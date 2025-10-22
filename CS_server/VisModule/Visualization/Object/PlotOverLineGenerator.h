@@ -52,18 +52,23 @@ public:
 
 public:
 
-    void run( const Argument& param, const vismodule::Camera& camera, const jpv::ParticleTransferClientMessage &clntMes, const int number_of_divide ,const int timeStep, vismodule::KVSMLObjectPlotOverLine* object, const int st = 1 )
+    void run(
+        const Argument& param,
+        const int number_of_divide,
+        vismodule::KVSMLObjectPlotOverLine* object
+    )
     {
-
         delete  m_object;
         struct stat s;
+
         if ( stat( param.m_input_data.c_str(), &s ) )
         {
             std::cout << "Error. read failed:" << param.m_input_data << std::endl;
             exit( 1 );
         }
-            m_object = new vismodule::KVSMLObjectPlotOverLine();
-            this -> createFromFile( param, camera, clntMes, number_of_divide);
+
+        m_object = new vismodule::KVSMLObjectPlotOverLine();
+        this->createFromFile( param, number_of_divide );
 
         vismodule::KVSMLObjectPlotOverLine* po = getKVSMLObjectPOL();
 
@@ -72,12 +77,18 @@ public:
         object->setMask(po->mask()); 
     }
 
-    void run( const Argument& param, const vismodule::Camera& camera, const jpv::ParticleTransferClientMessage &clntMes, const int number_of_divide, vismodule::KVSMLObjectPlotOverLine* object, const int st,  const int vl )
+    void run( 
+        const Argument& param,
+        const int number_of_divide,
+        vismodule::KVSMLObjectPlotOverLine* object,
+        const int st,
+        const int vl
+    )
     {
         delete  m_object;
 
         m_object = new vismodule::KVSMLObjectPlotOverLine();
-        this->createFromFile( param, camera, clntMes, number_of_divide, st, vl );
+        this->createFromFile( param, number_of_divide, st, vl );
 
         vismodule::KVSMLObjectPlotOverLine* po = getKVSMLObjectPOL();
 
@@ -112,11 +123,17 @@ public:
 
 
     void createFromFile(
-        const Argument& param, const vismodule::Camera& camera, const jpv::ParticleTransferClientMessage& clntMes, const int number_of_divide);
+        const Argument& param,
+        const int number_of_divide
+    );
         //const Argument& param, const vismodule::Camera& camera);
 
     void createFromFile(
-        const Argument& param, const vismodule::Camera& camera, const jpv::ParticleTransferClientMessage& clntMes, const int number_of_divide, const int st, const int vl);
+        const Argument& param,
+        const int number_of_divide,
+        const int st,
+        const int vl
+    );
 
 //    void createFromFile(
 //        const Argument& param, const vismodule::Camera& camera, const jpv::ParticleTransferClientMessage& clntMes, const int number_of_divide, const int st, const int vl );

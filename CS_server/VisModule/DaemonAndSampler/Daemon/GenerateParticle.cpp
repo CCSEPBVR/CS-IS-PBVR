@@ -2,14 +2,14 @@
 
 void generate_particle(
     Argument &param,
-    MultiVolumePropertyList& mvpl, 
+    MultiVolumePropertyList& mvpl,
     bool &nan_error, 
 #ifndef CPU_VER
     JobCollector& jc, 
 #endif
     JobDispatcher& jd,
     jpv::ParticleTransferServer pts,
-    int32_t server_mode
+    jpv::ServerMode server_mode
 )
 {
     int rank;
@@ -24,7 +24,30 @@ void generate_particle(
     int st, vl, wid = 0;
     jpv::ParticleTransferServerMessage servMes;
     std::vector<vismodule::CS_PointObjectGenerator> point_generator_lst;
-    const int tf_number = mvpl.m_list[0].m_number_ingredients;
+    int tf_number;
+    VariableRange vr; // jobcollectorで使用、削除予定
+    ParticleMonitor pm;
+
+    if ( server_mode == jpv::ServerMode::CS )
+    {
+        tf_number = param.m_transfunc_array.size();
+    } // server_mode == jpv::ServerMode::CS
+    else // server_mode == jpv::ServerMode::IS
+    {
+        pm.check();
+
+        if( pm.stepExisted() )
+        {
+            pm.setTimeStep_particle( pm.particleStatusFile().getLatestTimeStep() );
+        }
+        else
+        {
+            pm.setTimeStep_particle(0);
+        }
+        pm.readParticleHistoryFile();
+
+        tf_number = pm.particleHistoryFile().colorHistogramArray().size();
+    } // server_mode == jpv::ServerMode::IS
 
     jd.initialize(
         param.m_time_step,
@@ -71,7 +94,6 @@ void generate_particle(
         servMes.m_particle_limit = param.m_particle_limit;
         servMes.m_particle_density = param.m_particle_density;
         servMes.m_subpixel_level = param.m_subpixel_level;
-        servMes.m_server_side_variable_range = param.m_server_side_variable_range;
         // make sub volume num server message end
 
         // send sub volume num server message
@@ -110,6 +132,17 @@ void generate_particle(
         tmp_o_bins[tf] = 0;
     }
 
+    float* tmp_max;
+    float* tmp_min;
+    tmp_max = new float[tf_number * 2];
+    tmp_min = new float[tf_number * 2];
+
+    for ( int i = 0; i < ( tf_number * 2 ); i++ )
+    {
+        tmp_max[ i ] = FLT_MIN;
+        tmp_min[ i ] = FLT_MAX;
+    }
+
     while ( jd.dispatchNext( wid, &st, &vl ) )
     {
         vismodule::PointObject* originalObject = new vismodule::PointObject;
@@ -118,7 +151,7 @@ void generate_particle(
         {
             vismodule::PointObject* tmp_obj = NULL;
 
-            // make point object and histgram
+            // make point object and histgram and range
             if ( ( rank > 0 ) || ( mpi_size == 1 ) )
             {
                 int xvl, fidx;
@@ -183,7 +216,17 @@ void generate_particle(
                     }
                 }
                 // make histgram end
-            } // make point object and histgram
+
+                // make variable range start
+                for( int i = 0; i < tf_number; i++ )
+                {
+                    tmp_max[ 2 * i + 1 ] = vismodule::Math::Max( tmp_max[ 2 * i + 1 ], param.m_transfunc_synthesizer->m_c_max[ i ] );
+                    tmp_min[ 2 * i + 1 ] = vismodule::Math::Min( tmp_min[ 2 * i + 1 ], param.m_transfunc_synthesizer->m_c_min[ i ] );
+                    tmp_max[ 2 * i     ] = vismodule::Math::Max( tmp_max[ 2 * i     ], param.m_transfunc_synthesizer->m_o_max[ i ] );
+                    tmp_min[ 2 * i     ] = vismodule::Math::Min( tmp_min[ 2 * i     ], param.m_transfunc_synthesizer->m_o_min[ i ] );
+                }
+                // make variable range end
+            } // make point object and histgram and range
 
 #ifndef CPU_VER
             if ( mpi_size > 1 ) {
@@ -212,19 +255,6 @@ void generate_particle(
         } // server_mode == jpv::ServerMode::CS
         else // server_mode == jpv::ServerMode::IS
         {
-            ParticleMonitor pm;
-            pm.check();
-
-            if( pm.stepExisted() )
-            {
-                pm.setTimeStep_particle( pm.particleStatusFile().getLatestTimeStep() );
-            }
-            else
-            {
-                pm.setTimeStep_particle(0);
-            }
-            pm.readParticleHistoryFile();
-
             // get point object
             pm.readParticleFile();
             pm.getParticle( originalObject );
@@ -260,7 +290,7 @@ void generate_particle(
             // vismodule::PointObject* object = originalObject;
             // if ( originalObject != object ) delete originalObject;
             servMes.m_number_particle = originalObject->coords().size() / 3;
-            printf(" %zu perticles generated\n", servMes.m_number_particle);
+            printf( " %zu perticles generated\n", servMes.m_number_particle / 3 );
 
             if ( servMes.m_number_particle > 0 )
             {
@@ -299,19 +329,29 @@ void generate_particle(
     } // end of while(DispatchNext)
 
 #ifndef CPU_VER
-    if (mpi_size > 1) {
+    if ( mpi_size > 1 ) {
         MPI_Allreduce( MPI_IN_PLACE, tmp_c_bins, c_bins_size, MPI_UNSIGNED_LONG, MPI_SUM , MPI_COMM_WORLD );
         MPI_Allreduce( MPI_IN_PLACE, tmp_o_bins, o_bins_size, MPI_UNSIGNED_LONG, MPI_SUM , MPI_COMM_WORLD );
+        MPI_Allreduce( MPI_IN_PLACE, tmp_max, ( tf_number * 2 ), MPI_FLOAT, MPI_MAX, MPI_COMM_WORLD );
+        MPI_Allreduce( MPI_IN_PLACE, tmp_min, ( tf_number * 2 ), MPI_FLOAT, MPI_MIN, MPI_COMM_WORLD );
     }
 #endif
 
-    // send histgram
+    if ( server_mode == jpv::ServerMode::CS )
+    {
+        vr = setVariablerange2( tmp_max, tmp_min, ( tf_number * 2 ) );
+    }
+
+    // send histgram and range
     if ( rank == 0 )
     {
         // make histgram server message start
         servMes.m_number_particle = 0;
         servMes.m_flag_send_bins = 1;
         servMes.m_transfer_function_count = tf_number;
+        servMes.m_server_side_variable_range = vr;
+        setParamTransferFunctionToServer( &servMes, &param );
+
         servMes.m_color_nbins   = new vismodule::UInt64[tf_number];
         servMes.m_opacity_nbins = new vismodule::UInt64[tf_number];
         servMes.m_color_bins.resize( tf_number );
@@ -344,7 +384,7 @@ void generate_particle(
             DEFAULT_NBINS,
             tmp_o_bins
         );
-        // make histgram server message end
+        // make histgram and range server message end
 
         // TEST START 2015.1.14
         if ( nan_error )
@@ -358,7 +398,7 @@ void generate_particle(
         }
 
         // send histgram server message
-        std::cout << "INFO: send histgram server message" << std::endl;
+        std::cout << "INFO: send histgram and range server message" << std::endl;
         servMes.m_message_size = servMes.byteSize();
         servMes.show();
         pts.sendMessage( servMes );
@@ -375,7 +415,7 @@ void generate_particle(
 
         delete[] servMes.m_color_nbins;
         delete[] servMes.m_opacity_nbins;
-    } // send histgram
+    } // send histgram and range
 
     nan_error = false;
 
@@ -383,6 +423,7 @@ void generate_particle(
     delete[] tmp_o_bins;
 }
 
+#if 0
 void generate_particle_worker(
     Argument &param,
     MultiVolumePropertyList& mvpl,
@@ -782,3 +823,4 @@ void generate_particle_IS(
     delete[] tmp_c_bins;
     delete[] tmp_o_bins;
 }
+#endif

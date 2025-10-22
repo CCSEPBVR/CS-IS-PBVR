@@ -9,7 +9,7 @@ void generate_glyph(
 #endif
     JobDispatcher& jd,
     jpv::ParticleTransferServer pts,
-    int32_t server_mode    
+    jpv::ServerMode server_mode
 )
 {
     int rank;
@@ -24,7 +24,6 @@ void generate_glyph(
     int st, vl, wid = 0;
     jpv::ParticleTransferServerMessage servMes;
     std::vector<vismodule::GlyphSeedGenerator> glyph_creator_lst;
-    const int tf_number   = mvpl.m_list[0].m_number_ingredients;
     const int size_index  = 0; // for minmax array index
     const int color_index = 1; // for minmax array index
 
@@ -113,6 +112,7 @@ void generate_glyph(
             // make size and color minmax
             if ( ( rank > 0 ) || ( mpi_size == 1 ) )
             {
+                vismodule::GlyphSeedGenerator glyph_creator;
                 int xvl, fidx;
                 fidx = mvpl.getFileIndex( vl, &xvl );
                 MultiVolumeProperty& mvp = mvpl.m_list[fidx];
@@ -125,18 +125,18 @@ void generate_glyph(
                 {
                     if ( mvp.m_file_type == 1 || mvp.m_file_type == 2 ) // filetype: gathered subvolume or gathered timestep
                     {
-                        *tmp_obj = *glyph_creator_lst[fidx].run( param, *clntMes.m_camera, clntMes, mvpl.m_total_number_subvolumes, timeStep, st, xvl); 
+                        *tmp_obj = *glyph_creator.run( param, *param.m_camera, mvpl.m_total_number_subvolumes, st, xvl); 
                         // run()で得られるKVSMLObjectglyphとtmp_objは異なるメモリ領域を指しているため,ポインタコピーではなくオペレータを呼び出す必要がある
                     }
 #ifdef EXTEND_FILE_FORMAT
                     else if ( mvp.m_file_type == 3 || mvp.m_file_type == 4 )
                     {
-                        glyph_creator_lst[fidx].run( param, *clntMes.m_camera, clntMes, servMes.m_number_volume_divide, timeStep , tmp_obj, st, xvl );
+                        glyph_creator.run( param, *param.m_camera, mvpl.m_total_number_subvolumes, tmp_obj, st, xvl );
                     }                                
 #endif
                     else     // filetype: kvsml
                     {
-                        glyph_creator_lst[fidx].run( param, *clntMes.m_camera, clntMes, servMes.m_number_volume_divide, timeStep , tmp_obj, st );
+                        glyph_creator.run( param, *param.m_camera, mvpl.m_total_number_subvolumes, tmp_obj, st );
                     }
                 }
                 catch ( const std::runtime_error& e )
@@ -171,7 +171,15 @@ void generate_glyph(
             }
 #else
             originalGlyph->clear();
-            originalGlyph = tmp_obj;
+            originalGlyph->setCoords( tmp_obj->coords() );
+            originalGlyph->setColors( tmp_obj->colors() );
+            originalGlyph->setDirections( tmp_obj->directions() );
+            originalGlyph->setSizes( tmp_obj->sizes() );
+            originalGlyph->setColorMin( tmp_obj->colorMin() );
+            originalGlyph->setColorMax( tmp_obj->colorMax() );
+            originalGlyph->setSizeMin( tmp_obj->sizeMin() );
+            originalGlyph->setSizeMax( tmp_obj->sizeMax() );
+            printf(" %zu glyphs generated\n", tmp_obj->coords().size() / 3);
 #endif
             delete tmp_obj;
         } // server_mode == jpv::ServerMode::CS
@@ -182,11 +190,11 @@ void generate_glyph(
 
             if( pm.stepExisted() )
             {
-                pm.setTimeStep_particle( pm.particleStatusFile().getLatestTimeStep() );
+                pm.setTimeStep_glyph( pm.particleStatusFile().getLatestTimeStep() );
             }
             else
             {
-                pm.setTimeStep_particle(0);
+                pm.setTimeStep_glyph(0);
             }
 
             // get glyph
@@ -198,7 +206,7 @@ void generate_glyph(
             tmp_min[size_index]  = vismodule::Math::Min(  tmp_min[size_index], originalGlyph->sizeMin()  );
             tmp_max[color_index] = vismodule::Math::Max( tmp_max[color_index], originalGlyph->colorMax() );
             tmp_min[color_index] = vismodule::Math::Min( tmp_min[color_index], originalGlyph->colorMin() );
-        } // server_mode == jpv::ServerMode::CS
+        } // server_mode == jpv::ServerMode::IS
 
         // send glyph
         if ( rank == 0 )
@@ -208,7 +216,7 @@ void generate_glyph(
             // vismodule::KVSMLObjectGlyph* object = originalGlyph;
             // if ( originalGlyph != object ) delete originalGlyph;
             servMes.m_number_glyph = originalGlyph->coords().size() / 3;
-            printf(" %zu glyphs generated\n", object->coords().size() / 3);
+            printf(" %zu glyphs generated\n", originalGlyph->coords().size() / 3);
 
             if ( servMes.m_number_glyph > 0 )
             {
@@ -226,16 +234,16 @@ void generate_glyph(
             }
             for ( int i = 0; i < servMes.m_number_glyph; ++i )
             {
-                servMes.m_glyph_coords[3 * i + 0]  = object->coords()[3 * i + 0];
-                servMes.m_glyph_coords[3 * i + 1]  = object->coords()[3 * i + 1];
-                servMes.m_glyph_coords[3 * i + 2]  = object->coords()[3 * i + 2];
-                servMes.m_glyph_vectors[3 * i + 0] = object->directions()[3 * i + 0];
-                servMes.m_glyph_vectors[3 * i + 1] = object->directions()[3 * i + 1];
-                servMes.m_glyph_vectors[3 * i + 2] = object->directions()[3 * i + 2];
-                servMes.m_glyph_colors[3 * i + 0]  = object->colors()[3 * i + 0];
-                servMes.m_glyph_colors[3 * i + 1]  = object->colors()[3 * i + 1];
-                servMes.m_glyph_colors[3 * i + 2]  = object->colors()[3 * i + 2];
-                servMes.m_glyph_sizes[i]           = object->sizes()[i];
+                servMes.m_glyph_coords[3 * i + 0]  = originalGlyph->coords()[3 * i + 0];
+                servMes.m_glyph_coords[3 * i + 1]  = originalGlyph->coords()[3 * i + 1];
+                servMes.m_glyph_coords[3 * i + 2]  = originalGlyph->coords()[3 * i + 2];
+                servMes.m_glyph_vectors[3 * i + 0] = originalGlyph->directions()[3 * i + 0];
+                servMes.m_glyph_vectors[3 * i + 1] = originalGlyph->directions()[3 * i + 1];
+                servMes.m_glyph_vectors[3 * i + 2] = originalGlyph->directions()[3 * i + 2];
+                servMes.m_glyph_colors[3 * i + 0]  = originalGlyph->colors()[3 * i + 0];
+                servMes.m_glyph_colors[3 * i + 1]  = originalGlyph->colors()[3 * i + 1];
+                servMes.m_glyph_colors[3 * i + 2]  = originalGlyph->colors()[3 * i + 2];
+                servMes.m_glyph_sizes[i]           = originalGlyph->sizes()[i];
             }
             // make glyph server message end
 
@@ -298,6 +306,7 @@ void generate_glyph(
     delete[] tmp_max;
 }
 
+#if 0
 void generate_glyph_worker(Argument &param, jpv::ParticleTransferClientMessage& clntMes, MultiVolumePropertyList& mvpl, 
                          bool &nan_error,
 #ifndef CPU_VER
@@ -770,3 +779,4 @@ std::cout << __FILE__ << ", " << __func__ << ", " << __LINE__ << std::endl;
                     }
 
 }
+#endif

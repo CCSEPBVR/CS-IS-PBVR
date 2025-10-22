@@ -84,39 +84,49 @@ PlotOverLine::PlotOverLine( const vismodule::UnstructuredVolumeObject* volume,
 //    this->extractPlotLineStructured( P0, P1 );
 //}
 
-PlotOverLine::PlotOverLine( Type** values, int nvariables,
-        float* coordinates, int ncoords,
-        unsigned int* connections, int ncells,
-        const  vismodule::VolumeObjectBase::CellType& celltype, 
-        const jpv::ParticleTransferClientMessage &clntMes) :
-    m_values( values ), m_nvariables(nvariables),  
-    m_coordinates( coordinates  ), m_nnodes( ncoords ), 
-    m_connections( connections ), m_ncells( ncells ) 
+PlotOverLine::PlotOverLine(
+    Type** values,
+    int nvariables,
+    float* coordinates,
+    int ncoords,
+    unsigned int* connections,
+    int ncells,
+    const  vismodule::VolumeObjectBase::CellType& celltype, 
+    const Argument& param
+):
+m_values( values ),
+m_nvariables(nvariables),
+m_coordinates( coordinates  ),
+m_nnodes( ncoords ),
+m_connections( connections ),
+m_ncells( ncells ) 
 {
-    m_plot_variable =  std::atoi(clntMes.m_plot_variable.substr(1).c_str()) -1;
-    int sampling_size = clntMes.m_sampling_size;
-    vismodule::Vec3 P0( clntMes.m_start_point[0], clntMes.m_start_point[1], clntMes.m_start_point[2] );
-    vismodule::Vec3 P1( clntMes.m_end_point[0], clntMes.m_end_point[1], clntMes.m_end_point[2] );
+    m_plot_variable =  std::atoi(param.m_plot_variable.substr(1).c_str()) -1;
+    int sampling_size = param.m_sampling_size;
+    vismodule::Vec3 P0( param.m_start_point[0], param.m_start_point[1], param.m_start_point[2] );
+    vismodule::Vec3 P1( param.m_end_point[0], param.m_end_point[1], param.m_end_point[2] );
     std::cout << "m_plot_variable = " << m_plot_variable  <<std::endl;
     std::cout << "sampling_size = " << sampling_size <<std::endl;
     std::cout << "P0 = " << P0.x() << ", " << P0.y() << ", " << P0.z() <<std::endl;
     std::cout << "P1 = " << P1.x() << ", " << P1.y() << ", " << P1.z() <<std::endl;
     m_cellType = celltype;
-    std::cout << __LINE__ <<std::endl;
     this->setSamplingSize( sampling_size );
-    std::cout << __LINE__ <<std::endl;
     this->extractPlotLine( P0, P1 );
-    std::cout << __LINE__ <<std::endl;
 }
 
-PlotOverLine::PlotOverLine( domain_parameters_struct dom, float** values, int nvariables, 
-        const jpv::ParticleTransferClientMessage &clntMes):
-    m_values( values ),m_nvariables(nvariables)
+PlotOverLine::PlotOverLine(
+    domain_parameters_struct dom,
+    float** values,
+    int nvariables, 
+    const Argument& param
+):
+m_values( values ),
+m_nvariables(nvariables)
 {
-    m_plot_variable =  std::atoi(clntMes.m_plot_variable.substr(1).c_str()) -1;
-    int sampling_size = clntMes.m_sampling_size;
-    vismodule::Vec3 P0( clntMes.m_start_point[0], clntMes.m_start_point[1], clntMes.m_start_point[2] );
-    vismodule::Vec3 P1( clntMes.m_end_point[0], clntMes.m_end_point[1], clntMes.m_end_point[2] );
+    m_plot_variable =  std::atoi(param.m_plot_variable.substr(1).c_str()) -1;
+    int sampling_size = param.m_sampling_size;
+    vismodule::Vec3 P0( param.m_start_point[0], param.m_start_point[1], param.m_start_point[2] );
+    vismodule::Vec3 P1( param.m_end_point[0], param.m_end_point[1], param.m_end_point[2] );
     this->setSamplingSize( sampling_size );
     m_dom = dom;
     this->extractPlotLineStructured( P0, P1 );

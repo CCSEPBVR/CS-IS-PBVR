@@ -70,17 +70,17 @@
 #include <DaemonAndSampler/Daemon/Timer.h>
 
 
-void initial_step_master(
+void initial_step(
     Argument &param,
     MultiVolumePropertyList& mvpl, 
-    // std::vector<PointObjectCreator>& point_creator_lst, 
+    // std::vector<PointObjectCreator>& point_creator_lst,
     bool &nan_error,
 #ifndef CPU_VER
     JobCollector& jc,
 #endif
     JobDispatcher& jd,
     jpv::ParticleTransferServer pts,
-    int& timer_count
+    jpv::ServerMode server_mode
 );
 
 void initial_step_worker(

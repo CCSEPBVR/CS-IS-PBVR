@@ -26,25 +26,25 @@
 
 using namespace vismodule;
 
-void GlyphSeedGenerator::run( const Argument& param, const vismodule::Camera& camera, const jpv::ParticleTransferClientMessage &clntMes , const int number_of_divide ,const int timeStep, vismodule::KVSMLObjectGlyph* object, const int st )
+void GlyphSeedGenerator::run( const Argument& param, const vismodule::Camera& camera, const int number_of_divide, vismodule::KVSMLObjectGlyph* object, const int st )
 {
-    this->createFromFile( param, camera, clntMes, number_of_divide);
+    this->createFromFile( param, camera, number_of_divide );
 
     vismodule::KVSMLObjectGlyph* po = this->getKVSMLObjectGlyph();
 
-    object -> setCoords(po->coords());
-    object -> setColors(po->colors());
-    object -> setDirections(po->directions());
-    object -> setSizes(po->sizes());
-    object -> setColorMin(po->colorMin());
-    object -> setColorMax(po->colorMax());
-    object -> setSizeMin(po->sizeMin());
-    object -> setSizeMax(po->sizeMax());
+    object->setCoords( po->coords() );
+    object->setColors( po->colors() );
+    object->setDirections( po->directions() );
+    object->setSizes( po->sizes() );
+    object->setColorMin( po->colorMin() );
+    object->setColorMax( po->colorMax() );
+    object->setSizeMin( po->sizeMin() );
+    object->setSizeMax( po->sizeMax() );
     //return po;
 }
 
 #ifdef EXTEND_FILE_FORMAT
-void GlyphSeedGenerator::run( const Argument& param, const vismodule::Camera& camera,const jpv::ParticleTransferClientMessage &clntMes, const int number_of_divide, const int timeStep, vismodule::KVSMLObjectGlyph* object, const int st, const int vl)
+void GlyphSeedGenerator::run( const Argument& param, const vismodule::Camera& camera, const int number_of_divide, vismodule::KVSMLObjectGlyph* object, const int st, const int vl )
 {
     vismodule::KVSMLObjectGlyph* po = this->getKVSMLObjectGlyph();
 
@@ -59,18 +59,22 @@ void GlyphSeedGenerator::run( const Argument& param, const vismodule::Camera& ca
 }
 #endif
 
-vismodule::KVSMLObjectGlyph* GlyphSeedGenerator::run( const Argument& param, const vismodule::Camera& camera,const jpv::ParticleTransferClientMessage &clntMes, const int number_of_divide, const int timeStep, const int st, const int vl)
+vismodule::KVSMLObjectGlyph* GlyphSeedGenerator::run( const Argument& param, const vismodule::Camera& camera, const int number_of_divide, const int st, const int vl )
 {
     this->setFilterInfo( m_mvp );
     this->setCoordSynthTS( st );
-    this->createFromFile( param, camera, clntMes, number_of_divide, st, vl );
+    this->createFromFile( param, camera, number_of_divide, st, vl );
     vismodule::KVSMLObjectGlyph* po = this->getKVSMLObjectGlyph();
     return po;
 }
 
 
 //void GlyphSeedGenerator::createFromFile( const Argument& param, const vismodule::Camera& camera )
-void GlyphSeedGenerator::createFromFile( const Argument& param, const vismodule::Camera& camera, const jpv::ParticleTransferClientMessage &clntMes, const int number_of_divide )
+void GlyphSeedGenerator::createFromFile(
+    const Argument& param,
+    const vismodule::Camera& camera,
+    const int number_of_divide
+)
 {
 //FJ_TIMER_KAWAMURA
     VIS_MODULE_TIMER_STA( 260 );
@@ -100,12 +104,12 @@ void GlyphSeedGenerator::createFromFile( const Argument& param, const vismodule:
 //FJ_TIMER_KAWAMURA
 
     std::cout << *volume << std::endl;
-    std::cout << "min:" << volume->minObjectCoord() << ", max:" << volume->maxObjectCoord() << std::endl;
-    std::cout << "min:" << volume->minExternalCoord() << ", max:" << volume->maxExternalCoord() << std::endl;
+    std::cout << "min:"  << volume->minObjectCoord()   << ", max:" << volume->maxObjectCoord()   << std::endl;
+    std::cout << "min:"  << volume->minExternalCoord() << ", max:" << volume->maxExternalCoord() << std::endl;
 
    try
     {
-        sampling( volume , clntMes, number_of_divide);
+        sampling( volume , param, number_of_divide );
     }
     catch ( const std::runtime_error& e )
     {
@@ -119,7 +123,13 @@ void GlyphSeedGenerator::createFromFile( const Argument& param, const vismodule:
     delete volume;
 }
 
-void GlyphSeedGenerator::createFromFile( const Argument& param, const vismodule::Camera& camera, const jpv::ParticleTransferClientMessage& clntMes,const int number_of_divide, const int st, const int vl )
+void GlyphSeedGenerator::createFromFile(
+    const Argument& param,
+    const vismodule::Camera& camera,
+    const int number_of_divide,
+    const int st,
+    const int vl
+)
 {
     VIS_MODULE_TIMER_STA( 260 );
 //    delete m_object;
@@ -204,7 +214,7 @@ void GlyphSeedGenerator::createFromFile( const Argument& param, const vismodule:
 
     try
     {
-        sampling( volume ,clntMes, number_of_divide);
+        sampling( volume , param, number_of_divide );
     }
     catch ( const std::runtime_error& e )
     {
@@ -232,7 +242,11 @@ std::string GlyphSeedGenerator::getErrorMessage( const size_t maxMemory ) const
     return errorMessage;
 }
 
-void GlyphSeedGenerator::sampling( vismodule::VolumeObjectBase* volume,const jpv::ParticleTransferClientMessage& clntMes, const int number_of_divide )
+void GlyphSeedGenerator::sampling(
+    vismodule::VolumeObjectBase* volume,
+    const Argument& param,
+    const int number_of_divide
+)
 {
 #ifndef CPU_VER
     int rank;
@@ -245,83 +259,82 @@ void GlyphSeedGenerator::sampling( vismodule::VolumeObjectBase* volume,const jpv
 
     vismodule::VolumeObjectBase::VolumeType voltype = volume->volumeType();
 
-
-//    Type** values;
+    // Type** values;
     std::vector<float> coordinates; 
     int ncoords;
     std::vector<unsigned int> connections ;
     int ncells; 
     vismodule::VolumeObjectBase::CellType celltype;
 
-        //詰め替え処理
-        vismodule::AnyValueArray valueArray; 
-        valueArray = volume->values(); 
-        int nnodes = volume->nnodes();
-        int nvariables = volume->veclen();
+    //詰め替え処理
+    vismodule::AnyValueArray valueArray; 
+    valueArray = volume->values(); 
+    int nnodes = volume->nnodes();
+    int nvariables = volume->veclen();
 
-        // ここで変数の値をfloatでまとめることで粒子生成のテンプレート化を回避
-        std::unique_ptr<std::unique_ptr<Type[]>[]> values(new std::unique_ptr<Type[]>[nvariables]);
+    // ここで変数の値をfloatでまとめることで粒子生成のテンプレート化を回避
+    std::unique_ptr<std::unique_ptr<Type[]>[]> values(new std::unique_ptr<Type[]>[nvariables]);
 
-        // 実行時型分岐で呼び出す
-        const std::type_info& type = volume->values().typeInfo()->type();
-        if (type == typeid(vismodule::Int8))
-        {
-            copy_values<vismodule::Int8>(valueArray, values, nvariables, nnodes);
-        }  
-        else if ( type == typeid( vismodule::Int16  ) )
-        {
-            copy_values<vismodule::Int16>(valueArray, values, nvariables, nnodes);
-        } 
-        else if ( type == typeid( vismodule::Int32  ) )
-        {
-            copy_values<vismodule::Int32>(valueArray, values, nvariables, nnodes);
-        }
-        else if ( type == typeid( vismodule::Int64  ) )
-        {
-            copy_values<vismodule::Int64>(valueArray, values, nvariables, nnodes);
-        }
-        else if ( type == typeid( vismodule::UInt8  ) )
-        {
-            copy_values<vismodule::UInt8>(valueArray, values, nvariables, nnodes);
-        }
-        else if ( type == typeid( vismodule::UInt16 ) )
-        {
-            copy_values<vismodule::UInt16>(valueArray, values, nvariables, nnodes);
-        }
-        else if ( type == typeid( vismodule::UInt32 ) )
-        {
-            copy_values<vismodule::UInt32>(valueArray, values, nvariables, nnodes);
-        }
-        else if ( type == typeid( vismodule::UInt64 ) )
-        {
-            copy_values<vismodule::UInt64>(valueArray, values, nvariables, nnodes);
-        }
-        else if ( type == typeid( vismodule::Real32 ) )
-        {
-            copy_values<vismodule::Real32>(valueArray, values, nvariables, nnodes);
-        }
-        else if ( type == typeid( vismodule::Real64 ) )
-        {
-            copy_values<vismodule::Real64>(valueArray, values, nvariables, nnodes);
-        }
-        else 
-        {
-            throw std::runtime_error("Unsupported type");
-        }
+    // 実行時型分岐で呼び出す
+    const std::type_info& type = volume->values().typeInfo()->type();
+    if (type == typeid(vismodule::Int8))
+    {
+        copy_values<vismodule::Int8>(valueArray, values, nvariables, nnodes);
+    }  
+    else if ( type == typeid( vismodule::Int16  ) )
+    {
+        copy_values<vismodule::Int16>(valueArray, values, nvariables, nnodes);
+    } 
+    else if ( type == typeid( vismodule::Int32  ) )
+    {
+        copy_values<vismodule::Int32>(valueArray, values, nvariables, nnodes);
+    }
+    else if ( type == typeid( vismodule::Int64  ) )
+    {
+        copy_values<vismodule::Int64>(valueArray, values, nvariables, nnodes);
+    }
+    else if ( type == typeid( vismodule::UInt8  ) )
+    {
+        copy_values<vismodule::UInt8>(valueArray, values, nvariables, nnodes);
+    }
+    else if ( type == typeid( vismodule::UInt16 ) )
+    {
+        copy_values<vismodule::UInt16>(valueArray, values, nvariables, nnodes);
+    }
+    else if ( type == typeid( vismodule::UInt32 ) )
+    {
+        copy_values<vismodule::UInt32>(valueArray, values, nvariables, nnodes);
+    }
+    else if ( type == typeid( vismodule::UInt64 ) )
+    {
+        copy_values<vismodule::UInt64>(valueArray, values, nvariables, nnodes);
+    }
+    else if ( type == typeid( vismodule::Real32 ) )
+    {
+        copy_values<vismodule::Real32>(valueArray, values, nvariables, nnodes);
+    }
+    else if ( type == typeid( vismodule::Real64 ) )
+    {
+        copy_values<vismodule::Real64>(valueArray, values, nvariables, nnodes);
+    }
+    else 
+    {
+        throw std::runtime_error("Unsupported type");
+    }
 
-        // 一時的に raw pointer の配列を作る
-        std::vector<float*> raw_values(nvariables);
-        for (int j = 0; j < nvariables; ++j) 
-        {
-            raw_values[j] = values[j].get();
-        }
+    // 一時的に raw pointer の配列を作る
+    std::vector<float*> raw_values(nvariables);
+    for (int j = 0; j < nvariables; ++j) 
+    {
+        raw_values[j] = values[j].get();
+    }
  
 
     if(voltype ==  vismodule::VolumeObjectBase::VolumeType::Unstructured)
     {
         const vismodule::UnstructuredVolumeObject* uvo_p = static_cast<const vismodule::UnstructuredVolumeObject*>( volume );
        
-//      valueArray = volume->values(); 
+        // valueArray = volume->values(); 
         coordinates.assign( (float * )volume->coords().begin(),(float * )volume->coords().end()); 
         ncoords =  volume->nnodes();
         connections.assign((unsigned int*)uvo_p->connections().begin(), (unsigned int*)uvo_p->connections().end());
@@ -331,7 +344,7 @@ void GlyphSeedGenerator::sampling( vismodule::VolumeObjectBase* volume,const jpv
 
         nvariables = volume->veclen();
 
-        GlyphSeed glyph_generator( clntMes, number_of_divide, raw_values.data(), nvariables,
+        GlyphSeed glyph_generator( param, number_of_divide, raw_values.data(), nvariables,
                 coordinates.data(), ncoords, connections.data(), ncells, celltype, false);
         glyph_generator.getGlyphData(&m_object);
         
@@ -352,7 +365,7 @@ void GlyphSeedGenerator::sampling( vismodule::VolumeObjectBase* volume,const jpv
         ,1.f
         };
 
-        GlyphSeed glyph_generator( clntMes, number_of_divide, dom, raw_values.data(), nvariables,false);
+        GlyphSeed glyph_generator( param, number_of_divide, dom, raw_values.data(), nvariables,false);
         glyph_generator.getGlyphData(&m_object);
     }
 

@@ -72,9 +72,9 @@
 
 
 
-void generate_particle_master(
+void generate_particle(
     Argument &param,
-    MultiVolumePropertyList& mvpl, 
+    MultiVolumePropertyList& mvpl,
     // std::vector<PointObjectCreator>& point_creator_lst, 
     bool &nan_error, 
 #ifndef CPU_VER
@@ -82,8 +82,7 @@ void generate_particle_master(
 #endif
     JobDispatcher& jd,
     jpv::ParticleTransferServer pts,
-    TransferFunctionSynthesizerCreator transfunc_creator,
-    int& timer_count
+    jpv::ServerMode server_mode
 );  
 
 void generate_particle_worker(

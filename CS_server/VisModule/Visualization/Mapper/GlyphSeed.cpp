@@ -24,24 +24,39 @@
 //}
 
 // unstruct 
-GlyphSeed::GlyphSeed(const jpv::ParticleTransferClientMessage& clntMes, const int number_of_divide, Type** values,
-        int nvariables, float* coordinates, int ncoords,
-        unsigned int* connections, int ncells, const vismodule::VolumeObjectBase::CellType& celltype, const bool is_flag) :
-    m_values( values ), m_nvariable(nvariables),  
-    m_coords( coordinates  ), m_ncoords( ncoords ), 
-    m_connections( connections ), m_ncells( ncells ), m_is_flag(is_flag) 
+GlyphSeed::GlyphSeed(
+    const Argument& param,
+    const int number_of_divide,
+    Type** values,
+    int nvariables,
+    float* coordinates,
+    int ncoords,
+    unsigned int* connections,
+    int ncells,
+    const vismodule::VolumeObjectBase::CellType& celltype,
+    const bool is_flag
+):
+m_values( values ),
+m_nvariable(nvariables),  
+m_coords( coordinates  ),
+m_ncoords( ncoords ), 
+m_connections( connections ),
+m_ncells( ncells ),
+m_is_flag(is_flag) 
 {
-  
     std::cout << "m_is_flag = " << m_is_flag << std::endl; 
     m_g_flag = false; 
-    m_g_flag = this -> InputParameter(clntMes, number_of_divide);
-    if (m_g_flag)
+    m_g_flag = this->InputParameter( param, number_of_divide );
+    if ( m_g_flag )
     { 
-        if( m_distribution_modes == jpv::GlyphMode:: AllPoints || m_distribution_modes == jpv::GlyphMode:: EveryNthPoints )
+        if( 
+            m_distribution_modes == jpv::GlyphMode:: AllPoints ||
+            m_distribution_modes == jpv::GlyphMode:: EveryNthPoints
+        )
         {
             this->PointSampling_unstruct();
         }
-        else if(m_distribution_modes == jpv::GlyphMode:: UniformDistribution)
+        else if( m_distribution_modes == jpv::GlyphMode::UniformDistribution )
         {
             this->DistributionSampling_unstruct( celltype );
         }
@@ -49,43 +64,55 @@ GlyphSeed::GlyphSeed(const jpv::ParticleTransferClientMessage& clntMes, const in
 }
 
 // struct 
-GlyphSeed::GlyphSeed(const jpv::ParticleTransferClientMessage& clntMes, const int number_of_divide,  domain_parameters_struct dom, Type** values, int nvariables, const bool is_flag): 
-   m_values( values ), m_nvariable(nvariables) ,m_is_flag(is_flag)
-{
-   
+GlyphSeed::GlyphSeed(
+    const Argument& param,
+    const int number_of_divide,
+    domain_parameters_struct dom,
+    Type** values,
+    int nvariables,
+    const bool is_flag
+): 
+m_values( values ),
+m_nvariable(nvariables),
+m_is_flag(is_flag)
+{   
     m_g_flag = false; 
-    m_g_flag = this -> InputParameter(clntMes, number_of_divide);
+    m_g_flag = this->InputParameter( param, number_of_divide );
 
-    if (m_g_flag)
+    if ( m_g_flag )
     { 
-        if( m_distribution_modes == jpv::GlyphMode:: AllPoints || m_distribution_modes == jpv::GlyphMode:: EveryNthPoints )
+        if( m_distribution_modes == jpv::GlyphMode:: AllPoints ||
+            m_distribution_modes == jpv::GlyphMode:: EveryNthPoints
+        )
         {
             m_ncoords = dom.resolution[0]*dom.resolution[1]*dom.resolution[2];
-//            m_nvariable = nvariables;
-//            m_values = (float**)values;
+            // m_nvariable = nvariables;
+            // m_values = (float**)values;
             
-            this->PointSampling_struct(dom);
+            this->PointSampling_struct( dom );
         }
-        else if(m_distribution_modes == jpv::GlyphMode:: UniformDistribution)
+        else if( m_distribution_modes == jpv::GlyphMode:: UniformDistribution )
         {
-            this->DistributionSampling_struct( dom, values, nvariables);
+            this->DistributionSampling_struct( dom, values, nvariables );
         }
     }
-    
 }
 
-bool GlyphSeed::InputParameter(const jpv::ParticleTransferClientMessage& clntMes, const int number_of_divide )
+bool GlyphSeed::InputParameter(const Argument& param, const int number_of_divide )
 {
     bool glyph_flag;
-    int stride                                     = clntMes.m_stride;
-    int seed                                       = clntMes.m_seed; 
-    float number_of_sample_points                    = clntMes.m_number_of_sampling_point ;
+    int stride                    = param.m_stride;
+    int seed                      = param.m_seed; 
+    float number_of_sample_points = param.m_number_of_sampling_point;
 
-    int mpi_size = 1;
-    int mpi_rank = 0;
+    int mpi_size;
+    int mpi_rank;
 #ifndef CPU_VER
     MPI_Comm_size( MPI_COMM_WORLD, &mpi_size );
     MPI_Comm_rank( MPI_COMM_WORLD, &mpi_rank );
+#else
+    mpi_size = 1;
+    mpi_rank = 0;
 #endif
 
 #if _OPENMP
@@ -103,43 +130,43 @@ bool GlyphSeed::InputParameter(const jpv::ParticleTransferClientMessage& clntMes
     float glyph_min=0; 
     float glyph_max=0;
     // minmaxの値は前ステップで算出したものを参照
-    m_color_min = clntMes.m_glyph_color_min;
-    m_color_max = clntMes.m_glyph_color_max;
-    m_size_min = clntMes.m_glyph_size_min;
-    m_size_max = clntMes.m_glyph_size_max;
+    m_color_min = param.m_glyph_color_min;
+    m_color_max = param.m_glyph_color_max;
+    m_size_min  = param.m_glyph_size_min;
+    m_size_max  = param.m_glyph_size_max;
 
-    int table_size = clntMes.m_glyph_color_map_table.size();    
+    int table_size = param.m_glyph_color_map_table.size();    
     vismodule::ValueArray<vismodule::UInt8> u_table( table_size );
-    for( size_t j = 0; j< table_size ; j++ ) u_table[j] = (vismodule::UInt8)clntMes.m_glyph_color_map_table[j];
-    vismodule::ColorMap color_map( u_table, glyph_min, glyph_max);
+    for( size_t j = 0; j< table_size ; j++ ) u_table[j] = (vismodule::UInt8)param.m_glyph_color_map_table[j];
+    vismodule::ColorMap color_map( u_table, glyph_min, glyph_max );
     m_color_map = color_map;
 
-    if(m_is_flag) m_color_map =clntMes.m_color_map;
+    if( m_is_flag ) m_color_map = param.m_color_map;
 
-    glyph_flag = clntMes.m_glyph_flag;
+    glyph_flag = param.m_glyph_flag;
    
-    for (int i = 0; i< 3 ; i++)
+    for ( int i = 0; i < 3 ; i++ )
     {
-        m_direction_variables.push_back ( std::atoi(clntMes.m_direction_variable[i].substr(1).c_str()) - 1);
+        m_direction_variables.push_back ( std::atoi( param.m_direction_variable[i].substr(1).c_str() ) - 1 );
     }
 
-    m_size_sampling_method    =clntMes.m_size_sampling_method;
+    m_size_sampling_method = param.m_size_sampling_method;
 
-    for (int i =0 ; i< clntMes.m_size_variable.size(); i++)
+    for ( int i = 0; i < param.m_size_variable.size(); i++ )
     {
-        m_size_variables.push_back( std::atoi(clntMes.m_size_variable[i].substr(1).c_str()) -1); 
+        m_size_variables.push_back( std::atoi( param.m_size_variable[i].substr(1).c_str() ) -1 ); 
     }
 
-    m_distribution_modes = clntMes.m_distribution_mode; 
+    m_distribution_modes = param.m_distribution_mode; 
 
     m_stride = stride;
     if (m_distribution_modes == jpv::GlyphMode:: AllPoints) m_stride = 1;
     m_seed = seed; 
+    m_color_sampling_method    = param.m_color_data_sampling_method;
 
-    m_color_sampling_method    = clntMes.m_color_data_sampling_method;
-    for (int i =0 ; i< clntMes.m_color_data_variable.size(); i++)
+    for ( int i = 0 ; i < param.m_color_data_variable.size(); i++ )
     {
-        m_color_data_variables.push_back( std::atoi(clntMes.m_color_data_variable[i].substr(1).c_str()) - 1); 
+        m_color_data_variables.push_back( std::atoi( param.m_color_data_variable[i].substr(1).c_str() ) - 1 );
     }
 
 #if 1

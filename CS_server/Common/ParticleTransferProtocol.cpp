@@ -105,7 +105,6 @@ int32_t jpv::ParticleTransferClientMessage::byteSize( void ) const
         // add by @hira at 2016/12/01 : 1次伝達関数（色、不透明度）
         s += jpv::Serializer::byteSize( m_color_transfer_function_synthesis );
         s += jpv::Serializer::byteSize( m_opacity_transfer_function_synthesis );
-
     }
     if (m_initialize_parameter == InitializeParameter::generate_glyph || m_initialize_parameter == InitializeParameter::send_glyph_flag_false )
     {
@@ -1240,7 +1239,7 @@ void jpv::ParticleTransferServerMessage::show( void ) const
     std::cout << "fileType = "              << m_file_type                << std::endl;
     std::cout << "numberIngredients = "     << m_number_ingredients       << std::endl;
     std::cout << "flagSendBins = "          << m_flag_send_bins           << std::endl;
-    std::cout << "transferFunctionCount = " << m_number_nodes             << std::endl;
+    std::cout << "transferFunctionCount = " << m_transfer_function_count  << std::endl;
     std::cout << "particleLimit = "         << m_particle_limit           << std::endl;
     std::cout << "particleDensity = "       << m_particle_density         << std::endl;
     std::cout << "particleDataSizeLimit = " << m_particle_data_size_limit << std::endl;
@@ -1271,6 +1270,25 @@ void jpv::ParticleTransferServerMessage::show( void ) const
                   << m_transfer_function[i].m_opacity_variable   << ", "
                   << m_transfer_function[i].m_color_variable_min << ", "
                   << m_transfer_function[i].m_color_variable_max << std::endl;
+    }
+
+    std::cout << "server side variable range" << std::endl;
+    std::cout << "tfname, MIN, MAX" << std::endl;
+    for( int i = 0; i < m_transfer_function.size(); i++ )
+    {
+        std::stringstream tt;
+        VariableRange vr;
+        float c_min, c_max, o_min, o_max;
+
+        tt << "t" << i + 1;
+        vr = m_server_side_variable_range;
+        c_min = vr.min( tt.str() + "_var_c" );
+        c_max = vr.max( tt.str() + "_var_c" );
+        o_min = vr.min( tt.str() + "_var_o" );
+        o_max = vr.max( tt.str() + "_var_o" );
+
+        std::cout << "C" << i << ":" << c_min << ", " << c_max << std::endl;
+        std::cout << "C" << i << ":" << o_min << ", " << o_max << std::endl;
     }
 
     std::cout << "colorBins = {" << std::endl;

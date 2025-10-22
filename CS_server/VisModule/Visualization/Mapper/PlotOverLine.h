@@ -18,6 +18,7 @@
 #include <vismodule/TrilinearInterpolator>
 #include "TetrahedralCell.h"
 #include "../../../Common/ParticleTransferProtocol.h"
+#include <vismodule/Argument>
 
 #include <iomanip>
 #include <vismodule/PlotOverLineProperty>
@@ -210,15 +211,24 @@ public:
         const vismodule::Vec3 P0, const vismodule::Vec3 P1, const int plot_variable );
 
     // unstruct
-    PlotOverLine( Type** values, int nvariables,
-        float* coordinates, int ncoords,
-        unsigned int* connections, int ncells,
-        const  vismodule::VolumeObjectBase::CellType& celltype, 
-        const jpv::ParticleTransferClientMessage &clntMes);
+    PlotOverLine(
+        Type** values,
+        int nvariables,
+        float* coordinates,
+        int ncoords,
+        unsigned int* connections,
+        int ncells,
+        const vismodule::VolumeObjectBase::CellType& celltype, 
+        const Argument& param
+    );
 
     //struct 
-    PlotOverLine( domain_parameters_struct dom, float** values, int nvariables, 
-        const jpv::ParticleTransferClientMessage &clntMes);
+    PlotOverLine(
+        domain_parameters_struct dom,
+        float** values,
+        int nvariables, 
+        const Argument& param
+    );
 
 
     // CS用

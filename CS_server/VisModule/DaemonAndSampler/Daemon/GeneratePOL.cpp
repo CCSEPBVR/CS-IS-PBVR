@@ -8,7 +8,8 @@ void generate_plot_over_line(
     JobCollector& jc,
 #endif
     JobDispatcher& jd,
-    jpv::ParticleTransferServer pts
+    jpv::ParticleTransferServer pts,
+    jpv::ServerMode server_mode
 )
 {
     int rank;
@@ -85,9 +86,6 @@ void generate_plot_over_line(
     std::vector<int>   tmp_mask( resolution, 0 );
     std::vector<float> tmp_axis( resolution ); 
 
-    originalGlyph->setResolution( resolution );
-    originalGlyph->mask().fill( false );
-
     while ( jd.dispatchNext( wid, &st, &vl ) )
     {
         vismodule::KVSMLObjectPlotOverLine* tmp_obj = new vismodule::KVSMLObjectPlotOverLine;
@@ -113,12 +111,12 @@ void generate_plot_over_line(
 #ifdef EXTEND_FILE_FORMAT
                     else if ( mvp.m_file_type == 3 || mvp.m_file_type == 4 )
                     {
-                        pol_generator.run( param, *param.m_camera, clntMes, servMes.m_number_volume_divide, tmp_obj, st, xvl );
+                        pol_generator.run( param, servMes.m_number_volume_divide, tmp_obj, st, xvl );
                     }
 #endif
                     else // filetype: kvsml
                     {
-                        pol_generator.run( param, *param.m_camera, clntMes, timeStep,servMes.m_number_volume_divide , tmp_obj, st );
+                        pol_generator.run( param, servMes.m_number_volume_divide, tmp_obj );
                     }
                 }
                 catch ( const std::runtime_error& e )
@@ -224,6 +222,8 @@ void generate_plot_over_line(
 
     nan_error = false;
 }
+
+#if 0
 
 void generate_plot_over_line_worker(Argument &param, jpv::ParticleTransferClientMessage& clntMes, MultiVolumePropertyList& mvpl, 
                          bool &nan_error, 
@@ -650,3 +650,4 @@ void generate_plot_over_line_IS(Argument &param, jpv::ParticleTransferClientMess
 
 
 }
+#endif

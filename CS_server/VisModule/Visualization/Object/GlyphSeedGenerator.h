@@ -30,7 +30,6 @@
 
 namespace vismodule
 {
-
 class GlyphSeedGenerator
 {
 private:
@@ -55,10 +54,18 @@ public:
     }
 
     void createFromFile(
-        const Argument& param, const vismodule::Camera& camera, const jpv::ParticleTransferClientMessage& clntMes, const int number_of_divide);
+        const Argument& param,
+        const vismodule::Camera& camera,
+        const int number_of_divide
+    );
 
     void createFromFile(
-        const Argument& param, const vismodule::Camera& camera, const jpv::ParticleTransferClientMessage& clntMes, const int number_of_divide, const int st, const int vl );
+        const Argument& param,
+        const vismodule::Camera& camera,
+        const int number_of_divide,
+        const int st,
+        const int vl
+    );
 
     vismodule::KVSMLObjectGlyph* getKVSMLObjectGlyph()
     {
@@ -99,12 +106,12 @@ public:
         return m_coord_synthesizer_tokens;
     }
 
-    void run( const Argument& param, const vismodule::Camera& camera, const jpv::ParticleTransferClientMessage &clntMes, const int number_of_divide ,const int timeStep, vismodule::KVSMLObjectGlyph* object, const int st = 1 );
+    void run( const Argument& param, const vismodule::Camera& camera, const int number_of_divide, vismodule::KVSMLObjectGlyph* object, const int st = 1 );
 #ifdef EXTEND_FILE_FORMAT
-    void run( const Argument& param, const vismodule::Camera& camera,const jpv::ParticleTransferClientMessage &clntMes, const int number_of_divide, const int timeStep, vismodule::KVSMLObjectGlyph* object, const int st, const int vl);
+    void run( const Argument& param, const vismodule::Camera& camera, const int number_of_divide, vismodule::KVSMLObjectGlyph* object, const int st, const int vl );
 #endif
 
-    vismodule::KVSMLObjectGlyph* run( const Argument& param, const vismodule::Camera& camera,const jpv::ParticleTransferClientMessage &clntMes, const int number_of_divide, const int timeStep, const int st, const int vl);
+    vismodule::KVSMLObjectGlyph* run( const Argument& param, const vismodule::Camera& camera, const int number_of_divide, const int st, const int vl );
 
 public:
 
@@ -131,10 +138,12 @@ public:
     template <typename T>
         void copy_values(vismodule::AnyValueArray& valueArray, std::unique_ptr<std::unique_ptr<Type[]>[]>& values, int nvariables, int nnodes);
 private:
-    void sampling( vismodule::VolumeObjectBase* volume, const jpv::ParticleTransferClientMessage& clntMes, const int number_of_divide);
-
-};
-
-}
+    void sampling(
+        vismodule::VolumeObjectBase* volume,
+        const Argument& param,
+        const int number_of_divide
+    );
+}; // class GlyphSeedGenerator
+} // namespace vismodule
 
 #endif    // PBVR__POINT_OBJECT_GENERATOR_H_INCLUDE

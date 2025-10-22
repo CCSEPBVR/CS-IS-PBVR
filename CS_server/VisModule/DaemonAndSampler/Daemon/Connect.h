@@ -68,7 +68,17 @@
 #include <vismodule/GeneratePOL>
 
 void SignalHandler( const int sig );
-void CS_Connect( int argc, char** argv );
+void Connect( int argc, char** argv );
+#if 0
 void IS_Connect( int argc, char** argv );
+#endif
+void SetParameterFilePath(
+    std::string& tfFilePath,
+    std::string& tfFilePath_old,
+    std::string& glyphParameterPath,
+    std::string& glyphParameterPath_old,
+    std::string& plotOverLineParameterPath,
+    std::string& plotOverLineParameterPath_old
+);
 
 #endif

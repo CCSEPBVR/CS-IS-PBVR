@@ -23,6 +23,8 @@
 #include <vismodule/GlyphProperty>
 #include "../Common/ParticleTransferProtocol.h"
 
+#include <vismodule/Argument>
+
 #ifdef _OPENMP
 #  include <omp.h>
 #endif // _OPENMP
@@ -96,24 +98,39 @@ private:
            const float volume_of_cell,
            vismodule::MersenneTwister* MT );
     bool SetGlyphParameter();
-    bool InputParameter(const jpv::ParticleTransferClientMessage& clntMes, const int number_of_divide);
+    bool InputParameter( const Argument& param, const int number_of_divide );
 
 public:
    void GlyphSampling( const vismodule::VolumeObjectBase::CellType& celltype);
 
-
-    GlyphSeed();
-    GlyphSeed( Type** values, int nvariables,
+   GlyphSeed();
+   GlyphSeed( Type** values, int nvariables,
            float* coordinates, int ncoords,
            unsigned int* connections, int ncells, const  vismodule::VolumeObjectBase::CellType& celltype); //ISPBVR
 
-    // unstruct
-    GlyphSeed(const jpv::ParticleTransferClientMessage& clntMes, const int number_of_divide, Type** values, int nvariables,
-           float* coordinates, int ncoords,
-           unsigned int* connections, int ncells,
-           const  vismodule::VolumeObjectBase::CellType& celltype , const bool is_flag);  
+   // unstruct
+   GlyphSeed(
+      const Argument& param,
+      const int number_of_divide,
+      Type** values,
+      int nvariables,
+      float* coordinates,
+      int ncoords,
+      unsigned int* connections,
+      int ncells,
+      const vismodule::VolumeObjectBase::CellType& celltype,
+      const bool is_flag
+   );
+
    // struct
-    GlyphSeed(const jpv::ParticleTransferClientMessage& clntMes, const int number_of_divide,  domain_parameters_struct dom, Type** values, int nvariables, const bool is_flag );  
+   GlyphSeed(
+      const Argument& param,
+      const int number_of_divide,
+      domain_parameters_struct dom,
+      Type** values,
+      int nvariables,
+      const bool is_flag
+   );
 
     ~GlyphSeed()
     {

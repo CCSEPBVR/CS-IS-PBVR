@@ -10,6 +10,8 @@
 #include <vismodule/ExtendedTransferFunctionParameter>
 #include <vismodule/TransferFunction>
 
+#include "../Common/ParticleTransferProtocol.h"
+
 class Argument : public vismodule::CommandLine
 {
 private:
@@ -59,7 +61,32 @@ public:
     size_t m_normal_ingredient;
 
     VariableRange m_server_side_variable_range;
-    int32_t m_sampling_size; // use plot over line (resolution)
+
+    // glyph paramter
+    int m_stride;
+    int m_seed;
+    float m_number_of_sampling_point;
+    float m_glyph_color_min;
+    float m_glyph_color_max;
+    float m_glyph_size_min;
+    float m_glyph_size_max;
+    std::vector<int32_t> m_glyph_color_map_table;
+    vismodule::ColorMap m_color_map;
+    bool m_glyph_flag;
+    std::string m_direction_variable[3];
+    jpv::DataDefines m_size_sampling_method;
+    std::vector<std::string> m_size_variable;
+    jpv::GlyphMode m_distribution_mode;
+    jpv::DataDefines m_color_data_sampling_method;
+    std::vector<std::string> m_color_data_variable;
+    // glyph parameter
+
+    // plot over line parameter
+    std::string m_plot_variable;
+    float m_start_point[3];
+    float m_end_point[3];    
+    int32_t m_sampling_size; // resolution
+    // plot over line parameter
 
 public:
     Argument( const int argc, char** argv ):

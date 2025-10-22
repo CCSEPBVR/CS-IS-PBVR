@@ -30,7 +30,7 @@
 using namespace vismodule;
 
 
-vismodule::PointObject* CS_PointObjectGenerator::run( const Argument& param, const vismodule::Camera& camera, const int timeStep,  const int st )
+vismodule::PointObject* CS_PointObjectGenerator::run( const Argument& param, const vismodule::Camera& camera, const int st )
 {
     this ->setFilterInfo( m_mvp );
     this ->setCoordSynthTS( st );
@@ -47,7 +47,7 @@ vismodule::PointObject* CS_PointObjectGenerator::run( const Argument& param, con
     return po;
 }
 
-vismodule::PointObject*  CS_PointObjectGenerator::run( const Argument& param, const vismodule::Camera& camera, const int timeStep, const int st, const int vl)
+vismodule::PointObject*  CS_PointObjectGenerator::run( const Argument& param, const vismodule::Camera& camera, const int st, const int vl)
 {
     this->setFilterInfo( m_mvp );
     this->setCoordSynthTS( st );

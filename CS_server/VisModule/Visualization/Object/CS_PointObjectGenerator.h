@@ -120,8 +120,8 @@ public:
         return m_coord_synthesizer_tokens;
     }
 
-    vismodule::PointObject* run( const Argument& param, const vismodule::Camera& camera, const int timeStep,  const int st );
-    vismodule::PointObject* run( const Argument& param, const vismodule::Camera& camera, const int timeStep, const int st, const int vl);
+    vismodule::PointObject* run( const Argument& param, const vismodule::Camera& camera, const int st );
+    vismodule::PointObject* run( const Argument& param, const vismodule::Camera& camera, const int st, const int vl);
 
 private:
     vismodule::PointObject* sampling( const Argument& param, const vismodule::Camera& camera, vismodule::VolumeObjectBase& volume, const size_t subpixel_level, const float sampling_step );

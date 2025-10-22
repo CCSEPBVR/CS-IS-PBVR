@@ -24,7 +24,10 @@
 using namespace vismodule;
 
 // pfi,pfl ファイルの読み込み処理 (pfi,pflとファイル拡張子判別方法が異なるため、別処理とする) 
-void PlotOverLineGenerator::createFromFile( const Argument& param, const vismodule::Camera& camera, const jpv::ParticleTransferClientMessage &clntMes, const int number_of_divide )
+void PlotOverLineGenerator::createFromFile(
+    const Argument& param,
+    const int number_of_divide
+)
 {
 //FJ_TIMER_KAWAMURA
     VIS_MODULE_TIMER_STA( 260 );
@@ -36,7 +39,7 @@ void PlotOverLineGenerator::createFromFile( const Argument& param, const vismodu
     {
         std::cout << "Structured !" <<std::endl;
         volume = new vismodule::StructuredVolumeImporter( param.m_input_data ); 
-//        visModuleMessageError("structured data does not apply." );
+        // visModuleMessageError("structured data does not apply." );
         int id = param.m_subvolume_id;
         volume->updateMinMaxValues();
         volume->setMinMaxObjectCoords( m_mvp->m_min_subvolume_coord[id], m_mvp->m_max_subvolume_coord[id] );
@@ -136,8 +139,8 @@ void PlotOverLineGenerator::createFromFile( const Argument& param, const vismodu
         vismodule::VolumeObjectBase::CellType celltype;
 
         const vismodule::UnstructuredVolumeObject* uvo_p = static_cast<const vismodule::UnstructuredVolumeObject*>( volume );
-        vismodule::Vec3 start_point( clntMes.m_start_point[0], clntMes.m_start_point[1], clntMes.m_start_point[2] );
-        vismodule::Vec3 end_point( clntMes.m_end_point[0], clntMes.m_end_point[1], clntMes.m_end_point[2] );
+        vismodule::Vec3 start_point( param.m_start_point[0], param.m_start_point[1], param.m_start_point[2] );
+        vismodule::Vec3 end_point( param.m_end_point[0], param.m_end_point[1], param.m_end_point[2] );
        
         coordinates.assign( (float*)volume->coords().begin(),(float * )volume->coords().end()); 
         ncoords =  volume->nnodes();
@@ -146,12 +149,12 @@ void PlotOverLineGenerator::createFromFile( const Argument& param, const vismodu
         celltype = uvo_p->cellType();
 
 
-        int plot_variable =  std::atoi(clntMes.m_plot_variable.substr(1).c_str()) -1;
+        int plot_variable =  std::atoi(param.m_plot_variable.substr(1).c_str()) -1;
 
         try
         {
             PlotOverLine plot_over_line( raw_values.data(), nvariables, coordinates.data(), ncoords,
-            connections.data(), ncells,  celltype, clntMes);
+            connections.data(), ncells,  celltype, param );
             //connections.data(), ncells,  celltype, clntMes.m_sampling_size, start_point, end_point, plot_variable);
 
             m_object->setValuesOnLine(plot_over_line.values()); 
@@ -173,10 +176,10 @@ void PlotOverLineGenerator::createFromFile( const Argument& param, const vismodu
     {
 #if 1
         const vismodule::StructuredVolumeObject* object = static_cast<const vismodule::StructuredVolumeObject*>( volume );
-        vismodule::Vec3 start_point( clntMes.m_start_point[0], clntMes.m_start_point[1], clntMes.m_start_point[2] );
-        vismodule::Vec3 end_point( clntMes.m_end_point[0], clntMes.m_end_point[1], clntMes.m_end_point[2] );
+        vismodule::Vec3 start_point( param.m_start_point[0], param.m_start_point[1], param.m_start_point[2] );
+        vismodule::Vec3 end_point( param.m_end_point[0], param.m_end_point[1], param.m_end_point[2] );
 
-        int plot_variable =  std::atoi(clntMes.m_plot_variable.substr(1).c_str()) -1;
+        int plot_variable =  std::atoi(param.m_plot_variable.substr(1).c_str()) -1;
 
         const vismodule::StructuredVolumeObject* svo_p = static_cast<const vismodule::StructuredVolumeObject*>( volume );
         int resol[3] = { static_cast<int>(svo_p->resolution().x()), static_cast<int>(svo_p->resolution().y()), static_cast<int>(svo_p->resolution().z())};
@@ -195,7 +198,7 @@ void PlotOverLineGenerator::createFromFile( const Argument& param, const vismodu
         try
         {
             //PlotOverLine plot_over_line(dom, raw_values.data(), nvariables, clntMes.m_sampling_size, start_point, end_point, plot_variable);
-            PlotOverLine plot_over_line(dom, raw_values.data(), nvariables, clntMes);
+            PlotOverLine plot_over_line( dom, raw_values.data(), nvariables, param );
 
             m_object->setValuesOnLine(plot_over_line.values()); 
             m_object->setXAxis(plot_over_line.xAxis()); 
@@ -218,10 +221,15 @@ void PlotOverLineGenerator::createFromFile( const Argument& param, const vismodu
 }
 
 // pfi,pfl以外
-void PlotOverLineGenerator::createFromFile( const Argument& param, const vismodule::Camera& camera, const jpv::ParticleTransferClientMessage& clntMes, const int number_of_divide, const int st, const int vl )
+void PlotOverLineGenerator::createFromFile(
+    const Argument& param,
+    const int number_of_divide,
+    const int st,
+    const int vl
+)
 {
-    vismodule::Vec3 start_point( clntMes.m_start_point[0], clntMes.m_start_point[1], clntMes.m_start_point[2] );
-    vismodule::Vec3 end_point( clntMes.m_end_point[0], clntMes.m_end_point[1], clntMes.m_end_point[2] );
+    vismodule::Vec3 start_point( param.m_start_point[0], param.m_start_point[1], param.m_start_point[2] );
+    vismodule::Vec3 end_point( param.m_end_point[0], param.m_end_point[1], param.m_end_point[2] );
 
     // ボリュームデータ読み取り
     size_t found_kvsml = param.m_input_data_base.find(".kvsml");
@@ -366,7 +374,7 @@ void PlotOverLineGenerator::createFromFile( const Argument& param, const vismodu
     // ボリュームタイプ取得
     vismodule::VolumeObjectBase::VolumeType voltype = volume->volumeType();
     // plot 対象変数の取得    
-    int plot_variable =  std::atoi(clntMes.m_plot_variable.substr(1).c_str()) -1;
+    int plot_variable =  std::atoi(param.m_plot_variable.substr(1).c_str()) -1;
 
     if(voltype ==  vismodule::VolumeObjectBase::VolumeType::Unstructured)
     {
@@ -434,7 +442,7 @@ void PlotOverLineGenerator::createFromFile( const Argument& param, const vismodu
         {
             PlotOverLine plot_over_line( raw_values.data(), nvariables, coordinates.data(), ncoords,
             //connections.data(), ncells,  celltype, clntMes.m_sampling_size, start_point, end_point, plot_variable);
-            connections.data(), ncells,  celltype, clntMes);
+            connections.data(), ncells,  celltype, param);
             m_object->setValuesOnLine(plot_over_line.values()); 
             m_object->setXAxis(plot_over_line.xAxis()); 
             m_object->setMask(plot_over_line.mask()); 
@@ -468,7 +476,7 @@ void PlotOverLineGenerator::createFromFile( const Argument& param, const vismodu
 
         try
         {
-            PlotOverLine plot_over_line(dom, raw_values.data(), nvariables, clntMes);
+            PlotOverLine plot_over_line(dom, raw_values.data(), nvariables, param);
             //PlotOverLine plot_over_line(object, clntMes.m_sampling_size, start_point, end_point, plot_variable);
             m_object->setValuesOnLine(plot_over_line.values()); 
             m_object->setXAxis(plot_over_line.xAxis()); 

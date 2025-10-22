@@ -97,7 +97,8 @@ void SignalHandler( const int sig )
  */
 void  Connect( int argc, char** argv )
 {
-    int32_t server_mode;
+    jpv::ParticleTransferServer pts;
+    jpv::ServerMode server_mode;
 
     if ( argc < 2 )
     {
@@ -182,7 +183,6 @@ void  Connect( int argc, char** argv )
 #endif
             if ( bsz < 0 )
             {
-                loop = false;
                 std::cout << "Rank " << rank << ": Worker is terminated" << std::endl;
                 break;
             }
@@ -232,11 +232,13 @@ void  Connect( int argc, char** argv )
                     std::cout << "defalt parameter " << std::endl;
                     VariableRange range = Calculate_minmax( param, mvpl );
                     transfunc_creator.setInitialProtocol( mvpl.m_total_number_ingredients, range );
+                    setDefalutTransferFunctionToArgument( &param, range, mvpl.m_total_number_ingredients );
                 }
                 else
                 {
                     std::cout << "user define parameter " << std::endl;
                     transfunc_creator.setProtocol( clntMes );
+                    setClientTransferFunctionToArgument( &param, clntMes );
                 }
 
                 param.m_transfunc_synthesizer = transfunc_creator.create();
@@ -246,19 +248,6 @@ void  Connect( int argc, char** argv )
                 {
                     param.m_transfunc_array[i] = static_cast<vismodule::TransferFunction>(transfunc_creator.transfunc()[i]);
                 }
-
-                for ( int i = 0; i < transfunc_creator.transfunc().size(); i++ )
-                {
-                    std::stringstream ss;
-                    ss << (tf + 1);
-                    const std::string idxbuf = ss.str();
-                    vr.setValue("t" + idxbuf + "_var_o", param.m_transfunc_synthesizer->m_c_min[tf])
-                    vr.setValue("t" + idxbuf + "_var_o", param.m_transfunc_synthesizer->m_c_min[tf])
-                    vr.setValue("t" + idxbuf + "_var_c", param.m_transfunc_synthesizer->m_c_min[tf])
-                    vr.setValue("t" + idxbuf + "_var_c", param.m_transfunc_synthesizer->m_c_min[tf])
-                }
-
-                param.m_server_side_variable_range = vr;                
 
                 param.m_sampling_step  = CalculateSamplingStep( mvpl );
                 param.m_subpixel_level = CalculateSubpixelLevel( param, mvpl, *param.m_camera );
@@ -305,19 +294,6 @@ void  Connect( int argc, char** argv )
                     param.m_transfunc_array[i] = static_cast<vismodule::TransferFunction>( transfunc_creator.transfunc()[i] );
                 }
 
-                for ( int i = 0; i < transfunc_creator.transfunc().size(); i++ )
-                {
-                    std::stringstream ss;
-                    ss << (tf + 1);
-                    const std::string idxbuf = ss.str();
-                    vr.setValue("t" + idxbuf + "_var_o", param.m_transfunc_synthesizer->m_c_min[tf])
-                    vr.setValue("t" + idxbuf + "_var_o", param.m_transfunc_synthesizer->m_c_min[tf])
-                    vr.setValue("t" + idxbuf + "_var_c", param.m_transfunc_synthesizer->m_c_min[tf])
-                    vr.setValue("t" + idxbuf + "_var_c", param.m_transfunc_synthesizer->m_c_min[tf])
-                }
-
-                param.m_server_side_variable_range = vr;
-
 #ifndef CPU_VER
                 generate_particle( param, mvpl, nan_error, jc, jd, pts, server_mode );
 #else
@@ -335,10 +311,29 @@ void  Connect( int argc, char** argv )
 
                 Calculate_minmax_glyph( param, mvpl, clntMes );
 
+                param.m_stride                     = clntMes.m_stride;
+                param.m_seed                       = clntMes.m_seed;
+                param.m_number_of_sampling_point   = clntMes.m_number_of_sampling_point;
+                param.m_glyph_color_min            = clntMes.m_glyph_color_min;
+                param.m_glyph_color_max            = clntMes.m_glyph_color_max;
+                param.m_glyph_size_min             = clntMes.m_glyph_size_min;
+                param.m_glyph_size_max             = clntMes.m_glyph_size_max;
+                param.m_glyph_color_map_table      = clntMes.m_glyph_color_map_table;
+                param.m_color_map                  = clntMes.m_color_map;
+                param.m_glyph_flag                 = clntMes.m_glyph_flag;
+                param.m_direction_variable[0]      = clntMes.m_direction_variable[0];
+                param.m_direction_variable[1]      = clntMes.m_direction_variable[1];
+                param.m_direction_variable[2]      = clntMes.m_direction_variable[2];
+                param.m_size_sampling_method       = clntMes.m_size_sampling_method;
+                param.m_size_variable              = clntMes.m_size_variable;
+                param.m_distribution_mode          = clntMes.m_distribution_mode;
+                param.m_color_data_sampling_method = clntMes.m_color_data_sampling_method;
+                param.m_color_data_variable        = clntMes.m_color_data_variable;
+
 #ifndef CPU_VER
-                generate_glyph( param, mvpl, nan_error, jc, jd, pts );
+                generate_glyph( param, mvpl, nan_error, jc, jd, pts, server_mode );
 #else
-                generate_glyph( param, mvpl, nan_error, jd, pts );
+                generate_glyph( param, mvpl, nan_error, jd, pts, server_mode );
 #endif
             } // end of generate_glyph
             else if ( clntMes.m_initialize_parameter ==  jpv::InitializeParameter::plot_over_line )
@@ -349,12 +344,19 @@ void  Connect( int argc, char** argv )
                     break;
                 }
 
-                param.m_sampling_size = clntMes.m_sampling_size;
+                param.m_plot_variable  = clntMes.m_plot_variable;
+                param.m_start_point[0] = clntMes.m_start_point[0];
+                param.m_start_point[1] = clntMes.m_start_point[1];
+                param.m_start_point[2] = clntMes.m_start_point[2];
+                param.m_end_point[0]   = clntMes.m_end_point[0];
+                param.m_end_point[1]   = clntMes.m_end_point[1];
+                param.m_end_point[2]   = clntMes.m_end_point[2];
+                param.m_sampling_size  = clntMes.m_sampling_size;
 
 #ifndef CPU_VER
-                generate_plot_over_line( param, mvpl, nan_error, jc, jd, pts );
+                generate_plot_over_line( param, mvpl, nan_error, jc, jd, pts, server_mode );
 #else
-                generate_plot_over_line( param, mvpl, nan_error, jd, pts );
+                generate_plot_over_line( param, mvpl, nan_error, jd, pts, server_mode );
 #endif
             } // end of plot_over_line
         } // while loop
@@ -363,8 +365,10 @@ void  Connect( int argc, char** argv )
     {
         assert( jpv::ParticleTransferUtils::isLittleEndian() );
 
+        jpv::ParticleTransferServerMessage servMes;
+        servMes.m_camera = new vismodule::Camera();
+
         int ptss;
-        jpv::ParticleTransferServer pts;
         ptss = pts.initializeServer( param.m_port );
 
         jpv::ParticleTransferClientMessage clntMes;
@@ -407,15 +411,44 @@ void  Connect( int argc, char** argv )
 
             if ( clntMes.m_initialize_parameter == jpv::InitializeParameter::connection_reset )
             {
+                std::cout << "==================== Connection Reset Start ====================" << std::endl;
                 strncpy( servMes.m_header, "JPTP /1.0 899 OK\r\n", 18 );
+                servMes.m_camera = param.m_camera;
+                servMes.m_server_status = 0;
+                servMes.m_time_step = param.m_time_step;
+                servMes.m_level_index = param.m_level_index;
+                servMes.m_repeat_level = param.m_repeat_level;
                 servMes.m_number_particle = 0;
                 servMes.m_number_glyph = 0 ;
                 servMes.m_flag_send_bins = 1;
+                servMes.m_number_volume_divide = mvpl.m_total_number_subvolumes;
                 servMes.m_transfer_function_count = 0;
+                servMes.m_start_step = mvpl.m_total_start_steps;
+                servMes.m_last_step = mvpl.m_total_last_step;
+                servMes.m_number_step = mvpl.m_total_number_steps;
+                servMes.m_min_object_coord[0] = mvpl.m_total_min_object_coord[0];
+                servMes.m_min_object_coord[1] = mvpl.m_total_min_object_coord[1];
+                servMes.m_min_object_coord[2] = mvpl.m_total_min_object_coord[2];
+                servMes.m_max_object_coord[0] = mvpl.m_total_max_object_coord[0];
+                servMes.m_max_object_coord[1] = mvpl.m_total_max_object_coord[1];
+                servMes.m_max_object_coord[2] = mvpl.m_total_max_object_coord[2];
+                servMes.m_min_value = mvpl.m_total_min_value;
+                servMes.m_max_value = mvpl.m_total_max_value;
+                servMes.m_number_nodes = mvpl.m_total_number_nodes;
+                servMes.m_number_elements = mvpl.m_total_number_elements;
+                servMes.m_element_type = mvpl.m_list[0].m_elem_type;
+                servMes.m_file_type = mvpl.m_list[0].m_file_type;
+                servMes.m_number_ingredients = mvpl.m_list[0].m_number_ingredients;
+                servMes.m_particle_limit = param.m_particle_limit;
+                servMes.m_particle_density = param.m_particle_density;
+                servMes.m_subpixel_level = param.m_subpixel_level;
+                setParamTransferFunctionToServer( &servMes, &param );
                 servMes.m_message_size = servMes.byteSize();
+                servMes.show();
                 pts.sendMessage( servMes );
                 pts.disconnect();
                 pts.acceptServer();
+                std::cout << "==================== Connection Reset End ====================" << std::endl;
             } // connection reset
             else if ( clntMes.m_initialize_parameter == jpv::InitializeParameter::end )
             {
@@ -442,9 +475,9 @@ void  Connect( int argc, char** argv )
                     if (found_pfl != std::string::npos) pfi_flag = true;
                     if (found_pfi != std::string::npos) pfi_flag = true;
 #endif
-                    std::cout << "open_flag =             " << open_flag             << ", "
+                    std::cout << "open_flag = "             << open_flag             << ", "
                               << "ExtendFileFormat_flag = " << ExtendFileFormat_flag << ", "
-                              << "pfi_flag =              " << pfi_flag              << std::endl;
+                              << "pfi_flag = "              << pfi_flag              << std::endl;
 
                     strncpy( servMes.m_header, "JPTP /1.0 999 OK\r\n", 18 );
                     servMes.m_server_status = 0;
@@ -551,14 +584,16 @@ void  Connect( int argc, char** argv )
 
                     if( !clntMes.m_import_flag ) 
                     {
-                        std::cout << "defalt parameter " << std::endl;
+                        std::cout << "default parameter " << std::endl;
                         VariableRange range = Calculate_minmax( param, mvpl );
                         transfunc_creator.setInitialProtocol( mvpl.m_total_number_ingredients, range );
+                        setDefalutTransferFunctionToArgument( &param, range, mvpl.m_total_number_ingredients );
                     }
                     else
                     {
                         std::cout << "user define parameter " << std::endl;
                         transfunc_creator.setProtocol( clntMes );
+                        setClientTransferFunctionToArgument( &param, clntMes );
                     }
 
                     param.m_transfunc_synthesizer = transfunc_creator.create();
@@ -569,18 +604,7 @@ void  Connect( int argc, char** argv )
                         param.m_transfunc_array[i] = static_cast<vismodule::TransferFunction>(transfunc_creator.transfunc()[i]);
                     }
 
-                    for ( int i = 0; i < transfunc_creator.transfunc().size(); i++ )
-                    {
-                        std::stringstream ss;
-                        ss << (tf + 1);
-                        const std::string idxbuf = ss.str();
-                        vr.setValue("t" + idxbuf + "_var_o", param.m_transfunc_synthesizer->m_c_min[tf])
-                        vr.setValue("t" + idxbuf + "_var_o", param.m_transfunc_synthesizer->m_c_min[tf])
-                        vr.setValue("t" + idxbuf + "_var_c", param.m_transfunc_synthesizer->m_c_min[tf])
-                        vr.setValue("t" + idxbuf + "_var_c", param.m_transfunc_synthesizer->m_c_min[tf])
-                    }
-
-                    param.m_server_side_variable_range = vr;
+std::cout << __FILE__ << ", " << __func__ << ", " << __LINE__ << std::endl;
 
                     param.m_sampling_step  = CalculateSamplingStep( mvpl );
                     param.m_subpixel_level = CalculateSubpixelLevel( param, mvpl, *param.m_camera );
@@ -588,6 +612,8 @@ void  Connect( int argc, char** argv )
                 } // server_mode == jpv::ServerMode::CS
                 else // server_mode == jpv::ServerMode::IS
                 {
+                    MultiVolumeProperty mvp;
+
                     // Using environment variables, the constructor of the ParticleMonitor class
                     // set particle file, glyph file, plot over line file, status file, history file,
                     // and the min/max coordinates of the object.
@@ -631,9 +657,8 @@ void  Connect( int argc, char** argv )
 
                     const VariableRange vr        = pm.particleHistoryFile().variableRange();
                     const int tf_number           = pm.particleHistoryFile().colorHistogramArray().size();
-                    setDefalutTransferFunction( &param, vr, tf_number );
 
-                    delete originalObject;
+                    setDefalutTransferFunctionToArgument( &param, vr, tf_number );
                 } // server_mode == jpv::ServerMode::IS
                 
 #ifndef CPU_VER
@@ -651,6 +676,7 @@ void  Connect( int argc, char** argv )
             } // initial_step
             else if ( clntMes.m_initialize_parameter == jpv::InitializeParameter::generate_particle )
             {
+                std::cout << "==================== Generate Particle Start ====================" << std::endl;
                 if ( server_mode == jpv::ServerMode::CS )
                 {
                     // send cltMes to all worker process >>
@@ -695,6 +721,8 @@ void  Connect( int argc, char** argv )
                     VariableRange vr;
 
                     transfunc_creator.setProtocol( clntMes );
+                    setClientTransferFunctionToArgument( &param, clntMes );
+
                     param.m_transfunc_synthesizer = transfunc_creator.create();
                     param.m_transfunc_array.resize(transfunc_creator.transfunc().size());
 
@@ -702,22 +730,11 @@ void  Connect( int argc, char** argv )
                     {
                         param.m_transfunc_array[i] = static_cast<vismodule::TransferFunction>(transfunc_creator.transfunc()[i]);
                     }
-
-                    for ( int i = 0; i < transfunc_creator.transfunc().size(); i++ )
-                    {
-                        std::stringstream ss;
-                        ss << (tf + 1);
-                        const std::string idxbuf = ss.str();
-                        vr.setValue("t" + idxbuf + "_var_o", param.m_transfunc_synthesizer->m_c_min[tf])
-                        vr.setValue("t" + idxbuf + "_var_o", param.m_transfunc_synthesizer->m_c_min[tf])
-                        vr.setValue("t" + idxbuf + "_var_c", param.m_transfunc_synthesizer->m_c_min[tf])
-                        vr.setValue("t" + idxbuf + "_var_c", param.m_transfunc_synthesizer->m_c_min[tf])
-                    }
-
-                    param.m_server_side_variable_range = vr;
                 } // server_mode == jpv::ServerMode::CS
                 else // server_mode == jpv::ServerMode::IS
                 {
+                    MultiVolumeProperty mvp;
+
                     // update the transfer function file using the client message
                     // updated transfer function file is loaded by InSitu
                     // Daemon loads the particle file generated by InSitu
@@ -784,9 +801,12 @@ void  Connect( int argc, char** argv )
                 {
                     delete param.m_transfunc_synthesizer;
                 }
+
+                std::cout << "==================== Generate Particle End ====================" << std::endl;
             } // generate particle
             else if ( clntMes.m_initialize_parameter == jpv::InitializeParameter::generate_glyph )
             {
+                std::cout << "==================== Generate Glyph Start ====================" << std::endl;
                 if ( server_mode == jpv::ServerMode::CS )
                 {
                     // send cltMes to all worker process >>
@@ -816,6 +836,24 @@ void  Connect( int argc, char** argv )
 
                 if ( server_mode == jpv::ServerMode::CS )
                 {
+                    param.m_stride                     = clntMes.m_stride;
+                    param.m_seed                       = clntMes.m_seed;
+                    param.m_number_of_sampling_point   = clntMes.m_number_of_sampling_point;
+                    param.m_glyph_color_min            = clntMes.m_glyph_color_min;
+                    param.m_glyph_color_max            = clntMes.m_glyph_color_max;
+                    param.m_glyph_size_min             = clntMes.m_glyph_size_min;
+                    param.m_glyph_size_max             = clntMes.m_glyph_size_max;
+                    param.m_glyph_color_map_table      = clntMes.m_glyph_color_map_table;
+                    param.m_color_map                  = clntMes.m_color_map;
+                    param.m_glyph_flag                 = clntMes.m_glyph_flag;
+                    param.m_direction_variable[0]      = clntMes.m_direction_variable[0];
+                    param.m_direction_variable[1]      = clntMes.m_direction_variable[1];
+                    param.m_direction_variable[2]      = clntMes.m_direction_variable[2];
+                    param.m_size_sampling_method       = clntMes.m_size_sampling_method;
+                    param.m_size_variable              = clntMes.m_size_variable;
+                    param.m_distribution_mode          = clntMes.m_distribution_mode;
+                    param.m_color_data_sampling_method = clntMes.m_color_data_sampling_method;
+                    param.m_color_data_variable        = clntMes.m_color_data_variable;
                 } // server_mode == jpv::ServerMode::CS
                 else // server_mode == jpv::ServerMode::IS
                 {
@@ -832,13 +870,16 @@ void  Connect( int argc, char** argv )
                 } // server_mode == jpv::ServerMode::IS
 
 #ifndef CPU_VER
-                generate_glyph( param, mvpl, nan_error, jc, jd, pts );
+                generate_glyph( param, mvpl, nan_error, jc, jd, pts, server_mode );
 #else
-                generate_glyph( param, mvpl, nan_error, jd, pts );
+                generate_glyph( param, mvpl, nan_error, jd, pts, server_mode );
 #endif
+
+                std::cout << "==================== Generate Glyph End ====================" << std::endl;
             } // generate glyph
             else if ( clntMes.m_initialize_parameter == jpv::InitializeParameter::plot_over_line )
             {
+                std::cout << "==================== Plot Over Line Start ====================" << std::endl;
                 if ( server_mode == jpv::ServerMode::CS )
                 {
                     // send cltMes to all worker process >>
@@ -863,6 +904,14 @@ void  Connect( int argc, char** argv )
 
                 if ( server_mode == jpv::ServerMode::CS )
                 {
+                    param.m_plot_variable  = clntMes.m_plot_variable;
+                    param.m_start_point[0] = clntMes.m_start_point[0];
+                    param.m_start_point[1] = clntMes.m_start_point[1];
+                    param.m_start_point[2] = clntMes.m_start_point[2];
+                    param.m_end_point[0]   = clntMes.m_end_point[0];
+                    param.m_end_point[1]   = clntMes.m_end_point[1];
+                    param.m_end_point[2]   = clntMes.m_end_point[2];
+                    param.m_sampling_size  = clntMes.m_sampling_size;
                 } // server_mode == jpv::ServerMode::CS
                 else // server_mode == jpv::ServerMode::IS
                 {
@@ -881,16 +930,12 @@ void  Connect( int argc, char** argv )
                     }
                 }
 
-                if ( server_mode == jpv::ServerMode::CS )
-                {
-                    param.m_sampling_size = clntMes.m_sampling_size;
-                }
-
 #ifndef CPU_VER
-                generate_plot_over_line( param, mvpl, nan_error, jc, jd, pts );
+                generate_plot_over_line( param, mvpl, nan_error, jc, jd, pts, server_mode );
 #else
-                generate_plot_over_line( param, mvpl, nan_error, jd, pts );
+                generate_plot_over_line( param, mvpl, nan_error, jd, pts, server_mode );
 #endif
+                std::cout << "==================== Plot Over Line End ====================" << std::endl;
             } // plot over line
         } // while ( ( ptss != -1 ) && ( pts.good() ) )
     } // Master
@@ -1637,7 +1682,7 @@ void  Connect( int argc, char** argv )
 #endif // 新規作成以降をコメントアウト
 }
 
-
+#if 0
 void  IS_Connect( int argc, char** argv )
 {
 
@@ -1884,7 +1929,7 @@ std::cout << "jpv::InitializeParameter::end" << std::endl;
                 }
                 file.close();
 
-                initial_step_IS( servMes, param, mvpl, jd, pts );
+                initial_step_IS( servMes, param, mvpl, jd, pts, 1 );
                 std::cout << "==================== Initial Step end ====================" << std::endl;
             } // end of change PFI
             else if( clntMes.m_initialize_parameter == jpv::InitializeParameter::generate_particle )
@@ -1990,6 +2035,8 @@ std::cout << "jpv::InitializeParameter::plot_over_line" << std::endl;
     return;
 }
 
+#endif
+
 void SetParameterFilePath(
     std::string& tfFilePath,
     std::string& tfFilePath_old,
@@ -2032,8 +2079,10 @@ void SetParameterFilePath(
             plotOverLineParameterPath_old += "parameter_old.pol";
         }
         else {
-            tfFilePath                    += envBuf + ".tf";
-            tfFilePath_old                += envBuf + "_old.tf";
+            tfFilePath                    += envBuf;
+            tfFilePath                    += ".tf";
+            tfFilePath_old                += envBuf;
+            tfFilePath_old                += "_old.tf";
             glyphParameterPath            += "parameter.gly";
             plotOverLineParameterPath     += "parameter.pol";
             glyphParameterPath_old        += "parameter_old.gly";
