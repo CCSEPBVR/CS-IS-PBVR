@@ -17,16 +17,18 @@ void ObjectEditorWIP::initialize()
 {
     ui->setupUi( this );
 
-    groupCommonObjectWidgets =
+    m_group_common_object_widgets =
         {
             ui->nameLabel, ui->nameLineEdit,
             ui->formatLabel, ui->formatLineEdit,
             ui->directoryLabel, ui->directoryLineEdit,
             ui->timeStepLabel, ui->timeStepMinLineEdit, ui->timeStepMaxLineEdit,
             ui->focusLabel, ui->focusCheckBox,
+            ui->objectCoordsGroupBox,
+            ui->externalCoordsGroupBox,
         };
 
-    groupServerObjectWidgets =
+    m_group_server_object_widgets =
         {
             ui->numberOfVectorLabel, ui->numberOfVectorLineEdit,
             ui->numberOfElementsLabel, ui->numberOfElementsLineEdit,
@@ -41,7 +43,7 @@ void ObjectEditorWIP::initialize()
             ui->exportLabel, ui->exportPushButton,
         };
 
-    groupNontexturePolygonObjectWidgets =
+    m_group_nontexture_polygon_object_widgets =
         {
             ui->colorLabel, ui->colorClickableLabel,
             ui->opacityLabel, ui->opacityDoubleSpinBox,
@@ -57,22 +59,17 @@ void ObjectEditorWIP::initialize()
 
 void ObjectEditorWIP::toggleCommonObjectWidgets( bool isObject )
 {
-    for( auto w : groupCommonObjectWidgets )
-        w->setVisible(isObject);
-    ui->objectCoordsGroupBox->setVisible(isObject);
-    ui->externalCoordsGroupBox->setVisible(isObject);
+    for( auto w : m_group_common_object_widgets ) w->setVisible(isObject);
 }
 
 void ObjectEditorWIP::toggleServerObjectWidgets( bool isServerObject )
 {
-    for( auto w : groupServerObjectWidgets )
-        w->setVisible(false);
+    for( auto w : m_group_server_object_widgets ) w->setVisible(false);
 }
 
 void ObjectEditorWIP::toggleNontexturePolygonObjectWidgets( bool isNonTexturePolygonObject )
 {
-    for( auto w : groupNontexturePolygonObjectWidgets )
-        w->setVisible(false);
+    for( auto w : m_group_nontexture_polygon_object_widgets ) w->setVisible(false);
 }
 
 void ObjectEditorWIP::onBrowse()

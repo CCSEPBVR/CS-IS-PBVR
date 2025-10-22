@@ -24,9 +24,9 @@ private:
     // メンバ変数群
     Ui::ObjectEditorWIP *ui;
 
-    QList<QWidget*> groupCommonObjectWidgets;
-    QList<QWidget*> groupServerObjectWidgets;
-    QList<QWidget*> groupNontexturePolygonObjectWidgets;
+    QList<QWidget*> m_group_common_object_widgets;  // 全オブジェクト共通で表示させるウィジェット群
+    QList<QWidget*> m_group_server_object_widgets;  // サーバオブジェクト(kvs::PointObject)で表示させるウィジェット群
+    QList<QWidget*> m_group_nontexture_polygon_object_widgets; // テクスチャ無しポリゴンオブジェクト(.stl)を表示させるウィジェット群
 
     kvs::qt::jaea::Screen* m_screen = nullptr;
 
