@@ -112,6 +112,43 @@ void ObjectEditorWIP::toggleNontexturePolygonObjectWidgets( bool isNonTexturePol
     for( auto w : m_group_nontexture_polygon_object_widgets ) w->setVisible( isNonTexturePolygonObject );
 }
 
+void ObjectEditorWIP::addObjectToModel( const StringProcessor::ObjectInfo& objectInfo, StringProcessor& sp )
+{
+    StringProcessor::ObjectInfo info = objectInfo;
+
+    // 最初に追加されるオブジェクトはフォーカス状態にする
+    if( m_model->rowCount() == 0 )
+    {
+        info.isFocus = true;
+    }
+
+    QList<QStandardItem*> rowItems;
+    auto nameItem         = new QStandardItem( QString::fromUtf8( info.name ) );
+    auto formatItem       = new QStandardItem( QString::fromUtf8( sp.formatToString( info.format ) ) );
+    auto displayItem      = new QStandardItem( "" );
+    auto keepInitialItem  = new QStandardItem( "" );
+    auto keepFinalItem    = new QStandardItem( "" );
+
+    // 編集禁止
+    nameItem        ->setEditable( false );
+    formatItem      ->setEditable( false );
+    displayItem     ->setEditable( false );
+    keepInitialItem ->setEditable( false );
+    keepFinalItem   ->setEditable( false );
+
+    QVariant var;
+    var.setValue( info );
+    nameItem->setData( var, Qt::UserRole );
+
+    rowItems << nameItem << formatItem << displayItem << keepInitialItem << keepFinalItem;
+    m_model->appendRow( rowItems );
+
+    QModelIndex index = m_model->indexFromItem( rowItems.first() );
+    ui->treeView->setCurrentIndex( index );
+
+    calculateTotalMinMaxTimeStep();
+}
+
 void ObjectEditorWIP::calculateTotalMinMaxTimeStep()
 {
     if( !m_model ) return;
@@ -344,37 +381,7 @@ void ObjectEditorWIP::onBrowse()
         StringProcessor sp( filePath.toUtf8().constData() );
         if( auto objectInfoOpt = sp.extractFromLocalFile() )
         {
-            StringProcessor::ObjectInfo objectInfo = *objectInfoOpt;
-
-            if( m_model->rowCount() == 0 ) // 最初に追加されるオブジェクトはフォーカス状態にする。
-            {
-                objectInfo.isFocus = true;
-            }
-
-            QList<QStandardItem*> rowItems;
-            auto nameItem = new QStandardItem( QString::fromUtf8( objectInfo.name ) );
-            auto formatItem = new QStandardItem( QString::fromUtf8( sp.formatToString( objectInfo.format ) ) );
-            auto displayItem = new QStandardItem("");
-            auto keepInitialItem = new QStandardItem("");
-            auto keepFinalItem = new QStandardItem("");
-
-            // 編集禁止
-            nameItem->setEditable( false) ;
-            formatItem->setEditable( false );
-            displayItem->setEditable( false );
-            keepInitialItem->setEditable( false );
-            keepFinalItem->setEditable( false );
-
-            QVariant var;
-            var.setValue( objectInfo );
-            nameItem->setData( var, Qt::UserRole ); // UserRole など任意のロールを使用
-
-            rowItems << nameItem << formatItem << displayItem << keepInitialItem << keepFinalItem;
-            m_model->appendRow( rowItems );
-
-            QModelIndex index = m_model->indexFromItem( rowItems.first() );
-            ui->treeView->setCurrentIndex( index );
-            calculateTotalMinMaxTimeStep();
+            addObjectToModel( *objectInfoOpt, sp );
         }
         else
         {

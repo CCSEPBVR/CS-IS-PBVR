@@ -38,7 +38,7 @@ public:
         std::string name                = "";                           // Base name
         std::string directory           = "";                           // Directory path
         Format format                   = Format::Unknown;              // Detected format
-        std::pair<int,int> timeStep     = std::pair<int,int>( -1, -1 ); // Min/Max timestep
+        std::pair<int,int> timeStep     = { -1, -1 }; // Min/Max timestep
         bool isFocus                    = false;
 
         // Common Server Point Object Info
@@ -105,11 +105,11 @@ public:
         case Unknown:
             return "Unknow";
         case ClientServerPointObject:
-            return "ClientServerPointObject";
+            return "Server Point Object(CS)";
         case InsituServerPointObject:
-            return "InsituServerPointObject";
+            return "Server Point Object(IS)";
         case ServerGlyphObject:
-            return "ServerGlyphObject";
+            return "Server Glyph Object";
         case PointObjectKVSML:
             return "PointObject(KVSML)";
         case PointObjectLAS:
