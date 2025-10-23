@@ -81,4 +81,43 @@ void SetParameterFilePath(
     std::string& plotOverLineParameterPath_old
 );
 
+bool CheckFileFormat(
+    jpv::ParticleTransferClientMessage& clntMes,
+    jpv::ParticleTransferServer pts,
+    Argument& param
+);
+bool SetParticleParameterCS(
+    jpv::ParticleTransferClientMessage& clntMes,
+    jpv::ParticleTransferServer pts,
+    Argument& param,
+    MultiVolumePropertyList& mvpl
+);
+bool SetParticleParameterIS(
+    jpv::ParticleTransferClientMessage& clntMes,
+    Argument& param,
+    MultiVolumePropertyList& mvpl,
+    std::string tfFilePath,
+    std::string tfFilePath_old
+);
+bool SetGlyphParameterCS(
+    jpv::ParticleTransferClientMessage& clntMes,
+    Argument& param,
+    MultiVolumePropertyList& mvpl
+);
+bool SetGlyphParameterIS(
+    jpv::ParticleTransferClientMessage& clntMes,
+    std::string glyphParameterPath,
+    std::string glyphParameterPath_old
+);
+bool SetPOLParameterCS(
+    jpv::ParticleTransferClientMessage& clntMes,
+    Argument& param
+);
+
+bool SetPOLParameterIS(
+    jpv::ParticleTransferClientMessage& clntMes,    
+    std::string plotOverLineParameterPath,
+    std::string plotOverLineParameterPath_old    
+);
+
 #endif
