@@ -173,6 +173,23 @@ void ObjectEditorWIP::calculateTotalMinMaxTimeStep()
     qDebug() << totalMin << ", " << totalMax;
 }
 
+template<typename F>
+void ObjectEditorWIP::updateSelectedObject( F func )
+{
+    auto selectedIndexes = ui->treeView->selectionModel()->selectedIndexes();
+    if( selectedIndexes.isEmpty() ) return;
+
+    QModelIndex index = selectedIndexes.first();
+    QVariant var = index.data( Qt::UserRole );
+    if( !var.canConvert<StringProcessor::ObjectInfo>() ) return;
+
+    StringProcessor::ObjectInfo info = var.value<StringProcessor::ObjectInfo>();
+
+    func( info ); // 渡された処理で info を更新する
+
+    m_model->setData( index, QVariant::fromValue( info ), Qt::UserRole );
+}
+
 void ObjectEditorWIP::onItemSelection(const QItemSelection &selected, const QItemSelection &deselected)
 {
     Q_UNUSED(deselected);
@@ -249,120 +266,65 @@ void ObjectEditorWIP::onItemSelection(const QItemSelection &selected, const QIte
 
 void ObjectEditorWIP::onFocusCheckBoxToggled( bool checked )
 {
-    QModelIndexList selectedIndexes = ui->treeView->selectionModel()->selectedIndexes();
-    if( selectedIndexes.isEmpty() ) return;
-
-    QModelIndex index = selectedIndexes.first();
-    QVariant var = index.data( Qt::UserRole );
-    if( !var.canConvert<StringProcessor::ObjectInfo>() ) return;
-
-    StringProcessor::ObjectInfo info = var.value<StringProcessor::ObjectInfo>();
-    info.isFocus = checked;
-
-    QVariant newVar;
-    newVar.setValue( info );
-    ui->treeView->model()->setData( index, newVar, Qt::UserRole );
+    updateSelectedObject( [checked]( auto &info )
+                         {
+                             info.isFocus = checked;
+                         } );
 }
 
 void ObjectEditorWIP::onParticleLimitSpinBoxValueChanged( int value )
 {
-    QModelIndexList selectedIndexes = ui->treeView->selectionModel()->selectedIndexes();
-    if( selectedIndexes.isEmpty() ) return;
-
-    QModelIndex index = selectedIndexes.first();
-    QVariant var = index.data( Qt::UserRole );
-    if( !var.canConvert<StringProcessor::ObjectInfo>() ) return;
-
-    StringProcessor::ObjectInfo info = var.value<StringProcessor::ObjectInfo>();
-    info.particleLimit = value;
-
-    QVariant newVar;
-    newVar.setValue( info );
-    ui->treeView->model()->setData( index, newVar, Qt::UserRole );
+    updateSelectedObject( [value]( auto &info )
+                         {
+                             info.particleLimit = value;
+                         } );
 }
 
-void ObjectEditorWIP::onDensityDoubleSpinBoxValueChanged( double value )
+void ObjectEditorWIP::onDensityDoubleSpinBoxValueChanged(double value)
 {
-    QModelIndexList selectedIndexes = ui->treeView->selectionModel()->selectedIndexes();
-    if( selectedIndexes.isEmpty() ) return;
-
-    QModelIndex index = selectedIndexes.first();
-    QVariant var = index.data( Qt::UserRole );
-    if( !var.canConvert<StringProcessor::ObjectInfo>() ) return;
-
-    StringProcessor::ObjectInfo info = var.value<StringProcessor::ObjectInfo>();
-    info.density = value;
-
-    QVariant newVar;
-    newVar.setValue( info );
-    ui->treeView->model()->setData( index, newVar, Qt::UserRole );
+    updateSelectedObject( [value]( auto &info )
+                         {
+                             info.density = value;
+                         } );
 }
 
 void ObjectEditorWIP::onCoordinateLineEditTextChanged()
 {
-    QModelIndexList selectedIndexes = ui->treeView->selectionModel()->selectedIndexes();
-    if( selectedIndexes.isEmpty() ) return;
-
-    QModelIndex index = selectedIndexes.first();
-    QVariant var = index.data( Qt::UserRole );
-    if( !var.canConvert<StringProcessor::ObjectInfo>() ) return;
-
-    StringProcessor::ObjectInfo info = var.value<StringProcessor::ObjectInfo>();
-    info.coordinateX = ui->coordinateXLineEdit->text().toUtf8().constData();
-    info.coordinateY = ui->coordinateYLineEdit->text().toUtf8().constData();
-    info.coordinateZ = ui->coordinateZLineEdit->text().toUtf8().constData();
-
-    QVariant newVar;
-    newVar.setValue( info );
-    ui->treeView->model()->setData( index, newVar, Qt::UserRole );
+    updateSelectedObject( [this] ( auto &info )
+                         {
+                             info.coordinateX = ui->coordinateXLineEdit->text().toUtf8().constData();
+                             info.coordinateY = ui->coordinateYLineEdit->text().toUtf8().constData();
+                             info.coordinateZ = ui->coordinateZLineEdit->text().toUtf8().constData();
+                         } );
 }
 
 void ObjectEditorWIP::onColorLabelDoubleClicked()
 {
-    QModelIndexList selectedIndexes = ui->treeView->selectionModel()->selectedIndexes();
-    if( selectedIndexes.isEmpty() ) return;
-
-    QModelIndex index = selectedIndexes.first();
-    QVariant var = index.data( Qt::UserRole );
-    if( !var.canConvert<StringProcessor::ObjectInfo>() ) return;
-
-    QColorDialog colorDialog;
-    colorDialog.adjustSize();
-
-    StringProcessor::ObjectInfo info = var.value<StringProcessor::ObjectInfo>();
-
-    if( colorDialog.exec() == QDialog::Accepted )
-    {
-        QColor color = colorDialog.selectedColor();
-        QPalette palette = ui->colorClickableLabel->palette();
-        palette.setColor( QPalette::Window, color );
-        ui->colorClickableLabel->setPalette( palette );
-        info.rgb[0] = color.red();
-        info.rgb[1] = color.green();
-        info.rgb[2] = color.blue();
-    }
-
-    QVariant newVar;
-    newVar.setValue( info );
-    ui->treeView->model()->setData( index, newVar, Qt::UserRole );
+    updateSelectedObject( [this]( auto &info )
+                         {
+                             QColorDialog colorDialog;
+                             colorDialog.adjustSize();
+                             if( colorDialog.exec() == QDialog::Accepted )
+                             {
+                                 QColor color = colorDialog.selectedColor();
+                                 QPalette palette = ui->colorClickableLabel->palette();
+                                 palette.setColor( QPalette::Window, color );
+                                 ui->colorClickableLabel->setPalette( palette );
+                                 info.rgb[0] = color.red();
+                                 info.rgb[1] = color.green();
+                                 info.rgb[2] = color.blue();
+                             }
+                         } );
 }
 
 void ObjectEditorWIP::onOpacityDoubleSpinBoxValueChanged( double value )
 {
-    QModelIndexList selectedIndexes = ui->treeView->selectionModel()->selectedIndexes();
-    if( selectedIndexes.isEmpty() ) return;
-
-    QModelIndex index = selectedIndexes.first();
-    QVariant var = index.data( Qt::UserRole );
-    if( !var.canConvert<StringProcessor::ObjectInfo>() ) return;
-
-    StringProcessor::ObjectInfo info = var.value<StringProcessor::ObjectInfo>();
-    info.opacity = value;
-
-    QVariant newVar;
-    newVar.setValue( info );
-    ui->treeView->model()->setData( index, newVar, Qt::UserRole );
+    updateSelectedObject( [value]( auto &info )
+                         {
+                             info.opacity = value;
+                         } );
 }
+
 
 void ObjectEditorWIP::onBrowse()
 {

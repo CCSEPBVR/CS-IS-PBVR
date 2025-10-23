@@ -45,6 +45,9 @@ private:
     void addObjectToModel( const StringProcessor::ObjectInfo& objectInfo, StringProcessor& sp );
     void calculateTotalMinMaxTimeStep();
 
+    template<typename F>
+    void updateSelectedObject(F func);
+
 private slots:
     void onItemSelection( const QItemSelection &selected, const QItemSelection &deselected );
 
