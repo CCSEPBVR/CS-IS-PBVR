@@ -89,6 +89,7 @@ void ObjectEditorWIP::initialize()
     connect( ui->opacityDoubleSpinBox, &QDoubleSpinBox::valueChanged, this, &ObjectEditorWIP::onOpacityDoubleSpinBoxValueChanged );
 
     connect( ui->browsePushButton, &QPushButton::clicked, this, &ObjectEditorWIP::onBrowse );
+    connect( ui->deletePushButton, &QPushButton::clicked, this, &ObjectEditorWIP::onDelete );
 }
 
 void ObjectEditorWIP::toggleCommonObjectWidgets( bool isObject )
@@ -109,6 +110,30 @@ void ObjectEditorWIP::toggleClientServerObjectWidgets( bool isClientServerObject
 void ObjectEditorWIP::toggleNontexturePolygonObjectWidgets( bool isNonTexturePolygonObject )
 {
     for( auto w : m_group_nontexture_polygon_object_widgets ) w->setVisible( isNonTexturePolygonObject );
+}
+
+void ObjectEditorWIP::calculateTotalMinMaxTimeStep()
+{
+    if( !m_model ) return;
+
+    int totalMin = std::numeric_limits<int>::max();
+    int totalMax = std::numeric_limits<int>::min();
+
+    for( int row = 0; row < m_model->rowCount(); row++ )
+    {
+        QStandardItem* nameItem = m_model->item( row, 0 ); // UserRoleにObjectInfoが格納されている列
+        if( !nameItem ) continue;
+
+        QVariant var = nameItem->data( Qt::UserRole );
+        if( !var.canConvert<StringProcessor::ObjectInfo>() ) continue;
+
+        StringProcessor::ObjectInfo info = var.value<StringProcessor::ObjectInfo>();
+
+        totalMin = std::min( totalMin, info.timeStep.first );
+        totalMax = std::max( totalMax, info.timeStep.second );
+    }
+    // FIXME:ツールバー通知用のシグナルを発火してください。
+    qDebug() << totalMin << ", " << totalMax;
 }
 
 void ObjectEditorWIP::onItemSelection(const QItemSelection &selected, const QItemSelection &deselected)
@@ -349,6 +374,7 @@ void ObjectEditorWIP::onBrowse()
 
             QModelIndex index = m_model->indexFromItem( rowItems.first() );
             ui->treeView->setCurrentIndex( index );
+            calculateTotalMinMaxTimeStep();
         }
         else
         {
@@ -359,7 +385,29 @@ void ObjectEditorWIP::onBrowse()
 
 void ObjectEditorWIP::onDelete()
 {
+    if( !m_model ) return;
 
+    QItemSelectionModel* selectionModel = ui->treeView->selectionModel();
+    if( !selectionModel ) return;
+
+    QModelIndexList selectedIndexes = selectionModel->selectedIndexes();
+    if( selectedIndexes.isEmpty() ) return;
+
+    QSet<int> rowsToRemove;
+    for( const QModelIndex& index : selectedIndexes )
+    {
+        rowsToRemove.insert( index.row() );
+    }
+
+    QList<int> rowsList;
+    for( int r : rowsToRemove ) rowsList.append(r);
+    std::sort( rowsList.begin(), rowsList.end(), std::greater<int>() );
+
+    for( int row : rowsList )
+    {
+        m_model->removeRow( row );
+    }
+    calculateTotalMinMaxTimeStep();
 }
 
 void ObjectEditorWIP::onApply()

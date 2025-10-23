@@ -42,6 +42,7 @@ private:
     void toggleCommonServerObjectWidgets( bool isCommonServerObject );              // true:サーバポイントオブジェクトである。(ClientServer/Insitu共通)
     void toggleClientServerObjectWidgets( bool isClientServerObject );              // true:サーバポイントオブジェクトである。(ClientServer)
     void toggleNontexturePolygonObjectWidgets( bool isNonTexturePolygonObject );    // true:テクスチャ無しポリゴンオブジェクトである。(.stl, .kvsml)
+    void calculateTotalMinMaxTimeStep();
 
 private slots:
     void onItemSelection( const QItemSelection &selected, const QItemSelection &deselected );
