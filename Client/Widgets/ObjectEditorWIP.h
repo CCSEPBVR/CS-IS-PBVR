@@ -4,6 +4,7 @@
 #include <QDockWidget>
 #include <QList>
 #include <QFileDialog>
+#include <QColorDialog>
 
 #include "Screen.h"
 
@@ -26,6 +27,8 @@ private:
     // メンバ変数群
     Ui::ObjectEditorWIP *ui;
 
+    QStandardItemModel *m_model = nullptr;
+
     QList<QWidget*> m_group_common_object_widgets;              // 全オブジェクト共通で表示させるウィジェット群
     QList<QWidget*> m_group_common_server_point_object_widgets; // サーバポイントオブジェクト(ClientServer/In-Situ)で表示させるウィジェット群
     QList<QWidget*> m_group_client_server_point_object_widgets; // サーバポイントオブジェクト(ClientServer)で表示させるウィジェット群
@@ -35,12 +38,28 @@ private:
 
     // メソッド群
     void initialize();
-    void toggleCommonObjectWidgets( bool isObject ); // 選択したアイテムがオブジェクトかどうか。 // true:オブジェクトである。 // FIXME:そもそもアイテムない状態で選択はできないのでは。
-    void toggleClientServerObjectWidgets( bool isClientServerObject ); // true:CSオブジェクトである。
-    void toggleCommonServerObjectWidgets( bool isCommonServerObject ); // true:サーバーポイントオブジェクトである。
-    void toggleNontexturePolygonObjectWidgets( bool isNonTexturePolygonObject ); // true:テクスチャ無しポリゴンオブジェクトである。(.stl)
+    void toggleCommonObjectWidgets( bool isObject );                                // true:オブジェクトである。
+    void toggleCommonServerObjectWidgets( bool isCommonServerObject );              // true:サーバポイントオブジェクトである。(ClientServer/Insitu共通)
+    void toggleClientServerObjectWidgets( bool isClientServerObject );              // true:サーバポイントオブジェクトである。(ClientServer)
+    void toggleNontexturePolygonObjectWidgets( bool isNonTexturePolygonObject );    // true:テクスチャ無しポリゴンオブジェクトである。(.stl, .kvsml)
 
 private slots:
+    void onItemSelection( const QItemSelection &selected, const QItemSelection &deselected );
+
+    // 全オブジェクト共通
+    void onFocusCheckBoxToggled( bool checked );
+
+    // サーバポイントオブジェクトである。(ClientServer/Insitu共通)
+    void onParticleLimitSpinBoxValueChanged( int value );
+    void onDensityDoubleSpinBoxValueChanged( double value );
+
+    // サーバポイントオブジェクト(ClientServer)で表示させるウィジェット群
+    void onCoordinateLineEditTextChanged();
+
+    // true:テクスチャ無しポリゴンオブジェクトである。(.stl, .kvsml)
+    void onColorLabelDoubleClicked();
+    void onOpacityDoubleSpinBoxValueChanged( double value );
+
     void onBrowse(); // ...ボタン(ファイルブラウザ)が押された時
     void onDelete();
     void onApply();

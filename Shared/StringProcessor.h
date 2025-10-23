@@ -12,32 +12,34 @@ class StringProcessor
 public:
     enum Format
     {
-        Unknown             = 0,    // Aka Error
+        Unknown                 = 0,    // Aka Error
 
         // ServerSide
-        ServerPointObject   = 1,    // Server side point object
-        ServerGlyphObject   = 2,    // Server side point object
+        ClientServerPointObject = 1,    // Client Server side point object
+        InsituServerPointObject = 2,    // Insitu Server side point object
+        ServerGlyphObject       = 3,    // Server side point object
 
         // SideObject
-        PointObjectKVSML    = 3,    // Point Object(.kvsml)
-        PointObjectLAS      = 4,    // Point Object(.las)
-        PointObjectPTS      = 5,    // Point Object(.pts)
+        PointObjectKVSML        = 4,    // Point Object(.kvsml)
+        PointObjectLAS          = 5,    // Point Object(.las)
+        PointObjectPTS          = 6,    // Point Object(.pts)
 
-        PolygonObjectKVSML  = 6,    // Nontexture Polygon Object(.kvsml)
-        PolygonObjectSTL    = 7,    // Nontexture Polygon Object(.stl)
-        PolygonObject3DS    = 8,    // Texture Polygon Object(.3ds)
-        PolygonObjectFBX    = 9,    // Texture Polygon Object(.fbx)
+        PolygonObjectKVSML      = 7,    // Nontexture Polygon Object(.kvsml)
+        PolygonObjectSTL        = 8,    // Nontexture Polygon Object(.stl)
+        PolygonObject3DS        = 9,    // Texture Polygon Object(.3ds)
+        PolygonObjectFBX        = 10,   // Texture Polygon Object(.fbx)
 
-        LineObjectKVSML     = 10,   // Line Object(.kvsml)
+        LineObjectKVSML         = 11,   // Line Object(.kvsml)
     };
 
     struct ObjectInfo
     {
         // Common Object Info
-        std::string name;              // Base name (without extension)
-        std::string directory;         // Directory path
-        Format format;                 // Detected format
-        std::pair<int,int> timeStep;   // Min/Max timestep
+        std::string name                = "";                           // Base name
+        std::string directory           = "";                           // Directory path
+        Format format                   = Format::Unknown;              // Detected format
+        std::pair<int,int> timeStep     = std::pair<int,int>( -1, -1 ); // Min/Max timestep
+        bool isFocus                    = false;
 
         // Common Server Point Object Info
         int particleLimit               = 10000000;
@@ -70,8 +72,18 @@ public:
     {
         std::filesystem::path pathObject( m_local_file_path );
 
+        std::string baseName = pathObject.stem().string(); // "prefix_XXXXX"
+
         ObjectInfo objectInfo;
-        objectInfo.name      = pathObject.stem().string();
+        size_t underscorePos = baseName.find( '_' );
+        if( underscorePos != std::string::npos )
+        {
+            objectInfo.name = baseName.substr( 0, underscorePos );
+        }
+        else
+        {
+            objectInfo.name = baseName;
+        }
         objectInfo.directory = pathObject.parent_path().string();
         objectInfo.format    = extractFormat();
         objectInfo.timeStep  = extractTimeStep();
@@ -86,14 +98,16 @@ public:
         return objectInfo;
     }
 
-    std::string formatToString( Format format ) const
+    static std::string formatToString( Format format )
     {
         switch( format )
         {
         case Unknown:
             return "Unknow";
-        case ServerPointObject:
-            return "ServerPointObject";
+        case ClientServerPointObject:
+            return "ClientServerPointObject";
+        case InsituServerPointObject:
+            return "InsituServerPointObject";
         case ServerGlyphObject:
             return "ServerGlyphObject";
         case PointObjectKVSML:
@@ -176,7 +190,7 @@ private:
 
         for( const auto& e: serverExtensions )
         {
-            if( extension == e ) return Format::ServerPointObject;
+            if( extension == e ) return Format::ClientServerPointObject;
         }
 
         return Format::Unknown;
