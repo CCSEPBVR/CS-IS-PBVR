@@ -392,29 +392,60 @@ void ObjectEditorWIP::onBrowse()
 
 void ObjectEditorWIP::onDelete()
 {
-    if( !m_model ) return;
-
-    QItemSelectionModel* selectionModel = ui->treeView->selectionModel();
-    if( !selectionModel ) return;
-
-    QModelIndexList selectedIndexes = selectionModel->selectedIndexes();
+    QModelIndexList selectedIndexes = ui->treeView->selectionModel()->selectedIndexes();
     if( selectedIndexes.isEmpty() ) return;
 
-    QSet<int> rowsToRemove;
-    for( const QModelIndex& index : selectedIndexes )
+    QModelIndex index = selectedIndexes.first();
+    QVariant var = index.data( Qt::UserRole );
+    if( !var.canConvert<StringProcessor::ObjectInfo>() ) return;
+
+    bool requireFocusOnOther = false; // 他のオブジェクトをフォーカスするかどうかのフラグ
+
+    StringProcessor::ObjectInfo info = var.value<StringProcessor::ObjectInfo>();
+    if( info.isFocus )
     {
-        rowsToRemove.insert( index.row() );
+        bool otherFocusedFound = false;
+        for( int row = 0; row < m_model->rowCount(); row++ )
+        {
+            if( row == index.row() ) continue; // 自分自身はスキップ
+
+            QStandardItem* nameItem = m_model->item( row, 0 ); // UserRoleにObjectInfoが格納されている列
+            if( !nameItem ) continue;
+
+            QVariant otherVar = nameItem->data( Qt::UserRole );
+            if( !otherVar.canConvert<StringProcessor::ObjectInfo>() ) continue;
+
+            StringProcessor::ObjectInfo otherInfo = otherVar.value<StringProcessor::ObjectInfo>();
+            if( otherInfo.isFocus )
+            {
+                otherFocusedFound = true;
+                break; // 他にフォーカス中のアイテムがあるので終了
+            }
+        }
+        requireFocusOnOther = !otherFocusedFound; // 他にフォーカス中のアイテムがない場合はtrue
     }
 
-    QList<int> rowsList;
-    for( int r : rowsToRemove ) rowsList.append(r);
-    std::sort( rowsList.begin(), rowsList.end(), std::greater<int>() );
-
-    for( int row : rowsList )
+    if( requireFocusOnOther )
     {
-        m_model->removeRow( row );
+        for( int row = 0; row < m_model->rowCount(); ++row )
+        {
+            QStandardItem* item = m_model->item( row, 0 ); // UserRoleにObjectInfoが格納されている列
+            if( !item ) continue;
+
+            QVariant var = item->data( Qt::UserRole );
+            if( !var.canConvert<StringProcessor::ObjectInfo>() ) continue;
+
+            StringProcessor::ObjectInfo info = var.value<StringProcessor::ObjectInfo>();
+            // 自分自身（削除対象）はスキップ
+            if( row == index.row() ) continue;
+
+            // 一番若い（最初に見つかった）アイテムをフォーカス
+            info.isFocus = true;
+            item->setData( QVariant::fromValue(info), Qt::UserRole );
+            break; // 1つだけ更新したら終了
+        }
     }
-    calculateTotalMinMaxTimeStep();
+    m_model->removeRow( index.row() );
 }
 
 void ObjectEditorWIP::onApply()
