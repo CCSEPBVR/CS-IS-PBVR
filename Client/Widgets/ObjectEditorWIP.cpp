@@ -112,9 +112,9 @@ void ObjectEditorWIP::toggleNontexturePolygonObjectWidgets( bool isNonTexturePol
     for( auto w : m_group_nontexture_polygon_object_widgets ) w->setVisible( isNonTexturePolygonObject );
 }
 
-void ObjectEditorWIP::addObjectToModel( const StringProcessor::ObjectInfo& objectInfo, StringProcessor& sp )
+void ObjectEditorWIP::addObjectToModel( const ObjectInfoExtractor::ObjectInfo& objectInfo, ObjectInfoExtractor& oie )
 {
-    StringProcessor::ObjectInfo info = objectInfo;
+    ObjectInfoExtractor::ObjectInfo info = objectInfo;
 
     // 最初に追加されるオブジェクトはフォーカス状態にする
     if( m_model->rowCount() == 0 )
@@ -124,7 +124,7 @@ void ObjectEditorWIP::addObjectToModel( const StringProcessor::ObjectInfo& objec
 
     QList<QStandardItem*> rowItems;
     auto nameItem         = new QStandardItem( QString::fromUtf8( info.name ) );
-    auto formatItem       = new QStandardItem( QString::fromUtf8( sp.formatToString( info.format ) ) );
+    auto formatItem       = new QStandardItem( QString::fromUtf8( oie.formatToString( info.format ) ) );
     auto displayItem      = new QStandardItem( "" );
     auto keepInitialItem  = new QStandardItem( "" );
     auto keepFinalItem    = new QStandardItem( "" );
@@ -162,9 +162,9 @@ void ObjectEditorWIP::calculateTotalMinMaxTimeStep()
         if( !nameItem ) continue;
 
         QVariant var = nameItem->data( Qt::UserRole );
-        if( !var.canConvert<StringProcessor::ObjectInfo>() ) continue;
+        if( !var.canConvert<ObjectInfoExtractor::ObjectInfo>() ) continue;
 
-        StringProcessor::ObjectInfo info = var.value<StringProcessor::ObjectInfo>();
+        ObjectInfoExtractor::ObjectInfo info = var.value<ObjectInfoExtractor::ObjectInfo>();
 
         totalMin = std::min( totalMin, info.timeStep.first );
         totalMax = std::max( totalMax, info.timeStep.second );
@@ -181,9 +181,9 @@ void ObjectEditorWIP::updateSelectedObject( F func )
 
     QModelIndex index = selectedIndexes.first();
     QVariant var = index.data( Qt::UserRole );
-    if( !var.canConvert<StringProcessor::ObjectInfo>() ) return;
+    if( !var.canConvert<ObjectInfoExtractor::ObjectInfo>() ) return;
 
-    StringProcessor::ObjectInfo info = var.value<StringProcessor::ObjectInfo>();
+    ObjectInfoExtractor::ObjectInfo info = var.value<ObjectInfoExtractor::ObjectInfo>();
 
     func( info ); // 渡された処理で info を更新する
 
@@ -197,14 +197,14 @@ void ObjectEditorWIP::onItemSelection(const QItemSelection &selected, const QIte
 
     QModelIndex index = selected.indexes().first();
     QVariant var = index.data(Qt::UserRole);
-    if (!var.canConvert<StringProcessor::ObjectInfo>()) return;
+    if (!var.canConvert<ObjectInfoExtractor::ObjectInfo>()) return;
 
-    StringProcessor::ObjectInfo info = var.value<StringProcessor::ObjectInfo>();
+    ObjectInfoExtractor::ObjectInfo info = var.value<ObjectInfoExtractor::ObjectInfo>();
 
     // 全オブジェクト共通
     ui->nameLineEdit                ->setText( QString::fromUtf8( info.name.c_str() ) );
     ui->directoryLineEdit           ->setText( QString::fromUtf8( info.directory.c_str() ) );
-    ui->formatLineEdit              ->setText( QString::fromUtf8( StringProcessor::formatToString( info.format ) ) );
+    ui->formatLineEdit              ->setText( QString::fromUtf8( ObjectInfoExtractor::formatToString( info.format ) ) );
     ui->timeStepMinLineEdit         ->setText( QString::number( info.timeStep.first ) );
     ui->timeStepMaxLineEdit         ->setText( QString::number( info.timeStep.second ) );
     ui->focusCheckBox               ->setChecked( info.isFocus );
@@ -236,20 +236,20 @@ void ObjectEditorWIP::onItemSelection(const QItemSelection &selected, const QIte
     bool isClientServerObject = false;
     bool isNonTexturePolygonObject = false;
     // フラグをマップで管理(isObject, isCommonServerObject, isClientServerObject, isNonTexturePolygonObject )
-    static const std::map<StringProcessor::Format, std::tuple<bool,bool,bool,bool>> formatFlags =
+    static const std::map<ObjectInfoExtractor::Format, std::tuple<bool,bool,bool,bool>> formatFlags =
         {
-         { StringProcessor::Format::Unknown,                   { false, false, false, false } },
-         { StringProcessor::Format::ClientServerPointObject,   { true,  true,  true,  false } },
-         { StringProcessor::Format::InsituServerPointObject,   { true,  true,  false, false } },
-         { StringProcessor::Format::ServerGlyphObject,         { true,  false, false, false } },
-         { StringProcessor::Format::PointObjectKVSML,          { true,  false, false, false } },
-         { StringProcessor::Format::PointObjectLAS,            { true,  false, false, false } },
-         { StringProcessor::Format::PointObjectPTS,            { true,  false, false, false } },
-         { StringProcessor::Format::PolygonObjectKVSML,        { true,  false, false, true  } },
-         { StringProcessor::Format::PolygonObjectSTL,          { true,  false, false, true  } },
-         { StringProcessor::Format::PolygonObject3DS,          { true,  false, false, false } },
-         { StringProcessor::Format::PolygonObjectFBX,          { true,  false, false, false } },
-         { StringProcessor::Format::LineObjectKVSML,           { true,  false, false, false } },
+         { ObjectInfoExtractor::Format::Unknown,                   { false, false, false, false } },
+         { ObjectInfoExtractor::Format::ClientServerPointObject,   { true,  true,  true,  false } },
+         { ObjectInfoExtractor::Format::InsituServerPointObject,   { true,  true,  false, false } },
+         { ObjectInfoExtractor::Format::ServerGlyphObject,         { true,  false, false, false } },
+         { ObjectInfoExtractor::Format::PointObjectKVSML,          { true,  false, false, false } },
+         { ObjectInfoExtractor::Format::PointObjectLAS,            { true,  false, false, false } },
+         { ObjectInfoExtractor::Format::PointObjectPTS,            { true,  false, false, false } },
+         { ObjectInfoExtractor::Format::PolygonObjectKVSML,        { true,  false, false, true  } },
+         { ObjectInfoExtractor::Format::PolygonObjectSTL,          { true,  false, false, true  } },
+         { ObjectInfoExtractor::Format::PolygonObject3DS,          { true,  false, false, false } },
+         { ObjectInfoExtractor::Format::PolygonObjectFBX,          { true,  false, false, false } },
+         { ObjectInfoExtractor::Format::LineObjectKVSML,           { true,  false, false, false } },
          };
 
     auto it = formatFlags.find( info.format );
@@ -338,10 +338,10 @@ void ObjectEditorWIP::onBrowse()
 
     if( !filePath.isEmpty() )
     {
-        StringProcessor sp( filePath.toUtf8().constData() );
-        if( auto objectInfoOpt = sp.extractFromLocalFile() )
+        ObjectInfoExtractor oie( filePath.toUtf8().constData() );
+        if( auto objectInfoOpt = oie.extractFromLocalFile() )
         {
-            addObjectToModel( *objectInfoOpt, sp );
+            addObjectToModel( *objectInfoOpt, oie );
         }
         else
         {
@@ -357,11 +357,11 @@ void ObjectEditorWIP::onDelete()
 
     QModelIndex index = selectedIndexes.first();
     QVariant var = index.data( Qt::UserRole );
-    if( !var.canConvert<StringProcessor::ObjectInfo>() ) return;
+    if( !var.canConvert<ObjectInfoExtractor::ObjectInfo>() ) return;
 
     bool requireFocusOnOther = false; // 他のオブジェクトをフォーカスするかどうかのフラグ
 
-    StringProcessor::ObjectInfo info = var.value<StringProcessor::ObjectInfo>();
+    ObjectInfoExtractor::ObjectInfo info = var.value<ObjectInfoExtractor::ObjectInfo>();
     if( info.isFocus )
     {
         bool otherFocusedFound = false;
@@ -373,9 +373,9 @@ void ObjectEditorWIP::onDelete()
             if( !nameItem ) continue;
 
             QVariant otherVar = nameItem->data( Qt::UserRole );
-            if( !otherVar.canConvert<StringProcessor::ObjectInfo>() ) continue;
+            if( !otherVar.canConvert<ObjectInfoExtractor::ObjectInfo>() ) continue;
 
-            StringProcessor::ObjectInfo otherInfo = otherVar.value<StringProcessor::ObjectInfo>();
+            ObjectInfoExtractor::ObjectInfo otherInfo = otherVar.value<ObjectInfoExtractor::ObjectInfo>();
             if( otherInfo.isFocus )
             {
                 otherFocusedFound = true;
@@ -393,9 +393,9 @@ void ObjectEditorWIP::onDelete()
             if( !item ) continue;
 
             QVariant var = item->data( Qt::UserRole );
-            if( !var.canConvert<StringProcessor::ObjectInfo>() ) continue;
+            if( !var.canConvert<ObjectInfoExtractor::ObjectInfo>() ) continue;
 
-            StringProcessor::ObjectInfo info = var.value<StringProcessor::ObjectInfo>();
+            ObjectInfoExtractor::ObjectInfo info = var.value<ObjectInfoExtractor::ObjectInfo>();
             // 自分自身（削除対象）はスキップ
             if( row == index.row() ) continue;
 

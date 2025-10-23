@@ -8,7 +8,7 @@
 
 #include "Screen.h"
 
-#include "../../Shared/StringProcessor.h"
+#include "../../Shared/ObjectInfoExtractor.h"
 
 namespace Ui
 {
@@ -42,7 +42,7 @@ private:
     void toggleCommonServerObjectWidgets( bool isCommonServerObject );              // true:サーバポイントオブジェクトである。(ClientServer/Insitu共通)
     void toggleClientServerObjectWidgets( bool isClientServerObject );              // true:サーバポイントオブジェクトである。(ClientServer)
     void toggleNontexturePolygonObjectWidgets( bool isNonTexturePolygonObject );    // true:テクスチャ無しポリゴンオブジェクトである。(.stl, .kvsml)
-    void addObjectToModel( const StringProcessor::ObjectInfo& objectInfo, StringProcessor& sp );
+    void addObjectToModel( const ObjectInfoExtractor::ObjectInfo& objectInfo, ObjectInfoExtractor& oie );
     void calculateTotalMinMaxTimeStep();
 
     template<typename F>

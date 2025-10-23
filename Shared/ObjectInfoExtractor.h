@@ -1,5 +1,5 @@
-#ifndef STRINGPROCESSOR_H
-#define STRINGPROCESSOR_H
+#ifndef OBJECTINFOEXTRACTOR_H
+#define OBJECTINFOEXTRACTOR_H
 
 #include <iostream>
 #include <filesystem>
@@ -10,7 +10,7 @@
 #include <kvs/Vector>
 #include <kvs/RGBColor>
 
-class StringProcessor
+class ObjectInfoExtractor
 {
 public:
     enum Format
@@ -43,6 +43,10 @@ public:
         Format format                       = Format::Unknown;              // Detected format
         std::pair<int,int> timeStep         = { -1, -1 }; // Min/Max timestep
         bool isFocus                        = false;
+        kvs::Vec3 minObjectCoord;
+        kvs::Vec3 maxObjectCoord;
+        kvs::Vec3 minExternalObjectCoord;
+        kvs::Vec3 maxExternalObjectCoord;
 
         // Common Server Point Object Info
         int particleLimit                   = 10000000;
@@ -66,7 +70,7 @@ public:
         float polygonOpacity                = 0.5;
     };
 
-    explicit StringProcessor( const std::string& filePath )
+    explicit ObjectInfoExtractor( const std::string& filePath )
         : m_local_file_path( filePath )
     {
     }
@@ -254,4 +258,4 @@ private:
     }
 };
 
-#endif // STRINGPROCESSOR_H
+#endif // OBJECTINFOEXTRACTOR_H
