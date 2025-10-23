@@ -308,7 +308,7 @@ void readTFfromParamInfo( ParamInfo* param,
     int mpi_rank;
 #ifndef CPU_VER
     MPI_Comm_rank( MPI_COMM_WORLD, &mpi_rank );
-else
+#else
     mpi_rank = 0;
 #endif
 

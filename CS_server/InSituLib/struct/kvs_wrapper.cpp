@@ -502,7 +502,7 @@ void show_timer( time_parameters time )
 #else
     initialize = time.initialize;
     sampling   = time.sampling;
-    writting   = time.writting;
+    writing   = time.writting;
     mpi_reduce = time.mpi_reduce;
     write_text = time.write_text;
     total      = time_total;
@@ -890,8 +890,8 @@ void generate_particles( int time_step,
     MPI_Comm_rank( MPI_COMM_WORLD, &mpi_rank );
     MPI_Comm_size( MPI_COMM_WORLD, &mpi_size );
 #else
-    int mpi_rank = 0;
-    int mpi_size = 1;
+    mpi_rank = 0;
+    mpi_size = 1;
 #endif
     static ParamInfo param;
     pbvr_parameters particleBase;
