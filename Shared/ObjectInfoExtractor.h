@@ -10,6 +10,13 @@
 #include <kvs/Vector>
 #include <kvs/RGBColor>
 
+#include <kvs/PointImporter>
+#include <kvs/PolygonImporter>
+#ifdef ASSIMP
+#include "TexturedPolygonImporter.h"
+#endif
+#include <kvs/LineImporter>
+
 class ObjectInfoExtractor
 {
 public:
@@ -39,14 +46,15 @@ public:
     {
         // Common Object Info
         std::string name                    = "";                           // Base name
+        std::string extension;
         std::string directory               = "";                           // Directory path
         Format format                       = Format::Unknown;              // Detected format
         std::pair<int,int> timeStep         = { -1, -1 }; // Min/Max timestep
         bool isFocus                        = false;
         kvs::Vec3 minObjectCoord;
         kvs::Vec3 maxObjectCoord;
-        kvs::Vec3 minExternalObjectCoord;
-        kvs::Vec3 maxExternalObjectCoord;
+        kvs::Vec3 minExternalCoord;
+        kvs::Vec3 maxExternalCoord;
 
         // Common Server Point Object Info
         int particleLimit                   = 10000000;
@@ -91,9 +99,11 @@ public:
         {
             objectInfo.name = baseName;
         }
+        objectInfo.extension = pathObject.extension().string();
         objectInfo.directory = pathObject.parent_path().string();
         objectInfo.format    = extractFormat();
         objectInfo.timeStep  = extractTimeStep();
+        extractMinMaxCoords( objectInfo );
 
         // std::cout << "Name                  :" << objectInfo.name      << std::endl;
         // std::cout << "Directory             :" << objectInfo.directory << std::endl;
@@ -255,6 +265,72 @@ private:
             std::cerr << "No valid 5-digit timestep found in directory." << std::endl;
             return std::pair<int,int>( -1, -1 );
         }
+    }
+
+    void extractMinMaxCoords( ObjectInfo& info )
+    {
+// HACK: Windows環境では\\にしないとkvsml形式のデータが上手くインポートされない。
+#ifdef _WIN32
+        const char path_sep = '\\';
+#else
+        const char path_sep = '/';
+#endif
+
+        std::ostringstream oss;
+        oss << info.directory << path_sep
+            << info.name << "_"
+            << std::setw(5) << std::setfill('0') << info.timeStep.first
+            << info.extension;
+
+        const std::string fullpath = oss.str();
+
+        std::cout << info.format << std::endl;
+        std::cout << fullpath << std::endl;
+
+        std::unique_ptr<kvs::ObjectBase> object;
+
+        switch( info.format )
+        {
+        case Unknown:
+        case ClientServerPointObject:
+        case InsituServerPointObject:
+        case ServerGlyphObject:
+            return; // 生成不可の場合は早期リターン
+
+        case PointObjectKVSML:
+        case PointObjectLAS:
+        case PointObjectPTS:
+            object = std::make_unique<kvs::PointImporter>( fullpath );
+            break;
+
+        case PolygonObjectKVSML:
+        case PolygonObjectSTL:
+            object = std::make_unique<kvs::PolygonImporter>( fullpath );
+            break;
+#ifdef ASSIMP
+        case PolygonObject3DS:
+        case PolygonObjectFBX:
+            object = std::make_unique<kvs::TexturedPolygonImporter>( fullpath );
+            break;
+#endif
+        case LineObjectKVSML:
+            object = std::make_unique<kvs::LineImporter>( fullpath );
+            break;
+
+        default:
+            return; // 未対応フォーマットは何もしない
+        }
+
+        if( !object )
+        {
+            std::cerr << "Failed to load object: " << fullpath << std::endl;
+            return;
+        }
+
+        info.minObjectCoord     = object->minObjectCoord();
+        info.maxObjectCoord     = object->maxObjectCoord();
+        info.minExternalCoord   = object->minExternalCoord();
+        info.maxExternalCoord   = object->maxExternalCoord();
     }
 };
 

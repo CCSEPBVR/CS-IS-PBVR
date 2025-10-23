@@ -92,7 +92,7 @@
                </widget>
               </item>
               <item row="1" column="1">
-               <widget class="QLineEdit" name="lineEdit">
+               <widget class="QLineEdit" name="minObjectXCoordLineEdit">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
                   <horstretch>0</horstretch>
@@ -105,7 +105,7 @@
                </widget>
               </item>
               <item row="2" column="1">
-               <widget class="QLineEdit" name="lineEdit_2">
+               <widget class="QLineEdit" name="maxObjectXCoordLineEdit">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
                   <horstretch>0</horstretch>
@@ -118,7 +118,7 @@
                </widget>
               </item>
               <item row="1" column="2">
-               <widget class="QLineEdit" name="lineEdit_3">
+               <widget class="QLineEdit" name="minObjectYCoordLineEdit">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
                   <horstretch>0</horstretch>
@@ -131,7 +131,7 @@
                </widget>
               </item>
               <item row="2" column="2">
-               <widget class="QLineEdit" name="lineEdit_4">
+               <widget class="QLineEdit" name="maxObjectYCoordLineEdit">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
                   <horstretch>0</horstretch>
@@ -144,7 +144,7 @@
                </widget>
               </item>
               <item row="1" column="3">
-               <widget class="QLineEdit" name="lineEdit_5">
+               <widget class="QLineEdit" name="minObjectZCoordLineEdit">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
                   <horstretch>0</horstretch>
@@ -157,7 +157,7 @@
                </widget>
               </item>
               <item row="2" column="3">
-               <widget class="QLineEdit" name="lineEdit_6">
+               <widget class="QLineEdit" name="maxObjectZCoordLineEdit">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
                   <horstretch>0</horstretch>
@@ -230,7 +230,7 @@
                </widget>
               </item>
               <item row="1" column="1">
-               <widget class="QLineEdit" name="lineEdit_7">
+               <widget class="QLineEdit" name="minExternalXCoordLineEdit">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
                   <horstretch>0</horstretch>
@@ -243,7 +243,7 @@
                </widget>
               </item>
               <item row="2" column="1">
-               <widget class="QLineEdit" name="lineEdit_8">
+               <widget class="QLineEdit" name="maxExternalXCoordLineEdit">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
                   <horstretch>0</horstretch>
@@ -256,7 +256,7 @@
                </widget>
               </item>
               <item row="1" column="2">
-               <widget class="QLineEdit" name="lineEdit_9">
+               <widget class="QLineEdit" name="minExternalYCoordLineEdit">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
                   <horstretch>0</horstretch>
@@ -269,7 +269,7 @@
                </widget>
               </item>
               <item row="1" column="3">
-               <widget class="QLineEdit" name="lineEdit_10">
+               <widget class="QLineEdit" name="minExternalZCoordLineEdit">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
                   <horstretch>0</horstretch>
@@ -282,7 +282,7 @@
                </widget>
               </item>
               <item row="2" column="2">
-               <widget class="QLineEdit" name="lineEdit_11">
+               <widget class="QLineEdit" name="maxExternalYCoordLineEdit">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
                   <horstretch>0</horstretch>
@@ -295,7 +295,7 @@
                </widget>
               </item>
               <item row="2" column="3">
-               <widget class="QLineEdit" name="lineEdit_12">
+               <widget class="QLineEdit" name="maxExternalZCoordLineEdit">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
                   <horstretch>0</horstretch>

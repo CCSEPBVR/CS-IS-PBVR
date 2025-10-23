@@ -208,6 +208,18 @@ void ObjectEditorWIP::onItemSelection(const QItemSelection &selected, const QIte
     ui->timeStepMinLineEdit         ->setText( QString::number( info.timeStep.first ) );
     ui->timeStepMaxLineEdit         ->setText( QString::number( info.timeStep.second ) );
     ui->focusCheckBox               ->setChecked( info.isFocus );
+    ui->minObjectXCoordLineEdit     ->setText( QString::number( info.minObjectCoord.x() ) );
+    ui->minObjectYCoordLineEdit     ->setText( QString::number( info.minObjectCoord.y() ) );
+    ui->minObjectZCoordLineEdit     ->setText( QString::number( info.minObjectCoord.z() ) );
+    ui->maxObjectXCoordLineEdit     ->setText( QString::number( info.maxObjectCoord.x() ) );
+    ui->maxObjectYCoordLineEdit     ->setText( QString::number( info.maxObjectCoord.y() ) );
+    ui->maxObjectZCoordLineEdit     ->setText( QString::number( info.maxObjectCoord.z() ) );
+    ui->minExternalXCoordLineEdit   ->setText( QString::number( info.minExternalCoord.x() ) );
+    ui->minExternalYCoordLineEdit   ->setText( QString::number( info.minExternalCoord.y() ) );
+    ui->minExternalZCoordLineEdit   ->setText( QString::number( info.minExternalCoord.z() ) );
+    ui->maxExternalXCoordLineEdit   ->setText( QString::number( info.maxExternalCoord.x() ) );
+    ui->maxExternalYCoordLineEdit   ->setText( QString::number( info.maxExternalCoord.y() ) );
+    ui->maxExternalZCoordLineEdit   ->setText( QString::number( info.maxExternalCoord.z() ) );
 
     // サーバポイントオブジェクトである。(ClientServer/Insitu共通)
     ui->particleLimitSpinBox        ->setValue( info.particleLimit );
