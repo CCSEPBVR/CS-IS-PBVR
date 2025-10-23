@@ -222,6 +222,67 @@ int Hydrogen::generate_volume( void )
     return( 1 );
 }
 
+void Hydrogen::calc_each_ens(int mpi_size)
+{
+    const kvs::UInt64 dim1 = resolution.x();
+    const kvs::UInt64 dim2 = resolution.y();
+    const kvs::UInt64 dim3 = resolution.z();
+
+        const kvs::Real64 dim= 128.0;
+        const kvs::Real64 kr = 32.0 / dim;
+        //const kvs::Real64 kd = 1.5 + 0.5f*(float)mpi_size;
+        const kvs::Real64 kd = 1.f +(float)mpi_size;
+        //const kvs::Real64 kd = 6;
+        const kvs::Real64 kr3 = 32.0 / dim * 0.1667 * kd;
+
+        ncells = ( dim1 - 1 ) * ( dim2 - 1 )  * ( dim3 - 1 ) * 5 ;
+        nnodes = dim1 *  dim2  * dim3;
+
+        kvs::UInt64 index = 0;
+        kvs::UInt64 coords_index = 0;
+
+#if 0
+#else
+        for ( kvs::UInt64 k = 0; k < dim3; ++k )
+        {
+            for ( kvs::UInt64 j = 0; j < dim2; ++j )
+            {
+                for ( kvs::UInt64 i = 0; i < dim1; ++i )
+                {
+                    //const float x = (float)i * cell_length + global_region[mpi_rank].x();
+                    //const float y = (float)j * cell_length + global_region[mpi_rank].y();
+                    const float x = (float)i * cell_length;
+                    const float y = (float)j * cell_length;
+                    const float z = (float)k * cell_length;
+
+                    const kvs::Real64 dx = kr * ( x - ( dim / 2.0 ) );
+                    const kvs::Real64 dy = kr * ( y - ( dim / 2.0 ) );
+                    const kvs::Real64 dz = kr3* ( z - ( dim / 2.0 ) );
+
+
+
+                    const kvs::Real64 r = std::sqrt( dx * dx + dy * dy + dz * dz ) + 0.01;
+                    const kvs::Real64 cos_theta = dz / r;
+                    const kvs::Real64 phi = kd * ( r*r ) * std::exp( -r/2 ) * ( 3*cos_theta*cos_theta-1 );
+                    const kvs::Real64  c = (phi * phi) > 255 ? 255 : (phi * phi);
+
+                    values[0][index] = static_cast<float>( c );
+                    //values[0][index] += static_cast<float>( c )/mpi_size;
+                    //                std::cout << "values[0][index] = " << values[0][index] << std::endl;
+                    //                values[1][index] = static_cast<float>( c );
+                    //                values[2][index] = static_cast<float>( c );
+                    //                values[3][index] = static_cast<float>( c );
+                    index++;
+                    //                coords[ coords_index++ ] = x;
+                    //                coords[ coords_index++ ] = y;
+                    //                coords[ coords_index++ ] = z;
+                }
+            }
+        }
+#endif
+
+
+}
 void Hydrogen::calc_average(int mpi_size)
 {
     const kvs::UInt64 dim1 = resolution.x();

@@ -55,6 +55,7 @@ int main( int argc, char** argv )
     int mpi_size = 8;
     //MPI_Comm_rank( MPI_COMM_WORLD, &(mpi_size) );
     hydro.calc_average(mpi_size);
+    //hydro.calc_each_ens(mpi_size);
 
     for(int i =0; i< 1; i++ )
     //for(;;)

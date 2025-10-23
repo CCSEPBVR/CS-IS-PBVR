@@ -51,6 +51,8 @@ public:
     int generate_volume( void );
     
     void calc_average( int mpi_size);
+    
+    void calc_each_ens( int mpi_size);
 
     void show( void );
 };
