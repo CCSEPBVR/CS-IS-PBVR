@@ -29,6 +29,12 @@ MainWindow::MainWindow( kvs::qt::Application& app, QWidget *parent )
     , m_shading_control( new ShadingControl( m_screen, this ) )
     , m_transfer_function_editor( new TransferFunctionEditor( m_web_text_socket, this ) )
     , m_volume_transform( new VolumeTransform( m_screen, this ) )
+    , m_initialize_camera_xform( kvs::Mat4(
+          1, 0, 0, 0 ,
+          0, 1, 0, 0 ,
+          0, 0, 1, 12,
+          0, 0, 0, 1
+          ) )
 {
     initialize();
 }
