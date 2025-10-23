@@ -7,6 +7,9 @@
 #include <regex>
 #include <optional>
 
+#include <kvs/Vector>
+#include <kvs/RGBColor>
+
 class StringProcessor
 {
 public:
@@ -35,15 +38,15 @@ public:
     struct ObjectInfo
     {
         // Common Object Info
-        std::string name                = "";                           // Base name
-        std::string directory           = "";                           // Directory path
-        Format format                   = Format::Unknown;              // Detected format
-        std::pair<int,int> timeStep     = { -1, -1 }; // Min/Max timestep
-        bool isFocus                    = false;
+        std::string name                    = "";                           // Base name
+        std::string directory               = "";                           // Directory path
+        Format format                       = Format::Unknown;              // Detected format
+        std::pair<int,int> timeStep         = { -1, -1 }; // Min/Max timestep
+        bool isFocus                        = false;
 
         // Common Server Point Object Info
-        int particleLimit               = 10000000;
-        float density                   = 1.0;
+        int particleLimit                   = 10000000;
+        float density                       = 1.0;
 
         // Client Server Point Object Info
         int numberOfVector;
@@ -53,14 +56,14 @@ public:
         int elementType;
         int fileType;
         int stepNumber;
-        std::string coordinateX         = "";
-        std::string coordinateY         = "";
-        std::string coordinateZ         = "";
-        bool isExport                   = false;
+        std::string coordinateX             = "";
+        std::string coordinateY             = "";
+        std::string coordinateZ             = "";
+        bool isExport                       = false;
 
         // Nontexture Polygon Object Info
-        int rgb[3]                      = { 128, 128, 128 };
-        float opacity                   = 0.5;
+        kvs::RGBColor polygonColor          = { 128, 128, 128 };
+        float polygonOpacity                = 0.5;
     };
 
     explicit StringProcessor( const std::string& filePath )

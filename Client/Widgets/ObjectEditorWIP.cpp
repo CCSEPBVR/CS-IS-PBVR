@@ -227,9 +227,9 @@ void ObjectEditorWIP::onItemSelection(const QItemSelection &selected, const QIte
 
     // true:テクスチャ無しポリゴンオブジェクトである。(.stl, .kvsml)
     QPalette palette = ui->colorClickableLabel->palette();
-    palette.setColor( QPalette::Window, QColor( info.rgb[0], info.rgb[1], info.rgb[2] ) );
+    palette.setColor( QPalette::Window, QColor( info.polygonColor.r(), info.polygonColor.g(), info.polygonColor.b() ) );
     ui->colorClickableLabel         ->setPalette( palette );
-    ui->opacityDoubleSpinBox        ->setValue( info.opacity );
+    ui->opacityDoubleSpinBox        ->setValue( info.polygonOpacity );
 
     bool isObject = false;
     bool isCommonServerObject = false;
@@ -310,9 +310,7 @@ void ObjectEditorWIP::onColorLabelDoubleClicked()
                                  QPalette palette = ui->colorClickableLabel->palette();
                                  palette.setColor( QPalette::Window, color );
                                  ui->colorClickableLabel->setPalette( palette );
-                                 info.rgb[0] = color.red();
-                                 info.rgb[1] = color.green();
-                                 info.rgb[2] = color.blue();
+                                 info.polygonColor.set( color.red(), color.green(), color.blue() );
                              }
                          } );
 }
@@ -321,7 +319,7 @@ void ObjectEditorWIP::onOpacityDoubleSpinBoxValueChanged( double value )
 {
     updateSelectedObject( [value]( auto &info )
                          {
-                             info.opacity = value;
+                             info.polygonOpacity = value;
                          } );
 }
 
