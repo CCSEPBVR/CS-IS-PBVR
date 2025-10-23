@@ -1423,12 +1423,25 @@ void ObjectEditor::registerObject( QStandardItem* nameItem, const QStandardItem*
     std::unique_ptr<kvs::StochasticLineRenderer> stochasticLineRenderer;
     std::unique_ptr<kvs::StochasticTexturedPolygonRenderer> stochasticTexturedPolygonRenderer;
 
+    kvs::Xform initialXform
+        (
+            kvs::Mat4(
+                1, 0, 0, 0 ,
+                0, 1, 0, 0 ,
+                0, 0, 1, 12,
+                0, 0, 0, 1
+                )
+            );
+    kvs::Vec3 translationOffset = m_screen->scene()->camera()->xform().translation() - initialXform.translation();
+
     switch( format )
     {
     case ObjectItem::Format::ServerPointObjectCS:
     case ObjectItem::Format::ServerPointObjectIS:
         particleBasedRenderer = std::make_unique<kvs::glsl::ParticleBasedRenderer>();
         particleBasedRenderer.get()->enableShuffle();
+        particleBasedRenderer.get()->setTranslationOffset( translationOffset );
+        particleBasedRenderer.get()->setObjectDepth( m_screen->scene()->objectManager()->xform().scaling().z() / m_screen->scene()->camera()->xform().scaling().z() );
         emit shading( particleBasedRenderer.get() );
         nameItem->setData( QVariant::fromValue( m_screen->registerObject( nameItem->data( ObjectItem::nameItemRole::Object ).value<kvs::PointObject*>(), particleBasedRenderer.release() ) ), ObjectItem::nameItemRole::Ids );
         break;
@@ -1445,6 +1458,8 @@ void ObjectEditor::registerObject( QStandardItem* nameItem, const QStandardItem*
     case ObjectItem::Format::PointObjectPTS:
         particleBasedRenderer = std::make_unique<kvs::glsl::ParticleBasedRenderer>();
         particleBasedRenderer.get()->enableShuffle();
+        particleBasedRenderer.get()->setTranslationOffset( translationOffset );
+        particleBasedRenderer.get()->setObjectDepth( m_screen->scene()->objectManager()->xform().scaling().z() / m_screen->scene()->camera()->xform().scaling().z() );
         emit shading( particleBasedRenderer.get() );
         // particleBasedRenderer.get()->disableZooming(); //必要かどうか協議
         nameItem->setData( QVariant::fromValue( m_screen->registerObject( nameItem->data( ObjectItem::nameItemRole::Object ).value<kvs::PointObject*>(), particleBasedRenderer.release() ) ), ObjectItem::nameItemRole::Ids );

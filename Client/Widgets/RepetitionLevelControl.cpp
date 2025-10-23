@@ -34,6 +34,18 @@ void RepetitionLevelControl::onApply()
     const size_t repetitionLevel = static_cast<size_t>( ui->spinBoxNewRepetitionLevel->value() );
 
     const size_t size = m_screen->scene()->IDManager()->size();
+
+    kvs::Xform initialXform
+        (
+            kvs::Mat4(
+                1, 0, 0, 0 ,
+                0, 1, 0, 0 ,
+                0, 0, 1, 12,
+                0, 0, 0, 1
+                )
+            );
+    kvs::Vec3 translationOffset = m_screen->scene()->camera()->xform().translation() - initialXform.translation();
+
     for( int index = 0; index < size; index++ )
     {
         auto ids = m_screen->scene()->IDManager()->id( index );
@@ -43,6 +55,8 @@ void RepetitionLevelControl::onApply()
         {
             kvs::glsl::ParticleBasedRenderer* particleBasedRenderer = new kvs::glsl::ParticleBasedRenderer();
             particleBasedRenderer->enableShuffle();
+            particleBasedRenderer->setTranslationOffset( translationOffset );
+            particleBasedRenderer->setObjectDepth( m_screen->scene()->objectManager()->xform().scaling().z() / m_screen->scene()->camera()->xform().scaling().z() );
             emit shading( particleBasedRenderer );
             // particleBasedRenderer->disableZooming();
             m_screen->scene()->replaceRenderer( ids.second, particleBasedRenderer );
