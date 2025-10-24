@@ -462,11 +462,15 @@ void MainWindow::onUpdateServerState( bool serverState ) // true:接続中
 
     if( m_object_editor && m_object_editor_action )
     {
-        // TODO:サーバーと導通時にサーバから成分数を送ってもらう必要がある。 成分数が3未満の場合、GlyphEditorは開けなくする必要がある。
-        if( !serverState )
-        {
-            m_object_editor->reset();
-        }
+        /*
+         * MEMO
+         * ローカルモード(サーバと接続せずにローカルデータのみ閲覧するモード)
+         * スタンドアロンモード(クライアントとサーバを同じマシンで起動、接続するモード)
+         * クラサバモード(クライアントとサーバを別マシンで起動、接続するモード)
+         * In-situモード(クライアントとサーバを別マシンで起動、接続するモード)
+         * 上記の対応のため接続/切断時にObjectEditorをリセットする必要があります。
+         */
+        m_object_editor->reset();
     }
 
     if( m_plot_over_line_editor && m_plot_over_line_editor_action )
