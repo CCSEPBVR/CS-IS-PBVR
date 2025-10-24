@@ -2,6 +2,7 @@
 #define OBJECTEDITORWIP_H
 
 #include <QDockWidget>
+#include <QWebSocket>
 #include <QList>
 #include <QFileDialog>
 #include <QColorDialog>
@@ -20,12 +21,19 @@ class ObjectEditorWIP : public QDockWidget
     Q_OBJECT
 
 public:
-    explicit ObjectEditorWIP(QWidget *parent = nullptr);
+    explicit ObjectEditorWIP( QWebSocket* textSocket, kvs::qt::jaea::Screen* screen, QWidget *parent = nullptr );
     ~ObjectEditorWIP();
+
+    void updateOperatorState( bool operatorState ); // true:権限あり
+    void reset();
+    void loadParameter( const QString& filePath );
+    void saveParameter( const QString& filePath );
 
 private:
     // メンバ変数群
     Ui::ObjectEditorWIP *ui;
+
+    QWebSocket* m_web_text_socket = nullptr;
 
     QStandardItemModel *m_model = nullptr;
 

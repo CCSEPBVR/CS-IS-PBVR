@@ -300,13 +300,13 @@ void Communication::binaryWebsocketDisconnected()
 {
     if( !isSocketsConnected() )
     {
+        emit updateOperatorState( m_is_operator );
         emit updateServerState( false );
         m_user_id = -1;        
         m_is_operator = false;
         ui->IDLabelDisplay->clear();
         ui->isOperatorLabelDisplay->clear();
         ui->textBrowser->clear();
-        emit updateOperatorState( m_is_operator );
     }
 }
 
@@ -378,13 +378,13 @@ void Communication::textWebsocketDisconnected()
 {
     if( !isSocketsConnected() )
     {
+        emit updateOperatorState( m_is_operator );
         emit updateServerState( false );
         m_user_id = -1;
         m_is_operator = false;
         ui->IDLabelDisplay->clear();
         ui->isOperatorLabelDisplay->clear();
-        ui->textBrowser->clear();
-        emit updateOperatorState( m_is_operator );
+        ui->textBrowser->clear();        
     }
 }
 

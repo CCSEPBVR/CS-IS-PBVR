@@ -21,7 +21,7 @@ MainWindow::MainWindow( kvs::qt::Application& app, QWidget *parent )
     , m_animation_control( new AnimationControl( m_screen, this ) )
     , m_communication( new Communication( m_screen, m_web_binary_socket, m_web_text_socket, this ) )
     , m_glyph_editor( new GlyphEditor( m_web_text_socket, this ) )
-    , m_object_editor( new ObjectEditorWIP( this ) )
+    , m_object_editor( new ObjectEditorWIP( m_web_text_socket, m_screen, this ) )
     , m_plot_over_line_editor( new PlotOverLineEditor( m_web_text_socket, m_screen, this ) )
     , m_point_size_control( new PointSizeControl( m_screen, this ) )
     , m_preference( new Preference( this ) )
@@ -114,7 +114,6 @@ void MainWindow::initialize()
     debugPushButton->setGeometry(650, 50, 120, 40);
     debugPushButton->show();
 
-
     // ボタン押下でサーバにイベント送信
     connect(debugPushButton, &QPushButton::clicked, this, [this]() {
         RemoteFileDialog dlg(m_web_text_socket, this);
@@ -197,6 +196,7 @@ void MainWindow::communicationInitialize()
 
         connect( m_communication, &Communication::updateServerState, this, &MainWindow::onUpdateServerState );        
         connect( m_communication, &Communication::updateOperatorState, m_glyph_editor, &GlyphEditor::updateOperatorState );
+        connect( m_communication, &Communication::updateOperatorState, m_object_editor, &ObjectEditorWIP::updateOperatorState );
         connect( m_communication, &Communication::updateOperatorState, m_plot_over_line_editor, &PlotOverLineEditor::updateOperatorState );
         connect( m_communication, &Communication::updateOperatorState, m_transfer_function_editor, &TransferFunctionEditor::updateOperatorState );
 
@@ -242,8 +242,8 @@ void MainWindow::objectEditorInitialize()
     {
         m_object_editor_action = new QAction( tr( "Object Editor"), this );
 
-        // connect( this, &MainWindow::load, m_object_editor, &ObjectEditorWIP::loadParameter );
-        // connect( this, &MainWindow::save, m_object_editor, &ObjectEditorWIP::saveParameter );
+        connect( this, &MainWindow::load, m_object_editor, &ObjectEditorWIP::loadParameter );
+        connect( this, &MainWindow::save, m_object_editor, &ObjectEditorWIP::saveParameter );
 
         connect( m_object_editor_action, &QAction::triggered, this, &MainWindow::onObjectEditor );
 
@@ -457,6 +457,15 @@ void MainWindow::onUpdateServerState( bool serverState ) // true:接続中
         {
             m_glyph_editor->close();
             m_glyph_editor->reset();
+        }
+    }
+
+    if( m_object_editor && m_object_editor_action )
+    {
+        // TODO:サーバーと導通時にサーバから成分数を送ってもらう必要がある。 成分数が3未満の場合、GlyphEditorは開けなくする必要がある。
+        if( !serverState )
+        {
+            m_object_editor->reset();
         }
     }
 

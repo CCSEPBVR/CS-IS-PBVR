@@ -1,9 +1,11 @@
 #include "ObjectEditorWIP.h"
 #include "ui_ObjectEditorWIP.h"
 
-ObjectEditorWIP::ObjectEditorWIP(QWidget *parent)
+ObjectEditorWIP::ObjectEditorWIP( QWebSocket* textSocket, kvs::qt::jaea::Screen* screen, QWidget *parent )
     : QDockWidget(parent)
     , ui(new Ui::ObjectEditorWIP)
+    , m_web_text_socket( textSocket )
+    , m_screen( screen )
 {
     initialize();
 }
@@ -11,6 +13,60 @@ ObjectEditorWIP::ObjectEditorWIP(QWidget *parent)
 ObjectEditorWIP::~ObjectEditorWIP()
 {
     delete ui;
+}
+
+void ObjectEditorWIP::updateOperatorState( bool operatorState )
+{
+    ui->focusCheckBox           ->setEnabled( operatorState );
+    ui->particleLimitSpinBox    ->setEnabled( operatorState );
+    ui->densityDoubleSpinBox    ->setEnabled( operatorState );
+    ui->coordinateXLineEdit     ->setEnabled( operatorState );
+    ui->coordinateYLineEdit     ->setEnabled( operatorState );
+    ui->coordinateZLineEdit     ->setEnabled( operatorState );
+    ui->exportPushButton        ->setEnabled( operatorState );
+    ui->colorClickableLabel     ->setEnabled( operatorState );
+    ui->opacityDoubleSpinBox    ->setEnabled( operatorState );
+    ui->browsePushButton        ->setEnabled( operatorState );
+    ui->deletePushButton        ->setEnabled( operatorState );
+    ui->applyPushButton         ->setEnabled( operatorState );
+}
+
+void ObjectEditorWIP::reset()
+{
+    ui->focusCheckBox           ->setEnabled( true );
+    ui->particleLimitSpinBox    ->setEnabled( true );
+    ui->densityDoubleSpinBox    ->setEnabled( true );
+    ui->coordinateXLineEdit     ->setEnabled( true );
+    ui->coordinateYLineEdit     ->setEnabled( true );
+    ui->coordinateZLineEdit     ->setEnabled( true );
+    ui->exportPushButton        ->setEnabled( true );
+    ui->colorClickableLabel     ->setEnabled( true );
+    ui->opacityDoubleSpinBox    ->setEnabled( true );
+    ui->browsePushButton        ->setEnabled( true );
+    ui->deletePushButton        ->setEnabled( true );
+    ui->applyPushButton         ->setEnabled( true );
+
+    toggleCommonObjectWidgets( false );
+    toggleCommonServerObjectWidgets( false );
+    toggleClientServerObjectWidgets( false );
+    toggleNontexturePolygonObjectWidgets( false );
+
+    if( m_model )
+    {
+        m_model->removeRows( 0, m_model->rowCount() );
+    }
+}
+
+void ObjectEditorWIP::loadParameter( const QString& filePath )
+{
+    // TODO KPI
+    qDebug() << __FILE__ << ":" << __func__ << ":" << filePath;
+}
+
+void ObjectEditorWIP::saveParameter( const QString& filePath )
+{
+    // TODO KPI
+    qDebug() << __FILE__ << ":" << __func__ << ":" << filePath;
 }
 
 void ObjectEditorWIP::initialize()
@@ -64,11 +120,10 @@ void ObjectEditorWIP::initialize()
         };
 
     // 起動時はオブジェクトは存在しないため全て非表示
-    bool debug = true;
-    toggleCommonObjectWidgets( debug );
-    toggleCommonServerObjectWidgets( debug );
-    toggleClientServerObjectWidgets( debug );
-    toggleNontexturePolygonObjectWidgets( debug );
+    toggleCommonObjectWidgets( false );
+    toggleCommonServerObjectWidgets( false );
+    toggleClientServerObjectWidgets( false );
+    toggleNontexturePolygonObjectWidgets( false );
 
     connect( ui->treeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &ObjectEditorWIP::onItemSelection );
 
