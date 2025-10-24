@@ -747,12 +747,12 @@ void Communication::onVRSharePoint( kvs::Real32 CoordArray[ 2 * 3 ], kvs::Real32
 
 void Communication::loadParameter( const QString& filePath )
 {
-    // TODO KPI
+    // TODO:KPI
     qDebug() << __FILE__ << ":" << __func__ << ":" << filePath;
 }
 
 void Communication::saveParameter( const QString& filePath )
 {
-    // TODO KPI
+    // TODO:KPI
     qDebug() << __FILE__ << ":" << __func__ << ":" << filePath;
 }

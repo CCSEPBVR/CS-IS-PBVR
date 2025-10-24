@@ -13,7 +13,7 @@
 #include <kvs/StochasticPointRenderer>
 #include <kvs/StochasticLineRenderer>
 
-// HACK: glew.hより先にgl.hが読み込まれるのを防ぐため、qcustomplot.hを最後にインクルードする
+// HACK:glew.hより先にgl.hが読み込まれるのを防ぐため、qcustomplot.hを最後にインクルードする
 #include "qcustomplot.h"
 
 namespace Ui

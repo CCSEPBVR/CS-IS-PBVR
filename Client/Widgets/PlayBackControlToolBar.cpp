@@ -236,12 +236,12 @@ void PlayBackControlToolBar::doneMerge()
 
 void PlayBackControlToolBar::loadParameter( const QString& filePath )
 {
-    // TODO KPI
+    // TODO:KPI
     qDebug() << __FILE__ << ":" << __func__ << ":" << filePath;
 }
 
 void PlayBackControlToolBar::saveParameter( const QString& filePath )
 {
-    // TODO KPI
+    // TODO:KPI
     qDebug() << __FILE__ << ":" << __func__ << ":" << filePath;
 }

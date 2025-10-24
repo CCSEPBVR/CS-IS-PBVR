@@ -581,7 +581,7 @@ void Server::onMessage(uWS::WebSocket<false, true, PerSocket>* ws, std::string_v
 
         if (event == "debug")
         {
-            // FIXME: ドライブの移動の機能をつけたほうがいいかもしれません。
+            // FIXME:ドライブの移動の機能をつけたほうがいいかもしれません。
 
             std::string dir = received.value("path", ".");
             int page = received.value("page", 1);
@@ -609,7 +609,7 @@ void Server::onMessage(uWS::WebSocket<false, true, PerSocket>* ws, std::string_v
                 if (ec)
                 {
                     // アクセスできない場合はスキップ
-                    // FIXME: クライアント側でPermission Deniedとか出してあげてください。
+                    // FIXME:クライアント側でPermission Deniedとか出してあげてください。
                     continue;
                 }
 

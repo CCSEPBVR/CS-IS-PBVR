@@ -59,13 +59,13 @@ void ObjectEditorWIP::reset()
 
 void ObjectEditorWIP::loadParameter( const QString& filePath )
 {
-    // TODO KPI
+    // TODO:KPI
     qDebug() << __FILE__ << ":" << __func__ << ":" << filePath;
 }
 
 void ObjectEditorWIP::saveParameter( const QString& filePath )
 {
-    // TODO KPI
+    // TODO:KPI
     qDebug() << __FILE__ << ":" << __func__ << ":" << filePath;
 }
 
@@ -395,7 +395,7 @@ void ObjectEditorWIP::onBrowse()
 {
     QString filePath;
     /*
-     * FIXME
+     * FIXME:
      * ローカルモード(サーバと接続せずにローカルデータのみ閲覧するモード)の場合:QFileDialogでローカルファイルを参照
      * スタンドアロンモード(クライアントとサーバを同じマシンで起動、接続するモード)の場合:QFileDialogでローカルファイルを参照
      * クラサバモード(クライアントとサーバを別マシンで起動、接続するモード)の場合:RemoteFileDialogでリモートファイルを参照
@@ -412,7 +412,7 @@ void ObjectEditorWIP::onBrowse()
         }
         else
         {
-            // FIXME: MainWinodwのStatusBarで通知した方がいいかも。
+            // FIXME:MainWinodwのStatusBarで通知した方がいいかも。
         }
     }
 }

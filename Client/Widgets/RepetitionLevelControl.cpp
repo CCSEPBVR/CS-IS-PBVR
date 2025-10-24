@@ -53,12 +53,12 @@ void RepetitionLevelControl::updateCurrentRepetitionLevel()
 
 void RepetitionLevelControl::loadParameter( const QString& filePath )
 {
-    // TODO KPI
+    // TODO:KPI
     qDebug() << __FILE__ << ":" << __func__ << ":" << filePath;
 }
 
 void RepetitionLevelControl::saveParameter( const QString& filePath )
 {
-    // TODO KPI
+    // TODO:KPI
     qDebug() << __FILE__ << ":" << __func__ << ":" << filePath;
 }

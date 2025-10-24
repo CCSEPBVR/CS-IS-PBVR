@@ -27,7 +27,7 @@ void Preference::initialize()
 
     ui->boxTypeComboBox->addItem( "WiredBox", WiredBox );
     ui->boxTypeComboBox->addItem( "SolidBox", SolidBox );
-    // ui->boxTypeComboBox->addItem( "NoneBox", NoneBox ); // FIXME: Linux環境でNoneBoxに変更後別のボックスタイプを変更すると1ColorMapBarに影響がでる不具合があるため無効にしています。
+    // ui->boxTypeComboBox->addItem( "NoneBox", NoneBox ); // FIXME:Linux環境でNoneBoxに変更後別のボックスタイプを変更すると1ColorMapBarに影響がでる不具合があるため無効にしています。
 
     ui->showFPSComboBox->addItem( "Show", QVariant( true ) );
     ui->showFPSComboBox->addItem( "Hide", QVariant( false ) );
@@ -136,7 +136,7 @@ void Preference::loadOrientationAxisSetting()
     {
         ui->boxTypeComboBox->setCurrentIndex( SolidBox );
     }
-    // else if( boxType == "NoneBox" ) // FIXME: Linux環境でNoneBoxに変更後別のボックスタイプを変更すると1ColorMapBarに影響がでる不具合があるため無効にしています。
+    // else if( boxType == "NoneBox" ) // FIXME:Linux環境でNoneBoxに変更後別のボックスタイプを変更すると1ColorMapBarに影響がでる不具合があるため無効にしています。
     // {
     //     ui->boxTypeComboBox->setCurrentIndex( NoneAxis );
     // }

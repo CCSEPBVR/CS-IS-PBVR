@@ -476,7 +476,7 @@ void PlotOverLineEditor::updateNumberOfVector( const int numberOfVector )
     ui->targetComboBox->addItems( m_vector_list );
 }
 
-void PlotOverLineEditor::focusObjectUpdate( kvs::Vec3 focusTartgetObjectMinCoord, kvs::Vec3 focusTartgetObjectMaxCoord ) // MEMO: フォーカス対象のオブジェクトが変更された場合に呼び出される。
+void PlotOverLineEditor::focusObjectUpdate( kvs::Vec3 focusTartgetObjectMinCoord, kvs::Vec3 focusTartgetObjectMaxCoord ) // NOTE:フォーカス対象のオブジェクトが変更された場合に呼び出される。
 {
     if( m_start_point_object && m_end_point_object )
     {
@@ -677,12 +677,12 @@ void PlotOverLineEditor::reset()
 
 void PlotOverLineEditor::loadParameter( const QString& filePath )
 {
-    // TODO KPI
+    // TODO:KPI
     qDebug() << __FILE__ << ":" << __func__ << ":" << filePath;
 }
 
 void PlotOverLineEditor::saveParameter( const QString& filePath )
 {
-    // TODO KPI
+    // TODO:KPI
     qDebug() << __FILE__ << ":" << __func__ << ":" << filePath;
 }

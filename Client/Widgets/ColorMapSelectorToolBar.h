@@ -35,7 +35,7 @@ private:
     void initialize();
 
 private slots:
-    void updateUIFromCurrentItem(); // FIXME: メソッド名を変更した方がいいと思います。
+    void updateUIFromCurrentItem(); // FIXME:メソッド名を変更した方がいいと思います。
 
 public slots:
     void updateColorMapBar( QStandardItemModel* model );

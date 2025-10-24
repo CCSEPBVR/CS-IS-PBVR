@@ -20,7 +20,7 @@ void PointSizeControl::initialize()
     connect( ui->pointSizeDoubleSpinBox, &QDoubleSpinBox::valueChanged, this, &PointSizeControl::onPointSizeValueChanged );
 }
 
-// Note: この処理はPlot Over Line用（VRを含む）の始点・終点には影響しません。kvs::glsl::ParticleBasedRendererを使用して表示しているオブジェクトにのみ影響します。
+// NOTE:この処理はPlot Over Line用（VRを含む）の始点・終点には影響しません。kvs::glsl::ParticleBasedRendererを使用して表示しているオブジェクトにのみ影響します。
 void PointSizeControl::onPointSizeValueChanged()
 {
     const int size = m_screen->scene()->IDManager()->size();
@@ -45,12 +45,12 @@ void PointSizeControl::onPointSizeValueChanged()
 
 void PointSizeControl::loadParameter( const QString& filePath )
 {
-    // TODO KPI
+    // TODO:KPI
     qDebug() << __FILE__ << ":" << __func__ << ":" << filePath;
 }
 
 void PointSizeControl::saveParameter( const QString& filePath )
 {
-    // TODO KPI
+    // TODO:KPI
     qDebug() << __FILE__ << ":" << __func__ << ":" << filePath;
 }

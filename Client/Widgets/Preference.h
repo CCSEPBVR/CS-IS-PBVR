@@ -125,7 +125,7 @@ private slots:
 
 public slots:
     void readyScreen();
-    void mergingFinish( int ); // FIXME: メソッド名変更したほうがいいです。
+    void mergingFinish( int ); // FIXME:メソッド名変更したほうがいいです。
 
 protected:
     void closeEvent( QCloseEvent *event ) override;

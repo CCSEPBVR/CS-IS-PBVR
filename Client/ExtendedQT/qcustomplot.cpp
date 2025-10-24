@@ -17610,7 +17610,7 @@ QCPAxisRect::~QCPAxisRect() // v1
     delete mInsetLayout;
     mInsetLayout = nullptr;
 
-    // HACK (TO0603): QPointer が指す軸を明示的にクリアしないと(https://www.qcustomplot.com/index.php/support/forum/629)
+    // HACK:(TO0603):QPointer が指す軸を明示的にクリアしないと(https://www.qcustomplot.com/index.php/support/forum/629)
     // デストラクタでの二重解放やクラッシュの可能性がある
     mRangeDragHorzAxis.clear();
     mRangeZoomHorzAxis.clear();

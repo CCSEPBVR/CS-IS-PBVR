@@ -64,7 +64,7 @@ private:
     kvs::Label* m_fps_label                                     = nullptr;
     kvs::Label* m_time_step_label                               = nullptr;
 
-    kvs::Xform m_initialize_camera_xform; // FIXME: VRで初期位置でkvs::glsl::ParticleBasedRendererを使用している場合、表示されない不具合の対策用です(参考URL:https://github.com/CCSEPBVR/CS-IS-PBVR/blob/develop/Client/Widgets/RepetitionLevelControl.cpp)
+    kvs::Xform m_initialize_camera_xform; // FIXME:VRで初期位置でkvs::glsl::ParticleBasedRendererを使用している場合、表示されない不具合の対策用です(参考URL:https://github.com/CCSEPBVR/CS-IS-PBVR/blob/develop/Client/Widgets/RepetitionLevelControl.cpp)
 
     QAction* m_load_action = nullptr;
     QAction* m_save_action = nullptr;
@@ -91,7 +91,7 @@ private:
     GlyphEditor* m_glyph_editor = nullptr;                          // NOTE:通信関係有
 
     QAction* m_object_editor_action = nullptr;
-    ObjectEditorWIP* m_object_editor = nullptr;                          // NOTE:通信関係有
+    ObjectEditorWIP* m_object_editor = nullptr;                     // NOTE:通信関係有
 
     QAction* m_plot_over_line_editor_action = nullptr;
     PlotOverLineEditor* m_plot_over_line_editor = nullptr;          // NOTE:通信関係有
