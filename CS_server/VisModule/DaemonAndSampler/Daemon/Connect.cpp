@@ -97,7 +97,6 @@ void SignalHandler( const int sig )
  */
 void  Connect( int argc, char** argv )
 {
-    jpv::ParticleTransferServer pts;
     jpv::ServerMode server_mode;
 
     if ( argc < 2 )
@@ -161,223 +160,99 @@ void  Connect( int argc, char** argv )
     JobCollector  jc( &jd );
 #endif
 
+    assert( jpv::ParticleTransferUtils::isLittleEndian() );
+
+    int ptss;
+    jpv::ParticleTransferServer pts;
+
+    jpv::ParticleTransferServerMessage servMes;
+    jpv::ParticleTransferClientMessage clntMes;
+    
     char* buf;
     int bsz = 0;
+    
+    servMes.m_camera = new vismodule::Camera();
+    clntMes.m_camera = new vismodule::Camera();
 
-    if ( rank > 0 ) // Worker
+    if ( rank == 0 )
     {
-        if ( server_mode == jpv::ServerMode::IS )
-        {
-            std::cout << "ERROR: Daemon is single process" << std::endl;
-            return;
-        }
+        ptss = pts.initializeServer( param.m_port );
+    }
 
-        jpv::ParticleTransferClientMessage clntMes;
-        clntMes.m_camera = new vismodule::Camera();
-
-        while ( true )
+    while ( true )
+    {
+        if ( rank == 0 )
         {
-            // recv cltMes from process 0 start
-#ifndef CPU_VER
-            MPI_Bcast( &bsz, 1, MPI_INT, 0, MPI_COMM_WORLD );
-#endif
-            if ( bsz < 0 )
+            if ( ptss == -1 )
             {
-                std::cout << "Rank " << rank << ": Worker is terminated" << std::endl;
+                std::cout << "ERROR:server initialize failed" << std::endl;
                 break;
             }
-            buf = new char[bsz];
-#ifndef CPU_VER
-            MPI_Bcast( buf, bsz, MPI_BYTE, 0, MPI_COMM_WORLD );
-#endif
-            clntMes.unpack( buf );
-            delete[] buf;
-            // recv cltMes from process 0 end
+
+            pts.acceptServer(); // wait for client connection
+
+            if ( !pts.good() )
+            {
+                std::cout << "ERROR:server accept faild" << std::endl;
+                break;
+            }
+
+            ptss = pts.recvMessage( &clntMes );
+
+            if ( ptss == -1 )
+            {
+                std::cout << "ERROR:receive client message failed" << std::endl;
+                break;
+            }
 
             std::cout << "Rank " << rank << ": Recv Client Message" << std::endl;
-
-            if ( clntMes.m_initialize_parameter == jpv::InitializeParameter::connection_reset )
-            {
-            }
-            else if ( clntMes.m_initialize_parameter == jpv::InitializeParameter::end )
-            {
-            }
-            else if ( clntMes.m_initialize_parameter == jpv::InitializeParameter::initial_step )
-            {
-                bool result = SetParticleParameterCS( clntMes, pts, param, mvpl );
-
-                if ( !result )
-                {
-                    std::cout << "ERROR:particle parameter setting failed" << std::endl;
-                    break;
-                }
-
-#ifndef CPU_VER
-                initial_step( param, mvpl, nan_error, jc, jd, pts, server_mode );
-#else
-                initial_step( param, mvpl, nan_error, jd, pts, server_mode );
-#endif
-
-                delete param.m_transfunc_synthesizer;
-            }
-            else if ( clntMes.m_initialize_parameter ==  jpv::InitializeParameter::generate_particle )
-            {
-                bool result = SetParticleParameterCS( clntMes, pts, param, mvpl );
-
-                if ( !result )
-                {
-                    std::cout << "ERROR:particle parameter setting failed" << std::endl;
-                    break;
-                }
-
-#ifndef CPU_VER
-                generate_particle( param, mvpl, nan_error, jc, jd, pts, server_mode );
-#else
-                generate_particle( param, mvpl, nan_error, jd, pts, server_mode );
-#endif
-                delete param.m_transfunc_synthesizer;
-            }
-            else if ( clntMes.m_initialize_parameter ==  jpv::InitializeParameter::generate_glyph )
-            {
-                bool result = SetGlyphParameterCS( clntMes, param, mvpl );
-
-                if ( !result )
-                {
-                    std::cout << "ERROR:glyph parameter setting failed" << std::endl;
-                    break;
-                }                
-
-#ifndef CPU_VER
-                generate_glyph( param, mvpl, nan_error, jc, jd, pts, server_mode );
-#else
-                generate_glyph( param, mvpl, nan_error, jd, pts, server_mode );
-#endif
-            } // end of generate_glyph
-            else if ( clntMes.m_initialize_parameter ==  jpv::InitializeParameter::plot_over_line )
-            {
-                bool result = SetPOLParameterCS( clntMes, param );
-
-                if ( !result )
-                {
-                    std::cout << "ERROR:plot over line parameter setting failed" << std::endl;
-                    break;
-                }    
-
-#ifndef CPU_VER
-                generate_plot_over_line( param, mvpl, nan_error, jc, jd, pts, server_mode );
-#else
-                generate_plot_over_line( param, mvpl, nan_error, jd, pts, server_mode );
-#endif
-            } // end of plot_over_line
-        } // while loop
-    } // Worker
-    else // Master
-    {
-        assert( jpv::ParticleTransferUtils::isLittleEndian() );
-
-        jpv::ParticleTransferServerMessage servMes;
-        servMes.m_camera = new vismodule::Camera();
-
-        int ptss;
-        ptss = pts.initializeServer( param.m_port );
-
-        jpv::ParticleTransferClientMessage clntMes;
-        clntMes.m_camera = new vismodule::Camera();
-
-        pts.acceptServer(); // wait for client connection
-
-        while ( ( ptss != -1 ) && ( pts.good() ) )
-        {
-            ptss = pts.recvMessage( &clntMes );
-            if ( ptss == -1 ) break;
             clntMes.show();
 
+            if ( server_mode == jpv::ServerMode::CS )
+            {
 #ifdef _WIN32 
-            std::replace(clntMes.m_input_directory.begin(), clntMes.m_input_directory.end(), '/', '\\');
+                std::replace(clntMes.m_input_directory.begin(), clntMes.m_input_directory.end(), '/', '\\');
 #elif defined(_WIN64)
-            std::replace(clntMes.m_input_directory.begin(), clntMes.m_input_directory.end(), '/', '\\');
+                std::replace(clntMes.m_input_directory.begin(), clntMes.m_input_directory.end(), '/', '\\');
 #endif
 #ifdef __APPLE__
-            std::string target = "¥";
-            std::string replacement = "/";
+                std::string target = "¥";
+                std::string replacement = "/";
 
-            size_t pos = 0;
-            while ((pos = clntMes.m_input_directory.find(target, pos)) != std::string::npos) {
-                clntMes.m_input_directory.replace(pos, target.length(), replacement);
-                pos += replacement.length();
-            }
+                size_t pos = 0;
+                while ((pos = clntMes.m_input_directory.find(target, pos)) != std::string::npos) {
+                    clntMes.m_input_directory.replace(pos, target.length(), replacement);
+                    pos += replacement.length();
+                }
 #elif defined(__linux__)
-            std::string target = "\\";
-            std::string replacement = "/";
+                std::string target = "\\";
+                std::string replacement = "/";
 
-            size_t pos = 0;
-            while ((pos = clntMes.m_input_directory.find(target, pos)) != std::string::npos) {
-                clntMes.m_input_directory.replace(pos, target.length(), replacement);
-                pos += replacement.length();
-            }
+                size_t pos = 0;
+                while ((pos = clntMes.m_input_directory.find(target, pos)) != std::string::npos) {
+                    clntMes.m_input_directory.replace(pos, target.length(), replacement);
+                    pos += replacement.length();
+                }
 #endif
 
-            std::cout << "Rank " << rank << ": Recv Client Message" << std::endl;
-
-            if ( clntMes.m_initialize_parameter == jpv::InitializeParameter::connection_reset )
-            {
-                std::cout << "==================== Connection Reset Start ====================" << std::endl;
-                strncpy( servMes.m_header, "JPTP /1.0 899 OK\r\n", 18 );
-                servMes.m_camera = param.m_camera;
-                servMes.m_server_status = 0;
-                servMes.m_time_step = param.m_time_step;
-                servMes.m_level_index = param.m_level_index;
-                servMes.m_repeat_level = param.m_repeat_level;
-                servMes.m_number_particle = 0;
-                servMes.m_number_glyph = 0 ;
-                servMes.m_flag_send_bins = 1;
-                servMes.m_number_volume_divide = mvpl.m_total_number_subvolumes;
-                servMes.m_transfer_function_count = 0;
-                servMes.m_start_step = mvpl.m_total_start_steps;
-                servMes.m_last_step = mvpl.m_total_last_step;
-                servMes.m_number_step = mvpl.m_total_number_steps;
-                servMes.m_min_object_coord[0] = mvpl.m_total_min_object_coord[0];
-                servMes.m_min_object_coord[1] = mvpl.m_total_min_object_coord[1];
-                servMes.m_min_object_coord[2] = mvpl.m_total_min_object_coord[2];
-                servMes.m_max_object_coord[0] = mvpl.m_total_max_object_coord[0];
-                servMes.m_max_object_coord[1] = mvpl.m_total_max_object_coord[1];
-                servMes.m_max_object_coord[2] = mvpl.m_total_max_object_coord[2];
-                servMes.m_min_value = mvpl.m_total_min_value;
-                servMes.m_max_value = mvpl.m_total_max_value;
-                servMes.m_number_nodes = mvpl.m_total_number_nodes;
-                servMes.m_number_elements = mvpl.m_total_number_elements;
-                servMes.m_element_type = mvpl.m_list[0].m_elem_type;
-                servMes.m_file_type = mvpl.m_list[0].m_file_type;
-                servMes.m_number_ingredients = mvpl.m_list[0].m_number_ingredients;
-                servMes.m_particle_limit = param.m_particle_limit;
-                servMes.m_particle_density = param.m_particle_density;
-                servMes.m_subpixel_level = param.m_subpixel_level;
-                setParamTransferFunctionToServer( &servMes, &param );
-                servMes.m_message_size = servMes.byteSize();
-                servMes.show();
-                pts.sendMessage( servMes );
-                pts.disconnect();
-                pts.acceptServer();
-                std::cout << "==================== Connection Reset End ====================" << std::endl;
-            } // connection reset
-            else if ( clntMes.m_initialize_parameter == jpv::InitializeParameter::end )
-            {
-                std::cout << "ERROR : jpv::InitializeParameter::end" << std::endl;
-                break;
-            } // end
-            else if ( clntMes.m_initialize_parameter == jpv::InitializeParameter::initial_step )
-            {
-                std::cout << "==================== Initial Step Start ====================" << std::endl;
-
-                if ( server_mode == jpv::ServerMode::CS )
+                if ( clntMes.m_initialize_parameter == jpv::InitializeParameter::initial_step )
                 {
                     bool result = CheckFileFormat( clntMes, pts, param );
 
                     if( !result )
                     {
                         std::cout << "ERROR:file format check failed" << std::endl;
+                        break;
                     }
+                }
 
+                if ( 
+                    clntMes.m_initialize_parameter == jpv::InitializeParameter::initial_step      ||
+                    clntMes.m_initialize_parameter == jpv::InitializeParameter::generate_particle ||
+                    clntMes.m_initialize_parameter == jpv::InitializeParameter::generate_glyph    ||
+                    clntMes.m_initialize_parameter == jpv::InitializeParameter::plot_over_line
+                )
+                {
                     // send cltMes to all worker process >>
                     bsz = clntMes.byteSize();
 #ifndef CPU_VER
@@ -391,198 +266,238 @@ void  Connect( int argc, char** argv )
 #endif
                     delete[] buf;
                     // send cltMes to all worker process <<
-                } // server_mode == jpv::ServerMode::CS
-
-                if ( server_mode == jpv::ServerMode::CS )
-                {
-                    bool result = SetParticleParameterCS( clntMes, pts, param, mvpl );
-
-                    if( !result )
-                    {
-                        std::cout << "ERROR:particle parameter setting failed" << std::endl;
-                        break;
-                    }
                 }
-                else // server_mode == jpv::ServerMode::IS
-                {
-                    bool result = SetParticleParameterIS( clntMes, param, mvpl, tfFilePath, tfFilePath_old );
-
-                    if( !result )
-                    {
-                        std::cout << "ERROR:particle parameter setting failed" << std::endl;
-                        break;
-                    }
-                }
-                
-#ifndef CPU_VER
-                initial_step( param, mvpl, nan_error, jc, jd, pts, server_mode );
-#else
-                initial_step( param, mvpl, nan_error, jd, pts, server_mode );
-#endif
-
-                if ( server_mode == jpv::ServerMode::CS )
-                {
-                    delete param.m_transfunc_synthesizer;
-                }
-
-                std::cout << "==================== Initial Step end ====================" << std::endl;
-            } // initial_step
-            else if ( clntMes.m_initialize_parameter == jpv::InitializeParameter::generate_particle )
+            } // server_mode == jpv::ServerMode::CS
+        } // rank == 0
+        else // rank > 0
+        {
+            if ( server_mode == jpv::ServerMode::CS )
             {
-                std::cout << "==================== Generate Particle Start ====================" << std::endl;
-                if ( server_mode == jpv::ServerMode::CS )
-                {
-                    // send cltMes to all worker process >>
-                    bsz = clntMes.byteSize();
+                // recv cltMes from process 0 start
 #ifndef CPU_VER
-                    MPI_Bcast( &bsz, 1, MPI_INT, 0, MPI_COMM_WORLD );
+                MPI_Bcast( &bsz, 1, MPI_INT, 0, MPI_COMM_WORLD );
 #endif
-                    buf = new char[bsz];
-                    clntMes.pack( buf );
+                if ( bsz < 0 )
+                {
+                    std::cout << "Rank " << rank << ": Worker is terminated" << std::endl;
+                    break;
+                }
+                buf = new char[bsz];
 #ifndef CPU_VER
-                    MPI_Bcast( buf, bsz, MPI_BYTE, 0, MPI_COMM_WORLD );
+                MPI_Bcast( buf, bsz, MPI_BYTE, 0, MPI_COMM_WORLD );
 #endif
-                    delete[] buf;
-                    // send cltMes to all worker process <<
-                }
+                clntMes.unpack( buf );
+                delete[] buf;
+                // recv cltMes from process 0 end
 
-                if ( server_mode == jpv::ServerMode::CS )
+                std::cout << "Rank " << rank << ": Recv Client Message" << std::endl;
+            } // server_mode == jpv::ServerMode::CS
+            else // server_mode == jpv::ServerMode::IS
+            {
+                std::cout << "WARN:Daemon is single process" << std::endl;
+                break;
+            }
+        }
+
+        if ( clntMes.m_initialize_parameter == jpv::InitializeParameter::connection_reset )
+        {
+            if( rank > 0 ) continue;
+
+            std::cout << "==================== Connection Reset Start ====================" << std::endl;
+            strncpy( servMes.m_header, "JPTP /1.0 899 OK\r\n", 18 );
+            servMes.m_camera = param.m_camera;
+            servMes.m_server_status = 0;
+            servMes.m_time_step = param.m_time_step;
+            servMes.m_level_index = param.m_level_index;
+            servMes.m_repeat_level = param.m_repeat_level;
+            servMes.m_number_particle = 0;
+            servMes.m_number_glyph = 0 ;
+            servMes.m_flag_send_bins = 1;
+            servMes.m_number_volume_divide = mvpl.m_total_number_subvolumes;
+            servMes.m_transfer_function_count = 0;
+            servMes.m_start_step = mvpl.m_total_start_steps;
+            servMes.m_last_step = mvpl.m_total_last_step;
+            servMes.m_number_step = mvpl.m_total_number_steps;
+            servMes.m_min_object_coord[0] = mvpl.m_total_min_object_coord[0];
+            servMes.m_min_object_coord[1] = mvpl.m_total_min_object_coord[1];
+            servMes.m_min_object_coord[2] = mvpl.m_total_min_object_coord[2];
+            servMes.m_max_object_coord[0] = mvpl.m_total_max_object_coord[0];
+            servMes.m_max_object_coord[1] = mvpl.m_total_max_object_coord[1];
+            servMes.m_max_object_coord[2] = mvpl.m_total_max_object_coord[2];
+            servMes.m_min_value = mvpl.m_total_min_value;
+            servMes.m_max_value = mvpl.m_total_max_value;
+            servMes.m_number_nodes = mvpl.m_total_number_nodes;
+            servMes.m_number_elements = mvpl.m_total_number_elements;
+            servMes.m_element_type = mvpl.m_list[0].m_elem_type;
+            servMes.m_file_type = mvpl.m_list[0].m_file_type;
+            servMes.m_number_ingredients = mvpl.m_list[0].m_number_ingredients;
+            servMes.m_particle_limit = param.m_particle_limit;
+            servMes.m_particle_density = param.m_particle_density;
+            servMes.m_subpixel_level = param.m_subpixel_level;
+            setParamTransferFunctionToServer( &servMes, &param );
+            servMes.m_message_size = servMes.byteSize();
+            servMes.show();
+            pts.sendMessage( servMes );
+            pts.disconnect();
+            pts.acceptServer();
+            std::cout << "==================== Connection Reset End ====================" << std::endl;
+        } // connection reset
+        else if ( clntMes.m_initialize_parameter == jpv::InitializeParameter::end )
+        {
+            std::cout << "ERROR : jpv::InitializeParameter::end" << std::endl;
+            break;
+        } // end
+        else if ( clntMes.m_initialize_parameter == jpv::InitializeParameter::initial_step )
+        {
+            std::cout << "==================== Initial Step Start ====================" << std::endl;
+
+            if ( server_mode == jpv::ServerMode::CS )
+            {
+                bool result = SetParticleParameterCS( clntMes, pts, param, mvpl );
+
+                if( !result )
                 {
-                    bool result = SetParticleParameterCS( clntMes, pts, param, mvpl );
-
-                    if( !result )
-                    {
-                        std::cout << "ERROR:particle parameter setting failed" << std::endl;
-                        break;
-                    }
+                    std::cout << "ERROR:particle parameter setting failed" << std::endl;
+                    break;
                 }
-                else // server_mode == jpv::ServerMode::IS
+            }
+            else // server_mode == jpv::ServerMode::IS
+            {
+                bool result = SetParticleParameterIS( clntMes, param, mvpl, tfFilePath, tfFilePath_old );
+
+                if( !result )
                 {
-                    bool result = SetParticleParameterIS( clntMes, param, mvpl, tfFilePath, tfFilePath_old );
-
-                    if( !result )
-                    {
-                        std::cout << "ERROR:particle parameter setting failed" << std::endl;
-                        break;
-                    }
+                    std::cout << "ERROR:particle parameter setting failed" << std::endl;
+                    break;
                 }
-                
+            }
+            
 #ifndef CPU_VER
-                generate_particle( param, mvpl, nan_error, jc, jd, pts, server_mode );
+            initial_step( param, mvpl, nan_error, jc, jd, pts, server_mode );
 #else
-                generate_particle( param, mvpl, nan_error, jd, pts, server_mode );
+            initial_step( param, mvpl, nan_error, jd, pts, server_mode );
+#endif
+
+            if ( server_mode == jpv::ServerMode::CS )
+            {
+                delete param.m_transfunc_synthesizer;
+            }
+
+            std::cout << "==================== Initial Step end ====================" << std::endl;
+        } // initial_step
+        else if ( clntMes.m_initialize_parameter == jpv::InitializeParameter::generate_particle )
+        {
+            std::cout << "==================== Generate Particle Start ====================" << std::endl;
+
+            if ( server_mode == jpv::ServerMode::CS )
+            {
+                bool result = SetParticleParameterCS( clntMes, pts, param, mvpl );
+
+                if( !result )
+                {
+                    std::cout << "ERROR:particle parameter setting failed" << std::endl;
+                    break;
+                }
+            }
+            else // server_mode == jpv::ServerMode::IS
+            {
+                bool result = SetParticleParameterIS( clntMes, param, mvpl, tfFilePath, tfFilePath_old );
+
+                if( !result )
+                {
+                    std::cout << "ERROR:particle parameter setting failed" << std::endl;
+                    break;
+                }
+            }
+            
+#ifndef CPU_VER
+            generate_particle( param, mvpl, nan_error, jc, jd, pts, server_mode );
+#else
+            generate_particle( param, mvpl, nan_error, jd, pts, server_mode );
 #endif                           
 
-                if ( server_mode == jpv::ServerMode::CS )
-                {
-                    delete param.m_transfunc_synthesizer;
-                }
-
-                std::cout << "==================== Generate Particle End ====================" << std::endl;
-            } // generate particle
-            else if ( clntMes.m_initialize_parameter == jpv::InitializeParameter::generate_glyph )
+            if ( server_mode == jpv::ServerMode::CS )
             {
-                std::cout << "==================== Generate Glyph Start ====================" << std::endl;
-                if ( server_mode == jpv::ServerMode::CS )
-                {
-                    // send cltMes to all worker process >>
-                    bsz = clntMes.byteSize();
-#ifndef CPU_VER
-                    MPI_Bcast( &bsz, 1, MPI_INT, 0, MPI_COMM_WORLD );
-#endif
-                    buf = new char[bsz];
-                    clntMes.pack( buf );
-#ifndef CPU_VER
-                    MPI_Bcast( buf, bsz, MPI_BYTE, 0, MPI_COMM_WORLD );
-#endif
-                    delete[] buf;
-                    // send cltMes to all worker process <<
-                }
+                delete param.m_transfunc_synthesizer;
+            }
 
-                if ( server_mode == jpv::ServerMode::CS )
-                {
-                    bool result = SetGlyphParameterCS( clntMes, param, mvpl );
+            std::cout << "==================== Generate Particle End ====================" << std::endl;
+        } // generate particle
+        else if ( clntMes.m_initialize_parameter == jpv::InitializeParameter::generate_glyph )
+        {
+            std::cout << "==================== Generate Glyph Start ====================" << std::endl;
 
-                    if( !result )
-                    {
-                        std::cout << "ERROR:glyph parameter setting failed" << std::endl;
-                        break;
-                    }
-                }
-                else // server_mode == jpv::ServerMode::IS
-                {
-                    bool result = SetGlyphParameterIS( clntMes, glyphParameterPath, glyphParameterPath_old );
-
-                    if( !result )
-                    {
-                        std::cout << "ERROR:glyph parameter setting failed" << std::endl;
-                        break;
-                    }
-                }
-
-#ifndef CPU_VER
-                generate_glyph( param, mvpl, nan_error, jc, jd, pts, server_mode );
-#else
-                generate_glyph( param, mvpl, nan_error, jd, pts, server_mode );
-#endif
-
-                std::cout << "==================== Generate Glyph End ====================" << std::endl;
-            } // generate glyph
-            else if ( clntMes.m_initialize_parameter == jpv::InitializeParameter::plot_over_line )
+            if ( server_mode == jpv::ServerMode::CS )
             {
-                std::cout << "==================== Plot Over Line Start ====================" << std::endl;
-                if ( server_mode == jpv::ServerMode::CS )
-                {
-                    // send cltMes to all worker process >>
-                    bsz = clntMes.byteSize();
-#ifndef CPU_VER
-                    MPI_Bcast( &bsz, 1, MPI_INT, 0, MPI_COMM_WORLD );
-#endif
-                    buf = new char[bsz];
-                    clntMes.pack( buf );
-#ifndef CPU_VER
-                    MPI_Bcast( buf, bsz, MPI_BYTE, 0, MPI_COMM_WORLD );
-#endif
-                    delete[] buf;
-                    // send cltMes to all worker process <<
-                }
+                bool result = SetGlyphParameterCS( clntMes, param, mvpl );
 
-                if ( server_mode == jpv::ServerMode::CS )
+                if( !result )
                 {
-                    bool result = SetPOLParameterCS( clntMes, param );
-
-                    if( !result )
-                    {
-                        std::cout << "ERROR:plot over line parameter setting failed" << std::endl;
-                        break;
-                    }
+                    std::cout << "ERROR:glyph parameter setting failed" << std::endl;
+                    break;
                 }
-                else // server_mode == jpv::ServerMode::IS
+            }
+            else // server_mode == jpv::ServerMode::IS
+            {
+                bool result = SetGlyphParameterIS( clntMes, glyphParameterPath, glyphParameterPath_old );
+
+                if( !result )
                 {
-                    bool result = SetPOLParameterIS( clntMes, plotOverLineParameterPath, plotOverLineParameterPath_old );
-
-                    if( !result )
-                    {
-                        std::cout << "ERROR:plot over line parameter setting failed" << std::endl;
-                        break;
-                    }
+                    std::cout << "ERROR:glyph parameter setting failed" << std::endl;
+                    break;
                 }
+            }
 
 #ifndef CPU_VER
-                generate_plot_over_line( param, mvpl, nan_error, jc, jd, pts, server_mode );
+            generate_glyph( param, mvpl, nan_error, jc, jd, pts, server_mode );
 #else
-                generate_plot_over_line( param, mvpl, nan_error, jd, pts, server_mode );
+            generate_glyph( param, mvpl, nan_error, jd, pts, server_mode );
 #endif
-                std::cout << "==================== Plot Over Line End ====================" << std::endl;
-            } // plot over line
-        } // while ( ( ptss != -1 ) && ( pts.good() ) )
-    } // Master
 
-    bsz = -1;
+            std::cout << "==================== Generate Glyph End ====================" << std::endl;
+        } // generate glyph
+        else if ( clntMes.m_initialize_parameter == jpv::InitializeParameter::plot_over_line )
+        {
+            std::cout << "==================== Plot Over Line Start ====================" << std::endl;
+
+            if ( server_mode == jpv::ServerMode::CS )
+            {
+                bool result = SetPOLParameterCS( clntMes, param );
+
+                if( !result )
+                {
+                    std::cout << "ERROR:plot over line parameter setting failed" << std::endl;
+                    break;
+                }
+            }
+            else // server_mode == jpv::ServerMode::IS
+            {
+                bool result = SetPOLParameterIS( clntMes, plotOverLineParameterPath, plotOverLineParameterPath_old );
+
+                if( !result )
+                {
+                    std::cout << "ERROR:plot over line parameter setting failed" << std::endl;
+                    break;
+                }
+            }
+
 #ifndef CPU_VER
-    MPI_Bcast( &bsz, 1, MPI_INT, 0, MPI_COMM_WORLD ); // termination message
+            generate_plot_over_line( param, mvpl, nan_error, jc, jd, pts, server_mode );
+#else
+            generate_plot_over_line( param, mvpl, nan_error, jd, pts, server_mode );
 #endif
-    pts.termServer();
+            std::cout << "==================== Plot Over Line End ====================" << std::endl;
+        } // plot over line
+    } // while ( true )
+
+    if ( rank == 0 )
+    {
+        bsz = -1;
+#ifndef CPU_VER
+        MPI_Bcast( &bsz, 1, MPI_INT, 0, MPI_COMM_WORLD ); // termination message
+#endif
+        pts.termServer();
+    }
 
     return;
     // =================== 新規作成 ここまで ===================
@@ -1799,12 +1714,6 @@ bool CheckFileFormat(
         {
             std::cerr << "Error: pfifile doesn't exist" << std::endl;
         }
-    
-        int bsz = -1;
-
-#ifndef CPU_VER
-        MPI_Bcast( &bsz, 1, MPI_INT, 0, MPI_COMM_WORLD ); // termination message
-#endif
         return false;
     }
 
