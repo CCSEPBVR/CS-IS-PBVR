@@ -145,6 +145,7 @@ void ObjectEditorWIP::initialize()
 
     connect( ui->browsePushButton, &QPushButton::clicked, this, &ObjectEditorWIP::onBrowse );
     connect( ui->deletePushButton, &QPushButton::clicked, this, &ObjectEditorWIP::onDelete );
+    connect( ui->applyPushButton, &QPushButton::clicked, this, &ObjectEditorWIP::onApply );
 }
 
 void ObjectEditorWIP::toggleCommonObjectWidgets( bool isObject )
@@ -477,5 +478,54 @@ void ObjectEditorWIP::onDelete()
 
 void ObjectEditorWIP::onApply()
 {
+    QJsonObject root;
+    root["event"] = "ObjectInfoParameter";
 
+    QJsonArray objectInfoArray;
+
+    for( int row = 0; row < m_model->rowCount(); row++ )
+    {
+        QStandardItem* nameItem = m_model->item( row, 0 );
+        if( !nameItem ) continue;
+
+        QVariant var = nameItem->data( Qt::UserRole );
+        if( !var.canConvert<ObjectInfoExtractor::ObjectInfo>() ) continue;
+
+        ObjectInfoExtractor::ObjectInfo objectInfo = var.value<ObjectInfoExtractor::ObjectInfo>();
+
+        QJsonObject jsonObjectInfo;
+        jsonObjectInfo["name"]              = QString::fromUtf8( objectInfo.name );
+        jsonObjectInfo["directory"]         = QString::fromUtf8( objectInfo.directory );
+        jsonObjectInfo["format"]            = QString::fromUtf8( ObjectInfoExtractor::formatToString( objectInfo.format ).c_str() );
+        jsonObjectInfo["timeStepMin"]       = objectInfo.timeStep.first;
+        jsonObjectInfo["timeStepMax"]       = objectInfo.timeStep.second;
+        jsonObjectInfo["isFocus"]           = objectInfo.isFocus;
+
+        jsonObjectInfo["minObjectCoord"]    = QJsonArray{ objectInfo.minObjectCoord.x(), objectInfo.minObjectCoord.y(), objectInfo.minObjectCoord.z() };
+        jsonObjectInfo["maxObjectCoord"]    = QJsonArray{ objectInfo.maxObjectCoord.x(), objectInfo.maxObjectCoord.y(), objectInfo.maxObjectCoord.z() };
+        jsonObjectInfo["minExternalCoord"]  = QJsonArray{ objectInfo.minExternalCoord.x(), objectInfo.minExternalCoord.y(), objectInfo.minExternalCoord.z() };
+        jsonObjectInfo["maxExternalCoord"]  = QJsonArray{ objectInfo.maxExternalCoord.x(), objectInfo.maxExternalCoord.y(), objectInfo.maxExternalCoord.z() };
+
+        jsonObjectInfo["particleLimit"]     = objectInfo.particleLimit;
+        jsonObjectInfo["density"]           = objectInfo.density;
+
+        jsonObjectInfo["numberOfVector"]    = objectInfo.numberOfVector;
+        jsonObjectInfo["numberOfElements"]  = objectInfo.numberOfElements;
+        jsonObjectInfo["numberOfSubvolume"] = objectInfo.numberOfSubvolume;
+        jsonObjectInfo["numberOfNodes"]     = objectInfo.numberOfNodes;
+        jsonObjectInfo["elementType"]       = objectInfo.elementType;
+        jsonObjectInfo["fileType"]          = objectInfo.fileType;
+        jsonObjectInfo["stepNumber"]        = objectInfo.stepNumber;
+        jsonObjectInfo["coordinateX"]       = QString::fromUtf8( objectInfo.coordinateX );
+        jsonObjectInfo["coordinateY"]       = QString::fromUtf8( objectInfo.coordinateY );
+        jsonObjectInfo["coordinateZ"]       = QString::fromUtf8( objectInfo.coordinateZ );
+
+        jsonObjectInfo["polygonColor"]      = QJsonArray{ objectInfo.polygonColor.r(), objectInfo.polygonColor.g(), objectInfo.polygonColor.b() };
+        jsonObjectInfo["polygonOpacity"]    = objectInfo.polygonOpacity;
+
+        objectInfoArray.append( jsonObjectInfo );
+    }
+    root["objects"] = objectInfoArray;
+    qDebug() << root;
+    m_web_text_socket->sendTextMessage( QJsonDocument( root ).toJson( QJsonDocument::Compact ) );
 }

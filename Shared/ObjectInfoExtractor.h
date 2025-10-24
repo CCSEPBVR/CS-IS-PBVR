@@ -46,28 +46,28 @@ public:
     {
         // Common Object Info
         std::string name                    = "";                           // Base name
-        std::string extension;
+        std::string extension               = "";
         std::string directory               = "";                           // Directory path
         Format format                       = Format::Unknown;              // Detected format
         std::pair<int,int> timeStep         = { -1, -1 }; // Min/Max timestep
         bool isFocus                        = false;
-        kvs::Vec3 minObjectCoord;
-        kvs::Vec3 maxObjectCoord;
-        kvs::Vec3 minExternalCoord;
-        kvs::Vec3 maxExternalCoord;
+        kvs::Vec3 minObjectCoord            = { 0, 0, 0 };
+        kvs::Vec3 maxObjectCoord            = { 0, 0, 0 };
+        kvs::Vec3 minExternalCoord          = { 0, 0, 0 };
+        kvs::Vec3 maxExternalCoord          = { 0, 0, 0 };
 
         // Common Server Point Object Info
         int particleLimit                   = 10000000;
         float density                       = 1.0;
 
         // Client Server Point Object Info
-        int numberOfVector;
-        int numberOfElements;
-        int numberOfSubvolume;
-        int numberOfNodes;
-        int elementType;
-        int fileType;
-        int stepNumber;
+        int numberOfVector                  = -1;
+        int numberOfElements                = -1;
+        int numberOfSubvolume               = -1;
+        int numberOfNodes                   = -1;
+        int elementType                     = -1;
+        int fileType                        = -1;
+        int stepNumber                      = -1;
         std::string coordinateX             = "";
         std::string coordinateY             = "";
         std::string coordinateZ             = "";
