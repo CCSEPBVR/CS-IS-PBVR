@@ -478,6 +478,13 @@ void ObjectEditorWIP::onDelete()
 
 void ObjectEditorWIP::onApply()
 {
+    if( !m_web_sockets->isConnected() )
+    {
+        // FIXME:接続中でない場合、ローカルモードと判断し表示を行う。
+        qDebug() << "Not connected";
+        return;
+    }
+
     QJsonObject root;
     root["event"] = "ObjectInfoParameter";
 

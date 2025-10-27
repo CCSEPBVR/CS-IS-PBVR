@@ -223,6 +223,12 @@ void GlyphEditor::onColorDataNumberOfVariableValueChanged()
 
 void GlyphEditor::onApply()
 {
+    if( !m_web_sockets->isConnected() )
+    {
+        qDebug() << "Not connected";
+        return;
+    }
+
     m_model->clear();
 
     auto* rootItem = new QStandardItem("GlyphParams");

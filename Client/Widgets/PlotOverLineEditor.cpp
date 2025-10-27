@@ -426,6 +426,12 @@ void PlotOverLineEditor::onCreateLine()
 
 void PlotOverLineEditor::onApply()
 {
+    if( !m_web_sockets->isConnected() )
+    {
+        qDebug() << "Not connected";
+        return;
+    }
+
     if( m_is_send_available )
     {
         m_model->clear();

@@ -277,6 +277,12 @@ void TransferFunctionEditor::importTransferFunction()
 
 void TransferFunctionEditor::applyTransferFunction()
 {
+    if( !m_web_sockets->isConnected() )
+    {
+        qDebug() << "Not connected";
+        return;
+    }
+
     QJsonArray transferFunctionsArray;
 
     for (int row = 0; row < m_model->rowCount(); ++row)
