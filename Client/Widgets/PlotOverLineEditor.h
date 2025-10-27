@@ -2,11 +2,11 @@
 #define PLOTOVERLINEEDITOR_H
 
 #include <QDockWidget>
-#include <QWebSocket>
 
 #include "PlotOverLineItem.h"
 
 #include "Screen.h"
+#include "WebSocketPair.h"
 #include <kvs/PointObject>
 #include <kvs/LineObject>
 #include <kvs/Vector>
@@ -26,7 +26,7 @@ class PlotOverLineEditor : public QDockWidget
     Q_OBJECT
 
 public:
-    explicit PlotOverLineEditor( QWebSocket* textSocket, kvs::qt::jaea::Screen* screen, QWidget *parent = nullptr );
+    explicit PlotOverLineEditor( WebSocketPair* websockets, kvs::qt::jaea::Screen* screen, QWidget *parent = nullptr );
     ~PlotOverLineEditor();
 
     // ----- クラス定数 -----
@@ -37,7 +37,7 @@ private:
     Ui::PlotOverLineEditor *ui;
 
     // 通信関連
-    QWebSocket* m_web_text_socket = nullptr; // パラメータ送信用
+    WebSocketPair* m_web_sockets = nullptr;
     QStandardItemModel *m_model = nullptr;
 
     QCustomPlot* m_q_custom_plot = nullptr;

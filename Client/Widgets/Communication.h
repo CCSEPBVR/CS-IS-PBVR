@@ -2,9 +2,9 @@
 #define COMMUNICATION_H
 
 #include <QDockWidget>
-#include <QWebSocket>
 
 #include "Screen.h"
+#include "WebSocketPair.h"
 #include <kvs/PointObject>
 #include <kvs/ParticleBasedRenderer>
 #include <kvs/PolygonObject>
@@ -21,14 +21,13 @@ class Communication : public QDockWidget
     Q_OBJECT
 
 public:
-    explicit Communication( kvs::qt::jaea::Screen* screen, QWebSocket* binarySocket, QWebSocket* textSocket, QWidget *parent = nullptr );
+    explicit Communication( kvs::qt::jaea::Screen* screen, WebSocketPair* websockets, QWidget *parent = nullptr );
     ~Communication();
 
 private:
     Ui::Communication *ui;
     kvs::qt::jaea::Screen* m_screen       = nullptr;
-    QWebSocket* m_web_binary_socket = nullptr;
-    QWebSocket* m_web_text_socket = nullptr;
+    WebSocketPair* m_web_sockets = nullptr;
     QString m_uuid;
     int m_user_id = -1;
     bool m_is_operator = false;
@@ -37,7 +36,6 @@ private:
     QPair<int,int> m_server_point_object_ids    = QPair<int,int>( -1, -1 ); // AFTER_WEBSOCKET
 
     void initialize();
-    bool isSocketsConnected() const;
     void registerObject( kvs::PointObject* pointObject );
     void replaceObject( kvs::PointObject* pointObject );
 

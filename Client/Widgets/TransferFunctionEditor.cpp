@@ -2,10 +2,10 @@
 #include "ui_TransferFunctionEditor.h"
 
 // FIXME:存在しない派生量qNを指定した場合サーバがクラッシュする不具合があるはずです。
-TransferFunctionEditor::TransferFunctionEditor( QWebSocket* textSocket, QWidget *parent )
+TransferFunctionEditor::TransferFunctionEditor( WebSocketPair* websockets, QWidget *parent )
     : QDialog( parent )
     , ui( new Ui::TransferFunctionEditor )
-    , m_web_text_socket( textSocket )
+    , m_web_sockets( websockets )
     , m_model( new QStandardItemModel( this ) )
 {
     initialize();
@@ -353,7 +353,7 @@ void TransferFunctionEditor::applyTransferFunction()
     root["opacity_synthesizer"] = m_opacity_synthesizer;
     root["data"] = transferFunctionsArray;
 
-    m_web_text_socket->sendTextMessage(QJsonDocument(root).toJson(QJsonDocument::Compact));
+    m_web_sockets->text()->sendTextMessage(QJsonDocument(root).toJson(QJsonDocument::Compact));
 }
 
 

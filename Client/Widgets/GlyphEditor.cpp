@@ -1,10 +1,10 @@
 #include "GlyphEditor.h"
 #include "ui_GlyphEditor.h"
 
-GlyphEditor::GlyphEditor( QWebSocket* textSocket, QWidget *parent )
+GlyphEditor::GlyphEditor( WebSocketPair* websockets, QWidget *parent )
     : QDialog( parent )
     , ui( new Ui::GlyphEditor )
-    , m_web_text_socket( textSocket )
+    , m_web_sockets( websockets )
     , m_model( new QStandardItemModel( this ) )
 {
     initialize();
@@ -310,7 +310,7 @@ void GlyphEditor::onApply()
 
     root["params"] = params;
 
-    m_web_text_socket->sendTextMessage(QJsonDocument(root).toJson(QJsonDocument::Compact));
+    m_web_sockets->text()->sendTextMessage(QJsonDocument(root).toJson(QJsonDocument::Compact));
 }
 
 void GlyphEditor::updateNumberOfVector( const int numberOfVector )

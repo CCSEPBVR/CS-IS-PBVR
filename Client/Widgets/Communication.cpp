@@ -1,12 +1,11 @@
 #include "Communication.h"
 #include "ui_Communication.h"
 
-Communication::Communication( kvs::qt::jaea::Screen* screen, QWebSocket* binarySocket, QWebSocket* textSocket, QWidget* parent )
+Communication::Communication( kvs::qt::jaea::Screen* screen, WebSocketPair* websockets, QWidget* parent )
     : QDockWidget(parent)
     , ui(new Ui::Communication)
     , m_screen( screen )
-    , m_web_binary_socket( binarySocket )
-    , m_web_text_socket( textSocket )
+    , m_web_sockets( websockets )
 {
     initialize();
 }
@@ -27,11 +26,11 @@ void Communication::initialize()
     connect( ui->shareViewPushButton , &QPushButton::clicked, this, &Communication::onShareView );
 
     connect( ui->debugPushButton, &QPushButton::clicked, this, [this]() {
-        if( !isSocketsConnected() )
+        if( !m_web_sockets->isConnected() )
         {
             return;
         }
-        m_web_text_socket->sendTextMessage( QJsonDocument( QJsonObject{ {"event", "debug"} } ).toJson( QJsonDocument::Compact ) );
+        m_web_sockets->text()->sendTextMessage( QJsonDocument( QJsonObject{ {"event", "debug"} } ).toJson( QJsonDocument::Compact ) );
     });
 
     connect( ui->editColorMapPushButton, &QPushButton::clicked, this, [this]()
@@ -62,7 +61,7 @@ void Communication::initialize()
 
     connect( ui->sendTransferFunctionPushButton, &QPushButton::clicked, this, [this]()
             {
-                if( !isSocketsConnected() )
+                if( !m_web_sockets->isConnected() )
                 {
                     return;
                 }
@@ -83,7 +82,7 @@ void Communication::initialize()
                     opacityArray.append( opacity );
                 }
 
-                m_web_text_socket->sendTextMessage(
+                m_web_sockets->text()->sendTextMessage(
                     QJsonDocument(
                         QJsonObject{
                             { "event", "transferfunction" },
@@ -96,34 +95,20 @@ void Communication::initialize()
 
     connect( ui->generatePushButton, &QPushButton::clicked, this, [this]()
             {
-                if( !isSocketsConnected() )
+                if( !m_web_sockets->isConnected() )
                 {
                     return;
                 }
-                m_web_text_socket->sendTextMessage( QJsonDocument( QJsonObject{ {"event", "generate"} } ).toJson( QJsonDocument::Compact ) );
+                m_web_sockets->text()->sendTextMessage( QJsonDocument( QJsonObject{ {"event", "generate"} } ).toJson( QJsonDocument::Compact ) );
             } );
 
-    connect( m_web_binary_socket, &QWebSocket::connected    , this, &Communication::binaryWebsocketConnected );     // 接続成功(バイナリ)
-    connect( m_web_binary_socket, &QWebSocket::disconnected , this, &Communication::binaryWebsocketDisconnected );  // 接続切断(バイナリ)
-    connect( m_web_binary_socket, &QWebSocket::binaryMessageReceived , this, &Communication::binaryWebsocketMessageReceived );  // メッセージ受信(バイナリ)
+    connect( m_web_sockets->binary(), &QWebSocket::connected    , this, &Communication::binaryWebsocketConnected );     // 接続成功(バイナリ)
+    connect( m_web_sockets->binary(), &QWebSocket::disconnected , this, &Communication::binaryWebsocketDisconnected );  // 接続切断(バイナリ)
+    connect( m_web_sockets->binary(), &QWebSocket::binaryMessageReceived , this, &Communication::binaryWebsocketMessageReceived );  // メッセージ受信(バイナリ)
 
-    connect( m_web_text_socket, &QWebSocket::connected      , this, &Communication::textWebsocketConnected );       // 接続成功(テキスト)
-    connect( m_web_text_socket, &QWebSocket::disconnected   , this, &Communication::textWebsocketDisconnected );    // 接続切断(テキスト)
-    connect( m_web_text_socket, &QWebSocket::textMessageReceived , this, &Communication::textWebsocketMessageReceived );  // メッセージ受信(テキスト)
-}
-
-/**
- * @brief バイナリとテキストの両ソケットが接続済みか確認する
- * @return true  両方のソケットが接続中または接続済み
- * @return false どちらかが未接続
- */
-bool Communication::isSocketsConnected() const
-{
-    auto isConnectedOrConnecting = [](QWebSocket* socket)
-    {
-        return socket && ( socket->state() == QAbstractSocket::ConnectedState || socket->state() == QAbstractSocket::ConnectingState );
-    };
-    return isConnectedOrConnecting( m_web_binary_socket ) && isConnectedOrConnecting( m_web_text_socket );
+    connect( m_web_sockets->text(), &QWebSocket::connected      , this, &Communication::textWebsocketConnected );       // 接続成功(テキスト)
+    connect( m_web_sockets->text(), &QWebSocket::disconnected   , this, &Communication::textWebsocketDisconnected );    // 接続切断(テキスト)
+    connect( m_web_sockets->text(), &QWebSocket::textMessageReceived , this, &Communication::textWebsocketMessageReceived );  // メッセージ受信(テキスト)
 }
 
 void Communication::registerObject( kvs::PointObject* pointObject )
@@ -157,7 +142,7 @@ void Communication::replaceObject( kvs::PointObject* pointObject )
 
 void Communication::onConnectClicked()
 {
-    if( isSocketsConnected() )
+    if( m_web_sockets->isConnected() )
     {
         qDebug() << "Already connected";
         return;
@@ -171,13 +156,13 @@ void Communication::onConnectClicked()
     const QString textAddress   = address + "/text?uuid=" + uuidStr;
 
     qDebug() << "Connecting to" << address;
-    if( m_web_binary_socket ) m_web_binary_socket->open( QUrl( binaryAddress ) );
-    if( m_web_text_socket ) m_web_text_socket->open( QUrl( textAddress ) );
+    if( m_web_sockets->binary() ) m_web_sockets->binary()->open( QUrl( binaryAddress ) );
+    if( m_web_sockets->text() ) m_web_sockets->text()->open( QUrl( textAddress ) );
 }
 
 void Communication::onDisconnectClicked()
 {
-    if( !isSocketsConnected() )
+    if( !m_web_sockets->isConnected() )
     {
         qDebug() << "Not connected";
         return;
@@ -185,13 +170,12 @@ void Communication::onDisconnectClicked()
 
     m_uuid.clear();
     qDebug() << "Disconnecting...";
-    if( m_web_binary_socket ) m_web_binary_socket->close();
-    if( m_web_text_socket ) m_web_text_socket->close();
+    m_web_sockets->closeAll();
 }
 
 void Communication::onTransferOperator()
 {
-    if( !isSocketsConnected() )
+    if( !m_web_sockets->isConnected() )
     {
         qDebug() << "Not connected";
         return;
@@ -218,7 +202,7 @@ void Communication::onTransferOperator()
     }
 
 
-    m_web_text_socket->sendTextMessage( QJsonDocument( {
+    m_web_sockets->text()->sendTextMessage( QJsonDocument( {
                                                       {"event", "transferoperator"},
                                                       {"target_id", targetID},
                                                       } ).toJson( QJsonDocument::Compact) );
@@ -226,7 +210,7 @@ void Communication::onTransferOperator()
 
 void Communication::onChatClicked()
 {
-    if( !isSocketsConnected() )
+    if( !m_web_sockets->isConnected() )
     {
         qDebug() << "Not connected";
         return;
@@ -235,7 +219,7 @@ void Communication::onChatClicked()
     QString text = ui->chatLineEdit->text().trimmed();
     if( text.isEmpty() ) return; // 何も入力されていない場合は何もしない
 
-    m_web_text_socket->sendTextMessage( QJsonDocument( {
+    m_web_sockets->text()->sendTextMessage( QJsonDocument( {
                                                       {"event", "chat"},
                                                       {"text", text},
                                                       } ).toJson( QJsonDocument::Compact) );
@@ -244,7 +228,7 @@ void Communication::onChatClicked()
 
 void Communication::onShareView()
 {
-    if( !isSocketsConnected() )
+    if( !m_web_sockets->isConnected() )
     {
         qDebug() << "Not connected";
         return;
@@ -266,7 +250,7 @@ void Communication::onShareView()
         matrix_array.append( row_array );
     }
 
-    m_web_text_socket->sendTextMessage( QJsonDocument( {
+    m_web_sockets->text()->sendTextMessage( QJsonDocument( {
                                                       {"event", "shareview"},
                                                       {"matrix", matrix_array},
                                                       } ).toJson( QJsonDocument::Compact) );
@@ -290,7 +274,7 @@ void Communication::onItemDoubleClicked(const QModelIndex& index)
 
 void Communication::binaryWebsocketConnected()
 {
-    if( isSocketsConnected() )
+    if( m_web_sockets->isConnected() )
     {
         emit updateServerState( true );
     }
@@ -298,7 +282,7 @@ void Communication::binaryWebsocketConnected()
 
 void Communication::binaryWebsocketDisconnected()
 {
-    if( !isSocketsConnected() )
+    if( !m_web_sockets->isConnected() )
     {
         emit updateOperatorState( m_is_operator );
         emit updateServerState( false );
@@ -368,7 +352,7 @@ void Communication::binaryWebsocketMessageReceived( const QByteArray& binary )
 
 void Communication::textWebsocketConnected()
 {
-    if( isSocketsConnected() )
+    if( m_web_sockets->isConnected() )
     {
         emit updateServerState( true );
     }
@@ -376,7 +360,7 @@ void Communication::textWebsocketConnected()
 
 void Communication::textWebsocketDisconnected()
 {
-    if( !isSocketsConnected() )
+    if( !m_web_sockets->isConnected() )
     {
         emit updateOperatorState( m_is_operator );
         emit updateServerState( false );
@@ -710,7 +694,7 @@ kvs::PolygonObject* Communication::createArrowGlyph(
 
 void Communication::onVRSharePoint( kvs::Real32 CoordArray[ 2 * 3 ], kvs::Real32 DirectionArray[ 3 ] )
 {
-    if( !isSocketsConnected() )
+    if( !m_web_sockets->isConnected() )
     {
         qDebug() << "Not connected";
         return;
@@ -733,7 +717,7 @@ void Communication::onVRSharePoint( kvs::Real32 CoordArray[ 2 * 3 ], kvs::Real32
     positionObject["dz"] = dz;
 
 
-    m_web_text_socket->sendTextMessage( QJsonDocument( {
+    m_web_sockets->text()->sendTextMessage( QJsonDocument( {
                                                          {"event","sharepoint"},
                                                          {"x",CoordArray[3]},
                                                          {"y",CoordArray[4]},

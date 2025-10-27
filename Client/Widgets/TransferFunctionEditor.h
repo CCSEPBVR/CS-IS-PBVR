@@ -5,6 +5,7 @@
 #include <QWebSocket>
 #include <QFileDialog>
 
+#include "WebSocketPair.h"
 #include "TransferFunctionItem.h"
 
 #include "VariableEditor.h"
@@ -21,7 +22,7 @@ class TransferFunctionEditor : public QDialog
     Q_OBJECT
 
 public:
-    explicit TransferFunctionEditor( QWebSocket* textSocket, QWidget *parent = nullptr );
+    explicit TransferFunctionEditor( WebSocketPair* websockets, QWidget *parent = nullptr );
     ~TransferFunctionEditor();
 
 private:
@@ -29,7 +30,7 @@ private:
     Ui::TransferFunctionEditor *ui;
 
     // 通信関連
-    QWebSocket* m_web_text_socket = nullptr; // パラメータ送信用
+    WebSocketPair* m_web_sockets = nullptr;
     QStandardItemModel *m_model = nullptr;
 
     QString m_color_synthesizer;

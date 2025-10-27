@@ -2,8 +2,8 @@
 #define GLYPHEDITOR_H
 
 #include <QDialog>
-#include <QWebSocket>
 
+#include "WebSocketPair.h"
 #include "GlyphItem.h"
 #include "ComboBoxDelegate.h"
 
@@ -19,7 +19,7 @@ class GlyphEditor : public QDialog
     Q_OBJECT
 
 public:
-    explicit GlyphEditor( QWebSocket* textSocket, QWidget *parent = nullptr );
+    explicit GlyphEditor( WebSocketPair* websockets, QWidget *parent = nullptr );
     ~GlyphEditor();
 
 private:
@@ -27,7 +27,7 @@ private:
     Ui::GlyphEditor *ui;
 
     // 通信関連
-    QWebSocket* m_web_text_socket = nullptr; // パラメータ送信用
+    WebSocketPair* m_web_sockets = nullptr;
 
     int m_number_of_vector = -1;
 

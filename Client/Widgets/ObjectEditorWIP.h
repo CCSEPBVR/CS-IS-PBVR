@@ -2,12 +2,12 @@
 #define OBJECTEDITORWIP_H
 
 #include <QDockWidget>
-#include <QWebSocket>
 #include <QList>
 #include <QFileDialog>
 #include <QColorDialog>
 
 #include "Screen.h"
+#include "WebSocketPair.h"
 
 #include "../../Shared/ObjectInfoExtractor.h"
 
@@ -21,7 +21,7 @@ class ObjectEditorWIP : public QDockWidget
     Q_OBJECT
 
 public:
-    explicit ObjectEditorWIP( QWebSocket* textSocket, kvs::qt::jaea::Screen* screen, QWidget *parent = nullptr );
+    explicit ObjectEditorWIP( WebSocketPair* websockets, kvs::qt::jaea::Screen* screen, QWidget *parent = nullptr );
     ~ObjectEditorWIP();
 
     void updateOperatorState( bool operatorState ); // true:権限あり
@@ -33,7 +33,7 @@ private:
     // メンバ変数群
     Ui::ObjectEditorWIP *ui;
 
-    QWebSocket* m_web_text_socket = nullptr;
+    WebSocketPair* m_web_sockets = nullptr;
 
     QStandardItemModel *m_model = nullptr;
 

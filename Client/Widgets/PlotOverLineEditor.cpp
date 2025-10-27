@@ -1,10 +1,10 @@
 #include "PlotOverLineEditor.h"
 #include "ui_PlotOverLineEditor.h"
 
-PlotOverLineEditor::PlotOverLineEditor( QWebSocket* textSocket, kvs::qt::jaea::Screen* screen, QWidget *parent )
+PlotOverLineEditor::PlotOverLineEditor( WebSocketPair* websockets, kvs::qt::jaea::Screen* screen, QWidget *parent )
     : QDockWidget(parent)
     , ui(new Ui::PlotOverLineEditor)
-    , m_web_text_socket( textSocket )
+    , m_web_sockets( websockets )
     , m_model( new QStandardItemModel( this ) )
     , m_q_custom_plot( new QCustomPlot( this ) )
     , m_screen( screen )
@@ -461,7 +461,7 @@ void PlotOverLineEditor::onApply()
         root["start"] = QJsonArray{ m_start_coords.x(), m_start_coords.y(), m_start_coords.z() };
         root["end"]   = QJsonArray{ m_end_coords.x(), m_end_coords.y(), m_end_coords.z() };
 
-        m_web_text_socket->sendTextMessage( QJsonDocument(root).toJson(QJsonDocument::Compact) );
+        m_web_sockets->text()->sendTextMessage( QJsonDocument(root).toJson(QJsonDocument::Compact) );
     }
 }
 

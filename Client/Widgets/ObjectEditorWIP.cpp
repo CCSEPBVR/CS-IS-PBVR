@@ -1,10 +1,10 @@
 #include "ObjectEditorWIP.h"
 #include "ui_ObjectEditorWIP.h"
 
-ObjectEditorWIP::ObjectEditorWIP( QWebSocket* textSocket, kvs::qt::jaea::Screen* screen, QWidget *parent )
+ObjectEditorWIP::ObjectEditorWIP( WebSocketPair* websockets, kvs::qt::jaea::Screen* screen, QWidget *parent )
     : QDockWidget(parent)
     , ui(new Ui::ObjectEditorWIP)
-    , m_web_text_socket( textSocket )
+    , m_web_sockets( websockets )
     , m_screen( screen )
 {
     initialize();
@@ -527,5 +527,5 @@ void ObjectEditorWIP::onApply()
     }
     root["objects"] = objectInfoArray;
     qDebug() << root;
-    m_web_text_socket->sendTextMessage( QJsonDocument( root ).toJson( QJsonDocument::Compact ) );
+    m_web_sockets->text()->sendTextMessage( QJsonDocument( root ).toJson( QJsonDocument::Compact ) );
 }

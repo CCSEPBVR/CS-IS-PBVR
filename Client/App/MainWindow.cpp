@@ -10,8 +10,7 @@ MainWindow::MainWindow( kvs::qt::Application& app, QWidget *parent )
     , m_orientation_axis( nullptr )
     , m_fps_label( nullptr )
     , m_time_step_label( nullptr )
-    , m_web_binary_socket( new QWebSocket() )
-    , m_web_text_socket( new QWebSocket() )
+    , m_web_sockets( new WebSocketPair )
     // ウィジェット群(A~Z)
     // ABCDEFGHIJKLMNOPQRSTUVWXYZ
     , m_color_map_bar_selector_tool_bar( new ColorMapSelectorToolBar( m_screen, this ) )
@@ -19,15 +18,15 @@ MainWindow::MainWindow( kvs::qt::Application& app, QWidget *parent )
     , m_time_step_control_tool_bar( new TimeStepControlToolBar( this ) )
     , m_total_particles_tool_bar( new TotalParticlesToolBar( this ) )
     , m_animation_control( new AnimationControl( m_screen, this ) )
-    , m_communication( new Communication( m_screen, m_web_binary_socket, m_web_text_socket, this ) )
-    , m_glyph_editor( new GlyphEditor( m_web_text_socket, this ) )
-    , m_object_editor( new ObjectEditorWIP( m_web_text_socket, m_screen, this ) )
-    , m_plot_over_line_editor( new PlotOverLineEditor( m_web_text_socket, m_screen, this ) )
+    , m_communication( new Communication( m_screen, m_web_sockets, this ) )
+    , m_glyph_editor( new GlyphEditor( m_web_sockets, this ) )
+    , m_object_editor( new ObjectEditorWIP( m_web_sockets, m_screen, this ) )
+    , m_plot_over_line_editor( new PlotOverLineEditor( m_web_sockets, m_screen, this ) )
     , m_point_size_control( new PointSizeControl( m_screen, this ) )
     , m_preference( new Preference( this ) )
     , m_repetition_level_control( new RepetitionLevelControl( m_screen, m_compositor, this ) )
     , m_shading_control( new ShadingControl( m_screen, this ) )
-    , m_transfer_function_editor( new TransferFunctionEditor( m_web_text_socket, this ) )
+    , m_transfer_function_editor( new TransferFunctionEditor( m_web_sockets, this ) )
     , m_volume_transform( new VolumeTransform( m_screen, this ) )
     , m_initialize_camera_xform( kvs::Mat4(
           1, 0, 0, 0 ,
@@ -41,8 +40,7 @@ MainWindow::MainWindow( kvs::qt::Application& app, QWidget *parent )
 
 MainWindow::~MainWindow()
 {
-    delete m_web_text_socket;
-    delete m_web_binary_socket;
+    delete m_web_sockets;
     delete m_time_step_label;
     delete m_fps_label;
     delete m_orientation_axis;
@@ -68,9 +66,6 @@ void MainWindow::initialize()
     m_orientation_axis = new kvs::OrientationAxis( m_screen, m_screen->scene() );
     m_fps_label = new kvs::Label( m_screen );
     m_time_step_label = new kvs::Label( m_screen );
-
-    m_web_binary_socket->setParent( this );
-    m_web_text_socket->setParent( this );
 
     m_load_action = new QAction( tr( "Load"), this );
     connect( m_load_action, &QAction::triggered, this, &MainWindow::onLoad );
@@ -110,17 +105,18 @@ void MainWindow::initialize()
     initializeAfterShow();
 
     // デバッグボタン作成
-    QPushButton* debugPushButton = new QPushButton("Debug", this);
-    debugPushButton->setGeometry(650, 50, 120, 40);
+    QPushButton* debugPushButton = new QPushButton( "Debug", this );
+    debugPushButton->setGeometry( 650, 50, 120, 40 );
     debugPushButton->show();
 
     // ボタン押下でサーバにイベント送信
-    connect(debugPushButton, &QPushButton::clicked, this, [this]() {
-        RemoteFileDialog dlg(m_web_text_socket, this);
-        if (dlg.exec() == QDialog::Accepted) {
+    connect( debugPushButton, &QPushButton::clicked, this, [this]() {
+        RemoteFileDialog dlg( m_web_sockets->text(), this );
+        if( dlg.exec() == QDialog::Accepted )
+        {
             qDebug() << "選択ファイル:" << dlg.selectedFile();
         }
-    });
+    } );
 }
 
 void MainWindow::toolBarInitialize()

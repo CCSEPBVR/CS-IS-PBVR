@@ -11,6 +11,8 @@
 #include <kvs/OrientationAxis>
 #include <kvs/Label>
 
+#include "WebSocketPair.h"
+
 #include "ColorMapSelectorToolBar.h"
 #include "PlayBackControlToolBar.h"
 #include "TimeStepControlToolBar.h";
@@ -70,8 +72,7 @@ private:
     QAction* m_save_action = nullptr;
 
     // 通信関連
-    QWebSocket* m_web_binary_socket                             = nullptr;
-    QWebSocket* m_web_text_socket                               = nullptr;
+    WebSocketPair* m_web_sockets                                = nullptr;
 
     // ウィジェット群(ツールバー) A~Z
     ColorMapSelectorToolBar* m_color_map_bar_selector_tool_bar  = nullptr;
