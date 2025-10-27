@@ -13,6 +13,7 @@
 
 #include <vismodule/timer_simple>
 
+#include <vismodule/Connect>
 #include <vismodule/CS_PointObjectGenerator>
 
 #include <vismodule/Argument>
@@ -82,7 +83,8 @@ void generate_particle(
 #endif
     JobDispatcher& jd,
     jpv::ParticleTransferServer pts,
-    jpv::ServerMode server_mode
+    jpv::ServerMode server_mode,
+    jpv::InitializeParameter init_param
 );  
 
 void generate_particle_worker(

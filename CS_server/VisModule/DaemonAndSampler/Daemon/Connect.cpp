@@ -301,94 +301,23 @@ void  Connect( int argc, char** argv )
 
         if ( clntMes.m_initialize_parameter == jpv::InitializeParameter::connection_reset )
         {
-            if( rank > 0 ) continue;
-
-            std::cout << "==================== Connection Reset Start ====================" << std::endl;
-            strncpy( servMes.m_header, "JPTP /1.0 899 OK\r\n", 18 );
-            servMes.m_camera = param.m_camera;
-            servMes.m_server_status = 0;
-            servMes.m_time_step = param.m_time_step;
-            servMes.m_level_index = param.m_level_index;
-            servMes.m_repeat_level = param.m_repeat_level;
-            servMes.m_number_particle = 0;
-            servMes.m_number_glyph = 0 ;
-            servMes.m_flag_send_bins = 1;
-            servMes.m_number_volume_divide = mvpl.m_total_number_subvolumes;
-            servMes.m_transfer_function_count = 0;
-            servMes.m_start_step = mvpl.m_total_start_steps;
-            servMes.m_last_step = mvpl.m_total_last_step;
-            servMes.m_number_step = mvpl.m_total_number_steps;
-            servMes.m_min_object_coord[0] = mvpl.m_total_min_object_coord[0];
-            servMes.m_min_object_coord[1] = mvpl.m_total_min_object_coord[1];
-            servMes.m_min_object_coord[2] = mvpl.m_total_min_object_coord[2];
-            servMes.m_max_object_coord[0] = mvpl.m_total_max_object_coord[0];
-            servMes.m_max_object_coord[1] = mvpl.m_total_max_object_coord[1];
-            servMes.m_max_object_coord[2] = mvpl.m_total_max_object_coord[2];
-            servMes.m_min_value = mvpl.m_total_min_value;
-            servMes.m_max_value = mvpl.m_total_max_value;
-            servMes.m_number_nodes = mvpl.m_total_number_nodes;
-            servMes.m_number_elements = mvpl.m_total_number_elements;
-            servMes.m_element_type = mvpl.m_list[0].m_elem_type;
-            servMes.m_file_type = mvpl.m_list[0].m_file_type;
-            servMes.m_number_ingredients = mvpl.m_list[0].m_number_ingredients;
-            servMes.m_particle_limit = param.m_particle_limit;
-            servMes.m_particle_density = param.m_particle_density;
-            servMes.m_subpixel_level = param.m_subpixel_level;
-            setParamTransferFunctionToServer( &servMes, &param );
-            servMes.m_message_size = servMes.byteSize();
-            servMes.show();
-            pts.sendMessage( servMes );
-            pts.disconnect();
-            pts.acceptServer();
-            std::cout << "==================== Connection Reset End ====================" << std::endl;
+            std::cout << "ERROR : jpv::InitializeParameter::connection_reset" << std::endl;
+            break;
         } // connection reset
         else if ( clntMes.m_initialize_parameter == jpv::InitializeParameter::end )
         {
             std::cout << "ERROR : jpv::InitializeParameter::end" << std::endl;
             break;
         } // end
-        else if ( clntMes.m_initialize_parameter == jpv::InitializeParameter::initial_step )
-        {
-            std::cout << "==================== Initial Step Start ====================" << std::endl;
-
-            if ( server_mode == jpv::ServerMode::CS )
-            {
-                bool result = SetParticleParameterCS( clntMes, pts, param, mvpl );
-
-                if( !result )
-                {
-                    std::cout << "ERROR:particle parameter setting failed" << std::endl;
-                    break;
-                }
-            }
-            else // server_mode == jpv::ServerMode::IS
-            {
-                bool result = SetParticleParameterIS( clntMes, param, mvpl, tfFilePath, tfFilePath_old );
-
-                if( !result )
-                {
-                    std::cout << "ERROR:particle parameter setting failed" << std::endl;
-                    break;
-                }
-            }
-            
-#ifndef CPU_VER
-            initial_step( param, mvpl, nan_error, jc, jd, pts, server_mode );
-#else
-            initial_step( param, mvpl, nan_error, jd, pts, server_mode );
-#endif
-
-            if ( server_mode == jpv::ServerMode::CS )
-            {
-                delete param.m_transfunc_synthesizer;
-            }
-
-            std::cout << "==================== Initial Step end ====================" << std::endl;
-        } // initial_step
-        else if ( clntMes.m_initialize_parameter == jpv::InitializeParameter::generate_particle )
+        else if ( 
+            clntMes.m_initialize_parameter == jpv::InitializeParameter::initial_step ||
+            clntMes.m_initialize_parameter == jpv::InitializeParameter::generate_particle
+        )
         {
             std::cout << "==================== Generate Particle Start ====================" << std::endl;
 
+            jpv::InitializeParameter init_param = clntMes.m_initialize_parameter;
+
             if ( server_mode == jpv::ServerMode::CS )
             {
                 bool result = SetParticleParameterCS( clntMes, pts, param, mvpl );
@@ -411,9 +340,9 @@ void  Connect( int argc, char** argv )
             }
             
 #ifndef CPU_VER
-            generate_particle( param, mvpl, nan_error, jc, jd, pts, server_mode );
+            generate_particle( param, mvpl, nan_error, jc, jd, pts, server_mode, init_param );
 #else
-            generate_particle( param, mvpl, nan_error, jd, pts, server_mode );
+            generate_particle( param, mvpl, nan_error, jd, pts, server_mode, init_param );
 #endif                           
 
             if ( server_mode == jpv::ServerMode::CS )
@@ -488,6 +417,59 @@ void  Connect( int argc, char** argv )
 #endif
             std::cout << "==================== Plot Over Line End ====================" << std::endl;
         } // plot over line
+
+        // connection reset
+        if ( rank == 0 )
+        {
+            ptss = pts.recvMessage( &clntMes );
+
+            if ( ptss == -1 )
+            {
+                std::cout << "ERROR:receive client message failed(connection reset)" << std::endl;
+                break;
+            }
+
+            if ( clntMes.m_initialize_parameter == jpv::InitializeParameter::connection_reset )
+            {
+                std::cout << "==================== Connection Reset Start ====================" << std::endl;
+                strncpy( servMes.m_header, "JPTP /1.0 899 OK\r\n", 18 );
+                servMes.m_camera = param.m_camera;
+                servMes.m_server_status = 0;
+                servMes.m_time_step = param.m_time_step;
+                servMes.m_level_index = param.m_level_index;
+                servMes.m_repeat_level = param.m_repeat_level;
+                servMes.m_number_particle = 0;
+                servMes.m_number_glyph = 0 ;
+                servMes.m_flag_send_bins = 1;
+                servMes.m_number_volume_divide = mvpl.m_total_number_subvolumes;
+                servMes.m_transfer_function_count = 0;
+                servMes.m_start_step = mvpl.m_total_start_steps;
+                servMes.m_last_step = mvpl.m_total_last_step;
+                servMes.m_number_step = mvpl.m_total_number_steps;
+                servMes.m_min_object_coord[0] = mvpl.m_total_min_object_coord[0];
+                servMes.m_min_object_coord[1] = mvpl.m_total_min_object_coord[1];
+                servMes.m_min_object_coord[2] = mvpl.m_total_min_object_coord[2];
+                servMes.m_max_object_coord[0] = mvpl.m_total_max_object_coord[0];
+                servMes.m_max_object_coord[1] = mvpl.m_total_max_object_coord[1];
+                servMes.m_max_object_coord[2] = mvpl.m_total_max_object_coord[2];
+                servMes.m_min_value = mvpl.m_total_min_value;
+                servMes.m_max_value = mvpl.m_total_max_value;
+                servMes.m_number_nodes = mvpl.m_total_number_nodes;
+                servMes.m_number_elements = mvpl.m_total_number_elements;
+                servMes.m_element_type = mvpl.m_list[0].m_elem_type;
+                servMes.m_file_type = mvpl.m_list[0].m_file_type;
+                servMes.m_number_ingredients = mvpl.m_list[0].m_number_ingredients;
+                servMes.m_particle_limit = param.m_particle_limit;
+                servMes.m_particle_density = param.m_particle_density;
+                servMes.m_subpixel_level = param.m_subpixel_level;
+                setParamTransferFunctionToServer( &servMes, &param );
+                servMes.m_message_size = servMes.byteSize();
+                servMes.show();
+                pts.sendMessage( servMes );
+                pts.disconnect();
+                std::cout << "==================== Connection Reset End ====================" << std::endl;
+            }
+        } // connection reset 
     } // while ( true )
 
     if ( rank == 0 )
@@ -1742,15 +1724,6 @@ bool SetParticleParameterCS(
 
     std::cout << "clntMes.m_time_parameter = " << clntMes.m_time_parameter << std::endl;
 
-    /*
-    if( clntMes.m_time_parameter != 2 )
-    {
-        std::cout << "ERROR:partilce clntMes.m_time_parameter != 2" << std::endl;
-        delete servMes.m_camera;
-        return false;
-    }
-    */
-
     param.m_time_step                = clntMes.m_step; 
     param.m_level_index              = clntMes.m_level_index;
     param.m_repeat_level             = clntMes.m_repeat_level;
@@ -1835,12 +1808,6 @@ bool SetParticleParameterIS(
     MultiVolumeProperty mvp;
 
     std::cout << "clntMes.m_time_parameter = " << clntMes.m_time_parameter << std::endl;
-
-    if( clntMes.m_time_parameter != 2 )
-    {
-        std::cout << "ERROR:partilce clntMes.m_time_parameter != 2" << std::endl;
-        return false;
-    }
 
     param.m_time_step = clntMes.m_step; 
     param.m_level_index = clntMes.m_level_index;
@@ -1974,7 +1941,9 @@ bool SetGlyphParameterIS(
     if( nm1 != nm2 )
     {
         ppw.writeParameterFile( glyphParameterPath.c_str() );
-    }    
+    }
+
+    return true;
 }
 
 bool SetPOLParameterCS(
@@ -1997,7 +1966,9 @@ bool SetPOLParameterCS(
     param.m_end_point[0]   = clntMes.m_end_point[0];
     param.m_end_point[1]   = clntMes.m_end_point[1];
     param.m_end_point[2]   = clntMes.m_end_point[2];
-    param.m_sampling_size  = clntMes.m_sampling_size;    
+    param.m_sampling_size  = clntMes.m_sampling_size;
+
+    return true;
 }
 
 bool SetPOLParameterIS(
@@ -2018,5 +1989,48 @@ bool SetPOLParameterIS(
     if( nm1 != nm2 )
     {
         ppw.writeParameterFile( plotOverLineParameterPath.c_str() );
-    }    
+    }
+
+    return true;
+}
+
+void SetServerMessageParameter(
+    Argument& param,
+    MultiVolumePropertyList& mvpl,
+    jpv::ParticleTransferServerMessage& servMes
+)
+{
+    strncpy( servMes.m_header, "JPTP /1.0 100 OK\r\n", 18 );
+    servMes.m_camera = param.m_camera;
+    servMes.m_server_status = 0;
+    servMes.m_time_step = param.m_time_step;
+    servMes.m_level_index = param.m_level_index;
+    servMes.m_repeat_level = param.m_repeat_level;
+    servMes.m_number_particle = 0;
+    servMes.m_number_glyph = 0;
+    servMes.m_flag_send_bins = 1;
+    servMes.m_number_volume_divide = mvpl.m_total_number_subvolumes;
+    servMes.m_transfer_function_count = 0;
+    servMes.m_start_step = mvpl.m_total_start_steps;
+    servMes.m_last_step = mvpl.m_total_last_step;
+    servMes.m_number_step = mvpl.m_total_number_steps;
+    servMes.m_min_object_coord[0] = mvpl.m_total_min_object_coord[0];
+    servMes.m_min_object_coord[1] = mvpl.m_total_min_object_coord[1];
+    servMes.m_min_object_coord[2] = mvpl.m_total_min_object_coord[2];
+    servMes.m_max_object_coord[0] = mvpl.m_total_max_object_coord[0];
+    servMes.m_max_object_coord[1] = mvpl.m_total_max_object_coord[1];
+    servMes.m_max_object_coord[2] = mvpl.m_total_max_object_coord[2];
+    servMes.m_min_value = mvpl.m_total_min_value;
+    servMes.m_max_value = mvpl.m_total_max_value;
+    servMes.m_number_nodes = mvpl.m_total_number_nodes;
+    servMes.m_number_elements = mvpl.m_total_number_elements;
+    servMes.m_element_type = mvpl.m_list[0].m_elem_type;
+    servMes.m_file_type = mvpl.m_list[0].m_file_type;
+    servMes.m_number_ingredients = mvpl.m_list[0].m_number_ingredients;
+    servMes.m_opacity_transfer_function_synthesis = "O1";
+    servMes.m_color_transfer_function_synthesis = "C1";
+    servMes.m_particle_limit = param.m_particle_limit;
+    servMes.m_particle_density = param.m_particle_density;
+    servMes.m_subpixel_level = param.m_subpixel_level;
+    servMes.m_server_side_variable_range = param.m_server_side_variable_range;
 }

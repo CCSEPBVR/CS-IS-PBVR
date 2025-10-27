@@ -59,6 +59,7 @@
 #include <vismodule/Calculate>
 //#include <vismodule/PointObjectCreator>
 //#include <vismodule/PointObjectGenerator>
+#include <vismodule/Connect>
 #include <vismodule/CS_PointObjectGenerator>
 #include <vismodule/SignalHandler>
 #include <vismodule/Math>

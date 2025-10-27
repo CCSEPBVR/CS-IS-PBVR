@@ -9,7 +9,8 @@ void generate_particle(
 #endif
     JobDispatcher& jd,
     jpv::ParticleTransferServer pts,
-    jpv::ServerMode server_mode
+    jpv::ServerMode server_mode,
+    jpv::InitializeParameter init_param
 )
 {
     int rank;
@@ -59,48 +60,18 @@ void generate_particle(
         param.m_job_id_pack_size
     );
 
-    if( rank == 0 )
+    if ( rank == 0 )
     {
-        // make sub volume num server message start
-        strncpy( servMes.m_header, "JPTP /1.0 100 OK\r\n", 18 );
-        servMes.m_camera = param.m_camera;
-        servMes.m_server_status = 0;
-        servMes.m_time_step = param.m_time_step;
-        servMes.m_level_index = param.m_level_index;
-        servMes.m_repeat_level = param.m_repeat_level;
-        servMes.m_number_particle = 0;
-        servMes.m_number_glyph = 0;
-        servMes.m_flag_send_bins = 1;
-        servMes.m_number_volume_divide = mvpl.m_total_number_subvolumes;
-        servMes.m_transfer_function_count = 0;
-        servMes.m_start_step = mvpl.m_total_start_steps;
-        servMes.m_last_step = mvpl.m_total_last_step;
-        servMes.m_number_step = mvpl.m_total_number_steps;
-        servMes.m_min_object_coord[0] = mvpl.m_total_min_object_coord[0];
-        servMes.m_min_object_coord[1] = mvpl.m_total_min_object_coord[1];
-        servMes.m_min_object_coord[2] = mvpl.m_total_min_object_coord[2];
-        servMes.m_max_object_coord[0] = mvpl.m_total_max_object_coord[0];
-        servMes.m_max_object_coord[1] = mvpl.m_total_max_object_coord[1];
-        servMes.m_max_object_coord[2] = mvpl.m_total_max_object_coord[2];
-        servMes.m_min_value = mvpl.m_total_min_value;
-        servMes.m_max_value = mvpl.m_total_max_value;
-        servMes.m_number_nodes = mvpl.m_total_number_nodes;
-        servMes.m_number_elements = mvpl.m_total_number_elements;
-        servMes.m_element_type = mvpl.m_list[0].m_elem_type;
-        servMes.m_file_type = mvpl.m_list[0].m_file_type;
-        servMes.m_number_ingredients = mvpl.m_list[0].m_number_ingredients;
-        servMes.m_opacity_transfer_function_synthesis = "O1";
-        servMes.m_color_transfer_function_synthesis = "C1";
-        servMes.m_particle_limit = param.m_particle_limit;
-        servMes.m_particle_density = param.m_particle_density;
-        servMes.m_subpixel_level = param.m_subpixel_level;
-        // make sub volume num server message end
+        SetServerMessageParameter( param, mvpl, servMes );
 
-        // send sub volume num server message
-        std::cout << "INFO: send sub volume num server message" << std::endl;
-        servMes.m_message_size = servMes.byteSize();
-        servMes.show();
-        pts.sendMessage( servMes );            
+        if ( init_param == jpv::InitializeParameter::generate_particle )
+        {
+            // send sub volume num server message
+            std::cout << "INFO: send sub volume num server message" << std::endl;
+            servMes.m_message_size = servMes.byteSize();
+            servMes.show();
+            pts.sendMessage( servMes );
+        }  
     }
 
     if ( server_mode == jpv::ServerMode::CS )
@@ -240,15 +211,18 @@ void generate_particle(
                 }
             }
 #else
-            size_t nmemb = tmp_obj->nvertices() * 3;
-            vismodule::ValueArray<vismodule::Real32> coords_array ( tmp_obj->coords().pointer() , nmemb );
-            vismodule::ValueArray<vismodule::UInt8>  colors_array ( tmp_obj->colors().pointer() , nmemb );
-            vismodule::ValueArray<vismodule::Real32> normals_array( tmp_obj->normals().pointer(), nmemb );
-            
-            originalObject->clear();
-            originalObject->setCoords( coords_array );
-            originalObject->setColors( colors_array );
-            originalObject->setNormals( normals_array );
+            if ( init_param == jpv::InitializeParameter::generate_particle )
+            {
+                size_t nmemb = tmp_obj->nvertices() * 3;
+                vismodule::ValueArray<vismodule::Real32> coords_array ( tmp_obj->coords().pointer() , nmemb );
+                vismodule::ValueArray<vismodule::UInt8>  colors_array ( tmp_obj->colors().pointer() , nmemb );
+                vismodule::ValueArray<vismodule::Real32> normals_array( tmp_obj->normals().pointer(), nmemb );
+                
+                originalObject->clear();
+                originalObject->setCoords( coords_array );
+                originalObject->setColors( colors_array );
+                originalObject->setNormals( normals_array );
+            }
 #endif
 
             delete tmp_obj;
@@ -256,8 +230,11 @@ void generate_particle(
         else // server_mode == jpv::ServerMode::IS
         {
             // get point object
-            pm.readParticleFile();
-            pm.getParticle( originalObject );
+            if ( init_param == jpv::InitializeParameter::generate_particle )
+            {
+                pm.readParticleFile();
+                pm.getParticle( originalObject );
+            }
 
             // get histgram start
             int c_count = 0;
@@ -283,7 +260,7 @@ void generate_particle(
         } // server_mode == jpv::ServerMode::IS
 
         // send particle
-        if ( rank == 0 )
+        if ( rank == 0 && init_param == jpv::InitializeParameter::generate_particle )
         {
             // make particle server message start
             servMes.m_flag_send_bins = 0;
@@ -340,6 +317,10 @@ void generate_particle(
     if ( server_mode == jpv::ServerMode::CS )
     {
         vr = setVariablerange2( tmp_max, tmp_min, ( tf_number * 2 ) );
+    }
+    else // server_mode == jpv::ServerMode::IS
+    {
+        vr = pm.particleHistoryFile().variableRange();
     }
 
     // send histgram and range

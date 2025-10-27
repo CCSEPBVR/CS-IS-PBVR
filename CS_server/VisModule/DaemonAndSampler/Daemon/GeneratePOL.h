@@ -59,6 +59,7 @@
 #include <vismodule/PointObjectCreator>
 #include <vismodule/SignalHandler>
 #include <vismodule/Math>
+#include <vismodule/Connect>
 #include <vismodule/PlotOverLineGenerator>
 //IS
 #include <vismodule/ParticleMonitor>

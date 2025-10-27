@@ -39,47 +39,13 @@ void generate_plot_over_line(
 
     if( rank == 0 )
     {
-        // make sub volume num server message start
-        strncpy( servMes.m_header, "JPTP /1.0 100 OK\r\n", 18 );
-        servMes.m_camera = param.m_camera;
-        servMes.m_server_status = 0;
-        servMes.m_time_step = param.m_time_step;
-        servMes.m_level_index = param.m_level_index;
-        servMes.m_repeat_level = param.m_repeat_level;
-        servMes.m_number_particle = 0;
-        servMes.m_number_glyph = 0;
-        servMes.m_flag_send_bins = 1;
-        servMes.m_number_volume_divide = mvpl.m_total_number_subvolumes;
-        servMes.m_transfer_function_count = 0;
-        servMes.m_start_step = mvpl.m_total_start_steps;
-        servMes.m_last_step = mvpl.m_total_last_step;
-        servMes.m_number_step = mvpl.m_total_number_steps;
-        servMes.m_min_object_coord[0] = mvpl.m_total_min_object_coord[0];
-        servMes.m_min_object_coord[1] = mvpl.m_total_min_object_coord[1];
-        servMes.m_min_object_coord[2] = mvpl.m_total_min_object_coord[2];
-        servMes.m_max_object_coord[0] = mvpl.m_total_max_object_coord[0];
-        servMes.m_max_object_coord[1] = mvpl.m_total_max_object_coord[1];
-        servMes.m_max_object_coord[2] = mvpl.m_total_max_object_coord[2];
-        servMes.m_min_value = mvpl.m_total_min_value;
-        servMes.m_max_value = mvpl.m_total_max_value;
-        servMes.m_number_nodes = mvpl.m_total_number_nodes;
-        servMes.m_number_elements = mvpl.m_total_number_elements;
-        servMes.m_element_type = mvpl.m_list[0].m_elem_type;
-        servMes.m_file_type = mvpl.m_list[0].m_file_type;
-        servMes.m_number_ingredients = mvpl.m_list[0].m_number_ingredients;
-        servMes.m_opacity_transfer_function_synthesis = "O1";
-        servMes.m_color_transfer_function_synthesis = "C1";
-        servMes.m_particle_limit = param.m_particle_limit;
-        servMes.m_particle_density = param.m_particle_density;
-        servMes.m_subpixel_level = param.m_subpixel_level;
-        servMes.m_server_side_variable_range = param.m_server_side_variable_range;
-        // make sub volume num server message end
+        SetServerMessageParameter( param, mvpl, servMes );
 
         // send sub volume num server message
         std::cout << "INFO: send sub volume num server message" << std::endl;
         servMes.m_message_size = servMes.byteSize();
         servMes.show();
-        pts.sendMessage( servMes );            
+        pts.sendMessage( servMes );     
     }
     
     std::vector<float> tmp_values( resolution );

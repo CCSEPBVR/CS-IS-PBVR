@@ -120,4 +120,10 @@ bool SetPOLParameterIS(
     std::string plotOverLineParameterPath_old    
 );
 
+void SetServerMessageParameter(
+    Argument& param,
+    MultiVolumePropertyList& mvpl,
+    jpv::ParticleTransferServerMessage& servMes
+);
+
 #endif
