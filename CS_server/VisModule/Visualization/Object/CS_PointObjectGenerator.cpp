@@ -29,6 +29,225 @@
 
 using namespace vismodule;
 
+vismodule::PointObject* CS_PointObjectGenerator::GenerateParticleStruct(
+    const Argument& param,
+    vismodule::VolumeObjectBase* volume,
+    domain_parameters_struct dom,
+    Type** values,
+    const int nvariables
+)
+{
+    jpv::ServerMode server_mode;
+    server_mode = jpv::ServerMode::CS;
+
+    vismodule::CoordSynthesizerStrings* css;
+
+    if ( server_mode == jpv::ServerMode::CS )
+    {
+        std::string xss = param.m_x_synthesis;
+        std::string yss = param.m_y_synthesis;
+        std::string zss = param.m_z_synthesis;
+        css = new vismodule::CoordSynthesizerStrings( 0, xss, yss, zss );
+    }
+    else // jpv::ServerMode::IS
+    {
+        css = NULL;
+    }
+
+#ifdef CPU_SAMPLING_TIME
+    std::cout << std::endl << "CPU - ";
+#else
+    std::cout << std::endl << "GPU - ";
+#endif
+
+    switch ( param.m_sampling_method )
+    {
+    case 'u':
+        std::cout << "Uniform sampling" << std::endl;
+        return new vismodule::CellByCellUniformSampling(
+            dom,
+            values,
+            nvariables,
+            param.m_transfunc_array[0],
+            param.m_transfunc_array,
+            param.m_transfunc_synthesizer, 
+            param.m_particle_density,
+            css
+        );
+    case 'r':
+        std::cout << "Rejection sampling" << std::endl;
+        return new vismodule::CellByCellRejectionSampling(
+            dom,
+            values,
+            nvariables,
+            param.m_transfunc_array[0],
+            param.m_transfunc_array,
+            param.m_transfunc_synthesizer, 
+            param.m_particle_density,
+            css
+        );
+    case 'm':
+        std::cout << "Metropolis sampling" << std::endl;
+        return new vismodule::CellByCellMetropolisSampling(
+            dom,
+            values,
+            nvariables,
+            param.m_transfunc_array[0],
+            param.m_transfunc_array,
+            param.m_transfunc_synthesizer,
+            param.m_particle_density,
+            css
+        );
+    case 'h':
+        std::cout << "Histogram " << std::endl;
+        return new vismodule::CellByCellHistogram(
+            dom,
+            values,
+            nvariables,
+            param.m_transfunc_array[0],
+            param.m_transfunc_array,
+            param.m_transfunc_synthesizer,
+            param.m_particle_density,
+            css
+        );
+
+    default:
+        std::cout << "Unknown sampling method:" << param.m_sampling_method << std::endl;
+        exit( 1 );
+        return 0;
+    }
+}
+
+vismodule::PointObject* CS_PointObjectGenerator::GenerateParticleUnstruct(
+    const Argument& param,
+    vismodule::VolumeObjectBase* volume,
+    domain_parameters_unstruct dom,
+    Type** values,
+    int nvariables,
+    float* coordinates,
+    int ncoords,
+    unsigned int* connections,
+    int ncells,
+    const vismodule::VolumeObjectBase::CellType& celltype
+)
+{
+    float max_opacity;
+    float max_density;
+    float sampling_volume_inverse;
+    
+    CellByCellParticleGenerator::CalculateDensityConstaint(
+        *param.m_camera,
+        *volume,
+        static_cast<float>( param.m_subpixel_level ),
+        param.m_sampling_step,
+        &sampling_volume_inverse,
+        &max_opacity,
+        &max_density
+    );
+
+    param.m_transfunc_synthesizer->setMaxOpacity( max_opacity );
+    param.m_transfunc_synthesizer->setMaxDensity( max_density );
+    param.m_transfunc_synthesizer->setSamplingVolumeInverse( sampling_volume_inverse );
+
+    vismodule::CoordSynthesizerStrings* css;
+
+    jpv::ServerMode server_mode;
+    server_mode = jpv::ServerMode::CS;
+
+    if ( server_mode == jpv::ServerMode::CS )
+    {
+        std::string xss = param.m_x_synthesis;
+        std::string yss = param.m_y_synthesis;
+        std::string zss = param.m_z_synthesis;
+        css = new vismodule::CoordSynthesizerStrings( 0, xss, yss, zss );
+    }
+    else // jpv::ServerMode::IS
+    {
+        css = NULL;
+    }
+
+#ifdef CPU_SAMPLING_TIME
+    std::cout << std::endl << "CPU - ";
+#else
+    std::cout << std::endl << "GPU - ";
+#endif
+
+    switch ( param.m_sampling_method )
+    {
+    case 'u':
+        std::cout << "Uniform sampling" << std::endl;
+        return new vismodule::CellByCellUniformSampling(
+            dom,
+            values,
+            nvariables,
+            coordinates,
+            ncoords,
+            connections,
+            ncells,
+            celltype,
+            param.m_transfunc_array[0],
+            param.m_transfunc_array,
+            param.m_transfunc_synthesizer,
+            param.m_particle_density,
+            css
+        );
+    case 'r':
+        std::cout << "Rejection sampling" << std::endl;
+        return new vismodule::CellByCellRejectionSampling(
+            dom,
+            values,
+            nvariables,
+            coordinates,
+            ncoords,
+            connections,
+            ncells,
+            celltype,
+            param.m_transfunc_array[0],
+            param.m_transfunc_array,
+            param.m_transfunc_synthesizer,
+            param.m_particle_density,
+            css
+        );
+    case 'm':
+        std::cout << "Metropolis sampling" << std::endl;
+        return new vismodule::CellByCellMetropolisSampling(
+            dom,
+            values,
+            nvariables,
+            coordinates,
+            ncoords,
+            connections,
+            ncells,
+            celltype,
+            param.m_transfunc_array[0],
+            param.m_transfunc_array,
+            param.m_transfunc_synthesizer,
+            param.m_particle_density,
+            css
+        );
+    case 'h':
+        std::cout << "Histogram " << std::endl;
+        return new vismodule::CellByCellHistogram( 
+            dom,
+            values,
+            nvariables,
+            coordinates,
+            ncoords,
+            connections,
+            ncells,
+            celltype,
+            param.m_transfunc_array[0],
+            param.m_transfunc_array,
+            param.m_transfunc_synthesizer,
+            param.m_particle_density,
+            css
+        );
+    default:
+        std::cout << "Unknown sampling method:" << param.m_sampling_method << std::endl;
+        exit( 1 );
+        return 0;
+    }
+}
 
 vismodule::PointObject* CS_PointObjectGenerator::run( const Argument& param, const vismodule::Camera& camera, const int st )
 {
@@ -497,7 +716,12 @@ vismodule::PointObject* CS_PointObjectGenerator::sampling( const Argument& param
 }
 
 template <typename T>
-void CS_PointObjectGenerator::copy_values(vismodule::AnyValueArray& valueArray, std::unique_ptr<std::unique_ptr<Type[]>[]>& values, int nvariables, int nnodes) 
+void CS_PointObjectGenerator::copy_values(
+    vismodule::AnyValueArray& valueArray,
+    std::unique_ptr<std::unique_ptr<Type[]>[]>& values,
+    int nvariables,
+    int nnodes
+)
 {
     for (int j = 0; j < nvariables; j++) 
     {

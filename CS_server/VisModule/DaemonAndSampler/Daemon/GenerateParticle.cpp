@@ -24,7 +24,6 @@ void generate_particle(
 #endif
     int st, vl, wid = 0;
     jpv::ParticleTransferServerMessage servMes;
-    std::vector<vismodule::CS_PointObjectGenerator> point_generator_lst;
     int tf_number;
     VariableRange vr; // jobcollectorで使用、削除予定
     ParticleMonitor pm;
@@ -74,12 +73,6 @@ void generate_particle(
         }  
     }
 
-    if ( server_mode == jpv::ServerMode::CS )
-    {
-        point_generator_lst.clear();
-        point_generator_lst.resize(mvpl.m_list.size());
-    }
-
     int c_bins_size = 0;
     int o_bins_size = 0;
     for ( int tf = 0; tf < tf_number; tf++ )
@@ -120,7 +113,7 @@ void generate_particle(
 
         if ( server_mode == jpv::ServerMode::CS )
         {
-            vismodule::PointObject* tmp_obj = NULL;
+            vismodule::PointObject* tmp_obj = nullptr;
 
             // make point object and histgram and range
             if ( ( rank > 0 ) || ( mpi_size == 1 ) )
@@ -129,30 +122,71 @@ void generate_particle(
                 fidx = mvpl.getFileIndex( vl, &xvl );
                 MultiVolumeProperty& mvp = mvpl.m_list[fidx];
                 mvp.setFilePath( param.m_input_data, st, xvl );
-                point_generator_lst[fidx].setFilterInfo( &mvp );
                 param.m_subvolume_id = xvl;
-
-                point_generator_lst[fidx].setCoordSynthStr(
-                    param.m_x_synthesis,
-                    param.m_y_synthesis,
-                    param.m_z_synthesis
-                );
-
                 // generate point object start
                 try
                 {
+                    vismodule::VolumeObjectBase* volume = nullptr;
+                    vismodule::CS_PointObjectGenerator point_object_generator;
+
+                    point_object_generator.setCoordSynthStr(
+                        param.m_x_synthesis,
+                        param.m_y_synthesis,
+                        param.m_z_synthesis
+                    );
+
+                    // generate volume object
                     if ( mvp.m_file_type == 1 || mvp.m_file_type == 2 ) // filetype: gathered subvolume or gathered timestep
                     {
-                        tmp_obj = point_generator_lst[fidx].run( param, *param.m_camera, st, xvl );
+                        generate_volume( param, mvp, st, xvl, volume );
                     }
                     else if ( mvp.m_file_type == 3 || mvp.m_file_type == 4 )
                     {
-                        tmp_obj = point_generator_lst[fidx].run( param, *param.m_camera, st, xvl );
+                        generate_volume( param, mvp, st, xvl, volume );
                     }
                     else // filetype: kvsml
                     {
-                        tmp_obj = point_generator_lst[fidx].run( param, *param.m_camera, st );
+                        generate_volume( param, mvp, st, volume );
                     }
+
+                    if ( !volume )
+                    {
+                        throw std::runtime_error("Failed to generate volume object.");
+                    }
+
+                    Type** values = nullptr;
+                    int nvariables = 0;
+                    int ncoords = 0;
+                    vismodule::VolumeObjectBase::VolumeType voltype = volume->volumeType();
+
+                    if(voltype == vismodule::VolumeObjectBase::VolumeType::Unstructured)
+                    {
+                        domain_parameters_unstruct dom;
+                        float* coordinates = nullptr;
+                        unsigned int* connections = nullptr;
+                        int ncells = 0;
+                        vismodule::VolumeObjectBase::CellType celltype;
+
+                        store_volume_in_variables_array_unstruct( volume, dom, values, nvariables, coordinates, ncoords, connections, ncells, celltype );
+
+                        // generate particle
+                        tmp_obj = point_object_generator.GenerateParticleUnstruct( param, volume, dom, values, nvariables, coordinates, ncoords, connections, ncells, celltype );
+
+                        delete coordinates;
+                        delete connections;
+                    }
+                    else // (voltype == vismodule::VolumeObjectBase::VolumeType::Structured)
+                    {
+                        domain_parameters_struct dom; 
+
+                        store_volume_in_variables_array_struct( volume, dom, values, nvariables, ncoords );
+
+                        // generate particle
+                        tmp_obj = point_object_generator.GenerateParticleStruct( param, volume, dom, values, nvariables );
+                    }
+
+                    delete values;
+                    delete volume;
                 }
                 catch ( const std::runtime_error& e )
                 {
@@ -402,6 +436,302 @@ void generate_particle(
 
     delete[] tmp_c_bins;
     delete[] tmp_o_bins;
+}
+
+void generate_volume(
+    const Argument& param,
+    const MultiVolumeProperty& mvp,
+    const int time_step,
+    vismodule::VolumeObjectBase* volume
+)
+{
+    struct stat s;
+    if ( stat( param.m_input_data.c_str(), &s ) )
+    {
+        std::cout << "Error. read failed:" << param.m_input_data << std::endl;
+        exit( 1 );
+    }
+
+    if ( vismoduleview::FileChecker::ImportableStructuredVolume( param.m_input_data ))
+    {
+        std::cout << "Structured !" <<std::endl;
+        volume = new vismodule::StructuredVolumeImporter( param.m_input_data ); 
+        int id = param.m_subvolume_id;
+        volume->updateMinMaxValues();
+        volume->setMinMaxObjectCoords( mvp.m_min_subvolume_coord[id], mvp.m_max_subvolume_coord[id] );
+        volume->setMinMaxExternalCoords( mvp.m_min_subvolume_coord[id], mvp.m_max_subvolume_coord[id] );
+
+    } 
+    else if ( vismoduleview::FileChecker::ImportableUnstructuredVolume( param.m_input_data))
+    {
+        std::cout << "Unstructured !" <<std::endl;
+        volume = new vismodule::UnstructuredVolumeImporter( param.m_input_data );  
+        volume->updateMinMaxValues();
+        volume->setMinMaxObjectCoords( mvp.m_min_object_coord, mvp.m_max_object_coord );
+        volume->setMinMaxExternalCoords( mvp.m_min_object_coord, mvp.m_max_object_coord );
+    }
+    else 
+    {
+        visModuleMessageError("%s is not volume data.", param.m_input_data.c_str());
+    }
+
+    std::cout << *volume << std::endl;
+    std::cout << "min:" << volume->minObjectCoord()   << ", max:" << volume->maxObjectCoord() << std::endl;
+    std::cout << "min:" << volume->minExternalCoord() << ", max:" << volume->maxExternalCoord() << std::endl;
+
+    return;
+}
+
+void generate_volume(
+    const Argument &param,
+    const MultiVolumeProperty& mvp,
+    const int time_step,
+    const int sub_volume_id,
+    vismodule::VolumeObjectBase* volume
+)
+{
+    size_t found_kvsml = param.m_input_data_base.find(".kvsml");
+    size_t found_vtm   = param.m_input_data_base.find(".vtm");
+    size_t found_vtu   = param.m_input_data_base.find(".vtu");
+    size_t found_vti   = param.m_input_data_base.find(".vti");
+    size_t found_inp   = param.m_input_data_base.find(".inp");
+    size_t found_pvtu  = param.m_input_data_base.find(".pvtu");
+    size_t found_case  = param.m_input_data_base.find(".case");
+
+    if ( found_kvsml != std::string::npos )
+    {
+        volume = new vismodule::UnstructuredVolumeImporter( param.m_input_data );
+    
+        vismodule::File ifpx( mvp.m_file_path );
+        std::string path_base = ifpx.pathName() + ifpx.Separator() + ifpx.baseName();
+    
+        volume = new vismodule::UnstructuredVolumeImporter( path_base, mvp.m_file_type, time_step, sub_volume_id );
+    }
+#ifdef EXTEND_FILE_FORMAT
+    else if ( found_vtm != std::string::npos )
+    {
+        // structured
+        if( mvp.m_file_type == 3 )
+        {
+            volume = new vismodule::StructuredVolumeImporter( mvp.m_file_path, time_step, sub_volume_id );
+        }
+        // unstructured
+        if( mvp.m_file_type == 4 )
+        {
+            volume = new vismodule::UnstructuredVolumeImporter( mvp.m_file_path, mvp.m_file_type, mvp.m_elem_type, time_step, sub_volume_id );
+        }
+    }
+    else if ( found_vtu  != std::string::npos ||
+              found_inp  != std::string::npos ||
+              found_pvtu != std::string::npos ||
+              found_case != std::string::npos
+            )
+    {
+        volume = new vismodule::UnstructuredVolumeImporter( mvp.m_file_path, mvp.m_file_type, mvp.m_elem_type, time_step, sub_volume_id );
+    }
+    else if ( found_vti != std::string::npos )
+    {
+        volume = new vismodule::StructuredVolumeImporter( mvp.m_file_path, time_step, sub_volume_id );
+    }
+#endif
+
+    // CS only
+    if ( volume )
+    {
+        std::string xss = param.m_x_synthesis;
+        std::string yss = param.m_y_synthesis;
+        std::string zss = param.m_z_synthesis;
+        vismodule::CoordSynthesizerStrings css( 0, xss, yss, zss );
+        volume->setCoordSynthesizerStrings( css );
+    }
+
+    // .vtm .pvtu .case file format
+    if ( ( found_vtm != std::string::npos ) || ( found_pvtu != std::string::npos ) || ( found_case != std::string::npos ) )
+    {
+        // Structured Volume Data
+        if ( mvp.m_file_type == 3 )
+        {
+            volume->updateMinMaxValues();
+            volume->setMinMaxObjectCoords( mvp.m_min_subvolume_coord[sub_volume_id], mvp.m_max_subvolume_coord[sub_volume_id] );
+            volume->setMinMaxExternalCoords( mvp.m_min_subvolume_coord[sub_volume_id], mvp.m_max_subvolume_coord[sub_volume_id] );
+        }
+
+        // Unstructured Volume Data
+        else if ( mvp.m_file_type == 4 )
+        {
+            volume->updateMinMaxValues();
+            volume->setMinMaxObjectCoords( mvp.m_min_object_coord, mvp.m_max_object_coord );
+            volume->setMinMaxExternalCoords( mvp.m_min_object_coord, mvp.m_max_object_coord );
+        }
+    }
+    else
+    {
+        volume->setMinMaxValues( mvp.m_min_value, mvp.m_max_value );
+        volume->setMinMaxObjectCoords( mvp.m_min_object_coord, mvp.m_max_object_coord );
+        volume->setMinMaxExternalCoords( mvp.m_min_object_coord, mvp.m_max_object_coord );
+    }
+
+    std::cout << *volume << std::endl;
+    std::cout << "min:" << volume->minObjectCoord()   << ", max:" << volume->maxObjectCoord() << std::endl;
+    std::cout << "min:" << volume->minExternalCoord() << ", max:" << volume->maxExternalCoord() << std::endl;    
+}
+
+void store_volume_in_variables_array_common(
+    vismodule::VolumeObjectBase* volume,
+    Type** values,
+    int& nvariables,
+    int& ncoords
+)
+{
+    //詰め替え処理
+    vismodule::AnyValueArray valueArray;
+    valueArray = volume->values(); 
+    ncoords =  volume->nnodes();
+    nvariables = volume->veclen();
+
+    // ここで変数の値をfloatでまとめることで粒子生成のテンプレート化を回避
+    std::unique_ptr<std::unique_ptr<Type[]>[]> tmp_values(new std::unique_ptr<Type[]>[nvariables]);
+
+    // 実行時型分岐で呼び出す
+    const std::type_info& type = volume->values().typeInfo()->type();
+    if (type == typeid(vismodule::Int8))
+    {
+        copy_values<vismodule::Int8>(valueArray, tmp_values, nvariables, ncoords);
+    }  
+    else if ( type == typeid( vismodule::Int16  ) )
+    {
+        copy_values<vismodule::Int16>(valueArray, tmp_values, nvariables, ncoords);
+    } 
+    else if ( type == typeid( vismodule::Int32  ) )
+    {
+        copy_values<vismodule::Int32>(valueArray, tmp_values, nvariables, ncoords);
+    }
+    else if ( type == typeid( vismodule::Int64  ) )
+    {
+        copy_values<vismodule::Int64>(valueArray, tmp_values, nvariables, ncoords);
+    }
+    else if ( type == typeid( vismodule::UInt8  ) )
+    {
+        copy_values<vismodule::UInt8>(valueArray, tmp_values, nvariables, ncoords);
+    }
+    else if ( type == typeid( vismodule::UInt16 ) )
+    {
+        copy_values<vismodule::UInt16>(valueArray, tmp_values, nvariables, ncoords);
+    }
+    else if ( type == typeid( vismodule::UInt32 ) )
+    {
+        copy_values<vismodule::UInt32>(valueArray, tmp_values, nvariables, ncoords);
+    }
+    else if ( type == typeid( vismodule::UInt64 ) )
+    {
+        copy_values<vismodule::UInt64>(valueArray, tmp_values, nvariables, ncoords);
+    }
+    else if ( type == typeid( vismodule::Real32 ) )
+    {
+        copy_values<vismodule::Real32>(valueArray, tmp_values, nvariables, ncoords);
+    }
+    else if ( type == typeid( vismodule::Real64 ) )
+    {
+        copy_values<vismodule::Real64>(valueArray, tmp_values, nvariables, ncoords);
+    }
+    else 
+    {
+        throw std::runtime_error("Unsupported type");
+    }
+
+    std::vector<float*> raw_values( nvariables );
+    for (int i = 0; i < nvariables; ++i ) 
+    {
+        raw_values[i] = tmp_values[i].get();
+    }
+
+    values = raw_values.data();
+}
+
+void store_volume_in_variables_array_struct(
+    vismodule::VolumeObjectBase* volume,
+    domain_parameters_struct& dom,
+    Type** values,
+    int& nvariables,
+    int& ncoords
+)
+{
+    store_volume_in_variables_array_common( volume, values, nvariables, ncoords );
+
+    const vismodule::StructuredVolumeObject* svo_p = static_cast<const vismodule::StructuredVolumeObject*>( volume );
+
+    int resol[3] = {
+        static_cast<int>(svo_p->resolution().x()),
+        static_cast<int>(svo_p->resolution().y()),
+        static_cast<int>(svo_p->resolution().z())
+    };
+
+    dom = {
+        volume->minObjectCoord().x(),
+        volume->minObjectCoord().y(),
+        volume->minObjectCoord().z(),
+        volume->maxObjectCoord().x(),
+        volume->maxObjectCoord().y(),
+        volume->maxObjectCoord().z(),
+        resol,
+        1.f
+    };
+}
+
+void store_volume_in_variables_array_unstruct(
+    vismodule::VolumeObjectBase* volume,
+    domain_parameters_unstruct& dom,
+    Type** values,
+    int& nvariables,
+    float* coordinates,
+    int& ncoords,
+    unsigned int* connections,
+    int& ncells,
+    vismodule::VolumeObjectBase::CellType& celltype
+)
+{
+    store_volume_in_variables_array_common( volume, values, nvariables, ncoords );
+
+    const vismodule::UnstructuredVolumeObject* uvo_p = static_cast<const vismodule::UnstructuredVolumeObject*>( volume );
+
+    std::vector<float> tmp_coordinates;
+    tmp_coordinates.assign( (float*)uvo_p->coords().begin(), (float*)uvo_p->coords().end() );
+    coordinates = tmp_coordinates.data();
+
+    std::vector<unsigned int> tmp_connections;
+    tmp_connections.assign( (unsigned int*)uvo_p->connections().begin(), (unsigned int*)uvo_p->connections().end() );
+    connections = tmp_connections.data();
+
+    ncells   = uvo_p->ncells();
+    celltype = uvo_p->cellType();
+
+    dom = {
+        volume->minObjectCoord().x(),
+        volume->minObjectCoord().y(),
+        volume->minObjectCoord().z(),
+        volume->maxObjectCoord().x(),
+        volume->maxObjectCoord().y(),
+        volume->maxObjectCoord().z()
+    };
+}
+
+template <typename T>
+void copy_values(
+    vismodule::AnyValueArray& valueArray,
+    std::unique_ptr<std::unique_ptr<Type[]>[]>& values,
+    int nvariables,
+    int nnodes
+)
+{
+    for (int j = 0; j < nvariables; j++) 
+    {
+        values[j] = std::make_unique<Type[]>(nnodes);
+        for (int i = 0; i < nnodes; i++) 
+        {
+            int it = j * nnodes + i;
+            values[j][i] = valueArray.at<T>(it);
+        }
+    }
 }
 
 #if 0

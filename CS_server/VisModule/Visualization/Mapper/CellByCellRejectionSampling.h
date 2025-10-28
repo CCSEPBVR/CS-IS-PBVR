@@ -76,7 +76,7 @@ public:
         unsigned int* connections, int ncells,
         const  vismodule::VolumeObjectBase::CellType& celltype ,
         const vismodule::TransferFunction& transfer_function,
-        std::vector<vismodule::TransferFunction>& transfer_function_array,
+        const std::vector<vismodule::TransferFunction>& transfer_function_array,
         TransferFunctionSynthesizer* transfunc_synthesizer,
         const float                  paritcle_density,
         vismodule::CoordSynthesizerStrings* coord_synthesizer_strings);
@@ -87,7 +87,7 @@ public:
         Type** values,  
         int nvariables, 
         const vismodule::TransferFunction& transfer_function,
-        std::vector<vismodule::TransferFunction>& transfer_function_array,
+        const std::vector<vismodule::TransferFunction>& transfer_function_array,
         TransferFunctionSynthesizer* transfunc_synthesizer,
         const float                  paritcle_density,
         vismodule::CoordSynthesizerStrings* coord_synthesizer_strings);

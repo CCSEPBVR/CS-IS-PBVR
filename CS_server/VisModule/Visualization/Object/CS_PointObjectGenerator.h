@@ -123,12 +123,36 @@ public:
     vismodule::PointObject* run( const Argument& param, const vismodule::Camera& camera, const int st );
     vismodule::PointObject* run( const Argument& param, const vismodule::Camera& camera, const int st, const int vl);
 
+    vismodule::PointObject* GenerateParticleStruct(
+        const Argument& param,
+        vismodule::VolumeObjectBase* volume,
+        domain_parameters_struct dom,
+        Type** values,
+        int nvariables
+    );
+
+    vismodule::PointObject* GenerateParticleUnstruct(
+        const Argument& param,
+        vismodule::VolumeObjectBase* volume,
+        domain_parameters_unstruct dom,
+        Type** values,
+        int nvariables,
+        float* coordinates,
+        int ncoords,
+        unsigned int* connections,
+        int ncells,
+        const vismodule::VolumeObjectBase::CellType& celltype
+    );
+
 private:
     vismodule::PointObject* sampling( const Argument& param, const vismodule::Camera& camera, vismodule::VolumeObjectBase& volume, const size_t subpixel_level, const float sampling_step );
 
-template <typename T>
-void copy_values(vismodule::AnyValueArray& valueArray, std::unique_ptr<std::unique_ptr<Type[]>[]>& values, int nvariables, int nnodes);
-
+    template <typename T>
+    void copy_values(
+        vismodule::AnyValueArray& valueArray, std::unique_ptr<std::unique_ptr<Type[]>[]>& values,
+        int nvariables,
+        int nnodes
+    );
 };
 
 }

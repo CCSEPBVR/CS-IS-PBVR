@@ -85,7 +85,56 @@ void generate_particle(
     jpv::ParticleTransferServer pts,
     jpv::ServerMode server_mode,
     jpv::InitializeParameter init_param
-);  
+);
+
+void generate_volume(
+    const Argument& param,
+    const MultiVolumeProperty& mvp,
+    const int time_step,
+    vismodule::VolumeObjectBase* volume
+);
+
+void generate_volume(
+    const Argument &param,
+    const MultiVolumeProperty& mvp,
+    const int time_step,
+    const int sub_volume_id,
+    vismodule::VolumeObjectBase* volume
+);
+
+void store_volume_in_variables_array_common(
+    vismodule::VolumeObjectBase* volume,
+    Type** values,
+    int& nvariables,
+    int& ncoords
+);
+
+void store_volume_in_variables_array_struct(
+    vismodule::VolumeObjectBase* volume,
+    domain_parameters_struct& dom,
+    Type** values,
+    int& nvariables,
+    int& ncoords
+);
+
+void store_volume_in_variables_array_unstruct(
+    vismodule::VolumeObjectBase* volume,
+    domain_parameters_unstruct& dom,
+    Type** values,
+    int& nvariables,
+    float* coordinates,
+    int& ncoords,
+    unsigned int* connections,
+    int& ncells,
+    vismodule::VolumeObjectBase::CellType& celltype
+);
+
+template <typename T>
+void copy_values(
+    vismodule::AnyValueArray& valueArray, std::unique_ptr<std::unique_ptr<Type[]>[]>& values,
+    int nvariables,
+    int nnodes
+);
 
 void generate_particle_worker(
     Argument &param,

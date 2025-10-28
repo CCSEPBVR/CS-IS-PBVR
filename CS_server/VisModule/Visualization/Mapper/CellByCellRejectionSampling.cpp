@@ -78,7 +78,7 @@ CellByCellRejectionSampling::CellByCellRejectionSampling(
     unsigned int* connections, int ncells,
     const  vismodule::VolumeObjectBase::CellType& celltype, 
     const vismodule::TransferFunction& transfer_function,
-    std::vector<vismodule::TransferFunction>& transfer_function_array, 
+    const std::vector<vismodule::TransferFunction>& transfer_function_array, 
     TransferFunctionSynthesizer* transfunc_synthesizer,
     const float                  particle_density,
     vismodule::CoordSynthesizerStrings* coord_synthesizer_strings):
@@ -99,7 +99,7 @@ CellByCellRejectionSampling::CellByCellRejectionSampling(
         Type** values,  
         int nvariables, 
         const vismodule::TransferFunction& transfer_function,
-        std::vector<vismodule::TransferFunction>& transfer_function_array,
+        const std::vector<vismodule::TransferFunction>& transfer_function_array,
         TransferFunctionSynthesizer* transfunc_synthesizer,
         const float                  particle_density,
         vismodule::CoordSynthesizerStrings* coord_synthesizer_strings):
