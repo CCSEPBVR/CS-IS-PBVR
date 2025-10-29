@@ -155,6 +155,53 @@ inline bool NameListFile::getCount( const std::string& name )
     return true;
 }
 
+inline size_t NameListFile::byteSize() const
+{
+    size_t index = 0;
+   
+    index += jpv::Serializer::byteSize( m_name_list.size() );
+    for ( std::map<std::string, std::string>::const_iterator i = m_name_list.begin(); i != m_name_list.end(); i++ )
+    {
+        index += jpv::Serializer::byteSize( i->first );
+        index += jpv::Serializer::byteSize( i->second );
+    }
+
+    return index;    
+}
+
+inline size_t NameListFile::pack( char* buf ) const
+{
+    size_t index = 0;
+   
+    index += jpv::Serializer::write( buf + index, m_name_list.size() );
+    for ( std::map<std::string, std::string>::const_iterator i = m_name_list.begin(); i != m_name_list.end(); i++ )
+    {
+        index += jpv::Serializer::write( buf + index, i->first );
+        index += jpv::Serializer::write( buf + index, i->second );
+    }
+
+    return index;
+}
+
+inline size_t ParamInfo::unpack( const char* buf )
+{
+    std::string nm;
+    std::string val;
+    size_t s;
+    size_t index = 0;
+
+    //index += jpv::Serializer::read( buf + index, s );
+    index += jpv::Serializer::read( buf + index, &s );
+    for ( size_t i = 0; i != s; i++ )
+    {
+        index += jpv::Serializer::read( buf + index, &nm );
+        index += jpv::Serializer::read( buf + index, &val );
+        m_name_list[nm] = val;
+    }
+
+    return index;
+}
+
 inline bool NameListFile::operator==( NameListFile& name_list_file )
 {
     for( NameListMap::iterator i =  m_name_list.begin(); i != m_name_list.end(); i++ )

@@ -19,13 +19,15 @@ void ParameterFileReader::outputParameterMessage( jpv::ParticleTransferServerMes
     server_message->m_particle_data_size_limit =  m_name_list_file.getValue<float>(   "PARTICLE_DATA_SIZE_LIMIT"  );
 }
 
-void ParameterFileReader::setParameter( Argument *param ){
-    param->m_particle_limit           = m_name_list_file.getValue<int32_t>( "PARTICLE_LIMIT" );
-    param->m_particle_density         = m_name_list_file.getValue<float>( "PARTICLE_DENSITY" );
-    param->m_particle_data_size_limit = m_name_list_file.getValue<float>( "PARTICLE_DATA_SIZE_LIMIT" );
-    size_t width                      = m_name_list_file.getValue<size_t>( "RESOLUTION_WIDTH" );
-    size_t height                     = m_name_list_file.getValue<size_t>( "RESOLUTION_HEIGHT" );
-    param->m_camera->setWindowSize( width, height );
+void ParameterFileReader::setParameter( Argument& param )
+{
+    param.m_particle_limit           = m_name_list_file.getValue<int32_t>( "PARTICLE_LIMIT" );
+    param.m_particle_density         = m_name_list_file.getValue<float>( "PARTICLE_DENSITY" );
+    param.m_particle_data_size_limit = m_name_list_file.getValue<float>( "PARTICLE_DATA_SIZE_LIMIT" );
+    size_t width                     = m_name_list_file.getValue<size_t>( "RESOLUTION_WIDTH" );
+    size_t height                    = m_name_list_file.getValue<size_t>( "RESOLUTION_HEIGHT" );
+    param.m_camera->setWindowSize( width, height );
+    param.m_sampling_method          = m_name_list_file.getValue<std::string>("SAMPLING_METHOD");
 }
 
 void ParameterFileReader::outputTransferFunctionMessage( jpv::ParticleTransferServerMessage* server_message )
@@ -93,15 +95,14 @@ void ParameterFileReader::outputTransferFunctionMessage( jpv::ParticleTransferSe
 
 }
 
-void ParameterFileReader::setTransferFunction( Argument *param )
+void ParameterFileReader::setTransferFunction( Argument& param )
 {
-    const int tf_number                                   = m_name_list_file.getValue<int>( "TF_NUMBER" );
-    const size_t resolution                               = m_name_list_file.getValue<int>( "TF_RESOLUTION" );
-    param->m_color_transfer_function_synthesis   = m_name_list_file.getValue<std::string>( "COLOR_SYNTH" );
-    param->m_opacity_transfer_function_synthesis = m_name_list_file.getValue<std::string>( "OPACITY_SYNTH" );
+    const int tf_number     = m_name_list_file.getValue<int>( "TF_NUMBER" );
+    const size_t resolution = m_name_list_file.getValue<int>( "TF_RESOLUTION" );
 
-    param->m_named_transfunc_array.clear();
-    param->m_named_transfunc_array.resize( tf_number );
+    param.m_transfunc_array.clear();
+    param.m_transfunc_array.resize( tf_number );
+    
     for ( size_t n = 0; n < tf_number; n++ )
     {
         std::stringstream ss;
@@ -111,14 +112,11 @@ void ParameterFileReader::setTransferFunction( Argument *param )
         s_name << "t" << n + 1;
 
         const std::string tag_base = ss.str();
-        param->m_named_transfunc_array[n].setResolution( resolution );
-        param->m_named_transfunc_array[n].m_name                 = s_name.str();
-        param->m_named_transfunc_array[n].m_color_variable       = m_name_list_file.getValue<std::string>( tag_base + "VAR_C" );
-        param->m_named_transfunc_array[n].m_color_variable_min   = m_name_list_file.getValue<float>( tag_base + "MIN_C" );
-        param->m_named_transfunc_array[n].m_color_variable_max   = m_name_list_file.getValue<float>( tag_base + "MAX_C" );
-        param->m_named_transfunc_array[n].m_opacity_variable     = m_name_list_file.getValue<std::string>( tag_base + "VAR_O" );
-        param->m_named_transfunc_array[n].m_opacity_variable_min = m_name_list_file.getValue<float>( tag_base + "MIN_O" );
-        param->m_named_transfunc_array[n].m_opacity_variable_max = m_name_list_file.getValue<float>( tag_base + "MAX_O" );
+        param.m_transfunc_array[n].m_color_variable_min   = m_name_list_file.getValue<float>( tag_base + "MIN_C" );
+        param.m_transfunc_array[n].m_color_variable_max   = m_name_list_file.getValue<float>( tag_base + "MAX_C" );
+        param.m_transfunc_array[n].m_opacity_variable     = m_name_list_file.getValue<std::string>( tag_base + "VAR_O" );
+        param.m_transfunc_array[n].m_opacity_variable_min = m_name_list_file.getValue<float>( tag_base + "MIN_O" );
+        param.m_transfunc_array[n].m_opacity_variable_max = m_name_list_file.getValue<float>( tag_base + "MAX_O" );
 
         std::string s_color   = m_name_list_file.getValue<std::string>( tag_base + "TABLE_C" );
         std::string s_opacity = m_name_list_file.getValue<std::string>( tag_base + "TABLE_O" );
@@ -152,90 +150,167 @@ void ParameterFileReader::setTransferFunction( Argument *param )
         vismodule::ColorMap color_map( color_table );
         vismodule::OpacityMap opacity_map( opacity_table );
         vismodule::TransferFunction tf( color_map, opacity_map );
-        vismodule::TransferFunction& tt = param->m_named_transfunc_array[n];
+        vismodule::TransferFunction& tt = param.m_transfunc_array[n];
         tt = tf;
-    }    
+    }
+
+    std::string equation;
+    EquationToken eq;
+
+    equation   = m_name_list_file.getValue<std::string>( "COLOR_SYNTH" );
+    std::replace( equation.begin(), equation.end(), 'C', 'c' );
+    eq = param.TransferFunctionSynthesizer->convert_token( equation );
+
+    equation = m_name_list_file.getValue<std::string>( "OPACITY_SYNTH" );
+    std::replace( equation.begin(), equation.end(), 'O', 'a' );
+    eq = param.TransferFunctionSynthesizer->convert_token( equation );
+
+    std::vector<EquationToken> var;
+
+    for ( size_t i = 0; i < tf_number; i++ )
+    {
+        std::stringstream tss;
+        tss << "TF_NAME" << i + 1 << "_";
+        const std::string tag_base = tss.str();
+
+        equation = m_name_list_file.getValue<std::string>( tag_base + "VAR_C" );
+        eq = param.TransferFunctionSynthesizer->convert_token( equation );
+
+        var.push_back( eq );
+    }
+
+    param.TransferFunctionSynthesizer->setColorVariable( var );
+    var.clear();
+
+    for ( size_t i = 0; i < tf_number; i++ )
+    {
+        std::stringstream tss;
+        tss << "TF_NAME" << i + 1 << "_";
+        const std::string tag_base = tss.str();
+
+        equation = m_name_list_file.getValue<std::string>( tag_base + "VAR_O" );
+        eq = param.TransferFunctionSynthesizer->convert_token( equation );
+
+        var.push_back( eq );
+    }
+    
+    param.TransferFunctionSynthesizer->setOpacityVariable( var );
+    var.clear();
+
+    return;
 }
 
 void ParameterFileReader::readParameterFile( const char* fname )
 {
-    m_name_list_file.setName( "SAMPLING_METHOD"    );
-    m_name_list_file.setName( "PARTICLE_LIMIT"    );
-    m_name_list_file.setName( "PARTICLE_DENSITY"  );
-    m_name_list_file.setName( "PARTICLE_DATA_SIZE_LIMIT"  );
-    m_name_list_file.setName( "RESOLUTION_WIDTH"  );
-    m_name_list_file.setName( "RESOLUTION_HEIGHT" );
+    int mpi_rank;
+#ifndef CPU_VER
+    MPI_Comm_rank( MPI_COMM_WORLD, &mpi_rank );
+#else
+    mpi_rank = 0;
+#endif
 
-    m_name_list_file.setName( "TF_RESOLUTION" );
-    //m_name_list_file.setName( "TF_SYNTH"      );
-    m_name_list_file.setName( "COLOR_SYNTH" );
-    m_name_list_file.setName( "OPACITY_SYNTH" );
-    m_name_list_file.setName( "TF_NUMBER" );
+    int size = 0;
+    char* buf;
 
-//    m_name_list_file.setName( "OPA_FUNC_EXP_TOKEN");
-//    m_name_list_file.setName( "OPA_FUNC_VAR_NAME");
-//    m_name_list_file.setName( "OPA_FUNC_VAL_ARRAY");
-//    m_name_list_file.setName( "COL_FUNC_EXP_TOKEN");
-//    m_name_list_file.setName( "COL_FUNC_VAR_NAME");
-//    m_name_list_file.setName( "COL_FUNC_VAL_ARRAY");
-
-
-    for ( size_t n = 0; n < BEFORE_READ_TF_NUMBER; n++ )
+    if ( mpi_rank == 0 )
     {
-        std::stringstream ss;
-        ss << "TF_NAME" << n + 1 << "_";
+        m_name_list_file.setName( "SAMPLING_METHOD"    );
+        m_name_list_file.setName( "PARTICLE_LIMIT"    );
+        m_name_list_file.setName( "PARTICLE_DENSITY"  );
+        m_name_list_file.setName( "PARTICLE_DATA_SIZE_LIMIT"  );
+        m_name_list_file.setName( "RESOLUTION_WIDTH"  );
+        m_name_list_file.setName( "RESOLUTION_HEIGHT" );
+        m_name_list_file.setName( "TF_RESOLUTION" );
+        m_name_list_file.setName( "COLOR_SYNTH" );
+        m_name_list_file.setName( "OPACITY_SYNTH" );
+        m_name_list_file.setName( "TF_NUMBER" );
 
-        const std::string tag_base = ss.str();
-        m_name_list_file.setName( tag_base + "VAR_C" );
-        m_name_list_file.setName( tag_base + "MIN_C" );
-        m_name_list_file.setName( tag_base + "MAX_C" );
-        m_name_list_file.setName( tag_base + "VAR_O" );
-        m_name_list_file.setName( tag_base + "MIN_O" );
-        m_name_list_file.setName( tag_base + "MAX_O" );
-        m_name_list_file.setName( tag_base + "TABLE_C" );
-        m_name_list_file.setName( tag_base + "TABLE_O" );
-
-//        m_name_list_file.setName( tag_base + "O_EXP_TOKEN" );
-//        m_name_list_file.setName( tag_base + "O_VAR_NAME" );
-//        m_name_list_file.setName( tag_base + "O_VAL_ARRAY" );
-//        m_name_list_file.setName( tag_base + "C_EXP_TOKEN" );
-//        m_name_list_file.setName( tag_base + "C_VAR_NAME" );
-//        m_name_list_file.setName( tag_base + "C_VAL_ARRAY" );
-    }
-
-    m_name_list_file.setFileName( std::string( fname ) );
-    if( !m_name_list_file.read() )
-    {
-        this->set_default_parameter();
-    }
-
-    // delete TF_NUMBER+1 ~ BEFORE_READ_TF_NUMBER
-    int cur_tf_number = m_name_list_file.getValue<int>("TF_NUMBER");
-    if (cur_tf_number < BEFORE_READ_TF_NUMBER) {
-        for (size_t n = cur_tf_number; n < BEFORE_READ_TF_NUMBER; n++)
+        for ( size_t n = 0; n < BEFORE_READ_TF_NUMBER; n++ )
         {
             std::stringstream ss;
             ss << "TF_NAME" << n + 1 << "_";
 
             const std::string tag_base = ss.str();
-            m_name_list_file.deleteLine( tag_base + "VAR_C" );
-            m_name_list_file.deleteLine( tag_base + "MIN_C" );
-            m_name_list_file.deleteLine( tag_base + "MAX_C" );
-            m_name_list_file.deleteLine( tag_base + "VAR_O" );
-            m_name_list_file.deleteLine( tag_base + "MIN_O" );
-            m_name_list_file.deleteLine( tag_base + "MAX_O" );
-            m_name_list_file.deleteLine( tag_base + "TABLE_C" );
-            m_name_list_file.deleteLine( tag_base + "TABLE_O" );
-
-//            m_name_list_file.deleteLine( tag_base + "O_EXP_TOKEN" );
-//            m_name_list_file.deleteLine( tag_base + "O_VAR_NAME" );
-//            m_name_list_file.deleteLine( tag_base + "O_VAL_ARRAY" );
-//            m_name_list_file.deleteLine( tag_base + "C_EXP_TOKEN" );
-//            m_name_list_file.deleteLine( tag_base + "C_VAR_NAME" );
-//            m_name_list_file.deleteLine( tag_base + "C_VAL_ARRAY" );
+            m_name_list_file.setName( tag_base + "VAR_C" );
+            m_name_list_file.setName( tag_base + "MIN_C" );
+            m_name_list_file.setName( tag_base + "MAX_C" );
+            m_name_list_file.setName( tag_base + "VAR_O" );
+            m_name_list_file.setName( tag_base + "MIN_O" );
+            m_name_list_file.setName( tag_base + "MAX_O" );
+            m_name_list_file.setName( tag_base + "TABLE_C" );
+            m_name_list_file.setName( tag_base + "TABLE_O" );
         }
+
+        m_name_list_file.setName( "END_PARAMETER_FILE" );
+
+        m_name_list_file.setFileName( std::string( fname ) );
+
+        bool is_read_finished = false;
+
+        while( !is_read_finished )
+        {
+            if( !m_name_list_file.read() )
+            {
+                this->set_default_parameter();
+                break;
+            }
+
+            std::string result = m_name_list_file.getValue<std::string>( "END_PARAMETER_FILE" );
+
+            if( result == "SUCCESS" )
+            {
+                is_read_finished = true;
+            }
+        }
+
+        // delete TF_NUMBER+1 ~ BEFORE_READ_TF_NUMBER
+        int cur_tf_number = m_name_list_file.getValue<int>("TF_NUMBER");
+        if (cur_tf_number < BEFORE_READ_TF_NUMBER) {
+            for (size_t n = cur_tf_number; n < BEFORE_READ_TF_NUMBER; n++)
+            {
+                std::stringstream ss;
+                ss << "TF_NAME" << n + 1 << "_";
+
+                const std::string tag_base = ss.str();
+                m_name_list_file.deleteLine( tag_base + "VAR_C" );
+                m_name_list_file.deleteLine( tag_base + "MIN_C" );
+                m_name_list_file.deleteLine( tag_base + "MAX_C" );
+                m_name_list_file.deleteLine( tag_base + "VAR_O" );
+                m_name_list_file.deleteLine( tag_base + "MIN_O" );
+                m_name_list_file.deleteLine( tag_base + "MAX_O" );
+                m_name_list_file.deleteLine( tag_base + "TABLE_C" );
+                m_name_list_file.deleteLine( tag_base + "TABLE_O" );
+            }
+        }
+
+        size = m_name_list_file.byteSize();
+
+        if ( size > 0 )
+        {
+            buf = new char[size];
+            m_name_list_file.pack( buf );
+        }
+    } // mpi_rank == 0
+
+#ifndef CPU_VER
+    MPI_Bcast( &size, 1, MPI_INT, 0, MPI_COMM_WORLD );
+#endif
+
+    if( size > 0 )
+    {
+        if( mpi_rank > 0 ) buf = new char [size];
+#ifndef CPU_VER
+        MPI_Bcast( buf, size, MPI_CHARACTER, 0, MPI_COMM_WORLD );
+#endif
+        m_name_list_file.unpack( buf );
+        delete[] buf;
+    }
+    else
+    {
+        std::cout << "ERROR:Failed to read the parameter list file" << std::endl;
     }
 
+    return;
 }
 
 void ParameterFileReader::set_default_parameter()
@@ -286,6 +361,8 @@ void ParameterFileReader::set_default_parameter()
         m_name_list_file.setLine( tag_base + "MAX_O", static_cast<float>( 1.0 ) );
         m_name_list_file.setLine( tag_base + "TABLE_O", table_o.str() );
     }
+
+    m_name_list_file.setline( "END_PARAMETER_FILE", "SUCCESS" );
 }
 
 const NameListFile& ParameterFileReader::getNameListFile() const

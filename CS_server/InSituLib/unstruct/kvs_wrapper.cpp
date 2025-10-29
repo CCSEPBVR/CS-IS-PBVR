@@ -79,8 +79,8 @@ vismodule::ValueArray<float> C_max_recv;
 vismodule::ValueArray<int> o_histogram_recv;
 vismodule::ValueArray<int> c_histogram_recv;
 TransferFunctionSynthesizer* m_tfs;
-static bool generate_flag  = false;
-size_t  st_time_step = 0;
+static bool is_initial_step  = true;
+size_t  start_time_step = 0;
 
 pbvr::ParticleWriteThread pwt;
 /**
@@ -333,7 +333,7 @@ void readTFfromParamInfo( ParamInfo* param,
         tss << "TF_NAME" << i + 1 << "_";
         const std::string tag_base = tss.str();
 
-        min = param->getFloat( tag_base +"MIN_C" );
+        min = param->Float( tag_base +"MIN_C" );
         max = param->getFloat( tag_base +"MAX_C" );
         i_table = param->getTableInt( tag_base + "TABLE_C" );
         vismodule::ValueArray<vismodule::UInt8> u_table( i_table.size() );
@@ -433,15 +433,15 @@ bool initializeParameters(
 
     opend = LoadParameterFile( param_info, param_filename, old_param_filename );
     // add by shimomura 0808
-    if (generate_flag ==false && opend == false)
+    if (is_initial_step == true && opend == false)
     {
         //  TFファイル未読み取り判定ならば、return
         return opend; 
     }
-    else if (generate_flag ==false && opend == true )
+    else if (is_initial_step == true && opend == true )
     {
-        generate_flag =true;
-        st_time_step = time_step;
+        is_initial_step = false;
+        start_time_step = time_step;
     }
 
     *particle_density         = param.getFloat( "PARTICLE_DENSITY" );
@@ -612,18 +612,18 @@ void generate_particles( int time_step, domain_parameters_unstruct dom,
                              float* coordinates, int ncoords,
                              unsigned int* connections, int ncells, const  vismodule::VolumeObjectBase::CellType& celltype )
 {
-#ifndef CPU_VER
     int mpi_rank;
     int mpi_size;
+#ifndef CPU_VER
     MPI_Comm_rank( MPI_COMM_WORLD, &mpi_rank );
     MPI_Comm_size( MPI_COMM_WORLD, &mpi_size );
 #else
-    int mpi_rank = 0;
-    int mpi_size = 1;
+    mpi_rank = 0;
+    mpi_size = 1;
 #endif
 
-    static ParamInfo param;
-    pbvr_parameters particleBase;
+    // static ParamInfo param;
+    // pbvr_parameters particleBase;
     bool skip_flag;
 
     glyph_parameters glyph_param;
@@ -634,7 +634,7 @@ void generate_particles( int time_step, domain_parameters_unstruct dom,
     clntMes.m_plot_flag =false;
 
     //　パラメータファイル読み込み
-    skip_flag = SetParameter(dom, &particleBase, &param, time_step);
+    skip_flag = SetParticleParameter(dom, &particleBase, &param, time_step);
     SetGlyphParameter(&clntMes, time_step, glyph_param);
     SetPOLParameter(&clntMes, time_step, pol_param);
 
@@ -844,7 +844,7 @@ void generate_particles_vtk(  int time_step, vtkUnstructuredGrid* ucd )
     
     
     bool skip_flag;
-    skip_flag = SetParameter(dom, &particleBase, &param, time_step);
+    skip_flag = SetParticleParameter(dom, &particleBase, &param, time_step);
     
 #if 1
     glyph_parameters glyph_param;
@@ -965,7 +965,7 @@ void generate_particles_vtk(  int time_step, vtkUnstructuredGrid* ucd )
     if (clntMes.m_glyph_flag) OutputGlyphs(time_step, glyph_param);
     if (clntMes.m_plot_flag) OutputLine(time_step, pol_param);
 
-    // SetParameter でnew したm_tfsのメモリ領域を解放
+    // SetParticleParameter でnew したm_tfsのメモリ領域を解放
     delete m_tfs;
     
     timer.stop();
@@ -973,7 +973,222 @@ void generate_particles_vtk(  int time_step, vtkUnstructuredGrid* ucd )
 }
 #endif
 
-bool SetParameter(const domain_parameters_unstruct dom, pbvr_parameters* particleBase, ParamInfo *m_param ,const int time_step)
+void SetParameterFilePath(
+    std::string& stateFilePath,
+    std::string& coordMinMaxFilePath,
+    std::string& particleFilePath,
+    std::string& glyphFilePath,
+    std::string& plotOverLineFilePath,
+    std::string& tfFilePath,
+    std::string& tfFilePath_old,
+    std::string& glyphParameterPath,
+    std::string& glyphParameterPath_old,
+    std::string& plotOverLineParameterPath,
+    std::string& plotOverLineParameterPath_old
+)
+{
+    std::string visParamDir;
+    std::string tfFilename;
+
+    const char *envBuf = NULL;
+    envBuf = std::getenv( "VIS_PARAM_DIR" );
+    if (envBuf == NULL) {
+        visParamDir = "./";
+    }
+    else {
+        visParamDir = envBuf;
+        if (visParamDir[visParamDir.size() - 1] != '/') {
+            visParamDir += "/";
+        }
+    }
+    envBuf = std::getenv( "TF_NAME" );
+    if (envBuf == NULL) {
+        tfFilename = "default";
+    }
+    else {
+        tfFilename = envBuf;
+    }
+    stateFilePath = visParamDir + "state.txt";
+    envBuf = std::getenv( "PARTICLE_DIR" );
+    if (envBuf == NULL) {
+        coordMinMaxFilePath  = "./t_pfi_coords_minmax.txt";
+        particleFilePath     = "./t_";
+        glyphFilePath        = "./g_";
+        plotOverLineFilePath = "./p_";
+    }
+    else {
+        coordMinMaxFilePath = envBuf;
+        particleFilePath = envBuf;
+        glyphFilePath = envBuf;
+        if (coordMinMaxFilePath[coordMinMaxFilePath.size() - 1] != '/') {
+            coordMinMaxFilePath  += "/t_pfi_coords_minmax.txt";
+            particleFilePath     += "/t_";
+            glyphFilePath        += "/g_";
+            plotOverLineFilePath += "/p_";
+        }
+        else {
+            coordMinMaxFilePath  += "t_pfi_coords_minmax.txt";
+            particleFilePath     += "t_";
+            glyphFilePath        += "g_";
+            plotOverLineFilePath += "p_";
+        }
+    }
+
+    tfFilePath                    = visParamDir + tfFilename + ".tf";
+    tfFilePath_old                = visParamDir + tfFilename + "_old.tf";
+    glyphParameterPath            = visParamDir + "parameter.gly";
+    glyphParameterPath_old        = visParamDir + "parameter_old.gly";
+    plotOverLineParameterPath     = visParamDir + "parameter.pol";
+    plotOverLineParameterPath_old = visParamDir + "parameter_old.pol";
+}
+
+void WriteCoordMinMaxFile(
+    const domain_parameters_unstruct& dom,
+    const std::string& coordMinMaxFilePath
+)
+{
+    static bool minmaxFlag = false;
+    if (minmaxFlag == false && mpi_rank == 0) {
+        FILE* fp = fopen( coordMinMaxFilePath.c_str(), "w" );
+        if( fp )
+        {
+            fprintf( fp, "%f %f %f %f %f %f\n",
+                     dom.x_global_min,
+                     dom.y_global_min,
+                     dom.z_global_min,
+                     dom.x_global_max,
+                     dom.y_global_max,
+                     dom.z_global_max );
+            fclose( fp );
+        }
+        minmaxFlag = true;
+    }
+}
+
+bool SetParticleParameter( 
+    const int time_step,
+    const domain_parameters_unstruct& dom,
+    const std::string& tfFilePath,
+    const std::string& tfFilePath_old,
+    Argument& param,
+    MultiVolumePropertyList& mvpl
+)
+{
+    bool result = false;
+    ParameterFileReader ppr;
+
+    vismodule::Vector3f min_object_coords(
+        dom.x_global_min,
+        dom.y_global_min,
+        dom.z_global_min
+    );
+    vismodule::Vector3f max_object_coords(
+        dom.x_global_max,
+        dom.y_global_max,
+        dom.z_global_max
+    );
+
+    mvpl.m_total_start_steps       = time_step;
+    mvpl.m_total_min_object_coord  = min_object_coords;
+    mvpl.m_total_max_object_coord  = max_object_coords;
+
+    ppr.readParameterFile( tfFilePath.c_str() );
+    std::rename( filename.c_str(), old_filename.c_str() );
+    ppr.setParameter( param );
+    param.m_transfunc_synthesizer = new TransferFunctionSynthesizer();
+    ppr.setTransferFunction( param );
+
+    if ( is_initial_step == true )
+    {
+        is_initial_step = false;
+        start_time_step = time_step;
+    }
+
+    const float min = vismodule::Math::Min(
+        dom.x_global_min,
+        dom.y_global_min,
+        dom.z_global_min
+    );
+
+    const float max = vismodule::Math::Max(
+        dom.x_global_max,
+        dom.y_global_max,
+        dom.z_global_max
+    );
+
+    param.m_sampling_step = ( max - min ) / 1E1;
+    const float sampling_step = param.m_sampling_step;
+
+    vismodule::VolumeObjectBase object;
+    object.setMinMaxObjectCoords( min_object_coords, max_object_coords );
+    object.setMinMaxExternalCoords( min_object_coords, max_object_coords );
+
+    const double total_volume = ( dom.x_global_max - dom.x_global_min )
+                              * ( dom.y_global_max - dom.y_global_min )
+                              * ( dom.z_global_max - dom.z_global_min );
+
+    const float max_opacity      = 0.98;
+    const int particle_limit     = param.m_particle_limit;
+    const float particle_density = param.m_particle_density;
+    const int subpixel_level     = CalculateSubpixelLevel(
+        particle_limit,
+        *param.m_camera,
+        sampling_step,
+        total_volume,
+        &object
+    );
+
+    float sampling_volume_inverse;
+    float max_density;
+
+    Generator::CalculateDensityParameters(
+        param.m_camera,
+        &object,
+        subpixel_level,
+        param.m_sampling_step,
+        max_opacity,
+        &sampling_volume_inverse,
+        &max_density
+    );
+
+    param.m_transfunc_synthesizer->setMaxOpacity( max_opacity );
+    param.m_transfunc_synthesizer->setMaxDensity( max_opacity );
+    param.m_transfunc_synthesizer->setSamplingVolumeInverse( sampling_volume_inverse );
+
+    // cameraをどこかでnewする必要がある
+    // calculate部分をCSと共通化予定
+    // param.m_sampling_step  = CalculateSamplingStep( mvpl );
+    // param.m_subpixel_level = CalculateSubpixelLevel( param, mvpl, *param.m_camera );
+
+    int mpi_rank;
+#ifndef CPU_VER
+    MPI_Comm_rank( MPI_COMM_WORLD, &mpi_rank );
+#else
+    mpi_rank = 0;
+#endif
+
+    if( mpi_rank == 0 )
+    {
+        fprintf( stdout , "---------initialize Parameters--------------------------\n" );
+        fprintf( stdout , "particle_limit    = %20d\n"  , particle_limit               );
+        fprintf( stdout , "particle_density  = %20f\n"  , particle_density             );
+        fprintf( stdout , "resolutin_height  = %20d\n"  , height                       );
+        fprintf( stdout , "resolutin_width   = %20d\n"  , width                        );
+        fprintf( stdout , "total_volume      = %20.3e\n", total_volume                 );
+        fprintf( stdout , "  |-X             = %20f\n"  , object.maxObjectCoord().x()  );
+        fprintf( stdout , "  |-Y             = %20f\n"  , object.maxObjectCoord().y()  );
+        fprintf( stdout , "  |-Z             = %20f\n"  , object.maxObjectCoord().z()  );
+        fprintf( stdout , "max_opacity       = %20.3e\n", max_opacity                  );
+        fprintf( stdout , "max_density       = %20.3e\n", max_density                  );
+        fprintf( stdout , "sampling_step     = %20.3e\n", sampling_step                );
+        fprintf( stdout , "subpixel_level    = %20d\n"  , subpixel_level               );
+        fprintf( stdout , "--------------------------------------------------------\n" );
+    }
+
+    return;
+}
+
+bool SetParticleParameter(const domain_parameters_unstruct dom, pbvr_parameters* particleBase, ParamInfo *m_param ,const int time_step)
 {
     int mpi_rank;
 #ifndef CPU_VER
@@ -1089,8 +1304,6 @@ bool SetParameter(const domain_parameters_unstruct dom, pbvr_parameters* particl
     delete object;
     //if(mpi->rank==0)std::cout<<"end initializeTFS()\n";
 
-std::cout << __FILE__ << ", " << __func__ << ", " << __LINE__ << std::endl;
-
     //add by shimomura 20240722
     int nbin =256;
     particleBase->m_O_max.allocate(particleBase->m_tf_number);
@@ -1110,7 +1323,7 @@ std::cout << __FILE__ << ", " << __func__ << ", " << __LINE__ << std::endl;
     particleBase->m_c_histogram.fill(0x00);
 
     // TFファイルがないならば、retrun
-    if ( generate_flag == false )
+    if ( is_initial_step == true )
     {
         std::cout << "find no .tf!! skipping generate_particle !!!" << std::endl;
         return false;
@@ -1120,12 +1333,15 @@ std::cout << __FILE__ << ", " << __func__ << ", " << __LINE__ << std::endl;
     return true;
 }
 
-void GenerateParticles( int time_step,
-                         domain_parameters_unstruct dom,
-                         Type** values, int nvariables,
-                         float* coordinates, int ncoords,
-                         //unsigned int* connections, int ncells, const pbvr::VolumeObjectBase::CellType& celltype, pbvr_parameters& particleBase) //celltype  enum 型に変更
-                         unsigned int* connections, int ncells, const vismodule::VolumeObjectBase::CellType& celltype, pbvr_parameters& particleBase) //celltype  enum 型に変更
+void GenerateParticles(
+    domain_parameters_unstruct dom,
+    Type** values,
+    int nvariables,
+    float* coordinates,
+    int ncoords,
+    unsigned int* connections,
+    int ncells,
+    const vismodule::VolumeObjectBase::CellType& celltype, pbvr_paramete)
 {
     int mpi_rank;
 #ifndef CPU_VER
@@ -1607,7 +1823,7 @@ void OutputParticles(int time_step, int nvariables, pbvr_parameters& particleBas
             particle_write_thread->setPointObject( point_object );
             particle_write_thread->setFilename(particleBase.m_ptcFilePath.c_str());
             particle_write_thread->setTimestep(time_step ,particleBase.m_stateFilePath.c_str());
-            particle_write_thread->setStartTimestep(st_time_step); //add by shimomura 20240808
+            particle_write_thread->setStartTimestep(start_time_step); //add by shimomura 20240808
             particle_write_thread->work(true);
         }// If async_io is disabled, use kvs::PointExporter here in main thread.
         else{
@@ -1710,7 +1926,7 @@ void OutputParticles(int time_step, int nvariables, pbvr_parameters& particleBas
             // 20181226 end
             if( !ofs.is_open() ) std::cout<<"Cannot open state.txt"<<std::endl;
 
-            ofs<<"START_STEP="<< st_time_step <<std::endl;
+            ofs<<"START_STEP="<< start_time_step <<std::endl;
             ofs<<"LATEST_STEP="<<time_step<<std::endl;
 
             ofs.close();
