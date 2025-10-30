@@ -7,7 +7,14 @@
 #include <QColorDialog>
 
 #include "Screen.h"
+
+#include <kvs/ParticleBasedRenderer>
+#include <kvs/StochasticPolygonRenderer>
+#include <kvs/StochasticLineRenderer>
+#include <kvs/StochasticTexturedPolygonRenderer>
+
 #include "WebSocketPair.h"
+#include "Worker.h"
 
 #include "../../Shared/ObjectInfoExtractor.h"
 
@@ -28,6 +35,9 @@ public:
     void reset();
     void loadParameter( const QString& filePath );
     void saveParameter( const QString& filePath );
+
+public slots:
+    void showAtTimeStep( int requestTimeStep );
 
 private:
     // メンバ変数群
@@ -54,7 +64,10 @@ private:
     void calculateTotalMinMaxTimeStep();
 
     template<typename F>
-    void updateSelectedObject(F func);
+    void updateSelectedObject( F func );
+
+    void registerObject( ObjectInfoExtractor::ObjectInfo& info );
+    void replaceObject( ObjectInfoExtractor::ObjectInfo& info );
 
 private slots:
     void onItemSelection( const QItemSelection &selected, const QItemSelection &deselected );
@@ -76,6 +89,8 @@ private slots:
     void onBrowse(); // ...ボタン(ファイルブラウザ)が押された時
     void onDelete();
     void onApply();
+
+    void onDone( int requestTimeStep );
 };
 
 #endif // OBJECTEDITORWIP_H

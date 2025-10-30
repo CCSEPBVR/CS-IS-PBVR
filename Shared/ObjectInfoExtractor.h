@@ -76,6 +76,15 @@ public:
         // Nontexture Polygon Object Info
         kvs::RGBColor polygonColor          = { 128, 128, 128 };
         float polygonOpacity                = 0.5;
+
+        // For Client
+        kvs::ObjectBase* object             = nullptr;
+        std::pair<int,int> objectID         = { -1, -1 };
+        kvs::Vec3 currentMinObjectCoord     = { 0, 0, 0 };
+        kvs::Vec3 currentMaxObjectCoord     = { 0, 0, 0 };
+
+        int currentImportedTimeStep         = -1;
+        bool needSameTimeStepReplace        = false;
     };
 
     explicit ObjectInfoExtractor( const std::string& filePath )
@@ -282,10 +291,7 @@ private:
             << std::setw(5) << std::setfill('0') << info.timeStep.first
             << info.extension;
 
-        const std::string fullpath = oss.str();
-
-        std::cout << info.format << std::endl;
-        std::cout << fullpath << std::endl;
+        const std::string fullPath = oss.str();
 
         std::unique_ptr<kvs::ObjectBase> object;
 
@@ -300,21 +306,21 @@ private:
         case PointObjectKVSML:
         case PointObjectLAS:
         case PointObjectPTS:
-            object = std::make_unique<kvs::PointImporter>( fullpath );
+            object = std::make_unique<kvs::PointImporter>( fullPath );
             break;
 
         case PolygonObjectKVSML:
         case PolygonObjectSTL:
-            object = std::make_unique<kvs::PolygonImporter>( fullpath );
+            object = std::make_unique<kvs::PolygonImporter>( fullPath );
             break;
 #ifdef ASSIMP
         case PolygonObject3DS:
         case PolygonObjectFBX:
-            object = std::make_unique<kvs::TexturedPolygonImporter>( fullpath );
+            object = std::make_unique<kvs::TexturedPolygonImporter>( fullPath );
             break;
 #endif
         case LineObjectKVSML:
-            object = std::make_unique<kvs::LineImporter>( fullpath );
+            object = std::make_unique<kvs::LineImporter>( fullPath );
             break;
 
         default:
@@ -323,7 +329,7 @@ private:
 
         if( !object )
         {
-            std::cerr << "Failed to load object: " << fullpath << std::endl;
+            std::cerr << "Failed to load object: " << fullPath << std::endl;
             return;
         }
 

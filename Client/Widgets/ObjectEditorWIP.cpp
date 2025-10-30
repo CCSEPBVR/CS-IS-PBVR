@@ -69,6 +69,22 @@ void ObjectEditorWIP::saveParameter( const QString& filePath )
     qDebug() << __FILE__ << ":" << __func__ << ":" << filePath;
 }
 
+void ObjectEditorWIP::showAtTimeStep( int timeStep )
+{
+    Worker* worker = new Worker( timeStep, m_model, m_screen );
+    QThread* thread = new QThread;
+
+    worker->moveToThread( thread );
+
+    connect( thread, &QThread::started, worker, &Worker::process );
+    connect( worker, &Worker::done, thread, &QThread::quit );
+    connect( worker, &Worker::done, worker, &Worker::deleteLater );
+    connect( thread, &QThread::finished, thread, &QThread::deleteLater );
+    connect( worker, &Worker::done, this, [this, timeStep]() { onDone( timeStep ); } );
+
+    thread->start();
+}
+
 void ObjectEditorWIP::initialize()
 {
     ui->setupUi( this );
@@ -226,7 +242,6 @@ void ObjectEditorWIP::calculateTotalMinMaxTimeStep()
         totalMax = std::max( totalMax, info.timeStep.second );
     }
     // FIXME:ツールバー通知用のシグナルを発火してください。
-    qDebug() << totalMin << ", " << totalMax;
 }
 
 template<typename F>
@@ -244,6 +259,86 @@ void ObjectEditorWIP::updateSelectedObject( F func )
     func( info ); // 渡された処理で info を更新する
 
     m_model->setData( index, QVariant::fromValue( info ), Qt::UserRole );
+}
+
+void ObjectEditorWIP::registerObject( ObjectInfoExtractor::ObjectInfo& info )
+{
+    std::unique_ptr<kvs::glsl::ParticleBasedRenderer> particleBasedRenderer;
+    std::unique_ptr<kvs::StochasticPolygonRenderer> stochasticPolygonRenderer;
+    std::unique_ptr<kvs::StochasticLineRenderer> stochasticLineRenderer;
+    std::unique_ptr<kvs::StochasticTexturedPolygonRenderer> stochasticTexturedPolygonRenderer;
+
+    switch( info.format )
+    {
+    case ObjectInfoExtractor::ClientServerPointObject:
+        break;
+    case ObjectInfoExtractor::InsituServerPointObject:
+        break;
+    case ObjectInfoExtractor::ServerGlyphObject:
+        break;
+    case ObjectInfoExtractor::PointObjectKVSML:
+    case ObjectInfoExtractor::PointObjectLAS:
+    case ObjectInfoExtractor::PointObjectPTS:
+        particleBasedRenderer = std::make_unique<kvs::glsl::ParticleBasedRenderer>();
+        particleBasedRenderer.get()->enableShuffle();
+        info.objectID = m_screen->registerObject( static_cast<kvs::PointObject*>(info.object), particleBasedRenderer.release() );
+        break;
+    case ObjectInfoExtractor::PolygonObjectKVSML:
+    case ObjectInfoExtractor::PolygonObjectSTL:
+        stochasticPolygonRenderer = std::make_unique<kvs::StochasticPolygonRenderer>();
+        info.objectID = m_screen->registerObject( info.object, stochasticPolygonRenderer.release() );
+        break;
+#ifdef ASSIMP
+    case ObjectInfoExtractor::PolygonObject3DS:
+    case ObjectInfoExtractor::PolygonObjectFBX:
+        stochasticTexturedPolygonRenderer = std::make_unique<kvs::StochasticTexturedPolygonRenderer>();
+        info.objectID = m_screen->registerObject( info.object, stochasticTexturedPolygonRenderer.release() );
+        break;
+#endif
+    case ObjectInfoExtractor::LineObjectKVSML:
+        stochasticLineRenderer = std::make_unique<kvs::StochasticLineRenderer>();
+        info.objectID = m_screen->registerObject( info.object, stochasticLineRenderer.release() );
+        break;
+    default:
+        return;
+    }
+}
+
+void ObjectEditorWIP::replaceObject( ObjectInfoExtractor::ObjectInfo& info )
+{
+    std::unique_ptr<kvs::StochasticPolygonRenderer> stochasticPolygonRenderer;
+
+    switch( info.format )
+    {
+    case ObjectInfoExtractor::ClientServerPointObject:
+        break;
+    case ObjectInfoExtractor::InsituServerPointObject:
+        break;
+    case ObjectInfoExtractor::ServerGlyphObject:
+        break;
+    case ObjectInfoExtractor::PointObjectKVSML:
+    case ObjectInfoExtractor::PointObjectLAS:
+    case ObjectInfoExtractor::PointObjectPTS:
+        m_screen->scene()->replaceObject( 1, dynamic_cast<kvs::PointObject*>(info.object) );
+        break;
+    case ObjectInfoExtractor::PolygonObjectKVSML:
+    case ObjectInfoExtractor::PolygonObjectSTL:
+        stochasticPolygonRenderer = std::make_unique<kvs::StochasticPolygonRenderer>();
+        m_screen->scene()->replaceObject( info.objectID.first, info.object );
+        m_screen->scene()->replaceRenderer( info.objectID.second, stochasticPolygonRenderer.release() );
+        break;
+#ifdef ASSIMP
+    case ObjectInfoExtractor::PolygonObject3DS:
+    case ObjectInfoExtractor::PolygonObjectFBX:
+        m_screen->scene()->replaceObject( info.objectID.first, info.object );
+        break;
+#endif
+    case ObjectInfoExtractor::LineObjectKVSML:
+        m_screen->scene()->replaceObject( info.objectID.first, info.object );
+        break;
+    default:
+        return;
+    }
 }
 
 void ObjectEditorWIP::onItemSelection(const QItemSelection &selected, const QItemSelection &deselected)
@@ -391,7 +486,6 @@ void ObjectEditorWIP::onOpacityDoubleSpinBoxValueChanged( double value )
                          } );
 }
 
-
 void ObjectEditorWIP::onBrowse()
 {
     QString filePath;
@@ -478,6 +572,19 @@ void ObjectEditorWIP::onDelete()
 
 void ObjectEditorWIP::onApply()
 {
+    // フォーカス対象の最小最大オブジェクト座標の計算結果格納用変数
+    kvs::Vec3 resultMinObjectCoords(
+        std::numeric_limits<float>::max(),
+        std::numeric_limits<float>::max(),
+        std::numeric_limits<float>::max()
+        );
+
+    kvs::Vec3 resultMaxObjectCoords(
+        std::numeric_limits<float>::lowest(),
+        std::numeric_limits<float>::lowest(),
+        std::numeric_limits<float>::lowest()
+        );
+
     if( m_web_sockets->isConnected() )
     {
         QJsonObject root;
@@ -535,4 +642,36 @@ void ObjectEditorWIP::onApply()
     {
         // FIXME:接続中でない場合、ローカルモードと判断し表示を行う。
     }
+
+    showAtTimeStep( 1 );
+}
+
+void ObjectEditorWIP::onDone( int requestTimeStep )
+{
+    for( int row = 0; row < m_model->rowCount(); row++ )
+    {
+        QStandardItem* item = m_model->item( row, 0 ); // UserRoleにObjectInfoが格納されている列
+        if( !item ) continue;
+
+        QVariant var = item->data( Qt::UserRole );
+        if( !var.canConvert<ObjectInfoExtractor::ObjectInfo>() ) continue;
+
+        ObjectInfoExtractor::ObjectInfo info = var.value<ObjectInfoExtractor::ObjectInfo>();
+
+        if( info.object != nullptr )
+        {
+            if( info.objectID.first == -1 && info.objectID.second == -1 )
+            {
+                registerObject( info );
+            }
+            else
+            {
+                replaceObject( info );
+            }
+        }
+        QVariant newVar;
+        newVar.setValue( info );
+        item->setData( newVar, Qt::UserRole );
+    }
+    m_screen->update();
 }

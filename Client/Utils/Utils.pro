@@ -24,7 +24,8 @@ HEADERS += \
     PlotOverLineItem.h \
     ReceivedMessage.h \
     TransferFunctionItem.h \
-    Utils.h
+    Utils.h \
+    Worker.h
 
 #=============================================================================
 #  Source.
