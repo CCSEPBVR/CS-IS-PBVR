@@ -471,7 +471,8 @@ bool initializeParameters(
                         * ( object->maxObjectCoord().z() - object->minObjectCoord().z() );
 #endif
     *max_opacity = 0.98;
-    *subpixel_level = CalculateSubpixelLevel( *particle_limit , camera, sampling_step, total_volume, object );
+    //*subpixel_level = CalculateSubpixelLevel( *particle_limit , camera, sampling_step, total_volume, object );
+    *subpixel_level = 1.f;
 
     //std::cout<<"Generator::\n";
     Generator::CalculateDensityParameters(
@@ -3146,7 +3147,18 @@ void EnsembleGenerateParticles( int time_step,
 //    //const float sampling_volume_inverse = 1.0f / ( subpixel_length * subpixel_length * sampling_step );
 //    max_density = sampling_volume_inverse * sampling_step * inverse_subpixel_length ;
 
+    
+    std::vector<kvs::UInt8> c_table ={5,48,97,6,50,100,7,52,102,8,54,105,9,56,108,10,58,111,11,60,114,12,62,116,14,64,119,15,66,122,16,68,125,17,70,128,18,72,131,19,74,134,20,76,136,21,78,139,22,80,142,23,83,145,24,85,148,25,87,151,27,89,154,28,91,157,29,93,160,30,95,163,31,98,166,32,100,169,33,102,172,35,104,173,37,105,174,38,107,175,40,109,176,41,111,177,43,113,178,45,114,178,46,116,179,47,118,180,49,120,181,50,121,182,51,123,183,53,125,184,54,127,185,55,129,186,57,130,187,58,132,188,59,134,189,60,136,189,61,138,190,63,140,191,64,141,192,65,143,193,66,145,194,67,147,195,71,149,196,74,151,197,78,153,198,81,154,199,85,156,200,88,158,201,91,160,202,95,162,203,98,164,204,101,166,205,104,168,206,107,170,207,110,172,209,113,174,210,116,175,211,118,177,212,121,179,213,124,181,214,127,183,215,130,185,216,132,187,217,135,189,218,138,191,219,141,193,220,143,195,221,146,197,222,149,198,223,151,200,223,154,201,224,157,202,225,159,203,226,162,205,226,164,206,227,167,207,228,169,208,228,172,210,229,174,211,230,177,212,231,179,214,231,182,215,232,184,216,233,187,217,234,189,219,234,192,220,235,194,221,236,197,223,236,199,224,237,202,225,238,204,226,239,207,228,239,209,229,240,210,230,240,212,230,241,213,231,241,215,232,241,216,232,241,218,233,242,219,234,242,221,235,242,222,235,242,224,236,243,225,237,243,227,237,243,228,238,244,230,239,244,231,239,244,233,240,244,234,241,245,235,241,245,237,242,245,238,243,245,240,244,246,241,244,246,243,245,246,244,246,246,246,246,247,247,247,247,247,246,245,248,245,243,248,244,241,248,243,240,249,242,238,249,241,236,249,239,234,250,238,232,250,237,230,250,236,228,250,235,227,251,234,225,251,233,223,251,232,221,251,231,219,251,230,217,252,229,215,252,228,214,252,227,212,252,225,210,252,224,208,252,223,206,253,222,204,253,221,203,253,220,201,253,219,199,253,217,196,253,215,193,252,212,191,252,210,188,252,208,185,252,206,182,252,204,179,251,202,177,251,200,174,251,197,171,250,195,168,250,193,165,250,191,163,249,189,160,249,187,157,248,184,154,248,182,152,248,180,149,247,178,146,247,176,143,246,174,141,246,171,138,245,169,135,245,167,133,244,165,130,243,162,128,242,160,126,241,157,124,240,155,122,239,152,119,238,149,117,237,147,115,235,144,113,234,142,111,233,139,109,232,136,107,231,134,105,230,131,103,229,128,101,227,126,99,226,123,97,225,120,95,224,118,93,223,115,91,221,112,89,220,110,87,219,107,85,218,104,83,217,102,81,215,99,79,214,96,77,213,94,76,211,91,74,210,89,73,208,86,71,207,84,70,206,82,68,204,79,67,203,77,66,201,74,64,200,72,63,198,69,62,197,66,60,196,64,59,194,61,57,193,58,56,191,55,55,190,53,53,188,50,52,187,46,51,185,43,49,184,40,48,182,36,47,181,33,46,179,29,44,178,24,43,175,23,43,172,22,42,169,21,42,166,20,41,162,19,41,159,18,40,156,17,40,153,15,39,150,14,39,147,13,38,144,12,38,141,11,37,138,10,37,135,9,36,132,8,36,129,7,35,126,6,35,123,5,34,120,4,34,117,3,33,115,2,33,112,2,33,109,1,32,106,1,32,103,0,31};
+
+    kvs::ValueArray<kvs::UInt8> cc_table(c_table);
+        
+    kvs::ColorMap color_map( cc_table, min_value, max_value  );
+//    kvs::OpacityMap opacity_map( tf_resolution, min_value, max_value );
+//    auto tf = kvs::TransferFunction( color_map );
+   
+//	kvs::ColorMap color_map;
     auto tf = kvs::TransferFunction( tf_resolution );
+    tf.setColorMap(color_map) ;
     tf.setRange(min_value, max_value);
     const float max_range =  tf_resolution - 1 ;
     const float normalize_factor = max_range / ( max_value - min_value );
@@ -3159,8 +3171,10 @@ void EnsembleGenerateParticles( int time_step,
     {
 //        size_t particle_index_counter = N * r;
         // Generate particles for each cell.
+//        float debug_volume =0;
 
 //    #pragma omp parallel
+//        std::cout << "ncells = " << ncells <<std::endl;
         for ( size_t index = 0; index < ncells; ++index )
         {
             // Bind the cell which is indicated by 'index'.
@@ -3177,10 +3191,13 @@ void EnsembleGenerateParticles( int time_step,
             // Calculate a number of particles in this cell.
             const float volume_of_cell = cell->volume();
 
+//            if (index <6) std::cout << "volume_of_cell = " << volume_of_cell <<std::endl;
+//            debug_volume = debug_volume + volume_of_cell;
+
             size_t nparticles_in_cell 
             //    = calculate_number_of_particles( density, volume_of_cell, &MT ) ;
-                = calculate_number_of_particles( max_density, volume_of_cell, &MT ) *0.1f ;
-            //    = calculate_number_of_particles( density, volume_of_cell, &MT ) *10 ;
+            //    = calculate_number_of_particles( max_density, volume_of_cell, &MT ) *0.1f ;
+                = calculate_number_of_particles( max_density, volume_of_cell, &MT ) ;
 
             // Generate a set of particles in this cell represented by v0,...,v3 and s0,...,s3.
             for ( size_t particle = 0; particle < nparticles_in_cell; ++particle )
@@ -3217,6 +3234,7 @@ void EnsembleGenerateParticles( int time_step,
                 //            std::cout << mpi_rank <<  ":  coords = " << coord.x() <<  ", " << coord.y() << ", " <<  coord.z() << ", scalar = " << scalar << " , cell_index = " << index << std::endl; 
             } // end of 'paricle' for-loop
         } // end of 'cell' for-loop
+//        std::cout << "total_volume = " << debug_volume << std::endl;
     } // end of repeat_level loop    
 
     timer.stop();
