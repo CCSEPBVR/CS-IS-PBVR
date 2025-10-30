@@ -20,14 +20,15 @@ private:
     NameListFile m_name_list_file;
 
 public:
-    void inputMessage( const jpv::ParticleTransferClientMessage& clntMes );
-    void inputParameterMessage( const jpv::ParticleTransferClientMessage& clntMes );
-    void inputTransferFunctionMessage( const jpv::ParticleTransferClientMessage& clntMes );
+    void inputParticleParameterMessage( const jpv::ParticleTransferClientMessage& clntMes );
     void inputGlyphParameterMessage( const jpv::ParticleTransferClientMessage& clntMes );
     void inputPlotOverLineParameterMessage( const jpv::ParticleTransferClientMessage& clntMes );
     void writeParameterFile( const char* fname );
-    void writeDifferentParameterFile( const char* fname1, const char *fname2 );
     const NameListFile& getNameListFile() const;
+
+    // 削除予定
+    void inputParameterMessage( const jpv::ParticleTransferClientMessage& clntMes );
+    void inputTransferFunctionMessage( const jpv::ParticleTransferClientMessage& clntMes );
 };
 
 #endif

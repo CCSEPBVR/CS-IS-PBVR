@@ -63,6 +63,7 @@ public:
     VariableRange m_server_side_variable_range;
 
     // glyph paramter
+    bool m_glyph_flag;
     int m_stride;
     int m_seed;
     float m_number_of_sampling_point;
@@ -72,7 +73,6 @@ public:
     float m_glyph_size_max;
     std::vector<int32_t> m_glyph_color_map_table;
     vismodule::ColorMap m_color_map;
-    bool m_glyph_flag;
     std::string m_direction_variable[3];
     jpv::DataDefines m_size_sampling_method;
     std::vector<std::string> m_size_variable;
@@ -82,6 +82,7 @@ public:
     // glyph parameter
 
     // plot over line parameter
+    bool m_plot_flag;
     std::string m_plot_variable;
     float m_start_point[3];
     float m_end_point[3];    

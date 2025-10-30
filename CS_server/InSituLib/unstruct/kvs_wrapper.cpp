@@ -607,10 +607,16 @@ void show_timer( time_parameters time )
 }
 
 // 変数配列用のソルバー関数
-void generate_particles( int time_step, domain_parameters_unstruct dom,
-                             Type** values, int nvariables,
-                             float* coordinates, int ncoords,
-                             unsigned int* connections, int ncells, const  vismodule::VolumeObjectBase::CellType& celltype )
+void generate_particles(
+    int time_step,
+    domain_parameters_unstruct dom,
+    Type** values,
+    int nvariables,
+    float* coordinates,
+    int ncoords,
+    unsigned int* connections,
+    int ncells, const  vismodule::VolumeObjectBase::CellType& celltype
+)
 {
     int mpi_rank;
     int mpi_size;
@@ -626,17 +632,38 @@ void generate_particles( int time_step, domain_parameters_unstruct dom,
     // pbvr_parameters particleBase;
     bool skip_flag;
 
-    glyph_parameters glyph_param;
-    plot_over_line_parameters pol_param;
-    jpv::ParticleTransferClientMessage clntMes; 
-    //フラグの初期設定
-    clntMes.m_glyph_flag =false;
-    clntMes.m_plot_flag =false;
+    std::string stateFilePath,
+    std::string coordMinMaxFilePath,
+    std::string particleFilePath,
+    std::string glyphFilePath,
+    std::string plotOverLineFilePath,
+    std::string tfFilePath,
+    std::string tfFilePath_old,
+    std::string glyphParameterPath,
+    std::string glyphParameterPath_old,
+    std::string plotOverLineParameterPath,
+    std::string plotOverLineParameterPath_old
 
-    //　パラメータファイル読み込み
-    skip_flag = SetParticleParameter(dom, &particleBase, &param, time_step);
-    SetGlyphParameter(&clntMes, time_step, glyph_param);
-    SetPOLParameter(&clntMes, time_step, pol_param);
+    SetParameterFilePath(
+        stateFilePath,
+        coordMinMaxFilePath,
+        particleFilePath,
+        glyphFilePath,
+        plotOverLineFilePath,
+        tfFilePath,
+        tfFilePath_old,
+        glyphParameterPath,
+        glyphParameterPath_old,
+        plotOverLineParameterPath,
+        plotOverLineParameterPath_old
+    );
+
+    Argument param;
+    MultiVolumePropertyList mvpl;
+
+    skip_flag = SetParticleParameter( time_step, dom, tfFilePath, tfFilePath_old, param, mvpl );
+    SetGlyphParameter( glyphParameterPath, glyphParameterPath_old, param );
+    SetPlotOverLineParameter( plotOverLineParameterPath, plotOverLineParameterPath_old, param );
 
     particleBase.m_nvariables = nvariables; 
     if (skip_flag == false)
@@ -1092,11 +1119,10 @@ bool SetParticleParameter(
     mvpl.m_total_min_object_coord  = min_object_coords;
     mvpl.m_total_max_object_coord  = max_object_coords;
 
-    ppr.readParameterFile( tfFilePath.c_str() );
-    std::rename( filename.c_str(), old_filename.c_str() );
-    ppr.setParameter( param );
     param.m_transfunc_synthesizer = new TransferFunctionSynthesizer();
-    ppr.setTransferFunction( param );
+    ppr.readParticleParameterFile( tfFilePath.c_str() );
+    std::rename( filename.c_str(), old_filename.c_str() );
+    ppr.setParticleParameter( param );
 
     if ( is_initial_step == true )
     {
@@ -1185,7 +1211,33 @@ bool SetParticleParameter(
         fprintf( stdout , "--------------------------------------------------------\n" );
     }
 
-    return;
+    return true;
+}
+
+bool SetGlyphParameter(
+    const std::string& glyphParameterPath,
+    const std::string& glyphParameterPath_old,
+    Argument& param 
+)
+{
+    ParameterFileReader ppr;
+    ppr.readGlyphParameterFile( glyphParameterPath.c_str() );
+    std::rename( glyphParameterPath.c_str(), glyphParameterPath_old.c_str() );
+    ppr.setGlyphParameter( param );
+    return true;
+}
+
+bool SetPlotOverLineParameter(
+    const std::string& plotOverLineParameterPath,
+    const std::string& plotOverLineParameterPath_old
+    Argument& param
+)
+{
+    ParameterFileReader ppr;
+    ppr.readPlotOverLineParameterFile( plotOverLineParameterPath.c_str() );
+    std::rename( plotOverLineParameterPath.c_str(), plotOverLineParameterPath_old.c_str() );
+    ppr.setPlotOverLineParameter( param );
+    return true;
 }
 
 bool SetParticleParameter(const domain_parameters_unstruct dom, pbvr_parameters* particleBase, ParamInfo *m_param ,const int time_step)
@@ -1341,7 +1393,9 @@ void GenerateParticles(
     int ncoords,
     unsigned int* connections,
     int ncells,
-    const vismodule::VolumeObjectBase::CellType& celltype, pbvr_paramete)
+    const vismodule::VolumeObjectBase::CellType& celltype,
+    const Argument& param
+)
 {
     int mpi_rank;
 #ifndef CPU_VER
@@ -1351,13 +1405,13 @@ void GenerateParticles(
 #endif
     // 粒子生成コア関数呼び出し
     vismodule::PointObject* tmp_obj = NULL; 
-    switch(particleBase.m_sampling_method)
+    switch( param.m_sampling_method )
     {
         case 'u':
             std::cout << "Uniform sampling" << std::endl;
             tmp_obj =  new vismodule::CellByCellUniformSampling(  dom, values, nvariables,
-                    coordinates, ncoords, connections, ncells, celltype, particleBase.m_tf[0], particleBase.m_tf,
-                    m_tfs, particleBase.m_particle_density , NULL);
+                    coordinates, ncoords, connections, ncells, celltype, param.m_transfunc_array[0], particleBase.m_tf,
+                    m_tfs, param.m_particle_density , NULL);
              break;
 
         case 'r':

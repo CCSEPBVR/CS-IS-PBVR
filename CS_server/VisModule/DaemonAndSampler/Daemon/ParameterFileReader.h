@@ -30,7 +30,9 @@ public:
     void setParameter( Argument *param );
     void outputTransferFunctionMessage( jpv::ParticleTransferServerMessage* clntMes );
     void setTransferFunction( Argument *param );
-    void readParameterFile( const char* fname );
+    void readParticleParameterFile( const char* fname )
+    void readGlyphParameterFile( const char* fname )
+    void readPlotOverLineParameterFile( const char* fname )
     const NameListFile& getNameListFile() const;
 };
 
