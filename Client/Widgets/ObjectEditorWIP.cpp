@@ -504,7 +504,6 @@ void ObjectEditorWIP::onOpacityDoubleSpinBoxValueChanged( double value )
 
 void ObjectEditorWIP::onBrowse()
 {
-    QString filePath;
     /*
      * FIXME:
      * ローカルモード(サーバと接続せずにローカルデータのみ閲覧するモード)の場合:QFileDialogでローカルファイルを参照
@@ -512,9 +511,20 @@ void ObjectEditorWIP::onBrowse()
      * クラサバモード(クライアントとサーバを別マシンで起動、接続するモード)の場合:RemoteFileDialogでリモートファイルを参照
      * In-situモード(クライアントとサーバを別マシンで起動、接続するモード)の場合:RemoteFileDialogでリモートファイルを参照
      */
-    filePath = QFileDialog::getOpenFileName( this, tr( "ファイルを選択" ), QString(), tr( "すべてのファイル (*.*)" ) );
+    QStringList filePaths = QFileDialog::getOpenFileNames(
+        this,
+        tr("Select 3D data files"),
+        QDir::homePath(),
+#ifdef ASSIMP
+        tr("Support Files (*.kvsml *.las *.pts *.stl *.fbx *.3ds);;All Files (*.*)")
+#else
+        tr("Support Files (*.kvsml *.las *.pts *.stl);;All Files (*.*)")
+#endif
+        );
 
-    if( !filePath.isEmpty() )
+    if( filePaths.isEmpty() ) return;
+
+    for( const QString& filePath : filePaths )
     {
         ObjectInfoExtractor oie( filePath.toUtf8().constData() );
         if( auto objectInfoOpt = oie.extractFromLocalFile() )
@@ -523,7 +533,7 @@ void ObjectEditorWIP::onBrowse()
         }
         else
         {
-            // FIXME:MainWinodwのStatusBarで通知した方がいいかも。
+            // FIXME:MainWindowのStatusBarで通知した方がいいかも。
         }
     }
 }

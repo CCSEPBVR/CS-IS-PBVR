@@ -153,7 +153,7 @@ private:
         case ObjectInfoExtractor::PointObjectLAS:
         case ObjectInfoExtractor::PointObjectPTS:
             pointObject = std::make_unique<kvs::PointImporter>( fileName );
-            pointObject->setXform( m_screen->scene()->objectManager()->xform() );
+            // pointObject->setXform( m_screen->scene()->objectManager()->xform() );
             // pointObject.get()->setMinMaxObjectCoords( info.currentMinObjectCoord, info.currentMaxObjectCoord );
             // pointObject.get()->setMinMaxExternalCoords( info.currentMinObjectCoord, info.currentMaxObjectCoord );
             info.object = pointObject.release();
@@ -161,7 +161,7 @@ private:
         case ObjectInfoExtractor::PolygonObjectKVSML:
         case ObjectInfoExtractor::PolygonObjectSTL:
             polygonObject = std::make_unique<kvs::PolygonImporter>( fileName );
-            polygonObject->setXform( m_screen->scene()->objectManager()->xform() );
+            // polygonObject->setXform( m_screen->scene()->objectManager()->xform() );
             // polygonObject->setMinMaxObjectCoords( info.currentMinObjectCoord, info.currentMaxObjectCoord );
             // polygonObject->setMinMaxExternalCoords( info.currentMinObjectCoord, info.currentMaxObjectCoord );
             polygonObject->setColor( kvs::RGBColor( info.polygonColor ) );
@@ -172,7 +172,7 @@ private:
         case ObjectInfoExtractor::PolygonObject3DS:
         case ObjectInfoExtractor::PolygonObjectFBX:
             texturedPolygonObject = std::make_unique<kvs::TexturedPolygonImporter>( fileName );
-            texturedPolygonObject->setXform( m_screen->scene()->objectManager()->xform() );
+            // texturedPolygonObject->setXform( m_screen->scene()->objectManager()->xform() );
             // texturedPolygonObject->setMinMaxObjectCoords( info.currentMinObjectCoord, info.currentMaxObjectCoord );
             // texturedPolygonObject->setMinMaxExternalCoords( info.currentMinObjectCoord, info.currentMaxObjectCoord );
             info.object = texturedPolygonObject.release();
@@ -180,7 +180,7 @@ private:
 #endif
         case ObjectInfoExtractor::LineObjectKVSML:
             lineObject = std::make_unique<kvs::LineImporter>( fileName );
-            lineObject->setXform( m_screen->scene()->objectManager()->xform() );
+            // lineObject->setXform( m_screen->scene()->objectManager()->xform() );
             // lineObject.get()->setMinMaxObjectCoords( info.currentMinObjectCoord, info.currentMaxObjectCoord );
             // lineObject.get()->setMinMaxExternalCoords( info.currentMinObjectCoord, info.currentMaxObjectCoord );
             info.object = lineObject.release();
