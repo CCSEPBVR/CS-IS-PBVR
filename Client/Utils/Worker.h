@@ -36,11 +36,7 @@ public slots:
 
             int resultTimeStep = -1;
 
-            bool isDisplay      = true;
-            bool isKeepInitial  = false;
-            bool isKeepFinal    = false;
-
-            if( isDisplay )
+            if( info.isDisplay )
             {
                 // info.timeStep.first ～ info.timeStep.second の範囲内に m_time_step が含まれる場合、
                 // 対応するタイムステップとして resultTimeStep に設定する
@@ -51,7 +47,7 @@ public slots:
 
                 if( m_request_time_step < info.timeStep.first )
                 {
-                    if( isKeepInitial ) // FIXME:KeepInitialを実装してください
+                    if( info.isKeepInitial )
                     {
                         resultTimeStep = info.timeStep.first;
                     }
@@ -59,7 +55,7 @@ public slots:
 
                 if( m_request_time_step > info.timeStep.second )
                 {
-                    if( isKeepFinal ) // FIXME:KeepFinalを実装してください
+                    if( info.isKeepFinal )
                     {
                         resultTimeStep = info.timeStep.second;
                     }

@@ -208,6 +208,15 @@ void ObjectEditorWIP::addObjectToModel( const ObjectInfoExtractor::ObjectInfo& o
     keepInitialItem ->setEditable( false );
     keepFinalItem   ->setEditable( false );
 
+    displayItem     ->setCheckable( true );
+    keepInitialItem ->setCheckable( true );
+    keepFinalItem   ->setCheckable( true );
+
+    // bool -> Qt::CheckState 変換
+    displayItem     ->setCheckState( info.tmpIsDisplay     ? Qt::Checked : Qt::Unchecked );
+    keepInitialItem ->setCheckState( info.tmpIsKeepInitial ? Qt::Checked : Qt::Unchecked );
+    keepFinalItem   ->setCheckState( info.tmpIsKeepFinal   ? Qt::Checked : Qt::Unchecked );
+
     QVariant var;
     var.setValue( info );
     nameItem->setData( var, Qt::UserRole );
@@ -619,13 +628,21 @@ void ObjectEditorWIP::onApply()
 
     for( int row = 0; row < m_model->rowCount(); row++ )
     {
-        QStandardItem* nameItem = m_model->item( row, 0 );
-        if( !nameItem ) continue;
+        QStandardItem* nameItem         = m_model->item( row, 0 );
+        QStandardItem* displayItem      = m_model->item( row, 2 );
+        QStandardItem* keepInitialItem  = m_model->item( row, 3 );
+        QStandardItem* keepFinalItem    = m_model->item( row, 4 );
+        if( !nameItem || !displayItem || !keepInitialItem || !keepFinalItem ) continue;
 
         QVariant var = nameItem->data( Qt::UserRole );
         if( !var.canConvert<ObjectInfoExtractor::ObjectInfo>() ) continue;
 
         ObjectInfoExtractor::ObjectInfo objectInfo = var.value<ObjectInfoExtractor::ObjectInfo>();
+
+        // チェックボックスの状態を tmp に反映
+        objectInfo.tmpIsDisplay     = ( displayItem->checkState()        == Qt::Checked );
+        objectInfo.tmpIsKeepInitial = ( keepInitialItem->checkState()    == Qt::Checked );
+        objectInfo.tmpIsKeepFinal   = ( keepFinalItem->checkState()      == Qt::Checked );
 
         // tmpの確定
         objectInfo.isDisplay        = objectInfo.tmpIsDisplay;
