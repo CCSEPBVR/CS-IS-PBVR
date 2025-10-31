@@ -191,7 +191,7 @@ void ObjectEditorWIP::addObjectToModel( const ObjectInfoExtractor::ObjectInfo& o
     // 最初に追加されるオブジェクトはフォーカス状態にする
     if( m_model->rowCount() == 0 )
     {
-        info.isFocus = true;
+        info.tmpIsFocus = true;
     }
 
     QList<QStandardItem*> rowItems;
@@ -285,22 +285,26 @@ void ObjectEditorWIP::registerObject( ObjectInfoExtractor::ObjectInfo& info )
     case ObjectInfoExtractor::PointObjectPTS:
         particleBasedRenderer = std::make_unique<kvs::glsl::ParticleBasedRenderer>();
         particleBasedRenderer.get()->enableShuffle();
+        emit shading( particleBasedRenderer.get() );
         info.objectID = m_screen->registerObject( static_cast<kvs::PointObject*>(info.object), particleBasedRenderer.release() );
         break;
     case ObjectInfoExtractor::PolygonObjectKVSML:
     case ObjectInfoExtractor::PolygonObjectSTL:
         stochasticPolygonRenderer = std::make_unique<kvs::StochasticPolygonRenderer>();
+        emit shading( stochasticPolygonRenderer.get() );
         info.objectID = m_screen->registerObject( info.object, stochasticPolygonRenderer.release() );
         break;
 #ifdef ASSIMP
     case ObjectInfoExtractor::PolygonObject3DS:
     case ObjectInfoExtractor::PolygonObjectFBX:
         stochasticTexturedPolygonRenderer = std::make_unique<kvs::StochasticTexturedPolygonRenderer>();
+        emit shading( stochasticTexturedPolygonRenderer.get() );
         info.objectID = m_screen->registerObject( info.object, stochasticTexturedPolygonRenderer.release() );
         break;
 #endif
     case ObjectInfoExtractor::LineObjectKVSML:
         stochasticLineRenderer = std::make_unique<kvs::StochasticLineRenderer>();
+        emit shading( stochasticLineRenderer.get() );
         info.objectID = m_screen->registerObject( info.object, stochasticLineRenderer.release() );
         break;
     default:
@@ -328,6 +332,7 @@ void ObjectEditorWIP::replaceObject( ObjectInfoExtractor::ObjectInfo& info )
     case ObjectInfoExtractor::PolygonObjectKVSML:
     case ObjectInfoExtractor::PolygonObjectSTL:
         stochasticPolygonRenderer = std::make_unique<kvs::StochasticPolygonRenderer>();
+        emit shading( stochasticPolygonRenderer.get() );
         m_screen->scene()->replaceObject( info.objectID.first, info.object );
         m_screen->scene()->replaceRenderer( info.objectID.second, stochasticPolygonRenderer.release() );
         break;
@@ -369,7 +374,7 @@ void ObjectEditorWIP::onItemSelection(const QItemSelection &selected, const QIte
     ui->formatLineEdit              ->setText( QString::fromUtf8( ObjectInfoExtractor::formatToString( info.format ) ) );
     ui->timeStepMinLineEdit         ->setText( QString::number( info.timeStep.first ) );
     ui->timeStepMaxLineEdit         ->setText( QString::number( info.timeStep.second ) );
-    ui->focusCheckBox               ->setChecked( info.isFocus );
+    ui->focusCheckBox               ->setChecked( info.tmpIsFocus );
     ui->minObjectXCoordLineEdit     ->setText( QString::number( info.minObjectCoord.x() ) );
     ui->minObjectYCoordLineEdit     ->setText( QString::number( info.minObjectCoord.y() ) );
     ui->minObjectZCoordLineEdit     ->setText( QString::number( info.minObjectCoord.z() ) );
@@ -384,8 +389,8 @@ void ObjectEditorWIP::onItemSelection(const QItemSelection &selected, const QIte
     ui->maxExternalZCoordLineEdit   ->setText( QString::number( info.maxExternalCoord.z() ) );
 
     // サーバポイントオブジェクトである。(ClientServer/Insitu共通)
-    ui->particleLimitSpinBox        ->setValue( info.particleLimit );
-    ui->densityDoubleSpinBox        ->setValue( info.density );
+    ui->particleLimitSpinBox        ->setValue( info.tmpParticleLimit );
+    ui->densityDoubleSpinBox        ->setValue( info.tmpDensity );
 
     // サーバポイントオブジェクト(ClientServer)で表示させるウィジェット群
     ui->numberOfVectorLineEdit      ->setText( QString::number( info.numberOfVector ) );
@@ -395,15 +400,15 @@ void ObjectEditorWIP::onItemSelection(const QItemSelection &selected, const QIte
     ui->elementTypeLineEdit         ->setText( QString::number( info.elementType ) );
     ui->fileTypeLineEdit            ->setText( QString::number( info.fileType ) );
     ui->stepNumberLineEdit          ->setText( QString::number( info.stepNumber ) );
-    ui->coordinateXLineEdit         ->setText( QString::fromUtf8( info.coordinateX ) );
-    ui->coordinateYLineEdit         ->setText( QString::fromUtf8( info.coordinateY ) );
-    ui->coordinateZLineEdit         ->setText( QString::fromUtf8( info.coordinateZ ) );
+    ui->coordinateXLineEdit         ->setText( QString::fromUtf8( info.tmpCoordinateX ) );
+    ui->coordinateYLineEdit         ->setText( QString::fromUtf8( info.tmpCoordinateY ) );
+    ui->coordinateZLineEdit         ->setText( QString::fromUtf8( info.tmpCoordinateZ ) );
 
     // true:テクスチャ無しポリゴンオブジェクトである。(.stl, .kvsml)
     QPalette palette = ui->colorClickableLabel->palette();
-    palette.setColor( QPalette::Window, QColor( info.polygonColor.r(), info.polygonColor.g(), info.polygonColor.b() ) );
+    palette.setColor( QPalette::Window, QColor( info.tmpPolygonColor.r(), info.tmpPolygonColor.g(), info.tmpPolygonColor.b() ) );
     ui->colorClickableLabel         ->setPalette( palette );
-    ui->opacityDoubleSpinBox        ->setValue( info.polygonOpacity );
+    ui->opacityDoubleSpinBox        ->setValue( info.tmpPolygonOpacity );
 
     bool isObject = false;
     bool isCommonServerObject = false;
@@ -442,7 +447,7 @@ void ObjectEditorWIP::onFocusCheckBoxToggled( bool checked )
 {
     updateSelectedObject( [checked]( auto &info )
                          {
-                             info.isFocus = checked;
+                             info.tmpIsFocus = checked;
                          } );
 }
 
@@ -450,7 +455,7 @@ void ObjectEditorWIP::onParticleLimitSpinBoxValueChanged( int value )
 {
     updateSelectedObject( [value]( auto &info )
                          {
-                             info.particleLimit = value;
+                             info.tmpParticleLimit = value;
                          } );
 }
 
@@ -458,7 +463,7 @@ void ObjectEditorWIP::onDensityDoubleSpinBoxValueChanged(double value)
 {
     updateSelectedObject( [value]( auto &info )
                          {
-                             info.density = value;
+                             info.tmpDensity = value;
                          } );
 }
 
@@ -466,9 +471,9 @@ void ObjectEditorWIP::onCoordinateLineEditTextChanged()
 {
     updateSelectedObject( [this] ( auto &info )
                          {
-                             info.coordinateX = ui->coordinateXLineEdit->text().toUtf8().constData();
-                             info.coordinateY = ui->coordinateYLineEdit->text().toUtf8().constData();
-                             info.coordinateZ = ui->coordinateZLineEdit->text().toUtf8().constData();
+                             info.tmpCoordinateX = ui->coordinateXLineEdit->text().toUtf8().constData();
+                             info.tmpCoordinateY = ui->coordinateYLineEdit->text().toUtf8().constData();
+                             info.tmpCoordinateZ = ui->coordinateZLineEdit->text().toUtf8().constData();
                          } );
 }
 
@@ -484,7 +489,7 @@ void ObjectEditorWIP::onColorLabelDoubleClicked()
                                  QPalette palette = ui->colorClickableLabel->palette();
                                  palette.setColor( QPalette::Window, color );
                                  ui->colorClickableLabel->setPalette( palette );
-                                 info.polygonColor.set( color.red(), color.green(), color.blue() );
+                                 info.tmpPolygonColor.set( color.red(), color.green(), color.blue() );
                              }
                          } );
 }
@@ -493,7 +498,7 @@ void ObjectEditorWIP::onOpacityDoubleSpinBoxValueChanged( double value )
 {
     updateSelectedObject( [value]( auto &info )
                          {
-                             info.polygonOpacity = value;
+                             info.tmpPolygonOpacity = value;
                          } );
 }
 
@@ -535,7 +540,7 @@ void ObjectEditorWIP::onDelete()
     bool requireFocusOnOther = false; // 他のオブジェクトをフォーカスするかどうかのフラグ
 
     ObjectInfoExtractor::ObjectInfo info = var.value<ObjectInfoExtractor::ObjectInfo>();
-    if( info.isFocus )
+    if( info.tmpIsFocus )
     {
         bool otherFocusedFound = false;
         for( int row = 0; row < m_model->rowCount(); row++ )
@@ -549,7 +554,7 @@ void ObjectEditorWIP::onDelete()
             if( !otherVar.canConvert<ObjectInfoExtractor::ObjectInfo>() ) continue;
 
             ObjectInfoExtractor::ObjectInfo otherInfo = otherVar.value<ObjectInfoExtractor::ObjectInfo>();
-            if( otherInfo.isFocus )
+            if( otherInfo.tmpIsFocus )
             {
                 otherFocusedFound = true;
                 break; // 他にフォーカス中のアイテムがあるので終了
@@ -573,7 +578,7 @@ void ObjectEditorWIP::onDelete()
             if( row == index.row() ) continue;
 
             // 一番若い（最初に見つかった）アイテムをフォーカス
-            info.isFocus = true;
+            info.tmpIsFocus = true;
             item->setData( QVariant::fromValue(info), Qt::UserRole );
             break; // 1つだけ更新したら終了
         }
@@ -601,6 +606,48 @@ void ObjectEditorWIP::onApply()
         std::numeric_limits<float>::lowest(),
         std::numeric_limits<float>::lowest()
         );
+
+    for( int row = 0; row < m_model->rowCount(); row++ )
+    {
+        QStandardItem* nameItem = m_model->item( row, 0 );
+        if( !nameItem ) continue;
+
+        QVariant var = nameItem->data( Qt::UserRole );
+        if( !var.canConvert<ObjectInfoExtractor::ObjectInfo>() ) continue;
+
+        ObjectInfoExtractor::ObjectInfo objectInfo = var.value<ObjectInfoExtractor::ObjectInfo>();
+
+        // tmpの確定
+        objectInfo.isDisplay        = objectInfo.tmpIsDisplay;
+        objectInfo.isKeepInitial    = objectInfo.tmpIsKeepInitial;
+        objectInfo.isKeepFinal      = objectInfo.tmpIsKeepFinal;
+
+        objectInfo.isFocus          = objectInfo.tmpIsFocus;
+
+        objectInfo.particleLimit    = objectInfo.tmpParticleLimit;
+        objectInfo.density          = objectInfo.tmpDensity;
+
+        objectInfo.coordinateX      = objectInfo.tmpCoordinateX;
+        objectInfo.coordinateY      = objectInfo.tmpCoordinateY;
+        objectInfo.coordinateZ      = objectInfo.tmpCoordinateZ;
+
+        if( objectInfo.polygonColor.r() != objectInfo.tmpPolygonColor.r() ||
+            objectInfo.polygonColor.g() != objectInfo.tmpPolygonColor.g() ||
+            objectInfo.polygonColor.b() != objectInfo.tmpPolygonColor.b() )
+        {
+            objectInfo.polygonColor     = objectInfo.tmpPolygonColor;
+            objectInfo.needSameTimeStepReplace = true;
+        }
+        if( objectInfo.polygonOpacity != objectInfo.tmpPolygonOpacity )
+        {
+            objectInfo.polygonOpacity   = objectInfo.tmpPolygonOpacity;
+            objectInfo.needSameTimeStepReplace = true;
+        }
+
+        QVariant newVar;
+        newVar.setValue( objectInfo );
+        nameItem->setData( newVar, Qt::UserRole );
+    }
 
     if( m_web_sockets->isConnected() )
     {

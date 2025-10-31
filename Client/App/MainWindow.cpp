@@ -250,6 +250,7 @@ void MainWindow::objectEditorInitialize()
         m_object_editor_action = new QAction( tr( "Object Editor"), this );
 
         connect( m_object_editor, &ObjectEditorWIP::updateTotalTimeStepRange, m_time_step_control_tool_bar, &TimeStepControlToolBar::updateTotalTimeStepRange );
+        connect( m_object_editor, &ObjectEditorWIP::shading                 , m_shading_control, &ShadingControl::shading );
         connect( m_object_editor, &ObjectEditorWIP::done                    , m_time_step_control_tool_bar, &TimeStepControlToolBar::doneTimeControlToolBar );
         // connect( m_object_editor, &ObjectEditorWIP::noItems                         , m_time_step_control_tool_bar, &TimeStepControlToolBar::noItems );
         // connect( m_object_editor, &ObjectEditorWIP::updateInSituObjectMinMaxTimeStep, m_time_step_control_tool_bar, &TimeStepControlToolBar::updateInSituObjectMinMaxTimeStep );

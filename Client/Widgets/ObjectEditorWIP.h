@@ -41,6 +41,7 @@ public slots:
 
 signals:
     void updateTotalTimeStepRange( int min, int max, bool isSingleObject );
+    void shading( kvs::RendererBase* );
     void done( int requestTimeStep );
 
 private:

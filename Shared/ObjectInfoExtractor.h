@@ -45,11 +45,19 @@ public:
     struct ObjectInfo
     {
         // Common Object Info
+        bool tmpIsDisplay                   = true;
+        bool isDisplay                      = false;
+        bool tmpIsKeepInitial               = false;
+        bool isKeepInitial                  = false;
+        bool tmpIsKeepFinal                 = false;
+        bool isKeepFinal                    = false;
+
         std::string name                    = "";                           // Base name
         std::string extension               = "";
         std::string directory               = "";                           // Directory path
         Format format                       = Format::Unknown;              // Detected format
         std::pair<int,int> timeStep         = { -1, -1 }; // Min/Max timestep
+        bool tmpIsFocus                     = false;
         bool isFocus                        = false;
         kvs::Vec3 minObjectCoord            = { 0, 0, 0 };
         kvs::Vec3 maxObjectCoord            = { 0, 0, 0 };
@@ -57,7 +65,9 @@ public:
         kvs::Vec3 maxExternalCoord          = { 0, 0, 0 };
 
         // Common Server Point Object Info
+        int tmpParticleLimit                = 10000000;
         int particleLimit                   = 10000000;
+        float tmpDensity                    = 1.0;
         float density                       = 1.0;
 
         // Client Server Point Object Info
@@ -68,13 +78,18 @@ public:
         int elementType                     = -1;
         int fileType                        = -1;
         int stepNumber                      = -1;
+        std::string tmpCoordinateX          = "";
         std::string coordinateX             = "";
+        std::string tmpCoordinateY          = "";
         std::string coordinateY             = "";
+        std::string tmpCoordinateZ          = "";
         std::string coordinateZ             = "";
         bool isExport                       = false;
 
         // Nontexture Polygon Object Info
+        kvs::RGBColor tmpPolygonColor       = { 128, 128, 128 };
         kvs::RGBColor polygonColor          = { 128, 128, 128 };
+        float tmpPolygonOpacity             = 0.5;
         float polygonOpacity                = 0.5;
 
         // For Client
