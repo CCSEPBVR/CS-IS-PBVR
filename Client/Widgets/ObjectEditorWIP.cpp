@@ -46,15 +46,33 @@ void ObjectEditorWIP::reset()
     ui->deletePushButton        ->setEnabled( true );
     ui->applyPushButton         ->setEnabled( true );
 
+    if( m_model )
+    {
+        // 全行の ObjectInfo を取得してオブジェクト削除
+        for( int row = 0; row < m_model->rowCount(); ++row )
+        {
+            QStandardItem* nameItem = m_model->item( row, 0 );
+            if( !nameItem ) continue;
+
+            QVariant var = nameItem->data( Qt::UserRole );
+            if( !var.canConvert<ObjectInfoExtractor::ObjectInfo>() ) continue;
+
+            ObjectInfoExtractor::ObjectInfo info = var.value<ObjectInfoExtractor::ObjectInfo>();
+
+            // シーンからオブジェクト削除
+            m_screen->scene()->removeObject( info.objectID.first );
+        }
+
+        // モデルの行をすべて削除
+        m_model->removeRows( 0, m_model->rowCount() );
+        calculateTotalMinMaxTimeStep();
+        m_screen->update();
+    }
+
     toggleCommonObjectWidgets( false );
     toggleCommonServerObjectWidgets( false );
     toggleClientServerObjectWidgets( false );
     toggleNontexturePolygonObjectWidgets( false );
-
-    if( m_model )
-    {
-        m_model->removeRows( 0, m_model->rowCount() );
-    }
 }
 
 void ObjectEditorWIP::loadParameter( const QString& filePath )
@@ -362,14 +380,7 @@ void ObjectEditorWIP::replaceObject( ObjectInfoExtractor::ObjectInfo& info )
 void ObjectEditorWIP::onItemSelection(const QItemSelection &selected, const QItemSelection &deselected)
 {
     Q_UNUSED(deselected);
-    if( selected.indexes().isEmpty() )
-    {
-        toggleCommonObjectWidgets( false );
-        toggleCommonServerObjectWidgets( false );
-        toggleClientServerObjectWidgets( false );
-        toggleNontexturePolygonObjectWidgets( false );
-        return;
-    }
+    if( selected.indexes().isEmpty() ) return;
 
     QModelIndex index = selected.indexes().first();
     QVariant var = index.data(Qt::UserRole);
@@ -609,6 +620,14 @@ void ObjectEditorWIP::onDelete()
 
     m_screen->scene()->removeObject( info.objectID.first );
     m_screen->update();
+
+    if( m_model->rowCount() == 0 )
+    {
+        toggleCommonObjectWidgets( false );
+        toggleCommonServerObjectWidgets( false );
+        toggleClientServerObjectWidgets( false );
+        toggleNontexturePolygonObjectWidgets( false );
+    }
 }
 
 void ObjectEditorWIP::onApply()
