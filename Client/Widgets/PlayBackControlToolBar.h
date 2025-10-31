@@ -2,8 +2,8 @@
 #define PLAYBACKCONTROLTOOLBAR_H
 
 #include <QToolBar>
-#include <QPushButton>
 #include <QHBoxLayout>
+#include <QPushButton>
 
 class PlayBackControlToolBar : public QToolBar
 {
@@ -12,21 +12,35 @@ public:
     explicit PlayBackControlToolBar( QWidget *parent = nullptr );
     ~PlayBackControlToolBar();
 
+public slots:
+    void donePlayBackControlToolBar();
+
+signals:
+    void first();
+    void previous();
+    void reverse( bool isChecked );
+    void play( bool isChecked );
+    void next();
+    void last();
+    void keepLast( bool isChecked );
+    void jump();
+    void loop( bool isChecked );
+
 private:
     // メンバ変数群
-    QPushButton *m_first_time_step_push_button;
-    QPushButton *m_previous_time_step_push_button;
-    QPushButton *m_reverse_push_button;
-    QPushButton *m_play_push_button;
-    QPushButton *m_next_time_step_push_button;
-    QPushButton *m_last_time_step_push_button;
-    QPushButton *m_keep_last_time_step_push_button;
-    QPushButton *m_jump_push_button;
-    QPushButton *m_loop_push_button;
+    QPushButton* m_first_push_button;
+    QPushButton* m_previous_push_button;
+    QPushButton* m_reverse_push_button;
+    QPushButton* m_play_push_button;
+    QPushButton* m_next_push_button;
+    QPushButton* m_last_push_button;
+    QPushButton* m_keep_last_push_button;
+    QPushButton* m_jump_push_button;
+    QPushButton* m_loop_push_button;
 
     // メソッド群
     void initialize();
-    QPushButton* createButton( const QString& iconPath, const QSize& iconSize, const QSize& buttonSize, QWidget* parent );
+    QPushButton* createPushButton( const QString& iconPath, const QSize& iconSize, const QSize& buttonSize, QWidget* parent );
     void disableButtons();
     void enableButtons();
 
@@ -40,22 +54,6 @@ private slots:
     void onKeepLast();
     void onJump();
     void onLoop();
-
-public slots:
-    void doneMerge();
-    void loadParameter( const QString& filePath );
-    void saveParameter( const QString& filePath );
-
-signals:
-    void fisrtTimeStep();
-    void previousTimeStep();
-    void reverseTimeStep( bool isChecked );
-    void playTimeStep( bool isChecked );
-    void nextTimeStep();
-    void lastTimeStep();
-    void keepLastTimeStep( bool isChecked );
-    void jumpTimeStep();
-    void loopMode( bool isChecked );
 };
 
 #endif // PLAYBACKCONTROLTOOLBAR_H

@@ -80,7 +80,7 @@ void ObjectEditorWIP::showAtTimeStep( int timeStep )
     connect( worker, &Worker::done, thread, &QThread::quit );
     connect( worker, &Worker::done, worker, &Worker::deleteLater );
     connect( thread, &QThread::finished, thread, &QThread::deleteLater );
-    connect( worker, &Worker::done, this, [this, timeStep]() { onDone( timeStep ); } );
+    connect( worker, &Worker::done, this, [this, timeStep]() { doneObjectEditor( timeStep ); } );
 
     thread->start();
 }
@@ -241,7 +241,11 @@ void ObjectEditorWIP::calculateTotalMinMaxTimeStep()
         totalMin = std::min( totalMin, info.timeStep.first );
         totalMax = std::max( totalMax, info.timeStep.second );
     }
-    // FIXME:ツールバー通知用のシグナルを発火してください。
+
+    bool isSingleObject = false;
+    if( m_model->rowCount() == 1 ) isSingleObject = true;
+
+    emit updateTotalTimeStepRange( totalMin, totalMax, isSingleObject );
 }
 
 template<typename F>
@@ -344,7 +348,14 @@ void ObjectEditorWIP::replaceObject( ObjectInfoExtractor::ObjectInfo& info )
 void ObjectEditorWIP::onItemSelection(const QItemSelection &selected, const QItemSelection &deselected)
 {
     Q_UNUSED(deselected);
-    if (selected.indexes().isEmpty()) return;
+    if( selected.indexes().isEmpty() )
+    {
+        toggleCommonObjectWidgets( false );
+        toggleCommonServerObjectWidgets( false );
+        toggleClientServerObjectWidgets( false );
+        toggleNontexturePolygonObjectWidgets( false );
+        return;
+    }
 
     QModelIndex index = selected.indexes().first();
     QVariant var = index.data(Qt::UserRole);
@@ -567,7 +578,13 @@ void ObjectEditorWIP::onDelete()
             break; // 1つだけ更新したら終了
         }
     }
+
     m_model->removeRow( index.row() );
+
+    calculateTotalMinMaxTimeStep();
+
+    m_screen->scene()->removeObject( info.objectID.first );
+    m_screen->update();
 }
 
 void ObjectEditorWIP::onApply()
@@ -642,11 +659,9 @@ void ObjectEditorWIP::onApply()
     {
         // FIXME:接続中でない場合、ローカルモードと判断し表示を行う。
     }
-
-    showAtTimeStep( 1 );
 }
 
-void ObjectEditorWIP::onDone( int requestTimeStep )
+void ObjectEditorWIP::doneObjectEditor( int requestTimeStep )
 {
     for( int row = 0; row < m_model->rowCount(); row++ )
     {
@@ -673,5 +688,7 @@ void ObjectEditorWIP::onDone( int requestTimeStep )
         newVar.setValue( info );
         item->setData( newVar, Qt::UserRole );
     }
+
+    emit done( requestTimeStep );
     m_screen->update();
 }

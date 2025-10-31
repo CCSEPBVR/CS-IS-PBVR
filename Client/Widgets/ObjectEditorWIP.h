@@ -39,6 +39,10 @@ public:
 public slots:
     void showAtTimeStep( int requestTimeStep );
 
+signals:
+    void updateTotalTimeStepRange( int min, int max, bool isSingleObject );
+    void done( int requestTimeStep );
+
 private:
     // メンバ変数群
     Ui::ObjectEditorWIP *ui;
@@ -90,7 +94,7 @@ private slots:
     void onDelete();
     void onApply();
 
-    void onDone( int requestTimeStep );
+    void doneObjectEditor( int requestTimeStep );
 };
 
 #endif // OBJECTEDITORWIP_H
