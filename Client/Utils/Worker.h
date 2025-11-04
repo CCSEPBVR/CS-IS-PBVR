@@ -72,14 +72,14 @@ public slots:
                         }
                         else
                         {
-                            importObject( info, m_request_time_step );
+                            importObject( info, resultTimeStep );
                             info.currentImportedTimeStep = resultTimeStep;
                             info.needSameTimeStepReplace = false;
                         }
                     }
                     else
                     {
-                        importObject( info, m_request_time_step );
+                        importObject( info, resultTimeStep );
                         info.currentImportedTimeStep = resultTimeStep;
                         info.needSameTimeStepReplace = false;
                     }
