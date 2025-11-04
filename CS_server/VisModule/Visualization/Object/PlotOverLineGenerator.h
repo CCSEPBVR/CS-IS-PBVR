@@ -51,6 +51,25 @@ public:
     }
 
 public:
+    void GeneratePOLStruct(
+        const Argument& param,
+        const domain_parameters_struct& dom,
+        Type** values,
+        int nvariables,
+        vismodule::KVSMLObjectPlotOverLine* object
+    );
+
+    void GeneratePOLUnstruct(
+        const Argument& param,
+        Type** values,
+        int nvariables,
+        float* coordinates,
+        int ncoords,
+        unsigned int* connections,
+        int ncells,
+        const vismodule::VolumeObjectBase::CellType& celltype,
+        vismodule::KVSMLObjectPlotOverLine* object
+    );
 
     void run(
         const Argument& param,

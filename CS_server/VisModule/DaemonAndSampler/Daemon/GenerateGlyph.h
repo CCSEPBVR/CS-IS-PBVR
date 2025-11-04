@@ -13,13 +13,13 @@
 #include <vismodule/Connect>
 #include <vismodule/GlyphSeedGenerator>
 #include <vismodule/Calculate>
+#include <vismodule/GenerateParticle>
 //IS
 #include <vismodule/ParticleMonitor>
 #include <vismodule/ParameterFileWriter>
 #include <vismodule/ParameterFileReader>
 #include <vismodule/SetDefaultTransferFunction>
 #include <DaemonAndSampler/Daemon/Timer.h>
-
 
 void generate_glyph(
     Argument &param,

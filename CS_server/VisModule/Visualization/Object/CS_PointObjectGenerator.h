@@ -125,15 +125,14 @@ public:
 
     vismodule::PointObject* GenerateParticleStruct(
         const Argument& param,
-        vismodule::VolumeObjectBase* volume,
         domain_parameters_struct dom,
         Type** values,
-        int nvariables
+        int nvariables,
+        const jpv::ServerMode server_mode
     );
 
     vismodule::PointObject* GenerateParticleUnstruct(
         const Argument& param,
-        vismodule::VolumeObjectBase* volume,
         domain_parameters_unstruct dom,
         Type** values,
         int nvariables,
@@ -141,7 +140,8 @@ public:
         int ncoords,
         unsigned int* connections,
         int ncells,
-        const vismodule::VolumeObjectBase::CellType& celltype
+        const vismodule::VolumeObjectBase::CellType& celltype,
+        const jpv::ServerMode server_mode
     );
 
 private:

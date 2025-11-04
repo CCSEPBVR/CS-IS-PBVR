@@ -31,15 +31,12 @@ using namespace vismodule;
 
 vismodule::PointObject* CS_PointObjectGenerator::GenerateParticleStruct(
     const Argument& param,
-    vismodule::VolumeObjectBase* volume,
     domain_parameters_struct dom,
     Type** values,
-    const int nvariables
+    const int nvariables,
+    const jpv::ServerMode server_mode
 )
 {
-    jpv::ServerMode server_mode;
-    server_mode = jpv::ServerMode::CS;
-
     vismodule::CoordSynthesizerStrings* css;
 
     if ( server_mode == jpv::ServerMode::CS )
@@ -120,7 +117,6 @@ vismodule::PointObject* CS_PointObjectGenerator::GenerateParticleStruct(
 
 vismodule::PointObject* CS_PointObjectGenerator::GenerateParticleUnstruct(
     const Argument& param,
-    vismodule::VolumeObjectBase* volume,
     domain_parameters_unstruct dom,
     Type** values,
     int nvariables,
@@ -128,31 +124,11 @@ vismodule::PointObject* CS_PointObjectGenerator::GenerateParticleUnstruct(
     int ncoords,
     unsigned int* connections,
     int ncells,
-    const vismodule::VolumeObjectBase::CellType& celltype
+    const vismodule::VolumeObjectBase::CellType& celltype,
+    const jpv::ServerMode server_mode
 )
 {
-    float max_opacity;
-    float max_density;
-    float sampling_volume_inverse;
-    
-    CellByCellParticleGenerator::CalculateDensityConstaint(
-        *param.m_camera,
-        *volume,
-        static_cast<float>( param.m_subpixel_level ),
-        param.m_sampling_step,
-        &sampling_volume_inverse,
-        &max_opacity,
-        &max_density
-    );
-
-    param.m_transfunc_synthesizer->setMaxOpacity( max_opacity );
-    param.m_transfunc_synthesizer->setMaxDensity( max_density );
-    param.m_transfunc_synthesizer->setSamplingVolumeInverse( sampling_volume_inverse );
-
     vismodule::CoordSynthesizerStrings* css;
-
-    jpv::ServerMode server_mode;
-    server_mode = jpv::ServerMode::CS;
 
     if ( server_mode == jpv::ServerMode::CS )
     {

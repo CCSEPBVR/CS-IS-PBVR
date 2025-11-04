@@ -27,12 +27,16 @@ private:
 public:
     void outputMessage( jpv::ParticleTransferServerMessage* clntMes );
     void outputParameterMessage( jpv::ParticleTransferServerMessage* clntMes );
-    void setParameter( Argument *param );
     void outputTransferFunctionMessage( jpv::ParticleTransferServerMessage* clntMes );
-    void setTransferFunction( Argument *param );
-    void readParticleParameterFile( const char* fname )
-    void readGlyphParameterFile( const char* fname )
-    void readPlotOverLineParameterFile( const char* fname )
+    void setParticleParameter( Argument& param );
+    void setGlyphParameter( Argument& param );
+    void setPlotOverLineParameter( Argument& param );
+    void readParticleParameterFile( const char* fname );
+    void readGlyphParameterFile( const char* fname );
+    void readPlotOverLineParameterFile( const char* fname );
+    std::vector<int> getTableInt( std::string table_string );
+    std::vector<float> getTableFloat( std::string table_string );
+    std::vector<std::string> getTableString( std::string table_string );
     const NameListFile& getNameListFile() const;
 };
 

@@ -58,6 +58,10 @@ void ParameterFileWriter::inputParticleParameterMessage( const jpv::ParticleTran
 
     for ( size_t n = 0; n < tf_number; n++ )
     {
+        std::stringstream ss;
+        ss << "TF_NAME" << n + 1 << "_";
+        const std::string tag_base = ss.str();
+        
         m_name_list_file.setLine( tag_base + "VAR_C", client_message.m_volume_equation[2 * n    ].m_equation );
         m_name_list_file.setLine( tag_base + "VAR_O", client_message.m_volume_equation[2 * n + 1].m_equation );
     }

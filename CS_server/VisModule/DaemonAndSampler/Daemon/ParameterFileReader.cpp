@@ -283,7 +283,7 @@ void ParameterFileReader::outputParameterMessage( jpv::ParticleTransferServerMes
 
 void ParameterFileReader::setParticleParameter( Argument& param )
 {
-    param.m_sampling_method          = m_name_list_file.getValue<std::string>("SAMPLING_METHOD");
+    param.m_sampling_method          = m_name_list_file.getValue<std::string>("SAMPLING_METHOD").c_str()[0];
     param.m_particle_limit           = m_name_list_file.getValue<int32_t>( "PARTICLE_LIMIT" );
     param.m_particle_density         = m_name_list_file.getValue<float>( "PARTICLE_DENSITY" );
     param.m_particle_data_size_limit = m_name_list_file.getValue<float>( "PARTICLE_DATA_SIZE_LIMIT" );
@@ -307,10 +307,10 @@ void ParameterFileReader::setParticleParameter( Argument& param )
         s_name << "t" << n + 1;
 
         const std::string tag_base = ss.str();
-        param.m_transfunc_array[n].m_color_variable_min   = m_name_list_file.getValue<float>( tag_base + "MIN_C" );
-        param.m_transfunc_array[n].m_color_variable_max   = m_name_list_file.getValue<float>( tag_base + "MAX_C" );
-        param.m_transfunc_array[n].m_opacity_variable_min = m_name_list_file.getValue<float>( tag_base + "MIN_O" );
-        param.m_transfunc_array[n].m_opacity_variable_max = m_name_list_file.getValue<float>( tag_base + "MAX_O" );
+        // param.m_transfunc_array[n].m_color_variable_min   = m_name_list_file.getValue<float>( tag_base + "MIN_C" );
+        // param.m_transfunc_array[n].m_color_variable_max   = m_name_list_file.getValue<float>( tag_base + "MAX_C" );
+        // param.m_transfunc_array[n].m_opacity_variable_min = m_name_list_file.getValue<float>( tag_base + "MIN_O" );
+        // param.m_transfunc_array[n].m_opacity_variable_max = m_name_list_file.getValue<float>( tag_base + "MAX_O" );
 
         std::string s_color   = m_name_list_file.getValue<std::string>( tag_base + "TABLE_C" );
         std::string s_opacity = m_name_list_file.getValue<std::string>( tag_base + "TABLE_O" );
@@ -353,11 +353,11 @@ void ParameterFileReader::setParticleParameter( Argument& param )
 
     equation   = m_name_list_file.getValue<std::string>( "COLOR_SYNTH" );
     std::replace( equation.begin(), equation.end(), 'C', 'c' );
-    eq = param.TransferFunctionSynthesizer->convert_token( equation );
+    eq = param.m_transfunc_synthesizer->convert_token( equation );
 
     equation = m_name_list_file.getValue<std::string>( "OPACITY_SYNTH" );
     std::replace( equation.begin(), equation.end(), 'O', 'a' );
-    eq = param.TransferFunctionSynthesizer->convert_token( equation );
+    eq = param.m_transfunc_synthesizer->convert_token( equation );
 
     std::vector<EquationToken> var;
 
@@ -368,12 +368,12 @@ void ParameterFileReader::setParticleParameter( Argument& param )
         const std::string tag_base = tss.str();
 
         equation = m_name_list_file.getValue<std::string>( tag_base + "VAR_C" );
-        eq = param.TransferFunctionSynthesizer->convert_token( equation );
+        eq = param.m_transfunc_synthesizer->convert_token( equation );
 
         var.push_back( eq );
     }
 
-    param.TransferFunctionSynthesizer->setColorVariable( var );
+    param.m_transfunc_synthesizer->setColorVariable( var );
     var.clear();
 
     for ( size_t i = 0; i < tf_number; i++ )
@@ -383,12 +383,12 @@ void ParameterFileReader::setParticleParameter( Argument& param )
         const std::string tag_base = tss.str();
 
         equation = m_name_list_file.getValue<std::string>( tag_base + "VAR_O" );
-        eq = param.TransferFunctionSynthesizer->convert_token( equation );
+        eq = param.m_transfunc_synthesizer->convert_token( equation );
 
         var.push_back( eq );
     }
     
-    param.TransferFunctionSynthesizer->setOpacityVariable( var );
+    param.m_transfunc_synthesizer->setOpacityVariable( var );
     var.clear();
 
     return;
@@ -427,7 +427,7 @@ void ParameterFileReader::setGlyphParameter( Argument& param )
         return;        
     }
 
-    const distribution_mode = m_name_list_file.getValue<std::string>("DISTRIBUTION_MODE");
+    const std::string distribution_mode = m_name_list_file.getValue<std::string>("DISTRIBUTION_MODE");
     if ( distribution_mode == "AllPoints" )
     {
         param.m_distribution_mode = jpv::GlyphMode::AllPoints;
@@ -453,7 +453,7 @@ void ParameterFileReader::setGlyphParameter( Argument& param )
     }
     else
     {
-        param.m_tride = m_name_list_file.getValue<int>("STRIDE");
+        param.m_stride = m_name_list_file.getValue<int>("STRIDE");
     }
 
     param.m_seed                                  = m_name_list_file.getValue<int>("SEED");
@@ -519,26 +519,26 @@ void ParameterFileReader::setGlyphParameter( Argument& param )
     vismodule::ValueArray<vismodule::UInt8> color_map_uint_table( color_map_int_table.size() );
     for ( size_t i = 0; i < color_map_int_table.size(); i++ )
     {
-        color_map_uint_table[i] = (vismodule::UInt8)color_map_int_table;
+        color_map_uint_table[i] = (vismodule::UInt8)color_map_int_table[i];
     }
     vismodule::ColorMap color_map( color_map_uint_table, glyph_color_min, glyph_color_max );
     param.m_color_map = color_map;
 
 #if 1 // debug
-    std::cout << "param.m_direction_variable[0]      = " << param.m_direction_variable[0] << std::endl; 
-    std::cout << "param.m_direction_variable[1]      = " << param.m_direction_variable[1] << std::endl; 
-    std::cout << "param.m_direction_variable[2]      = " << param.m_direction_variable[2] << std::endl; 
-    std::cout << "param.m_size_sampling_method       = " << size_sampling_method << std::endl; 
-    std::cout << "param.m_distribution_mode          = " << distribution_mode       << std::endl; 
-    std::cout << "param.m_stride                     = " << param.m_stride                    << std::endl; 
-    std::cout << "param.m_seed                       = " << param.m_seed                      << std::endl; 
-    std::cout << "param.m_number_of_sampling_point   = " << clntMes->m_number_of_sampling_point   << std::endl; 
-    std::cout << "param.m_color_data_sampling_method = " << color_sampling_method    << std::endl; 
+    std::cout << "param.m_direction_variable[0]      = " << param.m_direction_variable[0]    << std::endl; 
+    std::cout << "param.m_direction_variable[1]      = " << param.m_direction_variable[1]    << std::endl; 
+    std::cout << "param.m_direction_variable[2]      = " << param.m_direction_variable[2]    << std::endl; 
+    std::cout << "param.m_size_sampling_method       = " << size_sampling_method             << std::endl; 
+    std::cout << "param.m_distribution_mode          = " << distribution_mode                << std::endl; 
+    std::cout << "param.m_stride                     = " << param.m_stride                   << std::endl; 
+    std::cout << "param.m_seed                       = " << param.m_seed                     << std::endl; 
+    std::cout << "param.m_number_of_sampling_point   = " << param.m_number_of_sampling_point << std::endl; 
+    std::cout << "param.m_color_data_sampling_method = " << color_sampling_method            << std::endl; 
 
     // for( size_t i = 0; i < param.m_size_variable.size(); i++ )
     for ( size_t i = 0; i < 1; i++ )
     {
-        std::cout << "param.m_size_variables[" << i << "]          = " << param.m_size_variables[i] << std::endl; 
+        std::cout << "param.m_size_variable[" << i << "]          = " << param.m_size_variable[i] << std::endl; 
     }
 
     // // for( size_t i = 0; i < param.m_color_data_variable.size(); i++ )
@@ -696,10 +696,6 @@ void ParameterFileReader::outputTransferFunctionMessage( jpv::ParticleTransferSe
 
 }
 
-void ParameterFileReader::setTransferFunction( Argument& param )
-{
-}
-
 void ParameterFileReader::set_default_parameter()
 {
     m_name_list_file.setLine( "PARTICLE_LIMIT"          , static_cast<int>( 10000000 ) );
@@ -749,7 +745,7 @@ void ParameterFileReader::set_default_parameter()
         m_name_list_file.setLine( tag_base + "TABLE_O", table_o.str() );
     }
 
-    m_name_list_file.setline( "END_PARAMETER_FILE", "SUCCESS" );
+    m_name_list_file.setLine( "END_PARAMETER_FILE", "SUCCESS" );
 }
 
 const NameListFile& ParameterFileReader::getNameListFile() const

@@ -53,6 +53,28 @@ public:
     {
     }
 
+    void GenerateGlyphStruct(
+        const Argument& param,
+        const int number_of_divide,
+        domain_parameters_struct& dom,
+        Type** values,
+        int nvariables,
+        vismodule::KVSMLObjectGlyph* object
+    );
+
+    void GenerateGlyphUnstruct(
+        const Argument& param,
+        const int number_of_divide,
+        Type** values,
+        int nvariables,
+        float* coordinates,
+        int ncoords,
+        unsigned int* connections,
+        int ncells,
+        const vismodule::VolumeObjectBase::CellType& celltype,
+        vismodule::KVSMLObjectGlyph* object
+    );
+
     void createFromFile(
         const Argument& param,
         const vismodule::Camera& camera,

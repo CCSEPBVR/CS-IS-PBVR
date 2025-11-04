@@ -7,6 +7,8 @@
 #include <fstream>
 #include <map>
 
+#include "../../../Common/Serializer.h"
+
 class NameListFile
 {
 private:
@@ -39,6 +41,10 @@ public:
 
     inline void write();
     inline bool read();
+
+    inline size_t NameListFile::byteSize() const;
+    inline size_t NameListFile::pack( char* buf ) const;
+    inline size_t NameListFile::unpack( const char* buf );
 
     inline bool operator==( NameListFile& name_list_file );
     inline bool operator!=( NameListFile& name_list_file );
@@ -183,7 +189,7 @@ inline size_t NameListFile::pack( char* buf ) const
     return index;
 }
 
-inline size_t ParamInfo::unpack( const char* buf )
+inline size_t NameListFile::unpack( const char* buf )
 {
     std::string nm;
     std::string val;

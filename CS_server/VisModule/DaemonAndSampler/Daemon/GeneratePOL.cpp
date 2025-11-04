@@ -23,7 +23,6 @@ void generate_plot_over_line(
 #endif
     int st, vl, wid = 0;
     jpv::ParticleTransferServerMessage servMes;
-    PlotOverLineGenerator pol_generator;
     const int tf_number  = mvpl.m_list[0].m_number_ingredients;
     const int resolution = param.m_sampling_size;
 
@@ -64,25 +63,78 @@ void generate_plot_over_line(
                 int xvl, fidx;
                 fidx = mvpl.getFileIndex( vl, &xvl );
                 MultiVolumeProperty& mvp = mvpl.m_list[fidx];
-                mvp.setFilePath(param.m_input_data, st, xvl);
-                pol_generator.setFinlterInfo( &mvp );
-                param.m_subvolume_id = xvl ;
+                mvp.setFilePath( param.m_input_data, st, xvl );
+                param.m_subvolume_id = xvl;
             
                 // generate plot over line start
                 try
                 {
+                    vismodule::VolumeObjectBase* volume = nullptr;
+                    PlotOverLineGenerator pol_generator;
+
                     if ( mvp.m_file_type == 1 || mvp.m_file_type == 2 ) // filetype: gathered subvolume or gathered timestep
                     {
                     }
 #ifdef EXTEND_FILE_FORMAT
                     else if ( mvp.m_file_type == 3 || mvp.m_file_type == 4 )
                     {
+                        generate_volume( param, mvp, st, xvl, volume );
                         pol_generator.run( param, servMes.m_number_volume_divide, tmp_obj, st, xvl );
                     }
 #endif
                     else // filetype: kvsml
                     {
+                        generate_volume( param, mvp, st, volume );
                         pol_generator.run( param, servMes.m_number_volume_divide, tmp_obj );
+                    }
+
+                    Type** values = nullptr;
+                    int nvariables = 0;
+                    int ncoords = 0;
+                    vismodule::VolumeObjectBase::VolumeType voltype = volume->volumeType();                    
+                    int number_of_divide = mvpl.m_total_number_subvolumes;
+
+                    if( voltype == vismodule::VolumeObjectBase::VolumeType::Unstructured )
+                    {
+                        domain_parameters_unstruct dom;
+                        float* coordinates = nullptr;
+                        unsigned int* connections = nullptr;
+                        int ncells = 0;
+                        vismodule::VolumeObjectBase::CellType celltype;
+
+                        store_volume_in_variables_array_unstruct( volume, dom, values, nvariables, coordinates, ncoords, connections, ncells, celltype );
+
+                        // generate particle
+                        pol_generator.GeneratePOLUnstruct(
+                            param,
+                            number_of_divide,
+                            values,
+                            nvariables,
+                            coordinates,
+                            ncoords,
+                            connections,
+                            ncells,
+                            celltype,
+                            tmp_obj
+                        );
+
+                        delete coordinates;
+                        delete connections;
+                    }
+                    else // ( voltype == vismodule::VolumeObjectBase::VolumeType::Structured )
+                    {
+                        domain_parameters_struct dom; 
+
+                        store_volume_in_variables_array_struct( volume, dom, values, nvariables, ncoords );
+
+                        // generate particle
+                        pol_generator.GeneratePOLStruct(
+                            param,
+                            dom,
+                            values,
+                            nvariables,
+                            tmp_obj
+                        );
                     }
                 }
                 catch ( const std::runtime_error& e )

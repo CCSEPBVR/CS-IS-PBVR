@@ -23,6 +23,54 @@
 
 using namespace vismodule;
 
+void PlotOverLineGenerator::GeneratePOLStruct(
+    const Argument& param,
+    const domain_parameters_struct& dom,
+    Type** values,
+    int nvariables,
+    vismodule::KVSMLObjectPlotOverLine* object
+)
+{
+    PlotOverLine plot_over_line(
+        dom,
+        values,
+        nvariables,
+        param
+    );
+
+    object->setValuesOnLine(plot_over_line.values());
+    object->setXAxis(plot_over_line.xAxis());
+    object->setMask(plot_over_line.mask());
+}
+
+void PlotOverLineGenerator::GeneratePOLUnstruct(
+    const Argument& param,
+    Type** values,
+    int nvariables,
+    float* coordinates,
+    int ncoords,
+    unsigned int* connections,
+    int ncells,
+    const vismodule::VolumeObjectBase::CellType& celltype,
+    vismodule::KVSMLObjectPlotOverLine* object
+)
+{
+    PlotOverLine plot_over_line( 
+        values,
+        nvariables,
+        coordinates,
+        ncoords,
+        connections,
+        ncells,
+        celltype,
+        param
+    );
+
+    object->setValuesOnLine(plot_over_line.values());
+    object->setXAxis(plot_over_line.xAxis());
+    object->setMask(plot_over_line.mask());
+}
+
 // pfi,pfl ファイルの読み込み処理 (pfi,pflとファイル拡張子判別方法が異なるため、別処理とする) 
 void PlotOverLineGenerator::createFromFile(
     const Argument& param,

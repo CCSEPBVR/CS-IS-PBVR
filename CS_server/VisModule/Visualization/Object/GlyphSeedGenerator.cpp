@@ -26,6 +26,76 @@
 
 using namespace vismodule;
 
+void GlyphSeedGenerator::GenerateGlyphStruct(
+    const Argument& param,
+    const int number_of_divide,
+    domain_parameters_struct& dom,
+    Type** values,
+    int nvariables,
+    vismodule::KVSMLObjectGlyph* object
+)
+{
+    GlyphSeed glyph_generator(
+        param,
+        number_of_divide,
+        dom,
+        values,
+        nvariables,
+        false
+    );
+    glyph_generator.getGlyphData(&m_object);
+
+    vismodule::KVSMLObjectGlyph* tmp_obj = this->getKVSMLObjectGlyph();
+
+    object->setCoords( tmp_obj->coords() );
+    object->setColors( tmp_obj->colors() );
+    object->setDirections( tmp_obj->directions() );
+    object->setSizes( tmp_obj->sizes() );
+    object->setColorMin( tmp_obj->colorMin() );
+    object->setColorMax( tmp_obj->colorMax() );
+    object->setSizeMin( tmp_obj->sizeMin() );
+    object->setSizeMax( tmp_obj->sizeMax() );
+}
+
+void GlyphSeedGenerator::GenerateGlyphUnstruct(
+    const Argument& param,
+    const int number_of_divide,
+    Type** values,
+    int nvariables,
+    float* coordinates,
+    int ncoords,
+    unsigned int* connections,
+    int ncells,
+    const vismodule::VolumeObjectBase::CellType& celltype,
+    vismodule::KVSMLObjectGlyph* object
+)
+{
+    GlyphSeed glyph_generator(
+        param,
+        number_of_divide,
+        values,
+        nvariables,
+        coordinates,
+        ncoords,
+        connections,
+        ncells,
+        celltype,
+        false
+    );
+
+    glyph_generator.getGlyphData(&m_object);
+    vismodule::KVSMLObjectGlyph* tmp_obj = this->getKVSMLObjectGlyph();
+
+    object->setCoords( tmp_obj->coords() );
+    object->setColors( tmp_obj->colors() );
+    object->setDirections( tmp_obj->directions() );
+    object->setSizes( tmp_obj->sizes() );
+    object->setColorMin( tmp_obj->colorMin() );
+    object->setColorMax( tmp_obj->colorMax() );
+    object->setSizeMin( tmp_obj->sizeMin() );
+    object->setSizeMax( tmp_obj->sizeMax() );
+}
+
 void GlyphSeedGenerator::run( const Argument& param, const vismodule::Camera& camera, const int number_of_divide, vismodule::KVSMLObjectGlyph* object, const int st )
 {
     this->createFromFile( param, camera, number_of_divide );

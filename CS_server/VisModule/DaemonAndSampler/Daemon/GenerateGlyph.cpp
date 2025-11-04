@@ -78,32 +78,89 @@ void generate_glyph(
             // make size and color minmax
             if ( ( rank > 0 ) || ( mpi_size == 1 ) )
             {
-                vismodule::GlyphSeedGenerator glyph_creator;
                 int xvl, fidx;
                 fidx = mvpl.getFileIndex( vl, &xvl );
                 MultiVolumeProperty& mvp = mvpl.m_list[fidx];
                 mvp.setFilePath(param.m_input_data, st, xvl);
-                glyph_creator.setFilterInfo( &mvp );
                 param.m_subvolume_id = xvl;
 
                 // generate glyph start
                 try
                 {
+                    vismodule::VolumeObjectBase* volume = nullptr;
+                    vismodule::GlyphSeedGenerator glyph_creator;
+
                     if ( mvp.m_file_type == 1 || mvp.m_file_type == 2 ) // filetype: gathered subvolume or gathered timestep
                     {
-                        *tmp_obj = *glyph_creator.run( param, *param.m_camera, mvpl.m_total_number_subvolumes, st, xvl); 
-                        // run()で得られるKVSMLObjectglyphとtmp_objは異なるメモリ領域を指しているため,ポインタコピーではなくオペレータを呼び出す必要がある
+                        generate_volume( param, mvp, st, xvl, volume );
                     }
 #ifdef EXTEND_FILE_FORMAT
                     else if ( mvp.m_file_type == 3 || mvp.m_file_type == 4 )
                     {
-                        glyph_creator.run( param, *param.m_camera, mvpl.m_total_number_subvolumes, tmp_obj, st, xvl );
+                        generate_volume( param, mvp, st, xvl, volume );
                     }                                
 #endif
                     else     // filetype: kvsml
                     {
-                        glyph_creator.run( param, *param.m_camera, mvpl.m_total_number_subvolumes, tmp_obj, st );
+                        generate_volume( param, mvp, st, volume );
                     }
+
+                    if ( !volume )
+                    {
+                        throw std::runtime_error("Failed to generate volume object.");
+                    }
+
+                    Type** values = nullptr;
+                    int nvariables = 0;
+                    int ncoords = 0;
+                    vismodule::VolumeObjectBase::VolumeType voltype = volume->volumeType();
+                    int number_of_divide = mvpl.m_total_number_subvolumes;
+
+                    if( voltype == vismodule::VolumeObjectBase::VolumeType::Unstructured )
+                    {
+                        domain_parameters_unstruct dom;
+                        float* coordinates = nullptr;
+                        unsigned int* connections = nullptr;
+                        int ncells = 0;
+                        vismodule::VolumeObjectBase::CellType celltype;
+
+                        store_volume_in_variables_array_unstruct( volume, dom, values, nvariables, coordinates, ncoords, connections, ncells, celltype );
+
+                        // generate particle
+                        glyph_creator.GenerateGlyphUnstruct(
+                            param,
+                            number_of_divide,
+                            values,
+                            nvariables,
+                            coordinates,
+                            ncoords,
+                            connections,
+                            ncells,
+                            celltype,
+                            tmp_obj
+                        );
+
+                        delete coordinates;
+                        delete connections;
+                    }
+                    else // ( voltype == vismodule::VolumeObjectBase::VolumeType::Structured )
+                    {
+                        domain_parameters_struct dom; 
+
+                        store_volume_in_variables_array_struct( volume, dom, values, nvariables, ncoords );
+
+                        // generate particle
+                        glyph_creator.GenerateGlyphStruct(
+                            param,
+                            number_of_divide,
+                            values,
+                            nvariables,
+                            tmp_obj
+                        );
+                    }
+
+                    delete values;
+                    delete volume;
                 }
                 catch ( const std::runtime_error& e )
                 {

@@ -159,7 +159,7 @@ void generate_particle(
                     int ncoords = 0;
                     vismodule::VolumeObjectBase::VolumeType voltype = volume->volumeType();
 
-                    if(voltype == vismodule::VolumeObjectBase::VolumeType::Unstructured)
+                    if( voltype == vismodule::VolumeObjectBase::VolumeType::Unstructured )
                     {
                         domain_parameters_unstruct dom;
                         float* coordinates = nullptr;
@@ -167,15 +167,33 @@ void generate_particle(
                         int ncells = 0;
                         vismodule::VolumeObjectBase::CellType celltype;
 
-                        store_volume_in_variables_array_unstruct( volume, dom, values, nvariables, coordinates, ncoords, connections, ncells, celltype );
+                        store_volume_in_variables_array_unstruct( dom, values, nvariables, coordinates, ncoords, connections, ncells, celltype );
+
+                        float max_opacity;
+                        float max_density;
+                        float sampling_volume_inverse;
+                        
+                        CellByCellParticleGenerator::CalculateDensityConstaint(
+                            *param.m_camera,
+                            *volume,
+                            static_cast<float>( param.m_subpixel_level ),
+                            param.m_sampling_step,
+                            &sampling_volume_inverse,
+                            &max_opacity,
+                            &max_density
+                        );
+
+                        param.m_transfunc_synthesizer->setMaxOpacity( max_opacity );
+                        param.m_transfunc_synthesizer->setMaxDensity( max_density );
+                        param.m_transfunc_synthesizer->setSamplingVolumeInverse( sampling_volume_inverse );
 
                         // generate particle
-                        tmp_obj = point_object_generator.GenerateParticleUnstruct( param, volume, dom, values, nvariables, coordinates, ncoords, connections, ncells, celltype );
+                        tmp_obj = point_object_generator.GenerateParticleUnstruct( param, dom, values, nvariables, coordinates, ncoords, connections, ncells, celltype );
 
                         delete coordinates;
                         delete connections;
                     }
-                    else // (voltype == vismodule::VolumeObjectBase::VolumeType::Structured)
+                    else // ( voltype == vismodule::VolumeObjectBase::VolumeType::Structured )
                     {
                         domain_parameters_struct dom; 
 
@@ -442,7 +460,7 @@ void generate_volume(
     const Argument& param,
     const MultiVolumeProperty& mvp,
     const int time_step,
-    vismodule::VolumeObjectBase* volume
+    vismodule::VolumeObjectBase*& volume
 )
 {
     struct stat s;
@@ -487,7 +505,7 @@ void generate_volume(
     const MultiVolumeProperty& mvp,
     const int time_step,
     const int sub_volume_id,
-    vismodule::VolumeObjectBase* volume
+    vismodule::VolumeObjectBase*& volume
 )
 {
     size_t found_kvsml = param.m_input_data_base.find(".kvsml");
