@@ -450,7 +450,7 @@ inline void CalculateDensityParameters(
 
     const float sampling_volume_inverse = 1.0f / ( subpixel_length * subpixel_length * sampling_step );
     const float max_density = -std::log( 1.0f - max_opacity ) * sampling_volume_inverse;
- 
+
     *p_sampling_volume_inverse = sampling_volume_inverse;
     *p_max_density = max_density;
 }

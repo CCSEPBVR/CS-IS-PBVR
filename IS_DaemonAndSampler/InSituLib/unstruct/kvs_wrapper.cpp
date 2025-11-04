@@ -3162,16 +3162,29 @@ void EnsembleGenerateParticles( int time_step,
     tf.setRange(min_value, max_value);
     const float max_range =  tf_resolution - 1 ;
     const float normalize_factor = max_range / ( max_value - min_value );
-        
+    
     kvs::MersenneTwister MT( mpi_rank );
+//#pragma omp parallel
+//{    
+//#if _OPENMP
+//        int nthreads = omp_get_num_threads();
+//        int thid     = omp_get_thread_num();
+//#else
+//        int nthreads = 1;
+//        int thid     = 0;
+//#endif
+//
+//    kvs::MersenneTwister MT( thid + mpi_rank * nthreads );
+//    std::vector<kvs::Real32> th_vertex_coords;
+//    std::vector<kvs::Real32> th_vertex_scalars;
+//    std::vector<kvs::Real32> th_vertex_normals;
+//    std::vector<int>         th_vertex_cellids;
 
     timer.stop();
     timer.start();
+//#pragma omp for schedule( dynamic ) nowait
     for ( kvs::UInt32 r = 0; r < repetitions; ++r )
     {
-//        size_t particle_index_counter = N * r;
-        // Generate particles for each cell.
-//        float debug_volume =0;
 
 //    #pragma omp parallel
 //        std::cout << "ncells = " << ncells <<std::endl;
@@ -3219,7 +3232,19 @@ void EnsembleGenerateParticles( int time_step,
                 */
                 const kvs::Vector3f normal( -cell->gradient() );
 
-                // set coord, color, and normal to point object( this ).
+//                // set coord, color, and normal to point object( this ).
+//                th_vertex_coords.push_back( coord.x() );
+//                th_vertex_coords.push_back( coord.y() );
+//                th_vertex_coords.push_back( coord.z() );
+//
+//                th_vertex_scalars.push_back( scalar );
+//
+//                th_vertex_normals.push_back( normal.x() );
+//                th_vertex_normals.push_back( normal.y() );
+//                th_vertex_normals.push_back( normal.z() );
+//
+//                th_vertex_cellids.push_back( index );
+
                 vertex_coords.push_back( coord.x() );
                 vertex_coords.push_back( coord.y() );
                 vertex_coords.push_back( coord.z() );
@@ -3234,11 +3259,19 @@ void EnsembleGenerateParticles( int time_step,
                 //            std::cout << mpi_rank <<  ":  coords = " << coord.x() <<  ", " << coord.y() << ", " <<  coord.z() << ", scalar = " << scalar << " , cell_index = " << index << std::endl; 
             } // end of 'paricle' for-loop
         } // end of 'cell' for-loop
-//        std::cout << "total_volume = " << debug_volume << std::endl;
     } // end of repeat_level loop    
 
+//    #pragma omp critical
+//    {
+//        vertex_coords.insert (vertex_coords.end() , th_vertex_coords.begin() , th_vertex_coords.end());
+//        vertex_scalars.insert(vertex_scalars.end(), th_vertex_scalars.begin(), th_vertex_scalars.end());
+//        vertex_normals.insert(vertex_normals.end(), th_vertex_normals.begin(), th_vertex_normals.end());
+//        vertex_cellids.insert(vertex_cellids.end(), th_vertex_cellids.begin(), th_vertex_cellids.end());
+//    }
+
     timer.stop();
-    std::cout << mpi_rank <<  ": uniform_sampling_time =  " << timer.sec() << std::endl;
+//    std::cout << mpi_rank <<  ": thid " << thid << ": uniform_sampling_time =  " << timer.sec() << std::endl;
+//}  //end omp loop
     std::cout << mpi_rank <<  ": uniform_nparticles = " <<  vertex_scalars.size()   << std::endl;
     // シフト処理
     if (mpi_size > 1 )
@@ -3264,7 +3297,7 @@ void EnsembleGenerateParticles( int time_step,
         int recv_from = (mpi_rank - 1 + mpi_size ) % mpi_size;
         float shift_exe_time = 0;
 
-        // 各ラウンドでリングを回していく（size-1回繰り返す） // 前のに書き直し
+        // 各ラウンドでリングを回していく（size-1回繰り返す） 
         for (int step = 0; step < mpi_size - 1; step++) 
         {
             timer.start();
@@ -3321,7 +3354,7 @@ void EnsembleGenerateParticles( int time_step,
                     recv_from, 0, MPI_COMM_WORLD, &reqs[1]);
 
             // 通信完了待ち
-//            MPI_Waitall(2, reqs, MPI_STATUSES_IGNORE);
+            MPI_Waitall(2, reqs, MPI_STATUSES_IGNORE);
 
             // --- 受信データを処理する ---
 //            std::cout << "Rank " << mpi_rank
@@ -3352,10 +3385,6 @@ void EnsembleGenerateParticles( int time_step,
 //               std::cout << "normal = " << normal <<std::endl;
 //               std::cout << mpi_rank << " : cell ->scalars()  " << cell ->scalars()[0] << " " << cell ->scalars()[1] << " " << cell ->scalars()[2] << " " <<  cell ->scalars()[3] << " " << std::endl; 
                     // 算出データを受信データと足し合わせる
-//                    vertex_scalars[i] = recv_scalars[i] + scalar;
-//                    vertex_normals[3*i+0] = recv_normals[3*i+0] + normal.x();
-//                    vertex_normals[3*i+1] = recv_normals[3*i+1] + normal.y();
-//                    vertex_normals[3*i+2] = recv_normals[3*i+2] + normal.z();
                     recv_scalars[i]     = recv_scalars[i] + scalar;
                     recv_normals[3*i+0] = recv_normals[3*i+0] + normal.x();
                     recv_normals[3*i+1] = recv_normals[3*i+1] + normal.y();
@@ -3422,6 +3451,7 @@ void EnsembleGenerateParticles( int time_step,
 
     //棄却法を適応する
 #if 1
+//    kvs::MersenneTwister MT( 10 + mpi_rank );
        timer.start();
        for(int i =0; i< vertex_scalars.size() ;i++)
        {
