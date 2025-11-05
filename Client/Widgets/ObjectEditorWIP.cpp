@@ -812,10 +812,10 @@ void ObjectEditorWIP::doneObjectEditor( int requestTimeStep )
         QVariant var = item->data( Qt::UserRole );
         if( !var.canConvert<ObjectInfoExtractor::ObjectInfo>() ) continue;
 
-        ObjectInfoExtractor::ObjectInfo info = var.value<ObjectInfoExtractor::ObjectInfo>();
-
+        ObjectInfoExtractor::ObjectInfo info = var.value<ObjectInfoExtractor::ObjectInfo>();        
         if( info.object != nullptr )
         {
+            info.object->setXform( m_screen->scene()->objectManager()->xform() );
             if( info.objectID.first == -1 && info.objectID.second == -1 )
             {
                 registerObject( info );
