@@ -1724,7 +1724,7 @@ bool SetParticleParameterCS(
 
     std::cout << "clntMes.m_time_parameter = " << clntMes.m_time_parameter << std::endl;
 
-    param.m_time_step                = clntMes.m_step; 
+    param.m_time_step                = clntMes.m_step;
     param.m_level_index              = clntMes.m_level_index;
     param.m_repeat_level             = clntMes.m_repeat_level;
     param.m_sampling_method          = clntMes.m_sampling_method;
@@ -1742,6 +1742,11 @@ bool SetParticleParameterCS(
         param.m_sampling_method = 'h';
 
         mvpl.searchFile(param);
+
+        if ( mvpl.m_total_start_steps > 0 )
+        {
+            param.m_time_step = mvpl.m_total_start_steps;
+        }
 
         if ( mvpl.m_list.size() <= 0 )
         {
