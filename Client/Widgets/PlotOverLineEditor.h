@@ -29,9 +29,6 @@ public:
     explicit PlotOverLineEditor( WebSocketPair* websockets, kvs::qt::jaea::Screen* screen, QWidget *parent = nullptr );
     ~PlotOverLineEditor();
 
-    // ----- クラス定数 -----
-    static constexpr auto PlotOverLineObjectName = "PlotOverLine_LineObject";
-
 private:
     // メンバ変数群
     Ui::PlotOverLineEditor *ui;
@@ -47,6 +44,8 @@ private:
     kvs::Vec3 m_end_point_initial_translation;
     kvs::PointObject* m_start_point_object = nullptr;   // 始点
     kvs::PointObject* m_end_point_object = nullptr;     // 終点
+    kvs::LineObject* m_plot_over_line_object = nullptr;
+    QPair<int,int> m_plot_over_line_object_id = { -1, -1 };
 
     QStringList m_vector_list;
     double m_x_min;

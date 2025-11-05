@@ -43,6 +43,50 @@ void PlotOverLineEditor::initialize()
     kvs::StochasticPointRenderer* endPointRenderer = new kvs::StochasticPointRenderer();
     m_screen->registerObject( m_end_point_object, endPointRenderer );
 
+    // 点の数
+    const size_t N = 2;
+
+    // 線分の数
+    const size_t L = 1;
+
+    // 座標定義
+    kvs::Real32 CoordArray[ N * 3 ] =
+        {
+            kvs::Real32( 0.0 ), kvs::Real32( 0.0 ), kvs::Real32( 0.0 ),
+            kvs::Real32( 0.0 ), kvs::Real32( 0.0 ), kvs::Real32( 0.0 ),
+        };
+
+    // 色定義
+    kvs::UInt8 ColorArray[ N * 3 ] =
+        {
+            0, 255, 0,
+            0, 255, 0,
+        };
+
+    // 接続定義
+    kvs::UInt32 ConnectionArray[ L * 2 ] =
+        {
+            0, 1,  // 点0と点1を接続
+        };
+
+    kvs::ValueArray<kvs::Real32> coords( CoordArray, N * 3 );
+    kvs::ValueArray<kvs::UInt8> colors( ColorArray, N * 3 );
+    kvs::ValueArray<kvs::UInt32> connections( ConnectionArray, L * 2 );
+
+    m_plot_over_line_object = new kvs::LineObject();
+    m_plot_over_line_object->setXform( initializeXform );
+    m_plot_over_line_object->setCoords( coords );
+    m_plot_over_line_object->setColors( colors );
+    m_plot_over_line_object->setConnections( connections );
+    m_plot_over_line_object->setSize( 10 );
+    m_plot_over_line_object->setLineType( kvs::LineObject::Segment );
+    m_plot_over_line_object->setColorType( kvs::LineObject::VertexColor );
+    m_plot_over_line_object->setMinMaxObjectCoords( m_start_point_object->minObjectCoord(), m_start_point_object->maxObjectCoord() );
+    m_plot_over_line_object->setMinMaxExternalCoords( m_start_point_object->minExternalCoord(), m_start_point_object->maxExternalCoord() );
+
+    kvs::StochasticLineRenderer* renderer = new kvs::StochasticLineRenderer();
+    m_plot_over_line_object_id = m_screen->registerObject( m_plot_over_line_object, renderer );
+
 #ifdef OPENXR_SCREEN
     m_screen->openxrInteractor()->setStartPoint( m_start_point_object );
     m_screen->openxrInteractor()->setEndPoint( m_end_point_object );
@@ -267,9 +311,9 @@ void PlotOverLineEditor::onPlotOverLineGroupBoxCheckBox()
             m_start_point_object->show();
             m_end_point_object->show();
 #endif
-            if( m_screen->scene()->object( PlotOverLineObjectName ) )
+            if( m_plot_over_line_object )
             {
-                m_screen->scene()->object( PlotOverLineObjectName )->show();
+                m_plot_over_line_object->show();
             }
             m_screen->update();
         }
@@ -282,9 +326,9 @@ void PlotOverLineEditor::onPlotOverLineGroupBoxCheckBox()
             m_start_point_object->hide();
             m_end_point_object->hide();
 #endif
-            if( m_screen->scene()->object( PlotOverLineObjectName ) )
+            if( m_plot_over_line_object )
             {
-                m_screen->scene()->object( PlotOverLineObjectName )->hide();
+                m_plot_over_line_object->hide();
             }
             m_screen->update();
         }
@@ -381,38 +425,21 @@ void PlotOverLineEditor::onCreateLine()
 
     if( m_start_point_object->minObjectCoord() != m_start_point_object->maxObjectCoord() )
     {
-        if( m_screen->scene()->object( PlotOverLineObjectName ) == nullptr ) // オブジェクト登録
+        if( m_plot_over_line_object ) // オブジェクトリプレイス
         {
-            kvs::LineObject* plotOverLineObject = new kvs::LineObject();
-            plotOverLineObject->setName( PlotOverLineObjectName );
-            plotOverLineObject->setXform( m_screen->scene()->objectManager()->xform( ) );
-            plotOverLineObject->setCoords( coords );
-            plotOverLineObject->setColors( colors );
-            plotOverLineObject->setConnections( connections );
-            plotOverLineObject->setSize( 10 );
-            plotOverLineObject->setLineType( kvs::LineObject::Segment );
-            plotOverLineObject->setColorType( kvs::LineObject::VertexColor );
-            plotOverLineObject->setMinMaxObjectCoords( m_start_point_object->minObjectCoord(), m_start_point_object->maxObjectCoord() );
-            plotOverLineObject->setMinMaxExternalCoords( m_start_point_object->minExternalCoord(), m_start_point_object->maxExternalCoord() );
+            m_plot_over_line_object = new kvs::LineObject();
+            m_plot_over_line_object->setXform( m_screen->scene()->objectManager()->xform( ) );
+            m_plot_over_line_object->setCoords( coords );
+            m_plot_over_line_object->setColors( colors );
+            m_plot_over_line_object->setConnections( connections );
+            m_plot_over_line_object->setSize( 10 );
+            m_plot_over_line_object->setLineType( kvs::LineObject::Segment );
+            m_plot_over_line_object->setColorType( kvs::LineObject::VertexColor );
+            m_plot_over_line_object->setMinMaxObjectCoords( m_start_point_object->minObjectCoord(), m_start_point_object->maxObjectCoord() );
+            m_plot_over_line_object->setMinMaxExternalCoords( m_start_point_object->minExternalCoord(), m_start_point_object->maxExternalCoord() );
+            m_screen->scene()->replaceObject( m_plot_over_line_object_id.first, m_plot_over_line_object );
+        }
 
-            kvs::StochasticLineRenderer* renderer = new kvs::StochasticLineRenderer();
-            m_screen->registerObject( plotOverLineObject, renderer );
-        }
-        else // リプレイス
-        {
-            kvs::LineObject* plotOverLineObject = new kvs::LineObject();
-            plotOverLineObject->setName( PlotOverLineObjectName );
-            plotOverLineObject->setXform( m_screen->scene()->objectManager()->xform( ) );
-            plotOverLineObject->setCoords( coords );
-            plotOverLineObject->setColors( colors );
-            plotOverLineObject->setConnections( connections );
-            plotOverLineObject->setSize( 10 );
-            plotOverLineObject->setLineType( kvs::LineObject::Segment );
-            plotOverLineObject->setColorType( kvs::LineObject::VertexColor );
-            plotOverLineObject->setMinMaxObjectCoords( m_start_point_object->minObjectCoord(), m_start_point_object->maxObjectCoord() );
-            plotOverLineObject->setMinMaxExternalCoords( m_start_point_object->minExternalCoord(), m_start_point_object->maxExternalCoord() );
-            m_screen->scene()->replaceObject( PlotOverLineObjectName, plotOverLineObject );
-        }
         m_start_coords.x() = CoordArray[0]; m_start_coords.y() = CoordArray[1]; m_start_coords.z() = CoordArray[2];
         m_end_coords.x() = CoordArray[3]; m_end_coords.y() = CoordArray[4]; m_end_coords.z() = CoordArray[5];
         m_is_send_available = true;
@@ -490,10 +517,10 @@ void PlotOverLineEditor::updateFocus( kvs::Vec3 resultMinObjectCoords, kvs::Vec3
         m_start_point_object->setMinMaxExternalCoords( resultMinObjectCoords, resultMaxObjectCoords );
         m_end_point_object->setMinMaxObjectCoords( resultMinObjectCoords, resultMaxObjectCoords );
         m_end_point_object->setMinMaxExternalCoords( resultMinObjectCoords, resultMaxObjectCoords );
-        if( m_screen->scene()->object( PlotOverLineObjectName ) )
+        if( m_plot_over_line_object )
         {
-            m_screen->scene()->object( PlotOverLineObjectName )->setMinMaxObjectCoords( resultMinObjectCoords, resultMaxObjectCoords );
-            m_screen->scene()->object( PlotOverLineObjectName )->setMinMaxExternalCoords( resultMinObjectCoords, resultMaxObjectCoords );
+            m_plot_over_line_object->setMinMaxObjectCoords( resultMinObjectCoords, resultMaxObjectCoords );
+            m_plot_over_line_object->setMinMaxExternalCoords( resultMinObjectCoords, resultMaxObjectCoords );
         }
         m_screen->scene()->objectManager()->updateMinMaxCoords();
         m_screen->scene()->objectManager()->updateExternalCoords();
@@ -600,37 +627,19 @@ void PlotOverLineEditor::drawPlotOverLineFromVRHands( kvs::Real32 CoordArray[ 2 
 
     if( m_start_point_object->minObjectCoord() != m_start_point_object->maxObjectCoord() )
     {
-        if( m_screen->scene()->object( PlotOverLineObjectName ) == nullptr ) // オブジェクト登録
+        if( m_plot_over_line_object ) // オブジェクトリプレイス
         {
-            kvs::LineObject* plotOverLineObject = new kvs::LineObject();
-            plotOverLineObject->setName( PlotOverLineObjectName );
-            plotOverLineObject->setXform( m_screen->scene()->objectManager()->xform( ) );
-            plotOverLineObject->setCoords( coords );
-            plotOverLineObject->setColors( colors );
-            plotOverLineObject->setConnections( connections );
-            plotOverLineObject->setSize( 10 );
-            plotOverLineObject->setLineType( kvs::LineObject::Segment );
-            plotOverLineObject->setColorType( kvs::LineObject::VertexColor );
-            plotOverLineObject->setMinMaxObjectCoords( m_start_point_object->minObjectCoord(), m_start_point_object->maxObjectCoord() );
-            plotOverLineObject->setMinMaxExternalCoords( m_start_point_object->minExternalCoord(), m_start_point_object->maxExternalCoord() );
-
-            kvs::StochasticLineRenderer* renderer = new kvs::StochasticLineRenderer();
-            m_screen->registerObject( plotOverLineObject, renderer );
-        }
-        else // リプレイス
-        {
-            kvs::LineObject* plotOverLineObject = new kvs::LineObject();
-            plotOverLineObject->setName( PlotOverLineObjectName );
-            plotOverLineObject->setXform( m_screen->scene()->objectManager()->xform( ) );
-            plotOverLineObject->setCoords( coords );
-            plotOverLineObject->setColors( colors );
-            plotOverLineObject->setConnections( connections );
-            plotOverLineObject->setSize( 10 );
-            plotOverLineObject->setLineType( kvs::LineObject::Segment );
-            plotOverLineObject->setColorType( kvs::LineObject::VertexColor );
-            plotOverLineObject->setMinMaxObjectCoords( m_start_point_object->minObjectCoord(), m_start_point_object->maxObjectCoord() );
-            plotOverLineObject->setMinMaxExternalCoords( m_start_point_object->minExternalCoord(), m_start_point_object->maxExternalCoord() );
-            m_screen->scene()->replaceObject( PlotOverLineObjectName, plotOverLineObject );
+            m_plot_over_line_object = new kvs::LineObject();
+            m_plot_over_line_object->setXform( m_screen->scene()->objectManager()->xform( ) );
+            m_plot_over_line_object->setCoords( coords );
+            m_plot_over_line_object->setColors( colors );
+            m_plot_over_line_object->setConnections( connections );
+            m_plot_over_line_object->setSize( 10 );
+            m_plot_over_line_object->setLineType( kvs::LineObject::Segment );
+            m_plot_over_line_object->setColorType( kvs::LineObject::VertexColor );
+            m_plot_over_line_object->setMinMaxObjectCoords( m_start_point_object->minObjectCoord(), m_start_point_object->maxObjectCoord() );
+            m_plot_over_line_object->setMinMaxExternalCoords( m_start_point_object->minExternalCoord(), m_start_point_object->maxExternalCoord() );
+            m_screen->scene()->replaceObject( m_plot_over_line_object_id.first, m_plot_over_line_object );
         }
     }
     m_screen->update();
