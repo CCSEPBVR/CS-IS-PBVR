@@ -49,6 +49,8 @@ void generate_particle(
         tf_number = pm.particleHistoryFile().colorHistogramArray().size();
     } // server_mode == jpv::ServerMode::IS
 
+    std::cout << "param.m_time_step:" << param.m_time_step << std::endl;
+
     jd.initialize(
         param.m_time_step,
         param.m_time_step,
@@ -154,7 +156,7 @@ void generate_particle(
                         throw std::runtime_error("Failed to generate volume object.");
                     }
 
-                    Type** values = nullptr;
+                    std::unique_ptr<std::unique_ptr<Type[]>[]> values;
                     int nvariables = 0;
                     int ncoords = 0;
                     vismodule::VolumeObjectBase::VolumeType voltype = volume->volumeType();
@@ -162,18 +164,18 @@ void generate_particle(
                     if( voltype == vismodule::VolumeObjectBase::VolumeType::Unstructured )
                     {
                         domain_parameters_unstruct dom;
-                        float* coordinates = nullptr;
-                        unsigned int* connections = nullptr;
+                        std::unique_ptr<float[]> coordinates;
+                        std::unique_ptr<unsigned int[]> connections;
                         int ncells = 0;
                         vismodule::VolumeObjectBase::CellType celltype;
 
-                        store_volume_in_variables_array_unstruct( dom, values, nvariables, coordinates, ncoords, connections, ncells, celltype );
+                        store_volume_in_variables_array_unstruct( volume, dom, values, nvariables, coordinates, ncoords, connections, ncells, celltype );
 
                         float max_opacity;
                         float max_density;
                         float sampling_volume_inverse;
                         
-                        CellByCellParticleGenerator::CalculateDensityConstaint(
+                        vismodule::CellByCellParticleGenerator::CalculateDensityConstaint(
                             *param.m_camera,
                             *volume,
                             static_cast<float>( param.m_subpixel_level ),
@@ -188,10 +190,7 @@ void generate_particle(
                         param.m_transfunc_synthesizer->setSamplingVolumeInverse( sampling_volume_inverse );
 
                         // generate particle
-                        tmp_obj = point_object_generator.GenerateParticleUnstruct( param, dom, values, nvariables, coordinates, ncoords, connections, ncells, celltype );
-
-                        delete coordinates;
-                        delete connections;
+                        tmp_obj = point_object_generator.GenerateParticleUnstruct( param, dom, values, nvariables, coordinates, ncoords, connections, ncells, celltype, server_mode );
                     }
                     else // ( voltype == vismodule::VolumeObjectBase::VolumeType::Structured )
                     {
@@ -200,10 +199,9 @@ void generate_particle(
                         store_volume_in_variables_array_struct( volume, dom, values, nvariables, ncoords );
 
                         // generate particle
-                        tmp_obj = point_object_generator.GenerateParticleStruct( param, volume, dom, values, nvariables );
+                        tmp_obj = point_object_generator.GenerateParticleStruct( param, dom, values, nvariables, server_mode );
                     }
 
-                    delete values;
                     delete volume;
                 }
                 catch ( const std::runtime_error& e )
@@ -595,8 +593,8 @@ void generate_volume(
 }
 
 void store_volume_in_variables_array_common(
-    vismodule::VolumeObjectBase* volume,
-    Type** values,
+    const vismodule::VolumeObjectBase* volume,
+    std::unique_ptr<std::unique_ptr<Type[]>[]>& values,
     int& nvariables,
     int& ncoords
 )
@@ -608,68 +606,61 @@ void store_volume_in_variables_array_common(
     nvariables = volume->veclen();
 
     // ここで変数の値をfloatでまとめることで粒子生成のテンプレート化を回避
-    std::unique_ptr<std::unique_ptr<Type[]>[]> tmp_values(new std::unique_ptr<Type[]>[nvariables]);
+    // std::unique_ptr<std::unique_ptr<Type[]>[]> tmp_values(new std::unique_ptr<Type[]>[nvariables]);
+    values = std::make_unique<std::unique_ptr<Type[]>[]>(nvariables);
 
     // 実行時型分岐で呼び出す
     const std::type_info& type = volume->values().typeInfo()->type();
     if (type == typeid(vismodule::Int8))
     {
-        copy_values<vismodule::Int8>(valueArray, tmp_values, nvariables, ncoords);
+        copy_values<vismodule::Int8>(valueArray, values, nvariables, ncoords);
     }  
     else if ( type == typeid( vismodule::Int16  ) )
     {
-        copy_values<vismodule::Int16>(valueArray, tmp_values, nvariables, ncoords);
+        copy_values<vismodule::Int16>(valueArray, values, nvariables, ncoords);
     } 
     else if ( type == typeid( vismodule::Int32  ) )
     {
-        copy_values<vismodule::Int32>(valueArray, tmp_values, nvariables, ncoords);
+        copy_values<vismodule::Int32>(valueArray, values, nvariables, ncoords);
     }
     else if ( type == typeid( vismodule::Int64  ) )
     {
-        copy_values<vismodule::Int64>(valueArray, tmp_values, nvariables, ncoords);
+        copy_values<vismodule::Int64>(valueArray, values, nvariables, ncoords);
     }
     else if ( type == typeid( vismodule::UInt8  ) )
     {
-        copy_values<vismodule::UInt8>(valueArray, tmp_values, nvariables, ncoords);
+        copy_values<vismodule::UInt8>(valueArray, values, nvariables, ncoords);
     }
     else if ( type == typeid( vismodule::UInt16 ) )
     {
-        copy_values<vismodule::UInt16>(valueArray, tmp_values, nvariables, ncoords);
+        copy_values<vismodule::UInt16>(valueArray, values, nvariables, ncoords);
     }
     else if ( type == typeid( vismodule::UInt32 ) )
     {
-        copy_values<vismodule::UInt32>(valueArray, tmp_values, nvariables, ncoords);
+        copy_values<vismodule::UInt32>(valueArray, values, nvariables, ncoords);
     }
     else if ( type == typeid( vismodule::UInt64 ) )
     {
-        copy_values<vismodule::UInt64>(valueArray, tmp_values, nvariables, ncoords);
+        copy_values<vismodule::UInt64>(valueArray, values, nvariables, ncoords);
     }
     else if ( type == typeid( vismodule::Real32 ) )
     {
-        copy_values<vismodule::Real32>(valueArray, tmp_values, nvariables, ncoords);
+        copy_values<vismodule::Real32>(valueArray, values, nvariables, ncoords);
     }
     else if ( type == typeid( vismodule::Real64 ) )
     {
-        copy_values<vismodule::Real64>(valueArray, tmp_values, nvariables, ncoords);
+        copy_values<vismodule::Real64>(valueArray, values, nvariables, ncoords);
     }
     else 
     {
         throw std::runtime_error("Unsupported type");
     }
-
-    std::vector<float*> raw_values( nvariables );
-    for (int i = 0; i < nvariables; ++i ) 
-    {
-        raw_values[i] = tmp_values[i].get();
-    }
-
-    values = raw_values.data();
 }
 
 void store_volume_in_variables_array_struct(
-    vismodule::VolumeObjectBase* volume,
+    const vismodule::VolumeObjectBase* volume,
     domain_parameters_struct& dom,
-    Type** values,
+    std::unique_ptr<std::unique_ptr<Type[]>[]>& values,
     int& nvariables,
     int& ncoords
 )
@@ -697,13 +688,13 @@ void store_volume_in_variables_array_struct(
 }
 
 void store_volume_in_variables_array_unstruct(
-    vismodule::VolumeObjectBase* volume,
+    const vismodule::VolumeObjectBase* volume,
     domain_parameters_unstruct& dom,
-    Type** values,
+    std::unique_ptr<std::unique_ptr<Type[]>[]>& values,
     int& nvariables,
-    float* coordinates,
+    std::unique_ptr<float[]>& coordinates,
     int& ncoords,
-    unsigned int* connections,
+    std::unique_ptr<unsigned int[]>& connections,
     int& ncells,
     vismodule::VolumeObjectBase::CellType& celltype
 )
@@ -714,11 +705,13 @@ void store_volume_in_variables_array_unstruct(
 
     std::vector<float> tmp_coordinates;
     tmp_coordinates.assign( (float*)uvo_p->coords().begin(), (float*)uvo_p->coords().end() );
-    coordinates = tmp_coordinates.data();
+    coordinates = std::make_unique<float[]>( tmp_coordinates.size() );
+    std::copy( tmp_coordinates.begin(), tmp_coordinates.end(), coordinates.get() );
 
     std::vector<unsigned int> tmp_connections;
     tmp_connections.assign( (unsigned int*)uvo_p->connections().begin(), (unsigned int*)uvo_p->connections().end() );
-    connections = tmp_connections.data();
+    connections = std::make_unique<unsigned int[]>( tmp_connections.size() );
+    std::copy( tmp_connections.begin(), tmp_connections.end(), connections.get() );
 
     ncells   = uvo_p->ncells();
     celltype = uvo_p->cellType();

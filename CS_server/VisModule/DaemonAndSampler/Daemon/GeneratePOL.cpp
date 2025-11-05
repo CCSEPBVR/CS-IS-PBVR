@@ -79,26 +79,23 @@ void generate_plot_over_line(
                     else if ( mvp.m_file_type == 3 || mvp.m_file_type == 4 )
                     {
                         generate_volume( param, mvp, st, xvl, volume );
-                        pol_generator.run( param, servMes.m_number_volume_divide, tmp_obj, st, xvl );
                     }
 #endif
                     else // filetype: kvsml
                     {
                         generate_volume( param, mvp, st, volume );
-                        pol_generator.run( param, servMes.m_number_volume_divide, tmp_obj );
                     }
 
-                    Type** values = nullptr;
+                    std::unique_ptr<std::unique_ptr<Type[]>[]> values;
                     int nvariables = 0;
                     int ncoords = 0;
                     vismodule::VolumeObjectBase::VolumeType voltype = volume->volumeType();                    
-                    int number_of_divide = mvpl.m_total_number_subvolumes;
 
                     if( voltype == vismodule::VolumeObjectBase::VolumeType::Unstructured )
                     {
                         domain_parameters_unstruct dom;
-                        float* coordinates = nullptr;
-                        unsigned int* connections = nullptr;
+                        std::unique_ptr<float[]> coordinates;
+                        std::unique_ptr<unsigned int[]> connections;
                         int ncells = 0;
                         vismodule::VolumeObjectBase::CellType celltype;
 
@@ -107,7 +104,6 @@ void generate_plot_over_line(
                         // generate particle
                         pol_generator.GeneratePOLUnstruct(
                             param,
-                            number_of_divide,
                             values,
                             nvariables,
                             coordinates,
@@ -117,9 +113,6 @@ void generate_plot_over_line(
                             celltype,
                             tmp_obj
                         );
-
-                        delete coordinates;
-                        delete connections;
                     }
                     else // ( voltype == vismodule::VolumeObjectBase::VolumeType::Structured )
                     {
@@ -136,6 +129,8 @@ void generate_plot_over_line(
                             tmp_obj
                         );
                     }
+
+                    delete volume;
                 }
                 catch ( const std::runtime_error& e )
                 {

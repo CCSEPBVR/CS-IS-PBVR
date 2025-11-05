@@ -110,7 +110,7 @@ void generate_glyph(
                         throw std::runtime_error("Failed to generate volume object.");
                     }
 
-                    Type** values = nullptr;
+                    std::unique_ptr<std::unique_ptr<Type[]>[]> values;
                     int nvariables = 0;
                     int ncoords = 0;
                     vismodule::VolumeObjectBase::VolumeType voltype = volume->volumeType();
@@ -119,8 +119,8 @@ void generate_glyph(
                     if( voltype == vismodule::VolumeObjectBase::VolumeType::Unstructured )
                     {
                         domain_parameters_unstruct dom;
-                        float* coordinates = nullptr;
-                        unsigned int* connections = nullptr;
+                        std::unique_ptr<float[]> coordinates;
+                        std::unique_ptr<unsigned int[]> connections;
                         int ncells = 0;
                         vismodule::VolumeObjectBase::CellType celltype;
 
@@ -139,9 +139,6 @@ void generate_glyph(
                             celltype,
                             tmp_obj
                         );
-
-                        delete coordinates;
-                        delete connections;
                     }
                     else // ( voltype == vismodule::VolumeObjectBase::VolumeType::Structured )
                     {
@@ -153,13 +150,13 @@ void generate_glyph(
                         glyph_creator.GenerateGlyphStruct(
                             param,
                             number_of_divide,
+                            dom,
                             values,
                             nvariables,
                             tmp_obj
                         );
                     }
 
-                    delete values;
                     delete volume;
                 }
                 catch ( const std::runtime_error& e )

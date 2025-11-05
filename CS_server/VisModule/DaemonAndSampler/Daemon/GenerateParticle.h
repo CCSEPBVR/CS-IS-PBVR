@@ -91,7 +91,7 @@ void generate_volume(
     const Argument& param,
     const MultiVolumeProperty& mvp,
     const int time_step,
-    vismodule::VolumeObjectBase* volume
+    vismodule::VolumeObjectBase*& volume
 );
 
 void generate_volume(
@@ -99,32 +99,32 @@ void generate_volume(
     const MultiVolumeProperty& mvp,
     const int time_step,
     const int sub_volume_id,
-    vismodule::VolumeObjectBase* volume
+    vismodule::VolumeObjectBase*& volume
 );
 
 void store_volume_in_variables_array_common(
     vismodule::VolumeObjectBase* volume,
-    Type** values,
+    std::unique_ptr<std::unique_ptr<Type[]>[]>& values,
     int& nvariables,
     int& ncoords
 );
 
 void store_volume_in_variables_array_struct(
-    vismodule::VolumeObjectBase* volume,
+    const vismodule::VolumeObjectBase* volume,
     domain_parameters_struct& dom,
-    Type** values,
+    std::unique_ptr<std::unique_ptr<Type[]>[]>& values,
     int& nvariables,
     int& ncoords
 );
 
 void store_volume_in_variables_array_unstruct(
-    vismodule::VolumeObjectBase* volume,
+    const vismodule::VolumeObjectBase* volume,
     domain_parameters_unstruct& dom,
-    Type** values,
+    std::unique_ptr<std::unique_ptr<Type[]>[]>& values,
     int& nvariables,
-    float* coordinates,
+    std::unique_ptr<float[]>& coordinates,
     int& ncoords,
-    unsigned int* connections,
+    std::unique_ptr<unsigned int[]>& connections,
     int& ncells,
     vismodule::VolumeObjectBase::CellType& celltype
 );

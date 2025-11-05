@@ -56,8 +56,8 @@ public:
     void GenerateGlyphStruct(
         const Argument& param,
         const int number_of_divide,
-        domain_parameters_struct& dom,
-        Type** values,
+        const domain_parameters_struct& dom,
+        const std::unique_ptr<std::unique_ptr<Type[]>[]>& values,
         int nvariables,
         vismodule::KVSMLObjectGlyph* object
     );
@@ -65,11 +65,11 @@ public:
     void GenerateGlyphUnstruct(
         const Argument& param,
         const int number_of_divide,
-        Type** values,
+        const std::unique_ptr<std::unique_ptr<Type[]>[]>& values,
         int nvariables,
-        float* coordinates,
+        const std::unique_ptr<float[]>& coordinates,
         int ncoords,
-        unsigned int* connections,
+        const std::unique_ptr<unsigned int[]>& connections,
         int ncells,
         const vismodule::VolumeObjectBase::CellType& celltype,
         vismodule::KVSMLObjectGlyph* object
