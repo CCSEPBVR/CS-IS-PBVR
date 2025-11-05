@@ -67,9 +67,9 @@ void PlotOverLineEditor::initialize()
     connect( ui->endTranslationXDoubleSpinBox, &QDoubleSpinBox::valueChanged, this, &PlotOverLineEditor::endTranslationUpdateXYZ );
     connect( ui->endTranslationYDoubleSpinBox, &QDoubleSpinBox::valueChanged, this, &PlotOverLineEditor::endTranslationUpdateXYZ );
     connect( ui->endTranslationZDoubleSpinBox, &QDoubleSpinBox::valueChanged, this, &PlotOverLineEditor::endTranslationUpdateXYZ );
-    connect( ui->endCoordXDoubleSpinBox, &QDoubleSpinBox::valueChanged, this, &PlotOverLineEditor::startCoordsUpdateXYZ );
-    connect( ui->endCoordYDoubleSpinBox, &QDoubleSpinBox::valueChanged, this, &PlotOverLineEditor::startCoordsUpdateXYZ );
-    connect( ui->endCoordZDoubleSpinBox, &QDoubleSpinBox::valueChanged, this, &PlotOverLineEditor::startCoordsUpdateXYZ );
+    connect( ui->endCoordXDoubleSpinBox, &QDoubleSpinBox::valueChanged, this, &PlotOverLineEditor::endCoordsUpdateXYZ );
+    connect( ui->endCoordYDoubleSpinBox, &QDoubleSpinBox::valueChanged, this, &PlotOverLineEditor::endCoordsUpdateXYZ );
+    connect( ui->endCoordZDoubleSpinBox, &QDoubleSpinBox::valueChanged, this, &PlotOverLineEditor::endCoordsUpdateXYZ );
 
     connect( ui->createLinePushButton , &QPushButton::clicked , this, &PlotOverLineEditor::onCreateLine );
     connect( ui->applyPushButton , &QPushButton::clicked , this, &PlotOverLineEditor::onApply );
@@ -482,23 +482,29 @@ void PlotOverLineEditor::updateNumberOfVector( const int numberOfVector )
     ui->targetComboBox->addItems( m_vector_list );
 }
 
-void PlotOverLineEditor::focusObjectUpdate( kvs::Vec3 focusTartgetObjectMinCoord, kvs::Vec3 focusTartgetObjectMaxCoord ) // NOTE:フォーカス対象のオブジェクトが変更された場合に呼び出される。
+void PlotOverLineEditor::updateFocus( kvs::Vec3 resultMinObjectCoords, kvs::Vec3 resultMaxObjectCoords ) // NOTE:フォーカス対象のオブジェクトが変更された場合に呼び出される。
 {
     if( m_start_point_object && m_end_point_object )
     {
-        m_start_point_object->setMinMaxObjectCoords( focusTartgetObjectMinCoord, focusTartgetObjectMaxCoord );
-        m_start_point_object->setMinMaxExternalCoords( focusTartgetObjectMinCoord, focusTartgetObjectMaxCoord );
-        m_end_point_object->setMinMaxObjectCoords( focusTartgetObjectMinCoord, focusTartgetObjectMaxCoord );
-        m_end_point_object->setMinMaxExternalCoords( focusTartgetObjectMinCoord, focusTartgetObjectMaxCoord );
+        m_start_point_object->setMinMaxObjectCoords( resultMinObjectCoords, resultMaxObjectCoords );
+        m_start_point_object->setMinMaxExternalCoords( resultMinObjectCoords, resultMaxObjectCoords );
+        m_end_point_object->setMinMaxObjectCoords( resultMinObjectCoords, resultMaxObjectCoords );
+        m_end_point_object->setMinMaxExternalCoords( resultMinObjectCoords, resultMaxObjectCoords );
         if( m_screen->scene()->object( PlotOverLineObjectName ) )
         {
-            m_screen->scene()->object( PlotOverLineObjectName )->setMinMaxObjectCoords( focusTartgetObjectMinCoord, focusTartgetObjectMaxCoord );
-            m_screen->scene()->object( PlotOverLineObjectName )->setMinMaxExternalCoords( focusTartgetObjectMinCoord, focusTartgetObjectMaxCoord );
+            m_screen->scene()->object( PlotOverLineObjectName )->setMinMaxObjectCoords( resultMinObjectCoords, resultMaxObjectCoords );
+            m_screen->scene()->object( PlotOverLineObjectName )->setMinMaxExternalCoords( resultMinObjectCoords, resultMaxObjectCoords );
         }
         m_screen->scene()->objectManager()->updateMinMaxCoords();
         m_screen->scene()->objectManager()->updateExternalCoords();
         m_screen->update();
     }
+}
+
+void PlotOverLineEditor::updateTranslation() // NOTE:フォーカス対象のオブジェクトが変更された場合に呼び出される。
+{
+    startCoordsUpdateXYZ();
+    endCoordsUpdateXYZ();
 }
 
 void PlotOverLineEditor::setPlotData( std::vector<float> xAxis, std::vector<bool> mask, std::vector<float> values )

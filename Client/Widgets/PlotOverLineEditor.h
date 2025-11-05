@@ -86,7 +86,8 @@ private slots:
 
 public slots:
     void updateNumberOfVector( const int numberOfVector );
-    void focusObjectUpdate( kvs::Vec3 focusTartgetObjectMinCoord, kvs::Vec3 focusTartgetObjectMaxCoord );
+    void updateFocus( kvs::Vec3 resultMinObjectCoords, kvs::Vec3 resultMaxObjectCoords );
+    void updateTranslation();
     void setPlotData( std::vector<float> xAxis, std::vector<bool> mask, std::vector<float> values );
     void drawPlotOverLineFromVRHands( kvs::Real32 CoordArray[ 2 * 3 ] ); // FIXME:onCreateLineと機能が重複しています。
     void togglePlotOverLineFromVRHands();

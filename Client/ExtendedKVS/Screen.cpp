@@ -40,7 +40,7 @@ void kvs::qt::jaea::Screen::keyPressEvent( kvs::KeyEvent* event )
     case kvs::Key::Home:
         this->reset();
         this->update();
-        emit updatePointsTranslation();
+        emit updateTranslation();
         break;
     case kvs::Key::x:
         emit addKeyFrameAdd( this->scene()->objectManager()->xform() );

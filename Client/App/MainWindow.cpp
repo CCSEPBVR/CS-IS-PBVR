@@ -21,7 +21,7 @@ MainWindow::MainWindow( kvs::qt::Application& app, QWidget *parent )
     , m_communication( new Communication( m_screen, m_web_sockets, this ) )
     , m_glyph_editor( new GlyphEditor( m_web_sockets, this ) )
     , m_object_editor( new ObjectEditorWIP( m_web_sockets, m_screen, this ) )
-    // , m_plot_over_line_editor( new PlotOverLineEditor( m_web_sockets, m_screen, this ) ) // FIXME:ObjectEditorとFocus機能が干渉しているので修正してください。
+    , m_plot_over_line_editor( new PlotOverLineEditor( m_web_sockets, m_screen, this ) )
     , m_point_size_control( new PointSizeControl( m_screen, this ) )
     , m_preference( new Preference( this ) )
     , m_repetition_level_control( new RepetitionLevelControl( m_screen, m_compositor, this ) )
@@ -250,6 +250,8 @@ void MainWindow::objectEditorInitialize()
         m_object_editor_action = new QAction( tr( "Object Editor"), this );
 
         connect( m_object_editor, &ObjectEditorWIP::updateTotalTimeStepRange, m_time_step_control_tool_bar, &TimeStepControlToolBar::updateTotalTimeStepRange );
+        connect( m_object_editor, &ObjectEditorWIP::updateFocus             , m_plot_over_line_editor, &PlotOverLineEditor::updateFocus );
+        connect( m_object_editor, &ObjectEditorWIP::updateTranslation       , m_plot_over_line_editor, &PlotOverLineEditor::updateTranslation );
         connect( m_object_editor, &ObjectEditorWIP::shading                 , m_shading_control, &ShadingControl::shading );
         connect( m_object_editor, &ObjectEditorWIP::done                    , m_time_step_control_tool_bar, &TimeStepControlToolBar::doneTimeControlToolBar );
         // connect( m_object_editor, &ObjectEditorWIP::noItems                         , m_time_step_control_tool_bar, &TimeStepControlToolBar::noItems );
@@ -273,6 +275,8 @@ void MainWindow::plotOverLineEditorInitialize()
     if( m_plot_over_line_editor )
     {
         m_plot_over_line_editor_action = new QAction( tr( "Plot Over Line Editor"), this );
+
+        connect( m_screen , &kvs::qt::jaea::Screen::updateTranslation   , m_plot_over_line_editor , &PlotOverLineEditor::updateTranslation );
 
         connect( this, &MainWindow::load, m_plot_over_line_editor, &PlotOverLineEditor::loadParameter );
         connect( this, &MainWindow::save, m_plot_over_line_editor, &PlotOverLineEditor::saveParameter );

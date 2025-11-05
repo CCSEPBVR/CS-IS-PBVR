@@ -41,6 +41,8 @@ public slots:
 
 signals:
     void updateTotalTimeStepRange( int min, int max, bool isSingleObject );
+    void updateFocus( kvs::Vec3 resultMinObjectCoords, kvs::Vec3 resultMaxObjectCoords );
+    void updateTranslation();
     void shading( kvs::RendererBase* );
     void done( int requestTimeStep );
 

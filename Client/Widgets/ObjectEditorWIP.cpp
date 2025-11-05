@@ -690,10 +690,58 @@ void ObjectEditorWIP::onApply()
             objectInfo.needSameTimeStepReplace = true;
         }
 
+        // フォーカス対象のオブジェクトに対して、全体の最小・最大座標を更新する。
+        if( objectInfo.isFocus )
+        {
+            resultMinObjectCoords.x() = std::min( resultMinObjectCoords.x(), objectInfo.minObjectCoord.x() );
+            resultMinObjectCoords.y() = std::min( resultMinObjectCoords.y(), objectInfo.minObjectCoord.y() );
+            resultMinObjectCoords.z() = std::min( resultMinObjectCoords.z(), objectInfo.minObjectCoord.z() );
+
+            resultMaxObjectCoords.x() = std::max( resultMaxObjectCoords.x(), objectInfo.maxObjectCoord.x() );
+            resultMaxObjectCoords.y() = std::max( resultMaxObjectCoords.y(), objectInfo.maxObjectCoord.y() );
+            resultMaxObjectCoords.z() = std::max( resultMaxObjectCoords.z(), objectInfo.maxObjectCoord.z() );
+        }
+
         QVariant newVar;
         newVar.setValue( objectInfo );
         nameItem->setData( newVar, Qt::UserRole );
     }
+
+    // resultObjectCoordsの反映
+    for( int row = 0; row < m_model->rowCount(); row++ )
+    {
+        QStandardItem* nameItem         = m_model->item( row, 0 );
+        QStandardItem* displayItem      = m_model->item( row, 2 );
+        QStandardItem* keepInitialItem  = m_model->item( row, 3 );
+        QStandardItem* keepFinalItem    = m_model->item( row, 4 );
+        if( !nameItem || !displayItem || !keepInitialItem || !keepFinalItem ) continue;
+
+        QVariant var = nameItem->data( Qt::UserRole );
+        if( !var.canConvert<ObjectInfoExtractor::ObjectInfo>() ) continue;
+
+        ObjectInfoExtractor::ObjectInfo objectInfo = var.value<ObjectInfoExtractor::ObjectInfo>();
+
+        objectInfo.currentMinObjectCoord = resultMinObjectCoords;
+        objectInfo.currentMaxObjectCoord = resultMaxObjectCoords;
+
+        if( objectInfo.objectID.first != -1 && objectInfo.objectID.second != -1 )
+        {
+            m_screen->scene()->object( objectInfo.objectID.first )->setMinMaxObjectCoords( resultMinObjectCoords, resultMaxObjectCoords );
+            m_screen->scene()->object( objectInfo.objectID.first )->setMinMaxExternalCoords( resultMinObjectCoords, resultMaxObjectCoords );
+        }
+
+        QVariant newVar;
+        newVar.setValue( objectInfo );
+        nameItem->setData( newVar, Qt::UserRole );
+    }
+
+    m_screen->scene()->objectManager()->push_centering_xform();
+    emit updateFocus( resultMinObjectCoords, resultMaxObjectCoords ); // NOTE:Plot Over Line用
+    m_screen->scene()->objectManager()->updateMinMaxCoords();
+    m_screen->scene()->objectManager()->updateExternalCoords();
+    m_screen->scene()->objectManager()->pop_centering_xform();
+    emit updateTranslation(); // NOTE:Plot Over Line用
+    m_screen->update();
 
     if( m_web_sockets->isConnected() )
     {

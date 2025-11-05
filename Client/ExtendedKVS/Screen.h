@@ -32,7 +32,7 @@ public:
     virtual void keyPressEvent( kvs::KeyEvent* event ) override;
 
 signals:
-    void updatePointsTranslation();
+    void updateTranslation();
     void addKeyFrameAdd( kvs::Xform xform ); // x
     void removeLastKeyFrame();               // d
     void clearKeyFrame();                    // D
