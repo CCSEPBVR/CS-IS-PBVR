@@ -41,7 +41,6 @@ signals:
     void done();
 
 private:
-    // メンバ変数群
     QLabel* m_current_time_step_label;
     QLineEdit* m_current_time_step_line_edit;
 
@@ -64,7 +63,6 @@ private:
     bool m_is_last_mode     = false;
     bool m_is_merging       = false;
 
-    // メソッド群
     void initialize();
     void decrementTimeStep();
     void incrementTimeStep();

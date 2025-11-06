@@ -27,7 +27,6 @@ signals:
     void loop( bool isChecked );
 
 private:
-    // メンバ変数群
     QPushButton* m_first_push_button;
     QPushButton* m_previous_push_button;
     QPushButton* m_reverse_push_button;
@@ -38,7 +37,6 @@ private:
     QPushButton* m_jump_push_button;
     QPushButton* m_loop_push_button;
 
-    // メソッド群
     void initialize();
     QPushButton* createPushButton( const QString& iconPath, const QSize& iconSize, const QSize& buttonSize, QWidget* parent );
     void disableButtons();

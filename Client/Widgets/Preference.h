@@ -75,7 +75,6 @@ protected:
     void closeEvent( QCloseEvent *event ) override;
 
 private:
-    // メンバ変数群
     Ui::Preference *ui;
 
     static const inline QString kConfigFilePath = QCoreApplication::applicationDirPath() + "/config.ini";
@@ -91,7 +90,6 @@ private:
 
     int m_current_time_step = -1;
 
-    // メソッド群
     void initialize();
     bool isConfigFileExists() { return QFile::exists( kConfigFilePath ); }
 

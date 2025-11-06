@@ -27,12 +27,10 @@ signals:
     void updatePointsTranslation(); // FIXME:シグナルスロットの接続が必要
 
 private:
-    // メンバ変数群
     Ui::VolumeTransform *ui;
 
     kvs::qt::jaea::Screen* m_screen = nullptr;
 
-    // メソッド群
     void initialize();
 
 private slots:

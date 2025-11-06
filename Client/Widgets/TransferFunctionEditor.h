@@ -32,22 +32,18 @@ public slots:
     void saveParameter( const QString& filePath );
 
 private:
-    // メンバ変数群
     Ui::TransferFunctionEditor *ui;
 
-    // 通信関連
     WebSocketPair* m_web_sockets = nullptr;
     QStandardItemModel *m_model = nullptr;
 
     QString m_color_synthesizer;
     QString m_opacity_synthesizer;
 
-    // ウィジェット群
     VariableEditor m_variable_editor;
     ColorMapEditor m_color_map_editor;
     OpacityMapEditor m_opacity_map_editor;
 
-    // メソッド群
     void initialize();
     void exportTransferFunction();
     void importTransferFunction();

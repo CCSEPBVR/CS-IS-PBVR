@@ -70,7 +70,6 @@ private:
     kvs::Vec3 m_end_coords;
     bool m_is_send_available = false;
 
-    // メソッド群
     void initialize();
     void calculateInitialTranslation();
     void updateTranslationXYZ( kvs::PointObject* point,

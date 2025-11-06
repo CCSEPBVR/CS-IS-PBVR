@@ -41,10 +41,8 @@ private:
     QStandardItemModel* m_color_data_model = nullptr;
     QStringList m_vector_list;
 
-    // ウィジェット群
     ColorMapEditor m_color_map_editor;
 
-    //  メソッド群
     void initialize();
 
 private slots:

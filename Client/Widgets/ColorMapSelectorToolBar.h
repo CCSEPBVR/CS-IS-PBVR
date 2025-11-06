@@ -35,7 +35,6 @@ private:
     kvs::ColorMapBar* m_color_map_bar = nullptr;
     QStandardItemModel *m_model = nullptr;
 
-    // メソッド群
     void initialize();
 
 private slots:

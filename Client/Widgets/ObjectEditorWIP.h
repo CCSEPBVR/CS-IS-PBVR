@@ -47,7 +47,6 @@ signals:
     void done( int requestTimeStep );
 
 private:
-    // メンバ変数群
     Ui::ObjectEditorWIP *ui;
 
     WebSocketPair* m_web_sockets = nullptr;
@@ -61,7 +60,6 @@ private:
 
     kvs::qt::jaea::Screen* m_screen = nullptr;
 
-    // メソッド群
     void initialize();
     void toggleCommonObjectWidgets( bool isObject );                                // true:オブジェクトである。
     void toggleCommonServerObjectWidgets( bool isCommonServerObject );              // true:サーバポイントオブジェクトである。(ClientServer/Insitu共通)
