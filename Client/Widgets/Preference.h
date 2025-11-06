@@ -45,7 +45,7 @@ public:
     explicit Preference( QWidget *parent = nullptr );
     ~Preference();
 
-    void setScreen( kvs::qt::jaea::Screen* screen ) { m_screen = screen; }
+    void setScreen( kvs::qt::jaea::Screen* screen )                      { m_screen = screen; }
     void setCompositor( kvs::StochasticRenderingCompositor* compositor ) { m_compositor = compositor; }
     void setColorMapBar( kvs::ColorMapBar* color_map_bar )
     {
@@ -57,15 +57,22 @@ public:
         m_orientation_axis = orientation_axis;
         m_orientation_axis->anchorToBottomRight();
     }
-    void setFpsLabel( kvs::Label* fps_label ) { m_fps_label = fps_label; }
-    void setTimeStepLabel( kvs::Label* time_step_label ) { m_time_step_label = time_step_label; }
+    void setFpsLabel( kvs::Label* fps_label )                            { m_fps_label = fps_label; }
+    void setTimeStepLabel( kvs::Label* time_step_label )                 { m_time_step_label = time_step_label; }
 
-    kvs::qt::jaea::Screen* screen() const { return m_screen; }
+    kvs::qt::jaea::Screen* screen()                  const { return m_screen; }
     kvs::StochasticRenderingCompositor* compositor() const { return m_compositor; }
-    kvs::ColorMapBar* colorMapBar() const { return m_color_map_bar; }
-    kvs::OrientationAxis* orientationAxis() const { return m_orientation_axis; }
-    kvs::Label* fpsLabel() const { return m_fps_label; }
-    kvs::Label* timeStepLabel() const { return m_time_step_label; }
+    kvs::ColorMapBar* colorMapBar()                  const { return m_color_map_bar; }
+    kvs::OrientationAxis* orientationAxis()          const { return m_orientation_axis; }
+    kvs::Label* fpsLabel()                           const { return m_fps_label; }
+    kvs::Label* timeStepLabel()                      const { return m_time_step_label; }
+
+public slots:
+    void readyScreen();
+    void mergingFinish( int ); // FIXME:メソッド名変更したほうがいいです。
+
+protected:
+    void closeEvent( QCloseEvent *event ) override;
 
 private:
     // メンバ変数群
@@ -122,13 +129,6 @@ private slots:
     void onApply();
     void onCancel();
     void onOK();
-
-public slots:
-    void readyScreen();
-    void mergingFinish( int ); // FIXME:メソッド名変更したほうがいいです。
-
-protected:
-    void closeEvent( QCloseEvent *event ) override;
 };
 
 #endif // PREFERENCE_H

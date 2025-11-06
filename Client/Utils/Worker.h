@@ -18,9 +18,6 @@ public:
     {
     }
 
-signals:
-    void done(); // 完了通知
-
 public slots:
     void process()
     {
@@ -122,6 +119,9 @@ public slots:
         }
         emit done();
     }
+
+signals:
+    void done(); // 完了通知
 
 private:
     int m_request_time_step;

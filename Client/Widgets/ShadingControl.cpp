@@ -15,38 +15,6 @@ ShadingControl::~ShadingControl()
     delete ui;
 }
 
-void ShadingControl::initialize()
-{
-    ui->setupUi( this );
-    QButtonGroup *radioButtonGroup = new QButtonGroup();
-    radioButtonGroup->addButton( ui->noneRadioButton );
-    radioButtonGroup->addButton( ui->phongRadioButton );
-    radioButtonGroup->addButton( ui->lambertRadioButton );
-    radioButtonGroup->addButton( ui->blinnPhongRadioButton );
-
-    connect( radioButtonGroup, SIGNAL( buttonClicked( QAbstractButton* ) ), this, SLOT( onChangedShadingParameter() ) );
-    connect( ui->AmbientDoubleSpinBox, &QDoubleSpinBox::valueChanged, this, &ShadingControl::onChangedShadingParameter );
-    connect( ui->DiffuseDoubleSpinBox, &QDoubleSpinBox::valueChanged, this, &ShadingControl::onChangedShadingParameter );
-    connect( ui->SpecularDoubleSpinBox, &QDoubleSpinBox::valueChanged, this, &ShadingControl::onChangedShadingParameter );
-    connect( ui->ShininessDoubleSpinBox, &QDoubleSpinBox::valueChanged, this, &ShadingControl::onChangedShadingParameter );
-}
-
-void ShadingControl::onChangedShadingParameter()
-{
-    const int size = m_screen->scene()->IDManager()->size();
-    for( int index = 0; index < size; index++ )
-    {
-        auto id = m_screen->scene()->IDManager()->id( index );
-        auto* object = m_screen->scene()->objectManager()->object( id.first );
-        auto* rendererBase = m_screen->scene()->rendererManager()->renderer( id.second );
-        if( rendererBase )
-        {
-            shading( rendererBase );
-        }
-    }
-    m_screen->update();
-}
-
 void ShadingControl::shading( kvs::RendererBase* rendererBase )
 {
     if( auto* stochasticRenderer = dynamic_cast<kvs::StochasticRendererBase*>( rendererBase ) )
@@ -126,4 +94,36 @@ void ShadingControl::saveParameter( const QString& filePath )
 {
     // TODO:KPI
     qDebug() << __FILE__ << ":" << __func__ << ":" << filePath;
+}
+
+void ShadingControl::initialize()
+{
+    ui->setupUi( this );
+    QButtonGroup *radioButtonGroup = new QButtonGroup();
+    radioButtonGroup->addButton( ui->noneRadioButton );
+    radioButtonGroup->addButton( ui->phongRadioButton );
+    radioButtonGroup->addButton( ui->lambertRadioButton );
+    radioButtonGroup->addButton( ui->blinnPhongRadioButton );
+
+    connect( radioButtonGroup, SIGNAL( buttonClicked( QAbstractButton* ) ), this, SLOT( onChangedShadingParameter() ) );
+    connect( ui->AmbientDoubleSpinBox, &QDoubleSpinBox::valueChanged, this, &ShadingControl::onChangedShadingParameter );
+    connect( ui->DiffuseDoubleSpinBox, &QDoubleSpinBox::valueChanged, this, &ShadingControl::onChangedShadingParameter );
+    connect( ui->SpecularDoubleSpinBox, &QDoubleSpinBox::valueChanged, this, &ShadingControl::onChangedShadingParameter );
+    connect( ui->ShininessDoubleSpinBox, &QDoubleSpinBox::valueChanged, this, &ShadingControl::onChangedShadingParameter );
+}
+
+void ShadingControl::onChangedShadingParameter()
+{
+    const int size = m_screen->scene()->IDManager()->size();
+    for( int index = 0; index < size; index++ )
+    {
+        auto id = m_screen->scene()->IDManager()->id( index );
+        auto* object = m_screen->scene()->objectManager()->object( id.first );
+        auto* rendererBase = m_screen->scene()->rendererManager()->renderer( id.second );
+        if( rendererBase )
+        {
+            shading( rendererBase );
+        }
+    }
+    m_screen->update();
 }

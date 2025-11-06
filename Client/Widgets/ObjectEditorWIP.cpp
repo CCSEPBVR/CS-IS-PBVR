@@ -75,18 +75,6 @@ void ObjectEditorWIP::reset()
     toggleNontexturePolygonObjectWidgets( false );
 }
 
-void ObjectEditorWIP::loadParameter( const QString& filePath )
-{
-    // TODO:KPI
-    qDebug() << __FILE__ << ":" << __func__ << ":" << filePath;
-}
-
-void ObjectEditorWIP::saveParameter( const QString& filePath )
-{
-    // TODO:KPI
-    qDebug() << __FILE__ << ":" << __func__ << ":" << filePath;
-}
-
 void ObjectEditorWIP::showAtTimeStep( int timeStep )
 {
     Worker* worker = new Worker( timeStep, m_model, m_screen );
@@ -101,6 +89,18 @@ void ObjectEditorWIP::showAtTimeStep( int timeStep )
     connect( worker, &Worker::done, this, [this, timeStep]() { doneObjectEditor( timeStep ); } );
 
     thread->start();
+}
+
+void ObjectEditorWIP::loadParameter( const QString& filePath )
+{
+    // TODO:KPI
+    qDebug() << __FILE__ << ":" << __func__ << ":" << filePath;
+}
+
+void ObjectEditorWIP::saveParameter( const QString& filePath )
+{
+    // TODO:KPI
+    qDebug() << __FILE__ << ":" << __func__ << ":" << filePath;
 }
 
 void ObjectEditorWIP::initialize()

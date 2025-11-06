@@ -25,6 +25,12 @@ public:
     explicit TransferFunctionEditor( WebSocketPair* websockets, QWidget *parent = nullptr );
     ~TransferFunctionEditor();
 
+public slots:
+    void updateOperatorState( bool operatorState ); // true:権限あり
+    void reset();
+    void loadParameter( const QString& filePath );
+    void saveParameter( const QString& filePath );
+
 private:
     // メンバ変数群
     Ui::TransferFunctionEditor *ui;
@@ -73,11 +79,5 @@ private slots:
     void onExport();
     void onImport();
     void onApply();
-
-public slots:    
-    void updateOperatorState( bool operatorState ); // true:権限あり
-    void reset();
-    void loadParameter( const QString& filePath );
-    void saveParameter( const QString& filePath );
 };
 #endif // TRANSFERFUNCTIONEDITOR_H

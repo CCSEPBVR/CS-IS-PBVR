@@ -8,6 +8,18 @@ TotalParticlesToolBar::TotalParticlesToolBar( QWidget* parent ) :
 
 TotalParticlesToolBar::~TotalParticlesToolBar() {}
 
+void TotalParticlesToolBar::updateTotalParticles( int totalParticles )
+{
+    if( totalParticles != 0 )
+    {
+        m_total_particles_display->setText( QString::number( totalParticles ) );
+    }
+    else
+    {
+        m_total_particles_display->setText( "NO POINT OBJECTS" );
+    }
+}
+
 void TotalParticlesToolBar::initialize()
 {    
     QWidget* containerWidget = new QWidget( this );
@@ -22,16 +34,4 @@ void TotalParticlesToolBar::initialize()
 
     this->addWidget( containerWidget );
     this->setMovable( false );
-}
-
-void TotalParticlesToolBar::updateTotalParticles( int totalParticles )
-{
-    if( totalParticles != 0 )
-    {
-        m_total_particles_display->setText( QString::number( totalParticles ) );
-    }
-    else
-    {
-        m_total_particles_display->setText( "NO POINT OBJECTS" );
-    }
 }

@@ -14,6 +14,18 @@ VolumeTransform::~VolumeTransform()
     delete ui;
 }
 
+void VolumeTransform::loadParameter( const QString& filePath )
+{
+    // TODO:KPI
+    qDebug() << __FILE__ << ":" << __func__ << ":" << filePath;
+}
+
+void VolumeTransform::saveParameter( const QString& filePath )
+{
+    // TODO:KPI
+    qDebug() << __FILE__ << ":" << __func__ << ":" << filePath;
+}
+
 void VolumeTransform::initialize()
 {
     ui->setupUi(this);
@@ -43,16 +55,4 @@ void VolumeTransform::onApply()
         ) );
 
     m_screen->update();
-}
-
-void VolumeTransform::loadParameter( const QString& filePath )
-{
-    // TODO:KPI
-    qDebug() << __FILE__ << ":" << __func__ << ":" << filePath;
-}
-
-void VolumeTransform::saveParameter( const QString& filePath )
-{
-    // TODO:KPI
-    qDebug() << __FILE__ << ":" << __func__ << ":" << filePath;
 }

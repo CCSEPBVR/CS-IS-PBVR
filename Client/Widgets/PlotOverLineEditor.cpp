@@ -18,6 +18,216 @@ PlotOverLineEditor::~PlotOverLineEditor()
     delete ui;
 }
 
+void PlotOverLineEditor::updateNumberOfVector( const int numberOfVector )
+{
+    m_vector_list.clear();
+    for( int i = 0; i < numberOfVector; i++ )
+    {
+        m_vector_list << QString( "q%1" ).arg( i + 1 );
+    }
+    ui->targetComboBox->clear();
+    ui->targetComboBox->addItems( m_vector_list );
+}
+
+void PlotOverLineEditor::updateFocus( kvs::Vec3 resultMinObjectCoords, kvs::Vec3 resultMaxObjectCoords ) // NOTE:フォーカス対象のオブジェクトが変更された場合に呼び出される。
+{
+    if( m_start_point_object && m_end_point_object )
+    {
+        m_start_point_object->setMinMaxObjectCoords( resultMinObjectCoords, resultMaxObjectCoords );
+        m_start_point_object->setMinMaxExternalCoords( resultMinObjectCoords, resultMaxObjectCoords );
+        m_end_point_object->setMinMaxObjectCoords( resultMinObjectCoords, resultMaxObjectCoords );
+        m_end_point_object->setMinMaxExternalCoords( resultMinObjectCoords, resultMaxObjectCoords );
+        if( m_plot_over_line_object )
+        {
+            m_plot_over_line_object->setMinMaxObjectCoords( resultMinObjectCoords, resultMaxObjectCoords );
+            m_plot_over_line_object->setMinMaxExternalCoords( resultMinObjectCoords, resultMaxObjectCoords );
+        }
+        m_screen->scene()->objectManager()->updateMinMaxCoords();
+        m_screen->scene()->objectManager()->updateExternalCoords();
+        m_screen->update();
+    }
+}
+
+void PlotOverLineEditor::updateTranslation() // NOTE:フォーカス対象のオブジェクトが変更された場合に呼び出される。
+{
+    startCoordsUpdateXYZ();
+    endCoordsUpdateXYZ();
+}
+
+void PlotOverLineEditor::setPlotData( std::vector<float> xAxis, std::vector<bool> mask, std::vector<float> values )
+{
+    // メインスレッドで実行する必要がある場合
+    if( QApplication::instance()->thread() != QThread::currentThread() )
+    {
+        QMetaObject::invokeMethod( this, [=]() { setPlotData(xAxis, mask, values); }, Qt::QueuedConnection );
+        return;
+    }
+
+    // 初期化：極端に大きい/小さい値を設定
+    m_x_min = std::numeric_limits<double>::max();
+    m_x_max = std::numeric_limits<double>::lowest();
+    m_y_min = std::numeric_limits<double>::max();
+    m_y_max = std::numeric_limits<double>::lowest();
+
+    QVector<double> x( xAxis.size() ), y(values.size() );
+    for( size_t i = 0; i < x.size(); i++ )
+    {
+        x[i] = xAxis[i];
+        if( mask[i] )
+        {
+            if( x[i] < m_x_min )
+            {
+                m_x_min = x[i];
+            }
+            if( x[i] > m_x_max )
+            {
+                m_x_max = x[i];
+            }
+        }
+    }
+    for( size_t i = 0; i < x.size(); i++ )
+    {
+        if( mask[i] )
+        {
+            y[i] = values[i];
+            if( y[i] < m_y_min )
+            {
+                m_y_min = y[i];
+            }
+            if( y[i] > m_y_max )
+            {
+                m_y_max = y[i];
+            }
+        }
+        else
+        {
+            y[i] = std::numeric_limits<double>::quiet_NaN();
+        }
+    }
+
+    // グラフにデータを追加
+    m_q_custom_plot->addGraph(); // 新しいグラフを追加
+    m_q_custom_plot->graph( 0 )->setData( x, y ); // データを設定
+
+    // 軸ラベルを設定
+    m_q_custom_plot->xAxis->setLabel( "xAxis" );
+    m_q_custom_plot->yAxis->setLabel( "Values" );
+
+    // 軸の範囲を設定
+    m_q_custom_plot->xAxis->setRange( m_x_min, m_x_max ); // x軸範囲
+    m_q_custom_plot->yAxis->setRange( m_y_min, m_y_max ); // y軸範囲
+    m_q_custom_plot->xAxis->ticker()->setTickCount( 10 );
+    m_q_custom_plot->yAxis->ticker()->setTickCount( 10 );
+
+    // ズームとドラッグを有効化
+    m_q_custom_plot->setInteractions( QCP::iRangeZoom | QCP::iRangeDrag );
+
+    // グラフを再描画
+    m_q_custom_plot->replot();
+}
+
+void PlotOverLineEditor::drawPlotOverLineFromVRHands( kvs::Real32 CoordArray[ 2 * 3 ] )
+{
+    // 色定義
+    kvs::UInt8 ColorArray[ 2 * 3 ] =
+        {
+            0, 255, 0,
+            0, 255, 0,
+        };
+
+    // 接続定義
+    kvs::UInt32 ConnectionArray[ 1 * 2 ] =
+        {
+            0, 1,  // 点0と点1を接続
+        };
+
+    kvs::ValueArray<kvs::Real32> coords( CoordArray, 2 * 3 );
+    kvs::ValueArray<kvs::UInt8> colors( ColorArray, 2 * 3 );
+    kvs::ValueArray<kvs::UInt32> connections( ConnectionArray, 1 * 2 );
+
+    if( m_start_point_object->minObjectCoord() != m_start_point_object->maxObjectCoord() )
+    {
+        if( m_plot_over_line_object ) // オブジェクトリプレイス
+        {
+            m_plot_over_line_object = new kvs::LineObject();
+            m_plot_over_line_object->setXform( m_screen->scene()->objectManager()->xform( ) );
+            m_plot_over_line_object->setCoords( coords );
+            m_plot_over_line_object->setColors( colors );
+            m_plot_over_line_object->setConnections( connections );
+            m_plot_over_line_object->setSize( 10 );
+            m_plot_over_line_object->setLineType( kvs::LineObject::Segment );
+            m_plot_over_line_object->setColorType( kvs::LineObject::VertexColor );
+            m_plot_over_line_object->setMinMaxObjectCoords( m_start_point_object->minObjectCoord(), m_start_point_object->maxObjectCoord() );
+            m_plot_over_line_object->setMinMaxExternalCoords( m_start_point_object->minExternalCoord(), m_start_point_object->maxExternalCoord() );
+            m_screen->scene()->replaceObject( m_plot_over_line_object_id.first, m_plot_over_line_object );
+        }
+    }
+    m_screen->update();
+}
+
+void PlotOverLineEditor::togglePlotOverLineFromVRHands()
+{
+    bool current = ui->plotOverLineGroupBox->isChecked();
+    ui->plotOverLineGroupBox->setChecked( !current );
+}
+
+void PlotOverLineEditor::updateOperatorState( bool operatorState )
+{
+    ui->resolutionSpinBox->setEnabled( operatorState );
+    ui->targetComboBox->setEnabled( operatorState );
+    ui->plotOverLineGroupBox->setEnabled( operatorState );
+
+    ui->startTranslationXDoubleSpinBox->setEnabled( operatorState );
+    ui->startTranslationYDoubleSpinBox->setEnabled( operatorState );
+    ui->startTranslationZDoubleSpinBox->setEnabled( operatorState );
+    ui->startCoordXDoubleSpinBox->setEnabled( operatorState );
+    ui->startCoordYDoubleSpinBox->setEnabled( operatorState );
+    ui->startCoordZDoubleSpinBox->setEnabled( operatorState );
+
+    ui->endTranslationXDoubleSpinBox->setEnabled( operatorState );
+    ui->endTranslationYDoubleSpinBox->setEnabled( operatorState );
+    ui->endTranslationZDoubleSpinBox->setEnabled( operatorState );
+    ui->endCoordXDoubleSpinBox->setEnabled( operatorState );
+    ui->endCoordYDoubleSpinBox->setEnabled( operatorState );
+    ui->endCoordZDoubleSpinBox->setEnabled( operatorState );
+
+    ui->createLinePushButton->setEnabled( operatorState );
+    ui->applyPushButton->setEnabled( operatorState );
+}
+
+void PlotOverLineEditor::reset()
+{
+    updateNumberOfVector( 0 );
+    ui->resolutionSpinBox->setValue( 256 );
+    ui->plotOverLineGroupBox->setChecked( false );
+
+    ui->startTranslationXDoubleSpinBox->setValue( 0 );
+    ui->startTranslationYDoubleSpinBox->setValue( 0 );
+    ui->startTranslationZDoubleSpinBox->setValue( 0 );
+    ui->startCoordXDoubleSpinBox->setValue( 0 );
+    ui->startCoordYDoubleSpinBox->setValue( 0 );
+    ui->startCoordZDoubleSpinBox->setValue( 0 );
+
+    ui->endTranslationXDoubleSpinBox->setValue( 0 );
+    ui->endTranslationYDoubleSpinBox->setValue( 0 );
+    ui->endTranslationZDoubleSpinBox->setValue( 0 );
+    ui->endCoordXDoubleSpinBox->setValue( 0 );
+    ui->endCoordYDoubleSpinBox->setValue( 0 );
+    ui->endCoordZDoubleSpinBox->setValue( 0 );
+}
+
+void PlotOverLineEditor::loadParameter( const QString& filePath )
+{
+    // TODO:KPI
+    qDebug() << __FILE__ << ":" << __func__ << ":" << filePath;
+}
+
+void PlotOverLineEditor::saveParameter( const QString& filePath )
+{
+    // TODO:KPI
+    qDebug() << __FILE__ << ":" << __func__ << ":" << filePath;
+}
+
 void PlotOverLineEditor::initialize()
 {
     ui->setupUi(this);
@@ -496,214 +706,4 @@ void PlotOverLineEditor::onApply()
 
         m_web_sockets->text()->sendTextMessage( QJsonDocument(root).toJson(QJsonDocument::Compact) );
     }
-}
-
-void PlotOverLineEditor::updateNumberOfVector( const int numberOfVector )
-{
-    m_vector_list.clear();
-    for( int i = 0; i < numberOfVector; i++ )
-    {
-        m_vector_list << QString( "q%1" ).arg( i + 1 );
-    }
-    ui->targetComboBox->clear();
-    ui->targetComboBox->addItems( m_vector_list );
-}
-
-void PlotOverLineEditor::updateFocus( kvs::Vec3 resultMinObjectCoords, kvs::Vec3 resultMaxObjectCoords ) // NOTE:フォーカス対象のオブジェクトが変更された場合に呼び出される。
-{
-    if( m_start_point_object && m_end_point_object )
-    {
-        m_start_point_object->setMinMaxObjectCoords( resultMinObjectCoords, resultMaxObjectCoords );
-        m_start_point_object->setMinMaxExternalCoords( resultMinObjectCoords, resultMaxObjectCoords );
-        m_end_point_object->setMinMaxObjectCoords( resultMinObjectCoords, resultMaxObjectCoords );
-        m_end_point_object->setMinMaxExternalCoords( resultMinObjectCoords, resultMaxObjectCoords );
-        if( m_plot_over_line_object )
-        {
-            m_plot_over_line_object->setMinMaxObjectCoords( resultMinObjectCoords, resultMaxObjectCoords );
-            m_plot_over_line_object->setMinMaxExternalCoords( resultMinObjectCoords, resultMaxObjectCoords );
-        }
-        m_screen->scene()->objectManager()->updateMinMaxCoords();
-        m_screen->scene()->objectManager()->updateExternalCoords();
-        m_screen->update();
-    }
-}
-
-void PlotOverLineEditor::updateTranslation() // NOTE:フォーカス対象のオブジェクトが変更された場合に呼び出される。
-{
-    startCoordsUpdateXYZ();
-    endCoordsUpdateXYZ();
-}
-
-void PlotOverLineEditor::setPlotData( std::vector<float> xAxis, std::vector<bool> mask, std::vector<float> values )
-{
-    // メインスレッドで実行する必要がある場合
-    if( QApplication::instance()->thread() != QThread::currentThread() )
-    {
-        QMetaObject::invokeMethod( this, [=]() { setPlotData(xAxis, mask, values); }, Qt::QueuedConnection );
-        return;
-    }
-
-    // 初期化：極端に大きい/小さい値を設定
-    m_x_min = std::numeric_limits<double>::max();
-    m_x_max = std::numeric_limits<double>::lowest();
-    m_y_min = std::numeric_limits<double>::max();
-    m_y_max = std::numeric_limits<double>::lowest();
-
-    QVector<double> x( xAxis.size() ), y(values.size() );
-    for( size_t i = 0; i < x.size(); i++ )
-    {
-        x[i] = xAxis[i];
-        if( mask[i] )
-        {
-            if( x[i] < m_x_min )
-            {
-                m_x_min = x[i];
-            }
-            if( x[i] > m_x_max )
-            {
-                m_x_max = x[i];
-            }
-        }
-    }
-    for( size_t i = 0; i < x.size(); i++ )
-    {
-        if( mask[i] )
-        {
-            y[i] = values[i];
-            if( y[i] < m_y_min )
-            {
-                m_y_min = y[i];
-            }
-            if( y[i] > m_y_max )
-            {
-                m_y_max = y[i];
-            }
-        }
-        else
-        {
-            y[i] = std::numeric_limits<double>::quiet_NaN();
-        }
-    }
-
-    // グラフにデータを追加
-    m_q_custom_plot->addGraph(); // 新しいグラフを追加
-    m_q_custom_plot->graph( 0 )->setData( x, y ); // データを設定
-
-    // 軸ラベルを設定
-    m_q_custom_plot->xAxis->setLabel( "xAxis" );
-    m_q_custom_plot->yAxis->setLabel( "Values" );
-
-    // 軸の範囲を設定
-    m_q_custom_plot->xAxis->setRange( m_x_min, m_x_max ); // x軸範囲
-    m_q_custom_plot->yAxis->setRange( m_y_min, m_y_max ); // y軸範囲
-    m_q_custom_plot->xAxis->ticker()->setTickCount( 10 );
-    m_q_custom_plot->yAxis->ticker()->setTickCount( 10 );
-
-    // ズームとドラッグを有効化
-    m_q_custom_plot->setInteractions( QCP::iRangeZoom | QCP::iRangeDrag );
-
-    // グラフを再描画
-    m_q_custom_plot->replot();
-}
-
-void PlotOverLineEditor::drawPlotOverLineFromVRHands( kvs::Real32 CoordArray[ 2 * 3 ] )
-{
-    // 色定義
-    kvs::UInt8 ColorArray[ 2 * 3 ] =
-        {
-            0, 255, 0,
-            0, 255, 0,
-        };
-
-    // 接続定義
-    kvs::UInt32 ConnectionArray[ 1 * 2 ] =
-        {
-            0, 1,  // 点0と点1を接続
-        };
-
-    kvs::ValueArray<kvs::Real32> coords( CoordArray, 2 * 3 );
-    kvs::ValueArray<kvs::UInt8> colors( ColorArray, 2 * 3 );
-    kvs::ValueArray<kvs::UInt32> connections( ConnectionArray, 1 * 2 );
-
-    if( m_start_point_object->minObjectCoord() != m_start_point_object->maxObjectCoord() )
-    {
-        if( m_plot_over_line_object ) // オブジェクトリプレイス
-        {
-            m_plot_over_line_object = new kvs::LineObject();
-            m_plot_over_line_object->setXform( m_screen->scene()->objectManager()->xform( ) );
-            m_plot_over_line_object->setCoords( coords );
-            m_plot_over_line_object->setColors( colors );
-            m_plot_over_line_object->setConnections( connections );
-            m_plot_over_line_object->setSize( 10 );
-            m_plot_over_line_object->setLineType( kvs::LineObject::Segment );
-            m_plot_over_line_object->setColorType( kvs::LineObject::VertexColor );
-            m_plot_over_line_object->setMinMaxObjectCoords( m_start_point_object->minObjectCoord(), m_start_point_object->maxObjectCoord() );
-            m_plot_over_line_object->setMinMaxExternalCoords( m_start_point_object->minExternalCoord(), m_start_point_object->maxExternalCoord() );
-            m_screen->scene()->replaceObject( m_plot_over_line_object_id.first, m_plot_over_line_object );
-        }
-    }
-    m_screen->update();
-}
-
-void PlotOverLineEditor::togglePlotOverLineFromVRHands()
-{
-    bool current = ui->plotOverLineGroupBox->isChecked();
-    ui->plotOverLineGroupBox->setChecked( !current );
-}
-
-void PlotOverLineEditor::updateOperatorState( bool operatorState )
-{
-    ui->resolutionSpinBox->setEnabled( operatorState );
-    ui->targetComboBox->setEnabled( operatorState );
-    ui->plotOverLineGroupBox->setEnabled( operatorState );
-
-    ui->startTranslationXDoubleSpinBox->setEnabled( operatorState );
-    ui->startTranslationYDoubleSpinBox->setEnabled( operatorState );
-    ui->startTranslationZDoubleSpinBox->setEnabled( operatorState );
-    ui->startCoordXDoubleSpinBox->setEnabled( operatorState );
-    ui->startCoordYDoubleSpinBox->setEnabled( operatorState );
-    ui->startCoordZDoubleSpinBox->setEnabled( operatorState );
-
-    ui->endTranslationXDoubleSpinBox->setEnabled( operatorState );
-    ui->endTranslationYDoubleSpinBox->setEnabled( operatorState );
-    ui->endTranslationZDoubleSpinBox->setEnabled( operatorState );
-    ui->endCoordXDoubleSpinBox->setEnabled( operatorState );
-    ui->endCoordYDoubleSpinBox->setEnabled( operatorState );
-    ui->endCoordZDoubleSpinBox->setEnabled( operatorState );
-
-    ui->createLinePushButton->setEnabled( operatorState );
-    ui->applyPushButton->setEnabled( operatorState );
-}
-
-void PlotOverLineEditor::reset()
-{
-    updateNumberOfVector( 0 );
-    ui->resolutionSpinBox->setValue( 256 );
-    ui->plotOverLineGroupBox->setChecked( false );
-
-    ui->startTranslationXDoubleSpinBox->setValue( 0 );
-    ui->startTranslationYDoubleSpinBox->setValue( 0 );
-    ui->startTranslationZDoubleSpinBox->setValue( 0 );
-    ui->startCoordXDoubleSpinBox->setValue( 0 );
-    ui->startCoordYDoubleSpinBox->setValue( 0 );
-    ui->startCoordZDoubleSpinBox->setValue( 0 );
-
-    ui->endTranslationXDoubleSpinBox->setValue( 0 );
-    ui->endTranslationYDoubleSpinBox->setValue( 0 );
-    ui->endTranslationZDoubleSpinBox->setValue( 0 );
-    ui->endCoordXDoubleSpinBox->setValue( 0 );
-    ui->endCoordYDoubleSpinBox->setValue( 0 );
-    ui->endCoordZDoubleSpinBox->setValue( 0 );
-}
-
-void PlotOverLineEditor::loadParameter( const QString& filePath )
-{
-    // TODO:KPI
-    qDebug() << __FILE__ << ":" << __func__ << ":" << filePath;
-}
-
-void PlotOverLineEditor::saveParameter( const QString& filePath )
-{
-    // TODO:KPI
-    qDebug() << __FILE__ << ":" << __func__ << ":" << filePath;
 }

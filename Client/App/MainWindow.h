@@ -54,11 +54,15 @@ public:
     MainWindow( kvs::qt::Application& app, QWidget *parent = nullptr );
     ~MainWindow();
 
+signals:
+    void readyScreen();
+    void updateCurrentRepetitionLevel();
+    void load( const QString& filePath );
+    void save( const QString& filePath );
+
 private:
-    // QtUI関連
     Ui::MainWindow *ui;
 
-    // KVS関連
     kvs::qt::jaea::Screen* m_screen                             = nullptr;
     kvs::StochasticRenderingCompositor* m_compositor            = nullptr;
     kvs::ColorMapBar* m_color_map_bar                           = nullptr;
@@ -71,7 +75,6 @@ private:
     QAction* m_load_action = nullptr;
     QAction* m_save_action = nullptr;
 
-    // 通信関連
     WebSocketPair* m_web_sockets                                = nullptr;
 
     // ウィジェット群(ツールバー) A~Z
@@ -119,8 +122,6 @@ private:
 #ifdef OPENXR_SCREEN
     VRHandControllerListener* m_vr_listener;
 #endif
-
-    // メソッド群
     void initialize();
     void toolBarInitialize();
     void animationControlInitialize();
@@ -137,8 +138,6 @@ private:
     void initializeAfterShow();
 
 private slots:
-    void onLoad();
-    void onSave();
     void onAnimationControl() { m_animation_control->show(); }
     void onCommunication() { m_communication->show(); }
     void onGlyphEditor() { m_glyph_editor->show(); }
@@ -153,10 +152,7 @@ private slots:
 
     void onUpdateServerState( bool serverState ); // true:接続中
 
-signals:
-    void readyScreen();
-    void updateCurrentRepetitionLevel();
-    void load( const QString& filePath );
-    void save( const QString& filePath );
+    void onLoad();
+    void onSave();
 };
 #endif // MAINWINDOW_H

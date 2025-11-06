@@ -33,11 +33,11 @@ public:
 
     void updateOperatorState( bool operatorState ); // true:権限あり
     void reset();
-    void loadParameter( const QString& filePath );
-    void saveParameter( const QString& filePath );
 
 public slots:
     void showAtTimeStep( int requestTimeStep );
+    void loadParameter( const QString& filePath );
+    void saveParameter( const QString& filePath );
 
 signals:
     void updateTotalTimeStepRange( int min, int max, bool isSingleObject );

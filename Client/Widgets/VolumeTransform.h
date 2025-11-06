@@ -19,6 +19,13 @@ public:
     explicit VolumeTransform( kvs::qt::jaea::Screen* screen, QWidget *parent = nullptr );
     ~VolumeTransform();
 
+public slots:
+    void loadParameter( const QString& filePath );
+    void saveParameter( const QString& filePath );
+
+signals:
+    void updatePointsTranslation(); // FIXME:シグナルスロットの接続が必要
+
 private:
     // メンバ変数群
     Ui::VolumeTransform *ui;
@@ -30,13 +37,6 @@ private:
 
 private slots:
     void onApply();
-
-public slots:
-    void loadParameter( const QString& filePath );
-    void saveParameter( const QString& filePath );
-
-signals:
-    void updatePointsTranslation(); // FIXME:シグナルスロットの接続が必要
 };
 
 #endif // VOLUMETRANSFORM_H

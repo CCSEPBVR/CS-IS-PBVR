@@ -23,12 +23,16 @@ public:
     void setColorMapBar( kvs::ColorMapBar* color_map_bar ) { m_color_map_bar = color_map_bar; }
     kvs::ColorMapBar* colorMapBar() const { return m_color_map_bar; }
 
+public slots:
+    void updateColorMapBar( QStandardItemModel* model );
+    void loadParameter( const QString& filePath );
+    void saveParameter( const QString& filePath );
+
 private:
-    // メンバ変数群
     QLabel* m_color_function_label;
     QComboBox* m_color_function_combo_box;
-    kvs::qt::jaea::Screen* m_screen                             = nullptr;
-    kvs::ColorMapBar* m_color_map_bar       = nullptr;
+    kvs::qt::jaea::Screen* m_screen = nullptr;
+    kvs::ColorMapBar* m_color_map_bar = nullptr;
     QStandardItemModel *m_model = nullptr;
 
     // メソッド群
@@ -36,11 +40,6 @@ private:
 
 private slots:
     void updateUIFromCurrentItem(); // FIXME:メソッド名を変更した方がいいと思います。
-
-public slots:
-    void updateColorMapBar( QStandardItemModel* model );
-    void loadParameter( const QString& filePath );
-    void saveParameter( const QString& filePath );
 };
 
 #endif // COLORMAPSELECTORTOOLBAR_H

@@ -16,6 +16,61 @@ TransferFunctionEditor::~TransferFunctionEditor()
     delete ui;
 }
 
+void TransferFunctionEditor::updateOperatorState( bool operatorState )
+{
+    if( m_variable_editor.isVisible() ) m_variable_editor.close();
+    if( m_color_map_editor.isVisible() ) m_color_map_editor.close();
+    if( m_opacity_map_editor.isVisible() ) m_opacity_map_editor.close();
+
+    ui->numberOfTransferFunctionLabelSpinBox->setEnabled( operatorState );
+
+    ui->colorSynthesizerLineEdit->setEnabled( operatorState );
+    ui->colorFunctionVariableLineEdit->setEnabled( operatorState );
+    ui->colorFunctionPushButton->setEnabled( operatorState );
+    ui->colorUserDefinedMinMaxRadioButton->setEnabled( operatorState );
+    ui->colorUserDefinedMinSpinBox->setEnabled( operatorState );
+    ui->colorUserDefinedMaxSpinBox->setEnabled( operatorState );
+    ui->colorServerSideMinMaxRadioButton->setEnabled( operatorState );
+    ui->editColorMapPushbutton->setEnabled( operatorState );
+
+    ui->opacitySynthesizerLineEdit->setEnabled( operatorState );
+    ui->opacityFunctionVariableLineEdit->setEnabled( operatorState );
+    ui->opacityFunctionPushButton->setEnabled( operatorState );
+    ui->opacityUserDefinedMinMaxRadioButton->setEnabled( operatorState );
+    ui->opacityUserDefinedMinSpinBox->setEnabled( operatorState );
+    ui->opacityUserDefinedMaxSpinBox->setEnabled( operatorState );
+    ui->opacityServerSideMinMaxRadioButton->setEnabled( operatorState );
+    ui->editOpacityMapPushbutton->setEnabled( operatorState );
+
+    ui->exportPushButton->setEnabled( operatorState );
+    ui->importPushButton->setEnabled( operatorState );
+    ui->applyPushButton->setEnabled( operatorState );
+}
+
+void TransferFunctionEditor::reset()
+{
+    ui->numberOfTransferFunctionLabelSpinBox->setValue( 0 );
+    QVector<QColor> initialColors( 256, QColor( 0, 0, 0 ) );
+    ui->colorMapBar->setColors( initialColors );
+    QVector<float> initialOpacity( 256, 0.0f );
+    ui->opacityMapBar->setOpacities( initialOpacity );
+    std::vector<int> initialHistogram( 256, 0 );
+    ui->colorHistogram->setDatas( initialHistogram );
+    ui->opacityHistogram->setDatas( initialHistogram );
+}
+
+void TransferFunctionEditor::loadParameter( const QString& filePath )
+{
+    // TODO:KPI
+    qDebug() << __FILE__ << ":" << __func__ << ":" << filePath;
+}
+
+void TransferFunctionEditor::saveParameter( const QString& filePath )
+{
+    // TODO:KPI
+    qDebug() << __FILE__ << ":" << __func__ << ":" << filePath;
+}
+
 void TransferFunctionEditor::initialize()
 {
     ui->setupUi( this );
@@ -717,59 +772,4 @@ void TransferFunctionEditor::onImport()
 void TransferFunctionEditor::onApply()
 {
     applyTransferFunction();
-}
-
-void TransferFunctionEditor::updateOperatorState( bool operatorState )
-{
-    if( m_variable_editor.isVisible() ) m_variable_editor.close();
-    if( m_color_map_editor.isVisible() ) m_color_map_editor.close();
-    if( m_opacity_map_editor.isVisible() ) m_opacity_map_editor.close();
-
-    ui->numberOfTransferFunctionLabelSpinBox->setEnabled( operatorState );
-
-    ui->colorSynthesizerLineEdit->setEnabled( operatorState );
-    ui->colorFunctionVariableLineEdit->setEnabled( operatorState );
-    ui->colorFunctionPushButton->setEnabled( operatorState );
-    ui->colorUserDefinedMinMaxRadioButton->setEnabled( operatorState );
-    ui->colorUserDefinedMinSpinBox->setEnabled( operatorState );
-    ui->colorUserDefinedMaxSpinBox->setEnabled( operatorState );
-    ui->colorServerSideMinMaxRadioButton->setEnabled( operatorState );
-    ui->editColorMapPushbutton->setEnabled( operatorState );
-
-    ui->opacitySynthesizerLineEdit->setEnabled( operatorState );
-    ui->opacityFunctionVariableLineEdit->setEnabled( operatorState );
-    ui->opacityFunctionPushButton->setEnabled( operatorState );
-    ui->opacityUserDefinedMinMaxRadioButton->setEnabled( operatorState );
-    ui->opacityUserDefinedMinSpinBox->setEnabled( operatorState );
-    ui->opacityUserDefinedMaxSpinBox->setEnabled( operatorState );
-    ui->opacityServerSideMinMaxRadioButton->setEnabled( operatorState );
-    ui->editOpacityMapPushbutton->setEnabled( operatorState );
-
-    ui->exportPushButton->setEnabled( operatorState );
-    ui->importPushButton->setEnabled( operatorState );
-    ui->applyPushButton->setEnabled( operatorState );
-}
-
-void TransferFunctionEditor::reset()
-{
-    ui->numberOfTransferFunctionLabelSpinBox->setValue( 0 );
-    QVector<QColor> initialColors( 256, QColor( 0, 0, 0 ) );
-    ui->colorMapBar->setColors( initialColors );
-    QVector<float> initialOpacity( 256, 0.0f );
-    ui->opacityMapBar->setOpacities( initialOpacity );
-    std::vector<int> initialHistogram( 256, 0 );
-    ui->colorHistogram->setDatas( initialHistogram );
-    ui->opacityHistogram->setDatas( initialHistogram );
-}
-
-void TransferFunctionEditor::loadParameter( const QString& filePath )
-{
-    // TODO:KPI
-    qDebug() << __FILE__ << ":" << __func__ << ":" << filePath;
-}
-
-void TransferFunctionEditor::saveParameter( const QString& filePath )
-{
-    // TODO:KPI
-    qDebug() << __FILE__ << ":" << __func__ << ":" << filePath;
 }

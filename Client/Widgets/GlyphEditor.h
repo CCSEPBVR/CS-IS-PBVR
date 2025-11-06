@@ -22,11 +22,16 @@ public:
     explicit GlyphEditor( WebSocketPair* websockets, QWidget *parent = nullptr );
     ~GlyphEditor();
 
+public slots:
+    void updateNumberOfVector( const int numberOfVector );
+    void updateOperatorState( bool operatorState ); // true:権限あり
+    void reset();
+    void loadParameter( const QString& filePath );
+    void saveParameter( const QString& filePath );
+
 private:
-    // メンバ変数群
     Ui::GlyphEditor *ui;
 
-    // 通信関連
     WebSocketPair* m_web_sockets = nullptr;
 
     int m_number_of_vector = -1;
@@ -56,13 +61,6 @@ private slots:
     void onColorDataNumberOfVariableValueChanged();
 
     void onApply();
-
-public slots:
-    void updateNumberOfVector( const int numberOfVector );
-    void updateOperatorState( bool operatorState ); // true:権限あり
-    void reset();
-    void loadParameter( const QString& filePath );
-    void saveParameter( const QString& filePath );
 };
 
 #endif // GLYPHEDITOR_H

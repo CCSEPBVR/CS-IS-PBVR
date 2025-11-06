@@ -19,138 +19,6 @@ AnimationControl::~AnimationControl()
     delete ui;
 }
 
-void AnimationControl::initialize()
-{
-    ui->setupUi( this );
-    ui->captureComboBox->addItem( "On", QVariant( true ) );
-    ui->captureComboBox->addItem( "Off", QVariant( false ) );
-    ui->captureComboBox->setCurrentIndex( 1 );
-
-    connect( ui->interpolationSpinBox, &QSpinBox::valueChanged, this, &AnimationControl::onInterpolationValueChanged );
-}
-
-kvs::Xform AnimationControl::InterpolateXform( const int interp_step, const int num_frame, const kvs::Xform& start, const kvs::Xform& end )
-{
-    // range of the interpolation parametar t = [0,1].
-    float delta = 1.0 / ( float )num_frame;
-    float t = delta * ( float )interp_step;
-
-    kvs::Matrix33f rotation_0( start.rotation() );
-    kvs::Vector3f translation_0( start.translation() );
-    kvs::Vector3f scaling_0( start.scaling() );
-
-    kvs::Matrix33f rotation_1( end.rotation() );
-    kvs::Vector3f translation_1( end.translation() );
-    kvs::Vector3f scaling_1( end.scaling() );
-
-    //KVS2.7.0
-    //MOD BY)T0603 2020.06.04
-    //kvs::Quaternion<float> q_0 = RtoQ( rotation_0 );
-    //kvs::Quaternion<float> q_1 = RtoQ( rotation_1 );
-    //kvs::Quaternion<float> q =
-    //      kvs::Quaternion<float>::sphericalLinearInterpolation( q_0, q_1, t, true, true );
-
-    kvs::Quaternion q_0 = RtoQ( rotation_0 );
-    kvs::Quaternion q_1 = RtoQ( rotation_1 );
-    kvs::Quaternion q =
-        kvs::Quaternion::SphericalLinearInterpolation( q_0, q_1, t, true, true );
-
-    kvs::Matrix33f rotation = q.toMatrix();
-
-    kvs::Vector3f translation = translation_1 * t + translation_0 * ( 1 - t );
-
-    kvs::Vector3f scaling = scaling_1 * t + scaling_0 * ( 1 - t );
-
-    kvs::Xform xform( translation, scaling, rotation );
-    return xform;
-}
-
-kvs::Quaternion AnimationControl::RtoQ( const kvs::Matrix33f& R )
-{
-    float r11 = R[0][0];
-    float r12 = R[0][1];
-    float r13 = R[0][2];
-    float r21 = R[1][0];
-    float r22 = R[1][1];
-    float r23 = R[1][2];
-    float r31 = R[2][0];
-    float r32 = R[2][1];
-    float r33 = R[2][2];
-
-    float q0 = ( r11 + r22 + r33 + 1.0f ) / 4.0f;
-    float q1 = ( r11 - r22 - r33 + 1.0f ) / 4.0f;
-    float q2 = ( -r11 + r22 - r33 + 1.0f ) / 4.0f;
-    float q3 = ( -r11 - r22 + r33 + 1.0f ) / 4.0f;
-    if ( q0 < 0.0f ) q0 = 0.0f;
-    if ( q1 < 0.0f ) q1 = 0.0f;
-    if ( q2 < 0.0f ) q2 = 0.0f;
-    if ( q3 < 0.0f ) q3 = 0.0f;
-    q0 = sqrt( q0 );
-    q1 = sqrt( q1 );
-    q2 = sqrt( q2 );
-    q3 = sqrt( q3 );
-    if ( q0 >= q1 && q0 >= q2 && q0 >= q3 )
-    {
-        q0 *= +1.0f;
-        q1 *= Sign( r32 - r23 );
-        q2 *= Sign( r13 - r31 );
-        q3 *= Sign( r21 - r12 );
-    }
-    else if ( q1 >= q0 && q1 >= q2 && q1 >= q3 )
-    {
-        q0 *= Sign( r32 - r23 );
-        q1 *= +1.0f;
-        q2 *= Sign( r21 + r12 );
-        q3 *= Sign( r13 + r31 );
-    }
-    else if ( q2 >= q0 && q2 >= q1 && q2 >= q3 )
-    {
-        q0 *= Sign( r13 - r31 );
-        q1 *= Sign( r21 + r12 );
-        q2 *= +1.0f;
-        q3 *= Sign( r32 + r23 );
-    }
-    else if ( q3 >= q0 && q3 >= q1 && q3 >= q2 )
-    {
-        q0 *= Sign( r21 - r12 );
-        q1 *= Sign( r31 + r13 );
-        q2 *= Sign( r32 + r23 );
-        q3 *= +1.0f;
-    }
-    else
-    {
-        printf( "coding error\n" );
-    }
-    float r = Norm( q0, q1, q2, q3 );
-    q0 /= r;
-    q1 /= r;
-    q2 /= r;
-    q3 /= r;
-
-    //KVS2.7.0
-    //MOD BY)T0603 2020.06.04
-    //return kvs::Quaternion<float>( q1, q2, q3, q0 );
-    return kvs::Quaternion( q1, q2, q3, q0 );
-}
-
-float AnimationControl::Sign( const float x )
-{
-    return ( x >= 0.0f ) ? +1.0f : -1.0f;
-}
-
-float AnimationControl::Norm( const float a, const float b, const float c, const float d )
-{
-    return sqrt( a * a + b * b + c * c + d * d );
-}
-
-void AnimationControl::onInterpolationValueChanged()
-{
-    if( m_xforms.size() < 2 == false )
-    {
-        ui->totalAnimationFramesDisplayLabel->setText( QString::number( ( m_xforms.size() - 1 ) * ( ui->interpolationSpinBox->value() + 1 ) ) );
-    }
-}
-
 void AnimationControl::addKeyFrameAdd( kvs::Xform xform )
 {
     m_xforms.push_back( xform );
@@ -364,4 +232,136 @@ void AnimationControl::saveParameter( const QString& filePath )
 {
     // TODO:KPI
     qDebug() << __FILE__ << ":" << __func__ << ":" << filePath;
+}
+
+void AnimationControl::initialize()
+{
+    ui->setupUi( this );
+    ui->captureComboBox->addItem( "On", QVariant( true ) );
+    ui->captureComboBox->addItem( "Off", QVariant( false ) );
+    ui->captureComboBox->setCurrentIndex( 1 );
+
+    connect( ui->interpolationSpinBox, &QSpinBox::valueChanged, this, &AnimationControl::onInterpolationValueChanged );
+}
+
+kvs::Xform AnimationControl::InterpolateXform( const int interp_step, const int num_frame, const kvs::Xform& start, const kvs::Xform& end )
+{
+    // range of the interpolation parametar t = [0,1].
+    float delta = 1.0 / ( float )num_frame;
+    float t = delta * ( float )interp_step;
+
+    kvs::Matrix33f rotation_0( start.rotation() );
+    kvs::Vector3f translation_0( start.translation() );
+    kvs::Vector3f scaling_0( start.scaling() );
+
+    kvs::Matrix33f rotation_1( end.rotation() );
+    kvs::Vector3f translation_1( end.translation() );
+    kvs::Vector3f scaling_1( end.scaling() );
+
+    //KVS2.7.0
+    //MOD BY)T0603 2020.06.04
+    //kvs::Quaternion<float> q_0 = RtoQ( rotation_0 );
+    //kvs::Quaternion<float> q_1 = RtoQ( rotation_1 );
+    //kvs::Quaternion<float> q =
+    //      kvs::Quaternion<float>::sphericalLinearInterpolation( q_0, q_1, t, true, true );
+
+    kvs::Quaternion q_0 = RtoQ( rotation_0 );
+    kvs::Quaternion q_1 = RtoQ( rotation_1 );
+    kvs::Quaternion q =
+        kvs::Quaternion::SphericalLinearInterpolation( q_0, q_1, t, true, true );
+
+    kvs::Matrix33f rotation = q.toMatrix();
+
+    kvs::Vector3f translation = translation_1 * t + translation_0 * ( 1 - t );
+
+    kvs::Vector3f scaling = scaling_1 * t + scaling_0 * ( 1 - t );
+
+    kvs::Xform xform( translation, scaling, rotation );
+    return xform;
+}
+
+kvs::Quaternion AnimationControl::RtoQ( const kvs::Matrix33f& R )
+{
+    float r11 = R[0][0];
+    float r12 = R[0][1];
+    float r13 = R[0][2];
+    float r21 = R[1][0];
+    float r22 = R[1][1];
+    float r23 = R[1][2];
+    float r31 = R[2][0];
+    float r32 = R[2][1];
+    float r33 = R[2][2];
+
+    float q0 = ( r11 + r22 + r33 + 1.0f ) / 4.0f;
+    float q1 = ( r11 - r22 - r33 + 1.0f ) / 4.0f;
+    float q2 = ( -r11 + r22 - r33 + 1.0f ) / 4.0f;
+    float q3 = ( -r11 - r22 + r33 + 1.0f ) / 4.0f;
+    if ( q0 < 0.0f ) q0 = 0.0f;
+    if ( q1 < 0.0f ) q1 = 0.0f;
+    if ( q2 < 0.0f ) q2 = 0.0f;
+    if ( q3 < 0.0f ) q3 = 0.0f;
+    q0 = sqrt( q0 );
+    q1 = sqrt( q1 );
+    q2 = sqrt( q2 );
+    q3 = sqrt( q3 );
+    if ( q0 >= q1 && q0 >= q2 && q0 >= q3 )
+    {
+        q0 *= +1.0f;
+        q1 *= Sign( r32 - r23 );
+        q2 *= Sign( r13 - r31 );
+        q3 *= Sign( r21 - r12 );
+    }
+    else if ( q1 >= q0 && q1 >= q2 && q1 >= q3 )
+    {
+        q0 *= Sign( r32 - r23 );
+        q1 *= +1.0f;
+        q2 *= Sign( r21 + r12 );
+        q3 *= Sign( r13 + r31 );
+    }
+    else if ( q2 >= q0 && q2 >= q1 && q2 >= q3 )
+    {
+        q0 *= Sign( r13 - r31 );
+        q1 *= Sign( r21 + r12 );
+        q2 *= +1.0f;
+        q3 *= Sign( r32 + r23 );
+    }
+    else if ( q3 >= q0 && q3 >= q1 && q3 >= q2 )
+    {
+        q0 *= Sign( r21 - r12 );
+        q1 *= Sign( r31 + r13 );
+        q2 *= Sign( r32 + r23 );
+        q3 *= +1.0f;
+    }
+    else
+    {
+        printf( "coding error\n" );
+    }
+    float r = Norm( q0, q1, q2, q3 );
+    q0 /= r;
+    q1 /= r;
+    q2 /= r;
+    q3 /= r;
+
+    //KVS2.7.0
+    //MOD BY)T0603 2020.06.04
+    //return kvs::Quaternion<float>( q1, q2, q3, q0 );
+    return kvs::Quaternion( q1, q2, q3, q0 );
+}
+
+float AnimationControl::Sign( const float x )
+{
+    return ( x >= 0.0f ) ? +1.0f : -1.0f;
+}
+
+float AnimationControl::Norm( const float a, const float b, const float c, const float d )
+{
+    return sqrt( a * a + b * b + c * c + d * d );
+}
+
+void AnimationControl::onInterpolationValueChanged()
+{
+    if( m_xforms.size() < 2 == false )
+    {
+        ui->totalAnimationFramesDisplayLabel->setText( QString::number( ( m_xforms.size() - 1 ) * ( ui->interpolationSpinBox->value() + 1 ) ) );
+    }
 }

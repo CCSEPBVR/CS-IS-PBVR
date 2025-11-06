@@ -15,6 +15,55 @@ Communication::~Communication()
     delete ui;
 }
 
+void Communication::onVRSharePoint( kvs::Real32 CoordArray[ 2 * 3 ], kvs::Real32 DirectionArray[ 3 ] )
+{
+    if( !m_web_sockets->isConnected() )
+    {
+        qDebug() << "Not connected";
+        return;
+    }
+
+    double x = CoordArray[3];
+    double y = CoordArray[4];
+    double z = CoordArray[5];
+
+    double dx = DirectionArray[0];
+    double dy = DirectionArray[1];
+    double dz = DirectionArray[2];
+
+    QJsonObject positionObject;
+    positionObject["x"] = x;
+    positionObject["y"] = y;
+    positionObject["z"] = z;
+    positionObject["dx"] = dx;
+    positionObject["dy"] = dy;
+    positionObject["dz"] = dz;
+
+
+    m_web_sockets->text()->sendTextMessage( QJsonDocument( {
+                                                             {"event","sharepoint"},
+                                                             {"x",CoordArray[3]},
+                                                             {"y",CoordArray[4]},
+                                                             {"z",CoordArray[5]},
+                                                             {"dx",DirectionArray[0]},
+                                                             {"dy",DirectionArray[1]},
+                                                             {"dz",DirectionArray[2]}
+                                                         }
+                                                         ).toJson( QJsonDocument::Compact ) );
+}
+
+void Communication::loadParameter( const QString& filePath )
+{
+    // TODO:KPI
+    qDebug() << __FILE__ << ":" << __func__ << ":" << filePath;
+}
+
+void Communication::saveParameter( const QString& filePath )
+{
+    // TODO:KPI
+    qDebug() << __FILE__ << ":" << __func__ << ":" << filePath;
+}
+
 void Communication::initialize()
 {
     ui->setupUi(this);
@@ -690,53 +739,4 @@ kvs::PolygonObject* Communication::createArrowGlyph(
     polygon->setNormalType(kvs::PolygonObject::VertexNormal);
 
     return polygon;
-}
-
-void Communication::onVRSharePoint( kvs::Real32 CoordArray[ 2 * 3 ], kvs::Real32 DirectionArray[ 3 ] )
-{
-    if( !m_web_sockets->isConnected() )
-    {
-        qDebug() << "Not connected";
-        return;
-    }
-
-    double x = CoordArray[3];
-    double y = CoordArray[4];
-    double z = CoordArray[5];
-
-    double dx = DirectionArray[0];
-    double dy = DirectionArray[1];
-    double dz = DirectionArray[2];
-
-    QJsonObject positionObject;
-    positionObject["x"] = x;
-    positionObject["y"] = y;
-    positionObject["z"] = z;
-    positionObject["dx"] = dx;
-    positionObject["dy"] = dy;
-    positionObject["dz"] = dz;
-
-
-    m_web_sockets->text()->sendTextMessage( QJsonDocument( {
-                                                         {"event","sharepoint"},
-                                                         {"x",CoordArray[3]},
-                                                         {"y",CoordArray[4]},
-                                                         {"z",CoordArray[5]},
-                                                         {"dx",DirectionArray[0]},
-                                                         {"dy",DirectionArray[1]},
-                                                         {"dz",DirectionArray[2]}
-                                                     }
-                                                     ).toJson( QJsonDocument::Compact ) );
-}
-
-void Communication::loadParameter( const QString& filePath )
-{
-    // TODO:KPI
-    qDebug() << __FILE__ << ":" << __func__ << ":" << filePath;
-}
-
-void Communication::saveParameter( const QString& filePath )
-{
-    // TODO:KPI
-    qDebug() << __FILE__ << ":" << __func__ << ":" << filePath;
 }

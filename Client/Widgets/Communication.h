@@ -24,26 +24,38 @@ public:
     explicit Communication( kvs::qt::jaea::Screen* screen, WebSocketPair* websockets, QWidget *parent = nullptr );
     ~Communication();
 
+public slots:
+    void onVRSharePoint( kvs::Real32 CoordArray[ 2 * 3 ], kvs::Real32 DirectionArray[ 3 ] );
+    void loadParameter( const QString& filePath );
+    void saveParameter( const QString& filePath );
+
+signals:
+    void updateServerState( bool serverState ); // true:接続中
+    void updateOperatorState( bool operatorState ); // true:権限あり
+    void updateFocus( kvs::Vec3, kvs::Vec3 ); // FIXME:このクラスに必要ないので削除
+    void updatePointsTranslation(); // FIXME:このクラスに必要ないので削除
+
 private:
     Ui::Communication *ui;
-    kvs::qt::jaea::Screen* m_screen       = nullptr;
+
+    kvs::qt::jaea::Screen* m_screen = nullptr;
     WebSocketPair* m_web_sockets = nullptr;
     QString m_uuid;
     int m_user_id = -1;
     bool m_is_operator = false;
     QStandardItemModel* m_share_view_list_model = nullptr;
 
-    QPair<int,int> m_server_point_object_ids    = QPair<int,int>( -1, -1 ); // AFTER_WEBSOCKET
+    QPair<int,int> m_server_point_object_ids    = QPair<int,int>( -1, -1 ); // FIXME:このクラスに必要ないので削除
 
     void initialize();
-    void registerObject( kvs::PointObject* pointObject );
-    void replaceObject( kvs::PointObject* pointObject );
+    void registerObject( kvs::PointObject* pointObject ); // FIXME:このクラスに必要ないので削除
+    void replaceObject( kvs::PointObject* pointObject ); // FIXME:このクラスに必要ないので削除
 
 private slots:
     // UI
     void onConnectClicked();
     void onDisconnectClicked();
-    void onTransferOperator();
+    void onTransferOperator(); // FIXME:このクラスに必要ないので削除
     void onChatClicked();
     void onShareView();
     void onItemDoubleClicked( const QModelIndex& index );
@@ -56,19 +68,10 @@ private slots:
     void textWebsocketDisconnected();
     void textWebsocketMessageReceived( const QString& receivedMessage );
 
-signals:
-    void updateServerState( bool serverState ); // true:接続中
-    void updateOperatorState( bool operatorState ); // true:権限あり
-    void updateFocus( kvs::Vec3, kvs::Vec3 );
-    void updatePointsTranslation();
-
 // 着目点用TMP
 private:
     kvs::PolygonObject* createArrowGlyph( const kvs::ValueArray<kvs::Real32>& coords, const kvs::ValueArray<kvs::Real32>& directions, const kvs::ValueArray<kvs::Real32>& sizes, const kvs::ValueArray<kvs::UInt8>& colors );
-public slots:
-    void onVRSharePoint( kvs::Real32 CoordArray[ 2 * 3 ], kvs::Real32 DirectionArray[ 3 ] );
-    void loadParameter( const QString& filePath );
-    void saveParameter( const QString& filePath );
+
 };
 
 #endif // COMMUNICATION_H

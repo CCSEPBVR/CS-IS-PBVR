@@ -14,6 +14,18 @@ PointSizeControl::~PointSizeControl()
     delete ui;
 }
 
+void PointSizeControl::loadParameter( const QString& filePath )
+{
+    // TODO:KPI
+    qDebug() << __FILE__ << ":" << __func__ << ":" << filePath;
+}
+
+void PointSizeControl::saveParameter( const QString& filePath )
+{
+    // TODO:KPI
+    qDebug() << __FILE__ << ":" << __func__ << ":" << filePath;
+}
+
 void PointSizeControl::initialize()
 {
     ui->setupUi(this);
@@ -41,16 +53,4 @@ void PointSizeControl::onPointSizeValueChanged()
         }
     }
     m_screen->update();
-}
-
-void PointSizeControl::loadParameter( const QString& filePath )
-{
-    // TODO:KPI
-    qDebug() << __FILE__ << ":" << __func__ << ":" << filePath;
-}
-
-void PointSizeControl::saveParameter( const QString& filePath )
-{
-    // TODO:KPI
-    qDebug() << __FILE__ << ":" << __func__ << ":" << filePath;
 }

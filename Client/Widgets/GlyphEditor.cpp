@@ -15,6 +15,102 @@ GlyphEditor::~GlyphEditor()
     delete ui;
 }
 
+void GlyphEditor::updateNumberOfVector( const int numberOfVector )
+{
+    m_number_of_vector = numberOfVector;
+    if( m_number_of_vector < 3 ) // 成分数が3未満である場合はこのパネルは使用できない。
+    {
+
+    }
+    else
+    {
+
+    }
+
+    m_vector_list.clear();
+    for( int i = 0; i < m_number_of_vector; i++ )
+    {
+        m_vector_list << QString( "q%1" ).arg( i + 1 );
+    }
+
+    ui->direction1ComboBox->clear();
+    ui->direction2ComboBox->clear();
+    ui->direction3ComboBox->clear();
+    ui->direction1ComboBox->addItems( m_vector_list );
+    ui->direction2ComboBox->addItems( m_vector_list );
+    ui->direction3ComboBox->addItems( m_vector_list );
+
+    ui->sizeTreeView->setItemDelegateForColumn( 1, new ComboBoxDelegate( m_vector_list, this ) );
+    ui->colorDataTreeView->setItemDelegateForColumn( 1, new ComboBoxDelegate( m_vector_list, this ) );
+
+    ui->sizeNumberOfVariablesSpinBox->setMaximum( m_number_of_vector );
+    ui->colorDataNumberOfVariablesSpinBox->setMaximum( m_number_of_vector );
+}
+
+void GlyphEditor::updateOperatorState( bool operatorState )
+{
+    if( m_color_map_editor.isVisible() ) m_color_map_editor.close();
+
+    ui->glyphTypeComboBox->setEnabled( operatorState );
+    ui->scaleFactorDoubleSpinBox->setEnabled( operatorState );
+    ui->direction1ComboBox->setEnabled( operatorState );
+    ui->direction2ComboBox->setEnabled( operatorState );
+    ui->direction3ComboBox->setEnabled( operatorState );
+    ui->sizeConstantRadioButton->setEnabled( operatorState );
+    ui->sizeVariableArrayRadioButton->setEnabled( operatorState );
+    ui->sizeNumberOfVariablesSpinBox->setEnabled( operatorState );
+
+    ui->uniformDistributionRadioButton->setEnabled( operatorState );
+    ui->allPointsRadioButton->setEnabled( operatorState );
+    ui->everyNthPointRadioButton->setEnabled( operatorState );
+
+    ui->numberOfSamplePointsSpinBox->setEnabled( operatorState );
+    ui->seedSpinBox->setEnabled( operatorState );
+    ui->strideSpinBox->setEnabled( operatorState );
+
+    ui->editColorMapPushButton->setEnabled( operatorState );
+
+    ui->colorDataConstantRadioButton->setEnabled( operatorState );
+    ui->colorDataVariableArrayRadioButton->setEnabled( operatorState );
+    ui->colorDataNumberOfVariablesSpinBox->setEnabled( operatorState );
+
+    ui->applyPushButton->setEnabled( operatorState );
+}
+
+void GlyphEditor::reset()
+{
+    updateNumberOfVector( 0 );
+    ui->glyphTypeComboBox->setCurrentIndex( 0 );
+    ui->scaleFactorDoubleSpinBox->setValue( 1.00 );
+
+    ui->direction1ComboBox->clear();
+    ui->direction2ComboBox->clear();
+    ui->direction3ComboBox->clear();
+
+    ui->sizeConstantRadioButton->setChecked( true );
+    ui->sizeNumberOfVariablesSpinBox->setValue( 0 );
+
+    ui->uniformDistributionRadioButton->setChecked( true );
+    ui->numberOfSamplePointsSpinBox->setValue( 1000 );
+    ui->seedSpinBox->setValue( 1 );
+    ui->strideSpinBox->setValue( 3 );
+
+    ui->colorDataConstantRadioButton->setChecked( true );
+    ui->colorDataNumberOfVariablesSpinBox->setValue( 0 );
+}
+
+void GlyphEditor::loadParameter( const QString& filePath )
+{
+    // TODO:KPI
+    qDebug() << __FILE__ << ":" << __func__ << ":" << filePath;
+}
+
+void GlyphEditor::saveParameter( const QString& filePath )
+{
+    // TODO:KPI
+    qDebug() << __FILE__ << ":" << __func__ << ":" << filePath;
+}
+
 void GlyphEditor::initialize()
 {
     ui->setupUi( this );
@@ -155,6 +251,18 @@ void GlyphEditor::onSizeNumberOfVariableValueChanged()
     }
 }
 
+void GlyphEditor::onEditColorMap()
+{
+    ColorMapEditor colorMapEditor;
+    colorMapEditor.adjustSize();
+    colorMapEditor.setDefaultColorMap( ui->colorMap->getColors() );
+
+    if( colorMapEditor.exec() == QDialog::Accepted )
+    {
+        ui->colorMap->setColors( colorMapEditor.getColorMap() );
+    }
+}
+
 void GlyphEditor::onColorDataConstantRadioButtonClicked()
 {
     if( ui->colorDataConstantRadioButton->isChecked() )
@@ -170,18 +278,6 @@ void GlyphEditor::onColorDataVariablesRadioButtonClicked()
     {
         ui->colorDataNumberOfVariablesSpinBox->setEnabled( true );
         ui->colorDataTreeView->setEnabled( true );
-    }
-}
-
-void GlyphEditor::onEditColorMap()
-{
-    ColorMapEditor colorMapEditor;
-    colorMapEditor.adjustSize();
-    colorMapEditor.setDefaultColorMap( ui->colorMap->getColors() );
-
-    if( colorMapEditor.exec() == QDialog::Accepted )
-    {
-        ui->colorMap->setColors( colorMapEditor.getColorMap() );
     }
 }
 
@@ -317,100 +413,4 @@ void GlyphEditor::onApply()
     root["params"] = params;
 
     m_web_sockets->text()->sendTextMessage(QJsonDocument(root).toJson(QJsonDocument::Compact));
-}
-
-void GlyphEditor::updateNumberOfVector( const int numberOfVector )
-{
-    m_number_of_vector = numberOfVector;
-    if( m_number_of_vector < 3 ) // 成分数が3未満である場合はこのパネルは使用できない。
-    {
-
-    }
-    else
-    {
-
-    }
-
-    m_vector_list.clear();
-    for( int i = 0; i < m_number_of_vector; i++ )
-    {
-        m_vector_list << QString( "q%1" ).arg( i + 1 );
-    }
-
-    ui->direction1ComboBox->clear();
-    ui->direction2ComboBox->clear();
-    ui->direction3ComboBox->clear();
-    ui->direction1ComboBox->addItems( m_vector_list );
-    ui->direction2ComboBox->addItems( m_vector_list );
-    ui->direction3ComboBox->addItems( m_vector_list );
-
-    ui->sizeTreeView->setItemDelegateForColumn( 1, new ComboBoxDelegate( m_vector_list, this ) );
-    ui->colorDataTreeView->setItemDelegateForColumn( 1, new ComboBoxDelegate( m_vector_list, this ) );
-
-    ui->sizeNumberOfVariablesSpinBox->setMaximum( m_number_of_vector );
-    ui->colorDataNumberOfVariablesSpinBox->setMaximum( m_number_of_vector );
-}
-
-void GlyphEditor::updateOperatorState( bool operatorState )
-{
-    if( m_color_map_editor.isVisible() ) m_color_map_editor.close();
-
-    ui->glyphTypeComboBox->setEnabled( operatorState );
-    ui->scaleFactorDoubleSpinBox->setEnabled( operatorState );
-    ui->direction1ComboBox->setEnabled( operatorState );
-    ui->direction2ComboBox->setEnabled( operatorState );
-    ui->direction3ComboBox->setEnabled( operatorState );
-    ui->sizeConstantRadioButton->setEnabled( operatorState );
-    ui->sizeVariableArrayRadioButton->setEnabled( operatorState );
-    ui->sizeNumberOfVariablesSpinBox->setEnabled( operatorState );
-
-    ui->uniformDistributionRadioButton->setEnabled( operatorState );
-    ui->allPointsRadioButton->setEnabled( operatorState );
-    ui->everyNthPointRadioButton->setEnabled( operatorState );
-
-    ui->numberOfSamplePointsSpinBox->setEnabled( operatorState );
-    ui->seedSpinBox->setEnabled( operatorState );
-    ui->strideSpinBox->setEnabled( operatorState );
-
-    ui->editColorMapPushButton->setEnabled( operatorState );
-
-    ui->colorDataConstantRadioButton->setEnabled( operatorState );
-    ui->colorDataVariableArrayRadioButton->setEnabled( operatorState );
-    ui->colorDataNumberOfVariablesSpinBox->setEnabled( operatorState );
-
-    ui->applyPushButton->setEnabled( operatorState );
-}
-
-void GlyphEditor::reset()
-{
-    updateNumberOfVector( 0 );
-    ui->glyphTypeComboBox->setCurrentIndex( 0 );
-    ui->scaleFactorDoubleSpinBox->setValue( 1.00 );
-
-    ui->direction1ComboBox->clear();
-    ui->direction2ComboBox->clear();
-    ui->direction3ComboBox->clear();
-
-    ui->sizeConstantRadioButton->setChecked( true );
-    ui->sizeNumberOfVariablesSpinBox->setValue( 0 );
-
-    ui->uniformDistributionRadioButton->setChecked( true );
-    ui->numberOfSamplePointsSpinBox->setValue( 1000 );
-    ui->seedSpinBox->setValue( 1 );
-    ui->strideSpinBox->setValue( 3 );
-
-    ui->colorDataConstantRadioButton->setChecked( true );
-    ui->colorDataNumberOfVariablesSpinBox->setValue( 0 );
-}
-
-void GlyphEditor::loadParameter( const QString& filePath )
-{
-    // TODO:KPI
-    qDebug() << __FILE__ << ":" << __func__ << ":" << filePath;
-}
-
-void GlyphEditor::saveParameter( const QString& filePath )
-{
-    // TODO:KPI
-    qDebug() << __FILE__ << ":" << __func__ << ":" << filePath;
 }

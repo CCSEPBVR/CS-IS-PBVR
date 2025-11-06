@@ -14,6 +14,24 @@ Preference::~Preference()
     delete ui;
 }
 
+// MainWindowクラスのshow()実行後に呼び出すしてKVSのウィジェットを表示する。
+void Preference::readyScreen()
+{
+    applySettings();
+}
+
+void Preference::mergingFinish( int requestTimeStep )
+{
+    m_current_time_step = requestTimeStep;
+    m_time_step_label->setText( "Time step: " + std::to_string( m_current_time_step ) );
+}
+
+void Preference::closeEvent( QCloseEvent* event )
+{
+    loadSettings();
+    event->accept();
+}
+
 void Preference::initialize()
 {
     ui->setupUi( this );
@@ -494,22 +512,4 @@ void Preference::onOK()
 {
     applySettings();
     close();
-}
-
-// MainWindowクラスのshow()実行後に呼び出すしてKVSのウィジェットを表示する。
-void Preference::readyScreen()
-{
-    applySettings();
-}
-
-void Preference::mergingFinish( int requestTimeStep )
-{
-    m_current_time_step = requestTimeStep;
-    m_time_step_label->setText( "Time step: " + std::to_string( m_current_time_step ) );
-}
-
-void Preference::closeEvent( QCloseEvent* event )
-{
-    loadSettings();
-    event->accept();
 }

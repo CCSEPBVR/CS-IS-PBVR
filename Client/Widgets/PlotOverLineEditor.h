@@ -29,11 +29,21 @@ public:
     explicit PlotOverLineEditor( WebSocketPair* websockets, kvs::qt::jaea::Screen* screen, QWidget *parent = nullptr );
     ~PlotOverLineEditor();
 
-private:
-    // メンバ変数群
+public slots:
+    void updateNumberOfVector( const int numberOfVector );
+    void updateFocus( kvs::Vec3 resultMinObjectCoords, kvs::Vec3 resultMaxObjectCoords );
+    void updateTranslation();
+    void setPlotData( std::vector<float> xAxis, std::vector<bool> mask, std::vector<float> values );
+    void drawPlotOverLineFromVRHands( kvs::Real32 CoordArray[ 2 * 3 ] ); // FIXME:onCreateLineと機能が重複しています。
+    void togglePlotOverLineFromVRHands();
+    void updateOperatorState( bool operatorState ); // true:権限あり
+    void reset();
+    void loadParameter( const QString& filePath );
+    void saveParameter( const QString& filePath );
+
+private:    
     Ui::PlotOverLineEditor *ui;
 
-    // 通信関連
     WebSocketPair* m_web_sockets = nullptr;
     QStandardItemModel *m_model = nullptr;
 
@@ -82,18 +92,6 @@ private slots:
     void endCoordsUpdateXYZ();
     void onCreateLine();
     void onApply();
-
-public slots:
-    void updateNumberOfVector( const int numberOfVector );
-    void updateFocus( kvs::Vec3 resultMinObjectCoords, kvs::Vec3 resultMaxObjectCoords );
-    void updateTranslation();
-    void setPlotData( std::vector<float> xAxis, std::vector<bool> mask, std::vector<float> values );
-    void drawPlotOverLineFromVRHands( kvs::Real32 CoordArray[ 2 * 3 ] ); // FIXME:onCreateLineと機能が重複しています。
-    void togglePlotOverLineFromVRHands();
-    void updateOperatorState( bool operatorState ); // true:権限あり
-    void reset();
-    void loadParameter( const QString& filePath );
-    void saveParameter( const QString& filePath );
 };
 
 #endif // PLOTOVERLINEEDITOR_H

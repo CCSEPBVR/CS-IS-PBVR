@@ -20,19 +20,6 @@ public:
     explicit RepetitionLevelControl( kvs::qt::jaea::Screen* screen, kvs::StochasticRenderingCompositor* compositor, QWidget *parent = nullptr );
     ~RepetitionLevelControl();
 
-private:
-    // メンバ変数群
-    Ui::RepetitionLevelControl *ui;
-
-    kvs::qt::jaea::Screen* m_screen = nullptr;
-    kvs::StochasticRenderingCompositor* m_compositor = nullptr;
-
-    // メソッド群
-    void initialize();
-
-private slots:
-    void onApply();
-
 public slots:
     void updateCurrentRepetitionLevel();
     void loadParameter( const QString& filePath );
@@ -40,6 +27,17 @@ public slots:
 
 signals:
     void shading( kvs::RendererBase* rendererBase );
+
+private:
+    Ui::RepetitionLevelControl *ui;
+
+    kvs::qt::jaea::Screen* m_screen = nullptr;
+    kvs::StochasticRenderingCompositor* m_compositor = nullptr;
+
+    void initialize();
+
+private slots:
+    void onApply();
 };
 
 #endif // REPETITIONLEVELCONTROL_H

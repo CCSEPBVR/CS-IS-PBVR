@@ -25,22 +25,20 @@ public:
     explicit ShadingControl( kvs::qt::jaea::Screen*, QWidget *parent = nullptr );
     ~ShadingControl();
 
-private:
-    // メンバ変数群
-    Ui::ShadingControl *ui;
-
-    kvs::qt::jaea::Screen* m_screen = nullptr;
-
-    // メソッド群
-    void initialize();
-
-private slots:
-    void onChangedShadingParameter();
-
 public slots:
     void shading( kvs::RendererBase* rendererBase );
     void loadParameter( const QString& filePath );
     void saveParameter( const QString& filePath );
+
+private:
+    Ui::ShadingControl *ui;
+
+    kvs::qt::jaea::Screen* m_screen = nullptr;
+
+    void initialize();
+
+private slots:
+    void onChangedShadingParameter();
 };
 
 #endif // SHADINGCONTROL_H

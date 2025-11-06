@@ -15,6 +15,24 @@ RepetitionLevelControl::~RepetitionLevelControl()
     delete ui;
 }
 
+void RepetitionLevelControl::updateCurrentRepetitionLevel()
+{
+    const size_t currentRepetitionLevel = m_compositor->repetitionLevel();
+    ui->dispCurrentRepetitionLevel->setText( QString::number( currentRepetitionLevel ) );
+}
+
+void RepetitionLevelControl::loadParameter( const QString& filePath )
+{
+    // TODO:KPI
+    qDebug() << __FILE__ << ":" << __func__ << ":" << filePath;
+}
+
+void RepetitionLevelControl::saveParameter( const QString& filePath )
+{
+    // TODO:KPI
+    qDebug() << __FILE__ << ":" << __func__ << ":" << filePath;
+}
+
 void RepetitionLevelControl::initialize()
 {
     ui->setupUi( this );
@@ -43,22 +61,4 @@ void RepetitionLevelControl::onApply()
     m_compositor->setRepetitionLevel( repetitionLevel );
     m_compositor->screen()->redraw();
     updateCurrentRepetitionLevel();
-}
-
-void RepetitionLevelControl::updateCurrentRepetitionLevel()
-{
-    const size_t currentRepetitionLevel = m_compositor->repetitionLevel();
-    ui->dispCurrentRepetitionLevel->setText( QString::number( currentRepetitionLevel ) );
-}
-
-void RepetitionLevelControl::loadParameter( const QString& filePath )
-{
-    // TODO:KPI
-    qDebug() << __FILE__ << ":" << __func__ << ":" << filePath;
-}
-
-void RepetitionLevelControl::saveParameter( const QString& filePath )
-{
-    // TODO:KPI
-    qDebug() << __FILE__ << ":" << __func__ << ":" << filePath;
 }
