@@ -70,7 +70,7 @@ void Communication::initialize()
 
     connect( ui->connectPushButton, &QPushButton::clicked, this, &Communication::onConnectClicked );
     connect( ui->disconnectPushButton, &QPushButton::clicked, this, &Communication::onDisconnectClicked );
-    connect( ui->transferOperatorPushButton, &QPushButton::clicked, this, &Communication::onTransferOperator );
+    connect( ui->transferOperatorApplyPushButton, &QPushButton::clicked, this, &Communication::onTransferOperator );
     connect( ui->chatSendPushButton, &QPushButton::clicked, this, &Communication::onChatClicked );
     connect( ui->shareViewPushButton , &QPushButton::clicked, this, &Communication::onShareView );
 
@@ -237,7 +237,7 @@ void Communication::onTransferOperator()
     }
 
     bool isValid = false;
-    int targetID = ui->IDlineEdit->text().toInt( &isValid );
+    int targetID = ui->transferOperatorIDlineEdit->text().toInt( &isValid );
 
     if( !isValid )
     {
@@ -337,8 +337,8 @@ void Communication::binaryWebsocketDisconnected()
         emit updateServerState( false );
         m_user_id = -1;        
         m_is_operator = false;
-        ui->IDLabelDisplay->clear();
-        ui->isOperatorLabelDisplay->clear();
+        ui->IDLineEdit->clear();
+        ui->isOperatorLineEdit->clear();
         ui->textBrowser->clear();
     }
 }
@@ -415,8 +415,8 @@ void Communication::textWebsocketDisconnected()
         emit updateServerState( false );
         m_user_id = -1;
         m_is_operator = false;
-        ui->IDLabelDisplay->clear();
-        ui->isOperatorLabelDisplay->clear();
+        ui->IDLineEdit->clear();
+        ui->isOperatorLineEdit->clear();
         ui->textBrowser->clear();        
     }
 }
@@ -449,7 +449,7 @@ void Communication::textWebsocketMessageReceived( const QString& receivedMessage
             int userID = obj["userID"].toInt(); // 自分自身のユーザID
             QString userIDStr = QString::number( userID );
             m_user_id = userID;
-            ui->IDLabelDisplay->setText( userIDStr );
+            ui->IDLineEdit->setText( userIDStr );
             ui->textBrowser->append("--- Your User ID is [" + userIDStr + "]" );
         }
 
@@ -458,7 +458,7 @@ void Communication::textWebsocketMessageReceived( const QString& receivedMessage
             bool isOperator = obj["isOperator"].toBool(); // 自分に操作権限があるか
             m_is_operator = isOperator;
             emit updateOperatorState( m_is_operator );
-            ui->isOperatorLabelDisplay->setText( m_is_operator ? "true" : "false" );
+            ui->isOperatorLineEdit->setText( m_is_operator ? "true" : "false" );
             if( m_is_operator )
             {
                 ui->textBrowser->append("--- You have operator privilege");
@@ -477,12 +477,12 @@ void Communication::textWebsocketMessageReceived( const QString& receivedMessage
             if( m_user_id == newOperatorID )
             {
                 m_is_operator = true;
-                ui->isOperatorLabelDisplay->setText( "true" );
+                ui->isOperatorLineEdit->setText( "true" );
             }
             else
             {
                 m_is_operator = false;
-                ui->isOperatorLabelDisplay->setText( "false" );
+                ui->isOperatorLineEdit->setText( "false" );
             }
         }
 

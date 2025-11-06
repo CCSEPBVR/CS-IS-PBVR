@@ -6,16 +6,19 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>515</width>
-    <height>482</height>
+    <width>657</width>
+    <height>855</height>
    </rect>
+  </property>
+  <property name="toolTip">
+   <string>Run the client and server on different machines, connect, and perform visualization.</string>
   </property>
   <property name="windowTitle">
    <string>Communication</string>
   </property>
   <widget class="QWidget" name="dockWidgetContents">
    <layout class="QGridLayout" name="gridLayout">
-    <item row="0" column="0" rowspan="3" colspan="3">
+    <item row="0" column="0">
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
        <number>0</number>
@@ -24,15 +27,270 @@
        <attribute name="title">
         <string>Connect</string>
        </attribute>
-       <layout class="QGridLayout" name="gridLayout_2">
-        <item row="5" column="0" colspan="2">
-         <widget class="QTextBrowser" name="textBrowser"/>
+       <layout class="QGridLayout" name="gridLayout_9">
+        <item row="2" column="0">
+         <widget class="QGroupBox" name="groupBox_5">
+          <property name="title">
+           <string>User Info</string>
+          </property>
+          <layout class="QGridLayout" name="gridLayout_7">
+           <item row="0" column="1" colspan="2">
+            <widget class="QLineEdit" name="IDLineEdit">
+             <property name="readOnly">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="1">
+            <widget class="QLineEdit" name="transferOperatorIDlineEdit">
+             <property name="placeholderText">
+              <string>e.g. 0(User ID to transfer operator rights to)</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="0">
+            <widget class="QLabel" name="isOperatorLabel">
+             <property name="text">
+              <string>Operator:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="0">
+            <widget class="QLabel" name="label_3">
+             <property name="text">
+              <string>Transfer Operator:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="2">
+            <widget class="QPushButton" name="transferOperatorApplyPushButton">
+             <property name="text">
+              <string>Apply</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="0" rowspan="2">
+            <widget class="QLabel" name="IDLabel">
+             <property name="text">
+              <string>ID:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="1" rowspan="2" colspan="2">
+            <widget class="QLineEdit" name="isOperatorLineEdit">
+             <property name="readOnly">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
         </item>
-        <item row="6" column="0">
-         <widget class="QLineEdit" name="chatLineEdit"/>
+        <item row="4" column="0">
+         <widget class="QGroupBox" name="groupBox_6">
+          <property name="title">
+           <string>Chat</string>
+          </property>
+          <layout class="QGridLayout" name="gridLayout_8">
+           <item row="0" column="0" colspan="2">
+            <widget class="QTextBrowser" name="textBrowser"/>
+           </item>
+           <item row="1" column="1">
+            <widget class="QPushButton" name="chatSendPushButton">
+             <property name="text">
+              <string>Send</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="0">
+            <widget class="QLineEdit" name="chatLineEdit">
+             <property name="text">
+              <string/>
+             </property>
+             <property name="placeholderText">
+              <string>Write a message...</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="0" colspan="2">
+            <widget class="QPushButton" name="debugPushButton">
+             <property name="text">
+              <string>Debug</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
         </item>
-        <item row="7" column="0" colspan="2">
-         <spacer name="verticalSpacer">
+        <item row="1" column="0">
+         <widget class="QGroupBox" name="groupBox_4">
+          <property name="title">
+           <string>Connect to Server</string>
+          </property>
+          <layout class="QGridLayout" name="gridLayout_5">
+           <item row="1" column="1">
+            <widget class="QPushButton" name="connectPushButton">
+             <property name="text">
+              <string>Connect</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="0" colspan="3">
+            <widget class="QLineEdit" name="addressLineEdit">
+             <property name="placeholderText">
+              <string>ex. wss://127.0.0.1:60000</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="2">
+            <widget class="QPushButton" name="disconnectPushButton">
+             <property name="text">
+              <string>Disconnect</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="0">
+            <spacer name="horizontalSpacer">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>40</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item row="0" column="0">
+         <widget class="QGroupBox" name="groupBox">
+          <property name="title">
+           <string>Setting</string>
+          </property>
+          <layout class="QGridLayout" name="gridLayout_6">
+           <item row="2" column="0">
+            <layout class="QGridLayout" name="gridLayout_2">
+             <item row="0" column="1">
+              <widget class="QLineEdit" name="transferFunctionFilePathLineEdit">
+               <property name="placeholderText">
+                <string>e.g. path/to/sample.pfi(.pfl)</string>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="2">
+              <widget class="QPushButton" name="pushButton_2">
+               <property name="text">
+                <string>...</string>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="0">
+              <widget class="QLabel" name="label_2">
+               <property name="text">
+                <string>Transfer Function File Path : </string>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="0">
+              <widget class="QLabel" name="label">
+               <property name="text">
+                <string>Volume Data File Path : </string>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="1">
+              <widget class="QLineEdit" name="volumeDataFilePathLineEdit">
+               <property name="placeholderText">
+                <string>e.g. path/to/sample.tf(.tfe)</string>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="2">
+              <widget class="QPushButton" name="pushButton">
+               <property name="text">
+                <string>...</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item row="1" column="0">
+            <widget class="QGroupBox" name="groupBox_3">
+             <property name="title">
+              <string>Sampling Type</string>
+             </property>
+             <layout class="QHBoxLayout" name="horizontalLayout_3">
+              <item>
+               <widget class="QRadioButton" name="uniformRadioButton">
+                <property name="text">
+                 <string>Uniform</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QRadioButton" name="metropolisRadioButton">
+                <property name="text">
+                 <string>Metropolis</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QRadioButton" name="rejectionRadioButton">
+                <property name="text">
+                 <string>Rejection</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </item>
+           <item row="0" column="0">
+            <widget class="QGroupBox" name="groupBox_2">
+             <property name="title">
+              <string>Mode</string>
+             </property>
+             <layout class="QHBoxLayout" name="horizontalLayout_2">
+              <item>
+               <widget class="QRadioButton" name="standAloneRadioButton">
+                <property name="toolTip">
+                 <string>Run the client and server on the same machine, connect, and perform visualization.</string>
+                </property>
+                <property name="text">
+                 <string>Stand Alone</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QRadioButton" name="clientServerRadioButton">
+                <property name="toolTip">
+                 <string>Run the client and server on different machines, connect, and perform visualization.</string>
+                </property>
+                <property name="text">
+                 <string>Client Server</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QRadioButton" name="insituRadioButton">
+                <property name="toolTip">
+                 <string>Run the client and server on different machines, connect, and perform visualization.</string>
+                </property>
+                <property name="text">
+                 <string>In-Situ</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item row="5" column="0">
+         <spacer name="verticalSpacer_4">
           <property name="orientation">
            <enum>Qt::Vertical</enum>
           </property>
@@ -43,76 +301,6 @@
            </size>
           </property>
          </spacer>
-        </item>
-        <item row="2" column="0">
-         <widget class="QLabel" name="IDLabel">
-          <property name="text">
-           <string>ID : </string>
-          </property>
-         </widget>
-        </item>
-        <item row="6" column="1">
-         <widget class="QPushButton" name="chatSendPushButton">
-          <property name="text">
-           <string>Send</string>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="0" colspan="2">
-         <widget class="QPushButton" name="debugPushButton">
-          <property name="text">
-           <string>Debug</string>
-          </property>
-         </widget>
-        </item>
-        <item row="2" column="1">
-         <widget class="QLabel" name="IDLabelDisplay">
-          <property name="text">
-           <string/>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="0" colspan="2">
-         <layout class="QHBoxLayout" name="horizontalLayout">
-          <item>
-           <widget class="QPushButton" name="connectPushButton">
-            <property name="text">
-             <string>Connect</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="disconnectPushButton">
-            <property name="text">
-             <string>Disconnect</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </item>
-        <item row="3" column="0">
-         <widget class="QLabel" name="isOperatorLabel">
-          <property name="text">
-           <string>Operator : </string>
-          </property>
-         </widget>
-        </item>
-        <item row="3" column="1">
-         <widget class="QLabel" name="isOperatorLabelDisplay">
-          <property name="text">
-           <string/>
-          </property>
-         </widget>
-        </item>
-        <item row="4" column="1">
-         <widget class="QPushButton" name="transferOperatorPushButton">
-          <property name="text">
-           <string>Transfer Operator</string>
-          </property>
-         </widget>
-        </item>
-        <item row="4" column="0">
-         <widget class="QLineEdit" name="IDlineEdit"/>
         </item>
        </layout>
       </widget>
