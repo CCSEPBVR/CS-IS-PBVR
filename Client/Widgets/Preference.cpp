@@ -4,8 +4,8 @@
 Preference::Preference( QWidget *parent )
     : QDialog(parent)
     , ui( new Ui::Preference )
-    , m_settings( kConfigFilePath, QSettings::IniFormat )
-{
+    , m_settings( QCoreApplication::applicationDirPath() + "/config.ini", QSettings::IniFormat )
+{    
     initialize();
 }
 

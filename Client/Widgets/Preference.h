@@ -77,8 +77,6 @@ protected:
 private:
     Ui::Preference *ui;
 
-    static const inline QString kConfigFilePath = QCoreApplication::applicationDirPath() + "/config.ini";
-
     kvs::qt::jaea::Screen* m_screen = nullptr;
     kvs::StochasticRenderingCompositor* m_compositor = nullptr;
     kvs::ColorMapBar* m_color_map_bar = nullptr;
@@ -91,7 +89,7 @@ private:
     int m_current_time_step = -1;
 
     void initialize();
-    bool isConfigFileExists() { return QFile::exists( kConfigFilePath ); }
+    bool isConfigFileExists() { return QFile::exists( QCoreApplication::applicationDirPath() + "/config.ini" ); }
 
     void loadSettings();
     void loadColorMapBarSetting();
