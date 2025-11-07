@@ -54,6 +54,9 @@ public:
     MainWindow( kvs::qt::Application& app, QWidget *parent = nullptr );
     ~MainWindow();
 
+public slots:
+    void updateStatusBarMessage( const QString& message );
+
 signals:
     void readyScreen();
     void updateCurrentRepetitionLevel();

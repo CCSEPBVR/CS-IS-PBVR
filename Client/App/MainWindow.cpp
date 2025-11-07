@@ -50,6 +50,11 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+void MainWindow::updateStatusBarMessage( const QString& message )
+{
+    ui->statusBar->showMessage( message, 5000 ); // 5秒間表示
+}
+
 void MainWindow::initialize()
 {    
     ui->setupUi( this ); // UIのセットアップ
@@ -201,7 +206,8 @@ void MainWindow::communicationInitialize()
         connect( this, &MainWindow::load, m_communication , &Communication::loadParameter );
         connect( this, &MainWindow::save, m_communication , &Communication::saveParameter );
 
-        connect( m_communication, &Communication::updateServerState, this, &MainWindow::onUpdateServerState );        
+        connect( m_communication, &Communication::updateStatusBarMessage, this, &MainWindow::updateStatusBarMessage );
+        connect( m_communication, &Communication::updateServerState, this, &MainWindow::onUpdateServerState );
         connect( m_communication, &Communication::updateOperatorState, m_glyph_editor, &GlyphEditor::updateOperatorState );
         connect( m_communication, &Communication::updateOperatorState, m_object_editor, &ObjectEditorWIP::updateOperatorState );
         connect( m_communication, &Communication::updateOperatorState, m_plot_over_line_editor, &PlotOverLineEditor::updateOperatorState );

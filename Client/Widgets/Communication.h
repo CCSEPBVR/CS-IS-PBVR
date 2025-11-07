@@ -36,6 +36,7 @@ signals:
     void updateOperatorState( bool operatorState ); // true:権限あり
     void updateFocus( kvs::Vec3, kvs::Vec3 ); // FIXME:このクラスに必要ないので削除
     void updatePointsTranslation(); // FIXME:このクラスに必要ないので削除
+    void updateStatusBarMessage( const QString& message );
 
 private:
     Ui::Communication *ui;

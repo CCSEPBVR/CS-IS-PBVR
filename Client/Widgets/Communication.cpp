@@ -19,7 +19,7 @@ void Communication::onVRSharePoint( kvs::Real32 CoordArray[ 2 * 3 ], kvs::Real32
 {
     if( !m_web_sockets->isConnected() )
     {
-        qDebug() << "Not connected";
+        emit updateStatusBarMessage( "Not connected." );
         return;
     }
 
@@ -111,6 +111,7 @@ void Communication::initialize()
             {
                 if( !m_web_sockets->isConnected() )
                 {
+                    emit updateStatusBarMessage( "Not connected." );
                     return;
                 }
 
@@ -145,6 +146,7 @@ void Communication::initialize()
             {
                 if( !m_web_sockets->isConnected() )
                 {
+                    emit updateStatusBarMessage( "Not connected." );
                     return;
                 }
                 m_web_sockets->text()->sendTextMessage( QJsonDocument( QJsonObject{ {"event", "generate"} } ).toJson( QJsonDocument::Compact ) );
@@ -237,7 +239,7 @@ void Communication::onConnectClicked()
 {    
     if( m_web_sockets->isConnected() )
     {
-        return;
+        emit updateStatusBarMessage( "Already connected." );
     }
 
     if( !ui->localVizRadioButton                ->isChecked() &&
@@ -269,7 +271,7 @@ void Communication::onConnectClicked()
     const QString binaryAddress = address + "/binary?uuid=" + uuidStr;
     const QString textAddress   = address + "/text?uuid=" + uuidStr;
 
-    qDebug() << "Connecting to" << address;
+    emit updateStatusBarMessage( "Connecting to " + address );
     if( m_web_sockets->binary() ) m_web_sockets->binary()->open( QUrl( binaryAddress ) );
     if( m_web_sockets->text() ) m_web_sockets->text()->open( QUrl( textAddress ) );
 }
@@ -278,12 +280,12 @@ void Communication::onDisconnectClicked()
 {
     if( !m_web_sockets->isConnected() )
     {
-        qDebug() << "Not connected";
+        emit updateStatusBarMessage( "Not connected." );
         return;
     }
 
     m_uuid.clear();
-    qDebug() << "Disconnecting...";
+    emit updateStatusBarMessage( "Disconnect." );
     m_web_sockets->closeAll();
 }
 
@@ -291,13 +293,13 @@ void Communication::onTransferOperator()
 {
     if( !m_web_sockets->isConnected() )
     {
-        qDebug() << "Not connected";
+        emit updateStatusBarMessage( "Not connected." );
         return;
     }
 
     if( !m_is_operator )
     {
-        qDebug() << "You are not the operator";
+        emit updateStatusBarMessage( "You are not the operator." );
         return;
     }
 
@@ -306,13 +308,13 @@ void Communication::onTransferOperator()
 
     if( !isValid )
     {
-        qDebug() << "Invalid ID";
+        emit updateStatusBarMessage( "Invalid ID." );
         return;
     }
 
     if( m_user_id == targetID )
     {
-        qDebug() << "You cannot transfer yourself";
+        emit updateStatusBarMessage( "You cannot transfer yourself." );
     }
 
 
@@ -326,6 +328,7 @@ void Communication::onChatClicked()
 {
     if( !m_web_sockets->isConnected() )
     {
+        emit updateStatusBarMessage( "Not connected." );
         return;
     }
 
@@ -343,7 +346,7 @@ void Communication::onShareView()
 {
     if( !m_web_sockets->isConnected() )
     {
-        qDebug() << "Not connected";
+        emit updateStatusBarMessage( "Not connected." );
         return;
     }
 
