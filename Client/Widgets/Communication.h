@@ -2,6 +2,8 @@
 #define COMMUNICATION_H
 
 #include <QDockWidget>
+#include <QFileDialog>
+#include <QMessageBox>
 
 #include "Screen.h"
 #include "WebSocketPair.h"
@@ -53,6 +55,10 @@ private:
 
 private slots:
     // UI
+    void onModeClicked();
+    void onSamplingTypeClicked();
+    void onVolumeDataFilePathClicked();
+    void onTransferFunctionFilePathClicked();
     void onConnectClicked();
     void onDisconnectClicked();
     void onTransferOperator(); // FIXME:このクラスに必要ないので削除
@@ -70,6 +76,8 @@ private slots:
 
 // 着目点用TMP
 private:
+    void websocketConnected();
+    void websocketDisconnected();
     kvs::PolygonObject* createArrowGlyph( const kvs::ValueArray<kvs::Real32>& coords, const kvs::ValueArray<kvs::Real32>& directions, const kvs::ValueArray<kvs::Real32>& sizes, const kvs::ValueArray<kvs::UInt8>& colors );
 
 };

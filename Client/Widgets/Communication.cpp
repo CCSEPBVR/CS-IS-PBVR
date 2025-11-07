@@ -68,19 +68,18 @@ void Communication::initialize()
 {
     ui->setupUi(this);
 
+    connect( ui->localVizRadioButton, &QRadioButton::clicked, this, &Communication::onModeClicked );
+    connect( ui->remoteVizClientServerRadioButton, &QRadioButton::clicked, this, &Communication::onModeClicked );
+    connect( ui->remoteVizInsituRadioButton, &QRadioButton::clicked, this, &Communication::onModeClicked );
+
+    connect( ui->volumeDataFilePathPushButton, &QPushButton::clicked, this, &Communication::onVolumeDataFilePathClicked );
+    connect( ui->transferFunctionFilePathPushButton, &QPushButton::clicked, this, &Communication::onTransferFunctionFilePathClicked );
+
     connect( ui->connectPushButton, &QPushButton::clicked, this, &Communication::onConnectClicked );
     connect( ui->disconnectPushButton, &QPushButton::clicked, this, &Communication::onDisconnectClicked );
     connect( ui->transferOperatorApplyPushButton, &QPushButton::clicked, this, &Communication::onTransferOperator );
-    connect( ui->chatSendPushButton, &QPushButton::clicked, this, &Communication::onChatClicked );
+    connect( ui->chatLineEdit, &QLineEdit::returnPressed, this, &Communication::onChatClicked );
     connect( ui->shareViewPushButton , &QPushButton::clicked, this, &Communication::onShareView );
-
-    connect( ui->debugPushButton, &QPushButton::clicked, this, [this]() {
-        if( !m_web_sockets->isConnected() )
-        {
-            return;
-        }
-        m_web_sockets->text()->sendTextMessage( QJsonDocument( QJsonObject{ {"event", "debug"} } ).toJson( QJsonDocument::Compact ) );
-    });
 
     connect( ui->editColorMapPushButton, &QPushButton::clicked, this, [this]()
             {
@@ -158,6 +157,9 @@ void Communication::initialize()
     connect( m_web_sockets->text(), &QWebSocket::connected      , this, &Communication::textWebsocketConnected );       // 接続成功(テキスト)
     connect( m_web_sockets->text(), &QWebSocket::disconnected   , this, &Communication::textWebsocketDisconnected );    // 接続切断(テキスト)
     connect( m_web_sockets->text(), &QWebSocket::textMessageReceived , this, &Communication::textWebsocketMessageReceived );  // メッセージ受信(テキスト)
+
+    ui->uniformRadioButton->setChecked( true ); // NOTE:デフォルトはUniformサンプリング
+    ui->disconnectPushButton->setEnabled( false ); // NOTE:デフォルトでは無効
 }
 
 void Communication::registerObject( kvs::PointObject* pointObject )
@@ -189,16 +191,79 @@ void Communication::replaceObject( kvs::PointObject* pointObject )
     m_screen->update();
 }
 
-void Communication::onConnectClicked()
+void Communication::onModeClicked()
 {
+    if( ui->remoteVizInsituRadioButton->isChecked() )
+    {
+        ui->volumeDataFilePathLineEdit->clear();
+        ui->volumeDataFilePathLineEdit->setPlaceholderText( "It is not required for In-Situ." );
+        ui->volumeDataFilePathLineEdit->setEnabled( false );
+        ui->volumeDataFilePathPushButton->setEnabled( false );
+
+        ui->transferFunctionFilePathLineEdit->clear();
+        ui->transferFunctionFilePathLineEdit->setPlaceholderText( "It is not required for In-Situ." );
+        ui->transferFunctionFilePathLineEdit->setEnabled( false );
+        ui->transferFunctionFilePathPushButton->setEnabled( false );
+    }
+    else
+    {
+        ui->volumeDataFilePathLineEdit->setPlaceholderText( "e.g., path/to/sample.pfi (or .pfl) (required)" );
+        ui->volumeDataFilePathLineEdit->setEnabled( true );
+        ui->volumeDataFilePathPushButton->setEnabled( true );
+        ui->transferFunctionFilePathLineEdit->setPlaceholderText( "e.g., path/to/sample.tf (or .tfe) (optional)" );
+        ui->transferFunctionFilePathLineEdit->setEnabled( true );
+        ui->transferFunctionFilePathPushButton->setEnabled( true );
+    }
+}
+
+void Communication::onSamplingTypeClicked()
+{
+
+}
+
+void Communication::onVolumeDataFilePathClicked()
+{
+    const QString filePath = QFileDialog::getOpenFileName( this, tr("Load Volume Data File"), QString(), tr("Volume Data File (*.pfi *.pfl);;All Files (*)") );
+    ui->volumeDataFilePathLineEdit->setText( filePath );
+}
+
+void Communication::onTransferFunctionFilePathClicked()
+{
+    const QString filePath = QFileDialog::getOpenFileName( this, tr("Load Transfer Function File"), QString(), tr("Transfer Function File (*.tfe *.TFE *.tf *.TF);;All Files (*)") );
+    ui->transferFunctionFilePathLineEdit->setText( filePath );
+}
+
+void Communication::onConnectClicked()
+{    
     if( m_web_sockets->isConnected() )
     {
-        qDebug() << "Already connected";
         return;
     }
 
+    if( !ui->localVizRadioButton                ->isChecked() &&
+        !ui->remoteVizClientServerRadioButton   ->isChecked() &&
+        !ui->remoteVizInsituRadioButton         ->isChecked() )
+    {
+        QMessageBox::warning( this, tr( "Warning" ), tr( "Please select a visualization mode." ) ); // Modeを選択してください。
+        return;
+    }
+
+    // if( ui->localVizRadioButton             ->isChecked() && ui->volumeDataFilePathLineEdit->text().isEmpty() ||
+    //     ui->remoteVizClientServerRadioButton->isChecked() && ui->volumeDataFilePathLineEdit->text().isEmpty() )
+    // {
+    //     QMessageBox::warning( this, tr( "Warning" ), tr( "Volume Data File is required for this mode." ) ); // FIXME:入力がなかった場合はゲスト
+    // }
+
+    if( ui->addressLineEdit->text().isEmpty() )
+    {
+        QMessageBox::warning( this, tr( "Warning" ), tr( "Please enter the address." ) ); // 接続先アドレスを入力してください。
+        return;
+    }
+
+    // FIXME:Local Viz.(Client Only)でオブジェクトを登録していた場合、サーバ接続時に削除されてしまうので警告ダイアログを表示するようにしてください。
+
     m_uuid = QUuid::createUuid().toString(); // ユーザUUID
-    const QString address = "ws://127.0.0.1:60000"; // AFTER_WEBSOCKET
+    const QString address = ui->addressLineEdit->text().toUtf8().constData(); // FIXME:wss:で接続できない。サーバ側の修正が必要かもしれません。要SSL対応
     QString uuidStr = m_uuid;
     uuidStr.remove('{').remove('}'); // { } を除去
     const QString binaryAddress = address + "/binary?uuid=" + uuidStr;
@@ -261,7 +326,6 @@ void Communication::onChatClicked()
 {
     if( !m_web_sockets->isConnected() )
     {
-        qDebug() << "Not connected";
         return;
     }
 
@@ -323,24 +387,12 @@ void Communication::onItemDoubleClicked(const QModelIndex& index)
 
 void Communication::binaryWebsocketConnected()
 {
-    if( m_web_sockets->isConnected() )
-    {
-        emit updateServerState( true );
-    }
+    websocketConnected();
 }
 
 void Communication::binaryWebsocketDisconnected()
 {
-    if( !m_web_sockets->isConnected() )
-    {
-        emit updateOperatorState( m_is_operator );
-        emit updateServerState( false );
-        m_user_id = -1;        
-        m_is_operator = false;
-        ui->IDLineEdit->clear();
-        ui->isOperatorLineEdit->clear();
-        ui->textBrowser->clear();
-    }
+    websocketDisconnected();
 }
 
 void Communication::binaryWebsocketMessageReceived( const QByteArray& binary )
@@ -401,24 +453,12 @@ void Communication::binaryWebsocketMessageReceived( const QByteArray& binary )
 
 void Communication::textWebsocketConnected()
 {
-    if( m_web_sockets->isConnected() )
-    {
-        emit updateServerState( true );
-    }
+    websocketConnected();
 }
 
 void Communication::textWebsocketDisconnected()
 {
-    if( !m_web_sockets->isConnected() )
-    {
-        emit updateOperatorState( m_is_operator );
-        emit updateServerState( false );
-        m_user_id = -1;
-        m_is_operator = false;
-        ui->IDLineEdit->clear();
-        ui->isOperatorLineEdit->clear();
-        ui->textBrowser->clear();        
-    }
+    websocketDisconnected();
 }
 
 void Communication::textWebsocketMessageReceived( const QString& receivedMessage )
@@ -607,6 +647,61 @@ void Communication::textWebsocketMessageReceived( const QString& receivedMessage
                 m_screen->update();
             }
         }
+    }
+}
+
+void Communication::websocketConnected()
+{
+    if( m_web_sockets->isConnected() )
+    {
+        emit updateServerState( true );
+
+        ui->localVizRadioButton                 ->setEnabled( false );
+        ui->remoteVizClientServerRadioButton    ->setEnabled( false );
+        ui->remoteVizInsituRadioButton          ->setEnabled( false );
+
+        ui->uniformRadioButton                  ->setEnabled( false );
+        ui->metropolisRadioButton               ->setEnabled( false );
+        ui->rejectionRadioButton                ->setEnabled( false );
+        ui->volumeDataFilePathLineEdit          ->setEnabled( false );
+        ui->volumeDataFilePathPushButton        ->setEnabled( false );
+        ui->transferFunctionFilePathLineEdit    ->setEnabled( false );
+        ui->transferFunctionFilePathPushButton  ->setEnabled( false );
+
+        ui->addressLineEdit                     ->setEnabled( false );
+        ui->connectPushButton                   ->setEnabled( false );
+        ui->disconnectPushButton                ->setEnabled( true );
+    }
+}
+
+void Communication::websocketDisconnected()
+{
+    if( !m_web_sockets->isConnected() )
+    {
+        emit updateOperatorState( m_is_operator );
+        emit updateServerState( false );
+        m_user_id = -1;
+        m_is_operator = false;
+
+        ui->localVizRadioButton                 ->setEnabled( true );
+        ui->remoteVizClientServerRadioButton    ->setEnabled( true );
+        ui->remoteVizInsituRadioButton          ->setEnabled( true );
+
+        ui->uniformRadioButton                  ->setEnabled( true );
+        ui->metropolisRadioButton               ->setEnabled( true );
+        ui->rejectionRadioButton                ->setEnabled( true );
+        ui->volumeDataFilePathLineEdit          ->setEnabled( true );
+        ui->volumeDataFilePathPushButton        ->setEnabled( true );
+        ui->transferFunctionFilePathLineEdit    ->setEnabled( true );
+        ui->transferFunctionFilePathPushButton  ->setEnabled( true );
+
+        ui->addressLineEdit                     ->setEnabled( true );
+        ui->connectPushButton                   ->setEnabled( true );
+        ui->disconnectPushButton                ->setEnabled( false );
+
+        ui->IDLineEdit->clear();
+        ui->isOperatorLineEdit->clear();
+        ui->textBrowser->clear();
     }
 }
 
