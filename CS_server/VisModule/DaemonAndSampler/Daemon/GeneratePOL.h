@@ -82,6 +82,14 @@ void generate_plot_over_line(
     jpv::ServerMode server_mode
 );
 
+void MakePlotOverLine(
+    const vismodule::KVSMLObjectPlotOverLine* pol_object,
+    const int resolution,
+    vismodule::ValueArray<float>& values_on_line,
+    vismodule::ValueArray<bool>& mask,
+    vismodule::ValueArray<float>& x_axis
+);
+
 void generate_plot_over_line_worker(Argument &param, jpv::ParticleTransferClientMessage& clntMes, MultiVolumePropertyList& mvpl, 
                          bool &nan_error,  
 #ifndef CPU_VER

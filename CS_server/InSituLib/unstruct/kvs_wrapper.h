@@ -12,6 +12,9 @@
 #include <vismodule/CellByCellUniformSampling>
 #include <vismodule/CellByCellMetropolisSampling>
 #include <vismodule/CellByCellParticleGenerator>
+#include <vismodule/Argument>
+#include <vismodule/NameListFile>
+#include <vismodule/CS_PointObjectGenerator>
 
 #ifdef VTK
 #include <vtkUnstructuredGrid.h>
@@ -19,7 +22,8 @@
 
 #include <vismodule/UnstructuredVolumeObject>
 
-//glyph
+//Glyph
+#include <vismodule/GlyphSeed>
 #include <vismodule/GlyphProperty>
 
 // plot over line 
@@ -151,16 +155,6 @@ extern "C" {
 
     } plot_over_line_parameters;
 
-    typedef struct
-    {
-        double initialize;
-        double sampling;
-        double writting;
-        double mpi_reduce;
-        double write_text;
-        int nparticles;
-    } time_parameters;
-
     void begin_wrapper_async_io();
     void   end_wrapper_async_io();
 
@@ -183,6 +177,113 @@ extern "C" {
 #ifdef VTK
     void generate_particles_vtk( int time_step,vtkUnstructuredGrid* ucd ); 
 #endif
+
+    void SetParameterFilePath(
+        const int time_step,
+        std::string& historyFilePath,
+        std::string& stateFilePath,
+        std::string& coordMinMaxFilePath,
+        std::string& particleFilePrefix,
+        std::string& glyphFilePrefix,
+        std::string& plotOverLineFilePrefix,
+        std::string& tfFilePath,
+        std::string& tfFilePath_old,
+        std::string& tfFilePath_step,
+        std::string& glyphParameterPath,
+        std::string& glyphParameterPath_old,
+        std::string& plotOverLineParameterPath,
+        std::string& plotOverLineParameterPath_old
+    );
+
+    bool SetParticleParameter( 
+        const domain_parameters_unstruct& dom,
+        const std::string& tfFilePath,
+        const std::string& tfFilePath_old,
+        Argument& param,
+        MultiVolumePropertyList& mvpl,
+        NameListFile& nameListFile
+    );
+
+    bool SetGlyphParameter(
+        const std::string& glyphParameterPath,
+        const std::string& glyphParameterPath_old,
+        Argument& param
+    );
+
+    bool SetPlotOverLineParameter(
+        const std::string& plotOverLineParameterPath,
+        const std::string& plotOverLineParameterPath_old,
+        Argument& param
+    );
+
+    void MakeParticle(
+        const vismodule::PointObject* point_object,
+        std::vector<float>& coords,
+        std::vector<Byte>&  colors,
+        std::vector<float>& normals
+    );
+
+    void MakeGlyph(
+        const vismodule::KVSMLObjectGlyph* glyph_object,
+        std::vector<float>& coords,
+        std::vector<float>& vectors,
+        std::vector<float>& sizes,
+        std::vector<unsigned char>& colors
+    );
+
+    void OutputParticles(
+        const Argument& param,
+        const MultiVolumePropertyList& mvpl,
+        const int time_step,
+        const int tf_number,
+        const int nvariables,
+        const std::string& particleFilePrefix,
+        const std::string& stateFilePath,
+        const std::string& histryFilePath,
+        const std::vector<float>& coords,
+        const std::vector<Byte>& colors,
+        const std::vector<float>& normals,
+        const vismodule::UInt64* c_bins,
+        const vismodule::UInt64* o_bins,
+        const float* max_array,
+        const float* min_array
+    );
+
+    void OutputGlyphs(
+        const int time_step,
+        const std::string& glyphFilePrefix,
+        const std::vector<float>& coords,
+        const std::vector<float>& vectors,
+        const std::vector<float>& sizes,
+        const std::vector<unsigned char>& colors
+    );
+
+    void OutputLine(
+        const int time_step,
+        const std::string& plotOverLineFilePrefix,
+        const vismodule::ValueArray<float>& values_on_line,
+        const vismodule::ValueArray<bool>& mask,
+        const vismodule::ValueArray<float>& x_axis
+    );
+
+    /*
+    typedef struct
+    {
+        double initialize;
+        double sampling;
+        double writting;
+        double mpi_reduce;
+        double write_text;
+        int nparticles;
+    } time_parameters;
+
+    void SetPOLParameter(jpv::ParticleTransferClientMessage* clntMes  ,const int time_step, plot_over_line_parameters& pol_param);
+
+    void SetGlyphParameter(jpv::ParticleTransferClientMessage* clntMes  ,const int time_step, glyph_parameters& glyph_param);
+
+    void OutputParticles( int time_step, int nvariables, pbvr_parameters& particleBase,  ParamInfo *param_info, bool skip_flag);
+    void OutputGlyphs( const int time_step, glyph_parameters& glyph_param);
+    void OutputLine(   const int time_step, plot_over_line_parameters& pol_param);
 
     void GenerateHistogram( int time_step,
                              domain_parameters_unstruct dom,
@@ -221,14 +322,8 @@ extern "C" {
                               const  vismodule::VolumeObjectBase::CellType& celltype , PlotOverLine* plot_over_line );
     void GeneratePlotOverLine(int time_step, const vismodule::UnstructuredVolumeObject* volume, PlotOverLine* plot_over_line);
     void GeneratePlotOverLine(int time_step, const vismodule::UnstructuredVolumeObject* volume, PlotOverLine* plot_over_line);
-
-    void OutputParticles( int time_step, int nvariables, pbvr_parameters& particleBase,  ParamInfo *param_info, bool skip_flag);
-    void OutputGlyphs( const int time_step, glyph_parameters& glyph_param);
-    void OutputLine(   const int time_step, plot_over_line_parameters& pol_param);
     bool SetParameter(const domain_parameters_unstruct dom, pbvr_parameters* particleBase, ParamInfo *param_info, const int time_step);
-
-    void SetPOLParameter(jpv::ParticleTransferClientMessage* clntMes  ,const int time_step, plot_over_line_parameters& pol_param);
-    void SetGlyphParameter(jpv::ParticleTransferClientMessage* clntMes  ,const int time_step, glyph_parameters& glyph_param);
+    */
 
 #endif
 

@@ -75,38 +75,26 @@ void generate_particle(
         }  
     }
 
-    int c_bins_size = 0;
-    int o_bins_size = 0;
-    for ( int tf = 0; tf < tf_number; tf++ )
-    {
-        c_bins_size += DEFAULT_NBINS;
-        o_bins_size += DEFAULT_NBINS;
-    }
-
     vismodule::UInt64* tmp_c_bins;
     vismodule::UInt64* tmp_o_bins;
-    tmp_c_bins = new vismodule::UInt64[c_bins_size];
-    tmp_o_bins = new vismodule::UInt64[o_bins_size];
-
-    for ( int tf = 0; tf < c_bins_size; tf++ )
-    {
-        tmp_c_bins[tf] = 0;
-    }
-
-    for ( int tf = 0; tf < o_bins_size; tf++ )
-    {
-        tmp_o_bins[tf] = 0;
-    }
-
     float* tmp_max;
     float* tmp_min;
-    tmp_max = new float[tf_number * 2];
-    tmp_min = new float[tf_number * 2];
 
-    for ( int i = 0; i < ( tf_number * 2 ); i++ )
+    tmp_c_bins = new vismodule::UInt64[DEFAULT_NBINS * tf_number];
+    tmp_o_bins = new vismodule::UInt64[DEFAULT_NBINS * tf_number];
+    tmp_max = new float[tf_number * 2]; // color, opacity
+    tmp_min = new float[tf_number * 2]; // color, opacity
+
+    for ( size_t i = 0; i < (DEFAULT_NBINS * tf_number); i++ )
     {
-        tmp_max[ i ] = FLT_MIN;
-        tmp_min[ i ] = FLT_MAX;
+        tmp_c_bins[i] = 0;
+        tmp_o_bins[i] = 0;
+    }
+
+    for ( int i = 0; i < (tf_number * 2); i++ )
+    {
+        tmp_max[i] = FLT_MIN;
+        tmp_min[i] = FLT_MAX;
     }
 
     while ( jd.dispatchNext( wid, &st, &vl ) )
@@ -189,8 +177,14 @@ void generate_particle(
                         param.m_transfunc_synthesizer->setMaxDensity( max_density );
                         param.m_transfunc_synthesizer->setSamplingVolumeInverse( sampling_volume_inverse );
 
+                        std::vector<Type*> raw_pointers_vector( nvariables );
+                        for ( size_t i = 0; i < nvariables; ++i )
+                        {
+                            raw_pointers_vector[i] = values.get()[i].get();
+                        }
+
                         // generate particle
-                        tmp_obj = point_object_generator.GenerateParticleUnstruct( param, dom, values, nvariables, coordinates, ncoords, connections, ncells, celltype, server_mode );
+                        tmp_obj = point_object_generator.GenerateParticleUnstruct( param, dom, raw_pointers_vector.data(), nvariables, coordinates.get(), ncoords, connections.get(), ncells, celltype, server_mode );
                     }
                     else // ( voltype == vismodule::VolumeObjectBase::VolumeType::Structured )
                     {
@@ -198,8 +192,14 @@ void generate_particle(
 
                         store_volume_in_variables_array_struct( volume, dom, values, nvariables, ncoords );
 
+                        std::vector<Type*> raw_pointers_vector( nvariables );
+                        for ( size_t i = 0; i < nvariables; ++i )
+                        {
+                            raw_pointers_vector[i] = values.get()[i].get();
+                        }                        
+
                         // generate particle
-                        tmp_obj = point_object_generator.GenerateParticleStruct( param, dom, values, nvariables, server_mode );
+                        tmp_obj = point_object_generator.GenerateParticleStruct( param, dom, raw_pointers_vector.data(), nvariables, server_mode );
                     }
 
                     delete volume;
@@ -214,39 +214,9 @@ void generate_particle(
                 }
                 // generate point object end
 
-                // make histgram start
-                int c_count = 0;
-                for ( int tf = 0; tf < tf_number; tf++ )
-                {
-                    int c_nbins = tmp_obj->getNbins();
-                    for ( int res = 0; res < c_nbins; res++ )
-                    {
-                        tmp_c_bins[ c_count ] += tmp_obj->getCHistogram()[ c_count ];
-                        c_count++;
-                    }
-                }
+                MakeHistgram( tmp_obj, tf_number, tmp_c_bins, tmp_o_bins );
 
-                int o_count = 0;
-                for ( int tf = 0; tf < tf_number; tf++ )
-                {
-                    int o_nbins = tmp_obj->getNbins();
-                    for ( int res = 0; res < o_nbins; res++ )
-                    {
-                        tmp_o_bins[ o_count ] += tmp_obj->getOHistogram()[ o_count ];
-                        o_count++;
-                    }
-                }
-                // make histgram end
-
-                // make variable range start
-                for( int i = 0; i < tf_number; i++ )
-                {
-                    tmp_max[ 2 * i + 1 ] = vismodule::Math::Max( tmp_max[ 2 * i + 1 ], param.m_transfunc_synthesizer->m_c_max[ i ] );
-                    tmp_min[ 2 * i + 1 ] = vismodule::Math::Min( tmp_min[ 2 * i + 1 ], param.m_transfunc_synthesizer->m_c_min[ i ] );
-                    tmp_max[ 2 * i     ] = vismodule::Math::Max( tmp_max[ 2 * i     ], param.m_transfunc_synthesizer->m_o_max[ i ] );
-                    tmp_min[ 2 * i     ] = vismodule::Math::Min( tmp_min[ 2 * i     ], param.m_transfunc_synthesizer->m_o_min[ i ] );
-                }
-                // make variable range end
+                MakeParticleMinMax( param.m_transfunc_synthesizer, tf_number, tmp_max, tmp_min );
             } // make point object and histgram and range
 
 #ifndef CPU_VER
@@ -602,58 +572,58 @@ void store_volume_in_variables_array_common(
     //詰め替え処理
     vismodule::AnyValueArray valueArray;
     valueArray = volume->values(); 
-    ncoords =  volume->nnodes();
+    ncoords    = volume->nnodes();
     nvariables = volume->veclen();
 
     // ここで変数の値をfloatでまとめることで粒子生成のテンプレート化を回避
     // std::unique_ptr<std::unique_ptr<Type[]>[]> tmp_values(new std::unique_ptr<Type[]>[nvariables]);
-    values = std::make_unique<std::unique_ptr<Type[]>[]>(nvariables);
+    values = std::make_unique<std::unique_ptr<Type[]>[]>( nvariables );
 
     // 実行時型分岐で呼び出す
     const std::type_info& type = volume->values().typeInfo()->type();
-    if (type == typeid(vismodule::Int8))
+    if (type == typeid( vismodule::Int8 ) )
     {
-        copy_values<vismodule::Int8>(valueArray, values, nvariables, ncoords);
+        copy_values<vismodule::Int8>( valueArray, values, nvariables, ncoords );
     }  
-    else if ( type == typeid( vismodule::Int16  ) )
+    else if ( type == typeid( vismodule::Int16 ) )
     {
-        copy_values<vismodule::Int16>(valueArray, values, nvariables, ncoords);
+        copy_values<vismodule::Int16>( valueArray, values, nvariables, ncoords );
     } 
-    else if ( type == typeid( vismodule::Int32  ) )
+    else if ( type == typeid( vismodule::Int32 ) )
     {
-        copy_values<vismodule::Int32>(valueArray, values, nvariables, ncoords);
+        copy_values<vismodule::Int32>( valueArray, values, nvariables, ncoords );
     }
-    else if ( type == typeid( vismodule::Int64  ) )
+    else if ( type == typeid( vismodule::Int64 ) )
     {
-        copy_values<vismodule::Int64>(valueArray, values, nvariables, ncoords);
+        copy_values<vismodule::Int64>( valueArray, values, nvariables, ncoords );
     }
-    else if ( type == typeid( vismodule::UInt8  ) )
+    else if ( type == typeid( vismodule::UInt8 ) )
     {
-        copy_values<vismodule::UInt8>(valueArray, values, nvariables, ncoords);
+        copy_values<vismodule::UInt8>( valueArray, values, nvariables, ncoords );
     }
     else if ( type == typeid( vismodule::UInt16 ) )
     {
-        copy_values<vismodule::UInt16>(valueArray, values, nvariables, ncoords);
+        copy_values<vismodule::UInt16>( valueArray, values, nvariables, ncoords );
     }
     else if ( type == typeid( vismodule::UInt32 ) )
     {
-        copy_values<vismodule::UInt32>(valueArray, values, nvariables, ncoords);
+        copy_values<vismodule::UInt32>( valueArray, values, nvariables, ncoords );
     }
     else if ( type == typeid( vismodule::UInt64 ) )
     {
-        copy_values<vismodule::UInt64>(valueArray, values, nvariables, ncoords);
+        copy_values<vismodule::UInt64>( valueArray, values, nvariables, ncoords );
     }
     else if ( type == typeid( vismodule::Real32 ) )
     {
-        copy_values<vismodule::Real32>(valueArray, values, nvariables, ncoords);
+        copy_values<vismodule::Real32>( valueArray, values, nvariables, ncoords );
     }
     else if ( type == typeid( vismodule::Real64 ) )
     {
-        copy_values<vismodule::Real64>(valueArray, values, nvariables, ncoords);
+        copy_values<vismodule::Real64>( valueArray, values, nvariables, ncoords );
     }
     else 
     {
-        throw std::runtime_error("Unsupported type");
+        throw std::runtime_error( "Unsupported type" );
     }
 }
 
@@ -742,6 +712,52 @@ void copy_values(
             int it = j * nnodes + i;
             values[j][i] = valueArray.at<T>(it);
         }
+    }
+}
+
+void MakeHistgram(
+    const vismodule::PointObject* point_object,
+    const int tf_number,
+    vismodule::UInt64* c_bins,
+    vismodule::UInt64* o_bins
+)
+{
+    int c_count = 0;
+    for ( int tf = 0; tf < tf_number; tf++ )
+    {
+        int c_nbins = point_object->getNbins();
+        for ( int res = 0; res < c_nbins; res++ )
+        {
+            c_bins[ c_count ] += point_object->getCHistogram()[ c_count ];
+            c_count++;
+        }
+    }
+
+    int o_count = 0;
+    for ( int tf = 0; tf < tf_number; tf++ )
+    {
+        int o_nbins = point_object->getNbins();
+        for ( int res = 0; res < o_nbins; res++ )
+        {
+            o_bins[ o_count ] += point_object->getOHistogram()[ o_count ];
+            o_count++;
+        }
+    }
+}
+
+void MakeParticleMinMax(
+    const TransferFunctionSynthesizer* transfer_function_synthesizer,
+    const int tf_number,
+    float* max_array,
+    float* min_array
+)
+{
+    for( int i = 0; i < tf_number; i++ )
+    {
+        max_array[2 * i + 1] = vismodule::Math::Max( max_array[2 * i + 1], transfer_function_synthesizer->m_c_max[i] );
+        min_array[2 * i + 1] = vismodule::Math::Min( min_array[2 * i + 1], transfer_function_synthesizer->m_c_min[i] );
+        max_array[2 * i    ] = vismodule::Math::Max( max_array[2 * i    ], transfer_function_synthesizer->m_o_max[i] );
+        min_array[2 * i    ] = vismodule::Math::Min( min_array[2 * i    ], transfer_function_synthesizer->m_o_min[i] );
     }
 }
 

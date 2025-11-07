@@ -136,6 +136,20 @@ void copy_values(
     int nnodes
 );
 
+void MakeHistgram(
+    const vismodule::PointObject* point_object,
+    const int tf_number,
+    const vismodule::UInt64* c_bins,
+    const vismodule::UInt64* o_bins
+);
+
+void MakeParticleMinMax(
+    const TransferFunctionSynthesizer* transfer_function_synthesizer,
+    const int tf_number,
+    float* max_array,
+    float* min_array
+);
+
 void generate_particle_worker(
     Argument &param,
     MultiVolumePropertyList& mvpl,

@@ -48,7 +48,7 @@ void generate_plot_over_line(
     }
     
     std::vector<float> tmp_values( resolution );
-    std::vector<int>   tmp_mask( resolution, 0 );
+    std::vector<bool>  tmp_mask( resolution, 0 );
     std::vector<float> tmp_axis( resolution ); 
 
     while ( jd.dispatchNext( wid, &st, &vl ) )
@@ -101,14 +101,20 @@ void generate_plot_over_line(
 
                         store_volume_in_variables_array_unstruct( volume, dom, values, nvariables, coordinates, ncoords, connections, ncells, celltype );
 
+                        std::vector<Type*> raw_pointers_vector( nvariables );
+                        for ( size_t i = 0; i < nvariables; ++i )
+                        {
+                            raw_pointers_vector[i] = values.get()[i].get();
+                        }
+
                         // generate particle
                         pol_generator.GeneratePOLUnstruct(
                             param,
-                            values,
+                            raw_pointers_vector.data(),
                             nvariables,
-                            coordinates,
+                            coordinates.get(),
                             ncoords,
-                            connections,
+                            connections.get(),
                             ncells,
                             celltype,
                             tmp_obj
@@ -120,11 +126,17 @@ void generate_plot_over_line(
 
                         store_volume_in_variables_array_struct( volume, dom, values, nvariables, ncoords );
 
+                        std::vector<Type*> raw_pointers_vector( nvariables );
+                        for ( size_t i = 0; i < nvariables; ++i )
+                        {
+                            raw_pointers_vector[i] = values.get()[i].get();
+                        }                        
+
                         // generate particle
                         pol_generator.GeneratePOLStruct(
                             param,
                             dom,
-                            values,
+                            raw_pointers_vector.data(),
                             nvariables,
                             tmp_obj
                         );
@@ -143,16 +155,7 @@ void generate_plot_over_line(
                 // generate plot over line end
 
                 // make parameter
-                for( int i = 0; i < resolution; i++ )
-                { 
-                    tmp_axis[i] = tmp_obj->x_axis()[i];
-                    if (tmp_obj->mask()[i])
-                    {
-                        // tmp_mask[i] = tmp_obj->mask()[i];
-                        tmp_mask[i]   = 1;
-                        tmp_values[i] = tmp_obj->values_on_line()[i];
-                    }
-                }
+                MakePlotOverLine( tmp_obj, resolution, tmp_values, tmp_mask, tmp_axis );
             } // make plot over line
 
 #ifndef CPU_VER
@@ -234,6 +237,26 @@ void generate_plot_over_line(
     } // end of while(DispatchNext)
 
     nan_error = false;
+}
+
+void MakePlotOverLine(
+    const vismodule::KVSMLObjectPlotOverLine* pol_object,
+    const int resolution,
+    vismodule::ValueArray<float>& values_on_line,
+    vismodule::ValueArray<bool>& mask,
+    vismodule::ValueArray<float>& x_axis
+)
+{
+    
+    for( size_t i = 0; i < resolution; i++ )
+    { 
+        x_axis[i] = pol_object->x_axis()[i];
+        if (pol_object->mask()[i])
+        {
+            mask[i]           = true;
+            values_on_line[i] = pol_object->values_on_line()[i];
+        }
+    }
 }
 
 #if 0

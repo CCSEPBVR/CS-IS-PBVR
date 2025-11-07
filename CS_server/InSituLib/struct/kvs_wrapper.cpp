@@ -33,19 +33,12 @@
 #  include <omp.h>
 #endif // _OPENMP
 
-
 // Asynchronous io, using worker thread pwt.
 #include "particle_write_thread.h"
-bool async_io_enabled=false;
-vismodule::ValueArray<float> O_min_recv;
-vismodule::ValueArray<float> O_max_recv;
-vismodule::ValueArray<float> C_min_recv;
-vismodule::ValueArray<float> C_max_recv;
-vismodule::ValueArray<int> o_histogram_recv;
-vismodule::ValueArray<int> c_histogram_recv;
-TransferFunctionSynthesizer* m_tfs;
-static bool generate_flag  = false;
-size_t  st_time_step = 0;
+bool async_io_enabled = false;
+static bool is_initial_step = false;
+static size_t start_time_step = 0;
+
 pbvr::ParticleWriteThread pwt;
 /**
  * @brief begin_wrapper_async_io , call to begin async wrapper output
@@ -66,52 +59,10 @@ void end_wrapper_async_io()
     }
 }
 
-
 namespace Generator = vismodule::CellByCellParticleGenerator;
-
-
-//***** vismodule::CellByCellParticleGenerator *****//
-float GetRandomNumber()
-{
-
-    // xorshift RGNs with period at least 2^128 - 1.
-//    static float t24 = 1.0/16777216.0; /* 0.5**24 */
-    static vismodule::UInt32 x = 123456789, y = 362436069, z = 521288629, w = 88675123;
-    vismodule::UInt32 t;
-    t = ( x ^ ( x << 11 ) );
-    x = y;
-    y = z;
-    z = w;
-    w = ( w ^ ( w >> 19 ) ) ^ ( t ^ ( t >> 8 ) );
-
-    //return 0;
-    return w * ( 1.0f / 4294967296.0f ); // = w * ( 1.0f / vismodule::Value<vismodule::UInt32>::Max() + 1 )
-//    return t24 * static_cast<float>( w >> 8 );
-}
 
 namespace
 {
-
-vismodule::Vector3f RandomSamplingInCubeKMATH( const vismodule::Vector3f vertex )
-{
-    const float x = GetRandomNumber();
-    const float y = GetRandomNumber();
-    const float z = GetRandomNumber();
-    const vismodule::Vector3f d( x, y, z );
-
-    return vertex + d;
-}
-
-vismodule::Vector3f RandomSamplingInCube( const vismodule::Vector3f vertex, vismodule::MersenneTwister* MT  )
-{
-    const float x = (float)MT->rand();
-    const float y = (float)MT->rand();
-    const float z = (float)MT->rand();
-    const vismodule::Vector3f d( x, y, z );
-
-    return vertex + d;
-}
-
 inline size_t CalculateSubpixelLevel( const int particle_limit,
                                       const vismodule::Camera& camera,
                                       const float sampling_step,
@@ -204,419 +155,7 @@ bool LoadParameterFile( ParamInfo*  param_info,
 
     return opend;
 }
-
-void readTFfromParamInfo( ParamInfo* param,
-                          std::vector<vismodule::TransferFunction>& tf,
-                          TransferFunctionSynthesizer* tfs )
-{
-    //Read TFS
-    std::vector<int> i_table;
-    std::vector<float> f_table;
-    EquationToken eq;
-    std::vector<EquationToken> var;
-    int tf_number;
-
-    // get TF_NUMBER
-    tf_number = param->getInt( "TF_NUMBER" );
-    //Read 1D tf
-    int resolution = param->getInt( "TF_RESOLUTION" );
-    float min, max;
-
-    tf.clear();
-
-    for ( size_t i = 0; i < tf_number; i++ )
-    {
-        std::stringstream tss;
-        tss << "TF_NAME" << i + 1 << "_";
-        const std::string tag_base = tss.str();
-
-        min = param->getFloat( tag_base +"MIN_C" );
-        max = param->getFloat( tag_base +"MAX_C" );
-        i_table = param->getTableInt( tag_base + "TABLE_C" );
-        vismodule::ValueArray<vismodule::UInt8> u_table( i_table.size() );
-        for( size_t j = 0; j<i_table.size(); j++ ) u_table[j] = (vismodule::UInt8)i_table[j];
-        vismodule::ColorMap color_map( u_table, min, max );
-
-        min = param->getFloat( tag_base +"MIN_O" );
-        max = param->getFloat( tag_base +"MAX_O" );
-        f_table = param->getTableFloat( tag_base + "TABLE_O" );
-        vismodule::ValueArray<float> ff_table( f_table );
-        vismodule::OpacityMap opacity_map( ff_table, min, max );
-
-        vismodule::TransferFunction tfBuf;
-        tfBuf.setColorMap( color_map );
-        tfBuf.setOpacityMap( opacity_map );
-        tf.push_back(tfBuf);
-    }
-
-#if 1
-    var.clear();
-    // add by shimomura 2024/03/25
-    std::string  equation;
-
-    equation = param->getString( "OPACITY_SYNTH" );
-    std::replace(equation.begin(), equation.end(), 'O', 'a');
-    eq = tfs->convert_token(equation);
-    tfs->setOpacityFunction( eq );
-
-    equation = param->getString( "COLOR_SYNTH" );
-    std::replace(equation.begin(), equation.end(), 'C', 'c');
-    eq = tfs->convert_token(equation);
-    tfs->setColorFunction( eq );
-
-    for ( size_t i = 0; i < tf_number; i++ )
-    {
-        std::stringstream tss;
-        tss << "TF_NAME" << i + 1 << "_";
-        const std::string tag_base = tss.str();
-
-        equation = param->getString( tag_base +"VAR_C" );
-        eq = tfs->convert_token(equation);
-        var.push_back( eq );
-    }
-
-    tfs->setOpacityVariable( var );
-
-    var.clear();
-    for ( size_t i = 0; i < tf_number; i++ )
-    {
-        std::stringstream tss;
-        tss << "TF_NAME" << i + 1 << "_";
-        const std::string tag_base = tss.str();
-
-        equation = param->getString( tag_base +"VAR_O" );
-        eq = tfs->convert_token(equation);
-
-        var.push_back( eq );
-    }
-
-    tfs->setColorVariable( var );
-    var.clear();
-#endif
-
-}
-
-bool initializeParameters(
-    TransferFunctionSynthesizer* tfs,
-    std::vector<vismodule::TransferFunction>& tf,
-    ParamInfo *param_info,
-    const vismodule::ObjectBase* object,
-    float* sampling_volume_inverse,
-    float* max_opacity, float* max_density, int* subpixel_level, float* particle_density, int* particle_limit,
-    float* particle_data_size_limit,
-    const std::string &visParamDir,
-    const std::string &tfFilename, 
-    std::string *sampling_method, 
-    const int time_step )
-{
-    //std::cout<<"param.LoadIN()\n";
-    ParamInfo& param = (*param_info);
-    static bool start_flag = true;
-    bool opend;
-
-#if 0
-    std::string param_filename     = "jupiter.tf";
-    std::string old_param_filename = "jupiter_old.tf";
-#else 
-    // 20181226 start 環境変数で指定したパスを使用
-    std::string param_filename     = visParamDir + tfFilename + ".tf";
-    std::string old_param_filename = visParamDir + tfFilename + "_old.tf";
-    // 20181226 end
-#endif
-
-    opend = LoadParameterFile( param_info, param_filename, old_param_filename );
-    // add by shimomura 0808
-    if (generate_flag ==false && opend == false)
-    {
-        //  TFファイル未読み取り判定ならば、return
-        return opend; 
-    }
-    else if (generate_flag ==false && opend == true )
-    {
-        generate_flag =true;
-        st_time_step = time_step;
-    }
-
-    *particle_density         = param.getFloat( "PARTICLE_DENSITY" );
-    *particle_data_size_limit = param.getFloat( "PARTICLE_DATA_SIZE_LIMIT" );
-    *sampling_method = param.getString("SAMPLING_METHOD");
-    //*sampling_method = "u";
-
-    //2019 kawamura
-    readTFfromParamInfo( param_info, tf, tfs );
-
-
-    //std::cout<<"camera\n";
-    vismodule::Camera camera;
-    int height = param.getInt( "RESOLUTION_HEIGHT" );
-    int width  = param.getInt( "RESOLUTION_WIDTH" );
-    camera.setWindowSize( height,width );
-    float min = vismodule::Math::Min( object->minObjectCoord().x(),
-                                object->minObjectCoord().y(),
-                                object->minObjectCoord().z() );
-    float max = vismodule::Math::Max( object->maxObjectCoord().x(),
-                                object->maxObjectCoord().y(),
-                                object->maxObjectCoord().z() );
-    const float sampling_step = (max - min) / 1E1;
-    *particle_limit = param.getInt( "PARTICLE_LIMIT" );
-#if 0
-#else
-    double total_volume = ( object->maxObjectCoord().x() - object->minObjectCoord().x() )
-                        * ( object->maxObjectCoord().y() - object->minObjectCoord().y() )
-                        * ( object->maxObjectCoord().z() - object->minObjectCoord().z() );
-#endif
-    *max_opacity = 0.98;
-    *subpixel_level = CalculateSubpixelLevel( *particle_limit , camera, sampling_step, total_volume, object );
-
-    //std::cout<<"Generator::\n";
-    Generator::CalculateDensityParameters(
-        &camera,
-        object,
-        (float)(*subpixel_level),
-        sampling_step,
-        *max_opacity,
-        sampling_volume_inverse,
-        max_density );
-
-    tfs->setMaxOpacity( *max_opacity );
-    tfs->setMaxDensity( * max_density );
-    tfs->setSamplingVolumeInverse( *sampling_volume_inverse );
-
-
-    int mpi_rank;
-#ifndef CPU_VER
-    MPI_Comm_rank( MPI_COMM_WORLD, &mpi_rank );
-#else
-    mpi_rank = 0;
-#endif
-
-    //if( mpi_rank == RANK )
-    if( mpi_rank == 0 )
-    {
-        fprintf( stdout , "---------initialize Parameters-------------\n" );
-        fprintf( stdout , "particle_limit    = %20d\n", *particle_limit );
-        fprintf( stdout , "particle_density  = %20f\n", *particle_density );
-        fprintf( stdout , "resolutin_height  = %20d\n", height );
-        fprintf( stdout , "resolutin_width   = %20d\n", width );
-        fprintf( stdout , "total_volume      = %20.3e\n", total_volume );
-        fprintf( stdout , "  |-X             = %20f\n", object->maxObjectCoord().x() );
-        fprintf( stdout , "  |-Y             = %20f\n", object->maxObjectCoord().y() );
-        fprintf( stdout , "  |-Z             = %20f\n", object->maxObjectCoord().z() );
-        fprintf( stdout , "max_opacity       = %20.3e\n", *max_opacity );
-        fprintf( stdout , "max_density       = %20.3e\n", *max_density );
-        fprintf( stdout , "sampling_step     = %20.3e\n", sampling_step );
-        fprintf( stdout , "subpixel_level    = %20d\n", *subpixel_level );
-        fprintf( stdout , "------------------------------------\n" );
-    }
-    
-    return opend;
-}
-
-void calculate_histogram( vismodule::ValueArray<int>&   th_o_histogram,
-                          vismodule::ValueArray<int>&   th_c_histogram,
-                          vismodule::ValueArray<float>& th_O_min,
-                          vismodule::ValueArray<float>& th_O_max,
-                          vismodule::ValueArray<float>& th_C_min,
-                          vismodule::ValueArray<float>& th_C_max,
-                          // ここまでoutput, 以下input
-                          const int nbins, // TFSから読み込む最大最小値
-                          const vismodule::ValueArray<float>& o_min,
-                          const vismodule::ValueArray<float>& o_max,
-                          const vismodule::ValueArray<float>& c_min,
-                          const vismodule::ValueArray<float>& c_max,
-                          const float** o_scalars, // åæå¤
-                          const float** c_scalars,
-                          const int tf_number  )
-{
-    //ヒストグラムと最大最小値
-    for( int i = 0; i < tf_number; i++ )
-    {
-        for( int I = 0; I < SIMDW; I++ )
-        {
-            //不透明度のヒストグラム
-            float h = (o_scalars[i][I] - o_min[i])/( o_max[i] - o_min[i] )*nbins;
-            int H = (int)h;
-            if( 0 <= H && H <= nbins )
-            {
-                if( H == nbins ) H--;
-                th_o_histogram[ H + nbins*i]++;
-            }
-
-            //色のヒストグラム
-            h = (c_scalars[i][I] - c_min[i])/( c_max[i] - c_min[i] )*nbins;
-            H = (int)h;
-            if( 0 <= H && H <= nbins )
-            {
-                if( H == nbins ) H--;
-                th_c_histogram[ H + nbins*i]++;
-            }
-
-            //不透明度の最大最小値
-            th_O_min[i] = th_O_min[i] < o_scalars[i][I] ? th_O_min[i] : o_scalars[i][I];
-            th_O_max[i] = th_O_max[i] > o_scalars[i][I] ? th_O_max[i] : o_scalars[i][I];
-            //色の最大最小値
-            th_C_min[i] = th_C_min[i] < c_scalars[i][I] ? th_C_min[i] : c_scalars[i][I];
-            th_C_max[i] = th_C_max[i] > c_scalars[i][I] ? th_C_max[i] : c_scalars[i][I];
-        }
-    }
-}
-
-const size_t calculate_number_of_particles(
-    const float density,
-    const float volume_of_cell,
-    vismodule::MersenneTwister* MT )
-{
-    const float N = density * volume_of_cell;
-    const float R = (float)MT->rand();
-
-    size_t n = static_cast<size_t>( N );
-    if ( N - n > R )
-    {
-        ++n;
-    }
-
-    return ( n );
-}
-
-void show_timer( time_parameters time )
-{
-    double initialize;
-    double sampling;
-    double writing;
-    double mpi_reduce;
-    double write_text;
-    int    nparticles;
-
-    double time_total =
-        time.initialize + time.sampling + time.writting + time.mpi_reduce + time.write_text;
-    double total;
-
-#ifndef CPU_VER
-    MPI_Reduce( &(time.initialize), &initialize, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD );
-    MPI_Reduce( &(time.sampling),   &sampling,   1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD );
-    MPI_Reduce( &(time.writting),   &writing,   1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD );
-    MPI_Reduce( &(time.mpi_reduce), &mpi_reduce, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD );
-    MPI_Reduce( &(time.write_text), &write_text, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD );
-    MPI_Reduce( &(time_total),      &total,      1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD );
-    MPI_Reduce( &(time.nparticles), &nparticles, 1, MPI_INTEGER,MPI_SUM, 0, MPI_COMM_WORLD );
-#else
-    initialize = time.initialize;
-    sampling   = time.sampling;
-    writing   = time.writting;
-    mpi_reduce = time.mpi_reduce;
-    write_text = time.write_text;
-    total      = time_total;
-    nparticles = time.nparticles;
-#endif
-
-    int mpi_rank;
-#ifndef CPU_VER
-    MPI_Comm_rank( MPI_COMM_WORLD, &mpi_rank );
-#else
-    mpi_rank = 0;
-#endif
-
-    if( mpi_rank == 0 )
-    {
-        printf("initialize= %8.3e [sec/step]\n", initialize);
-        printf("sampling  = %8.3e [sec/step]\n", sampling  );
-        printf("writing   = %8.3e [sec/step]\n", writing  );
-        printf("mpi_reduce= %8.3e [sec/step]\n", mpi_reduce);
-        printf("write_text= %8.3e [sec/step]\n", write_text);
-        printf("total     = %8.3e [sec/step]\n", total     );
-        printf("nparticles= %d\n", nparticles );
-    }
-}
 }//end of unnamed namespace
-
-void SetDefalutParameter( TransferFunctionSynthesizer* tfs,
-                          pbvr_parameters* particleBase,
-                          const int nvariables, Type** values, const int ncoords)
-{
-    //Read TFS
-    std::vector<int> i_table;
-    std::vector<float> f_table;
-    EquationToken eq;
-    std::vector<EquationToken> var1;
-    int tf_number;
-    // get TF_NUMBER
-    tf_number = nvariables;
-    std::vector<vismodule::TransferFunction> tf;
-
-    //Read 1D tf
-    int resolution = 256;
-    float min, max;
-
-    tf.clear();
-
-    for ( size_t i = 0; i < tf_number; i++ )
-    {
-        std::stringstream tss;
-        tss << "TF_NAME" << i + 1 << "_";
-        const std::string tag_base = tss.str();
-
-        // 各変量のminmax
-        // calc_minmax
-        min = values[i][0];
-        max = values[i][0];
-        
-        for(int j = 1; j < ncoords; j++)
-        {
-            min = min < values[i][j] ? min : values[i][j]; 
-            max = max > values[i][j] ? max : values[i][j]; 
-        }
-
-        vismodule::ColorMap color_map( 256, min, max );
-        vismodule::OpacityMap opacity_map( 256, min, max );
-
-        vismodule::TransferFunction tfBuf;
-        tfBuf.setColorMap( color_map );
-        tfBuf.setOpacityMap( opacity_map );
-        tf.push_back(tfBuf);
-    }
-    particleBase ->m_tf = tf;
-
-    // add by shimomura 2024/03/25
-    std::string  equation;
-
-    equation = "a1";
-    eq = tfs->convert_token(equation);
-    tfs->setOpacityFunction( eq );
-
-    equation = "c1" ;
-    eq = tfs->convert_token(equation);
-    tfs->setColorFunction( eq );
-
-    for ( size_t i = 0; i < tf_number; i++ )
-    {
-        std::stringstream tss;
-        tss << "q" << i + 1 ;
-        const std::string tag_base = tss.str();
-
-        equation = tag_base;
-        eq = tfs->convert_token(equation);
-        var1.push_back( eq );
-    }
-
-    tfs->setOpacityVariable( var1 );
-    tfs->setColorVariable( var1 );
-
-    var1.clear();
-    int nbin = 256;
-    particleBase->m_tf_number = nvariables;
-    particleBase->m_O_max.allocate(particleBase->m_tf_number);
-    particleBase->m_O_min.allocate(particleBase->m_tf_number);
-    particleBase->m_C_max.allocate(particleBase->m_tf_number);
-    particleBase->m_C_min.allocate(particleBase->m_tf_number);
-    particleBase->m_O_max.fill(0x00);
-    particleBase->m_O_min.fill(0x00);
-    particleBase->m_C_max.fill(0x00);
-    particleBase->m_C_min.fill(0x00);
-    particleBase->m_o_histogram.allocate(particleBase->m_tf_number*nbin);
-    particleBase->m_c_histogram.allocate(particleBase->m_tf_number*nbin);
-    particleBase->m_o_histogram.fill(0x00);
-    particleBase->m_c_histogram.fill(0x00);
-}
 
 void SetPOLParameter(jpv::ParticleTransferClientMessage* clntMes  ,const int time_step, plot_over_line_parameters& pol_param )
 {
@@ -879,10 +418,12 @@ void SetGlyphParameter(jpv::ParticleTransferClientMessage* clntMes  ,const int t
       clntMes->m_glyph_flag = glyph_flag;
 }
 
-void generate_particles( int time_step,
-        domain_parameters_struct dom,
-        Type** values, 
-        int nvariables )
+void generate_particles(
+    int time_step,
+    domain_parameters_struct dom,
+    Type** values, 
+    int nvariables
+)
 {
     int mpi_rank;
     int mpi_size;
@@ -893,158 +434,169 @@ void generate_particles( int time_step,
     mpi_rank = 0;
     mpi_size = 1;
 #endif
-    static ParamInfo param;
-    pbvr_parameters particleBase;
-    bool skip_flag;
-    int ncoords = dom.resolution[0] * dom.resolution[1] * dom.resolution[2] ;
-    glyph_parameters glyph_param;
-    plot_over_line_parameters pol_param;
-    jpv::ParticleTransferClientMessage clntMes; 
-    particleBase.m_nvariables = nvariables; 
 
-    //フラグの初期設定
-    clntMes.m_glyph_flag =false;
-    clntMes.m_plot_flag =false;
-
-    skip_flag = SetParameter(dom, &particleBase, &param, time_step);
-    SetGlyphParameter(&clntMes, time_step, glyph_param);
-    SetPOLParameter(&clntMes, time_step, pol_param);
-
-#if 1
-    if (skip_flag == false)
+    if ( is_initial_step == true )
     {
-        // デフォルト設定を伝達関数に設定
-        SetDefalutParameter(m_tfs, &particleBase, nvariables, values, ncoords);
+        is_initial_step = false;
+        start_time_step = time_step;
+    }
 
-        // ファイルが読めなかった場合、サンプリング法はh固定
-        particleBase.m_sampling_method = 'h';
-        // ヒストグラム生成、出力
-        GenerateParticles(time_step, dom, values, nvariables, particleBase);
-        OutputParticles(time_step, nvariables, particleBase, &param, skip_flag);
-    }    
-    else
+    std::string stateFilePath;
+    std::string coordMinMaxFilePath;
+    std::string particleFilePrefix;
+    std::string glyphFilePrefix;
+    std::string plotOverLineFilePrefix;
+    std::string tfFilePath;
+    std::string tfFilePath_old;
+    std::string glyphParameterPath;
+    std::string glyphParameterPath_old;
+    std::string plotOverLineParameterPath;
+    std::string plotOverLineParameterPath_old; 
+
+    SetParameterFilePath(
+        time_step,
+        historyFilePath,
+        stateFilePath,
+        coordMinMaxFilePath,
+        particleFilePrefix,
+        glyphFilePrefix,
+        plotOverLineFilePrefix,
+        tfFilePath,
+        tfFilePath_old,
+        tfFilePath_step,
+        glyphParameterPath,
+        glyphParameterPath_old,
+        plotOverLineParameterPath,
+        plotOverLineParameterPath_old
+    );
+
+    Argument param;
+    MultiVolumePropertyList mvpl;
+    NameListFile nameListFile;
+    param.m_transfunc_synthesizer = new TransferFunctionSynthesizer();
+
+    SetParticleParameter( dom, tfFilePath, tfFilePath_old, param, mvpl, nameListFile );
+    SetGlyphParameter( glyphParameterPath, glyphParameterPath_old, param );
+    SetPlotOverLineParameter( plotOverLineParameterPath, plotOverLineParameterPath_old, param );
+
+    const int tf_number  = param.m_transfunc_array.size();
+    const int resolution = param.m_sampling_size;
+
+    // particle parameters
+    std::vector<float> particle_coords;
+    std::vector<Byte>  particle_colors;
+    std::vector<float> particle_normals;
+    vismodule::UInt64* tmp_c_bins;
+    vismodule::UInt64* tmp_o_bins;
+    float* tmp_max;
+    float* tmp_min;
+
+    tmp_c_bins = new vismodule::UInt64[DEFAULT_NBINS * tf_number];
+    tmp_o_bins = new vismodule::UInt64[DEFAULT_NBINS * tf_number];
+    tmp_max = new float[tf_number * 2]; // color, opacity
+    tmp_min = new float[tf_number * 2]; // color, opacity
+
+    for ( size_t i = 0; i < (DEFAULT_NBINS * tf_number); i++ )
     {
-        // allocate
-        pol_param.m_values_on_line.allocate(clntMes.m_sampling_size) ; 
-        pol_param.m_x_axis.allocate(clntMes.m_sampling_size)  ; 
-        pol_param.m_mask  .allocate(clntMes.m_sampling_size) ; 
-        // plot_over_line_parametersの0埋め
-        pol_param.m_values_on_line.fill(0x00);
-        pol_param.m_x_axis.fill(0x00); 
-        pol_param.m_mask.fill( false );
+        tmp_c_bins[tf] = 0;
+        tmp_o_bins[tf] = 0;
+    }
 
-//        // 粒子生成
-        GenerateParticles(time_step, dom, values,
-            nvariables, particleBase);
+    for ( int i = 0; i < (tf_number * 2); i++ )
+    {
+        tmp_max[i] = FLT_MIN;
+        tmp_min[i] = FLT_MAX;
+    }
 
-//        //　グリフ生成、出力
-        GlyphObjectGenerator(time_step, dom, values,
-                nvariables,  clntMes, glyph_param);
+    // glyph parameters
+    std::vector<float>         glyph_coords;
+    std::vector<float>         glyph_vectors;
+    std::vector<float>         glyph_sizes;
+    std::vector<unsigned char> glyph_colors;
 
-//        //　plot over line生成、出力
-        PlotOverLineObjectGenerator( time_step,
-                dom, values, nvariables,
-                clntMes, pol_param );
+    // plot over line parameters
+    vismodule::ValueArray<float> values_on_line( resolution );
+    vismodule::ValueArray<bool>  mask( resolution, 0 );
+    vismodule::ValueArray<float> x_axis( resolution );
 
-        // 粒子データ出力
-        OutputParticles(time_step, nvariables, particleBase, &param, skip_flag);
-        if (clntMes.m_glyph_flag)
-        {
-            std::cout << "debug flag"<<std::endl;
-            OutputGlyphs(time_step, glyph_param);
-        }
-            if (clntMes.m_plot_flag) OutputLine(time_step, pol_param);
+    values_on_line.fill( 0x00 );
+    mask.fill( false );
+    x_axis.fill( 0x00 );
+
+    jpv::ServerMode server_mode = jpv::ServerMode::IS;
+    vismodule::PointObject* point_object = nullptr;
+    vismodule::CS_PointObjectGenerator point_object_generator;
+    point_object = point_object_generator.GenerateParticleStruct(
+        param, dom, values, nvariables, server_mode
+    );
+
+    MakeParticle( point_object, particle_coords, particle_colors, particle_normals ); // InSitu only
+    MakeHistgram( point_object, tf_number, tmp_c_bins, tmp_o_bins ); // CS common
+    MakeParticleMinMax( param.m_transfunc_synthesizer, tf_number, tmp_max, tmp_min ); // CS common
+
+    delete point_object;
+
+    if ( param.m_glyph_flag )
+    {
+        vismodule::KVSMLObjectGlyph* glyph_object = new vismodule::KVSMLObjectGlyph;
+        vismodule::GlyphSeedGenerator glyph_creator;
+        int number_of_divide = mpi_size;
+        glyph_creator.GenerateGlyphStruct(
+            param, number_of_divide, dom,
+            values, nvariables, glyph_object
+        );
+
+        MakeGlyph( glyph_object, glyph_coords, glyph_vectors, glyph_sizes, glyph_colors ); // InSitu only
+
+        delete glyph_object;
+    }
+
+    if ( param.m_plot_flag )
+    {
+        vismodule::KVSMLObjectPlotOverLine* pol_object = new vismodule::KVSMLObjectPlotOverLine;
+        PlotOverLineGenerator pol_generator;
+        pol_generator.GeneratePOLSstruct(
+            param, dom, values, nvariables, pol_object
+        );
+
+        MakePlotOverLine( pol_object, resolution, values_on_line, mask, x_axis ); // CS common
+
+        delete pol_object;
+    }
+
+    OutputCoordMinMaxFile( dom, coordMinMaxFilePath );
+
+    if ( mpi_rank == 0 )
+    {
+        nameListFile.setFileName( tfFilePath_step );
+        nameListFile.write();
+    }
+
+    // データ出力
+    OutputParticles(
+        param, mvpl, time_step, tf_number, nvariables, particleFilePrefix,
+        particleFilePrefix, stateFilePath, histryFilePath, coords, colors,
+        normals, tmp_c_bins, tmp_o_bins, tmp_max, tmp_min
+    );
+
+    if ( param.m_glyph_flag )
+    {
+        OutputGlyphs(
+            time_step, glyphFilePrefix, glyph_coords,
+            glyph_vectors, glyph_sizes, glyph_colors
+        );
+    }
+
+    if ( param.m_plot_flag )
+    {
+        OutputLine( time_step, plotOverLineFilePrefix, values_on_line, mask, x_axis );
     }
    
-//    GenerateGlyphs_PlotOverLine(time_step, dom, values, nvariables);
-//    GenerateParticles( time_step, dom, values, nvariables );
-#endif
-    delete m_tfs;
-
-
-}
-
-void GenerateGlyphs_PlotOverLine( int time_step, domain_parameters_struct dom, Type** values, int nvariables )
-{
-
-    const vismodule::Vector3ui resolution( dom.resolution[0], dom.resolution[1], dom.resolution[2]);  
-    int nnodes = resolution.x()*resolution.y()*resolution.z();
-
-    vismodule::ValueArray<float> tmp_Values(nnodes * nvariables);
-
-    for(int i = 0; i < nvariables; ++i )
-    {
-        for(int k = 0; k < nnodes; ++k)
-        {
-           tmp_Values[k+i*nnodes] = values[i][k] ;
-        } 
-    }
-
-    const int nx = resolution.x();
-    const int ny = resolution.y();
-    const int nz = resolution.z();
-    const int nxy = nx * ny;
-    const int nx_1 = nx-1;
-    const int ny_1 = ny-1;
-    const int nz_1 = nz-1;
-    const int nxy_1 = nx_1 * ny_1;
-
-    const vismodule::Vector3f min_vec(dom.x_min, dom.y_min, dom.z_min); 
-    const vismodule::Vector3f max_vec(((float)nx * dom.cell_length)+min_vec.x(),
-            ((float)ny * dom.cell_length)+min_vec.y(),
-            ((float)nz * dom.cell_length)+min_vec.z() ); 
-    const vismodule::Vector3f cell_length( dom.cell_length,
-            dom.cell_length ,
-            dom.cell_length );
-
-    // coord & vector 
-    vismodule::ValueArray<float> Coord(nnodes*3);
-    int glyph_count =0;
-    //#pragma omp for
-    for ( vismodule::UInt32 z = 0; z < nz; ++z )
-    {
-        for ( vismodule::UInt32 y = 0; y < ny; ++y )
-        {
-            for ( vismodule::UInt32 x = 0; x < nx; ++x )
-            {
-                const int index = x + y*nx + z*nx*ny;
-                    const float x_g = ((float)x * cell_length.x())+min_vec.x();
-                    const float y_g = ((float)y * cell_length.y())+min_vec.y();
-                    const float z_g = ((float)z * cell_length.z())+min_vec.z();
-
-                    Coord[3*glyph_count    ] = x_g;
-                    Coord[3*glyph_count +1 ] = y_g;
-                    Coord[3*glyph_count +2 ] = z_g;
-                    glyph_count++;
-            }
-        }
-    }
-
-    vismodule::AnyValueArray Values(tmp_Values);
-
-    vismodule::StructuredVolumeObject object(vismodule::VolumeObjectBase::Curvilinear, resolution, nvariables, Coord, Values ); 
-
-    object.setMinMaxObjectCoords( min_vec, max_vec );
-    object.setMinMaxExternalCoords( min_vec, max_vec );
-
-    // Generate glyph
-    //GlyphSeed glyph_generator( object ); 
-    //glyph_generator.OutputGlyph( time_step);
-
-    // Generate plot over line
-    PlotOverLine plot_over_line;
-
-    plot_over_line.SetPOLParameter(time_step);
-    plot_over_line.SetCellLength(dom.cell_length);
-    plot_over_line.SetOffset(min_vec);
-        
-    if(plot_over_line.plot_flag())
-    {
-        plot_over_line.extractPlotLine( &object );
-        plot_over_line.CellTypeReduceing();
-    } 
-    plot_over_line.OutputLine(time_step);
-
+    delete tmp_c_bins;
+    delete tmp_o_bins
+    delete tmp_max;
+    delete tmp_min;
+    delete param.m_transfunc_synthesizer;
 }
 
 void GlyphObjectGenerator( int time_step,

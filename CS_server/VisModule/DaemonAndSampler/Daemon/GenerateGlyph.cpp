@@ -126,15 +126,21 @@ void generate_glyph(
 
                         store_volume_in_variables_array_unstruct( volume, dom, values, nvariables, coordinates, ncoords, connections, ncells, celltype );
 
+                        std::vector<Type*> raw_pointers_vector( nvariables );
+                        for ( size_t i = 0; i < nvariables; ++i )
+                        {
+                            raw_pointers_vector[i] = values.get()[i].get();
+                        }
+
                         // generate particle
                         glyph_creator.GenerateGlyphUnstruct(
                             param,
                             number_of_divide,
-                            values,
+                            raw_pointers_vector.data(),
                             nvariables,
-                            coordinates,
+                            coordinates.get(),
                             ncoords,
-                            connections,
+                            connections.get(),
                             ncells,
                             celltype,
                             tmp_obj
@@ -146,12 +152,18 @@ void generate_glyph(
 
                         store_volume_in_variables_array_struct( volume, dom, values, nvariables, ncoords );
 
+                        std::vector<Type*> raw_pointers_vector( nvariables );
+                        for ( size_t i = 0; i < nvariables; ++i )
+                        {
+                            raw_pointers_vector[i] = values.get()[i].get();
+                        }
+
                         // generate particle
                         glyph_creator.GenerateGlyphStruct(
                             param,
                             number_of_divide,
                             dom,
-                            values,
+                            raw_pointers_vector.data(),
                             nvariables,
                             tmp_obj
                         );

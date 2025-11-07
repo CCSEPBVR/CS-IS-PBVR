@@ -54,18 +54,18 @@ public:
     void GeneratePOLStruct(
         const Argument& param,
         const domain_parameters_struct& dom,
-        const std::unique_ptr<std::unique_ptr<Type[]>[]>& values,
+        Type** values,
         int nvariables,
         vismodule::KVSMLObjectPlotOverLine* object
     );
 
     void GeneratePOLUnstruct(
         const Argument& param,
-        const std::unique_ptr<std::unique_ptr<Type[]>[]>& values,
+        Type** values,
         int nvariables,
-        const std::unique_ptr<float[]>& coordinates,
+        float* coordinates,
         int ncoords,
-        const std::unique_ptr<unsigned int[]>& connections,
+        unsigned int* connections,
         int ncells,
         const vismodule::VolumeObjectBase::CellType& celltype,
         vismodule::KVSMLObjectPlotOverLine* object

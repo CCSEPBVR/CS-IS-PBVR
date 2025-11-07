@@ -32,7 +32,7 @@ using namespace vismodule;
 vismodule::PointObject* CS_PointObjectGenerator::GenerateParticleStruct(
     const Argument& param,
     const domain_parameters_struct& dom,
-    const std::unique_ptr<std::unique_ptr<Type[]>[]>& values,
+    Type** values,
     const int nvariables,
     const jpv::ServerMode server_mode
 )
@@ -51,12 +51,6 @@ vismodule::PointObject* CS_PointObjectGenerator::GenerateParticleStruct(
         css = NULL;
     }
 
-    std::vector<Type*> raw_pointers_vector( nvariables );
-    for ( size_t i = 0; i < nvariables; ++i )
-    {
-        raw_pointers_vector[i] = values.get()[i].get();
-    }
-
 #ifdef CPU_SAMPLING_TIME
     std::cout << std::endl << "CPU - ";
 #else
@@ -69,7 +63,7 @@ vismodule::PointObject* CS_PointObjectGenerator::GenerateParticleStruct(
         std::cout << "Uniform sampling" << std::endl;
         return new vismodule::CellByCellUniformSampling(
             dom,
-            raw_pointers_vector.data(),
+            values,
             nvariables,
             param.m_transfunc_array[0],
             param.m_transfunc_array,
@@ -81,7 +75,7 @@ vismodule::PointObject* CS_PointObjectGenerator::GenerateParticleStruct(
         std::cout << "Rejection sampling" << std::endl;
         return new vismodule::CellByCellRejectionSampling(
             dom,
-            raw_pointers_vector.data(),
+            values,
             nvariables,
             param.m_transfunc_array[0],
             param.m_transfunc_array,
@@ -93,7 +87,7 @@ vismodule::PointObject* CS_PointObjectGenerator::GenerateParticleStruct(
         std::cout << "Metropolis sampling" << std::endl;
         return new vismodule::CellByCellMetropolisSampling(
             dom,
-            raw_pointers_vector.data(),
+            values,
             nvariables,
             param.m_transfunc_array[0],
             param.m_transfunc_array,
@@ -105,7 +99,7 @@ vismodule::PointObject* CS_PointObjectGenerator::GenerateParticleStruct(
         std::cout << "Histogram " << std::endl;
         return new vismodule::CellByCellHistogram(
             dom,
-            raw_pointers_vector.data(),
+            values,
             nvariables,
             param.m_transfunc_array[0],
             param.m_transfunc_array,
@@ -124,11 +118,11 @@ vismodule::PointObject* CS_PointObjectGenerator::GenerateParticleStruct(
 vismodule::PointObject* CS_PointObjectGenerator::GenerateParticleUnstruct(
     const Argument& param,
     const domain_parameters_unstruct& dom,
-    const std::unique_ptr<std::unique_ptr<Type[]>[]>& values,
+    Type** values,
     const int nvariables,
-    const std::unique_ptr<float[]>& coordinates,
+    float* coordinates,
     const int ncoords,
-    const std::unique_ptr<unsigned int[]>& connections,
+    unsigned int* connections,
     const int ncells,
     const vismodule::VolumeObjectBase::CellType& celltype,
     const jpv::ServerMode server_mode
@@ -148,12 +142,6 @@ vismodule::PointObject* CS_PointObjectGenerator::GenerateParticleUnstruct(
         css = NULL;
     }
 
-    std::vector<Type*> raw_pointers_vector( nvariables );
-    for ( size_t i = 0; i < nvariables; ++i )
-    {
-        raw_pointers_vector[i] = values.get()[i].get();
-    }
-
 #ifdef CPU_SAMPLING_TIME
     std::cout << std::endl << "CPU - ";
 #else
@@ -166,11 +154,11 @@ vismodule::PointObject* CS_PointObjectGenerator::GenerateParticleUnstruct(
         std::cout << "Uniform sampling" << std::endl;
         return new vismodule::CellByCellUniformSampling(
             dom,
-            raw_pointers_vector.data(),
+            values,
             nvariables,
-            coordinates.get(),
+            coordinates,
             ncoords,
-            connections.get(),
+            connections,
             ncells,
             celltype,
             param.m_transfunc_array[0],
@@ -183,11 +171,11 @@ vismodule::PointObject* CS_PointObjectGenerator::GenerateParticleUnstruct(
         std::cout << "Rejection sampling" << std::endl;
         return new vismodule::CellByCellRejectionSampling(
             dom,
-            raw_pointers_vector.data(),
+            values,
             nvariables,
-            coordinates.get(),
+            coordinates,
             ncoords,
-            connections.get(),
+            connections,
             ncells,
             celltype,
             param.m_transfunc_array[0],
@@ -200,11 +188,11 @@ vismodule::PointObject* CS_PointObjectGenerator::GenerateParticleUnstruct(
         std::cout << "Metropolis sampling" << std::endl;
         return new vismodule::CellByCellMetropolisSampling(
             dom,
-            raw_pointers_vector.data(),
+            values,
             nvariables,
-            coordinates.get(),
+            coordinates,
             ncoords,
-            connections.get(),
+            connections,
             ncells,
             celltype,
             param.m_transfunc_array[0],
@@ -217,11 +205,11 @@ vismodule::PointObject* CS_PointObjectGenerator::GenerateParticleUnstruct(
         std::cout << "Histogram " << std::endl;
         return new vismodule::CellByCellHistogram( 
             dom,
-            raw_pointers_vector.data(),
+            values,
             nvariables,
-            coordinates.get(),
+            coordinates,
             ncoords,
-            connections.get(),
+            connections,
             ncells,
             celltype,
             param.m_transfunc_array[0],

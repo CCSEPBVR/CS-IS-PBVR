@@ -30,22 +30,16 @@ void GlyphSeedGenerator::GenerateGlyphStruct(
     const Argument& param,
     const int number_of_divide,
     const domain_parameters_struct& dom,
-    const std::unique_ptr<std::unique_ptr<Type[]>[]>& values,
+    Type** values,
     int nvariables,
     vismodule::KVSMLObjectGlyph* object
 )
 {
-    std::vector<Type*> raw_pointers_vector( nvariables );
-    for ( size_t i = 0; i < nvariables; ++i )
-    {
-        raw_pointers_vector[i] = values.get()[i].get();
-    }
-
     GlyphSeed glyph_generator(
         param,
         number_of_divide,
         dom,
-        raw_pointers_vector.data(),
+        values,
         nvariables,
         false
     );
@@ -66,30 +60,24 @@ void GlyphSeedGenerator::GenerateGlyphStruct(
 void GlyphSeedGenerator::GenerateGlyphUnstruct(
     const Argument& param,
     const int number_of_divide,
-    const std::unique_ptr<std::unique_ptr<Type[]>[]>& values,
+    Type** values,
     int nvariables,
-    const std::unique_ptr<float[]>& coordinates,
+    float* coordinates,
     int ncoords,
-    const std::unique_ptr<unsigned int[]>& connections,
+    unsigned int* connections,
     int ncells,
     const vismodule::VolumeObjectBase::CellType& celltype,
     vismodule::KVSMLObjectGlyph* object
 )
 {
-    std::vector<Type*> raw_pointers_vector( nvariables );
-    for ( size_t i = 0; i < nvariables; ++i )
-    {
-        raw_pointers_vector[i] = values.get()[i].get();
-    }
-
     GlyphSeed glyph_generator(
         param,
         number_of_divide,
-        raw_pointers_vector.data(),
+        values,
         nvariables,
-        coordinates.get(),
+        coordinates,
         ncoords,
-        connections.get(),
+        connections,
         ncells,
         celltype,
         false
