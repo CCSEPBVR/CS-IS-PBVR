@@ -14,6 +14,8 @@
 #include <kvs/StochasticTexturedPolygonRenderer>
 
 #include "WebSocketPair.h"
+#include "VizMode.h"
+#include "RemoteFileDialog.h"
 #include "Worker.h"
 
 #include "../../Shared/ObjectInfoExtractor.h"
@@ -28,7 +30,7 @@ class ObjectEditorWIP : public QDockWidget
     Q_OBJECT
 
 public:
-    explicit ObjectEditorWIP( WebSocketPair* websockets, kvs::qt::jaea::Screen* screen, QWidget *parent = nullptr );
+    explicit ObjectEditorWIP( WebSocketPair* websockets, Viz::Mode* vizMode, kvs::qt::jaea::Screen* screen, QWidget *parent = nullptr );
     ~ObjectEditorWIP();
 
     void updateOperatorState( bool operatorState ); // true:権限あり
@@ -50,6 +52,7 @@ private:
     Ui::ObjectEditorWIP *ui;
 
     WebSocketPair* m_web_sockets = nullptr;
+    const Viz::Mode* m_viz_mode = nullptr;
 
     QStandardItemModel *m_model = nullptr;
 

@@ -7,6 +7,7 @@
 
 #include "Screen.h"
 #include "WebSocketPair.h"
+#include "VizMode.h"
 #include <kvs/PointObject>
 #include <kvs/ParticleBasedRenderer>
 #include <kvs/PolygonObject>
@@ -23,7 +24,7 @@ class Communication : public QDockWidget
     Q_OBJECT
 
 public:
-    explicit Communication( kvs::qt::jaea::Screen* screen, WebSocketPair* websockets, QWidget *parent = nullptr );
+    explicit Communication( kvs::qt::jaea::Screen* screen, WebSocketPair* websockets, Viz::Mode* vizMode, QWidget *parent = nullptr );
     ~Communication();
 
 public slots:
@@ -43,6 +44,7 @@ private:
 
     kvs::qt::jaea::Screen* m_screen = nullptr;
     WebSocketPair* m_web_sockets = nullptr;
+    Viz::Mode* m_viz_mode = nullptr;
     QString m_uuid;
     int m_user_id = -1;
     bool m_is_operator = false;
@@ -79,6 +81,7 @@ private slots:
 private:
     void websocketConnected();
     void websocketDisconnected();
+    void updateVizMode();
     kvs::PolygonObject* createArrowGlyph( const kvs::ValueArray<kvs::Real32>& coords, const kvs::ValueArray<kvs::Real32>& directions, const kvs::ValueArray<kvs::Real32>& sizes, const kvs::ValueArray<kvs::UInt8>& colors );
 
 };

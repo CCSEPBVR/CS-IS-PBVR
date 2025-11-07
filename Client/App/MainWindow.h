@@ -13,6 +13,8 @@
 
 #include "WebSocketPair.h"
 
+#include "VizMode.h"
+
 #include "ColorMapSelectorToolBar.h"
 #include "PlayBackControlToolBar.h"
 #include "TimeStepControlToolBar.h";
@@ -79,6 +81,7 @@ private:
     QAction* m_save_action = nullptr;
 
     WebSocketPair* m_web_sockets                                = nullptr;
+    Viz::Mode* m_viz_mode                                       = nullptr;
 
     // ウィジェット群(ツールバー) A~Z
     ColorMapSelectorToolBar* m_color_map_bar_selector_tool_bar  = nullptr;

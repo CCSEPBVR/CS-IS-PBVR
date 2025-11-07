@@ -1,11 +1,12 @@
 #include "ObjectEditorWIP.h"
 #include "ui_ObjectEditorWIP.h"
 
-ObjectEditorWIP::ObjectEditorWIP( WebSocketPair* websockets, kvs::qt::jaea::Screen* screen, QWidget *parent )
+ObjectEditorWIP::ObjectEditorWIP( WebSocketPair* websockets, Viz::Mode* vizMode, kvs::qt::jaea::Screen* screen, QWidget *parent )
     : QDockWidget(parent)
     , ui(new Ui::ObjectEditorWIP)
     , m_web_sockets( websockets )
     , m_screen( screen )
+    , m_viz_mode( vizMode )
 {
     initialize();
 }
@@ -531,30 +532,51 @@ void ObjectEditorWIP::onBrowse()
      * クラサバモード(クライアントとサーバを別マシンで起動、接続するモード)の場合:RemoteFileDialogでリモートファイルを参照
      * In-situモード(クライアントとサーバを別マシンで起動、接続するモード)の場合:RemoteFileDialogでリモートファイルを参照
      */
-    QStringList filePaths = QFileDialog::getOpenFileNames(
-        this,
-        tr("Select 3D data files"),
-        QDir::homePath(),
-#ifdef ASSIMP
-        tr("Support Files (*.kvsml *.las *.pts *.stl *.fbx *.3ds);;All Files (*.*)")
-#else
-        tr("Support Files (*.kvsml *.las *.pts *.stl);;All Files (*.*)")
-#endif
-        );
 
-    if( filePaths.isEmpty() ) return;
-
-    for( const QString& filePath : filePaths )
+    switch( *m_viz_mode )
     {
-        ObjectInfoExtractor oie( filePath.toUtf8().constData() );
-        if( auto objectInfoOpt = oie.extractFromLocalFile() )
+    case Viz::Mode::Local:
+    case Viz::Mode::LocalClientAndServer:
+    {
+        QStringList filePaths = QFileDialog::getOpenFileNames(
+            this,
+            tr("Select 3D data files"),
+            QDir::homePath(),
+#ifdef ASSIMP
+            tr("Support Files (*.kvsml *.las *.pts *.stl *.fbx *.3ds);;All Files (*.*)")
+#else
+            tr("Support Files (*.kvsml *.las *.pts *.stl);;All Files (*.*)")
+#endif
+            );
+
+        if (filePaths.isEmpty()) return;
+
+        for (const QString& filePath : filePaths)
         {
-            addObjectToModel( *objectInfoOpt, oie );
+            ObjectInfoExtractor oie(filePath.toUtf8().constData());
+            if (auto objectInfoOpt = oie.extractFromLocalFile())
+            {
+                addObjectToModel(*objectInfoOpt, oie);
+            }
+            else
+            {
+                // FIXME: MainWindowのStatusBarで通知
+            }
         }
-        else
+        break;
+    }
+    case Viz::Mode::RemoteClientAndServer:
+    case Viz::Mode::RemoteInSitu:
+    {
+        RemoteFileDialog dlg( m_web_sockets->text(), this );
+        if( dlg.exec() == QDialog::Accepted )
         {
-            // FIXME:MainWindowのStatusBarで通知した方がいいかも。
+            qDebug() << "選択ファイル:" << dlg.selectedFile();
         }
+        break;
+    }
+    default:
+        break;
     }
 }
 

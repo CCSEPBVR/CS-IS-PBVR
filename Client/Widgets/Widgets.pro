@@ -43,6 +43,7 @@ HEADERS += \
     TransferFunctionEditor.h \
     # TransferFunctionItem.h \
     VariableEditor.h \
+    VizMode.h \
     VolumeTransform.h
 
 

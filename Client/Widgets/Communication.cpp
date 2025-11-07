@@ -1,11 +1,12 @@
 #include "Communication.h"
 #include "ui_Communication.h"
 
-Communication::Communication( kvs::qt::jaea::Screen* screen, WebSocketPair* websockets, QWidget* parent )
+Communication::Communication( kvs::qt::jaea::Screen* screen, WebSocketPair* websockets, Viz::Mode* vizMode, QWidget* parent )
     : QDockWidget(parent)
     , ui(new Ui::Communication)
     , m_screen( screen )
     , m_web_sockets( websockets )
+    , m_viz_mode( vizMode )
 {
     initialize();
 }
@@ -162,6 +163,8 @@ void Communication::initialize()
 
     ui->uniformRadioButton->setChecked( true ); // NOTE:デフォルトはUniformサンプリング
     ui->disconnectPushButton->setEnabled( false ); // NOTE:デフォルトでは無効
+
+    ui->addressLineEdit->setText( "ws://127.0.0.1:60000" );
 }
 
 void Communication::registerObject( kvs::PointObject* pointObject )
@@ -273,7 +276,7 @@ void Communication::onConnectClicked()
 
     emit updateStatusBarMessage( "Connecting to " + address );
     if( m_web_sockets->binary() ) m_web_sockets->binary()->open( QUrl( binaryAddress ) );
-    if( m_web_sockets->text() ) m_web_sockets->text()->open( QUrl( textAddress ) );
+    if( m_web_sockets->text() ) m_web_sockets->text()->open( QUrl( textAddress ) );    
 }
 
 void Communication::onDisconnectClicked()
@@ -674,6 +677,27 @@ void Communication::websocketConnected()
         ui->addressLineEdit                     ->setEnabled( false );
         ui->connectPushButton                   ->setEnabled( false );
         ui->disconnectPushButton                ->setEnabled( true );
+        updateVizMode();
+    }
+}
+
+void Communication::updateVizMode()
+{
+    *m_viz_mode = Viz::Mode::Local;
+
+    if( !m_web_sockets->isConnected() ) return;
+
+    if( ui->localVizRadioButton->isChecked() )
+    {
+        *m_viz_mode = Viz::Mode::LocalClientAndServer;
+    }
+    else if( ui->remoteVizClientServerRadioButton->isChecked() )
+    {
+        *m_viz_mode = Viz::Mode::RemoteClientAndServer;
+    }
+    else if( ui->remoteVizInsituRadioButton->isChecked() )
+    {
+        *m_viz_mode = Viz::Mode::RemoteInSitu;
     }
 }
 
@@ -705,6 +729,7 @@ void Communication::websocketDisconnected()
         ui->IDLineEdit->clear();
         ui->isOperatorLineEdit->clear();
         ui->textBrowser->clear();
+        updateVizMode();
     }
 }
 
