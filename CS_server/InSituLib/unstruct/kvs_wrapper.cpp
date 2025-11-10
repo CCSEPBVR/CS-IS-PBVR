@@ -49,6 +49,10 @@
 #include "Importer/VtkImporter.h"
 #endif
 
+// Generate
+#include <vismodule/GenerateParticle>
+#include <vismodule/GenerateGlyph>
+
 //PlotOverLine
 #include <vismodule/PlotOverLine>
 
@@ -207,7 +211,7 @@ void SetDefalutParameter( TransferFunctionSynthesizer* tfs,
 }//end of unnamed namespace
 
 // 変数配列用のソルバー関数
-void generate_particles(
+bool generate_particles(
     int time_step,
     domain_parameters_unstruct dom,
     Type** values,
@@ -229,12 +233,15 @@ void generate_particles(
     mpi_size = 1;
 #endif
 
+std::cout << __FILE__ << ", " << __func__ << ", " << __LINE__ << std::endl;
+
     if ( is_initial_step == true )
     {
         is_initial_step = false;
         start_time_step = time_step;
     }
 
+    bool result = false;
     std::string historyFilePath;
     std::string stateFilePath;
     std::string coordMinMaxFilePath;
@@ -249,7 +256,7 @@ void generate_particles(
     std::string plotOverLineParameterPath;
     std::string plotOverLineParameterPath_old; 
 
-    SetParameterFilePath(
+    result = SetParameterFilePath(
         time_step,
         historyFilePath,
         stateFilePath,
@@ -266,17 +273,30 @@ void generate_particles(
         plotOverLineParameterPath_old
     );
 
+    if ( !result ) return false;
+
     char  arg_dummy0[] = "dummy";
     char* arg_dummy[]  = { arg_dummy0, NULL };
 
-    Argument param( 1, arg_dummy );
+    static Argument param( 1, arg_dummy );
     MultiVolumePropertyList mvpl;
-    NameListFile nameListFile;
+    static NameListFile nameListFile;
     param.m_transfunc_synthesizer = new TransferFunctionSynthesizer();
+    param.m_camera                = new vismodule::Camera();
+
+std::cout << __FILE__ << ", " << __func__ << ", " << __LINE__ << std::endl;
 
     SetParticleParameter( dom, tfFilePath, tfFilePath_old, param, mvpl, nameListFile );
+
+std::cout << __FILE__ << ", " << __func__ << ", " << __LINE__ << std::endl;
+
     SetGlyphParameter( glyphParameterPath, glyphParameterPath_old, param );
+
+std::cout << __FILE__ << ", " << __func__ << ", " << __LINE__ << std::endl;
+
     SetPlotOverLineParameter( plotOverLineParameterPath, plotOverLineParameterPath_old, param );
+
+std::cout << __FILE__ << ", " << __func__ << ", " << __LINE__ << std::endl;
 
     const int tf_number  = param.m_transfunc_array.size();
     const int resolution = param.m_sampling_size;
@@ -330,9 +350,30 @@ void generate_particles(
         ncoords, connections, ncells, celltype, server_mode
     );
 
+    int c_count = 0;
+    for ( int tf = 0; tf < tf_number; tf++ )
+    {
+        int c_nbins = point_object->getNbins();
+        std::cout << "c_nbins:" << c_nbins << std::endl;
+        for ( int res = 0; res < 10; res++ )
+        {
+            std::cout << "c_hist[" << res << "]" << point_object->getCHistogram()[ res ] << std::endl;
+        }
+    }
+
     MakeParticle( point_object, particle_coords, particle_colors, particle_normals ); // InSitu only
     MakeHistgram( point_object, tf_number, tmp_c_bins, tmp_o_bins ); // CS common
     MakeParticleMinMax( param.m_transfunc_synthesizer, tf_number, tmp_max, tmp_min ); // CS common
+
+    for ( size_t i = 0; i < 10; i++ )
+    {
+        std::cout << "tmp_c_bins[" << i << "]:" << tmp_c_bins[i] << std::endl;
+    }
+
+    for ( size_t i = 0; i < 10; i++ )
+    {
+        std::cout << "tmp_o_bins[" << i << "]:" << tmp_o_bins[i] << std::endl;
+    }
 
     delete point_object;
 
@@ -376,8 +417,8 @@ void generate_particles(
     // データ出力
     OutputParticles(
         param, mvpl, time_step, tf_number, nvariables, particleFilePrefix,
-        particleFilePrefix, stateFilePath, histryFilePath, coords, colors,
-        normals, tmp_c_bins, tmp_o_bins, tmp_max, tmp_min
+        stateFilePath, historyFilePath, particle_coords, particle_colors,
+        particle_normals, tmp_c_bins, tmp_o_bins, tmp_max, tmp_min
     );
 
     if ( param.m_glyph_flag )
@@ -394,13 +435,16 @@ void generate_particles(
     }
    
     delete tmp_c_bins;
-    delete tmp_o_bins
+    delete tmp_o_bins;
     delete tmp_max;
     delete tmp_min;
     delete param.m_transfunc_synthesizer;
+    delete param.m_camera;
+
+    return true;
 }
 
-void SetParameterFilePath(
+bool SetParameterFilePath(
     const int time_step,
     std::string& historyFilePath,
     std::string& stateFilePath,
@@ -419,6 +463,7 @@ void SetParameterFilePath(
 {
     std::string visParamDir;
     std::string tfFilename;
+    static bool is_first_setting = true;
 
     const char *envBuf = NULL;
     envBuf = std::getenv( "VIS_PARAM_DIR" );
@@ -441,7 +486,7 @@ void SetParameterFilePath(
 
     std::stringstream step;
     step << '_' << std::setw( 5 ) << std::setfill( '0' ) << time_step;
-    history_file_name = visParamDir + "history" + step.str() + ".txt";
+    historyFilePath = visParamDir + "history" + step.str() + ".txt";
     stateFilePath     = visParamDir + "state.txt";
     
     envBuf = std::getenv( "PARTICLE_DIR" );
@@ -477,6 +522,34 @@ void SetParameterFilePath(
     glyphParameterPath_old        = visParamDir + "parameter_old.gly";
     plotOverLineParameterPath     = visParamDir + "parameter.pol";
     plotOverLineParameterPath_old = visParamDir + "parameter_old.pol";
+
+    std::ifstream tfFile( tfFilePath );
+    std::ifstream glyphParameterFile( glyphParameterPath );
+    std::ifstream plotOverLineParameterFile( plotOverLineParameterPath );
+
+    if ( is_first_setting )
+    {
+        if ( !tfFile.good() )
+        {
+            std::cout << "ERROR:default.tf is not existed." << std::endl;
+            return false;
+        }
+
+        if ( !glyphParameterFile.good() )
+        {
+            std::cout << "ERROR:parameter.gly is not existed." << std::endl;
+            return false;
+        }
+
+        if ( !plotOverLineParameterFile.good() )
+        {
+            std::cout << "ERROR:parameter.pol is not existed." << std::endl;
+            return false;
+        }
+    }
+
+    is_first_setting = false;
+    return true;
 }
 
 void OutputCoordMinMaxFile(
@@ -484,6 +557,13 @@ void OutputCoordMinMaxFile(
     const std::string& coordMinMaxFilePath
 )
 {
+    int mpi_rank;
+#ifndef CPU_VER
+    MPI_Comm_rank( MPI_COMM_WORLD, &mpi_rank );
+#else
+    mpi_rank = 0;
+#endif
+
     static bool minmaxFlag = false;
     if (minmaxFlag == false && mpi_rank == 0) {
         FILE* fp = fopen( coordMinMaxFilePath.c_str(), "w" );
@@ -511,8 +591,9 @@ bool SetParticleParameter(
     NameListFile& nameListFile
 )
 {
-    bool result = false;
     ParameterFileReader ppr;
+
+std::cout << __FILE__ << ", " << __func__ << ", " << __LINE__ << std::endl;
 
     vismodule::Vector3f min_object_coords(
         dom.x_global_min,
@@ -525,12 +606,28 @@ bool SetParticleParameter(
         dom.z_global_max
     );
 
+std::cout << __FILE__ << ", " << __func__ << ", " << __LINE__ << std::endl;
     mvpl.m_total_min_object_coord  = min_object_coords;
     mvpl.m_total_max_object_coord  = max_object_coords;
-    ppr.readParticleParameterFile( tfFilePath.c_str() );
-    std::rename( filename.c_str(), old_filename.c_str() );
-    ppr.setParticleParameter( param );
-    nameListFile = ppr.getNameListFile();
+std::cout << __FILE__ << ", " << __func__ << ", " << __LINE__ << std::endl;
+
+    std::ifstream tfFile( tfFilePath );
+
+    if ( tfFile.good() )
+    {
+        ppr.readParticleParameterFile( tfFilePath.c_str() );
+std::cout << __FILE__ << ", " << __func__ << ", " << __LINE__ << std::endl;
+        std::rename( tfFilePath.c_str(), tfFilePath_old.c_str() );
+std::cout << __FILE__ << ", " << __func__ << ", " << __LINE__ << std::endl;
+        ppr.setParticleParameter( param );
+std::cout << __FILE__ << ", " << __func__ << ", " << __LINE__ << std::endl;
+        nameListFile = ppr.getNameListFile();
+std::cout << __FILE__ << ", " << __func__ << ", " << __LINE__ << std::endl;
+    }
+    else
+    {
+        std::cout << "DEBUG:default.tf is not existed." << std::endl;
+    }
 
     const float min = vismodule::Math::Min(
         dom.x_global_min,
@@ -544,11 +641,10 @@ bool SetParticleParameter(
         dom.z_global_max
     );
 
-    param.m_time
     param.m_sampling_step = ( max - min ) / 1E1;
     const float sampling_step = param.m_sampling_step;
 
-    vismodule::VolumeObjectBase object;
+    vismodule::StructuredVolumeObject object;
     object.setMinMaxObjectCoords( min_object_coords, max_object_coords );
     object.setMinMaxExternalCoords( min_object_coords, max_object_coords );
 
@@ -598,20 +694,20 @@ bool SetParticleParameter(
 
     if( mpi_rank == 0 )
     {
-        fprintf( stdout , "---------initialize Parameters--------------------------\n" );
-        fprintf( stdout , "particle_limit    = %20d\n"  , particle_limit               );
-        fprintf( stdout , "particle_density  = %20f\n"  , particle_density             );
-        fprintf( stdout , "resolutin_height  = %20d\n"  , height                       );
-        fprintf( stdout , "resolutin_width   = %20d\n"  , width                        );
-        fprintf( stdout , "total_volume      = %20.3e\n", total_volume                 );
-        fprintf( stdout , "  |-X             = %20f\n"  , object.maxObjectCoord().x()  );
-        fprintf( stdout , "  |-Y             = %20f\n"  , object.maxObjectCoord().y()  );
-        fprintf( stdout , "  |-Z             = %20f\n"  , object.maxObjectCoord().z()  );
-        fprintf( stdout , "max_opacity       = %20.3e\n", max_opacity                  );
-        fprintf( stdout , "max_density       = %20.3e\n", max_density                  );
-        fprintf( stdout , "sampling_step     = %20.3e\n", sampling_step                );
-        fprintf( stdout , "subpixel_level    = %20d\n"  , subpixel_level               );
-        fprintf( stdout , "--------------------------------------------------------\n" );
+        fprintf( stdout , "---------initialize Parameters----------------------------\n" );
+        fprintf( stdout , "particle_limit    = %20d\n"  , particle_limit                 );
+        fprintf( stdout , "particle_density  = %20f\n"  , particle_density               );
+        fprintf( stdout , "resolutin_height  = %20d\n"  , param.m_camera->windowHeight() );
+        fprintf( stdout , "resolutin_width   = %20d\n"  , param.m_camera->windowWidth()  );
+        fprintf( stdout , "total_volume      = %20.3e\n", total_volume                   );
+        fprintf( stdout , "  |-X             = %20f\n"  , object.maxObjectCoord().x()    );
+        fprintf( stdout , "  |-Y             = %20f\n"  , object.maxObjectCoord().y()    );
+        fprintf( stdout , "  |-Z             = %20f\n"  , object.maxObjectCoord().z()    );
+        fprintf( stdout , "max_opacity       = %20.3e\n", max_opacity                    );
+        fprintf( stdout , "max_density       = %20.3e\n", max_density                    );
+        fprintf( stdout , "sampling_step     = %20.3e\n", sampling_step                  );
+        fprintf( stdout , "subpixel_level    = %20d\n"  , subpixel_level                 );
+        fprintf( stdout , "----------------------------------------------------------\n" );
     }
 
     return true;
@@ -624,22 +720,42 @@ bool SetGlyphParameter(
 )
 {
     ParameterFileReader ppr;
-    ppr.readGlyphParameterFile( glyphParameterPath.c_str() );
-    std::rename( glyphParameterPath.c_str(), glyphParameterPath_old.c_str() );
-    ppr.setGlyphParameter( param );
+
+    std::ifstream glyphParameterFile( glyphParameterPath );
+
+    if ( glyphParameterFile.good() )
+    {
+        ppr.readGlyphParameterFile( glyphParameterPath.c_str() );
+        std::rename( glyphParameterPath.c_str(), glyphParameterPath_old.c_str() );
+        ppr.setGlyphParameter( param );
+    }
+    else
+    {
+        std::cout << "DEBUG:parameter.gly is not existed." << std::endl;
+    }
+
     return true;
 }
 
 bool SetPlotOverLineParameter(
     const std::string& plotOverLineParameterPath,
-    const std::string& plotOverLineParameterPath_old
+    const std::string& plotOverLineParameterPath_old,
     Argument& param
 )
 {
     ParameterFileReader ppr;
-    ppr.readPlotOverLineParameterFile( plotOverLineParameterPath.c_str() );
-    std::rename( plotOverLineParameterPath.c_str(), plotOverLineParameterPath_old.c_str() );
-    ppr.setPlotOverLineParameter( param );
+
+    std::ifstream plotOverLineParameterFile( plotOverLineParameterPath );
+
+    if ( plotOverLineParameterFile.good() )
+    {
+        ppr.readPlotOverLineParameterFile( plotOverLineParameterPath.c_str() );
+std::cout << __FILE__ << ", " << __func__ << ", " << __LINE__ << std::endl;
+        std::rename( plotOverLineParameterPath.c_str(), plotOverLineParameterPath_old.c_str() );
+        ppr.setPlotOverLineParameter( param );
+std::cout << __FILE__ << ", " << __func__ << ", " << __LINE__ << std::endl;
+    }
+
     return true;
 }
 
@@ -686,10 +802,10 @@ auto safe_append = [](auto& dst, auto const& src, char const* what){
     dst.insert(dst.end(), src.begin(), src.end());
 };
 
-    auto const& c = glyph_object->glyph_coords();
-    auto const& v = glyph_object->glyph_directions();
-    auto const& s = glyph_object->glyph_sizes();
-    auto const& k = glyph_object->glyph_colors();
+    auto const& c = glyph_object->coords();
+    auto const& v = glyph_object->directions();
+    auto const& s = glyph_object->sizes();
+    auto const& k = glyph_object->colors();
 
 #if 0 // for debug
      std::cout << "glyph_param.m_glyph_sizes        = " << glyph_param.m_glyph_sizes.size()     << std::endl; 
@@ -1011,7 +1127,7 @@ void OutputParticles(
 
 void OutputGlyphs(
     const int time_step,
-    const std::string& glyphFilePrefix
+    const std::string& glyphFilePrefix,
     const std::vector<float>& coords,
     const std::vector<float>& vectors,
     const std::vector<float>& sizes,
@@ -1028,6 +1144,11 @@ void OutputGlyphs(
     mpi_size = 1;
 #endif
 
+    vismodule::ValueArray<float> tmp_coords( coords );
+    vismodule::ValueArray<float> tmp_vectors( vectors );
+    vismodule::ValueArray<Byte>  tmp_colors( colors );
+    vismodule::ValueArray<float> tmp_sizes( sizes );
+
     std::stringstream ss;
     ss << std::setfill('0') << std::setw(5) << time_step;
     ss << "_";
@@ -1038,7 +1159,7 @@ void OutputGlyphs(
     std::string glyphFilePath;
     glyphFilePath = glyphFilePrefix + ss.str();
     
-    vismodule::KVSMLObjectGlyph glyph_object( coords, colors, vectors, sizes );
+    vismodule::KVSMLObjectGlyph glyph_object( tmp_coords, tmp_colors, tmp_vectors, tmp_sizes );
     glyph_object.write( glyphFilePath.c_str() );
 }
 
@@ -1076,7 +1197,7 @@ void OutputLine(
 
 #ifdef VTK
 // vtk用のソルバー関数
-void generate_particles_vtk( int time_step, vtkUnstructuredGrid* ucd )
+bool generate_particles_vtk( int time_step, vtkUnstructuredGrid* ucd )
 {
     int mpi_rank;
     int mpi_size;
@@ -1097,6 +1218,7 @@ void generate_particles_vtk( int time_step, vtkUnstructuredGrid* ucd )
         start_time_step = time_step;
     }
 
+    bool result = false;
     std::string stateFilePath;
     std::string coordMinMaxFilePath;
     std::string particleFilePrefix;
@@ -1109,7 +1231,7 @@ void generate_particles_vtk( int time_step, vtkUnstructuredGrid* ucd )
     std::string plotOverLineParameterPath;
     std::string plotOverLineParameterPath_old; 
 
-    SetParameterFilePath(
+    result = SetParameterFilePath(
         time_step,
         historyFilePath,
         stateFilePath,
@@ -1126,10 +1248,13 @@ void generate_particles_vtk( int time_step, vtkUnstructuredGrid* ucd )
         plotOverLineParameterPath_old
     );
 
+    if ( !result ) return false;
+
     Argument param;
     MultiVolumePropertyList mvpl;
     NameListFile nameListFile;
     param.m_transfunc_synthesizer = new TransferFunctionSynthesizer();
+    param.m_camera                = new vismodule::Camera();
 
     SetParticleParameter( dom, tfFilePath, tfFilePath_old, param, mvpl, nameListFile );
     SetGlyphParameter( glyphParameterPath, glyphParameterPath_old, param );
@@ -1289,6 +1414,9 @@ void generate_particles_vtk( int time_step, vtkUnstructuredGrid* ucd )
     delete tmp_max;
     delete tmp_min;
     delete param.m_transfunc_synthesizer;
+    delete param.m_camera;
+
+    return true;
 }
 
 void SetDomain( vtkUnstructuredGrid* ucd, domain_parameters_unstruct* dom)

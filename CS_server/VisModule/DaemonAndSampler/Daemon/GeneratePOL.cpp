@@ -47,9 +47,12 @@ void generate_plot_over_line(
         pts.sendMessage( servMes );     
     }
     
-    std::vector<float> tmp_values( resolution );
-    std::vector<bool>  tmp_mask( resolution, 0 );
-    std::vector<float> tmp_axis( resolution ); 
+    vismodule::ValueArray<float> tmp_values( resolution );
+    vismodule::ValueArray<bool>  tmp_mask( resolution );
+    vismodule::ValueArray<float> tmp_axis( resolution );
+    tmp_values.fill( 0x00 );
+    tmp_mask.fill( false );
+    tmp_axis.fill( 0x00 );
 
     while ( jd.dispatchNext( wid, &st, &vl ) )
     {

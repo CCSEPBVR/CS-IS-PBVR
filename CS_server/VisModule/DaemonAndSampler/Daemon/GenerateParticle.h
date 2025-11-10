@@ -139,8 +139,8 @@ void copy_values(
 void MakeHistgram(
     const vismodule::PointObject* point_object,
     const int tf_number,
-    const vismodule::UInt64* c_bins,
-    const vismodule::UInt64* o_bins
+    vismodule::UInt64* c_bins,
+    vismodule::UInt64* o_bins
 );
 
 void MakeParticleMinMax(

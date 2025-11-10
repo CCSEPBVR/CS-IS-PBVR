@@ -38,9 +38,9 @@ ifdef MPILDFLAGS
 endif
 
 LDFLAGS  += -L${INSITU_DIR} -lInSituPBVR \
+            -L${VISMODULE_SOURCE_DIR}/Release -lvisModule \
             -L${FUNC_DIR} -lpbvrFunc \
-            -L${COMMON_DIR} -lpbvrCommon \
-            -L${VISMODULE_SOURCE_DIR}/Release -lvisModule
+            -L${COMMON_DIR} -lpbvrCommon
 
 #LDFLAGS += -DVTK
 #LDFLAGS += -I/home/center/viztools/VTK-9.2.2/include/vtk-9.2 -I./VTK -I./Importer -I./Filter

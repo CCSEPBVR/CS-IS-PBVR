@@ -743,6 +743,16 @@ void MakeHistgram(
             o_count++;
         }
     }
+
+    for ( size_t i = 0; i < 10; i++ )
+    {
+        std::cout << "c_bins[" << i << "]:" << c_bins[i] << std::endl;
+    }
+
+    for ( size_t i = 0; i < 10; i++ )
+    {
+        std::cout << "o_bins[" << i << "]:" << o_bins[i] << std::endl;
+    }
 }
 
 void MakeParticleMinMax(

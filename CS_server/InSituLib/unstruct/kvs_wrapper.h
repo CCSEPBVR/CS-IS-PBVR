@@ -169,16 +169,21 @@ extern "C" {
 #else
 
     //void PbvrSampler_single( int time_step, domain_parameters_unstruct dom,
-    void generate_particles( int time_step, domain_parameters_unstruct dom,
+    bool generate_particles( int time_step, domain_parameters_unstruct dom,
                              Type** values, int nvariables,
                              float* coordinates, int ncoords,
                              unsigned int* connections, int ncells, const  vismodule::VolumeObjectBase::CellType& celltypes );
 
 #ifdef VTK
-    void generate_particles_vtk( int time_step,vtkUnstructuredGrid* ucd ); 
+    bool generate_particles_vtk( int time_step,vtkUnstructuredGrid* ucd ); 
 #endif
 
-    void SetParameterFilePath(
+    void OutputCoordMinMaxFile(
+        const domain_parameters_unstruct& dom,
+        const std::string& coordMinMaxFilePath
+    );
+
+    bool SetParameterFilePath(
         const int time_step,
         std::string& historyFilePath,
         std::string& stateFilePath,

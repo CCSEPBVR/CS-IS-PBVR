@@ -2,7 +2,25 @@
 
 void ParameterFileWriter::inputParticleParameterMessage( const jpv::ParticleTransferClientMessage& client_message )
 {
-    m_name_list_file.setLine( "SAMPLING_METHOD" , client_message.m_sampling_method );
+    std::string client_sampling_method;
+    if ( client_message.m_sampling_method == 'u' )
+    {
+        m_name_list_file.setLine( "SAMPLING_METHOD" , "Uniform" );
+    }
+    else if ( client_message.m_sampling_method == 'm' )
+    {
+        m_name_list_file.setLine( "SAMPLING_METHOD" , "Metropolis" );
+    }
+    else if ( client_message.m_sampling_method == 'r' )
+    {
+        m_name_list_file.setLine( "SAMPLING_METHOD" , "Rejection" );
+    }
+    else
+    {
+        std::cout << "ERROR:client sampling method is unknown." << std::endl;
+        m_name_list_file.setLine( "SAMPLING_METHOD" , "UNKNOWN" );
+    }
+
     m_name_list_file.setLine( "PARTICLE_LIMIT" , client_message.m_particle_limit );
     m_name_list_file.setLine( "PARTICLE_DENSITY" ,client_message.m_particle_density );
     m_name_list_file.setLine( "PARTICLE_DATA_SIZE_LIMIT" ,client_message.m_particle_data_size_limit );

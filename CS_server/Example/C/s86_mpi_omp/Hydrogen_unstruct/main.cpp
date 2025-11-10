@@ -41,16 +41,18 @@ int main( int argc, char** argv )
     };
 
     int time_step = 0;
+    bool result = false;
 
     begin_wrapper_async_io();
-    for(;;)
+    for( size_t i = 0; i < 1; i++ )
     {
         if(mpi_rank==RANK) hydro.show();
 
-        generate_particles( time_step, dom,
+        result = generate_particles( time_step, dom,
                             hydro.values, hydro.nvariables,
                             hydro.coords, hydro.nnodes,
                             hydro.connections, hydro.ncells, vismodule::VolumeObjectBase::CellType::Hexahedra );
+        if ( !result ) return -1;
         time_step++;
     }
     end_wrapper_async_io();

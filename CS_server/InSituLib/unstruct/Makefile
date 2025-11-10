@@ -11,7 +11,6 @@ endif
 PROG=libInSituPBVR.a
 
 VISMODULE_SOURCE_DIR        = ../../VisModule
-KVS_SOURCE_DIR        = ../../KVS/Source
 #TRANSFER_FUNCTION_DIR = ./TFS
 FUNCTION_PARSER_DIR   = ../../FunctionParser
 #IMPORT_DIR            = Importer/Importer
@@ -72,9 +71,9 @@ else
 endif
 
 CXXFLAGS += -I../shared
-CXXFLAGS += -I${KVS_SOURCE_DIR}
 CXXFLAGS += -I${VISMODULE_SOURCE_DIR}
 CXXFLAGS += -I${FUNCTION_PARSER_DIR}
+CXXFLAGS += -I${COMMON_DIR}
 CXXFLAGS += -w -DNO_CLIENT
 
 #ifeq ($(VTK_PATH), true)
