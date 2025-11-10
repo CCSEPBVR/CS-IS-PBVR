@@ -20,7 +20,6 @@ TARGET = Utils
 HEADERS += \
     FrequencyTable.h \
     GlyphItem.h \
-    ObjectItem.h \
     PlotOverLineItem.h \
     ReceivedMessage.h \
     TransferFunctionItem.h \

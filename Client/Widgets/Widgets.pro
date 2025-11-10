@@ -23,15 +23,10 @@ HEADERS += \
     ColorMapSelectorToolBar.h \
     Communication.h \
     Connect.h \
-    # GlyphItem.h \
     GlyphEditor.h \
-    MergeWorker.h \
-    ObjectEditor.h \
-    # ObjectItem.h \
     ObjectEditorWIP.h \
     OpacityMapEditor.h \
     PlayBackControlToolBar.h \
-    # PlotOverLineItem.h \
     PlotOverLineEditor.h \
     PointSizeControl.h \
     Preference.h \
@@ -41,7 +36,6 @@ HEADERS += \
     TimeStepControlToolBar.h \
     TotalParticlesToolBar.h \
     TransferFunctionEditor.h \
-    # TransferFunctionItem.h \
     VariableEditor.h \
     VizMode.h \
     VolumeTransform.h
@@ -57,7 +51,6 @@ SOURCES += \
     Communication.cpp \
     Connect.cpp \
     GlyphEditor.cpp \
-    ObjectEditor.cpp \
     ObjectEditorWIP.cpp \
     OpacityMapEditor.cpp \
     PlayBackControlToolBar.cpp \
@@ -82,7 +75,6 @@ FORMS += \
     Communication.ui \
     Connect.ui \
     GlyphEditor.ui \
-    ObjectEditor.ui \
     ObjectEditorWIP.ui \
     OpacityMapEditor.ui \
     PlotOverLineEditor.ui \
