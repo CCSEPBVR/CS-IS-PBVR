@@ -1,4 +1,5 @@
-#include "Server.h"
+// #include "Server.h"
+#include "ServerWIP.h"
 int main( int argc, char *argv[] )
 {
     int port = 60000; // デフォルトポート番号
@@ -8,5 +9,5 @@ int main( int argc, char *argv[] )
         port = std::atoi( argv[1] );
     }
 
-    Server server( port );
+    ServerWIP server( port );
 }
