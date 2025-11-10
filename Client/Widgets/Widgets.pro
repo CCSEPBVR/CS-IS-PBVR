@@ -22,7 +22,6 @@ HEADERS += \
     ColorMapEditor.h \
     ColorMapSelectorToolBar.h \
     Communication.h \
-    Connect.h \
     GlyphEditor.h \
     ObjectEditorWIP.h \
     OpacityMapEditor.h \
@@ -49,7 +48,6 @@ SOURCES += \
     ColorMapEditor.cpp \
     ColorMapSelectorToolBar.cpp \
     Communication.cpp \
-    Connect.cpp \
     GlyphEditor.cpp \
     ObjectEditorWIP.cpp \
     OpacityMapEditor.cpp \
@@ -73,7 +71,6 @@ FORMS += \
     AnimationControl.ui \
     ColorMapEditor.ui \
     Communication.ui \
-    Connect.ui \
     GlyphEditor.ui \
     ObjectEditorWIP.ui \
     OpacityMapEditor.ui \
