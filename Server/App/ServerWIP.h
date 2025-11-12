@@ -1,6 +1,9 @@
 #ifndef SERVERWIP_H
 #define SERVERWIP_H
 
+#include <locale>
+#include <codecvt>
+
 #ifdef _WIN32
 #include <uwebsockets/App.h>
 #else
@@ -124,6 +127,8 @@ private:
             }
         }
     }
+
+    std::string to_utf8( const std::filesystem::path& p );
 };
 
 #endif // SERVERWIP_H

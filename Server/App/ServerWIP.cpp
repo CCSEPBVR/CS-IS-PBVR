@@ -456,8 +456,6 @@ void ServerWIP::plotoverlineparameter( uWS::WebSocket<false, true, PerSocket>* w
 
 void ServerWIP::fileList( uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received )
 {
-    // FIXME:ドライブの移動の機能をつけたほうがいいかもしれません。
-
     std::string dir = received.value( "path", "." );
     int page = received.value( "page", 1 );
     int per_page = received.value( "per_page", 20 );
@@ -465,8 +463,9 @@ void ServerWIP::fileList( uWS::WebSocket<false, true, PerSocket>* ws, const nloh
     nlohmann::json resp;
     resp["files"] = nlohmann::json::array();
 
-    // 親フォルダが存在する場合、先頭に ".." を追加
     std::filesystem::path current( dir );
+
+    // 親フォルダ ".." を追加
     if( current.has_parent_path() && current != current.root_path() )
     {
         nlohmann::json parent;
@@ -477,27 +476,22 @@ void ServerWIP::fileList( uWS::WebSocket<false, true, PerSocket>* ws, const nloh
     }
 
     std::vector<std::filesystem::directory_entry> entries;
-    std::error_code ec; // エラーコード受け取り用
+    std::error_code ec;
 
-    for( auto& entry : std::filesystem::directory_iterator( dir, ec ) )
+    for( auto& entry : std::filesystem::directory_iterator( current, ec ) )
     {
-        if( ec )
-        {
-            // アクセスできない場合はスキップ
-            // FIXME:クライアント側でPermission Deniedとか出してあげてください。
-            continue;
-        }
+        if(ec) continue;
 
-        std::string name = entry.path().filename().string();
-        // 隠しファイルをスキップ
-        if( !name.empty() && name[0] == '.' ) continue;
+        std::string name = to_utf8( entry.path().filename() );
+        if( !name.empty() && name[0] == '.' ) continue; // 隠しファイルスキップ
 
         entries.push_back( entry );
     }
 
-    std::sort( entries.begin(), entries.end(), []( auto& a, auto& b )
+    // 名前順ソート
+    std::sort( entries.begin(), entries.end(), [this]( auto& a, auto& b )
               {
-                  return a.path().filename().string() < b.path().filename().string();
+                  return to_utf8( a.path().filename() ) < to_utf8( b.path().filename() );
               } );
 
     int start = ( page - 1 ) * per_page;
@@ -507,7 +501,7 @@ void ServerWIP::fileList( uWS::WebSocket<false, true, PerSocket>* ws, const nloh
     {
         auto& e = entries[i];
         nlohmann::json item;
-        item["name"] = e.path().filename().string();
+        item["name"] = to_utf8( e.path().filename() );
         item["type"] = e.is_directory() ? "dir" : "file";
         resp["files"].push_back( item );
     }
@@ -521,4 +515,15 @@ void ServerWIP::fileList( uWS::WebSocket<false, true, PerSocket>* ws, const nloh
 void ServerWIP::selectedFile( uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received )
 {
     // ObjectInfoExtractor oie( filePath.toUtf8().constData() );
+}
+
+std::string ServerWIP::to_utf8( const std::filesystem::path& p )
+{
+#ifdef _WIN32
+    std::wstring ws = p.wstring();
+    std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> conv;
+    return conv.to_bytes( ws );
+#else
+    return p.string();
+#endif
 }
