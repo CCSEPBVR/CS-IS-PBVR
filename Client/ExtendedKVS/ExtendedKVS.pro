@@ -19,8 +19,7 @@ TARGET = ExtendedKVS
 #=============================================================================
 HEADERS += \
     Screen.h \   
-    Utils.h \
-    stb_image.h
+    Utils.h
 
 contains( DEFINES, OPENXR_SCREEN ){
 HEADERS += \
@@ -32,14 +31,10 @@ HEADERS += \
 
 contains( DEFINES, ASSIMP ){
 HEADERS += \
-    FBX.h \
-    ThreeDS.h
 }
 
 contains( DEFINES, ASSIMP ) {
-    HEADERS += TexturedPolygonImporter.h
 }
-
 
 #=============================================================================
 #  Source.
@@ -58,14 +53,10 @@ SOURCES += \
 
 contains( DEFINES, ASSIMP ){
 SOURCES += \
-    FBX.cpp \
-    ThreeDS.cpp
 }
 
 contains( DEFINES, ASSIMP ) {
-    SOURCES += TexturedPolygonImporter.cpp
 }
-
 
 #=============================================================================
 #  Forms.

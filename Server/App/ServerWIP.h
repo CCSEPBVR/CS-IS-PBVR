@@ -8,6 +8,7 @@
 #endif
 
 #include "../../Shared/json.hpp"
+#include "../../Shared/ObjectInfoExtractor.h"
 
 #include <kvs/RGBColor>
 
@@ -93,6 +94,7 @@ private:
     void glyph( uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received );
     void plotoverlineparameter( uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received );
     void fileList( uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received );
+    void selectedFile( uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received );
 
     void debugNumberOfUsers()
     {

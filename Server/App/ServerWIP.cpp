@@ -188,6 +188,7 @@ void ServerWIP::onMessage( uWS::WebSocket<false, true, PerSocket>* ws, std::stri
         if( event == "glyph" )                  glyph( ws, received );
         if( event == "plotoverlineparameter" )  plotoverlineparameter( ws, received );
         if( event == "fileList" )               fileList( ws, received );
+        if( event == "selectedFile" )           selectedFile( ws, received );
         if( event == "debug" )                  debugNumberOfUsers();
     }
 }
@@ -515,4 +516,9 @@ void ServerWIP::fileList( uWS::WebSocket<false, true, PerSocket>* ws, const nloh
     resp["path"] = dir;
 
     ws->send( resp.dump(), uWS::OpCode::TEXT );
+}
+
+void ServerWIP::selectedFile( uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received )
+{
+    // ObjectInfoExtractor oie( filePath.toUtf8().constData() );
 }

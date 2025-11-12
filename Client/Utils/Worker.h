@@ -135,8 +135,9 @@ private:
         std::unique_ptr<kvs::PointObject> pointObject;
         std::unique_ptr<kvs::PolygonObject> polygonObject;
         std::unique_ptr<kvs::LineObject> lineObject;
+#ifdef ASSIMP
         std::unique_ptr<kvs::TexturedPolygonObject> texturedPolygonObject;
-
+#endif
         switch( info.format )
         {
         case ObjectInfoExtractor::ClientServerPointObject:
