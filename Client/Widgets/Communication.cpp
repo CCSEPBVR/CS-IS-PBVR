@@ -530,6 +530,7 @@ void Communication::textWebsocketMessageReceived( const QString& receivedMessage
                 m_is_operator = false;
                 ui->isOperatorLineEdit->setText( "false" );
             }
+            emit updateOperatorState( m_is_operator );
         }
 
         if( obj["event"].toString() == "chat" )
