@@ -172,7 +172,7 @@ private slots:
         }
 
         m_pathLabel->setText( "Path: " + ( m_currentPath.isEmpty() ? "/" : m_currentPath ) );
-        m_pageLabel->setText( QString( "ページ: %1" ).arg( m_currentPage ) );
+        m_pageLabel->setText( QString( "Page: %1" ).arg( m_currentPage ) );
 
         bool hasNext = obj.value( "has_next" ).toBool( false );
         m_nextButton->setEnabled( hasNext );
