@@ -551,12 +551,12 @@ void ObjectEditorWIP::onBrowse()
 
         if (filePaths.isEmpty()) return;
 
-        for (const QString& filePath : filePaths)
+        for( const QString& filePath : filePaths )
         {
-            ObjectInfoExtractor oie(filePath.toUtf8().constData());
-            if (auto objectInfoOpt = oie.extractFromLocalFile())
+            ObjectInfoExtractor oie( filePath.toUtf8().constData() );
+            if( auto objectInfoOpt = oie.extractFromLocalFile() )
             {
-                addObjectToModel(*objectInfoOpt, oie);
+                addObjectToModel( *objectInfoOpt, oie );
             }
             else
             {
@@ -568,7 +568,7 @@ void ObjectEditorWIP::onBrowse()
     case Viz::Mode::RemoteClientAndServer:
     case Viz::Mode::RemoteInSitu:
     {
-        RemoteFileDialog dlg( m_web_sockets->text(), this );
+        RemoteFileDialog dlg( m_web_sockets, this );
         if( dlg.exec() == QDialog::Accepted )
         {
             qDebug() << "選択ファイル:" << dlg.selectedFile();

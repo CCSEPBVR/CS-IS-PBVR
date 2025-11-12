@@ -11,7 +11,7 @@
 
 #include <kvs/RGBColor>
 
-constexpr bool SSL = false; // SSL を使わない場合
+constexpr bool SSL = false;
 
 struct ClientState; // 前方宣言
 
@@ -92,6 +92,7 @@ private:
     void transferfunction( uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received );
     void glyph( uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received );
     void plotoverlineparameter( uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received );
+    void fileList( uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received );
 
     void debugNumberOfUsers()
     {

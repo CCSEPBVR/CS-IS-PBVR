@@ -117,7 +117,7 @@ void MainWindow::initialize()
 
     // ボタン押下でサーバにイベント送信
     connect( debugPushButton, &QPushButton::clicked, this, [this]() {
-        RemoteFileDialog dlg( m_web_sockets->text(), this );
+        RemoteFileDialog dlg( m_web_sockets, this );
         if( dlg.exec() == QDialog::Accepted )
         {
             qDebug() << "選択ファイル:" << dlg.selectedFile();
