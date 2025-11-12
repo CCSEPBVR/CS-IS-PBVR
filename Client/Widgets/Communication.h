@@ -33,10 +33,10 @@ public slots:
     void saveParameter( const QString& filePath );
 
 signals:
-    void updateServerState( bool serverState ); // true:接続中
+    void updateServerState( bool serverState );     // true:接続中
     void updateOperatorState( bool operatorState ); // true:権限あり
-    void updateFocus( kvs::Vec3, kvs::Vec3 ); // FIXME:このクラスに必要ないので削除
-    void updatePointsTranslation(); // FIXME:このクラスに必要ないので削除
+    void updateFocus( kvs::Vec3, kvs::Vec3 );       // FIXME:このクラスに必要ないので削除
+    void updatePointsTranslation();                 // FIXME:このクラスに必要ないので削除
     void updateStatusBarMessage( const QString& message );
 
 private:
@@ -53,11 +53,17 @@ private:
     QPair<int,int> m_server_point_object_ids    = QPair<int,int>( -1, -1 ); // FIXME:このクラスに必要ないので削除
 
     void initialize();
-    void registerObject( kvs::PointObject* pointObject ); // FIXME:このクラスに必要ないので削除
-    void replaceObject( kvs::PointObject* pointObject ); // FIXME:このクラスに必要ないので削除
+    void registerObject( kvs::PointObject* pointObject );   // FIXME:このクラスに必要ないので削除
+    void replaceObject( kvs::PointObject* pointObject );    // FIXME:このクラスに必要ないので削除
+
+    void websocketConnected();
+    void websocketDisconnected();
+    void updateVizMode();
+
+    // 着目点グリフ用
+    kvs::PolygonObject* createArrowGlyph( const kvs::ValueArray<kvs::Real32>& coords, const kvs::ValueArray<kvs::Real32>& directions, const kvs::ValueArray<kvs::Real32>& sizes, const kvs::ValueArray<kvs::UInt8>& colors );
 
 private slots:
-    // UI
     void onModeClicked();
     void onSamplingTypeClicked();
     void onVolumeDataFilePathClicked();
@@ -69,21 +75,12 @@ private slots:
     void onShareView();
     void onItemDoubleClicked( const QModelIndex& index );
 
-    // WebSocket
     void binaryWebsocketConnected();
     void binaryWebsocketDisconnected();
     void binaryWebsocketMessageReceived( const QByteArray& binary );
     void textWebsocketConnected();
     void textWebsocketDisconnected();
     void textWebsocketMessageReceived( const QString& receivedMessage );
-
-// 着目点用TMP
-private:
-    void websocketConnected();
-    void websocketDisconnected();
-    void updateVizMode();
-    kvs::PolygonObject* createArrowGlyph( const kvs::ValueArray<kvs::Real32>& coords, const kvs::ValueArray<kvs::Real32>& directions, const kvs::ValueArray<kvs::Real32>& sizes, const kvs::ValueArray<kvs::UInt8>& colors );
-
 };
 
 #endif // COMMUNICATION_H

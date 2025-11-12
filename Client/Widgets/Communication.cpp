@@ -196,6 +196,213 @@ void Communication::replaceObject( kvs::PointObject* pointObject )
     m_screen->update();
 }
 
+void Communication::websocketConnected()
+{
+    if( m_web_sockets->isConnected() )
+    {
+        emit updateServerState( true );
+
+        ui->localVizRadioButton                 ->setEnabled( false );
+        ui->remoteVizClientServerRadioButton    ->setEnabled( false );
+        ui->remoteVizInsituRadioButton          ->setEnabled( false );
+
+        ui->uniformRadioButton                  ->setEnabled( false );
+        ui->metropolisRadioButton               ->setEnabled( false );
+        ui->rejectionRadioButton                ->setEnabled( false );
+        ui->volumeDataFilePathLineEdit          ->setEnabled( false );
+        ui->volumeDataFilePathPushButton        ->setEnabled( false );
+        ui->transferFunctionFilePathLineEdit    ->setEnabled( false );
+        ui->transferFunctionFilePathPushButton  ->setEnabled( false );
+
+        ui->addressLineEdit                     ->setEnabled( false );
+        ui->connectPushButton                   ->setEnabled( false );
+        ui->disconnectPushButton                ->setEnabled( true );
+        updateVizMode();
+    }
+}
+
+void Communication::websocketDisconnected()
+{
+    if( !m_web_sockets->isConnected() )
+    {
+        emit updateOperatorState( m_is_operator );
+        emit updateServerState( false );
+        m_user_id = -1;
+        m_is_operator = false;
+
+        ui->localVizRadioButton                 ->setEnabled( true );
+        ui->remoteVizClientServerRadioButton    ->setEnabled( true );
+        ui->remoteVizInsituRadioButton          ->setEnabled( true );
+
+        ui->uniformRadioButton                  ->setEnabled( true );
+        ui->metropolisRadioButton               ->setEnabled( true );
+        ui->rejectionRadioButton                ->setEnabled( true );
+        ui->volumeDataFilePathLineEdit          ->setEnabled( true );
+        ui->volumeDataFilePathPushButton        ->setEnabled( true );
+        ui->transferFunctionFilePathLineEdit    ->setEnabled( true );
+        ui->transferFunctionFilePathPushButton  ->setEnabled( true );
+
+        ui->addressLineEdit                     ->setEnabled( true );
+        ui->connectPushButton                   ->setEnabled( true );
+        ui->disconnectPushButton                ->setEnabled( false );
+
+        ui->IDLineEdit->clear();
+        ui->isOperatorLineEdit->clear();
+        ui->textBrowser->clear();
+        updateVizMode();
+    }
+}
+
+void Communication::updateVizMode()
+{
+    *m_viz_mode = Viz::Mode::Local;
+
+    if( !m_web_sockets->isConnected() ) return;
+
+    if( ui->localVizRadioButton->isChecked() )
+    {
+        *m_viz_mode = Viz::Mode::LocalClientAndServer;
+    }
+    else if( ui->remoteVizClientServerRadioButton->isChecked() )
+    {
+        *m_viz_mode = Viz::Mode::RemoteClientAndServer;
+    }
+    else if( ui->remoteVizInsituRadioButton->isChecked() )
+    {
+        *m_viz_mode = Viz::Mode::RemoteInSitu;
+    }
+}
+
+kvs::PolygonObject* Communication::createArrowGlyph(
+    const kvs::ValueArray<kvs::Real32>& coords,
+    const kvs::ValueArray<kvs::Real32>& directions,
+    const kvs::ValueArray<kvs::Real32>& sizes,
+    const kvs::ValueArray<kvs::UInt8>& colors )
+{
+    const size_t npoint = coords.size() / 3;
+    const int slices = 20;
+
+    std::vector<kvs::Vec3> all_vertices;
+    std::vector<kvs::Vec3> all_normals;
+    std::vector<kvs::UInt32> all_indices;
+    std::vector<kvs::UInt8> all_colors;
+
+    for( size_t i = 0, index = 0; i < npoint; i++, index += 3 )
+    {
+        kvs::Vec3 tip_position( coords.data() + index );   // 先端位置
+        kvs::Vec3 direction( directions.data() + index );
+        kvs::Real32 size = sizes[i];
+        kvs::RGBColor color( colors.data() + index );
+
+        if( direction.length() < 1e-6 )
+        {
+            std::cerr << "Error: Invalid direction vector." << std::endl;
+            continue;
+        }
+        direction = direction.normalized();
+
+        // --- 矢印寸法 ---
+        const float cylinder_height = 0.7f * size;
+        const float cylinder_radius = 0.07f * size;
+        const float cone_height = 0.3f * size;
+        const float cone_radius = 0.15f * size;
+        const float arrow_height = cylinder_height + cone_height;
+
+        std::vector<kvs::Vec3> vertices;
+        std::vector<kvs::Vec3> normals;
+        std::vector<kvs::UInt32> indices;
+
+        // --- 円柱の構築 ---
+        for( int s = 0; s < slices; ++s )
+        {
+            float angle = 2.0f * M_PI * s / slices;
+            float x = cylinder_radius * std::cos( angle );
+            float y = cylinder_radius * std::sin( angle );
+
+            vertices.emplace_back( x, y, 0.0f );              // 底面
+            normals.emplace_back( x, y, 0.0f );
+
+            vertices.emplace_back( x, y, cylinder_height );   // 上面
+            normals.emplace_back( x, y, 0.0f );
+        }
+
+        for( int s = 0; s < slices; ++s )
+        {
+            int next = ( s + 1 ) % slices;
+            indices.push_back( s * 2 ); indices.push_back( next * 2 ); indices.push_back( s * 2 +1 );
+            indices.push_back( s * 2 +1 ); indices.push_back( next * 2 ); indices.push_back( next * 2 +1 );
+        }
+
+        // --- 円錐の構築 ---
+        std::vector<kvs::Vec3> base_vertices;
+        for( int s = 0; s < slices; ++s )
+        {
+            float angle = 2.0f * M_PI * s / slices;
+            base_vertices.emplace_back( cone_radius*std::cos( angle ), cone_radius*std::sin( angle ), cylinder_height );
+        }
+
+        for( int s = 0; s < slices; ++s )
+        {
+            int next = ( s + 1 ) % slices;
+            kvs::Vec3 apex( 0, 0, cylinder_height + cone_height );
+            kvs::Vec3 v1 = base_vertices[s];
+            kvs::Vec3 v2 = base_vertices[next];
+
+            vertices.push_back( v1 ); vertices.push_back( v2 ); vertices.push_back( apex );
+            kvs::Vec3 normal = ( v2 - v1 ).cross( apex - v1 ).normalized();
+            normals.push_back( normal ); normals.push_back( normal ); normals.push_back( normal );
+
+            int base_index = vertices.size() - 3;
+            indices.push_back( base_index ); indices.push_back( base_index + 1 ); indices.push_back( base_index + 2 );
+        }
+
+        // --- 先端が tip_position になるように Zを下方向にシフト ---
+        for( auto& v : vertices ) v.z() -= arrow_height;
+
+        // --- 回転・位置調整 ---
+        kvs::Vec3 default_direction( 0, 0, 1 );
+        kvs::Vec3 axis = default_direction.cross( direction );
+        float angle = std::acos( default_direction.dot( direction ) );
+        kvs::Mat3 rotation;
+        if( axis.length() > 1e-6 )
+        {
+
+            rotation = kvs::Mat3::Rotation( axis.normalized(), angle*180.0/M_PI );
+        }
+        else
+        {
+            rotation = kvs::Mat3::Identity();
+        }
+
+        for( auto& v : vertices ) v = rotation * v + tip_position;
+        for( auto& n : normals ) n = rotation * n;
+
+        size_t offset = all_vertices.size();
+        all_vertices.insert( all_vertices.end(), vertices.begin(), vertices.end() );
+        all_normals.insert( all_normals.end(), normals.begin(), normals.end() );
+        for( auto idx : indices ) all_indices.push_back( idx + offset );
+
+        for( size_t c =0; c< vertices.size(); ++c )
+        {
+            all_colors.push_back( color.r() );
+            all_colors.push_back( color.g() );
+            all_colors.push_back( color.b() );
+        }
+    }
+
+    kvs::PolygonObject* polygon = new kvs::PolygonObject();
+    polygon->setCoords( kvs::ValueArray<kvs::Real32>( ( kvs::Real32* )all_vertices.data(), all_vertices.size()*3 ) );
+    polygon->setConnections( kvs::ValueArray<kvs::UInt32>( all_indices.data(), all_indices.size() ) );
+    polygon->setColors( kvs::ValueArray<kvs::UInt8>( all_colors.data(), all_colors.size() ) );
+    polygon->setNormals( kvs::ValueArray<kvs::Real32>( ( kvs::Real32* )all_normals.data(), all_normals.size()*3 ) );
+    polygon->setOpacity( 255 );
+    polygon->setPolygonType(kvs::PolygonObject::Triangle);
+    polygon->setColorType(kvs::PolygonObject::PolygonColor);
+    polygon->setNormalType(kvs::PolygonObject::VertexNormal);
+
+    return polygon;
+}
+
 void Communication::onModeClicked()
 {
     if( ui->remoteVizInsituRadioButton->isChecked() )
@@ -655,212 +862,4 @@ void Communication::textWebsocketMessageReceived( const QString& receivedMessage
             }
         }
     }
-}
-
-void Communication::websocketConnected()
-{
-    if( m_web_sockets->isConnected() )
-    {
-        emit updateServerState( true );
-
-        ui->localVizRadioButton                 ->setEnabled( false );
-        ui->remoteVizClientServerRadioButton    ->setEnabled( false );
-        ui->remoteVizInsituRadioButton          ->setEnabled( false );
-
-        ui->uniformRadioButton                  ->setEnabled( false );
-        ui->metropolisRadioButton               ->setEnabled( false );
-        ui->rejectionRadioButton                ->setEnabled( false );
-        ui->volumeDataFilePathLineEdit          ->setEnabled( false );
-        ui->volumeDataFilePathPushButton        ->setEnabled( false );
-        ui->transferFunctionFilePathLineEdit    ->setEnabled( false );
-        ui->transferFunctionFilePathPushButton  ->setEnabled( false );
-
-        ui->addressLineEdit                     ->setEnabled( false );
-        ui->connectPushButton                   ->setEnabled( false );
-        ui->disconnectPushButton                ->setEnabled( true );
-        updateVizMode();
-    }
-}
-
-void Communication::updateVizMode()
-{
-    *m_viz_mode = Viz::Mode::Local;
-
-    if( !m_web_sockets->isConnected() ) return;
-
-    if( ui->localVizRadioButton->isChecked() )
-    {
-        *m_viz_mode = Viz::Mode::LocalClientAndServer;
-    }
-    else if( ui->remoteVizClientServerRadioButton->isChecked() )
-    {
-        *m_viz_mode = Viz::Mode::RemoteClientAndServer;
-    }
-    else if( ui->remoteVizInsituRadioButton->isChecked() )
-    {
-        *m_viz_mode = Viz::Mode::RemoteInSitu;
-    }
-}
-
-void Communication::websocketDisconnected()
-{
-    if( !m_web_sockets->isConnected() )
-    {
-        emit updateOperatorState( m_is_operator );
-        emit updateServerState( false );
-        m_user_id = -1;
-        m_is_operator = false;
-
-        ui->localVizRadioButton                 ->setEnabled( true );
-        ui->remoteVizClientServerRadioButton    ->setEnabled( true );
-        ui->remoteVizInsituRadioButton          ->setEnabled( true );
-
-        ui->uniformRadioButton                  ->setEnabled( true );
-        ui->metropolisRadioButton               ->setEnabled( true );
-        ui->rejectionRadioButton                ->setEnabled( true );
-        ui->volumeDataFilePathLineEdit          ->setEnabled( true );
-        ui->volumeDataFilePathPushButton        ->setEnabled( true );
-        ui->transferFunctionFilePathLineEdit    ->setEnabled( true );
-        ui->transferFunctionFilePathPushButton  ->setEnabled( true );
-
-        ui->addressLineEdit                     ->setEnabled( true );
-        ui->connectPushButton                   ->setEnabled( true );
-        ui->disconnectPushButton                ->setEnabled( false );
-
-        ui->IDLineEdit->clear();
-        ui->isOperatorLineEdit->clear();
-        ui->textBrowser->clear();
-        updateVizMode();
-    }
-}
-
-// 着目点グリフ生成用メソッド
-kvs::PolygonObject* Communication::createArrowGlyph(
-    const kvs::ValueArray<kvs::Real32>& coords,
-    const kvs::ValueArray<kvs::Real32>& directions,
-    const kvs::ValueArray<kvs::Real32>& sizes,
-    const kvs::ValueArray<kvs::UInt8>& colors )
-{
-    const size_t npoint = coords.size() / 3;
-    const int slices = 20;
-
-    std::vector<kvs::Vec3> all_vertices;
-    std::vector<kvs::Vec3> all_normals;
-    std::vector<kvs::UInt32> all_indices;
-    std::vector<kvs::UInt8> all_colors;
-
-    for( size_t i = 0, index = 0; i < npoint; i++, index += 3 )
-    {
-        kvs::Vec3 tip_position( coords.data() + index );   // 先端位置
-        kvs::Vec3 direction( directions.data() + index );
-        kvs::Real32 size = sizes[i];
-        kvs::RGBColor color( colors.data() + index );
-
-        if( direction.length() < 1e-6 )
-        {
-            std::cerr << "Error: Invalid direction vector." << std::endl;
-            continue;
-        }
-        direction = direction.normalized();
-
-        // --- 矢印寸法 ---
-        const float cylinder_height = 0.7f * size;
-        const float cylinder_radius = 0.07f * size;
-        const float cone_height = 0.3f * size;
-        const float cone_radius = 0.15f * size;
-        const float arrow_height = cylinder_height + cone_height;
-
-        std::vector<kvs::Vec3> vertices;
-        std::vector<kvs::Vec3> normals;
-        std::vector<kvs::UInt32> indices;
-
-        // --- 円柱の構築 ---
-        for( int s = 0; s < slices; ++s )
-        {
-            float angle = 2.0f * M_PI * s / slices;
-            float x = cylinder_radius * std::cos( angle );
-            float y = cylinder_radius * std::sin( angle );
-
-            vertices.emplace_back( x, y, 0.0f );              // 底面
-            normals.emplace_back( x, y, 0.0f );
-
-            vertices.emplace_back( x, y, cylinder_height );   // 上面
-            normals.emplace_back( x, y, 0.0f );
-        }
-
-        for( int s = 0; s < slices; ++s )
-        {
-            int next = ( s + 1 ) % slices;
-            indices.push_back( s * 2 ); indices.push_back( next * 2 ); indices.push_back( s * 2 +1 );
-            indices.push_back( s * 2 +1 ); indices.push_back( next * 2 ); indices.push_back( next * 2 +1 );
-        }
-
-        // --- 円錐の構築 ---
-        std::vector<kvs::Vec3> base_vertices;
-        for( int s = 0; s < slices; ++s )
-        {
-            float angle = 2.0f * M_PI * s / slices;
-            base_vertices.emplace_back( cone_radius*std::cos( angle ), cone_radius*std::sin( angle ), cylinder_height );
-        }
-
-        for( int s = 0; s < slices; ++s )
-        {
-            int next = ( s + 1 ) % slices;
-            kvs::Vec3 apex( 0, 0, cylinder_height + cone_height );
-            kvs::Vec3 v1 = base_vertices[s];
-            kvs::Vec3 v2 = base_vertices[next];
-
-            vertices.push_back( v1 ); vertices.push_back( v2 ); vertices.push_back( apex );
-            kvs::Vec3 normal = ( v2 - v1 ).cross( apex - v1 ).normalized();
-            normals.push_back( normal ); normals.push_back( normal ); normals.push_back( normal );
-
-            int base_index = vertices.size() - 3;
-            indices.push_back( base_index ); indices.push_back( base_index + 1 ); indices.push_back( base_index + 2 );
-        }
-
-        // --- 先端が tip_position になるように Zを下方向にシフト ---
-        for( auto& v : vertices ) v.z() -= arrow_height;
-
-        // --- 回転・位置調整 ---
-        kvs::Vec3 default_direction( 0, 0, 1 );
-        kvs::Vec3 axis = default_direction.cross( direction );
-        float angle = std::acos( default_direction.dot( direction ) );
-        kvs::Mat3 rotation;
-        if( axis.length() > 1e-6 )
-        {
-
-            rotation = kvs::Mat3::Rotation( axis.normalized(), angle*180.0/M_PI );
-        }
-        else
-        {
-            rotation = kvs::Mat3::Identity();
-        }
-
-        for( auto& v : vertices ) v = rotation * v + tip_position;
-        for( auto& n : normals ) n = rotation * n;
-
-        size_t offset = all_vertices.size();
-        all_vertices.insert( all_vertices.end(), vertices.begin(), vertices.end() );
-        all_normals.insert( all_normals.end(), normals.begin(), normals.end() );
-        for( auto idx : indices ) all_indices.push_back( idx + offset );
-
-        for( size_t c =0; c< vertices.size(); ++c )
-        {
-            all_colors.push_back( color.r() );
-            all_colors.push_back( color.g() );
-            all_colors.push_back( color.b() );
-        }
-    }
-
-    kvs::PolygonObject* polygon = new kvs::PolygonObject();
-    polygon->setCoords( kvs::ValueArray<kvs::Real32>( ( kvs::Real32* )all_vertices.data(), all_vertices.size()*3 ) );
-    polygon->setConnections( kvs::ValueArray<kvs::UInt32>( all_indices.data(), all_indices.size() ) );
-    polygon->setColors( kvs::ValueArray<kvs::UInt8>( all_colors.data(), all_colors.size() ) );
-    polygon->setNormals( kvs::ValueArray<kvs::Real32>( ( kvs::Real32* )all_normals.data(), all_normals.size()*3 ) );
-    polygon->setOpacity( 255 );
-    polygon->setPolygonType(kvs::PolygonObject::Triangle);
-    polygon->setColorType(kvs::PolygonObject::PolygonColor);
-    polygon->setNormalType(kvs::PolygonObject::VertexNormal);
-
-    return polygon;
 }
