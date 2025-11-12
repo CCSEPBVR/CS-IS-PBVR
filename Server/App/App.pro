@@ -36,6 +36,9 @@ win32 {
             LIBS += -L$$KVS_GLEW_DIR/lib -lglew32
         }
     }
+    !isEmpty( KVS_ASSIMP_DIR ) {
+        LIBS += -L$$KVS_ASSIMP_DIR/lib/release -lassimp-vc143-mt
+    }
     !isEmpty(KVS_UWS_DIR) {
         LIBS +="$$KVS_UWS_DIR/lib/uSockets.lib"
         LIBS +="$$KVS_UWS_DIR/lib/libuv.lib"
@@ -64,6 +67,9 @@ macx {
     !isEmpty( KVS_DIR ) {
         LIBS += -L$$KVS_DIR/lib -lkvsCore
     }
+    !isEmpty( KVS_ASSIMP_DIR ) {
+        LIBS += -L$$KVS_ASSIMP_DIR/lib -lassimp -lIrrXML -lzlibstatic
+    }
     !isEmpty( KVS_UWS_DIR ) {
         LIBS += $$KVS_UWS_DIR/uSockets/uSockets.a
         OPENSSL_PATH = /opt/homebrew/opt/openssl@3
@@ -74,6 +80,9 @@ macx {
 unix:!macx {
     !isEmpty( KVS_DIR ) {
         LIBS += -L$$KVS_DIR/lib -lkvsCore
+    }
+    !isEmpty( KVS_ASSIMP_DIR ) {
+        LIBS += -L$$KVS_ASSIMP_DIR/lib -lassimp -lIrrXML -lzlibstatic
     }
     !isEmpty( KVS_UWS_DIR ) {
         LIBS += $$KVS_UWS_DIR/uSockets/uSockets.a
