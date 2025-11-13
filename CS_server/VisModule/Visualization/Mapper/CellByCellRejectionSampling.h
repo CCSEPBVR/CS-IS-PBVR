@@ -76,8 +76,6 @@ private:
     std::vector<vismodule::TransferFunction> m_transfer_function_array; 
     //std::vector<NamedTransferFunction> m_transfer_function_array; 
 
-    float                  m_particle_density;
-
     bool                   m_batch;
 
 public:
@@ -103,7 +101,6 @@ public:
         //const NamedTransferFunction& transfer_function,
         TransferFunctionSynthesizer* transfunc_synthesizer,
         const CropRegion&            crop,
-        const float                  density_factor,
         const float                  object_depth = 0.0f );
 
     CellByCellRejectionSampling(
@@ -117,7 +114,6 @@ public:
         std::vector<vismodule::TransferFunction>& transfer_function_array,
         TransferFunctionSynthesizer* transfunc_synthesizer,
         const CropRegion&            crop,
-        const float                  density_factor,
         const bool                   batch,
         const float                  object_depth = 0.0f );
 

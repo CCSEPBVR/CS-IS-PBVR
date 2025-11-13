@@ -15,7 +15,6 @@ private:
     std::string m_hexahedra_directory;
     std::string m_quadratic_tetrahedra_directory;
     bool m_test_volume;
-    float m_density_factor;
 
 public:
     std::string m_input_data;
@@ -43,7 +42,7 @@ public:
     std::string m_parameter_file;
     int m_job_id_pack_size;
     int m_particle_limit, m_particle_limit_pre;
-    float m_particle_density;
+    float m_extra_opacity_factor;
     std::string m_output_data_base;
     size_t m_window_width;
     size_t m_window_height;
@@ -133,8 +132,7 @@ public:
         m_normal_ingredient = 0;
         m_particle_limit = 10000000;
         m_particle_limit_pre = -1;
-        m_density_factor = 1.0;
-        m_particle_density = 1.0;
+        m_extra_opacity_factor = 1.0;
         m_output_data_base = "./";
         m_window_width  = 620;
         m_window_height = 620;
@@ -165,7 +163,6 @@ public:
         if ( this->hasOption( "jn" ) ) m_job_id_pack_size = this->optionValue<int>( "jn" );
         if ( this->hasOption( "m_normal_ingredient" ) ) m_normal_ingredient = this->optionValue<size_t>( "m_normal_ingredient" );
         if ( this->hasOption( "plimit" ) ) m_particle_limit = this->optionValue<int>( "plimit" );
-        if ( this->hasOption( "pd" ) ) m_particle_density = this->optionValue<int>( "pd" );
         if ( this->hasOption( "vin" ) )
         {
             size_t pos;

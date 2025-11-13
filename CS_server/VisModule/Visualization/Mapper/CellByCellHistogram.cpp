@@ -104,7 +104,6 @@ CellByCellHistogram::CellByCellHistogram(
     m_transfer_function_synthesizer( transfunc_synthesizer ),
     m_normal_ingredient( normal_ingredient ),
     m_camera( 0 ),
-    m_particle_density( 1.0 ),
     m_batch( false )
 {
     m_crop = crop;
@@ -135,7 +134,6 @@ CellByCellHistogram::CellByCellHistogram(
     TransferFunctionSynthesizer* transfunc_synthesizer,
     const size_t                 normal_ingredient,
     const CropRegion&            crop,
-    const float                  particle_density,
     const bool                   batch,
     const float                  object_depth ):
     vismodule::MapperBase( transfer_function ),
@@ -143,7 +141,6 @@ CellByCellHistogram::CellByCellHistogram(
     m_transfer_function_array( transfer_function_array ),
     m_transfer_function_synthesizer( transfunc_synthesizer ),
     m_normal_ingredient( normal_ingredient ),
-    m_particle_density( particle_density ),
     m_batch( batch )
 {
     m_crop = crop;
@@ -169,7 +166,6 @@ CellByCellHistogram::CellByCellHistogram(
     vismodule::PointObject(),
     m_transfer_function_synthesizer( transfunc_synthesizer ),
     m_normal_ingredient( normal_ingredient ),
-    m_particle_density( 1.0 ),
     m_batch( false )
 {
     m_crop = crop;

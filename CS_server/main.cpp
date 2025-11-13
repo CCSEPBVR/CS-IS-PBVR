@@ -1037,7 +1037,7 @@ int main( int argc, char** argv )
 
                     param.m_input_data_base = clntMes.m_input_directory;
                     param.m_particle_limit = clntMes.m_particle_limit;
-                    param.m_particle_density = clntMes.m_particle_density;
+                    param.m_extra_opacity_factor = clntMes.m_extra_opacity_factor;
 
 #if 0
                     std::string pfifile, pflfile;
@@ -1247,8 +1247,8 @@ int main( int argc, char** argv )
                                        param.m_latency_threshold, param.m_job_id_pack_size );
                     }
 
-                    param.m_sampling_step = CalculateSamplingStep( mvpl );
-                    //param.m_sampling_step = 1;
+                    // 2025/11/13 全体的な濃さを調節するパラメータを追加 shimomura
+                    param.m_sampling_step = CalculateSamplingStep( mvpl )/param.m_extra_opacity_factor;
                     param.m_subpixel_level = CalculateSubpixelLevel( param, mvpl, *clntMes.m_camera );
                     param.m_particle_limit_pre = param.m_particle_limit;
 
@@ -1434,7 +1434,7 @@ int main( int argc, char** argv )
                     param.m_crop.set( clntMes.m_crop_region );
                     param.m_input_data_base = clntMes.m_input_directory;
                     param.m_particle_limit = clntMes.m_particle_limit;
-                    param.m_particle_density = clntMes.m_particle_density;
+                    param.m_extra_opacity_factor = clntMes.m_extra_opacity_factor;
 
 #if 0
                     std::string pfifile, pflfile;
@@ -1631,8 +1631,8 @@ int main( int argc, char** argv )
                                        param.m_latency_threshold, param.m_job_id_pack_size );
                     }
 
-                    param.m_sampling_step = CalculateSamplingStep( mvpl );
-                    //param.m_sampling_step = 1;
+                    // 2025/11/13 全体的な濃さを調節するパラメータを追加 shimomura
+                    param.m_sampling_step = CalculateSamplingStep( mvpl )/param.m_extra_opacity_factor;
                     param.m_subpixel_level = CalculateSubpixelLevel( param, mvpl, *clntMes.m_camera );
                     param.m_particle_limit_pre = param.m_particle_limit;
 
@@ -1823,7 +1823,7 @@ int main( int argc, char** argv )
                     param.m_crop.set( clntMes.m_crop_region );
                     param.m_input_data_base = clntMes.m_input_directory;
                     param.m_particle_limit = clntMes.m_particle_limit;
-                    param.m_particle_density = clntMes.m_particle_density;
+                    param.m_extra_opacity_factor = clntMes.m_extra_opacity_factor;
 
 #if 0
                     std::string pfifile, pflfile;
@@ -2022,8 +2022,8 @@ int main( int argc, char** argv )
                                        param.m_latency_threshold, param.m_job_id_pack_size );
                     }
 
-                    param.m_sampling_step = CalculateSamplingStep( mvpl );
-                    //param.m_sampling_step = 1;
+                    // 2025/11/13 全体的な濃さを調節するパラメータを追加 shimomura
+                    param.m_sampling_step = CalculateSamplingStep( mvpl )/param.m_extra_opacity_factor;
                     param.m_subpixel_level = CalculateSubpixelLevel( param, mvpl, *clntMes.m_camera );
                     param.m_particle_limit_pre = param.m_particle_limit;
                     
@@ -2167,7 +2167,7 @@ int main( int argc, char** argv )
                     param.m_crop.set( clntMes.m_crop_region );
                     param.m_input_data_base = clntMes.m_input_directory;
                     param.m_particle_limit = clntMes.m_particle_limit;
-                    param.m_particle_density = clntMes.m_particle_density;
+                    param.m_extra_opacity_factor = clntMes.m_extra_opacity_factor;
 
                     size_t found_pfl  = param.m_input_data_base.find(".pfl");
                     size_t found_pfi  = param.m_input_data_base.find(".pfi");
@@ -2338,7 +2338,8 @@ int main( int argc, char** argv )
                                        param.m_latency_threshold, param.m_job_id_pack_size );
                     }
 
-                    param.m_sampling_step = CalculateSamplingStep( mvpl );
+                    // 2025/11/13 全体的な濃さを調節するパラメータを追加 shimomura
+                    param.m_sampling_step = CalculateSamplingStep( mvpl )/param.m_extra_opacity_factor;
                     param.m_subpixel_level = CalculateSubpixelLevel( param, mvpl, *clntMes.m_camera );
                     param.m_particle_limit_pre = param.m_particle_limit;
                     
@@ -2877,7 +2878,7 @@ int main( int argc, char** argv )
                     param.m_crop.setEnable( clntMes.m_enable_crop_region );
                     param.m_crop.set( clntMes.m_crop_region );
                     param.m_particle_limit = clntMes.m_particle_limit;
-                    param.m_particle_density = clntMes.m_particle_density;
+                    param.m_extra_opacity_factor = clntMes.m_extra_opacity_factor;
 
                     param.m_transfunc_synthesizer = transfunc_creator.create();
                     param.m_transfunc_array.resize(transfunc_creator.transfunc().size());
@@ -2937,7 +2938,8 @@ int main( int argc, char** argv )
                         VIS_MODULE_TIMER_STA( 470 );
                     }
 
-                    param.m_sampling_step = CalculateSamplingStep( mvpl );
+                    // 2025/11/13 全体的な濃さを調節するパラメータを追加 shimomura
+                    param.m_sampling_step = CalculateSamplingStep( mvpl )/param.m_extra_opacity_factor;
                     param.m_subpixel_level = CalculateSubpixelLevel( param, mvpl, *clntMes.m_camera );
 
                     VariableRange vr;
@@ -3341,7 +3343,7 @@ int main( int argc, char** argv )
                         param.m_crop.setEnable( clntMes.m_enable_crop_region );
                         param.m_crop.set( clntMes.m_crop_region );
                         param.m_particle_limit = clntMes.m_particle_limit;
-                        param.m_particle_density = clntMes.m_particle_density;
+                        param.m_extra_opacity_factor = clntMes.m_extra_opacity_factor;
 
                         transfunc_creator.setProtocol( clntMes );
                         transfunc_creator.setAsisTransferFunction( param.m_transfer_function );
@@ -3402,7 +3404,8 @@ int main( int argc, char** argv )
                             VIS_MODULE_TIMER_STA( 470 );
                         }
 
-                        param.m_sampling_step = CalculateSamplingStep( mvpl );
+                        // 2025/11/13 全体的な濃さを調節するパラメータを追加 shimomura
+                        param.m_sampling_step = CalculateSamplingStep( mvpl )/param.m_extra_opacity_factor;
                         param.m_subpixel_level = CalculateSubpixelLevel( param, mvpl, *clntMes.m_camera );
 
                         VariableRange vr;
@@ -3806,7 +3809,7 @@ int main( int argc, char** argv )
                         param.m_crop.setEnable( clntMes.m_enable_crop_region );
                         param.m_crop.set( clntMes.m_crop_region );
                         param.m_particle_limit = clntMes.m_particle_limit;
-                        param.m_particle_density = clntMes.m_particle_density;
+                        param.m_extra_opacity_factor = clntMes.m_extra_opacity_factor;
 
 //                        transfunc_creator.setProtocol( clntMes );
 //                        transfunc_creator.setAsisTransferFunction( param.m_transfer_function );
@@ -3856,7 +3859,8 @@ int main( int argc, char** argv )
                             VIS_MODULE_TIMER_STA( 470 );
                         }
 
-                        param.m_sampling_step = CalculateSamplingStep( mvpl );
+                        // 2025/11/13 全体的な濃さを調節するパラメータを追加 shimomura
+                        param.m_sampling_step = CalculateSamplingStep( mvpl )/param.m_extra_opacity_factor;
                         param.m_subpixel_level = CalculateSubpixelLevel( param, mvpl, *clntMes.m_camera );
 
                         VariableRange vr;
@@ -4200,7 +4204,7 @@ int main( int argc, char** argv )
                         param.m_crop.setEnable( clntMes.m_enable_crop_region );
                         param.m_crop.set( clntMes.m_crop_region );
                         param.m_particle_limit = clntMes.m_particle_limit;
-                        param.m_particle_density = clntMes.m_particle_density;
+                        param.m_extra_opacity_factor = clntMes.m_extra_opacity_factor;
 
                      param.m_transfunc_array.resize(transfunc_creator.transfunc().size());
                     for(int i = 0; i<transfunc_creator.transfunc().size(); i++ )
@@ -4246,7 +4250,8 @@ int main( int argc, char** argv )
                             VIS_MODULE_TIMER_STA( 470 );
                         }
 
-                        param.m_sampling_step = CalculateSamplingStep( mvpl );
+                        // 2025/11/13 全体的な濃さを調節するパラメータを追加 shimomura
+                        param.m_sampling_step = CalculateSamplingStep( mvpl )/param.m_extra_opacity_factor;
 
                         param.m_subpixel_level = CalculateSubpixelLevel( param, mvpl, *clntMes.m_camera );
 

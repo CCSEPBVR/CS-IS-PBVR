@@ -104,7 +104,6 @@ CellByCellUniformSampling::CellByCellUniformSampling(
     m_transfer_function_synthesizer( transfunc_synthesizer ),
     m_normal_ingredient( normal_ingredient ),
     m_camera( 0 ),
-    m_particle_density( 1.0 ),
     m_batch( false )
 {
     m_crop = crop;
@@ -135,7 +134,6 @@ CellByCellUniformSampling::CellByCellUniformSampling(
     TransferFunctionSynthesizer* transfunc_synthesizer,
     const size_t                 normal_ingredient,
     const CropRegion&            crop,
-    const float                  particle_density,
     const bool                   batch,
     const float                  object_depth ):
     vismodule::MapperBase( transfer_function ),
@@ -143,7 +141,6 @@ CellByCellUniformSampling::CellByCellUniformSampling(
     m_transfer_function_array( transfer_function_array ),
     m_transfer_function_synthesizer( transfunc_synthesizer ),
     m_normal_ingredient( normal_ingredient ),
-    m_particle_density( particle_density ),
     m_batch( batch )
 {
     m_crop = crop;
@@ -169,7 +166,6 @@ CellByCellUniformSampling::CellByCellUniformSampling(
     vismodule::PointObject(),
     m_transfer_function_synthesizer( transfunc_synthesizer ),
     m_normal_ingredient( normal_ingredient ),
-    m_particle_density( 1.0 ),
     m_batch( false )
 {
     m_crop = crop;
@@ -958,7 +954,7 @@ void CellByCellUniformSampling::generate_particles( const vismodule::StructuredV
 //                    timed_section_end(td_CalculateDensity,thid);
 //                    timed_section_start(td_CalculateNumPar,thid);
 
-                    const int np = calculate_number_of_particles( density, 1, &MT ) * m_particle_density;
+                    const int np = calculate_number_of_particles( density, 1, &MT ) ;
 //                    const int np = calculate_number_of_particles( density, 1, &MT ) * 0.1;
 //                    timed_section_end(td_CalculateNumPar,thid);
 
@@ -1915,8 +1911,6 @@ void CellByCellUniformSampling::generate_particles<vismodule::Real32>( const vis
                     interp[thid][0]->bindCell( cell_index[cell_BLK] );
                     nparticles_array[cell_BLK] 
                         = calculate_number_of_particles( density, interp[thid][0]->volume(), &MT );
-                nparticles_array[cell_BLK] *= m_particle_density ;
-                //nparticles_array[cell_BLK] *= m_particle_density * 0.1 ;
                 nparticles_num += nparticles_array[cell_BLK];
             }
             /////////////////////////////// Synthesized~ (), CalculateOpacity() ///////////////////////////////////

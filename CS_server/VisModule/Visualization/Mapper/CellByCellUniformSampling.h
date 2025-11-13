@@ -67,7 +67,6 @@ private:
 
     const size_t m_normal_ingredient;
 
-    float                  m_particle_density;
 
     bool                   m_batch;
 
@@ -94,7 +93,6 @@ public:
         TransferFunctionSynthesizer* transfunc_synthesizer,
         const size_t                 normal_ingredient,
         const CropRegion&            crop,
-        const float                  particle_density,
         const bool                   batch,
         const float                  object_depth = 0.0f );
 

@@ -255,22 +255,22 @@ vismodule::PointObject* PointObjectGenerator::sampling( const Argument& param, c
         std::cout << "Uniform sampling" << std::endl;
         return new vismodule::CellByCellUniformSampling( camera, volume, subpixel_level, sampling_step, tf, tf_array,
                                                     param.m_transfunc_synthesizer, param.m_normal_ingredient, param.m_crop,
-                                                    param.m_particle_density, param.m_batch );
+                                                    param.m_batch );
     case 'r':
         std::cout << "Rejection sampling" << std::endl;
         return new vismodule::CellByCellRejectionSampling( camera, volume, subpixel_level, sampling_step, tf, tf_array,
                                                       param.m_transfunc_synthesizer, param.m_crop,
-                                                      param.m_particle_density, param.m_batch );
+                                                      param.m_batch );
     case 'm':
         std::cout << "Metropolis sampling" << std::endl;
         return new vismodule::CellByCellMetropolisSampling( camera, volume, subpixel_level, sampling_step, tf, tf_array,
                                                        param.m_transfunc_synthesizer, param.m_normal_ingredient, param.m_crop,
-                                                       param.m_particle_density, param.m_batch );
+                                                       param.m_batch );
     case 'h':
         std::cout << "Histogram " << std::endl;
         return new vismodule::CellByCellHistogram( camera, volume, subpixel_level, sampling_step, tf, tf_array,
                                                        param.m_transfunc_synthesizer, param.m_normal_ingredient, param.m_crop,
-                                                       param.m_particle_density, param.m_batch );
+                                                       param.m_batch );
 
     default:
         std::cout << "Unknown sampling method:" << param.m_sampling_method << std::endl;
