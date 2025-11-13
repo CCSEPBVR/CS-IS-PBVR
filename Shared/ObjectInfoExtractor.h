@@ -67,8 +67,8 @@ public:
         // Common Server Point Object Info
         int tmpParticleLimit                = 10000000;
         int particleLimit                   = 10000000;
-        float tmpExtraOpacityFactor                    = 1.0;
-        float extraOpacityFactor                       = 1.0;
+        float tmpExtraOpacityFactor         = 1.0;
+        float extraOpacityFactor            = 1.0;
 
         // Client Server Point Object Info
         int numberOfVector                  = -1;

@@ -530,56 +530,56 @@ void ServerWIP::selectedFile( uWS::WebSocket<false, true, PerSocket>* ws, const 
         m_objects->push_back( *objectInfoOpt );
 
         nlohmann::json msg;
-        msg["event"]                = "addObjectToModel";
+        msg["event"]                    = "addObjectToModel";
         // Common Object Info
-        msg["tmpIsDisplay"]         = objectInfoOpt->tmpIsDisplay;
-        msg["isDisplay"]            = objectInfoOpt->isDisplay;
-        msg["tmpIsKeepInitial"]     = objectInfoOpt->tmpIsKeepInitial;
-        msg["isKeepInitial"]        = objectInfoOpt->isKeepInitial;
-        msg["tmpIsKeepFinal"]       = objectInfoOpt->tmpIsKeepFinal;
-        msg["isKeepFinal"]          = objectInfoOpt->isKeepFinal;
+        msg["tmpIsDisplay"]             = objectInfoOpt->tmpIsDisplay;
+        msg["isDisplay"]                = objectInfoOpt->isDisplay;
+        msg["tmpIsKeepInitial"]         = objectInfoOpt->tmpIsKeepInitial;
+        msg["isKeepInitial"]            = objectInfoOpt->isKeepInitial;
+        msg["tmpIsKeepFinal"]           = objectInfoOpt->tmpIsKeepFinal;
+        msg["isKeepFinal"]              = objectInfoOpt->isKeepFinal;
 
-        msg["name"]                 = objectInfoOpt->name;
-        msg["extension"]            = objectInfoOpt->extension;
-        msg["directory"]            = objectInfoOpt->directory;
-        msg["format"]               = objectInfoOpt->format;
-        msg["timeStep"]             = objectInfoOpt->timeStep;
-        msg["tmpIsFocus"]           = objectInfoOpt->tmpIsFocus;
-        msg["isFocus"]              = objectInfoOpt->isFocus;
-        msg["minObjectCoord"]       = { objectInfoOpt->minObjectCoord.x(), objectInfoOpt->minObjectCoord.y(), objectInfoOpt->minObjectCoord.z() };
-        msg["maxObjectCoord"]       = { objectInfoOpt->maxObjectCoord.x(), objectInfoOpt->maxObjectCoord.y(), objectInfoOpt->maxObjectCoord.z() };
-        msg["minExternalCoord"]     = { objectInfoOpt->minExternalCoord.x(), objectInfoOpt->minExternalCoord.y(), objectInfoOpt->minExternalCoord.z() };
-        msg["maxExternalCoord"]     = { objectInfoOpt->maxExternalCoord.x(), objectInfoOpt->maxExternalCoord.y(), objectInfoOpt->maxExternalCoord.z() };
+        msg["name"]                     = objectInfoOpt->name;
+        msg["extension"]                = objectInfoOpt->extension;
+        msg["directory"]                = objectInfoOpt->directory;
+        msg["format"]                   = objectInfoOpt->format;
+        msg["timeStep"]                 = objectInfoOpt->timeStep;
+        msg["tmpIsFocus"]               = objectInfoOpt->tmpIsFocus;
+        msg["isFocus"]                  = objectInfoOpt->isFocus;
+        msg["minObjectCoord"]           = { objectInfoOpt->minObjectCoord.x(), objectInfoOpt->minObjectCoord.y(), objectInfoOpt->minObjectCoord.z() };
+        msg["maxObjectCoord"]           = { objectInfoOpt->maxObjectCoord.x(), objectInfoOpt->maxObjectCoord.y(), objectInfoOpt->maxObjectCoord.z() };
+        msg["minExternalCoord"]         = { objectInfoOpt->minExternalCoord.x(), objectInfoOpt->minExternalCoord.y(), objectInfoOpt->minExternalCoord.z() };
+        msg["maxExternalCoord"]         = { objectInfoOpt->maxExternalCoord.x(), objectInfoOpt->maxExternalCoord.y(), objectInfoOpt->maxExternalCoord.z() };
 
         // Common Server Point Object Info
-        msg["tmpParticleLimit"]     = objectInfoOpt->tmpParticleLimit;
-        msg["particleLimit"]        = objectInfoOpt->particleLimit;
-        msg["tmpExtraOpacityFactor"]           = objectInfoOpt->tmpExtraOpacityFactor;
-        msg["extraOpacityFactor"]              = objectInfoOpt->extraOpacityFactor;
+        msg["tmpParticleLimit"]         = objectInfoOpt->tmpParticleLimit;
+        msg["particleLimit"]            = objectInfoOpt->particleLimit;
+        msg["tmpExtraOpacityFactor"]    = objectInfoOpt->tmpExtraOpacityFactor;
+        msg["extraOpacityFactor"]       = objectInfoOpt->extraOpacityFactor;
 
         // Client Server Point Object Info
-        msg["numberOfVector"]       = objectInfoOpt->numberOfVector;
-        msg["numberOfElements"]     = objectInfoOpt->numberOfElements;
-        msg["numberOfSubvolume"]    = objectInfoOpt->numberOfSubvolume;
-        msg["numberOfNodes"]        = objectInfoOpt->numberOfNodes;
-        msg["elementType"]          = objectInfoOpt->elementType;
-        msg["fileType"]             = objectInfoOpt->fileType;
-        msg["stepNumber"]           = objectInfoOpt->stepNumber;
-        msg["tmpCoordinateX"]       = objectInfoOpt->tmpCoordinateX;
-        msg["coordinateX"]          = objectInfoOpt->coordinateX;
-        msg["tmpCoordinateY"]       = objectInfoOpt->tmpCoordinateY;
-        msg["coordinateY"]          = objectInfoOpt->coordinateY;
-        msg["tmpCoordinateZ"]       = objectInfoOpt->tmpCoordinateZ;
-        msg["coordinateZ"]          = objectInfoOpt->coordinateZ;
-        msg["isExport"]             = objectInfoOpt->isExport;
+        msg["numberOfVector"]           = objectInfoOpt->numberOfVector;
+        msg["numberOfElements"]         = objectInfoOpt->numberOfElements;
+        msg["numberOfSubvolume"]        = objectInfoOpt->numberOfSubvolume;
+        msg["numberOfNodes"]            = objectInfoOpt->numberOfNodes;
+        msg["elementType"]              = objectInfoOpt->elementType;
+        msg["fileType"]                 = objectInfoOpt->fileType;
+        msg["stepNumber"]               = objectInfoOpt->stepNumber;
+        msg["tmpCoordinateX"]           = objectInfoOpt->tmpCoordinateX;
+        msg["coordinateX"]              = objectInfoOpt->coordinateX;
+        msg["tmpCoordinateY"]           = objectInfoOpt->tmpCoordinateY;
+        msg["coordinateY"]              = objectInfoOpt->coordinateY;
+        msg["tmpCoordinateZ"]           = objectInfoOpt->tmpCoordinateZ;
+        msg["coordinateZ"]              = objectInfoOpt->coordinateZ;
+        msg["isExport"]                 = objectInfoOpt->isExport;
 
         // Nontexture Polygon Object Info
-        msg["tmpPolygonColor"]      = { objectInfoOpt->tmpPolygonColor.red(), objectInfoOpt->tmpPolygonColor.green(), objectInfoOpt->tmpPolygonColor.blue() };
-        msg["polygonColor"]         = { objectInfoOpt->polygonColor.red(), objectInfoOpt->polygonColor.green(), objectInfoOpt->polygonColor.blue() };
-        msg["tmpPolygonOpacity"]    = objectInfoOpt->tmpPolygonOpacity;
-        msg["polygonOpacity"]       = objectInfoOpt->polygonOpacity;
+        msg["tmpPolygonColor"]          = { objectInfoOpt->tmpPolygonColor.red(), objectInfoOpt->tmpPolygonColor.green(), objectInfoOpt->tmpPolygonColor.blue() };
+        msg["polygonColor"]             = { objectInfoOpt->polygonColor.red(), objectInfoOpt->polygonColor.green(), objectInfoOpt->polygonColor.blue() };
+        msg["tmpPolygonOpacity"]        = objectInfoOpt->tmpPolygonOpacity;
+        msg["polygonOpacity"]           = objectInfoOpt->polygonOpacity;
 
-        msg["isRemote"]             = objectInfoOpt->isRemote;
+        msg["isRemote"]                 = objectInfoOpt->isRemote;
 
         m_u_web_sockets.publish( "Notice", msg.dump(), uWS::OpCode::TEXT );
     }

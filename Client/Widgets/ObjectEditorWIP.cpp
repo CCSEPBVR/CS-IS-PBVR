@@ -18,34 +18,34 @@ ObjectEditorWIP::~ObjectEditorWIP()
 
 void ObjectEditorWIP::updateOperatorState( bool operatorState )
 {
-    ui->focusCheckBox           ->setEnabled( operatorState );
-    ui->particleLimitSpinBox    ->setEnabled( operatorState );
-    ui->extraOpacityFactorDoubleSpinBox    ->setEnabled( operatorState );
-    ui->coordinateXLineEdit     ->setEnabled( operatorState );
-    ui->coordinateYLineEdit     ->setEnabled( operatorState );
-    ui->coordinateZLineEdit     ->setEnabled( operatorState );
-    ui->exportPushButton        ->setEnabled( operatorState );
-    ui->colorClickableLabel     ->setEnabled( operatorState );
-    ui->opacityDoubleSpinBox    ->setEnabled( operatorState );
-    ui->browsePushButton        ->setEnabled( operatorState );
-    ui->deletePushButton        ->setEnabled( operatorState );
-    ui->applyPushButton         ->setEnabled( operatorState );
+    ui->focusCheckBox                   ->setEnabled( operatorState );
+    ui->particleLimitSpinBox            ->setEnabled( operatorState );
+    ui->extraOpacityFactorDoubleSpinBox ->setEnabled( operatorState );
+    ui->coordinateXLineEdit             ->setEnabled( operatorState );
+    ui->coordinateYLineEdit             ->setEnabled( operatorState );
+    ui->coordinateZLineEdit             ->setEnabled( operatorState );
+    ui->exportPushButton                ->setEnabled( operatorState );
+    ui->colorClickableLabel             ->setEnabled( operatorState );
+    ui->opacityDoubleSpinBox            ->setEnabled( operatorState );
+    ui->browsePushButton                ->setEnabled( operatorState );
+    ui->deletePushButton                ->setEnabled( operatorState );
+    ui->applyPushButton                 ->setEnabled( operatorState );
 }
 
 void ObjectEditorWIP::reset()
 {
-    ui->focusCheckBox           ->setEnabled( true );
-    ui->particleLimitSpinBox    ->setEnabled( true );
-    ui->extraOpacityFactorDoubleSpinBox    ->setEnabled( true );
-    ui->coordinateXLineEdit     ->setEnabled( true );
-    ui->coordinateYLineEdit     ->setEnabled( true );
-    ui->coordinateZLineEdit     ->setEnabled( true );
-    ui->exportPushButton        ->setEnabled( true );
-    ui->colorClickableLabel     ->setEnabled( true );
-    ui->opacityDoubleSpinBox    ->setEnabled( true );
-    ui->browsePushButton        ->setEnabled( true );
-    ui->deletePushButton        ->setEnabled( true );
-    ui->applyPushButton         ->setEnabled( true );
+    ui->focusCheckBox                   ->setEnabled( true );
+    ui->particleLimitSpinBox            ->setEnabled( true );
+    ui->extraOpacityFactorDoubleSpinBox ->setEnabled( true );
+    ui->coordinateXLineEdit             ->setEnabled( true );
+    ui->coordinateYLineEdit             ->setEnabled( true );
+    ui->coordinateZLineEdit             ->setEnabled( true );
+    ui->exportPushButton                ->setEnabled( true );
+    ui->colorClickableLabel             ->setEnabled( true );
+    ui->opacityDoubleSpinBox            ->setEnabled( true );
+    ui->browsePushButton                ->setEnabled( true );
+    ui->deletePushButton                ->setEnabled( true );
+    ui->applyPushButton                 ->setEnabled( true );
 
     if( m_model )
     {
@@ -178,8 +178,8 @@ void ObjectEditorWIP::initialize()
 
     m_group_common_server_point_object_widgets =
         {
-            ui->particleLimitLabel  , ui->particleLimitSpinBox,
-            ui->extraOpacityFactorLabel        , ui->extraOpacityFactorDoubleSpinBox,
+            ui->particleLimitLabel      , ui->particleLimitSpinBox,
+            ui->extraOpacityFactorLabel , ui->extraOpacityFactorDoubleSpinBox,
         };
 
     m_group_client_server_point_object_widgets =
@@ -408,40 +408,40 @@ void ObjectEditorWIP::onItemSelection(const QItemSelection &selected, const QIte
     ObjectInfoExtractor::ObjectInfo info = var.value<ObjectInfoExtractor::ObjectInfo>();
 
     // 全オブジェクト共通
-    ui->nameLineEdit                ->setText( QString::fromUtf8( info.name.c_str() ) );
-    ui->directoryLineEdit           ->setText( QString::fromUtf8( info.directory.c_str() ) );
-    ui->formatLineEdit              ->setText( QString::fromUtf8( ObjectInfoExtractor::formatToString( info.format ) ) );
-    ui->timeStepMinLineEdit         ->setText( QString::number( info.timeStep.first ) );
-    ui->timeStepMaxLineEdit         ->setText( QString::number( info.timeStep.second ) );
-    ui->focusCheckBox               ->setChecked( info.tmpIsFocus );
-    ui->minObjectXCoordLineEdit     ->setText( QString::number( info.minObjectCoord.x() ) );
-    ui->minObjectYCoordLineEdit     ->setText( QString::number( info.minObjectCoord.y() ) );
-    ui->minObjectZCoordLineEdit     ->setText( QString::number( info.minObjectCoord.z() ) );
-    ui->maxObjectXCoordLineEdit     ->setText( QString::number( info.maxObjectCoord.x() ) );
-    ui->maxObjectYCoordLineEdit     ->setText( QString::number( info.maxObjectCoord.y() ) );
-    ui->maxObjectZCoordLineEdit     ->setText( QString::number( info.maxObjectCoord.z() ) );
-    ui->minExternalXCoordLineEdit   ->setText( QString::number( info.minExternalCoord.x() ) );
-    ui->minExternalYCoordLineEdit   ->setText( QString::number( info.minExternalCoord.y() ) );
-    ui->minExternalZCoordLineEdit   ->setText( QString::number( info.minExternalCoord.z() ) );
-    ui->maxExternalXCoordLineEdit   ->setText( QString::number( info.maxExternalCoord.x() ) );
-    ui->maxExternalYCoordLineEdit   ->setText( QString::number( info.maxExternalCoord.y() ) );
-    ui->maxExternalZCoordLineEdit   ->setText( QString::number( info.maxExternalCoord.z() ) );
+    ui->nameLineEdit                    ->setText( QString::fromUtf8( info.name.c_str() ) );
+    ui->directoryLineEdit               ->setText( QString::fromUtf8( info.directory.c_str() ) );
+    ui->formatLineEdit                  ->setText( QString::fromUtf8( ObjectInfoExtractor::formatToString( info.format ) ) );
+    ui->timeStepMinLineEdit             ->setText( QString::number( info.timeStep.first ) );
+    ui->timeStepMaxLineEdit             ->setText( QString::number( info.timeStep.second ) );
+    ui->focusCheckBox                   ->setChecked( info.tmpIsFocus );
+    ui->minObjectXCoordLineEdit         ->setText( QString::number( info.minObjectCoord.x() ) );
+    ui->minObjectYCoordLineEdit         ->setText( QString::number( info.minObjectCoord.y() ) );
+    ui->minObjectZCoordLineEdit         ->setText( QString::number( info.minObjectCoord.z() ) );
+    ui->maxObjectXCoordLineEdit         ->setText( QString::number( info.maxObjectCoord.x() ) );
+    ui->maxObjectYCoordLineEdit         ->setText( QString::number( info.maxObjectCoord.y() ) );
+    ui->maxObjectZCoordLineEdit         ->setText( QString::number( info.maxObjectCoord.z() ) );
+    ui->minExternalXCoordLineEdit       ->setText( QString::number( info.minExternalCoord.x() ) );
+    ui->minExternalYCoordLineEdit       ->setText( QString::number( info.minExternalCoord.y() ) );
+    ui->minExternalZCoordLineEdit       ->setText( QString::number( info.minExternalCoord.z() ) );
+    ui->maxExternalXCoordLineEdit       ->setText( QString::number( info.maxExternalCoord.x() ) );
+    ui->maxExternalYCoordLineEdit       ->setText( QString::number( info.maxExternalCoord.y() ) );
+    ui->maxExternalZCoordLineEdit       ->setText( QString::number( info.maxExternalCoord.z() ) );
 
     // サーバポイントオブジェクトである。(ClientServer/Insitu共通)
-    ui->particleLimitSpinBox        ->setValue( info.tmpParticleLimit );
-    ui->extraOpacityFactorDoubleSpinBox        ->setValue( info.tmpExtraOpacityFactor );
+    ui->particleLimitSpinBox            ->setValue( info.tmpParticleLimit );
+    ui->extraOpacityFactorDoubleSpinBox ->setValue( info.tmpExtraOpacityFactor );
 
     // サーバポイントオブジェクト(ClientServer)で表示させるウィジェット群
-    ui->numberOfVectorLineEdit      ->setText( QString::number( info.numberOfVector ) );
-    ui->numberOfElementsLineEdit    ->setText( QString::number( info.numberOfElements ) );
-    ui->numberOfSubvolumeLineEdit   ->setText( QString::number( info.numberOfSubvolume ) );
-    ui->numberOfNodesLineEdit       ->setText( QString::number( info.numberOfNodes ) );
-    ui->elementTypeLineEdit         ->setText( QString::number( info.elementType ) );
-    ui->fileTypeLineEdit            ->setText( QString::number( info.fileType ) );
-    ui->stepNumberLineEdit          ->setText( QString::number( info.stepNumber ) );
-    ui->coordinateXLineEdit         ->setText( QString::fromUtf8( info.tmpCoordinateX ) );
-    ui->coordinateYLineEdit         ->setText( QString::fromUtf8( info.tmpCoordinateY ) );
-    ui->coordinateZLineEdit         ->setText( QString::fromUtf8( info.tmpCoordinateZ ) );
+    ui->numberOfVectorLineEdit          ->setText( QString::number( info.numberOfVector ) );
+    ui->numberOfElementsLineEdit        ->setText( QString::number( info.numberOfElements ) );
+    ui->numberOfSubvolumeLineEdit       ->setText( QString::number( info.numberOfSubvolume ) );
+    ui->numberOfNodesLineEdit           ->setText( QString::number( info.numberOfNodes ) );
+    ui->elementTypeLineEdit             ->setText( QString::number( info.elementType ) );
+    ui->fileTypeLineEdit                ->setText( QString::number( info.fileType ) );
+    ui->stepNumberLineEdit              ->setText( QString::number( info.stepNumber ) );
+    ui->coordinateXLineEdit             ->setText( QString::fromUtf8( info.tmpCoordinateX ) );
+    ui->coordinateYLineEdit             ->setText( QString::fromUtf8( info.tmpCoordinateY ) );
+    ui->coordinateZLineEdit             ->setText( QString::fromUtf8( info.tmpCoordinateZ ) );
 
     // true:テクスチャ無しポリゴンオブジェクトである。(.stl, .kvsml)
     QPalette palette = ui->colorClickableLabel->palette();
@@ -702,23 +702,23 @@ void ObjectEditorWIP::onApply()
         ObjectInfoExtractor::ObjectInfo objectInfo = var.value<ObjectInfoExtractor::ObjectInfo>();
 
         // チェックボックスの状態を tmp に反映
-        objectInfo.tmpIsDisplay     = ( displayItem->checkState()        == Qt::Checked );
-        objectInfo.tmpIsKeepInitial = ( keepInitialItem->checkState()    == Qt::Checked );
-        objectInfo.tmpIsKeepFinal   = ( keepFinalItem->checkState()      == Qt::Checked );
+        objectInfo.tmpIsDisplay         = ( displayItem->checkState()        == Qt::Checked );
+        objectInfo.tmpIsKeepInitial     = ( keepInitialItem->checkState()    == Qt::Checked );
+        objectInfo.tmpIsKeepFinal       = ( keepFinalItem->checkState()      == Qt::Checked );
 
         // tmpの確定
-        objectInfo.isDisplay        = objectInfo.tmpIsDisplay;
-        objectInfo.isKeepInitial    = objectInfo.tmpIsKeepInitial;
-        objectInfo.isKeepFinal      = objectInfo.tmpIsKeepFinal;
+        objectInfo.isDisplay            = objectInfo.tmpIsDisplay;
+        objectInfo.isKeepInitial        = objectInfo.tmpIsKeepInitial;
+        objectInfo.isKeepFinal          = objectInfo.tmpIsKeepFinal;
 
-        objectInfo.isFocus          = objectInfo.tmpIsFocus;
+        objectInfo.isFocus              = objectInfo.tmpIsFocus;
 
-        objectInfo.particleLimit    = objectInfo.tmpParticleLimit;
-        objectInfo.extraOpacityFactor          = objectInfo.tmpExtraOpacityFactor;
+        objectInfo.particleLimit        = objectInfo.tmpParticleLimit;
+        objectInfo.extraOpacityFactor   = objectInfo.tmpExtraOpacityFactor;
 
-        objectInfo.coordinateX      = objectInfo.tmpCoordinateX;
-        objectInfo.coordinateY      = objectInfo.tmpCoordinateY;
-        objectInfo.coordinateZ      = objectInfo.tmpCoordinateZ;
+        objectInfo.coordinateX          = objectInfo.tmpCoordinateX;
+        objectInfo.coordinateY          = objectInfo.tmpCoordinateY;
+        objectInfo.coordinateZ          = objectInfo.tmpCoordinateZ;
 
         if( objectInfo.polygonColor.r() != objectInfo.tmpPolygonColor.r() ||
             objectInfo.polygonColor.g() != objectInfo.tmpPolygonColor.g() ||
@@ -804,34 +804,34 @@ void ObjectEditorWIP::onApply()
             ObjectInfoExtractor::ObjectInfo objectInfo = var.value<ObjectInfoExtractor::ObjectInfo>();
 
             QJsonObject jsonObjectInfo;
-            jsonObjectInfo["name"]              = QString::fromUtf8( objectInfo.name );
-            jsonObjectInfo["directory"]         = QString::fromUtf8( objectInfo.directory );
-            jsonObjectInfo["format"]            = QString::fromUtf8( ObjectInfoExtractor::formatToString( objectInfo.format ).c_str() );
-            jsonObjectInfo["timeStepMin"]       = objectInfo.timeStep.first;
-            jsonObjectInfo["timeStepMax"]       = objectInfo.timeStep.second;
-            jsonObjectInfo["isFocus"]           = objectInfo.isFocus;
+            jsonObjectInfo["name"]                  = QString::fromUtf8( objectInfo.name );
+            jsonObjectInfo["directory"]             = QString::fromUtf8( objectInfo.directory );
+            jsonObjectInfo["format"]                = QString::fromUtf8( ObjectInfoExtractor::formatToString( objectInfo.format ).c_str() );
+            jsonObjectInfo["timeStepMin"]           = objectInfo.timeStep.first;
+            jsonObjectInfo["timeStepMax"]           = objectInfo.timeStep.second;
+            jsonObjectInfo["isFocus"]               = objectInfo.isFocus;
 
-            jsonObjectInfo["minObjectCoord"]    = QJsonArray{ objectInfo.minObjectCoord.x(), objectInfo.minObjectCoord.y(), objectInfo.minObjectCoord.z() };
-            jsonObjectInfo["maxObjectCoord"]    = QJsonArray{ objectInfo.maxObjectCoord.x(), objectInfo.maxObjectCoord.y(), objectInfo.maxObjectCoord.z() };
-            jsonObjectInfo["minExternalCoord"]  = QJsonArray{ objectInfo.minExternalCoord.x(), objectInfo.minExternalCoord.y(), objectInfo.minExternalCoord.z() };
-            jsonObjectInfo["maxExternalCoord"]  = QJsonArray{ objectInfo.maxExternalCoord.x(), objectInfo.maxExternalCoord.y(), objectInfo.maxExternalCoord.z() };
+            jsonObjectInfo["minObjectCoord"]        = QJsonArray{ objectInfo.minObjectCoord.x(), objectInfo.minObjectCoord.y(), objectInfo.minObjectCoord.z() };
+            jsonObjectInfo["maxObjectCoord"]        = QJsonArray{ objectInfo.maxObjectCoord.x(), objectInfo.maxObjectCoord.y(), objectInfo.maxObjectCoord.z() };
+            jsonObjectInfo["minExternalCoord"]      = QJsonArray{ objectInfo.minExternalCoord.x(), objectInfo.minExternalCoord.y(), objectInfo.minExternalCoord.z() };
+            jsonObjectInfo["maxExternalCoord"]      = QJsonArray{ objectInfo.maxExternalCoord.x(), objectInfo.maxExternalCoord.y(), objectInfo.maxExternalCoord.z() };
 
-            jsonObjectInfo["particleLimit"]     = objectInfo.particleLimit;
-            jsonObjectInfo["extraOpacityFactor"]           = objectInfo.extraOpacityFactor;
+            jsonObjectInfo["particleLimit"]         = objectInfo.particleLimit;
+            jsonObjectInfo["extraOpacityFactor"]    = objectInfo.extraOpacityFactor;
 
-            jsonObjectInfo["numberOfVector"]    = objectInfo.numberOfVector;
-            jsonObjectInfo["numberOfElements"]  = objectInfo.numberOfElements;
-            jsonObjectInfo["numberOfSubvolume"] = objectInfo.numberOfSubvolume;
-            jsonObjectInfo["numberOfNodes"]     = objectInfo.numberOfNodes;
-            jsonObjectInfo["elementType"]       = objectInfo.elementType;
-            jsonObjectInfo["fileType"]          = objectInfo.fileType;
-            jsonObjectInfo["stepNumber"]        = objectInfo.stepNumber;
-            jsonObjectInfo["coordinateX"]       = QString::fromUtf8( objectInfo.coordinateX );
-            jsonObjectInfo["coordinateY"]       = QString::fromUtf8( objectInfo.coordinateY );
-            jsonObjectInfo["coordinateZ"]       = QString::fromUtf8( objectInfo.coordinateZ );
+            jsonObjectInfo["numberOfVector"]        = objectInfo.numberOfVector;
+            jsonObjectInfo["numberOfElements"]      = objectInfo.numberOfElements;
+            jsonObjectInfo["numberOfSubvolume"]     = objectInfo.numberOfSubvolume;
+            jsonObjectInfo["numberOfNodes"]         = objectInfo.numberOfNodes;
+            jsonObjectInfo["elementType"]           = objectInfo.elementType;
+            jsonObjectInfo["fileType"]              = objectInfo.fileType;
+            jsonObjectInfo["stepNumber"]            = objectInfo.stepNumber;
+            jsonObjectInfo["coordinateX"]           = QString::fromUtf8( objectInfo.coordinateX );
+            jsonObjectInfo["coordinateY"]           = QString::fromUtf8( objectInfo.coordinateY );
+            jsonObjectInfo["coordinateZ"]           = QString::fromUtf8( objectInfo.coordinateZ );
 
-            jsonObjectInfo["polygonColor"]      = QJsonArray{ objectInfo.polygonColor.r(), objectInfo.polygonColor.g(), objectInfo.polygonColor.b() };
-            jsonObjectInfo["polygonOpacity"]    = objectInfo.polygonOpacity;
+            jsonObjectInfo["polygonColor"]          = QJsonArray{ objectInfo.polygonColor.r(), objectInfo.polygonColor.g(), objectInfo.polygonColor.b() };
+            jsonObjectInfo["polygonOpacity"]        = objectInfo.polygonOpacity;
 
             objectInfoArray.append( jsonObjectInfo );
         }

@@ -867,63 +867,63 @@ void Communication::textWebsocketMessageReceived( const QString& receivedMessage
             ObjectInfoExtractor::ObjectInfo objectInfo;
 
             // Common Object Info
-            objectInfo.tmpIsDisplay         = obj["tmpIsDisplay"].toBool();
-            objectInfo.isDisplay            = obj["isDisplay"].toBool();
-            objectInfo.tmpIsKeepInitial     = obj["tmpIsKeepInitial"].toBool();
-            objectInfo.isKeepInitial        = obj["isKeepInitial"].toBool();
-            objectInfo.tmpIsKeepFinal       = obj["tmpIsKeepFinal"].toBool();
-            objectInfo.isKeepFinal          = obj["isKeepFinal"].toBool();
+            objectInfo.tmpIsDisplay             = obj["tmpIsDisplay"].toBool();
+            objectInfo.isDisplay                = obj["isDisplay"].toBool();
+            objectInfo.tmpIsKeepInitial         = obj["tmpIsKeepInitial"].toBool();
+            objectInfo.isKeepInitial            = obj["isKeepInitial"].toBool();
+            objectInfo.tmpIsKeepFinal           = obj["tmpIsKeepFinal"].toBool();
+            objectInfo.isKeepFinal              = obj["isKeepFinal"].toBool();
 
-            objectInfo.name                 = obj["name"].toString().toUtf8();
-            objectInfo.extension            = obj["extension"].toString().toUtf8();
-            objectInfo.directory            = obj["directory"].toString().toUtf8();
-            objectInfo.format               = objectInfo.format = static_cast<ObjectInfoExtractor::Format>( obj["format"].toInt() );
-            QJsonArray timeStepArray        = obj["timeStep"].toArray();
-            objectInfo.timeStep             = { timeStepArray[0].toInt(), timeStepArray[1].toInt() };
-            objectInfo.tmpIsFocus           = obj["tmpIsFocus"].toBool();
-            objectInfo.isFocus              = obj["isFocus"].toBool();
-            auto minObjectCoordArray        = obj["minObjectCoord"].toArray();
-            objectInfo.minObjectCoord       = { minObjectCoordArray[0].toDouble(), minObjectCoordArray[1].toDouble(), minObjectCoordArray[2].toDouble() };
-            auto maxObjectCoordArray        = obj["maxObjectCoord"].toArray();
-            objectInfo.maxObjectCoord       = { maxObjectCoordArray[0].toDouble(), maxObjectCoordArray[1].toDouble(), maxObjectCoordArray[2].toDouble() };
-            auto minExternalCoordArray      = obj["minExternalCoord"].toArray();
-            objectInfo.minExternalCoord     = { minExternalCoordArray[0].toDouble(), minExternalCoordArray[1].toDouble(), minExternalCoordArray[2].toDouble() };
-            auto maxExternalCoordArray      = obj["maxExternalCoord"].toArray();
-            objectInfo.maxExternalCoord     = { maxExternalCoordArray[0].toDouble(), maxExternalCoordArray[1].toDouble(), maxExternalCoordArray[2].toDouble() };
+            objectInfo.name                     = obj["name"].toString().toUtf8();
+            objectInfo.extension                = obj["extension"].toString().toUtf8();
+            objectInfo.directory                = obj["directory"].toString().toUtf8();
+            objectInfo.format                   = objectInfo.format = static_cast<ObjectInfoExtractor::Format>( obj["format"].toInt() );
+            QJsonArray timeStepArray            = obj["timeStep"].toArray();
+            objectInfo.timeStep                 = { timeStepArray[0].toInt(), timeStepArray[1].toInt() };
+            objectInfo.tmpIsFocus               = obj["tmpIsFocus"].toBool();
+            objectInfo.isFocus                  = obj["isFocus"].toBool();
+            auto minObjectCoordArray            = obj["minObjectCoord"].toArray();
+            objectInfo.minObjectCoord           = { minObjectCoordArray[0].toDouble(), minObjectCoordArray[1].toDouble(), minObjectCoordArray[2].toDouble() };
+            auto maxObjectCoordArray            = obj["maxObjectCoord"].toArray();
+            objectInfo.maxObjectCoord           = { maxObjectCoordArray[0].toDouble(), maxObjectCoordArray[1].toDouble(), maxObjectCoordArray[2].toDouble() };
+            auto minExternalCoordArray          = obj["minExternalCoord"].toArray();
+            objectInfo.minExternalCoord         = { minExternalCoordArray[0].toDouble(), minExternalCoordArray[1].toDouble(), minExternalCoordArray[2].toDouble() };
+            auto maxExternalCoordArray          = obj["maxExternalCoord"].toArray();
+            objectInfo.maxExternalCoord         = { maxExternalCoordArray[0].toDouble(), maxExternalCoordArray[1].toDouble(), maxExternalCoordArray[2].toDouble() };
 
             // Common Server Point Object Info
-            objectInfo.tmpParticleLimit     = obj["tmpParticleLimit"].toInt();
-            objectInfo.particleLimit        = obj["particleLimit"].toInt();
-            objectInfo.tmpExtraOpacityFactor           = static_cast<float>( obj["tmpExtraOpacityFactor"].toDouble() );
-            objectInfo.extraOpacityFactor              = static_cast<float>( obj["extraOpacityFactor"].toDouble() );
+            objectInfo.tmpParticleLimit         = obj["tmpParticleLimit"].toInt();
+            objectInfo.particleLimit            = obj["particleLimit"].toInt();
+            objectInfo.tmpExtraOpacityFactor    = static_cast<float>( obj["tmpExtraOpacityFactor"].toDouble() );
+            objectInfo.extraOpacityFactor       = static_cast<float>( obj["extraOpacityFactor"].toDouble() );
 
             // Client Server Point Object Info
-            objectInfo.numberOfVector       = obj["numberOfVector"].toInt();
-            objectInfo.numberOfElements     = obj["numberOfElements"].toInt();
-            objectInfo.numberOfSubvolume    = obj["numberOfSubvolume"].toInt();
-            objectInfo.numberOfNodes        = obj["numberOfNodes"].toInt();
-            objectInfo.elementType          = obj["elementType"].toInt();
-            objectInfo.fileType             = obj["fileType"].toInt();
-            objectInfo.stepNumber           = obj["stepNumber"].toInt();
+            objectInfo.numberOfVector           = obj["numberOfVector"].toInt();
+            objectInfo.numberOfElements         = obj["numberOfElements"].toInt();
+            objectInfo.numberOfSubvolume        = obj["numberOfSubvolume"].toInt();
+            objectInfo.numberOfNodes            = obj["numberOfNodes"].toInt();
+            objectInfo.elementType              = obj["elementType"].toInt();
+            objectInfo.fileType                 = obj["fileType"].toInt();
+            objectInfo.stepNumber               = obj["stepNumber"].toInt();
 
-            objectInfo.tmpCoordinateX       = obj["tmpCoordinateX"].toString().toUtf8();
-            objectInfo.coordinateX          = obj["coordinateX"].toString().toUtf8();
-            objectInfo.tmpCoordinateY       = obj["tmpCoordinateY"].toString().toUtf8();
-            objectInfo.coordinateY          = obj["coordinateY"].toString().toUtf8();
-            objectInfo.tmpCoordinateZ       = obj["tmpCoordinateZ"].toString().toUtf8();
-            objectInfo.coordinateZ          = obj["coordinateZ"].toString().toUtf8();
-            objectInfo.isExport             = obj["isExport"].toBool();
+            objectInfo.tmpCoordinateX           = obj["tmpCoordinateX"].toString().toUtf8();
+            objectInfo.coordinateX              = obj["coordinateX"].toString().toUtf8();
+            objectInfo.tmpCoordinateY           = obj["tmpCoordinateY"].toString().toUtf8();
+            objectInfo.coordinateY              = obj["coordinateY"].toString().toUtf8();
+            objectInfo.tmpCoordinateZ           = obj["tmpCoordinateZ"].toString().toUtf8();
+            objectInfo.coordinateZ              = obj["coordinateZ"].toString().toUtf8();
+            objectInfo.isExport                 = obj["isExport"].toBool();
 
             // Nontexture Polygon Object Info
-            auto tmpPolygonColorArray       = obj["tmpPolygonColor"].toArray();
-            objectInfo.tmpPolygonColor      = kvs::RGBColor( tmpPolygonColorArray[0].toInt(), tmpPolygonColorArray[1].toInt(), tmpPolygonColorArray[2].toInt() );
-            auto polygonColorArray          = obj["polygonColor"].toArray();
-            objectInfo.polygonColor         = kvs::RGBColor( polygonColorArray[0].toInt(), polygonColorArray[1].toInt(), polygonColorArray[2].toInt() );
+            auto tmpPolygonColorArray           = obj["tmpPolygonColor"].toArray();
+            objectInfo.tmpPolygonColor          = kvs::RGBColor( tmpPolygonColorArray[0].toInt(), tmpPolygonColorArray[1].toInt(), tmpPolygonColorArray[2].toInt() );
+            auto polygonColorArray              = obj["polygonColor"].toArray();
+            objectInfo.polygonColor             = kvs::RGBColor( polygonColorArray[0].toInt(), polygonColorArray[1].toInt(), polygonColorArray[2].toInt() );
 
-            objectInfo.tmpPolygonOpacity    = static_cast<float>( obj["tmpPolygonOpacity"].toDouble() );
-            objectInfo.polygonOpacity       = static_cast<float>( obj["polygonOpacity"].toDouble() );
+            objectInfo.tmpPolygonOpacity        = static_cast<float>( obj["tmpPolygonOpacity"].toDouble() );
+            objectInfo.polygonOpacity           = static_cast<float>( obj["polygonOpacity"].toDouble() );
 
-            objectInfo.isRemote             = obj["isRemote"].toBool();
+            objectInfo.isRemote                 = obj["isRemote"].toBool();
 
             emit addObjectToModel( objectInfo );
         }
