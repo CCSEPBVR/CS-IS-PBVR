@@ -487,6 +487,7 @@ int main( int argc, char** argv )
 #endif
 //jupiter end
 
+                std::cout << __FUNCTION__  << ", " << __LINE__ <<std::endl; 
 //// read minmax & histrogram 
 
                 ParticleMonitor pm( particlePath, glyphFilePath, plotOverLineFilePath, statePath.c_str(), historyPath.c_str() );
@@ -558,8 +559,9 @@ int main( int argc, char** argv )
                 servMes.m_flag_send_bins = 1;
                 servMes.m_number_glyph = 0;
                 servMes.m_particle_limit = pm.particleHistoryFile().ParticleLimit();
-                servMes.m_particle_density = pm.particleHistoryFile().ParticleDensity();
+                servMes.m_extra_opacity_factor = pm.particleHistoryFile().ExtraOpacityFactor();
 
+                std::cout << __FUNCTION__  << ", " << __LINE__ <<std::endl; 
                 // 20181226 start  環境変数で指定したパスおよび名前でファイル参照を行う
                 //初期化 : jupiter_old.tfを読む
                 ParameterFileReader ppr;
@@ -778,7 +780,7 @@ int main( int argc, char** argv )
                         param.crop.set_enable( clntMes.m_enable_crop_region );
                         param.crop.set( clntMes.m_crop_region );
                         param.particle_limit = clntMes.m_particle_limit;
-                        param.particle_density = clntMes.m_particle_density;
+                        param.extra_opacity_factor = clntMes.m_extra_opacity_factor;
 
                         if ( clntMes.m_node_type == 'a' )
                         {
@@ -975,7 +977,7 @@ int main( int argc, char** argv )
                             //servMes.m_number_elements = fil.total_numElements;
                             servMes.m_number_ingredients = pm.particleHistoryFile().nVariables();
                             servMes.m_particle_limit = pm.particleHistoryFile().ParticleLimit();
-                            servMes.m_particle_density = pm.particleHistoryFile().ParticleDensity();
+                            servMes.m_extra_opacity_factor = pm.particleHistoryFile().ExtraOpacityFactor();
 
                             TimerStart( 3 );
                             for ( int tf = 0; tf < pm.particleHistoryFile().colorHistogramArray().size() && tf < servMes.m_transfer_function_count; tf++ )
@@ -1235,7 +1237,7 @@ int main( int argc, char** argv )
                         param.crop.set_enable( clntMes.m_enable_crop_region );
                         param.crop.set( clntMes.m_crop_region );
                         param.particle_limit = clntMes.m_particle_limit;
-                        param.particle_density = clntMes.m_particle_density;
+                        param.extra_opacity_factor = clntMes.m_extra_opacity_factor;
 
                         if ( clntMes.m_node_type == 'a' )
                         {
@@ -1579,7 +1581,7 @@ int main( int argc, char** argv )
                         param.crop.set_enable( clntMes.m_enable_crop_region );
                         param.crop.set( clntMes.m_crop_region );
                         param.particle_limit = clntMes.m_particle_limit;
-                        param.particle_density = clntMes.m_particle_density;
+                        param.extra_opacity_factor = clntMes.m_extra_opacity_factor;
 
                         if ( clntMes.m_node_type == 'a' )
                         {

@@ -329,7 +329,7 @@ bool initializeParameters(
     ParamInfo *param_info,
     int nvariables,const kvs::ObjectBase* object,
     float* sampling_volume_inverse,
-    float* max_opacity, float* max_density, int* subpixel_level, float* particle_density,
+    float* max_opacity, float* max_density, int* subpixel_level, float* extra_opacity_factor,
     float* particle_data_size_limit,
     const std::string &visParamDir,
     const std::string &tfFilename )
@@ -351,7 +351,7 @@ bool initializeParameters(
 
     opend = LoadParameterFile( param_info, param_filename, old_param_filename );
 
-    *particle_density         = param.getFloat( "PARTICLE_DENSITY" );
+    *extra_opacity_factor         = param.getFloat( "EXTRA_OAPCITY_FACTOR" );
     *particle_data_size_limit = param.getFloat( "PARTICLE_DATA_SIZE_LIMIT" );
 
 
@@ -369,7 +369,7 @@ bool initializeParameters(
     float max = kvs::Math::Max( object->maxObjectCoord().x(),
                                 object->maxObjectCoord().y(),
                                 object->maxObjectCoord().z() );
-    const float sampling_step = (max - min) / 1E1;
+    const float sampling_step = (max - min) / 1E1/(*extra_opacity_factor);
     int particle_limit = param.getInt( "PARTICLE_LIMIT" );
     double total_volume = ( object->maxObjectCoord().x() - object->minObjectCoord().x() )
                         * ( object->maxObjectCoord().y() - object->minObjectCoord().y() )
@@ -398,7 +398,7 @@ bool initializeParameters(
     {
         fprintf( stdout , "---------initialize Parameters-------------\n" );
         fprintf( stdout , "particle_limit    = %20d\n", particle_limit );
-        fprintf( stdout , "particle_density  = %20f\n", *particle_density );
+        fprintf( stdout , "extra_opacity_factor  = %20f\n", *extra_opacity_factor );
         fprintf( stdout , "resolutin_height  = %20d\n", height );
         fprintf( stdout , "resolutin_width   = %20d\n", width );
         fprintf( stdout , "total_volume      = %20.3e\n", total_volume );
@@ -598,7 +598,7 @@ void generate_particles( const int time_step,
     float max_opacity;
     float max_density;
     int subpixel_level;
-    float particle_density;
+    float extra_opacity_factor;
     float particle_data_size_limit;
 
     // 20181226 start  環境変数で指定したファイルパスを参照する
@@ -687,7 +687,7 @@ void generate_particles( const int time_step,
     bool tmp_parameter_file_opened = 
       initializeParameters( tfs, tf, &param, nvariables, object,
                             &sampling_volume_inverse, &max_opacity, &max_density, 
-                            &subpixel_level, &particle_density, &particle_data_size_limit,
+                            &subpixel_level, &extra_opacity_factor, &particle_data_size_limit,
                             visParamDir, tfFilename );
 
     int tf_number = tf.size();
@@ -1050,7 +1050,7 @@ void generate_particles( const int time_step,
                     const float d = cell_length[l];
                     const float cell_volume = d * d * d;
 
-                    const int np = calculate_number_of_particles( density, cell_volume, &MT ) * particle_density;
+                    const int np = calculate_number_of_particles( density, cell_volume, &MT ) ;
 
                     const int cell_id = I + J * SIMDW;
 

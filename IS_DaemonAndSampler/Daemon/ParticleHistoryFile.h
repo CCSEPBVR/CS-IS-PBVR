@@ -21,7 +21,7 @@ private:
     HistogramArray    m_opacity_histogram_array;
     int               m_nvariables;
     int               m_particle_limit;
-    float             m_particle_density;
+    float             m_extra_opacity_factor;
 
 private:
 
@@ -48,7 +48,8 @@ public:
     HistogramArray& opacityHistogramArray();
     int nVariables(){return m_nvariables; };
     int ParticleLimit(){return m_particle_limit; };
-    float ParticleDensity(){return m_particle_density; };
+    //float ParticleDensity(){return m_particle_density; };
+    float ExtraOpacityFactor(){return m_extra_opacity_factor; };
 };
 
 template<typename T>

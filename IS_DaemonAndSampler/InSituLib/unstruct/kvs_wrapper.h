@@ -85,7 +85,8 @@ extern "C" {
     float m_max_density;
     float m_particle_data_size_limit;
     float m_sampling_volume_inverse;
-    float m_particle_density;
+//    float m_particle_density;
+    float m_extra_opacity_factor;
     int m_particle_limit;
     float m_max_opacity;
     int m_nvariables;

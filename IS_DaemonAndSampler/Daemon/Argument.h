@@ -36,7 +36,8 @@ public:
     int jid_pack_size;
     int particle_limit, particle_limit_pre;
     float density_factor;
-    float particle_density;
+    //float particle_density;
+    float extra_opacity_factor;
     std::string output_data_base;
     size_t windowWidth;
     size_t windowHeight;
@@ -113,7 +114,8 @@ Argument( int argc, char** argv ):
         particle_limit = 10000000;
         particle_limit_pre = -1;
         density_factor = 1.0;
-        particle_density = 1.0;
+        //particle_density = 1.0;
+        extra_opacity_factor =1.0;
         output_data_base = "./";
         windowWidth  = 620;
         windowHeight = 620;
@@ -143,7 +145,7 @@ Argument( int argc, char** argv ):
         if ( this->hasOption( "jn" ) ) jid_pack_size = this->optionValue<int>( "jn" );
         if ( this->hasOption( "normal_ingred" ) ) normal_ingred = this->optionValue<size_t>( "normal_ingred" );
         if ( this->hasOption( "plimit" ) ) particle_limit = this->optionValue<int>( "plimit" );
-        if ( this->hasOption( "pd" ) ) particle_density = this->optionValue<int>( "pd" );
+//        if ( this->hasOption( "pd" ) ) particle_density = this->optionValue<int>( "pd" );
         if ( this->hasOption( "vin" ) )
         {
             size_t pos;

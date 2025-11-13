@@ -12,7 +12,7 @@ void ParameterFileReader::outputMessage( jpv::ParticleTransferServerMessage* ser
 void ParameterFileReader::outputParameterMessage( jpv::ParticleTransferServerMessage* server_message )
 {
     server_message->m_particle_limit         =  m_name_list_file.getValue<int32_t>( "PARTICLE_LIMIT"    );
-    server_message->m_particle_density       =  m_name_list_file.getValue<float>(   "PARTICLE_DENSITY"  );
+    server_message->m_extra_opacity_factor       =  m_name_list_file.getValue<float>(   "EXTRA_OPACITY_FACTOR"  );
     size_t width                           =  m_name_list_file.getValue<size_t>(  "RESOLUTION_WIDTH"  );
     size_t height                          =  m_name_list_file.getValue<size_t>(  "RESOLUTION_HEIGHT" );
     server_message->m_camera->setWindowSize( width, height );

@@ -28,7 +28,8 @@ bool ParamInfo::LoadIN( const std::string& filename )
 
     name_list.push_back( "SUB_PIXEL_LEVEL" );
     name_list.push_back( "REPEAT_LEVEL" );
-    name_list.push_back( "PARTICLE_DENSITY" );
+    //name_list.push_back( "PARTICLE_DENSITY" );
+    name_list.push_back( "EXTRA_OPACITY_FACTOR" );
     name_list.push_back( "PARTICLE_LIMIT" );
     name_list.push_back( "PARTICLE_DATA_SIZE_LIMIT" );
     name_list.push_back( "RESOLUTION_WIDTH" );

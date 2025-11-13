@@ -10,7 +10,7 @@ void ParameterFileWriter::inputParameterMessage( const jpv::ParticleTransferClie
 {
 //  m_name_list_file.setLine( "SUB_PIXEL_LEVEL", client_message.subPixelLevel  );
     m_name_list_file.setLine( "PARTICLE_LIMIT" , client_message.m_particle_limit );
-    m_name_list_file.setLine( "PARTICLE_DENSITY" ,client_message.m_particle_density );
+    m_name_list_file.setLine( "EXTRA_OPACITY_FACTOR" ,client_message.m_extra_opacity_factor );
     m_name_list_file.setLine( "PARTICLE_DATA_SIZE_LIMIT" ,client_message.m_particle_data_size_limit );
 //  if ( client_message.samplingMethod == 'u' )
 //  {

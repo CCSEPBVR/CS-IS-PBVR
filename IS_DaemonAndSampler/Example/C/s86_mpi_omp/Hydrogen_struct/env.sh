@@ -3,7 +3,7 @@
 . /etc/profile.d/modules.sh
 module purge
 module load cuda/11.4 gnu/cur intel/cur  mpt/2.23-ga
-export MPICC_CC=icc; export MPICXX_CXX=icpc
+#export MPICC_CC=icc; export MPICXX_CXX=icpc
 
 echo "end setting module & export"
 

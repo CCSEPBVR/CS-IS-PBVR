@@ -5,7 +5,7 @@ ParticleHistoryFile::ParticleHistoryFile()
     this->set_name();
     m_nvariables =0;
     m_particle_limit   = 0;
-    m_particle_density = 0;
+    m_extra_opacity_factor = 0;
 }
 
 ParticleHistoryFile::ParticleHistoryFile( const std::string& file ):
@@ -14,7 +14,7 @@ ParticleHistoryFile::ParticleHistoryFile( const std::string& file ):
     this->set_name();
     m_nvariables =0;
     m_particle_limit   = 0;
-    m_particle_density = 0;
+    m_extra_opacity_factor = 0;
 }
 
 void ParticleHistoryFile::set_name()
@@ -70,7 +70,8 @@ void ParticleHistoryFile::set_name()
         m_name.push_back( "HISTOGRAM_O" + ss.str() );
     }
     m_name.push_back( "N_VARIABLES" );
-    m_name.push_back( "PARTICLE_DENSITY" );
+//    m_name.push_back( "PARTICLE_DENSITY" );
+    m_name.push_back( "EXTRA_OPACITY_FACTOR" );
     m_name.push_back( "PARTICLE_LIMIT" );
     m_name.push_back( "END_HISTORY_FILE" );
 
@@ -133,9 +134,9 @@ void ParticleHistoryFile::assign_name_list( const NameListFile& name_list_file )
     else {
         cur_tf_number = 0;
     }
-    m_nvariables = nml.getValue<int>( "N_VARIABLES" );;
-    m_particle_limit   = nml.getValue<int>( "PARTICLE_LIMIT" );;
-    m_particle_density = nml.getValue<float>( "PARTICLE_DENSITY" );;
+    m_nvariables = nml.getValue<int>( "N_VARIABLES" );
+    m_particle_limit   = nml.getValue<int>( "PARTICLE_LIMIT" );
+    m_extra_opacity_factor = nml.getValue<float>( "EXTRA_OPACITY_FACTOR" );
 
     for (int i = 0; i < cur_tf_number; i++) {
         std::stringstream ss;
