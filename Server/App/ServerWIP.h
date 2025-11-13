@@ -10,6 +10,8 @@
 #include <App.h>
 #endif
 
+#include "Worker.h"
+
 #include "../../Shared/json.hpp"
 #include "../../Shared/ObjectInfoExtractor.h"
 
@@ -49,6 +51,8 @@ private:
     std::list<kvs::RGBColor> m_transfer_function_colors;
     std::list<float>         m_transfer_function_opacities;
     std::mutex               m_transfer_function_mutex;
+
+    std::vector<ObjectInfoExtractor::ObjectInfo>* m_objects;
 
     void initialize();
     void upgrade( uWS::HttpResponse<SSL>* res, uWS::HttpRequest* req, struct us_socket_context_t* context, SocketType type );

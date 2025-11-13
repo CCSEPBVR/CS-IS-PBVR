@@ -8,6 +8,8 @@ ServerWIP::ServerWIP(int port)
 
 void ServerWIP::initialize()
 {
+    m_objects = new std::vector<ObjectInfoExtractor::ObjectInfo>();
+
     m_u_web_sockets.ws<PerSocket>("/binary",
                                   {
                                       .upgrade  = [this]( uWS::HttpResponse<SSL>* res, uWS::HttpRequest* req, struct us_socket_context_t* context )
@@ -181,17 +183,18 @@ void ServerWIP::onMessage( uWS::WebSocket<false, true, PerSocket>* ws, std::stri
             int targetID = received["target_id"];
             transferOperatorControl( userID, targetID );
         }
-        if( event == "chat" )                   chat( ws, received );
-        if( event == "shareview" )              shareview( ws, received );
-        if( event == "sharepoint" )             sharepoint( ws, received );
-        if( event == "transferfunction" )       transferfunction( ws, received );
-        if( event == "glyph" )                  glyph( ws, received );
-        if( event == "plotoverlineparameter" )  plotoverlineparameter( ws, received );
-        if( event == "fileList" )               fileList( ws, received );
-        if( event == "selectedFile" )           selectedFile( ws, received );
-        if( event == "showAtTimeStep" )         showAtTimeStep( ws, received );
-        if( event == "debug" )                  debugNumberOfUsers();
-        else                                    std::cout << "[Server] Unknow Event : " << event << std::endl;
+
+        if( event == "chat" )                       chat( ws, received );
+        else if( event == "shareview" )             shareview( ws, received );
+        else if( event == "sharepoint" )            sharepoint( ws, received );
+        else if( event == "transferfunction" )      transferfunction( ws, received );
+        else if( event == "glyph" )                 glyph( ws, received );
+        else if( event == "plotoverlineparameter" ) plotoverlineparameter( ws, received );
+        else if( event == "fileList" )              fileList( ws, received );
+        else if( event == "selectedFile" )          selectedFile( ws, received );
+        else if( event == "showAtTimeStep" )        showAtTimeStep( ws, received );
+        else if( event == "debug" )                 debugNumberOfUsers();
+        else                                        std::cout << "[Server] Unknow Event : " << event << std::endl;
     }
 }
 
@@ -524,6 +527,8 @@ void ServerWIP::selectedFile( uWS::WebSocket<false, true, PerSocket>* ws, const 
     {
         objectInfoOpt->isRemote     = true;
 
+        m_objects->push_back( *objectInfoOpt );
+
         nlohmann::json msg;
         msg["event"]                = "addObjectToModel";
         // Common Object Info
@@ -584,6 +589,15 @@ void ServerWIP::showAtTimeStep( uWS::WebSocket<false, true, PerSocket>* ws, cons
 {
     std::cout << "[Server] show at time step" << std::endl;
     const int& timeStep = received["timeStep"];
+
+    Worker worker( timeStep, m_objects ); // m_objects は std::vector<ObjectInfo> のメンバ
+    worker.setDoneCallBack( [ws]() {
+        // 処理完了時に何か通知したい場合
+        std::cout << "[Server] Worker done processing" << std::endl;
+        // ws を使ってクライアントに通知も可能
+        // ws->send("{\"status\":\"done\"}", uWS::OpCode::TEXT);
+    } );
+    worker.process();
 }
 
 std::string ServerWIP::toUtf8( const std::filesystem::path& p )

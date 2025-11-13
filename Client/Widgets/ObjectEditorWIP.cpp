@@ -228,6 +228,23 @@ void ObjectEditorWIP::initialize()
     connect( ui->browsePushButton, &QPushButton::clicked, this, &ObjectEditorWIP::onBrowse );
     connect( ui->deletePushButton, &QPushButton::clicked, this, &ObjectEditorWIP::onDelete );
     connect( ui->applyPushButton, &QPushButton::clicked, this, &ObjectEditorWIP::onApply );
+
+    // デバッグボタン作成
+    QPushButton* debugPushButton = new QPushButton("Debug", this);
+    debugPushButton->setGeometry(650, 50, 120, 40);
+    debugPushButton->show();
+
+    // ボタン押下でサーバにイベント送信
+    connect( debugPushButton, &QPushButton::clicked, this, [this]()
+            {
+                if( m_web_sockets->isConnected() )
+                {
+                    m_web_sockets->text()->sendTextMessage( QJsonDocument( {
+                                                                          {"event", "showAtTimeStep"},
+                                                                          {"timeStep", 0},
+                                                                          } ).toJson( QJsonDocument::Compact ) );
+                }
+            } );
 }
 
 void ObjectEditorWIP::toggleCommonObjectWidgets( bool isObject )

@@ -18,10 +18,10 @@ TARGET = pbvr_server
 #=============================================================================
 win32 {
     CONFIG(release, debug|release){
-        LIBS += -L../Utils/release -lUtils
+        # LIBS += -L../Utils/release -lUtils
     }
     else:CONFIG(debug, debug|release){
-        LIBS += -L../Utils/debug -lUtils
+        # LIBS += -L../Utils/debug -lUtils
     }
 
     !isEmpty( KVS_DIR ) {
@@ -64,7 +64,7 @@ win32 {
 }
 
 macx {
-    LIBS += -L../Utils -lUtils
+    # LIBS += -L../Utils -lUtils
 
     !isEmpty( KVS_DIR ) {
         LIBS += -L$$KVS_DIR/lib -lkvsCore
@@ -80,7 +80,7 @@ macx {
 }
 
 unix:!macx {
-    LIBS += -L../Utils -lUtils
+    # LIBS += -L../Utils -lUtils
 
     !isEmpty( KVS_DIR ) {
         LIBS += -L$$KVS_DIR/lib -lkvsCore
@@ -122,18 +122,18 @@ RESOURCES += \
 #=============================================================================
 #  Pre Targetdeps
 #=============================================================================
-win32 {
-    CONFIG(release, debug|release) {
-        PRE_TARGETDEPS += ../Utils/release/Utils.lib
-    } else:CONFIG(debug, debug|release) {
-        PRE_TARGETDEPS += ../Utils/debug/Utils.lib
-    }
-}
+# win32 {
+#     CONFIG(release, debug|release) {
+#         PRE_TARGETDEPS += ../Utils/release/Utils.lib
+#     } else:CONFIG(debug, debug|release) {
+#         PRE_TARGETDEPS += ../Utils/debug/Utils.lib
+#     }
+# }
 
-macx {
-    PRE_TARGETDEPS += ../Utils/libUtils.a
-}
+# macx {
+#     PRE_TARGETDEPS += ../Utils/libUtils.a
+# }
 
-unix:!macx {
-    PRE_TARGETDEPS += ../Utils/libUtils.a
-}
+# unix:!macx {
+#     PRE_TARGETDEPS += ../Utils/libUtils.a
+# }
