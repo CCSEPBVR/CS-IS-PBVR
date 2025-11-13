@@ -189,7 +189,9 @@ void ServerWIP::onMessage( uWS::WebSocket<false, true, PerSocket>* ws, std::stri
         if( event == "plotoverlineparameter" )  plotoverlineparameter( ws, received );
         if( event == "fileList" )               fileList( ws, received );
         if( event == "selectedFile" )           selectedFile( ws, received );
+        if( event == "showAtTimeStep" )         showAtTimeStep( ws, received );
         if( event == "debug" )                  debugNumberOfUsers();
+        else                                    std::cout << "[Server] Unknow Event : " << event << std::endl;
     }
 }
 
@@ -482,7 +484,7 @@ void ServerWIP::fileList( uWS::WebSocket<false, true, PerSocket>* ws, const nloh
     {
         if(ec) continue;
 
-        std::string name = to_utf8( entry.path().filename() );
+        std::string name = toUtf8( entry.path().filename() );
         if( !name.empty() && name[0] == '.' ) continue; // 隠しファイルスキップ
 
         entries.push_back( entry );
@@ -491,7 +493,7 @@ void ServerWIP::fileList( uWS::WebSocket<false, true, PerSocket>* ws, const nloh
     // 名前順ソート
     std::sort( entries.begin(), entries.end(), [this]( auto& a, auto& b )
               {
-                  return to_utf8( a.path().filename() ) < to_utf8( b.path().filename() );
+                  return toUtf8( a.path().filename() ) < toUtf8( b.path().filename() );
               } );
 
     int start = ( page - 1 ) * per_page;
@@ -501,7 +503,7 @@ void ServerWIP::fileList( uWS::WebSocket<false, true, PerSocket>* ws, const nloh
     {
         auto& e = entries[i];
         nlohmann::json item;
-        item["name"] = to_utf8( e.path().filename() );
+        item["name"] = toUtf8( e.path().filename() );
         item["type"] = e.is_directory() ? "dir" : "file";
         resp["files"].push_back( item );
     }
@@ -514,10 +516,77 @@ void ServerWIP::fileList( uWS::WebSocket<false, true, PerSocket>* ws, const nloh
 
 void ServerWIP::selectedFile( uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received )
 {
-    // ObjectInfoExtractor oie( filePath.toUtf8().constData() );
+    std::cout << "[Server] selected file" << std::endl;
+    std::string file = received["file"];
+
+    ObjectInfoExtractor oie( file );
+    if( auto objectInfoOpt = oie.extractFromLocalFile() )
+    {
+        objectInfoOpt->isRemote     = true;
+
+        nlohmann::json msg;
+        msg["event"]                = "addObjectToModel";
+        // Common Object Info
+        msg["tmpIsDisplay"]         = objectInfoOpt->tmpIsDisplay;
+        msg["isDisplay"]            = objectInfoOpt->isDisplay;
+        msg["tmpIsKeepInitial"]     = objectInfoOpt->tmpIsKeepInitial;
+        msg["isKeepInitial"]        = objectInfoOpt->isKeepInitial;
+        msg["tmpIsKeepFinal"]       = objectInfoOpt->tmpIsKeepFinal;
+        msg["isKeepFinal"]          = objectInfoOpt->isKeepFinal;
+
+        msg["name"]                 = objectInfoOpt->name;
+        msg["extension"]            = objectInfoOpt->extension;
+        msg["directory"]            = objectInfoOpt->directory;
+        msg["format"]               = objectInfoOpt->format;
+        msg["timeStep"]             = objectInfoOpt->timeStep;
+        msg["tmpIsFocus"]           = objectInfoOpt->tmpIsFocus;
+        msg["isFocus"]              = objectInfoOpt->isFocus;
+        msg["minObjectCoord"]       = { objectInfoOpt->minObjectCoord.x(), objectInfoOpt->minObjectCoord.y(), objectInfoOpt->minObjectCoord.z() };
+        msg["maxObjectCoord"]       = { objectInfoOpt->maxObjectCoord.x(), objectInfoOpt->maxObjectCoord.y(), objectInfoOpt->maxObjectCoord.z() };
+        msg["minExternalCoord"]     = { objectInfoOpt->minExternalCoord.x(), objectInfoOpt->minExternalCoord.y(), objectInfoOpt->minExternalCoord.z() };
+        msg["maxExternalCoord"]     = { objectInfoOpt->maxExternalCoord.x(), objectInfoOpt->maxExternalCoord.y(), objectInfoOpt->maxExternalCoord.z() };
+
+        // Common Server Point Object Info
+        msg["tmpParticleLimit"]     = objectInfoOpt->tmpParticleLimit;
+        msg["particleLimit"]        = objectInfoOpt->particleLimit;
+        msg["tmpDensity"]           = objectInfoOpt->tmpDensity;
+        msg["density"]              = objectInfoOpt->density;
+
+        // Client Server Point Object Info
+        msg["numberOfVector"]       = objectInfoOpt->numberOfVector;
+        msg["numberOfElements"]     = objectInfoOpt->numberOfElements;
+        msg["numberOfSubvolume"]    = objectInfoOpt->numberOfSubvolume;
+        msg["numberOfNodes"]        = objectInfoOpt->numberOfNodes;
+        msg["elementType"]          = objectInfoOpt->elementType;
+        msg["fileType"]             = objectInfoOpt->fileType;
+        msg["stepNumber"]           = objectInfoOpt->stepNumber;
+        msg["tmpCoordinateX"]       = objectInfoOpt->tmpCoordinateX;
+        msg["coordinateX"]          = objectInfoOpt->coordinateX;
+        msg["tmpCoordinateY"]       = objectInfoOpt->tmpCoordinateY;
+        msg["coordinateY"]          = objectInfoOpt->coordinateY;
+        msg["tmpCoordinateZ"]       = objectInfoOpt->tmpCoordinateZ;
+        msg["coordinateZ"]          = objectInfoOpt->coordinateZ;
+        msg["isExport"]             = objectInfoOpt->isExport;
+
+        // Nontexture Polygon Object Info
+        msg["tmpPolygonColor"]      = { objectInfoOpt->tmpPolygonColor.red(), objectInfoOpt->tmpPolygonColor.green(), objectInfoOpt->tmpPolygonColor.blue() };
+        msg["polygonColor"]         = { objectInfoOpt->polygonColor.red(), objectInfoOpt->polygonColor.green(), objectInfoOpt->polygonColor.blue() };
+        msg["tmpPolygonOpacity"]    = objectInfoOpt->tmpPolygonOpacity;
+        msg["polygonOpacity"]       = objectInfoOpt->polygonOpacity;
+
+        msg["isRemote"]             = objectInfoOpt->isRemote;
+
+        m_u_web_sockets.publish( "Notice", msg.dump(), uWS::OpCode::TEXT );
+    }
 }
 
-std::string ServerWIP::to_utf8( const std::filesystem::path& p )
+void ServerWIP::showAtTimeStep( uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received )
+{
+    std::cout << "[Server] show at time step" << std::endl;
+    const int& timeStep = received["timeStep"];
+}
+
+std::string ServerWIP::toUtf8( const std::filesystem::path& p )
 {
 #ifdef _WIN32
     std::wstring ws = p.wstring();

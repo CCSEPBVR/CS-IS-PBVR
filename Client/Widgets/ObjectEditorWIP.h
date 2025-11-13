@@ -37,6 +37,8 @@ public:
     void reset();
 
 public slots:
+    // void addObjectToModel( const ObjectInfoExtractor::ObjectInfo& objectInfo, ObjectInfoExtractor& oie );
+    void addObjectToModel( const ObjectInfoExtractor::ObjectInfo& objectInfo );
     void showAtTimeStep( int requestTimeStep );
     void loadParameter( const QString& filePath );
     void saveParameter( const QString& filePath );
@@ -67,8 +69,7 @@ private:
     void toggleCommonObjectWidgets( bool isObject );                                // true:オブジェクトである。
     void toggleCommonServerObjectWidgets( bool isCommonServerObject );              // true:サーバポイントオブジェクトである。(ClientServer/Insitu共通)
     void toggleClientServerObjectWidgets( bool isClientServerObject );              // true:サーバポイントオブジェクトである。(ClientServer)
-    void toggleNontexturePolygonObjectWidgets( bool isNonTexturePolygonObject );    // true:テクスチャ無しポリゴンオブジェクトである。(.stl, .kvsml)
-    void addObjectToModel( const ObjectInfoExtractor::ObjectInfo& objectInfo, ObjectInfoExtractor& oie );
+    void toggleNontexturePolygonObjectWidgets( bool isNonTexturePolygonObject );    // true:テクスチャ無しポリゴンオブジェクトである。(.stl, .kvsml)    
     void calculateTotalMinMaxTimeStep();
 
     template<typename F>

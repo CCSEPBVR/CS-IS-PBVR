@@ -8,6 +8,9 @@
 #include "Screen.h"
 #include "WebSocketPair.h"
 #include "VizMode.h"
+
+#include "../../Shared/ObjectInfoExtractor.h"
+
 #include <kvs/PointObject>
 #include <kvs/ParticleBasedRenderer>
 #include <kvs/PolygonObject>
@@ -32,9 +35,10 @@ public slots:
     void loadParameter( const QString& filePath );
     void saveParameter( const QString& filePath );
 
-signals:
+signals:    
     void updateServerState( bool serverState );     // true:接続中
     void updateOperatorState( bool operatorState ); // true:権限あり
+    void addObjectToModel( const ObjectInfoExtractor::ObjectInfo& objectInfo );
     void updateFocus( kvs::Vec3, kvs::Vec3 );       // FIXME:このクラスに必要ないので削除
     void updatePointsTranslation();                 // FIXME:このクラスに必要ないので削除
     void updateStatusBarMessage( const QString& message );

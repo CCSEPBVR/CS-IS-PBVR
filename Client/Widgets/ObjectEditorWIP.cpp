@@ -76,6 +76,53 @@ void ObjectEditorWIP::reset()
     toggleNontexturePolygonObjectWidgets( false );
 }
 
+// void ObjectEditorWIP::addObjectToModel( const ObjectInfoExtractor::ObjectInfo& objectInfo, ObjectInfoExtractor& oie )
+void ObjectEditorWIP::addObjectToModel( const ObjectInfoExtractor::ObjectInfo& objectInfo )
+{
+    ObjectInfoExtractor::ObjectInfo info = objectInfo;
+
+    // 最初に追加されるオブジェクトはフォーカス状態にする
+    if( m_model->rowCount() == 0 )
+    {
+        info.tmpIsFocus = true;
+    }
+
+    QList<QStandardItem*> rowItems;
+    auto nameItem         = new QStandardItem( QString::fromUtf8( info.name ) );
+    auto formatItem       = new QStandardItem( QString::fromUtf8( ObjectInfoExtractor::formatToString( info.format ) ) );
+    auto displayItem      = new QStandardItem( "" );
+    auto keepInitialItem  = new QStandardItem( "" );
+    auto keepFinalItem    = new QStandardItem( "" );
+
+    // 編集禁止
+    nameItem        ->setEditable( false );
+    formatItem      ->setEditable( false );
+    displayItem     ->setEditable( false );
+    keepInitialItem ->setEditable( false );
+    keepFinalItem   ->setEditable( false );
+
+    displayItem     ->setCheckable( true );
+    keepInitialItem ->setCheckable( true );
+    keepFinalItem   ->setCheckable( true );
+
+    // bool -> Qt::CheckState 変換
+    displayItem     ->setCheckState( info.tmpIsDisplay     ? Qt::Checked : Qt::Unchecked );
+    keepInitialItem ->setCheckState( info.tmpIsKeepInitial ? Qt::Checked : Qt::Unchecked );
+    keepFinalItem   ->setCheckState( info.tmpIsKeepFinal   ? Qt::Checked : Qt::Unchecked );
+
+    QVariant var;
+    var.setValue( info );
+    nameItem->setData( var, Qt::UserRole );
+
+    rowItems << nameItem << formatItem << displayItem << keepInitialItem << keepFinalItem;
+    m_model->appendRow( rowItems );
+
+    QModelIndex index = m_model->indexFromItem( rowItems.first() );
+    ui->treeView->setCurrentIndex( index );
+
+    calculateTotalMinMaxTimeStep();
+}
+
 void ObjectEditorWIP::showAtTimeStep( int timeStep )
 {
     Worker* worker = new Worker( timeStep, m_model, m_screen );
@@ -201,52 +248,6 @@ void ObjectEditorWIP::toggleClientServerObjectWidgets( bool isClientServerObject
 void ObjectEditorWIP::toggleNontexturePolygonObjectWidgets( bool isNonTexturePolygonObject )
 {
     for( auto w : m_group_nontexture_polygon_object_widgets ) w->setVisible( isNonTexturePolygonObject );
-}
-
-void ObjectEditorWIP::addObjectToModel( const ObjectInfoExtractor::ObjectInfo& objectInfo, ObjectInfoExtractor& oie )
-{
-    ObjectInfoExtractor::ObjectInfo info = objectInfo;
-
-    // 最初に追加されるオブジェクトはフォーカス状態にする
-    if( m_model->rowCount() == 0 )
-    {
-        info.tmpIsFocus = true;
-    }
-
-    QList<QStandardItem*> rowItems;
-    auto nameItem         = new QStandardItem( QString::fromUtf8( info.name ) );
-    auto formatItem       = new QStandardItem( QString::fromUtf8( oie.formatToString( info.format ) ) );
-    auto displayItem      = new QStandardItem( "" );
-    auto keepInitialItem  = new QStandardItem( "" );
-    auto keepFinalItem    = new QStandardItem( "" );
-
-    // 編集禁止
-    nameItem        ->setEditable( false );
-    formatItem      ->setEditable( false );
-    displayItem     ->setEditable( false );
-    keepInitialItem ->setEditable( false );
-    keepFinalItem   ->setEditable( false );
-
-    displayItem     ->setCheckable( true );
-    keepInitialItem ->setCheckable( true );
-    keepFinalItem   ->setCheckable( true );
-
-    // bool -> Qt::CheckState 変換
-    displayItem     ->setCheckState( info.tmpIsDisplay     ? Qt::Checked : Qt::Unchecked );
-    keepInitialItem ->setCheckState( info.tmpIsKeepInitial ? Qt::Checked : Qt::Unchecked );
-    keepFinalItem   ->setCheckState( info.tmpIsKeepFinal   ? Qt::Checked : Qt::Unchecked );
-
-    QVariant var;
-    var.setValue( info );
-    nameItem->setData( var, Qt::UserRole );
-
-    rowItems << nameItem << formatItem << displayItem << keepInitialItem << keepFinalItem;
-    m_model->appendRow( rowItems );
-
-    QModelIndex index = m_model->indexFromItem( rowItems.first() );
-    ui->treeView->setCurrentIndex( index );
-
-    calculateTotalMinMaxTimeStep();
 }
 
 void ObjectEditorWIP::calculateTotalMinMaxTimeStep()
@@ -556,7 +557,7 @@ void ObjectEditorWIP::onBrowse()
             ObjectInfoExtractor oie( filePath.toUtf8().constData() );
             if( auto objectInfoOpt = oie.extractFromLocalFile() )
             {
-                addObjectToModel( *objectInfoOpt, oie );
+                addObjectToModel( *objectInfoOpt );
             }
             else
             {
@@ -571,7 +572,10 @@ void ObjectEditorWIP::onBrowse()
         RemoteFileDialog dlg( m_web_sockets, this );
         if( dlg.exec() == QDialog::Accepted )
         {
-            qDebug() << "選択ファイル:" << dlg.selectedFile();
+            m_web_sockets->text()->sendTextMessage( QJsonDocument( {
+                                                                  {"event", "selectedFile"},
+                                                                  {"file", dlg.selectedFile()},
+                                                                  } ).toJson( QJsonDocument::Compact ) );
         }
         break;
     }

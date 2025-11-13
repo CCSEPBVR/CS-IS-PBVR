@@ -210,9 +210,11 @@ void MainWindow::communicationInitialize()
         connect( m_communication, &Communication::updateStatusBarMessage, this, &MainWindow::updateStatusBarMessage );
         connect( m_communication, &Communication::updateServerState, this, &MainWindow::onUpdateServerState );
         connect( m_communication, &Communication::updateOperatorState, m_glyph_editor, &GlyphEditor::updateOperatorState );
-        connect( m_communication, &Communication::updateOperatorState, m_object_editor, &ObjectEditorWIP::updateOperatorState );
+        connect( m_communication, &Communication::updateOperatorState, m_object_editor, &ObjectEditorWIP::updateOperatorState );        
         connect( m_communication, &Communication::updateOperatorState, m_plot_over_line_editor, &PlotOverLineEditor::updateOperatorState );
         connect( m_communication, &Communication::updateOperatorState, m_transfer_function_editor, &TransferFunctionEditor::updateOperatorState );
+
+        connect( m_communication, &Communication::addObjectToModel, m_object_editor, &ObjectEditorWIP::addObjectToModel );
 
         connect( m_communication_action, &QAction::triggered, this, &MainWindow::onCommunication );
 

@@ -56,7 +56,7 @@ public:
         std::string extension               = "";
         std::string directory               = "";                           // Directory path
         Format format                       = Format::Unknown;              // Detected format
-        std::pair<int,int> timeStep         = { -1, -1 }; // Min/Max timestep
+        std::pair<int,int> timeStep         = { -1, -1 };                   // Min/Max timestep
         bool tmpIsFocus                     = false;
         bool isFocus                        = false;
         kvs::Vec3 minObjectCoord            = { 0, 0, 0 };
@@ -100,6 +100,8 @@ public:
 
         int currentImportedTimeStep         = -1;
         bool needSameTimeStepReplace        = false;
+
+        bool isRemote                       = false; // ture:リモートオブジェクト(Remote Vizで追加するオブジェクトは全部trueとなります。)
     };
 
     explicit ObjectInfoExtractor( const std::string& filePath )

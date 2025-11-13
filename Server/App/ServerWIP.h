@@ -98,6 +98,7 @@ private:
     void plotoverlineparameter( uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received );
     void fileList( uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received );
     void selectedFile( uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received );
+    void showAtTimeStep( uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received );
 
     void debugNumberOfUsers()
     {
@@ -128,7 +129,7 @@ private:
         }
     }
 
-    std::string to_utf8( const std::filesystem::path& p );
+    std::string toUtf8( const std::filesystem::path& p );
 };
 
 #endif // SERVERWIP_H
