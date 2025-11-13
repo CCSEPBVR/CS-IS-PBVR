@@ -49,6 +49,7 @@ int Hydrogen::generate_volume( void )
     //ncells = 2;
     //nnodes = 8;
 
+    //connections = new unsigned int[ ncells * num_element_node ]; // 5tetra cell per 1cube
     connections = new unsigned int[ ncells * num_element_node ]; // 5tetra cell per 1cube
     coords      = new float[ nnodes * num_dimentions ];
     values      = new float*[ nvariables ];
@@ -204,8 +205,10 @@ int Hydrogen::generate_volume( void )
  
                 connections[ connection_index++ ] = static_cast<unsigned int>( local_vertex_index[ 6 ] );
                 connections[ connection_index++ ] = static_cast<unsigned int>( local_vertex_index[ 4 ] );
-                connections[ connection_index++ ] = static_cast<unsigned int>( local_vertex_index[ 2 ] );
+//                connections[ connection_index++ ] = static_cast<unsigned int>( local_vertex_index[ 2 ] );
+//                connections[ connection_index++ ] = static_cast<unsigned int>( local_vertex_index[ 7 ] );
                 connections[ connection_index++ ] = static_cast<unsigned int>( local_vertex_index[ 7 ] );
+                connections[ connection_index++ ] = static_cast<unsigned int>( local_vertex_index[ 2 ] );
  
                 connections[ connection_index++ ] = static_cast<unsigned int>( local_vertex_index[ 4 ] );
                 connections[ connection_index++ ] = static_cast<unsigned int>( local_vertex_index[ 1 ] );
@@ -289,6 +292,12 @@ void Hydrogen::calc_average(int mpi_size)
     const kvs::UInt64 dim2 = resolution.y();
     const kvs::UInt64 dim3 = resolution.z();
 
+    for (int i =0;i<nnodes;i++)
+    {
+        values[0][i] = 0.f;
+    }
+
+
     for (int step =0; step< mpi_size; step++)
     {
         const kvs::Real64 dim= 128.0;
@@ -342,11 +351,12 @@ void Hydrogen::calc_average(int mpi_size)
                     const kvs::Real64 phi = kd * ( r*r ) * std::exp( -r/2 ) * ( 3*cos_theta*cos_theta-1 );
                     const kvs::Real64  c = (phi * phi) > 255 ? 255 : (phi * phi);
 
-                    values[0][index] += static_cast<float>( c )/mpi_size;
+                    values[0][index] += static_cast<float>( c );
                     //                std::cout << "values[0][index] = " << values[0][index] << std::endl;
                     //                values[1][index] = static_cast<float>( c );
                     //                values[2][index] = static_cast<float>( c );
                     //                values[3][index] = static_cast<float>( c );
+                    //if(index == 119 ) std::cout << mpi_rank  << " : hydro.values[0][119] =  " << values[0][119] << ", c = " << c<< std::endl; 
                     index++;
                     //                coords[ coords_index++ ] = x;
                     //                coords[ coords_index++ ] = y;
@@ -355,6 +365,10 @@ void Hydrogen::calc_average(int mpi_size)
             }
         }
 #endif
+    }
+    for (int i =0;i<nnodes;i++)
+    {
+        values[0][i] /= mpi_size;
     }
 
 
@@ -373,13 +387,23 @@ Hydrogen::Hydrogen( void )
     // Including halo region in x-y boundary
     //resolution = kvs::Vector3ui( 2, 2, 2 );
     //resolution = kvs::Vector3ui( 4, 4, 8 );
-    resolution = kvs::Vector3ui( 32, 32, 32 );
-    //resolution = kvs::Vector3ui( 64, 64, 64 );
+    //resolution = kvs::Vector3ui( 32, 32, 32 );
+//    resolution = kvs::Vector3ui( 64, 64, 64 );
+//    resolution = kvs::Vector3ui( 16, 16, 16 );
+//    resolution = kvs::Vector3ui( 64, 64, 64 );
+    resolution = kvs::Vector3ui( 256, 256, 256 );
+//    resolution = kvs::Vector3ui( 512, 512, 512 );
+    //resolution = kvs::Vector3ui( 1024, 1024, 1024 );
+
 
     //cell_length = 16.0;
     //cell_length = 1.0;
-    //cell_length = 2.0;
-    cell_length = 4.0;
+//    cell_length = 8.0;
+//    cell_length = 2.0;
+//    cell_length = 0.5;
+//    cell_length = 0.25;
+//    cell_length = 0.125;
+    cell_length = 127.f/(resolution.x()-1);
 
 //    global_region[ 0 ] = kvs::Vector2f(  0,  0 );
 //    global_region[ 1 ] = kvs::Vector2f( 63,  0 );
