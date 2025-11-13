@@ -60,7 +60,7 @@ void ObjectEditor::initialize()
 
         // Client Server(CS),In-Situ(IS)共通
         { "particleLimit"   , { ui->particleLimitLabel, ui->particleLimitSpinBox } },
-        { "density"         , { ui->densityLabel, ui->densityDoubleSpinBox } },
+        { "extraOpacityFactor", { ui->extraOpacityFactorLabel, ui->extraOpacityFactorDoubleSpinBox } },
 
         // テクスチャ無しポリゴン専用
         { "color"           ,  { ui->colorLabel, ui->colorDisplay } },
@@ -81,7 +81,7 @@ void ObjectEditor::initialize()
     connect( ui->exportPushButton,              &QPushButton::clicked,                  this, &ObjectEditor::onExport );
 
     connect( ui->particleLimitSpinBox,          &QSpinBox::valueChanged,                this, &ObjectEditor::onParticleLimit );
-    connect( ui->densityDoubleSpinBox,          &QDoubleSpinBox::valueChanged,          this, &ObjectEditor::onDensity );
+    connect( ui->extraOpacityFactorDoubleSpinBox,          &QDoubleSpinBox::valueChanged,          this, &ObjectEditor::onExtraOpacityFactor );
 
     connect( ui->colorDisplay,                  &ClickableLabel::doubleClicked,         this, &ObjectEditor::onPolygonColor );
     connect( ui->opacityDoubleSpinBox,          &QDoubleSpinBox::valueChanged,          this, &ObjectEditor::onPolygonOpacity );
@@ -223,9 +223,6 @@ void ObjectEditor::serverPointObjectIS( QString volumeDataFilePath, ServerPointO
         QPair<int,int> minMaxTimeStep = QPair<int,int>( serverPointObjectPropertiesIS.minTimeStep, serverPointObjectPropertiesIS.maxTimeStep );
         kvs::Vec3f minObjectCoord = serverPointObjectPropertiesIS.minObjectCoords;
         kvs::Vec3f maxObjectCoord = serverPointObjectPropertiesIS.maxObjectCoords;
-        // float particleLimit = serverPointObjectPropertiesIS.particleLimit;
-        // float particleDensity = serverPointObjectPropertiesIS.particleDensity;
-
 
         nameItem->setData( format                               ,                                       ObjectItem::nameItemRole::Format );
         nameItem->setData( ""                                   ,                                       ObjectItem::nameItemRole::DirectoryPath );
@@ -236,7 +233,7 @@ void ObjectEditor::serverPointObjectIS( QString volumeDataFilePath, ServerPointO
         nameItem->setData( QVariant::fromValue( maxObjectCoord ),                                       ObjectItem::nameItemRole::InitialMaxExternalCoord );
         nameItem->setData( QVariant::fromValue( serverPointObjectPropertiesIS.numberOfIngredients ),    ObjectItem::nameItemRole::NumberOfVectors );
         nameItem->setData( QVariant::fromValue( serverPointObjectPropertiesIS.particleLimit ),          ObjectItem::nameItemRole::TemporaryParticleLimit );
-        nameItem->setData( QVariant::fromValue( serverPointObjectPropertiesIS.particleDensity ),        ObjectItem::nameItemRole::TemporaryDensity );
+        nameItem->setData( QVariant::fromValue( serverPointObjectPropertiesIS.extraOpacityFactor ),        ObjectItem::nameItemRole::TemporaryExtraOpacityFactor );
 
         nameItem->setText( name );
         formatItem->setData( format, ObjectItem::FormatItemRole::FormatValue );
@@ -379,7 +376,7 @@ void ObjectEditor::requestReplaceServerGlyphObject()
 
 // In-Situで後から粒子が生成された場合の更新処理
 // void ObjectEditor::insituObjectActive( kvs::Vec3f minCoords, kvs::Vec3f maxCoords ) // AFTER パラメータの更新しろ、UIの更新も
-void ObjectEditor::insituObjectActive( kvs::Vec3f minCoords, kvs::Vec3f maxCoords, int numberOfVector, float particleLimit, float particleDensity ) // AFTER パラメータの更新しろ、UIの更新も
+void ObjectEditor::insituObjectActive( kvs::Vec3f minCoords, kvs::Vec3f maxCoords, int numberOfVector, float particleLimit, float extraOpacityFactor ) // AFTER パラメータの更新しろ、UIの更新も
 {
     for( int row = 0; row < m_model->rowCount(); row++ )
     {
@@ -396,7 +393,7 @@ void ObjectEditor::insituObjectActive( kvs::Vec3f minCoords, kvs::Vec3f maxCoord
             nameItem->setData( QVariant::fromValue( maxCoords ),        ObjectItem::nameItemRole::InitialMaxExternalCoord );
             nameItem->setData( QVariant::fromValue( numberOfVector ),   ObjectItem::nameItemRole::NumberOfVectors );
             nameItem->setData( QVariant::fromValue( particleLimit ),    ObjectItem::nameItemRole::TemporaryParticleLimit );
-            nameItem->setData( QVariant::fromValue( particleDensity ),  ObjectItem::nameItemRole::TemporaryDensity );
+            nameItem->setData( QVariant::fromValue( extraOpacityFactor ),  ObjectItem::nameItemRole::TemporaryExtraOpacityFactor );
             break;
         default:
             break;
@@ -450,7 +447,7 @@ void ObjectEditor::onItemSelectionChanged()
     ui->stepNumberDisplay->setText( QString::number( nameItem->data( ObjectItem::nameItemRole::StepNumber ).value<int>() ) );
 
     ui->particleLimitSpinBox->setValue( nameItem->data( ObjectItem::nameItemRole::TemporaryParticleLimit ).value<int>() );
-    ui->densityDoubleSpinBox->setValue( nameItem->data( ObjectItem::nameItemRole::TemporaryDensity ).value<float>() );
+    ui->extraOpacityFactorDoubleSpinBox->setValue( nameItem->data( ObjectItem::nameItemRole::TemporaryExtraOpacityFactor ).value<float>() );
     ui->coordinate1LineEdit->setText( nameItem->data( ObjectItem::nameItemRole::TemporaryCoordinate1 ).value<QString>() );
     ui->coordinate2LineEdit->setText( nameItem->data( ObjectItem::nameItemRole::TemporaryCoordinate2 ).value<QString>() );
     ui->coordinate3LineEdit->setText( nameItem->data( ObjectItem::nameItemRole::TemporaryCoordinate3 ).value<QString>() );
@@ -721,8 +718,8 @@ void ObjectEditor::onApply()
 
         int temporaryParticleLimit      = nameItem->data( ObjectItem::nameItemRole::TemporaryParticleLimit ).value<int>();
         int currentParticleLimit        = nameItem->data( ObjectItem::nameItemRole::CurrentParticleLimit ).value<int>();
-        float temporaryDensity          = nameItem->data( ObjectItem::nameItemRole::TemporaryDensity ).value<float>();
-        float currentDensity            = nameItem->data( ObjectItem::nameItemRole::CurrentDensity ).value<float>();
+        float temporaryExtraOpacityFactor          = nameItem->data( ObjectItem::nameItemRole::TemporaryExtraOpacityFactor ).value<float>();
+        float currentExtraOpacityFactor            = nameItem->data( ObjectItem::nameItemRole::CurrentExtraOpacityFactor ).value<float>();
 
         QColor temporaryPolygonColor    = nameItem->data( ObjectItem::nameItemRole::TemporaryPolygonColor ).value<QColor>();
         QColor currentPolygonColor      = nameItem->data( ObjectItem::nameItemRole::CurrentPolygonColor ).value<QColor>();
@@ -743,12 +740,12 @@ void ObjectEditor::onApply()
             nameItem->setData( QVariant( nameItem->data( ObjectItem::nameItemRole::TemporaryPolygonOpacity ) ), ObjectItem::nameItemRole::CurrentPolygonOpacity );
         }
 
-        if( temporaryParticleLimit != currentParticleLimit || temporaryDensity != currentDensity )
+        if( temporaryParticleLimit != currentParticleLimit || temporaryExtraOpacityFactor != currentExtraOpacityFactor )
         {
             // 未確定と確定の値に違いがある場合 リプレイス(インポート)を行い、値を確定する。
             nameItem->setData( QVariant::fromValue( true ), ObjectItem::nameItemRole::RequestReplace );
             nameItem->setData( QVariant( nameItem->data( ObjectItem::nameItemRole::TemporaryParticleLimit ) ), ObjectItem::nameItemRole::CurrentParticleLimit );
-            nameItem->setData( QVariant( nameItem->data( ObjectItem::nameItemRole::TemporaryDensity ) ), ObjectItem::nameItemRole::CurrentDensity );
+            nameItem->setData( QVariant( nameItem->data( ObjectItem::nameItemRole::TemporaryExtraOpacityFactor ) ), ObjectItem::nameItemRole::CurrentExtraOpacityFactor );
             emit updateRenderParameterClientMessage( m_model ); // AFTER
         }
 
@@ -1021,7 +1018,7 @@ void ObjectEditor::onParticleLimit()
     nameItem->setData( QVariant::fromValue( ui->particleLimitSpinBox->value() ), ObjectItem::nameItemRole::TemporaryParticleLimit );
 }
 
-void ObjectEditor::onDensity()
+void ObjectEditor::onExtraOpacityFactor()
 {
     QModelIndexList selectedIndexes = ui->treeView->selectionModel()->selectedIndexes();
 
@@ -1045,7 +1042,7 @@ void ObjectEditor::onDensity()
         return;
     }
 
-    nameItem->setData( QVariant::fromValue( ui->densityDoubleSpinBox->value() ), ObjectItem::nameItemRole::TemporaryDensity );
+    nameItem->setData( QVariant::fromValue( ui->extraOpacityFactorDoubleSpinBox->value() ), ObjectItem::nameItemRole::TemporaryExtraOpacityFactor );
 }
 
 void ObjectEditor::onPolygonColor()
@@ -1387,7 +1384,7 @@ void ObjectEditor::clientServerPointObjectProperty()
     showFormRow( "coord3" );
     showFormRow( "export" );
     showFormRow( "particleLimit" );
-    showFormRow( "density" );    
+    showFormRow( "extraOpacityFactor" );
 }
 
 void ObjectEditor::inSituPointObjectProperty()
@@ -1400,7 +1397,7 @@ void ObjectEditor::inSituPointObjectProperty()
 
     showFormRow( "vectors" );
     showFormRow( "particleLimit" );
-    showFormRow( "density" );
+    showFormRow( "extraOpacityFactor" );
 }
 
 void ObjectEditor::stlPolygonObjectProperty()

@@ -78,7 +78,7 @@ private slots:
     void onExport();
 
     void onParticleLimit();
-    void onDensity();
+    void onExtraOpacityFactor();
 
     void onPolygonColor();
     void onPolygonOpacity();

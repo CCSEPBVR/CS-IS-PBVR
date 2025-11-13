@@ -35,7 +35,7 @@ struct ServerPointObjectPropertiesIS
     int minTimeStep;
     int maxTimeStep;
     float particleLimit;
-    float particleDensity;
+    float extraOpacityFactor;
 };
 
 struct ServerGlyphObjectPropertiesIS

@@ -79,7 +79,7 @@
           <property name="geometry">
            <rect>
             <x>0</x>
-            <y>-189</y>
+            <y>0</y>
             <width>311</width>
             <height>482</height>
            </rect>
@@ -481,14 +481,14 @@
               </widget>
              </item>
              <item row="13" column="0">
-              <widget class="QLabel" name="densityLabel">
+              <widget class="QLabel" name="extraOpacityFactorLabel">
                <property name="text">
-                <string>Density : </string>
+                <string>Extra Opacity Factor : </string>
                </property>
               </widget>
              </item>
              <item row="13" column="1">
-              <widget class="QDoubleSpinBox" name="densityDoubleSpinBox">
+              <widget class="QDoubleSpinBox" name="extraOpacityFactorDoubleSpinBox">
                <property name="maximumSize">
                 <size>
                  <width>100</width>

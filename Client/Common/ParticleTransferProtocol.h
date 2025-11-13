@@ -117,7 +117,7 @@ public:
     int32_t m_enable_crop_region;
     float m_crop_region[6];
     int32_t m_particle_limit;
-    float m_particle_density;
+    float m_extra_opacity_factor;
 // #ifdef COMM_MODE_IS
     float m_particle_data_size_limit;
 // #endif
@@ -235,7 +235,7 @@ public:
     int32_t m_transfer_function_count;
 //#ifdef COMM_MODE_IS
     int32_t m_particle_limit;
-    float m_particle_density;
+    float m_extra_opacity_factor;
     float m_particle_data_size_limit;
     kvs::Camera* m_camera;
     std::vector<NamedTransferFunctionParameter> m_transfer_function;

@@ -26,7 +26,7 @@ void Connect::initialize()
 
     // パーティクルリミット、デンシティ、データサイズリミットを初期化
     m_client_message.m_particle_limit = 10000000;
-    m_client_message.m_particle_density = 1;
+    m_client_message.m_extra_opacity_factor = 1;
     m_client_message.m_particle_data_size_limit = 20;
 
     m_glyph_scale_factor = 1;
@@ -241,7 +241,7 @@ void Connect::connectServer()
     ServerPointObjectPropertiesIS serverPointObjectPropertiesIS;
     serverPointObjectPropertiesIS.numberOfIngredients   = m_server_message.m_number_ingredients;
     serverPointObjectPropertiesIS.particleLimit         = m_server_message.m_particle_limit;
-    serverPointObjectPropertiesIS.particleDensity       = m_server_message.m_particle_density;
+    serverPointObjectPropertiesIS.extraOpacityFactor       = m_server_message.m_extra_opacity_factor;
     serverPointObjectPropertiesIS.minObjectCoords       = kvs::Vec3f( m_server_message.m_min_object_coord );
     serverPointObjectPropertiesIS.maxObjectCoords       = kvs::Vec3f( m_server_message.m_max_object_coord );
 
@@ -442,7 +442,7 @@ kvs::PointObject* Connect::generateParticles( int timeStep )
 
         int numberOfVector = m_server_message.m_number_ingredients;
         float particleLimit = m_server_message.m_particle_limit;
-        float particleDensity = m_server_message.m_particle_density;
+        float extraOpacityFactor = m_server_message.m_extra_opacity_factor;
 
         if( m_server_mode == SERVERMODE::InSitu )
         {
@@ -468,7 +468,7 @@ kvs::PointObject* Connect::generateParticles( int timeStep )
                         // m_merge->serverGlyphObjectIS( "IS-GlyphObject", 0, 0 );  // AFTER
                     }
 
-                    emit insituObjectActive( serverSideMinObjectCoords, serverSideMaxObjectCoords, numberOfVector, particleLimit, particleDensity );
+                    emit insituObjectActive( serverSideMinObjectCoords, serverSideMaxObjectCoords, numberOfVector, particleLimit, extraOpacityFactor );
                 }
                 m_has_insitu_object = true;
             }
@@ -821,7 +821,7 @@ void Connect::deleteServerObject()
 
         // 必要な初期値を再設定
         m_client_message.m_particle_limit = 10000000;
-        m_client_message.m_particle_density = 1;
+        m_client_message.m_extra_opacity_factor = 1;
         m_client_message.m_particle_data_size_limit = 20;
         m_client_message.m_distribution_mode = jpv::GlyphMode::UniformDistribution;
         m_client_message.m_color_data_sampling_method = jpv::DataDefines::Constant;
@@ -1093,7 +1093,7 @@ void Connect::updateRenderParameterClientMessage( QStandardItemModel* model )
         case ObjectItem::Format::ServerPointObjectCS:
         case ObjectItem::Format::ServerPointObjectIS:
             m_client_message.m_particle_limit = nameItem->data( ObjectItem::nameItemRole::CurrentParticleLimit ).toInt();
-            m_client_message.m_particle_density = nameItem->data( ObjectItem::nameItemRole::CurrentDensity ).toFloat();
+            m_client_message.m_extra_opacity_factor = nameItem->data( ObjectItem::nameItemRole::CurrentExtraOpacityFactor ).toFloat();
         }
     }
 }
