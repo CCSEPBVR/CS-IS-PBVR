@@ -165,6 +165,8 @@ else {
     }
 }
 
+INCLUDEPATH += $$PWD/Utils/
+
 # # Git ブランチ名を取得して変数に設定
 # GIT_BRANCH_NAME = $$system(git rev-parse --abbrev-ref HEAD)
 
