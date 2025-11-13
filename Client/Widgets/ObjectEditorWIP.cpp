@@ -20,7 +20,7 @@ void ObjectEditorWIP::updateOperatorState( bool operatorState )
 {
     ui->focusCheckBox           ->setEnabled( operatorState );
     ui->particleLimitSpinBox    ->setEnabled( operatorState );
-    ui->densityDoubleSpinBox    ->setEnabled( operatorState );
+    ui->extraOpacityFactorDoubleSpinBox    ->setEnabled( operatorState );
     ui->coordinateXLineEdit     ->setEnabled( operatorState );
     ui->coordinateYLineEdit     ->setEnabled( operatorState );
     ui->coordinateZLineEdit     ->setEnabled( operatorState );
@@ -36,7 +36,7 @@ void ObjectEditorWIP::reset()
 {
     ui->focusCheckBox           ->setEnabled( true );
     ui->particleLimitSpinBox    ->setEnabled( true );
-    ui->densityDoubleSpinBox    ->setEnabled( true );
+    ui->extraOpacityFactorDoubleSpinBox    ->setEnabled( true );
     ui->coordinateXLineEdit     ->setEnabled( true );
     ui->coordinateYLineEdit     ->setEnabled( true );
     ui->coordinateZLineEdit     ->setEnabled( true );
@@ -179,7 +179,7 @@ void ObjectEditorWIP::initialize()
     m_group_common_server_point_object_widgets =
         {
             ui->particleLimitLabel  , ui->particleLimitSpinBox,
-            ui->densityLabel        , ui->densityDoubleSpinBox,
+            ui->extraOpacityFactorLabel        , ui->extraOpacityFactorDoubleSpinBox,
         };
 
     m_group_client_server_point_object_widgets =
@@ -214,7 +214,7 @@ void ObjectEditorWIP::initialize()
 
     // サーバポイントオブジェクトである。(ClientServer/Insitu共通)
     connect( ui->particleLimitSpinBox, &QSpinBox::valueChanged, this, &ObjectEditorWIP::onParticleLimitSpinBoxValueChanged );
-    connect( ui->densityDoubleSpinBox, &QDoubleSpinBox::valueChanged, this, &ObjectEditorWIP::onDensityDoubleSpinBoxValueChanged );
+    connect( ui->extraOpacityFactorDoubleSpinBox, &QDoubleSpinBox::valueChanged, this, &ObjectEditorWIP::onExtraOpacityFactorDoubleSpinBoxValueChanged );
 
     // サーバポイントオブジェクト(ClientServer)で表示させるウィジェット群
     connect( ui->coordinateXLineEdit, &QLineEdit::textChanged, this, &ObjectEditorWIP::onCoordinateLineEditTextChanged );
@@ -429,7 +429,7 @@ void ObjectEditorWIP::onItemSelection(const QItemSelection &selected, const QIte
 
     // サーバポイントオブジェクトである。(ClientServer/Insitu共通)
     ui->particleLimitSpinBox        ->setValue( info.tmpParticleLimit );
-    ui->densityDoubleSpinBox        ->setValue( info.tmpDensity );
+    ui->extraOpacityFactorDoubleSpinBox        ->setValue( info.tmpExtraOpacityFactor );
 
     // サーバポイントオブジェクト(ClientServer)で表示させるウィジェット群
     ui->numberOfVectorLineEdit      ->setText( QString::number( info.numberOfVector ) );
@@ -498,11 +498,11 @@ void ObjectEditorWIP::onParticleLimitSpinBoxValueChanged( int value )
                          } );
 }
 
-void ObjectEditorWIP::onDensityDoubleSpinBoxValueChanged(double value)
+void ObjectEditorWIP::onExtraOpacityFactorDoubleSpinBoxValueChanged( double value )
 {
     updateSelectedObject( [value]( auto &info )
                          {
-                             info.tmpDensity = value;
+                             info.tmpExtraOpacityFactor = value;
                          } );
 }
 
@@ -714,7 +714,7 @@ void ObjectEditorWIP::onApply()
         objectInfo.isFocus          = objectInfo.tmpIsFocus;
 
         objectInfo.particleLimit    = objectInfo.tmpParticleLimit;
-        objectInfo.density          = objectInfo.tmpDensity;
+        objectInfo.extraOpacityFactor          = objectInfo.tmpExtraOpacityFactor;
 
         objectInfo.coordinateX      = objectInfo.tmpCoordinateX;
         objectInfo.coordinateY      = objectInfo.tmpCoordinateY;
@@ -817,7 +817,7 @@ void ObjectEditorWIP::onApply()
             jsonObjectInfo["maxExternalCoord"]  = QJsonArray{ objectInfo.maxExternalCoord.x(), objectInfo.maxExternalCoord.y(), objectInfo.maxExternalCoord.z() };
 
             jsonObjectInfo["particleLimit"]     = objectInfo.particleLimit;
-            jsonObjectInfo["density"]           = objectInfo.density;
+            jsonObjectInfo["extraOpacityFactor"]           = objectInfo.extraOpacityFactor;
 
             jsonObjectInfo["numberOfVector"]    = objectInfo.numberOfVector;
             jsonObjectInfo["numberOfElements"]  = objectInfo.numberOfElements;

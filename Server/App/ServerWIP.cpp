@@ -554,8 +554,8 @@ void ServerWIP::selectedFile( uWS::WebSocket<false, true, PerSocket>* ws, const 
         // Common Server Point Object Info
         msg["tmpParticleLimit"]     = objectInfoOpt->tmpParticleLimit;
         msg["particleLimit"]        = objectInfoOpt->particleLimit;
-        msg["tmpDensity"]           = objectInfoOpt->tmpDensity;
-        msg["density"]              = objectInfoOpt->density;
+        msg["tmpExtraOpacityFactor"]           = objectInfoOpt->tmpExtraOpacityFactor;
+        msg["extraOpacityFactor"]              = objectInfoOpt->extraOpacityFactor;
 
         // Client Server Point Object Info
         msg["numberOfVector"]       = objectInfoOpt->numberOfVector;

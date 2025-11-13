@@ -344,7 +344,7 @@
           <property name="geometry">
            <rect>
             <x>0</x>
-            <y>0</y>
+            <y>-209</y>
             <width>240</width>
             <height>495</height>
            </rect>
@@ -410,7 +410,7 @@
            <item row="14" column="0">
             <layout class="QHBoxLayout" name="horizontalLayout_15">
              <item>
-              <widget class="QLabel" name="densityLabel">
+              <widget class="QLabel" name="extraOpacityFactorLabel">
                <property name="sizePolicy">
                 <sizepolicy hsizetype="Ignored" vsizetype="Preferred">
                  <horstretch>0</horstretch>
@@ -418,17 +418,23 @@
                 </sizepolicy>
                </property>
                <property name="text">
-                <string>Density:</string>
+                <string>Extra Opacity Factor:</string>
                </property>
               </widget>
              </item>
              <item>
-              <widget class="QDoubleSpinBox" name="densityDoubleSpinBox">
+              <widget class="QDoubleSpinBox" name="extraOpacityFactorDoubleSpinBox">
                <property name="sizePolicy">
                 <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
                  <horstretch>0</horstretch>
                  <verstretch>0</verstretch>
                 </sizepolicy>
+               </property>
+               <property name="minimum">
+                <double>1.000000000000000</double>
+               </property>
+               <property name="maximum">
+                <double>1000.000000000000000</double>
                </property>
               </widget>
              </item>

@@ -894,8 +894,8 @@ void Communication::textWebsocketMessageReceived( const QString& receivedMessage
             // Common Server Point Object Info
             objectInfo.tmpParticleLimit     = obj["tmpParticleLimit"].toInt();
             objectInfo.particleLimit        = obj["particleLimit"].toInt();
-            objectInfo.tmpDensity           = static_cast<float>( obj["tmpDensity"].toDouble() );
-            objectInfo.density              = static_cast<float>( obj["density"].toDouble() );
+            objectInfo.tmpExtraOpacityFactor           = static_cast<float>( obj["tmpExtraOpacityFactor"].toDouble() );
+            objectInfo.extraOpacityFactor              = static_cast<float>( obj["extraOpacityFactor"].toDouble() );
 
             // Client Server Point Object Info
             objectInfo.numberOfVector       = obj["numberOfVector"].toInt();

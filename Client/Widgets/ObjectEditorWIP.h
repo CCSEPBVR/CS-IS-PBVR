@@ -86,7 +86,7 @@ private slots:
 
     // サーバポイントオブジェクトである。(ClientServer/Insitu共通)
     void onParticleLimitSpinBoxValueChanged( int value );
-    void onDensityDoubleSpinBoxValueChanged( double value );
+    void onExtraOpacityFactorDoubleSpinBoxValueChanged( double value );
 
     // サーバポイントオブジェクト(ClientServer)で表示させるウィジェット群
     void onCoordinateLineEditTextChanged();
