@@ -150,7 +150,6 @@ else {
 
 INCLUDEPATH += $$PWD/Widgets/
 INCLUDEPATH += $$PWD/FunctionParser/
-INCLUDEPATH += $$PWD/Common/
 INCLUDEPATH += $$PWD/Utils/
 INCLUDEPATH += $$PWD/ExtendedKVS/
 INCLUDEPATH += $$PWD/ExtendedQT/

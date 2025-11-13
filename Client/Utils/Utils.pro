@@ -21,16 +21,13 @@ HEADERS += \
     FrequencyTable.h \
     GlyphItem.h \
     PlotOverLineItem.h \
-    ReceivedMessage.h \
     TransferFunctionItem.h \
-    Utils.h \
     Worker.h
 
 #=============================================================================
 #  Source.
 #=============================================================================
-SOURCES += \
-    Utils.cpp
+SOURCES +=
 
 #=============================================================================
 #  Forms.

@@ -21,7 +21,6 @@ win32 {
     CONFIG(release, debug|release){
         LIBS += -L../Widgets/release -lWidgets
         LIBS += -L../FunctionParser/release -lFunctionParser
-        LIBS += -L../Common/release -lCommon
         LIBS += -L../Utils/release -lUtils
         LIBS += -L../ExtendedKVS/release -lExtendedKVS
         LIBS += -L../ExtendedQT/release -lExtendedQT
@@ -29,7 +28,6 @@ win32 {
     else:CONFIG(debug, debug|release){
         LIBS += -L../Widgets/debug -lWidgets
         LIBS += -L../FunctionParser/debug -lFunctionParser
-        LIBS += -L../Common/debug -lCommon
         LIBS += -L../Utils/debug -lUtils
         LIBS += -L../ExtendedKVS/debug -lExtendedKVS
         LIBS += -L../ExtendedQT/debug -lExtendedQT
@@ -66,7 +64,6 @@ win32 {
 macx {
     LIBS += -L../Widgets -lWidgets
     LIBS += -L../FunctionParser -lFunctionParser
-    LIBS += -L../Common -lCommon
     LIBS += -L../Utils -lUtils
     LIBS += -L../ExtendedKVS -lExtendedKVS
     LIBS += -L../ExtendedQT -lExtendedQT
@@ -95,7 +92,6 @@ macx {
 unix:!macx {
     LIBS += -L../Widgets -lWidgets
     LIBS += -L../FunctionParser -lFunctionParser
-    LIBS += -L../Common -lCommon
     LIBS += -L../Utils -lUtils
     LIBS += -L../ExtendedKVS -lExtendedKVS
     LIBS += -L../ExtendedQT -lExtendedQT
@@ -155,14 +151,12 @@ win32 {
     CONFIG(release, debug|release) {
         PRE_TARGETDEPS += ../Widgets/release/Widgets.lib
         PRE_TARGETDEPS += ../FunctionParser/release/FunctionParser.lib
-        PRE_TARGETDEPS += ../Common/release/Common.lib
         PRE_TARGETDEPS += ../Utils/release/Utils.lib
         PRE_TARGETDEPS += ../ExtendedKVS/release/ExtendedKVS.lib
         PRE_TARGETDEPS += ../ExtendedQT/release/ExtendedQT.lib
     } else:CONFIG(debug, debug|release) {
         PRE_TARGETDEPS += ../Widgets/debug/Widgets.lib
         PRE_TARGETDEPS += ../FunctionParser/debug/FunctionParser.lib
-        PRE_TARGETDEPS += ../Common/debug/Common.lib
         PRE_TARGETDEPS += ../Utils/debug/Utils.lib
         PRE_TARGETDEPS += ../ExtendedKVS/debug/ExtendedKVS.lib
         PRE_TARGETDEPS += ../ExtendedQT/debug/ExtendedQT.lib
@@ -172,7 +166,6 @@ win32 {
 macx {
     PRE_TARGETDEPS += ../Widgets/libWidgets.a
     PRE_TARGETDEPS += ../FunctionParser/libFunctionParser.a
-    PRE_TARGETDEPS += ../Common/libCommon.a
     PRE_TARGETDEPS += ../Utils/libUtils.a
     PRE_TARGETDEPS += ../ExtendedKVS/libExtendedKVS.a
     PRE_TARGETDEPS += ../ExtendedQT/libExtendedQT.a
@@ -181,7 +174,6 @@ macx {
 unix:!macx {
     PRE_TARGETDEPS += ../Widgets/libWidgets.a
     PRE_TARGETDEPS += ../FunctionParser/libFunctionParser.a
-    PRE_TARGETDEPS += ../Common/libCommon.a
     PRE_TARGETDEPS += ../Utils/libUtils.a
     PRE_TARGETDEPS += ../ExtendedKVS/libExtendedKVS.a
     PRE_TARGETDEPS += ../ExtendedQT/libExtendedQT.a
