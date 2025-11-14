@@ -85,9 +85,19 @@ void generate_plot_over_line(
 void MakePlotOverLine(
     const vismodule::KVSMLObjectPlotOverLine* pol_object,
     const int resolution,
-    vismodule::ValueArray<float>& values_on_line,
-    vismodule::ValueArray<bool>& mask,
-    vismodule::ValueArray<float>& x_axis
+    std::vector<float>& values_on_line,
+    std::vector<int>& mask,
+    std::vector<float>& x_axis
+);
+
+void SendPlotOverLineServerMessage(
+    const std::vector<float>& values_on_line,
+    const std::vector<int>& mask,
+    const std::vector<float>& x_axis,
+    const int resolution,
+    const bool& nan_error,
+    jpv::ParticleTransferServer pts,
+    jpv::ParticleTransferServerMessage& servMes
 );
 
 void generate_plot_over_line_worker(Argument &param, jpv::ParticleTransferClientMessage& clntMes, MultiVolumePropertyList& mvpl, 

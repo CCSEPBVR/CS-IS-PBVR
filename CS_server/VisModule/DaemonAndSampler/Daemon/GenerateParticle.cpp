@@ -51,16 +51,6 @@ void generate_particle(
 
     std::cout << "param.m_time_step:" << param.m_time_step << std::endl;
 
-    jd.initialize(
-        param.m_time_step,
-        param.m_time_step,
-        mvpl.m_total_number_subvolumes,
-        mvpl.m_total_min_subvolume_coord,
-        mvpl.m_total_max_subvolume_coord,
-        param.m_latency_threshold,
-        param.m_job_id_pack_size
-    );
-
     if ( rank == 0 )
     {
         SetServerMessageParameter( param, mvpl, servMes );
@@ -77,13 +67,9 @@ void generate_particle(
 
     vismodule::UInt64* tmp_c_bins;
     vismodule::UInt64* tmp_o_bins;
-    float* tmp_max;
-    float* tmp_min;
 
     tmp_c_bins = new vismodule::UInt64[DEFAULT_NBINS * tf_number];
     tmp_o_bins = new vismodule::UInt64[DEFAULT_NBINS * tf_number];
-    tmp_max = new float[tf_number * 2]; // color, opacity
-    tmp_min = new float[tf_number * 2]; // color, opacity
 
     for ( size_t i = 0; i < (DEFAULT_NBINS * tf_number); i++ )
     {
@@ -91,18 +77,33 @@ void generate_particle(
         tmp_o_bins[i] = 0;
     }
 
-    for ( int i = 0; i < (tf_number * 2); i++ )
+    if ( server_mode == jpv::ServerMode::CS )
     {
-        tmp_max[i] = FLT_MIN;
-        tmp_min[i] = FLT_MAX;
-    }
+        float* tmp_max;
+        float* tmp_min;
 
-    while ( jd.dispatchNext( wid, &st, &vl ) )
-    {
-        vismodule::PointObject* originalObject = new vismodule::PointObject;
+        tmp_max = new float[tf_number * 2]; // color, opacity
+        tmp_min = new float[tf_number * 2]; // color, opacity
 
-        if ( server_mode == jpv::ServerMode::CS )
+        for ( int i = 0; i < (tf_number * 2); i++ )
         {
+            tmp_max[i] = FLT_MIN;
+            tmp_min[i] = FLT_MAX;
+        }
+
+        jd.initialize(
+            param.m_time_step,
+            param.m_time_step,
+            mvpl.m_total_number_subvolumes,
+            mvpl.m_total_min_subvolume_coord,
+            mvpl.m_total_max_subvolume_coord,
+            param.m_latency_threshold,
+            param.m_job_id_pack_size
+        );
+
+        while ( jd.dispatchNext( wid, &st, &vl ) )
+        {
+            vismodule::PointObject* originalObject = new vismodule::PointObject;
             vismodule::PointObject* tmp_obj = nullptr;
 
             // make point object and histgram and range
@@ -246,102 +247,75 @@ void generate_particle(
 #endif
 
             delete tmp_obj;
-        } // server_mode == jpv::ServerMode::CS
-        else // server_mode == jpv::ServerMode::IS
-        {
-            // get point object
-            if ( init_param == jpv::InitializeParameter::generate_particle )
-            {
-                pm.readParticleFile();
-                pm.getParticle( originalObject );
-            }
 
-            // get histgram start
-            int c_count = 0;
-            for ( int tf = 0; tf < tf_number; tf++ )
+            // send particle
+            if ( rank == 0 && init_param == jpv::InitializeParameter::generate_particle )
             {
-                for ( int res = 0; res < DEFAULT_NBINS; res++ )
-                {
-                    tmp_c_bins[c_count] = pm.particleHistoryFile().colorHistogramArray()[tf][res];
-                    c_count++;
-                }
-            }
+                SendParticleServerMessage( originalObject, pts, servMes );
+            }            
 
-            int o_count = 0;
-            for ( int tf = 0; tf < tf_number; tf++ )
-            {
-                for ( int res = 0; res < DEFAULT_NBINS; res++ )
-                {
-                    tmp_o_bins[o_count] = pm.particleHistoryFile().opacityHistogramArray()[tf][res];
-                    o_count++;
-                }
-            }
-            // get histgram end
-        } // server_mode == jpv::ServerMode::IS
-
-        // send particle
-        if ( rank == 0 && init_param == jpv::InitializeParameter::generate_particle )
-        {
-            // make particle server message start
-            servMes.m_flag_send_bins = 0;
-            // vismodule::PointObject* object = originalObject;
-            // if ( originalObject != object ) delete originalObject;
-            servMes.m_number_particle = originalObject->coords().size() / 3;
-            printf( " %zu perticles generated\n", servMes.m_number_particle / 3 );
-
-            if ( servMes.m_number_particle > 0 )
-            {
-                servMes.m_positions = std::make_unique<float[]>(3 * servMes.m_number_particle);
-                servMes.m_normals   = std::make_unique<float[]>(3 * servMes.m_number_particle);
-                servMes.m_colors    = std::make_unique<unsigned char[]>(3 * servMes.m_number_particle);
-            }
-            else
-            {
-                servMes.m_positions = NULL;
-                servMes.m_normals   = NULL;
-                servMes.m_colors    = NULL;
-            }
-            for ( int i = 0; i < servMes.m_number_particle; ++i )
-            {
-                servMes.m_positions[3 * i + 0] = originalObject->coords()[3 * i + 0];
-                servMes.m_positions[3 * i + 1] = originalObject->coords()[3 * i + 1];
-                servMes.m_positions[3 * i + 2] = originalObject->coords()[3 * i + 2];
-                servMes.m_normals[3 * i + 0]   = originalObject->normals()[3 * i + 0];
-                servMes.m_normals[3 * i + 1]   = originalObject->normals()[3 * i + 1];
-                servMes.m_normals[3 * i + 2]   = originalObject->normals()[3 * i + 2];
-                servMes.m_colors[3 * i + 0]    = originalObject->colors()[3 * i + 0];
-                servMes.m_colors[3 * i + 1]    = originalObject->colors()[3 * i + 1];
-                servMes.m_colors[3 * i + 2]    = originalObject->colors()[3 * i + 2];
-            }
-            // make particle server message end
-
-            // send particle server message
-            std::cout << "INFO: send particle server message" << std::endl;
-            servMes.m_message_size = servMes.byteSize();
-            servMes.show();
-            pts.sendMessage( servMes );
-        } // send particle
-
-        delete originalObject;
-    } // end of while(DispatchNext)
+            delete originalObject;
+        } // end of while(DispatchNext)
 
 #ifndef CPU_VER
-    if ( mpi_size > 1 ) {
-        MPI_Allreduce( MPI_IN_PLACE, tmp_c_bins, c_bins_size, MPI_UNSIGNED_LONG, MPI_SUM , MPI_COMM_WORLD );
-        MPI_Allreduce( MPI_IN_PLACE, tmp_o_bins, o_bins_size, MPI_UNSIGNED_LONG, MPI_SUM , MPI_COMM_WORLD );
-        MPI_Allreduce( MPI_IN_PLACE, tmp_max, ( tf_number * 2 ), MPI_FLOAT, MPI_MAX, MPI_COMM_WORLD );
-        MPI_Allreduce( MPI_IN_PLACE, tmp_min, ( tf_number * 2 ), MPI_FLOAT, MPI_MIN, MPI_COMM_WORLD );
-    }
+        if ( mpi_size > 1 )
+        {
+            MPI_Allreduce( MPI_IN_PLACE, tmp_c_bins, ( DEFAULT_NBINS * tf_number ), MPI_UNSIGNED_LONG, MPI_SUM , MPI_COMM_WORLD );
+            MPI_Allreduce( MPI_IN_PLACE, tmp_o_bins, ( DEFAULT_NBINS * tf_number ), MPI_UNSIGNED_LONG, MPI_SUM , MPI_COMM_WORLD );
+            MPI_Allreduce( MPI_IN_PLACE, tmp_max, ( tf_number * 2 ), MPI_FLOAT, MPI_MAX, MPI_COMM_WORLD );
+            MPI_Allreduce( MPI_IN_PLACE, tmp_min, ( tf_number * 2 ), MPI_FLOAT, MPI_MIN, MPI_COMM_WORLD );
+        }
 #endif
 
-    if ( server_mode == jpv::ServerMode::CS )
-    {
         vr = setVariablerange2( tmp_max, tmp_min, ( tf_number * 2 ) );
-    }
+
+        delete tmp_min;
+        delete tmp_max;
+    } // server_mode == jpv::ServerMode::CS
     else // server_mode == jpv::ServerMode::IS
     {
+        vismodule::PointObject* originalObject = new vismodule::PointObject;
+
+        // get point object
+        if ( init_param == jpv::InitializeParameter::generate_particle )
+        {
+            pm.readParticleFile();
+            pm.getParticle( originalObject );
+        }
+
+        // get histgram start
+        int c_count = 0;
+        for ( int tf = 0; tf < tf_number; tf++ )
+        {
+            for ( int res = 0; res < DEFAULT_NBINS; res++ )
+            {
+                tmp_c_bins[c_count] = pm.particleHistoryFile().colorHistogramArray()[tf][res];
+                c_count++;
+            }
+        }
+
+        int o_count = 0;
+        for ( int tf = 0; tf < tf_number; tf++ )
+        {
+            for ( int res = 0; res < DEFAULT_NBINS; res++ )
+            {
+                tmp_o_bins[o_count] = pm.particleHistoryFile().opacityHistogramArray()[tf][res];
+                o_count++;
+            }
+        }
+        // get histgram end
+
+        // send server message
+        if ( init_param == jpv::InitializeParameter::generate_particle )
+        {
+            SendParticleServerMessage( originalObject, pts, servMes );
+        }
+
         vr = pm.particleHistoryFile().variableRange();
-    }
+        vr.show();
+
+        delete originalObject;
+    } // server_mode == jpv::ServerMode::IS
 
     // send histgram and range
     if ( rank == 0 )
@@ -743,16 +717,6 @@ void MakeHistgram(
             o_count++;
         }
     }
-
-    for ( size_t i = 0; i < 10; i++ )
-    {
-        std::cout << "c_bins[" << i << "]:" << c_bins[i] << std::endl;
-    }
-
-    for ( size_t i = 0; i < 10; i++ )
-    {
-        std::cout << "o_bins[" << i << "]:" << o_bins[i] << std::endl;
-    }
 }
 
 void MakeParticleMinMax(
@@ -769,6 +733,52 @@ void MakeParticleMinMax(
         max_array[2 * i    ] = vismodule::Math::Max( max_array[2 * i    ], transfer_function_synthesizer->m_o_max[i] );
         min_array[2 * i    ] = vismodule::Math::Min( min_array[2 * i    ], transfer_function_synthesizer->m_o_min[i] );
     }
+}
+
+void SendParticleServerMessage(
+    const vismodule::PointObject* originalObject,
+    jpv::ParticleTransferServer pts,
+    jpv::ParticleTransferServerMessage& servMes
+)
+{
+    // make particle server message start
+    servMes.m_flag_send_bins = 0;
+    // vismodule::PointObject* object = originalObject;
+    // if ( originalObject != object ) delete originalObject;
+    servMes.m_number_particle = originalObject->coords().size() / 3;
+    printf( " %zu perticles generated\n", servMes.m_number_particle / 3 );
+
+    if ( servMes.m_number_particle > 0 )
+    {
+        servMes.m_positions = std::make_unique<float[]>(3 * servMes.m_number_particle);
+        servMes.m_normals   = std::make_unique<float[]>(3 * servMes.m_number_particle);
+        servMes.m_colors    = std::make_unique<unsigned char[]>(3 * servMes.m_number_particle);
+    }
+    else
+    {
+        servMes.m_positions = NULL;
+        servMes.m_normals   = NULL;
+        servMes.m_colors    = NULL;
+    }
+    for ( int i = 0; i < servMes.m_number_particle; ++i )
+    {
+        servMes.m_positions[3 * i + 0] = originalObject->coords()[3 * i + 0];
+        servMes.m_positions[3 * i + 1] = originalObject->coords()[3 * i + 1];
+        servMes.m_positions[3 * i + 2] = originalObject->coords()[3 * i + 2];
+        servMes.m_normals[3 * i + 0]   = originalObject->normals()[3 * i + 0];
+        servMes.m_normals[3 * i + 1]   = originalObject->normals()[3 * i + 1];
+        servMes.m_normals[3 * i + 2]   = originalObject->normals()[3 * i + 2];
+        servMes.m_colors[3 * i + 0]    = originalObject->colors()[3 * i + 0];
+        servMes.m_colors[3 * i + 1]    = originalObject->colors()[3 * i + 1];
+        servMes.m_colors[3 * i + 2]    = originalObject->colors()[3 * i + 2];
+    }
+    // make particle server message end
+
+    // send particle server message
+    std::cout << "INFO: send particle server message" << std::endl;
+    servMes.m_message_size = servMes.byteSize();
+    servMes.show();
+    pts.sendMessage( servMes );
 }
 
 #if 0

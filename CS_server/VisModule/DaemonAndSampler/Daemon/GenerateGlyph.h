@@ -33,6 +33,12 @@ void generate_glyph(
     jpv::ServerMode server_mode
 );
 
+void SendGlyphServerMessage(
+    const vismodule::KVSMLObjectGlyph* originalGlyph,
+    jpv::ParticleTransferServer pts,
+    jpv::ParticleTransferServerMessage& servMes    
+);
+
 void generate_glyph_worker(Argument &param, jpv::ParticleTransferClientMessage& clntMes, MultiVolumePropertyList& mvpl, 
                          bool &nan_error, 
 #ifndef CPU_VER

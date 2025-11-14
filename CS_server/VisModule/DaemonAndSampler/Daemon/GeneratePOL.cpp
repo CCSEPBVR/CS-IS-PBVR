@@ -26,16 +26,6 @@ void generate_plot_over_line(
     const int tf_number  = mvpl.m_list[0].m_number_ingredients;
     const int resolution = param.m_sampling_size;
 
-    jd.initialize( 
-        param.m_time_step,
-        param.m_time_step,
-        mvpl.m_total_number_subvolumes,
-        mvpl.m_total_min_subvolume_coord,
-        mvpl.m_total_max_subvolume_coord,
-        param.m_latency_threshold,
-        param.m_job_id_pack_size
-    );
-
     if( rank == 0 )
     {
         SetServerMessageParameter( param, mvpl, servMes );
@@ -46,20 +36,26 @@ void generate_plot_over_line(
         servMes.show();
         pts.sendMessage( servMes );     
     }
-    
-    vismodule::ValueArray<float> tmp_values( resolution );
-    vismodule::ValueArray<bool>  tmp_mask( resolution );
-    vismodule::ValueArray<float> tmp_axis( resolution );
-    tmp_values.fill( 0x00 );
-    tmp_mask.fill( false );
-    tmp_axis.fill( 0x00 );
 
-    while ( jd.dispatchNext( wid, &st, &vl ) )
+    if ( server_mode == jpv::ServerMode::CS )
     {
-        vismodule::KVSMLObjectPlotOverLine* tmp_obj = new vismodule::KVSMLObjectPlotOverLine;
-        
-        if ( server_mode == jpv::ServerMode::CS )
+        jd.initialize( 
+            param.m_time_step,
+            param.m_time_step,
+            mvpl.m_total_number_subvolumes,
+            mvpl.m_total_min_subvolume_coord,
+            mvpl.m_total_max_subvolume_coord,
+            param.m_latency_threshold,
+            param.m_job_id_pack_size
+        );
+
+        while ( jd.dispatchNext( wid, &st, &vl ) )
         {
+            vismodule::KVSMLObjectPlotOverLine* tmp_obj = new vismodule::KVSMLObjectPlotOverLine;
+            std::vector<float> tmp_values( resolution, 0 );
+            std::vector<int>   tmp_mask( resolution, 0 );
+            std::vector<float> tmp_axis( resolution, 0 );
+        
             // make plot over line
             if ( ( rank > 0 ) || ( mpi_size == 1 ) )
             {
@@ -166,78 +162,47 @@ void generate_plot_over_line(
                 jc.jobCollect_pol( tmp_axis, tmp_mask, tmp_values, &nan_error, &wid );
             }
 #endif
-        } // server_mode == jpv::ServerMode::CS
-        else // server_mode == jpv::ServerMode::IS
+
+            // send plot over line
+            if ( rank == 0 )
+            {
+                SendPlotOverLineServerMessage( tmp_values, tmp_mask, tmp_axis, resolution, nan_error, pts, servMes );
+            } // send plot over line
+
+            delete tmp_obj;
+        } // end of while(DispatchNext)
+    } // server_mode == jpv::ServerMode::CS
+    else // server_mode == jpv::ServerMode::IS
+    {
+        vismodule::KVSMLObjectPlotOverLine* tmp_obj = new vismodule::KVSMLObjectPlotOverLine;
+        std::vector<float> tmp_values( resolution, 0 );
+        std::vector<int>   tmp_mask( resolution, 0 );
+        std::vector<float> tmp_axis( resolution, 0 );
+
+        ParticleMonitor pm;
+        pm.check();
+
+        if( pm.stepExisted() )
         {
-            ParticleMonitor pm;
-            pm.check();
+            pm.setTimeStep_particle( pm.particleStatusFile().getLatestTimeStep() );
+        }
+        else
+        {
+            pm.setTimeStep_particle(0);
+        }
+        
+        // get plot over line
+        pm.readPlotOverLineFile();
+        pm.getPlotOverLine( tmp_obj );
 
-            if( pm.stepExisted() )
-            {
-                pm.setTimeStep_particle( pm.particleStatusFile().getLatestTimeStep() );
-            }
-            else
-            {
-                pm.setTimeStep_particle(0);
-            }
-            
-            // get plot over line
-            pm.readPlotOverLineFile();
-            pm.getPlotOverLine( tmp_obj );
-
-            // make parameter
-            for( int i = 0; i < resolution; i++ )
-            { 
-                tmp_axis[i] = tmp_obj->x_axis()[i];
-                if (tmp_obj->mask()[i])
-                {
-                    // tmp_mask[i] = tmp_obj->mask()[i];
-                    tmp_mask[i]   = 1;
-                    tmp_values[i] = tmp_obj->values_on_line()[i];
-                }
-            }
-        } // server_mode == jpv::ServerMode::IS
+        // make parameter
+        MakePlotOverLine( tmp_obj, resolution, tmp_values, tmp_mask, tmp_axis );
 
         // send plot over line
-        if ( rank == 0 )
-        {
-            servMes.m_flag_send_bins = 3;
-            servMes.m_resolution     = resolution;
-            servMes.m_xAxis.resize( resolution );
-            servMes.m_mask.resize( resolution );
-            servMes.m_line_values.resize( resolution );
-
-            for ( int i = 0; i < resolution; ++i )
-            {
-                servMes.m_xAxis[i]       = tmp_axis[i];   
-                servMes.m_line_values[i] = tmp_values[i];   
-                servMes.m_mask[i]        = tmp_mask[i];
-            }
-
-            // TEST START 2015.1.14
-            if ( nan_error )
-            {
-                strncpy( servMes.m_header, "JPTP /1.0 899 OK\r\n", 18 );
-                servMes.m_server_status   = 1;
-                servMes.m_number_particle = 0;
-                servMes.m_number_glyph    = 0;
-                servMes.m_flag_send_bins  = 1;
-                std::cout << "!!!!!!!!!!!! Send serverStatus = 1 " << std::endl;
-            }
-
-            // send histgram server message
-            std::cout << "INFO: send histgram server message" << std::endl;            
-            servMes.m_message_size = servMes.byteSize();
-            servMes.show();
-            pts.sendMessage( servMes );
-
-            // TEST START 2015.1.14
-            servMes.m_server_status = 0;
-            // TEST END 2015.1.14
-        } // send plot over line
+        SendPlotOverLineServerMessage( tmp_values, tmp_mask, tmp_axis, resolution, nan_error, pts, servMes );
 
         delete tmp_obj;
-    } // end of while(DispatchNext)
+    } // server_mode == jpv::ServerMode::IS
 
     nan_error = false;
 }
@@ -245,21 +210,65 @@ void generate_plot_over_line(
 void MakePlotOverLine(
     const vismodule::KVSMLObjectPlotOverLine* pol_object,
     const int resolution,
-    vismodule::ValueArray<float>& values_on_line,
-    vismodule::ValueArray<bool>& mask,
-    vismodule::ValueArray<float>& x_axis
+    std::vector<float>& values_on_line,
+    std::vector<int>& mask,
+    std::vector<float>& x_axis
 )
 {
-    
     for( size_t i = 0; i < resolution; i++ )
     { 
         x_axis[i] = pol_object->x_axis()[i];
         if (pol_object->mask()[i])
         {
-            mask[i]           = true;
+            mask[i]           = 1;
             values_on_line[i] = pol_object->values_on_line()[i];
         }
     }
+}
+
+void SendPlotOverLineServerMessage(
+    const std::vector<float>& values_on_line,
+    const std::vector<int>& mask,
+    const std::vector<float>& x_axis,
+    const int resolution,
+    const bool& nan_error,
+    jpv::ParticleTransferServer pts,
+    jpv::ParticleTransferServerMessage& servMes
+)
+{
+    servMes.m_flag_send_bins = 3;
+    servMes.m_resolution     = resolution;
+    servMes.m_xAxis.resize( resolution );
+    servMes.m_mask.resize( resolution );
+    servMes.m_line_values.resize( resolution );
+
+    for ( int i = 0; i < resolution; ++i )
+    {
+        servMes.m_xAxis[i]       = x_axis[i];   
+        servMes.m_line_values[i] = values_on_line[i];   
+        servMes.m_mask[i]        = mask[i];
+    }
+
+    // TEST START 2015.1.14
+    if ( nan_error )
+    {
+        strncpy( servMes.m_header, "JPTP /1.0 899 OK\r\n", 18 );
+        servMes.m_server_status   = 1;
+        servMes.m_number_particle = 0;
+        servMes.m_number_glyph    = 0;
+        servMes.m_flag_send_bins  = 1;
+        std::cout << "!!!!!!!!!!!! Send serverStatus = 1 " << std::endl;
+    }
+
+    // send histgram server message
+    std::cout << "INFO: send histgram server message" << std::endl;            
+    servMes.m_message_size = servMes.byteSize();
+    servMes.show();
+    pts.sendMessage( servMes );
+
+    // TEST START 2015.1.14
+    servMes.m_server_status = 0;
+    // TEST END 2015.1.14
 }
 
 #if 0

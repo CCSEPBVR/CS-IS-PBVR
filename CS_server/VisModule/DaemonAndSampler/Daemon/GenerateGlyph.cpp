@@ -23,19 +23,8 @@ void generate_glyph(
 #endif
     int st, vl, wid = 0;
     jpv::ParticleTransferServerMessage servMes;
-    std::vector<vismodule::GlyphSeedGenerator> glyph_creator_lst;
     const int size_index  = 0; // for minmax array index
     const int color_index = 1; // for minmax array index
-
-    jd.initialize(
-        param.m_time_step,
-        param.m_time_step,
-        mvpl.m_total_number_subvolumes,
-        mvpl.m_total_min_subvolume_coord,
-        mvpl.m_total_max_subvolume_coord,
-        param.m_latency_threshold,
-        param.m_job_id_pack_size
-    );
 
     if( rank == 0 )
     {
@@ -46,12 +35,6 @@ void generate_glyph(
         servMes.m_message_size = servMes.byteSize();
         servMes.show();
         pts.sendMessage( servMes );     
-    }
-
-    if ( server_mode == jpv::ServerMode::CS )
-    {
-        glyph_creator_lst.clear();
-        glyph_creator_lst.resize(mvpl.m_list.size());
     }
 
     int cnt = 2;
@@ -66,12 +49,21 @@ void generate_glyph(
         tmp_min[tf] = FLT_MAX;
     }
 
-    while ( jd.dispatchNext( wid, &st, &vl ) )
+    if ( server_mode == jpv::ServerMode::CS )
     {
-        vismodule::KVSMLObjectGlyph* originalGlyph = new vismodule::KVSMLObjectGlyph;
+        jd.initialize(
+            param.m_time_step,
+            param.m_time_step,
+            mvpl.m_total_number_subvolumes,
+            mvpl.m_total_min_subvolume_coord,
+            mvpl.m_total_max_subvolume_coord,
+            param.m_latency_threshold,
+            param.m_job_id_pack_size
+        );
 
-        if ( server_mode == jpv::ServerMode::CS )
+        while ( jd.dispatchNext( wid, &st, &vl ) )
         {
+            vismodule::KVSMLObjectGlyph* originalGlyph = new vismodule::KVSMLObjectGlyph;
             vismodule::KVSMLObjectGlyph* tmp_obj = new vismodule::KVSMLObjectGlyph;
 
             // make glyph
@@ -214,88 +206,54 @@ void generate_glyph(
             printf(" %zu glyphs generated\n", tmp_obj->coords().size() / 3);
 #endif
             delete tmp_obj;
-        } // server_mode == jpv::ServerMode::CS
-        else // server_mode == jpv::ServerMode::IS
-        {
-            ParticleMonitor pm;
-            pm.check();
 
-            if( pm.stepExisted() )
+            // send glyph
+            if ( rank == 0 )
             {
-                pm.setTimeStep_glyph( pm.particleStatusFile().getLatestTimeStep() );
-            }
-            else
-            {
-                pm.setTimeStep_glyph(0);
-            }
+                SendGlyphServerMessage( originalGlyph, pts, servMes );
+            } // send glyph
 
-            // get glyph
-            pm.readGlyphFile();
-            pm.getGlyph( originalGlyph );
-
-            // get minmax
-            tmp_max[size_index]  = vismodule::Math::Max(  tmp_max[size_index], originalGlyph->sizeMax()  );
-            tmp_min[size_index]  = vismodule::Math::Min(  tmp_min[size_index], originalGlyph->sizeMin()  );
-            tmp_max[color_index] = vismodule::Math::Max( tmp_max[color_index], originalGlyph->colorMax() );
-            tmp_min[color_index] = vismodule::Math::Min( tmp_min[color_index], originalGlyph->colorMin() );
-        } // server_mode == jpv::ServerMode::IS
-
-        // send glyph
-        if ( rank == 0 )
-        {
-            // make glyph server message start
-            servMes.m_flag_send_bins = 2;
-            // vismodule::KVSMLObjectGlyph* object = originalGlyph;
-            // if ( originalGlyph != object ) delete originalGlyph;
-            servMes.m_number_glyph = originalGlyph->coords().size() / 3;
-            printf(" %zu glyphs generated\n", originalGlyph->coords().size() / 3);
-
-            if ( servMes.m_number_glyph > 0 )
-            {
-                servMes.m_glyph_coords  = std::make_unique<float[]>(3 * servMes.m_number_glyph);
-                servMes.m_glyph_vectors = std::make_unique<float[]>(3 * servMes.m_number_glyph);
-                servMes.m_glyph_colors  = std::make_unique<unsigned char[]>(3 * servMes.m_number_glyph);
-                servMes.m_glyph_sizes   = std::make_unique<float[]>(servMes.m_number_glyph);
-            }
-            else
-            {
-                servMes.m_glyph_coords  = NULL;
-                servMes.m_glyph_vectors = NULL;
-                servMes.m_glyph_colors  = NULL;
-                servMes.m_glyph_sizes   = NULL;
-            }
-            for ( int i = 0; i < servMes.m_number_glyph; ++i )
-            {
-                servMes.m_glyph_coords[3 * i + 0]  = originalGlyph->coords()[3 * i + 0];
-                servMes.m_glyph_coords[3 * i + 1]  = originalGlyph->coords()[3 * i + 1];
-                servMes.m_glyph_coords[3 * i + 2]  = originalGlyph->coords()[3 * i + 2];
-                servMes.m_glyph_vectors[3 * i + 0] = originalGlyph->directions()[3 * i + 0];
-                servMes.m_glyph_vectors[3 * i + 1] = originalGlyph->directions()[3 * i + 1];
-                servMes.m_glyph_vectors[3 * i + 2] = originalGlyph->directions()[3 * i + 2];
-                servMes.m_glyph_colors[3 * i + 0]  = originalGlyph->colors()[3 * i + 0];
-                servMes.m_glyph_colors[3 * i + 1]  = originalGlyph->colors()[3 * i + 1];
-                servMes.m_glyph_colors[3 * i + 2]  = originalGlyph->colors()[3 * i + 2];
-                servMes.m_glyph_sizes[i]           = originalGlyph->sizes()[i];
-            }
-            // make glyph server message end
-
-            // send glyph server message
-            std::cout << "INFO: send glyph server message" << std::endl;
-            servMes.m_message_size = servMes.byteSize();
-            servMes.show();
-            pts.sendMessage( servMes );
-        } // send glyph
-
-        delete originalGlyph;
-    } // end of while(DispatchNext)
+            delete originalGlyph;
+        } // end of while(DispatchNext)
 
 #ifndef CPU_VER
-    if (mpi_size > 1) 
-    {
-        MPI_Allreduce( MPI_IN_PLACE, tmp_max, cnt, MPI_FLOAT, MPI_MAX , MPI_COMM_WORLD );
-        MPI_Allreduce( MPI_IN_PLACE, tmp_min, cnt, MPI_FLOAT, MPI_MIN , MPI_COMM_WORLD );
-    }
+        if ( mpi_size > 1 )
+        {
+            MPI_Allreduce( MPI_IN_PLACE, tmp_max, cnt, MPI_FLOAT, MPI_MAX , MPI_COMM_WORLD );
+            MPI_Allreduce( MPI_IN_PLACE, tmp_min, cnt, MPI_FLOAT, MPI_MIN , MPI_COMM_WORLD );
+        }
 #endif
+    } // server_mode == jpv::ServerMode::CS  
+    else // server_mode == jpv::ServerMode::IS
+    {
+        vismodule::KVSMLObjectGlyph* originalGlyph = new vismodule::KVSMLObjectGlyph;
+
+        ParticleMonitor pm;
+        pm.check();
+
+        if( pm.stepExisted() )
+        {
+            pm.setTimeStep_glyph( pm.particleStatusFile().getLatestTimeStep() );
+        }
+        else
+        {
+            pm.setTimeStep_glyph(0);
+        }
+
+        // get glyph
+        pm.readGlyphFile();
+        pm.getGlyph( originalGlyph );
+
+        // get minmax
+        tmp_max[size_index]  = vismodule::Math::Max(  tmp_max[size_index], originalGlyph->sizeMax()  );
+        tmp_min[size_index]  = vismodule::Math::Min(  tmp_min[size_index], originalGlyph->sizeMin()  );
+        tmp_max[color_index] = vismodule::Math::Max( tmp_max[color_index], originalGlyph->colorMax() );
+        tmp_min[color_index] = vismodule::Math::Min( tmp_min[color_index], originalGlyph->colorMin() );
+
+        SendGlyphServerMessage( originalGlyph, pts, servMes );
+
+        delete originalGlyph;
+    } // server_mode == jpv::ServerMode::IS  
 
     // send size and color minmax
     if ( rank == 0 )
@@ -336,6 +294,55 @@ void generate_glyph(
 
     delete[] tmp_min;
     delete[] tmp_max;
+}
+
+void SendGlyphServerMessage(
+    const vismodule::KVSMLObjectGlyph* originalGlyph,
+    jpv::ParticleTransferServer pts,
+    jpv::ParticleTransferServerMessage& servMes    
+)
+{
+    // make glyph server message start
+    servMes.m_flag_send_bins = 2;
+    // vismodule::KVSMLObjectGlyph* object = originalGlyph;
+    // if ( originalGlyph != object ) delete originalGlyph;
+    servMes.m_number_glyph = originalGlyph->coords().size() / 3;
+    printf(" %zu glyphs generated\n", originalGlyph->coords().size() / 3);
+
+    if ( servMes.m_number_glyph > 0 )
+    {
+        servMes.m_glyph_coords  = std::make_unique<float[]>(3 * servMes.m_number_glyph);
+        servMes.m_glyph_vectors = std::make_unique<float[]>(3 * servMes.m_number_glyph);
+        servMes.m_glyph_colors  = std::make_unique<unsigned char[]>(3 * servMes.m_number_glyph);
+        servMes.m_glyph_sizes   = std::make_unique<float[]>(servMes.m_number_glyph);
+    }
+    else
+    {
+        servMes.m_glyph_coords  = NULL;
+        servMes.m_glyph_vectors = NULL;
+        servMes.m_glyph_colors  = NULL;
+        servMes.m_glyph_sizes   = NULL;
+    }
+    for ( int i = 0; i < servMes.m_number_glyph; ++i )
+    {
+        servMes.m_glyph_coords[3 * i + 0]  = originalGlyph->coords()[3 * i + 0];
+        servMes.m_glyph_coords[3 * i + 1]  = originalGlyph->coords()[3 * i + 1];
+        servMes.m_glyph_coords[3 * i + 2]  = originalGlyph->coords()[3 * i + 2];
+        servMes.m_glyph_vectors[3 * i + 0] = originalGlyph->directions()[3 * i + 0];
+        servMes.m_glyph_vectors[3 * i + 1] = originalGlyph->directions()[3 * i + 1];
+        servMes.m_glyph_vectors[3 * i + 2] = originalGlyph->directions()[3 * i + 2];
+        servMes.m_glyph_colors[3 * i + 0]  = originalGlyph->colors()[3 * i + 0];
+        servMes.m_glyph_colors[3 * i + 1]  = originalGlyph->colors()[3 * i + 1];
+        servMes.m_glyph_colors[3 * i + 2]  = originalGlyph->colors()[3 * i + 2];
+        servMes.m_glyph_sizes[i]           = originalGlyph->sizes()[i];
+    }
+    // make glyph server message end
+
+    // send glyph server message
+    std::cout << "INFO: send glyph server message" << std::endl;
+    servMes.m_message_size = servMes.byteSize();
+    servMes.show();
+    pts.sendMessage( servMes );
 }
 
 #if 0

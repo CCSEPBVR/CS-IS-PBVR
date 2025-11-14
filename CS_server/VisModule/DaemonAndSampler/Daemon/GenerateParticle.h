@@ -150,6 +150,12 @@ void MakeParticleMinMax(
     float* min_array
 );
 
+void SendParticleServerMessage(
+    const vismodule::PointObject* originalObject,
+    jpv::ParticleTransferServer pts,
+    jpv::ParticleTransferServerMessage& servMes
+);
+
 void generate_particle_worker(
     Argument &param,
     MultiVolumePropertyList& mvpl,
