@@ -43,8 +43,9 @@ public:
     };
 
     struct ObjectInfo
-    {
+    {           
         // Common Object Info
+        std::string uuid                    = "";
         bool tmpIsDisplay                   = true;
         bool isDisplay                      = false;
         bool tmpIsKeepInitial               = false;
@@ -100,8 +101,6 @@ public:
 
         int currentImportedTimeStep         = -1;
         bool needSameTimeStepReplace        = false;
-
-        bool isRemote                       = false; // ture:リモートオブジェクト(Remote Vizで追加するオブジェクトは全部trueとなります。)
     };
 
     explicit ObjectInfoExtractor( const std::string& filePath )

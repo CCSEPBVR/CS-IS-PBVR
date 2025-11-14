@@ -193,7 +193,9 @@ void ServerWIP::onMessage( uWS::WebSocket<false, true, PerSocket>* ws, std::stri
         else if( event == "fileList" )              fileList( ws, received );
         else if( event == "selectedFile" )          selectedFile( ws, received );
         else if( event == "showAtTimeStep" )        showAtTimeStep( ws, received );
+        else if( event == "objectInfoUpdate" )      objectInfoUpdate( ws, received );
         else if( event == "debug" )                 debugNumberOfUsers();
+        else if( event == "debugSrvObjects" )       debugSrvObjects();
         else                                        std::cout << "[Server] Unknow Event : " << event << std::endl;
     }
 }
@@ -521,17 +523,18 @@ void ServerWIP::selectedFile( uWS::WebSocket<false, true, PerSocket>* ws, const 
 {
     std::cout << "[Server] selected file" << std::endl;
     std::string file = received["file"];
+    std::string uuid = received["uuid"];
 
     ObjectInfoExtractor oie( file );
     if( auto objectInfoOpt = oie.extractFromLocalFile() )
     {
-        objectInfoOpt->isRemote     = true;
-
+        objectInfoOpt->uuid = uuid;
         m_objects->push_back( *objectInfoOpt );
 
         nlohmann::json msg;
         msg["event"]                    = "addObjectToModel";
         // Common Object Info
+        msg["uuid"]                     = objectInfoOpt->uuid;
         msg["tmpIsDisplay"]             = objectInfoOpt->tmpIsDisplay;
         msg["isDisplay"]                = objectInfoOpt->isDisplay;
         msg["tmpIsKeepInitial"]         = objectInfoOpt->tmpIsKeepInitial;
@@ -579,8 +582,6 @@ void ServerWIP::selectedFile( uWS::WebSocket<false, true, PerSocket>* ws, const 
         msg["tmpPolygonOpacity"]        = objectInfoOpt->tmpPolygonOpacity;
         msg["polygonOpacity"]           = objectInfoOpt->polygonOpacity;
 
-        msg["isRemote"]                 = objectInfoOpt->isRemote;
-
         m_u_web_sockets.publish( "Notice", msg.dump(), uWS::OpCode::TEXT );
     }
 }
@@ -598,6 +599,123 @@ void ServerWIP::showAtTimeStep( uWS::WebSocket<false, true, PerSocket>* ws, cons
         // ws->send("{\"status\":\"done\"}", uWS::OpCode::TEXT);
     } );
     worker.process();
+
+    for( auto& info : *m_objects ) // FIXME:最終的には全オブジェクトを固めて一括送信すること。
+    {
+        if( info.object != nullptr )
+        {
+            const size_t numberOfVertices               = static_cast<kvs::PointObject*>( info.object )->numberOfVertices();
+            const kvs::ValueArray<kvs::Real32>& coords  = static_cast<kvs::PointObject*>( info.object )->coords();
+            const kvs::ValueArray<kvs::UInt8>& colors   = static_cast<kvs::PointObject*>( info.object )->colors();
+            const kvs::ValueArray<kvs::Real32>& normals = static_cast<kvs::PointObject*>( info.object )->normals();
+            const kvs::Vec3& minObjectCoords            = static_cast<kvs::PointObject*>( info.object )->minObjectCoord();
+            const kvs::Vec3& maxObjectCoords            = static_cast<kvs::PointObject*>( info.object )->maxObjectCoord();
+
+            size_t total_size =
+                sizeof( size_t ) +
+                sizeof( kvs::Real32 ) * 3 * numberOfVertices +
+                sizeof( kvs::UInt8 )  * 3 * numberOfVertices +
+                sizeof( kvs::Real32 ) * 3 * numberOfVertices +
+                sizeof( kvs::Real32 ) * 3 +
+                sizeof( kvs::Real32 ) * 3;
+
+            std::vector<char> buffer( total_size );
+            size_t offset = 0;
+            std::memcpy( buffer.data() + offset, &numberOfVertices, sizeof( size_t ) );
+            offset += sizeof( size_t );
+            std::memcpy( buffer.data() + offset, coords.data(), sizeof( kvs::Real32 ) * 3 * numberOfVertices );
+            offset += sizeof( kvs::Real32 ) * 3 * numberOfVertices;
+            std::memcpy( buffer.data() + offset, colors.data(), sizeof( kvs::UInt8 ) * 3 * numberOfVertices );
+            offset += sizeof( kvs::UInt8 ) * 3 * numberOfVertices;
+            std::memcpy( buffer.data() + offset, normals.data(), sizeof( kvs::Real32 ) * 3 * numberOfVertices );
+            offset += sizeof( kvs::Real32 ) * 3 * numberOfVertices;
+            std::memcpy( buffer.data() + offset, minObjectCoords.data(), sizeof( kvs::Real32 ) * 3 );
+            offset += sizeof( kvs::Real32 ) * 3;
+            std::memcpy( buffer.data() + offset, maxObjectCoords.data(), sizeof( kvs::Real32 ) * 3 );
+            offset += sizeof( kvs::Real32 ) * 3;
+
+            m_u_web_sockets.getLoop()->defer( [buffer, this]()
+                                             {
+                                                 std::cout << "[Server] publishing..." << std::endl;
+                                                 m_u_web_sockets.publish( "AFTER", std::string_view( buffer.data(), buffer.size() ), uWS::OpCode::BINARY );
+                                             } );
+        }
+    }
+}
+
+void ServerWIP::objectInfoUpdate( uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received )
+{
+    std::cout << "[Server] object info update" << std::endl;
+    if( !received.contains("objects") || !received["objects"].is_array() ) return;
+
+    for( const auto& objJson : received["objects"] )
+    {
+        std::string uuid;
+        if (objJson.contains("uuid") && objJson["uuid"].is_string())
+        {
+            uuid = objJson["uuid"].get<std::string>();
+        }
+        else
+        {
+            continue; // uuid が無ければスキップ
+        }
+
+        // m_objects の中から一致する uuid のオブジェクトを探す
+        auto it = std::find_if( m_objects->begin(), m_objects->end(),
+                               [&]( const ObjectInfoExtractor::ObjectInfo& info )
+                               {
+                                   return info.uuid == uuid;
+                               } );
+        if( it == m_objects->end() ) continue; // 見つからなければスキップ
+
+        ObjectInfoExtractor::ObjectInfo& info = *it;
+
+        // 受信 JSON から必要なフィールドだけを更新
+        if( objJson.contains( "tmpIsDisplay" ) )            info.tmpIsDisplay           = objJson["tmpIsDisplay"].get<bool>();
+        if( objJson.contains( "isDisplay" ) )               info.isDisplay              = objJson["isDisplay"].get<bool>();
+        if( objJson.contains( "tmpIsKeepInitial" ) )        info.tmpIsKeepInitial       = objJson["tmpIsKeepInitial"].get<bool>();
+        if( objJson.contains( "isKeepInitial" ) )           info.isKeepInitial          = objJson["isKeepInitial"].get<bool>();
+        if( objJson.contains( "tmpIsKeepFinal" ) )          info.tmpIsKeepFinal         = objJson["tmpIsKeepFinal"].get<bool>();
+        if( objJson.contains( "isKeepFinal" ) )             info.isKeepFinal            = objJson["isKeepFinal"].get<bool>();
+
+        if( objJson.contains( "tmpIsFocus" ) )              info.tmpIsFocus             = objJson["tmpIsFocus"].get<bool>();
+        if( objJson.contains( "isFocus" ) )                 info.isFocus                = objJson["isFocus"].get<bool>();
+
+        if( objJson.contains( "tmpParticleLimit" ) )        info.tmpParticleLimit       = objJson["tmpParticleLimit"].get<int>();
+        if( objJson.contains( "particleLimit" ) )           info.particleLimit          = objJson["particleLimit"].get<int>();
+        if( objJson.contains( "tmpExtraOpacityFactor" ) )   info.tmpExtraOpacityFactor  = objJson["tmpExtraOpacityFactor"].get<float>();
+        if( objJson.contains( "extraOpacityFactor" ) )      info.extraOpacityFactor     = objJson["extraOpacityFactor"].get<float>();
+
+        if( objJson.contains( "tmpCoordinateX" ) )          info.tmpCoordinateX         = objJson["tmpCoordinateX"].get<std::string>();
+        if( objJson.contains( "coordinateX" ) )             info.coordinateX            = objJson["coordinateX"].get<std::string>();
+        if( objJson.contains( "tmpCoordinateY" ) )          info.tmpCoordinateY         = objJson["tmpCoordinateY"].get<std::string>();
+        if( objJson.contains( "coordinateY" ) )             info.coordinateY            = objJson["coordinateY"].get<std::string>();
+        if( objJson.contains( "tmpCoordinateZ" ) )          info.tmpCoordinateZ         = objJson["tmpCoordinateZ"].get<std::string>();
+        if( objJson.contains( "coordinateZ" ) )             info.coordinateZ            = objJson["coordinateZ"].get<std::string>();
+
+        if( objJson.contains( "isExport" ) )                info.isExport               = objJson["isExport"].get<bool>();
+
+        if( objJson.contains("tmpPolygonColor") && objJson["tmpPolygonColor"].is_array() && objJson["tmpPolygonColor"].size() == 3 )
+        {
+            info.tmpPolygonColor = kvs::RGBColor(
+                objJson["tmpPolygonColor"][0].get<int>(),
+                objJson["tmpPolygonColor"][1].get<int>(),
+                objJson["tmpPolygonColor"][2].get<int>()
+                );
+        }
+
+        if( objJson.contains("polygonColor") && objJson["polygonColor"].is_array() && objJson["polygonColor"].size() == 3 )
+        {
+            info.polygonColor = kvs::RGBColor(
+                objJson["polygonColor"][0].get<int>(),
+                objJson["polygonColor"][1].get<int>(),
+                objJson["polygonColor"][2].get<int>()
+                );
+        }
+
+        if( objJson.contains( "tmpPolygonOpacity" ) )       info.tmpPolygonOpacity      = objJson["tmpPolygonOpacity"].get<float>();
+        if( objJson.contains( "polygonOpacity" ) )          info.polygonOpacity         = objJson["polygonOpacity"].get<float>();
+    }
 }
 
 std::string ServerWIP::toUtf8( const std::filesystem::path& p )

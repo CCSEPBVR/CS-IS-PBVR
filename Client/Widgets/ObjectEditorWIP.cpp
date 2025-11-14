@@ -125,18 +125,40 @@ void ObjectEditorWIP::addObjectToModel( const ObjectInfoExtractor::ObjectInfo& o
 
 void ObjectEditorWIP::showAtTimeStep( int timeStep )
 {
-    Worker* worker = new Worker( timeStep, m_model, m_screen );
-    QThread* thread = new QThread;
+    switch( *m_viz_mode )
+    {
+    case Viz::Mode::Local:
+    case Viz::Mode::LocalClientAndServer:
+    {
+        Worker* worker = new Worker( timeStep, m_model, m_screen );
+        QThread* thread = new QThread;
 
-    worker->moveToThread( thread );
+        worker->moveToThread( thread );
 
-    connect( thread, &QThread::started, worker, &Worker::process );
-    connect( worker, &Worker::done, thread, &QThread::quit );
-    connect( worker, &Worker::done, worker, &Worker::deleteLater );
-    connect( thread, &QThread::finished, thread, &QThread::deleteLater );
-    connect( worker, &Worker::done, this, [this, timeStep]() { doneObjectEditor( timeStep ); } );
+        connect( thread, &QThread::started, worker, &Worker::process );
+        connect( worker, &Worker::done, thread, &QThread::quit );
+        connect( worker, &Worker::done, worker, &Worker::deleteLater );
+        connect( thread, &QThread::finished, thread, &QThread::deleteLater );
+        connect( worker, &Worker::done, this, [this, timeStep]() { doneObjectEditor( timeStep ); } );
 
-    thread->start();
+        thread->start();
+        break;
+    }
+    case Viz::Mode::RemoteClientAndServer:
+    case Viz::Mode::RemoteInSitu:
+    {
+        if( m_web_sockets->isConnected() )
+        {
+            m_web_sockets->text()->sendTextMessage( QJsonDocument( {
+                                                                  {"event", "showAtTimeStep"},
+                                                                  {"timeStep", timeStep},
+                                                                  } ).toJson( QJsonDocument::Compact ) );
+        }
+        break;
+    }
+    default:
+        break;
+    }
 }
 
 void ObjectEditorWIP::loadParameter( const QString& filePath )
@@ -237,12 +259,77 @@ void ObjectEditorWIP::initialize()
     // ボタン押下でサーバにイベント送信
     connect( debugPushButton, &QPushButton::clicked, this, [this]()
             {
-                if( m_web_sockets->isConnected() )
+                if( !m_web_sockets->isConnected() )
                 {
-                    m_web_sockets->text()->sendTextMessage( QJsonDocument( {
-                                                                          {"event", "showAtTimeStep"},
-                                                                          {"timeStep", 0},
-                                                                          } ).toJson( QJsonDocument::Compact ) );
+                    qDebug() << "Not connected.";
+                    return;
+                }
+                m_web_sockets->text()->sendTextMessage( QJsonDocument( QJsonObject{ {"event", "debugSrvObjects"} } ).toJson( QJsonDocument::Compact ) );
+
+                for( int row = 0; row < m_model->rowCount(); row++ )
+                {
+                    QStandardItem* nameItem = m_model->item( row, 0 );
+                    QVariant var = nameItem->data( Qt::UserRole );
+                    if( !var.canConvert<ObjectInfoExtractor::ObjectInfo>() ) continue;
+
+                    ObjectInfoExtractor::ObjectInfo info = var.value<ObjectInfoExtractor::ObjectInfo>();
+
+                    std::cout << "[Client]"                                                                                     << std::endl;
+                    std::cout << "[Common Object Info]"                                                                         << std::endl;
+                    std::cout << "info.tmpIsDisplay                 : " << info.tmpIsDisplay                                    << std::endl;
+                    std::cout << "info.isDisplay                    : " << info.isDisplay                                       << std::endl;
+                    std::cout << "info.tmpIsKeepInitial             : " << info.tmpIsKeepInitial                                << std::endl;
+                    std::cout << "info.isKeepInitial                : " << info.isKeepInitial                                   << std::endl;
+                    std::cout << "info.tmpIsKeepFinal               : " << info.tmpIsKeepFinal                                  << std::endl;
+                    std::cout << "info.isKeepFinal                  : " << info.isKeepFinal                                     << std::endl;
+
+                    std::cout << "info.name                         : " << info.name                                            << std::endl;
+                    std::cout << "info.extension                    : " << info.extension                                       << std::endl;
+                    std::cout << "info.directory                    : " << info.directory                                       << std::endl;
+                    std::cout << "info.format                       : " << info.format                                          << std::endl;
+                    std::cout << "info.timeStep                     : " << info.timeStep.first << ", " << info.timeStep.second  << std::endl;
+                    std::cout << "info.tmpIsFocus                   : " << info.tmpIsFocus                                      << std::endl;
+                    std::cout << "info.isFocus                      : " << info.isFocus                                         << std::endl;
+                    std::cout << "info.minObjectCoord               : " << info.minObjectCoord                                  << std::endl;
+                    std::cout << "info.maxObjectCoord               : " << info.maxObjectCoord                                  << std::endl;
+                    std::cout << "info.minExternalCoord             : " << info.minExternalCoord                                << std::endl;
+                    std::cout << "info.maxExternalCoord             : " << info.maxExternalCoord                                << std::endl;
+
+                    std::cout << "[Common Server Point Object Info]"                                                            << std::endl;
+                    std::cout << "info.tmpParticleLimit             : " << info.tmpParticleLimit                                << std::endl;
+                    std::cout << "info.particleLimit                : " << info.particleLimit                                   << std::endl;
+                    std::cout << "info.tmpExtraOpacityFactor        : " << info.tmpExtraOpacityFactor                           << std::endl;
+                    std::cout << "info.extraOpacityFactor           : " << info.extraOpacityFactor                              << std::endl;
+
+                    std::cout << "[Client Server Point Object Info]"                                                            << std::endl;
+                    std::cout << "info.numberOfVector               : " << info.numberOfVector                                  << std::endl;
+                    std::cout << "info.numberOfElements             : " << info.numberOfElements                                << std::endl;
+                    std::cout << "info.numberOfSubvolume            : " << info.numberOfSubvolume                               << std::endl;
+                    std::cout << "info.numberOfNodes                : " << info.numberOfNodes                                   << std::endl;
+                    std::cout << "info.elementType                  : " << info.elementType                                     << std::endl;
+                    std::cout << "info.fileType                     : " << info.fileType                                        << std::endl;
+                    std::cout << "info.stepNumber                   : " << info.stepNumber                                      << std::endl;
+                    std::cout << "info.tmpCoordinateX               : " << info.tmpCoordinateX                                  << std::endl;
+                    std::cout << "info.coordinateX                  : " << info.coordinateX                                     << std::endl;
+                    std::cout << "info.tmpCoordinateY               : " << info.tmpCoordinateY                                  << std::endl;
+                    std::cout << "info.coordinateY                  : " << info.coordinateY                                     << std::endl;
+                    std::cout << "info.tmpCoordinateZ               : " << info.tmpCoordinateZ                                  << std::endl;
+                    std::cout << "info.coordinateZ                  : " << info.coordinateZ                                     << std::endl;
+                    std::cout << "info.isExport                     : " << info.isExport                                        << std::endl;
+
+                    std::cout << "[Nontexture Polygon Object Info]"                                                             << std::endl;
+                    std::cout << "kvs::RGBColor tmpPolygonColor     : " << info.tmpPolygonColor                                 << std::endl;
+                    std::cout << "kvs::RGBColor polygonColor        : " << info.polygonColor                                    << std::endl;
+                    std::cout << "info.tmpPolygonOpacity            : " << info.tmpPolygonOpacity                               << std::endl;
+                    std::cout << "info.polygonOpacity               : " << info.polygonOpacity                                  << std::endl;
+
+                    std::cout << "[For client]"                                                                                 << std::endl;
+                    std::cout << "info.object                       : " << info.object                                          << std::endl;
+                    std::cout << "info.objectID                     : " << info.objectID.first << ", " << info.objectID.second  << std::endl;
+                    std::cout << "info.currentMinObjectCoord        : " << info.currentMinObjectCoord                           << std::endl;
+                    std::cout << "info.currentMaxObjectCoord        : " << info.currentMaxObjectCoord                           << std::endl;
+                    std::cout << "info.currentImportedTimeStep      : " << info.currentImportedTimeStep                         << std::endl;
+                    std::cout << "info.needSameTimeStepReplace      : " << info.needSameTimeStepReplace                         << std::endl;
                 }
             } );
 }
@@ -571,9 +658,11 @@ void ObjectEditorWIP::onBrowse()
 
         for( const QString& filePath : filePaths )
         {
+            QString uuid = QUuid::createUuid().toString( QUuid::WithoutBraces );
             ObjectInfoExtractor oie( filePath.toUtf8().constData() );
             if( auto objectInfoOpt = oie.extractFromLocalFile() )
             {
+                objectInfoOpt->uuid = uuid.toUtf8();
                 addObjectToModel( *objectInfoOpt );
             }
             else
@@ -589,10 +678,14 @@ void ObjectEditorWIP::onBrowse()
         RemoteFileDialog dlg( m_web_sockets, this );
         if( dlg.exec() == QDialog::Accepted )
         {
-            m_web_sockets->text()->sendTextMessage( QJsonDocument( {
-                                                                  {"event", "selectedFile"},
-                                                                  {"file", dlg.selectedFile()},
-                                                                  } ).toJson( QJsonDocument::Compact ) );
+            QString uuid = QUuid::createUuid().toString( QUuid::WithoutBraces );
+            m_web_sockets->text()->sendTextMessage(
+                QJsonDocument( QJsonObject{
+                                  { "event", "selectedFile" },
+                                  { "file", dlg.selectedFile() },
+                                  { "uuid", uuid }
+                              } ).toJson( QJsonDocument::Compact )
+                );
         }
         break;
     }
@@ -786,62 +879,124 @@ void ObjectEditorWIP::onApply()
     emit updateTranslation(); // NOTE:Plot Over Line用
     m_screen->update();
 
-    if( m_web_sockets->isConnected() )
+    switch( *m_viz_mode )
     {
-        QJsonObject root;
-        root["event"] = "ObjectInfoParameter";
-
-        QJsonArray objectInfoArray;
-
-        for( int row = 0; row < m_model->rowCount(); row++ )
-        {
-            QStandardItem* nameItem = m_model->item( row, 0 );
-            if( !nameItem ) continue;
-
-            QVariant var = nameItem->data( Qt::UserRole );
-            if( !var.canConvert<ObjectInfoExtractor::ObjectInfo>() ) continue;
-
-            ObjectInfoExtractor::ObjectInfo objectInfo = var.value<ObjectInfoExtractor::ObjectInfo>();
-
-            QJsonObject jsonObjectInfo;
-            jsonObjectInfo["name"]                  = QString::fromUtf8( objectInfo.name );
-            jsonObjectInfo["directory"]             = QString::fromUtf8( objectInfo.directory );
-            jsonObjectInfo["format"]                = QString::fromUtf8( ObjectInfoExtractor::formatToString( objectInfo.format ).c_str() );
-            jsonObjectInfo["timeStepMin"]           = objectInfo.timeStep.first;
-            jsonObjectInfo["timeStepMax"]           = objectInfo.timeStep.second;
-            jsonObjectInfo["isFocus"]               = objectInfo.isFocus;
-
-            jsonObjectInfo["minObjectCoord"]        = QJsonArray{ objectInfo.minObjectCoord.x(), objectInfo.minObjectCoord.y(), objectInfo.minObjectCoord.z() };
-            jsonObjectInfo["maxObjectCoord"]        = QJsonArray{ objectInfo.maxObjectCoord.x(), objectInfo.maxObjectCoord.y(), objectInfo.maxObjectCoord.z() };
-            jsonObjectInfo["minExternalCoord"]      = QJsonArray{ objectInfo.minExternalCoord.x(), objectInfo.minExternalCoord.y(), objectInfo.minExternalCoord.z() };
-            jsonObjectInfo["maxExternalCoord"]      = QJsonArray{ objectInfo.maxExternalCoord.x(), objectInfo.maxExternalCoord.y(), objectInfo.maxExternalCoord.z() };
-
-            jsonObjectInfo["particleLimit"]         = objectInfo.particleLimit;
-            jsonObjectInfo["extraOpacityFactor"]    = objectInfo.extraOpacityFactor;
-
-            jsonObjectInfo["numberOfVector"]        = objectInfo.numberOfVector;
-            jsonObjectInfo["numberOfElements"]      = objectInfo.numberOfElements;
-            jsonObjectInfo["numberOfSubvolume"]     = objectInfo.numberOfSubvolume;
-            jsonObjectInfo["numberOfNodes"]         = objectInfo.numberOfNodes;
-            jsonObjectInfo["elementType"]           = objectInfo.elementType;
-            jsonObjectInfo["fileType"]              = objectInfo.fileType;
-            jsonObjectInfo["stepNumber"]            = objectInfo.stepNumber;
-            jsonObjectInfo["coordinateX"]           = QString::fromUtf8( objectInfo.coordinateX );
-            jsonObjectInfo["coordinateY"]           = QString::fromUtf8( objectInfo.coordinateY );
-            jsonObjectInfo["coordinateZ"]           = QString::fromUtf8( objectInfo.coordinateZ );
-
-            jsonObjectInfo["polygonColor"]          = QJsonArray{ objectInfo.polygonColor.r(), objectInfo.polygonColor.g(), objectInfo.polygonColor.b() };
-            jsonObjectInfo["polygonOpacity"]        = objectInfo.polygonOpacity;
-
-            objectInfoArray.append( jsonObjectInfo );
-        }
-        root["objects"] = objectInfoArray;
-        qDebug() << root;
-        m_web_sockets->text()->sendTextMessage( QJsonDocument( root ).toJson( QJsonDocument::Compact ) );
+    case Viz::Mode::Local:
+    case Viz::Mode::LocalClientAndServer:
+    {
+        break;
     }
-    else // ローカルモード
+    case Viz::Mode::RemoteClientAndServer:
+    case Viz::Mode::RemoteInSitu:
     {
-        // FIXME:接続中でない場合、ローカルモードと判断し表示を行う。
+        if( m_web_sockets->isConnected() ) // FIXME:以下でObjectInfoの内容をサーバ側へ送信していますが、必要なもの並びに更新があったもののみ送信するようにしてください。
+        {
+            QJsonObject root;
+            root["event"] = "objectInfoUpdate";
+
+            QJsonArray objectInfoArray;
+            for( int row = 0; row < m_model->rowCount(); row++ )
+            {
+                QStandardItem* nameItem = m_model->item( row, 0 );
+                if( !nameItem ) continue;
+                QVariant var = nameItem->data( Qt::UserRole );
+                if( !var.canConvert<ObjectInfoExtractor::ObjectInfo>() ) continue;
+
+                ObjectInfoExtractor::ObjectInfo info = var.value<ObjectInfoExtractor::ObjectInfo>();
+
+                QJsonObject jsonObjectInfo;
+                // Common Object Info
+                jsonObjectInfo["uuid"]                      = QString::fromUtf8( info.uuid );
+                jsonObjectInfo["tmpIsDisplay"]              = info.tmpIsDisplay;
+                jsonObjectInfo["isDisplay"]                 = info.isDisplay;
+                jsonObjectInfo["tmpIsKeepInitial"]          = info.tmpIsKeepInitial;
+                jsonObjectInfo["isKeepInitial"]             = info.isKeepInitial;
+                jsonObjectInfo["tmpIsKeepFinal"]            = info.tmpIsKeepFinal;
+                jsonObjectInfo["isKeepFinal"]               = info.isKeepFinal;
+
+                jsonObjectInfo["name"]                      = QString::fromUtf8( info.name );
+                jsonObjectInfo["extension"]                 = QString::fromUtf8( info.extension );
+                jsonObjectInfo["directory"]                 = QString::fromUtf8( info.directory );
+                jsonObjectInfo["format"]                    = info.format;
+                QJsonArray timeStepArray;
+                timeStepArray.append( info.timeStep.first );
+                timeStepArray.append( info.timeStep.second );
+                jsonObjectInfo["timeStep"]                  = timeStepArray;
+                jsonObjectInfo["tmpIsFocus"]                = info.tmpIsFocus;
+                jsonObjectInfo["isFocus"]                   = info.isFocus;
+                QJsonArray minObjectCoordArray;
+                minObjectCoordArray.append( info.minObjectCoord.x() );
+                minObjectCoordArray.append( info.minObjectCoord.y() );
+                minObjectCoordArray.append( info.minObjectCoord.z() );
+                jsonObjectInfo["minObjectCoord"]            = minObjectCoordArray;
+                QJsonArray maxObjectCoordArray;
+                maxObjectCoordArray.append( info.maxObjectCoord.x() );
+                maxObjectCoordArray.append( info.maxObjectCoord.y() );
+                maxObjectCoordArray.append( info.maxObjectCoord.z() );
+                jsonObjectInfo["maxObjectCoord"]            = maxObjectCoordArray;
+                QJsonArray minExternalCoordArray;
+                minExternalCoordArray.append( info.minExternalCoord.x() );
+                minExternalCoordArray.append( info.minExternalCoord.y() );
+                minExternalCoordArray.append( info.minExternalCoord.z() );
+                jsonObjectInfo["minExternalCoord"]          = minExternalCoordArray;
+                QJsonArray maxExternalCoordArray;
+                maxExternalCoordArray.append( info.maxExternalCoord.x() );
+                maxExternalCoordArray.append( info.maxExternalCoord.y() );
+                maxExternalCoordArray.append( info.maxExternalCoord.z() );
+                jsonObjectInfo["maxExternalCoord"]          = maxExternalCoordArray;
+
+                // Common Server Point Object Info
+                jsonObjectInfo["tmpParticleLimit"]          = info.tmpParticleLimit;
+                jsonObjectInfo["particleLimit"]             = info.particleLimit;
+                jsonObjectInfo["tmpExtraOpacityFactor"]     = info.tmpExtraOpacityFactor;
+                jsonObjectInfo["extraOpacityFactor"]        = info.extraOpacityFactor;
+
+                // Client Server Point Object Info
+                jsonObjectInfo["numberOfVector"]            = info.numberOfVector;
+                jsonObjectInfo["numberOfElements"]          = info.numberOfElements;
+                jsonObjectInfo["numberOfSubvolume"]         = info.numberOfSubvolume;
+                jsonObjectInfo["numberOfNodes"]             = info.numberOfNodes;
+                jsonObjectInfo["elementType"]               = info.elementType;
+                jsonObjectInfo["fileType"]                  = info.fileType;
+                jsonObjectInfo["stepNumber"]                = info.stepNumber;
+                jsonObjectInfo["tmpCoordinateX"]            = QString::fromUtf8( info.tmpCoordinateX );
+                jsonObjectInfo["coordinateX"]               = QString::fromUtf8( info.coordinateX );
+                jsonObjectInfo["tmpCoordinateY"]            = QString::fromUtf8( info.tmpCoordinateY );
+                jsonObjectInfo["coordinateY"]               = QString::fromUtf8( info.coordinateY );
+                jsonObjectInfo["tmpCoordinateZ"]            = QString::fromUtf8( info.tmpCoordinateZ );
+                jsonObjectInfo["coordinateZ"]               = QString::fromUtf8( info.coordinateZ );
+                jsonObjectInfo["isExport"]                  = info.isExport;
+
+                // Nontexture Polygon Object Info
+                QJsonArray tmpPolygonColorArray;
+                tmpPolygonColorArray.append( info.tmpPolygonColor.r() );
+                tmpPolygonColorArray.append( info.tmpPolygonColor.g() );
+                tmpPolygonColorArray.append( info.tmpPolygonColor.b() );
+                jsonObjectInfo["tmpPolygonColor"]           = tmpPolygonColorArray;
+                QJsonArray polygonColorArray;
+                polygonColorArray.append( info.polygonColor.r() );
+                polygonColorArray.append( info.polygonColor.g() );
+                polygonColorArray.append( info.polygonColor.b() );
+                jsonObjectInfo["polygonColor"]              = polygonColorArray;
+                jsonObjectInfo["tmpPolygonOpacity"]         = info.tmpPolygonOpacity;
+                jsonObjectInfo["polygonOpacity"]            = info.polygonOpacity;
+
+                // For Client
+                // jsonObjectInfo["object"]                    = info.object;
+                // jsonObjectInfo["objectID"]                  = info.objectID;
+                // jsonObjectInfo["currentMinObjectCoord"]     = info.currentMinObjectCoord;
+                // jsonObjectInfo["currentMaxObjectCoord"]     = info.currentMaxObjectCoord;
+                // jsonObjectInfo["currentImportedTimeStep"]   = info.currentImportedTimeStep;
+                // jsonObjectInfo["needSameTimeStepReplace"]   = info.needSameTimeStepReplace;
+                objectInfoArray.append( jsonObjectInfo );
+            }
+            root["objects"] = objectInfoArray;
+            m_web_sockets->text()->sendTextMessage( QJsonDocument( root ).toJson( QJsonDocument::Compact ) );
+        }
+        break;
+    }
+    default:
+        break;
     }
 }
 

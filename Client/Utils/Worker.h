@@ -69,14 +69,14 @@ public slots:
                         }
                         else
                         {
-                            if( !info.isRemote ) importObject( info, resultTimeStep );
+                            importObject( info, resultTimeStep );
                             info.currentImportedTimeStep = resultTimeStep;
                             info.needSameTimeStepReplace = false;
                         }
                     }
                     else
                     {
-                        if( !info.isRemote ) importObject( info, resultTimeStep );
+                        importObject( info, resultTimeStep );
                         info.currentImportedTimeStep = resultTimeStep;
                         info.needSameTimeStepReplace = false;
                     }

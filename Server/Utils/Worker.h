@@ -23,7 +23,6 @@ public:
         for( auto& info : *m_objects )
         {
             int resultTimeStep = -1;
-
             if( info.isDisplay )
             {
                 // info.timeStep.first ～ info.timeStep.second の範囲内に m_time_step が含まれる場合、
@@ -60,14 +59,14 @@ public:
                         }
                         else
                         {
-                            if( !info.isRemote ) importObject( info, resultTimeStep );
+                            importObject( info, resultTimeStep );
                             info.currentImportedTimeStep = resultTimeStep;
                             info.needSameTimeStepReplace = false;
                         }
                     }
                     else
                     {
-                        if( !info.isRemote ) importObject( info, resultTimeStep );
+                        importObject( info, resultTimeStep );
                         info.currentImportedTimeStep = resultTimeStep;
                         info.needSameTimeStepReplace = false;
                     }

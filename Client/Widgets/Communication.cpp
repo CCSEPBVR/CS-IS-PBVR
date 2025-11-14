@@ -474,12 +474,10 @@ void Communication::onConnectClicked()
 
     // FIXME:Local Viz.(Client Only)でオブジェクトを登録していた場合、サーバ接続時に削除されてしまうので警告ダイアログを表示するようにしてください。
 
-    m_uuid = QUuid::createUuid().toString(); // ユーザUUID
+    m_uuid = QUuid::createUuid().toString( QUuid::WithoutBraces ); // ユーザUUID
     const QString address = ui->addressLineEdit->text().toUtf8().constData(); // FIXME:wss:で接続できない。サーバ側の修正が必要かもしれません。要SSL対応
-    QString uuidStr = m_uuid;
-    uuidStr.remove('{').remove('}'); // { } を除去
-    const QString binaryAddress = address + "/binary?uuid=" + uuidStr;
-    const QString textAddress   = address + "/text?uuid=" + uuidStr;
+    const QString binaryAddress = address + "/binary?uuid=" + m_uuid;
+    const QString textAddress   = address + "/text?uuid=" + m_uuid;
 
     emit updateStatusBarMessage( "Connecting to " + address );
     if( m_web_sockets->binary() ) m_web_sockets->binary()->open( QUrl( binaryAddress ) );
@@ -867,6 +865,7 @@ void Communication::textWebsocketMessageReceived( const QString& receivedMessage
             ObjectInfoExtractor::ObjectInfo objectInfo;
 
             // Common Object Info
+            objectInfo.uuid                     = obj["uuid"].toString().toUtf8();
             objectInfo.tmpIsDisplay             = obj["tmpIsDisplay"].toBool();
             objectInfo.isDisplay                = obj["isDisplay"].toBool();
             objectInfo.tmpIsKeepInitial         = obj["tmpIsKeepInitial"].toBool();
@@ -922,8 +921,6 @@ void Communication::textWebsocketMessageReceived( const QString& receivedMessage
 
             objectInfo.tmpPolygonOpacity        = static_cast<float>( obj["tmpPolygonOpacity"].toDouble() );
             objectInfo.polygonOpacity           = static_cast<float>( obj["polygonOpacity"].toDouble() );
-
-            objectInfo.isRemote                 = obj["isRemote"].toBool();
 
             emit addObjectToModel( objectInfo );
         }

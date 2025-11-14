@@ -103,6 +103,7 @@ private:
     void fileList( uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received );
     void selectedFile( uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received );
     void showAtTimeStep( uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received );
+    void objectInfoUpdate( uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received );
 
     void debugNumberOfUsers()
     {
@@ -130,6 +131,69 @@ private:
             {
                 std::cout << "Text not connected" << std::endl;
             }
+        }
+    }
+
+    void debugSrvObjects()
+    {
+        for( auto& info : *m_objects )
+        {
+            std::cout << "[Server]"                                                                                     << std::endl;
+            std::cout << "[Common Object Info]"                                                                         << std::endl;
+            std::cout << "info.tmpIsDisplay                 : " << info.tmpIsDisplay                                    << std::endl;
+            std::cout << "info.isDisplay                    : " << info.isDisplay                                       << std::endl;
+            std::cout << "info.tmpIsKeepInitial             : " << info.tmpIsKeepInitial                                << std::endl;
+            std::cout << "info.isKeepInitial                : " << info.isKeepInitial                                   << std::endl;
+            std::cout << "info.tmpIsKeepFinal               : " << info.tmpIsKeepFinal                                  << std::endl;
+            std::cout << "info.isKeepFinal                  : " << info.isKeepFinal                                     << std::endl;
+
+            std::cout << "info.name                         : " << info.name                                            << std::endl;
+            std::cout << "info.extension                    : " << info.extension                                       << std::endl;
+            std::cout << "info.directory                    : " << info.directory                                       << std::endl;
+            std::cout << "info.format                       : " << info.format                                          << std::endl;
+            std::cout << "info.timeStep                     : " << info.timeStep.first << ", " << info.timeStep.second  << std::endl;
+            std::cout << "info.tmpIsFocus                   : " << info.tmpIsFocus                                      << std::endl;
+            std::cout << "info.isFocus                      : " << info.isFocus                                         << std::endl;
+            std::cout << "info.minObjectCoord               : " << info.minObjectCoord                                  << std::endl;
+            std::cout << "info.maxObjectCoord               : " << info.maxObjectCoord                                  << std::endl;
+            std::cout << "info.minExternalCoord             : " << info.minExternalCoord                                << std::endl;
+            std::cout << "info.maxExternalCoord             : " << info.maxExternalCoord                                << std::endl;
+
+            std::cout << "[Common Server Point Object Info]"                                                            << std::endl;
+            std::cout << "info.tmpParticleLimit             : " << info.tmpParticleLimit                                << std::endl;
+            std::cout << "info.particleLimit                : " << info.particleLimit                                   << std::endl;
+            std::cout << "info.tmpExtraOpacityFactor        : " << info.tmpExtraOpacityFactor                           << std::endl;
+            std::cout << "info.extraOpacityFactor           : " << info.extraOpacityFactor                              << std::endl;
+
+            std::cout << "[Client Server Point Object Info]"                                                            << std::endl;
+            std::cout << "info.numberOfVector               : " << info.numberOfVector                                  << std::endl;
+            std::cout << "info.numberOfElements             : " << info.numberOfElements                                << std::endl;
+            std::cout << "info.numberOfSubvolume            : " << info.numberOfSubvolume                               << std::endl;
+            std::cout << "info.numberOfNodes                : " << info.numberOfNodes                                   << std::endl;
+            std::cout << "info.elementType                  : " << info.elementType                                     << std::endl;
+            std::cout << "info.fileType                     : " << info.fileType                                        << std::endl;
+            std::cout << "info.stepNumber                   : " << info.stepNumber                                      << std::endl;
+            std::cout << "info.tmpCoordinateX               : " << info.tmpCoordinateX                                  << std::endl;
+            std::cout << "info.coordinateX                  : " << info.coordinateX                                     << std::endl;
+            std::cout << "info.tmpCoordinateY               : " << info.tmpCoordinateY                                  << std::endl;
+            std::cout << "info.coordinateY                  : " << info.coordinateY                                     << std::endl;
+            std::cout << "info.tmpCoordinateZ               : " << info.tmpCoordinateZ                                  << std::endl;
+            std::cout << "info.coordinateZ                  : " << info.coordinateZ                                     << std::endl;
+            std::cout << "info.isExport                     : " << info.isExport                                        << std::endl;
+
+            std::cout << "[Nontexture Polygon Object Info]"                                                             << std::endl;
+            std::cout << "kvs::RGBColor tmpPolygonColor     : " << info.tmpPolygonColor                                 << std::endl;
+            std::cout << "kvs::RGBColor polygonColor        : " << info.polygonColor                                    << std::endl;
+            std::cout << "info.tmpPolygonOpacity            : " << info.tmpPolygonOpacity                               << std::endl;
+            std::cout << "info.polygonOpacity               : " << info.polygonOpacity                                  << std::endl;
+
+            std::cout << "[For client]"                                                                                 << std::endl;
+            std::cout << "info.object                       : " << info.object                                          << std::endl;
+            std::cout << "info.objectID                     : " << info.objectID.first << ", " << info.objectID.second  << std::endl;
+            std::cout << "info.currentMinObjectCoord        : " << info.currentMinObjectCoord                           << std::endl;
+            std::cout << "info.currentMaxObjectCoord        : " << info.currentMaxObjectCoord                           << std::endl;
+            std::cout << "info.currentImportedTimeStep      : " << info.currentImportedTimeStep                         << std::endl;
+            std::cout << "info.needSameTimeStepReplace      : " << info.needSameTimeStepReplace                         << std::endl;
         }
     }
 
