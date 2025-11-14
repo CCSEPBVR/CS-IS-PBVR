@@ -3,36 +3,43 @@ PBVR_DIR = ../../../..
 include ${PBVR_DIR}/pbvr.conf
 include ${PBVR_DIR}/arch/${PBVR_MACHINE}
 
-KVS_SOURCE_DIR  = ${PBVR_DIR}/KVS/Source
-FUNC_DIR        = ${PBVR_DIR}/FunctionParser
-INSITU_DIR      = ${PBVR_DIR}/InSituLib/struct
-COMMON_DIR      = ${PBVR_DIR}/Common
-VISMODULE_SOURCE_DIR        = ${PBVR_DIR}/VisModule
+INSITU_DIR           = ${PBVR_DIR}/InSituLib/struct
+INSITU_COMMON_DIR    = ${PBVR_DIR}/InSituLib/shared
+VISMODULE_SOURCE_DIR = ${PBVR_DIR}/VisModule
+FUNC_DIR             = ${PBVR_DIR}/FunctionParser
+COMMON_DIR           = ${PBVR_DIR}/Common
 
 TARGET  = run
 
-CXX = ${MPICXX}
-CXXFLAGS = ${MPICXXFLAGS}
+ifdef MPICXX
+    CXX      = ${MPICXX}
+endif
 
-CXXFLAGS += -I${INSITU_DIR} \
-            -I${FUNC_DIR} \
-            -I${COMMON_DIR} \
-            -I${KVS_SOURCE_DIR} \
+ifdef MPICXXFLAGS
+    CXXFLAGS = ${MPICXXFLAGS}
+else
+	CXXFLAGS += -DCPU_VER
+endif
+
+CXXFLAGS += -I./ \
+            -I${INSITU_DIR} \
+            -I${INSITU_COMMON_DIR} \
             -I${VISMODULE_SOURCE_DIR} \
-            -I./
+            -I${FUNC_DIR} \
+            -I${COMMON_DIR}
 
-LD = ${MPILD}
-LDFLAGS = ${MPILDFLAGS}
+ifdef MPICXX
+    LD = ${MPILD}
+endif
 
-#LDFLAGS  += -lmpi -lmpicxx
+ifdef MPILDFLAGS
+    LDFLAGS += ${MPILDFLAGS}
+endif
+
 LDFLAGS  += -L${INSITU_DIR} -lInSituPBVR \
+            -L${VISMODULE_SOURCE_DIR}/Release -lvisModule \
             -L${FUNC_DIR} -lpbvrFunc \
-            -L${COMMON_DIR} -lpbvrCommon \
-            -L${VISMODULE_SOURCE_DIR}/Release -lvisModule
-            #-L${KVS_SOURCE_DIR}/Core/Release -lkvsCore
-
-
-#nvcc -O3 -DUSE_NVCC -std=c++11 -restrict -Xcompiler -fopenmp  -lm -lstdc++ -Xcompiler -fopenmp -L/opt/mvapich2/gdr/2.3a/mcast/no-openacc/cuda8.0/mofed4.2/mpirun/gnu4.8.5/lib64  -lmpi -lmpicxx  -L/usr/local/cuda/lib64  -lcudart -rdc=true -Xnvlink -w --gpu-architecture=sm_60 -L../../../InSituLib_LBM -lInSituPBVR -L../../../FunctionParser -lpbvrFunc -L../../../KVS/Source/Core/Release -lkvsCore
+            -L${COMMON_DIR} -lpbvrCommon
 
 TEST_SRCS = \
 main.cpp \
@@ -60,5 +67,3 @@ clean:
 
 all_clean:
 	@rm -f *.o $(TARGET)
-
-

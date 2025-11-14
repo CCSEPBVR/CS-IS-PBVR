@@ -1,8 +1,9 @@
+#include "Hydrogen.h"
 #include <string>
 #include <iostream>
 #include <cstdlib>
-#include "Hydrogen.h"
 #include "kvs_wrapper.h"
+#include "kvs_wrapper_common.h"
 #ifndef CPU_VER
 #include <mpi.h>
 #endif
@@ -44,7 +45,7 @@ int main( int argc, char** argv )
     bool result = false;
 
     begin_wrapper_async_io();
-    for( size_t i = 0; i < 1; i++ )
+    for(;;)
     {
         if(mpi_rank==RANK) hydro.show();
 
