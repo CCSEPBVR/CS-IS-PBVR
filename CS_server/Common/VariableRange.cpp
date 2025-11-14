@@ -137,3 +137,12 @@ size_t VariableRange::unpack( const char* buf )
     return index;
 }
 
+#include <iostream>
+
+void VariableRange::show()
+{
+    for ( range_map_t::const_iterator i = m_min.begin(); i != m_min.end(); i++ )
+    {
+        std::cout << i->first << ":" << i->second << ", " << m_max[i->first] << std::endl;
+    }
+}

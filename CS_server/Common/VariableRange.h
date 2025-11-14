@@ -33,6 +33,8 @@ public:
     size_t byteSize() const;
     size_t pack( char* buf ) const;
     size_t unpack( const char* buf );
+
+    void show();
 };
 
 #endif // PBVR__VARIABLE_RANGE_H_INCLUDE
