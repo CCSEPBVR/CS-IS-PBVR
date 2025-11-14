@@ -633,6 +633,12 @@ vismodule::PointObject* CS_PointObjectGenerator::sampling( const Argument& param
         ,volume.maxObjectCoord().x()
         ,volume.maxObjectCoord().y()
         ,volume.maxObjectCoord().z()
+        ,volume.minObjectCoord().x()
+        ,volume.minObjectCoord().y()
+        ,volume.minObjectCoord().z()
+        ,volume.maxObjectCoord().x()
+        ,volume.maxObjectCoord().y()
+        ,volume.maxObjectCoord().z()
         ,resol
         ,1.f
         };

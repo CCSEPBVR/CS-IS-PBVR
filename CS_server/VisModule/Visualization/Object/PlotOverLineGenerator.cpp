@@ -238,6 +238,12 @@ void PlotOverLineGenerator::createFromFile(
         ,volume->maxObjectCoord().x()
         ,volume->maxObjectCoord().y()
         ,volume->maxObjectCoord().z()
+        ,volume->minObjectCoord().x()
+        ,volume->minObjectCoord().y()
+        ,volume->minObjectCoord().z()
+        ,volume->maxObjectCoord().x()
+        ,volume->maxObjectCoord().y()
+        ,volume->maxObjectCoord().z()
         ,resol
         ,1.f
         };
@@ -513,6 +519,12 @@ void PlotOverLineGenerator::createFromFile(
         int resol[3] = { static_cast<int>(svo_p->resolution().x()), static_cast<int>(svo_p->resolution().y()), static_cast<int>(svo_p->resolution().z())};
         domain_parameters_struct dom={
          volume->minObjectCoord().x()
+        ,volume->minObjectCoord().y()
+        ,volume->minObjectCoord().z()
+        ,volume->maxObjectCoord().x()
+        ,volume->maxObjectCoord().y()
+        ,volume->maxObjectCoord().z()
+        ,volume->minObjectCoord().x()
         ,volume->minObjectCoord().y()
         ,volume->minObjectCoord().z()
         ,volume->maxObjectCoord().x()

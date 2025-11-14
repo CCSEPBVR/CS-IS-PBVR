@@ -54,7 +54,16 @@ typedef struct
 
 typedef struct
 {
-    //　各プロセスのminmax 
+    // global minmax
+    float x_global_min;
+    float y_global_min;
+    float z_global_min;
+
+    float x_global_max;
+    float y_global_max;
+    float z_global_max;
+
+    // minmax of each process
     float x_min;
     float y_min;
     float z_min;
