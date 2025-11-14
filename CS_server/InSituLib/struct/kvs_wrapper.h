@@ -1,31 +1,16 @@
 #ifndef KVS_WRAPPER_H_INCLUDED
 #define KVS_WRAPPER_H_INCLUDED
 
-
-#include "../shared/thread_timer.h"
-#include <vismodule/PointObject>
-#include <vismodule/StructuredVolumeObject>
-#include <vismodule/CellByCellHistogram>
-#include <vismodule/CellByCellRejectionSampling>
-#include <vismodule/CellByCellUniformSampling>
-#include <vismodule/CellByCellMetropolisSampling>
+#include <vismodule/Argument>
+#include <vismodule/NameListFile>
+#include <vismodule/MultiVolumeProperty>
 #include <vismodule/CellByCellParticleGenerator>
-#include <vismodule/ParamInfo>
-#include "../../Common/ParticleTransferProtocol.h"
-
-#include <vismodule/KVSMLObjectPlotOverLine>
-
-#ifndef SIMDW
-#define SIMDW 128
-#endif
 
 #ifdef DOUBLE_SCHEME
-  typedef double Type;
+    typedef double Type;
 #else
-  typedef float Type;
+    typedef float Type;
 #endif
-
-//typedef void* pbvr_ParticleWriteThread;
 
 typedef unsigned char Byte;
 
@@ -33,8 +18,32 @@ typedef unsigned char Byte;
 extern "C" {
 #endif
 
-    //    pbvr_ParticleWriteThread create_particle_write_thread();
+void OutputCoordMinMaxFile(
+    const domain_parameters_struct& dom,
+    const std::string& coordMinMaxFilePath
+);
 
+bool generate_particles(
+    int time_step,
+    domain_parameters_struct dom,
+    Type** volume_data,
+    int nvariables
+);
+
+bool SetParticleParameter( 
+    const domain_parameters_struct& dom,
+    const std::string& tfFilePath,
+    const std::string& tfFilePath_old,
+    Argument& param,
+    MultiVolumePropertyList& mvpl,
+    NameListFile& nameListFile
+);
+
+#ifdef __cplusplus
+}
+#endif
+
+/*
     float GetRandomNumber();
 
     typedef struct
@@ -74,7 +83,6 @@ extern "C" {
     char m_sampling_method;
 
     } pbvr_parameters;
-
 
     // グリフ用パラメータ
     typedef struct
@@ -117,14 +125,6 @@ extern "C" {
         int nparticles;
     } time_parameters;
 
-    void begin_wrapper_async_io();
-    void   end_wrapper_async_io();
-
-    void generate_particles( int time_step,
-                             domain_parameters_struct dom,
-                             Type** volume_data, 
-                             int nvariables );
-    
     void GenerateParticles( int time_step,
                              domain_parameters_struct dom,
                              Type** volume_data, 
@@ -159,11 +159,6 @@ extern "C" {
     void OutputLine(   const int time_step, plot_over_line_parameters& pol_param);
 
     void state_txt_writer( void );
-
-
-
-#ifdef __cplusplus
-}
-#endif
+*/
 
 #endif

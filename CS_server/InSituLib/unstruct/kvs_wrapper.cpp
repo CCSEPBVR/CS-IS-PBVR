@@ -1,214 +1,78 @@
-#include <fstream>
-#include <cstdio>
-#include <vector>
-#include <vismodule/Vector3>
-#include <vismodule/AnyValueArray>
-#include <vismodule/ValueArray>
-#include <vismodule/StructuredVolumeObject>
-#include <vismodule/TrilinearInterpolator>
-#include <vismodule/PointObject>
-#include <vismodule/PointExporter>
-#include <vismodule/KVSMLObjectPoint>
-#include <vismodule/MersenneTwister>
-#include <vismodule/TransferFunction>
-#include <vismodule/RGBColor>
-#include <vismodule/Timer>
+#include "kvs_wrapper_common.h"
+#include "kvs_wrapper.h"
 
-#include <sstream>
-#include <iomanip>
+#include <cstdio>
+#include <fstream>
+#include <vector>
 #include <memory>
 
-#include "kvs_wrapper.h"
+#include <vismodule/ValueArray>
+#include <vismodule/PointObject>
 #include <vismodule/CellByCellParticleGenerator>
 #include <vismodule/TransferFunctionSynthesizer>
-#include <vismodule/ParamInfo>
-#include "float.h"
+#include <vismodule/StructuredVolumeObject>
 #include <vismodule/UnstructuredVolumeObject>
+
 #ifndef CPU_VER
 #include <mpi.h>
 #endif
-#include <vismodule/CellBase>
-#include <vismodule/TetrahedralCell>
-#include <vismodule/QuadraticTetrahedralCell>
-#include <vismodule/HexahedralCell>
-#include <vismodule/QuadraticHexahedralCell>
-#include <vismodule/PrismaticCell>
-#include <vismodule/PyramidalCell>
-
-#ifdef VTK
-//VTK
-#include <vtkSmartPointerBase.h>
-#include <vtkSmartPointer.h>
-#include <vtkPointData.h>
-#include <FileFormat/VtkUnstructuredFileFormat.h>
-#include <FileFormat/VTK/VtkXmlUnstructuredGrid.h>
-#include <vtkUnstructuredGrid.h>
-
-//kvsmlImporter
-#include "CvtTypeTraits.h"
-#include "Importer/VtkImporter.h"
-#endif
 
 // Generate
+#include <vismodule/CS_PointObjectGenerator>
+#include <vismodule/GlyphSeedGenerator>
 #include <vismodule/GenerateParticle>
 #include <vismodule/GenerateGlyph>
+#include <vismodule/GeneratePOL>
 
 //PlotOverLine
 #include <vismodule/PlotOverLine>
 
-// add FJ start
-#ifndef SIMD_BLK_SIZE
-#define SIMD_BLK_SIZE 128
+#ifdef EXTEND_FILE_FORMAT
+#include <vismodule/UnstructuredVolumeImporter>
+#include <vtkSmartPointerBase.h>
+#include <vtkSmartPointer.h>
+#include <vtkPointData.h>
+#include <vtkUnstructuredGrid.h>
+#include <kvs/UnstructuredVolumeObject>
+#include <kvs/extendedfileformat/VtkUnstructuredFileFormat>
+#include <kvs/extendedfileformat/VtkXmlUnstructuredGrid>
+#include <kvs/extendedfileformat/VtkImporter>
 #endif
-// add FJ  end
-
-
-#ifdef _OPENMP
-#  include <omp.h>
-#endif // _OPENMP
-
-#define RANK 1
-
-// Asynchronous io, using worker thread pwt.
-#include "particle_write_thread.h"
-bool async_io_enabled = false;
-static bool is_initial_step = true;
-static size_t  start_time_step = 0;
-
-pbvr::ParticleWriteThread pwt;
-/**
- * @brief begin_wrapper_async_io , call to begin async wrapper output
- */
-void begin_wrapper_async_io()
-{
-    async_io_enabled=true;
-}
-/**
- * @brief end_wrapper_async_io , call to end async wrapper ouput - and wait for last worker thread to finish.
- */
-void end_wrapper_async_io()
-{
-    if(async_io_enabled)
-    {
-        pwt.join(true);
-        async_io_enabled=false;
-    }
-}
 
 namespace Generator = vismodule::CellByCellParticleGenerator;
 
-namespace
+static bool is_initial_step = true;
+static size_t start_time_step = 0;
+
+void OutputCoordMinMaxFile(
+    const domain_parameters_unstruct& dom,
+    const std::string& coordMinMaxFilePath
+)
 {
-inline size_t CalculateSubpixelLevel( const int particle_limit,
-                                      const vismodule::Camera& camera,
-                                      const float sampling_step,
-                                      const double total_volume,
-                                      const vismodule::ObjectBase* volume )
-{
-    namespace Generator = vismodule::CellByCellParticleGenerator;
-    double d_nparticles = 0.0;//particle density for subpixel_level=1
-    d_nparticles = Generator::CalculateGreatDensity( camera, *volume, 1, sampling_step ) * total_volume;
+    int mpi_rank;
+#ifndef CPU_VER
+    MPI_Comm_rank( MPI_COMM_WORLD, &mpi_rank );
+#else
+    mpi_rank = 0;
+#endif
 
-    //Calculation of optimized subpixel level
-    float plimit = static_cast<float>( particle_limit );
-    float nparticles = static_cast<float>( d_nparticles );
-    float subpixel_level = sqrt( plimit / nparticles );
-
-    if ( subpixel_level < 1 ) subpixel_level = 1;
-
-    return static_cast<size_t>( subpixel_level + 0.5f );
-}
-
-void SetDefalutParameter( TransferFunctionSynthesizer* tfs,
-                          pbvr_parameters* particleBase,
-                          const int nvariables, Type** values, const int ncoords)
-{
-    //Read TFS
-    std::vector<int> i_table;
-    std::vector<float> f_table;
-    EquationToken eq;
-    std::vector<EquationToken> var1;
-    int tf_number;
-    // get TF_NUMBER
-    tf_number = nvariables;
-    std::vector<vismodule::TransferFunction> tf;
-
-    //Read 1D tf
-    int resolution = 256;
-    float min, max;
-
-    tf.clear();
-
-    for ( size_t i = 0; i < tf_number; i++ )
-    {
-        std::stringstream tss;
-        tss << "TF_NAME" << i + 1 << "_";
-        const std::string tag_base = tss.str();
-
-        // 各変量のminmax
-        // calc_minmax
-        min = values[i][0];
-        max = values[i][0];
-        
-        for(int j = 1; j < ncoords; j++)
+    static bool minmaxFlag = false;
+    if (minmaxFlag == false && mpi_rank == 0) {
+        FILE* fp = fopen( coordMinMaxFilePath.c_str(), "w" );
+        if( fp )
         {
-            min = min < values[i][j] ? min : values[i][j]; 
-            max = max > values[i][j] ? max : values[i][j]; 
+            fprintf( fp, "%f %f %f %f %f %f\n",
+                     dom.x_global_min,
+                     dom.y_global_min,
+                     dom.z_global_min,
+                     dom.x_global_max,
+                     dom.y_global_max,
+                     dom.z_global_max );
+            fclose( fp );
         }
-
-        vismodule::ColorMap color_map( 256, min, max );
-        vismodule::OpacityMap opacity_map( 256, min, max );
-
-        vismodule::TransferFunction tfBuf;
-        tfBuf.setColorMap( color_map );
-        tfBuf.setOpacityMap( opacity_map );
-        tf.push_back(tfBuf);
+        minmaxFlag = true;
     }
-    particleBase ->m_tf = tf;
-
-    // add by shimomura 2024/03/25
-    std::string  equation;
-
-    equation = "a1";
-    eq = tfs->convert_token(equation);
-    tfs->setOpacityFunction( eq );
-
-    equation = "c1" ;
-    eq = tfs->convert_token(equation);
-    tfs->setColorFunction( eq );
-
-    for ( size_t i = 0; i < tf_number; i++ )
-    {
-        std::stringstream tss;
-        tss << "q" << i + 1 ;
-        const std::string tag_base = tss.str();
-
-        equation = tag_base;
-        eq = tfs->convert_token(equation);
-        var1.push_back( eq );
-    }
-
-    tfs->setOpacityVariable( var1 );
-    tfs->setColorVariable( var1 );
-
-    var1.clear();
-    int nbin = 256;
-    particleBase->m_tf_number = nvariables;
-    particleBase->m_O_max.allocate(particleBase->m_tf_number);
-    particleBase->m_O_min.allocate(particleBase->m_tf_number);
-    particleBase->m_C_max.allocate(particleBase->m_tf_number);
-    particleBase->m_C_min.allocate(particleBase->m_tf_number);
-    particleBase->m_O_max.fill(0x00);
-    particleBase->m_O_min.fill(0x00);
-    particleBase->m_C_max.fill(0x00);
-    particleBase->m_C_min.fill(0x00);
-    particleBase->m_o_histogram.allocate(particleBase->m_tf_number*nbin);
-    particleBase->m_c_histogram.allocate(particleBase->m_tf_number*nbin);
-    particleBase->m_o_histogram.fill(0x00);
-    particleBase->m_c_histogram.fill(0x00);
 }
-
-}//end of unnamed namespace
 
 // 変数配列用のソルバー関数
 bool generate_particles(
@@ -232,8 +96,6 @@ bool generate_particles(
     mpi_rank = 0;
     mpi_size = 1;
 #endif
-
-std::cout << __FILE__ << ", " << __func__ << ", " << __LINE__ << std::endl;
 
     if ( is_initial_step == true )
     {
@@ -278,25 +140,17 @@ std::cout << __FILE__ << ", " << __func__ << ", " << __LINE__ << std::endl;
     char  arg_dummy0[] = "dummy";
     char* arg_dummy[]  = { arg_dummy0, NULL };
 
-    static Argument param( 1, arg_dummy );
+    Argument param( 1, arg_dummy );
     MultiVolumePropertyList mvpl;
-    static NameListFile nameListFile;
+    static NameListFile particleNameListFile;
+    static NameListFile glyphNameListFile;
+    static NameListFile POLNameListFile;
     param.m_transfunc_synthesizer = new TransferFunctionSynthesizer();
     param.m_camera                = new vismodule::Camera();
 
-std::cout << __FILE__ << ", " << __func__ << ", " << __LINE__ << std::endl;
-
-    SetParticleParameter( dom, tfFilePath, tfFilePath_old, param, mvpl, nameListFile );
-
-std::cout << __FILE__ << ", " << __func__ << ", " << __LINE__ << std::endl;
-
-    SetGlyphParameter( glyphParameterPath, glyphParameterPath_old, param );
-
-std::cout << __FILE__ << ", " << __func__ << ", " << __LINE__ << std::endl;
-
-    SetPlotOverLineParameter( plotOverLineParameterPath, plotOverLineParameterPath_old, param );
-
-std::cout << __FILE__ << ", " << __func__ << ", " << __LINE__ << std::endl;
+    SetParticleParameter( dom, tfFilePath, tfFilePath_old, param, mvpl, particleNameListFile );
+    SetGlyphParameter( glyphParameterPath, glyphParameterPath_old, param, glyphNameListFile );
+    SetPlotOverLineParameter( plotOverLineParameterPath, plotOverLineParameterPath_old, param, POLNameListFile );
 
     const int tf_number  = param.m_transfunc_array.size();
     const int resolution = param.m_sampling_size;
@@ -334,13 +188,9 @@ std::cout << __FILE__ << ", " << __func__ << ", " << __LINE__ << std::endl;
     std::vector<unsigned char> glyph_colors;
 
     // plot over line parameters
-    vismodule::ValueArray<float> values_on_line( resolution );
-    vismodule::ValueArray<bool>  mask( resolution );
-    vismodule::ValueArray<float> x_axis( resolution );
-
-    values_on_line.fill( 0x00 );
-    mask.fill( false );
-    x_axis.fill( 0x00 );
+    std::vector<float> values_on_line( resolution, 0 );
+    std::vector<int>   mask( resolution, 0 );
+    std::vector<float> x_axis( resolution, 0 );
 
     jpv::ServerMode server_mode = jpv::ServerMode::IS;
     vismodule::PointObject* point_object = nullptr;
@@ -350,30 +200,9 @@ std::cout << __FILE__ << ", " << __func__ << ", " << __LINE__ << std::endl;
         ncoords, connections, ncells, celltype, server_mode
     );
 
-    int c_count = 0;
-    for ( int tf = 0; tf < tf_number; tf++ )
-    {
-        int c_nbins = point_object->getNbins();
-        std::cout << "c_nbins:" << c_nbins << std::endl;
-        for ( int res = 0; res < 10; res++ )
-        {
-            std::cout << "c_hist[" << res << "]" << point_object->getCHistogram()[ res ] << std::endl;
-        }
-    }
-
     MakeParticle( point_object, particle_coords, particle_colors, particle_normals ); // InSitu only
     MakeHistgram( point_object, tf_number, tmp_c_bins, tmp_o_bins ); // CS common
     MakeParticleMinMax( param.m_transfunc_synthesizer, tf_number, tmp_max, tmp_min ); // CS common
-
-    for ( size_t i = 0; i < 10; i++ )
-    {
-        std::cout << "tmp_c_bins[" << i << "]:" << tmp_c_bins[i] << std::endl;
-    }
-
-    for ( size_t i = 0; i < 10; i++ )
-    {
-        std::cout << "tmp_o_bins[" << i << "]:" << tmp_o_bins[i] << std::endl;
-    }
 
     delete point_object;
 
@@ -410,13 +239,13 @@ std::cout << __FILE__ << ", " << __func__ << ", " << __LINE__ << std::endl;
 
     if ( mpi_rank == 0 )
     {
-        nameListFile.setFileName( tfFilePath_step );
-        nameListFile.write();
+        particleNameListFile.setFileName( tfFilePath_step );
+        particleNameListFile.write();
     }
 
     // データ出力
     OutputParticles(
-        param, mvpl, time_step, tf_number, nvariables, particleFilePrefix,
+        param, mvpl, start_time_step, time_step, tf_number, nvariables, particleFilePrefix,
         stateFilePath, historyFilePath, particle_coords, particle_colors,
         particle_normals, tmp_c_bins, tmp_o_bins, tmp_max, tmp_min
     );
@@ -444,144 +273,6 @@ std::cout << __FILE__ << ", " << __func__ << ", " << __LINE__ << std::endl;
     return true;
 }
 
-bool SetParameterFilePath(
-    const int time_step,
-    std::string& historyFilePath,
-    std::string& stateFilePath,
-    std::string& coordMinMaxFilePath,
-    std::string& particleFilePrefix,
-    std::string& glyphFilePrefix,
-    std::string& plotOverLineFilePrefix,
-    std::string& tfFilePath,
-    std::string& tfFilePath_old,
-    std::string& tfFilePath_step,
-    std::string& glyphParameterPath,
-    std::string& glyphParameterPath_old,
-    std::string& plotOverLineParameterPath,
-    std::string& plotOverLineParameterPath_old
-)
-{
-    std::string visParamDir;
-    std::string tfFilename;
-    static bool is_first_setting = true;
-
-    const char *envBuf = NULL;
-    envBuf = std::getenv( "VIS_PARAM_DIR" );
-    if (envBuf == NULL) {
-        visParamDir = "./";
-    }
-    else {
-        visParamDir = envBuf;
-        if (visParamDir[visParamDir.size() - 1] != '/') {
-            visParamDir += "/";
-        }
-    }
-    envBuf = std::getenv( "TF_NAME" );
-    if (envBuf == NULL) {
-        tfFilename = "default";
-    }
-    else {
-        tfFilename = envBuf;
-    }
-
-    std::stringstream step;
-    step << '_' << std::setw( 5 ) << std::setfill( '0' ) << time_step;
-    historyFilePath = visParamDir + "history" + step.str() + ".txt";
-    stateFilePath     = visParamDir + "state.txt";
-    
-    envBuf = std::getenv( "PARTICLE_DIR" );
-    if (envBuf == NULL) {
-        coordMinMaxFilePath    = "./t_pfi_coords_minmax.txt";
-        particleFilePrefix     = "./t_";
-        glyphFilePrefix        = "./g_";
-        plotOverLineFilePrefix = "./p_";
-    }
-    else {
-        coordMinMaxFilePath    = envBuf;
-        particleFilePrefix     = envBuf;
-        glyphFilePrefix        = envBuf;
-        plotOverLineFilePrefix = envBuf;
-        if (coordMinMaxFilePath[coordMinMaxFilePath.size() - 1] != '/') {
-            coordMinMaxFilePath    += "/t_pfi_coords_minmax.txt";
-            particleFilePrefix     += "/t_";
-            glyphFilePrefix        += "/g_";
-            plotOverLineFilePrefix += "/p_";
-        }
-        else {
-            coordMinMaxFilePath    += "t_pfi_coords_minmax.txt";
-            particleFilePrefix     += "t_";
-            glyphFilePrefix        += "g_";
-            plotOverLineFilePrefix += "p_";
-        }
-    }
-
-    tfFilePath                    = visParamDir + tfFilename + ".tf";
-    tfFilePath_old                = visParamDir + tfFilename + "_old.tf";
-    tfFilePath_step               = visParamDir + tfFilename + step.str() + ".tf";
-    glyphParameterPath            = visParamDir + "parameter.gly";
-    glyphParameterPath_old        = visParamDir + "parameter_old.gly";
-    plotOverLineParameterPath     = visParamDir + "parameter.pol";
-    plotOverLineParameterPath_old = visParamDir + "parameter_old.pol";
-
-    std::ifstream tfFile( tfFilePath );
-    std::ifstream glyphParameterFile( glyphParameterPath );
-    std::ifstream plotOverLineParameterFile( plotOverLineParameterPath );
-
-    if ( is_first_setting )
-    {
-        if ( !tfFile.good() )
-        {
-            std::cout << "ERROR:default.tf is not existed." << std::endl;
-            return false;
-        }
-
-        if ( !glyphParameterFile.good() )
-        {
-            std::cout << "ERROR:parameter.gly is not existed." << std::endl;
-            return false;
-        }
-
-        if ( !plotOverLineParameterFile.good() )
-        {
-            std::cout << "ERROR:parameter.pol is not existed." << std::endl;
-            return false;
-        }
-    }
-
-    is_first_setting = false;
-    return true;
-}
-
-void OutputCoordMinMaxFile(
-    const domain_parameters_unstruct& dom,
-    const std::string& coordMinMaxFilePath
-)
-{
-    int mpi_rank;
-#ifndef CPU_VER
-    MPI_Comm_rank( MPI_COMM_WORLD, &mpi_rank );
-#else
-    mpi_rank = 0;
-#endif
-
-    static bool minmaxFlag = false;
-    if (minmaxFlag == false && mpi_rank == 0) {
-        FILE* fp = fopen( coordMinMaxFilePath.c_str(), "w" );
-        if( fp )
-        {
-            fprintf( fp, "%f %f %f %f %f %f\n",
-                     dom.x_global_min,
-                     dom.y_global_min,
-                     dom.z_global_min,
-                     dom.x_global_max,
-                     dom.y_global_max,
-                     dom.z_global_max );
-            fclose( fp );
-        }
-        minmaxFlag = true;
-    }
-}
-
 bool SetParticleParameter( 
     const domain_parameters_unstruct& dom,
     const std::string& tfFilePath,
@@ -591,9 +282,60 @@ bool SetParticleParameter(
     NameListFile& nameListFile
 )
 {
-    ParameterFileReader ppr;
+    int mpi_rank;
+#ifndef CPU_VER
+    MPI_Comm_rank( MPI_COMM_WORLD, &mpi_rank );
+#else
+    mpi_rank = 0;
+#endif
 
-std::cout << __FILE__ << ", " << __func__ << ", " << __LINE__ << std::endl;
+    ParameterFileReader ppr;
+    int size = 0;
+    char* buf;
+
+    if ( mpi_rank == 0 )
+    {
+        bool is_file_exist = false;
+        std::ifstream tfFile( tfFilePath );
+
+        if ( tfFile.good() )
+        {
+            is_file_exist = true;
+            ppr.readParticleParameterFile( tfFilePath.c_str() );
+            nameListFile = ppr.getNameListFile();
+            std::rename( tfFilePath.c_str(), tfFilePath_old.c_str() );
+        }
+        else
+        {
+            ppr.setNameListFile( nameListFile );
+        }
+
+        if ( is_file_exist ) size = nameListFile.byteSize();
+        else size = 0;
+
+        if ( size > 0 )
+        {
+            buf = new char[size];
+            nameListFile.pack( buf );
+        }
+    }
+
+#ifndef CPU_VER
+    MPI_Bcast( &size, 1, MPI_INT, 0, MPI_COMM_WORLD );
+#endif
+
+    if ( size > 0 )
+    {
+        if ( mpi_rank > 0 ) buf = new char [size];
+#ifndef CPU_VER
+        MPI_Bcast( buf, size, MPI_CHARACTER, 0, MPI_COMM_WORLD );
+#endif
+        if( mpi_rank > 0 ) nameListFile.unpack( buf );
+        delete[] buf;
+    }
+
+    if ( mpi_rank > 0 ) ppr.setNameListFile( nameListFile );
+    ppr.setParticleParameter( param );
 
     vismodule::Vector3f min_object_coords(
         dom.x_global_min,
@@ -606,28 +348,8 @@ std::cout << __FILE__ << ", " << __func__ << ", " << __LINE__ << std::endl;
         dom.z_global_max
     );
 
-std::cout << __FILE__ << ", " << __func__ << ", " << __LINE__ << std::endl;
     mvpl.m_total_min_object_coord  = min_object_coords;
     mvpl.m_total_max_object_coord  = max_object_coords;
-std::cout << __FILE__ << ", " << __func__ << ", " << __LINE__ << std::endl;
-
-    std::ifstream tfFile( tfFilePath );
-
-    if ( tfFile.good() )
-    {
-        ppr.readParticleParameterFile( tfFilePath.c_str() );
-std::cout << __FILE__ << ", " << __func__ << ", " << __LINE__ << std::endl;
-        std::rename( tfFilePath.c_str(), tfFilePath_old.c_str() );
-std::cout << __FILE__ << ", " << __func__ << ", " << __LINE__ << std::endl;
-        ppr.setParticleParameter( param );
-std::cout << __FILE__ << ", " << __func__ << ", " << __LINE__ << std::endl;
-        nameListFile = ppr.getNameListFile();
-std::cout << __FILE__ << ", " << __func__ << ", " << __LINE__ << std::endl;
-    }
-    else
-    {
-        std::cout << "DEBUG:default.tf is not existed." << std::endl;
-    }
 
     const float min = vismodule::Math::Min(
         dom.x_global_min,
@@ -677,20 +399,13 @@ std::cout << __FILE__ << ", " << __func__ << ", " << __LINE__ << std::endl;
     );
 
     param.m_transfunc_synthesizer->setMaxOpacity( max_opacity );
-    param.m_transfunc_synthesizer->setMaxDensity( max_opacity );
+    param.m_transfunc_synthesizer->setMaxDensity( max_density );
     param.m_transfunc_synthesizer->setSamplingVolumeInverse( sampling_volume_inverse );
 
     // cameraをどこかでnewする必要がある
     // calculate部分をCSと共通化予定
     // param.m_sampling_step  = CalculateSamplingStep( mvpl );
     // param.m_subpixel_level = CalculateSubpixelLevel( param, mvpl, *param.m_camera );
-
-    int mpi_rank;
-#ifndef CPU_VER
-    MPI_Comm_rank( MPI_COMM_WORLD, &mpi_rank );
-#else
-    mpi_rank = 0;
-#endif
 
     if( mpi_rank == 0 )
     {
@@ -713,489 +428,7 @@ std::cout << __FILE__ << ", " << __func__ << ", " << __LINE__ << std::endl;
     return true;
 }
 
-bool SetGlyphParameter(
-    const std::string& glyphParameterPath,
-    const std::string& glyphParameterPath_old,
-    Argument& param 
-)
-{
-    ParameterFileReader ppr;
-
-    std::ifstream glyphParameterFile( glyphParameterPath );
-
-    if ( glyphParameterFile.good() )
-    {
-        ppr.readGlyphParameterFile( glyphParameterPath.c_str() );
-        std::rename( glyphParameterPath.c_str(), glyphParameterPath_old.c_str() );
-        ppr.setGlyphParameter( param );
-    }
-    else
-    {
-        std::cout << "DEBUG:parameter.gly is not existed." << std::endl;
-    }
-
-    return true;
-}
-
-bool SetPlotOverLineParameter(
-    const std::string& plotOverLineParameterPath,
-    const std::string& plotOverLineParameterPath_old,
-    Argument& param
-)
-{
-    ParameterFileReader ppr;
-
-    std::ifstream plotOverLineParameterFile( plotOverLineParameterPath );
-
-    if ( plotOverLineParameterFile.good() )
-    {
-        ppr.readPlotOverLineParameterFile( plotOverLineParameterPath.c_str() );
-std::cout << __FILE__ << ", " << __func__ << ", " << __LINE__ << std::endl;
-        std::rename( plotOverLineParameterPath.c_str(), plotOverLineParameterPath_old.c_str() );
-        ppr.setPlotOverLineParameter( param );
-std::cout << __FILE__ << ", " << __func__ << ", " << __LINE__ << std::endl;
-    }
-
-    return true;
-}
-
-void MakeParticle(
-    const vismodule::PointObject* point_object,
-    std::vector<float>& coords,
-    std::vector<Byte>&  colors,
-    std::vector<float>& normals
-)
-{
-    size_t nmemb = point_object->nvertices() * 3;
-    vismodule::ValueArray<vismodule::Real32> coords_array ( point_object->coords().pointer() , nmemb );
-    vismodule::ValueArray<vismodule::UInt8>  colors_array ( point_object->colors().pointer() , nmemb );
-    vismodule::ValueArray<vismodule::Real32> normals_array( point_object->normals().pointer(), nmemb );
-
-    coords.insert( coords.end(), coords_array.begin(), coords_array.end() );
-    colors.insert( colors.end(), colors_array.begin(), colors_array.end() );
-    normals.insert( normals.end(), normals_array.begin(), normals_array.end() );
-}
-
-void MakeGlyph(
-    const vismodule::KVSMLObjectGlyph* glyph_object,
-    std::vector<float>& coords,
-    std::vector<float>& vectors,
-    std::vector<float>& sizes,
-    std::vector<unsigned char>& colors
-)
-{
-auto safe_append = [](auto& dst, auto const& src, char const* what){
-    using size_type = typename std::decay_t<decltype(dst)>::size_type;
-    const size_type dsz = dst.size();
-    const size_type ssz = src.size();
-    const size_type mx  = dst.max_size();
-
-    //　受け渡しの際にセグフォエラーが発生する？これの予防および、調査のためのラムダ関数 
-    // オーバーフロー防止（mx - dsz の形で比較）
-    if (ssz > mx - dsz) {
-        std::ostringstream oss;
-        oss << what << ": length_error: size(" << dsz << ") + add(" << ssz
-            << ") > max_size(" << mx << ")";
-        throw std::length_error(oss.str());
-    }
-    dst.reserve(dsz + ssz);           // 先に確保しておくと例外の発生箇所がここに来る
-    dst.insert(dst.end(), src.begin(), src.end());
-};
-
-    auto const& c = glyph_object->coords();
-    auto const& v = glyph_object->directions();
-    auto const& s = glyph_object->sizes();
-    auto const& k = glyph_object->colors();
-
-#if 0 // for debug
-     std::cout << "glyph_param.m_glyph_sizes        = " << glyph_param.m_glyph_sizes.size()     << std::endl; 
-     std::cout << "glyph_seed.glyph_sizes()         = " << glyph_seed.glyph_sizes().size()      << std::endl; 
-     std::cout << "glyph_param.m_glyph_vectors      = " << glyph_param.m_glyph_vectors.size()   << std::endl; 
-     std::cout << "glyph_seed.glyph_directions()    = " << glyph_seed.glyph_directions().size() << std::endl; 
-     std::cout << "m_glyph_coords.size()            = " << glyph_param.m_glyph_coords.size()    << std::endl; 
-     std::cout << "glyph_seed.glyph_coords().size() = " << glyph_seed.glyph_coords().size()     << std::endl; 
-     std::cout << "m_glyph_coords.size()            = " << glyph_param.m_glyph_colors.size()    << std::endl; 
-     std::cout << "glyph_seed.glyph_colors()        = " << glyph_seed.glyph_colors().size()     << std::endl; 
-
-    std::cout << "vectors:"
-              << " cur = " << glyph_param.m_glyph_vectors.size()
-              << " add = " << v.size() 
-              << " max = " << glyph_param.m_glyph_vectors.max_size() << std::endl;
-    std::cout << "coords :"
-              << " cur = " << glyph_param.m_glyph_coords.size()
-              << " add = " << c.size()
-              << " max = " << glyph_param.m_glyph_coords.max_size() << std::endl;
-    std::cout << "colors :"
-              << " cur = " << glyph_param.m_glyph_colors.size()
-              << " add = " << k.size()
-              << " max = " << glyph_param.m_glyph_colors.max_size() << std::endl;
-    std::cout << "sizes  :"
-              << " cur = " << glyph_param.m_glyph_sizes.size()
-              << " add = " << s.size()
-              << " max = " << glyph_param.m_glyph_sizes.max_size() << std::endl;
-#endif // for debug
-
-    // 集約処理
-    safe_append(coords , c, "m_glyph_coords");
-    safe_append(vectors, v, "m_glyph_vectors");
-    safe_append(sizes  , s, "m_glyph_sizes");
-    safe_append(colors , k, "m_glyph_colors");
-}
-
-void OutputParticles(
-    const Argument& param,
-    const MultiVolumePropertyList& mvpl,
-    const int time_step,
-    const int tf_number,
-    const int nvariables,
-    const std::string& particleFilePrefix,
-    const std::string& stateFilePath,
-    const std::string& histryFilePath,
-    const std::vector<float>& coords,
-    const std::vector<Byte>& colors,
-    const std::vector<float>& normals,
-    const vismodule::UInt64* c_bins,
-    const vismodule::UInt64* o_bins,
-    const float* max_array,
-    const float* min_array
-)
-{
-    int mpi_rank;
-#ifndef CPU_VER
-    MPI_Comm_rank( MPI_COMM_WORLD, &mpi_rank );
-#else
-    mpi_rank = 0;
-#endif
-
-    ///-------------------------------------//
-    ///--------粒子配列をファイル出力----------//
-    //--------------------------------------//
-    static bool first_step = true;
-    static int count;
-    static int num_nodes;
-
-#ifndef CPU_VER
-    static MPI_Comm new_comm;
-#endif
-
-    /* 各ノード毎に粒子データを出力する。 */
-    if( first_step )
-    {
-#ifndef CPU_VER
-        int numprocs, myrank;
-        int resultlen;
-        char procname[MPI_MAX_PROCESSOR_NAME];
-        char* procname_bak;
-        char* procname_g;
-        char* procname_p;
-
-        MPI_Comm_size( MPI_COMM_WORLD, &numprocs );
-        MPI_Comm_rank( MPI_COMM_WORLD, &myrank );
-
-        /* ノード名を取得し、各ランクで共有する. */
-        MPI_Get_processor_name( procname, &resultlen );
-        procname_g = new char[ MPI_MAX_PROCESSOR_NAME * numprocs ];
-        MPI_Allgather( procname,   MPI_MAX_PROCESSOR_NAME, MPI_CHAR,
-                       procname_g, MPI_MAX_PROCESSOR_NAME, MPI_CHAR,
-                       MPI_COMM_WORLD );
-
-        int color;
-        count = 1;
-        for( color = 0; color < numprocs; color++ )
-        {
-            procname_p = procname_g + MPI_MAX_PROCESSOR_NAME * color;
-
-            /* 要素の隣同士を比較して差異があった場合にカウントし, *
-             * ノード毎に連続した番号を割り当てる.                 */
-            if( color > 0 )
-            {
-                procname_bak = procname_p - MPI_MAX_PROCESSOR_NAME;
-                if( strcmp( procname_p, procname_bak ) != 0 )
-                    count++;
-            }
-
-            /* 自分のノード名が一致した要素番号をコミュニケータ分割のcolorとする */
-            if( strcmp( procname_p, procname ) == 0 )
-                break;
-        }
-
-        delete[] procname_g;
-        
-        MPI_Comm_split( MPI_COMM_WORLD, color, myrank, &new_comm );
-        
-        int split_numprocs;
-        MPI_Comm_size( new_comm, &split_numprocs );
-        
-        /*
-         * 各ノードに均等にランクが割り当てられることを前提とし,
-         * 分割前のプロセス数と分割後のプロセス数の非を粒子ファイル数とする.
-         */
-        num_nodes = numprocs / split_numprocs;
-        if( numprocs % split_numprocs > 0 ) num_nodes++;
-#else
-        count = 1;
-        num_nodes = 1;
-#endif
-        first_step = false;
-    }   
-    
-    /*
-     * ファイル名の粒子データのファイル名を入力する.
-     * countが各ファイルで連続でない場合,ファイルが不在と見なしてデーモンでスピンロックがかかる.
-     */
-    // 環境変数で指定したファイルパスを参照する
-    std::stringstream ss;
-    ss << std::setfill('0') << std::setw(5) << time_step;
-    ss << "_";
-    ss << std::setfill('0') << std::setw(7) << count;
-    ss << "_";
-    ss << std::setfill('0') << std::setw(7) << num_nodes;
-    ss << ".kvsml";
-    const std::string particleFilePath = particleFilePrefix + ss.str();
-
-    int particle_size = coords.size();
-    int *recvcounts;
-    int *displs;
-
-    int new_rank;
-    int new_number_of_process;
-#ifndef CPU_VER
-    MPI_Comm_rank( new_comm, &new_rank );
-    MPI_Comm_size( new_comm, &new_number_of_process );
-#else
-    new_rank = 0;
-    new_number_of_process = 1;
-#endif
-
-    /*
-     *  recvcounts: 各ランク毎の受信バッファサイズ.
-     *  displs:     受信先バッファ上の各ランク毎の受信バッファの位置(オフセット)
-     */
-
-    displs = new int[ new_number_of_process ];
-    recvcounts = new int[ new_number_of_process ];
-
-#ifndef CPU_VER
-    MPI_Allgather( &particle_size, 1, MPI_INT,
-                   recvcounts,     1, MPI_INT,
-                   new_comm );
-#else
-    recvcounts[0] = particle_size;
-#endif
-
-    displs[0] = 0;
-    for( int i = 1; i < new_number_of_process; i++ )
-        displs[i] = displs[i-1] + recvcounts[i-1];
-
-    vismodule::ValueArray<float> new_coords(  displs[new_number_of_process-1] + recvcounts[new_number_of_process-1] );
-    vismodule::ValueArray<Byte>  new_colors(  displs[new_number_of_process-1] + recvcounts[new_number_of_process-1] );
-    vismodule::ValueArray<float> new_normals( displs[new_number_of_process-1] + recvcounts[new_number_of_process-1] );
-
-#ifndef CPU_VER
-    MPI_Gatherv( coords.pointer(),   particle_size, MPI_FLOAT,
-                 new_coords.pointer(), recvcounts, displs, MPI_FLOAT,
-                 0, new_comm );
-
-    MPI_Gatherv( colors.pointer(),   particle_size, MPI_BYTE,
-                 new_colors.pointer(), recvcounts, displs, MPI_BYTE,
-                 0, new_comm );
-
-    MPI_Gatherv( normals.pointer(),   particle_size, MPI_FLOAT,
-                 new_normals.pointer(), recvcounts, displs, MPI_FLOAT,
-                 0, new_comm );
-#else
-    for( int i = 0; i < particle_size; i++ )
-    {
-        new_coords[i]  = coords[i];
-        new_colors[i]  = colors[i];
-        new_normals[i] = normals[i];
-    }
-#endif
-
-    /*  分割後コミュニケータのランク0で出力する  */
-    if( new_rank == 0 )
-    {
-        vismodule::PointObject* point_object = new vismodule::PointObject( new_coords, new_colors, new_normals, param.m_subpixel_level );
-        point_object->setMinMaxObjectCoords( mvpl.m_total_min_object_coord, mvpl.m_total_min_object_coord );
-        // If async_io is enabled, use worker thread to write kvsml data and state.txt
-        if (async_io_enabled){
-            pbvr::ParticleWriteThread* particle_write_thread = &pwt;
-            particle_write_thread->join( true );
-            particle_write_thread->setPointObject( point_object );
-            particle_write_thread->setFilename( particleFilePath.c_str() );
-            particle_write_thread->setTimestep( time_step , stateFilePath.c_str() );
-            particle_write_thread->setStartTimestep( start_time_step ); //add by shimomura 20240808
-            particle_write_thread->work( true );
-        }// If async_io is disabled, use kvs::PointExporter here in main thread.
-        else{
-            vismodule::KVSMLObjectPoint* kvsml_object = new vismodule::PointExporter<vismodule::KVSMLObjectPoint>( *point_object );
-            kvsml_object->setWritingDataType( vismodule::KVSMLObjectPoint::ExternalBinary );
-            kvsml_object->write( particleFilePath.c_str() );
-            delete kvsml_object;
-        }
-        delete point_object;
-    }
-
-    // histgram receiver
-    vismodule::UInt64* c_bins_recv;
-    vismodule::UInt64* o_bins_recv;
-    c_bins_recv = new vismodule::UInt64[tf_number * DEFAULT_NBINS];
-    o_bins_recv = new vismodule::UInt64[tf_number * DEFAULT_NBINS];
-
-#ifndef CPU_VER
-    //ヒストグラムの集計
-    MPI_Reduce( c_bins.pointer(), c_bins_recv.pointer(),
-                (tf_number * DEFAULT_NBINS), MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD );
-
-    MPI_Reduce( o_bins.pointer(), o_bins_recv.pointer(),
-                (tf_number * DEFAULT_NBINS), MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD );
-#else
-    for( int i = 0; i < (tf_number * DEFAULT_NBINS); i++ )
-    {
-        c_bins_recv[i] = c_bins[i];
-        o_bins_recv[i] = o_bins[i];
-    }
-#endif
-
-    // min max receiver
-    float* max_array_recv;
-    float* min_array_recv;
-    max_array_recv = new float[tf_number * 2]; // color, opacity
-    min_array_recv = new float[tf_number * 2]; // color, opacity
-
-#ifndef CPU_VER
-    // if(mpi_rank==0)std::cout<<"MPI_Reduce"<<std::endl;
-    MPI_Reduce( max_array.pointer(), max_array_recv.pointer(),
-                (tf_number * 2), MPI_FLOAT, MPI_MAX, 0, MPI_COMM_WORLD );
-    MPI_Reduce( min_array.pointer(), min_array_recv.pointer(),
-                (tf_number * 2), MPI_FLOAT, MPI_MIN, 0, MPI_COMM_WORLD );
-#else
-    for( size_t i = 0; i < tf_number; i++ )
-    {
-        max_array_recv[i] = max_array[i];
-        min_array_recv[i] = min_array[i];
-    }
-#endif
-
-    //状態ファイルの出力
-    if( mpi_rank == 0 )
-    {
-        // If async_io is enabled, state.txt will be written from worker thread.
-        // If async_io is disabled, state.txt will be written here.
-        if ( !async_io_enabled ){
-            std::ofstream ofs( stateFilePath.c_str(), std::ios::out );
-            if( !ofs.is_open() ) std::cout<<"Cannot open state.txt"<<std::endl;
-
-            ofs << "START_STEP  = " << start_time_step << std::endl;
-            ofs << "LATEST_STEP = " << time_step       << std::endl;
-
-            ofs.close();
-        }
-
-        std::ofstream ofs2( histryFilePath.c_str(), std::ios::out);
-        ofs2 << "TF_NUMBER=" << tf_number << std::endl;
-
-        for( size_t i = 0; i < tf_number; i++ )
-        {
-            ofs2 << "MIN_O" << (i + 1) << "=" << min_array_recv[2 * i    ] << std::endl;
-            ofs2 << "MAX_O" << (i + 1) << "=" << max_array_recv[2 * i    ] << std::endl;
-            ofs2 << "MIN_C" << (i + 1) << "=" << min_array_recv[2 * i + 1] << std::endl;
-            ofs2 << "MAX_C" << (i + 1) << "=" << max_array_recv[2 * i + 1] << std::endl;
-            ofs2 << "RESOLUTION_O" << (i + 1) << "=" << DEFAULT_NBINS << std::endl;
-            ofs2 << "HISTOGRAM_O"  << (i + 1) << "=";
-            for ( size_t j = 0; j < DEFAULT_NBINS; j++ )
-            {
-                ofs2 << o_bins_recv[j + (i * DEFAULT_NBINS)] << ",";
-            }
-            ofs2 << std::endl;
-            ofs2 << "RESOLUTION_C" << (i + 1) << "=" << DEFAULT_NBINS << std::endl;
-            ofs2 << "HISTOGRAM_C"  << (i + 1) << "=";
-            for ( size_t j = 0; j < DEFAULT_NBINS; j++ )
-            {
-                ofs2 << c_bins_recv[j + (i * DEFAULT_NBINS)] << ",";
-            }
-            ofs2 << std::endl;
-        }
-
-        ofs2 << "N_VARIABLES="      << nvariables               << std::endl;
-        ofs2 << "PARTICLE_DENSITY=" << param.m_particle_density << std::endl;
-        ofs2 << "PARTICLE_LIMIT="   << param.m_particle_limit   << std::endl;
-        ofs2 << "END_HISTORY_FILE=SUCCESS" << std::endl;
-        ofs2.close();
-    }
-}
-
-void OutputGlyphs(
-    const int time_step,
-    const std::string& glyphFilePrefix,
-    const std::vector<float>& coords,
-    const std::vector<float>& vectors,
-    const std::vector<float>& sizes,
-    const std::vector<unsigned char>& colors
-)
-{
-    int mpi_rank;
-    int mpi_size;
-#ifndef CPU_VER
-    MPI_Comm_size( MPI_COMM_WORLD, &mpi_size );
-    MPI_Comm_rank( MPI_COMM_WORLD, &mpi_rank );
-#else
-    mpi_rank = 0;
-    mpi_size = 1;
-#endif
-
-    vismodule::ValueArray<float> tmp_coords( coords );
-    vismodule::ValueArray<float> tmp_vectors( vectors );
-    vismodule::ValueArray<Byte>  tmp_colors( colors );
-    vismodule::ValueArray<float> tmp_sizes( sizes );
-
-    std::stringstream ss;
-    ss << std::setfill('0') << std::setw(5) << time_step;
-    ss << "_";
-    ss << std::setfill('0') << std::setw(7) << mpi_rank+1;
-    ss << "_";
-    ss << std::setfill('0') << std::setw(7) << mpi_size;
-    ss << ".dat";
-    std::string glyphFilePath;
-    glyphFilePath = glyphFilePrefix + ss.str();
-    
-    vismodule::KVSMLObjectGlyph glyph_object( tmp_coords, tmp_colors, tmp_vectors, tmp_sizes );
-    glyph_object.write( glyphFilePath.c_str() );
-}
-
-void OutputLine(
-    const int time_step,
-    const std::string& plotOverLineFilePrefix,
-    const vismodule::ValueArray<float>& values_on_line,
-    const vismodule::ValueArray<bool>& mask,
-    const vismodule::ValueArray<float>& x_axis
-)
-{
-    int mpi_rank;
-    int mpi_size;
-#ifndef CPU_VER
-    MPI_Comm_rank( MPI_COMM_WORLD, &mpi_rank );
-    MPI_Comm_size( MPI_COMM_WORLD, &mpi_size );
-#else
-    mpi_rank = 0;
-    mpi_size = 1;
-#endif
-
-    std::stringstream ss;
-    ss << std::setfill('0') << std::setw(5) << time_step;
-    ss << "_";
-    ss << std::setfill('0') << std::setw(7) << mpi_rank+1;
-    ss << "_";
-    ss << std::setfill('0') << std::setw(7) << mpi_size;
-    ss << ".dat";
-    std::string plotOverLineFilePath;
-    plotOverLineFilePath = plotOverLineFilePrefix + ss.str();
-
-    vismodule::KVSMLObjectPlotOverLine pol_object( values_on_line, x_axis, mask );
-    pol_object.write( plotOverLineFilePath.c_str() );
-}
-
-#ifdef VTK
+#ifdef EXTEND_FILE_FORMAT
 // vtk用のソルバー関数
 bool generate_particles_vtk( int time_step, vtkUnstructuredGrid* ucd )
 {
@@ -1219,6 +452,7 @@ bool generate_particles_vtk( int time_step, vtkUnstructuredGrid* ucd )
     }
 
     bool result = false;
+    std::string historyFilePath;
     std::string stateFilePath;
     std::string coordMinMaxFilePath;
     std::string particleFilePrefix;
@@ -1226,6 +460,7 @@ bool generate_particles_vtk( int time_step, vtkUnstructuredGrid* ucd )
     std::string plotOverLineFilePrefix;
     std::string tfFilePath;
     std::string tfFilePath_old;
+    std::string tfFilePath_step;
     std::string glyphParameterPath;
     std::string glyphParameterPath_old;
     std::string plotOverLineParameterPath;
@@ -1250,15 +485,20 @@ bool generate_particles_vtk( int time_step, vtkUnstructuredGrid* ucd )
 
     if ( !result ) return false;
 
-    Argument param;
+    char  arg_dummy0[] = "dummy";
+    char* arg_dummy[]  = { arg_dummy0, NULL };
+
+    Argument param( 1, arg_dummy );
     MultiVolumePropertyList mvpl;
-    NameListFile nameListFile;
+    static NameListFile particleNameListFile;
+    static NameListFile glyphNameListFile;
+    static NameListFile POLNameListFile;
     param.m_transfunc_synthesizer = new TransferFunctionSynthesizer();
     param.m_camera                = new vismodule::Camera();
 
-    SetParticleParameter( dom, tfFilePath, tfFilePath_old, param, mvpl, nameListFile );
-    SetGlyphParameter( glyphParameterPath, glyphParameterPath_old, param );
-    SetPlotOverLineParameter( plotOverLineParameterPath, plotOverLineParameterPath_old, param );
+    SetParticleParameter( dom, tfFilePath, tfFilePath_old, param, mvpl, particleNameListFile );
+    SetGlyphParameter( glyphParameterPath, glyphParameterPath_old, param, glyphNameListFile );
+    SetPlotOverLineParameter( plotOverLineParameterPath, plotOverLineParameterPath_old, param, POLNameListFile );
 
     const int tf_number  = param.m_transfunc_array.size();
     const int resolution = param.m_sampling_size;
@@ -1279,14 +519,14 @@ bool generate_particles_vtk( int time_step, vtkUnstructuredGrid* ucd )
 
     for ( size_t i = 0; i < (DEFAULT_NBINS * tf_number); i++ )
     {
-        tmp_c_bins[tf] = 0;
-        tmp_o_bins[tf] = 0;
+        tmp_c_bins[i] = 0;
+        tmp_o_bins[i] = 0;
     }
 
     for ( int i = 0; i < (tf_number * 2); i++ )
     {
-        tmp_max[ i ] = FLT_MIN;
-        tmp_min[ i ] = FLT_MAX;
+        tmp_max[i] = FLT_MIN;
+        tmp_min[i] = FLT_MAX;
     }
 
     // glyph parameters
@@ -1296,13 +536,9 @@ bool generate_particles_vtk( int time_step, vtkUnstructuredGrid* ucd )
     std::vector<unsigned char> glyph_colors;
 
     // plot over line parameters
-    vismodule::ValueArray<float> values_on_line( resolution );
-    vismodule::ValueArray<bool>   mask( resolution, 0 );
-    vismodule::ValueArray<float> x_axis( resolution );
-
-    values_on_line.fill( 0x00 );
-    mask.fill( false );
-    x_axis.fill( 0x00 );
+    std::vector<float> values_on_line( resolution, 0 );
+    std::vector<int>   mask( resolution, 0 );
+    std::vector<float> x_axis( resolution, 0 );
 
     int nvariables;
     
@@ -1320,7 +556,8 @@ bool generate_particles_vtk( int time_step, vtkUnstructuredGrid* ucd )
     for ( size_t i = 0; i < kvs_cell_type_vector.size(); i++ )
     {
         vismodule::UnstructuredVolumeImporter importer;
-        importer.import( input_vtu, kvs_cell_type_vector[i] );
+        int kvs_cell_type = static_cast<int>(kvs_cell_type_vector[i]);
+        importer.import( input_vtu, kvs_cell_type );
         vismodule::UnstructuredVolumeObject* volume = &importer;
 
         std::unique_ptr<std::unique_ptr<Type[]>[]> values;
@@ -1338,11 +575,18 @@ bool generate_particles_vtk( int time_step, vtkUnstructuredGrid* ucd )
             ncoords, connections, ncells, celltype
         );
 
+        std::vector<Type*> raw_pointers_vector( nvariables );
+        for ( size_t i = 0; i < nvariables; ++i )
+        {
+            raw_pointers_vector[i] = values.get()[i].get();
+        }
+
+        jpv::ServerMode server_mode = jpv::ServerMode::IS;
         vismodule::PointObject* point_object = nullptr;
         vismodule::CS_PointObjectGenerator point_object_generator;
         point_object = point_object_generator.GenerateParticleUnstruct(
-            param, dom, values, nvariables, coordinates,
-            ncoords, connections, ncells, celltype, server_mode
+            param, dom, raw_pointers_vector.data(), nvariables, coordinates.get(),
+            ncoords, connections.get(), ncells, celltype, server_mode
         );
 
         MakeParticle( point_object, particle_coords, particle_colors, particle_normals ); // InSitu only
@@ -1357,8 +601,8 @@ bool generate_particles_vtk( int time_step, vtkUnstructuredGrid* ucd )
             vismodule::GlyphSeedGenerator glyph_creator;
             int number_of_divide = mpi_size;
             glyph_creator.GenerateGlyphUnstruct(
-                param, number_of_divide, values, nvariables, coordinates,
-                ncoords, connections, ncells, celltype, glyph_object
+                param, number_of_divide, raw_pointers_vector.data(), nvariables, coordinates.get(),
+                ncoords, connections.get(), ncells, celltype, glyph_object
             );
 
             MakeGlyph( glyph_object, glyph_coords, glyph_vectors, glyph_sizes, glyph_colors ); // InSitu only
@@ -1371,8 +615,8 @@ bool generate_particles_vtk( int time_step, vtkUnstructuredGrid* ucd )
             vismodule::KVSMLObjectPlotOverLine* pol_object = new vismodule::KVSMLObjectPlotOverLine;
             PlotOverLineGenerator pol_generator;
             pol_generator.GeneratePOLUnstruct(
-                param, values, nvariables, coordinates,
-                ncoords, connections, ncells, celltype, pol_object
+                param, raw_pointers_vector.data(), nvariables, coordinates.get(),
+                ncoords, connections.get(), ncells, celltype, pol_object
             );
 
             MakePlotOverLine( pol_object, resolution, values_on_line, mask, x_axis ); // CS common
@@ -1385,15 +629,15 @@ bool generate_particles_vtk( int time_step, vtkUnstructuredGrid* ucd )
 
     if ( mpi_rank == 0 )
     {
-        nameListFile.setFileName( tfFilePath_step );
-        nameListFile.write();
+        particleNameListFile.setFileName( tfFilePath_step );
+        particleNameListFile.write();
     }
 
     // データ出力
     OutputParticles(
-        param, mvpl, time_step, tf_number, nvariables, particleFilePrefix,
-        particleFilePrefix, stateFilePath, histryFilePath, coords, colors,
-        normals, tmp_c_bins, tmp_o_bins, tmp_max, tmp_min
+        param, mvpl, start_time_step, time_step, tf_number, nvariables, particleFilePrefix,
+        stateFilePath, historyFilePath, particle_coords, particle_colors,
+        particle_normals, tmp_c_bins, tmp_o_bins, tmp_max, tmp_min
     );
 
     if ( param.m_glyph_flag )
@@ -1410,7 +654,7 @@ bool generate_particles_vtk( int time_step, vtkUnstructuredGrid* ucd )
     }
 
     delete tmp_c_bins;
-    delete tmp_o_bins
+    delete tmp_o_bins;
     delete tmp_max;
     delete tmp_min;
     delete param.m_transfunc_synthesizer;
@@ -1419,7 +663,7 @@ bool generate_particles_vtk( int time_step, vtkUnstructuredGrid* ucd )
     return true;
 }
 
-void SetDomain( vtkUnstructuredGrid* ucd, domain_parameters_unstruct* dom)
+void SetDomain( vtkUnstructuredGrid* ucd, domain_parameters_unstruct* dom )
 {
     double bounds[6];
     ucd->GetPoints()->GetBounds( bounds );
@@ -1457,7 +701,7 @@ void SetDomain( vtkUnstructuredGrid* ucd, domain_parameters_unstruct* dom)
     dom->y_global_max = recv_Ymax;
     dom->z_global_max = recv_Zmax;
 }
-#endif // VTK
+#endif // EXTEND_FILE_FORMAT
 
 /*
 
@@ -1565,6 +809,95 @@ void show_timer( time_parameters time )
         printf("total     = %8.3e [sec/step]\n", total     );
         printf("nparticles= %d\n", nparticles );
     }
+}
+
+void SetDefalutParameter( TransferFunctionSynthesizer* tfs,
+                          pbvr_parameters* particleBase,
+                          const int nvariables, Type** values, const int ncoords)
+{
+    //Read TFS
+    std::vector<int> i_table;
+    std::vector<float> f_table;
+    EquationToken eq;
+    std::vector<EquationToken> var1;
+    int tf_number;
+    // get TF_NUMBER
+    tf_number = nvariables;
+    std::vector<vismodule::TransferFunction> tf;
+
+    //Read 1D tf
+    int resolution = 256;
+    float min, max;
+
+    tf.clear();
+
+    for ( size_t i = 0; i < tf_number; i++ )
+    {
+        std::stringstream tss;
+        tss << "TF_NAME" << i + 1 << "_";
+        const std::string tag_base = tss.str();
+
+        // 各変量のminmax
+        // calc_minmax
+        min = values[i][0];
+        max = values[i][0];
+        
+        for(int j = 1; j < ncoords; j++)
+        {
+            min = min < values[i][j] ? min : values[i][j]; 
+            max = max > values[i][j] ? max : values[i][j]; 
+        }
+
+        vismodule::ColorMap color_map( 256, min, max );
+        vismodule::OpacityMap opacity_map( 256, min, max );
+
+        vismodule::TransferFunction tfBuf;
+        tfBuf.setColorMap( color_map );
+        tfBuf.setOpacityMap( opacity_map );
+        tf.push_back(tfBuf);
+    }
+    particleBase ->m_tf = tf;
+
+    // add by shimomura 2024/03/25
+    std::string  equation;
+
+    equation = "a1";
+    eq = tfs->convert_token(equation);
+    tfs->setOpacityFunction( eq );
+
+    equation = "c1" ;
+    eq = tfs->convert_token(equation);
+    tfs->setColorFunction( eq );
+
+    for ( size_t i = 0; i < tf_number; i++ )
+    {
+        std::stringstream tss;
+        tss << "q" << i + 1 ;
+        const std::string tag_base = tss.str();
+
+        equation = tag_base;
+        eq = tfs->convert_token(equation);
+        var1.push_back( eq );
+    }
+
+    tfs->setOpacityVariable( var1 );
+    tfs->setColorVariable( var1 );
+
+    var1.clear();
+    int nbin = 256;
+    particleBase->m_tf_number = nvariables;
+    particleBase->m_O_max.allocate(particleBase->m_tf_number);
+    particleBase->m_O_min.allocate(particleBase->m_tf_number);
+    particleBase->m_C_max.allocate(particleBase->m_tf_number);
+    particleBase->m_C_min.allocate(particleBase->m_tf_number);
+    particleBase->m_O_max.fill(0x00);
+    particleBase->m_O_min.fill(0x00);
+    particleBase->m_C_max.fill(0x00);
+    particleBase->m_C_min.fill(0x00);
+    particleBase->m_o_histogram.allocate(particleBase->m_tf_number*nbin);
+    particleBase->m_c_histogram.allocate(particleBase->m_tf_number*nbin);
+    particleBase->m_o_histogram.fill(0x00);
+    particleBase->m_c_histogram.fill(0x00);
 }
 
 bool initializeParameters(

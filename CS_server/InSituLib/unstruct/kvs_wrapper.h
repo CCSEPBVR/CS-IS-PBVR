@@ -1,64 +1,77 @@
 #ifndef KVS_WRAPPER_H_INCLUDED
 #define KVS_WRAPPER_H_INCLUDED
 
-#include "../shared/thread_timer.h"
-#include <vismodule/TransferFunction>
 #include <vismodule/VolumeObjectBase>
-#include <vismodule/ParamInfo>
-#include <vismodule/TransferFunction>
-#include "../../Common/ParticleTransferProtocol.h"
-#include <vismodule/CellByCellHistogram>
-#include <vismodule/CellByCellRejectionSampling>
-#include <vismodule/CellByCellUniformSampling>
-#include <vismodule/CellByCellMetropolisSampling>
-#include <vismodule/CellByCellParticleGenerator>
 #include <vismodule/Argument>
 #include <vismodule/NameListFile>
-#include <vismodule/CS_PointObjectGenerator>
+#include <vismodule/MultiVolumeProperty>
+#include <vismodule/CellByCellParticleGenerator>
 
-#ifdef VTK
+#ifdef EXTEND_FILE_FORMAT
 #include <vtkUnstructuredGrid.h>
 #endif
 
-#include <vismodule/UnstructuredVolumeObject>
-
-//Glyph
-#include <vismodule/GlyphSeed>
-#include <vismodule/GlyphProperty>
-
-// plot over line 
-#include <vismodule/PlotOverLine>
-#include <vismodule/PlotOverLineProperty>
-#include <vismodule/KVSMLObjectPlotOverLine>
-
 #ifdef DOUBLE_SCHEME
-  typedef double Type;
+    typedef double Type;
 #else
-  typedef float Type;
+    typedef float Type;
 #endif
 
 typedef unsigned char Byte;
-//typedef void* pbvr_ParticleWriteThread;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+void OutputCoordMinMaxFile(
+    const domain_parameters_unstruct& dom,
+    const std::string& coordMinMaxFilePath
+);
+
+bool SetParticleParameter( 
+    const domain_parameters_unstruct& dom,
+    const std::string& tfFilePath,
+    const std::string& tfFilePath_old,
+    Argument& param,
+    MultiVolumePropertyList& mvpl,
+    NameListFile& nameListFile
+);
+
+bool generate_particles(
+    int time_step,
+    domain_parameters_unstruct dom,
+    Type** values,
+    int nvariables,
+    float* coordinates,
+    int ncoords,
+    unsigned int* connections,
+    int ncells,
+    const vismodule::VolumeObjectBase::CellType& celltypes
+);
+
+#ifdef EXTEND_FILE_FORMAT
+bool generate_particles_vtk(
+    int time_step,
+    vtkUnstructuredGrid* ucd
+);
+
+void SetDomain(
+    vtkUnstructuredGrid* ucd,
+    domain_parameters_unstruct* dom
+);
+#endif
+
+    /*
     void kmath_initialization();
     void kmath_finalization();
-
-    //    pbvr_ParticleWriteThread create_particle_write_thread();
-
     float GetRandomNumber();
 
-#if 0
     typedef struct
     {
         int  npe,  npe_x,  npe_y,  npe_z, npe_xy;
         int  rank;
     } mpi_parameters;
-#endif
-#if 0
+
     typedef struct
     {
         int nx, ny, nz,
@@ -72,18 +85,17 @@ extern "C" {
 
         int restart;
     } domain_parameters_unstruct;
-#else
-//    typedef struct
-//    {
-//        float x_global_min;
-//        float y_global_min;
-//        float z_global_min;
-//
-//        float x_global_max;
-//        float y_global_max;
-//        float z_global_max;
-//    } domain_parameters_unstruct;
-#endif
+
+    typedef struct
+    {
+        float x_global_min;
+        float y_global_min;
+        float z_global_min;
+
+        float x_global_max;
+        float y_global_max;
+        float z_global_max;
+    } domain_parameters_unstruct;
 
     typedef struct
     {
@@ -155,123 +167,6 @@ extern "C" {
 
     } plot_over_line_parameters;
 
-    void begin_wrapper_async_io();
-    void   end_wrapper_async_io();
-
-#if 0
-    void generate_particles( const int time_step,
-                             Type** values, int nvariables,
-                             float* coords, int ncoords,
-                             unsigned int* connections, int ncells,
-                             domain_parameters_unstruct* cdo,
-                             mpi_parameters* mpi,
-                             time_parameters* time );
-#else
-
-    //void PbvrSampler_single( int time_step, domain_parameters_unstruct dom,
-    bool generate_particles( int time_step, domain_parameters_unstruct dom,
-                             Type** values, int nvariables,
-                             float* coordinates, int ncoords,
-                             unsigned int* connections, int ncells, const  vismodule::VolumeObjectBase::CellType& celltypes );
-
-#ifdef VTK
-    bool generate_particles_vtk( int time_step,vtkUnstructuredGrid* ucd ); 
-#endif
-
-    void OutputCoordMinMaxFile(
-        const domain_parameters_unstruct& dom,
-        const std::string& coordMinMaxFilePath
-    );
-
-    bool SetParameterFilePath(
-        const int time_step,
-        std::string& historyFilePath,
-        std::string& stateFilePath,
-        std::string& coordMinMaxFilePath,
-        std::string& particleFilePrefix,
-        std::string& glyphFilePrefix,
-        std::string& plotOverLineFilePrefix,
-        std::string& tfFilePath,
-        std::string& tfFilePath_old,
-        std::string& tfFilePath_step,
-        std::string& glyphParameterPath,
-        std::string& glyphParameterPath_old,
-        std::string& plotOverLineParameterPath,
-        std::string& plotOverLineParameterPath_old
-    );
-
-    bool SetParticleParameter( 
-        const domain_parameters_unstruct& dom,
-        const std::string& tfFilePath,
-        const std::string& tfFilePath_old,
-        Argument& param,
-        MultiVolumePropertyList& mvpl,
-        NameListFile& nameListFile
-    );
-
-    bool SetGlyphParameter(
-        const std::string& glyphParameterPath,
-        const std::string& glyphParameterPath_old,
-        Argument& param
-    );
-
-    bool SetPlotOverLineParameter(
-        const std::string& plotOverLineParameterPath,
-        const std::string& plotOverLineParameterPath_old,
-        Argument& param
-    );
-
-    void MakeParticle(
-        const vismodule::PointObject* point_object,
-        std::vector<float>& coords,
-        std::vector<Byte>&  colors,
-        std::vector<float>& normals
-    );
-
-    void MakeGlyph(
-        const vismodule::KVSMLObjectGlyph* glyph_object,
-        std::vector<float>& coords,
-        std::vector<float>& vectors,
-        std::vector<float>& sizes,
-        std::vector<unsigned char>& colors
-    );
-
-    void OutputParticles(
-        const Argument& param,
-        const MultiVolumePropertyList& mvpl,
-        const int time_step,
-        const int tf_number,
-        const int nvariables,
-        const std::string& particleFilePrefix,
-        const std::string& stateFilePath,
-        const std::string& histryFilePath,
-        const std::vector<float>& coords,
-        const std::vector<Byte>& colors,
-        const std::vector<float>& normals,
-        const vismodule::UInt64* c_bins,
-        const vismodule::UInt64* o_bins,
-        const float* max_array,
-        const float* min_array
-    );
-
-    void OutputGlyphs(
-        const int time_step,
-        const std::string& glyphFilePrefix,
-        const std::vector<float>& coords,
-        const std::vector<float>& vectors,
-        const std::vector<float>& sizes,
-        const std::vector<unsigned char>& colors
-    );
-
-    void OutputLine(
-        const int time_step,
-        const std::string& plotOverLineFilePrefix,
-        const vismodule::ValueArray<float>& values_on_line,
-        const vismodule::ValueArray<bool>& mask,
-        const vismodule::ValueArray<float>& x_axis
-    );
-
-    /*
     typedef struct
     {
         double initialize;
@@ -281,6 +176,14 @@ extern "C" {
         double write_text;
         int nparticles;
     } time_parameters;
+
+    void generate_particles( const int time_step,
+                             Type** values, int nvariables,
+                             float* coords, int ncoords,
+                             unsigned int* connections, int ncells,
+                             domain_parameters_unstruct* cdo,
+                             mpi_parameters* mpi,
+                             time_parameters* time );
 
     void SetPOLParameter(jpv::ParticleTransferClientMessage* clntMes  ,const int time_step, plot_over_line_parameters& pol_param);
 
@@ -328,12 +231,9 @@ extern "C" {
     void GeneratePlotOverLine(int time_step, const vismodule::UnstructuredVolumeObject* volume, PlotOverLine* plot_over_line);
     void GeneratePlotOverLine(int time_step, const vismodule::UnstructuredVolumeObject* volume, PlotOverLine* plot_over_line);
     bool SetParameter(const domain_parameters_unstruct dom, pbvr_parameters* particleBase, ParamInfo *param_info, const int time_step);
-    */
-
-#endif
 
     void state_txt_writer( void );
-
+    */
 
 #ifdef __cplusplus
 }
