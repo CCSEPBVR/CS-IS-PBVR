@@ -37,6 +37,7 @@ public:
     std::vector<int> getTableInt( std::string table_string );
     std::vector<float> getTableFloat( std::string table_string );
     std::vector<std::string> getTableString( std::string table_string );
+    void setNameListFile( const NameListFile& nameListFile );
     const NameListFile& getNameListFile() const;
 };
 

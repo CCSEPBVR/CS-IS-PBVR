@@ -4,112 +4,73 @@
 
 void ParameterFileReader::readParticleParameterFile( const char* fname )
 {
-    int mpi_rank;
-#ifndef CPU_VER
-    MPI_Comm_rank( MPI_COMM_WORLD, &mpi_rank );
-#else
-    mpi_rank = 0;
-#endif
+    m_name_list_file.setName( "SAMPLING_METHOD" );
+    m_name_list_file.setName( "PARTICLE_LIMIT" );
+    m_name_list_file.setName( "PARTICLE_DENSITY" );
+    m_name_list_file.setName( "PARTICLE_DATA_SIZE_LIMIT" );
+    m_name_list_file.setName( "RESOLUTION_WIDTH" );
+    m_name_list_file.setName( "RESOLUTION_HEIGHT" );
+    m_name_list_file.setName( "TF_RESOLUTION" );
+    m_name_list_file.setName( "COLOR_SYNTH" );
+    m_name_list_file.setName( "OPACITY_SYNTH" );
+    m_name_list_file.setName( "TF_NUMBER" );
 
-    int size = 0;
-    char* buf;
-
-    if ( mpi_rank == 0 )
+    for ( size_t n = 0; n < BEFORE_READ_TF_NUMBER; n++ )
     {
-        m_name_list_file.setName( "SAMPLING_METHOD" );
-        m_name_list_file.setName( "PARTICLE_LIMIT" );
-        m_name_list_file.setName( "PARTICLE_DENSITY" );
-        m_name_list_file.setName( "PARTICLE_DATA_SIZE_LIMIT" );
-        m_name_list_file.setName( "RESOLUTION_WIDTH" );
-        m_name_list_file.setName( "RESOLUTION_HEIGHT" );
-        m_name_list_file.setName( "TF_RESOLUTION" );
-        m_name_list_file.setName( "COLOR_SYNTH" );
-        m_name_list_file.setName( "OPACITY_SYNTH" );
-        m_name_list_file.setName( "TF_NUMBER" );
+        std::stringstream ss;
+        ss << "TF_NAME" << n + 1 << "_";
 
-        for ( size_t n = 0; n < BEFORE_READ_TF_NUMBER; n++ )
+        const std::string tag_base = ss.str();
+        m_name_list_file.setName( tag_base + "VAR_C" );
+        m_name_list_file.setName( tag_base + "MIN_C" );
+        m_name_list_file.setName( tag_base + "MAX_C" );
+        m_name_list_file.setName( tag_base + "VAR_O" );
+        m_name_list_file.setName( tag_base + "MIN_O" );
+        m_name_list_file.setName( tag_base + "MAX_O" );
+        m_name_list_file.setName( tag_base + "TABLE_C" );
+        m_name_list_file.setName( tag_base + "TABLE_O" );
+    }
+
+    m_name_list_file.setName( "END_PARAMETER_FILE" );
+
+    m_name_list_file.setFileName( std::string( fname ) );
+
+    bool is_read_finished = false;
+
+    while( !is_read_finished )
+    {
+        if( !m_name_list_file.read() )
+        {
+            this->set_default_parameter();
+            break;
+        }
+
+        std::string result = m_name_list_file.getValue<std::string>( "END_PARAMETER_FILE" );
+
+        if( result == "SUCCESS" )
+        {
+            is_read_finished = true;
+        }
+    }
+
+    // delete TF_NUMBER+1 ~ BEFORE_READ_TF_NUMBER
+    int cur_tf_number = m_name_list_file.getValue<int>("TF_NUMBER");
+    if (cur_tf_number < BEFORE_READ_TF_NUMBER) {
+        for (size_t n = cur_tf_number; n < BEFORE_READ_TF_NUMBER; n++)
         {
             std::stringstream ss;
             ss << "TF_NAME" << n + 1 << "_";
 
             const std::string tag_base = ss.str();
-            m_name_list_file.setName( tag_base + "VAR_C" );
-            m_name_list_file.setName( tag_base + "MIN_C" );
-            m_name_list_file.setName( tag_base + "MAX_C" );
-            m_name_list_file.setName( tag_base + "VAR_O" );
-            m_name_list_file.setName( tag_base + "MIN_O" );
-            m_name_list_file.setName( tag_base + "MAX_O" );
-            m_name_list_file.setName( tag_base + "TABLE_C" );
-            m_name_list_file.setName( tag_base + "TABLE_O" );
+            m_name_list_file.deleteLine( tag_base + "VAR_C" );
+            m_name_list_file.deleteLine( tag_base + "MIN_C" );
+            m_name_list_file.deleteLine( tag_base + "MAX_C" );
+            m_name_list_file.deleteLine( tag_base + "VAR_O" );
+            m_name_list_file.deleteLine( tag_base + "MIN_O" );
+            m_name_list_file.deleteLine( tag_base + "MAX_O" );
+            m_name_list_file.deleteLine( tag_base + "TABLE_C" );
+            m_name_list_file.deleteLine( tag_base + "TABLE_O" );
         }
-
-        m_name_list_file.setName( "END_PARAMETER_FILE" );
-
-        m_name_list_file.setFileName( std::string( fname ) );
-
-        bool is_read_finished = false;
-
-        while( !is_read_finished )
-        {
-            if( !m_name_list_file.read() )
-            {
-                this->set_default_parameter();
-                break;
-            }
-
-            std::string result = m_name_list_file.getValue<std::string>( "END_PARAMETER_FILE" );
-
-            if( result == "SUCCESS" )
-            {
-                is_read_finished = true;
-            }
-        }
-
-        // delete TF_NUMBER+1 ~ BEFORE_READ_TF_NUMBER
-        int cur_tf_number = m_name_list_file.getValue<int>("TF_NUMBER");
-        if (cur_tf_number < BEFORE_READ_TF_NUMBER) {
-            for (size_t n = cur_tf_number; n < BEFORE_READ_TF_NUMBER; n++)
-            {
-                std::stringstream ss;
-                ss << "TF_NAME" << n + 1 << "_";
-
-                const std::string tag_base = ss.str();
-                m_name_list_file.deleteLine( tag_base + "VAR_C" );
-                m_name_list_file.deleteLine( tag_base + "MIN_C" );
-                m_name_list_file.deleteLine( tag_base + "MAX_C" );
-                m_name_list_file.deleteLine( tag_base + "VAR_O" );
-                m_name_list_file.deleteLine( tag_base + "MIN_O" );
-                m_name_list_file.deleteLine( tag_base + "MAX_O" );
-                m_name_list_file.deleteLine( tag_base + "TABLE_C" );
-                m_name_list_file.deleteLine( tag_base + "TABLE_O" );
-            }
-        }
-
-        size = m_name_list_file.byteSize();
-
-        if ( size > 0 )
-        {
-            buf = new char[size];
-            m_name_list_file.pack( buf );
-        }
-    } // mpi_rank == 0
-
-#ifndef CPU_VER
-    MPI_Bcast( &size, 1, MPI_INT, 0, MPI_COMM_WORLD );
-#endif
-
-    if( size > 0 )
-    {
-        if( mpi_rank > 0 ) buf = new char [size];
-#ifndef CPU_VER
-        MPI_Bcast( buf, size, MPI_CHARACTER, 0, MPI_COMM_WORLD );
-#endif
-        if( mpi_rank > 0 ) m_name_list_file.unpack( buf );
-        delete[] buf;
-    }
-    else
-    {
-        std::cout << "ERROR:Failed to read the parameter list file" << std::endl;
     }
 
     return;
@@ -117,78 +78,39 @@ void ParameterFileReader::readParticleParameterFile( const char* fname )
 
 void ParameterFileReader::readGlyphParameterFile( const char* fname )
 {
-    int mpi_rank;
-#ifndef CPU_VER
-    MPI_Comm_rank( MPI_COMM_WORLD, &mpi_rank );
-#else
-    mpi_rank = 0;
-#endif
+    m_name_list_file.setName( "GLYPH_FLAG" );
+    m_name_list_file.setName( "STRIDE" );
+    m_name_list_file.setName( "SEED" );
+    m_name_list_file.setName( "NUMBER_OF_SMAPLING_POINT" );
+    m_name_list_file.setName( "GLYPH_COLOR_MAX" );
+    m_name_list_file.setName( "GLYPH_COLOR_MIN" );
+    m_name_list_file.setName( "SIZE_VARIABLES" );
+    m_name_list_file.setName( "COLOR_VARIABLES" );
+    m_name_list_file.setName( "DIRECTION_VARIABLES" );
+    m_name_list_file.setName( "DISTRIBUTION_MODE" );
+    m_name_list_file.setName( "SIZE_SAMPLING_METHOD" );
+    m_name_list_file.setName( "COLOR_DATA_SAMPLING_METHOD" );
+    m_name_list_file.setName( "GLYPH_COLOR_MAP_TABLE" );
+    m_name_list_file.setName( "END_PARAMETER_FILE" );
 
-    int size = 0;
-    char* buf;
+    m_name_list_file.setFileName( std::string( fname ) );
 
-    if ( mpi_rank == 0 )
+    bool is_read_finished = false;
+
+    while( !is_read_finished )
     {
-        m_name_list_file.setName( "GLYPH_FLAG" );
-        m_name_list_file.setName( "STRIDE" );
-        m_name_list_file.setName( "SEED" );
-        m_name_list_file.setName( "NUMBER_OF_SMAPLING_POINT" );
-        m_name_list_file.setName( "GLYPH_COLOR_MAX" );
-        m_name_list_file.setName( "GLYPH_COLOR_MIN" );
-        m_name_list_file.setName( "SIZE_VARIABLES" );
-        m_name_list_file.setName( "COLOR_VARIABLES" );
-        m_name_list_file.setName( "DIRECTION_VARIABLES" );
-        m_name_list_file.setName( "DISTRIBUTION_MODE" );
-        m_name_list_file.setName( "SIZE_SAMPLING_METHOD" );
-        m_name_list_file.setName( "COLOR_DATA_SAMPLING_METHOD" );
-        m_name_list_file.setName( "GLYPH_COLOR_MAP_TABLE" );
-        m_name_list_file.setName( "END_PARAMETER_FILE" );
-
-        m_name_list_file.setFileName( std::string( fname ) );
-
-        bool is_read_finished = false;
-
-        while( !is_read_finished )
+        if( !m_name_list_file.read() )
         {
-            if( !m_name_list_file.read() )
-            {
-                this->set_default_parameter();
-                break;
-            }
-
-            std::string result = m_name_list_file.getValue<std::string>( "END_PARAMETER_FILE" );
-
-            if( result == "SUCCESS" )
-            {
-                is_read_finished = true;
-            }
+            this->set_default_parameter();
+            break;
         }
 
-        size = m_name_list_file.byteSize();
+        std::string result = m_name_list_file.getValue<std::string>( "END_PARAMETER_FILE" );
 
-        if ( size > 0 )
+        if( result == "SUCCESS" )
         {
-            buf = new char[size];
-            m_name_list_file.pack( buf );
+            is_read_finished = true;
         }
-    } // mpi_rank == 0
-
-#ifndef CPU_VER
-    MPI_Bcast( &size, 1, MPI_INT, 0, MPI_COMM_WORLD );
-#endif
-
-    if( size > 0 )
-    {
-        if( mpi_rank > 0 ) buf = new char [size];
-#ifndef CPU_VER
-        MPI_Bcast( buf, size, MPI_CHARACTER, 0, MPI_COMM_WORLD );
-#endif
-        if( mpi_rank > 0 ) m_name_list_file.unpack( buf );
-        delete[] buf;
-    }
-    else
-    {
-        std::cout << "ERROR:Failed to read the parameter list file" << std::endl;
     }
 
     return;
@@ -196,72 +118,32 @@ void ParameterFileReader::readGlyphParameterFile( const char* fname )
 
 void ParameterFileReader::readPlotOverLineParameterFile( const char* fname )
 {
-    int mpi_rank;
-#ifndef CPU_VER
-    MPI_Comm_rank( MPI_COMM_WORLD, &mpi_rank );
-#else
-    mpi_rank = 0;
-#endif
+    m_name_list_file.setName( "PLOT_FLAG" );
+    m_name_list_file.setName( "PLOT_VARIABLE" );
+    m_name_list_file.setName( "SAMPLING_SIZE" );
+    m_name_list_file.setName( "START_POINT" );
+    m_name_list_file.setName( "END_POINT" );
+    m_name_list_file.setName( "END_PARAMETER_FILE" );
 
-    int size = 0;
-    char* buf;
+    m_name_list_file.setFileName( std::string( fname ) );
 
-    if ( mpi_rank == 0 )
+    bool is_read_finished = false;
+
+    while( !is_read_finished )
     {
-        m_name_list_file.setName( "PLOT_FLAG" );
-        m_name_list_file.setName( "PLOT_VARIABLE" );
-        m_name_list_file.setName( "SAMPLING_SIZE" );
-        m_name_list_file.setName( "START_POINT" );
-        m_name_list_file.setName( "END_POINT" );
-        m_name_list_file.setName( "END_PARAMETER_FILE" );
-
-        m_name_list_file.setFileName( std::string( fname ) );
-        std::cout << "fname:" << std::string( fname ) << std::endl;
-
-        bool is_read_finished = false;
-
-        while( !is_read_finished )
+        if( !m_name_list_file.read() )
         {
-            if( !m_name_list_file.read() )
-            {
-                std::cout << "!m_name_list_file.read()" << std::endl;
-                this->set_default_parameter();
-                break;
-            }
-
-            std::string result = m_name_list_file.getValue<std::string>( "END_PARAMETER_FILE" );
-
-            if( result == "SUCCESS" )
-            {
-                is_read_finished = true;
-            }
+            std::cout << "!m_name_list_file.read()" << std::endl;
+            this->set_default_parameter();
+            break;
         }
 
-        size = m_name_list_file.byteSize();
+        std::string result = m_name_list_file.getValue<std::string>( "END_PARAMETER_FILE" );
 
-        if ( size > 0 )
+        if( result == "SUCCESS" )
         {
-            buf = new char[size];
-            m_name_list_file.pack( buf );
+            is_read_finished = true;
         }
-    } // mpi_rank == 0
-
-#ifndef CPU_VER
-    MPI_Bcast( &size, 1, MPI_INT, 0, MPI_COMM_WORLD );
-#endif
-
-    if( size > 0 )
-    {
-        if( mpi_rank > 0 ) buf = new char [size];
-#ifndef CPU_VER
-        MPI_Bcast( buf, size, MPI_CHARACTER, 0, MPI_COMM_WORLD );
-#endif
-        if( mpi_rank > 0 ) m_name_list_file.unpack( buf );
-        delete[] buf;
-    }
-    else
-    {
-        std::cout << "ERROR:Failed to read the parameter list file" << std::endl;
     }
 
     return;
@@ -285,7 +167,6 @@ void ParameterFileReader::outputParameterMessage( jpv::ParticleTransferServerMes
 
 void ParameterFileReader::setParticleParameter( Argument& param )
 {
-std::cout << __FILE__ << ", " << __func__ << ", " << __LINE__ << std::endl;
     const std::string size_sampling_method = m_name_list_file.getValue<std::string>("SAMPLING_METHOD");
     param.m_particle_limit                 = m_name_list_file.getValue<int32_t>( "PARTICLE_LIMIT" );
     param.m_particle_density               = m_name_list_file.getValue<float>( "PARTICLE_DENSITY" );
@@ -309,25 +190,16 @@ std::cout << __FILE__ << ", " << __func__ << ", " << __LINE__ << std::endl;
         return;   
     }
 
-std::cout << __FILE__ << ", " << __func__ << ", " << __LINE__ << std::endl;
-
     const size_t width               = m_name_list_file.getValue<size_t>( "RESOLUTION_WIDTH" );
-std::cout << __FILE__ << ", " << __func__ << ", " << __LINE__ << std::endl;
     const size_t height              = m_name_list_file.getValue<size_t>( "RESOLUTION_HEIGHT" );
-std::cout << __FILE__ << ", " << __func__ << ", " << __LINE__ << std::endl;
     param.m_camera->setWindowSize( width, height );
-
-std::cout << __FILE__ << ", " << __func__ << ", " << __LINE__ << std::endl;
 
     const size_t resolution          = m_name_list_file.getValue<int>( "TF_RESOLUTION" );
     const int tf_number              = m_name_list_file.getValue<int>( "TF_NUMBER" );
 
-std::cout << __FILE__ << ", " << __func__ << ", " << __LINE__ << std::endl;
-
     param.m_transfunc_array.clear();
     param.m_transfunc_array.resize( tf_number );
 
-std::cout << __FILE__ << ", " << __func__ << ", " << __LINE__ << std::endl;
     
     for ( size_t n = 0; n < tf_number; n++ )
     {
@@ -338,15 +210,12 @@ std::cout << __FILE__ << ", " << __func__ << ", " << __LINE__ << std::endl;
         s_name << "t" << n + 1;
 
         const std::string tag_base = ss.str();
-        // param.m_transfunc_array[n].m_color_variable_min   = m_name_list_file.getValue<float>( tag_base + "MIN_C" );
-        // param.m_transfunc_array[n].m_color_variable_max   = m_name_list_file.getValue<float>( tag_base + "MAX_C" );
-        // param.m_transfunc_array[n].m_opacity_variable_min = m_name_list_file.getValue<float>( tag_base + "MIN_O" );
-        // param.m_transfunc_array[n].m_opacity_variable_max = m_name_list_file.getValue<float>( tag_base + "MAX_O" );
-
+        const float color_min   = m_name_list_file.getValue<float>( tag_base + "MIN_C" );
+        const float color_max   = m_name_list_file.getValue<float>( tag_base + "MAX_C" );
+        const float opacity_min = m_name_list_file.getValue<float>( tag_base + "MIN_O" );
+        const float opacity_max = m_name_list_file.getValue<float>( tag_base + "MAX_O" );
         std::string s_color   = m_name_list_file.getValue<std::string>( tag_base + "TABLE_C" );
         std::string s_opacity = m_name_list_file.getValue<std::string>( tag_base + "TABLE_O" );
-
-        std::cout << "s_color:" << s_color << std::endl;
 
         std::replace( s_color.begin(), s_color.end(), ',', ' ' );
         std::replace( s_opacity.begin(), s_opacity.end(), ',', ' ' );
@@ -379,9 +248,9 @@ std::cout << __FILE__ << ", " << __func__ << ", " << __LINE__ << std::endl;
         vismodule::TransferFunction tf( color_map, opacity_map );
         vismodule::TransferFunction& tt = param.m_transfunc_array[n];
         tt = tf;
+        param.m_transfunc_array[n].setColorRange( color_min, color_max );
+        param.m_transfunc_array[n].setOpacityRange( opacity_min, opacity_max );
     }
-
-std::cout << __FILE__ << ", " << __func__ << ", " << __LINE__ << std::endl;
 
     std::string equation;
     EquationToken eq;
@@ -592,6 +461,7 @@ void ParameterFileReader::setGlyphParameter( Argument& param )
 void ParameterFileReader::setPlotOverLineParameter( Argument& param )
 {
     std::string p_flag = m_name_list_file.getValue<std::string>("PLOT_FLAG");
+
     if ( strcmp( p_flag.c_str(), "TRUE" ) )
     {
         param.m_plot_flag = true;
@@ -602,31 +472,21 @@ void ParameterFileReader::setPlotOverLineParameter( Argument& param )
         return;
     }
 
-    std::cout << "p_flag:" << p_flag << std::endl;
-
-std::cout << __FILE__ << ", " << __func__ << ", " << __LINE__ << std::endl;
-
     param.m_sampling_size = m_name_list_file.getValue<int>("SAMPLING_SIZE");
     param.m_plot_variable = m_name_list_file.getValue<int>("PLOT_VARIABLE");
 
-std::cout << __FILE__ << ", " << __func__ << ", " << __LINE__ << std::endl;
-
     const std::string start_point_string = m_name_list_file.getValue<std::string>("START_POINT");
-std::cout << __FILE__ << ", " << __func__ << ", " << __LINE__ << std::endl;
-    std::cout << "start_point_string:" << start_point_string << std::endl;
     const std::vector<float> start_point_float_table = getTableFloat( start_point_string );
-std::cout << __FILE__ << ", " << __func__ << ", " << __LINE__ << std::endl;
+
     param.m_start_point[0] = start_point_float_table[0];
     param.m_start_point[1] = start_point_float_table[1];
     param.m_start_point[2] = start_point_float_table[2];
-std::cout << __FILE__ << ", " << __func__ << ", " << __LINE__ << std::endl;
 
     const std::string end_point_string = m_name_list_file.getValue<std::string>("END_POINT");
     const std::vector<float> end_point_float_table = getTableFloat( end_point_string );
     param.m_end_point[0] = end_point_float_table[0];
     param.m_end_point[1] = end_point_float_table[1];
     param.m_end_point[2] = end_point_float_table[2];
-std::cout << __FILE__ << ", " << __func__ << ", " << __LINE__ << std::endl;
 }
 
 std::vector<int> ParameterFileReader::getTableInt( std::string table_string )
@@ -792,6 +652,11 @@ void ParameterFileReader::set_default_parameter()
     }
 
     m_name_list_file.setLine( "END_PARAMETER_FILE", "SUCCESS" );
+}
+
+void ParameterFileReader::setNameListFile( const NameListFile& nameListFile )
+{
+    m_name_list_file = nameListFile;
 }
 
 const NameListFile& ParameterFileReader::getNameListFile() const
