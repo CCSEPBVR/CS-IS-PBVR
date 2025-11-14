@@ -64,6 +64,7 @@ public:
 
 #ifdef EXTEND_FILE_FORMAT 
     UnstructuredVolumeImporter( const std::string& filename, const int fileType, const int targetCellType, const int st, const int vl );
+    void import( const kvs::ExtendedFileFormat::VtkXmlUnstructuredGrid& vtu , const int targetCellType ); // use InSitu OpenFOAM
 #endif
 
     virtual ~UnstructuredVolumeImporter();
@@ -85,7 +86,6 @@ private:
     void import( const vismodule::StepAggregateTypeSubvolume& gt );
 #ifdef EXTEND_FILE_FORMAT 
     void import( const kvs::ExtendedFileFormat::VtkXmlMultiBlock& vtm , const int targetCellType, const int vl );
-    void import( const kvs::ExtendedFileFormat::VtkXmlUnstructuredGrid& vtu , const int targetCellType );
     void import( const kvs::ExtendedFileFormat::AvsUcd& inp , const int targetCellType );
     void import( const kvs::ExtendedFileFormat::VtkXmlPUnstructuredGrid& pvtu , const int targetCellType, const int vl);
     void import( const kvs::ExtendedFileFormat::EnSightGoldBinary& ensightGold , const int targetCellType, const int vl);
