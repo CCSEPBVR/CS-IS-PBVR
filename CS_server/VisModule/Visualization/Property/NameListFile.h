@@ -42,9 +42,9 @@ public:
     inline void write();
     inline bool read();
 
-    inline size_t NameListFile::byteSize() const;
-    inline size_t NameListFile::pack( char* buf ) const;
-    inline size_t NameListFile::unpack( const char* buf );
+    inline size_t byteSize() const;
+    inline size_t pack( char* buf ) const;
+    inline size_t unpack( const char* buf );
 
     inline bool operator==( NameListFile& name_list_file );
     inline bool operator!=( NameListFile& name_list_file );
