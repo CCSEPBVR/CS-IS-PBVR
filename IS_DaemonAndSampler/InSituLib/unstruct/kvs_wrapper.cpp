@@ -3092,17 +3092,28 @@ void EnsembleGenerateParticles( int time_step,
     volume -> setConnections(Connections);
 
     // Set a tetrahedral cell interpolator.
-    kvs::CellBase<float>* cell = NULL;
+//    kvs::CellBase<float>*  cell = NULL;
+    std::vector<kvs::CellBase<float>*>  cell;
+    cell.resize(max_threads);
+   
     switch ( celltype )
     {
         case kvs::VolumeObjectBase::Tetrahedra:
-            {   
-                cell = new kvs::TetrahedralCell<float>( volume );
+            {  
+                //cell = new kvs::TetrahedralCell<float>( volume );
+                for ( int i = 0; i < max_threads; i++ )
+                {
+                    cell[i] = new kvs::TetrahedralCell<float>( volume );
+                }
                 break;
             }
         case kvs::VolumeObjectBase::Hexahedra:
             {   
-                cell = new kvs::HexahedralCell<float>( volume );
+                //cell = new kvs::HexahedralCell<float>( volume );
+                for ( int i = 0; i < max_threads; i++ )
+                {
+                    cell[i] = new kvs::HexahedralCell<float>( volume );
+                }
                 break;
             }
         default:
@@ -3179,7 +3190,7 @@ void EnsembleGenerateParticles( int time_step,
 //         rejected_NP_in_cell[i] = 0;
 //    }
      
-    kvs::MersenneTwister MT( mpi_rank );
+//    kvs::MersenneTwister MT( mpi_rank );
 #pragma omp parallel
 {    
 #if _OPENMP
@@ -3198,40 +3209,36 @@ void EnsembleGenerateParticles( int time_step,
     float time1=0, time2 =0;
 
     kvs::Timer th_timer( kvs::Timer::Start );
-    th_timer.start();
 #pragma omp for schedule( dynamic ) nowait
     for ( size_t index = 0; index < ncells; ++index )
-        {
+    {
+    th_timer.start();
             // Bind the cell which is indicated by 'index'.
-            cell->bindCell( index );
-
-//            // Calculate a density.
-//            const float  average_scalar = cell->averagedScalar();
-//            const size_t average_degree = static_cast<size_t>( ( average_scalar - min_value ) * normalize_factor );
-//            float opacity = tf.opacityMap().at(average_scalar);
-//            float density = Generator::CalculateDensity( opacity,
-//                    sampling_volume_inverse,
-//                    max_opacity, max_density );
-
+            cell[thid]->bindCell( index );
             // Calculate a number of particles in this cell.
-            const float volume_of_cell = cell->volume();
+            const float volume_of_cell = cell[thid]->volume();
 
+    th_timer.stop();
+    time1 += th_timer.sec();
+    th_timer.start();
             size_t nparticles_in_cell 
                 = calculate_number_of_particles( max_density, volume_of_cell, &MT ) ;
 
-//            NP_in_cell[index] += nparticles_in_cell;
+
+        for ( kvs::UInt32 r = 0; r < repetitions; ++r )
+        {
             // Generate a set of particles in this cell represented by v0,...,v3 and s0,...,s3.
             for ( size_t particle = 0; particle < nparticles_in_cell; ++particle )
             {
                 // Calculate a coord. // ローカル座標
-                const kvs::Vector3f coord = cell->MT_randomSampling( &MT);
+                const kvs::Vector3f coord = cell[thid]->MT_randomSampling( &MT);
                 // Calculate a color.
-                const float scalar = cell->scalar();
+                const float scalar = cell[thid]->scalar();
 
                 // Calculate a normal.
                 /* NOTE: The gradient vector of the cell is reversed for shading on the rendering process.
                 */
-                const kvs::Vector3f normal( -cell->gradient() );
+                const kvs::Vector3f normal( -cell[thid]->gradient() );
 
                 // set coord, color, and normal to point object( this ).
                 th_vertex_coords.push_back( coord.x() );
@@ -3245,25 +3252,18 @@ void EnsembleGenerateParticles( int time_step,
                 th_vertex_normals.push_back( normal.z() );
 
                 th_vertex_cellids.push_back( index );
-
-//                vertex_coords.push_back( coord.x() );
-//                vertex_coords.push_back( coord.y() );
-//                vertex_coords.push_back( coord.z() );
-//
-//                vertex_scalars.push_back( scalar );
-//
-//                vertex_normals.push_back( normal.x() );
-//                vertex_normals.push_back( normal.y() );
-//                vertex_normals.push_back( normal.z() );
-//
-//                vertex_cellids.push_back( index );
-                //            std::cout << mpi_rank <<  ":  coords = " << coord.x() <<  ", " << coord.y() << ", " <<  coord.z() << ", scalar = " << scalar << " , cell_index = " << index << std::endl; 
             } // end of 'paricle' for-loop
+
+    th_timer.stop();
+    time2 += th_timer.sec();
+    th_timer.start();
         } // end of 'cell' for-loop
     } // end of repeat_level loop    
 
     th_timer.stop();
-    std::cout << "sampling_time= " << th_timer.sec() << std::endl;          
+    //std::cout << "sampling_time= " << th_timer.sec() << std::endl;          
+    std::cout << "sampling_time= " << time1 << std::endl;          
+    std::cout << "pushback_time= " << time2 << std::endl;          
 
     th_timer.start();
     #pragma omp critical
@@ -3276,11 +3276,10 @@ void EnsembleGenerateParticles( int time_step,
 
     th_timer.stop();
     std::cout << mpi_rank <<  ": insert_time =" << th_timer.sec() << std::endl;
-//    std::cout << mpi_rank <<  ": thid " << thid << ": uniform_sampling_time =  " << timer.sec() << std::endl;
 }  //end omp loop
     timer.stop();
     std::cout << mpi_rank <<  ": uniform_sampling_time =" << timer.sec() << std::endl;
-//    std::cout << mpi_rank <<  ": uniform_nparticles = " <<  vertex_scalars.size()   << std::endl;
+    std::cout << mpi_rank <<  ": uniform_nparticles = " <<  vertex_scalars.size()   << std::endl;
 
    
 
@@ -3381,16 +3380,16 @@ void EnsembleGenerateParticles( int time_step,
             // 受け取った座標情報で、recv先の条件下でのスカラー値を計算
             for(int i =0; i< recv_size ;i++)
             {
-                cell->bindCell( recv_cellids[i] );
+                cell[0]->bindCell( recv_cellids[i] );
                 const kvs::Vector3f coord(recv_coords[3*i + 0], recv_coords[3*i + 1], recv_coords[3*i + 2]);
 
                     // Calculate a color.
                 //cell -> setGlobalPoint(coord);
-                cell -> setLocalPoint(coord);
-                const float scalar = cell->scalar();
+                cell[0] -> setLocalPoint(coord);
+                const float scalar = cell[0]->scalar();
 
                     // Calculate a normal.
-                const kvs::Vector3f normal( -cell->gradient() );
+                const kvs::Vector3f normal( -cell[0]->gradient() );
 //                    const kvs::Vector3f normal( interpolator.gradient<float>() );
 
 //               std::cout << "normal = " << normal <<std::endl;
@@ -3479,14 +3478,14 @@ void EnsembleGenerateParticles( int time_step,
 #pragma omp for schedule( dynamic ) nowait
        for(int i =0; i< vertex_scalars.size() ;i++)
        {
-            cell -> bindCell(vertex_cellids[i]); 
+            cell[thid] -> bindCell(vertex_cellids[i]); 
 
 //           std::cout << "Rank " << mpi_rank <<  std::endl;
           
                const kvs::Vector3f coord(vertex_coords[3*i+0], vertex_coords[3*i+1], vertex_coords[3*i+2]);
-               cell -> setLocalPoint(coord);
+               cell[thid] -> setLocalPoint(coord);
                // local 座標からglobal座標へ変換
-               const kvs::Vector3f global_coord = cell -> transformLocalToGlobal(coord);
+               const kvs::Vector3f global_coord = cell[thid] -> transformLocalToGlobal(coord);
 
                // density の計算
                float opacity = tf.opacityMap().at(vertex_scalars[ i ]);
@@ -3888,6 +3887,12 @@ void EnsembleGenerateParticles( int time_step,
 //        std::cout << mpi_rank <<" : particleBase.m_C_min["<< i << "] = " << particleBase.m_C_min[i] << std::endl;
 //        std::cout << mpi_rank <<" : particleBase.m_C_max["<< i << "] = " << particleBase.m_C_max[i] << std::endl;
     }
+
+    for ( int i = 0; i < max_threads; i++ )
+    {
+             if (cell[i] != NULL)delete cell[i];
+    }
+
 
 
 }
