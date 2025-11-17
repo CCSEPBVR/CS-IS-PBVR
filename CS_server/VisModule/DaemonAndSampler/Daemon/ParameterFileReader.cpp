@@ -1,4 +1,5 @@
 #include "ParameterFileReader.h"
+#include <vismodule/ExtendedTransferFunctionParameter>
 #define DEFAULT_TF_NUMBER 5
 #define BEFORE_READ_TF_NUMBER 99
 
@@ -199,7 +200,10 @@ void ParameterFileReader::setParticleParameter( Argument& param )
 
     param.m_transfunc_array.clear();
     param.m_transfunc_array.resize( tf_number );
-
+    param.m_named_transfunc_array.clear();
+    param.m_named_transfunc_array.resize( tf_number );
+    param.m_voleqn.clear();
+    param.m_voleqn.resize( tf_number );
     
     for ( size_t n = 0; n < tf_number; n++ )
     {
@@ -207,15 +211,29 @@ void ParameterFileReader::setParticleParameter( Argument& param )
         ss << "TF_NAME" << n + 1 << "_";
 
         std::stringstream s_name;
+        std::stringstream f_name;
         s_name << "t" << n + 1;
+        f_name << "_F" << n + 1 << "_VAR_";
 
         const std::string tag_base = ss.str();
-        const float color_min   = m_name_list_file.getValue<float>( tag_base + "MIN_C" );
-        const float color_max   = m_name_list_file.getValue<float>( tag_base + "MAX_C" );
-        const float opacity_min = m_name_list_file.getValue<float>( tag_base + "MIN_O" );
-        const float opacity_max = m_name_list_file.getValue<float>( tag_base + "MAX_O" );
-        std::string s_color   = m_name_list_file.getValue<std::string>( tag_base + "TABLE_C" );
-        std::string s_opacity = m_name_list_file.getValue<std::string>( tag_base + "TABLE_O" );
+        param.m_named_transfunc_array[n].setResolution( resolution );
+        param.m_named_transfunc_array[n].m_name = s_name.str();
+
+        const std::string color_variable  = m_name_list_file.getValue<std::string>( tag_base + "VAR_O" );
+        const std::string opacity_varible = m_name_list_file.getValue<std::string>( tag_base + "VAR_O" );
+        const float color_min             = m_name_list_file.getValue<float>( tag_base + "MIN_C" );
+        const float color_max             = m_name_list_file.getValue<float>( tag_base + "MAX_C" );
+        const float opacity_min           = m_name_list_file.getValue<float>( tag_base + "MIN_O" );
+        const float opacity_max           = m_name_list_file.getValue<float>( tag_base + "MAX_O" );
+        std::string s_color               = m_name_list_file.getValue<std::string>( tag_base + "TABLE_C" );
+        std::string s_opacity             = m_name_list_file.getValue<std::string>( tag_base + "TABLE_O" );
+
+        param.m_named_transfunc_array[n].m_color_variable       = color_variable;
+        param.m_named_transfunc_array[n].m_opacity_variable     = opacity_varible;
+        param.m_named_transfunc_array[n].m_color_variable_min   = color_min;
+        param.m_named_transfunc_array[n].m_color_variable_max   = color_max;
+        param.m_named_transfunc_array[n].m_opacity_variable_min = opacity_min;
+        param.m_named_transfunc_array[n].m_opacity_variable_max = opacity_max;
 
         std::replace( s_color.begin(), s_color.end(), ',', ' ' );
         std::replace( s_opacity.begin(), s_opacity.end(), ',', ' ' );
@@ -245,11 +263,20 @@ void ParameterFileReader::setParticleParameter( Argument& param )
 
         vismodule::ColorMap color_map( color_table );
         vismodule::OpacityMap opacity_map( opacity_table );
-        vismodule::TransferFunction tf( color_map, opacity_map );
-        vismodule::TransferFunction& tt = param.m_transfunc_array[n];
-        tt = tf;
+
+        param.m_transfunc_array[n].setColorMap( color_map );
+        param.m_transfunc_array[n].setOpacityMap( opacity_map );
+        param.m_named_transfunc_array[n].setColorMap( color_map );
+        param.m_named_transfunc_array[n].setOpacityMap( opacity_map );
         param.m_transfunc_array[n].setColorRange( color_min, color_max );
         param.m_transfunc_array[n].setOpacityRange( opacity_min, opacity_max );
+        param.m_named_transfunc_array[n].setColorRange( color_min, color_max );
+        param.m_named_transfunc_array[n].setOpacityRange( opacity_min, opacity_max );
+
+        param.m_named_transfunc_array[n].m_selection = NamedTransferFunctionParameter::SelectTransferFunction;
+
+        param.m_voleqn[n].m_name     = f_name.str() + "C";
+        param.m_voleqn[n].m_equation = color_variable;
     }
 
     std::string equation;
@@ -291,7 +318,6 @@ void ParameterFileReader::setParticleParameter( Argument& param )
 
         var.push_back( eq );
     }
-    
     param.m_transfunc_synthesizer->setOpacityVariable( var );
     var.clear();
 
@@ -462,7 +488,7 @@ void ParameterFileReader::setPlotOverLineParameter( Argument& param )
 {
     std::string p_flag = m_name_list_file.getValue<std::string>("PLOT_FLAG");
 
-    if ( strcmp( p_flag.c_str(), "TRUE" ) )
+    if ( strcmp( p_flag.c_str(), "TRUE" ) == 0 )
     {
         param.m_plot_flag = true;
     }
@@ -473,7 +499,7 @@ void ParameterFileReader::setPlotOverLineParameter( Argument& param )
     }
 
     param.m_sampling_size = m_name_list_file.getValue<int>("SAMPLING_SIZE");
-    param.m_plot_variable = m_name_list_file.getValue<int>("PLOT_VARIABLE");
+    param.m_plot_variable = m_name_list_file.getValue<std::string>("PLOT_VARIABLE");
 
     const std::string start_point_string = m_name_list_file.getValue<std::string>("START_POINT");
     const std::vector<float> start_point_float_table = getTableFloat( start_point_string );
@@ -487,6 +513,15 @@ void ParameterFileReader::setPlotOverLineParameter( Argument& param )
     param.m_end_point[0] = end_point_float_table[0];
     param.m_end_point[1] = end_point_float_table[1];
     param.m_end_point[2] = end_point_float_table[2];
+
+    std::cout << "param.m_sampling_size  = " << param.m_sampling_size << std::endl;
+    std::cout << "param.m_plot_variable  = " << param.m_plot_variable << std::endl;
+    std::cout << "param.m_start_point[0] = " << param.m_start_point[0] << std::endl;
+    std::cout << "param.m_start_point[1] = " << param.m_start_point[1] << std::endl;
+    std::cout << "param.m_start_point[2] = " << param.m_start_point[2] << std::endl;
+    std::cout << "param.m_end_point[0]   = " << param.m_end_point[0] << std::endl; 
+    std::cout << "param.m_end_point[1]   = " << param.m_end_point[1] << std::endl; 
+    std::cout << "param.m_end_point[2]   = " << param.m_end_point[2] << std::endl; 
 }
 
 std::vector<int> ParameterFileReader::getTableInt( std::string table_string )

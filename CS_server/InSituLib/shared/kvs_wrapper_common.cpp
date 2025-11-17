@@ -561,7 +561,7 @@ void OutputParticles(
     if( new_rank == 0 )
     {
         vismodule::PointObject* point_object = new vismodule::PointObject( new_coords, new_colors, new_normals, param.m_subpixel_level );
-        point_object->setMinMaxObjectCoords( mvpl.m_total_min_object_coord, mvpl.m_total_min_object_coord );
+        point_object->setMinMaxObjectCoords( mvpl.m_total_min_object_coord, mvpl.m_total_max_object_coord );
         // If async_io is enabled, use worker thread to write kvsml data and state.txt
         if (async_io_enabled){
             pbvr::ParticleWriteThread* particle_write_thread = &pwt;
@@ -587,6 +587,12 @@ void OutputParticles(
     c_bins_recv = new vismodule::UInt64[tf_number * DEFAULT_NBINS];
     o_bins_recv = new vismodule::UInt64[tf_number * DEFAULT_NBINS];
 
+    for ( size_t i = 0; i < (tf_number * DEFAULT_NBINS); i++ )
+    {
+        c_bins_recv[i] = 0;
+        o_bins_recv[i] = 0;
+    }
+
 #ifndef CPU_VER
     //ヒストグラムの集計
     MPI_Reduce( c_bins, c_bins_recv, (tf_number * DEFAULT_NBINS), MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD );
@@ -605,11 +611,17 @@ void OutputParticles(
     max_array_recv = new float[tf_number * 2]; // color, opacity
     min_array_recv = new float[tf_number * 2]; // color, opacity
 
+    for ( size_t i = 0; i < (tf_number * 2); i++ )
+    {
+        max_array_recv[i] = FLT_MIN;
+        min_array_recv[i] = FLT_MAX;
+    }
+
 #ifndef CPU_VER
     MPI_Reduce( max_array, max_array_recv, (tf_number * 2), MPI_FLOAT, MPI_MAX, 0, MPI_COMM_WORLD );
     MPI_Reduce( min_array, min_array_recv, (tf_number * 2), MPI_FLOAT, MPI_MIN, 0, MPI_COMM_WORLD );
 #else
-    for( size_t i = 0; i < tf_number; i++ )
+    for( size_t i = 0; i < (tf_number * 2); i++ )
     {
         max_array_recv[i] = max_array[i];
         min_array_recv[i] = min_array[i];

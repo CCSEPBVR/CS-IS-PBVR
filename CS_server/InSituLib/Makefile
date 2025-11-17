@@ -13,3 +13,6 @@ clean:
 	for i in $(SUBDIRS); do \
 	$(MAKE) -C $$i clean; done
 
+all_clean:
+	for i in $(SUBDIRS); do \
+	$(MAKE) -C $$i all_clean; done

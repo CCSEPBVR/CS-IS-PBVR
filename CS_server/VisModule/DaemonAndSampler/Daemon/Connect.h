@@ -94,10 +94,10 @@ bool SetParticleParameterCS(
 );
 bool SetParticleParameterIS(
     jpv::ParticleTransferClientMessage& clntMes,
-    Argument& param,
-    MultiVolumePropertyList& mvpl,
     std::string tfFilePath,
-    std::string tfFilePath_old
+    std::string tfFilePath_old,
+    Argument& param,
+    MultiVolumePropertyList& mvpl
 );
 bool SetGlyphParameterCS(
     jpv::ParticleTransferClientMessage& clntMes,
@@ -107,7 +107,8 @@ bool SetGlyphParameterCS(
 bool SetGlyphParameterIS(
     jpv::ParticleTransferClientMessage& clntMes,
     std::string glyphParameterPath,
-    std::string glyphParameterPath_old
+    std::string glyphParameterPath_old,
+    Argument& param
 );
 bool SetPOLParameterCS(
     jpv::ParticleTransferClientMessage& clntMes,
@@ -117,7 +118,8 @@ bool SetPOLParameterCS(
 bool SetPOLParameterIS(
     jpv::ParticleTransferClientMessage& clntMes,    
     std::string plotOverLineParameterPath,
-    std::string plotOverLineParameterPath_old    
+    std::string plotOverLineParameterPath_old,
+    Argument& param
 );
 
 void SetServerMessageParameter(

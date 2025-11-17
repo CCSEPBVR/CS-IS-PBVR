@@ -44,6 +44,7 @@
 #include <vismodule/File>
 
 #include <vismodule/ExtendedTransferFunction>
+#include <vismodule/TransferFunctionSynthesizer>
 #include <vismodule/TransferFunctionSynthesizerCreator>
 #include "VariableRange.h"
 
@@ -314,7 +315,14 @@ void  Connect( int argc, char** argv )
             clntMes.m_initialize_parameter == jpv::InitializeParameter::generate_particle
         )
         {
-            std::cout << "==================== Generate Particle Start ====================" << std::endl;
+            if ( clntMes.m_initialize_parameter == jpv::InitializeParameter::initial_step )
+            {
+                std::cout << "==================== Initial Step Start ====================" << std::endl;
+            }
+            else
+            {
+                std::cout << "==================== Generate Particle Start ====================" << std::endl;
+            }
 
             jpv::InitializeParameter init_param = clntMes.m_initialize_parameter;
 
@@ -330,7 +338,8 @@ void  Connect( int argc, char** argv )
             }
             else // server_mode == jpv::ServerMode::IS
             {
-                bool result = SetParticleParameterIS( clntMes, param, mvpl, tfFilePath, tfFilePath_old );
+                param.m_transfunc_synthesizer = new TransferFunctionSynthesizer();
+                bool result = SetParticleParameterIS( clntMes, tfFilePath, tfFilePath_old, param, mvpl );
 
                 if( !result )
                 {
@@ -345,12 +354,17 @@ void  Connect( int argc, char** argv )
             generate_particle( param, mvpl, nan_error, jd, pts, server_mode, init_param );
 #endif                           
 
-            if ( server_mode == jpv::ServerMode::CS )
-            {
-                delete param.m_transfunc_synthesizer;
-            }
+            // CSではSetParticleParameterCS->TransferFunctionSynthesizerCreator::setProtocol()でメモリを確保している
+            delete param.m_transfunc_synthesizer;
 
-            std::cout << "==================== Generate Particle End ====================" << std::endl;
+            if ( clntMes.m_initialize_parameter == jpv::InitializeParameter::initial_step )
+            {
+                std::cout << "==================== Initial Step Start ====================" << std::endl;
+            }
+            else
+            {
+                std::cout << "==================== Generate Particle Start ====================" << std::endl;
+            }
         } // generate particle
         else if ( clntMes.m_initialize_parameter == jpv::InitializeParameter::generate_glyph )
         {
@@ -368,7 +382,7 @@ void  Connect( int argc, char** argv )
             }
             else // server_mode == jpv::ServerMode::IS
             {
-                bool result = SetGlyphParameterIS( clntMes, glyphParameterPath, glyphParameterPath_old );
+                bool result = SetGlyphParameterIS( clntMes, glyphParameterPath, glyphParameterPath_old, param );
 
                 if( !result )
                 {
@@ -401,7 +415,7 @@ void  Connect( int argc, char** argv )
             }
             else // server_mode == jpv::ServerMode::IS
             {
-                bool result = SetPOLParameterIS( clntMes, plotOverLineParameterPath, plotOverLineParameterPath_old );
+                bool result = SetPOLParameterIS( clntMes, plotOverLineParameterPath, plotOverLineParameterPath_old, param );
 
                 if( !result )
                 {
@@ -1804,25 +1818,28 @@ bool SetParticleParameterCS(
 
 bool SetParticleParameterIS(
     jpv::ParticleTransferClientMessage& clntMes,
-    Argument& param,
-    MultiVolumePropertyList& mvpl,
     std::string tfFilePath,
-    std::string tfFilePath_old
+    std::string tfFilePath_old,
+    Argument& param,
+    MultiVolumePropertyList& mvpl
 )
 {
     MultiVolumeProperty mvp;
 
     std::cout << "clntMes.m_time_parameter = " << clntMes.m_time_parameter << std::endl;
 
+    param.m_camera = clntMes.m_camera;
+
+    /*
     param.m_time_step                = clntMes.m_step; 
     param.m_level_index              = clntMes.m_level_index;
     param.m_repeat_level             = clntMes.m_repeat_level;
     param.m_sampling_method          = 'h';
-    param.m_camera                   = clntMes.m_camera;
     param.m_x_synthesis              = clntMes.m_x_synthesis;
     param.m_y_synthesis              = clntMes.m_y_synthesis;
     param.m_z_synthesis              = clntMes.m_z_synthesis;
     param.m_particle_data_size_limit = clntMes.m_particle_data_size_limit;
+    */
 
     // Using environment variables, the constructor of the ParticleMonitor class
     // set particle file, glyph file, plot over line file, status file, history file,
@@ -1869,19 +1886,17 @@ bool SetParticleParameterIS(
     VariableRange vr        = pm.particleHistoryFile().variableRange();
     int tf_number           = pm.particleHistoryFile().colorHistogramArray().size();
 
-    if ( clntMes.m_initialize_parameter == jpv::InitializeParameter::initial_step )
-    {
-        setDefalutTransferFunctionToArgument( &param, vr, tf_number );
-    }
-    else if ( clntMes.m_initialize_parameter == jpv::InitializeParameter::generate_particle )
+    ParameterFileReader ppr;
+    ppr.readParticleParameterFile( tfFilePath_old.c_str() );
+    ppr.setParticleParameter( param );
+
+    if ( clntMes.m_initialize_parameter == jpv::InitializeParameter::generate_particle )
     {
         // update the transfer function file using the client message
         // updated transfer function file is loaded by InSitu
         // Daemon loads the particle file generated by InSitu
         ParameterFileWriter ppw;
-        ParameterFileReader ppr;
         ppw.inputParticleParameterMessage( clntMes );
-        ppr.readParticleParameterFile( tfFilePath_old.c_str() );
         NameListFile nm1 = ppr.getNameListFile();
         NameListFile nm2 = ppw.getNameListFile();
         if( nm1 != nm2 )
@@ -1889,6 +1904,8 @@ bool SetParticleParameterIS(
             ppw.writeParameterFile( tfFilePath.c_str() );
         }
     }
+
+std::cout << __FILE__ << ", " << __func__ << ", " << __LINE__ << std::endl;    
 
     return true;
 }
@@ -1934,15 +1951,20 @@ bool SetGlyphParameterCS(
 bool SetGlyphParameterIS(
     jpv::ParticleTransferClientMessage& clntMes,
     std::string glyphParameterPath,
-    std::string glyphParameterPath_old    
+    std::string glyphParameterPath_old,
+    Argument& param
 )
 {
     ParameterFileWriter ppw;
     ParameterFileReader ppr;
+    
     ppw.inputGlyphParameterMessage( clntMes );
     ppr.readGlyphParameterFile( glyphParameterPath_old.c_str() );
+    ppr.setGlyphParameter( param );
+
     NameListFile nm1 = ppr.getNameListFile();
     NameListFile nm2 = ppw.getNameListFile();
+
     if( nm1 != nm2 )
     {
         ppw.writeParameterFile( glyphParameterPath.c_str() );
@@ -1979,7 +2001,8 @@ bool SetPOLParameterCS(
 bool SetPOLParameterIS(
     jpv::ParticleTransferClientMessage& clntMes,    
     std::string plotOverLineParameterPath,
-    std::string plotOverLineParameterPath_old    
+    std::string plotOverLineParameterPath_old,
+    Argument& param
 )
 {
     ParameterFileWriter ppw;
@@ -1988,6 +2011,8 @@ bool SetPOLParameterIS(
     // 20181226 start　環境変数で指定したパスおよび名前でファイル参照を行う
     ppw.inputPlotOverLineParameterMessage( clntMes );
     ppr.readPlotOverLineParameterFile( plotOverLineParameterPath_old.c_str() );
+    ppr.setPlotOverLineParameter( param );
+
     NameListFile nm1 = ppr.getNameListFile();
     NameListFile nm2 = ppw.getNameListFile();
 
