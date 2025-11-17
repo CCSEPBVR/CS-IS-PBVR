@@ -215,6 +215,7 @@ void MainWindow::communicationInitialize()
         connect( m_communication, &Communication::updateOperatorState, m_transfer_function_editor, &TransferFunctionEditor::updateOperatorState );
 
         connect( m_communication, &Communication::addObjectToModel, m_object_editor, &ObjectEditorWIP::addObjectToModel );
+        connect( m_communication, &Communication::objectInfoUpdate, m_object_editor, &ObjectEditorWIP::objectInfoUpdate );
 
         connect( m_communication_action, &QAction::triggered, this, &MainWindow::onCommunication );
 

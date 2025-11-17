@@ -688,14 +688,14 @@ void Communication::textWebsocketMessageReceived( const QString& receivedMessage
             ui->textBrowser->append( "--- User[" + userIDStr + "] Join" );
         }
 
-        if( obj["event"].toString() == "left" )
+        else if( obj["event"].toString() == "left" )
         {
             int userID = obj["userID"].toInt();    // 入出者
             QString userIDStr = QString::number( userID );
             ui->textBrowser->append( "--- User[" + userIDStr + "] Left" );
         }
 
-        if( obj["event"].toString() == "id" )
+        else if( obj["event"].toString() == "id" )
         {
             int userID = obj["userID"].toInt(); // 自分自身のユーザID
             QString userIDStr = QString::number( userID );
@@ -704,7 +704,7 @@ void Communication::textWebsocketMessageReceived( const QString& receivedMessage
             ui->textBrowser->append("--- Your User ID is [" + userIDStr + "]" );
         }
 
-        if( obj["event"].toString() == "operator" )
+        else if( obj["event"].toString() == "operator" )
         {
             bool isOperator = obj["isOperator"].toBool(); // 自分に操作権限があるか
             m_is_operator = isOperator;
@@ -720,7 +720,7 @@ void Communication::textWebsocketMessageReceived( const QString& receivedMessage
             }
         }
 
-        if( obj["event"].toString() == "operatortransfer" )
+        else if( obj["event"].toString() == "operatortransfer" )
         {
             int oldOperatorID = obj["oldOperatorID"].toInt();
             int newOperatorID = obj["newOperatorID"].toInt();
@@ -738,7 +738,7 @@ void Communication::textWebsocketMessageReceived( const QString& receivedMessage
             emit updateOperatorState( m_is_operator );
         }
 
-        if( obj["event"].toString() == "chat" )
+        else if( obj["event"].toString() == "chat" )
         {
             int userID = obj["userID"].toInt();    // 受信したチャットの送信者
             QString userIDStr = QString::number( userID );
@@ -746,7 +746,7 @@ void Communication::textWebsocketMessageReceived( const QString& receivedMessage
             ui->textBrowser->append( "User[" + userIDStr + "]: " + text );
         }
 
-        if( obj["event"].toString() == "shareview" )
+        else if( obj["event"].toString() == "shareview" )
         {
             int userID = obj["userID"].toInt();    // 受信した視点共有の送信者
             QString userIDStr = QString::number( userID );
@@ -780,7 +780,7 @@ void Communication::textWebsocketMessageReceived( const QString& receivedMessage
             m_share_view_list_model->appendRow( item );
         }
 
-        if( obj["event"].toString() == "sharepoint" )
+        else if( obj["event"].toString() == "sharepoint" )
         {
             int userID = obj["userID"].toInt();    // 着目点共有を行った送信者
             QString userIDStr = QString::number( userID );
@@ -860,7 +860,7 @@ void Communication::textWebsocketMessageReceived( const QString& receivedMessage
             }
         }
 
-        if( obj["event"].toString() == "addObjectToModel" )
+        else if( obj["event"].toString() == "addObjectToModel" )
         {
             ObjectInfoExtractor::ObjectInfo objectInfo;
 
@@ -923,6 +923,60 @@ void Communication::textWebsocketMessageReceived( const QString& receivedMessage
             objectInfo.polygonOpacity           = static_cast<float>( obj["polygonOpacity"].toDouble() );
 
             emit addObjectToModel( objectInfo );
+        }
+
+        else if( obj["event"].toString() == "objectInfoUpdate" )
+        {
+            QJsonArray resultMinObjectCoordsArray   = obj["resultMinObjectCoords"].toArray();
+            std::cout << resultMinObjectCoordsArray[0].toDouble() << ", " << resultMinObjectCoordsArray[1].toDouble() << resultMinObjectCoordsArray[2].toDouble() << std::endl;
+            QJsonArray resultMaxObjectCoordsArray   = obj["resultMaxObjectCoords"].toArray();
+            std::cout << resultMaxObjectCoordsArray[0].toDouble() << ", " << resultMaxObjectCoordsArray[1].toDouble() << resultMaxObjectCoordsArray[2].toDouble() << std::endl;
+            QJsonArray objectsArray                 = obj["objects"].toArray();
+            // for( const auto& v : objectsArray )
+            // {
+            //     auto o = v.toObject(); // 個々のオブジェクト情報
+
+            //     qDebug() << o["uuid"].toString().toUtf8();
+
+            //     std::cout << o["tmpIsDisplay"].toBool()                                     << std::endl;
+            //     std::cout << o["isDisplay"].toBool()                                        << std::endl;
+            //     std::cout << o["tmpIsKeepInitial"].toBool()                                 << std::endl;
+            //     std::cout << o["isKeepInitial"].toBool()                                    << std::endl;
+            //     std::cout << o["tmpIsKeepFinal"].toBool()                                   << std::endl;
+            //     std::cout << o["isKeepFinal"].toBool()                                      << std::endl;
+
+            //     std::cout << o["tmpIsFocus"].toBool()                                       << std::endl;
+            //     std::cout << o["isFocus"].toBool()                                          << std::endl;
+
+            //     std::cout << o["tmpParticleLimit"].toInt()                                  << std::endl;
+            //     std::cout << o["particleLimit"].toInt()                                     << std::endl;
+            //     std::cout << static_cast<float>( o["tmpExtraOpacityFactor"].toDouble() )    << std::endl;
+            //     std::cout << static_cast<float>( o["extraOpacityFactor"].toDouble() )       << std::endl;
+
+            //     qDebug() << o["tmpCoordinateX"].toString().toUtf8();
+            //     qDebug() << o["coordinateX"].toString().toUtf8();
+            //     qDebug() << o["tmpCoordinateY"].toString().toUtf8();
+            //     qDebug() << o["coordinateY"].toString().toUtf8();
+            //     qDebug() << o["tmpCoordinateZ"].toString().toUtf8();
+            //     qDebug() << o["coordinateZ"].toString().toUtf8();
+
+            //     std::cout << o["isExport"].toBool() << std::endl;
+
+            //     auto tmpPolygonColorArray = o["tmpPolygonColor"].toArray();
+            //     std::cout << kvs::RGBColor( tmpPolygonColorArray[0].toInt(), tmpPolygonColorArray[1].toInt(), tmpPolygonColorArray[2].toInt() ) << std::endl;
+
+            //     auto polygonColorArray = o["polygonColor"].toArray();
+            //     std::cout << kvs::RGBColor( polygonColorArray[0].toInt(), polygonColorArray[1].toInt(), polygonColorArray[2].toInt() ) << std::endl;
+
+            //     std::cout << static_cast<float>( o["tmpPolygonOpacity"].toDouble() ) << std::endl;
+            //     std::cout << static_cast<float>( o["polygonOpacity"].toDouble() ) << std::endl;
+            // }
+            emit objectInfoUpdate( resultMinObjectCoordsArray, resultMaxObjectCoordsArray, objectsArray );
+        }
+
+        else
+        {
+            emit updateStatusBarMessage( "Unknown event received. Please check that the client and server versions match." );
         }
     }
 }

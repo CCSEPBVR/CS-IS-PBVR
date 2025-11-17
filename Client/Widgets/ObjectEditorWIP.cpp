@@ -123,6 +123,100 @@ void ObjectEditorWIP::addObjectToModel( const ObjectInfoExtractor::ObjectInfo& o
     calculateTotalMinMaxTimeStep();
 }
 
+// FIXME:このメソッド名変な気がする。操作権を持つものからのapplyみたいな感じにしてください。
+void ObjectEditorWIP::objectInfoUpdate( const QJsonArray& resultMinObjectCoordsArray, const QJsonArray& resultMaxObjectCoordsArray, const QJsonArray& objects )
+{
+    for( const auto& v : objects )
+    {
+        auto o = v.toObject();
+        std::string uuid = o["uuid"].toString().toUtf8().constData();
+
+        for( int row = 0; row < m_model->rowCount(); ++row )
+        {
+            QStandardItem* nameItem         = m_model->item( row, 0 );
+            QStandardItem* displayItem      = m_model->item( row, 2 );
+            QStandardItem* keepInitialItem  = m_model->item( row, 3 );
+            QStandardItem* keepFinalItem    = m_model->item( row, 4 );
+            QVariant var = nameItem->data( Qt::UserRole );
+            if( !var.canConvert<ObjectInfoExtractor::ObjectInfo>() ) continue;
+
+            ObjectInfoExtractor::ObjectInfo info = var.value<ObjectInfoExtractor::ObjectInfo>();
+
+            if( info.uuid == uuid )
+            {
+                if( o.contains( "tmpIsDisplay" ) )          info.tmpIsDisplay           = o["tmpIsDisplay"].toBool();
+                if( o.contains( "isDisplay" ) )             info.isDisplay              = o["isDisplay"].toBool();
+                if( o.contains( "tmpIsKeepInitial" ) )      info.tmpIsKeepInitial       = o["tmpIsKeepInitial"].toBool();
+                if( o.contains( "isKeepInitial" ) )         info.isKeepInitial          = o["isKeepInitial"].toBool();
+                if( o.contains( "tmpIsKeepFinal" ) )        info.tmpIsKeepFinal         = o["tmpIsKeepFinal"].toBool();
+                if( o.contains( "isKeepFinal" ) )           info.isKeepFinal            = o["isKeepFinal"].toBool();
+                if( o.contains( "tmpIsFocus" ) )            info.tmpIsFocus             = o["tmpIsFocus"].toBool();
+                if( o.contains( "isFocus" ) )               info.isFocus                = o["isFocus"].toBool();
+                if( o.contains( "tmpParticleLimit" ) )      info.tmpParticleLimit       = o["tmpParticleLimit"].toInt();
+                if( o.contains( "particleLimit" ) )         info.particleLimit          = o["particleLimit"].toInt();
+                if( o.contains( "tmpExtraOpacityFactor" ) ) info.tmpExtraOpacityFactor  = static_cast<float>( o["tmpExtraOpacityFactor"].toDouble() );
+                if( o.contains( "extraOpacityFactor" ) )    info.extraOpacityFactor     = static_cast<float>( o["extraOpacityFactor"].toDouble() );
+                if( o.contains( "tmpCoordinateX" ) )        info.tmpCoordinateX         = o["tmpCoordinateX"].toString().toUtf8();
+                if( o.contains( "coordinateX" ) )           info.coordinateX            = o["coordinateX"].toString().toUtf8();
+                if( o.contains( "tmpCoordinateY" ) )        info.tmpCoordinateY         = o["tmpCoordinateY"].toString().toUtf8();
+                if( o.contains( "coordinateY" ) )           info.coordinateY            = o["coordinateY"].toString().toUtf8();
+                if( o.contains( "tmpCoordinateZ" ) )        info.tmpCoordinateZ         = o["tmpCoordinateZ"].toString().toUtf8();
+                if( o.contains( "coordinateZ" ) )           info.coordinateZ            = o["coordinateZ"].toString().toUtf8();
+                if( o.contains( "isExport" ) )              info.isExport               = o["isExport"].toBool();
+
+                if( o.contains( "tmpPolygonColor" ) && o["tmpPolygonColor"].isArray() && o["tmpPolygonColor"].toArray().size() == 3 )
+                {
+                    auto arr = o["tmpPolygonColor"].toArray();
+                    info.tmpPolygonColor = kvs::RGBColor( arr[0].toInt(), arr[1].toInt(), arr[2].toInt() );
+                }
+
+                if( o.contains("polygonColor") && o["polygonColor"].isArray() && o["polygonColor"].toArray().size() == 3 )
+                {
+                    auto arr = o["polygonColor"].toArray();
+                    info.polygonColor = kvs::RGBColor( arr[0].toInt(), arr[1].toInt(), arr[2].toInt() );
+                }
+
+                if( o.contains( "tmpPolygonOpacity" ) )   info.tmpPolygonOpacity    = static_cast<float>( o["tmpPolygonOpacity"].toDouble() );
+                if( o.contains( "polygonOpacity" ) )      info.polygonOpacity       = static_cast<float>( o["polygonOpacity"].toDouble() );
+
+                // UI更新 FIXME:スレッド処理意識してないかもしれません。invoke
+                displayItem     ->setCheckState( info.tmpIsDisplay     ? Qt::Checked : Qt::Unchecked );
+                keepInitialItem ->setCheckState( info.tmpIsKeepInitial ? Qt::Checked : Qt::Unchecked );
+                keepFinalItem   ->setCheckState( info.tmpIsKeepFinal   ? Qt::Checked : Qt::Unchecked );
+
+                QModelIndex idx = ui->treeView->currentIndex();
+                if( idx.isValid() )
+                {
+                    ui->focusCheckBox                   ->setCheckState( info.tmpIsFocus   ? Qt::Checked : Qt::Unchecked );
+                    ui->particleLimitSpinBox            ->setValue( info.tmpParticleLimit );
+                    ui->extraOpacityFactorDoubleSpinBox ->setValue( info.tmpExtraOpacityFactor );
+                    ui->coordinateXLineEdit             ->setText( QString::fromUtf8( info.tmpCoordinateX ) );
+                    ui->coordinateYLineEdit             ->setText( QString::fromUtf8( info.tmpCoordinateY ) );
+                    ui->coordinateZLineEdit             ->setText( QString::fromUtf8( info.tmpCoordinateZ ) );
+
+                    QPalette palette = ui->colorClickableLabel->palette();
+                    palette.setColor( QPalette::Window, QColor( info.tmpPolygonColor.r(), info.tmpPolygonColor.g(), info.tmpPolygonColor.b() ) );
+                    ui->colorClickableLabel             ->setPalette( palette );
+                    ui->opacityDoubleSpinBox            ->setValue( info.tmpPolygonOpacity );
+                }
+
+                nameItem->setData( QVariant::fromValue( info ), Qt::UserRole );
+                break;
+            }
+        }
+    }
+
+    kvs::Vec3 resultMinObjectCoords( resultMinObjectCoordsArray[0].toDouble(), resultMinObjectCoordsArray[1].toDouble(), resultMinObjectCoordsArray[2].toDouble() );
+    kvs::Vec3 resultMaxObjectCoords( resultMaxObjectCoordsArray[0].toDouble(), resultMaxObjectCoordsArray[1].toDouble(), resultMaxObjectCoordsArray[2].toDouble() );
+    m_screen->scene()->objectManager()->push_centering_xform();
+    emit updateFocus( resultMinObjectCoords, resultMaxObjectCoords ); // NOTE:Plot Over Line用
+    m_screen->scene()->objectManager()->updateMinMaxCoords();
+    m_screen->scene()->objectManager()->updateExternalCoords();
+    m_screen->scene()->objectManager()->pop_centering_xform();
+    emit updateTranslation(); // NOTE:Plot Over Line用
+    m_screen->update();
+}
+
 void ObjectEditorWIP::showAtTimeStep( int timeStep )
 {
     switch( *m_viz_mode )
@@ -893,6 +987,17 @@ void ObjectEditorWIP::onApply()
         {
             QJsonObject root;
             root["event"] = "objectInfoUpdate";
+            QJsonArray resultMinObjectCoordsArray;
+            resultMinObjectCoordsArray.append( resultMinObjectCoords.x() );
+            resultMinObjectCoordsArray.append( resultMinObjectCoords.y() );
+            resultMinObjectCoordsArray.append( resultMinObjectCoords.z() );
+            root["resultMinObjectCoords"] = resultMinObjectCoordsArray;
+
+            QJsonArray resultMaxObjectCoordsArray;
+            resultMaxObjectCoordsArray.append( resultMaxObjectCoords.x() );
+            resultMaxObjectCoordsArray.append( resultMaxObjectCoords.y() );
+            resultMaxObjectCoordsArray.append( resultMaxObjectCoords.z() );
+            root["resultMaxObjectCoords"] = resultMaxObjectCoordsArray;
 
             QJsonArray objectInfoArray;
             for( int row = 0; row < m_model->rowCount(); row++ )
@@ -984,8 +1089,17 @@ void ObjectEditorWIP::onApply()
                 // For Client
                 // jsonObjectInfo["object"]                    = info.object;
                 // jsonObjectInfo["objectID"]                  = info.objectID;
-                // jsonObjectInfo["currentMinObjectCoord"]     = info.currentMinObjectCoord;
-                // jsonObjectInfo["currentMaxObjectCoord"]     = info.currentMaxObjectCoord;
+                // QJsonArray currentMinObjectCoordArray;
+                // currentMinObjectCoordArray.append( info.currentMinObjectCoord.x() );
+                // currentMinObjectCoordArray.append( info.currentMinObjectCoord.y() );
+                // currentMinObjectCoordArray.append( info.currentMinObjectCoord.z() );
+                // QJsonArray currentMaxObjectCoordArray;
+                // currentMaxObjectCoordArray.append( info.currentMaxObjectCoord.x() );
+                // currentMaxObjectCoordArray.append( info.currentMaxObjectCoord.y() );
+                // currentMaxObjectCoordArray.append( info.currentMaxObjectCoord.z() );
+
+                // jsonObjectInfo["currentMinObjectCoord"]     = currentMinObjectCoordArray;
+                // jsonObjectInfo["currentMaxObjectCoord"]     = currentMaxObjectCoordArray;
                 // jsonObjectInfo["currentImportedTimeStep"]   = info.currentImportedTimeStep;
                 // jsonObjectInfo["needSameTimeStepReplace"]   = info.needSameTimeStepReplace;
                 objectInfoArray.append( jsonObjectInfo );

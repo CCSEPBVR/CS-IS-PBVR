@@ -39,6 +39,7 @@ public:
 public slots:
     // void addObjectToModel( const ObjectInfoExtractor::ObjectInfo& objectInfo, ObjectInfoExtractor& oie );
     void addObjectToModel( const ObjectInfoExtractor::ObjectInfo& objectInfo );
+    void objectInfoUpdate( const QJsonArray& resultMinObjectCoordsArray, const QJsonArray& resultMaxObjectCoordsArray, const QJsonArray& objects );
     void showAtTimeStep( int requestTimeStep );
     void loadParameter( const QString& filePath );
     void saveParameter( const QString& filePath );

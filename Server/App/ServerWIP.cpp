@@ -716,6 +716,14 @@ void ServerWIP::objectInfoUpdate( uWS::WebSocket<false, true, PerSocket>* ws, co
         if( objJson.contains( "tmpPolygonOpacity" ) )       info.tmpPolygonOpacity      = objJson["tmpPolygonOpacity"].get<float>();
         if( objJson.contains( "polygonOpacity" ) )          info.polygonOpacity         = objJson["polygonOpacity"].get<float>();
     }
+
+    nlohmann::json msg;
+    msg["event"] = "objectInfoUpdate";
+    msg["resultMinObjectCoords"] = received["resultMinObjectCoords"];
+    msg["resultMaxObjectCoords"] = received["resultMaxObjectCoords"];
+    msg["objects"] = received["objects"];
+
+    ws->publish( "Notice", msg.dump(), uWS::OpCode::TEXT );
 }
 
 std::string ServerWIP::toUtf8( const std::filesystem::path& p )
