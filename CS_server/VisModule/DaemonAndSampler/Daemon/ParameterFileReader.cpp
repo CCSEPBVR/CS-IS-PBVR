@@ -219,7 +219,7 @@ void ParameterFileReader::setParticleParameter( Argument& param )
         param.m_named_transfunc_array[n].setResolution( resolution );
         param.m_named_transfunc_array[n].m_name = s_name.str();
 
-        const std::string color_variable  = m_name_list_file.getValue<std::string>( tag_base + "VAR_O" );
+        const std::string color_variable  = m_name_list_file.getValue<std::string>( tag_base + "VAR_C" );
         const std::string opacity_varible = m_name_list_file.getValue<std::string>( tag_base + "VAR_O" );
         const float color_min             = m_name_list_file.getValue<float>( tag_base + "MIN_C" );
         const float color_max             = m_name_list_file.getValue<float>( tag_base + "MAX_C" );
