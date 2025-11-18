@@ -40,6 +40,8 @@ public:
     float*         coords;
     int            ncells;
     int            nnodes;
+    //long            ncells;
+    //long            nnodes;
     int            nvariables;
 
 public:
