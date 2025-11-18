@@ -78,6 +78,13 @@ bool SetParameterFilePath(
     std::string& plotOverLineParameterPath_old
 )
 {
+    int mpi_rank;
+#ifndef CPU_VER
+    MPI_Comm_rank( MPI_COMM_WORLD, &mpi_rank );
+#else
+    mpi_rank = 0;
+#endif
+
     std::string visParamDir;
     std::string tfFilename;
     static bool is_first_setting = true;
@@ -144,7 +151,7 @@ bool SetParameterFilePath(
     std::ifstream glyphParameterFile( glyphParameterPath );
     std::ifstream plotOverLineParameterFile( plotOverLineParameterPath );
 
-    if ( is_first_setting )
+    if ( is_first_setting && mpi_rank == 0 )
     {
         if ( !tfFile.good() )
         {
