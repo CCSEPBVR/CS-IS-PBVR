@@ -548,7 +548,7 @@ inline void CalculateDensityParameters(
     double projection[16];
     ::GetProjectionMatrix( &projection );
     int    viewport[4];
-    ::GetViewport( camera, &viewport );
+    ::GetViewport( *camera, &viewport );
 
     // Calculate a depth of the center of gravity of the object.
     const float object_depth = CalculateObjectDepth( *object, modelview, projection, viewport );
