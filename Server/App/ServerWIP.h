@@ -197,6 +197,9 @@ private:
         }
     }
 
+    std::vector<char> pack();
+    size_t calculateTotalSize() const;
+
     std::string toUtf8( const std::filesystem::path& p );
 };
 

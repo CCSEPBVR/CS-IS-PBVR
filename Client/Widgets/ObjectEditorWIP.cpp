@@ -123,6 +123,405 @@ void ObjectEditorWIP::addObjectToModel( const ObjectInfoExtractor::ObjectInfo& o
     calculateTotalMinMaxTimeStep();
 }
 
+void ObjectEditorWIP::unpack( const QByteArray& binary )
+{
+    const char* dataPtr = binary.constData();
+    size_t offset = 0;
+
+    // 送信されてきたUUIDを記録する
+    std::unordered_set<std::string> receivedUUIDSs;
+
+    while( offset < static_cast<size_t>( binary.size() ) )
+    {
+        // UUIDの読み取り
+        uint32_t uuidLen = 0;
+
+        std::memcpy( &uuidLen, dataPtr + offset, sizeof(uint32_t) );
+        offset += sizeof(uint32_t);
+
+        if( offset + uuidLen > static_cast<size_t>( binary.size() ) ) break; // uuidLenが正常値か検証
+
+        std::string uuid( uuidLen, '\0' );
+        std::memcpy( uuid.data(), dataPtr + offset, uuidLen );
+        offset += uuidLen;
+
+        receivedUUIDSs.insert( uuid );
+
+        // モデル内のUUIDと一致する場合objectを更新する。
+        for( int row = 0; row < m_model->rowCount(); ++row )
+        {
+            QStandardItem* nameItem = m_model->item( row, 0 );
+            QVariant var = nameItem->data( Qt::UserRole );
+            if( !var.canConvert<ObjectInfoExtractor::ObjectInfo>() ) continue;
+
+            ObjectInfoExtractor::ObjectInfo info = var.value<ObjectInfoExtractor::ObjectInfo>();
+
+            if( info.uuid != uuid ) continue;
+
+            // UUIDが一致したのでobjectを更新
+            switch( info.format )
+            {
+            case ObjectInfoExtractor::ClientServerPointObject:
+            case ObjectInfoExtractor::InsituServerPointObject:
+            case ObjectInfoExtractor::PointObjectKVSML:
+            {
+                size_t numberOfVertices = 0;
+                std::memcpy( &numberOfVertices, dataPtr + offset, sizeof(size_t) );
+                offset += sizeof(size_t);
+
+                kvs::ValueArray<kvs::Real32> coords( numberOfVertices * 3 );
+                std::memcpy( coords.data(), dataPtr + offset, sizeof(kvs::Real32) * 3 * numberOfVertices );
+                offset += sizeof(kvs::Real32) * 3 * numberOfVertices;
+
+                kvs::ValueArray<kvs::UInt8> colors( numberOfVertices * 3 );
+                std::memcpy( colors.data(), dataPtr + offset, sizeof(kvs::UInt8) * 3 * numberOfVertices );
+                offset += sizeof(kvs::UInt8) * 3 * numberOfVertices;
+
+                kvs::ValueArray<kvs::Real32> normals( numberOfVertices * 3 );
+                std::memcpy( normals.data(), dataPtr + offset, sizeof(kvs::Real32) * 3 * numberOfVertices );
+                offset += sizeof(kvs::Real32) * 3 * numberOfVertices;
+
+                // kvs::Vec3 minObj; // GUIDE
+                // std::memcpy( minObj.data(), dataPtr + offset, sizeof(kvs::Real32) * 3 );
+                // offset += sizeof(kvs::Real32) * 3;
+
+                // kvs::Vec3 maxObj;
+                // std::memcpy ( maxObj.data(), dataPtr + offset, sizeof(kvs::Real32) * 3 );
+                // offset += sizeof(kvs::Real32) * 3;
+
+                auto* object = new kvs::PointObject();
+                object->setCoords( coords );
+                object->setColors( colors );
+                object->setNormals( normals );
+                // object->setMinMaxObjectCoords( minObj, maxObj );
+                // object->setMinMaxExternalCoords( minObj, maxObj );
+
+                info.object = object;
+                break;
+            }
+            case ObjectInfoExtractor::PointObjectLAS:
+            case ObjectInfoExtractor::PointObjectPTS:
+            {
+                size_t numberOfVertices = 0;
+                std::memcpy( &numberOfVertices, dataPtr + offset, sizeof(size_t) );
+                offset += sizeof(size_t);
+
+                kvs::ValueArray<kvs::Real32> coords( numberOfVertices * 3 );
+                std::memcpy( coords.data(), dataPtr + offset, sizeof(kvs::Real32) * 3 * numberOfVertices );
+                offset += sizeof(kvs::Real32) * 3 * numberOfVertices;
+
+                kvs::ValueArray<kvs::UInt8> colors( numberOfVertices * 3 );
+                std::memcpy( colors.data(), dataPtr + offset, sizeof(kvs::UInt8) * 3 * numberOfVertices );
+                offset += sizeof(kvs::UInt8) * 3 * numberOfVertices;
+
+                auto* object = new kvs::PointObject();
+                object->setCoords( coords );
+                object->setColors( colors );;
+
+                info.object = object;
+                break;
+            }
+            case ObjectInfoExtractor::ServerGlyphObject:
+            case ObjectInfoExtractor::PolygonObjectKVSML:
+            case ObjectInfoExtractor::PolygonObjectSTL:
+            {
+                kvs::PolygonObject::PolygonType polygonType;
+                std::memcpy( &polygonType, dataPtr + offset, sizeof(kvs::PolygonObject::PolygonType) );
+                offset += sizeof(kvs::PolygonObject::PolygonType);
+
+                kvs::PolygonObject::ColorType colorType;
+                std::memcpy( &colorType, dataPtr + offset, sizeof(kvs::PolygonObject::ColorType) );
+                offset += sizeof(kvs::PolygonObject::ColorType);
+
+                kvs::PolygonObject::NormalType normalType;
+                std::memcpy( &normalType, dataPtr + offset, sizeof(kvs::PolygonObject::NormalType) );
+                offset += sizeof(kvs::PolygonObject::NormalType);
+
+                size_t nCoords;
+                std::memcpy( &nCoords, dataPtr + offset, sizeof(size_t) );
+                offset += sizeof(size_t);
+
+                kvs::ValueArray<kvs::Real32> coords( nCoords );
+                std::memcpy( coords.data(), dataPtr + offset, sizeof(kvs::Real32) * nCoords );
+                offset += sizeof(kvs::Real32) * nCoords;
+
+                size_t nColors;
+                std::memcpy( &nColors, dataPtr + offset, sizeof(size_t) );
+                offset += sizeof(size_t);
+
+                kvs::ValueArray<kvs::UInt8> colors( nColors );
+                std::memcpy( colors.data(), dataPtr + offset, sizeof(kvs::UInt8) * nColors );
+                offset += sizeof(kvs::UInt8) * nColors;
+
+                size_t nNormals;
+                std::memcpy( &nNormals, dataPtr + offset, sizeof(size_t) );
+                offset += sizeof(size_t);
+
+                kvs::ValueArray<kvs::Real32> normals( nNormals );
+                std::memcpy( normals.data(), dataPtr + offset, sizeof(kvs::Real32) * nNormals );
+                offset += sizeof(kvs::Real32) * nNormals;
+
+                size_t nConnections;
+                std::memcpy( &nConnections, dataPtr + offset, sizeof(size_t) );
+                offset += sizeof(size_t);
+
+                kvs::ValueArray<kvs::UInt32> connections( nConnections );
+                std::memcpy( connections.data(), dataPtr + offset, sizeof(kvs::UInt32) * nConnections );
+                offset += sizeof(kvs::UInt32) * nConnections;
+
+                auto* object = new kvs::PolygonObject();
+                object->setPolygonType( polygonType );
+                object->setColorType( colorType );
+                object->setNormalType( normalType );
+                object->setCoords( coords );
+                object->setColors( colors );
+                object->setNormals( normals );
+                object->setConnections( connections );
+
+                info.object = object;
+                break;
+            }
+            case ObjectInfoExtractor::PolygonObject3DS:
+            case ObjectInfoExtractor::PolygonObjectFBX:
+            {
+                kvs::TexturedPolygonObject::PolygonType polygonType;
+                std::memcpy( &polygonType, dataPtr + offset, sizeof(kvs::TexturedPolygonObject::PolygonType) );
+                offset += sizeof(kvs::TexturedPolygonObject::PolygonType);
+
+                kvs::TexturedPolygonObject::ColorType colorType;
+                std::memcpy( &colorType, dataPtr + offset, sizeof(kvs::TexturedPolygonObject::ColorType) );
+                offset += sizeof(kvs::TexturedPolygonObject::ColorType);
+
+                kvs::TexturedPolygonObject::NormalType normalType;
+                std::memcpy( &normalType, dataPtr + offset, sizeof(kvs::TexturedPolygonObject::NormalType) );
+                offset += sizeof(kvs::TexturedPolygonObject::NormalType);
+
+                size_t nCoords;
+                std::memcpy( &nCoords, dataPtr + offset, sizeof(size_t) );
+                offset += sizeof(size_t);
+
+                kvs::ValueArray<kvs::Real32> coords( nCoords );
+                std::memcpy( coords.data(), dataPtr + offset, sizeof(kvs::Real32) * nCoords );
+                offset += sizeof(kvs::Real32) * nCoords;
+
+                size_t nColors;
+                std::memcpy( &nColors, dataPtr + offset, sizeof(size_t) );
+                offset += sizeof(size_t);
+
+                kvs::ValueArray<kvs::UInt8> colors( nColors );
+                std::memcpy( colors.data(), dataPtr + offset, sizeof(kvs::UInt8) * nColors );
+                offset += sizeof(kvs::UInt8) * nColors;
+
+                size_t nNormals;
+                std::memcpy( &nNormals, dataPtr + offset, sizeof(size_t) );
+                offset += sizeof(size_t);
+
+                kvs::ValueArray<kvs::Real32> normals( nNormals );
+                std::memcpy( normals.data(), dataPtr + offset, sizeof(kvs::Real32) * nNormals );
+                offset += sizeof(kvs::Real32) * nNormals;
+
+                size_t nConnections;
+                std::memcpy( &nConnections, dataPtr + offset, sizeof(size_t) );
+                offset += sizeof(size_t);
+
+                kvs::ValueArray<kvs::UInt32> connections( nConnections );
+                std::memcpy( connections.data(), dataPtr + offset, sizeof(kvs::UInt32) * nConnections );
+                offset += sizeof(kvs::UInt32) * nConnections;
+
+                size_t nOpacities;
+                std::memcpy( &nOpacities, dataPtr + offset, sizeof(size_t) );
+                offset += sizeof(size_t);
+
+                kvs::ValueArray<kvs::UInt8> opacities( nOpacities );
+                std::memcpy( opacities.data(), dataPtr + offset, sizeof(kvs::UInt8) * nOpacities );
+                offset += sizeof(kvs::UInt8) * nOpacities;
+
+                size_t nTexture2DCoords;
+                std::memcpy( &nTexture2DCoords, dataPtr + offset, sizeof(size_t) );
+                offset += sizeof(size_t);
+
+                kvs::ValueArray<kvs::Real32> texture2DCoords( nTexture2DCoords );
+                std::memcpy( texture2DCoords.data(), dataPtr + offset, sizeof(kvs::Real32) * nTexture2DCoords );
+                offset += sizeof(kvs::Real32) * nTexture2DCoords;
+
+                size_t nTextureIds;
+                std::memcpy( &nTextureIds, dataPtr + offset, sizeof(size_t) );
+                offset += sizeof(size_t);
+
+                kvs::ValueArray<kvs::UInt32> textureIds( nTextureIds );
+                std::memcpy( textureIds.data(), dataPtr + offset, sizeof(kvs::UInt32) * nTextureIds );
+                offset += sizeof(kvs::UInt32) * nTextureIds;
+
+                // --- mapIdToColorArray ---
+                size_t mapColorSize;
+                memcpy( &mapColorSize, dataPtr + offset, sizeof(size_t) );
+                offset += sizeof(size_t);
+
+                std::map<kvs::UInt32, kvs::ValueArray<kvs::UInt8>> mapColor;
+
+                for( size_t i = 0; i < mapColorSize; i++ )
+                {
+                    kvs::UInt32 id;
+                    memcpy( &id, dataPtr + offset, sizeof(kvs::UInt32) );
+                    offset += sizeof(kvs::UInt32);
+
+                    size_t arrSize;
+                    memcpy( &arrSize, dataPtr + offset, sizeof(size_t) );
+                    offset += sizeof(size_t);
+
+                    kvs::ValueArray<kvs::UInt8> arr(arrSize);
+                    memcpy( arr.data(), dataPtr + offset, arrSize );
+                    offset += arrSize;
+
+                    mapColor[id] = arr;
+                }
+
+                // --- width ---
+                size_t mapWSize;
+                memcpy( &mapWSize, dataPtr + offset, sizeof(size_t) );
+                offset += sizeof(size_t);
+
+                std::map<kvs::UInt32, kvs::UInt32> mapW;
+
+                for( size_t i = 0; i < mapWSize; i++ )
+                {
+                    kvs::UInt32 id, w;
+                    memcpy( &id, dataPtr + offset, sizeof(kvs::UInt32) );
+                    offset += sizeof(kvs::UInt32);
+                    memcpy( &w, dataPtr + offset, sizeof(kvs::UInt32) );
+                    offset += sizeof(kvs::UInt32);
+                    mapW[id] = w;
+                }
+
+                // --- height ---
+                size_t mapHSize;
+                memcpy( &mapHSize, dataPtr + offset, sizeof(size_t) );
+                offset += sizeof(size_t);
+
+                std::map<kvs::UInt32, kvs::UInt32> mapH;
+
+                for( size_t i = 0; i < mapHSize; i++ )
+                {
+                    kvs::UInt32 id, h;
+                    memcpy( &id, dataPtr + offset, sizeof(kvs::UInt32) );
+                    offset += sizeof(kvs::UInt32);
+                    memcpy( &h, dataPtr + offset, sizeof(kvs::UInt32) );
+                    offset += sizeof(kvs::UInt32);
+                    mapH[id] = h;
+                }
+
+                auto* object = new kvs::TexturedPolygonObject();
+                object->setPolygonType( polygonType );
+                object->setColorType( colorType );
+                object->setNormalType( normalType );
+                object->setCoords( coords );
+                object->setColors( colors );
+                object->setNormals( normals );
+                object->setConnections( connections );
+                object->setOpacities( opacities );
+                object->setTexture2DCoords( texture2DCoords );
+                object->setTextureIds( textureIds );
+                object->setMapIdToColorArray( mapColor );
+                object->setMapIdToImageWidth( mapW );
+                object->setMapIdToImageHeight( mapH );
+
+                info.object = object;
+                break;
+            }
+            case ObjectInfoExtractor::LineObjectKVSML:
+            {
+                kvs::LineObject::LineType lineType;
+                std::memcpy( &lineType, dataPtr + offset, sizeof(kvs::LineObject::LineType) );
+                offset += sizeof(kvs::LineObject::LineType);
+
+                kvs::LineObject::ColorType colorType;
+                std::memcpy( &colorType, dataPtr + offset, sizeof(kvs::LineObject::ColorType) );
+                offset += sizeof(kvs::LineObject::ColorType);
+
+                // kvs::LineObject::NormalType normalType;
+                // std::memcpy( &normalType, dataPtr + offset, sizeof(kvs::LineObject::NormalType) );
+                // offset += sizeof(kvs::LineObject::NormalType);
+
+                size_t nCoords;
+                std::memcpy( &nCoords, dataPtr + offset, sizeof(size_t) );
+                offset += sizeof(size_t);
+
+                kvs::ValueArray<kvs::Real32> coords( nCoords );
+                std::memcpy( coords.data(), dataPtr + offset, sizeof(kvs::Real32) * nCoords );
+                offset += sizeof(kvs::Real32) * nCoords;
+
+                size_t nColors;
+                std::memcpy( &nColors, dataPtr + offset, sizeof(size_t) );
+                offset += sizeof(size_t);
+
+                kvs::ValueArray<kvs::UInt8> colors( nColors );
+                std::memcpy( colors.data(), dataPtr + offset, sizeof(kvs::UInt8) * nColors );
+                offset += sizeof(kvs::UInt8) * nColors;
+
+                size_t nNormals;
+                std::memcpy( &nNormals, dataPtr + offset, sizeof(size_t) );
+                offset += sizeof(size_t);
+
+                kvs::ValueArray<kvs::Real32> normals( nNormals );
+                std::memcpy( normals.data(), dataPtr + offset, sizeof(kvs::Real32) * nNormals );
+                offset += sizeof(kvs::Real32) * nNormals;
+
+                size_t nConnections;
+                std::memcpy( &nConnections, dataPtr + offset, sizeof(size_t) );
+                offset += sizeof(size_t);
+
+                kvs::ValueArray<kvs::UInt32> connections( nConnections );
+                std::memcpy( connections.data(), dataPtr + offset, sizeof(kvs::UInt32) * nConnections );
+                offset += sizeof(kvs::UInt32) * nConnections;
+
+                size_t nSizes;
+                std::memcpy( &nSizes, dataPtr + offset, sizeof(size_t) );
+                offset += sizeof(size_t);
+
+                kvs::ValueArray<kvs::Real32> sizes( nSizes );
+                std::memcpy( sizes.data(), dataPtr + offset, sizeof(kvs::Real32) * nSizes );
+                offset += sizeof(kvs::Real32) * nSizes;
+
+                auto* object = new kvs::LineObject();
+                object->setLineType( lineType );
+                object->setColorType( colorType );
+                // object->setNormalType( normalType2 );
+                object->setCoords( coords );
+                object->setColors( colors );
+                object->setNormals( normals );
+                object->setConnections( connections );
+                object->setSizes( sizes );
+
+                info.object = object;
+                break;
+            }
+            default:
+                break;
+            }
+            nameItem->setData( QVariant::fromValue( info ), Qt::UserRole );
+            break;
+        }
+    }
+
+    // 受信していないUUIDのobjectをnullptrに更新する
+    for( int row = 0; row < m_model->rowCount(); ++row )
+    {
+        QStandardItem* nameItem = m_model->item( row, 0 );
+        QVariant var = nameItem->data( Qt::UserRole );
+        if( !var.canConvert<ObjectInfoExtractor::ObjectInfo>() ) continue;
+
+        ObjectInfoExtractor::ObjectInfo info = var.value<ObjectInfoExtractor::ObjectInfo>();
+
+        if( receivedUUIDSs.find( info.uuid ) == receivedUUIDSs.end() )
+        {
+            info.object = nullptr;
+            nameItem->setData( QVariant::fromValue( info ), Qt::UserRole );
+        }
+    }
+
+    doneObjectEditor( 0 );
+}
+
 // FIXME:このメソッド名変な気がする。操作権を持つものからのapplyみたいな感じにしてください。
 void ObjectEditorWIP::objectInfoUpdate( const QJsonArray& resultMinObjectCoordsArray, const QJsonArray& resultMaxObjectCoordsArray, const QJsonArray& objects )
 {
@@ -513,7 +912,7 @@ void ObjectEditorWIP::registerObject( ObjectInfoExtractor::ObjectInfo& info )
         particleBasedRenderer = std::make_unique<kvs::glsl::ParticleBasedRenderer>();
         particleBasedRenderer.get()->enableShuffle();
         emit shading( particleBasedRenderer.get() );
-        info.objectID = m_screen->registerObject( static_cast<kvs::PointObject*>(info.object), particleBasedRenderer.release() );
+        info.objectID = m_screen->registerObject( info.object, particleBasedRenderer.release() );
         break;
     case ObjectInfoExtractor::PolygonObjectKVSML:
     case ObjectInfoExtractor::PolygonObjectSTL:
@@ -554,7 +953,7 @@ void ObjectEditorWIP::replaceObject( ObjectInfoExtractor::ObjectInfo& info )
     case ObjectInfoExtractor::PointObjectKVSML:
     case ObjectInfoExtractor::PointObjectLAS:
     case ObjectInfoExtractor::PointObjectPTS:
-        m_screen->scene()->replaceObject( 1, dynamic_cast<kvs::PointObject*>(info.object) );
+        m_screen->scene()->replaceObject( info.objectID.first, info.object );
         break;
     case ObjectInfoExtractor::PolygonObjectKVSML:
     case ObjectInfoExtractor::PolygonObjectSTL:

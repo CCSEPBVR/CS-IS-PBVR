@@ -39,6 +39,7 @@ signals:
     void updateServerState( bool serverState );     // true:接続中
     void updateOperatorState( bool operatorState ); // true:権限あり
     void addObjectToModel( const ObjectInfoExtractor::ObjectInfo& objectInfo );
+    void unpack( const QByteArray& binary );
     void objectInfoUpdate( const QJsonArray& resultMinObjectCoordsArray, const QJsonArray& resultMaxObjectCoordsArray, const QJsonArray& updatedObjects );
     void updateFocus( kvs::Vec3, kvs::Vec3 );       // FIXME:このクラスに必要ないので削除
     void updatePointsTranslation();                 // FIXME:このクラスに必要ないので削除

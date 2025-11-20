@@ -1,6 +1,8 @@
 #ifndef OBJECTEDITORWIP_H
 #define OBJECTEDITORWIP_H
 
+#include <unordered_set>
+
 #include <QDockWidget>
 #include <QList>
 #include <QFileDialog>
@@ -39,6 +41,7 @@ public:
 public slots:
     // void addObjectToModel( const ObjectInfoExtractor::ObjectInfo& objectInfo, ObjectInfoExtractor& oie );
     void addObjectToModel( const ObjectInfoExtractor::ObjectInfo& objectInfo );
+    void unpack( const QByteArray& binary );
     void objectInfoUpdate( const QJsonArray& resultMinObjectCoordsArray, const QJsonArray& resultMaxObjectCoordsArray, const QJsonArray& objects );
     void showAtTimeStep( int requestTimeStep );
     void loadParameter( const QString& filePath );

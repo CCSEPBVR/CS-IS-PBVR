@@ -608,58 +608,7 @@ void Communication::binaryWebsocketDisconnected()
 
 void Communication::binaryWebsocketMessageReceived( const QByteArray& binary )
 {
-    const char* data_ptr = binary.constData();
-    size_t offset = 0;
-
-    // 頂点数を読み出す
-    size_t numberOfVertices = 0;
-    std::memcpy( &numberOfVertices, data_ptr + offset, sizeof( size_t ) );
-    offset += sizeof( size_t );
-
-    // 座標（float3 * N）
-    kvs::ValueArray<kvs::Real32> coords( numberOfVertices * 3 );
-    std::memcpy( coords.data(), data_ptr + offset, sizeof( kvs::Real32 ) * 3 * numberOfVertices );
-    offset += sizeof( kvs::Real32 ) * 3 * numberOfVertices;
-
-    // 色（uchar3 * N）
-    kvs::ValueArray<kvs::UInt8> colors( numberOfVertices * 3 );
-    std::memcpy( colors.data(), data_ptr + offset, sizeof( kvs::UInt8 ) * 3 * numberOfVertices );
-    offset += sizeof( kvs::UInt8 ) * 3 * numberOfVertices;
-
-    // 法線（float3 * N）
-    kvs::ValueArray<kvs::Real32> normals( numberOfVertices * 3 );
-    std::memcpy( normals.data(), data_ptr + offset, sizeof( kvs::Real32 ) * 3 * numberOfVertices );
-    offset += sizeof( kvs::Real32 ) * 3 * numberOfVertices;
-
-    // minObjectCoords（float3）
-    kvs::Vec3 minObjectCoords;
-    std::memcpy( minObjectCoords.data(), data_ptr + offset, sizeof( kvs::Real32 ) * 3 );
-    offset += sizeof( kvs::Real32 ) * 3;
-
-    // maxObjectCoords（float3）
-    kvs::Vec3 maxObjectCoords;
-    std::memcpy( maxObjectCoords.data(), data_ptr + offset, sizeof( kvs::Real32 ) * 3 );
-    offset += sizeof( kvs::Real32 ) * 3;
-
-    // kvs::PointObject の生成
-    auto* object = new kvs::PointObject();
-    object->setCoords( coords );
-    object->setColors( colors );
-    object->setNormals( normals );
-    object->setMinMaxObjectCoords( minObjectCoords, maxObjectCoords );
-    object->setMinMaxExternalCoords( minObjectCoords, maxObjectCoords );
-
-    emit updateFocus( minObjectCoords, maxObjectCoords ); // AFTER_WEBSOCKET
-    emit updatePointsTranslation(); // AFTER_WEBSOCKET
-
-    if( m_server_point_object_ids == QPair<int,int>(-1, -1) )
-    {
-        registerObject(object);
-    }
-    else
-    {
-        replaceObject(object);
-    }
+    emit unpack( binary );
 }
 
 void Communication::textWebsocketConnected()
