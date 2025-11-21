@@ -181,20 +181,20 @@ void ObjectEditorWIP::unpack( const QByteArray& binary )
                 std::memcpy( normals.data(), dataPtr + offset, sizeof(kvs::Real32) * 3 * numberOfVertices );
                 offset += sizeof(kvs::Real32) * 3 * numberOfVertices;
 
-                // kvs::Vec3 minObj; // GUIDE
-                // std::memcpy( minObj.data(), dataPtr + offset, sizeof(kvs::Real32) * 3 );
-                // offset += sizeof(kvs::Real32) * 3;
+                kvs::Vec3 minObjectCoords;
+                std::memcpy( minObjectCoords.data(), dataPtr + offset, sizeof(kvs::Real32) * 3 );
+                offset += sizeof(kvs::Real32) * 3;
 
-                // kvs::Vec3 maxObj;
-                // std::memcpy ( maxObj.data(), dataPtr + offset, sizeof(kvs::Real32) * 3 );
-                // offset += sizeof(kvs::Real32) * 3;
+                kvs::Vec3 maxObjectCoords;
+                std::memcpy ( maxObjectCoords.data(), dataPtr + offset, sizeof(kvs::Real32) * 3 );
+                offset += sizeof(kvs::Real32) * 3;
 
                 auto* object = new kvs::PointObject();
                 object->setCoords( coords );
                 object->setColors( colors );
                 object->setNormals( normals );
-                // object->setMinMaxObjectCoords( minObj, maxObj );
-                // object->setMinMaxExternalCoords( minObj, maxObj );
+                object->setMinMaxObjectCoords( minObjectCoords, maxObjectCoords );
+                object->setMinMaxExternalCoords( minObjectCoords, maxObjectCoords );
 
                 info.object = object;
                 break;
@@ -214,9 +214,19 @@ void ObjectEditorWIP::unpack( const QByteArray& binary )
                 std::memcpy( colors.data(), dataPtr + offset, sizeof(kvs::UInt8) * 3 * numberOfVertices );
                 offset += sizeof(kvs::UInt8) * 3 * numberOfVertices;
 
+                kvs::Vec3 minObjectCoords;
+                std::memcpy( minObjectCoords.data(), dataPtr + offset, sizeof(kvs::Real32) * 3 );
+                offset += sizeof(kvs::Real32) * 3;
+
+                kvs::Vec3 maxObjectCoords;
+                std::memcpy ( maxObjectCoords.data(), dataPtr + offset, sizeof(kvs::Real32) * 3 );
+                offset += sizeof(kvs::Real32) * 3;
+
                 auto* object = new kvs::PointObject();
                 object->setCoords( coords );
                 object->setColors( colors );;
+                object->setMinMaxObjectCoords( minObjectCoords, maxObjectCoords );
+                object->setMinMaxExternalCoords( minObjectCoords, maxObjectCoords );
 
                 info.object = object;
                 break;
@@ -269,6 +279,22 @@ void ObjectEditorWIP::unpack( const QByteArray& binary )
                 std::memcpy( connections.data(), dataPtr + offset, sizeof(kvs::UInt32) * nConnections );
                 offset += sizeof(kvs::UInt32) * nConnections;
 
+                size_t nOpacities;
+                std::memcpy( &nOpacities, dataPtr + offset, sizeof(size_t) );
+                offset += sizeof(size_t);
+
+                kvs::ValueArray<kvs::UInt8> opacities( nOpacities );
+                std::memcpy( opacities.data(), dataPtr + offset, sizeof(kvs::UInt8) * nOpacities );
+                offset += sizeof(kvs::UInt8) * nOpacities;
+
+                kvs::Vec3 minObjectCoords;
+                std::memcpy( minObjectCoords.data(), dataPtr + offset, sizeof(kvs::Real32) * 3 );
+                offset += sizeof(kvs::Real32) * 3;
+
+                kvs::Vec3 maxObjectCoords;
+                std::memcpy ( maxObjectCoords.data(), dataPtr + offset, sizeof(kvs::Real32) * 3 );
+                offset += sizeof(kvs::Real32) * 3;
+
                 auto* object = new kvs::PolygonObject();
                 object->setPolygonType( polygonType );
                 object->setColorType( colorType );
@@ -277,6 +303,9 @@ void ObjectEditorWIP::unpack( const QByteArray& binary )
                 object->setColors( colors );
                 object->setNormals( normals );
                 object->setConnections( connections );
+                object->setOpacities( opacities );
+                object->setMinMaxObjectCoords( minObjectCoords, maxObjectCoords );
+                object->setMinMaxExternalCoords( minObjectCoords, maxObjectCoords );
 
                 info.object = object;
                 break;
@@ -410,6 +439,14 @@ void ObjectEditorWIP::unpack( const QByteArray& binary )
                     mapH[id] = h;
                 }
 
+                kvs::Vec3 minObjectCoords;
+                std::memcpy( minObjectCoords.data(), dataPtr + offset, sizeof(kvs::Real32) * 3 );
+                offset += sizeof(kvs::Real32) * 3;
+
+                kvs::Vec3 maxObjectCoords;
+                std::memcpy ( maxObjectCoords.data(), dataPtr + offset, sizeof(kvs::Real32) * 3 );
+                offset += sizeof(kvs::Real32) * 3;
+
                 auto* object = new kvs::TexturedPolygonObject();
                 object->setPolygonType( polygonType );
                 object->setColorType( colorType );
@@ -424,6 +461,8 @@ void ObjectEditorWIP::unpack( const QByteArray& binary )
                 object->setMapIdToColorArray( mapColor );
                 object->setMapIdToImageWidth( mapW );
                 object->setMapIdToImageHeight( mapH );
+                object->setMinMaxObjectCoords( minObjectCoords, maxObjectCoords );
+                object->setMinMaxExternalCoords( minObjectCoords, maxObjectCoords );
 
                 info.object = object;
                 break;
@@ -482,6 +521,14 @@ void ObjectEditorWIP::unpack( const QByteArray& binary )
                 std::memcpy( sizes.data(), dataPtr + offset, sizeof(kvs::Real32) * nSizes );
                 offset += sizeof(kvs::Real32) * nSizes;
 
+                kvs::Vec3 minObjectCoords;
+                std::memcpy( minObjectCoords.data(), dataPtr + offset, sizeof(kvs::Real32) * 3 );
+                offset += sizeof(kvs::Real32) * 3;
+
+                kvs::Vec3 maxObjectCoords;
+                std::memcpy ( maxObjectCoords.data(), dataPtr + offset, sizeof(kvs::Real32) * 3 );
+                offset += sizeof(kvs::Real32) * 3;
+
                 auto* object = new kvs::LineObject();
                 object->setLineType( lineType );
                 object->setColorType( colorType );
@@ -491,6 +538,8 @@ void ObjectEditorWIP::unpack( const QByteArray& binary )
                 object->setNormals( normals );
                 object->setConnections( connections );
                 object->setSizes( sizes );
+                object->setMinMaxObjectCoords( minObjectCoords, maxObjectCoords );
+                object->setMinMaxExternalCoords( minObjectCoords, maxObjectCoords );
 
                 info.object = object;
                 break;
@@ -1488,19 +1537,19 @@ void ObjectEditorWIP::onApply()
                 // For Client
                 // jsonObjectInfo["object"]                    = info.object;
                 // jsonObjectInfo["objectID"]                  = info.objectID;
-                // QJsonArray currentMinObjectCoordArray;
-                // currentMinObjectCoordArray.append( info.currentMinObjectCoord.x() );
-                // currentMinObjectCoordArray.append( info.currentMinObjectCoord.y() );
-                // currentMinObjectCoordArray.append( info.currentMinObjectCoord.z() );
-                // QJsonArray currentMaxObjectCoordArray;
-                // currentMaxObjectCoordArray.append( info.currentMaxObjectCoord.x() );
-                // currentMaxObjectCoordArray.append( info.currentMaxObjectCoord.y() );
-                // currentMaxObjectCoordArray.append( info.currentMaxObjectCoord.z() );
+                QJsonArray currentMinObjectCoordArray;
+                currentMinObjectCoordArray.append( info.currentMinObjectCoord.x() );
+                currentMinObjectCoordArray.append( info.currentMinObjectCoord.y() );
+                currentMinObjectCoordArray.append( info.currentMinObjectCoord.z() );
+                QJsonArray currentMaxObjectCoordArray;
+                currentMaxObjectCoordArray.append( info.currentMaxObjectCoord.x() );
+                currentMaxObjectCoordArray.append( info.currentMaxObjectCoord.y() );
+                currentMaxObjectCoordArray.append( info.currentMaxObjectCoord.z() );
 
-                // jsonObjectInfo["currentMinObjectCoord"]     = currentMinObjectCoordArray;
-                // jsonObjectInfo["currentMaxObjectCoord"]     = currentMaxObjectCoordArray;
-                // jsonObjectInfo["currentImportedTimeStep"]   = info.currentImportedTimeStep;
-                // jsonObjectInfo["needSameTimeStepReplace"]   = info.needSameTimeStepReplace;
+                jsonObjectInfo["currentMinObjectCoord"]     = currentMinObjectCoordArray;
+                jsonObjectInfo["currentMaxObjectCoord"]     = currentMaxObjectCoordArray;
+                jsonObjectInfo["currentImportedTimeStep"]   = info.currentImportedTimeStep;
+                jsonObjectInfo["needSameTimeStepReplace"]   = info.needSameTimeStepReplace;
                 objectInfoArray.append( jsonObjectInfo );
             }
             root["objects"] = objectInfoArray;

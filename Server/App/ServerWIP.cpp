@@ -676,6 +676,29 @@ void ServerWIP::objectInfoUpdate( uWS::WebSocket<false, true, PerSocket>* ws, co
 
         if( objJson.contains( "tmpPolygonOpacity" ) )       info.tmpPolygonOpacity      = objJson["tmpPolygonOpacity"].get<float>();
         if( objJson.contains( "polygonOpacity" ) )          info.polygonOpacity         = objJson["polygonOpacity"].get<float>();
+
+        if( objJson.contains("currentMinObjectCoord") && objJson["currentMinObjectCoord"].is_array() && objJson["currentMinObjectCoord"].size() == 3 )
+        {
+            info.currentMinObjectCoord = kvs::Vec3(
+                objJson["currentMinObjectCoord"][0].get<float>(),
+                objJson["currentMinObjectCoord"][1].get<float>(),
+                objJson["currentMinObjectCoord"][2].get<float>()
+                );
+        }
+
+        if( objJson.contains("currentMaxObjectCoord") && objJson["currentMaxObjectCoord"].is_array() && objJson["currentMaxObjectCoord"].size() == 3 )
+        {
+            info.currentMaxObjectCoord = kvs::Vec3(
+                objJson["currentMaxObjectCoord"][0].get<float>(),
+                objJson["currentMaxObjectCoord"][1].get<float>(),
+                objJson["currentMaxObjectCoord"][2].get<float>()
+                );
+        }
+
+        std::cout << info.currentMinObjectCoord << std::endl;
+        std::cout << info.currentMaxObjectCoord << std::endl;
+
+        if( objJson.contains( "needSameTimeStepReplace" ) )            info.needSameTimeStepReplace           = objJson["needSameTimeStepReplace"].get<bool>();
     }
 
     nlohmann::json msg;
@@ -687,18 +710,6 @@ void ServerWIP::objectInfoUpdate( uWS::WebSocket<false, true, PerSocket>* ws, co
     ws->publish( "Notice", msg.dump(), uWS::OpCode::TEXT );
 }
 
-// FIXME:もしかしたら送信情報に以下を含める必要があるかもしれません。
-// packメソッド
-// const auto& minObjectCoords     = point->minObjectCoord();
-// const auto& maxObjectCoords     = point->minObjectCoord();
-// std::memcpy( buffer.data() + offset, minObjectCoords.data(), sizeof(kvs::Real32) * 3 );
-// offset += sizeof(kvs::Real32) * 3;
-// std::memcpy( buffer.data() + offset, maxObjectCoords.data(), sizeof(kvs::Real32) * 3 );
-// offset += sizeof(kvs::Real32) * 3;
-// calculateTotalSizeメソッド
-// totalSize += sizeof(kvs::Real32) * 3;                      // minObjectCoords
-// totalSize += sizeof(kvs::Real32) * 3;                      // maxObjectCoords
-
 std::vector<char> ServerWIP::pack()
 {
     size_t totalSize = calculateTotalSize();
@@ -707,7 +718,7 @@ std::vector<char> ServerWIP::pack()
 
     for( const auto& info : *m_objects )
     {
-        if( info.object == nullptr ) continue;// nullptrである場合は送信しない
+        if( info.object == nullptr ) continue; // nullptrである場合は送信しない
 
         // UUID
         uint32_t uuidLen = static_cast<uint32_t>( info.uuid.size() );
@@ -743,13 +754,13 @@ std::vector<char> ServerWIP::pack()
             std::memcpy( buffer.data() + offset, normals.data(), sizeof(kvs::Real32) * 3 * numberOfVertices );
             offset += sizeof(kvs::Real32) * 3 * numberOfVertices;
 
-            // const auto& minObjectCoords     = point->minObjectCoord(); // GUIDE
-            // std::memcpy( buffer.data() + offset, minObjectCoords.data(), sizeof(kvs::Real32) * 3 );
-            // offset += sizeof(kvs::Real32) * 3;
+            const auto& minObjectCoords     = pointObject->minObjectCoord();                                    // minObjectCoords
+            std::memcpy( buffer.data() + offset, minObjectCoords.data(), sizeof(kvs::Real32) * 3 );
+            offset += sizeof(kvs::Real32) * 3;
 
-            // const auto& maxObjectCoords     = point->minObjectCoord();
-            // std::memcpy( buffer.data() + offset, maxObjectCoords.data(), sizeof(kvs::Real32) * 3 );
-            // offset += sizeof(kvs::Real32) * 3;
+            const auto& maxObjectCoords     = pointObject->maxObjectCoord();                                    // maxObjectCoords
+            std::memcpy( buffer.data() + offset, maxObjectCoords.data(), sizeof(kvs::Real32) * 3 );
+            offset += sizeof(kvs::Real32) * 3;
             break;
         }
         case ObjectInfoExtractor::PointObjectLAS:
@@ -768,6 +779,14 @@ std::vector<char> ServerWIP::pack()
             const auto& colors              = pointObject->colors();                                            // colors
             std::memcpy( buffer.data() + offset, colors.data(), sizeof(kvs::UInt8) * 3 * numberOfVertices );
             offset += sizeof(kvs::UInt8) * 3 * numberOfVertices;
+
+            const auto& minObjectCoords     = pointObject->minObjectCoord();                                    // minObjectCoords
+            std::memcpy( buffer.data() + offset, minObjectCoords.data(), sizeof(kvs::Real32) * 3 );
+            offset += sizeof(kvs::Real32) * 3;
+
+            const auto& maxObjectCoords     = pointObject->maxObjectCoord();                                    // maxObjectCoords
+            std::memcpy( buffer.data() + offset, maxObjectCoords.data(), sizeof(kvs::Real32) * 3 );
+            offset += sizeof(kvs::Real32) * 3;
             break;
         }
         case ObjectInfoExtractor::ServerGlyphObject:
@@ -776,49 +795,65 @@ std::vector<char> ServerWIP::pack()
         {
             auto* polygonObject = static_cast<kvs::PolygonObject*>( info.object );
 
-            const kvs::PolygonObject::PolygonType polygonType = polygonObject->polygonType();                   // polygonType
+            const kvs::PolygonObject::PolygonType polygonType = polygonObject->polygonType();                       // polygonType
             std::memcpy( buffer.data() + offset, &polygonType, sizeof(kvs::PolygonObject::PolygonType) );
             offset += sizeof(kvs::PolygonObject::PolygonType);
 
-            const kvs::PolygonObject::ColorType colorType = polygonObject->colorType();                         // colorType
+            const kvs::PolygonObject::ColorType colorType = polygonObject->colorType();                             // colorType
             std::memcpy( buffer.data() + offset, &colorType, sizeof(kvs::PolygonObject::ColorType) );
             offset += sizeof(kvs::PolygonObject::ColorType);
 
-            const kvs::PolygonObject::NormalType normalType = polygonObject->normalType();                      // normalType
+            const kvs::PolygonObject::NormalType normalType = polygonObject->normalType();                          // normalType
             std::memcpy( buffer.data() + offset, &normalType, sizeof(kvs::PolygonObject::NormalType) );
             offset += sizeof(kvs::PolygonObject::NormalType);
 
-            const size_t nCoords = polygonObject->coords().size();                                              // coords.size()
+            const size_t nCoords = polygonObject->coords().size();                                                  // coords.size()
             std::memcpy( buffer.data() + offset, &nCoords, sizeof(size_t) );
             offset += sizeof(size_t);
 
-            const kvs::ValueArray<kvs::Real32> coords = polygonObject->coords();                                // coords()
+            const kvs::ValueArray<kvs::Real32> coords = polygonObject->coords();                                    // coords()
             std::memcpy( buffer.data() + offset, coords.data(), sizeof(kvs::Real32) * coords.size() );
             offset += sizeof(kvs::Real32) * coords.size();
 
-            const size_t nColors = polygonObject->colors().size();                                              // colors.size()
+            const size_t nColors = polygonObject->colors().size();                                                  // colors.size()
             std::memcpy( buffer.data() + offset, &nColors, sizeof(size_t) );
             offset += sizeof(size_t);
 
-            const kvs::ValueArray<kvs::UInt8> colors = polygonObject->colors();                                 // colors()
+            const kvs::ValueArray<kvs::UInt8> colors = polygonObject->colors();                                     // colors()
             std::memcpy( buffer.data() + offset, colors.data(), sizeof(kvs::UInt8) * colors.size() );
             offset += sizeof(kvs::UInt8) * colors.size();
 
-            const size_t nNormals = polygonObject->normals().size();                                            // normals.size()
+            const size_t nNormals = polygonObject->normals().size();                                                // normals.size()
             std::memcpy( buffer.data() + offset, &nNormals, sizeof(size_t) );
             offset += sizeof(size_t);
 
-            const kvs::ValueArray<kvs::Real32> normals      = polygonObject->normals();                         // normals()
+            const kvs::ValueArray<kvs::Real32> normals      = polygonObject->normals();                             // normals()
             std::memcpy( buffer.data() + offset, normals.data(), sizeof(kvs::Real32) * normals.size() );
             offset += sizeof(kvs::Real32) * normals.size();
 
-            const size_t nConnections = polygonObject->connections().size();                                    // connections.size()
+            const size_t nConnections = polygonObject->connections().size();                                        // connections.size()
             std::memcpy( buffer.data() + offset, &nConnections, sizeof(size_t) );
             offset += sizeof(size_t);
 
-            const kvs::ValueArray<kvs::UInt32> connections   = polygonObject->connections();                    // connections()
+            const kvs::ValueArray<kvs::UInt32> connections   = polygonObject->connections();                        // connections()
             std::memcpy( buffer.data() + offset, connections.data(), sizeof(kvs::UInt32) * connections.size() );
             offset += sizeof(kvs::UInt32) * connections.size();
+
+            const size_t nOpacities = polygonObject->opacities().size();                                            // opacities.size()
+            std::memcpy( buffer.data() + offset, &nOpacities, sizeof(size_t) );
+            offset += sizeof(size_t);
+
+            const kvs::ValueArray<kvs::UInt8> opacities        = polygonObject->opacities();                        // opacities()
+            std::memcpy( buffer.data() + offset, opacities.data(), sizeof(kvs::UInt8) * opacities.size() );
+            offset += sizeof(kvs::UInt8) * opacities.size();
+
+            const auto& minObjectCoords     = polygonObject->minObjectCoord();                                      // minObjectCoords
+            std::memcpy( buffer.data() + offset, minObjectCoords.data(), sizeof(kvs::Real32) * 3 );
+            offset += sizeof(kvs::Real32) * 3;
+
+            const auto& maxObjectCoords     = polygonObject->maxObjectCoord();                                      // maxObjectCoords
+            std::memcpy( buffer.data() + offset, maxObjectCoords.data(), sizeof(kvs::Real32) * 3 );
+            offset += sizeof(kvs::Real32) * 3;
             break;
         }
 #ifdef ASSIMP
@@ -826,71 +861,71 @@ std::vector<char> ServerWIP::pack()
         case ObjectInfoExtractor::PolygonObjectFBX:
         {
             auto* texturedPolygonObject = static_cast<kvs::TexturedPolygonObject*>( info.object );
-            const kvs::TexturedPolygonObject::PolygonType polygonType = texturedPolygonObject->polygonType();        // polygonType
+            const kvs::TexturedPolygonObject::PolygonType polygonType = texturedPolygonObject->polygonType();               // polygonType
             std::memcpy( buffer.data() + offset, &polygonType, sizeof(kvs::TexturedPolygonObject::PolygonType) );
             offset += sizeof(kvs::TexturedPolygonObject::PolygonType);
 
-            const kvs::TexturedPolygonObject::ColorType colorType = texturedPolygonObject->colorType();              // colorType
+            const kvs::TexturedPolygonObject::ColorType colorType = texturedPolygonObject->colorType();                     // colorType
             std::memcpy( buffer.data() + offset, &colorType, sizeof(kvs::TexturedPolygonObject::ColorType) );
             offset += sizeof(kvs::TexturedPolygonObject::ColorType);
 
-            const kvs::TexturedPolygonObject::NormalType normalType = texturedPolygonObject->normalType();           // normalType
+            const kvs::TexturedPolygonObject::NormalType normalType = texturedPolygonObject->normalType();                  // normalType
             std::memcpy( buffer.data() + offset, &normalType, sizeof(kvs::TexturedPolygonObject::NormalType) );
             offset += sizeof(kvs::TexturedPolygonObject::NormalType);
 
-            const size_t nCoords = texturedPolygonObject->coords().size();
+            const size_t nCoords = texturedPolygonObject->coords().size();                                                  // coords.size()
             std::memcpy( buffer.data() + offset, &nCoords, sizeof(size_t) );
             offset += sizeof(size_t);
 
-            const kvs::ValueArray<kvs::Real32> coords = texturedPolygonObject->coords();
+            const kvs::ValueArray<kvs::Real32> coords = texturedPolygonObject->coords();                                    // coords()
             std::memcpy( buffer.data() + offset, coords.data(), sizeof(kvs::Real32) * coords.size() );
             offset += sizeof(kvs::Real32) * coords.size();
 
-            const size_t nColors = texturedPolygonObject->colors().size();
+            const size_t nColors = texturedPolygonObject->colors().size();                                                  // colors.size()
             std::memcpy( buffer.data() + offset, &nColors, sizeof(size_t) );
             offset += sizeof(size_t);
 
-            const kvs::ValueArray<kvs::UInt8> colors        = texturedPolygonObject->colors();
+            const kvs::ValueArray<kvs::UInt8> colors        = texturedPolygonObject->colors();                              // colors()
             std::memcpy( buffer.data() + offset, colors.data(), sizeof(kvs::UInt8) * colors.size() );
             offset += sizeof(kvs::UInt8) * colors.size();
 
-            const size_t nNormals = texturedPolygonObject->normals().size();
+            const size_t nNormals = texturedPolygonObject->normals().size();                                                // normals.size()
             std::memcpy( buffer.data() + offset, &nNormals, sizeof(size_t) );
             offset += sizeof(size_t);
 
-            const kvs::ValueArray<kvs::Real32> normals      = texturedPolygonObject->normals();
+            const kvs::ValueArray<kvs::Real32> normals      = texturedPolygonObject->normals();                             // normals()
             std::memcpy( buffer.data() + offset, normals.data(), sizeof(kvs::Real32) * normals.size() );
             offset += sizeof(kvs::Real32) * normals.size();
 
-            const size_t nConnections = texturedPolygonObject->connections().size();
+            const size_t nConnections = texturedPolygonObject->connections().size();                                        // connections.size()
             std::memcpy( buffer.data() + offset, &nConnections, sizeof(size_t) );
             offset += sizeof(size_t);
 
-            const kvs::ValueArray<kvs::UInt32> connections   = texturedPolygonObject->connections();
+            const kvs::ValueArray<kvs::UInt32> connections   = texturedPolygonObject->connections();                        // connections()
             std::memcpy( buffer.data() + offset, connections.data(), sizeof(kvs::UInt32) * connections.size() );
             offset += sizeof(kvs::UInt32) * connections.size();
 
-            const size_t nOpacities = texturedPolygonObject->opacities().size();
+            const size_t nOpacities = texturedPolygonObject->opacities().size();                                            // opacities.size()
             std::memcpy( buffer.data() + offset, &nOpacities, sizeof(size_t) );
             offset += sizeof(size_t);
 
-            const kvs::ValueArray<kvs::UInt8> opacities        = texturedPolygonObject->opacities();
+            const kvs::ValueArray<kvs::UInt8> opacities        = texturedPolygonObject->opacities();                        // opacities()
             std::memcpy( buffer.data() + offset, opacities.data(), sizeof(kvs::UInt8) * opacities.size() );
             offset += sizeof(kvs::UInt8) * opacities.size();
 
-            const size_t nTexture2DCoords = texturedPolygonObject->texture2DCoords().size();
+            const size_t nTexture2DCoords = texturedPolygonObject->texture2DCoords().size();                                // texture2DCoords().size()
             std::memcpy( buffer.data() + offset, &nTexture2DCoords, sizeof(size_t) );
             offset += sizeof(size_t);
 
-            const kvs::ValueArray<kvs::Real32> texture2DCoords = texturedPolygonObject->texture2DCoords();
+            const kvs::ValueArray<kvs::Real32> texture2DCoords = texturedPolygonObject->texture2DCoords();                  // texture2DCoords()
             std::memcpy( buffer.data() + offset, texture2DCoords.data(), sizeof(kvs::Real32) * texture2DCoords.size() );
             offset += sizeof(kvs::Real32) * texture2DCoords.size();
 
-            const size_t nTextureIds = texturedPolygonObject->textureIds().size();
+            const size_t nTextureIds = texturedPolygonObject->textureIds().size();                                          // textureIds().size()
             std::memcpy( buffer.data() + offset, &nTextureIds, sizeof(size_t) );
             offset += sizeof(size_t);
 
-            const kvs::ValueArray<kvs::UInt32> textureIds   = texturedPolygonObject->textureIds();
+            const kvs::ValueArray<kvs::UInt32> textureIds   = texturedPolygonObject->textureIds();                          // textureIds()
             std::memcpy( buffer.data() + offset, textureIds.data(), sizeof(kvs::UInt32) * textureIds.size() );
             offset += sizeof(kvs::UInt32) * textureIds.size();
 
@@ -947,6 +982,14 @@ std::vector<char> ServerWIP::pack()
                     offset += sizeof(kvs::UInt32);
                 }
             }
+
+            const auto& minObjectCoords     = texturedPolygonObject->minObjectCoord();                                      // minObjectCoords
+            std::memcpy( buffer.data() + offset, minObjectCoords.data(), sizeof(kvs::Real32) * 3 );
+            offset += sizeof(kvs::Real32) * 3;
+
+            const auto& maxObjectCoords     = texturedPolygonObject->maxObjectCoord();                                      // maxObjectCoords
+            std::memcpy( buffer.data() + offset, maxObjectCoords.data(), sizeof(kvs::Real32) * 3 );
+            offset += sizeof(kvs::Real32) * 3;
             break;
         }
 #endif
@@ -954,53 +997,61 @@ std::vector<char> ServerWIP::pack()
         {
             auto* lineObject = static_cast<kvs::LineObject*>( info.object );
 
-            const kvs::LineObject::LineType lineType = lineObject->lineType();      // lineType
+            const kvs::LineObject::LineType lineType = lineObject->lineType();                                      // lineType
             std::memcpy( buffer.data() + offset, &lineType, sizeof(kvs::LineObject::LineType) );
             offset += sizeof(kvs::LineObject::LineType);
 
-            const kvs::LineObject::ColorType colorType = lineObject->colorType();   // colorType
+            const kvs::LineObject::ColorType colorType = lineObject->colorType();                                   // colorType
             std::memcpy( buffer.data() + offset, &colorType, sizeof(kvs::LineObject::ColorType) );
             offset += sizeof(kvs::LineObject::ColorType);
 
-            const size_t nCoords = lineObject->coords().size();
+            const size_t nCoords = lineObject->coords().size();                                                     // coords.size()
             std::memcpy( buffer.data() + offset, &nCoords, sizeof(size_t) );
             offset += sizeof(size_t);
 
-            const kvs::ValueArray<kvs::Real32> coords = lineObject->coords();
+            const kvs::ValueArray<kvs::Real32> coords = lineObject->coords();                                       // coords
             std::memcpy( buffer.data() + offset, coords.data(), sizeof(kvs::Real32) * coords.size() );
             offset += sizeof(kvs::Real32) * coords.size();
 
-            const size_t nColors = lineObject->colors().size();
+            const size_t nColors = lineObject->colors().size();                                                     // colors.size()
             std::memcpy( buffer.data() + offset, &nColors, sizeof(size_t) );
             offset += sizeof(size_t);
 
-            const kvs::ValueArray<kvs::UInt8> colors        = lineObject->colors();
+            const kvs::ValueArray<kvs::UInt8> colors        = lineObject->colors();                                 // colors
             std::memcpy( buffer.data() + offset, colors.data(), sizeof(kvs::UInt8) * colors.size() );
             offset += sizeof(kvs::UInt8) * colors.size();
 
-            const size_t nNormals = lineObject->normals().size();
+            const size_t nNormals = lineObject->normals().size();                                                   // normals.size()
             std::memcpy( buffer.data() + offset, &nNormals, sizeof(size_t) );
             offset += sizeof(size_t);
 
-            const kvs::ValueArray<kvs::Real32> normals      = lineObject->normals();
+            const kvs::ValueArray<kvs::Real32> normals      = lineObject->normals();                                // normals
             std::memcpy( buffer.data() + offset, normals.data(), sizeof(kvs::Real32) * normals.size() );
             offset += sizeof(kvs::Real32) * normals.size();
 
-            const size_t nConnections = lineObject->connections().size();
+            const size_t nConnections = lineObject->connections().size();                                           // connections.size()
             std::memcpy( buffer.data() + offset, &nConnections, sizeof(size_t) );
             offset += sizeof(size_t);
 
             const kvs::ValueArray<kvs::UInt32> connections   = lineObject->connections();
-            std::memcpy( buffer.data() + offset, connections.data(), sizeof(kvs::UInt32) * connections.size() );
+            std::memcpy( buffer.data() + offset, connections.data(), sizeof(kvs::UInt32) * connections.size() );    // connections
             offset += sizeof(kvs::UInt32) * connections.size();
 
-            const size_t nSizes = lineObject->sizes().size();
+            const size_t nSizes = lineObject->sizes().size();                                                       // sizes.size()
             std::memcpy( buffer.data() + offset, &nSizes, sizeof(size_t) );
             offset += sizeof(size_t);
 
-            const kvs::ValueArray<kvs::Real32> sizes   = lineObject->sizes();
+            const kvs::ValueArray<kvs::Real32> sizes   = lineObject->sizes();                                       // sizes
             std::memcpy( buffer.data() + offset, sizes.data(), sizeof(kvs::Real32) * sizes.size() );
             offset += sizeof(kvs::Real32) * sizes.size();
+
+            const auto& minObjectCoords     = lineObject->minObjectCoord();                                         // minObjectCoords
+            std::memcpy( buffer.data() + offset, minObjectCoords.data(), sizeof(kvs::Real32) * 3 );
+            offset += sizeof(kvs::Real32) * 3;
+
+            const auto& maxObjectCoords     = lineObject->maxObjectCoord();                                         // maxObjectCoords
+            std::memcpy( buffer.data() + offset, maxObjectCoords.data(), sizeof(kvs::Real32) * 3 );
+            offset += sizeof(kvs::Real32) * 3;
             break;
         }
         default:
@@ -1031,9 +1082,13 @@ size_t ServerWIP::calculateTotalSize() const
             auto* pointObject = static_cast<kvs::PointObject*>( info.object );
             size_t numberOfVertices = pointObject->numberOfVertices();
             totalSize += sizeof(size_t);                                // numberOfVertices
+
             totalSize += sizeof(kvs::Real32) * 3 * numberOfVertices;    // coords
             totalSize += sizeof(kvs::UInt8) * 3 * numberOfVertices;     // colors
             totalSize += sizeof(kvs::Real32) * 3 * numberOfVertices;    // normals
+
+            totalSize += sizeof(kvs::Real32) * 3;                       // minObjectCoords
+            totalSize += sizeof(kvs::Real32) * 3;                       // maxObjectCoords
             break;
         }
         case ObjectInfoExtractor::PointObjectLAS:
@@ -1042,8 +1097,12 @@ size_t ServerWIP::calculateTotalSize() const
             auto* pointObject = static_cast<kvs::PointObject*>( info.object );
             size_t numberOfVertices = pointObject->numberOfVertices();
             totalSize += sizeof(size_t);                                // numberOfVertices
+
             totalSize += sizeof(kvs::Real32) * 3 * numberOfVertices;    // coords
             totalSize += sizeof(kvs::UInt8) * 3 * numberOfVertices;     // colors
+
+            totalSize += sizeof(kvs::Real32) * 3;                       // minObjectCoords
+            totalSize += sizeof(kvs::Real32) * 3;                       // maxObjectCoords
             break;
         }
         case ObjectInfoExtractor::ServerGlyphObject:
@@ -1054,14 +1113,24 @@ size_t ServerWIP::calculateTotalSize() const
             totalSize += sizeof(kvs::PolygonObject::PolygonType);                       // polygonType
             totalSize += sizeof(kvs::PolygonObject::ColorType);                         // colorType
             totalSize += sizeof(kvs::PolygonObject::NormalType);                        // normalType
+
             totalSize += sizeof(size_t);                                                // coords.size()
             totalSize += sizeof(kvs::Real32)    * polygonObject->coords().size();       // coords
+
             totalSize += sizeof(size_t);                                                // colors.size()
             totalSize += sizeof(kvs::UInt8)     * polygonObject->colors().size();       // colors
+
             totalSize += sizeof(size_t);                                                // normals.size()
             totalSize += sizeof(kvs::Real32)    * polygonObject->normals().size();      // normals
+
             totalSize += sizeof(size_t);                                                // connections.size()
             totalSize += sizeof(kvs::UInt32)    * polygonObject->connections().size();  // connections
+
+            totalSize += sizeof(size_t);                                                // opacities.size()
+            totalSize += sizeof(kvs::UInt8)     * polygonObject->opacities().size();    // opacities
+
+            totalSize += sizeof(kvs::Real32) * 3;                                       // minObjectCoords
+            totalSize += sizeof(kvs::Real32) * 3;                                       // maxObjectCoords
             break;
         }
 #ifdef ASSIMP
@@ -1069,55 +1138,58 @@ size_t ServerWIP::calculateTotalSize() const
         case ObjectInfoExtractor::PolygonObjectFBX:
         {
             auto* texturedPolygonObject = static_cast<kvs::TexturedPolygonObject*>( info.object );
-            totalSize += sizeof(kvs::TexturedPolygonObject::PolygonType);                                           // PolygonType
-            totalSize += sizeof(kvs::TexturedPolygonObject::ColorType);                                             // ColorType
-            totalSize += sizeof(kvs::TexturedPolygonObject::NormalType);                                            // NormalType
+            totalSize += sizeof(kvs::TexturedPolygonObject::PolygonType);                           // PolygonType
+            totalSize += sizeof(kvs::TexturedPolygonObject::ColorType);                             // ColorType
+            totalSize += sizeof(kvs::TexturedPolygonObject::NormalType);                            // NormalType
 
-            totalSize += sizeof(size_t);                                                                            // coords.size()
-            totalSize += sizeof(kvs::Real32)    * texturedPolygonObject->coords().size();                           // coords
+            totalSize += sizeof(size_t);                                                            // coords.size()
+            totalSize += sizeof(kvs::Real32)    * texturedPolygonObject->coords().size();           // coords
 
-            totalSize += sizeof(size_t);                                                                            // colors.size()
-            totalSize += sizeof(kvs::UInt8)    * texturedPolygonObject->colors().size();                            // colors
+            totalSize += sizeof(size_t);                                                            // colors.size()
+            totalSize += sizeof(kvs::UInt8)    * texturedPolygonObject->colors().size();            // colors
 
-            totalSize += sizeof(size_t);                                                                            // normals.size()
-            totalSize += sizeof(kvs::Real32)    * texturedPolygonObject->normals().size();                          // normals
+            totalSize += sizeof(size_t);                                                            // normals.size()
+            totalSize += sizeof(kvs::Real32)    * texturedPolygonObject->normals().size();          // normals
 
-            totalSize += sizeof(size_t);                                                                            // connections.size()
-            totalSize += sizeof(kvs::UInt32)    * texturedPolygonObject->connections().size();                      // connections
+            totalSize += sizeof(size_t);                                                            // connections.size()
+            totalSize += sizeof(kvs::UInt32)    * texturedPolygonObject->connections().size();      // connections
 
-            totalSize += sizeof(size_t);                                                                            // opacities.size()
-            totalSize += sizeof(kvs::UInt8)    * texturedPolygonObject->opacities().size();                         // opacities
+            totalSize += sizeof(size_t);                                                            // opacities.size()
+            totalSize += sizeof(kvs::UInt8)    * texturedPolygonObject->opacities().size();         // opacities
 
-            totalSize += sizeof(size_t);                                                                            // texture2DCoords.size()
-            totalSize += sizeof(kvs::Real32)    * texturedPolygonObject->texture2DCoords().size();                  // texture2DCoords
+            totalSize += sizeof(size_t);                                                            // texture2DCoords.size()
+            totalSize += sizeof(kvs::Real32)    * texturedPolygonObject->texture2DCoords().size();  // texture2DCoords
 
-            totalSize += sizeof(size_t);                                                                            // textureIds.size()
-            totalSize += sizeof(kvs::UInt32)    * texturedPolygonObject->textureIds().size();                       // textureIds
+            totalSize += sizeof(size_t);                                                            // textureIds.size()
+            totalSize += sizeof(kvs::UInt32)    * texturedPolygonObject->textureIds().size();       // textureIds
 
-            totalSize += sizeof(size_t);                                                                            // mapIdColorArray
+            totalSize += sizeof(size_t);                                                            // mapIdColorArray
             for( const auto& kv : texturedPolygonObject->mapIdToColorArray() )
             {
                 const kvs::UInt32 id = kv.first;
                 const size_t size = kv.second.size();
 
-                totalSize += sizeof(kvs::UInt32); // id
-                totalSize += sizeof(size_t);      // array size
-                totalSize += sizeof(kvs::UInt8) * size; // RGBA bytes
+                totalSize += sizeof(kvs::UInt32);                                                   // id
+                totalSize += sizeof(size_t);                                                        // array size
+                totalSize += sizeof(kvs::UInt8) * size;                                             // RGBA bytes
             }
 
             totalSize += sizeof(size_t);
-            for( const auto& kv : texturedPolygonObject->mapIdToImageWidth() )                                       // mapIdImageWidth
+            for( const auto& kv : texturedPolygonObject->mapIdToImageWidth() )                      // mapIdImageWidth
             {
-                totalSize += sizeof(kvs::UInt32); // id
-                totalSize += sizeof(kvs::UInt32); // width
+                totalSize += sizeof(kvs::UInt32);                                                   // id
+                totalSize += sizeof(kvs::UInt32);                                                   // width
             }
 
             totalSize += sizeof(size_t);
-            for( const auto& kv : texturedPolygonObject->mapIdToImageHeight() )                                      // mapIdImageHeight
+            for( const auto& kv : texturedPolygonObject->mapIdToImageHeight() )                     // mapIdImageHeight
             {
-                totalSize += sizeof(kvs::UInt32); // id
-                totalSize += sizeof(kvs::UInt32); // height
+                totalSize += sizeof(kvs::UInt32);                                                   // id
+                totalSize += sizeof(kvs::UInt32);                                                   // height
             }
+
+            totalSize += sizeof(kvs::Real32) * 3;                                                   // minObjectCoords
+            totalSize += sizeof(kvs::Real32) * 3;                                                   // maxObjectCoords
             break;
         }
 #endif
@@ -1126,16 +1198,24 @@ size_t ServerWIP::calculateTotalSize() const
             auto* lineObject = static_cast<kvs::LineObject*>( info.object );
             totalSize += sizeof(kvs::LineObject::LineType);                         // lineType
             totalSize += sizeof(kvs::LineObject::ColorType);                        // colorType
+
             totalSize += sizeof(size_t);                                            // coords.size()
             totalSize += sizeof(kvs::Real32)    * lineObject->coords().size();      // coords
+
             totalSize += sizeof(size_t);                                            // colors.size()
             totalSize += sizeof(kvs::UInt8)     * lineObject->colors().size();      // colors
+
             totalSize += sizeof(size_t);                                            // normals.size()
             totalSize += sizeof(kvs::Real32)    * lineObject->normals().size();     // normals
+
             totalSize += sizeof(size_t);                                            // connections.size()
             totalSize += sizeof(kvs::UInt32)    * lineObject->connections().size(); // connections
+
             totalSize += sizeof(size_t);                                            // sizes.size()
             totalSize += sizeof(kvs::Real32)    * lineObject->sizes().size();       // sizes
+
+            totalSize += sizeof(kvs::Real32) * 3;                                   // minObjectCoords
+            totalSize += sizeof(kvs::Real32) * 3;                                   // maxObjectCoords
             break;
         }
         default:
