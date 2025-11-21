@@ -506,8 +506,7 @@ void GlyphSeed::PointSampling_unstruct()
         // minmax値の更新
         m_color_min = min;
         m_color_max = max;
-
-  }
+    } // jpv::DataDefines::VariableArray or jpv::DataDefines::SingleVariable
 
 //    this -> show();
 }

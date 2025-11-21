@@ -184,11 +184,11 @@ void generate_plot_over_line(
 
         if( pm.stepExisted() )
         {
-            pm.setTimeStep_particle( pm.particleStatusFile().getLatestTimeStep() );
+            pm.setTimeStep_pol( pm.particleStatusFile().getLatestTimeStep() );
         }
         else
         {
-            pm.setTimeStep_particle(0);
+            pm.setTimeStep_pol(0);
         }
         
         // get plot over line

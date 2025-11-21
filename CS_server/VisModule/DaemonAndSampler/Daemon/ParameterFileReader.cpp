@@ -168,10 +168,12 @@ void ParameterFileReader::outputParameterMessage( jpv::ParticleTransferServerMes
 
 void ParameterFileReader::setParticleParameter( Argument& param )
 {
-    const std::string size_sampling_method = m_name_list_file.getValue<std::string>("SAMPLING_METHOD");
-    param.m_particle_limit                 = m_name_list_file.getValue<int32_t>( "PARTICLE_LIMIT" );
-    param.m_particle_density               = m_name_list_file.getValue<float>( "PARTICLE_DENSITY" );
-    param.m_particle_data_size_limit       = m_name_list_file.getValue<float>( "PARTICLE_DATA_SIZE_LIMIT" );
+    const std::string size_sampling_method      = m_name_list_file.getValue<std::string>("SAMPLING_METHOD");
+    param.m_particle_limit                      = m_name_list_file.getValue<int32_t>( "PARTICLE_LIMIT" );
+    param.m_particle_density                    = m_name_list_file.getValue<float>( "PARTICLE_DENSITY" );
+    param.m_particle_data_size_limit            = m_name_list_file.getValue<float>( "PARTICLE_DATA_SIZE_LIMIT" );
+    param.m_color_transfer_function_synthesis   = m_name_list_file.getValue<std::string>( "COLOR_SYNTH" );
+    param.m_opacity_transfer_function_synthesis = m_name_list_file.getValue<std::string>( "OPACITY_SYNTH" );
 
     if ( size_sampling_method == "Uniform" )
     {
@@ -285,10 +287,12 @@ void ParameterFileReader::setParticleParameter( Argument& param )
     equation   = m_name_list_file.getValue<std::string>( "COLOR_SYNTH" );
     std::replace( equation.begin(), equation.end(), 'C', 'c' );
     eq = param.m_transfunc_synthesizer->convert_token( equation );
+    param.m_transfunc_synthesizer->setColorFunction( eq );
 
     equation = m_name_list_file.getValue<std::string>( "OPACITY_SYNTH" );
     std::replace( equation.begin(), equation.end(), 'O', 'a' );
     eq = param.m_transfunc_synthesizer->convert_token( equation );
+    param.m_transfunc_synthesizer->setOpacityFunction( eq );
 
     std::vector<EquationToken> var;
 
@@ -444,6 +448,9 @@ void ParameterFileReader::setGlyphParameter( Argument& param )
 
     const float glyph_color_min = m_name_list_file.getValue<float>("GLYPH_COLOR_MIN");
     const float glyph_color_max = m_name_list_file.getValue<float>("GLYPH_COLOR_MAX");
+    param.m_glyph_color_min     = glyph_color_min;
+    param.m_glyph_color_max     = glyph_color_max;
+
     const std::string color_map_string   = m_name_list_file.getValue<std::string>( "GLYPH_COLOR_MAP_TABLE" );
     const std::vector<int> color_map_int_table = getTableInt( color_map_string );
     vismodule::ValueArray<vismodule::UInt8> color_map_uint_table( color_map_int_table.size() );

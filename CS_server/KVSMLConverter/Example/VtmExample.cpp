@@ -104,7 +104,7 @@ void Vtm2Kvsml( const std::string& directory, const std::string& base,
             is_unstructured = true;
             for ( auto vtu : input_vtu->eachCellType() )
             {
-                cvt::VtkImporter<cvt::VtkXmlUnstructuredGrid> importer( input_vtu );
+                cvt::VtkImporter<cvt::VtkXmlUnstructuredGrid> importer( &vtu );
                 kvs::UnstructuredVolumeObject* object = &importer;
 
                 auto cell_type = object->cellType();
@@ -249,7 +249,7 @@ void SeriesVtm2Kvsml( const std::string& directory, const std::string& base,
                     is_unstructured = true;
                     for ( auto vtu : input_vtu->eachCellType() )
                     {
-                        cvt::VtkImporter<cvt::VtkXmlUnstructuredGrid> importer( input_vtu );
+                        cvt::VtkImporter<cvt::VtkXmlUnstructuredGrid> importer( &vtu );
                         kvs::UnstructuredVolumeObject* object = &importer;
 
                         auto cell_type = object->cellType();

@@ -359,11 +359,11 @@ void  Connect( int argc, char** argv )
 
             if ( clntMes.m_initialize_parameter == jpv::InitializeParameter::initial_step )
             {
-                std::cout << "==================== Initial Step Start ====================" << std::endl;
+                std::cout << "==================== Initial Step End ====================" << std::endl;
             }
             else
             {
-                std::cout << "==================== Generate Particle Start ====================" << std::endl;
+                std::cout << "==================== Generate Particle End ====================" << std::endl;
             }
         } // generate particle
         else if ( clntMes.m_initialize_parameter == jpv::InitializeParameter::generate_glyph )

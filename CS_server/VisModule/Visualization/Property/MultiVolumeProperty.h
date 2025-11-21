@@ -99,7 +99,7 @@ public:
     int32_t m_total_number_ingredients;
     std::vector<MultiVolumeProperty::IngredientsMinMax> m_total_ingredient;
 
-    void searchFile(const Argument param);
+    void searchFile(const Argument& param);
 
 };
 

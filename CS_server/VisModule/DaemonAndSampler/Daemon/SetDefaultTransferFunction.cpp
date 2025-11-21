@@ -182,8 +182,8 @@ void setParamTransferFunctionToServer( jpv::ParticleTransferServerMessage* servM
 
         // NamedTransferFunction変数
         servMes->m_transfer_function[i].m_name                 = tt.str();
-        servMes->m_transfer_function[i].m_color_variable       = qq.str();
-        servMes->m_transfer_function[i].m_opacity_variable     = qq.str();
+        servMes->m_transfer_function[i].m_color_variable       = param->m_named_transfunc_array[i].m_color_variable;
+        servMes->m_transfer_function[i].m_opacity_variable     = param->m_named_transfunc_array[i].m_opacity_variable;
 
         // ExtendTransferFunction変数
         servMes->m_transfer_function[i].m_color_variable_min   = param->m_named_transfunc_array[i].m_color_variable_min;

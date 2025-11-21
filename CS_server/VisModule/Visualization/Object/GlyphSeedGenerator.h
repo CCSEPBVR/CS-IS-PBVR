@@ -59,6 +59,7 @@ public:
         const domain_parameters_struct& dom,
         Type** values,
         int nvariables,
+        const jpv::ServerMode& server_mode,
         vismodule::KVSMLObjectGlyph* object
     );
 
@@ -72,6 +73,7 @@ public:
         unsigned int* connections,
         int ncells,
         const vismodule::VolumeObjectBase::CellType& celltype,
+        const jpv::ServerMode& server_mode,
         vismodule::KVSMLObjectGlyph* object
     );
 

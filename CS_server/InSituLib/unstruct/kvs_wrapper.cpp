@@ -213,7 +213,7 @@ bool generate_particles(
         int number_of_divide = mpi_size;
         glyph_creator.GenerateGlyphUnstruct(
             param, number_of_divide, values, nvariables, coordinates,
-            ncoords, connections, ncells, celltype, glyph_object
+            ncoords, connections, ncells, celltype, server_mode, glyph_object
         );
 
         MakeGlyph( glyph_object, glyph_coords, glyph_vectors, glyph_sizes, glyph_colors ); // InSitu only
@@ -391,8 +391,8 @@ bool SetParticleParameter(
     Generator::CalculateDensityParameters(
         param.m_camera,
         &object,
-        subpixel_level,
-        param.m_sampling_step,
+        (float)subpixel_level,
+        sampling_step,
         max_opacity,
         &sampling_volume_inverse,
         &max_density
@@ -402,10 +402,6 @@ bool SetParticleParameter(
     param.m_transfunc_synthesizer->setMaxDensity( max_density );
     param.m_transfunc_synthesizer->setSamplingVolumeInverse( sampling_volume_inverse );
 
-    // cameraをどこかでnewする必要がある
-    // calculate部分をCSと共通化予定
-    // param.m_sampling_step  = CalculateSamplingStep( mvpl );
-    // param.m_subpixel_level = CalculateSubpixelLevel( param, mvpl, *param.m_camera );
 
     if( mpi_rank == 0 )
     {
@@ -562,7 +558,7 @@ bool generate_particles_vtk( int time_step, vtkUnstructuredGrid* ucd )
 
         std::unique_ptr<std::unique_ptr<Type[]>[]> values;
         domain_parameters_unstruct tmp_dom; // not use
-        nvariables  = 0;
+        nvariables = 0;
         std::unique_ptr<float[]> coordinates;
         int ncoords = 0;
         std::unique_ptr<unsigned int[]> connections;
@@ -602,7 +598,7 @@ bool generate_particles_vtk( int time_step, vtkUnstructuredGrid* ucd )
             int number_of_divide = mpi_size;
             glyph_creator.GenerateGlyphUnstruct(
                 param, number_of_divide, raw_pointers_vector.data(), nvariables, coordinates.get(),
-                ncoords, connections.get(), ncells, celltype, glyph_object
+                ncoords, connections.get(), ncells, celltype, server_mode, glyph_object
             );
 
             MakeGlyph( glyph_object, glyph_coords, glyph_vectors, glyph_sizes, glyph_colors ); // InSitu only

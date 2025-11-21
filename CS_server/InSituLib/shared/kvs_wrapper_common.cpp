@@ -355,31 +355,23 @@ auto safe_append = [](auto& dst, auto const& src, char const* what){
     auto const& k = glyph_object->colors();
 
 #if 0 // for debug
-     std::cout << "glyph_param.m_glyph_sizes        = " << glyph_param.m_glyph_sizes.size()     << std::endl; 
-     std::cout << "glyph_seed.glyph_sizes()         = " << glyph_seed.glyph_sizes().size()      << std::endl; 
-     std::cout << "glyph_param.m_glyph_vectors      = " << glyph_param.m_glyph_vectors.size()   << std::endl; 
-     std::cout << "glyph_seed.glyph_directions()    = " << glyph_seed.glyph_directions().size() << std::endl; 
-     std::cout << "m_glyph_coords.size()            = " << glyph_param.m_glyph_coords.size()    << std::endl; 
-     std::cout << "glyph_seed.glyph_coords().size() = " << glyph_seed.glyph_coords().size()     << std::endl; 
-     std::cout << "m_glyph_coords.size()            = " << glyph_param.m_glyph_colors.size()    << std::endl; 
-     std::cout << "glyph_seed.glyph_colors()        = " << glyph_seed.glyph_colors().size()     << std::endl; 
 
     std::cout << "vectors:"
-              << " cur = " << glyph_param.m_glyph_vectors.size()
+              << " cur = " << vectors.size()
               << " add = " << v.size() 
-              << " max = " << glyph_param.m_glyph_vectors.max_size() << std::endl;
+              << " max = " << vectors.max_size() << std::endl;
     std::cout << "coords :"
-              << " cur = " << glyph_param.m_glyph_coords.size()
+              << " cur = " << coords.size()
               << " add = " << c.size()
-              << " max = " << glyph_param.m_glyph_coords.max_size() << std::endl;
+              << " max = " << coords.max_size() << std::endl;
     std::cout << "colors :"
-              << " cur = " << glyph_param.m_glyph_colors.size()
+              << " cur = " << colors.size()
               << " add = " << k.size()
-              << " max = " << glyph_param.m_glyph_colors.max_size() << std::endl;
+              << " max = " << colors.max_size() << std::endl;
     std::cout << "sizes  :"
-              << " cur = " << glyph_param.m_glyph_sizes.size()
+              << " cur = " << sizes.size()
               << " add = " << s.size()
-              << " max = " << glyph_param.m_glyph_sizes.max_size() << std::endl;
+              << " max = " << sizes.max_size() << std::endl;
 #endif // for debug
 
     // 集約処理

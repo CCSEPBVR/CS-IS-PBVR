@@ -32,9 +32,15 @@ void GlyphSeedGenerator::GenerateGlyphStruct(
     const domain_parameters_struct& dom,
     Type** values,
     int nvariables,
+    const jpv::ServerMode& server_mode,
     vismodule::KVSMLObjectGlyph* object
 )
 {
+    bool is_flag = false;
+
+    if ( server_mode == jpv::ServerMode::CS ) is_flag = false;
+    else is_flag = true;
+
     GlyphSeed glyph_generator(
         param,
         number_of_divide,
@@ -67,9 +73,15 @@ void GlyphSeedGenerator::GenerateGlyphUnstruct(
     unsigned int* connections,
     int ncells,
     const vismodule::VolumeObjectBase::CellType& celltype,
+    const jpv::ServerMode& server_mode,
     vismodule::KVSMLObjectGlyph* object
 )
 {
+    bool is_flag = false;
+
+    if ( server_mode == jpv::ServerMode::CS ) is_flag = false;
+    else is_flag = true;
+
     GlyphSeed glyph_generator(
         param,
         number_of_divide,
@@ -80,7 +92,7 @@ void GlyphSeedGenerator::GenerateGlyphUnstruct(
         connections,
         ncells,
         celltype,
-        false
+        is_flag
     );
 
     glyph_generator.getGlyphData(&m_object);

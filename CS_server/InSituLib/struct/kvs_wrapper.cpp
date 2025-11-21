@@ -188,7 +188,7 @@ bool generate_particles(
         int number_of_divide = mpi_size;
         glyph_creator.GenerateGlyphStruct(
             param, number_of_divide, dom,
-            values, nvariables, glyph_object
+            values, nvariables, server_mode, glyph_object
         );
 
         MakeGlyph( glyph_object, glyph_coords, glyph_vectors, glyph_sizes, glyph_colors ); // InSitu only
@@ -366,7 +366,7 @@ bool SetParticleParameter(
         param.m_camera,
         &object,
         (float)subpixel_level,
-        param.m_sampling_step,
+        sampling_step,
         max_opacity,
         &sampling_volume_inverse,
         &max_density

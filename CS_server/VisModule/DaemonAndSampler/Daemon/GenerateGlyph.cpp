@@ -135,6 +135,7 @@ void generate_glyph(
                             connections.get(),
                             ncells,
                             celltype,
+                            server_mode,
                             tmp_obj
                         );
                     }
@@ -157,6 +158,7 @@ void generate_glyph(
                             dom,
                             raw_pointers_vector.data(),
                             nvariables,
+                            server_mode,
                             tmp_obj
                         );
                     }
