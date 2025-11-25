@@ -54,57 +54,28 @@ public:
                     {
                         if( info.needSameTimeStepReplace == false )
                         {
-                            // m_screen->scene()->object( info.objectID.first )->show();
                             info.object = nullptr;
                         }
                         else
                         {
                             importObject( info, resultTimeStep );
                             info.currentImportedTimeStep = resultTimeStep;
-                            info.needSameTimeStepReplace = false;
                         }
                     }
                     else
                     {
                         importObject( info, resultTimeStep );
                         info.currentImportedTimeStep = resultTimeStep;
-                        info.needSameTimeStepReplace = false;
                     }
-
-                    // QVariant newVar;
-                    // newVar.setValue( info );
-                    // item->setData( newVar, Qt::UserRole );
                 }
                 else
                 {
-                    if( info.objectID.first == -1 && info.objectID.second == -1 ) // 一度も登録されてない場合
-                    {
-
-                    }
-                    else // 登録されている場合
-                    {
-                        // m_screen->scene()->object( info.objectID.first )->hide();
-                    }
                     info.object = nullptr;
-                    // QVariant newVar;
-                    // newVar.setValue( info );
-                    // item->setData( newVar, Qt::UserRole );
                 }
             }
             else
             {
-                if( info.objectID.first == -1 && info.objectID.second == -1 ) // 一度も登録されてない場合
-                {
-
-                }
-                else // 登録されている場合
-                {
-                    // m_screen->scene()->object( info.objectID.first )->hide();
-                }
                 info.object = nullptr;
-                // QVariant newVar;
-                // newVar.setValue( info );
-                // item->setData( newVar, Qt::UserRole );
             }
         }
         if( m_done_call_back ) m_done_call_back();

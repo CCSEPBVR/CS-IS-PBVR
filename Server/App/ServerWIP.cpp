@@ -592,8 +592,8 @@ void ServerWIP::showAtTimeStep( uWS::WebSocket<false, true, PerSocket>* ws, cons
     const int& timeStep = received["timeStep"];
 
     Worker worker( timeStep, m_objects ); // m_objects は std::vector<ObjectInfo> のメンバ
-    worker.setDoneCallBack( [this, ws]() {
-        std::vector<char> buffer = pack();
+    worker.setDoneCallBack( [this, ws, timeStep]() {
+        std::vector<char> buffer = pack( timeStep );
 
         // バイナリ送信
         m_u_web_sockets.getLoop()->defer( [buffer, this]() {
@@ -710,11 +710,15 @@ void ServerWIP::objectInfoUpdate( uWS::WebSocket<false, true, PerSocket>* ws, co
     ws->publish( "Notice", msg.dump(), uWS::OpCode::TEXT );
 }
 
-std::vector<char> ServerWIP::pack()
+std::vector<char> ServerWIP::pack( const int timeStep )
 {
     size_t totalSize = calculateTotalSize();
     std::vector<char> buffer( totalSize );
     size_t offset = 0;
+
+    // Time Step
+    std::memcpy( buffer.data() + offset, &timeStep, sizeof(int) );
+    offset += sizeof(int);
 
     for( const auto& info : *m_objects )
     {
@@ -728,6 +732,11 @@ std::vector<char> ServerWIP::pack()
 
         std::memcpy( buffer.data() + offset, info.uuid.data(), uuidLen );
         offset += uuidLen;
+
+        // CurrentImportedTimeStep
+        int currentImportedTimeStep = info.currentImportedTimeStep;
+        std::memcpy( buffer.data() + offset, &currentImportedTimeStep, sizeof(int) );
+        offset += sizeof(int);
 
         // Object
         switch( info.format )
@@ -1064,6 +1073,10 @@ std::vector<char> ServerWIP::pack()
 size_t ServerWIP::calculateTotalSize() const
 {
     size_t totalSize = 0;
+
+    // Time Step
+    totalSize += sizeof(int);
+
     for( const auto& info : *m_objects )
     {
         if( info.object == nullptr ) continue;// nullptrである場合は送信しない
@@ -1071,6 +1084,9 @@ size_t ServerWIP::calculateTotalSize() const
         // UUID
         totalSize += sizeof(uint32_t);
         totalSize += info.uuid.size();
+
+        // CurrentImportedTimeStep
+        totalSize += sizeof(int);
 
         // Object
         switch( info.format )

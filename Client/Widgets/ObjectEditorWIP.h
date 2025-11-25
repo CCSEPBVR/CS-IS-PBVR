@@ -82,6 +82,8 @@ private:
     void registerObject( ObjectInfoExtractor::ObjectInfo& info );
     void replaceObject( ObjectInfoExtractor::ObjectInfo& info );
 
+    void updateVisibility( int requestTimeStep );
+
 private slots:
     void onItemSelection( const QItemSelection &selected, const QItemSelection &deselected );
 

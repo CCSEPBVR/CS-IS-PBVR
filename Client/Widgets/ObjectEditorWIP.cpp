@@ -128,6 +128,11 @@ void ObjectEditorWIP::unpack( const QByteArray& binary )
     const char* dataPtr = binary.constData();
     size_t offset = 0;
 
+    // Time Step
+    int timeStep = 0;
+    std::memcpy( &timeStep, dataPtr + offset, sizeof(int) );
+    offset += sizeof(int);
+
     // 送信されてきたUUIDを記録する
     std::unordered_set<std::string> receivedUUIDSs;
 
@@ -147,6 +152,10 @@ void ObjectEditorWIP::unpack( const QByteArray& binary )
 
         receivedUUIDSs.insert( uuid );
 
+        int currentImportedTimeStep;
+        std::memcpy( &currentImportedTimeStep, dataPtr + offset, sizeof(int) );
+        offset += sizeof(int);
+
         // モデル内のUUIDと一致する場合objectを更新する。
         for( int row = 0; row < m_model->rowCount(); ++row )
         {
@@ -156,9 +165,12 @@ void ObjectEditorWIP::unpack( const QByteArray& binary )
 
             ObjectInfoExtractor::ObjectInfo info = var.value<ObjectInfoExtractor::ObjectInfo>();
 
-            if( info.uuid != uuid ) continue;
+            if( info.uuid != uuid ) continue;                
 
             // UUIDが一致したのでobjectを更新
+
+            info.currentImportedTimeStep = currentImportedTimeStep;
+
             switch( info.format )
             {
             case ObjectInfoExtractor::ClientServerPointObject:
@@ -568,7 +580,7 @@ void ObjectEditorWIP::unpack( const QByteArray& binary )
         }
     }
 
-    doneObjectEditor( 0 );
+    doneObjectEditor( timeStep );
 }
 
 // FIXME:このメソッド名変な気がする。操作権を持つものからのapplyみたいな感じにしてください。
@@ -1022,6 +1034,101 @@ void ObjectEditorWIP::replaceObject( ObjectInfoExtractor::ObjectInfo& info )
         break;
     default:
         return;
+    }
+}
+
+void ObjectEditorWIP::updateVisibility( int requestTimeStep )
+{
+    for( int row = 0; row < m_model->rowCount(); row++ )
+    {
+        QStandardItem* item = m_model->item( row, 0 ); // UserRoleにObjectInfoが格納されている列
+        if( !item ) continue;
+
+        QVariant var = item->data( Qt::UserRole );
+        if( !var.canConvert<ObjectInfoExtractor::ObjectInfo>() ) continue;
+
+        ObjectInfoExtractor::ObjectInfo info = var.value<ObjectInfoExtractor::ObjectInfo>();
+
+        int resultTimeStep = -1;
+
+        if( info.isDisplay )
+        {
+            // info.timeStep.first ～ info.timeStep.second の範囲内に m_time_step が含まれる場合、
+            // 対応するタイムステップとして resultTimeStep に設定する
+            if( requestTimeStep >= info.timeStep.first && requestTimeStep <= info.timeStep.second )
+            {
+                resultTimeStep = requestTimeStep;
+            }
+
+            if( requestTimeStep < info.timeStep.first )
+            {
+                if( info.isKeepInitial )
+                {
+                    resultTimeStep = info.timeStep.first;
+                }
+            }
+
+            if( requestTimeStep > info.timeStep.second )
+            {
+                if( info.isKeepFinal )
+                {
+                    resultTimeStep = info.timeStep.second;
+                }
+            }
+
+            if( resultTimeStep != -1 )
+            {
+                if( resultTimeStep == info.currentImportedTimeStep )
+                {
+                    if( info.needSameTimeStepReplace == false )
+                    {
+                        if( info.objectID.first != -1 && info.objectID.second != -1 )
+                        {
+                            m_screen->scene()->object( info.objectID.first )->show();
+                        }
+                    }
+                    else
+                    {
+                        info.needSameTimeStepReplace = false;
+                    }
+                }
+                else
+                {
+                    info.needSameTimeStepReplace = false;
+                }
+
+                QVariant newVar;
+                newVar.setValue( info );
+                item->setData( newVar, Qt::UserRole );
+            }
+            else
+            {
+                if( info.objectID.first == -1 && info.objectID.second == -1 ) // 一度も登録されてない場合
+                {
+                }
+                else // 登録されている場合
+                {
+                    if( info.objectID.first != -1 && info.objectID.second != -1 )
+                    {
+                        m_screen->scene()->object( info.objectID.first )->hide();
+                    }
+                }
+            }
+        }
+        else
+        {
+            if( info.objectID.first == -1 && info.objectID.second == -1 ) // 一度も登録されてない場合
+            {
+
+            }
+            else // 登録されている場合
+            {
+                if( info.objectID.first != -1 && info.objectID.second != -1 )
+                {
+                    m_screen->scene()->object( info.objectID.first )->hide();
+                }
+            }
+        }
     }
 }
 
@@ -1564,6 +1671,8 @@ void ObjectEditorWIP::onApply()
 
 void ObjectEditorWIP::doneObjectEditor( int requestTimeStep )
 {
+    updateVisibility( requestTimeStep );
+
     for( int row = 0; row < m_model->rowCount(); row++ )
     {
         QStandardItem* item = m_model->item( row, 0 ); // UserRoleにObjectInfoが格納されている列

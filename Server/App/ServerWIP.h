@@ -197,7 +197,7 @@ private:
         }
     }
 
-    std::vector<char> pack();
+    std::vector<char> pack( const int timeStep );
     size_t calculateTotalSize() const;
 
     std::string toUtf8( const std::filesystem::path& p );
