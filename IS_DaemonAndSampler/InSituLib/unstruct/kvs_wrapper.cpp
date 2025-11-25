@@ -2903,6 +2903,7 @@ void ens_OutputParticles(int time_step, int nvariables, pbvr_parameters& particl
     //if(mpi->rank==0)std::cout<<"end generate_particles\n";
 
 }
+
 void ensemble_generate_particles( int time_step, domain_parameters dom,
                              Type** values, int nvariables,
                              float* coordinates, int ncoords,
@@ -2919,6 +2920,25 @@ void ensemble_generate_particles( int time_step, domain_parameters dom,
             connections, ncells, celltype, particleBase);
 
     ens_OutputParticles(time_step, nvariables, particleBase, &param, skip_flag);
+}
+
+
+void ensemble_test( int time_step, domain_parameters dom,
+                             Type** values, int nvariables,
+                             float* coordinates, int ncoords,
+                             unsigned int* connections, int ncells, const  pbvr::VolumeObjectBase::CellType& celltype )
+{
+    static ParamInfo param;
+    pbvr_parameters particleBase;
+    bool skip_flag;
+    skip_flag = SetParameter(dom, &particleBase, &param, time_step);
+    skip_flag = true;
+    particleBase.m_nvariables = nvariables; 
+        EnsembleTest(time_step, dom, values,
+            nvariables, coordinates, ncoords,
+            connections, ncells, celltype, particleBase);
+
+//    ens_OutputParticles(time_step, nvariables, particleBase, &param, skip_flag);
 }
 
 kvs::Vector3f RandomSamplingInCube( const kvs::Vector3f vertex, kvs::MersenneTwister* MT  )
@@ -3031,58 +3051,58 @@ void EnsembleGenerateParticles( int time_step,
     std::vector<kvs::Real32> average_normals; 
     std::vector<int>         average_cellids;
 
-
-    kvs::UnstructuredVolumeObject* volume = new kvs::UnstructuredVolumeObject;
-    volume -> setNNodes(ncoords);
-    volume -> setNCells(ncells);
-    volume -> setVeclen(nvariables);
-    std::vector<float> Values;
-    Values.resize(ncoords * nvariables);
-    for (int i =0; i<nvariables ; i++) 
-    {    
-        for (int k=0; k< ncoords; k++) 
-        {    
-            Values[k+i*ncoords] = values[i][k];
-        }    
-    }    
-
-    kvs::AnyValueArray Var(Values);
-    volume -> setValues(Var);
-    kvs::ValueArray<float> Coords(coordinates, ncoords*3);
-    volume -> setCoords(Coords);
-    kvs::ValueArray<kvs::UInt32> Connections;
-    switch ( celltype )  // 2次要素は一旦除外
-    {
-        case 4: // pbvr::VolumeObjectBase::Tetrahedra:
-            {
-                int nconnection = ncells * 4;
-                Connections.allocate(nconnection); // hexのみ
-                for (int i =0; i< nconnection ;i ++)
-                {
-                    Connections[i] = connections[i];
-                }
-                volume -> setCellType(kvs::VolumeObjectBase::Tetrahedra);
-                break;
-            }
-        case 8: //  pbvr::VolumeObjectBase::Hexahedra:
-            {
-                int nconnection = ncells * 8;
-                Connections.allocate(nconnection); // hexのみ
-                for (int i =0; i< nconnection ;i ++)
-                {
-                    Connections[i] = connections[i];
-                }
-                volume -> setCellType(kvs::VolumeObjectBase::Hexahedra);
-                break;
-            }
-        default:
-            {
-                std::cout << "Unsupported cell type." << std::endl;
-                return;
-            }
-    }
-
-    volume -> setConnections(Connections);
+//  kvs::volume データの作り方
+//    kvs::UnstructuredVolumeObject* volume = new kvs::UnstructuredVolumeObject;
+//    volume -> setNNodes(ncoords);
+//    volume -> setNCells(ncells);
+//    volume -> setVeclen(nvariables);
+//    std::vector<float> Values;
+//    Values.resize(ncoords * nvariables);
+//    for (int i =0; i<nvariables ; i++) 
+//    {    
+//        for (int k=0; k< ncoords; k++) 
+//        {    
+//            Values[k+i*ncoords] = values[i][k];
+//        }    
+//    }    
+//
+//    kvs::AnyValueArray Var(Values);
+//    volume -> setValues(Var);
+//    kvs::ValueArray<float> Coords(coordinates, ncoords*3);
+//    volume -> setCoords(Coords);
+//    kvs::ValueArray<kvs::UInt32> Connections;
+//    switch ( celltype )  // 2次要素は一旦除外
+//    {
+//        case 4: // pbvr::VolumeObjectBase::Tetrahedra:
+//            {
+//                int nconnection = ncells * 4;
+//                Connections.allocate(nconnection); // hexのみ
+//                for (int i =0; i< nconnection ;i ++)
+//                {
+//                    Connections[i] = connections[i];
+//                }
+//                volume -> setCellType(kvs::VolumeObjectBase::Tetrahedra);
+//                break;
+//            }
+//        case 8: //  pbvr::VolumeObjectBase::Hexahedra:
+//            {
+//                int nconnection = ncells * 8;
+//                Connections.allocate(nconnection); // hexのみ
+//                for (int i =0; i< nconnection ;i ++)
+//                {
+//                    Connections[i] = connections[i];
+//                }
+//                volume -> setCellType(kvs::VolumeObjectBase::Hexahedra);
+//                break;
+//            }
+//        default:
+//            {
+//                std::cout << "Unsupported cell type." << std::endl;
+//                return;
+//            }
+//    }
+//
+//    volume -> setConnections(Connections);
 
 //    // Set a tetrahedral cell interpolator.
 //    std::vector<kvs::CellBase<float>*>  cell;
@@ -3115,6 +3135,7 @@ void EnsembleGenerateParticles( int time_step,
 //            }
 //    }
 
+//  pbvr::cellbaseの宣言 
     std::vector< pbvr::CellBase<Type>* > cell;
     cell.resize( max_threads );
 
@@ -3176,6 +3197,7 @@ void EnsembleGenerateParticles( int time_step,
     
     const int tf_resolution = 256;
 
+    // tfクラスの作成（デフォルトカラー）
     // stab data
     
     std::vector<kvs::UInt8> c_table ={5,48,97,6,50,100,7,52,102,8,54,105,9,56,108,10,58,111,11,60,114,12,62,116,14,64,119,15,66,122,16,68,125,17,70,128,18,72,131,19,74,134,20,76,136,21,78,139,22,80,142,23,83,145,24,85,148,25,87,151,27,89,154,28,91,157,29,93,160,30,95,163,31,98,166,32,100,169,33,102,172,35,104,173,37,105,174,38,107,175,40,109,176,41,111,177,43,113,178,45,114,178,46,116,179,47,118,180,49,120,181,50,121,182,51,123,183,53,125,184,54,127,185,55,129,186,57,130,187,58,132,188,59,134,189,60,136,189,61,138,190,63,140,191,64,141,192,65,143,193,66,145,194,67,147,195,71,149,196,74,151,197,78,153,198,81,154,199,85,156,200,88,158,201,91,160,202,95,162,203,98,164,204,101,166,205,104,168,206,107,170,207,110,172,209,113,174,210,116,175,211,118,177,212,121,179,213,124,181,214,127,183,215,130,185,216,132,187,217,135,189,218,138,191,219,141,193,220,143,195,221,146,197,222,149,198,223,151,200,223,154,201,224,157,202,225,159,203,226,162,205,226,164,206,227,167,207,228,169,208,228,172,210,229,174,211,230,177,212,231,179,214,231,182,215,232,184,216,233,187,217,234,189,219,234,192,220,235,194,221,236,197,223,236,199,224,237,202,225,238,204,226,239,207,228,239,209,229,240,210,230,240,212,230,241,213,231,241,215,232,241,216,232,241,218,233,242,219,234,242,221,235,242,222,235,242,224,236,243,225,237,243,227,237,243,228,238,244,230,239,244,231,239,244,233,240,244,234,241,245,235,241,245,237,242,245,238,243,245,240,244,246,241,244,246,243,245,246,244,246,246,246,246,247,247,247,247,247,246,245,248,245,243,248,244,241,248,243,240,249,242,238,249,241,236,249,239,234,250,238,232,250,237,230,250,236,228,250,235,227,251,234,225,251,233,223,251,232,221,251,231,219,251,230,217,252,229,215,252,228,214,252,227,212,252,225,210,252,224,208,252,223,206,253,222,204,253,221,203,253,220,201,253,219,199,253,217,196,253,215,193,252,212,191,252,210,188,252,208,185,252,206,182,252,204,179,251,202,177,251,200,174,251,197,171,250,195,168,250,193,165,250,191,163,249,189,160,249,187,157,248,184,154,248,182,152,248,180,149,247,178,146,247,176,143,246,174,141,246,171,138,245,169,135,245,167,133,244,165,130,243,162,128,242,160,126,241,157,124,240,155,122,239,152,119,238,149,117,237,147,115,235,144,113,234,142,111,233,139,109,232,136,107,231,134,105,230,131,103,229,128,101,227,126,99,226,123,97,225,120,95,224,118,93,223,115,91,221,112,89,220,110,87,219,107,85,218,104,83,217,102,81,215,99,79,214,96,77,213,94,76,211,91,74,210,89,73,208,86,71,207,84,70,206,82,68,204,79,67,203,77,66,201,74,64,200,72,63,198,69,62,197,66,60,196,64,59,194,61,57,193,58,56,191,55,55,190,53,53,188,50,52,187,46,51,185,43,49,184,40,48,182,36,47,181,33,46,179,29,44,178,24,43,175,23,43,172,22,42,169,21,42,166,20,41,162,19,41,159,18,40,156,17,40,153,15,39,150,14,39,147,13,38,144,12,38,141,11,37,138,10,37,135,9,36,132,8,36,129,7,35,126,6,35,123,5,34,120,4,34,117,3,33,115,2,33,112,2,33,109,1,32,106,1,32,103,0,31};
@@ -3200,54 +3222,9 @@ void EnsembleGenerateParticles( int time_step,
 //         rejected_NP_in_cell[i] = 0;
 //    }
 
-    //TFS
-    TransferFunctionSynthesizer* tfs = new TransferFunctionSynthesizer;
-    // add by shimomura 2024/03/25
-    std::string  equation;
-    EquationToken eq;
-    std::vector<EquationToken> var1;
-    equation = "a1";
-
-    //std::replace(equation.begin(), equation.end(), 'O', 'a');
-    eq = tfs->convert_token(equation);
-    tfs->setOpacityFunction( eq );
-
-    equation = "c1" ;
-    //std::replace(equation.begin(), equation.end(), 'C', 'c');
-    eq = tfs->convert_token(equation);
-    tfs->setColorFunction( eq );
-
-    for ( size_t i = 0; i < 1; i++ )
-    {
-        std::stringstream tss;
-        tss << "q" << i + 1 ;
-        const std::string tag_base = tss.str();
-
-        equation = tag_base;
-        eq = tfs->convert_token(equation);
-        var1.push_back( eq );
-    }
-
-    tfs->setOpacityVariable( var1 );
-    tfs->setColorVariable( var1 );
-
-    TransferFunctionSynthesizer** th_tfs = new TransferFunctionSynthesizer*[max_threads];
-    for ( int n = 0; n < max_threads; n++ )
-    {
-        th_tfs[n] = new TransferFunctionSynthesizer( *tfs );
-    }
-
-    std::vector<pbvr::TransferFunction> th_tf;
-    th_tf.resize( max_threads );
-    for ( int i = 0; i < max_threads; i++ )
-    {
-            th_tf[i] = tf;
-    }
-
-
     kvs::Timer timer( kvs::Timer::Start );
-//#pragma omp parallel
-//{    
+#pragma omp parallel
+{    
 #if _OPENMP
         int nthreads = omp_get_num_threads();
         int thid     = omp_get_thread_num();
@@ -3256,9 +3233,7 @@ void EnsembleGenerateParticles( int time_step,
         int thid     = 0;
 #endif
 
-        std::cout << "thid = " << thid << std::endl; 
-    kvs::MersenneTwister MT( mpi_rank );
-//    kvs::MersenneTwister MT( thid + mpi_rank * nthreads );
+    kvs::MersenneTwister MT( thid + mpi_rank * nthreads );
     std::vector<kvs::Real32> th_vertex_coords;
     std::vector<kvs::Real32> th_vertex_scalars;
     std::vector<kvs::Real32> th_vertex_normals;
@@ -3267,38 +3242,32 @@ void EnsembleGenerateParticles( int time_step,
 
 //    kvs::Timer th_timer( kvs::Timer::Start );
 //#pragma omp for schedule( dynamic ) nowait
-//#pragma omp for 
+#pragma omp for  
     for ( size_t index = 0; index < ncells; ++index )
     {
-//    th_timer.start();
-            // Bind the cell which is indicated by 'index'.
+//            th_timer.start();
             cell[thid]->bindCell( index );
-
-//    th_timer.stop();
-//    time5 += th_timer.sec();
-//    th_timer.start();
+//            th_timer.stop();
+//            time1 += th_timer.sec();
+//            th_timer.start();
             // Calculate a number of particles in this cell.
             const float volume_of_cell = cell[thid]->volume();
+//            th_timer.stop();
+//            time2 += th_timer.sec();
+//            th_timer.start();
 
-
-//    th_timer.stop();
-//    time4 += th_timer.sec();
-//    th_timer.start();
             size_t nparticles_in_cell 
                 = calculate_number_of_particles( max_density, volume_of_cell, &MT ) ;
             nparticles_in_cell *= repetitions;
+//            th_timer.stop();
+//            time3 += th_timer.sec();
+//            th_timer.start();
 
-//    th_timer.stop();
-//    time1 += th_timer.sec();
-//    th_timer.start();
-//        for ( kvs::UInt32 r = 0; r < repetitions; ++r )
-//        {
             // Generate a set of particles in this cell represented by v0,...,v3 and s0,...,s3.
             for ( size_t particle = 0; particle < nparticles_in_cell; ++particle )
             {
                 // Calculate a coord. // ローカル座標
                 const kvs::Vector3f coord = cell[thid]->randomSampling_MT( &MT);
-//                const kvs::Vector3f coord = cell[thid]->MT_randomSampling( &MT);
                 // Calculate a color.
                 const float scalar = cell[thid]->scalar();
 
@@ -3307,67 +3276,45 @@ void EnsembleGenerateParticles( int time_step,
                 */
                 const kvs::Vector3f normal( -cell[thid]->gradient() );
 
-//    th_timer.stop();
-//    time2 += th_timer.sec();
-//    th_timer.start();
                 // set coord, color, and normal to point object( this ).
-//                th_vertex_coords.push_back( coord.x() );
-//                th_vertex_coords.push_back( coord.y() );
-//                th_vertex_coords.push_back( coord.z() );
-//
-//                th_vertex_scalars.push_back( scalar );
-//
-//                th_vertex_normals.push_back( normal.x() );
-//                th_vertex_normals.push_back( normal.y() );
-//                th_vertex_normals.push_back( normal.z() );
-//
-//                th_vertex_cellids.push_back( index );
+                th_vertex_coords.push_back( coord.x() );
+                th_vertex_coords.push_back( coord.y() );
+                th_vertex_coords.push_back( coord.z() );
 
-                vertex_coords.push_back( coord.x() );
-                vertex_coords.push_back( coord.y() );
-                vertex_coords.push_back( coord.z() );
+                th_vertex_scalars.push_back( scalar );
 
-                vertex_scalars.push_back( scalar );
+                th_vertex_normals.push_back( normal.x() );
+                th_vertex_normals.push_back( normal.y() );
+                th_vertex_normals.push_back( normal.z() );
 
-                vertex_normals.push_back( normal.x() );
-                vertex_normals.push_back( normal.y() );
-                vertex_normals.push_back( normal.z() );
+                th_vertex_cellids.push_back( index );
 
-                vertex_cellids.push_back( index );
-
-
-//    th_timer.stop();
-//    time3 += th_timer.sec();
-//    th_timer.start();
             } // end of 'paricle' for-loop
 
-//    th_timer.stop();
-//    time2 += th_timer.sec();
-//    th_timer.start();
-//    } // end of repeat_level loop    
-
+//            th_timer.stop();
+//            time4 += th_timer.sec();
+//            th_timer.start();
     } // end of 'cell' for-loop
-//    th_timer.stop();
-    //std::cout << "sampling_time= " << th_timer.sec() << std::endl;          
-    std::cout << "calc_particle_time= " << time1 << std::endl;          
-    std::cout << "bind_cell_time= " << time5 << std::endl;          
-    std::cout << "volume_of_cell_time= " << time4 << std::endl;          
-    std::cout << "sampling_time= " << time2 << std::endl;          
-    std::cout << "push_back_time= " << time3 << std::endl;          
-//
-//    th_timer.start();
 //    #pragma omp barrier
-//    #pragma omp critical
+    #pragma omp critical
+    {
+        vertex_coords.insert (vertex_coords.end() , th_vertex_coords.begin() , th_vertex_coords.end());
+        vertex_scalars.insert(vertex_scalars.end(), th_vertex_scalars.begin(), th_vertex_scalars.end());
+        vertex_normals.insert(vertex_normals.end(), th_vertex_normals.begin(), th_vertex_normals.end());
+        vertex_cellids.insert(vertex_cellids.end(), th_vertex_cellids.begin(), th_vertex_cellids.end());
+    }
+//            th_timer.stop();
+//            time5 += th_timer.sec();
+//            th_timer.start();
+//    if(thid == 0 ) 
 //    {
-//        vertex_coords.insert (vertex_coords.end() , th_vertex_coords.begin() , th_vertex_coords.end());
-//        vertex_scalars.insert(vertex_scalars.end(), th_vertex_scalars.begin(), th_vertex_scalars.end());
-//        vertex_normals.insert(vertex_normals.end(), th_vertex_normals.begin(), th_vertex_normals.end());
-//        vertex_cellids.insert(vertex_cellids.end(), th_vertex_cellids.begin(), th_vertex_cellids.end());
+//        std::cout << mpi_rank << ": cell_bind      =  " << time1 <<std::endl;
+//        std::cout << mpi_rank << ": cell_volume    =  " << time2 <<std::endl;
+//        std::cout << mpi_rank << ": calc_nparticle =  " << time3 <<std::endl;
+//        std::cout << mpi_rank << ": sampling & pushback  =  " << time4 <<std::endl;
+//        std::cout << mpi_rank << ": inset  =  " << time5 <<std::endl;
 //    }
-//
-//    th_timer.stop();
-//    std::cout << mpi_rank <<  ": insert_time =" << th_timer.sec() << std::endl;
-//}  //end omp loop
+}  //end omp loop
     timer.stop();
     std::cout << mpi_rank <<  ": uniform_sampling_time =" << timer.sec() << std::endl;
     std::cout << mpi_rank <<  ": uniform_nparticles : " <<  vertex_scalars.size()   << std::endl;
@@ -3456,40 +3403,28 @@ void EnsembleGenerateParticles( int time_step,
             // 通信完了待ち
             MPI_Waitall(2, reqs, MPI_STATUSES_IGNORE);
 
-            // --- 受信データを処理する ---
-//            std::cout << "Rank " << mpi_rank
-//                << " received from " << recv_from
-//                << " (step " << step << "): ";
-//            //for (auto v : recv_scalars) std::cout << v << " ";
-//            for (auto v : recv_coords) std::cout << v << " ";
-//            std::cout << std::endl;
             timer.stop();
-//            std::cout << mpi_rank <<  ": step = " <<  step  << ": shift_exe_time =  " << timer.sec() << std::endl;
             shift_exe_time += timer.sec();
 
             // 受け取った座標情報で、recv先の条件下でのスカラー値を計算
+            #pragma omp for 
             for(int i =0; i< recv_size ;i++)
             {
                 cell[0]->bindCell( recv_cellids[i] );
                 const kvs::Vector3f coord(recv_coords[3*i + 0], recv_coords[3*i + 1], recv_coords[3*i + 2]);
 
                     // Calculate a color.
-                //cell -> setGlobalPoint(coord);
                 cell[0] -> setLocalPoint(coord);
                 const float scalar = cell[0]->scalar();
 
                     // Calculate a normal.
                 const kvs::Vector3f normal( -cell[0]->gradient() );
-//                    const kvs::Vector3f normal( interpolator.gradient<float>() );
 
-//               std::cout << "normal = " << normal <<std::endl;
-//               std::cout << mpi_rank << " : cell ->scalars()  " << cell ->scalars()[0] << " " << cell ->scalars()[1] << " " << cell ->scalars()[2] << " " <<  cell ->scalars()[3] << " " << std::endl; 
-                    // 算出データを受信データと足し合わせる
+                // 算出データを受信データと足し合わせる
                     recv_scalars[i]     = recv_scalars[i] + scalar;
                     recv_normals[3*i+0] = recv_normals[3*i+0] + normal.x();
                     recv_normals[3*i+1] = recv_normals[3*i+1] + normal.y();
                     recv_normals[3*i+2] = recv_normals[3*i+2] + normal.z();
-//                    std::cout << mpi_rank <<  ":  coords = " << coord.x() <<  ", " << coord.y() << ", " <<  coord.z() << ", scalar = " << scalar << std::endl; 
             }
 
             // 次のラウンドでは受信したデータを送信対象に更新
@@ -3499,36 +3434,6 @@ void EnsembleGenerateParticles( int time_step,
             vertex_coords = recv_coords;
         } // end for loop shift step
         std::cout << mpi_rank <<  ": shift_exe_time =" << shift_exe_time << std::endl;
-
-//            for(int i =0; i< recv_scalars.size() ;i++)
-//            {
-//                if (vertex_cellids[i] != recv_cellids[i] )
-//                {
-//                    std::cout << "diff : " << vertex_cellids[i] << " " << recv_cellids[i] <<std::endl;
-//                }
-//            }
-//        for (int r = 0; r < mpi_size; r++) {
-//            if (mpi_rank == r) {
-//                std::cout << "Rank " << mpi_rank << " collected data: ";
-//                for (int i = 0; i < local_size; i++) {
-//                    std::cout << vertex_scalars[i] << " ";
-//                }
-//                std::cout << std::endl;
-//            }
-//            MPI_Barrier(MPI_COMM_WORLD);
-//        }
-//
-//        for (int r = 0; r < mpi_size; r++) 
-//        {
-//            if (mpi_rank == r) {
-//                std::cout << "Rank " << mpi_rank << " cooord data: ";
-//                for (int i = 0; i <  3 * local_size; i++) {
-//                    std::cout << vertex_coords[i] << " ";
-//                }
-//                std::cout << std::endl;
-//            }
-//            MPI_Barrier(MPI_COMM_WORLD);
-//        }
 
        //　平均化処理 シフト処理の回数分徐算
        const float invert_num = 1.f/float(mpi_size); 
@@ -3541,7 +3446,6 @@ void EnsembleGenerateParticles( int time_step,
            vertex_normals[3*i + 2] *= invert_num;
        }
 
-//        std::cout << "vertex_scalars[ 0 ] = " <<  vertex_scalars[ 0 ] << ", coord = " << vertex_coords[0] << ", " << vertex_coords[1] << ", " << vertex_coords[2] <<std::endl; 
     }
 
     //棄却法を適応する
@@ -3551,7 +3455,6 @@ void EnsembleGenerateParticles( int time_step,
     timer.start();
 #pragma omp parallel
 {    
-//    kvs::MersenneTwister MT( 10 + mpi_rank );
 #if _OPENMP
         int nthreads = omp_get_num_threads();
         int thid     = omp_get_thread_num();
@@ -3559,18 +3462,18 @@ void EnsembleGenerateParticles( int time_step,
         int nthreads = 1;
         int thid     = 0;
 #endif
-
-    kvs::MersenneTwister MT( vertex_scalars.size() +  thid + mpi_rank * nthreads );
+//
+    kvs::MersenneTwister MT( 10 + mpi_rank );
+//    kvs::MersenneTwister MT( vertex_scalars.size() +  thid + mpi_rank * nthreads );
     std::vector<kvs::Real32> th_vertex_coords;
     std::vector<kvs::Real32> th_vertex_normals;
     std::vector<kvs::UInt8>  th_vertex_colors;
 
-#pragma omp for schedule( dynamic ) nowait
+//#pragma omp for schedule( dynamic ) nowait
+#pragma omp for
        for(int i =0; i< vertex_scalars.size() ;i++)
        {
             cell[thid] -> bindCell(vertex_cellids[i]); 
-
-//           std::cout << "Rank " << mpi_rank <<  std::endl;
           
                const kvs::Vector3f coord(vertex_coords[3*i+0], vertex_coords[3*i+1], vertex_coords[3*i+2]);
                cell[thid] -> setLocalPoint(coord);
@@ -3587,10 +3490,8 @@ void EnsembleGenerateParticles( int time_step,
                {
                    // Calculate a color.
                    const kvs::RGBColor color( tf.colorMap().at( vertex_scalars[ i ] ) );
-//                   std::cout << mpi_rank << ": scalar = " <<  vertex_scalars[ i ]   <<  ", avarage_coord = " << coord << std::endl;
 
                    // Calculate a normal.
-                   //const Vector3f normal( interpolator.template gradient<T>() );
                    const kvs::Vector3f normal( vertex_normals[3*i+0], vertex_normals[3*i+1], vertex_normals[3*i+2] );
 
                    // set coord, color, and normal to point object( this ).
@@ -3606,24 +3507,6 @@ void EnsembleGenerateParticles( int time_step,
                    th_vertex_normals.push_back( normal.y() );
                    th_vertex_normals.push_back( normal.z() );
 
-//                   // set coord, color, and normal to point object( this ).
-//                   average_coords.push_back( global_coord.x() );
-//                   average_coords.push_back( global_coord.y() );
-//                   average_coords.push_back( global_coord.z() );
-//
-//                   average_colors.push_back( color.r() );
-//                   average_colors.push_back( color.g() );
-//                   average_colors.push_back( color.b() );
-//                   
-////                   average_scalars.push_back( vertex_scalars[ i ] );
-//
-//                   average_normals.push_back( normal.x() );
-//                   average_normals.push_back( normal.y() );
-//                   average_normals.push_back( normal.z() );
-//
-//                   average_cellids.push_back(vertex_cellids[i]);
-//                     rejected_NP_in_cell[vertex_cellids[i]]++;                 
-////                   count++;
                }
 
        }
@@ -3633,41 +3516,13 @@ void EnsembleGenerateParticles( int time_step,
            average_colors.insert (average_colors.end(), th_vertex_colors.begin() , th_vertex_colors.end());
            average_normals.insert(average_normals.end(), th_vertex_normals.begin(), th_vertex_normals.end());
        }
-
 }
        timer.stop();
        std::cout << mpi_rank << ": rejection_exe_time =" << timer.sec() << std::endl;
 
        int size = average_coords.size();
-       //               std::cout << "Rank " << mpi_rank << " collected data: ";
-//       for (int i = 0; i < size; i++) 
-//       {
-////           std::cout << "Rank " << mpi_rank << ", avarage_color = " << (int)average_colors[3*i+0] << " " << (int)average_colors[3*i+1] 
-////               << " " << (int)average_colors[3*i+2] << std::endl;
-//           std::cout << "Rank " << mpi_rank << ", avarage_color = " << (int)average_colors[i] <<  std::endl;
-//       }
-//       std::cout << std::endl;
-//
-//       std::cout << "Rank " << mpi_rank << " cooord data: ";
-//       for (int i = 0; i <  size; i++) 
-//       {
-//           std::cout << average_coords[i] << " ";
-//       }
-//       std::cout << std::endl;
 #endif
 
-   
-//    std::ofstream  file("log_shift.txt");
-//    int Ncell_0 =0;
-//    file << "index, nparticles, rejected_npartiles " << std::endl;
-//    for (int i =0; i<ncells;i++)
-//    {
-//        file << i << ", " << NP_in_cell[i]<< ", " << rejected_NP_in_cell[i] << std::endl;
-//        if(rejected_NP_in_cell[i] == 0 ) Ncell_0 ++;
-//    }
-//    file << " number of 0 pertile cells = " <<  Ncell_0 << std::endl;
- 
-    //std::cout << "nparticles = " <<  vertex_coords.size()/3   << std::endl;
     std::cout << mpi_rank <<  ": nparticles : " <<  size/3   << std::endl;
 
     // 平均値データを集約する
@@ -3986,5 +3841,217 @@ void EnsembleGenerateParticles( int time_step,
 
 
 }
+
+void EnsembleTest( int time_step,
+                         domain_parameters dom,
+                         Type** values, int nvariables,
+                         float* coordinates, int ncoords,
+                         unsigned int* connections, int ncells, const pbvr::VolumeObjectBase::CellType& celltype, pbvr_parameters& particleBase) //celltype  enum 型に変更
+{
+
+#if _OPENMP
+    int max_threads = omp_get_max_threads();
+#else
+    int max_threads = 1;
+#endif
+
+    std::cout << "max_threads = " << max_threads  <<std::endl;
+    int mpi_rank = 0;
+    int mpi_size = 1;
+
+    MPI_Comm_rank( MPI_COMM_WORLD, &mpi_rank );
+    MPI_Comm_size( MPI_COMM_WORLD, &mpi_size );
+
+    if(mpi_rank==0)std::cout<<"start generate_particles\n";
+    static bool start_flag = true;
+    static bool parameter_file_opened=false;
+
+    // 初回サンプリング処理
+    // 動的な粒子データ配列
+    std::vector<kvs::Real32> vertex_coords;
+    std::vector<kvs::Real32> vertex_scalars;
+    std::vector<kvs::Real32> vertex_normals;
+    std::vector<int> vertex_cellids;
+
+    //平均値データ
+    std::vector<kvs::Real32> average_coords;
+    std::vector<kvs::UInt8>  average_colors;
+    std::vector<kvs::Real32> average_scalars;
+    std::vector<kvs::Real32> average_normals; 
+    std::vector<int>         average_cellids;
+
+//  pbvr::cellbaseの宣言 
+    std::vector< pbvr::CellBase<Type>* > cell;
+    cell.resize( max_threads );
+
+    switch ( celltype )
+    {
+        case pbvr::VolumeObjectBase::Tetrahedra:
+            {
+                if (mpi_rank == 0) std::cout << "celltype: tetrahedra " << std::endl; 
+                for ( int i = 0; i < max_threads; i++ )
+                {
+                    cell[i]  = new pbvr::TetrahedralCell<Type>( values[0], coordinates, ncoords, connections, ncells );
+                }
+                break;
+            }
+        case pbvr::VolumeObjectBase::Hexahedra:
+            {
+                for ( int i = 0; i < max_threads; i++ )
+                {
+                     cell[i]  = new pbvr::HexahedralCell<Type>( values[0], coordinates, ncoords, connections, ncells );
+                }
+                break;
+            }
+
+        default:
+            {
+                //BaseClass::m_is_success = false;
+                //kvsMessageError( "Unsupported cell type." );
+                std::cout << "Unsupported cell type." << std::endl; 
+                return;
+            }
+       }
+//    int   tf_number                = particleBase.m_tf_number;
+//    float sampling_volume_inverse  = particleBase.m_sampling_volume_inverse ;
+//    float max_opacity              = particleBase.m_max_opacity             ;
+//    float max_density              = particleBase.m_max_density             ;
+//    int   subpixel_level           = particleBase.m_subpixel_level          ;
+//    float particle_density         = particleBase.m_particle_density        ;
+//    float particle_data_size_limit = particleBase.m_particle_data_size_limit;
+
+    int   tf_number                = 1.f;
+    float sampling_volume_inverse  = 1.f;
+    float max_opacity              = 0.98             ;
+    float max_density              = 1             ;
+    int   subpixel_level           = 1          ;
+    float particle_density         = 1        ;
+//    float particle_data_size_limit = data_size_limit;
+    std::cout << "sampling_volume_inverse  = " << sampling_volume_inverse  <<std::endl;
+    // repeat level を手動設定
+    //int   repetitions             = 24 ;
+    int   repetitions             = 8 ;
+    parameter_file_opened = particleBase.m_parameter_file_opened;
+    const int max_nparticles = (int)max_density + 1;
+
+    // アンサンブル数でrepetitionを徐算
+    int ens_number = mpi_size;
+    repetitions /= ens_number;
+
+//    float max_opacity              = 0.98;
+    // Hydrogen
+    const float min_value = 0;
+    const float max_value = 255;
+////    // spx 
+//    const float min_value = 0.2;
+//    const float max_value = 1;
+    
+    kvs::Timer timer( kvs::Timer::Start );
+#pragma omp parallel
+{    
+#if _OPENMP
+        int nthreads = omp_get_num_threads();
+        int thid     = omp_get_thread_num();
+#else
+        int nthreads = 1;
+        int thid     = 0;
+#endif
+
+    std::cout << "nthreads = " << nthreads  <<std::endl;
+    kvs::MersenneTwister MT( thid + mpi_rank * nthreads );
+    std::vector<kvs::Real32> th_vertex_coords;
+    std::vector<kvs::Real32> th_vertex_scalars;
+    std::vector<kvs::Real32> th_vertex_normals;
+    std::vector<int>         th_vertex_cellids;
+    float time1=0, time2 =0, time3 =0, time4 = 0, time5 = 0;
+
+//    kvs::Timer th_timer( kvs::Timer::Start );
+//#pragma omp for schedule( dynamic ) nowait
+#pragma omp for  
+    for ( size_t index = 0; index < ncells; ++index )
+    {
+//            th_timer.start();
+            cell[thid]->bindCell( index );
+//            th_timer.stop();
+//            time1 += th_timer.sec();
+//            th_timer.start();
+            // Calculate a number of particles in this cell.
+//            const float volume_of_cell = cell[thid]->volume();
+////            th_timer.stop();
+////            time2 += th_timer.sec();
+////            th_timer.start();
+//
+//            size_t nparticles_in_cell 
+//                = calculate_number_of_particles( max_density, volume_of_cell, &MT ) ;
+//            nparticles_in_cell *= repetitions;
+//            th_timer.stop();
+//            time3 += th_timer.sec();
+//            th_timer.start();
+
+//            // Generate a set of particles in this cell represented by v0,...,v3 and s0,...,s3.
+//            for ( size_t particle = 0; particle < nparticles_in_cell; ++particle )
+//            {
+//                // Calculate a coord. // ローカル座標
+//                const kvs::Vector3f coord = cell[thid]->randomSampling_MT( &MT);
+//                // Calculate a color.
+//                const float scalar = cell[thid]->scalar();
+//
+//                // Calculate a normal.
+//                /* NOTE: The gradient vector of the cell is reversed for shading on the rendering process.
+//                */
+//                const kvs::Vector3f normal( -cell[thid]->gradient() );
+//
+//                // set coord, color, and normal to point object( this ).
+//                th_vertex_coords.push_back( coord.x() );
+//                th_vertex_coords.push_back( coord.y() );
+//                th_vertex_coords.push_back( coord.z() );
+//
+//                th_vertex_scalars.push_back( scalar );
+//
+//                th_vertex_normals.push_back( normal.x() );
+//                th_vertex_normals.push_back( normal.y() );
+//                th_vertex_normals.push_back( normal.z() );
+//
+//                th_vertex_cellids.push_back( index );
+//
+//            } // end of 'paricle' for-loop
+
+//            th_timer.stop();
+//            time4 += th_timer.sec();
+//            th_timer.start();
+    } // end of 'cell' for-loop
+//    #pragma omp barrier
+//    #pragma omp critical
+//    {
+//        vertex_coords.insert (vertex_coords.end() , th_vertex_coords.begin() , th_vertex_coords.end());
+//        vertex_scalars.insert(vertex_scalars.end(), th_vertex_scalars.begin(), th_vertex_scalars.end());
+//        vertex_normals.insert(vertex_normals.end(), th_vertex_normals.begin(), th_vertex_normals.end());
+//        vertex_cellids.insert(vertex_cellids.end(), th_vertex_cellids.begin(), th_vertex_cellids.end());
+//    }
+//            th_timer.stop();
+//            time5 += th_timer.sec();
+//            th_timer.start();
+//    if(thid == 0 ) 
+//    {
+//        std::cout << mpi_rank << ": cell_bind      =  " << time1 <<std::endl;
+//        std::cout << mpi_rank << ": cell_volume    =  " << time2 <<std::endl;
+//        std::cout << mpi_rank << ": calc_nparticle =  " << time3 <<std::endl;
+//        std::cout << mpi_rank << ": sampling & pushback  =  " << time4 <<std::endl;
+//        std::cout << mpi_rank << ": inset  =  " << time5 <<std::endl;
+//    }
+}  //end omp loop
+    timer.stop();
+    std::cout << mpi_rank <<  ": uniform_sampling_time =" << timer.sec() << std::endl;
+    std::cout << mpi_rank <<  ": uniform_nparticles : " <<  vertex_scalars.size()   << std::endl;
+
+    for ( int i = 0; i < max_threads; i++ )
+    {
+             if (cell[i] != NULL)delete cell[i];
+    }
+
+
+
+}
+
 
 
