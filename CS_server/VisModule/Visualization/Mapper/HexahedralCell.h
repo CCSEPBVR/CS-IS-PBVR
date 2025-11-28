@@ -146,8 +146,8 @@ inline void HexahedralCell<T>::grad_ary(float* grad_array_x, float* grad_array_y
     for( int i = 0; i < loop_cnt; i++ )
     {
 
-        const float dsdx
-            = static_cast<float>( BaseClass::m_scalars_array[ 0][i] * BaseClass::m_differential_functions_array[ 0][i]  )
+        const double dsdx
+            = static_cast<double>( BaseClass::m_scalars_array[ 0][i] * BaseClass::m_differential_functions_array[ 0][i]  )
                               + ( BaseClass::m_scalars_array[ 1][i] * BaseClass::m_differential_functions_array[ 1][i]  )
                               + ( BaseClass::m_scalars_array[ 2][i] * BaseClass::m_differential_functions_array[ 2][i]  )
                               + ( BaseClass::m_scalars_array[ 3][i] * BaseClass::m_differential_functions_array[ 3][i]  )
@@ -157,8 +157,8 @@ inline void HexahedralCell<T>::grad_ary(float* grad_array_x, float* grad_array_y
                               + ( BaseClass::m_scalars_array[ 7][i] * BaseClass::m_differential_functions_array[ 7][i]  );
 
 
-        const float dsdy
-            = static_cast<float>( BaseClass::m_scalars_array[ 0][i] * BaseClass::m_differential_functions_array[ 8][i]  )
+        const double dsdy
+            = static_cast<double>( BaseClass::m_scalars_array[ 0][i] * BaseClass::m_differential_functions_array[ 8][i]  )
                               + ( BaseClass::m_scalars_array[ 1][i] * BaseClass::m_differential_functions_array[ 9][i]  )
                               + ( BaseClass::m_scalars_array[ 2][i] * BaseClass::m_differential_functions_array[10][i]  )
                               + ( BaseClass::m_scalars_array[ 3][i] * BaseClass::m_differential_functions_array[11][i]  )
@@ -167,8 +167,8 @@ inline void HexahedralCell<T>::grad_ary(float* grad_array_x, float* grad_array_y
                               + ( BaseClass::m_scalars_array[ 6][i] * BaseClass::m_differential_functions_array[14][i]  )
                               + ( BaseClass::m_scalars_array[ 7][i] * BaseClass::m_differential_functions_array[15][i]  );
 
-        const float dsdz
-            = static_cast<float>( BaseClass::m_scalars_array[ 0][i] * BaseClass::m_differential_functions_array[16][i]  )
+        const double dsdz
+            = static_cast<double>( BaseClass::m_scalars_array[ 0][i] * BaseClass::m_differential_functions_array[16][i]  )
                               + ( BaseClass::m_scalars_array[ 1][i] * BaseClass::m_differential_functions_array[17][i]  )
                               + ( BaseClass::m_scalars_array[ 2][i] * BaseClass::m_differential_functions_array[18][i]  )
                               + ( BaseClass::m_scalars_array[ 3][i] * BaseClass::m_differential_functions_array[19][i]  )
@@ -177,11 +177,11 @@ inline void HexahedralCell<T>::grad_ary(float* grad_array_x, float* grad_array_y
                               + ( BaseClass::m_scalars_array[ 6][i] * BaseClass::m_differential_functions_array[22][i]  )
                               + ( BaseClass::m_scalars_array[ 7][i] * BaseClass::m_differential_functions_array[23][i]  );
 
-        const vismodule::Vector3f g( dsdx, dsdy, dsdz );
+        const vismodule::Vector3d g( dsdx, dsdy, dsdz );
 
         ///////////////////////// JacobiMatrix /////////////////////////
 
-        const float dXdx = ( BaseClass::m_differential_functions_array[ 0][i]  * BaseClass::m_vertices_array[ 0][i].x() )
+        double dXdx = ( BaseClass::m_differential_functions_array[ 0][i]  * BaseClass::m_vertices_array[ 0][i].x() )
                          + ( BaseClass::m_differential_functions_array[ 1][i]  * BaseClass::m_vertices_array[ 1][i].x() )
                          + ( BaseClass::m_differential_functions_array[ 2][i]  * BaseClass::m_vertices_array[ 2][i].x() )
                          + ( BaseClass::m_differential_functions_array[ 3][i]  * BaseClass::m_vertices_array[ 3][i].x() )
@@ -190,7 +190,7 @@ inline void HexahedralCell<T>::grad_ary(float* grad_array_x, float* grad_array_y
                          + ( BaseClass::m_differential_functions_array[ 6][i]  * BaseClass::m_vertices_array[ 6][i].x() )
                          + ( BaseClass::m_differential_functions_array[ 7][i]  * BaseClass::m_vertices_array[ 7][i].x() );
 
-        const float dYdx = ( BaseClass::m_differential_functions_array[ 0][i]  * BaseClass::m_vertices_array[ 0][i].y() )
+        double dYdx = ( BaseClass::m_differential_functions_array[ 0][i]  * BaseClass::m_vertices_array[ 0][i].y() )
                          + ( BaseClass::m_differential_functions_array[ 1][i]  * BaseClass::m_vertices_array[ 1][i].y() )
                          + ( BaseClass::m_differential_functions_array[ 2][i]  * BaseClass::m_vertices_array[ 2][i].y() )
                          + ( BaseClass::m_differential_functions_array[ 3][i]  * BaseClass::m_vertices_array[ 3][i].y() )
@@ -199,7 +199,7 @@ inline void HexahedralCell<T>::grad_ary(float* grad_array_x, float* grad_array_y
                          + ( BaseClass::m_differential_functions_array[ 6][i]  * BaseClass::m_vertices_array[ 6][i].y() )
                          + ( BaseClass::m_differential_functions_array[ 7][i]  * BaseClass::m_vertices_array[ 7][i].y() );
 
-        const float dZdx = ( BaseClass::m_differential_functions_array[ 0][i]  * BaseClass::m_vertices_array[ 0][i].z() )
+        double dZdx = ( BaseClass::m_differential_functions_array[ 0][i]  * BaseClass::m_vertices_array[ 0][i].z() )
                          + ( BaseClass::m_differential_functions_array[ 1][i]  * BaseClass::m_vertices_array[ 1][i].z() )
                          + ( BaseClass::m_differential_functions_array[ 2][i]  * BaseClass::m_vertices_array[ 2][i].z() )
                          + ( BaseClass::m_differential_functions_array[ 3][i]  * BaseClass::m_vertices_array[ 3][i].z() )
@@ -208,7 +208,7 @@ inline void HexahedralCell<T>::grad_ary(float* grad_array_x, float* grad_array_y
                          + ( BaseClass::m_differential_functions_array[ 6][i]  * BaseClass::m_vertices_array[ 6][i].z() )
                          + ( BaseClass::m_differential_functions_array[ 7][i]  * BaseClass::m_vertices_array[ 7][i].z() );
 
-        const float dXdy = ( BaseClass::m_differential_functions_array[ 8][i]  * BaseClass::m_vertices_array[ 0][i].x() )
+        double dXdy = ( BaseClass::m_differential_functions_array[ 8][i]  * BaseClass::m_vertices_array[ 0][i].x() )
                          + ( BaseClass::m_differential_functions_array[ 9][i]  * BaseClass::m_vertices_array[ 1][i].x() )
                          + ( BaseClass::m_differential_functions_array[10][i]  * BaseClass::m_vertices_array[ 2][i].x() )
                          + ( BaseClass::m_differential_functions_array[11][i]  * BaseClass::m_vertices_array[ 3][i].x() )
@@ -217,7 +217,7 @@ inline void HexahedralCell<T>::grad_ary(float* grad_array_x, float* grad_array_y
                          + ( BaseClass::m_differential_functions_array[14][i]  * BaseClass::m_vertices_array[ 6][i].x() )
                          + ( BaseClass::m_differential_functions_array[15][i]  * BaseClass::m_vertices_array[ 7][i].x() );
                                                                                             
-        const float dYdy = ( BaseClass::m_differential_functions_array[ 8][i]  * BaseClass::m_vertices_array[ 0][i].y() )
+        double dYdy = ( BaseClass::m_differential_functions_array[ 8][i]  * BaseClass::m_vertices_array[ 0][i].y() )
                          + ( BaseClass::m_differential_functions_array[ 9][i]  * BaseClass::m_vertices_array[ 1][i].y() )
                          + ( BaseClass::m_differential_functions_array[10][i]  * BaseClass::m_vertices_array[ 2][i].y() )
                          + ( BaseClass::m_differential_functions_array[11][i]  * BaseClass::m_vertices_array[ 3][i].y() )
@@ -226,7 +226,7 @@ inline void HexahedralCell<T>::grad_ary(float* grad_array_x, float* grad_array_y
                          + ( BaseClass::m_differential_functions_array[14][i]  * BaseClass::m_vertices_array[ 6][i].y() )
                          + ( BaseClass::m_differential_functions_array[15][i]  * BaseClass::m_vertices_array[ 7][i].y() );
                                                                                             
-        const float dZdy = ( BaseClass::m_differential_functions_array[ 8][i]  * BaseClass::m_vertices_array[ 0][i].z() )
+        double dZdy = ( BaseClass::m_differential_functions_array[ 8][i]  * BaseClass::m_vertices_array[ 0][i].z() )
                          + ( BaseClass::m_differential_functions_array[ 9][i]  * BaseClass::m_vertices_array[ 1][i].z() )
                          + ( BaseClass::m_differential_functions_array[10][i]  * BaseClass::m_vertices_array[ 2][i].z() )
                          + ( BaseClass::m_differential_functions_array[11][i]  * BaseClass::m_vertices_array[ 3][i].z() )
@@ -235,7 +235,7 @@ inline void HexahedralCell<T>::grad_ary(float* grad_array_x, float* grad_array_y
                          + ( BaseClass::m_differential_functions_array[14][i]  * BaseClass::m_vertices_array[ 6][i].z() )
                          + ( BaseClass::m_differential_functions_array[15][i]  * BaseClass::m_vertices_array[ 7][i].z() );
 
-        const float dXdz = ( BaseClass::m_differential_functions_array[16][i]  * BaseClass::m_vertices_array[ 0][i].x() )
+        double dXdz = ( BaseClass::m_differential_functions_array[16][i]  * BaseClass::m_vertices_array[ 0][i].x() )
                          + ( BaseClass::m_differential_functions_array[17][i]  * BaseClass::m_vertices_array[ 1][i].x() )
                          + ( BaseClass::m_differential_functions_array[18][i]  * BaseClass::m_vertices_array[ 2][i].x() )
                          + ( BaseClass::m_differential_functions_array[19][i]  * BaseClass::m_vertices_array[ 3][i].x() )
@@ -244,7 +244,7 @@ inline void HexahedralCell<T>::grad_ary(float* grad_array_x, float* grad_array_y
                          + ( BaseClass::m_differential_functions_array[22][i]  * BaseClass::m_vertices_array[ 6][i].x() )
                          + ( BaseClass::m_differential_functions_array[23][i]  * BaseClass::m_vertices_array[ 7][i].x() );
                                                                                             
-        const float dYdz = ( BaseClass::m_differential_functions_array[16][i]  * BaseClass::m_vertices_array[ 0][i].y() )
+        double dYdz = ( BaseClass::m_differential_functions_array[16][i]  * BaseClass::m_vertices_array[ 0][i].y() )
                          + ( BaseClass::m_differential_functions_array[17][i]  * BaseClass::m_vertices_array[ 1][i].y() )
                          + ( BaseClass::m_differential_functions_array[18][i]  * BaseClass::m_vertices_array[ 2][i].y() )
                          + ( BaseClass::m_differential_functions_array[19][i]  * BaseClass::m_vertices_array[ 3][i].y() )
@@ -253,7 +253,7 @@ inline void HexahedralCell<T>::grad_ary(float* grad_array_x, float* grad_array_y
                          + ( BaseClass::m_differential_functions_array[22][i]  * BaseClass::m_vertices_array[ 6][i].y() )
                          + ( BaseClass::m_differential_functions_array[23][i]  * BaseClass::m_vertices_array[ 7][i].y() );
                                                                                             
-        const float dZdz = ( BaseClass::m_differential_functions_array[16][i]  * BaseClass::m_vertices_array[ 0][i].z() )
+        double dZdz = ( BaseClass::m_differential_functions_array[16][i]  * BaseClass::m_vertices_array[ 0][i].z() )
                          + ( BaseClass::m_differential_functions_array[17][i]  * BaseClass::m_vertices_array[ 1][i].z() )
                          + ( BaseClass::m_differential_functions_array[18][i]  * BaseClass::m_vertices_array[ 2][i].z() )
                          + ( BaseClass::m_differential_functions_array[19][i]  * BaseClass::m_vertices_array[ 3][i].z() )
@@ -264,10 +264,53 @@ inline void HexahedralCell<T>::grad_ary(float* grad_array_x, float* grad_array_y
 
         ///////////////////////// JacobiMatrix /////////////////////////
 
+        // calc scale factor
+        double minValue = std::numeric_limits<double>::max();
+        std::vector<double> values = {
+            vismodule::Math::Abs(dXdx),vismodule::Math::Abs(dYdx),vismodule::Math::Abs(dZdx),
+            vismodule::Math::Abs(dXdy),vismodule::Math::Abs(dYdy),vismodule::Math::Abs(dZdy),
+            vismodule::Math::Abs(dXdz),vismodule::Math::Abs(dYdz),vismodule::Math::Abs(dZdz)
+        };
+
+        for ( double value : values )
+        {
+            if ( value != 0 && value < minValue )
+            {
+                minValue = value;
+            }
+        }
+
+        int order = 0;
+
+        while ( minValue < 1.0 )
+        {
+            minValue *= 10.0;
+            --order;
+        }
+
+        while ( minValue >= 10.0 )
+        {
+            minValue /= 10.0;
+            ++order;
+        }
+
+        order = -order;
+
+        double scale_factor = std::pow(10.0, order);  
+        dXdx *= scale_factor;
+        dXdy *= scale_factor;
+        dXdz *= scale_factor;
+        dYdx *= scale_factor;
+        dYdy *= scale_factor;
+        dYdz *= scale_factor;
+        dZdx *= scale_factor;
+        dZdy *= scale_factor;
+        dZdz *= scale_factor;
+
         /////////////////////////   inverse   /////////////////////////
 
         //const T det22[9] = {
-        const float det22[9] = {
+        const double det22[9] = {
         dYdy * dZdz - dZdy * dYdz,
         dXdy * dZdz - dZdy * dXdz,
         dXdy * dYdz - dYdy * dXdz,
@@ -279,14 +322,14 @@ inline void HexahedralCell<T>::grad_ary(float* grad_array_x, float* grad_array_y
         dXdx * dYdy - dYdx * dXdy, };
 
         //const T det33 =
-        const float det33 =
+        const double det33 =
             dXdx * (dYdy * dZdz - dZdy * dYdz)
           - dYdx * (dXdy * dZdz - dZdy * dXdz)
           + dZdx * (dXdy * dYdz - dYdy * dXdz);
 
-        float determinant = (float)det33;
+        double determinant = (double)det33;
 
-        vismodule::Matrix33f J;
+        vismodule::Matrix33d J;
 /*
         J.set( ( dYdy * dZdz - dZdy * dYdz ), ( dYdx * dZdz - dZdx * dYdz ), ( dXdx * dYdz - dYdx * dXdz ),
                ( dXdy * dZdz - dZdy * dXdz ), ( dXdx * dZdz - dZdx * dXdz ), ( dXdx * dZdy - dZdx * dXdy ),
@@ -297,10 +340,10 @@ inline void HexahedralCell<T>::grad_ary(float* grad_array_x, float* grad_array_y
                -det22[1], +det22[4], -det22[7],
                +det22[2], -det22[5], +det22[8] );
 
-        const T det_inverse = static_cast<T>( 1.0 / det33 );
+        const double det_inverse = static_cast<double>( 1.0 / det33 );
 
         J *= det_inverse;
-        const vismodule::Vector3f G = J * g;
+        const vismodule::Vector3d G = J * g * scale_factor;
 
         /////////////////////////   inverse   /////////////////////////
 
