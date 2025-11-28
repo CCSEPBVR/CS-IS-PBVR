@@ -212,16 +212,21 @@ void CellByCellHistogram::setObjectDepth( const float object_depth )
     m_object_depth = object_depth;
 }
 
-CellByCellHistogram::SuperClass* CellByCellHistogram::generate_histogram_struct(  domain_parameters_struct dom, Type** values, int nvariables )
+void CellByCellHistogram::generate_histogram_struct(
+    domain_parameters_struct dom,
+    Type** values,
+    int nvariables
+)
 {
+    int nnodes = dom.resolution[0] * dom.resolution[1] * dom.resolution[2];
+    const vismodule::Vector3ui resolution( dom.resolution[0], dom.resolution[1], dom.resolution[2] );
+    std::cout << "resolution = " << resolution << std::endl;
 
-    int nnodes = dom.resolution[0]*dom.resolution[1]*dom.resolution[2];
-    const vismodule::Vector3ui resolution(dom.resolution[0],dom.resolution[1],dom.resolution[2] );
-#if 1
-    int tf_number = m_transfer_function_array.size();
-    float sampling_volume_inverse = m_transfer_function_synthesizer -> getSamplingVolumeInverse()  ;
-    float max_opacity = m_transfer_function_synthesizer -> getMaxOpacity();
-    float max_density = m_transfer_function_synthesizer -> getMaxDensity();
+    int tf_number                 = m_transfer_function_array.size();
+    float sampling_volume_inverse = m_transfer_function_synthesizer->getSamplingVolumeInverse();
+    float max_opacity             = m_transfer_function_synthesizer->getMaxOpacity();
+    float max_density             = m_transfer_function_synthesizer->getMaxDensity();
+    int max_nparticles            = (int)max_density + 1;
 
 #if _OPENMP
     int max_threads = omp_get_max_threads();
@@ -236,68 +241,67 @@ CellByCellHistogram::SuperClass* CellByCellHistogram::generate_histogram_struct(
     int mpi_rank = 0;
 #endif
 
-    std::vector< std::vector< vismodule::TrilinearInterpolator* > >  interp;
+    std::vector<std::vector< vismodule::TrilinearInterpolator*>> interp;
     interp.resize( max_threads );
+
     for ( int i = 0; i < max_threads; i++ )
     {
-        interp[ i ].resize( nvariables );
+        interp[i].resize( nvariables );
         for ( int j = 0; j < nvariables; j++ )
         {
-             interp[i][j]  = new vismodule::TrilinearInterpolator( values[j], resolution);
+             interp[i][j] = new vismodule::TrilinearInterpolator( values[j], resolution );
         }
     }
 
-    static bool parameter_file_opened=true;
-    const int max_nparticles = (int)m_transfer_function_synthesizer->getMaxDensity() + 1;
-    if(mpi_rank==0) std::cout<<"******* max_nparticles="<<max_nparticles<<std::endl;
+    if( mpi_rank == 0 ) std::cout << "******* max_nparticles=" << max_nparticles << std::endl;
 
-    //ｿｿｿｿｿｿ
+    //ヒストグラム
     int nbins = 256;
-    vismodule::ValueArray<float> o_min( tf_number );//TFSｿｿｿｿｿｿｿｿｿｿｿ
+
+    // 伝達関数から読み込む最大最小値
+    vismodule::ValueArray<float> o_min( tf_number );
     vismodule::ValueArray<float> o_max( tf_number );
     vismodule::ValueArray<float> c_min( tf_number );
     vismodule::ValueArray<float> c_max( tf_number );
 
-    // 2023/07/31 add by shimomura
-    SuperClass::m_c_histogram = vismodule::ValueArray<int> (tf_number * nbins);
-    SuperClass::m_o_histogram = vismodule::ValueArray<int> (tf_number * nbins);
+    SuperClass::m_c_histogram = vismodule::ValueArray<int> (tf_number * nbins); // 色ヒストグラムの配列
+    SuperClass::m_o_histogram = vismodule::ValueArray<int> (tf_number * nbins); // 不透明度ヒストグラムの配列
     SuperClass::setTfnumber(tf_number);
     SuperClass::setNbins(nbins);
-
+    
     m_o_histogram.fill(0x00);
     m_c_histogram.fill(0x00);
+
     for( size_t i = 0; i < tf_number; i++ )
     {
         o_min[i] = m_transfer_function_array[i].opacityMap().minValue();
         o_max[i] = m_transfer_function_array[i].opacityMap().maxValue();
         c_min[i] = m_transfer_function_array[i].colorMap().minValue();
         c_max[i] = m_transfer_function_array[i].colorMap().maxValue();
+
+        o_min[i] = o_min[i] < FLT_MIN ? FLT_MIN : o_min[i];
+        o_max[i] = o_max[i] > FLT_MAX ? FLT_MAX : o_max[i];
+        c_min[i] = c_min[i] < FLT_MIN ? FLT_MIN : c_min[i];
+        c_max[i] = c_max[i] > FLT_MAX ? FLT_MAX : c_max[i];
     }
 
-    //ｿｿｿｿｿ
-    vismodule::ValueArray<float> O_min( tf_number );//ｿｿｿｿｿｿｿｿｿｿｿ
+    // min max
+    vismodule::ValueArray<float> O_min( tf_number );
     vismodule::ValueArray<float> O_max( tf_number );
     vismodule::ValueArray<float> C_min( tf_number );
     vismodule::ValueArray<float> C_max( tf_number );
 
-    // ｿｿｿｿｿｿｿｿｿｿ
-    std::vector<float> vertex_coords;
-    std::vector<Byte>  vertex_colors;
-    std::vector<float> vertex_normals;
-
-    if( parameter_file_opened )
+    // initialize
+    for ( size_t i = 0; i < tf_number; i++ )
     {
-        for ( size_t i = 0; i < tf_number; i++ ) //ｿｿｿ
-        {
-            O_min[ i ] =  FLT_MAX;
-            O_max[ i ] = -FLT_MAX;
-            C_min[ i ] =  FLT_MAX;
-            C_max[ i ] = -FLT_MAX;
-        }
+        O_min[i] =  FLT_MAX;
+        O_max[i] = -FLT_MAX;
+        C_min[i] =  FLT_MAX;
+        C_max[i] = -FLT_MAX;
     }
 
     TransferFunctionSynthesizer** th_tfs = new TransferFunctionSynthesizer*[max_threads];
-    std::vector< std::vector<vismodule::TransferFunction> > th_tf;
+    std::vector<std::vector<vismodule::TransferFunction>> th_tf;
 
     for ( int n = 0; n < max_threads; n++ )
     {
@@ -305,23 +309,24 @@ CellByCellHistogram::SuperClass* CellByCellHistogram::generate_histogram_struct(
     }
 
     th_tf.resize( max_threads );
+
     for ( int i = 0; i < max_threads; i++ )
     {
-        th_tf[ i ].resize( tf_number );
+        th_tf[i].resize( tf_number );
         for ( int j = 0; j < tf_number; j++ )
         {
             th_tf[i][j] = m_transfer_function_array[j];
         }
     }
 
-    float* opacity_volume = new float[ resolution.x()*resolution.y()*resolution.z() ];
+    float* opacity_volume = new float[resolution.x() * resolution.y() * resolution.z()];
 
-//    time_parameters time;
-//    timer.stop();
-//    time.initialize = timer.sec();
-//    timer.start();
+    // time_parameters time;
+    // timer.stop();
+    // time.initialize = timer.sec();
+    // timer.start();
 
-    //ｿｿｿｿｿｿｿｿｿｿｿ
+    // 頂点解像度と格子解像度
     const int nx = resolution.x();
     const int ny = resolution.y();
     const int nz = resolution.z();
@@ -331,7 +336,7 @@ CellByCellHistogram::SuperClass* CellByCellHistogram::generate_histogram_struct(
     const int nz_1 = nz-1;
     const int nxy_1 = nx_1 * ny_1;
 
-    int total_nparticles = 0;
+    // int total_nparticles = 0;
 
     CoordSynthesizerStrings css;
     if ( m_coord_synthesizer_strings ) 
@@ -339,6 +344,18 @@ CellByCellHistogram::SuperClass* CellByCellHistogram::generate_histogram_struct(
         css = *m_coord_synthesizer_strings;
     }
 
+    // static TimedScope td_gatherf("GatherF",1);
+    // static TimedScope td_gather("gather",1);
+    // static TimedScope td_kvsml("kvsml",1);
+    // static TimedScope td_SynthOpacityScalars("SynthesizedOpacityScalars",max_threads);
+    // static TimedScope td_SynthColorScalars("SynthesizedColorScalars",max_threads);
+    // static TimedScope td_CalculateHistogram("CalculateHistogram",max_threads);
+    // static TimedScope td_CalculateOpacity("CalculateOpacity",max_threads);
+    // static TimedScope td_CalculateDensity("CalculateDensity",max_threads);
+    // static TimedScope td_CalculateNumPar("Ccalculate_number_of_particles (Random)",max_threads);
+    // static TimedScope td_CalculateColor("CalculateColor",max_threads);
+    // static  TimedScope td_VectorPush("Vector Push",max_threads);
+    // static TimedScope td_VectorIns("Vector Insert",max_threads);
 
     #pragma omp parallel
     {
@@ -350,18 +367,14 @@ CellByCellHistogram::SuperClass* CellByCellHistogram::generate_histogram_struct(
         int thid     = 0;
 #endif
 
-        int th_total_nparticles = 0;
-        //ｿｿｿｿｿｿｿｿｿｿｿｿｿｿｿｿｿｿｿ
+        // th_tfs[thid]->set_debug_thid(thid,max_threads);
+
+        // 各スレッド番号をシードにした乱数生成器
         vismodule::MersenneTwister MT( thid + mpi_rank * nthreads );
 
-        // ｿｿｿｿｿｿｿｿｿｿ
-        std::vector<float> th_vertex_coords;
-        std::vector<Byte>  th_vertex_colors;
-        std::vector<float> th_vertex_normals;
-
-        //ｿｿｿｿｿｿｿｿｿ
-//        float o_scalars[tf_number][SIMDW];//ｿｿｿｿｿｿｿ
-//        float c_scalars[tf_number][SIMDW];//ｿｿｿｿ
+        // ヒストグラムの配列
+        // float o_scalars[tf_number][SIMDW]; // 頂点の不透明度
+        // float c_scalars[tf_number][SIMDW]; // 頂点の色
 
         float** o_scalars = new float* [tf_number];
         float** c_scalars = new float* [tf_number];
@@ -372,100 +385,186 @@ CellByCellHistogram::SuperClass* CellByCellHistogram::generate_histogram_struct(
             c_scalars[i] = new float[SIMDW];
         }
 
-        vismodule::ValueArray<int> th_o_histogram( tf_number * nbins );//ｿｿｿｿ
-        vismodule::ValueArray<int> th_c_histogram( tf_number * nbins );//ｿ
+        vismodule::ValueArray<int> th_o_histogram( tf_number * nbins ); // 不透明度
+        vismodule::ValueArray<int> th_c_histogram( tf_number * nbins ); // 色
 
-        if( parameter_file_opened )
-        {
-            th_o_histogram.fill(0x00);
-            th_c_histogram.fill(0x00);
-        }
+        th_o_histogram.fill(0x00);
+        th_c_histogram.fill(0x00);
 
-        //ｿｿｿｿｿ
-        vismodule::ValueArray<float> th_O_min( tf_number );//ｿｿｿｿｿｿｿｿｿｿｿ
+        // 計算して得る最大最小値
+        vismodule::ValueArray<float> th_O_min( tf_number );
         vismodule::ValueArray<float> th_O_max( tf_number );
         vismodule::ValueArray<float> th_C_min( tf_number );
         vismodule::ValueArray<float> th_C_max( tf_number );
 
-        if( parameter_file_opened )
+        // 初期化
+        for ( int i = 0; i < tf_number; i++ )
         {
-            for ( int i = 0; i < tf_number; i++ ) //ｿｿｿ
-            {
-                th_O_min[ i ] =  FLT_MAX;
-                th_O_max[ i ] = -FLT_MAX;
-                th_C_min[ i ] =  FLT_MAX;
-                th_C_max[ i ] = -FLT_MAX;
-            }
+            th_O_min[i] =  FLT_MAX;
+            th_O_max[i] = -FLT_MAX;
+            th_C_min[i] =  FLT_MAX;
+            th_C_max[i] = -FLT_MAX;
         }
 
         // minmax coordの設定
         const vismodule::Vector3f min_vec( 
-                dom.x_min, 
-                dom.y_min, 
-                dom.z_min); 
-       const  vismodule::Vector3f max_vec( 
-                dom.x_max, 
-                dom.y_max, 
-                dom.z_max ); 
+            dom.x_min, 
+            dom.y_min, 
+            dom.z_min
+        ); 
+        const vismodule::Vector3f max_vec( 
+            dom.x_max, 
+            dom.y_max, 
+            dom.z_max
+        ); 
 
-//        const vismodule::Vector3f min_vec = volume.minObjectCoord(); 
-//        const vismodule::Vector3f max_vec = volume.maxObjectCoord(); 
-        const vismodule::Vector3f cell_length( (max_vec.x() - min_vec.x() )/ nx_1,
-                                         (max_vec.y() - min_vec.y() )/ ny_1,
-                                         (max_vec.z() - min_vec.z() )/ nz_1) ;
+        const vismodule::Vector3f cell_length(
+            (max_vec.x() - min_vec.x() ) / nx_1,
+            (max_vec.y() - min_vec.y() ) / ny_1,
+            (max_vec.z() - min_vec.z() ) / nz_1
+        );
 
-#if 1
-       calculateMinmax_struct( nx, ny, nz, min_vec, cell_length,
-               nvariables, thid, tf_number,
-               interp, th_tfs, 
-               o_scalars, c_scalars,
-               th_O_min, th_O_max, th_C_min, th_C_max,  
-               O_min, O_max, C_min, C_max ); 
-
-#endif
-            for( int i = 0; i < tf_number; i++ )
-            {
-                o_min[i] = O_min[i];
-                o_max[i] = O_max[i];
-                c_min[i] = C_min[i];
-                c_max[i] = C_max[i];
-            }
-
-#if 1
-            calculateHistogram_struct( nx, ny, nz, min_vec, cell_length,
-               nvariables, thid, tf_number,
-               interp, th_tfs, 
-               o_scalars, c_scalars,
-               o_min, o_max, c_min, c_max, 
-               th_o_histogram,th_c_histogram );
-#endif
-//        timed_section_start(td_VectorIns,thid);
-        #pragma omp critical
         {
-            if( parameter_file_opened )
-            {
+            // Marge x-y-z loop
+            const int nvertices = nx * ny * nz;
+            // "+ 1" means remained loop
+            const int outer_loop = (nvertices % SIMDW == 0) ? nvertices / SIMDW : nvertices / SIMDW + 1;
 
-                for( int n = 0; n < tf_number * nbins; n++ )
+            #pragma omp for
+            for ( int J = 0; J < outer_loop; J++ )
+            {
+                int ncells = ((J + 1) * SIMDW > nvertices) ? nvertices - J * SIMDW : SIMDW;
+                float X_l[SIMDW], Y_l[SIMDW], Z_l[SIMDW];
+                float X_g[SIMDW], Y_g[SIMDW], Z_g[SIMDW];
+
+                #pragma ivdep
+                for ( int I = 0; I < SIMDW; I++ )
                 {
-                    m_o_histogram[n] += th_o_histogram[n];
-                    m_c_histogram[n] += th_c_histogram[n];
+                    const int vertex_id = I + J * SIMDW;
+                    const int k =  vertex_id / nxy;
+                    const int j = (vertex_id - k * nxy) / nx;
+                    const int i =  vertex_id - k * nxy - j * nx;
+
+                    const float x_l = (float)i;
+                    const float y_l = (float)j;
+                    const float z_l = (float)k;
+                    const float x_g = (x_l * cell_length.x()) + min_vec.x();
+                    const float y_g = (y_l * cell_length.y()) + min_vec.y();
+                    const float z_g = (z_l * cell_length.z()) + min_vec.z();
+
+                    X_l[I] = x_l;
+                    Y_l[I] = y_l;
+                    Z_l[I] = z_l;
+                    X_g[I] = x_g;
+                    Y_g[I] = y_g;
+                    Z_g[I] = z_g;
+                }
+
+                th_tfs[thid]->SynthesizedOpacityScalars(
+                    interp[thid],
+                    X_l, Y_l, Z_l,
+                    X_g, Y_g, Z_g,
+                    o_scalars
+                );
+
+                th_tfs[thid]->SynthesizedColorScalars(
+                    interp[thid],
+                    X_l, Y_l, Z_l,
+                    X_g, Y_g, Z_g,
+                    c_scalars
+                );
+
+                std::vector<bool> o_zero_flag(tf_number);
+                std::vector<bool> c_zero_flag(tf_number);
+
+                for( size_t i = 0; i < tf_number; i++ )
+                {
+                    o_zero_flag[i] = false;
+                    c_zero_flag[i] = false;
+                    if ( vismodule::Math::Equal<float>( o_max[i], o_min[i] ) ) // 0判定ならば一様分布にする
+                    {
+                        o_zero_flag[i] = true;
+                        for ( int k = 0; k < nbins; k++ )
+                        {
+                            th_o_histogram[k + nbins * i]++;
+                        }
+                    }
+
+                    if ( vismodule::Math::Equal<float>( c_max[i], c_min[i] ) ) // 0判定ならば一様分布にする
+                    {
+                        c_zero_flag[i] = true;
+                        for ( int k = 0; k < nbins; k++ )
+                        {
+                            th_c_histogram[k + nbins * i]++;
+                        }
+                    }
+                }
+
+                for( int i = 0; i < tf_number; i++ )
+                {
+                    for( int I = 0; I < ncells; I++ )
+                    {
+                        if ( !o_zero_flag[i] )
+                        {                        
+                            float h = (o_scalars[i][I] - o_min[i])/( o_max[i] - o_min[i] )*nbins;
+                            int H = (int)h;
+                            if( 0 <= H && H <= nbins )
+                            {
+                                if( H == nbins ) H--;
+                                th_o_histogram[H + nbins * i]++;
+                            }
+                        }
+
+                        if ( !c_zero_flag[i] )
+                        {
+                            float h = (c_scalars[i][I] - c_min[i]) / ( c_max[i] - c_min[i] ) * nbins;
+                            int H = (int)h;
+                            if( 0 <= H && H <= nbins )
+                            {
+                                if( H == nbins ) H--;
+                                th_c_histogram[H + nbins * i]++;
+                            }
+                        }
+
+                        th_O_min[i] = th_O_min[i] < o_scalars[i][I] ? th_O_min[i] : o_scalars[i][I];
+                        th_O_max[i] = th_O_max[i] > o_scalars[i][I] ? th_O_max[i] : o_scalars[i][I];
+                        th_C_min[i] = th_C_min[i] < c_scalars[i][I] ? th_C_min[i] : c_scalars[i][I];
+                        th_C_max[i] = th_C_max[i] > c_scalars[i][I] ? th_C_max[i] : c_scalars[i][I];
+                    }
                 }
             }
+        } // end of Histogram
+        
+        // timed_section_start(td_VectorIns,thid);
+        #pragma omp critical
+        {
+            // 最大最小値
+            for( size_t i = 0; i < tf_number; i++ )
+            {
+                // 不透明度
+                O_min[i] = O_min[i] < th_O_min[i] ? O_min[i] : th_O_min[i];
+                O_max[i] = O_max[i] > th_O_max[i] ? O_max[i] : th_O_max[i];
+                // 色
+                C_min[i] = C_min[i] < th_C_min[i] ? C_min[i] : th_C_min[i];
+                C_max[i] = C_max[i] > th_C_max[i] ? C_max[i] : th_C_max[i];
+            }
 
+            for( int n = 0; n < tf_number * nbins; n++ )
+            {
+                m_o_histogram[n] += th_o_histogram[n];
+                m_c_histogram[n] += th_c_histogram[n];
+            }
         } // end of omp critical
-//        timed_section_end(td_VectorIns,thid);
+        // timed_section_end(td_VectorIns,thid);
     } // end of omp parallel
 
-    //if(mpi->rank == 0) std::cout<<"total_nparticles="<<total_nparticles<<std::endl;
-    //std::cout<<"rank="<<mpi_rank<<",total_nparticles="<<total_nparticles<<std::endl;
+    // set minmax range
+    m_transfer_function_synthesizer->m_o_min.resize(tf_number);
+    m_transfer_function_synthesizer->m_o_max.resize(tf_number);
+    m_transfer_function_synthesizer->m_c_min.resize(tf_number);
+    m_transfer_function_synthesizer->m_c_max.resize(tf_number);
 
-    // add by shimomura 
-    // set variable range
-    m_transfer_function_synthesizer->m_o_min.resize(tf_number);        
-    m_transfer_function_synthesizer->m_o_max.resize(tf_number);        
-    m_transfer_function_synthesizer->m_c_min.resize(tf_number);        
-    m_transfer_function_synthesizer->m_c_max.resize(tf_number);        
-    for (int i = 0; i < tf_number; i++)
+    for ( int i = 0; i < tf_number; i++ )
     {
         m_transfer_function_synthesizer->m_o_min[i] = m_transfer_function_synthesizer->m_o_min[i] < O_min[i] ? m_transfer_function_synthesizer->m_o_min[i] : O_min[i];
         m_transfer_function_synthesizer->m_o_max[i] = m_transfer_function_synthesizer->m_o_max[i] > O_max[i] ? m_transfer_function_synthesizer->m_o_max[i] : O_max[i];
@@ -473,14 +572,18 @@ CellByCellHistogram::SuperClass* CellByCellHistogram::generate_histogram_struct(
         m_transfer_function_synthesizer->m_c_max[i] = m_transfer_function_synthesizer->m_c_max[i] > C_max[i] ? m_transfer_function_synthesizer->m_c_max[i] : C_max[i];
     }
 
-    for(int i=0; i<max_threads; i++)
+    // timer.stop();
+    // time.sampling = timer.sec();
+    // time.nparticles = vertex_coords.size()/3;
+    // timer.start();
+
+    for( int i = 0; i < max_threads; i++ )
     {
         delete th_tfs[i];
     }
     delete[] th_tfs;
 
-//    delete tfs;
-
+    // delete tfs;
     delete[] opacity_volume;
 
     for ( int i = 0; i < max_threads; i++ )
@@ -490,21 +593,31 @@ CellByCellHistogram::SuperClass* CellByCellHistogram::generate_histogram_struct(
              delete interp[i][j];
         }
     }
- 
-#endif
+
+    return;
 }
 
-CellByCellHistogram::SuperClass* CellByCellHistogram::generate_histogram_unstruct( domain_parameters_unstruct dom,Type** values, int nvariables,
-        float* coordinates, int ncoords,
-        unsigned int* connections, int ncells,
-        const  vismodule::VolumeObjectBase::CellType& cellType )
+void CellByCellHistogram::generate_histogram_unstruct(
+    domain_parameters_unstruct dom,
+    Type** values,
+    int nvariables,
+    float* coordinates,
+    int ncoords,
+    unsigned int* connections,
+    int ncells,
+    const vismodule::VolumeObjectBase::CellType& cellType
+)
 {
     double start = GetTime();
     size_t resolution = DEFAULT_NBINS;
 
-    float sampling_volume_inverse = m_transfer_function_synthesizer -> getSamplingVolumeInverse()  ;
-    float max_opacity = m_transfer_function_synthesizer -> getMaxOpacity();
-    float max_density = m_transfer_function_synthesizer -> getMaxDensity();
+    int tf_number                  = m_transfer_function_array.size();
+    float sampling_volume_inverse  = m_transfer_function_synthesizer->getSamplingVolumeInverse();
+    float max_opacity              = m_transfer_function_synthesizer->getMaxOpacity();
+    float max_density              = m_transfer_function_synthesizer->getMaxDensity();
+    float particle_density         = m_particle_density;
+    float particle_data_size_limit = m_transfer_function_synthesizer->getParticleDataSizeLimit();
+    const int max_nparticles       = (int)max_density + 1;
 
 #if _OPENMP
     int max_threads = omp_get_max_threads();
@@ -519,16 +632,9 @@ CellByCellHistogram::SuperClass* CellByCellHistogram::generate_histogram_unstruc
     int mpi_rank = 0;
 #endif
 
-//    int mpi_rank;
-//    MPI_Comm_rank( MPI_COMM_WORLD, &mpi_rank );
-
-    //if(mpi->rank==0)std::cout<<"start generate_particles\n";
-    static bool start_flag = true;
-    static bool parameter_file_opened=true;
-
-    std::vector< std::vector< vismodule::CellBase<Type>* > >  interp;
-
+    std::vector<std::vector<vismodule::CellBase<Type>*>> interp;
     interp.resize( max_threads );
+
     switch ( cellType )
     {
         case vismodule::VolumeObjectBase::Tetrahedra:
@@ -661,34 +767,29 @@ CellByCellHistogram::SuperClass* CellByCellHistogram::generate_histogram_unstruc
             {
                 BaseClass::m_is_success = false;
                 visModuleMessageError( "Unsupported cell type." );
-                return NULL;
+                return;
             }
     }
     //    VIS_MODULE_TIMER_END( 270 );
 
-    int tf_number = m_transfer_function_array.size();
+    SuperClass::m_color_histogram   = vismodule::ValueArray<vismodule::FrequencyTable>( tf_number );
+    SuperClass::m_opacity_histogram = vismodule::ValueArray<vismodule::FrequencyTable>( tf_number );
 
-    SuperClass::m_color_histogram  = vismodule::ValueArray<vismodule::FrequencyTable>( tf_number );
-    SuperClass::m_opacity_histogram  = vismodule::ValueArray<vismodule::FrequencyTable>( tf_number );
+    std::cout<<"******* getMaxDensity() = " << m_transfer_function_synthesizer->getMaxDensity() << std::endl;
 
-    std::cout<<"******* getMaxDensity()="<<m_transfer_function_synthesizer->getMaxDensity()<<std::endl;
-    const int max_nparticles = (int)m_transfer_function_synthesizer->getMaxDensity() + 1;
+    if( mpi_rank == 0 ) std::cout << "******* max_nparticles=" << max_nparticles << std::endl;
 
-    if(mpi_rank==RANK) std::cout<<"******* max_nparticles="<<max_nparticles<<std::endl;
-
+    // ヒストグラム
     int nbins = 256;
-    vismodule::ValueArray<float> o_min( tf_number );//read minmax from TFS
+
+    // 伝達関数から読み込む最大最小値
+    vismodule::ValueArray<float> o_min( tf_number );
     vismodule::ValueArray<float> o_max( tf_number );
     vismodule::ValueArray<float> c_min( tf_number );
     vismodule::ValueArray<float> c_max( tf_number );
-
-
-    vismodule::ValueArray<int> o_histogram( tf_number * nbins );// opacity histogram
-    vismodule::ValueArray<int> c_histogram( tf_number * nbins );// color histogram
     
-    // 2023/07/31 add by shimomura
-    SuperClass::m_c_histogram = vismodule::ValueArray<int> (tf_number * nbins);
-    SuperClass::m_o_histogram = vismodule::ValueArray<int> (tf_number * nbins);
+    SuperClass::m_c_histogram = vismodule::ValueArray<int> (tf_number * nbins); // 色ヒストグラムの配列
+    SuperClass::m_o_histogram = vismodule::ValueArray<int> (tf_number * nbins); // 不透明度ヒストグラムの配列
     SuperClass::setTfnumber(tf_number);
     SuperClass::setNbins(nbins);
 
@@ -701,32 +802,35 @@ CellByCellHistogram::SuperClass* CellByCellHistogram::generate_histogram_unstruc
         o_max[i] = m_transfer_function_array[i].opacityMap().maxValue();
         c_min[i] = m_transfer_function_array[i].colorMap().minValue();
         c_max[i] = m_transfer_function_array[i].colorMap().maxValue();
+
+        o_min[i] = o_min[i] < FLT_MIN ? FLT_MIN : o_min[i];
+        o_max[i] = o_max[i] > FLT_MAX ? FLT_MAX : o_max[i];
+        c_min[i] = c_min[i] < FLT_MIN ? FLT_MIN : c_min[i];
+        c_max[i] = c_max[i] > FLT_MAX ? FLT_MAX : c_max[i];
     }
-    //min max
-    vismodule::ValueArray<float> O_min( tf_number );// 4 calculate
+
+    // min max
+    vismodule::ValueArray<float> O_min( tf_number );
     vismodule::ValueArray<float> O_max( tf_number );
     vismodule::ValueArray<float> C_min( tf_number );
     vismodule::ValueArray<float> C_max( tf_number );
 
-    // dynamic  array 4 paritcle
+    // dynamic array for paritcle
     std::vector<float> vertex_coords;
     std::vector<Byte>  vertex_colors;
     std::vector<float> vertex_normals;
 
-    if( parameter_file_opened )
+    // initialize
+    for ( size_t i = 0; i < tf_number; i++ )
     {
-        for ( size_t i = 0; i < tf_number; i++ ) // initialize
-        {
-            O_min[ i ] =  FLT_MAX;
-            O_max[ i ] = -FLT_MAX;
-            C_min[ i ] =  FLT_MAX;
-            C_max[ i ] = -FLT_MAX;
-        }
+        O_min[i] =  FLT_MAX;
+        O_max[i] = -FLT_MAX;
+        C_min[i] =  FLT_MAX;
+        C_max[i] = -FLT_MAX;
     }
 
-
     TransferFunctionSynthesizer** th_tfs = new TransferFunctionSynthesizer*[max_threads];
-    std::vector< std::vector<vismodule::TransferFunction> > th_tf;
+    std::vector<std::vector<vismodule::TransferFunction>> th_tf;
 
     for ( int n = 0; n < max_threads; n++ )
     {
@@ -734,9 +838,10 @@ CellByCellHistogram::SuperClass* CellByCellHistogram::generate_histogram_unstruc
     }
 
     th_tf.resize( max_threads );
+
     for ( int i = 0; i < max_threads; i++ )
     {
-        th_tf[ i ].resize( tf_number );
+        th_tf[i].resize( tf_number );
         for ( int j = 0; j < tf_number; j++ )
         {
             th_tf[i][j] = m_transfer_function_array[j];
@@ -752,11 +857,8 @@ CellByCellHistogram::SuperClass* CellByCellHistogram::generate_histogram_unstruc
 //    //
 #endif
 
-    float particle_data_size_limit = m_transfer_function_synthesizer -> getParticleDataSizeLimit();
-    int particles_process_limit = static_cast<int> (  ( particle_data_size_limit * 10E6 )
-            / ( sizeof( float ) + sizeof( Byte ) + sizeof( float ) ) );
-    bool particle_limit_over = false;
-    // coordinate synthesis
+    int particles_process_limit = static_cast<int>((particle_data_size_limit * 10E6) / (sizeof( float ) + sizeof( Byte ) + sizeof( float )));
+
     CoordSynthesizerStrings css;
     if ( m_coord_synthesizer_strings ) 
     {
@@ -772,46 +874,39 @@ CellByCellHistogram::SuperClass* CellByCellHistogram::generate_histogram_unstruc
         int nthreads = 1;
         int thid     = 0;
 #endif
-//        std::cout << "nthreads = " << nthreads <<std::endl;
 
        vismodule::MersenneTwister MT( thid + mpi_rank * nthreads );
 
+        // 動的な粒子データ配列
         std::vector<float> th_vertex_coords;
         std::vector<Byte>  th_vertex_colors;
         std::vector<float> th_vertex_normals;
 
+        // ヒストグラムの配列
+        std::vector<float> o_scalars( tf_number ); // 頂点の不透明度
+        std::vector<float> c_scalars( tf_number ); // 頂点の色
+        vismodule::ValueArray<int> th_o_histogram( tf_number * nbins ); // 不透明度
+        vismodule::ValueArray<int> th_c_histogram( tf_number * nbins ); // 色
 
-        //ｿｿｿｿｿｿｿｿｿ
-        std::vector<float> o_scalars( tf_number );//vertex opacity
-        std::vector<float> c_scalars( tf_number );//vertex color
-        vismodule::ValueArray<int> th_o_histogram( tf_number * nbins );// opacity
-        vismodule::ValueArray<int> th_c_histogram( tf_number * nbins );// color
+        th_o_histogram.fill(0x00);
+        th_c_histogram.fill(0x00);
 
-        if( parameter_file_opened )
-        {
-            th_o_histogram.fill(0x00);
-            th_c_histogram.fill(0x00);
-        }
-
-        //ｿｿｿｿｿ
-        vismodule::ValueArray<float> th_O_min( tf_number );//ｿｿｿｿｿｿｿｿｿｿｿ
+        // 計算して得る最大最小値
+        vismodule::ValueArray<float> th_O_min( tf_number );
         vismodule::ValueArray<float> th_O_max( tf_number );
         vismodule::ValueArray<float> th_C_min( tf_number );
         vismodule::ValueArray<float> th_C_max( tf_number );
 
-        if( parameter_file_opened )
+        // 初期化
+        for ( int i = 0; i < tf_number; i++ )
         {
-            for ( int i = 0; i < tf_number; i++ ) //ｿｿｿ
-            {
-                th_O_min[ i ] =  FLT_MAX;
-                th_O_max[ i ] = -FLT_MAX;
-                th_C_min[ i ] =  FLT_MAX;
-                th_C_max[ i ] = -FLT_MAX;
-            }
+            th_O_min[i] =  FLT_MAX;
+            th_O_max[i] = -FLT_MAX;
+            th_C_min[i] =  FLT_MAX;
+            th_C_max[i] = -FLT_MAX;
         }
 
-        // -----------------------------------
-        //ｿｿｿｿｿ
+        // 配列の追加
         vismodule::Vector3f local_center_array[ SIMDW ];
         vismodule::Vector3f global_center_array[ SIMDW ];
         vismodule::UInt32 cell_index[ SIMDW ];
@@ -843,65 +938,160 @@ CellByCellHistogram::SuperClass* CellByCellHistogram::generate_histogram_unstruc
         float dsdz_array[ SIMDW ];
         vismodule::Vector3f grad_array[ SIMDW ];
         vismodule::RGBColor color_array[ SIMDW ];
-        // -----------------------------------
-        calculateMinmax_unstruct(cell_index, ncells, local_center_array,global_center_array,
-               nvariables, thid, tf_number,
-               interp, th_tfs, 
-               o_scalars_array, c_scalars_array,
-               th_O_min, th_O_max, th_C_min, th_C_max,  
-               O_min, O_max, C_min, C_max ); 
 
-        for( int i = 0; i < tf_number; i++ )
+        // 粒子生成ループ開始
+#pragma omp for schedule( dynamic ) nowait
+        for( int cell_base = 0; cell_base < ncells; cell_base += SIMDW )
         {
-            o_min[i] = O_min[i] ;
-            o_max[i] = O_max[i] ;
-            c_min[i] = C_min[i] ;
-            c_max[i] = C_max[i] ;
-        }
+            // ブロック内でのループ回数を取得
+            int remain = ( ncells - cell_base > SIMDW )? SIMDW: ncells - cell_base;
 
-        calculateHistogram_unstruct(
-        cell_index, ncells, local_center_array, global_center_array,
-        nvariables, thid, tf_number,
-        interp, th_tfs, 
-        o_scalars_array, c_scalars_array,
-        o_min, o_max, c_min, c_max, 
-        th_o_histogram,th_c_histogram );
+            /////////////////////////////// Synthesized~ (), CalculateOpacity() ///////////////////////////////////
+            // 一括でセルをバインドするための配列と、座標の取得
+            for( int cell_BLK = 0; cell_BLK < remain; cell_BLK++ )
+            {
+                cell_index[cell_BLK] = (vismodule::UInt32)(cell_base + cell_BLK);
+                // local_center_array[cell_BLK] = vismodule::Vector3f ( 0.5, 0.5, 0.5 );
+                local_center_array[cell_BLK] = interp[thid][0]->localGravityPoint();
+            }
+
+            // 補間器にセルを一括でバインド
+            for( int i = 0; i < nvariables; i++ )
+            {
+                interp[thid][i]->bindCellArray(remain, cell_index);
+            }
+
+            interp[thid][0]->setLocalPointArray( remain, local_center_array );
+            interp[thid][0]->transformLocalToGlobalArray(
+                remain,
+                local_center_array,
+                global_center_array
+            );
+            
+            th_tfs[thid]->SynthesizedOpacityScalarsArray(
+                interp[thid],
+                remain,
+                local_center_array,
+                global_center_array,
+                o_scalars_array
+            );
+
+            th_tfs[thid]->SynthesizedColorScalarsArray(
+                interp[thid],
+                remain,
+                local_center_array,
+                global_center_array,
+                c_scalars_array
+            );
+
+            std::vector<bool> o_zero_flag(tf_number);
+            std::vector<bool> c_zero_flag(tf_number);
+
+            for( size_t i = 0; i < tf_number; i++ )
+            {
+                o_zero_flag[i] = false;
+                c_zero_flag[i] = false;
+                if ( vismodule::Math::Equal<float>( o_max[i], o_min[i] ) ) // 0判定ならば一様分布にする
+                {
+                    o_zero_flag[i] = true;
+                    for ( int k = 0; k < nbins; k++ )
+                    {
+                        th_o_histogram[k + nbins * i]++;
+                    }
+                }
+
+                if ( vismodule::Math::Equal<float>( c_max[i], c_min[i] ) ) // 0判定ならば一様分布にする
+                {
+                    c_zero_flag[i] = true;
+                    for ( int k = 0; k < nbins; k++ )
+                    {
+                        th_c_histogram[k + nbins * i]++;
+                    }
+                }
+            }
+
+            for( int cell_BLK = 0; cell_BLK < remain; cell_BLK++ )
+            {
+                for( size_t i = 0; i < tf_number; i++ )
+                {
+                    if ( !o_zero_flag[i] )
+                    {
+                        float h = ( o_scalars_array[cell_BLK][i] - o_min[i] ) / ( o_max[i] - o_min[i] ) * nbins;
+                        int H = (int)h;
+
+                        if( 0 <= H && H <= nbins )
+                        {
+                            if( H == nbins ) H--;
+                            th_o_histogram[ H + nbins * i]++;
+                        }
+                    }
+
+                    if ( !c_zero_flag[i] )
+                    {
+                        float h = ( c_scalars_array[cell_BLK][i] - c_min[i] ) / ( c_max[i] - c_min[i] ) * nbins;
+                        int H = (int)h;
+
+                        if( 0 <= H && H <= nbins )
+                        {
+                            if( H == nbins ) H--;
+                            th_c_histogram[ H + nbins * i]++;
+                        }
+                    }
+
+                    th_O_min[i] = th_O_min[i] < o_scalars_array[cell_BLK][i] ? th_O_min[i] : o_scalars_array[cell_BLK][i];
+                    th_O_max[i] = th_O_max[i] > o_scalars_array[cell_BLK][i] ? th_O_max[i] : o_scalars_array[cell_BLK][i];
+                    th_C_min[i] = th_C_min[i] < c_scalars_array[cell_BLK][i] ? th_C_min[i] : c_scalars_array[cell_BLK][i];
+                    th_C_max[i] = th_C_max[i] > c_scalars_array[cell_BLK][i] ? th_C_max[i] : c_scalars_array[cell_BLK][i];
+                }
+            }
+        } // end of for cell
 
 #pragma omp critical
         {
+            // 最大最小値
+            for( size_t i = 0; i < tf_number; i++ )
+            {
+                // 不透明度
+                O_min[i] = O_min[i] < th_O_min[i] ? O_min[i] : th_O_min[i];
+                O_max[i] = O_max[i] > th_O_max[i] ? O_max[i] : th_O_max[i];
+                // 色
+                C_min[i] = C_min[i] < th_C_min[i] ? C_min[i] : th_C_min[i];
+                C_max[i] = C_max[i] > th_C_max[i] ? C_max[i] : th_C_max[i];
+            }
+
             for( int n = 0; n < tf_number * nbins; n++ )
             {
                 m_o_histogram[n] += th_o_histogram[n];
                 m_c_histogram[n] += th_c_histogram[n];
             }
         }
-
     } //#pragma omp parallel
 
-    // add by shimomura 
     // set minmax range
-    m_transfer_function_synthesizer->m_o_min.resize(tf_number);        
-    m_transfer_function_synthesizer->m_o_max.resize(tf_number);        
-    m_transfer_function_synthesizer->m_c_min.resize(tf_number);        
-    m_transfer_function_synthesizer->m_c_max.resize(tf_number);        
-    for (int i = 0; i < tf_number; i++)
+    m_transfer_function_synthesizer->m_o_min.resize(tf_number);
+    m_transfer_function_synthesizer->m_o_max.resize(tf_number);
+    m_transfer_function_synthesizer->m_c_min.resize(tf_number);
+    m_transfer_function_synthesizer->m_c_max.resize(tf_number);
+
+    for ( size_t i = 0; i < tf_number; i++ )
     {
-        m_transfer_function_synthesizer->m_o_min[i] = O_min[i];
-        m_transfer_function_synthesizer->m_o_max[i] = O_max[i];
-        m_transfer_function_synthesizer->m_c_min[i] = C_min[i];
-        m_transfer_function_synthesizer->m_c_max[i] = C_max[i];
+        m_transfer_function_synthesizer->m_o_min[i] = m_transfer_function_synthesizer->m_o_min[i] < O_min[i] ? m_transfer_function_synthesizer->m_o_min[i] : O_min[i];
+        m_transfer_function_synthesizer->m_o_max[i] = m_transfer_function_synthesizer->m_o_max[i] > O_max[i] ? m_transfer_function_synthesizer->m_o_max[i] : O_max[i];
+        m_transfer_function_synthesizer->m_c_min[i] = m_transfer_function_synthesizer->m_c_min[i] < C_min[i] ? m_transfer_function_synthesizer->m_c_min[i] : C_min[i];
+        m_transfer_function_synthesizer->m_c_max[i] = m_transfer_function_synthesizer->m_c_max[i] > C_max[i] ? m_transfer_function_synthesizer->m_c_max[i] : C_max[i];
     }
 
-    for(int i=0; i<max_threads; i++)
+    for( int i = 0; i < max_threads; i++ )
     {
         delete th_tfs[i];
     }
     delete[] th_tfs;
+
     for ( int i = 0; i < max_threads; i++ )
     {
-        for ( int j = 0; j < nvariables; j++ )
+        for ( int j = 0; j < interp[i].size(); j++ )
         {
-             delete interp[i][j];
+             if (interp[i][j] != NULL) delete interp[i][j];
         }
     }
 

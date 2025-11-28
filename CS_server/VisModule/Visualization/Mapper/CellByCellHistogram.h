@@ -119,10 +119,10 @@ public:
     void setObjectDepth( const float object_depth );
 
     // struct
-    SuperClass* generate_histogram_struct( domain_parameters_struct dom, 
+    void generate_histogram_struct( domain_parameters_struct dom, 
             Type** values, int nvariables);
     // unstruct
-    SuperClass* generate_histogram_unstruct(  domain_parameters_unstruct dom,Type** values, int nvariables,
+    void generate_histogram_unstruct(  domain_parameters_unstruct dom,Type** values, int nvariables,
         float* coordinates, int ncoords,
         unsigned int* connections, int ncells,
         const  vismodule::VolumeObjectBase::CellType& celltype) ;
