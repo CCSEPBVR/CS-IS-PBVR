@@ -41,6 +41,7 @@ signals:
     void addObjectToModel( const ObjectInfoExtractor::ObjectInfo& objectInfo );
     void unpack( const QByteArray& binary );
     void objectInfoUpdate( const QJsonArray& resultMinObjectCoordsArray, const QJsonArray& resultMaxObjectCoordsArray, const QJsonArray& updatedObjects );
+    void updateTransferFunctionFromServer( const QString& colorSynth, const QString& opacitySynth, const QJsonArray& dataArray );
     void updateFocus( kvs::Vec3, kvs::Vec3 );       // FIXME:このクラスに必要ないので削除
     void updatePointsTranslation();                 // FIXME:このクラスに必要ないので削除
     void updateStatusBarMessage( const QString& message );

@@ -1,0 +1,545 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>TransferFunctionEditorWIP</class>
+ <widget class="QDialog" name="TransferFunctionEditorWIP">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>772</width>
+    <height>474</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Transfer Function Editor</string>
+  </property>
+  <layout class="QGridLayout" name="gridLayout">
+   <item row="2" column="0" colspan="4">
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <spacer name="horizontalSpacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="exportPushButton">
+       <property name="text">
+        <string>Export</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="importPushButton">
+       <property name="text">
+        <string>Import</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="applyPushButton">
+       <property name="text">
+        <string>Apply</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item row="1" column="1">
+    <widget class="QGroupBox" name="groupBox_2">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="title">
+      <string>Color Function</string>
+     </property>
+     <layout class="QGridLayout" name="gridLayout_4">
+      <item row="1" column="4">
+       <widget class="QLineEdit" name="colorFunctionVariableLineEdit"/>
+      </item>
+      <item row="0" column="0" colspan="2">
+       <widget class="QLabel" name="colorSynthesizerLabel">
+        <property name="text">
+         <string>Synthesizer:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="5">
+       <widget class="QLabel" name="label_4">
+        <property name="text">
+         <string> )</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="2" colspan="5">
+       <widget class="QLineEdit" name="colorSynthesizerLineEdit"/>
+      </item>
+      <item row="1" column="2">
+       <widget class="QComboBox" name="colorFunctionComboBox"/>
+      </item>
+      <item row="1" column="6">
+       <widget class="QPushButton" name="colorFunctionVariableEditorPushButton">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="text">
+         <string>...</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0" colspan="2">
+       <widget class="QLabel" name="colorLabelFunction">
+        <property name="text">
+         <string>Function:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="3">
+       <widget class="QLabel" name="label_3">
+        <property name="text">
+         <string> = f( </string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0" colspan="7">
+       <widget class="QGroupBox" name="colorMapGroupBox">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="title">
+         <string>Color Map</string>
+        </property>
+        <layout class="QGridLayout" name="gridLayout_3">
+         <item row="4" column="0" alignment="Qt::AlignLeft">
+          <widget class="QLabel" name="colorMinLabel">
+           <property name="text">
+            <string>Min:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="4" column="1" alignment="Qt::AlignRight">
+          <widget class="QLabel" name="colorMaxLabel">
+           <property name="text">
+            <string>:Max</string>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="0" colspan="2">
+          <widget class="Histogram" name="colorHistogram" native="true">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>80</height>
+            </size>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="0" colspan="2">
+          <widget class="ColorMap" name="colorMap" native="true">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>80</height>
+            </size>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0" colspan="2">
+          <widget class="QPushButton" name="colorMapEditPushButton">
+           <property name="text">
+            <string>Edit Color Map</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="0" colspan="2">
+          <layout class="QFormLayout" name="formLayout">
+           <item row="0" column="0">
+            <widget class="QRadioButton" name="colorUserDefinedMinMaxRadioButton">
+             <property name="text">
+              <string>User Defined Min Max:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <layout class="QHBoxLayout" name="horizontalLayout_2">
+             <item>
+              <widget class="QDoubleSpinBox" name="colorUserDefinedMinDoubleSpinBox">
+               <property name="decimals">
+                <number>8</number>
+               </property>
+               <property name="minimum">
+                <double>-100000000000000000.000000000000000</double>
+               </property>
+               <property name="maximum">
+                <double>100000000000000000.000000000000000</double>
+               </property>
+               <property name="singleStep">
+                <double>0.100000000000000</double>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QDoubleSpinBox" name="colorUserDefinedMaxDoubleSpinBox">
+               <property name="decimals">
+                <number>8</number>
+               </property>
+               <property name="minimum">
+                <double>-100000000000000000.000000000000000</double>
+               </property>
+               <property name="maximum">
+                <double>100000000000000000.000000000000000</double>
+               </property>
+               <property name="singleStep">
+                <double>0.100000000000000</double>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item row="1" column="0">
+            <widget class="QRadioButton" name="colorServerSideMinMaxRadioButton">
+             <property name="text">
+              <string>Server Side Min Max:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="1">
+            <layout class="QHBoxLayout" name="horizontalLayout_3">
+             <item>
+              <widget class="QDoubleSpinBox" name="colorServerSideMinDoubleSpinBox">
+               <property name="buttonSymbols">
+                <enum>QAbstractSpinBox::NoButtons</enum>
+               </property>
+               <property name="decimals">
+                <number>8</number>
+               </property>
+               <property name="minimum">
+                <double>-100000000000000000.000000000000000</double>
+               </property>
+               <property name="maximum">
+                <double>100000000000000000.000000000000000</double>
+               </property>
+               <property name="singleStep">
+                <double>0.100000000000000</double>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QDoubleSpinBox" name="colorServerSideMaxDoubleSpinBox">
+               <property name="buttonSymbols">
+                <enum>QAbstractSpinBox::NoButtons</enum>
+               </property>
+               <property name="decimals">
+                <number>8</number>
+               </property>
+               <property name="minimum">
+                <double>-100000000000000000.000000000000000</double>
+               </property>
+               <property name="maximum">
+                <double>100000000000000000.000000000000000</double>
+               </property>
+               <property name="singleStep">
+                <double>0.100000000000000</double>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+          </layout>
+         </item>
+        </layout>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item row="1" column="2">
+    <widget class="QGroupBox" name="groupBox_4">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="title">
+      <string>Opacity Function</string>
+     </property>
+     <layout class="QGridLayout" name="gridLayout_5">
+      <item row="1" column="4">
+       <widget class="QLineEdit" name="opacityFunctionVariableLineEdit"/>
+      </item>
+      <item row="0" column="0" colspan="2">
+       <widget class="QLabel" name="opacitySynthesizerLabel">
+        <property name="text">
+         <string>Synthesizer:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="5">
+       <widget class="QLabel" name="label_5">
+        <property name="text">
+         <string> )</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="2" colspan="5">
+       <widget class="QLineEdit" name="opacitySynthesizerLineEdit"/>
+      </item>
+      <item row="1" column="2">
+       <widget class="QComboBox" name="opacityFunctionComboBox"/>
+      </item>
+      <item row="1" column="6">
+       <widget class="QPushButton" name="opacityFunctionVariableEditorPushButton">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="text">
+         <string>...</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0" colspan="2">
+       <widget class="QLabel" name="opacityLabelFunction">
+        <property name="text">
+         <string>Function:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="3">
+       <widget class="QLabel" name="label_6">
+        <property name="text">
+         <string> = f( </string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0" colspan="7">
+       <widget class="QGroupBox" name="opacityMapGroupBox">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="title">
+         <string>Opacity Map</string>
+        </property>
+        <layout class="QGridLayout" name="gridLayout_6">
+         <item row="4" column="0" alignment="Qt::AlignLeft">
+          <widget class="QLabel" name="opacityMinLabel">
+           <property name="text">
+            <string>Min:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="4" column="1" alignment="Qt::AlignRight">
+          <widget class="QLabel" name="opacityMaxLabel">
+           <property name="text">
+            <string>:Max</string>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="0" colspan="2">
+          <widget class="Histogram" name="opacityHistogram" native="true">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>80</height>
+            </size>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="0" colspan="2">
+          <widget class="OpacityMap" name="opacityMap" native="true">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>80</height>
+            </size>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0" colspan="2">
+          <widget class="QPushButton" name="opacityMapEditPushButton">
+           <property name="text">
+            <string>Edit Opacity Map</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="0" colspan="2">
+          <layout class="QFormLayout" name="formLayout_2">
+           <item row="0" column="0">
+            <widget class="QRadioButton" name="opacityUserDefinedMinMaxRadioButton">
+             <property name="text">
+              <string>User Defined Min Max:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <layout class="QHBoxLayout" name="horizontalLayout_4">
+             <item>
+              <widget class="QDoubleSpinBox" name="opacityUserDefinedMinDoubleSpinBox">
+               <property name="decimals">
+                <number>8</number>
+               </property>
+               <property name="minimum">
+                <double>-100000000000000000.000000000000000</double>
+               </property>
+               <property name="maximum">
+                <double>100000000000000000.000000000000000</double>
+               </property>
+               <property name="singleStep">
+                <double>0.100000000000000</double>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QDoubleSpinBox" name="opacityUserDefinedMaxDoubleSpinBox">
+               <property name="decimals">
+                <number>8</number>
+               </property>
+               <property name="minimum">
+                <double>-100000000000000000.000000000000000</double>
+               </property>
+               <property name="maximum">
+                <double>100000000000000000.000000000000000</double>
+               </property>
+               <property name="singleStep">
+                <double>0.100000000000000</double>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item row="1" column="0">
+            <widget class="QRadioButton" name="opacityServerSideMinMaxRadioButton">
+             <property name="text">
+              <string>Server Side Min Max:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="1">
+            <layout class="QHBoxLayout" name="horizontalLayout_5">
+             <item>
+              <widget class="QDoubleSpinBox" name="opacityServerSideMinDoubleSpinBox">
+               <property name="buttonSymbols">
+                <enum>QAbstractSpinBox::NoButtons</enum>
+               </property>
+               <property name="decimals">
+                <number>8</number>
+               </property>
+               <property name="minimum">
+                <double>-100000000000000000.000000000000000</double>
+               </property>
+               <property name="maximum">
+                <double>100000000000000000.000000000000000</double>
+               </property>
+               <property name="singleStep">
+                <double>0.100000000000000</double>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QDoubleSpinBox" name="opacityServerSideMaxDoubleSpinBox">
+               <property name="readOnly">
+                <bool>true</bool>
+               </property>
+               <property name="buttonSymbols">
+                <enum>QAbstractSpinBox::NoButtons</enum>
+               </property>
+               <property name="decimals">
+                <number>8</number>
+               </property>
+               <property name="minimum">
+                <double>-100000000000000000.000000000000000</double>
+               </property>
+               <property name="maximum">
+                <double>100000000000000000.000000000000000</double>
+               </property>
+               <property name="singleStep">
+                <double>0.100000000000000</double>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+          </layout>
+         </item>
+        </layout>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item row="0" column="1" colspan="2">
+    <widget class="QGroupBox" name="groupBox">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="title">
+      <string>Settings</string>
+     </property>
+     <layout class="QGridLayout" name="gridLayout_2">
+      <item row="1" column="0">
+       <layout class="QFormLayout" name="formLayout_3">
+        <item row="0" column="0">
+         <widget class="QLabel" name="numberOfTransferFunctionlabel">
+          <property name="text">
+           <string>Number of Transfer Function:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="1">
+         <widget class="QSpinBox" name="numberOfTransferFunctionSpinBox"/>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>ColorMap</class>
+   <extends>QWidget</extends>
+   <header>ColorMap.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>OpacityMap</class>
+   <extends>QWidget</extends>
+   <header>OpacityMap.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>Histogram</class>
+   <extends>QWidget</extends>
+   <header>Histogram.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>

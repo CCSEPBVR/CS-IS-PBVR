@@ -37,6 +37,7 @@ void ServerWIP::initialize()
 
     m_u_web_sockets.ws<PerSocket>("/text",
                                   {
+                                      .maxPayloadLength = 256 * 1024,
                                       .upgrade  = [this]( uWS::HttpResponse<SSL>* res, uWS::HttpRequest* req, struct us_socket_context_t* context )
                                       {
                                           upgrade( res, req, context, SocketType::Text );
@@ -65,7 +66,7 @@ void ServerWIP::initialize()
                            {
                                if( token )  std::cout << "[Server] Listening on port " << m_port << std::endl;
                                else         std::cerr << "[Server] Failed to listen on port " << m_port << std::endl;
-                           } ).run();
+                           } ).run();    
 }
 
 void ServerWIP::upgrade( uWS::HttpResponse<SSL>* res, uWS::HttpRequest* req, struct us_socket_context_t* context, SocketType socketType )
@@ -296,23 +297,34 @@ void ServerWIP::sharepoint( uWS::WebSocket<false, true, PerSocket>* ws, const nl
 void ServerWIP::transferfunction( uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received )
 {
     const auto& dataArray = received["data"];
+    std::string colorSynthesizer = received.value("color_synthesizer", "");
+    std::string opacitySynthesizer = received.value("opacity_synthesizer", "");
+
+    // std::cout << "Color Synthesizer: " << colorSynthesizer << std::endl;
+    // std::cout << "Opacity Synthesizer: " << opacitySynthesizer << std::endl;
     for( size_t i = 0; i < dataArray.size(); ++i )
     {
         const auto& tf = dataArray[i];
-        std::cout << "----- Transfer Function Row " << i << " -----" << std::endl;
+        // std::cout << "----- Transfer Function Row " << i << " -----" << std::endl;
 
         // Color
-        std::cout << "ColorFunction: "              << tf.value("ColorFunction", "" )            << std::endl;
-        std::cout << "ColorVariable: "              << tf.value("ColorVariable", "" )            << std::endl;
-        std::cout << "TemporaryColorRangeMode: "    << tf.value("TemporaryColorRangeMode", 0 )   << std::endl;
-        std::cout << "CurrentColorRangeMode: "      << tf.value("CurrentColorRangeMode", 0 )     << std::endl;
-        std::cout << "ResultColorRangeMode: "       << tf.value("ResultColorRangeMode", 0 )      << std::endl;
-        std::cout << "ColorUserRangeMin/Max: "      << tf.value("ColorUserRangeMin", 0.0 )       << " / " << tf.value("ColorUserRangeMax", 0.0) << std::endl;
-        std::cout << "ColorServerRangeMin/Max: "    << tf.value("ColorServerRangeMin", 0.0 )     << " / " << tf.value("ColorServerRangeMax", 0.0) << std::endl;
+        std::string colorFunction   = tf.value( "ColorFunction", "C" + std::to_string( i + 1 ) );
+        std::string colorVariable   = tf.value( "ColorVariable", "" );
+        int colorRangeMode          = tf.value( "ColorRangeMode", 0 );
+        double colorUserMin         = tf.value( "ColorUserRangeMin", 0.0 );
+        double colorUserMax         = tf.value( "ColorUserRangeMax", 0.0 );
+        double colorServerMin       = tf.value( "ColorServerRangeMin", 0.0 );
+        double colorServerMax       = tf.value( "ColorServerRangeMax", 0.0 );
+
+        // std::cout << "ColorFunction: " << colorFunction << std::endl;
+        // std::cout << "ColorVariable: " << colorVariable << std::endl;
+        // std::cout << "ColorRangeMode: " << colorRangeMode << std::endl;
+        // std::cout << "ColorUserRangeMin/Max: " << colorUserMin << " / " << colorUserMax << std::endl;
+        // std::cout << "ColorServerRangeMin/Max: " << colorServerMin << " / " << colorServerMax << std::endl;
 
         if( tf.contains("ColorMap") && tf["ColorMap"].is_array() )
         {
-            std::cout << "ColorMap: ";
+            // std::cout << "ColorMap: ";
             for( const auto& rgbArr : tf["ColorMap"] )
             {
                 if( rgbArr.is_array() && rgbArr.size() == 3 )
@@ -320,42 +332,66 @@ void ServerWIP::transferfunction( uWS::WebSocket<false, true, PerSocket>* ws, co
                     int r = rgbArr[0].get<int>();
                     int g = rgbArr[1].get<int>();
                     int b = rgbArr[2].get<int>();
-                    std::cout << "(" << r << "," << g << "," << b << ") ";
+                    // std::cout << "(" << r << "," << g << "," << b << ") ";
                 }
             }
-            std::cout << std::endl;
+            // std::cout << std::endl;
         }
 
         if( tf.contains("ColorHistogram") && tf["ColorHistogram"].is_array() )
         {
-            std::cout << "ColorHistogram: ";
-            for( auto& v : tf["ColorHistogram"] ) std::cout << v.get<int>() << " ";
-            std::cout << std::endl;
+            // std::cout << "ColorHistogram: ";
+            // for( auto& v : tf["ColorHistogram"]) std::cout << v.get<int>() << " " ;
+            // std::cout << std::endl;
         }
 
         // Opacity
-        std::cout << "OpacityFunction: "            << tf.value( "OpacityFunction", "" )          << std::endl;
-        std::cout << "OpacityVariable: "            << tf.value( "OpacityVariable", "" )          << std::endl;
-        std::cout << "TemporaryOpacityRangeMode: "  << tf.value( "TemporaryOpacityRangeMode", 0 ) << std::endl;
-        std::cout << "CurrentOpacityRangeMode: "    << tf.value( "CurrentOpacityRangeMode", 0 )   << std::endl;
-        std::cout << "ResultOpacityRangeMode: "     << tf.value( "ResultOpacityRangeMode", 0 )    << std::endl;
-        std::cout << "OpacityUserRangeMin/Max: "    << tf.value( "OpacityUserRangeMin", 0.0 )     << " / " << tf.value( "OpacityUserRangeMax", 0.0 ) << std::endl;
-        std::cout << "OpacityServerRangeMin/Max: "  << tf.value( "OpacityServerRangeMin", 0.0 )   << " / " << tf.value( "OpacityServerRangeMax", 0.0 ) << std::endl;
+        std::string opacityFunction = tf.value( "OpacityFunction", "O" + std::to_string( i + 1 ) );
+        std::string opacityVariable = tf.value( "OpacityVariable", "" );
+        int opacityRangeMode        = tf.value( "OpacityRangeMode", 0 );
+        double opacityUserMin       = tf.value( "OpacityUserRangeMin", 0.0 );
+        double opacityUserMax       = tf.value( "OpacityUserRangeMax", 0.0 );
+        double opacityServerMin     = tf.value( "OpacityServerRangeMin", 0.0 );
+        double opacityServerMax     = tf.value( "OpacityServerRangeMax", 0.0 );
+
+        // std::cout << "OpacityFunction: " << opacityFunction << std::endl;
+        // std::cout << "OpacityVariable: " << opacityVariable << std::endl;
+        // std::cout << "OpacityRangeMode: " << opacityRangeMode << std::endl;
+        // std::cout << "OpacityUserRangeMin/Max: " << opacityUserMin << " / " << opacityUserMax << std::endl;
+        // std::cout << "OpacityServerRangeMin/Max: " << opacityServerMin << " / " << opacityServerMax << std::endl;
 
         if( tf.contains("OpacityMap") && tf["OpacityMap"].is_array() )
         {
-            std::cout << "OpacityMap: ";
-            for( auto& v : tf["OpacityMap"] ) std::cout << v.get<float>() << " ";
-            std::cout << std::endl;
+            // std::cout << "OpacityMap: ";
+            // for( auto& v : tf["OpacityMap"] ) std::cout << v.get<float>() << " ";
+            // std::cout << std::endl;
         }
 
         if( tf.contains("OpacityHistogram") && tf["OpacityHistogram"].is_array() )
         {
-            std::cout << "OpacityHistogram: ";
-            for( auto& v : tf["OpacityHistogram"] ) std::cout << v.get<int>() << " ";
-            std::cout << std::endl;
+            // std::cout << "OpacityHistogram: ";
+            // for( auto& v : tf["OpacityHistogram"] ) std::cout << v.get<int>() << " ";
+            // std::cout << std::endl;
         }
+
+        // 必要であればここで構造体にコピー
+        // m_transfer_function_server[i].color.name = colorFunction;
+        // m_transfer_function_server[i].color.variable = colorVariable;
+        // m_transfer_function_server[i].color.userDefinedMinMax = {colorUserMin, colorUserMax};
+        // ...
     }
+
+    nlohmann::json msg;
+    msg["event"]                = "transferfunction";
+    msg["color_synthesizer"]    = received.value("color_synthesizer", "");
+    msg["opacity_synthesizer"]  = received.value("opacity_synthesizer", "");
+    msg["data"]                 = received["data"];
+
+    // デバッグ出力
+    // std::cout << "Broadcasting Transfer Function:" << std::endl;
+    // std::cout << msg.dump(4) << std::endl;
+
+    ws->publish( "Notice", msg.dump(), uWS::OpCode::TEXT );
 }
 
 void ServerWIP::glyph( uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received )

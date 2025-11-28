@@ -11,7 +11,7 @@ class Histogram : public QWidget
 public:
     Histogram(QWidget* parent = nullptr);
     ~Histogram();
-    void setDatas( std::vector<int>& data );
+    void setDatas( const std::vector<int>& data );
     std::vector<int> getDatas() const { return m_data; }
 
 protected:

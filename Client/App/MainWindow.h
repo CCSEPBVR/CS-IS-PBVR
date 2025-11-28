@@ -31,7 +31,7 @@
 #include "Preference.h"
 #include "RepetitionLevelControl.h"
 #include "ShadingControl.h"
-#include "TransferFunctionEditor.h"
+#include "TransferFunctionEditorWIP.h"
 #include "VolumeTransform.h"
 
 // デバッグ
@@ -119,7 +119,7 @@ private:
     ShadingControl* m_shading_control = nullptr;
 
     QAction* m_transfer_function_editor_action = nullptr;
-    TransferFunctionEditor* m_transfer_function_editor = nullptr;   // NOTE:通信関係有
+    TransferFunctionEditorWIP* m_transfer_function_editor_wip = nullptr;   // NOTE:通信関係有
 
     QAction* m_volume_transform_action = nullptr;
     VolumeTransform* m_volume_transform = nullptr;
@@ -153,7 +153,7 @@ private slots:
     void onPreference() { m_preference->show(); }
     void onRepetitionLevelControl() { m_repetition_level_control->show(); }
     void onShadingControl() { m_shading_control->show(); }
-    void onTransferFunctionEditor() { m_transfer_function_editor->show(); }
+    void onTransferFunctionEditor() { m_transfer_function_editor_wip->show(); }
     void onVolumeTransform() { m_volume_transform->show(); }
 
     void onUpdateServerState( bool serverState ); // true:接続中

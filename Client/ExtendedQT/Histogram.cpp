@@ -19,9 +19,10 @@ Histogram::~Histogram()
 
 }
 
-void Histogram::setDatas( std::vector<int>& data )
+void Histogram::setDatas( const std::vector<int>& data )
 {
     m_data = data;
+    update();  // 再描画
 }
 
 void Histogram::paintEvent( QPaintEvent* event )

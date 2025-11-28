@@ -923,6 +923,71 @@ void Communication::textWebsocketMessageReceived( const QString& receivedMessage
             emit objectInfoUpdate( resultMinObjectCoordsArray, resultMaxObjectCoordsArray, objectsArray );
         }
 
+        else if (obj["event"].toString() == "transferfunction")
+        {
+            // synthesize 情報
+            QString colorSynth      = obj.value("color_synthesizer").toString().toUtf8();
+            QString opacitySynth    = obj.value("opacity_synthesizer").toString().toUtf8();
+
+            // qDebug() << "Color Synthesizer:" << colorSynth;
+            // qDebug() << "Opacity Synthesizer:" << opacitySynth;
+
+            // transfer function 配列
+            QJsonArray dataArray = obj.value("data").toArray();
+            for (int i = 0; i < dataArray.size(); ++i)
+            {
+                QJsonObject tf = dataArray[i].toObject();
+                // qDebug() << "----- Transfer Function Row" << i << "-----";
+
+                QString colorFunction   = tf.value("ColorFunction").toString();
+                QString colorVariable   = tf.value("ColorVariable").toString();
+                double colorUserMin     = tf.value("ColorUserRangeMin").toDouble();
+                double colorUserMax     = tf.value("ColorUserRangeMax").toDouble();
+                double colorServerMin   = tf.value("ColorServerRangeMin").toDouble();
+                double colorServerMax   = tf.value("ColorServerRangeMax").toDouble();
+
+                // qDebug() << "ColorFunction:" << colorFunction;
+                // qDebug() << "ColorVariable:" << colorVariable;
+                // qDebug() << "ColorUserRangeMin/Max:" << colorUserMin << "/" << colorUserMax;
+                // qDebug() << "ColorServerRangeMin/Max:" << colorServerMin << "/" << colorServerMax;
+
+                // 色マップ
+                QJsonArray colorArr = tf.value("ColorMap").toArray();
+                QString colorMapStr;
+                for (const QJsonValue& rgbVal : colorArr)
+                {
+                    QJsonArray rgb = rgbVal.toArray();
+                    if (rgb.size() == 3)
+                    {
+                        colorMapStr += QString("(%1,%2,%3) ").arg(rgb[0].toInt()).arg(rgb[1].toInt()).arg(rgb[2].toInt());
+                    }
+                }
+                // qDebug() << "ColorMap:" << colorMapStr;
+
+                // 不透明度情報
+                QString opacityFunction = tf.value("OpacityFunction").toString();
+                QString opacityVariable = tf.value("OpacityVariable").toString();
+                double opacityUserMin   = tf.value("OpacityUserRangeMin").toDouble();
+                double opacityUserMax   = tf.value("OpacityUserRangeMax").toDouble();
+                double opacityServerMin = tf.value("OpacityServerRangeMin").toDouble();
+                double opacityServerMax = tf.value("OpacityServerRangeMax").toDouble();
+
+                // qDebug() << "OpacityFunction:" << opacityFunction;
+                // qDebug() << "OpacityVariable:" << opacityVariable;
+                // qDebug() << "OpacityUserRangeMin/Max:" << opacityUserMin << "/" << opacityUserMax;
+                // qDebug() << "OpacityServerRangeMin/Max:" << opacityServerMin << "/" << opacityServerMax;
+
+                QJsonArray opacityArr = tf.value("OpacityMap").toArray();
+                QString opacityMapStr;
+                for (const QJsonValue& v : opacityArr)
+                {
+                    opacityMapStr += QString::number(static_cast<float>(v.toDouble())) + " ";
+                }
+                // qDebug() << "OpacityMap:" << opacityMapStr;
+            }
+            emit updateTransferFunctionFromServer( colorSynth, opacitySynth, dataArray );
+        }
+
         else
         {
             emit updateStatusBarMessage( "Unknown event received. Please check that the client and server versions match." );

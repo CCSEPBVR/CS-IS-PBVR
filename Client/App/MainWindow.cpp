@@ -27,7 +27,7 @@ MainWindow::MainWindow( kvs::qt::Application& app, QWidget *parent )
     , m_preference( new Preference( this ) )
     , m_repetition_level_control( new RepetitionLevelControl( m_screen, m_compositor, this ) )
     , m_shading_control( new ShadingControl( m_screen, this ) )
-    , m_transfer_function_editor( new TransferFunctionEditor( m_web_sockets, this ) )
+    , m_transfer_function_editor_wip( new TransferFunctionEditorWIP( m_web_sockets, this ) )
     , m_volume_transform( new VolumeTransform( m_screen, this ) )
     , m_initialize_camera_xform( kvs::Mat4(
           1, 0, 0, 0 ,
@@ -212,7 +212,9 @@ void MainWindow::communicationInitialize()
         connect( m_communication, &Communication::updateOperatorState, m_glyph_editor, &GlyphEditor::updateOperatorState );
         connect( m_communication, &Communication::updateOperatorState, m_object_editor, &ObjectEditorWIP::updateOperatorState );        
         connect( m_communication, &Communication::updateOperatorState, m_plot_over_line_editor, &PlotOverLineEditor::updateOperatorState );
-        connect( m_communication, &Communication::updateOperatorState, m_transfer_function_editor, &TransferFunctionEditor::updateOperatorState );
+
+        connect( m_communication, &Communication::updateOperatorState, m_transfer_function_editor_wip, &TransferFunctionEditorWIP::updateOperatorState );
+        connect( m_communication, &Communication::updateTransferFunctionFromServer, m_transfer_function_editor_wip, &TransferFunctionEditorWIP::updateTransferFunctionFromServer );
 
         connect( m_communication, &Communication::unpack            , m_object_editor, &ObjectEditorWIP::unpack );
         connect( m_communication, &Communication::addObjectToModel  , m_object_editor, &ObjectEditorWIP::addObjectToModel );
@@ -388,18 +390,19 @@ void MainWindow::shadingControlInitialize()
 
 void MainWindow::transferFunctionEditorInitialize()
 {
-    if( m_transfer_function_editor )
+    if( m_transfer_function_editor_wip )
     {
         m_transfer_function_editor_action = new QAction( tr( "Transfer Function Editor"), this );
 
-        connect( this, &MainWindow::load, m_transfer_function_editor, &TransferFunctionEditor::loadParameter );
-        connect( this, &MainWindow::save, m_transfer_function_editor, &TransferFunctionEditor::saveParameter );
+        connect( this, &MainWindow::load, m_transfer_function_editor_wip, &TransferFunctionEditorWIP::loadParameter );
+        connect( this, &MainWindow::save, m_transfer_function_editor_wip, &TransferFunctionEditorWIP::saveParameter );
 
         connect( m_transfer_function_editor_action, &QAction::triggered, this, &MainWindow::onTransferFunctionEditor );
 
         m_transfer_function_editor_action->setEnabled( false ); // サーバ接続前は無効
 
         ui->menuTools->addAction( m_transfer_function_editor_action );
+        m_transfer_function_editor_wip->adjustSize();
     }
     // connect( m_transfer_function_editor         , &TransferFunctionEditor::updateColorMapBar                    , m_color_map_bar_selector_tool_bar , &ColorMapSelectorToolBar::updateColorMapBar );
     // connect( m_transfer_function_editor         , &TransferFunctionEditor::failedTransferFunctionImport         , m_connect                         , &Connect::failedTransferFunctionImport );
@@ -498,13 +501,13 @@ void MainWindow::onUpdateServerState( bool serverState ) // true:接続中
         }
     }
 
-    if( m_transfer_function_editor && m_transfer_function_editor_action )
+    if( m_transfer_function_editor_wip && m_transfer_function_editor_action )
     {
         m_transfer_function_editor_action->setEnabled( serverState );
         if( !serverState )
         {
-            m_transfer_function_editor->close();
-            m_transfer_function_editor->reset();
+            m_transfer_function_editor_wip->close();
+            m_transfer_function_editor_wip->reset();
         }
     }
 }
