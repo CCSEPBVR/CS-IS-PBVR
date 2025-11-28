@@ -594,8 +594,8 @@ void OutputParticles(
 
 #ifndef CPU_VER
     //ヒストグラムの集計
-    MPI_Reduce( c_bins, c_bins_recv, (tf_number * DEFAULT_NBINS), MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD );
-    MPI_Reduce( o_bins, o_bins_recv, (tf_number * DEFAULT_NBINS), MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD );
+    MPI_Reduce( c_bins, c_bins_recv, (tf_number * DEFAULT_NBINS), MPI_UNSIGNED_LONG, MPI_SUM, 0, MPI_COMM_WORLD );
+    MPI_Reduce( o_bins, o_bins_recv, (tf_number * DEFAULT_NBINS), MPI_UNSIGNED_LONG, MPI_SUM, 0, MPI_COMM_WORLD );
 #else
     for( int i = 0; i < (tf_number * DEFAULT_NBINS); i++ )
     {
@@ -673,6 +673,11 @@ void OutputParticles(
         ofs2 << "END_HISTORY_FILE=SUCCESS" << std::endl;
         ofs2.close();
     }
+
+    delete min_array_recv;
+    delete max_array_recv;
+    delete c_bins_recv;
+    delete o_bins_recv;
 }
 
 void OutputGlyphs(
