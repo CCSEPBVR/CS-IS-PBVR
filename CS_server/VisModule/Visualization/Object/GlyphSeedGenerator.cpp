@@ -47,7 +47,7 @@ void GlyphSeedGenerator::GenerateGlyphStruct(
         dom,
         values,
         nvariables,
-        false
+        is_flag
     );
     glyph_generator.getGlyphData(&m_object);
 
