@@ -103,6 +103,10 @@ public:
     void setTexture2DCoords( const kvs::ValueArray<kvs::Real32>& texture2DCoords ) { m_texture_2d_coords = texture2DCoords; }
     void setTextureIds( const kvs::ValueArray<kvs::UInt32>& textureIds ) { m_texture_ids = textureIds; }
 
+    void setMapIdToColorArray( const std::map<kvs::UInt32, kvs::ValueArray<kvs::UInt8>>& map ) { m_map_id_to_color_array = map; }
+    void setMapIdToImageWidth( const std::map<kvs::UInt32, kvs::UInt32>& map ) { m_map_id_to_image_width = map; }
+    void setMapIdToImageHeight( const std::map<kvs::UInt32, kvs::UInt32>& map ) { m_map_id_to_image_height = map; }
+
     void addColorArray( const kvs::UInt32 id, const kvs::ValueArray<kvs::UInt8>& color_array,
                        const kvs::UInt32 width, const kvs::UInt32 height );
 
