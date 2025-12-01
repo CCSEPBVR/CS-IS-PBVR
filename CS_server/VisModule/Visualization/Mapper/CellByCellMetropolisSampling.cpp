@@ -750,7 +750,6 @@ void CellByCellMetropolisSampling::generate_particles_struct(
                         if( p_id == SIMDW || (I == SIMDW && p_id > 0) )
                         {
                             // セグフォエラー対策
-                            /*
                             if ( p_id > 0 )
                             {
                                 // パディング：末尾を最後の有効要素で埋める
@@ -764,7 +763,6 @@ void CellByCellMetropolisSampling::generate_particles_struct(
                                     p_z_g[jj] = p_z_g[p_id - 1];
                                 }
                             }
-                            */
 
                             th_tfs[thid]->CalculateOpacity(
                                 interp[thid], th_tf[thid],
@@ -778,18 +776,18 @@ void CellByCellMetropolisSampling::generate_particles_struct(
                             for ( int pp = 0; pp < p_id; pp++ )
                             {
                                 /*
-                                    const float density_map =
-                                    pp < zero_id ?
-                                    Generator::CalculateDensity( particle_opacity[pp],
-                                    sampling_volume_inverse,
-                                    max_opacity, max_density ) : 0;
+                                const float density_tmp =
+                                pp < zero_id ?
+                                Generator::CalculateDensity( particle_opacity[pp],
+                                sampling_volume_inverse,
+                                max_opacity, max_density ) : 0;
                                 */
                                 const float density_tmp = Generator::CalculateDensity(
                                     particle_opacity[pp],
                                     sampling_volume_inverse,
                                     max_opacity, max_density
                                 );
-
+                                
                                 if ( !vismodule::Math::IsZero( density_tmp ) )
                                 {
                                     density = density_tmp;
@@ -803,12 +801,13 @@ void CellByCellMetropolisSampling::generate_particles_struct(
                     } // end of for max_loop
 
                     size_t nduplications = 0; // number of duplications
-                    const int nparticles_I  = I < SIMDW ? nparticles[I] : SIMDW - pp_id;
+                    const int nparticles_I = I < SIMDW ? nparticles[I] : 1;
+                    // const int nparticles_I  = I < SIMDW ? nparticles[I] : SIMDW - pp_id;
                     const int zero_id = I < SIMDW ? SIMDW : pp_id;
                     int nparticles_count = 0;
 
-                    // for( int p = 0; p < nparticles_I; p++ )
-                    for( int p = 0; p < nparticles_I; p += SIMDW )
+                    for( int p = 0; p < nparticles_I; p++ )
+                    // for( int p = 0; p < nparticles_I; p += SIMDW )
                     {
                         // nparticles_count = 0;
                         while (1)
