@@ -918,10 +918,10 @@ void CellByCellUniformSampling::generate_particles_struct(
 
     for ( int i = 0; i < tf_number; i++ )
     {
-        m_transfer_function_synthesizer->m_o_min[i] = m_transfer_function_synthesizer->m_o_min[i] < O_min[i] ? m_transfer_function_synthesizer->m_o_min[i] : O_min[i];
-        m_transfer_function_synthesizer->m_o_max[i] = m_transfer_function_synthesizer->m_o_max[i] > O_max[i] ? m_transfer_function_synthesizer->m_o_max[i] : O_max[i];
-        m_transfer_function_synthesizer->m_c_min[i] = m_transfer_function_synthesizer->m_c_min[i] < C_min[i] ? m_transfer_function_synthesizer->m_c_min[i] : C_min[i];
-        m_transfer_function_synthesizer->m_c_max[i] = m_transfer_function_synthesizer->m_c_max[i] > C_max[i] ? m_transfer_function_synthesizer->m_c_max[i] : C_max[i];
+        m_transfer_function_synthesizer->m_o_min[i] = O_min[i];
+        m_transfer_function_synthesizer->m_o_max[i] = O_max[i];
+        m_transfer_function_synthesizer->m_c_min[i] = C_min[i];
+        m_transfer_function_synthesizer->m_c_max[i] = C_max[i];
     }
 
     SuperClass::m_coords  = vismodule::ValueArray<vismodule::Real32>( vertex_coords );
@@ -1743,10 +1743,10 @@ void CellByCellUniformSampling::generate_particles_unstruct(
 
     for ( size_t i = 0; i < tf_number; i++ )
     {
-        m_transfer_function_synthesizer->m_o_min[i] = m_transfer_function_synthesizer->m_o_min[i] < O_min[i] ? m_transfer_function_synthesizer->m_o_min[i] : O_min[i];
-        m_transfer_function_synthesizer->m_o_max[i] = m_transfer_function_synthesizer->m_o_max[i] > O_max[i] ? m_transfer_function_synthesizer->m_o_max[i] : O_max[i];
-        m_transfer_function_synthesizer->m_c_min[i] = m_transfer_function_synthesizer->m_c_min[i] < C_min[i] ? m_transfer_function_synthesizer->m_c_min[i] : C_min[i];
-        m_transfer_function_synthesizer->m_c_max[i] = m_transfer_function_synthesizer->m_c_max[i] > C_max[i] ? m_transfer_function_synthesizer->m_c_max[i] : C_max[i];
+        m_transfer_function_synthesizer->m_o_min[i] = O_min[i];
+        m_transfer_function_synthesizer->m_o_max[i] = O_max[i];
+        m_transfer_function_synthesizer->m_c_min[i] = C_min[i];
+        m_transfer_function_synthesizer->m_c_max[i] = C_max[i];
     }
 
 #if 0
