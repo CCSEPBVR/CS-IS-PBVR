@@ -1420,13 +1420,6 @@ void GenerateParticles( int time_step,
     int mpi_rank = 0;
 
     MPI_Comm_rank( MPI_COMM_WORLD, &mpi_rank );
-//    debug 
-//       for ( int j = 0; j < ncoords ; j++ )
-//       {
-//            std::cout << "mpi_rank = " << mpi_rank << ",  values["<< j <<"] = " << values[0][j] << std::endl;
-//       }
-//      
-
 
     if(mpi_rank==0)std::cout<<"start generate_particles\n";
     static bool start_flag = true;
@@ -2913,7 +2906,7 @@ void ensemble_generate_particles( int time_step, domain_parameters dom,
     bool skip_flag;
     skip_flag = SetParameter(dom, &particleBase, &param, time_step);
     skip_flag = true;
-//    particleBase.m_nvariables = nvariables; 
+    particleBase.m_nvariables = nvariables; 
         EnsembleGenerateParticles(time_step, dom, values,
             nvariables, coordinates, ncoords,
             connections, ncells, celltype, particleBase);
@@ -3105,6 +3098,8 @@ void EnsembleGenerateParticles( int time_step,
     // Hydrogen
     const float min_value = 0;
     const float max_value = 255;
+//    const float min_value = 0;
+//    const float max_value = 1;
 ////    // spx 
 //    const float min_value = 0.2;
 //    const float max_value = 1;
@@ -3285,8 +3280,8 @@ void EnsembleGenerateParticles( int time_step,
             {
                 // Calculate a coord. // ローカル座標
                 const kvs::Vector3f coord = cell[thid]->randomSampling_MT( &MT);
-//                const kvs::Vector3f coord = kvs::Vector3f{1,0,0}; // debug
-//                cell[thid]->setLocalPoint(coord); // debug
+//                kvs::Vector3f coord  = kvs::Vector3f{0,0,0}; //debug
+                cell[thid]->setLocalPoint(coord); 
                 // Calculate a color.
                 const float scalar = cell[thid]->scalar();
 
@@ -3440,11 +3435,13 @@ void EnsembleGenerateParticles( int time_step,
                 const kvs::Vector3f normal( -cell[0]->gradient() );
 
                 // 算出データを受信データと足し合わせる
+//                    if(mpi_rank == 2)std::cout << step << ", id =" <<  i <<", bef_recv_scalars[i]     =" << recv_scalars[i] << ", scalar =" << scalar <<std::endl; //debug
                     recv_scalars[i]     = recv_scalars[i] + scalar;
                     recv_normals[3*i+0] = recv_normals[3*i+0] + normal.x();
                     recv_normals[3*i+1] = recv_normals[3*i+1] + normal.y();
                     recv_normals[3*i+2] = recv_normals[3*i+2] + normal.z();
-
+//                    if(mpi_rank == 2)std::cout << step << ", id = " << i <<", recv_scalars[i]     =" << recv_scalars[i] << ", scalar =" << scalar <<std::endl; //debug
+                    //std::cout << mpi_rank <<", recv_scalars[i]     =" << recv_scalars[i] << ", scalar =" << scalar <<std::endl; //debug
             }
 
             // 次のラウンドでは受信したデータを送信対象に更新
@@ -3461,9 +3458,9 @@ void EnsembleGenerateParticles( int time_step,
        for (int i = 0; i < vertex_scalars.size(); i++ )
        {
            vertex_scalars[ i ]     *= invert_num; 
-           vertex_normals[3*i + 0] *= invert_num;
-           vertex_normals[3*i + 1] *= invert_num;
-           vertex_normals[3*i + 2] *= invert_num;
+           vertex_normals[3*i + 0] *= -invert_num;
+           vertex_normals[3*i + 1] *= -invert_num;
+           vertex_normals[3*i + 2] *= -invert_num;
        }
 
     }
@@ -3564,7 +3561,6 @@ void EnsembleGenerateParticles( int time_step,
           average_normals = vertex_normals;
           average_cellids = vertex_cellids;
           average_coords  = vertex_coords ;
-          std::cout << "size = " << average_scalars.size() << ", " << average_normals.size() << std::endl; 
 
       //初回サンプリング 
           for(int i =0; i< average_scalars.size();i++)
@@ -3585,6 +3581,8 @@ void EnsembleGenerateParticles( int time_step,
               vertex_normals[3*i+0] = (scalar - average_scalars[i])*(normal.x() - average_normals[3*i+0]);
               vertex_normals[3*i+1] = (scalar - average_scalars[i])*(normal.y() - average_normals[3*i+1]);
               vertex_normals[3*i+2] = (scalar - average_scalars[i])*(normal.z() - average_normals[3*i+2]);
+              //if(mpi_rank == 2)std::cout << i  << ", vertex_scalars[i] =" << vertex_scalars[i] << ", scalar =" << scalar << ", ave=" << average_scalars[i] <<std::endl; //debug
+//              std::cout << i << mpi_rank << ", vertex_scalars[i] =" << vertex_scalars[i] << ", scalar =" << scalar << ", ave=" << average_scalars[i] <<std::endl; //debug
           }
            vertex_cellids = average_cellids;
            vertex_coords  = average_coords;
@@ -3729,9 +3727,9 @@ void EnsembleGenerateParticles( int time_step,
        for (int i = 0; i < vertex_scalars.size();  i++ )
        {
            vertex_scalars[ i ]   *=   invert_num; 
-           vertex_normals[3*i + 0] *=  2.f*invert_num;// 2.f は分散計算式の係数
-           vertex_normals[3*i + 1] *=  2.f*invert_num;// 2.f は分散計算式の係数
-           vertex_normals[3*i + 2] *=  2.f*invert_num;// 2.f は分散計算式の係数
+           vertex_normals[3*i + 0] *=  -2.f*invert_num;// 2.f は分散計算式の係数
+           vertex_normals[3*i + 1] *=  -2.f*invert_num;// 2.f は分散計算式の係数
+           vertex_normals[3*i + 2] *=  -2.f*invert_num;// 2.f は分散計算式の係数
 
 //           std::cout << "vertex_normals[" << i << "]=" << vertex_normals[3*i + 0] << ", " << vertex_normals[3*i + 1] << ", " << vertex_normals[3*i + 2] << ", "  <<  std::endl;
 ////          // floatの丸め誤差以下ならば強制的に0にする。 
@@ -3789,8 +3787,8 @@ void EnsembleGenerateParticles( int time_step,
                        sampling_volume_inverse,
                        max_opacity, max_density );
                const float R = MT.rand();
-//               if ( density > max_density * R )
-               if ( density > 0 ) //debug
+               if ( density > max_density * R )
+//               if ( density > 0 ) //debug
                {
                    // Calculate a color.
                    const kvs::RGBColor color( tf.colorMap().at( vertex_scalars[ i ] ) );
@@ -3827,94 +3825,17 @@ void EnsembleGenerateParticles( int time_step,
        }
 }  //end omp
 
-//for (int i = 0;i < var_scalars.size() ; i++ )
+//for (int i = 0;i < var_scalars.size() ; i++ ) //debug
 //{
 //    std::cout << " var_coords = " << var_coords[0] << ", " << var_coords[1] << ", " << var_coords[2] << ", " << std::endl;
 //    std::cout << " var_scalars["<<i<<"] = " << var_scalars[i] << std::endl;
 //    std::cout << " var_normals["<<i<<"] = " << var_normals[3*i] << ", " << var_normals[3*i+1] << ", " << var_normals[3*i+2] << std::endl;
 //}
     // 分散データを集約する
+    std::cout << mpi_rank <<  ": nparticles : " <<  var_coords.size()/3   << std::endl;
     particleBase.m_sample_coords.insert(particleBase.m_sample_coords.end()  , var_coords.begin() , var_coords.end());
     particleBase.m_sample_colors.insert(particleBase.m_sample_colors.end()  , var_colors.begin() , var_colors.end());
     particleBase.m_sample_normals.insert(particleBase.m_sample_normals.end(), var_normals.begin(), var_normals.end());
-//#endif
-//#if 1
-//            timer.start();
-//       for(int i =0; i< vertex_scalars.size() ;i++)
-//       {
-////           std::cout << "Rank " << mpi_rank << ", recv_cellids[i] = " << recv_cellids[i] <<  std::endl;
-//            cell -> bindCell(vertex_cellids[i]);
-////           std::cout << "Rank " << mpi_rank <<  std::endl;
-//
-////        size_t count = 0;
-////           while ( count < nparticles )
-////           {
-//               //const kvs::Vector3f coord( Generator::RandomSamplingInCube( v ) );
-//           
-//               const kvs::Vector3f coord(vertex_coords[3*i+0], vertex_coords[3*i+1], vertex_coords[3*i+2]);
-//               cell -> setLocalPoint(coord);
-//               const kvs::Vector3f global_coord = cell -> transformLocalToGlobal(coord);
-//
-//               // density の計算
-//               float opacity = tf.opacityMap().at(vertex_scalars[ i ]);
-//               float density  = Generator::CalculateDensity( opacity,
-//                       sampling_volume_inverse,
-//                       max_opacity, max_density );
-//               //const float R = GetRandomNumber();
-//               const float R = MT.rand();
-////               std::cout << "density = " << density << ", max_density = " << max_density << std::endl;
-//               if ( density > max_density * R )
-//               {
-//                   // Calculate a color.
-//                   const kvs::RGBColor color( tf.colorMap().at( vertex_scalars[ i ] ) );
-////                   std::cout << mpi_rank << ": scalar = " <<  vertex_scalars[ i ]   <<  ", avarage_coord = " << coord << std::endl;
-//
-//                   // Calculate a normal.
-//                   //const Vector3f normal( interpolator.template gradient<T>() );
-//                   const kvs::Vector3f normal( vertex_normals[3*i+0], vertex_normals[3*i+1], vertex_normals[3*i+2] );
-//
-//                   // set coord, color, and normal to point object( this ).
-//                   average_coords.push_back( global_coord.x() );
-//                   average_coords.push_back( global_coord.y() );
-//                   average_coords.push_back( global_coord.z() );
-//
-//                   average_colors.push_back( color.r() );
-//                   average_colors.push_back( color.g() );
-//                   average_colors.push_back( color.b() );
-//                   
-//                   average_scalars.push_back( vertex_scalars[ i ] );
-//
-//                   average_normals.push_back( normal.x() );
-//                   average_normals.push_back( normal.y() );
-//                   average_normals.push_back( normal.z() );
-//
-//                   average_cellids.push_back(vertex_cellids[i]);
-////                   count++;
-//               }
-////           } // end of 'paricle' while-loop
-//
-//       }
-//
-//       timer.stop();
-//       std::cout << mpi_rank << ": rejection_exe_time =  " << timer.sec() << std::endl;
-//    int size = average_coords.size();
-//        std::cout << mpi_rank <<  ": nparticles = " <<  size/3   << std::endl;
-//    particleBase.m_sample_coords.insert(particleBase.m_sample_coords.end()  , average_coords.begin() , average_coords.end());
-//    particleBase.m_sample_colors.insert(particleBase.m_sample_colors.end()  , average_colors.begin() , average_colors.end());
-//    particleBase.m_sample_normals.insert(particleBase.m_sample_normals.end(), average_normals.begin(), average_normals.end());
-//#endif
-////        std::vector<Byte>  vertex_colors;
-////        for (int i=0;i<vertex_scalars.size() ; i++)
-////        {
-////            const kvs::RGBColor color( tf.colorMap().at( vertex_scalars[ i ] ) );
-////            vertex_colors.push_back(color.r());
-////            vertex_colors.push_back(color.g());
-////            vertex_colors.push_back(color.b());
-////        }
-////        particleBase.m_sample_coords.insert(particleBase.m_sample_coords.end(), vertex_coords.begin(), vertex_coords.end());
-////        particleBase.m_sample_colors.insert(particleBase.m_sample_colors.end(), vertex_colors.begin(), vertex_colors.end());
-////        particleBase.m_sample_normals.insert(particleBase.m_sample_normals.end(), vertex_normals.begin(), vertex_normals.end());
-//    }
 
     int tf_number = nvariables;
     int nbins =256;
