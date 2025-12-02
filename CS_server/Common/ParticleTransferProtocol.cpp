@@ -1244,6 +1244,7 @@ void jpv::ParticleTransferServerMessage::show( void ) const
     std::cout << "particleDensity = "       << m_particle_density         << std::endl;
     std::cout << "particleDataSizeLimit = " << m_particle_data_size_limit << std::endl;
 
+    /*
     if ( m_number_particle > 0 )
     {
         int number_particle = m_number_particle < 5 ? m_number_particle : 5;
@@ -1260,7 +1261,8 @@ void jpv::ParticleTransferServerMessage::show( void ) const
             std::cout << "m_colors["     << 3 * i + 2 << "] = " << (int)m_colors[3 * i + 2] << std::endl;
         }
     }
-
+    */
+    
     std::cout << "transfunc.size = "     << m_transfer_function.size() << std::endl;
     std::cout << "transfunc.Name, ColorVar, OpacityVar, ColorVarMin, ColorVarMax" << std::endl;
     for( int i = 0; i < m_transfer_function.size(); i++ )
