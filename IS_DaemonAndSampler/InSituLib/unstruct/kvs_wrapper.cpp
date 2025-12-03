@@ -3095,10 +3095,10 @@ void EnsembleGenerateParticles( int time_step,
 
 //    float max_opacity              = 0.98;
     // Hydrogen
-    const float min_value = 0;
-    const float max_value = 255;
 //    const float min_value = 0;
-//    const float max_value = 0.1;
+//    const float max_value = 255;
+    const float min_value = 0;
+    const float max_value = 1;
 ////    // spx 
 //    const float min_value = 0.2;
 //    const float max_value = 1;
@@ -3582,7 +3582,7 @@ void EnsembleGenerateParticles( int time_step,
            vertex_cellids = average_cellids;
            vertex_coords  = average_coords;
     timer.stop();
-    std::cout << mpi_rank <<  ": uniform_sampling_time =" << timer.sec() << std::endl;
+    std::cout << mpi_rank <<  ": var_uniform_sampling_time =" << timer.sec() << std::endl;
     // シフト処理
     if (mpi_size > 1 )
     {
@@ -3826,6 +3826,15 @@ void EnsembleGenerateParticles( int time_step,
     particleBase.m_sample_colors.insert(particleBase.m_sample_colors.end()  , var_colors.begin() , var_colors.end());
     particleBase.m_sample_normals.insert(particleBase.m_sample_normals.end(), var_normals.begin(), var_normals.end());
 
+//if(mpi_rank < 10) //debug
+//{
+//    std::string file = "scalar_result_" + std::to_string(mpi_rank) + ".txt";
+//    std::ofstream ss(file.c_str());
+//    for (int i=0;i<var_scalars.size(); i++)
+//    {
+//        ss << "scalar=" <<  var_scalars[i] << std::endl;
+//    }
+//}
     int tf_number = nvariables;
     int nbins =256;
 
