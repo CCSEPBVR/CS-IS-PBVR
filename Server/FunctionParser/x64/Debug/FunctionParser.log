@@ -1,0 +1,107 @@
+﻿  ExpressionConverter.cpp
+C:\Users\SAKAMOTO\work\CS-IS-PBVR\Server\FunctionParser\ExpressionConverter.h(1,1): warning C4819: ファイルは、現在のコード ページ (932) で表示できない文字を含んでいます。データの損失を防ぐために、ファイルを Unicode 形式で保存してください。
+  (ソース ファイル 'ExpressionConverter.cpp' をコンパイルしています)
+  
+C:\Users\SAKAMOTO\work\CS-IS-PBVR\Server\FunctionParser\Token.h(1,1): warning C4819: ファイルは、現在のコード ページ (932) で表示できない文字を含んでいます。データの損失を防ぐために、ファイルを Unicode 形式で保存してください。
+  (ソース ファイル 'ExpressionConverter.cpp' をコンパイルしています)
+  
+C:\Users\SAKAMOTO\work\CS-IS-PBVR\Server\FunctionParser\ExpressionTokenizer.h(1,1): warning C4819: ファイルは、現在のコード ページ (932) で表示できない文字を含んでいます。データの損失を防ぐために、ファイルを Unicode 形式で保存してください。
+  (ソース ファイル 'ExpressionConverter.cpp' をコンパイルしています)
+  
+C:\Users\SAKAMOTO\work\CS-IS-PBVR\Server\FunctionParser\ExpressionTokenizer.h(48,30): warning C4267: '初期化中': 'size_t' から 'unsigned int' に変換しました。データが失われているかもしれません。
+  (ソース ファイル 'ExpressionConverter.cpp' をコンパイルしています)
+  
+C:\Users\SAKAMOTO\work\CS-IS-PBVR\Server\FunctionParser\ExpressionTokenizer.h(49,30): warning C4267: '初期化中': 'size_t' から 'unsigned int' に変換しました。データが失われているかもしれません。
+  (ソース ファイル 'ExpressionConverter.cpp' をコンパイルしています)
+  
+C:\Users\SAKAMOTO\work\CS-IS-PBVR\Server\FunctionParser\ExpressionTokenizer.h(55,47): warning C4267: '=': 'size_t' から 'unsigned int' に変換しました。データが失われているかもしれません。
+  (ソース ファイル 'ExpressionConverter.cpp' をコンパイルしています)
+  
+C:\Users\SAKAMOTO\work\CS-IS-PBVR\Server\FunctionParser\ExpressionTokenizer.h(246,34): warning C4267: '初期化中': 'size_t' から 'unsigned int' に変換しました。データが失われているかもしれません。
+  (ソース ファイル 'ExpressionConverter.cpp' をコンパイルしています)
+  
+C:\Users\SAKAMOTO\work\CS-IS-PBVR\Server\FunctionParser\ExpressionTokenizer.h(262,39): warning C4244: '初期化中': '__int64' から 'unsigned int' への変換です。データが失われる可能性があります。
+  (ソース ファイル 'ExpressionConverter.cpp' をコンパイルしています)
+  
+C:\Users\SAKAMOTO\work\CS-IS-PBVR\Server\FunctionParser\ExpressionTokenizer.h(293,54): warning C4267: '+=': 'size_t' から 'unsigned int' に変換しました。データが失われているかもしれません。
+  (ソース ファイル 'ExpressionConverter.cpp' をコンパイルしています)
+  
+C:\Users\SAKAMOTO\work\CS-IS-PBVR\Server\FunctionParser\ExpressionTokenizer.h(306,53): warning C4267: '+=': 'size_t' から 'unsigned int' に変換しました。データが失われているかもしれません。
+  (ソース ファイル 'ExpressionConverter.cpp' をコンパイルしています)
+  
+C:\Users\SAKAMOTO\work\CS-IS-PBVR\Server\FunctionParser\ExpressionConverter.h(324,45): warning C4244: '引数': 'double' から '_Ty' への変換です。データが失われる可能性があります。
+C:\Users\SAKAMOTO\work\CS-IS-PBVR\Server\FunctionParser\ExpressionConverter.h(324,45): warning C4244:         with
+C:\Users\SAKAMOTO\work\CS-IS-PBVR\Server\FunctionParser\ExpressionConverter.h(324,45): warning C4244:         [
+C:\Users\SAKAMOTO\work\CS-IS-PBVR\Server\FunctionParser\ExpressionConverter.h(324,45): warning C4244:             _Ty=float
+C:\Users\SAKAMOTO\work\CS-IS-PBVR\Server\FunctionParser\ExpressionConverter.h(324,45): warning C4244:         ]
+  (ソース ファイル 'ExpressionConverter.cpp' をコンパイルしています)
+  
+  ExpressionTokenizer.cpp
+C:\Users\SAKAMOTO\work\CS-IS-PBVR\Server\FunctionParser\ExpressionTokenizer.h(1,1): warning C4819: ファイルは、現在のコード ページ (932) で表示できない文字を含んでいます。データの損失を防ぐために、ファイルを Unicode 形式で保存してください。
+  (ソース ファイル 'ExpressionTokenizer.cpp' をコンパイルしています)
+  
+C:\Users\SAKAMOTO\work\CS-IS-PBVR\Server\FunctionParser\Token.h(1,1): warning C4819: ファイルは、現在のコード ページ (932) で表示できない文字を含んでいます。データの損失を防ぐために、ファイルを Unicode 形式で保存してください。
+  (ソース ファイル 'ExpressionTokenizer.cpp' をコンパイルしています)
+  
+C:\Users\SAKAMOTO\work\CS-IS-PBVR\Server\FunctionParser\ExpressionTokenizer.h(48,30): warning C4267: '初期化中': 'size_t' から 'unsigned int' に変換しました。データが失われているかもしれません。
+  (ソース ファイル 'ExpressionTokenizer.cpp' をコンパイルしています)
+  
+C:\Users\SAKAMOTO\work\CS-IS-PBVR\Server\FunctionParser\ExpressionTokenizer.h(49,30): warning C4267: '初期化中': 'size_t' から 'unsigned int' に変換しました。データが失われているかもしれません。
+  (ソース ファイル 'ExpressionTokenizer.cpp' をコンパイルしています)
+  
+C:\Users\SAKAMOTO\work\CS-IS-PBVR\Server\FunctionParser\ExpressionTokenizer.h(55,47): warning C4267: '=': 'size_t' から 'unsigned int' に変換しました。データが失われているかもしれません。
+  (ソース ファイル 'ExpressionTokenizer.cpp' をコンパイルしています)
+  
+C:\Users\SAKAMOTO\work\CS-IS-PBVR\Server\FunctionParser\ExpressionTokenizer.h(246,34): warning C4267: '初期化中': 'size_t' から 'unsigned int' に変換しました。データが失われているかもしれません。
+  (ソース ファイル 'ExpressionTokenizer.cpp' をコンパイルしています)
+  
+C:\Users\SAKAMOTO\work\CS-IS-PBVR\Server\FunctionParser\ExpressionTokenizer.h(262,39): warning C4244: '初期化中': '__int64' から 'unsigned int' への変換です。データが失われる可能性があります。
+  (ソース ファイル 'ExpressionTokenizer.cpp' をコンパイルしています)
+  
+C:\Users\SAKAMOTO\work\CS-IS-PBVR\Server\FunctionParser\ExpressionTokenizer.h(293,54): warning C4267: '+=': 'size_t' から 'unsigned int' に変換しました。データが失われているかもしれません。
+  (ソース ファイル 'ExpressionTokenizer.cpp' をコンパイルしています)
+  
+C:\Users\SAKAMOTO\work\CS-IS-PBVR\Server\FunctionParser\ExpressionTokenizer.h(306,53): warning C4267: '+=': 'size_t' から 'unsigned int' に変換しました。データが失われているかもしれません。
+  (ソース ファイル 'ExpressionTokenizer.cpp' をコンパイルしています)
+  
+  function.cpp
+C:\Users\SAKAMOTO\work\CS-IS-PBVR\Server\FunctionParser\function.h(282,51): warning C4267: '+=': 'size_t' から 'int' に変換しました。データが失われているかもしれません。
+  (ソース ファイル 'function.cpp' をコンパイルしています)
+  
+  function_parser.cpp
+C:\Users\SAKAMOTO\work\CS-IS-PBVR\Server\FunctionParser\function_parser.cpp(1,1): warning C4819: ファイルは、現在のコード ページ (932) で表示できない文字を含んでいます。データの損失を防ぐために、ファイルを Unicode 形式で保存してください。
+C:\Users\SAKAMOTO\work\CS-IS-PBVR\Server\FunctionParser\function.h(282,51): warning C4267: '+=': 'size_t' から 'int' に変換しました。データが失われているかもしれません。
+  (ソース ファイル 'function_parser.cpp' をコンパイルしています)
+  
+C:\Users\SAKAMOTO\work\CS-IS-PBVR\Server\FunctionParser\function_parser.cpp(139,22): warning C4267: '初期化中': 'size_t' から 'int' に変換しました。データが失われているかもしれません。
+C:\Users\SAKAMOTO\work\CS-IS-PBVR\Server\FunctionParser\function_parser.cpp(199,45): warning C4244: '引数': '__int64' から 'int' への変換です。データが失われる可能性があります。
+  ReversePolishNotation.cpp
+C:\Users\SAKAMOTO\work\CS-IS-PBVR\Server\FunctionParser\ReversePolishNotation.h(1,1): warning C4819: ファイルは、現在のコード ページ (932) で表示できない文字を含んでいます。データの損失を防ぐために、ファイルを Unicode 形式で保存してください。
+  (ソース ファイル 'ReversePolishNotation.cpp' をコンパイルしています)
+  
+C:\Users\SAKAMOTO\work\CS-IS-PBVR\Server\FunctionParser\Token.h(1,1): warning C4819: ファイルは、現在のコード ページ (932) で表示できない文字を含んでいます。データの損失を防ぐために、ファイルを Unicode 形式で保存してください。
+  (ソース ファイル 'ReversePolishNotation.cpp' をコンパイルしています)
+  
+C:\Users\SAKAMOTO\work\CS-IS-PBVR\Server\FunctionParser\ReversePolishNotation.h(323,32): warning C4244: '=': 'int' から 'float' への変換です。データが失われる可能性があります。
+  (ソース ファイル 'ReversePolishNotation.cpp' をコンパイルしています)
+  
+C:\Users\SAKAMOTO\work\CS-IS-PBVR\Server\FunctionParser\ReversePolishNotation.h(328,38): warning C4244: '=': 'int' から 'float' への変換です。データが失われる可能性があります。
+  (ソース ファイル 'ReversePolishNotation.cpp' をコンパイルしています)
+  
+C:\Users\SAKAMOTO\work\CS-IS-PBVR\Server\FunctionParser\ReversePolishNotation.h(336,31): warning C4244: '=': 'double' から 'float' への変換です。データが失われる可能性があります。
+  (ソース ファイル 'ReversePolishNotation.cpp' をコンパイルしています)
+  
+C:\Users\SAKAMOTO\work\CS-IS-PBVR\Server\FunctionParser\ReversePolishNotation.h(642,42): warning C4244: '=': 'int' から 'float' への変換です。データが失われる可能性があります。
+  (ソース ファイル 'ReversePolishNotation.cpp' をコンパイルしています)
+  
+C:\Users\SAKAMOTO\work\CS-IS-PBVR\Server\FunctionParser\ReversePolishNotation.h(650,48): warning C4244: '=': 'int' から 'float' への変換です。データが失われる可能性があります。
+  (ソース ファイル 'ReversePolishNotation.cpp' をコンパイルしています)
+  
+C:\Users\SAKAMOTO\work\CS-IS-PBVR\Server\FunctionParser\ReversePolishNotation.h(661,38): warning C4244: '=': 'double' から 'float' への変換です。データが失われる可能性があります。
+  (ソース ファイル 'ReversePolishNotation.cpp' をコンパイルしています)
+  
+C:\Users\SAKAMOTO\work\CS-IS-PBVR\Server\FunctionParser\ReversePolishNotation.h(764,24): warning C4477: 'printf' : 書式文字列 '%g' には、型 'double' の引数が必要ですが、可変個引数 1 は型 'float *' です
+  (ソース ファイル 'ReversePolishNotation.cpp' をコンパイルしています)
+  
+  コードを生成中...
+  FunctionParser.vcxproj -> C:\Users\SAKAMOTO\work\CS-IS-PBVR\Server\x64\Debug\FunctionParser.lib
