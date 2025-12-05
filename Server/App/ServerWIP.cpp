@@ -197,6 +197,7 @@ void ServerWIP::onMessage( uWS::WebSocket<false, true, PerSocket>* ws, std::stri
         else if( event == "objectInfoUpdate" )      objectInfoUpdate( ws, received );
         else if( event == "debug" )                 debugNumberOfUsers();
         else if( event == "debugSrvObjects" )       debugSrvObjects();
+        else if( event == "GlyphParameter")         recvGlyphParameter( ws, received );
         else                                        std::cout << "[Server] Unknow Event : " << event << std::endl;
     }
 }
@@ -1275,6 +1276,60 @@ size_t ServerWIP::calculateTotalSize() const
         }
     }
     return totalSize;
+}
+
+void ServerWIP::recvGlyphParameter( uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received )
+{
+    // Type
+    // std::cout << "Type              : " << received.value( "Type", -1 ) << std::endl;
+
+    // ScaleFactor
+    // std::cout << "ScaleFactor       : " << received.value( "ScaleFactor", -1.0 ) << std::endl;
+
+    // Direction
+    // std::cout << "Direction1        : " << received.value( "Direction1", -1.0 ) + 1 << std::endl;
+    // std::cout << "Direction2        : " << received.value( "Direction2", -1.0 ) + 1 << std::endl;
+    // std::cout << "Direction2        : " << received.value( "Direction3", -1.0 ) + 1 << std::endl;
+
+    // Size
+    // std::cout << "SizeMode          : " << received.value( "SizeMode", -1.0 ) << std::endl;
+    if( received.contains( "SizeVariables" ) )
+    {
+        // std::cout << "SizeVariables: ";
+        // for( const auto& v : received["SizeVariables"] )
+        //     std::cout << v.get<int>() + 1 << " ";
+        // std::cout << std::endl;
+    }
+
+    // Distribution
+    // std::cout << "DistributionMode      : " << received.value( "DistributionMode", -1 ) << std::endl;
+    // std::cout << "NumberOfSamplePoints  : " << received.value( "NumberOfSamplePoints", -1 ) << std::endl;
+    // std::cout << "Seed                  : " << received.value( "Seed", -1 ) << std::endl;
+    // std::cout << "Stride                : " << received.value( "Stride", -1 ) << std::endl;
+
+    // Color Map
+    if( received.contains( "ColorMap" ) )
+    {
+        // std::cout << "ColorMap:" << std::endl;
+        for( const auto& c : received["ColorMap"] )
+        {
+            // std::cout << "  r=" << c["r"].get<int>()
+            //           << " g=" << c["g"].get<int>()
+            //           << " b=" << c["b"].get<int>() << std::endl;
+        }
+    }
+
+    // Color Data
+    // std::cout << "ColorDataMode         : " << received.value( "ColorDataMode", -1.0 ) << std::endl;
+    if( received.contains( "ColorDataVariables" ) )
+    {
+        // std::cout << "ColorDataVariables: ";
+        // for( const auto& v : received["ColorDataVariables"] )
+        //     std::cout << v.get<int>() + 1 << " ";
+        // std::cout << std::endl;
+    }
+
+    ws->publish( "Notice", received.dump(), uWS::OpCode::TEXT );
 }
 
 std::string ServerWIP::toUtf8( const std::filesystem::path& p )

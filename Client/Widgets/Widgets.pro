@@ -23,6 +23,7 @@ HEADERS += \
     ColorMapSelectorToolBar.h \
     Communication.h \
     GlyphEditor.h \
+    GlyphEditorWIP.h \
     ObjectEditorWIP.h \
     OpacityMapEditor.h \
     PlayBackControlToolBar.h \
@@ -51,6 +52,7 @@ SOURCES += \
     ColorMapSelectorToolBar.cpp \
     Communication.cpp \
     GlyphEditor.cpp \
+    GlyphEditorWIP.cpp \
     ObjectEditorWIP.cpp \
     OpacityMapEditor.cpp \
     PlayBackControlToolBar.cpp \
@@ -76,6 +78,7 @@ FORMS += \
     ColorMapEditor.ui \
     Communication.ui \
     GlyphEditor.ui \
+    GlyphEditorWIP.ui \
     ObjectEditorWIP.ui \
     OpacityMapEditor.ui \
     PlotOverLineEditor.ui \

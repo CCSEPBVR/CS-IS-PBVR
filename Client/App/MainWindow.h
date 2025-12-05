@@ -24,7 +24,7 @@
 // ABCDEFGHIJKLMNOPQRSTUVWXYZ
 #include "AnimationControl.h"
 #include "Communication.h"
-#include "GlyphEditor.h"
+#include "GlyphEditorWIP.h"
 #include "ObjectEditorWIP.h"
 #include "PlotOverLineEditor.h"
 #include "PointSizeControl.h"
@@ -98,7 +98,7 @@ private:
     Communication* m_communication = nullptr;                       // NOTE:通信関係有
 
     QAction* m_glyph_editor_action = nullptr;
-    GlyphEditor* m_glyph_editor = nullptr;                          // NOTE:通信関係有
+    GlyphEditorWIP* m_glyph_editor_wip = nullptr;                          // NOTE:通信関係有
 
     QAction* m_object_editor_action = nullptr;
     ObjectEditorWIP* m_object_editor = nullptr;                     // NOTE:通信関係有
@@ -146,7 +146,7 @@ private:
 private slots:
     void onAnimationControl() { m_animation_control->show(); }
     void onCommunication() { m_communication->show(); }
-    void onGlyphEditor() { m_glyph_editor->show(); }
+    void onGlyphEditor() { m_glyph_editor_wip->show(); }
     void onObjectEditor() { m_object_editor->show(); }
     void onPlotOverLineEditor() { m_plot_over_line_editor->show(); }
     void onPointSizeControl() { m_point_size_control->show(); }

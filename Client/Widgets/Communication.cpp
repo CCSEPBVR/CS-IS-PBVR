@@ -923,6 +923,11 @@ void Communication::textWebsocketMessageReceived( const QString& receivedMessage
             emit objectInfoUpdate( resultMinObjectCoordsArray, resultMaxObjectCoordsArray, objectsArray );
         }
 
+        else if( obj["event"].toString() == "GlyphParameter" )
+        {
+            emit receiveGlyphParameter( obj );
+        }
+
         else if (obj["event"].toString() == "transferfunction")
         {
             // synthesize 情報

@@ -1,0 +1,524 @@
+#include "GlyphEditorWIP.h"
+#include "ui_GlyphEditorWIP.h"
+
+GlyphEditorWIP::GlyphEditorWIP( WebSocketPair* websockets, QWidget *parent )
+    : QDialog( parent )
+    , ui( new Ui::GlyphEditorWIP )
+    , m_web_sockets( websockets )
+    , m_is_operator( false )
+{
+    initialize();
+}
+
+GlyphEditorWIP::~GlyphEditorWIP()
+{
+    delete ui;
+}
+
+void GlyphEditorWIP::updateOperatorState( bool operatorState )
+{
+    m_is_operator = operatorState;
+
+    if( m_color_map_editor.isVisible() ) m_color_map_editor.close();
+
+    ui->typeComboBox                        ->setEnabled( m_is_operator );
+    ui->scaleFactorDoubleSpinBox            ->setEnabled( m_is_operator );
+    ui->direction1ComboBox                  ->setEnabled( m_is_operator );
+    ui->direction2ComboBox                  ->setEnabled( m_is_operator );
+    ui->direction3ComboBox                  ->setEnabled( m_is_operator );
+    ui->sizeConstantRadioButton             ->setEnabled( m_is_operator );
+    ui->sizeVariableArrayRadioButton        ->setEnabled( m_is_operator );
+    ui->sizeNumberOfVariablesSpinBox        ->setEnabled( m_is_operator );
+    for( int i = 0; i < ui->sizeVariableGridLayout->count(); ++i )
+    {
+        if( QLayoutItem* item = ui->sizeVariableGridLayout->itemAt( i ) )
+        {
+            if( QWidget* w = item->widget() )
+            {
+                if( auto cb = qobject_cast<QComboBox*>( w ) )
+                    cb->setEnabled( m_is_operator );
+            }
+        }
+    }
+
+    ui->uniformRadioButton                  ->setEnabled( m_is_operator );
+    ui->allPointsRadioButton                ->setEnabled( m_is_operator );
+    ui->everyNthPointRadioButton            ->setEnabled( m_is_operator );
+
+    ui->numberOfSamplePointsSpinBox         ->setEnabled( m_is_operator );
+    ui->seedSpinBox                         ->setEnabled( m_is_operator );
+    ui->strideSpinBox                       ->setEnabled( m_is_operator );
+
+    ui->editColorMapPushButton              ->setEnabled( m_is_operator );
+
+    ui->colorDataConstantRadioButton        ->setEnabled( m_is_operator );
+    ui->colorDataVariableArrayRadioButton   ->setEnabled( m_is_operator );
+    ui->colorDataNumberOfVariablesSpinBox   ->setEnabled( m_is_operator );
+    for( int i = 0; i < ui->colorDataVariableGridLayout->count(); ++i )
+    {
+        if( QLayoutItem* item = ui->colorDataVariableGridLayout->itemAt( i ) )
+        {
+            if( QWidget* w = item->widget() )
+            {
+                if( auto cb = qobject_cast<QComboBox*>( w ) )
+                    cb->setEnabled( m_is_operator );
+            }
+        }
+    }
+
+    ui->applyPushButton                     ->setEnabled( m_is_operator );
+}
+
+void GlyphEditorWIP::reset()
+{
+    updateNumberOfVector( 0 );
+    ui->typeComboBox->setCurrentIndex( GlyphParameter::Type::Arrow );
+    ui->scaleFactorDoubleSpinBox->setValue( 1.0 );
+
+    ui->sizeConstantRadioButton->setChecked( true );
+    ui->sizeNumberOfVariablesSpinBox->setValue( 0 );
+
+    ui->uniformRadioButton->setChecked( true );
+    ui->numberOfSamplePointsSpinBox->setValue( 1000 );
+    ui->seedSpinBox->setValue( 1 );
+    ui->strideSpinBox->setValue( 3 );
+
+    ui->colorMap->setColors( defaultColor() );
+
+    ui->colorDataConstantRadioButton->setChecked( true );
+    ui->colorDataNumberOfVariablesSpinBox->setValue( 0 );
+
+    ui->colorDataConstantRadioButton->setChecked( true );
+    ui->colorDataNumberOfVariablesSpinBox->setValue( 0 );
+}
+
+void GlyphEditorWIP::loadParameter( const QString& filePath )
+{
+    // TODO:KPI
+    qDebug() << __FILE__ << ":" << __func__ << ":" << filePath;
+}
+
+void GlyphEditorWIP::saveParameter( const QString& filePath )
+{
+    // TODO:KPI
+    qDebug() << __FILE__ << ":" << __func__ << ":" << filePath;
+}
+
+void GlyphEditorWIP::updateNumberOfVector( const int numberOfVector )
+{
+    if( numberOfVector < 3 ) return;
+
+    m_vector_list.clear();
+
+    for( int i = 0; i < numberOfVector; ++i )
+    {
+        const QString name = QString( "q%1" ).arg( i + 1 );
+        m_vector_list << name;
+    }
+
+    // UI へ反映
+    ui->direction1ComboBox->clear();
+    ui->direction2ComboBox->clear();
+    ui->direction3ComboBox->clear();
+
+    ui->direction1ComboBox->addItems( m_vector_list );
+    ui->direction2ComboBox->addItems( m_vector_list );
+    ui->direction3ComboBox->addItems( m_vector_list );
+
+    ui->sizeNumberOfVariablesSpinBox      ->setMaximum( numberOfVector );
+    ui->colorDataNumberOfVariablesSpinBox ->setMaximum( numberOfVector );
+}
+
+void GlyphEditorWIP::receiveGlyphParameter( const QJsonObject& glyphParameter )
+{
+    // const QJsonObject glyphParameter = dataArray.first().toObject();
+
+    // Type
+    ui->typeComboBox->setCurrentIndex( glyphParameter.value( "Type" ).toInt() );
+
+    // ScaleFactor
+    ui->scaleFactorDoubleSpinBox->setValue( glyphParameter.value( "ScaleFactor" ).toDouble() );
+
+    // Direction
+    ui->direction1ComboBox->setCurrentIndex( glyphParameter.value( "Direction1" ).toInt() );
+    ui->direction2ComboBox->setCurrentIndex( glyphParameter.value( "Direction2" ).toInt() );
+    ui->direction3ComboBox->setCurrentIndex( glyphParameter.value( "Direction3" ).toInt() );
+
+    // Size Mode
+    GlyphParameter::DataMode sizeDataMode = static_cast<GlyphParameter::DataMode>( glyphParameter.value( "SizeMode" ).toInt() );
+
+    if( sizeDataMode == GlyphParameter::DataMode::Constant )
+    {
+        ui->sizeConstantRadioButton->setChecked( true );
+    }
+    else if( sizeDataMode == GlyphParameter::DataMode::VariableArray )
+    {
+        ui->sizeVariableArrayRadioButton->setChecked( true );
+    }
+
+    const auto sizeVariables = glyphParameter.value( "SizeVariables" ).toArray();
+    ui->sizeNumberOfVariablesSpinBox->setValue( sizeVariables.size() );
+    int sizeComboIndex = 0;
+    for( int i = 0; i < ui->sizeVariableGridLayout->count(); ++i )
+    {
+        auto* item = ui->sizeVariableGridLayout->itemAt( i );
+        if( !item ) continue;
+
+        if( auto* cb = qobject_cast<QComboBox*>( item->widget() ) )
+        {
+            if( sizeComboIndex < sizeVariables.size() )
+            {
+                const int val = sizeVariables.at( sizeComboIndex ).toInt();
+                cb->setCurrentIndex( val );
+            }
+            ++sizeComboIndex;
+        }
+    }
+
+    GlyphParameter::DistributionMode distributionMode = static_cast<GlyphParameter::DistributionMode>( glyphParameter.value( "DistributionMode" ).toInt() );
+    if( distributionMode == GlyphParameter::DistributionMode::UniformDistribution  )
+        ui->uniformRadioButton->setChecked( true );
+    else if( distributionMode == GlyphParameter::DistributionMode::AllPoints )
+        ui->allPointsRadioButton->setChecked( true );
+    else if( distributionMode == GlyphParameter::EveryNthPoints )
+        ui->everyNthPointRadioButton->setChecked( true );
+
+    ui->numberOfSamplePointsSpinBox ->setValue( glyphParameter.value( "NumberOfSamplePoints" ).toInt() );
+    ui->seedSpinBox                 ->setValue( glyphParameter.value( "Seed" ).toInt() );
+    ui->strideSpinBox               ->setValue( glyphParameter.value( "Stride" ).toInt() );
+
+    // ColorMap array
+    const QJsonArray colorMapJson = glyphParameter.value( "ColorMap" ).toArray();
+
+    QVector<QColor> colors;
+    colors.reserve( colorMapJson.size() );
+    for( const auto& c : colorMapJson )
+    {
+        const QJsonObject obj = c.toObject();
+
+        const int r = obj.value( "r" ).toInt();
+        const int g = obj.value( "g" ).toInt();
+        const int b = obj.value( "b" ).toInt();
+
+        colors.append( QColor( r, g, b ) );
+    }
+    ui->colorMap->setColors( colors );
+
+    // Color Data Mode
+    GlyphParameter::DataMode colorDataMode = static_cast<GlyphParameter::DataMode>( glyphParameter.value( "ColorDataMode" ).toInt() );
+
+    if( colorDataMode == GlyphParameter::DataMode::Constant )
+    {
+        ui->colorDataConstantRadioButton->setChecked( true );
+    }
+    else if( colorDataMode == GlyphParameter::DataMode::VariableArray )
+    {
+        ui->colorDataVariableArrayRadioButton->setChecked( true );
+    }
+
+    const auto colorDataVariables = glyphParameter.value( "ColorDataVariables" ).toArray();
+    ui->colorDataNumberOfVariablesSpinBox->setValue( colorDataVariables.size() );
+    int colorDataComboIndex = 0;
+    for( int i = 0; i < ui->colorDataVariableGridLayout->count(); ++i )
+    {
+        auto* item = ui->colorDataVariableGridLayout->itemAt( i );
+        if( !item ) continue;
+
+        if( auto* cb = qobject_cast<QComboBox*>( item->widget() ) )
+        {
+            if( colorDataComboIndex < colorDataVariables.size() )
+            {
+                const int val = colorDataVariables.at( colorDataComboIndex ).toInt();
+                cb->setCurrentIndex( val );
+            }
+            ++colorDataComboIndex;
+        }
+    }
+}
+
+void GlyphEditorWIP::initialize()
+{
+    ui->setupUi( this );
+
+    QStringList types;
+    types << "Arrow" << "Diamond" << "Sphere";
+    ui->typeComboBox->addItems( types );
+
+    ui->sizeAreaScrollArea      ->setVerticalScrollBarPolicy( Qt::ScrollBarAlwaysOn );
+    ui->colorDataAreaScrollArea ->setVerticalScrollBarPolicy( Qt::ScrollBarAlwaysOn );
+
+    reset();
+
+    // Direction
+    connect( ui->direction1ComboBox, QOverload<int>::of( &QComboBox::currentIndexChanged ), this, &GlyphEditorWIP::onDirectionComboBoxIndexChanged );
+    connect( ui->direction2ComboBox, QOverload<int>::of( &QComboBox::currentIndexChanged ), this, &GlyphEditorWIP::onDirectionComboBoxIndexChanged );
+    connect( ui->direction3ComboBox, QOverload<int>::of( &QComboBox::currentIndexChanged ), this, &GlyphEditorWIP::onDirectionComboBoxIndexChanged );
+
+    // Size
+    connect( ui->sizeConstantRadioButton        , &QRadioButton::clicked    , this, &GlyphEditorWIP::onSizeUiState );
+    connect( ui->sizeVariableArrayRadioButton   , &QRadioButton::clicked    , this, &GlyphEditorWIP::onSizeUiState );
+    connect( ui->sizeNumberOfVariablesSpinBox   , &QSpinBox::valueChanged   , this, &GlyphEditorWIP::onSizeNumberOfVariableValueChanged );
+
+    // Color Map
+    connect( ui->editColorMapPushButton, &QPushButton::clicked, this, &GlyphEditorWIP::onColorMapEditorClicked );
+
+    // Color Data
+    connect( ui->colorDataConstantRadioButton       , &QRadioButton::clicked    , this, &GlyphEditorWIP::onColorDataUiState );
+    connect( ui->colorDataVariableArrayRadioButton  , &QRadioButton::clicked    , this, &GlyphEditorWIP::onColorDataUiState );
+    connect( ui->colorDataNumberOfVariablesSpinBox  , &QSpinBox::valueChanged   , this, &GlyphEditorWIP::onColorDataNumberOfVariableValueChanged );
+
+    connect( ui->applyPushButton, &QPushButton::clicked, this, &GlyphEditorWIP::onApply );
+
+    onSizeUiState();
+    onColorDataUiState();
+
+    // デバッグボタン作成
+    QPushButton* debugPushButton = new QPushButton( "Debug", this );
+    debugPushButton->setGeometry( 650, 50, 120, 40 );
+    debugPushButton->show();
+
+    // ボタン押下でサーバにイベント送信
+    connect( debugPushButton, &QPushButton::clicked, this, [this]() {
+        // updateFromServer();
+    } );
+}
+
+void GlyphEditorWIP::clearLayout( QLayout* layout )
+{
+    while( QLayoutItem* item = layout->takeAt( 0 ) )
+    {
+        if( QWidget* widget = item->widget() ) widget->deleteLater();
+        delete item;
+    }
+}
+
+void GlyphEditorWIP::updateUiEnableState( const bool isVariableArray, QSpinBox* spinBox, QGridLayout* gridLayout )
+{
+    if( m_is_operator ) spinBox->setEnabled( isVariableArray );
+
+    // レイアウト内のすべてのウィジェットを有効/無効に切り替える
+    for( int i = 0; i < gridLayout->count(); ++i )
+    {
+        QLayoutItem* item = gridLayout->itemAt( i );
+        if( !item ) continue;
+
+        QWidget* widget = item->widget();
+        if( widget )
+        {
+            if( m_is_operator ) widget->setEnabled( isVariableArray );
+        }
+    }
+}
+
+void GlyphEditorWIP::updateVariableGridLayout( QSpinBox* spinBox, QGridLayout* grid )
+{
+    const int newCount = spinBox->value();
+
+    // 既存のコンボボックスを収集
+    QVector<QComboBox*> combos;
+    for( int i = 0; i < grid->count(); ++i )
+    {
+        if( QWidget* w = grid->itemAt( i )->widget() )
+        {
+            if( auto cb = qobject_cast<QComboBox*>( w ) )
+            {
+                combos.append( cb );
+            }
+        }
+    }
+
+    const int currentCount = combos.size();
+
+    //===========================
+    // 行を増やす
+    //===========================
+    for( int i = currentCount; i < newCount; ++i )
+    {
+        QLabel* label = new QLabel( QString( "Variable%1" ).arg( i + 1 ), this );
+
+        QComboBox* combo = new QComboBox( this );
+        combo->addItems( m_vector_list );
+        combo->setEnabled( m_is_operator );
+
+        grid->addWidget( label, i, 0 );
+        grid->addWidget( combo, i, 1 );
+    }
+
+    //===========================
+    // 行を減らす
+    //===========================
+    for( int i = currentCount - 1; i >= newCount; --i )
+    {
+        if( auto* labelItem = grid->itemAtPosition( i, 0 ) )
+            delete labelItem->widget();
+
+        if( auto* comboItem = grid->itemAtPosition( i, 1 ) )
+            delete comboItem->widget();
+    }
+}
+
+void GlyphEditorWIP::onDirectionComboBoxIndexChanged()
+{
+    QStringList selectedList;
+    selectedList << ui->direction1ComboBox->currentText()
+                 << ui->direction2ComboBox->currentText()
+                 << ui->direction3ComboBox->currentText();
+
+    QList<QComboBox*> comboBoxes =
+        {
+            ui->direction1ComboBox,
+            ui->direction2ComboBox,
+            ui->direction3ComboBox
+        };
+
+    QSet<QString> used;
+    for( QComboBox* combo : comboBoxes )
+    {
+        QString value = combo->currentText();
+        if( !value.isEmpty() && used.contains( value ) )
+        {
+            // 重複していたら別の未使用の値を探して設定
+            for( const QString& candidate : m_vector_list )
+            {
+                if( !used.contains( candidate ) )
+                {
+                    combo->blockSignals( true );
+                    int index = combo->findText( candidate );
+                    if( index != -1 )
+                        combo->setCurrentIndex( index );
+                    combo->blockSignals( false );
+                    used.insert( candidate );
+                    break;
+                }
+            }
+        }
+        else
+        {
+            if( !value.isEmpty() ) used.insert( value );
+        }
+    }
+}
+
+void GlyphEditorWIP::onSizeUiState()
+{
+    const bool isVariableArray = ui->sizeVariableArrayRadioButton->isChecked();
+    updateUiEnableState( isVariableArray, ui->sizeNumberOfVariablesSpinBox, ui->sizeVariableGridLayout );
+}
+
+void GlyphEditorWIP::onSizeNumberOfVariableValueChanged()
+{
+    updateVariableGridLayout( ui->sizeNumberOfVariablesSpinBox, ui->sizeVariableGridLayout );
+}
+
+void GlyphEditorWIP::onColorMapEditorClicked()
+{
+    ColorMapEditor colorMapEditor;
+    colorMapEditor.adjustSize();
+    colorMapEditor.setDefaultColorMap( ui->colorMap->getColors() );
+
+    if( colorMapEditor.exec() == QDialog::Accepted )
+    {
+        ui->colorMap->setColors( colorMapEditor.getColorMap() );        
+    }
+}
+
+void GlyphEditorWIP::onColorDataUiState()
+{
+    const bool isVariableArray = ui->colorDataVariableArrayRadioButton->isChecked();
+    updateUiEnableState( isVariableArray, ui->colorDataNumberOfVariablesSpinBox, ui->colorDataVariableGridLayout );
+}
+
+void GlyphEditorWIP::onColorDataNumberOfVariableValueChanged()
+{
+    updateVariableGridLayout( ui->colorDataNumberOfVariablesSpinBox, ui->colorDataVariableGridLayout );
+}
+
+void GlyphEditorWIP::onApply()
+{
+    if( !m_web_sockets->isConnected() )
+    {
+        qDebug() << "Not connected";
+        return;
+    }
+
+    QJsonObject glyphParameter;
+
+    glyphParameter["event"]         = "GlyphParameter";
+    // Type
+    glyphParameter["Type"]          = ui->typeComboBox->currentIndex();
+
+    // ScaleFactor
+    glyphParameter["ScaleFactor"]   = ui->scaleFactorDoubleSpinBox->value();
+
+    // Direction
+    glyphParameter["Direction1"]    = ui->direction1ComboBox->currentIndex();
+    glyphParameter["Direction2"]    = ui->direction2ComboBox->currentIndex();
+    glyphParameter["Direction3"]    = ui->direction3ComboBox->currentIndex();
+
+    // Size Mode
+    GlyphParameter::DataMode sizeDataMode =
+        ui->sizeConstantRadioButton->isChecked()
+            ? GlyphParameter::DataMode::Constant
+            : GlyphParameter::DataMode::VariableArray;
+    glyphParameter["SizeMode"]      = static_cast<int>(sizeDataMode);
+
+    // Size Variables
+    QJsonArray sizeVariables;
+    for( int i = 0; i < ui->sizeVariableGridLayout->count(); ++i )
+    {
+        if( auto* item = ui->sizeVariableGridLayout->itemAt( i ) )
+        {
+            if( auto* cb = qobject_cast<QComboBox*>( item->widget() ) )
+                sizeVariables.append( cb->currentIndex() );
+        }
+    }
+    glyphParameter["SizeVariables"] = sizeVariables;
+
+    // Distribution
+    GlyphParameter::DistributionMode distributionMode;
+    if( ui->uniformRadioButton->isChecked() )
+        distributionMode = GlyphParameter::DistributionMode::UniformDistribution;
+    else if( ui->allPointsRadioButton->isChecked() )
+        distributionMode = GlyphParameter::DistributionMode::AllPoints;
+    else
+        distributionMode = GlyphParameter::DistributionMode::EveryNthPoints;
+
+    glyphParameter["DistributionMode"]     = static_cast<int>( distributionMode );
+    glyphParameter["NumberOfSamplePoints"] = ui->numberOfSamplePointsSpinBox->value();
+    glyphParameter["Seed"]                 = ui->seedSpinBox->value();
+    glyphParameter["Stride"]               = ui->strideSpinBox->value();
+
+    // Color Map
+    QJsonArray colorMapArray;
+    const auto& map = toStdVectorColors( ui->colorMap->getColors() );
+    for( const auto& rgb : map )
+    {
+        QJsonObject rgbObj;
+        rgbObj["r"] = static_cast<int>( rgb.r() );
+        rgbObj["g"] = static_cast<int>( rgb.g() );
+        rgbObj["b"] = static_cast<int>( rgb.b() );
+        colorMapArray.append( rgbObj );
+    }
+    glyphParameter["ColorMap"] = colorMapArray;
+
+    // Color Data Mode
+    GlyphParameter::DataMode colorDataMode =
+        ui->colorDataConstantRadioButton->isChecked()
+            ? GlyphParameter::DataMode::Constant
+            : GlyphParameter::DataMode::VariableArray;
+    glyphParameter["ColorDataMode"]     = static_cast<int>(colorDataMode);
+
+    // Color Data Variables
+    QJsonArray colorDataVariables;
+    for( int i = 0; i < ui->colorDataVariableGridLayout->count(); ++i )
+    {
+        if( auto* item = ui->colorDataVariableGridLayout->itemAt( i ) )
+        {
+            if( auto* cb = qobject_cast<QComboBox*>( item->widget() ) )
+                colorDataVariables.append( cb->currentIndex() );
+        }
+    }
+    glyphParameter["ColorDataVariables"]    = colorDataVariables;
+
+    m_web_sockets->text()->sendTextMessage( QJsonDocument( glyphParameter ).toJson( QJsonDocument::Compact ) );
+}

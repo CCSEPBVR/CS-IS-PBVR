@@ -45,6 +45,7 @@ signals:
     void updateFocus( kvs::Vec3, kvs::Vec3 );       // FIXME:このクラスに必要ないので削除
     void updatePointsTranslation();                 // FIXME:このクラスに必要ないので削除
     void updateStatusBarMessage( const QString& message );
+    void receiveGlyphParameter( const QJsonObject& dataArray );
 
 private:
     Ui::Communication *ui;
