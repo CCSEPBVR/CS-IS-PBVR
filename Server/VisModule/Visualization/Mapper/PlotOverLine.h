@@ -17,7 +17,6 @@
 #include "CellBase.h"
 #include <vismodule/TrilinearInterpolator>
 #include "TetrahedralCell.h"
-#include "../../../Common/ParticleTransferProtocol.h"
 #include <vismodule/Argument>
 
 #include <iomanip>

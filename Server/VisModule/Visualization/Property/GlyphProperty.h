@@ -3,8 +3,8 @@
 
 #include <string>
 #include <vector>
-#include "../../../Common/Serializer.h"
 #include <map>
+#include <vismodule/Serializer>
 
 class  GlyphProperty 
 {

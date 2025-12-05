@@ -61,7 +61,7 @@
     #include <DaemonAndSampler/Daemon/Timer.h>
 #endif
 
-#include <vismodule/Argument>
+#include <vismodule/ParticleProperty>
 #include <vismodule/MultiVolumeProperty>
 #include <vismodule/AnyValueArray>
 #include <vismodule/VolumeObjectBase>
@@ -80,15 +80,15 @@
 bool SetParticleParameterCS(
     const std::string file_name,
     const int time_step,
-    const vismodule::Camera* camera,
-    Argument& param,
+    vismodule::Camera* camera,
+    ParticleProperty& param,
     MultiVolumePropertyList& mvpl
 );
 
 void GenerateParticleCS(
-    Argument &param,
+    ParticleProperty& param,
     MultiVolumePropertyList& mvpl,
-    std::unique_ptr<kvs::PointObject> point_object
+    std::unique_ptr<kvs::PointObject>& point_object
     // jpv::ParticleTransferServer pts,
     // jpv::ServerMode server_mode,
     // jpv::InitializeParameter init_param
@@ -108,14 +108,14 @@ void GenerateParticleIS(
 */
 
 void generate_volume(
-    const Argument& param,
+    const ParticleProperty& param,
     const MultiVolumeProperty& mvp,
     const int time_step,
     vismodule::VolumeObjectBase*& volume
 );
 
 void generate_volume(
-    const Argument &param,
+    const ParticleProperty& param,
     const MultiVolumeProperty& mvp,
     const int time_step,
     const int sub_volume_id,

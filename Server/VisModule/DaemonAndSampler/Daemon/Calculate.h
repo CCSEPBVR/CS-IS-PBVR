@@ -1,8 +1,14 @@
 #ifndef VIS_MODULE_CALCULATE_H_INCLDE
 #define VIS_MODULE_CALCULATE_H_INCLDE
 
+#include <vismodule/timer_simple>
+#include <vismodule/File>
+#include <vismodule/FileChecker>
+#include <vismodule/StructuredVolumeImporter>
+#include <vismodule/UnstructuredVolumeImporter>
+
 //inline vismodule::UnstructuredVolumeObject* CreateVolumeData( const Argument& param,
-inline vismodule::VolumeObjectBase* CreateVolumeData( const Argument& param,
+inline vismodule::VolumeObjectBase* CreateVolumeData( const ParticleProperty& param,
                                                          const MultiVolumeProperty& mvp,
                                                          const int& steps, const int& subvols )
 {
@@ -86,7 +92,7 @@ inline float CalculateSamplingStep( const MultiVolumePropertyList& mvpl )
 }
 
 //kawamura2: This calculates optimized subpixel level.
-inline size_t CalculateSubpixelLevel( const Argument& param,
+inline size_t CalculateSubpixelLevel( const ParticleProperty& param,
                                       const MultiVolumePropertyList& mvpl,
                                       const vismodule::Camera& camera )
 {
@@ -154,7 +160,7 @@ inline size_t CalculateSubpixelLevel( const Argument& param,
     return static_cast<size_t>( subpixel_level + 0.5f );
 }
 
-inline VariableRange Calculate_minmax( const Argument& param,
+inline VariableRange Calculate_minmax( const ParticleProperty& param,
                                       const MultiVolumePropertyList& mvpl)
 {
     namespace Generator = vismodule::CellByCellParticleGenerator;
@@ -255,7 +261,7 @@ inline VariableRange Calculate_minmax( const Argument& param,
    return vr;
 }
 
-
+/* 多地点対応のため一旦保留
 inline void Calculate_minmax_glyph( const Argument& param,
                                       const MultiVolumePropertyList& mvpl,
                                       jpv::ParticleTransferClientMessage& clntMes)
@@ -401,9 +407,10 @@ inline void Calculate_minmax_glyph( const Argument& param,
   clntMes.m_glyph_size_min  = min_vec[1] ;
 #endif
 }
+*/
 
 
-inline float CalculateDensityFactor( const Argument& param,
+inline float CalculateDensityFactor( const ParticleProperty& param,
                                      const MultiVolumeProperty& mvp,
                                      const vismodule::Camera& camera )
 {

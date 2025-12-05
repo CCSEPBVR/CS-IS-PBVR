@@ -6,7 +6,7 @@
 //#include "Types.h"
 #include <vismodule/Vector3>
 #include <float.h>
-#include <vismodule/Argument>
+#include <vismodule/ParticleProperty>
 
 class MultiVolumeProperty
 {
@@ -99,7 +99,7 @@ public:
     int32_t m_total_number_ingredients;
     std::vector<MultiVolumeProperty::IngredientsMinMax> m_total_ingredient;
 
-    void searchFile(const Argument& param);
+    void searchFile(const ParticleProperty& param);
 
 };
 

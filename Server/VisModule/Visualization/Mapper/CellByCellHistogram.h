@@ -100,7 +100,7 @@ public:
 public:
 
      // MapperBaseクラスのvirtual 関数をオーバーライドするため空関数を宣言
-    SuperClass* exec( const vismodule::ObjectBase& object ){};
+    SuperClass* exec( const vismodule::ObjectBase& object ){ return NULL; };
 
 public:
 

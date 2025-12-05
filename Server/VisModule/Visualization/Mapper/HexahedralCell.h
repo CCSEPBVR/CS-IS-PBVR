@@ -265,7 +265,7 @@ inline void HexahedralCell<T>::grad_ary(float* grad_array_x, float* grad_array_y
         ///////////////////////// JacobiMatrix /////////////////////////
 
         // calc scale factor
-        double minValue = std::numeric_limits<double>::max();
+        double minValue = (std::numeric_limits<double>::max)();
         std::vector<double> values = {
             vismodule::Math::Abs(dXdx),vismodule::Math::Abs(dYdx),vismodule::Math::Abs(dZdx),
             vismodule::Math::Abs(dXdy),vismodule::Math::Abs(dYdy),vismodule::Math::Abs(dZdy),

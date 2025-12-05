@@ -233,6 +233,7 @@ void CellByCellUniformSampling::setObjectDepth( const float object_depth )
 // MapperBaseクラスのvirtual 関数をオーバーライドするため空関数を宣言
 CellByCellUniformSampling::SuperClass* CellByCellUniformSampling::exec( const vismodule::ObjectBase& object )
 {
+    return NULL;
 }
 //template <>
 //void CellByCellUniformSampling::generate_particles_unstruct<vismodule::Real32>( const vismodule::UnstructuredVolumeObject& volume );

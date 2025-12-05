@@ -13,7 +13,7 @@
 #include "../../../FunctionParser/Token.h"
 //add by shimomura  2022/12/20
 //#include "../Common/VariableRange.h"
-#include "../../../Common/VariableRange.h"
+#include <vismodule/VariableRange>
 #include "../../../FunctionParser/ExpressionTokenizer.h"
 #include "../../../FunctionParser/ExpressionConverter.h"
 

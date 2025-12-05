@@ -3,7 +3,7 @@
 
 #include <string>
 #include <vector>
-#include "../Common/Serializer.h"
+#include <vismodule/Serializer>
 #include <map>
 
 class  PlotOverLineProperty 

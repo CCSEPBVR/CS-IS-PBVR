@@ -21,7 +21,6 @@
 #include <vismodule/StructuredVolumeObject>
 #include <vismodule/KVSMLObjectGlyph>
 #include <vismodule/GlyphProperty>
-#include "../Common/ParticleTransferProtocol.h"
 
 #include <vismodule/Argument>
 
@@ -66,14 +65,11 @@ protected:
 
     //入力パラメータ(デーモン→サーバー)
     std::vector<int>  m_direction_variables;
-    jpv::DataDefines m_size_sampling_method;
     std::vector<int> m_size_variables;
-    jpv::GlyphMode m_distribution_modes;
     int m_stride;
     int m_seed;
     float m_number_of_sample_points;
     vismodule::ColorMap m_color_map;
-    jpv::DataDefines m_color_sampling_method;
     std::vector<int> m_color_data_variables;
 // glyph paramter end
 

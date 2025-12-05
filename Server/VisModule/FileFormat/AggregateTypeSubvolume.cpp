@@ -14,7 +14,7 @@
 #include <vismodule/File>
 #include <vismodule/AnyValueArray>
 #include <vismodule/Type>
-#include "Types.h"
+#include <vismodule/Types>
 #include <vismodule/IgnoreUnusedVariable>
 #include <stdio.h>
 #include <string.h>

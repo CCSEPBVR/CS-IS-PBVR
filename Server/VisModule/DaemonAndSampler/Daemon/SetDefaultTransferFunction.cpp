@@ -1,3 +1,4 @@
+#include "SetDefaultTransferFunction.h"
 #include <vismodule/SetDefaultTransferFunction>
 #include <vismodule/ExtendedTransferFunctionParameter>
 
@@ -53,15 +54,15 @@ void setDefalutTransferFunction(jpv::ParticleTransferServerMessage* servMes, con
 }
 */
 
-void setDefalutTransferFunctionToArgument( Argument *param, const VariableRange vr, const int tf_number )
+void setDefalutTransferFunctionToArgument( ParticleProperty& param, const VariableRange vr, const int tf_number )
 {
     const int TF_resolution = 256;
-    param->m_named_transfunc_array.clear();
-    param->m_named_transfunc_array.resize( tf_number );
-    param->m_voleqn.clear();
-    param->m_voleqn.resize( tf_number );
-    param->m_color_transfer_function_synthesis = "C1"; 
-    param->m_opacity_transfer_function_synthesis = "O1"; 
+    param.m_transfunc_array.clear();
+    param.m_transfunc_array.resize( tf_number );
+    // param->m_voleqn.clear();
+    // param->m_voleqn.resize( tf_number );
+    param.m_color_transfer_function_synthesis = "C1"; 
+    param.m_opacity_transfer_function_synthesis = "O1"; 
 
     // set defalut opacity & color  parameter
     std::vector<float> o_table ={0, 0.00392157, 0.00784314, 0.0117647, 0.0156863, 0.0196078, 0.0235294, 0.027451, 0.0313726, 0.0352941, 0.0392157, 0.0431373, 0.0470588, 0.0509804, 0.054902, 0.0588235, 0.0627451, 0.0666667, 0.0705882, 0.0745098, 0.0784314, 0.0823529, 0.0862745, 0.0901961, 0.0941177, 0.0980392, 0.101961, 0.105882, 0.109804, 0.113725, 0.117647, 0.121569, 0.12549, 0.129412, 0.133333, 0.137255, 0.141176, 0.145098, 0.14902, 0.152941, 0.156863, 0.160784, 0.164706, 0.168627, 0.172549, 0.176471, 0.180392, 0.184314, 0.188235, 0.192157, 0.196078, 0.2, 0.203922, 0.207843, 0.211765, 0.215686, 0.219608, 0.223529, 0.227451, 0.231373, 0.235294, 0.239216, 0.243137, 0.247059, 0.25098, 0.254902, 0.258824, 0.262745, 0.266667, 0.270588, 0.27451, 0.278431, 0.282353, 0.286275, 0.290196, 0.294118, 0.298039, 0.301961, 0.305882, 0.309804, 0.313726, 0.317647, 0.321569, 0.32549, 0.329412, 0.333333, 0.337255, 0.341176, 0.345098, 0.34902, 0.352941, 0.356863, 0.360784, 0.364706, 0.368627, 0.372549, 0.376471, 0.380392, 0.384314, 0.388235, 0.392157, 0.396078, 0.4, 0.403922, 0.407843, 0.411765, 0.415686, 0.419608, 0.423529, 0.427451, 0.431373, 0.435294, 0.439216, 0.443137, 0.447059, 0.45098, 0.454902, 0.458824, 0.462745, 0.466667, 0.470588, 0.47451, 0.478431, 0.482353, 0.486275, 0.490196, 0.494118, 0.498039, 0.501961, 0.505882, 0.509804, 0.513726, 0.517647, 0.521569, 0.52549, 0.529412, 0.533333, 0.537255, 0.541176, 0.545098, 0.54902, 0.552941, 0.556863, 0.560784, 0.564706, 0.568627, 0.572549, 0.576471, 0.580392, 0.584314, 0.588235, 0.592157, 0.596078, 0.6, 0.603922, 0.607843, 0.611765, 0.615686, 0.619608, 0.623529, 0.627451, 0.631373, 0.635294, 0.639216, 0.643137, 0.647059, 0.65098, 0.654902, 0.658824, 0.662745, 0.666667, 0.670588, 0.67451, 0.678431, 0.682353, 0.686275, 0.690196, 0.694118, 0.698039, 0.701961, 0.705882, 0.709804, 0.713726, 0.717647, 0.721569, 0.72549, 0.729412, 0.733333, 0.737255, 0.741176, 0.745098, 0.74902, 0.752941, 0.756863, 0.760784, 0.764706, 0.768628, 0.772549, 0.776471, 0.780392, 0.784314, 0.788235, 0.792157, 0.796079, 0.8, 0.803922, 0.807843, 0.811765, 0.815686, 0.819608, 0.823529, 0.827451, 0.831373, 0.835294, 0.839216, 0.843137, 0.847059, 0.85098, 0.854902, 0.858824, 0.862745, 0.866667, 0.870588, 0.87451, 0.878431, 0.882353, 0.886275, 0.890196, 0.894118, 0.898039, 0.901961, 0.905882, 0.909804, 0.913726, 0.917647, 0.921569, 0.92549, 0.929412, 0.933333, 0.937255, 0.941177, 0.945098, 0.94902, 0.952941, 0.956863, 0.960784, 0.964706, 0.968628, 0.972549, 0.976471, 0.980392, 0.984314, 0.988235, 0.992157, 0.996078, 1};
@@ -74,11 +75,11 @@ void setDefalutTransferFunctionToArgument( Argument *param, const VariableRange 
     std::vector<EquationToken> var_o;
     std::vector<EquationToken> var_c;
 
-    eq = param->m_transfunc_synthesizer->convert_token( "a1" );
-    param->m_transfunc_synthesizer->setOpacityFunction( eq );
+    eq = param.m_transfunc_synthesizer->convert_token( "a1" );
+    param.m_transfunc_synthesizer->setOpacityFunction( eq );
 
-    eq = param->m_transfunc_synthesizer->convert_token( "c1" );
-    param->m_transfunc_synthesizer->setColorFunction( eq );
+    eq = param.m_transfunc_synthesizer->convert_token( "c1" );
+    param.m_transfunc_synthesizer->setColorFunction( eq );
 
     for ( size_t i = 0; i < tf_number; i++ )
     {
@@ -88,6 +89,7 @@ void setDefalutTransferFunctionToArgument( Argument *param, const VariableRange 
         tt << "t"  << i + 1;
         ff << "_F" << i + 1 << "_VAR_";
 
+        /*
         param->m_named_transfunc_array[i].m_name                 = tt.str();
         param->m_named_transfunc_array[i].m_color_variable       = qq.str();
         param->m_named_transfunc_array[i].m_opacity_variable     = qq.str();
@@ -101,13 +103,15 @@ void setDefalutTransferFunctionToArgument( Argument *param, const VariableRange 
         param->m_named_transfunc_array[i].m_equation_green       = ""; 
         param->m_named_transfunc_array[i].m_equation_blue        = ""; 
         param->m_named_transfunc_array[i].m_equation_opacity     = "";
+        */
 
         vismodule::ColorMap color_map( cc_table    , vr.min( tt.str() + "_var_c" ), vr.max( tt.str() + "_var_c" ) );
         vismodule::OpacityMap opacity_map( oo_table, vr.min( tt.str() + "_var_o" ), vr.max( tt.str() + "_var_o" ) );
 
-        param->m_named_transfunc_array[i].setColorMap( color_map );
-        param->m_named_transfunc_array[i].setOpacityMap( opacity_map );
-        param->m_named_transfunc_array[i].setColorRange(
+        param.m_transfunc_array[i].setColorMap( color_map );
+        param.m_transfunc_array[i].setOpacityMap( opacity_map );
+        /*
+        param.m_transfunc_array[i].setColorRange(
             param->m_named_transfunc_array[i].m_color_variable_min,
             param->m_named_transfunc_array[i].m_color_variable_max
         );
@@ -115,13 +119,14 @@ void setDefalutTransferFunctionToArgument( Argument *param, const VariableRange 
             param->m_named_transfunc_array[i].m_opacity_variable_min,
             param->m_named_transfunc_array[i].m_opacity_variable_max
         );
-        param->m_named_transfunc_array[i].m_selection = NamedTransferFunctionParameter::SelectTransferFunction;
+        */
+        // param->m_named_transfunc_array[i].m_selection = NamedTransferFunctionParameter::SelectTransferFunction;
 
-        var_o.push_back( param->m_transfunc_synthesizer->convert_token( qq.str() ) );
-        var_c.push_back( param->m_transfunc_synthesizer->convert_token( qq.str() ) );
+        // var_o.push_back( param.m_transfunc_synthesizer->convert_token( qq.str() ) );
+        // var_c.push_back( param.m_transfunc_synthesizer->convert_token( qq.str() ) );
 
-        param->m_voleqn[i].m_name     = ff.str() + "C";
-        param->m_voleqn[i].m_equation = qq.str();
+        // param->m_voleqn[i].m_name     = ff.str() + "C";
+        // param->m_voleqn[i].m_equation = qq.str();
     }
 }
 

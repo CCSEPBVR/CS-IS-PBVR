@@ -72,10 +72,10 @@ public:
     std::vector<int32_t> m_glyph_color_map_table;
     vismodule::ColorMap m_color_map;
     std::string m_direction_variable[3];
-    jpv::DataDefines m_size_sampling_method;
+    // jpv::DataDefines m_size_sampling_method; // 多地点対応のため一旦コメントアウト
     std::vector<std::string> m_size_variable;
-    jpv::GlyphMode m_distribution_mode;
-    jpv::DataDefines m_color_data_sampling_method;
+    // jpv::GlyphMode m_distribution_mode; // 多地点対応のため一旦コメントアウト
+    // jpv::DataDefines m_color_data_sampling_method; // 多地点対応のため一旦コメントアウト
     std::vector<std::string> m_color_data_variable;
     // glyph parameter
 

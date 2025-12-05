@@ -6,7 +6,7 @@
 #include <vector>
 #include <vismodule/Type>
 #include <vismodule/NameListFile>
-#include "../Common/VariableRange.h" 
+#include <vismodule/VariableRange>
 
 class ParticleHistoryFile
 {

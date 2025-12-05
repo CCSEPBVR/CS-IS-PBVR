@@ -4,6 +4,10 @@
 #include <functional>
 
 #include "../../Shared/ObjectInfoExtractor.h"
+#include <vismodule/ParticleProperty>
+#include <vismodule/MultiVolumeProperty>
+#include <vismodule/GenerateParticle>
+#include <vismodule/Camera>
 
 class Worker
 {
@@ -85,20 +89,28 @@ private:
     int m_request_time_step;
     std::vector<ObjectInfoExtractor::ObjectInfo>* m_objects;
     DoneCallBack m_done_call_back;
+    ParticleProperty param;
+    MultiVolumePropertyList mvpl;
+    vismodule::Camera camera;
 
     void importObject( ObjectInfoExtractor::ObjectInfo& info, const int&  requestTimeStep )
     {
+std::cout << __FILE__ << ", " << __func__ << ", " << __LINE__ << std::endl;
         std::string fileName = createFileName( info, requestTimeStep );
 
         std::unique_ptr<kvs::PointObject> pointObject;
         std::unique_ptr<kvs::PolygonObject> polygonObject;
         std::unique_ptr<kvs::LineObject> lineObject;
+
 #ifdef ASSIMP
         std::unique_ptr<kvs::TexturedPolygonObject> texturedPolygonObject;
 #endif
         switch( info.format )
         {
         case ObjectInfoExtractor::ClientServerPointObject:
+            pointObject = std::make_unique<kvs::PointObject>();
+            SetParticleParameterCS( fileName, requestTimeStep, &camera, param, mvpl );
+            GenerateParticleCS( param, mvpl, pointObject );
             break;
         case ObjectInfoExtractor::InsituServerPointObject:
             break;

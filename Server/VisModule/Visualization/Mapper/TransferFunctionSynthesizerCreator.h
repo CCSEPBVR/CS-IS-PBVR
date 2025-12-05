@@ -8,7 +8,6 @@
 #include <vismodule/TransferFunction>
 #include <vismodule/TransferFunctionSynthesizer>
 //#include "TransferFunctionSynthesizer_IS.h"
-#include "../../../Common/ParticleTransferProtocol.h"
 #include <vismodule/ExtendedTransferFunction>
 #include <vismodule/TransferFunctionProperty>
 #include <vismodule/MultiVolumeProperty>
@@ -17,7 +16,7 @@
 #include "../../../FunctionParser/ReversePolishNotation.h"
 #include "../../../FunctionParser/Token.h"
 
-#include "../../../Common/VariableRange.h"
+#include <vismodule/VariableRange>
 
 #define TF_COUNT 5 //������ 
 #define VAR_OFFSET_A 112 //Token.h->VarName-A1�������
@@ -48,11 +47,11 @@ public:
     //void setOpacityRange( const std::string& name, const float min_value, const float max_value );
     void setColorRange( const float min_value, const float max_value );
     void setOpacityRange( const float min_value, const float max_value );
-    void setProtocol(  const jpv::ParticleTransferClientMessage& clntMes );
+    // void setProtocol(  const jpv::ParticleTransferClientMessage& clntMes );
     void setInitialProtocol(  const int nvariable, const VariableRange vr );
     void setParameterFile(  const TransferFunctionProperty& tfp );
     void setAsisTransferFunction( const vismodule::TransferFunction& tf );
-    void setTransferFunction( jpv::ParticleTransferServerMessage* servMes , const VariableRange vr);
+    // void setTransferFunction( jpv::ParticleTransferServerMessage* servMes , const VariableRange vr);
     // add by @hira at 2016/12/01
     void setInitializeRange( const float min_value, const float max_value );
 
@@ -78,7 +77,7 @@ private:
 
 private:
     void assign();
-    void set_protocol(  const jpv::ParticleTransferClientMessage& clntMes );
+    // void set_protocol(  const jpv::ParticleTransferClientMessage& clntMes );
     void set_param_info(  const TransferFunctionProperty& tfp );
     void read_TF_from_ParamInfo(  const TransferFunctionProperty& tfp );
     

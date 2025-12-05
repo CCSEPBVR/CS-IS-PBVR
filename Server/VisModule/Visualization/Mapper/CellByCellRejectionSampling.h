@@ -107,7 +107,7 @@ public:
 
 public:
 
-    SuperClass* exec( const vismodule::ObjectBase& object ){};
+    SuperClass* exec( const vismodule::ObjectBase& object ){ return NULL; };
 
 public:
 

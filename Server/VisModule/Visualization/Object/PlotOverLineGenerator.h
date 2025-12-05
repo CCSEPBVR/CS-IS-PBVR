@@ -21,7 +21,6 @@
 #include <vismodule/MultiVolumeProperty>
 #include <vismodule/ExtendedTransferFunction>
 #include <vismodule/KVSMLObjectGlyph>
-#include "../Common/ParticleTransferProtocol.h"
 #include <vismodule/PlotOverLine>
 #include <vismodule/KVSMLObjectPlotOverLine>
 

@@ -14,6 +14,8 @@
 #ifndef VIS_MODULE__CELL_BASE_H_INCLUDE
 #define VIS_MODULE__CELL_BASE_H_INCLUDE
 
+#include <limits>
+
 #include <vismodule/DebugNew>
 #include <vismodule/ClassName>
 #include <vismodule/Type>
@@ -755,7 +757,7 @@ inline const vismodule::Vector3f CellBase<T>::gradient() const
     vismodule::Matrix33d J = this->JacobiMatrix_d();
 
     // calc scale factor
-    double minValue = std::numeric_limits<double>::max();
+    double minValue = (std::numeric_limits<double>::max)();
 
     for ( size_t i = 0; i < 3; i++ ) 
     {
