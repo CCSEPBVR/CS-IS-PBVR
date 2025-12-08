@@ -928,6 +928,11 @@ void Communication::textWebsocketMessageReceived( const QString& receivedMessage
             emit receiveGlyphParameter( obj );
         }
 
+        else if( obj["event"].toString() == "PlotOverLineParameter" )
+        {
+            emit receivePlotOverLineParameter( obj );
+        }
+
         else if (obj["event"].toString() == "transferfunction")
         {
             // synthesize 情報

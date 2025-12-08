@@ -189,8 +189,7 @@ void ServerWIP::onMessage( uWS::WebSocket<false, true, PerSocket>* ws, std::stri
         else if( event == "shareview" )             shareview( ws, received );
         else if( event == "sharepoint" )            sharepoint( ws, received );
         else if( event == "transferfunction" )      transferfunction( ws, received );
-        else if( event == "glyph" )                 glyph( ws, received );
-        else if( event == "plotoverlineparameter" ) plotoverlineparameter( ws, received );
+        else if( event == "glyph" )                 glyph( ws, received );        
         else if( event == "fileList" )              fileList( ws, received );
         else if( event == "selectedFile" )          selectedFile( ws, received );
         else if( event == "showAtTimeStep" )        showAtTimeStep( ws, received );
@@ -198,6 +197,7 @@ void ServerWIP::onMessage( uWS::WebSocket<false, true, PerSocket>* ws, std::stri
         else if( event == "debug" )                 debugNumberOfUsers();
         else if( event == "debugSrvObjects" )       debugSrvObjects();
         else if( event == "GlyphParameter")         recvGlyphParameter( ws, received );
+        else if( event == "PlotOverLineParameter" ) receivePlotOverLineParameter( ws, received );
         else                                        std::cout << "[Server] Unknow Event : " << event << std::endl;
     }
 }
@@ -1327,6 +1327,44 @@ void ServerWIP::recvGlyphParameter( uWS::WebSocket<false, true, PerSocket>* ws, 
         // for( const auto& v : received["ColorDataVariables"] )
         //     std::cout << v.get<int>() + 1 << " ";
         // std::cout << std::endl;
+    }
+
+    ws->publish( "Notice", received.dump(), uWS::OpCode::TEXT );
+}
+
+void ServerWIP::receivePlotOverLineParameter( uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received )
+{
+    // Enable
+    // std::cout << "Enable              : " << received.value( "Enable", -1 ) << std::endl;
+    // Resolution
+    // std::cout << "Resolution              : " << received.value( "Resolution", -1 ) << std::endl;
+    // Target
+    // std::cout << "Target              : " << received.value( "Target", -1 ) << std::endl;
+
+    auto sc = received["StartCoords"];
+    if( sc.size() == 3 )
+    {
+        // std::cout << "StartCoords         : "
+        //           << sc[0].get<double>() << ", "
+        //           << sc[1].get<double>() << ", "
+        //           << sc[2].get<double>() << std::endl;
+    }
+    else
+    {
+        // std::cout << "StartCoords         : (invalid size)" << std::endl;
+    }
+
+    auto ec = received["EndCoords"];
+    if( ec.size() == 3 )
+    {
+        // std::cout << "EndCoords           : "
+        //           << ec[0].get<double>() << ", "
+        //           << ec[1].get<double>() << ", "
+        //           << ec[2].get<double>() << std::endl;
+    }
+    else
+    {
+        // std::cout << "EndCoords           : (invalid size)" << std::endl;
     }
 
     ws->publish( "Notice", received.dump(), uWS::OpCode::TEXT );

@@ -22,7 +22,7 @@ MainWindow::MainWindow( kvs::qt::Application& app, QWidget *parent )
     , m_communication( new Communication( m_screen, m_web_sockets, m_viz_mode, this ) )    
     , m_glyph_editor_wip( new GlyphEditorWIP( m_web_sockets, this ) )
     , m_object_editor( new ObjectEditorWIP( m_web_sockets, m_viz_mode, m_screen, this ) )
-    , m_plot_over_line_editor( new PlotOverLineEditor( m_web_sockets, m_screen, this ) )
+    , m_plot_over_line_editor_wip( new PlotOverLineEditorWIP( m_web_sockets, m_screen, this ) )
     , m_point_size_control( new PointSizeControl( m_screen, this ) )
     , m_preference( new Preference( this ) )
     , m_repetition_level_control( new RepetitionLevelControl( m_screen, m_compositor, this ) )
@@ -109,20 +109,6 @@ void MainWindow::initialize()
 
     emit readyScreen();
     initializeAfterShow();
-
-    // デバッグボタン作成
-    QPushButton* debugPushButton = new QPushButton( "Debug", this );
-    debugPushButton->setGeometry( 650, 50, 120, 40 );
-    debugPushButton->show();
-
-    // ボタン押下でサーバにイベント送信
-    connect( debugPushButton, &QPushButton::clicked, this, [this]() {
-        RemoteFileDialog dlg( m_web_sockets, this );
-        if( dlg.exec() == QDialog::Accepted )
-        {
-            qDebug() << "選択ファイル:" << dlg.selectedFile();
-        }
-    } );
 }
 
 void MainWindow::toolBarInitialize()
@@ -211,7 +197,7 @@ void MainWindow::communicationInitialize()
         connect( m_communication, &Communication::updateServerState, this, &MainWindow::onUpdateServerState );
         connect( m_communication, &Communication::updateOperatorState, m_glyph_editor_wip, &GlyphEditorWIP::updateOperatorState );
         connect( m_communication, &Communication::updateOperatorState, m_object_editor, &ObjectEditorWIP::updateOperatorState );        
-        connect( m_communication, &Communication::updateOperatorState, m_plot_over_line_editor, &PlotOverLineEditor::updateOperatorState );
+        connect( m_communication, &Communication::updateOperatorState, m_plot_over_line_editor_wip, &PlotOverLineEditorWIP::updateOperatorState );
 
         connect( m_communication, &Communication::updateOperatorState, m_transfer_function_editor_wip, &TransferFunctionEditorWIP::updateOperatorState );
         connect( m_communication, &Communication::updateTransferFunctionFromServer, m_transfer_function_editor_wip, &TransferFunctionEditorWIP::updateTransferFunctionFromServer );
@@ -265,8 +251,8 @@ void MainWindow::objectEditorInitialize()
         m_object_editor_action = new QAction( tr( "Object Editor"), this );
 
         connect( m_object_editor, &ObjectEditorWIP::updateTotalTimeStepRange, m_time_step_control_tool_bar, &TimeStepControlToolBar::updateTotalTimeStepRange );
-        connect( m_object_editor, &ObjectEditorWIP::updateFocus             , m_plot_over_line_editor, &PlotOverLineEditor::updateFocus );
-        connect( m_object_editor, &ObjectEditorWIP::updateTranslation       , m_plot_over_line_editor, &PlotOverLineEditor::updateTranslation );
+        connect( m_object_editor, &ObjectEditorWIP::updateFocus             , m_plot_over_line_editor_wip, &PlotOverLineEditorWIP::updateFocus );
+        connect( m_object_editor, &ObjectEditorWIP::updateTranslation       , m_plot_over_line_editor_wip, &PlotOverLineEditorWIP::updateTranslation );
         connect( m_object_editor, &ObjectEditorWIP::shading                 , m_shading_control, &ShadingControl::shading );
         connect( m_object_editor, &ObjectEditorWIP::done                    , m_time_step_control_tool_bar, &TimeStepControlToolBar::doneTimeControlToolBar );
         // connect( m_object_editor, &ObjectEditorWIP::noItems                         , m_time_step_control_tool_bar, &TimeStepControlToolBar::noItems );
@@ -287,25 +273,27 @@ void MainWindow::objectEditorInitialize()
 
 void MainWindow::plotOverLineEditorInitialize()
 {
-    if( m_plot_over_line_editor )
+    if( m_plot_over_line_editor_wip )
     {
         m_plot_over_line_editor_action = new QAction( tr( "Plot Over Line Editor"), this );
 
-        connect( m_screen , &kvs::qt::jaea::Screen::updateTranslation   , m_plot_over_line_editor , &PlotOverLineEditor::updateTranslation );
+        connect( m_screen , &kvs::qt::jaea::Screen::updateTranslation   , m_plot_over_line_editor_wip , &PlotOverLineEditorWIP::updateTranslation );
 
-        connect( this, &MainWindow::load, m_plot_over_line_editor, &PlotOverLineEditor::loadParameter );
-        connect( this, &MainWindow::save, m_plot_over_line_editor, &PlotOverLineEditor::saveParameter );
+        connect( this, &MainWindow::load, m_plot_over_line_editor_wip, &PlotOverLineEditorWIP::loadParameter );
+        connect( this, &MainWindow::save, m_plot_over_line_editor_wip, &PlotOverLineEditorWIP::saveParameter );
 
         connect( m_plot_over_line_editor_action, &QAction::triggered, this, &MainWindow::onPlotOverLineEditor );
+
+        connect( m_communication, &Communication::receivePlotOverLineParameter, m_plot_over_line_editor_wip, &PlotOverLineEditorWIP::receivePlotOverLineParameter );
 
         m_plot_over_line_editor_action->setEnabled( false ); // サーバ接続前は無効
 
         ui->menuTools->addAction( m_plot_over_line_editor_action );
 
-        m_plot_over_line_editor->adjustSize();
-        m_plot_over_line_editor->close();
-        addDockWidget( Qt::LeftDockWidgetArea, m_plot_over_line_editor );
-        // m_plot_over_line_editor->updateNumberOfVector( 3 ); // DEBUG:成分数に応じてUIが変化するか確認
+        m_plot_over_line_editor_wip->adjustSize();
+        m_plot_over_line_editor_wip->close();
+        addDockWidget( Qt::LeftDockWidgetArea, m_plot_over_line_editor_wip );
+        // m_plot_over_line_editor_wip->updateNumberOfVector( 3 ); // DEBUG:成分数に応じてUIが変化するか確認
     }
 }
 
@@ -493,13 +481,13 @@ void MainWindow::onUpdateServerState( bool serverState ) // true:接続中
         m_object_editor->reset();
     }
 
-    if( m_plot_over_line_editor && m_plot_over_line_editor_action )
+    if( m_plot_over_line_editor_wip && m_plot_over_line_editor_action )
     {
         m_plot_over_line_editor_action->setEnabled( serverState );
         if( !serverState )
         {
-            m_plot_over_line_editor->close();
-            m_plot_over_line_editor->reset();
+            m_plot_over_line_editor_wip->close();
+            m_plot_over_line_editor_wip->reset();
         }
     }
 

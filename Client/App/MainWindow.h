@@ -26,7 +26,7 @@
 #include "Communication.h"
 #include "GlyphEditorWIP.h"
 #include "ObjectEditorWIP.h"
-#include "PlotOverLineEditor.h"
+#include "PlotOverLineEditorWIP.h"
 #include "PointSizeControl.h"
 #include "Preference.h"
 #include "RepetitionLevelControl.h"
@@ -104,7 +104,7 @@ private:
     ObjectEditorWIP* m_object_editor = nullptr;                     // NOTE:通信関係有
 
     QAction* m_plot_over_line_editor_action = nullptr;
-    PlotOverLineEditor* m_plot_over_line_editor = nullptr;          // NOTE:通信関係有
+    PlotOverLineEditorWIP* m_plot_over_line_editor_wip = nullptr;          // NOTE:通信関係有
 
     QAction* m_point_size_control_action = nullptr;
     PointSizeControl* m_point_size_control = nullptr;
@@ -148,7 +148,7 @@ private slots:
     void onCommunication() { m_communication->show(); }
     void onGlyphEditor() { m_glyph_editor_wip->show(); }
     void onObjectEditor() { m_object_editor->show(); }
-    void onPlotOverLineEditor() { m_plot_over_line_editor->show(); }
+    void onPlotOverLineEditor() { m_plot_over_line_editor_wip->show(); }
     void onPointSizeControl() { m_point_size_control->show(); }
     void onPreference() { m_preference->show(); }
     void onRepetitionLevelControl() { m_repetition_level_control->show(); }

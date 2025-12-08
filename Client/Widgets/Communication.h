@@ -46,6 +46,7 @@ signals:
     void updatePointsTranslation();                 // FIXME:このクラスに必要ないので削除
     void updateStatusBarMessage( const QString& message );
     void receiveGlyphParameter( const QJsonObject& dataArray );
+    void receivePlotOverLineParameter( const QJsonObject& plotOverLineParameter );
 
 private:
     Ui::Communication *ui;

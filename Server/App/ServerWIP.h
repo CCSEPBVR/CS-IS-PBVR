@@ -105,6 +105,7 @@ private:
     void showAtTimeStep( uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received );
     void objectInfoUpdate( uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received );
     void recvGlyphParameter( uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received );
+    void receivePlotOverLineParameter( uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received );
 
     void debugNumberOfUsers()
     {
