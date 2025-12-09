@@ -226,7 +226,6 @@ $(OUTDIR)/./Visualization/Mapper/SquareCell.o \
 $(OUTDIR)/./Visualization/Mapper/TetrahedralCell.o \
 $(OUTDIR)/./Visualization/Mapper/TransferFunction.o \
 $(OUTDIR)/./Visualization/Mapper/TransferFunctionSynthesizer.o \
-$(OUTDIR)/./Visualization/Mapper/TransferFunctionSynthesizerCreator.o \
 $(OUTDIR)/./Visualization/Mapper/TriangleCell.o \
 $(OUTDIR)/./Visualization/Object/AxisObject.o \
 $(OUTDIR)/./Visualization/Object/GeometryObjectBase.o \
@@ -245,7 +244,6 @@ $(OUTDIR)/./Visualization/Object/StructuredVolumeObject.o \
 $(OUTDIR)/./Visualization/Object/UnstructuredVolumeObject.o \
 $(OUTDIR)/./Visualization/Pipeline/ObjectImporter.o \
 $(OUTDIR)/./Visualization/Pipeline/PipelineModule.o \
-$(OUTDIR)/./Visualization/Property/GlyphProperty.o \
 $(OUTDIR)/./Visualization/Property/MultiVolumeProperty.o \
 $(OUTDIR)/./Visualization/Property/PlotOverLineProperty.o \
 $(OUTDIR)/./Visualization/Property/TransferFunctionProperty.o \
@@ -276,11 +274,9 @@ $(OUTDIR)/./DaemonAndSampler/Daemon/ParticleMonitor.o \
 $(OUTDIR)/./DaemonAndSampler/Daemon/SetDefaultTransferFunction.o \
 $(OUTDIR)/./DaemonAndSampler/Daemon/Timer.o \
 $(OUTDIR)/./Visualization/Object/PointObjectCreator.o \
-$(OUTDIR)/./DaemonAndSampler/Daemon/Connect.o \
 $(OUTDIR)/./DaemonAndSampler/Daemon/GenerateGlyph.o \
 $(OUTDIR)/./DaemonAndSampler/Daemon/GenerateParticle.o \
-$(OUTDIR)/./DaemonAndSampler/Daemon/GeneratePOL.o \
-$(OUTDIR)/./DaemonAndSampler/Daemon/InitialStep.o \
+$(OUTDIR)/./DaemonAndSampler/Daemon/GeneratePOL.o
 
 
 
