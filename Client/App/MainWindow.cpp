@@ -15,7 +15,7 @@ MainWindow::MainWindow( kvs::qt::Application& app, QWidget *parent )
     // ウィジェット群(A~Z)
     // ABCDEFGHIJKLMNOPQRSTUVWXYZ
     , m_color_map_bar_selector_tool_bar( new ColorMapSelectorToolBar( m_screen, this ) )
-    , m_play_back_control_tool_bar( new PlayBackControlToolBar( this ) )
+    , m_play_back_control_tool_bar( new PlayBackControlToolBarWIP( this ) )
     , m_time_step_control_tool_bar( new TimeStepControlToolBar( this ) )
     , m_total_particles_tool_bar( new TotalParticlesToolBar( this ) )
     , m_animation_control( new AnimationControl( m_screen, this ) )
@@ -117,7 +117,7 @@ void MainWindow::toolBarInitialize()
     if( m_time_step_control_tool_bar )
     {
         connect( m_time_step_control_tool_bar, &TimeStepControlToolBar::requestMerge, m_object_editor, &ObjectEditorWIP::showAtTimeStep );
-        connect( m_time_step_control_tool_bar, &TimeStepControlToolBar::done, m_play_back_control_tool_bar, &PlayBackControlToolBar::donePlayBackControlToolBar );
+        connect( m_time_step_control_tool_bar, &TimeStepControlToolBar::done, m_play_back_control_tool_bar, &PlayBackControlToolBarWIP::onDataRequestCompleted );
         connect( this, &MainWindow::load, m_time_step_control_tool_bar , &TimeStepControlToolBar::loadParameter );
         connect( this, &MainWindow::save, m_time_step_control_tool_bar , &TimeStepControlToolBar::saveParameter );
 
@@ -143,15 +143,15 @@ void MainWindow::toolBarInitialize()
 
     if( m_play_back_control_tool_bar )
     {
-        connect( m_play_back_control_tool_bar, &PlayBackControlToolBar::first   , m_time_step_control_tool_bar, &TimeStepControlToolBar::first );
-        connect( m_play_back_control_tool_bar, &PlayBackControlToolBar::previous, m_time_step_control_tool_bar, &TimeStepControlToolBar::previous );
-        connect( m_play_back_control_tool_bar, &PlayBackControlToolBar::reverse , m_time_step_control_tool_bar, &TimeStepControlToolBar::reverse );
-        connect( m_play_back_control_tool_bar, &PlayBackControlToolBar::play    , m_time_step_control_tool_bar, &TimeStepControlToolBar::play );
-        connect( m_play_back_control_tool_bar, &PlayBackControlToolBar::next    , m_time_step_control_tool_bar, &TimeStepControlToolBar::next );
-        connect( m_play_back_control_tool_bar, &PlayBackControlToolBar::last    , m_time_step_control_tool_bar, &TimeStepControlToolBar::last );
-        connect( m_play_back_control_tool_bar, &PlayBackControlToolBar::keepLast, m_time_step_control_tool_bar, &TimeStepControlToolBar::keepLast );
-        connect( m_play_back_control_tool_bar, &PlayBackControlToolBar::jump    , m_time_step_control_tool_bar, &TimeStepControlToolBar::jump );
-        connect( m_play_back_control_tool_bar, &PlayBackControlToolBar::loop    , m_time_step_control_tool_bar, &TimeStepControlToolBar::loop );
+        connect( m_play_back_control_tool_bar, &PlayBackControlToolBarWIP::first   , m_time_step_control_tool_bar, &TimeStepControlToolBar::first );
+        connect( m_play_back_control_tool_bar, &PlayBackControlToolBarWIP::previous, m_time_step_control_tool_bar, &TimeStepControlToolBar::previous );
+        connect( m_play_back_control_tool_bar, &PlayBackControlToolBarWIP::reverse , m_time_step_control_tool_bar, &TimeStepControlToolBar::reverse );
+        connect( m_play_back_control_tool_bar, &PlayBackControlToolBarWIP::play    , m_time_step_control_tool_bar, &TimeStepControlToolBar::play );
+        connect( m_play_back_control_tool_bar, &PlayBackControlToolBarWIP::next    , m_time_step_control_tool_bar, &TimeStepControlToolBar::next );
+        connect( m_play_back_control_tool_bar, &PlayBackControlToolBarWIP::last    , m_time_step_control_tool_bar, &TimeStepControlToolBar::last );
+        connect( m_play_back_control_tool_bar, &PlayBackControlToolBarWIP::keepLast, m_time_step_control_tool_bar, &TimeStepControlToolBar::keepLast );
+        connect( m_play_back_control_tool_bar, &PlayBackControlToolBarWIP::jump    , m_time_step_control_tool_bar, &TimeStepControlToolBar::jump );
+        connect( m_play_back_control_tool_bar, &PlayBackControlToolBarWIP::loop    , m_time_step_control_tool_bar, &TimeStepControlToolBar::loop );
         // connect( this, &MainWindow::load, m_play_back_control_tool_bar , &PlayBackControlToolBar::loadParameter );
         // connect( this, &MainWindow::save, m_play_back_control_tool_bar , &PlayBackControlToolBar::saveParameter );
 
@@ -195,6 +195,7 @@ void MainWindow::communicationInitialize()
 
         connect( m_communication, &Communication::updateStatusBarMessage, this, &MainWindow::updateStatusBarMessage );
         connect( m_communication, &Communication::updateServerState, this, &MainWindow::onUpdateServerState );
+        connect( m_communication, &Communication::updateOperatorState, m_play_back_control_tool_bar, &PlayBackControlToolBarWIP::onOperatorStateUpdate );
         connect( m_communication, &Communication::updateOperatorState, m_glyph_editor_wip, &GlyphEditorWIP::updateOperatorState );
         connect( m_communication, &Communication::updateOperatorState, m_object_editor, &ObjectEditorWIP::updateOperatorState );        
         connect( m_communication, &Communication::updateOperatorState, m_plot_over_line_editor_wip, &PlotOverLineEditorWIP::updateOperatorState );

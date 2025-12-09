@@ -27,6 +27,7 @@ HEADERS += \
     ObjectEditorWIP.h \
     OpacityMapEditor.h \
     PlayBackControlToolBar.h \
+    PlayBackControlToolBarWIP.h \
     PlotOverLineEditor.h \
     PlotOverLineEditorWIP.h \
     PointSizeControl.h \
@@ -57,6 +58,7 @@ SOURCES += \
     ObjectEditorWIP.cpp \
     OpacityMapEditor.cpp \
     PlayBackControlToolBar.cpp \
+    PlayBackControlToolBarWIP.cpp \
     PlotOverLineEditor.cpp \
     PlotOverLineEditorWIP.cpp \
     PointSizeControl.cpp \

@@ -16,8 +16,8 @@
 #include "VizMode.h"
 
 #include "ColorMapSelectorToolBar.h"
-#include "PlayBackControlToolBar.h"
-#include "TimeStepControlToolBar.h";
+#include "PlayBackControlToolBarWIP.h"
+#include "TimeStepControlToolBar.h"
 #include "TotalParticlesToolBar.h"
 
 // ウィジェット群(A~Z)
@@ -85,7 +85,7 @@ private:
 
     // ウィジェット群(ツールバー) A~Z
     ColorMapSelectorToolBar* m_color_map_bar_selector_tool_bar  = nullptr;
-    PlayBackControlToolBar* m_play_back_control_tool_bar = nullptr;
+    PlayBackControlToolBarWIP* m_play_back_control_tool_bar = nullptr;
     TimeStepControlToolBar* m_time_step_control_tool_bar = nullptr;
     TotalParticlesToolBar* m_total_particles_tool_bar = nullptr;
 
