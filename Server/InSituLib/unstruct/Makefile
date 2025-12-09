@@ -1,0 +1,64 @@
+include ../../pbvr.conf
+include ../../arch/${PBVR_MACHINE}
+
+VISMODULE_SOURCE_DIR       = ../../VisModule
+FUNCTION_PARSER_DIR        = ../../FunctionParser
+COMMON_DIR                 = ../../Common
+
+OBJS  = \
+../shared/kvs_wrapper_common.o \
+kvs_wrapper.o
+
+PROG = libInSituPBVR.a
+
+ifdef MPICXX
+    CXX      = ${MPICXX}
+endif
+
+ifdef MPICXXFLAGS
+    CXXFLAGS = ${MPICXXFLAGS}
+else
+	CXXFLAGS += -DCPU_VER
+endif
+
+CXXFLAGS += -I../shared
+CXXFLAGS += -I${VISMODULE_SOURCE_DIR}
+CXXFLAGS += -I${FUNCTION_PARSER_DIR}
+CXXFLAGS += -I${COMMON_DIR}
+CXXFLAGS += -w -DNO_CLIENT
+
+ifdef KVS_DIR
+include $(KVS_DIR)/kvs.conf
+ifeq "$(KVS_SUPPORT_EXTENDED_FILE_FORMAT)" "1"
+CXXFLAGS += -std=c++17 -DEXTEND_FILE_FORMAT
+CXXFLAGS += \
+-I$(KVS_DIR)/include \
+-I$(VTK_INCLUDE_PATH) \
+-I./Filter
+@echo "INFO:KVS_SUPPORT_EXTENDED_FILE_FORMAT=1. OpenFOAM is available."	
+else
+@echo "INFO:KVS_SUPPORT_EXTENDED_FILE_FORMAT=0. OpenFOAM is not available."	
+endif
+else
+@echo "INFO:KVS_DIR is not found. OpenFOAM is not available."
+endif
+
+all : ${PROG}
+
+${PROG} : ${OBJS}
+	${AR} ${ARFLAGS} $@ ${OBJS}
+
+%.o : %.c
+	${CC} -c ${CCFLAGS} $<
+
+../shared/%.o : ../shared/%.cpp
+	${CXX} -c ${CXXFLAGS} $< -o $@
+
+%.o : %.cpp
+	${CXX} -c ${CXXFLAGS} $<
+
+clean :
+	${RM} -f ${OBJS}
+
+all_clean :
+	${RM} -f ${PROG} ${OBJS}
