@@ -6,11 +6,16 @@
 #include <vismodule/FileChecker>
 #include <vismodule/StructuredVolumeImporter>
 #include <vismodule/UnstructuredVolumeImporter>
+#include <vismodule/ParticleProperty>
+#include <vismodule/GlyphProperty>
 
 //inline vismodule::UnstructuredVolumeObject* CreateVolumeData( const Argument& param,
-inline vismodule::VolumeObjectBase* CreateVolumeData( const ParticleProperty& param,
-                                                         const MultiVolumeProperty& mvp,
-                                                         const int& steps, const int& subvols )
+inline vismodule::VolumeObjectBase* CreateVolumeData
+(
+    const MultiVolumeProperty& mvp,
+    const int& steps,
+    const int& subvols
+)
 {
     if ( mvp.m_file_type == 1 || mvp.m_file_type == 2 )
     {
@@ -51,7 +56,6 @@ inline vismodule::VolumeObjectBase* CreateVolumeData( const ParticleProperty& pa
                << '_' << std::setw( 7 ) << std::setfill( '0' ) << ( subvols + 1 )
                << '_' << std::setw( 7 ) << std::setfill( '0' ) << mvp.m_number_subvolumes;
 
-        //std::string m_input_data = param.m_input_data_base + suffix.str() + ".kvsml";
         vismodule::File ifpx( mvp.m_file_path );
         std::string m_input_data = ifpx.pathName() + ifpx.Separator()
                                    + ifpx.baseName() + suffix.str() + ".kvsml";
@@ -124,7 +128,7 @@ inline size_t CalculateSubpixelLevel( const ParticleProperty& param,
         if ( subvols % nprocs == rank )
         {
             VIS_MODULE_TIMER_STA( 16 );
-            volume = CreateVolumeData( param, mvp, steps, xvl );
+            volume = CreateVolumeData( mvp, steps, xvl );
             VIS_MODULE_TIMER_END( 16 );
 
             VIS_MODULE_TIMER_STA( 17 );
@@ -203,7 +207,7 @@ inline VariableRange Calculate_minmax( const ParticleProperty& param,
 
             if ( subvols % nprocs == rank )
             {
-                volume = CreateVolumeData( param, mvp, steps, xvl );
+                volume = CreateVolumeData( mvp, steps, xvl );
                 //volume->updateMinMaxValues();
                 int nnodes = volume->nnodes();
                 for (int n =0; n< nvariable; n++) 
@@ -261,33 +265,31 @@ inline VariableRange Calculate_minmax( const ParticleProperty& param,
    return vr;
 }
 
-/* 多地点対応のため一旦保留
-inline void Calculate_minmax_glyph( const Argument& param,
-                                      const MultiVolumePropertyList& mvpl,
-                                      jpv::ParticleTransferClientMessage& clntMes)
+inline void Calculate_minmax_glyph
+(
+    const GlyphProperty& glyph_property,
+    const MultiVolumePropertyList& mvpl
+)
 {
-
-
     namespace Generator = vismodule::CellByCellParticleGenerator;
     vismodule::VolumeObjectBase* volume = nullptr;
     double total_volume = 0.0;
-    double density_lev1 = 0.0;//kawamura2: particle density for subpixel_level=1
-    //int steps = mvpl.m_total_start_steps;
-    int steps = clntMes.m_step;
+    double density_lev1 = 0.0; // kawamura2: particle density for subpixel_level=1
+    int steps = glyph_property.m_time_step;
     int subvols = 0;
 
     vismodule::Real64 tmp_min, tmp_max;
     std::vector<float> min_vec, max_vec;
     int nvariable = mvpl.m_total_number_ingredients;
     int nvariablep2 = 2;
-    min_vec.resize(nvariablep2);
-    max_vec.resize(nvariablep2);
-    for(int i = 0 ;i < nvariablep2 ; i++)
+    min_vec.resize( nvariablep2 );
+    max_vec.resize( nvariablep2 );
+    for( int i = 0; i < nvariablep2; i++ )
     {
-        min_vec[i] = FLT_MAX; 
-        max_vec[i] = FLT_MIN; 
+        min_vec[i] = FLT_MAX;
+        max_vec[i] = FLT_MIN;
     } 
-# if 1
+
     //Total Volume Calculation
 #ifndef CPU_VER
     int rank;
@@ -303,32 +305,39 @@ inline void Calculate_minmax_glyph( const Argument& param,
     min_vec[0] = 0;
     max_vec[0] = 0;
     std::vector<int> color_data_variables;
-    if( clntMes.m_color_data_sampling_method == jpv::DataDefines::VariableArray || clntMes.m_color_data_sampling_method == jpv::DataDefines::SingleVariable  )
+    if(
+        glyph_property.m_color_data_sampling_method == DataDefines::VariableArray ||
+        glyph_property.m_color_data_sampling_method == DataDefines::SingleVariable
+    )
     {
-        for (int i =0 ; i< clntMes.m_color_data_variable.size(); i++)
+        for ( int i = 0; i < glyph_property.m_color_data_variable.size(); i++ )
         {
-            color_data_variables.push_back( std::atoi(clntMes.m_color_data_variable[i].substr(1).c_str()) - 1); 
+            color_data_variables.push_back( std::atoi( glyph_property.m_color_data_variable[i].substr(1).c_str() ) - 1 );
         }
-
     }
-  // size
+
+    // size
     min_vec[1] = 0;
     max_vec[1] = 0;
     std::vector<int> size_variables;
-    if( clntMes.m_size_sampling_method == jpv::DataDefines::VariableArray || clntMes.m_size_sampling_method == jpv::DataDefines::SingleVariable  )
+    if(
+        glyph_property.m_size_sampling_method == DataDefines::VariableArray ||
+        glyph_property.m_size_sampling_method == DataDefines::SingleVariable
+    )
     {
-        for (int i =0 ; i< clntMes.m_size_variable.size(); i++)
+        for ( int i = 0; i < glyph_property.m_size_variable.size(); i++ )
         {
-            size_variables.push_back( std::atoi(clntMes.m_size_variable[i].substr(1).c_str()) - 1); 
+            size_variables.push_back( std::atoi( glyph_property.m_size_variable[i].substr(1).c_str() ) - 1 ); 
         }
-
     }
 
-      if( clntMes.m_color_data_sampling_method == jpv::DataDefines::VariableArray || clntMes.m_color_data_sampling_method == jpv::DataDefines::SingleVariable 
-          || clntMes.m_color_data_sampling_method == jpv::DataDefines::VariableArray || clntMes.m_color_data_sampling_method == jpv::DataDefines::SingleVariable  )
-      {
-//    for ( steps = mvpl.m_total_start_steps; steps <= mvpl.m_total_start_step; steps++ ) //初回ステップのみ
-//    {
+    if( 
+        glyph_property.m_color_data_sampling_method == DataDefines::VariableArray ||
+        glyph_property.m_color_data_sampling_method == DataDefines::SingleVariable 
+    )
+    {
+        // for ( steps = mvpl.m_total_start_steps; steps <= mvpl.m_total_start_step; steps++ ) // 初回ステップのみ
+        // {
         for ( subvols = 0; subvols < mvpl.m_total_number_subvolumes; subvols++ )
         {
             int xvl, fidx;
@@ -337,77 +346,90 @@ inline void Calculate_minmax_glyph( const Argument& param,
 
             if ( subvols % nprocs == rank )
             {
-                volume = CreateVolumeData( param, fi, steps, xvl );
+                volume = CreateVolumeData( fi, steps, xvl );
                 int nnodes = volume->nnodes();
+
                 // color
-                if( clntMes.m_color_data_sampling_method == jpv::DataDefines::VariableArray || clntMes.m_color_data_sampling_method == jpv::DataDefines::SingleVariable  )
+                if(
+                    glyph_property.m_color_data_sampling_method == DataDefines::VariableArray ||
+                    glyph_property.m_color_data_sampling_method == DataDefines::SingleVariable
+                )
                 {
                     tmp_min = FLT_MAX;
                     tmp_max = FLT_MIN;
-                    for (int i = 0; i< nnodes; i++)
+
+                    for ( int i = 0; i < nnodes; i++ )
                     {
                         float tmp = 0;
-                        for(int k = 0 ; k< clntMes.m_color_data_variable.size() ; k++)
+                        for( int k = 0; k < glyph_property.m_color_data_variable.size() ; k++ )
                         {
-                            tmp += vismodule::Math::Square(volume->values().at<float>( i+ color_data_variables[k]*nnodes)) ;
+                            tmp += vismodule::Math::Square( volume->values().at<float>( i + color_data_variables[k] * nnodes ) );
                         }
 
-                        tmp = std::sqrt(tmp);
-                        tmp_min = tmp_min < tmp ? tmp_min : tmp ; 
-                        tmp_max = tmp_max > tmp ? tmp_max : tmp ; 
+                        tmp = std::sqrt( tmp );
+                        tmp_min = tmp_min < tmp ? tmp_min : tmp;
+                        tmp_max = tmp_max > tmp ? tmp_max : tmp; 
                     }
-                    min_vec[0]=min_vec[0] < tmp_min ? min_vec[0] : tmp_min;
-                    max_vec[0]=max_vec[0] > tmp_max ? max_vec[0] : tmp_max;
-            }
+
+                    min_vec[0] = min_vec[0] < tmp_min ? min_vec[0] : tmp_min;
+                    max_vec[0] = max_vec[0] > tmp_max ? max_vec[0] : tmp_max;
+                }
+
             // size
-            if( clntMes.m_size_sampling_method == jpv::DataDefines::VariableArray || clntMes.m_size_sampling_method == jpv::DataDefines::SingleVariable  )
+            if(
+                glyph_property.m_size_sampling_method == DataDefines::VariableArray ||
+                glyph_property.m_size_sampling_method == DataDefines::SingleVariable
+            )
             {
                 tmp_min = FLT_MAX;
                 tmp_max = FLT_MIN;
-                for (int i = 0; i< nnodes; i++)
+
+                for ( int i = 0; i < nnodes; i++ )
                 {
                     float tmp = 0;
-                    for(int k = 0 ; k< clntMes.m_size_variable.size() ; k++)
+                    for( int k = 0; k < glyph_property.m_size_variable.size(); k++ )
                     {
-                        tmp += vismodule::Math::Square(volume->values().at<float>( i+ size_variables[k]*nnodes)) ;
+                        tmp += vismodule::Math::Square( volume->values().at<float>( i + size_variables[k] * nnodes ) );
                     }
-                    tmp = std::sqrt(tmp);
-                    tmp_min = tmp_min < tmp ? tmp_min : tmp ; 
-                    tmp_max = tmp_max > tmp ? tmp_max : tmp ; 
-                }
-                min_vec[1]=min_vec[1] < tmp_min ? min_vec[1] : tmp_min;
-                max_vec[1]=max_vec[1] > tmp_max ? max_vec[1] : tmp_max;
 
+                    tmp = std::sqrt( tmp );
+                    tmp_min = tmp_min < tmp ? tmp_min : tmp;
+                    tmp_max = tmp_max > tmp ? tmp_max : tmp; 
+                }
+
+                min_vec[1] = min_vec[1] < tmp_min ? min_vec[1] : tmp_min;
+                max_vec[1] = max_vec[1] > tmp_max ? max_vec[1] : tmp_max;
             }
-            delete volume;
+
+                delete volume;
             }
         }
-//    }
-#ifndef CPU_VER
-    VIS_MODULE_TIMER_STA( 19 );
-    MPI_Allreduce( MPI_IN_PLACE, min_vec.data(), nvariablep2, MPI_FLOAT, MPI_MIN, MPI_COMM_WORLD );
-    MPI_Allreduce( MPI_IN_PLACE, max_vec.data(), nvariablep2, MPI_FLOAT, MPI_MAX, MPI_COMM_WORLD );
-    VIS_MODULE_TIMER_END( 19 );
-#endif
-      }
-      if( clntMes.m_color_data_sampling_method == jpv::DataDefines::Constant )
-      {
-                min_vec[0]=0;
-                max_vec[0]=1;
-      }
-      if( clntMes.m_size_sampling_method == jpv::DataDefines::Constant )
-      {
-                min_vec[1]=0;
-                max_vec[1]=1;
-      }
+        // }
 
-  clntMes.m_glyph_color_max = max_vec[0] ;
-  clntMes.m_glyph_color_min = min_vec[0] ;
-  clntMes.m_glyph_size_max  = max_vec[1] ;
-  clntMes.m_glyph_size_min  = min_vec[1] ;
+#ifndef CPU_VER
+        VIS_MODULE_TIMER_STA( 19 );
+        MPI_Allreduce( MPI_IN_PLACE, min_vec.data(), nvariablep2, MPI_FLOAT, MPI_MIN, MPI_COMM_WORLD );
+        MPI_Allreduce( MPI_IN_PLACE, max_vec.data(), nvariablep2, MPI_FLOAT, MPI_MAX, MPI_COMM_WORLD );
+        VIS_MODULE_TIMER_END( 19 );
 #endif
+    } // glyph_property.m_color_data_sampling_method is VariableArray or SingleVariable 
+
+    if( glyph_property.m_color_data_sampling_method == DataDefines::Constant )
+    {
+        min_vec[0] = 0;
+        max_vec[0] = 1;
+    }
+    if( glyph_property.m_size_sampling_method == DataDefines::Constant )
+    {
+        min_vec[1] = 0;
+        max_vec[1] = 1;
+    }
+
+    glyph_property.m_glyph_color_max = max_vec[0];
+    glyph_property.m_glyph_color_min = min_vec[0];
+    glyph_property.m_glyph_size_max  = max_vec[1];
+    glyph_property.m_glyph_size_min  = min_vec[1];
 }
-*/
 
 
 inline float CalculateDensityFactor( const ParticleProperty& param,
@@ -434,7 +456,7 @@ inline float CalculateDensityFactor( const ParticleProperty& param,
     if ( rank == 0 )
     {
         VIS_MODULE_TIMER_STA( 16 );
-        volume = CreateVolumeData( param, mvp, steps, subvols );
+        volume = CreateVolumeData( mvp, steps, subvols );
         VIS_MODULE_TIMER_END( 16 );
         VIS_MODULE_TIMER_STA( 17 );
         total_volume += Generator::CalculateTotalVolume( *volume );
@@ -458,7 +480,7 @@ inline float CalculateDensityFactor( const ParticleProperty& param,
         if ( subvols % nprocs == rank )
         {
             VIS_MODULE_TIMER_STA( 16 );
-            volume = CreateVolumeData( param, mvp, steps, subvols );
+            volume = CreateVolumeData( mvp, steps, subvols );
             VIS_MODULE_TIMER_END( 16 );
             VIS_MODULE_TIMER_STA( 17 );
             total_volume += Generator::CalculateTotalVolume( *volume );

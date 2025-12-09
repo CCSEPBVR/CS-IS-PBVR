@@ -1,7 +1,7 @@
 #ifndef __PARTICLE_PROPERTY__
 #define __PARTICLE_PROPERTY__
 
-#include<string>
+#include <string>
 #include <vismodule/TransferFunctionSynthesizer>
 #include <vismodule/TransferFunction>
 

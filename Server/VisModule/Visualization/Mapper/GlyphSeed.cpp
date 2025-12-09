@@ -1,4 +1,5 @@
 #include "GlyphSeed.h"
+#include <vismodule/GlyphProperty>
 
 //// IS用 constructor
 //GlyphSeed::GlyphSeed(Type** values,
@@ -25,7 +26,7 @@
 
 // unstruct 
 GlyphSeed::GlyphSeed(
-    const Argument& param,
+    const GlyphProperty& glyph_property,
     const int number_of_divide,
     Type** values,
     int nvariables,
@@ -37,26 +38,26 @@ GlyphSeed::GlyphSeed(
     const bool is_flag
 ):
 m_values( values ),
-m_nvariable(nvariables),  
-m_coords( coordinates  ),
+m_nvariable( nvariables ),
+m_coords( coordinates ),
 m_ncoords( ncoords ), 
 m_connections( connections ),
 m_ncells( ncells ),
-m_is_flag(is_flag) 
+m_is_flag( is_flag ) 
 {
     std::cout << "m_is_flag = " << m_is_flag << std::endl; 
     m_g_flag = false; 
-    m_g_flag = this->InputParameter( param, number_of_divide );
+    m_g_flag = this->InputParameter( glyph_property, number_of_divide );
     if ( m_g_flag )
     { 
         if( 
-            m_distribution_modes == jpv::GlyphMode:: AllPoints ||
-            m_distribution_modes == jpv::GlyphMode:: EveryNthPoints
+            m_distribution_modes == GlyphMode:: AllPoints ||
+            m_distribution_modes == GlyphMode:: EveryNthPoints
         )
         {
             this->PointSampling_unstruct();
         }
-        else if( m_distribution_modes == jpv::GlyphMode::UniformDistribution )
+        else if( m_distribution_modes == GlyphMode::UniformDistribution )
         {
             this->DistributionSampling_unstruct( celltype );
         }
@@ -65,7 +66,7 @@ m_is_flag(is_flag)
 
 // struct 
 GlyphSeed::GlyphSeed(
-    const Argument& param,
+    const GlyphProperty& glyph_property,
     const int number_of_divide,
     domain_parameters_struct dom,
     Type** values,
@@ -74,15 +75,15 @@ GlyphSeed::GlyphSeed(
 ): 
 m_values( values ),
 m_nvariable(nvariables),
-m_is_flag(is_flag)
+m_is_flag( is_flag )
 {   
     m_g_flag = false; 
-    m_g_flag = this->InputParameter( param, number_of_divide );
+    m_g_flag = this->InputParameter( glyph_property, number_of_divide );
 
     if ( m_g_flag )
     { 
-        if( m_distribution_modes == jpv::GlyphMode:: AllPoints ||
-            m_distribution_modes == jpv::GlyphMode:: EveryNthPoints
+        if( m_distribution_modes == GlyphMode:: AllPoints ||
+            m_distribution_modes == GlyphMode:: EveryNthPoints
         )
         {
             m_ncoords = dom.resolution[0]*dom.resolution[1]*dom.resolution[2];
@@ -91,19 +92,19 @@ m_is_flag(is_flag)
             
             this->PointSampling_struct( dom );
         }
-        else if( m_distribution_modes == jpv::GlyphMode:: UniformDistribution )
+        else if( m_distribution_modes == GlyphMode::UniformDistribution )
         {
             this->DistributionSampling_struct( dom, values, nvariables );
         }
     }
 }
 
-bool GlyphSeed::InputParameter(const Argument& param, const int number_of_divide )
+bool GlyphSeed::InputParameter( const GlyphProperty& glyph_property, const int number_of_divide )
 {
     bool glyph_flag;
-    int stride                    = param.m_stride;
-    int seed                      = param.m_seed; 
-    float number_of_sample_points = param.m_number_of_sampling_point;
+    int stride                    = glyph_property.m_stride;
+    int seed                      = glyph_property.m_seed; 
+    float number_of_sample_points = glyph_property.m_number_of_sampling_point;
 
     int mpi_size;
     int mpi_rank;
@@ -127,61 +128,90 @@ bool GlyphSeed::InputParameter(const Argument& param, const int number_of_divide
 
     m_number_of_sample_points = number_of_sample_points;
     
-    float glyph_min=0; 
-    float glyph_max=0;
+    float glyph_min = 0;
+    float glyph_max = 0;
     // minmaxの値は前ステップで算出したものを参照
-    m_color_min = param.m_glyph_color_min;
-    m_color_max = param.m_glyph_color_max;
-    m_size_min  = param.m_glyph_size_min;
-    m_size_max  = param.m_glyph_size_max;
+    m_color_min = glyph_property.m_glyph_color_min;
+    m_color_max = glyph_property.m_glyph_color_max;
+    m_size_min  = glyph_property.m_glyph_size_min;
+    m_size_max  = glyph_property.m_glyph_size_max;
 
-    int table_size = param.m_glyph_color_map_table.size();    
+    int table_size = glyph_property.m_glyph_color_map_table.size();    
     vismodule::ValueArray<vismodule::UInt8> u_table( table_size );
-    for( size_t j = 0; j< table_size ; j++ ) u_table[j] = (vismodule::UInt8)param.m_glyph_color_map_table[j];
+    for( size_t j = 0; j < table_size; j++ ) u_table[j] = (vismodule::UInt8)glyph_property.m_glyph_color_map_table[j];
     vismodule::ColorMap color_map( u_table, glyph_min, glyph_max );
     m_color_map = color_map;
 
-    if( m_is_flag ) m_color_map = param.m_color_map;
+    if( m_is_flag ) m_color_map = glyph_property.m_color_map;
 
-    glyph_flag = param.m_glyph_flag;
+    glyph_flag = glyph_property.m_glyph_flag;
    
     for ( int i = 0; i < 3 ; i++ )
     {
-        m_direction_variables.push_back ( std::atoi( param.m_direction_variable[i].substr(1).c_str() ) - 1 );
+        m_direction_variables.push_back ( std::atoi( glyph_property.m_direction_variable[i].substr(1).c_str() ) - 1 );
     }
 
-    m_size_sampling_method = param.m_size_sampling_method;
+    m_size_sampling_method = glyph_property.m_size_sampling_method;
 
-    for ( int i = 0; i < param.m_size_variable.size(); i++ )
+    for ( int i = 0; i < glyph_property.m_size_variable.size(); i++ )
     {
-        m_size_variables.push_back( std::atoi( param.m_size_variable[i].substr(1).c_str() ) -1 ); 
+        m_size_variables.push_back( std::atoi( glyph_property.m_size_variable[i].substr(1).c_str() ) -1 ); 
     }
 
-    m_distribution_modes = param.m_distribution_mode; 
+    m_distribution_modes = glyph_property.m_distribution_mode; 
 
     m_stride = stride;
-    if (m_distribution_modes == jpv::GlyphMode:: AllPoints) m_stride = 1;
+    if ( m_distribution_modes == GlyphMode::AllPoints ) m_stride = 1;
     m_seed = seed; 
-    m_color_sampling_method    = param.m_color_data_sampling_method;
+    m_color_sampling_method = glyph_property.m_color_data_sampling_method;
 
-    for ( int i = 0 ; i < param.m_color_data_variable.size(); i++ )
+    for ( int i = 0; i < glyph_property.m_color_data_variable.size(); i++ )
     {
-        m_color_data_variables.push_back( std::atoi( param.m_color_data_variable[i].substr(1).c_str() ) - 1 );
+        m_color_data_variables.push_back( std::atoi( glyph_property.m_color_data_variable[i].substr(1).c_str() ) - 1 );
     }
 
 #if 1
-    std::cout << "m_direction_variables        = " << m_direction_variables[0] << ", " << m_direction_variables[1]   << std::endl; 
-    std::cout << "m_size_sampling_method       = " << static_cast<int>(m_size_sampling_method)      << std::endl; 
-    if(m_size_variables.size() > 0) std::cout << "m_size_variables             = " << m_size_variables[0]    << std::endl; 
-    std::cout << "m_distribution_modes         = " << static_cast<int>(m_distribution_modes )       << std::endl; 
-    std::cout << "m_stride                     = " << m_stride                    << std::endl; 
-    std::cout << "m_seed                       = " << m_seed                      << std::endl; 
-    std::cout << "m_number_of_sample_points    = " << m_number_of_sample_points   << std::endl; 
-    std::cout << "m_color_sampling_method      = " << static_cast<int>(m_color_sampling_method )    << std::endl; 
-    if(m_color_data_variables.size() > 0) std::cout << "m_color_data_variables       = " << m_color_data_variables[0] <<  std::endl; 
-#endif 
-      return glyph_flag; 
+    std::string size_sampling_method_string;
+    if ( m_size_sampling_method == DataDefines::Constant ) size_sampling_method_string = "Constant";
+    else if ( m_size_sampling_method == DataDefines::SingleVariable ) size_sampling_method_string = "SingleVariable";
+    else if ( m_size_sampling_method == DataDefines::VariableArray ) size_sampling_method_string = "VariableArray";
+    else size_sampling_method_string = "Unknown";
 
+    std::string distribution_modes_string;
+    if ( m_distribution_modes == GlyphMode::AllPoints ) distribution_modes_string = "AllPoints";
+    else if ( m_distribution_modes == GlyphMode::EveryNthPoints ) distribution_modes_string = "EveryNthPoints";
+    else if ( m_distribution_modes == GlyphMode::UniformDistribution ) distribution_modes_string = "UniformDistribution";
+    else distribution_modes_string = "Unknown";
+
+    std::string color_sampling_method_string;
+    if ( m_color_sampling_method == DataDefines::Constant ) color_sampling_method_string = "Constant";
+    else if ( m_color_sampling_method == DataDefines::SingleVariable ) color_sampling_method_string = "SingleVariable";
+    else if ( m_color_sampling_method == DataDefines::VariableArray ) color_sampling_method_string = "VariableArray";
+    else color_sampling_method_string = "Unknown";
+
+    std::cout << "m_size_sampling_method    = " << size_sampling_method_string  << std::endl;
+    std::cout << "m_distribution_modes      = " << distribution_modes_string    << std::endl; 
+    std::cout << "m_stride                  = " << m_stride                     << std::endl; 
+    std::cout << "m_seed                    = " << m_seed                       << std::endl; 
+    std::cout << "m_number_of_sample_points = " << m_number_of_sample_points    << std::endl;
+    std::cout << "m_color_sampling_method   = " << color_sampling_method_string << std::endl; 
+
+    for ( size_t i = 0; i < m_direction_variables.size(); i++ )
+    {
+        std::cout << "m_direction_variables[" << i << "]  = " << m_direction_variables[i] << std::endl;
+    }
+
+    for ( size_t i = 0; i < m_size_variables.size(); i++ )
+    {
+        std::cout << "m_size_variables[" << i << "]       = " << m_size_variables[i] << std::endl;
+    }
+
+    for ( size_t i = 0; i < m_color_data_variables.size(); i++ )
+    {
+        std::cout << "m_color_data_variables[" << i << "]       = " << m_color_data_variables[i] << std::endl;
+    }
+#endif 
+    return glyph_flag; 
 }
 
 //#if 1
@@ -363,11 +393,11 @@ void GlyphSeed::PointSampling_unstruct()
    }
 
    //size
-   if (m_size_sampling_method == jpv::DataDefines::Constant)
+   if (m_size_sampling_method == DataDefines::Constant)
    {
        std::fill(m_glyph_sizes.begin(), m_glyph_sizes.end() ,1);
    }
-   else if (  m_size_sampling_method == jpv::DataDefines::VariableArray || m_size_sampling_method == jpv::DataDefines::SingleVariable ) 
+   else if (  m_size_sampling_method == DataDefines::VariableArray || m_size_sampling_method == DataDefines::SingleVariable ) 
    {
        std::vector<float> tmp_size(nPoints);
        std::vector<int> size_var = m_size_variables;
@@ -445,7 +475,7 @@ void GlyphSeed::PointSampling_unstruct()
    //color 
    float glyph_color_data_max = FLT_MIN;
    float glyph_color_data_min = FLT_MAX;
-   if (m_color_sampling_method == jpv::DataDefines::Constant)
+   if (m_color_sampling_method == DataDefines::Constant)
    {
        // 色が白になるよう設定
        for (int ii=0;ii < nPoints; ii++)
@@ -456,7 +486,7 @@ void GlyphSeed::PointSampling_unstruct()
        }
 
    }
-   else if (m_color_sampling_method == jpv::DataDefines::VariableArray || m_color_sampling_method == jpv::DataDefines::SingleVariable ) 
+   else if (m_color_sampling_method == DataDefines::VariableArray || m_color_sampling_method == DataDefines::SingleVariable ) 
    {
        std::vector<int> color_var = m_color_data_variables;
        int n_color_variables=color_var.size();
@@ -506,7 +536,7 @@ void GlyphSeed::PointSampling_unstruct()
         // minmax値の更新
         m_color_min = min;
         m_color_max = max;
-    } // jpv::DataDefines::VariableArray or jpv::DataDefines::SingleVariable
+    } // DataDefines::VariableArray or DataDefines::SingleVariable
 
 //    this -> show();
 }
@@ -582,11 +612,11 @@ void GlyphSeed::PointSampling_struct(domain_parameters_struct dom)
     }
 
    //size
-   if (m_size_sampling_method == jpv::DataDefines::Constant)
+   if (m_size_sampling_method == DataDefines::Constant)
    {
        std::fill(m_glyph_sizes.begin(), m_glyph_sizes.end() ,1);
    }
-   else if (  m_size_sampling_method == jpv::DataDefines::VariableArray || m_size_sampling_method == jpv::DataDefines::SingleVariable ) 
+   else if (  m_size_sampling_method == DataDefines::VariableArray || m_size_sampling_method == DataDefines::SingleVariable ) 
    {
        std::vector<float> tmp_size(nPoints);
        std::vector<int> size_var = m_size_variables;
@@ -672,7 +702,7 @@ void GlyphSeed::PointSampling_struct(domain_parameters_struct dom)
    //color 
    float glyph_color_data_max = FLT_MIN;
    float glyph_color_data_min = FLT_MAX;
-   if (m_color_sampling_method == jpv::DataDefines::Constant)
+   if (m_color_sampling_method == DataDefines::Constant)
    {
        for (int ii=0;ii < nPoints; ii++)
        {
@@ -681,7 +711,7 @@ void GlyphSeed::PointSampling_struct(domain_parameters_struct dom)
            m_glyph_colors[3*ii +2 ] = 255 ;
        }
    }
-   else if (m_color_sampling_method == jpv::DataDefines::VariableArray || m_color_sampling_method == jpv::DataDefines::SingleVariable ) 
+   else if (m_color_sampling_method == DataDefines::VariableArray || m_color_sampling_method == DataDefines::SingleVariable ) 
    {
        std::vector<int> color_var = m_color_data_variables;
        int n_color_variables=color_var.size();
@@ -933,7 +963,7 @@ void GlyphSeed::DistributionSampling_unstruct( const vismodule::VolumeObjectBase
 
                 //サイズ計算
                 float size = 0;
-                if (m_size_sampling_method == jpv::DataDefines::SingleVariable || m_size_sampling_method == jpv::DataDefines::VariableArray )
+                if (m_size_sampling_method == DataDefines::SingleVariable || m_size_sampling_method == DataDefines::VariableArray )
                 { 
                     // float scalar_array[interp[thid].size()];
                     float eval_result =0;
@@ -951,7 +981,7 @@ void GlyphSeed::DistributionSampling_unstruct( const vismodule::VolumeObjectBase
                 //色の計算
                 float color_data =0; 
 
-                if (m_color_sampling_method ==  jpv::DataDefines::SingleVariable || m_color_sampling_method == jpv::DataDefines::VariableArray )
+                if (m_color_sampling_method ==  DataDefines::SingleVariable || m_color_sampling_method == DataDefines::VariableArray )
                 { 
                     float eval_result =0;
 
@@ -994,7 +1024,7 @@ void GlyphSeed::DistributionSampling_unstruct( const vismodule::VolumeObjectBase
      } //#pragma omp parallel
 
     //sizeのminmaxを計算する
-    if (m_size_sampling_method == jpv::DataDefines::SingleVariable || m_size_sampling_method == jpv::DataDefines::VariableArray )
+    if (m_size_sampling_method == DataDefines::SingleVariable || m_size_sampling_method == DataDefines::VariableArray )
     { 
         int n_size_data=m_glyph_sizes.size();
         float max=FLT_MIN;
@@ -1067,7 +1097,7 @@ void GlyphSeed::DistributionSampling_unstruct( const vismodule::VolumeObjectBase
         m_size_max = 1.000001;
     }
 
-    if (m_color_sampling_method == jpv::DataDefines::SingleVariable || m_color_sampling_method == jpv::DataDefines::VariableArray )
+    if (m_color_sampling_method == DataDefines::SingleVariable || m_color_sampling_method == DataDefines::VariableArray )
     { 
         int n_color_data=m_glyph_colors_data.size();
         float max=FLT_MIN;
@@ -1263,7 +1293,7 @@ void GlyphSeed::DistributionSampling_struct(domain_parameters_struct dom, Type**
                     }
                     //サイズ計算
                     float size = 0;
-                    if (m_size_sampling_method == jpv::DataDefines::SingleVariable || m_size_sampling_method == jpv::DataDefines::VariableArray )
+                    if (m_size_sampling_method == DataDefines::SingleVariable || m_size_sampling_method == DataDefines::VariableArray )
                     { 
                         float eval_result =0;
 
@@ -1280,7 +1310,7 @@ void GlyphSeed::DistributionSampling_struct(domain_parameters_struct dom, Type**
                     //色の計算
                     float color_data =0; 
 
-                    if (m_color_sampling_method ==  jpv::DataDefines::SingleVariable || m_color_sampling_method == jpv::DataDefines::VariableArray )
+                    if (m_color_sampling_method ==  DataDefines::SingleVariable || m_color_sampling_method == DataDefines::VariableArray )
                     { 
                         // float scalar_array[interp[thid].size()];
                         float eval_result =0;
@@ -1323,7 +1353,7 @@ void GlyphSeed::DistributionSampling_struct(domain_parameters_struct dom, Type**
     
     }  // end of pragma omp
 
-    if (m_size_sampling_method == jpv::DataDefines::SingleVariable || m_size_sampling_method == jpv::DataDefines::VariableArray )
+    if (m_size_sampling_method == DataDefines::SingleVariable || m_size_sampling_method == DataDefines::VariableArray )
     { 
         int n_size_data=m_glyph_sizes.size();
         //size計算用
@@ -1399,7 +1429,7 @@ void GlyphSeed::DistributionSampling_struct(domain_parameters_struct dom, Type**
         m_size_max = 1.000001;
     }
 
-    if (m_color_sampling_method == jpv::DataDefines::SingleVariable || m_color_sampling_method == jpv::DataDefines::VariableArray )
+    if (m_color_sampling_method == DataDefines::SingleVariable || m_color_sampling_method == DataDefines::VariableArray )
     { 
         int n_color_data=m_glyph_colors_data.size();
         float max=FLT_MIN;

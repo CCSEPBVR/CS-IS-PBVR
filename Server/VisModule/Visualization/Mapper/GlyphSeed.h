@@ -63,14 +63,17 @@ protected:
    std::vector<float> m_glyph_colors_data; 
    std::vector<unsigned char>   m_glyph_colors; 
 
-    //入力パラメータ(デーモン→サーバー)
-    std::vector<int>  m_direction_variables;
-    std::vector<int> m_size_variables;
-    int m_stride;
-    int m_seed;
-    float m_number_of_sample_points;
-    vismodule::ColorMap m_color_map;
-    std::vector<int> m_color_data_variables;
+   //入力パラメータ(デーモン→サーバー)
+   std::vector<int>  m_direction_variables;
+   DataDefines m_size_sampling_method;
+   std::vector<int> m_size_variables;
+   GlyphMode m_distribution_modes;
+   int m_stride;
+   int m_seed;
+   float m_number_of_sample_points;
+   vismodule::ColorMap m_color_map;
+   DataDefines m_color_sampling_method;
+   std::vector<int> m_color_data_variables;
 // glyph paramter end
 
    
@@ -94,7 +97,7 @@ private:
            const float volume_of_cell,
            vismodule::MersenneTwister* MT );
     bool SetGlyphParameter();
-    bool InputParameter( const Argument& param, const int number_of_divide );
+    bool InputParameter( const GlyphProperty& glyph_property, const int number_of_divide );
 
 public:
    void GlyphSampling( const vismodule::VolumeObjectBase::CellType& celltype);
@@ -106,7 +109,7 @@ public:
 
    // unstruct
    GlyphSeed(
-      const Argument& param,
+      const GlyphProperty& glyph_property,
       const int number_of_divide,
       Type** values,
       int nvariables,
@@ -120,7 +123,7 @@ public:
 
    // struct
    GlyphSeed(
-      const Argument& param,
+      const GlyphProperty& glyph_property,
       const int number_of_divide,
       domain_parameters_struct dom,
       Type** values,
