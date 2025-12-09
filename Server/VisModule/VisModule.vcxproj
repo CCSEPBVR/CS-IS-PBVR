@@ -21,6 +21,7 @@
   <ItemGroup>
     <ClCompile Include="DaemonAndSampler\Daemon\GenerateParticle.cpp" />
     <ClCompile Include="DaemonAndSampler\Daemon\GlyphFile.cpp" />
+    <ClCompile Include="DaemonAndSampler\Daemon\ParameterFileReader.cpp" />
     <ClCompile Include="DaemonAndSampler\Daemon\ParticleFile.cpp" />
     <ClCompile Include="DaemonAndSampler\Daemon\ParticleHistoryFile.cpp" />
     <ClCompile Include="DaemonAndSampler\Daemon\ParticleMonitor.cpp" />
@@ -138,6 +139,7 @@
     <ClInclude Include="DaemonAndSampler\Daemon\Calculate.h" />
     <ClInclude Include="DaemonAndSampler\Daemon\GenerateParticle.h" />
     <ClInclude Include="DaemonAndSampler\Daemon\GlyphFile.h" />
+    <ClInclude Include="DaemonAndSampler\Daemon\ParameterFileReader.h" />
     <ClInclude Include="DaemonAndSampler\Daemon\ParticleFile.h" />
     <ClInclude Include="DaemonAndSampler\Daemon\ParticleHistoryFile.h" />
     <ClInclude Include="DaemonAndSampler\Daemon\ParticleMonitor.h" />
@@ -368,8 +370,10 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <ObjectFileName>$(IntDir)%(RelativeDir)</ObjectFileName>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>
