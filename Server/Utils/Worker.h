@@ -95,7 +95,6 @@ private:
 
     void importObject( ObjectInfoExtractor::ObjectInfo& info, const int&  requestTimeStep )
     {
-std::cout << __FILE__ << ", " << __func__ << ", " << __LINE__ << std::endl;
         std::string fileName = createFileName( info, requestTimeStep );
 
         std::unique_ptr<kvs::PointObject> pointObject;
@@ -111,6 +110,7 @@ std::cout << __FILE__ << ", " << __func__ << ", " << __LINE__ << std::endl;
             pointObject = std::make_unique<kvs::PointObject>();
             SetParticleParameterCS( fileName, requestTimeStep, &camera, param, mvpl );
             GenerateParticleCS( param, mvpl, pointObject );
+            info.object = pointObject.release();
             break;
         case ObjectInfoExtractor::InsituServerPointObject:
             break;
