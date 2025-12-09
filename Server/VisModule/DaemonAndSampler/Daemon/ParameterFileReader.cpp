@@ -150,23 +150,7 @@ void ParameterFileReader::readPlotOverLineParameterFile( const char* fname )
     return;
 }
 
-void ParameterFileReader::outputMessage( jpv::ParticleTransferServerMessage* server_message )
-{
-    this->outputParameterMessage( server_message );
-    this->outputTransferFunctionMessage( server_message );
-}
-
-void ParameterFileReader::outputParameterMessage( jpv::ParticleTransferServerMessage* server_message )
-{
-    server_message->m_particle_limit         =  m_name_list_file.getValue<int32_t>( "PARTICLE_LIMIT"    );
-    server_message->m_particle_density       =  m_name_list_file.getValue<float>(   "PARTICLE_DENSITY"  );
-    size_t width                           =  m_name_list_file.getValue<size_t>(  "RESOLUTION_WIDTH"  );
-    size_t height                          =  m_name_list_file.getValue<size_t>(  "RESOLUTION_HEIGHT" );
-    server_message->m_camera->setWindowSize( width, height );
-    server_message->m_particle_data_size_limit =  m_name_list_file.getValue<float>(   "PARTICLE_DATA_SIZE_LIMIT"  );
-}
-
-void ParameterFileReader::setParticleParameter( Argument& param )
+void ParameterFileReader::setParticleParameter( ParticleProperty& param )
 {
     const std::string size_sampling_method      = m_name_list_file.getValue<std::string>("SAMPLING_METHOD");
     param.m_particle_limit                      = m_name_list_file.getValue<int32_t>( "PARTICLE_LIMIT" );
@@ -174,7 +158,7 @@ void ParameterFileReader::setParticleParameter( Argument& param )
     param.m_particle_data_size_limit            = m_name_list_file.getValue<float>( "PARTICLE_DATA_SIZE_LIMIT" );
     param.m_color_transfer_function_synthesis   = m_name_list_file.getValue<std::string>( "COLOR_SYNTH" );
     param.m_opacity_transfer_function_synthesis = m_name_list_file.getValue<std::string>( "OPACITY_SYNTH" );
-
+    
     if ( size_sampling_method == "Uniform" )
     {
         param.m_sampling_method = 'u';
@@ -202,10 +186,10 @@ void ParameterFileReader::setParticleParameter( Argument& param )
 
     param.m_transfunc_array.clear();
     param.m_transfunc_array.resize( tf_number );
-    param.m_named_transfunc_array.clear();
-    param.m_named_transfunc_array.resize( tf_number );
-    param.m_voleqn.clear();
-    param.m_voleqn.resize( tf_number );
+    // param.m_named_transfunc_array.clear();
+    // param.m_named_transfunc_array.resize( tf_number );
+    // param.m_voleqn.clear();
+    // param.m_voleqn.resize( tf_number );
     
     for ( size_t n = 0; n < tf_number; n++ )
     {
@@ -218,8 +202,8 @@ void ParameterFileReader::setParticleParameter( Argument& param )
         f_name << "_F" << n + 1 << "_VAR_";
 
         const std::string tag_base = ss.str();
-        param.m_named_transfunc_array[n].setResolution( resolution );
-        param.m_named_transfunc_array[n].m_name = s_name.str();
+        // param.m_named_transfunc_array[n].setResolution( resolution );
+        // param.m_named_transfunc_array[n].m_name = s_name.str();
 
         const std::string color_variable  = m_name_list_file.getValue<std::string>( tag_base + "VAR_C" );
         const std::string opacity_varible = m_name_list_file.getValue<std::string>( tag_base + "VAR_O" );
@@ -230,12 +214,14 @@ void ParameterFileReader::setParticleParameter( Argument& param )
         std::string s_color               = m_name_list_file.getValue<std::string>( tag_base + "TABLE_C" );
         std::string s_opacity             = m_name_list_file.getValue<std::string>( tag_base + "TABLE_O" );
 
+        /*
         param.m_named_transfunc_array[n].m_color_variable       = color_variable;
         param.m_named_transfunc_array[n].m_opacity_variable     = opacity_varible;
         param.m_named_transfunc_array[n].m_color_variable_min   = color_min;
         param.m_named_transfunc_array[n].m_color_variable_max   = color_max;
         param.m_named_transfunc_array[n].m_opacity_variable_min = opacity_min;
         param.m_named_transfunc_array[n].m_opacity_variable_max = opacity_max;
+        */
 
         std::replace( s_color.begin(), s_color.end(), ',', ' ' );
         std::replace( s_opacity.begin(), s_opacity.end(), ',', ' ' );
@@ -268,17 +254,17 @@ void ParameterFileReader::setParticleParameter( Argument& param )
 
         param.m_transfunc_array[n].setColorMap( color_map );
         param.m_transfunc_array[n].setOpacityMap( opacity_map );
-        param.m_named_transfunc_array[n].setColorMap( color_map );
-        param.m_named_transfunc_array[n].setOpacityMap( opacity_map );
+        // param.m_named_transfunc_array[n].setColorMap( color_map );
+        // param.m_named_transfunc_array[n].setOpacityMap( opacity_map );
         param.m_transfunc_array[n].setColorRange( color_min, color_max );
         param.m_transfunc_array[n].setOpacityRange( opacity_min, opacity_max );
-        param.m_named_transfunc_array[n].setColorRange( color_min, color_max );
-        param.m_named_transfunc_array[n].setOpacityRange( opacity_min, opacity_max );
+        // param.m_named_transfunc_array[n].setColorRange( color_min, color_max );
+        // param.m_named_transfunc_array[n].setOpacityRange( opacity_min, opacity_max );
 
-        param.m_named_transfunc_array[n].m_selection = NamedTransferFunctionParameter::SelectTransferFunction;
+        // param.m_named_transfunc_array[n].m_selection = NamedTransferFunctionParameter::SelectTransferFunction;
 
-        param.m_voleqn[n].m_name     = f_name.str() + "C";
-        param.m_voleqn[n].m_equation = color_variable;
+        // param.m_voleqn[n].m_name     = f_name.str() + "C";
+        // param.m_voleqn[n].m_equation = color_variable;
     }
 
     std::string equation;
@@ -579,70 +565,6 @@ std::vector<std::string> ParameterFileReader::getTableString( std::string table_
     return table;
 }
 
-void ParameterFileReader::outputTransferFunctionMessage( jpv::ParticleTransferServerMessage* server_message )
-{
-    const size_t resolution                   = m_name_list_file.getValue<int>(         "TF_RESOLUTION" );
-    //server_message->transferFunctionSynthesis  = m_name_list_file.getValue<std::string>( "TF_SYNTH"      );
-    server_message->m_color_transfer_function_synthesis = m_name_list_file.getValue<std::string>( "COLOR_SYNTH" );
-    server_message->m_opacity_transfer_function_synthesis = m_name_list_file.getValue<std::string>( "OPACITY_SYNTH" );
-
-    const int cur_tf_number = m_name_list_file.getValue<int>("TF_NUMBER");
-    server_message->m_transfer_function.resize( cur_tf_number );
-    for ( size_t n = 0; n < cur_tf_number; n++ )
-    {
-        std::stringstream ss;
-        ss << "TF_NAME" << n + 1 << "_";
-
-        std::stringstream s_name;
-        s_name << "t" << n + 1;
-
-        const std::string tag_base = ss.str();
-        server_message->m_transfer_function[n].setResolution( resolution );
-        server_message->m_transfer_function[n].m_name          = s_name.str();
-        server_message->m_transfer_function[n].m_color_variable      = m_name_list_file.getValue<std::string>( tag_base + "VAR_C" );
-        server_message->m_transfer_function[n].m_color_variable_min   = m_name_list_file.getValue<float>( tag_base + "MIN_C" );
-        server_message->m_transfer_function[n].m_color_variable_max   = m_name_list_file.getValue<float>( tag_base + "MAX_C" );
-        server_message->m_transfer_function[n].m_opacity_variable    = m_name_list_file.getValue<std::string>( tag_base + "VAR_O" );
-        server_message->m_transfer_function[n].m_opacity_variable_min = m_name_list_file.getValue<float>( tag_base + "MIN_O" );
-        server_message->m_transfer_function[n].m_opacity_variable_max = m_name_list_file.getValue<float>( tag_base + "MAX_O" );
-
-        std::string s_color =   m_name_list_file.getValue<std::string>( tag_base + "TABLE_C" );
-        std::string s_opacity = m_name_list_file.getValue<std::string>( tag_base + "TABLE_O" );
-
-        std::replace( s_color.begin(), s_color.end(), ',', ' ' );
-        std::replace( s_opacity.begin(), s_opacity.end(), ',', ' ' );
-
-        std::stringstream ss_color( s_color );
-        std::stringstream ss_opacity( s_opacity );
-
-        vismodule::ColorMap::Table color_table( resolution * 3 );
-        vismodule::OpacityMap::Table opacity_table( resolution );
-
-        for ( size_t i = 0; i < resolution; i++ )
-        {
-            for ( size_t c = 0; c < 3; c++ )
-            {
-                int color_e;
-                ss_color >> color_e;
-                color_table.at( i * 3 + c ) = color_e;
-            }
-        }
-
-        for ( size_t i = 0; i < resolution; i++ )
-        {
-            float opacity;
-            ss_opacity >> opacity;
-            opacity_table.at( i ) = opacity;
-        }
-
-        vismodule::ColorMap color_map( color_table );
-        vismodule::OpacityMap opacity_map( opacity_table );
-        vismodule::TransferFunction tf( color_map, opacity_map );
-        vismodule::TransferFunction& tt = server_message->m_transfer_function[n];
-        tt = tf;
-    }
-
-}
 
 void ParameterFileReader::set_default_parameter()
 {

@@ -7,6 +7,7 @@
 #include <vismodule/UnstructuredVolumeImporter>
 #include <vismodule/StructuredVolumeImporter>
 #include <vismodule/ParticleMonitor>
+#include <vismodule/ParameterFileReader>
 
 bool SetParticleParameterCS(
     const std::string file_name,
@@ -30,13 +31,13 @@ bool SetParticleParameterCS(
 
     param.m_time_step                = time_step;
     param.m_level_index              = 1;
-    param.m_repeat_level             = 1;
+    param.m_repeat_level             = 4;
     param.m_sampling_method          = 'u';
     param.m_camera                   = camera;
     // param.m_x_synthesis              = clntMes.m_x_synthesis;
     // param.m_y_synthesis              = clntMes.m_y_synthesis;
     // param.m_z_synthesis              = clntMes.m_z_synthesis;
-    param.m_particle_data_size_limit = 10;
+    param.m_particle_data_size_limit = 20;
     param.filepath                   = file_name;
     param.m_particle_limit           = 10000000;
     param.m_particle_density         = 1;
@@ -318,8 +319,8 @@ void GenerateParticleCS(
             const size_t nnormals = point_object->normals().size() + recv_obj->normals().size();
 
             kvs_coords.allocate( ncoords );
-            kvs_coords.allocate( ncolors );
-            kvs_coords.allocate( nnormals );
+            kvs_colors.allocate( ncolors );
+            kvs_normals.allocate( nnormals );
 
             kvs::Real32* pcoords  = kvs_coords.data();
             kvs::UInt8* pcolors  = kvs_colors.data();
@@ -331,6 +332,10 @@ void GenerateParticleCS(
             memcpy( pcolors + point_object->colors().size(), recv_obj->colors().pointer(), recv_obj->colors().byteSize() );
             memcpy( pnormals, point_object->normals().data(), point_object->normals().byteSize() );
             memcpy( pnormals + point_object->normals().size(), recv_obj->normals().pointer(), recv_obj->normals().byteSize() );
+
+            point_object->setCoords( kvs_coords );
+            point_object->setColors( kvs_colors );
+            point_object->setNormals( kvs_normals );
         }
         else
         {
@@ -339,16 +344,20 @@ void GenerateParticleCS(
             const size_t nnormals = recv_obj->normals().size();
 
             kvs_coords.allocate( ncoords );
-            kvs_coords.allocate( ncolors );
-            kvs_coords.allocate( nnormals );
+            kvs_colors.allocate( ncolors );
+            kvs_normals.allocate( nnormals );
 
             kvs::Real32* pcoords  = kvs_coords.data();
-            kvs::UInt8* pcolors  = kvs_colors.data();
+            kvs::UInt8*  pcolors  = kvs_colors.data();
             kvs::Real32* pnormals = kvs_normals.data();
 
             memcpy( pcoords, recv_obj->coords().pointer(), recv_obj->coords().byteSize() );
             memcpy( pcolors, recv_obj->colors().pointer(), recv_obj->colors().byteSize() );
             memcpy( pnormals, recv_obj->normals().pointer(), recv_obj->normals().byteSize() );
+
+            point_object->setCoords( kvs_coords );
+            point_object->setColors( kvs_colors );
+            point_object->setNormals( kvs_normals );
         }
 
         delete send_obj;
@@ -378,11 +387,137 @@ void GenerateParticleCS(
     */
 }
 
-void GenerateParticleIS(
-    ParticleProperty &param,
-    MultiVolumePropertyList& mvpl,
+void SetParticleParameterIS(
     const int time_step,
-    const std::string file_name,
+    vismodule::Camera* camera,
+    ParticleProperty& param,
+    MultiVolumePropertyList& mvpl
+)
+{
+    const char *envBuf = NULL;
+    std::string visParamDir;
+    std::string tfFilePath;
+    std::string tfFilePath_old;
+
+    envBuf = std::getenv( "VIS_PARAM_DIR" );
+
+    if (envBuf == NULL) {
+        visParamDir = "./";
+    }
+    else {
+        visParamDir = envBuf;
+        if (visParamDir[visParamDir.size() - 1] != '/') {
+            visParamDir += "/";
+        }
+    }
+
+    tfFilePath     = visParamDir;
+    tfFilePath_old = visParamDir;
+
+    envBuf = std::getenv( "TF_NAME" );
+
+    if (envBuf == NULL) {
+        tfFilePath     += "default.tf";
+        tfFilePath_old += "default_old.tf";
+    }
+    else {
+        tfFilePath     += envBuf;
+        tfFilePath     += ".tf";
+        tfFilePath_old += envBuf;
+        tfFilePath_old += "_old.tf";
+    }
+
+    MultiVolumeProperty mvp;
+
+    param.m_time_step                = time_step;
+    param.m_camera                   = camera;
+    param.m_level_index              = 1;
+    param.m_repeat_level             = 4;
+    param.m_particle_data_size_limit = 20;
+
+    /*
+    param.m_time_step                = clntMes.m_step; 
+    param.m_level_index              = clntMes.m_level_index;
+    param.m_repeat_level             = clntMes.m_repeat_level;
+    param.m_sampling_method          = 'h';
+    param.m_x_synthesis              = clntMes.m_x_synthesis;
+    param.m_y_synthesis              = clntMes.m_y_synthesis;
+    param.m_z_synthesis              = clntMes.m_z_synthesis;
+    param.m_particle_data_size_limit = clntMes.m_particle_data_size_limit;
+    */
+
+    // Using environment variables, the constructor of the ParticleMonitor class
+    // set particle file, glyph file, plot over line file, status file, history file,
+    // and the min/max coordinates of the object.
+    ParticleMonitor pm;
+    pm.check();
+
+    if( pm.stepExisted() )
+    {
+        pm.setTimeStep_particle( pm.particleStatusFile().getLatestTimeStep() );
+    }
+    else
+    {
+        pm.setTimeStep_particle(0);
+        std::cout << "WARN:particle status file does not exist" << std::endl;
+    }
+    pm.readParticleHistoryFile();                
+
+    // store particle monitor in mvpl
+    mvpl.m_total_start_steps       = pm.particleStatusFile().getStartTimeStep();
+    mvpl.m_total_last_step         = pm.particleStatusFile().getLatestTimeStep();
+    mvpl.m_total_number_steps      = mvpl.m_total_last_step - mvpl.m_total_start_steps + 1;
+    mvp.m_file_type                = 0;
+    mvp.m_elem_type                = 0;
+    mvp.m_number_ingredients       = pm.particleHistoryFile().nVariables();
+    mvpl.m_list.push_back(mvp);
+    mvpl.m_total_number_elements   = 0;
+    mvpl.m_total_number_nodes      = 0;
+    mvpl.m_total_number_subvolumes = 1;
+    mvpl.m_total_min_object_coord  = pm.getMinObjectCoords();
+    mvpl.m_total_max_object_coord  = pm.getMaxObjectCoords();
+    mvpl.m_total_min_value         = 0;
+    mvpl.m_total_max_value         = 0;
+
+    // store particle monitor in param
+    // sampling step is not used in IS mode
+    param.m_subpixel_level   = pm.getSubpixelLevel();
+    // particle limit and particle density will be overwritten later
+    // when transfer function file is readed(ParameterFileReader)
+    param.m_particle_limit   = pm.particleHistoryFile().ParticleLimit();
+    param.m_particle_density = pm.particleHistoryFile().ParticleDensity();
+    // param.m_server_side_variable_range = pm.particleHistoryFile().variableRange();
+
+    // VariableRange vr        = pm.particleHistoryFile().variableRange();
+    // int tf_number           = pm.particleHistoryFile().colorHistogramArray().size();
+
+    ParameterFileReader ppr;
+    ppr.readParticleParameterFile( tfFilePath_old.c_str() );
+    ppr.setParticleParameter( param );
+
+    /* 一旦保留
+    if ( clntMes.m_initialize_parameter == jpv::InitializeParameter::generate_particle )
+    {
+        // update the transfer function file using the client message
+        // updated transfer function file is loaded by InSitu
+        // Daemon loads the particle file generated by InSitu
+        ParameterFileWriter ppw;
+        ppw.inputParticleParameterMessage( clntMes );
+        NameListFile nm1 = ppr.getNameListFile();
+        NameListFile nm2 = ppw.getNameListFile();
+        if( nm1 != nm2 )
+        {
+            ppw.writeParameterFile( tfFilePath.c_str() );
+        }
+    }
+    */
+
+    return;
+}
+
+void GenerateParticleIS(
+    ParticleProperty& param,
+    MultiVolumePropertyList& mvpl,
     std::unique_ptr<kvs::PointObject> point_object
     // jpv::ParticleTransferServer pts,
     // jpv::ServerMode server_mode,
@@ -391,7 +526,7 @@ void GenerateParticleIS(
 {
     int tf_number;
     ParticleMonitor pm;
-    VariableRange vr;
+    // VariableRange vr; // 一旦保留
 
     std::cout << "param.m_time_step:" << param.m_time_step << std::endl;
 
@@ -409,24 +544,51 @@ void GenerateParticleIS(
 
     tf_number = pm.particleHistoryFile().colorHistogramArray().size();
 
+    /* 一時保留
     vismodule::UInt64* tmp_c_bins;
     vismodule::UInt64* tmp_o_bins;
-
+    
     tmp_c_bins = new vismodule::UInt64[DEFAULT_NBINS * tf_number];
     tmp_o_bins = new vismodule::UInt64[DEFAULT_NBINS * tf_number];
-
+    
     for ( size_t i = 0; i < (DEFAULT_NBINS * tf_number); i++ )
     {
         tmp_c_bins[i] = 0;
         tmp_o_bins[i] = 0;
     }
+    */
 
-    vismodule::PointObject* originalObject = new vismodule::PointObject;
+    vismodule::PointObject* vismodule_point_object = new vismodule::PointObject;
 
     // get point object
     pm.readParticleFile();
-    pm.getParticle( originalObject );
+    pm.getParticle( vismodule_point_object );
 
+    kvs::ValueArray<kvs::Real32> kvs_coords;
+    kvs::ValueArray<kvs::UInt8>  kvs_colors;
+    kvs::ValueArray<kvs::Real32> kvs_normals;
+
+    const size_t ncoords  = vismodule_point_object->coords().size();
+    const size_t ncolors  = vismodule_point_object->colors().size();
+    const size_t nnormals = vismodule_point_object->normals().size();
+
+    kvs_coords.allocate( ncoords );
+    kvs_colors.allocate( ncolors );
+    kvs_normals.allocate( nnormals );
+
+    kvs::Real32* pcoords  = kvs_coords.data();
+    kvs::UInt8*  pcolors  = kvs_colors.data();
+    kvs::Real32* pnormals = kvs_normals.data();
+
+    memcpy( pcoords, vismodule_point_object->coords().pointer(), vismodule_point_object->coords().byteSize() );
+    memcpy( pcolors, vismodule_point_object->colors().pointer(), vismodule_point_object->colors().byteSize() );
+    memcpy( pnormals, vismodule_point_object->normals().pointer(), vismodule_point_object->normals().byteSize() );
+
+    point_object->setCoords( kvs_coords );
+    point_object->setColors( kvs_colors );
+    point_object->setNormals( kvs_normals );
+
+    /* 一旦保留
     // get histgram start
     int c_count = 0;
     for ( int tf = 0; tf < tf_number; tf++ )
@@ -437,7 +599,7 @@ void GenerateParticleIS(
             c_count++;
         }
     }
-
+    
     int o_count = 0;
     for ( int tf = 0; tf < tf_number; tf++ )
     {
@@ -448,13 +610,16 @@ void GenerateParticleIS(
         }
     }
     // get histgram end
-
+    
     vr = pm.particleHistoryFile().variableRange();
     vr.show();
+    */
 
-    delete originalObject;
+    delete vismodule_point_object;
+    /* 一旦保留
     delete[] tmp_c_bins;
     delete[] tmp_o_bins;
+    */
 }
 
 void generate_volume(

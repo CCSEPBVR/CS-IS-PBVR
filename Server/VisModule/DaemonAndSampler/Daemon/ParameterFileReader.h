@@ -6,16 +6,13 @@
 #include <fstream>
 #include <map>
 #include <algorithm>
-#include <vismodule/Argument>
 #include <vismodule/Type>
 #include <vismodule/Vector3>
 #include <vismodule/Camera>
 #include <vismodule/ColorMap>
 #include <vismodule/OpacityMap>
-#include "ParticleTransferProtocol.h"
-#include "PBVRParam.h"
-//#include "../Client/ExtendedTransferFunctionMessage.h"
 #include <vismodule/NameListFile>
+#include <vismodule/ParticleProperty>
 
 class ParameterFileReader
 {
@@ -25,12 +22,9 @@ private:
     void set_default_parameter();
 
 public:
-    void outputMessage( jpv::ParticleTransferServerMessage* clntMes );
-    void outputParameterMessage( jpv::ParticleTransferServerMessage* clntMes );
-    void outputTransferFunctionMessage( jpv::ParticleTransferServerMessage* clntMes );
-    void setParticleParameter( Argument& param );
-    void setGlyphParameter( Argument& param );
-    void setPlotOverLineParameter( Argument& param );
+    void setParticleParameter( ParticleProperty& param );
+    void setGlyphParameter( ParticleProperty& param );
+    void setPlotOverLineParameter( ParticleProperty& param );
     void readParticleParameterFile( const char* fname );
     void readGlyphParameterFile( const char* fname );
     void readPlotOverLineParameterFile( const char* fname );

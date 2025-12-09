@@ -94,18 +94,21 @@ void GenerateParticleCS(
     // jpv::InitializeParameter init_param
 );
 
-/*
-void GenerateParticleIS(
-    Argument &param,
-    MultiVolumePropertyList& mvpl,
+void SetParticleParameterIS(
     const int time_step,
-    const std::string file_name,
+    vismodule::Camera* camera,
+    ParticleProperty& param,
+    MultiVolumePropertyList& mvpl
+);
+
+void GenerateParticleIS(
+    ParticleProperty &param,
+    MultiVolumePropertyList& mvpl,
     std::unique_ptr<kvs::PointObject> point_object
     // jpv::ParticleTransferServer pts,
     // jpv::ServerMode server_mode,
     // jpv::InitializeParameter init_param
 );
-*/
 
 void generate_volume(
     const ParticleProperty& param,
