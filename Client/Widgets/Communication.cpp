@@ -933,6 +933,11 @@ void Communication::textWebsocketMessageReceived( const QString& receivedMessage
             emit receivePlotOverLineParameter( obj );
         }
 
+        else if( obj["event"].toString() == "TimeStepControlParameter" )
+        {
+            emit receiveTimeStepControlParameter( obj );
+        }
+
         else if (obj["event"].toString() == "transferfunction")
         {
             // synthesize 情報

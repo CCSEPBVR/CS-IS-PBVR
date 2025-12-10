@@ -47,6 +47,7 @@ signals:
     void updateStatusBarMessage( const QString& message );
     void receiveGlyphParameter( const QJsonObject& dataArray );
     void receivePlotOverLineParameter( const QJsonObject& plotOverLineParameter );
+    void receiveTimeStepControlParameter( const QJsonObject& timeStepControlParameter );
 
 private:
     Ui::Communication *ui;

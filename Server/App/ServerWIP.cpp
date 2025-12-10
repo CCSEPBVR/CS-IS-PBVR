@@ -185,19 +185,20 @@ void ServerWIP::onMessage( uWS::WebSocket<false, true, PerSocket>* ws, std::stri
             transferOperatorControl( userID, targetID );
         }
 
-        if( event == "chat" )                       chat( ws, received );
-        else if( event == "shareview" )             shareview( ws, received );
-        else if( event == "sharepoint" )            sharepoint( ws, received );
-        else if( event == "transferfunction" )      transferfunction( ws, received );
-        else if( event == "glyph" )                 glyph( ws, received );        
-        else if( event == "fileList" )              fileList( ws, received );
-        else if( event == "selectedFile" )          selectedFile( ws, received );
-        else if( event == "showAtTimeStep" )        showAtTimeStep( ws, received );
-        else if( event == "objectInfoUpdate" )      objectInfoUpdate( ws, received );
-        else if( event == "debug" )                 debugNumberOfUsers();
-        else if( event == "debugSrvObjects" )       debugSrvObjects();
-        else if( event == "GlyphParameter")         recvGlyphParameter( ws, received );
-        else if( event == "PlotOverLineParameter" ) receivePlotOverLineParameter( ws, received );
+        if( event == "chat" )                           chat( ws, received );
+        else if( event == "shareview" )                 shareview( ws, received );
+        else if( event == "sharepoint" )                sharepoint( ws, received );
+        else if( event == "transferfunction" )          transferfunction( ws, received );
+        else if( event == "glyph" )                     glyph( ws, received );
+        else if( event == "fileList" )                  fileList( ws, received );
+        else if( event == "selectedFile" )              selectedFile( ws, received );
+        else if( event == "showAtTimeStep" )            showAtTimeStep( ws, received );
+        else if( event == "objectInfoUpdate" )          objectInfoUpdate( ws, received );
+        else if( event == "debug" )                     debugNumberOfUsers();
+        else if( event == "debugSrvObjects" )           debugSrvObjects();
+        else if( event == "GlyphParameter")             recvGlyphParameter( ws, received );
+        else if( event == "PlotOverLineParameter" )     receivePlotOverLineParameter( ws, received );
+        else if( event == "TimeStepControlParameter" )  receiveTimeStepControlParameter( ws, received );
         else                                        std::cout << "[Server] Unknow Event : " << event << std::endl;
     }
 }
@@ -1367,6 +1368,11 @@ void ServerWIP::receivePlotOverLineParameter( uWS::WebSocket<false, true, PerSoc
         // std::cout << "EndCoords           : (invalid size)" << std::endl;
     }
 
+    ws->publish( "Notice", received.dump(), uWS::OpCode::TEXT );
+}
+
+void ServerWIP::receiveTimeStepControlParameter( uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received )
+{
     ws->publish( "Notice", received.dump(), uWS::OpCode::TEXT );
 }
 

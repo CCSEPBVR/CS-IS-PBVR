@@ -36,6 +36,7 @@ HEADERS += \
     RepetitionLevelControl.h \
     ShadingControl.h \
     TimeStepControlToolBar.h \
+    TimeStepControlToolBarWIP.h \
     TotalParticlesToolBar.h \
     TransferFunctionEditor.h \
     TransferFunctionEditorWIP.h \
@@ -66,6 +67,7 @@ SOURCES += \
     RepetitionLevelControl.cpp \
     ShadingControl.cpp \
     TimeStepControlToolBar.cpp \
+    TimeStepControlToolBarWIP.cpp \
     TotalParticlesToolBar.cpp \
     TransferFunctionEditor.cpp \
     TransferFunctionEditorWIP.cpp \

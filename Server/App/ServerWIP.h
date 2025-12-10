@@ -94,18 +94,19 @@ private:
         m_u_web_sockets.publish( "Notice", msg.dump(), uWS::OpCode::TEXT );
     }
 
-    void chat( uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received );
-    void shareview( uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received );
-    void sharepoint( uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received );
-    void transferfunction( uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received );
-    void glyph( uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received );
-    void plotoverlineparameter( uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received );
-    void fileList( uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received );
-    void selectedFile( uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received );
-    void showAtTimeStep( uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received );
-    void objectInfoUpdate( uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received );
-    void recvGlyphParameter( uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received );
-    void receivePlotOverLineParameter( uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received );
+    void chat                               ( uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received );
+    void shareview                          ( uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received );
+    void sharepoint                         ( uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received );
+    void transferfunction                   ( uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received );
+    void glyph                              ( uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received );
+    void plotoverlineparameter              ( uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received );
+    void fileList                           ( uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received );
+    void selectedFile                       ( uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received );
+    void showAtTimeStep                     ( uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received );
+    void objectInfoUpdate                   ( uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received );
+    void recvGlyphParameter                 ( uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received );
+    void receivePlotOverLineParameter       ( uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received );
+    void receiveTimeStepControlParameter    ( uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received );
 
     void debugNumberOfUsers()
     {
