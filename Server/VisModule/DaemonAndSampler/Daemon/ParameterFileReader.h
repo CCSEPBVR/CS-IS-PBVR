@@ -13,6 +13,7 @@
 #include <vismodule/OpacityMap>
 #include <vismodule/NameListFile>
 #include <vismodule/ParticleProperty>
+#include <vismodule/GlyphProperty>
 
 class ParameterFileReader
 {
@@ -23,7 +24,7 @@ private:
 
 public:
     void setParticleParameter( ParticleProperty& param );
-    void setGlyphParameter( ParticleProperty& param );
+    void setGlyphParameter( GlyphProperty& param );
     void setPlotOverLineParameter( ParticleProperty& param );
     void readParticleParameterFile( const char* fname );
     void readGlyphParameterFile( const char* fname );

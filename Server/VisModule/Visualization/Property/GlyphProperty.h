@@ -7,6 +7,7 @@
 #include <vismodule/Serializer>
 
 // CSとISでglyphのsize minmaxの集計方法が異なる
+// 定義する場所は変更予定
 enum class ServerMode : int32_t
 {
     CS = 0,
@@ -31,7 +32,6 @@ struct GlyphProperty
 {
     ServerMode server_mode;
     bool m_glyph_flag;
-    int m_time_step;
     int m_stride;
     int m_seed;
     float m_number_of_sampling_point;
