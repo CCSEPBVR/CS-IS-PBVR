@@ -177,12 +177,6 @@
     <ClCompile Include="FileFormat\FileFormatBase.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="DaemonAndSampler\Daemon\ParticleMonitor.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="DaemonAndSampler\Daemon\ParticleFile.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
     <ClCompile Include="FileFormat\XML\XMLComment.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
@@ -226,12 +220,6 @@
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="FileFormat\KVSML\DataValueTag.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="DaemonAndSampler\Daemon\ParticleHistoryFile.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="DaemonAndSampler\Daemon\ParticleStatusFile.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="FileFormat\KVSML\SizeTag.cpp">
@@ -357,7 +345,13 @@
     <ClCompile Include="FileFormat\PNM\Ppm.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="DaemonAndSampler\Daemon\ParameterFileReader.cpp">
+    <ClCompile Include="DaemonAndSampler\Daemon\GenerateGlyph.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Visualization\Object\GlyphSeedGenerator.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Visualization\Mapper\GlyphSeed.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
   </ItemGroup>
@@ -533,12 +527,6 @@
     <ClInclude Include="FileFormat\FileFormatBase.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="DaemonAndSampler\Daemon\ParticleMonitor.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="DaemonAndSampler\Daemon\ParticleFile.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
     <ClInclude Include="FileFormat\XML\XMLComment.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
@@ -584,19 +572,10 @@
     <ClInclude Include="FileFormat\KVSML\DataValueTag.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="DaemonAndSampler\Daemon\ParticleHistoryFile.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="DaemonAndSampler\Daemon\ParticleStatusFile.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
     <ClInclude Include="FileFormat\KVSML\SizeTag.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="FileFormat\KVSML\PointObjectTag.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="DaemonAndSampler\Daemon\PlotOverLineFile.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="FileFormat\KVSMLObjectPlotOverLine.h">
@@ -716,7 +695,16 @@
     <ClInclude Include="FileFormat\PNM\Ppm.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="DaemonAndSampler\Daemon\ParameterFileReader.h">
+    <ClInclude Include="DaemonAndSampler\Daemon\GenerateGlyph.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Visualization\Property\GlyphProperty.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Visualization\Object\GlyphSeedGenerator.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Visualization\Mapper\GlyphSeed.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>
