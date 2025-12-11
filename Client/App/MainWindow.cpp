@@ -15,7 +15,7 @@ MainWindow::MainWindow( kvs::qt::Application& app, QWidget *parent )
     // ウィジェット群(A~Z)
     // ABCDEFGHIJKLMNOPQRSTUVWXYZ
     , m_color_map_bar_selector_tool_bar( new ColorMapSelectorToolBar( m_screen, this ) )
-    , m_play_back_control_tool_bar( new PlayBackControlToolBarWIP( this ) )
+    , m_play_back_control_tool_bar( new PlayBackControlToolBarWIP( m_web_sockets, this ) )
     , m_time_step_control_tool_bar( new TimeStepControlToolBarWIP( m_web_sockets, this ) )
     , m_total_particles_tool_bar( new TotalParticlesToolBar( this ) )
     , m_animation_control( new AnimationControl( m_screen, this ) )
@@ -459,6 +459,11 @@ void MainWindow::onUpdateServerState( bool serverState ) // true:接続中
 {
     // ウィジェット群(A~Z)
     // ABCDEFGHIJKLMNOPQRSTUVWXYZ
+
+    if( m_play_back_control_tool_bar )
+    {
+        m_play_back_control_tool_bar->reset();
+    }
 
     if( m_glyph_editor_wip && m_glyph_editor_action )
     {

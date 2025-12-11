@@ -5,16 +5,19 @@
 #include <QPushButton>
 #include <QHBoxLayout>
 
+#include "WebSocketPair.h"
+
 class PlayBackControlToolBarWIP : public QToolBar
 {
     Q_OBJECT
 public:
-    PlayBackControlToolBarWIP( QWidget *parent = nullptr );
+    PlayBackControlToolBarWIP( WebSocketPair* websockets, QWidget *parent = nullptr );
     ~PlayBackControlToolBarWIP();
 
 public slots:
     void onDataRequestCompleted();
     void onOperatorStateUpdate( bool operatorState );
+    void reset();
 
 signals:
     void first();
@@ -28,6 +31,7 @@ signals:
     void loop( bool isChecked );
 
 private:
+    WebSocketPair* m_web_sockets = nullptr;
     bool m_is_operator;
 
     QPushButton* m_first_push_button        = nullptr;

@@ -1,7 +1,8 @@
 #include "PlayBackControlToolBarWIP.h"
 
-PlayBackControlToolBarWIP::PlayBackControlToolBarWIP( QWidget* parent )
+PlayBackControlToolBarWIP::PlayBackControlToolBarWIP( WebSocketPair* websockets, QWidget* parent )
     : QToolBar( parent )
+    , m_web_sockets( websockets )
     , m_is_operator( false )
 {
     const QSize iconSize( 60, 60 );
@@ -62,7 +63,7 @@ PlayBackControlToolBarWIP::~PlayBackControlToolBarWIP() {}
 
 void PlayBackControlToolBarWIP::onDataRequestCompleted()
 {
-    if( m_is_operator ) enableButtons();
+    if( m_is_operator || m_web_sockets->isConnected() == false ) enableButtons();
 }
 
 void PlayBackControlToolBarWIP::onOperatorStateUpdate( bool operatorState )
@@ -88,6 +89,19 @@ void PlayBackControlToolBarWIP::onOperatorStateUpdate( bool operatorState )
         m_loop_push_button      ->setChecked( false ); onLoop();
         m_loop_push_button      ->setEnabled( false ); disableButtons();
     }
+}
+
+void PlayBackControlToolBarWIP::reset()
+{
+    m_first_push_button    ->setEnabled( true );
+    m_previous_push_button ->setEnabled( true );
+    m_reverse_push_button  ->setEnabled( true );
+    m_play_push_button     ->setEnabled( true );
+    m_next_push_button     ->setEnabled( true );
+    m_last_push_button     ->setEnabled( true );
+    m_keep_last_push_button->setEnabled( true );
+    m_jump_push_button     ->setEnabled( true );
+    m_loop_push_button     ->setEnabled( true );
 }
 
 QPushButton* PlayBackControlToolBarWIP::createPushButton( const QString& iconPath, const QSize& iconSize, const QSize& buttonSize, QWidget* parent )
