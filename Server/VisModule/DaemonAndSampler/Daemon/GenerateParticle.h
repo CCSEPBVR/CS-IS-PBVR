@@ -81,12 +81,12 @@ bool SetParticleParameterCS(
     const std::string file_name,
     const int time_step,
     vismodule::Camera* camera,
-    ParticleProperty& param,
+    ParticleProperty& particle_property,
     MultiVolumePropertyList& mvpl
 );
 
 void GenerateParticleCS(
-    ParticleProperty& param,
+    ParticleProperty& particle_property,
     MultiVolumePropertyList& mvpl,
     std::unique_ptr<kvs::PointObject>& point_object
     // jpv::ParticleTransferServer pts,
@@ -97,12 +97,12 @@ void GenerateParticleCS(
 void SetParticleParameterIS(
     const int time_step,
     vismodule::Camera* camera,
-    ParticleProperty& param,
+    ParticleProperty& particle_property,
     MultiVolumePropertyList& mvpl
 );
 
 void GenerateParticleIS(
-    ParticleProperty &param,
+    ParticleProperty &particle_property,
     MultiVolumePropertyList& mvpl,
     std::unique_ptr<kvs::PointObject> point_object
     // jpv::ParticleTransferServer pts,
@@ -111,14 +111,14 @@ void GenerateParticleIS(
 );
 
 void generate_volume(
-    const ParticleProperty& param,
+    const ParticleProperty& particle_property,
     const MultiVolumeProperty& mvp,
     const int time_step,
     vismodule::VolumeObjectBase*& volume
 );
 
 void generate_volume(
-    const ParticleProperty& param,
+    const ParticleProperty& particle_property,
     const MultiVolumeProperty& mvp,
     const int time_step,
     const int sub_volume_id,

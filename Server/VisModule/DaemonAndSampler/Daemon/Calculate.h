@@ -8,6 +8,8 @@
 #include <vismodule/UnstructuredVolumeImporter>
 #include <vismodule/ParticleProperty>
 #include <vismodule/GlyphProperty>
+#include <vismodule/MultiVolumeProperty>
+#include <vismodule/CellByCellParticleGenerator>
 
 //inline vismodule::UnstructuredVolumeObject* CreateVolumeData( const Argument& param,
 inline vismodule::VolumeObjectBase* CreateVolumeData
@@ -267,7 +269,8 @@ inline VariableRange Calculate_minmax( const ParticleProperty& param,
 
 inline void Calculate_minmax_glyph
 (
-    const GlyphProperty& glyph_property,
+    const ParticleProperty& particle_property,
+    GlyphProperty& glyph_property,
     const MultiVolumePropertyList& mvpl
 )
 {
@@ -275,7 +278,7 @@ inline void Calculate_minmax_glyph
     vismodule::VolumeObjectBase* volume = nullptr;
     double total_volume = 0.0;
     double density_lev1 = 0.0; // kawamura2: particle density for subpixel_level=1
-    int steps = glyph_property.m_time_step;
+    int steps = particle_property.m_time_step;
     int subvols = 0;
 
     vismodule::Real64 tmp_min, tmp_max;

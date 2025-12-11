@@ -13,7 +13,7 @@ bool SetParticleParameterCS(
     const std::string file_name,
     const int time_step,
     vismodule::Camera* camera,
-    ParticleProperty& param,
+    ParticleProperty& particle_property,
     MultiVolumePropertyList& mvpl
 )
 {
@@ -29,29 +29,29 @@ bool SetParticleParameterCS(
 
     std::cout << "time_step = " << time_step << std::endl;
 
-    param.m_time_step                = time_step;
-    param.m_level_index              = 1;
-    param.m_repeat_level             = 4;
-    param.m_sampling_method          = 'u';
-    param.m_camera                   = camera;
-    // param.m_x_synthesis              = clntMes.m_x_synthesis;
-    // param.m_y_synthesis              = clntMes.m_y_synthesis;
-    // param.m_z_synthesis              = clntMes.m_z_synthesis;
-    param.m_particle_data_size_limit = 20;
-    param.filepath                   = file_name;
-    param.m_particle_limit           = 10000000;
-    param.m_particle_density         = 1;
-    param.m_latency_threshold        = -1.0;
-    param.m_job_id_pack_size         = 1;
+    particle_property.m_time_step                = time_step;
+    particle_property.m_level_index              = 1;
+    particle_property.m_repeat_level             = 4;
+    particle_property.m_sampling_method          = 'u';
+    particle_property.m_camera                   = camera;
+    // particle_property.m_x_synthesis              = clntMes.m_x_synthesis;
+    // particle_property.m_y_synthesis              = clntMes.m_y_synthesis;
+    // particle_property.m_z_synthesis              = clntMes.m_z_synthesis;
+    particle_property.m_particle_data_size_limit = 20;
+    particle_property.filepath                   = file_name;
+    particle_property.m_particle_limit           = 10000000;
+    particle_property.m_particle_density         = 1;
+    particle_property.m_latency_threshold        = -1.0;
+    particle_property.m_job_id_pack_size         = 1;
 
     // 初回通信の場合, どのように判断するのかは保留
     if ( true )
     {
-        mvpl.searchFile(param);
+        mvpl.searchFile(particle_property);
 
         if ( mvpl.m_total_start_steps > 0 )
         {
-            param.m_time_step = mvpl.m_total_start_steps;
+            particle_property.m_time_step = mvpl.m_total_start_steps;
         }
 
         if ( mvpl.m_list.size() <= 0 )
@@ -68,36 +68,36 @@ bool SetParticleParameterCS(
     if ( true )
     {
         std::cout << "default parameter " << std::endl;
-        VariableRange range = Calculate_minmax( param, mvpl );
-        setDefalutTransferFunctionToArgument( param, range, mvpl.m_total_number_ingredients );
+        VariableRange range = Calculate_minmax( particle_property, mvpl );
+        setDefalutTransferFunctionToArgument( particle_property, range, mvpl.m_total_number_ingredients );
     }
     else
     {
         /* 一旦保留
         std::cout << "user define parameter " << std::endl;
         transfunc_creator.setProtocol( clntMes );
-        setClientTransferFunctionToArgument( &param, clntMes );
+        setClientTransferFunctionToArgument( &particle_property, clntMes );
         */
     }
 
     /*
-    param.m_transfunc_synthesizer = transfunc_creator.create();
-    param.m_transfunc_array.resize( transfunc_creator.transfunc().size() );
+    particle_property.m_transfunc_synthesizer = transfunc_creator.create();
+    particle_property.m_transfunc_array.resize( transfunc_creator.transfunc().size() );
 
     for(int i = 0; i < transfunc_creator.transfunc().size(); i++ )
     {
-        param.m_transfunc_array[i] = static_cast<vismodule::TransferFunction>(transfunc_creator.transfunc()[i]);
+        particle_property.m_transfunc_array[i] = static_cast<vismodule::TransferFunction>(transfunc_creator.transfunc()[i]);
     }
     */
 
-    param.m_sampling_step  = CalculateSamplingStep( mvpl );
-    param.m_subpixel_level = CalculateSubpixelLevel( param, mvpl, *param.m_camera );
+    particle_property.m_sampling_step  = CalculateSamplingStep( mvpl );
+    particle_property.m_subpixel_level = CalculateSubpixelLevel( particle_property, mvpl, *particle_property.m_camera );
 
     return true;
 }
 
 void GenerateParticleCS(
-    ParticleProperty& param,
+    ParticleProperty& particle_property,
     MultiVolumePropertyList& mvpl,
     std::unique_ptr<kvs::PointObject>& point_object
     // jpv::ParticleTransferServer pts,
@@ -125,9 +125,9 @@ void GenerateParticleCS(
     JobCollector jc;
 #endif
 
-    tf_number = param.m_transfunc_array.size();
+    tf_number = particle_property.m_transfunc_array.size();
 
-    std::cout << "param.m_time_step:" << param.m_time_step << std::endl;
+    std::cout << "particle_property.m_time_step:" << particle_property.m_time_step << std::endl;
 
     /* 一時保留
     vismodule::UInt64* tmp_c_bins;
@@ -154,13 +154,13 @@ void GenerateParticleCS(
     */
 
     jd.initialize(
-        param.m_time_step,
-        param.m_time_step,
+        particle_property.m_time_step,
+        particle_property.m_time_step,
         mvpl.m_total_number_subvolumes,
         mvpl.m_total_min_subvolume_coord,
         mvpl.m_total_max_subvolume_coord,
-        param.m_latency_threshold,
-        param.m_job_id_pack_size
+        particle_property.m_latency_threshold,
+        particle_property.m_job_id_pack_size
     );
 
     while ( jd.dispatchNext( wid, &st, &vl ) )
@@ -174,7 +174,7 @@ void GenerateParticleCS(
             int xvl, fidx;
             fidx = mvpl.getFileIndex( vl, &xvl );
             MultiVolumeProperty& mvp = mvpl.m_list[fidx];
-            mvp.setFilePath( param.filepath, st, xvl );
+            mvp.setFilePath( particle_property.filepath, st, xvl );
 
             // generate point object start
             try
@@ -182,26 +182,26 @@ void GenerateParticleCS(
                 vismodule::VolumeObjectBase* volume = nullptr;
                 vismodule::PointObjectGenerator point_object_generator;
 
-                /* 保留
+                /* 一旦保留
                 point_object_generator.setCoordSynthStr(
-                    param.m_x_synthesis,
-                    param.m_y_synthesis,
-                    param.m_z_synthesis
+                    particle_property.m_x_synthesis,
+                    particle_property.m_y_synthesis,
+                    particle_property.m_z_synthesis
                 );
                 */
 
                 // generate volume object
                 if ( mvp.m_file_type == 1 || mvp.m_file_type == 2 ) // filetype: gathered subvolume or gathered timestep
                 {
-                    generate_volume( param, mvp, st, xvl, volume );
+                    generate_volume( particle_property, mvp, st, xvl, volume );
                 }
                 else if ( mvp.m_file_type == 3 || mvp.m_file_type == 4 )
                 {
-                    generate_volume( param, mvp, st, xvl, volume );
+                    generate_volume( particle_property, mvp, st, xvl, volume );
                 }
                 else // filetype: kvsml
                 {
-                    generate_volume( param, mvp, st, volume );
+                    generate_volume( particle_property, mvp, st, volume );
                 }
 
                 if ( !volume )
@@ -229,18 +229,18 @@ void GenerateParticleCS(
                     float sampling_volume_inverse;
                         
                     vismodule::CellByCellParticleGenerator::CalculateDensityConstaint(
-                        *param.m_camera,
+                        *particle_property.m_camera,
                         *volume,
-                        static_cast<float>( param.m_subpixel_level ),
-                        param.m_sampling_step,
+                        static_cast<float>( particle_property.m_subpixel_level ),
+                        particle_property.m_sampling_step,
                         &sampling_volume_inverse,
                         &max_opacity,
                         &max_density
                     );
 
-                    param.m_transfunc_synthesizer->setMaxOpacity( max_opacity );
-                    param.m_transfunc_synthesizer->setMaxDensity( max_density );
-                    param.m_transfunc_synthesizer->setSamplingVolumeInverse( sampling_volume_inverse );
+                    particle_property.m_transfunc_synthesizer->setMaxOpacity( max_opacity );
+                    particle_property.m_transfunc_synthesizer->setMaxDensity( max_density );
+                    particle_property.m_transfunc_synthesizer->setSamplingVolumeInverse( sampling_volume_inverse );
 
                     std::vector<Type*> raw_pointers_vector( nvariables );
                     for ( size_t i = 0; i < nvariables; ++i )
@@ -249,7 +249,7 @@ void GenerateParticleCS(
                     }
 
                     // generate particle
-                    send_obj = point_object_generator.GenerateParticleUnstruct( param, dom, raw_pointers_vector.data(), nvariables, coordinates.get(), ncoords, connections.get(), ncells, celltype );
+                    send_obj = point_object_generator.GenerateParticleUnstruct( particle_property, dom, raw_pointers_vector.data(), nvariables, coordinates.get(), ncoords, connections.get(), ncells, celltype );
                 }
                 else // ( voltype == vismodule::VolumeObjectBase::VolumeType::Structured )
                 {
@@ -264,7 +264,7 @@ void GenerateParticleCS(
                     }                        
 
                     // generate particle
-                    send_obj = point_object_generator.GenerateParticleStruct( param, dom, raw_pointers_vector.data(), nvariables );
+                    send_obj = point_object_generator.GenerateParticleStruct( particle_property, dom, raw_pointers_vector.data(), nvariables );
                 }
 
                 delete volume;
@@ -279,9 +279,9 @@ void GenerateParticleCS(
             }
             // generate point object end
 
-            /* 一時保留
+            /* 一旦保留
             MakeHistgram( send_obj, tf_number, tmp_c_bins, tmp_o_bins );
-            MakeParticleMinMax( param.m_transfunc_synthesizer, tf_number, tmp_max, tmp_min );
+            MakeParticleMinMax( particle_property.m_transfunc_synthesizer, tf_number, tmp_max, tmp_min );
             */
         } // make point object and histgram and range
 
@@ -323,7 +323,7 @@ void GenerateParticleCS(
             kvs_normals.allocate( nnormals );
 
             kvs::Real32* pcoords  = kvs_coords.data();
-            kvs::UInt8* pcolors  = kvs_colors.data();
+            kvs::UInt8* pcolors   = kvs_colors.data();
             kvs::Real32* pnormals = kvs_normals.data();
 
             memcpy( pcoords, point_object->coords().data(), point_object->coords().byteSize() );
@@ -365,7 +365,7 @@ void GenerateParticleCS(
     } // end of while(DispatchNext)
 
 #ifndef CPU_VER
-    /* // 一時保留
+    /* 一旦保留
     if ( mpi_size > 1 )
     {
         MPI_Allreduce( MPI_IN_PLACE, tmp_c_bins, ( DEFAULT_NBINS * tf_number ), MPI_UNSIGNED_LONG, MPI_SUM , MPI_COMM_WORLD );
@@ -376,10 +376,10 @@ void GenerateParticleCS(
     */
 #endif
 
-    // vr = setVariablerange2( tmp_max, tmp_min, ( tf_number * 2 ) ); // 一時保留
+    // vr = setVariablerange2( tmp_max, tmp_min, ( tf_number * 2 ) ); // 一旦保留
 
     nan_error = false;
-    /*  一時保留
+    /*  一旦保留
     delete tmp_min;
     delete tmp_max;
     delete[] tmp_c_bins;
@@ -387,10 +387,11 @@ void GenerateParticleCS(
     */
 }
 
+#if 0
 void SetParticleParameterIS(
     const int time_step,
     vismodule::Camera* camera,
-    ParticleProperty& param,
+    ParticleProperty& particle_property,
     MultiVolumePropertyList& mvpl
 )
 {
@@ -429,21 +430,21 @@ void SetParticleParameterIS(
 
     MultiVolumeProperty mvp;
 
-    param.m_time_step                = time_step;
-    param.m_camera                   = camera;
-    param.m_level_index              = 1;
-    param.m_repeat_level             = 4;
-    param.m_particle_data_size_limit = 20;
+    particle_property.m_time_step                = time_step;
+    particle_property.m_camera                   = camera;
+    particle_property.m_level_index              = 1;
+    particle_property.m_repeat_level             = 4;
+    particle_property.m_particle_data_size_limit = 20;
 
     /*
-    param.m_time_step                = clntMes.m_step; 
-    param.m_level_index              = clntMes.m_level_index;
-    param.m_repeat_level             = clntMes.m_repeat_level;
-    param.m_sampling_method          = 'h';
-    param.m_x_synthesis              = clntMes.m_x_synthesis;
-    param.m_y_synthesis              = clntMes.m_y_synthesis;
-    param.m_z_synthesis              = clntMes.m_z_synthesis;
-    param.m_particle_data_size_limit = clntMes.m_particle_data_size_limit;
+    particle_property.m_time_step                = clntMes.m_step; 
+    particle_property.m_level_index              = clntMes.m_level_index;
+    particle_property.m_repeat_level             = clntMes.m_repeat_level;
+    particle_property.m_sampling_method          = 'h';
+    particle_property.m_x_synthesis              = clntMes.m_x_synthesis;
+    particle_property.m_y_synthesis              = clntMes.m_y_synthesis;
+    particle_property.m_z_synthesis              = clntMes.m_z_synthesis;
+    particle_property.m_particle_data_size_limit = clntMes.m_particle_data_size_limit;
     */
 
     // Using environment variables, the constructor of the ParticleMonitor class
@@ -481,19 +482,19 @@ void SetParticleParameterIS(
 
     // store particle monitor in param
     // sampling step is not used in IS mode
-    param.m_subpixel_level   = pm.getSubpixelLevel();
+    particle_property.m_subpixel_level   = pm.getSubpixelLevel();
     // particle limit and particle density will be overwritten later
     // when transfer function file is readed(ParameterFileReader)
-    param.m_particle_limit   = pm.particleHistoryFile().ParticleLimit();
-    param.m_particle_density = pm.particleHistoryFile().ParticleDensity();
-    // param.m_server_side_variable_range = pm.particleHistoryFile().variableRange();
+    particle_property.m_particle_limit   = pm.particleHistoryFile().ParticleLimit();
+    particle_property.m_particle_density = pm.particleHistoryFile().ParticleDensity();
+    // particle_property.m_server_side_variable_range = pm.particleHistoryFile().variableRange();
 
     // VariableRange vr        = pm.particleHistoryFile().variableRange();
     // int tf_number           = pm.particleHistoryFile().colorHistogramArray().size();
 
     ParameterFileReader ppr;
     ppr.readParticleParameterFile( tfFilePath_old.c_str() );
-    ppr.setParticleParameter( param );
+    ppr.setParticleParameter( particle_property );
 
     /* 一旦保留
     if ( clntMes.m_initialize_parameter == jpv::InitializeParameter::generate_particle )
@@ -516,7 +517,7 @@ void SetParticleParameterIS(
 }
 
 void GenerateParticleIS(
-    ParticleProperty& param,
+    ParticleProperty& particle_property,
     MultiVolumePropertyList& mvpl,
     std::unique_ptr<kvs::PointObject> point_object
     // jpv::ParticleTransferServer pts,
@@ -528,7 +529,7 @@ void GenerateParticleIS(
     ParticleMonitor pm;
     // VariableRange vr; // 一旦保留
 
-    std::cout << "param.m_time_step:" << param.m_time_step << std::endl;
+    std::cout << "particle_property.m_time_step:" << particle_property.m_time_step << std::endl;
 
     pm.check();
 
@@ -621,42 +622,43 @@ void GenerateParticleIS(
     delete[] tmp_o_bins;
     */
 }
+#endif
 
 void generate_volume(
-    const ParticleProperty& param,
+    const ParticleProperty& particle_property,
     const MultiVolumeProperty& mvp,
     const int time_step,
     vismodule::VolumeObjectBase*& volume
 )
 {
     struct stat s;
-    if ( stat( param.filepath.c_str(), &s ) )
+    if ( stat( particle_property.filepath.c_str(), &s ) )
     {
-        std::cout << "Error. read failed:" << param.filepath << std::endl;
+        std::cout << "Error. read failed:" << particle_property.filepath << std::endl;
         exit( 1 );
     }
 
-    if ( vismoduleview::FileChecker::ImportableStructuredVolume( param.filepath ))
+    if ( vismoduleview::FileChecker::ImportableStructuredVolume( particle_property.filepath ))
     {
         std::cout << "Structured !" <<std::endl;
-        volume = new vismodule::StructuredVolumeImporter( param.filepath ); 
+        volume = new vismodule::StructuredVolumeImporter( particle_property.filepath ); 
         int id = 1;
         volume->updateMinMaxValues();
         volume->setMinMaxObjectCoords( mvp.m_min_subvolume_coord[id], mvp.m_max_subvolume_coord[id] );
         volume->setMinMaxExternalCoords( mvp.m_min_subvolume_coord[id], mvp.m_max_subvolume_coord[id] );
 
     } 
-    else if ( vismoduleview::FileChecker::ImportableUnstructuredVolume( param.filepath))
+    else if ( vismoduleview::FileChecker::ImportableUnstructuredVolume( particle_property.filepath))
     {
         std::cout << "Unstructured !" <<std::endl;
-        volume = new vismodule::UnstructuredVolumeImporter( param.filepath );  
+        volume = new vismodule::UnstructuredVolumeImporter( particle_property.filepath );  
         volume->updateMinMaxValues();
         volume->setMinMaxObjectCoords( mvp.m_min_object_coord, mvp.m_max_object_coord );
         volume->setMinMaxExternalCoords( mvp.m_min_object_coord, mvp.m_max_object_coord );
     }
     else 
     {
-        visModuleMessageError("%s is not volume data.", param.filepath.c_str());
+        visModuleMessageError("%s is not volume data.", particle_property.filepath.c_str());
     }
 
     std::cout << *volume << std::endl;
@@ -667,24 +669,24 @@ void generate_volume(
 }
 
 void generate_volume(
-    const ParticleProperty &param,
+    const ParticleProperty &particle_property,
     const MultiVolumeProperty& mvp,
     const int time_step,
     const int sub_volume_id,
     vismodule::VolumeObjectBase*& volume
 )
 {
-    size_t found_kvsml = param.filepath.find(".kvsml");
-    size_t found_vtm   = param.filepath.find(".vtm");
-    size_t found_vtu   = param.filepath.find(".vtu");
-    size_t found_vti   = param.filepath.find(".vti");
-    size_t found_inp   = param.filepath.find(".inp");
-    size_t found_pvtu  = param.filepath.find(".pvtu");
-    size_t found_case  = param.filepath.find(".case");
+    size_t found_kvsml = particle_property.filepath.find(".kvsml");
+    size_t found_vtm   = particle_property.filepath.find(".vtm");
+    size_t found_vtu   = particle_property.filepath.find(".vtu");
+    size_t found_vti   = particle_property.filepath.find(".vti");
+    size_t found_inp   = particle_property.filepath.find(".inp");
+    size_t found_pvtu  = particle_property.filepath.find(".pvtu");
+    size_t found_case  = particle_property.filepath.find(".case");
 
     if ( found_kvsml != std::string::npos )
     {
-        volume = new vismodule::UnstructuredVolumeImporter( param.filepath );
+        volume = new vismodule::UnstructuredVolumeImporter( particle_property.filepath );
     
         vismodule::File ifpx( mvp.m_file_path );
         std::string path_base = ifpx.pathName() + ifpx.Separator() + ifpx.baseName();
@@ -722,9 +724,9 @@ void generate_volume(
     // CS only
     if ( volume )
     {
-        std::string xss = param.m_x_synthesis;
-        std::string yss = param.m_y_synthesis;
-        std::string zss = param.m_z_synthesis;
+        std::string xss = particle_property.m_x_synthesis;
+        std::string yss = particle_property.m_y_synthesis;
+        std::string zss = particle_property.m_z_synthesis;
         vismodule::CoordSynthesizerStrings css( 0, xss, yss, zss );
         volume->setCoordSynthesizerStrings( css );
     }
