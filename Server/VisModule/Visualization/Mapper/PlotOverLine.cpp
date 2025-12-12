@@ -1,8 +1,9 @@
 #include <vismodule/PlotOverLine>
-#include <vismodule/KVSMLObjectPlotOverLine>
 #include <fstream>
 #include <filesystem>
 #include <vismodule/Type>
+#include <vismodule/PlotOverLineProperty>
+#include <vismodule/KVSMLObjectPlotOverLine>
 
 PlotOverLine::PlotOverLine( void ){}
 
@@ -92,7 +93,7 @@ PlotOverLine::PlotOverLine(
     unsigned int* connections,
     int ncells,
     const  vismodule::VolumeObjectBase::CellType& celltype, 
-    const Argument& param
+    const PlotOverLineProperty& pol_property
 ):
 m_values( values ),
 m_nvariables(nvariables),
@@ -101,10 +102,10 @@ m_nnodes( ncoords ),
 m_connections( connections ),
 m_ncells( ncells ) 
 {
-    m_plot_variable =  std::atoi(param.m_plot_variable.substr(1).c_str()) -1;
-    int sampling_size = param.m_sampling_size;
-    vismodule::Vec3 P0( param.m_start_point[0], param.m_start_point[1], param.m_start_point[2] );
-    vismodule::Vec3 P1( param.m_end_point[0], param.m_end_point[1], param.m_end_point[2] );
+    m_plot_variable =  std::atoi(pol_property.m_plot_variable.substr(1).c_str()) -1;
+    int sampling_size = pol_property.m_sampling_size;
+    vismodule::Vec3 P0( pol_property.m_start_point[0], pol_property.m_start_point[1], pol_property.m_start_point[2] );
+    vismodule::Vec3 P1( pol_property.m_end_point[0], pol_property.m_end_point[1], pol_property.m_end_point[2] );
     std::cout << "m_plot_variable = " << m_plot_variable  <<std::endl;
     std::cout << "sampling_size = " << sampling_size <<std::endl;
     std::cout << "P0 = " << P0.x() << ", " << P0.y() << ", " << P0.z() <<std::endl;
@@ -118,15 +119,15 @@ PlotOverLine::PlotOverLine(
     domain_parameters_struct dom,
     float** values,
     int nvariables, 
-    const Argument& param
+    const PlotOverLineProperty& pol_property
 ):
 m_values( values ),
 m_nvariables(nvariables)
 {
-    m_plot_variable =  std::atoi(param.m_plot_variable.substr(1).c_str()) -1;
-    int sampling_size = param.m_sampling_size;
-    vismodule::Vec3 P0( param.m_start_point[0], param.m_start_point[1], param.m_start_point[2] );
-    vismodule::Vec3 P1( param.m_end_point[0], param.m_end_point[1], param.m_end_point[2] );
+    m_plot_variable =  std::atoi(pol_property.m_plot_variable.substr(1).c_str()) -1;
+    int sampling_size = pol_property.m_sampling_size;
+    vismodule::Vec3 P0( pol_property.m_start_point[0], pol_property.m_start_point[1], pol_property.m_start_point[2] );
+    vismodule::Vec3 P1( pol_property.m_end_point[0], pol_property.m_end_point[1], pol_property.m_end_point[2] );
     this->setSamplingSize( sampling_size );
     m_dom = dom;
     this->extractPlotLineStructured( P0, P1 );
@@ -191,6 +192,7 @@ void PlotOverLine::extractPlotLineStructured( const vismodule::Vec3 P0, const vi
     this->for_structured_mesh( P0, P1 );
 }
 
+#if 0 // 削除予定
 bool PlotOverLine::SetPOLParameter( const int time_step )
 {
     std::string visParamDir;
@@ -277,6 +279,7 @@ bool PlotOverLine::SetPOLParameter( const int time_step )
     return m_plot_flag; 
 
 }
+#endif
 
 void PlotOverLine::extractPlotLine( const vismodule::StructuredVolumeObject* volume)
 {

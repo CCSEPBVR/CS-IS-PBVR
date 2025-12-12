@@ -21,12 +21,7 @@
 #include <vismodule/FileFormatBase>
 #include <vismodule/ValueArray>
 #include <vismodule/Type>
-#include <vismodule/Vector3>
 #include <sstream>
-#include <vismodule/XMLDocument>
-#include <vismodule/XMLDeclaration>
-#include <vismodule/XMLElement>
-#include <vismodule/XMLComment>
 #include <vismodule/ValueArray>
 #include <vismodule/File>
 #include <vismodule/Type>

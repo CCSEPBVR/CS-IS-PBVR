@@ -1,15 +1,39 @@
+#include <vismodule/GenerateParticle>
 #include <vismodule/GeneratePOL>
+#include <vismodule/ParticleProperty>
+#include <vismodule/PlotOverLineProperty>
+#include <vismodule/MultiVolumeProperty>
+#include <vismodule/KVSMLObjectPlotOverLine>
+#include <vismodule/UnstructuredVolumeImporter>
+#include <vismodule/StructuredVolumeImporter>
+#include <vismodule/PlotOverLineGenerator>
+#include <vismodule/JobDispatcher>
 
-void generate_plot_over_line(
-    Argument &param,
-    MultiVolumePropertyList& mvpl,
-    bool &nan_error,
 #ifndef CPU_VER
-    JobCollector& jc,
+#include <vismodule/JobCollector>
 #endif
-    JobDispatcher& jd,
-    jpv::ParticleTransferServer pts,
-    jpv::ServerMode server_mode
+
+void SetPOLParameterCS(
+    PlotOverLineProperty& pol_property
+)
+{
+    pol_property.m_plot_flag = true;
+
+    // spx
+    pol_property.m_plot_variable  = "q1";
+    pol_property.m_start_point[0] =  4.10;
+    pol_property.m_start_point[1] =  3.50;
+    pol_property.m_start_point[2] = -4.50;
+    pol_property.m_end_point[0]   = 10.60;
+    pol_property.m_end_point[1]   =  3.50;
+    pol_property.m_end_point[2]   = -4.50;
+    pol_property.m_sampling_size  =   256;
+}
+
+std::unique_ptr<vismodule::KVSMLObjectPlotOverLine> GeneratePOLCS(
+    ParticleProperty& particle_property,
+    const PlotOverLineProperty& pol_property,
+    MultiVolumePropertyList& mvpl
 )
 {
     int rank;
@@ -21,255 +45,221 @@ void generate_plot_over_line(
     rank = 0;
 	mpi_size = 1;
 #endif
+
     int st, vl, wid = 0;
-    jpv::ParticleTransferServerMessage servMes;
+    JobDispatcher jd;
     const int tf_number  = mvpl.m_list[0].m_number_ingredients;
-    const int resolution = param.m_sampling_size;
-
-    if( rank == 0 )
-    {
-        SetServerMessageParameter( param, mvpl, servMes );
-
-        // send sub volume num server message
-        std::cout << "INFO: send sub volume num server message" << std::endl;
-        servMes.m_message_size = servMes.byteSize();
-        servMes.show();
-        pts.sendMessage( servMes );     
-    }
-
-    if ( server_mode == jpv::ServerMode::CS )
-    {
-        jd.initialize( 
-            param.m_time_step,
-            param.m_time_step,
-            mvpl.m_total_number_subvolumes,
-            mvpl.m_total_min_subvolume_coord,
-            mvpl.m_total_max_subvolume_coord,
-            param.m_latency_threshold,
-            param.m_job_id_pack_size
-        );
-
-        while ( jd.dispatchNext( wid, &st, &vl ) )
-        {
-            vismodule::KVSMLObjectPlotOverLine* tmp_obj = new vismodule::KVSMLObjectPlotOverLine;
-            std::vector<float> tmp_values( resolution, 0 );
-            std::vector<int>   tmp_mask( resolution, 0 );
-            std::vector<float> tmp_axis( resolution, 0 );
-        
-            // make plot over line
-            if ( ( rank > 0 ) || ( mpi_size == 1 ) )
-            {
-                int xvl, fidx;
-                fidx = mvpl.getFileIndex( vl, &xvl );
-                MultiVolumeProperty& mvp = mvpl.m_list[fidx];
-                mvp.setFilePath( param.m_input_data, st, xvl );
-                param.m_subvolume_id = xvl;
-            
-                // generate plot over line start
-                try
-                {
-                    vismodule::VolumeObjectBase* volume = nullptr;
-                    PlotOverLineGenerator pol_generator;
-
-                    if ( mvp.m_file_type == 1 || mvp.m_file_type == 2 ) // filetype: gathered subvolume or gathered timestep
-                    {
-                    }
-#ifdef EXTEND_FILE_FORMAT
-                    else if ( mvp.m_file_type == 3 || mvp.m_file_type == 4 )
-                    {
-                        generate_volume( param, mvp, st, xvl, volume );
-                    }
-#endif
-                    else // filetype: kvsml
-                    {
-                        generate_volume( param, mvp, st, volume );
-                    }
-
-                    std::unique_ptr<std::unique_ptr<Type[]>[]> values;
-                    int nvariables = 0;
-                    int ncoords = 0;
-                    vismodule::VolumeObjectBase::VolumeType voltype = volume->volumeType();                    
-
-                    if( voltype == vismodule::VolumeObjectBase::VolumeType::Unstructured )
-                    {
-                        domain_parameters_unstruct dom;
-                        std::unique_ptr<float[]> coordinates;
-                        std::unique_ptr<unsigned int[]> connections;
-                        int ncells = 0;
-                        vismodule::VolumeObjectBase::CellType celltype;
-
-                        store_volume_in_variables_array_unstruct( volume, dom, values, nvariables, coordinates, ncoords, connections, ncells, celltype );
-
-                        std::vector<Type*> raw_pointers_vector( nvariables );
-                        for ( size_t i = 0; i < nvariables; ++i )
-                        {
-                            raw_pointers_vector[i] = values.get()[i].get();
-                        }
-
-                        // generate particle
-                        pol_generator.GeneratePOLUnstruct(
-                            param,
-                            raw_pointers_vector.data(),
-                            nvariables,
-                            coordinates.get(),
-                            ncoords,
-                            connections.get(),
-                            ncells,
-                            celltype,
-                            tmp_obj
-                        );
-                    }
-                    else // ( voltype == vismodule::VolumeObjectBase::VolumeType::Structured )
-                    {
-                        domain_parameters_struct dom; 
-
-                        store_volume_in_variables_array_struct( volume, dom, values, nvariables, ncoords );
-
-                        std::vector<Type*> raw_pointers_vector( nvariables );
-                        for ( size_t i = 0; i < nvariables; ++i )
-                        {
-                            raw_pointers_vector[i] = values.get()[i].get();
-                        }                        
-
-                        // generate particle
-                        pol_generator.GeneratePOLStruct(
-                            param,
-                            dom,
-                            raw_pointers_vector.data(),
-                            nvariables,
-                            tmp_obj
-                        );
-                    }
-
-                    delete volume;
-                }
-                catch ( const std::runtime_error& e )
-                {
-#ifdef _DEBUG // debug by @hira
-                    printf("[Exception] %s[%d] :: %s \n", __FILE__, __LINE__, e.what());
-#endif
-                    std::cerr << e.what();
-                    nan_error = true;
-                }
-                // generate plot over line end
-
-                // make parameter
-                MakePlotOverLine( tmp_obj, resolution, tmp_values, tmp_mask, tmp_axis );
-            } // make plot over line
+    const int resolution = pol_property.m_sampling_size;
+    bool nan_error = false;
 
 #ifndef CPU_VER
-            if ( mpi_size > 1 ) {
-                jc.jobCollect_pol( tmp_axis, tmp_mask, tmp_values, &nan_error, &wid );
-            }
+    JobCollector jc;
 #endif
 
-            // send plot over line
-            if ( rank == 0 )
-            {
-                SendPlotOverLineServerMessage( tmp_values, tmp_mask, tmp_axis, resolution, nan_error, pts, servMes );
-            } // send plot over line
+    vismodule::ValueArray<float> values_on_line;
+    vismodule::ValueArray<float> x_axis;
+    vismodule::ValueArray<bool>  mask;
 
-            delete tmp_obj;
-        } // end of while(DispatchNext)
-    } // server_mode == jpv::ServerMode::CS
-    else // server_mode == jpv::ServerMode::IS
+    values_on_line.allocate( resolution );
+    x_axis.allocate( resolution );
+    mask.allocate( resolution );
+
+    jd.initialize( 
+        particle_property.m_time_step,
+        particle_property.m_time_step,
+        mvpl.m_total_number_subvolumes,
+        mvpl.m_total_min_subvolume_coord,
+        mvpl.m_total_max_subvolume_coord,
+        particle_property.m_latency_threshold,
+        particle_property.m_job_id_pack_size
+    );
+
+    while ( jd.dispatchNext( wid, &st, &vl ) )
     {
         vismodule::KVSMLObjectPlotOverLine* tmp_obj = new vismodule::KVSMLObjectPlotOverLine;
         std::vector<float> tmp_values( resolution, 0 );
         std::vector<int>   tmp_mask( resolution, 0 );
         std::vector<float> tmp_axis( resolution, 0 );
-
-        ParticleMonitor pm;
-        pm.check();
-
-        if( pm.stepExisted() )
+    
+        // make plot over line
+        if ( ( rank > 0 ) || ( mpi_size == 1 ) )
         {
-            pm.setTimeStep_pol( pm.particleStatusFile().getLatestTimeStep() );
-        }
-        else
-        {
-            pm.setTimeStep_pol(0);
-        }
+            int xvl, fidx;
+            fidx = mvpl.getFileIndex( vl, &xvl );
+            MultiVolumeProperty& mvp = mvpl.m_list[fidx];
+            mvp.setFilePath( particle_property.filepath, st, xvl );
         
-        // get plot over line
-        pm.readPlotOverLineFile();
-        pm.getPlotOverLine( tmp_obj );
+            // generate plot over line start
+            try
+            {
+                vismodule::VolumeObjectBase* volume = nullptr;
+                PlotOverLineGenerator pol_generator;
 
-        // make parameter
-        MakePlotOverLine( tmp_obj, resolution, tmp_values, tmp_mask, tmp_axis );
+                if ( mvp.m_file_type == 1 || mvp.m_file_type == 2 ) // filetype: gathered subvolume or gathered timestep
+                {
+                }
+#ifdef EXTEND_FILE_FORMAT
+                else if ( mvp.m_file_type == 3 || mvp.m_file_type == 4 )
+                {
+                    generate_volume( particle_property, mvp, st, xvl, volume );
+                }
+#endif
+                else // filetype: kvsml
+                {
+                    generate_volume( particle_property, mvp, st, volume );
+                }
 
-        // send plot over line
-        SendPlotOverLineServerMessage( tmp_values, tmp_mask, tmp_axis, resolution, nan_error, pts, servMes );
+                std::unique_ptr<std::unique_ptr<Type[]>[]> values;
+                int nvariables = 0;
+                int ncoords = 0;
+                vismodule::VolumeObjectBase::VolumeType voltype = volume->volumeType();                    
+
+                if( voltype == vismodule::VolumeObjectBase::VolumeType::Unstructured )
+                {
+                    domain_parameters_unstruct dom;
+                    std::unique_ptr<float[]> coordinates;
+                    std::unique_ptr<unsigned int[]> connections;
+                    int ncells = 0;
+                    vismodule::VolumeObjectBase::CellType celltype;
+
+                    store_volume_in_variables_array_unstruct( volume, dom, values, nvariables, coordinates, ncoords, connections, ncells, celltype );
+
+                    std::vector<Type*> raw_pointers_vector( nvariables );
+                    for ( size_t i = 0; i < nvariables; ++i )
+                    {
+                        raw_pointers_vector[i] = values.get()[i].get();
+                    }
+
+                    // generate particle
+                    pol_generator.GeneratePOLUnstruct(
+                        pol_property,
+                        raw_pointers_vector.data(),
+                        nvariables,
+                        coordinates.get(),
+                        ncoords,
+                        connections.get(),
+                        ncells,
+                        celltype,
+                        tmp_obj
+                    );
+                }
+                else // ( voltype == vismodule::VolumeObjectBase::VolumeType::Structured )
+                {
+                    domain_parameters_struct dom; 
+
+                    store_volume_in_variables_array_struct( volume, dom, values, nvariables, ncoords );
+
+                    std::vector<Type*> raw_pointers_vector( nvariables );
+                    for ( size_t i = 0; i < nvariables; ++i )
+                    {
+                        raw_pointers_vector[i] = values.get()[i].get();
+                    }                        
+
+                    // generate particle
+                    pol_generator.GeneratePOLStruct(
+                        pol_property,
+                        dom,
+                        raw_pointers_vector.data(),
+                        nvariables,
+                        tmp_obj
+                    );
+                }
+
+                delete volume;
+            }
+            catch ( const std::runtime_error& e )
+            {
+#ifdef _DEBUG // debug by @hira
+                printf("[Exception] %s[%d] :: %s \n", __FILE__, __LINE__, e.what());
+#endif
+                std::cerr << e.what();
+                nan_error = true;
+            }
+            // generate plot over line end
+
+            // store the value of tmp_obj in a variable array for jobCollect.
+            for( size_t i = 0; i < resolution; i++ )
+            { 
+                tmp_axis[i] = tmp_obj->x_axis()[i];
+                if ( tmp_obj->mask()[i] )
+                {
+                    tmp_mask[i]   = 1;
+                    tmp_values[i] = tmp_obj->values_on_line()[i];
+                }
+            }
+        } // make plot over line
+
+#ifndef CPU_VER
+        if ( mpi_size > 1 ) {
+            jc.jobCollect_pol( tmp_axis, tmp_mask, tmp_values, &nan_error, &wid );
+        }
+#endif
+
+        // aggregate the variable array.
+        for( size_t i = 0; i < resolution; i++ )
+        { 
+            x_axis[i] = tmp_axis[i];
+            if ( tmp_mask[i] )
+            {
+                mask[i]           = 1;
+                values_on_line[i] = tmp_values[i];
+            }
+        }
 
         delete tmp_obj;
-    } // server_mode == jpv::ServerMode::IS
+    } // end of while(DispatchNext)
 
     nan_error = false;
+
+    return std::make_unique<vismodule::KVSMLObjectPlotOverLine>( values_on_line, x_axis, mask );
 }
 
-void MakePlotOverLine(
-    const vismodule::KVSMLObjectPlotOverLine* pol_object,
-    const int resolution,
-    std::vector<float>& values_on_line,
-    std::vector<int>& mask,
-    std::vector<float>& x_axis
+#if 0 // 一旦保留
+std::unique_ptr<vismodule::KVSMLObjectPlotOverLine> GeneratePOLIS(
+    ParticleProperty& particle_property,
+    const PlotOverLineProperty& pol_property,
+    MultiVolumePropertyList& mvpl
 )
 {
+    bool nan_error = false;
+    const int resolution = pol_property.m_sampling_size;
+
+    vismodule::KVSMLObjectPlotOverLine* tmp_obj = new vismodule::KVSMLObjectPlotOverLine;
+    std::vector<float> values_on_line( resolution, 0 );
+    std::vector<int>   mask( resolution, 0 );
+    std::vector<float> x_axis( resolution, 0 );
+
+    ParticleMonitor pm;
+    pm.check();
+
+    if( pm.stepExisted() )
+    {
+        pm.setTimeStep_pol( pm.particleStatusFile().getLatestTimeStep() );
+    }
+    else
+    {
+        pm.setTimeStep_pol(0);
+    }
+    
+    // get plot over line
+    pm.readPlotOverLineFile();
+    pm.getPlotOverLine( tmp_obj );
+
+    // make parameter
     for( size_t i = 0; i < resolution; i++ )
     { 
-        x_axis[i] = pol_object->x_axis()[i];
-        if (pol_object->mask()[i])
+        x_axis[i] = tmp_obj->x_axis()[i];
+        if ( tmp_obj->mask()[i] )
         {
             mask[i]           = 1;
-            values_on_line[i] = pol_object->values_on_line()[i];
+            values_on_line[i] = tmp_obj->values_on_line()[i];
         }
     }
+
+    nan_error = false;
+    delete tmp_obj;
 }
-
-void SendPlotOverLineServerMessage(
-    const std::vector<float>& values_on_line,
-    const std::vector<int>& mask,
-    const std::vector<float>& x_axis,
-    const int resolution,
-    const bool& nan_error,
-    jpv::ParticleTransferServer pts,
-    jpv::ParticleTransferServerMessage& servMes
-)
-{
-    servMes.m_flag_send_bins = 3;
-    servMes.m_resolution     = resolution;
-    servMes.m_xAxis.resize( resolution );
-    servMes.m_mask.resize( resolution );
-    servMes.m_line_values.resize( resolution );
-
-    for ( int i = 0; i < resolution; ++i )
-    {
-        servMes.m_xAxis[i]       = x_axis[i];   
-        servMes.m_line_values[i] = values_on_line[i];   
-        servMes.m_mask[i]        = mask[i];
-    }
-
-    // TEST START 2015.1.14
-    if ( nan_error )
-    {
-        strncpy( servMes.m_header, "JPTP /1.0 899 OK\r\n", 18 );
-        servMes.m_server_status   = 1;
-        servMes.m_number_particle = 0;
-        servMes.m_number_glyph    = 0;
-        servMes.m_flag_send_bins  = 1;
-        std::cout << "!!!!!!!!!!!! Send serverStatus = 1 " << std::endl;
-    }
-
-    // send histgram server message
-    std::cout << "INFO: send histgram server message" << std::endl;            
-    servMes.m_message_size = servMes.byteSize();
-    servMes.show();
-    pts.sendMessage( servMes );
-
-    // TEST START 2015.1.14
-    servMes.m_server_status = 0;
-    // TEST END 2015.1.14
-}
+#endif
 
 #if 0
 

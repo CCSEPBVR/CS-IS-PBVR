@@ -2,25 +2,12 @@
 #define PLOT_OVER_LINE
 #include <vismodule/Matrix>
 #include <vismodule/Vector>
-#include <vismodule/Math>
-#include <vismodule/UnstructuredVolumeObject>
+#include <vismodule/TransferFunctionSynthesizer>
 #include <vismodule/StructuredVolumeObject>
-//#include "StructuredVolumeObject.h"
-#include <vismodule/CellByCellParticleGenerator>
-#ifndef CPU_VER
-#include <mpi.h>
-#endif
-
-#include "TransferFunctionSynthesizer.h"
-#include "float.h"
 #include <vismodule/UnstructuredVolumeObject>
-#include "CellBase.h"
-#include <vismodule/TrilinearInterpolator>
-#include "TetrahedralCell.h"
-#include <vismodule/Argument>
-
-#include <iomanip>
+#include <vismodule/CellByCellParticleGenerator>
 #include <vismodule/PlotOverLineProperty>
+
 namespace vismodule
 {
 //    using Vec3 = Vector3<float>;
@@ -218,7 +205,7 @@ public:
         unsigned int* connections,
         int ncells,
         const vismodule::VolumeObjectBase::CellType& celltype, 
-        const Argument& param
+        const PlotOverLineProperty& pol_property
     );
 
     //struct 
@@ -226,7 +213,7 @@ public:
         domain_parameters_struct dom,
         float** values,
         int nvariables, 
-        const Argument& param
+        const PlotOverLineProperty& pol_property
     );
 
 
