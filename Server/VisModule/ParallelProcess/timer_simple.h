@@ -51,7 +51,7 @@ inline double GetTime()
     return static_cast<double>( time * 1000 / CLOCKS_PER_SEC );
 #else
     struct timeval tv;
-    gettimeofday( &tv, NULL );
+    gettimeofday( &tv, nullptr );
     // return msec
     return ( double )( tv.tv_sec ) * 1000 + ( double )( tv.tv_usec ) * 1e-3;
 #endif

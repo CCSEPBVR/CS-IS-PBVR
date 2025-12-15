@@ -235,7 +235,7 @@ $(OUTDIR)/./Visualization/Object/ImageObject.o \
 $(OUTDIR)/./Visualization/Object/LineObject.o \
 $(OUTDIR)/./Visualization/Object/ObjectBase.o \
 $(OUTDIR)/./Visualization/Object/PointObject.o \
-$(OUTDIR)/./Visualization/Object/CS_PointObjectGenerator.o \
+$(OUTDIR)/./Visualization/Object/PointObjectGenerator.o \
 $(OUTDIR)/./Visualization/Object/PlotOverLineGenerator.o \
 $(OUTDIR)/./Visualization/Object/PolygonObject.o \
 $(OUTDIR)/./Visualization/Object/TableObject.o \
@@ -245,7 +245,6 @@ $(OUTDIR)/./Visualization/Object/UnstructuredVolumeObject.o \
 $(OUTDIR)/./Visualization/Pipeline/ObjectImporter.o \
 $(OUTDIR)/./Visualization/Pipeline/PipelineModule.o \
 $(OUTDIR)/./Visualization/Property/MultiVolumeProperty.o \
-$(OUTDIR)/./Visualization/Property/PlotOverLineProperty.o \
 $(OUTDIR)/./Visualization/Property/TransferFunctionProperty.o \
 $(OUTDIR)/./Visualization/Renderer/ParticleBuffer.o \
 $(OUTDIR)/./Visualization/Renderer/RendererBase.o \
@@ -261,11 +260,8 @@ $(OUTDIR)/./Visualization/Viewer/RendererManager.o \
 $(OUTDIR)/./Visualization/Viewer/Trackball.o \
 $(OUTDIR)/./Visualization/Viewer/Xform.o \
 $(OUTDIR)/./Visualization/Viewer/XformControl.o \
-$(OUTDIR)/./DaemonAndSampler/Daemon/ExtendedTransferFunctionMessage.o \
 $(OUTDIR)/./DaemonAndSampler/Daemon/GlyphFile.o \
-$(OUTDIR)/./DaemonAndSampler/Daemon/ParamInfo.o \
 $(OUTDIR)/./DaemonAndSampler/Daemon/ParameterFileReader.o \
-$(OUTDIR)/./DaemonAndSampler/Daemon/ParameterFileWriter.o \
 $(OUTDIR)/./DaemonAndSampler/Daemon/ParticleHistoryFile.o \
 $(OUTDIR)/./DaemonAndSampler/Daemon/ParticleFile.o \
 $(OUTDIR)/./DaemonAndSampler/Daemon/ParticleStatusFile.o \
@@ -273,7 +269,6 @@ $(OUTDIR)/./DaemonAndSampler/Daemon/PlotOverLineFile.o \
 $(OUTDIR)/./DaemonAndSampler/Daemon/ParticleMonitor.o \
 $(OUTDIR)/./DaemonAndSampler/Daemon/SetDefaultTransferFunction.o \
 $(OUTDIR)/./DaemonAndSampler/Daemon/Timer.o \
-$(OUTDIR)/./Visualization/Object/PointObjectCreator.o \
 $(OUTDIR)/./DaemonAndSampler/Daemon/GenerateGlyph.o \
 $(OUTDIR)/./DaemonAndSampler/Daemon/GenerateParticle.o \
 $(OUTDIR)/./DaemonAndSampler/Daemon/GeneratePOL.o

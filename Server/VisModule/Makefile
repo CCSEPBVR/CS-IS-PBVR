@@ -19,6 +19,8 @@ ifdef KVS_DIR
 include $(KVS_DIR)/kvs.conf
 ifeq "$(KVS_SUPPORT_EXTENDED_FILE_FORMAT)" "1"
 INCLUDE_PATH += -I$(KVS_DIR)/include -I$(VTK_INCLUDE_PATH)
+else
+INCLUDE_PATH += -I$(KVS_DIR)/include
 endif
 endif
 
