@@ -14,6 +14,7 @@
 #include <vismodule/NameListFile>
 #include <vismodule/ParticleProperty>
 #include <vismodule/GlyphProperty>
+#include <vismodule/PlotOverLineProperty>
 
 class ParameterFileReader
 {
@@ -23,9 +24,9 @@ private:
     void set_default_parameter();
 
 public:
-    void setParticleParameter( ParticleProperty& param );
-    void setGlyphParameter( GlyphProperty& param );
-    void setPlotOverLineParameter( ParticleProperty& param );
+    void setParticleParameter( ParticleProperty& particle_property );
+    void setGlyphParameter( GlyphProperty& glyph_property );
+    void setPlotOverLineParameter( PlotOverLineProperty& pol_property );
     void readParticleParameterFile( const char* fname );
     void readGlyphParameterFile( const char* fname );
     void readPlotOverLineParameterFile( const char* fname );
