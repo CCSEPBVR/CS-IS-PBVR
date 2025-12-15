@@ -64,6 +64,10 @@ std::unique_ptr<vismodule::KVSMLObjectPlotOverLine> GeneratePOLCS(
     x_axis.allocate( resolution );
     mask.allocate( resolution );
 
+    values_on_line.fill( 0x00 );
+    x_axis.fill( 0x00 );
+    mask.fill( 0x00 );
+
     jd.initialize( 
         particle_property.m_time_step,
         particle_property.m_time_step,
