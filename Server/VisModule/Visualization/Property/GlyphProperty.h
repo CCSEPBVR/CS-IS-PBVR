@@ -3,8 +3,6 @@
 
 #include <string>
 #include <vector>
-#include <map>
-#include <vismodule/Serializer>
 
 // CSとISでglyphのsize minmaxの集計方法が異なる
 // 定義する場所は変更予定
