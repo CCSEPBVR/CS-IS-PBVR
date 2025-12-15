@@ -23,7 +23,7 @@
 // ウィジェット群(A~Z)
 // ABCDEFGHIJKLMNOPQRSTUVWXYZ
 #include "AnimationControl.h"
-#include "Communication.h"
+#include "CommunicationWIP.h"
 #include "GlyphEditorWIP.h"
 #include "ObjectEditorWIP.h"
 #include "PlotOverLineEditorWIP.h"
@@ -95,7 +95,7 @@ private:
     AnimationControl* m_animation_control = nullptr;
 
     QAction* m_communication_action = nullptr;
-    Communication* m_communication = nullptr;                       // NOTE:通信関係有
+    CommunicationWIP* m_communication = nullptr;                       // NOTE:通信関係有
 
     QAction* m_glyph_editor_action = nullptr;
     GlyphEditorWIP* m_glyph_editor_wip = nullptr;                          // NOTE:通信関係有

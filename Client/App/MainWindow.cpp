@@ -19,7 +19,7 @@ MainWindow::MainWindow( kvs::qt::Application& app, QWidget *parent )
     , m_time_step_control_tool_bar( new TimeStepControlToolBarWIP( m_web_sockets, this ) )
     , m_total_particles_tool_bar( new TotalParticlesToolBar( this ) )
     , m_animation_control( new AnimationControl( m_screen, this ) )
-    , m_communication( new Communication( m_screen, m_web_sockets, m_viz_mode, this ) )    
+    , m_communication( new CommunicationWIP( m_web_sockets, m_viz_mode, m_screen, this ) )
     , m_glyph_editor_wip( new GlyphEditorWIP( m_web_sockets, this ) )
     , m_object_editor( new ObjectEditorWIP( m_web_sockets, m_viz_mode, m_screen, this ) )
     , m_plot_over_line_editor_wip( new PlotOverLineEditorWIP( m_web_sockets, m_screen, this ) )
@@ -116,8 +116,8 @@ void MainWindow::toolBarInitialize()
     // ツールバーの配置
     if( m_time_step_control_tool_bar )
     {
-        connect( m_communication, &Communication::receiveTimeStepControlParameter, m_time_step_control_tool_bar, &TimeStepControlToolBarWIP::onReceiveTimeStepControlParameter );
-        connect( m_time_step_control_tool_bar, &TimeStepControlToolBarWIP::requestDataAt, m_object_editor, &ObjectEditorWIP::showAtTimeStep );
+        connect( m_communication, &CommunicationWIP::receiveTimeStepControlParameter, m_time_step_control_tool_bar, &TimeStepControlToolBarWIP::onReceiveTimeStepControlParameter );
+        connect( m_time_step_control_tool_bar, &TimeStepControlToolBarWIP::requestDataAt, m_object_editor, &ObjectEditorWIP::onRequestDataAt );
         connect( m_time_step_control_tool_bar, &TimeStepControlToolBarWIP::dataRequestCompleted, m_play_back_control_tool_bar, &PlayBackControlToolBarWIP::onDataRequestCompleted );        
         connect( this, &MainWindow::load, m_time_step_control_tool_bar , &TimeStepControlToolBarWIP::loadParameter );
         connect( this, &MainWindow::save, m_time_step_control_tool_bar , &TimeStepControlToolBarWIP::saveParameter );
@@ -191,23 +191,23 @@ void MainWindow::communicationInitialize()
     {
         m_communication_action = new QAction( tr( "Communication" ), this );
 
-        connect( this, &MainWindow::load, m_communication , &Communication::loadParameter );
-        connect( this, &MainWindow::save, m_communication , &Communication::saveParameter );
+        connect( this, &MainWindow::load, m_communication , &CommunicationWIP::loadParameter );
+        connect( this, &MainWindow::save, m_communication , &CommunicationWIP::saveParameter );
 
-        connect( m_communication, &Communication::updateStatusBarMessage, this, &MainWindow::updateStatusBarMessage );
-        connect( m_communication, &Communication::updateServerState, this, &MainWindow::onUpdateServerState );
-        connect( m_communication, &Communication::updateOperatorState, m_time_step_control_tool_bar, &TimeStepControlToolBarWIP::onOperatorStateUpdate );
-        connect( m_communication, &Communication::updateOperatorState, m_play_back_control_tool_bar, &PlayBackControlToolBarWIP::onOperatorStateUpdate );
-        connect( m_communication, &Communication::updateOperatorState, m_glyph_editor_wip, &GlyphEditorWIP::updateOperatorState );
-        connect( m_communication, &Communication::updateOperatorState, m_object_editor, &ObjectEditorWIP::updateOperatorState );        
-        connect( m_communication, &Communication::updateOperatorState, m_plot_over_line_editor_wip, &PlotOverLineEditorWIP::updateOperatorState );
+        connect( m_communication, &CommunicationWIP::updateStatusBarMessage, this, &MainWindow::updateStatusBarMessage );
+        connect( m_communication, &CommunicationWIP::updateServerState, this, &MainWindow::onUpdateServerState );
+        connect( m_communication, &CommunicationWIP::updateOperatorState, m_time_step_control_tool_bar, &TimeStepControlToolBarWIP::onOperatorStateUpdate );
+        connect( m_communication, &CommunicationWIP::updateOperatorState, m_play_back_control_tool_bar, &PlayBackControlToolBarWIP::onOperatorStateUpdate );
+        connect( m_communication, &CommunicationWIP::updateOperatorState, m_glyph_editor_wip, &GlyphEditorWIP::updateOperatorState );
+        connect( m_communication, &CommunicationWIP::updateOperatorState, m_object_editor, &ObjectEditorWIP::updateOperatorState );
+        connect( m_communication, &CommunicationWIP::updateOperatorState, m_plot_over_line_editor_wip, &PlotOverLineEditorWIP::updateOperatorState );
 
-        connect( m_communication, &Communication::updateOperatorState, m_transfer_function_editor_wip, &TransferFunctionEditorWIP::updateOperatorState );
-        connect( m_communication, &Communication::updateTransferFunctionFromServer, m_transfer_function_editor_wip, &TransferFunctionEditorWIP::updateTransferFunctionFromServer );
+        connect( m_communication, &CommunicationWIP::updateOperatorState, m_transfer_function_editor_wip, &TransferFunctionEditorWIP::updateOperatorState );
+        connect( m_communication, &CommunicationWIP::receiveTransferFunctionParameter, m_transfer_function_editor_wip, &TransferFunctionEditorWIP::onReceiveTransferFunctionParameter );
 
-        connect( m_communication, &Communication::unpack            , m_object_editor, &ObjectEditorWIP::unpack );
-        connect( m_communication, &Communication::addObjectToModel  , m_object_editor, &ObjectEditorWIP::addObjectToModel );
-        connect( m_communication, &Communication::objectInfoUpdate  , m_object_editor, &ObjectEditorWIP::objectInfoUpdate );
+        connect( m_communication, &CommunicationWIP::unpack                     , m_object_editor, &ObjectEditorWIP::unpack );
+        connect( m_communication, &CommunicationWIP::addObjectToModel           , m_object_editor, &ObjectEditorWIP::addObjectToModel );
+        connect( m_communication, &CommunicationWIP::receiveObjectInfoParameter , m_object_editor, &ObjectEditorWIP::onReceiveObjectInfoParameter );
 
         connect( m_communication_action, &QAction::triggered, this, &MainWindow::onCommunication );
 
@@ -238,7 +238,7 @@ void MainWindow::glyphEditorInitialize()
 
         connect( m_glyph_editor_action, &QAction::triggered, this, &MainWindow::onGlyphEditor );
 
-        connect( m_communication, &Communication::receiveGlyphParameter, m_glyph_editor_wip, &GlyphEditorWIP::receiveGlyphParameter );
+        connect( m_communication, &CommunicationWIP::receiveGlyphParameter, m_glyph_editor_wip, &GlyphEditorWIP::onReceiveGlyphParameter );
 
         m_glyph_editor_action->setEnabled( false ); // サーバ接続前は無効
 
@@ -257,7 +257,7 @@ void MainWindow::objectEditorInitialize()
         connect( m_object_editor, &ObjectEditorWIP::updateFocus             , m_plot_over_line_editor_wip, &PlotOverLineEditorWIP::updateFocus );
         connect( m_object_editor, &ObjectEditorWIP::updateTranslation       , m_plot_over_line_editor_wip, &PlotOverLineEditorWIP::updateTranslation );
         connect( m_object_editor, &ObjectEditorWIP::shading                 , m_shading_control, &ShadingControl::shading );
-        connect( m_object_editor, &ObjectEditorWIP::done                    , m_time_step_control_tool_bar, &TimeStepControlToolBarWIP::onDataRequestCompleted );
+        connect( m_object_editor, &ObjectEditorWIP::dataRequestCompleted    , m_time_step_control_tool_bar, &TimeStepControlToolBarWIP::onDataRequestCompleted );
         // connect( m_object_editor, &ObjectEditorWIP::noItems                         , m_time_step_control_tool_bar, &TimeStepControlToolBar::noItems );
         // connect( m_object_editor, &ObjectEditorWIP::updateInSituObjectMinMaxTimeStep, m_time_step_control_tool_bar, &TimeStepControlToolBar::updateInSituObjectMinMaxTimeStep );
         connect( this, &MainWindow::load, m_object_editor, &ObjectEditorWIP::loadParameter );
@@ -287,7 +287,7 @@ void MainWindow::plotOverLineEditorInitialize()
 
         connect( m_plot_over_line_editor_action, &QAction::triggered, this, &MainWindow::onPlotOverLineEditor );
 
-        connect( m_communication, &Communication::receivePlotOverLineParameter, m_plot_over_line_editor_wip, &PlotOverLineEditorWIP::receivePlotOverLineParameter );
+        connect( m_communication, &CommunicationWIP::receivePlotOverLineParameter, m_plot_over_line_editor_wip, &PlotOverLineEditorWIP::onReceivePlotOverLineParameter );
 
         m_plot_over_line_editor_action->setEnabled( false ); // サーバ接続前は無効
 

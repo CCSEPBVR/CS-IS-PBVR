@@ -129,23 +129,23 @@ void GlyphEditorWIP::updateNumberOfVector( const int numberOfVector )
     ui->colorDataNumberOfVariablesSpinBox ->setMaximum( numberOfVector );
 }
 
-void GlyphEditorWIP::receiveGlyphParameter( const QJsonObject& glyphParameter )
+void GlyphEditorWIP::onReceiveGlyphParameter( const QJsonObject& glyphParameter )
 {
     // const QJsonObject glyphParameter = dataArray.first().toObject();
 
     // Type
-    ui->typeComboBox->setCurrentIndex( glyphParameter.value( "Type" ).toInt() );
+    ui->typeComboBox->setCurrentIndex( glyphParameter.value( QString::fromUtf8( Protocol::Key::Type ) ).toInt() );
 
     // ScaleFactor
-    ui->scaleFactorDoubleSpinBox->setValue( glyphParameter.value( "ScaleFactor" ).toDouble() );
+    ui->scaleFactorDoubleSpinBox->setValue( glyphParameter.value( QString::fromUtf8( Protocol::Key::ScaleFactor ) ).toDouble() );
 
     // Direction
-    ui->direction1ComboBox->setCurrentIndex( glyphParameter.value( "Direction1" ).toInt() );
-    ui->direction2ComboBox->setCurrentIndex( glyphParameter.value( "Direction2" ).toInt() );
-    ui->direction3ComboBox->setCurrentIndex( glyphParameter.value( "Direction3" ).toInt() );
+    ui->direction1ComboBox->setCurrentIndex( glyphParameter.value( QString::fromUtf8( Protocol::Key::Direction1 ) ).toInt() );
+    ui->direction2ComboBox->setCurrentIndex( glyphParameter.value( QString::fromUtf8( Protocol::Key::Direction2 ) ).toInt() );
+    ui->direction3ComboBox->setCurrentIndex( glyphParameter.value( QString::fromUtf8( Protocol::Key::Direction3 ) ).toInt() );
 
     // Size Mode
-    GlyphParameter::DataMode sizeDataMode = static_cast<GlyphParameter::DataMode>( glyphParameter.value( "SizeMode" ).toInt() );
+    GlyphParameter::DataMode sizeDataMode = static_cast<GlyphParameter::DataMode>( glyphParameter.value( QString::fromUtf8( Protocol::Key::SizeMode ) ).toInt() );
 
     if( sizeDataMode == GlyphParameter::DataMode::Constant )
     {
@@ -156,7 +156,7 @@ void GlyphEditorWIP::receiveGlyphParameter( const QJsonObject& glyphParameter )
         ui->sizeVariableArrayRadioButton->setChecked( true );
     }
 
-    const auto sizeVariables = glyphParameter.value( "SizeVariables" ).toArray();
+    const auto sizeVariables = glyphParameter.value( QString::fromUtf8( Protocol::Key::SizeVariables ) ).toArray();
     ui->sizeNumberOfVariablesSpinBox->setValue( sizeVariables.size() );
     int sizeComboIndex = 0;
     for( int i = 0; i < ui->sizeVariableGridLayout->count(); ++i )
@@ -175,7 +175,7 @@ void GlyphEditorWIP::receiveGlyphParameter( const QJsonObject& glyphParameter )
         }
     }
 
-    GlyphParameter::DistributionMode distributionMode = static_cast<GlyphParameter::DistributionMode>( glyphParameter.value( "DistributionMode" ).toInt() );
+    GlyphParameter::DistributionMode distributionMode = static_cast<GlyphParameter::DistributionMode>( glyphParameter.value( QString::fromUtf8( Protocol::Key::DistributionMode ) ).toInt() );
     if( distributionMode == GlyphParameter::DistributionMode::UniformDistribution  )
         ui->uniformRadioButton->setChecked( true );
     else if( distributionMode == GlyphParameter::DistributionMode::AllPoints )
@@ -183,9 +183,9 @@ void GlyphEditorWIP::receiveGlyphParameter( const QJsonObject& glyphParameter )
     else if( distributionMode == GlyphParameter::EveryNthPoints )
         ui->everyNthPointRadioButton->setChecked( true );
 
-    ui->numberOfSamplePointsSpinBox ->setValue( glyphParameter.value( "NumberOfSamplePoints" ).toInt() );
-    ui->seedSpinBox                 ->setValue( glyphParameter.value( "Seed" ).toInt() );
-    ui->strideSpinBox               ->setValue( glyphParameter.value( "Stride" ).toInt() );
+    ui->numberOfSamplePointsSpinBox ->setValue( glyphParameter.value( QString::fromUtf8( Protocol::Key::NumberOfSamplePoints ) ).toInt() );
+    ui->seedSpinBox                 ->setValue( glyphParameter.value( QString::fromUtf8( Protocol::Key::Seed ) ).toInt() );
+    ui->strideSpinBox               ->setValue( glyphParameter.value( QString::fromUtf8( Protocol::Key::Stride ) ).toInt() );
 
     // ColorMap array
     const QJsonArray colorMapJson = glyphParameter.value( "ColorMap" ).toArray();
@@ -196,16 +196,16 @@ void GlyphEditorWIP::receiveGlyphParameter( const QJsonObject& glyphParameter )
     {
         const QJsonObject obj = c.toObject();
 
-        const int r = obj.value( "r" ).toInt();
-        const int g = obj.value( "g" ).toInt();
-        const int b = obj.value( "b" ).toInt();
+        const int r = obj.value( QString::fromUtf8( Protocol::Key::R ) ).toInt();
+        const int g = obj.value( QString::fromUtf8( Protocol::Key::G ) ).toInt();
+        const int b = obj.value( QString::fromUtf8( Protocol::Key::B ) ).toInt();
 
         colors.append( QColor( r, g, b ) );
     }
     ui->colorMap->setColors( colors );
 
     // Color Data Mode
-    GlyphParameter::DataMode colorDataMode = static_cast<GlyphParameter::DataMode>( glyphParameter.value( "ColorDataMode" ).toInt() );
+    GlyphParameter::DataMode colorDataMode = static_cast<GlyphParameter::DataMode>( glyphParameter.value( QString::fromUtf8( Protocol::Key::ColorDataMode ) ).toInt() );
 
     if( colorDataMode == GlyphParameter::DataMode::Constant )
     {
@@ -443,24 +443,24 @@ void GlyphEditorWIP::onApply()
 
     QJsonObject glyphParameter;
 
-    glyphParameter["event"]         = "GlyphParameter";
+    glyphParameter[QString::fromUtf8( Protocol::Key::Event )]         = QString::fromUtf8( Protocol::Events::GlyphParameter );
     // Type
-    glyphParameter["Type"]          = ui->typeComboBox->currentIndex();
+    glyphParameter[QString::fromUtf8( Protocol::Key::Type )]          = ui->typeComboBox->currentIndex();
 
     // ScaleFactor
-    glyphParameter["ScaleFactor"]   = ui->scaleFactorDoubleSpinBox->value();
+    glyphParameter[QString::fromUtf8( Protocol::Key::ScaleFactor )]   = ui->scaleFactorDoubleSpinBox->value();
 
     // Direction
-    glyphParameter["Direction1"]    = ui->direction1ComboBox->currentIndex();
-    glyphParameter["Direction2"]    = ui->direction2ComboBox->currentIndex();
-    glyphParameter["Direction3"]    = ui->direction3ComboBox->currentIndex();
+    glyphParameter[QString::fromUtf8( Protocol::Key::Direction1 )]    = ui->direction1ComboBox->currentIndex();
+    glyphParameter[QString::fromUtf8( Protocol::Key::Direction2 )]    = ui->direction2ComboBox->currentIndex();
+    glyphParameter[QString::fromUtf8( Protocol::Key::Direction3 )]    = ui->direction3ComboBox->currentIndex();
 
     // Size Mode
     GlyphParameter::DataMode sizeDataMode =
         ui->sizeConstantRadioButton->isChecked()
             ? GlyphParameter::DataMode::Constant
             : GlyphParameter::DataMode::VariableArray;
-    glyphParameter["SizeMode"]      = static_cast<int>(sizeDataMode);
+    glyphParameter[QString::fromUtf8( Protocol::Key::SizeMode )]      = static_cast<int>(sizeDataMode);
 
     // Size Variables
     QJsonArray sizeVariables;
@@ -472,7 +472,7 @@ void GlyphEditorWIP::onApply()
                 sizeVariables.append( cb->currentIndex() );
         }
     }
-    glyphParameter["SizeVariables"] = sizeVariables;
+    glyphParameter[QString::fromUtf8( Protocol::Key::SizeVariables )] = sizeVariables;
 
     // Distribution
     GlyphParameter::DistributionMode distributionMode;
@@ -483,10 +483,10 @@ void GlyphEditorWIP::onApply()
     else
         distributionMode = GlyphParameter::DistributionMode::EveryNthPoints;
 
-    glyphParameter["DistributionMode"]     = static_cast<int>( distributionMode );
-    glyphParameter["NumberOfSamplePoints"] = ui->numberOfSamplePointsSpinBox->value();
-    glyphParameter["Seed"]                 = ui->seedSpinBox->value();
-    glyphParameter["Stride"]               = ui->strideSpinBox->value();
+    glyphParameter[QString::fromUtf8( Protocol::Key::DistributionMode )]     = static_cast<int>( distributionMode );
+    glyphParameter[QString::fromUtf8( Protocol::Key::NumberOfSamplePoints )] = ui->numberOfSamplePointsSpinBox->value();
+    glyphParameter[QString::fromUtf8( Protocol::Key::Seed )]                 = ui->seedSpinBox->value();
+    glyphParameter[QString::fromUtf8( Protocol::Key::Stride )]               = ui->strideSpinBox->value();
 
     // Color Map
     QJsonArray colorMapArray;
@@ -494,19 +494,19 @@ void GlyphEditorWIP::onApply()
     for( const auto& rgb : map )
     {
         QJsonObject rgbObj;
-        rgbObj["r"] = static_cast<int>( rgb.r() );
-        rgbObj["g"] = static_cast<int>( rgb.g() );
-        rgbObj["b"] = static_cast<int>( rgb.b() );
+        rgbObj[QString::fromUtf8( Protocol::Key::R )] = static_cast<int>( rgb.r() );
+        rgbObj[QString::fromUtf8( Protocol::Key::G )] = static_cast<int>( rgb.g() );
+        rgbObj[QString::fromUtf8( Protocol::Key::B )] = static_cast<int>( rgb.b() );
         colorMapArray.append( rgbObj );
     }
-    glyphParameter["ColorMap"] = colorMapArray;
+    glyphParameter[QString::fromUtf8( Protocol::Key::ColorMap )] = colorMapArray;
 
     // Color Data Mode
     GlyphParameter::DataMode colorDataMode =
         ui->colorDataConstantRadioButton->isChecked()
             ? GlyphParameter::DataMode::Constant
             : GlyphParameter::DataMode::VariableArray;
-    glyphParameter["ColorDataMode"]     = static_cast<int>(colorDataMode);
+    glyphParameter[QString::fromUtf8( Protocol::Key::ColorDataMode )]     = static_cast<int>(colorDataMode);
 
     // Color Data Variables
     QJsonArray colorDataVariables;
@@ -518,7 +518,7 @@ void GlyphEditorWIP::onApply()
                 colorDataVariables.append( cb->currentIndex() );
         }
     }
-    glyphParameter["ColorDataVariables"]    = colorDataVariables;
+    glyphParameter[QString::fromUtf8( Protocol::Key::ColorDataVariables )]    = colorDataVariables;
 
     m_web_sockets->text()->sendTextMessage( QJsonDocument( glyphParameter ).toJson( QJsonDocument::Compact ) );
 }

@@ -584,13 +584,12 @@ void ObjectEditorWIP::unpack( const QByteArray& binary )
 }
 
 // FIXME:このメソッド名変な気がする。操作権を持つものからのapplyみたいな感じにしてください。
-void ObjectEditorWIP::objectInfoUpdate( const QJsonArray& resultMinObjectCoordsArray, const QJsonArray& resultMaxObjectCoordsArray, const QJsonArray& objects )
+void ObjectEditorWIP::onReceiveObjectInfoParameter( const QJsonArray& resultMinObjectCoordsArray, const QJsonArray& resultMaxObjectCoordsArray, const QJsonArray& objects )
 {
     for( const auto& v : objects )
     {
         auto o = v.toObject();
-        std::string uuid = o["uuid"].toString().toUtf8().constData();
-
+        std::string uuid = o[QString::fromUtf8( Protocol::Key::UUID )].toString().toUtf8().constData();
         for( int row = 0; row < m_model->rowCount(); ++row )
         {
             QStandardItem* nameItem         = m_model->item( row, 0 );
@@ -604,40 +603,38 @@ void ObjectEditorWIP::objectInfoUpdate( const QJsonArray& resultMinObjectCoordsA
 
             if( info.uuid == uuid )
             {
-                if( o.contains( "tmpIsDisplay" ) )          info.tmpIsDisplay           = o["tmpIsDisplay"].toBool();
-                if( o.contains( "isDisplay" ) )             info.isDisplay              = o["isDisplay"].toBool();
-                if( o.contains( "tmpIsKeepInitial" ) )      info.tmpIsKeepInitial       = o["tmpIsKeepInitial"].toBool();
-                if( o.contains( "isKeepInitial" ) )         info.isKeepInitial          = o["isKeepInitial"].toBool();
-                if( o.contains( "tmpIsKeepFinal" ) )        info.tmpIsKeepFinal         = o["tmpIsKeepFinal"].toBool();
-                if( o.contains( "isKeepFinal" ) )           info.isKeepFinal            = o["isKeepFinal"].toBool();
-                if( o.contains( "tmpIsFocus" ) )            info.tmpIsFocus             = o["tmpIsFocus"].toBool();
-                if( o.contains( "isFocus" ) )               info.isFocus                = o["isFocus"].toBool();
-                if( o.contains( "tmpParticleLimit" ) )      info.tmpParticleLimit       = o["tmpParticleLimit"].toInt();
-                if( o.contains( "particleLimit" ) )         info.particleLimit          = o["particleLimit"].toInt();
-                if( o.contains( "tmpExtraOpacityFactor" ) ) info.tmpExtraOpacityFactor  = static_cast<float>( o["tmpExtraOpacityFactor"].toDouble() );
-                if( o.contains( "extraOpacityFactor" ) )    info.extraOpacityFactor     = static_cast<float>( o["extraOpacityFactor"].toDouble() );
-                if( o.contains( "tmpCoordinateX" ) )        info.tmpCoordinateX         = o["tmpCoordinateX"].toString().toUtf8();
-                if( o.contains( "coordinateX" ) )           info.coordinateX            = o["coordinateX"].toString().toUtf8();
-                if( o.contains( "tmpCoordinateY" ) )        info.tmpCoordinateY         = o["tmpCoordinateY"].toString().toUtf8();
-                if( o.contains( "coordinateY" ) )           info.coordinateY            = o["coordinateY"].toString().toUtf8();
-                if( o.contains( "tmpCoordinateZ" ) )        info.tmpCoordinateZ         = o["tmpCoordinateZ"].toString().toUtf8();
-                if( o.contains( "coordinateZ" ) )           info.coordinateZ            = o["coordinateZ"].toString().toUtf8();
-                if( o.contains( "isExport" ) )              info.isExport               = o["isExport"].toBool();
-
-                if( o.contains( "tmpPolygonColor" ) && o["tmpPolygonColor"].isArray() && o["tmpPolygonColor"].toArray().size() == 3 )
+                if( o.contains( QString::fromUtf8( Protocol::Key::TmpIsDisplay ) ) )          info.tmpIsDisplay           = o[QString::fromUtf8( Protocol::Key::TmpIsDisplay )].toBool();
+                if( o.contains( QString::fromUtf8( Protocol::Key::IsDisplay ) ) )             info.isDisplay              = o[QString::fromUtf8( Protocol::Key::IsDisplay )].toBool();
+                if( o.contains( QString::fromUtf8( Protocol::Key::TmpIsKeepInitial ) ) )      info.tmpIsKeepInitial       = o[QString::fromUtf8( Protocol::Key::TmpIsKeepInitial )].toBool();
+                if( o.contains( QString::fromUtf8( Protocol::Key::IsKeepInitial ) ) )         info.isKeepInitial          = o[QString::fromUtf8( Protocol::Key::IsKeepInitial )].toBool();
+                if( o.contains( QString::fromUtf8( Protocol::Key::TmpIsKeepFinal ) ) )        info.tmpIsKeepFinal         = o[QString::fromUtf8( Protocol::Key::TmpIsKeepFinal )].toBool();
+                if( o.contains( QString::fromUtf8( Protocol::Key::IsKeepFinal ) ) )           info.isKeepFinal            = o[QString::fromUtf8( Protocol::Key::IsKeepFinal )].toBool();
+                if( o.contains( QString::fromUtf8( Protocol::Key::TmpIsFocus ) ) )            info.tmpIsFocus             = o[QString::fromUtf8( Protocol::Key::TmpIsFocus )].toBool();
+                if( o.contains( QString::fromUtf8( Protocol::Key::IsFocus ) ) )               info.isFocus                = o[QString::fromUtf8( Protocol::Key::IsFocus )].toBool();
+                if( o.contains( QString::fromUtf8( Protocol::Key::TmpParticleLimit ) ) )      info.tmpParticleLimit       = o[QString::fromUtf8( Protocol::Key::TmpParticleLimit )].toInt();
+                if( o.contains( QString::fromUtf8( Protocol::Key::ParticleLimit ) ) )         info.particleLimit          = o[QString::fromUtf8( Protocol::Key::ParticleLimit )].toInt();
+                if( o.contains( QString::fromUtf8( Protocol::Key::TmpExtraOpacityFactor ) ) ) info.tmpExtraOpacityFactor  = static_cast<float>( o[QString::fromUtf8( Protocol::Key::TmpExtraOpacityFactor )].toDouble() );
+                if( o.contains( QString::fromUtf8( Protocol::Key::ExtraOpacityFactor ) ) )    info.extraOpacityFactor     = static_cast<float>( o[QString::fromUtf8( Protocol::Key::ExtraOpacityFactor )].toDouble() );
+                if( o.contains( QString::fromUtf8( Protocol::Key::TmpCoordinateX ) ) )        info.tmpCoordinateX         = o[QString::fromUtf8( Protocol::Key::TmpCoordinateX )].toString().toUtf8();
+                if( o.contains( QString::fromUtf8( Protocol::Key::CoordinateX ) ) )           info.coordinateX            = o[QString::fromUtf8( Protocol::Key::CoordinateX )].toString().toUtf8();
+                if( o.contains( QString::fromUtf8( Protocol::Key::TmpCoordinateY ) ) )        info.tmpCoordinateY         = o[QString::fromUtf8( Protocol::Key::TmpCoordinateY )].toString().toUtf8();
+                if( o.contains( QString::fromUtf8( Protocol::Key::CoordinateY ) ) )           info.coordinateY            = o[QString::fromUtf8( Protocol::Key::CoordinateY )].toString().toUtf8();
+                if( o.contains( QString::fromUtf8( Protocol::Key::TmpCoordinateZ ) ) )        info.tmpCoordinateZ         = o[QString::fromUtf8( Protocol::Key::TmpCoordinateZ )].toString().toUtf8();
+                if( o.contains( QString::fromUtf8( Protocol::Key::CoordinateZ ) ) )           info.coordinateZ            = o[QString::fromUtf8( Protocol::Key::CoordinateZ )].toString().toUtf8();
+                if( o.contains( QString::fromUtf8( Protocol::Key::IsExport ) ) )              info.isExport               = o[QString::fromUtf8( Protocol::Key::IsExport )].toBool();
+                if( o.contains( QString::fromUtf8( Protocol::Key::TmpPolygonColor ) ) && o[QString::fromUtf8( Protocol::Key::TmpPolygonColor )].isArray() && o[QString::fromUtf8( Protocol::Key::TmpPolygonColor )].toArray().size() == 3 )
                 {
-                    auto arr = o["tmpPolygonColor"].toArray();
+                    auto arr = o[QString::fromUtf8( Protocol::Key::TmpPolygonColor )].toArray();
                     info.tmpPolygonColor = kvs::RGBColor( arr[0].toInt(), arr[1].toInt(), arr[2].toInt() );
                 }
 
-                if( o.contains("polygonColor") && o["polygonColor"].isArray() && o["polygonColor"].toArray().size() == 3 )
+                if( o.contains(QString::fromUtf8( Protocol::Key::PolygonColor )) && o[QString::fromUtf8( Protocol::Key::PolygonColor )].isArray() && o[QString::fromUtf8( Protocol::Key::PolygonColor )].toArray().size() == 3 )
                 {
-                    auto arr = o["polygonColor"].toArray();
+                    auto arr = o[QString::fromUtf8( Protocol::Key::PolygonColor )].toArray();
                     info.polygonColor = kvs::RGBColor( arr[0].toInt(), arr[1].toInt(), arr[2].toInt() );
                 }
-
-                if( o.contains( "tmpPolygonOpacity" ) )   info.tmpPolygonOpacity    = static_cast<float>( o["tmpPolygonOpacity"].toDouble() );
-                if( o.contains( "polygonOpacity" ) )      info.polygonOpacity       = static_cast<float>( o["polygonOpacity"].toDouble() );
+                if( o.contains( QString::fromUtf8( Protocol::Key::TmpPolygonOpacity ) ) )   info.tmpPolygonOpacity    = static_cast<float>( o[QString::fromUtf8( Protocol::Key::TmpPolygonOpacity )].toDouble() );
+                if( o.contains( QString::fromUtf8( Protocol::Key::PolygonOpacity ) ) )      info.polygonOpacity       = static_cast<float>( o[QString::fromUtf8( Protocol::Key::PolygonOpacity )].toDouble() );
 
                 // UI更新 FIXME:スレッド処理意識してないかもしれません。invoke
                 displayItem     ->setCheckState( info.tmpIsDisplay     ? Qt::Checked : Qt::Unchecked );
@@ -677,7 +674,7 @@ void ObjectEditorWIP::objectInfoUpdate( const QJsonArray& resultMinObjectCoordsA
     m_screen->update();
 }
 
-void ObjectEditorWIP::showAtTimeStep( int timeStep )
+void ObjectEditorWIP::onRequestDataAt( int timeStep )
 {
     switch( *m_viz_mode )
     {
@@ -704,8 +701,8 @@ void ObjectEditorWIP::showAtTimeStep( int timeStep )
         if( m_web_sockets->isConnected() )
         {
             m_web_sockets->text()->sendTextMessage( QJsonDocument( {
-                                                                  {"event", "showAtTimeStep"},
-                                                                  {"timeStep", timeStep},
+                                                                     { QString::fromUtf8( Protocol::Key::Event ), QString::fromUtf8( Protocol::Events::RequestDataAt ) } ,
+                                                                     { QString::fromUtf8( Protocol::Key::TimeStep ), timeStep },
                                                                   } ).toJson( QJsonDocument::Compact ) );
         }
         break;
@@ -1330,9 +1327,9 @@ void ObjectEditorWIP::onBrowse()
             QString uuid = QUuid::createUuid().toString( QUuid::WithoutBraces );
             m_web_sockets->text()->sendTextMessage(
                 QJsonDocument( QJsonObject{
-                                  { "event", "selectedFile" },
-                                  { "file", dlg.selectedFile() },
-                                  { "uuid", uuid }
+                                  { QString::fromUtf8( Protocol::Key::Event ), QString::fromUtf8( Protocol::Events::SelectedFile ) },
+                                  { QString::fromUtf8( Protocol::Key::File ), dlg.selectedFile() },
+                                  { QString::fromUtf8( Protocol::Key::UUID ), uuid }
                               } ).toJson( QJsonDocument::Compact )
                 );
         }
@@ -1541,18 +1538,18 @@ void ObjectEditorWIP::onApply()
         if( m_web_sockets->isConnected() ) // FIXME:以下でObjectInfoの内容をサーバ側へ送信していますが、必要なもの並びに更新があったもののみ送信するようにしてください。
         {
             QJsonObject root;
-            root["event"] = "objectInfoUpdate";
+            root[QString::fromUtf8( Protocol::Key::Event )] = QString::fromUtf8( Protocol::Events::ObjectInfoParameter );
             QJsonArray resultMinObjectCoordsArray;
             resultMinObjectCoordsArray.append( resultMinObjectCoords.x() );
             resultMinObjectCoordsArray.append( resultMinObjectCoords.y() );
             resultMinObjectCoordsArray.append( resultMinObjectCoords.z() );
-            root["resultMinObjectCoords"] = resultMinObjectCoordsArray;
+            root[QString::fromUtf8( Protocol::Key::ResultMinObjectCoords )] = resultMinObjectCoordsArray;
 
             QJsonArray resultMaxObjectCoordsArray;
             resultMaxObjectCoordsArray.append( resultMaxObjectCoords.x() );
             resultMaxObjectCoordsArray.append( resultMaxObjectCoords.y() );
             resultMaxObjectCoordsArray.append( resultMaxObjectCoords.z() );
-            root["resultMaxObjectCoords"] = resultMaxObjectCoordsArray;
+            root[QString::fromUtf8( Protocol::Key::ResultMaxObjectCoords )] = resultMaxObjectCoordsArray;
 
             QJsonArray objectInfoArray;
             for( int row = 0; row < m_model->rowCount(); row++ )
@@ -1566,84 +1563,84 @@ void ObjectEditorWIP::onApply()
 
                 QJsonObject jsonObjectInfo;
                 // Common Object Info
-                jsonObjectInfo["uuid"]                      = QString::fromUtf8( info.uuid );
-                jsonObjectInfo["tmpIsDisplay"]              = info.tmpIsDisplay;
-                jsonObjectInfo["isDisplay"]                 = info.isDisplay;
-                jsonObjectInfo["tmpIsKeepInitial"]          = info.tmpIsKeepInitial;
-                jsonObjectInfo["isKeepInitial"]             = info.isKeepInitial;
-                jsonObjectInfo["tmpIsKeepFinal"]            = info.tmpIsKeepFinal;
-                jsonObjectInfo["isKeepFinal"]               = info.isKeepFinal;
+                jsonObjectInfo[QString::fromUtf8( Protocol::Key::UUID )]                      = QString::fromUtf8( info.uuid );
+                jsonObjectInfo[QString::fromUtf8( Protocol::Key::TmpIsDisplay )]              = info.tmpIsDisplay;
+                jsonObjectInfo[QString::fromUtf8( Protocol::Key::IsDisplay )]                 = info.isDisplay;
+                jsonObjectInfo[QString::fromUtf8( Protocol::Key::TmpIsKeepInitial )]          = info.tmpIsKeepInitial;
+                jsonObjectInfo[QString::fromUtf8( Protocol::Key::IsKeepInitial )]             = info.isKeepInitial;
+                jsonObjectInfo[QString::fromUtf8( Protocol::Key::TmpIsKeepFinal )]            = info.tmpIsKeepFinal;
+                jsonObjectInfo[QString::fromUtf8( Protocol::Key::IsKeepFinal )]               = info.isKeepFinal;
 
-                jsonObjectInfo["name"]                      = QString::fromUtf8( info.name );
-                jsonObjectInfo["extension"]                 = QString::fromUtf8( info.extension );
-                jsonObjectInfo["directory"]                 = QString::fromUtf8( info.directory );
-                jsonObjectInfo["format"]                    = info.format;
+                jsonObjectInfo[QString::fromUtf8( Protocol::Key::Name )]                      = QString::fromUtf8( info.name );
+                jsonObjectInfo[QString::fromUtf8( Protocol::Key::Extension )]                 = QString::fromUtf8( info.extension );
+                jsonObjectInfo[QString::fromUtf8( Protocol::Key::Directory )]                 = QString::fromUtf8( info.directory );
+                jsonObjectInfo[QString::fromUtf8( Protocol::Key::Format )]                    = info.format;
                 QJsonArray timeStepArray;
                 timeStepArray.append( info.timeStep.first );
                 timeStepArray.append( info.timeStep.second );
-                jsonObjectInfo["timeStep"]                  = timeStepArray;
-                jsonObjectInfo["tmpIsFocus"]                = info.tmpIsFocus;
-                jsonObjectInfo["isFocus"]                   = info.isFocus;
+                jsonObjectInfo[QString::fromUtf8( Protocol::Key::TimeStep )]                  = timeStepArray;
+                jsonObjectInfo[QString::fromUtf8( Protocol::Key::TmpIsFocus )]                = info.tmpIsFocus;
+                jsonObjectInfo[QString::fromUtf8( Protocol::Key::IsFocus )]                   = info.isFocus;
                 QJsonArray minObjectCoordArray;
                 minObjectCoordArray.append( info.minObjectCoord.x() );
                 minObjectCoordArray.append( info.minObjectCoord.y() );
                 minObjectCoordArray.append( info.minObjectCoord.z() );
-                jsonObjectInfo["minObjectCoord"]            = minObjectCoordArray;
+                jsonObjectInfo[QString::fromUtf8( Protocol::Key::MinObjectCoord )]            = minObjectCoordArray;
                 QJsonArray maxObjectCoordArray;
                 maxObjectCoordArray.append( info.maxObjectCoord.x() );
                 maxObjectCoordArray.append( info.maxObjectCoord.y() );
                 maxObjectCoordArray.append( info.maxObjectCoord.z() );
-                jsonObjectInfo["maxObjectCoord"]            = maxObjectCoordArray;
+                jsonObjectInfo[QString::fromUtf8( Protocol::Key::MaxObjectCoord )]            = maxObjectCoordArray;
                 QJsonArray minExternalCoordArray;
                 minExternalCoordArray.append( info.minExternalCoord.x() );
                 minExternalCoordArray.append( info.minExternalCoord.y() );
                 minExternalCoordArray.append( info.minExternalCoord.z() );
-                jsonObjectInfo["minExternalCoord"]          = minExternalCoordArray;
+                jsonObjectInfo[QString::fromUtf8( Protocol::Key::MinExternalCoord )]          = minExternalCoordArray;
                 QJsonArray maxExternalCoordArray;
                 maxExternalCoordArray.append( info.maxExternalCoord.x() );
                 maxExternalCoordArray.append( info.maxExternalCoord.y() );
                 maxExternalCoordArray.append( info.maxExternalCoord.z() );
-                jsonObjectInfo["maxExternalCoord"]          = maxExternalCoordArray;
+                jsonObjectInfo[QString::fromUtf8( Protocol::Key::MaxExternalCoord )]          = maxExternalCoordArray;
 
                 // Common Server Point Object Info
-                jsonObjectInfo["tmpParticleLimit"]          = info.tmpParticleLimit;
-                jsonObjectInfo["particleLimit"]             = info.particleLimit;
-                jsonObjectInfo["tmpExtraOpacityFactor"]     = info.tmpExtraOpacityFactor;
-                jsonObjectInfo["extraOpacityFactor"]        = info.extraOpacityFactor;
+                jsonObjectInfo[QString::fromUtf8( Protocol::Key::TmpParticleLimit )]          = info.tmpParticleLimit;
+                jsonObjectInfo[QString::fromUtf8( Protocol::Key::ParticleLimit )]             = info.particleLimit;
+                jsonObjectInfo[QString::fromUtf8( Protocol::Key::TmpExtraOpacityFactor )]     = info.tmpExtraOpacityFactor;
+                jsonObjectInfo[QString::fromUtf8( Protocol::Key::ExtraOpacityFactor )]        = info.extraOpacityFactor;
 
                 // Client Server Point Object Info
-                jsonObjectInfo["numberOfVector"]            = info.numberOfVector;
-                jsonObjectInfo["numberOfElements"]          = info.numberOfElements;
-                jsonObjectInfo["numberOfSubvolume"]         = info.numberOfSubvolume;
-                jsonObjectInfo["numberOfNodes"]             = info.numberOfNodes;
-                jsonObjectInfo["elementType"]               = info.elementType;
-                jsonObjectInfo["fileType"]                  = info.fileType;
-                jsonObjectInfo["stepNumber"]                = info.stepNumber;
-                jsonObjectInfo["tmpCoordinateX"]            = QString::fromUtf8( info.tmpCoordinateX );
-                jsonObjectInfo["coordinateX"]               = QString::fromUtf8( info.coordinateX );
-                jsonObjectInfo["tmpCoordinateY"]            = QString::fromUtf8( info.tmpCoordinateY );
-                jsonObjectInfo["coordinateY"]               = QString::fromUtf8( info.coordinateY );
-                jsonObjectInfo["tmpCoordinateZ"]            = QString::fromUtf8( info.tmpCoordinateZ );
-                jsonObjectInfo["coordinateZ"]               = QString::fromUtf8( info.coordinateZ );
-                jsonObjectInfo["isExport"]                  = info.isExport;
+                jsonObjectInfo[QString::fromUtf8( Protocol::Key::NumberOfVector )]            = info.numberOfVector;
+                jsonObjectInfo[QString::fromUtf8( Protocol::Key::NumberOfElements )]          = info.numberOfElements;
+                jsonObjectInfo[QString::fromUtf8( Protocol::Key::NumberOfSubvolume )]         = info.numberOfSubvolume;
+                jsonObjectInfo[QString::fromUtf8( Protocol::Key::NumberOfNodes )]             = info.numberOfNodes;
+                jsonObjectInfo[QString::fromUtf8( Protocol::Key::ElementType )]               = info.elementType;
+                jsonObjectInfo[QString::fromUtf8( Protocol::Key::FileType )]                  = info.fileType;
+                jsonObjectInfo[QString::fromUtf8( Protocol::Key::StepNumber )]                = info.stepNumber;
+                jsonObjectInfo[QString::fromUtf8( Protocol::Key::TmpCoordinateX )]            = QString::fromUtf8( info.tmpCoordinateX );
+                jsonObjectInfo[QString::fromUtf8( Protocol::Key::CoordinateX )]               = QString::fromUtf8( info.coordinateX );
+                jsonObjectInfo[QString::fromUtf8( Protocol::Key::TmpCoordinateY )]            = QString::fromUtf8( info.tmpCoordinateY );
+                jsonObjectInfo[QString::fromUtf8( Protocol::Key::CoordinateY )]               = QString::fromUtf8( info.coordinateY );
+                jsonObjectInfo[QString::fromUtf8( Protocol::Key::TmpCoordinateZ )]            = QString::fromUtf8( info.tmpCoordinateZ );
+                jsonObjectInfo[QString::fromUtf8( Protocol::Key::CoordinateZ )]               = QString::fromUtf8( info.coordinateZ );
+                jsonObjectInfo[QString::fromUtf8( Protocol::Key::IsExport )]                  = info.isExport;
 
                 // Nontexture Polygon Object Info
                 QJsonArray tmpPolygonColorArray;
                 tmpPolygonColorArray.append( info.tmpPolygonColor.r() );
                 tmpPolygonColorArray.append( info.tmpPolygonColor.g() );
                 tmpPolygonColorArray.append( info.tmpPolygonColor.b() );
-                jsonObjectInfo["tmpPolygonColor"]           = tmpPolygonColorArray;
+                jsonObjectInfo[QString::fromUtf8( Protocol::Key::TmpPolygonColor )]           = tmpPolygonColorArray;
                 QJsonArray polygonColorArray;
                 polygonColorArray.append( info.polygonColor.r() );
                 polygonColorArray.append( info.polygonColor.g() );
                 polygonColorArray.append( info.polygonColor.b() );
-                jsonObjectInfo["polygonColor"]              = polygonColorArray;
-                jsonObjectInfo["tmpPolygonOpacity"]         = info.tmpPolygonOpacity;
-                jsonObjectInfo["polygonOpacity"]            = info.polygonOpacity;
+                jsonObjectInfo[QString::fromUtf8( Protocol::Key::PolygonColor )]              = polygonColorArray;
+                jsonObjectInfo[QString::fromUtf8( Protocol::Key::TmpPolygonOpacity )]         = info.tmpPolygonOpacity;
+                jsonObjectInfo[QString::fromUtf8( Protocol::Key::PolygonOpacity )]            = info.polygonOpacity;
 
                 // For Client
-                // jsonObjectInfo["object"]                    = info.object;
-                // jsonObjectInfo["objectID"]                  = info.objectID;
+                // jsonObjectInfo[QString::fromUtf8( Protocol::Key::object )]                    = info.object;
+                // jsonObjectInfo[QString::fromUtf8( Protocol::Key::objectID )]                  = info.objectID;
                 QJsonArray currentMinObjectCoordArray;
                 currentMinObjectCoordArray.append( info.currentMinObjectCoord.x() );
                 currentMinObjectCoordArray.append( info.currentMinObjectCoord.y() );
@@ -1653,13 +1650,13 @@ void ObjectEditorWIP::onApply()
                 currentMaxObjectCoordArray.append( info.currentMaxObjectCoord.y() );
                 currentMaxObjectCoordArray.append( info.currentMaxObjectCoord.z() );
 
-                jsonObjectInfo["currentMinObjectCoord"]     = currentMinObjectCoordArray;
-                jsonObjectInfo["currentMaxObjectCoord"]     = currentMaxObjectCoordArray;
-                jsonObjectInfo["currentImportedTimeStep"]   = info.currentImportedTimeStep;
-                jsonObjectInfo["needSameTimeStepReplace"]   = info.needSameTimeStepReplace;
+                jsonObjectInfo[QString::fromUtf8( Protocol::Key::CurrentMinObjectCoord )]     = currentMinObjectCoordArray;
+                jsonObjectInfo[QString::fromUtf8( Protocol::Key::CurrentMaxObjectCoord )]     = currentMaxObjectCoordArray;
+                jsonObjectInfo[QString::fromUtf8( Protocol::Key::CurrentImportedTimeStep )]   = info.currentImportedTimeStep;
+                jsonObjectInfo[QString::fromUtf8( Protocol::Key::NeedSameTimeStepReplace )]   = info.needSameTimeStepReplace;
                 objectInfoArray.append( jsonObjectInfo );
             }
-            root["objects"] = objectInfoArray;
+            root[QString::fromUtf8( Protocol::Key::Objects )] = objectInfoArray;
             m_web_sockets->text()->sendTextMessage( QJsonDocument( root ).toJson( QJsonDocument::Compact ) );
         }
         break;
@@ -1699,6 +1696,6 @@ void ObjectEditorWIP::doneObjectEditor( int requestTimeStep )
         item->setData( newVar, Qt::UserRole );
     }
 
-    emit done( requestTimeStep );
+    emit dataRequestCompleted( requestTimeStep );
     m_screen->update();
 }

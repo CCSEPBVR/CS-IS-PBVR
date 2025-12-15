@@ -11,6 +11,7 @@
 #include <QJsonObject>
 
 #include "WebSocketPair.h"
+#include "../../Shared/JsonKeys.h"
 
 class TimeStepControlToolBarWIP : public QToolBar
 {

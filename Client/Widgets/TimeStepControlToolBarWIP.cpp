@@ -108,14 +108,14 @@ void TimeStepControlToolBarWIP::onOperatorStateUpdate( bool operatorState )
 
 void TimeStepControlToolBarWIP::onReceiveTimeStepControlParameter( const QJsonObject& timeStepControlParameter )
 {
-    if( timeStepControlParameter.contains("NextTimeStep") )
-        m_next_time_step_spin_box->setValue( timeStepControlParameter.value( "NextTimeStep" ).toInt() );
+    if( timeStepControlParameter.contains( QString::fromUtf8( Protocol::Key::NextTimeStep ) ) )
+        m_next_time_step_spin_box->setValue( timeStepControlParameter.value( QString::fromUtf8( Protocol::Key::NextTimeStep ) ).toInt() );
 
-    if( timeStepControlParameter.contains("MinLimit") )
-        m_min_limit_time_step_spin_box->setValue( timeStepControlParameter.value( "MinLimit" ).toInt() );
+    if( timeStepControlParameter.contains( QString::fromUtf8( Protocol::Key::MinLimit  ) ) )
+        m_min_limit_time_step_spin_box->setValue( timeStepControlParameter.value( QString::fromUtf8( Protocol::Key::MinLimit ) ).toInt() );
 
-    if( timeStepControlParameter.contains("MaxLimit") )
-        m_max_limit_time_step_spin_box->setValue( timeStepControlParameter.value("MaxLimit").toInt() );
+    if( timeStepControlParameter.contains( QString::fromUtf8( Protocol::Key::MaxLimit ) ) )
+        m_max_limit_time_step_spin_box->setValue( timeStepControlParameter.value( QString::fromUtf8( Protocol::Key::MaxLimit ) ).toInt() );
 }
 
 void TimeStepControlToolBarWIP::onDataRequestCompleted( int requestTimeStep )
@@ -295,8 +295,8 @@ void TimeStepControlToolBarWIP::updateNext( int next )
     if( m_is_operator )
     {
         QJsonObject timeStepControlParameter;
-        timeStepControlParameter["event"] = "TimeStepControlParameter";
-        timeStepControlParameter["NextTimeStep"] = next;
+        timeStepControlParameter[QString::fromUtf8( Protocol::Key::Event )] = QString::fromUtf8( Protocol::Events::TimeStepControlParameter );
+        timeStepControlParameter[QString::fromUtf8( Protocol::Key::NextTimeStep )] = next;
 
         m_web_sockets->text()->sendTextMessage( QJsonDocument( timeStepControlParameter ).toJson( QJsonDocument::Compact ) );
     }
@@ -320,8 +320,8 @@ void TimeStepControlToolBarWIP::updateMinLimit( int minLimit )
     if( m_is_operator )
     {
         QJsonObject timeStepControlParameter;
-        timeStepControlParameter["event"] = "TimeStepControlParameter";
-        timeStepControlParameter["MinLimit"] = minLimit;
+        timeStepControlParameter[QString::fromUtf8( Protocol::Key::Event )] = QString::fromUtf8( Protocol::Events::TimeStepControlParameter );
+        timeStepControlParameter[QString::fromUtf8( Protocol::Key::MinLimit )] = minLimit;
 
         m_web_sockets->text()->sendTextMessage( QJsonDocument( timeStepControlParameter ).toJson( QJsonDocument::Compact ) );
     }
@@ -345,8 +345,8 @@ void TimeStepControlToolBarWIP::updateMaxLimit( int maxLimit )
     if( m_is_operator )
     {
         QJsonObject timeStepControlParameter;
-        timeStepControlParameter["event"] = "TimeStepControlParameter";
-        timeStepControlParameter["MaxLimit"] = maxLimit;
+        timeStepControlParameter[QString::fromUtf8( Protocol::Key::Event )] = QString::fromUtf8( Protocol::Events::TimeStepControlParameter );
+        timeStepControlParameter[QString::fromUtf8( Protocol::Key::MaxLimit )] = maxLimit;
 
         if( m_is_operator ) m_web_sockets->text()->sendTextMessage( QJsonDocument( timeStepControlParameter ).toJson( QJsonDocument::Compact ) );
     }

@@ -6,6 +6,8 @@
 #include <QGridLayout>
 
 #include "WebSocketPair.h"
+
+#include "../../Shared/JsonKeys.h"
 #include "../../Shared/GlyphParameter.h"
 
 #include "ColorMapEditor.h"
@@ -29,7 +31,7 @@ public slots:
     void saveParameter( const QString& filePath );
 
     void updateNumberOfVector( const int numberOfVector );
-    void receiveGlyphParameter( const QJsonObject& dataArray );
+    void onReceiveGlyphParameter( const QJsonObject& dataArray );
 
 private:
     Ui::GlyphEditorWIP *ui;

@@ -5,6 +5,8 @@
 
 #include "Screen.h"
 #include "WebSocketPair.h"
+#include "../../Shared/JsonKeys.h"
+
 #include <kvs/PointObject>
 #include <kvs/LineObject>
 #include <kvs/StochasticPointRenderer>
@@ -37,7 +39,7 @@ public slots:
     void setPlotData( std::vector<float> xAxis, std::vector<bool> mask, std::vector<float> values );//
     // void drawPlotOverLineFromVRHands( kvs::Real32 CoordArray[ 2 * 3 ] ); // FIXME:onCreateLineと機能が重複しています。
     // void togglePlotOverLineFromVRHands();
-    void receivePlotOverLineParameter( const QJsonObject& plotOverLineParameter );
+    void onReceivePlotOverLineParameter( const QJsonObject& plotOverLineParameter );
 
 
 private:

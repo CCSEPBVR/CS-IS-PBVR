@@ -6,6 +6,7 @@
 #include <QFileDialog>
 
 #include "WebSocketPair.h"
+#include "../../Shared/JsonKeys.h"
 #include "../../Shared/TransferFunction.h"
 
 #include "VariableEditor.h"
@@ -33,7 +34,7 @@ public slots:
     void loadParameter( const QString& filePath );
     void saveParameter( const QString& filePath );
 
-    void updateTransferFunctionFromServer( const QString& colorSynth, const QString& opacitySynth, const QJsonArray& dataArray );
+    void onReceiveTransferFunctionParameter( const QString& colorSynth, const QString& opacitySynth, const QJsonArray& dataArray );
 
 private:
     Ui::TransferFunctionEditorWIP *ui;

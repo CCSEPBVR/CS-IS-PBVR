@@ -104,7 +104,7 @@ private:
     void requestDir( const QString& path, int page )
     {
         QJsonObject msg;
-        msg["event"] = "fileList";
+        msg["Event"] = "fileList";
         msg["path"] = path;
         msg["page"] = page;
         msg["per_page"] = 20;

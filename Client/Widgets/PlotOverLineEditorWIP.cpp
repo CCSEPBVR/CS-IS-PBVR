@@ -183,17 +183,17 @@ void PlotOverLineEditorWIP::setPlotData( std::vector<float> xAxis, std::vector<b
     m_q_custom_plot->replot();
 }
 
-void PlotOverLineEditorWIP::receivePlotOverLineParameter( const QJsonObject& plotOverLineParameter )
+void PlotOverLineEditorWIP::onReceivePlotOverLineParameter( const QJsonObject& plotOverLineParameter )
 {
     // Enable
-    ui->plotOverLineGroupBox->setChecked( plotOverLineParameter.value( "Enable" ).toBool() );
+    ui->plotOverLineGroupBox->setChecked( plotOverLineParameter.value( QString::fromUtf8( Protocol::Key::Enable ) ).toBool() );
     // Resolution
-    ui->resolutionSpinBox->setValue( plotOverLineParameter.value( "Resolution" ).toInt() );
+    ui->resolutionSpinBox->setValue( plotOverLineParameter.value( QString::fromUtf8( Protocol::Key::Resolution ) ).toInt() );
     // Resolution
-    ui->targetComboBox->setCurrentIndex( plotOverLineParameter.value( "Target" ).toInt() );
+    ui->targetComboBox->setCurrentIndex( plotOverLineParameter.value( QString::fromUtf8( Protocol::Key::Target ) ).toInt() );
 
     // Start Coords
-    const QJsonArray start = plotOverLineParameter.value( "StartCoords" ).toArray();
+    const QJsonArray start = plotOverLineParameter.value( QString::fromUtf8( Protocol::Key::StartCoords ) ).toArray();
     if( start.size() == 3 )
     {
         ui->startCoordsXDoubleSpinBox->setValue( start.at( 0 ) .toDouble() ) ;
@@ -201,7 +201,7 @@ void PlotOverLineEditorWIP::receivePlotOverLineParameter( const QJsonObject& plo
         ui->startCoordsZDoubleSpinBox->setValue( start.at( 2 ) .toDouble() ) ;
     }
 
-    const QJsonArray end = plotOverLineParameter.value( "EndCoords" ).toArray();
+    const QJsonArray end = plotOverLineParameter.value( QString::fromUtf8( Protocol::Key::EndCoords ) ).toArray();
     if( end.size() == 3 )
     {
         ui->endCoordsXDoubleSpinBox->setValue( end.at( 0 ) .toDouble() ) ;
@@ -605,27 +605,27 @@ void PlotOverLineEditorWIP::onApply()
     onCreateLine();
 
     QJsonObject plotOverLineParameter;
-    plotOverLineParameter["event"]          = "PlotOverLineParameter";
+    plotOverLineParameter[QString::fromUtf8( Protocol::Key::Event )]          = "PlotOverLineParameter";
     // Enable
-    plotOverLineParameter["Enable"]         = ui->plotOverLineGroupBox->isChecked();
+    plotOverLineParameter[QString::fromUtf8( Protocol::Key::Enable )]         = ui->plotOverLineGroupBox->isChecked();
     // Resolution
-    plotOverLineParameter["Resolution"]     = ui->resolutionSpinBox->value();
+    plotOverLineParameter[QString::fromUtf8( Protocol::Key::Resolution )]     = ui->resolutionSpinBox->value();
     // Target
-    plotOverLineParameter["Target"]         = ui->targetComboBox->currentIndex();
+    plotOverLineParameter[QString::fromUtf8( Protocol::Key::Target )]         = ui->targetComboBox->currentIndex();
 
     // Start Coords
     QJsonArray startCoords;
     startCoords.append( ui->startCoordsXDoubleSpinBox->value() );
     startCoords.append( ui->startCoordsYDoubleSpinBox->value() );
     startCoords.append( ui->startCoordsZDoubleSpinBox->value() );
-    plotOverLineParameter["StartCoords"]    = startCoords;
+    plotOverLineParameter[QString::fromUtf8( Protocol::Key::StartCoords )]    = startCoords;
 
     // End Coords
     QJsonArray endCoords;
     endCoords.append( ui->endCoordsXDoubleSpinBox->value() );
     endCoords.append( ui->endCoordsYDoubleSpinBox->value() );
     endCoords.append( ui->endCoordsZDoubleSpinBox->value() );
-    plotOverLineParameter["EndCoords"]    = endCoords;
+    plotOverLineParameter[QString::fromUtf8( Protocol::Key::EndCoords )]    = endCoords;
 
     m_web_sockets->text()->sendTextMessage( QJsonDocument( plotOverLineParameter ).toJson(QJsonDocument::Compact ) );
 }

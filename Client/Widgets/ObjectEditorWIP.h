@@ -20,6 +20,7 @@
 #include "RemoteFileDialog.h"
 #include "Worker.h"
 
+#include "../../Shared/JsonKeys.h"
 #include "../../Shared/ObjectInfoExtractor.h"
 
 namespace Ui
@@ -42,8 +43,8 @@ public slots:
     // void addObjectToModel( const ObjectInfoExtractor::ObjectInfo& objectInfo, ObjectInfoExtractor& oie );
     void addObjectToModel( const ObjectInfoExtractor::ObjectInfo& objectInfo );
     void unpack( const QByteArray& binary );
-    void objectInfoUpdate( const QJsonArray& resultMinObjectCoordsArray, const QJsonArray& resultMaxObjectCoordsArray, const QJsonArray& objects );
-    void showAtTimeStep( int requestTimeStep );
+    void onReceiveObjectInfoParameter( const QJsonArray& resultMinObjectCoordsArray, const QJsonArray& resultMaxObjectCoordsArray, const QJsonArray& objects );
+    void onRequestDataAt( int requestTimeStep );
     void loadParameter( const QString& filePath );
     void saveParameter( const QString& filePath );
 
@@ -52,7 +53,7 @@ signals:
     void updateFocus( kvs::Vec3 resultMinObjectCoords, kvs::Vec3 resultMaxObjectCoords );
     void updateTranslation();
     void shading( kvs::RendererBase* );
-    void done( int requestTimeStep );
+    void dataRequestCompleted( int requestTimeStep );
 
 private:
     Ui::ObjectEditorWIP *ui;
