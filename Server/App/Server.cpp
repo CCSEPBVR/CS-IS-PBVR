@@ -167,7 +167,8 @@ void Server::onMessage( uWS::WebSocket<false, true, PerSocket>* ws, std::string_
 
         if( event == "Template" ) std::cout << __LINE__ << std::endl;
         else if( event == Protocol::Events::TransferOperator )          transferOperator( ws, received );
-        else if( event == Protocol::Events::Chat )                      chat( ws, received );
+        else if( event == Protocol::Events::Initialize )                initialize( ws, received );
+        else if( event == Protocol::Events::Chat )                      chat( ws, received );        
         else if( event == Protocol::Events::ShareView )                 shareView( ws, received );
         else if( event == Protocol::Events::SharePoint )                sharePoint( ws, received );
         // else if( event == Protocol::Events::FileList )                  fileList( ws, received );
@@ -238,6 +239,141 @@ void Server::transferOperator( uWS::WebSocket<false, true, PerSocket>* ws, const
 
     int targetID = received[Protocol::Key::TargetID];
     assignOperator( userID, targetID );
+}
+
+void Server::initialize( uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received )
+{
+    std::cout << "[Server] Initialize" << std::endl;
+    bool mode                               = true;
+    std::string volumeDataFilePath          = received[Protocol::Key::VolumeDataFilePath];
+    std::string transferFunctionFilePath    = received[Protocol::Key::TransferFunctionFilePath];
+    std::string uuid                        = received[Protocol::Key::UUID];
+    ObjectInfoExtractor::Format format      = received[Protocol::Key::Format];
+
+    const const int DEBUG_NUMBER_OF_VECTOR = 3;
+    {
+        nlohmann::json msg;
+        msg[Protocol::Key::Event]                   = Protocol::Events::AddObjectToModel;
+
+        // Common Object Info
+        msg[Protocol::Key::UUID]                    = uuid;
+        msg[Protocol::Key::TmpIsDisplay]            = true;
+        msg[Protocol::Key::IsDisplay]               = false;
+        msg[Protocol::Key::TmpIsKeepInitial]        = false;
+        msg[Protocol::Key::IsKeepInitial]           = false;
+        msg[Protocol::Key::TmpIsKeepFinal]          = false;
+        msg[Protocol::Key::IsKeepFinal]             = false;
+
+        msg[Protocol::Key::Name]                    = "TMP";                                                    // FIXME:サーバ担当者
+        msg[Protocol::Key::Extension]               = "TMP";                                                    // FIXME:サーバ担当者
+        msg[Protocol::Key::Directory]               = volumeDataFilePath;
+        msg[Protocol::Key::Format]                  = format;
+        msg[Protocol::Key::TimeStep]                = std::pair<int,int>( 0 , 50 );
+        msg[Protocol::Key::TmpIsFocus]              = false;
+        msg[Protocol::Key::IsFocus]                 = false;
+        msg[Protocol::Key::MinObjectCoord]          = { 1, 2, 3 };                                              // FIXME:サーバ担当者
+        msg[Protocol::Key::MaxObjectCoord]          = { 4, 5, 6 };                                              // FIXME:サーバ担当者
+        msg[Protocol::Key::MinExternalCoord]        = { 1, 2, 3 };                                              // FIXME:サーバ担当者
+        msg[Protocol::Key::MaxExternalCoord]        = { 4, 5, 6 };                                              // FIXME:サーバ担当者
+
+        // Common Server Point Object Info
+        msg[Protocol::Key::TmpParticleLimit]        = 10000000;
+        msg[Protocol::Key::ParticleLimit]           = 10000000;
+        msg[Protocol::Key::TmpExtraOpacityFactor]   = 1.0;
+        msg[Protocol::Key::ExtraOpacityFactor]      = 1.0;
+
+        // Client Server Point Object Info
+        msg[Protocol::Key::NumberOfVector]          = DEBUG_NUMBER_OF_VECTOR;                                   // FIXME:サーバ担当者
+        msg[Protocol::Key::NumberOfElements]        = 3;                                                        // FIXME:サーバ担当者
+        msg[Protocol::Key::NumberOfSubvolume]       = 3;                                                        // FIXME:サーバ担当者
+        msg[Protocol::Key::NumberOfNodes]           = 3;                                                        // FIXME:サーバ担当者
+        msg[Protocol::Key::ElementType]             = 3;                                                        // FIXME:サーバ担当者
+        msg[Protocol::Key::FileType]                = 3;                                                        // FIXME:サーバ担当者
+        msg[Protocol::Key::StepNumber]              = 3;                                                        // FIXME:サーバ担当者
+        msg[Protocol::Key::TmpCoordinateX]          = "";
+        msg[Protocol::Key::CoordinateX]             = "";
+        msg[Protocol::Key::TmpCoordinateY]          = "";
+        msg[Protocol::Key::CoordinateY]             = "";
+        msg[Protocol::Key::TmpCoordinateZ]          = "";
+        msg[Protocol::Key::CoordinateZ]             = "";
+        msg[Protocol::Key::IsExport]                = false;
+
+        // Nontexture Polygon Object Info
+        msg[Protocol::Key::TmpPolygonColor]         = { 128, 128, 128 };
+        msg[Protocol::Key::PolygonColor]            = { 128, 128, 128 };
+        msg[Protocol::Key::TmpPolygonOpacity]       = 0.5;
+        msg[Protocol::Key::PolygonOpacity]          = 0.5;
+        m_u_web_sockets.publish( "Notice", msg.dump(), uWS::OpCode::TEXT );
+    }
+
+    {
+        if( DEBUG_NUMBER_OF_VECTOR >= 3 ) // 成分数3以上の時
+        {
+            std::cout << "TEST" << std::endl;
+            nlohmann::json msg;
+            msg[Protocol::Key::Event]                   = Protocol::Events::AddObjectToModel;
+
+            // Common Object Info
+            msg[Protocol::Key::UUID]                    = uuid;
+            msg[Protocol::Key::TmpIsDisplay]            = true;
+            msg[Protocol::Key::IsDisplay]               = false;
+            msg[Protocol::Key::TmpIsKeepInitial]        = false;
+            msg[Protocol::Key::IsKeepInitial]           = false;
+            msg[Protocol::Key::TmpIsKeepFinal]          = false;
+            msg[Protocol::Key::IsKeepFinal]             = false;
+
+            msg[Protocol::Key::Name]                    = "TMP";                                                    // FIXME:サーバ担当者
+            msg[Protocol::Key::Extension]               = "TMP";                                                    // FIXME:サーバ担当者
+            msg[Protocol::Key::Directory]               = volumeDataFilePath;
+            msg[Protocol::Key::Format]                  = ObjectInfoExtractor::Format::ServerGlyphObject;
+            msg[Protocol::Key::TimeStep]                = std::pair<int,int>( 0 , 50 );
+            msg[Protocol::Key::TmpIsFocus]              = false;
+            msg[Protocol::Key::IsFocus]                 = false;
+            msg[Protocol::Key::MinObjectCoord]          = { 1, 2, 3 };                                              // FIXME:サーバ担当者
+            msg[Protocol::Key::MaxObjectCoord]          = { 4, 5, 6 };                                              // FIXME:サーバ担当者
+            msg[Protocol::Key::MinExternalCoord]        = { 1, 2, 3 };                                              // FIXME:サーバ担当者
+            msg[Protocol::Key::MaxExternalCoord]        = { 4, 5, 6 };                                              // FIXME:サーバ担当者
+
+            // Common Server Point Object Info
+            msg[Protocol::Key::TmpParticleLimit]        = 10000000;
+            msg[Protocol::Key::ParticleLimit]           = 10000000;
+            msg[Protocol::Key::TmpExtraOpacityFactor]   = 1.0;
+            msg[Protocol::Key::ExtraOpacityFactor]      = 1.0;
+
+            // Client Server Point Object Info
+            msg[Protocol::Key::NumberOfVector]          = DEBUG_NUMBER_OF_VECTOR;                                   // FIXME:サーバ担当者
+            msg[Protocol::Key::NumberOfElements]        = 3;                                                        // FIXME:サーバ担当者
+            msg[Protocol::Key::NumberOfSubvolume]       = 3;                                                        // FIXME:サーバ担当者
+            msg[Protocol::Key::NumberOfNodes]           = 3;                                                        // FIXME:サーバ担当者
+            msg[Protocol::Key::ElementType]             = 3;                                                        // FIXME:サーバ担当者
+            msg[Protocol::Key::FileType]                = 3;                                                        // FIXME:サーバ担当者
+            msg[Protocol::Key::StepNumber]              = 3;                                                        // FIXME:サーバ担当者
+            msg[Protocol::Key::TmpCoordinateX]          = "";
+            msg[Protocol::Key::CoordinateX]             = "";
+            msg[Protocol::Key::TmpCoordinateY]          = "";
+            msg[Protocol::Key::CoordinateY]             = "";
+            msg[Protocol::Key::TmpCoordinateZ]          = "";
+            msg[Protocol::Key::CoordinateZ]             = "";
+            msg[Protocol::Key::IsExport]                = false;
+
+            // Nontexture Polygon Object Info
+            msg[Protocol::Key::TmpPolygonColor]         = { 128, 128, 128 };
+            msg[Protocol::Key::PolygonColor]            = { 128, 128, 128 };
+            msg[Protocol::Key::TmpPolygonOpacity]       = 0.5;
+            msg[Protocol::Key::PolygonOpacity]          = 0.5;
+            m_u_web_sockets.publish( "Notice", msg.dump(), uWS::OpCode::TEXT );
+        }
+    }
+}
+
+void createServerPointObject()
+{
+
+}
+
+void createServerGlyphObject()
+{
+
 }
 
 void Server::chat( uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received )

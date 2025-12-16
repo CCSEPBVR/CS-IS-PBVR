@@ -111,6 +111,22 @@ void CommunicationWIP::websocketConnected()
         ui->connectPushButton                   ->setEnabled( false );
         ui->disconnectPushButton                ->setEnabled( true );
         updateVizMode();
+
+        QString uuid = QUuid::createUuid().toString( QUuid::WithoutBraces );
+
+        ObjectInfoExtractor::Format format;
+        if( ui->localVizRadioButton->isChecked() || ui->remoteVizClientServerRadioButton->isChecked() )
+            format = ObjectInfoExtractor::Format::ClientServerPointObject;
+        else
+            format = ObjectInfoExtractor::Format::InsituServerPointObject;
+
+        m_web_sockets->text()->sendTextMessage( QJsonDocument( {
+                                                                 { QString::fromUtf8( Protocol::Key::Event )                    , QString::fromUtf8( Protocol::Events::Initialize ) },
+                                                                 { QString::fromUtf8( Protocol::Key::VolumeDataFilePath )       , ui->volumeDataFilePathLineEdit->text() },
+                                                                 { QString::fromUtf8( Protocol::Key::TransferFunctionFilePath ) , ui->transferFunctionFilePathLineEdit->text() },
+                                                                 { QString::fromUtf8( Protocol::Key::UUID )                     , uuid },
+                                                                 { QString::fromUtf8( Protocol::Key::Format )                   , format },
+                                                              } ).toJson( QJsonDocument::Compact ) );
     }
 }
 
@@ -482,7 +498,7 @@ void CommunicationWIP::convertObjectInfo( const QJsonObject& dataArray )
     objectInfo.name                     = dataArray[QString::fromUtf8( Protocol::Key::Name )].toString().toUtf8();
     objectInfo.extension                = dataArray[QString::fromUtf8( Protocol::Key::Extension )].toString().toUtf8();
     objectInfo.directory                = dataArray[QString::fromUtf8( Protocol::Key::Directory )].toString().toUtf8();
-    objectInfo.format                   = objectInfo.format = static_cast<ObjectInfoExtractor::Format>( dataArray[QString::fromUtf8( Protocol::Key::Format )].toInt() );
+    objectInfo.format                   = static_cast<ObjectInfoExtractor::Format>( dataArray[QString::fromUtf8( Protocol::Key::Format )].toInt() );
     QJsonArray timeStepArray            = dataArray[QString::fromUtf8( Protocol::Key::TimeStep )].toArray();
     objectInfo.timeStep                 = { timeStepArray[0].toInt(), timeStepArray[1].toInt() };
     objectInfo.tmpIsFocus               = dataArray[QString::fromUtf8( Protocol::Key::TmpIsFocus )].toBool();

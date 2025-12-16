@@ -16,6 +16,12 @@ inline constexpr std::string_view TargetID                  = "TargetID";
 inline constexpr std::string_view OldOperatorID             = "OldOperatorID";
 inline constexpr std::string_view NewOperatorID             = "NewOperatorID";
 
+// Volume Data File Path
+inline constexpr std::string_view VolumeDataFilePath        = "VolumeDataFilePath";
+
+// Transfer Function File Path
+inline constexpr std::string_view TransferFunctionFilePath  = "TransferFunctionFilePath";
+
 // Chat
 inline constexpr std::string_view Text                      = "Text";
 
@@ -152,6 +158,7 @@ inline constexpr std::string_view Left                      = "Left";
 inline constexpr std::string_view ID                        = "ID";
 inline constexpr std::string_view Operator                  = "Operator";
 inline constexpr std::string_view TransferOperator          = "TransferOperator";
+inline constexpr std::string_view Initialize                = "Initialize";
 inline constexpr std::string_view Chat                      = "Chat";
 inline constexpr std::string_view ShareView                 = "ShareView";
 inline constexpr std::string_view SharePoint                = "SharePoint";

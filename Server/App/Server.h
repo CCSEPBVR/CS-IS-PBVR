@@ -58,6 +58,9 @@ private:
     void onClose( uWS::WebSocket<false, true, PerSocket>* ws, int /*code*/, std::string_view /*msg*/ );
 
     void transferOperator                   ( uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received );
+    void initialize                         ( uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received );
+    void createServerPointObject            ();
+    void createServerGlyphObject            ();
     void chat                               ( uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received );
     void shareView                          ( uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received );
     void sharePoint                         ( uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received );
