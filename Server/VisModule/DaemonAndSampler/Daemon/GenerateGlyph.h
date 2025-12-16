@@ -15,6 +15,16 @@ std::unique_ptr<kvs::PolygonGlyphObject> GenerateGlyphCS(
     MultiVolumePropertyList& mvpl
 );
 
+void SetGlyphParameterIS(
+    GlyphProperty& glyph_property
+);
+
+std::unique_ptr<kvs::PolygonGlyphObject> GenerateGlyphIS(
+    const ParticleProperty& particle_property,
+    const GlyphProperty& glyph_property,
+    const MultiVolumePropertyList& mvpl
+);
+
 /*
 void generate_glyph(
     Argument &param,

@@ -5,6 +5,8 @@
 #include <vismodule/GlyphProperty>
 #include <vismodule/KVSMLObjectGlyph>
 #include <vismodule/GlyphSeedGenerator>
+#include <vismodule/ParticleMonitor>
+#include <vismodule/ParameterFileReader>
 
 void SetGlyphParameterCS(
     const ParticleProperty& particle_property,
@@ -356,6 +358,136 @@ std::unique_ptr<kvs::PolygonGlyphObject> GenerateGlyphCS(
     }
     std::cout << std::endl;
     */
+
+    kvs::ValueArray<kvs::Real32> kvs_scaled_sizes;
+    kvs_scaled_sizes.allocate( glyph_object->sizes().size() );
+
+    for ( size_t i = 0; i < glyph_object->sizes().size(); i++ )
+    {
+        kvs_scaled_sizes[i] = glyph_object->sizes()[i] * 0.05;
+    }
+
+    return std::make_unique<kvs::PolygonGlyphObject>(
+        glyph_object->coords(),
+        glyph_object->directions(),
+        kvs_scaled_sizes,
+        glyph_object->colors(),
+        kvs::PolygonGlyphObject::GlyphType::Arrow
+    );
+}
+
+void SetGlyphParameterIS(
+    GlyphProperty& glyph_property
+)
+{
+    const char *envBuf = NULL;
+    std::string visParamDir;
+    std::string glyphParameterPath;
+    std::string glyphParameterPath_old;
+    ParameterFileReader ppr;
+
+    envBuf = std::getenv( "VIS_PARAM_DIR" );
+
+    if (envBuf == NULL) {
+        visParamDir = "./";
+    }
+    else {
+        visParamDir = envBuf;
+        if (visParamDir[visParamDir.size() - 1] != '/') {
+            visParamDir += "/";
+        }
+    }
+
+    glyphParameterPath     = visParamDir;
+    glyphParameterPath_old = visParamDir;
+    glyphParameterPath     += "parameter.gly";
+    glyphParameterPath_old += "parameter_old.gly";
+
+    ppr.readGlyphParameterFile( glyphParameterPath_old.c_str() );
+    ppr.setGlyphParameter( glyph_property );
+}
+
+std::unique_ptr<kvs::PolygonGlyphObject> GenerateGlyphIS(
+    const ParticleProperty& particle_property,
+    const GlyphProperty& glyph_property,
+    const MultiVolumePropertyList& mvpl
+)
+{
+    std::unique_ptr<vismodule::KVSMLObjectGlyph> recv_obj = std::make_unique<vismodule::KVSMLObjectGlyph>();
+    std::unique_ptr<kvs::PolygonGlyphObject> glyph_object = std::make_unique<kvs::PolygonGlyphObject>();
+    const int size_index  = 0; // for minmax array index
+    const int color_index = 1; // for minmax array index
+
+    /* 一旦保留
+    int cnt = 2;
+    float* tmp_max;
+    float* tmp_min;
+    tmp_max = new float[cnt]; 
+    tmp_min = new float[cnt];
+    
+    for ( int tf = 0; tf < cnt; tf++ )
+    {
+        tmp_max[tf] = FLT_MIN;
+        tmp_min[tf] = FLT_MAX;
+    }
+    */
+
+    ParticleMonitor pm;
+    pm.check();
+    
+    if( pm.stepExisted() )
+    {
+        pm.setTimeStep_glyph( particle_property.m_time_step );
+    }
+    else
+    {
+        pm.setTimeStep_glyph(0);
+    }
+    
+    // get glyph
+    pm.readGlyphFile();
+    pm.getGlyph( recv_obj.get() );
+    
+    /* 一旦保留
+    // get minmax
+    tmp_max[size_index]  = vismodule::Math::Max(  tmp_max[size_index], kvsml_object_glyph->sizeMax()  );
+    tmp_min[size_index]  = vismodule::Math::Min(  tmp_min[size_index], kvsml_object_glyph->sizeMin()  );
+    tmp_max[color_index] = vismodule::Math::Max( tmp_max[color_index], kvsml_object_glyph->colorMax() );
+    tmp_min[color_index] = vismodule::Math::Min( tmp_min[color_index], kvsml_object_glyph->colorMin() );
+    */
+
+    // delete[] tmp_min;
+    // delete[] tmp_max;
+
+    kvs::ValueArray<kvs::Real32> kvs_coords;
+    kvs::ValueArray<kvs::UInt8>  kvs_colors;
+    kvs::ValueArray<kvs::Real32> kvs_directions;
+    kvs::ValueArray<kvs::Real32> kvs_sizes;
+
+    const size_t ncoords     = recv_obj->coords().size();
+    const size_t ncolors     = recv_obj->colors().size();
+    const size_t ndirections = recv_obj->directions().size();
+    const size_t nsizes      = recv_obj->sizes().size();
+
+    kvs_coords.allocate( ncoords );
+    kvs_colors.allocate( ncolors );
+    kvs_directions.allocate( ndirections );
+    kvs_sizes.allocate( nsizes );
+
+    kvs::Real32* pcoords     = kvs_coords.data();
+    kvs::UInt8* pcolors      = kvs_colors.data();
+    kvs::Real32* pdirections = kvs_directions.data();
+    kvs::Real32* psizes      = kvs_sizes.data();
+
+    memcpy( pcoords, recv_obj->coords().pointer(), recv_obj->coords().byteSize() );
+    memcpy( pcolors, recv_obj->colors().pointer(), recv_obj->colors().byteSize() );
+    memcpy( pdirections, recv_obj->directions().pointer(), recv_obj->directions().byteSize() );     
+    memcpy( psizes, recv_obj->sizes().pointer(), recv_obj->sizes().byteSize() );
+
+    glyph_object->setCoords( kvs_coords );
+    glyph_object->setColors( kvs_colors );
+    glyph_object->setDirections( kvs_directions );
+    glyph_object->setSizes( kvs_sizes );
 
     kvs::ValueArray<kvs::Real32> kvs_scaled_sizes;
     kvs_scaled_sizes.allocate( glyph_object->sizes().size() );

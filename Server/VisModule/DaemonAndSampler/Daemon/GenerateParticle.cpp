@@ -387,7 +387,6 @@ void GenerateParticleCS(
     */
 }
 
-#if 0
 void SetParticleParameterIS(
     const int time_step,
     vismodule::Camera* camera,
@@ -519,7 +518,7 @@ void SetParticleParameterIS(
 void GenerateParticleIS(
     ParticleProperty& particle_property,
     MultiVolumePropertyList& mvpl,
-    std::unique_ptr<kvs::PointObject> point_object
+    std::unique_ptr<kvs::PointObject>& point_object
     // jpv::ParticleTransferServer pts,
     // jpv::ServerMode server_mode,
     // jpv::InitializeParameter init_param
@@ -535,7 +534,8 @@ void GenerateParticleIS(
 
     if( pm.stepExisted() )
     {
-        pm.setTimeStep_particle( pm.particleStatusFile().getLatestTimeStep() );
+        // pm.setTimeStep_particle( pm.particleStatusFile().getLatestTimeStep() );
+        pm.setTimeStep_particle( particle_property.m_time_step );
     }
     else
     {
@@ -622,7 +622,6 @@ void GenerateParticleIS(
     delete[] tmp_o_bins;
     */
 }
-#endif
 
 void generate_volume(
     const ParticleProperty& particle_property,

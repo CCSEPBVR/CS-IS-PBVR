@@ -104,7 +104,7 @@ void SetParticleParameterIS(
 void GenerateParticleIS(
     ParticleProperty &particle_property,
     MultiVolumePropertyList& mvpl,
-    std::unique_ptr<kvs::PointObject> point_object
+    std::unique_ptr<kvs::PointObject>& point_object
     // jpv::ParticleTransferServer pts,
     // jpv::ServerMode server_mode,
     // jpv::InitializeParameter init_param
