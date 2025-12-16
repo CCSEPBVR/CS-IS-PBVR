@@ -55,6 +55,20 @@ CMakeLists.txt.user*
 *.ncb
 *.sdf
 *.opensdf
+.vs/
+*.vcxproj.user
+*.sln
+
+# ===== MSVC build artifacts =====
+x64/
+Debug/
+Release/
+
+# ===== Project specific =====
+Server/x64/
+Server/FunctionParser/x64/
+Server/VisModule/x64/
+Server/pbvr_server/
 
 # MinGW generated files
 *.Debug
