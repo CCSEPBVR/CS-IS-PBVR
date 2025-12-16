@@ -71,28 +71,29 @@ public:
         std::memcpy( t, buf, sizeof( *t ) );
         return sizeof( *t );
     }
-
-    template<>
-    size_t byteSize<std::string>( const std::string& object );
-    template<>
-    size_t write<std::string>( char* buf, const std::string& object );
-    template<>
-    size_t read<std::string>( const char* buf, std::string* object );
-
-    template<>
-    size_t byteSize<vismodule::Camera>( const vismodule::Camera& object );
-    template<>
-    size_t pack<vismodule::Camera>( char* buf, const vismodule::Camera& object );
-    template<>
-    size_t unpack<vismodule::Camera>( const char* buf, vismodule::Camera* object );
-
-    template<>
-    size_t byteSize<vismodule::TransferFunction>( const vismodule::TransferFunction& object );
-    template<>
-    size_t pack<vismodule::TransferFunction>( char* buf, const vismodule::TransferFunction& object );
-    template<>
-    size_t unpack<vismodule::TransferFunction>( const char* buf, vismodule::TransferFunction* object );
 };
 }
+
+template<>
+size_t vismodule::Serializer::byteSize<std::string>( const std::string& object );
+template<>
+size_t vismodule::Serializer::write<std::string>( char* buf, const std::string& object );
+template<>
+size_t vismodule::Serializer::read<std::string>( const char* buf, std::string* object );
+
+template<>
+size_t vismodule::Serializer::byteSize<vismodule::Camera>( const vismodule::Camera& object );
+template<>
+size_t vismodule::Serializer::pack<vismodule::Camera>( char* buf, const vismodule::Camera& object );
+template<>
+size_t vismodule::Serializer::unpack<vismodule::Camera>( const char* buf, vismodule::Camera* object );
+
+template<>
+size_t vismodule::Serializer::byteSize<vismodule::TransferFunction>( const vismodule::TransferFunction& object );
+template<>
+size_t vismodule::Serializer::pack<vismodule::TransferFunction>( char* buf, const vismodule::TransferFunction& object );
+template<>
+size_t vismodule::Serializer::unpack<vismodule::TransferFunction>( const char* buf, vismodule::TransferFunction* object );
+
 
 #endif // VISMODULE__JPV__SERIALIZER_H_INCLUDE
