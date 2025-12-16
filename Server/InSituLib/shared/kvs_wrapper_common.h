@@ -7,6 +7,9 @@
 #include <vismodule/PointObject>
 #include <vismodule/KVSMLObjectGlyph>
 #include <vismodule/MultiVolumeProperty>
+#include <vismodule/ParticleProperty>
+#include <vismodule/GlyphProperty>
+#include <vismodule/PlotOverLineProperty>
 
 // add FJ start
 #ifndef SIMD_BLK_SIZE
@@ -48,14 +51,14 @@ bool SetParameterFilePath(
 bool SetGlyphParameter(
     const std::string& glyphParameterPath,
     const std::string& glyphParameterPath_old,
-    Argument& param,
+    GlyphProperty& glyph_property,
     NameListFile& nameListFile
 );
 
 bool SetPlotOverLineParameter(
     const std::string& plotOverLineParameterPath,
     const std::string& plotOverLineParameterPath_old,
-    Argument& param,
+    PlotOverLineProperty& pol_property,
     NameListFile& nameListFile
 );
 
@@ -75,7 +78,7 @@ void MakeGlyph(
 );
 
 void OutputParticles(
-    const Argument& param,
+    const ParticleProperty& particle_property,
     const MultiVolumePropertyList& mvpl,
     const int start_time_step,
     const int time_step,

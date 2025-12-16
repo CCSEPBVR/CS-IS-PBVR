@@ -160,6 +160,7 @@ $(OUTDIR)/./Utility/Time.o \
 $(OUTDIR)/./Utility/Tokenizer.o \
 $(OUTDIR)/./Utility/Value.o \
 $(OUTDIR)/./Utility/ValueArray.o \
+$(OUTDIR)/./Utility/Serializer.o \
 $(OUTDIR)/./Visualization/Data/HydrogenVolumeData.o \
 $(OUTDIR)/./Visualization/Data/TornadoVolumeData.o \
 $(OUTDIR)/./Visualization/Exporter/KVSMLObjectPointWriter.o \
@@ -246,6 +247,7 @@ $(OUTDIR)/./Visualization/Pipeline/ObjectImporter.o \
 $(OUTDIR)/./Visualization/Pipeline/PipelineModule.o \
 $(OUTDIR)/./Visualization/Property/MultiVolumeProperty.o \
 $(OUTDIR)/./Visualization/Property/TransferFunctionProperty.o \
+$(OUTDIR)/./Visualization/Property/VariableRange.o \
 $(OUTDIR)/./Visualization/Renderer/ParticleBuffer.o \
 $(OUTDIR)/./Visualization/Renderer/RendererBase.o \
 $(OUTDIR)/./Visualization/Renderer/Shader.o \

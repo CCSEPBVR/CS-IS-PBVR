@@ -3,7 +3,6 @@ include ../../arch/${PBVR_MACHINE}
 
 VISMODULE_SOURCE_DIR       = ../../VisModule
 FUNCTION_PARSER_DIR        = ../../FunctionParser
-COMMON_DIR                 = ../../Common
 
 OBJS  = \
 ../shared/kvs_wrapper_common.o \
@@ -24,7 +23,7 @@ endif
 CXXFLAGS += -I../shared
 CXXFLAGS += -I${VISMODULE_SOURCE_DIR}
 CXXFLAGS += -I${FUNCTION_PARSER_DIR}
-CXXFLAGS += -I${COMMON_DIR}
+CXXFLAGS += -I${KVS_DIR}/include
 CXXFLAGS += -w -DNO_CLIENT
 
 ifdef KVS_DIR

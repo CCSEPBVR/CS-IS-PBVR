@@ -12,8 +12,10 @@
 #include <vismodule/CellByCellParticleGenerator>
 #include <vismodule/TransferFunctionSynthesizer>
 
+#include <vismodule/ParameterFileReader>
+
 // Generate
-#include <vismodule/CS_PointObjectGenerator>
+#include <vismodule/PointObjectGenerator>
 #include <vismodule/GlyphSeedGenerator>
 #include <vismodule/PlotOverLineGenerator>
 
@@ -116,20 +118,22 @@ bool generate_particles(
     char  arg_dummy0[] = "dummy";
     char* arg_dummy[]  = { arg_dummy0, NULL };
 
-    Argument param( 1, arg_dummy );
+    ParticleProperty particle_property;
+    GlyphProperty glyph_property;
+    PlotOverLineProperty pol_property;
     MultiVolumePropertyList mvpl;
     static NameListFile particleNameListFile;
     static NameListFile glyphNameListFile;
     static NameListFile POLNameListFile;
-    param.m_transfunc_synthesizer = new TransferFunctionSynthesizer();
-    param.m_camera                = new vismodule::Camera();
+    particle_property.m_transfunc_synthesizer = new TransferFunctionSynthesizer();
+    particle_property.m_camera                = new vismodule::Camera();
 
-    SetParticleParameter( dom, tfFilePath, tfFilePath_old, param, mvpl, particleNameListFile );
-    SetGlyphParameter( glyphParameterPath, glyphParameterPath_old, param, glyphNameListFile );
-    SetPlotOverLineParameter( plotOverLineParameterPath, plotOverLineParameterPath_old, param, POLNameListFile );
+    SetParticleParameter( dom, tfFilePath, tfFilePath_old, particle_property, mvpl, particleNameListFile );
+    SetGlyphParameter( glyphParameterPath, glyphParameterPath_old, glyph_property, glyphNameListFile );
+    SetPlotOverLineParameter( plotOverLineParameterPath, plotOverLineParameterPath_old, pol_property, POLNameListFile );
 
-    const int tf_number  = param.m_transfunc_array.size();
-    const int resolution = param.m_sampling_size;
+    const int tf_number  = particle_property.m_transfunc_array.size();
+    const int resolution = pol_property.m_sampling_size;
 
     // particle parameters
     std::vector<float> particle_coords;
@@ -168,26 +172,26 @@ bool generate_particles(
     std::vector<int>   mask( resolution, 0 );
     std::vector<float> x_axis( resolution, 0 );
     
-    jpv::ServerMode server_mode = jpv::ServerMode::IS;
+    ServerMode server_mode = ServerMode::IS;
     vismodule::PointObject* point_object = nullptr;
-    vismodule::CS_PointObjectGenerator point_object_generator;
+    vismodule::PointObjectGenerator point_object_generator;
     point_object = point_object_generator.GenerateParticleStruct(
-        param, dom, values, nvariables, server_mode
+        particle_property, dom, values, nvariables
     );
 
     MakeParticle( point_object, particle_coords, particle_colors, particle_normals ); // InSitu only
     MakeHistgram( point_object, tf_number, tmp_c_bins, tmp_o_bins ); // CS common
-    MakeParticleMinMax( param.m_transfunc_synthesizer, tf_number, tmp_max, tmp_min ); // CS common
+    MakeParticleMinMax( particle_property.m_transfunc_synthesizer, tf_number, tmp_max, tmp_min ); // CS common
 
     delete point_object;
 
-    if ( param.m_glyph_flag )
+    if ( glyph_property.m_glyph_flag )
     {
         vismodule::KVSMLObjectGlyph* glyph_object = new vismodule::KVSMLObjectGlyph;
         vismodule::GlyphSeedGenerator glyph_creator;
         int number_of_divide = mpi_size;
         glyph_creator.GenerateGlyphStruct(
-            param, number_of_divide, dom,
+            glyph_property, number_of_divide, dom,
             values, nvariables, server_mode, glyph_object
         );
 
@@ -196,15 +200,23 @@ bool generate_particles(
         delete glyph_object;
     }
 
-    if ( param.m_plot_flag )
+    if ( pol_property.m_plot_flag )
     {
         vismodule::KVSMLObjectPlotOverLine* pol_object = new vismodule::KVSMLObjectPlotOverLine;
         PlotOverLineGenerator pol_generator;
         pol_generator.GeneratePOLStruct(
-            param, dom, values, nvariables, pol_object
+            pol_property, dom, values, nvariables, pol_object
         );
 
-        MakePlotOverLine( pol_object, resolution, values_on_line, mask, x_axis ); // CS common
+        for( size_t i = 0; i < resolution; i++ )
+        { 
+            x_axis[i] = pol_object->x_axis()[i];
+            if ( pol_object->mask()[i] )
+            {
+                mask[i]           = 1;
+                values_on_line[i] = pol_object->values_on_line()[i];
+            }
+        }
 
         delete pol_object;
     }
@@ -219,12 +231,12 @@ bool generate_particles(
 
     // データ出力
     OutputParticles(
-        param, mvpl, start_time_step, time_step, tf_number, nvariables, particleFilePrefix,
+        particle_property, mvpl, start_time_step, time_step, tf_number, nvariables, particleFilePrefix,
         stateFilePath, historyFilePath, particle_coords, particle_colors,
         particle_normals, tmp_c_bins, tmp_o_bins, tmp_max, tmp_min
     );
 
-    if ( param.m_glyph_flag )
+    if ( glyph_property.m_glyph_flag )
     {
         OutputGlyphs(
             time_step, glyphFilePrefix, glyph_coords,
@@ -232,7 +244,7 @@ bool generate_particles(
         );
     }
 
-    if ( param.m_plot_flag )
+    if ( pol_property.m_plot_flag )
     {
         OutputLine( time_step, plotOverLineFilePrefix, values_on_line, mask, x_axis );
     }
@@ -241,8 +253,8 @@ bool generate_particles(
     delete tmp_o_bins;
     delete tmp_max;
     delete tmp_min;
-    delete param.m_transfunc_synthesizer;
-    delete param.m_camera;
+    delete particle_property.m_transfunc_synthesizer;
+    delete particle_property.m_camera;
 
     return true;
 }
@@ -251,7 +263,7 @@ bool SetParticleParameter(
     const domain_parameters_struct& dom,
     const std::string& tfFilePath,
     const std::string& tfFilePath_old,
-    Argument& param,
+    ParticleProperty& particle_property,
     MultiVolumePropertyList& mvpl,
     NameListFile& nameListFile
 )
@@ -309,7 +321,7 @@ bool SetParticleParameter(
     }
 
     if ( mpi_rank > 0 ) ppr.setNameListFile( nameListFile );
-    ppr.setParticleParameter( param );
+    ppr.setParticleParameter( particle_property );
 
     vismodule::Vector3f min_object_coords(
         dom.x_global_min,
@@ -337,8 +349,8 @@ bool SetParticleParameter(
         dom.z_global_max
     );
 
-    param.m_sampling_step = ( max - min ) / 1E1;
-    const float sampling_step = param.m_sampling_step;
+    particle_property.m_sampling_step = ( max - min ) / 1E1;
+    const float sampling_step = particle_property.m_sampling_step;
 
     vismodule::StructuredVolumeObject object;
     object.setMinMaxObjectCoords( min_object_coords, max_object_coords );
@@ -349,11 +361,11 @@ bool SetParticleParameter(
                               * ( dom.z_global_max - dom.z_global_min );
 
     const float max_opacity      = 0.98;
-    const int particle_limit     = param.m_particle_limit;
-    const float particle_density = param.m_particle_density;
+    const int particle_limit     = particle_property.m_particle_limit;
+    const float particle_density = particle_property.m_particle_density;
     const int subpixel_level     = CalculateSubpixelLevel(
         particle_limit,
-        *param.m_camera,
+        *particle_property.m_camera,
         sampling_step,
         total_volume,
         &object
@@ -363,7 +375,7 @@ bool SetParticleParameter(
     float max_density;
 
     Generator::CalculateDensityParameters(
-        param.m_camera,
+        particle_property.m_camera,
         &object,
         (float)subpixel_level,
         sampling_step,
@@ -372,26 +384,26 @@ bool SetParticleParameter(
         &max_density
     );
 
-    param.m_transfunc_synthesizer->setMaxOpacity( max_opacity );
-    param.m_transfunc_synthesizer->setMaxDensity( max_density );
-    param.m_transfunc_synthesizer->setSamplingVolumeInverse( sampling_volume_inverse );
+    particle_property.m_transfunc_synthesizer->setMaxOpacity( max_opacity );
+    particle_property.m_transfunc_synthesizer->setMaxDensity( max_density );
+    particle_property.m_transfunc_synthesizer->setSamplingVolumeInverse( sampling_volume_inverse );
 
     if( mpi_rank == 0 )
     {
-        fprintf( stdout , "---------initialize Parameters----------------------------\n" );
-        fprintf( stdout , "particle_limit    = %20d\n"  , particle_limit                 );
-        fprintf( stdout , "particle_density  = %20f\n"  , particle_density               );
-        fprintf( stdout , "resolutin_height  = %20d\n"  , param.m_camera->windowHeight() );
-        fprintf( stdout , "resolutin_width   = %20d\n"  , param.m_camera->windowWidth()  );
-        fprintf( stdout , "total_volume      = %20.3e\n", total_volume                   );
-        fprintf( stdout , "  |-X             = %20f\n"  , object.maxObjectCoord().x()    );
-        fprintf( stdout , "  |-Y             = %20f\n"  , object.maxObjectCoord().y()    );
-        fprintf( stdout , "  |-Z             = %20f\n"  , object.maxObjectCoord().z()    );
-        fprintf( stdout , "max_opacity       = %20.3e\n", max_opacity                    );
-        fprintf( stdout , "max_density       = %20.3e\n", max_density                    );
-        fprintf( stdout , "sampling_step     = %20.3e\n", sampling_step                  );
-        fprintf( stdout , "subpixel_level    = %20d\n"  , subpixel_level                 );
-        fprintf( stdout , "----------------------------------------------------------\n" );
+        fprintf( stdout , "---------initialize Parameters----------------------------------------\n" );
+        fprintf( stdout , "particle_limit    = %20d\n"  , particle_limit                             );
+        fprintf( stdout , "particle_density  = %20f\n"  , particle_density                           );
+        fprintf( stdout , "resolutin_height  = %20d\n"  , particle_property.m_camera->windowHeight() );
+        fprintf( stdout , "resolutin_width   = %20d\n"  , particle_property.m_camera->windowWidth()  );
+        fprintf( stdout , "total_volume      = %20.3e\n", total_volume                               );
+        fprintf( stdout , "  |-X             = %20f\n"  , object.maxObjectCoord().x()                );
+        fprintf( stdout , "  |-Y             = %20f\n"  , object.maxObjectCoord().y()                );
+        fprintf( stdout , "  |-Z             = %20f\n"  , object.maxObjectCoord().z()                );
+        fprintf( stdout , "max_opacity       = %20.3e\n", max_opacity                                );
+        fprintf( stdout , "max_density       = %20.3e\n", max_density                                );
+        fprintf( stdout , "sampling_step     = %20.3e\n", sampling_step                              );
+        fprintf( stdout , "subpixel_level    = %20d\n"  , subpixel_level                             );
+        fprintf( stdout , "----------------------------------------------------------------------\n" );
     }
 
     return true;

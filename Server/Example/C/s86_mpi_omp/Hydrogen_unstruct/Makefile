@@ -7,7 +7,6 @@ INSITU_DIR           = ${PBVR_DIR}/InSituLib/unstruct
 INSITU_COMMON_DIR    = ${PBVR_DIR}/InSituLib/shared
 VISMODULE_SOURCE_DIR = ${PBVR_DIR}/VisModule
 FUNC_DIR             = ${PBVR_DIR}/FunctionParser
-COMMON_DIR           = ${PBVR_DIR}/Common
 
 TARGET  = run
 
@@ -26,7 +25,7 @@ CXXFLAGS += -I./ \
             -I${INSITU_COMMON_DIR} \
             -I${VISMODULE_SOURCE_DIR} \
             -I${FUNC_DIR} \
-            -I${COMMON_DIR}
+            -I${KVS_DIR}/include
 
 ifdef MPICXX
     LD = ${MPILD}
@@ -39,7 +38,7 @@ endif
 LDFLAGS  += -L${INSITU_DIR} -lInSituPBVR \
             -L${VISMODULE_SOURCE_DIR}/Release -lvisModule \
             -L${FUNC_DIR} -lpbvrFunc \
-            -L${COMMON_DIR} -lpbvrCommon
+            -L${KVS_DIR}/lib -lkvsCore
 
 TEST_SRCS = \
 main.cpp \

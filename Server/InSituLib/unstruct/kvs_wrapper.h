@@ -2,10 +2,10 @@
 #define KVS_WRAPPER_H_INCLUDED
 
 #include <vismodule/VolumeObjectBase>
-#include <vismodule/Argument>
 #include <vismodule/NameListFile>
 #include <vismodule/MultiVolumeProperty>
 #include <vismodule/CellByCellParticleGenerator>
+#include <vismodule/ParticleProperty>
 
 #ifdef EXTEND_FILE_FORMAT
 #include <vtkUnstructuredGrid.h>
@@ -32,7 +32,7 @@ bool SetParticleParameter(
     const domain_parameters_unstruct& dom,
     const std::string& tfFilePath,
     const std::string& tfFilePath_old,
-    Argument& param,
+    ParticleProperty& particle_property,
     MultiVolumePropertyList& mvpl,
     NameListFile& nameListFile
 );

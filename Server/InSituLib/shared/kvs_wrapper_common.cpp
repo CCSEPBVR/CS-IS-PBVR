@@ -179,7 +179,7 @@ bool SetParameterFilePath(
 bool SetGlyphParameter(
     const std::string& glyphParameterPath,
     const std::string& glyphParameterPath_old,
-    Argument& param,
+    GlyphProperty& glyph_property,
     NameListFile& nameListFile
 )
 {
@@ -236,7 +236,7 @@ bool SetGlyphParameter(
     }
 
     if ( mpi_rank > 0 ) ppr.setNameListFile( nameListFile );
-    ppr.setGlyphParameter( param );
+    ppr.setGlyphParameter( glyph_property );
 
     return true;
 }
@@ -244,7 +244,7 @@ bool SetGlyphParameter(
 bool SetPlotOverLineParameter(
     const std::string& plotOverLineParameterPath,
     const std::string& plotOverLineParameterPath_old,
-    Argument& param,
+    PlotOverLineProperty& pol_property,
     NameListFile& nameListFile
 )
 {
@@ -301,7 +301,7 @@ bool SetPlotOverLineParameter(
     }
 
     if ( mpi_rank > 0 ) ppr.setNameListFile( nameListFile );
-    ppr.setPlotOverLineParameter( param );
+    ppr.setPlotOverLineParameter( pol_property );
 
     return true;
 }
@@ -382,7 +382,7 @@ auto safe_append = [](auto& dst, auto const& src, char const* what){
 }
 
 void OutputParticles(
-    const Argument& param,
+    const ParticleProperty& particle_property,
     const MultiVolumePropertyList& mvpl,
     const int start_time_step,
     const int time_step,
@@ -559,7 +559,7 @@ void OutputParticles(
     /*  分割後コミュニケータのランク0で出力する  */
     if( new_rank == 0 )
     {
-        vismodule::PointObject* point_object = new vismodule::PointObject( new_coords, new_colors, new_normals, param.m_subpixel_level );
+        vismodule::PointObject* point_object = new vismodule::PointObject( new_coords, new_colors, new_normals, particle_property.m_subpixel_level );
         point_object->setMinMaxObjectCoords( mvpl.m_total_min_object_coord, mvpl.m_total_max_object_coord );
         // If async_io is enabled, use worker thread to write kvsml data and state.txt
         if (async_io_enabled){
@@ -668,8 +668,8 @@ void OutputParticles(
         }
 
         ofs2 << "N_VARIABLES="      << nvariables               << std::endl;
-        ofs2 << "PARTICLE_DENSITY=" << param.m_particle_density << std::endl;
-        ofs2 << "PARTICLE_LIMIT="   << param.m_particle_limit   << std::endl;
+        ofs2 << "PARTICLE_DENSITY=" << particle_property.m_particle_density << std::endl;
+        ofs2 << "PARTICLE_LIMIT="   << particle_property.m_particle_limit   << std::endl;
         ofs2 << "END_HISTORY_FILE=SUCCESS" << std::endl;
         ofs2.close();
     }

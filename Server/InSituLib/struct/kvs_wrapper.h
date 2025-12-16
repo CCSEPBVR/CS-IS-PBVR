@@ -5,6 +5,7 @@
 #include <vismodule/NameListFile>
 #include <vismodule/MultiVolumeProperty>
 #include <vismodule/CellByCellParticleGenerator>
+#include <vismodule/ParticleProperty>
 
 #ifdef DOUBLE_SCHEME
     typedef double Type;
@@ -34,7 +35,7 @@ bool SetParticleParameter(
     const domain_parameters_struct& dom,
     const std::string& tfFilePath,
     const std::string& tfFilePath_old,
-    Argument& param,
+    ParticleProperty& particle_property,
     MultiVolumePropertyList& mvpl,
     NameListFile& nameListFile
 );
