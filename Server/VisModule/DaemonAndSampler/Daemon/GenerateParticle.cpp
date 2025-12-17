@@ -122,7 +122,7 @@ void GenerateParticleCS(
     bool nan_error = false;
 
 #ifndef CPU_VER
-    JobCollector jc;
+    JobCollector jc( &jd );
 #endif
 
     tf_number = particle_property.m_transfunc_array.size();

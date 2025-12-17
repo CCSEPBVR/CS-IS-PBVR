@@ -64,7 +64,7 @@ std::unique_ptr<kvs::PolygonGlyphObject> GenerateGlyphCS(
     bool nan_error = false;
 
 #ifndef CPU_VER
-    JobCollector jc;
+    JobCollector jc( &jd );
 #endif
 
     /* 一旦保留

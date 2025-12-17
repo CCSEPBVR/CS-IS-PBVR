@@ -53,7 +53,7 @@ std::unique_ptr<vismodule::KVSMLObjectPlotOverLine> GeneratePOLCS(
     bool nan_error = false;
 
 #ifndef CPU_VER
-    JobCollector jc;
+    JobCollector jc( &jd );
 #endif
 
     vismodule::ValueArray<float> values_on_line;
