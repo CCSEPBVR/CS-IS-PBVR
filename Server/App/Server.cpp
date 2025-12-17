@@ -1,4 +1,5 @@
 #include "Server.h"
+#include <filesystem>
 
 Server::Server( int port )
     : m_port( port )
@@ -250,6 +251,25 @@ void Server::initialize( uWS::WebSocket<false, true, PerSocket>* ws, const nlohm
     std::string uuid                        = received[Protocol::Key::UUID];
     ObjectInfoExtractor::Format format      = received[Protocol::Key::Format];
 
+    std::filesystem::path fileSystemPath( volumeDataFilePath );
+    std::string volumeDataFileName      = fileSystemPath.stem().string();
+    std::string volumeDataFileExtension = fileSystemPath.extension().string();
+
+    MultiVolumePropertyList mvpl;
+    ParticleProperty particle_property;
+    particle_property.filepath = volumeDataFilePath;
+    mvpl.searchFile( particle_property );
+
+    float min_x = mvpl.m_total_min_object_coord[0];
+    float min_y = mvpl.m_total_min_object_coord[1];
+    float min_z = mvpl.m_total_min_object_coord[2];
+    float max_x = mvpl.m_total_max_object_coord[0];
+    float max_y = mvpl.m_total_max_object_coord[1];
+    float max_z = mvpl.m_total_max_object_coord[2];
+
+    int start_step = mvpl.m_total_start_steps;
+    int last_step = mvpl.m_total_last_step;
+
     const const int DEBUG_NUMBER_OF_VECTOR = 3;
     {
         nlohmann::json msg;
@@ -264,17 +284,17 @@ void Server::initialize( uWS::WebSocket<false, true, PerSocket>* ws, const nlohm
         msg[Protocol::Key::TmpIsKeepFinal]          = false;
         msg[Protocol::Key::IsKeepFinal]             = false;
 
-        msg[Protocol::Key::Name]                    = "TMP";                                                    // FIXME:サーバ担当者
-        msg[Protocol::Key::Extension]               = "TMP";                                                    // FIXME:サーバ担当者
+        msg[Protocol::Key::Name]                    = volumeDataFileName;                                       // FIXME:サーバ担当者
+        msg[Protocol::Key::Extension]               = volumeDataFileExtension;                                  // FIXME:サーバ担当者
         msg[Protocol::Key::Directory]               = volumeDataFilePath;
         msg[Protocol::Key::Format]                  = format;
-        msg[Protocol::Key::TimeStep]                = std::pair<int,int>( 0 , 50 );
+        msg[Protocol::Key::TimeStep]                = std::pair<int,int>( start_step, last_step );
         msg[Protocol::Key::TmpIsFocus]              = false;
         msg[Protocol::Key::IsFocus]                 = false;
-        msg[Protocol::Key::MinObjectCoord]          = { 1, 2, 3 };                                              // FIXME:サーバ担当者
-        msg[Protocol::Key::MaxObjectCoord]          = { 4, 5, 6 };                                              // FIXME:サーバ担当者
-        msg[Protocol::Key::MinExternalCoord]        = { 1, 2, 3 };                                              // FIXME:サーバ担当者
-        msg[Protocol::Key::MaxExternalCoord]        = { 4, 5, 6 };                                              // FIXME:サーバ担当者
+        msg[Protocol::Key::MinObjectCoord]          = { min_x, min_y, min_z };                                  // FIXME:サーバ担当者
+        msg[Protocol::Key::MaxObjectCoord]          = { max_x, max_y, max_z };                                  // FIXME:サーバ担当者
+        msg[Protocol::Key::MinExternalCoord]        = { min_x, min_y, min_z };                                  // FIXME:サーバ担当者
+        msg[Protocol::Key::MaxExternalCoord]        = { max_x, max_y, max_z };                                  // FIXME:サーバ担当者
 
         // Common Server Point Object Info
         msg[Protocol::Key::TmpParticleLimit]        = 10000000;
@@ -283,13 +303,13 @@ void Server::initialize( uWS::WebSocket<false, true, PerSocket>* ws, const nlohm
         msg[Protocol::Key::ExtraOpacityFactor]      = 1.0;
 
         // Client Server Point Object Info
-        msg[Protocol::Key::NumberOfVector]          = DEBUG_NUMBER_OF_VECTOR;                                   // FIXME:サーバ担当者
-        msg[Protocol::Key::NumberOfElements]        = 3;                                                        // FIXME:サーバ担当者
-        msg[Protocol::Key::NumberOfSubvolume]       = 3;                                                        // FIXME:サーバ担当者
-        msg[Protocol::Key::NumberOfNodes]           = 3;                                                        // FIXME:サーバ担当者
-        msg[Protocol::Key::ElementType]             = 3;                                                        // FIXME:サーバ担当者
-        msg[Protocol::Key::FileType]                = 3;                                                        // FIXME:サーバ担当者
-        msg[Protocol::Key::StepNumber]              = 3;                                                        // FIXME:サーバ担当者
+        msg[Protocol::Key::NumberOfVector]          = mvpl.m_total_number_ingredients;                          // FIXME:サーバ担当者
+        msg[Protocol::Key::NumberOfElements]        = mvpl.m_total_number_elements;                             // FIXME:サーバ担当者
+        msg[Protocol::Key::NumberOfSubvolume]       = mvpl.m_total_number_subvolumes;                           // FIXME:サーバ担当者
+        msg[Protocol::Key::NumberOfNodes]           = mvpl.m_total_number_nodes;                                // FIXME:サーバ担当者
+        msg[Protocol::Key::ElementType]             = mvpl.m_list[0].m_elem_type;                               // FIXME:サーバ担当者
+        msg[Protocol::Key::FileType]                = mvpl.m_list[0].m_file_type;                               // FIXME:サーバ担当者
+        msg[Protocol::Key::StepNumber]              = mvpl.m_total_number_steps;                                // FIXME:サーバ担当者
         msg[Protocol::Key::TmpCoordinateX]          = "";
         msg[Protocol::Key::CoordinateX]             = "";
         msg[Protocol::Key::TmpCoordinateY]          = "";
@@ -307,7 +327,7 @@ void Server::initialize( uWS::WebSocket<false, true, PerSocket>* ws, const nlohm
     }
 
     {
-        if( DEBUG_NUMBER_OF_VECTOR >= 3 ) // 成分数3以上の時
+        if( mvpl.m_total_number_ingredients >= 3 ) // 成分数3以上の時
         {
             std::cout << "TEST" << std::endl;
             nlohmann::json msg;
@@ -322,17 +342,17 @@ void Server::initialize( uWS::WebSocket<false, true, PerSocket>* ws, const nlohm
             msg[Protocol::Key::TmpIsKeepFinal]          = false;
             msg[Protocol::Key::IsKeepFinal]             = false;
 
-            msg[Protocol::Key::Name]                    = "TMP";                                                    // FIXME:サーバ担当者
-            msg[Protocol::Key::Extension]               = "TMP";                                                    // FIXME:サーバ担当者
+            msg[Protocol::Key::Name]                    = volumeDataFileName;                                       // FIXME:サーバ担当者
+            msg[Protocol::Key::Extension]               = volumeDataFileExtension;                                  // FIXME:サーバ担当者
             msg[Protocol::Key::Directory]               = volumeDataFilePath;
             msg[Protocol::Key::Format]                  = ObjectInfoExtractor::Format::ServerGlyphObject;
-            msg[Protocol::Key::TimeStep]                = std::pair<int,int>( 0 , 50 );
+            msg[Protocol::Key::TimeStep]                = std::pair<int,int>( start_step, last_step );
             msg[Protocol::Key::TmpIsFocus]              = false;
             msg[Protocol::Key::IsFocus]                 = false;
-            msg[Protocol::Key::MinObjectCoord]          = { 1, 2, 3 };                                              // FIXME:サーバ担当者
-            msg[Protocol::Key::MaxObjectCoord]          = { 4, 5, 6 };                                              // FIXME:サーバ担当者
-            msg[Protocol::Key::MinExternalCoord]        = { 1, 2, 3 };                                              // FIXME:サーバ担当者
-            msg[Protocol::Key::MaxExternalCoord]        = { 4, 5, 6 };                                              // FIXME:サーバ担当者
+            msg[Protocol::Key::MinObjectCoord]          = { min_x, min_y, min_z };                                  // FIXME:サーバ担当者
+            msg[Protocol::Key::MaxObjectCoord]          = { max_x, max_y, max_z };                                  // FIXME:サーバ担当者
+            msg[Protocol::Key::MinExternalCoord]        = { min_x, min_y, min_z };                                  // FIXME:サーバ担当者
+            msg[Protocol::Key::MaxExternalCoord]        = { max_x, max_y, max_z };                                  // FIXME:サーバ担当者
 
             // Common Server Point Object Info
             msg[Protocol::Key::TmpParticleLimit]        = 10000000;
@@ -341,13 +361,13 @@ void Server::initialize( uWS::WebSocket<false, true, PerSocket>* ws, const nlohm
             msg[Protocol::Key::ExtraOpacityFactor]      = 1.0;
 
             // Client Server Point Object Info
-            msg[Protocol::Key::NumberOfVector]          = DEBUG_NUMBER_OF_VECTOR;                                   // FIXME:サーバ担当者
-            msg[Protocol::Key::NumberOfElements]        = 3;                                                        // FIXME:サーバ担当者
-            msg[Protocol::Key::NumberOfSubvolume]       = 3;                                                        // FIXME:サーバ担当者
-            msg[Protocol::Key::NumberOfNodes]           = 3;                                                        // FIXME:サーバ担当者
-            msg[Protocol::Key::ElementType]             = 3;                                                        // FIXME:サーバ担当者
-            msg[Protocol::Key::FileType]                = 3;                                                        // FIXME:サーバ担当者
-            msg[Protocol::Key::StepNumber]              = 3;                                                        // FIXME:サーバ担当者
+            msg[Protocol::Key::NumberOfVector]          = mvpl.m_total_number_ingredients;                          // FIXME:サーバ担当者
+            msg[Protocol::Key::NumberOfElements]        = mvpl.m_total_number_elements;                             // FIXME:サーバ担当者
+            msg[Protocol::Key::NumberOfSubvolume]       = mvpl.m_total_number_subvolumes;                           // FIXME:サーバ担当者
+            msg[Protocol::Key::NumberOfNodes]           = mvpl.m_total_number_nodes;                                // FIXME:サーバ担当者
+            msg[Protocol::Key::ElementType]             = mvpl.m_list[0].m_elem_type;                               // FIXME:サーバ担当者
+            msg[Protocol::Key::FileType]                = mvpl.m_list[0].m_file_type;                               // FIXME:サーバ担当者
+            msg[Protocol::Key::StepNumber]              = mvpl.m_total_number_steps;                                // FIXME:サーバ担当者
             msg[Protocol::Key::TmpCoordinateX]          = "";
             msg[Protocol::Key::CoordinateX]             = "";
             msg[Protocol::Key::TmpCoordinateY]          = "";
