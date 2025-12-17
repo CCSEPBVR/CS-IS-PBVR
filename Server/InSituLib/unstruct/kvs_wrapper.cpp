@@ -503,11 +503,11 @@ bool generate_particles_vtk( int time_step, vtkUnstructuredGrid* ucd )
     particle_property.m_camera                = new vismodule::Camera();
 
     SetParticleParameter( dom, tfFilePath, tfFilePath_old, particle_property, mvpl, particleNameListFile );
-    SetGlyphParameter( glyphParameterPath, glyphParameterPath_old, particle_property, glyphNameListFile );
-    SetPlotOverLineParameter( plotOverLineParameterPath, plotOverLineParameterPath_old, particle_property, POLNameListFile );
+    SetGlyphParameter( glyphParameterPath, glyphParameterPath_old, glyph_property, glyphNameListFile );
+    SetPlotOverLineParameter( plotOverLineParameterPath, plotOverLineParameterPath_old, pol_property, POLNameListFile );
 
     const int tf_number  = particle_property.m_transfunc_array.size();
-    const int resolution = particle_property.m_sampling_size;
+    const int resolution = pol_property.m_sampling_size;
 
     // particle parameters
     std::vector<float> particle_coords;
@@ -587,12 +587,12 @@ bool generate_particles_vtk( int time_step, vtkUnstructuredGrid* ucd )
             raw_pointers_vector[i] = values.get()[i].get();
         }
 
-        jpv::ServerMode server_mode = jpv::ServerMode::IS;
+        ServerMode server_mode = ServerMode::IS;
         vismodule::PointObject* point_object = nullptr;
-        vismodule::CS_PointObjectGenerator point_object_generator;
+        vismodule::PointObjectGenerator point_object_generator;
         point_object = point_object_generator.GenerateParticleUnstruct(
             particle_property, dom, raw_pointers_vector.data(), nvariables, coordinates.get(),
-            ncoords, connections.get(), ncells, celltype, server_mode
+            ncoords, connections.get(), ncells, celltype
         );
 
         MakeParticle( point_object, particle_coords, particle_colors, particle_normals ); // InSitu only
