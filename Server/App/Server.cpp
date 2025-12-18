@@ -275,54 +275,153 @@ void Server::initialize( uWS::WebSocket<false, true, PerSocket>* ws, const nlohm
         nlohmann::json msg;
         msg[Protocol::Key::Event]                   = Protocol::Events::AddObjectToModel;
 
+        // // Common Object Info
+        // msg[Protocol::Key::UUID]                    = uuid;
+        // msg[Protocol::Key::TmpIsDisplay]            = true;
+        // msg[Protocol::Key::IsDisplay]               = false;
+        // msg[Protocol::Key::TmpIsKeepInitial]        = false;
+        // msg[Protocol::Key::IsKeepInitial]           = false;
+        // msg[Protocol::Key::TmpIsKeepFinal]          = false;
+        // msg[Protocol::Key::IsKeepFinal]             = false;
+
+        // msg[Protocol::Key::Name]                    = volumeDataFileName;                                       // FIXME:サーバ担当者
+        // msg[Protocol::Key::Extension]               = volumeDataFileExtension;                                  // FIXME:サーバ担当者
+        // msg[Protocol::Key::Directory]               = volumeDataFilePath;
+        // msg[Protocol::Key::Format]                  = format;
+        // msg[Protocol::Key::TimeStep]                = std::pair<int,int>( start_step, last_step );
+        // msg[Protocol::Key::TmpIsFocus]              = false;
+        // msg[Protocol::Key::IsFocus]                 = false;
+        // msg[Protocol::Key::MinObjectCoord]          = { min_x, min_y, min_z };                                  // FIXME:サーバ担当者
+        // msg[Protocol::Key::MaxObjectCoord]          = { max_x, max_y, max_z };                                  // FIXME:サーバ担当者
+        // msg[Protocol::Key::MinExternalCoord]        = { min_x, min_y, min_z };                                  // FIXME:サーバ担当者
+        // msg[Protocol::Key::MaxExternalCoord]        = { max_x, max_y, max_z };                                  // FIXME:サーバ担当者
+
+        // // Common Server Point Object Info
+        // msg[Protocol::Key::TmpParticleLimit]        = 10000000;
+        // msg[Protocol::Key::ParticleLimit]           = 10000000;
+        // msg[Protocol::Key::TmpExtraOpacityFactor]   = 1.0;
+        // msg[Protocol::Key::ExtraOpacityFactor]      = 1.0;
+
+        // // Client Server Point Object Info
+        // msg[Protocol::Key::NumberOfVector]          = mvpl.m_total_number_ingredients;                          // FIXME:サーバ担当者
+        // msg[Protocol::Key::NumberOfElements]        = mvpl.m_total_number_elements;                             // FIXME:サーバ担当者
+        // msg[Protocol::Key::NumberOfSubvolume]       = mvpl.m_total_number_subvolumes;                           // FIXME:サーバ担当者
+        // msg[Protocol::Key::NumberOfNodes]           = mvpl.m_total_number_nodes;                                // FIXME:サーバ担当者
+        // msg[Protocol::Key::ElementType]             = mvpl.m_list[0].m_elem_type;                               // FIXME:サーバ担当者
+        // msg[Protocol::Key::FileType]                = mvpl.m_list[0].m_file_type;                               // FIXME:サーバ担当者
+        // msg[Protocol::Key::StepNumber]              = mvpl.m_total_number_steps;                                // FIXME:サーバ担当者
+        // msg[Protocol::Key::TmpCoordinateX]          = "";
+        // msg[Protocol::Key::CoordinateX]             = "";
+        // msg[Protocol::Key::TmpCoordinateY]          = "";
+        // msg[Protocol::Key::CoordinateY]             = "";
+        // msg[Protocol::Key::TmpCoordinateZ]          = "";
+        // msg[Protocol::Key::CoordinateZ]             = "";
+        // msg[Protocol::Key::IsExport]                = false;
+
+        // // Nontexture Polygon Object Info
+        // msg[Protocol::Key::TmpPolygonColor]         = { 128, 128, 128 };
+        // msg[Protocol::Key::PolygonColor]            = { 128, 128, 128 };
+        // msg[Protocol::Key::TmpPolygonOpacity]       = 0.5;
+        // msg[Protocol::Key::PolygonOpacity]          = 0.5;
+
+        ObjectInfoExtractor::ObjectInfo objectInfo;
+        // // Common Object Info
+        objectInfo.uuid                  = uuid;
+        objectInfo.tmpIsDisplay          = true;
+        objectInfo.isDisplay             = false;
+        objectInfo.tmpIsKeepInitial      = false;
+        objectInfo.isKeepInitial         = false;
+        objectInfo.tmpIsKeepFinal        = false;
+        objectInfo.isKeepFinal           = false;
+
+        objectInfo.name                  = volumeDataFileName;                                       // FIXME:サーバ担当者
+        objectInfo.extension             = volumeDataFileExtension;                                  // FIXME:サーバ担当者
+        objectInfo.directory             = volumeDataFilePath;
+        objectInfo.format                = format;
+        objectInfo.timeStep              = std::pair<int,int>( start_step, last_step );
+        objectInfo.tmpIsFocus            = false;
+        objectInfo.isFocus               = false;
+        objectInfo.minObjectCoord        = { min_x, min_y, min_z };                                  // FIXME:サーバ担当者
+        objectInfo.maxObjectCoord        = { max_x, max_y, max_z };                                  // FIXME:サーバ担当者
+        objectInfo.minExternalCoord      = { min_x, min_y, min_z };                                  // FIXME:サーバ担当者
+        objectInfo.maxExternalCoord      = { max_x, max_y, max_z };                                  // FIXME:サーバ担当者
+
+        // // Common Server Point Object Info
+        objectInfo.tmpParticleLimit      = 10000000;
+        objectInfo.particleLimit         = 10000000;
+        objectInfo.tmpExtraOpacityFactor = 1.0;
+        objectInfo.extraOpacityFactor    = 1.0;
+
+        // // Client Server Point Object Info
+        objectInfo.numberOfVector        = mvpl.m_total_number_ingredients;                          // FIXME:サーバ担当者
+        objectInfo.numberOfElements      = mvpl.m_total_number_elements;                             // FIXME:サーバ担当者
+        objectInfo.numberOfSubvolume     = mvpl.m_total_number_subvolumes;                           // FIXME:サーバ担当者
+        objectInfo.numberOfNodes         = mvpl.m_total_number_nodes;                                // FIXME:サーバ担当者
+        objectInfo.elementType           = mvpl.m_list[0].m_elem_type;                               // FIXME:サーバ担当者
+        objectInfo.fileType              = mvpl.m_list[0].m_file_type;                               // FIXME:サーバ担当者
+        objectInfo.stepNumber            = mvpl.m_total_number_steps;                                // FIXME:サーバ担当者
+        objectInfo.tmpCoordinateX        = "";
+        objectInfo.coordinateX           = "";
+        objectInfo.tmpCoordinateY        = "";
+        objectInfo.coordinateY           = "";
+        objectInfo.tmpCoordinateZ        = "";
+        objectInfo.coordinateZ           = "";
+        objectInfo.isExport              = false;
+
+        // // Nontexture Polygon Object Info
+        objectInfo.tmpPolygonColor       = kvs::RGBColor( 128, 128, 128 );
+        objectInfo.polygonColor          = kvs::RGBColor( 128, 128, 128 );
+        objectInfo.tmpPolygonOpacity     = 0.5;
+        objectInfo.polygonOpacity        = 0.5;
+
+        m_objects->push_back( objectInfo );
+
         // Common Object Info
-        msg[Protocol::Key::UUID]                    = uuid;
-        msg[Protocol::Key::TmpIsDisplay]            = true;
-        msg[Protocol::Key::IsDisplay]               = false;
-        msg[Protocol::Key::TmpIsKeepInitial]        = false;
-        msg[Protocol::Key::IsKeepInitial]           = false;
-        msg[Protocol::Key::TmpIsKeepFinal]          = false;
-        msg[Protocol::Key::IsKeepFinal]             = false;
+        msg[Protocol::Key::UUID]                  = objectInfo.uuid;
+        msg[Protocol::Key::TmpIsDisplay]          = objectInfo.tmpIsDisplay;
+        msg[Protocol::Key::IsDisplay]             = objectInfo.isDisplay;
+        msg[Protocol::Key::TmpIsKeepInitial]      = objectInfo.tmpIsKeepInitial;
+        msg[Protocol::Key::IsKeepInitial]         = objectInfo.isKeepInitial;
+        msg[Protocol::Key::TmpIsKeepFinal]        = objectInfo.tmpIsKeepFinal;
+        msg[Protocol::Key::IsKeepFinal]           = objectInfo.isKeepFinal;
 
-        msg[Protocol::Key::Name]                    = volumeDataFileName;                                       // FIXME:サーバ担当者
-        msg[Protocol::Key::Extension]               = volumeDataFileExtension;                                  // FIXME:サーバ担当者
-        msg[Protocol::Key::Directory]               = volumeDataFilePath;
-        msg[Protocol::Key::Format]                  = format;
-        msg[Protocol::Key::TimeStep]                = std::pair<int,int>( start_step, last_step );
-        msg[Protocol::Key::TmpIsFocus]              = false;
-        msg[Protocol::Key::IsFocus]                 = false;
-        msg[Protocol::Key::MinObjectCoord]          = { min_x, min_y, min_z };                                  // FIXME:サーバ担当者
-        msg[Protocol::Key::MaxObjectCoord]          = { max_x, max_y, max_z };                                  // FIXME:サーバ担当者
-        msg[Protocol::Key::MinExternalCoord]        = { min_x, min_y, min_z };                                  // FIXME:サーバ担当者
-        msg[Protocol::Key::MaxExternalCoord]        = { max_x, max_y, max_z };                                  // FIXME:サーバ担当者
+        msg[Protocol::Key::Name]                  = objectInfo.name;
+        msg[Protocol::Key::Extension]             = objectInfo.extension;
+        msg[Protocol::Key::Directory]             = objectInfo.directory;
+        msg[Protocol::Key::Format]                = objectInfo.format;
+        msg[Protocol::Key::TimeStep]              = objectInfo.timeStep;
+        msg[Protocol::Key::TmpIsFocus]            = objectInfo.tmpIsFocus;
+        msg[Protocol::Key::IsFocus]               = objectInfo.isFocus;
+        msg[Protocol::Key::MinObjectCoord]        = { objectInfo.minObjectCoord.x(), objectInfo.minObjectCoord.y(), objectInfo.minObjectCoord.z() };
+        msg[Protocol::Key::MaxObjectCoord]        = { objectInfo.maxObjectCoord.x(), objectInfo.maxObjectCoord.y(), objectInfo.maxObjectCoord.z() };
+        msg[Protocol::Key::MinExternalCoord]      = { objectInfo.minExternalCoord.x(), objectInfo.minExternalCoord.y(), objectInfo.minExternalCoord.z() };
+        msg[Protocol::Key::MaxExternalCoord]      = { objectInfo.maxExternalCoord.x(), objectInfo.maxExternalCoord.y(), objectInfo.maxExternalCoord.z() };
+            // Common Server Point Object Info
+        msg[Protocol::Key::TmpParticleLimit]      = objectInfo.tmpParticleLimit;
+        msg[Protocol::Key::ParticleLimit]         = objectInfo.particleLimit;
+        msg[Protocol::Key::TmpExtraOpacityFactor] = objectInfo.tmpExtraOpacityFactor;
+        msg[Protocol::Key::ExtraOpacityFactor]    = objectInfo.extraOpacityFactor;
+            // Client Server Point Object Info
+        msg[Protocol::Key::NumberOfVector]        = objectInfo.numberOfVector;
+        msg[Protocol::Key::NumberOfElements]      = objectInfo.numberOfElements;
+        msg[Protocol::Key::NumberOfSubvolume]     = objectInfo.numberOfSubvolume;
+        msg[Protocol::Key::NumberOfNodes]         = objectInfo.numberOfNodes;
+        msg[Protocol::Key::ElementType]           = objectInfo.elementType;
+        msg[Protocol::Key::FileType]              = objectInfo.fileType;
+        msg[Protocol::Key::StepNumber]            = objectInfo.stepNumber;
+        msg[Protocol::Key::TmpCoordinateX]        = objectInfo.tmpCoordinateX;
+        msg[Protocol::Key::CoordinateX]           = objectInfo.coordinateX;
+        msg[Protocol::Key::TmpCoordinateY]        = objectInfo.tmpCoordinateY;
+        msg[Protocol::Key::CoordinateY]           = objectInfo.coordinateY;
+        msg[Protocol::Key::TmpCoordinateZ]        = objectInfo.tmpCoordinateZ;
+        msg[Protocol::Key::CoordinateZ]           = objectInfo.coordinateZ;
+        msg[Protocol::Key::IsExport]              = objectInfo.isExport;
+            // Nontexture Polygon Object Info
+        msg[Protocol::Key::TmpPolygonColor]       = { objectInfo.tmpPolygonColor.r(), objectInfo.tmpPolygonColor.g(), objectInfo.tmpPolygonColor.b() };
+        msg[Protocol::Key::PolygonColor]          = { objectInfo.polygonColor.r(), objectInfo.polygonColor.g(), objectInfo.polygonColor.b() };
+        msg[Protocol::Key::TmpPolygonOpacity]     = objectInfo.tmpPolygonOpacity;
+        msg[Protocol::Key::PolygonOpacity]        = objectInfo.polygonOpacity;
 
-        // Common Server Point Object Info
-        msg[Protocol::Key::TmpParticleLimit]        = 10000000;
-        msg[Protocol::Key::ParticleLimit]           = 10000000;
-        msg[Protocol::Key::TmpExtraOpacityFactor]   = 1.0;
-        msg[Protocol::Key::ExtraOpacityFactor]      = 1.0;
-
-        // Client Server Point Object Info
-        msg[Protocol::Key::NumberOfVector]          = mvpl.m_total_number_ingredients;                          // FIXME:サーバ担当者
-        msg[Protocol::Key::NumberOfElements]        = mvpl.m_total_number_elements;                             // FIXME:サーバ担当者
-        msg[Protocol::Key::NumberOfSubvolume]       = mvpl.m_total_number_subvolumes;                           // FIXME:サーバ担当者
-        msg[Protocol::Key::NumberOfNodes]           = mvpl.m_total_number_nodes;                                // FIXME:サーバ担当者
-        msg[Protocol::Key::ElementType]             = mvpl.m_list[0].m_elem_type;                               // FIXME:サーバ担当者
-        msg[Protocol::Key::FileType]                = mvpl.m_list[0].m_file_type;                               // FIXME:サーバ担当者
-        msg[Protocol::Key::StepNumber]              = mvpl.m_total_number_steps;                                // FIXME:サーバ担当者
-        msg[Protocol::Key::TmpCoordinateX]          = "";
-        msg[Protocol::Key::CoordinateX]             = "";
-        msg[Protocol::Key::TmpCoordinateY]          = "";
-        msg[Protocol::Key::CoordinateY]             = "";
-        msg[Protocol::Key::TmpCoordinateZ]          = "";
-        msg[Protocol::Key::CoordinateZ]             = "";
-        msg[Protocol::Key::IsExport]                = false;
-
-        // Nontexture Polygon Object Info
-        msg[Protocol::Key::TmpPolygonColor]         = { 128, 128, 128 };
-        msg[Protocol::Key::PolygonColor]            = { 128, 128, 128 };
-        msg[Protocol::Key::TmpPolygonOpacity]       = 0.5;
-        msg[Protocol::Key::PolygonOpacity]          = 0.5;
         m_u_web_sockets.publish( "Notice", msg.dump(), uWS::OpCode::TEXT );
     }
 

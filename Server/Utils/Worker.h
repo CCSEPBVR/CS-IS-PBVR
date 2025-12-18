@@ -95,7 +95,9 @@ private:
 
     void importObject( ObjectInfoExtractor::ObjectInfo& info, const int&  requestTimeStep )
     {
-        std::string fileName = createFileName( info, requestTimeStep );
+        std::string fileName;
+        if( info.format == ObjectInfoExtractor::Format::ClientServerPointObject ) fileName = info.directory;
+        else fileName = createFileName( info, requestTimeStep );
 
         std::unique_ptr<kvs::PointObject> pointObject;
         std::unique_ptr<kvs::PolygonObject> polygonObject;
