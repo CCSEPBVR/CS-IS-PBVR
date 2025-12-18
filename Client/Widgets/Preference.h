@@ -57,8 +57,8 @@ public:
         m_orientation_axis = orientation_axis;
         m_orientation_axis->anchorToBottomRight();
     }
-    void setFpsLabel( kvs::Label* fps_label )                            { m_fps_label = fps_label; }
-    void setTimeStepLabel( kvs::Label* time_step_label )                 { m_time_step_label = time_step_label; }
+    void setFpsLabel( kvs::Label* fps_label )            { m_fps_label = fps_label; }
+    void setTimeStepLabel( kvs::Label* time_step_label ) { m_time_step_label = time_step_label; }
 
     kvs::qt::jaea::Screen* screen()                  const { return m_screen; }
     kvs::StochasticRenderingCompositor* compositor() const { return m_compositor; }
@@ -68,8 +68,8 @@ public:
     kvs::Label* timeStepLabel()                      const { return m_time_step_label; }
 
 public slots:
-    void readyScreen();
-    void mergingFinish( int ); // FIXME:メソッド名変更したほうがいいです。
+    void onReadyScreen();
+    void onDataRequestCompleted( const int requestTimeStep );
 
 protected:
     void closeEvent( QCloseEvent *event ) override;
@@ -77,18 +77,16 @@ protected:
 private:
     Ui::Preference *ui;
 
-    kvs::qt::jaea::Screen* m_screen = nullptr;
+    kvs::qt::jaea::Screen* m_screen                  = nullptr;
     kvs::StochasticRenderingCompositor* m_compositor = nullptr;
-    kvs::ColorMapBar* m_color_map_bar = nullptr;
-    kvs::OrientationAxis* m_orientation_axis = nullptr;
-    kvs::Label* m_fps_label = nullptr;
-    kvs::Label* m_time_step_label = nullptr;
+    kvs::ColorMapBar* m_color_map_bar                = nullptr;
+    kvs::OrientationAxis* m_orientation_axis         = nullptr;
+    kvs::Label* m_fps_label                          = nullptr;
+    kvs::Label* m_time_step_label                    = nullptr;
 
     QSettings m_settings;
-
     int m_current_time_step = -1;
 
-    void initialize();
     bool isConfigFileExists() { return QFile::exists( QCoreApplication::applicationDirPath() + "/config.ini" ); }
 
     void loadSettings();

@@ -8,7 +8,31 @@ Communication::Communication( kvs::qt::jaea::Screen* screen, WebSocketPair* webs
     , m_web_sockets( websockets )
     , m_viz_mode( vizMode )
 {
-    initialize();
+    ui->setupUi( this );
+
+    ui->uniformRadioButton->setChecked( true ); // NOTE:デフォルトはUniformサンプリング
+    ui->disconnectPushButton->setEnabled( false ); // NOTE:デフォルトでは無効
+    ui->addressLineEdit->setText( "ws://127.0.0.1:60000" );
+
+    connect( ui->localVizRadioButton               ,&QRadioButton::clicked            , this, &Communication::onModeClicked );
+    connect( ui->remoteVizClientServerRadioButton  ,&QRadioButton::clicked            , this, &Communication::onModeClicked );
+    connect( ui->remoteVizInsituRadioButton        ,&QRadioButton::clicked            , this, &Communication::onModeClicked );
+
+    connect( ui->volumeDataFilePathPushButton      ,&QPushButton::clicked             , this, &Communication::onVolumeDataFilePathClicked );
+    connect( ui->transferFunctionFilePathPushButton,&QPushButton::clicked             , this, &Communication::onTransferFunctionFilePathClicked );
+
+    connect( ui->connectPushButton                 ,&QPushButton::clicked             , this, &Communication::onConnectClicked );
+    connect( ui->disconnectPushButton              ,&QPushButton::clicked             , this, &Communication::onDisconnectClicked );
+    connect( ui->transferOperatorApplyPushButton   ,&QPushButton::clicked             , this, &Communication::onTransferOperator );
+    connect( ui->chatLineEdit                      ,&QLineEdit::returnPressed         , this, &Communication::onChatClicked );
+    connect( ui->shareViewPushButton               ,&QPushButton::clicked             , this, &Communication::onShareView );
+
+    connect( m_web_sockets->binary()               ,&QWebSocket::connected            , this, &Communication::onBinaryWebsocketConnected );         // 接続成功(バイナリ)
+    connect( m_web_sockets->binary()               ,&QWebSocket::disconnected         , this, &Communication::onBinaryWebsocketDisconnected );      // 接続切断(バイナリ)
+    connect( m_web_sockets->binary()               ,&QWebSocket::binaryMessageReceived, this, &Communication::onBinaryWebsocketMessageReceived );   // メッセージ受信(バイナリ)
+    connect( m_web_sockets->text()                 ,&QWebSocket::connected            , this, &Communication::onTextWebsocketConnected );           // 接続成功(テキスト)
+    connect( m_web_sockets->text()                 ,&QWebSocket::disconnected         , this, &Communication::onTextWebsocketDisconnected );        // 接続切断(テキスト)
+    connect( m_web_sockets->text()                 ,&QWebSocket::textMessageReceived  , this, &Communication::onTextWebsocketMessageReceived );     // メッセージ受信(テキスト)
 }
 
 Communication::~Communication()
@@ -32,168 +56,26 @@ void Communication::onVRSharePoint( kvs::Real32 CoordArray[ 2 * 3 ], kvs::Real32
     double dy = DirectionArray[1];
     double dz = DirectionArray[2];
 
-    QJsonObject positionObject;
-    positionObject["x"] = x;
-    positionObject["y"] = y;
-    positionObject["z"] = z;
-    positionObject["dx"] = dx;
-    positionObject["dy"] = dy;
-    positionObject["dz"] = dz;
-
-
     m_web_sockets->text()->sendTextMessage( QJsonDocument( {
-                                                             {"event","sharepoint"},
-                                                             {"x",CoordArray[3]},
-                                                             {"y",CoordArray[4]},
-                                                             {"z",CoordArray[5]},
-                                                             {"dx",DirectionArray[0]},
-                                                             {"dy",DirectionArray[1]},
-                                                             {"dz",DirectionArray[2]}
+                                                             { QString::fromUtf8( Protocol::Key::Event ), QString::fromUtf8( Protocol::Events::SharePoint ) },
+                                                             { QString::fromUtf8( Protocol::Key::X ), CoordArray[3] },
+                                                             { QString::fromUtf8( Protocol::Key::Y ), CoordArray[4] },
+                                                             { QString::fromUtf8( Protocol::Key::Z ), CoordArray[5] },
+                                                             { QString::fromUtf8( Protocol::Key::Dx ), DirectionArray[0] },
+                                                             { QString::fromUtf8( Protocol::Key::Dy ), DirectionArray[1] },
+                                                             { QString::fromUtf8( Protocol::Key::Dz ), DirectionArray[2] }
                                                          }
                                                          ).toJson( QJsonDocument::Compact ) );
 }
 
-void Communication::loadParameter( const QString& filePath )
+void Communication::onLoadParameter( const QString& filePath )
 {
-    // TODO:KPI
     qDebug() << __FILE__ << ":" << __func__ << ":" << filePath;
 }
 
-void Communication::saveParameter( const QString& filePath )
+void Communication::onSaveParameter( const QString& filePath )
 {
-    // TODO:KPI
     qDebug() << __FILE__ << ":" << __func__ << ":" << filePath;
-}
-
-void Communication::initialize()
-{
-    ui->setupUi(this);
-
-    connect( ui->localVizRadioButton, &QRadioButton::clicked, this, &Communication::onModeClicked );
-    connect( ui->remoteVizClientServerRadioButton, &QRadioButton::clicked, this, &Communication::onModeClicked );
-    connect( ui->remoteVizInsituRadioButton, &QRadioButton::clicked, this, &Communication::onModeClicked );
-
-    connect( ui->volumeDataFilePathPushButton, &QPushButton::clicked, this, &Communication::onVolumeDataFilePathClicked );
-    connect( ui->transferFunctionFilePathPushButton, &QPushButton::clicked, this, &Communication::onTransferFunctionFilePathClicked );
-
-    connect( ui->connectPushButton, &QPushButton::clicked, this, &Communication::onConnectClicked );
-    connect( ui->disconnectPushButton, &QPushButton::clicked, this, &Communication::onDisconnectClicked );
-    connect( ui->transferOperatorApplyPushButton, &QPushButton::clicked, this, &Communication::onTransferOperator );
-    connect( ui->chatLineEdit, &QLineEdit::returnPressed, this, &Communication::onChatClicked );
-    connect( ui->shareViewPushButton , &QPushButton::clicked, this, &Communication::onShareView );
-
-    connect( ui->editColorMapPushButton, &QPushButton::clicked, this, [this]()
-            {
-                ColorMapEditor colorMapEditor;
-                colorMapEditor.adjustSize();
-                colorMapEditor.setDefaultColorMap( ui->colorMap->getColors() );
-
-                if( colorMapEditor.exec() == QDialog::Accepted )
-                {
-                    QVector<QColor> qcolors = colorMapEditor.getColorMap();
-                    ui->colorMap->setColors( qcolors );
-                }
-            } );
-
-    connect( ui->editOpacityMapPushButton, &QPushButton::clicked, this, [this]()
-            {
-                OpacityMapEditor OpacityMapEditor;
-                OpacityMapEditor.adjustSize();
-                OpacityMapEditor.setDefaultOpacityMap( ui->opacityMap->getOpacities() );
-
-                if( OpacityMapEditor.exec() == QDialog::Accepted )
-                {
-                    QVector<float> opacities = OpacityMapEditor.getOpacityMap();
-                    ui->opacityMap->setOpacities( opacities );
-                }
-            } );
-
-    connect( ui->sendTransferFunctionPushButton, &QPushButton::clicked, this, [this]()
-            {
-                if( !m_web_sockets->isConnected() )
-                {
-                    emit updateStatusBarMessage( "Not connected." );
-                    return;
-                }
-
-                QJsonArray colorArray;
-                for( const QColor& color : ui->colorMap->getColors() )
-                {
-                    QJsonArray rgb;
-                    rgb.append( color.red() );
-                    rgb.append( color.green() );
-                    rgb.append( color.blue() );
-                    colorArray.append( rgb );
-                }
-
-                QJsonArray opacityArray;
-                for( float opacity : ui->opacityMap->getOpacities() )
-                {
-                    opacityArray.append( opacity );
-                }
-
-                m_web_sockets->text()->sendTextMessage(
-                    QJsonDocument(
-                        QJsonObject{
-                            { "event", "transferfunction" },
-                            { "colorMap", colorArray },
-                            { "opacityMap", opacityArray }
-                        }
-                        ).toJson( QJsonDocument::Compact )
-                    );
-            } );
-
-    connect( ui->generatePushButton, &QPushButton::clicked, this, [this]()
-            {
-                if( !m_web_sockets->isConnected() )
-                {
-                    emit updateStatusBarMessage( "Not connected." );
-                    return;
-                }
-                m_web_sockets->text()->sendTextMessage( QJsonDocument( QJsonObject{ {"event", "generate"} } ).toJson( QJsonDocument::Compact ) );
-            } );
-
-    connect( m_web_sockets->binary(), &QWebSocket::connected    , this, &Communication::binaryWebsocketConnected );     // 接続成功(バイナリ)
-    connect( m_web_sockets->binary(), &QWebSocket::disconnected , this, &Communication::binaryWebsocketDisconnected );  // 接続切断(バイナリ)
-    connect( m_web_sockets->binary(), &QWebSocket::binaryMessageReceived , this, &Communication::binaryWebsocketMessageReceived );  // メッセージ受信(バイナリ)
-
-    connect( m_web_sockets->text(), &QWebSocket::connected      , this, &Communication::textWebsocketConnected );       // 接続成功(テキスト)
-    connect( m_web_sockets->text(), &QWebSocket::disconnected   , this, &Communication::textWebsocketDisconnected );    // 接続切断(テキスト)
-    connect( m_web_sockets->text(), &QWebSocket::textMessageReceived , this, &Communication::textWebsocketMessageReceived );  // メッセージ受信(テキスト)
-
-    ui->uniformRadioButton->setChecked( true ); // NOTE:デフォルトはUniformサンプリング
-    ui->disconnectPushButton->setEnabled( false ); // NOTE:デフォルトでは無効
-
-    ui->addressLineEdit->setText( "ws://127.0.0.1:60000" );
-}
-
-void Communication::registerObject( kvs::PointObject* pointObject )
-{
-    kvs::glsl::ParticleBasedRenderer* renderer = new kvs::glsl::ParticleBasedRenderer();
-    renderer->enableShuffle();
-
-    kvs::Xform m_initial_camera_xfom
-        (
-            kvs::Mat4(
-                1, 0, 0, 0 ,
-                0, 1, 0, 0 ,
-                0, 0, 1, 12,
-                0, 0, 0, 1
-                )
-            );
-
-    kvs::Vec3 translationOffset = m_screen->scene()->camera()->xform().translation() - m_initial_camera_xfom.translation();
-    renderer->setTranslationOffset( translationOffset );
-    renderer->setObjectDepth( m_screen->scene()->objectManager()->xform().scaling().z() / m_screen->scene()->camera()->xform().scaling().z() );
-
-    m_server_point_object_ids = m_screen->scene()->registerObject( pointObject, renderer );
-    m_screen->update();
-}
-
-void Communication::replaceObject( kvs::PointObject* pointObject )
-{
-    m_screen->scene()->replaceObject( m_server_point_object_ids.first, pointObject );
-    m_screen->update();
 }
 
 void Communication::websocketConnected()
@@ -218,6 +100,22 @@ void Communication::websocketConnected()
         ui->connectPushButton                   ->setEnabled( false );
         ui->disconnectPushButton                ->setEnabled( true );
         updateVizMode();
+
+        QString uuid = QUuid::createUuid().toString( QUuid::WithoutBraces );
+
+        ObjectInfoExtractor::Format format;
+        if( ui->localVizRadioButton->isChecked() || ui->remoteVizClientServerRadioButton->isChecked() )
+            format = ObjectInfoExtractor::Format::ClientServerPointObject;
+        else
+            format = ObjectInfoExtractor::Format::InsituServerPointObject;
+
+        m_web_sockets->text()->sendTextMessage( QJsonDocument( {
+                                                              { QString::fromUtf8( Protocol::Key::Event )                   , QString::fromUtf8( Protocol::Events::Initialize ) },
+                                                              { QString::fromUtf8( Protocol::Key::VolumeDataFilePath )      , ui->volumeDataFilePathLineEdit->text() },
+                                                              { QString::fromUtf8( Protocol::Key::TransferFunctionFilePath ), ui->transferFunctionFilePathLineEdit->text() },
+                                                              { QString::fromUtf8( Protocol::Key::UUID )                    , uuid },
+                                                              { QString::fromUtf8( Protocol::Key::Format )                  , format },
+                                                              } ).toJson( QJsonDocument::Compact ) );
     }
 }
 
@@ -225,7 +123,7 @@ void Communication::websocketDisconnected()
 {
     if( !m_web_sockets->isConnected() )
     {
-        emit updateOperatorState( m_is_operator );
+        emit updateOperatorState( m_is_operator ); // FIXME:ここで本当にあってる??下で値書き換えてるけど??
         emit updateServerState( false );
         m_user_id = -1;
         m_is_operator = false;
@@ -259,18 +157,188 @@ void Communication::updateVizMode()
 
     if( !m_web_sockets->isConnected() ) return;
 
-    if( ui->localVizRadioButton->isChecked() )
+    if( ui->localVizRadioButton->isChecked() )                   *m_viz_mode = Viz::Mode::LocalClientAndServer;
+    else if( ui->remoteVizClientServerRadioButton->isChecked() ) *m_viz_mode = Viz::Mode::RemoteClientAndServer;
+    else if( ui->remoteVizInsituRadioButton->isChecked() )       *m_viz_mode = Viz::Mode::RemoteInSitu;
+}
+
+void Communication::Join( const QJsonObject& dataArray )
+{
+    int userID = dataArray[QString::fromUtf8( Protocol::Key::UserID )].toInt();    // 入出者
+    QString userIDStr = QString::number( userID );
+    ui->textBrowser->append( "--- User[" + userIDStr + "] Join" );
+}
+
+void Communication::Left( const QJsonObject& dataArray )
+{
+    int userID = dataArray[QString::fromUtf8( Protocol::Key::UserID )].toInt();    // 退出者
+    QString userIDStr = QString::number( userID );
+    ui->textBrowser->append( "--- User[" + userIDStr + "] Left" );
+}
+
+void Communication::ID( const QJsonObject& dataArray )
+{
+    int userID = dataArray[QString::fromUtf8( Protocol::Key::UserID )].toInt(); // 自分自身のユーザID
+    QString userIDStr = QString::number( userID );
+    m_user_id = userID;
+    ui->IDLineEdit->setText( userIDStr );
+    ui->textBrowser->append("--- Your User ID is [" + userIDStr + "]" );
+}
+
+void Communication::Operator( const QJsonObject& dataArray )
+{
+    bool isOperator = dataArray[QString::fromUtf8( Protocol::Key::IsOperator )].toBool(); // 自分に操作権限があるか
+    m_is_operator = isOperator;
+    emit updateOperatorState( m_is_operator );
+    ui->isOperatorLineEdit->setText( m_is_operator ? "true" : "false" );
+    if( m_is_operator )
     {
-        *m_viz_mode = Viz::Mode::LocalClientAndServer;
+        ui->textBrowser->append("--- You have operator privilege");
     }
-    else if( ui->remoteVizClientServerRadioButton->isChecked() )
+    else
     {
-        *m_viz_mode = Viz::Mode::RemoteClientAndServer;
+        ui->textBrowser->append("--- You are not operator");
     }
-    else if( ui->remoteVizInsituRadioButton->isChecked() )
+}
+
+void Communication::transferOperator( const QJsonObject& dataArray )
+{
+    int oldOperatorID = dataArray[QString::fromUtf8( Protocol::Key::OldOperatorID )].toInt();
+    int newOperatorID = dataArray[QString::fromUtf8( Protocol::Key::NewOperatorID )].toInt();
+    ui->textBrowser->append("--- Operator change [" + QString::number( oldOperatorID ) + "] to [" + QString::number( newOperatorID ) + "]" );
+    if( m_user_id == newOperatorID )
     {
-        *m_viz_mode = Viz::Mode::RemoteInSitu;
+        m_is_operator = true;
+        ui->isOperatorLineEdit->setText( "true" );
     }
+    else
+    {
+        m_is_operator = false;
+        ui->isOperatorLineEdit->setText( "false" );
+    }
+    emit updateOperatorState( m_is_operator );
+}
+
+void Communication::chat( const QJsonObject& dataArray )
+{
+    int userID = dataArray[QString::fromUtf8( Protocol::Key::UserID )].toInt();    // 受信したチャットの送信者
+    QString userIDStr = QString::number( userID );
+    QString text = dataArray[QString::fromUtf8( Protocol::Key::Text )].toString();      // 受信したチャット内容
+    ui->textBrowser->append( "User[" + userIDStr + "]: " + text );
+}
+
+void Communication::shareView( const QJsonObject& dataArray )
+{
+    // int userID = dataArray[QString::fromUtf8( Protocol::Key::UserID )].toInt();    // 着目点共有を行った送信者
+    // QString userIDStr = QString::number( userID );
+    // QJsonArray matrixArray = dataArray[QString::fromUtf8( Protocol::Key::Matrix )].toArray();
+    // kvs::Matrix44f mat;
+    // for( int row = 0; row < 4; ++row )
+    // {
+    //     QJsonArray row_array = matrixArray.at( row ).toArray();
+    //     for( int col = 0; col < 4; ++col )
+    //     {
+    //         mat[row][col] = static_cast<float>( row_array.at( col ).toDouble() );
+    //     }
+    // }
+
+    // // kvs::Xform に変換
+    // kvs::Xform recieveXform( mat );
+    // if( !m_share_view_list_model )
+    // {
+    //     m_share_view_list_model = new QStandardItemModel( this );
+    //     ui->shareListView->setModel( m_share_view_list_model );
+    //     connect( ui->shareListView, &QListView::doubleClicked, this, &Communication::onItemDoubleClicked );
+    // }
+    // // 表示用ラベル作成
+    // QString label = "User[" + userIDStr + "] View";
+
+    // // QStandardItem 作成し、xform をデータとして格納
+    // QStandardItem* item = new QStandardItem( label );
+    // item->setData( QVariant::fromValue( recieveXform ), Qt::UserRole + 1 );
+    // // 編集不可にする
+    // item->setFlags( item->flags() & ~Qt::ItemIsEditable );
+    // m_share_view_list_model->appendRow( item );
+}
+
+void Communication::sharePoint( const QJsonObject& dataArray )
+{
+//     int userID = dataArray[QString::fromUtf8( Protocol::Key::UserID )].toInt();    // 着目点共有を行った送信者
+//     QString userIDStr = QString::number( userID );
+//     double x    = dataArray[QString::fromUtf8( Protocol::Key::X )].toDouble();
+//     double y    = dataArray[QString::fromUtf8( Protocol::Key::Y )].toDouble();
+//     double z    = dataArray[QString::fromUtf8( Protocol::Key::Z )].toDouble();
+//     double dx   = dataArray[QString::fromUtf8( Protocol::Key::Dx )].toDouble();
+//     double dy   = dataArray[QString::fromUtf8( Protocol::Key::Dy )].toDouble();
+//     double dz   = dataArray[QString::fromUtf8( Protocol::Key::Dz )].toDouble();
+
+//     kvs::Real32 CoordArray[ 1 * 3 ] =
+//         {
+//             kvs::Real32( x ),
+//             kvs::Real32( y ),
+//             kvs::Real32( z ),
+//         };
+
+//     kvs::Real32 DirectionArray[ 1 * 3 ] =
+//         {
+//             kvs::Real32( dx ),
+//             kvs::Real32( dy ),
+//             kvs::Real32( dz ),
+//         };
+
+// #ifdef OPENXR_SCREEN
+//     // シーン全体のサイズを基準にした base_size
+//     kvs::Vec3 min_coord = m_screen->scene()->objectManager()->minObjectCoord();
+//     kvs::Vec3 max_coord = m_screen->scene()->objectManager()->maxObjectCoord();
+//     kvs::Vec3 diag = max_coord - min_coord;
+//     float scene_size = diag.length();
+//     float base_size = scene_size * 0.005f; // シーン全体に対する割合
+
+//     // 現在のスケーリング値を取得
+//     kvs::Xform xform = m_screen->scene()->objectManager()->xform();
+//     float scalingFactor = xform.scaling().x(); // (x,y,z が同じなら x でOK)
+
+//     // スケーリングに反比例させることで拡大縮小に依存しないサイズにする
+//     kvs::Real32 SizeArray[1] = { base_size / scalingFactor };
+// #else
+//     kvs::Xform currentObjectManagerXform = m_screen->scene()->objectManager()->xform(); // 現在のオブジェクトマネージャーのTranslation, Scaling, Rotationを取得する。
+//     float scalingFactor = 1 / ( currentObjectManagerXform.inverse() * m_screen->scene()->object( m_screen->scene()->numberOfObjects() - 1 )->xform() ).scaling().x();
+//     kvs::Real32 SizeArray[ 1 ] = {
+//         0.5f * scalingFactor,
+//     };
+// #endif
+
+//     kvs::UInt8 ColorArray[ 1 * 3 ] =
+//         {
+//             0, 255, 0,
+//         };
+
+//     kvs::ValueArray<kvs::Real32> coords( CoordArray, 1 * 3 );
+//     kvs::ValueArray<kvs::Real32> direction( DirectionArray, 1 * 3 );
+//     kvs::ValueArray<kvs::Real32> size( SizeArray, 1 );
+//     kvs::ValueArray<kvs::UInt8> colors( ColorArray, 1 * 3 );
+
+//     if( m_screen->scene()->object( userID + "_SharedGlyph" ) == nullptr )
+//     {
+//         kvs::PolygonObject* sharedPolygon = createArrowGlyph( coords, direction, size, colors );
+//         sharedPolygon->setName( userID + "_SharedGlyph" );
+//         sharedPolygon->setXform( m_screen->scene()->objectManager()->xform() );
+//         sharedPolygon->setMinMaxObjectCoords( m_screen->scene()->object( m_server_point_object_ids.first )->minObjectCoord(), m_screen->scene()->object( m_server_point_object_ids.first )->maxObjectCoord() );
+//         sharedPolygon->setMinMaxExternalCoords( m_screen->scene()->object( m_server_point_object_ids.first )->minObjectCoord(), m_screen->scene()->object( m_server_point_object_ids.first )->maxObjectCoord() );
+//         kvs::StochasticPolygonRenderer* renderer = new kvs::StochasticPolygonRenderer();
+//         m_screen->registerObject( sharedPolygon, renderer );
+//         m_screen->update();
+//     }
+//     else
+//     {
+//         kvs::PolygonObject* sharedPolygon = createArrowGlyph( coords, direction, size, colors );
+//         sharedPolygon->setName( userID + "_SharedGlyph" );
+//         sharedPolygon->setXform( m_screen->scene()->objectManager()->xform() );
+//         sharedPolygon->setMinMaxObjectCoords( m_screen->scene()->object( m_server_point_object_ids.first )->minObjectCoord(), m_screen->scene()->object( m_server_point_object_ids.first )->maxObjectCoord() );
+//         sharedPolygon->setMinMaxExternalCoords( m_screen->scene()->object( m_server_point_object_ids.first )->minObjectCoord(), m_screen->scene()->object( m_server_point_object_ids.first )->maxObjectCoord() );
+//         m_screen->scene()->replaceObject( userID + "_SharedGlyph", sharedPolygon );
+//         m_screen->update();
+//     }
 }
 
 kvs::PolygonObject* Communication::createArrowGlyph(
@@ -279,128 +347,192 @@ kvs::PolygonObject* Communication::createArrowGlyph(
     const kvs::ValueArray<kvs::Real32>& sizes,
     const kvs::ValueArray<kvs::UInt8>& colors )
 {
-    const size_t npoint = coords.size() / 3;
-    const int slices = 20;
+    // const size_t npoint = coords.size() / 3;
+    // const int slices = 20;
 
-    std::vector<kvs::Vec3> all_vertices;
-    std::vector<kvs::Vec3> all_normals;
-    std::vector<kvs::UInt32> all_indices;
-    std::vector<kvs::UInt8> all_colors;
+    // std::vector<kvs::Vec3> all_vertices;
+    // std::vector<kvs::Vec3> all_normals;
+    // std::vector<kvs::UInt32> all_indices;
+    // std::vector<kvs::UInt8> all_colors;
 
-    for( size_t i = 0, index = 0; i < npoint; i++, index += 3 )
-    {
-        kvs::Vec3 tip_position( coords.data() + index );   // 先端位置
-        kvs::Vec3 direction( directions.data() + index );
-        kvs::Real32 size = sizes[i];
-        kvs::RGBColor color( colors.data() + index );
+    // for( size_t i = 0, index = 0; i < npoint; i++, index += 3 )
+    // {
+    //     kvs::Vec3 tip_position( coords.data() + index );   // 先端位置
+    //     kvs::Vec3 direction( directions.data() + index );
+    //     kvs::Real32 size = sizes[i];
+    //     kvs::RGBColor color( colors.data() + index );
 
-        if( direction.length() < 1e-6 )
-        {
-            std::cerr << "Error: Invalid direction vector." << std::endl;
-            continue;
-        }
-        direction = direction.normalized();
+    //     if( direction.length() < 1e-6 )
+    //     {
+    //         std::cerr << "Error: Invalid direction vector." << std::endl;
+    //         continue;
+    //     }
+    //     direction = direction.normalized();
 
-        // --- 矢印寸法 ---
-        const float cylinder_height = 0.7f * size;
-        const float cylinder_radius = 0.07f * size;
-        const float cone_height = 0.3f * size;
-        const float cone_radius = 0.15f * size;
-        const float arrow_height = cylinder_height + cone_height;
+    //     // --- 矢印寸法 ---
+    //     const float cylinder_height = 0.7f * size;
+    //     const float cylinder_radius = 0.07f * size;
+    //     const float cone_height = 0.3f * size;
+    //     const float cone_radius = 0.15f * size;
+    //     const float arrow_height = cylinder_height + cone_height;
 
-        std::vector<kvs::Vec3> vertices;
-        std::vector<kvs::Vec3> normals;
-        std::vector<kvs::UInt32> indices;
+    //     std::vector<kvs::Vec3> vertices;
+    //     std::vector<kvs::Vec3> normals;
+    //     std::vector<kvs::UInt32> indices;
 
-        // --- 円柱の構築 ---
-        for( int s = 0; s < slices; ++s )
-        {
-            float angle = 2.0f * M_PI * s / slices;
-            float x = cylinder_radius * std::cos( angle );
-            float y = cylinder_radius * std::sin( angle );
+    //     // --- 円柱の構築 ---
+    //     for( int s = 0; s < slices; ++s )
+    //     {
+    //         float angle = 2.0f * M_PI * s / slices;
+    //         float x = cylinder_radius * std::cos( angle );
+    //         float y = cylinder_radius * std::sin( angle );
 
-            vertices.emplace_back( x, y, 0.0f );              // 底面
-            normals.emplace_back( x, y, 0.0f );
+    //         vertices.emplace_back( x, y, 0.0f );              // 底面
+    //         normals.emplace_back( x, y, 0.0f );
 
-            vertices.emplace_back( x, y, cylinder_height );   // 上面
-            normals.emplace_back( x, y, 0.0f );
-        }
+    //         vertices.emplace_back( x, y, cylinder_height );   // 上面
+    //         normals.emplace_back( x, y, 0.0f );
+    //     }
 
-        for( int s = 0; s < slices; ++s )
-        {
-            int next = ( s + 1 ) % slices;
-            indices.push_back( s * 2 ); indices.push_back( next * 2 ); indices.push_back( s * 2 +1 );
-            indices.push_back( s * 2 +1 ); indices.push_back( next * 2 ); indices.push_back( next * 2 +1 );
-        }
+    //     for( int s = 0; s < slices; ++s )
+    //     {
+    //         int next = ( s + 1 ) % slices;
+    //         indices.push_back( s * 2 ); indices.push_back( next * 2 ); indices.push_back( s * 2 +1 );
+    //         indices.push_back( s * 2 +1 ); indices.push_back( next * 2 ); indices.push_back( next * 2 +1 );
+    //     }
 
-        // --- 円錐の構築 ---
-        std::vector<kvs::Vec3> base_vertices;
-        for( int s = 0; s < slices; ++s )
-        {
-            float angle = 2.0f * M_PI * s / slices;
-            base_vertices.emplace_back( cone_radius*std::cos( angle ), cone_radius*std::sin( angle ), cylinder_height );
-        }
+    //     // --- 円錐の構築 ---
+    //     std::vector<kvs::Vec3> base_vertices;
+    //     for( int s = 0; s < slices; ++s )
+    //     {
+    //         float angle = 2.0f * M_PI * s / slices;
+    //         base_vertices.emplace_back( cone_radius*std::cos( angle ), cone_radius*std::sin( angle ), cylinder_height );
+    //     }
 
-        for( int s = 0; s < slices; ++s )
-        {
-            int next = ( s + 1 ) % slices;
-            kvs::Vec3 apex( 0, 0, cylinder_height + cone_height );
-            kvs::Vec3 v1 = base_vertices[s];
-            kvs::Vec3 v2 = base_vertices[next];
+    //     for( int s = 0; s < slices; ++s )
+    //     {
+    //         int next = ( s + 1 ) % slices;
+    //         kvs::Vec3 apex( 0, 0, cylinder_height + cone_height );
+    //         kvs::Vec3 v1 = base_vertices[s];
+    //         kvs::Vec3 v2 = base_vertices[next];
 
-            vertices.push_back( v1 ); vertices.push_back( v2 ); vertices.push_back( apex );
-            kvs::Vec3 normal = ( v2 - v1 ).cross( apex - v1 ).normalized();
-            normals.push_back( normal ); normals.push_back( normal ); normals.push_back( normal );
+    //         vertices.push_back( v1 ); vertices.push_back( v2 ); vertices.push_back( apex );
+    //         kvs::Vec3 normal = ( v2 - v1 ).cross( apex - v1 ).normalized();
+    //         normals.push_back( normal ); normals.push_back( normal ); normals.push_back( normal );
 
-            int base_index = vertices.size() - 3;
-            indices.push_back( base_index ); indices.push_back( base_index + 1 ); indices.push_back( base_index + 2 );
-        }
+    //         int base_index = vertices.size() - 3;
+    //         indices.push_back( base_index ); indices.push_back( base_index + 1 ); indices.push_back( base_index + 2 );
+    //     }
 
-        // --- 先端が tip_position になるように Zを下方向にシフト ---
-        for( auto& v : vertices ) v.z() -= arrow_height;
+    //     // --- 先端が tip_position になるように Zを下方向にシフト ---
+    //     for( auto& v : vertices ) v.z() -= arrow_height;
 
-        // --- 回転・位置調整 ---
-        kvs::Vec3 default_direction( 0, 0, 1 );
-        kvs::Vec3 axis = default_direction.cross( direction );
-        float angle = std::acos( default_direction.dot( direction ) );
-        kvs::Mat3 rotation;
-        if( axis.length() > 1e-6 )
-        {
+    //     // --- 回転・位置調整 ---
+    //     kvs::Vec3 default_direction( 0, 0, 1 );
+    //     kvs::Vec3 axis = default_direction.cross( direction );
+    //     float angle = std::acos( default_direction.dot( direction ) );
+    //     kvs::Mat3 rotation;
+    //     if( axis.length() > 1e-6 )
+    //     {
 
-            rotation = kvs::Mat3::Rotation( axis.normalized(), angle*180.0/M_PI );
-        }
-        else
-        {
-            rotation = kvs::Mat3::Identity();
-        }
+    //         rotation = kvs::Mat3::Rotation( axis.normalized(), angle*180.0/M_PI );
+    //     }
+    //     else
+    //     {
+    //         rotation = kvs::Mat3::Identity();
+    //     }
 
-        for( auto& v : vertices ) v = rotation * v + tip_position;
-        for( auto& n : normals ) n = rotation * n;
+    //     for( auto& v : vertices ) v = rotation * v + tip_position;
+    //     for( auto& n : normals ) n = rotation * n;
 
-        size_t offset = all_vertices.size();
-        all_vertices.insert( all_vertices.end(), vertices.begin(), vertices.end() );
-        all_normals.insert( all_normals.end(), normals.begin(), normals.end() );
-        for( auto idx : indices ) all_indices.push_back( idx + offset );
+    //     size_t offset = all_vertices.size();
+    //     all_vertices.insert( all_vertices.end(), vertices.begin(), vertices.end() );
+    //     all_normals.insert( all_normals.end(), normals.begin(), normals.end() );
+    //     for( auto idx : indices ) all_indices.push_back( idx + offset );
 
-        for( size_t c =0; c< vertices.size(); ++c )
-        {
-            all_colors.push_back( color.r() );
-            all_colors.push_back( color.g() );
-            all_colors.push_back( color.b() );
-        }
-    }
+    //     for( size_t c =0; c< vertices.size(); ++c )
+    //     {
+    //         all_colors.push_back( color.r() );
+    //         all_colors.push_back( color.g() );
+    //         all_colors.push_back( color.b() );
+    //     }
+    // }
 
     kvs::PolygonObject* polygon = new kvs::PolygonObject();
-    polygon->setCoords( kvs::ValueArray<kvs::Real32>( ( kvs::Real32* )all_vertices.data(), all_vertices.size()*3 ) );
-    polygon->setConnections( kvs::ValueArray<kvs::UInt32>( all_indices.data(), all_indices.size() ) );
-    polygon->setColors( kvs::ValueArray<kvs::UInt8>( all_colors.data(), all_colors.size() ) );
-    polygon->setNormals( kvs::ValueArray<kvs::Real32>( ( kvs::Real32* )all_normals.data(), all_normals.size()*3 ) );
-    polygon->setOpacity( 255 );
-    polygon->setPolygonType(kvs::PolygonObject::Triangle);
-    polygon->setColorType(kvs::PolygonObject::PolygonColor);
-    polygon->setNormalType(kvs::PolygonObject::VertexNormal);
+    // polygon->setCoords( kvs::ValueArray<kvs::Real32>( ( kvs::Real32* )all_vertices.data(), all_vertices.size()*3 ) );
+    // polygon->setConnections( kvs::ValueArray<kvs::UInt32>( all_indices.data(), all_indices.size() ) );
+    // polygon->setColors( kvs::ValueArray<kvs::UInt8>( all_colors.data(), all_colors.size() ) );
+    // polygon->setNormals( kvs::ValueArray<kvs::Real32>( ( kvs::Real32* )all_normals.data(), all_normals.size()*3 ) );
+    // polygon->setOpacity( 255 );
+    // polygon->setPolygonType( kvs::PolygonObject::Triangle );
+    // polygon->setColorType( kvs::PolygonObject::PolygonColor );
+    // polygon->setNormalType( kvs::PolygonObject::VertexNormal );
 
     return polygon;
+}
+
+void Communication::convertObjectInfo( const QJsonObject& dataArray )
+{
+    ObjectInfoExtractor::ObjectInfo objectInfo;
+
+    // Common Object Info
+    objectInfo.uuid                     = dataArray[QString::fromUtf8( Protocol::Key::UUID )].toString().toUtf8();
+    objectInfo.tmpIsDisplay             = dataArray[QString::fromUtf8( Protocol::Key::TmpIsDisplay )].toBool();
+    objectInfo.isDisplay                = dataArray[QString::fromUtf8( Protocol::Key::IsDisplay )].toBool();
+    objectInfo.tmpIsKeepInitial         = dataArray[QString::fromUtf8( Protocol::Key::TmpIsKeepInitial )].toBool();
+    objectInfo.isKeepInitial            = dataArray[QString::fromUtf8( Protocol::Key::IsKeepInitial )].toBool();
+    objectInfo.tmpIsKeepFinal           = dataArray[QString::fromUtf8( Protocol::Key::TmpIsKeepFinal )].toBool();
+    objectInfo.isKeepFinal              = dataArray[QString::fromUtf8( Protocol::Key::IsKeepFinal )].toBool();
+
+    objectInfo.name                     = dataArray[QString::fromUtf8( Protocol::Key::Name )].toString().toUtf8();
+    objectInfo.extension                = dataArray[QString::fromUtf8( Protocol::Key::Extension )].toString().toUtf8();
+    objectInfo.directory                = dataArray[QString::fromUtf8( Protocol::Key::Directory )].toString().toUtf8();
+    objectInfo.format                   = static_cast<ObjectInfoExtractor::Format>( dataArray[QString::fromUtf8( Protocol::Key::Format )].toInt() );
+    QJsonArray timeStepArray            = dataArray[QString::fromUtf8( Protocol::Key::TimeStep )].toArray();
+    objectInfo.timeStep                 = { timeStepArray[0].toInt(), timeStepArray[1].toInt() };
+    objectInfo.tmpIsFocus               = dataArray[QString::fromUtf8( Protocol::Key::TmpIsFocus )].toBool();
+    objectInfo.isFocus                  = dataArray[QString::fromUtf8( Protocol::Key::IsFocus )].toBool();
+    auto minObjectCoordArray            = dataArray[QString::fromUtf8( Protocol::Key::MinObjectCoord )].toArray();
+    objectInfo.minObjectCoord           = { minObjectCoordArray[0].toDouble(), minObjectCoordArray[1].toDouble(), minObjectCoordArray[2].toDouble() };
+    auto maxObjectCoordArray            = dataArray[QString::fromUtf8( Protocol::Key::MaxObjectCoord )].toArray();
+    objectInfo.maxObjectCoord           = { maxObjectCoordArray[0].toDouble(), maxObjectCoordArray[1].toDouble(), maxObjectCoordArray[2].toDouble() };
+    auto minExternalCoordArray          = dataArray[QString::fromUtf8( Protocol::Key::MinExternalCoord )].toArray();
+    objectInfo.minExternalCoord         = { minExternalCoordArray[0].toDouble(), minExternalCoordArray[1].toDouble(), minExternalCoordArray[2].toDouble() };
+    auto maxExternalCoordArray          = dataArray[QString::fromUtf8( Protocol::Key::MaxExternalCoord )].toArray();
+    objectInfo.maxExternalCoord         = { maxExternalCoordArray[0].toDouble(), maxExternalCoordArray[1].toDouble(), maxExternalCoordArray[2].toDouble() };
+
+    // Common Server Point Object Info
+    objectInfo.tmpParticleLimit         = dataArray[QString::fromUtf8( Protocol::Key::TmpParticleLimit )].toInt();
+    objectInfo.particleLimit            = dataArray[QString::fromUtf8( Protocol::Key::ParticleLimit )].toInt();
+    objectInfo.tmpExtraOpacityFactor    = static_cast<float>( dataArray[QString::fromUtf8( Protocol::Key::TmpExtraOpacityFactor )].toDouble() );
+    objectInfo.extraOpacityFactor       = static_cast<float>( dataArray[QString::fromUtf8( Protocol::Key::ExtraOpacityFactor )].toDouble() );
+
+    // Client Server Point Object Info
+    objectInfo.numberOfVector           = dataArray[QString::fromUtf8( Protocol::Key::NumberOfVector )].toInt();
+    objectInfo.numberOfElements         = dataArray[QString::fromUtf8( Protocol::Key::NumberOfElements )].toInt();
+    objectInfo.numberOfSubvolume        = dataArray[QString::fromUtf8( Protocol::Key::NumberOfSubvolume)].toInt();
+    objectInfo.numberOfNodes            = dataArray[QString::fromUtf8( Protocol::Key::NumberOfNodes )].toInt();
+    objectInfo.elementType              = dataArray[QString::fromUtf8( Protocol::Key::ElementType )].toInt();
+    objectInfo.fileType                 = dataArray[QString::fromUtf8( Protocol::Key::FileType )].toInt();
+    objectInfo.stepNumber               = dataArray[QString::fromUtf8( Protocol::Key::StepNumber )].toInt();
+
+    objectInfo.tmpCoordinateX           = dataArray[QString::fromUtf8( Protocol::Key::TmpCoordinateX )].toString().toUtf8();
+    objectInfo.coordinateX              = dataArray[QString::fromUtf8( Protocol::Key::CoordinateX )].toString().toUtf8();
+    objectInfo.tmpCoordinateY           = dataArray[QString::fromUtf8( Protocol::Key::TmpCoordinateY )].toString().toUtf8();
+    objectInfo.coordinateY              = dataArray[QString::fromUtf8( Protocol::Key::CoordinateY )].toString().toUtf8();
+    objectInfo.tmpCoordinateZ           = dataArray[QString::fromUtf8( Protocol::Key::TmpCoordinateZ )].toString().toUtf8();
+    objectInfo.coordinateZ              = dataArray[QString::fromUtf8( Protocol::Key::IsExport )].toBool();
+
+    // Nontexture Polygon Object Info
+    auto tmpPolygonColorArray           = dataArray[QString::fromUtf8( Protocol::Key::TmpPolygonColor )].toArray();
+    objectInfo.tmpPolygonColor          = kvs::RGBColor( tmpPolygonColorArray[0].toInt(), tmpPolygonColorArray[1].toInt(), tmpPolygonColorArray[2].toInt() );
+    auto polygonColorArray              = dataArray[QString::fromUtf8( Protocol::Key::PolygonColor )].toArray();
+    objectInfo.polygonColor             = kvs::RGBColor( polygonColorArray[0].toInt(), polygonColorArray[1].toInt(), polygonColorArray[2].toInt() );
+
+    objectInfo.tmpPolygonOpacity        = static_cast<float>( dataArray[QString::fromUtf8( Protocol::Key::TmpPolygonOpacity )].toDouble() );
+    objectInfo.polygonOpacity           = static_cast<float>( dataArray[QString::fromUtf8( Protocol::Key::PolygonOpacity )].toDouble() );
+
+    emit addObjectToModel( objectInfo );
 }
 
 void Communication::onModeClicked()
@@ -428,14 +560,9 @@ void Communication::onModeClicked()
     }
 }
 
-void Communication::onSamplingTypeClicked()
-{
-
-}
-
 void Communication::onVolumeDataFilePathClicked()
 {
-    const QString filePath = QFileDialog::getOpenFileName( this, tr("Load Volume Data File"), QString(), tr("Volume Data File (*.pfi *.pfl);;All Files (*)") );
+    const QString filePath = QFileDialog::getOpenFileName( this, tr( "Load Volume Data File" ), QString(), tr( "Volume Data File (*.pfi *.pfl);;All Files (*)" ) );
     ui->volumeDataFilePathLineEdit->setText( filePath );
 }
 
@@ -446,10 +573,11 @@ void Communication::onTransferFunctionFilePathClicked()
 }
 
 void Communication::onConnectClicked()
-{    
+{
     if( m_web_sockets->isConnected() )
     {
         emit updateStatusBarMessage( "Already connected." );
+        return;
     }
 
     if( !ui->localVizRadioButton                ->isChecked() &&
@@ -474,14 +602,14 @@ void Communication::onConnectClicked()
 
     // FIXME:Local Viz.(Client Only)でオブジェクトを登録していた場合、サーバ接続時に削除されてしまうので警告ダイアログを表示するようにしてください。
 
-    m_uuid = QUuid::createUuid().toString( QUuid::WithoutBraces ); // ユーザUUID
+    m_user_uuid = QUuid::createUuid().toString( QUuid::WithoutBraces ); // ユーザUUID
     const QString address = ui->addressLineEdit->text().toUtf8().constData(); // FIXME:wss:で接続できない。サーバ側の修正が必要かもしれません。要SSL対応
-    const QString binaryAddress = address + "/binary?uuid=" + m_uuid;
-    const QString textAddress   = address + "/text?uuid=" + m_uuid;
+    const QString binaryAddress = address + "/binary?uuid=" + m_user_uuid;
+    const QString textAddress   = address + "/text?uuid=" + m_user_uuid;
 
     emit updateStatusBarMessage( "Connecting to " + address );
-    if( m_web_sockets->binary() ) m_web_sockets->binary()->open( QUrl( binaryAddress ) );
-    if( m_web_sockets->text() ) m_web_sockets->text()->open( QUrl( textAddress ) );    
+    if( m_web_sockets->binary() )   m_web_sockets->binary() ->open( QUrl( binaryAddress ) );
+    if( m_web_sockets->text() )     m_web_sockets->text()   ->open( QUrl( textAddress ) );
 }
 
 void Communication::onDisconnectClicked()
@@ -492,7 +620,7 @@ void Communication::onDisconnectClicked()
         return;
     }
 
-    m_uuid.clear();
+    m_user_uuid.clear();
     emit updateStatusBarMessage( "Disconnect." );
     m_web_sockets->closeAll();
 }
@@ -525,11 +653,10 @@ void Communication::onTransferOperator()
         emit updateStatusBarMessage( "You cannot transfer yourself." );
     }
 
-
     m_web_sockets->text()->sendTextMessage( QJsonDocument( {
-                                                      {"event", "transferoperator"},
-                                                      {"target_id", targetID},
-                                                      } ).toJson( QJsonDocument::Compact) );
+                                                          { QString::fromUtf8( Protocol::Key::Event ), QString::fromUtf8( Protocol::Events::TransferOperator )},
+                                                          { QString::fromUtf8( Protocol::Key::TargetID ), targetID },
+                                                          } ).toJson( QJsonDocument::Compact ) );
 }
 
 void Communication::onChatClicked()
@@ -544,9 +671,9 @@ void Communication::onChatClicked()
     if( text.isEmpty() ) return; // 何も入力されていない場合は何もしない
 
     m_web_sockets->text()->sendTextMessage( QJsonDocument( {
-                                                      {"event", "chat"},
-                                                      {"text", text},
-                                                      } ).toJson( QJsonDocument::Compact) );
+                                                          { QString::fromUtf8( Protocol::Key::Event ), QString::fromUtf8( Protocol::Events::Chat ) },
+                                                          { QString::fromUtf8( Protocol::Key::Text ), text },
+                                                          } ).toJson( QJsonDocument::Compact ) );
     ui->chatLineEdit->clear();
 }
 
@@ -561,8 +688,6 @@ void Communication::onShareView()
     kvs::Xform currentXform = m_screen->scene()->objectManager()->xform();
     const kvs::Matrix44f matrix = currentXform.toMatrix();
 
-    std::cout << matrix << std::endl;
-
     QJsonArray matrix_array;
     for( int row = 0; row < 4; ++row )
     {
@@ -575,437 +700,85 @@ void Communication::onShareView()
     }
 
     m_web_sockets->text()->sendTextMessage( QJsonDocument( {
-                                                      {"event", "shareview"},
-                                                      {"matrix", matrix_array},
-                                                      } ).toJson( QJsonDocument::Compact) );
+                                                          { QString::fromUtf8( Protocol::Key::Event ), QString::fromUtf8( Protocol::Events::ShareView ) },
+                                                          { QString::fromUtf8( Protocol::Key::Matrix ), matrix_array },
+                                                          } ).toJson( QJsonDocument::Compact ) );
 }
 
-void Communication::onItemDoubleClicked(const QModelIndex& index)
-{
-    if( !index.isValid() ) return;
-
-    QVariant data = index.data( Qt::UserRole + 1 );
-    if( data.canConvert<kvs::Xform>() )
-    {
-        m_screen->reset();
-        kvs::Xform xform = data.value<kvs::Xform>();
-        m_screen->scene()->objectManager()->rotate( xform.rotation() );
-        m_screen->scene()->objectManager()->translate( xform.translation() );
-        m_screen->scene()->objectManager()->scale( xform.scaling() );
-    }
-    m_screen->update();
-}
-
-void Communication::binaryWebsocketConnected()
+void Communication::onBinaryWebsocketConnected()
 {
     websocketConnected();
 }
 
-void Communication::binaryWebsocketDisconnected()
+void Communication::onBinaryWebsocketDisconnected()
 {
     websocketDisconnected();
 }
 
-void Communication::binaryWebsocketMessageReceived( const QByteArray& binary )
+void Communication::onBinaryWebsocketMessageReceived( const QByteArray& binary )
 {
     emit unpack( binary );
 }
 
-void Communication::textWebsocketConnected()
+void Communication::onTextWebsocketConnected()
 {
     websocketConnected();
 }
 
-void Communication::textWebsocketDisconnected()
+void Communication::onTextWebsocketDisconnected()
 {
     websocketDisconnected();
 }
 
-void Communication::textWebsocketMessageReceived( const QString& receivedMessage )
+void Communication::onTextWebsocketMessageReceived( const QString& receivedMessage )
 {
-    QJsonDocument doc = QJsonDocument::fromJson( receivedMessage.toUtf8() );
-    if( !doc.isObject() ) return; // オブジェクトでない場合は無視
+    QJsonParseError parseError;
+    QJsonDocument doc = QJsonDocument::fromJson( receivedMessage.toUtf8(), &parseError );
+    // if( parseError.error != QJsonParseError::NoError || !doc.isObject() )
+    // {
+    //     qWarning() << "Invalid JSON received";
+    //     return;
+    // }
 
     QJsonObject obj = doc.object();
 
-    if( obj.contains("event") )
+    // "Event" キーが存在するかチェック
+    const QString keyEvent = QString::fromUtf8( Protocol::Key::Event );
+    if( !obj.contains( keyEvent ) ) return;
+
+    const QString event = obj.value( keyEvent ).toString();
+
+    // ==== イベント分岐 ====
+    if( event == "Template" ) qDebug() << __LINE__;
+    else if( event == QString::fromUtf8( Protocol::Events::Join ) )                         Join( obj );
+    else if( event == QString::fromUtf8( Protocol::Events::Left ) )                         Left( obj );
+    else if( event == QString::fromUtf8( Protocol::Events::ID ) )                           ID( obj );
+    else if( event == QString::fromUtf8( Protocol::Events::Operator ) )                     Operator( obj );
+    else if( event == QString::fromUtf8( Protocol::Events::TransferOperator ) )             transferOperator( obj );
+    else if( event == QString::fromUtf8( Protocol::Events::Chat ) )                         chat( obj );
+    else if( event == QString::fromUtf8( Protocol::Events::AddObjectToModel ) )             convertObjectInfo( obj );
+    else if( event == QString::fromUtf8( Protocol::Events::ShareView ) )                    shareView( obj );
+    else if( event == QString::fromUtf8( Protocol::Events::SharePoint ) )                   sharePoint( obj );
+    // else if( event == QString::fromUtf8( Protocol::Events::FileList ) )                     fileList( obj );
+    else if( event == QString::fromUtf8( Protocol::Events::ObjectInfoParameter ) )
     {
-        if( obj["event"].toString() == "join" )
-        {
-            int userID = obj["userID"].toInt();    // 入出者
-            QString userIDStr = QString::number( userID );
-            ui->textBrowser->append( "--- User[" + userIDStr + "] Join" );
-        }
-
-        else if( obj["event"].toString() == "left" )
-        {
-            int userID = obj["userID"].toInt();    // 入出者
-            QString userIDStr = QString::number( userID );
-            ui->textBrowser->append( "--- User[" + userIDStr + "] Left" );
-        }
-
-        else if( obj["event"].toString() == "id" )
-        {
-            int userID = obj["userID"].toInt(); // 自分自身のユーザID
-            QString userIDStr = QString::number( userID );
-            m_user_id = userID;
-            ui->IDLineEdit->setText( userIDStr );
-            ui->textBrowser->append("--- Your User ID is [" + userIDStr + "]" );
-        }
-
-        else if( obj["event"].toString() == "operator" )
-        {
-            bool isOperator = obj["isOperator"].toBool(); // 自分に操作権限があるか
-            m_is_operator = isOperator;
-            emit updateOperatorState( m_is_operator );
-            ui->isOperatorLineEdit->setText( m_is_operator ? "true" : "false" );
-            if( m_is_operator )
-            {
-                ui->textBrowser->append("--- You have operator privilege");
-            }
-            else
-            {
-                ui->textBrowser->append("--- You are not operator");
-            }
-        }
-
-        else if( obj["event"].toString() == "operatortransfer" )
-        {
-            int oldOperatorID = obj["oldOperatorID"].toInt();
-            int newOperatorID = obj["newOperatorID"].toInt();
-            ui->textBrowser->append("--- Operator change [" + QString::number( oldOperatorID ) + "] to [" + QString::number( newOperatorID ) + "]" );
-            if( m_user_id == newOperatorID )
-            {
-                m_is_operator = true;
-                ui->isOperatorLineEdit->setText( "true" );
-            }
-            else
-            {
-                m_is_operator = false;
-                ui->isOperatorLineEdit->setText( "false" );
-            }
-            emit updateOperatorState( m_is_operator );
-        }
-
-        else if( obj["event"].toString() == "chat" )
-        {
-            int userID = obj["userID"].toInt();    // 受信したチャットの送信者
-            QString userIDStr = QString::number( userID );
-            QString text = obj["text"].toString();      // 受信したチャット内容
-            ui->textBrowser->append( "User[" + userIDStr + "]: " + text );
-        }
-
-        else if( obj["event"].toString() == "shareview" )
-        {
-            int userID = obj["userID"].toInt();    // 受信した視点共有の送信者
-            QString userIDStr = QString::number( userID );
-            QJsonArray matrixArray = obj["matrix"].toArray();
-            kvs::Matrix44f mat;
-            for( int row = 0; row < 4; ++row )
-            {
-                QJsonArray row_array = matrixArray.at( row ).toArray();
-                for( int col = 0; col < 4; ++col )
-                {
-                    mat[row][col] = static_cast<float>( row_array.at( col ).toDouble() );
-                }
-            }
-
-            // kvs::Xform に変換
-            kvs::Xform recieveXform( mat );
-            if( !m_share_view_list_model )
-            {
-                m_share_view_list_model = new QStandardItemModel( this );
-                ui->shareListView->setModel( m_share_view_list_model );
-                connect( ui->shareListView, &QListView::doubleClicked, this, &Communication::onItemDoubleClicked );
-            }
-            // 表示用ラベル作成
-            QString label = "User[" + userIDStr + "] View";
-
-            // QStandardItem 作成し、xform をデータとして格納
-            QStandardItem* item = new QStandardItem( label );
-            item->setData( QVariant::fromValue( recieveXform ), Qt::UserRole + 1 );
-            // 編集不可にする
-            item->setFlags( item->flags() & ~Qt::ItemIsEditable );
-            m_share_view_list_model->appendRow( item );
-        }
-
-        else if( obj["event"].toString() == "sharepoint" )
-        {
-            int userID = obj["userID"].toInt();    // 着目点共有を行った送信者
-            QString userIDStr = QString::number( userID );
-            double x = obj["x"].toDouble();
-            double y = obj["y"].toDouble();
-            double z = obj["z"].toDouble();
-            double dx = obj["dx"].toDouble();
-            double dy = obj["dy"].toDouble();
-            double dz = obj["dz"].toDouble();
-
-            kvs::Real32 CoordArray[ 1 * 3 ] =
-                {
-                    kvs::Real32( x ),
-                    kvs::Real32( y ),
-                    kvs::Real32( z ),
-                };
-
-            kvs::Real32 DirectionArray[ 1 * 3 ] =
-                {
-                    kvs::Real32( dx ),
-                    kvs::Real32( dy ),
-                    kvs::Real32( dz ),
-                };
-
-#ifdef OPENXR_SCREEN
-            // シーン全体のサイズを基準にした base_size
-            kvs::Vec3 min_coord = m_screen->scene()->objectManager()->minObjectCoord();
-            kvs::Vec3 max_coord = m_screen->scene()->objectManager()->maxObjectCoord();
-            kvs::Vec3 diag = max_coord - min_coord;
-            float scene_size = diag.length();
-            float base_size = scene_size * 0.005f; // シーン全体に対する割合
-
-            // 現在のスケーリング値を取得
-            kvs::Xform xform = m_screen->scene()->objectManager()->xform();
-            float scalingFactor = xform.scaling().x(); // (x,y,z が同じなら x でOK)
-
-            // スケーリングに反比例させることで拡大縮小に依存しないサイズにする
-            kvs::Real32 SizeArray[1] = { base_size / scalingFactor };
-#else
-            kvs::Xform currentObjectManagerXform = m_screen->scene()->objectManager()->xform(); // 現在のオブジェクトマネージャーのTranslation, Scaling, Rotationを取得する。
-            float scalingFactor = 1 / ( currentObjectManagerXform.inverse() * m_screen->scene()->object( m_screen->scene()->numberOfObjects() - 1 )->xform() ).scaling().x();
-            kvs::Real32 SizeArray[ 1 ] = {
-                0.5f * scalingFactor,
-            };
-#endif
-
-            kvs::UInt8 ColorArray[ 1 * 3 ] =
-                {
-                    0, 255, 0,
-                };
-
-            kvs::ValueArray<kvs::Real32> coords( CoordArray, 1 * 3 );
-            kvs::ValueArray<kvs::Real32> direction( DirectionArray, 1 * 3 );
-            kvs::ValueArray<kvs::Real32> size( SizeArray, 1 );
-            kvs::ValueArray<kvs::UInt8> colors( ColorArray, 1 * 3 );
-
-            if( m_screen->scene()->object( userID + "_SharedGlyph" ) == nullptr )
-            {
-                kvs::PolygonObject* sharedPolygon = createArrowGlyph( coords, direction, size, colors );
-                sharedPolygon->setName( userID + "_SharedGlyph" );
-                sharedPolygon->setXform( m_screen->scene()->objectManager()->xform() );
-                sharedPolygon->setMinMaxObjectCoords( m_screen->scene()->object( m_server_point_object_ids.first )->minObjectCoord(), m_screen->scene()->object( m_server_point_object_ids.first )->maxObjectCoord() );
-                sharedPolygon->setMinMaxExternalCoords( m_screen->scene()->object( m_server_point_object_ids.first )->minObjectCoord(), m_screen->scene()->object( m_server_point_object_ids.first )->maxObjectCoord() );
-                kvs::StochasticPolygonRenderer* renderer = new kvs::StochasticPolygonRenderer();
-                m_screen->registerObject( sharedPolygon, renderer );
-                m_screen->update();
-            }
-            else
-            {
-                kvs::PolygonObject* sharedPolygon = createArrowGlyph( coords, direction, size, colors );
-                sharedPolygon->setName( userID + "_SharedGlyph" );
-                sharedPolygon->setXform( m_screen->scene()->objectManager()->xform() );
-                sharedPolygon->setMinMaxObjectCoords( m_screen->scene()->object( m_server_point_object_ids.first )->minObjectCoord(), m_screen->scene()->object( m_server_point_object_ids.first )->maxObjectCoord() );
-                sharedPolygon->setMinMaxExternalCoords( m_screen->scene()->object( m_server_point_object_ids.first )->minObjectCoord(), m_screen->scene()->object( m_server_point_object_ids.first )->maxObjectCoord() );
-                m_screen->scene()->replaceObject( userID + "_SharedGlyph", sharedPolygon );
-                m_screen->update();
-            }
-        }
-
-        else if( obj["event"].toString() == "addObjectToModel" )
-        {
-            ObjectInfoExtractor::ObjectInfo objectInfo;
-
-            // Common Object Info
-            objectInfo.uuid                     = obj["uuid"].toString().toUtf8();
-            objectInfo.tmpIsDisplay             = obj["tmpIsDisplay"].toBool();
-            objectInfo.isDisplay                = obj["isDisplay"].toBool();
-            objectInfo.tmpIsKeepInitial         = obj["tmpIsKeepInitial"].toBool();
-            objectInfo.isKeepInitial            = obj["isKeepInitial"].toBool();
-            objectInfo.tmpIsKeepFinal           = obj["tmpIsKeepFinal"].toBool();
-            objectInfo.isKeepFinal              = obj["isKeepFinal"].toBool();
-
-            objectInfo.name                     = obj["name"].toString().toUtf8();
-            objectInfo.extension                = obj["extension"].toString().toUtf8();
-            objectInfo.directory                = obj["directory"].toString().toUtf8();
-            objectInfo.format                   = objectInfo.format = static_cast<ObjectInfoExtractor::Format>( obj["format"].toInt() );
-            QJsonArray timeStepArray            = obj["timeStep"].toArray();
-            objectInfo.timeStep                 = { timeStepArray[0].toInt(), timeStepArray[1].toInt() };
-            objectInfo.tmpIsFocus               = obj["tmpIsFocus"].toBool();
-            objectInfo.isFocus                  = obj["isFocus"].toBool();
-            auto minObjectCoordArray            = obj["minObjectCoord"].toArray();
-            objectInfo.minObjectCoord           = { minObjectCoordArray[0].toDouble(), minObjectCoordArray[1].toDouble(), minObjectCoordArray[2].toDouble() };
-            auto maxObjectCoordArray            = obj["maxObjectCoord"].toArray();
-            objectInfo.maxObjectCoord           = { maxObjectCoordArray[0].toDouble(), maxObjectCoordArray[1].toDouble(), maxObjectCoordArray[2].toDouble() };
-            auto minExternalCoordArray          = obj["minExternalCoord"].toArray();
-            objectInfo.minExternalCoord         = { minExternalCoordArray[0].toDouble(), minExternalCoordArray[1].toDouble(), minExternalCoordArray[2].toDouble() };
-            auto maxExternalCoordArray          = obj["maxExternalCoord"].toArray();
-            objectInfo.maxExternalCoord         = { maxExternalCoordArray[0].toDouble(), maxExternalCoordArray[1].toDouble(), maxExternalCoordArray[2].toDouble() };
-
-            // Common Server Point Object Info
-            objectInfo.tmpParticleLimit         = obj["tmpParticleLimit"].toInt();
-            objectInfo.particleLimit            = obj["particleLimit"].toInt();
-            objectInfo.tmpExtraOpacityFactor    = static_cast<float>( obj["tmpExtraOpacityFactor"].toDouble() );
-            objectInfo.extraOpacityFactor       = static_cast<float>( obj["extraOpacityFactor"].toDouble() );
-
-            // Client Server Point Object Info
-            objectInfo.numberOfVector           = obj["numberOfVector"].toInt();
-            objectInfo.numberOfElements         = obj["numberOfElements"].toInt();
-            objectInfo.numberOfSubvolume        = obj["numberOfSubvolume"].toInt();
-            objectInfo.numberOfNodes            = obj["numberOfNodes"].toInt();
-            objectInfo.elementType              = obj["elementType"].toInt();
-            objectInfo.fileType                 = obj["fileType"].toInt();
-            objectInfo.stepNumber               = obj["stepNumber"].toInt();
-
-            objectInfo.tmpCoordinateX           = obj["tmpCoordinateX"].toString().toUtf8();
-            objectInfo.coordinateX              = obj["coordinateX"].toString().toUtf8();
-            objectInfo.tmpCoordinateY           = obj["tmpCoordinateY"].toString().toUtf8();
-            objectInfo.coordinateY              = obj["coordinateY"].toString().toUtf8();
-            objectInfo.tmpCoordinateZ           = obj["tmpCoordinateZ"].toString().toUtf8();
-            objectInfo.coordinateZ              = obj["coordinateZ"].toString().toUtf8();
-            objectInfo.isExport                 = obj["isExport"].toBool();
-
-            // Nontexture Polygon Object Info
-            auto tmpPolygonColorArray           = obj["tmpPolygonColor"].toArray();
-            objectInfo.tmpPolygonColor          = kvs::RGBColor( tmpPolygonColorArray[0].toInt(), tmpPolygonColorArray[1].toInt(), tmpPolygonColorArray[2].toInt() );
-            auto polygonColorArray              = obj["polygonColor"].toArray();
-            objectInfo.polygonColor             = kvs::RGBColor( polygonColorArray[0].toInt(), polygonColorArray[1].toInt(), polygonColorArray[2].toInt() );
-
-            objectInfo.tmpPolygonOpacity        = static_cast<float>( obj["tmpPolygonOpacity"].toDouble() );
-            objectInfo.polygonOpacity           = static_cast<float>( obj["polygonOpacity"].toDouble() );
-
-            emit addObjectToModel( objectInfo );
-        }
-
-        else if( obj["event"].toString() == "objectInfoUpdate" )
-        {
-            QJsonArray resultMinObjectCoordsArray   = obj["resultMinObjectCoords"].toArray();
-            std::cout << resultMinObjectCoordsArray[0].toDouble() << ", " << resultMinObjectCoordsArray[1].toDouble() << resultMinObjectCoordsArray[2].toDouble() << std::endl;
-            QJsonArray resultMaxObjectCoordsArray   = obj["resultMaxObjectCoords"].toArray();
-            std::cout << resultMaxObjectCoordsArray[0].toDouble() << ", " << resultMaxObjectCoordsArray[1].toDouble() << resultMaxObjectCoordsArray[2].toDouble() << std::endl;
-            QJsonArray objectsArray                 = obj["objects"].toArray();
-            // for( const auto& v : objectsArray )
-            // {
-            //     auto o = v.toObject(); // 個々のオブジェクト情報
-
-            //     qDebug() << o["uuid"].toString().toUtf8();
-
-            //     std::cout << o["tmpIsDisplay"].toBool()                                     << std::endl;
-            //     std::cout << o["isDisplay"].toBool()                                        << std::endl;
-            //     std::cout << o["tmpIsKeepInitial"].toBool()                                 << std::endl;
-            //     std::cout << o["isKeepInitial"].toBool()                                    << std::endl;
-            //     std::cout << o["tmpIsKeepFinal"].toBool()                                   << std::endl;
-            //     std::cout << o["isKeepFinal"].toBool()                                      << std::endl;
-
-            //     std::cout << o["tmpIsFocus"].toBool()                                       << std::endl;
-            //     std::cout << o["isFocus"].toBool()                                          << std::endl;
-
-            //     std::cout << o["tmpParticleLimit"].toInt()                                  << std::endl;
-            //     std::cout << o["particleLimit"].toInt()                                     << std::endl;
-            //     std::cout << static_cast<float>( o["tmpExtraOpacityFactor"].toDouble() )    << std::endl;
-            //     std::cout << static_cast<float>( o["extraOpacityFactor"].toDouble() )       << std::endl;
-
-            //     qDebug() << o["tmpCoordinateX"].toString().toUtf8();
-            //     qDebug() << o["coordinateX"].toString().toUtf8();
-            //     qDebug() << o["tmpCoordinateY"].toString().toUtf8();
-            //     qDebug() << o["coordinateY"].toString().toUtf8();
-            //     qDebug() << o["tmpCoordinateZ"].toString().toUtf8();
-            //     qDebug() << o["coordinateZ"].toString().toUtf8();
-
-            //     std::cout << o["isExport"].toBool() << std::endl;
-
-            //     auto tmpPolygonColorArray = o["tmpPolygonColor"].toArray();
-            //     std::cout << kvs::RGBColor( tmpPolygonColorArray[0].toInt(), tmpPolygonColorArray[1].toInt(), tmpPolygonColorArray[2].toInt() ) << std::endl;
-
-            //     auto polygonColorArray = o["polygonColor"].toArray();
-            //     std::cout << kvs::RGBColor( polygonColorArray[0].toInt(), polygonColorArray[1].toInt(), polygonColorArray[2].toInt() ) << std::endl;
-
-            //     std::cout << static_cast<float>( o["tmpPolygonOpacity"].toDouble() ) << std::endl;
-            //     std::cout << static_cast<float>( o["polygonOpacity"].toDouble() ) << std::endl;
-            // }
-            emit objectInfoUpdate( resultMinObjectCoordsArray, resultMaxObjectCoordsArray, objectsArray );
-        }
-
-        else if( obj["event"].toString() == "GlyphParameter" )
-        {
-            emit receiveGlyphParameter( obj );
-        }
-
-        else if( obj["event"].toString() == "PlotOverLineParameter" )
-        {
-            emit receivePlotOverLineParameter( obj );
-        }
-
-        else if( obj["event"].toString() == "TimeStepControlParameter" )
-        {
-            emit receiveTimeStepControlParameter( obj );
-        }
-
-        else if (obj["event"].toString() == "transferfunction")
-        {
-            // synthesize 情報
-            QString colorSynth      = obj.value("color_synthesizer").toString().toUtf8();
-            QString opacitySynth    = obj.value("opacity_synthesizer").toString().toUtf8();
-
-            // qDebug() << "Color Synthesizer:" << colorSynth;
-            // qDebug() << "Opacity Synthesizer:" << opacitySynth;
-
-            // transfer function 配列
-            QJsonArray dataArray = obj.value("data").toArray();
-            for (int i = 0; i < dataArray.size(); ++i)
-            {
-                QJsonObject tf = dataArray[i].toObject();
-                // qDebug() << "----- Transfer Function Row" << i << "-----";
-
-                QString colorFunction   = tf.value("ColorFunction").toString();
-                QString colorVariable   = tf.value("ColorVariable").toString();
-                double colorUserMin     = tf.value("ColorUserRangeMin").toDouble();
-                double colorUserMax     = tf.value("ColorUserRangeMax").toDouble();
-                double colorServerMin   = tf.value("ColorServerRangeMin").toDouble();
-                double colorServerMax   = tf.value("ColorServerRangeMax").toDouble();
-
-                // qDebug() << "ColorFunction:" << colorFunction;
-                // qDebug() << "ColorVariable:" << colorVariable;
-                // qDebug() << "ColorUserRangeMin/Max:" << colorUserMin << "/" << colorUserMax;
-                // qDebug() << "ColorServerRangeMin/Max:" << colorServerMin << "/" << colorServerMax;
-
-                // 色マップ
-                QJsonArray colorArr = tf.value("ColorMap").toArray();
-                QString colorMapStr;
-                for (const QJsonValue& rgbVal : colorArr)
-                {
-                    QJsonArray rgb = rgbVal.toArray();
-                    if (rgb.size() == 3)
-                    {
-                        colorMapStr += QString("(%1,%2,%3) ").arg(rgb[0].toInt()).arg(rgb[1].toInt()).arg(rgb[2].toInt());
-                    }
-                }
-                // qDebug() << "ColorMap:" << colorMapStr;
-
-                // 不透明度情報
-                QString opacityFunction = tf.value("OpacityFunction").toString();
-                QString opacityVariable = tf.value("OpacityVariable").toString();
-                double opacityUserMin   = tf.value("OpacityUserRangeMin").toDouble();
-                double opacityUserMax   = tf.value("OpacityUserRangeMax").toDouble();
-                double opacityServerMin = tf.value("OpacityServerRangeMin").toDouble();
-                double opacityServerMax = tf.value("OpacityServerRangeMax").toDouble();
-
-                // qDebug() << "OpacityFunction:" << opacityFunction;
-                // qDebug() << "OpacityVariable:" << opacityVariable;
-                // qDebug() << "OpacityUserRangeMin/Max:" << opacityUserMin << "/" << opacityUserMax;
-                // qDebug() << "OpacityServerRangeMin/Max:" << opacityServerMin << "/" << opacityServerMax;
-
-                QJsonArray opacityArr = tf.value("OpacityMap").toArray();
-                QString opacityMapStr;
-                for (const QJsonValue& v : opacityArr)
-                {
-                    opacityMapStr += QString::number(static_cast<float>(v.toDouble())) + " ";
-                }
-                // qDebug() << "OpacityMap:" << opacityMapStr;
-            }
-            emit updateTransferFunctionFromServer( colorSynth, opacitySynth, dataArray );
-        }
-
-        else
-        {
-            emit updateStatusBarMessage( "Unknown event received. Please check that the client and server versions match." );
-        }
+        // FIXME:いまのままでもいいですが、直接emitする方がいいと思います。
+        QJsonArray resultMinObjectCoordsArray   = obj[QString::fromUtf8( Protocol::Key::ResultMinObjectCoords )].toArray();
+        QJsonArray resultMaxObjectCoordsArray   = obj[QString::fromUtf8( Protocol::Key::ResultMaxObjectCoords )].toArray();
+        QJsonArray objectsArray                 = obj[QString::fromUtf8( Protocol::Key::Objects )].toArray();
+        receiveObjectInfoParameter( resultMinObjectCoordsArray, resultMaxObjectCoordsArray, objectsArray );
     }
+    else if( event == QString::fromUtf8( Protocol::Events::TransferFunctionParameter ) )
+    {
+        // synthesize 情報
+        QString colorSynth      = obj.value(QString::fromUtf8( Protocol::Key::ColorSynthesizer ) ).toString().toUtf8();
+        QString opacitySynth    = obj.value(QString::fromUtf8( Protocol::Key::OpacitySynthesizer ) ).toString().toUtf8();
+        QJsonArray dataArray    = obj.value(QString::fromUtf8( Protocol::Key::Data ) ).toArray();
+        receiveTransferFunctionParameter( colorSynth, opacitySynth, dataArray );
+    }
+    else if( event == QString::fromUtf8( Protocol::Events::GlyphParameter ) )               receiveGlyphParameter( obj );
+    else if( event == QString::fromUtf8( Protocol::Events::PlotOverLineParameter ) )        receivePlotOverLineParameter( obj );
+    else if( event == QString::fromUtf8( Protocol::Events::RequestDataAt ) )                requestDataAt( obj );
+    else if( event == QString::fromUtf8( Protocol::Events::TimeStepControlParameter ) )     receiveTimeStepControlParameter( obj );
+    else emit updateStatusBarMessage( "Unknown event received. Please check that the client and server versions match." );
 }

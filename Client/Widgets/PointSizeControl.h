@@ -23,15 +23,14 @@ public:
     ~PointSizeControl();
 
 public slots:
-    void loadParameter( const QString& filePath );
-    void saveParameter( const QString& filePath );
+    // FIXME:KPI
+    void onLoadParameter( const QString& filePath );
+    void onSaveParameter( const QString& filePath );
 
 private:
     Ui::PointSizeControl *ui;
 
     kvs::qt::jaea::Screen* m_screen = nullptr;
-
-    void initialize();
 
 private slots:
     void onPointSizeValueChanged();

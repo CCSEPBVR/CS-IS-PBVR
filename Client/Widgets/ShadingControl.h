@@ -26,16 +26,15 @@ public:
     ~ShadingControl();
 
 public slots:
-    void shading( kvs::RendererBase* rendererBase );
-    void loadParameter( const QString& filePath );
-    void saveParameter( const QString& filePath );
+    void onShading( kvs::RendererBase* rendererBase );
+    // FIXME:KPI
+    void onLoadParameter( const QString& filePath );
+    void onSaveParameter( const QString& filePath );
 
 private:
     Ui::ShadingControl *ui;
 
     kvs::qt::jaea::Screen* m_screen = nullptr;
-
-    void initialize();
 
 private slots:
     void onChangedShadingParameter();

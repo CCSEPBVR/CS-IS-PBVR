@@ -2,11 +2,12 @@
 #include "ui_PointSizeControl.h"
 
 PointSizeControl::PointSizeControl( kvs::qt::jaea::Screen* screen, QWidget *parent )
-    : QDockWidget(parent)
-    , ui(new Ui::PointSizeControl)
+    : QDockWidget( parent )
+    , ui( new Ui::PointSizeControl )
     , m_screen( screen )
 {
-    initialize();
+    ui->setupUi( this );
+    connect( ui->pointSizeDoubleSpinBox, &QDoubleSpinBox::valueChanged, this, &PointSizeControl::onPointSizeValueChanged );
 }
 
 PointSizeControl::~PointSizeControl()
@@ -14,25 +15,17 @@ PointSizeControl::~PointSizeControl()
     delete ui;
 }
 
-void PointSizeControl::loadParameter( const QString& filePath )
+void PointSizeControl::onLoadParameter( const QString& filePath )
 {
-    // TODO:KPI
     qDebug() << __FILE__ << ":" << __func__ << ":" << filePath;
 }
 
-void PointSizeControl::saveParameter( const QString& filePath )
+void PointSizeControl::onSaveParameter( const QString& filePath )
 {
-    // TODO:KPI
     qDebug() << __FILE__ << ":" << __func__ << ":" << filePath;
 }
 
-void PointSizeControl::initialize()
-{
-    ui->setupUi(this);
-    connect( ui->pointSizeDoubleSpinBox, &QDoubleSpinBox::valueChanged, this, &PointSizeControl::onPointSizeValueChanged );
-}
-
-// NOTE:この処理はPlot Over Line用（VRを含む）の始点・終点には影響しません。kvs::glsl::ParticleBasedRendererを使用して表示しているオブジェクトにのみ影響します。
+// NOTE:この処理はPlot Over Line用(VRを含む)の始点・終点のポイントオブジェクトには影響しません。kvs::glsl::ParticleBasedRendererを使用して表示しているもののみ影響します。
 void PointSizeControl::onPointSizeValueChanged()
 {
     const int size = m_screen->scene()->IDManager()->size();

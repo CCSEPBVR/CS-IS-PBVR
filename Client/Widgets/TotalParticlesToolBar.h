@@ -14,13 +14,12 @@ public:
     ~TotalParticlesToolBar();
 
 public slots:
-    void updateTotalParticles( int ); // FIXME:引数ではなく、ParticleBasedRendererを使用しているオブジェクトから参照したほうが良いかもしれません。
+    // FIXME:引数ではなく、ParticleBasedRendererを使用しているオブジェクトから算出したほうが良いかもしれません。
+    void updateTotalParticles( int );
 
 private:
     QLabel* m_total_particles_label;
     QLabel* m_total_particles_display;
-
-    void initialize();
 };
 
 #endif // TOTALPARTICLESTOOLBAR_H

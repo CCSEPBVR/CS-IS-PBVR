@@ -20,18 +20,17 @@ public:
     ~VolumeTransform();
 
 public slots:
-    void loadParameter( const QString& filePath );
-    void saveParameter( const QString& filePath );
+    // FIXME:KPI
+    void onLoadParameter( const QString& filePath );
+    void onSaveParameter( const QString& filePath );
 
 signals:
-    void updatePointsTranslation(); // FIXME:シグナルスロットの接続が必要
+    void updateTranslation(); // FIXME:シグナルスロットの接続が必要
 
 private:
     Ui::VolumeTransform *ui;
 
     kvs::qt::jaea::Screen* m_screen = nullptr;
-
-    void initialize();
 
 private slots:
     void onApply();

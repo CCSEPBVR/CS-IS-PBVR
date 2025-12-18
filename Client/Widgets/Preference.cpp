@@ -2,37 +2,9 @@
 #include "ui_Preference.h"
 
 Preference::Preference( QWidget *parent )
-    : QDialog(parent)
+    : QDialog( parent )
     , ui( new Ui::Preference )
     , m_settings( QCoreApplication::applicationDirPath() + "/config.ini", QSettings::IniFormat )
-{    
-    initialize();
-}
-
-Preference::~Preference()
-{
-    delete ui;
-}
-
-// MainWindowクラスのshow()実行後に呼び出すしてKVSのウィジェットを表示する。
-void Preference::readyScreen()
-{
-    applySettings();
-}
-
-void Preference::mergingFinish( int requestTimeStep )
-{
-    m_current_time_step = requestTimeStep;
-    m_time_step_label->setText( "Time step: " + std::to_string( m_current_time_step ) );
-}
-
-void Preference::closeEvent( QCloseEvent* event )
-{
-    loadSettings();
-    event->accept();
-}
-
-void Preference::initialize()
 {
     ui->setupUi( this );
 
@@ -45,7 +17,7 @@ void Preference::initialize()
 
     ui->boxTypeComboBox->addItem( "WiredBox", WiredBox );
     ui->boxTypeComboBox->addItem( "SolidBox", SolidBox );
-    // ui->boxTypeComboBox->addItem( "NoneBox", NoneBox ); // FIXME:Linux環境でNoneBoxに変更後別のボックスタイプを変更すると1ColorMapBarに影響がでる不具合があるため無効にしています。
+    // ui->boxTypeComboBox->addItem( "NoneBox", NoneBox ); // NOTE:Linux環境でNoneBoxに変更後、別のボックスタイプに変更するとColorMapBarに不具合が生じるため無効にしています。
 
     ui->showFPSComboBox->addItem( "Show", QVariant( true ) );
     ui->showFPSComboBox->addItem( "Hide", QVariant( false ) );
@@ -63,21 +35,37 @@ void Preference::initialize()
     ui->fontColorClickableLabel->setAutoFillBackground( true );
     ui->fontColorClickableLabel->setPalette( fontColor );
 
-    if( isConfigFileExists() )
-    {
-        loadSettings();
-    }
-    else
-    {
-        defaultSettings();
-    }
+    if( isConfigFileExists() ) loadSettings();
+    else defaultSettings();
 
     connect( ui->backGroundColorClickableLabel, &ClickableLabel::doubleClicked, this, &Preference::onBackGroundColorDoubleClicked );
-    connect( ui->fontColorClickableLabel, &ClickableLabel::doubleClicked, this, &Preference::onLabelsColorDoubleClicked );
-    connect( ui->applyPushButton, &QPushButton::clicked, this, &Preference::onApply );
-    connect( ui->defaultPushButton, &QPushButton::clicked, this, &Preference::onDefault );
-    connect( ui->cancelPushButton, &QPushButton::clicked, this, &Preference::onCancel );
-    connect( ui->okPushButton, &QPushButton::clicked, this, &Preference::onOK );
+    connect( ui->fontColorClickableLabel      , &ClickableLabel::doubleClicked, this, &Preference::onLabelsColorDoubleClicked );
+    connect( ui->applyPushButton              , &QPushButton::clicked         , this, &Preference::onApply );
+    connect( ui->defaultPushButton            , &QPushButton::clicked         , this, &Preference::onDefault );
+    connect( ui->cancelPushButton             , &QPushButton::clicked         , this, &Preference::onCancel );
+    connect( ui->okPushButton                 , &QPushButton::clicked         , this, &Preference::onOK );
+}
+
+Preference::~Preference()
+{
+    delete ui;
+}
+
+void Preference::onReadyScreen()
+{
+    applySettings();
+}
+
+void Preference::onDataRequestCompleted( int requestTimeStep )
+{
+    m_current_time_step = requestTimeStep;
+    m_time_step_label->setText( "Time step: " + std::to_string( m_current_time_step ) );
+}
+
+void Preference::closeEvent( QCloseEvent* event )
+{
+    loadSettings();
+    event->accept();
 }
 
 void Preference::loadSettings()
@@ -493,15 +481,16 @@ void Preference::onLabelsColorDoubleClicked()
     raise();
 }
 
+void Preference::onDefault()
+{
+    defaultSettings();
+}
+
 void Preference::onApply()
 {
     applySettings();
 }
 
-void Preference::onDefault()
-{
-    defaultSettings();
-}
 
 void Preference::onCancel()
 {

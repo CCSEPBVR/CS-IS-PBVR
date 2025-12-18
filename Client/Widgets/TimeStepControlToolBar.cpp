@@ -1,161 +1,10 @@
 #include "TimeStepControlToolBar.h"
 
-TimeStepControlToolBar::TimeStepControlToolBar( QWidget* parent ) :
-    QToolBar( parent )
+TimeStepControlToolBar::TimeStepControlToolBar( WebSocketPair* websockets, QWidget* parent )
+    : QToolBar( parent )
+    , m_web_sockets( websockets )
+    , m_is_operator( false )
 {
-    initialize();
-}
-
-TimeStepControlToolBar::~TimeStepControlToolBar() {}
-
-void TimeStepControlToolBar::updateTotalTimeStepRange( int min, int max, bool isSingleObject )
-{
-    if( min == std::numeric_limits<int>::max() && max == std::numeric_limits<int>::min() )
-    {
-        min = 0;
-        max = 0;
-    }
-
-    m_total_time_step_range_label->setText( QString("(Min :%1, Max :%2)").arg( min ).arg( max ) );
-    m_min_limit_time_step_spin_box->setMinimum( min );
-    m_min_limit_time_step_spin_box->setMaximum( max );
-    m_max_limit_time_step_spin_box->setMinimum( min );
-    m_max_limit_time_step_spin_box->setMaximum( max );
-
-    if( isSingleObject )
-    {
-        m_min_limit_time_step_spin_box->setValue( min );
-        m_max_limit_time_step_spin_box->setValue( max );
-    }
-}
-
-void TimeStepControlToolBar::first()
-{
-    if( m_is_merging ) return;
-
-    m_next_time_step_spin_box->setValue( m_min_limit_time_step_spin_box->minimum() );
-    m_is_merging = true;
-    emit requestMerge( m_next_time_step_spin_box->value() );
-}
-
-void TimeStepControlToolBar::previous()
-{
-    if( m_is_merging ) return;
-
-    if( m_current_time_step_line_edit->text().isEmpty() )
-    {
-        m_next_time_step_spin_box->setValue( m_next_time_step_spin_box->value() );
-    }
-    else
-    {
-        m_next_time_step_spin_box->setValue( m_next_time_step_spin_box->value() - 1 );
-    }
-    m_is_merging = true;
-    emit requestMerge( m_next_time_step_spin_box->value() );
-}
-
-void TimeStepControlToolBar::reverse( bool isChecked )
-{
-    if( isChecked )
-    {
-        m_is_reverse_mode = true;
-        m_timer.start();
-    }
-    else
-    {
-        m_timer.stop();
-    }
-}
-
-void TimeStepControlToolBar::play( bool isChecked )
-{
-    if( isChecked )
-    {
-        m_is_reverse_mode = false;
-        m_timer.start();
-    }
-    else
-    {
-        m_timer.stop();
-    }
-}
-
-void TimeStepControlToolBar::next()
-{
-    if( m_is_merging ) return;
-
-    if( m_current_time_step_line_edit->text().isEmpty() )
-    {
-        m_next_time_step_spin_box->setValue( m_next_time_step_spin_box->value() );
-    }
-    else
-    {
-        m_next_time_step_spin_box->setValue( m_next_time_step_spin_box->value() + 1 );
-    }
-    m_is_merging = true;
-    emit requestMerge( m_next_time_step_spin_box->value() );
-}
-
-void TimeStepControlToolBar::last()
-{
-    if( m_is_merging ) return;
-
-    m_next_time_step_spin_box->setValue( m_max_limit_time_step_spin_box->maximum() );
-    m_is_merging = true;
-    emit requestMerge( m_next_time_step_spin_box->value() );
-}
-
-void TimeStepControlToolBar::keepLast( bool isChecked )
-{
-    if( isChecked )
-    {
-        m_is_last_mode = true;
-        m_timer.start();
-    }
-    else
-    {
-        m_is_last_mode = false;
-        m_timer.stop();
-    }
-}
-
-void TimeStepControlToolBar::jump()
-{
-    if( m_is_merging ) return;
-
-    m_is_merging = true;
-    emit requestMerge( m_next_time_step_spin_box->value() );
-}
-
-void TimeStepControlToolBar::loop( bool isChecked )
-{
-    m_next_time_step_spin_box->setWrapping( isChecked );
-}
-
-void TimeStepControlToolBar::doneTimeControlToolBar( int requestTimeStep )
-{
-    m_current_time_step_line_edit->setText( QString::number( requestTimeStep ) );
-    m_is_merging = false;
-    emit done();
-}
-
-void TimeStepControlToolBar::loadParameter( const QString& filePath )
-{
-    // TODO:KPI
-    qDebug() << __FILE__ << ":" << __func__ << ":" << filePath;
-}
-
-void TimeStepControlToolBar::saveParameter( const QString& filePath )
-{
-    // TODO:KPI
-    qDebug() << __FILE__ << ":" << __func__ << ":" << filePath;
-}
-
-void TimeStepControlToolBar::initialize()
-{
-    QWidget* containerWidget = new QWidget( this );
-    QHBoxLayout* layout = new QHBoxLayout( containerWidget );
-
     m_current_time_step_label = new QLabel( "Current Time Step :", this );
     m_current_time_step_line_edit = new QLineEdit( this );
     m_current_time_step_line_edit->setReadOnly( true );
@@ -182,7 +31,7 @@ void TimeStepControlToolBar::initialize()
     QFrame* verticleLine2 = new QFrame( this );
     verticleLine2->setFrameShape( QFrame::VLine );
 
-    m_total_time_step_range_label = new QLabel( QString("(Min :%1, Max :%2)").arg(0).arg(0), this );
+    m_total_time_step_range_label = new QLabel( QString( "(Min :%1, Max :%2)" ).arg( 0 ).arg( 0 ), this );
 
     QFrame* verticleLine3 = new QFrame( this );
     verticleLine3->setFrameShape( QFrame::VLine );
@@ -194,6 +43,8 @@ void TimeStepControlToolBar::initialize()
     m_update_interval_spin_box->setSuffix( "ms" );
     m_update_interval_spin_box->setFixedWidth( 100 );
 
+    QWidget* containerWidget = new QWidget( this );
+    QHBoxLayout* layout      = new QHBoxLayout( containerWidget );
     layout->addWidget( m_current_time_step_label );
     layout->addWidget( m_current_time_step_line_edit );
     layout->addWidget( verticleLine1 );
@@ -216,10 +67,187 @@ void TimeStepControlToolBar::initialize()
 
     m_timer.setInterval( m_update_interval_spin_box->value() );
 
-    connect( m_min_limit_time_step_spin_box , QOverload<int>::of( &QSpinBox::valueChanged ) , this, &TimeStepControlToolBar::updateMinLimit );
-    connect( m_max_limit_time_step_spin_box , QOverload<int>::of( &QSpinBox::valueChanged ) , this, &TimeStepControlToolBar::updateMaxLimit );
-    connect( m_update_interval_spin_box     , &QSpinBox::valueChanged                       , this, &TimeStepControlToolBar::updateInterval );
-    connect( &m_timer                       , &QTimer::timeout                              , this, &TimeStepControlToolBar::updateTimeStep );
+    connect( m_next_time_step_spin_box     , QOverload<int>::of( &QSpinBox::valueChanged ), this, &TimeStepControlToolBar::onUpdateNext );
+    connect( m_min_limit_time_step_spin_box, QOverload<int>::of( &QSpinBox::valueChanged ), this, &TimeStepControlToolBar::onUpdateMinLimit );
+    connect( m_max_limit_time_step_spin_box, QOverload<int>::of( &QSpinBox::valueChanged ), this, &TimeStepControlToolBar::onUpdateMaxLimit );
+    connect( m_update_interval_spin_box    , &QSpinBox::valueChanged                      , this, &TimeStepControlToolBar::onUpdateInterval );
+    connect( &m_timer                      , &QTimer::timeout                             , this, &TimeStepControlToolBar::onUpdateTimeStep );
+}
+
+TimeStepControlToolBar::~TimeStepControlToolBar() {}
+
+void TimeStepControlToolBar::onUpdateServerState( bool serverState )
+{
+
+}
+
+void TimeStepControlToolBar::onOperatorStateUpdate( bool operatorState )
+{
+    m_is_operator = operatorState;
+
+    m_next_time_step_spin_box       ->setEnabled( m_is_operator );
+    m_min_limit_time_step_spin_box  ->setEnabled( m_is_operator );
+    m_max_limit_time_step_spin_box  ->setEnabled( m_is_operator );
+}
+
+void TimeStepControlToolBar::onReset()
+{
+
+}
+
+void TimeStepControlToolBar::updateTotalTimeStepRange( int min, int max, bool isSingleObject )
+{
+    if( min == std::numeric_limits<int>::max() && max == std::numeric_limits<int>::min() )
+    {
+        min = 0;
+        max = 0;
+    }
+
+    m_total_time_step_range_label->setText( QString("(Min :%1, Max :%2)").arg( min ).arg( max ) );
+    m_min_limit_time_step_spin_box->setMinimum( min );
+    m_min_limit_time_step_spin_box->setMaximum( max );
+    m_max_limit_time_step_spin_box->setMinimum( min );
+    m_max_limit_time_step_spin_box->setMaximum( max );
+
+    if( isSingleObject )
+    {
+        m_min_limit_time_step_spin_box->setValue( min );
+        m_max_limit_time_step_spin_box->setValue( max );
+    }
+}
+
+void TimeStepControlToolBar::onReceiveTimeStepControlParameter( const QJsonObject& timeStepControlParameter )
+{
+    if( timeStepControlParameter.contains( QString::fromUtf8( Protocol::Key::NextTimeStep ) ) )
+        m_next_time_step_spin_box->setValue( timeStepControlParameter.value( QString::fromUtf8( Protocol::Key::NextTimeStep ) ).toInt() );
+
+    if( timeStepControlParameter.contains( QString::fromUtf8( Protocol::Key::MinLimit  ) ) )
+        m_min_limit_time_step_spin_box->setValue( timeStepControlParameter.value( QString::fromUtf8( Protocol::Key::MinLimit ) ).toInt() );
+
+    if( timeStepControlParameter.contains( QString::fromUtf8( Protocol::Key::MaxLimit ) ) )
+        m_max_limit_time_step_spin_box->setValue( timeStepControlParameter.value( QString::fromUtf8( Protocol::Key::MaxLimit ) ).toInt() );
+}
+
+void TimeStepControlToolBar::onDataRequestCompleted( int requestTimeStep )
+{
+    m_current_time_step_line_edit->setText( QString::number( requestTimeStep ) );
+    m_is_merging = false;
+    emit dataRequestCompleted();
+}
+
+void TimeStepControlToolBar::onFirst()
+{
+    if( m_is_merging ) return;
+
+    m_next_time_step_spin_box->setValue( m_min_limit_time_step_spin_box->minimum() );
+    m_is_merging = true;
+    emit requestDataAt( m_next_time_step_spin_box->value() );
+}
+
+void TimeStepControlToolBar::onPrevious()
+{
+    if( m_is_merging ) return;
+
+    if( m_current_time_step_line_edit->text().isEmpty() )
+    {
+        m_next_time_step_spin_box->setValue( m_next_time_step_spin_box->value() );
+    }
+    else
+    {
+        m_next_time_step_spin_box->setValue( m_next_time_step_spin_box->value() - 1 );
+    }
+    m_is_merging = true;
+    emit requestDataAt( m_next_time_step_spin_box->value() );
+}
+
+void TimeStepControlToolBar::onReverse( bool isChecked )
+{
+    if( isChecked )
+    {
+        m_is_reverse_mode = true;
+        m_timer.start();
+    }
+    else
+    {
+        m_timer.stop();
+    }
+}
+
+void TimeStepControlToolBar::onPlay( bool isChecked )
+{
+    if( isChecked )
+    {
+        m_is_reverse_mode = false;
+        m_timer.start();
+    }
+    else
+    {
+        m_timer.stop();
+    }
+}
+
+void TimeStepControlToolBar::onNext()
+{
+    if( m_is_merging ) return;
+
+    if( m_current_time_step_line_edit->text().isEmpty() )
+    {
+        m_next_time_step_spin_box->setValue( m_next_time_step_spin_box->value() );
+    }
+    else
+    {
+        m_next_time_step_spin_box->setValue( m_next_time_step_spin_box->value() + 1 );
+    }
+    m_is_merging = true;
+    emit requestDataAt( m_next_time_step_spin_box->value() );
+}
+
+void TimeStepControlToolBar::onLast()
+{
+    if( m_is_merging ) return;
+
+    m_next_time_step_spin_box->setValue( m_max_limit_time_step_spin_box->maximum() );
+    m_is_merging = true;
+    emit requestDataAt( m_next_time_step_spin_box->value() );
+}
+
+void TimeStepControlToolBar::onKeepLast( bool isChecked )
+{
+    if( isChecked )
+    {
+        m_is_last_mode = true;
+        m_timer.start();
+    }
+    else
+    {
+        m_is_last_mode = false;
+        m_timer.stop();
+    }
+}
+
+void TimeStepControlToolBar::onJump()
+{
+    if( m_is_merging ) return;
+
+    m_is_merging = true;
+    emit requestDataAt( m_next_time_step_spin_box->value() );
+}
+
+void TimeStepControlToolBar::onLoop( bool isChecked )
+{
+    m_next_time_step_spin_box->setWrapping( isChecked );
+}
+
+void TimeStepControlToolBar::onLoadParameter( const QString& filePath )
+{
+    // TODO:KPI
+    qDebug() << __FILE__ << ":" << __func__ << ":" << filePath;
+}
+
+void TimeStepControlToolBar::onSaveParameter( const QString& filePath )
+{
+    // TODO:KPI
+    qDebug() << __FILE__ << ":" << __func__ << ":" << filePath;
 }
 
 void TimeStepControlToolBar::decrementTimeStep()
@@ -236,7 +264,7 @@ void TimeStepControlToolBar::decrementTimeStep()
     }
 
     m_is_merging = true;
-    emit requestMerge( m_next_time_step_spin_box->value() );
+    emit requestDataAt( m_next_time_step_spin_box->value() );
 }
 
 void TimeStepControlToolBar::incrementTimeStep()
@@ -253,7 +281,7 @@ void TimeStepControlToolBar::incrementTimeStep()
     }
 
     m_is_merging = true;
-    emit requestMerge( m_next_time_step_spin_box->value() );
+    emit requestDataAt( m_next_time_step_spin_box->value() );
 }
 
 void TimeStepControlToolBar::keepLastTimeStep()
@@ -263,35 +291,83 @@ void TimeStepControlToolBar::keepLastTimeStep()
     m_next_time_step_spin_box->setValue( m_max_limit_time_step_spin_box->maximum() );
 
     m_is_merging = true;
-    emit requestMerge( m_next_time_step_spin_box->value() );
+    emit requestDataAt( m_next_time_step_spin_box->value() );
 }
 
-void TimeStepControlToolBar::updateMinLimit( int minLimit )
+void TimeStepControlToolBar::onUpdateNext( int next )
+{
+    if( !m_web_sockets->isConnected() )
+    {
+        qDebug() << "Not connected";
+        return;
+    }
+
+    if( m_is_operator )
+    {
+        QJsonObject timeStepControlParameter;
+        timeStepControlParameter[QString::fromUtf8( Protocol::Key::Event )] = QString::fromUtf8( Protocol::Events::TimeStepControlParameter );
+        timeStepControlParameter[QString::fromUtf8( Protocol::Key::NextTimeStep )] = next;
+
+        m_web_sockets->text()->sendTextMessage( QJsonDocument( timeStepControlParameter ).toJson( QJsonDocument::Compact ) );
+    }
+}
+
+void TimeStepControlToolBar::onUpdateMinLimit( int minLimit )
 {
     QMetaObject::invokeMethod( this, [=]() {
-            m_max_limit_time_step_spin_box->blockSignals( true );
-            m_max_limit_time_step_spin_box->setMinimum( minLimit );
-            m_max_limit_time_step_spin_box->blockSignals( false );
-            m_next_time_step_spin_box->setMinimum( minLimit );
-        }, Qt::QueuedConnection ); // GUIスレッドで安全に処理
+        m_max_limit_time_step_spin_box->blockSignals( true );
+        m_max_limit_time_step_spin_box->setMinimum( minLimit );
+        m_max_limit_time_step_spin_box->blockSignals( false );
+        m_next_time_step_spin_box->setMinimum( minLimit );
+    }, Qt::QueuedConnection ); // GUIスレッドで安全に処理
+
+    if( !m_web_sockets->isConnected() )
+    {
+        qDebug() << "Not connected";
+        return;
+    }
+
+    if( m_is_operator )
+    {
+        QJsonObject timeStepControlParameter;
+        timeStepControlParameter[QString::fromUtf8( Protocol::Key::Event )] = QString::fromUtf8( Protocol::Events::TimeStepControlParameter );
+        timeStepControlParameter[QString::fromUtf8( Protocol::Key::MinLimit )] = minLimit;
+
+        m_web_sockets->text()->sendTextMessage( QJsonDocument( timeStepControlParameter ).toJson( QJsonDocument::Compact ) );
+    }
 }
 
-void TimeStepControlToolBar::updateMaxLimit( int maxLimit )
+void TimeStepControlToolBar::onUpdateMaxLimit( int maxLimit )
 {
     QMetaObject::invokeMethod( this, [=]() {
-            m_min_limit_time_step_spin_box->blockSignals( true );
-            m_min_limit_time_step_spin_box->setMaximum( maxLimit );
-            m_min_limit_time_step_spin_box->blockSignals( false );
-            m_next_time_step_spin_box->setMaximum( maxLimit );
-        }, Qt::QueuedConnection ); // GUIスレッドで安全に処理
+        m_min_limit_time_step_spin_box->blockSignals( true );
+        m_min_limit_time_step_spin_box->setMaximum( maxLimit );
+        m_min_limit_time_step_spin_box->blockSignals( false );
+        m_next_time_step_spin_box->setMaximum( maxLimit );
+    }, Qt::QueuedConnection ); // GUIスレッドで安全に処理
+
+    if( !m_web_sockets->isConnected() )
+    {
+        qDebug() << "Not connected";
+        return;
+    }
+
+    if( m_is_operator )
+    {
+        QJsonObject timeStepControlParameter;
+        timeStepControlParameter[QString::fromUtf8( Protocol::Key::Event )] = QString::fromUtf8( Protocol::Events::TimeStepControlParameter );
+        timeStepControlParameter[QString::fromUtf8( Protocol::Key::MaxLimit )] = maxLimit;
+
+        if( m_is_operator ) m_web_sockets->text()->sendTextMessage( QJsonDocument( timeStepControlParameter ).toJson( QJsonDocument::Compact ) );
+    }
 }
 
-void TimeStepControlToolBar::updateInterval()
+void TimeStepControlToolBar::onUpdateInterval()
 {
     m_timer.setInterval( m_update_interval_spin_box->value() );
 }
 
-void TimeStepControlToolBar::updateTimeStep()
+void TimeStepControlToolBar::onUpdateTimeStep()
 {
     if( m_is_reverse_mode && !m_is_last_mode ) // 逆再生
     {

@@ -2,11 +2,12 @@
 #include "ui_VolumeTransform.h"
 
 VolumeTransform::VolumeTransform( kvs::qt::jaea::Screen* screen, QWidget *parent )
-    : QDockWidget(parent)
-    , ui(new Ui::VolumeTransform)
+    : QDockWidget( parent )
+    , ui( new Ui::VolumeTransform )
     , m_screen( screen )
-{    
-    initialize();
+{
+    ui->setupUi( this );
+    connect( ui->applyPushButton, &QPushButton::clicked, this, &VolumeTransform::onApply );
 }
 
 VolumeTransform::~VolumeTransform()
@@ -14,28 +15,20 @@ VolumeTransform::~VolumeTransform()
     delete ui;
 }
 
-void VolumeTransform::loadParameter( const QString& filePath )
+void VolumeTransform::onLoadParameter( const QString& filePath )
 {
-    // TODO:KPI
     qDebug() << __FILE__ << ":" << __func__ << ":" << filePath;
 }
 
-void VolumeTransform::saveParameter( const QString& filePath )
+void VolumeTransform::onSaveParameter( const QString& filePath )
 {
-    // TODO:KPI
     qDebug() << __FILE__ << ":" << __func__ << ":" << filePath;
-}
-
-void VolumeTransform::initialize()
-{
-    ui->setupUi(this);
-    connect( ui->applyPushButton, &QPushButton::clicked, this, &VolumeTransform::onApply );
 }
 
 void VolumeTransform::onApply()
 {
     m_screen->reset();
-    emit updatePointsTranslation();
+    emit updateTranslation();
 
     m_screen->scene()->objectManager()->translate( kvs::Vec3f(
         ui->translationXAxisDoubleSpinBox->value(),

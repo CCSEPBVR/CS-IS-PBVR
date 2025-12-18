@@ -22,22 +22,17 @@ HEADERS += \
     ColorMapEditor.h \
     ColorMapSelectorToolBar.h \
     Communication.h \
-    CommunicationWIP.h \
     GlyphEditor.h \
-    GlyphEditorWIP.h \
     ObjectEditorWIP.h \
     OpacityMapEditor.h \
     PlayBackControlToolBar.h \
-    PlayBackControlToolBarWIP.h \
     PlotOverLineEditor.h \
-    PlotOverLineEditorWIP.h \
     PointSizeControl.h \
     Preference.h \
     RemoteFileDialog.h \
     RepetitionLevelControl.h \
     ShadingControl.h \
     TimeStepControlToolBar.h \
-    TimeStepControlToolBarWIP.h \
     TotalParticlesToolBar.h \
     TransferFunctionEditor.h \
     TransferFunctionEditorWIP.h \
@@ -55,21 +50,16 @@ SOURCES += \
     ColorMapEditor.cpp \
     ColorMapSelectorToolBar.cpp \
     Communication.cpp \
-    CommunicationWIP.cpp \
     GlyphEditor.cpp \
-    GlyphEditorWIP.cpp \
     ObjectEditorWIP.cpp \
     OpacityMapEditor.cpp \
     PlayBackControlToolBar.cpp \
-    PlayBackControlToolBarWIP.cpp \
     PlotOverLineEditor.cpp \
-    PlotOverLineEditorWIP.cpp \
     PointSizeControl.cpp \
     Preference.cpp \
     RepetitionLevelControl.cpp \
     ShadingControl.cpp \
     TimeStepControlToolBar.cpp \
-    TimeStepControlToolBarWIP.cpp \
     TotalParticlesToolBar.cpp \
     TransferFunctionEditor.cpp \
     TransferFunctionEditorWIP.cpp \
@@ -85,13 +75,10 @@ FORMS += \
     AnimationControl.ui \
     ColorMapEditor.ui \
     Communication.ui \
-    CommunicationWIP.ui \
     GlyphEditor.ui \
-    GlyphEditorWIP.ui \
     ObjectEditorWIP.ui \
     OpacityMapEditor.ui \
     PlotOverLineEditor.ui \
-    PlotOverLineEditorWIP.ui \
     PointSizeControl.ui \
     Preference.ui \
     RepetitionLevelControl.ui \

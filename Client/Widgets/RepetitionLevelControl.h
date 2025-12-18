@@ -21,9 +21,10 @@ public:
     ~RepetitionLevelControl();
 
 public slots:
-    void updateCurrentRepetitionLevel();
-    void loadParameter( const QString& filePath );
-    void saveParameter( const QString& filePath );
+    void onUpdateCurrentRepetitionLevel();
+    // FIXME:KPI
+    void onLoadParameter( const QString& filePath );
+    void onSaveParameter( const QString& filePath );
 
 signals:
     void shading( kvs::RendererBase* rendererBase );
@@ -33,8 +34,6 @@ private:
 
     kvs::qt::jaea::Screen* m_screen = nullptr;
     kvs::StochasticRenderingCompositor* m_compositor = nullptr;
-
-    void initialize();
 
 private slots:
     void onApply();

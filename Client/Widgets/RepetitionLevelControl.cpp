@@ -7,7 +7,8 @@ RepetitionLevelControl::RepetitionLevelControl( kvs::qt::jaea::Screen* screen, k
     , m_screen( screen )
     , m_compositor( compositor )
 {
-    initialize();
+    ui->setupUi(this);
+    connect( ui->applyPushButton, &QPushButton::clicked, this, &RepetitionLevelControl::onApply );
 }
 
 RepetitionLevelControl::~RepetitionLevelControl()
@@ -15,28 +16,20 @@ RepetitionLevelControl::~RepetitionLevelControl()
     delete ui;
 }
 
-void RepetitionLevelControl::updateCurrentRepetitionLevel()
+void RepetitionLevelControl::onUpdateCurrentRepetitionLevel()
 {
     const size_t currentRepetitionLevel = m_compositor->repetitionLevel();
     ui->dispCurrentRepetitionLevel->setText( QString::number( currentRepetitionLevel ) );
 }
 
-void RepetitionLevelControl::loadParameter( const QString& filePath )
+void RepetitionLevelControl::onLoadParameter( const QString& filePath )
 {
-    // TODO:KPI
     qDebug() << __FILE__ << ":" << __func__ << ":" << filePath;
 }
 
-void RepetitionLevelControl::saveParameter( const QString& filePath )
+void RepetitionLevelControl::onSaveParameter( const QString& filePath )
 {
-    // TODO:KPI
     qDebug() << __FILE__ << ":" << __func__ << ":" << filePath;
-}
-
-void RepetitionLevelControl::initialize()
-{
-    ui->setupUi( this );
-    connect( ui->applyPushButton, &QPushButton::clicked, this, &RepetitionLevelControl::onApply );
 }
 
 void RepetitionLevelControl::onApply()
@@ -60,5 +53,5 @@ void RepetitionLevelControl::onApply()
 
     m_compositor->setRepetitionLevel( repetitionLevel );
     m_compositor->screen()->redraw();
-    updateCurrentRepetitionLevel();
+    onUpdateCurrentRepetitionLevel();
 }

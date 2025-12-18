@@ -2,8 +2,8 @@
 #include "ui_AnimationControl.h"
 
 AnimationControl::AnimationControl( kvs::qt::jaea::Screen* screen, QWidget *parent )
-    : QDockWidget(parent)
-    , ui(new Ui::AnimationControl)
+    : QDockWidget( parent )
+    , ui( new Ui::AnimationControl )
     , m_screen( screen )
     , m_animation_timer( new QTimer( this ) )
     , m_animation_paused( false )
@@ -11,7 +11,13 @@ AnimationControl::AnimationControl( kvs::qt::jaea::Screen* screen, QWidget *pare
     , m_xform_index( 0 )
     , m_interpolation_counter( 0 )
 {
-    initialize();
+    ui->setupUi( this );
+
+    ui->captureComboBox->addItem( "On", QVariant( true ) );
+    ui->captureComboBox->addItem( "Off", QVariant( false ) );
+    ui->captureComboBox->setCurrentIndex( 1 );
+
+    connect( ui->interpolationSpinBox, &QSpinBox::valueChanged, this, &AnimationControl::onInterpolationValueChanged );
 }
 
 AnimationControl::~AnimationControl()
@@ -19,7 +25,7 @@ AnimationControl::~AnimationControl()
     delete ui;
 }
 
-void AnimationControl::addKeyFrameAdd( kvs::Xform xform )
+void AnimationControl::onAddKeyFrameAdd( kvs::Xform xform )
 {
     m_xforms.push_back( xform );
 
@@ -30,7 +36,7 @@ void AnimationControl::addKeyFrameAdd( kvs::Xform xform )
     }
 }
 
-void AnimationControl::removeLastKeyFrame()
+void AnimationControl::onRemoveLastKeyFrame()
 {
     if( m_xforms.size() >= 1 )
     {
@@ -44,19 +50,18 @@ void AnimationControl::removeLastKeyFrame()
     }
     else
     {
-        ui->totalAnimationFramesDisplayLabel->setText("0");
+        ui->totalAnimationFramesDisplayLabel->setText( "0" );
     }
 }
 
-void AnimationControl::clearKeyFrame()
+void AnimationControl::onClearKeyFrame()
 {
     m_xforms.clear();
     ui->totalKeyFramesDisplayLabel->setText( QString::number( m_xforms.size() ) );
-
-    ui->totalAnimationFramesDisplayLabel->setText("0");
+    ui->totalAnimationFramesDisplayLabel->setText( "0" );
 }
 
-void AnimationControl::playKeyFrame()
+void AnimationControl::onPlayKeyFrame()
 {
     // キーフレームの数を取得
     const int num_frames = m_xforms.size();
@@ -65,16 +70,17 @@ void AnimationControl::playKeyFrame()
     const int interp_steps = ui->interpolationSpinBox->value();
 
     // キーフレームが不足している場合、警告をログに出力して関数を終了
-    if (num_frames < 2) {
+    if( num_frames < 2 )
+    {
         qWarning() << "Insufficient keyframes for animation.";
         return;
     }
 
     // アニメーションが既に再生中であれば一時停止フラグをトグルし、タイマーを停止する
-    if ( m_animation_timer->isActive())
+    if( m_animation_timer->isActive() )
     {
         m_animation_paused = !m_animation_paused;
-        if (m_animation_paused)
+        if( m_animation_paused )
         {
             m_animation_timer->stop();
             return;
@@ -84,7 +90,7 @@ void AnimationControl::playKeyFrame()
     int loop_counter = 0;
 
     // 各キーフレーム間で補間を行う
-    for (int i = 0; i < num_frames - 1; i++)
+    for( int i = 0; i < num_frames - 1; i++ )
     {
         // 各キーフレームの間を指定されたステップ数で補間
         for (int step = 0; step <= interp_steps; step++)
@@ -102,7 +108,7 @@ void AnimationControl::playKeyFrame()
             m_screen->update();
             if( ui->captureComboBox->currentData().toBool() == true )
             {
-                screenShot( loop_counter );
+                onScreenShot( loop_counter );
             }
             loop_counter++;
 
@@ -123,10 +129,9 @@ void AnimationControl::playKeyFrame()
     m_animation_timer->stop();
 }
 
-
-void AnimationControl::loadKeyFrameFile()
+void AnimationControl::onLoadKeyFrameFile()
 {
-    clearKeyFrame();
+    onClearKeyFrame();
 
     QString file_name = QFileDialog::getOpenFileName(this, "Load Keyframes", QDir::currentPath(), "Binary Files (*.anim)");
     if (file_name.isEmpty())
@@ -162,33 +167,33 @@ void AnimationControl::loadKeyFrameFile()
                 rotation_3, rotation_4, rotation_5,
                 rotation_6, rotation_7, rotation_8));
 
-        addKeyFrameAdd(xform);
+        onAddKeyFrameAdd(xform);
     }
 
     file.close();
 }
 
-void AnimationControl::saveKeyFrameFile()
+void AnimationControl::onSaveKeyFrameFile()
 {
-    QString file_name = QFileDialog::getSaveFileName(this, "Save Keyframes", QDir::currentPath(), "Binary Files (*.anim)");
+    QString file_name = QFileDialog::getSaveFileName( this, "Save Keyframes", QDir::currentPath(), "Binary Files (*.anim)" );
 
-    if( file_name.right(4) != ".anim" )
+    if( file_name.right( 4 ) != ".anim" )
     {
         file_name += ".anim";
     }
 
-    if (file_name.isEmpty())
+    if( file_name.isEmpty() )
         return;
 
     QFile file(file_name);
-    if (!file.open(QIODevice::WriteOnly))
+    if( !file.open( QIODevice::WriteOnly ) )
     {
         qWarning() << "Could not open file for writing.";
         return;
     }
 
-    QDataStream out(&file);
-    for (const kvs::Xform& xform : m_xforms)
+    QDataStream out( &file );
+    for( const kvs::Xform& xform : m_xforms )
     {
         out << xform.translation().x()
             << xform.translation().y()
@@ -206,42 +211,29 @@ void AnimationControl::saveKeyFrameFile()
             << xform.rotation()[2].y()
             << xform.rotation()[2].z();
     }
-
     file.close();
 }
 
-void AnimationControl::screenShot(int loopCounter)
+void AnimationControl::onScreenShot(int loopCounter)
 {
-    QString frame_number = QString::asprintf("%06d", loopCounter + 1);
+    QString frame_number = QString::asprintf( "%06d", loopCounter + 1 );
     QString file_name = ui->imageFileLineEdit->text();
 
     QImage image = m_screen->grabFramebuffer();
 
     // ファイル名を作成して保存
     QString full_file_name = file_name + "_" + frame_number + ".bmp";
-    image.save(full_file_name);
+    image.save( full_file_name );
 }
 
-void AnimationControl::loadParameter( const QString& filePath )
+void AnimationControl::onLoadParameter( const QString& filePath )
 {
-    // TODO:KPI
     qDebug() << __FILE__ << ":" << __func__ << ":" << filePath;
 }
 
-void AnimationControl::saveParameter( const QString& filePath )
+void AnimationControl::onSaveParameter( const QString& filePath )
 {
-    // TODO:KPI
     qDebug() << __FILE__ << ":" << __func__ << ":" << filePath;
-}
-
-void AnimationControl::initialize()
-{
-    ui->setupUi( this );
-    ui->captureComboBox->addItem( "On", QVariant( true ) );
-    ui->captureComboBox->addItem( "Off", QVariant( false ) );
-    ui->captureComboBox->setCurrentIndex( 1 );
-
-    connect( ui->interpolationSpinBox, &QSpinBox::valueChanged, this, &AnimationControl::onInterpolationValueChanged );
 }
 
 kvs::Xform AnimationControl::InterpolateXform( const int interp_step, const int num_frame, const kvs::Xform& start, const kvs::Xform& end )

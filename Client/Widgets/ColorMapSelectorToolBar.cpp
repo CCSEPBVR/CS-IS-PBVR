@@ -4,7 +4,20 @@ ColorMapSelectorToolBar::ColorMapSelectorToolBar( kvs::qt::jaea::Screen* screen,
     : QToolBar( parent )
     , m_screen( screen )
 {
-    initialize();
+    QWidget* containerWidget = new QWidget( this );
+    QHBoxLayout* layout = new QHBoxLayout( containerWidget );
+
+    m_color_function_label = new QLabel( "Color Function : ", this );
+    m_color_function_combo_box = new QComboBox( this );
+
+    layout->addWidget( m_color_function_label );
+    layout->addWidget( m_color_function_combo_box );
+
+    // ToolBarにウィジェットを追加
+    this->addWidget( containerWidget );
+    this->setMovable( false );
+
+    connect( m_color_function_combo_box, &QComboBox::currentIndexChanged, this, &ColorMapSelectorToolBar::updateUIFromCurrentItem );
 }
 
 ColorMapSelectorToolBar::~ColorMapSelectorToolBar() {}
@@ -69,34 +82,14 @@ void ColorMapSelectorToolBar::updateColorMapBar( QStandardItemModel* model )
     updateUIFromCurrentItem();
 }
 
-void ColorMapSelectorToolBar::loadParameter( const QString& filePath )
+void ColorMapSelectorToolBar::onLoadParameter( const QString& filePath )
 {
-    // TODO:KPI
     qDebug() << __FILE__ << ":" << __func__ << ":" << filePath;
 }
 
-void ColorMapSelectorToolBar::saveParameter( const QString& filePath )
+void ColorMapSelectorToolBar::onSaveParameter( const QString& filePath )
 {
-    // TODO:KPI
     qDebug() << __FILE__ << ":" << __func__ << ":" << filePath;
-}
-
-void ColorMapSelectorToolBar::initialize()
-{
-    QWidget* containerWidget = new QWidget( this );
-    QHBoxLayout* layout = new QHBoxLayout( containerWidget );
-
-    m_color_function_label = new QLabel( "Color Function : ", this );
-    m_color_function_combo_box = new QComboBox( this );
-
-    layout->addWidget( m_color_function_label );
-    layout->addWidget( m_color_function_combo_box );
-
-    // ToolBarにウィジェットを追加
-    this->addWidget( containerWidget );
-    this->setMovable( false );
-
-    connect( m_color_function_combo_box                  , &QComboBox::currentIndexChanged   , this, &ColorMapSelectorToolBar::updateUIFromCurrentItem );
 }
 
 void ColorMapSelectorToolBar::updateUIFromCurrentItem()
@@ -118,9 +111,9 @@ void ColorMapSelectorToolBar::updateUIFromCurrentItem()
 
         kvs::ColorMap color_map( 256, 0.0, 1.0 );
 
-        for ( int i = 0; i < n; ++i )
+        for( int i = 0; i < n; ++i )
         {
-            const double position = static_cast<double>(i) / (n - 1); // 正規化位置
+            const double position = static_cast<double>( i ) / ( n - 1 ); // 正規化位置
             QColor qcolor = colorList[i].value<QColor>();
             kvs::RGBColor rgb( qcolor.red(), qcolor.green(), qcolor.blue() );
             color_map.addPoint( position, rgb );

@@ -2,7 +2,6 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include <QWebSocket>
 
 #include <kvs/qt/Application>
 #include "Screen.h"
@@ -12,36 +11,24 @@
 #include <kvs/Label>
 
 #include "WebSocketPair.h"
-
 #include "VizMode.h"
 
 #include "ColorMapSelectorToolBar.h"
-#include "PlayBackControlToolBarWIP.h"
-#include "TimeStepControlToolBarWIP.h"
+#include "PlayBackControlToolBar.h"
+#include "TimeStepControlToolBar.h"
 #include "TotalParticlesToolBar.h"
 
-// ウィジェット群(A~Z)
-// ABCDEFGHIJKLMNOPQRSTUVWXYZ
 #include "AnimationControl.h"
-#include "CommunicationWIP.h"
-#include "GlyphEditorWIP.h"
+#include "Communication.h"
+#include "GlyphEditor.h"
 #include "ObjectEditorWIP.h"
-#include "PlotOverLineEditorWIP.h"
+#include "PlotOverLineEditor.h"
 #include "PointSizeControl.h"
 #include "Preference.h"
 #include "RepetitionLevelControl.h"
 #include "ShadingControl.h"
 #include "TransferFunctionEditorWIP.h"
 #include "VolumeTransform.h"
-
-// デバッグ
-#include <kvs/HydrogenVolumeData>
-#include <kvs/CellByCellMetropolisSampling>
-#include "RemoteFileDialog.h"
-
-#ifdef OPENXR_SCREEN
-#include "VRHandControllerListener.h"
-#endif
 
 namespace Ui
 {
@@ -53,19 +40,23 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    MainWindow( kvs::qt::Application& app, QWidget *parent = nullptr );
+    explicit MainWindow( kvs::qt::Application& app, QWidget *parent = nullptr );
     ~MainWindow();
 
 public slots:
-    void updateStatusBarMessage( const QString& message );
+    void onUpdateStatusBarMessage( const QString& message );
 
 signals:
     void readyScreen();
-    void updateCurrentRepetitionLevel();
+    void updateInitialRepetitionLevel();
+    // FIXME:KPI
     void load( const QString& filePath );
     void save( const QString& filePath );
 
 private:
+    static constexpr int DefaultRepetitionLevel = 4;
+    static constexpr int DefaultScreenSize      = 620;
+
     Ui::MainWindow *ui;
 
     kvs::qt::jaea::Screen* m_screen                             = nullptr;
@@ -75,60 +66,60 @@ private:
     kvs::Label* m_fps_label                                     = nullptr;
     kvs::Label* m_time_step_label                               = nullptr;
 
-    kvs::Xform m_initialize_camera_xform; // FIXME:VRで初期位置でkvs::glsl::ParticleBasedRendererを使用している場合、表示されない不具合の対策用です(参考URL:https://github.com/CCSEPBVR/CS-IS-PBVR/blob/develop/Client/Widgets/RepetitionLevelControl.cpp)
-
-    QAction* m_load_action = nullptr;
-    QAction* m_save_action = nullptr;
+    // FIXME:VRで初期位置でkvs::glsl::ParticleBasedRendererを使用している場合、表示されない不具合の対策用です(参考URL:https://github.com/CCSEPBVR/CS-IS-PBVR/blob/develop/Client/Widgets/RepetitionLevelControl.cpp)
+    kvs::Xform m_initialize_camera_xform;
 
     WebSocketPair* m_web_sockets                                = nullptr;
     Viz::Mode* m_viz_mode                                       = nullptr;
 
-    // ウィジェット群(ツールバー) A~Z
-    ColorMapSelectorToolBar* m_color_map_bar_selector_tool_bar  = nullptr;
-    PlayBackControlToolBarWIP* m_play_back_control_tool_bar = nullptr;
-    TimeStepControlToolBarWIP* m_time_step_control_tool_bar = nullptr;
-    TotalParticlesToolBar* m_total_particles_tool_bar = nullptr;
-
-    // ウィジェット群(ドック,ダイアログ) A~Z
-    // ABCDEFGHIJKLMNOPQRSTUVWXYZ
-    QAction* m_animation_control_action = nullptr;
-    AnimationControl* m_animation_control = nullptr;
-
-    QAction* m_communication_action = nullptr;
-    CommunicationWIP* m_communication = nullptr;                       // NOTE:通信関係有
-
-    QAction* m_glyph_editor_action = nullptr;
-    GlyphEditorWIP* m_glyph_editor_wip = nullptr;                          // NOTE:通信関係有
-
-    QAction* m_object_editor_action = nullptr;
-    ObjectEditorWIP* m_object_editor = nullptr;                     // NOTE:通信関係有
-
-    QAction* m_plot_over_line_editor_action = nullptr;
-    PlotOverLineEditorWIP* m_plot_over_line_editor_wip = nullptr;          // NOTE:通信関係有
-
-    QAction* m_point_size_control_action = nullptr;
-    PointSizeControl* m_point_size_control = nullptr;
-
-    QAction* m_preference_action = nullptr;
-    Preference* m_preference = nullptr;
-
-    QAction* m_repetition_level_control_action = nullptr;
-    RepetitionLevelControl* m_repetition_level_control = nullptr;
-
-    QAction* m_shading_control_action = nullptr;
-    ShadingControl* m_shading_control = nullptr;
-
-    QAction* m_transfer_function_editor_action = nullptr;
-    TransferFunctionEditorWIP* m_transfer_function_editor_wip = nullptr;   // NOTE:通信関係有
-
-    QAction* m_volume_transform_action = nullptr;
-    VolumeTransform* m_volume_transform = nullptr;
-
-    // VR関連
 #ifdef OPENXR_SCREEN
     VRHandControllerListener* m_vr_listener;
 #endif
-    void initialize();
+
+    // FIXME:KPI
+    QAction* m_load_action = nullptr;
+    QAction* m_save_action = nullptr;
+
+    // ToolBar
+    ColorMapSelectorToolBar* m_color_map_bar_selector_tool_bar = nullptr; // NOTE:KPI関係有
+    PlayBackControlToolBar* m_play_back_control_tool_bar       = nullptr; // NOTE:通信関係有
+    TimeStepControlToolBar* m_time_step_control_tool_bar       = nullptr; // NOTE:通信関係有 KPI関係有
+    TotalParticlesToolBar* m_total_particles_tool_bar          = nullptr;
+
+    // Widget
+    QAction* m_animation_control_action                        = nullptr;
+    AnimationControl* m_animation_control                      = nullptr; // NOTE:KPI関係有
+
+    QAction* m_communication_action                            = nullptr;
+    Communication* m_communication                             = nullptr; // NOTE:通信関係有 KPI関係有
+
+    QAction* m_glyph_editor_action                             = nullptr;
+    GlyphEditor* m_glyph_editor                                = nullptr; // NOTE:通信関係有 KPI関係有
+
+    QAction* m_object_editor_action                            = nullptr;
+    ObjectEditorWIP* m_object_editor                           = nullptr; // NOTE:通信関係有 KPI関係有
+
+    QAction* m_plot_over_line_editor_action                    = nullptr;
+    PlotOverLineEditor* m_plot_over_line_editor                = nullptr; // NOTE:通信関係有 KPI関係有
+
+    QAction* m_point_size_control_action                       = nullptr;
+    PointSizeControl* m_point_size_control                     = nullptr; // NOTE:KPI関係有
+
+    QAction* m_preference_action                               = nullptr;
+    Preference* m_preference                                   = nullptr;
+
+    QAction* m_repetition_level_control_action                 = nullptr;
+    RepetitionLevelControl* m_repetition_level_control         = nullptr; // NOTE:KPI関係有
+
+    QAction* m_shading_control_action                          = nullptr;
+    ShadingControl* m_shading_control                          = nullptr; // NOTE:KPI関係有
+
+    QAction* m_transfer_function_editor_action                 = nullptr;
+    TransferFunctionEditorWIP* m_transfer_function_editor      = nullptr; // NOTE:通信関係有 KPI関係有
+
+    QAction* m_volume_transform_action                         = nullptr;
+    VolumeTransform* m_volume_transform                        = nullptr; // NOTE:KPI関係有
+
     void toolBarInitialize();
     void animationControlInitialize();
     void communicationInitialize();
@@ -144,21 +135,22 @@ private:
     void initializeAfterShow();
 
 private slots:
-    void onAnimationControl() { m_animation_control->show(); }
-    void onCommunication() { m_communication->show(); }
-    void onGlyphEditor() { m_glyph_editor_wip->show(); }
-    void onObjectEditor() { m_object_editor->show(); }
-    void onPlotOverLineEditor() { m_plot_over_line_editor_wip->show(); }
-    void onPointSizeControl() { m_point_size_control->show(); }
-    void onPreference() { m_preference->show(); }
+    void onAnimationControl()       { m_animation_control->show();        }
+    void onCommunication()          { m_communication->show();            }
+    void onGlyphEditor()            { m_glyph_editor->show();             }
+    void onObjectEditor()           { m_object_editor->show();            }
+    void onPlotOverLineEditor()     { m_plot_over_line_editor->show();    }
+    void onPointSizeControl()       { m_point_size_control->show();       }
+    void onPreference()             { m_preference->show();               }
     void onRepetitionLevelControl() { m_repetition_level_control->show(); }
-    void onShadingControl() { m_shading_control->show(); }
-    void onTransferFunctionEditor() { m_transfer_function_editor_wip->show(); }
-    void onVolumeTransform() { m_volume_transform->show(); }
+    void onShadingControl()         { m_shading_control->show();          }
+    void onTransferFunctionEditor() { m_transfer_function_editor->show(); }
+    void onVolumeTransform()        { m_volume_transform->show();         }
 
     void onUpdateServerState( bool serverState ); // true:接続中
 
     void onLoad();
     void onSave();
 };
+
 #endif // MAINWINDOW_H

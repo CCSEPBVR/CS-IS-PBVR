@@ -6,19 +6,17 @@
 #include <QMessageBox>
 
 #include "Screen.h"
+#include <kvs/PolygonObject>
+#include <kvs/StochasticPolygonRenderer>
+
 #include "WebSocketPair.h"
 #include "VizMode.h"
 
+#include "../../Shared/JsonKeys.h"
 #include "../../Shared/ObjectInfoExtractor.h"
 
-#include <kvs/PointObject>
-#include <kvs/ParticleBasedRenderer>
-#include <kvs/PolygonObject>
-#include <kvs/StochasticPolygonRenderer>
-#include "ColorMapEditor.h"
-#include "OpacityMapEditor.h"
-
-namespace Ui {
+namespace Ui
+{
 class Communication;
 }
 
@@ -32,65 +30,65 @@ public:
 
 public slots:
     void onVRSharePoint( kvs::Real32 CoordArray[ 2 * 3 ], kvs::Real32 DirectionArray[ 3 ] );
-    void loadParameter( const QString& filePath );
-    void saveParameter( const QString& filePath );
+    // FIXME:KPI
+    void onLoadParameter( const QString& filePath );
+    void onSaveParameter( const QString& filePath );
 
-signals:    
+signals:
+    void updateStatusBarMessage( const QString& message );
     void updateServerState( bool serverState );     // true:接続中
     void updateOperatorState( bool operatorState ); // true:権限あり
+    void requestDataAt( const QJsonObject& dataArray );
     void addObjectToModel( const ObjectInfoExtractor::ObjectInfo& objectInfo );
     void unpack( const QByteArray& binary );
-    void objectInfoUpdate( const QJsonArray& resultMinObjectCoordsArray, const QJsonArray& resultMaxObjectCoordsArray, const QJsonArray& updatedObjects );
-    void updateTransferFunctionFromServer( const QString& colorSynth, const QString& opacitySynth, const QJsonArray& dataArray );
-    void updateFocus( kvs::Vec3, kvs::Vec3 );       // FIXME:このクラスに必要ないので削除
-    void updatePointsTranslation();                 // FIXME:このクラスに必要ないので削除
-    void updateStatusBarMessage( const QString& message );
-    void receiveGlyphParameter( const QJsonObject& dataArray );
-    void receivePlotOverLineParameter( const QJsonObject& plotOverLineParameter );
     void receiveTimeStepControlParameter( const QJsonObject& timeStepControlParameter );
+    void receiveGlyphParameter( const QJsonObject& dataArray );
+    void receiveObjectInfoParameter( const QJsonArray& resultMinObjectCoordsArray, const QJsonArray& resultMaxObjectCoordsArray, const QJsonArray& updatedObjects );
+    void receivePlotOverLineParameter( const QJsonObject& dataArray );
+    void receiveTransferFunctionParameter( const QString& colorSynth, const QString& opacitySynth, const QJsonArray& dataArray );
 
 private:
     Ui::Communication *ui;
 
     kvs::qt::jaea::Screen* m_screen = nullptr;
-    WebSocketPair* m_web_sockets = nullptr;
-    Viz::Mode* m_viz_mode = nullptr;
-    QString m_uuid;
-    int m_user_id = -1;
-    bool m_is_operator = false;
-    QStandardItemModel* m_share_view_list_model = nullptr;
+    WebSocketPair* m_web_sockets    = nullptr;
+    Viz::Mode* m_viz_mode           = nullptr;
 
-    QPair<int,int> m_server_point_object_ids    = QPair<int,int>( -1, -1 ); // FIXME:このクラスに必要ないので削除
-
-    void initialize();
-    void registerObject( kvs::PointObject* pointObject );   // FIXME:このクラスに必要ないので削除
-    void replaceObject( kvs::PointObject* pointObject );    // FIXME:このクラスに必要ないので削除
+    QString m_user_uuid;
+    int m_user_id                   = -1;
+    bool m_is_operator              = false;
 
     void websocketConnected();
     void websocketDisconnected();
     void updateVizMode();
 
-    // 着目点グリフ用
+    void Join( const QJsonObject& dataArray );
+    void Left( const QJsonObject& dataArray );
+    void ID( const QJsonObject& dataArray );
+    void Operator( const QJsonObject& dataArray );
+    void transferOperator( const QJsonObject& dataArray );
+    void chat( const QJsonObject& dataArray );
+    void shareView( const QJsonObject& dataArray );     // FIXME:実装部コメントアウトしてしあるので修正が必要です
+    void sharePoint( const QJsonObject& dataArray );    // FIXME:実装部コメントアウトしてしあるので修正が必要です
     kvs::PolygonObject* createArrowGlyph( const kvs::ValueArray<kvs::Real32>& coords, const kvs::ValueArray<kvs::Real32>& directions, const kvs::ValueArray<kvs::Real32>& sizes, const kvs::ValueArray<kvs::UInt8>& colors );
+    void convertObjectInfo( const QJsonObject& dataArray );
 
 private slots:
     void onModeClicked();
-    void onSamplingTypeClicked();
     void onVolumeDataFilePathClicked();
     void onTransferFunctionFilePathClicked();
     void onConnectClicked();
     void onDisconnectClicked();
-    void onTransferOperator(); // FIXME:このクラスに必要ないので削除
+    void onTransferOperator();
     void onChatClicked();
     void onShareView();
-    void onItemDoubleClicked( const QModelIndex& index );
 
-    void binaryWebsocketConnected();
-    void binaryWebsocketDisconnected();
-    void binaryWebsocketMessageReceived( const QByteArray& binary );
-    void textWebsocketConnected();
-    void textWebsocketDisconnected();
-    void textWebsocketMessageReceived( const QString& receivedMessage );
+    void onBinaryWebsocketConnected();
+    void onBinaryWebsocketDisconnected();
+    void onBinaryWebsocketMessageReceived( const QByteArray& binary );
+    void onTextWebsocketConnected();
+    void onTextWebsocketDisconnected();
+    void onTextWebsocketMessageReceived( const QString& receivedMessage );
 };
 
 #endif // COMMUNICATION_H

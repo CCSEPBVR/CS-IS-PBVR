@@ -14,13 +14,13 @@
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QGridLayout" name="gridLayout_2">
+   <layout class="QGridLayout" name="gridLayout">
     <item row="0" column="0">
      <layout class="QGridLayout" name="screenArea"/>
     </item>
    </layout>
   </widget>
-  <widget class="QMenuBar" name="menuBar">
+  <widget class="QMenuBar" name="menubar">
    <property name="geometry">
     <rect>
      <x>0</x>
@@ -29,17 +29,17 @@
      <height>17</height>
     </rect>
    </property>
-   <widget class="QMenu" name="menupbvr_client">
-    <property name="title">
-     <string>pbvr_client</string>
-    </property>
-   </widget>
    <widget class="QMenu" name="menuTools">
     <property name="title">
      <string>Tools</string>
     </property>
    </widget>
-   <addaction name="menupbvr_client"/>
+   <widget class="QMenu" name="menuPBVRClient">
+    <property name="title">
+     <string>pbvr_client</string>
+    </property>
+   </widget>
+   <addaction name="menuPBVRClient"/>
    <addaction name="menuTools"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>

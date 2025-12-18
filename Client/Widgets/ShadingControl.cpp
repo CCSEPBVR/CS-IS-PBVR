@@ -1,13 +1,23 @@
 #include "ShadingControl.h"
 #include "ui_ShadingControl.h"
 
-ShadingControl::ShadingControl( kvs::qt::jaea::Screen* screen,
-                                QWidget *parent )
+ShadingControl::ShadingControl( kvs::qt::jaea::Screen* screen, QWidget *parent )
     : QDockWidget( parent )
     , ui( new Ui::ShadingControl )
     , m_screen( screen )
 {
-    initialize();
+    ui->setupUi( this );
+    QButtonGroup *radioButtonGroup = new QButtonGroup();
+    radioButtonGroup->addButton( ui->noneRadioButton );
+    radioButtonGroup->addButton( ui->phongRadioButton );
+    radioButtonGroup->addButton( ui->lambertRadioButton );
+    radioButtonGroup->addButton( ui->blinnPhongRadioButton );
+
+    connect( radioButtonGroup, SIGNAL( buttonClicked( QAbstractButton* ) ), this, SLOT( onChangedShadingParameter() ) );
+    connect( ui->AmbientDoubleSpinBox  , &QDoubleSpinBox::valueChanged, this, &ShadingControl::onChangedShadingParameter );
+    connect( ui->DiffuseDoubleSpinBox  , &QDoubleSpinBox::valueChanged, this, &ShadingControl::onChangedShadingParameter );
+    connect( ui->SpecularDoubleSpinBox , &QDoubleSpinBox::valueChanged, this, &ShadingControl::onChangedShadingParameter );
+    connect( ui->ShininessDoubleSpinBox, &QDoubleSpinBox::valueChanged, this, &ShadingControl::onChangedShadingParameter );
 }
 
 ShadingControl::~ShadingControl()
@@ -15,7 +25,7 @@ ShadingControl::~ShadingControl()
     delete ui;
 }
 
-void ShadingControl::shading( kvs::RendererBase* rendererBase )
+void ShadingControl::onShading( kvs::RendererBase* rendererBase )
 {
     if( auto* stochasticRenderer = dynamic_cast<kvs::StochasticRendererBase*>( rendererBase ) )
     {
@@ -84,32 +94,14 @@ void ShadingControl::shading( kvs::RendererBase* rendererBase )
     }
 }
 
-void ShadingControl::loadParameter( const QString& filePath )
+void ShadingControl::onLoadParameter( const QString& filePath )
 {
-    // TODO:KPI
     qDebug() << __FILE__ << ":" << __func__ << ":" << filePath;
 }
 
-void ShadingControl::saveParameter( const QString& filePath )
+void ShadingControl::onSaveParameter( const QString& filePath )
 {
-    // TODO:KPI
     qDebug() << __FILE__ << ":" << __func__ << ":" << filePath;
-}
-
-void ShadingControl::initialize()
-{
-    ui->setupUi( this );
-    QButtonGroup *radioButtonGroup = new QButtonGroup();
-    radioButtonGroup->addButton( ui->noneRadioButton );
-    radioButtonGroup->addButton( ui->phongRadioButton );
-    radioButtonGroup->addButton( ui->lambertRadioButton );
-    radioButtonGroup->addButton( ui->blinnPhongRadioButton );
-
-    connect( radioButtonGroup, SIGNAL( buttonClicked( QAbstractButton* ) ), this, SLOT( onChangedShadingParameter() ) );
-    connect( ui->AmbientDoubleSpinBox, &QDoubleSpinBox::valueChanged, this, &ShadingControl::onChangedShadingParameter );
-    connect( ui->DiffuseDoubleSpinBox, &QDoubleSpinBox::valueChanged, this, &ShadingControl::onChangedShadingParameter );
-    connect( ui->SpecularDoubleSpinBox, &QDoubleSpinBox::valueChanged, this, &ShadingControl::onChangedShadingParameter );
-    connect( ui->ShininessDoubleSpinBox, &QDoubleSpinBox::valueChanged, this, &ShadingControl::onChangedShadingParameter );
 }
 
 void ShadingControl::onChangedShadingParameter()
@@ -122,7 +114,7 @@ void ShadingControl::onChangedShadingParameter()
         auto* rendererBase = m_screen->scene()->rendererManager()->renderer( id.second );
         if( rendererBase )
         {
-            shading( rendererBase );
+            onShading( rendererBase );
         }
     }
     m_screen->update();

@@ -20,15 +20,16 @@ public:
     ~AnimationControl();
 
 public slots:
-    void addKeyFrameAdd( kvs::Xform xform );    // x
-    void removeLastKeyFrame();                  // d
-    void clearKeyFrame();                       // D
-    void playKeyFrame();                        // M
-    void loadKeyFrameFile();                    // L
-    void saveKeyFrameFile();                    // S
-    void screenShot( int loopCounter );         // ?
-    void loadParameter( const QString& filePath );
-    void saveParameter( const QString& filePath );
+    void onAddKeyFrameAdd( kvs::Xform xform ); // x
+    void onRemoveLastKeyFrame();               // d
+    void onClearKeyFrame();                    // D
+    void onPlayKeyFrame();                     // M
+    void onLoadKeyFrameFile();                 // L
+    void onSaveKeyFrameFile();                 // S
+    void onScreenShot( int loopCounter );      // ?
+    // FIXME:KPI
+    void onLoadParameter( const QString& filePath );
+    void onSaveParameter( const QString& filePath );
 
 private:
     Ui::AnimationControl *ui;
@@ -37,10 +38,9 @@ private:
     QTimer* m_animation_timer;
     bool m_animation_paused;
     QVector<kvs::Xform> m_xforms;
-    int m_xform_index = 0;
-    int m_interpolation_counter = 0;
+    int m_xform_index;
+    int m_interpolation_counter;
 
-    void initialize();
     kvs::Xform InterpolateXform( const int interpolationStep, const int numberOfFrame, const kvs::Xform& start, const kvs::Xform& end );
     kvs::Quaternion RtoQ( const kvs::Matrix33f& R );
     float Sign( const float x );
@@ -49,4 +49,5 @@ private:
 private slots:
     void onInterpolationValueChanged();
 };
+
 #endif // ANIMATIONCONTROL_H
