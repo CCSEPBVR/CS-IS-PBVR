@@ -101,7 +101,7 @@ private:
     void importObject( ObjectInfoExtractor::ObjectInfo& info, const int&  requestTimeStep )
     {
         std::string fileName;
-        if( info.format == ObjectInfoExtractor::Format::ClientServerPointObject ) fileName = info.directory;
+        if( info.format == ObjectInfoExtractor::Format::ClientServerPointObject ) fileName = toNativePath( info.directory );
         else fileName = createFileName( info, requestTimeStep );
 
         std::unique_ptr<kvs::PointObject> pointObject;
@@ -183,6 +183,16 @@ private:
 
         const std::string fullPath = oss.str();
         return fullPath;
+    }
+
+    static std::string toNativePath( const std::string& path )
+    {
+        std::string nativePath = path;
+#ifdef _WIN32
+        for ( char& c : nativePath )
+            if ( c == '/' ) c = '\\';
+#endif
+        return nativePath;
     }
 };
 
