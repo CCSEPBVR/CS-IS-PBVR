@@ -69,6 +69,8 @@ Server/x64/
 Server/FunctionParser/x64/
 Server/VisModule/x64/
 Server/pbvr_server/
+Server/**/x64/Debug/*.log
+Server/**/x64/Release/*.log
 
 # MinGW generated files
 *.Debug
