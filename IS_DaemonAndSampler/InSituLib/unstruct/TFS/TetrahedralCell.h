@@ -84,6 +84,8 @@ public:
 //    const kvs::Vector3f randomSampling_SFMT( sfmt_t *sfmt  ) const;
 
     const kvs::Real32 volume() const;
+    
+    void volumeArray(const int loop_cnt, float* vol_array) const;
 
     const kvs::Vector3f transformGlobalToLocal( const kvs::Vector3f& point ) const;
 
@@ -140,9 +142,12 @@ inline TetrahedralCell<T>::~TetrahedralCell()
 template <typename T>
 inline void TetrahedralCell<T>::scalar_ary(float*  scalar_array, const int loop_cnt) const 
 {
-    #pragma ivdep
+    //#pragma ivdep
+    #pragma simd
     for ( size_t i = 0; i < loop_cnt ; i++ )
     {
+//        for (int j =0 ; j < 4; j++ ) std::cout << "BaseClass::m_interpolation_functions_array[0][i] =" << BaseClass::m_interpolation_functions_array[j][i] << std::endl;
+//        for (int j =0 ; j < 4; j++ ) std::cout << "BaseClass::m_scalars_array[0][i] =" << BaseClass::m_scalars_array[j][i] << std::endl;
         //scalar_array[i]= static_cast<kvs::Real32>( m_interpolation_functions_array[0][j] * m_scalars_array[0][j] );
         scalar_array[i] =  BaseClass::m_interpolation_functions_array[0][i] * BaseClass::m_scalars_array[0][i] 
                         +  BaseClass::m_interpolation_functions_array[1][i] * BaseClass::m_scalars_array[1][i]
@@ -154,7 +159,8 @@ inline void TetrahedralCell<T>::scalar_ary(float*  scalar_array, const int loop_
 template <typename T>
 inline void TetrahedralCell<T>::grad_ary(float* grad_array_x, float* grad_array_y, float* grad_array_z, const int loop_cnt) const
 {
-    #pragma ivdep
+    //#pragma ivdep
+    #pragma simd
     for( int i = 0; i < loop_cnt; i++ )
     {
 
@@ -336,7 +342,8 @@ template <typename T>
 //inline const kvs::Real32** TetrahedralCell<T>::interpolationFunctions_array( const kvs::Vector3f* local_array, const int loop_cnt ) const
 inline void TetrahedralCell<T>::interpolationFunctions_array( const kvs::Vector3f* local_array, const int loop_cnt ) const
 {
-    #pragma ivdep
+    //#pragma ivdep
+    #pragma simd
     for( int i = 0; i < loop_cnt; i++)
     {
     const float x = local_array[i].x();
@@ -369,7 +376,8 @@ inline void TetrahedralCell<T>::differentialFunctions_array(  const kvs::Vector3
 {
     kvs::IgnoreUnusedVariable( local_array );
 
-    #pragma ivdep
+    //#pragma ivdep
+    #pragma simd
     for( int i = 0; i < loop_cnt; i++)
     {
 //        // dNdx
@@ -620,7 +628,79 @@ inline const kvs::Real32 TetrahedralCell<T>::volume() const
     const kvs::Vector3f v02( BaseClass::m_vertices[2] - BaseClass::m_vertices[0] );
     const kvs::Vector3f v03( BaseClass::m_vertices[3] - BaseClass::m_vertices[0] );
 
-    return kvs::Math::Abs( ( v01.cross( v02 ) ).dot( v03 ) ) * 0.166666f;
+    const kvs::Vector3f cross {v01[1] * v02[2] - v01[2] * v02[1], v01[2] * v02[0] - v01[0] * v02[2], v01[0] * v02[1] - v01[1] * v02[0]};
+    const kvs::Real32 dot = kvs::Math::Abs(0.166666f * (cross[0]*v03[0] + cross[1]*v03[1] + cross[2]*v03[2]  ));
+    return dot;
+
+//    return kvs::math::abs( ( v01.cross( v02 ) ).dot( v03 ) ) * 0.166666f;
+}
+
+template <typename T>
+inline void TetrahedralCell<T>::volumeArray(const int loop_cnt, float* vol_array ) const
+{
+
+    float p0x[loop_cnt];
+    float p0y[loop_cnt];
+    float p0z[loop_cnt];
+    float p1x[loop_cnt];
+    float p1y[loop_cnt];
+    float p1z[loop_cnt];
+    float p2x[loop_cnt];
+    float p2y[loop_cnt];
+    float p2z[loop_cnt];
+    float p3x[loop_cnt];
+    float p3y[loop_cnt];
+    float p3z[loop_cnt];
+
+
+//    #pragma simd
+////    #pragma omp simd aligned(vol_array:64)
+//    for( int i = 0; i < loop_cnt; i++)
+//    {
+//        p0x[i] = BaseClass::m_vertices_array[0][i].x();
+//        p0y[i] = BaseClass::m_vertices_array[0][i].y();
+//        p0z[i] = BaseClass::m_vertices_array[0][i].z();
+//        p1x[i] = BaseClass::m_vertices_array[1][i].x();
+//        p1y[i] = BaseClass::m_vertices_array[1][i].y();
+//        p1z[i] = BaseClass::m_vertices_array[1][i].z();
+//        p2x[i] = BaseClass::m_vertices_array[2][i].x();
+//        p2y[i] = BaseClass::m_vertices_array[2][i].y();
+//        p2z[i] = BaseClass::m_vertices_array[2][i].z();
+//        p3x[i] = BaseClass::m_vertices_array[3][i].x();
+//        p3y[i] = BaseClass::m_vertices_array[3][i].y();
+//        p3z[i] = BaseClass::m_vertices_array[3][i].z();
+//    }
+    
+    #pragma omp simd simdlen(8)
+    for( int i = 0; i < loop_cnt; i++)
+    {
+        const float v01x = BaseClass::m_vertices_array[1][i].x() - BaseClass::m_vertices_array[0][i].x();
+        const float v01y = BaseClass::m_vertices_array[1][i].y() - BaseClass::m_vertices_array[0][i].y();
+        const float v01z = BaseClass::m_vertices_array[1][i].z() - BaseClass::m_vertices_array[0][i].z();
+        const float v02x = BaseClass::m_vertices_array[2][i].x() - BaseClass::m_vertices_array[0][i].x();
+        const float v02y = BaseClass::m_vertices_array[2][i].y() - BaseClass::m_vertices_array[0][i].y();
+        const float v02z = BaseClass::m_vertices_array[2][i].z() - BaseClass::m_vertices_array[0][i].z();
+        const float v03x = BaseClass::m_vertices_array[3][i].x() - BaseClass::m_vertices_array[0][i].x();
+        const float v03y = BaseClass::m_vertices_array[3][i].y() - BaseClass::m_vertices_array[0][i].y();
+        const float v03z = BaseClass::m_vertices_array[3][i].z() - BaseClass::m_vertices_array[0][i].z();
+
+//    const float v01x = p1.x() - p0.x();
+//    const float v01y = p1.y() - p0.y();
+//    const float v01z = p1.z() - p0.z();
+//    const float v02x = p2.x() - p0.x();
+//    const float v02y = p2.y() - p0.y();
+//    const float v02z = p2.z() - p0.z();
+//    const float v03x = p3.x() - p0.x();
+//    const float v03y = p3.y() - p0.y();
+//    const float v03z = p3.z() - p0.z();
+
+    const float cx = v01y*v02z - v01z*v02y;
+    const float cy = v01z*v02x - v01x*v02z;
+    const float cz = v01x*v02y - v01y*v02x;
+
+    const float det = cx*v03x + cy*v03y + cz*v03z;
+    vol_array[i] = kvs::Math::Abs(det) * 0.166666f; 
+    }
 }
 
 /*===========================================================================*/

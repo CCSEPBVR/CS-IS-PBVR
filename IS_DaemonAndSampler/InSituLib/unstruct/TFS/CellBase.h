@@ -101,9 +101,11 @@ public:
 //    virtual const kvs::Real32** differentialFunctions_array( const kvs::Vector3f* point, const int loop_cnt ) const = 0;
     virtual void differentialFunctions_array( const kvs::Vector3f* point, const int loop_cnt ) const = 0;
     
-    virtual void scalar_ary( float* scalar_array, const int loop_cnt ) const = 0;
+    //virtual void scalar_ary( float* scalar_array, const int loop_cnt ) const = 0;
+    virtual void scalar_ary( float* scalar_array, const int loop_cnt ) const ;
     
-    virtual void grad_ary( float* grad_array_x, float* grad_array_y, float* grad_array_z,  const int loop_cnt ) const = 0;
+    //virtual void grad_ary( float* grad_array_x, float* grad_array_y, float* grad_array_z,  const int loop_cnt ) const = 0;
+    virtual void grad_ary( float* grad_array_x, float* grad_array_y, float* grad_array_z,  const int loop_cnt ) const;
     
 //    virtual void bindCell_wVolume( const kvs::UInt32 index, const size_t n = 0 );
     
@@ -147,6 +149,10 @@ public:
 //    virtual const kvs::Vector3f randomSampling_SFMT( sfmt_t *sfmt ) const;
 
     virtual const kvs::Real32 volume() const;
+    
+    //virtual const kvs::Real32 volume() const;
+    
+    virtual void  volumeArray(const int loop_cnt, float* vol_array) const;
 
     virtual const kvs::Real32 averagedScalar() const;
 
@@ -645,6 +651,14 @@ inline const kvs::Real32 CellBase<T>::volume() const
     return kvs::Real32( 0.0f );
 }
 
+template <typename T>
+inline void CellBase<T>::volumeArray(const int loop_cnt, float* vol_array) const
+{
+    kvsMessageError( "'volume' is not implemented." );
+//    return kvs::Real32( 0.0f );
+}
+
+
 /*===========================================================================*/
 /**
  *  @brief  Returns the averaged scalar value.
@@ -687,6 +701,12 @@ inline const kvs::Real32 CellBase<T>::scalar() const
     return S;
 }
 
+template <typename T>
+inline void CellBase<T>::scalar_ary(float*  scalar_array, const int loop_cnt) const 
+{
+    kvsMessageError( "'volume' is not implemented." );
+//    return kvs::Real32( 0.0f );
+}
 /*===========================================================================*/
 /**
  *  @brief  Returns the gradient vector at the attached point.
@@ -787,6 +807,11 @@ inline const kvs::Vector3f CellBase<T>::gradient() const
     return kvs::Math::IsZero( determinant ) ? kvs::Vector3f( 0.0f, 0.0f, 0.0f ) : F;
 }
 #endif
+template <typename T>
+inline void CellBase<T>::grad_ary(float* grad_array_x, float* grad_array_y, float* grad_array_z, const int loop_cnt) const
+{
+    kvsMessageError( "'volume' is not implemented." );
+}
 /*===========================================================================*/
 /**
  *  @brief  Returns the glavity point value.
@@ -978,7 +1003,7 @@ inline const kvs::Real32 CellBase<T>::randomNumber() const
 }
 
 template <typename T>
-void CellBase<T>::CalcScalarGrad(
+inline void CellBase<T>::CalcScalarGrad(
     const int loop_cnt,
     float *scalar_array,
     float *grad_array_x,
