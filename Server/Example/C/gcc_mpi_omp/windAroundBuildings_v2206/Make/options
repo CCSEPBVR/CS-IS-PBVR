@@ -7,10 +7,9 @@ EXE_INC = \
     -I$(LIB_SRC)/TurbulenceModels/incompressible/lnInclude \
     -I$(LIB_SRC)/transportModels \
     -I$(LIB_SRC)/transportModels/incompressible/singlePhaseTransportModel \
-    -DVTK \
+    -DEXTEND_FILE_FORMAT \
     -I../../../../InSituLib/unstruct \
     -I../../../../VisModule \
-    -I../../../../Common \
     -I$(KVS_DIR)/include \
     -I${VTK_INCLUDE_PATH} 
 
@@ -25,9 +24,8 @@ EXE_LIBS = \
     -latmosphericModels \
     -L../../../../InSituLib/unstruct -lInSituPBVR \
     -L../../../../VisModule/Release  -lvisModule \
-    -L../../../../Common  -lpbvrCommon \
     -L../../../../FunctionParser -lpbvrFunc \
-    -L$(KVS_DIR)/lib -lkvsCore \
+    -L$(KVS_DIR)/lib -lkvsCore -lkvsSupportExtendedFileFormat \
     -L/lib64 \
     -L${VTK_LIB_PATH} -lvtkFiltersExtraction-9.2 -lvtkIOXML-9.2 -lvtkIOXMLParser-9.2 -lvtkexpat-9.2 -lvtkParallelCore-9.2 -lvtkIOLegacy-9.2 -lvtkIOCore-9.2 \
     -lvtkdoubleconversion-9.2 -lvtklz4-9.2 -lvtklzma-9.2 -lvtkFiltersStatistics-9.2 -lvtkFiltersGeneral-9.2 -lvtkFiltersGeometry-9.2 -lvtkFiltersParallel-9.2 -lvtkFiltersCore-9.2 -lvtkCommonExecutionModel-9.2  \
