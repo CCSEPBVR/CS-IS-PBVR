@@ -959,10 +959,16 @@ void ObjectEditorWIP::registerObject( ObjectInfoExtractor::ObjectInfo& info )
     switch( info.format )
     {
     case ObjectInfoExtractor::ClientServerPointObject:
-        break;
     case ObjectInfoExtractor::InsituServerPointObject:
+        particleBasedRenderer = std::make_unique<kvs::glsl::ParticleBasedRenderer>();
+        particleBasedRenderer.get()->enableShuffle();
+        emit shading( particleBasedRenderer.get() );
+        info.objectID = m_screen->registerObject( info.object, particleBasedRenderer.release() );
         break;
     case ObjectInfoExtractor::ServerGlyphObject:
+        stochasticPolygonRenderer = std::make_unique<kvs::StochasticPolygonRenderer>();
+        emit shading( stochasticPolygonRenderer.get() );
+        info.objectID = m_screen->registerObject( info.object, stochasticPolygonRenderer.release() );
         break;
     case ObjectInfoExtractor::PointObjectKVSML:
     case ObjectInfoExtractor::PointObjectLAS:
@@ -1003,10 +1009,14 @@ void ObjectEditorWIP::replaceObject( ObjectInfoExtractor::ObjectInfo& info )
     switch( info.format )
     {
     case ObjectInfoExtractor::ClientServerPointObject:
-        break;
     case ObjectInfoExtractor::InsituServerPointObject:
+        m_screen->scene()->replaceObject( info.objectID.first, info.object );
         break;
     case ObjectInfoExtractor::ServerGlyphObject:
+        stochasticPolygonRenderer = std::make_unique<kvs::StochasticPolygonRenderer>();
+        emit shading( stochasticPolygonRenderer.get() );
+        m_screen->scene()->replaceObject( info.objectID.first, info.object );
+        m_screen->scene()->replaceRenderer( info.objectID.second, stochasticPolygonRenderer.release() );
         break;
     case ObjectInfoExtractor::PointObjectKVSML:
     case ObjectInfoExtractor::PointObjectLAS:
