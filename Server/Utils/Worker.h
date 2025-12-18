@@ -5,9 +5,12 @@
 
 #include "../../Shared/ObjectInfoExtractor.h"
 #include <vismodule/ParticleProperty>
+#include <vismodule/GlyphProperty>
 #include <vismodule/MultiVolumeProperty>
 #include <vismodule/GenerateParticle>
+#include <vismodule/GenerateGlyph>
 #include <vismodule/Camera>
+#include <vismodule/TransferFunctionSynthesizer>
 
 class Worker
 {
@@ -18,6 +21,7 @@ public:
         : m_request_time_step( requestTimeStep )
         , m_objects( objects )
     {
+        camera.setWindowSize( 620, 620 ); // クライアントから送信されるようになったら削除
     }
 
     void setDoneCallBack( DoneCallBack callBack ) { m_done_call_back = std::move( callBack ); }
@@ -89,7 +93,8 @@ private:
     int m_request_time_step;
     std::vector<ObjectInfoExtractor::ObjectInfo>* m_objects;
     DoneCallBack m_done_call_back;
-    ParticleProperty param;
+    ParticleProperty particle_property;
+    GlyphProperty glyph_property;
     MultiVolumePropertyList mvpl;
     vismodule::Camera camera;
 
@@ -109,14 +114,22 @@ private:
         switch( info.format )
         {
         case ObjectInfoExtractor::ClientServerPointObject:
+            particle_property.m_transfunc_synthesizer = new TransferFunctionSynthesizer();
             pointObject = std::make_unique<kvs::PointObject>();
-            SetParticleParameterCS( fileName, requestTimeStep, &camera, param, mvpl );
-            GenerateParticleCS( param, mvpl, pointObject );
+            SetParticleParameterCS( fileName, requestTimeStep, &camera, particle_property, mvpl );
+            GenerateParticleCS( particle_property, mvpl, pointObject );
+            delete particle_property.m_transfunc_synthesizer;
             info.object = pointObject.release();
             break;
         case ObjectInfoExtractor::InsituServerPointObject:
+            SetParticleParameterIS( requestTimeStep, &camera, particle_property, mvpl );
+            GenerateParticleIS( particle_property, mvpl, pointObject );
+            info.object = pointObject.release();
             break;
         case ObjectInfoExtractor::ServerGlyphObject:
+            SetGlyphParameterCS( particle_property, glyph_property, mvpl );
+            polygonObject = GenerateGlyphCS( particle_property, glyph_property, mvpl );
+            info.object = polygonObject.release();
             break;
         case ObjectInfoExtractor::PointObjectKVSML:
         case ObjectInfoExtractor::PointObjectLAS:
