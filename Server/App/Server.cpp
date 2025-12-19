@@ -4,7 +4,12 @@
 Server::Server( int port )
     : m_port( port )
 {
-    m_objects = new std::vector<ObjectInfoExtractor::ObjectInfo>();
+    m_objects                                    = new std::vector<ObjectInfoExtractor::ObjectInfo>();
+    m_particle_property                          = new ParticleProperty();
+    m_particle_property->m_transfunc_synthesizer = new TransferFunctionSynthesizer();
+    m_glyph_property                             = new GlyphProperty();
+    m_pol_property                               = new PlotOverLineProperty();
+    m_multi_volume_property_list                 = new MultiVolumePropertyList();
 
     m_u_web_sockets.ws<PerSocket>( "/binary",
                                   {
@@ -977,7 +982,7 @@ void Server::requestDataAt( uWS::WebSocket<false, true, PerSocket>* ws, const nl
     std::cout << "[Server] show at time step" << std::endl;
     const int& timeStep = received[Protocol::Key::TimeStep];
 
-    Worker worker( timeStep, m_objects ); // m_objects は std::vector<ObjectInfo> のメンバ
+    Worker worker( timeStep, m_objects, m_particle_property, m_glyph_property, m_pol_property, m_multi_volume_property_list ); // m_objects は std::vector<ObjectInfo> のメンバ
     worker.setDoneCallBack( [this, ws, timeStep]() {
         std::vector<char> buffer = pack( timeStep );
 

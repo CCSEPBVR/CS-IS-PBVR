@@ -17,9 +17,14 @@ class Worker
 public:
     using DoneCallBack = std::function<void()>;
 
-    explicit Worker( const int requestTimeStep, std::vector<ObjectInfoExtractor::ObjectInfo>* objects )
-        : m_request_time_step( requestTimeStep )
-        , m_objects( objects )
+    explicit Worker( 
+        const int requestTimeStep, std::vector<ObjectInfoExtractor::ObjectInfo>* objects,
+        ParticleProperty* particle_property, GlyphProperty* glyph_property,
+        PlotOverLineProperty* pol_property, MultiVolumePropertyList* multi_volume_property_list
+    )
+        : m_request_time_step( requestTimeStep ) , m_objects( objects )
+        , m_particle_property( particle_property ), m_glyph_property( glyph_property )
+        , m_pol_property( pol_property ), m_multi_volume_property_list( multi_volume_property_list )
     {
         camera.setWindowSize( 620, 620 ); // クライアントから送信されるようになったら削除
     }
@@ -66,13 +71,13 @@ public:
                         }
                         else
                         {
-                            importObject( info, resultTimeStep );
+                            importObject( info, resultTimeStep, m_particle_property, m_glyph_property, m_pol_property, m_multi_volume_property_list );
                             info.currentImportedTimeStep = resultTimeStep;
                         }
                     }
                     else
                     {
-                        importObject( info, resultTimeStep );
+                        importObject( info, resultTimeStep, m_particle_property, m_glyph_property, m_pol_property, m_multi_volume_property_list );
                         info.currentImportedTimeStep = resultTimeStep;
                     }
                 }
@@ -93,12 +98,17 @@ private:
     int m_request_time_step;
     std::vector<ObjectInfoExtractor::ObjectInfo>* m_objects;
     DoneCallBack m_done_call_back;
-    ParticleProperty particle_property;
-    GlyphProperty glyph_property;
-    MultiVolumePropertyList mvpl;
+    ParticleProperty* m_particle_property;
+    GlyphProperty* m_glyph_property;
+    PlotOverLineProperty* m_pol_property;
+    MultiVolumePropertyList* m_multi_volume_property_list;
     vismodule::Camera camera;
 
-    void importObject( ObjectInfoExtractor::ObjectInfo& info, const int&  requestTimeStep )
+    void importObject(
+        ObjectInfoExtractor::ObjectInfo& info, const int&  requestTimeStep,
+        ParticleProperty* particle_property, GlyphProperty* glyph_property,
+        PlotOverLineProperty* pol_property, MultiVolumePropertyList* multi_volume_property_list
+    )
     {
         std::string fileName;
         if( info.format == ObjectInfoExtractor::Format::ClientServerPointObject ) fileName = toNativePath( info.directory );
@@ -114,21 +124,19 @@ private:
         switch( info.format )
         {
         case ObjectInfoExtractor::ClientServerPointObject:
-            particle_property.m_transfunc_synthesizer = new TransferFunctionSynthesizer();
             pointObject = std::make_unique<kvs::PointObject>();
-            SetParticleParameterCS( fileName, requestTimeStep, &camera, particle_property, mvpl );
-            GenerateParticleCS( particle_property, mvpl, pointObject );
-            delete particle_property.m_transfunc_synthesizer;
+            SetParticleParameterCS( fileName, requestTimeStep, &camera, *particle_property, *multi_volume_property_list );
+            GenerateParticleCS( *particle_property, *multi_volume_property_list, pointObject );
             info.object = pointObject.release();
             break;
         case ObjectInfoExtractor::InsituServerPointObject:
-            SetParticleParameterIS( requestTimeStep, &camera, particle_property, mvpl );
-            GenerateParticleIS( particle_property, mvpl, pointObject );
+            SetParticleParameterIS( requestTimeStep, &camera, *particle_property, *multi_volume_property_list );
+            GenerateParticleIS( *particle_property, *multi_volume_property_list, pointObject );
             info.object = pointObject.release();
             break;
         case ObjectInfoExtractor::ServerGlyphObject:
-            SetGlyphParameterCS( particle_property, glyph_property, mvpl );
-            polygonObject = GenerateGlyphCS( particle_property, glyph_property, mvpl );
+            SetGlyphParameterCS( *particle_property, *glyph_property, *multi_volume_property_list );
+            polygonObject = GenerateGlyphCS( *particle_property, *glyph_property, *multi_volume_property_list );
             info.object = polygonObject.release();
             break;
         case ObjectInfoExtractor::PointObjectKVSML:

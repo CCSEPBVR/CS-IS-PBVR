@@ -16,6 +16,10 @@
 #include "../../Shared/JsonKeys.h"
 #include "../../Shared/ObjectInfoExtractor.h"
 
+#include <vismodule/ParticleProperty>
+#include <vismodule/GlyphProperty>
+#include <vismodule/PlotOverLineProperty>
+
 #include <kvs/RGBColor>
 
 constexpr bool SSL = false;
@@ -51,6 +55,10 @@ private:
     int m_next_user_id = 0;
 
     std::vector<ObjectInfoExtractor::ObjectInfo>* m_objects;
+    ParticleProperty* m_particle_property;
+    GlyphProperty* m_glyph_property;
+    PlotOverLineProperty* m_pol_property;
+    MultiVolumePropertyList* m_multi_volume_property_list;
 
     void onUpgrade( uWS::HttpResponse<SSL>* res, uWS::HttpRequest* req, struct us_socket_context_t* context, SocketType type );
     void onOpen( uWS::WebSocket<false, true, PerSocket>* ws, SocketType socketType );
