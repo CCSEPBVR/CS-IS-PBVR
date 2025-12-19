@@ -16,4 +16,14 @@ std::unique_ptr<vismodule::KVSMLObjectPlotOverLine> GeneratePOLCS(
     MultiVolumePropertyList& mvpl
 );
 
+void SetPOLParameterIS(
+    PlotOverLineProperty& pol_property
+);
+
+std::unique_ptr<vismodule::KVSMLObjectPlotOverLine> GeneratePOLIS(
+    ParticleProperty& particle_property,
+    const PlotOverLineProperty& pol_property,
+    MultiVolumePropertyList& mvpl
+);
+
 #endif
