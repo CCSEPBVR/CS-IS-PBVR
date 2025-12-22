@@ -651,27 +651,8 @@ inline void TetrahedralCell<T>::volumeArray(const int loop_cnt, float* vol_array
     float p3x[loop_cnt];
     float p3y[loop_cnt];
     float p3z[loop_cnt];
-
-
-//    #pragma simd
-////    #pragma omp simd aligned(vol_array:64)
-//    for( int i = 0; i < loop_cnt; i++)
-//    {
-//        p0x[i] = BaseClass::m_vertices_array[0][i].x();
-//        p0y[i] = BaseClass::m_vertices_array[0][i].y();
-//        p0z[i] = BaseClass::m_vertices_array[0][i].z();
-//        p1x[i] = BaseClass::m_vertices_array[1][i].x();
-//        p1y[i] = BaseClass::m_vertices_array[1][i].y();
-//        p1z[i] = BaseClass::m_vertices_array[1][i].z();
-//        p2x[i] = BaseClass::m_vertices_array[2][i].x();
-//        p2y[i] = BaseClass::m_vertices_array[2][i].y();
-//        p2z[i] = BaseClass::m_vertices_array[2][i].z();
-//        p3x[i] = BaseClass::m_vertices_array[3][i].x();
-//        p3y[i] = BaseClass::m_vertices_array[3][i].y();
-//        p3z[i] = BaseClass::m_vertices_array[3][i].z();
-//    }
-    
-    #pragma omp simd simdlen(8)
+   
+    #pragma omp simd 
     for( int i = 0; i < loop_cnt; i++)
     {
         const float v01x = BaseClass::m_vertices_array[1][i].x() - BaseClass::m_vertices_array[0][i].x();
@@ -683,16 +664,6 @@ inline void TetrahedralCell<T>::volumeArray(const int loop_cnt, float* vol_array
         const float v03x = BaseClass::m_vertices_array[3][i].x() - BaseClass::m_vertices_array[0][i].x();
         const float v03y = BaseClass::m_vertices_array[3][i].y() - BaseClass::m_vertices_array[0][i].y();
         const float v03z = BaseClass::m_vertices_array[3][i].z() - BaseClass::m_vertices_array[0][i].z();
-
-//    const float v01x = p1.x() - p0.x();
-//    const float v01y = p1.y() - p0.y();
-//    const float v01z = p1.z() - p0.z();
-//    const float v02x = p2.x() - p0.x();
-//    const float v02y = p2.y() - p0.y();
-//    const float v02z = p2.z() - p0.z();
-//    const float v03x = p3.x() - p0.x();
-//    const float v03y = p3.y() - p0.y();
-//    const float v03z = p3.z() - p0.z();
 
     const float cx = v01y*v02z - v01z*v02y;
     const float cy = v01z*v02x - v01x*v02z;
