@@ -3,7 +3,7 @@
 
 #include <string>
 #include <vismodule/TransferFunctionSynthesizer>
-#include <vismodule/TransferFunction>
+#include <vismodule/ExtendedTransferFunction>
 
 struct ParticleProperty
 {
@@ -21,7 +21,7 @@ struct ParticleProperty
     float m_particle_data_size_limit;
     vismodule::Camera* m_camera;
     TransferFunctionSynthesizer* m_transfunc_synthesizer;
-    std::vector<vismodule::TransferFunction> m_transfunc_array;
+    std::vector<NamedTransferFunction> m_transfunc_array;
     std::string m_color_transfer_function_synthesis;
     std::string m_opacity_transfer_function_synthesis;
     std::string m_x_synthesis;

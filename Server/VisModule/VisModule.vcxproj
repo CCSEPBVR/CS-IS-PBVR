@@ -118,6 +118,7 @@
     <ClCompile Include="Visualization\Mapper\CellByCellRejectionSampling.cpp" />
     <ClCompile Include="Visualization\Mapper\CellByCellUniformSampling.cpp" />
     <ClCompile Include="Visualization\Mapper\ColorMap.cpp" />
+    <ClCompile Include="Visualization\Mapper\ExtendedTransferFunction.cpp" />
     <ClCompile Include="Visualization\Mapper\FrequencyTable.cpp" />
     <ClCompile Include="Visualization\Mapper\GlyphSeed.cpp" />
     <ClCompile Include="Visualization\Mapper\MapperBase.cpp" />
@@ -243,6 +244,7 @@
     <ClInclude Include="Visualization\Mapper\CellByCellParticleGenerator.h" />
     <ClInclude Include="Visualization\Mapper\CellByCellUniformSampling.h" />
     <ClInclude Include="Visualization\Mapper\ColorMap.h" />
+    <ClInclude Include="Visualization\Mapper\ExtendedTransferFunction.h" />
     <ClInclude Include="Visualization\Mapper\FrequencyTable.h" />
     <ClInclude Include="Visualization\Mapper\GlyphSeed.h" />
     <ClInclude Include="Visualization\Mapper\MapperBase.h" />
@@ -263,6 +265,7 @@
     <ClInclude Include="Visualization\Property\GlyphProperty.h" />
     <ClInclude Include="Visualization\Property\MultiVolumeProperty.h" />
     <ClInclude Include="Visualization\Property\ParticleProperty.h" />
+    <ClInclude Include="Visualization\Property\PlotOverLineProperty.h" />
     <ClInclude Include="Visualization\Property\VariableRange.h" />
     <ClInclude Include="Visualization\Viewer\Camera.h" />
     <ClInclude Include="Visualization\Viewer\Xform.h" />

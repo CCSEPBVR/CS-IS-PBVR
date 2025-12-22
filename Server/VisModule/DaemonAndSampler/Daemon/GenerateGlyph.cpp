@@ -23,6 +23,7 @@ void SetGlyphParameterCS(
     glyph_property.m_stride                     = 99;
     glyph_property.m_seed                       = 1;
     glyph_property.m_number_of_sampling_point   = 1000;
+    glyph_property.m_scale_factor               = 0.05;
     glyph_property.m_glyph_color_map_table      = glyph_color_map_table;
     // glyph_property.m_color_map                  = clntMes.m_color_map;
     glyph_property.m_direction_variable[0]      = "q1";
@@ -364,7 +365,7 @@ std::unique_ptr<kvs::PolygonGlyphObject> GenerateGlyphCS(
 
     for ( size_t i = 0; i < glyph_object->sizes().size(); i++ )
     {
-        kvs_scaled_sizes[i] = glyph_object->sizes()[i] * 0.05;
+        kvs_scaled_sizes[i] = glyph_object->sizes()[i] * glyph_property.m_scale_factor;
     }
 
     return std::make_unique<kvs::PolygonGlyphObject>(
@@ -405,6 +406,7 @@ void SetGlyphParameterIS(
 
     ppr.readGlyphParameterFile( glyphParameterPath_old.c_str() );
     ppr.setGlyphParameter( glyph_property );
+    glyph_property.m_scale_factor = 0.05;
 }
 
 std::unique_ptr<kvs::PolygonGlyphObject> GenerateGlyphIS(
@@ -494,7 +496,7 @@ std::unique_ptr<kvs::PolygonGlyphObject> GenerateGlyphIS(
 
     for ( size_t i = 0; i < glyph_object->sizes().size(); i++ )
     {
-        kvs_scaled_sizes[i] = glyph_object->sizes()[i] * 0.05;
+        kvs_scaled_sizes[i] = glyph_object->sizes()[i] * glyph_property.m_scale_factor;
     }
 
     return std::make_unique<kvs::PolygonGlyphObject>(

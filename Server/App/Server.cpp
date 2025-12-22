@@ -7,9 +7,12 @@ Server::Server( int port )
     m_objects                                    = new std::vector<ObjectInfoExtractor::ObjectInfo>();
     m_particle_property                          = new ParticleProperty();
     m_particle_property->m_transfunc_synthesizer = new TransferFunctionSynthesizer();
+    m_particle_property->m_camera                = new vismodule::Camera();
     m_glyph_property                             = new GlyphProperty();
     m_pol_property                               = new PlotOverLineProperty();
     m_multi_volume_property_list                 = new MultiVolumePropertyList();
+
+    m_particle_property->m_camera->setWindowSize( 620, 620 ); // クライアントから送信されるようになったら削除
 
     m_u_web_sockets.ws<PerSocket>( "/binary",
                                   {
@@ -260,20 +263,18 @@ void Server::initialize( uWS::WebSocket<false, true, PerSocket>* ws, const nlohm
     std::string volumeDataFileName      = fileSystemPath.stem().string();
     std::string volumeDataFileExtension = fileSystemPath.extension().string();
 
-    MultiVolumePropertyList mvpl;
-    ParticleProperty particle_property;
-    particle_property.filepath = volumeDataFilePath;
-    mvpl.searchFile( particle_property );
+    m_particle_property->filepath = volumeDataFilePath;
+    m_multi_volume_property_list->searchFile( *m_particle_property );
 
-    float min_x = mvpl.m_total_min_object_coord[0];
-    float min_y = mvpl.m_total_min_object_coord[1];
-    float min_z = mvpl.m_total_min_object_coord[2];
-    float max_x = mvpl.m_total_max_object_coord[0];
-    float max_y = mvpl.m_total_max_object_coord[1];
-    float max_z = mvpl.m_total_max_object_coord[2];
+    float min_x = m_multi_volume_property_list->m_total_min_object_coord[0];
+    float min_y = m_multi_volume_property_list->m_total_min_object_coord[1];
+    float min_z = m_multi_volume_property_list->m_total_min_object_coord[2];
+    float max_x = m_multi_volume_property_list->m_total_max_object_coord[0];
+    float max_y = m_multi_volume_property_list->m_total_max_object_coord[1];
+    float max_z = m_multi_volume_property_list->m_total_max_object_coord[2];
 
-    int start_step = mvpl.m_total_start_steps;
-    int last_step = mvpl.m_total_last_step;
+    int start_step = m_multi_volume_property_list->m_total_start_steps;
+    int last_step = m_multi_volume_property_list->m_total_last_step;
 
     const const int DEBUG_NUMBER_OF_VECTOR = 3;
     {
@@ -308,13 +309,13 @@ void Server::initialize( uWS::WebSocket<false, true, PerSocket>* ws, const nlohm
         // msg[Protocol::Key::ExtraOpacityFactor]      = 1.0;
 
         // // Client Server Point Object Info
-        // msg[Protocol::Key::NumberOfVector]          = mvpl.m_total_number_ingredients;                          // FIXME:サーバ担当者
-        // msg[Protocol::Key::NumberOfElements]        = mvpl.m_total_number_elements;                             // FIXME:サーバ担当者
-        // msg[Protocol::Key::NumberOfSubvolume]       = mvpl.m_total_number_subvolumes;                           // FIXME:サーバ担当者
-        // msg[Protocol::Key::NumberOfNodes]           = mvpl.m_total_number_nodes;                                // FIXME:サーバ担当者
-        // msg[Protocol::Key::ElementType]             = mvpl.m_list[0].m_elem_type;                               // FIXME:サーバ担当者
-        // msg[Protocol::Key::FileType]                = mvpl.m_list[0].m_file_type;                               // FIXME:サーバ担当者
-        // msg[Protocol::Key::StepNumber]              = mvpl.m_total_number_steps;                                // FIXME:サーバ担当者
+        // msg[Protocol::Key::NumberOfVector]          = m_multi_volume_property_list->m_total_number_ingredients; // FIXME:サーバ担当者
+        // msg[Protocol::Key::NumberOfElements]        = m_multi_volume_property_list->m_total_number_elements;    // FIXME:サーバ担当者
+        // msg[Protocol::Key::NumberOfSubvolume]       = m_multi_volume_property_list->m_total_number_subvolumes;  // FIXME:サーバ担当者
+        // msg[Protocol::Key::NumberOfNodes]           = m_multi_volume_property_list->m_total_number_nodes;       // FIXME:サーバ担当者
+        // msg[Protocol::Key::ElementType]             = m_multi_volume_property_list->m_list[0].m_elem_type;      // FIXME:サーバ担当者
+        // msg[Protocol::Key::FileType]                = m_multi_volume_property_list->m_list[0].m_file_type;      // FIXME:サーバ担当者
+        // msg[Protocol::Key::StepNumber]              = m_multi_volume_property_list->m_total_number_steps;       // FIXME:サーバ担当者
         // msg[Protocol::Key::TmpCoordinateX]          = "";
         // msg[Protocol::Key::CoordinateX]             = "";
         // msg[Protocol::Key::TmpCoordinateY]          = "";
@@ -358,13 +359,13 @@ void Server::initialize( uWS::WebSocket<false, true, PerSocket>* ws, const nlohm
         objectInfo.extraOpacityFactor    = 1.0;
 
         // // Client Server Point Object Info
-        objectInfo.numberOfVector        = mvpl.m_total_number_ingredients;                          // FIXME:サーバ担当者
-        objectInfo.numberOfElements      = mvpl.m_total_number_elements;                             // FIXME:サーバ担当者
-        objectInfo.numberOfSubvolume     = mvpl.m_total_number_subvolumes;                           // FIXME:サーバ担当者
-        objectInfo.numberOfNodes         = mvpl.m_total_number_nodes;                                // FIXME:サーバ担当者
-        objectInfo.elementType           = mvpl.m_list[0].m_elem_type;                               // FIXME:サーバ担当者
-        objectInfo.fileType              = mvpl.m_list[0].m_file_type;                               // FIXME:サーバ担当者
-        objectInfo.stepNumber            = mvpl.m_total_number_steps;                                // FIXME:サーバ担当者
+        objectInfo.numberOfVector        = m_multi_volume_property_list->m_total_number_ingredients; // FIXME:サーバ担当者
+        objectInfo.numberOfElements      = m_multi_volume_property_list->m_total_number_elements;    // FIXME:サーバ担当者
+        objectInfo.numberOfSubvolume     = m_multi_volume_property_list->m_total_number_subvolumes;  // FIXME:サーバ担当者
+        objectInfo.numberOfNodes         = m_multi_volume_property_list->m_total_number_nodes;       // FIXME:サーバ担当者
+        objectInfo.elementType           = m_multi_volume_property_list->m_list[0].m_elem_type;      // FIXME:サーバ担当者
+        objectInfo.fileType              = m_multi_volume_property_list->m_list[0].m_file_type;      // FIXME:サーバ担当者
+        objectInfo.stepNumber            = m_multi_volume_property_list->m_total_number_steps;       // FIXME:サーバ担当者
         objectInfo.tmpCoordinateX        = "";
         objectInfo.coordinateX           = "";
         objectInfo.tmpCoordinateY        = "";
@@ -431,7 +432,7 @@ void Server::initialize( uWS::WebSocket<false, true, PerSocket>* ws, const nlohm
     }
 
     {
-        if( mvpl.m_total_number_ingredients >= 3 ) // 成分数3以上の時
+        if( m_multi_volume_property_list->m_total_number_ingredients >= 3 ) // 成分数3以上の時
         {
             std::cout << "TEST" << std::endl;
             nlohmann::json msg;
@@ -465,13 +466,13 @@ void Server::initialize( uWS::WebSocket<false, true, PerSocket>* ws, const nlohm
             msg[Protocol::Key::ExtraOpacityFactor]      = 1.0;
 
             // Client Server Point Object Info
-            msg[Protocol::Key::NumberOfVector]          = mvpl.m_total_number_ingredients;                          // FIXME:サーバ担当者
-            msg[Protocol::Key::NumberOfElements]        = mvpl.m_total_number_elements;                             // FIXME:サーバ担当者
-            msg[Protocol::Key::NumberOfSubvolume]       = mvpl.m_total_number_subvolumes;                           // FIXME:サーバ担当者
-            msg[Protocol::Key::NumberOfNodes]           = mvpl.m_total_number_nodes;                                // FIXME:サーバ担当者
-            msg[Protocol::Key::ElementType]             = mvpl.m_list[0].m_elem_type;                               // FIXME:サーバ担当者
-            msg[Protocol::Key::FileType]                = mvpl.m_list[0].m_file_type;                               // FIXME:サーバ担当者
-            msg[Protocol::Key::StepNumber]              = mvpl.m_total_number_steps;                                // FIXME:サーバ担当者
+            msg[Protocol::Key::NumberOfVector]          = m_multi_volume_property_list->m_total_number_ingredients; // FIXME:サーバ担当者
+            msg[Protocol::Key::NumberOfElements]        = m_multi_volume_property_list->m_total_number_elements;    // FIXME:サーバ担当者
+            msg[Protocol::Key::NumberOfSubvolume]       = m_multi_volume_property_list->m_total_number_subvolumes;  // FIXME:サーバ担当者
+            msg[Protocol::Key::NumberOfNodes]           = m_multi_volume_property_list->m_total_number_nodes;       // FIXME:サーバ担当者
+            msg[Protocol::Key::ElementType]             = m_multi_volume_property_list->m_list[0].m_elem_type;      // FIXME:サーバ担当者
+            msg[Protocol::Key::FileType]                = m_multi_volume_property_list->m_list[0].m_file_type;      // FIXME:サーバ担当者
+            msg[Protocol::Key::StepNumber]              = m_multi_volume_property_list->m_total_number_steps;       // FIXME:サーバ担当者
             msg[Protocol::Key::TmpCoordinateX]          = "";
             msg[Protocol::Key::CoordinateX]             = "";
             msg[Protocol::Key::TmpCoordinateY]          = "";
@@ -769,6 +770,17 @@ void Server::receiveObjectInfoParameter( uWS::WebSocket<false, true, PerSocket>*
         std::cout << info.currentMaxObjectCoord << std::endl;
 
         if( objJson.contains( Protocol::Key::NeedSameTimeStepReplace ) )            info.needSameTimeStepReplace           = objJson[Protocol::Key::NeedSameTimeStepReplace].get<bool>();
+
+        if (
+            info.format == ObjectInfoExtractor::Format::ClientServerPointObject ||
+            info.format == ObjectInfoExtractor::Format::InsituServerPointObject
+        )
+        {
+            m_particle_property->m_particle_limit = info.tmpParticleLimit;
+            m_particle_property->m_x_synthesis    = info.tmpCoordinateX;
+            m_particle_property->m_y_synthesis    = info.tmpCoordinateY;
+            m_particle_property->m_z_synthesis    = info.tmpCoordinateZ;
+        }
     }
 
     nlohmann::json msg;
@@ -788,6 +800,25 @@ void Server::receiveTransferFunctionParameter( uWS::WebSocket<false, true, PerSo
 
     std::cout << "Color Synthesizer:   " << colorSynthesizer << std::endl;
     std::cout << "Opacity Synthesizer: " << opacitySynthesizer << std::endl;
+
+    m_particle_property->m_transfunc_array.clear();
+    m_particle_property->m_transfunc_array.resize( dataArray.size() );
+
+    EquationToken color_equation_token;
+    std::string colorSynthesizerBuf = colorSynthesizer;
+    std::replace( colorSynthesizerBuf.begin(), colorSynthesizerBuf.end(), 'C', 'c' );
+    color_equation_token = m_particle_property->m_transfunc_synthesizer->convert_token( colorSynthesizerBuf );
+    m_particle_property->m_transfunc_synthesizer->setColorFunction( color_equation_token );
+
+    EquationToken opacity_equation_token;
+    std::string opacitySynthesizerBuf = opacitySynthesizer;
+    std::replace( opacitySynthesizerBuf.begin(), opacitySynthesizerBuf.end(), 'O', 'a' );
+    opacity_equation_token = m_particle_property->m_transfunc_synthesizer->convert_token( opacitySynthesizerBuf );
+    m_particle_property->m_transfunc_synthesizer->setOpacityFunction( opacity_equation_token );
+
+    std::vector<EquationToken> var_o;
+    std::vector<EquationToken> var_c;
+
     for( size_t i = 0; i < dataArray.size(); ++i )
     {
         const auto& tf = dataArray[i];
@@ -802,12 +833,18 @@ void Server::receiveTransferFunctionParameter( uWS::WebSocket<false, true, PerSo
         double colorServerMin       = tf.value( Protocol::Key::ColorServerRangeMin, 0.0 );
         double colorServerMax       = tf.value( Protocol::Key::ColorServerRangeMax, 0.0 );
 
+        m_particle_property->m_transfunc_array[i].m_name               = colorFunction;
+        m_particle_property->m_transfunc_array[i].m_color_variable     = colorVariable;
+        m_particle_property->m_transfunc_array[i].m_color_variable_min = colorUserMin;
+        m_particle_property->m_transfunc_array[i].m_color_variable_max = colorUserMax;
+
         std::cout << "ColorFunction: " << colorFunction << std::endl;
         std::cout << "ColorVariable: " << colorVariable << std::endl;
         std::cout << "ColorRangeMode: " << colorRangeMode << std::endl;
         std::cout << "ColorUserRangeMin/Max: " << colorUserMin << " / " << colorUserMax << std::endl;
         std::cout << "ColorServerRangeMin/Max: " << colorServerMin << " / " << colorServerMax << std::endl;
 
+        std::vector<vismodule::UInt8> c_table;
         if( tf.contains( Protocol::Key::ColorMap ) && tf[Protocol::Key::ColorMap].is_array() )
         {
             std::cout << "ColorMap: ";
@@ -818,6 +855,9 @@ void Server::receiveTransferFunctionParameter( uWS::WebSocket<false, true, PerSo
                     int r = rgbArr[0].get<int>();
                     int g = rgbArr[1].get<int>();
                     int b = rgbArr[2].get<int>();
+                    c_table.push_back( r );
+                    c_table.push_back( g );
+                    c_table.push_back( b );
                     std::cout << "(" << r << "," << g << "," << b << ") ";
                 }
             }
@@ -840,16 +880,25 @@ void Server::receiveTransferFunctionParameter( uWS::WebSocket<false, true, PerSo
         double opacityServerMin     = tf.value( Protocol::Key::OpacityServerRangeMin, 0.0 );
         double opacityServerMax     = tf.value( Protocol::Key::OpacityServerRangeMax, 0.0 );
 
+        m_particle_property->m_transfunc_array[i].m_opacity_variable     = opacityVariable;
+        m_particle_property->m_transfunc_array[i].m_opacity_variable_min = opacityUserMin;
+        m_particle_property->m_transfunc_array[i].m_opacity_variable_max = opacityUserMax;
+
         std::cout << "OpacityFunction: " << opacityFunction << std::endl;
         std::cout << "OpacityVariable: " << opacityVariable << std::endl;
         std::cout << "OpacityRangeMode: " << opacityRangeMode << std::endl;
         std::cout << "OpacityUserRangeMin/Max: " << opacityUserMin << " / " << opacityUserMax << std::endl;
         std::cout << "OpacityServerRangeMin/Max: " << opacityServerMin << " / " << opacityServerMax << std::endl;
 
+        std::vector<float> o_table;
         if( tf.contains( Protocol::Key::OpacityMap ) && tf[Protocol::Key::OpacityMap].is_array() )
         {
             std::cout << "OpacityMap: ";
-            for( auto& v : tf[Protocol::Key::OpacityMap] ) std::cout << v.get<float>() << " ";
+            for( auto& v : tf[Protocol::Key::OpacityMap] )
+            {
+                o_table.push_back( v.get<float>() );
+                std::cout << v.get<float>() << " ";
+            }
             std::cout << std::endl;
         }
 
@@ -860,11 +909,14 @@ void Server::receiveTransferFunctionParameter( uWS::WebSocket<false, true, PerSo
             std::cout << std::endl;
         }
 
-        // 必要であればここで構造体にコピー
-        // m_transfer_function_server[i].color.name = colorFunction;
-        // m_transfer_function_server[i].color.variable = colorVariable;
-        // m_transfer_function_server[i].color.userDefinedMinMax = {colorUserMin, colorUserMax};
-        // ...
+        vismodule::ValueArray<vismodule::UInt8> cc_table( c_table );
+        vismodule::ValueArray<float>            oo_table( o_table );
+
+        vismodule::ColorMap color_map( cc_table, m_particle_property->m_transfunc_array[i].m_color_variable_min, m_particle_property->m_transfunc_array[i].m_color_variable_max );
+        vismodule::OpacityMap opacity_map( oo_table, m_particle_property->m_transfunc_array[i].m_opacity_variable_min, m_particle_property->m_transfunc_array[i].m_opacity_variable_max );
+
+        m_particle_property->m_transfunc_array[i].setColorMap( color_map );
+        m_particle_property->m_transfunc_array[i].setOpacityMap( opacity_map );
     }
 
     nlohmann::json msg;
@@ -884,22 +936,37 @@ void Server::receiveGlyphParameter( uWS::WebSocket<false, true, PerSocket>* ws, 
 {
     // Type
     std::cout << "Type              : " << received.value( Protocol::Key::Type, -1 ) << std::endl;
+    int glyph_type_int = received.value( Protocol::Key::Type, -1 );
+    GlyphType glyph_type =  ConvertIntToGlyphType( glyph_type_int );
+    m_glyph_property->m_glyph_type = glyph_type;
 
     // ScaleFactor
     std::cout << "ScaleFactor       : " << received.value( Protocol::Key::ScaleFactor, -1.0 ) << std::endl;
+    m_glyph_property->m_scale_factor = received.value( Protocol::Key::ScaleFactor, -1.0 );
 
     // Direction
     std::cout << "Direction1        : " << received.value( Protocol::Key::Direction1, -1.0 ) + 1 << std::endl;
     std::cout << "Direction2        : " << received.value( Protocol::Key::Direction2, -1.0 ) + 1 << std::endl;
     std::cout << "Direction2        : " << received.value( Protocol::Key::Direction3, -1.0 ) + 1 << std::endl;
+    m_glyph_property->m_direction_variable[0] = "q" + std::to_string( received.value( Protocol::Key::Direction1, -1 ) + 1 );
+    m_glyph_property->m_direction_variable[1] = "q" + std::to_string( received.value( Protocol::Key::Direction2, -1 ) + 1 );
+    m_glyph_property->m_direction_variable[2] = "q" + std::to_string( received.value( Protocol::Key::Direction3, -1 ) + 1 );
 
     // Size
     std::cout << "SizeMode          : " << received.value( Protocol::Key::SizeMode, -1.0 ) << std::endl;
+    int size_mode_int = received.value( Protocol::Key::SizeMode, -1 );
+    DataDefines size_mode = ConvertIntToDataDefines( size_mode_int );
+    m_glyph_property->m_size_sampling_method = size_mode;
+    int size_variables_index = 0;
     if( received.contains( Protocol::Key::SizeVariables ) )
     {
         std::cout << "SizeVariables: ";
         for( const auto& v : received[Protocol::Key::SizeVariables] )
+        {
             std::cout << v.get<int>() + 1 << " ";
+            m_glyph_property->m_size_variable[size_variables_index] = v.get<int>() + 1;
+            size_variables_index++;
+        }
         std::cout << std::endl;
     }
 
@@ -908,8 +975,15 @@ void Server::receiveGlyphParameter( uWS::WebSocket<false, true, PerSocket>* ws, 
     std::cout << "NumberOfSamplePoints  : " << received.value( Protocol::Key::NumberOfSamplePoints, -1 ) << std::endl;
     std::cout << "Seed                  : " << received.value( Protocol::Key::Seed, -1 ) << std::endl;
     std::cout << "Stride                : " << received.value( Protocol::Key::Stride, -1 ) << std::endl;
+    int distribution_mode_int = received.value( Protocol::Key::DistributionMode, -1 );
+    GlyphMode distribution_mode = ConvertIntToGlyphMode( distribution_mode_int );
+    m_glyph_property->m_distribution_mode = distribution_mode;
+    m_glyph_property->m_number_of_sampling_point = received.value( Protocol::Key::NumberOfSamplePoints, -1 );
+    m_glyph_property->m_seed = received.value( Protocol::Key::Seed, -1 );
+    m_glyph_property->m_stride = received.value( Protocol::Key::Stride, -1 );
 
     // Color Map
+    std::vector<int32_t> glyph_color_map_table;
     if( received.contains( Protocol::Key::ColorMap ) )
     {
         std::cout << "ColorMap:" << std::endl;
@@ -918,16 +992,29 @@ void Server::receiveGlyphParameter( uWS::WebSocket<false, true, PerSocket>* ws, 
             std::cout << " r=" << c[Protocol::Key::R].get<int>()
                       << " g=" << c[Protocol::Key::G].get<int>()
                       << " b=" << c[Protocol::Key::B].get<int>() << std::endl;
+            glyph_color_map_table.push_back( c[Protocol::Key::R].get<int32_t>() );
+            glyph_color_map_table.push_back( c[Protocol::Key::G].get<int32_t>() );
+            glyph_color_map_table.push_back( c[Protocol::Key::B].get<int32_t>() );
         }
     }
+    m_glyph_property->m_glyph_color_map_table = glyph_color_map_table;
 
     // Color Data
     std::cout << "ColorDataMode         : " << received.value( Protocol::Key::ColorDataMode, -1.0 ) << std::endl;
+    int color_data_mode_int = received.value( Protocol::Key::ColorDataMode, -1 );
+    DataDefines color_data_mode = ConvertIntToDataDefines( color_data_mode_int );
+    m_glyph_property->m_color_data_sampling_method = color_data_mode;
+    int color_data_variables_index = 0;
     if( received.contains( Protocol::Key::ColorDataVariables ) )
     {
         std::cout << "ColorDataVariables: ";
         for( const auto& v : received[Protocol::Key::ColorDataVariables] )
+        {
             std::cout << v.get<int>() + 1 << " ";
+            int color_data_variable = v.get<int>() + 1;
+            m_glyph_property->m_color_data_variable[color_data_variables_index];
+            color_data_variables_index++;
+        }
         std::cout << std::endl;
     }
 
@@ -938,10 +1025,15 @@ void Server::receivePlotOverLineParameter( uWS::WebSocket<false, true, PerSocket
 {
     // Enable
     std::cout << "Enable              : " << received.value( Protocol::Key::Enable, -1 ) << std::endl;
+    m_pol_property->m_plot_flag = received.value( Protocol::Key::Enable, false );
+
     // Resolution
     std::cout << "Resolution              : " << received.value( Protocol::Key::Resolution, -1 ) << std::endl;
+    m_pol_property->m_sampling_size = received.value( Protocol::Key::Resolution, -1 );
+
     // Target
-    std::cout << "Target              : " << received.value( Protocol::Key::Target, -1 ) << std::endl;
+    std::cout << "Target              : " << received.value( Protocol::Key::Target, -1 ) + 1 << std::endl;
+    m_pol_property->m_plot_variable = "q" + std::to_string( received.value( Protocol::Key::Target, -1 ) + 1 );
 
     auto sc = received[Protocol::Key::StartCoords];
     if( sc.size() == 3 )
@@ -950,6 +1042,9 @@ void Server::receivePlotOverLineParameter( uWS::WebSocket<false, true, PerSocket
                   << sc[0].get<double>() << ", "
                   << sc[1].get<double>() << ", "
                   << sc[2].get<double>() << std::endl;
+        m_pol_property->m_start_point[0] = sc[0].get<double>();
+        m_pol_property->m_start_point[1] = sc[1].get<double>();
+        m_pol_property->m_start_point[2] = sc[2].get<double>();
     }
     else
     {
@@ -963,6 +1058,9 @@ void Server::receivePlotOverLineParameter( uWS::WebSocket<false, true, PerSocket
                   << ec[0].get<double>() << ", "
                   << ec[1].get<double>() << ", "
                   << ec[2].get<double>() << std::endl;
+        m_pol_property->m_end_point[0] = ec[0].get<double>();
+        m_pol_property->m_end_point[1] = ec[1].get<double>();
+        m_pol_property->m_end_point[2] = ec[2].get<double>();
     }
     else
     {

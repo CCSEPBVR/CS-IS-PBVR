@@ -51,6 +51,13 @@ vismodule::PointObject* PointObjectGenerator::GenerateParticleStruct(
 
     css = NULL;
 
+    // NamedTransferFunctionをTransferFunctionにupcast
+    std::vector<vismodule::TransferFunction> transfunc_array;
+    for ( const auto& named_tf : param.m_transfunc_array )
+    {
+        transfunc_array.push_back( static_cast<const vismodule::TransferFunction&>(named_tf) );
+    }
+
 #ifdef CPU_SAMPLING_TIME
     std::cout << std::endl << "CPU - ";
 #else
@@ -65,8 +72,8 @@ vismodule::PointObject* PointObjectGenerator::GenerateParticleStruct(
             dom,
             values,
             nvariables,
-            param.m_transfunc_array[0],
-            param.m_transfunc_array,
+            transfunc_array[0],
+            transfunc_array,
             param.m_transfunc_synthesizer, 
             param.m_particle_density,
             css
@@ -77,8 +84,8 @@ vismodule::PointObject* PointObjectGenerator::GenerateParticleStruct(
             dom,
             values,
             nvariables,
-            param.m_transfunc_array[0],
-            param.m_transfunc_array,
+            transfunc_array[0],
+            transfunc_array,
             param.m_transfunc_synthesizer, 
             param.m_particle_density,
             css
@@ -89,8 +96,8 @@ vismodule::PointObject* PointObjectGenerator::GenerateParticleStruct(
             dom,
             values,
             nvariables,
-            param.m_transfunc_array[0],
-            param.m_transfunc_array,
+            transfunc_array[0],
+            transfunc_array,
             param.m_transfunc_synthesizer,
             param.m_particle_density,
             css
@@ -101,8 +108,8 @@ vismodule::PointObject* PointObjectGenerator::GenerateParticleStruct(
             dom,
             values,
             nvariables,
-            param.m_transfunc_array[0],
-            param.m_transfunc_array,
+            transfunc_array[0],
+            transfunc_array,
             param.m_transfunc_synthesizer,
             param.m_particle_density,
             css
@@ -146,6 +153,13 @@ vismodule::PointObject* PointObjectGenerator::GenerateParticleUnstruct(
 
     css = NULL;
 
+    // NamedTransferFunctionをTransferFunctionにupcast
+    std::vector<vismodule::TransferFunction> transfunc_array;
+    for ( const auto& named_tf : param.m_transfunc_array )
+    {
+        transfunc_array.push_back( static_cast<const vismodule::TransferFunction&>(named_tf) );
+    }
+
 #ifdef CPU_SAMPLING_TIME
     std::cout << std::endl << "CPU - ";
 #else
@@ -165,8 +179,8 @@ vismodule::PointObject* PointObjectGenerator::GenerateParticleUnstruct(
             connections,
             ncells,
             celltype,
-            param.m_transfunc_array[0],
-            param.m_transfunc_array,
+            transfunc_array[0],
+            transfunc_array,
             param.m_transfunc_synthesizer,
             param.m_particle_density,
             css
@@ -182,8 +196,8 @@ vismodule::PointObject* PointObjectGenerator::GenerateParticleUnstruct(
             connections,
             ncells,
             celltype,
-            param.m_transfunc_array[0],
-            param.m_transfunc_array,
+            transfunc_array[0],
+            transfunc_array,
             param.m_transfunc_synthesizer,
             param.m_particle_density,
             css
@@ -199,8 +213,8 @@ vismodule::PointObject* PointObjectGenerator::GenerateParticleUnstruct(
             connections,
             ncells,
             celltype,
-            param.m_transfunc_array[0],
-            param.m_transfunc_array,
+            transfunc_array[0],
+            transfunc_array,
             param.m_transfunc_synthesizer,
             param.m_particle_density,
             css
@@ -216,8 +230,8 @@ vismodule::PointObject* PointObjectGenerator::GenerateParticleUnstruct(
             connections,
             ncells,
             celltype,
-            param.m_transfunc_array[0],
-            param.m_transfunc_array,
+            transfunc_array[0],
+            transfunc_array,
             param.m_transfunc_synthesizer,
             param.m_particle_density,
             css
