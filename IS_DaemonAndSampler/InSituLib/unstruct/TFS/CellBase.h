@@ -1011,7 +1011,7 @@ inline void CellBase<T>::CalcScalarGrad(
     float *grad_array_z )
 {
 
-//    kvs::Timer timer( kvs::Timer::Start );
+    kvs::Timer timer( kvs::Timer::Start );
 //        //////////////////////////// scalar ////////////////////////////
 //    #pragma ivdep
 //    for( int i = 0; i < loop_cnt; i++ )
