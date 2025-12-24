@@ -269,7 +269,7 @@ inline VariableRange Calculate_minmax( const ParticleProperty& param,
 
 inline void Calculate_minmax_glyph
 (
-    const ParticleProperty& particle_property,
+    const int time_step,
     GlyphProperty& glyph_property,
     const MultiVolumePropertyList& mvpl
 )
@@ -278,7 +278,7 @@ inline void Calculate_minmax_glyph
     vismodule::VolumeObjectBase* volume = nullptr;
     double total_volume = 0.0;
     double density_lev1 = 0.0; // kawamura2: particle density for subpixel_level=1
-    int steps = particle_property.m_time_step;
+    int steps = time_step;
     int subvols = 0;
 
     vismodule::Real64 tmp_min, tmp_max;

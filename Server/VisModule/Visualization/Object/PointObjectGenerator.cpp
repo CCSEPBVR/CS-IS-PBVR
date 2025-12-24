@@ -26,7 +26,7 @@
 using namespace vismodule;
 
 vismodule::PointObject* PointObjectGenerator::GenerateParticleStruct(
-    const ParticleProperty& param,
+    const ParticleProperty& particle_property,
     const domain_parameters_struct& dom,
     Type** values,
     const int nvariables
@@ -38,9 +38,9 @@ vismodule::PointObject* PointObjectGenerator::GenerateParticleStruct(
     /* CS IS の切り替えは一旦保留
     if ( server_mode == jpv::ServerMode::CS )
     {
-        std::string xss = param.m_x_synthesis;
-        std::string yss = param.m_y_synthesis;
-        std::string zss = param.m_z_synthesis;
+        std::string xss = particle_property.m_x_synthesis;
+        std::string yss = particle_property.m_y_synthesis;
+        std::string zss = particle_property.m_z_synthesis;
         css = new vismodule::CoordSynthesizerStrings( 0, xss, yss, zss );
     }
     else // jpv::ServerMode::IS
@@ -53,7 +53,7 @@ vismodule::PointObject* PointObjectGenerator::GenerateParticleStruct(
 
     // NamedTransferFunctionをTransferFunctionにupcast
     std::vector<vismodule::TransferFunction> transfunc_array;
-    for ( const auto& named_tf : param.m_transfunc_array )
+    for ( const auto& named_tf : particle_property.m_transfunc_array )
     {
         transfunc_array.push_back( static_cast<const vismodule::TransferFunction&>(named_tf) );
     }
@@ -64,7 +64,7 @@ vismodule::PointObject* PointObjectGenerator::GenerateParticleStruct(
     std::cout << std::endl << "GPU - ";
 #endif
 
-    switch ( param.m_sampling_method )
+    switch ( particle_property.m_sampling_method )
     {
     case 'u':
         std::cout << "Uniform sampling" << std::endl;
@@ -74,8 +74,8 @@ vismodule::PointObject* PointObjectGenerator::GenerateParticleStruct(
             nvariables,
             transfunc_array[0],
             transfunc_array,
-            param.m_transfunc_synthesizer, 
-            param.m_particle_density,
+            particle_property.m_transfunc_synthesizer, 
+            particle_property.m_particle_density,
             css
         );
     case 'r':
@@ -86,8 +86,8 @@ vismodule::PointObject* PointObjectGenerator::GenerateParticleStruct(
             nvariables,
             transfunc_array[0],
             transfunc_array,
-            param.m_transfunc_synthesizer, 
-            param.m_particle_density,
+            particle_property.m_transfunc_synthesizer, 
+            particle_property.m_particle_density,
             css
         );
     case 'm':
@@ -98,8 +98,8 @@ vismodule::PointObject* PointObjectGenerator::GenerateParticleStruct(
             nvariables,
             transfunc_array[0],
             transfunc_array,
-            param.m_transfunc_synthesizer,
-            param.m_particle_density,
+            particle_property.m_transfunc_synthesizer,
+            particle_property.m_particle_density,
             css
         );
     case 'h':
@@ -110,20 +110,20 @@ vismodule::PointObject* PointObjectGenerator::GenerateParticleStruct(
             nvariables,
             transfunc_array[0],
             transfunc_array,
-            param.m_transfunc_synthesizer,
-            param.m_particle_density,
+            particle_property.m_transfunc_synthesizer,
+            particle_property.m_particle_density,
             css
         );
 
     default:
-        std::cout << "Unknown sampling method:" << param.m_sampling_method << std::endl;
+        std::cout << "Unknown sampling method:" << particle_property.m_sampling_method << std::endl;
         exit( 1 );
         return 0;
     }
 }
 
 vismodule::PointObject* PointObjectGenerator::GenerateParticleUnstruct(
-    const ParticleProperty& param,
+    const ParticleProperty& particle_property,
     const domain_parameters_unstruct& dom,
     Type** values,
     const int nvariables,
@@ -140,9 +140,9 @@ vismodule::PointObject* PointObjectGenerator::GenerateParticleUnstruct(
     /* CS ISの切り替えは一旦保留
     if ( server_mode == jpv::ServerMode::CS )
     {
-        std::string xss = param.m_x_synthesis;
-        std::string yss = param.m_y_synthesis;
-        std::string zss = param.m_z_synthesis;
+        std::string xss = particle_property.m_x_synthesis;
+        std::string yss = particle_property.m_y_synthesis;
+        std::string zss = particle_property.m_z_synthesis;
         css = new vismodule::CoordSynthesizerStrings( 0, xss, yss, zss );
     }
     else // jpv::ServerMode::IS
@@ -155,7 +155,7 @@ vismodule::PointObject* PointObjectGenerator::GenerateParticleUnstruct(
 
     // NamedTransferFunctionをTransferFunctionにupcast
     std::vector<vismodule::TransferFunction> transfunc_array;
-    for ( const auto& named_tf : param.m_transfunc_array )
+    for ( const auto& named_tf : particle_property.m_transfunc_array )
     {
         transfunc_array.push_back( static_cast<const vismodule::TransferFunction&>(named_tf) );
     }
@@ -166,7 +166,7 @@ vismodule::PointObject* PointObjectGenerator::GenerateParticleUnstruct(
     std::cout << std::endl << "GPU - ";
 #endif
 
-    switch ( param.m_sampling_method )
+    switch ( particle_property.m_sampling_method )
     {
     case 'u':
         std::cout << "Uniform sampling" << std::endl;
@@ -181,8 +181,8 @@ vismodule::PointObject* PointObjectGenerator::GenerateParticleUnstruct(
             celltype,
             transfunc_array[0],
             transfunc_array,
-            param.m_transfunc_synthesizer,
-            param.m_particle_density,
+            particle_property.m_transfunc_synthesizer,
+            particle_property.m_particle_density,
             css
         );
     case 'r':
@@ -198,8 +198,8 @@ vismodule::PointObject* PointObjectGenerator::GenerateParticleUnstruct(
             celltype,
             transfunc_array[0],
             transfunc_array,
-            param.m_transfunc_synthesizer,
-            param.m_particle_density,
+            particle_property.m_transfunc_synthesizer,
+            particle_property.m_particle_density,
             css
         );
     case 'm':
@@ -215,8 +215,8 @@ vismodule::PointObject* PointObjectGenerator::GenerateParticleUnstruct(
             celltype,
             transfunc_array[0],
             transfunc_array,
-            param.m_transfunc_synthesizer,
-            param.m_particle_density,
+            particle_property.m_transfunc_synthesizer,
+            particle_property.m_particle_density,
             css
         );
     case 'h':
@@ -232,12 +232,12 @@ vismodule::PointObject* PointObjectGenerator::GenerateParticleUnstruct(
             celltype,
             transfunc_array[0],
             transfunc_array,
-            param.m_transfunc_synthesizer,
-            param.m_particle_density,
+            particle_property.m_transfunc_synthesizer,
+            particle_property.m_particle_density,
             css
         );
     default:
-        std::cout << "Unknown sampling method:" << param.m_sampling_method << std::endl;
+        std::cout << "Unknown sampling method:" << particle_property.m_sampling_method << std::endl;
         exit( 1 );
         return 0;
     }

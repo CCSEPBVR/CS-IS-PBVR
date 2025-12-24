@@ -119,18 +119,15 @@ private:
         {
         case ObjectInfoExtractor::ClientServerPointObject:
             pointObject = std::make_unique<kvs::PointObject>();
-            SetParticleParameterCS( fileName, requestTimeStep, m_particle_property->m_camera, *m_particle_property, *m_multi_volume_property_list );
-            GenerateParticleCS( *m_particle_property, *m_multi_volume_property_list, pointObject );
+            GenerateParticleCS( fileName, requestTimeStep, *m_particle_property, *m_multi_volume_property_list, pointObject );
             info.object = pointObject.release();
             break;
         case ObjectInfoExtractor::InsituServerPointObject:
-            SetParticleParameterIS( requestTimeStep, m_particle_property->m_camera, *m_particle_property, *m_multi_volume_property_list );
-            GenerateParticleIS( *m_particle_property, *m_multi_volume_property_list, pointObject );
+            GenerateParticleIS( requestTimeStep, *m_multi_volume_property_list, pointObject );
             info.object = pointObject.release();
             break;
         case ObjectInfoExtractor::ServerGlyphObject:
-            SetGlyphParameterCS( *m_particle_property, *m_glyph_property, *m_multi_volume_property_list );
-            polygonObject = GenerateGlyphCS( *m_particle_property, *m_glyph_property, *m_multi_volume_property_list );
+            polygonObject = GenerateGlyphCS( fileName, requestTimeStep, *m_glyph_property, *m_multi_volume_property_list );
             info.object = polygonObject.release();
             break;
         case ObjectInfoExtractor::PointObjectKVSML:
@@ -187,6 +184,7 @@ private:
         return fullPath;
     }
 
+public:
     static std::string toNativePath( const std::string& path )
     {
         std::string nativePath = path;

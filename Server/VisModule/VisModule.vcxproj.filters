@@ -428,9 +428,6 @@
     <ClInclude Include="DaemonAndSampler\Daemon\SetDefaultTransferFunction.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="Visualization\Property\ExtendedTransferFunctionParameter.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
     <ClInclude Include="Visualization\Object\PointObjectGenerator.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>

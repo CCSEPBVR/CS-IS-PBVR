@@ -261,7 +261,6 @@
     <ClInclude Include="Visualization\Object\StructuredVolumeObject.h" />
     <ClInclude Include="Visualization\Object\UnstructuredVolumeObject.h" />
     <ClInclude Include="Visualization\Object\VolumeObjectBase.h" />
-    <ClInclude Include="Visualization\Property\ExtendedTransferFunctionParameter.h" />
     <ClInclude Include="Visualization\Property\GlyphProperty.h" />
     <ClInclude Include="Visualization\Property\MultiVolumeProperty.h" />
     <ClInclude Include="Visualization\Property\ParticleProperty.h" />

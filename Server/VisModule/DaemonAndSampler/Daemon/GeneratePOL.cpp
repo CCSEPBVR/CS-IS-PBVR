@@ -13,6 +13,7 @@
 #include <vismodule/JobCollector>
 #endif
 
+/*
 void SetPOLParameterCS(
     PlotOverLineProperty& pol_property
 )
@@ -29,9 +30,11 @@ void SetPOLParameterCS(
     pol_property.m_end_point[2]   = -4.50;
     pol_property.m_sampling_size  =   256;
 }
+*/
 
 std::unique_ptr<vismodule::KVSMLObjectPlotOverLine> GeneratePOLCS(
-    ParticleProperty& particle_property,
+    std::string& file_path,
+    const int time_step,
     const PlotOverLineProperty& pol_property,
     MultiVolumePropertyList& mvpl
 )
@@ -69,13 +72,13 @@ std::unique_ptr<vismodule::KVSMLObjectPlotOverLine> GeneratePOLCS(
     mask.fill( 0x00 );
 
     jd.initialize( 
-        particle_property.m_time_step,
-        particle_property.m_time_step,
+        time_step,
+        time_step,
         mvpl.m_total_number_subvolumes,
         mvpl.m_total_min_subvolume_coord,
         mvpl.m_total_max_subvolume_coord,
-        particle_property.m_latency_threshold,
-        particle_property.m_job_id_pack_size
+        -1.0,
+        1
     );
 
     while ( jd.dispatchNext( wid, &st, &vl ) )
@@ -91,7 +94,7 @@ std::unique_ptr<vismodule::KVSMLObjectPlotOverLine> GeneratePOLCS(
             int xvl, fidx;
             fidx = mvpl.getFileIndex( vl, &xvl );
             MultiVolumeProperty& mvp = mvpl.m_list[fidx];
-            mvp.setFilePath( particle_property.filepath, st, xvl );
+            mvp.setFilePath( file_path, st, xvl );
         
             // generate plot over line start
             try
@@ -105,12 +108,12 @@ std::unique_ptr<vismodule::KVSMLObjectPlotOverLine> GeneratePOLCS(
 #ifdef EXTEND_FILE_FORMAT
                 else if ( mvp.m_file_type == 3 || mvp.m_file_type == 4 )
                 {
-                    generate_volume( particle_property, mvp, st, xvl, volume );
+                    generate_volume( file_path, mvp, st, xvl, volume );
                 }
 #endif
                 else // filetype: kvsml
                 {
-                    generate_volume( particle_property, mvp, st, volume );
+                    generate_volume( file_path, mvp, volume );
                 }
 
                 std::unique_ptr<std::unique_ptr<Type[]>[]> values;
@@ -250,7 +253,7 @@ void SetPOLParameterIS(
 }
 
 std::unique_ptr<vismodule::KVSMLObjectPlotOverLine> GeneratePOLIS(
-    ParticleProperty& particle_property,
+    const int time_step,
     const PlotOverLineProperty& pol_property,
     MultiVolumePropertyList& mvpl
 )
@@ -276,7 +279,7 @@ std::unique_ptr<vismodule::KVSMLObjectPlotOverLine> GeneratePOLIS(
 
     if( pm.stepExisted() )
     {
-        pm.setTimeStep_pol( particle_property.m_time_step );
+        pm.setTimeStep_pol( time_step );
     }
     else
     {

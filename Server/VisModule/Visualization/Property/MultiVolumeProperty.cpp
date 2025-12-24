@@ -2572,19 +2572,19 @@ void MultiVolumePropertyList::cropTimeStep( const int s, const int e )
     m_total_number_steps = m_total_last_step - m_total_start_steps + 1;
 }
 
-void MultiVolumePropertyList::searchFile( const ParticleProperty& param )
+void MultiVolumePropertyList::searchFile( const std::string& filename )
 {
-                    size_t found_pfl  = param.filepath.find(".pfl");
-                    size_t found_pfi  = param.filepath.find(".pfi");
-                    size_t found_vtm  = param.filepath.find(".vtm");
-                    size_t found_vtu  = param.filepath.find(".vtu");
-                    size_t found_vti  = param.filepath.find(".vti");
-                    size_t found_inp  = param.filepath.find(".inp");
-                    size_t found_pvtu = param.filepath.find(".pvtu");
-                    size_t found_case = param.filepath.find(".case");
+                    size_t found_pfl  = filename.find(".pfl");
+                    size_t found_pfi  = filename.find(".pfi");
+                    size_t found_vtm  = filename.find(".vtm");
+                    size_t found_vtu  = filename.find(".vtu");
+                    size_t found_vti  = filename.find(".vti");
+                    size_t found_inp  = filename.find(".inp");
+                    size_t found_pvtu = filename.find(".pvtu");
+                    size_t found_case = filename.find(".case");
                     if ( found_pfl != std::string::npos )
                     {
-                        std::string pflfile = param.filepath;
+                        std::string pflfile = filename;
                         std::cout << "pflファイルが選択されました" << std::endl;
                         vismodule::File pfl( pflfile );
                         if ( pfl.isExisted() )
@@ -2594,7 +2594,7 @@ void MultiVolumePropertyList::searchFile( const ParticleProperty& param )
                      }
                     else if ( found_pfi != std::string::npos )
                     {
-                        std::string pfifile = param.filepath;
+                        std::string pfifile = filename;
                         std::cout << "pfiファイルが選択されました" << std::endl;
                         vismodule::File pfi( pfifile );
                         if ( pfi.isExisted() )
@@ -2605,7 +2605,7 @@ void MultiVolumePropertyList::searchFile( const ParticleProperty& param )
 #ifdef EXTEND_FILE_FORMAT
                     else if ( found_vtm != std::string::npos )
                     {
-                        std::string vtmfile = param.filepath;
+                        std::string vtmfile = filename;
                         std::cout << ".vtmファイルが選択されました" << std::endl;
                         size_t found_asterisk = vtmfile.find( '*' );
 
@@ -2624,7 +2624,7 @@ void MultiVolumePropertyList::searchFile( const ParticleProperty& param )
                     }
                     else if ( found_vtu != std::string::npos )
                     {
-                        std::string vtufile = param.filepath;
+                        std::string vtufile = filename;
                         std::cout << ".vtuファイルが選択されました" << std::endl;
                         size_t found_asterisk = vtufile.find( '*' );
 
@@ -2641,7 +2641,7 @@ void MultiVolumePropertyList::searchFile( const ParticleProperty& param )
                     }
                     else if ( found_vti != std::string::npos )
                     {
-                        std::string vtifile = param.filepath;
+                        std::string vtifile = filename;
                         std::cout << ".vtiファイルが選択されました" << std::endl;
                         size_t found_asterisk = vtifile.find( '*' );
 
@@ -2658,7 +2658,7 @@ void MultiVolumePropertyList::searchFile( const ParticleProperty& param )
                     }
                     else if ( found_inp != std::string::npos )
                     {
-                        std::string inpfile = param.filepath;
+                        std::string inpfile = filename;
                         std::cout << ".inpファイルが選択されました" << std::endl;
                         size_t found_asterisk = inpfile.find( '*' );
 
@@ -2675,7 +2675,7 @@ void MultiVolumePropertyList::searchFile( const ParticleProperty& param )
                     }
                     else if ( found_pvtu != std::string::npos )
                     {
-                        std::string pvtufile = param.filepath;
+                        std::string pvtufile = filename;
                         std::cout << ".pvtuファイルが選択されました" << std::endl;
                         size_t found_asterisk = pvtufile.find( '*' );
 
@@ -2692,7 +2692,7 @@ void MultiVolumePropertyList::searchFile( const ParticleProperty& param )
                     }
                     else if ( found_case != std::string::npos )
                     {
-                        std::string casefile = param.filepath;
+                        std::string casefile = filename;
                         std::cout << ".caseファイルが選択されました" << std::endl;
                         size_t found_asterisk = casefile.find( '*' );
 

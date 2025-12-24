@@ -3,14 +3,7 @@
 
 #include <string>
 #include <vector>
-
-// CSとISでglyphのsize minmaxの集計方法が異なる
-// 定義する場所は変更予定
-enum class ServerMode : int32_t
-{
-    CS = 0,
-    IS = 1
-};
+#include <vismodule/ParticleProperty>
 
 enum GlyphType
 {

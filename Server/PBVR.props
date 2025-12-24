@@ -5,7 +5,7 @@
   <PropertyGroup />
   <ItemDefinitionGroup>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(SolutionDir)App;$(SolutionDir)Utils;$(SolutionDir)FunctionParser;$(SolutionDir)VisModule;$(KVS_DIR)\include;$(KVS_GLUT_DIR)\include\GL;$(VCPKG_ROOT)\installed\x64-windows-static\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)App;$(SolutionDir)Utils;$(SolutionDir)FunctionParser;$(SolutionDir)VisModule;$(SolutionDir)..\Shared;$(KVS_DIR)\include;$(KVS_GLUT_DIR)\include\GL;$(VCPKG_ROOT)\installed\x64-windows-static\include</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <DisableSpecificWarnings>4996</DisableSpecificWarnings>

@@ -1,5 +1,9 @@
 #include "Server.h"
+#include "TransferFunction.h"
 #include <filesystem>
+
+#include <vismodule/KVSMLObjectPlotOverLine>
+#include <vismodule/GeneratePOL>
 
 Server::Server( int port )
     : m_port( port )
@@ -259,12 +263,56 @@ void Server::initialize( uWS::WebSocket<false, true, PerSocket>* ws, const nlohm
     std::string uuid                        = received[Protocol::Key::UUID];
     ObjectInfoExtractor::Format format      = received[Protocol::Key::Format];
 
-    std::filesystem::path fileSystemPath( volumeDataFilePath );
-    std::string volumeDataFileName      = fileSystemPath.stem().string();
-    std::string volumeDataFileExtension = fileSystemPath.extension().string();
+    std::string volumeDataNativeFilePath       = Worker::toNativePath( volumeDataFilePath );
+    std::string transferFunctionNativeFilePath = Worker::toNativePath( transferFunctionFilePath );
+    std::filesystem::path fileSystemPath( volumeDataNativeFilePath );
+    std::string volumeDataFileName       = fileSystemPath.stem().string();
+    std::string volumeDataFileExtension  = fileSystemPath.extension().string();
 
-    m_particle_property->filepath = volumeDataFilePath;
-    m_multi_volume_property_list->searchFile( *m_particle_property );
+    if ( format == ObjectInfoExtractor::Format::ClientServerPointObject )
+    {
+        m_server_mode = ServerMode::CS;
+
+        SetDefaultParticleParameterCS(
+            volumeDataNativeFilePath,
+            transferFunctionNativeFilePath,
+            *m_particle_property,
+            *m_multi_volume_property_list
+        );
+
+        // histgramとmin maxをm_particle_propertyに格納
+        // 粒子データは使用しない
+        std::unique_ptr<kvs::PointObject> tmp_object;
+        tmp_object = std::make_unique<kvs::PointObject>();
+
+        GenerateParticleCS(
+            volumeDataNativeFilePath,
+            m_multi_volume_property_list->m_total_start_steps,
+            *m_particle_property,
+            *m_multi_volume_property_list,
+            tmp_object
+        );
+    }
+    else if ( format == ObjectInfoExtractor::Format::InsituServerPointObject )
+    {
+        m_server_mode = ServerMode::IS;
+
+        SetDefaultParticleParameterIS(
+            *m_particle_property,
+            *m_multi_volume_property_list
+        );
+
+        // histgramとmin maxをm_particle_propertyに格納
+        // 粒子データは使用しない
+        std::unique_ptr<kvs::PointObject> tmp_object;
+        tmp_object = std::make_unique<kvs::PointObject>();
+
+        GenerateParticleIS(
+            m_multi_volume_property_list->m_total_start_steps,
+            *m_multi_volume_property_list,
+            tmp_object
+        );
+    }
 
     float min_x = m_multi_volume_property_list->m_total_min_object_coord[0];
     float min_y = m_multi_volume_property_list->m_total_min_object_coord[1];
@@ -274,7 +322,7 @@ void Server::initialize( uWS::WebSocket<false, true, PerSocket>* ws, const nlohm
     float max_z = m_multi_volume_property_list->m_total_max_object_coord[2];
 
     int start_step = m_multi_volume_property_list->m_total_start_steps;
-    int last_step = m_multi_volume_property_list->m_total_last_step;
+    int last_step  = m_multi_volume_property_list->m_total_last_step;
 
     const const int DEBUG_NUMBER_OF_VECTOR = 3;
     {
@@ -292,7 +340,7 @@ void Server::initialize( uWS::WebSocket<false, true, PerSocket>* ws, const nlohm
 
         // msg[Protocol::Key::Name]                    = volumeDataFileName;                                       // FIXME:サーバ担当者
         // msg[Protocol::Key::Extension]               = volumeDataFileExtension;                                  // FIXME:サーバ担当者
-        // msg[Protocol::Key::Directory]               = volumeDataFilePath;
+        // msg[Protocol::Key::Directory]               = volumeDataNativeFilePath;
         // msg[Protocol::Key::Format]                  = format;
         // msg[Protocol::Key::TimeStep]                = std::pair<int,int>( start_step, last_step );
         // msg[Protocol::Key::TmpIsFocus]              = false;
@@ -342,7 +390,7 @@ void Server::initialize( uWS::WebSocket<false, true, PerSocket>* ws, const nlohm
 
         objectInfo.name                  = volumeDataFileName;                                       // FIXME:サーバ担当者
         objectInfo.extension             = volumeDataFileExtension;                                  // FIXME:サーバ担当者
-        objectInfo.directory             = volumeDataFilePath;
+        objectInfo.directory             = volumeDataNativeFilePath;
         objectInfo.format                = format;
         objectInfo.timeStep              = std::pair<int,int>( start_step, last_step );
         objectInfo.tmpIsFocus            = false;
@@ -449,7 +497,7 @@ void Server::initialize( uWS::WebSocket<false, true, PerSocket>* ws, const nlohm
 
             msg[Protocol::Key::Name]                    = volumeDataFileName;                                       // FIXME:サーバ担当者
             msg[Protocol::Key::Extension]               = volumeDataFileExtension;                                  // FIXME:サーバ担当者
-            msg[Protocol::Key::Directory]               = volumeDataFilePath;
+            msg[Protocol::Key::Directory]               = volumeDataNativeFilePath;
             msg[Protocol::Key::Format]                  = ObjectInfoExtractor::Format::ServerGlyphObject;
             msg[Protocol::Key::TimeStep]                = std::pair<int,int>( start_step, last_step );
             msg[Protocol::Key::TmpIsFocus]              = false;
@@ -489,6 +537,16 @@ void Server::initialize( uWS::WebSocket<false, true, PerSocket>* ws, const nlohm
             m_u_web_sockets.publish( "Notice", msg.dump(), uWS::OpCode::TEXT );
         }
     }
+
+    // ここでhistgram, minmaxを送信?
+    // nlohmann::json msg;
+    // msg[Protocol::Key::Event]           = Protocol::Events::HistgramAndMinMax;
+    // msd[Protocol::Key::ColorHistgram]   = m_particle_property->color_histgram;
+    // msd[Protocol::Key::OpacityHistgram] = m_particle_property->opacity_histgram;
+    // msd[Protocol::Key::ColorMin]        = m_particle_property->color_min_vec;
+    // msd[Protocol::Key::ColorMax]        = m_particle_property->color_max_vec;
+    // msd[Protocol::Key::OpacityMin]      = m_particle_property->opacity_min_vec;
+    // msd[Protocol::Key::OpacityMax]      = m_particle_property->opacity_max_vec;
 }
 
 void createServerPointObject()
@@ -805,15 +863,15 @@ void Server::receiveTransferFunctionParameter( uWS::WebSocket<false, true, PerSo
     m_particle_property->m_transfunc_array.resize( dataArray.size() );
 
     EquationToken color_equation_token;
-    std::string colorSynthesizerBuf = colorSynthesizer;
-    std::replace( colorSynthesizerBuf.begin(), colorSynthesizerBuf.end(), 'C', 'c' );
-    color_equation_token = m_particle_property->m_transfunc_synthesizer->convert_token( colorSynthesizerBuf );
+    std::string colorFunctionSynthesizerBuf = colorSynthesizer;
+    std::replace( colorFunctionSynthesizerBuf.begin(), colorFunctionSynthesizerBuf.end(), 'C', 'c' );
+    color_equation_token = m_particle_property->m_transfunc_synthesizer->convert_token( colorFunctionSynthesizerBuf );
     m_particle_property->m_transfunc_synthesizer->setColorFunction( color_equation_token );
 
     EquationToken opacity_equation_token;
-    std::string opacitySynthesizerBuf = opacitySynthesizer;
-    std::replace( opacitySynthesizerBuf.begin(), opacitySynthesizerBuf.end(), 'O', 'a' );
-    opacity_equation_token = m_particle_property->m_transfunc_synthesizer->convert_token( opacitySynthesizerBuf );
+    std::string opacityFunctionSynthesizerBuf = opacitySynthesizer;
+    std::replace( opacityFunctionSynthesizerBuf.begin(), opacityFunctionSynthesizerBuf.end(), 'O', 'a' );
+    opacity_equation_token = m_particle_property->m_transfunc_synthesizer->convert_token( opacityFunctionSynthesizerBuf );
     m_particle_property->m_transfunc_synthesizer->setOpacityFunction( opacity_equation_token );
 
     std::vector<EquationToken> var_o;
@@ -835,8 +893,26 @@ void Server::receiveTransferFunctionParameter( uWS::WebSocket<false, true, PerSo
 
         m_particle_property->m_transfunc_array[i].m_name               = colorFunction;
         m_particle_property->m_transfunc_array[i].m_color_variable     = colorVariable;
-        m_particle_property->m_transfunc_array[i].m_color_variable_min = colorUserMin;
-        m_particle_property->m_transfunc_array[i].m_color_variable_max = colorUserMax;
+
+        switch ( static_cast<TransferFunction::RangeMode>( colorRangeMode ) )
+        {
+        case TransferFunction::ServerSide:
+            m_particle_property->m_transfunc_array[i].m_color_variable_min = colorServerMin;
+            m_particle_property->m_transfunc_array[i].m_color_variable_max = colorServerMax;
+            break;
+        case TransferFunction::UserRange:
+            m_particle_property->m_transfunc_array[i].m_color_variable_min = colorUserMin;
+            m_particle_property->m_transfunc_array[i].m_color_variable_max = colorUserMax;
+            break;
+        default:
+            std::cout << "ERROR:Range Mode is unknown" << std::endl;
+        }
+
+        std::string colorVariableSynthesizerBuf = colorVariable;
+        std::replace( colorVariableSynthesizerBuf.begin(), colorVariableSynthesizerBuf.end(), 'X', 'x' );
+        std::replace( colorVariableSynthesizerBuf.begin(), colorVariableSynthesizerBuf.end(), 'Y', 'y' );
+        std::replace( colorVariableSynthesizerBuf.begin(), colorVariableSynthesizerBuf.end(), 'Z', 'z' );
+        var_c.push_back( m_particle_property->m_transfunc_synthesizer->convert_token( colorVariableSynthesizerBuf ) );
 
         std::cout << "ColorFunction: " << colorFunction << std::endl;
         std::cout << "ColorVariable: " << colorVariable << std::endl;
@@ -884,6 +960,26 @@ void Server::receiveTransferFunctionParameter( uWS::WebSocket<false, true, PerSo
         m_particle_property->m_transfunc_array[i].m_opacity_variable_min = opacityUserMin;
         m_particle_property->m_transfunc_array[i].m_opacity_variable_max = opacityUserMax;
 
+        switch ( static_cast<TransferFunction::RangeMode>( opacityRangeMode ) )
+        {
+        case TransferFunction::ServerSide:
+            m_particle_property->m_transfunc_array[i].m_opacity_variable_min = opacityServerMin;
+            m_particle_property->m_transfunc_array[i].m_opacity_variable_max = opacityServerMax;
+            break;
+        case TransferFunction::UserRange:
+            m_particle_property->m_transfunc_array[i].m_opacity_variable_min = opacityUserMin;
+            m_particle_property->m_transfunc_array[i].m_opacity_variable_max = opacityUserMax;
+            break;
+        default:
+            std::cout << "ERROR:Range Mode is unknown" << std::endl;
+        }
+
+        std::string opacityVariableSynthesizerBuf = opacityVariable;
+        std::replace( opacityVariableSynthesizerBuf.begin(), opacityVariableSynthesizerBuf.end(), 'X', 'x' );
+        std::replace( opacityVariableSynthesizerBuf.begin(), opacityVariableSynthesizerBuf.end(), 'Y', 'y' );
+        std::replace( opacityVariableSynthesizerBuf.begin(), opacityVariableSynthesizerBuf.end(), 'Z', 'z' );
+        var_o.push_back( m_particle_property->m_transfunc_synthesizer->convert_token( opacityVariableSynthesizerBuf ) );
+
         std::cout << "OpacityFunction: " << opacityFunction << std::endl;
         std::cout << "OpacityVariable: " << opacityVariable << std::endl;
         std::cout << "OpacityRangeMode: " << opacityRangeMode << std::endl;
@@ -918,6 +1014,9 @@ void Server::receiveTransferFunctionParameter( uWS::WebSocket<false, true, PerSo
         m_particle_property->m_transfunc_array[i].setColorMap( color_map );
         m_particle_property->m_transfunc_array[i].setOpacityMap( opacity_map );
     }
+
+    m_particle_property->m_transfunc_synthesizer->setColorVariable( var_c );
+    m_particle_property->m_transfunc_synthesizer->setOpacityVariable( var_o );
 
     nlohmann::json msg;
     msg[Protocol::Key::Event]               = Protocol::Events::TransferFunctionParameter;
@@ -957,15 +1056,15 @@ void Server::receiveGlyphParameter( uWS::WebSocket<false, true, PerSocket>* ws, 
     int size_mode_int = received.value( Protocol::Key::SizeMode, -1 );
     DataDefines size_mode = ConvertIntToDataDefines( size_mode_int );
     m_glyph_property->m_size_sampling_method = size_mode;
-    int size_variables_index = 0;
+    m_glyph_property->m_size_variable.clear();
+    m_glyph_property->m_size_variable.resize( received[Protocol::Key::SizeVariables].size() );
     if( received.contains( Protocol::Key::SizeVariables ) )
     {
         std::cout << "SizeVariables: ";
-        for( const auto& v : received[Protocol::Key::SizeVariables] )
+        for ( size_t i = 0; i < received[Protocol::Key::SizeVariables].size(); i++ )
         {
-            std::cout << v.get<int>() + 1 << " ";
-            m_glyph_property->m_size_variable[size_variables_index] = v.get<int>() + 1;
-            size_variables_index++;
+            std::cout << received[Protocol::Key::SizeVariables][i].get<int>() + 1 << " ";
+            m_glyph_property->m_size_variable[i] = received[Protocol::Key::SizeVariables][i].get<int>() + 1;
         }
         std::cout << std::endl;
     }
@@ -1004,16 +1103,15 @@ void Server::receiveGlyphParameter( uWS::WebSocket<false, true, PerSocket>* ws, 
     int color_data_mode_int = received.value( Protocol::Key::ColorDataMode, -1 );
     DataDefines color_data_mode = ConvertIntToDataDefines( color_data_mode_int );
     m_glyph_property->m_color_data_sampling_method = color_data_mode;
-    int color_data_variables_index = 0;
+    m_glyph_property->m_color_data_variable.clear();
+    m_glyph_property->m_color_data_variable.resize( received[Protocol::Key::ColorDataVariables].size() );
     if( received.contains( Protocol::Key::ColorDataVariables ) )
     {
         std::cout << "ColorDataVariables: ";
-        for( const auto& v : received[Protocol::Key::ColorDataVariables] )
+        for( size_t i = 0; i < received[Protocol::Key::ColorDataVariables].size(); i++ )
         {
-            std::cout << v.get<int>() + 1 << " ";
-            int color_data_variable = v.get<int>() + 1;
-            m_glyph_property->m_color_data_variable[color_data_variables_index];
-            color_data_variables_index++;
+            std::cout << received[Protocol::Key::ColorDataVariables][i].get<int>() + 1 << " ";
+            m_glyph_property->m_color_data_variable[i] = received[Protocol::Key::ColorDataVariables][i].get<int>() + 1;
         }
         std::cout << std::endl;
     }
@@ -1080,6 +1178,8 @@ void Server::requestDataAt( uWS::WebSocket<false, true, PerSocket>* ws, const nl
     std::cout << "[Server] show at time step" << std::endl;
     const int& timeStep = received[Protocol::Key::TimeStep];
 
+    // m_particle_property, m_glyph_property, m_pol_property, m_multi_volume_propertyを排他制御してコピー?
+
     Worker worker( timeStep, m_objects, m_particle_property, m_glyph_property, m_pol_property, m_multi_volume_property_list ); // m_objects は std::vector<ObjectInfo> のメンバ
     worker.setDoneCallBack( [this, ws, timeStep]() {
         std::vector<char> buffer = pack( timeStep );
@@ -1089,6 +1189,54 @@ void Server::requestDataAt( uWS::WebSocket<false, true, PerSocket>* ws, const nl
             std::cout << "[Server] publish UUID + PointObjects..." << std::endl;
             m_u_web_sockets.publish( "AFTER", std::string_view( buffer.data(), buffer.size() ), uWS::OpCode::BINARY );
         } );
+
+        // ここでhistgram, minmaxを送信?
+        // nlohmann::json msg;
+        // msg[Protocol::Key::Event]           = Protocol::Events::HistgramAndMinMax;
+        // msd[Protocol::Key::ColorHistgram]   = m_particle_property->color_histgram;
+        // msd[Protocol::Key::OpacityHistgram] = m_particle_property->opacity_histgram;
+        // msd[Protocol::Key::ColorMin]        = m_particle_property->color_min_vec;
+        // msd[Protocol::Key::ColorMax]        = m_particle_property->color_max_vec;
+        // msd[Protocol::Key::OpacityMin]      = m_particle_property->opacity_min_vec;
+        // msd[Protocol::Key::OpacityMax]      = m_particle_property->opacity_max_vec;
+
+        // POL生成
+        if ( m_pol_property->m_plot_flag )
+        {
+            std::unique_ptr<vismodule::KVSMLObjectPlotOverLine> kvsml_object_pol;
+
+            if ( m_server_mode == ServerMode::CS )
+            {
+                std::string file_path;
+                for ( const auto& info : *m_objects )
+                {
+                    if ( info.format == ObjectInfoExtractor::Format::ClientServerPointObject ) file_path = Worker::toNativePath( info.directory );
+                    break;
+                }
+                kvsml_object_pol = GeneratePOLCS( file_path, timeStep, *m_pol_property, *m_multi_volume_property_list );
+            }
+            else if ( m_server_mode == ServerMode::IS )
+            {
+                kvsml_object_pol = GeneratePOLIS( timeStep, *m_pol_property, *m_multi_volume_property_list );
+            }
+
+            // jsonの配列として送るためにValueArrayからvectorにコピー
+            const int resolution = kvsml_object_pol->values_on_line().size();
+            std::vector<float> values_on_line( resolution, 0 );
+            std::vector<bool>  mask;
+            std::vector<float> x_axis( resolution, 0 );
+
+            std::memcpy( values_on_line.data(), kvsml_object_pol->values_on_line().pointer(), kvsml_object_pol->values_on_line().byteSize() );
+            mask.assign( kvsml_object_pol->mask().pointer(), kvsml_object_pol->mask().pointer() + kvsml_object_pol->mask().byteSize() );
+            std::memcpy( x_axis.data(), kvsml_object_pol->values_on_line().pointer(), kvsml_object_pol->values_on_line().byteSize() );
+
+            // FIXME:ここでPOLの配列をテキストで送信
+            // msg[Protocol::Key::Event]       = Protocol::Events::PlotOverLineHoge;
+            // msg[Protocol::Key::ValueOnLine] = values_on_line;
+            // msg[Protocol::Key::XAxis]       = mask;
+            // msg[Protocol::Key::Mask]        = x_axis;
+            // m_u_web_sockets.publish( "Notice", msg.dump(), uWS::OpCode::TEXT );
+        }
     } );
     worker.process();
 }

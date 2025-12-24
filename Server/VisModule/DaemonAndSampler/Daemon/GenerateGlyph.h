@@ -3,24 +3,29 @@
 #include <vismodule/MultiVolumeProperty>
 #include <kvs/PolygonGlyphObject>
 
+/*
 void SetGlyphParameterCS(
     const ParticleProperty& particle_property,
     GlyphProperty& glyph_property,
     const MultiVolumePropertyList& mvpl
 );
+*/
 
 std::unique_ptr<kvs::PolygonGlyphObject> GenerateGlyphCS(
-    ParticleProperty& particle_property,
+    std::string& file_path,
+    const int time_step,
     const GlyphProperty& glyph_property,
     MultiVolumePropertyList& mvpl
 );
 
+/*
 void SetGlyphParameterIS(
     GlyphProperty& glyph_property
 );
+*/
 
 std::unique_ptr<kvs::PolygonGlyphObject> GenerateGlyphIS(
-    const ParticleProperty& particle_property,
+    const int time_step,
     const GlyphProperty& glyph_property,
     const MultiVolumePropertyList& mvpl
 );

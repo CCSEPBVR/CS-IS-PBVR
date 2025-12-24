@@ -5,10 +5,15 @@
 #include <vismodule/TransferFunctionSynthesizer>
 #include <vismodule/ExtendedTransferFunction>
 
+enum ServerMode
+{
+    CS = 0,
+    IS = 1
+};
+
 struct ParticleProperty
 {
-	std::string filepath;
-    int m_time_step;
+    // property for visualization
     size_t m_subpixel_level;
     size_t m_repeat_level;
     int m_level_index;
@@ -27,6 +32,16 @@ struct ParticleProperty
     std::string m_x_synthesis;
     std::string m_y_synthesis;
     std::string m_z_synthesis;
+
+    // histgram
+    std::vector<unsigned long long> color_histgram;
+    std::vector<unsigned long long> opacity_histgram;
+
+    // min max
+    std::vector<float> color_min_vec;
+    std::vector<float> color_max_vec;
+    std::vector<float> opacity_min_vec;
+    std::vector<float> opacity_max_vec;
 };
 
 #endif //  __PARTICLE__PROPERTY_

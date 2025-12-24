@@ -54,6 +54,7 @@ private:
     std::unordered_map<std::string, std::shared_ptr<ClientState>> m_clients;
     int m_next_user_id = 0;
 
+    ServerMode m_server_mode;
     std::vector<ObjectInfoExtractor::ObjectInfo>* m_objects;
     ParticleProperty* m_particle_property;
     GlyphProperty* m_glyph_property;

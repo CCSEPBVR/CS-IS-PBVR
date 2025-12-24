@@ -77,15 +77,17 @@
 #include <vismodule/JobCollector>
 #endif
 
-bool SetParticleParameterCS(
-    const std::string file_name,
-    const int time_step,
-    vismodule::Camera* camera,
+// 初回通信用 デフォルトパラメータを設定する
+bool SetDefaultParticleParameterCS(
+    const std::string& volume_data_file_name,
+    const std::string& transfer_function_file_name,
     ParticleProperty& particle_property,
     MultiVolumePropertyList& mvpl
 );
 
 void GenerateParticleCS(
+    std::string& file_path,
+    const int time_step, 
     ParticleProperty& particle_property,
     MultiVolumePropertyList& mvpl,
     std::unique_ptr<kvs::PointObject>& point_object
@@ -94,15 +96,13 @@ void GenerateParticleCS(
     // jpv::InitializeParameter init_param
 );
 
-void SetParticleParameterIS(
-    const int time_step,
-    vismodule::Camera* camera,
+void SetDefaultParticleParameterIS(
     ParticleProperty& particle_property,
     MultiVolumePropertyList& mvpl
 );
 
 void GenerateParticleIS(
-    ParticleProperty &particle_property,
+    const int time_step,
     MultiVolumePropertyList& mvpl,
     std::unique_ptr<kvs::PointObject>& point_object
     // jpv::ParticleTransferServer pts,
@@ -111,14 +111,13 @@ void GenerateParticleIS(
 );
 
 void generate_volume(
-    const ParticleProperty& particle_property,
+    const std::string& file_path,
     const MultiVolumeProperty& mvp,
-    const int time_step,
     vismodule::VolumeObjectBase*& volume
 );
 
 void generate_volume(
-    const ParticleProperty& particle_property,
+    const std::string& file_path,
     const MultiVolumeProperty& mvp,
     const int time_step,
     const int sub_volume_id,
