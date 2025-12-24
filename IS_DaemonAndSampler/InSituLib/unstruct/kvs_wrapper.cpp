@@ -3428,10 +3428,10 @@ void EnsembleGenerateParticles( int time_step,
 //    std::cout << mpi_rank <<  ": particle_time =" << time5 << std::endl;  
 //    if (thid <  12 )
 //    {
-        for (int i =0;i < 12; i++)
-        {
-            std::cout << mpi_rank <<  ": time["<< i <<"] =" << timeN[i] << std::endl;
-        }
+//        for (int i =0;i < 12; i++)
+//        {
+//            std::cout << mpi_rank <<  ": time["<< i <<"] =" << timeN[i] << std::endl;
+//        }
 //    
 //    }
 }  //end omp loop
@@ -3813,50 +3813,188 @@ void EnsembleGenerateParticles( int time_step,
     std::vector<kvs::Real32>  th_vertex_scalars;
     std::vector<int>  th_vertex_cellids;
 
-//#pragma omp for schedule( dynamic ) nowait
-#pragma omp for
-       for(int i =0; i< vertex_scalars.size() ;i++)
-       {
-            cell[thid] -> bindCell(vertex_cellids[i]); 
-          
-               const kvs::Vector3f coord(vertex_coords[3*i+0], vertex_coords[3*i+1], vertex_coords[3*i+2]);
-               cell[thid] -> setLocalPoint(coord);
-               // local 座標からglobal座標へ変換
-               const kvs::Vector3f global_coord = cell[thid] -> transformLocalToGlobal(coord);
+    kvs::UInt32 cell_index[ SIMD_BLK_SIZE ];
+    kvs::Vector3f local_coord_array[ SIMD_BLK_SIZE ];
+    kvs::Vector3f global_coord_array[ SIMD_BLK_SIZE ];
+    float opacity_array[ SIMD_BLK_SIZE ];
+    float th_timeN[20]= {0};
+    kvs::Timer th_timer( kvs::Timer::Start );
 
-               // density の計算
-               float opacity = tf.opacityMap().at(vertex_scalars[ i ]);
-               float density  = Generator::CalculateDensity( opacity,
-                       sampling_volume_inverse,
-                       max_opacity, max_density );
+#pragma omp for  
+            for(int i =0; i< vertex_scalars.size() ;i+= SIMD_BLK_SIZE)
+            {
+                th_timer.start();
+                    //ブロック内でのループ回数を取得
+                    int remain_BLK = ( vertex_scalars.size() - i > SIMD_BLK_SIZE )
+                                                        ? SIMD_BLK_SIZE: vertex_scalars.size() - i;
+                    // セル登録
+            #pragma omp simd
+                    for( int j = 0; j < remain_BLK; j++ ) 
+                    {
+                        cell_index[j] = vertex_cellids[i + j];
+                    }
+                    cell[thid] -> bindCellArray(remain_BLK, cell_index);
+
+                th_timer.stop();
+                th_timeN[0] += th_timer.sec();
+                th_timer.start();
+
+                //局所座標の詰め替え
+//            #pragma omp simd
+                    for( int j = 0; j < remain_BLK; j++ ) 
+                    {
+                        local_coord_array[j].x() = vertex_coords[ 3*(i+j)+ 0];
+                        local_coord_array[j].y() = vertex_coords[ 3*(i+j)+ 1];
+                        local_coord_array[j].z() = vertex_coords[ 3*(i+j)+ 2];
+                    }
+
+                th_timer.stop();
+                th_timeN[1] += th_timer.sec();
+                th_timer.start();
+                //座標の登録
+                cell[thid] -> setLocalPointArray(remain_BLK,local_coord_array);
+
+                th_timer.stop();
+                th_timeN[2] += th_timer.sec();
+                th_timer.start();
+                //全体座標への変換
+                cell[thid] -> transformLocalToGlobalArray(remain_BLK,local_coord_array,global_coord_array);
+
+                th_timer.stop();
+                th_timeN[3] += th_timer.sec();
+                th_timer.start();
+
+                //opacity 計算 
+                for( int j = 0; j < remain_BLK; j++ ) 
+                {
+                    opacity_array[j] = tf.opacityMap().at(vertex_scalars[ i+j ]);
+                }
+                th_timer.stop();
+                th_timeN[4] += th_timer.sec();
+                th_timer.start();
+
+                for( int j = 0; j < remain_BLK; j++ ) 
+                {
+                    float density  = Generator::CalculateDensity( opacity_array[j],
+                            sampling_volume_inverse,
+                            max_opacity, max_density );
+
+                    th_timer.stop();
+                    th_timeN[5] += th_timer.sec();
+                    th_timer.start();
                const float R = MT.rand();
+                th_timer.stop();
+                th_timeN[6] += th_timer.sec();
                if ( density > max_density * R )
                {
+                th_timer.start();
                    // Calculate a color.
-                   const kvs::RGBColor color( tf.colorMap().at( vertex_scalars[ i ] ) );
+                   const kvs::RGBColor color( tf.colorMap().at( vertex_scalars[ i+j ] ) );
+                th_timer.stop();
+                th_timeN[7] += th_timer.sec();
+                th_timer.start();
 
                    // Calculate a normal.
-                   const kvs::Vector3f normal( vertex_normals[3*i+0], vertex_normals[3*i+1], vertex_normals[3*i+2] );
+//                   const kvs::Vector3f normal( vertex_normals[3*(i+j)+0], vertex_normals[3*(i+j)+1], vertex_normals[3*(i+j)+2] );
+                th_timer.stop();
+                th_timeN[8] += th_timer.sec();
+                th_timer.start();
 
                    // set coord, color, and normal to point object( this ).
-                   th_vertex_coords.push_back( global_coord.x() );
-                   th_vertex_coords.push_back( global_coord.y() );
-                   th_vertex_coords.push_back( global_coord.z() );
-
-//                   th_vertex_scalars.push_back(vertex_scalars[ i ]);
+                   th_vertex_coords.push_back( global_coord_array[j].x() );
+                   th_vertex_coords.push_back( global_coord_array[j].y() );
+                   th_vertex_coords.push_back( global_coord_array[j].z() );
 
                    th_vertex_colors.push_back( color.r() );
                    th_vertex_colors.push_back( color.g() );
                    th_vertex_colors.push_back( color.b() );
 
-                   th_vertex_normals.push_back( normal.x() );
-                   th_vertex_normals.push_back( normal.y() );
-                   th_vertex_normals.push_back( normal.z() );
+                   th_vertex_normals.push_back( vertex_normals[3*(i+j)+0] );
+                   th_vertex_normals.push_back( vertex_normals[3*(i+j)+1] );
+                   th_vertex_normals.push_back( vertex_normals[3*(i+j)+2] );
 
-//                   th_vertex_cellids.push_back(vertex_cellids[i]);
+                th_timer.stop();
+                th_timeN[9] += th_timer.sec();
                }
+                }
+            }
+//#pragma omp for schedule( dynamic ) nowait
+//#pragma omp for
+//       for(int i =0; i< vertex_scalars.size() ;i++)
+//       {
+//                th_timer.start();
+//            cell[thid] -> bindCell(vertex_cellids[i]); 
+//                th_timer.stop();
+//                th_timeN[0] += th_timer.sec();
+//                th_timer.start();
+//         
+//               const kvs::Vector3f coord(vertex_coords[3*i+0], vertex_coords[3*i+1], vertex_coords[3*i+2]);
 
-       }
+//                th_timer.stop();
+//                th_timeN[1] += th_timer.sec();
+//                th_timer.start();
+//               cell[thid] -> setLocalPoint(coord);
+//                th_timer.stop();
+//                th_timeN[2] += th_timer.sec();
+//                th_timer.start();
+//               // local 座標からglobal座標へ変換
+//               const kvs::Vector3f global_coord = cell[thid] -> transformLocalToGlobal(coord);
+//                th_timer.stop();
+//                th_timeN[3] += th_timer.sec();
+//                th_timer.start();
+//
+//               // density の計算
+//               float opacity = tf.opacityMap().at(vertex_scalars[ i ]);
+//                th_timer.stop();
+//                th_timeN[4] += th_timer.sec();
+//                th_timer.start();
+//               float density  = Generator::CalculateDensity( opacity,
+//                       sampling_volume_inverse,
+//                       max_opacity, max_density );
+//                th_timer.stop();
+//                th_timeN[5] += th_timer.sec();
+//                th_timer.start();
+//               const float R = MT.rand();
+//                th_timer.stop();
+//                th_timeN[6] += th_timer.sec();
+//               if ( density > max_density * R )
+//               {
+//                th_timer.start();
+//                   // Calculate a color.
+//                   const kvs::RGBColor color( tf.colorMap().at( vertex_scalars[ i ] ) );
+//                th_timer.stop();
+//                th_timeN[7] += th_timer.sec();
+//                th_timer.start();
+//
+//                   // Calculate a normal.
+//                   const kvs::Vector3f normal( vertex_normals[3*i+0], vertex_normals[3*i+1], vertex_normals[3*i+2] );
+//                th_timer.stop();
+//                th_timeN[8] += th_timer.sec();
+//                th_timer.start();
+//
+//                   // set coord, color, and normal to point object( this ).
+//                   th_vertex_coords.push_back( global_coord.x() );
+//                   th_vertex_coords.push_back( global_coord.y() );
+//                   th_vertex_coords.push_back( global_coord.z() );
+//
+////                   th_vertex_scalars.push_back(vertex_scalars[ i ]);
+//
+//                   th_vertex_colors.push_back( color.r() );
+//                   th_vertex_colors.push_back( color.g() );
+//                   th_vertex_colors.push_back( color.b() );
+//
+//                   th_vertex_normals.push_back( normal.x() );
+//                   th_vertex_normals.push_back( normal.y() );
+//                   th_vertex_normals.push_back( normal.z() );
+//
+////                   th_vertex_cellids.push_back(vertex_cellids[i]);
+////
+//                th_timer.stop();
+//                th_timeN[9] += th_timer.sec();
+//               }
+//
+//       }
+                th_timer.start();
 #pragma omp critical
        {
            average_coords.insert (average_coords.end() , th_vertex_coords.begin() , th_vertex_coords.end());
@@ -3865,6 +4003,16 @@ void EnsembleGenerateParticles( int time_step,
 //           average_scalars.insert(average_scalars.end(), th_vertex_scalars.begin(), th_vertex_scalars.end());
 //           average_cellids.insert(average_cellids.end(), th_vertex_cellids.begin(), th_vertex_cellids.end());
        }
+                th_timer.stop();
+                th_timeN[10] += th_timer.sec();
+#pragma omp critical
+                {    
+                    for (int i =0;i < 11; i++)
+                    {
+                        std::cout << mpi_rank <<  ": time["<< i <<"] =" << th_timeN[i] << std::endl;
+                    }
+                }
+
 }
        timer.stop();
        std::cout << mpi_rank << ": rejection_exe_time =" << timer.sec() << std::endl;
