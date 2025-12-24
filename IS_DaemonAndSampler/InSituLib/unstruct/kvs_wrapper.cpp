@@ -3207,122 +3207,135 @@ void EnsembleGenerateParticles( int time_step,
             {
                 nparticles_array[cell_BLK] 
                     = calculate_number_of_particles( max_density, volume_array[cell_BLK], &MT ) * repetitions ;
+//                if(cell_index[cell_BLK] < 10 )std::cout << "nparticles_array[cell_BLK] = " << nparticles_array[cell_BLK] << std::endl;
             }
             th_timer.stop();
             timeN[3] += th_timer.sec();
             // アンサンブル粒子データを作成
-            for(int cell_BLK = 0; cell_BLK < remain; cell_BLK++ )
+            int p_id = 0;
+            float p_x_l[remain], p_y_l[remain], p_z_l[remain];
+            float p_x_g[remain], p_y_g[remain], p_z_g[remain];
+            for(int cell_BLK = 0; cell_BLK < remain+1; cell_BLK++ )
             {
+                const int nparticles_I  = cell_BLK<remain ? nparticles_array[cell_BLK] : 1;
                 // ------------------------------------------------
-                for( int i = 0; i < nparticles_array[cell_BLK]; i+=SIMD_BLK_SIZE )
+                for( int i = 0; i < nparticles_I; i+=SIMD_BLK_SIZE )
                 {
                     th_timer.start();
                     //ブロック内でのループ回数を取得
-                    int remain_BLK = ( nparticles_array[cell_BLK] - i > SIMD_BLK_SIZE )
-                                                        ? SIMD_BLK_SIZE: nparticles_array[cell_BLK] - i;
-//                    int remain_BLK = ( np - i > SIMD_BLK_SIZE )
-//                                                        ? SIMD_BLK_SIZE: np - i;
-
-                    //一括でセルをバインドするための配列と、座標の取得
-                    for( int j = 0; j < remain_BLK; j++ ) 
-                    {
-                        cell_index[j] = index + cell_BLK;
-                    }
+                    int remain_BLK = ( nparticles_I - i > SIMD_BLK_SIZE )
+                                                        ? SIMD_BLK_SIZE: nparticles_I - i;
+//                    const int zero_id = cell_BLK<SIMDW ? SIMDW : p_id;
 
                     th_timer.stop();
                     timeN[4] += th_timer.sec();
-                    th_timer.start();
-
-                    for( int j = 0; j < remain_BLK; j++ ) 
+                    if( cell_BLK < SIMD_BLK_SIZE )
                     {
-                        local_coord_array[j] = cell[thid] -> randomSampling_MT( &MT );
-                        //local_coord_array[j] = kvs::Vector3f{0,1,0};
-                    }
+                        th_timer.start();
+                        cell_index[p_id] = index + cell_BLK;
+                        th_timer.stop();
+                        timeN[4] += th_timer.sec();
+                        th_timer.start();
 
-                    th_timer.stop();
-                    timeN[5] += th_timer.sec();
-                    th_timer.start();
+                        local_coord_array[p_id] = cell[thid] -> randomSampling_MT( &MT );
+                        th_timer.stop();
+                        timeN[5] += th_timer.sec();
+                        p_id ++;
+//                        //一括でセルをバインドするための配列と、座標の取得
+//                        #pragma simd
+//                        for( int j = 0; j < remain_BLK; j++ ) 
+//                        {
+//                            cell_index[p_id] = index + cell_BLK;
+//                            p_id ++;
+//                        }
+//
+//                        for( int j = 0; j < remain_BLK; j++ ) 
+//                        {
+//                            local_coord_array[p_id] = cell[thid] -> randomSampling_MT( &MT );
+//                        }
+                    }
+                    if(p_id == SIMD_BLK_SIZE || cell_BLK == remain)
+                    {
+                        th_timer.start();
+
                     //補間器にセルを一括でバインド
-                    cell[thid]->bindCellArray( remain_BLK, cell_index );
+                    cell[thid]->bindCellArray( p_id, cell_index );
                     th_timer.stop();
                     timeN[6] += th_timer.sec();
                     th_timer.start();
-                    cell[thid]->setLocalPointArray(  remain_BLK, local_coord_array );
+                    cell[thid]->setLocalPointArray(  p_id, local_coord_array );
                     
                     th_timer.stop();
                     timeN[7] += th_timer.sec();
                     th_timer.start();
-                    float scalar_array[remain_BLK];
-                    float grad_array_x[remain_BLK];
-                    float grad_array_y[remain_BLK];
-                    float grad_array_z[remain_BLK];
+                    float scalar_array[p_id];
+                    float grad_array_x[p_id];
+                    float grad_array_y[p_id];
+                    float grad_array_z[p_id];
 
-//                    cell[thid]->CalcScalarGrad( remain_BLK,
+//                    cell[thid]->CalcScalarGrad( p_id,
 //                            scalar_array,
 //                            grad_array_x,
 //                            grad_array_y,
 //                            grad_array_z );
                         
-                    cell[thid] -> scalar_ary( scalar_array, remain_BLK);
+                    cell[thid] -> scalar_ary( scalar_array, p_id);
                     th_timer.stop();
                     timeN[8] += th_timer.sec();
                     th_timer.start();
-                    cell[thid] -> grad_ary( grad_array_x, grad_array_y, grad_array_z, remain_BLK);
+                    cell[thid] -> grad_ary( grad_array_x, grad_array_y, grad_array_z, p_id);
 
                     th_timer.stop();
                     timeN[9] += th_timer.sec();
                     th_timer.start();
-//                    th_vertex_coords.reserve(th_vertex_coords.size() + remain_BLK * 3);
-//                    th_vertex_scalars.reserve(th_vertex_scalars.size() + remain_BLK);
-//                    th_vertex_normals.reserve(th_vertex_normals.size() + remain_BLK * 3);
-//                    th_vertex_cellids.reserve(th_vertex_cellids.size() + remain_BLK);
-//                    size_t base_c = th_vertex_coords.size();
-//                    size_t base_n = th_vertex_normals.size();
-//                    size_t base_s = th_vertex_scalars.size();
-//                    size_t base_id = th_vertex_cellids.size();
-//
-//                    th_vertex_coords.resize(base_c + remain_BLK * 3);
-//                    th_vertex_normals.resize(base_n + remain_BLK * 3);
-//                    th_vertex_scalars.resize(base_s + remain_BLK);
-//                    th_vertex_cellids.resize(base_id + remain_BLK);
+// resize による最適化テスト
+                    size_t base_c = th_vertex_coords.size();
+                    size_t base_n = th_vertex_normals.size();
+                    size_t base_s = th_vertex_scalars.size();
+                    size_t base_id = th_vertex_cellids.size();
 
-                    #pragma simd
-                    for( int j = 0; j < remain_BLK; j++ ) 
+                    th_vertex_coords.resize(base_c + p_id * 3);
+                    th_vertex_normals.resize(base_n + p_id * 3);
+                    th_vertex_scalars.resize(base_s + p_id);
+                    th_vertex_cellids.resize(base_id + p_id);
+
+#pragma simd
+                    for( int j = 0; j < p_id; j++ ) 
                     {
-//                        size_t c = base_c + 3*j;
-//                        th_vertex_coords[c+0] = local_coord_array[j].x();
-//                        th_vertex_coords[c+1] = local_coord_array[j].y();
-//                        th_vertex_coords[c+2] = local_coord_array[j].z();
+// resize による最適化テスト
+                        size_t c = base_c + 3*j;
+                        th_vertex_coords[c+0] = local_coord_array[j].x();
+                        th_vertex_coords[c+1] = local_coord_array[j].y();
+                        th_vertex_coords[c+2] = local_coord_array[j].z();
+
+                        th_vertex_scalars[base_s + j] = scalar_array[j];
+
+                        size_t n = base_n + 3*j;
+                        th_vertex_normals[n+0] = grad_array_x[j];
+                        th_vertex_normals[n+1] = grad_array_y[j];
+                        th_vertex_normals[n+2] = grad_array_z[j];
+
+                        th_vertex_cellids[base_id + j] = cell_index[j];
+
+//                        th_vertex_coords.push_back( local_coord_array[j].x() );
+//                        th_vertex_coords.push_back( local_coord_array[j].y() );
+//                        th_vertex_coords.push_back( local_coord_array[j].z() );
 //
-//                        th_vertex_scalars[base_s + j] = scalar_array[j];
+//                        th_vertex_scalars.push_back( scalar_array[j] );
 //
-//                        size_t n = base_n + 3*j;
-//                        th_vertex_normals[n+0] = grad_array_x[j];
-//                        th_vertex_normals[n+1] = grad_array_y[j];
-//                        th_vertex_normals[n+2] = grad_array_z[j];
+//                        th_vertex_normals.push_back( grad_array_x[j] );
+//                        th_vertex_normals.push_back( grad_array_y[j] );
+//                        th_vertex_normals.push_back( grad_array_z[j] );
+////                        th_vertex_normals_x.push_back( grad_array_x[j] );
+////                        th_vertex_normals_y.push_back( grad_array_y[j] );
+////                        th_vertex_normals_z.push_back( grad_array_z[j] );
 //
-//                        th_vertex_cellids[base_id + j] = cell_index[j];
-
-//                        std::cout << "scalar_array[j] =" << scalar_array[j] << std::endl;
-                        th_vertex_coords.push_back( local_coord_array[j].x() );
-                        th_vertex_coords.push_back( local_coord_array[j].y() );
-                        th_vertex_coords.push_back( local_coord_array[j].z() );
-
-                        th_vertex_scalars.push_back( scalar_array[j] );
-
-                        th_vertex_normals.push_back( grad_array_x[j] );
-                        th_vertex_normals.push_back( grad_array_y[j] );
-                        th_vertex_normals.push_back( grad_array_z[j] );
-//                        th_vertex_normals_x.push_back( grad_array_x[j] );
-//                        th_vertex_normals_y.push_back( grad_array_y[j] );
-//                        th_vertex_normals_z.push_back( grad_array_z[j] );
-
-                        th_vertex_cellids.push_back( cell_index[j] );
+//                        th_vertex_cellids.push_back( cell_index[j] );
                     }
-
-                    th_timer.stop();
-                    timeN[10] += th_timer.sec();
-                    th_timer.start();
+                        th_timer.stop();
+                        timeN[10] += th_timer.sec();
+                    p_id = 0;
+                    }
                 } 
             }
     }
@@ -3415,10 +3428,10 @@ void EnsembleGenerateParticles( int time_step,
 //    std::cout << mpi_rank <<  ": particle_time =" << time5 << std::endl;  
 //    if (thid <  12 )
 //    {
-//        for (int i =0;i < 12; i++)
-//        {
-//            std::cout << mpi_rank <<  ": time["<< i <<"] =" << timeN[i] << std::endl;
-//        }
+        for (int i =0;i < 12; i++)
+        {
+            std::cout << mpi_rank <<  ": time["<< i <<"] =" << timeN[i] << std::endl;
+        }
 //    
 //    }
 }  //end omp loop
@@ -3734,11 +3747,11 @@ void EnsembleGenerateParticles( int time_step,
 #endif
             }
 #pragma omp barrier
-#pragma omp critical
-            {
-                for(int i =0; i <  7; i++ )
-                    timeN[i] += th_timeN[i]/nthreads;    
-            }
+//#pragma omp critical
+//            {
+//                for(int i =0; i <  7; i++ )
+//                    timeN[i] += th_timeN[i]/nthreads;    
+//            }
 
 }
             // 次のラウンドでは受信したデータを送信対象に更新
@@ -3756,10 +3769,10 @@ void EnsembleGenerateParticles( int time_step,
 //        std::cout << mpi_rank <<  ": bindcell_time =" << time3 << std::endl; 
 //        std::cout << mpi_rank <<  ": calc_time =" << time4 << std::endl; 
 //        std::cout << mpi_rank <<  ": move_time =" << time5 << std::endl; 
-        for (int i =0;i < 7; i++)
-        {
-            std::cout << mpi_rank <<  ": time["<< i <<"] =" << timeN[i] << std::endl;
-        }
+//        for (int i =0;i < 7; i++)
+//        {
+//            std::cout << mpi_rank <<  ": time["<< i <<"] =" << timeN[i] << std::endl;
+//        }
 
 
 
