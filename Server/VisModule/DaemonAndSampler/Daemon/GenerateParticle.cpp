@@ -1,79 +1,14 @@
+#include <vismodule/JobDispatcher>
+#include <vismodule/JobCollector>
 #include <vismodule/GenerateParticle>
-#include <vismodule/VariableRange>
 #include <vismodule/Calculate>
-#include <vismodule/SetDefaultTransferFunction>
+#include <vismodule/VariableRange>
 #include <vismodule/PointObjectGenerator>
 #include <vismodule/FileChecker>
 #include <vismodule/UnstructuredVolumeImporter>
 #include <vismodule/StructuredVolumeImporter>
 #include <vismodule/ParticleMonitor>
 #include <vismodule/ParameterFileReader>
-
-// 初回通信用 デフォルトパラメータを設定する
-bool SetDefaultParticleParameterCS(
-    const std::string& volume_data_file_name,
-    const std::string& transfer_function_file_name,
-    ParticleProperty& particle_property,
-    MultiVolumePropertyList& mvpl
-)
-{
-    int rank;
-    int mpi_size;
-#ifndef CPU_VER
-    MPI_Comm_rank( MPI_COMM_WORLD, &rank );
-    MPI_Comm_size( MPI_COMM_WORLD, &mpi_size );
-#else
-    rank = 0;
-	mpi_size = 1;
-#endif
-
-    particle_property.m_level_index              = 1;
-    particle_property.m_repeat_level             = 4;
-    particle_property.m_sampling_method          = 'h';
-    particle_property.m_particle_data_size_limit = 20;
-    particle_property.m_particle_limit           = 10000000;
-    particle_property.m_particle_density         = 1;
-    particle_property.m_latency_threshold        = -1.0;
-    particle_property.m_job_id_pack_size         = 1;
-
-    mvpl.searchFile( volume_data_file_name );
-
-    if ( mvpl.m_list.size() <= 0 )
-    {
-        if ( rank == 0 )
-        {
-            std::cerr << "Error: pfifile doesn't exist(rank:" << rank << ")" << std::endl;
-        }
-        return false;
-    }
-
-    particle_property.m_sampling_step  = CalculateSamplingStep( mvpl );
-    particle_property.m_subpixel_level = CalculateSubpixelLevel( particle_property, mvpl, *particle_property.m_camera );
-
-    // ユーザーが伝達関数を指定している場合
-    if ( transfer_function_file_name != "" )
-    {
-        std::cout << "user define parameter " << std::endl;
-        std::cout << "ERROR: user define parameter is not supported at this time." << std::endl;
-
-        // 伝達関数ファイルから伝達関数を設定する処理の実装する, クライアントにサンプルがあるはず
-
-        /*
-        transfunc_creator.setProtocol( clntMes );
-        setClientTransferFunctionToArgument( &particle_property, clntMes );
-        */
-        return false;
-    }
-    // ユーザーが伝達関数を指定していない場合
-    else
-    {
-        std::cout << "default parameter " << std::endl;
-        VariableRange range = Calculate_minmax( particle_property, mvpl );
-        setDefalutTransferFunctionToArgument( particle_property, range, mvpl.m_total_number_ingredients );
-    }
-
-    return true;
-}
 
 void GenerateParticleCS(
     std::string& file_path,
@@ -99,6 +34,7 @@ void GenerateParticleCS(
     VariableRange vr; // jobcollectorで使用
     JobDispatcher jd;
     bool nan_error = false;
+    char tmp_sampling_method;
 
 #ifndef CPU_VER
     JobCollector jc( &jd );
@@ -113,20 +49,13 @@ void GenerateParticleCS(
 
     tmp_c_bins = new vismodule::UInt64[DEFAULT_NBINS * tf_number];
     tmp_o_bins = new vismodule::UInt64[DEFAULT_NBINS * tf_number];
+    std::fill_n( tmp_c_bins, DEFAULT_NBINS * tf_number, 0 );
+    std::fill_n( tmp_o_bins, DEFAULT_NBINS * tf_number, 0 );
+
     tmp_max = new float[tf_number * 2]; // color, opacity
     tmp_min = new float[tf_number * 2]; // color, opacity
-
-    for ( size_t i = 0; i < (DEFAULT_NBINS * tf_number); i++ )
-    {
-        tmp_c_bins[i] = 0;
-        tmp_o_bins[i] = 0;
-    }
-
-    for ( int i = 0; i < (tf_number * 2); i++ )
-    {
-        tmp_max[i] = FLT_MIN;
-        tmp_min[i] = FLT_MAX;
-    }
+    std::fill_n( tmp_max, tf_number * 2, FLT_MIN );
+    std::fill_n( tmp_min, tf_number * 2, FLT_MAX );
 
     jd.initialize(
         time_step,
@@ -245,7 +174,6 @@ void GenerateParticleCS(
                 nan_error = true;
             }
             // generate point object end
-
             
             MakeHistgram( send_obj, tf_number, tmp_c_bins, tmp_o_bins );
             MakeParticleMinMax( particle_property.m_transfunc_synthesizer, tf_number, tmp_max, tmp_min );
@@ -340,7 +268,8 @@ void GenerateParticleCS(
     }
 #endif
 
-    // vr = setVariablerange2( tmp_max, tmp_min, ( tf_number * 2 ) ); // 一旦保留
+    vr = setVariablerange2( tmp_max, tmp_min, ( tf_number * 2 ) );
+    vr.show();
 
     // histgramの格納
     particle_property.color_histgram.clear();
@@ -361,149 +290,33 @@ void GenerateParticleCS(
     particle_property.opacity_max_vec.resize( tf_number );
     for( int i = 0; i < tf_number; i++ )
     {
-        particle_property.color_min_vec[i]   = tmp_min[2 * i + 1];
-        particle_property.color_max_vec[i]   = tmp_max[2 * i + 1];
-        particle_property.opacity_min_vec[i] = tmp_min[2 * i    ];
-        particle_property.opacity_max_vec[i] = tmp_max[2 * i    ];
+        std::stringstream ss; 
+        ss << (i + 1); 
+        const std::string idxbuf = ss.str();
+        particle_property.color_min_vec[i]   = vr.min( "t" + idxbuf + "_var_c" );
+        particle_property.color_max_vec[i]   = vr.max( "t" + idxbuf + "_var_c" );
+        particle_property.opacity_min_vec[i] = vr.min( "t" + idxbuf + "_var_o" );
+        particle_property.opacity_max_vec[i] = vr.max( "t" + idxbuf + "_var_o" );
     }
 
     nan_error = false;
 
-    delete tmp_min;
-    delete tmp_max;
+    delete[] tmp_min;
+    delete[] tmp_max;
     delete[] tmp_c_bins;
     delete[] tmp_o_bins;
 }
 
-void SetDefaultParticleParameterIS(
-    ParticleProperty& particle_property,
-    MultiVolumePropertyList& mvpl
-)
-{
-    const char *envBuf = NULL;
-    std::string visParamDir;
-    std::string tfFilePath;
-    std::string tfFilePath_old;
-
-    envBuf = std::getenv( "VIS_PARAM_DIR" );
-
-    if (envBuf == NULL) {
-        visParamDir = "./";
-    }
-    else {
-        visParamDir = envBuf;
-        if (visParamDir[visParamDir.size() - 1] != '/') {
-            visParamDir += "/";
-        }
-    }
-
-    tfFilePath     = visParamDir;
-    tfFilePath_old = visParamDir;
-
-    envBuf = std::getenv( "TF_NAME" );
-
-    if (envBuf == NULL) {
-        tfFilePath     += "default.tf";
-        tfFilePath_old += "default_old.tf";
-    }
-    else {
-        tfFilePath     += envBuf;
-        tfFilePath     += ".tf";
-        tfFilePath_old += envBuf;
-        tfFilePath_old += "_old.tf";
-    }
-
-    MultiVolumeProperty mvp;
-
-    particle_property.m_level_index              = 1;
-    particle_property.m_repeat_level             = 4;
-    particle_property.m_particle_data_size_limit = 20;
-
-    // particle_property.m_sampling_method          = 'h';
-
-    // Using environment variables, the constructor of the ParticleMonitor class
-    // set particle file, glyph file, plot over line file, status file, history file,
-    // and the min/max coordinates of the object.
-    ParticleMonitor pm;
-    pm.check();
-
-    if( pm.stepExisted() )
-    {
-        pm.setTimeStep_particle( pm.particleStatusFile().getLatestTimeStep() );
-    }
-    else
-    {
-        pm.setTimeStep_particle(0);
-        std::cout << "WARN:particle status file does not exist" << std::endl;
-    }
-    pm.readParticleHistoryFile();                
-
-    // store particle monitor in mvpl
-    mvpl.m_total_start_steps       = pm.particleStatusFile().getStartTimeStep();
-    mvpl.m_total_last_step         = pm.particleStatusFile().getLatestTimeStep();
-    mvpl.m_total_number_steps      = mvpl.m_total_last_step - mvpl.m_total_start_steps + 1;
-    mvp.m_file_type                = 0;
-    mvp.m_elem_type                = 0;
-    mvp.m_number_ingredients       = pm.particleHistoryFile().nVariables();
-    mvpl.m_list.push_back(mvp);
-    mvpl.m_total_number_elements   = 0;
-    mvpl.m_total_number_nodes      = 0;
-    mvpl.m_total_number_subvolumes = 1;
-    mvpl.m_total_min_object_coord  = pm.getMinObjectCoords();
-    mvpl.m_total_max_object_coord  = pm.getMaxObjectCoords();
-    mvpl.m_total_min_value         = 0;
-    mvpl.m_total_max_value         = 0;
-
-    // store particle monitor in param
-    // sampling step is not used in IS mode
-    particle_property.m_subpixel_level   = pm.getSubpixelLevel();
-    // particle limit and particle density will be overwritten later
-    // when transfer function file is readed(ParameterFileReader)
-    particle_property.m_particle_limit   = pm.particleHistoryFile().ParticleLimit();
-    particle_property.m_particle_density = pm.particleHistoryFile().ParticleDensity();
-    // particle_property.m_server_side_variable_range = pm.particleHistoryFile().variableRange();
-
-    // VariableRange vr        = pm.particleHistoryFile().variableRange();
-    // int tf_number           = pm.particleHistoryFile().colorHistogramArray().size();
-
-    ParameterFileReader ppr;
-    ppr.readParticleParameterFile( tfFilePath_old.c_str() );
-    ppr.setParticleParameter( particle_property );
-
-    // 設定したパラメータとファイルを読み込んだパラメータを比較する
-    // クライアントからの送信された伝達関数を読み込む関数に移動する
-    /* 一旦保留
-    if ( clntMes.m_initialize_parameter == jpv::InitializeParameter::generate_particle )
-    {
-        // update the transfer function file using the client message
-        // updated transfer function file is loaded by InSitu
-        // Daemon loads the particle file generated by InSitu
-        ParameterFileWriter ppw;
-        ppw.inputParticleParameterMessage( clntMes );
-        NameListFile nm1 = ppr.getNameListFile();
-        NameListFile nm2 = ppw.getNameListFile();
-        if( nm1 != nm2 )
-        {
-            ppw.writeParameterFile( tfFilePath.c_str() );
-        }
-    }
-    */
-
-    return;
-}
-
 void GenerateParticleIS(
     const int time_step,
+    ParticleProperty& particle_property,
     MultiVolumePropertyList& mvpl,
     std::unique_ptr<kvs::PointObject>& point_object
-    // jpv::ParticleTransferServer pts,
-    // jpv::ServerMode server_mode,
-    // jpv::InitializeParameter init_param
 )
 {
     int tf_number;
     ParticleMonitor pm;
-    // VariableRange vr; // 一旦保留
+    VariableRange vr;
 
     std::cout << "time_step:" << time_step << std::endl;
 
@@ -522,19 +335,12 @@ void GenerateParticleIS(
 
     tf_number = pm.particleHistoryFile().colorHistogramArray().size();
 
-    /* 一時保留
     vismodule::UInt64* tmp_c_bins;
     vismodule::UInt64* tmp_o_bins;
-    
     tmp_c_bins = new vismodule::UInt64[DEFAULT_NBINS * tf_number];
     tmp_o_bins = new vismodule::UInt64[DEFAULT_NBINS * tf_number];
-    
-    for ( size_t i = 0; i < (DEFAULT_NBINS * tf_number); i++ )
-    {
-        tmp_c_bins[i] = 0;
-        tmp_o_bins[i] = 0;
-    }
-    */
+    std::fill_n( tmp_c_bins, DEFAULT_NBINS * tf_number, 0 );
+    std::fill_n( tmp_o_bins, DEFAULT_NBINS * tf_number, 0 );
 
     vismodule::PointObject* vismodule_point_object = new vismodule::PointObject;
 
@@ -566,7 +372,6 @@ void GenerateParticleIS(
     point_object->setColors( kvs_colors );
     point_object->setNormals( kvs_normals );
 
-    /* 一旦保留
     // get histgram start
     int c_count = 0;
     for ( int tf = 0; tf < tf_number; tf++ )
@@ -591,13 +396,30 @@ void GenerateParticleIS(
     
     vr = pm.particleHistoryFile().variableRange();
     vr.show();
-    */
+
+    // histgramの格納
+    particle_property.color_histgram.clear();
+    particle_property.opacity_histgram.clear();
+    particle_property.color_histgram.resize( DEFAULT_NBINS * tf_number );
+    particle_property.opacity_histgram.resize( DEFAULT_NBINS * tf_number );
+    std::memcpy( particle_property.color_histgram.data(), tmp_c_bins, DEFAULT_NBINS * tf_number * sizeof( unsigned long long ) );
+    std::memcpy( particle_property.opacity_histgram.data(), tmp_o_bins, DEFAULT_NBINS * tf_number * sizeof( unsigned long long ) );
+
+    // min maxの格納
+    for( int i = 0; i < tf_number; i++ )
+    {
+        std::stringstream ss; 
+        ss << (i + 1); 
+        const std::string idxbuf = ss.str();
+        particle_property.color_min_vec[i]   = vr.min( "t" + idxbuf + "_var_c" );
+        particle_property.color_max_vec[i]   = vr.max( "t" + idxbuf + "_var_c" );
+        particle_property.opacity_min_vec[i] = vr.min( "t" + idxbuf + "_var_o" );
+        particle_property.opacity_max_vec[i] = vr.max( "t" + idxbuf + "_var_o" );
+    }
 
     delete vismodule_point_object;
-    /* 一旦保留
     delete[] tmp_c_bins;
     delete[] tmp_o_bins;
-    */
 }
 
 void generate_volume(

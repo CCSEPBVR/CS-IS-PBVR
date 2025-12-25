@@ -123,7 +123,7 @@ private:
             info.object = pointObject.release();
             break;
         case ObjectInfoExtractor::InsituServerPointObject:
-            GenerateParticleIS( requestTimeStep, *m_multi_volume_property_list, pointObject );
+            GenerateParticleIS( requestTimeStep, *m_particle_property, *m_multi_volume_property_list, pointObject );
             info.object = pointObject.release();
             break;
         case ObjectInfoExtractor::ServerGlyphObject:

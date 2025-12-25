@@ -1,89 +1,15 @@
 #ifndef VIS_MODULE_GENERATE_STEP_H_INCLDE
 #define VIS_MODULE_GENERATE_STEP_H_INCLDE
 
-#if 0
-    #include "ParticleTransferServer.h"
-    #include "ParticleTransferProtocol.h"
-
-    #include <vismodule/PointObject>
-    #include <vismodule/CommandLine>
-    #include <vismodule/Camera>
-    #include <vismodule/TransferFunction>
-    #include <vismodule/Matrix33>
-    #include <vismodule/RotationMatrix33>
-
-    #include <vismodule/timer_simple>
-
-    #include <vismodule/Connect>
-    #include <vismodule/CS_PointObjectGenerator>
-
-    #include <vismodule/AVSField>
-    #include <vismodule/Timer>
-    #include <vismodule/KVSMLObjectPointWriter>
-    #include <vismodule/TransferFunctionProperty>
-    #ifndef CPU_VER
-    #include "mpi.h"
-    #endif
-
-    #include <cassert>
-    #include <signal.h> /* 140319 for client stop by Ctrl+c */
-    #include <sys/stat.h>
-    #if (defined(VIS_MODULE_PLATFORM_LINUX) || defined(VIS_MODULE_PLATFORM_MACOSX))
-    #include <execinfo.h>
-    #endif
-    #include <vismodule/File>
-
-    #include <vismodule/ExtendedTransferFunction>
-    #include <vismodule/TransferFunctionSynthesizerCreator>
-    #include "VariableRange.h"
-
-    #include <vismodule/timer_simple>
-
-    #include <vismodule/Compiler>
-    #ifdef VIS_MODULE_COMPILER_VC
-    #include <direct.h>
-    #define mkdir( dir, mode ) _mkdir( dir )
-    #endif
-
-    #include <vismodule/GlyphSeedGenerator>
-
-    //plot over line
-    #include <vismodule/PlotOverLineGenerator>
-
-    #include <vismodule/Calculate>
-    #include <vismodule/SignalHandler>
-    #include <vismodule/Math>
-    //IS
-    #include <vismodule/ParticleMonitor>
-    #include <vismodule/ParameterFileWriter>
-    #include <vismodule/ParameterFileReader>
-    #include <vismodule/SetDefaultTransferFunction>
-    #include <DaemonAndSampler/Daemon/Timer.h>
-#endif
-
 #include <vismodule/ParticleProperty>
 #include <vismodule/MultiVolumeProperty>
 #include <vismodule/AnyValueArray>
 #include <vismodule/VolumeObjectBase>
 #include <vismodule/PointObject>
-#include <vismodule/JobDispatcher>
-#include <vismodule/CellByCellParticleGenerator>
 #include <vismodule/TransferFunctionSynthesizer>
+#include <vismodule/CellByCellParticleGenerator>
 
 #include <kvs/PointObject>
-
-#ifndef CPU_VER
-#include "mpi.h"
-#include <vismodule/JobCollector>
-#endif
-
-// 初回通信用 デフォルトパラメータを設定する
-bool SetDefaultParticleParameterCS(
-    const std::string& volume_data_file_name,
-    const std::string& transfer_function_file_name,
-    ParticleProperty& particle_property,
-    MultiVolumePropertyList& mvpl
-);
 
 void GenerateParticleCS(
     std::string& file_path,
@@ -91,23 +17,13 @@ void GenerateParticleCS(
     ParticleProperty& particle_property,
     MultiVolumePropertyList& mvpl,
     std::unique_ptr<kvs::PointObject>& point_object
-    // jpv::ParticleTransferServer pts,
-    // jpv::ServerMode server_mode,
-    // jpv::InitializeParameter init_param
-);
-
-void SetDefaultParticleParameterIS(
-    ParticleProperty& particle_property,
-    MultiVolumePropertyList& mvpl
 );
 
 void GenerateParticleIS(
     const int time_step,
+    ParticleProperty& particle_property,
     MultiVolumePropertyList& mvpl,
     std::unique_ptr<kvs::PointObject>& point_object
-    // jpv::ParticleTransferServer pts,
-    // jpv::ServerMode server_mode,
-    // jpv::InitializeParameter init_param
 );
 
 void generate_volume(

@@ -27,14 +27,17 @@ public:
     void setParticleParameter( ParticleProperty& particle_property );
     void setGlyphParameter( GlyphProperty& glyph_property );
     void setPlotOverLineParameter( PlotOverLineProperty& pol_property );
+
     void readParticleParameterFile( const char* fname );
     void readGlyphParameterFile( const char* fname );
     void readPlotOverLineParameterFile( const char* fname );
+
+    void setNameListFile( const NameListFile& nameListFile );
+    const NameListFile& getNameListFile() const;
+
     std::vector<int> getTableInt( std::string table_string );
     std::vector<float> getTableFloat( std::string table_string );
     std::vector<std::string> getTableString( std::string table_string );
-    void setNameListFile( const NameListFile& nameListFile );
-    const NameListFile& getNameListFile() const;
 };
 
 #endif

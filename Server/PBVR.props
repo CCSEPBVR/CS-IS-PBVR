@@ -8,8 +8,8 @@
       <AdditionalIncludeDirectories>$(SolutionDir)App;$(SolutionDir)Utils;$(SolutionDir)FunctionParser;$(SolutionDir)VisModule;$(SolutionDir)..\Shared;$(KVS_DIR)\include;$(KVS_GLUT_DIR)\include\GL;$(VCPKG_ROOT)\installed\x64-windows-static\include</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <DisableSpecificWarnings>4996</DisableSpecificWarnings>
-      <PreprocessorDefinitions>CPU_VER;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <DisableSpecificWarnings>4996;4305;4267;4101;4244</DisableSpecificWarnings>
+      <PreprocessorDefinitions>CPU_VER;NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>$(SolutionDir)$(Platform)\$(Configuration);$(KVS_DIR)\lib;$(KVS_GLUT_DIR)\lib;$(VCPKG_ROOT)\installed\x64-windows-static\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>

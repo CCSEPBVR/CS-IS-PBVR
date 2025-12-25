@@ -20,13 +20,11 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="App\Server.h" />
-    <ClInclude Include="App\ServerWIP.h" />
     <ClInclude Include="Utils\Worker.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="App\main.cpp" />
     <ClCompile Include="App\Server.cpp" />
-    <ClCompile Include="App\ServerWIP.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>

@@ -185,10 +185,8 @@ void ParameterFileReader::setParticleParameter( ParticleProperty& particle_prope
 
     particle_property.m_transfunc_array.clear();
     particle_property.m_transfunc_array.resize( tf_number );
-    // param.m_named_transfunc_array.clear();
-    // param.m_named_transfunc_array.resize( tf_number );
-    // param.m_voleqn.clear();
-    // param.m_voleqn.resize( tf_number );
+    // particle_property.m_voleqn.clear();
+    // particle_property.m_voleqn.resize( tf_number );
     
     for ( size_t n = 0; n < tf_number; n++ )
     {
@@ -201,8 +199,8 @@ void ParameterFileReader::setParticleParameter( ParticleProperty& particle_prope
         f_name << "_F" << n + 1 << "_VAR_";
 
         const std::string tag_base = ss.str();
-        // param.m_named_transfunc_array[n].setResolution( resolution );
-        // param.m_named_transfunc_array[n].m_name = s_name.str();
+        particle_property.m_transfunc_array[n].m_resolution = resolution;
+        particle_property.m_transfunc_array[n].m_name = s_name.str();
 
         const std::string color_variable  = m_name_list_file.getValue<std::string>( tag_base + "VAR_C" );
         const std::string opacity_varible = m_name_list_file.getValue<std::string>( tag_base + "VAR_O" );
@@ -213,14 +211,12 @@ void ParameterFileReader::setParticleParameter( ParticleProperty& particle_prope
         std::string s_color               = m_name_list_file.getValue<std::string>( tag_base + "TABLE_C" );
         std::string s_opacity             = m_name_list_file.getValue<std::string>( tag_base + "TABLE_O" );
 
-        /*
-        param.m_named_transfunc_array[n].m_color_variable       = color_variable;
-        param.m_named_transfunc_array[n].m_opacity_variable     = opacity_varible;
-        param.m_named_transfunc_array[n].m_color_variable_min   = color_min;
-        param.m_named_transfunc_array[n].m_color_variable_max   = color_max;
-        param.m_named_transfunc_array[n].m_opacity_variable_min = opacity_min;
-        param.m_named_transfunc_array[n].m_opacity_variable_max = opacity_max;
-        */
+        particle_property.m_transfunc_array[n].m_color_variable       = color_variable;
+        particle_property.m_transfunc_array[n].m_opacity_variable     = opacity_varible;
+        particle_property.m_transfunc_array[n].m_color_variable_min   = color_min;
+        particle_property.m_transfunc_array[n].m_color_variable_max   = color_max;
+        particle_property.m_transfunc_array[n].m_opacity_variable_min = opacity_min;
+        particle_property.m_transfunc_array[n].m_opacity_variable_max = opacity_max;
 
         std::replace( s_color.begin(), s_color.end(), ',', ' ' );
         std::replace( s_opacity.begin(), s_opacity.end(), ',', ' ' );
@@ -253,17 +249,13 @@ void ParameterFileReader::setParticleParameter( ParticleProperty& particle_prope
 
         particle_property.m_transfunc_array[n].setColorMap( color_map );
         particle_property.m_transfunc_array[n].setOpacityMap( opacity_map );
-        // param.m_named_transfunc_array[n].setColorMap( color_map );
-        // param.m_named_transfunc_array[n].setOpacityMap( opacity_map );
         particle_property.m_transfunc_array[n].setColorRange( color_min, color_max );
         particle_property.m_transfunc_array[n].setOpacityRange( opacity_min, opacity_max );
-        // param.m_named_transfunc_array[n].setColorRange( color_min, color_max );
-        // param.m_named_transfunc_array[n].setOpacityRange( opacity_min, opacity_max );
 
-        // param.m_named_transfunc_array[n].m_selection = NamedTransferFunctionParameter::SelectTransferFunction;
+        // particle_property.m_transfunc_array[n].m_selection = NamedTransferFunctionParameter::SelectTransferFunction;
 
-        // param.m_voleqn[n].m_name     = f_name.str() + "C";
-        // param.m_voleqn[n].m_equation = color_variable;
+        // particle_property.m_voleqn[n].m_name     = f_name.str() + "C";
+        // particle_property.m_voleqn[n].m_equation = color_variable;
     }
 
     std::string equation;

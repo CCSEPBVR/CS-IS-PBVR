@@ -1,15 +1,17 @@
 #include <vismodule/InitialStep>
+#include <vismodule/Calculate>
+#include <vismodule/ParticleMonitor>
+#include <vismodule/ParameterFileReader>
+#include <vismodule/JobDispatcher>
+#include <vismodule/PointObjectGenerator>
+#include <vismodule/GenerateParticle>
 
-void initial_step(
-    Argument &param,
-    MultiVolumePropertyList& mvpl,
-    bool &nan_error,
-#ifndef CPU_VER
-    JobCollector& jc,
-#endif
-    JobDispatcher& jd,
-    jpv::ParticleTransferServer pts,
-    jpv::ServerMode server_mode
+// 初回通信用 デフォルトパラメータを設定する(CS)
+bool SetDefaultParticleParameterCS(
+    const std::string& volume_data_file_name,
+    const std::string& transfer_function_file_name,
+    ParticleProperty& particle_property,
+    MultiVolumePropertyList& mvpl
 )
 {
     int rank;
@@ -21,486 +23,389 @@ void initial_step(
     rank = 0;
 	mpi_size = 1;
 #endif
+
+    particle_property.m_level_index              = 1;
+    particle_property.m_repeat_level             = 4;
+    particle_property.m_sampling_method          = 'h';
+    particle_property.m_particle_data_size_limit = 20;
+    particle_property.m_particle_limit           = 10000000;
+    particle_property.m_particle_density         = 1;
+    particle_property.m_latency_threshold        = -1.0;
+    particle_property.m_job_id_pack_size         = 1;
+
+    mvpl.searchFile( volume_data_file_name );
+
+    if ( mvpl.m_list.size() <= 0 )
+    {
+        if ( rank == 0 )
+        {
+            std::cerr << "Error: pfifile doesn't exist(rank:" << rank << ")" << std::endl;
+        }
+        return false;
+    }
+
+    particle_property.m_sampling_step  = CalculateSamplingStep( mvpl );
+    particle_property.m_subpixel_level = CalculateSubpixelLevel( particle_property, mvpl, *particle_property.m_camera );
+
+    // ユーザーが伝達関数を指定している場合
+    if ( transfer_function_file_name != "" )
+    {
+        std::cout << "user define parameter " << std::endl;
+        std::cout << "ERROR: user define parameter is not supported at this time." << std::endl;
+
+        // 伝達関数ファイルから伝達関数を設定する処理の実装する, クライアントにサンプルがあるはず
+
+        /*
+        transfunc_creator.setProtocol( clntMes );
+        setClientTransferFunctionToArgument( &particle_property, clntMes );
+        */
+        return false;
+    }
+    // ユーザーが伝達関数を指定していない場合
+    else
+    {
+        const int tf_number     = mvpl.m_total_number_ingredients;
+        const int TF_resolution = 256;
+
+        std::cout << "default parameter " << std::endl;
+        
+        particle_property.m_transfunc_array.clear();
+        particle_property.m_transfunc_array.resize( tf_number );
+ 
+        // particle_property.m_voleqn.clear();
+        // particle_property.m_voleqn.resize( tf_number );
+
+        particle_property.m_color_transfer_function_synthesis   = "C1"; 
+        particle_property.m_opacity_transfer_function_synthesis = "O1"; 
+
+        // set defalut opacity & color  parameter
+        std::vector<float> o_table ={0, 0.00392157, 0.00784314, 0.0117647, 0.0156863, 0.0196078, 0.0235294, 0.027451, 0.0313726, 0.0352941, 0.0392157, 0.0431373, 0.0470588, 0.0509804, 0.054902, 0.0588235, 0.0627451, 0.0666667, 0.0705882, 0.0745098, 0.0784314, 0.0823529, 0.0862745, 0.0901961, 0.0941177, 0.0980392, 0.101961, 0.105882, 0.109804, 0.113725, 0.117647, 0.121569, 0.12549, 0.129412, 0.133333, 0.137255, 0.141176, 0.145098, 0.14902, 0.152941, 0.156863, 0.160784, 0.164706, 0.168627, 0.172549, 0.176471, 0.180392, 0.184314, 0.188235, 0.192157, 0.196078, 0.2, 0.203922, 0.207843, 0.211765, 0.215686, 0.219608, 0.223529, 0.227451, 0.231373, 0.235294, 0.239216, 0.243137, 0.247059, 0.25098, 0.254902, 0.258824, 0.262745, 0.266667, 0.270588, 0.27451, 0.278431, 0.282353, 0.286275, 0.290196, 0.294118, 0.298039, 0.301961, 0.305882, 0.309804, 0.313726, 0.317647, 0.321569, 0.32549, 0.329412, 0.333333, 0.337255, 0.341176, 0.345098, 0.34902, 0.352941, 0.356863, 0.360784, 0.364706, 0.368627, 0.372549, 0.376471, 0.380392, 0.384314, 0.388235, 0.392157, 0.396078, 0.4, 0.403922, 0.407843, 0.411765, 0.415686, 0.419608, 0.423529, 0.427451, 0.431373, 0.435294, 0.439216, 0.443137, 0.447059, 0.45098, 0.454902, 0.458824, 0.462745, 0.466667, 0.470588, 0.47451, 0.478431, 0.482353, 0.486275, 0.490196, 0.494118, 0.498039, 0.501961, 0.505882, 0.509804, 0.513726, 0.517647, 0.521569, 0.52549, 0.529412, 0.533333, 0.537255, 0.541176, 0.545098, 0.54902, 0.552941, 0.556863, 0.560784, 0.564706, 0.568627, 0.572549, 0.576471, 0.580392, 0.584314, 0.588235, 0.592157, 0.596078, 0.6, 0.603922, 0.607843, 0.611765, 0.615686, 0.619608, 0.623529, 0.627451, 0.631373, 0.635294, 0.639216, 0.643137, 0.647059, 0.65098, 0.654902, 0.658824, 0.662745, 0.666667, 0.670588, 0.67451, 0.678431, 0.682353, 0.686275, 0.690196, 0.694118, 0.698039, 0.701961, 0.705882, 0.709804, 0.713726, 0.717647, 0.721569, 0.72549, 0.729412, 0.733333, 0.737255, 0.741176, 0.745098, 0.74902, 0.752941, 0.756863, 0.760784, 0.764706, 0.768628, 0.772549, 0.776471, 0.780392, 0.784314, 0.788235, 0.792157, 0.796079, 0.8, 0.803922, 0.807843, 0.811765, 0.815686, 0.819608, 0.823529, 0.827451, 0.831373, 0.835294, 0.839216, 0.843137, 0.847059, 0.85098, 0.854902, 0.858824, 0.862745, 0.866667, 0.870588, 0.87451, 0.878431, 0.882353, 0.886275, 0.890196, 0.894118, 0.898039, 0.901961, 0.905882, 0.909804, 0.913726, 0.917647, 0.921569, 0.92549, 0.929412, 0.933333, 0.937255, 0.941177, 0.945098, 0.94902, 0.952941, 0.956863, 0.960784, 0.964706, 0.968628, 0.972549, 0.976471, 0.980392, 0.984314, 0.988235, 0.992157, 0.996078, 1};
+        std::vector<vismodule::UInt8> c_table = {5,48,97,6,50,100,7,52,102,8,54,105,9,56,108,10,58,111,11,60,114,12,62,116,14,64,119,15,66,122,16,68,125,17,70,128,18,72,131,19,74,134,20,76,136,21,78,139,22,80,142,23,83,145,24,85,148,25,87,151,27,89,154,28,91,157,29,93,160,30,95,163,31,98,166,32,100,169,33,102,172,35,104,173,37,105,174,38,107,175,40,109,176,41,111,177,43,113,178,45,114,178,46,116,179,47,118,180,49,120,181,50,121,182,51,123,183,53,125,184,54,127,185,55,129,186,57,130,187,58,132,188,59,134,189,60,136,189,61,138,190,63,140,191,64,141,192,65,143,193,66,145,194,67,147,195,71,149,196,74,151,197,78,153,198,81,154,199,85,156,200,88,158,201,91,160,202,95,162,203,98,164,204,101,166,205,104,168,206,107,170,207,110,172,209,113,174,210,116,175,211,118,177,212,121,179,213,124,181,214,127,183,215,130,185,216,132,187,217,135,189,218,138,191,219,141,193,220,143,195,221,146,197,222,149,198,223,151,200,223,154,201,224,157,202,225,159,203,226,162,205,226,164,206,227,167,207,228,169,208,228,172,210,229,174,211,230,177,212,231,179,214,231,182,215,232,184,216,233,187,217,234,189,219,234,192,220,235,194,221,236,197,223,236,199,224,237,202,225,238,204,226,239,207,228,239,209,229,240,210,230,240,212,230,241,213,231,241,215,232,241,216,232,241,218,233,242,219,234,242,221,235,242,222,235,242,224,236,243,225,237,243,227,237,243,228,238,244,230,239,244,231,239,244,233,240,244,234,241,245,235,241,245,237,242,245,238,243,245,240,244,246,241,244,246,243,245,246,244,246,246,246,246,247,247,247,247,247,246,245,248,245,243,248,244,241,248,243,240,249,242,238,249,241,236,249,239,234,250,238,232,250,237,230,250,236,228,250,235,227,251,234,225,251,233,223,251,232,221,251,231,219,251,230,217,252,229,215,252,228,214,252,227,212,252,225,210,252,224,208,252,223,206,253,222,204,253,221,203,253,220,201,253,219,199,253,217,196,253,215,193,252,212,191,252,210,188,252,208,185,252,206,182,252,204,179,251,202,177,251,200,174,251,197,171,250,195,168,250,193,165,250,191,163,249,189,160,249,187,157,248,184,154,248,182,152,248,180,149,247,178,146,247,176,143,246,174,141,246,171,138,245,169,135,245,167,133,244,165,130,243,162,128,242,160,126,241,157,124,240,155,122,239,152,119,238,149,117,237,147,115,235,144,113,234,142,111,233,139,109,232,136,107,231,134,105,230,131,103,229,128,101,227,126,99,226,123,97,225,120,95,224,118,93,223,115,91,221,112,89,220,110,87,219,107,85,218,104,83,217,102,81,215,99,79,214,96,77,213,94,76,211,91,74,210,89,73,208,86,71,207,84,70,206,82,68,204,79,67,203,77,66,201,74,64,200,72,63,198,69,62,197,66,60,196,64,59,194,61,57,193,58,56,191,55,55,190,53,53,188,50,52,187,46,51,185,43,49,184,40,48,182,36,47,181,33,46,179,29,44,178,24,43,175,23,43,172,22,42,169,21,42,166,20,41,162,19,41,159,18,40,156,17,40,153,15,39,150,14,39,147,13,38,144,12,38,141,11,37,138,10,37,135,9,36,132,8,36,129,7,35,126,6,35,123,5,34,120,4,34,117,3,33,115,2,33,112,2,33,109,1,32,106,1,32,103,0,31};
+
+        vismodule::ValueArray<vismodule::UInt8> cc_table(c_table);
+        vismodule::ValueArray<float> oo_table(o_table);
+
+        EquationToken eq;
+        std::vector<EquationToken> var_o;
+        std::vector<EquationToken> var_c;
+
+        eq = particle_property.m_transfunc_synthesizer->convert_token( "a1" );
+        particle_property.m_transfunc_synthesizer->setOpacityFunction( eq );
+
+        eq = particle_property.m_transfunc_synthesizer->convert_token( "c1" );
+        particle_property.m_transfunc_synthesizer->setColorFunction( eq );
+
+        for ( size_t i = 0; i < tf_number; i++ )
+        {
+            std::stringstream cc, qq, tt, ff;
+            cc << "C"  << i + 1;
+            qq << "q"  << i + 1;
+            tt << "t"  << i + 1;
+            ff << "_F" << i + 1 << "_VAR_";
+
+            particle_property.m_transfunc_array[i].m_name                 = tt.str();
+            particle_property.m_transfunc_array[i].m_color_variable       = qq.str();
+            particle_property.m_transfunc_array[i].m_opacity_variable     = qq.str();
+
+            particle_property.m_transfunc_array[i].m_color_variable_min   = 0;
+            particle_property.m_transfunc_array[i].m_color_variable_max   = 1; 
+            particle_property.m_transfunc_array[i].m_opacity_variable_min = 0;
+            particle_property.m_transfunc_array[i].m_opacity_variable_max = 1; 
+            particle_property.m_transfunc_array[i].m_resolution           = TF_resolution;
+            particle_property.m_transfunc_array[i].m_equation_red         = ""; 
+            particle_property.m_transfunc_array[i].m_equation_green       = ""; 
+            particle_property.m_transfunc_array[i].m_equation_blue        = ""; 
+            particle_property.m_transfunc_array[i].m_equation_opacity     = "";
+
+            vismodule::ColorMap color_map( cc_table    , 0, 1 );
+            vismodule::OpacityMap opacity_map( oo_table, 0, 1 );
+        
+            // particle_property.m_transfunc_array[i].m_selection = NamedTransferFunctionParameter::SelectTransferFunction;
+
+            // particle_property.m_voleqn[i].m_name     = ff.str() + "C";
+            // particle_property.m_voleqn[i].m_equation = qq.str();
+
+            var_o.push_back( particle_property.m_transfunc_synthesizer->convert_token( qq.str() ) );
+            var_c.push_back( particle_property.m_transfunc_synthesizer->convert_token( qq.str() ) );
+        }
+
+        particle_property.m_transfunc_synthesizer->setOpacityVariable( var_o );
+        particle_property.m_transfunc_synthesizer->setColorVariable( var_c );
+    }
+
+    return true;
+}
+
+void InitialStepCS(
+    std::string& file_path,
+    const int time_step, 
+    ParticleProperty& particle_property,
+    MultiVolumePropertyList& mvpl,
+    std::unique_ptr<kvs::PointObject>& point_object
+)
+{
+    int rank;
+    int mpi_size;
+#ifndef CPU_VER
+    MPI_Comm_rank( MPI_COMM_WORLD, &rank );
+    MPI_Comm_size( MPI_COMM_WORLD, &mpi_size );
+#else
+    rank = 0;
+	mpi_size = 1;
+#endif
+
     int st, vl, wid = 0;
-    jpv::ParticleTransferServerMessage servMes;
-    std::vector<vismodule::CS_PointObjectGenerator> point_generator_lst;
     int tf_number;
-    VariableRange vr; // jobcollectorで使用、削除予定
-    ParticleMonitor pm;
+    VariableRange vr; // jobcollectorで使用
+    JobDispatcher jd;
+    bool nan_error = false;
+    char tmp_sampling_method;
 
-    if ( server_mode == jpv::ServerMode::CS )
-    {
-        tf_number = param.m_transfunc_array.size();
-    } // server_mode == jpv::ServerMode::CS
-    else // server_mode == jpv::ServerMode::IS
-    {
-        pm.check();
+#ifndef CPU_VER
+    JobCollector jc( &jd );
+#endif
 
-        if( pm.stepExisted() )
-        {
-            pm.setTimeStep_particle( pm.particleStatusFile().getLatestTimeStep() );
-        }
-        else
-        {
-            pm.setTimeStep_particle(0);
-        }
-        pm.readParticleHistoryFile();
-
-        tf_number = pm.particleHistoryFile().colorHistogramArray().size();
-    } // server_mode == jpv::ServerMode::IS
-
-    jd.initialize(
-        mvpl.m_total_start_steps,
-        mvpl.m_total_start_steps,
-        mvpl.m_total_number_subvolumes,
-        mvpl.m_total_min_subvolume_coord,
-        mvpl.m_total_max_subvolume_coord,
-        param.m_latency_threshold,
-        param.m_job_id_pack_size
-    );
-
-    if( rank == 0 )
-    {
-        SetServerMessageParameter( param, mvpl, servMes );
-    }
-
-    if ( server_mode == jpv::ServerMode::CS )
-    {
-        point_generator_lst.clear();
-        point_generator_lst.resize(mvpl.m_list.size());
-    }
-
-    int c_bins_size = 0;
-    int o_bins_size = 0;
-    for ( int tf = 0; tf < tf_number; tf++ )
-    {
-        c_bins_size += DEFAULT_NBINS;
-        o_bins_size += DEFAULT_NBINS;
-    }
+    tf_number = particle_property.m_transfunc_array.size();
 
     vismodule::UInt64* tmp_c_bins;
     vismodule::UInt64* tmp_o_bins;
-    tmp_c_bins = new vismodule::UInt64[c_bins_size];
-    tmp_o_bins = new vismodule::UInt64[o_bins_size];
-
-    for ( int tf = 0; tf < c_bins_size; tf++ )
-    {
-        tmp_c_bins[tf] = 0;
-    }
-
-    for ( int tf = 0; tf < o_bins_size; tf++ )
-    {
-        tmp_o_bins[tf] = 0;
-    }
-
     float* tmp_max;
     float* tmp_min;
-    tmp_max = new float[tf_number * 2];
-    tmp_min = new float[tf_number * 2];
 
-    for ( int i = 0; i < ( tf_number * 2 ); i++ )
-    {
-        tmp_max[ i ] = FLT_MIN;
-        tmp_min[ i ] = FLT_MAX;
-    }
+    tmp_c_bins = new vismodule::UInt64[DEFAULT_NBINS * tf_number];
+    tmp_o_bins = new vismodule::UInt64[DEFAULT_NBINS * tf_number];
+    std::fill_n( tmp_c_bins, DEFAULT_NBINS * tf_number, 0 );
+    std::fill_n( tmp_o_bins, DEFAULT_NBINS * tf_number, 0 );
+
+    tmp_max = new float[tf_number * 2]; // color, opacity
+    tmp_min = new float[tf_number * 2]; // color, opacity
+    std::fill_n( tmp_max, tf_number * 2, FLT_MIN );
+    std::fill_n( tmp_min, tf_number * 2, FLT_MAX );
+
+    // サンプリングメソッド
+    tmp_sampling_method = particle_property.m_sampling_method;
+    particle_property.m_sampling_method = 'h';
+
+    jd.initialize(
+        time_step,
+        time_step,
+        mvpl.m_total_number_subvolumes,
+        mvpl.m_total_min_subvolume_coord,
+        mvpl.m_total_max_subvolume_coord,
+        particle_property.m_latency_threshold,
+        particle_property.m_job_id_pack_size
+    );
 
     while ( jd.dispatchNext( wid, &st, &vl ) )
     {
-        if ( server_mode == jpv::ServerMode::CS )
+        vismodule::PointObject* recv_obj = new vismodule::PointObject;
+        vismodule::PointObject* send_obj = nullptr;
+
+        // make point object and histgram and range
+        if ( ( rank > 0 ) || ( mpi_size == 1 ) )
         {
-            vismodule::PointObject* tmp_obj = NULL;
-            vismodule::PointObject* originalObject = new vismodule::PointObject;
+            int xvl, fidx;
+            fidx = mvpl.getFileIndex( vl, &xvl );
+            MultiVolumeProperty& mvp = mvpl.m_list[fidx];
+            mvp.setFilePath( file_path, st, xvl );
 
-            // make point object and histgram and range
-            if ( ( rank > 0 ) || ( mpi_size == 1 ) )
+            // generate point object start
+            try
             {
-                int xvl, fidx;
-                fidx = mvpl.getFileIndex( vl, &xvl );
-                MultiVolumeProperty& mvp = mvpl.m_list[fidx];
-                mvp.setFilePath( param.m_input_data, st, xvl );
-                point_generator_lst[fidx].setFilterInfo( &mvp );
-                param.m_subvolume_id = xvl;
+                vismodule::VolumeObjectBase* volume = nullptr;
+                vismodule::PointObjectGenerator point_object_generator;
 
-                point_generator_lst[fidx].setCoordSynthStr(
-                    param.m_x_synthesis,
-                    param.m_y_synthesis,
-                    param.m_z_synthesis
-                );
-
-                // generate point object start            
-                try
+                // generate volume object
+                if ( mvp.m_file_type == 1 || mvp.m_file_type == 2 ) // filetype: gathered subvolume or gathered timestep
                 {
-                    if ( mvp.m_file_type == 1 || mvp.m_file_type == 2 ) // filetype: gathered subvolume or gathered timestep
-                    {
-                        tmp_obj = point_generator_lst[fidx].run( param, *param.m_camera, st, xvl);
-                    }
-                    else if ( mvp.m_file_type == 3 || mvp.m_file_type == 4 )
-                    {
-                        tmp_obj = point_generator_lst[fidx].run( param, *param.m_camera, st, xvl);
-                    }
-                    else     // filetype: kvsml
-                    {
-                        tmp_obj = point_generator_lst[fidx].run( param, *param.m_camera, st );
-                    }
+                    generate_volume( file_path, mvp, st, xvl, volume );
                 }
-                catch ( const std::runtime_error& e )
+                else if ( mvp.m_file_type == 3 || mvp.m_file_type == 4 )
                 {
-#ifdef _DEBUG
-                    // debug by @hira
-                    printf("[Exception] %s[%d] :: %s \n", __FILE__, __LINE__, e.what());
+                    generate_volume( file_path, mvp, st, xvl, volume );
+                }
+                else // filetype: kvsml
+                {
+                    generate_volume( file_path, mvp, volume );
+                }
+
+                if ( !volume )
+                {
+                    throw std::runtime_error("Failed to generate volume object.");
+                }
+
+                std::unique_ptr<std::unique_ptr<Type[]>[]> values;
+                int nvariables = 0;
+                int ncoords = 0;
+                vismodule::VolumeObjectBase::VolumeType voltype = volume->volumeType();
+
+                if( voltype == vismodule::VolumeObjectBase::VolumeType::Unstructured )
+                {
+                    domain_parameters_unstruct dom;
+                    std::unique_ptr<float[]> coordinates;
+                    std::unique_ptr<unsigned int[]> connections;
+                    int ncells = 0;
+                    vismodule::VolumeObjectBase::CellType celltype;
+
+                    store_volume_in_variables_array_unstruct( volume, dom, values, nvariables, coordinates, ncoords, connections, ncells, celltype );
+
+                    float max_opacity;
+                    float max_density;
+                    float sampling_volume_inverse;
+                        
+                    vismodule::CellByCellParticleGenerator::CalculateDensityConstaint(
+                        *particle_property.m_camera,
+                        *volume,
+                        static_cast<float>( particle_property.m_subpixel_level ),
+                        particle_property.m_sampling_step,
+                        &sampling_volume_inverse,
+                        &max_opacity,
+                        &max_density
+                    );
+
+                    particle_property.m_transfunc_synthesizer->setMaxOpacity( max_opacity );
+                    particle_property.m_transfunc_synthesizer->setMaxDensity( max_density );
+                    particle_property.m_transfunc_synthesizer->setSamplingVolumeInverse( sampling_volume_inverse );
+
+                    std::vector<Type*> raw_pointers_vector( nvariables );
+                    for ( size_t i = 0; i < nvariables; ++i )
+                    {
+                        raw_pointers_vector[i] = values.get()[i].get();
+                    }
+
+                    // generate particle
+                    send_obj = point_object_generator.GenerateParticleUnstruct( particle_property, dom, raw_pointers_vector.data(), nvariables, coordinates.get(), ncoords, connections.get(), ncells, celltype );
+                }
+                else // ( voltype == vismodule::VolumeObjectBase::VolumeType::Structured )
+                {
+                    domain_parameters_struct dom; 
+
+                    store_volume_in_variables_array_struct( volume, dom, values, nvariables, ncoords );
+
+                    std::vector<Type*> raw_pointers_vector( nvariables );
+                    for ( size_t i = 0; i < nvariables; ++i )
+                    {
+                        raw_pointers_vector[i] = values.get()[i].get();
+                    }                        
+
+                    // generate particle
+                    send_obj = point_object_generator.GenerateParticleStruct( particle_property, dom, raw_pointers_vector.data(), nvariables );
+                }
+
+                delete volume;
+            }
+            catch ( const std::runtime_error& e )
+            {
+#ifdef _DEBUG // debug by @hira
+                printf("[Exception] %s[%d] :: %s \n", __FILE__, __LINE__, e.what());
 #endif
-                    std::cerr << e.what();
-                    nan_error = true;
-                }
-
-                // make histgram start
-                int c_count = 0;
-                for ( int tf = 0; tf < tf_number; tf++ )
-                {
-                    int c_nbins = tmp_obj->getNbins();
-                    for ( int res = 0; res < c_nbins; res++ )
-                    {
-                        tmp_c_bins[ c_count ] += tmp_obj->getCHistogram()[ c_count ];
-                        c_count++;
-                    }
-                }
-                int o_count = 0;
-                for ( int tf = 0; tf < tf_number; tf++ )
-                {
-                    int o_nbins = tmp_obj->getNbins();
-                    for ( int res = 0; res < o_nbins; res++ )
-                    {
-                        tmp_o_bins[ o_count ] += tmp_obj->getOHistogram()[ o_count ];
-                        o_count++;
-                    }
-                }
-                // make histgram end
-
-                // make variable range start
-                for( int i = 0; i < tf_number; i++ )
-                {
-                    tmp_max[ 2 * i + 1 ] = vismodule::Math::Max( tmp_max[ 2 * i + 1 ], param.m_transfunc_synthesizer->m_c_max[ i ] );
-                    tmp_min[ 2 * i + 1 ] = vismodule::Math::Min( tmp_min[ 2 * i + 1 ], param.m_transfunc_synthesizer->m_c_min[ i ] );
-                    tmp_max[ 2 * i     ] = vismodule::Math::Max( tmp_max[ 2 * i     ], param.m_transfunc_synthesizer->m_o_max[ i ] );
-                    tmp_min[ 2 * i     ] = vismodule::Math::Min( tmp_min[ 2 * i     ], param.m_transfunc_synthesizer->m_o_min[ i ] );
-                }
-                // make variable range end
-
-            } // make point object and histgram and range
-
-#ifndef CPU_VER
-            if ( mpi_size > 1 ) {
-                if ( rank == 0 )
-                {
-                    jc.jobCollect( originalObject, &vr, &nan_error, &wid );
-                }
-                else
-                {
-                    jc.jobCollect( tmp_obj, &vr, &nan_error, &wid );
-                }
+                std::cerr << e.what();
+                nan_error = true;
             }
-#endif
+            // generate point object end
 
-            delete tmp_obj;
-            delete originalObject;
-        } // server_mode == jpv::ServerMode::CS
-        else // server_mode == jpv::ServerMode::IS
-        {
-            int c_count = 0;
-            for ( int tf = 0; tf < tf_number; tf++ )
-            {
-                for ( int res = 0; res < DEFAULT_NBINS; res++ )
-                {
-                    tmp_c_bins[c_count] = pm.particleHistoryFile().colorHistogramArray()[tf][res];
-                    c_count++;
-                }
-            }
+            MakeHistgram( send_obj, tf_number, tmp_c_bins, tmp_o_bins );
+            MakeParticleMinMax( particle_property.m_transfunc_synthesizer, tf_number, tmp_max, tmp_min );
+        } // make point object and histgram and range
 
-            int o_count = 0;
-            for ( int tf = 0; tf < tf_number; tf++ )
-            {
-                for ( int res = 0; res < DEFAULT_NBINS; res++ )
-                {
-                    tmp_o_bins[o_count] = pm.particleHistoryFile().opacityHistogramArray()[tf][res];
-                    o_count++;
-                }
-            }
-
-            vr = pm.particleHistoryFile().variableRange();
-        } // server_mode == jpv::ServerMode::IS
+        delete send_obj;
+        delete recv_obj;
     } // end of while(DispatchNext)
 
 #ifndef CPU_VER
-    if ( mpi_size > 1 ) {
-        MPI_Allreduce( MPI_IN_PLACE, tmp_c_bins, c_bins_size, MPI_UNSIGNED_LONG, MPI_SUM, MPI_COMM_WORLD );
-        MPI_Allreduce( MPI_IN_PLACE, tmp_o_bins, o_bins_size, MPI_UNSIGNED_LONG, MPI_SUM, MPI_COMM_WORLD );
+    if ( mpi_size > 1 )
+    {
+        MPI_Allreduce( MPI_IN_PLACE, tmp_c_bins, ( DEFAULT_NBINS * tf_number ), MPI_UNSIGNED_LONG, MPI_SUM , MPI_COMM_WORLD );
+        MPI_Allreduce( MPI_IN_PLACE, tmp_o_bins, ( DEFAULT_NBINS * tf_number ), MPI_UNSIGNED_LONG, MPI_SUM , MPI_COMM_WORLD );
         MPI_Allreduce( MPI_IN_PLACE, tmp_max, ( tf_number * 2 ), MPI_FLOAT, MPI_MAX, MPI_COMM_WORLD );
         MPI_Allreduce( MPI_IN_PLACE, tmp_min, ( tf_number * 2 ), MPI_FLOAT, MPI_MIN, MPI_COMM_WORLD );
     }
 #endif
 
-    if ( server_mode == jpv::ServerMode::CS )
+    vr = setVariablerange2( tmp_max, tmp_min, ( tf_number * 2 ) );
+    vr.show();
+
+    // histgramの格納
+    particle_property.color_histgram.clear();
+    particle_property.opacity_histgram.clear();
+    particle_property.color_histgram.resize( DEFAULT_NBINS * tf_number );
+    particle_property.opacity_histgram.resize( DEFAULT_NBINS * tf_number );
+    std::memcpy( particle_property.color_histgram.data(), tmp_c_bins, DEFAULT_NBINS * tf_number * sizeof( unsigned long long ) );
+    std::memcpy( particle_property.opacity_histgram.data(), tmp_o_bins, DEFAULT_NBINS * tf_number * sizeof( unsigned long long ) );
+
+    // min maxの格納
+    particle_property.color_min_vec.clear();
+    particle_property.color_max_vec.clear();
+    particle_property.opacity_min_vec.clear();
+    particle_property.opacity_max_vec.clear();
+    particle_property.color_min_vec.resize( tf_number );
+    particle_property.color_max_vec.resize( tf_number );
+    particle_property.opacity_min_vec.resize( tf_number );
+    particle_property.opacity_max_vec.resize( tf_number );
+    for( int i = 0; i < tf_number; i++ )
     {
-        vr = setVariablerange2( tmp_max, tmp_min, ( tf_number * 2 ) );
+        std::stringstream ss; 
+        ss << (i + 1); 
+        const std::string idxbuf = ss.str();
+        particle_property.color_min_vec[i]   = vr.min( "t" + idxbuf + "_var_c" );
+        particle_property.color_max_vec[i]   = vr.max( "t" + idxbuf + "_var_c" );
+        particle_property.opacity_min_vec[i] = vr.min( "t" + idxbuf + "_var_o" );
+        particle_property.opacity_max_vec[i] = vr.max( "t" + idxbuf + "_var_o" );
     }
-
-    if ( rank == 0 ) // send histgram and range
-    {
-        // make histgram server message start
-        servMes.m_number_particle = 0;
-        servMes.m_flag_send_bins = 1;
-        servMes.m_transfer_function_count = tf_number;
-        servMes.m_server_side_variable_range = vr;
-        setParamTransferFunctionToServer( &servMes, &param );
-
-        servMes.m_color_nbins   = new vismodule::UInt64[tf_number];
-        servMes.m_opacity_nbins = new vismodule::UInt64[tf_number];
-        servMes.m_color_bins.resize( tf_number );
-        servMes.m_opacity_bins.resize( tf_number );
-
-        for ( int tf = 0; tf < tf_number; tf++ )
-        {
-            servMes.m_color_nbins[tf] = DEFAULT_NBINS;
-            servMes.m_opacity_nbins[tf] = DEFAULT_NBINS;
-            servMes.m_color_bins[tf]   =  new vismodule::UInt64[ DEFAULT_NBINS ];
-            servMes.m_opacity_bins[tf] =  new vismodule::UInt64[ DEFAULT_NBINS ];
-            for ( int res = 0; res < DEFAULT_NBINS; res++ )
-            {
-                servMes.m_color_bins[tf][res] = 0;
-            }
-            for ( int res = 0; res < DEFAULT_NBINS; res++ )
-            {
-                servMes.m_opacity_bins[tf][res] = 0;
-            }
-        }
-
-        servMes.setColorHistogramBins(                                                     
-                param.m_transfunc_array.size(),
-                DEFAULT_NBINS,
-                tmp_c_bins
-        );
-        servMes.setOpacityHistogramBins(
-                param.m_transfunc_array.size(),
-                DEFAULT_NBINS,
-                tmp_o_bins
-        );
-        // make histgram server message end
-
-        // TEST START 2015.1.14
-        if ( nan_error )
-        {
-        // TEST START 2015.1.14
-            strncpy( servMes.m_header, "JPTP /1.0 899 OK\r\n", 18 );
-            servMes.m_server_status = 1;
-            servMes.m_number_particle = 0;
-            servMes.m_number_glyph = 0 ;
-            servMes.m_flag_send_bins = 1;
-            std::cout << "!!!!!!!!!!!! Send serverStatus = 1 " << std::endl;
-        }
-
-        // send histgram and range server message
-        std::cout << "INFO: send histgram and range server message" << std::endl;
-        servMes.m_message_size = servMes.byteSize();
-        servMes.show();
-        pts.sendMessage( servMes );
-
-        // TEST START 2015.1.14
-        servMes.m_server_status = 0;
-        // TEST END 2015.1.14
-
-        for ( int tf = 0; tf < tf_number; tf++ )
-        {
-            delete[] servMes.m_color_bins[tf];
-            delete[] servMes.m_opacity_bins[tf];
-        }
-
-        delete[] servMes.m_color_nbins;
-        delete[] servMes.m_opacity_nbins;
-    } // send histgram and range
 
     nan_error = false;
 
-    delete[] tmp_c_bins;
-    delete[] tmp_o_bins;
-}
+    particle_property.m_sampling_method = tmp_sampling_method;
 
-#if 0
-void initial_step_worker(
-    Argument &param,
-    MultiVolumePropertyList& mvpl,
-    bool &nan_error,
-#ifndef CPU_VER
-    JobCollector& jc,
-#endif
-    JobDispatcher& jd,
-    TransferFunctionSynthesizerCreator transfunc_creator,
-    int& timer_count
-)
-{
-#ifndef CPU_VER
-    int rank;
-    int mpi_size;
-    MPI_Comm_rank( MPI_COMM_WORLD, &rank );
-    MPI_Comm_size( MPI_COMM_WORLD, &mpi_size );
-#else
-    int rank = 0;
-	int mpi_size = 1;
-#endif
-    jpv::ParticleTransferServerMessage servMes;
-    int st, vl, wid = 0;
-    std::vector<vismodule::CS_PointObjectGenerator> point_generator_lst;
-    VariableRange vr;
-
-    point_generator_lst.clear();
-    point_generator_lst.resize(mvpl.m_list.size());
-    if ( !param.hasOption( "L" ) ) param.m_latency_threshold = -1.0;
-
-    jd.initialize(
-        mvpl.m_total_start_steps,
-        mvpl.m_total_start_steps,
-        mvpl.m_total_number_subvolumes,
-        mvpl.m_total_min_subvolume_coord,
-        mvpl.m_total_max_subvolume_coord,
-        param.m_latency_threshold,
-        param.m_job_id_pack_size
-    );
-
-    param.m_sampling_step = CalculateSamplingStep( mvpl );
-    param.m_subpixel_level = CalculateSubpixelLevel( param, mvpl, *param.m_camera );
-    // param.m_particle_limit_pre = param.m_particle_limit; 削除予定
-    
-    int c_bins_size = 0;
-    int o_bins_size = 0;
-    int c_nbins = DEFAULT_NBINS;
-    int o_nbins = DEFAULT_NBINS;
-    for ( int tf = 0; tf < transfunc_creator.transfunc().size(); tf++ )
-    {
-        c_bins_size += c_nbins;
-        o_bins_size += o_nbins;
-    }
-
-    vismodule::UInt64* tmp_c_bins;
-    vismodule::UInt64* tmp_o_bins;
-    tmp_c_bins = new vismodule::UInt64[c_bins_size];
-    tmp_o_bins = new vismodule::UInt64[o_bins_size];
-
-    float*  tmp_max;
-    float*  tmp_min;
-    tmp_max = new float[transfunc_creator.transfunc().size() * 2]; 
-    tmp_min = new float[transfunc_creator.transfunc().size() * 2]; 
-
-    for ( int tf = 0; tf < (transfunc_creator.transfunc().size() * 2); tf++ )
-    {
-        tmp_max[tf] = FLT_MIN;
-        tmp_min[tf] = FLT_MAX;
-    }
-
-    for ( int tf = 0; tf < c_bins_size; tf++ )
-    {
-        tmp_c_bins[tf] = 0;
-    }
-
-    for ( int tf = 0; tf < o_bins_size; tf++ )
-    {
-        tmp_o_bins[tf] = 0;
-    }
-
-    while ( jd.dispatchNext( wid, &st, &vl ) )
-    {
-        int xvl, fidx;
-        vismodule::PointObject* tmp_obj = NULL;
-        fidx = mvpl.getFileIndex( vl, &xvl );
-        MultiVolumeProperty& mvp = mvpl.m_list[fidx];
-        mvp.setFilePath(param.m_input_data, st, xvl);
-        point_generator_lst[fidx].setFilterInfo( &mvp );
-        point_generator_lst[fidx].setCoordSynthStr( param.m_x_synthesis, param.m_y_synthesis, param.m_z_synthesis );
-        int timeStep = 1;
-
-        try
-        {
-            if ( mvp.m_file_type == 1 || mvp.m_file_type == 2 ) // filetype: gathered subvolume or gathered timestep
-            {
-                tmp_obj = point_generator_lst[fidx].run( param, *param.m_camera, timeStep, st, xvl );
-            }
-            else if ( mvp.m_file_type == 3 || mvp.m_file_type == 4 )
-            {
-                tmp_obj = point_generator_lst[fidx].run( param, *param.m_camera, timeStep, st, xvl);
-            }
-            else     // filetype: kvsml
-            {
-                tmp_obj = point_generator_lst[fidx].run( param, *param.m_camera, timeStep, st );
-            }
-        }
-        catch ( const std::runtime_error& e )
-        {
-#ifdef _DEBUG		// debug by @hira
-            printf("[Exception] %s[%d] :: %s \n", __FILE__, __LINE__, e.what());
-#endif
-            std::cerr << e.what();
-            nan_error = true;
-        }
-#ifndef CPU_VER
-        jc.jobCollect( tmp_obj, &vr, &nan_error, &wid );
-#endif
-        if ( nan_error )
-        {
-            nan_error = false;
-            continue;
-        }
-        
-        int c_count = 0;
-        for ( int tf = 0; tf < transfunc_creator.transfunc().size(); tf++ )
-        {
-            c_nbins = tmp_obj->getNbins();
-            //add by shimomura 2023/06/14
-            tmp_max[2*tf+1] = vismodule::Math::Max( tmp_max[2*tf+1] ,param.m_transfunc_synthesizer-> m_c_max[tf]);
-            tmp_min[2*tf+1] = vismodule::Math::Min( tmp_min[2*tf+1] ,param.m_transfunc_synthesizer-> m_c_min[tf]);
-            for ( int res = 0; res < c_nbins; res++ )
-            {
-                tmp_c_bins[c_count] += tmp_obj->getCHistogram()[ c_count ] ;
-                c_count++;
-            }
-        }
-
-        int o_count = 0;
-        for ( int tf = 0; tf < transfunc_creator.transfunc().size(); tf++ )
-        {
-            o_nbins = tmp_obj->getNbins();
-            //add by shimomura 2023/06/14
-            tmp_max[2*tf] = vismodule::Math::Max( tmp_max[2*tf] ,param.m_transfunc_synthesizer-> m_c_max[tf]);
-            tmp_min[2*tf] = vismodule::Math::Min( tmp_min[2*tf] ,param.m_transfunc_synthesizer-> m_c_min[tf]);
-            for ( int res = 0; res < o_nbins; res++ )
-            {
-                tmp_o_bins[o_count] += tmp_obj->getOHistogram()[ o_count ] ;
-                o_count++;
-            }
-        }
-    } // end of while(DispatchNext)
-#ifndef CPU_VER
-    MPI_Allreduce( MPI_IN_PLACE, tmp_c_bins, c_bins_size, MPI_UNSIGNED_LONG, MPI_SUM , MPI_COMM_WORLD );
-    MPI_Allreduce( MPI_IN_PLACE, tmp_o_bins, o_bins_size, MPI_UNSIGNED_LONG, MPI_SUM , MPI_COMM_WORLD );
-    MPI_Allreduce( MPI_IN_PLACE, tmp_max, (transfunc_creator.transfunc().size() * 2), MPI_FLOAT, MPI_MAX , MPI_COMM_WORLD );
-    MPI_Allreduce( MPI_IN_PLACE, tmp_min, (transfunc_creator.transfunc().size() * 2), MPI_FLOAT, MPI_MIN , MPI_COMM_WORLD );
-#endif
-    delete[] tmp_c_bins;
-    delete[] tmp_o_bins;
-    //add by shimomura 20240603
-    delete[] tmp_max;
     delete[] tmp_min;
-    delete param.m_transfunc_synthesizer;
+    delete[] tmp_max;
+    delete[] tmp_c_bins;
+    delete[] tmp_o_bins;
 }
 
-void initial_step_IS(
-    Argument &param,
-    MultiVolumePropertyList& mvpl, 
-    JobDispatcher& jd,
-    jpv::ParticleTransferServer pts
+void SetDefaultParticleParameterIS(
+    ParticleProperty& particle_property,
+    MultiVolumePropertyList& mvpl
 )
 {
-    jpv::ParticleTransferServerMessage servMes;
+    const char *envBuf = NULL;
+    std::string visParamDir;
+    std::string tfFilePath;
+    std::string tfFilePath_old;
+
+    envBuf = std::getenv( "VIS_PARAM_DIR" );
+
+    if (envBuf == NULL) {
+        visParamDir = "./";
+    }
+    else {
+        visParamDir = envBuf;
+        if (visParamDir[visParamDir.size() - 1] != '/') {
+            visParamDir += "/";
+        }
+    }
+
+    tfFilePath     = visParamDir;
+    tfFilePath_old = visParamDir;
+
+    envBuf = std::getenv( "TF_NAME" );
+
+    if (envBuf == NULL) {
+        tfFilePath     += "default.tf";
+        tfFilePath_old += "default_old.tf";
+    }
+    else {
+        tfFilePath     += envBuf;
+        tfFilePath     += ".tf";
+        tfFilePath_old += envBuf;
+        tfFilePath_old += "_old.tf";
+    }
+
     MultiVolumeProperty mvp;
-    VariableRange vr;
-    const int tf_number = mvpl.m_list[0].m_number_ingredients;
+
+    particle_property.m_level_index              = 1;
+    particle_property.m_repeat_level             = 4;
+    particle_property.m_particle_data_size_limit = 20;
 
     // Using environment variables, the constructor of the ParticleMonitor class
     // set particle file, glyph file, plot over line file, status file, history file,
@@ -508,63 +413,84 @@ void initial_step_IS(
     ParticleMonitor pm;
     pm.check();
 
-
     if( pm.stepExisted() )
     {
-        pm.setTimeStep_particle( mvpl.m_total_last_step );
+        pm.setTimeStep_particle( pm.particleStatusFile().getLatestTimeStep() );
     }
     else
     {
         pm.setTimeStep_particle(0);
         std::cout << "WARN:particle status file does not exist" << std::endl;
     }
+    pm.readParticleHistoryFile();                
+
+    // store particle monitor in mvpl
+    mvpl.m_total_start_steps        = pm.particleStatusFile().getStartTimeStep();
+    mvpl.m_total_last_step          = pm.particleStatusFile().getLatestTimeStep();
+    mvpl.m_total_number_steps       = mvpl.m_total_last_step - mvpl.m_total_start_steps + 1;
+    mvp.m_file_type                 = 0;
+    mvp.m_elem_type                 = 0;
+    mvpl.m_list.push_back(mvp);
+    mvpl.m_total_number_ingredients = pm.particleHistoryFile().nVariables();
+    mvpl.m_total_number_elements    = 0;
+    mvpl.m_total_number_nodes       = 0;
+    mvpl.m_total_number_subvolumes  = 1;
+    mvpl.m_total_min_object_coord   = pm.getMinObjectCoords();
+    mvpl.m_total_max_object_coord   = pm.getMaxObjectCoords();
+    mvpl.m_total_min_value          = 0;
+    mvpl.m_total_max_value          = 0;
+
+    // store particle monitor in param
+    // sampling step is not used in IS mode
+    particle_property.m_subpixel_level   = pm.getSubpixelLevel();
+    // particle limit and particle density will be overwritten later
+    // when transfer function file is readed(ParameterFileReader)
+    particle_property.m_particle_limit   = pm.particleHistoryFile().ParticleLimit();
+    particle_property.m_particle_density = pm.particleHistoryFile().ParticleDensity();;
+
+    ParameterFileReader ppr;
+    ppr.readParticleParameterFile( tfFilePath_old.c_str() );
+    ppr.setParticleParameter( particle_property );
+
+    return;
+}
+
+void InitialStepIS(
+    const int time_step,
+    ParticleProperty& particle_property,
+    MultiVolumePropertyList& mvpl,
+    std::unique_ptr<kvs::PointObject>& point_object
+)
+{
+    int tf_number;
+    ParticleMonitor pm;
+    VariableRange vr;
+
+    std::cout << "time_step:" << time_step << std::endl;
+
+    pm.check();
+
+    if( pm.stepExisted() )
+    {
+        // pm.setTimeStep_particle( pm.particleStatusFile().getLatestTimeStep() );
+        pm.setTimeStep_particle( time_step );
+    }
+    else
+    {
+        pm.setTimeStep_particle(0);
+    }
     pm.readParticleHistoryFile();
 
-    vr = pm.particleHistoryFile().variableRange();
-
-#if 0
-    std::cout << "particle monitor variable range" << std::endl;
-    std::cout << "tf_number:" << tf_number << std::endl;
-    std::cout << "tfname, MIN, MAX" << std::endl;
-    for( int i = 0; i < tf_number; i++ )
-    {
-        std::stringstream tt;
-        float c_min, c_max, o_min, o_max;
-
-        tt << "t" << i + 1;
-        c_min = vr.min( tt.str() + "_var_c" );
-        c_max = vr.max( tt.str() + "_var_c" );
-        o_min = vr.min( tt.str() + "_var_o" );
-        o_max = vr.max( tt.str() + "_var_o" );
-
-        std::cout << "C" << i << ":" << c_min << ", " << c_max << std::endl;
-        std::cout << "C" << i << ":" << o_min << ", " << o_max << std::endl;
-    }
-#endif
-
-    int c_bins_size = 0;
-    int o_bins_size = 0;
-    for ( int tf = 0; tf < tf_number; tf++ )
-    {
-        c_bins_size += DEFAULT_NBINS;
-        o_bins_size += DEFAULT_NBINS;
-    }
+    tf_number = pm.particleHistoryFile().colorHistogramArray().size();
 
     vismodule::UInt64* tmp_c_bins;
     vismodule::UInt64* tmp_o_bins;
-    tmp_c_bins = new vismodule::UInt64[c_bins_size];
-    tmp_o_bins = new vismodule::UInt64[o_bins_size];
+    tmp_c_bins = new vismodule::UInt64[DEFAULT_NBINS * tf_number];
+    tmp_o_bins = new vismodule::UInt64[DEFAULT_NBINS * tf_number];
+    std::fill_n( tmp_c_bins, DEFAULT_NBINS * tf_number, 0 );
+    std::fill_n( tmp_o_bins, DEFAULT_NBINS * tf_number, 0 );
 
-    for ( int tf = 0; tf < c_bins_size; tf++ )
-    {
-        tmp_c_bins[tf] = 0;
-    }
-
-    for ( int tf = 0; tf < o_bins_size; tf++ )
-    {
-        tmp_o_bins[tf] = 0;
-    }
-
+    // get histgram start
     int c_count = 0;
     for ( int tf = 0; tf < tf_number; tf++ )
     {
@@ -574,7 +500,7 @@ void initial_step_IS(
             c_count++;
         }
     }
-
+    
     int o_count = 0;
     for ( int tf = 0; tf < tf_number; tf++ )
     {
@@ -584,118 +510,31 @@ void initial_step_IS(
             o_count++;
         }
     }
+    // get histgram end
+    
+    vr = pm.particleHistoryFile().variableRange();
+    vr.show();
 
-    // make server message
-    strncpy( servMes.m_header, "JPTP /1.0 100 OK\r\n", 18 );
-    servMes.m_camera = param.m_camera;
-    servMes.m_server_status = 0;
-    servMes.m_time_step = param.m_time_step;
-    servMes.m_level_index = param.m_level_index;
-    servMes.m_repeat_level = param.m_repeat_level;
-    servMes.m_number_particle = 0;
-    servMes.m_number_glyph = 0;
-    servMes.m_flag_send_bins = 1;
-    servMes.m_number_volume_divide = 1;
-    servMes.m_transfer_function_count = 0;
-    servMes.m_start_step = mvpl.m_total_start_steps;
-    servMes.m_last_step = mvpl.m_total_last_step;
-    servMes.m_number_step = mvpl.m_total_number_steps;
-    servMes.m_min_object_coord[0] = mvpl.m_total_min_object_coord[0];
-    servMes.m_min_object_coord[1] = mvpl.m_total_min_object_coord[1];
-    servMes.m_min_object_coord[2] = mvpl.m_total_min_object_coord[2];
-    servMes.m_max_object_coord[0] = mvpl.m_total_max_object_coord[0];
-    servMes.m_max_object_coord[1] = mvpl.m_total_max_object_coord[1];
-    servMes.m_max_object_coord[2] = mvpl.m_total_max_object_coord[2];
-    // servMes.m_min_value = mvpl.m_total_min_value;
-    // servMes.m_max_value = mvpl.m_total_max_value;
-    servMes.m_number_nodes = mvpl.m_total_number_nodes;
-    servMes.m_number_elements = mvpl.m_total_number_elements;
-    servMes.m_element_type = mvpl.m_list[0].m_elem_type;
-    servMes.m_file_type = mvpl.m_list[0].m_file_type;
-    servMes.m_number_ingredients = mvpl.m_list[0].m_number_ingredients;
-    servMes.m_color_transfer_function_synthesis = param.m_color_transfer_function_synthesis;
-    servMes.m_opacity_transfer_function_synthesis = param.m_opacity_transfer_function_synthesis;
-    servMes.m_particle_limit = param.m_particle_limit;
-    servMes.m_particle_density = param.m_particle_density;
-    servMes.m_subpixel_level = param.m_subpixel_level;
-    servMes.m_server_side_variable_range = vr;
+    // histgramの格納
+    particle_property.color_histgram.clear();
+    particle_property.opacity_histgram.clear();
+    particle_property.color_histgram.resize( DEFAULT_NBINS * tf_number );
+    particle_property.opacity_histgram.resize( DEFAULT_NBINS * tf_number );
+    std::memcpy( particle_property.color_histgram.data(), tmp_c_bins, DEFAULT_NBINS * tf_number * sizeof( unsigned long long ) );
+    std::memcpy( particle_property.opacity_histgram.data(), tmp_o_bins, DEFAULT_NBINS * tf_number * sizeof( unsigned long long ) );
 
-    servMes.m_transfer_function.clear();
-    servMes.m_transfer_function.resize( tf_number );
+    // min maxの格納
     for( int i = 0; i < tf_number; i++ )
     {
-        servMes.m_transfer_function[i] = param.m_named_transfunc_array[i];
-        /*
-        servMes.m_transfer_function[i].m_name = param.m_named_transfunc_array[i].m_name;
-        servMes.m_transfer_function[i].m_color_variable = param.m_named_transfunc_array[i].m_color_variable;
-        servMes.m_transfer_function[i].m_color_variable_min = param.m_named_transfunc_array[i].m_color_variable_min;
-        servMes.m_transfer_function[i].m_color_variable_max = param.m_named_transfunc_array[i].m_color_variable_max;
-        servMes.m_transfer_function[i].m_opacity_variable = param.m_named_transfunc_array[i].m_opacity_variable;
-        servMes.m_transfer_function[i].m_opacity_variable_min = param.m_named_transfunc_array[i].m_opacity_variable_min;
-        servMes.m_transfer_function[i].m_opacity_variable_max = param.m_named_transfunc_array[i].m_opacity_variable_max;
-        servMes.m_transfer_function[i].m_resolution = param.m_named_transfunc_array[i].m_resolution;
-        servMes.m_transfer_function[i].m_equation_red = param.m_named_transfunc_array[i].m_equation_red;
-        servMes.m_transfer_function[i].m_equation_green = param.m_named_transfunc_array[i].m_equation_green;
-        servMes.m_transfer_function[i].m_equation_blue = param.m_named_transfunc_array[i].m_equation_blue;
-        servMes.m_transfer_function[i].m_equation_opacity = param.m_named_transfunc_array[i].m_equation_opacity;
-        servMes.m_transfer_function[i].setColorMap( param.m_named_transfunc_array[i].colorMap() );
-        servMes.m_transfer_function[i].setOpacityMap( param.m_named_transfunc_array[i].opacityMap() );
-        servMes.m_transfer_function[i].m_selection = param.m_named_transfunc_array[i].m_selection;
-        */
+        std::stringstream ss; 
+        ss << (i + 1); 
+        const std::string idxbuf = ss.str();
+        particle_property.color_min_vec[i]   = vr.min( "t" + idxbuf + "_var_c" );
+        particle_property.color_max_vec[i]   = vr.max( "t" + idxbuf + "_var_c" );
+        particle_property.opacity_min_vec[i] = vr.min( "t" + idxbuf + "_var_o" );
+        particle_property.opacity_max_vec[i] = vr.max( "t" + idxbuf + "_var_o" );
     }
-
-    servMes.m_transfer_function_count = tf_number; // TF_COUNT
-    servMes.m_color_nbins   = new vismodule::UInt64[tf_number];
-    servMes.m_opacity_nbins = new vismodule::UInt64[tf_number];
-    servMes.m_color_bins.resize( tf_number );
-    servMes.m_opacity_bins.resize( tf_number );
-
-    for ( int tf = 0; tf < tf_number; tf++ )
-    {
-        servMes.m_color_nbins[tf] = DEFAULT_NBINS;
-        servMes.m_opacity_nbins[tf] = DEFAULT_NBINS;
-        servMes.m_color_bins[tf]   =  new vismodule::UInt64[ DEFAULT_NBINS ];
-        servMes.m_opacity_bins[tf] =  new vismodule::UInt64[ DEFAULT_NBINS ];
-        for ( int res = 0; res < DEFAULT_NBINS; res++ )
-        {
-            servMes.m_color_bins[tf][res] = 0;
-        }
-        for ( int res = 0; res < DEFAULT_NBINS; res++ )
-        {
-            servMes.m_opacity_bins[tf][res] = 0;
-        }
-    }
-
-    // add by shimomura 2022/12/16
-    servMes.setColorHistogramBins
-    (
-        param.m_transfunc_array.size(),
-        DEFAULT_NBINS,
-        tmp_c_bins
-    );
-    servMes.setOpacityHistogramBins
-    (
-        param.m_transfunc_array.size(),
-        DEFAULT_NBINS,
-        tmp_o_bins
-    );
-
-    servMes.m_message_size = servMes.byteSize();
-    servMes.show();
-    pts.sendMessage( servMes );
-
-    servMes.m_server_status = 0;
-    servMes.m_transfer_function_count = 0;
-
-    for ( int tf = 0; tf < tf_number; tf++ )
-    {
-        delete[] servMes.m_color_bins[tf];
-        delete[] servMes.m_opacity_bins[tf];
-    }
-    delete[] servMes.m_color_nbins;
-    delete[] servMes.m_opacity_nbins;
 
     delete[] tmp_c_bins;
     delete[] tmp_o_bins;
 }
-#endif

@@ -48,9 +48,6 @@
     <ClCompile Include="Visualization\Viewer\Camera.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="DaemonAndSampler\Daemon\SetDefaultTransferFunction.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
     <ClCompile Include="Visualization\Property\ExtendedTransferFunctionParameter.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
@@ -381,6 +378,12 @@
     <ClCompile Include="Visualization\Mapper\ExtendedTransferFunction.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
+    <ClCompile Include="DaemonAndSampler\Daemon\ParameterFileWriter.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="DaemonAndSampler\Daemon\InitialStep.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DaemonAndSampler\Daemon\GenerateParticle.h">
@@ -423,9 +426,6 @@
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="DaemonAndSampler\Daemon\Calculate.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="DaemonAndSampler\Daemon\SetDefaultTransferFunction.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="Visualization\Object\PointObjectGenerator.h">
@@ -759,6 +759,12 @@
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="Visualization\Property\PlotOverLineProperty.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="DaemonAndSampler\Daemon\ParameterFileWriter.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="DaemonAndSampler\Daemon\InitialStep.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>

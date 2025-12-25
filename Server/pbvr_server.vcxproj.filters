@@ -27,17 +27,11 @@
     <ClInclude Include="Utils\Worker.h">
       <Filter>ヘッダー ファイル\Utils</Filter>
     </ClInclude>
-    <ClInclude Include="App\ServerWIP.h">
-      <Filter>ヘッダー ファイル\App</Filter>
-    </ClInclude>
     <ClInclude Include="App\Server.h">
       <Filter>ヘッダー ファイル\App</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="App\ServerWIP.cpp">
-      <Filter>ソース ファイル\App</Filter>
-    </ClCompile>
     <ClCompile Include="App\main.cpp">
       <Filter>ソース ファイル\App</Filter>
     </ClCompile>
