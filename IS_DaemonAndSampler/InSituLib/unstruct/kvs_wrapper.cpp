@@ -3952,8 +3952,6 @@ void EnsembleGenerateParticles( int time_step,
           average_cellids = vertex_cellids;
           average_coords  = vertex_coords ;
 
-    std::mt19937_64 mt( 12345 + mpi_rank * 1000);
-    std::chi_squared_distribution<double> dist(4.0);
       //初回サンプリング 
     timer.start();
 #pragma omp parallel
@@ -3971,22 +3969,46 @@ void EnsembleGenerateParticles( int time_step,
 #pragma omp for  
           for(int i =0; i< average_scalars.size();i++)
           {
+                th_timer.start();
               cell[thid]->bindCell( vertex_cellids[i] );
+                th_timer.stop();
+                th_timeN[0] += th_timer.sec();
+                th_timer.start();
               const kvs::Vector3f local_coord(vertex_coords[3*i + 0], vertex_coords[3*i + 1], vertex_coords[3*i + 2]);
+                th_timer.stop();
+                th_timeN[1] += th_timer.sec();
+                th_timer.start();
 
               // Calculate a color.
               cell[thid] -> setLocalPoint(local_coord);
+                th_timer.stop();
+                th_timeN[2] += th_timer.sec();
+                th_timer.start();
               const float scalar = cell[thid]->scalar();
+                th_timer.stop();
+                th_timeN[3] += th_timer.sec();
+                th_timer.start();
 
               // Calculate a normal.
               const kvs::Vector3f normal( -cell[thid]->gradient() );
+                th_timer.stop();
+                th_timeN[4] += th_timer.sec();
+                th_timer.start();
 
               // 算出データを受信データと足し合わせる
               vertex_scalars[i]     = (scalar - average_scalars[i])*(scalar - average_scalars[i]);
               vertex_normals[3*i+0] = (scalar - average_scalars[i])*(normal.x() - average_normals[3*i+0]);
               vertex_normals[3*i+1] = (scalar - average_scalars[i])*(normal.y() - average_normals[3*i+1]);
               vertex_normals[3*i+2] = (scalar - average_scalars[i])*(normal.z() - average_normals[3*i+2]);
+                th_timer.stop();
+                th_timeN[5] += th_timer.sec();
+                th_timer.start();
           }
+    #pragma omp critical
+        for (int i =0;i < 6; i++)
+        {
+            std::cout << mpi_rank <<  ": time["<< i <<"] =" << th_timeN[i] << std::endl;
+        }
 }
            vertex_cellids = average_cellids;
            vertex_coords  = average_coords;
@@ -4230,10 +4252,10 @@ void EnsembleGenerateParticles( int time_step,
            move_exe_time += timer.sec();
        }
             
-        for (int i =0;i < 7; i++)
-        {
-            std::cout << mpi_rank <<  ": time["<< i <<"] =" << timeN[i] << std::endl;
-        }
+//        for (int i =0;i < 7; i++)
+//        {
+//            std::cout << mpi_rank <<  ": time["<< i <<"] =" << timeN[i] << std::endl;
+//        }
        std::cout << mpi_rank <<  ": var_shift_exe_time =" << shift_exe_time << std::endl;
        std::cout << mpi_rank <<  ": var_move_exe_time =" << move_exe_time << std::endl;
 
