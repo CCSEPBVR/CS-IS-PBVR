@@ -3311,9 +3311,9 @@ void EnsembleGenerateParticles( int time_step,
                         th_vertex_scalars[base_s + j] = scalar_array[j];
 
                         size_t n = base_n + 3*j;
-                        th_vertex_normals[n+0] = -grad_array_x[j];
-                        th_vertex_normals[n+1] = -grad_array_y[j];
-                        th_vertex_normals[n+2] = -grad_array_z[j];
+                        th_vertex_normals[n+0] = grad_array_x[j];
+                        th_vertex_normals[n+1] = grad_array_y[j];
+                        th_vertex_normals[n+2] = grad_array_z[j];
 
                         th_vertex_cellids[base_id + j] = cell_index[j];
 
@@ -3691,9 +3691,9 @@ void EnsembleGenerateParticles( int time_step,
        for (int i = 0; i < vertex_scalars.size(); i++ )
        {
            vertex_scalars[ i ]     *= invert_num; 
-           vertex_normals[3*i + 0] *= invert_num;
-           vertex_normals[3*i + 1] *= invert_num;
-           vertex_normals[3*i + 2] *= invert_num;
+           vertex_normals[3*i + 0] *= -invert_num;
+           vertex_normals[3*i + 1] *= -invert_num;
+           vertex_normals[3*i + 2] *= -invert_num;
        }
 
 //       timer.stop();
@@ -4334,9 +4334,9 @@ void EnsembleGenerateParticles( int time_step,
        for (int i = 0; i < vertex_scalars.size();  i++ )
        {
            vertex_scalars[ i ]   *=   invert_num; 
-           vertex_normals[3*i + 0] *=  2.f*invert_num;// 2.f は分散計算式の係数
-           vertex_normals[3*i + 1] *=  2.f*invert_num;// 2.f は分散計算式の係数
-           vertex_normals[3*i + 2] *=  2.f*invert_num;// 2.f は分散計算式の係数
+           vertex_normals[3*i + 0] *=  -2.f*invert_num;// 2.f は分散計算式の係数
+           vertex_normals[3*i + 1] *=  -2.f*invert_num;// 2.f は分散計算式の係数
+           vertex_normals[3*i + 2] *=  -2.f*invert_num;// 2.f は分散計算式の係数
        }
 //       timer.stop();
 //       std::cout << mpi_rank <<  ": var_shift_exe_time =" << timer.sec() << std::endl;
@@ -4930,9 +4930,9 @@ void EnsembleGenerateParticles( int time_step,
        for (int i = 0; i < vertex_scalars.size();  i++ )
        {
            vertex_scalars[ i ]   *=   invert_num; 
-           vertex_normals[3*i + 0] *=  3.f*invert_num;// 3.f は分散計算式の係数
-           vertex_normals[3*i + 1] *=  3.f*invert_num;// 3.f は分散計算式の係数
-           vertex_normals[3*i + 2] *=  3.f*invert_num;// 3.f は分散計算式の係数
+           vertex_normals[3*i + 0] *= - 3.f*invert_num;// 3.f は分散計算式の係数
+           vertex_normals[3*i + 1] *= - 3.f*invert_num;// 3.f は分散計算式の係数
+           vertex_normals[3*i + 2] *= - 3.f*invert_num;// 3.f は分散計算式の係数
        }
     } // end if(mpi_size ==1)
 
