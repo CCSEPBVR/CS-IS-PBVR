@@ -3311,9 +3311,9 @@ void EnsembleGenerateParticles( int time_step,
                         th_vertex_scalars[base_s + j] = scalar_array[j];
 
                         size_t n = base_n + 3*j;
-                        th_vertex_normals[n+0] = grad_array_x[j];
-                        th_vertex_normals[n+1] = grad_array_y[j];
-                        th_vertex_normals[n+2] = grad_array_z[j];
+                        th_vertex_normals[n+0] = -grad_array_x[j];
+                        th_vertex_normals[n+1] = -grad_array_y[j];
+                        th_vertex_normals[n+2] = -grad_array_z[j];
 
                         th_vertex_cellids[base_id + j] = cell_index[j];
 
@@ -3964,8 +3964,75 @@ void EnsembleGenerateParticles( int time_step,
         int thid     = 0;
 #endif
 
+    kvs::UInt32 cell_index[ SIMD_BLK_SIZE ];
+    kvs::Vector3f local_coord_array[ SIMD_BLK_SIZE ];
     float th_timeN[20]= {0};
     kvs::Timer th_timer( kvs::Timer::Start );
+#pragma omp for  
+            for(int i =0; i< vertex_scalars.size() ;i+= SIMD_BLK_SIZE)
+            {
+                th_timer.start();
+                    //ブロック内でのループ回数を取得
+                    int remain_BLK = ( vertex_scalars.size() - i > SIMD_BLK_SIZE )
+                                                        ? SIMD_BLK_SIZE: vertex_scalars.size() - i;
+                    // セル登録
+            #pragma omp simd
+                    for( int j = 0; j < remain_BLK; j++ ) 
+                    {
+                        cell_index[j] = vertex_cellids[i + j];
+                    }
+                th_timer.stop();
+                th_timeN[1] += th_timer.sec();
+                th_timer.start();
+                    cell[thid] -> bindCellArray(remain_BLK, cell_index);
+
+                th_timer.stop();
+                th_timeN[2] += th_timer.sec();
+                th_timer.start();
+
+                //局所座標の詰め替え
+//            #pragma omp simd
+                    for( int j = 0; j < remain_BLK; j++ ) 
+                    {
+                        local_coord_array[j].x() = vertex_coords[ 3*(i+j)+ 0];
+                        local_coord_array[j].y() = vertex_coords[ 3*(i+j)+ 1];
+                        local_coord_array[j].z() = vertex_coords[ 3*(i+j)+ 2];
+                    }
+                th_timer.stop();
+                th_timeN[3] += th_timer.sec();
+                th_timer.start();
+                    cell[thid] -> setLocalPointArray(remain_BLK, local_coord_array);
+                th_timer.stop();
+                th_timeN[4] += th_timer.sec();
+                th_timer.start();
+
+                    float scalar_array[remain_BLK];
+                    float grad_array_x[remain_BLK];
+                    float grad_array_y[remain_BLK];
+                    float grad_array_z[remain_BLK];
+
+                    cell[thid]->CalcScalarGrad( remain_BLK,
+                            scalar_array,
+                            grad_array_x,
+                            grad_array_y,
+                            grad_array_z );
+
+                th_timer.stop();
+                th_timeN[5] += th_timer.sec();
+                th_timer.start();
+            #pragma omp simd
+                    for (int j= 0; j <remain_BLK ;j++)
+                    {
+                        vertex_scalars[i+j]       = (scalar_array[j] - average_scalars[i+j])*(scalar_array[j] - average_scalars[i+j]);
+                        vertex_normals[3*(i+j)+0] = (scalar_array[j] - average_scalars[i+j])*(grad_array_x[j] - average_normals[3*(i+j)+0]);
+                        vertex_normals[3*(i+j)+1] = (scalar_array[j] - average_scalars[i+j])*(grad_array_y[j] - average_normals[3*(i+j)+1]);
+                        vertex_normals[3*(i+j)+2] = (scalar_array[j] - average_scalars[i+j])*(grad_array_z[j] - average_normals[3*(i+j)+2]);
+                    }
+                th_timer.stop();
+                th_timeN[6] += th_timer.sec();
+                th_timer.start();
+            }
+#if 0    
 #pragma omp for  
           for(int i =0; i< average_scalars.size();i++)
           {
@@ -4004,8 +4071,9 @@ void EnsembleGenerateParticles( int time_step,
                 th_timeN[5] += th_timer.sec();
                 th_timer.start();
           }
+#endif
     #pragma omp critical
-        for (int i =0;i < 6; i++)
+        for (int i =0;i < 7; i++)
         {
             std::cout << mpi_rank <<  ": time["<< i <<"] =" << th_timeN[i] << std::endl;
         }
