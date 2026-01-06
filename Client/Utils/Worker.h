@@ -10,11 +10,13 @@ class Worker : public QObject
 {
     Q_OBJECT
 public:
-    explicit Worker( int requestTimeStep, QStandardItemModel* model, kvs::qt::jaea::Screen* screen, QObject* parent = nullptr )
+    explicit Worker( QStandardItemModel* model, kvs::qt::jaea::Screen* screen,  int requestTimeStep, kvs::Vec3 resultMinObjectCoords, kvs::Vec3 resultMaxObjectCoords, QObject* parent = nullptr )
         : QObject( parent )
-        , m_request_time_step( requestTimeStep )
         , m_model( model )
         , m_screen( screen )
+        , m_request_time_step( requestTimeStep )
+        , m_result_min_object_coords( resultMinObjectCoords )
+        , m_result_max_object_coords( resultMaxObjectCoords )
     {
     }
 
@@ -105,9 +107,12 @@ signals:
     void done(); // 完了通知
 
 private:
-    int m_request_time_step;
     QStandardItemModel* m_model;
     kvs::qt::jaea::Screen* m_screen = nullptr;
+
+    int m_request_time_step;
+    kvs::Vec3 m_result_min_object_coords;
+    kvs::Vec3 m_result_max_object_coords;
 
     void importObject( ObjectInfoExtractor::ObjectInfo& info, const int&  requestTimeStep )
     {
@@ -131,15 +136,15 @@ private:
         case ObjectInfoExtractor::PointObjectLAS:
         case ObjectInfoExtractor::PointObjectPTS:
             pointObject = std::make_unique<kvs::PointImporter>( fileName );
-            pointObject.get()->setMinMaxObjectCoords( info.currentMinObjectCoord, info.currentMaxObjectCoord );
-            pointObject.get()->setMinMaxExternalCoords( info.currentMinObjectCoord, info.currentMaxObjectCoord );
+            pointObject.get()->setMinMaxObjectCoords( m_result_min_object_coords, m_result_max_object_coords );
+            pointObject.get()->setMinMaxExternalCoords( m_result_min_object_coords, m_result_max_object_coords );
             info.object = pointObject.release();
             break;
         case ObjectInfoExtractor::PolygonObjectKVSML:
         case ObjectInfoExtractor::PolygonObjectSTL:
             polygonObject = std::make_unique<kvs::PolygonImporter>( fileName );
-            polygonObject->setMinMaxObjectCoords( info.currentMinObjectCoord, info.currentMaxObjectCoord );
-            polygonObject->setMinMaxExternalCoords( info.currentMinObjectCoord, info.currentMaxObjectCoord );
+            polygonObject->setMinMaxObjectCoords( m_result_min_object_coords, m_result_max_object_coords );
+            polygonObject->setMinMaxExternalCoords( m_result_min_object_coords, m_result_max_object_coords );
             polygonObject->setColor( kvs::RGBColor( info.polygonColor ) );
             polygonObject->setOpacity( info.polygonOpacity * 255 );
             info.object = polygonObject.release();
@@ -148,15 +153,15 @@ private:
         case ObjectInfoExtractor::PolygonObject3DS:
         case ObjectInfoExtractor::PolygonObjectFBX:
             texturedPolygonObject = std::make_unique<kvs::TexturedPolygonImporter>( fileName );
-            texturedPolygonObject->setMinMaxObjectCoords( info.currentMinObjectCoord, info.currentMaxObjectCoord );
-            texturedPolygonObject->setMinMaxExternalCoords( info.currentMinObjectCoord, info.currentMaxObjectCoord );
+            texturedPolygonObject->setMinMaxObjectCoords( m_result_min_object_coords, m_result_max_object_coords );
+            texturedPolygonObject->setMinMaxExternalCoords( m_result_min_object_coords, m_result_max_object_coords );
             info.object = texturedPolygonObject.release();
             break;
 #endif
         case ObjectInfoExtractor::LineObjectKVSML:
             lineObject = std::make_unique<kvs::LineImporter>( fileName );
-            lineObject.get()->setMinMaxObjectCoords( info.currentMinObjectCoord, info.currentMaxObjectCoord );
-            lineObject.get()->setMinMaxExternalCoords( info.currentMinObjectCoord, info.currentMaxObjectCoord );
+            lineObject.get()->setMinMaxObjectCoords( m_result_min_object_coords, m_result_max_object_coords );
+            lineObject.get()->setMinMaxExternalCoords( m_result_min_object_coords, m_result_max_object_coords );
             info.object = lineObject.release();
             break;
         default:

@@ -1,5 +1,5 @@
 #include "Server.h"
-#include "TransferFunction.h"
+#include "../../Shared/TransferFunction.h"
 #include <filesystem>
 
 #include <vismodule/KVSMLObjectPlotOverLine>
@@ -183,12 +183,13 @@ void Server::onMessage( uWS::WebSocket<false, true, PerSocket>* ws, std::string_
         if( event == "Template" ) std::cout << __LINE__ << std::endl;
         else if( event == Protocol::Events::TransferOperator )          transferOperator( ws, received );
         else if( event == Protocol::Events::Initialize )                initialize( ws, received );
-        else if( event == Protocol::Events::Chat )                      chat( ws, received );        
+        else if( event == Protocol::Events::Chat )                      chat( ws, received );
         else if( event == Protocol::Events::ShareView )                 shareView( ws, received );
         else if( event == Protocol::Events::SharePoint )                sharePoint( ws, received );
         // else if( event == Protocol::Events::FileList )                  fileList( ws, received );
         else if( event == "fileList" )                                  fileList( ws, received );
         else if( event == Protocol::Events::SelectedFile )              selectedFile( ws, received );
+        else if( event == Protocol::Events::ObjectDelete )              receiveObjectDelete( ws, received );
         else if( event == Protocol::Events::ObjectInfoParameter )       receiveObjectInfoParameter( ws, received );
         else if( event == Protocol::Events::TransferFunctionParameter ) receiveTransferFunctionParameter( ws, received );
         else if( event == Protocol::Events::GlyphParameter )            receiveGlyphParameter( ws, received );
@@ -746,174 +747,165 @@ void Server::selectedFile( uWS::WebSocket<false, true, PerSocket>* ws, const nlo
         m_objects->push_back( *objectInfoOpt );
 
         nlohmann::json msg;
-        msg[Protocol::Key::Event]                   = Protocol::Events::AddObjectToModel;
-        // Common Object Info
-        msg[Protocol::Key::UUID]                    = objectInfoOpt->uuid;
-        msg[Protocol::Key::TmpIsDisplay]            = objectInfoOpt->tmpIsDisplay;
-        msg[Protocol::Key::IsDisplay]               = objectInfoOpt->isDisplay;
-        msg[Protocol::Key::TmpIsKeepInitial]        = objectInfoOpt->tmpIsKeepInitial;
-        msg[Protocol::Key::IsKeepInitial]           = objectInfoOpt->isKeepInitial;
-        msg[Protocol::Key::TmpIsKeepFinal]          = objectInfoOpt->tmpIsKeepFinal;
-        msg[Protocol::Key::IsKeepFinal]             = objectInfoOpt->isKeepFinal;
+        msg[Protocol::Key::Event]                 = Protocol::Events::SelectedFile;
+        // 全オブジェクト共通
+        msg[Protocol::Key::UUID]                  = objectInfoOpt->uuid;
+        msg[Protocol::Key::TmpIsDisplay]          = objectInfoOpt->tmpIsDisplay;
+        msg[Protocol::Key::IsDisplay]             = objectInfoOpt->isDisplay;
+        msg[Protocol::Key::TmpIsKeepInitial]      = objectInfoOpt->tmpIsKeepInitial;
+        msg[Protocol::Key::IsKeepInitial]         = objectInfoOpt->isKeepInitial;
+        msg[Protocol::Key::TmpIsKeepFinal]        = objectInfoOpt->tmpIsKeepFinal;
+        msg[Protocol::Key::IsKeepFinal]           = objectInfoOpt->isKeepFinal;
 
-        msg[Protocol::Key::Name]                    = objectInfoOpt->name;
-        msg[Protocol::Key::Extension]               = objectInfoOpt->extension;
-        msg[Protocol::Key::Directory]               = objectInfoOpt->directory;
-        msg[Protocol::Key::Format]                  = objectInfoOpt->format;
-        msg[Protocol::Key::TimeStep]                = objectInfoOpt->timeStep;
-        msg[Protocol::Key::TmpIsFocus]              = objectInfoOpt->tmpIsFocus;
-        msg[Protocol::Key::IsFocus]                 = objectInfoOpt->isFocus;
-        msg[Protocol::Key::MinObjectCoord]          = { objectInfoOpt->minObjectCoord.x(), objectInfoOpt->minObjectCoord.y(), objectInfoOpt->minObjectCoord.z() };
-        msg[Protocol::Key::MaxObjectCoord]          = { objectInfoOpt->maxObjectCoord.x(), objectInfoOpt->maxObjectCoord.y(), objectInfoOpt->maxObjectCoord.z() };
-        msg[Protocol::Key::MinExternalCoord]        = { objectInfoOpt->minExternalCoord.x(), objectInfoOpt->minExternalCoord.y(), objectInfoOpt->minExternalCoord.z() };
-        msg[Protocol::Key::MaxExternalCoord]        = { objectInfoOpt->maxExternalCoord.x(), objectInfoOpt->maxExternalCoord.y(), objectInfoOpt->maxExternalCoord.z() };
+        msg[Protocol::Key::Name]                  = objectInfoOpt->name;
+        msg[Protocol::Key::Extension]             = objectInfoOpt->extension;
+        msg[Protocol::Key::Directory]             = objectInfoOpt->directory;
+        msg[Protocol::Key::Format]                = objectInfoOpt->format;
+        msg[Protocol::Key::TimeStep]              = objectInfoOpt->timeStep;
+        msg[Protocol::Key::TmpIsFocus]            = objectInfoOpt->tmpIsFocus;
+        msg[Protocol::Key::IsFocus]               = objectInfoOpt->isFocus;
+        msg[Protocol::Key::MinObjectCoord]        = { objectInfoOpt->minObjectCoord.x(), objectInfoOpt->minObjectCoord.y(), objectInfoOpt->minObjectCoord.z() };
+        msg[Protocol::Key::MaxObjectCoord]        = { objectInfoOpt->maxObjectCoord.x(), objectInfoOpt->maxObjectCoord.y(), objectInfoOpt->maxObjectCoord.z() };
+        msg[Protocol::Key::MinExternalCoord]      = { objectInfoOpt->minExternalCoord.x(), objectInfoOpt->minExternalCoord.y(), objectInfoOpt->minExternalCoord.z() };
+        msg[Protocol::Key::MaxExternalCoord]      = { objectInfoOpt->maxExternalCoord.x(), objectInfoOpt->maxExternalCoord.y(), objectInfoOpt->maxExternalCoord.z() };
 
-        // Common Server Point Object Info
-        msg[Protocol::Key::TmpParticleLimit]        = objectInfoOpt->tmpParticleLimit;
-        msg[Protocol::Key::ParticleLimit]           = objectInfoOpt->particleLimit;
-        msg[Protocol::Key::TmpExtraOpacityFactor]   = objectInfoOpt->tmpExtraOpacityFactor;
-        msg[Protocol::Key::ExtraOpacityFactor]      = objectInfoOpt->extraOpacityFactor;
+        // サーバポイントオブジェクト(ClientServer/In-Situ共通)
+        msg[Protocol::Key::TmpParticleLimit]      = objectInfoOpt->tmpParticleLimit;
+        msg[Protocol::Key::ParticleLimit]         = objectInfoOpt->particleLimit;
+        msg[Protocol::Key::TmpExtraOpacityFactor] = objectInfoOpt->tmpExtraOpacityFactor;
+        msg[Protocol::Key::ExtraOpacityFactor]    = objectInfoOpt->extraOpacityFactor;
 
-        // Client Server Point Object Info
-        msg[Protocol::Key::NumberOfVector]          = objectInfoOpt->numberOfVector;
-        msg[Protocol::Key::NumberOfElements]        = objectInfoOpt->numberOfElements;
-        msg[Protocol::Key::NumberOfSubvolume]       = objectInfoOpt->numberOfSubvolume;
-        msg[Protocol::Key::NumberOfNodes]           = objectInfoOpt->numberOfNodes;
-        msg[Protocol::Key::ElementType]             = objectInfoOpt->elementType;
-        msg[Protocol::Key::FileType]                = objectInfoOpt->fileType;
-        msg[Protocol::Key::StepNumber]              = objectInfoOpt->stepNumber;
-        msg[Protocol::Key::TmpCoordinateX]          = objectInfoOpt->tmpCoordinateX;
-        msg[Protocol::Key::CoordinateX]             = objectInfoOpt->coordinateX;
-        msg[Protocol::Key::TmpCoordinateY]          = objectInfoOpt->tmpCoordinateY;
-        msg[Protocol::Key::CoordinateY]             = objectInfoOpt->coordinateY;
-        msg[Protocol::Key::TmpCoordinateZ]          = objectInfoOpt->tmpCoordinateZ;
-        msg[Protocol::Key::CoordinateZ]             = objectInfoOpt->coordinateZ;
-        msg[Protocol::Key::IsExport]                = objectInfoOpt->isExport;
+        // サーバポイントオブジェクト(ClientServerのみ)
+        msg[Protocol::Key::NumberOfVector]        = objectInfoOpt->numberOfVector;
+        msg[Protocol::Key::NumberOfElements]      = objectInfoOpt->numberOfElements;
+        msg[Protocol::Key::NumberOfSubvolume]     = objectInfoOpt->numberOfSubvolume;
+        msg[Protocol::Key::NumberOfNodes]         = objectInfoOpt->numberOfNodes;
+        msg[Protocol::Key::ElementType]           = objectInfoOpt->elementType;
+        msg[Protocol::Key::FileType]              = objectInfoOpt->fileType;
+        msg[Protocol::Key::StepNumber]            = objectInfoOpt->stepNumber;
+        msg[Protocol::Key::TmpCoordinateX]        = objectInfoOpt->tmpCoordinateX;
+        msg[Protocol::Key::CoordinateX]           = objectInfoOpt->coordinateX;
+        msg[Protocol::Key::TmpCoordinateY]        = objectInfoOpt->tmpCoordinateY;
+        msg[Protocol::Key::CoordinateY]           = objectInfoOpt->coordinateY;
+        msg[Protocol::Key::TmpCoordinateZ]        = objectInfoOpt->tmpCoordinateZ;
+        msg[Protocol::Key::CoordinateZ]           = objectInfoOpt->coordinateZ;
+        msg[Protocol::Key::IsExport]              = objectInfoOpt->isExport;
 
-        // Nontexture Polygon Object Info
-        msg[Protocol::Key::TmpPolygonColor]         = { objectInfoOpt->tmpPolygonColor.red(), objectInfoOpt->tmpPolygonColor.green(), objectInfoOpt->tmpPolygonColor.blue() };
-        msg[Protocol::Key::PolygonColor]            = { objectInfoOpt->polygonColor.red(), objectInfoOpt->polygonColor.green(), objectInfoOpt->polygonColor.blue() };
-        msg[Protocol::Key::TmpPolygonOpacity]       = objectInfoOpt->tmpPolygonOpacity;
-        msg[Protocol::Key::PolygonOpacity]          = objectInfoOpt->polygonOpacity;
+        // テスクチャ無しポリゴン(.stlのみ) // FIXME:KVSMLPolygonObjectは不透明度のみ操作できるようにしたほうがいいかもしれません。
+        msg[Protocol::Key::TmpPolygonColor]       = { objectInfoOpt->tmpPolygonColor.red(), objectInfoOpt->tmpPolygonColor.green(), objectInfoOpt->tmpPolygonColor.blue() };
+        msg[Protocol::Key::PolygonColor]          = { objectInfoOpt->polygonColor.red(), objectInfoOpt->polygonColor.green(), objectInfoOpt->polygonColor.blue() };
+        msg[Protocol::Key::TmpPolygonOpacity]     = objectInfoOpt->tmpPolygonOpacity;
+        msg[Protocol::Key::PolygonOpacity]        = objectInfoOpt->polygonOpacity;
 
         m_u_web_sockets.publish( "Notice", msg.dump(), uWS::OpCode::TEXT );
     }
 }
 
+void Server::receiveObjectDelete( uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received )
+{
+    if( !received.contains( Protocol::Key::UUID ) || !received[Protocol::Key::UUID].is_string() ) return;
+
+    const std::string uuid = received[Protocol::Key::UUID].get<std::string>();
+
+    // --- authoritative delete ---
+    auto it = std::find_if( m_objects->begin(), m_objects->end(),
+                           [&]( const ObjectInfoExtractor::ObjectInfo& info )
+                           {
+                               return info.uuid == uuid;
+                           } );
+
+    if( it == m_objects->end() ) return;
+
+    m_objects->erase( it );
+
+    // --- broadcast ---
+    nlohmann::json msg;
+    msg[Protocol::Key::Event] = Protocol::Events::ObjectDelete;
+    msg[Protocol::Key::UUID]  = uuid;
+
+    ws->publish( "Notice", msg.dump(), uWS::OpCode::TEXT );
+}
+
 void Server::receiveObjectInfoParameter( uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received )
 {
-    std::cout << "[Server] object info update" << std::endl;
-    if( !received.contains( Protocol::Key::Objects ) || !received[Protocol::Key::Objects].is_array() ) return;
+    std::cout << "[Server] Object Info Parameter" << std::endl;
 
-    for( const auto& objJson : received[Protocol::Key::Objects] )
+    if( received.contains( Protocol::Key::ResultMinObjectCoords ) &&
+        received[Protocol::Key::ResultMinObjectCoords].is_array() &&
+        received[Protocol::Key::ResultMinObjectCoords].size() == 3 )
     {
-        std::string uuid;
-        if( objJson.contains( Protocol::Key::UUID ) && objJson[Protocol::Key::UUID].is_string() )
+        // m_result_min_object_coords = kvs::Vec3(
+        //     received[Protocol::Key::ResultMinObjectCoords][0].get<float>(),
+        //     received[Protocol::Key::ResultMinObjectCoords][1].get<float>(),
+        //     received[Protocol::Key::ResultMinObjectCoords][2].get<float>() );
+    }
+
+    if( received.contains( Protocol::Key::ResultMaxObjectCoords ) &&
+        received[Protocol::Key::ResultMaxObjectCoords].is_array() &&
+        received[Protocol::Key::ResultMaxObjectCoords].size() == 3 )
+    {
+        // m_result_max_object_coords = kvs::Vec3(
+        //     received[Protocol::Key::ResultMaxObjectCoords][0].get<float>(),
+        //     received[Protocol::Key::ResultMaxObjectCoords][1].get<float>(),
+        //     received[Protocol::Key::ResultMaxObjectCoords][2].get<float>() );
+    }
+
+    if( received.contains( Protocol::Key::Objects ) && received[Protocol::Key::Objects].is_array() )
+    {
+        for( const auto& patch : received[Protocol::Key::Objects] )
         {
-            uuid = objJson[Protocol::Key::UUID].get<std::string>();
-        }
-        else
-        {
-            continue; // uuid が無ければスキップ
-        }
+            if( !patch.contains( Protocol::Key::UUID ) || !patch[Protocol::Key::UUID].is_string() ) continue;
+            const std::string uuid = patch[Protocol::Key::UUID].get<std::string>();
 
-        // m_objects の中から一致する uuid のオブジェクトを探す
-        auto it = std::find_if( m_objects->begin(), m_objects->end(),
-                               [&]( const ObjectInfoExtractor::ObjectInfo& info )
-                               {
-                                   return info.uuid == uuid;
-                               } );
-        if( it == m_objects->end() ) continue; // 見つからなければスキップ
+            auto it = std::find_if( m_objects->begin(), m_objects->end(),
+                                   [&]( const ObjectInfoExtractor::ObjectInfo& info )
+                                   {
+                                       return info.uuid == uuid;
+                                   } );
 
-        ObjectInfoExtractor::ObjectInfo& info = *it;
+            if( it == m_objects->end() ) continue;
 
-        // 受信 JSON から必要なフィールドだけを更新
-        if( objJson.contains( Protocol::Key::TmpIsDisplay ) )            info.tmpIsDisplay           = objJson[Protocol::Key::TmpIsDisplay].get<bool>();
-        if( objJson.contains( Protocol::Key::IsDisplay ) )               info.isDisplay              = objJson[Protocol::Key::IsDisplay].get<bool>();
-        if( objJson.contains( Protocol::Key::TmpIsKeepInitial ) )        info.tmpIsKeepInitial       = objJson[Protocol::Key::TmpIsKeepInitial].get<bool>();
-        if( objJson.contains( Protocol::Key::IsKeepInitial ) )           info.isKeepInitial          = objJson[Protocol::Key::IsKeepInitial].get<bool>();
-        if( objJson.contains( Protocol::Key::TmpIsKeepFinal ) )          info.tmpIsKeepFinal         = objJson[Protocol::Key::TmpIsKeepFinal].get<bool>();
-        if( objJson.contains( Protocol::Key::IsKeepFinal ) )             info.isKeepFinal            = objJson[Protocol::Key::IsKeepFinal].get<bool>();
-
-        if( objJson.contains( Protocol::Key::TmpIsFocus ) )              info.tmpIsFocus             = objJson[Protocol::Key::TmpIsFocus].get<bool>();
-        if( objJson.contains( Protocol::Key::IsFocus ) )                 info.isFocus                = objJson[Protocol::Key::IsFocus].get<bool>();
-
-        if( objJson.contains( Protocol::Key::TmpParticleLimit ) )        info.tmpParticleLimit       = objJson[Protocol::Key::TmpParticleLimit].get<int>();
-        if( objJson.contains( Protocol::Key::ParticleLimit ) )           info.particleLimit          = objJson[Protocol::Key::ParticleLimit].get<int>();
-        if( objJson.contains( Protocol::Key::TmpExtraOpacityFactor ) )   info.tmpExtraOpacityFactor  = objJson[Protocol::Key::TmpExtraOpacityFactor].get<float>();
-        if( objJson.contains( Protocol::Key::ExtraOpacityFactor ) )      info.extraOpacityFactor     = objJson[Protocol::Key::ExtraOpacityFactor].get<float>();
-
-        if( objJson.contains( Protocol::Key::TmpCoordinateX ) )          info.tmpCoordinateX         = objJson[Protocol::Key::TmpCoordinateX].get<std::string>();
-        if( objJson.contains( Protocol::Key::CoordinateX ) )             info.coordinateX            = objJson[Protocol::Key::CoordinateX].get<std::string>();
-        if( objJson.contains( Protocol::Key::TmpCoordinateY ) )          info.tmpCoordinateY         = objJson[Protocol::Key::TmpCoordinateY].get<std::string>();
-        if( objJson.contains( Protocol::Key::CoordinateY ) )             info.coordinateY            = objJson[Protocol::Key::CoordinateY].get<std::string>();
-        if( objJson.contains( Protocol::Key::TmpCoordinateZ ) )          info.tmpCoordinateZ         = objJson[Protocol::Key::TmpCoordinateZ].get<std::string>();
-        if( objJson.contains( Protocol::Key::CoordinateZ ) )             info.coordinateZ            = objJson[Protocol::Key::CoordinateZ].get<std::string>();
-
-        if( objJson.contains( Protocol::Key::IsExport ) )                info.isExport               = objJson[Protocol::Key::IsExport].get<bool>();
-
-        if( objJson.contains( Protocol::Key::TmpPolygonColor ) && objJson[Protocol::Key::TmpPolygonColor].is_array() && objJson[Protocol::Key::TmpPolygonColor].size() == 3 )
-        {
-            info.tmpPolygonColor = kvs::RGBColor(
-                objJson[Protocol::Key::TmpPolygonColor][0].get<int>(),
-                objJson[Protocol::Key::TmpPolygonColor][1].get<int>(),
-                objJson[Protocol::Key::TmpPolygonColor][2].get<int>()
-                );
-        }
-
-        if( objJson.contains( Protocol::Key::PolygonColor ) && objJson[Protocol::Key::PolygonColor].is_array() && objJson[Protocol::Key::PolygonColor].size() == 3 )
-        {
-            info.polygonColor = kvs::RGBColor(
-                objJson[Protocol::Key::PolygonColor][0].get<int>(),
-                objJson[Protocol::Key::PolygonColor][1].get<int>(),
-                objJson[Protocol::Key::PolygonColor][2].get<int>()
-                );
-        }
-
-        if( objJson.contains( Protocol::Key::TmpPolygonOpacity ) )       info.tmpPolygonOpacity      = objJson[Protocol::Key::TmpPolygonOpacity].get<float>();
-        if( objJson.contains( Protocol::Key::PolygonOpacity ) )          info.polygonOpacity         = objJson[Protocol::Key::PolygonOpacity].get<float>();
-
-        if( objJson.contains( Protocol::Key::CurrentMinObjectCoord ) && objJson[ Protocol::Key::CurrentMinObjectCoord ].is_array() && objJson[ Protocol::Key::CurrentMinObjectCoord ].size() == 3 )
-        {
-            info.currentMinObjectCoord = kvs::Vec3(
-                objJson[Protocol::Key::CurrentMinObjectCoord][0].get<float>(),
-                objJson[Protocol::Key::CurrentMinObjectCoord][1].get<float>(),
-                objJson[Protocol::Key::CurrentMinObjectCoord][2].get<float>()
-                );
-        }
-
-        if( objJson.contains( Protocol::Key::CurrentMaxObjectCoord ) && objJson[ Protocol::Key::CurrentMaxObjectCoord ].is_array() && objJson[ Protocol::Key::CurrentMaxObjectCoord ].size() == 3 )
-        {
-            info.currentMaxObjectCoord = kvs::Vec3(
-                objJson[Protocol::Key::CurrentMaxObjectCoord][0].get<float>(),
-                objJson[Protocol::Key::CurrentMaxObjectCoord][1].get<float>(),
-                objJson[Protocol::Key::CurrentMaxObjectCoord][2].get<float>()
-                );
-        }
-
-        std::cout << info.currentMinObjectCoord << std::endl;
-        std::cout << info.currentMaxObjectCoord << std::endl;
-
-        if( objJson.contains( Protocol::Key::NeedSameTimeStepReplace ) )            info.needSameTimeStepReplace           = objJson[Protocol::Key::NeedSameTimeStepReplace].get<bool>();
-
-        if (
-            info.format == ObjectInfoExtractor::Format::ClientServerPointObject ||
-            info.format == ObjectInfoExtractor::Format::InsituServerPointObject
-        )
-        {
-            m_particle_property->m_particle_limit = info.tmpParticleLimit;
-            m_particle_property->m_x_synthesis    = info.tmpCoordinateX;
-            m_particle_property->m_y_synthesis    = info.tmpCoordinateY;
-            m_particle_property->m_z_synthesis    = info.tmpCoordinateZ;
+            ObjectInfoExtractor::ObjectInfo& info = *it;
+            // 全オブジェクト共通
+            if( patch.contains( Protocol::Key::IsDisplay ) )          info.isDisplay = patch[Protocol::Key::IsDisplay].get<bool>();
+            if( patch.contains( Protocol::Key::IsKeepInitial ) )      info.isKeepInitial = patch[Protocol::Key::IsKeepInitial].get<bool>();
+            if( patch.contains( Protocol::Key::IsKeepFinal ) )        info.isKeepFinal = patch[Protocol::Key::IsKeepFinal].get<bool>();
+            if( patch.contains( Protocol::Key::IsFocus ) )            info.isFocus = patch[Protocol::Key::IsFocus].get<bool>();
+            // サーバポイントオブジェクト(ClientServer/In-Situ共通)
+            if( patch.contains( Protocol::Key::ParticleLimit ) )      info.particleLimit = patch[Protocol::Key::ParticleLimit].get<int>();
+            if( patch.contains( Protocol::Key::ExtraOpacityFactor ) ) info.extraOpacityFactor = patch[Protocol::Key::ExtraOpacityFactor].get<float>();
+            // サーバポイントオブジェクト(ClientServerのみ)
+            if( patch.contains( Protocol::Key::CoordinateX ) ) info.coordinateX = patch[Protocol::Key::CoordinateX].get<std::string>();
+            if( patch.contains( Protocol::Key::CoordinateY ) ) info.coordinateY = patch[Protocol::Key::CoordinateY].get<std::string>();
+            if( patch.contains( Protocol::Key::CoordinateZ ) ) info.coordinateZ = patch[Protocol::Key::CoordinateZ].get<std::string>();
+            // テスクチャ無しポリゴン(.stlのみ) // FIXME:KVSMLPolygonObjectは不透明度のみ操作できるようにしたほうがいいかもしれません。
+            if( patch.contains( Protocol::Key::PolygonColor ) &&
+                patch[Protocol::Key::PolygonColor].is_array() &&
+                patch[Protocol::Key::PolygonColor].size() == 3 )
+            {
+                info.polygonColor = kvs::RGBColor(
+                    patch[Protocol::Key::PolygonColor][0].get<int>(),
+                    patch[Protocol::Key::PolygonColor][1].get<int>(),
+                    patch[Protocol::Key::PolygonColor][2].get<int>() );
+                info.needSameTimeStepReplace = true;
+            }
+            if( patch.contains( Protocol::Key::PolygonOpacity ) )
+            {
+                info.polygonOpacity          = patch[Protocol::Key::PolygonOpacity].get<float>();
+                info.needSameTimeStepReplace = true;
+            }
         }
     }
 
+    // =========================================================
+    // ③ 全クライアントへブロードキャスト
+    // =========================================================
     nlohmann::json msg;
-    msg[Protocol::Key::Event] = Protocol::Events::ObjectInfoParameter;
+    msg[Protocol::Key::Event]                 = Protocol::Events::ObjectInfoParameter;
     msg[Protocol::Key::ResultMinObjectCoords] = received[Protocol::Key::ResultMinObjectCoords];
     msg[Protocol::Key::ResultMaxObjectCoords] = received[Protocol::Key::ResultMaxObjectCoords];
-    msg[Protocol::Key::Objects] = received[Protocol::Key::Objects];
-
+    // Objects はあれば付ける
+    if( received.contains( Protocol::Key::Objects ) ) msg[Protocol::Key::Objects] = received[Protocol::Key::Objects];
     ws->publish( "Notice", msg.dump(), uWS::OpCode::TEXT );
 }
 
@@ -1338,9 +1330,14 @@ void Server::requestDataAt( uWS::WebSocket<false, true, PerSocket>* ws, const nl
     std::cout << "[Server] show at time step" << std::endl;
     const int& timeStep = received[Protocol::Key::TimeStep];
 
+    const auto& minJson = received.at( Protocol::Key::ResultMinObjectCoords );
+    const auto& maxJson = received.at( Protocol::Key::ResultMaxObjectCoords );
+    kvs::Vec3 minObjectCoords( minJson[0].get<float>(), minJson[1].get<float>(), minJson[2].get<float>() );
+    kvs::Vec3 maxObjectCoords( maxJson[0].get<float>(), maxJson[1].get<float>(), maxJson[2].get<float>() );
+
     // m_particle_property, m_glyph_property, m_pol_property, m_multi_volume_propertyを排他制御してコピー?
 
-    Worker worker( timeStep, m_objects, m_particle_property, m_glyph_property, m_pol_property, m_multi_volume_property_list ); // m_objects は std::vector<ObjectInfo> のメンバ
+    Worker worker( timeStep, m_objects, minObjectCoords, maxObjectCoords, m_particle_property, m_glyph_property, m_pol_property, m_multi_volume_property_list ); // m_objects は std::vector<ObjectInfo> のメンバ
     worker.setDoneCallBack( [this, ws, timeStep]() {
         std::vector<char> buffer = pack( timeStep );
 

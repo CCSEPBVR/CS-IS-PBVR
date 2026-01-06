@@ -96,8 +96,8 @@ public:
         // For Client
         kvs::ObjectBase* object             = nullptr;
         std::pair<int,int> objectID         = { -1, -1 };
-        kvs::Vec3 currentMinObjectCoord     = { 0, 0, 0 };
-        kvs::Vec3 currentMaxObjectCoord     = { 0, 0, 0 };
+        // kvs::Vec3 currentMinObjectCoord     = { 0, 0, 0 };
+        // kvs::Vec3 currentMaxObjectCoord     = { 0, 0, 0 };
 
         int currentImportedTimeStep         = -1;
         bool needSameTimeStepReplace        = false;

@@ -39,11 +39,12 @@ signals:
     void updateServerState( bool serverState );     // true:接続中
     void updateOperatorState( bool operatorState ); // true:権限あり
     void requestDataAt( const QJsonObject& dataArray );
-    void addObjectToModel( const ObjectInfoExtractor::ObjectInfo& objectInfo );
+    void receiveSelectedFile( const QJsonObject& dataArray );
+    void receiveObjectDelete( const QJsonObject& dataArray );
     void unpack( const QByteArray& binary );
     void receiveTimeStepControlParameter( const QJsonObject& timeStepControlParameter );
     void receiveGlyphParameter( const QJsonObject& dataArray );
-    void receiveObjectInfoParameter( const QJsonArray& resultMinObjectCoordsArray, const QJsonArray& resultMaxObjectCoordsArray, const QJsonArray& updatedObjects );
+    void receiveObjectInfoParameter( const QJsonObject& dataArray );
     void receivePlotOverLineParameter( const QJsonObject& dataArray );
     void receiveTransferFunctionParameter( const QString& colorSynth, const QString& opacitySynth, const QJsonArray& dataArray );
 
@@ -71,7 +72,7 @@ private:
     void shareView( const QJsonObject& dataArray );     // FIXME:実装部コメントアウトしてしあるので修正が必要です
     void sharePoint( const QJsonObject& dataArray );    // FIXME:実装部コメントアウトしてしあるので修正が必要です
     kvs::PolygonObject* createArrowGlyph( const kvs::ValueArray<kvs::Real32>& coords, const kvs::ValueArray<kvs::Real32>& directions, const kvs::ValueArray<kvs::Real32>& sizes, const kvs::ValueArray<kvs::UInt8>& colors );
-    void convertObjectInfo( const QJsonObject& dataArray );
+    // void convertObjectInfo( const QJsonObject& dataArray );
 
 private slots:
     void onModeClicked();

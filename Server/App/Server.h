@@ -75,6 +75,7 @@ private:
     void sharePoint                         ( uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received );
     void fileList                           ( uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received );
     void selectedFile                       ( uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received );
+    void receiveObjectDelete             ( uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received );
     void receiveObjectInfoParameter         ( uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received );
     void receiveTransferFunctionParameter   ( uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received );
     void receiveGlyphParameter              ( uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received );

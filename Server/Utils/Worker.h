@@ -20,10 +20,13 @@ public:
 
     explicit Worker( 
         const int requestTimeStep, std::vector<ObjectInfoExtractor::ObjectInfo>* objects,
+        kvs::Vec3 resultMinObjectCoords, kvs::Vec3 resultMaxObjectCoords,
         ParticleProperty* particle_property, GlyphProperty* glyph_property,
         PlotOverLineProperty* pol_property, MultiVolumePropertyList* multi_volume_property_list
     )
         : m_request_time_step( requestTimeStep ) , m_objects( objects )
+        , m_result_min_object_coords( resultMinObjectCoords )
+        , m_result_max_object_coords( resultMaxObjectCoords )
         , m_particle_property( particle_property ), m_glyph_property( glyph_property )
         , m_pol_property( pol_property ), m_multi_volume_property_list( multi_volume_property_list )
     {}
@@ -95,6 +98,8 @@ public:
 
 private:
     int m_request_time_step;
+    kvs::Vec3 m_result_min_object_coords;
+    kvs::Vec3 m_result_max_object_coords;
     std::vector<ObjectInfoExtractor::ObjectInfo>* m_objects;
     DoneCallBack m_done_call_back;
     ParticleProperty* m_particle_property;
@@ -120,29 +125,35 @@ private:
         case ObjectInfoExtractor::ClientServerPointObject:
             pointObject = std::make_unique<kvs::PointObject>();
             GenerateParticleCS( fileName, requestTimeStep, *m_particle_property, *m_multi_volume_property_list, pointObject );
+            pointObject.get()->setMinMaxObjectCoords( m_result_min_object_coords, m_result_max_object_coords );
+            pointObject.get()->setMinMaxExternalCoords( m_result_min_object_coords, m_result_max_object_coords );
             info.object = pointObject.release();
             break;
         case ObjectInfoExtractor::InsituServerPointObject:
             GenerateParticleIS( requestTimeStep, *m_particle_property, *m_multi_volume_property_list, pointObject );
+            pointObject.get()->setMinMaxObjectCoords( m_result_min_object_coords, m_result_max_object_coords );
+            pointObject.get()->setMinMaxExternalCoords( m_result_min_object_coords, m_result_max_object_coords );
             info.object = pointObject.release();
             break;
         case ObjectInfoExtractor::ServerGlyphObject:
             polygonObject = GenerateGlyphCS( fileName, requestTimeStep, *m_glyph_property, *m_multi_volume_property_list );
+            polygonObject->setMinMaxObjectCoords( m_result_min_object_coords, m_result_max_object_coords );
+            polygonObject->setMinMaxExternalCoords( m_result_min_object_coords, m_result_max_object_coords );
             info.object = polygonObject.release();
             break;
         case ObjectInfoExtractor::PointObjectKVSML:
         case ObjectInfoExtractor::PointObjectLAS:
         case ObjectInfoExtractor::PointObjectPTS:
             pointObject = std::make_unique<kvs::PointImporter>( fileName );
-            pointObject.get()->setMinMaxObjectCoords( info.currentMinObjectCoord, info.currentMaxObjectCoord );
-            pointObject.get()->setMinMaxExternalCoords( info.currentMinObjectCoord, info.currentMaxObjectCoord );
+            pointObject.get()->setMinMaxObjectCoords( m_result_min_object_coords, m_result_max_object_coords );
+            pointObject.get()->setMinMaxExternalCoords( m_result_min_object_coords, m_result_max_object_coords );
             info.object = pointObject.release();
             break;
         case ObjectInfoExtractor::PolygonObjectKVSML:
         case ObjectInfoExtractor::PolygonObjectSTL:
             polygonObject = std::make_unique<kvs::PolygonImporter>( fileName );
-            polygonObject->setMinMaxObjectCoords( info.currentMinObjectCoord, info.currentMaxObjectCoord );
-            polygonObject->setMinMaxExternalCoords( info.currentMinObjectCoord, info.currentMaxObjectCoord );
+            polygonObject->setMinMaxObjectCoords( m_result_min_object_coords, m_result_max_object_coords );
+            polygonObject->setMinMaxExternalCoords( m_result_min_object_coords, m_result_max_object_coords );
             polygonObject->setColor( kvs::RGBColor( info.polygonColor ) );
             polygonObject->setOpacity( info.polygonOpacity * 255 );
             info.object = polygonObject.release();
@@ -151,15 +162,15 @@ private:
         case ObjectInfoExtractor::PolygonObject3DS:
         case ObjectInfoExtractor::PolygonObjectFBX:
             texturedPolygonObject = std::make_unique<kvs::TexturedPolygonImporter>( fileName );
-            texturedPolygonObject->setMinMaxObjectCoords( info.currentMinObjectCoord, info.currentMaxObjectCoord );
-            texturedPolygonObject->setMinMaxExternalCoords( info.currentMinObjectCoord, info.currentMaxObjectCoord );
+            texturedPolygonObject->setMinMaxObjectCoords( m_result_min_object_coords, m_result_max_object_coords );
+            texturedPolygonObject->setMinMaxExternalCoords( m_result_min_object_coords, m_result_max_object_coords );
             info.object = texturedPolygonObject.release();
             break;
 #endif
         case ObjectInfoExtractor::LineObjectKVSML:
             lineObject = std::make_unique<kvs::LineImporter>( fileName );
-            lineObject.get()->setMinMaxObjectCoords( info.currentMinObjectCoord, info.currentMaxObjectCoord );
-            lineObject.get()->setMinMaxExternalCoords( info.currentMinObjectCoord, info.currentMaxObjectCoord );
+            lineObject.get()->setMinMaxObjectCoords( m_result_min_object_coords, m_result_max_object_coords );
+            lineObject.get()->setMinMaxExternalCoords( m_result_min_object_coords, m_result_max_object_coords );
             info.object = lineObject.release();
             break;
         default:

@@ -21,7 +21,7 @@
 #include "AnimationControl.h"
 #include "Communication.h"
 #include "GlyphEditor.h"
-#include "ObjectEditorWIP.h"
+#include "ObjectEditor.h"
 #include "PlotOverLineEditor.h"
 #include "PointSizeControl.h"
 #include "Preference.h"
@@ -97,7 +97,7 @@ private:
     GlyphEditor* m_glyph_editor                                = nullptr; // NOTE:通信関係有 KPI関係有
 
     QAction* m_object_editor_action                            = nullptr;
-    ObjectEditorWIP* m_object_editor                           = nullptr; // NOTE:通信関係有 KPI関係有
+    ObjectEditor* m_object_editor                              = nullptr; // NOTE:通信関係有 KPI関係有
 
     QAction* m_plot_over_line_editor_action                    = nullptr;
     PlotOverLineEditor* m_plot_over_line_editor                = nullptr; // NOTE:通信関係有 KPI関係有

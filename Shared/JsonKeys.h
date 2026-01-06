@@ -165,6 +165,7 @@ inline constexpr std::string_view SharePoint                = "SharePoint";
 inline constexpr std::string_view FileList                  = "FileList";
 inline constexpr std::string_view SelectedFile              = "SelectedFile";
 inline constexpr std::string_view AddObjectToModel          = "AddObjectToModel";
+inline constexpr std::string_view ObjectDelete              = "ObjectDelete";
 inline constexpr std::string_view ObjectInfoParameter       = "ObjectInfoParameter";
 inline constexpr std::string_view TransferFunctionParameter = "TransferFunctionParameter";
 inline constexpr std::string_view GlyphParameter            = "GlyphParameter";

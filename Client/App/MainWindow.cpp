@@ -27,7 +27,7 @@ MainWindow::MainWindow( kvs::qt::Application& app, QWidget *parent )
     , m_animation_control              ( new AnimationControl( m_screen, this ) )
     , m_communication                  ( new Communication( m_screen, m_web_sockets, m_viz_mode, this ) )
     , m_glyph_editor                   ( new GlyphEditor( m_web_sockets, this ) )
-    , m_object_editor                  ( new ObjectEditorWIP( m_web_sockets, m_viz_mode, m_screen, this ) )
+    , m_object_editor                  ( new ObjectEditor( m_screen, m_web_sockets, m_viz_mode, this ) )
     , m_plot_over_line_editor          ( new PlotOverLineEditor( m_screen, m_web_sockets, this ) )
     , m_point_size_control             ( new PointSizeControl( m_screen, this ) )
     , m_preference                     ( new Preference( this ) )
@@ -86,7 +86,7 @@ MainWindow::MainWindow( kvs::qt::Application& app, QWidget *parent )
                     m_animation_control              ->onLoadParameter( filePath );
                     m_communication                  ->onLoadParameter( filePath );
                     m_glyph_editor                   ->onLoadParameter( filePath );
-                    m_object_editor                  ->loadParameter( filePath );
+                    m_object_editor                  ->onLoadParameter( filePath );
                     m_plot_over_line_editor          ->onLoadParameter( filePath );
                     m_point_size_control             ->onLoadParameter( filePath );
                     m_repetition_level_control       ->onLoadParameter( filePath );
@@ -106,7 +106,7 @@ MainWindow::MainWindow( kvs::qt::Application& app, QWidget *parent )
                     m_animation_control              ->onSaveParameter( filePath );
                     m_communication                  ->onSaveParameter( filePath );
                     m_glyph_editor                   ->onSaveParameter( filePath );
-                    m_object_editor                  ->saveParameter( filePath );
+                    m_object_editor                  ->onSaveParameter( filePath );
                     m_plot_over_line_editor          ->onSaveParameter( filePath );
                     m_point_size_control             ->onSaveParameter( filePath );
                     m_repetition_level_control       ->onSaveParameter( filePath );
@@ -169,7 +169,7 @@ void MainWindow::toolBarInitialize()
 {
     if( m_time_step_control_tool_bar )
     {
-        connect( m_time_step_control_tool_bar, &TimeStepControlToolBar::requestDataAt        , m_object_editor             , &ObjectEditorWIP::onRequestDataAt );
+        connect( m_time_step_control_tool_bar, &TimeStepControlToolBar::requestDataAt        , m_object_editor             , &ObjectEditor::onRequestDataAt );
         connect( m_time_step_control_tool_bar, &TimeStepControlToolBar::dataRequestCompleted , m_play_back_control_tool_bar, &PlayBackControlToolBar::onDataRequestCompleted );
 
         this->addToolBar( Qt::TopToolBarArea, m_time_step_control_tool_bar );
@@ -241,16 +241,17 @@ void MainWindow::communicationInitialize()
         connect( m_communication, &Communication::updateOperatorState             , m_time_step_control_tool_bar, &TimeStepControlToolBar::onOperatorStateUpdate );
         connect( m_communication, &Communication::updateOperatorState             , m_play_back_control_tool_bar, &PlayBackControlToolBar::onOperatorStateUpdate );
         connect( m_communication, &Communication::updateOperatorState             , m_glyph_editor              , &GlyphEditor::onOperatorStateUpdate );
-        connect( m_communication, &Communication::updateOperatorState             , m_object_editor             , &ObjectEditorWIP::updateOperatorState );
+        connect( m_communication, &Communication::updateOperatorState             , m_object_editor             , &ObjectEditor::onOperatorStateUpdate );
         connect( m_communication, &Communication::updateOperatorState             , m_plot_over_line_editor     , &PlotOverLineEditor::onOperatorStateUpdate );
         connect( m_communication, &Communication::updateOperatorState             , m_transfer_function_editor  , &TransferFunctionEditorWIP::updateOperatorState );
         connect( m_communication, &Communication::receiveTransferFunctionParameter, m_transfer_function_editor  , &TransferFunctionEditorWIP::onReceiveTransferFunctionParameter );
 
         connect( m_communication, &Communication::receiveGlyphParameter           , m_glyph_editor              , &GlyphEditor::onReceiveGlyphParameter );
 
-        connect( m_communication, &Communication::unpack                          , m_object_editor             , &ObjectEditorWIP::unpack );
-        connect( m_communication, &Communication::addObjectToModel                , m_object_editor             , &ObjectEditorWIP::addObjectToModel );
-        connect( m_communication, &Communication::receiveObjectInfoParameter      , m_object_editor             , &ObjectEditorWIP::onReceiveObjectInfoParameter );
+        connect( m_communication, &Communication::unpack                          , m_object_editor             , &ObjectEditor::onUnpack );
+        connect( m_communication, &Communication::receiveSelectedFile             , m_object_editor             , &ObjectEditor::onReceiveSelectedFile );
+        connect( m_communication, &Communication::receiveObjectDelete             , m_object_editor             , &ObjectEditor::onReceiveObjectDelete );
+        connect( m_communication, &Communication::receiveObjectInfoParameter      , m_object_editor             , &ObjectEditor::onReceiveObjectInfoParameter );
 
         connect( m_communication, &Communication::receivePlotOverLineParameter    , m_plot_over_line_editor     , &PlotOverLineEditor::onReceivePlotOverLineParameter );
 
@@ -281,11 +282,11 @@ void MainWindow::objectEditorInitialize()
         m_object_editor->adjustSize();
         addDockWidget( Qt::LeftDockWidgetArea, m_object_editor );
 
-        connect( m_object_editor, &ObjectEditorWIP::updateTotalTimeStepRange, m_time_step_control_tool_bar, &TimeStepControlToolBar::updateTotalTimeStepRange );
-        connect( m_object_editor, &ObjectEditorWIP::updateFocus             , m_plot_over_line_editor     , &PlotOverLineEditor::onUpdateFocus );
-        connect( m_object_editor, &ObjectEditorWIP::updateTranslation       , m_plot_over_line_editor     , &PlotOverLineEditor::onUpdateTranslation );
-        connect( m_object_editor, &ObjectEditorWIP::shading                 , m_shading_control           , &ShadingControl::onShading );
-        connect( m_object_editor, &ObjectEditorWIP::dataRequestCompleted    , m_time_step_control_tool_bar, &TimeStepControlToolBar::onDataRequestCompleted );
+        connect( m_object_editor, &ObjectEditor::updateTotalTimeStepRange, m_time_step_control_tool_bar, &TimeStepControlToolBar::updateTotalTimeStepRange );
+        connect( m_object_editor, &ObjectEditor::updateFocus             , m_plot_over_line_editor     , &PlotOverLineEditor::onUpdateFocus );
+        connect( m_object_editor, &ObjectEditor::updateTranslation       , m_plot_over_line_editor     , &PlotOverLineEditor::onUpdateTranslation );
+        connect( m_object_editor, &ObjectEditor::shading                 , m_shading_control           , &ShadingControl::onShading );
+        connect( m_object_editor, &ObjectEditor::dataRequestCompleted    , m_time_step_control_tool_bar, &TimeStepControlToolBar::onDataRequestCompleted );
 
         connect( m_object_editor_action, &QAction::triggered, this, &MainWindow::onObjectEditor );
     }
@@ -466,7 +467,7 @@ void MainWindow::onUpdateServerState( bool serverState ) // true:接続中
          * In-situモード(クライアントとサーバを別マシンで起動、接続するモード)
          * 上記の対応のため接続/切断時にObjectEditorをリセットする必要があります。
          */
-        m_object_editor->reset();
+        m_object_editor->onReset();
     }
 
     if( m_plot_over_line_editor && m_plot_over_line_editor_action )

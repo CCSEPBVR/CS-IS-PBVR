@@ -471,70 +471,6 @@ kvs::PolygonObject* Communication::createArrowGlyph(
     return polygon;
 }
 
-void Communication::convertObjectInfo( const QJsonObject& dataArray )
-{
-    ObjectInfoExtractor::ObjectInfo objectInfo;
-
-    // Common Object Info
-    objectInfo.uuid                     = dataArray[QString::fromUtf8( Protocol::Key::UUID )].toString().toUtf8();
-    objectInfo.tmpIsDisplay             = dataArray[QString::fromUtf8( Protocol::Key::TmpIsDisplay )].toBool();
-    objectInfo.isDisplay                = dataArray[QString::fromUtf8( Protocol::Key::IsDisplay )].toBool();
-    objectInfo.tmpIsKeepInitial         = dataArray[QString::fromUtf8( Protocol::Key::TmpIsKeepInitial )].toBool();
-    objectInfo.isKeepInitial            = dataArray[QString::fromUtf8( Protocol::Key::IsKeepInitial )].toBool();
-    objectInfo.tmpIsKeepFinal           = dataArray[QString::fromUtf8( Protocol::Key::TmpIsKeepFinal )].toBool();
-    objectInfo.isKeepFinal              = dataArray[QString::fromUtf8( Protocol::Key::IsKeepFinal )].toBool();
-
-    objectInfo.name                     = dataArray[QString::fromUtf8( Protocol::Key::Name )].toString().toUtf8();
-    objectInfo.extension                = dataArray[QString::fromUtf8( Protocol::Key::Extension )].toString().toUtf8();
-    objectInfo.directory                = dataArray[QString::fromUtf8( Protocol::Key::Directory )].toString().toUtf8();
-    objectInfo.format                   = static_cast<ObjectInfoExtractor::Format>( dataArray[QString::fromUtf8( Protocol::Key::Format )].toInt() );
-    QJsonArray timeStepArray            = dataArray[QString::fromUtf8( Protocol::Key::TimeStep )].toArray();
-    objectInfo.timeStep                 = { timeStepArray[0].toInt(), timeStepArray[1].toInt() };
-    objectInfo.tmpIsFocus               = dataArray[QString::fromUtf8( Protocol::Key::TmpIsFocus )].toBool();
-    objectInfo.isFocus                  = dataArray[QString::fromUtf8( Protocol::Key::IsFocus )].toBool();
-    auto minObjectCoordArray            = dataArray[QString::fromUtf8( Protocol::Key::MinObjectCoord )].toArray();
-    objectInfo.minObjectCoord           = { minObjectCoordArray[0].toDouble(), minObjectCoordArray[1].toDouble(), minObjectCoordArray[2].toDouble() };
-    auto maxObjectCoordArray            = dataArray[QString::fromUtf8( Protocol::Key::MaxObjectCoord )].toArray();
-    objectInfo.maxObjectCoord           = { maxObjectCoordArray[0].toDouble(), maxObjectCoordArray[1].toDouble(), maxObjectCoordArray[2].toDouble() };
-    auto minExternalCoordArray          = dataArray[QString::fromUtf8( Protocol::Key::MinExternalCoord )].toArray();
-    objectInfo.minExternalCoord         = { minExternalCoordArray[0].toDouble(), minExternalCoordArray[1].toDouble(), minExternalCoordArray[2].toDouble() };
-    auto maxExternalCoordArray          = dataArray[QString::fromUtf8( Protocol::Key::MaxExternalCoord )].toArray();
-    objectInfo.maxExternalCoord         = { maxExternalCoordArray[0].toDouble(), maxExternalCoordArray[1].toDouble(), maxExternalCoordArray[2].toDouble() };
-
-    // Common Server Point Object Info
-    objectInfo.tmpParticleLimit         = dataArray[QString::fromUtf8( Protocol::Key::TmpParticleLimit )].toInt();
-    objectInfo.particleLimit            = dataArray[QString::fromUtf8( Protocol::Key::ParticleLimit )].toInt();
-    objectInfo.tmpExtraOpacityFactor    = static_cast<float>( dataArray[QString::fromUtf8( Protocol::Key::TmpExtraOpacityFactor )].toDouble() );
-    objectInfo.extraOpacityFactor       = static_cast<float>( dataArray[QString::fromUtf8( Protocol::Key::ExtraOpacityFactor )].toDouble() );
-
-    // Client Server Point Object Info
-    objectInfo.numberOfVector           = dataArray[QString::fromUtf8( Protocol::Key::NumberOfVector )].toInt();
-    objectInfo.numberOfElements         = dataArray[QString::fromUtf8( Protocol::Key::NumberOfElements )].toInt();
-    objectInfo.numberOfSubvolume        = dataArray[QString::fromUtf8( Protocol::Key::NumberOfSubvolume)].toInt();
-    objectInfo.numberOfNodes            = dataArray[QString::fromUtf8( Protocol::Key::NumberOfNodes )].toInt();
-    objectInfo.elementType              = dataArray[QString::fromUtf8( Protocol::Key::ElementType )].toInt();
-    objectInfo.fileType                 = dataArray[QString::fromUtf8( Protocol::Key::FileType )].toInt();
-    objectInfo.stepNumber               = dataArray[QString::fromUtf8( Protocol::Key::StepNumber )].toInt();
-
-    objectInfo.tmpCoordinateX           = dataArray[QString::fromUtf8( Protocol::Key::TmpCoordinateX )].toString().toUtf8();
-    objectInfo.coordinateX              = dataArray[QString::fromUtf8( Protocol::Key::CoordinateX )].toString().toUtf8();
-    objectInfo.tmpCoordinateY           = dataArray[QString::fromUtf8( Protocol::Key::TmpCoordinateY )].toString().toUtf8();
-    objectInfo.coordinateY              = dataArray[QString::fromUtf8( Protocol::Key::CoordinateY )].toString().toUtf8();
-    objectInfo.tmpCoordinateZ           = dataArray[QString::fromUtf8( Protocol::Key::TmpCoordinateZ )].toString().toUtf8();
-    objectInfo.coordinateZ              = dataArray[QString::fromUtf8( Protocol::Key::IsExport )].toBool();
-
-    // Nontexture Polygon Object Info
-    auto tmpPolygonColorArray           = dataArray[QString::fromUtf8( Protocol::Key::TmpPolygonColor )].toArray();
-    objectInfo.tmpPolygonColor          = kvs::RGBColor( tmpPolygonColorArray[0].toInt(), tmpPolygonColorArray[1].toInt(), tmpPolygonColorArray[2].toInt() );
-    auto polygonColorArray              = dataArray[QString::fromUtf8( Protocol::Key::PolygonColor )].toArray();
-    objectInfo.polygonColor             = kvs::RGBColor( polygonColorArray[0].toInt(), polygonColorArray[1].toInt(), polygonColorArray[2].toInt() );
-
-    objectInfo.tmpPolygonOpacity        = static_cast<float>( dataArray[QString::fromUtf8( Protocol::Key::TmpPolygonOpacity )].toDouble() );
-    objectInfo.polygonOpacity           = static_cast<float>( dataArray[QString::fromUtf8( Protocol::Key::PolygonOpacity )].toDouble() );
-
-    emit addObjectToModel( objectInfo );
-}
-
 void Communication::onModeClicked()
 {
     if( ui->remoteVizInsituRadioButton->isChecked() )
@@ -756,18 +692,18 @@ void Communication::onTextWebsocketMessageReceived( const QString& receivedMessa
     else if( event == QString::fromUtf8( Protocol::Events::Operator ) )                     Operator( obj );
     else if( event == QString::fromUtf8( Protocol::Events::TransferOperator ) )             transferOperator( obj );
     else if( event == QString::fromUtf8( Protocol::Events::Chat ) )                         chat( obj );
-    else if( event == QString::fromUtf8( Protocol::Events::AddObjectToModel ) )             convertObjectInfo( obj );
+    else if( event == QString::fromUtf8( Protocol::Events::SelectedFile ) )                 emit receiveSelectedFile( obj );
+    else if( event == QString::fromUtf8( Protocol::Events::ObjectDelete ) )                 emit receiveObjectDelete( obj );
     else if( event == QString::fromUtf8( Protocol::Events::ShareView ) )                    shareView( obj );
     else if( event == QString::fromUtf8( Protocol::Events::SharePoint ) )                   sharePoint( obj );
     // else if( event == QString::fromUtf8( Protocol::Events::FileList ) )                     fileList( obj );
-    else if( event == QString::fromUtf8( Protocol::Events::ObjectInfoParameter ) )
-    {
-        // FIXME:いまのままでもいいですが、直接emitする方がいいと思います。
-        QJsonArray resultMinObjectCoordsArray   = obj[QString::fromUtf8( Protocol::Key::ResultMinObjectCoords )].toArray();
-        QJsonArray resultMaxObjectCoordsArray   = obj[QString::fromUtf8( Protocol::Key::ResultMaxObjectCoords )].toArray();
-        QJsonArray objectsArray                 = obj[QString::fromUtf8( Protocol::Key::Objects )].toArray();
-        receiveObjectInfoParameter( resultMinObjectCoordsArray, resultMaxObjectCoordsArray, objectsArray );
-    }
+    else if( event == QString::fromUtf8( Protocol::Events::ObjectInfoParameter ) )          emit receiveObjectInfoParameter( obj );
+    // {
+        // QJsonArray resultMinObjectCoordsArray   = obj[QString::fromUtf8( Protocol::Key::ResultMinObjectCoords )].toArray();
+        // QJsonArray resultMaxObjectCoordsArray   = obj[QString::fromUtf8( Protocol::Key::ResultMaxObjectCoords )].toArray();
+        // QJsonArray objectsArray                 = obj[QString::fromUtf8( Protocol::Key::Objects )].toArray();
+        // receiveObjectInfoParameter( resultMinObjectCoordsArray, resultMaxObjectCoordsArray, objectsArray );
+    // }
     else if( event == QString::fromUtf8( Protocol::Events::TransferFunctionParameter ) )
     {
         // synthesize 情報
