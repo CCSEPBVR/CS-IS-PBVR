@@ -38,10 +38,10 @@ struct ParticleProperty
     std::vector<unsigned long long> opacity_histgram;
 
     // min max
-    std::vector<float> color_min_vec;
-    std::vector<float> color_max_vec;
-    std::vector<float> opacity_min_vec;
-    std::vector<float> opacity_max_vec;
+    std::vector<float> server_color_min_vec;
+    std::vector<float> server_color_max_vec;
+    std::vector<float> server_opacity_min_vec;
+    std::vector<float> server_opacity_max_vec;
 };
 
 #endif //  __PARTICLE__PROPERTY_

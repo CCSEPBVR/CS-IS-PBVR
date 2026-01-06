@@ -337,23 +337,23 @@ void InitialStepCS(
     std::memcpy( particle_property.opacity_histgram.data(), tmp_o_bins, DEFAULT_NBINS * tf_number * sizeof( unsigned long long ) );
 
     // min maxの格納
-    particle_property.color_min_vec.clear();
-    particle_property.color_max_vec.clear();
-    particle_property.opacity_min_vec.clear();
-    particle_property.opacity_max_vec.clear();
-    particle_property.color_min_vec.resize( tf_number );
-    particle_property.color_max_vec.resize( tf_number );
-    particle_property.opacity_min_vec.resize( tf_number );
-    particle_property.opacity_max_vec.resize( tf_number );
+    particle_property.server_color_min_vec.clear();
+    particle_property.server_color_max_vec.clear();
+    particle_property.server_opacity_min_vec.clear();
+    particle_property.server_opacity_max_vec.clear();
+    particle_property.server_color_min_vec.resize( tf_number );
+    particle_property.server_color_max_vec.resize( tf_number );
+    particle_property.server_opacity_min_vec.resize( tf_number );
+    particle_property.server_opacity_max_vec.resize( tf_number );
     for( int i = 0; i < tf_number; i++ )
     {
         std::stringstream ss; 
         ss << (i + 1); 
         const std::string idxbuf = ss.str();
-        particle_property.color_min_vec[i]   = vr.min( "t" + idxbuf + "_var_c" );
-        particle_property.color_max_vec[i]   = vr.max( "t" + idxbuf + "_var_c" );
-        particle_property.opacity_min_vec[i] = vr.min( "t" + idxbuf + "_var_o" );
-        particle_property.opacity_max_vec[i] = vr.max( "t" + idxbuf + "_var_o" );
+        particle_property.server_color_min_vec[i]   = vr.min( "t" + idxbuf + "_var_c" );
+        particle_property.server_color_max_vec[i]   = vr.max( "t" + idxbuf + "_var_c" );
+        particle_property.server_opacity_min_vec[i] = vr.min( "t" + idxbuf + "_var_o" );
+        particle_property.server_opacity_max_vec[i] = vr.max( "t" + idxbuf + "_var_o" );
     }
 
     nan_error = false;
@@ -532,10 +532,10 @@ void InitialStepIS(
         std::stringstream ss; 
         ss << (i + 1); 
         const std::string idxbuf = ss.str();
-        particle_property.color_min_vec[i]   = vr.min( "t" + idxbuf + "_var_c" );
-        particle_property.color_max_vec[i]   = vr.max( "t" + idxbuf + "_var_c" );
-        particle_property.opacity_min_vec[i] = vr.min( "t" + idxbuf + "_var_o" );
-        particle_property.opacity_max_vec[i] = vr.max( "t" + idxbuf + "_var_o" );
+        particle_property.server_color_min_vec[i]   = vr.min( "t" + idxbuf + "_var_c" );
+        particle_property.server_color_max_vec[i]   = vr.max( "t" + idxbuf + "_var_c" );
+        particle_property.server_opacity_min_vec[i] = vr.min( "t" + idxbuf + "_var_o" );
+        particle_property.server_opacity_max_vec[i] = vr.max( "t" + idxbuf + "_var_o" );
     }
 
     delete[] tmp_c_bins;

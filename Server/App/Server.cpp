@@ -590,12 +590,12 @@ void Server::initialize( uWS::WebSocket<false, true, PerSocket>* ws, const nlohm
     // msd[Protocol::Key::OpacityVariable]  = opacity_variable_vec;
     // msd[Protocol::Key::UserColorMin]     = user_color_min_vec;
     // msd[Protocol::Key::UserColorMax]     = user_color_max_vec;
-    // msd[Protocol::Key::ServerColorMin]   = m_particle_property->color_min_vec;
-    // msd[Protocol::Key::ServerColorMax]   = m_particle_property->color_max_vec;
+    // msd[Protocol::Key::ServerColorMin]   = m_particle_property->server_color_min_vec;
+    // msd[Protocol::Key::ServerColorMax]   = m_particle_property->server_color_max_vec;
     // msd[Protocol::Key::UserOpacityMin]   = user_opacity_min_vec;
     // msd[Protocol::Key::UserOpacityMax]   = user_opacity_max_vec;
-    // msd[Protocol::Key::ServerOpacityMin] = m_particle_property->opacity_min_vec;
-    // msd[Protocol::Key::ServerOpacityMax] = m_particle_property->opacity_max_vec;
+    // msd[Protocol::Key::ServerOpacityMin] = m_particle_property->server_opacity_min_vec;
+    // msd[Protocol::Key::ServerOpacityMax] = m_particle_property->server_opacity_max_vec;
     // msd[Protocol::Key::ColorMap]         = color_map;
     // msd[Protocol::Key::OpacityMap]       = opacity_map;
     // msd[Protocol::Key::ColorHistgram]    = m_particle_property->color_histgram;
@@ -1338,10 +1338,10 @@ void Server::requestDataAt( uWS::WebSocket<false, true, PerSocket>* ws, const nl
         // msg[Protocol::Key::Event]           = Protocol::Events::HistgramAndMinMax;
         // msd[Protocol::Key::ColorHistgram]   = m_particle_property->color_histgram;
         // msd[Protocol::Key::OpacityHistgram] = m_particle_property->opacity_histgram;
-        // msd[Protocol::Key::ColorMin]        = m_particle_property->color_min_vec;
-        // msd[Protocol::Key::ColorMax]        = m_particle_property->color_max_vec;
-        // msd[Protocol::Key::OpacityMin]      = m_particle_property->opacity_min_vec;
-        // msd[Protocol::Key::OpacityMax]      = m_particle_property->opacity_max_vec;
+        // msd[Protocol::Key::ColorMin]        = m_particle_property->server_color_min_vec;
+        // msd[Protocol::Key::ColorMax]        = m_particle_property->server_color_max_vec;
+        // msd[Protocol::Key::OpacityMin]      = m_particle_property->server_opacity_min_vec;
+        // msd[Protocol::Key::OpacityMax]      = m_particle_property->server_opacity_max_vec;
         // m_u_web_sockets.publish( "Notice", msg.dump(), uWS::OpCode::TEXT );
         
 
