@@ -29,14 +29,13 @@ vismodule::PointObject* PointObjectGenerator::GenerateParticleStruct(
     const ParticleProperty& particle_property,
     const domain_parameters_struct& dom,
     Type** values,
-    const int nvariables
-    // const jpv::ServerMode server_mode
+    const int nvariables,
+    ServerMode server_mode
 )
 {
     vismodule::CoordSynthesizerStrings* css;
 
-    /* CS IS の切り替えは一旦保留
-    if ( server_mode == jpv::ServerMode::CS )
+    if ( server_mode == ServerMode::CS )
     {
         std::string xss = particle_property.m_x_synthesis;
         std::string yss = particle_property.m_y_synthesis;
@@ -47,9 +46,6 @@ vismodule::PointObject* PointObjectGenerator::GenerateParticleStruct(
     {
         css = NULL;
     }
-    */
-
-    css = NULL;
 
     // NamedTransferFunctionをTransferFunctionにupcast
     std::vector<vismodule::TransferFunction> transfunc_array;
@@ -131,14 +127,13 @@ vismodule::PointObject* PointObjectGenerator::GenerateParticleUnstruct(
     const int ncoords,
     unsigned int* connections,
     const int ncells,
-    const vismodule::VolumeObjectBase::CellType& celltype
-    // const jpv::ServerMode server_mode
+    const vismodule::VolumeObjectBase::CellType& celltype,
+    ServerMode server_mode
 )
 {
     vismodule::CoordSynthesizerStrings* css;
 
-    /* CS ISの切り替えは一旦保留
-    if ( server_mode == jpv::ServerMode::CS )
+    if ( server_mode == ServerMode::CS )
     {
         std::string xss = particle_property.m_x_synthesis;
         std::string yss = particle_property.m_y_synthesis;
@@ -149,9 +144,6 @@ vismodule::PointObject* PointObjectGenerator::GenerateParticleUnstruct(
     {
         css = NULL;
     }
-    */
-
-    css = NULL;
 
     // NamedTransferFunctionをTransferFunctionにupcast
     std::vector<vismodule::TransferFunction> transfunc_array;

@@ -26,7 +26,7 @@ bool SetDefaultParticleParameterCS(
 
     particle_property.m_level_index              = 1;
     particle_property.m_repeat_level             = 4;
-    particle_property.m_sampling_method          = 'h';
+    particle_property.m_sampling_method          = 'u';
     particle_property.m_particle_data_size_limit = 20;
     particle_property.m_particle_limit           = 10000000;
     particle_property.m_particle_density         = 1;
@@ -119,6 +119,9 @@ bool SetDefaultParticleParameterCS(
 
             vismodule::ColorMap color_map( cc_table    , 0, 1 );
             vismodule::OpacityMap opacity_map( oo_table, 0, 1 );
+
+            particle_property.m_transfunc_array[i].setColorMap( color_map );
+            particle_property.m_transfunc_array[i].setOpacityMap( opacity_map );
         
             // particle_property.m_transfunc_array[i].m_selection = NamedTransferFunctionParameter::SelectTransferFunction;
 
@@ -274,7 +277,7 @@ void InitialStepCS(
                     }
 
                     // generate particle
-                    send_obj = point_object_generator.GenerateParticleUnstruct( particle_property, dom, raw_pointers_vector.data(), nvariables, coordinates.get(), ncoords, connections.get(), ncells, celltype );
+                    send_obj = point_object_generator.GenerateParticleUnstruct( particle_property, dom, raw_pointers_vector.data(), nvariables, coordinates.get(), ncoords, connections.get(), ncells, celltype, ServerMode::CS );
                 }
                 else // ( voltype == vismodule::VolumeObjectBase::VolumeType::Structured )
                 {
@@ -289,7 +292,7 @@ void InitialStepCS(
                     }                        
 
                     // generate particle
-                    send_obj = point_object_generator.GenerateParticleStruct( particle_property, dom, raw_pointers_vector.data(), nvariables );
+                    send_obj = point_object_generator.GenerateParticleStruct( particle_property, dom, raw_pointers_vector.data(), nvariables, ServerMode::CS );
                 }
 
                 delete volume;
@@ -322,7 +325,7 @@ void InitialStepCS(
     }
 #endif
 
-    vr = setVariablerange2( tmp_max, tmp_min, ( tf_number * 2 ) );
+    vr = setVariablerange2( tmp_max, tmp_min, tf_number );
     vr.show();
 
     // histgramの格納

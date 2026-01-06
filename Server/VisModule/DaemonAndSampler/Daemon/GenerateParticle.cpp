@@ -16,7 +16,6 @@ void GenerateParticleCS(
     ParticleProperty& particle_property,
     MultiVolumePropertyList& mvpl,
     std::unique_ptr<kvs::PointObject>& point_object
-    // jpv::ServerMode server_mode
 )
 {
     int rank;
@@ -145,7 +144,7 @@ void GenerateParticleCS(
                     }
 
                     // generate particle
-                    send_obj = point_object_generator.GenerateParticleUnstruct( particle_property, dom, raw_pointers_vector.data(), nvariables, coordinates.get(), ncoords, connections.get(), ncells, celltype );
+                    send_obj = point_object_generator.GenerateParticleUnstruct( particle_property, dom, raw_pointers_vector.data(), nvariables, coordinates.get(), ncoords, connections.get(), ncells, celltype, ServerMode::CS );
                 }
                 else // ( voltype == vismodule::VolumeObjectBase::VolumeType::Structured )
                 {
@@ -160,7 +159,7 @@ void GenerateParticleCS(
                     }                        
 
                     // generate particle
-                    send_obj = point_object_generator.GenerateParticleStruct( particle_property, dom, raw_pointers_vector.data(), nvariables );
+                    send_obj = point_object_generator.GenerateParticleStruct( particle_property, dom, raw_pointers_vector.data(), nvariables, ServerMode::CS );
                 }
 
                 delete volume;
@@ -268,7 +267,7 @@ void GenerateParticleCS(
     }
 #endif
 
-    vr = setVariablerange2( tmp_max, tmp_min, ( tf_number * 2 ) );
+    vr = setVariablerange2( tmp_max, tmp_min, tf_number );
     vr.show();
 
     // histgramの格納

@@ -28,8 +28,8 @@ public:
         const ParticleProperty& param,
         const domain_parameters_struct& dom,
         Type** values,
-        const int nvariables
-        // const jpv::ServerMode server_mode
+        const int nvariables,
+        ServerMode server_mode
     );
 
     vismodule::PointObject* GenerateParticleUnstruct(
@@ -41,8 +41,8 @@ public:
         const int ncoords,
         unsigned int* connections,
         const int ncells,
-        const vismodule::VolumeObjectBase::CellType& celltype
-        // const jpv::ServerMode server_mode
+        const vismodule::VolumeObjectBase::CellType& celltype,
+        ServerMode server_mode
     );
 }; // class ParticleProperty
 

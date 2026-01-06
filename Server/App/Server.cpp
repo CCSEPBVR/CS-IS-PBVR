@@ -287,7 +287,7 @@ void Server::initialize( uWS::WebSocket<false, true, PerSocket>* ws, const nlohm
         std::unique_ptr<kvs::PointObject> tmp_object;
         tmp_object = std::make_unique<kvs::PointObject>();
 
-        GenerateParticleCS(
+        InitialStepCS(
             volumeDataNativeFilePath,
             m_multi_volume_property_list->m_total_start_steps,
             *m_particle_property,
@@ -543,18 +543,64 @@ void Server::initialize( uWS::WebSocket<false, true, PerSocket>* ws, const nlohm
         }
     }
 
-    // 伝達関数も必要?
-    // m_particle_propertyに値は格納されている
+    // クライアントに送信する伝達関数を作成する
+    const int tf_number = m_particle_property->m_transfunc_array.size();
+    const int tf_resolution = 256;
+    std::vector<std::string> color_variable_vec;
+    std::vector<std::string> opacity_variable_vec;
+    std::vector<float> user_color_min_vec;
+    std::vector<float> user_color_max_vec;
+    std::vector<float> user_opacity_min_vec;
+    std::vector<float> user_opacity_max_vec;
+    std::vector<vismodule::UInt8> color_map;
+    std::vector<float> opacity_map;
 
-    // ここでhistgram, minmaxを送信?
+    color_variable_vec.resize( tf_number );
+    opacity_variable_vec.resize( tf_number );
+    user_color_min_vec.resize( tf_number );
+    user_color_max_vec.resize( tf_number );
+    user_opacity_min_vec.resize( tf_number );
+    user_opacity_max_vec.resize( tf_number );
+    color_map.resize( tf_number * tf_resolution * 3 );
+    opacity_map.resize( tf_number * tf_resolution );
+
+    int offset = 0;
+
+    for ( size_t i = 0; i < tf_number; i++ )
+    {
+        color_variable_vec[i]   = m_particle_property->m_transfunc_array[i].m_color_variable;
+        opacity_variable_vec[i] = m_particle_property->m_transfunc_array[i].m_opacity_variable;
+        user_color_min_vec[i]   = m_particle_property->m_transfunc_array[i].colorMinValue();
+        user_color_max_vec[i]   = m_particle_property->m_transfunc_array[i].colorMaxValue();
+        user_opacity_min_vec[i] = m_particle_property->m_transfunc_array[i].opacityMinValue();
+        user_opacity_max_vec[i] = m_particle_property->m_transfunc_array[i].opacityMaxValue();
+
+        vismodule::ColorMap::Table color_map_table     = m_particle_property->m_transfunc_array[i].colorMap().table();
+        vismodule::OpacityMap::Table opacity_map_table = m_particle_property->m_transfunc_array[i].opacityMap().table();
+
+        std::memcpy( color_map.data() + ( offset * 3 ), color_map_table.pointer(), color_map_table.byteSize() );
+        std::memcpy( opacity_map.data() + offset, opacity_map_table.pointer(), opacity_map_table.byteSize() );
+        offset += tf_resolution;
+    }
+
+    // クライアントに伝達関数を送信する
     // nlohmann::json msg;
-    // msg[Protocol::Key::Event]           = Protocol::Events::HistgramAndMinMax;
-    // msd[Protocol::Key::ColorHistgram]   = m_particle_property->color_histgram;
-    // msd[Protocol::Key::OpacityHistgram] = m_particle_property->opacity_histgram;
-    // msd[Protocol::Key::ColorMin]        = m_particle_property->color_min_vec;
-    // msd[Protocol::Key::ColorMax]        = m_particle_property->color_max_vec;
-    // msd[Protocol::Key::OpacityMin]      = m_particle_property->opacity_min_vec;
-    // msd[Protocol::Key::OpacityMax]      = m_particle_property->opacity_max_vec;
+    // msg[Protocol::Key::Event]            = Protocol::Events::HistgramAndMinMax;
+    // msd[Protocol::Key::ColorVariable]    = color_variable_vec;
+    // msd[Protocol::Key::OpacityVariable]  = opacity_variable_vec;
+    // msd[Protocol::Key::UserColorMin]     = user_color_min_vec;
+    // msd[Protocol::Key::UserColorMax]     = user_color_max_vec;
+    // msd[Protocol::Key::ServerColorMin]   = m_particle_property->color_min_vec;
+    // msd[Protocol::Key::ServerColorMax]   = m_particle_property->color_max_vec;
+    // msd[Protocol::Key::UserOpacityMin]   = user_opacity_min_vec;
+    // msd[Protocol::Key::UserOpacityMax]   = user_opacity_max_vec;
+    // msd[Protocol::Key::ServerOpacityMin] = m_particle_property->opacity_min_vec;
+    // msd[Protocol::Key::ServerOpacityMax] = m_particle_property->opacity_max_vec;
+    // msd[Protocol::Key::ColorMap]         = color_map;
+    // msd[Protocol::Key::OpacityMap]       = opacity_map;
+    // msd[Protocol::Key::ColorHistgram]    = m_particle_property->color_histgram;
+    // msd[Protocol::Key::OpacityHistgram]  = m_particle_property->opacity_histgram;
+    // m_u_web_sockets.publish( "Notice", msg.dump(), uWS::OpCode::TEXT );
 }
 
 void createServerPointObject()
@@ -1296,6 +1342,8 @@ void Server::requestDataAt( uWS::WebSocket<false, true, PerSocket>* ws, const nl
         // msd[Protocol::Key::ColorMax]        = m_particle_property->color_max_vec;
         // msd[Protocol::Key::OpacityMin]      = m_particle_property->opacity_min_vec;
         // msd[Protocol::Key::OpacityMax]      = m_particle_property->opacity_max_vec;
+        // m_u_web_sockets.publish( "Notice", msg.dump(), uWS::OpCode::TEXT );
+        
 
         // POL生成
         if ( m_pol_property->m_plot_flag )
@@ -1328,7 +1376,7 @@ void Server::requestDataAt( uWS::WebSocket<false, true, PerSocket>* ws, const nl
             std::memcpy( x_axis.data(), kvsml_object_pol->values_on_line().pointer(), kvsml_object_pol->values_on_line().byteSize() );
 
             // FIXME:ここでPOLの配列をテキストで送信
-            // msg[Protocol::Key::Event]       = Protocol::Events::PlotOverLineHoge;
+            // msg[Protocol::Key::Event]       = Protocol::Events::PlotOverLineGraph;
             // msg[Protocol::Key::ValueOnLine] = values_on_line;
             // msg[Protocol::Key::XAxis]       = mask;
             // msg[Protocol::Key::Mask]        = x_axis;
