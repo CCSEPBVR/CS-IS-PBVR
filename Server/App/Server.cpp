@@ -606,7 +606,7 @@ void Server::initialize( uWS::WebSocket<false, true, PerSocket>* ws, const nlohm
     // クライアントに伝達関数を送信する
     nlohmann::json msg;
     msg[Protocol::Key::Event]                 = Protocol::Events::Initialize;
-    msg[Protocol::Key::ColorSynthesizer]      = m_particle_property->m_transfunc_synthesizer->m_color_transfer_function_synthesis;
+    msg[Protocol::Key::ColorSynthesizer]      = m_particle_property->m_color_transfer_function_synthesis;
     msg[Protocol::Key::ColorRangeMode]        = color_range_mode_vec;
     msg[Protocol::Key::ColorVariable]         = color_variable_vec;
     msg[Protocol::Key::ColorUserRangeMin]     = user_color_min_vec;
@@ -616,7 +616,7 @@ void Server::initialize( uWS::WebSocket<false, true, PerSocket>* ws, const nlohm
     msg[Protocol::Key::ColorMap]              = color_map;
     msg[Protocol::Key::ColorHistogram]        = m_particle_property->color_histgram;
 
-    msg[Protocol::Key::OpacitySynthesizer]    = m_particle_property->m_transfunc_synthesizer->m_opacity_transfer_function_synthesis;
+    msg[Protocol::Key::OpacitySynthesizer]    = m_particle_property->m_opacity_transfer_function_synthesis;
     msg[Protocol::Key::OpacityRangeMode]      = opacity_range_mode_vec;
     msg[Protocol::Key::OpacityVariable]       = opacity_variable_vec;
     msg[Protocol::Key::OpacityUserRangeMin]   = user_opacity_min_vec;
