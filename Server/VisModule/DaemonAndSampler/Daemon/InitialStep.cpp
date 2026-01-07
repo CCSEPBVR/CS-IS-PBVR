@@ -51,7 +51,6 @@ bool SetDefaultParticleParameterCS(
     if ( transfer_function_file_name != "" )
     {
         std::cout << "user define parameter " << std::endl;
-        std::cout << "ERROR: user define parameter is not supported at this time." << std::endl;
 
         // 伝達関数ファイルから伝達関数を設定する処理の実装する, クライアントにサンプルがあるはず
         ParameterFileReader ppr;

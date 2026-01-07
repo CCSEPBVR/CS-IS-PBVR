@@ -550,12 +550,19 @@ void Server::initialize( uWS::WebSocket<false, true, PerSocket>* ws, const nlohm
     for ( size_t i = 0; i < tf_number; i++ )
     {
         float color_min, color_max, opacity_min, opacity_max;
-        color_min   = m_particle_property->server_color_min_vec[i];
-        color_max   = m_particle_property->server_color_max_vec[i];
-        opacity_min = m_particle_property->server_opacity_min_vec[i];
-        opacity_max = m_particle_property->server_opacity_max_vec[i];
-        m_particle_property->m_transfunc_array[i].setColorRange( color_min, color_max );
-        m_particle_property->m_transfunc_array[i].setOpacityRange( opacity_min, opacity_max );
+        if ( m_particle_property->m_transfunc_array[i].m_server_color_range_mode == NamedTransferFunction::ServerRangeMode::ServerSide )
+        {
+            color_min   = m_particle_property->server_color_min_vec[i];
+            color_max   = m_particle_property->server_color_max_vec[i];
+            m_particle_property->m_transfunc_array[i].setColorRange( color_min, color_max );
+        }
+
+        if ( m_particle_property->m_transfunc_array[i].m_server_opacity_range_mode == NamedTransferFunction::ServerRangeMode::ServerSide )
+        {
+            opacity_min = m_particle_property->server_opacity_min_vec[i];
+            opacity_max = m_particle_property->server_opacity_max_vec[i];
+            m_particle_property->m_transfunc_array[i].setOpacityRange( opacity_min, opacity_max );
+        }
     }
 
     // クライアントに送信する伝達関数を作成する

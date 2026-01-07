@@ -237,12 +237,14 @@ void ParameterFileReader::setTransferFunctionParameter( ParticleProperty& partic
         std::string s_color               = m_name_list_file.getValue<std::string>( tag_base + "TABLE_C" );
         std::string s_opacity             = m_name_list_file.getValue<std::string>( tag_base + "TABLE_O" );
 
-        particle_property.m_transfunc_array[i].m_color_variable       = color_variable;
-        particle_property.m_transfunc_array[i].m_opacity_variable     = opacity_varible;
-        particle_property.m_transfunc_array[i].m_color_variable_min   = color_min;
-        particle_property.m_transfunc_array[i].m_color_variable_max   = color_max;
-        particle_property.m_transfunc_array[i].m_opacity_variable_min = opacity_min;
-        particle_property.m_transfunc_array[i].m_opacity_variable_max = opacity_max;
+        particle_property.m_transfunc_array[i].m_server_color_range_mode   = NamedTransferFunction::ServerRangeMode::UserRange;
+        particle_property.m_transfunc_array[i].m_server_opacity_range_mode = NamedTransferFunction::ServerRangeMode::UserRange;
+        particle_property.m_transfunc_array[i].m_color_variable            = color_variable;
+        particle_property.m_transfunc_array[i].m_opacity_variable          = opacity_varible;
+        particle_property.m_transfunc_array[i].m_color_variable_min        = color_min;
+        particle_property.m_transfunc_array[i].m_color_variable_max        = color_max;
+        particle_property.m_transfunc_array[i].m_opacity_variable_min      = opacity_min;
+        particle_property.m_transfunc_array[i].m_opacity_variable_max      = opacity_max;
 
         std::replace( s_color.begin(), s_color.end(), ',', ' ' );
         std::replace( s_opacity.begin(), s_opacity.end(), ',', ' ' );
@@ -278,6 +280,52 @@ void ParameterFileReader::setTransferFunctionParameter( ParticleProperty& partic
         particle_property.m_transfunc_array[i].setColorRange( color_min, color_max );
         particle_property.m_transfunc_array[i].setOpacityRange( opacity_min, opacity_max );        
     }
+
+    std::string equation;
+    EquationToken eq;
+
+    equation = m_name_list_file.getValue<std::string>( "TF_SYNTH_C" );
+    std::replace( equation.begin(), equation.end(), 'C', 'c' );
+    eq = particle_property.m_transfunc_synthesizer->convert_token( equation );
+    particle_property.m_transfunc_synthesizer->setColorFunction( eq );
+
+    equation = m_name_list_file.getValue<std::string>( "TF_SYNTH_O" );
+    std::replace( equation.begin(), equation.end(), 'O', 'a' );
+    eq = particle_property.m_transfunc_synthesizer->convert_token( equation );
+    particle_property.m_transfunc_synthesizer->setOpacityFunction( eq );
+
+    std::vector<EquationToken> var;
+
+    for ( size_t i = 0; i < tf_number; i++ )
+    {
+        std::stringstream tss;
+        tss << "TF_NAME" << i + 1 << "_";
+        const std::string tag_base = tss.str();
+
+        equation = m_name_list_file.getValue<std::string>( tag_base + "VAR_C" );
+        eq = particle_property.m_transfunc_synthesizer->convert_token( equation );
+
+        var.push_back( eq );
+    }
+
+    particle_property.m_transfunc_synthesizer->setColorVariable( var );
+    var.clear();
+
+    for ( size_t i = 0; i < tf_number; i++ )
+    {
+        std::stringstream tss;
+        tss << "TF_NAME" << i + 1 << "_";
+        const std::string tag_base = tss.str();
+
+        equation = m_name_list_file.getValue<std::string>( tag_base + "VAR_O" );
+        eq = particle_property.m_transfunc_synthesizer->convert_token( equation );
+
+        var.push_back( eq );
+    }
+    particle_property.m_transfunc_synthesizer->setOpacityVariable( var );
+    var.clear();
+
+    return;
 }
 
 void ParameterFileReader::setParticleParameter( ParticleProperty& particle_property )
@@ -392,7 +440,7 @@ void ParameterFileReader::setParticleParameter( ParticleProperty& particle_prope
     std::string equation;
     EquationToken eq;
 
-    equation   = m_name_list_file.getValue<std::string>( "COLOR_SYNTH" );
+    equation = m_name_list_file.getValue<std::string>( "COLOR_SYNTH" );
     std::replace( equation.begin(), equation.end(), 'C', 'c' );
     eq = particle_property.m_transfunc_synthesizer->convert_token( equation );
     particle_property.m_transfunc_synthesizer->setColorFunction( eq );
