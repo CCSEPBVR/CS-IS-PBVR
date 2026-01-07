@@ -47,8 +47,17 @@ public:
         SelectTransferFunction = 1,
     };
 
+    enum ServerRangeMode
+    {
+        Unknown    = 0,
+        UserRange  = 1,
+        ServerSide = 2,
+    };
+
 public:
     Selection m_selection;
+    ServerRangeMode m_server_color_range_mode;
+    ServerRangeMode m_server_opacity_range_mode;
 
     std::string m_name;
     std::string m_color_variable;

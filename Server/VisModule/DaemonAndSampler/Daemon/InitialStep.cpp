@@ -122,8 +122,9 @@ bool SetDefaultParticleParameterCS(
 
             particle_property.m_transfunc_array[i].setColorMap( color_map );
             particle_property.m_transfunc_array[i].setOpacityMap( opacity_map );
-        
-            // particle_property.m_transfunc_array[i].m_selection = NamedTransferFunctionParameter::SelectTransferFunction;
+
+            particle_property.m_transfunc_array[i].m_server_color_range_mode   = NamedTransferFunction::ServerRangeMode::ServerSide;
+            particle_property.m_transfunc_array[i].m_server_opacity_range_mode = NamedTransferFunction::ServerRangeMode::ServerSide;
 
             // particle_property.m_voleqn[i].m_name     = ff.str() + "C";
             // particle_property.m_voleqn[i].m_equation = qq.str();

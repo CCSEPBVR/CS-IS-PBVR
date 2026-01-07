@@ -543,8 +543,21 @@ void Server::initialize( uWS::WebSocket<false, true, PerSocket>* ws, const nlohm
         }
     }
 
-    // クライアントに送信する伝達関数を作成する
+    // ColorMap, OpacityMapのMinMaxを更新する
     const int tf_number = m_particle_property->m_transfunc_array.size();
+
+    for ( size_t i = 0; i < tf_number; i++ )
+    {
+        float color_min, color_max, opacity_min, opacity_max;
+        color_min   = m_particle_property->server_color_min_vec[i];
+        color_max   = m_particle_property->server_color_max_vec[i];
+        opacity_min = m_particle_property->server_opacity_min_vec[i];
+        opacity_max = m_particle_property->server_opacity_max_vec[i];
+        m_particle_property->m_transfunc_array[i].setColorRange( color_min, color_max );
+        m_particle_property->m_transfunc_array[i].setOpacityRange( opacity_min, opacity_max );
+    }
+
+    // クライアントに送信する伝達関数を作成する
     const int tf_resolution = 256;
     std::vector<std::string> color_variable_vec;
     std::vector<std::string> opacity_variable_vec;
@@ -951,10 +964,12 @@ void Server::receiveTransferFunctionParameter( uWS::WebSocket<false, true, PerSo
         switch ( static_cast<TransferFunction::RangeMode>( colorRangeMode ) )
         {
         case TransferFunction::ServerSide:
+            m_particle_property->m_transfunc_array[i].m_server_color_range_mode = NamedTransferFunction::ServerRangeMode::ServerSide;
             m_particle_property->m_transfunc_array[i].m_color_variable_min = colorServerMin;
             m_particle_property->m_transfunc_array[i].m_color_variable_max = colorServerMax;
             break;
         case TransferFunction::UserRange:
+            m_particle_property->m_transfunc_array[i].m_server_color_range_mode = NamedTransferFunction::ServerRangeMode::UserRange;
             m_particle_property->m_transfunc_array[i].m_color_variable_min = colorUserMin;
             m_particle_property->m_transfunc_array[i].m_color_variable_max = colorUserMax;
             break;
@@ -1017,10 +1032,12 @@ void Server::receiveTransferFunctionParameter( uWS::WebSocket<false, true, PerSo
         switch ( static_cast<TransferFunction::RangeMode>( opacityRangeMode ) )
         {
         case TransferFunction::ServerSide:
+            m_particle_property->m_transfunc_array[i].m_server_opacity_range_mode = NamedTransferFunction::ServerRangeMode::ServerSide;
             m_particle_property->m_transfunc_array[i].m_opacity_variable_min = opacityServerMin;
             m_particle_property->m_transfunc_array[i].m_opacity_variable_max = opacityServerMax;
             break;
         case TransferFunction::UserRange:
+            m_particle_property->m_transfunc_array[i].m_server_opacity_range_mode = NamedTransferFunction::ServerRangeMode::UserRange;
             m_particle_property->m_transfunc_array[i].m_opacity_variable_min = opacityUserMin;
             m_particle_property->m_transfunc_array[i].m_opacity_variable_max = opacityUserMax;
             break;
@@ -1332,6 +1349,29 @@ void Server::requestDataAt( uWS::WebSocket<false, true, PerSocket>* ws, const nl
             std::cout << "[Server] publish UUID + PointObjects..." << std::endl;
             m_u_web_sockets.publish( "AFTER", std::string_view( buffer.data(), buffer.size() ), uWS::OpCode::BINARY );
         } );
+
+
+        int tf_number = m_particle_property->m_transfunc_array.size();
+
+        for ( size_t i = 0; i < tf_number; i++ )
+        {
+            // ServerRangeModeがサーバの場合, ColorMapのMinMaxを更新する
+            if ( m_particle_property->m_transfunc_array[i].m_server_color_range_mode == NamedTransferFunction::ServerRangeMode::ServerSide )
+            {
+                float color_min, color_max;
+                color_min = m_particle_property->server_color_min_vec[i];
+                color_max = m_particle_property->server_color_max_vec[i];
+                m_particle_property->m_transfunc_array[i].setColorRange( color_min, color_max );
+            }
+            // ServerRangeModeがサーバの場合, OpacityMapのMinMaxを更新する
+            if ( m_particle_property->m_transfunc_array[i].m_server_opacity_range_mode == NamedTransferFunction::ServerRangeMode::ServerSide )
+            {
+                float opacity_min, opacity_max;
+                opacity_min = m_particle_property->server_opacity_min_vec[i];
+                opacity_max = m_particle_property->server_opacity_max_vec[i];
+                m_particle_property->m_transfunc_array[i].setOpacityRange( opacity_min, opacity_max );
+            }
+        }
 
         // ここでhistgram, minmaxを送信?
         // nlohmann::json msg;
