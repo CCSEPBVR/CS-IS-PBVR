@@ -34,6 +34,7 @@ public slots:
     void loadParameter( const QString& filePath );
     void saveParameter( const QString& filePath );
 
+    void onReceiveInitializeTransferFunctionParameter( const QJsonObject& dataArray );
     void onReceiveTransferFunctionParameter( const QString& colorSynth, const QString& opacitySynth, const QJsonArray& dataArray );
 
 private:
