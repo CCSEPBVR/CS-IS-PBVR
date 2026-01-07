@@ -2,6 +2,63 @@
 #define DEFAULT_TF_NUMBER 5
 #define BEFORE_READ_TF_NUMBER 99
 
+void ParameterFileReader::readTransferFunctionFile( const char* fname )
+{
+    m_name_list_file.setName( "TF_RESOLUTION" );
+    m_name_list_file.setName( "TF_NUMBER" );
+    m_name_list_file.setName( "TF_SYNTH_C" );
+    m_name_list_file.setName( "TF_SYNTH_O" );
+
+    for ( size_t i = 0; i < BEFORE_READ_TF_NUMBER; i++ )
+    {
+        std::stringstream ss;
+        ss << "TF_NAME" << i + 1 << "_";
+
+        const std::string tag_base = ss.str();
+        m_name_list_file.setName( tag_base + "C" );
+        m_name_list_file.setName( tag_base + "VAR_C" );
+        m_name_list_file.setName( tag_base + "MIN_C" );
+        m_name_list_file.setName( tag_base + "MAX_C" );
+        m_name_list_file.setName( tag_base + "TABLE_C" );
+        m_name_list_file.setName( tag_base + "O" );
+        m_name_list_file.setName( tag_base + "VAR_O" );
+        m_name_list_file.setName( tag_base + "MIN_O" );
+        m_name_list_file.setName( tag_base + "MAX_O" );
+        m_name_list_file.setName( tag_base + "TABLE_O" );
+    }
+
+    m_name_list_file.setFileName( std::string( fname ) );
+
+    if( !m_name_list_file.read() )
+    {
+        std::cerr << "ERROR:Failed to read the transfer function file." << std::endl;
+        return;
+    }
+
+    // delete TF_NUMBER+1 ~ BEFORE_READ_TF_NUMBER
+    const int tf_number = m_name_list_file.getValue<int>( "TF_NUMBER" );
+    if ( tf_number < BEFORE_READ_TF_NUMBER )
+    {
+        for ( size_t i = tf_number; i < BEFORE_READ_TF_NUMBER; i++ )
+        {
+            std::stringstream ss;
+            ss << "TF_NAME" << i + 1 << "_";
+
+            const std::string tag_base = ss.str();
+            m_name_list_file.setName( tag_base + "C" );
+            m_name_list_file.setName( tag_base + "VAR_C" );
+            m_name_list_file.setName( tag_base + "MIN_C" );
+            m_name_list_file.setName( tag_base + "MAX_C" );
+            m_name_list_file.setName( tag_base + "TABLE_C" );
+            m_name_list_file.setName( tag_base + "O" );
+            m_name_list_file.setName( tag_base + "VAR_O" );
+            m_name_list_file.setName( tag_base + "MIN_O" );
+            m_name_list_file.setName( tag_base + "MAX_O" );
+            m_name_list_file.setName( tag_base + "TABLE_O" );
+        }
+    }
+}
+
 void ParameterFileReader::readParticleParameterFile( const char* fname )
 {
     m_name_list_file.setName( "SAMPLING_METHOD" );
@@ -147,6 +204,80 @@ void ParameterFileReader::readPlotOverLineParameterFile( const char* fname )
     }
 
     return;
+}
+
+void ParameterFileReader::setTransferFunctionParameter( ParticleProperty& particle_property )
+{
+    const int tf_resolution = m_name_list_file.getValue<int>( "TF_RESOLUTION" );
+    const int tf_number     = m_name_list_file.getValue<int>( "TF_NUMBER" );
+    particle_property.m_color_transfer_function_synthesis = m_name_list_file.getValue<std::string>( "TF_SYNTH_C" );
+    particle_property.m_opacity_transfer_function_synthesis = m_name_list_file.getValue<std::string>( "TF_SYNTH_O" );
+
+    particle_property.m_transfunc_array.clear();
+    particle_property.m_transfunc_array.resize( tf_number );
+
+    for ( size_t i = 0; i < tf_number; i++ )
+    {
+        std::stringstream ss;
+        ss << "TF_NAME" << i + 1 << "_";
+
+        std::stringstream s_name;
+        s_name << "t" << i + 1;
+
+        const std::string tag_base = ss.str();
+        particle_property.m_transfunc_array[i].m_resolution = tf_resolution;
+        particle_property.m_transfunc_array[i].m_name = s_name.str();
+
+        const std::string color_variable  = m_name_list_file.getValue<std::string>( tag_base + "VAR_C" );
+        const std::string opacity_varible = m_name_list_file.getValue<std::string>( tag_base + "VAR_O" );
+        const float color_min             = m_name_list_file.getValue<float>( tag_base + "MIN_C" );
+        const float color_max             = m_name_list_file.getValue<float>( tag_base + "MAX_C" );
+        const float opacity_min           = m_name_list_file.getValue<float>( tag_base + "MIN_O" );
+        const float opacity_max           = m_name_list_file.getValue<float>( tag_base + "MAX_O" );
+        std::string s_color               = m_name_list_file.getValue<std::string>( tag_base + "TABLE_C" );
+        std::string s_opacity             = m_name_list_file.getValue<std::string>( tag_base + "TABLE_O" );
+
+        particle_property.m_transfunc_array[i].m_color_variable       = color_variable;
+        particle_property.m_transfunc_array[i].m_opacity_variable     = opacity_varible;
+        particle_property.m_transfunc_array[i].m_color_variable_min   = color_min;
+        particle_property.m_transfunc_array[i].m_color_variable_max   = color_max;
+        particle_property.m_transfunc_array[i].m_opacity_variable_min = opacity_min;
+        particle_property.m_transfunc_array[i].m_opacity_variable_max = opacity_max;
+
+        std::replace( s_color.begin(), s_color.end(), ',', ' ' );
+        std::replace( s_opacity.begin(), s_opacity.end(), ',', ' ' );
+
+        std::stringstream ss_color( s_color );
+        std::stringstream ss_opacity( s_opacity );
+
+        vismodule::ColorMap::Table color_table( tf_resolution * 3 );
+        vismodule::OpacityMap::Table opacity_table( tf_resolution );
+
+        for ( size_t i = 0; i < tf_resolution; i++ )
+        {
+            for ( size_t c = 0; c < 3; c++ )
+            {
+                int color_e;
+                ss_color >> color_e;
+                color_table.at( i * 3 + c ) = color_e;
+            }
+        }
+
+        for ( size_t i = 0; i < tf_resolution; i++ )
+        {
+            float opacity;
+            ss_opacity >> opacity;
+            opacity_table.at( i ) = opacity;
+        }
+
+        vismodule::ColorMap color_map( color_table );
+        vismodule::OpacityMap opacity_map( opacity_table );
+
+        particle_property.m_transfunc_array[i].setColorMap( color_map );
+        particle_property.m_transfunc_array[i].setOpacityMap( opacity_map );
+        particle_property.m_transfunc_array[i].setColorRange( color_min, color_max );
+        particle_property.m_transfunc_array[i].setOpacityRange( opacity_min, opacity_max );        
+    }
 }
 
 void ParameterFileReader::setParticleParameter( ParticleProperty& particle_property )

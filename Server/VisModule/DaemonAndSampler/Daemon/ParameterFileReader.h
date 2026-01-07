@@ -24,10 +24,12 @@ private:
     void set_default_parameter();
 
 public:
+    void setTransferFunctionParameter( ParticleProperty& particle_property );
     void setParticleParameter( ParticleProperty& particle_property );
     void setGlyphParameter( GlyphProperty& glyph_property );
     void setPlotOverLineParameter( PlotOverLineProperty& pol_property );
 
+    void readTransferFunctionFile( const char* fname );
     void readParticleParameterFile( const char* fname );
     void readGlyphParameterFile( const char* fname );
     void readPlotOverLineParameterFile( const char* fname );
