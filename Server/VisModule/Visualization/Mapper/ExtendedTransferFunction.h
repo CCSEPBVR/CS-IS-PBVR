@@ -47,7 +47,7 @@ public:
         SelectTransferFunction = 1,
     };
 
-    enum ServerRangeMode
+    enum class ServerRangeMode : std::uint8_t
     {
         Unknown    = 0,
         UserRange  = 1,

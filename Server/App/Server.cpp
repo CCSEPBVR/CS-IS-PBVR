@@ -562,6 +562,8 @@ void Server::initialize( uWS::WebSocket<false, true, PerSocket>* ws, const nlohm
     const int tf_resolution = 256;
     std::vector<std::string> color_variable_vec;
     std::vector<std::string> opacity_variable_vec;
+    std::vector<std::uint8_t> color_range_mode_vec;
+    std::vector<std::uint8_t> opacity_range_mode_vec;
     std::vector<float> user_color_min_vec;
     std::vector<float> user_color_max_vec;
     std::vector<float> user_opacity_min_vec;
@@ -571,6 +573,8 @@ void Server::initialize( uWS::WebSocket<false, true, PerSocket>* ws, const nlohm
 
     color_variable_vec.resize( tf_number );
     opacity_variable_vec.resize( tf_number );
+    color_range_mode_vec.resize( tf_number );
+    opacity_range_mode_vec.resize( tf_number );
     user_color_min_vec.resize( tf_number );
     user_color_max_vec.resize( tf_number );
     user_opacity_min_vec.resize( tf_number );
@@ -582,12 +586,14 @@ void Server::initialize( uWS::WebSocket<false, true, PerSocket>* ws, const nlohm
 
     for ( size_t i = 0; i < tf_number; i++ )
     {
-        color_variable_vec[i]   = m_particle_property->m_transfunc_array[i].m_color_variable;
-        opacity_variable_vec[i] = m_particle_property->m_transfunc_array[i].m_opacity_variable;
-        user_color_min_vec[i]   = m_particle_property->m_transfunc_array[i].colorMinValue();
-        user_color_max_vec[i]   = m_particle_property->m_transfunc_array[i].colorMaxValue();
-        user_opacity_min_vec[i] = m_particle_property->m_transfunc_array[i].opacityMinValue();
-        user_opacity_max_vec[i] = m_particle_property->m_transfunc_array[i].opacityMaxValue();
+        color_variable_vec[i]     = m_particle_property->m_transfunc_array[i].m_color_variable;
+        opacity_variable_vec[i]   = m_particle_property->m_transfunc_array[i].m_opacity_variable;
+        user_color_min_vec[i]     = m_particle_property->m_transfunc_array[i].colorMinValue();
+        user_color_max_vec[i]     = m_particle_property->m_transfunc_array[i].colorMaxValue();
+        user_opacity_min_vec[i]   = m_particle_property->m_transfunc_array[i].opacityMinValue();
+        user_opacity_max_vec[i]   = m_particle_property->m_transfunc_array[i].opacityMaxValue();
+        color_range_mode_vec[i]   = static_cast<std::uint8_t>( m_particle_property->m_transfunc_array[i].m_server_color_range_mode );
+        opacity_range_mode_vec[i] = static_cast<std::uint8_t>( m_particle_property->m_transfunc_array[i].m_server_opacity_range_mode );
 
         vismodule::ColorMap::Table color_map_table     = m_particle_property->m_transfunc_array[i].colorMap().table();
         vismodule::OpacityMap::Table opacity_map_table = m_particle_property->m_transfunc_array[i].opacityMap().table();
@@ -599,21 +605,25 @@ void Server::initialize( uWS::WebSocket<false, true, PerSocket>* ws, const nlohm
 
     // クライアントに伝達関数を送信する
     // nlohmann::json msg;
-    // msg[Protocol::Key::Event]            = Protocol::Events::HistgramAndMinMax;
-    // msd[Protocol::Key::ColorVariable]    = color_variable_vec;
-    // msd[Protocol::Key::OpacityVariable]  = opacity_variable_vec;
-    // msd[Protocol::Key::UserColorMin]     = user_color_min_vec;
-    // msd[Protocol::Key::UserColorMax]     = user_color_max_vec;
-    // msd[Protocol::Key::ServerColorMin]   = m_particle_property->server_color_min_vec;
-    // msd[Protocol::Key::ServerColorMax]   = m_particle_property->server_color_max_vec;
-    // msd[Protocol::Key::UserOpacityMin]   = user_opacity_min_vec;
-    // msd[Protocol::Key::UserOpacityMax]   = user_opacity_max_vec;
-    // msd[Protocol::Key::ServerOpacityMin] = m_particle_property->server_opacity_min_vec;
-    // msd[Protocol::Key::ServerOpacityMax] = m_particle_property->server_opacity_max_vec;
-    // msd[Protocol::Key::ColorMap]         = color_map;
-    // msd[Protocol::Key::OpacityMap]       = opacity_map;
-    // msd[Protocol::Key::ColorHistgram]    = m_particle_property->color_histgram;
-    // msd[Protocol::Key::OpacityHistgram]  = m_particle_property->opacity_histgram;
+    // msg[Protocol::Key::Event]                 = Protocol::Events::HistgramAndMinMaxHOGE;
+    // msg[Protocol::Key::ColorSynthesizer]      = m_particle_property->m_transfunc_synthesizer->m_color_transfer_function_synthesis;
+    // msg[Protocol::Key::OpacitySynthesizer]    = m_particle_property->m_transfunc_synthesizer->m_opacity_transfer_function_synthesis;
+    // msg[Protocol::Key::ColorRangeMode]        = color_range_mode_vec;
+    // msg[Protocol::Key::OpacityRangeMode]      = opacity_range_mode_vec;
+    // msg[Protocol::Key::ColorVariable]         = color_variable_vec;
+    // msg[Protocol::Key::OpacityVariable]       = opacity_variable_vec;
+    // msg[Protocol::Key::ColorUserRangeMin]     = user_color_min_vec;
+    // msg[Protocol::Key::ColorUserRangeMax]     = user_color_max_vec;
+    // msg[Protocol::Key::ColorServerRangeMin]   = m_particle_property->server_color_min_vec;
+    // msg[Protocol::Key::ColorServerRangeMax]   = m_particle_property->server_color_max_vec;
+    // msg[Protocol::Key::OpacityUserRangeMin]   = user_opacity_min_vec;
+    // msg[Protocol::Key::OpacityUserRangeMax]   = user_opacity_max_vec;
+    // msg[Protocol::Key::OpacityServerRangeMin] = m_particle_property->server_opacity_min_vec;
+    // msg[Protocol::Key::OpacityServerRangeMax] = m_particle_property->server_opacity_max_vec;
+    // msg[Protocol::Key::ColorMap]              = color_map;
+    // msg[Protocol::Key::OpacityMap]            = opacity_map;
+    // msg[Protocol::Key::ColorHistogram]        = m_particle_property->color_histgram;
+    // msg[Protocol::Key::OpacityHistogram]      = m_particle_property->opacity_histgram;
     // m_u_web_sockets.publish( "Notice", msg.dump(), uWS::OpCode::TEXT );
 }
 
