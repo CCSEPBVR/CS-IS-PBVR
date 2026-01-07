@@ -424,6 +424,93 @@ void CellByCellHistogram::generate_histogram_struct(
             (max_vec.z() - min_vec.z() ) / nz_1
         );
 
+        // Calculate MinMax
+        {
+            // Marge x-y-z loop
+            const int nvertices = nx * ny * nz;
+            // "+ 1" means remained loop
+            const int outer_loop = (nvertices % SIMDW == 0) ? nvertices / SIMDW : nvertices / SIMDW + 1;
+
+            #pragma omp for
+            for ( int J = 0; J < outer_loop; J++ )
+            {
+                int ncells = ((J + 1) * SIMDW > nvertices) ? nvertices - J * SIMDW : SIMDW;
+                float X_l[SIMDW], Y_l[SIMDW], Z_l[SIMDW];
+                float X_g[SIMDW], Y_g[SIMDW], Z_g[SIMDW];
+
+                #pragma ivdep
+                for ( int I = 0; I < SIMDW; I++ )
+                {
+                    const int vertex_id = I + J * SIMDW;
+                    const int k =  vertex_id / nxy;
+                    const int j = (vertex_id - k * nxy) / nx;
+                    const int i =  vertex_id - k * nxy - j * nx;
+
+                    const float x_l = (float)i;
+                    const float y_l = (float)j;
+                    const float z_l = (float)k;
+                    const float x_g = (x_l * cell_length.x()) + min_vec.x();
+                    const float y_g = (y_l * cell_length.y()) + min_vec.y();
+                    const float z_g = (z_l * cell_length.z()) + min_vec.z();
+
+                    X_l[I] = x_l;
+                    Y_l[I] = y_l;
+                    Z_l[I] = z_l;
+                    X_g[I] = x_g;
+                    Y_g[I] = y_g;
+                    Z_g[I] = z_g;
+                }
+
+                th_tfs[thid]->SynthesizedOpacityScalars(
+                    interp[thid],
+                    X_l, Y_l, Z_l,
+                    X_g, Y_g, Z_g,
+                    o_scalars
+                );
+
+                th_tfs[thid]->SynthesizedColorScalars(
+                    interp[thid],
+                    X_l, Y_l, Z_l,
+                    X_g, Y_g, Z_g,
+                    c_scalars
+                );
+
+                for( int i = 0; i < tf_number; i++ )
+                {
+                    for( int I = 0; I < ncells; I++ )
+                    {
+                        th_O_min[i] = th_O_min[i] < o_scalars[i][I] ? th_O_min[i] : o_scalars[i][I];
+                        th_O_max[i] = th_O_max[i] > o_scalars[i][I] ? th_O_max[i] : o_scalars[i][I];
+                        th_C_min[i] = th_C_min[i] < c_scalars[i][I] ? th_C_min[i] : c_scalars[i][I];
+                        th_C_max[i] = th_C_max[i] > c_scalars[i][I] ? th_C_max[i] : c_scalars[i][I];
+                    }
+                }
+            }
+        } // end of Calculate MinMax
+        
+        #pragma omp critical
+        {
+            // 最大最小値
+            for( size_t i = 0; i < tf_number; i++ )
+            {
+                // 不透明度
+                O_min[i] = O_min[i] < th_O_min[i] ? O_min[i] : th_O_min[i];
+                O_max[i] = O_max[i] > th_O_max[i] ? O_max[i] : th_O_max[i];
+                // 色
+                C_min[i] = C_min[i] < th_C_min[i] ? C_min[i] : th_C_min[i];
+                C_max[i] = C_max[i] > th_C_max[i] ? C_max[i] : th_C_max[i];
+            }
+        } // end of omp critical
+
+        for( size_t i = 0; i < tf_number; i++ )
+        {
+            o_min[i] = O_min[i];
+            o_max[i] = O_max[i];
+            c_min[i] = C_min[i];
+            c_max[i] = C_max[i];
+        }
+
+        // Count Histgram
         {
             // Marge x-y-z loop
             const int nvertices = nx * ny * nz;
@@ -525,37 +612,19 @@ void CellByCellHistogram::generate_histogram_struct(
                                 th_c_histogram[H + nbins * i]++;
                             }
                         }
-
-                        th_O_min[i] = th_O_min[i] < o_scalars[i][I] ? th_O_min[i] : o_scalars[i][I];
-                        th_O_max[i] = th_O_max[i] > o_scalars[i][I] ? th_O_max[i] : o_scalars[i][I];
-                        th_C_min[i] = th_C_min[i] < c_scalars[i][I] ? th_C_min[i] : c_scalars[i][I];
-                        th_C_max[i] = th_C_max[i] > c_scalars[i][I] ? th_C_max[i] : c_scalars[i][I];
                     }
                 }
             }
-        } // end of Histogram
-        
-        // timed_section_start(td_VectorIns,thid);
+        } // end of Count Histogram
+
         #pragma omp critical
         {
-            // 最大最小値
-            for( size_t i = 0; i < tf_number; i++ )
-            {
-                // 不透明度
-                O_min[i] = O_min[i] < th_O_min[i] ? O_min[i] : th_O_min[i];
-                O_max[i] = O_max[i] > th_O_max[i] ? O_max[i] : th_O_max[i];
-                // 色
-                C_min[i] = C_min[i] < th_C_min[i] ? C_min[i] : th_C_min[i];
-                C_max[i] = C_max[i] > th_C_max[i] ? C_max[i] : th_C_max[i];
-            }
-
             for( int n = 0; n < tf_number * nbins; n++ )
             {
                 m_o_histogram[n] += th_o_histogram[n];
                 m_c_histogram[n] += th_c_histogram[n];
             }
         } // end of omp critical
-        // timed_section_end(td_VectorIns,thid);
     } // end of omp parallel
 
     // set minmax range
@@ -939,7 +1008,86 @@ void CellByCellHistogram::generate_histogram_unstruct(
         vismodule::Vector3f grad_array[ SIMDW ];
         vismodule::RGBColor color_array[ SIMDW ];
 
-        // 粒子生成ループ開始
+        // Calculate MinMax
+#pragma omp for schedule( dynamic ) nowait
+        for( int cell_base = 0; cell_base < ncells; cell_base += SIMDW )
+        {
+            // ブロック内でのループ回数を取得
+            int remain = ( ncells - cell_base > SIMDW )? SIMDW: ncells - cell_base;
+
+            /////////////////////////////// Synthesized~ (), CalculateOpacity() ///////////////////////////////////
+            // 一括でセルをバインドするための配列と、座標の取得
+            for( int cell_BLK = 0; cell_BLK < remain; cell_BLK++ )
+            {
+                cell_index[cell_BLK] = (vismodule::UInt32)(cell_base + cell_BLK);
+                // local_center_array[cell_BLK] = vismodule::Vector3f ( 0.5, 0.5, 0.5 );
+                local_center_array[cell_BLK] = interp[thid][0]->localGravityPoint();
+            }
+
+            // 補間器にセルを一括でバインド
+            for( int i = 0; i < nvariables; i++ )
+            {
+                interp[thid][i]->bindCellArray(remain, cell_index);
+            }
+
+            interp[thid][0]->setLocalPointArray( remain, local_center_array );
+            interp[thid][0]->transformLocalToGlobalArray(
+                remain,
+                local_center_array,
+                global_center_array
+            );
+            
+            th_tfs[thid]->SynthesizedOpacityScalarsArray(
+                interp[thid],
+                remain,
+                local_center_array,
+                global_center_array,
+                o_scalars_array
+            );
+
+            th_tfs[thid]->SynthesizedColorScalarsArray(
+                interp[thid],
+                remain,
+                local_center_array,
+                global_center_array,
+                c_scalars_array
+            );
+
+            for( int cell_BLK = 0; cell_BLK < remain; cell_BLK++ )
+            {
+                for( size_t i = 0; i < tf_number; i++ )
+                {
+                    th_O_min[i] = th_O_min[i] < o_scalars_array[cell_BLK][i] ? th_O_min[i] : o_scalars_array[cell_BLK][i];
+                    th_O_max[i] = th_O_max[i] > o_scalars_array[cell_BLK][i] ? th_O_max[i] : o_scalars_array[cell_BLK][i];
+                    th_C_min[i] = th_C_min[i] < c_scalars_array[cell_BLK][i] ? th_C_min[i] : c_scalars_array[cell_BLK][i];
+                    th_C_max[i] = th_C_max[i] > c_scalars_array[cell_BLK][i] ? th_C_max[i] : c_scalars_array[cell_BLK][i];
+                }
+            }
+        } // end of for cell (Calculate MinMax)
+
+#pragma omp critical
+        {
+            // 最大最小値
+            for( size_t i = 0; i < tf_number; i++ )
+            {
+                // 不透明度
+                O_min[i] = O_min[i] < th_O_min[i] ? O_min[i] : th_O_min[i];
+                O_max[i] = O_max[i] > th_O_max[i] ? O_max[i] : th_O_max[i];
+                // 色
+                C_min[i] = C_min[i] < th_C_min[i] ? C_min[i] : th_C_min[i];
+                C_max[i] = C_max[i] > th_C_max[i] ? C_max[i] : th_C_max[i];
+            }
+        }
+
+        for( size_t i = 0; i < tf_number; i++ )
+        {
+            o_min[i] = O_min[i];
+            o_max[i] = O_max[i];
+            c_min[i] = C_min[i];
+            c_max[i] = C_max[i];
+        }
+
+        // Count Histogram
 #pragma omp for schedule( dynamic ) nowait
         for( int cell_base = 0; cell_base < ncells; cell_base += SIMDW )
         {
@@ -1037,28 +1185,12 @@ void CellByCellHistogram::generate_histogram_unstruct(
                             th_c_histogram[ H + nbins * i]++;
                         }
                     }
-
-                    th_O_min[i] = th_O_min[i] < o_scalars_array[cell_BLK][i] ? th_O_min[i] : o_scalars_array[cell_BLK][i];
-                    th_O_max[i] = th_O_max[i] > o_scalars_array[cell_BLK][i] ? th_O_max[i] : o_scalars_array[cell_BLK][i];
-                    th_C_min[i] = th_C_min[i] < c_scalars_array[cell_BLK][i] ? th_C_min[i] : c_scalars_array[cell_BLK][i];
-                    th_C_max[i] = th_C_max[i] > c_scalars_array[cell_BLK][i] ? th_C_max[i] : c_scalars_array[cell_BLK][i];
                 }
             }
-        } // end of for cell
+        } // end of for cell (Count Histogram)
 
 #pragma omp critical
         {
-            // 最大最小値
-            for( size_t i = 0; i < tf_number; i++ )
-            {
-                // 不透明度
-                O_min[i] = O_min[i] < th_O_min[i] ? O_min[i] : th_O_min[i];
-                O_max[i] = O_max[i] > th_O_max[i] ? O_max[i] : th_O_max[i];
-                // 色
-                C_min[i] = C_min[i] < th_C_min[i] ? C_min[i] : th_C_min[i];
-                C_max[i] = C_max[i] > th_C_max[i] ? C_max[i] : th_C_max[i];
-            }
-
             for( int n = 0; n < tf_number * nbins; n++ )
             {
                 m_o_histogram[n] += th_o_histogram[n];
