@@ -975,8 +975,8 @@ void Server::receiveTransferFunctionParameter( uWS::WebSocket<false, true, PerSo
         {
         case TransferFunction::ServerSide:
             m_particle_property->m_transfunc_array[i].m_server_color_range_mode = NamedTransferFunction::ServerRangeMode::ServerSide;
-            m_particle_property->m_transfunc_array[i].m_color_variable_min = colorServerMin;
-            m_particle_property->m_transfunc_array[i].m_color_variable_max = colorServerMax;
+            m_particle_property->m_transfunc_array[i].m_color_variable_min = m_particle_property->server_color_min_vec[i];
+            m_particle_property->m_transfunc_array[i].m_color_variable_max = m_particle_property->server_color_max_vec[i];
             break;
         case TransferFunction::UserRange:
             m_particle_property->m_transfunc_array[i].m_server_color_range_mode = NamedTransferFunction::ServerRangeMode::UserRange;
@@ -1043,8 +1043,8 @@ void Server::receiveTransferFunctionParameter( uWS::WebSocket<false, true, PerSo
         {
         case TransferFunction::ServerSide:
             m_particle_property->m_transfunc_array[i].m_server_opacity_range_mode = NamedTransferFunction::ServerRangeMode::ServerSide;
-            m_particle_property->m_transfunc_array[i].m_opacity_variable_min = opacityServerMin;
-            m_particle_property->m_transfunc_array[i].m_opacity_variable_max = opacityServerMax;
+            m_particle_property->m_transfunc_array[i].m_opacity_variable_min = m_particle_property->server_opacity_min_vec[i];
+            m_particle_property->m_transfunc_array[i].m_opacity_variable_max = m_particle_property->server_opacity_max_vec[i];
             break;
         case TransferFunction::UserRange:
             m_particle_property->m_transfunc_array[i].m_server_opacity_range_mode = NamedTransferFunction::ServerRangeMode::UserRange;
