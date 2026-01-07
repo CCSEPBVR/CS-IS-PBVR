@@ -331,7 +331,7 @@ void Server::initialize( uWS::WebSocket<false, true, PerSocket>* ws, const nlohm
     const const int DEBUG_NUMBER_OF_VECTOR = 3;
     {
         nlohmann::json msg;
-        msg[Protocol::Key::Event]                   = Protocol::Events::AddObjectToModel;
+        msg[Protocol::Key::Event]                   = Protocol::Events::SelectedFile;
 
         // // Common Object Info
         // msg[Protocol::Key::UUID]                    = uuid;
@@ -490,7 +490,7 @@ void Server::initialize( uWS::WebSocket<false, true, PerSocket>* ws, const nlohm
         {
             std::cout << "TEST" << std::endl;
             nlohmann::json msg;
-            msg[Protocol::Key::Event]                   = Protocol::Events::AddObjectToModel;
+            msg[Protocol::Key::Event]                   = Protocol::Events::SelectedFile;
 
             // Common Object Info
             msg[Protocol::Key::UUID]                    = uuid;
