@@ -438,6 +438,66 @@ void ObjectEditor::onRequestDataAt( int requestTimeStep )
     }
 }
 
+void ObjectEditor::onTransferFunctionUpdate()
+{
+    if( !( *m_viz_mode == Viz::Mode::LocalClientAndServer  ||
+          *m_viz_mode == Viz::Mode::RemoteClientAndServer ||
+          *m_viz_mode == Viz::Mode::RemoteInSitu ) ||
+        !m_web_sockets->isConnected() )
+    {
+        return;
+    }
+
+    QJsonArray patchArray;
+
+    for( int row = 0; row < m_model->rowCount(); ++row )
+    {
+        QStandardItem* nameItem = m_model->item( row, 0 );
+        if( !nameItem ) continue;
+
+        QVariant var = nameItem->data( Qt::UserRole );
+        if( !var.canConvert<ObjectInfoExtractor::ObjectInfo>() ) continue;
+
+        auto objectInfo = var.value<ObjectInfoExtractor::ObjectInfo>();
+
+        // 対象フォーマットのみ
+        const auto fmt = objectInfo.format; // ←メンバ名が違うなら合わせてください
+        const bool is_target =
+            ( fmt == ObjectInfoExtractor::Format::ClientServerPointObject ) ||
+            ( fmt == ObjectInfoExtractor::Format::InsituServerPointObject );
+
+        if( !is_target ) continue;
+
+        // needSameTimeStep を有効化
+        // （既存コードでは needSameTimeStepReplace があるので、実際のフラグ名に合わせてどちらか/両方）
+        // objectInfo.needSameTimeStep = true;          // ←存在するならこれ
+        objectInfo.needSameTimeStepReplace = true;   // ←既存にあるならこっち
+
+        // モデルへ反映
+        nameItem->setData( QVariant::fromValue( objectInfo ), Qt::UserRole );
+
+        // 送信用パッチ（uuid + フラグのみ）
+        QJsonObject patch;
+        patch[QString::fromUtf8( Protocol::Key::UUID )] = QString::fromUtf8( objectInfo.uuid );
+        patch[QString::fromUtf8( Protocol::Key::NeedSameTimeStepReplace )] = true; // ←Key があるならこれ
+        // もし Protocol に Key が無いなら、サーバ側が見ているキー名に合わせてください
+
+        patchArray.append( patch );
+    }
+
+    // 対象が無ければ送らない
+    if( patchArray.isEmpty() ) return;
+
+    QJsonObject objectInfoParameter;
+    objectInfoParameter[QString::fromUtf8( Protocol::Key::Event )] = QString::fromUtf8( Protocol::Events::ObjectInfoParameter );
+
+    // onApply() と同じイベントに載せるなら Objects で差分送信
+    objectInfoParameter[QString::fromUtf8( Protocol::Key::Objects )] = patchArray;
+
+    m_web_sockets->text()->sendTextMessage( QJsonDocument( objectInfoParameter ).toJson( QJsonDocument::Compact ) );
+}
+
+
 void ObjectEditor::onUnpack( const QByteArray& binary )
 {
     const char* dataPtr = binary.constData();

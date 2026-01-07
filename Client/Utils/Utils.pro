@@ -18,6 +18,7 @@ TARGET = Utils
 #  Header.
 #=============================================================================
 HEADERS += \
+    ClientUtils.h \
     FrequencyTable.h \
     GlyphItem.h \
     PlotOverLineItem.h \

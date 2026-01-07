@@ -33,7 +33,7 @@ MainWindow::MainWindow( kvs::qt::Application& app, QWidget *parent )
     , m_preference                     ( new Preference( this ) )
     , m_repetition_level_control       ( new RepetitionLevelControl( m_screen, m_compositor, this ) )
     , m_shading_control                ( new ShadingControl( m_screen, this ) )
-    , m_transfer_function_editor       ( new TransferFunctionEditorWIP( m_web_sockets, this ) )
+    , m_transfer_function_editor       ( new TransferFunctionEditor( m_web_sockets, this ) )
     , m_volume_transform               ( new VolumeTransform( m_screen, this ) )
 {
     ui->setupUi( this );
@@ -91,7 +91,7 @@ MainWindow::MainWindow( kvs::qt::Application& app, QWidget *parent )
                     m_point_size_control             ->onLoadParameter( filePath );
                     m_repetition_level_control       ->onLoadParameter( filePath );
                     m_shading_control                ->onLoadParameter( filePath );
-                    m_transfer_function_editor       ->loadParameter( filePath );
+                    m_transfer_function_editor       ->onLoadParameter( filePath );
                     m_volume_transform               ->onLoadParameter( filePath );
                 }
                 );
@@ -111,7 +111,7 @@ MainWindow::MainWindow( kvs::qt::Application& app, QWidget *parent )
                     m_point_size_control             ->onSaveParameter( filePath );
                     m_repetition_level_control       ->onSaveParameter( filePath );
                     m_shading_control                ->onSaveParameter( filePath );
-                    m_transfer_function_editor       ->saveParameter( filePath );
+                    m_transfer_function_editor       ->onSaveParameter( filePath );
                     m_volume_transform               ->onSaveParameter( filePath );
                 }
                 );
@@ -243,9 +243,9 @@ void MainWindow::communicationInitialize()
         connect( m_communication, &Communication::updateOperatorState                       , m_glyph_editor              , &GlyphEditor::onOperatorStateUpdate );
         connect( m_communication, &Communication::updateOperatorState                       , m_object_editor             , &ObjectEditor::onOperatorStateUpdate );
         connect( m_communication, &Communication::updateOperatorState                       , m_plot_over_line_editor     , &PlotOverLineEditor::onOperatorStateUpdate );
-        connect( m_communication, &Communication::updateOperatorState                       , m_transfer_function_editor  , &TransferFunctionEditorWIP::updateOperatorState );
-        connect( m_communication, &Communication::receiveTransferFunctionParameter          , m_transfer_function_editor  , &TransferFunctionEditorWIP::onReceiveTransferFunctionParameter );
-        connect( m_communication, &Communication::receiveInitializeTransferFunctionParameter, m_transfer_function_editor  , &TransferFunctionEditorWIP::onReceiveInitializeTransferFunctionParameter );
+        connect( m_communication, &Communication::updateOperatorState                       , m_transfer_function_editor  , &TransferFunctionEditor::onOperatorStateUpdate );
+        connect( m_communication, &Communication::receiveTransferFunctionParameter          , m_transfer_function_editor  , &TransferFunctionEditor::onReceiveTransferFunctionParameter );
+        connect( m_communication, &Communication::receiveInitializeTransferFunctionParameter, m_transfer_function_editor  , &TransferFunctionEditor::onReceiveInitializeTransferFunctionParameter );
 
         connect( m_communication, &Communication::receiveGlyphParameter           , m_glyph_editor              , &GlyphEditor::onReceiveGlyphParameter );
 
@@ -383,6 +383,7 @@ void MainWindow::transferFunctionEditorInitialize()
         m_transfer_function_editor->adjustSize();
 
         connect( m_transfer_function_editor_action, &QAction::triggered, this, &MainWindow::onTransferFunctionEditor );
+        connect( m_transfer_function_editor       , &TransferFunctionEditor::transferFunctionUpdate, m_object_editor, &ObjectEditor::onTransferFunctionUpdate );
         // connect( m_transfer_function_editor         , &TransferFunctionEditor::updateColorMapBar                    , m_color_map_bar_selector_tool_bar , &ColorMapSelectorToolBar::updateColorMapBar );
         // connect( m_transfer_function_editor         , &TransferFunctionEditor::failedTransferFunctionImport         , m_connect                         , &Connect::failedTransferFunctionImport );
         // connect( m_transfer_function_editor         , &TransferFunctionEditor::successTransferFunctionImport        , m_connect                         , &Connect::successTransferFunctionImport );
@@ -487,7 +488,7 @@ void MainWindow::onUpdateServerState( bool serverState ) // true:接続中
         if( !serverState )
         {
             m_transfer_function_editor->close();
-            m_transfer_function_editor->reset();
+            m_transfer_function_editor->onReset();
         }
     }
 }

@@ -41,6 +41,7 @@ public:
     void onReceiveObjectDelete( const QJsonObject& dataArray );
     void onReceiveObjectInfoParameter( const QJsonObject& dataArray );
     void onRequestDataAt( int requestTimeStep );
+    void onTransferFunctionUpdate();
     void onUnpack( const QByteArray& binary );
     // FIXME:KPI
     void onLoadParameter( const QString& filePath );

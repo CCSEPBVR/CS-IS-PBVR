@@ -912,6 +912,10 @@ void Server::receiveObjectInfoParameter( uWS::WebSocket<false, true, PerSocket>*
                 info.polygonOpacity          = patch[Protocol::Key::PolygonOpacity].get<float>();
                 info.needSameTimeStepReplace = true;
             }
+            if( patch.contains( Protocol::Key::NeedSameTimeStepReplace ) )
+            {
+                info.needSameTimeStepReplace = true;
+            }
         }
     }
 

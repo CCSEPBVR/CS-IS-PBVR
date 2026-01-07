@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>545</width>
-    <height>336</height>
+    <width>340</width>
+    <height>360</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -15,17 +15,15 @@
   </property>
   <layout class="QGridLayout" name="gridLayout">
    <item row="0" column="0">
-    <layout class="QVBoxLayout" name="verticalLayout">
-     <item>
-      <widget class="QTreeView" name="treeView"/>
-     </item>
-     <item>
-      <widget class="QTextEdit" name="textEdit">
-       <property name="readOnly">
-        <bool>true</bool>
-       </property>
-       <property name="html">
-        <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+    <widget class="QTreeView" name="treeView"/>
+   </item>
+   <item row="1" column="0">
+    <widget class="QTextEdit" name="textEdit">
+     <property name="readOnly">
+      <bool>true</bool>
+     </property>
+     <property name="html">
+      <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;meta charset=&quot;utf-8&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
 p, li { white-space: pre-wrap; }
 hr { height: 1px; border-width: 0; }
@@ -42,12 +40,10 @@ li.checked::marker { content: &quot;\2612&quot;; }
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Functions: &lt;span style=&quot; font-weight:700;&quot;&gt;sqrt()&lt;/span&gt;, &lt;span style=&quot; font-weight:700;&quot;&gt;cbrt()&lt;/span&gt;, &lt;span style=&quot; font-weight:700;&quot;&gt;log()&lt;/span&gt;, &lt;span style=&quot; font-weight:700;&quot;&gt;log10()&lt;/span&gt;, &lt;span style=&quot; font-weight:700;&quot;&gt;exp()&lt;/span&gt;, &lt;span style=&quot; font-weight:700;&quot;&gt;abs()&lt;/span&gt;, &lt;span style=&quot; font-weight:700;&quot;&gt;floor()&lt;/span&gt;, &lt;span style=&quot; font-weight:700;&quot;&gt;ceil()&lt;/span&gt;, &lt;span style=&quot; font-weight:700;&quot;&gt;sin()&lt;/span&gt;, &lt;span style=&quot; font-weight:700;&quot;&gt;cos()&lt;/span&gt;, &lt;span style=&quot; font-weight:700;&quot;&gt;tan()&lt;/span&gt;, &lt;span style=&quot; font-weight:700;&quot;&gt;asin()&lt;/span&gt;, &lt;span style=&quot; font-weight:700;&quot;&gt;sinh()&lt;/span&gt;, &lt;span style=&quot; font-weight:700;&quot;&gt;cosh()&lt;/span&gt;, &lt;span style=&quot; font-weight:700;&quot;&gt;tanh()&lt;/span&gt;, &lt;span style=&quot; font-weight:700;&quot;&gt;asinh()&lt;/span&gt;, &lt;span style=&quot; font-weight:700;&quot;&gt;acosh()&lt;/span&gt;, &lt;span style=&quot; font-weight:700;&quot;&gt;atanh()&lt;/span&gt;, &lt;span style=&quot; font-weight:700;&quot;&gt;heavi()&lt;/span&gt;, &lt;span style=&quot; font-weight:700;&quot;&gt;rectfunc()&lt;/span&gt;&lt;/p&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Binary functions: &lt;span style=&quot; font-weight:700;&quot;&gt;sigmoid(*,*)&lt;/span&gt;, &lt;span style=&quot; font-weight:700;&quot;&gt;gauss(*,*)&lt;/span&gt;, &lt;span style=&quot; font-weight:700;&quot;&gt;min(*,*)&lt;/span&gt;, &lt;span style=&quot; font-weight:700;&quot;&gt;max(*,*)&lt;/span&gt;&lt;/p&gt;
 &lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;br /&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-       </property>
-      </widget>
-     </item>
-    </layout>
+     </property>
+    </widget>
    </item>
-   <item row="1" column="0">
+   <item row="2" column="0">
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
       <spacer name="horizontalSpacer">
@@ -66,6 +62,9 @@ li.checked::marker { content: &quot;\2612&quot;; }
       <widget class="QPushButton" name="cancelPushButton">
        <property name="text">
         <string>Cancel</string>
+       </property>
+       <property name="autoDefault">
+        <bool>false</bool>
        </property>
       </widget>
      </item>

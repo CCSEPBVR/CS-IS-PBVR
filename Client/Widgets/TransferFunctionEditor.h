@@ -2,15 +2,19 @@
 #define TRANSFERFUNCTIONEDITOR_H
 
 #include <QDialog>
-#include <QWebSocket>
+#include <QButtonGroup>
 #include <QFileDialog>
 
 #include "WebSocketPair.h"
-#include "TransferFunctionItem.h"
+#include "../../Shared/JsonKeys.h"
+#include "../../Shared/TransferFunction.h"
 
+#include "ClientUtils.h"
 #include "VariableEditor.h"
 #include "ColorMapEditor.h"
 #include "OpacityMapEditor.h"
+
+// FIXME:ヒストグラム更新用処理を追加すること。
 
 namespace Ui
 {
@@ -26,54 +30,59 @@ public:
     ~TransferFunctionEditor();
 
 public slots:
-    void updateOperatorState( bool operatorState ); // true:権限あり
-    void reset();
-    void loadParameter( const QString& filePath );
-    void saveParameter( const QString& filePath );
+    void onOperatorStateUpdate( bool operatorState ); // true:権限あり
+    void onReset();
+    void onReceiveInitializeTransferFunctionParameter( const QJsonObject& dataArray );
+    void onReceiveTransferFunctionParameter( const QString& colorSynth, const QString& opacitySynth, const QJsonArray& dataArray );
+    // FIXME:KPI
+    void onLoadParameter( const QString& filePath );
+    void onSaveParameter( const QString& filePath );
+
+signals:
+    void transferFunctionUpdate();
 
 private:
     Ui::TransferFunctionEditor *ui;
-
     WebSocketPair* m_web_sockets = nullptr;
-    QStandardItemModel *m_model = nullptr;
 
-    QString m_color_synthesizer;
-    QString m_opacity_synthesizer;
+    bool m_is_operator;
+
+    TransferFunction* m_transfer_function = nullptr;
 
     VariableEditor m_variable_editor;
     ColorMapEditor m_color_map_editor;
     OpacityMapEditor m_opacity_map_editor;
 
-    void initialize();
-    void exportTransferFunction();
-    void importTransferFunction();
+    void updateUI();
+    void clear();
+    void disable();
+    void enable();
     void applyTransferFunction();
 
 private slots:
     void onNumberOfTransferFunctionValueChanged( const int numberOfTransferFunction );
 
     void onColorSynthesizerChanged( const QString &colorSynthesizer );
-    void onColorFunctionChanged();
+    void onColorComboBoxChanged();
     void onColorFunctionVariableChanged( const QString &colorFunctionVariable );
-    void onEditColorVariable();
-    void onColorUserDefinedMinMaxClicked();
-    void onColorUserDefinedMinChanged( const float &colorUserDefinedMin );
-    void onColorUserDefinedMaxChanged( const float &colorUserDefinedMax );
-    void onColorServerSideMinMaxClicked();
-    void onEditColorMap();
+    void onColorFunctionVariableEditorClicked();
+    void onColorRangeModeRadioButtonClicked();
+    void onColorUserDefinedMinChanged( const double &colorUserDefinedMin );
+    void onColorUserDefinedMaxChanged( const double &colorUserDefinedMax );
+    void onColorMapEditorClicked();
 
     void onOpacitySynthesizerChanged( const QString &opacitySynthesizer );
-    void onOpacityFunctionChanged();
+    void onOpacityComboBoxChanged();
     void onOpacityFunctionVariableChanged( const QString &opacityFunctionVariable );
-    void onEditOpacityVariable();
-    void onOpacityUserDefinedMinMaxClicked();
-    void onOpacityUserDefinedMinChanged( const float &opacityUserDefinedMin );
-    void onOpacityUserDefinedMaxChanged( const float &opacityUserDefinedMax );
-    void onOpacityServerSideMinMaxClicked();
-    void onEditOpacityMap();
+    void onOpacityRangeModeRadioButtonClicked();
+    void onOpacityFunctionVariableEditorClicked();
+    void onOpacityUserDefinedMinChanged( const double &opacityUserDefinedMin );
+    void onOpacityUserDefinedMaxChanged( const double &opacityUserDefinedMax );
+    void onOpacityMapEditorClicked();
 
     void onExport();
     void onImport();
     void onApply();
 };
+
 #endif // TRANSFERFUNCTIONEDITOR_H

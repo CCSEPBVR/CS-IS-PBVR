@@ -35,9 +35,7 @@ HEADERS += \
     TimeStepControlToolBar.h \
     TotalParticlesToolBar.h \
     TransferFunctionEditor.h \
-    TransferFunctionEditorWIP.h \
     VariableEditor.h \
-    VariableEditorWIP.h \
     VizMode.h \
     VolumeTransform.h
 
@@ -62,9 +60,7 @@ SOURCES += \
     TimeStepControlToolBar.cpp \
     TotalParticlesToolBar.cpp \
     TransferFunctionEditor.cpp \
-    TransferFunctionEditorWIP.cpp \
     VariableEditor.cpp \
-    VariableEditorWIP.cpp \
     VolumeTransform.cpp
 
 
@@ -84,9 +80,7 @@ FORMS += \
     RepetitionLevelControl.ui \
     ShadingControl.ui \
     TransferFunctionEditor.ui \
-    TransferFunctionEditorWIP.ui \
     VariableEditor.ui \
-    VariableEditorWIP.ui \
     VolumeTransform.ui
 
 

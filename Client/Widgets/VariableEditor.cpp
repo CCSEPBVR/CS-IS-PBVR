@@ -1,17 +1,20 @@
 #include "VariableEditor.h"
 #include "ui_VariableEditor.h"
 
-VariableEditor::VariableEditor(QWidget* parent)
-    : QDialog(parent)
-    , ui(new Ui::VariableEditor)
-    , m_type(COLOR)
-    , m_original_model(nullptr)
+VariableEditor::VariableEditor(QWidget *parent)
+    : QDialog( parent )
+    , ui (new Ui::VariableEditor )
+    , m_model( new QStandardItemModel( this ) )
+    , m_type( COLOR )
+    , m_transfer_function( nullptr )
 {
-    ui->setupUi(this);
+    ui->setupUi( this );
 
-    ui->treeView->setEditTriggers(QAbstractItemView::DoubleClicked | QAbstractItemView::SelectedClicked);
-    connect(ui->cancelPushButton, &QPushButton::clicked, this, &VariableEditor::close);
-    connect(ui->OKPushButton, &QPushButton::clicked, this, &VariableEditor::accept);
+    ui->treeView->setModel( m_model );
+    ui->treeView->setEditTriggers( QAbstractItemView::DoubleClicked | QAbstractItemView::SelectedClicked );
+
+    connect( ui->cancelPushButton, &QPushButton::clicked, this, &VariableEditor::close );
+    connect( ui->OKPushButton, &QPushButton::clicked, this, &VariableEditor::accept );
 }
 
 VariableEditor::~VariableEditor()
@@ -19,43 +22,49 @@ VariableEditor::~VariableEditor()
     delete ui;
 }
 
-void VariableEditor::initialize()
+void VariableEditor::setup( TYPE type, TransferFunction* transferFunction )
 {
-    if (!m_original_model) return;
-
-    // 既存のデータをクリア
-    m_editable_mode.clear();
-
-    m_editable_mode.setColumnCount(2);
-    m_editable_mode.setHorizontalHeaderLabels(QStringList() << "Function" << "f（algebraic formula）");
-
-    for (int row = 0; row < m_original_model->rowCount(); ++row)
-    {
-        const QStandardItem* item = m_original_model->item(row);
-        QString funcStr, varStr;
-
-        switch (m_type)
-        {
-        case TYPE::COLOR:
-            funcStr = item->data(TransferFunctionItem::ColorFunction).toString();
-            varStr = item->data(TransferFunctionItem::ColorVariable).toString();
-            break;
-        case TYPE::OPACITY:
-            funcStr = item->data(TransferFunctionItem::OpacityFunction).toString();
-            varStr = item->data(TransferFunctionItem::OpacityVariable).toString();
-            break;
-        }
-
-        QStandardItem* funcItem = new QStandardItem(funcStr);
-        funcItem->setFlags(funcItem->flags() & ~Qt::ItemIsEditable);
-
-        QStandardItem* varItem = new QStandardItem(varStr);
-
-        QList<QStandardItem*> newRow;
-        newRow << funcItem << varItem;
-        m_editable_mode.appendRow(newRow);
-    }
-
-    ui->treeView->setModel(&m_editable_mode);
+    m_type = type;
+    m_transfer_function = transferFunction;
 }
 
+void VariableEditor::initialize()
+{
+    if( !m_transfer_function ) return;
+
+    m_model->clear();
+    m_model->setColumnCount( 2 );
+    m_model->setHorizontalHeaderLabels( QStringList() << "Name" << "Variable" );
+
+    const size_t count = m_transfer_function->count();
+
+    for( size_t i = 0; i < count; ++i )
+    {
+        QString name;
+        QString variable;
+
+        if( m_type == COLOR )
+        {
+            name = QString( "C%1" ).arg( i + 1 );
+            variable = QString::fromUtf8( m_transfer_function->at(i).color.variable );
+        }
+        else if( m_type == OPACITY )
+        {
+            name = QString( "O%1" ).arg( i + 1 );
+            variable = QString::fromUtf8( m_transfer_function->at(i).opacity.variable );
+        }
+
+        QStandardItem* nameItem = new QStandardItem( name );
+        nameItem->setEditable( false ); // Name列は編集不可
+
+        QStandardItem* variableItem = new QStandardItem( variable );
+        variableItem->setEditable( true ); // Variable列は編集可能
+
+        QList<QStandardItem*> row;
+        row << nameItem << variableItem;
+
+        m_model->appendRow( row );
+    }
+
+    ui->treeView->resizeColumnToContents( 0 );
+}

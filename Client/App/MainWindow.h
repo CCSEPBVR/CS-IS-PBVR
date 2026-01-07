@@ -27,7 +27,7 @@
 #include "Preference.h"
 #include "RepetitionLevelControl.h"
 #include "ShadingControl.h"
-#include "TransferFunctionEditorWIP.h"
+#include "TransferFunctionEditor.h"
 #include "VolumeTransform.h"
 
 namespace Ui
@@ -115,7 +115,7 @@ private:
     ShadingControl* m_shading_control                          = nullptr; // NOTE:KPI関係有
 
     QAction* m_transfer_function_editor_action                 = nullptr;
-    TransferFunctionEditorWIP* m_transfer_function_editor      = nullptr; // NOTE:通信関係有 KPI関係有
+    TransferFunctionEditor* m_transfer_function_editor         = nullptr; // NOTE:通信関係有 KPI関係有
 
     QAction* m_volume_transform_action                         = nullptr;
     VolumeTransform* m_volume_transform                        = nullptr; // NOTE:KPI関係有
