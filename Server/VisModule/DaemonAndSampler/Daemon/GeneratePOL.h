@@ -6,11 +6,7 @@
 #include <vismodule/MultiVolumeProperty>
 #include <vismodule/KVSMLObjectPlotOverLine>
 
-/*
-void SetPOLParameterCS(
-    PlotOverLineProperty& pol_property
-);
-*/
+void SetDefaultPOLParameterCS( PlotOverLineProperty& pol_property );
 
 std::unique_ptr<vismodule::KVSMLObjectPlotOverLine> GeneratePOLCS(
     std::string& file_path,

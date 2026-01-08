@@ -13,24 +13,18 @@
 #include <vismodule/JobCollector>
 #endif
 
-/*
-void SetPOLParameterCS(
-    PlotOverLineProperty& pol_property
-)
+void SetDefaultPOLParameterCS( PlotOverLineProperty& pol_property )
 {
-    pol_property.m_plot_flag = true;
-
-    // spx
+    pol_property.m_plot_flag      = false;
     pol_property.m_plot_variable  = "q1";
-    pol_property.m_start_point[0] =  4.10;
-    pol_property.m_start_point[1] =  3.50;
-    pol_property.m_start_point[2] = -4.50;
-    pol_property.m_end_point[0]   = 10.60;
-    pol_property.m_end_point[1]   =  3.50;
-    pol_property.m_end_point[2]   = -4.50;
-    pol_property.m_sampling_size  =   256;
+    pol_property.m_start_point[0] = 0;
+    pol_property.m_start_point[1] = 0;
+    pol_property.m_start_point[2] = 0;
+    pol_property.m_end_point[0]   = 1;
+    pol_property.m_end_point[1]   = 1;
+    pol_property.m_end_point[2]   = 1;
+    pol_property.m_sampling_size  = 256;
 }
-*/
 
 std::unique_ptr<vismodule::KVSMLObjectPlotOverLine> GeneratePOLCS(
     std::string& file_path,

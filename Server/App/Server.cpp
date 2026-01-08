@@ -295,6 +295,19 @@ void Server::initialize( uWS::WebSocket<false, true, PerSocket>* ws, const nlohm
             *m_multi_volume_property_list,
             tmp_object
         );
+
+        // 成分数3以上の時Glyphのデフォルトパラメータを設定する
+        if( m_multi_volume_property_list->m_total_number_ingredients >= 3 )
+        {
+            SetDefaultGlyphParameterCS( *m_glyph_property );
+        }
+        else
+        {
+            m_glyph_property->m_glyph_flag = false;
+        }
+
+        // POLのデフォルトパラメータを設定する
+        SetDefaultPOLParameterCS( *m_pol_property );
     }
     else if ( format == ObjectInfoExtractor::Format::InsituServerPointObject )
     {
@@ -316,6 +329,13 @@ void Server::initialize( uWS::WebSocket<false, true, PerSocket>* ws, const nlohm
             *m_multi_volume_property_list,
             tmp_object
         );
+
+        // 成分数3以上の時Glyphのパラメータファイルを読み込む
+        if( m_multi_volume_property_list->m_total_number_ingredients >= 3 )
+        {
+        }
+
+        // POLのパラメータファイルを読み込む
     }
 
     float min_x = m_multi_volume_property_list->m_total_min_object_coord[0];
@@ -632,6 +652,33 @@ void Server::initialize( uWS::WebSocket<false, true, PerSocket>* ws, const nlohm
     msg[Protocol::Key::OpacityServerRangeMax] = m_particle_property->server_opacity_max_vec;
     msg[Protocol::Key::OpacityMap]            = opacity_map;
     msg[Protocol::Key::OpacityHistogram]      = m_particle_property->opacity_histgram;
+
+    // 成分数3以上の時, グリフパラメータを送信する
+    if( m_multi_volume_property_list->m_total_number_ingredients >= 3 )
+    {
+        msg[Protocol::Key::Type]                 = m_glyph_property->m_glyph_type;
+        msg[Protocol::Key::ScaleFactor]          = m_glyph_property->m_scale_factor;
+        msg[Protocol::Key::Direction1]           = m_glyph_property->m_direction_variable[0];
+        msg[Protocol::Key::Direction2]           = m_glyph_property->m_direction_variable[1];
+        msg[Protocol::Key::Direction3]           = m_glyph_property->m_direction_variable[2];
+        msg[Protocol::Key::SizeMode]             = m_glyph_property->m_size_sampling_method;
+        msg[Protocol::Key::SizeVariables]        = m_glyph_property->m_size_variable;
+        msg[Protocol::Key::DistributionMode]     = m_glyph_property->m_distribution_mode;
+        msg[Protocol::Key::NumberOfSamplePoints] = m_glyph_property->m_number_of_sampling_point;
+        msg[Protocol::Key::Seed]                 = m_glyph_property->m_seed;
+        msg[Protocol::Key::Stride]               = m_glyph_property->m_stride;
+        msg[Protocol::Key::ColorDataMode]        = m_glyph_property->m_color_data_sampling_method;
+        msg[Protocol::Key::ColorDataVariables]   = m_glyph_property->m_color_data_variable;
+        // msg[Protocol::Key::GlyphColorMapTable]   = m_glyph_property->m_glyph_color_map_table; // キーが存在しない
+    }
+
+    // POLパラメータを送信する
+    msg[Protocol::Key::Enable]      = m_pol_property->m_plot_flag;
+    msg[Protocol::Key::Resolution]  = m_pol_property->m_sampling_size;
+    msg[Protocol::Key::Target]      = m_pol_property->m_plot_variable;
+    msg[Protocol::Key::StartCoords] = m_pol_property->m_start_point;
+    msg[Protocol::Key::EndCoords]   = m_pol_property->m_end_point;
+
     m_u_web_sockets.publish( "Notice", msg.dump(), uWS::OpCode::TEXT );
 }
 
