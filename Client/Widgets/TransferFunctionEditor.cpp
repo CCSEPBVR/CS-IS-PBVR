@@ -438,6 +438,7 @@ void TransferFunctionEditor::applyTransferFunction()
     root[QString::fromUtf8( Protocol::Key::Data )]                = transferFunctionsArray;
 
     m_web_sockets->text()->sendTextMessage( QJsonDocument( root ).toJson( QJsonDocument::Compact ) );
+    emit transferFunctionUpdate();
 }
 
 void TransferFunctionEditor::onNumberOfTransferFunctionValueChanged( const int numberOfTransferFunction )
@@ -535,8 +536,7 @@ void TransferFunctionEditor::onNumberOfTransferFunctionValueChanged( const int n
     ui->opacityFunctionComboBox->blockSignals( false );
 
     // UI更新
-    updateUI();
-    emit transferFunctionUpdate();
+    updateUI();    
 }
 
 void TransferFunctionEditor::onColorSynthesizerChanged( const QString &colorSynthesizer )
