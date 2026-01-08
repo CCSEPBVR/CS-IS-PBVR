@@ -2777,17 +2777,6 @@ void ens_OutputParticles(int time_step, int nvariables, pbvr_parameters& particl
     }
     
     }// end if skip_flag
-    else 
-    {
-            std::ofstream ofs( particleBase.m_stateFilePath.c_str(), std::ios::out);
-            // 20181226 end
-            if( !ofs.is_open() ) std::cout<<"Cannot open state.txt"<<std::endl;
-
-            ofs<<"START_STEP="<< 0 <<std::endl;
-            ofs<<"LATEST_STEP="<<time_step<<std::endl;
-
-            ofs.close();
-    }
 
 //    timer.stop();
 //    time.writting = timer.sec();
@@ -2896,6 +2885,332 @@ void ens_OutputParticles(int time_step, int nvariables, pbvr_parameters& particl
 //    show_timer( time );
     //if(mpi->rank==0)std::cout<<"end generate_particles\n";
 
+
+    if (skip_flag)
+    {
+        //　分散のファイル出力
+        ///-------------------------------------//
+        ///--------分散配列をファイル出力----------//
+        //--------------------------------------//
+        kvs::ValueArray<float> coords( particleBase.m_varience_coords );
+        kvs::ValueArray<Byte>  colors( particleBase.m_varience_colors );
+        kvs::ValueArray<float> normals(particleBase.m_varience_normals );
+
+        static bool first_step = true;
+        static MPI_Comm new_comm;
+        static int count;
+        static int num_nodes;
+        /* 各ノード毎に粒子データを出力する。 */
+        if( first_step )
+        {
+            int numprocs, myrank;
+            int resultlen;
+            char procname[MPI_MAX_PROCESSOR_NAME];
+            char* procname_bak;
+            char* procname_g;
+            char* procname_p;
+
+            MPI_Comm_size( MPI_COMM_WORLD, &numprocs );
+            MPI_Comm_rank( MPI_COMM_WORLD, &myrank );
+
+            /* ノード名を取得し、各ランクで共有する. */
+            MPI_Get_processor_name( procname, &resultlen );
+            procname_g = new char[ MPI_MAX_PROCESSOR_NAME * numprocs ];
+            MPI_Allgather( procname,   MPI_MAX_PROCESSOR_NAME, MPI_CHAR,
+                    procname_g, MPI_MAX_PROCESSOR_NAME, MPI_CHAR,
+                    MPI_COMM_WORLD );
+
+            int color;
+            count = 1;
+            for( color = 0; color < numprocs; color++ )
+            {
+                procname_p = procname_g + MPI_MAX_PROCESSOR_NAME * color;
+
+                /* 要素の隣同士を比較して差異があった場合にカウントし, *
+                 * ノード毎に連続した番号を割り当てる.                 */
+                if( color > 0 )
+                {
+                    procname_bak = procname_p - MPI_MAX_PROCESSOR_NAME;
+                    if( strcmp( procname_p, procname_bak ) != 0 )
+                        count++;
+                }
+
+                /* 自分のノード名が一致した要素番号をコミュニケータ分割のcolorとする */
+                if( strcmp( procname_p, procname ) == 0 )
+                    break;
+            }
+
+            delete[] procname_g;
+
+            MPI_Comm_split( MPI_COMM_WORLD, color, myrank, &new_comm );
+
+            int split_numprocs;
+            MPI_Comm_size( new_comm, &split_numprocs );
+
+            /*
+             * 各ノードに均等にランクが割り当てられることを前提とし,
+             * 分割前のプロセス数と分割後のプロセス数の非を粒子ファイル数とする.
+             */
+            num_nodes = numprocs / split_numprocs;
+            if( numprocs % split_numprocs > 0 ) num_nodes++;
+            first_step = false;
+            std::cout << "num_nodes = " << num_nodes  << "numprocs = " << numprocs << ", split_numprocs = " << split_numprocs << std::endl;
+        }   
+
+        /*
+         * ファイル名の粒子データのファイル名を入力する.
+         * countが各ファイルで連続でない場合,ファイルが不在と見なしてデーモンでスピンロックがかかる.
+         */
+#if 0
+        char filename[256];
+        sprintf(filename, "./jupiter_particle_out/t_%05d_",time_step);
+        sprintf(filename,"%s%07d_%07d.kvsml", filename, count, num_nodes );
+#else
+        // 20181226 start  環境変数で指定したファイルパスを参照する
+        std::stringstream ss;
+        //add by shimomura 20240614
+        //    ss << std::setfill('0') << std::setw(2) << static_cast<int>(celltype);
+        //    ss << "_";
+        ss << std::setfill('0') << std::setw(5) << time_step;
+        ss << "_";
+        ss << std::setfill('0') << std::setw(7) << count;
+        ss << "_";
+        ss << std::setfill('0') << std::setw(7) << num_nodes;
+        ss << ".kvsml";
+        particleBase.m_varFilePath = particleBase.m_visParamDir + "particle_out/var_";
+        particleBase.m_varFilePath += ss.str();
+        // 20181226 end
+#endif
+
+        int particle_size = coords.size();
+        int *recvcounts;
+        int *displs;
+        int  new_number_of_process;
+        int new_rank;
+
+        MPI_Comm_rank( new_comm, &new_rank );
+        MPI_Comm_size( new_comm, &new_number_of_process );
+
+        /*
+         *  recvcounts: 各ランク毎の受信バッファサイズ.
+         *  displs:     受信先バッファ上の各ランク毎の受信バッファの位置(オフセット)
+         */
+
+        displs = new int[ new_number_of_process ];
+        recvcounts = new int[ new_number_of_process ];
+
+        MPI_Allgather( &particle_size, 1, MPI_INT,
+                recvcounts,     1, MPI_INT,
+                new_comm );
+        displs[0] = 0;
+        for( int i =1; i< new_number_of_process; i++ )
+            displs[i] = displs[i-1] + recvcounts[i-1];
+
+        kvs::ValueArray<float> new_coords(  displs[new_number_of_process-1] + recvcounts[new_number_of_process-1] );
+        kvs::ValueArray<Byte>  new_colors(  displs[new_number_of_process-1] + recvcounts[new_number_of_process-1] );
+        kvs::ValueArray<float> new_normals( displs[new_number_of_process-1] + recvcounts[new_number_of_process-1] );
+
+        MPI_Gatherv( coords.pointer(),   particle_size, MPI_FLOAT,
+                new_coords.pointer(), recvcounts, displs, MPI_FLOAT,
+                0, new_comm );
+
+        MPI_Gatherv( colors.pointer(),   particle_size, MPI_BYTE,
+                new_colors.pointer(), recvcounts, displs, MPI_BYTE,
+                0, new_comm );
+
+        MPI_Gatherv( normals.pointer(),   particle_size, MPI_FLOAT,
+                new_normals.pointer(), recvcounts, displs, MPI_FLOAT,
+                0, new_comm );
+
+        /*  分割後コミュニケータのランク0で出力する  */
+        if( new_rank == 0 )
+        {
+            kvs::PointObject* point_object = new kvs::PointObject( new_coords, new_colors, new_normals, particleBase.m_subpixel_level );
+            point_object->setMinMaxObjectCoords( particleBase.m_min_vec, particleBase.m_max_vec );
+            // If async_io is enabled, use worker thread to write kvsml data and state.txt
+            if (async_io_enabled){
+                pbvr::ParticleWriteThread* particle_write_thread =  &pwt;
+                particle_write_thread->join(true);
+                particle_write_thread->setPointObject( point_object );
+                //particle_write_thread->setFilename(particleBase.m_ptcFilePath.c_str());
+                particle_write_thread->setFilename(particleBase.m_varFilePath.c_str());
+                particle_write_thread->setTimestep(time_step ,particleBase.m_stateFilePath.c_str());
+                particle_write_thread->setStartTimestep(st_time_step); //add by shimomura 20240808
+                particle_write_thread->work(true);
+            }// If async_io is disabled, use kvs::PointExporter here in main thread.
+            else{
+                kvs::KVSMLObjectPoint* kvsml_object = new kvs::PointExporter<kvs::KVSMLObjectPoint>( point_object );
+                kvsml_object->setWritingDataType( kvs::KVSMLObjectPoint::ExternalBinary );
+                kvsml_object->write( particleBase.m_varFilePath.c_str() );
+                delete kvsml_object;
+            }
+            delete point_object;
+        }
+    }
+
+#if  1
+    if (skip_flag)
+    {
+    //　歪度のファイル出力
+    ///-------------------------------------//
+    ///--------歪度配列をファイル出力----------//
+    //--------------------------------------//
+    kvs::ValueArray<float> coords( particleBase.m_varience_coords );
+    kvs::ValueArray<Byte>  colors( particleBase.m_varience_colors );
+    kvs::ValueArray<float> normals(particleBase.m_varience_normals );
+
+        static bool first_step = true;
+        static MPI_Comm new_comm;
+        static int count;
+        static int num_nodes;
+    /* 各ノード毎に粒子データを出力する。 */
+    if( first_step )
+    {
+        int numprocs, myrank;
+        int resultlen;
+        char procname[MPI_MAX_PROCESSOR_NAME];
+        char* procname_bak;
+        char* procname_g;
+        char* procname_p;
+
+        MPI_Comm_size( MPI_COMM_WORLD, &numprocs );
+        MPI_Comm_rank( MPI_COMM_WORLD, &myrank );
+
+        /* ノード名を取得し、各ランクで共有する. */
+        MPI_Get_processor_name( procname, &resultlen );
+        procname_g = new char[ MPI_MAX_PROCESSOR_NAME * numprocs ];
+        MPI_Allgather( procname,   MPI_MAX_PROCESSOR_NAME, MPI_CHAR,
+                       procname_g, MPI_MAX_PROCESSOR_NAME, MPI_CHAR,
+                       MPI_COMM_WORLD );
+
+        int color;
+        count = 1;
+        for( color = 0; color < numprocs; color++ )
+        {
+            procname_p = procname_g + MPI_MAX_PROCESSOR_NAME * color;
+
+            /* 要素の隣同士を比較して差異があった場合にカウントし, *
+             * ノード毎に連続した番号を割り当てる.                 */
+            if( color > 0 )
+            {
+                procname_bak = procname_p - MPI_MAX_PROCESSOR_NAME;
+                if( strcmp( procname_p, procname_bak ) != 0 )
+                    count++;
+            }
+
+            /* 自分のノード名が一致した要素番号をコミュニケータ分割のcolorとする */
+            if( strcmp( procname_p, procname ) == 0 )
+                break;
+        }
+
+        delete[] procname_g;
+        
+        MPI_Comm_split( MPI_COMM_WORLD, color, myrank, &new_comm );
+        
+        int split_numprocs;
+        MPI_Comm_size( new_comm, &split_numprocs );
+        
+        /*
+         * 各ノードに均等にランクが割り当てられることを前提とし,
+         * 分割前のプロセス数と分割後のプロセス数の非を粒子ファイル数とする.
+         */
+        num_nodes = numprocs / split_numprocs;
+        if( numprocs % split_numprocs > 0 ) num_nodes++;
+        first_step = false;
+        std::cout << "num_nodes = " << num_nodes  << "numprocs = " << numprocs << ", split_numprocs = " << split_numprocs << std::endl;
+    }   
+    
+    /*
+     * ファイル名の粒子データのファイル名を入力する.
+     * countが各ファイルで連続でない場合,ファイルが不在と見なしてデーモンでスピンロックがかかる.
+     */
+#if 0
+    char filename[256];
+    sprintf(filename, "./jupiter_particle_out/t_%05d_",time_step);
+    sprintf(filename,"%s%07d_%07d.kvsml", filename, count, num_nodes );
+#else
+    // 20181226 start  環境変数で指定したファイルパスを参照する
+    std::stringstream ss;
+    //add by shimomura 20240614
+//    ss << std::setfill('0') << std::setw(2) << static_cast<int>(celltype);
+//    ss << "_";
+    ss << std::setfill('0') << std::setw(5) << time_step;
+    ss << "_";
+    ss << std::setfill('0') << std::setw(7) << count;
+    ss << "_";
+    ss << std::setfill('0') << std::setw(7) << num_nodes;
+    ss << ".kvsml";
+//    particleBase.m_ptcFilePath += ss.str();
+    particleBase.m_skeFilePath = particleBase.m_visParamDir + "particle_out/ske_";
+    particleBase.m_skeFilePath += ss.str();
+    // 20181226 end
+#endif
+
+    int particle_size = coords.size();
+    int *recvcounts;
+    int *displs;
+    int  new_number_of_process;
+    int new_rank;
+
+    MPI_Comm_rank( new_comm, &new_rank );
+    MPI_Comm_size( new_comm, &new_number_of_process );
+
+    /*
+     *  recvcounts: 各ランク毎の受信バッファサイズ.
+     *  displs:     受信先バッファ上の各ランク毎の受信バッファの位置(オフセット)
+     */
+
+    displs = new int[ new_number_of_process ];
+    recvcounts = new int[ new_number_of_process ];
+
+    MPI_Allgather( &particle_size, 1, MPI_INT,
+                   recvcounts,     1, MPI_INT,
+                   new_comm );
+    displs[0] = 0;
+    for( int i =1; i< new_number_of_process; i++ )
+        displs[i] = displs[i-1] + recvcounts[i-1];
+
+    kvs::ValueArray<float> new_coords(  displs[new_number_of_process-1] + recvcounts[new_number_of_process-1] );
+    kvs::ValueArray<Byte>  new_colors(  displs[new_number_of_process-1] + recvcounts[new_number_of_process-1] );
+    kvs::ValueArray<float> new_normals( displs[new_number_of_process-1] + recvcounts[new_number_of_process-1] );
+
+    MPI_Gatherv( coords.pointer(),   particle_size, MPI_FLOAT,
+                 new_coords.pointer(), recvcounts, displs, MPI_FLOAT,
+                 0, new_comm );
+
+    MPI_Gatherv( colors.pointer(),   particle_size, MPI_BYTE,
+                 new_colors.pointer(), recvcounts, displs, MPI_BYTE,
+                 0, new_comm );
+
+    MPI_Gatherv( normals.pointer(),   particle_size, MPI_FLOAT,
+                 new_normals.pointer(), recvcounts, displs, MPI_FLOAT,
+                 0, new_comm );
+
+    /*  分割後コミュニケータのランク0で出力する  */
+    if( new_rank == 0 )
+    {
+        kvs::PointObject* point_object = new kvs::PointObject( new_coords, new_colors, new_normals, particleBase.m_subpixel_level );
+        point_object->setMinMaxObjectCoords( particleBase.m_min_vec, particleBase.m_max_vec );
+        // If async_io is enabled, use worker thread to write kvsml data and state.txt
+        if (async_io_enabled){
+            pbvr::ParticleWriteThread* particle_write_thread =  &pwt;
+            particle_write_thread->join(true);
+            particle_write_thread->setPointObject( point_object );
+            particle_write_thread->setFilename(particleBase.m_skeFilePath.c_str());
+            particle_write_thread->setTimestep(time_step ,particleBase.m_stateFilePath.c_str());
+            particle_write_thread->setStartTimestep(st_time_step); //add by shimomura 20240808
+            particle_write_thread->work(true);
+        }// If async_io is disabled, use kvs::PointExporter here in main thread.
+        else{
+            kvs::KVSMLObjectPoint* kvsml_object = new kvs::PointExporter<kvs::KVSMLObjectPoint>( point_object );
+            kvsml_object->setWritingDataType( kvs::KVSMLObjectPoint::ExternalBinary );
+            kvsml_object->write( particleBase.m_skeFilePath.c_str() );
+            delete kvsml_object;
+        }
+        delete point_object;
+    }
+    }
+#endif
 }
 
 void ensemble_generate_particles( int time_step, domain_parameters dom,
@@ -3095,7 +3410,8 @@ void EnsembleGenerateParticles( int time_step,
     const int max_nparticles = (int)max_density + 1;
 
     // アンサンブル数でrepetitionを徐算
-    int ens_number = mpi_size;
+    const int MPIprocess_per_ensemble = 4;  
+    int ens_number = mpi_size/MPIprocess_per_ensemble;
     repetitions /= ens_number;
 
 //    float max_opacity              = 0.98;
@@ -3229,7 +3545,7 @@ void EnsembleGenerateParticles( int time_step,
 
                     th_timer.stop();
                     timeN[4] += th_timer.sec();
-                    if( cell_BLK < SIMD_BLK_SIZE )
+                    if( cell_BLK < remain )
                     {
                         th_timer.start();
                         cell_index[p_id] = index + cell_BLK;
@@ -3421,18 +3737,13 @@ void EnsembleGenerateParticles( int time_step,
     th_timer.stop();
     timeN[11] += th_timer.sec();
     th_timer.start();
-//    std::cout << mpi_rank <<  ": rand_time =" << time1 << std::endl; 
-//    std::cout << mpi_rank <<  ": scalar_time =" << time2 << std::endl; 
-//    std::cout << mpi_rank <<  ": grad_time =" << time3 << std::endl; 
-//    std::cout << mpi_rank <<  ": volume_time =" << time4 << std::endl; 
-//    std::cout << mpi_rank <<  ": particle_time =" << time5 << std::endl;  
 //    if (thid <  12 )
 //    {
-//        for (int i =0;i < 12; i++)
-//        {
-//            std::cout << mpi_rank <<  ": time["<< i <<"] =" << timeN[i] << std::endl;
-//        }
-//    
+        for (int i =0;i < 12; i++)
+        {
+            std::cout << mpi_rank <<  ": ave_sampling_time["<< i <<"] =" << timeN[i] << std::endl;
+        }
+    
 //    }
 }  //end omp loop
     timer.stop();
@@ -3445,7 +3756,8 @@ void EnsembleGenerateParticles( int time_step,
 //    vertex_normals.insert(vertex_normals.end(),vertex_normals_z.begin(),vertex_normals_z.end()); 
 
     // シフト処理
-    if (mpi_size > 1 )
+    //if (mpi_size > 1 )
+    if (ens_number > 1 )
     {
 //            timer.start();
         float timeN[20]= {0};
@@ -3474,14 +3786,16 @@ void EnsembleGenerateParticles( int time_step,
 
 
         // 送信先（自分の次のrank）、受信元（自分の前のrank）
-        int send_to = (mpi_rank + 1 ) % mpi_size;
-        int recv_from = (mpi_rank - 1 + mpi_size ) % mpi_size;
+//        int send_to = (mpi_rank + 1 ) % mpi_size;
+//        int recv_from = (mpi_rank - 1 + mpi_size ) % mpi_size;
+        int send_to   = (mpi_rank + MPIprocess_per_ensemble ) % mpi_size;
+        int recv_from = (mpi_rank - MPIprocess_per_ensemble + mpi_size ) % mpi_size;
         float shift_exe_time = 0;
         float move_exe_time = 0;
         float time1=0, time2 =0, time3 =0, time4 = 0, time5 = 0;
 
         // 各ラウンドでリングを回していく（size-1回繰り返す） 
-        for (int step = 0; step < mpi_size - 1; step++) 
+        for (int step = 0; step < ens_number - 1; step++) 
         {
             timer.start();
 #if 1
@@ -3678,15 +3992,15 @@ void EnsembleGenerateParticles( int time_step,
 //        std::cout << mpi_rank <<  ": bindcell_time =" << time3 << std::endl; 
 //        std::cout << mpi_rank <<  ": calc_time =" << time4 << std::endl; 
 //        std::cout << mpi_rank <<  ": move_time =" << time5 << std::endl; 
-//        for (int i =0;i < 7; i++)
-//        {
-//            std::cout << mpi_rank <<  ": time["<< i <<"] =" << timeN[i] << std::endl;
-//        }
+        for (int i =0;i < 7; i++)
+        {
+            std::cout << mpi_rank <<  ": ave_calc_time["<< i <<"] =" << timeN[i] << std::endl;
+        }
 
 
 
        //　平均化処理 シフト処理の回数分徐算
-       const float invert_num = 1.f/float(mpi_size); 
+       const float invert_num = 1.f/float(ens_number); 
 #pragma omp simd
        for (int i = 0; i < vertex_scalars.size(); i++ )
        {
@@ -3922,13 +4236,13 @@ void EnsembleGenerateParticles( int time_step,
        }
                 th_timer.stop();
                 th_timeN[10] += th_timer.sec();
-//#pragma omp critical
-//                {    
-//                    for (int i =0;i < 11; i++)
-//                    {
-//                        std::cout << mpi_rank <<  ": time["<< i <<"] =" << th_timeN[i] << std::endl;
-//                    }
-//                }
+#pragma omp critical
+                {    
+                    for (int i =0;i < 11; i++)
+                    {
+                        std::cout << mpi_rank <<  ": ave_rejection_time["<< i <<"] =" << th_timeN[i] << std::endl;
+                    }
+                }
 
 }
        timer.stop();
@@ -4075,7 +4389,7 @@ void EnsembleGenerateParticles( int time_step,
     #pragma omp critical
         for (int i =0;i < 7; i++)
         {
-            std::cout << mpi_rank <<  ": time["<< i <<"] =" << th_timeN[i] << std::endl;
+            std::cout << mpi_rank <<  ": var_sampling_time["<< i <<"] =" << th_timeN[i] << std::endl;
         }
 }
            vertex_cellids = average_cellids;
@@ -4083,7 +4397,8 @@ void EnsembleGenerateParticles( int time_step,
     timer.stop();
     std::cout << mpi_rank <<  ": var_uniform_sampling_time =" << timer.sec() << std::endl;
     // シフト処理
-    if (mpi_size > 1 )
+    //if (mpi_size > 1 )
+    if (ens_number > 1 )
     {
            // 送信データの個数 
        const int local_size = vertex_scalars.size(); 
@@ -4103,13 +4418,13 @@ void EnsembleGenerateParticles( int time_step,
 
 
            // 送信先（自分の次のrank）、受信元（自分の前のrank）
-        int send_to = (mpi_rank + 1 ) % mpi_size;
-        int recv_from = (mpi_rank - 1 + mpi_size ) % mpi_size;
+        int send_to   = (mpi_rank + MPIprocess_per_ensemble ) % mpi_size;
+        int recv_from = (mpi_rank - MPIprocess_per_ensemble + mpi_size ) % mpi_size;
         float shift_exe_time = 0;
         float move_exe_time = 0;
 
        // 各ラウンドでリングを回していく（size-1回繰り返す）
-       for (int step = 0; step < mpi_size - 1; step++) 
+       for (int step = 0; step < ens_number - 1; step++) 
        {
             timer.start();
            const int send_size = average_scalars.size();
@@ -4320,17 +4635,18 @@ void EnsembleGenerateParticles( int time_step,
            move_exe_time += timer.sec();
        }
             
-//        for (int i =0;i < 7; i++)
-//        {
-//            std::cout << mpi_rank <<  ": time["<< i <<"] =" << timeN[i] << std::endl;
-//        }
+        for (int i =0;i < 7; i++)
+        {
+            std::cout << mpi_rank <<  ": var_calc_time["<< i <<"] =" << timeN[i] << std::endl;
+        }
        std::cout << mpi_rank <<  ": var_shift_exe_time =" << shift_exe_time << std::endl;
        std::cout << mpi_rank <<  ": var_move_exe_time =" << move_exe_time << std::endl;
 
 //    }
 //#if 0      
        // 集計された分散値を計算
-       const float invert_num = 1.f/float(mpi_size);  
+       //const float invert_num = 1.f/float(mpi_size);  
+       const float invert_num = 1.f/float(ens_number); 
        for (int i = 0; i < vertex_scalars.size();  i++ )
        {
            vertex_scalars[ i ]   *=   invert_num; 
@@ -4572,13 +4888,13 @@ void EnsembleGenerateParticles( int time_step,
        }
        th_timer.stop();
        th_timeN[10] += th_timer.sec();
-//#pragma omp critical
-//                {    
-//                    for (int i =0;i < 11; i++)
-//                    {
-//                        std::cout << mpi_rank <<  ": time["<< i <<"] =" << th_timeN[i] << std::endl;
-//                    }
-//                }
+#pragma omp critical
+                {    
+                    for (int i =0;i < 11; i++)
+                    {
+                        std::cout << mpi_rank <<  ": var_rejection_time["<< i <<"] =" << th_timeN[i] << std::endl;
+                    }
+                }
 
 
 }  //end omp
@@ -4587,9 +4903,9 @@ void EnsembleGenerateParticles( int time_step,
        std::cout << mpi_rank << ": var_rejection_exe_time =" << timer.sec() << std::endl;
 //    // 分散データを集約する
 //    std::cout << mpi_rank <<  ": nparticles : " <<  var_coords.size()/3   << std::endl;
-//    particleBase.m_sample_coords.insert(particleBase.m_sample_coords.end()  , var_coords.begin() , var_coords.end());
-//    particleBase.m_sample_colors.insert(particleBase.m_sample_colors.end()  , var_colors.begin() , var_colors.end());
-//    particleBase.m_sample_normals.insert(particleBase.m_sample_normals.end(), var_normals.begin(), var_normals.end());
+    particleBase.m_varience_coords.insert( particleBase.m_varience_coords.end()  , var_coords.begin() , var_coords.end());
+    particleBase.m_varience_colors.insert( particleBase.m_varience_colors.end()  , var_colors.begin() , var_colors.end());
+    particleBase.m_varience_normals.insert(particleBase.m_varience_normals.end(), var_normals.begin(), var_normals.end());
 
 
     // 歪度を計算する (法線計算は除外)
@@ -4643,7 +4959,8 @@ void EnsembleGenerateParticles( int time_step,
     timer.stop();
     std::cout << mpi_rank <<  ": ske_uniform_sampling_time =" << timer.sec() << std::endl;
     // シフト処理
-    if (mpi_size > 1 )
+    //if (mpi_size > 1 )
+    if (ens_number > 1 )
     {
 //            timer.start();
            // 送信データの個数 
@@ -4667,13 +4984,13 @@ void EnsembleGenerateParticles( int time_step,
         std::vector<float> recv_normals_var;
 
            // 送信先（自分の次のrank）、受信元（自分の前のrank）
-        int send_to = (mpi_rank + 1 ) % mpi_size;
-        int recv_from = (mpi_rank - 1 + mpi_size ) % mpi_size;
+        int send_to   = (mpi_rank + MPIprocess_per_ensemble ) % mpi_size;
+        int recv_from = (mpi_rank - MPIprocess_per_ensemble + mpi_size ) % mpi_size;
         float shift_exe_time = 0;
         float move_exe_time = 0;
 
        // 各ラウンドでリングを回していく（size-1回繰り返す）
-       for (int step = 0; step < mpi_size - 1; step++) 
+       for (int step = 0; step < ens_number - 1; step++) 
        {
            timer.start();
            const int send_size = average_scalars.size();
@@ -4925,7 +5242,8 @@ void EnsembleGenerateParticles( int time_step,
 //    }
 //#if 0      
        // 集計された分散値を計算
-       const float invert_num = 1.f/(float(mpi_size));  
+       //const float invert_num = 1.f/(float(mpi_size));  
+       const float invert_num = 1.f/float(ens_number); 
             #pragma omp simd
        for (int i = 0; i < vertex_scalars.size();  i++ )
        {
@@ -5019,9 +5337,9 @@ void EnsembleGenerateParticles( int time_step,
        std::cout << mpi_rank << ": ske_rejection_exe_time =" << timer.sec() << std::endl;
 //    // 歪度データを集約する
 //    std::cout << mpi_rank <<  ": nparticles : " <<  skewness_coords.size()/3   << std::endl;
-//    particleBase.m_sample_coords.insert(particleBase.m_sample_coords.end()  , skewness_coords.begin() , skewness_coords.end());
-//    particleBase.m_sample_colors.insert(particleBase.m_sample_colors.end()  , skewness_colors.begin() , skewness_colors.end());
-//    particleBase.m_sample_normals.insert(particleBase.m_sample_normals.end(), skewness_normals.begin(), skewness_normals.end());
+    particleBase.m_skewness_coords.insert( particleBase.m_skewness_coords.end()  , skewness_coords.begin() , skewness_coords.end());
+    particleBase.m_skewness_colors.insert( particleBase.m_skewness_colors.end()  , skewness_colors.begin() , skewness_colors.end());
+    particleBase.m_skewness_normals.insert(particleBase.m_skewness_normals.end() , skewness_normals.begin(), skewness_normals.end());
 
 
     int tf_number = nvariables;

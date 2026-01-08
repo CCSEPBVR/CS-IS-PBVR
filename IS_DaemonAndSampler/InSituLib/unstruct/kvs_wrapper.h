@@ -72,13 +72,21 @@ extern "C" {
     typedef struct
     {
     std::vector<float>  m_sample_coords;
-    std::vector<Byte>  m_sample_colors;
+    std::vector<Byte>   m_sample_colors;
     std::vector<float>  m_sample_normals;
+    std::vector<float>  m_varience_coords;
+    std::vector<Byte>   m_varience_colors;
+    std::vector<float>  m_varience_normals;
+    std::vector<float>  m_skewness_coords;
+    std::vector<Byte>   m_skewness_colors;
+    std::vector<float>  m_skewness_normals;
     int m_subpixel_level;
     std::string m_ptcFilePath;
     std::string m_stateFilePath;
     std::string m_tfFilename;
     std::string m_visParamDir;
+    std::string m_varFilePath;
+    std::string m_skeFilePath;
     //static ParamInfo m_param;
     kvs::Vector3f m_min_vec, m_max_vec;
     bool m_parameter_file_opened;
