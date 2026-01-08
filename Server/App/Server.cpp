@@ -263,8 +263,18 @@ void Server::initialize( uWS::WebSocket<false, true, PerSocket>* ws, const nlohm
     bool mode                               = true;
     std::string volumeDataFilePath          = received[Protocol::Key::VolumeDataFilePath];
     std::string transferFunctionFilePath    = received[Protocol::Key::TransferFunctionFilePath];
-    std::string uuid                        = received[Protocol::Key::UUID];
-    ObjectInfoExtractor::Format format      = received[Protocol::Key::Format];
+
+    std::vector<std::string> uuids;
+    const auto& uuidNode = received.at( Protocol::Key::UUID );
+    uuids = uuidNode.get<std::vector<std::string>>();
+    std::string pointObjectUUID = uuids[0];
+    std::string glyphObjectUUID = uuids[1];
+
+    std::vector<ObjectInfoExtractor::Format> formats;
+    const auto& formatNode = received.at( Protocol::Key::Format );
+    formats = formatNode.get<std::vector<ObjectInfoExtractor::Format>>();
+    ObjectInfoExtractor::Format pointObjectFormat = formats[0];
+    ObjectInfoExtractor::Format glyphObjectFormat = formats[1];
 
     std::string volumeDataNativeFilePath       = Worker::toNativePath( volumeDataFilePath );
     std::string transferFunctionNativeFilePath = Worker::toNativePath( transferFunctionFilePath );
@@ -272,7 +282,7 @@ void Server::initialize( uWS::WebSocket<false, true, PerSocket>* ws, const nlohm
     std::string volumeDataFileName       = fileSystemPath.stem().string();
     std::string volumeDataFileExtension  = fileSystemPath.extension().string();
 
-    if ( format == ObjectInfoExtractor::Format::ClientServerPointObject )
+    if ( pointObjectFormat == ObjectInfoExtractor::Format::ClientServerPointObject )
     {
         m_server_mode = ServerMode::CS;
 
@@ -309,7 +319,7 @@ void Server::initialize( uWS::WebSocket<false, true, PerSocket>* ws, const nlohm
         // POLのデフォルトパラメータを設定する
         SetDefaultPOLParameterCS( *m_pol_property );
     }
-    else if ( format == ObjectInfoExtractor::Format::InsituServerPointObject )
+    else if ( pointObjectFormat == ObjectInfoExtractor::Format::InsituServerPointObject )
     {
         m_server_mode = ServerMode::IS;
 
@@ -348,63 +358,13 @@ void Server::initialize( uWS::WebSocket<false, true, PerSocket>* ws, const nlohm
     int start_step = m_multi_volume_property_list->m_total_start_steps;
     int last_step  = m_multi_volume_property_list->m_total_last_step;
 
-    const const int DEBUG_NUMBER_OF_VECTOR = 3;
     {
         nlohmann::json msg;
         msg[Protocol::Key::Event]                   = Protocol::Events::SelectedFile;
 
-        // // Common Object Info
-        // msg[Protocol::Key::UUID]                    = uuid;
-        // msg[Protocol::Key::TmpIsDisplay]            = true;
-        // msg[Protocol::Key::IsDisplay]               = false;
-        // msg[Protocol::Key::TmpIsKeepInitial]        = false;
-        // msg[Protocol::Key::IsKeepInitial]           = false;
-        // msg[Protocol::Key::TmpIsKeepFinal]          = false;
-        // msg[Protocol::Key::IsKeepFinal]             = false;
-
-        // msg[Protocol::Key::Name]                    = volumeDataFileName;                                       // FIXME:サーバ担当者
-        // msg[Protocol::Key::Extension]               = volumeDataFileExtension;                                  // FIXME:サーバ担当者
-        // msg[Protocol::Key::Directory]               = volumeDataNativeFilePath;
-        // msg[Protocol::Key::Format]                  = format;
-        // msg[Protocol::Key::TimeStep]                = std::pair<int,int>( start_step, last_step );
-        // msg[Protocol::Key::TmpIsFocus]              = false;
-        // msg[Protocol::Key::IsFocus]                 = false;
-        // msg[Protocol::Key::MinObjectCoord]          = { min_x, min_y, min_z };                                  // FIXME:サーバ担当者
-        // msg[Protocol::Key::MaxObjectCoord]          = { max_x, max_y, max_z };                                  // FIXME:サーバ担当者
-        // msg[Protocol::Key::MinExternalCoord]        = { min_x, min_y, min_z };                                  // FIXME:サーバ担当者
-        // msg[Protocol::Key::MaxExternalCoord]        = { max_x, max_y, max_z };                                  // FIXME:サーバ担当者
-
-        // // Common Server Point Object Info
-        // msg[Protocol::Key::TmpParticleLimit]        = 10000000;
-        // msg[Protocol::Key::ParticleLimit]           = 10000000;
-        // msg[Protocol::Key::TmpExtraOpacityFactor]   = 1.0;
-        // msg[Protocol::Key::ExtraOpacityFactor]      = 1.0;
-
-        // // Client Server Point Object Info
-        // msg[Protocol::Key::NumberOfVector]          = m_multi_volume_property_list->m_total_number_ingredients; // FIXME:サーバ担当者
-        // msg[Protocol::Key::NumberOfElements]        = m_multi_volume_property_list->m_total_number_elements;    // FIXME:サーバ担当者
-        // msg[Protocol::Key::NumberOfSubvolume]       = m_multi_volume_property_list->m_total_number_subvolumes;  // FIXME:サーバ担当者
-        // msg[Protocol::Key::NumberOfNodes]           = m_multi_volume_property_list->m_total_number_nodes;       // FIXME:サーバ担当者
-        // msg[Protocol::Key::ElementType]             = m_multi_volume_property_list->m_list[0].m_elem_type;      // FIXME:サーバ担当者
-        // msg[Protocol::Key::FileType]                = m_multi_volume_property_list->m_list[0].m_file_type;      // FIXME:サーバ担当者
-        // msg[Protocol::Key::StepNumber]              = m_multi_volume_property_list->m_total_number_steps;       // FIXME:サーバ担当者
-        // msg[Protocol::Key::TmpCoordinateX]          = "";
-        // msg[Protocol::Key::CoordinateX]             = "";
-        // msg[Protocol::Key::TmpCoordinateY]          = "";
-        // msg[Protocol::Key::CoordinateY]             = "";
-        // msg[Protocol::Key::TmpCoordinateZ]          = "";
-        // msg[Protocol::Key::CoordinateZ]             = "";
-        // msg[Protocol::Key::IsExport]                = false;
-
-        // // Nontexture Polygon Object Info
-        // msg[Protocol::Key::TmpPolygonColor]         = { 128, 128, 128 };
-        // msg[Protocol::Key::PolygonColor]            = { 128, 128, 128 };
-        // msg[Protocol::Key::TmpPolygonOpacity]       = 0.5;
-        // msg[Protocol::Key::PolygonOpacity]          = 0.5;
-
         ObjectInfoExtractor::ObjectInfo objectInfo;
         // // Common Object Info
-        objectInfo.uuid                  = uuid;
+        objectInfo.uuid                  = pointObjectUUID;
         objectInfo.tmpIsDisplay          = true;
         objectInfo.isDisplay             = false;
         objectInfo.tmpIsKeepInitial      = false;
@@ -415,7 +375,7 @@ void Server::initialize( uWS::WebSocket<false, true, PerSocket>* ws, const nlohm
         objectInfo.name                  = volumeDataFileName;                                       // FIXME:サーバ担当者
         objectInfo.extension             = volumeDataFileExtension;                                  // FIXME:サーバ担当者
         objectInfo.directory             = volumeDataNativeFilePath;
-        objectInfo.format                = format;
+        objectInfo.format                = pointObjectFormat;
         objectInfo.timeStep              = std::pair<int,int>( start_step, last_step );
         objectInfo.tmpIsFocus            = false;
         objectInfo.isFocus               = false;
@@ -508,59 +468,111 @@ void Server::initialize( uWS::WebSocket<false, true, PerSocket>* ws, const nlohm
     {
         if( m_multi_volume_property_list->m_total_number_ingredients >= 3 ) // 成分数3以上の時
         {
-            std::cout << "TEST" << std::endl;
-            nlohmann::json msg;
-            msg[Protocol::Key::Event]                   = Protocol::Events::SelectedFile;
+            {
+                nlohmann::json msg;
+                msg[Protocol::Key::Event]                   = Protocol::Events::SelectedFile;
 
-            // Common Object Info
-            msg[Protocol::Key::UUID]                    = uuid;
-            msg[Protocol::Key::TmpIsDisplay]            = true;
-            msg[Protocol::Key::IsDisplay]               = false;
-            msg[Protocol::Key::TmpIsKeepInitial]        = false;
-            msg[Protocol::Key::IsKeepInitial]           = false;
-            msg[Protocol::Key::TmpIsKeepFinal]          = false;
-            msg[Protocol::Key::IsKeepFinal]             = false;
+                ObjectInfoExtractor::ObjectInfo objectInfoGlyph;
+                // // Common Object Info
+                objectInfoGlyph.uuid                  = glyphObjectUUID;
+                objectInfoGlyph.tmpIsDisplay          = true;
+                objectInfoGlyph.isDisplay             = false;
+                objectInfoGlyph.tmpIsKeepInitial      = false;
+                objectInfoGlyph.isKeepInitial         = false;
+                objectInfoGlyph.tmpIsKeepFinal        = false;
+                objectInfoGlyph.isKeepFinal           = false;
 
-            msg[Protocol::Key::Name]                    = volumeDataFileName;                                       // FIXME:サーバ担当者
-            msg[Protocol::Key::Extension]               = volumeDataFileExtension;                                  // FIXME:サーバ担当者
-            msg[Protocol::Key::Directory]               = volumeDataNativeFilePath;
-            msg[Protocol::Key::Format]                  = ObjectInfoExtractor::Format::ServerGlyphObject;
-            msg[Protocol::Key::TimeStep]                = std::pair<int,int>( start_step, last_step );
-            msg[Protocol::Key::TmpIsFocus]              = false;
-            msg[Protocol::Key::IsFocus]                 = false;
-            msg[Protocol::Key::MinObjectCoord]          = { min_x, min_y, min_z };                                  // FIXME:サーバ担当者
-            msg[Protocol::Key::MaxObjectCoord]          = { max_x, max_y, max_z };                                  // FIXME:サーバ担当者
-            msg[Protocol::Key::MinExternalCoord]        = { min_x, min_y, min_z };                                  // FIXME:サーバ担当者
-            msg[Protocol::Key::MaxExternalCoord]        = { max_x, max_y, max_z };                                  // FIXME:サーバ担当者
+                objectInfoGlyph.name                  = volumeDataFileName;                                       // FIXME:サーバ担当者
+                objectInfoGlyph.extension             = volumeDataFileExtension;                                  // FIXME:サーバ担当者
+                objectInfoGlyph.directory             = volumeDataNativeFilePath;
+                objectInfoGlyph.format                = glyphObjectFormat;
+                objectInfoGlyph.timeStep              = std::pair<int,int>( start_step, last_step );
+                objectInfoGlyph.tmpIsFocus            = false;
+                objectInfoGlyph.isFocus               = false;
+                objectInfoGlyph.minObjectCoord        = { min_x, min_y, min_z };                                  // FIXME:サーバ担当者
+                objectInfoGlyph.maxObjectCoord        = { max_x, max_y, max_z };                                  // FIXME:サーバ担当者
+                objectInfoGlyph.minExternalCoord      = { min_x, min_y, min_z };                                  // FIXME:サーバ担当者
+                objectInfoGlyph.maxExternalCoord      = { max_x, max_y, max_z };                                  // FIXME:サーバ担当者
 
-            // Common Server Point Object Info
-            msg[Protocol::Key::TmpParticleLimit]        = 10000000;
-            msg[Protocol::Key::ParticleLimit]           = 10000000;
-            msg[Protocol::Key::TmpExtraOpacityFactor]   = 1.0;
-            msg[Protocol::Key::ExtraOpacityFactor]      = 1.0;
+                // // Common Server Point Object Info
+                objectInfoGlyph.tmpParticleLimit      = 10000000;
+                // objectInfo.tmpParticleLimit      = m_particle_property->m_particle_limit;
+                objectInfoGlyph.particleLimit         = 10000000;
+                // objectInfo.particleLimit         = m_particle_property->m_particle_limit;
+                objectInfoGlyph.tmpExtraOpacityFactor = 1.0;
+                objectInfoGlyph.extraOpacityFactor    = 1.0;
 
-            // Client Server Point Object Info
-            msg[Protocol::Key::NumberOfVector]          = m_multi_volume_property_list->m_total_number_ingredients; // FIXME:サーバ担当者
-            msg[Protocol::Key::NumberOfElements]        = m_multi_volume_property_list->m_total_number_elements;    // FIXME:サーバ担当者
-            msg[Protocol::Key::NumberOfSubvolume]       = m_multi_volume_property_list->m_total_number_subvolumes;  // FIXME:サーバ担当者
-            msg[Protocol::Key::NumberOfNodes]           = m_multi_volume_property_list->m_total_number_nodes;       // FIXME:サーバ担当者
-            msg[Protocol::Key::ElementType]             = m_multi_volume_property_list->m_list[0].m_elem_type;      // FIXME:サーバ担当者
-            msg[Protocol::Key::FileType]                = m_multi_volume_property_list->m_list[0].m_file_type;      // FIXME:サーバ担当者
-            msg[Protocol::Key::StepNumber]              = m_multi_volume_property_list->m_total_number_steps;       // FIXME:サーバ担当者
-            msg[Protocol::Key::TmpCoordinateX]          = "";
-            msg[Protocol::Key::CoordinateX]             = "";
-            msg[Protocol::Key::TmpCoordinateY]          = "";
-            msg[Protocol::Key::CoordinateY]             = "";
-            msg[Protocol::Key::TmpCoordinateZ]          = "";
-            msg[Protocol::Key::CoordinateZ]             = "";
-            msg[Protocol::Key::IsExport]                = false;
+                // // Client Server Point Object Info
+                objectInfoGlyph.numberOfVector        = m_multi_volume_property_list->m_total_number_ingredients; // FIXME:サーバ担当者
+                objectInfoGlyph.numberOfElements      = m_multi_volume_property_list->m_total_number_elements;    // FIXME:サーバ担当者
+                objectInfoGlyph.numberOfSubvolume     = m_multi_volume_property_list->m_total_number_subvolumes;  // FIXME:サーバ担当者
+                objectInfoGlyph.numberOfNodes         = m_multi_volume_property_list->m_total_number_nodes;       // FIXME:サーバ担当者
+                objectInfoGlyph.elementType           = m_multi_volume_property_list->m_list[0].m_elem_type;      // FIXME:サーバ担当者
+                objectInfoGlyph.fileType              = m_multi_volume_property_list->m_list[0].m_file_type;      // FIXME:サーバ担当者
+                objectInfoGlyph.stepNumber            = m_multi_volume_property_list->m_total_number_steps;       // FIXME:サーバ担当者
+                objectInfoGlyph.tmpCoordinateX        = "";
+                objectInfoGlyph.coordinateX           = "";
+                objectInfoGlyph.tmpCoordinateY        = "";
+                objectInfoGlyph.coordinateY           = "";
+                objectInfoGlyph.tmpCoordinateZ        = "";
+                objectInfoGlyph.coordinateZ           = "";
+                objectInfoGlyph.isExport              = false;
 
-            // Nontexture Polygon Object Info
-            msg[Protocol::Key::TmpPolygonColor]         = { 128, 128, 128 };
-            msg[Protocol::Key::PolygonColor]            = { 128, 128, 128 };
-            msg[Protocol::Key::TmpPolygonOpacity]       = 0.5;
-            msg[Protocol::Key::PolygonOpacity]          = 0.5;
-            m_u_web_sockets.publish( "Notice", msg.dump(), uWS::OpCode::TEXT );
+                // // Nontexture Polygon Object Info
+                objectInfoGlyph.tmpPolygonColor       = kvs::RGBColor( 128, 128, 128 );
+                objectInfoGlyph.polygonColor          = kvs::RGBColor( 128, 128, 128 );
+                objectInfoGlyph.tmpPolygonOpacity     = 0.5;
+                objectInfoGlyph.polygonOpacity        = 0.5;
+                m_objects->push_back( objectInfoGlyph );
+
+                // Common Object Info
+                msg[Protocol::Key::UUID]                  = objectInfoGlyph.uuid;
+                msg[Protocol::Key::TmpIsDisplay]          = objectInfoGlyph.tmpIsDisplay;
+                msg[Protocol::Key::IsDisplay]             = objectInfoGlyph.isDisplay;
+                msg[Protocol::Key::TmpIsKeepInitial]      = objectInfoGlyph.tmpIsKeepInitial;
+                msg[Protocol::Key::IsKeepInitial]         = objectInfoGlyph.isKeepInitial;
+                msg[Protocol::Key::TmpIsKeepFinal]        = objectInfoGlyph.tmpIsKeepFinal;
+                msg[Protocol::Key::IsKeepFinal]           = objectInfoGlyph.isKeepFinal;
+
+                msg[Protocol::Key::Name]                  = objectInfoGlyph.name;
+                msg[Protocol::Key::Extension]             = objectInfoGlyph.extension;
+                msg[Protocol::Key::Directory]             = objectInfoGlyph.directory;
+                msg[Protocol::Key::Format]                = objectInfoGlyph.format;
+                msg[Protocol::Key::TimeStep]              = objectInfoGlyph.timeStep;
+                msg[Protocol::Key::TmpIsFocus]            = objectInfoGlyph.tmpIsFocus;
+                msg[Protocol::Key::IsFocus]               = objectInfoGlyph.isFocus;
+                msg[Protocol::Key::MinObjectCoord]        = { objectInfoGlyph.minObjectCoord.x(), objectInfoGlyph.minObjectCoord.y(), objectInfoGlyph.minObjectCoord.z() };
+                msg[Protocol::Key::MaxObjectCoord]        = { objectInfoGlyph.maxObjectCoord.x(), objectInfoGlyph.maxObjectCoord.y(), objectInfoGlyph.maxObjectCoord.z() };
+                msg[Protocol::Key::MinExternalCoord]      = { objectInfoGlyph.minExternalCoord.x(), objectInfoGlyph.minExternalCoord.y(), objectInfoGlyph.minExternalCoord.z() };
+                msg[Protocol::Key::MaxExternalCoord]      = { objectInfoGlyph.maxExternalCoord.x(), objectInfoGlyph.maxExternalCoord.y(), objectInfoGlyph.maxExternalCoord.z() };
+                    // Common Server Point Object Info
+                msg[Protocol::Key::TmpParticleLimit]      = objectInfoGlyph.tmpParticleLimit;
+                msg[Protocol::Key::ParticleLimit]         = objectInfoGlyph.particleLimit;
+                msg[Protocol::Key::TmpExtraOpacityFactor] = objectInfoGlyph.tmpExtraOpacityFactor;
+                msg[Protocol::Key::ExtraOpacityFactor]    = objectInfoGlyph.extraOpacityFactor;
+                    // Client Server Point Object Info
+                msg[Protocol::Key::NumberOfVector]        = objectInfoGlyph.numberOfVector;
+                msg[Protocol::Key::NumberOfElements]      = objectInfoGlyph.numberOfElements;
+                msg[Protocol::Key::NumberOfSubvolume]     = objectInfoGlyph.numberOfSubvolume;
+                msg[Protocol::Key::NumberOfNodes]         = objectInfoGlyph.numberOfNodes;
+                msg[Protocol::Key::ElementType]           = objectInfoGlyph.elementType;
+                msg[Protocol::Key::FileType]              = objectInfoGlyph.fileType;
+                msg[Protocol::Key::StepNumber]            = objectInfoGlyph.stepNumber;
+                msg[Protocol::Key::TmpCoordinateX]        = objectInfoGlyph.tmpCoordinateX;
+                msg[Protocol::Key::CoordinateX]           = objectInfoGlyph.coordinateX;
+                msg[Protocol::Key::TmpCoordinateY]        = objectInfoGlyph.tmpCoordinateY;
+                msg[Protocol::Key::CoordinateY]           = objectInfoGlyph.coordinateY;
+                msg[Protocol::Key::TmpCoordinateZ]        = objectInfoGlyph.tmpCoordinateZ;
+                msg[Protocol::Key::CoordinateZ]           = objectInfoGlyph.coordinateZ;
+                msg[Protocol::Key::IsExport]              = objectInfoGlyph.isExport;
+                    // Nontexture Polygon Object Info
+                msg[Protocol::Key::TmpPolygonColor]       = { objectInfoGlyph.tmpPolygonColor.r(), objectInfoGlyph.tmpPolygonColor.g(), objectInfoGlyph.tmpPolygonColor.b() };
+                msg[Protocol::Key::PolygonColor]          = { objectInfoGlyph.polygonColor.r(), objectInfoGlyph.polygonColor.g(), objectInfoGlyph.polygonColor.b() };
+                msg[Protocol::Key::TmpPolygonOpacity]     = objectInfoGlyph.tmpPolygonOpacity;
+                msg[Protocol::Key::PolygonOpacity]        = objectInfoGlyph.polygonOpacity;
+
+                m_u_web_sockets.publish( "Notice", msg.dump(), uWS::OpCode::TEXT );
+            }
         }
     }
 

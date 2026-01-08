@@ -101,21 +101,34 @@ void Communication::websocketConnected()
         ui->disconnectPushButton                ->setEnabled( true );
         updateVizMode();
 
-        QString uuid = QUuid::createUuid().toString( QUuid::WithoutBraces );
+        QString pointObjectUUID = QUuid::createUuid().toString( QUuid::WithoutBraces );
+        QString glyphObjectUUID = QUuid::createUuid().toString( QUuid::WithoutBraces );
 
-        ObjectInfoExtractor::Format format;
+        ObjectInfoExtractor::Format pointObjectFormat;
         if( ui->localVizRadioButton->isChecked() || ui->remoteVizClientServerRadioButton->isChecked() )
-            format = ObjectInfoExtractor::Format::ClientServerPointObject;
+            pointObjectFormat = ObjectInfoExtractor::Format::ClientServerPointObject;
         else
-            format = ObjectInfoExtractor::Format::InsituServerPointObject;
+            pointObjectFormat = ObjectInfoExtractor::Format::InsituServerPointObject;
 
-        m_web_sockets->text()->sendTextMessage( QJsonDocument( {
-                                                              { QString::fromUtf8( Protocol::Key::Event )                   , QString::fromUtf8( Protocol::Events::Initialize ) },
-                                                              { QString::fromUtf8( Protocol::Key::VolumeDataFilePath )      , ui->volumeDataFilePathLineEdit->text() },
-                                                              { QString::fromUtf8( Protocol::Key::TransferFunctionFilePath ), ui->transferFunctionFilePathLineEdit->text() },
-                                                              { QString::fromUtf8( Protocol::Key::UUID )                    , uuid },
-                                                              { QString::fromUtf8( Protocol::Key::Format )                  , format },
-                                                              } ).toJson( QJsonDocument::Compact ) );
+        ObjectInfoExtractor::Format glyphObjectFormat = ObjectInfoExtractor::Format::ServerGlyphObject;
+
+        QJsonArray uuidArray;
+        uuidArray.append( pointObjectUUID );
+        uuidArray.append( glyphObjectUUID );
+
+        QJsonArray formatArray;
+        formatArray.append( pointObjectFormat );
+        formatArray.append( glyphObjectFormat );
+
+        m_web_sockets->text()->sendTextMessage(
+            QJsonDocument( {
+                           { QString::fromUtf8( Protocol::Key::Event)                    , QString::fromUtf8(Protocol::Events::Initialize) },
+                           { QString::fromUtf8( Protocol::Key::VolumeDataFilePath )      , ui->volumeDataFilePathLineEdit->text() },
+                           { QString::fromUtf8( Protocol::Key::TransferFunctionFilePath ), ui->transferFunctionFilePathLineEdit->text() },
+                           { QString::fromUtf8( Protocol::Key::UUID )                    , uuidArray },
+                           { QString::fromUtf8( Protocol::Key::Format )                  , formatArray },
+                           } ).toJson( QJsonDocument::Compact )
+            );
     }
 }
 
