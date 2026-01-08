@@ -242,6 +242,7 @@ int main( int argc, char** argv )
             const char *envBuf = NULL;
             envBuf = std::getenv( "PARTICLE_DIR" );
             if (envBuf == NULL) {
+                //particlePath = "./t";
                 particlePath = "./t";
                 glyphFilePath = "./g";
                 plotOverLineFilePath = "./p";
@@ -251,12 +252,16 @@ int main( int argc, char** argv )
                 glyphFilePath = envBuf;
                 plotOverLineFilePath = envBuf;
                 if (particlePath[particlePath.size() - 1] != '/') {
-                    particlePath += "/t";
+                    //particlePath += "/t";
+                    //particlePath += "/var";
+                    particlePath += "/ske";
                     glyphFilePath += "/g";
                     plotOverLineFilePath += "/p";
                 }
                 else {
-                    particlePath += "t";
+                    //particlePath += "t";
+                    //particlePath += "var";
+                    particlePath += "ske";
                     glyphFilePath += "g";
                     plotOverLineFilePath += "p";
                 }
@@ -455,10 +460,12 @@ int main( int argc, char** argv )
 #else
                 // 20181226 start
                 // 環境変数の値を直接使用する
-                std::string filename( particlePath );
+//                std::string filename( particlePath );
+                std::string filename( visParamDir );
                 // 20181226 end
 #endif
-                filename.append( "_pfi_coords_minmax.txt" );
+                //filename.append( "_pfi_coords_minmax.txt" );
+                filename.append( "/particle_out/t_pfi_coords_minmax.txt" );
                 kvs::File f( filename.c_str()  );
                 if ( f.isExisted() )
                 {
@@ -928,9 +935,11 @@ int main( int argc, char** argv )
                             TimerStart( 2 );
                             // 20181226 start　環境変数で指定したパスを使用
                             //std::string filename( jupiter_prefix );
-                            std::string filename( particlePath );
+                            //std::string filename( particlePath );
+                            std::string filename( visParamDir );
                             // 20181226 end
-                            filename.append( "_pfi_coords_minmax.txt" );
+                            filename.append( "/particle_out/t_pfi_coords_minmax.txt" );
+                            //filename.append( "t_pfi_coords_minmax.txt" );
                             kvs::File f( filename.c_str()  );
 
                             if ( f.isExisted() )

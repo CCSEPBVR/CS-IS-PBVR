@@ -3055,9 +3055,9 @@ void ens_OutputParticles(int time_step, int nvariables, pbvr_parameters& particl
     ///-------------------------------------//
     ///--------歪度配列をファイル出力----------//
     //--------------------------------------//
-    kvs::ValueArray<float> coords( particleBase.m_varience_coords );
-    kvs::ValueArray<Byte>  colors( particleBase.m_varience_colors );
-    kvs::ValueArray<float> normals(particleBase.m_varience_normals );
+    kvs::ValueArray<float> coords( particleBase.m_skewness_coords );
+    kvs::ValueArray<Byte>  colors( particleBase.m_skewness_colors );
+    kvs::ValueArray<float> normals(particleBase.m_skewness_normals );
 
         static bool first_step = true;
         static MPI_Comm new_comm;
@@ -3418,8 +3418,8 @@ void EnsembleGenerateParticles( int time_step,
     // Hydrogen
     const float min_value = 0;
     const float max_value = 255;
-//    const float min_value = 0;
-//    const float max_value = 1;
+    const float var_min_value = 0;
+    const float var_max_value = 1;
 ////    // spx 
 //    const float min_value = 0.2;
 //    const float max_value = 1;
@@ -4252,10 +4252,10 @@ void EnsembleGenerateParticles( int time_step,
 
     std::cout << mpi_rank <<  ": nparticles : " <<  size/3   << std::endl;
 
-    // 平均値データを集約する
-    particleBase.m_sample_coords.insert(particleBase.m_sample_coords.end()  , average_coords.begin() , average_coords.end());
-    particleBase.m_sample_colors.insert(particleBase.m_sample_colors.end()  , average_colors.begin() , average_colors.end());
-    particleBase.m_sample_normals.insert(particleBase.m_sample_normals.end(), average_normals.begin(), average_normals.end());
+//    // 平均値データを集約する
+//    particleBase.m_sample_coords.insert(particleBase.m_sample_coords.end()  , average_coords.begin() , average_coords.end());
+//    particleBase.m_sample_colors.insert(particleBase.m_sample_colors.end()  , average_colors.begin() , average_colors.end());
+//    particleBase.m_sample_normals.insert(particleBase.m_sample_normals.end(), average_normals.begin(), average_normals.end());
 
 //#if 0
     // 分散を計算する
@@ -4903,6 +4903,9 @@ void EnsembleGenerateParticles( int time_step,
        std::cout << mpi_rank << ": var_rejection_exe_time =" << timer.sec() << std::endl;
 //    // 分散データを集約する
 //    std::cout << mpi_rank <<  ": nparticles : " <<  var_coords.size()/3   << std::endl;
+//     particleBase.m_sample_coords. insert(particleBase.m_varience_coords.end()  , var_coords.begin() , var_coords.end());
+//     particleBase.m_sample_colors. insert(particleBase.m_varience_colors.end()  , var_colors.begin() , var_colors.end());
+//     particleBase.m_sample_normals.insert(particleBase.m_varience_normals.end() , var_normals.begin(), var_normals.end());
     particleBase.m_varience_coords.insert( particleBase.m_varience_coords.end()  , var_coords.begin() , var_coords.end());
     particleBase.m_varience_colors.insert( particleBase.m_varience_colors.end()  , var_colors.begin() , var_colors.end());
     particleBase.m_varience_normals.insert(particleBase.m_varience_normals.end(), var_normals.begin(), var_normals.end());
