@@ -255,21 +255,21 @@ void ParameterFileReader::setTransferFunctionParameter( ParticleProperty& partic
         vismodule::ColorMap::Table color_table( tf_resolution * 3 );
         vismodule::OpacityMap::Table opacity_table( tf_resolution );
 
-        for ( size_t i = 0; i < tf_resolution; i++ )
+        for ( size_t j = 0; j < tf_resolution; j++ )
         {
             for ( size_t c = 0; c < 3; c++ )
             {
                 int color_e;
                 ss_color >> color_e;
-                color_table.at( i * 3 + c ) = color_e;
+                color_table.at( j * 3 + c ) = color_e;
             }
         }
 
-        for ( size_t i = 0; i < tf_resolution; i++ )
+        for ( size_t j = 0; j < tf_resolution; j++ )
         {
             float opacity;
             ss_opacity >> opacity;
-            opacity_table.at( i ) = opacity;
+            opacity_table.at( j ) = opacity;
         }
 
         vismodule::ColorMap color_map( color_table );
@@ -303,6 +303,9 @@ void ParameterFileReader::setTransferFunctionParameter( ParticleProperty& partic
         const std::string tag_base = tss.str();
 
         equation = m_name_list_file.getValue<std::string>( tag_base + "VAR_C" );
+        std::replace( equation.begin(), equation.end(), 'X', 'x' );
+        std::replace( equation.begin(), equation.end(), 'Y', 'y' );
+        std::replace( equation.begin(), equation.end(), 'Z', 'z' );
         eq = particle_property.m_transfunc_synthesizer->convert_token( equation );
 
         var.push_back( eq );
@@ -318,6 +321,9 @@ void ParameterFileReader::setTransferFunctionParameter( ParticleProperty& partic
         const std::string tag_base = tss.str();
 
         equation = m_name_list_file.getValue<std::string>( tag_base + "VAR_O" );
+        std::replace( equation.begin(), equation.end(), 'X', 'x' );
+        std::replace( equation.begin(), equation.end(), 'Y', 'y' );
+        std::replace( equation.begin(), equation.end(), 'Z', 'z' );
         eq = particle_property.m_transfunc_synthesizer->convert_token( equation );
 
         var.push_back( eq );
@@ -459,6 +465,9 @@ void ParameterFileReader::setParticleParameter( ParticleProperty& particle_prope
         const std::string tag_base = tss.str();
 
         equation = m_name_list_file.getValue<std::string>( tag_base + "VAR_C" );
+        std::replace( equation.begin(), equation.end(), 'X', 'x' );
+        std::replace( equation.begin(), equation.end(), 'Y', 'y' );
+        std::replace( equation.begin(), equation.end(), 'Z', 'z' );
         eq = particle_property.m_transfunc_synthesizer->convert_token( equation );
 
         var.push_back( eq );
@@ -474,6 +483,9 @@ void ParameterFileReader::setParticleParameter( ParticleProperty& particle_prope
         const std::string tag_base = tss.str();
 
         equation = m_name_list_file.getValue<std::string>( tag_base + "VAR_O" );
+        std::replace( equation.begin(), equation.end(), 'X', 'x' );
+        std::replace( equation.begin(), equation.end(), 'Y', 'y' );
+        std::replace( equation.begin(), equation.end(), 'Z', 'z' );
         eq = particle_property.m_transfunc_synthesizer->convert_token( equation );
 
         var.push_back( eq );
