@@ -1,18 +1,30 @@
 CXX = icpx
-CXXFLAGS = -O3 -xCORE-AVX2 -qopenmp -std=c++17
+#CXXFLAGS = -O3 -xSSE4.2 -qopenmp -std=c++17
+#CXXFLAGS = -O3 -xCORE-AVX2 -qopenmp -std=c++17
+CXXFLAGS = -O3 -xCORE-AVX512 -qopenmp -std=c++17
 
 LD = icpx
-LDFLAGS= -O3 -xCORE-AVX2 -qopenmp 
+#LDFLAGS= -O3 -xSSE4.2 -qopenmp 
+#LDFLAGS= -O3 -xCORE-AVX2 -qopenmp 
+LDFLAGS= -O3 -xCORE-AVX512 -qopenmp 
 
 MPICXX = mpicxx
-MPICXXFLAGS = -O3 -xCORE-AVX2 -qopenmp -std=c++17
+#MPICXXFLAGS = -O3 -xSSE4.2 -qopenmp -std=c++17
+#MPICXXFLAGS = -O3 -xCORE-AVX2 -qopenmp -std=c++17
+MPICXXFLAGS = -O3 -xCORE-AVX512 -qopenmp -std=c++17
 
 MPICC = mpicc
-MPICCFLAGS = -O3 -xCORE-AVX2 -qopenmp 
+#MPICCFLAGS = -O3 -xSSE4.2 -qopenmp 
+#MPICCFLAGS = -O3 -xCORE-AVX2 -qopenmp 
+MPICCFLAGS = -O3 -xCORE-AVX512 -qopenmp 
 
 MPILD = mpicxx
-MPILDFLAGS = -O3 -xCORE-AVX2 -qopenmp 
+#MPILDFLAGS = -O3 -xSSE4.2 -qopenmp 
+#MPILDFLAGS = -O3 -xCORE-AVX2 -qopenmp 
+MPILDFLAGS = -O3 -xCORE-AVX512 -qopenmp 
 
 NTL_CC = icx
 NTL_CXX = icpx
-NTL_CFLAGS= -O3 -xCORE-AVX2 -fp-model precise
+#NTL_CFLAGS= -O3 -xSSE4.2 -fp-model precise
+#NTL_CFLAGS= -O3 -xCORE-AVX2 -fp-model precise
+NTL_CFLAGS= -O3 -xCORE-AVX512 -fp-model precise
