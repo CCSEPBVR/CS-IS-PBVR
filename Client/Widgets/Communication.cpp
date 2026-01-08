@@ -704,7 +704,13 @@ void Communication::onTextWebsocketMessageReceived( const QString& receivedMessa
     else if( event == QString::fromUtf8( Protocol::Events::ID ) )                           ID( obj );
     else if( event == QString::fromUtf8( Protocol::Events::Operator ) )                     Operator( obj );
     else if( event == QString::fromUtf8( Protocol::Events::TransferOperator ) )             transferOperator( obj );
-    else if( event == QString::fromUtf8( Protocol::Events::Initialize ) )                   emit receiveInitializeTransferFunctionParameter( obj );
+    else if( event == QString::fromUtf8( Protocol::Events::Initialize ) )
+    {
+        QString colorSynth      = obj.value(QString::fromUtf8( Protocol::Key::ColorSynthesizer ) ).toString().toUtf8();
+        QString opacitySynth    = obj.value(QString::fromUtf8( Protocol::Key::OpacitySynthesizer ) ).toString().toUtf8();
+        QJsonArray dataArray    = obj.value(QString::fromUtf8( Protocol::Key::Data ) ).toArray();
+        emit receiveInitializeTransferFunctionParameter( colorSynth, opacitySynth, dataArray );
+    }
     else if( event == QString::fromUtf8( Protocol::Events::Chat ) )                         chat( obj );
     else if( event == QString::fromUtf8( Protocol::Events::SelectedFile ) )                 emit receiveSelectedFile( obj );
     else if( event == QString::fromUtf8( Protocol::Events::ObjectDelete ) )                 emit receiveObjectDelete( obj );

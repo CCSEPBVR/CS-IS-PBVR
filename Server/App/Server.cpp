@@ -597,73 +597,119 @@ void Server::initialize( uWS::WebSocket<false, true, PerSocket>* ws, const nlohm
         }
     }
 
-    // クライアントに送信する伝達関数を作成する
+    // NOTE:クライアントに送信する伝達関数を作成する
+    nlohmann::json transferFunctions = nlohmann::json::array();
     const int tf_resolution = 256;
-    std::vector<std::string> color_variable_vec;
-    std::vector<std::string> opacity_variable_vec;
-    std::vector<std::uint8_t> color_range_mode_vec;
-    std::vector<std::uint8_t> opacity_range_mode_vec;
-    std::vector<float> user_color_min_vec;
-    std::vector<float> user_color_max_vec;
-    std::vector<float> user_opacity_min_vec;
-    std::vector<float> user_opacity_max_vec;
-    std::vector<vismodule::UInt8> color_map;
-    std::vector<float> opacity_map;
-
-    color_variable_vec.resize( tf_number );
-    opacity_variable_vec.resize( tf_number );
-    color_range_mode_vec.resize( tf_number );
-    opacity_range_mode_vec.resize( tf_number );
-    user_color_min_vec.resize( tf_number );
-    user_color_max_vec.resize( tf_number );
-    user_opacity_min_vec.resize( tf_number );
-    user_opacity_max_vec.resize( tf_number );
-    color_map.resize( tf_number * tf_resolution * 3 );
-    opacity_map.resize( tf_number * tf_resolution );
-
-    int offset = 0;
-
-    for ( size_t i = 0; i < tf_number; i++ )
+    for( size_t i = 0; i < tf_number; ++i )
     {
-        color_variable_vec[i]     = m_particle_property->m_transfunc_array[i].m_color_variable;
-        opacity_variable_vec[i]   = m_particle_property->m_transfunc_array[i].m_opacity_variable;
-        user_color_min_vec[i]     = m_particle_property->m_transfunc_array[i].colorMinValue();
-        user_color_max_vec[i]     = m_particle_property->m_transfunc_array[i].colorMaxValue();
-        user_opacity_min_vec[i]   = m_particle_property->m_transfunc_array[i].opacityMinValue();
-        user_opacity_max_vec[i]   = m_particle_property->m_transfunc_array[i].opacityMaxValue();
-        color_range_mode_vec[i]   = static_cast<std::uint8_t>( m_particle_property->m_transfunc_array[i].m_server_color_range_mode );
-        opacity_range_mode_vec[i] = static_cast<std::uint8_t>( m_particle_property->m_transfunc_array[i].m_server_opacity_range_mode );
+        nlohmann::json tf;
 
-        vismodule::ColorMap::Table color_map_table     = m_particle_property->m_transfunc_array[i].colorMap().table();
-        vismodule::OpacityMap::Table opacity_map_table = m_particle_property->m_transfunc_array[i].opacityMap().table();
+        // ---- Color ----
+        tf[Protocol::Key::ColorFunction]       = "C" + std::to_string( i + 1 );
+        tf[Protocol::Key::ColorVariable]       = m_particle_property->m_transfunc_array[i].m_color_variable;
+        tf[Protocol::Key::ColorRangeMode]      = static_cast<std::uint8_t>( m_particle_property->m_transfunc_array[i].m_server_color_range_mode );
+        tf[Protocol::Key::ColorUserRangeMin]   = m_particle_property->m_transfunc_array[i].colorMinValue();
+        tf[Protocol::Key::ColorUserRangeMax]   = m_particle_property->m_transfunc_array[i].colorMaxValue();
+        tf[Protocol::Key::ColorServerRangeMin] = m_particle_property->server_color_min_vec[i]; // FIXME: m_particle_property->m_transfunc_array[i].serverColorMin();となるようにしてください
+        tf[Protocol::Key::ColorServerRangeMax] = m_particle_property->server_color_max_vec[i]; // FIXME: m_particle_property->m_transfunc_array[i].serverColorMax();となるようにしてください
 
-        std::memcpy( color_map.data() + ( offset * 3 ), color_map_table.pointer(), color_map_table.byteSize() );
-        std::memcpy( opacity_map.data() + offset, opacity_map_table.pointer(), opacity_map_table.byteSize() );
-        offset += tf_resolution;
+        // ColorMap
+        nlohmann::json color_map_json = nlohmann::json::array();
+        auto color_table = m_particle_property->m_transfunc_array[i].colorMap().table();
+        const std::uint8_t* cptr = color_table.pointer();
+
+        for( int j = 0; j < tf_resolution; ++j )
+        {
+            color_map_json.push_back(
+                {
+                    cptr[j*3 + 0],
+                    cptr[j*3 + 1],
+                    cptr[j*3 + 2]
+                } );
+        }
+        tf[Protocol::Key::ColorMap] = color_map_json;
+
+        constexpr int histogram_resolution = 256;
+        { // FIXME: m_particle_property->m_transfunc_array[i].colorHistogram();用にする必要があります
+            nlohmann::json color_histogram_json = nlohmann::json::array();
+            const size_t base = i * histogram_resolution;
+            for( int b = 0; b < histogram_resolution; ++b )
+            {
+                color_histogram_json.push_back(
+                    static_cast<int>( m_particle_property->color_histgram[ base + b ] )
+                    );
+            }
+            tf[Protocol::Key::ColorHistogram] = color_histogram_json;
+        }
+
+        // {
+        //     nlohmann::json color_histogram_json = nlohmann::json::array();
+
+        //     const auto& hist = m_particle_property->m_transfunc_array[i].colorHistogram();
+
+        //     color_histogram_json.reserve( hist.size() );
+        //     for( const auto& h : hist )
+        //     {
+        //         color_histogram_json.push_back( static_cast<int>( h ) );
+        //     }
+        //     tf[Protocol::Key::ColorHistogram] = color_histogram_json;
+        // }
+
+        // ---- Opacity ----
+        tf[Protocol::Key::OpacityFunction]       = "O" + std::to_string( i + 1 );
+        tf[Protocol::Key::OpacityVariable]       = m_particle_property->m_transfunc_array[i].m_opacity_variable;
+        tf[Protocol::Key::OpacityRangeMode]      = static_cast<std::uint8_t>( m_particle_property->m_transfunc_array[i].m_server_opacity_range_mode );
+        tf[Protocol::Key::OpacityUserRangeMin]   = m_particle_property->m_transfunc_array[i].opacityMinValue();
+        tf[Protocol::Key::OpacityUserRangeMax]   = m_particle_property->m_transfunc_array[i].opacityMaxValue();
+        tf[Protocol::Key::OpacityServerRangeMin] = m_particle_property->server_opacity_min_vec[i];
+        tf[Protocol::Key::OpacityServerRangeMax] = m_particle_property->server_opacity_max_vec[i];
+
+        // OpacityMap
+        nlohmann::json opacity_map_json = nlohmann::json::array();
+        auto opacity_table = m_particle_property->m_transfunc_array[i].opacityMap().table();
+        const float* optr = opacity_table.pointer();
+
+        for( int j = 0; j < tf_resolution; ++j )
+        {
+            opacity_map_json.push_back( optr[j] );
+        }
+        tf[Protocol::Key::OpacityMap] = opacity_map_json;
+        { // FIXME: m_particle_property->m_transfunc_array[i].opacityHistogram();用にする必要があります。
+            nlohmann::json opacity_histogram_json = nlohmann::json::array();
+
+            const size_t base = i * histogram_resolution;
+            for( int b = 0; b < histogram_resolution; ++b )
+            {
+                opacity_histogram_json.push_back(
+                    static_cast<int>( m_particle_property->opacity_histgram[ base + b ] )
+                    );
+            }
+
+            tf[Protocol::Key::OpacityHistogram] = opacity_histogram_json;
+        }
+
+        // {
+        //     nlohmann::json opacity_histogram_json = nlohmann::json::array();
+
+        //     const auto& hist = m_particle_property->m_transfunc_array[i].opacityHistogram();
+
+        //     opacity_histogram_json.reserve( hist.size() );
+        //     for( const auto& h : hist )
+        //     {
+        //         opacity_histogram_json.push_back( static_cast<int>( h ) );
+        //     }
+        //     tf[Protocol::Key::OpacityHistogram] = opacity_histogram_json;
+        // }
+
+        transferFunctions.push_back( tf );
     }
 
-    // クライアントに伝達関数を送信する
     nlohmann::json msg;
-    msg[Protocol::Key::Event]                 = Protocol::Events::Initialize;
-    msg[Protocol::Key::ColorSynthesizer]      = m_particle_property->m_color_transfer_function_synthesis;
-    msg[Protocol::Key::ColorRangeMode]        = color_range_mode_vec;
-    msg[Protocol::Key::ColorVariable]         = color_variable_vec;
-    msg[Protocol::Key::ColorUserRangeMin]     = user_color_min_vec;
-    msg[Protocol::Key::ColorUserRangeMax]     = user_color_max_vec;
-    msg[Protocol::Key::ColorServerRangeMin]   = m_particle_property->server_color_min_vec;
-    msg[Protocol::Key::ColorServerRangeMax]   = m_particle_property->server_color_max_vec;
-    msg[Protocol::Key::ColorMap]              = color_map;
-    msg[Protocol::Key::ColorHistogram]        = m_particle_property->color_histgram;
+    msg[Protocol::Key::Event]               = Protocol::Events::Initialize;
+    msg[Protocol::Key::ColorSynthesizer]    = m_particle_property->m_color_transfer_function_synthesis;
+    msg[Protocol::Key::OpacitySynthesizer]  = m_particle_property->m_opacity_transfer_function_synthesis;
+    msg[Protocol::Key::Data]                = transferFunctions;
 
-    msg[Protocol::Key::OpacitySynthesizer]    = m_particle_property->m_opacity_transfer_function_synthesis;
-    msg[Protocol::Key::OpacityRangeMode]      = opacity_range_mode_vec;
-    msg[Protocol::Key::OpacityVariable]       = opacity_variable_vec;
-    msg[Protocol::Key::OpacityUserRangeMin]   = user_opacity_min_vec;
-    msg[Protocol::Key::OpacityUserRangeMax]   = user_opacity_max_vec;
-    msg[Protocol::Key::OpacityServerRangeMin] = m_particle_property->server_opacity_min_vec;
-    msg[Protocol::Key::OpacityServerRangeMax] = m_particle_property->server_opacity_max_vec;
-    msg[Protocol::Key::OpacityMap]            = opacity_map;
-    msg[Protocol::Key::OpacityHistogram]      = m_particle_property->opacity_histgram;
 
     // 成分数3以上の時, グリフパラメータを送信する
     if( m_multi_volume_property_list->m_total_number_ingredients >= 3 )

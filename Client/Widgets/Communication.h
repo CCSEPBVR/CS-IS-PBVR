@@ -39,7 +39,7 @@ signals:
     void updateServerState( bool serverState );     // true:接続中
     void updateOperatorState( bool operatorState ); // true:権限あり
     void requestDataAt( const QJsonObject& dataArray );
-    void receiveInitializeTransferFunctionParameter( const QJsonObject& dataArray );
+    void receiveInitializeTransferFunctionParameter( const QString& colorSynth, const QString& opacitySynth, const QJsonArray& dataArray );
     void receiveSelectedFile( const QJsonObject& dataArray );
     void receiveObjectDelete( const QJsonObject& dataArray );
     void unpack( const QByteArray& binary );

@@ -32,7 +32,7 @@ public:
 public slots:
     void onOperatorStateUpdate( bool operatorState ); // true:権限あり
     void onReset();
-    void onReceiveInitializeTransferFunctionParameter( const QJsonObject& dataArray );
+    void onReceiveInitializeTransferFunctionParameter( const QString& colorSynth, const QString& opacitySynth, const QJsonArray& dataArray );
     void onReceiveTransferFunctionParameter( const QString& colorSynth, const QString& opacitySynth, const QJsonArray& dataArray );
     // FIXME:KPI
     void onLoadParameter( const QString& filePath );
