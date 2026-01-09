@@ -9,19 +9,29 @@
 //#include "../../../FunctionParser/function_parser.h"
 //#include "Types.h"
 #include <vismodule/Type>
+#include <vismodule/FrequencyTable>
 
 class ExtendedTransferFunction : public vismodule::TransferFunction
 {
 public:
     int32_t m_resolution;
+
     std::string m_equation_red;
     std::string m_equation_green;
     std::string m_equation_blue;
     std::string m_equation_opacity;
-    float m_color_variable_min;
-    float m_color_variable_max;
-    float m_opacity_variable_min;
-    float m_opacity_variable_max;
+
+    float m_user_color_variable_min;
+    float m_user_color_variable_max;
+    float m_user_opacity_variable_min;
+    float m_user_opacity_variable_max;
+    float m_server_color_variable_min;
+    float m_server_color_variable_max;
+    float m_server_opacity_variable_min;
+    float m_server_opacity_variable_max;
+
+    vismodule::UInt64 m_color_histogram[DEFAULT_NBINS];
+    vismodule::UInt64 m_opacity_histogram[DEFAULT_NBINS];
 
 public:
 
@@ -36,6 +46,17 @@ public:
                               const float       max_value );
     ~ExtendedTransferFunction();
 
+    const float userColorMinValue() const { return m_user_color_variable_min; }
+    const float userColorMaxValue() const { return m_user_color_variable_max; }
+    const float userOpacityMinValue() const { return m_user_opacity_variable_min; }
+    const float userOpacityMaxValue() const { return m_user_opacity_variable_max; }
+    const float serverColorMinValue() const { return m_server_color_variable_min; }
+    const float serverColorMaxValue() const { return m_server_color_variable_max; }
+    const float serverOpacityMinValue() const { return m_server_opacity_variable_min; }
+    const float serverOpacityMaxValue() const { return m_server_opacity_variable_max; }
+
+    const vismodule::UInt64* colorHistogram() const { return m_color_histogram; }
+    const vismodule::UInt64* opacityHistogram() const { return m_opacity_histogram; }
 };
 
 class NamedTransferFunction : public ExtendedTransferFunction

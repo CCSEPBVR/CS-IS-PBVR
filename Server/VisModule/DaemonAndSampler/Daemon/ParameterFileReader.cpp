@@ -241,10 +241,10 @@ void ParameterFileReader::setTransferFunctionParameter( ParticleProperty& partic
         particle_property.m_transfunc_array[i].m_server_opacity_range_mode = NamedTransferFunction::ServerRangeMode::UserRange;
         particle_property.m_transfunc_array[i].m_color_variable            = color_variable;
         particle_property.m_transfunc_array[i].m_opacity_variable          = opacity_varible;
-        particle_property.m_transfunc_array[i].m_color_variable_min        = color_min;
-        particle_property.m_transfunc_array[i].m_color_variable_max        = color_max;
-        particle_property.m_transfunc_array[i].m_opacity_variable_min      = opacity_min;
-        particle_property.m_transfunc_array[i].m_opacity_variable_max      = opacity_max;
+        particle_property.m_transfunc_array[i].m_user_color_variable_min   = color_min;
+        particle_property.m_transfunc_array[i].m_user_color_variable_max   = color_max;
+        particle_property.m_transfunc_array[i].m_user_opacity_variable_min = opacity_min;
+        particle_property.m_transfunc_array[i].m_user_opacity_variable_max = opacity_max;
 
         std::replace( s_color.begin(), s_color.end(), ',', ' ' );
         std::replace( s_opacity.begin(), s_opacity.end(), ',', ' ' );
@@ -396,12 +396,12 @@ void ParameterFileReader::setParticleParameter( ParticleProperty& particle_prope
         std::string s_color               = m_name_list_file.getValue<std::string>( tag_base + "TABLE_C" );
         std::string s_opacity             = m_name_list_file.getValue<std::string>( tag_base + "TABLE_O" );
 
-        particle_property.m_transfunc_array[n].m_color_variable       = color_variable;
-        particle_property.m_transfunc_array[n].m_opacity_variable     = opacity_varible;
-        particle_property.m_transfunc_array[n].m_color_variable_min   = color_min;
-        particle_property.m_transfunc_array[n].m_color_variable_max   = color_max;
-        particle_property.m_transfunc_array[n].m_opacity_variable_min = opacity_min;
-        particle_property.m_transfunc_array[n].m_opacity_variable_max = opacity_max;
+        particle_property.m_transfunc_array[n].m_color_variable            = color_variable;
+        particle_property.m_transfunc_array[n].m_opacity_variable          = opacity_varible;
+        particle_property.m_transfunc_array[n].m_user_color_variable_min   = color_min;
+        particle_property.m_transfunc_array[n].m_user_color_variable_max   = color_max;
+        particle_property.m_transfunc_array[n].m_user_opacity_variable_min = opacity_min;
+        particle_property.m_transfunc_array[n].m_user_opacity_variable_max = opacity_max;
 
         std::replace( s_color.begin(), s_color.end(), ',', ' ' );
         std::replace( s_opacity.begin(), s_opacity.end(), ',', ' ' );

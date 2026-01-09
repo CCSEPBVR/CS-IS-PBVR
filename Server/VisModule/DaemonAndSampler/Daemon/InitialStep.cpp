@@ -103,15 +103,19 @@ bool SetDefaultParticleParameterCS(
             particle_property.m_transfunc_array[i].m_color_variable       = qq.str();
             particle_property.m_transfunc_array[i].m_opacity_variable     = qq.str();
 
-            particle_property.m_transfunc_array[i].m_color_variable_min   = 0;
-            particle_property.m_transfunc_array[i].m_color_variable_max   = 1; 
-            particle_property.m_transfunc_array[i].m_opacity_variable_min = 0;
-            particle_property.m_transfunc_array[i].m_opacity_variable_max = 1; 
-            particle_property.m_transfunc_array[i].m_resolution           = TF_resolution;
-            particle_property.m_transfunc_array[i].m_equation_red         = ""; 
-            particle_property.m_transfunc_array[i].m_equation_green       = ""; 
-            particle_property.m_transfunc_array[i].m_equation_blue        = ""; 
-            particle_property.m_transfunc_array[i].m_equation_opacity     = "";
+            particle_property.m_transfunc_array[i].m_server_color_variable_min   = 0;
+            particle_property.m_transfunc_array[i].m_server_color_variable_max   = 1; 
+            particle_property.m_transfunc_array[i].m_server_opacity_variable_min = 0;
+            particle_property.m_transfunc_array[i].m_server_opacity_variable_max = 1;
+            particle_property.m_transfunc_array[i].m_user_color_variable_min     = 0;
+            particle_property.m_transfunc_array[i].m_user_color_variable_max     = 1; 
+            particle_property.m_transfunc_array[i].m_user_opacity_variable_min   = 0;
+            particle_property.m_transfunc_array[i].m_user_opacity_variable_max   = 1; 
+            particle_property.m_transfunc_array[i].m_resolution                  = TF_resolution;
+            particle_property.m_transfunc_array[i].m_equation_red                = ""; 
+            particle_property.m_transfunc_array[i].m_equation_green              = ""; 
+            particle_property.m_transfunc_array[i].m_equation_blue               = ""; 
+            particle_property.m_transfunc_array[i].m_equation_opacity            = "";
 
             vismodule::ColorMap color_map( cc_table    , 0, 1 );
             vismodule::OpacityMap opacity_map( oo_table, 0, 1 );
@@ -325,32 +329,21 @@ void InitialStepCS(
     vr = setVariablerange2( tmp_max, tmp_min, tf_number );
     vr.show();
 
-    // histgramの格納
-    particle_property.color_histgram.clear();
-    particle_property.opacity_histgram.clear();
-    particle_property.color_histgram.resize( DEFAULT_NBINS * tf_number );
-    particle_property.opacity_histgram.resize( DEFAULT_NBINS * tf_number );
-    std::memcpy( particle_property.color_histgram.data(), tmp_c_bins, DEFAULT_NBINS * tf_number * sizeof( unsigned long long ) );
-    std::memcpy( particle_property.opacity_histgram.data(), tmp_o_bins, DEFAULT_NBINS * tf_number * sizeof( unsigned long long ) );
-
-    // min maxの格納
-    particle_property.server_color_min_vec.clear();
-    particle_property.server_color_max_vec.clear();
-    particle_property.server_opacity_min_vec.clear();
-    particle_property.server_opacity_max_vec.clear();
-    particle_property.server_color_min_vec.resize( tf_number );
-    particle_property.server_color_max_vec.resize( tf_number );
-    particle_property.server_opacity_min_vec.resize( tf_number );
-    particle_property.server_opacity_max_vec.resize( tf_number );
+    // histogram, minmaxの格納
     for( int i = 0; i < tf_number; i++ )
     {
+        // histogram
+        std::copy( tmp_c_bins + ( DEFAULT_NBINS * i ), tmp_c_bins + ( DEFAULT_NBINS * ( i + 1 ) ), particle_property.m_transfunc_array[i].m_color_histogram );
+        std::copy( tmp_o_bins + ( DEFAULT_NBINS * i ), tmp_o_bins + ( DEFAULT_NBINS * ( i + 1 ) ), particle_property.m_transfunc_array[i].m_opacity_histogram );
+
+        // minmax
         std::stringstream ss; 
         ss << (i + 1); 
         const std::string idxbuf = ss.str();
-        particle_property.server_color_min_vec[i]   = vr.min( "t" + idxbuf + "_var_c" );
-        particle_property.server_color_max_vec[i]   = vr.max( "t" + idxbuf + "_var_c" );
-        particle_property.server_opacity_min_vec[i] = vr.min( "t" + idxbuf + "_var_o" );
-        particle_property.server_opacity_max_vec[i] = vr.max( "t" + idxbuf + "_var_o" );
+        particle_property.m_transfunc_array[i].m_server_color_variable_min   = vr.min( "t" + idxbuf + "_var_c" );
+        particle_property.m_transfunc_array[i].m_server_color_variable_max   = vr.max( "t" + idxbuf + "_var_c" );
+        particle_property.m_transfunc_array[i].m_server_opacity_variable_min = vr.min( "t" + idxbuf + "_var_o" );
+        particle_property.m_transfunc_array[i].m_server_opacity_variable_max = vr.max( "t" + idxbuf + "_var_o" );
     }
 
     nan_error = false;
@@ -515,24 +508,21 @@ void InitialStepIS(
     vr = pm.particleHistoryFile().variableRange();
     vr.show();
 
-    // histgramの格納
-    particle_property.color_histgram.clear();
-    particle_property.opacity_histgram.clear();
-    particle_property.color_histgram.resize( DEFAULT_NBINS * tf_number );
-    particle_property.opacity_histgram.resize( DEFAULT_NBINS * tf_number );
-    std::memcpy( particle_property.color_histgram.data(), tmp_c_bins, DEFAULT_NBINS * tf_number * sizeof( unsigned long long ) );
-    std::memcpy( particle_property.opacity_histgram.data(), tmp_o_bins, DEFAULT_NBINS * tf_number * sizeof( unsigned long long ) );
-
-    // min maxの格納
+    // histogram, minmaxの格納
     for( int i = 0; i < tf_number; i++ )
     {
+        // histogram
+        std::copy( tmp_c_bins + ( DEFAULT_NBINS * i ), tmp_c_bins + ( DEFAULT_NBINS * ( i + 1 ) ), particle_property.m_transfunc_array[i].m_color_histogram );
+        std::copy( tmp_o_bins + ( DEFAULT_NBINS * i ), tmp_o_bins + ( DEFAULT_NBINS * ( i + 1 ) ), particle_property.m_transfunc_array[i].m_opacity_histogram );
+
+        // minmax
         std::stringstream ss; 
         ss << (i + 1); 
         const std::string idxbuf = ss.str();
-        particle_property.server_color_min_vec[i]   = vr.min( "t" + idxbuf + "_var_c" );
-        particle_property.server_color_max_vec[i]   = vr.max( "t" + idxbuf + "_var_c" );
-        particle_property.server_opacity_min_vec[i] = vr.min( "t" + idxbuf + "_var_o" );
-        particle_property.server_opacity_max_vec[i] = vr.max( "t" + idxbuf + "_var_o" );
+        particle_property.m_transfunc_array[i].m_server_color_variable_min   = vr.min( "t" + idxbuf + "_var_c" );
+        particle_property.m_transfunc_array[i].m_server_color_variable_max   = vr.max( "t" + idxbuf + "_var_c" );
+        particle_property.m_transfunc_array[i].m_server_opacity_variable_min = vr.min( "t" + idxbuf + "_var_o" );
+        particle_property.m_transfunc_array[i].m_server_opacity_variable_max = vr.max( "t" + idxbuf + "_var_o" );
     }
 
     delete[] tmp_c_bins;

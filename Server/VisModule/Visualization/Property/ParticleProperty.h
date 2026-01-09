@@ -32,16 +32,6 @@ struct ParticleProperty
     std::string m_x_synthesis;
     std::string m_y_synthesis;
     std::string m_z_synthesis;
-
-    // histgram
-    std::vector<unsigned long long> color_histgram;
-    std::vector<unsigned long long> opacity_histgram;
-
-    // min max
-    std::vector<float> server_color_min_vec;
-    std::vector<float> server_color_max_vec;
-    std::vector<float> server_opacity_min_vec;
-    std::vector<float> server_opacity_max_vec;
 };
 
 #endif //  __PARTICLE__PROPERTY_

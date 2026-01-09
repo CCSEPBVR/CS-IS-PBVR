@@ -26,11 +26,11 @@ void setDefalutTransferFunction(jpv::ParticleTransferServerMessage* servMes, con
         tt << "t" << i + 1;  
         servMes->m_transfer_function[i].m_name          = tt.str();
         servMes->m_transfer_function[i].m_color_variable       = qq.str();
-        servMes->m_transfer_function[i].m_color_variable_min   = servMes->m_server_side_variable_range.min( tt.str() + "_var_c" );
-        servMes->m_transfer_function[i].m_color_variable_max   = servMes->m_server_side_variable_range.max( tt.str() + "_var_c" ); 
+        servMes->m_transfer_function[i].m_user_color_variable_min   = servMes->m_server_side_variable_range.min( tt.str() + "_var_c" );
+        servMes->m_transfer_function[i].m_user_color_variable_max   = servMes->m_server_side_variable_range.max( tt.str() + "_var_c" ); 
         servMes->m_transfer_function[i].m_opacity_variable     = qq.str();
-        servMes->m_transfer_function[i].m_opacity_variable_min = servMes->m_server_side_variable_range.min( tt.str() + "_var_o" );
-        servMes->m_transfer_function[i].m_opacity_variable_max = servMes->m_server_side_variable_range.max( tt.str() + "_var_o" ); 
+        servMes->m_transfer_function[i].m_user_opacity_variable_min = servMes->m_server_side_variable_range.min( tt.str() + "_var_o" );
+        servMes->m_transfer_function[i].m_user_opacity_variable_max = servMes->m_server_side_variable_range.max( tt.str() + "_var_o" ); 
         servMes->m_transfer_function[i].m_resolution           = TF_resolution;
         servMes->m_transfer_function[i].m_equation_red         = ""; 
         servMes->m_transfer_function[i].m_equation_green       = ""; 
@@ -40,8 +40,8 @@ void setDefalutTransferFunction(jpv::ParticleTransferServerMessage* servMes, con
         vismodule::ValueArray<float> oo_table(o_table);
         vismodule::ColorMap color_map( cc_table    , servMes->m_server_side_variable_range.min( tt.str() + "_var_c" ), servMes->m_server_side_variable_range.max( tt.str() + "_var_c" )  );
         vismodule::OpacityMap opacity_map( oo_table, servMes->m_server_side_variable_range.min( tt.str() + "_var_o" ), servMes->m_server_side_variable_range.max( tt.str() + "_var_o" )  );
-        //vismodule::ColorMap color_map( TF_resolution*3, m_transfunc[i].m_color_variable_min, m_transfunc[i].m_color_variable_max  );
-        //vismodule::OpacityMap opacity_map( TF_resolution, m_transfunc[i].m_color_variable_min, m_transfunc[i].m_color_variable_max  );
+        //vismodule::ColorMap color_map( TF_resolution*3, m_transfunc[i].m_user_color_variable_min, m_transfunc[i].m_user_color_variable_max  );
+        //vismodule::OpacityMap opacity_map( TF_resolution, m_transfunc[i].m_user_color_variable_min, m_transfunc[i].m_user_color_variable_max  );
         //for (int n =0 ; n < TF_resolution*3 ; n++ ) color_map.table.at(n) = 1; // dummy data
         //for (int n =0 ; n < TF_resolution ; n++ ) opacity_map.table.at(n) = 1; // dummy data
         servMes->m_transfer_function[i].setColorMap( color_map );
@@ -93,15 +93,15 @@ void setDefalutTransferFunctionToArgument( ParticleProperty& particle_property, 
         particle_property.m_transfunc_array[i].m_color_variable       = qq.str();
         particle_property.m_transfunc_array[i].m_opacity_variable     = qq.str();
 
-        particle_property.m_transfunc_array[i].m_color_variable_min   = vr.min( tt.str() + "_var_c" );
-        particle_property.m_transfunc_array[i].m_color_variable_max   = vr.max( tt.str() + "_var_c" ); 
-        particle_property.m_transfunc_array[i].m_opacity_variable_min = vr.min( tt.str() + "_var_o" );
-        particle_property.m_transfunc_array[i].m_opacity_variable_max = vr.max( tt.str() + "_var_o" ); 
-        particle_property.m_transfunc_array[i].m_resolution           = TF_resolution;
-        particle_property.m_transfunc_array[i].m_equation_red         = ""; 
-        particle_property.m_transfunc_array[i].m_equation_green       = ""; 
-        particle_property.m_transfunc_array[i].m_equation_blue        = ""; 
-        particle_property.m_transfunc_array[i].m_equation_opacity     = "";
+        particle_property.m_transfunc_array[i].m_user_color_variable_min   = vr.min( tt.str() + "_var_c" );
+        particle_property.m_transfunc_array[i].m_user_color_variable_max   = vr.max( tt.str() + "_var_c" ); 
+        particle_property.m_transfunc_array[i].m_user_opacity_variable_min = vr.min( tt.str() + "_var_o" );
+        particle_property.m_transfunc_array[i].m_user_opacity_variable_max = vr.max( tt.str() + "_var_o" ); 
+        particle_property.m_transfunc_array[i].m_resolution                = TF_resolution;
+        particle_property.m_transfunc_array[i].m_equation_red              = ""; 
+        particle_property.m_transfunc_array[i].m_equation_green            = ""; 
+        particle_property.m_transfunc_array[i].m_equation_blue             = ""; 
+        particle_property.m_transfunc_array[i].m_equation_opacity          = "";
 
         vismodule::ColorMap color_map( cc_table    , vr.min( tt.str() + "_var_c" ), vr.max( tt.str() + "_var_c" ) );
         vismodule::OpacityMap opacity_map( oo_table, vr.min( tt.str() + "_var_o" ), vr.max( tt.str() + "_var_o" ) );
@@ -144,10 +144,10 @@ void setClientTransferFunctionToArgument( Argument *param, const jpv::ParticleTr
         param->m_named_transfunc_array[i].m_opacity_variable     = clntMes.m_transfer_function[i].m_opacity_variable;
 
         // ExtendTransferFunction変数
-        param->m_named_transfunc_array[i].m_color_variable_min   = clntMes.m_transfer_function[i].m_color_variable_min;
-        param->m_named_transfunc_array[i].m_color_variable_max   = clntMes.m_transfer_function[i].m_color_variable_max;
-        param->m_named_transfunc_array[i].m_opacity_variable_min = clntMes.m_transfer_function[i].m_opacity_variable_min;
-        param->m_named_transfunc_array[i].m_opacity_variable_max = clntMes.m_transfer_function[i].m_opacity_variable_max;
+        param->m_named_transfunc_array[i].m_user_color_variable_min   = clntMes.m_transfer_function[i].m_user_color_variable_min;
+        param->m_named_transfunc_array[i].m_user_color_variable_max   = clntMes.m_transfer_function[i].m_user_color_variable_max;
+        param->m_named_transfunc_array[i].m_user_opacity_variable_min = clntMes.m_transfer_function[i].m_user_opacity_variable_min;
+        param->m_named_transfunc_array[i].m_user_opacity_variable_max = clntMes.m_transfer_function[i].m_user_opacity_variable_max;
         param->m_named_transfunc_array[i].m_resolution           = clntMes.m_transfer_function[i].m_resolution;
         param->m_named_transfunc_array[i].m_equation_red         = clntMes.m_transfer_function[i].m_equation_red;
         param->m_named_transfunc_array[i].m_equation_green       = clntMes.m_transfer_function[i].m_equation_green;
@@ -158,12 +158,12 @@ void setClientTransferFunctionToArgument( Argument *param, const jpv::ParticleTr
         param->m_named_transfunc_array[i].setColorMap( clntMes.m_transfer_function[i].colorMap() );
         param->m_named_transfunc_array[i].setOpacityMap( clntMes.m_transfer_function[i].opacityMap() );
         param->m_named_transfunc_array[i].setColorRange(
-            param->m_named_transfunc_array[i].m_color_variable_min,
-            param->m_named_transfunc_array[i].m_color_variable_max
+            param->m_named_transfunc_array[i].m_user_color_variable_min,
+            param->m_named_transfunc_array[i].m_user_color_variable_max
         );
         param->m_named_transfunc_array[i].setOpacityRange(
-            param->m_named_transfunc_array[i].m_opacity_variable_min,
-            param->m_named_transfunc_array[i].m_opacity_variable_max
+            param->m_named_transfunc_array[i].m_user_opacity_variable_min,
+            param->m_named_transfunc_array[i].m_user_opacity_variable_max
         );
 
         param->m_named_transfunc_array[i].m_selection = clntMes.m_transfer_function[i].m_selection;
@@ -199,10 +199,10 @@ void setParamTransferFunctionToServer( jpv::ParticleTransferServerMessage* servM
         servMes->m_transfer_function[i].m_opacity_variable     = param->m_named_transfunc_array[i].m_opacity_variable;
 
         // ExtendTransferFunction変数
-        servMes->m_transfer_function[i].m_color_variable_min   = param->m_named_transfunc_array[i].m_color_variable_min;
-        servMes->m_transfer_function[i].m_color_variable_max   = param->m_named_transfunc_array[i].m_color_variable_max;
-        servMes->m_transfer_function[i].m_opacity_variable_min = param->m_named_transfunc_array[i].m_opacity_variable_min;
-        servMes->m_transfer_function[i].m_opacity_variable_max = param->m_named_transfunc_array[i].m_opacity_variable_max; 
+        servMes->m_transfer_function[i].m_user_color_variable_min   = param->m_named_transfunc_array[i].m_user_color_variable_min;
+        servMes->m_transfer_function[i].m_user_color_variable_max   = param->m_named_transfunc_array[i].m_user_color_variable_max;
+        servMes->m_transfer_function[i].m_user_opacity_variable_min = param->m_named_transfunc_array[i].m_user_opacity_variable_min;
+        servMes->m_transfer_function[i].m_user_opacity_variable_max = param->m_named_transfunc_array[i].m_user_opacity_variable_max; 
         servMes->m_transfer_function[i].m_resolution           = param->m_named_transfunc_array[i].m_resolution;
         servMes->m_transfer_function[i].m_equation_red         = param->m_named_transfunc_array[i].m_equation_red; 
         servMes->m_transfer_function[i].m_equation_green       = param->m_named_transfunc_array[i].m_equation_green;
@@ -213,12 +213,12 @@ void setParamTransferFunctionToServer( jpv::ParticleTransferServerMessage* servM
         servMes->m_transfer_function[i].setColorMap( param->m_named_transfunc_array[i].colorMap() );
         servMes->m_transfer_function[i].setOpacityMap( param->m_named_transfunc_array[i].opacityMap() );
         servMes->m_transfer_function[i].setColorRange(
-            servMes->m_transfer_function[i].m_color_variable_min,
-            servMes->m_transfer_function[i].m_color_variable_max
+            servMes->m_transfer_function[i].m_user_color_variable_min,
+            servMes->m_transfer_function[i].m_user_color_variable_max
         );
         servMes->m_transfer_function[i].setOpacityRange(
-            servMes->m_transfer_function[i].m_opacity_variable_min,
-            servMes->m_transfer_function[i].m_opacity_variable_max
+            servMes->m_transfer_function[i].m_user_opacity_variable_min,
+            servMes->m_transfer_function[i].m_user_opacity_variable_max
         );
 
         servMes->m_transfer_function[i].m_selection = param->m_named_transfunc_array[i].m_selection;

@@ -37,10 +37,10 @@ void ParameterFileWriter::getParticleParameter( const ParticleProperty& particle
         ss << "TF_NAME" << n + 1 << "_";
 
         const std::string tag_base = ss.str();
-        m_name_list_file.setLine( tag_base + "MIN_C", particle_property.m_transfunc_array[n].m_color_variable_min );
-        m_name_list_file.setLine( tag_base + "MAX_C", particle_property.m_transfunc_array[n].m_color_variable_max );
-        m_name_list_file.setLine( tag_base + "MIN_O", particle_property.m_transfunc_array[n].m_opacity_variable_min );
-        m_name_list_file.setLine( tag_base + "MAX_O", particle_property.m_transfunc_array[n].m_opacity_variable_max );
+        m_name_list_file.setLine( tag_base + "MIN_C", particle_property.m_transfunc_array[n].m_user_color_variable_min );
+        m_name_list_file.setLine( tag_base + "MAX_C", particle_property.m_transfunc_array[n].m_user_color_variable_max );
+        m_name_list_file.setLine( tag_base + "MIN_O", particle_property.m_transfunc_array[n].m_user_opacity_variable_min );
+        m_name_list_file.setLine( tag_base + "MAX_O", particle_property.m_transfunc_array[n].m_user_opacity_variable_max );
 
         vismodule::ColorMap::Table   color_table   = particle_property.m_transfunc_array[n].colorMap().table();
         vismodule::OpacityMap::Table opacity_table = particle_property.m_transfunc_array[n].opacityMap().table();
