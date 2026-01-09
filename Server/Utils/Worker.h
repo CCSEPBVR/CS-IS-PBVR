@@ -12,6 +12,7 @@
 #include <vismodule/GenerateGlyph>
 #include <vismodule/Camera>
 #include <vismodule/TransferFunctionSynthesizer>
+#include <vismodule/Calculate>
 
 class Worker
 {
@@ -136,6 +137,7 @@ private:
             info.object = pointObject.release();
             break;
         case ObjectInfoExtractor::ServerGlyphObject:
+            Calculate_minmax_glyph( requestTimeStep, *m_glyph_property, *m_multi_volume_property_list );
             polygonObject = GenerateGlyphCS( fileName, requestTimeStep, *m_glyph_property, *m_multi_volume_property_list );
             polygonObject->setMinMaxObjectCoords( m_result_min_object_coords, m_result_max_object_coords );
             polygonObject->setMinMaxExternalCoords( m_result_min_object_coords, m_result_max_object_coords );

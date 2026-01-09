@@ -34,6 +34,10 @@ void SetDefaultGlyphParameterCS( GlyphProperty& glyph_property )
     glyph_property.m_color_data_sampling_method = DataDefines::Constant;
     glyph_property.m_color_data_variable        = color_data_variables;
     glyph_property.m_glyph_color_map_table      = glyph_color_map_table;
+    glyph_property.m_glyph_color_min            = 0;
+    glyph_property.m_glyph_color_max            = 1;
+    glyph_property.m_glyph_size_min             = 0;
+    glyph_property.m_glyph_size_max             = 1;
     
     return;
 }
