@@ -34,6 +34,9 @@ public slots:
     void onLoadParameter( const QString& filePath );
     void onSaveParameter( const QString& filePath );
 
+signals:
+    void glyphParameterUpdate();
+
 private:
     Ui::GlyphEditor *ui;
 

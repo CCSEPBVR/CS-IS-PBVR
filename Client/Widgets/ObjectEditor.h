@@ -42,12 +42,14 @@ public:
     void onReceiveObjectInfoParameter( const QJsonObject& dataArray );
     void onRequestDataAt( int requestTimeStep );
     void onTransferFunctionUpdate();
+    void onGlyphParameterUpdate();
     void onUnpack( const QByteArray& binary );
     // FIXME:KPI
     void onLoadParameter( const QString& filePath );
     void onSaveParameter( const QString& filePath );
 
 signals:
+    void updateNumberOfVector( const int numberOfVector );
     void updateTotalTimeStepRange( int min, int max, bool isSingleObject );
     void updateFocus( kvs::Vec3 resultMinObjectCoords, kvs::Vec3 resultMaxObjectCoords );
     void updateTranslation();

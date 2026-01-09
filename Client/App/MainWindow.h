@@ -45,6 +45,7 @@ public:
 
 public slots:
     void onUpdateStatusBarMessage( const QString& message );
+    void onUpdateNumberOfVector( const int numberOfVector );
 
 signals:
     void readyScreen();

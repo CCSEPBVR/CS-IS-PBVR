@@ -165,6 +165,22 @@ void MainWindow::onUpdateStatusBarMessage( const QString& message )
     ui->statusBar->showMessage( message, 5000 ); // 5秒間表示
 }
 
+void MainWindow::onUpdateNumberOfVector( const int numberOfVector )
+{
+    // NOTE:GlyphEditorは成分数3以上でないといけない
+    if( numberOfVector >= 3 )
+    {
+        m_glyph_editor->onUpdateNumberOfVector( numberOfVector );
+        m_glyph_editor_action->setEnabled( true );
+    }
+    else
+    {
+        m_glyph_editor_action->setEnabled( false );
+    }
+
+    m_plot_over_line_editor->onUpdateNumberOfVector( numberOfVector );
+}
+
 void MainWindow::toolBarInitialize()
 {
     if( m_time_step_control_tool_bar )
@@ -268,9 +284,8 @@ void MainWindow::glyphEditorInitialize()
         ui->menuTools->addAction( m_glyph_editor_action );
         m_glyph_editor_action->setEnabled( false ); // NOTE:サーバ接続前は無効
 
-        connect( m_glyph_editor_action, &QAction::triggered, this, &MainWindow::onGlyphEditor );
-
-        // m_glyph_editor_wip->onUpdateNumberOfVector( 3 ); // DEBUG:成分数に応じてUIが変化するか確認
+        connect( m_glyph_editor_action, &QAction::triggered               , this           , &MainWindow::onGlyphEditor );
+        connect( m_glyph_editor       , &GlyphEditor::glyphParameterUpdate, m_object_editor, &ObjectEditor::onGlyphParameterUpdate );
     }
 }
 
@@ -283,11 +298,12 @@ void MainWindow::objectEditorInitialize()
         m_object_editor->adjustSize();
         addDockWidget( Qt::LeftDockWidgetArea, m_object_editor );
 
+        connect( m_object_editor, &ObjectEditor::updateNumberOfVector    , this                        , &MainWindow::onUpdateNumberOfVector );
         connect( m_object_editor, &ObjectEditor::updateTotalTimeStepRange, m_time_step_control_tool_bar, &TimeStepControlToolBar::updateTotalTimeStepRange );
         connect( m_object_editor, &ObjectEditor::updateFocus             , m_plot_over_line_editor     , &PlotOverLineEditor::onUpdateFocus );
         connect( m_object_editor, &ObjectEditor::updateTranslation       , m_plot_over_line_editor     , &PlotOverLineEditor::onUpdateTranslation );
         connect( m_object_editor, &ObjectEditor::shading                 , m_shading_control           , &ShadingControl::onShading );
-        connect( m_object_editor, &ObjectEditor::dataRequestCompleted    , m_time_step_control_tool_bar, &TimeStepControlToolBar::onDataRequestCompleted );
+        connect( m_object_editor, &ObjectEditor::dataRequestCompleted    , m_time_step_control_tool_bar, &TimeStepControlToolBar::onDataRequestCompleted );        
 
         connect( m_object_editor_action, &QAction::triggered, this, &MainWindow::onObjectEditor );
     }
@@ -450,8 +466,6 @@ void MainWindow::onUpdateServerState( bool serverState ) // true:接続中
 
     if( m_glyph_editor && m_glyph_editor_action )
     {
-        // TODO:サーバーと導通時にサーバから成分数を送ってもらう必要がある。 成分数が3未満の場合、GlyphEditorは開けなくする必要がある。
-        m_glyph_editor_action->setEnabled( serverState );
         if( !serverState )
         {
             m_glyph_editor->close();

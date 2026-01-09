@@ -509,4 +509,5 @@ void GlyphEditor::onApply()
     glyphParameter[QString::fromUtf8( Protocol::Key::ColorDataVariables )]    = colorDataVariables;
 
     m_web_sockets->text()->sendTextMessage( QJsonDocument( glyphParameter ).toJson( QJsonDocument::Compact ) );
+    emit glyphParameterUpdate();
 }

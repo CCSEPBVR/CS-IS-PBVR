@@ -1284,16 +1284,17 @@ void Server::receiveGlyphParameter( uWS::WebSocket<false, true, PerSocket>* ws, 
     DataDefines size_mode = ConvertIntToDataDefines( size_mode_int );
     m_glyph_property->m_size_sampling_method = size_mode;
     m_glyph_property->m_size_variable.clear();
-    m_glyph_property->m_size_variable.resize( received[Protocol::Key::SizeVariables].size() );
-    if( received.contains( Protocol::Key::SizeVariables ) )
+    if( received.contains(Protocol::Key::SizeVariables ) )
     {
-        std::cout << "SizeVariables: ";
-        for ( size_t i = 0; i < received[Protocol::Key::SizeVariables].size(); i++ )
+        const auto& arr = received[Protocol::Key::SizeVariables];
+        m_glyph_property->m_size_variable.resize( arr.size() );
+        std::cout << "SizeVariables size=" << arr.size() << std::endl;
+        for( size_t i = 0; i < arr.size(); ++i )
         {
-            std::cout << received[Protocol::Key::SizeVariables][i].get<int>() + 1 << " ";
-            m_glyph_property->m_size_variable[i] = received[Protocol::Key::SizeVariables][i].get<int>() + 1;
+            int raw = arr[i].get<int>();
+            m_glyph_property->m_size_variable[i] = "q" + std::to_string( raw + 1 );        // "q1","q2",...
+            std::cout << "  m_size_variable[" << i << "]: " << m_glyph_property->m_size_variable[i] << std::endl;
         }
-        std::cout << std::endl;
     }
 
     // Distribution
@@ -1331,16 +1332,17 @@ void Server::receiveGlyphParameter( uWS::WebSocket<false, true, PerSocket>* ws, 
     DataDefines color_data_mode = ConvertIntToDataDefines( color_data_mode_int );
     m_glyph_property->m_color_data_sampling_method = color_data_mode;
     m_glyph_property->m_color_data_variable.clear();
-    m_glyph_property->m_color_data_variable.resize( received[Protocol::Key::ColorDataVariables].size() );
-    if( received.contains( Protocol::Key::ColorDataVariables ) )
+    if( received.contains(Protocol::Key::ColorDataVariables ) )
     {
-        std::cout << "ColorDataVariables: ";
-        for( size_t i = 0; i < received[Protocol::Key::ColorDataVariables].size(); i++ )
+        const auto& arr = received[Protocol::Key::ColorDataVariables];
+        m_glyph_property->m_color_data_variable.resize( arr.size() );
+        std::cout << "ColorDataVariables size=" << arr.size() << std::endl;
+        for( size_t i = 0; i < arr.size(); ++i )
         {
-            std::cout << received[Protocol::Key::ColorDataVariables][i].get<int>() + 1 << " ";
-            m_glyph_property->m_color_data_variable[i] = received[Protocol::Key::ColorDataVariables][i].get<int>() + 1;
+            int raw = arr[i].get<int>();
+            m_glyph_property->m_color_data_variable[i] = "q" + std::to_string( raw + 1 );        // "q1","q2",...
+            std::cout << "  m_color_data_variable[" << i << "]: " << m_glyph_property->m_color_data_variable[i] << std::endl;
         }
-        std::cout << std::endl;
     }
 
     // ISの場合グリフパラメータをパラメータファイルに書き込む
