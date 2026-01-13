@@ -1578,7 +1578,7 @@ void Server::requestDataAt( uWS::WebSocket<false, true, PerSocket>* ws, const nl
 
             std::memcpy( values_on_line.data(), kvsml_object_pol->values_on_line().pointer(), kvsml_object_pol->values_on_line().byteSize() );
             mask.assign( kvsml_object_pol->mask().pointer(), kvsml_object_pol->mask().pointer() + kvsml_object_pol->mask().byteSize() );
-            std::memcpy( x_axis.data(), kvsml_object_pol->values_on_line().pointer(), kvsml_object_pol->values_on_line().byteSize() );
+            std::memcpy( x_axis.data(), kvsml_object_pol->x_axis().pointer(), kvsml_object_pol->x_axis().byteSize() );
 
             // FIXME:ここでPOLの配列をテキストで送信
             // msg[Protocol::Key::Event]       = Protocol::Events::PlotOverLineGraph;
