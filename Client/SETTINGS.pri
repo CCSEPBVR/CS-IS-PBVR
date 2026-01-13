@@ -36,8 +36,8 @@ else:CONFIG( debug, debug|release ) {
 
     win32 {
         QMAKE_CXXFLAGS_DEBUG += /Od /DDEBUG
-        QMAKE_CFLAGS_DEBUG += /MT
-        QMAKE_CXXFLAGS_DEBUG += /MT
+        QMAKE_CFLAGS_DEBUG += /MTd
+        QMAKE_CXXFLAGS_DEBUG += /MTd
     }
 
     macx {
