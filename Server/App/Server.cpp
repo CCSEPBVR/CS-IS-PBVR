@@ -1030,11 +1030,9 @@ void Server::receiveObjectInfoParameter( uWS::WebSocket<false, true, PerSocket>*
     // ③ 全クライアントへブロードキャスト
     // =========================================================
     nlohmann::json msg;
-    msg[Protocol::Key::Event]                 = Protocol::Events::ObjectInfoParameter;
-    msg[Protocol::Key::ResultMinObjectCoords] = received[Protocol::Key::ResultMinObjectCoords];
-    msg[Protocol::Key::ResultMaxObjectCoords] = received[Protocol::Key::ResultMaxObjectCoords];
-    // Objects はあれば付ける
-    if( received.contains( Protocol::Key::Objects ) ) msg[Protocol::Key::Objects] = received[Protocol::Key::Objects];
+    if( received.contains( Protocol::Key::ResultMinObjectCoords ) ) msg[Protocol::Key::ResultMinObjectCoords] = received.at( Protocol::Key::ResultMinObjectCoords );
+    if( received.contains( Protocol::Key::ResultMaxObjectCoords ) ) msg[Protocol::Key::ResultMaxObjectCoords] = received.at( Protocol::Key::ResultMaxObjectCoords );
+    if( received.contains( Protocol::Key::Objects ) )               msg[Protocol::Key::Objects] = received.at( Protocol::Key::Objects );
     ws->publish( "Notice", msg.dump(), uWS::OpCode::TEXT );
 }
 
