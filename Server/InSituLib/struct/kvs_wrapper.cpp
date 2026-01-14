@@ -14,6 +14,8 @@
 
 #include <vismodule/ParameterFileReader>
 
+#include <vismodule/ParticleProperty>
+
 // Generate
 #include <vismodule/PointObjectGenerator>
 #include <vismodule/GlyphSeedGenerator>
@@ -176,7 +178,7 @@ bool generate_particles(
     vismodule::PointObject* point_object = nullptr;
     vismodule::PointObjectGenerator point_object_generator;
     point_object = point_object_generator.GenerateParticleStruct(
-        particle_property, dom, values, nvariables
+        particle_property, dom, values, nvariables, ServerMode::IS
     );
 
     MakeParticle( point_object, particle_coords, particle_colors, particle_normals ); // InSitu only

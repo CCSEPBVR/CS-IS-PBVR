@@ -17,6 +17,8 @@
 #include <mpi.h>
 #endif
 
+#include <vismodule/ParticleProperty>
+
 #include <vismodule/ParameterFileReader>
 
 // Generate
@@ -197,7 +199,7 @@ bool generate_particles(
     vismodule::PointObjectGenerator point_object_generator;
     point_object = point_object_generator.GenerateParticleUnstruct(
         particle_property, dom, values, nvariables, coordinates,
-        ncoords, connections, ncells, celltype
+        ncoords, connections, ncells, celltype, ServerMode::IS
     );
 
     MakeParticle( point_object, particle_coords, particle_colors, particle_normals ); // InSitu only
