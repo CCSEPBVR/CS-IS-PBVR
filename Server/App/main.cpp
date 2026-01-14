@@ -1,5 +1,10 @@
 #include "Server.h"
 // #include "ServerWIP.h"
+
+#ifndef CPU_VER
+#include "mpi.h"
+#endif
+
 int main( int argc, char *argv[] )
 {
     int port = 60000; // デフォルトポート番号
@@ -9,5 +14,28 @@ int main( int argc, char *argv[] )
         port = std::atoi( argv[1] );
     }
 
-    Server server( port );
+#ifndef CPU_VER
+    MPI_Init( &argc, &argv );
+#endif
+
+#ifndef CPU_VER
+    int rank;
+    int mpi_size;
+    MPI_Comm_rank( MPI_COMM_WORLD, &rank );
+    MPI_Comm_size( MPI_COMM_WORLD, &mpi_size );
+#else
+    int rank = 0;
+	int mpi_size = 1;
+#endif
+
+    if ( rank == 0 )
+    {
+        Server server( port );
+    }
+
+#ifndef CPU_VER
+    MPI_Finalize();
+#endif
+
+    return 0;
 }

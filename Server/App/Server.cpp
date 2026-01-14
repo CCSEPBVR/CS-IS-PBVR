@@ -333,7 +333,7 @@ void Server::initialize( uWS::WebSocket<false, true, PerSocket>* ws, const nlohm
         std::unique_ptr<kvs::PointObject> tmp_object;
         tmp_object = std::make_unique<kvs::PointObject>();
 
-        GenerateParticleIS(
+        InitialStepIS(
             m_multi_volume_property_list->m_total_start_steps,
             *m_particle_property,
             *m_multi_volume_property_list,
@@ -343,6 +343,11 @@ void Server::initialize( uWS::WebSocket<false, true, PerSocket>* ws, const nlohm
         // 成分数3以上の時Glyphのパラメータファイルを読み込む
         if( m_multi_volume_property_list->m_total_number_ingredients >= 3 )
         {
+            SetDefaultGlyphParameterIS( *m_glyph_property );
+        }
+        else
+        {
+            m_glyph_property->m_glyph_flag = false;
         }
 
         // POLのパラメータファイルを読み込む
@@ -997,8 +1002,16 @@ void Server::receiveObjectInfoParameter( uWS::WebSocket<false, true, PerSocket>*
             if( patch.contains( Protocol::Key::IsKeepFinal ) )        info.isKeepFinal = patch[Protocol::Key::IsKeepFinal].get<bool>();
             if( patch.contains( Protocol::Key::IsFocus ) )            info.isFocus = patch[Protocol::Key::IsFocus].get<bool>();
             // サーバポイントオブジェクト(ClientServer/In-Situ共通)
-            if( patch.contains( Protocol::Key::ParticleLimit ) )      info.particleLimit = patch[Protocol::Key::ParticleLimit].get<int>();
-            if( patch.contains( Protocol::Key::ExtraOpacityFactor ) ) info.extraOpacityFactor = patch[Protocol::Key::ExtraOpacityFactor].get<float>();
+            if( patch.contains( Protocol::Key::ParticleLimit ) )
+            {
+                info.particleLimit = patch[Protocol::Key::ParticleLimit].get<int>();
+                m_particle_property->m_particle_limit = info.particleLimit;
+            }
+            if( patch.contains( Protocol::Key::ExtraOpacityFactor ) )
+            {
+                info.extraOpacityFactor = patch[Protocol::Key::ExtraOpacityFactor].get<float>();
+                m_particle_property->m_extra_opacity_factor = info.particleLimit;
+            }
             // サーバポイントオブジェクト(ClientServerのみ)
             if( patch.contains( Protocol::Key::CoordinateX ) ) info.coordinateX = patch[Protocol::Key::CoordinateX].get<std::string>();
             if( patch.contains( Protocol::Key::CoordinateY ) ) info.coordinateY = patch[Protocol::Key::CoordinateY].get<std::string>();
@@ -1024,6 +1037,43 @@ void Server::receiveObjectInfoParameter( uWS::WebSocket<false, true, PerSocket>*
                 info.needSameTimeStepReplace = true;
             }
         }
+    }
+
+    // ISの場合粒子パラメータをパラメータファイルに書き込む
+    if ( m_server_mode == ServerMode::IS )
+    {
+        const char *envBuf = NULL;
+        std::string tfFilePath;
+
+        envBuf = std::getenv( "VIS_PARAM_DIR" );
+
+        if ( envBuf == nullptr )
+        {
+            tfFilePath = "./";
+        }
+        else
+        {
+            tfFilePath = envBuf;
+            if ( tfFilePath[tfFilePath.size() - 1] != '/' ) tfFilePath += "/";
+        }
+
+        envBuf = std::getenv( "TF_NAME" );
+
+        if ( envBuf == nullptr )
+        {
+            tfFilePath += "default.tf";
+        }
+        else
+        {
+            tfFilePath +=  envBuf;
+            tfFilePath += ".tf";
+        }
+
+        std::cout << "tfFilePath:" << tfFilePath << std::endl;
+
+        ParameterFileWriter ppw;
+        ppw.getParticleParameter( *m_particle_property );
+        ppw.writeParameterFile( tfFilePath.c_str() );
     }
 
     // =========================================================
@@ -1473,7 +1523,7 @@ void Server::requestDataAt( uWS::WebSocket<false, true, PerSocket>* ws, const nl
 
     // m_particle_property, m_glyph_property, m_pol_property, m_multi_volume_propertyを排他制御してコピー?
 
-    Worker worker( timeStep, m_objects, minObjectCoords, maxObjectCoords, m_particle_property, m_glyph_property, m_pol_property, m_multi_volume_property_list ); // m_objects は std::vector<ObjectInfo> のメンバ
+    Worker worker( timeStep, m_objects, minObjectCoords, maxObjectCoords, m_server_mode, m_particle_property, m_glyph_property, m_pol_property, m_multi_volume_property_list ); // m_objects は std::vector<ObjectInfo> のメンバ
     worker.setDoneCallBack( [this, ws, timeStep]() {
         std::vector<char> buffer = pack( timeStep );
 

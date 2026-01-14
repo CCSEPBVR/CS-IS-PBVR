@@ -6,6 +6,10 @@
 #include <vismodule/PointObjectGenerator>
 #include <vismodule/GenerateParticle>
 
+#ifndef CPU_VER
+    #include <vismodule/JobCollector>
+#endif
+
 // 初回通信用 デフォルトパラメータを設定する(CS)
 bool SetDefaultParticleParameterCS(
     const std::string& volume_data_file_name,

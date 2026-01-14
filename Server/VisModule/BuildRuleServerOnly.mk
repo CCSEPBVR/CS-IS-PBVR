@@ -264,6 +264,7 @@ $(OUTDIR)/./Visualization/Viewer/Xform.o \
 $(OUTDIR)/./Visualization/Viewer/XformControl.o \
 $(OUTDIR)/./DaemonAndSampler/Daemon/GlyphFile.o \
 $(OUTDIR)/./DaemonAndSampler/Daemon/ParameterFileReader.o \
+$(OUTDIR)/./DaemonAndSampler/Daemon/ParameterFileWriter.o \
 $(OUTDIR)/./DaemonAndSampler/Daemon/ParticleHistoryFile.o \
 $(OUTDIR)/./DaemonAndSampler/Daemon/ParticleFile.o \
 $(OUTDIR)/./DaemonAndSampler/Daemon/ParticleStatusFile.o \
@@ -271,6 +272,7 @@ $(OUTDIR)/./DaemonAndSampler/Daemon/PlotOverLineFile.o \
 $(OUTDIR)/./DaemonAndSampler/Daemon/ParticleMonitor.o \
 $(OUTDIR)/./DaemonAndSampler/Daemon/SetDefaultTransferFunction.o \
 $(OUTDIR)/./DaemonAndSampler/Daemon/Timer.o \
+$(OUTDIR)/./DaemonAndSampler/Daemon/InitialStep.o \
 $(OUTDIR)/./DaemonAndSampler/Daemon/GenerateGlyph.o \
 $(OUTDIR)/./DaemonAndSampler/Daemon/GenerateParticle.o \
 $(OUTDIR)/./DaemonAndSampler/Daemon/GeneratePOL.o

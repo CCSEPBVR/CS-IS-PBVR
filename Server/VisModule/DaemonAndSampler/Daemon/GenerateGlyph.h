@@ -12,28 +12,10 @@ std::unique_ptr<kvs::PolygonGlyphObject> GenerateGlyphCS(
     MultiVolumePropertyList& mvpl
 );
 
-/*
-void SetGlyphParameterIS(
-    GlyphProperty& glyph_property
-);
-*/
+void SetDefaultGlyphParameterIS( GlyphProperty& glyph_property );
 
 std::unique_ptr<kvs::PolygonGlyphObject> GenerateGlyphIS(
     const int time_step,
     const GlyphProperty& glyph_property,
     const MultiVolumePropertyList& mvpl
 );
-
-/*
-void generate_glyph(
-    Argument &param,
-    MultiVolumePropertyList& mvpl,
-    bool &nan_error,
-    #ifndef CPU_VER
-    JobCollector& jc,
-    #endif
-    JobDispatcher& jd,
-    jpv::ParticleTransferServer pts,
-    jpv::ServerMode server_mode
-);
-*/

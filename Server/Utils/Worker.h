@@ -22,13 +22,13 @@ public:
     explicit Worker( 
         const int requestTimeStep, std::vector<ObjectInfoExtractor::ObjectInfo>* objects,
         kvs::Vec3 resultMinObjectCoords, kvs::Vec3 resultMaxObjectCoords,
-        ParticleProperty* particle_property, GlyphProperty* glyph_property,
+        const ServerMode server_mode, ParticleProperty* particle_property, GlyphProperty* glyph_property,
         PlotOverLineProperty* pol_property, MultiVolumePropertyList* multi_volume_property_list
     )
         : m_request_time_step( requestTimeStep ) , m_objects( objects )
         , m_result_min_object_coords( resultMinObjectCoords )
         , m_result_max_object_coords( resultMaxObjectCoords )
-        , m_particle_property( particle_property ), m_glyph_property( glyph_property )
+        , m_server_mode(server_mode), m_particle_property( particle_property ), m_glyph_property( glyph_property )
         , m_pol_property( pol_property ), m_multi_volume_property_list( multi_volume_property_list )
     {}
 
@@ -103,6 +103,7 @@ private:
     kvs::Vec3 m_result_max_object_coords;
     std::vector<ObjectInfoExtractor::ObjectInfo>* m_objects;
     DoneCallBack m_done_call_back;
+    ServerMode m_server_mode;
     ParticleProperty* m_particle_property;
     GlyphProperty* m_glyph_property;
     PlotOverLineProperty* m_pol_property;
@@ -131,14 +132,22 @@ private:
             info.object = pointObject.release();
             break;
         case ObjectInfoExtractor::InsituServerPointObject:
+            pointObject = std::make_unique<kvs::PointObject>();
             GenerateParticleIS( requestTimeStep, *m_particle_property, *m_multi_volume_property_list, pointObject );
             pointObject.get()->setMinMaxObjectCoords( m_result_min_object_coords, m_result_max_object_coords );
             pointObject.get()->setMinMaxExternalCoords( m_result_min_object_coords, m_result_max_object_coords );
             info.object = pointObject.release();
             break;
         case ObjectInfoExtractor::ServerGlyphObject:
-            Calculate_minmax_glyph( requestTimeStep, *m_glyph_property, *m_multi_volume_property_list );
-            polygonObject = GenerateGlyphCS( fileName, requestTimeStep, *m_glyph_property, *m_multi_volume_property_list );
+            if ( m_server_mode == ServerMode::CS )
+            {
+                Calculate_minmax_glyph( requestTimeStep, *m_glyph_property, *m_multi_volume_property_list );
+                polygonObject = GenerateGlyphCS( fileName, requestTimeStep, *m_glyph_property, *m_multi_volume_property_list );
+            }
+            else if ( m_server_mode == ServerMode::IS )
+            {
+                polygonObject = GenerateGlyphIS( requestTimeStep, *m_glyph_property, *m_multi_volume_property_list );
+            }
             polygonObject->setMinMaxObjectCoords( m_result_min_object_coords, m_result_max_object_coords );
             polygonObject->setMinMaxExternalCoords( m_result_min_object_coords, m_result_max_object_coords );
             info.object = polygonObject.release();

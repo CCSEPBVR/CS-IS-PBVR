@@ -52,9 +52,9 @@ endif
 #=============================================================================
 # INCLUDE_PATH, LIBRARY_PATH, LINK_LIBRARY
 #=============================================================================
-INCLUDE_PATH := -I./Utils -I./App
-LIBRARY_PATH :=
-LINK_LIBRARY :=
+INCLUDE_PATH := -I./Utils -I./App -I./VisModule -I./FunctionParser
+LIBRARY_PATH := -L./VisModule/Release -L./FunctionParser
+LINK_LIBRARY := -lvisModule -lpbvrFunc
 
 #=============================================================================
 # KVS
@@ -82,13 +82,15 @@ vpath %.h   $(SUBDIRS)
 OUTDIR := Release
 TARGET := pbvr_server
 
-SRCS := $(foreach d, $(SUBDIRS), $(wildcard $(d)/*.cpp))
-OBJS := $(patsubst %.cpp, $(OUTDIR)/%.o, $(notdir $(SRCS)))
+OBJS := \
+	$(OUTDIR)/main.o \
+	$(OUTDIR)/Server.o
+
 
 all: $(TARGET)
 
 $(TARGET): $(OBJS)
-	$(LD) $(LDFLAGS) $(DEFINITIONS) $(LIBRARY_PATH) $(LINK_LIBRARY) $^ -o $@
+	$(LD) $^ $(LDFLAGS) $(DEFINITIONS) $(LIBRARY_PATH) $(LINK_LIBRARY) -o $@
 
 $(OUTDIR)/%.o: %.cpp %.h
 	$(MKDIR) $(OUTDIR)

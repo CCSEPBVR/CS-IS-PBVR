@@ -1,5 +1,4 @@
 #include <vismodule/JobDispatcher>
-#include <vismodule/JobCollector>
 #include <vismodule/GenerateParticle>
 #include <vismodule/Calculate>
 #include <vismodule/VariableRange>
@@ -9,6 +8,10 @@
 #include <vismodule/StructuredVolumeImporter>
 #include <vismodule/ParticleMonitor>
 #include <vismodule/ParameterFileReader>
+
+#ifndef CPU_VER
+    #include <vismodule/JobCollector>
+#endif
 
 void GenerateParticleCS(
     std::string& file_path,
