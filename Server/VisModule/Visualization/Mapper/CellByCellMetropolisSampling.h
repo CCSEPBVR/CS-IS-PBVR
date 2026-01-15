@@ -75,7 +75,6 @@ private:
 
     const size_t m_normal_ingredient;
 
-    float                  m_particle_density;
     vismodule::CoordSynthesizerStrings* m_coord_synthesizer_strings;
 
 public:
@@ -91,7 +90,6 @@ public:
         const vismodule::TransferFunction& transfer_function,
         const std::vector<vismodule::TransferFunction>& transfer_function_array,
         TransferFunctionSynthesizer* transfunc_synthesizer,
-        const float                  paritcle_density,
         vismodule::CoordSynthesizerStrings* coord_synthesizer_strings);
 
     //constructor for struct 
@@ -102,7 +100,6 @@ public:
         const vismodule::TransferFunction& transfer_function,
         const std::vector<vismodule::TransferFunction>& transfer_function_array,
         TransferFunctionSynthesizer* transfunc_synthesizer,
-        const float                  paritcle_density,
         vismodule::CoordSynthesizerStrings* coord_synthesizer_strings);
 
     virtual ~CellByCellMetropolisSampling();

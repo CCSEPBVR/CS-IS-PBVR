@@ -71,7 +71,6 @@ vismodule::PointObject* PointObjectGenerator::GenerateParticleStruct(
             transfunc_array[0],
             transfunc_array,
             particle_property.m_transfunc_synthesizer, 
-            particle_property.m_particle_density,
             css
         );
     case 'r':
@@ -83,7 +82,6 @@ vismodule::PointObject* PointObjectGenerator::GenerateParticleStruct(
             transfunc_array[0],
             transfunc_array,
             particle_property.m_transfunc_synthesizer, 
-            particle_property.m_particle_density,
             css
         );
     case 'm':
@@ -95,7 +93,6 @@ vismodule::PointObject* PointObjectGenerator::GenerateParticleStruct(
             transfunc_array[0],
             transfunc_array,
             particle_property.m_transfunc_synthesizer,
-            particle_property.m_particle_density,
             css
         );
     case 'h':
@@ -107,7 +104,6 @@ vismodule::PointObject* PointObjectGenerator::GenerateParticleStruct(
             transfunc_array[0],
             transfunc_array,
             particle_property.m_transfunc_synthesizer,
-            particle_property.m_particle_density,
             css
         );
 
@@ -174,7 +170,6 @@ vismodule::PointObject* PointObjectGenerator::GenerateParticleUnstruct(
             transfunc_array[0],
             transfunc_array,
             particle_property.m_transfunc_synthesizer,
-            particle_property.m_particle_density,
             css
         );
     case 'r':
@@ -191,7 +186,6 @@ vismodule::PointObject* PointObjectGenerator::GenerateParticleUnstruct(
             transfunc_array[0],
             transfunc_array,
             particle_property.m_transfunc_synthesizer,
-            particle_property.m_particle_density,
             css
         );
     case 'm':
@@ -208,7 +202,6 @@ vismodule::PointObject* PointObjectGenerator::GenerateParticleUnstruct(
             transfunc_array[0],
             transfunc_array,
             particle_property.m_transfunc_synthesizer,
-            particle_property.m_particle_density,
             css
         );
     case 'h':
@@ -225,7 +218,6 @@ vismodule::PointObject* PointObjectGenerator::GenerateParticleUnstruct(
             transfunc_array[0],
             transfunc_array,
             particle_property.m_transfunc_synthesizer,
-            particle_property.m_particle_density,
             css
         );
     default:

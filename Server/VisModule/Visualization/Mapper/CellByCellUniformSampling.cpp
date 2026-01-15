@@ -95,14 +95,12 @@ CellByCellUniformSampling::CellByCellUniformSampling(
     const vismodule::TransferFunction& transfer_function,
     const std::vector<vismodule::TransferFunction>& transfer_function_array, 
     TransferFunctionSynthesizer* transfunc_synthesizer,
-    const float                  particle_density,
     vismodule::CoordSynthesizerStrings* coord_synthesizer_strings):
     vismodule::MapperBase( transfer_function ),
     vismodule::PointObject(),
     m_transfer_function_array( transfer_function_array ),
     m_transfer_function_synthesizer( transfunc_synthesizer ),
     m_normal_ingredient( nvariables ),
-    m_particle_density( particle_density ),
     m_coord_synthesizer_strings(coord_synthesizer_strings)
 {
 //    this->setSubpixelLevel( subpixel_level );
@@ -119,14 +117,12 @@ CellByCellUniformSampling::CellByCellUniformSampling(
         const vismodule::TransferFunction& transfer_function,
         const std::vector<vismodule::TransferFunction>& transfer_function_array,
         TransferFunctionSynthesizer* transfunc_synthesizer,
-        const float                  particle_density,
         vismodule::CoordSynthesizerStrings* coord_synthesizer_strings):
     vismodule::MapperBase( transfer_function ),
     vismodule::PointObject(),
     m_transfer_function_array( transfer_function_array ),
     m_transfer_function_synthesizer( transfunc_synthesizer ),
     m_normal_ingredient( nvariables ),
-    m_particle_density( particle_density), 
     m_coord_synthesizer_strings(coord_synthesizer_strings)
 {
 //    this->setSubpixelLevel( subpixel_level );
@@ -708,8 +704,7 @@ void CellByCellUniformSampling::generate_particles_struct(
 
 
                     // timed_section_start(td_CalculateNumPar,thid);
-                    const int np = calculate_number_of_particles( density, 1, &MT ) * m_particle_density;
-                    // const int np = calculate_number_of_particles( density, 1, &MT ) * 0.1;
+                    const int np = calculate_number_of_particles( density, 1, &MT );
                     // timed_section_end(td_CalculateNumPar,thid);
 
                     const int cell_id = I + J * SIMDW;
@@ -973,7 +968,6 @@ void CellByCellUniformSampling::generate_particles_unstruct(
     float sampling_volume_inverse  = m_transfer_function_synthesizer->getSamplingVolumeInverse();
     float max_opacity              = m_transfer_function_synthesizer->getMaxOpacity();
     float max_density              = m_transfer_function_synthesizer->getMaxDensity();
-    float particle_density         = m_particle_density;
     float particle_data_size_limit = m_transfer_function_synthesizer->getParticleDataSizeLimit();
     const int max_nparticles       = (int)max_density + 1;
 
@@ -1439,8 +1433,6 @@ void CellByCellUniformSampling::generate_particles_unstruct(
                 // interp[thid][0]->bindCellWoVol( cell_index[cell_BLK] );
                 interp[thid][0]->bindCell( cell_index[cell_BLK] );
                 nparticles_array[cell_BLK] = calculate_number_of_particles( density, interp[thid][0]->volume(), &MT );
-                nparticles_array[cell_BLK] *= m_particle_density;
-                // nparticles_array[cell_BLK] *= m_particle_density * 0.1;
                 nparticles_num += nparticles_array[cell_BLK];
             }
             /////////////////////////////// Synthesized~ (), CalculateOpacity() ///////////////////////////////////

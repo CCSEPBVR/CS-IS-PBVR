@@ -373,9 +373,6 @@ bool SetParticleParameter(
         dom.z_global_max
     );
 
-    particle_property.m_sampling_step = ( max - min ) / 1E1;
-    const float sampling_step = particle_property.m_sampling_step;
-
     vismodule::StructuredVolumeObject object;
     object.setMinMaxObjectCoords( min_object_coords, max_object_coords );
     object.setMinMaxExternalCoords( min_object_coords, max_object_coords );
@@ -384,10 +381,12 @@ bool SetParticleParameter(
                               * ( dom.y_global_max - dom.y_global_min )
                               * ( dom.z_global_max - dom.z_global_min );
 
-    const float max_opacity      = 0.98;
-    const int particle_limit     = particle_property.m_particle_limit;
-    const float particle_density = particle_property.m_particle_density;
-    const int subpixel_level     = CalculateSubpixelLevel(
+    const float max_opacity           = 0.98;
+    const int particle_limit          = particle_property.m_particle_limit;
+    const float extra_opacity_factor  = particle_property.m_extra_opacity_factor;
+    particle_property.m_sampling_step = ( max - min ) / 1E1 / extra_opacity_factor;
+    const float sampling_step         = particle_property.m_sampling_step;
+    const int subpixel_level          = CalculateSubpixelLevel(
         particle_limit,
         *particle_property.m_camera,
         sampling_step,
@@ -417,7 +416,7 @@ bool SetParticleParameter(
     {
         fprintf( stdout , "---------initialize Parameters----------------------------------------\n" );
         fprintf( stdout , "particle_limit    = %20d\n"  , particle_limit                             );
-        fprintf( stdout , "particle_density  = %20f\n"  , particle_density                           );
+        fprintf( stdout , "extra_opacity_factor  = %20f\n"  , extra_opacity_factor                           );
         fprintf( stdout , "resolutin_height  = %20d\n"  , particle_property.m_camera->windowHeight() );
         fprintf( stdout , "resolutin_width   = %20d\n"  , particle_property.m_camera->windowWidth()  );
         fprintf( stdout , "total_volume      = %20.3e\n", total_volume                               );

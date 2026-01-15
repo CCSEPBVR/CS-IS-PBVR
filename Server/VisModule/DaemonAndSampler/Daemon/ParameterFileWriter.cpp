@@ -22,7 +22,7 @@ void ParameterFileWriter::getParticleParameter( const ParticleProperty& particle
     }
 
     m_name_list_file.setLine( "PARTICLE_LIMIT" , particle_property.m_particle_limit );
-    m_name_list_file.setLine( "PARTICLE_DENSITY" ,particle_property.m_particle_density );
+    m_name_list_file.setLine( "EXTRA_OPACITY_FACTOR" ,particle_property.m_extra_opacity_factor );
     m_name_list_file.setLine( "PARTICLE_DATA_SIZE_LIMIT" ,particle_property.m_particle_data_size_limit );
     m_name_list_file.setLine( "RESOLUTION_WIDTH" , particle_property.m_camera->windowWidth() );
     m_name_list_file.setLine( "RESOLUTION_HEIGHT", particle_property.m_camera->windowHeight() );

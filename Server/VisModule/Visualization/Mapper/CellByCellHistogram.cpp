@@ -89,14 +89,12 @@ CellByCellHistogram::CellByCellHistogram(
     const vismodule::TransferFunction& transfer_function,
     const std::vector<vismodule::TransferFunction>& transfer_function_array, 
     TransferFunctionSynthesizer* transfunc_synthesizer,
-    const float                  particle_density,
     vismodule::CoordSynthesizerStrings* coord_synthesizer_strings):
     vismodule::MapperBase( transfer_function ),
     vismodule::PointObject(),
     m_transfer_function_array( transfer_function_array ),
     m_transfer_function_synthesizer( transfunc_synthesizer ),
     m_normal_ingredient( nvariables ),
-    m_particle_density( particle_density ),
     m_coord_synthesizer_strings(coord_synthesizer_strings)
 {
     this->generate_histogram_unstruct(dom, values, nvariables,
@@ -111,14 +109,12 @@ CellByCellHistogram::CellByCellHistogram(
         const vismodule::TransferFunction& transfer_function,
         const std::vector<vismodule::TransferFunction>& transfer_function_array,
         TransferFunctionSynthesizer* transfunc_synthesizer,
-        const float                  particle_density,
         vismodule::CoordSynthesizerStrings* coord_synthesizer_strings):
     vismodule::MapperBase( transfer_function ),
     vismodule::PointObject(),
     m_transfer_function_array( transfer_function_array ),
     m_transfer_function_synthesizer( transfunc_synthesizer ),
     m_normal_ingredient( nvariables ),
-    m_particle_density( particle_density), 
     m_coord_synthesizer_strings(coord_synthesizer_strings)
 {
     this->generate_histogram_struct(dom, values, nvariables);
@@ -684,7 +680,6 @@ void CellByCellHistogram::generate_histogram_unstruct(
     float sampling_volume_inverse  = m_transfer_function_synthesizer->getSamplingVolumeInverse();
     float max_opacity              = m_transfer_function_synthesizer->getMaxOpacity();
     float max_density              = m_transfer_function_synthesizer->getMaxDensity();
-    float particle_density         = m_particle_density;
     float particle_data_size_limit = m_transfer_function_synthesizer->getParticleDataSizeLimit();
     const int max_nparticles       = (int)max_density + 1;
 

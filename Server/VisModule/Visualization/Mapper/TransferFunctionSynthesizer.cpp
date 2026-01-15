@@ -203,12 +203,12 @@ float TransferFunctionSynthesizer::getMaxDensity() const
     return m_max_density;
 }
 
-void TransferFunctionSynthesizer::setParticleDensity(float particle_density ) 
+void TransferFunctionSynthesizer::setExtraOpacityFactor( float extra_opacity_factor ) 
 {
-    m_particle_density = particle_density;
+    m_extra_opacity_factor = extra_opacity_factor;
 }
 
-void TransferFunctionSynthesizer::setParticleDataSizeLimit(float particle_data_size_limit ) 
+void TransferFunctionSynthesizer::setParticleDataSizeLimit( float particle_data_size_limit ) 
 {
     m_particle_data_size_limit = particle_data_size_limit;
 }
@@ -218,9 +218,9 @@ std::vector<float> TransferFunctionSynthesizer::scalars()
     return m_scalars;
 }
 
-float TransferFunctionSynthesizer::getParticleDensity()
+float TransferFunctionSynthesizer::getExtraOpacityFactor()
 {
-    return m_particle_density;
+    return m_extra_opacity_factor;
 }
 
 float TransferFunctionSynthesizer::getParticleDataSizeLimit()

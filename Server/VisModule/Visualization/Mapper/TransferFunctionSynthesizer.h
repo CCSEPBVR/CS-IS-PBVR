@@ -76,7 +76,7 @@ protected:
     float m_max_opacity; 
     float m_max_density;
     float m_sampling_volume_inverse;
-    float m_particle_density; 
+    float m_extra_opacity_factor; 
     float m_particle_data_size_limit; 
     // add by shimomura 2022/12/20
     VariableRange m_variable_range;
@@ -135,10 +135,10 @@ public:
     float getSamplingVolumeInverse() const;
 
     //add by shimomura 2022/12/19
-    void  setParticleDensity( float particle_density);
+    void  setExtraOpacityFactor( float extra_opacity_factor );
     void  setParticleDataSizeLimit( float particle_data_size_limit ); 
 
-    float getParticleDensity();
+    float getExtraOpacityFactor();
     float getParticleDataSizeLimit();
     VariableRange& variableRange();                                                                                                                                           
     const VariableRange& variableRange() const;

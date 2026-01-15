@@ -36,7 +36,6 @@ public:
     std::string m_parameter_file;
     int m_job_id_pack_size;
     int m_particle_limit, m_particle_limit_pre;
-    float m_particle_density;
     float m_particle_data_size_limit;
     std::string m_output_data_base;
     vismodule::Camera* m_camera;
@@ -72,10 +71,10 @@ public:
     std::vector<int32_t> m_glyph_color_map_table;
     vismodule::ColorMap m_color_map;
     std::string m_direction_variable[3];
-    // jpv::DataDefines m_size_sampling_method; // ‘½’n“_‘Î‰‚Ì‚½‚ßˆê’UƒRƒƒ“ƒgƒAƒEƒg
+    // jpv::DataDefines m_size_sampling_method; // ï¿½ï¿½ï¿½nï¿½_ï¿½Î‰ï¿½ï¿½Ì‚ï¿½ï¿½ßˆï¿½Uï¿½Rï¿½ï¿½ï¿½ï¿½ï¿½gï¿½Aï¿½Eï¿½g
     std::vector<std::string> m_size_variable;
-    // jpv::GlyphMode m_distribution_mode; // ‘½’n“_‘Î‰‚Ì‚½‚ßˆê’UƒRƒƒ“ƒgƒAƒEƒg
-    // jpv::DataDefines m_color_data_sampling_method; // ‘½’n“_‘Î‰‚Ì‚½‚ßˆê’UƒRƒƒ“ƒgƒAƒEƒg
+    // jpv::GlyphMode m_distribution_mode; // ï¿½ï¿½ï¿½nï¿½_ï¿½Î‰ï¿½ï¿½Ì‚ï¿½ï¿½ßˆï¿½Uï¿½Rï¿½ï¿½ï¿½ï¿½ï¿½gï¿½Aï¿½Eï¿½g
+    // jpv::DataDefines m_color_data_sampling_method; // ï¿½ï¿½ï¿½nï¿½_ï¿½Î‰ï¿½ï¿½Ì‚ï¿½ï¿½ßˆï¿½Uï¿½Rï¿½ï¿½ï¿½ï¿½ï¿½gï¿½Aï¿½Eï¿½g
     std::vector<std::string> m_color_data_variable;
     // glyph parameter
 
@@ -143,7 +142,6 @@ public:
         m_particle_limit = 10000000;
         m_particle_limit_pre = -1;
         m_density_factor = 1.0;
-        m_particle_density = 1.0;
         m_output_data_base = "./";
         m_window_width  = 620;
         m_window_height = 620;
@@ -163,7 +161,6 @@ public:
         if ( this->hasOption( "jn" ) ) m_job_id_pack_size = this->optionValue<int>( "jn" );
         if ( this->hasOption( "m_normal_ingredient" ) ) m_normal_ingredient = this->optionValue<size_t>( "m_normal_ingredient" );
         if ( this->hasOption( "plimit" ) ) m_particle_limit = this->optionValue<int>( "plimit" );
-        if ( this->hasOption( "pd" ) ) m_particle_density = this->optionValue<int>( "pd" );
         if ( this->hasOption( "vin" ) )
         {
             size_t pos;

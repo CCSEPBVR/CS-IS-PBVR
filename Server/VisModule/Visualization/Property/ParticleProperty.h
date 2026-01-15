@@ -22,7 +22,7 @@ struct ParticleProperty
     double m_latency_threshold;
     int m_job_id_pack_size;
     int m_particle_limit;
-    float m_particle_density;
+    float m_extra_opacity_factor;
     float m_particle_data_size_limit;
     vismodule::Camera* m_camera;
     TransferFunctionSynthesizer* m_transfunc_synthesizer;

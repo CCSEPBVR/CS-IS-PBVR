@@ -71,7 +71,6 @@ struct PBVRParam
     int CSmode;
     int renderingId;
     int32_t particle_limit; // APPEND Fj) 2015.03.04
-    float particle_density;
     float particle_data_size_limit;
     int timeStepKeyFrame;
 

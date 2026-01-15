@@ -33,7 +33,7 @@ bool SetDefaultParticleParameterCS(
     particle_property.m_sampling_method          = 'u';
     particle_property.m_particle_data_size_limit = 20;
     particle_property.m_particle_limit           = 10000000;
-    particle_property.m_particle_density         = 1;
+    particle_property.m_extra_opacity_factor     = 1;
     particle_property.m_latency_threshold        = -1.0;
     particle_property.m_job_id_pack_size         = 1;
 
@@ -48,7 +48,7 @@ bool SetDefaultParticleParameterCS(
         return false;
     }
 
-    particle_property.m_sampling_step  = CalculateSamplingStep( mvpl );
+    particle_property.m_sampling_step  = CalculateSamplingStep( mvpl ) / particle_property.m_extra_opacity_factor;
     particle_property.m_subpixel_level = CalculateSubpixelLevel( particle_property, mvpl, *particle_property.m_camera );
 
     // ユーザーが伝達関数を指定している場合
@@ -439,11 +439,11 @@ void SetDefaultParticleParameterIS(
 
     // store particle monitor in param
     // sampling step is not used in IS mode
-    particle_property.m_subpixel_level   = pm.getSubpixelLevel();
+    particle_property.m_subpixel_level       = pm.getSubpixelLevel();
     // particle limit and particle density will be overwritten later
     // when transfer function file is readed(ParameterFileReader)
-    particle_property.m_particle_limit   = pm.particleHistoryFile().ParticleLimit();
-    particle_property.m_particle_density = pm.particleHistoryFile().ParticleDensity();;
+    particle_property.m_particle_limit       = pm.particleHistoryFile().ParticleLimit();
+    particle_property.m_extra_opacity_factor = pm.particleHistoryFile().ExtraOpacityFactor();;
 
     ParameterFileReader ppr;
     ppr.readParticleParameterFile( tfFilePath_old.c_str() );

@@ -667,9 +667,9 @@ void OutputParticles(
             ofs2 << std::endl;
         }
 
-        ofs2 << "N_VARIABLES="      << nvariables               << std::endl;
-        ofs2 << "PARTICLE_DENSITY=" << particle_property.m_particle_density << std::endl;
-        ofs2 << "PARTICLE_LIMIT="   << particle_property.m_particle_limit   << std::endl;
+        ofs2 << "N_VARIABLES="             << nvariables                               << std::endl;
+        ofs2 << "EXTRA_OPACITY_FACTOR="    << particle_property.m_extra_opacity_factor << std::endl;
+        ofs2 << "PARTICLE_LIMIT="          << particle_property.m_particle_limit       << std::endl;
         ofs2 << "END_HISTORY_FILE=SUCCESS" << std::endl;
         ofs2.close();
     }
