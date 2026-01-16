@@ -4,6 +4,7 @@
 #include <locale>
 #include <codecvt>
 #include <thread>
+#include <atomic>
 
 #ifdef _WIN32
 #include <uwebsockets/App.h>
