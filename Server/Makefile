@@ -64,6 +64,51 @@ LIBRARY_PATH += -L$(KVS_DIR)/lib
 LINK_LIBRARY += -lkvsCore
 
 #=============================================================================
+# VTK
+#=============================================================================
+ifdef KVS_DIR
+include $(KVS_DIR)/kvs.conf
+ifeq "$(KVS_SUPPORT_EXTENDED_FILE_FORMAT)" "1"
+INCLUDE_PATH += -I$(VTK_INCLUDE_PATH)
+LIBRARY_PATH += -L$(VTK_LIB_PATH)
+LINK_LIBRARY += -lkvsSupportExtendedFileFormat \
+-lvtkCommonExecutionModel-$(VTK_VERSION) \
+-lvtkFiltersCore-$(VTK_VERSION) \
+-lvtkFiltersExtraction-$(VTK_VERSION) \
+-lvtkFiltersGeneral-$(VTK_VERSION) \
+-lvtkFiltersGeometry-$(VTK_VERSION) \
+-lvtkFiltersParallel-$(VTK_VERSION) \
+-lvtkCommonExecutionModel-$(VTK_VERSION) \
+-lvtkFiltersCore-$(VTK_VERSION) \
+-lvtkIOCore-$(VTK_VERSION) \
+-lvtkIOGeometry-$(VTK_VERSION) \
+-lvtkIOCGNSReader-$(VTK_VERSION) \
+-lvtkIOEnSight-$(VTK_VERSION) \
+-lvtkIOParallel-$(VTK_VERSION) \
+-lvtkIOLegacy-$(VTK_VERSION) \
+-lvtkIOXML-$(VTK_VERSION) \
+-lvtkCommonDataModel-$(VTK_VERSION) \
+-lvtkIOXMLParser-$(VTK_VERSION) \
+-lvtkexpat-$(VTK_VERSION) \
+-lvtkCommonTransforms-$(VTK_VERSION) \
+-lvtkCommonMath-$(VTK_VERSION) \
+-lvtkCommonCore-$(VTK_VERSION) \
+-lvtksys-$(VTK_VERSION) \
+-lvtkloguru-$(VTK_VERSION) \
+-lvtkIOCore-$(VTK_VERSION) \
+-lvtkzlib-$(VTK_VERSION) \
+-lvtkdoubleconversion-$(VTK_VERSION) \
+-lvtklzma-$(VTK_VERSION) \
+-lvtklz4-$(VTK_VERSION) \
+-lvtkCommonSystem-$(VTK_VERSION) \
+-lvtkCommonMisc-$(VTK_VERSION) \
+-lvtkpugixml-$(VTK_VERSION) \
+-ldl
+DEFINITIONS += -DEXTEND_FILE_FORMAT
+endif
+endif
+
+#=============================================================================
 # uWebSockets
 #=============================================================================
 INCLUDE_PATH += -I$(KVS_UWS_DIR)/src -I$(KVS_UWS_DIR)/uSockets/src

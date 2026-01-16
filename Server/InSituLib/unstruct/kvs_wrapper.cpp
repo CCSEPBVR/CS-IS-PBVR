@@ -593,7 +593,7 @@ bool generate_particles_vtk( int time_step, vtkUnstructuredGrid* ucd )
         vismodule::PointObjectGenerator point_object_generator;
         point_object = point_object_generator.GenerateParticleUnstruct(
             particle_property, dom, raw_pointers_vector.data(), nvariables, coordinates.get(),
-            ncoords, connections.get(), ncells, celltype
+            ncoords, connections.get(), ncells, celltype, ServerMode::IS
         );
 
         MakeParticle( point_object, particle_coords, particle_colors, particle_normals ); // InSitu only
