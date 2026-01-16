@@ -187,6 +187,7 @@ $(OUTDIR)/./Visualization/Importer/TableImporter.o \
 $(OUTDIR)/./Visualization/Importer/UnstructuredVolumeImporter.o \
 $(OUTDIR)/./Visualization/Mapper/CellAdjacencyGraph.o \
 $(OUTDIR)/./Visualization/Mapper/CellByCellHistogram.o \
+$(OUTDIR)/./Visualization/Mapper/CellByCellMinMax.o \
 $(OUTDIR)/./Visualization/Mapper/CellByCellMetropolisSampling.o \
 $(OUTDIR)/./Visualization/Mapper/CellByCellRejectionSampling.o \
 $(OUTDIR)/./Visualization/Mapper/CellByCellUniformSampling.o \

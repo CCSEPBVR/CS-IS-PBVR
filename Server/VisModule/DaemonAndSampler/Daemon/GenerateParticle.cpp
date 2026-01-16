@@ -69,6 +69,173 @@ void GenerateParticleCS(
         particle_property.m_job_id_pack_size
     );
 
+    // server_side_range_modeかの判定 
+    bool server_side_range_mode =false;
+    for ( size_t i = 0; i < tf_number; i++ )
+    {   
+        if (particle_property.m_transfunc_array[i].m_server_color_range_mode  == NamedTransferFunction::ServerRangeMode::ServerSide &&
+                server_side_range_mode == false) 
+        {
+            server_side_range_mode =true;
+        }
+        if (particle_property.m_transfunc_array[i].m_server_opacity_range_mode  == NamedTransferFunction::ServerRangeMode::ServerSide &&
+                server_side_range_mode == false) 
+        {
+            server_side_range_mode =true;
+        }
+
+    }
+
+    if( server_side_range_mode )
+    {
+        char tmp_sampling_method =  particle_property.m_sampling_method; 
+        particle_property.m_sampling_method ='x'; 
+        while ( jd.dispatchNext( wid, &st, &vl ) )
+        {
+            vismodule::PointObject* recv_obj = new vismodule::PointObject;
+            vismodule::PointObject* send_obj = nullptr;
+
+            // make point object and histgram and range
+            if ( ( rank > 0 ) || ( mpi_size == 1 ) )
+            {
+                int xvl, fidx;
+                fidx = mvpl.getFileIndex( vl, &xvl );
+                MultiVolumeProperty& mvp = mvpl.m_list[fidx];
+                mvp.setFilePath( file_path, st, xvl );
+
+                // generate point object start
+                try
+                {
+                    vismodule::VolumeObjectBase* volume = nullptr;
+                    vismodule::PointObjectGenerator point_object_generator;
+
+                    // generate volume object
+                    if ( mvp.m_file_type == 1 || mvp.m_file_type == 2 ) // filetype: gathered subvolume or gathered timestep
+                    {
+                        generate_volume( file_path, mvp, st, xvl, volume );
+                    }
+                    else if ( mvp.m_file_type == 3 || mvp.m_file_type == 4 )
+                    {
+                        generate_volume( file_path, mvp, st, xvl, volume );
+                    }
+                    else // filetype: kvsml
+                    {
+                        generate_volume( file_path, mvp, volume );
+                    }
+
+                    if ( !volume )
+                    {
+                        throw std::runtime_error("Failed to generate volume object.");
+                    }
+
+                    std::unique_ptr<std::unique_ptr<Type[]>[]> values;
+                    int nvariables = 0;
+                    int ncoords = 0;
+                    vismodule::VolumeObjectBase::VolumeType voltype = volume->volumeType();
+
+                    if( voltype == vismodule::VolumeObjectBase::VolumeType::Unstructured )
+                    {
+                        domain_parameters_unstruct dom;
+                        std::unique_ptr<float[]> coordinates;
+                        std::unique_ptr<unsigned int[]> connections;
+                        int ncells = 0;
+                        vismodule::VolumeObjectBase::CellType celltype;
+
+                        store_volume_in_variables_array_unstruct( volume, dom, values, nvariables, coordinates, ncoords, connections, ncells, celltype );
+
+                        float max_opacity;
+                        float max_density;
+                        float sampling_volume_inverse;
+
+                        vismodule::CellByCellParticleGenerator::CalculateDensityConstaint(
+                                *particle_property.m_camera,
+                                *volume,
+                                static_cast<float>( particle_property.m_subpixel_level ),
+                                particle_property.m_sampling_step,
+                                &sampling_volume_inverse,
+                                &max_opacity,
+                                &max_density
+                                );
+
+                        particle_property.m_transfunc_synthesizer->setMaxOpacity( max_opacity );
+                        particle_property.m_transfunc_synthesizer->setMaxDensity( max_density );
+                        particle_property.m_transfunc_synthesizer->setSamplingVolumeInverse( sampling_volume_inverse );
+
+                        std::vector<Type*> raw_pointers_vector( nvariables );
+                        for ( size_t i = 0; i < nvariables; ++i )
+                        {
+                            raw_pointers_vector[i] = values.get()[i].get();
+                        }
+
+                        // generate particle
+                        send_obj = point_object_generator.GenerateParticleUnstruct( particle_property, dom, raw_pointers_vector.data(), nvariables, coordinates.get(), ncoords, connections.get(), ncells, celltype, ServerMode::CS );
+                    }
+                    else // ( voltype == vismodule::VolumeObjectBase::VolumeType::Structured )
+                    {
+                        domain_parameters_struct dom; 
+
+                        store_volume_in_variables_array_struct( volume, dom, values, nvariables, ncoords );
+
+                        std::vector<Type*> raw_pointers_vector( nvariables );
+                        for ( size_t i = 0; i < nvariables; ++i )
+                        {
+                            raw_pointers_vector[i] = values.get()[i].get();
+                        }                        
+
+                        // generate particle
+                        send_obj = point_object_generator.GenerateParticleStruct( particle_property, dom, raw_pointers_vector.data(), nvariables, ServerMode::CS );
+                    }
+
+                    delete volume;
+                }
+                catch ( const std::runtime_error& e )
+                {
+#ifdef _DEBUG // debug by @hira
+                    printf("[Exception] %s[%d] :: %s \n", __FILE__, __LINE__, e.what());
+#endif
+                    std::cerr << e.what();
+                    nan_error = true;
+                }
+                // generate point object end
+
+                //            MakeHistgram( send_obj, tf_number, tmp_c_bins, tmp_o_bins );
+                MakeParticleMinMax( particle_property.m_transfunc_synthesizer, tf_number, tmp_max, tmp_min );
+            } // make point object and histgram and range
+            delete send_obj;
+            delete recv_obj;
+        } // end of while(DispatchNext)
+
+#ifndef CPU_VER
+        if ( mpi_size > 1 )
+        {
+            MPI_Allreduce( MPI_IN_PLACE, tmp_max, ( tf_number * 2 ), MPI_FLOAT, MPI_MAX, MPI_COMM_WORLD );
+            MPI_Allreduce( MPI_IN_PLACE, tmp_min, ( tf_number * 2 ), MPI_FLOAT, MPI_MIN, MPI_COMM_WORLD );
+        }
+#endif
+        // min,maxの更新
+        MakeParticleMinMax( particle_property.m_transfunc_synthesizer, tf_number, tmp_max, tmp_min );
+    for( size_t i = 0; i < tf_number; i++ )
+    {
+        if( particle_property.m_transfunc_array[i].m_server_color_range_mode ==  NamedTransferFunction::ServerRangeMode::ServerSide)
+        particle_property.m_transfunc_array[i].setColorRange(  tmp_min[2*i + 1],tmp_max[2*i + 1]);
+        if( particle_property.m_transfunc_array[i].m_server_opacity_range_mode ==  NamedTransferFunction::ServerRangeMode::ServerSide)
+        particle_property.m_transfunc_array[i].setOpacityRange(tmp_min[2*i    ],tmp_max[2*i    ]);
+    }
+
+    // 本命の粒子生成のためjob dispatch のパラメータ初期化 
+    wid = 0; st =0; vl =0; 
+    particle_property.m_sampling_method = tmp_sampling_method ;
+    jd.initialize(
+        time_step,
+        time_step,
+        mvpl.m_total_number_subvolumes,
+        mvpl.m_total_min_subvolume_coord,
+        mvpl.m_total_max_subvolume_coord,
+        particle_property.m_latency_threshold,
+        particle_property.m_job_id_pack_size
+    );
+    }
+
     while ( jd.dispatchNext( wid, &st, &vl ) )
     {
         vismodule::PointObject* recv_obj = new vismodule::PointObject;
@@ -178,7 +345,7 @@ void GenerateParticleCS(
             // generate point object end
             
             MakeHistgram( send_obj, tf_number, tmp_c_bins, tmp_o_bins );
-            MakeParticleMinMax( particle_property.m_transfunc_synthesizer, tf_number, tmp_max, tmp_min );
+            //MakeParticleMinMax( particle_property.m_transfunc_synthesizer, tf_number, tmp_max, tmp_min );
         } // make point object and histgram and range
 
 #ifndef CPU_VER
@@ -265,8 +432,8 @@ void GenerateParticleCS(
     {
         MPI_Allreduce( MPI_IN_PLACE, tmp_c_bins, ( DEFAULT_NBINS * tf_number ), MPI_UNSIGNED_LONG, MPI_SUM , MPI_COMM_WORLD );
         MPI_Allreduce( MPI_IN_PLACE, tmp_o_bins, ( DEFAULT_NBINS * tf_number ), MPI_UNSIGNED_LONG, MPI_SUM , MPI_COMM_WORLD );
-        MPI_Allreduce( MPI_IN_PLACE, tmp_max, ( tf_number * 2 ), MPI_FLOAT, MPI_MAX, MPI_COMM_WORLD );
-        MPI_Allreduce( MPI_IN_PLACE, tmp_min, ( tf_number * 2 ), MPI_FLOAT, MPI_MIN, MPI_COMM_WORLD );
+//        MPI_Allreduce( MPI_IN_PLACE, tmp_max, ( tf_number * 2 ), MPI_FLOAT, MPI_MAX, MPI_COMM_WORLD );
+//        MPI_Allreduce( MPI_IN_PLACE, tmp_min, ( tf_number * 2 ), MPI_FLOAT, MPI_MIN, MPI_COMM_WORLD );
     }
 #endif
 

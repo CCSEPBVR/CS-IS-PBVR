@@ -9,6 +9,7 @@
 #include <vismodule/CellByCellRejectionSampling>
 #include <vismodule/CellByCellMetropolisSampling>
 #include <vismodule/CellByCellHistogram>
+#include <vismodule/CellByCellMinMax>
 #include <vismodule/CellByCellParticleGenerator>
 #if 0 //TEST_DELETE
 #include <vismodule/TestVolume>
@@ -106,6 +107,18 @@ vismodule::PointObject* PointObjectGenerator::GenerateParticleStruct(
             particle_property.m_transfunc_synthesizer,
             css
         );
+    case 'x':
+        std::cout << "MinMax " << std::endl;
+        return new vismodule::CellByCellMinMax(
+            dom,
+            values,
+            nvariables,
+            transfunc_array[0],
+            transfunc_array,
+            particle_property.m_transfunc_synthesizer,
+            css
+        );
+
 
     default:
         std::cout << "Unknown sampling method:" << particle_property.m_sampling_method << std::endl;
@@ -220,6 +233,23 @@ vismodule::PointObject* PointObjectGenerator::GenerateParticleUnstruct(
             particle_property.m_transfunc_synthesizer,
             css
         );
+    case 'x':
+        std::cout << "MinMax " << std::endl;
+        return new vismodule::CellByCellMinMax( 
+            dom,
+            values,
+            nvariables,
+            coordinates,
+            ncoords,
+            connections,
+            ncells,
+            celltype,
+            transfunc_array[0],
+            transfunc_array,
+            particle_property.m_transfunc_synthesizer,
+            css
+        );
+
     default:
         std::cout << "Unknown sampling method:" << particle_property.m_sampling_method << std::endl;
         exit( 1 );
