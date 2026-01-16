@@ -3,6 +3,7 @@
 
 #include <locale>
 #include <codecvt>
+#include <thread>
 
 #ifdef _WIN32
 #include <uwebsockets/App.h>
@@ -47,12 +48,16 @@ public:
 
 public:
     Server( int port );
+    ~Server();
 
 private:
     int m_port;
     uWS::App m_u_web_sockets;
     std::unordered_map<std::string, std::shared_ptr<ClientState>> m_clients;
     int m_next_user_id = 0;
+
+    std::atomic<bool> m_last_step_monitor_is_running; // LAST_STEPを監視するスレッドに終了信号を送る変数
+    std::thread m_last_step_monitor_thread; // state.txtのLAST_STEPを監視するスレッド
 
     ServerMode m_server_mode;
     std::vector<ObjectInfoExtractor::ObjectInfo>* m_objects;
@@ -87,6 +92,7 @@ private:
     std::string toUtf8( const std::filesystem::path& p );
     std::vector<char> pack( const int timeStep );
     size_t calculateTotalSize() const;
+    void LastStepMonitorLoop();
 };
 
 #endif // SERVER_H

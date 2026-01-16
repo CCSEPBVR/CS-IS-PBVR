@@ -1,10 +1,12 @@
 #include "Server.h"
 #include "../../Shared/TransferFunction.h"
 #include <filesystem>
+#include <chrono>
 
 #include <vismodule/KVSMLObjectPlotOverLine>
 #include <vismodule/InitialStep>
 #include <vismodule/GeneratePOL>
+#include <vismodule/ParticleMonitor>
 #include <vismodule/ParameterFileWriter>
 
 Server::Server( int port )
@@ -77,6 +79,18 @@ Server::Server( int port )
                                if( token )  std::cout << "[Server] Listening on port " << m_port << std::endl;
                                else         std::cerr << "[Server] Failed to listen on port " << m_port << std::endl;
                            } ).run();
+}
+
+Server::~Server()
+{
+    // m_last_step_monitor_is_runningの値の変更はm_last_step_monitor_threadから見ることができる
+    // m_last_step_monitor_threadのwhile文の終了条件はm_last_step_monitor_is_runningの値がtrueであること
+    // m_last_step_monitor_is_runningをfalseにすることでm_last_step_monitor_threadを終了する
+    m_last_step_monitor_is_running.store( false );
+    if ( m_last_step_monitor_thread.joinable() ) // スレッドが起動している場合
+    {
+        m_last_step_monitor_thread.join(); // 終了待ち
+    }
 }
 
 void Server::onUpgrade( uWS::HttpResponse<SSL>* res, uWS::HttpRequest* req, struct us_socket_context_t* context, SocketType socketType )
@@ -745,6 +759,20 @@ void Server::initialize( uWS::WebSocket<false, true, PerSocket>* ws, const nlohm
     msg[Protocol::Key::EndCoords]   = m_pol_property->m_end_point;
 
     m_u_web_sockets.publish( "Notice", msg.dump(), uWS::OpCode::TEXT );
+
+    // ISの場合state.txtを監視しLAST_STEPが更新されたらクライアントにLAST_STEPを送信するスレッドを起動する
+    if ( m_server_mode == ServerMode::IS )
+    {
+        // スレッドがすでに起動している場合は二重起動しない
+        if ( m_last_step_monitor_thread.joinable() )
+        {
+            std::cout << "WARNING:Last step monitor is already started." << std::endl;
+        }
+        else
+        {
+            m_last_step_monitor_thread = std::thread( [this]() { this->LastStepMonitorLoop(); } );
+        }
+    }
 }
 
 void createServerPointObject()
@@ -2214,4 +2242,38 @@ size_t Server::calculateTotalSize() const
         }
     }
     return totalSize;
+}
+
+void Server::LastStepMonitorLoop()
+{
+    std::cout << "Server::LastStepMonitorLoop() start" << std::endl;
+    // メインスレッドでのm_last_step_monitor_is_runningの値の変更を監視しtrueからfalseになったら終了する
+    while ( m_last_step_monitor_is_running.load() )
+    {
+        ParticleMonitor pm;
+        pm.check();
+        int old_last_time_step = 0;
+        int new_last_time_step = 0;
+
+        if( pm.stepExisted() )
+        {
+            new_last_time_step = pm.particleStatusFile().getLatestTimeStep();
+
+            std::cout << "last step:" << new_last_time_step << std::endl;
+
+            // last stepが更新された場合
+            if ( new_last_time_step > old_last_time_step )
+            {
+                // last stepをクライアントに送信する
+            }
+        }
+        else
+        {
+            std::cout << "WARNING: Time step is not exited." << std::endl;
+        }
+
+        std::cout << "Server::LastStepMonitorLoop() working..." << std::endl;
+        std::this_thread::sleep_for(std::chrono::seconds(10));
+    }
+    std::cout << "Server::LastStepMonitorLoop() start" << std::endl;
 }
