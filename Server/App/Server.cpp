@@ -365,6 +365,7 @@ void Server::initialize( uWS::WebSocket<false, true, PerSocket>* ws, const nlohm
         }
 
         // POLのパラメータファイルを読み込む
+        SetDefaultPOLParameterIS( *m_pol_property );
     }
 
     float min_x = m_multi_volume_property_list->m_total_min_object_coord[0];

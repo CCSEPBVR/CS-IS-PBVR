@@ -215,9 +215,7 @@ std::unique_ptr<vismodule::KVSMLObjectPlotOverLine> GeneratePOLCS(
     return std::make_unique<vismodule::KVSMLObjectPlotOverLine>( values_on_line, x_axis, mask );
 }
 
-void SetPOLParameterIS(
-    PlotOverLineProperty& pol_property
-)
+void SetDefaultPOLParameterIS( PlotOverLineProperty& pol_property )
 {
     const char *envBuf = NULL;
     std::string visParamDir;
