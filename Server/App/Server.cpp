@@ -1134,8 +1134,8 @@ void Server::receiveTransferFunctionParameter( uWS::WebSocket<false, true, PerSo
     std::string colorSynthesizer    = received.value( Protocol::Key::ColorSynthesizer, "" );
     std::string opacitySynthesizer  = received.value( Protocol::Key::OpacitySynthesizer, "" );
 
-    std::cout << "Color Synthesizer:   " << colorSynthesizer << std::endl;
-    std::cout << "Opacity Synthesizer: " << opacitySynthesizer << std::endl;
+    // std::cout << "Color Synthesizer:   " << colorSynthesizer << std::endl;
+    // std::cout << "Opacity Synthesizer: " << opacitySynthesizer << std::endl;
 
     m_particle_property->m_transfunc_array.clear();
     m_particle_property->m_transfunc_array.resize( dataArray.size() );
@@ -1158,26 +1158,25 @@ void Server::receiveTransferFunctionParameter( uWS::WebSocket<false, true, PerSo
     for( size_t i = 0; i < dataArray.size(); ++i )
     {
         const auto& tf = dataArray[i];
-        std::cout << "----- Transfer Function Row " << i << " -----" << std::endl;
-
+        // std::cout << "----- Transfer Function Row " << i << " -----" << std::endl;
         // Color
         std::string colorFunction   = tf.value( Protocol::Key::ColorFunction, "C" + std::to_string( i + 1 ) );
         std::string colorVariable   = tf.value( Protocol::Key::ColorVariable, "" );
-        int colorRangeMode          = tf.value( Protocol::Key::ColorRangeMode, 0 );
-        double colorUserMin         = tf.value( Protocol::Key::ColorUserRangeMin, 0.0 );
-        double colorUserMax         = tf.value( Protocol::Key::ColorUserRangeMax, 0.0 );
-        double colorServerMin       = tf.value( Protocol::Key::ColorServerRangeMin, 0.0 );
-        double colorServerMax       = tf.value( Protocol::Key::ColorServerRangeMax, 0.0 );
+        NamedTransferFunction::ServerRangeMode colorRangeMode = static_cast<NamedTransferFunction::ServerRangeMode>( tf.value( Protocol::Key::ColorRangeMode, 0 ) );
+        double      colorUserMin    = tf.value( Protocol::Key::ColorUserRangeMin, 0.0 );
+        double      colorUserMax    = tf.value( Protocol::Key::ColorUserRangeMax, 0.0 );
+        double      colorServerMin  = tf.value( Protocol::Key::ColorServerRangeMin, 0.0 );
+        double      colorServerMax  = tf.value( Protocol::Key::ColorServerRangeMax, 1.0 );
 
-        m_particle_property->m_transfunc_array[i].m_name               = colorFunction;
-        m_particle_property->m_transfunc_array[i].m_color_variable     = colorVariable;
+        m_particle_property->m_transfunc_array[i].m_name           = colorFunction;
+        m_particle_property->m_transfunc_array[i].m_color_variable = colorVariable;
 
         switch ( static_cast<TransferFunction::RangeMode>( colorRangeMode ) )
         {
         case TransferFunction::ServerSide:
             m_particle_property->m_transfunc_array[i].m_server_color_range_mode   = NamedTransferFunction::ServerRangeMode::ServerSide;
-            m_particle_property->m_transfunc_array[i].m_server_color_variable_min = m_particle_property->m_transfunc_array[i].m_server_color_variable_min;
-            m_particle_property->m_transfunc_array[i].m_server_color_variable_max = m_particle_property->m_transfunc_array[i].m_server_color_variable_max;
+            m_particle_property->m_transfunc_array[i].m_server_color_variable_min = colorServerMin;
+            m_particle_property->m_transfunc_array[i].m_server_color_variable_max = colorServerMax;
             break;
         case TransferFunction::UserRange:
             m_particle_property->m_transfunc_array[i].m_server_color_range_mode = NamedTransferFunction::ServerRangeMode::UserRange;
@@ -1186,24 +1185,28 @@ void Server::receiveTransferFunctionParameter( uWS::WebSocket<false, true, PerSo
             break;
         default:
             std::cout << "ERROR:Range Mode is unknown" << std::endl;
+            break;
         }
 
-        std::string colorVariableSynthesizerBuf = colorVariable;
-        std::replace( colorVariableSynthesizerBuf.begin(), colorVariableSynthesizerBuf.end(), 'X', 'x' );
-        std::replace( colorVariableSynthesizerBuf.begin(), colorVariableSynthesizerBuf.end(), 'Y', 'y' );
-        std::replace( colorVariableSynthesizerBuf.begin(), colorVariableSynthesizerBuf.end(), 'Z', 'z' );
-        var_c.push_back( m_particle_property->m_transfunc_synthesizer->convert_token( colorVariableSynthesizerBuf ) );
+        // Color variable token
+        {
+            std::string buf = colorVariable;
+            std::replace( buf.begin(), buf.end(), 'X', 'x' );
+            std::replace( buf.begin(), buf.end(), 'Y', 'y' );
+            std::replace( buf.begin(), buf.end(), 'Z', 'z' );
+            var_c.push_back( m_particle_property->m_transfunc_synthesizer->convert_token( buf ) );
+        }
 
-        std::cout << "ColorFunction: " << colorFunction << std::endl;
-        std::cout << "ColorVariable: " << colorVariable << std::endl;
-        std::cout << "ColorRangeMode: " << colorRangeMode << std::endl;
-        std::cout << "ColorUserRangeMin/Max: " << colorUserMin << " / " << colorUserMax << std::endl;
-        std::cout << "ColorServerRangeMin/Max: " << colorServerMin << " / " << colorServerMax << std::endl;
+        // std::cout << "ColorFunction: " << colorFunction << std::endl;
+        // std::cout << "ColorVariable: " << colorVariable << std::endl;
+        // std::cout << "ColorRangeMode: " << static_cast<int>( colorRangeMode ) << std::endl;
+        // std::cout << "ColorUserRangeMin/Max: " << colorUserMin << " / " << colorUserMax << std::endl;
+        // std::cout << "ColorServerRangeMin/Max: " << colorServerMin << " / " << colorServerMax << std::endl;
 
+        // ColorMap table
         std::vector<vismodule::UInt8> c_table;
         if( tf.contains( Protocol::Key::ColorMap ) && tf[Protocol::Key::ColorMap].is_array() )
         {
-            std::cout << "ColorMap: ";
             for( const auto& rgbArr : tf[Protocol::Key::ColorMap] )
             {
                 if( rgbArr.is_array() && rgbArr.size() == 3 )
@@ -1214,93 +1217,109 @@ void Server::receiveTransferFunctionParameter( uWS::WebSocket<false, true, PerSo
                     c_table.push_back( r );
                     c_table.push_back( g );
                     c_table.push_back( b );
-                    std::cout << "(" << r << "," << g << "," << b << ") ";
                 }
             }
-            std::cout << std::endl;
         }
 
         if( tf.contains( Protocol::Key::ColorHistogram ) && tf[ Protocol::Key::ColorHistogram ].is_array() )
         {
-            std::cout << "ColorHistogram: ";
-            for( auto& v : tf[Protocol::Key::ColorHistogram]) std::cout << v.get<int>() << " " ;
+            for( auto& v : tf[Protocol::Key::ColorHistogram] ) std::cout << v.get<int>() << " ";
             std::cout << std::endl;
         }
 
         // Opacity
         std::string opacityFunction = tf.value( Protocol::Key::OpacityFunction, "O" + std::to_string( i + 1 ) );
         std::string opacityVariable = tf.value( Protocol::Key::OpacityVariable, "" );
-        int opacityRangeMode        = tf.value( Protocol::Key::OpacityRangeMode, 0 );
-        double opacityUserMin       = tf.value( Protocol::Key::OpacityUserRangeMin, 0.0 );
-        double opacityUserMax       = tf.value( Protocol::Key::OpacityUserRangeMax, 0.0 );
-        double opacityServerMin     = tf.value( Protocol::Key::OpacityServerRangeMin, 0.0 );
-        double opacityServerMax     = tf.value( Protocol::Key::OpacityServerRangeMax, 0.0 );
+        NamedTransferFunction::ServerRangeMode opacityRangeMode = static_cast<NamedTransferFunction::ServerRangeMode>( tf.value( Protocol::Key::ColorRangeMode, 0 ) );
+        double      opacityUserMin  = tf.value( Protocol::Key::OpacityUserRangeMin, 0.0 );
+        double      opacityUserMax  = tf.value( Protocol::Key::OpacityUserRangeMax, 0.0 );
+        double      opacityServerMin= tf.value( Protocol::Key::OpacityServerRangeMin, 0.0 );
+        double      opacityServerMax= tf.value( Protocol::Key::OpacityServerRangeMax, 1.0 );
 
-        m_particle_property->m_transfunc_array[i].m_opacity_variable     = opacityVariable;
+        m_particle_property->m_transfunc_array[i].m_opacity_variable = opacityVariable;
 
         switch ( static_cast<TransferFunction::RangeMode>( opacityRangeMode ) )
         {
         case TransferFunction::ServerSide:
-            m_particle_property->m_transfunc_array[i].m_server_opacity_range_mode = NamedTransferFunction::ServerRangeMode::ServerSide;
+            m_particle_property->m_transfunc_array[i].m_server_opacity_range_mode   = opacityRangeMode;
+            m_particle_property->m_transfunc_array[i].m_server_opacity_variable_min = opacityServerMin;
+            m_particle_property->m_transfunc_array[i].m_server_opacity_variable_max = opacityServerMax;
             break;
         case TransferFunction::UserRange:
-            m_particle_property->m_transfunc_array[i].m_server_opacity_range_mode = NamedTransferFunction::ServerRangeMode::UserRange;
-            m_particle_property->m_transfunc_array[i].m_user_opacity_variable_min = opacityUserMin;
-            m_particle_property->m_transfunc_array[i].m_user_opacity_variable_max = opacityUserMax;
+            m_particle_property->m_transfunc_array[i].m_server_opacity_range_mode   = opacityRangeMode;
+            m_particle_property->m_transfunc_array[i].m_user_opacity_variable_min   = opacityUserMin;
+            m_particle_property->m_transfunc_array[i].m_user_opacity_variable_max   = opacityUserMax;
             break;
         default:
             std::cout << "ERROR:Range Mode is unknown" << std::endl;
+            break;
         }
 
-        std::string opacityVariableSynthesizerBuf = opacityVariable;
-        std::replace( opacityVariableSynthesizerBuf.begin(), opacityVariableSynthesizerBuf.end(), 'X', 'x' );
-        std::replace( opacityVariableSynthesizerBuf.begin(), opacityVariableSynthesizerBuf.end(), 'Y', 'y' );
-        std::replace( opacityVariableSynthesizerBuf.begin(), opacityVariableSynthesizerBuf.end(), 'Z', 'z' );
-        var_o.push_back( m_particle_property->m_transfunc_synthesizer->convert_token( opacityVariableSynthesizerBuf ) );
+        // Opacity variable token
+        {
+            std::string buf = opacityVariable;
+            std::replace( buf.begin(), buf.end(), 'X', 'x' );
+            std::replace( buf.begin(), buf.end(), 'Y', 'y' );
+            std::replace( buf.begin(), buf.end(), 'Z', 'z' );
+            var_o.push_back( m_particle_property->m_transfunc_synthesizer->convert_token( buf ) );
+        }
 
-        std::cout << "OpacityFunction: " << opacityFunction << std::endl;
-        std::cout << "OpacityVariable: " << opacityVariable << std::endl;
-        std::cout << "OpacityRangeMode: " << opacityRangeMode << std::endl;
-        std::cout << "OpacityUserRangeMin/Max: " << opacityUserMin << " / " << opacityUserMax << std::endl;
-        std::cout << "OpacityServerRangeMin/Max: " << opacityServerMin << " / " << opacityServerMax << std::endl;
+        // std::cout << "OpacityFunction: " << opacityFunction << std::endl;
+        // std::cout << "OpacityVariable: " << opacityVariable << std::endl;
+        // std::cout << "OpacityRangeMode: " << static_cast<int>( opacityRangeMode ) << std::endl;
+        // std::cout << "OpacityUserRangeMin/Max: " << opacityUserMin << " / " << opacityUserMax << std::endl;
+        // std::cout << "OpacityServerRangeMin/Max: " << opacityServerMin << " / " << opacityServerMax << std::endl;
 
+        // OpacityMap table
         std::vector<float> o_table;
         if( tf.contains( Protocol::Key::OpacityMap ) && tf[Protocol::Key::OpacityMap].is_array() )
         {
-            std::cout << "OpacityMap: ";
             for( auto& v : tf[Protocol::Key::OpacityMap] )
             {
                 o_table.push_back( v.get<float>() );
-                std::cout << v.get<float>() << " ";
             }
-            std::cout << std::endl;
         }
 
-        if( tf.contains( Protocol::Key::OpacityHistogram ) && tf[Protocol::Key::OpacityHistogram].is_array() )
+        if( tf.contains( Protocol::Key::OpacityHistogram ) && tf[ Protocol::Key::OpacityHistogram ].is_array() )
         {
-            std::cout << "OpacityHistogram: ";
             for( auto& v : tf[Protocol::Key::OpacityHistogram] ) std::cout << v.get<int>() << " ";
             std::cout << std::endl;
         }
 
         vismodule::ValueArray<vismodule::UInt8> cc_table( c_table );
-        vismodule::ValueArray<float>            oo_table( o_table );
-
-        vismodule::ColorMap color_map( cc_table );
-        vismodule::OpacityMap opacity_map( oo_table );
-
-        if ( m_particle_property->m_transfunc_array[i].m_server_opacity_range_mode == NamedTransferFunction::ServerRangeMode::ServerSide )
+        vismodule::ColorMap   color_map( cc_table );
+        switch( m_particle_property->m_transfunc_array[i].m_server_color_range_mode )
         {
-            color_map.setRange( m_particle_property->m_transfunc_array[i].m_server_color_variable_min, m_particle_property->m_transfunc_array[i].m_server_color_variable_max );
-            opacity_map.setRange( m_particle_property->m_transfunc_array[i].m_server_opacity_variable_min, m_particle_property->m_transfunc_array[i].m_server_opacity_variable_max );
-        }
-        else
-        {
+        case NamedTransferFunction::ServerRangeMode::UserRange:
             color_map.setRange( m_particle_property->m_transfunc_array[i].m_user_color_variable_min, m_particle_property->m_transfunc_array[i].m_user_color_variable_max );
-            color_map.setRange( m_particle_property->m_transfunc_array[i].m_user_opacity_variable_min, m_particle_property->m_transfunc_array[i].m_user_opacity_variable_max );
-        }
+            break;
 
+        case NamedTransferFunction::ServerRangeMode::ServerSide:
+            color_map.setRange( m_particle_property->m_transfunc_array[i].m_server_color_variable_min, m_particle_property->m_transfunc_array[i].m_server_color_variable_max );
+            break;
+
+        default:
+            std::cout << "ERROR: Color RangeMode is unknown" << std::endl;
+            break;
+        }
         m_particle_property->m_transfunc_array[i].setColorMap( color_map );
+
+        vismodule::ValueArray<float> oo_table( o_table );
+        vismodule::OpacityMap opacity_map( oo_table );
+        switch( m_particle_property->m_transfunc_array[i].m_server_opacity_range_mode )
+        {
+        case NamedTransferFunction::ServerRangeMode::UserRange:
+            opacity_map.setRange( m_particle_property->m_transfunc_array[i].m_user_opacity_variable_min, m_particle_property->m_transfunc_array[i].m_user_opacity_variable_max );
+            break;
+
+        case NamedTransferFunction::ServerRangeMode::ServerSide:
+            opacity_map.setRange( m_particle_property->m_transfunc_array[i].m_server_opacity_variable_min, m_particle_property->m_transfunc_array[i].m_server_opacity_variable_max );
+            break;
+
+        default:
+            std::cout << "ERROR: Opacity RangeMode is unknown" << std::endl;
+            break;
+        }
         m_particle_property->m_transfunc_array[i].setOpacityMap( opacity_map );
     }
 
@@ -1349,10 +1368,6 @@ void Server::receiveTransferFunctionParameter( uWS::WebSocket<false, true, PerSo
     msg[Protocol::Key::ColorSynthesizer]    = received.value( Protocol::Key::ColorSynthesizer, "" );
     msg[Protocol::Key::OpacitySynthesizer]  = received.value( Protocol::Key::OpacitySynthesizer, "" );
     msg[Protocol::Key::Data]                = received[Protocol::Key::Data];
-
-    // デバッグ出力
-    std::cout << "Broadcasting Transfer Function:" << std::endl;
-    std::cout << msg.dump(4) << std::endl;
 
     ws->publish( "Notice", msg.dump(), uWS::OpCode::TEXT );
 }
@@ -1575,110 +1590,118 @@ void Server::requestDataAt( uWS::WebSocket<false, true, PerSocket>* ws, const nl
             m_u_web_sockets.publish( "AFTER", std::string_view( buffer.data(), buffer.size() ), uWS::OpCode::BINARY );
         } );
 
-        const int tf_resolution = 256;
-        const int tf_number     = m_particle_property->m_transfunc_array.size();
+        nlohmann::json msg;
+        msg[Protocol::Key::Event] = Protocol::Events::RequestDataAt;
 
-        for ( size_t i = 0; i < tf_number; i++ )
+        // Transfer Function Parameter
+        nlohmann::json transferFunctions = nlohmann::json::array();
+        const int tf_number              = m_particle_property->m_transfunc_array.size();
+        const int tf_resolution          = 256;
+
+        for( size_t i = 0; i < tf_number; ++i )
         {
-            // ServerRangeModeがサーバの場合, ColorMapのMinMaxを更新する
-            if ( m_particle_property->m_transfunc_array[i].m_server_color_range_mode == NamedTransferFunction::ServerRangeMode::ServerSide )
+            nlohmann::json tf;
+
+            // ---- Color ----
+            // tf[Protocol::Key::ColorFunction]       = "C" + std::to_string( i + 1 );
+            // tf[Protocol::Key::ColorVariable]       = m_particle_property->m_transfunc_array[i].m_color_variable;
+            tf[Protocol::Key::ColorRangeMode]      = static_cast<std::uint8_t>( m_particle_property->m_transfunc_array[i].m_server_color_range_mode );
+            tf[Protocol::Key::ColorUserRangeMin]   = m_particle_property->m_transfunc_array[i].userColorMinValue();
+            tf[Protocol::Key::ColorUserRangeMax]   = m_particle_property->m_transfunc_array[i].userColorMaxValue();
+            tf[Protocol::Key::ColorServerRangeMin] = m_particle_property->m_transfunc_array[i].serverColorMinValue(); // FIXME: m_particle_property->m_transfunc_array[i].serverColorMin();となるようにしてください
+            tf[Protocol::Key::ColorServerRangeMax] = m_particle_property->m_transfunc_array[i].serverColorMaxValue(); // FIXME: m_particle_property->m_transfunc_array[i].serverColorMax();となるようにしてください
+
+            // Color Histogram
             {
-                float color_min, color_max;
-                color_min = m_particle_property->m_transfunc_array[i].m_server_color_variable_min;
-                color_max = m_particle_property->m_transfunc_array[i].m_server_color_variable_max;
-                m_particle_property->m_transfunc_array[i].setColorRange( color_min, color_max );
+                nlohmann::json color_histogram_json = nlohmann::json::array();
+                const vismodule::UInt64* hist = m_particle_property->m_transfunc_array[i].colorHistogram();
+
+                for( int j = 0; j < tf_resolution; ++j )
+                {
+                    color_histogram_json.push_back( static_cast<int>( hist[j] ) );
+                }
+                tf[Protocol::Key::ColorHistogram] = color_histogram_json;
             }
-            // ServerRangeModeがサーバの場合, OpacityMapのMinMaxを更新する
-            if ( m_particle_property->m_transfunc_array[i].m_server_opacity_range_mode == NamedTransferFunction::ServerRangeMode::ServerSide )
+
+            // ---- Opacity ----
+            // tf[Protocol::Key::OpacityFunction]       = "O" + std::to_string( i + 1 );
+            // tf[Protocol::Key::OpacityVariable]       = m_particle_property->m_transfunc_array[i].m_opacity_variable;
+            tf[Protocol::Key::OpacityRangeMode]      = static_cast<std::uint8_t>( m_particle_property->m_transfunc_array[i].m_server_opacity_range_mode );
+            tf[Protocol::Key::OpacityUserRangeMin]   = m_particle_property->m_transfunc_array[i].userOpacityMinValue();
+            tf[Protocol::Key::OpacityUserRangeMax]   = m_particle_property->m_transfunc_array[i].userOpacityMaxValue();
+            tf[Protocol::Key::OpacityServerRangeMin] = m_particle_property->m_transfunc_array[i].serverOpacityMinValue();
+            tf[Protocol::Key::OpacityServerRangeMax] = m_particle_property->m_transfunc_array[i].serverOpacityMaxValue();
+
+            // Opacity Histogram
             {
-                float opacity_min, opacity_max;
-                opacity_min = m_particle_property->m_transfunc_array[i].m_server_opacity_variable_min;
-                opacity_max = m_particle_property->m_transfunc_array[i].m_server_opacity_variable_max;
-                m_particle_property->m_transfunc_array[i].setOpacityRange( opacity_min, opacity_max );
+                nlohmann::json opacity_histogram_json = nlohmann::json::array();
+                const vismodule::UInt64* hist = m_particle_property->m_transfunc_array[i].opacityHistogram();
+
+                for( int j = 0; j < tf_resolution; ++j )
+                {
+                    opacity_histogram_json.push_back( static_cast<int>( hist[j] ) );
+                }
+                tf[Protocol::Key::OpacityHistogram] = opacity_histogram_json;
             }
+
+            transferFunctions.push_back( tf );
         }
 
-        // クライアントに送信するhistogram, minmaxを作成する
-        std::vector<float> server_color_min_vec;
-        std::vector<float> server_color_max_vec;
-        std::vector<float> server_opacity_min_vec;
-        std::vector<float> server_opacity_max_vec;
-        std::vector<std::vector<vismodule::UInt64>> color_histogram_vec;
-        std::vector<std::vector<vismodule::UInt64>> opacity_histogram_vec;
+        nlohmann::json transferFunctionParameter;
+        transferFunctionParameter[Protocol::Key::Data]               = transferFunctions;
+        msg[Protocol::Key::TransferFunctionParameter]                = std::move( transferFunctionParameter );
 
-        server_color_min_vec.resize( tf_number );
-        server_color_max_vec.resize( tf_number );
-        server_opacity_min_vec.resize( tf_number );
-        server_opacity_max_vec.resize( tf_number );
-        color_histogram_vec.resize( tf_number );
-        opacity_histogram_vec.resize( tf_number );
-
-        for ( size_t i = 0; i < tf_number; i++ )
-        {
-            server_color_min_vec[i]   = m_particle_property->m_transfunc_array[i].m_server_color_variable_min;
-            server_color_max_vec[i]   = m_particle_property->m_transfunc_array[i].m_server_color_variable_max;
-            server_opacity_min_vec[i] = m_particle_property->m_transfunc_array[i].m_server_opacity_variable_min;
-            server_opacity_max_vec[i] = m_particle_property->m_transfunc_array[i].m_server_opacity_variable_max;
-
-            const vismodule::UInt64* color_histogram   = m_particle_property->m_transfunc_array[i].colorHistogram();
-            const vismodule::UInt64* opacity_histogram = m_particle_property->m_transfunc_array[i].opacityHistogram();
-
-            color_histogram_vec[i].resize( tf_resolution );
-            opacity_histogram_vec[i].resize( tf_resolution );
-
-            std::copy( color_histogram, color_histogram + tf_resolution, color_histogram_vec[i].begin() );
-            std::copy( opacity_histogram, opacity_histogram + tf_resolution, opacity_histogram_vec[i].begin() );
-        }
-
-        // ここでhistgram, minmaxを送信?
-        // nlohmann::json msg;
-        // msg[Protocol::Key::Event]           = Protocol::Events::HistgramAndMinMax;
-        // msd[Protocol::Key::ColorHistgram]   = color_histogram_vec;
-        // msd[Protocol::Key::OpacityHistgram] = opacity_histogram_vec;
-        // msd[Protocol::Key::ColorMin]        = server_color_min_vec;
-        // msd[Protocol::Key::ColorMax]        = server_color_max_vec;
-        // msd[Protocol::Key::OpacityMin]      = server_opacity_min_vec;
-        // msd[Protocol::Key::OpacityMax]      = server_opacity_max_vec;
-        // m_u_web_sockets.publish( "Notice", msg.dump(), uWS::OpCode::TEXT );
-        
-
-        // POL生成
-        if ( m_pol_property->m_plot_flag )
+        // Plot Over Line Prameter
+        if( m_pol_property->m_plot_flag )
         {
             std::unique_ptr<vismodule::KVSMLObjectPlotOverLine> kvsml_object_pol;
 
-            if ( m_server_mode == ServerMode::CS )
+            if( m_server_mode == ServerMode::CS )
             {
                 std::string file_path;
-                for ( const auto& info : *m_objects )
+                for( const auto& info : *m_objects )
                 {
-                    if ( info.format == ObjectInfoExtractor::Format::ClientServerPointObject ) file_path = Worker::toNativePath( info.directory );
-                    break;
+                    if( info.format == ObjectInfoExtractor::Format::ClientServerPointObject )
+                    {
+                        file_path = Worker::toNativePath( info.directory );
+                        break;
+                    }
                 }
                 kvsml_object_pol = GeneratePOLCS( file_path, timeStep, *m_pol_property, *m_multi_volume_property_list );
             }
-            else if ( m_server_mode == ServerMode::IS )
+            else if( m_server_mode == ServerMode::IS )
             {
                 kvsml_object_pol = GeneratePOLIS( timeStep, *m_pol_property, *m_multi_volume_property_list );
             }
 
-            // jsonの配列として送るためにValueArrayからvectorにコピー
-            const int resolution = kvsml_object_pol->values_on_line().size();
-            std::vector<float> values_on_line( resolution, 0 );
-            std::vector<bool>  mask;
-            std::vector<float> x_axis( resolution, 0 );
+            if( kvsml_object_pol )
+            {
+                const size_t resolution = kvsml_object_pol->values_on_line().size();
 
-            std::memcpy( values_on_line.data(), kvsml_object_pol->values_on_line().pointer(), kvsml_object_pol->values_on_line().byteSize() );
-            mask.assign( kvsml_object_pol->mask().pointer(), kvsml_object_pol->mask().pointer() + kvsml_object_pol->mask().byteSize() );
-            std::memcpy( x_axis.data(), kvsml_object_pol->x_axis().pointer(), kvsml_object_pol->x_axis().byteSize() );
+                std::vector<float>   values_on_line( resolution );
+                std::vector<float>   x_axis( resolution );
+                std::vector<uint8_t> mask_u8( resolution );
 
-            // FIXME:ここでPOLの配列をテキストで送信
-            // msg[Protocol::Key::Event]       = Protocol::Events::PlotOverLineGraph;
-            // msg[Protocol::Key::ValueOnLine] = values_on_line;
-            // msg[Protocol::Key::XAxis]       = mask;
-            // msg[Protocol::Key::Mask]        = x_axis;
-            // m_u_web_sockets.publish( "Notice", msg.dump(), uWS::OpCode::TEXT );
+                std::memcpy( values_on_line.data(), kvsml_object_pol->values_on_line().pointer(), kvsml_object_pol->values_on_line().byteSize() );
+
+                std::memcpy( x_axis.data(), kvsml_object_pol->x_axis().pointer(), kvsml_object_pol->x_axis().byteSize() );
+
+                const auto& m = kvsml_object_pol->mask();
+                const auto* mp = m.pointer();
+                for( size_t i = 0; i < resolution; ++i )
+                {
+                    mask_u8[i] = mp[i] ? 1 : 0;
+                }
+
+                nlohmann::json plotOverLineParameter;
+                plotOverLineParameter[Protocol::Key::ValueOnLine] = values_on_line;
+                plotOverLineParameter[Protocol::Key::XAxis]       = x_axis;
+                plotOverLineParameter[Protocol::Key::Mask]        = mask_u8;
+                msg[Protocol::Key::PlotOverLineParameter]         = std::move( plotOverLineParameter );
+            }
         }
+
+        m_u_web_sockets.publish( "Notice", msg.dump(), uWS::OpCode::TEXT );
     } );
     worker.process();
 }

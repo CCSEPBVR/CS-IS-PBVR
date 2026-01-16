@@ -196,6 +196,56 @@ void TransferFunctionEditor::onReceiveTransferFunctionParameter( const QString& 
     updateUI();
 }
 
+void TransferFunctionEditor::onReceiveRequestDataAtTransferFunctionParameter( const QJsonArray& dataArray )
+{
+    ui->numberOfTransferFunctionSpinBox->setValue( dataArray.size() );
+
+    for( int i = 0; i < dataArray.size(); ++i )
+    {
+        QJsonObject tf = dataArray[i].toObject();
+
+        // Color
+        // m_transfer_function->at( i ).color.variable                 = tf.value( QString::fromUtf8( Protocol::Key::ColorVariable ) ).toString().toUtf8().constData();
+        m_transfer_function->at( i ).color.rangeMode                = static_cast<TransferFunction::RangeMode>( tf.value( QString::fromUtf8( Protocol::Key::ColorRangeMode ) ).toInt() );
+        // m_transfer_function->at( i ).color.userDefinedMinMax.first  = tf.value( QString::fromUtf8( Protocol::Key::ColorUserRangeMin ) ).toDouble();
+        // m_transfer_function->at( i ).color.userDefinedMinMax.second = tf.value( QString::fromUtf8( Protocol::Key::ColorUserRangeMax ) ).toDouble();
+        m_transfer_function->at( i ).color.serverSideMinMax.first   = tf.value( QString::fromUtf8( Protocol::Key::ColorServerRangeMin ) ).toDouble();
+        m_transfer_function->at( i ).color.serverSideMinMax.second  = tf.value( QString::fromUtf8( Protocol::Key::ColorServerRangeMax ) ).toDouble();
+
+        std::vector<int> colorHistogramTemp;
+        const QJsonArray colorHistArr =
+            tf.value( QString::fromUtf8( Protocol::Key::ColorHistogram ) ).toArray();
+        colorHistogramTemp.reserve( colorHistArr.size() );
+
+        for( const QJsonValue& v : colorHistArr )
+        {
+            colorHistogramTemp.push_back( v.toInt() );
+        }
+        m_transfer_function->at( i ).color.histogram = colorHistogramTemp;
+
+        // Opacity
+        // m_transfer_function->at( i ).opacity.variable                 = tf.value( QString::fromUtf8( Protocol::Key::OpacityVariable ) ).toString().toUtf8().constData();
+        m_transfer_function->at( i ).opacity.rangeMode                = static_cast<TransferFunction::RangeMode>( tf.value( QString::fromUtf8( Protocol::Key::OpacityRangeMode ) ).toInt() );
+        // m_transfer_function->at( i ).opacity.userDefinedMinMax.first  = tf.value( QString::fromUtf8( Protocol::Key::OpacityUserRangeMin ) ).toDouble();
+        // m_transfer_function->at( i ).opacity.userDefinedMinMax.second = tf.value( QString::fromUtf8( Protocol::Key::OpacityUserRangeMax ) ).toDouble();
+        m_transfer_function->at( i ).opacity.serverSideMinMax.first   = tf.value( QString::fromUtf8( Protocol::Key::OpacityServerRangeMin ) ).toDouble();
+        m_transfer_function->at( i ).opacity.serverSideMinMax.second  = tf.value( QString::fromUtf8( Protocol::Key::OpacityServerRangeMax ) ).toDouble();
+
+        std::vector<int> opacityHistogramTemp;
+        const QJsonArray opacityHistArr =
+            tf.value( QString::fromUtf8( Protocol::Key::OpacityHistogram ) ).toArray();
+        opacityHistogramTemp.reserve( opacityHistArr.size() );
+
+        for( const QJsonValue& v : opacityHistArr )
+        {
+            opacityHistogramTemp.push_back( v.toInt() );
+        }
+        m_transfer_function->at( i ).opacity.histogram = opacityHistogramTemp;
+    }
+
+    updateUI();
+}
+
 void TransferFunctionEditor::onLoadParameter( const QString& filePath )
 {
     qDebug() << __FILE__ << ":" << __func__ << ":" << filePath;
@@ -382,38 +432,22 @@ void TransferFunctionEditor::applyTransferFunction()
     }
 
     QJsonArray transferFunctionsArray;
+
     for( int i = 0; i < m_transfer_function->count(); ++i )
     {
         QJsonObject tfObj;
-
-        QString colorName = QString( "C%1" ).arg( i + 1 );
-        tfObj[QString::fromUtf8( Protocol::Key::ColorFunction )] = colorName;
-        tfObj[QString::fromUtf8( Protocol::Key::ColorVariable )] = QString::fromUtf8( m_transfer_function->at( i ).color.variable );
-        // tfObj["TemporaryColorRangeMode"] = static_cast<int>( tf.color.rangeModeTemp );
-        // tfObj["CurrentColorRangeMode"] = static_cast<int>( tf.color.rangeModeCurrent );
-        // tfObj["ResultColorRangeMode"] = static_cast<int>( tf.color.rangeModeResult );
-        tfObj[QString::fromUtf8( Protocol::Key::ColorRangeMode )]       = m_transfer_function->at( i ).color.rangeMode;
-        tfObj[QString::fromUtf8( Protocol::Key::ColorUserRangeMin )]    = m_transfer_function->at( i ).color.userDefinedMinMax.first;
-        tfObj[QString::fromUtf8( Protocol::Key::ColorUserRangeMax )]    = m_transfer_function->at( i ).color.userDefinedMinMax.second;
-        // tfObj["ColorServerRangeMin"]    = m_transfer_function->at( i ).color.serverSideMinMax.first;
-        // tfObj["ColorServerRangeMax"]    = m_transfer_function->at( i ).color.serverSideMinMax.second;
-
-        QJsonArray colorMapArray;
-
-        const auto& map = m_transfer_function->at(i).color.map;
-        for( const auto& rgb : map )
-        {
-            QJsonObject rgbObj;
-            rgbObj[QString::fromUtf8( Protocol::Key::R )] = static_cast<int>( rgb.r() );
-            rgbObj[QString::fromUtf8( Protocol::Key::G )] = static_cast<int>( rgb.g() );
-            rgbObj[QString::fromUtf8( Protocol::Key::B )] = static_cast<int>( rgb.b() );
-            colorMapArray.append( rgbObj );
-        }
-
-        tfObj[QString::fromUtf8( Protocol::Key::ColorMap )] = colorMapArray;
+        // Color
+        const QString colorName = QStringLiteral( "C%1" ).arg( i + 1 );
+        tfObj[QString::fromUtf8( Protocol::Key::ColorFunction )]     = colorName;
+        tfObj[QString::fromUtf8( Protocol::Key::ColorVariable )]     = QString::fromUtf8( m_transfer_function->at( i ).color.variable );
+        tfObj[QString::fromUtf8( Protocol::Key::ColorRangeMode )]    = m_transfer_function->at( i ).color.rangeMode;
+        tfObj[QString::fromUtf8( Protocol::Key::ColorUserRangeMin )] = m_transfer_function->at( i ).color.userDefinedMinMax.first;
+        tfObj[QString::fromUtf8( Protocol::Key::ColorUserRangeMax )] = m_transfer_function->at( i ).color.userDefinedMinMax.second;
 
         QJsonArray colorArray;
-        for( const auto& c : m_transfer_function->at( i ).color.map )
+        const auto& cmap = m_transfer_function->at( i ).color.map;
+
+        for( const auto& c : cmap )
         {
             QJsonArray rgb;
             rgb.append( c.red() );
@@ -421,36 +455,35 @@ void TransferFunctionEditor::applyTransferFunction()
             rgb.append( c.blue() );
             colorArray.append( rgb );
         }
-        tfObj["ColorMap"] = colorArray;
 
-        QString opacityName = QString( "O%1" ).arg( i + 1 );
-        tfObj[QString::fromUtf8( Protocol::Key::OpacityFunction )] = opacityName.toUtf8().constData();
-        tfObj[QString::fromUtf8( Protocol::Key::OpacityVariable )] = QString::fromUtf8( m_transfer_function->at( i ).opacity.variable );
-        // tfObj["TemporaryOopacityRangeMode"] = static_cast<int>( tf.opacity.rangeModeTemp );
-        // tfObj["CurrentOpacityRangeMode"] = static_cast<int>( tf.opacity.rangeModeCurrent );
-        // tfObj["ResultOpacityRangeMode"] = static_cast<int>( tf.opacity.rangeModeResult );
-        tfObj[QString::fromUtf8( Protocol::Key::OpacityRangeMode )]     = m_transfer_function->at( i ).opacity.rangeMode;
-        tfObj[QString::fromUtf8( Protocol::Key::OpacityUserRangeMin )]  = m_transfer_function->at( i ).opacity.userDefinedMinMax.first;
-        tfObj[QString::fromUtf8( Protocol::Key::OpacityUserRangeMax )]  = m_transfer_function->at( i ).opacity.userDefinedMinMax.second;
-        // tfObj["OpacityServerRangeMin"]    = m_transfer_function->at( i ).opacity.serverSideMinMax.first;
-        // tfObj["OpacityServerRangeMax"]    = m_transfer_function->at( i ).opacity.serverSideMinMax.second;
+        tfObj[QString::fromUtf8( Protocol::Key::ColorMap )] = colorArray;
 
+        // Opacity
+        const QString opacityName = QStringLiteral( "O%1" ).arg( i + 1 );
+        tfObj[QString::fromUtf8( Protocol::Key::OpacityFunction )]     = opacityName;
+        tfObj[QString::fromUtf8( Protocol::Key::OpacityVariable )]     = QString::fromUtf8( m_transfer_function->at( i ).opacity.variable );
+        tfObj[QString::fromUtf8( Protocol::Key::OpacityRangeMode )]    = m_transfer_function->at( i ).opacity.rangeMode;
+        tfObj[QString::fromUtf8( Protocol::Key::OpacityUserRangeMin )] = m_transfer_function->at( i ).opacity.userDefinedMinMax.first;
+        tfObj[QString::fromUtf8( Protocol::Key::OpacityUserRangeMax )] = m_transfer_function->at( i ).opacity.userDefinedMinMax.second;
         QJsonArray opacityArray;
-        for( float v : m_transfer_function->at( i ).opacity.map )
+        const auto& omap = m_transfer_function->at( i ).opacity.map;
+        for( float v : omap )
         {
             opacityArray.append( v );
         }
         tfObj[QString::fromUtf8( Protocol::Key::OpacityMap )] = opacityArray;
-
+        // -------------------------
         transferFunctionsArray.append( tfObj );
+
+        const auto& testcmap = m_transfer_function->at(i).color.map;
+        const auto& testomap = m_transfer_function->at(i).opacity.map;
     }
 
     QJsonObject root;
-    root[QString::fromUtf8( Protocol::Key::Event )]               = QString::fromUtf8( Protocol::Events::TransferFunctionParameter );
-    root[QString::fromUtf8( Protocol::Key::ColorSynthesizer )]   = QString::fromUtf8( m_transfer_function->colorSynthesizer() );
+    root[QString::fromUtf8( Protocol::Key::Event )] = QString::fromUtf8( Protocol::Events::TransferFunctionParameter );
+    root[QString::fromUtf8( Protocol::Key::ColorSynthesizer )] = QString::fromUtf8( m_transfer_function->colorSynthesizer() );
     root[QString::fromUtf8( Protocol::Key::OpacitySynthesizer )] = QString::fromUtf8( m_transfer_function->opacitySynthesizer() );
-    root[QString::fromUtf8( Protocol::Key::Data )]                = transferFunctionsArray;
-
+    root[QString::fromUtf8( Protocol::Key::Data )] = transferFunctionsArray;
     m_web_sockets->text()->sendTextMessage( QJsonDocument( root ).toJson( QJsonDocument::Compact ) );
     emit transferFunctionUpdate();
 }

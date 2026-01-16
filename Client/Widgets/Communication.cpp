@@ -783,7 +783,26 @@ void Communication::onTextWebsocketMessageReceived( const QString& receivedMessa
     }
     else if( event == QString::fromUtf8( Protocol::Events::GlyphParameter ) )               receiveGlyphParameter( obj );
     else if( event == QString::fromUtf8( Protocol::Events::PlotOverLineParameter ) )        receivePlotOverLineParameter( obj );
-    else if( event == QString::fromUtf8( Protocol::Events::RequestDataAt ) )                requestDataAt( obj );
+    else if( event == QString::fromUtf8( Protocol::Events::RequestDataAt ) )
+    {
+        // TransferFunctionParameter
+        const auto tfKey = QString::fromUtf8( Protocol::Key::TransferFunctionParameter );
+        if( obj.contains( tfKey ) && obj.value( tfKey ).isObject() )
+        {
+            const QJsonObject transferFunctionObject = obj.value( tfKey ).toObject();;
+            const QJsonArray dataArray = transferFunctionObject.value( QString::fromUtf8( Protocol::Key::Data ) ).toArray();
+
+            emit receiveRequestDataAtTransferFunctionParameter( dataArray );
+        }
+
+        // PlotOverLineParameter
+        const auto polKey = QString::fromUtf8( Protocol::Key::PlotOverLineParameter );
+        if( obj.contains( polKey ) && obj.value( polKey ).isObject() )
+        {
+            const QJsonObject polObj = obj.value( polKey ).toObject();
+            emit receiveRequestDataAtPlotOverLineParameter( polObj );
+        }
+    }
     else if( event == QString::fromUtf8( Protocol::Events::TimeStepControlParameter ) )     receiveTimeStepControlParameter( obj );
     else emit updateStatusBarMessage( "Unknown event received. Please check that the client and server versions match." );
 }

@@ -250,27 +250,29 @@ void MainWindow::communicationInitialize()
         m_communication->adjustSize();
         addDockWidget( Qt::RightDockWidgetArea, m_communication );
         // FIXME:接続が汚すぎる
-        connect( m_communication, &Communication::updateStatusBarMessage                    , this                        , &MainWindow::onUpdateStatusBarMessage );
-        connect( m_communication, &Communication::updateServerState                         , this                        , &MainWindow::onUpdateServerState );
+        connect( m_communication, &Communication::updateStatusBarMessage                       , this                        , &MainWindow::onUpdateStatusBarMessage );
+        connect( m_communication, &Communication::updateServerState                            , this                        , &MainWindow::onUpdateServerState );
 
-        connect( m_communication, &Communication::receiveTimeStepControlParameter           , m_time_step_control_tool_bar, &TimeStepControlToolBar::onReceiveTimeStepControlParameter );
-        connect( m_communication, &Communication::updateOperatorState                       , m_time_step_control_tool_bar, &TimeStepControlToolBar::onOperatorStateUpdate );
-        connect( m_communication, &Communication::updateOperatorState                       , m_play_back_control_tool_bar, &PlayBackControlToolBar::onOperatorStateUpdate );
-        connect( m_communication, &Communication::updateOperatorState                       , m_glyph_editor              , &GlyphEditor::onOperatorStateUpdate );
-        connect( m_communication, &Communication::updateOperatorState                       , m_object_editor             , &ObjectEditor::onOperatorStateUpdate );
-        connect( m_communication, &Communication::updateOperatorState                       , m_plot_over_line_editor     , &PlotOverLineEditor::onOperatorStateUpdate );
-        connect( m_communication, &Communication::updateOperatorState                       , m_transfer_function_editor  , &TransferFunctionEditor::onOperatorStateUpdate );
-        connect( m_communication, &Communication::receiveTransferFunctionParameter          , m_transfer_function_editor  , &TransferFunctionEditor::onReceiveTransferFunctionParameter );
-        connect( m_communication, &Communication::receiveInitializeTransferFunctionParameter, m_transfer_function_editor  , &TransferFunctionEditor::onReceiveInitializeTransferFunctionParameter );
+        connect( m_communication, &Communication::receiveTimeStepControlParameter              , m_time_step_control_tool_bar, &TimeStepControlToolBar::onReceiveTimeStepControlParameter );
+        connect( m_communication, &Communication::updateOperatorState                          , m_time_step_control_tool_bar, &TimeStepControlToolBar::onOperatorStateUpdate );
+        connect( m_communication, &Communication::updateOperatorState                          , m_play_back_control_tool_bar, &PlayBackControlToolBar::onOperatorStateUpdate );
+        connect( m_communication, &Communication::updateOperatorState                          , m_glyph_editor              , &GlyphEditor::onOperatorStateUpdate );
+        connect( m_communication, &Communication::updateOperatorState                          , m_object_editor             , &ObjectEditor::onOperatorStateUpdate );
+        connect( m_communication, &Communication::updateOperatorState                          , m_plot_over_line_editor     , &PlotOverLineEditor::onOperatorStateUpdate );
+        connect( m_communication, &Communication::updateOperatorState                          , m_transfer_function_editor  , &TransferFunctionEditor::onOperatorStateUpdate );
+        connect( m_communication, &Communication::receiveTransferFunctionParameter             , m_transfer_function_editor  , &TransferFunctionEditor::onReceiveTransferFunctionParameter );
+        connect( m_communication, &Communication::receiveInitializeTransferFunctionParameter   , m_transfer_function_editor  , &TransferFunctionEditor::onReceiveInitializeTransferFunctionParameter );
+        connect( m_communication, &Communication::receiveRequestDataAtTransferFunctionParameter, m_transfer_function_editor  , &TransferFunctionEditor::onReceiveRequestDataAtTransferFunctionParameter );
 
-        connect( m_communication, &Communication::receiveGlyphParameter           , m_glyph_editor              , &GlyphEditor::onReceiveGlyphParameter );
+        connect( m_communication, &Communication::receiveGlyphParameter                        , m_glyph_editor              , &GlyphEditor::onReceiveGlyphParameter );
 
-        connect( m_communication, &Communication::unpack                          , m_object_editor             , &ObjectEditor::onUnpack );
-        connect( m_communication, &Communication::receiveSelectedFile             , m_object_editor             , &ObjectEditor::onReceiveSelectedFile );
-        connect( m_communication, &Communication::receiveObjectDelete             , m_object_editor             , &ObjectEditor::onReceiveObjectDelete );
-        connect( m_communication, &Communication::receiveObjectInfoParameter      , m_object_editor             , &ObjectEditor::onReceiveObjectInfoParameter );
+        connect( m_communication, &Communication::unpack                                       , m_object_editor             , &ObjectEditor::onUnpack );
+        connect( m_communication, &Communication::receiveSelectedFile                          , m_object_editor             , &ObjectEditor::onReceiveSelectedFile );
+        connect( m_communication, &Communication::receiveObjectDelete                          , m_object_editor             , &ObjectEditor::onReceiveObjectDelete );
+        connect( m_communication, &Communication::receiveObjectInfoParameter                   , m_object_editor             , &ObjectEditor::onReceiveObjectInfoParameter );
 
-        connect( m_communication, &Communication::receivePlotOverLineParameter    , m_plot_over_line_editor     , &PlotOverLineEditor::onReceivePlotOverLineParameter );
+        connect( m_communication, &Communication::receivePlotOverLineParameter                 , m_plot_over_line_editor     , &PlotOverLineEditor::onReceivePlotOverLineParameter );
+        connect( m_communication, &Communication::receiveRequestDataAtPlotOverLineParameter    , m_plot_over_line_editor     , &PlotOverLineEditor::onReceiveRequestDataAtPlotOverLineParameter );
 
         connect( m_communication_action, &QAction::triggered, this, &MainWindow::onCommunication );
     }

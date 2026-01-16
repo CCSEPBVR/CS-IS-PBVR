@@ -34,6 +34,7 @@ public slots:
     void onReset();
     void onReceiveInitializeTransferFunctionParameter( const QString& colorSynth, const QString& opacitySynth, const QJsonArray& dataArray );
     void onReceiveTransferFunctionParameter( const QString& colorSynth, const QString& opacitySynth, const QJsonArray& dataArray );
+    void onReceiveRequestDataAtTransferFunctionParameter( const QJsonArray& dataArray );
     // FIXME:KPI
     void onLoadParameter( const QString& filePath );
     void onSaveParameter( const QString& filePath );

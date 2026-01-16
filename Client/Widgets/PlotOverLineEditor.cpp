@@ -277,6 +277,41 @@ void PlotOverLineEditor::onReceivePlotOverLineParameter( const QJsonObject& plot
     onCreateLine();
 }
 
+void PlotOverLineEditor::onReceiveRequestDataAtPlotOverLineParameter( const QJsonObject& dataArray )
+{
+    const auto keyValue = QString::fromUtf8( Protocol::Key::ValueOnLine );
+    const auto keyXAxis = QString::fromUtf8( Protocol::Key::XAxis );
+    const auto keyMask  = QString::fromUtf8( Protocol::Key::Mask );
+
+    const QJsonArray valuesArr = dataArray.value( keyValue ).toArray();
+    const QJsonArray xAxisArr  = dataArray.value( keyXAxis ).toArray();
+    const QJsonArray maskArr   = dataArray.value( keyMask ).toArray();
+
+    std::vector<float> values_on_line;
+    values_on_line.reserve( valuesArr.size() );
+    for( const auto& v : valuesArr )
+    {
+        values_on_line.push_back( static_cast<float>( v.toDouble() ) );
+    }
+
+    std::vector<float> x_axis;
+    x_axis.reserve( xAxisArr.size() );
+    for( const auto& x : xAxisArr )
+    {
+        x_axis.push_back( static_cast<float>( x.toDouble() ) );
+    }
+
+    // ★ onSetPlotData が vector<bool> を要求しているので合わせる
+    std::vector<bool> mask;
+    mask.reserve( maskArr.size() );
+    for( const auto& m : maskArr )
+    {
+        mask.push_back( m.toInt() != 0 );
+    }
+
+    onSetPlotData( x_axis, mask, values_on_line );
+}
+
 void PlotOverLineEditor::onLoadParameter( const QString& filePath )
 {
     qDebug() << __FILE__ << ":" << __func__ << ":" << filePath;

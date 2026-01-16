@@ -121,6 +121,9 @@ inline constexpr std::string_view Resolution                = "Resolution";
 inline constexpr std::string_view Target                    = "Target";
 inline constexpr std::string_view StartCoords               = "StartCoords";
 inline constexpr std::string_view EndCoords                 = "EndCoords";
+inline constexpr std::string_view ValueOnLine               = "ValueOnLine";
+inline constexpr std::string_view XAxis                     = "XAxis";
+inline constexpr std::string_view Mask                      = "Mask";
 
 inline constexpr std::string_view TimeStep                  = "TimeStep";
 
