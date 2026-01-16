@@ -12,6 +12,7 @@
 #endif
 
 #include "Worker.h"
+#include "ServerUtils.h"
 
 #include "../../Shared/json.hpp"
 #include "../../Shared/JsonKeys.h"

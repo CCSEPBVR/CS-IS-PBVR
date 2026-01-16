@@ -40,8 +40,9 @@ signals:
     void updateOperatorState( bool operatorState ); // true:権限あり
     void requestDataAt( const QJsonObject& dataArray );
     void receiveRequestDataAtTransferFunctionParameter( const QJsonArray& dataArray );
-     void receiveRequestDataAtPlotOverLineParameter( const QJsonObject& dataArray );
+    void receiveRequestDataAtPlotOverLineParameter( const QJsonObject& dataArray );
     void receiveInitializeTransferFunctionParameter( const QString& colorSynth, const QString& opacitySynth, const QJsonArray& dataArray );
+    void receiveInitializePlotOverLineParameter( const QJsonObject& dataArray );
     void receiveSelectedFile( const QJsonObject& dataArray );
     void receiveObjectDelete( const QJsonObject& dataArray );
     void unpack( const QByteArray& binary );

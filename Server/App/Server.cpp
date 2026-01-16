@@ -745,9 +745,9 @@ void Server::initialize( uWS::WebSocket<false, true, PerSocket>* ws, const nlohm
         glyphParameter[Protocol::Key::Type]                 = m_glyph_property->m_glyph_type;
         glyphParameter[Protocol::Key::ScaleFactor]          = m_glyph_property->m_scale_factor;
 
-        glyphParameter[Protocol::Key::Direction1]           = m_glyph_property->m_direction_variable[0];
-        glyphParameter[Protocol::Key::Direction2]           = m_glyph_property->m_direction_variable[1];
-        glyphParameter[Protocol::Key::Direction3]           = m_glyph_property->m_direction_variable[2];
+        glyphParameter[Protocol::Key::Direction1]           = toVariableIndex( m_glyph_property->m_direction_variable[0] );
+        glyphParameter[Protocol::Key::Direction2]           = toVariableIndex( m_glyph_property->m_direction_variable[1] );
+        glyphParameter[Protocol::Key::Direction3]           = toVariableIndex( m_glyph_property->m_direction_variable[2] );
 
         glyphParameter[Protocol::Key::SizeMode]             = m_glyph_property->m_size_sampling_method;
         glyphParameter[Protocol::Key::SizeVariables]        = m_glyph_property->m_size_variable;
@@ -767,7 +767,7 @@ void Server::initialize( uWS::WebSocket<false, true, PerSocket>* ws, const nlohm
     nlohmann::json plotOverLineParameter;
     plotOverLineParameter[Protocol::Key::Enable]      = m_pol_property->m_plot_flag;
     plotOverLineParameter[Protocol::Key::Resolution]  = m_pol_property->m_sampling_size;
-    plotOverLineParameter[Protocol::Key::Target]      = m_pol_property->m_plot_variable;
+    plotOverLineParameter[Protocol::Key::Target]      = toVariableIndex( m_pol_property->m_plot_variable );
     plotOverLineParameter[Protocol::Key::StartCoords] = m_pol_property->m_start_point;
     plotOverLineParameter[Protocol::Key::EndCoords]   = m_pol_property->m_end_point;
     msg[Protocol::Key::PlotOverLineParameter]         = std::move( plotOverLineParameter );

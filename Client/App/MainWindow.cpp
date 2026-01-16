@@ -272,6 +272,7 @@ void MainWindow::communicationInitialize()
         connect( m_communication, &Communication::receiveObjectInfoParameter                   , m_object_editor             , &ObjectEditor::onReceiveObjectInfoParameter );
 
         connect( m_communication, &Communication::receivePlotOverLineParameter                 , m_plot_over_line_editor     , &PlotOverLineEditor::onReceivePlotOverLineParameter );
+        connect( m_communication, &Communication::receiveInitializePlotOverLineParameter       , m_plot_over_line_editor     , &PlotOverLineEditor::onReceiveInitializePlotOverLineParameter );
         connect( m_communication, &Communication::receiveRequestDataAtPlotOverLineParameter    , m_plot_over_line_editor     , &PlotOverLineEditor::onReceiveRequestDataAtPlotOverLineParameter );
 
         connect( m_communication_action, &QAction::triggered, this, &MainWindow::onCommunication );

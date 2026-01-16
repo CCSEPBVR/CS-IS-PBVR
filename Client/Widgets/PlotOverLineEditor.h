@@ -38,6 +38,7 @@ public slots:
     void onUpdateTranslation();
     void onSetPlotData( std::vector<float> xAxis, std::vector<bool> mask, std::vector<float> values );
     void onReceivePlotOverLineParameter( const QJsonObject& dataArray );
+    void onReceiveInitializePlotOverLineParameter( const QJsonObject& dataArray );
     void onReceiveRequestDataAtPlotOverLineParameter( const QJsonObject& dataArray );
     // FIXME:KPI
     void onLoadParameter( const QString& filePath );

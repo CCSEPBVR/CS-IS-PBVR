@@ -748,16 +748,10 @@ void Communication::onTextWebsocketMessageReceived( const QString& receivedMessa
 
         // PlotOverLineParameter
         const auto polKey = QString::fromUtf8( Protocol::Key::PlotOverLineParameter );
-        if( obj.contains( polKey ) && obj.value( polKey ).isObject() )
+        if( obj.contains( polKey ) && obj.value(polKey).isObject() )
         {
             const QJsonObject plotOverLineObject = obj.value( polKey ).toObject();
-
-            const bool enable          = plotOverLineObject.value( QString::fromUtf8( Protocol::Key::Enable ) ).toBool();
-            const int resolution       = plotOverLineObject.value( QString::fromUtf8( Protocol::Key::Resolution ) ).toInt();
-            const int target           = plotOverLineObject.value( QString::fromUtf8( Protocol::Key::Target ) ).toInt();
-
-            const QJsonValue start     = plotOverLineObject.value( QString::fromUtf8( Protocol::Key::StartCoords ) );
-            const QJsonValue end       = plotOverLineObject.value( QString::fromUtf8( Protocol::Key::EndCoords ) );
+            emit receiveInitializePlotOverLineParameter( plotOverLineObject );
         }
     }
     else if( event == QString::fromUtf8( Protocol::Events::Chat ) )                         chat( obj );

@@ -277,6 +277,44 @@ void PlotOverLineEditor::onReceivePlotOverLineParameter( const QJsonObject& plot
     onCreateLine();
 }
 
+void PlotOverLineEditor::onReceiveInitializePlotOverLineParameter( const QJsonObject& plotOverLineParameter )
+{
+    // Enable
+    ui->plotOverLineGroupBox->setChecked( plotOverLineParameter.value( QString::fromUtf8( Protocol::Key::Enable ) ).toBool() );
+
+    // Resolution
+    ui->resolutionSpinBox->setValue( plotOverLineParameter.value( QString::fromUtf8( Protocol::Key::Resolution ) ).toInt() );
+
+    // Target (0-based index)
+    const int targetIndex = plotOverLineParameter.value( QString::fromUtf8( Protocol::Key::Target ) ).toInt();
+
+    if( 0 <= targetIndex && targetIndex < ui->targetComboBox->count() )
+        ui->targetComboBox->setCurrentIndex( targetIndex );
+    else
+        qDebug() << "[PlotOverLineEditor] target index out of range:" << targetIndex;
+
+    // Start Coords
+    const QJsonArray start = plotOverLineParameter.value( QString::fromUtf8( Protocol::Key::StartCoords ) ).toArray();
+    if( start.size() == 3 )
+    {
+        ui->startCoordsXDoubleSpinBox->setValue( start.at(0).toDouble() );
+        ui->startCoordsYDoubleSpinBox->setValue( start.at(1).toDouble() );
+        ui->startCoordsZDoubleSpinBox->setValue( start.at(2).toDouble() );
+    }
+
+    // End Coords
+    const QJsonArray end = plotOverLineParameter.value( QString::fromUtf8( Protocol::Key::EndCoords ) ).toArray();
+    if( end.size() == 3 )
+    {
+        ui->endCoordsXDoubleSpinBox->setValue( end.at(0).toDouble() );
+        ui->endCoordsYDoubleSpinBox->setValue( end.at(1).toDouble() );
+        ui->endCoordsZDoubleSpinBox->setValue( end.at(2).toDouble() );
+    }
+
+    // NOTE:初回導通で線を引くことはできない。
+    // onCreateLine();
+}
+
 void PlotOverLineEditor::onReceiveRequestDataAtPlotOverLineParameter( const QJsonObject& dataArray )
 {
     const auto keyValue = QString::fromUtf8( Protocol::Key::ValueOnLine );
