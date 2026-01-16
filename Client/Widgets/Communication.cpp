@@ -706,10 +706,59 @@ void Communication::onTextWebsocketMessageReceived( const QString& receivedMessa
     else if( event == QString::fromUtf8( Protocol::Events::TransferOperator ) )             transferOperator( obj );
     else if( event == QString::fromUtf8( Protocol::Events::Initialize ) )
     {
-        QString colorSynth      = obj.value(QString::fromUtf8( Protocol::Key::ColorSynthesizer ) ).toString().toUtf8();
-        QString opacitySynth    = obj.value(QString::fromUtf8( Protocol::Key::OpacitySynthesizer ) ).toString().toUtf8();
-        QJsonArray dataArray    = obj.value(QString::fromUtf8( Protocol::Key::Data ) ).toArray();
-        emit receiveInitializeTransferFunctionParameter( colorSynth, opacitySynth, dataArray );
+        // TransferFunctionParameter
+        const auto tfKey = QString::fromUtf8( Protocol::Key::TransferFunctionParameter );
+        if( obj.contains( tfKey ) && obj.value( tfKey ).isObject() )
+        {
+            const QJsonObject transferFunctionObject = obj.value( tfKey ).toObject();
+
+            const QString colorSynth   = transferFunctionObject.value( QString::fromUtf8( Protocol::Key::ColorSynthesizer ) ).toString();
+            const QString opacitySynth = transferFunctionObject.value( QString::fromUtf8( Protocol::Key::OpacitySynthesizer ) ).toString();
+            const QJsonArray dataArray = transferFunctionObject.value( QString::fromUtf8( Protocol::Key::Data ) ).toArray();
+
+            emit receiveInitializeTransferFunctionParameter( colorSynth, opacitySynth, dataArray );
+        }
+
+        // GlyphParameter
+        const auto glyphKey = QString::fromUtf8( Protocol::Key::GlyphParameter );
+        if( obj.contains( glyphKey ) && obj.value( glyphKey ).isObject() )
+        {
+            const QJsonObject glyphObject = obj.value( glyphKey ).toObject();
+
+            const int type                 = glyphObject.value( QString::fromUtf8( Protocol::Key::Type ) ).toInt();
+            const double scaleFactor       = glyphObject.value( QString::fromUtf8( Protocol::Key::ScaleFactor ) ).toDouble();
+
+            const int direction1           = glyphObject.value( QString::fromUtf8( Protocol::Key::Direction1 ) ).toInt();
+            const int direction2           = glyphObject.value( QString::fromUtf8( Protocol::Key::Direction2 ) ).toInt();
+            const int direction3           = glyphObject.value( QString::fromUtf8( Protocol::Key::Direction3 ) ).toInt();
+
+            const int sizeMode             = glyphObject.value( QString::fromUtf8( Protocol::Key::SizeMode ) ).toInt();
+            const QJsonArray sizeVariables = glyphObject.value( QString::fromUtf8( Protocol::Key::SizeVariables ) ).toArray();
+
+            const int distributionMode     = glyphObject.value( QString::fromUtf8( Protocol::Key::DistributionMode ) ).toInt();
+            const int numberOfSamplePoints = glyphObject.value( QString::fromUtf8( Protocol::Key::NumberOfSamplePoints ) ).toInt();
+            const int seed                 = glyphObject.value( QString::fromUtf8( Protocol::Key::Seed ) ).toInt();
+            const int stride               = glyphObject.value( QString::fromUtf8( Protocol::Key::Stride ) ).toInt();
+
+            const QJsonValue colorMap      = glyphObject.value( QString::fromUtf8( Protocol::Key::ColorMap ) );
+
+            const int colorDataMode        = glyphObject.value( QString::fromUtf8( Protocol::Key::ColorDataMode ) ).toInt();
+            const QJsonArray colorDataVars = glyphObject.value( QString::fromUtf8( Protocol::Key::ColorDataVariables ) ).toArray();
+        }
+
+        // PlotOverLineParameter
+        const auto polKey = QString::fromUtf8( Protocol::Key::PlotOverLineParameter );
+        if( obj.contains( polKey ) && obj.value( polKey ).isObject() )
+        {
+            const QJsonObject plotOverLineObject = obj.value( polKey ).toObject();
+
+            const bool enable          = plotOverLineObject.value( QString::fromUtf8( Protocol::Key::Enable ) ).toBool();
+            const int resolution       = plotOverLineObject.value( QString::fromUtf8( Protocol::Key::Resolution ) ).toInt();
+            const int target           = plotOverLineObject.value( QString::fromUtf8( Protocol::Key::Target ) ).toInt();
+
+            const QJsonValue start     = plotOverLineObject.value( QString::fromUtf8( Protocol::Key::StartCoords ) );
+            const QJsonValue end       = plotOverLineObject.value( QString::fromUtf8( Protocol::Key::EndCoords ) );
+        }
     }
     else if( event == QString::fromUtf8( Protocol::Events::Chat ) )                         chat( obj );
     else if( event == QString::fromUtf8( Protocol::Events::SelectedFile ) )                 emit receiveSelectedFile( obj );

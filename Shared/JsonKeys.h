@@ -22,6 +22,11 @@ inline constexpr std::string_view VolumeDataFilePath        = "VolumeDataFilePat
 // Transfer Function File Path
 inline constexpr std::string_view TransferFunctionFilePath  = "TransferFunctionFilePath";
 
+// Initialize Parameter
+inline constexpr std::string_view TransferFunctionParameter = "TransferFunctionParameter";
+inline constexpr std::string_view GlyphParameter            = "GlyphParameter";
+inline constexpr std::string_view PlotOverLineParameter     = "PlotOverLineParameter";
+
 // Chat
 inline constexpr std::string_view Text                      = "Text";
 

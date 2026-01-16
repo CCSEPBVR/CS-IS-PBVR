@@ -727,36 +727,50 @@ void Server::initialize( uWS::WebSocket<false, true, PerSocket>* ws, const nlohm
     }
 
     nlohmann::json msg;
-    msg[Protocol::Key::Event]               = Protocol::Events::Initialize;
-    msg[Protocol::Key::ColorSynthesizer]    = m_particle_property->m_color_transfer_function_synthesis;
-    msg[Protocol::Key::OpacitySynthesizer]  = m_particle_property->m_opacity_transfer_function_synthesis;
-    msg[Protocol::Key::Data]                = transferFunctions;
+    msg[Protocol::Key::Event] = Protocol::Events::Initialize;
+
+    // TransferFunctionParameter
+    nlohmann::json transferFunctionParameter;
+    transferFunctionParameter[Protocol::Key::ColorSynthesizer]   = m_particle_property->m_color_transfer_function_synthesis;
+    transferFunctionParameter[Protocol::Key::OpacitySynthesizer] = m_particle_property->m_opacity_transfer_function_synthesis;
+    transferFunctionParameter[Protocol::Key::Data]               = transferFunctions;
+    msg[Protocol::Key::TransferFunctionParameter]                = std::move( transferFunctionParameter );
 
     // 成分数3以上の時, グリフパラメータを送信する
     if( m_multi_volume_property_list->m_total_number_ingredients >= 3 )
     {
-        msg[Protocol::Key::Type]                 = m_glyph_property->m_glyph_type;
-        msg[Protocol::Key::ScaleFactor]          = m_glyph_property->m_scale_factor;
-        msg[Protocol::Key::Direction1]           = m_glyph_property->m_direction_variable[0];
-        msg[Protocol::Key::Direction2]           = m_glyph_property->m_direction_variable[1];
-        msg[Protocol::Key::Direction3]           = m_glyph_property->m_direction_variable[2];
-        msg[Protocol::Key::SizeMode]             = m_glyph_property->m_size_sampling_method;
-        msg[Protocol::Key::SizeVariables]        = m_glyph_property->m_size_variable;
-        msg[Protocol::Key::DistributionMode]     = m_glyph_property->m_distribution_mode;
-        msg[Protocol::Key::NumberOfSamplePoints] = m_glyph_property->m_number_of_sampling_point;
-        msg[Protocol::Key::Seed]                 = m_glyph_property->m_seed;
-        msg[Protocol::Key::Stride]               = m_glyph_property->m_stride;
-        msg[Protocol::Key::ColorDataMode]        = m_glyph_property->m_color_data_sampling_method;
-        msg[Protocol::Key::ColorDataVariables]   = m_glyph_property->m_color_data_variable;
-        // msg[Protocol::Key::GlyphColorMapTable]   = m_glyph_property->m_glyph_color_map_table; // キーが存在しない
+        // GlyphParameter
+        nlohmann::json glyphParameter;
+
+        glyphParameter[Protocol::Key::Type]                 = m_glyph_property->m_glyph_type;
+        glyphParameter[Protocol::Key::ScaleFactor]          = m_glyph_property->m_scale_factor;
+
+        glyphParameter[Protocol::Key::Direction1]           = m_glyph_property->m_direction_variable[0];
+        glyphParameter[Protocol::Key::Direction2]           = m_glyph_property->m_direction_variable[1];
+        glyphParameter[Protocol::Key::Direction3]           = m_glyph_property->m_direction_variable[2];
+
+        glyphParameter[Protocol::Key::SizeMode]             = m_glyph_property->m_size_sampling_method;
+        glyphParameter[Protocol::Key::SizeVariables]        = m_glyph_property->m_size_variable;
+
+        glyphParameter[Protocol::Key::DistributionMode]     = m_glyph_property->m_distribution_mode;
+        glyphParameter[Protocol::Key::NumberOfSamplePoints] = m_glyph_property->m_number_of_sampling_point;
+        glyphParameter[Protocol::Key::Seed]                 = m_glyph_property->m_seed;
+        glyphParameter[Protocol::Key::Stride]               = m_glyph_property->m_stride;
+
+        glyphParameter[Protocol::Key::ColorMap]             = m_glyph_property->m_glyph_color_map_table;
+        glyphParameter[Protocol::Key::ColorDataMode]        = m_glyph_property->m_color_data_sampling_method;
+        glyphParameter[Protocol::Key::ColorDataVariables]   = m_glyph_property->m_color_data_variable;
+        msg[Protocol::Key::GlyphParameter]                  = std::move( glyphParameter );
     }
 
-    // POLパラメータを送信する
-    msg[Protocol::Key::Enable]      = m_pol_property->m_plot_flag;
-    msg[Protocol::Key::Resolution]  = m_pol_property->m_sampling_size;
-    msg[Protocol::Key::Target]      = m_pol_property->m_plot_variable;
-    msg[Protocol::Key::StartCoords] = m_pol_property->m_start_point;
-    msg[Protocol::Key::EndCoords]   = m_pol_property->m_end_point;
+    // PlotOverLineParameter
+    nlohmann::json plotOverLineParameter;
+    plotOverLineParameter[Protocol::Key::Enable]      = m_pol_property->m_plot_flag;
+    plotOverLineParameter[Protocol::Key::Resolution]  = m_pol_property->m_sampling_size;
+    plotOverLineParameter[Protocol::Key::Target]      = m_pol_property->m_plot_variable;
+    plotOverLineParameter[Protocol::Key::StartCoords] = m_pol_property->m_start_point;
+    plotOverLineParameter[Protocol::Key::EndCoords]   = m_pol_property->m_end_point;
+    msg[Protocol::Key::PlotOverLineParameter]         = std::move( plotOverLineParameter );
 
     m_u_web_sockets.publish( "Notice", msg.dump(), uWS::OpCode::TEXT );
 
