@@ -136,6 +136,7 @@ void ParameterFileReader::readParticleParameterFile( const char* fname )
 void ParameterFileReader::readGlyphParameterFile( const char* fname )
 {
     m_name_list_file.setName( "GLYPH_FLAG" );
+    m_name_list_file.setName( "SCALE_FACTOR" );
     m_name_list_file.setName( "STRIDE" );
     m_name_list_file.setName( "SEED" );
     m_name_list_file.setName( "NUMBER_OF_SMAPLING_POINT" );
@@ -508,6 +509,8 @@ void ParameterFileReader::setGlyphParameter( GlyphProperty& glyph_property )
         glyph_property.m_glyph_flag = false;
         return;
     }
+
+    glyph_property.m_scale_factor = m_name_list_file.getValue<float>("SCALE_FACTOR");
 
     const std::string size_sampling_method = m_name_list_file.getValue<std::string>("SIZE_SAMPLING_METHOD");
     if ( size_sampling_method == "Constant" )

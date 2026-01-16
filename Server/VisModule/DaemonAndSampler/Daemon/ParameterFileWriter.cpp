@@ -90,6 +90,7 @@ void ParameterFileWriter::getGlyphParameter( const GlyphProperty& glyph_property
     if ( glyph_property.m_glyph_flag ) glyph_flag = "TRUE"; 
 
     m_name_list_file.setLine( "GLYPH_FLAG", glyph_flag );
+    m_name_list_file.setLine( "SCALE_FACTOR", glyph_property.m_scale_factor );
     m_name_list_file.setLine( "STRIDE", glyph_property.m_stride );
     m_name_list_file.setLine( "SEED", glyph_property.m_seed );
     m_name_list_file.setLine( "NUMBER_OF_SMAPLING_POINT", glyph_property.m_number_of_sampling_point );
