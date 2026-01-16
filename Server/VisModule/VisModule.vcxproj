@@ -116,6 +116,7 @@
     <ClCompile Include="Visualization\Importer\UnstructuredVolumeImporter.cpp" />
     <ClCompile Include="Visualization\Mapper\CellByCellHistogram.cpp" />
     <ClCompile Include="Visualization\Mapper\CellByCellMetropolisSampling.cpp" />
+    <ClCompile Include="Visualization\Mapper\CellByCellMinMax.cpp" />
     <ClCompile Include="Visualization\Mapper\CellByCellRejectionSampling.cpp" />
     <ClCompile Include="Visualization\Mapper\CellByCellUniformSampling.cpp" />
     <ClCompile Include="Visualization\Mapper\ColorMap.cpp" />
@@ -243,6 +244,7 @@
     <ClInclude Include="Visualization\Importer\UnstructuredVolumeImporter.h" />
     <ClInclude Include="Visualization\Mapper\CellByCellHistogram.h" />
     <ClInclude Include="Visualization\Mapper\CellByCellMetropolisSampling.h" />
+    <ClInclude Include="Visualization\Mapper\CellByCellMinMax.h" />
     <ClInclude Include="Visualization\Mapper\CellByCellParticleGenerator.h" />
     <ClInclude Include="Visualization\Mapper\CellByCellUniformSampling.h" />
     <ClInclude Include="Visualization\Mapper\ColorMap.h" />

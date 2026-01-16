@@ -384,6 +384,9 @@
     <ClCompile Include="DaemonAndSampler\Daemon\InitialStep.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
+    <ClCompile Include="Visualization\Mapper\CellByCellMinMax.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DaemonAndSampler\Daemon\GenerateParticle.h">
@@ -765,6 +768,9 @@
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="DaemonAndSampler\Daemon\InitialStep.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Visualization\Mapper\CellByCellMinMax.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>
