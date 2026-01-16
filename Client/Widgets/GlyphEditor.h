@@ -30,6 +30,7 @@ public slots:
     void onReset();
     void onUpdateNumberOfVector( const int numberOfVector );
     void onReceiveGlyphParameter( const QJsonObject& dataArray );
+    void onReceiveInitializeGlyphParameter( const QJsonObject& dataArray );
     // FIXME:KPI
     void onLoadParameter( const QString& filePath );
     void onSaveParameter( const QString& filePath );

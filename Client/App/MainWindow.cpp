@@ -265,6 +265,7 @@ void MainWindow::communicationInitialize()
         connect( m_communication, &Communication::receiveRequestDataAtTransferFunctionParameter, m_transfer_function_editor  , &TransferFunctionEditor::onReceiveRequestDataAtTransferFunctionParameter );
 
         connect( m_communication, &Communication::receiveGlyphParameter                        , m_glyph_editor              , &GlyphEditor::onReceiveGlyphParameter );
+        connect( m_communication, &Communication::receiveInitializeGlyphParameter              , m_glyph_editor              , &GlyphEditor::onReceiveInitializeGlyphParameter );
 
         connect( m_communication, &Communication::unpack                                       , m_object_editor             , &ObjectEditor::onUnpack );
         connect( m_communication, &Communication::receiveSelectedFile                          , m_object_editor             , &ObjectEditor::onReceiveSelectedFile );

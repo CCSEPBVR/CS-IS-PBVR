@@ -261,6 +261,118 @@ void GlyphEditor::onReceiveGlyphParameter( const QJsonObject& glyphParameter )
     }
 }
 
+void GlyphEditor::onReceiveInitializeGlyphParameter( const QJsonObject& glyphParameter )
+{
+    // Type
+    ui->typeComboBox->setCurrentIndex( glyphParameter.value(QString::fromUtf8(Protocol::Key::Type)).toInt() );
+
+    // ScaleFactor
+    ui->scaleFactorDoubleSpinBox->setValue( glyphParameter.value(QString::fromUtf8(Protocol::Key::ScaleFactor)).toDouble() );
+
+    // Direction (0-based index)
+    ui->direction1ComboBox->setCurrentIndex( glyphParameter.value(QString::fromUtf8(Protocol::Key::Direction1)).toInt() );
+    ui->direction2ComboBox->setCurrentIndex( glyphParameter.value(QString::fromUtf8(Protocol::Key::Direction2)).toInt() );
+    ui->direction3ComboBox->setCurrentIndex( glyphParameter.value(QString::fromUtf8(Protocol::Key::Direction3)).toInt() );
+
+    // ---- Size ----
+    const int rawSizeMode = glyphParameter.value( QString::fromUtf8( Protocol::Key::SizeMode ) ).toInt();
+    // 1->0, 2->1 へ変換
+    const int fixedSizeMode = rawSizeMode - 1;
+    const auto sizeDataMode = static_cast<GlyphParameter::DataMode>( fixedSizeMode );
+
+    ui->sizeConstantRadioButton     ->setChecked( sizeDataMode == GlyphParameter::DataMode::Constant );
+    ui->sizeVariableArrayRadioButton->setChecked( sizeDataMode == GlyphParameter::DataMode::VariableArray );
+
+    const QJsonArray sizeVariables = glyphParameter.value( QString::fromUtf8( Protocol::Key::SizeVariables ) ).toArray();
+    ui->sizeNumberOfVariablesSpinBox->setValue( sizeVariables.size() );
+
+    int sizeComboIndex = 0;
+    for( int i = 0; i < ui->sizeVariableGridLayout->count() && sizeComboIndex < sizeVariables.size(); ++i )
+    {
+        auto* item = ui->sizeVariableGridLayout->itemAt( i );
+        if (!item) continue;
+
+        if( auto* cb = qobject_cast<QComboBox*>( item->widget() ) )
+        {
+            const QSignalBlocker b( cb );
+            cb->setCurrentIndex( sizeVariables.at( sizeComboIndex ).toInt() );
+            ++sizeComboIndex;
+        }
+    }
+
+    // ---- Distribution ----
+    const auto distributionMode = static_cast<GlyphParameter::DistributionMode>( glyphParameter.value(QString::fromUtf8(Protocol::Key::DistributionMode)).toInt() );
+
+    ui->uniformRadioButton->setChecked( distributionMode == GlyphParameter::DistributionMode::UniformDistribution );
+    ui->allPointsRadioButton->setChecked( distributionMode == GlyphParameter::DistributionMode::AllPoints );
+    ui->everyNthPointRadioButton->setChecked( distributionMode == GlyphParameter::DistributionMode::EveryNthPoints );
+
+    ui->numberOfSamplePointsSpinBox->setValue( glyphParameter.value( QString::fromUtf8( Protocol::Key::NumberOfSamplePoints ) ).toInt() );
+    ui->seedSpinBox->setValue( glyphParameter.value( QString::fromUtf8( Protocol::Key::Seed ) ).toInt() );
+    ui->strideSpinBox->setValue( glyphParameter.value( QString::fromUtf8( Protocol::Key::Stride ) ).toInt() );
+
+    // ---- ColorMap ----
+    const QJsonArray colorMapJson = glyphParameter.value( QString::fromUtf8( Protocol::Key::ColorMap ) ).toArray();
+
+    QVector<QColor> colors;
+
+    if( !colorMapJson.isEmpty() && colorMapJson.at(0).isObject() )
+    {
+        // 形式A: [{R,G,B}, ...]
+        colors.reserve( colorMapJson.size() );
+        for( const auto& c : colorMapJson )
+        {
+            const QJsonObject obj = c.toObject();
+            const int r = obj.value( QString::fromUtf8( Protocol::Key::R ) ).toInt();
+            const int g = obj.value( QString::fromUtf8( Protocol::Key::G ) ).toInt();
+            const int b = obj.value( QString::fromUtf8( Protocol::Key::B ) ).toInt();
+            colors.append( QColor( r, g, b ) );
+        }
+    }
+    else
+    {
+        // 形式B: [r,g,b,r,g,b,...]  ← あなたのログはこれ
+        const int n = colorMapJson.size() / 3;
+        colors.reserve( n );
+        for( int i = 0; i + 2 < colorMapJson.size(); i += 3 )
+        {
+            const int r = colorMapJson.at( i ).toInt();
+            const int g = colorMapJson.at( i + 1 ).toInt();
+            const int b = colorMapJson.at( i + 2 ).toInt();
+            colors.append( QColor( r, g, b ) );
+        }
+    }
+
+    ui->colorMap->setColors( colors );
+
+    // ---- ColorData ----
+    const int rawColorDataMode = glyphParameter.value( QString::fromUtf8( Protocol::Key::ColorDataMode ) ).toInt();
+    // 1->0, 2->1 へ変換
+    const int fixedColorDataMode = rawColorDataMode - 1;
+    const auto colorDataMode = static_cast<GlyphParameter::DataMode>( fixedColorDataMode );
+
+    ui->colorDataConstantRadioButton->setChecked( colorDataMode == GlyphParameter::DataMode::Constant );
+    ui->colorDataVariableArrayRadioButton->setChecked( colorDataMode == GlyphParameter::DataMode::VariableArray );
+
+    const QJsonArray colorDataVariables = glyphParameter.value( QString::fromUtf8( Protocol::Key::ColorDataVariables ) ).toArray();
+
+    ui->colorDataNumberOfVariablesSpinBox->setValue( colorDataVariables.size() );
+
+    int colorDataComboIndex = 0;
+    for( int i = 0; i < ui->colorDataVariableGridLayout->count() && colorDataComboIndex < colorDataVariables.size(); ++i )
+    {
+        auto* item = ui->colorDataVariableGridLayout->itemAt( i );
+        if( !item ) continue;
+
+        if( auto* cb = qobject_cast<QComboBox*>( item->widget() ) )
+        {
+            const QSignalBlocker b( cb );
+            cb->setCurrentIndex( colorDataVariables.at( colorDataComboIndex ).toInt() );
+            ++colorDataComboIndex;
+        }
+    }
+}
+
 void GlyphEditor::onLoadParameter( const QString& filePath )
 {
     qDebug() << __FILE__ << ":" << __func__ << ":" << filePath;

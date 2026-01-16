@@ -742,25 +742,41 @@ void Server::initialize( uWS::WebSocket<false, true, PerSocket>* ws, const nlohm
         // GlyphParameter
         nlohmann::json glyphParameter;
 
-        glyphParameter[Protocol::Key::Type]                 = m_glyph_property->m_glyph_type;
-        glyphParameter[Protocol::Key::ScaleFactor]          = m_glyph_property->m_scale_factor;
+        glyphParameter[Protocol::Key::Type]        = m_glyph_property->m_glyph_type;
+        glyphParameter[Protocol::Key::ScaleFactor] = m_glyph_property->m_scale_factor;
 
-        glyphParameter[Protocol::Key::Direction1]           = toVariableIndex( m_glyph_property->m_direction_variable[0] );
-        glyphParameter[Protocol::Key::Direction2]           = toVariableIndex( m_glyph_property->m_direction_variable[1] );
-        glyphParameter[Protocol::Key::Direction3]           = toVariableIndex( m_glyph_property->m_direction_variable[2] );
+        glyphParameter[Protocol::Key::Direction1]  = toVariableIndex( m_glyph_property->m_direction_variable[0] );
+        glyphParameter[Protocol::Key::Direction2]  = toVariableIndex( m_glyph_property->m_direction_variable[1] );
+        glyphParameter[Protocol::Key::Direction3]  = toVariableIndex( m_glyph_property->m_direction_variable[2] );
 
-        glyphParameter[Protocol::Key::SizeMode]             = m_glyph_property->m_size_sampling_method;
-        glyphParameter[Protocol::Key::SizeVariables]        = m_glyph_property->m_size_variable;
+        glyphParameter[Protocol::Key::SizeMode] = m_glyph_property->m_size_sampling_method;
+        {
+            nlohmann::json sizeVarArray = nlohmann::json::array();
+            for( const auto& var : m_glyph_property->m_size_variable )
+            {
+                sizeVarArray.push_back( toVariableIndex( var ) );
+            }
+            glyphParameter[Protocol::Key::SizeVariables] = std::move( sizeVarArray );
+        }
 
         glyphParameter[Protocol::Key::DistributionMode]     = m_glyph_property->m_distribution_mode;
         glyphParameter[Protocol::Key::NumberOfSamplePoints] = m_glyph_property->m_number_of_sampling_point;
         glyphParameter[Protocol::Key::Seed]                 = m_glyph_property->m_seed;
         glyphParameter[Protocol::Key::Stride]               = m_glyph_property->m_stride;
 
-        glyphParameter[Protocol::Key::ColorMap]             = m_glyph_property->m_glyph_color_map_table;
-        glyphParameter[Protocol::Key::ColorDataMode]        = m_glyph_property->m_color_data_sampling_method;
-        glyphParameter[Protocol::Key::ColorDataVariables]   = m_glyph_property->m_color_data_variable;
-        msg[Protocol::Key::GlyphParameter]                  = std::move( glyphParameter );
+        glyphParameter[Protocol::Key::ColorMap]      = m_glyph_property->m_glyph_color_map_table;
+        glyphParameter[Protocol::Key::ColorDataMode] = m_glyph_property->m_color_data_sampling_method;
+
+        {
+            nlohmann::json colorVarArray = nlohmann::json::array();
+            for( const auto& var : m_glyph_property->m_color_data_variable )
+            {
+                colorVarArray.push_back( toVariableIndex( var ) );
+            }
+            glyphParameter[Protocol::Key::ColorDataVariables] = std::move( colorVarArray );
+        }
+
+        msg[Protocol::Key::GlyphParameter] = std::move( glyphParameter );
     }
 
     // PlotOverLineParameter

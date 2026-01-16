@@ -724,26 +724,7 @@ void Communication::onTextWebsocketMessageReceived( const QString& receivedMessa
         if( obj.contains( glyphKey ) && obj.value( glyphKey ).isObject() )
         {
             const QJsonObject glyphObject = obj.value( glyphKey ).toObject();
-
-            const int type                 = glyphObject.value( QString::fromUtf8( Protocol::Key::Type ) ).toInt();
-            const double scaleFactor       = glyphObject.value( QString::fromUtf8( Protocol::Key::ScaleFactor ) ).toDouble();
-
-            const int direction1           = glyphObject.value( QString::fromUtf8( Protocol::Key::Direction1 ) ).toInt();
-            const int direction2           = glyphObject.value( QString::fromUtf8( Protocol::Key::Direction2 ) ).toInt();
-            const int direction3           = glyphObject.value( QString::fromUtf8( Protocol::Key::Direction3 ) ).toInt();
-
-            const int sizeMode             = glyphObject.value( QString::fromUtf8( Protocol::Key::SizeMode ) ).toInt();
-            const QJsonArray sizeVariables = glyphObject.value( QString::fromUtf8( Protocol::Key::SizeVariables ) ).toArray();
-
-            const int distributionMode     = glyphObject.value( QString::fromUtf8( Protocol::Key::DistributionMode ) ).toInt();
-            const int numberOfSamplePoints = glyphObject.value( QString::fromUtf8( Protocol::Key::NumberOfSamplePoints ) ).toInt();
-            const int seed                 = glyphObject.value( QString::fromUtf8( Protocol::Key::Seed ) ).toInt();
-            const int stride               = glyphObject.value( QString::fromUtf8( Protocol::Key::Stride ) ).toInt();
-
-            const QJsonValue colorMap      = glyphObject.value( QString::fromUtf8( Protocol::Key::ColorMap ) );
-
-            const int colorDataMode        = glyphObject.value( QString::fromUtf8( Protocol::Key::ColorDataMode ) ).toInt();
-            const QJsonArray colorDataVars = glyphObject.value( QString::fromUtf8( Protocol::Key::ColorDataVariables ) ).toArray();
+            emit receiveInitializeGlyphParameter( glyphObject );
         }
 
         // PlotOverLineParameter

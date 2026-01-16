@@ -42,6 +42,7 @@ signals:
     void receiveRequestDataAtTransferFunctionParameter( const QJsonArray& dataArray );
     void receiveRequestDataAtPlotOverLineParameter( const QJsonObject& dataArray );
     void receiveInitializeTransferFunctionParameter( const QString& colorSynth, const QString& opacitySynth, const QJsonArray& dataArray );
+    void receiveInitializeGlyphParameter( const QJsonObject& dataArray );
     void receiveInitializePlotOverLineParameter( const QJsonObject& dataArray );
     void receiveSelectedFile( const QJsonObject& dataArray );
     void receiveObjectDelete( const QJsonObject& dataArray );
