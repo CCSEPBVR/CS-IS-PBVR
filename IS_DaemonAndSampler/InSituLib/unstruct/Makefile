@@ -46,7 +46,7 @@ endif
 CXXFLAGS += -I../shared
 CXXFLAGS += -I${KVS_SOURCE_DIR}
 CXXFLAGS += -I${FUNCTION_PARSER_DIR}
-CXXFLAGS += -w -DNO_CLIENT
+CXXFLAGS += -w -DNO_CLIENT -qopt-report=5 -qopt-report-phase=vec
 
 ifeq ($(VTK_PATH), true)
 CXXFLAGS += -DVTK

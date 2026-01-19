@@ -74,6 +74,8 @@ public:
 
     const kvs::Real32 volume() const;
 
+    void volumeArray(const int loop_cnt, float* vol_array) const;
+
     void setLocalGravityPoint() const;
 };
 
@@ -854,6 +856,52 @@ inline const kvs::Real32 HexahedralCell<T>::volume() const
     const float resolution3 = resolution * resolution * resolution;
     return sum_metric / resolution3;
 }
+
+template <typename T>
+inline void HexahedralCell<T>::volumeArray(const int loop_cnt, float* vol_array ) const
+{
+    const size_t resolution = 3;
+    const float sampling_length = 1.0f / ( float )resolution;
+    const float adjustment = sampling_length * 0.5f;
+        
+//#pragma omp simd  
+    for (int id = 0; id< loop_cnt; id++)
+    {
+        for (int j =0; j< BaseClass::m_nnodes; j++ )
+        {
+		    BaseClass::m_vertices[j]                 =  BaseClass::m_vertices_array[j][id]; 
+        }
+        kvs::Vector3f sampling_position( -adjustment, -adjustment, -adjustment );
+        float sum_metric = 0;
+        for ( size_t k = 0 ; k < resolution ; k++ )
+        {
+            sampling_position[ 2 ] +=  sampling_length;
+            for ( size_t j = 0 ; j < resolution ; j++ )
+            {
+                sampling_position[ 1 ] += sampling_length;
+                for ( size_t i = 0 ; i < resolution ; i++ )
+                {
+                    sampling_position[ 0 ] += sampling_length;
+
+                    this->setLocalPoint( sampling_position );
+                    //const kvs::Matrix33f J = BaseClass::jacobiMatrix();
+                    const kvs::Matrix33f J = BaseClass::JacobiMatrix();
+                    const float metric_element = J.determinant();
+
+                    sum_metric += kvs::Math::Abs<float>( metric_element );
+                }
+                sampling_position[ 0 ] = -adjustment;
+            }
+            sampling_position[ 1 ] = -adjustment;
+        }
+
+        const float resolution3 = resolution * resolution * resolution;
+        vol_array[id] = sum_metric / resolution3;
+    }
+
+
+}
+
 
 /*===========================================================================*/
 /**

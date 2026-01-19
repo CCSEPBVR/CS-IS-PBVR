@@ -3048,7 +3048,7 @@ void ens_OutputParticles(int time_step, int nvariables, pbvr_parameters& particl
         }
     }
 
-#if  1
+#if  0
     if (skip_flag)
     {
     //　歪度のファイル出力
@@ -3380,6 +3380,7 @@ void EnsembleGenerateParticles( int time_step,
             }
         case pbvr::VolumeObjectBase::Hexahedra:
             {
+                if (mpi_rank == 0) std::cout << "celltype: Hexahedra " << std::endl; 
                 for ( int i = 0; i < max_threads; i++ )
                 {
                      cell[i]  = new pbvr::HexahedralCell<Type>( values[0], coordinates, ncoords, connections, ncells );
@@ -3416,8 +3417,8 @@ void EnsembleGenerateParticles( int time_step,
 
 //    float max_opacity              = 0.98;
     // Hydrogen
-    const float min_value = 0;
-    const float max_value = 255;
+    const float min_value = -5;
+    const float max_value = 10;
     const float var_min_value = 0;
     const float var_max_value = 1;
 ////    // spx 
@@ -3437,11 +3438,14 @@ void EnsembleGenerateParticles( int time_step,
     kvs::ColorMap color_map( cc_table, min_value, max_value  );
 //    kvs::OpacityMap opacity_map( tf_resolution, min_value, max_value );
 //    auto tf = kvs::TransferFunction( color_map );
-   
+ 
+//  tf のハードコーディング 
 //	kvs::ColorMap color_map;
-    auto tf = pbvr::TransferFunction( tf_resolution );
-    tf.setColorMap(color_map) ;
-    tf.setRange(min_value, max_value);
+//    auto tf = pbvr::TransferFunction( tf_resolution );
+//    tf.setColorMap(color_map) ;
+//    tf.setRange(min_value, max_value);
+//  .tfファイルを参照
+    auto tf = particleBase.m_tf[0];
     const float max_range =  tf_resolution - 1 ;
     const float normalize_factor = max_range / ( max_value - min_value );
 //    int NP_in_cell[ncells];
@@ -3510,13 +3514,18 @@ void EnsembleGenerateParticles( int time_step,
             th_timer.start();
 
             cell[thid]->bindCellArray( remain, cell_index );
+
             th_timer.stop();
             timeN[1] += th_timer.sec();
             th_timer.start();
+
             cell[thid]->volumeArray( remain, volume_array);
+
             th_timer.stop();
             timeN[2] += th_timer.sec();
             th_timer.start();
+
+           
             //生成粒子数を計算
             #pragma simd
             for(int cell_BLK = 0; cell_BLK < remain; cell_BLK++ )
@@ -3739,10 +3748,10 @@ void EnsembleGenerateParticles( int time_step,
     th_timer.start();
 //    if (thid <  12 )
 //    {
-        for (int i =0;i < 12; i++)
-        {
-            std::cout << mpi_rank <<  ": ave_sampling_time["<< i <<"] =" << timeN[i] << std::endl;
-        }
+//        for (int i =0;i < 12; i++)
+//        {
+//            std::cout << mpi_rank <<  ": ave_sampling_time["<< i <<"] =" << timeN[i] << std::endl;
+//        }
     
 //    }
 }  //end omp loop
@@ -3992,10 +4001,10 @@ void EnsembleGenerateParticles( int time_step,
 //        std::cout << mpi_rank <<  ": bindcell_time =" << time3 << std::endl; 
 //        std::cout << mpi_rank <<  ": calc_time =" << time4 << std::endl; 
 //        std::cout << mpi_rank <<  ": move_time =" << time5 << std::endl; 
-        for (int i =0;i < 7; i++)
-        {
-            std::cout << mpi_rank <<  ": ave_calc_time["<< i <<"] =" << timeN[i] << std::endl;
-        }
+//        for (int i =0;i < 7; i++)
+//        {
+//            std::cout << mpi_rank <<  ": ave_calc_time["<< i <<"] =" << timeN[i] << std::endl;
+//        }
 
 
 
@@ -4236,13 +4245,13 @@ void EnsembleGenerateParticles( int time_step,
        }
                 th_timer.stop();
                 th_timeN[10] += th_timer.sec();
-#pragma omp critical
-                {    
-                    for (int i =0;i < 11; i++)
-                    {
-                        std::cout << mpi_rank <<  ": ave_rejection_time["<< i <<"] =" << th_timeN[i] << std::endl;
-                    }
-                }
+//#pragma omp critical
+//                {    
+//                    for (int i =0;i < 11; i++)
+//                    {
+//                        std::cout << mpi_rank <<  ": ave_rejection_time["<< i <<"] =" << th_timeN[i] << std::endl;
+//                    }
+//                }
 
 }
        timer.stop();
@@ -4253,9 +4262,9 @@ void EnsembleGenerateParticles( int time_step,
     std::cout << mpi_rank <<  ": nparticles : " <<  size/3   << std::endl;
 
 //    // 平均値データを集約する
-//    particleBase.m_sample_coords.insert(particleBase.m_sample_coords.end()  , average_coords.begin() , average_coords.end());
-//    particleBase.m_sample_colors.insert(particleBase.m_sample_colors.end()  , average_colors.begin() , average_colors.end());
-//    particleBase.m_sample_normals.insert(particleBase.m_sample_normals.end(), average_normals.begin(), average_normals.end());
+    particleBase.m_sample_coords.insert(particleBase.m_sample_coords.end()  , average_coords.begin() , average_coords.end());
+    particleBase.m_sample_colors.insert(particleBase.m_sample_colors.end()  , average_colors.begin() , average_colors.end());
+    particleBase.m_sample_normals.insert(particleBase.m_sample_normals.end(), average_normals.begin(), average_normals.end());
 
 //#if 0
     // 分散を計算する
@@ -4386,11 +4395,11 @@ void EnsembleGenerateParticles( int time_step,
                 th_timer.start();
           }
 #endif
-    #pragma omp critical
-        for (int i =0;i < 7; i++)
-        {
-            std::cout << mpi_rank <<  ": var_sampling_time["<< i <<"] =" << th_timeN[i] << std::endl;
-        }
+//    #pragma omp critical
+//        for (int i =0;i < 7; i++)
+//        {
+//            std::cout << mpi_rank <<  ": var_sampling_time["<< i <<"] =" << th_timeN[i] << std::endl;
+//        }
 }
            vertex_cellids = average_cellids;
            vertex_coords  = average_coords;
@@ -4910,7 +4919,7 @@ void EnsembleGenerateParticles( int time_step,
     particleBase.m_varience_colors.insert( particleBase.m_varience_colors.end()  , var_colors.begin() , var_colors.end());
     particleBase.m_varience_normals.insert(particleBase.m_varience_normals.end(), var_normals.begin(), var_normals.end());
 
-
+# if 0
     // 歪度を計算する (法線計算は除外)
 
     //分散値データ配列の受け渡し
@@ -5343,7 +5352,7 @@ void EnsembleGenerateParticles( int time_step,
     particleBase.m_skewness_coords.insert( particleBase.m_skewness_coords.end()  , skewness_coords.begin() , skewness_coords.end());
     particleBase.m_skewness_colors.insert( particleBase.m_skewness_colors.end()  , skewness_colors.begin() , skewness_colors.end());
     particleBase.m_skewness_normals.insert(particleBase.m_skewness_normals.end() , skewness_normals.begin(), skewness_normals.end());
-
+#endif
 
     int tf_number = nvariables;
     int nbins =256;
