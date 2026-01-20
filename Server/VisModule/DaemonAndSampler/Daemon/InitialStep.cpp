@@ -190,8 +190,9 @@ void InitialStepCS(
     std::fill_n( tmp_max, tf_number * 2, FLT_MIN );
     std::fill_n( tmp_min, tf_number * 2, FLT_MAX );
 
-    // サンプリングメソッド
+    // サンプリングメソッドをMinMax用に一時的に変更
     tmp_sampling_method = particle_property.m_sampling_method;
+    particle_property.m_sampling_method ='x';
 
     jd.initialize(
         time_step,
@@ -203,26 +204,6 @@ void InitialStepCS(
         particle_property.m_job_id_pack_size
     );
 
-    // server_side_range_modeかの判定 
-    bool server_side_range_mode =false;
-    for ( size_t i = 0; i < tf_number; i++ )
-    {   
-       if (particle_property.m_transfunc_array[i].m_server_color_range_mode  == NamedTransferFunction::ServerRangeMode::ServerSide &&
-               server_side_range_mode == false) 
-       {
-            server_side_range_mode =true;
-       }
-       if (particle_property.m_transfunc_array[i].m_server_opacity_range_mode  == NamedTransferFunction::ServerRangeMode::ServerSide &&
-               server_side_range_mode == false) 
-       {
-            server_side_range_mode =true;
-       }
-    }
-
-    if( server_side_range_mode )
-    {
-        std::cout << "select server_side_range_mode !" << std::endl;
-    particle_property.m_sampling_method ='x'; 
     while ( jd.dispatchNext( wid, &st, &vl ) )
     {
         vismodule::PointObject* recv_obj = new vismodule::PointObject;
@@ -330,9 +311,6 @@ void InitialStepCS(
                 nan_error = true;
             }
             // generate point object end
-
-//            MakeHistgram( send_obj, tf_number, tmp_c_bins, tmp_o_bins );
-            MakeParticleMinMax( particle_property.m_transfunc_synthesizer, tf_number, tmp_max, tmp_min );
         } // make point object and histgram and range
 
         delete send_obj;
@@ -347,20 +325,40 @@ void InitialStepCS(
         MPI_Allreduce( MPI_IN_PLACE, tmp_min, ( tf_number * 2 ), MPI_FLOAT, MPI_MIN, MPI_COMM_WORLD );
     }
 #endif
-    }
 
     // min,maxの更新
     MakeParticleMinMax( particle_property.m_transfunc_synthesizer, tf_number, tmp_max, tmp_min );
+
+    vr = setVariablerange2( tmp_max, tmp_min, tf_number );
+    vr.show();
+
     for( size_t i = 0; i < tf_number; i++ )
     {
-        if( particle_property.m_transfunc_array[i].m_server_color_range_mode ==  NamedTransferFunction::ServerRangeMode::ServerSide)
-        particle_property.m_transfunc_array[i].setColorRange(  tmp_min[2*i + 1],tmp_max[2*i + 1]);
-        if( particle_property.m_transfunc_array[i].m_server_opacity_range_mode ==  NamedTransferFunction::ServerRangeMode::ServerSide)
-        particle_property.m_transfunc_array[i].setOpacityRange(tmp_min[2*i    ],tmp_max[2*i    ]);
+        std::stringstream ss; 
+        ss << (i + 1); 
+        const std::string idxbuf = ss.str();
+
+        float color_variable_min   = vr.min( "t" + idxbuf + "_var_c" );
+        float color_variable_max   = vr.max( "t" + idxbuf + "_var_c" );
+        float opacity_variable_min = vr.min( "t" + idxbuf + "_var_o" );
+        float opacity_variable_max = vr.max( "t" + idxbuf + "_var_o" );
+
+        // MinMaxの格納
+        particle_property.m_transfunc_array[i].m_server_color_variable_min   = color_variable_min;
+        particle_property.m_transfunc_array[i].m_server_color_variable_max   = color_variable_min;
+        particle_property.m_transfunc_array[i].m_server_opacity_variable_min = opacity_variable_min;
+        particle_property.m_transfunc_array[i].m_server_opacity_variable_max = opacity_variable_max;
+
+        // ColorMap,OpacityMapの更新
+        if( particle_property.m_transfunc_array[i].m_server_color_range_mode == NamedTransferFunction::ServerRangeMode::ServerSide )
+        particle_property.m_transfunc_array[i].setColorRange( color_variable_min, color_variable_max);
+        if( particle_property.m_transfunc_array[i].m_server_opacity_range_mode == NamedTransferFunction::ServerRangeMode::ServerSide )
+        particle_property.m_transfunc_array[i].setOpacityRange( opacity_variable_min, opacity_variable_max );
     }
 
     // 本命の粒子生成のためjob dispatch のパラメータ初期化 
-    wid = 0; st =0; vl =0; 
+    wid = 0; st = 0; vl = 0;
+
     jd.initialize(
         time_step,
         time_step,
@@ -371,8 +369,9 @@ void InitialStepCS(
         particle_property.m_job_id_pack_size
     );
 
-
+    // サンプリングメソッドをHistogram用に一時的に変更
     particle_property.m_sampling_method = 'h';
+
     while ( jd.dispatchNext( wid, &st, &vl ) )
     {
         vismodule::PointObject* recv_obj = new vismodule::PointObject;
@@ -482,7 +481,6 @@ void InitialStepCS(
             // generate point object end
 
             MakeHistgram( send_obj, tf_number, tmp_c_bins, tmp_o_bins );
-//            MakeParticleMinMax( particle_property.m_transfunc_synthesizer, tf_number, tmp_max, tmp_min );
         } // make point object and histgram and range
 
         delete send_obj;
@@ -494,33 +492,20 @@ void InitialStepCS(
     {
         MPI_Allreduce( MPI_IN_PLACE, tmp_c_bins, ( DEFAULT_NBINS * tf_number ), MPI_UNSIGNED_LONG, MPI_SUM , MPI_COMM_WORLD );
         MPI_Allreduce( MPI_IN_PLACE, tmp_o_bins, ( DEFAULT_NBINS * tf_number ), MPI_UNSIGNED_LONG, MPI_SUM , MPI_COMM_WORLD );
-//        MPI_Allreduce( MPI_IN_PLACE, tmp_max, ( tf_number * 2 ), MPI_FLOAT, MPI_MAX, MPI_COMM_WORLD );
-//        MPI_Allreduce( MPI_IN_PLACE, tmp_min, ( tf_number * 2 ), MPI_FLOAT, MPI_MIN, MPI_COMM_WORLD );
     }
 #endif
 
-    vr = setVariablerange2( tmp_max, tmp_min, tf_number );
-    vr.show();
-
-    // histogram, minmaxの格納
+    // histogram
     for( int i = 0; i < tf_number; i++ )
     {
         // histogram
         std::copy( tmp_c_bins + ( DEFAULT_NBINS * i ), tmp_c_bins + ( DEFAULT_NBINS * ( i + 1 ) ), particle_property.m_transfunc_array[i].m_color_histogram );
         std::copy( tmp_o_bins + ( DEFAULT_NBINS * i ), tmp_o_bins + ( DEFAULT_NBINS * ( i + 1 ) ), particle_property.m_transfunc_array[i].m_opacity_histogram );
-
-        // minmax
-        std::stringstream ss; 
-        ss << (i + 1); 
-        const std::string idxbuf = ss.str();
-        particle_property.m_transfunc_array[i].m_server_color_variable_min   = vr.min( "t" + idxbuf + "_var_c" );
-        particle_property.m_transfunc_array[i].m_server_color_variable_max   = vr.max( "t" + idxbuf + "_var_c" );
-        particle_property.m_transfunc_array[i].m_server_opacity_variable_min = vr.min( "t" + idxbuf + "_var_o" );
-        particle_property.m_transfunc_array[i].m_server_opacity_variable_max = vr.max( "t" + idxbuf + "_var_o" );
     }
 
     nan_error = false;
 
+    // 一時的に変更していたサンプリングメソッドを元に戻す
     particle_property.m_sampling_method = tmp_sampling_method;
 
     delete[] tmp_min;

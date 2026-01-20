@@ -610,29 +610,9 @@ void Server::initialize( uWS::WebSocket<false, true, PerSocket>* ws, const nlohm
         }
     }
 
-    // ServerSideRangeの場合, ColorMapとOpacityMapのMinMaxを更新する
-    const int tf_number = m_particle_property->m_transfunc_array.size();
-
-    for ( size_t i = 0; i < tf_number; i++ )
-    {
-        float color_min, color_max, opacity_min, opacity_max;
-        if ( m_particle_property->m_transfunc_array[i].m_server_color_range_mode == NamedTransferFunction::ServerRangeMode::ServerSide )
-        {
-            color_min   = m_particle_property->m_transfunc_array[i].m_server_color_variable_min;
-            color_max   = m_particle_property->m_transfunc_array[i].m_server_color_variable_max;
-            m_particle_property->m_transfunc_array[i].setColorRange( color_min, color_max );
-        }
-
-        if ( m_particle_property->m_transfunc_array[i].m_server_opacity_range_mode == NamedTransferFunction::ServerRangeMode::ServerSide )
-        {
-            opacity_min = m_particle_property->m_transfunc_array[i].m_server_opacity_variable_min;
-            opacity_max = m_particle_property->m_transfunc_array[i].m_server_opacity_variable_max;
-            m_particle_property->m_transfunc_array[i].setOpacityRange( opacity_min, opacity_max );
-        }
-    }
-
     // NOTE:クライアントに送信する伝達関数を作成する
     nlohmann::json transferFunctions = nlohmann::json::array();
+    const int tf_number = m_particle_property->m_transfunc_array.size();
     const int tf_resolution = 256;
     
     for( size_t i = 0; i < tf_number; ++i )
