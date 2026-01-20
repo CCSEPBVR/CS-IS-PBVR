@@ -126,12 +126,10 @@ void ParameterFileWriter::getGlyphParameter( const GlyphProperty& glyph_property
 
     std::string size_sampling_method;
     if      ( glyph_property.m_size_sampling_method       == DataDefines::Constant )       size_sampling_method = "Constant"; 
-    else if ( glyph_property.m_size_sampling_method       == DataDefines::SingleVariable ) size_sampling_method = "SingleVariable"; 
     else if ( glyph_property.m_size_sampling_method       == DataDefines::VariableArray )  size_sampling_method = "VariableArray"; 
 
     std::string color_sampling_method;
     if      ( glyph_property.m_color_data_sampling_method == DataDefines::Constant )       color_sampling_method = "Constant"; 
-    else if ( glyph_property.m_color_data_sampling_method == DataDefines::SingleVariable ) color_sampling_method = "SingleVariable"; 
     else if ( glyph_property.m_color_data_sampling_method == DataDefines::VariableArray )  color_sampling_method = "VariableArray"; 
 
     m_name_list_file.setLine( "DISTRIBUTION_MODE", distribution_mode );

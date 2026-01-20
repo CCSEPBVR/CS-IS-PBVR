@@ -25,8 +25,7 @@ enum class DataDefines : int32_t
 {
     Invalid             = -1,
     Constant            =  0,
-    SingleVariable      =  1,
-    VariableArray       =  2
+    VariableArray       =  1
 };
 
 struct GlyphProperty
@@ -83,8 +82,7 @@ inline DataDefines ConvertIntToDataDefines( int data_defines_int )
     switch ( data_defines_int )
     {
     case 0: return DataDefines::Constant;
-    case 1: return DataDefines::SingleVariable;
-    case 2: return DataDefines::VariableArray;
+    case 1: return DataDefines::VariableArray;
     default:
         std::cout << "ERROR:DataDefines is invalid." << std::endl;
         return DataDefines::Invalid;

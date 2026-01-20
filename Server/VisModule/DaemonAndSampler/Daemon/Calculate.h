@@ -308,10 +308,7 @@ inline void Calculate_minmax_glyph
     min_vec[0] = 0;
     max_vec[0] = 0;
     std::vector<int> color_data_variables;
-    if(
-        glyph_property.m_color_data_sampling_method == DataDefines::VariableArray ||
-        glyph_property.m_color_data_sampling_method == DataDefines::SingleVariable
-    )
+    if( glyph_property.m_color_data_sampling_method == DataDefines::VariableArray )
     {
         for ( int i = 0; i < glyph_property.m_color_data_variable.size(); i++ )
         {
@@ -323,10 +320,7 @@ inline void Calculate_minmax_glyph
     min_vec[1] = 0;
     max_vec[1] = 0;
     std::vector<int> size_variables;
-    if(
-        glyph_property.m_size_sampling_method == DataDefines::VariableArray ||
-        glyph_property.m_size_sampling_method == DataDefines::SingleVariable
-    )
+    if( glyph_property.m_size_sampling_method == DataDefines::VariableArray )
     {
         for ( int i = 0; i < glyph_property.m_size_variable.size(); i++ )
         {
@@ -334,10 +328,7 @@ inline void Calculate_minmax_glyph
         }
     }
 
-    if( 
-        glyph_property.m_color_data_sampling_method == DataDefines::VariableArray ||
-        glyph_property.m_color_data_sampling_method == DataDefines::SingleVariable 
-    )
+    if( glyph_property.m_color_data_sampling_method == DataDefines::VariableArray )
     {
         // for ( steps = mvpl.m_total_start_steps; steps <= mvpl.m_total_start_step; steps++ ) // 初回ステップのみ
         // {
@@ -353,10 +344,7 @@ inline void Calculate_minmax_glyph
                 int nnodes = volume->nnodes();
 
                 // color
-                if(
-                    glyph_property.m_color_data_sampling_method == DataDefines::VariableArray ||
-                    glyph_property.m_color_data_sampling_method == DataDefines::SingleVariable
-                )
+                if( glyph_property.m_color_data_sampling_method == DataDefines::VariableArray )
                 {
                     tmp_min = FLT_MAX;
                     tmp_max = FLT_MIN;
@@ -379,10 +367,7 @@ inline void Calculate_minmax_glyph
                 }
 
             // size
-            if(
-                glyph_property.m_size_sampling_method == DataDefines::VariableArray ||
-                glyph_property.m_size_sampling_method == DataDefines::SingleVariable
-            )
+            if( glyph_property.m_size_sampling_method == DataDefines::VariableArray )
             {
                 tmp_min = FLT_MAX;
                 tmp_max = FLT_MIN;
@@ -415,7 +400,7 @@ inline void Calculate_minmax_glyph
         MPI_Allreduce( MPI_IN_PLACE, max_vec.data(), nvariablep2, MPI_FLOAT, MPI_MAX, MPI_COMM_WORLD );
         VIS_MODULE_TIMER_END( 19 );
 #endif
-    } // glyph_property.m_color_data_sampling_method is VariableArray or SingleVariable 
+    } // glyph_property.m_color_data_sampling_method is VariableArray 
 
     if( glyph_property.m_color_data_sampling_method == DataDefines::Constant )
     {

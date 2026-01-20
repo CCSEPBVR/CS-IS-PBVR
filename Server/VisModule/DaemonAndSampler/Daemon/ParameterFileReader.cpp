@@ -517,10 +517,6 @@ void ParameterFileReader::setGlyphParameter( GlyphProperty& glyph_property )
     {
         glyph_property.m_size_sampling_method = DataDefines::Constant;
     }
-    else if ( size_sampling_method == "SingleVariable" )
-    {
-        glyph_property.m_size_sampling_method = DataDefines::SingleVariable;
-    }
     else if ( size_sampling_method == "VariableArray" )
     {
         glyph_property.m_size_sampling_method = DataDefines::VariableArray;
@@ -568,10 +564,6 @@ void ParameterFileReader::setGlyphParameter( GlyphProperty& glyph_property )
     if (color_sampling_method == "Constant" )
     {
         glyph_property.m_color_data_sampling_method = DataDefines::Constant;
-    }
-    else if (color_sampling_method == "SingleVariable" )
-    {
-        glyph_property.m_color_data_sampling_method = DataDefines::SingleVariable;
     }
     else if (color_sampling_method == "VariableArray" )
     {
