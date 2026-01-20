@@ -1154,9 +1154,12 @@ void GlyphSeed::DistributionSampling_unstruct( const vismodule::VolumeObjectBase
             m_color_map.setRange(0, 1);
             vismodule::RGBColor color;
             color = m_color_map.at( 0 );
-            m_glyph_colors.push_back( color.r());
-            m_glyph_colors.push_back( color.g());
-            m_glyph_colors.push_back( color.b());
+            for( int jx = 0; jx < n_color_data; jx++ )
+            {
+                m_glyph_colors.push_back( color.r() );
+                m_glyph_colors.push_back( color.g() );
+                m_glyph_colors.push_back( color.b() );
+            }
         }
         // 各ファイルのminmaxを登録。集約処理はgenerate_glyph.cppで（関数外）
         m_color_min = min;

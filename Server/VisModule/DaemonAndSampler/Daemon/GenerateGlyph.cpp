@@ -411,8 +411,6 @@ void SetDefaultGlyphParameterIS( GlyphProperty& glyph_property )
     ppr.readGlyphParameterFile( glyphParameterPath_old.c_str() );
 
     ppr.setGlyphParameter( glyph_property );
-
-    glyph_property.m_scale_factor = 1;
 }
 
 std::unique_ptr<kvs::PolygonGlyphObject> GenerateGlyphIS(

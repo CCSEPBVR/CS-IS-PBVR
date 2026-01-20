@@ -633,24 +633,23 @@ void ParameterFileReader::setGlyphParameter( GlyphProperty& glyph_property )
     glyph_property.m_color_map = color_map;
 
 #if 1 // debug
-    std::cout << "glyph_property.m_direction_variable[0]      = " << glyph_property.m_direction_variable[0]    << std::endl; 
-    std::cout << "glyph_property.m_direction_variable[1]      = " << glyph_property.m_direction_variable[1]    << std::endl; 
-    std::cout << "glyph_property.m_direction_variable[2]      = " << glyph_property.m_direction_variable[2]    << std::endl; 
-    std::cout << "glyph_property.m_size_sampling_method       = " << size_sampling_method             << std::endl; 
-    std::cout << "glyph_property.m_distribution_mode          = " << distribution_mode                << std::endl; 
-    std::cout << "glyph_property.m_stride                     = " << glyph_property.m_stride                   << std::endl; 
-    std::cout << "glyph_property.m_seed                       = " << glyph_property.m_seed                     << std::endl; 
-    std::cout << "glyph_property.m_number_of_sampling_point   = " << glyph_property.m_number_of_sampling_point << std::endl; 
-    std::cout << "glyph_property.m_color_data_sampling_method = " << color_sampling_method            << std::endl; 
+    std::cout << "glyph_property.m_direction_variable[0]      = " << glyph_property.m_direction_variable[0]    << std::endl;
+    std::cout << "glyph_property.m_direction_variable[1]      = " << glyph_property.m_direction_variable[1]    << std::endl;
+    std::cout << "glyph_property.m_direction_variable[2]      = " << glyph_property.m_direction_variable[2]    << std::endl;
+    std::cout << "glyph_property.m_size_sampling_method       = " << size_sampling_method                      << std::endl;
+    std::cout << "glyph_property.m_distribution_mode          = " << distribution_mode                         << std::endl;
+    std::cout << "glyph_property.m_scale_factor               = " << glyph_property.m_scale_factor             << std::endl;
+    std::cout << "glyph_property.m_stride                     = " << glyph_property.m_stride                   << std::endl;
+    std::cout << "glyph_property.m_seed                       = " << glyph_property.m_seed                     << std::endl;
+    std::cout << "glyph_property.m_number_of_sampling_point   = " << glyph_property.m_number_of_sampling_point << std::endl;
+    std::cout << "glyph_property.m_color_data_sampling_method = " << color_sampling_method                     << std::endl;
 
-    // for( size_t i = 0; i < glyph_property.m_size_variable.size(); i++ )
-    for ( size_t i = 0; i < 1; i++ )
+    for( size_t i = 0; i < glyph_property.m_size_variable.size(); i++ )
     {
         std::cout << "glyph_property.m_size_variable[" << i << "]          = " << glyph_property.m_size_variable[i] << std::endl; 
     }
 
-    // // for( size_t i = 0; i < glyph_property.m_color_data_variable.size(); i++ )
-    for ( size_t i = 0; i < 1; i++ )
+    for( size_t i = 0; i < glyph_property.m_color_data_variable.size(); i++ )
     {
         std::cout << "glyph_property.m_color_data_variable[" << i << "]     = " << glyph_property.m_color_data_variable[i] <<  std::endl; 
     }
