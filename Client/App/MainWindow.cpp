@@ -22,7 +22,7 @@ MainWindow::MainWindow( kvs::qt::Application& app, QWidget *parent )
     , m_color_map_bar_selector_tool_bar( new ColorMapSelectorToolBar( m_screen, this ) ) // FIXME:未実装
     , m_play_back_control_tool_bar     ( new PlayBackControlToolBar( m_web_sockets, this ) )
     , m_time_step_control_tool_bar     ( new TimeStepControlToolBar( m_web_sockets, this ) )
-    , m_total_particles_tool_bar       ( new TotalParticlesToolBar( this ) ) // FIXME:未実装
+    , m_total_particles_tool_bar       ( new TotalParticlesToolBar( m_screen, this ) )
     // Widget
     , m_animation_control              ( new AnimationControl( m_screen, this ) )
     , m_communication                  ( new Communication( m_screen, m_web_sockets, m_viz_mode, this ) )
@@ -187,6 +187,7 @@ void MainWindow::toolBarInitialize()
     {
         connect( m_time_step_control_tool_bar, &TimeStepControlToolBar::requestDataAt        , m_object_editor             , &ObjectEditor::onRequestDataAt );
         connect( m_time_step_control_tool_bar, &TimeStepControlToolBar::dataRequestCompleted , m_play_back_control_tool_bar, &PlayBackControlToolBar::onDataRequestCompleted );
+        connect( m_time_step_control_tool_bar, &TimeStepControlToolBar::dataRequestCompleted , m_total_particles_tool_bar  , &TotalParticlesToolBar::onUpdateTotalParticles );
 
         this->addToolBar( Qt::TopToolBarArea, m_time_step_control_tool_bar );
         this->addToolBarBreak( Qt::TopToolBarArea );
@@ -308,7 +309,7 @@ void MainWindow::objectEditorInitialize()
         connect( m_object_editor, &ObjectEditor::updateFocus             , m_plot_over_line_editor     , &PlotOverLineEditor::onUpdateFocus );
         connect( m_object_editor, &ObjectEditor::updateTranslation       , m_plot_over_line_editor     , &PlotOverLineEditor::onUpdateTranslation );
         connect( m_object_editor, &ObjectEditor::shading                 , m_shading_control           , &ShadingControl::onShading );
-        connect( m_object_editor, &ObjectEditor::dataRequestCompleted    , m_time_step_control_tool_bar, &TimeStepControlToolBar::onDataRequestCompleted );        
+        connect( m_object_editor, &ObjectEditor::dataRequestCompleted    , m_time_step_control_tool_bar, &TimeStepControlToolBar::onDataRequestCompleted );
 
         connect( m_object_editor_action, &QAction::triggered, this, &MainWindow::onObjectEditor );
     }
