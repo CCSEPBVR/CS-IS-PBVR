@@ -508,7 +508,7 @@ std::unique_ptr<kvs::PolygonGlyphObject> GenerateGlyphIS(
         glyph_object->directions(),
         kvs_scaled_sizes,
         glyph_object->colors(),
-        kvs::PolygonGlyphObject::GlyphType::Arrow
+        static_cast<kvs::PolygonGlyphObject::GlyphType>( glyph_property.m_glyph_type )
     );
 }
 

@@ -136,6 +136,7 @@ void ParameterFileReader::readParticleParameterFile( const char* fname )
 void ParameterFileReader::readGlyphParameterFile( const char* fname )
 {
     m_name_list_file.setName( "GLYPH_FLAG" );
+    m_name_list_file.setName( "GLYPH_TYPE" );
     m_name_list_file.setName( "SCALE_FACTOR" );
     m_name_list_file.setName( "STRIDE" );
     m_name_list_file.setName( "SEED" );
@@ -506,6 +507,26 @@ void ParameterFileReader::setGlyphParameter( GlyphProperty& glyph_property )
     }
     else
     {
+        glyph_property.m_glyph_flag = false;
+        return;
+    }
+
+    const std::string glyph_type_string = m_name_list_file.getValue<std::string>( "GLYPH_TYPE" );
+    if ( strcmp( glyph_type_string.c_str(), "Arrow" ) == 0 )
+    {
+        glyph_property.m_glyph_type = GlyphType::Arrow;
+    }
+    else if ( strcmp( glyph_type_string.c_str(), "Diamond" ) == 0 )
+    {
+        glyph_property.m_glyph_type = GlyphType::Diamond;
+    }
+    else if ( strcmp( glyph_type_string.c_str(), "Sphere" ) == 0 )
+    {
+        glyph_property.m_glyph_type = GlyphType::Sphere;
+    }
+    else
+    {
+        std::cout << "ERROR:unknown glyph type, so skip generate glyph." << std::endl;
         glyph_property.m_glyph_flag = false;
         return;
     }

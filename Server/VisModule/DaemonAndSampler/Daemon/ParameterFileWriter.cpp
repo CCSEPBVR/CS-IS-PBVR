@@ -97,6 +97,18 @@ void ParameterFileWriter::getGlyphParameter( const GlyphProperty& glyph_property
     m_name_list_file.setLine( "GLYPH_COLOR_MAX", 1 );
     m_name_list_file.setLine( "GLYPH_COLOR_MIN", 0 );
 
+    // グリフタイプを文字列に変換
+    std::string glyph_type;
+    if ( glyph_property.m_glyph_type == GlyphType::Arrow ) glyph_type = "Arrow";
+    else if ( glyph_property.m_glyph_type == GlyphType::Diamond ) glyph_type = "Diamond";
+    else if ( glyph_property.m_glyph_type == GlyphType::Sphere ) glyph_type = "Sphere";
+    else
+    {
+        glyph_type = "Invalid";
+        std::cout << "ERROR:glyph type is invalid." << std::endl;
+    }
+    m_name_list_file.setLine( "GLYPH_TYPE", glyph_type );
+
     // 各成分を文字列に変換
     std::stringstream  size_variable, color_data_variable;
     for ( size_t i = 0; i < glyph_property.m_size_variable.size(); i++ )
