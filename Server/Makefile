@@ -40,6 +40,13 @@ ifndef MPICXX
 DEFINITIONS += -DCPU_VER
 endif
 
+ifdef KVS_DIR
+include $(KVS_DIR)/kvs.conf
+ifeq "$(KVS_SUPPORT_EXTENDED_FILE_FORMAT)" "1"
+DEFINITIONS += -DEXTEND_FILE_FORMAT
+endif
+endif
+
 #=============================================================================
 #  Linker option.
 #=============================================================================

@@ -299,6 +299,19 @@ void Server::initialize( uWS::WebSocket<false, true, PerSocket>* ws, const nlohm
 
     if ( pointObjectFormat == ObjectInfoExtractor::Format::ClientServerPointObject )
     {
+        // ファイル形式を拡張していない状態でVTKファイルが指定された場合, クライアントにエラーメッセージを送信
+        // クライアント側で拡張子で選択ファイルを制限しているので拡張子が.pflもしくは.pfi以外の場合はVTKファイルが指定されている
+#ifndef EXTEND_FILE_FORMAT
+        if ( volumeDataFileExtension != ".pfl" && volumeDataFileExtension != ".pfi" )
+        {
+            std::cout << "ERROR:Unsupported file format."                                           << std::endl;
+            std::cout << "INFO:This server does not currently support this file format."            << std::endl;
+            std::cout << "INFO:If you want to use VTK file format, please rebuild the application." << std::endl;
+            std::cout << "INFO:The build i structions are available on the wiki."                   << std::endl;
+            std::cout << "URL:https://github.com/CCSEPBVR/CS-IS-PBVR/wiki"                          << std::endl;
+        }
+#endif
+
         m_server_mode = ServerMode::CS;
 
         SetDefaultParticleParameterCS(
