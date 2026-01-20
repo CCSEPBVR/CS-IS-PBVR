@@ -52,6 +52,7 @@ signals:
     void receiveObjectInfoParameter( const QJsonObject& dataArray );
     void receivePlotOverLineParameter( const QJsonObject& dataArray );
     void receiveTransferFunctionParameter( const QString& colorSynth, const QString& opacitySynth, const QJsonArray& dataArray );
+    void updateMaxTimeStep( const int latest );
 
 private:
     Ui::Communication *ui;

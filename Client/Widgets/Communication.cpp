@@ -779,5 +779,15 @@ void Communication::onTextWebsocketMessageReceived( const QString& receivedMessa
         }
     }
     else if( event == QString::fromUtf8( Protocol::Events::TimeStepControlParameter ) )     receiveTimeStepControlParameter( obj );
+    else if( event == QString::fromUtf8( Protocol::Events::LatestTimeStep ) )
+    {
+        const QString key = QString::fromUtf8( Protocol::Key::UpdateMaxTimeStep );
+
+        if( obj.contains(key) )
+        {
+            const int latest = obj.value( key ).toInt();
+            emit updateMaxTimeStep( latest );
+        }
+    }
     else emit updateStatusBarMessage( "Unknown event received. Please check that the client and server versions match." );
 }

@@ -2302,33 +2302,63 @@ size_t Server::calculateTotalSize() const
 void Server::LastStepMonitorLoop()
 {
     std::cout << "Server::LastStepMonitorLoop() start" << std::endl;
-    // メインスレッドでのm_last_step_monitor_is_runningの値の変更を監視しtrueからfalseになったら終了する
-    while ( m_last_step_monitor_is_running.load() )
+
+    int old_last_time_step = -1;
+
+    // メインスレッドでの m_last_step_monitor_is_running の値の変更を監視し
+    // true -> false になったら終了する
+    while( m_last_step_monitor_is_running.load() )
     {
         ParticleMonitor pm;
         pm.check();
-        int old_last_time_step = 0;
-        int new_last_time_step = 0;
 
         if( pm.stepExisted() )
         {
-            new_last_time_step = pm.particleStatusFile().getLatestTimeStep();
+            const int new_last_time_step = pm.particleStatusFile().getLatestTimeStep();
+            std::cout << "last step: " << new_last_time_step << std::endl;
 
-            std::cout << "last step:" << new_last_time_step << std::endl;
-
-            // last stepが更新された場合
-            if ( new_last_time_step > old_last_time_step )
+            // last step が更新された場合
+            if( new_last_time_step >= 0 && new_last_time_step > old_last_time_step )
             {
-                // last stepをクライアントに送信する
+                std::cout << "[LastStepMonitor] updated: "
+                          << old_last_time_step << " -> " << new_last_time_step << std::endl;
+
+                old_last_time_step = new_last_time_step;
+
+                // m_objects の max timestep を更新（対象フォーマットのみ）
+                if( m_objects )
+                {
+                    for( auto& info : *m_objects )
+                    {
+                        if( info.format == ObjectInfoExtractor::Format::InsituServerPointObject ||
+                            info.format == ObjectInfoExtractor::Format::ServerGlyphObject )
+                        {
+                            info.timeStep.second = std::max( info.timeStep.first, new_last_time_step );
+                        }
+                    }
+                }
+
+                // クライアントに送信
+                nlohmann::json msg;
+                msg[Protocol::Key::Event]             = Protocol::Events::LatestTimeStep;
+                msg[Protocol::Key::UpdateMaxTimeStep] = new_last_time_step;
+
+                m_u_web_sockets.publish( "Notice", msg.dump(), uWS::OpCode::TEXT );
+            }
+            else
+            {
+                std::cout << "[LastStepMonitor] no update. last=" << old_last_time_step << std::endl;
             }
         }
         else
         {
-            std::cout << "WARNING: Time step is not exited." << std::endl;
+            std::cout << "WARNING: Time step is not existed." << std::endl;
         }
 
         std::cout << "Server::LastStepMonitorLoop() working..." << std::endl;
-        std::this_thread::sleep_for(std::chrono::seconds(10));
+        std::this_thread::sleep_for( std::chrono::seconds(1) );
     }
-    std::cout << "Server::LastStepMonitorLoop() start" << std::endl;
+
+    std::cout << "Server::LastStepMonitorLoop() end" << std::endl;
 }
+

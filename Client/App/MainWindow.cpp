@@ -271,6 +271,7 @@ void MainWindow::communicationInitialize()
         connect( m_communication, &Communication::receiveSelectedFile                          , m_object_editor             , &ObjectEditor::onReceiveSelectedFile );
         connect( m_communication, &Communication::receiveObjectDelete                          , m_object_editor             , &ObjectEditor::onReceiveObjectDelete );
         connect( m_communication, &Communication::receiveObjectInfoParameter                   , m_object_editor             , &ObjectEditor::onReceiveObjectInfoParameter );
+        connect( m_communication, &Communication::updateMaxTimeStep                            , m_object_editor             , &ObjectEditor::onUpdateMaxTimeStep );
 
         connect( m_communication, &Communication::receivePlotOverLineParameter                 , m_plot_over_line_editor     , &PlotOverLineEditor::onReceivePlotOverLineParameter );
         connect( m_communication, &Communication::receiveInitializePlotOverLineParameter       , m_plot_over_line_editor     , &PlotOverLineEditor::onReceiveInitializePlotOverLineParameter );

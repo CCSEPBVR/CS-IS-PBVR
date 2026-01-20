@@ -1019,6 +1019,29 @@ void ObjectEditor::onUnpack( const QByteArray& binary )
     dataRequestComplete( timeStep );
 }
 
+void ObjectEditor::onUpdateMaxTimeStep( const int latest )
+{
+    for( int row = 0; row < m_model->rowCount(); row++ )
+    {
+        QStandardItem* nameItem = m_model->item( row, 0 ); // NOTE:ObjectInfoが格納されている列
+        if( !nameItem ) continue;
+
+        QVariant var = nameItem->data( Qt::UserRole );
+        if( !var.canConvert<ObjectInfoExtractor::ObjectInfo>() ) continue;
+
+        auto info = var.value<ObjectInfoExtractor::ObjectInfo>();
+
+        if( info.format == ObjectInfoExtractor::Format::InsituServerPointObject ||
+            info.format == ObjectInfoExtractor::Format::ServerGlyphObject )
+        {
+            info.timeStep.second = std::max( info.timeStep.first, latest );
+            nameItem->setData( QVariant::fromValue(info), Qt::UserRole );
+        }
+    }
+
+    calculateTotalMinMaxTimeStep();
+}
+
 void ObjectEditor::onLoadParameter( const QString& filePath )
 {
     qDebug() << __FILE__ << ":" << __func__ << ":" << filePath;

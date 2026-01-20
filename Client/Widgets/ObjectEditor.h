@@ -44,6 +44,7 @@ public:
     void onTransferFunctionUpdate();
     void onGlyphParameterUpdate();
     void onUnpack( const QByteArray& binary );
+    void onUpdateMaxTimeStep( const int latest );
     // FIXME:KPI
     void onLoadParameter( const QString& filePath );
     void onSaveParameter( const QString& filePath );

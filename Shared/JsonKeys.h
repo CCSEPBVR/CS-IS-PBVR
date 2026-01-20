@@ -27,6 +27,9 @@ inline constexpr std::string_view TransferFunctionParameter = "TransferFunctionP
 inline constexpr std::string_view GlyphParameter            = "GlyphParameter";
 inline constexpr std::string_view PlotOverLineParameter     = "PlotOverLineParameter";
 
+// Update IS TimeStep
+inline constexpr std::string_view UpdateMaxTimeStep         = "UpdateMaxTimeStep";
+
 // Chat
 inline constexpr std::string_view Text                      = "Text";
 
@@ -179,6 +182,7 @@ inline constexpr std::string_view GlyphParameter            = "GlyphParameter";
 inline constexpr std::string_view PlotOverLineParameter     = "PlotOverLineParameter";
 inline constexpr std::string_view RequestDataAt             = "RequestDataAt";
 inline constexpr std::string_view TimeStepControlParameter  = "TimeStepControlParameter";
+inline constexpr std::string_view LatestTimeStep            = "LatestTimeStep";
 }
 }
 #endif // JSONKEYS_H
