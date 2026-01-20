@@ -19,6 +19,7 @@ Server::Server( int port )
     m_glyph_property                             = new GlyphProperty();
     m_pol_property                               = new PlotOverLineProperty();
     m_multi_volume_property_list                 = new MultiVolumePropertyList();
+    m_last_step_monitor_is_running               = true;
 
     m_particle_property->m_camera->setWindowSize( 620, 620 ); // クライアントから送信されるようになったら削除
 
