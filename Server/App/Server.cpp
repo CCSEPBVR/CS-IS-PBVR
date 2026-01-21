@@ -1265,7 +1265,7 @@ void Server::receiveTransferFunctionParameter( uWS::WebSocket<false, true, PerSo
         // Opacity
         std::string opacityFunction = tf.value( Protocol::Key::OpacityFunction, "O" + std::to_string( i + 1 ) );
         std::string opacityVariable = tf.value( Protocol::Key::OpacityVariable, "" );
-        NamedTransferFunction::ServerRangeMode opacityRangeMode = static_cast<NamedTransferFunction::ServerRangeMode>( tf.value( Protocol::Key::ColorRangeMode, 0 ) );
+        NamedTransferFunction::ServerRangeMode opacityRangeMode = static_cast<NamedTransferFunction::ServerRangeMode>( tf.value( Protocol::Key::OpacityRangeMode, 0 ) );
         double      opacityUserMin  = tf.value( Protocol::Key::OpacityUserRangeMin, 0.0 );
         double      opacityUserMax  = tf.value( Protocol::Key::OpacityUserRangeMax, 0.0 );
         double      opacityServerMin= tf.value( Protocol::Key::OpacityServerRangeMin, 0.0 );
