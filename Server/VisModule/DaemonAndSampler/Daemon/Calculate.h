@@ -328,7 +328,8 @@ inline void Calculate_minmax_glyph
         }
     }
 
-    if( glyph_property.m_color_data_sampling_method == DataDefines::VariableArray )
+    if( glyph_property.m_size_sampling_method == DataDefines::VariableArray ||
+        glyph_property.m_color_data_sampling_method == DataDefines::VariableArray )
     {
         // for ( steps = mvpl.m_total_start_steps; steps <= mvpl.m_total_start_step; steps++ ) // 初回ステップのみ
         // {
