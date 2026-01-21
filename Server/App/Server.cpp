@@ -1109,8 +1109,15 @@ void Server::receiveObjectInfoParameter( uWS::WebSocket<false, true, PerSocket>*
         }
     }
 
+    // CSの場合粒子パラメータの再計算
+    if ( m_server_mode == ServerMode::CS )
+    {
+        m_particle_property->m_sampling_step  = CalculateSamplingStep( *m_multi_volume_property_list ) / m_particle_property->m_extra_opacity_factor;
+        m_particle_property->m_subpixel_level = CalculateSubpixelLevel( *m_particle_property, *m_multi_volume_property_list, *m_particle_property->m_camera );
+    }
     // ISの場合粒子パラメータをパラメータファイルに書き込む
-    if ( m_server_mode == ServerMode::IS )
+    // m_server_mode == ServerMode::IS
+    else
     {
         const char *envBuf = NULL;
         std::string tfFilePath;
