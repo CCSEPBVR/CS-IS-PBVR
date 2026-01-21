@@ -1169,6 +1169,9 @@ void Server::receiveTransferFunctionParameter( uWS::WebSocket<false, true, PerSo
     std::string colorSynthesizer    = received.value( Protocol::Key::ColorSynthesizer, "" );
     std::string opacitySynthesizer  = received.value( Protocol::Key::OpacitySynthesizer, "" );
 
+    if( colorSynthesizer.empty() )   colorSynthesizer = "C1";
+    if( opacitySynthesizer.empty() ) opacitySynthesizer = "O1";
+
     // std::cout << "Color Synthesizer:   " << colorSynthesizer << std::endl;
     // std::cout << "Opacity Synthesizer: " << opacitySynthesizer << std::endl;
 
