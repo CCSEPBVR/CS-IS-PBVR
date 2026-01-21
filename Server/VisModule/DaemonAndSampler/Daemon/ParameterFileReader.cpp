@@ -398,6 +398,8 @@ void ParameterFileReader::setParticleParameter( ParticleProperty& particle_prope
         std::string s_color               = m_name_list_file.getValue<std::string>( tag_base + "TABLE_C" );
         std::string s_opacity             = m_name_list_file.getValue<std::string>( tag_base + "TABLE_O" );
 
+        particle_property.m_transfunc_array[n].m_server_color_range_mode   = NamedTransferFunction::ServerRangeMode::UserRange;
+        particle_property.m_transfunc_array[n].m_server_opacity_range_mode = NamedTransferFunction::ServerRangeMode::UserRange;
         particle_property.m_transfunc_array[n].m_color_variable            = color_variable;
         particle_property.m_transfunc_array[n].m_opacity_variable          = opacity_varible;
         particle_property.m_transfunc_array[n].m_user_color_variable_min   = color_min;
