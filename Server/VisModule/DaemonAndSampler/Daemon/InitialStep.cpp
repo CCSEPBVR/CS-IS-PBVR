@@ -206,10 +206,7 @@ void InitialStepCS(
 
     while ( jd.dispatchNext( wid, &st, &vl ) )
     {
-        vismodule::PointObject* recv_obj = new vismodule::PointObject;
-        vismodule::PointObject* send_obj = nullptr;
-
-        // make point object and histgram and range
+        // calculate min max
         if ( ( rank > 0 ) || ( mpi_size == 1 ) )
         {
             int xvl, fidx;
@@ -222,6 +219,7 @@ void InitialStepCS(
             {
                 vismodule::VolumeObjectBase* volume = nullptr;
                 vismodule::PointObjectGenerator point_object_generator;
+                vismodule::PointObject* tmp_obj = nullptr;
 
                 // generate volume object
                 if ( mvp.m_file_type == 1 || mvp.m_file_type == 2 ) // filetype: gathered subvolume or gathered timestep
@@ -282,7 +280,7 @@ void InitialStepCS(
                     }
 
                     // generate particle
-                    send_obj = point_object_generator.GenerateParticleUnstruct( particle_property, dom, raw_pointers_vector.data(), nvariables, coordinates.get(), ncoords, connections.get(), ncells, celltype, ServerMode::CS );
+                    tmp_obj = point_object_generator.GenerateParticleUnstruct( particle_property, dom, raw_pointers_vector.data(), nvariables, coordinates.get(), ncoords, connections.get(), ncells, celltype, ServerMode::CS );
                 }
                 else // ( voltype == vismodule::VolumeObjectBase::VolumeType::Structured )
                 {
@@ -297,10 +295,11 @@ void InitialStepCS(
                     }                        
 
                     // generate particle
-                    send_obj = point_object_generator.GenerateParticleStruct( particle_property, dom, raw_pointers_vector.data(), nvariables, ServerMode::CS );
+                    tmp_obj = point_object_generator.GenerateParticleStruct( particle_property, dom, raw_pointers_vector.data(), nvariables, ServerMode::CS );
                 }
 
                 delete volume;
+                delete tmp_obj;
             }
             catch ( const std::runtime_error& e )
             {
@@ -311,10 +310,9 @@ void InitialStepCS(
                 nan_error = true;
             }
             // generate point object end
-        } // make point object and histgram and range
 
-        delete send_obj;
-        delete recv_obj;
+            MakeParticleMinMax( particle_property.m_transfunc_synthesizer, tf_number, tmp_max, tmp_min );
+        } // calculate minmax
     } // end of while(DispatchNext)
 
 //min,max　のMPIプロセス間集約
@@ -345,7 +343,7 @@ void InitialStepCS(
 
         // MinMaxの格納
         particle_property.m_transfunc_array[i].m_server_color_variable_min   = color_variable_min;
-        particle_property.m_transfunc_array[i].m_server_color_variable_max   = color_variable_min;
+        particle_property.m_transfunc_array[i].m_server_color_variable_max   = color_variable_max;
         particle_property.m_transfunc_array[i].m_server_opacity_variable_min = opacity_variable_min;
         particle_property.m_transfunc_array[i].m_server_opacity_variable_max = opacity_variable_max;
 
@@ -359,6 +357,9 @@ void InitialStepCS(
     // 本命の粒子生成のためjob dispatch のパラメータ初期化 
     wid = 0; st = 0; vl = 0;
 
+    // サンプリングメソッドをHistogram用に一時的に変更
+    particle_property.m_sampling_method = 'h';
+
     jd.initialize(
         time_step,
         time_step,
@@ -368,9 +369,6 @@ void InitialStepCS(
         particle_property.m_latency_threshold,
         particle_property.m_job_id_pack_size
     );
-
-    // サンプリングメソッドをHistogram用に一時的に変更
-    particle_property.m_sampling_method = 'h';
 
     while ( jd.dispatchNext( wid, &st, &vl ) )
     {
@@ -495,7 +493,7 @@ void InitialStepCS(
     }
 #endif
 
-    // histogram
+    // histogramの格納
     for( int i = 0; i < tf_number; i++ )
     {
         // histogram
