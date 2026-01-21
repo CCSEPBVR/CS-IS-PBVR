@@ -1059,16 +1059,33 @@ void Server::receiveObjectInfoParameter( uWS::WebSocket<false, true, PerSocket>*
             {
                 info.particleLimit = patch[Protocol::Key::ParticleLimit].get<int>();
                 m_particle_property->m_particle_limit = info.particleLimit;
+                info.needSameTimeStepReplace = true;
             }
             if( patch.contains( Protocol::Key::ExtraOpacityFactor ) )
             {
                 info.extraOpacityFactor = patch[Protocol::Key::ExtraOpacityFactor].get<float>();
-                m_particle_property->m_extra_opacity_factor = info.particleLimit;
+                m_particle_property->m_extra_opacity_factor = info.extraOpacityFactor;
+                info.needSameTimeStepReplace = true;
             }
             // サーバポイントオブジェクト(ClientServerのみ)
-            if( patch.contains( Protocol::Key::CoordinateX ) ) info.coordinateX = patch[Protocol::Key::CoordinateX].get<std::string>();
-            if( patch.contains( Protocol::Key::CoordinateY ) ) info.coordinateY = patch[Protocol::Key::CoordinateY].get<std::string>();
-            if( patch.contains( Protocol::Key::CoordinateZ ) ) info.coordinateZ = patch[Protocol::Key::CoordinateZ].get<std::string>();
+            if( patch.contains( Protocol::Key::CoordinateX ) )
+            {
+                info.coordinateX = patch[Protocol::Key::CoordinateX].get<std::string>();
+                m_particle_property->m_x_synthesis = info.coordinateX;
+                info.needSameTimeStepReplace = true;
+            }
+            if( patch.contains( Protocol::Key::CoordinateY ) )
+            {
+                info.coordinateY = patch[Protocol::Key::CoordinateY].get<std::string>();
+                m_particle_property->m_y_synthesis = info.coordinateY;
+                info.needSameTimeStepReplace = true;
+            }
+            if( patch.contains( Protocol::Key::CoordinateZ ) )
+            {
+                info.coordinateZ = patch[Protocol::Key::CoordinateZ].get<std::string>();
+                m_particle_property->m_z_synthesis = info.coordinateZ;
+                info.needSameTimeStepReplace = true;
+            }
             // テスクチャ無しポリゴン(.stlのみ) // FIXME:KVSMLPolygonObjectは不透明度のみ操作できるようにしたほうがいいかもしれません。
             if( patch.contains( Protocol::Key::PolygonColor ) &&
                 patch[Protocol::Key::PolygonColor].is_array() &&
