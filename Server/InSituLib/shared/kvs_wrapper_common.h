@@ -17,7 +17,12 @@
 #endif
 // add FJ  end
 
-    typedef unsigned char Byte;
+typedef unsigned char Byte;
+
+// Asynchronous io, using worker thread pwt.
+#include "particle_write_thread.h"
+extern bool async_io_enabled;
+extern pbvr::ParticleWriteThread pwt;
 
 void begin_wrapper_async_io();
 

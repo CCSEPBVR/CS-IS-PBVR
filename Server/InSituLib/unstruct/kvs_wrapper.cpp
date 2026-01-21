@@ -273,6 +273,40 @@ bool generate_particles(
         OutputLine( time_step, plotOverLineFilePrefix, values_on_line, mask, x_axis );
     }
    
+    // 粒子ファイル書き込みスレッドが終了するまで待機
+    // async_io_enabled, pwtはkvs_wrapper_common.cppに宣言
+    if ( async_io_enabled )
+    {
+        std::cout << "Particle write thread is active."             << std::endl;
+        std::cout << "Waiting for particle write thread to finish." << std::endl;
+        pbvr::ParticleWriteThread* particle_write_thread = &pwt;
+        particle_write_thread->join( true );
+        std::cout << "Particle write thread is finished." << std::endl;
+    }
+    else
+    {
+        std::cout << "Particle write thread is not active." << std::endl;
+    }
+
+    std::cout << "Waiting for all processes to finish." << std::endl;
+    
+#ifndef CPU_VER
+    MPI_Barrier( MPI_COMM_WORLD ); // すべてのプロセスでファイルの書き込む処理が終了するまで待機
+#endif
+    
+    std::cout << "All processes have finished." << std::endl;
+
+    if ( mpi_rank == 0 )
+    {
+        std::ofstream ofs( stateFilePath.c_str(), std::ios::out );
+        if( !ofs.is_open() ) std::cout << "Cannot open state.txt" << std::endl;
+
+        ofs << "START_STEP  = " << start_time_step << std::endl;
+        ofs << "LATEST_STEP = " << time_step       << std::endl;
+
+        ofs.close();
+    }
+   
     delete tmp_c_bins;
     delete tmp_o_bins;
     delete tmp_max;
@@ -666,6 +700,40 @@ bool generate_particles_vtk( int time_step, vtkUnstructuredGrid* ucd )
     if ( pol_property.m_plot_flag )
     {
         OutputLine( time_step, plotOverLineFilePrefix, values_on_line, mask, x_axis );
+    }
+
+    // 粒子ファイル書き込みスレッドが終了するまで待機
+    // async_io_enabled, pwtはkvs_wrapper_common.cppに宣言
+    if ( async_io_enabled )
+    {
+        std::cout << "Particle write thread is active."             << std::endl;
+        std::cout << "Waiting for particle write thread to finish." << std::endl;
+        pbvr::ParticleWriteThread* particle_write_thread = &pwt;
+        particle_write_thread->join( true );
+        std::cout << "Particle write thread is finished." << std::endl;
+    }
+    else
+    {
+        std::cout << "Particle write thread is not active." << std::endl;
+    }
+
+    std::cout << "Waiting for all processes to finish." << std::endl;
+    
+#ifndef CPU_VER
+    MPI_Barrier( MPI_COMM_WORLD ); // すべてのプロセスでファイルの書き込む処理が終了するまで待機
+#endif
+    
+    std::cout << "All processes have finished." << std::endl;
+
+    if ( mpi_rank == 0 )
+    {
+        std::ofstream ofs( stateFilePath.c_str(), std::ios::out );
+        if( !ofs.is_open() ) std::cout << "Cannot open state.txt" << std::endl;
+
+        ofs << "START_STEP  = " << start_time_step << std::endl;
+        ofs << "LATEST_STEP = " << time_step       << std::endl;
+
+        ofs.close();
     }
 
     delete tmp_c_bins;

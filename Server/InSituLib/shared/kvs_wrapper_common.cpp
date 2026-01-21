@@ -15,9 +15,6 @@
 #endif // _OPENMP
 
 namespace Generator = vismodule::CellByCellParticleGenerator;
-
-// Asynchronous io, using worker thread pwt.
-#include "particle_write_thread.h"
 bool async_io_enabled = false;
 pbvr::ParticleWriteThread pwt;
 
@@ -561,14 +558,12 @@ void OutputParticles(
     {
         vismodule::PointObject* point_object = new vismodule::PointObject( new_coords, new_colors, new_normals, particle_property.m_subpixel_level );
         point_object->setMinMaxObjectCoords( mvpl.m_total_min_object_coord, mvpl.m_total_max_object_coord );
-        // If async_io is enabled, use worker thread to write kvsml data and state.txt
+        // If async_io is enabled, use worker thread to write kvsml data
         if (async_io_enabled){
             pbvr::ParticleWriteThread* particle_write_thread = &pwt;
             particle_write_thread->join( true );
             particle_write_thread->setPointObject( point_object );
             particle_write_thread->setFilename( particleFilePath.c_str() );
-            particle_write_thread->setTimestep( time_step , stateFilePath.c_str() );
-            particle_write_thread->setStartTimestep( start_time_step ); //add by shimomura 20240808
             particle_write_thread->work( true );
         }// If async_io is disabled, use kvs::PointExporter here in main thread.
         else{
@@ -627,21 +622,9 @@ void OutputParticles(
     }
 #endif
 
-    //状態ファイルの出力
+    // historyファイルの出力
     if( mpi_rank == 0 )
     {
-        // If async_io is enabled, state.txt will be written from worker thread.
-        // If async_io is disabled, state.txt will be written here.
-        if ( !async_io_enabled ){
-            std::ofstream ofs( stateFilePath.c_str(), std::ios::out );
-            if( !ofs.is_open() ) std::cout<<"Cannot open state.txt"<<std::endl;
-
-            ofs << "START_STEP  = " << start_time_step << std::endl;
-            ofs << "LATEST_STEP = " << time_step       << std::endl;
-
-            ofs.close();
-        }
-
         std::ofstream ofs2( histryFilePath.c_str(), std::ios::out);
         ofs2 << "TF_NUMBER=" << tf_number << std::endl;
 
