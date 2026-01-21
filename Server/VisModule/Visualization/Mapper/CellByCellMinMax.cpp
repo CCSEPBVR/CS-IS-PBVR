@@ -274,11 +274,6 @@ void CellByCellMinMax::generate_minmax_struct(
         o_max[i] = m_transfer_function_array[i].opacityMap().maxValue();
         c_min[i] = m_transfer_function_array[i].colorMap().minValue();
         c_max[i] = m_transfer_function_array[i].colorMap().maxValue();
-
-        o_min[i] = o_min[i] < FLT_MIN ? FLT_MIN : o_min[i];
-        o_max[i] = o_max[i] > FLT_MAX ? FLT_MAX : o_max[i];
-        c_min[i] = c_min[i] < FLT_MIN ? FLT_MIN : c_min[i];
-        c_max[i] = c_max[i] > FLT_MAX ? FLT_MAX : c_max[i];
     }
 
     // min max
@@ -749,11 +744,6 @@ void CellByCellMinMax::generate_minmax_unstruct(
         o_max[i] = m_transfer_function_array[i].opacityMap().maxValue();
         c_min[i] = m_transfer_function_array[i].colorMap().minValue();
         c_max[i] = m_transfer_function_array[i].colorMap().maxValue();
-
-        o_min[i] = o_min[i] < FLT_MIN ? FLT_MIN : o_min[i];
-        o_max[i] = o_max[i] > FLT_MAX ? FLT_MAX : o_max[i];
-        c_min[i] = c_min[i] < FLT_MIN ? FLT_MIN : c_min[i];
-        c_max[i] = c_max[i] > FLT_MAX ? FLT_MAX : c_max[i];
     }
 
     // min max
