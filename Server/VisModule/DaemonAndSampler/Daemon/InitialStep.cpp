@@ -285,8 +285,10 @@ void InitialStepCS(
                 else // ( voltype == vismodule::VolumeObjectBase::VolumeType::Structured )
                 {
                     domain_parameters_struct dom; 
+                    std::array<int, 3> resolution;
 
-                    store_volume_in_variables_array_struct( volume, dom, values, nvariables, ncoords );
+                    store_volume_in_variables_array_struct( volume, dom, resolution, values, nvariables, ncoords );
+
 
                     std::vector<Type*> raw_pointers_vector( nvariables );
                     for ( size_t i = 0; i < nvariables; ++i )
@@ -453,8 +455,9 @@ void InitialStepCS(
                 else // ( voltype == vismodule::VolumeObjectBase::VolumeType::Structured )
                 {
                     domain_parameters_struct dom; 
+                    std::array<int, 3> resolution;
 
-                    store_volume_in_variables_array_struct( volume, dom, values, nvariables, ncoords );
+                    store_volume_in_variables_array_struct( volume, dom, resolution, values, nvariables, ncoords );
 
                     std::vector<Type*> raw_pointers_vector( nvariables );
                     for ( size_t i = 0; i < nvariables; ++i )

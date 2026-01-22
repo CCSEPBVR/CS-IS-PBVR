@@ -154,8 +154,9 @@ void GenerateParticleCS(
                 else // ( voltype == vismodule::VolumeObjectBase::VolumeType::Structured )
                 {
                     domain_parameters_struct dom; 
+                    std::array<int, 3> resolution;
 
-                    store_volume_in_variables_array_struct( volume, dom, values, nvariables, ncoords );
+                    store_volume_in_variables_array_struct( volume, dom, resolution, values, nvariables, ncoords );
 
                     std::vector<Type*> raw_pointers_vector( nvariables );
                     for ( size_t i = 0; i < nvariables; ++i )
@@ -321,8 +322,9 @@ void GenerateParticleCS(
                 else // ( voltype == vismodule::VolumeObjectBase::VolumeType::Structured )
                 {
                     domain_parameters_struct dom; 
+                    std::array<int, 3> resolution;
 
-                    store_volume_in_variables_array_struct( volume, dom, values, nvariables, ncoords );
+                    store_volume_in_variables_array_struct( volume, dom, resolution, values, nvariables, ncoords );
 
                     std::vector<Type*> raw_pointers_vector( nvariables );
                     for ( size_t i = 0; i < nvariables; ++i )
@@ -582,9 +584,6 @@ void generate_volume(
         std::cout << "Structured !" <<std::endl;
         volume = new vismodule::StructuredVolumeImporter( file_path ); 
         int id = 1;
-        volume->updateMinMaxValues();
-        volume->setMinMaxObjectCoords( mvp.m_min_subvolume_coord[id], mvp.m_max_subvolume_coord[id] );
-        volume->setMinMaxExternalCoords( mvp.m_min_subvolume_coord[id], mvp.m_max_subvolume_coord[id] );
 
     } 
     else if ( vismoduleview::FileChecker::ImportableUnstructuredVolume( file_path))
@@ -759,6 +758,7 @@ void store_volume_in_variables_array_common(
 void store_volume_in_variables_array_struct(
     const vismodule::VolumeObjectBase* volume,
     domain_parameters_struct& dom,
+    std::array<int, 3>& resolution,
     std::unique_ptr<std::unique_ptr<Type[]>[]>& values,
     int& nvariables,
     int& ncoords
@@ -768,11 +768,9 @@ void store_volume_in_variables_array_struct(
 
     const vismodule::StructuredVolumeObject* svo_p = static_cast<const vismodule::StructuredVolumeObject*>( volume );
 
-    int resol[3] = {
-        static_cast<int>(svo_p->resolution().x()),
-        static_cast<int>(svo_p->resolution().y()),
-        static_cast<int>(svo_p->resolution().z())
-    };
+    resolution[0] = static_cast<int>( svo_p->resolution().x() );
+    resolution[1] = static_cast<int>( svo_p->resolution().y() );
+    resolution[2] = static_cast<int>( svo_p->resolution().z() );
 
     dom = {
         volume->minObjectCoord().x(),
@@ -787,7 +785,7 @@ void store_volume_in_variables_array_struct(
         volume->maxObjectCoord().x(),
         volume->maxObjectCoord().y(),
         volume->maxObjectCoord().z(),
-        resol,
+        resolution.data(),
         1.f
     };
 }

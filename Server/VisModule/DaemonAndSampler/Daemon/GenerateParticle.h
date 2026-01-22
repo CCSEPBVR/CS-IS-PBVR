@@ -50,6 +50,7 @@ void store_volume_in_variables_array_common(
 void store_volume_in_variables_array_struct(
     const vismodule::VolumeObjectBase* volume,
     domain_parameters_struct& dom,
+    std::array<int, 3>& resolution,
     std::unique_ptr<std::unique_ptr<Type[]>[]>& values,
     int& nvariables,
     int& ncoords
