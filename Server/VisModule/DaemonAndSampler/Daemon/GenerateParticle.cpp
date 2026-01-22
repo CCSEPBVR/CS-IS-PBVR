@@ -109,6 +109,34 @@ void GenerateParticleCS(
                     throw std::runtime_error("Failed to generate volume object.");
                 }
 
+                float max_opacity;
+                float max_density;
+                float sampling_volume_inverse;
+
+                if ( particle_property.m_camera == nullptr )
+                {
+                    std::cout << "ERROR: particle_property.m_camera is NULL." << std::endl;
+                }
+
+                vismodule::CellByCellParticleGenerator::CalculateDensityConstaint(
+                    *particle_property.m_camera,
+                    *volume,
+                    static_cast<float>( particle_property.m_subpixel_level ),
+                    particle_property.m_sampling_step,
+                    &sampling_volume_inverse,
+                    &max_opacity,
+                    &max_density
+                );
+
+                if ( particle_property.m_transfunc_synthesizer == nullptr )
+                {
+                    std::cout << "ERROR: particle_property.m_transfunc_synthesizer is NULL." << std::endl;
+                }
+
+                particle_property.m_transfunc_synthesizer->setMaxOpacity( max_opacity );
+                particle_property.m_transfunc_synthesizer->setMaxDensity( max_density );
+                particle_property.m_transfunc_synthesizer->setSamplingVolumeInverse( sampling_volume_inverse );
+
                 std::unique_ptr<std::unique_ptr<Type[]>[]> values;
                 int nvariables = 0;
                 int ncoords = 0;
@@ -123,24 +151,6 @@ void GenerateParticleCS(
                     vismodule::VolumeObjectBase::CellType celltype;
 
                     store_volume_in_variables_array_unstruct( volume, dom, values, nvariables, coordinates, ncoords, connections, ncells, celltype );
-
-                    float max_opacity;
-                    float max_density;
-                    float sampling_volume_inverse;
-
-                    vismodule::CellByCellParticleGenerator::CalculateDensityConstaint(
-                        *particle_property.m_camera,
-                        *volume,
-                        static_cast<float>( particle_property.m_subpixel_level ),
-                        particle_property.m_sampling_step,
-                        &sampling_volume_inverse,
-                        &max_opacity,
-                        &max_density
-                    );
-
-                    particle_property.m_transfunc_synthesizer->setMaxOpacity( max_opacity );
-                    particle_property.m_transfunc_synthesizer->setMaxDensity( max_density );
-                    particle_property.m_transfunc_synthesizer->setSamplingVolumeInverse( sampling_volume_inverse );
 
                     std::vector<Type*> raw_pointers_vector( nvariables );
                     for ( size_t i = 0; i < nvariables; ++i )
@@ -277,6 +287,34 @@ void GenerateParticleCS(
                     throw std::runtime_error("Failed to generate volume object.");
                 }
 
+                float max_opacity;
+                float max_density;
+                float sampling_volume_inverse;
+
+                if ( particle_property.m_camera == nullptr )
+                {
+                    std::cout << "ERROR: particle_property.m_camera is NULL." << std::endl;
+                }
+                    
+                vismodule::CellByCellParticleGenerator::CalculateDensityConstaint(
+                    *particle_property.m_camera,
+                    *volume,
+                    static_cast<float>( particle_property.m_subpixel_level ),
+                    particle_property.m_sampling_step,
+                    &sampling_volume_inverse,
+                    &max_opacity,
+                    &max_density
+                );
+
+                if ( particle_property.m_transfunc_synthesizer == nullptr )
+                {
+                    std::cout << "ERROR: particle_property.m_transfunc_synthesizer is NULL." << std::endl;
+                }
+
+                particle_property.m_transfunc_synthesizer->setMaxOpacity( max_opacity );
+                particle_property.m_transfunc_synthesizer->setMaxDensity( max_density );
+                particle_property.m_transfunc_synthesizer->setSamplingVolumeInverse( sampling_volume_inverse );
+
                 std::unique_ptr<std::unique_ptr<Type[]>[]> values;
                 int nvariables = 0;
                 int ncoords = 0;
@@ -291,24 +329,6 @@ void GenerateParticleCS(
                     vismodule::VolumeObjectBase::CellType celltype;
 
                     store_volume_in_variables_array_unstruct( volume, dom, values, nvariables, coordinates, ncoords, connections, ncells, celltype );
-
-                    float max_opacity;
-                    float max_density;
-                    float sampling_volume_inverse;
-                        
-                    vismodule::CellByCellParticleGenerator::CalculateDensityConstaint(
-                        *particle_property.m_camera,
-                        *volume,
-                        static_cast<float>( particle_property.m_subpixel_level ),
-                        particle_property.m_sampling_step,
-                        &sampling_volume_inverse,
-                        &max_opacity,
-                        &max_density
-                    );
-
-                    particle_property.m_transfunc_synthesizer->setMaxOpacity( max_opacity );
-                    particle_property.m_transfunc_synthesizer->setMaxDensity( max_density );
-                    particle_property.m_transfunc_synthesizer->setSamplingVolumeInverse( sampling_volume_inverse );
 
                     std::vector<Type*> raw_pointers_vector( nvariables );
                     for ( size_t i = 0; i < nvariables; ++i )
