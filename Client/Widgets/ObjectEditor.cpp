@@ -12,6 +12,10 @@ ObjectEditor::ObjectEditor( kvs::qt::jaea::Screen* screen, WebSocketPair* websoc
 {
     ui->setupUi( this );
 
+    // NOTE: extraOpacityFactorは一時的に無効にしています。必要になったら下記のコードの削除とextraOpacityFactorに関係するコードのコメント文を元に戻せば使えるはずです。
+    ui->extraOpacityFactorLabel->setVisible( false );
+    ui->extraOpacityFactorDoubleSpinBox->setVisible( false );
+
     m_model->setHorizontalHeaderLabels( { "Name", "Format", "Display", "Keep Initial", "Keep Final" } );
     ui->treeView->setModel( m_model );
 
@@ -31,7 +35,7 @@ ObjectEditor::ObjectEditor( kvs::qt::jaea::Screen* screen, WebSocketPair* websoc
     m_group_common_server_point_object_widgets =
         {
             ui->particleLimitLabel      , ui->particleLimitSpinBox,
-            ui->extraOpacityFactorLabel , ui->extraOpacityFactorDoubleSpinBox,
+            // ui->extraOpacityFactorLabel , ui->extraOpacityFactorDoubleSpinBox,
         };
 
     m_group_client_server_point_object_widgets =
@@ -65,7 +69,7 @@ ObjectEditor::ObjectEditor( kvs::qt::jaea::Screen* screen, WebSocketPair* websoc
     connect( ui->focusCheckBox                  , &QCheckBox::toggled                   , this, &ObjectEditor::onFocusCheckBoxToggled );
     // サーバポイントオブジェクト(ClientServer/In-Situ共通)
     connect( ui->particleLimitSpinBox           , &QSpinBox::valueChanged               , this, &ObjectEditor::onParticleLimitSpinBoxValueChanged );
-    connect( ui->extraOpacityFactorDoubleSpinBox, &QDoubleSpinBox::valueChanged         , this, &ObjectEditor::onExtraOpacityFactorDoubleSpinBoxValueChanged );
+    // connect( ui->extraOpacityFactorDoubleSpinBox, &QDoubleSpinBox::valueChanged         , this, &ObjectEditor::onExtraOpacityFactorDoubleSpinBoxValueChanged );
     // サーバポイントオブジェクト(ClientServerのみ)
     connect( ui->coordinateXLineEdit            , &QLineEdit::textChanged               , this, &ObjectEditor::onCoordinateLineEditTextChanged );
     connect( ui->coordinateYLineEdit            , &QLineEdit::textChanged               , this, &ObjectEditor::onCoordinateLineEditTextChanged );
@@ -124,8 +128,8 @@ void ObjectEditor::onReceiveSelectedFile( const QJsonObject& dataArray )
     // サーバポイントオブジェクト(ClientServer/In-Situ共通)
     objectInfo.tmpParticleLimit      = dataArray[QString::fromUtf8( Protocol::Key::TmpParticleLimit )].toInt();
     objectInfo.particleLimit         = dataArray[QString::fromUtf8( Protocol::Key::ParticleLimit )].toInt();
-    objectInfo.tmpExtraOpacityFactor = static_cast<float>( dataArray[QString::fromUtf8( Protocol::Key::TmpExtraOpacityFactor )].toDouble() );
-    objectInfo.extraOpacityFactor    = static_cast<float>( dataArray[QString::fromUtf8( Protocol::Key::ExtraOpacityFactor )].toDouble() );
+    // objectInfo.tmpExtraOpacityFactor = static_cast<float>( dataArray[QString::fromUtf8( Protocol::Key::TmpExtraOpacityFactor )].toDouble() );
+    // objectInfo.extraOpacityFactor    = static_cast<float>( dataArray[QString::fromUtf8( Protocol::Key::ExtraOpacityFactor )].toDouble() );
     // サーバポイントオブジェクト(ClientServerのみ)
     objectInfo.numberOfVector        = dataArray[QString::fromUtf8( Protocol::Key::NumberOfVector )].toInt();
     objectInfo.numberOfElements      = dataArray[QString::fromUtf8( Protocol::Key::NumberOfElements )].toInt();
@@ -315,11 +319,11 @@ void ObjectEditor::onReceiveObjectInfoParameter( const QJsonObject& dataArray )
                     info.tmpParticleLimit = patch[QString::fromUtf8( Protocol::Key::ParticleLimit )].toInt();
                     info.particleLimit    = patch[QString::fromUtf8( Protocol::Key::ParticleLimit )].toInt();
                 }
-                if( patch.contains( QString::fromUtf8( Protocol::Key::ExtraOpacityFactor ) ) )
-                {
-                    info.tmpExtraOpacityFactor = static_cast<float>( patch[QString::fromUtf8( Protocol::Key::ExtraOpacityFactor )].toDouble() );
-                    info.extraOpacityFactor    = static_cast<float>( patch[QString::fromUtf8( Protocol::Key::ExtraOpacityFactor )].toDouble() );
-                }
+                // if( patch.contains( QString::fromUtf8( Protocol::Key::ExtraOpacityFactor ) ) )
+                // {
+                //     info.tmpExtraOpacityFactor = static_cast<float>( patch[QString::fromUtf8( Protocol::Key::ExtraOpacityFactor )].toDouble() );
+                //     info.extraOpacityFactor    = static_cast<float>( patch[QString::fromUtf8( Protocol::Key::ExtraOpacityFactor )].toDouble() );
+                // }
                 // サーバポイントオブジェクト(ClientServerのみ)
                 if( patch.contains( QString::fromUtf8( Protocol::Key::CoordinateX ) ) )
                 {
@@ -1082,7 +1086,7 @@ void ObjectEditor::updateEditorFromIndex( const QModelIndex& index )
     ui->maxExternalZCoordLineEdit       ->setText( QString::number( info.maxExternalCoord.z() ) );
     // サーバポイントオブジェクト(ClientServer/In-Situ共通)
     ui->particleLimitSpinBox            ->setValue( info.tmpParticleLimit );
-    ui->extraOpacityFactorDoubleSpinBox ->setValue( info.tmpExtraOpacityFactor );
+    // ui->extraOpacityFactorDoubleSpinBox ->setValue( info.tmpExtraOpacityFactor );
     // サーバポイントオブジェクト(ClientServerのみ)
     ui->numberOfVectorLineEdit          ->setText( QString::number( info.numberOfVector ) );
     ui->numberOfElementsLineEdit        ->setText( QString::number( info.numberOfElements ) );
@@ -1699,11 +1703,11 @@ void ObjectEditor::onApply()
             objectInfo.particleLimit = objectInfo.tmpParticleLimit;
             patch[QString::fromUtf8( Protocol::Key::ParticleLimit )] = objectInfo.particleLimit;
         }
-        if( objectInfo.extraOpacityFactor != objectInfo.tmpExtraOpacityFactor )
-        {
-            objectInfo.extraOpacityFactor = objectInfo.tmpExtraOpacityFactor;
-            patch[QString::fromUtf8( Protocol::Key::ExtraOpacityFactor )] = objectInfo.extraOpacityFactor;
-        }
+        // if( objectInfo.extraOpacityFactor != objectInfo.tmpExtraOpacityFactor )
+        // {
+        //     objectInfo.extraOpacityFactor = objectInfo.tmpExtraOpacityFactor;
+        //     patch[QString::fromUtf8( Protocol::Key::ExtraOpacityFactor )] = objectInfo.extraOpacityFactor;
+        // }
         // サーバポイントオブジェクト(ClientServerのみ)
         auto updateCoord = [&](const QString& key, std::string& dst, const std::string& src)
         {

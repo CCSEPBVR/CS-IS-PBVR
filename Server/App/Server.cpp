@@ -473,8 +473,8 @@ void Server::initialize( uWS::WebSocket<false, true, PerSocket>* ws, const nlohm
             // Common Server Point Object Info
         msg[Protocol::Key::TmpParticleLimit]      = objectInfo.tmpParticleLimit;
         msg[Protocol::Key::ParticleLimit]         = objectInfo.particleLimit;
-        msg[Protocol::Key::TmpExtraOpacityFactor] = objectInfo.tmpExtraOpacityFactor;
-        msg[Protocol::Key::ExtraOpacityFactor]    = objectInfo.extraOpacityFactor;
+        // msg[Protocol::Key::TmpExtraOpacityFactor] = objectInfo.tmpExtraOpacityFactor;
+        // msg[Protocol::Key::ExtraOpacityFactor]    = objectInfo.extraOpacityFactor;
             // Client Server Point Object Info
         msg[Protocol::Key::NumberOfVector]        = objectInfo.numberOfVector;
         msg[Protocol::Key::NumberOfElements]      = objectInfo.numberOfElements;
@@ -582,8 +582,8 @@ void Server::initialize( uWS::WebSocket<false, true, PerSocket>* ws, const nlohm
                     // Common Server Point Object Info
                 msg[Protocol::Key::TmpParticleLimit]      = objectInfoGlyph.tmpParticleLimit;
                 msg[Protocol::Key::ParticleLimit]         = objectInfoGlyph.particleLimit;
-                msg[Protocol::Key::TmpExtraOpacityFactor] = objectInfoGlyph.tmpExtraOpacityFactor;
-                msg[Protocol::Key::ExtraOpacityFactor]    = objectInfoGlyph.extraOpacityFactor;
+                // msg[Protocol::Key::TmpExtraOpacityFactor] = objectInfoGlyph.tmpExtraOpacityFactor;
+                // msg[Protocol::Key::ExtraOpacityFactor]    = objectInfoGlyph.extraOpacityFactor;
                     // Client Server Point Object Info
                 msg[Protocol::Key::NumberOfVector]        = objectInfoGlyph.numberOfVector;
                 msg[Protocol::Key::NumberOfElements]      = objectInfoGlyph.numberOfElements;
@@ -955,8 +955,8 @@ void Server::selectedFile( uWS::WebSocket<false, true, PerSocket>* ws, const nlo
         // サーバポイントオブジェクト(ClientServer/In-Situ共通)
         msg[Protocol::Key::TmpParticleLimit]      = objectInfoOpt->tmpParticleLimit;
         msg[Protocol::Key::ParticleLimit]         = objectInfoOpt->particleLimit;
-        msg[Protocol::Key::TmpExtraOpacityFactor] = objectInfoOpt->tmpExtraOpacityFactor;
-        msg[Protocol::Key::ExtraOpacityFactor]    = objectInfoOpt->extraOpacityFactor;
+        // msg[Protocol::Key::TmpExtraOpacityFactor] = objectInfoOpt->tmpExtraOpacityFactor;
+        // msg[Protocol::Key::ExtraOpacityFactor]    = objectInfoOpt->extraOpacityFactor;
 
         // サーバポイントオブジェクト(ClientServerのみ)
         msg[Protocol::Key::NumberOfVector]        = objectInfoOpt->numberOfVector;
@@ -1061,12 +1061,12 @@ void Server::receiveObjectInfoParameter( uWS::WebSocket<false, true, PerSocket>*
                 m_particle_property->m_particle_limit = info.particleLimit;
                 info.needSameTimeStepReplace = true;
             }
-            if( patch.contains( Protocol::Key::ExtraOpacityFactor ) )
-            {
-                info.extraOpacityFactor = patch[Protocol::Key::ExtraOpacityFactor].get<float>();
-                m_particle_property->m_extra_opacity_factor = info.extraOpacityFactor;
-                info.needSameTimeStepReplace = true;
-            }
+            // if( patch.contains( Protocol::Key::ExtraOpacityFactor ) )
+            // {
+            //     info.extraOpacityFactor = patch[Protocol::Key::ExtraOpacityFactor].get<float>();
+            //     m_particle_property->m_extra_opacity_factor = info.extraOpacityFactor;
+            //     info.needSameTimeStepReplace = true;
+            // }
             // サーバポイントオブジェクト(ClientServerのみ)
             if( patch.contains( Protocol::Key::CoordinateX ) )
             {
