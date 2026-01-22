@@ -1,3 +1,5 @@
+#include <array>
+
 #include <vismodule/GenerateParticle>
 #include <vismodule/GeneratePOL>
 #include <vismodule/ParticleProperty>

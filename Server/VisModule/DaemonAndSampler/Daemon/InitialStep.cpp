@@ -1,3 +1,5 @@
+#include <array>
+
 #include <vismodule/InitialStep>
 #include <vismodule/Calculate>
 #include <vismodule/ParticleMonitor>

@@ -1,3 +1,5 @@
+#include <array>
+
 #include <vismodule/Calculate>
 #include <vismodule/JobDispatcher>
 #include <vismodule/GenerateParticle>

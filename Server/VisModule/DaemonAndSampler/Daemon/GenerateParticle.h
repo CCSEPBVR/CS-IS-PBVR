@@ -1,6 +1,8 @@
 #ifndef VIS_MODULE_GENERATE_STEP_H_INCLDE
 #define VIS_MODULE_GENERATE_STEP_H_INCLDE
 
+#include <array>
+
 #include <vismodule/ParticleProperty>
 #include <vismodule/MultiVolumeProperty>
 #include <vismodule/AnyValueArray>
