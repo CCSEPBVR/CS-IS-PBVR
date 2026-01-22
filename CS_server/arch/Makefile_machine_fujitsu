@@ -1,8 +1,0 @@
-CXX	= FCCpx
-CXXFLAGS= -Kfast -Xg -std=c++17
-
-CC	= fccpx
-CCFLAGS = -Kfast -Xg -std=c++17
-
-LD	= FCCpx
-LDFLAGS	= -Kfast -Xg -std=c++17

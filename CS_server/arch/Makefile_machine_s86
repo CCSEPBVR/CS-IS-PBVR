@@ -1,6 +1,0 @@
-CXX = icpx
-CXXFLAGS = -O3 -xCORE-AVX2 -std=c++17
-CC  = icx
-CCFLAGS = -O3 -xCORE-AVX2 -fcommon
-LD = icpx
-LDFLAGS= -O3 -xCORE-AVX2
