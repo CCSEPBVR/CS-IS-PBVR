@@ -18,24 +18,16 @@ TARGET = FunctionParser
 #  Header.
 #=============================================================================
 HEADERS += \
-    ExpressionConverter.h \
-    ExpressionTokenizer.h \
     Function.h \
     FunctionOperation.h \
-    FunctionParser.h \
-    ReversePolishNotation.h \
-    Token.h
+    FunctionParser.h
 
 #=============================================================================
 #  Source.
 #=============================================================================
 SOURCES += \
-    ExpressionConverter.cpp \
-    ExpressionTokenizer.cpp \
     Function.cpp \
-    FunctionParser.cpp \
-    ReversePolishNotation.cpp \
-    main.cpp
+    FunctionParser.cpp
 
 #=============================================================================
 #  Resource.

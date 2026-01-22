@@ -19,10 +19,6 @@ TARGET = Utils
 #=============================================================================
 HEADERS += \
     ClientUtils.h \
-    FrequencyTable.h \
-    GlyphItem.h \
-    PlotOverLineItem.h \
-    TransferFunctionItem.h \
     Worker.h
 
 #=============================================================================

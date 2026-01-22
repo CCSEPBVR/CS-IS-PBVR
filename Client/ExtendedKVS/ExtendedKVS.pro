@@ -18,8 +18,7 @@ TARGET = ExtendedKVS
 #  Header.
 #=============================================================================
 HEADERS += \
-    Screen.h \   
-    Utils.h
+    Screen.h    
 
 contains( DEFINES, OPENXR_SCREEN ){
 HEADERS += \
@@ -41,7 +40,6 @@ contains( DEFINES, ASSIMP ) {
 #=============================================================================
 SOURCES += \
     Screen.cpp \    
-    Utils.cpp \
 
 contains( DEFINES, OPENXR_SCREEN ){
 SOURCES += \

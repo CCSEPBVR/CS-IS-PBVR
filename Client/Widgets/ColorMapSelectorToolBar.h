@@ -10,8 +10,6 @@
 #include "Screen.h"
 #include <kvs/ColorMapBar>
 
-#include "TransferFunctionItem.h" // FIXME:不要
-
 class ColorMapSelectorToolBar : public QToolBar
 {
     Q_OBJECT
@@ -33,7 +31,6 @@ private:
     QComboBox* m_color_function_combo_box;
     kvs::qt::jaea::Screen* m_screen = nullptr;
     kvs::ColorMapBar* m_color_map_bar = nullptr;
-    QStandardItemModel *m_model = nullptr; // FIXME:不要
 
 private slots:
     void updateUIFromCurrentItem(); // FIXME:メソッド名を変更した方がいいと思います。
