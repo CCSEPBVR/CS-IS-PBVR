@@ -63,7 +63,7 @@ void ParameterFileReader::readParticleParameterFile( const char* fname )
 {
     m_name_list_file.setName( "SAMPLING_METHOD" );
     m_name_list_file.setName( "PARTICLE_LIMIT" );
-    m_name_list_file.setName( "EXTRA_OPACITY_FACTOR" );
+    // m_name_list_file.setName( "EXTRA_OPACITY_FACTOR" ); // 一時的にコメントアウト
     m_name_list_file.setName( "PARTICLE_DATA_SIZE_LIMIT" );
     m_name_list_file.setName( "RESOLUTION_WIDTH" );
     m_name_list_file.setName( "RESOLUTION_HEIGHT" );
@@ -338,9 +338,10 @@ void ParameterFileReader::setTransferFunctionParameter( ParticleProperty& partic
 
 void ParameterFileReader::setParticleParameter( ParticleProperty& particle_property )
 {
-    const std::string size_sampling_method      = m_name_list_file.getValue<std::string>("SAMPLING_METHOD");
+    const std::string size_sampling_method                  = m_name_list_file.getValue<std::string>("SAMPLING_METHOD");
     particle_property.m_particle_limit                      = m_name_list_file.getValue<int32_t>( "PARTICLE_LIMIT" );
-    particle_property.m_extra_opacity_factor                    = m_name_list_file.getValue<float>( "EXTRA_OPACITY_FACTOR" );
+    // particle_property.m_extra_opacity_factor                = m_name_list_file.getValue<float>( "EXTRA_OPACITY_FACTOR" ); // 一時的にコメントアウト
+    particle_property.m_extra_opacity_factor                = 1; // 一時的にハードコーティング
     particle_property.m_particle_data_size_limit            = m_name_list_file.getValue<float>( "PARTICLE_DATA_SIZE_LIMIT" );
     particle_property.m_color_transfer_function_synthesis   = m_name_list_file.getValue<std::string>( "COLOR_SYNTH" );
     particle_property.m_opacity_transfer_function_synthesis = m_name_list_file.getValue<std::string>( "OPACITY_SYNTH" );
@@ -768,7 +769,7 @@ std::vector<std::string> ParameterFileReader::getTableString( std::string table_
 void ParameterFileReader::set_default_parameter()
 {
     m_name_list_file.setLine( "PARTICLE_LIMIT"          , static_cast<int>( 10000000 ) );
-    m_name_list_file.setLine( "EXTRA_OPACITY_FACTOR"        , static_cast<float>( 1.0 ) );
+    // m_name_list_file.setLine( "EXTRA_OPACITY_FACTOR"        , static_cast<float>( 1.0 ) ); // 一時的にコメントアウト
     m_name_list_file.setLine( "PARTICLE_DATA_SIZE_LIMIT", static_cast<float>( 20.0 ) );
     m_name_list_file.setLine( "RESOLUTION_WIDTH"        , static_cast<int>( 620 ) );
     m_name_list_file.setLine( "RESOLUTION_HEIGHT"       , static_cast<int>( 620 ) );

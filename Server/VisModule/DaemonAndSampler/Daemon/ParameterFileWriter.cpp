@@ -22,7 +22,7 @@ void ParameterFileWriter::getParticleParameter( const ParticleProperty& particle
     }
 
     m_name_list_file.setLine( "PARTICLE_LIMIT" , particle_property.m_particle_limit );
-    m_name_list_file.setLine( "EXTRA_OPACITY_FACTOR" ,particle_property.m_extra_opacity_factor );
+    // m_name_list_file.setLine( "EXTRA_OPACITY_FACTOR" ,particle_property.m_extra_opacity_factor ); // 一時的にコメントアウト
     m_name_list_file.setLine( "PARTICLE_DATA_SIZE_LIMIT" ,particle_property.m_particle_data_size_limit );
     m_name_list_file.setLine( "RESOLUTION_WIDTH" , particle_property.m_camera->windowWidth() );
     m_name_list_file.setLine( "RESOLUTION_HEIGHT", particle_property.m_camera->windowHeight() );
@@ -37,10 +37,36 @@ void ParameterFileWriter::getParticleParameter( const ParticleProperty& particle
         ss << "TF_NAME" << n + 1 << "_";
 
         const std::string tag_base = ss.str();
-        m_name_list_file.setLine( tag_base + "MIN_C", particle_property.m_transfunc_array[n].m_user_color_variable_min );
-        m_name_list_file.setLine( tag_base + "MAX_C", particle_property.m_transfunc_array[n].m_user_color_variable_max );
-        m_name_list_file.setLine( tag_base + "MIN_O", particle_property.m_transfunc_array[n].m_user_opacity_variable_min );
-        m_name_list_file.setLine( tag_base + "MAX_O", particle_property.m_transfunc_array[n].m_user_opacity_variable_max );
+
+        switch ( particle_property.m_transfunc_array[n].m_server_color_range_mode )
+        {
+        case NamedTransferFunction::ServerRangeMode::ServerSide:
+            m_name_list_file.setLine( tag_base + "MIN_C", particle_property.m_transfunc_array[n].m_server_color_variable_min );
+            m_name_list_file.setLine( tag_base + "MAX_C", particle_property.m_transfunc_array[n].m_server_color_variable_max );
+            break;
+        case NamedTransferFunction::ServerRangeMode::UserRange:
+            m_name_list_file.setLine( tag_base + "MIN_C", particle_property.m_transfunc_array[n].m_user_color_variable_min );
+            m_name_list_file.setLine( tag_base + "MAX_C", particle_property.m_transfunc_array[n].m_user_color_variable_max );
+            break;
+        default:
+            std::cout << "ERROR:Range Mode is unknown" << std::endl;
+            break;
+        }
+
+        switch ( particle_property.m_transfunc_array[n].m_server_opacity_range_mode )
+        {
+        case NamedTransferFunction::ServerRangeMode::ServerSide:
+            m_name_list_file.setLine( tag_base + "MIN_O", particle_property.m_transfunc_array[n].m_server_opacity_variable_min );
+            m_name_list_file.setLine( tag_base + "MAX_O", particle_property.m_transfunc_array[n].m_server_opacity_variable_max );
+            break;
+        case NamedTransferFunction::ServerRangeMode::UserRange:
+            m_name_list_file.setLine( tag_base + "MIN_O", particle_property.m_transfunc_array[n].m_user_opacity_variable_min );
+            m_name_list_file.setLine( tag_base + "MAX_O", particle_property.m_transfunc_array[n].m_user_opacity_variable_max );
+            break;
+        default:
+            std::cout << "ERROR:Range Mode is unknown" << std::endl;
+            break;
+        }
 
         vismodule::ColorMap::Table   color_table   = particle_property.m_transfunc_array[n].colorMap().table();
         vismodule::OpacityMap::Table opacity_table = particle_property.m_transfunc_array[n].opacityMap().table();

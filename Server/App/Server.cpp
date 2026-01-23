@@ -1172,6 +1172,9 @@ void Server::receiveTransferFunctionParameter( uWS::WebSocket<false, true, PerSo
     if( colorSynthesizer.empty() )   colorSynthesizer = "C1";
     if( opacitySynthesizer.empty() ) opacitySynthesizer = "O1";
 
+    m_particle_property->m_color_transfer_function_synthesis   = colorSynthesizer;
+    m_particle_property->m_opacity_transfer_function_synthesis = opacitySynthesizer;
+
     // std::cout << "Color Synthesizer:   " << colorSynthesizer << std::endl;
     // std::cout << "Opacity Synthesizer: " << opacitySynthesizer << std::endl;
 
@@ -1740,6 +1743,62 @@ void Server::requestDataAt( uWS::WebSocket<false, true, PerSocket>* ws, const nl
         }
 
         m_u_web_sockets.publish( "Notice", msg.dump(), uWS::OpCode::TEXT );
+
+        // ISで伝達関数のrange modeが1つでもserver side rangeの場合default.tfに書き込む
+        if ( m_server_mode == ServerMode::IS )
+        {
+            bool isServerSideRangeUsed = false;
+            for ( size_t i = 0; i < tf_number; i++ )
+            {
+                if ( m_particle_property->m_transfunc_array[i].m_server_color_range_mode == NamedTransferFunction::ServerRangeMode::ServerSide )
+                {
+                    isServerSideRangeUsed = true;
+                    break;
+                }
+
+                if ( m_particle_property->m_transfunc_array[i].m_server_opacity_range_mode == NamedTransferFunction::ServerRangeMode::ServerSide )
+                {
+                    isServerSideRangeUsed = true;
+                    break;
+                }
+            }
+
+            if ( isServerSideRangeUsed )
+            {
+                const char *envBuf = NULL;
+                std::string tfFilePath;
+
+                envBuf = std::getenv( "VIS_PARAM_DIR" );
+
+                if ( envBuf == nullptr )
+                {
+                    tfFilePath = "./";
+                }
+                else
+                {
+                    tfFilePath = envBuf;
+                    if ( tfFilePath[tfFilePath.size() - 1] != '/' ) tfFilePath += "/";
+                }
+
+                envBuf = std::getenv( "TF_NAME" );
+
+                if ( envBuf == nullptr )
+                {
+                    tfFilePath += "default.tf";
+                }
+                else
+                {
+                    tfFilePath +=  envBuf;
+                    tfFilePath += ".tf";
+                }
+
+                std::cout << "tfFilePath:" << tfFilePath << std::endl;
+
+                ParameterFileWriter ppw;
+                ppw.getParticleParameter( *m_particle_property );
+                ppw.writeParameterFile( tfFilePath.c_str() );
+            }
+        }
     } );
     worker.process();
 }

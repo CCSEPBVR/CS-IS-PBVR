@@ -251,6 +251,40 @@ bool generate_particles(
         OutputLine( time_step, plotOverLineFilePrefix, values_on_line, mask, x_axis );
     }
    
+    // 粒子ファイル書き込みスレッドが終了するまで待機
+    // async_io_enabled, pwtはkvs_wrapper_common.cppに宣言
+    if ( async_io_enabled )
+    {
+        std::cout << "Particle write thread is active."             << std::endl;
+        std::cout << "Waiting for particle write thread to finish." << std::endl;
+        pbvr::ParticleWriteThread* particle_write_thread = &pwt;
+        particle_write_thread->join( true );
+        std::cout << "Particle write thread is finished." << std::endl;
+    }
+    else
+    {
+        std::cout << "Particle write thread is not active." << std::endl;
+    }
+
+    std::cout << "Waiting for all processes to finish." << std::endl;
+    
+#ifndef CPU_VER
+    MPI_Barrier( MPI_COMM_WORLD ); // すべてのプロセスでファイルの書き込む処理が終了するまで待機
+#endif
+    
+    std::cout << "All processes have finished." << std::endl;
+
+    if ( mpi_rank == 0 )
+    {
+        std::ofstream ofs( stateFilePath.c_str(), std::ios::out );
+        if( !ofs.is_open() ) std::cout << "Cannot open state.txt" << std::endl;
+
+        ofs << "START_STEP  = " << start_time_step << std::endl;
+        ofs << "LATEST_STEP = " << time_step       << std::endl;
+
+        ofs.close();
+    }
+   
     delete tmp_c_bins;
     delete tmp_o_bins;
     delete tmp_max;
@@ -391,20 +425,20 @@ bool SetParticleParameter(
 
     if( mpi_rank == 0 )
     {
-        fprintf( stdout , "---------initialize Parameters----------------------------------------\n" );
-        fprintf( stdout , "particle_limit    = %20d\n"  , particle_limit                             );
-        fprintf( stdout , "extra_opacity_factor  = %20f\n"  , extra_opacity_factor                           );
-        fprintf( stdout , "resolutin_height  = %20d\n"  , particle_property.m_camera->windowHeight() );
-        fprintf( stdout , "resolutin_width   = %20d\n"  , particle_property.m_camera->windowWidth()  );
-        fprintf( stdout , "total_volume      = %20.3e\n", total_volume                               );
-        fprintf( stdout , "  |-X             = %20f\n"  , object.maxObjectCoord().x()                );
-        fprintf( stdout , "  |-Y             = %20f\n"  , object.maxObjectCoord().y()                );
-        fprintf( stdout , "  |-Z             = %20f\n"  , object.maxObjectCoord().z()                );
-        fprintf( stdout , "max_opacity       = %20.3e\n", max_opacity                                );
-        fprintf( stdout , "max_density       = %20.3e\n", max_density                                );
-        fprintf( stdout , "sampling_step     = %20.3e\n", sampling_step                              );
-        fprintf( stdout , "subpixel_level    = %20d\n"  , subpixel_level                             );
-        fprintf( stdout , "----------------------------------------------------------------------\n" );
+        fprintf( stdout , "---------initialize Parameters---------------------------------------------\n");
+        fprintf( stdout , "particle_limit    = %20d\n"      , particle_limit                             );
+        fprintf( stdout , "extra_opacity_factor  = %20f\n"  , extra_opacity_factor                       );
+        fprintf( stdout , "resolutin_height  = %20d\n"      , particle_property.m_camera->windowHeight() );
+        fprintf( stdout , "resolutin_width   = %20d\n"      , particle_property.m_camera->windowWidth()  );
+        fprintf( stdout , "total_volume      = %20.3e\n"    , total_volume                               );
+        fprintf( stdout , "  |-X             = %20f\n"      , object.maxObjectCoord().x()                );
+        fprintf( stdout , "  |-Y             = %20f\n"      , object.maxObjectCoord().y()                );
+        fprintf( stdout , "  |-Z             = %20f\n"      , object.maxObjectCoord().z()                );
+        fprintf( stdout , "max_opacity       = %20.3e\n"    , max_opacity                                );
+        fprintf( stdout , "max_density       = %20.3e\n"    , max_density                                );
+        fprintf( stdout , "sampling_step     = %20.3e\n"    , sampling_step                              );
+        fprintf( stdout , "subpixel_level    = %20d\n"      , subpixel_level                             );
+        fprintf( stdout , "--------------------------------------------------------------------------\n" );
     }
 
     return true;

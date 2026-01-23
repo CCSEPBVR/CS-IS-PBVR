@@ -70,7 +70,7 @@ void ParticleHistoryFile::set_name()
         m_name.push_back( "HISTOGRAM_O" + ss.str() );
     }
     m_name.push_back( "N_VARIABLES" );
-    m_name.push_back( "EXTRA_OPACITY_FACTOR" );
+    // m_name.push_back( "EXTRA_OPACITY_FACTOR" ); // 一時的にコメントアウト
     m_name.push_back( "PARTICLE_LIMIT" );
     m_name.push_back( "END_HISTORY_FILE" );
 
@@ -135,7 +135,7 @@ void ParticleHistoryFile::assign_name_list( const NameListFile& name_list_file )
     }
     m_nvariables           = nml.getValue<int>( "N_VARIABLES" );
     m_particle_limit       = nml.getValue<int>( "PARTICLE_LIMIT" );
-    m_extra_opacity_factor = nml.getValue<float>( "EXTRA_OPACITY_FACTOR" );
+    // m_extra_opacity_factor = nml.getValue<float>( "EXTRA_OPACITY_FACTOR" ); // 一時的にコメントアウト
 
     for (int i = 0; i < cur_tf_number; i++) {
         std::stringstream ss;

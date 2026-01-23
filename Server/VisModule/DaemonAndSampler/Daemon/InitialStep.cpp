@@ -620,7 +620,10 @@ void SetDefaultParticleParameterIS(
     // particle limit and particle density will be overwritten later
     // when transfer function file is readed(ParameterFileReader)
     particle_property.m_particle_limit       = pm.particleHistoryFile().ParticleLimit();
-    particle_property.m_extra_opacity_factor = pm.particleHistoryFile().ExtraOpacityFactor();;
+    
+    // 一時的にハードコーディング
+    // particle_property.m_extra_opacity_factor = pm.particleHistoryFile().ExtraOpacityFactor();
+    particle_property.m_extra_opacity_factor = 1;
 
     ParameterFileReader ppr;
     ppr.readParticleParameterFile( tfFilePath_old.c_str() );

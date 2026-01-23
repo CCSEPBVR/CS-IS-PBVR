@@ -448,20 +448,20 @@ bool SetParticleParameter(
 
     if( mpi_rank == 0 )
     {
-        fprintf( stdout , "---------initialize Parameters----------------------------------------\n" );
-        fprintf( stdout , "particle_limit    = %20d\n"  , particle_limit                             );
-        fprintf( stdout , "extra_opacity_factor  = %20f\n"  , extra_opacity_factor                           );
-        fprintf( stdout , "resolutin_height  = %20d\n"  , particle_property.m_camera->windowHeight() );
-        fprintf( stdout , "resolutin_width   = %20d\n"  , particle_property.m_camera->windowWidth()  );
-        fprintf( stdout , "total_volume      = %20.3e\n", total_volume                               );
-        fprintf( stdout , "  |-X             = %20f\n"  , object.maxObjectCoord().x()                );
-        fprintf( stdout , "  |-Y             = %20f\n"  , object.maxObjectCoord().y()                );
-        fprintf( stdout , "  |-Z             = %20f\n"  , object.maxObjectCoord().z()                );
-        fprintf( stdout , "max_opacity       = %20.3e\n", max_opacity                                );
-        fprintf( stdout , "max_density       = %20.3e\n", max_density                                );
-        fprintf( stdout , "sampling_step     = %20.3e\n", sampling_step                              );
-        fprintf( stdout , "subpixel_level    = %20d\n"  , subpixel_level                             );
-        fprintf( stdout , "----------------------------------------------------------------------\n" );
+        fprintf( stdout , "---------initialize Parameters-------------------------------------------\n" );
+        fprintf( stdout , "particle_limit    = %20d\n"     , particle_limit                             );
+        fprintf( stdout , "extra_opacity_factor  = %20f\n" , extra_opacity_factor                       );
+        fprintf( stdout , "resolutin_height  = %20d\n"     , particle_property.m_camera->windowHeight() );
+        fprintf( stdout , "resolutin_width   = %20d\n"     , particle_property.m_camera->windowWidth()  );
+        fprintf( stdout , "total_volume      = %20.3e\n"   , total_volume                               );
+        fprintf( stdout , "  |-X             = %20f\n"     , object.maxObjectCoord().x()                );
+        fprintf( stdout , "  |-Y             = %20f\n"     , object.maxObjectCoord().y()                );
+        fprintf( stdout , "  |-Z             = %20f\n"     , object.maxObjectCoord().z()                );
+        fprintf( stdout , "max_opacity       = %20.3e\n"   , max_opacity                                );
+        fprintf( stdout , "max_density       = %20.3e\n"   , max_density                                );
+        fprintf( stdout , "sampling_step     = %20.3e\n"   , sampling_step                              );
+        fprintf( stdout , "subpixel_level    = %20d\n"     , subpixel_level                             );
+        fprintf( stdout , "-------------------------------------------------------------------------\n" );
     }
 
     return true;
