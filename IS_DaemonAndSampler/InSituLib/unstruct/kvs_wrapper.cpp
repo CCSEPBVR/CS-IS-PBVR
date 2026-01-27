@@ -474,7 +474,8 @@ bool initializeParameters(
     //*max_opacity = 0.98;
     *max_opacity = 0.9;
     //*subpixel_level = CalculateSubpixelLevel( *particle_limit , camera, sampling_step, total_volume, object );
-    *subpixel_level = 1.f;
+    //*subpixel_level = 1.f;
+    *subpixel_level = 2.f;
 
     //std::cout<<"Generator::\n";
     Generator::CalculateDensityParameters(
@@ -3406,7 +3407,7 @@ void EnsembleGenerateParticles( int time_step,
     float particle_data_size_limit = particleBase.m_particle_data_size_limit;
     // repeat level を手動設定
     //int   repetitions             = 24 ;
-    int   repetitions             = 8 ;
+    int   repetitions             = 9 ;
     parameter_file_opened = particleBase.m_parameter_file_opened;
     const int max_nparticles = (int)max_density + 1;
 
@@ -3414,13 +3415,14 @@ void EnsembleGenerateParticles( int time_step,
     const int MPIprocess_per_ensemble = 4;  
     int ens_number = mpi_size/MPIprocess_per_ensemble;
     repetitions /= ens_number;
+    if (repetitions < ens_number ) repetitions = 1;
 
 //    float max_opacity              = 0.98;
     // Hydrogen
     const float min_value = -5;
     const float max_value = 10;
-    const float var_min_value = 0;
-    const float var_max_value = 1;
+    const float var_min_value = -8;
+    const float var_max_value =-8;
 ////    // spx 
 //    const float min_value = 0.2;
 //    const float max_value = 1;
@@ -3446,8 +3448,10 @@ void EnsembleGenerateParticles( int time_step,
 //    tf.setRange(min_value, max_value);
 //  .tfファイルを参照
     auto tf = particleBase.m_tf[0];
-    const float max_range =  tf_resolution - 1 ;
-    const float normalize_factor = max_range / ( max_value - min_value );
+    const float max_value_tf = particleBase.m_tf[0].opacityMap().maxValue();
+    const float min_value_tf = particleBase.m_tf[0].opacityMap().minValue();
+//    const float max_range =  tf_resolution - 1 ;
+//    const float normalize_factor = max_range / ( max_value - min_value );
 //    int NP_in_cell[ncells];
 //    int rejected_NP_in_cell[ncells];
 //    for (int i =0; i<ncells;i++)
@@ -3525,14 +3529,23 @@ void EnsembleGenerateParticles( int time_step,
             timeN[2] += th_timer.sec();
             th_timer.start();
 
-           
+//            // cityLBM用に生成粒子の範囲を限定
+//            kvs::Vector3f local_array[remain];
+//            for(int cell_BLK = 0; cell_BLK < remain; cell_BLK++ )
+//            {
+//                    local_array[cell_BLK].x()= 0;
+//                    local_array[cell_BLK].y()= 0;
+//                    local_array[cell_BLK].z()= 0;
+//            }
+//            kvs::Vector3f global_array[remain];
+//            cell[thid]->transformLocalToGlobalArray(remain, local_array, global_array);
+
             //生成粒子数を計算
             #pragma simd
             for(int cell_BLK = 0; cell_BLK < remain; cell_BLK++ )
             {
-                nparticles_array[cell_BLK] 
-                    = calculate_number_of_particles( max_density, volume_array[cell_BLK], &MT ) * repetitions ;
-//                if(cell_index[cell_BLK] < 10 )std::cout << "nparticles_array[cell_BLK] = " << nparticles_array[cell_BLK] << std::endl;
+                    nparticles_array[cell_BLK] 
+                        = calculate_number_of_particles( max_density, volume_array[cell_BLK], &MT ) * repetitions * particle_density ;
             }
             th_timer.stop();
             timeN[3] += th_timer.sec();
@@ -3746,14 +3759,13 @@ void EnsembleGenerateParticles( int time_step,
     th_timer.stop();
     timeN[11] += th_timer.sec();
     th_timer.start();
-//    if (thid <  12 )
-//    {
-//        for (int i =0;i < 12; i++)
-//        {
-//            std::cout << mpi_rank <<  ": ave_sampling_time["<< i <<"] =" << timeN[i] << std::endl;
-//        }
-    
-//    }
+    if (thid <  12 )
+    {
+        for (int i =0;i < 12; i++)
+        {
+            std::cout << mpi_rank <<  ": ave_sampling_time["<< i <<"] =" << timeN[i] << std::endl;
+        }
+    }
 }  //end omp loop
     timer.stop();
     std::cout << mpi_rank <<  ": uniform_sampling_time =" << timer.sec() << std::endl;
@@ -4001,10 +4013,10 @@ void EnsembleGenerateParticles( int time_step,
 //        std::cout << mpi_rank <<  ": bindcell_time =" << time3 << std::endl; 
 //        std::cout << mpi_rank <<  ": calc_time =" << time4 << std::endl; 
 //        std::cout << mpi_rank <<  ": move_time =" << time5 << std::endl; 
-//        for (int i =0;i < 7; i++)
-//        {
-//            std::cout << mpi_rank <<  ": ave_calc_time["<< i <<"] =" << timeN[i] << std::endl;
-//        }
+        for (int i =0;i < 7; i++)
+        {
+            std::cout << mpi_rank <<  ": ave_calc_time["<< i <<"] =" << timeN[i] << std::endl;
+        }
 
 
 
@@ -4024,6 +4036,14 @@ void EnsembleGenerateParticles( int time_step,
     }
     //棄却法を適応する
 #if 1
+
+// 常用対数を取るための計算
+ std::vector<float> log_vertex_scalars(vertex_scalars.size());
+#pragma omp simd
+       for (int i = 0; i < vertex_scalars.size(); i++ )
+       {
+           log_vertex_scalars[ i ]     = std::log10(vertex_scalars[ i ]); 
+       }
 
     timer.stop();
     timer.start();
@@ -4100,7 +4120,9 @@ void EnsembleGenerateParticles( int time_step,
                 //opacity 計算 
                 for( int j = 0; j < remain_BLK; j++ ) 
                 {
-                    opacity_array[j] = tf.opacityMap().at(vertex_scalars[ i+j ]);
+//                    opacity_array[j] = tf.opacityMap().at(vertex_scalars[ i+j ]);
+//                    対数値を参照
+                    opacity_array[j] = tf.opacityMap().at(log_vertex_scalars[ i+j ]);
                 }
                 th_timer.stop();
                 th_timeN[4] += th_timer.sec();
@@ -4129,7 +4151,9 @@ void EnsembleGenerateParticles( int time_step,
                {
                 th_timer.start();
                    // Calculate a color.
-                   const kvs::RGBColor color( tf.colorMap().at( vertex_scalars[ i+j ] ) );
+//                   const kvs::RGBColor color( tf.colorMap().at( vertex_scalars[ i+j ] ) );
+//                    対数値を参照
+                   const kvs::RGBColor color( tf.colorMap().at( log_vertex_scalars[ i+j ] ) );
                 th_timer.stop();
                 th_timeN[7] += th_timer.sec();
                 th_timer.start();
@@ -4158,82 +4182,6 @@ void EnsembleGenerateParticles( int time_step,
                }
                 }
             }
-//#pragma omp for schedule( dynamic ) nowait
-//#pragma omp for
-//       for(int i =0; i< vertex_scalars.size() ;i++)
-//       {
-//                th_timer.start();
-//            cell[thid] -> bindCell(vertex_cellids[i]); 
-//                th_timer.stop();
-//                th_timeN[0] += th_timer.sec();
-//                th_timer.start();
-//         
-//               const kvs::Vector3f coord(vertex_coords[3*i+0], vertex_coords[3*i+1], vertex_coords[3*i+2]);
-
-//                th_timer.stop();
-//                th_timeN[1] += th_timer.sec();
-//                th_timer.start();
-//               cell[thid] -> setLocalPoint(coord);
-//                th_timer.stop();
-//                th_timeN[2] += th_timer.sec();
-//                th_timer.start();
-//               // local 座標からglobal座標へ変換
-//               const kvs::Vector3f global_coord = cell[thid] -> transformLocalToGlobal(coord);
-//                th_timer.stop();
-//                th_timeN[3] += th_timer.sec();
-//                th_timer.start();
-//
-//               // density の計算
-//               float opacity = tf.opacityMap().at(vertex_scalars[ i ]);
-//                th_timer.stop();
-//                th_timeN[4] += th_timer.sec();
-//                th_timer.start();
-//               float density  = Generator::CalculateDensity( opacity,
-//                       sampling_volume_inverse,
-//                       max_opacity, max_density );
-//                th_timer.stop();
-//                th_timeN[5] += th_timer.sec();
-//                th_timer.start();
-//               const float R = MT.rand();
-//                th_timer.stop();
-//                th_timeN[6] += th_timer.sec();
-//               if ( density > max_density * R )
-//               {
-//                th_timer.start();
-//                   // Calculate a color.
-//                   const kvs::RGBColor color( tf.colorMap().at( vertex_scalars[ i ] ) );
-//                th_timer.stop();
-//                th_timeN[7] += th_timer.sec();
-//                th_timer.start();
-//
-//                   // Calculate a normal.
-//                   const kvs::Vector3f normal( vertex_normals[3*i+0], vertex_normals[3*i+1], vertex_normals[3*i+2] );
-//                th_timer.stop();
-//                th_timeN[8] += th_timer.sec();
-//                th_timer.start();
-//
-//                   // set coord, color, and normal to point object( this ).
-//                   th_vertex_coords.push_back( global_coord.x() );
-//                   th_vertex_coords.push_back( global_coord.y() );
-//                   th_vertex_coords.push_back( global_coord.z() );
-//
-////                   th_vertex_scalars.push_back(vertex_scalars[ i ]);
-//
-//                   th_vertex_colors.push_back( color.r() );
-//                   th_vertex_colors.push_back( color.g() );
-//                   th_vertex_colors.push_back( color.b() );
-//
-//                   th_vertex_normals.push_back( normal.x() );
-//                   th_vertex_normals.push_back( normal.y() );
-//                   th_vertex_normals.push_back( normal.z() );
-//
-////                   th_vertex_cellids.push_back(vertex_cellids[i]);
-////
-//                th_timer.stop();
-//                th_timeN[9] += th_timer.sec();
-//               }
-//
-//       }
                 th_timer.start();
 #pragma omp critical
        {
@@ -4245,13 +4193,13 @@ void EnsembleGenerateParticles( int time_step,
        }
                 th_timer.stop();
                 th_timeN[10] += th_timer.sec();
-//#pragma omp critical
-//                {    
-//                    for (int i =0;i < 11; i++)
-//                    {
-//                        std::cout << mpi_rank <<  ": ave_rejection_time["<< i <<"] =" << th_timeN[i] << std::endl;
-//                    }
-//                }
+#pragma omp critical
+                {    
+                    for (int i =0;i < 11; i++)
+                    {
+                        std::cout << mpi_rank <<  ": ave_rejection_time["<< i <<"] =" << th_timeN[i] << std::endl;
+                    }
+                }
 
 }
        timer.stop();
@@ -4266,8 +4214,10 @@ void EnsembleGenerateParticles( int time_step,
     particleBase.m_sample_colors.insert(particleBase.m_sample_colors.end()  , average_colors.begin() , average_colors.end());
     particleBase.m_sample_normals.insert(particleBase.m_sample_normals.end(), average_normals.begin(), average_normals.end());
 
-//#if 0
+#if 1
     // 分散を計算する
+    // cityLBM用の minmax設定
+     if( particleBase.m_tf.size() >1 ) tf = particleBase.m_tf[1];
        // 分散計算処理 
        //平均値 データ配列の受け渡し
           average_scalars = vertex_scalars;
@@ -4343,10 +4293,26 @@ void EnsembleGenerateParticles( int time_step,
                 th_timer.stop();
                 th_timeN[5] += th_timer.sec();
                 th_timer.start();
+                //丸め誤差の影響排除のための正規化
+//            #pragma omp simd
+//                    for (int j= 0; j <remain_BLK ;j++)
+//                    {
+//                        scalar_array[j]           *= 1e6;
+//                        average_scalars[i+j]      *= 1e6;
+//                        average_normals[3*(i+j)+0]*= 1e6;
+//                        average_normals[3*(i+j)+1]*= 1e6;
+//                        average_normals[3*(i+j)+2]*= 1e6;
+//                        grad_array_x[j]           *= 1e6;
+//                        grad_array_y[j]           *= 1e6;
+//                        grad_array_z[j]           *= 1e6;
+//                    }
+
             #pragma omp simd
                     for (int j= 0; j <remain_BLK ;j++)
                     {
-                        vertex_scalars[i+j]       = (scalar_array[j] - average_scalars[i+j])*(scalar_array[j] - average_scalars[i+j]);
+//                       if ((i+j) % 10000 == 0 ) std::cout << "scalar_array[j] = " << scalar_array[j] << ", average_scalars_average[i+j] = " << average_scalars[i+j]  << std::endl;
+//                        vertex_scalars[i+j]       = (scalar_array[j] - average_scalars[i+j])*(scalar_array[j] - average_scalars[i+j]);
+                        //vertex_scalars[i+j]       =  (1e6*scalar_array[j] - 1e6*average_scalars[i+j])*(1e6*scalar_array[j] - 1e6*average_scalars[i+j]);
                         vertex_normals[3*(i+j)+0] = (scalar_array[j] - average_scalars[i+j])*(grad_array_x[j] - average_normals[3*(i+j)+0]);
                         vertex_normals[3*(i+j)+1] = (scalar_array[j] - average_scalars[i+j])*(grad_array_y[j] - average_normals[3*(i+j)+1]);
                         vertex_normals[3*(i+j)+2] = (scalar_array[j] - average_scalars[i+j])*(grad_array_z[j] - average_normals[3*(i+j)+2]);
@@ -4395,11 +4361,11 @@ void EnsembleGenerateParticles( int time_step,
                 th_timer.start();
           }
 #endif
-//    #pragma omp critical
-//        for (int i =0;i < 7; i++)
-//        {
-//            std::cout << mpi_rank <<  ": var_sampling_time["<< i <<"] =" << th_timeN[i] << std::endl;
-//        }
+    #pragma omp critical
+        for (int i =0;i < 7; i++)
+        {
+            std::cout << mpi_rank <<  ": var_sampling_time["<< i <<"] =" << th_timeN[i] << std::endl;
+        }
 }
            vertex_cellids = average_cellids;
            vertex_coords  = average_coords;
@@ -4602,12 +4568,23 @@ void EnsembleGenerateParticles( int time_step,
                         recv_normals_average_array_z[j] = recv_normals_average[3*(i+j)+2];
                     }
 
+                    //丸め誤差の影響排除のための正規化
+//            #pragma omp simd
+//                    for (int j= 0; j <remain_BLK ;j++)
+//                    {
+//                        scalar_array[j]           *= 1e6;
+//                        grad_array_x[j]           *= 1e6;
+//                        grad_array_y[j]           *= 1e6;
+//                        grad_array_z[j]           *= 1e6;
+//                    }
 
             #pragma omp simd
                     for( int j = 0; j < remain_BLK; j++ ) 
                     {
+//                       if ((i+j) % 10000 == 0 ) std::cout << "scalar_array[j] = " << scalar_array[j] << ", recv_scalars_average[i+j] = " << recv_scalars_average[i+j]  << std::endl;
 //                        // 算出データを受信データと足し合わせる
                         recv_scalars[i+j]       = (scalar_array[j] - recv_scalars_average[i+j] )*(scalar_array[j] - recv_scalars_average[  i+j    ]) + recv_scalars[i+j] ;
+//                        recv_scalars[i+j]       = (1e6*scalar_array[j] - 1e6*recv_scalars_average[i+j] )*(1e6*scalar_array[j] - 1e6*recv_scalars_average[  i+j    ]) + recv_scalars[i+j] ;
                         recv_normals_array_x[j] = (scalar_array[j] - recv_scalars_average[i+j] )*(grad_array_x[j] - recv_normals_average_array_x[j]) + recv_normals_array_x[j];
                         recv_normals_array_y[j] = (scalar_array[j] - recv_scalars_average[i+j] )*(grad_array_y[j] - recv_normals_average_array_y[j]) + recv_normals_array_y[j];
                         recv_normals_array_z[j] = (scalar_array[j] - recv_scalars_average[i+j] )*(grad_array_z[j] - recv_normals_average_array_z[j]) + recv_normals_array_z[j];
@@ -4651,7 +4628,6 @@ void EnsembleGenerateParticles( int time_step,
        std::cout << mpi_rank <<  ": var_shift_exe_time =" << shift_exe_time << std::endl;
        std::cout << mpi_rank <<  ": var_move_exe_time =" << move_exe_time << std::endl;
 
-//    }
 //#if 0      
        // 集計された分散値を計算
        //const float invert_num = 1.f/float(mpi_size);  
@@ -4663,6 +4639,24 @@ void EnsembleGenerateParticles( int time_step,
            vertex_normals[3*i + 1] *=  -2.f*invert_num;// 2.f は分散計算式の係数
            vertex_normals[3*i + 2] *=  -2.f*invert_num;// 2.f は分散計算式の係数
        }
+       
+// 常用対数を取るための計算
+ std::vector<float> log_vertex_scalars(vertex_scalars.size());
+#pragma omp simd
+       for (int i = 0; i < vertex_scalars.size(); i++ )
+       {
+           log_vertex_scalars[ i ]     = std::log10(vertex_scalars[ i ]); 
+       }
+
+
+//// 常用対数を取るための計算 + 正規化の逆変換処理
+//#pragma omp simd
+//       for (int i = 0; i < vertex_scalars.size(); i++ )
+//       {
+//           vertex_scalars[ i ]     = std::log10(vertex_scalars[ i ]); 
+////           if (i % 10000 == 0 ) std::cout << "vertex_scalars[ i ] = " << vertex_scalars[ i ] << std::endl;
+//       }
+
 //       timer.stop();
 //       std::cout << mpi_rank <<  ": var_shift_exe_time =" << timer.sec() << std::endl;
     } // end if(mpi_size ==1)
@@ -4750,7 +4744,7 @@ void EnsembleGenerateParticles( int time_step,
                 //opacity 計算 
                 for( int j = 0; j < remain_BLK; j++ ) 
                 {
-                    opacity_array[j] = tf.opacityMap().at(vertex_scalars[ i+j ]);
+                    opacity_array[j] = tf.opacityMap().at(log_vertex_scalars[ i+j ]);
                 }
                 th_timer.stop();
                 th_timeN[4] += th_timer.sec();
@@ -4780,7 +4774,7 @@ void EnsembleGenerateParticles( int time_step,
                {
                 th_timer.start();
                    // Calculate a color.
-                   const kvs::RGBColor color( tf.colorMap().at( vertex_scalars[ i+j ] ) );
+                   const kvs::RGBColor color( tf.colorMap().at( log_vertex_scalars[ i+j ] ) );
                 th_timer.stop();
                 th_timeN[7] += th_timer.sec();
                 th_timer.start();
@@ -4810,82 +4804,6 @@ void EnsembleGenerateParticles( int time_step,
                 }
             }
 
-#if 0
-//#pragma omp for schedule( dynamic ) nowait
-#pragma omp for
-       for(int i =0; i< vertex_scalars.size() ;i++)
-       {
-            th_timer.start();
-            cell[thid] -> bindCell(vertex_cellids[i]); 
-            th_timer.stop();
-            th_timeN[0] += th_timer.sec();
-            th_timer.start();
-               const kvs::Vector3f coord(vertex_coords[3*i+0], vertex_coords[3*i+1], vertex_coords[3*i+2]);
-
-            th_timer.stop();
-            th_timeN[1] += th_timer.sec();
-            th_timer.start();
-               cell[thid] -> setLocalPoint(coord);
-
-            th_timer.stop();
-            th_timeN[2] += th_timer.sec();
-            th_timer.start();
-               // local 座標からglobal座標へ変換
-               const kvs::Vector3f global_coord = cell[thid] -> transformLocalToGlobal(coord);
-            th_timer.stop();
-            th_timeN[3] += th_timer.sec();
-            th_timer.start();
-               // density の計算
-               float opacity = tf.opacityMap().at(vertex_scalars[ i ]);
-
-            th_timer.stop();
-            th_timeN[4] += th_timer.sec();
-            th_timer.start();
-               float density  = Generator::CalculateDensity( opacity,
-                       sampling_volume_inverse,
-                       max_opacity, max_density );
-
-            th_timer.stop();
-            th_timeN[5] += th_timer.sec();
-            th_timer.start();
-               const float R = MT.rand();
-            th_timer.stop();
-            th_timeN[6] += th_timer.sec();
-               if ( density > max_density * R )
-               {
-            th_timer.start();
-                   // Calculate a color.
-                   const kvs::RGBColor color( tf.colorMap().at( vertex_scalars[ i ] ) );
-            th_timer.stop();
-            th_timeN[7] += th_timer.sec();
-            th_timer.start();
-                   // Calculate a normal.
-                   const kvs::Vector3f normal( vertex_normals[3*i+0], vertex_normals[3*i+1], vertex_normals[3*i+2] );
-            th_timer.stop();
-            th_timeN[8] += th_timer.sec();
-            th_timer.start();
-
-                   // set coord, color, and normal to point object( this ).
-                   th_vertex_coords.push_back( global_coord.x() );
-                   th_vertex_coords.push_back( global_coord.y() );
-                   th_vertex_coords.push_back( global_coord.z() );
-
-                   th_vertex_scalars.push_back(vertex_scalars[ i ]);
-
-                   th_vertex_colors.push_back( color.r() );
-                   th_vertex_colors.push_back( color.g() );
-                   th_vertex_colors.push_back( color.b() );
-
-                   th_vertex_normals.push_back( normal.x() );
-                   th_vertex_normals.push_back( normal.y() );
-                   th_vertex_normals.push_back( normal.z() );
-
-            th_timer.stop();
-            th_timeN[9] += th_timer.sec();
-               }
-
-       }
-#endif
        th_timer.start();
 #pragma omp critical
        {
@@ -4918,7 +4836,7 @@ void EnsembleGenerateParticles( int time_step,
     particleBase.m_varience_coords.insert( particleBase.m_varience_coords.end()  , var_coords.begin() , var_coords.end());
     particleBase.m_varience_colors.insert( particleBase.m_varience_colors.end()  , var_colors.begin() , var_colors.end());
     particleBase.m_varience_normals.insert(particleBase.m_varience_normals.end(), var_normals.begin(), var_normals.end());
-
+#endif
 # if 0
     // 歪度を計算する (法線計算は除外)
 
@@ -5251,7 +5169,6 @@ void EnsembleGenerateParticles( int time_step,
        std::cout << mpi_rank <<  ": ske_shift_exe_time =" << shift_exe_time << std::endl;
        std::cout << mpi_rank <<  ": ske_move_exe_time =" << move_exe_time << std::endl;
 
-//    }
 //#if 0      
        // 集計された分散値を計算
        //const float invert_num = 1.f/(float(mpi_size));  
@@ -5354,7 +5271,7 @@ void EnsembleGenerateParticles( int time_step,
     particleBase.m_skewness_normals.insert(particleBase.m_skewness_normals.end() , skewness_normals.begin(), skewness_normals.end());
 #endif
 
-    int tf_number = nvariables;
+    int tf_number = particleBase.m_tf.size();
     int nbins =256;
 
     kvs::ValueArray<int> o_histogram( tf_number * nbins );//不透明度ヒストグラムの配列
@@ -5375,11 +5292,18 @@ void EnsembleGenerateParticles( int time_step,
     for( int i = 0; i < tf_number; i++ )
     {
         //不透明度
-        particleBase.m_O_min[i] = min_value;
-        particleBase.m_O_max[i] = max_value;
+        particleBase.m_O_min[i] = particleBase.m_tf[i].minValue();
+        particleBase.m_O_max[i] = particleBase.m_tf[i].maxValue();
         //色
-        particleBase.m_C_min[i] = min_value;
-        particleBase.m_C_max[i] = max_value;
+        particleBase.m_C_min[i] = particleBase.m_tf[i].minValue();
+        particleBase.m_C_max[i] = particleBase.m_tf[i].maxValue();
+
+//        //不透明度
+//        particleBase.m_O_min[i] = min_value_tf;
+//        particleBase.m_O_max[i] = max_value_tf;
+//        //色
+//        particleBase.m_C_min[i] = min_value_tf;
+//        particleBase.m_C_max[i] = max_value_tf;
 //        std::cout << mpi_rank <<" : particleBase.m_C_min["<< i << "] = " << particleBase.m_C_min[i] << std::endl;
 //        std::cout << mpi_rank <<" : particleBase.m_C_max["<< i << "] = " << particleBase.m_C_max[i] << std::endl;
     }
@@ -5390,8 +5314,8 @@ void EnsembleGenerateParticles( int time_step,
     }
 
 
-
 }
+
 void EnsembleTest( int time_step,
                          domain_parameters dom,
                          Type** values, int nvariables,
