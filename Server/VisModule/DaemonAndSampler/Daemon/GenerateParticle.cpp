@@ -7,7 +7,6 @@
 #include <vismodule/UnstructuredVolumeImporter>
 #include <vismodule/StructuredVolumeImporter>
 #include <vismodule/ParticleMonitor>
-#include <vismodule/ParameterFileReader>
 
 #ifndef CPU_VER
     #include <vismodule/JobCollector>

@@ -23,23 +23,20 @@ private:
     
     void set_default_parameter();
 
-public:
-    void setTransferFunctionParameter( ParticleProperty& particle_property );
-    void setParticleParameter( ParticleProperty& particle_property );
-    void setGlyphParameter( GlyphProperty& glyph_property );
-    void setPlotOverLineParameter( PlotOverLineProperty& pol_property );
-
-    void readTransferFunctionFile( const char* fname );
-    void readParticleParameterFile( const char* fname );
-    void readGlyphParameterFile( const char* fname );
-    void readPlotOverLineParameterFile( const char* fname );
-
-    void setNameListFile( const NameListFile& nameListFile );
-    const NameListFile& getNameListFile() const;
-
     std::vector<int> getTableInt( std::string table_string );
     std::vector<float> getTableFloat( std::string table_string );
     std::vector<std::string> getTableString( std::string table_string );
+public:
+    void readTransferFunctionFile( const char* fname );　// CSのConnect時に指定した.tfファイルを読み込む
+    void readParticleParameterFile( const char* fname ); // ISのdefault.tfファイルを読み込む
+    void readGlyphParameterFile( const char* fname );
+    void readPlotOverLineParameterFile( const char* fname );
+    void setTransferFunctionParameter( ParticleProperty& particle_property ); // CSのConnect時に指定した.tfファイルを読み込んだ値を設定する
+    void setParticleParameter( ParticleProperty& particle_property ); // ISのdefault.tfファイルを読み込んだ値を設定する
+    void setGlyphParameter( GlyphProperty& glyph_property );
+    void setPlotOverLineParameter( PlotOverLineProperty& pol_property );
+    void setNameListFile( const NameListFile& nameListFile );
+    const NameListFile& getNameListFile() const;
 };
 
 #endif

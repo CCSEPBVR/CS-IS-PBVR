@@ -2,6 +2,7 @@
 #define DEFAULT_TF_NUMBER 5
 #define BEFORE_READ_TF_NUMBER 99
 
+// CSのConnect時に指定した.tfファイルを読み込む
 void ParameterFileReader::readTransferFunctionFile( const char* fname )
 {
     m_name_list_file.setName( "TF_RESOLUTION" );
@@ -59,6 +60,7 @@ void ParameterFileReader::readTransferFunctionFile( const char* fname )
     }
 }
 
+// ISのdefault.tfファイルを読み込む
 void ParameterFileReader::readParticleParameterFile( const char* fname )
 {
     m_name_list_file.setName( "SAMPLING_METHOD" );
@@ -208,6 +210,7 @@ void ParameterFileReader::readPlotOverLineParameterFile( const char* fname )
     return;
 }
 
+// CSのConnect時に指定した.tfファイルを読み込んだ値を設定する
 void ParameterFileReader::setTransferFunctionParameter( ParticleProperty& particle_property )
 {
     const int tf_resolution = m_name_list_file.getValue<int>( "TF_RESOLUTION" );
@@ -336,6 +339,7 @@ void ParameterFileReader::setTransferFunctionParameter( ParticleProperty& partic
     return;
 }
 
+// ISのdefault.tfファイルを読み込んだ値を設定する
 void ParameterFileReader::setParticleParameter( ParticleProperty& particle_property )
 {
     const std::string size_sampling_method                  = m_name_list_file.getValue<std::string>("SAMPLING_METHOD");

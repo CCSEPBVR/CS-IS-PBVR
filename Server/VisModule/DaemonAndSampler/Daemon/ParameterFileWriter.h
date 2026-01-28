@@ -10,13 +10,18 @@ class ParameterFileWriter
 {
 private:
     NameListFile m_name_list_file;
+    std::string m_particle_parameter_path;
+    std::string m_glyph_parameter_path;
+    std::string m_pol_parameter_path;
 
 public:
+    ParameterFileWriter();
     void getParticleParameter( const ParticleProperty& particle_property );
     void getGlyphParameter( const GlyphProperty& glyph_property );
     void getPlotOverLineParameter( const PlotOverLineProperty& pol_property );
-
-    void writeParameterFile( const char* fname );
+    void writeParticleParameterFile();
+    void writeGlyphParameterFile();
+    void writePlotOverLineParameterFile();
     const NameListFile& getNameListFile() const;
 };
 

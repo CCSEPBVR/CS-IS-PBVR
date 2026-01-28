@@ -1,5 +1,48 @@
 #include "ParameterFileWriter.h"
 
+ParameterFileWriter::ParameterFileWriter()
+{
+    const char *envBuf = NULL;
+
+    envBuf = std::getenv( "VIS_PARAM_DIR" );
+
+    if ( envBuf == nullptr )
+    {
+        m_particle_parameter_path = "./";
+        m_glyph_parameter_path    = "./";
+        m_pol_parameter_path      = "./";
+    }
+    else
+    {
+        m_particle_parameter_path = envBuf;
+        if ( m_particle_parameter_path[m_particle_parameter_path.size() - 1] != '/' ) m_particle_parameter_path += "/";
+        if ( m_glyph_parameter_path[m_glyph_parameter_path.size() - 1] != '/' )       m_glyph_parameter_path    += "/";
+        if ( m_pol_parameter_path[m_pol_parameter_path.size() - 1] != '/' )           m_pol_parameter_path      += "/";
+    }
+
+    envBuf = std::getenv( "TF_NAME" );
+
+    if ( envBuf == nullptr )
+    {
+        m_particle_parameter_path += "default.tf";
+        m_glyph_parameter_path    += "parameter.gly";
+        m_pol_parameter_path      += "parameter.pol";
+    }
+    else
+    {
+        m_particle_parameter_path +=  envBuf;
+        m_particle_parameter_path += ".tf";
+        m_glyph_parameter_path    += envBuf;
+        m_glyph_parameter_path    += ".tf";
+        m_pol_parameter_path      += envBuf;
+        m_pol_parameter_path      += ".tf";
+    }
+
+    std::cout << "ParticleParameterPath:"     << m_particle_parameter_path << std::endl;
+    std::cout << "GlyphParameterPath:"        << m_glyph_parameter_path    << std::endl;
+    std::cout << "PlotOverLineParameterPath:" << m_pol_parameter_path      << std::endl;
+}
+
 void ParameterFileWriter::getParticleParameter( const ParticleProperty& particle_property )
 {
     std::string client_sampling_method;
@@ -208,9 +251,21 @@ void ParameterFileWriter::getPlotOverLineParameter( const PlotOverLineProperty& 
     m_name_list_file.setLine( "END_PARAMETER_FILE", "SUCCESS" );
 }
 
-void ParameterFileWriter::writeParameterFile( const char* fname )
+void ParameterFileWriter::writeParticleParameterFile()
 {
-    m_name_list_file.setFileName( std::string( fname ) );
+    m_name_list_file.setFileName( m_particle_parameter_path );
+    m_name_list_file.write();
+}
+
+void ParameterFileWriter::writeGlyphParameterFile()
+{
+    m_name_list_file.setFileName( m_glyph_parameter_path );
+    m_name_list_file.write();
+}
+
+void ParameterFileWriter::writePlotOverLineParameterFile()
+{
+    m_name_list_file.setFileName( m_pol_parameter_path );
     m_name_list_file.write();
 }
 

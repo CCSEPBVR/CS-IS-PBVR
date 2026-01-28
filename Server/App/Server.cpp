@@ -1119,38 +1119,9 @@ void Server::receiveObjectInfoParameter( uWS::WebSocket<false, true, PerSocket>*
     // m_server_mode == ServerMode::IS
     else
     {
-        const char *envBuf = NULL;
-        std::string tfFilePath;
-
-        envBuf = std::getenv( "VIS_PARAM_DIR" );
-
-        if ( envBuf == nullptr )
-        {
-            tfFilePath = "./";
-        }
-        else
-        {
-            tfFilePath = envBuf;
-            if ( tfFilePath[tfFilePath.size() - 1] != '/' ) tfFilePath += "/";
-        }
-
-        envBuf = std::getenv( "TF_NAME" );
-
-        if ( envBuf == nullptr )
-        {
-            tfFilePath += "default.tf";
-        }
-        else
-        {
-            tfFilePath +=  envBuf;
-            tfFilePath += ".tf";
-        }
-
-        std::cout << "tfFilePath:" << tfFilePath << std::endl;
-
         ParameterFileWriter ppw;
         ppw.getParticleParameter( *m_particle_property );
-        ppw.writeParameterFile( tfFilePath.c_str() );
+        ppw.writeParticleParameterFile();
     }
 
     // =========================================================
@@ -1370,38 +1341,9 @@ void Server::receiveTransferFunctionParameter( uWS::WebSocket<false, true, PerSo
     // ISの場合粒子パラメータをパラメータファイルに書き込む
     if ( m_server_mode == ServerMode::IS )
     {
-        const char *envBuf = NULL;
-        std::string tfFilePath;
-
-        envBuf = std::getenv( "VIS_PARAM_DIR" );
-
-        if ( envBuf == nullptr )
-        {
-            tfFilePath = "./";
-        }
-        else
-        {
-            tfFilePath = envBuf;
-            if ( tfFilePath[tfFilePath.size() - 1] != '/' ) tfFilePath += "/";
-        }
-
-        envBuf = std::getenv( "TF_NAME" );
-
-        if ( envBuf == nullptr )
-        {
-            tfFilePath += "default.tf";
-        }
-        else
-        {
-            tfFilePath +=  envBuf;
-            tfFilePath += ".tf";
-        }
-
-        std::cout << "tfFilePath:" << tfFilePath << std::endl;
-
         ParameterFileWriter ppw;
         ppw.getParticleParameter( *m_particle_property );
-        ppw.writeParameterFile( tfFilePath.c_str() );
+        ppw.writeParticleParameterFile();
     }
 
     nlohmann::json msg;
@@ -1503,27 +1445,9 @@ void Server::receiveGlyphParameter( uWS::WebSocket<false, true, PerSocket>* ws, 
     // ISの場合グリフパラメータをパラメータファイルに書き込む
     if ( m_server_mode == ServerMode::IS )
     {
-        const char *envBuf = NULL;
-        std::string glyphParameterPath;
-
-        envBuf = std::getenv( "VIS_PARAM_DIR" );
-
-        if ( envBuf == nullptr )
-        {
-            glyphParameterPath = "./parameter.gly";
-        }
-        else
-        {
-            glyphParameterPath  = envBuf;
-            if ( glyphParameterPath[glyphParameterPath.size() - 1] != '/' ) glyphParameterPath += "/";
-            glyphParameterPath += "parameter.gly";
-        }
-
-        std::cout << "glyphParameterPath:" << glyphParameterPath << std::endl;
-
         ParameterFileWriter ppw;
         ppw.getGlyphParameter( *m_glyph_property );
-        ppw.writeParameterFile( glyphParameterPath.c_str() );
+        ppw.writeGlyphParameterFile();
     }
 
     ws->publish( "Notice", received.dump(), uWS::OpCode::TEXT );
@@ -1578,27 +1502,9 @@ void Server::receivePlotOverLineParameter( uWS::WebSocket<false, true, PerSocket
     // ISの場合POLパラメータをパラメータファイルに書き込む
     if ( m_server_mode == ServerMode::IS )
     {
-        const char *envBuf = NULL;
-        std::string plotOverLineParameterPath;
-
-        envBuf = std::getenv( "VIS_PARAM_DIR" );
-
-        if ( envBuf == nullptr )
-        {
-            plotOverLineParameterPath = "./parameter.pol";
-        }
-        else
-        {
-            plotOverLineParameterPath  = envBuf;
-            if ( plotOverLineParameterPath[plotOverLineParameterPath.size() - 1] != '/' ) plotOverLineParameterPath += "/";
-            plotOverLineParameterPath += "parameter.pol";
-        }
-
-        std::cout << "plotOverLineParameterPath:" << plotOverLineParameterPath << std::endl;
-
         ParameterFileWriter ppw;
         ppw.getPlotOverLineParameter( *m_pol_property );
-        ppw.writeParameterFile( plotOverLineParameterPath.c_str() );
+        ppw.writePlotOverLineParameterFile();
     }
 
     ws->publish( "Notice", received.dump(), uWS::OpCode::TEXT );
@@ -1765,38 +1671,9 @@ void Server::requestDataAt( uWS::WebSocket<false, true, PerSocket>* ws, const nl
 
             if ( isServerSideRangeUsed )
             {
-                const char *envBuf = NULL;
-                std::string tfFilePath;
-
-                envBuf = std::getenv( "VIS_PARAM_DIR" );
-
-                if ( envBuf == nullptr )
-                {
-                    tfFilePath = "./";
-                }
-                else
-                {
-                    tfFilePath = envBuf;
-                    if ( tfFilePath[tfFilePath.size() - 1] != '/' ) tfFilePath += "/";
-                }
-
-                envBuf = std::getenv( "TF_NAME" );
-
-                if ( envBuf == nullptr )
-                {
-                    tfFilePath += "default.tf";
-                }
-                else
-                {
-                    tfFilePath +=  envBuf;
-                    tfFilePath += ".tf";
-                }
-
-                std::cout << "tfFilePath:" << tfFilePath << std::endl;
-
                 ParameterFileWriter ppw;
                 ppw.getParticleParameter( *m_particle_property );
-                ppw.writeParameterFile( tfFilePath.c_str() );
+                ppw.writeParticleParameterFile();
             }
         }
     } );
