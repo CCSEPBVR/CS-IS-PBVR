@@ -21,8 +21,7 @@ void InitialStepCS(
     std::string& file_path,
     const int time_step, 
     ParticleProperty& particle_property,
-    MultiVolumePropertyList& mvpl,
-    std::unique_ptr<kvs::PointObject>& point_object
+    MultiVolumePropertyList& mvpl
 );
 
 void SetDefaultParticleParameterIS(
@@ -33,8 +32,7 @@ void SetDefaultParticleParameterIS(
 void InitialStepIS(
     const int time_step,
     ParticleProperty& particle_property,
-    MultiVolumePropertyList& mvpl,
-    std::unique_ptr<kvs::PointObject>& point_object
+    MultiVolumePropertyList& mvpl
 );
 
 #endif

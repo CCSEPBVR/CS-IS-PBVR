@@ -150,8 +150,7 @@ void InitialStepCS(
     std::string& file_path,
     const int time_step, 
     ParticleProperty& particle_property,
-    MultiVolumePropertyList& mvpl,
-    std::unique_ptr<kvs::PointObject>& point_object
+    MultiVolumePropertyList& mvpl
 )
 {
     int rank;
@@ -589,7 +588,7 @@ void SetDefaultParticleParameterIS(
 
     if( pm.stepExisted() )
     {
-        pm.setTimeStep_particle( pm.particleStatusFile().getLatestTimeStep() );
+        pm.setTimeStep_particle( pm.particleStatusFile().getStartTimeStep() );
     }
     else
     {
@@ -635,8 +634,7 @@ void SetDefaultParticleParameterIS(
 void InitialStepIS(
     const int time_step,
     ParticleProperty& particle_property,
-    MultiVolumePropertyList& mvpl,
-    std::unique_ptr<kvs::PointObject>& point_object
+    MultiVolumePropertyList& mvpl
 )
 {
     int tf_number;

@@ -307,31 +307,32 @@ void Server::initialize( uWS::WebSocket<false, true, PerSocket>* ws, const nlohm
             std::cout << "ERROR:Unsupported file format."                                           << std::endl;
             std::cout << "INFO:This server does not currently support this file format."            << std::endl;
             std::cout << "INFO:If you want to use VTK file format, please rebuild the application." << std::endl;
-            std::cout << "INFO:The build i structions are available on the wiki."                   << std::endl;
+            std::cout << "INFO:The build structions are available on the wiki."                     << std::endl;
             std::cout << "URL:https://github.com/CCSEPBVR/CS-IS-PBVR/wiki"                          << std::endl;
+            // FIXME: ファイル拡張子が対応していないことをクライアントに伝える 
         }
 #endif
 
         m_server_mode = ServerMode::CS;
 
-        SetDefaultParticleParameterCS(
+        bool is_success = false;
+        is_success = SetDefaultParticleParameterCS(
             volumeDataNativeFilePath,
             transferFunctionNativeFilePath,
             *m_particle_property,
             *m_multi_volume_property_list
         );
 
-        // histgramとmin maxをm_particle_propertyに格納
-        // 粒子データは使用しない
-        std::unique_ptr<kvs::PointObject> tmp_object;
-        tmp_object = std::make_unique<kvs::PointObject>();
+        if ( is_success )
+        {
+            // FIXME: ファイルを読み込むことが出来なかったことをクライアントに伝える
+        }
 
         InitialStepCS(
             volumeDataNativeFilePath,
             m_multi_volume_property_list->m_total_start_steps,
             *m_particle_property,
-            *m_multi_volume_property_list,
-            tmp_object
+            *m_multi_volume_property_list
         );
 
         // 成分数3以上の時Glyphのデフォルトパラメータを設定する
@@ -351,21 +352,29 @@ void Server::initialize( uWS::WebSocket<false, true, PerSocket>* ws, const nlohm
     {
         m_server_mode = ServerMode::IS;
 
+        ParticleMonitor pm;
+        pm.check();
+        int counter = 0;
+
+        // InSituでオブジェクト生成が開始されるまで待機
+        while( !pm.stepExisted() )
+        {
+            pm.check();
+            std::string base_string = "Waiting for simulation object generation ";
+            std::cout << "\r" << base_string << std::string( ( counter % 10 ), '.' ) << std::flush;
+            std::this_thread::sleep_for( std::chrono::seconds( 1 ) );
+            counter++;
+        }
+
         SetDefaultParticleParameterIS(
             *m_particle_property,
             *m_multi_volume_property_list
         );
 
-        // histgramとmin maxをm_particle_propertyに格納
-        // 粒子データは使用しない
-        std::unique_ptr<kvs::PointObject> tmp_object;
-        tmp_object = std::make_unique<kvs::PointObject>();
-
         InitialStepIS(
             m_multi_volume_property_list->m_total_start_steps,
             *m_particle_property,
-            *m_multi_volume_property_list,
-            tmp_object
+            *m_multi_volume_property_list
         );
 
         // 成分数3以上の時Glyphのパラメータファイルを読み込む
