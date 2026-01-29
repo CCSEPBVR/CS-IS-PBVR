@@ -27,7 +27,7 @@ private:
     std::vector<float> getTableFloat( std::string table_string );
     std::vector<std::string> getTableString( std::string table_string );
 public:
-    void readTransferFunctionFile( const char* fname );　// CSのConnect時に指定した.tfファイルを読み込む
+    void readTransferFunctionFile( const char* fname ); // CSのConnect時に指定した.tfファイルを読み込む
     void readParticleParameterFile( const char* fname ); // ISのdefault.tfファイルを読み込む
     void readGlyphParameterFile( const char* fname );
     void readPlotOverLineParameterFile( const char* fname );
