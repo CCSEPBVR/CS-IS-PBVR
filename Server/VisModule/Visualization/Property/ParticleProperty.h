@@ -32,6 +32,48 @@ struct ParticleProperty
     std::string m_x_synthesis;
     std::string m_y_synthesis;
     std::string m_z_synthesis;
+
+    void UpdateTransferFunctionSynthesizer()
+    {
+        EquationToken color_equation_token;
+        std::string colorFunctionSynthesizerBuf = m_color_transfer_function_synthesis;
+        std::replace( colorFunctionSynthesizerBuf.begin(), colorFunctionSynthesizerBuf.end(), 'C', 'c' );
+        color_equation_token = m_transfunc_synthesizer->convert_token( colorFunctionSynthesizerBuf );
+        m_transfunc_synthesizer->setColorFunction( color_equation_token );
+
+        EquationToken opacity_equation_token;
+        std::string opacityFunctionSynthesizerBuf = m_opacity_transfer_function_synthesis;
+        std::replace( opacityFunctionSynthesizerBuf.begin(), opacityFunctionSynthesizerBuf.end(), 'O', 'a' );
+        opacity_equation_token = m_transfunc_synthesizer->convert_token( opacityFunctionSynthesizerBuf );
+        m_transfunc_synthesizer->setOpacityFunction( opacity_equation_token );
+
+        std::vector<EquationToken> var_c;
+        std::vector<EquationToken> var_o;
+
+        for( size_t i = 0; i < m_transfunc_array.size(); ++i )
+        {
+            // Color variable token
+            {
+                std::string buf = m_transfunc_array[i].m_color_variable;
+                std::replace( buf.begin(), buf.end(), 'X', 'x' );
+                std::replace( buf.begin(), buf.end(), 'Y', 'y' );
+                std::replace( buf.begin(), buf.end(), 'Z', 'z' );
+                var_c.push_back( m_transfunc_synthesizer->convert_token( buf ) );
+            }
+
+            // Opacity variable token
+            {
+                std::string buf = m_transfunc_array[i].m_opacity_variable;
+                std::replace( buf.begin(), buf.end(), 'X', 'x' );
+                std::replace( buf.begin(), buf.end(), 'Y', 'y' );
+                std::replace( buf.begin(), buf.end(), 'Z', 'z' );
+                var_o.push_back( m_transfunc_synthesizer->convert_token( buf ) );
+            }
+        }
+
+        m_transfunc_synthesizer->setColorVariable( var_c );
+        m_transfunc_synthesizer->setOpacityVariable( var_o );
+    }
 };
 
 #endif //  __PARTICLE__PROPERTY_

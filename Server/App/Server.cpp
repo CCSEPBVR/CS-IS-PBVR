@@ -1161,21 +1161,6 @@ void Server::receiveTransferFunctionParameter( uWS::WebSocket<false, true, PerSo
     m_particle_property->m_transfunc_array.clear();
     m_particle_property->m_transfunc_array.resize( dataArray.size() );
 
-    EquationToken color_equation_token;
-    std::string colorFunctionSynthesizerBuf = colorSynthesizer;
-    std::replace( colorFunctionSynthesizerBuf.begin(), colorFunctionSynthesizerBuf.end(), 'C', 'c' );
-    color_equation_token = m_particle_property->m_transfunc_synthesizer->convert_token( colorFunctionSynthesizerBuf );
-    m_particle_property->m_transfunc_synthesizer->setColorFunction( color_equation_token );
-
-    EquationToken opacity_equation_token;
-    std::string opacityFunctionSynthesizerBuf = opacitySynthesizer;
-    std::replace( opacityFunctionSynthesizerBuf.begin(), opacityFunctionSynthesizerBuf.end(), 'O', 'a' );
-    opacity_equation_token = m_particle_property->m_transfunc_synthesizer->convert_token( opacityFunctionSynthesizerBuf );
-    m_particle_property->m_transfunc_synthesizer->setOpacityFunction( opacity_equation_token );
-
-    std::vector<EquationToken> var_o;
-    std::vector<EquationToken> var_c;
-
     for( size_t i = 0; i < dataArray.size(); ++i )
     {
         const auto& tf = dataArray[i];
@@ -1207,15 +1192,6 @@ void Server::receiveTransferFunctionParameter( uWS::WebSocket<false, true, PerSo
         default:
             std::cout << "ERROR:Range Mode is unknown" << std::endl;
             break;
-        }
-
-        // Color variable token
-        {
-            std::string buf = colorVariable;
-            std::replace( buf.begin(), buf.end(), 'X', 'x' );
-            std::replace( buf.begin(), buf.end(), 'Y', 'y' );
-            std::replace( buf.begin(), buf.end(), 'Z', 'z' );
-            var_c.push_back( m_particle_property->m_transfunc_synthesizer->convert_token( buf ) );
         }
 
         // std::cout << "ColorFunction: " << colorFunction << std::endl;
@@ -1274,15 +1250,6 @@ void Server::receiveTransferFunctionParameter( uWS::WebSocket<false, true, PerSo
         default:
             std::cout << "ERROR:Range Mode is unknown" << std::endl;
             break;
-        }
-
-        // Opacity variable token
-        {
-            std::string buf = opacityVariable;
-            std::replace( buf.begin(), buf.end(), 'X', 'x' );
-            std::replace( buf.begin(), buf.end(), 'Y', 'y' );
-            std::replace( buf.begin(), buf.end(), 'Z', 'z' );
-            var_o.push_back( m_particle_property->m_transfunc_synthesizer->convert_token( buf ) );
         }
 
         // std::cout << "OpacityFunction: " << opacityFunction << std::endl;
@@ -1344,8 +1311,7 @@ void Server::receiveTransferFunctionParameter( uWS::WebSocket<false, true, PerSo
         m_particle_property->m_transfunc_array[i].setOpacityMap( opacity_map );
     }
 
-    m_particle_property->m_transfunc_synthesizer->setColorVariable( var_c );
-    m_particle_property->m_transfunc_synthesizer->setOpacityVariable( var_o );
+    m_particle_property->UpdateTransferFunctionSynthesizer();
 
     // ISの場合粒子パラメータをパラメータファイルに書き込む
     if ( m_server_mode == ServerMode::IS )
