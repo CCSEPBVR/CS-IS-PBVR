@@ -251,22 +251,11 @@ void CellByCellMinMax::generate_minmax_struct(
 
     if( mpi_rank == 0 ) std::cout << "******* max_nparticles=" << max_nparticles << std::endl;
 
-    //ヒストグラム
-    int nbins = 256;
-
     // 伝達関数から読み込む最大最小値
     vismodule::ValueArray<float> o_min( tf_number );
     vismodule::ValueArray<float> o_max( tf_number );
     vismodule::ValueArray<float> c_min( tf_number );
     vismodule::ValueArray<float> c_max( tf_number );
-
-    SuperClass::m_c_histogram = vismodule::ValueArray<int> (tf_number * nbins); // 色ヒストグラムの配列
-    SuperClass::m_o_histogram = vismodule::ValueArray<int> (tf_number * nbins); // 不透明度ヒストグラムの配列
-    SuperClass::setTfnumber(tf_number);
-    SuperClass::setNbins(nbins);
-    
-    m_o_histogram.fill(0x00);
-    m_c_histogram.fill(0x00);
 
     for( size_t i = 0; i < tf_number; i++ )
     {
@@ -375,12 +364,6 @@ void CellByCellMinMax::generate_minmax_struct(
             o_scalars[i] = new float[SIMDW];
             c_scalars[i] = new float[SIMDW];
         }
-
-        vismodule::ValueArray<int> th_o_histogram( tf_number * nbins ); // 不透明度
-        vismodule::ValueArray<int> th_c_histogram( tf_number * nbins ); // 色
-
-        th_o_histogram.fill(0x00);
-        th_c_histogram.fill(0x00);
 
         // 計算して得る最大最小値
         vismodule::ValueArray<float> th_O_min( tf_number );

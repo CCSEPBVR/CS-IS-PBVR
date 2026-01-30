@@ -272,25 +272,10 @@ void CellByCellRejectionSampling::generate_particles_struct(
         c_max[i] = m_transfer_function_array[i].colorMap().maxValue();
     }
 
-    // min max
-    vismodule::ValueArray<float> O_min( tf_number );
-    vismodule::ValueArray<float> O_max( tf_number );
-    vismodule::ValueArray<float> C_min( tf_number );
-    vismodule::ValueArray<float> C_max( tf_number );
-
     // dynamic array for paritcle
     std::vector<float> vertex_coords;
     std::vector<Byte>  vertex_colors;
     std::vector<float> vertex_normals;
-
-    // initialize
-    for ( size_t i = 0; i < tf_number; i++ )
-    {
-        O_min[i] =  FLT_MAX;
-        O_max[i] = -FLT_MAX;
-        C_min[i] =  FLT_MAX;
-        C_max[i] = -FLT_MAX;
-    }
 
     TransferFunctionSynthesizer** th_tfs = new TransferFunctionSynthesizer*[max_threads];
     std::vector<std::vector<vismodule::TransferFunction>> th_tf;
@@ -390,21 +375,6 @@ void CellByCellRejectionSampling::generate_particles_struct(
 
         th_o_histogram.fill(0x00);
         th_c_histogram.fill(0x00);
-
-        // 計算して得る最大最小値
-        vismodule::ValueArray<float> th_O_min( tf_number );
-        vismodule::ValueArray<float> th_O_max( tf_number );
-        vismodule::ValueArray<float> th_C_min( tf_number );
-        vismodule::ValueArray<float> th_C_max( tf_number );
-
-        // 初期化
-        for ( int i = 0; i < tf_number; i++ )
-        {
-            th_O_min[i] =  FLT_MAX;
-            th_O_max[i] = -FLT_MAX;
-            th_C_min[i] =  FLT_MAX;
-            th_C_max[i] = -FLT_MAX;
-        }
 
         // minmax coordの設定
         const vismodule::Vector3f min_vec( 
@@ -528,11 +498,6 @@ void CellByCellRejectionSampling::generate_particles_struct(
                                 th_c_histogram[H + nbins * i]++;
                             }
                         }
-
-                        th_O_min[i] = th_O_min[i] < o_scalars[i][I] ? th_O_min[i] : o_scalars[i][I];
-                        th_O_max[i] = th_O_max[i] > o_scalars[i][I] ? th_O_max[i] : o_scalars[i][I];
-                        th_C_min[i] = th_C_min[i] < c_scalars[i][I] ? th_C_min[i] : c_scalars[i][I];
-                        th_C_max[i] = th_C_max[i] > c_scalars[i][I] ? th_C_max[i] : c_scalars[i][I];
                     }
                 }
             }
@@ -844,17 +809,6 @@ void CellByCellRejectionSampling::generate_particles_struct(
         // timed_section_start(td_VectorIns,thid);
         #pragma omp critical
         {
-            // 最大最小値
-            for( size_t i = 0; i < tf_number; i++ )
-            {
-                // 不透明度
-                O_min[i] = O_min[i] < th_O_min[i] ? O_min[i] : th_O_min[i];
-                O_max[i] = O_max[i] > th_O_max[i] ? O_max[i] : th_O_max[i];
-                // 色
-                C_min[i] = C_min[i] < th_C_min[i] ? C_min[i] : th_C_min[i];
-                C_max[i] = C_max[i] > th_C_max[i] ? C_max[i] : th_C_max[i];
-            }
-
             for( int n = 0; n < tf_number * nbins; n++ )
             {
                 m_o_histogram[n] += th_o_histogram[n];
@@ -877,20 +831,6 @@ void CellByCellRejectionSampling::generate_particles_struct(
 
     // if ( mpi->rank == 0 ) std::cout << "total_nparticles = " << total_nparticles << std::endl;
     std::cout << "rank = " << mpi_rank << ", total_nparticles = " << total_nparticles << std::endl;
-
-    // set minmax range
-    m_transfer_function_synthesizer->m_o_min.resize(tf_number);
-    m_transfer_function_synthesizer->m_o_max.resize(tf_number);
-    m_transfer_function_synthesizer->m_c_min.resize(tf_number);
-    m_transfer_function_synthesizer->m_c_max.resize(tf_number);
-
-    for ( int i = 0; i < tf_number; i++ )
-    {
-        m_transfer_function_synthesizer->m_o_min[i] = O_min[i];
-        m_transfer_function_synthesizer->m_o_max[i] = O_max[i];
-        m_transfer_function_synthesizer->m_c_min[i] = C_min[i];
-        m_transfer_function_synthesizer->m_c_max[i] = C_max[i];
-    }
 
     SuperClass::m_coords  = vismodule::ValueArray<vismodule::Real32>( vertex_coords );
     SuperClass::m_colors  = vismodule::ValueArray<vismodule::UInt8>( vertex_colors );
@@ -1127,25 +1067,10 @@ void CellByCellRejectionSampling::generate_particles_unstruct
         c_max[i] = m_transfer_function_array[i].colorMap().maxValue();
     }
 
-    // min max
-    vismodule::ValueArray<float> O_min( tf_number );
-    vismodule::ValueArray<float> O_max( tf_number );
-    vismodule::ValueArray<float> C_min( tf_number );
-    vismodule::ValueArray<float> C_max( tf_number );
-
     // dynamic array for paritcle
     std::vector<float> vertex_coords;
     std::vector<Byte>  vertex_colors;
     std::vector<float> vertex_normals;
-
-    // initialize
-    for ( size_t i = 0; i < tf_number; i++ )
-    {
-        O_min[i] =  FLT_MAX;
-        O_max[i] = -FLT_MAX;
-        C_min[i] =  FLT_MAX;
-        C_max[i] = -FLT_MAX;
-    }
 
     TransferFunctionSynthesizer** th_tfs = new TransferFunctionSynthesizer*[max_threads];
     std::vector<std::vector<vismodule::TransferFunction>> th_tf;
@@ -1208,21 +1133,6 @@ void CellByCellRejectionSampling::generate_particles_unstruct
 
         th_o_histogram.fill(0x00);
         th_c_histogram.fill(0x00);
-
-        // 計算して得る最大最小値
-        vismodule::ValueArray<float> th_O_min( tf_number );
-        vismodule::ValueArray<float> th_O_max( tf_number );
-        vismodule::ValueArray<float> th_C_min( tf_number );
-        vismodule::ValueArray<float> th_C_max( tf_number );
-
-        // 初期化
-        for ( int i = 0; i < tf_number; i++ )
-        {
-            th_O_min[i] =  FLT_MAX;
-            th_O_max[i] = -FLT_MAX;
-            th_C_min[i] =  FLT_MAX;
-            th_C_max[i] = -FLT_MAX;
-        }
 
         // 配列の追加
         vismodule::Vector3f local_center_array[ SIMDW ];
@@ -1355,11 +1265,6 @@ void CellByCellRejectionSampling::generate_particles_unstruct
                             th_c_histogram[ H + nbins * i]++;
                         }
                     }
-
-                    th_O_min[i] = th_O_min[i] < o_scalars_array[cell_BLK][i] ? th_O_min[i] : o_scalars_array[cell_BLK][i];
-                    th_O_max[i] = th_O_max[i] > o_scalars_array[cell_BLK][i] ? th_O_max[i] : o_scalars_array[cell_BLK][i];
-                    th_C_min[i] = th_C_min[i] < c_scalars_array[cell_BLK][i] ? th_C_min[i] : c_scalars_array[cell_BLK][i];
-                    th_C_max[i] = th_C_max[i] > c_scalars_array[cell_BLK][i] ? th_C_max[i] : c_scalars_array[cell_BLK][i];
                 }
             }
 
@@ -1667,17 +1572,6 @@ void CellByCellRejectionSampling::generate_particles_unstruct
 
 #pragma omp critical
         {
-            // 最大最小値
-            for( size_t i = 0; i < tf_number; i++ )
-            {
-                // 不透明度
-                O_min[i] = O_min[i] < th_O_min[i] ? O_min[i] : th_O_min[i];
-                O_max[i] = O_max[i] > th_O_max[i] ? O_max[i] : th_O_max[i];
-                // 色
-                C_min[i] = C_min[i] < th_C_min[i] ? C_min[i] : th_C_min[i];
-                C_max[i] = C_max[i] > th_C_max[i] ? C_max[i] : th_C_max[i];
-            }
-
             for( int n = 0; n < tf_number * nbins; n++ )
             {
                 m_o_histogram[n] += th_o_histogram[n];
@@ -1693,20 +1587,6 @@ void CellByCellRejectionSampling::generate_particles_unstruct
         th_vertex_colors.clear();
         th_vertex_normals.clear();
     } //#pragma omp parallel
-
-    // set minmax range
-    m_transfer_function_synthesizer->m_o_min.resize(tf_number);        
-    m_transfer_function_synthesizer->m_o_max.resize(tf_number);        
-    m_transfer_function_synthesizer->m_c_min.resize(tf_number);        
-    m_transfer_function_synthesizer->m_c_max.resize(tf_number);        
-
-    for ( size_t i = 0; i < tf_number; i++ )
-    {
-        m_transfer_function_synthesizer->m_o_min[i] = O_min[i];
-        m_transfer_function_synthesizer->m_o_max[i] = O_max[i];
-        m_transfer_function_synthesizer->m_c_min[i] = C_min[i];
-        m_transfer_function_synthesizer->m_c_max[i] = C_max[i];
-    }
 
     for( int i = 0; i < max_threads; i++ )
     {
