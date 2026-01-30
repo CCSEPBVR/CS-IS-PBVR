@@ -517,12 +517,14 @@ void InitialStepCS(
     }
 #endif
 
-    // histogramの格納
-    for( int i = 0; i < tf_number; i++ )
+    if ( rank == 0 )
     {
-        // histogram
-        std::copy( tmp_c_bins + ( DEFAULT_NBINS * i ), tmp_c_bins + ( DEFAULT_NBINS * ( i + 1 ) ), particle_property.m_transfunc_array[i].m_color_histogram );
-        std::copy( tmp_o_bins + ( DEFAULT_NBINS * i ), tmp_o_bins + ( DEFAULT_NBINS * ( i + 1 ) ), particle_property.m_transfunc_array[i].m_opacity_histogram );
+        // histogramの格納
+        for( int i = 0; i < tf_number; i++ )
+        {
+            std::copy( tmp_c_bins + ( DEFAULT_NBINS * i ), tmp_c_bins + ( DEFAULT_NBINS * ( i + 1 ) ), particle_property.m_transfunc_array[i].m_color_histogram );
+            std::copy( tmp_o_bins + ( DEFAULT_NBINS * i ), tmp_o_bins + ( DEFAULT_NBINS * ( i + 1 ) ), particle_property.m_transfunc_array[i].m_opacity_histogram );
+        }
     }
 
     nan_error = false;

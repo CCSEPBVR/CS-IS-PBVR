@@ -393,56 +393,59 @@ void GenerateParticleCS(
         recv_obj->setNormals( vismodule_normals );
 #endif
 
-        kvs::ValueArray<kvs::Real32> kvs_coords;
-        kvs::ValueArray<kvs::UInt8>  kvs_colors;
-        kvs::ValueArray<kvs::Real32> kvs_normals;
-
-        if ( point_object->coords().size() > 0 )
+        if ( rank == 0 )
         {
-            const size_t ncoords  = point_object->coords().size() + recv_obj->coords().size();
-            const size_t ncolors  = point_object->colors().size() + recv_obj->colors().size();
-            const size_t nnormals = point_object->normals().size() + recv_obj->normals().size();
+            kvs::ValueArray<kvs::Real32> kvs_coords;
+            kvs::ValueArray<kvs::UInt8>  kvs_colors;
+            kvs::ValueArray<kvs::Real32> kvs_normals;
 
-            kvs_coords.allocate( ncoords );
-            kvs_colors.allocate( ncolors );
-            kvs_normals.allocate( nnormals );
+            if ( point_object->coords().size() > 0 )
+            {
+                const size_t ncoords  = point_object->coords().size() + recv_obj->coords().size();
+                const size_t ncolors  = point_object->colors().size() + recv_obj->colors().size();
+                const size_t nnormals = point_object->normals().size() + recv_obj->normals().size();
 
-            kvs::Real32* pcoords  = kvs_coords.data();
-            kvs::UInt8* pcolors   = kvs_colors.data();
-            kvs::Real32* pnormals = kvs_normals.data();
+                kvs_coords.allocate( ncoords );
+                kvs_colors.allocate( ncolors );
+                kvs_normals.allocate( nnormals );
 
-            memcpy( pcoords, point_object->coords().data(), point_object->coords().byteSize() );
-            memcpy( pcoords + point_object->coords().size(), recv_obj->coords().pointer(), recv_obj->coords().byteSize() );
-            memcpy( pcolors, point_object->colors().data(), point_object->colors().byteSize() );
-            memcpy( pcolors + point_object->colors().size(), recv_obj->colors().pointer(), recv_obj->colors().byteSize() );
-            memcpy( pnormals, point_object->normals().data(), point_object->normals().byteSize() );
-            memcpy( pnormals + point_object->normals().size(), recv_obj->normals().pointer(), recv_obj->normals().byteSize() );
+                kvs::Real32* pcoords  = kvs_coords.data();
+                kvs::UInt8* pcolors   = kvs_colors.data();
+                kvs::Real32* pnormals = kvs_normals.data();
 
-            point_object->setCoords( kvs_coords );
-            point_object->setColors( kvs_colors );
-            point_object->setNormals( kvs_normals );
-        }
-        else
-        {
-            const size_t ncoords = recv_obj->coords().size();
-            const size_t ncolors  = recv_obj->colors().size();
-            const size_t nnormals = recv_obj->normals().size();
+                memcpy( pcoords, point_object->coords().data(), point_object->coords().byteSize() );
+                memcpy( pcoords + point_object->coords().size(), recv_obj->coords().pointer(), recv_obj->coords().byteSize() );
+                memcpy( pcolors, point_object->colors().data(), point_object->colors().byteSize() );
+                memcpy( pcolors + point_object->colors().size(), recv_obj->colors().pointer(), recv_obj->colors().byteSize() );
+                memcpy( pnormals, point_object->normals().data(), point_object->normals().byteSize() );
+                memcpy( pnormals + point_object->normals().size(), recv_obj->normals().pointer(), recv_obj->normals().byteSize() );
 
-            kvs_coords.allocate( ncoords );
-            kvs_colors.allocate( ncolors );
-            kvs_normals.allocate( nnormals );
+                point_object->setCoords( kvs_coords );
+                point_object->setColors( kvs_colors );
+                point_object->setNormals( kvs_normals );
+            }
+            else
+            {
+                const size_t ncoords = recv_obj->coords().size();
+                const size_t ncolors  = recv_obj->colors().size();
+                const size_t nnormals = recv_obj->normals().size();
 
-            kvs::Real32* pcoords  = kvs_coords.data();
-            kvs::UInt8*  pcolors  = kvs_colors.data();
-            kvs::Real32* pnormals = kvs_normals.data();
+                kvs_coords.allocate( ncoords );
+                kvs_colors.allocate( ncolors );
+                kvs_normals.allocate( nnormals );
 
-            memcpy( pcoords, recv_obj->coords().pointer(), recv_obj->coords().byteSize() );
-            memcpy( pcolors, recv_obj->colors().pointer(), recv_obj->colors().byteSize() );
-            memcpy( pnormals, recv_obj->normals().pointer(), recv_obj->normals().byteSize() );
+                kvs::Real32* pcoords  = kvs_coords.data();
+                kvs::UInt8*  pcolors  = kvs_colors.data();
+                kvs::Real32* pnormals = kvs_normals.data();
 
-            point_object->setCoords( kvs_coords );
-            point_object->setColors( kvs_colors );
-            point_object->setNormals( kvs_normals );
+                memcpy( pcoords, recv_obj->coords().pointer(), recv_obj->coords().byteSize() );
+                memcpy( pcolors, recv_obj->colors().pointer(), recv_obj->colors().byteSize() );
+                memcpy( pnormals, recv_obj->normals().pointer(), recv_obj->normals().byteSize() );
+
+                point_object->setCoords( kvs_coords );
+                point_object->setColors( kvs_colors );
+                point_object->setNormals( kvs_normals );
+            }
         }
 
         delete send_obj;
@@ -457,12 +460,14 @@ void GenerateParticleCS(
     }
 #endif
 
-    // histogramの格納
-    for( int i = 0; i < tf_number; i++ )
+    if ( rank == 0 )
     {
-        // histogram
-        std::copy( tmp_c_bins + ( DEFAULT_NBINS * i ), tmp_c_bins + ( DEFAULT_NBINS * ( i + 1 ) ), particle_property.m_transfunc_array[i].m_color_histogram );
-        std::copy( tmp_o_bins + ( DEFAULT_NBINS * i ), tmp_o_bins + ( DEFAULT_NBINS * ( i + 1 ) ), particle_property.m_transfunc_array[i].m_opacity_histogram );
+        // histogramの格納
+        for( int i = 0; i < tf_number; i++ )
+        {
+            std::copy( tmp_c_bins + ( DEFAULT_NBINS * i ), tmp_c_bins + ( DEFAULT_NBINS * ( i + 1 ) ), particle_property.m_transfunc_array[i].m_color_histogram );
+            std::copy( tmp_o_bins + ( DEFAULT_NBINS * i ), tmp_o_bins + ( DEFAULT_NBINS * ( i + 1 ) ), particle_property.m_transfunc_array[i].m_opacity_histogram );
+        }
     }
 
     nan_error = false;

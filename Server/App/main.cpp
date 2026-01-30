@@ -32,6 +32,10 @@ int main( int argc, char *argv[] )
     {
         Server server( port );
     }
+    else
+    {
+        ServerWorker server_worker();
+    }
 
 #ifndef CPU_VER
     MPI_Finalize();

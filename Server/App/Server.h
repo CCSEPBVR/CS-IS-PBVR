@@ -61,6 +61,8 @@ private:
     std::atomic<bool> m_last_step_monitor_is_running; // LAST_STEPを監視するスレッドに終了信号を送る変数
     std::thread m_last_step_monitor_thread; // state.txtのLAST_STEPを監視するスレッド
 
+    int m_mpi_size;
+    int m_mpi_rank;
     ServerMode m_server_mode;
     std::vector<ObjectInfoExtractor::ObjectInfo>* m_objects;
     ParticleProperty* m_particle_property;

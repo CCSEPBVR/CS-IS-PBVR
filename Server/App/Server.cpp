@@ -274,6 +274,13 @@ void Server::transferOperator( uWS::WebSocket<false, true, PerSocket>* ws, const
 
 void Server::initialize( uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received )
 {
+#ifndef CPU_VER
+    MPI_Comm_size( MPI_COMM_WORLD, &m_mpi_size );
+    MPI_Comm_rank( MPI_COMM_WORLD, &m_mpi_rank );
+#else
+	m_mpi_size = 1;
+    m_mpi_rank = 0
+#endif
     std::cout << "[Server] Initialize" << std::endl;
     bool mode                               = true;
     std::string volumeDataFilePath          = received[Protocol::Key::VolumeDataFilePath];
@@ -328,6 +335,12 @@ void Server::initialize( uWS::WebSocket<false, true, PerSocket>* ws, const nlohm
             // FIXME: ファイルを読み込むことが出来なかったことをクライアントに伝える
         }
 
+        // Workerが動いている場合, 初回導通信号をWorkerに送信する
+        if ( m_mpi_size > 1 )
+        {
+            SendInitialStepSignal( volumeDataNativeFilePath, transferFunctionNativeFilePath );
+        }
+
         InitialStepCS(
             volumeDataNativeFilePath,
             m_multi_volume_property_list->m_total_start_steps,
@@ -336,14 +349,9 @@ void Server::initialize( uWS::WebSocket<false, true, PerSocket>* ws, const nlohm
         );
 
         // 成分数3以上の時Glyphのデフォルトパラメータを設定する
-        if( m_multi_volume_property_list->m_total_number_ingredients >= 3 )
-        {
-            SetDefaultGlyphParameterCS( *m_glyph_property );
-        }
-        else
-        {
-            m_glyph_property->m_glyph_flag = false;
-        }
+        bool isGlyphEnabled = m_multi_volume_property_list->m_total_number_ingredients >= 3;
+        m_glyph_property->m_glyph_flag = isGlyphEnabled;
+        SetDefaultGlyphParameterCS( *m_glyph_property );
 
         // POLのデフォルトパラメータを設定する
         SetDefaultPOLParameterCS( *m_pol_property );
@@ -1118,16 +1126,21 @@ void Server::receiveObjectInfoParameter( uWS::WebSocket<false, true, PerSocket>*
         }
     }
 
-    // CSの場合粒子パラメータの再計算
     if ( m_server_mode == ServerMode::CS )
     {
+        // 粒子パラメータの再計算
         m_particle_property->m_sampling_step  = CalculateSamplingStep( *m_multi_volume_property_list ) / m_particle_property->m_extra_opacity_factor;
         m_particle_property->m_subpixel_level = CalculateSubpixelLevel( *m_particle_property, *m_multi_volume_property_list, *m_particle_property->m_camera );
+
+        // Workerに粒子パラメータを送信する
+        if ( m_mpi_size > 0 )
+        {
+            SendParticlePropertySignal( *m_particle_property );
+        }
     }
-    // ISの場合粒子パラメータをパラメータファイルに書き込む
-    // m_server_mode == ServerMode::IS
-    else
+    else // m_server_mode == ServerMode::IS
     {
+        // パラメータファイルに粒子パラメータを書き込む
         ParameterFileWriter ppw;
         ppw.getParticleParameter( *m_particle_property );
         ppw.writeParticleParameterFile();
@@ -1313,9 +1326,17 @@ void Server::receiveTransferFunctionParameter( uWS::WebSocket<false, true, PerSo
 
     m_particle_property->UpdateTransferFunctionSynthesizer();
 
-    // ISの場合粒子パラメータをパラメータファイルに書き込む
-    if ( m_server_mode == ServerMode::IS )
+    if ( m_server_mode == ServerMode::CS )
     {
+        // Workerに粒子パラメータを送信する
+        if ( m_mpi_size > 0 )
+        {
+            SendParticlePropertySignal( *m_particle_property );
+        }
+    }
+    else // m_server_mode == ServerMode::IS
+    {
+        // パラメータファイルに粒子パラメータファイルを書き込む
         ParameterFileWriter ppw;
         ppw.getParticleParameter( *m_particle_property );
         ppw.writeParticleParameterFile();
@@ -1417,9 +1438,17 @@ void Server::receiveGlyphParameter( uWS::WebSocket<false, true, PerSocket>* ws, 
         }
     }
 
-    // ISの場合グリフパラメータをパラメータファイルに書き込む
-    if ( m_server_mode == ServerMode::IS )
+    if ( m_server_mode == ServerMode::CS )
     {
+        // WorkerにGlyphパラメータを送信する
+        if ( m_mpi_size > 0 )
+        {
+            SendGlyphPropertySignal( *m_glyph_property );
+        }
+    }
+    else // m_server_mode == ServerMode::IS
+    {
+        // グリフパラメータをパラメータファイルに書き込む
         ParameterFileWriter ppw;
         ppw.getGlyphParameter( *m_glyph_property );
         ppw.writeGlyphParameterFile();
@@ -1474,9 +1503,17 @@ void Server::receivePlotOverLineParameter( uWS::WebSocket<false, true, PerSocket
         std::cout << "EndCoords           : (invalid size)" << std::endl;
     }
 
-    // ISの場合POLパラメータをパラメータファイルに書き込む
-    if ( m_server_mode == ServerMode::IS )
+    if ( m_server_mode == ServerMode::CS )
     {
+        // WorkerにPOLパラメータを送信する
+        if ( m_mpi_size > 0 )
+        {
+
+        }
+    }
+    else // m_server_mode == ServerMode::IS
+    {
+        // パラメータファイルにPOLパラメータを書き込む
         ParameterFileWriter ppw;
         ppw.getPlotOverLineParameter( *m_pol_property );
         ppw.writePlotOverLineParameterFile();
@@ -1589,6 +1626,8 @@ void Server::requestDataAt( uWS::WebSocket<false, true, PerSocket>* ws, const nl
                         break;
                     }
                 }
+                
+                SendGeneratePlorOverLineSignal( file_path, timeStep );
                 kvsml_object_pol = GeneratePOLCS( file_path, timeStep, *m_pol_property, *m_multi_volume_property_list );
             }
             else if( m_server_mode == ServerMode::IS )
