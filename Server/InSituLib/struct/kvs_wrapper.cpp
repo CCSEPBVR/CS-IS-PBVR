@@ -177,13 +177,24 @@ bool generate_particles(
     ServerMode server_mode = ServerMode::IS;
     vismodule::PointObject* point_object = nullptr;
     vismodule::PointObjectGenerator point_object_generator;
+
+    char tmp_sampling_method = particle_property.m_sampling_method;
+    particle_property.m_sampling_method = 'x';
+
+    point_object = point_object_generator.GenerateParticleStruct(
+        particle_property, dom, values, nvariables, ServerMode::IS
+    );
+
+    MakeParticleMinMax( particle_property.m_transfunc_synthesizer, tf_number, tmp_max, tmp_min ); // CS common
+
+    particle_property.m_sampling_method = tmp_sampling_method;
+
     point_object = point_object_generator.GenerateParticleStruct(
         particle_property, dom, values, nvariables, ServerMode::IS
     );
 
     MakeParticle( point_object, particle_coords, particle_colors, particle_normals ); // InSitu only
     MakeHistgram( point_object, tf_number, tmp_c_bins, tmp_o_bins ); // CS common
-    MakeParticleMinMax( particle_property.m_transfunc_synthesizer, tf_number, tmp_max, tmp_min ); // CS common
 
     delete point_object;
 
