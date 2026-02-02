@@ -165,7 +165,6 @@ private:
         switch( info.format )
         {
         case ObjectInfoExtractor::ClientServerPointObject:
-            SendGenerateParticleSignal( fileName, requestTimeStep );
             pointObject = std::make_unique<kvs::PointObject>();
             GenerateParticleCS( fileName, requestTimeStep, *m_particle_property, *m_multi_volume_property_list, pointObject );
             pointObject->setMinMaxObjectCoords( m_result_min_object_coords, m_result_max_object_coords );
@@ -184,7 +183,6 @@ private:
         case ObjectInfoExtractor::ServerGlyphObject:
             if( m_server_mode == ServerMode::CS )
             {
-                SendGenerateGlyphSignal( fileName, requestTimeStep );
                 Calculate_minmax_glyph( requestTimeStep, *m_glyph_property, *m_multi_volume_property_list );
                 polygonObject = GenerateGlyphCS( fileName, requestTimeStep, *m_glyph_property, *m_multi_volume_property_list );
             }
