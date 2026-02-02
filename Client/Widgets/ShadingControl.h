@@ -4,14 +4,15 @@
 #include <QDockWidget>
 #include <QButtonGroup>
 
-#include "Screen.h"
-#include <kvs/StochasticRendererBase>
-#include <kvs/StochasticPolygonRenderer>
-#include <kvs/ParticleBasedRenderer>
-#include <kvs/StochasticTexturedPolygonRenderer>
 #include <kvs/IDManager>
+#include <kvs/ParticleBasedRenderer>
 #include <kvs/RendererManager>
+#include <kvs/StochasticPolygonRenderer>
+#include <kvs/StochasticRendererBase>
+#include <kvs/StochasticTexturedPolygonRenderer>
+#include "Screen.h" // <kvs/qt/Screen>
 
+// FIXME:lasフォーマットのオブジェクトにシェーディングは必要ありません
 namespace Ui
 {
 class ShadingControl;
@@ -27,9 +28,8 @@ public:
 
 public slots:
     void onShading( kvs::RendererBase* rendererBase );
-    // FIXME:KPI
-    void onLoadParameter( const QString& filePath );
-    void onSaveParameter( const QString& filePath );
+    void onLoadParameter( const QString& filePath ); // KPI
+    void onSaveParameter( const QString& filePath ); // KPI
 
 private:
     Ui::ShadingControl *ui;

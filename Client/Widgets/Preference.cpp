@@ -17,7 +17,7 @@ Preference::Preference( QWidget *parent )
 
     ui->boxTypeComboBox->addItem( "WiredBox", WiredBox );
     ui->boxTypeComboBox->addItem( "SolidBox", SolidBox );
-    // ui->boxTypeComboBox->addItem( "NoneBox", NoneBox ); // NOTE:Linux環境でNoneBoxに変更後、別のボックスタイプに変更するとColorMapBarに不具合が生じるため無効にしています。
+    // ui->boxTypeComboBox->addItem( "NoneBox", NoneBox ); // FIXME:Linux環境でNoneBoxに変更後、別のボックスタイプに変更するとm_color_map_barの表示に不具合が生じるため無効にしています
 
     ui->showFPSComboBox->addItem( "Show", QVariant( true ) );
     ui->showFPSComboBox->addItem( "Hide", QVariant( false ) );
@@ -51,7 +51,7 @@ Preference::~Preference()
     delete ui;
 }
 
-void Preference::onReadyScreen()
+void Preference::onScreenInitialized()
 {
     applySettings();
 }
@@ -142,7 +142,7 @@ void Preference::loadOrientationAxisSetting()
     {
         ui->boxTypeComboBox->setCurrentIndex( SolidBox );
     }
-    // else if( boxType == "NoneBox" ) // FIXME:Linux環境でNoneBoxに変更後別のボックスタイプを変更すると1ColorMapBarに影響がでる不具合があるため無効にしています。
+    // else if( boxType == "NoneBox" ) // FIXME:Linux環境でNoneBoxに変更後、別のボックスタイプに変更するとm_color_map_barの表示に不具合が生じるため無効にしています
     // {
     //     ui->boxTypeComboBox->setCurrentIndex( NoneAxis );
     // }

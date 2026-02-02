@@ -3,11 +3,12 @@
 
 #include <QDockWidget>
 
-#include "Screen.h"
 #include <kvs/IDManager>
+#include <kvs/ParticleBasedRenderer>
+#include <kvs/PointObject>
 #include <kvs/RendererManager>
 #include <kvs/StochasticRendererBase>
-#include <kvs/ParticleBasedRenderer>
+#include "Screen.h" // <kvs/qt/Screen>
 
 namespace Ui
 {
@@ -23,9 +24,8 @@ public:
     ~PointSizeControl();
 
 public slots:
-    // FIXME:KPI
-    void onLoadParameter( const QString& filePath );
-    void onSaveParameter( const QString& filePath );
+    void onLoadParameter( const QString& filePath ); // KPI
+    void onSaveParameter( const QString& filePath ); // KPI
 
 private:
     Ui::PointSizeControl *ui;

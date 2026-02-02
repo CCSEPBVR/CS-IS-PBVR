@@ -1,20 +1,22 @@
 #ifndef OBJECTEDITOR_H
 #define OBJECTEDITOR_H
+
 #include <unordered_set>
 
 #include <QDockWidget>
-#include <QFileDialog>
 #include <QColorDialog>
+#include <QFileDialog>
 
-#include "Screen.h"
 #include <kvs/ParticleBasedRenderer>
-#include <kvs/StochasticPolygonRenderer>
 #include <kvs/StochasticLineRenderer>
+#include <kvs/StochasticPolygonRenderer>
 #include <kvs/StochasticTexturedPolygonRenderer>
+#include "Screen.h"
 
-#include "WebSocketPair.h"
 #include "VizMode.h"
+#include "WebSocketPair.h"
 #include "Worker.h"
+
 #include "RemoteFileDialog.h"
 
 #include "../../Shared/JsonKeys.h"
@@ -32,39 +34,48 @@ class ObjectEditor : public QDockWidget
 public:
     explicit ObjectEditor( kvs::qt::jaea::Screen* screen, WebSocketPair* websockets, Viz::Mode* vizMode, QWidget *parent = nullptr );
     ~ObjectEditor();
-
-public:
-    void onUpdateServerState( bool serverState );     // true:接続中
-    void onOperatorStateUpdate( bool operatorState ); // true:権限あり
-    void onReset();
-    void onReceiveSelectedFile( const QJsonObject& dataArray );
-    void onReceiveObjectDelete( const QJsonObject& dataArray );
-    void onReceiveObjectInfoParameter( const QJsonObject& dataArray );
-    void onRequestDataAt( int requestTimeStep );
-    void onTransferFunctionUpdate();
-    void onGlyphParameterUpdate();
-    void onUnpack( const QByteArray& binary );
-    void onUpdateMaxTimeStep( const int latest );
-    // FIXME:KPI
-    void onLoadParameter( const QString& filePath );
-    void onSaveParameter( const QString& filePath );
+    void reset();
 
 signals:
+    void updateStatusBarMessage( const QString& message );
     void updateNumberOfVector( const int numberOfVector );
-    void updateTotalTimeStepRange( int min, int max, bool isSingleObject );
+    void updateTotalTimeStepRange( int min, int max, const bool isSingleObject );
     void updateFocus( kvs::Vec3 resultMinObjectCoords, kvs::Vec3 resultMaxObjectCoords );
     void updateTranslation();
     void shading( kvs::RendererBase* );
-    void dataRequestCompleted( int requestTimeStep );
+    void dataRequestCompleted( const int requestTimeStep );
+
+public slots:
+    void onOperatorStateUpdate( const bool operatorState ); // true: 権限有り, false: 権限無し
+
+    // NOTE:バイナリソケット用
+    void onUnpack( const QByteArray& binary );
+
+    // NOTE:テキストソケット用
+    void onReceiveObjectInfoParameter( const QJsonObject& payload );
+
+    void onReceiveSelectedFile( const QJsonObject& payload );
+    void onReceiveObjectDelete( const QJsonObject& payload );
+
+    void onUpdateObjectLatestTimeStep( const QJsonObject& payload );
+
+    void onGlyphParameterUpdate();
+    void onTransferFunctionUpdate();
+
+    void onRequestDataAt( int requestTimeStep );
+
+    void onLoadParameter( const QString& filePath ); // KPI
+    void onSaveParameter( const QString& filePath ); // KPI
 
 private:
     Ui::ObjectEditor *ui;
 
     kvs::qt::jaea::Screen* m_screen = nullptr;
+
     WebSocketPair* m_web_sockets    = nullptr;
     Viz::Mode* m_viz_mode           = nullptr;
 
-    bool m_is_operator;
+    bool m_is_operator              = false;
 
     QStandardItemModel *m_model     = nullptr;
 
@@ -77,20 +88,24 @@ private:
     kvs::Vec3 m_result_min_object_coords;
     kvs::Vec3 m_result_max_object_coords;
 
-    void updateEditorFromIndex( const QModelIndex& index );
     void setWidgetsVisible( const QList<QWidget*>& widgets, const bool visible );
-    void addObjectToModel( ObjectInfoExtractor::ObjectInfo& objectInfo );
-    void calculateTotalMinMaxTimeStep();
+    void updateUI( const QModelIndex& index );
 
     template<typename F>
-    void updateSelectedObject( F func );
+    void updateSelectedObjectInfoParameter( F func );
 
-    void updateVisibility( int requestTimeStep );
+    void addObjectInfoToModel( ObjectInfoExtractor::ObjectInfo& objectInfo );
+    void calculateTotalMinMaxTimeStep();
+
+    void sendNeedSameTimeStepReplacePatches( const std::function<bool( ObjectInfoExtractor::Format )>& isTargetFormat );
+
+    void updateVisibility( const int requestTimeStep );
     void registerObject( ObjectInfoExtractor::ObjectInfo& info );
     void replaceObject( ObjectInfoExtractor::ObjectInfo& info );
+    void dataRequestComplete( const int requestTimeStep );
 
 private slots:
-    void onItemSelection( const QItemSelection &selected, const QItemSelection &deselected );
+    void onSelectionChanged( const QItemSelection &selected, const QItemSelection &deselected );
 
     // 全オブジェクト共通
     void onFocusCheckBoxToggled( bool checked );
@@ -109,8 +124,6 @@ private slots:
     void onBrowse();
     void onDelete();
     void onApply();
-
-    void dataRequestComplete( int requestTimeStep );
 };
 
 #endif // OBJECTEDITOR_H

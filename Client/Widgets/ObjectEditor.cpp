@@ -1,7 +1,7 @@
 #include "ObjectEditor.h"
 #include "ui_ObjectEditor.h"
 
-// FIXME:ISオブジェクトのタイムステップ増加、サーバ側フォーカスのバグ、 エクスポート
+// FIXME:エクスポート機能が未実装です
 ObjectEditor::ObjectEditor( kvs::qt::jaea::Screen* screen, WebSocketPair* websockets, Viz::Mode* vizMode, QWidget *parent )
     : QDockWidget( parent )
     , ui( new Ui::ObjectEditor )
@@ -12,7 +12,7 @@ ObjectEditor::ObjectEditor( kvs::qt::jaea::Screen* screen, WebSocketPair* websoc
 {
     ui->setupUi( this );
 
-    // NOTE: extraOpacityFactorは一時的に無効にしています。必要になったら下記のコードの削除とextraOpacityFactorに関係するコードのコメント文を元に戻せば使えるはずです。
+    // NOTE:(extraOpacityFactor)は一時的に無効にしています。必要になったら下記のコードの削除とextraOpacityFactorに関係するコードのコメント文を元に戻せば使えるはずです。
     ui->extraOpacityFactorLabel->setVisible( false );
     ui->extraOpacityFactorDoubleSpinBox->setVisible( false );
 
@@ -35,6 +35,7 @@ ObjectEditor::ObjectEditor( kvs::qt::jaea::Screen* screen, WebSocketPair* websoc
     m_group_common_server_point_object_widgets =
         {
             ui->particleLimitLabel      , ui->particleLimitSpinBox,
+            // NOTE:(extraOpacityFactor)は一時的に無効にしています。必要になったら下記のコードの削除とextraOpacityFactorに関係するコードのコメント文を元に戻せば使えるはずです。
             // ui->extraOpacityFactorLabel , ui->extraOpacityFactorDoubleSpinBox,
         };
 
@@ -57,24 +58,28 @@ ObjectEditor::ObjectEditor( kvs::qt::jaea::Screen* screen, WebSocketPair* websoc
             ui->opacityLabel, ui->opacityDoubleSpinBox,
         };
 
-    // 起動直後にオブジェクト情報はないので非表示にする。
+    // NOTE:起動直後にオブジェクトはないので非表示にする。
     setWidgetsVisible( m_group_common_object_widgets             , false );
     setWidgetsVisible( m_group_common_server_point_object_widgets, false );
     setWidgetsVisible( m_group_client_server_point_object_widgets, false );
     setWidgetsVisible( m_group_nontexture_polygon_object_widgets , false );
 
-    connect( ui->treeView->selectionModel()     , &QItemSelectionModel::selectionChanged, this, &ObjectEditor::onItemSelection );
+    connect( ui->treeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &ObjectEditor::onSelectionChanged );
 
     // 全オブジェクト共通
     connect( ui->focusCheckBox                  , &QCheckBox::toggled                   , this, &ObjectEditor::onFocusCheckBoxToggled );
+
     // サーバポイントオブジェクト(ClientServer/In-Situ共通)
     connect( ui->particleLimitSpinBox           , &QSpinBox::valueChanged               , this, &ObjectEditor::onParticleLimitSpinBoxValueChanged );
+    // NOTE:(extraOpacityFactor)は一時的に無効にしています。必要になったら下記のコードの削除とextraOpacityFactorに関係するコードのコメント文を元に戻せば使えるはずです。
     // connect( ui->extraOpacityFactorDoubleSpinBox, &QDoubleSpinBox::valueChanged         , this, &ObjectEditor::onExtraOpacityFactorDoubleSpinBoxValueChanged );
+
     // サーバポイントオブジェクト(ClientServerのみ)
     connect( ui->coordinateXLineEdit            , &QLineEdit::textChanged               , this, &ObjectEditor::onCoordinateLineEditTextChanged );
     connect( ui->coordinateYLineEdit            , &QLineEdit::textChanged               , this, &ObjectEditor::onCoordinateLineEditTextChanged );
     connect( ui->coordinateZLineEdit            , &QLineEdit::textChanged               , this, &ObjectEditor::onCoordinateLineEditTextChanged );
     // connect( ui->exportPushButton               , &QPushButton::clicked                 , this, &ObjectEditor::onExportButtonClicked );
+
     // テスクチャ無しポリゴン(.stlのみ) // FIXME:KVSMLPolygonObjectは不透明度のみ操作できるようにしたほうがいいかもしれません。
     connect( ui->colorClickableLabel            , &ClickableLabel::doubleClicked        , this, &ObjectEditor::onColorLabelDoubleClicked );
     connect( ui->opacityDoubleSpinBox           , &QDoubleSpinBox::valueChanged         , this, &ObjectEditor::onOpacityDoubleSpinBoxValueChanged );
@@ -89,476 +94,34 @@ ObjectEditor::~ObjectEditor()
     delete ui;
 }
 
-void ObjectEditor::onUpdateServerState( bool serverState ) // true:接続中
-{}
-
-void ObjectEditor::onOperatorStateUpdate( bool operatorState ) // true:権限あり
-{}
-
-void ObjectEditor::onReset()
-{}
-
-void ObjectEditor::onReceiveSelectedFile( const QJsonObject& dataArray )
+void ObjectEditor::reset()
 {
-    ObjectInfoExtractor::ObjectInfo objectInfo;
-    // 全オブジェクト共通
-    objectInfo.uuid                  = dataArray[QString::fromUtf8( Protocol::Key::UUID )].toString().toUtf8();
-    objectInfo.tmpIsDisplay          = dataArray[QString::fromUtf8( Protocol::Key::TmpIsDisplay )].toBool();
-    objectInfo.isDisplay             = dataArray[QString::fromUtf8( Protocol::Key::IsDisplay )].toBool();
-    objectInfo.tmpIsKeepInitial      = dataArray[QString::fromUtf8( Protocol::Key::TmpIsKeepInitial )].toBool();
-    objectInfo.isKeepInitial         = dataArray[QString::fromUtf8( Protocol::Key::IsKeepInitial )].toBool();
-    objectInfo.tmpIsKeepFinal        = dataArray[QString::fromUtf8( Protocol::Key::TmpIsKeepFinal )].toBool();
-    objectInfo.isKeepFinal           = dataArray[QString::fromUtf8( Protocol::Key::IsKeepFinal )].toBool();
-    objectInfo.name                  = dataArray[QString::fromUtf8( Protocol::Key::Name )].toString().toUtf8();
-    objectInfo.extension             = dataArray[QString::fromUtf8( Protocol::Key::Extension )].toString().toUtf8();
-    objectInfo.directory             = dataArray[QString::fromUtf8( Protocol::Key::Directory )].toString().toUtf8();
-    objectInfo.format                = static_cast<ObjectInfoExtractor::Format>( dataArray[QString::fromUtf8( Protocol::Key::Format )].toInt() );
-    QJsonArray timeStepArray         = dataArray[QString::fromUtf8( Protocol::Key::TimeStep )].toArray();
-    objectInfo.timeStep              = { timeStepArray[0].toInt(), timeStepArray[1].toInt() };
-    objectInfo.tmpIsFocus            = dataArray[QString::fromUtf8( Protocol::Key::TmpIsFocus )].toBool();
-    objectInfo.isFocus               = dataArray[QString::fromUtf8( Protocol::Key::IsFocus )].toBool();
-    auto minObjectCoordArray         = dataArray[QString::fromUtf8( Protocol::Key::MinObjectCoord )].toArray();
-    objectInfo.minObjectCoord        = { minObjectCoordArray[0].toDouble(), minObjectCoordArray[1].toDouble(), minObjectCoordArray[2].toDouble() };
-    auto maxObjectCoordArray         = dataArray[QString::fromUtf8( Protocol::Key::MaxObjectCoord )].toArray();
-    objectInfo.maxObjectCoord        = { maxObjectCoordArray[0].toDouble(), maxObjectCoordArray[1].toDouble(), maxObjectCoordArray[2].toDouble() };
-    auto minExternalCoordArray       = dataArray[QString::fromUtf8( Protocol::Key::MinExternalCoord )].toArray();
-    objectInfo.minExternalCoord      = { minExternalCoordArray[0].toDouble(), minExternalCoordArray[1].toDouble(), minExternalCoordArray[2].toDouble() };
-    auto maxExternalCoordArray       = dataArray[QString::fromUtf8( Protocol::Key::MaxExternalCoord )].toArray();
-    objectInfo.maxExternalCoord      = { maxExternalCoordArray[0].toDouble(), maxExternalCoordArray[1].toDouble(), maxExternalCoordArray[2].toDouble() };
-    // サーバポイントオブジェクト(ClientServer/In-Situ共通)
-    objectInfo.tmpParticleLimit      = dataArray[QString::fromUtf8( Protocol::Key::TmpParticleLimit )].toInt();
-    objectInfo.particleLimit         = dataArray[QString::fromUtf8( Protocol::Key::ParticleLimit )].toInt();
-    // objectInfo.tmpExtraOpacityFactor = static_cast<float>( dataArray[QString::fromUtf8( Protocol::Key::TmpExtraOpacityFactor )].toDouble() );
-    // objectInfo.extraOpacityFactor    = static_cast<float>( dataArray[QString::fromUtf8( Protocol::Key::ExtraOpacityFactor )].toDouble() );
-    // サーバポイントオブジェクト(ClientServerのみ)
-    objectInfo.numberOfVector        = dataArray[QString::fromUtf8( Protocol::Key::NumberOfVector )].toInt();
-    objectInfo.numberOfElements      = dataArray[QString::fromUtf8( Protocol::Key::NumberOfElements )].toInt();
-    objectInfo.numberOfSubvolume     = dataArray[QString::fromUtf8( Protocol::Key::NumberOfSubvolume)].toInt();
-    objectInfo.numberOfNodes         = dataArray[QString::fromUtf8( Protocol::Key::NumberOfNodes )].toInt();
-    objectInfo.elementType           = dataArray[QString::fromUtf8( Protocol::Key::ElementType )].toInt();
-    objectInfo.fileType              = dataArray[QString::fromUtf8( Protocol::Key::FileType )].toInt();
-    objectInfo.stepNumber            = dataArray[QString::fromUtf8( Protocol::Key::StepNumber )].toInt();
-    objectInfo.tmpCoordinateX        = dataArray[QString::fromUtf8( Protocol::Key::TmpCoordinateX )].toString().toUtf8();
-    objectInfo.coordinateX           = dataArray[QString::fromUtf8( Protocol::Key::CoordinateX )].toString().toUtf8();
-    objectInfo.tmpCoordinateY        = dataArray[QString::fromUtf8( Protocol::Key::TmpCoordinateY )].toString().toUtf8();
-    objectInfo.coordinateY           = dataArray[QString::fromUtf8( Protocol::Key::CoordinateY )].toString().toUtf8();
-    objectInfo.tmpCoordinateZ        = dataArray[QString::fromUtf8( Protocol::Key::TmpCoordinateZ )].toString().toUtf8();
-    objectInfo.coordinateZ           = dataArray[QString::fromUtf8( Protocol::Key::IsExport )].toBool();
-    // テスクチャ無しポリゴン(.stlのみ) // FIXME:KVSMLPolygonObjectは不透明度のみ操作できるようにしたほうがいいかもしれません。
-    auto tmpPolygonColorArray        = dataArray[QString::fromUtf8( Protocol::Key::TmpPolygonColor )].toArray();
-    objectInfo.tmpPolygonColor       = kvs::RGBColor( tmpPolygonColorArray[0].toInt(), tmpPolygonColorArray[1].toInt(), tmpPolygonColorArray[2].toInt() );
-    auto polygonColorArray           = dataArray[QString::fromUtf8( Protocol::Key::PolygonColor )].toArray();
-    objectInfo.polygonColor          = kvs::RGBColor( polygonColorArray[0].toInt(), polygonColorArray[1].toInt(), polygonColorArray[2].toInt() );
-    objectInfo.tmpPolygonOpacity     = static_cast<float>( dataArray[QString::fromUtf8( Protocol::Key::TmpPolygonOpacity )].toDouble() );
-    objectInfo.polygonOpacity        = static_cast<float>( dataArray[QString::fromUtf8( Protocol::Key::PolygonOpacity )].toDouble() );
 
-    addObjectToModel( objectInfo );
-
-    const bool isServerPointObject = ( objectInfo.format == ObjectInfoExtractor::ClientServerPointObject ) || ( objectInfo.format == ObjectInfoExtractor::InsituServerPointObject );
-    if( isServerPointObject ) emit updateNumberOfVector( objectInfo.numberOfVector );
 }
 
-void ObjectEditor::onReceiveObjectDelete( const QJsonObject& data )
+void ObjectEditor::onOperatorStateUpdate( const bool operatorState )
 {
-    if( !data.contains( QString::fromUtf8( Protocol::Key::UUID ) ) ) return;
+    m_is_operator = operatorState;
 
-    const QString uuid = data[QString::fromUtf8( Protocol::Key::UUID )].toString();
-
-    bool deletedWasFocus = false;
-
-    for( int row = 0; row < m_model->rowCount(); ++row )
+    const int rows = m_model->rowCount();
+    for( int r = 0; r < rows; ++r )
     {
-        QStandardItem* item = m_model->item( row, 0 );
-        if( !item ) continue;
-
-        QVariant var = item->data( Qt::UserRole );
-        if( !var.canConvert<ObjectInfoExtractor::ObjectInfo>() ) continue;
-
-        auto info = var.value<ObjectInfoExtractor::ObjectInfo>();
-        if( QString::fromUtf8( info.uuid ) != uuid ) continue;
-
-        deletedWasFocus = info.tmpIsFocus;  // ★削除前に覚える
-
-        // --- Scene ---
-        if( info.objectID.first != -1 ) m_screen->scene()->removeObject( info.objectID.first );
-
-        // --- Model ---
-        m_model->removeRow( row );
-        break;
+        if( auto* displayItem     = m_model->item( r, 2 ) ) { displayItem    ->setEnabled( m_is_operator ); }
+        if( auto* keepInitialItem = m_model->item( r, 3 ) ) { keepInitialItem->setEnabled( m_is_operator ); }
+        if( auto* keepFinalItem   = m_model->item( r, 4 ) ) { keepFinalItem  ->setEnabled( m_is_operator ); }
     }
 
-    // ★フォーカス再割当（必要なら）
-    if( deletedWasFocus )
-    {
-        bool otherFocusedFound = false;
-        for( int row = 0; row < m_model->rowCount(); ++row )
-        {
-            QStandardItem* item = m_model->item( row, 0 );
-            if( !item ) continue;
-
-            QVariant var = item->data( Qt::UserRole );
-            if( !var.canConvert<ObjectInfoExtractor::ObjectInfo>() ) continue;
-
-            auto info = var.value<ObjectInfoExtractor::ObjectInfo>();
-            if( info.tmpIsFocus ) { otherFocusedFound = true; break; }
-        }
-
-        if( !otherFocusedFound && m_model->rowCount() > 0 )
-        {
-            // 先頭でも良いし、直前/直後優先など方針は好み
-            QStandardItem* item = m_model->item( 0, 0 );
-            if( item )
-            {
-                QVariant var = item->data( Qt::UserRole );
-                if( var.canConvert<ObjectInfoExtractor::ObjectInfo>() )
-                {
-                    auto info = var.value<ObjectInfoExtractor::ObjectInfo>();
-                    info.tmpIsFocus = true;
-                    item->setData( QVariant::fromValue( info ), Qt::UserRole );
-                }
-            }
-        }
-    }
-
-    calculateTotalMinMaxTimeStep();
-
-    if( m_model->rowCount() == 0 )
-    {
-        setWidgetsVisible( m_group_common_object_widgets             , false );
-        setWidgetsVisible( m_group_common_server_point_object_widgets, false );
-        setWidgetsVisible( m_group_client_server_point_object_widgets, false );
-        setWidgetsVisible( m_group_nontexture_polygon_object_widgets , false );
-    }
-
-    m_screen->update();
-
-    QModelIndex current = ui->treeView->currentIndex();
-    if( current.isValid() )
-    {
-        QModelIndex idx0 = current.sibling( current.row(), 0 ); // UserRoleが入ってる列に合わせる
-        updateEditorFromIndex( idx0 );
-    }
-}
-
-void ObjectEditor::onReceiveObjectInfoParameter( const QJsonObject& dataArray )
-{
-    if( dataArray.contains( QString::fromUtf8( Protocol::Key::ResultMinObjectCoords ) ) )
-    {
-        QJsonArray a = dataArray[QString::fromUtf8( Protocol::Key::ResultMinObjectCoords )].toArray();
-        if( a.size() == 3 )
-        {
-            m_result_min_object_coords = kvs::Vec3( a[0].toDouble(), a[1].toDouble(), a[2].toDouble() );
-        }
-    }
-
-    if( dataArray.contains( QString::fromUtf8( Protocol::Key::ResultMaxObjectCoords ) ) )
-    {
-        QJsonArray a = dataArray[QString::fromUtf8( Protocol::Key::ResultMaxObjectCoords )].toArray();
-        if( a.size() == 3 )
-        {
-            m_result_max_object_coords = kvs::Vec3( a[0].toDouble(), a[1].toDouble(), a[2].toDouble() );
-        }
-    }
-
-    if( dataArray.contains( QString::fromUtf8( Protocol::Key::Objects ) ) && dataArray[QString::fromUtf8( Protocol::Key::Objects )].isArray() )
-    {
-        const QJsonArray objects = dataArray[QString::fromUtf8( Protocol::Key::Objects )].toArray();
-
-        for( const QJsonValue& value : objects )
-        {
-            if( !value.isObject() ) continue;
-
-            const QJsonObject patch = value.toObject();
-
-            if( !patch.contains( QString::fromUtf8( Protocol::Key::UUID ) ) ) continue;
-
-            const QString uuid = patch[QString::fromUtf8( Protocol::Key::UUID )].toString();
-
-            for( int row = 0; row < m_model->rowCount(); ++row )
-            {
-                QStandardItem* nameItem         = m_model->item( row, 0 );
-                QStandardItem* displayItem      = m_model->item( row, 2 );
-                QStandardItem* keepInitialItem  = m_model->item( row, 3 );
-                QStandardItem* keepFinalItem    = m_model->item( row, 4 );
-                if( !nameItem ) continue;
-
-                QVariant var = nameItem->data( Qt::UserRole );
-                if( !var.canConvert<ObjectInfoExtractor::ObjectInfo>() ) continue;
-
-                ObjectInfoExtractor::ObjectInfo info = var.value<ObjectInfoExtractor::ObjectInfo>();
-
-                if( QString::fromUtf8( info.uuid ) != uuid ) continue;
-
-                // 全オブジェクト共通
-                if( patch.contains( QString::fromUtf8( Protocol::Key::IsDisplay ) ) )
-                {
-                    info.tmpIsDisplay = patch[QString::fromUtf8( Protocol::Key::IsDisplay )].toBool();
-                    info.isDisplay    = patch[QString::fromUtf8( Protocol::Key::IsDisplay )].toBool();
-                    displayItem       ->setCheckState( info.tmpIsDisplay     ? Qt::Checked : Qt::Unchecked );
-                }
-                if( patch.contains( QString::fromUtf8( Protocol::Key::IsKeepInitial ) ) )
-                {
-                    info.tmpIsKeepInitial = patch[QString::fromUtf8( Protocol::Key::IsKeepInitial )].toBool();
-                    info.isKeepInitial    = patch[QString::fromUtf8( Protocol::Key::IsKeepInitial )].toBool();
-                    keepInitialItem       ->setCheckState( info.tmpIsKeepInitial ? Qt::Checked : Qt::Unchecked );
-                }
-                if( patch.contains( QString::fromUtf8( Protocol::Key::IsKeepFinal ) ) )
-                {
-                    info.tmpIsKeepFinal = patch[QString::fromUtf8( Protocol::Key::IsKeepFinal )].toBool();
-                    info.isKeepFinal    = patch[QString::fromUtf8( Protocol::Key::IsKeepFinal )].toBool();
-                    keepFinalItem       ->setCheckState( info.tmpIsKeepFinal ? Qt::Checked : Qt::Unchecked );
-                }
-                if( patch.contains( QString::fromUtf8( Protocol::Key::IsFocus ) ) )
-                {
-                    info.tmpIsFocus = patch[QString::fromUtf8( Protocol::Key::IsFocus )].toBool();
-                    info.isFocus    = patch[QString::fromUtf8( Protocol::Key::IsFocus )].toBool();
-                }
-                // サーバポイントオブジェクト(ClientServer/In-Situ共通)
-                if( patch.contains( QString::fromUtf8( Protocol::Key::ParticleLimit ) ) )
-                {
-                    info.tmpParticleLimit = patch[QString::fromUtf8( Protocol::Key::ParticleLimit )].toInt();
-                    info.particleLimit    = patch[QString::fromUtf8( Protocol::Key::ParticleLimit )].toInt();
-                }
-                // if( patch.contains( QString::fromUtf8( Protocol::Key::ExtraOpacityFactor ) ) )
-                // {
-                //     info.tmpExtraOpacityFactor = static_cast<float>( patch[QString::fromUtf8( Protocol::Key::ExtraOpacityFactor )].toDouble() );
-                //     info.extraOpacityFactor    = static_cast<float>( patch[QString::fromUtf8( Protocol::Key::ExtraOpacityFactor )].toDouble() );
-                // }
-                // サーバポイントオブジェクト(ClientServerのみ)
-                if( patch.contains( QString::fromUtf8( Protocol::Key::CoordinateX ) ) )
-                {
-                    info.tmpCoordinateX = patch[QString::fromUtf8( Protocol::Key::CoordinateX )].toString().toUtf8().constData();
-                    info.coordinateX    = patch[QString::fromUtf8( Protocol::Key::CoordinateX )].toString().toUtf8().constData();
-                }
-                if( patch.contains( QString::fromUtf8( Protocol::Key::CoordinateY ) ) )
-                {
-                    info.tmpCoordinateY = patch[QString::fromUtf8( Protocol::Key::CoordinateY )].toString().toUtf8().constData();
-                    info.coordinateY    = patch[QString::fromUtf8( Protocol::Key::CoordinateY )].toString().toUtf8().constData();
-                }
-                if( patch.contains( QString::fromUtf8( Protocol::Key::CoordinateZ ) ) )
-                {
-                    info.tmpCoordinateZ = patch[QString::fromUtf8( Protocol::Key::CoordinateZ )].toString().toUtf8().constData();
-                    info.coordinateZ    = patch[QString::fromUtf8( Protocol::Key::CoordinateZ )].toString().toUtf8().constData();
-                }
-                // テスクチャ無しポリゴン(.stlのみ) // FIXME:KVSMLPolygonObjectは不透明度のみ操作できるようにしたほうがいいかもしれません。
-                if( patch.contains( QString::fromUtf8( Protocol::Key::PolygonColor ) ) )
-                {
-                    QJsonArray c = patch[QString::fromUtf8( Protocol::Key::PolygonColor )].toArray();
-                    if( c.size() == 3 )
-                    {
-                        info.polygonColor            = kvs::RGBColor( c[0].toInt(), c[1].toInt(), c[2].toInt() );
-                        info.tmpPolygonColor            = kvs::RGBColor( c[0].toInt(), c[1].toInt(), c[2].toInt() );
-                        info.needSameTimeStepReplace = true;
-                    }
-                }
-                if( patch.contains( QString::fromUtf8( Protocol::Key::PolygonOpacity ) ) )
-                {
-                    info.polygonOpacity          = static_cast<float>( patch[QString::fromUtf8( Protocol::Key::PolygonOpacity )].toDouble() );
-                    info.tmpPolygonOpacity       = static_cast<float>( patch[QString::fromUtf8( Protocol::Key::PolygonOpacity )].toDouble() );
-                    info.needSameTimeStepReplace = true;
-                }
-                nameItem->setData( QVariant::fromValue( info ), Qt::UserRole );
-                break;
-            }
-        }
-    }
-
-    for( int row = 0; row < m_model->rowCount(); row++ )
-    {
-        QStandardItem* nameItem = m_model->item( row, 0 );
-        if( !nameItem ) continue;
-
-        QVariant var = nameItem->data( Qt::UserRole );
-        if( !var.canConvert<ObjectInfoExtractor::ObjectInfo>() ) continue;
-
-        auto info = var.value<ObjectInfoExtractor::ObjectInfo>();
-        if( info.objectID.first != -1 && info.objectID.second != -1 )
-        {
-            m_screen->scene()->object( info.objectID.first )->setMinMaxObjectCoords( m_result_min_object_coords, m_result_max_object_coords );
-            m_screen->scene()->object( info.objectID.first )->setMinMaxExternalCoords( m_result_min_object_coords, m_result_max_object_coords );
-        }
-    }
-
-    m_screen->scene()->objectManager()->push_centering_xform();
-    emit updateFocus( m_result_min_object_coords, m_result_max_object_coords );
-    m_screen->scene()->objectManager()->updateMinMaxCoords();
-    m_screen->scene()->objectManager()->updateExternalCoords();
-    m_screen->scene()->objectManager()->pop_centering_xform();
-    emit updateTranslation();
-    m_screen->update();
-
-    QModelIndex current = ui->treeView->currentIndex();
-    if( current.isValid() )
-    {
-        QModelIndex idx0 = current.sibling( current.row(), 0 ); // UserRoleが入ってる列に合わせる
-        updateEditorFromIndex( idx0 );
-    }
-}
-
-void ObjectEditor::onRequestDataAt( int requestTimeStep )
-{
-    switch( *m_viz_mode )
-    {
-    case Viz::Mode::Local:
-    case Viz::Mode::LocalClientAndServer:
-    {
-        Worker* worker = new Worker( m_model, m_screen, requestTimeStep, m_result_min_object_coords, m_result_max_object_coords );
-        QThread* thread = new QThread;
-
-        worker->moveToThread( thread );
-
-        connect( thread, &QThread::started , worker, &Worker::process );
-        connect( worker, &Worker::done     , thread, &QThread::quit );
-        connect( worker, &Worker::done     , worker, &Worker::deleteLater );
-        connect( thread, &QThread::finished, thread, &QThread::deleteLater );
-        connect( worker, &Worker::done     , this  , [this, requestTimeStep]() { dataRequestComplete( requestTimeStep ); } );
-
-        thread->start();
-        break;
-    }
-    case Viz::Mode::RemoteClientAndServer:
-    case Viz::Mode::RemoteInSitu:
-    {
-        if( m_web_sockets->isConnected() )
-        {
-            QJsonArray resultMinObjectCoords;
-            resultMinObjectCoords.append( m_result_min_object_coords.x() );
-            resultMinObjectCoords.append( m_result_min_object_coords.y() );
-            resultMinObjectCoords.append( m_result_min_object_coords.z() );
-
-            QJsonArray resultMaxObjectCoords;
-            resultMaxObjectCoords.append( m_result_max_object_coords.x() );
-            resultMaxObjectCoords.append( m_result_max_object_coords.y() );
-            resultMaxObjectCoords.append( m_result_max_object_coords.z() );
-
-            m_web_sockets->text()->sendTextMessage( QJsonDocument( {
-                                                                  { QString::fromUtf8( Protocol::Key::Event )                , QString::fromUtf8( Protocol::Events::RequestDataAt ) } ,
-                                                                  { QString::fromUtf8( Protocol::Key::TimeStep )             , requestTimeStep },
-                                                                  { QString::fromUtf8( Protocol::Key::ResultMinObjectCoords ), resultMinObjectCoords },
-                                                                  { QString::fromUtf8( Protocol::Key::ResultMaxObjectCoords ), resultMaxObjectCoords },
-                                                                  } ).toJson( QJsonDocument::Compact ) );
-        }
-        break;
-    }
-    default:
-        break;
-    }
-}
-
-void ObjectEditor::onTransferFunctionUpdate()
-{
-    if( !( *m_viz_mode == Viz::Mode::LocalClientAndServer  ||
-          *m_viz_mode == Viz::Mode::RemoteClientAndServer ||
-          *m_viz_mode == Viz::Mode::RemoteInSitu ) ||
-        !m_web_sockets->isConnected() )
-    {
-        return;
-    }
-
-    QJsonArray patchArray;
-
-    for( int row = 0; row < m_model->rowCount(); ++row )
-    {
-        QStandardItem* nameItem = m_model->item( row, 0 );
-        if( !nameItem ) continue;
-
-        QVariant var = nameItem->data( Qt::UserRole );
-        if( !var.canConvert<ObjectInfoExtractor::ObjectInfo>() ) continue;
-
-        auto objectInfo = var.value<ObjectInfoExtractor::ObjectInfo>();
-
-        // 対象フォーマットのみ
-        const auto fmt = objectInfo.format; // ←メンバ名が違うなら合わせてください
-        const bool is_target =
-            ( fmt == ObjectInfoExtractor::Format::ClientServerPointObject ) ||
-            ( fmt == ObjectInfoExtractor::Format::InsituServerPointObject );
-
-        if( !is_target ) continue;
-
-        // needSameTimeStep を有効化
-        // （既存コードでは needSameTimeStepReplace があるので、実際のフラグ名に合わせてどちらか/両方）
-        // objectInfo.needSameTimeStep = true;          // ←存在するならこれ
-        objectInfo.needSameTimeStepReplace = true;   // ←既存にあるならこっち
-
-        // モデルへ反映
-        nameItem->setData( QVariant::fromValue( objectInfo ), Qt::UserRole );
-
-        // 送信用パッチ（uuid + フラグのみ）
-        QJsonObject patch;
-        patch[QString::fromUtf8( Protocol::Key::UUID )] = QString::fromUtf8( objectInfo.uuid );
-        patch[QString::fromUtf8( Protocol::Key::NeedSameTimeStepReplace )] = true; // ←Key があるならこれ
-        // もし Protocol に Key が無いなら、サーバ側が見ているキー名に合わせてください
-
-        patchArray.append( patch );
-    }
-
-    // 対象が無ければ送らない
-    if( patchArray.isEmpty() ) return;
-
-    QJsonObject objectInfoParameter;
-    objectInfoParameter[QString::fromUtf8( Protocol::Key::Event )] = QString::fromUtf8( Protocol::Events::ObjectInfoParameter );
-
-    // onApply() と同じイベントに載せるなら Objects で差分送信
-    objectInfoParameter[QString::fromUtf8( Protocol::Key::Objects )] = patchArray;
-
-    m_web_sockets->text()->sendTextMessage( QJsonDocument( objectInfoParameter ).toJson( QJsonDocument::Compact ) );
-}
-
-void ObjectEditor::onGlyphParameterUpdate()
-{
-    if( !( *m_viz_mode == Viz::Mode::LocalClientAndServer  ||
-          *m_viz_mode == Viz::Mode::RemoteClientAndServer ||
-          *m_viz_mode == Viz::Mode::RemoteInSitu ) ||
-        !m_web_sockets->isConnected() )
-    {
-        return;
-    }
-
-    QJsonArray patchArray;
-
-    for( int row = 0; row < m_model->rowCount(); ++row )
-    {
-        QStandardItem* nameItem = m_model->item( row, 0 );
-        if( !nameItem ) continue;
-
-        QVariant var = nameItem->data( Qt::UserRole );
-        if( !var.canConvert<ObjectInfoExtractor::ObjectInfo>() ) continue;
-
-        auto objectInfo = var.value<ObjectInfoExtractor::ObjectInfo>();
-
-        // 対象フォーマットのみ
-        const auto fmt = objectInfo.format; // ←メンバ名が違うなら合わせてください
-        const bool is_target = ( fmt == ObjectInfoExtractor::Format::ServerGlyphObject );
-
-        if( !is_target ) continue;
-
-        // needSameTimeStep を有効化
-        // （既存コードでは needSameTimeStepReplace があるので、実際のフラグ名に合わせてどちらか/両方）
-        // objectInfo.needSameTimeStep = true;          // ←存在するならこれ
-        objectInfo.needSameTimeStepReplace = true;   // ←既存にあるならこっち
-
-        // モデルへ反映
-        nameItem->setData( QVariant::fromValue( objectInfo ), Qt::UserRole );
-
-        // 送信用パッチ（uuid + フラグのみ）
-        QJsonObject patch;
-        patch[QString::fromUtf8( Protocol::Key::UUID )] = QString::fromUtf8( objectInfo.uuid );
-        patch[QString::fromUtf8( Protocol::Key::NeedSameTimeStepReplace )] = true; // ←Key があるならこれ
-        // もし Protocol に Key が無いなら、サーバ側が見ているキー名に合わせてください
-
-        patchArray.append( patch );
-    }
-
-    // 対象が無ければ送らない
-    if( patchArray.isEmpty() ) return;
-
-    QJsonObject objectInfoParameter;
-    objectInfoParameter[QString::fromUtf8( Protocol::Key::Event )] = QString::fromUtf8( Protocol::Events::ObjectInfoParameter );
-
-    // onApply() と同じイベントに載せるなら Objects で差分送信
-    objectInfoParameter[QString::fromUtf8( Protocol::Key::Objects )] = patchArray;
-
-    m_web_sockets->text()->sendTextMessage( QJsonDocument( objectInfoParameter ).toJson( QJsonDocument::Compact ) );
+    ui->focusCheckBox                  ->setEnabled( m_is_operator );
+    ui->particleLimitSpinBox           ->setEnabled( m_is_operator );
+    ui->extraOpacityFactorDoubleSpinBox->setEnabled( m_is_operator );
+    ui->coordinateXLineEdit            ->setEnabled( m_is_operator );
+    ui->coordinateYLineEdit            ->setEnabled( m_is_operator );
+    ui->coordinateZLineEdit            ->setEnabled( m_is_operator );
+    ui->colorClickableLabel            ->setEnabled( m_is_operator );
+    ui->opacityDoubleSpinBox           ->setEnabled( m_is_operator );
+    ui->browsePushButton               ->setEnabled( m_is_operator );
+    ui->deletePushButton               ->setEnabled( m_is_operator );
+    ui->applyPushButton                ->setEnabled( m_is_operator );
 }
 
 void ObjectEditor::onUnpack( const QByteArray& binary )
@@ -572,11 +135,11 @@ void ObjectEditor::onUnpack( const QByteArray& binary )
     offset += sizeof(int);
 
     // 送信されてきたUUIDを記録する
-    std::unordered_set<std::string> receivedUUIDSs;
+    std::unordered_set<std::string> receivedUUIDs;
 
     while( offset < static_cast<size_t>( binary.size() ) )
     {
-        // UUIDの読み取り
+        // NOTE:UUIDの読み取り
         uint32_t uuidLen = 0;
 
         std::memcpy( &uuidLen, dataPtr + offset, sizeof(uint32_t) );
@@ -588,13 +151,13 @@ void ObjectEditor::onUnpack( const QByteArray& binary )
         std::memcpy( uuid.data(), dataPtr + offset, uuidLen );
         offset += uuidLen;
 
-        receivedUUIDSs.insert( uuid );
+        receivedUUIDs.insert( uuid );
 
         int currentImportedTimeStep;
         std::memcpy( &currentImportedTimeStep, dataPtr + offset, sizeof(int) );
         offset += sizeof(int);
 
-        // モデル内のUUIDと一致する場合objectを更新する。
+        // NOTE:モデル内のUUIDと一致する場合objectを更新する。
         for( int row = 0; row < m_model->rowCount(); ++row )
         {
             QStandardItem* nameItem = m_model->item( row, 0 );
@@ -605,7 +168,7 @@ void ObjectEditor::onUnpack( const QByteArray& binary )
 
             if( info.uuid != uuid ) continue;
 
-            // UUIDが一致したのでobjectを更新
+            // NOTE:UUIDが一致したのでobjectを更新
 
             info.currentImportedTimeStep = currentImportedTimeStep;
 
@@ -1004,7 +567,7 @@ void ObjectEditor::onUnpack( const QByteArray& binary )
         }
     }
 
-    // 受信していないUUIDのobjectをnullptrに更新する
+    // NOTE:受信していないUUIDのobjectをnullptrに更新する
     for( int row = 0; row < m_model->rowCount(); ++row )
     {
         QStandardItem* nameItem = m_model->item( row, 0 );
@@ -1013,7 +576,7 @@ void ObjectEditor::onUnpack( const QByteArray& binary )
 
         ObjectInfoExtractor::ObjectInfo info = var.value<ObjectInfoExtractor::ObjectInfo>();
 
-        if( receivedUUIDSs.find( info.uuid ) == receivedUUIDSs.end() )
+        if( receivedUUIDs.find( info.uuid ) == receivedUUIDs.end() )
         {
             info.object = nullptr;
             nameItem->setData( QVariant::fromValue( info ), Qt::UserRole );
@@ -1023,11 +586,317 @@ void ObjectEditor::onUnpack( const QByteArray& binary )
     dataRequestComplete( timeStep );
 }
 
-void ObjectEditor::onUpdateMaxTimeStep( const int latest )
+void ObjectEditor::onReceiveObjectInfoParameter( const QJsonObject& payload )
 {
+    if( payload.contains( QString::fromUtf8( Protocol::Key::ResultMinObjectCoords ) ) )
+    {
+        QJsonArray a = payload[QString::fromUtf8( Protocol::Key::ResultMinObjectCoords )].toArray();
+        if( a.size() == 3 )
+        {
+            m_result_min_object_coords = kvs::Vec3( a[0].toDouble(), a[1].toDouble(), a[2].toDouble() );
+        }
+    }
+
+    if( payload.contains( QString::fromUtf8( Protocol::Key::ResultMaxObjectCoords ) ) )
+    {
+        QJsonArray a = payload[QString::fromUtf8( Protocol::Key::ResultMaxObjectCoords )].toArray();
+        if( a.size() == 3 )
+        {
+            m_result_max_object_coords = kvs::Vec3( a[0].toDouble(), a[1].toDouble(), a[2].toDouble() );
+        }
+    }
+
+    if( payload.contains( QString::fromUtf8( Protocol::Key::Objects ) ) && payload[QString::fromUtf8( Protocol::Key::Objects )].isArray() )
+    {
+        const QJsonArray objects = payload[QString::fromUtf8( Protocol::Key::Objects )].toArray();
+
+        for( const QJsonValue& value : objects )
+        {
+            if( !value.isObject() ) continue;
+
+            const QJsonObject patch = value.toObject();
+
+            if( !patch.contains( QString::fromUtf8( Protocol::Key::UUID ) ) ) continue;
+
+            const QString uuid = patch[QString::fromUtf8( Protocol::Key::UUID )].toString();
+
+            for( int row = 0; row < m_model->rowCount(); ++row )
+            {
+                QStandardItem* nameItem         = m_model->item( row, 0 );
+                QStandardItem* displayItem      = m_model->item( row, 2 );
+                QStandardItem* keepInitialItem  = m_model->item( row, 3 );
+                QStandardItem* keepFinalItem    = m_model->item( row, 4 );
+                if( !nameItem ) continue;
+
+                QVariant var = nameItem->data( Qt::UserRole );
+                if( !var.canConvert<ObjectInfoExtractor::ObjectInfo>() ) continue;
+
+                ObjectInfoExtractor::ObjectInfo info = var.value<ObjectInfoExtractor::ObjectInfo>();
+
+                if( QString::fromUtf8( info.uuid ) != uuid ) continue;
+
+                // 全オブジェクト共通
+                if( patch.contains( QString::fromUtf8( Protocol::Key::IsDisplay ) ) )
+                {
+                    info.tmpIsDisplay = patch[QString::fromUtf8( Protocol::Key::IsDisplay )].toBool();
+                    info.isDisplay    = patch[QString::fromUtf8( Protocol::Key::IsDisplay )].toBool();
+                    displayItem       ->setCheckState( info.tmpIsDisplay     ? Qt::Checked : Qt::Unchecked );
+                }
+                if( patch.contains( QString::fromUtf8( Protocol::Key::IsKeepInitial ) ) )
+                {
+                    info.tmpIsKeepInitial = patch[QString::fromUtf8( Protocol::Key::IsKeepInitial )].toBool();
+                    info.isKeepInitial    = patch[QString::fromUtf8( Protocol::Key::IsKeepInitial )].toBool();
+                    keepInitialItem       ->setCheckState( info.tmpIsKeepInitial ? Qt::Checked : Qt::Unchecked );
+                }
+                if( patch.contains( QString::fromUtf8( Protocol::Key::IsKeepFinal ) ) )
+                {
+                    info.tmpIsKeepFinal = patch[QString::fromUtf8( Protocol::Key::IsKeepFinal )].toBool();
+                    info.isKeepFinal    = patch[QString::fromUtf8( Protocol::Key::IsKeepFinal )].toBool();
+                    keepFinalItem       ->setCheckState( info.tmpIsKeepFinal ? Qt::Checked : Qt::Unchecked );
+                }
+                if( patch.contains( QString::fromUtf8( Protocol::Key::IsFocus ) ) )
+                {
+                    info.tmpIsFocus = patch[QString::fromUtf8( Protocol::Key::IsFocus )].toBool();
+                    info.isFocus    = patch[QString::fromUtf8( Protocol::Key::IsFocus )].toBool();
+                }
+
+                // サーバポイントオブジェクト(ClientServer/In-Situ共通)
+                if( patch.contains( QString::fromUtf8( Protocol::Key::ParticleLimit ) ) )
+                {
+                    info.tmpParticleLimit = patch[QString::fromUtf8( Protocol::Key::ParticleLimit )].toInt();
+                    info.particleLimit    = patch[QString::fromUtf8( Protocol::Key::ParticleLimit )].toInt();
+                }
+                // NOTE:(extraOpacityFactor)は一時的に無効にしています。必要になったら下記のコードの削除とextraOpacityFactorに関係するコードのコメント文を元に戻せば使えるはずです。
+                // if( patch.contains( QString::fromUtf8( Protocol::Key::ExtraOpacityFactor ) ) )
+                // {
+                //     info.tmpExtraOpacityFactor = static_cast<float>( patch[QString::fromUtf8( Protocol::Key::ExtraOpacityFactor )].toDouble() );
+                //     info.extraOpacityFactor    = static_cast<float>( patch[QString::fromUtf8( Protocol::Key::ExtraOpacityFactor )].toDouble() );
+                // }
+
+                // サーバポイントオブジェクト(ClientServerのみ)
+                if( patch.contains( QString::fromUtf8( Protocol::Key::CoordinateX ) ) )
+                {
+                    info.tmpCoordinateX = patch[QString::fromUtf8( Protocol::Key::CoordinateX )].toString().toUtf8().constData();
+                    info.coordinateX    = patch[QString::fromUtf8( Protocol::Key::CoordinateX )].toString().toUtf8().constData();
+                }
+                if( patch.contains( QString::fromUtf8( Protocol::Key::CoordinateY ) ) )
+                {
+                    info.tmpCoordinateY = patch[QString::fromUtf8( Protocol::Key::CoordinateY )].toString().toUtf8().constData();
+                    info.coordinateY    = patch[QString::fromUtf8( Protocol::Key::CoordinateY )].toString().toUtf8().constData();
+                }
+                if( patch.contains( QString::fromUtf8( Protocol::Key::CoordinateZ ) ) )
+                {
+                    info.tmpCoordinateZ = patch[QString::fromUtf8( Protocol::Key::CoordinateZ )].toString().toUtf8().constData();
+                    info.coordinateZ    = patch[QString::fromUtf8( Protocol::Key::CoordinateZ )].toString().toUtf8().constData();
+                }
+
+                // テスクチャ無しポリゴン(.stlのみ) // FIXME:KVSMLPolygonObjectは不透明度のみ操作できるようにしたほうがいいかもしれません。
+                if( patch.contains( QString::fromUtf8( Protocol::Key::PolygonColor ) ) )
+                {
+                    QJsonArray c = patch[QString::fromUtf8( Protocol::Key::PolygonColor )].toArray();
+                    if( c.size() == 3 )
+                    {
+                        info.polygonColor            = kvs::RGBColor( c[0].toInt(), c[1].toInt(), c[2].toInt() );
+                        info.tmpPolygonColor            = kvs::RGBColor( c[0].toInt(), c[1].toInt(), c[2].toInt() );
+                        info.needSameTimeStepReplace = true;
+                    }
+                }
+                if( patch.contains( QString::fromUtf8( Protocol::Key::PolygonOpacity ) ) )
+                {
+                    info.polygonOpacity          = static_cast<float>( patch[QString::fromUtf8( Protocol::Key::PolygonOpacity )].toDouble() );
+                    info.tmpPolygonOpacity       = static_cast<float>( patch[QString::fromUtf8( Protocol::Key::PolygonOpacity )].toDouble() );
+                    info.needSameTimeStepReplace = true;
+                }
+                nameItem->setData( QVariant::fromValue( info ), Qt::UserRole );
+                break;
+            }
+        }
+    }
+
     for( int row = 0; row < m_model->rowCount(); row++ )
     {
-        QStandardItem* nameItem = m_model->item( row, 0 ); // NOTE:ObjectInfoが格納されている列
+        QStandardItem* nameItem = m_model->item( row, 0 );
+        if( !nameItem ) continue;
+
+        QVariant var = nameItem->data( Qt::UserRole );
+        if( !var.canConvert<ObjectInfoExtractor::ObjectInfo>() ) continue;
+
+        auto info = var.value<ObjectInfoExtractor::ObjectInfo>();
+        if( info.objectID.first != -1 && info.objectID.second != -1 )
+        {
+            m_screen->scene()->object( info.objectID.first )->setMinMaxObjectCoords( m_result_min_object_coords, m_result_max_object_coords );
+            m_screen->scene()->object( info.objectID.first )->setMinMaxExternalCoords( m_result_min_object_coords, m_result_max_object_coords );
+        }
+    }
+
+    m_screen->scene()->objectManager()->push_centering_xform();
+    emit updateFocus( m_result_min_object_coords, m_result_max_object_coords );
+    m_screen->scene()->objectManager()->updateMinMaxCoords();
+    m_screen->scene()->objectManager()->updateExternalCoords();
+    m_screen->scene()->objectManager()->pop_centering_xform();
+    emit updateTranslation();
+    m_screen->update();
+
+    QModelIndex currentIndex = ui->treeView->currentIndex();
+    if( currentIndex.isValid() )
+    {
+        updateUI( currentIndex );
+    }
+}
+
+void ObjectEditor::onReceiveSelectedFile( const QJsonObject& payload )
+{
+    ObjectInfoExtractor::ObjectInfo objectInfo;
+
+    // 全オブジェクト共通
+    objectInfo.uuid                  = payload[QString::fromUtf8( Protocol::Key::UUID )].toString().toUtf8();
+    objectInfo.tmpIsDisplay          = payload[QString::fromUtf8( Protocol::Key::TmpIsDisplay )].toBool();
+    objectInfo.isDisplay             = payload[QString::fromUtf8( Protocol::Key::IsDisplay )].toBool();
+    objectInfo.tmpIsKeepInitial      = payload[QString::fromUtf8( Protocol::Key::TmpIsKeepInitial )].toBool();
+    objectInfo.isKeepInitial         = payload[QString::fromUtf8( Protocol::Key::IsKeepInitial )].toBool();
+    objectInfo.tmpIsKeepFinal        = payload[QString::fromUtf8( Protocol::Key::TmpIsKeepFinal )].toBool();
+    objectInfo.isKeepFinal           = payload[QString::fromUtf8( Protocol::Key::IsKeepFinal )].toBool();
+    objectInfo.name                  = payload[QString::fromUtf8( Protocol::Key::Name )].toString().toUtf8();
+    objectInfo.extension             = payload[QString::fromUtf8( Protocol::Key::Extension )].toString().toUtf8();
+    objectInfo.directory             = payload[QString::fromUtf8( Protocol::Key::Directory )].toString().toUtf8();
+    objectInfo.format                = static_cast<ObjectInfoExtractor::Format>( payload[QString::fromUtf8( Protocol::Key::Format )].toInt() );
+    QJsonArray timeStepArray         = payload[QString::fromUtf8( Protocol::Key::TimeStep )].toArray();
+    objectInfo.timeStep              = { timeStepArray[0].toInt(), timeStepArray[1].toInt() };
+    objectInfo.tmpIsFocus            = payload[QString::fromUtf8( Protocol::Key::TmpIsFocus )].toBool();
+    objectInfo.isFocus               = payload[QString::fromUtf8( Protocol::Key::IsFocus )].toBool();
+    auto minObjectCoordArray         = payload[QString::fromUtf8( Protocol::Key::MinObjectCoord )].toArray();
+    objectInfo.minObjectCoord        = { minObjectCoordArray[0].toDouble(), minObjectCoordArray[1].toDouble(), minObjectCoordArray[2].toDouble() };
+    auto maxObjectCoordArray         = payload[QString::fromUtf8( Protocol::Key::MaxObjectCoord )].toArray();
+    objectInfo.maxObjectCoord        = { maxObjectCoordArray[0].toDouble(), maxObjectCoordArray[1].toDouble(), maxObjectCoordArray[2].toDouble() };
+    auto minExternalCoordArray       = payload[QString::fromUtf8( Protocol::Key::MinExternalCoord )].toArray();
+    objectInfo.minExternalCoord      = { minExternalCoordArray[0].toDouble(), minExternalCoordArray[1].toDouble(), minExternalCoordArray[2].toDouble() };
+    auto maxExternalCoordArray       = payload[QString::fromUtf8( Protocol::Key::MaxExternalCoord )].toArray();
+    objectInfo.maxExternalCoord      = { maxExternalCoordArray[0].toDouble(), maxExternalCoordArray[1].toDouble(), maxExternalCoordArray[2].toDouble() };
+
+    // サーバポイントオブジェクト(ClientServer/In-Situ共通)
+    objectInfo.tmpParticleLimit      = payload[QString::fromUtf8( Protocol::Key::TmpParticleLimit )].toInt();
+    objectInfo.particleLimit         = payload[QString::fromUtf8( Protocol::Key::ParticleLimit )].toInt();
+    // NOTE:(extraOpacityFactor)は一時的に無効にしています。必要になったら下記のコードの削除とextraOpacityFactorに関係するコードのコメント文を元に戻せば使えるはずです。
+    // objectInfo.tmpExtraOpacityFactor = static_cast<float>( payload[QString::fromUtf8( Protocol::Key::TmpExtraOpacityFactor )].toDouble() );
+    // objectInfo.extraOpacityFactor    = static_cast<float>( payload[QString::fromUtf8( Protocol::Key::ExtraOpacityFactor )].toDouble() );
+
+    // サーバポイントオブジェクト(ClientServerのみ)
+    objectInfo.numberOfVector        = payload[QString::fromUtf8( Protocol::Key::NumberOfVector )].toInt();
+    objectInfo.numberOfElements      = payload[QString::fromUtf8( Protocol::Key::NumberOfElements )].toInt();
+    objectInfo.numberOfSubvolume     = payload[QString::fromUtf8( Protocol::Key::NumberOfSubvolume)].toInt();
+    objectInfo.numberOfNodes         = payload[QString::fromUtf8( Protocol::Key::NumberOfNodes )].toInt();
+    objectInfo.elementType           = payload[QString::fromUtf8( Protocol::Key::ElementType )].toInt();
+    objectInfo.fileType              = payload[QString::fromUtf8( Protocol::Key::FileType )].toInt();
+    objectInfo.stepNumber            = payload[QString::fromUtf8( Protocol::Key::StepNumber )].toInt();
+    objectInfo.tmpCoordinateX        = payload[QString::fromUtf8( Protocol::Key::TmpCoordinateX )].toString().toUtf8();
+    objectInfo.coordinateX           = payload[QString::fromUtf8( Protocol::Key::CoordinateX )].toString().toUtf8();
+    objectInfo.tmpCoordinateY        = payload[QString::fromUtf8( Protocol::Key::TmpCoordinateY )].toString().toUtf8();
+    objectInfo.coordinateY           = payload[QString::fromUtf8( Protocol::Key::CoordinateY )].toString().toUtf8();
+    objectInfo.tmpCoordinateZ        = payload[QString::fromUtf8( Protocol::Key::TmpCoordinateZ )].toString().toUtf8();
+    objectInfo.coordinateZ           = payload[QString::fromUtf8( Protocol::Key::IsExport )].toBool();
+
+    // テスクチャ無しポリゴン(.stlのみ) // FIXME:KVSMLPolygonObjectは不透明度のみ操作できるようにしたほうがいいかもしれません。
+    auto tmpPolygonColorArray        = payload[QString::fromUtf8( Protocol::Key::TmpPolygonColor )].toArray();
+    objectInfo.tmpPolygonColor       = kvs::RGBColor( tmpPolygonColorArray[0].toInt(), tmpPolygonColorArray[1].toInt(), tmpPolygonColorArray[2].toInt() );
+    auto polygonColorArray           = payload[QString::fromUtf8( Protocol::Key::PolygonColor )].toArray();
+    objectInfo.polygonColor          = kvs::RGBColor( polygonColorArray[0].toInt(), polygonColorArray[1].toInt(), polygonColorArray[2].toInt() );
+    objectInfo.tmpPolygonOpacity     = static_cast<float>( payload[QString::fromUtf8( Protocol::Key::TmpPolygonOpacity )].toDouble() );
+    objectInfo.polygonOpacity        = static_cast<float>( payload[QString::fromUtf8( Protocol::Key::PolygonOpacity )].toDouble() );
+
+    addObjectInfoToModel( objectInfo );
+
+    // FIXME:ここで成分数のアップデートを行っていますが、適切な場所なのか不明です
+    const bool isServerPointObject = ( objectInfo.format == ObjectInfoExtractor::ClientServerPointObject ) || ( objectInfo.format == ObjectInfoExtractor::InsituServerPointObject );
+    if( isServerPointObject ) emit updateNumberOfVector( objectInfo.numberOfVector );
+}
+
+void ObjectEditor::onReceiveObjectDelete( const QJsonObject& payload )
+{
+    if( !payload.contains( QString::fromUtf8( Protocol::Key::UUID ) ) ) return;
+
+    const QString uuid = payload[QString::fromUtf8( Protocol::Key::UUID )].toString().toUtf8();
+
+    bool deletedWasFocus = false;
+
+    for( int row = 0; row < m_model->rowCount(); ++row )
+    {
+        QStandardItem* item = m_model->item( row, 0 );
+        if( !item ) continue;
+
+        QVariant var = item->data( Qt::UserRole );
+        if( !var.canConvert<ObjectInfoExtractor::ObjectInfo>() ) continue;
+
+        auto info = var.value<ObjectInfoExtractor::ObjectInfo>();
+        if( QString::fromUtf8( info.uuid ) != uuid ) continue;
+
+        deletedWasFocus = info.tmpIsFocus;
+
+        if( info.objectID.first != -1 ) m_screen->scene()->removeObject( info.objectID.first );
+
+        m_model->removeRow( row );
+        break;
+    }
+
+    if( deletedWasFocus )
+    {
+        bool otherFocusedFound = false;
+        for( int row = 0; row < m_model->rowCount(); ++row )
+        {
+            QStandardItem* item = m_model->item( row, 0 );
+            if( !item ) continue;
+
+            QVariant var = item->data( Qt::UserRole );
+            if( !var.canConvert<ObjectInfoExtractor::ObjectInfo>() ) continue;
+
+            auto info = var.value<ObjectInfoExtractor::ObjectInfo>();
+            if( info.tmpIsFocus ) { otherFocusedFound = true; break; }
+        }
+
+        if( !otherFocusedFound && m_model->rowCount() > 0 )
+        {
+            QStandardItem* item = m_model->item( 0, 0 );
+            if( item )
+            {
+                QVariant var = item->data( Qt::UserRole );
+                if( var.canConvert<ObjectInfoExtractor::ObjectInfo>() )
+                {
+                    auto info = var.value<ObjectInfoExtractor::ObjectInfo>();
+                    info.tmpIsFocus = true;
+                    item->setData( QVariant::fromValue( info ), Qt::UserRole );
+                }
+            }
+        }
+    }
+
+    calculateTotalMinMaxTimeStep();
+
+    if( m_model->rowCount() == 0 )
+    {
+        setWidgetsVisible( m_group_common_object_widgets             , false );
+        setWidgetsVisible( m_group_common_server_point_object_widgets, false );
+        setWidgetsVisible( m_group_client_server_point_object_widgets, false );
+        setWidgetsVisible( m_group_nontexture_polygon_object_widgets , false );
+    }
+
+    m_screen->update();
+
+    QModelIndex currentIndex = ui->treeView->currentIndex();
+    if( currentIndex.isValid() )
+    {
+        updateUI( currentIndex );
+    }
+}
+
+void ObjectEditor::onUpdateObjectLatestTimeStep( const QJsonObject& payload )
+{
+    const QString kUpdateMaxTimeStep = QString::fromUtf8( Protocol::Key::UpdateMaxTimeStep );
+    if( !payload.contains( kUpdateMaxTimeStep ) ) return;
+    const QJsonValue v = payload.value( kUpdateMaxTimeStep );
+    const int latest   = v.toInt();
+
+    for( int row = 0; row < m_model->rowCount(); row++ )
+    {
+        QStandardItem* nameItem = m_model->item( row, 0 );
         if( !nameItem ) continue;
 
         QVariant var = nameItem->data( Qt::UserRole );
@@ -1046,6 +915,75 @@ void ObjectEditor::onUpdateMaxTimeStep( const int latest )
     calculateTotalMinMaxTimeStep();
 }
 
+void ObjectEditor::onGlyphParameterUpdate()
+{
+    sendNeedSameTimeStepReplacePatches(
+        []( ObjectInfoExtractor::Format format )
+        {
+            return format == ObjectInfoExtractor::Format::ServerGlyphObject;
+        } );
+}
+
+void ObjectEditor::onTransferFunctionUpdate()
+{
+    sendNeedSameTimeStepReplacePatches(
+        []( ObjectInfoExtractor::Format format )
+        {
+            return ( format == ObjectInfoExtractor::Format::ClientServerPointObject ) ||
+                   ( format == ObjectInfoExtractor::Format::InsituServerPointObject );
+        } );
+}
+
+void ObjectEditor::onRequestDataAt( int requestTimeStep )
+{
+    switch( *m_viz_mode )
+    {
+    case Viz::Mode::Local:
+    case Viz::Mode::LocalClientAndServer:
+    {
+        Worker* worker = new Worker( m_model, m_screen, requestTimeStep, m_result_min_object_coords, m_result_max_object_coords );
+        QThread* thread = new QThread;
+
+        worker->moveToThread( thread );
+
+        connect( thread, &QThread::started , worker, &Worker::process );
+        connect( worker, &Worker::done     , thread, &QThread::quit );
+        connect( worker, &Worker::done     , worker, &Worker::deleteLater );
+        connect( thread, &QThread::finished, thread, &QThread::deleteLater );
+        connect( worker, &Worker::done     , this  , [this, requestTimeStep]() { dataRequestComplete( requestTimeStep ); } );
+
+        thread->start();
+        break;
+    }
+    case Viz::Mode::RemoteClientAndServer:
+    case Viz::Mode::RemoteInSitu:
+    {
+        if( m_web_sockets->isConnected() )
+        {
+            QJsonArray resultMinObjectCoords;
+            resultMinObjectCoords.append( m_result_min_object_coords.x() );
+            resultMinObjectCoords.append( m_result_min_object_coords.y() );
+            resultMinObjectCoords.append( m_result_min_object_coords.z() );
+
+            QJsonArray resultMaxObjectCoords;
+            resultMaxObjectCoords.append( m_result_max_object_coords.x() );
+            resultMaxObjectCoords.append( m_result_max_object_coords.y() );
+            resultMaxObjectCoords.append( m_result_max_object_coords.z() );
+
+            m_web_sockets->text()->sendTextMessage( QJsonDocument( {
+                                                                  { QString::fromUtf8( Protocol::Key::Event )                , QString::fromUtf8( Protocol::Events::RequestDataAt ) },
+                                                                  { QString::fromUtf8( Protocol::Key::TimeStep )             , requestTimeStep },
+                                                                  { QString::fromUtf8( Protocol::Key::ResultMinObjectCoords ), resultMinObjectCoords },
+                                                                  { QString::fromUtf8( Protocol::Key::ResultMaxObjectCoords ), resultMaxObjectCoords },
+                                                                  } ).toJson( QJsonDocument::Compact ) );
+        }
+        break;
+    }
+    default:
+        break;
+    }
+}
+
 void ObjectEditor::onLoadParameter( const QString& filePath )
 {
     qDebug() << __FILE__ << ":" << __func__ << ":" << filePath;
@@ -1056,59 +994,70 @@ void ObjectEditor::onSaveParameter( const QString& filePath )
     qDebug() << __FILE__ << ":" << __func__ << ":" << filePath;
 }
 
-void ObjectEditor::updateEditorFromIndex( const QModelIndex& index )
+void ObjectEditor::setWidgetsVisible( const QList<QWidget*>& widgets, const bool visible )
+{
+    for( auto* w : widgets ) w->setVisible( visible );
+}
+
+void ObjectEditor::updateUI( const QModelIndex& index )
 {
     if( !index.isValid() ) return;
 
-    QVariant var = index.data( Qt::UserRole );
+    const QModelIndex nameIndex = index.sibling( index.row(), 0 );
+    const QVariant var = nameIndex.data( Qt::UserRole );
     if( !var.canConvert<ObjectInfoExtractor::ObjectInfo>() ) return;
 
-    ObjectInfoExtractor::ObjectInfo info = var.value<ObjectInfoExtractor::ObjectInfo>();
+    const ObjectInfoExtractor::ObjectInfo info = var.value<ObjectInfoExtractor::ObjectInfo>();
 
     // 全オブジェクト共通
-    ui->nameLineEdit                    ->setText( QString::fromUtf8( info.name.c_str() ) );
-    ui->directoryLineEdit               ->setText( QString::fromUtf8( info.directory.c_str() ) );
-    ui->formatLineEdit                  ->setText( QString::fromUtf8( ObjectInfoExtractor::formatToString( info.format ) ) );
-    ui->timeStepMinLineEdit             ->setText( QString::number( info.timeStep.first ) );
-    ui->timeStepMaxLineEdit             ->setText( QString::number( info.timeStep.second ) );
-    ui->focusCheckBox                   ->setChecked( info.tmpIsFocus );
-    ui->minObjectXCoordLineEdit         ->setText( QString::number( info.minObjectCoord.x() ) );
-    ui->minObjectYCoordLineEdit         ->setText( QString::number( info.minObjectCoord.y() ) );
-    ui->minObjectZCoordLineEdit         ->setText( QString::number( info.minObjectCoord.z() ) );
-    ui->maxObjectXCoordLineEdit         ->setText( QString::number( info.maxObjectCoord.x() ) );
-    ui->maxObjectYCoordLineEdit         ->setText( QString::number( info.maxObjectCoord.y() ) );
-    ui->maxObjectZCoordLineEdit         ->setText( QString::number( info.maxObjectCoord.z() ) );
-    ui->minExternalXCoordLineEdit       ->setText( QString::number( info.minExternalCoord.x() ) );
-    ui->minExternalYCoordLineEdit       ->setText( QString::number( info.minExternalCoord.y() ) );
-    ui->minExternalZCoordLineEdit       ->setText( QString::number( info.minExternalCoord.z() ) );
-    ui->maxExternalXCoordLineEdit       ->setText( QString::number( info.maxExternalCoord.x() ) );
-    ui->maxExternalYCoordLineEdit       ->setText( QString::number( info.maxExternalCoord.y() ) );
-    ui->maxExternalZCoordLineEdit       ->setText( QString::number( info.maxExternalCoord.z() ) );
+    ui->nameLineEdit             ->setText( QString::fromUtf8( info.name.c_str() ) );
+    ui->directoryLineEdit        ->setText( QString::fromUtf8( info.directory.c_str() ) );
+    ui->formatLineEdit           ->setText( QString::fromUtf8( ObjectInfoExtractor::formatToString( info.format ) ) );
+    ui->timeStepMinLineEdit      ->setText( QString::number( info.timeStep.first ) );
+    ui->timeStepMaxLineEdit      ->setText( QString::number( info.timeStep.second ) );
+    ui->focusCheckBox            ->setChecked( info.tmpIsFocus );
+    ui->minObjectXCoordLineEdit  ->setText( QString::number( info.minObjectCoord.x() ) );
+    ui->minObjectYCoordLineEdit  ->setText( QString::number( info.minObjectCoord.y() ) );
+    ui->minObjectZCoordLineEdit  ->setText( QString::number( info.minObjectCoord.z() ) );
+    ui->maxObjectXCoordLineEdit  ->setText( QString::number( info.maxObjectCoord.x() ) );
+    ui->maxObjectYCoordLineEdit  ->setText( QString::number( info.maxObjectCoord.y() ) );
+    ui->maxObjectZCoordLineEdit  ->setText( QString::number( info.maxObjectCoord.z() ) );
+    ui->minExternalXCoordLineEdit->setText( QString::number( info.minExternalCoord.x() ) );
+    ui->minExternalYCoordLineEdit->setText( QString::number( info.minExternalCoord.y() ) );
+    ui->minExternalZCoordLineEdit->setText( QString::number( info.minExternalCoord.z() ) );
+    ui->maxExternalXCoordLineEdit->setText( QString::number( info.maxExternalCoord.x() ) );
+    ui->maxExternalYCoordLineEdit->setText( QString::number( info.maxExternalCoord.y() ) );
+    ui->maxExternalZCoordLineEdit->setText( QString::number( info.maxExternalCoord.z() ) );
+
     // サーバポイントオブジェクト(ClientServer/In-Situ共通)
     ui->particleLimitSpinBox            ->setValue( info.tmpParticleLimit );
+    // NOTE:(extraOpacityFactor)は一時的に無効にしています。必要になったら下記のコードの削除とextraOpacityFactorに関係するコードのコメント文を元に戻せば使えるはずです。
     // ui->extraOpacityFactorDoubleSpinBox ->setValue( info.tmpExtraOpacityFactor );
+
     // サーバポイントオブジェクト(ClientServerのみ)
-    ui->numberOfVectorLineEdit          ->setText( QString::number( info.numberOfVector ) );
-    ui->numberOfElementsLineEdit        ->setText( QString::number( info.numberOfElements ) );
-    ui->numberOfSubvolumeLineEdit       ->setText( QString::number( info.numberOfSubvolume ) );
-    ui->numberOfNodesLineEdit           ->setText( QString::number( info.numberOfNodes ) );
-    ui->elementTypeLineEdit             ->setText( QString::number( info.elementType ) );
-    ui->fileTypeLineEdit                ->setText( QString::number( info.fileType ) );
-    ui->stepNumberLineEdit              ->setText( QString::number( info.stepNumber ) );
-    ui->coordinateXLineEdit             ->setText( QString::fromUtf8( info.tmpCoordinateX ) );
-    ui->coordinateYLineEdit             ->setText( QString::fromUtf8( info.tmpCoordinateY ) );
-    ui->coordinateZLineEdit             ->setText( QString::fromUtf8( info.tmpCoordinateZ ) );
+    ui->numberOfVectorLineEdit   ->setText( QString::number( info.numberOfVector ) );
+    ui->numberOfElementsLineEdit ->setText( QString::number( info.numberOfElements ) );
+    ui->numberOfSubvolumeLineEdit->setText( QString::number( info.numberOfSubvolume ) );
+    ui->numberOfNodesLineEdit    ->setText( QString::number( info.numberOfNodes ) );
+    ui->elementTypeLineEdit      ->setText( QString::number( info.elementType ) );
+    ui->fileTypeLineEdit         ->setText( QString::number( info.fileType ) );
+    ui->stepNumberLineEdit       ->setText( QString::number( info.stepNumber ) );
+    ui->coordinateXLineEdit      ->setText( QString::fromUtf8( info.tmpCoordinateX ) );
+    ui->coordinateYLineEdit      ->setText( QString::fromUtf8( info.tmpCoordinateY ) );
+    ui->coordinateZLineEdit      ->setText( QString::fromUtf8( info.tmpCoordinateZ ) );
+
     // テスクチャ無しポリゴン(.stlのみ) // FIXME:KVSMLPolygonObjectは不透明度のみ操作できるようにしたほうがいいかもしれません。
     QPalette palette = ui->colorClickableLabel->palette();
     palette.setColor( QPalette::Window, QColor( info.tmpPolygonColor.r(), info.tmpPolygonColor.g(), info.tmpPolygonColor.b() ) );
-    ui->colorClickableLabel         ->setPalette( palette );
-    ui->opacityDoubleSpinBox        ->setValue( info.tmpPolygonOpacity );
+    ui->colorClickableLabel      ->setPalette( palette );
+    ui->opacityDoubleSpinBox     ->setValue( info.tmpPolygonOpacity );
 
+    // NOTE:info.formatに応じて各ウィジェットグループの表示/非表示を切り替える
     bool isObject                  = false;
     bool isCommonServerObject      = false;
     bool isClientServerObject      = false;
     bool isNonTexturePolygonObject = false;
-    // フラグをマップで管理(isObject, isCommonServerObject, isClientServerObject, isNonTexturePolygonObject )
+
     static const std::map<ObjectInfoExtractor::Format, std::tuple<bool,bool,bool,bool>> formatFlags =
         {
          { ObjectInfoExtractor::Format::Unknown,                   { false, false, false, false } },
@@ -1137,12 +1086,35 @@ void ObjectEditor::updateEditorFromIndex( const QModelIndex& index )
     setWidgetsVisible( m_group_nontexture_polygon_object_widgets , isNonTexturePolygonObject );
 }
 
-void ObjectEditor::setWidgetsVisible( const QList<QWidget*>& widgets, const bool visible )
+void ObjectEditor::onSelectionChanged( const QItemSelection &selected, const QItemSelection &deselected )
 {
-    for( auto* w : widgets ) w->setVisible( visible );
+    Q_UNUSED( deselected );
+
+    const auto indexes = selected.indexes();
+    if( indexes.isEmpty() ) return;
+
+    updateUI( indexes.first() );
 }
 
-void ObjectEditor::addObjectToModel( ObjectInfoExtractor::ObjectInfo& objectInfo ) // FIXME:スロットではないのでは
+template<typename F>
+void ObjectEditor::updateSelectedObjectInfoParameter( F func )
+{
+    const QModelIndexList selectedIndexes = ui->treeView->selectionModel()->selectedIndexes();
+    if( selectedIndexes.isEmpty() ) return;
+
+    QModelIndex index = selectedIndexes.first();
+    index = index.sibling( index.row(), 0 );
+
+    const QVariant var = index.data( Qt::UserRole );
+    if( !var.canConvert<ObjectInfoExtractor::ObjectInfo>() ) return;
+
+    auto info = var.value<ObjectInfoExtractor::ObjectInfo>();
+    func( info );
+
+    m_model->setData( index, QVariant::fromValue( info ), Qt::UserRole );
+}
+
+void ObjectEditor::addObjectInfoToModel( ObjectInfoExtractor::ObjectInfo& objectInfo )
 {
     // NOTE:最初に追加されるオブジェクトはフォーカス対象になる
     if( m_model->rowCount() == 0 ) objectInfo.tmpIsFocus = true;
@@ -1161,10 +1133,18 @@ void ObjectEditor::addObjectToModel( ObjectInfoExtractor::ObjectInfo& objectInfo
     keepInitialItem ->setEditable( false );
     keepFinalItem   ->setEditable( false );
 
-    // NOTE:display,keepInitial/Finalのチェックボックス有効にする。
+    // NOTE:display,keepInitial,keepFinalのチェックボックス有効にする。
     displayItem     ->setCheckable( true );
     keepInitialItem ->setCheckable( true );
     keepFinalItem   ->setCheckable( true );
+
+    // NOTE:操作権限がない場合はチェックボックスを操作不可にする
+    if( !m_is_operator )
+    {
+        displayItem    ->setEnabled( false );
+        keepInitialItem->setEnabled( false );
+        keepFinalItem  ->setEnabled( false );
+    }
 
     // NOTE:boolからQt::CheckStateに変換
     displayItem     ->setCheckState( objectInfo.tmpIsDisplay     ? Qt::Checked : Qt::Unchecked );
@@ -1208,28 +1188,54 @@ void ObjectEditor::calculateTotalMinMaxTimeStep()
     emit updateTotalTimeStepRange( totalMin, totalMax, isSingleObject );
 }
 
-template<typename F>
-void ObjectEditor::updateSelectedObject( F func )
+void ObjectEditor::sendNeedSameTimeStepReplacePatches( const std::function<bool( ObjectInfoExtractor::Format )>& isTargetFormat )
 {
-    auto selectedRows = ui->treeView->selectionModel()->selectedRows(0); // column 0
-    if( selectedRows.isEmpty() ) return;
+    if( !( *m_viz_mode == Viz::Mode::LocalClientAndServer  ||
+          *m_viz_mode == Viz::Mode::RemoteClientAndServer ||
+          *m_viz_mode == Viz::Mode::RemoteInSitu ) ||
+        !m_web_sockets->isConnected() )
+    {
+        return;
+    }
 
-    QModelIndex index = selectedRows.first();
-    QVariant var = index.data( Qt::UserRole );
-    if( !var.canConvert<ObjectInfoExtractor::ObjectInfo>() ) return;
+    QJsonArray patchArray;
 
-    ObjectInfoExtractor::ObjectInfo info = var.value<ObjectInfoExtractor::ObjectInfo>();
+    const int rows = m_model->rowCount();
+    for( int row = 0; row < rows; ++row )
+    {
+        QStandardItem* nameItem = m_model->item( row, 0 );
+        if( !nameItem ) { continue; }
 
-    func( info ); // 渡された処理で info を更新する
+        const QVariant var = nameItem->data( Qt::UserRole );
+        if( !var.canConvert<ObjectInfoExtractor::ObjectInfo>() ) { continue; }
 
-    m_model->setData( index, QVariant::fromValue( info ), Qt::UserRole );
+        auto objectInfo = var.value<ObjectInfoExtractor::ObjectInfo>();
+
+        if( !isTargetFormat( objectInfo.format ) ) { continue; }
+
+        objectInfo.needSameTimeStepReplace = true;
+        nameItem->setData( QVariant::fromValue( objectInfo ), Qt::UserRole );
+
+        QJsonObject patch;
+        patch[ QString::fromUtf8( Protocol::Key::UUID ) ] = QString::fromUtf8( objectInfo.uuid );
+        patch[ QString::fromUtf8( Protocol::Key::NeedSameTimeStepReplace ) ] = true;
+        patchArray.append( patch );
+    }
+
+    if( patchArray.isEmpty() ) { return; }
+
+    QJsonObject msg;
+    msg[ QString::fromUtf8( Protocol::Key::Event ) ]   = QString::fromUtf8( Protocol::Events::ObjectInfoParameter );
+    msg[ QString::fromUtf8( Protocol::Key::Objects ) ] = patchArray;
+
+    m_web_sockets->text()->sendTextMessage( QJsonDocument( msg ).toJson( QJsonDocument::Compact ) );
 }
 
 void ObjectEditor::updateVisibility( int requestTimeStep )
 {
     for( int row = 0; row < m_model->rowCount(); row++ )
     {
-        QStandardItem* item = m_model->item( row, 0 ); // UserRoleにObjectInfoが格納されている列
+        QStandardItem* item = m_model->item( row, 0 );
         if( !item ) continue;
 
         QVariant var = item->data( Qt::UserRole );
@@ -1241,8 +1247,6 @@ void ObjectEditor::updateVisibility( int requestTimeStep )
 
         if( info.isDisplay )
         {
-            // info.timeStep.first ～ info.timeStep.second の範囲内に m_time_step が含まれる場合、
-            // 対応するタイムステップとして resultTimeStep に設定する
             if( requestTimeStep >= info.timeStep.first && requestTimeStep <= info.timeStep.second )
             {
                 resultTimeStep = requestTimeStep;
@@ -1415,76 +1419,102 @@ void ObjectEditor::replaceObject( ObjectInfoExtractor::ObjectInfo& info )
     }
 }
 
-void ObjectEditor::onItemSelection( const QItemSelection &selected, const QItemSelection &deselected )
+void ObjectEditor::dataRequestComplete( const int requestTimeStep )
 {
-    Q_UNUSED( deselected );
-    if( selected.indexes().isEmpty() ) return;
+    updateVisibility( requestTimeStep );
 
-    updateEditorFromIndex( selected.indexes().first() );
+    for( int row = 0; row < m_model->rowCount(); row++ )
+    {
+        QStandardItem* item = m_model->item( row, 0 ); // UserRoleにObjectInfoが格納されている列
+        if( !item ) continue;
+
+        QVariant var = item->data( Qt::UserRole );
+        if( !var.canConvert<ObjectInfoExtractor::ObjectInfo>() ) continue;
+
+        ObjectInfoExtractor::ObjectInfo info = var.value<ObjectInfoExtractor::ObjectInfo>();
+        if( info.object != nullptr )
+        {
+            info.object->setXform( m_screen->scene()->objectManager()->xform() );
+            if( info.objectID.first == -1 && info.objectID.second == -1 )
+            {
+                registerObject( info );
+            }
+            else
+            {
+                replaceObject( info );
+            }
+        }
+        QVariant newVar;
+        newVar.setValue( info );
+        item->setData( newVar, Qt::UserRole );
+    }
+
+    emit dataRequestCompleted( requestTimeStep );
+    m_screen->update();
 }
 
 void ObjectEditor::onFocusCheckBoxToggled( bool checked )
 {
-    updateSelectedObject( [checked]( auto &info )
-                         {
-                             info.tmpIsFocus = checked;
-                         } );
+    updateSelectedObjectInfoParameter( [checked]( auto &info )
+                                      {
+                                          info.tmpIsFocus = checked;
+                                      } );
 }
 
 void ObjectEditor::onParticleLimitSpinBoxValueChanged( int value )
 {
-    updateSelectedObject( [value]( auto &info )
-                         {
-                             info.tmpParticleLimit = value;
-                         } );
+    updateSelectedObjectInfoParameter( [value]( auto &info )
+                                      {
+                                          info.tmpParticleLimit = value;
+                                      } );
 }
 
 void ObjectEditor::onExtraOpacityFactorDoubleSpinBoxValueChanged( double value )
 {
-    updateSelectedObject( [value]( auto &info )
-                         {
-                             info.tmpExtraOpacityFactor = value;
-                         } );
+    updateSelectedObjectInfoParameter( [value]( auto &info )
+                                      {
+                                          info.tmpExtraOpacityFactor = value;
+                                      } );
 }
 
 void ObjectEditor::onCoordinateLineEditTextChanged()
 {
-    updateSelectedObject( [this] ( auto &info )
-                         {
-                             info.tmpCoordinateX = ui->coordinateXLineEdit->text().toUtf8().constData();
-                             info.tmpCoordinateY = ui->coordinateYLineEdit->text().toUtf8().constData();
-                             info.tmpCoordinateZ = ui->coordinateZLineEdit->text().toUtf8().constData();
-                         } );
+    updateSelectedObjectInfoParameter( [this] ( auto &info )
+                                      {
+                                          info.tmpCoordinateX = ui->coordinateXLineEdit->text().toUtf8().constData();
+                                          info.tmpCoordinateY = ui->coordinateYLineEdit->text().toUtf8().constData();
+                                          info.tmpCoordinateZ = ui->coordinateZLineEdit->text().toUtf8().constData();
+                                      } );
 }
 
 void ObjectEditor::onColorLabelDoubleClicked()
 {
-    updateSelectedObject( [this]( auto &info )
-                         {
-                             QColorDialog colorDialog;
-                             colorDialog.adjustSize();
-                             if( colorDialog.exec() == QDialog::Accepted )
-                             {
-                                 QColor color = colorDialog.selectedColor();
-                                 QPalette palette = ui->colorClickableLabel->palette();
-                                 palette.setColor( QPalette::Window, color );
-                                 ui->colorClickableLabel->setPalette( palette );
-                                 info.tmpPolygonColor.set( color.red(), color.green(), color.blue() );
-                             }
-                         } );
+    updateSelectedObjectInfoParameter( [this]( auto &info )
+                                      {
+                                          QColorDialog colorDialog;
+                                          colorDialog.adjustSize();
+                                          if( colorDialog.exec() == QDialog::Accepted )
+                                          {
+                                              QColor color     = colorDialog.selectedColor();
+                                              QPalette palette = ui->colorClickableLabel->palette();
+                                              palette.setColor( QPalette::Window, color );
+                                              ui->colorClickableLabel->setPalette( palette );
+                                              info.tmpPolygonColor.set( color.red(), color.green(), color.blue() );
+                                          }
+                                      } );
 }
 
 void ObjectEditor::onOpacityDoubleSpinBoxValueChanged( double value )
 {
-    updateSelectedObject( [value]( auto &info )
-                         {
-                             info.tmpPolygonOpacity = value;
-                         } );
+    updateSelectedObjectInfoParameter( [value]( auto &info )
+                                      {
+                                          info.tmpPolygonOpacity = value;
+                                      } );
 }
 
 void ObjectEditor::onBrowse()
 {
-    // Note:
+    // NOTE:
     // Local(サーバと接続せずローカルマシンのデータを可視化するモード)
     // LocalClientAndServer(クライアントとサーバを同マシンで起動/接続するモード)
     // -> QFileDialog
@@ -1498,11 +1528,11 @@ void ObjectEditor::onBrowse()
     {
         QStringList filePaths = QFileDialog::getOpenFileNames( this, tr("Select 3D data files"), QDir::homePath(),
 #ifdef ASSIMP
-            tr("Support Files (*.kvsml *.las *.pts *.stl *.fbx *.3ds);;All Files (*.*)")
+                                                              tr("Support Files (*.kvsml *.las *.pts *.stl *.fbx *.3ds);;All Files (*.*)")
 #else
-            tr("Support Files (*.kvsml *.las *.pts *.stl);;All Files (*.*)")
+                                                              tr("Support Files (*.kvsml *.las *.pts *.stl);;All Files (*.*)")
 #endif
-            );
+                                                              );
 
         if( filePaths.isEmpty() ) return;
 
@@ -1513,11 +1543,11 @@ void ObjectEditor::onBrowse()
             if( auto objectInfoOpt = oie.extractFromLocalFile() )
             {
                 objectInfoOpt->uuid = uuid.toUtf8();
-                addObjectToModel( *objectInfoOpt );
+                addObjectInfoToModel( *objectInfoOpt );
             }
             else
             {
-                // FIXME:MainWindowのStatusBarで通知
+                emit updateStatusBarMessage( tr( "Failed to load file: %1" ).arg( filePath ) );
             }
         }
         break;
@@ -1546,34 +1576,34 @@ void ObjectEditor::onBrowse()
 
 void ObjectEditor::onDelete()
 {
-    QModelIndexList selectedIndexes = ui->treeView->selectionModel()->selectedIndexes();
+    const QModelIndexList selectedIndexes = ui->treeView->selectionModel()->selectedIndexes();
     if( selectedIndexes.isEmpty() ) return;
 
     QModelIndex index = selectedIndexes.first();
-    QVariant var = index.data( Qt::UserRole );
-    if( !var.canConvert<ObjectInfoExtractor::ObjectInfo>() ) return;
+    index = index.sibling( index.row(), 0 );
 
-    ObjectInfoExtractor::ObjectInfo info = var.value<ObjectInfoExtractor::ObjectInfo>();
+    const QVariant var = index.data( Qt::UserRole );
+    if ( !var.canConvert<ObjectInfoExtractor::ObjectInfo>() ) return;
 
-    // NOTE:フォーカス再割当が必要か判定
+    const ObjectInfoExtractor::ObjectInfo info = var.value<ObjectInfoExtractor::ObjectInfo>();
+
+    // NOTE:フォーカス再割当が必要か判定(削除対象がフォーカスで、他にフォーカスが無い場合)
     bool requireFocusOnOther = false;
-
     if( info.tmpIsFocus )
     {
         bool otherFocusedFound = false;
 
-        for( int row = 0; row < m_model->rowCount(); row++ )
+        for( int row = 0; row < m_model->rowCount(); ++row )
         {
             if( row == index.row() ) continue;
 
             QStandardItem* nameItem = m_model->item( row, 0 );
-            if( !nameItem ) continue;
+            if ( !nameItem ) continue;
 
-            QVariant otherVar = nameItem->data( Qt::UserRole );
+            const QVariant otherVar = nameItem->data( Qt::UserRole );
             if( !otherVar.canConvert<ObjectInfoExtractor::ObjectInfo>() ) continue;
 
-            ObjectInfoExtractor::ObjectInfo otherInfo = otherVar.value<ObjectInfoExtractor::ObjectInfo>();
-
+            const auto otherInfo = otherVar.value<ObjectInfoExtractor::ObjectInfo>();
             if( otherInfo.tmpIsFocus )
             {
                 otherFocusedFound = true;
@@ -1584,21 +1614,20 @@ void ObjectEditor::onDelete()
         requireFocusOnOther = !otherFocusedFound;
     }
 
-    // NOTE:フォーカスを他オブジェクトへ移す
+    // NOTE: フォーカスを他オブジェクトへ移す（必要な場合のみ、先頭の1つに付与）
     if( requireFocusOnOther )
     {
         for( int row = 0; row < m_model->rowCount(); ++row )
         {
-            if( row == index.row() ) continue;
+            if( row == index.row() ){ continue; }
 
             QStandardItem* item = m_model->item( row, 0 );
             if( !item ) continue;
 
-            QVariant v = item->data( Qt::UserRole );
+            const QVariant v = item->data( Qt::UserRole );
             if( !v.canConvert<ObjectInfoExtractor::ObjectInfo>() ) continue;
 
-            ObjectInfoExtractor::ObjectInfo otherInfo = v.value<ObjectInfoExtractor::ObjectInfo>();
-
+            auto otherInfo = v.value<ObjectInfoExtractor::ObjectInfo>();
             otherInfo.tmpIsFocus = true;
             item->setData( QVariant::fromValue( otherInfo ), Qt::UserRole );
             break; // NOTE:1つだけフォーカス
@@ -1606,32 +1635,36 @@ void ObjectEditor::onDelete()
     }
 
     // NOTE:シーンから削除
-    if( info.objectID.first != -1 ) m_screen->scene()->removeObject( info.objectID.first );
+    if( info.objectID.first != -1 )
+    {
+        m_screen->scene()->removeObject( info.objectID.first );
+    }
 
-    // NOTE:Model から削除
+    // NOTE:Modelから削除
     m_model->removeRow( index.row() );
 
     calculateTotalMinMaxTimeStep();
     m_screen->update();
 
-    // NOTE:全削除時の UI 非表示
+    // NOTE:全削除時のUI非表示
     if( m_model->rowCount() == 0 )
     {
-        setWidgetsVisible( m_group_common_object_widgets             , false );
+        setWidgetsVisible( m_group_common_object_widgets,              false );
         setWidgetsVisible( m_group_common_server_point_object_widgets, false );
         setWidgetsVisible( m_group_client_server_point_object_widgets, false );
-        setWidgetsVisible( m_group_nontexture_polygon_object_widgets , false );
+        setWidgetsVisible( m_group_nontexture_polygon_object_widgets,  false );
     }
 
-    // NOTE:WebSocket：削除通知（即時確定イベント）
-    if( ( *m_viz_mode == Viz::Mode::LocalClientAndServer  ||
-          *m_viz_mode == Viz::Mode::RemoteClientAndServer ||
-          *m_viz_mode == Viz::Mode::RemoteInSitu ) &&
-          m_web_sockets->isConnected() )
+    const bool is_remote_mode =
+        ( *m_viz_mode == Viz::Mode::LocalClientAndServer  ||
+         *m_viz_mode == Viz::Mode::RemoteClientAndServer ||
+         *m_viz_mode == Viz::Mode::RemoteInSitu );
+
+    if( is_remote_mode && m_web_sockets->isConnected() )
     {
         QJsonObject msg;
         msg[QString::fromUtf8( Protocol::Key::Event )] = QString::fromUtf8( Protocol::Events::ObjectDelete );
-        msg[QString::fromUtf8( Protocol::Key::UUID )] = QString::fromUtf8( info.uuid );
+        msg[QString::fromUtf8( Protocol::Key::UUID )]  = QString::fromUtf8( info.uuid );
         m_web_sockets->text()->sendTextMessage( QJsonDocument( msg ).toJson( QJsonDocument::Compact ) );
     }
 }
@@ -1650,10 +1683,10 @@ void ObjectEditor::onApply()
         std::numeric_limits<float>::lowest()
         );
 
-    // === 差分送信用 ===
+    // NOTE:差分送信用パッチ
     QJsonArray patchArray;
 
-    for( int row = 0; row < m_model->rowCount(); row++ )
+    for( int row = 0; row < m_model->rowCount(); ++row )
     {
         QStandardItem* nameItem        = m_model->item( row, 0 );
         QStandardItem* displayItem     = m_model->item( row, 2 );
@@ -1666,16 +1699,17 @@ void ObjectEditor::onApply()
 
         ObjectInfoExtractor::ObjectInfo objectInfo = var.value<ObjectInfoExtractor::ObjectInfo>();
 
-        // NOTE:display, keepInitial/Finalのチェックボックスの状態をtmpに格納 // FIXME:チェックボックスのtmpIsは不要なのでは
+        // NOTE:display, keepInitial, keepFinalのチェックボックス状態をtmpに格納
+        // FIXME:dispaly, keepInitial, keepFinalのtmpIsは不要かもしれません
         objectInfo.tmpIsDisplay     = ( displayItem->checkState()     == Qt::Checked );
         objectInfo.tmpIsKeepInitial = ( keepInitialItem->checkState() == Qt::Checked );
         objectInfo.tmpIsKeepFinal   = ( keepFinalItem->checkState()   == Qt::Checked );
 
-        // オブジェクト用パッチ
+        // NOTE:オブジェクト用パッチ
         QJsonObject patch;
         patch[QString::fromUtf8( Protocol::Key::UUID )] = QString::fromUtf8( objectInfo.uuid );
 
-        // NOTE:isHogeの確定
+        // NOTE:以下isHogeの確定
         // 全オブジェクト共通
         if( objectInfo.isDisplay != objectInfo.tmpIsDisplay )
         {
@@ -1697,17 +1731,20 @@ void ObjectEditor::onApply()
             objectInfo.isFocus = objectInfo.tmpIsFocus;
             patch[QString::fromUtf8( Protocol::Key::IsFocus )] = objectInfo.isFocus;
         }
+
         // サーバポイントオブジェクト(ClientServer/In-Situ共通)
         if( objectInfo.particleLimit != objectInfo.tmpParticleLimit )
         {
             objectInfo.particleLimit = objectInfo.tmpParticleLimit;
             patch[QString::fromUtf8( Protocol::Key::ParticleLimit )] = objectInfo.particleLimit;
         }
+        // NOTE:(extraOpacityFactor)は一時的に無効にしています。必要になったら下記のコードの削除とextraOpacityFactorに関係するコードのコメント文を元に戻せば使えるはずです。
         // if( objectInfo.extraOpacityFactor != objectInfo.tmpExtraOpacityFactor )
         // {
         //     objectInfo.extraOpacityFactor = objectInfo.tmpExtraOpacityFactor;
         //     patch[QString::fromUtf8( Protocol::Key::ExtraOpacityFactor )] = objectInfo.extraOpacityFactor;
         // }
+
         // サーバポイントオブジェクト(ClientServerのみ)
         auto updateCoord = [&](const QString& key, std::string& dst, const std::string& src)
         {
@@ -1720,6 +1757,7 @@ void ObjectEditor::onApply()
         updateCoord( QString::fromUtf8( Protocol::Key::CoordinateX ), objectInfo.coordinateX, objectInfo.tmpCoordinateX );
         updateCoord( QString::fromUtf8( Protocol::Key::CoordinateY ), objectInfo.coordinateY, objectInfo.tmpCoordinateY );
         updateCoord( QString::fromUtf8( Protocol::Key::CoordinateZ ), objectInfo.coordinateZ, objectInfo.tmpCoordinateZ );
+
         // テスクチャ無しポリゴン(.stlのみ) // FIXME:KVSMLPolygonObjectは不透明度のみ操作できるようにしたほうがいいかもしれません。
         if( objectInfo.polygonColor.r() != objectInfo.tmpPolygonColor.r() ||
             objectInfo.polygonColor.g() != objectInfo.tmpPolygonColor.g() ||
@@ -1741,7 +1779,7 @@ void ObjectEditor::onApply()
             patch[QString::fromUtf8( Protocol::Key::PolygonOpacity )] = objectInfo.polygonOpacity;
         }
 
-        // NOTE:フォーカス対象の
+        // NOTE:フォーカス対象のオブジェクトのみ、全体のmin/max座標計算に含める
         if( objectInfo.isFocus )
         {
             resultMinObjectCoords.x() = std::min( resultMinObjectCoords.x(), objectInfo.minObjectCoord.x() );
@@ -1753,10 +1791,10 @@ void ObjectEditor::onApply()
             resultMaxObjectCoords.z() = std::max( resultMaxObjectCoords.z(), objectInfo.maxObjectCoord.z() );
         }
 
-        // モデルへ反映
+        // NOTE:モデルへ反映
         nameItem->setData( QVariant::fromValue( objectInfo ), Qt::UserRole );
 
-        // uuid 以外が入っていれば送信対象
+        // NOTE:uuid以外が入っていれば送信対象
         if( patch.keys().size() > 1 )
         {
             patchArray.append( patch );
@@ -1791,11 +1829,10 @@ void ObjectEditor::onApply()
     emit updateTranslation();
     m_screen->update();
 
-    // WebSocket：部分更新 + 全体座標送信
     if( ( *m_viz_mode == Viz::Mode::LocalClientAndServer  ||
-          *m_viz_mode == Viz::Mode::RemoteClientAndServer ||
-          *m_viz_mode == Viz::Mode::RemoteInSitu ) &&
-          m_web_sockets->isConnected() )
+         *m_viz_mode == Viz::Mode::RemoteClientAndServer ||
+         *m_viz_mode == Viz::Mode::RemoteInSitu ) &&
+        m_web_sockets->isConnected() )
     {
         QJsonObject objectInfoParameter;
         objectInfoParameter[QString::fromUtf8( Protocol::Key::Event )] = QString::fromUtf8( Protocol::Events::ObjectInfoParameter );
@@ -1813,43 +1850,8 @@ void ObjectEditor::onApply()
         objectInfoParameter[QString::fromUtf8( Protocol::Key::ResultMinObjectCoords )] = minCoords;
         objectInfoParameter[QString::fromUtf8( Protocol::Key::ResultMaxObjectCoords )] = maxCoords;
 
-        // 差分がある場合のみ Objects を付ける
         if( !patchArray.isEmpty() ) objectInfoParameter[QString::fromUtf8( Protocol::Key::Objects )] = patchArray;
 
         m_web_sockets->text()->sendTextMessage( QJsonDocument( objectInfoParameter ).toJson( QJsonDocument::Compact ) );
     }
-}
-
-void ObjectEditor::dataRequestComplete( int requestTimeStep )
-{
-    updateVisibility( requestTimeStep );
-
-    for( int row = 0; row < m_model->rowCount(); row++ )
-    {
-        QStandardItem* item = m_model->item( row, 0 ); // UserRoleにObjectInfoが格納されている列
-        if( !item ) continue;
-
-        QVariant var = item->data( Qt::UserRole );
-        if( !var.canConvert<ObjectInfoExtractor::ObjectInfo>() ) continue;
-
-        ObjectInfoExtractor::ObjectInfo info = var.value<ObjectInfoExtractor::ObjectInfo>();
-        if( info.object != nullptr )
-        {
-            info.object->setXform( m_screen->scene()->objectManager()->xform() );
-            if( info.objectID.first == -1 && info.objectID.second == -1 )
-            {
-                registerObject( info );
-            }
-            else
-            {
-                replaceObject( info );
-            }
-        }
-        QVariant newVar;
-        newVar.setValue( info );
-        item->setData( newVar, Qt::UserRole );
-    }
-
-    emit dataRequestCompleted( requestTimeStep );
-    m_screen->update();
 }

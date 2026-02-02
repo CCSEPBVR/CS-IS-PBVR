@@ -2,13 +2,13 @@
 #define TIMESTEPCONTROLTOOLBAR_H
 
 #include <QToolBar>
+#include <QHBoxLayout>
+#include <QJsonDocument>
+#include <QJsonObject>
 #include <QLabel>
 #include <QLineEdit>
 #include <QSpinBox>
-#include <QHBoxLayout>
 #include <QTimer>
-#include <QJsonDocument>
-#include <QJsonObject>
 
 #include "WebSocketPair.h"
 
@@ -21,14 +21,20 @@ class TimeStepControlToolBar : public QToolBar
 public:
     explicit TimeStepControlToolBar( WebSocketPair* websockets, QWidget *parent = nullptr );
     ~TimeStepControlToolBar();
+    void reset();
+
+signals:
+    void requestDataAt( const int requestTimeStep );
+    void dataRequestCompleted( const int requestTimeStep );
 
 public slots:
-    void onUpdateServerState( bool serverState );     // true:接続中
-    void onOperatorStateUpdate( bool operatorState ); // true:権限あり
-    void onReset();
-    void updateTotalTimeStepRange( int min, int max, bool isSingleObject );
+    void onOperatorStateUpdate( const bool operatorState ); // true: 権限有り, false: 権限無し
+
+    // NOTE:テキストソケット用
     void onReceiveTimeStepControlParameter( const QJsonObject& timeStepControlParameter );
-    void onDataRequestCompleted( int requestTimeStep );
+
+    void onUpdateTotalTimeStepRange( const int min, const int max, const bool isSingleObject );
+    void onDataRequestCompleted( const int requestTimeStep );
 
     void onFirst();
     void onPrevious();
@@ -39,34 +45,31 @@ public slots:
     void onKeepLast( bool isChecked );
     void onJump();
     void onLoop( bool isChecked );
-    // FIXME:KPI
-    void onLoadParameter( const QString& filePath );
-    void onSaveParameter( const QString& filePath );
 
-signals:
-    void requestDataAt( const int requestTimeStep );
-    void dataRequestCompleted();
+    void onLoadParameter( const QString& filePath ); // KPI
+    void onSaveParameter( const QString& filePath ); // KPI
 
 private:
+    QLabel* m_current_time_step_label        = nullptr;
+    QLineEdit* m_current_time_step_line_edit = nullptr;
+
+    QLabel* m_next_time_step_label           = nullptr;
+    QSpinBox* m_next_time_step_spin_box      = nullptr;
+
+    QLabel* m_min_limit_time_step_label      = nullptr;
+    QSpinBox* m_min_limit_time_step_spin_box = nullptr;
+
+    QLabel* m_max_limit_time_step_label      = nullptr;
+    QSpinBox* m_max_limit_time_step_spin_box = nullptr;
+
+    QLabel* m_total_time_step_range_label    = nullptr;
+
+    QLabel* m_update_interval_label          = nullptr;
+    QSpinBox* m_update_interval_spin_box     = nullptr;
+
     WebSocketPair* m_web_sockets = nullptr;
-    bool m_is_operator;
 
-    QLabel* m_current_time_step_label           = nullptr;
-    QLineEdit* m_current_time_step_line_edit    = nullptr;
-
-    QLabel* m_next_time_step_label              = nullptr;
-    QSpinBox* m_next_time_step_spin_box         = nullptr;
-
-    QLabel* m_min_limit_time_step_label         = nullptr;
-    QSpinBox* m_min_limit_time_step_spin_box    = nullptr;
-
-    QLabel* m_max_limit_time_step_label         = nullptr;
-    QSpinBox* m_max_limit_time_step_spin_box    = nullptr;
-
-    QLabel* m_total_time_step_range_label       = nullptr;
-
-    QLabel* m_update_interval_label             = nullptr;
-    QSpinBox* m_update_interval_spin_box        = nullptr;
+    bool m_is_operator           = false;
 
     QTimer m_timer;
     bool m_is_reverse_mode  = false;
@@ -78,10 +81,10 @@ private:
     void keepLastTimeStep();
 
 private slots:
-    void onUpdateNext( int next );
-    void onUpdateMinLimit( int minLimit );
-    void onUpdateMaxLimit( int maxLimit );
-    void onUpdateInterval();
+    void onUpdateNext( const int next );
+    void onUpdateMinLimit( const int minLimit );
+    void onUpdateMaxLimit( const int maxLimit );
+    void onUpdateInterval( const int interval );
     void onUpdateTimeStep();
 };
 

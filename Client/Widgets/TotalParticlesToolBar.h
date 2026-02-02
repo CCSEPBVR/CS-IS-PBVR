@@ -5,12 +5,12 @@
 #include <QLabel>
 #include <QHBoxLayout>
 
-#include "Screen.h"
 #include <kvs/IDManager>
+#include <kvs/ParticleBasedRenderer>
 #include <kvs/PointObject>
 #include <kvs/RendererManager>
 #include <kvs/StochasticRendererBase>
-#include <kvs/ParticleBasedRenderer>
+#include "Screen.h" // <kvs/qt/Screen>
 
 class TotalParticlesToolBar : public QToolBar
 {

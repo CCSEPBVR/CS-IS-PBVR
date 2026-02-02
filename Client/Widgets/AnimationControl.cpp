@@ -2,8 +2,8 @@
 #include "ui_AnimationControl.h"
 
 AnimationControl::AnimationControl( kvs::qt::jaea::Screen* screen, QWidget *parent )
-    : QDockWidget( parent )
-    , ui( new Ui::AnimationControl )
+    : QDockWidget(parent)
+    , ui(new Ui::AnimationControl)
     , m_screen( screen )
     , m_animation_timer( new QTimer( this ) )
     , m_animation_paused( false )
@@ -196,20 +196,20 @@ void AnimationControl::onSaveKeyFrameFile()
     for( const kvs::Xform& xform : m_xforms )
     {
         out << xform.translation().x()
-            << xform.translation().y()
-            << xform.translation().z()
-            << xform.scaling().x()
-            << xform.scaling().y()
-            << xform.scaling().z()
-            << xform.rotation()[0].x()
-            << xform.rotation()[0].y()
-            << xform.rotation()[0].z()
-            << xform.rotation()[1].x()
-            << xform.rotation()[1].y()
-            << xform.rotation()[1].z()
-            << xform.rotation()[2].x()
-            << xform.rotation()[2].y()
-            << xform.rotation()[2].z();
+        << xform.translation().y()
+        << xform.translation().z()
+        << xform.scaling().x()
+        << xform.scaling().y()
+        << xform.scaling().z()
+        << xform.rotation()[0].x()
+        << xform.rotation()[0].y()
+        << xform.rotation()[0].z()
+        << xform.rotation()[1].x()
+        << xform.rotation()[1].y()
+        << xform.rotation()[1].z()
+        << xform.rotation()[2].x()
+        << xform.rotation()[2].y()
+        << xform.rotation()[2].z();
     }
     file.close();
 }

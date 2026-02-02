@@ -22,20 +22,6 @@ PlayBackControlToolBar::PlayBackControlToolBar( WebSocketPair* websockets, QWidg
     m_loop_push_button      = createPushButton( "://Resources/images/loop.svg", iconSize, pushButtonSize, this );
     m_loop_push_button      ->setCheckable( true );
 
-    QWidget* containerWidget    = new QWidget( this );
-    QHBoxLayout* layout         = new QHBoxLayout( containerWidget );
-    layout->addWidget( m_first_push_button );
-    layout->addWidget( m_previous_push_button );
-    layout->addWidget( m_reverse_push_button );
-    layout->addWidget( m_play_push_button );
-    layout->addWidget( m_next_push_button );
-    layout->addWidget( m_last_push_button );
-    layout->addWidget( m_keep_last_push_button );
-    layout->addWidget( m_jump_push_button );
-    layout->addWidget( m_loop_push_button );
-
-    this->addWidget( containerWidget );
-
     m_buttons =
         {
             m_first_push_button,
@@ -47,6 +33,21 @@ PlayBackControlToolBar::PlayBackControlToolBar( WebSocketPair* websockets, QWidg
             m_keep_last_push_button,
             m_jump_push_button,
         };
+
+    QWidget* containerWidget = new QWidget( this );
+    QHBoxLayout* layout      = new QHBoxLayout( containerWidget );
+    layout->addWidget( m_first_push_button );
+    layout->addWidget( m_previous_push_button );
+    layout->addWidget( m_reverse_push_button );
+    layout->addWidget( m_play_push_button );
+    layout->addWidget( m_next_push_button );
+    layout->addWidget( m_last_push_button );
+    layout->addWidget( m_keep_last_push_button );
+    layout->addWidget( m_jump_push_button );
+    layout->addWidget( m_loop_push_button );
+
+    this->addWidget( containerWidget );
+    this->setMovable( false );
 
     connect( m_first_push_button    , &QPushButton::clicked, this, &PlayBackControlToolBar::onFirst );
     connect( m_previous_push_button , &QPushButton::clicked, this, &PlayBackControlToolBar::onPrevious );
@@ -61,52 +62,29 @@ PlayBackControlToolBar::PlayBackControlToolBar( WebSocketPair* websockets, QWidg
 
 PlayBackControlToolBar::~PlayBackControlToolBar() {}
 
-void PlayBackControlToolBar::onUpdateServerState( bool serverState )
+void PlayBackControlToolBar::reset()
 {
 
-}
-
-void PlayBackControlToolBar::onOperatorStateUpdate( bool operatorState )
-{
-    m_is_operator = operatorState;
-    if( m_is_operator )
-    {
-        m_first_push_button    ->setEnabled( true );
-        m_previous_push_button ->setEnabled( true );
-        m_reverse_push_button  ->setEnabled( true );
-        m_play_push_button     ->setEnabled( true );
-        m_next_push_button     ->setEnabled( true );
-        m_last_push_button     ->setEnabled( true );
-        m_keep_last_push_button->setEnabled( true );
-        m_jump_push_button     ->setEnabled( true );
-        m_loop_push_button     ->setEnabled( true );
-    }
-    else
-    {
-        m_reverse_push_button   ->setChecked( false ); onReverse();
-        m_play_push_button      ->setChecked( false ); onPlay();
-        m_keep_last_push_button ->setChecked( false ); onKeepLast();
-        m_loop_push_button      ->setChecked( false ); onLoop();
-        m_loop_push_button      ->setEnabled( false ); disableButtons();
-    }
-}
-
-void PlayBackControlToolBar::onReset()
-{
-    m_first_push_button    ->setEnabled( true );
-    m_previous_push_button ->setEnabled( true );
-    m_reverse_push_button  ->setEnabled( true );
-    m_play_push_button     ->setEnabled( true );
-    m_next_push_button     ->setEnabled( true );
-    m_last_push_button     ->setEnabled( true );
-    m_keep_last_push_button->setEnabled( true );
-    m_jump_push_button     ->setEnabled( true );
-    m_loop_push_button     ->setEnabled( true );
 }
 
 void PlayBackControlToolBar::onDataRequestCompleted()
 {
     if( m_is_operator || m_web_sockets->isConnected() == false ) enableButtons();
+}
+
+void PlayBackControlToolBar::onOperatorStateUpdate( bool operatorState )
+{
+    m_is_operator = operatorState;
+
+    m_first_push_button    ->setEnabled( m_is_operator );
+    m_previous_push_button ->setEnabled( m_is_operator );
+    m_reverse_push_button  ->setEnabled( m_is_operator );
+    m_play_push_button     ->setEnabled( m_is_operator );
+    m_next_push_button     ->setEnabled( m_is_operator );
+    m_last_push_button     ->setEnabled( m_is_operator );
+    m_keep_last_push_button->setEnabled( m_is_operator );
+    m_jump_push_button     ->setEnabled( m_is_operator );
+    m_loop_push_button     ->setEnabled( m_is_operator );
 }
 
 QPushButton* PlayBackControlToolBar::createPushButton( const QString& iconPath, const QSize& iconSize, const QSize& buttonSize, QWidget* parent )
@@ -124,7 +102,7 @@ QPushButton* PlayBackControlToolBar::createPushButton( const QString& iconPath, 
         "background-color: rgba(0, 0, 0, 50);"
         "}"
         "QPushButton:checked {"
-        "background-color: rgba(0, 0, 0, 80);"
+        "background-color: rgba(0, 0, 0, 60);"
         "}"
         ); // ボタンの枠を消し、押した時の背景色を設定
     return button;
@@ -132,26 +110,29 @@ QPushButton* PlayBackControlToolBar::createPushButton( const QString& iconPath, 
 
 void PlayBackControlToolBar::disableButtons()
 {
+    const bool anyChecked =
+        m_reverse_push_button  ->isChecked() ||
+        m_play_push_button     ->isChecked() ||
+        m_keep_last_push_button->isChecked();
+
     for( QPushButton* button : m_buttons )
     {
-        // リバース、プレイ、キープラストボタンのいずれかが押されている場合はスキップ
-        if( ( button == m_reverse_push_button  && button->isChecked() ) ||
-            ( button == m_play_push_button     && button->isChecked() ) ||
-            ( button == m_keep_last_push_button && button->isChecked()) )
+        if( anyChecked && button->isChecked() )
         {
             continue;
         }
-
         button->setEnabled( false );
     }
 }
 
 void PlayBackControlToolBar::enableButtons()
 {
-    // リバース、プレイ、キープラストボタンのいずれかが押されている場合は何もしない
-    if( m_reverse_push_button->isChecked() ||
-        m_play_push_button->isChecked() ||
-        m_keep_last_push_button->isChecked() )
+    const bool anyChecked =
+        m_reverse_push_button  ->isChecked() ||
+        m_play_push_button     ->isChecked() ||
+        m_keep_last_push_button->isChecked();
+
+    if( anyChecked )
     {
         return;
     }
@@ -179,12 +160,12 @@ void PlayBackControlToolBar::onReverse()
     if( m_reverse_push_button->isChecked() )
     {
         disableButtons();
-        m_reverse_push_button->setIcon( QIcon("://Resources/images/pause.svg") );
+        m_reverse_push_button->setIcon( QIcon( "://Resources/images/pause.svg" ) );
     }
     else
     {
         enableButtons();
-        m_reverse_push_button->setIcon( QIcon("://Resources/images/reverse.svg") );
+        m_reverse_push_button->setIcon( QIcon( "://Resources/images/reverse.svg" ) );
     }
     emit reverse( m_reverse_push_button->isChecked() );
 }
@@ -194,12 +175,12 @@ void PlayBackControlToolBar::onPlay()
     if( m_play_push_button->isChecked() )
     {
         disableButtons();
-        m_play_push_button->setIcon( QIcon("://Resources/images/pause.svg") );
+        m_play_push_button->setIcon( QIcon( "://Resources/images/pause.svg" ) );
     }
     else
     {
         enableButtons();
-        m_play_push_button->setIcon( QIcon("://Resources/images/play.svg") );
+        m_play_push_button->setIcon( QIcon( "://Resources/images/play.svg" ) );
     }
     emit play( m_play_push_button->isChecked() );
 }
@@ -221,12 +202,12 @@ void PlayBackControlToolBar::onKeepLast()
     if( m_keep_last_push_button->isChecked() )
     {
         disableButtons();
-        m_keep_last_push_button->setIcon( QIcon("://Resources/images/pause.svg") );
+        m_keep_last_push_button->setIcon( QIcon( "://Resources/images/pause.svg" ) );
     }
     else
     {
         enableButtons();
-        m_keep_last_push_button->setIcon( QIcon("://Resources/images/keepLast.svg") );
+        m_keep_last_push_button->setIcon( QIcon( "://Resources/images/keepLast.svg" ) );
     }
 
     emit keepLast( m_keep_last_push_button->isChecked() );

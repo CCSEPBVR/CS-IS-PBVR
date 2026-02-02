@@ -4,7 +4,7 @@
 #include <QDockWidget>
 #include <QFileDialog>
 
-#include "Screen.h"
+#include "Screen.h" // <kvs/qt/Screen>
 
 namespace Ui
 {
@@ -16,7 +16,7 @@ class AnimationControl : public QDockWidget
     Q_OBJECT
 
 public:
-    explicit AnimationControl( kvs::qt::jaea::Screen* screen, QWidget *parent = nullptr );
+    explicit AnimationControl( kvs::qt::jaea::Screen* screen, QWidget *parent );
     ~AnimationControl();
 
 public slots:
@@ -27,9 +27,9 @@ public slots:
     void onLoadKeyFrameFile();                 // L
     void onSaveKeyFrameFile();                 // S
     void onScreenShot( int loopCounter );      // ?
-    // FIXME:KPI
-    void onLoadParameter( const QString& filePath );
-    void onSaveParameter( const QString& filePath );
+
+    void onLoadParameter( const QString& filePath ); // KPI
+    void onSaveParameter( const QString& filePath ); // KPI
 
 private:
     Ui::AnimationControl *ui;

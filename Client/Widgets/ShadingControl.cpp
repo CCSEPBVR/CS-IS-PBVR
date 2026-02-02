@@ -7,6 +7,7 @@ ShadingControl::ShadingControl( kvs::qt::jaea::Screen* screen, QWidget *parent )
     , m_screen( screen )
 {
     ui->setupUi( this );
+
     QButtonGroup *radioButtonGroup = new QButtonGroup();
     radioButtonGroup->addButton( ui->noneRadioButton );
     radioButtonGroup->addButton( ui->phongRadioButton );
@@ -27,70 +28,51 @@ ShadingControl::~ShadingControl()
 
 void ShadingControl::onShading( kvs::RendererBase* rendererBase )
 {
-    if( auto* stochasticRenderer = dynamic_cast<kvs::StochasticRendererBase*>( rendererBase ) )
-    {
-        if( auto* stochasticPolygonRenderer = dynamic_cast<kvs::StochasticPolygonRenderer*>( stochasticRenderer ) )
-        {
-            if( ui->noneRadioButton->isChecked() )
-            {
-                stochasticPolygonRenderer->setShader( kvs::Shader::Lambert( 1, 0 ) );
-            }
-            else if( ui->phongRadioButton->isChecked() )
-            {
-                stochasticPolygonRenderer->setShader( kvs::Shader::Phong( ui->AmbientDoubleSpinBox->value(), ui->DiffuseDoubleSpinBox->value(), ui->SpecularDoubleSpinBox->value(), ui->ShininessDoubleSpinBox->value() ) );
-            }
-            else if( ui->lambertRadioButton->isChecked() )
-            {
-                stochasticPolygonRenderer->setShader( kvs::Shader::Lambert( ui->AmbientDoubleSpinBox->value(), ui->DiffuseDoubleSpinBox->value() ) );
-            }
-            else if( ui->blinnPhongRadioButton->isChecked() )
-            {
-                stochasticPolygonRenderer->setShader( kvs::Shader::BlinnPhong( ui->AmbientDoubleSpinBox->value(), ui->DiffuseDoubleSpinBox->value(), ui->SpecularDoubleSpinBox->value(), ui->ShininessDoubleSpinBox->value() ) );
-            }
-        }
-        else if( auto* particleRenderer = dynamic_cast<kvs::glsl::ParticleBasedRenderer*>( stochasticRenderer ) )
-        {
-            if( !particleRenderer->isShuffleEnabled() )
-            {
-                particleRenderer->enableShuffle();
-            }
+    auto* stochastic = dynamic_cast<kvs::StochasticRendererBase*>( rendererBase );
+    if( !stochastic ) { return; }
 
-            if( ui->noneRadioButton->isChecked() )
-            {
-                particleRenderer->setShader( kvs::Shader::Lambert( 1, 0 ) );
-            }
-            else if( ui->phongRadioButton->isChecked() )
-            {
-                particleRenderer->setShader( kvs::Shader::Phong( ui->AmbientDoubleSpinBox->value(), ui->DiffuseDoubleSpinBox->value(), ui->SpecularDoubleSpinBox->value(), ui->ShininessDoubleSpinBox->value() ) );
-            }
-            else if( ui->lambertRadioButton->isChecked() )
-            {
-                particleRenderer->setShader( kvs::Shader::Lambert( ui->AmbientDoubleSpinBox->value(), ui->DiffuseDoubleSpinBox->value() ) );
-            }
-            else if( ui->blinnPhongRadioButton->isChecked() )
-            {
-                particleRenderer->setShader( kvs::Shader::BlinnPhong( ui->AmbientDoubleSpinBox->value(), ui->DiffuseDoubleSpinBox->value(), ui->SpecularDoubleSpinBox->value(), ui->ShininessDoubleSpinBox->value() ) );
-            }
-        }
-        else if( auto* stochasticTexturedPolygonRenderer = dynamic_cast<kvs::StochasticTexturedPolygonRenderer*>( stochasticRenderer ) )
+    const float ambient   = static_cast<float>( ui->AmbientDoubleSpinBox->value() );
+    const float diffuse   = static_cast<float>( ui->DiffuseDoubleSpinBox->value() );
+    const float specular  = static_cast<float>( ui->SpecularDoubleSpinBox->value() );
+    const float shininess = static_cast<float>( ui->ShininessDoubleSpinBox->value() );
+
+    auto applyShader = [&]( auto* r )
+    {
+        if( ui->noneRadioButton->isChecked() )
         {
-            if( ui->noneRadioButton->isChecked() )
-            {
-                stochasticTexturedPolygonRenderer->setShader( kvs::Shader::Lambert( 1, 0 ) );
-            }
-            else if( ui->phongRadioButton->isChecked() )
-            {
-                stochasticTexturedPolygonRenderer->setShader( kvs::Shader::Phong( ui->AmbientDoubleSpinBox->value(), ui->DiffuseDoubleSpinBox->value(), ui->SpecularDoubleSpinBox->value(), ui->ShininessDoubleSpinBox->value() ) );
-            }
-            else if( ui->lambertRadioButton->isChecked() )
-            {
-                stochasticTexturedPolygonRenderer->setShader( kvs::Shader::Lambert( ui->AmbientDoubleSpinBox->value(), ui->DiffuseDoubleSpinBox->value() ) );
-            }
-            else if( ui->blinnPhongRadioButton->isChecked() )
-            {
-                stochasticTexturedPolygonRenderer->setShader( kvs::Shader::BlinnPhong( ui->AmbientDoubleSpinBox->value(), ui->DiffuseDoubleSpinBox->value(), ui->SpecularDoubleSpinBox->value(), ui->ShininessDoubleSpinBox->value() ) );
-            }
+            r->setShader( kvs::Shader::Lambert( 1, 0 ) );
         }
+        else if( ui->phongRadioButton->isChecked() )
+        {
+            r->setShader( kvs::Shader::Phong( ambient, diffuse, specular, shininess ) );
+        }
+        else if ( ui->lambertRadioButton->isChecked() )
+        {
+            r->setShader( kvs::Shader::Lambert( ambient, diffuse ) );
+        }
+        else if( ui->blinnPhongRadioButton->isChecked() )
+        {
+            r->setShader( kvs::Shader::BlinnPhong( ambient, diffuse, specular, shininess ) );
+        }
+    };
+
+    if( auto* polygon = dynamic_cast<kvs::StochasticPolygonRenderer*>( stochastic ) )
+    {
+        applyShader( polygon );
+        return;
+    }
+
+    if( auto* particle = dynamic_cast<kvs::glsl::ParticleBasedRenderer*>( stochastic ) )
+    {
+        if ( !particle->isShuffleEnabled() ) { particle->enableShuffle(); }
+        applyShader( particle );
+        return;
+    }
+
+    if( auto* textured = dynamic_cast<kvs::StochasticTexturedPolygonRenderer*>( stochastic ) )
+    {
+        applyShader( textured );
+        return;
     }
 }
 
@@ -107,10 +89,9 @@ void ShadingControl::onSaveParameter( const QString& filePath )
 void ShadingControl::onChangedShadingParameter()
 {
     const int size = m_screen->scene()->IDManager()->size();
-    for( int index = 0; index < size; index++ )
+    for( int index = 0; index < size; ++index )
     {
         auto id = m_screen->scene()->IDManager()->id( index );
-        auto* object = m_screen->scene()->objectManager()->object( id.first );
         auto* rendererBase = m_screen->scene()->rendererManager()->renderer( id.second );
         if( rendererBase )
         {

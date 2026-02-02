@@ -7,7 +7,7 @@ RepetitionLevelControl::RepetitionLevelControl( kvs::qt::jaea::Screen* screen, k
     , m_screen( screen )
     , m_compositor( compositor )
 {
-    ui->setupUi(this);
+    ui->setupUi( this );
     connect( ui->applyPushButton, &QPushButton::clicked, this, &RepetitionLevelControl::onApply );
 }
 
@@ -36,22 +36,36 @@ void RepetitionLevelControl::onApply()
 {
     const size_t repetitionLevel = static_cast<size_t>( ui->spinBoxNewRepetitionLevel->value() );
 
-    const size_t size = m_screen->scene()->IDManager()->size();
-    for( int index = 0; index < size; index++ )
+    const int size = m_screen->scene()->IDManager()->size();
+
+    for( int index = 0; index < size; ++index )
     {
-        auto ids = m_screen->scene()->IDManager()->id( index );
-        auto* object = m_screen->scene()->object( ids.first );
-        auto* renderer = m_screen->scene()->renderer( ids.second );
-        if( auto* particleRenderer = dynamic_cast<kvs::glsl::ParticleBasedRenderer*>( renderer ) )
-        {
-            kvs::glsl::ParticleBasedRenderer* particleBasedRenderer = new kvs::glsl::ParticleBasedRenderer();
-            particleBasedRenderer->enableShuffle();
-            emit shading( particleBasedRenderer );
-            m_screen->scene()->replaceRenderer( ids.second, particleBasedRenderer );
-        }
+        const auto id = m_screen->scene()->IDManager()->id( index );
+        auto* object = m_screen->scene()->objectManager()->object( id.first );
+        auto* rendererBase = m_screen->scene()->rendererManager()->renderer( id.second );
+
+        if( !object || !rendererBase ) { continue; }
+
+        auto* pointObject = dynamic_cast<kvs::PointObject*>( object );
+        if ( !pointObject ) { continue; }
+
+        auto* stochastic = dynamic_cast<kvs::StochasticRendererBase*>( rendererBase );
+        if ( !stochastic ) { continue; }
+
+        auto* particle = dynamic_cast<kvs::glsl::ParticleBasedRenderer*>( stochastic );
+        if ( !particle ) { continue; }
+
+        auto* newRenderer = new kvs::glsl::ParticleBasedRenderer();
+        newRenderer->enableShuffle();
+
+        // NOTE:レンダラーを作り直したのでシェーディングも設定しなおす必要がある
+        emit shading( newRenderer );
+
+        m_screen->scene()->replaceRenderer( id.second, newRenderer );
     }
 
     m_compositor->setRepetitionLevel( repetitionLevel );
     m_compositor->screen()->redraw();
+
     onUpdateCurrentRepetitionLevel();
 }

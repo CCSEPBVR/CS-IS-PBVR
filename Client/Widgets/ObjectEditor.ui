@@ -15,6 +15,9 @@
   </property>
   <widget class="QWidget" name="dockWidgetContents">
    <layout class="QGridLayout" name="gridLayout_7">
+    <item row="0" column="0">
+     <widget class="QTreeView" name="treeView"/>
+    </item>
     <item row="1" column="0">
      <widget class="QGroupBox" name="groupBox_3">
       <property name="title">
@@ -971,9 +974,6 @@
        </item>
       </layout>
      </widget>
-    </item>
-    <item row="0" column="0">
-     <widget class="QTreeView" name="treeView"/>
     </item>
    </layout>
   </widget>

@@ -2,19 +2,20 @@
 #define TRANSFERFUNCTIONEDITOR_H
 
 #include <QDialog>
-#include <QButtonGroup>
+#include <QComboBox>
 #include <QFileDialog>
+#include <QVector>
+#include <vector>
 
 #include "WebSocketPair.h"
-#include "../../Shared/JsonKeys.h"
-#include "../../Shared/TransferFunction.h"
 
 #include "ClientUtils.h"
 #include "VariableEditor.h"
 #include "ColorMapEditor.h"
 #include "OpacityMapEditor.h"
 
-// FIXME:ヒストグラム更新用処理を追加すること。
+#include "../../Shared/JsonKeys.h"
+#include "../../Shared/TransferFunction.h"
 
 namespace Ui
 {
@@ -28,57 +29,89 @@ class TransferFunctionEditor : public QDialog
 public:
     explicit TransferFunctionEditor( WebSocketPair* websockets, QWidget *parent = nullptr );
     ~TransferFunctionEditor();
-
-public slots:
-    void onOperatorStateUpdate( bool operatorState ); // true:権限あり
-    void onReset();
-    void onReceiveInitializeTransferFunctionParameter( const QString& colorSynth, const QString& opacitySynth, const QJsonArray& dataArray );
-    void onReceiveTransferFunctionParameter( const QString& colorSynth, const QString& opacitySynth, const QJsonArray& dataArray );
-    void onReceiveRequestDataAtTransferFunctionParameter( const QJsonArray& dataArray );
-    // FIXME:KPI
-    void onLoadParameter( const QString& filePath );
-    void onSaveParameter( const QString& filePath );
+    void reset();
 
 signals:
     void transferFunctionUpdate();
+    void updateLastSentTransferFunction( TransferFunction* lastSentTransferFunction );
+
+public slots:
+    void onOperatorStateUpdate( const bool operatorState ); // true: 権限有り, false: 権限無し
+
+    // NOTE:テキストソケット用
+    void onReceiveTransferFunctionParameter( const QJsonObject& payload );
+    void onReceiveRequestDataAtTransferFunctionParameter( const QJsonObject& payload );
+
+    void onLoadParameter( const QString& filePath ); // KPI
+    void onSaveParameter( const QString& filePath ); // KPI
 
 private:
-    Ui::TransferFunctionEditor *ui;
-    WebSocketPair* m_web_sockets = nullptr;
+    enum class UpdateTarget { Color, Opacity, Both };
 
-    bool m_is_operator;
+    Ui::TransferFunctionEditor *ui;
+
+    WebSocketPair* m_web_sockets          = nullptr;
+
+    bool m_is_operator                    = false;
 
     TransferFunction* m_transfer_function = nullptr;
 
-    VariableEditor m_variable_editor;
-    ColorMapEditor m_color_map_editor;
+    VariableEditor   m_variable_editor;
+    ColorMapEditor   m_color_map_editor;
     OpacityMapEditor m_opacity_map_editor;
 
-    void updateUI();
-    void clear();
-    void disable();
-    void enable();
-    void applyTransferFunction();
+    TransferFunction m_last_sent_tf;
+    bool m_has_last_sent = false;
+
+    void updateUIFromUserInput( UpdateTarget target );
+    void updateUIFromServer( UpdateTarget target );
+
+    template <class F>
+    void updateSelectedColorTransferFunction( QComboBox* combo, F&& func )
+    {
+        if( !m_transfer_function ) return;
+
+        const int idx = combo->currentIndex();
+        const int tfCount = static_cast<int>( m_transfer_function->count() );
+        if( idx < 0 || idx >= tfCount ) return;
+
+        auto& color = m_transfer_function->at( static_cast<size_t>( idx ) ).color;
+        std::forward<F>(func)( color );
+    }
+
+    template <class F>
+    void updateSelectedOpacityTransferFunction( QComboBox* combo, F&& func )
+    {
+        if( !m_transfer_function ) return;
+
+        const int idx = combo->currentIndex();
+        const int tfCount = static_cast<int>( m_transfer_function->count() );
+        if( idx < 0 || idx >= tfCount ) return;
+
+        auto& opacity = m_transfer_function->at( static_cast<size_t>( idx ) ).opacity;
+        std::forward<F>(func)( opacity );
+    }
 
 private slots:
     void onNumberOfTransferFunctionValueChanged( const int numberOfTransferFunction );
-
+    // Color
     void onColorSynthesizerChanged( const QString &colorSynthesizer );
     void onColorComboBoxChanged();
     void onColorFunctionVariableChanged( const QString &colorFunctionVariable );
     void onColorFunctionVariableEditorClicked();
     void onColorRangeModeRadioButtonClicked();
-    void onColorUserDefinedMinChanged( const double &colorUserDefinedMin );
-    void onColorUserDefinedMaxChanged( const double &colorUserDefinedMax );
+    void onColorUserDefinedMinChanged( const double colorUserDefinedMin );
+    void onColorUserDefinedMaxChanged( const double colorUserDefinedMax );
     void onColorMapEditorClicked();
 
+    // Opacity
     void onOpacitySynthesizerChanged( const QString &opacitySynthesizer );
     void onOpacityComboBoxChanged();
     void onOpacityFunctionVariableChanged( const QString &opacityFunctionVariable );
     void onOpacityRangeModeRadioButtonClicked();
     void onOpacityFunctionVariableEditorClicked();
-    void onOpacityUserDefinedMinChanged( const double &opacityUserDefinedMin );
-    void onOpacityUserDefinedMaxChanged( const double &opacityUserDefinedMax );
+    void onOpacityUserDefinedMinChanged( const double opacityUserDefinedMin );
+    void onOpacityUserDefinedMaxChanged( const double opacityUserDefinedMax );
     void onOpacityMapEditorClicked();
 
     void onExport();

@@ -3,14 +3,11 @@
 
 #include <QDockWidget>
 #include <QFileDialog>
-#include <QMessageBox>
 
-#include "Screen.h"
-#include <kvs/PolygonObject>
-#include <kvs/StochasticPolygonRenderer>
+#include "Screen.h" // <kvs/qt/Screen>
 
-#include "WebSocketPair.h"
 #include "VizMode.h"
+#include "WebSocketPair.h"
 
 #include "../../Shared/JsonKeys.h"
 #include "../../Shared/ObjectInfoExtractor.h"
@@ -25,39 +22,45 @@ class Communication : public QDockWidget
     Q_OBJECT
 
 public:
-    explicit Communication( kvs::qt::jaea::Screen* screen, WebSocketPair* websockets, Viz::Mode* vizMode, QWidget *parent = nullptr );
+    explicit Communication( kvs::qt::jaea::Screen* screen, WebSocketPair* webSockets, Viz::Mode* vizMode, QWidget *parent = nullptr );
     ~Communication();
-
-public slots:
-    void onVRSharePoint( kvs::Real32 CoordArray[ 2 * 3 ], kvs::Real32 DirectionArray[ 3 ] );
-    // FIXME:KPI
-    void onLoadParameter( const QString& filePath );
-    void onSaveParameter( const QString& filePath );
 
 signals:
     void updateStatusBarMessage( const QString& message );
-    void updateServerState( bool serverState );     // true:接続中
-    void updateOperatorState( bool operatorState ); // true:権限あり
-    void requestDataAt( const QJsonObject& dataArray );
-    void receiveRequestDataAtTransferFunctionParameter( const QJsonArray& dataArray );
-    void receiveRequestDataAtPlotOverLineParameter( const QJsonObject& dataArray );
-    void receiveInitializeTransferFunctionParameter( const QString& colorSynth, const QString& opacitySynth, const QJsonArray& dataArray );
-    void receiveInitializeGlyphParameter( const QJsonObject& dataArray );
-    void receiveInitializePlotOverLineParameter( const QJsonObject& dataArray );
-    void receiveSelectedFile( const QJsonObject& dataArray );
-    void receiveObjectDelete( const QJsonObject& dataArray );
+    void updateServerState( const bool serverState );     // true: 接続中 , false: 未接続
+    void updateOperatorState( const bool operatorState ); // true: 権限有り, false: 権限無し
+
+    // NOTE:バイナリソケット用
     void unpack( const QByteArray& binary );
-    void receiveTimeStepControlParameter( const QJsonObject& timeStepControlParameter );
-    void receiveGlyphParameter( const QJsonObject& dataArray );
-    void receiveObjectInfoParameter( const QJsonObject& dataArray );
-    void receivePlotOverLineParameter( const QJsonObject& dataArray );
-    void receiveTransferFunctionParameter( const QString& colorSynth, const QString& opacitySynth, const QJsonArray& dataArray );
-    void updateMaxTimeStep( const int latest );
+
+    // NOTE:テキストソケット用
+    void receiveTimeStepControlParameter ( const QJsonObject& payload );
+    void receiveGlyphParameter           ( const QJsonObject& payload );
+    void receiveObjectInfoParameter      ( const QJsonObject& payload );
+    void receivePlotOverLineParameter    ( const QJsonObject& payload );
+    void receiveTransferFunctionParameter( const QJsonObject& payload );
+
+    // NOTE:時系列更新用
+    void receiveRequestDataAtTransferFunctionParameter( const QJsonObject& payload );
+
+    void receiveSelectedFile( const QJsonObject& payload );
+    void receiveObjectDelete( const QJsonObject& payload );
+
+    // NOTE:In-Situ用オブジェクトのタイムステップが更新されたときの受信
+    void updateObjectLatestTimeStep( const QJsonObject& payload );
+
+public slots:
+    // void onVRSharePoint( kvs::Real32 CoordArray[ 2 * 3 ], kvs::Real32 DirectionArray[ 3 ] );
+    void onLoadParameter( const QString& filePath ); // KPI
+    void onSaveParameter( const QString& filePath ); // KPI
 
 private:
+    static constexpr const char* k_not_connected_text = "Not connected.";
+
     Ui::Communication *ui;
 
     kvs::qt::jaea::Screen* m_screen = nullptr;
+
     WebSocketPair* m_web_sockets    = nullptr;
     Viz::Mode* m_viz_mode           = nullptr;
 
@@ -65,20 +68,25 @@ private:
     int m_user_id                   = -1;
     bool m_is_operator              = false;
 
-    void websocketConnected();
-    void websocketDisconnected();
+    void webSocketConnected();
+    void webSocketDisconnected();
+
     void updateVizMode();
 
-    void Join( const QJsonObject& dataArray );
-    void Left( const QJsonObject& dataArray );
-    void ID( const QJsonObject& dataArray );
-    void Operator( const QJsonObject& dataArray );
-    void transferOperator( const QJsonObject& dataArray );
-    void chat( const QJsonObject& dataArray );
-    void shareView( const QJsonObject& dataArray );     // FIXME:実装部コメントアウトしてしあるので修正が必要です
-    void sharePoint( const QJsonObject& dataArray );    // FIXME:実装部コメントアウトしてしあるので修正が必要です
-    kvs::PolygonObject* createArrowGlyph( const kvs::ValueArray<kvs::Real32>& coords, const kvs::ValueArray<kvs::Real32>& directions, const kvs::ValueArray<kvs::Real32>& sizes, const kvs::ValueArray<kvs::UInt8>& colors );
-    // void convertObjectInfo( const QJsonObject& dataArray );
+    // NOTE:テキストソケット用
+    // NOTE:メッセージ受信時Communicationクラスが処理を担当する部分
+    void receiveJoin            ( const QJsonObject& payload );
+    void receiveLeft            ( const QJsonObject& payload );
+    void receiveID              ( const QJsonObject& payload );
+    void receiveOperator        ( const QJsonObject& payload );
+    void receiveTransferOperator( const QJsonObject& payload );
+    void receiveChat            ( const QJsonObject& payload );
+    void receiveShareView       ( const QJsonObject& payload ); // FIXME:実装部コメントアウト中(使用する場合は解除)
+    void receiveSharePoint      ( const QJsonObject& payload ); // FIXME:実装部コメントアウト中(使用する場合は解除)
+    kvs::PolygonObject* createArrowGlyph( const kvs::ValueArray<kvs::Real32>& coords,
+                                         const kvs::ValueArray<kvs::Real32>& directions,
+                                         const kvs::ValueArray<kvs::Real32>& sizes,
+                                         const kvs::ValueArray<kvs::UInt8>& colors ); // FIXME:通信処理(Communication)の責務を超えているため、Utilsへ移動してください
 
 private slots:
     void onModeClicked();
@@ -86,16 +94,17 @@ private slots:
     void onTransferFunctionFilePathClicked();
     void onConnectClicked();
     void onDisconnectClicked();
+
     void onTransferOperator();
-    void onChatClicked();
+    void onSendChatMessage();
     void onShareView();
 
-    void onBinaryWebsocketConnected();
-    void onBinaryWebsocketDisconnected();
-    void onBinaryWebsocketMessageReceived( const QByteArray& binary );
-    void onTextWebsocketConnected();
-    void onTextWebsocketDisconnected();
-    void onTextWebsocketMessageReceived( const QString& receivedMessage );
+    void onBinaryWebSocketConnected();
+    void onBinaryWebSocketDisconnected();
+    void onBinaryWebSocketMessageReceived( const QByteArray& binary );
+    void onTextWebSocketConnected();
+    void onTextWebSocketDisconnected();
+    void onTextWebSocketMessageReceived( const QString& receivedMessage );
 };
 
 #endif // COMMUNICATION_H

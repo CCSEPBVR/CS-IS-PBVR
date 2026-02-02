@@ -78,6 +78,8 @@ inline constexpr std::string_view CurrentImportedTimeStep   = "CurrentImportedTi
 inline constexpr std::string_view NeedSameTimeStepReplace   = "NeedSameTimeStepReplace";
 
 // TransferFunctionEditor
+inline constexpr std::string_view NumberOfTransferFunction  = "NumberOfTransferFunction";
+inline constexpr std::string_view Index                     = "Index";
 inline constexpr std::string_view Data                      = "Data";
 inline constexpr std::string_view ColorSynthesizer          = "ColorSynthesizer";
 inline constexpr std::string_view OpacitySynthesizer        = "OpacitySynthesizer";

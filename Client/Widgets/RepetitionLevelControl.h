@@ -3,9 +3,10 @@
 
 #include <QDockWidget>
 
-#include "Screen.h"
-#include <kvs/StochasticRenderingCompositor>
 #include <kvs/ParticleBasedRenderer>
+#include <kvs/PointObject>
+#include <kvs/StochasticRenderingCompositor>
+#include "Screen.h" // <kvs/qt/Screen>
 
 namespace Ui
 {
@@ -20,14 +21,13 @@ public:
     explicit RepetitionLevelControl( kvs::qt::jaea::Screen* screen, kvs::StochasticRenderingCompositor* compositor, QWidget *parent = nullptr );
     ~RepetitionLevelControl();
 
-public slots:
-    void onUpdateCurrentRepetitionLevel();
-    // FIXME:KPI
-    void onLoadParameter( const QString& filePath );
-    void onSaveParameter( const QString& filePath );
-
 signals:
     void shading( kvs::RendererBase* rendererBase );
+
+public slots:
+    void onUpdateCurrentRepetitionLevel();
+    void onLoadParameter( const QString& filePath ); // KPI
+    void onSaveParameter( const QString& filePath ); // KPI
 
 private:
     Ui::RepetitionLevelControl *ui;

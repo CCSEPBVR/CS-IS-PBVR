@@ -1,6 +1,11 @@
 #include "TransferFunctionEditor.h"
 #include "ui_TransferFunctionEditor.h"
 
+#include <QJsonDocument>
+#include <QJsonArray>
+#include <QDebug>
+#include <QtGlobal>
+
 TransferFunctionEditor::TransferFunctionEditor( WebSocketPair* websockets, QWidget *parent )
     : QDialog( parent )
     , ui( new Ui::TransferFunctionEditor )
@@ -8,40 +13,39 @@ TransferFunctionEditor::TransferFunctionEditor( WebSocketPair* websockets, QWidg
     , m_is_operator( false )
     , m_transfer_function( new TransferFunction() )
 {
-    ui->setupUi( this );
+    ui->setupUi(this);
 
-    ui->numberOfTransferFunctionSpinBox->setMaximum( 16 ); // FIXME:旧サーバ(WebSocket対応前のサーバでは伝達関数の最大値が17を超えるとクラッシュするという不具合があったはずです)
+    // FIXME:旧サーバ(WebSocket対応前)のサーバで伝達関数が17を以上になるとクラッシュする不具合があった記憶があります
+    ui->numberOfTransferFunctionSpinBox->setMaximum( 16 );
 
-    ui->colorMap->setColors( toQVectorColors( std::vector<kvs::RGBColor>( 256, kvs::RGBColor( 0, 0, 0 ) ) ) );
+    ui->colorMap  ->setColors( toQVectorColors( std::vector<kvs::RGBColor>( 256, kvs::RGBColor( 0, 0, 0 ) ) ) );
     ui->opacityMap->setOpacities( toQVectorOpacities( std::vector<float>( 256, 0 ) ) );
 
-    connect( ui->numberOfTransferFunctionSpinBox        , &QSpinBox::valueChanged           , this, &TransferFunctionEditor::onNumberOfTransferFunctionValueChanged );
+    connect( ui->numberOfTransferFunctionSpinBox        , &QSpinBox::valueChanged        , this, &TransferFunctionEditor::onNumberOfTransferFunctionValueChanged );
 
-    connect( ui->colorSynthesizerLineEdit               , &QLineEdit::textChanged           , this, &TransferFunctionEditor::onColorSynthesizerChanged );
-    connect( ui->colorFunctionComboBox                  , &QComboBox::currentIndexChanged   , this, &TransferFunctionEditor::onColorComboBoxChanged );
-    connect( ui->colorFunctionVariableLineEdit          , &QLineEdit::textChanged           , this, &TransferFunctionEditor::onColorFunctionVariableChanged );
-    connect( ui->colorFunctionVariableEditorPushButton  , &QPushButton::clicked             , this, &TransferFunctionEditor::onColorFunctionVariableEditorClicked );
-    connect( ui->colorUserDefinedMinMaxRadioButton      , &QRadioButton::clicked            , this, &TransferFunctionEditor::onColorRangeModeRadioButtonClicked );
-    connect( ui->colorServerSideMinMaxRadioButton       , &QRadioButton::clicked            , this, &TransferFunctionEditor::onColorRangeModeRadioButtonClicked );
-    connect( ui->colorUserDefinedMinDoubleSpinBox       , &QDoubleSpinBox::valueChanged     , this, &TransferFunctionEditor::onColorUserDefinedMinChanged );
-    connect( ui->colorUserDefinedMaxDoubleSpinBox       , &QDoubleSpinBox::valueChanged     , this, &TransferFunctionEditor::onColorUserDefinedMaxChanged );
-    connect( ui->colorMapEditPushButton                 , &QPushButton::clicked             , this, &TransferFunctionEditor::onColorMapEditorClicked );
+    connect( ui->colorSynthesizerLineEdit               , &QLineEdit::textChanged        , this, &TransferFunctionEditor::onColorSynthesizerChanged );
+    connect( ui->colorFunctionComboBox                  , &QComboBox::currentIndexChanged, this, &TransferFunctionEditor::onColorComboBoxChanged );
+    connect( ui->colorFunctionVariableLineEdit          , &QLineEdit::textChanged        , this, &TransferFunctionEditor::onColorFunctionVariableChanged );
+    connect( ui->colorFunctionVariableEditorPushButton  , &QPushButton::clicked          , this, &TransferFunctionEditor::onColorFunctionVariableEditorClicked );
+    connect( ui->colorUserDefinedMinMaxRadioButton      , &QRadioButton::clicked         , this, &TransferFunctionEditor::onColorRangeModeRadioButtonClicked );
+    connect( ui->colorServerSideMinMaxRadioButton       , &QRadioButton::clicked         , this, &TransferFunctionEditor::onColorRangeModeRadioButtonClicked );
+    connect( ui->colorUserDefinedMinDoubleSpinBox       , &QDoubleSpinBox::valueChanged  , this, &TransferFunctionEditor::onColorUserDefinedMinChanged );
+    connect( ui->colorUserDefinedMaxDoubleSpinBox       , &QDoubleSpinBox::valueChanged  , this, &TransferFunctionEditor::onColorUserDefinedMaxChanged );
+    connect( ui->colorMapEditPushButton                 , &QPushButton::clicked          , this, &TransferFunctionEditor::onColorMapEditorClicked );
 
-    connect( ui->opacitySynthesizerLineEdit             , &QLineEdit::textChanged           , this, &TransferFunctionEditor::onOpacitySynthesizerChanged );
-    connect( ui->opacityFunctionComboBox                , &QComboBox::currentIndexChanged   , this, &TransferFunctionEditor::onOpacityComboBoxChanged );
-    connect( ui->opacityFunctionVariableLineEdit        , &QLineEdit::textChanged           , this, &TransferFunctionEditor::onOpacityFunctionVariableChanged );
-    connect( ui->opacityFunctionVariableEditorPushButton, &QPushButton::clicked             , this, &TransferFunctionEditor::onOpacityFunctionVariableEditorClicked );
-    connect( ui->opacityUserDefinedMinMaxRadioButton    , &QRadioButton::clicked            , this, &TransferFunctionEditor::onOpacityRangeModeRadioButtonClicked );
-    connect( ui->opacityServerSideMinMaxRadioButton     , &QRadioButton::clicked            , this, &TransferFunctionEditor::onOpacityRangeModeRadioButtonClicked );
-    connect( ui->opacityUserDefinedMinDoubleSpinBox     , &QDoubleSpinBox::valueChanged     , this, &TransferFunctionEditor::onOpacityUserDefinedMinChanged );
-    connect( ui->opacityUserDefinedMaxDoubleSpinBox     , &QDoubleSpinBox::valueChanged     , this, &TransferFunctionEditor::onOpacityUserDefinedMaxChanged );
-    connect( ui->opacityMapEditPushButton               , &QPushButton::clicked             , this, &TransferFunctionEditor::onOpacityMapEditorClicked );
+    connect( ui->opacitySynthesizerLineEdit             , &QLineEdit::textChanged        , this, &TransferFunctionEditor::onOpacitySynthesizerChanged );
+    connect( ui->opacityFunctionComboBox                , &QComboBox::currentIndexChanged, this, &TransferFunctionEditor::onOpacityComboBoxChanged );
+    connect( ui->opacityFunctionVariableLineEdit        , &QLineEdit::textChanged        , this, &TransferFunctionEditor::onOpacityFunctionVariableChanged );
+    connect( ui->opacityFunctionVariableEditorPushButton, &QPushButton::clicked          , this, &TransferFunctionEditor::onOpacityFunctionVariableEditorClicked );
+    connect( ui->opacityUserDefinedMinMaxRadioButton    , &QRadioButton::clicked         , this, &TransferFunctionEditor::onOpacityRangeModeRadioButtonClicked );
+    connect( ui->opacityServerSideMinMaxRadioButton     , &QRadioButton::clicked         , this, &TransferFunctionEditor::onOpacityRangeModeRadioButtonClicked );
+    connect( ui->opacityUserDefinedMinDoubleSpinBox     , &QDoubleSpinBox::valueChanged  , this, &TransferFunctionEditor::onOpacityUserDefinedMinChanged );
+    connect( ui->opacityUserDefinedMaxDoubleSpinBox     , &QDoubleSpinBox::valueChanged  , this, &TransferFunctionEditor::onOpacityUserDefinedMaxChanged );
+    connect( ui->opacityMapEditPushButton               , &QPushButton::clicked          , this, &TransferFunctionEditor::onOpacityMapEditorClicked );
 
-    connect( ui->exportPushButton                       , &QPushButton::clicked             , this, &TransferFunctionEditor::onExport );
-    connect( ui->importPushButton                       , &QPushButton::clicked             , this, &TransferFunctionEditor::onImport );
-    connect( ui->applyPushButton                        , &QPushButton::clicked             , this, &TransferFunctionEditor::onApply );
-
-    updateUI();
+    connect( ui->exportPushButton                       , &QPushButton::clicked          , this, &TransferFunctionEditor::onExport );
+    connect( ui->importPushButton                       , &QPushButton::clicked          , this, &TransferFunctionEditor::onImport );
+    connect( ui->applyPushButton                        , &QPushButton::clicked          , this, &TransferFunctionEditor::onApply );
 }
 
 TransferFunctionEditor::~TransferFunctionEditor()
@@ -49,190 +53,400 @@ TransferFunctionEditor::~TransferFunctionEditor()
     delete ui;
 }
 
-void TransferFunctionEditor::onOperatorStateUpdate( bool operatorState )
+void TransferFunctionEditor::reset()
+{
+}
+
+void TransferFunctionEditor::onOperatorStateUpdate( const bool operatorState )
 {
     m_is_operator = operatorState;
-    updateUI();
+
+    ui->numberOfTransferFunctionSpinBox->setEnabled( m_is_operator );
+
+    ui->colorSynthesizerLineEdit             ->setEnabled( m_is_operator );
+    ui->colorFunctionVariableLineEdit        ->setEnabled( m_is_operator );
+    ui->colorFunctionVariableEditorPushButton->setEnabled( m_is_operator );
+    ui->colorUserDefinedMinMaxRadioButton    ->setEnabled( m_is_operator );
+    ui->colorServerSideMinMaxRadioButton     ->setEnabled( m_is_operator );
+    ui->colorUserDefinedMinDoubleSpinBox     ->setEnabled( m_is_operator );
+    ui->colorUserDefinedMaxDoubleSpinBox     ->setEnabled( m_is_operator );
+    ui->colorMapEditPushButton               ->setEnabled( m_is_operator );
+
+    ui->opacitySynthesizerLineEdit             ->setEnabled( m_is_operator );
+    ui->opacityFunctionVariableLineEdit        ->setEnabled( m_is_operator );
+    ui->opacityFunctionVariableEditorPushButton->setEnabled( m_is_operator );
+    ui->opacityUserDefinedMinMaxRadioButton    ->setEnabled( m_is_operator );
+    ui->opacityServerSideMinMaxRadioButton     ->setEnabled( m_is_operator );
+    ui->opacityUserDefinedMinDoubleSpinBox     ->setEnabled( m_is_operator );
+    ui->opacityUserDefinedMaxDoubleSpinBox     ->setEnabled( m_is_operator );
+    ui->opacityMapEditPushButton               ->setEnabled( m_is_operator );
+
+    ui->exportPushButton                       ->setEnabled( m_is_operator );
+    ui->importPushButton                       ->setEnabled( m_is_operator );
+    ui->applyPushButton                        ->setEnabled( m_is_operator );
 }
 
-void TransferFunctionEditor::onReset()
+void TransferFunctionEditor::onReceiveTransferFunctionParameter( const QJsonObject& payload )
 {
-    ui->numberOfTransferFunctionSpinBox->setValue( 0 );
-}
+    // NOTE:初回導通時に送られてくる初期伝達関数
+    if( !m_transfer_function ) { return; }
 
-void TransferFunctionEditor::onReceiveInitializeTransferFunctionParameter( const QString& colorSynth, const QString& opacitySynth, const QJsonArray& dataArray )
-{
-    ui->numberOfTransferFunctionSpinBox->setValue( dataArray.size() );
+    const auto kTFNumber              = QString::fromUtf8( "TFNumber" );
+    const auto kColorSynthesizer      = QString::fromUtf8( Protocol::Key::ColorSynthesizer );
+    const auto kOpacitySynthesizer    = QString::fromUtf8( Protocol::Key::OpacitySynthesizer );
+    const auto kData                  = QString::fromUtf8( Protocol::Key::Data );
 
-    // Synthesizer 情報を UI に反映
-    ui->colorSynthesizerLineEdit->setText( colorSynth );
-    ui->opacitySynthesizerLineEdit->setText( opacitySynth );
+    const auto kColorVariable         = QString::fromUtf8( Protocol::Key::ColorVariable );
+    const auto kColorRangeMode        = QString::fromUtf8( Protocol::Key::ColorRangeMode );
+    const auto kColorUserRangeMin     = QString::fromUtf8( Protocol::Key::ColorUserRangeMin );
+    const auto kColorUserRangeMax     = QString::fromUtf8( Protocol::Key::ColorUserRangeMax );
+    const auto kColorServerRangeMin   = QString::fromUtf8( Protocol::Key::ColorServerRangeMin );
+    const auto kColorServerRangeMax   = QString::fromUtf8( Protocol::Key::ColorServerRangeMax );
+    const auto kColorMap              = QString::fromUtf8( Protocol::Key::ColorMap );
+    const auto kColorHistogram        = QString::fromUtf8( Protocol::Key::ColorHistogram );
 
-    for( int i = 0; i < dataArray.size(); ++i )
+    const auto kOpacityVariable       = QString::fromUtf8( Protocol::Key::OpacityVariable );
+    const auto kOpacityRangeMode      = QString::fromUtf8( Protocol::Key::OpacityRangeMode );
+    const auto kOpacityUserRangeMin   = QString::fromUtf8( Protocol::Key::OpacityUserRangeMin );
+    const auto kOpacityUserRangeMax   = QString::fromUtf8( Protocol::Key::OpacityUserRangeMax );
+    const auto kOpacityServerRangeMin = QString::fromUtf8( Protocol::Key::OpacityServerRangeMin );
+    const auto kOpacityServerRangeMax = QString::fromUtf8( Protocol::Key::OpacityServerRangeMax );
+    const auto kOpacityMap            = QString::fromUtf8( Protocol::Key::OpacityMap );
+    const auto kOpacityHistogram      = QString::fromUtf8( Protocol::Key::OpacityHistogram );
+
+    if( payload.contains( kTFNumber ) )
     {
-        QJsonObject tf = dataArray[i].toObject();
+        ui->numberOfTransferFunctionSpinBox->setValue( payload.value( kTFNumber ).toInt() );
+    }
+
+    // Synthesizer
+    if( payload.contains( kColorSynthesizer ) )
+    {
+        m_transfer_function->setColorSynthesizer( payload.value( kColorSynthesizer ).toString().toUtf8().constData() );
+        ui->colorSynthesizerLineEdit->setText( QString::fromUtf8( m_transfer_function->colorSynthesizer() ) );
+    }
+
+    if( payload.contains( kOpacitySynthesizer ) )
+    {
+        m_transfer_function->setOpacitySynthesizer( payload.value( kOpacitySynthesizer ).toString().toUtf8().constData() );
+        ui->opacitySynthesizerLineEdit->setText( QString::fromUtf8( m_transfer_function->opacitySynthesizer() ) );
+    }
+
+    if( !payload.contains( kData ) || !payload.value( kData ).isArray() ) return;
+    const QJsonArray tfArray = payload.value( kData ).toArray();
+    const int tfNumber       = tfArray.size();
+
+    for( int i = 0; i < tfNumber; ++i )
+    {
+        const QJsonValue v = tfArray.at( i );
+        if( !v.isObject() ) continue;
+
+        const QJsonObject tf = v.toObject();
 
         // Color
-        m_transfer_function->at( i ).color.variable                 = tf.value( QString::fromUtf8( Protocol::Key::ColorVariable ) ).toString().toUtf8().constData();
-        m_transfer_function->at( i ).color.rangeMode                = static_cast<TransferFunction::RangeMode>( tf.value( QString::fromUtf8( Protocol::Key::ColorRangeMode ) ).toInt() );
-        m_transfer_function->at( i ).color.userDefinedMinMax.first  = tf.value( QString::fromUtf8( Protocol::Key::ColorUserRangeMin ) ).toDouble();
-        m_transfer_function->at( i ).color.userDefinedMinMax.second = tf.value( QString::fromUtf8( Protocol::Key::ColorUserRangeMax ) ).toDouble();
-        m_transfer_function->at( i ).color.serverSideMinMax.first   = tf.value( QString::fromUtf8( Protocol::Key::ColorServerRangeMin ) ).toDouble();
-        m_transfer_function->at( i ).color.serverSideMinMax.second  = tf.value( QString::fromUtf8( Protocol::Key::ColorServerRangeMax ) ).toDouble();
-
-        QJsonArray colorArr = tf.value( QString::fromUtf8( Protocol::Key::ColorMap ) ).toArray();
-        std::vector<kvs::RGBColor> colorMapTemp;
-        for( const QJsonValue& rgbVal : colorArr )
+        if( tf.contains( kColorVariable ) )
         {
-            QJsonArray rgb = rgbVal.toArray();
-            if( rgb.size() == 3 )
+            m_transfer_function->at( i ).color.variable = tf.value( kColorVariable ).toString().toUtf8().constData();
+        }
+        if( tf.contains( kColorRangeMode ) )
+        {
+            m_transfer_function->at( i ).color.rangeMode = static_cast<TransferFunction::RangeMode>( tf.value( kColorRangeMode ).toInt() );
+        }
+        if( tf.contains( kColorUserRangeMin ) )
+        {
+            m_transfer_function->at( i ).color.userDefinedMinMax.first = tf.value( kColorUserRangeMin ).toDouble();
+        }
+        if( tf.contains( kColorUserRangeMax ) )
+        {
+            m_transfer_function->at( i ).color.userDefinedMinMax.second = tf.value( kColorUserRangeMax ).toDouble();
+        }
+        if( tf.contains( kColorServerRangeMin ) )
+        {
+            m_transfer_function->at( i ).color.serverSideMinMax.first = tf.value( kColorServerRangeMin ).toDouble();
+        }
+        if( tf.contains( kColorServerRangeMax ) )
+        {
+            m_transfer_function->at( i ).color.serverSideMinMax.second = tf.value( kColorServerRangeMax ).toDouble();
+        }
+        if( tf.contains( kColorMap ) && tf.value( kColorMap ).isArray() )
+        {
+            const QJsonArray colorArr = tf.value( kColorMap ).toArray();
+
+            std::vector<kvs::RGBColor> colorMapTemp;
+            colorMapTemp.reserve( colorArr.size() );
+
+            for( const QJsonValue& rgbVal : colorArr )
             {
-                kvs::RGBColor color(
-                    static_cast<unsigned char>( rgb[0].toInt() ),
-                    static_cast<unsigned char>( rgb[1].toInt() ),
-                    static_cast<unsigned char>( rgb[2].toInt() )
-                    );
-                colorMapTemp.push_back( color );
+                if( !rgbVal.isArray() ) continue;
+                const QJsonArray rgb = rgbVal.toArray();
+                if( rgb.size() == 3 )
+                {
+                    kvs::RGBColor color(
+                        static_cast<unsigned char>( rgb[0].toInt() ),
+                        static_cast<unsigned char>( rgb[1].toInt() ),
+                        static_cast<unsigned char>( rgb[2].toInt() ) );
+                    colorMapTemp.push_back( color );
+                }
             }
+
+            m_transfer_function->at( i ).color.map = std::move( colorMapTemp );
         }
-        m_transfer_function->at( i ).color.map = colorMapTemp;
 
-        std::vector<int> colorHistogramTemp;
-        const QJsonArray colorHistArr =
-            tf.value( QString::fromUtf8( Protocol::Key::ColorHistogram ) ).toArray();
-        colorHistogramTemp.reserve( colorHistArr.size() );
-
-        for( const QJsonValue& v : colorHistArr )
+        if( tf.contains( kColorHistogram ) && tf.value( kColorHistogram ).isArray() )
         {
-            colorHistogramTemp.push_back( v.toInt() );
-        }
-        m_transfer_function->at( i ).color.histogram = colorHistogramTemp;
+            const QJsonArray colorHistArr = tf.value( kColorHistogram ).toArray();
 
-        // Opacity
-        m_transfer_function->at( i ).opacity.variable                 = tf.value( QString::fromUtf8( Protocol::Key::OpacityVariable ) ).toString().toUtf8().constData();
-        m_transfer_function->at( i ).opacity.rangeMode                = static_cast<TransferFunction::RangeMode>( tf.value( QString::fromUtf8( Protocol::Key::OpacityRangeMode ) ).toInt() );
-        m_transfer_function->at( i ).opacity.userDefinedMinMax.first  = tf.value( QString::fromUtf8( Protocol::Key::OpacityUserRangeMin ) ).toDouble();
-        m_transfer_function->at( i ).opacity.userDefinedMinMax.second = tf.value( QString::fromUtf8( Protocol::Key::OpacityUserRangeMax ) ).toDouble();
-        m_transfer_function->at( i ).opacity.serverSideMinMax.first   = tf.value( QString::fromUtf8( Protocol::Key::OpacityServerRangeMin ) ).toDouble();
-        m_transfer_function->at( i ).opacity.serverSideMinMax.second  = tf.value( QString::fromUtf8( Protocol::Key::OpacityServerRangeMax ) ).toDouble();
+            std::vector<int> colorHistogramTemp;
+            colorHistogramTemp.reserve( colorHistArr.size() );
 
-        QJsonArray opacityArr = tf.value( QString::fromUtf8( Protocol::Key::OpacityMap ) ).toArray();
-        std::vector<float> opacityMapTemp;
-        for( const QJsonValue& v : opacityArr )
-        {
-            opacityMapTemp.push_back( static_cast<float>( v.toDouble() ) );
-        }
-        m_transfer_function->at( i ).opacity.map = opacityMapTemp;
-
-        std::vector<int> opacityHistogramTemp;
-        const QJsonArray opacityHistArr =
-            tf.value( QString::fromUtf8( Protocol::Key::OpacityHistogram ) ).toArray();
-        opacityHistogramTemp.reserve( opacityHistArr.size() );
-
-        for( const QJsonValue& v : opacityHistArr )
-        {
-            opacityHistogramTemp.push_back( v.toInt() );
-        }
-        m_transfer_function->at( i ).opacity.histogram = opacityHistogramTemp;
-    }
-
-    updateUI();
-}
-
-void TransferFunctionEditor::onReceiveTransferFunctionParameter( const QString& colorSynth, const QString& opacitySynth, const QJsonArray& dataArray )
-{
-    ui->numberOfTransferFunctionSpinBox->setValue( dataArray.size() );
-
-    // Synthesizer 情報を UI に反映
-    ui->colorSynthesizerLineEdit->setText( colorSynth );
-    ui->opacitySynthesizerLineEdit->setText( opacitySynth );
-
-    for( int i = 0; i < dataArray.size(); ++i )
-    {
-        QJsonObject tf = dataArray[i].toObject();
-
-        // Color
-        m_transfer_function->at( i ).color.variable                 = tf.value( QString::fromUtf8( Protocol::Key::ColorVariable ) ).toString().toUtf8().constData();
-        m_transfer_function->at( i ).color.rangeMode                = static_cast<TransferFunction::RangeMode>( tf.value( QString::fromUtf8( Protocol::Key::ColorRangeMode ) ).toInt() );
-        m_transfer_function->at( i ).color.userDefinedMinMax.first  = tf.value( QString::fromUtf8( Protocol::Key::ColorUserRangeMin ) ).toDouble();
-        m_transfer_function->at( i ).color.userDefinedMinMax.second = tf.value( QString::fromUtf8( Protocol::Key::ColorUserRangeMax ) ).toDouble();
-        m_transfer_function->at( i ).color.serverSideMinMax.first   = tf.value( QString::fromUtf8( Protocol::Key::ColorServerRangeMin ) ).toDouble();
-        m_transfer_function->at( i ).color.serverSideMinMax.second  = tf.value( QString::fromUtf8( Protocol::Key::ColorServerRangeMax ) ).toDouble();
-
-        QJsonArray colorArr = tf.value( QString::fromUtf8( Protocol::Key::ColorMap ) ).toArray();
-        std::vector<kvs::RGBColor> colorMapTemp;
-        for( const QJsonValue& rgbVal : colorArr )
-        {
-            QJsonArray rgb = rgbVal.toArray();
-            if( rgb.size() == 3 )
+            for( const QJsonValue& hv : colorHistArr )
             {
-                kvs::RGBColor color(
-                    static_cast<unsigned char>( rgb[0].toInt() ),
-                    static_cast<unsigned char>( rgb[1].toInt() ),
-                    static_cast<unsigned char>( rgb[2].toInt() )
-                    );
-                colorMapTemp.push_back( color );
+                colorHistogramTemp.push_back( hv.toInt() );
             }
+
+            m_transfer_function->at( i ).color.histogram = std::move( colorHistogramTemp );
         }
-        m_transfer_function->at( i ).color.map = colorMapTemp;
 
         // Opacity
-        m_transfer_function->at( i ).opacity.variable                 = tf.value( QString::fromUtf8( Protocol::Key::OpacityVariable ) ).toString().toUtf8().constData();
-        m_transfer_function->at( i ).opacity.rangeMode                = static_cast<TransferFunction::RangeMode>( tf.value( QString::fromUtf8( Protocol::Key::OpacityRangeMode ) ).toInt() );
-        m_transfer_function->at( i ).opacity.userDefinedMinMax.first  = tf.value( QString::fromUtf8( Protocol::Key::OpacityUserRangeMin ) ).toDouble();
-        m_transfer_function->at( i ).opacity.userDefinedMinMax.second = tf.value( QString::fromUtf8( Protocol::Key::OpacityUserRangeMax ) ).toDouble();
-        m_transfer_function->at( i ).opacity.serverSideMinMax.first   = tf.value( QString::fromUtf8( Protocol::Key::OpacityServerRangeMin ) ).toDouble();
-        m_transfer_function->at( i ).opacity.serverSideMinMax.second  = tf.value( QString::fromUtf8( Protocol::Key::OpacityServerRangeMax ) ).toDouble();
-
-        QJsonArray opacityArr = tf.value( QString::fromUtf8( Protocol::Key::OpacityMap ) ).toArray();
-        std::vector<float> opacityMapTemp;
-        for( const QJsonValue& v : opacityArr )
+        if( tf.contains( kOpacityVariable ) )
         {
-            opacityMapTemp.push_back( static_cast<float>( v.toDouble() ) );
+            m_transfer_function->at( i ).opacity.variable = tf.value( kOpacityVariable ).toString().toUtf8().constData();
         }
-        m_transfer_function->at( i ).opacity.map = opacityMapTemp;
+        if( tf.contains( kOpacityRangeMode ) )
+        {
+            m_transfer_function->at( i ).opacity.rangeMode = static_cast<TransferFunction::RangeMode>( tf.value( kOpacityRangeMode ).toInt() );
+        }
+        if( tf.contains( kOpacityUserRangeMin ) )
+        {
+            m_transfer_function->at( i ).opacity.userDefinedMinMax.first = tf.value( kOpacityUserRangeMin ).toDouble();
+        }
+        if( tf.contains( kOpacityUserRangeMax ) )
+        {
+            m_transfer_function->at( i ).opacity.userDefinedMinMax.second = tf.value( kOpacityUserRangeMax ).toDouble();
+        }
+        if( tf.contains( kOpacityServerRangeMin ) )
+        {
+            m_transfer_function->at( i ).opacity.serverSideMinMax.first = tf.value( kOpacityServerRangeMin ).toDouble();
+        }
+        if( tf.contains( kOpacityServerRangeMax ) )
+        {
+            m_transfer_function->at( i ).opacity.serverSideMinMax.second = tf.value( kOpacityServerRangeMax ).toDouble();
+        }
+        if( tf.contains( kOpacityMap ) && tf.value( kOpacityMap ).isArray() )
+        {
+            const QJsonArray opacityArr = tf.value( kOpacityMap ).toArray();
+
+            std::vector<float> opacityMapTemp;
+            opacityMapTemp.reserve( opacityArr.size() );
+
+            for( const QJsonValue& ov : opacityArr )
+            {
+                opacityMapTemp.push_back( static_cast<float>( ov.toDouble() ) );
+            }
+
+            m_transfer_function->at( i ).opacity.map = std::move( opacityMapTemp );
+        }
+        if( tf.contains( kOpacityHistogram ) && tf.value( kOpacityHistogram ).isArray() )
+        {
+            const QJsonArray OpacityHistArr = tf.value( kOpacityHistogram ).toArray();
+
+            std::vector<int> OpacityHistogramTemp;
+            OpacityHistogramTemp.reserve( OpacityHistArr.size() );
+
+            for( const QJsonValue& hv : OpacityHistArr )
+            {
+                OpacityHistogramTemp.push_back( hv.toInt() );
+            }
+
+            m_transfer_function->at( i ).opacity.histogram = std::move( OpacityHistogramTemp );
+        }
     }
 
-    updateUI();
+    m_last_sent_tf = *m_transfer_function;
+    m_has_last_sent = true;
+
+    // NOTE:初回導通なので両UIを更新
+    updateUIFromUserInput( UpdateTarget::Both );
+    updateUIFromServer( UpdateTarget::Both );
 }
 
-void TransferFunctionEditor::onReceiveRequestDataAtTransferFunctionParameter( const QJsonArray& dataArray )
-{
-    const int n_tf   = m_transfer_function->count();
-    const int n_data = dataArray.size();
-    const int n_min  = std::min( n_tf, n_data );
+void TransferFunctionEditor::onReceiveRequestDataAtTransferFunctionParameter( const QJsonObject& payload )
+{    
+    // NOTE:時系列更新時に遅れてくる伝達関数
+    // UserRangeMode,UserRangeMin,UserRangeMaxはUIに反映しないColorMapSelectorで使用する
+    if( !m_transfer_function ) return;
 
-    for( int i = 0; i < n_min; ++i )
+    const auto kData                  = QString::fromUtf8( Protocol::Key::Data );
+
+    const auto kColorRangeMode        = QString::fromUtf8( Protocol::Key::ColorRangeMode );
+    const auto kColorUserRangeMin     = QString::fromUtf8( Protocol::Key::ColorUserRangeMin );
+    const auto kColorUserRangeMax     = QString::fromUtf8( Protocol::Key::ColorUserRangeMax );
+    const auto kColorServerRangeMin   = QString::fromUtf8( Protocol::Key::ColorServerRangeMin );
+    const auto kColorServerRangeMax   = QString::fromUtf8( Protocol::Key::ColorServerRangeMax );
+    const auto kColorMap              = QString::fromUtf8( Protocol::Key::ColorMap );
+    const auto kColorHistogram        = QString::fromUtf8( Protocol::Key::ColorHistogram );
+
+    const auto kOpacityRangeMode      = QString::fromUtf8( Protocol::Key::OpacityRangeMode );
+    const auto kOpacityUserRangeMin   = QString::fromUtf8( Protocol::Key::OpacityUserRangeMin );
+    const auto kOpacityUserRangeMax   = QString::fromUtf8( Protocol::Key::OpacityUserRangeMax );
+    const auto kOpacityServerRangeMin = QString::fromUtf8( Protocol::Key::OpacityServerRangeMin );
+    const auto kOpacityServerRangeMax = QString::fromUtf8( Protocol::Key::OpacityServerRangeMax );
+    const auto kOpacityHistogram      = QString::fromUtf8( Protocol::Key::OpacityHistogram );
+
+    if( !payload.contains( kData ) || !payload.value( kData ).isArray() ) return;
+    const QJsonArray tfArray = payload.value( kData ).toArray();
+    const int tfNumber       = tfArray.size();
+
+    const int colorIndex = ui->colorFunctionComboBox->currentIndex();
+    if( colorIndex < 0 || colorIndex >= tfNumber ) return;
+
+    TransferFunction legendBar;
+    // LegendBar用
+    for( int i = 0; i < tfNumber; ++i )
     {
-        const QJsonObject tf = dataArray[i].toObject();
+        const QJsonValue v = tfArray.at( i );
+        if( !v.isObject() ) continue;
+
+        const QJsonObject tf = v.toObject();
+
+        TransferFunction::Item item;
 
         // Color
-        m_transfer_function->at( i ).color.serverSideMinMax.first  = tf.value( QString::fromUtf8( Protocol::Key::ColorServerRangeMin ) ).toDouble();
-        m_transfer_function->at( i ).color.serverSideMinMax.second = tf.value( QString::fromUtf8( Protocol::Key::ColorServerRangeMax ) ).toDouble();
-
-        std::vector<int> colorHistogramTemp;
-        const QJsonArray colorHistArr = tf.value( QString::fromUtf8( Protocol::Key::ColorHistogram ) ).toArray();
-        colorHistogramTemp.reserve( colorHistArr.size() );
-        for( const QJsonValue& v : colorHistArr )
+        if( tf.contains( kColorRangeMode ) )
         {
-            colorHistogramTemp.push_back( v.toInt() );
+            item.color.rangeMode = static_cast<TransferFunction::RangeMode>( tf.value( kColorRangeMode ).toInt() );
         }
-        m_transfer_function->at( i ).color.histogram = std::move( colorHistogramTemp );
 
-        // Opacity
-        m_transfer_function->at( i ).opacity.serverSideMinMax.first  = tf.value( QString::fromUtf8( Protocol::Key::OpacityServerRangeMin ) ).toDouble();
-        m_transfer_function->at( i ).opacity.serverSideMinMax.second = tf.value( QString::fromUtf8( Protocol::Key::OpacityServerRangeMax ) ).toDouble();
-
-        std::vector<int> opacityHistogramTemp;
-        const QJsonArray opacityHistArr = tf.value( QString::fromUtf8( Protocol::Key::OpacityHistogram ) ).toArray();
-        opacityHistogramTemp.reserve( opacityHistArr.size() );
-        for( const QJsonValue& v : opacityHistArr )
+        if( tf.contains( kColorUserRangeMin ) )
         {
-            opacityHistogramTemp.push_back( v.toInt() );
+            item.color.userDefinedMinMax.first = tf.value( kColorUserRangeMin ).toDouble();
         }
-        m_transfer_function->at( i ).opacity.histogram = std::move( opacityHistogramTemp );
+
+        if( tf.contains( kColorUserRangeMax ) )
+        {
+            item.color.userDefinedMinMax.second = tf.value( kColorUserRangeMax ).toDouble();
+        }
+
+        if( tf.contains( kColorServerRangeMin ) )
+        {
+            item.color.serverSideMinMax.first = tf.value( kColorServerRangeMin ).toDouble();
+        }
+
+        if( tf.contains( kColorServerRangeMax ) )
+        {
+            item.color.serverSideMinMax.second = tf.value( kColorServerRangeMax ).toDouble();
+        }
+
+        if( tf.contains( kColorMap ) && tf.value( kColorMap ).isArray() )
+        {
+            const QJsonArray colorArr = tf.value( kColorMap ).toArray();
+
+            std::vector<kvs::RGBColor> colorMapTemp;
+            colorMapTemp.reserve( colorArr.size() );
+
+            for( const QJsonValue& rgbVal : colorArr )
+            {
+                if( !rgbVal.isArray() ) continue;
+                const QJsonArray rgb = rgbVal.toArray();
+                if( rgb.size() == 3 )
+                {
+                    kvs::RGBColor color(
+                        static_cast<unsigned char>( rgb[0].toInt() ),
+                        static_cast<unsigned char>( rgb[1].toInt() ),
+                        static_cast<unsigned char>( rgb[2].toInt() ) );
+                    colorMapTemp.push_back( color );
+                }
+            }
+
+            item.color.map = std::move( colorMapTemp );
+        }
+
+        legendBar.addTransferFunction( item );
     }
-    updateUI();
+
+    // NOTE:コンボボックスのアイテム分だけループする、それ以外は無視
+    for( int i = 0; i < ui->colorFunctionComboBox->count(); ++i )
+    {
+        const QJsonValue v = tfArray.at( i );
+        if( !v.isObject() ) continue;
+
+        const QJsonObject tf = v.toObject();
+
+        // Color
+        // if( tf.contains( kColorRangeMode ) )
+        // {
+        //     m_transfer_function->at( i ).color.rangeMode = static_cast<TransferFunction::RangeMode>( tf.value( kColorRangeMode ).toInt() );
+        // }
+
+        // if( tf.contains( kColorUserRangeMin ) )
+        // {
+        //     m_transfer_function->at( i ).color.userDefinedMinMax.first = tf.value( kColorUserRangeMin ).toDouble();
+        // }
+        // if( tf.contains( kColorUserRangeMax ) )
+        // {
+        //     m_transfer_function->at( i ).color.userDefinedMinMax.second = tf.value( kColorUserRangeMax ).toDouble();
+        // }
+        if( tf.contains( kColorServerRangeMin ) )
+        {
+            m_transfer_function->at( i ).color.serverSideMinMax.first = tf.value( kColorServerRangeMin ).toDouble();
+        }
+        if( tf.contains( kColorServerRangeMax ) )
+        {
+            m_transfer_function->at( i ).color.serverSideMinMax.second = tf.value( kColorServerRangeMax ).toDouble();
+        }
+        if( tf.contains( kColorHistogram ) && tf.value( kColorHistogram ).isArray() )
+        {
+            const QJsonArray colorHistArr = tf.value( kColorHistogram ).toArray();
+
+            std::vector<int> colorHistogramTemp;
+            colorHistogramTemp.reserve( colorHistArr.size() );
+
+            for( const QJsonValue& hv : colorHistArr )
+            {
+                colorHistogramTemp.push_back( hv.toInt() );
+            }
+
+            m_transfer_function->at( i ).color.histogram = std::move( colorHistogramTemp );
+        }
+        // Opacity
+        // if( tf.contains( kOpacityRangeMode ) )
+        // {
+        //     m_transfer_function->at( i ).opacity.rangeMode = static_cast<TransferFunction::RangeMode>( tf.value( kOpacityRangeMode ).toInt() );
+        // }
+
+        // if( tf.contains( kOpacityUserRangeMin ) )
+        // {
+        //     m_transfer_function->at( i ).opacity.userDefinedMinMax.first = tf.value( kOpacityUserRangeMin ).toDouble();
+        // }
+        // if( tf.contains( kOpacityUserRangeMax ) )
+        // {
+        //     m_transfer_function->at( i ).opacity.userDefinedMinMax.second = tf.value( kOpacityUserRangeMax ).toDouble();
+        // }
+        if( tf.contains( kOpacityServerRangeMin ) )
+        {
+            m_transfer_function->at( i ).opacity.serverSideMinMax.first = tf.value( kOpacityServerRangeMin ).toDouble();
+        }
+        if( tf.contains( kOpacityServerRangeMax ) )
+        {
+            m_transfer_function->at( i ).opacity.serverSideMinMax.second = tf.value( kOpacityServerRangeMax ).toDouble();
+        }
+        if( tf.contains( kOpacityHistogram ) && tf.value( kOpacityHistogram ).isArray() )
+        {
+            const QJsonArray OpacityHistArr = tf.value( kOpacityHistogram ).toArray();
+
+            std::vector<int> OpacityHistogramTemp;
+            OpacityHistogramTemp.reserve( OpacityHistArr.size() );
+
+            for( const QJsonValue& hv : OpacityHistArr )
+            {
+                OpacityHistogramTemp.push_back( hv.toInt() );
+            }
+
+            m_transfer_function->at( i ).opacity.histogram = std::move( OpacityHistogramTemp );
+        }
+    }
+    updateUIFromServer( UpdateTarget::Both );
+    updateLastSentTransferFunction( &legendBar );
 }
 
 void TransferFunctionEditor::onLoadParameter( const QString& filePath )
@@ -245,336 +459,203 @@ void TransferFunctionEditor::onSaveParameter( const QString& filePath )
     qDebug() << __FILE__ << ":" << __func__ << ":" << filePath;
 }
 
-void TransferFunctionEditor::updateUI()
+void TransferFunctionEditor::updateUIFromUserInput( UpdateTarget target )
 {
+    // NOTE:ユーザの操作によってのみ更新されるUI
     if( !m_transfer_function ) return;
 
-    if( m_transfer_function->count() == 0 )
-    {
-        clear();
-        disable();
-        if( m_is_operator )
-        {
-            ui->numberOfTransferFunctionSpinBox->setEnabled( true );
-            ui->importPushButton->setEnabled( true );
-        }
-        else
-        {
-            ui->numberOfTransferFunctionSpinBox->setEnabled( false );
-            ui->importPushButton->setEnabled( false );
-        }
-    }
-    else
-    {
-        if( m_is_operator )
-        {
-            enable();
-            ui->numberOfTransferFunctionSpinBox->setEnabled( true );
-            ui->importPushButton->setEnabled( true );
-        }
-        else
-        {
-            disable();
-            ui->numberOfTransferFunctionSpinBox->setEnabled( false );
-            ui->importPushButton->setEnabled( false );
-        }
-    }
+    const int tfCount = static_cast<int>( m_transfer_function->count() );
 
-    int colorIndex      = ui->colorFunctionComboBox->currentIndex();
-    int opacityIndex    = ui->opacityFunctionComboBox->currentIndex();
+    if( target == UpdateTarget::Color || target == UpdateTarget::Both )
+    { // Color
+        if( ui->colorFunctionComboBox->count() < tfCount ) return;
+        const int colorIndex = ui->colorFunctionComboBox->currentIndex();
+        if( colorIndex < 0 || colorIndex >= tfCount )
+        {
+            // コンボ操作でシグナルが飛んで再入しないようにする
+            const QSignalBlocker blocker( ui->colorFunctionComboBox );
 
-    // Color
-    if( colorIndex >= 0 && colorIndex < static_cast<int>( m_transfer_function->count() ) )
-    {
-        const auto& colorItem = m_transfer_function->at( colorIndex ).color;
-        ui->colorFunctionVariableLineEdit       ->setText( QString::fromUtf8( colorItem.variable ) );
-        ui->colorUserDefinedMinMaxRadioButton   ->setChecked( colorItem.rangeMode == TransferFunction::UserRange );
-        ui->colorServerSideMinMaxRadioButton    ->setChecked( colorItem.rangeMode == TransferFunction::ServerSide );
-        ui->colorUserDefinedMinDoubleSpinBox    ->setValue( colorItem.userDefinedMinMax.first );
-        ui->colorUserDefinedMaxDoubleSpinBox    ->setValue( colorItem.userDefinedMinMax.second );
-        ui->colorServerSideMinDoubleSpinBox     ->setValue( colorItem.serverSideMinMax.first );
-        ui->colorServerSideMaxDoubleSpinBox     ->setValue( colorItem.serverSideMinMax.second );
-        ui->colorMap                            ->setColors( toQVectorColors( colorItem.map ) );
-        ui->colorHistogram                      ->setDatas( colorItem.histogram );
+            ui->colorFunctionVariableLineEdit->clear();
+
+            ui->colorUserDefinedMinDoubleSpinBox->setValue( 0.0 );
+            ui->colorUserDefinedMaxDoubleSpinBox->setValue( 0.0 );
+            ui->colorServerSideMinDoubleSpinBox->setValue( 0.0 );
+            ui->colorServerSideMaxDoubleSpinBox->setValue( 0.0 );
+
+            ui->colorMap->setColors(
+                toQVectorColors(
+                    std::vector<kvs::RGBColor>( 256, kvs::RGBColor( 0, 0, 0 ) )
+                    )
+                );
+
+            ui->colorHistogram->setDatas( {} );
+            return;
+        }
+
+        const auto& c = m_transfer_function->at( static_cast<size_t>( colorIndex ) ).color;
+
+        ui->colorFunctionVariableLineEdit    ->setText( QString::fromStdString( c.variable ) );
+        ui->colorUserDefinedMinMaxRadioButton->setChecked( c.rangeMode == TransferFunction::UserRange );
+        ui->colorServerSideMinMaxRadioButton ->setChecked( c.rangeMode == TransferFunction::ServerSide );
+        ui->colorUserDefinedMinDoubleSpinBox ->setValue( c.userDefinedMinMax.first );
+        ui->colorUserDefinedMaxDoubleSpinBox ->setValue( c.userDefinedMinMax.second );
+        ui->colorMap                         ->setColors( toQVectorColors( c.map ) );
     }
+    if( target == UpdateTarget::Opacity || target == UpdateTarget::Both )
+    { // Opacity
+        if( ui->opacityFunctionComboBox->count() < tfCount ) return;
+        const int OpacityIndex = ui->opacityFunctionComboBox->currentIndex();
+        if( OpacityIndex < 0 || OpacityIndex >= tfCount )
+        {
+            // コンボ操作でシグナルが飛んで再入しないようにする
+            const QSignalBlocker blocker( ui->opacityFunctionComboBox );
 
-    // Opacity
-    if( opacityIndex >= 0 && opacityIndex < static_cast<int>( m_transfer_function->count() ) )
-    {
-        const auto& opacityItem = m_transfer_function->at( opacityIndex ).opacity;
-        ui->opacityFunctionVariableLineEdit     ->setText( QString::fromUtf8( opacityItem.variable ) );
-        ui->opacityUserDefinedMinMaxRadioButton ->setChecked( opacityItem.rangeMode == TransferFunction::UserRange );
-        ui->opacityServerSideMinMaxRadioButton  ->setChecked( opacityItem.rangeMode == TransferFunction::ServerSide );
-        ui->opacityUserDefinedMinDoubleSpinBox  ->setValue( opacityItem.userDefinedMinMax.first );
-        ui->opacityUserDefinedMaxDoubleSpinBox  ->setValue( opacityItem.userDefinedMinMax.second );
-        ui->opacityServerSideMinDoubleSpinBox   ->setValue( opacityItem.serverSideMinMax.first );
-        ui->opacityServerSideMaxDoubleSpinBox   ->setValue( opacityItem.serverSideMinMax.second );
-        ui->opacityMap                          ->setOpacities( toQVectorOpacities( opacityItem.map ) );
-        ui->opacityHistogram                    ->setDatas( opacityItem.histogram );
+            ui->opacityFunctionVariableLineEdit->clear();
+
+            ui->opacityUserDefinedMinDoubleSpinBox->setValue( 0.0 );
+            ui->opacityUserDefinedMaxDoubleSpinBox->setValue( 0.0 );
+            ui->opacityServerSideMinDoubleSpinBox->setValue( 0.0 );
+            ui->opacityServerSideMaxDoubleSpinBox->setValue( 0.0 );
+
+            ui->opacityMap->setOpacities( toQVectorOpacities( std::vector<float>( 256, 0 ) ) );
+
+            ui->opacityHistogram->setDatas( {} );
+            return;
+        }
+
+        const auto& o = m_transfer_function->at( static_cast<size_t>( OpacityIndex ) ).opacity;
+
+        ui->opacityFunctionVariableLineEdit    ->setText( QString::fromStdString( o.variable ) );
+        ui->opacityUserDefinedMinMaxRadioButton->setChecked( o.rangeMode == TransferFunction::UserRange );
+        ui->opacityServerSideMinMaxRadioButton ->setChecked( o.rangeMode == TransferFunction::ServerSide );
+        ui->opacityUserDefinedMinDoubleSpinBox ->setValue( o.userDefinedMinMax.first );
+        ui->opacityUserDefinedMaxDoubleSpinBox ->setValue( o.userDefinedMinMax.second );
+        ui->opacityMap                         ->setOpacities( toQVectorOpacities( o.map ) );
     }
 }
 
-void TransferFunctionEditor::clear()
+void TransferFunctionEditor::updateUIFromServer( UpdateTarget target )
 {
-    // Color
-    ui->colorSynthesizerLineEdit            ->clear();
-    ui->colorFunctionVariableLineEdit       ->clear();
+    // NOTE:時系列更新時によってのみ更新されるUI
+    if( !m_transfer_function ) return;
 
-    QButtonGroup* colorRadioButtonGroup = new QButtonGroup( this );
-    colorRadioButtonGroup                   ->setExclusive( false );
-    colorRadioButtonGroup                   ->addButton( ui->colorUserDefinedMinMaxRadioButton );
-    colorRadioButtonGroup                   ->addButton( ui->colorServerSideMinMaxRadioButton );
-    colorRadioButtonGroup                   ->setExclusive( true );
+    const int tfCount = static_cast<int>( m_transfer_function->count() );
 
-    ui->colorUserDefinedMinMaxRadioButton   ->setChecked( false );
-    ui->colorServerSideMinMaxRadioButton    ->setChecked( false );
-    ui->colorUserDefinedMinDoubleSpinBox    ->setValue( 0.0 );
-    ui->colorUserDefinedMaxDoubleSpinBox    ->setValue( 0.0 );
-    ui->colorServerSideMinDoubleSpinBox     ->setValue( 0.0 );
-    ui->colorServerSideMaxDoubleSpinBox     ->setValue( 0.0 );
-    ui->colorMap                            ->setColors( toQVectorColors( std::vector<kvs::RGBColor>( 256, kvs::RGBColor( 0, 0, 0 ) ) ) );
-    ui->colorHistogram                      ->setDatas( std::vector<int>( 256,  0 ) );
-
-    // Opacity
-    ui->opacitySynthesizerLineEdit          ->clear();
-    ui->opacityFunctionVariableLineEdit     ->clear();
-
-    QButtonGroup* opacityRadioButtonGroup = new QButtonGroup( this );
-    opacityRadioButtonGroup                 ->setExclusive( false );
-    opacityRadioButtonGroup                 ->addButton( ui->opacityUserDefinedMinMaxRadioButton );
-    opacityRadioButtonGroup                 ->addButton( ui->opacityServerSideMinMaxRadioButton );
-    opacityRadioButtonGroup                 ->setExclusive( true );
-
-    ui->opacityUserDefinedMinMaxRadioButton ->setChecked( false );
-    ui->opacityServerSideMinMaxRadioButton  ->setChecked( false );
-    ui->opacityUserDefinedMinDoubleSpinBox  ->setValue( 0.0 );
-    ui->opacityUserDefinedMaxDoubleSpinBox  ->setValue( 0.0 );
-    ui->opacityServerSideMinDoubleSpinBox   ->setValue( 0.0 );
-    ui->opacityServerSideMaxDoubleSpinBox   ->setValue( 0.0 );
-    ui->opacityMap                          ->setOpacities( toQVectorOpacities( std::vector<float>( 256, 0 ) ) );
-    ui->opacityHistogram                    ->setDatas( std::vector<int>( 256,  0 ) );
-}
-
-void TransferFunctionEditor::disable()
-{
-    ui->colorSynthesizerLineEdit                ->setEnabled( false );
-    ui->colorFunctionVariableLineEdit           ->setEnabled( false );
-    ui->colorFunctionVariableEditorPushButton   ->setEnabled( false );
-    ui->colorUserDefinedMinMaxRadioButton       ->setEnabled( false );
-    ui->colorServerSideMinMaxRadioButton        ->setEnabled( false );
-    ui->colorUserDefinedMinDoubleSpinBox        ->setEnabled( false );
-    ui->colorUserDefinedMaxDoubleSpinBox        ->setEnabled( false );
-    ui->colorServerSideMinDoubleSpinBox         ->setEnabled( false );
-    ui->colorServerSideMaxDoubleSpinBox         ->setEnabled( false );
-    ui->colorMapEditPushButton                  ->setEnabled( false );
-
-    ui->opacitySynthesizerLineEdit              ->setEnabled( false );
-    ui->opacityFunctionVariableLineEdit         ->setEnabled( false );
-    ui->opacityFunctionVariableEditorPushButton ->setEnabled( false );
-    ui->opacityUserDefinedMinMaxRadioButton     ->setEnabled( false );
-    ui->opacityServerSideMinMaxRadioButton      ->setEnabled( false );
-    ui->opacityUserDefinedMinDoubleSpinBox      ->setEnabled( false );
-    ui->opacityUserDefinedMaxDoubleSpinBox      ->setEnabled( false );
-    ui->opacityServerSideMinDoubleSpinBox       ->setEnabled( false );
-    ui->opacityServerSideMaxDoubleSpinBox       ->setEnabled( false );
-    ui->opacityMapEditPushButton                ->setEnabled( false );
-
-    ui->exportPushButton                        ->setEnabled( false );
-    ui->applyPushButton                         ->setEnabled( false );
-}
-
-void TransferFunctionEditor::enable()
-{
-    ui->colorSynthesizerLineEdit                ->setEnabled( true );
-    ui->colorFunctionVariableLineEdit           ->setEnabled( true );
-    ui->colorFunctionVariableEditorPushButton   ->setEnabled( true );
-    ui->colorUserDefinedMinMaxRadioButton       ->setEnabled( true );
-    ui->colorServerSideMinMaxRadioButton        ->setEnabled( true );
-    ui->colorUserDefinedMinDoubleSpinBox        ->setEnabled( true );
-    ui->colorUserDefinedMaxDoubleSpinBox        ->setEnabled( true );
-    ui->colorServerSideMinDoubleSpinBox         ->setEnabled( true );
-    ui->colorServerSideMaxDoubleSpinBox         ->setEnabled( true );
-    ui->colorMapEditPushButton                  ->setEnabled( true );
-
-    ui->opacitySynthesizerLineEdit              ->setEnabled( true );
-    ui->opacityFunctionVariableLineEdit         ->setEnabled( true );
-    ui->opacityFunctionVariableEditorPushButton ->setEnabled( true );
-    ui->opacityUserDefinedMinMaxRadioButton     ->setEnabled( true );
-    ui->opacityServerSideMinMaxRadioButton      ->setEnabled( true );
-    ui->opacityUserDefinedMinDoubleSpinBox      ->setEnabled( true );
-    ui->opacityUserDefinedMaxDoubleSpinBox      ->setEnabled( true );
-    ui->opacityServerSideMinDoubleSpinBox       ->setEnabled( true );
-    ui->opacityServerSideMaxDoubleSpinBox       ->setEnabled( true );
-    ui->opacityMapEditPushButton                ->setEnabled( true );
-
-    ui->exportPushButton                        ->setEnabled( true );
-    ui->applyPushButton                         ->setEnabled( true );
-}
-
-void TransferFunctionEditor::applyTransferFunction()
-{
-    // FIXME:差分更新(送信受信側)を実装してください
-    if( !m_web_sockets->isConnected() )
+     // Color
+    if( target == UpdateTarget::Color || target == UpdateTarget::Both )
     {
-        qDebug() << "Not connected";
-        return;
+        if( ui->colorFunctionComboBox->count() < tfCount ) return;
+        const int colorIndex = ui->colorFunctionComboBox->currentIndex();
+        if( colorIndex < 0 || colorIndex >= tfCount ) return;
+
+        const auto& c = m_transfer_function->at( static_cast<size_t>( colorIndex ) ).color;
+
+        ui->colorServerSideMinDoubleSpinBox->setValue( c.serverSideMinMax.first );
+        ui->colorServerSideMaxDoubleSpinBox->setValue( c.serverSideMinMax.second );
+        ui->colorHistogram                 ->setDatas( c.histogram );
     }
-
-    QJsonArray transferFunctionsArray;
-
-    for( int i = 0; i < m_transfer_function->count(); ++i )
+     // Opacity
+    if( target == UpdateTarget::Opacity || target == UpdateTarget::Both )
     {
-        QJsonObject tfObj;
-        // Color
-        const QString colorName = QStringLiteral( "C%1" ).arg( i + 1 );
-        tfObj[QString::fromUtf8( Protocol::Key::ColorFunction )]     = colorName;
-        tfObj[QString::fromUtf8( Protocol::Key::ColorVariable )]     = QString::fromUtf8( m_transfer_function->at( i ).color.variable );
-        tfObj[QString::fromUtf8( Protocol::Key::ColorRangeMode )]    = m_transfer_function->at( i ).color.rangeMode;
-        tfObj[QString::fromUtf8( Protocol::Key::ColorUserRangeMin )] = m_transfer_function->at( i ).color.userDefinedMinMax.first;
-        tfObj[QString::fromUtf8( Protocol::Key::ColorUserRangeMax )] = m_transfer_function->at( i ).color.userDefinedMinMax.second;
+        if( ui->opacityFunctionComboBox->count() < tfCount ) return;
+        const int opacityIndex = ui->opacityFunctionComboBox->currentIndex();
+        if( opacityIndex < 0 || opacityIndex >= tfCount ) return;
 
-        QJsonArray colorArray;
-        const auto& cmap = m_transfer_function->at( i ).color.map;
+        const auto& c = m_transfer_function->at( static_cast<size_t>( opacityIndex ) ).opacity;
 
-        for( const auto& c : cmap )
-        {
-            QJsonArray rgb;
-            rgb.append( c.red() );
-            rgb.append( c.green() );
-            rgb.append( c.blue() );
-            colorArray.append( rgb );
-        }
-
-        tfObj[QString::fromUtf8( Protocol::Key::ColorMap )] = colorArray;
-
-        // Opacity
-        const QString opacityName = QStringLiteral( "O%1" ).arg( i + 1 );
-        tfObj[QString::fromUtf8( Protocol::Key::OpacityFunction )]     = opacityName;
-        tfObj[QString::fromUtf8( Protocol::Key::OpacityVariable )]     = QString::fromUtf8( m_transfer_function->at( i ).opacity.variable );
-        tfObj[QString::fromUtf8( Protocol::Key::OpacityRangeMode )]    = m_transfer_function->at( i ).opacity.rangeMode;
-        tfObj[QString::fromUtf8( Protocol::Key::OpacityUserRangeMin )] = m_transfer_function->at( i ).opacity.userDefinedMinMax.first;
-        tfObj[QString::fromUtf8( Protocol::Key::OpacityUserRangeMax )] = m_transfer_function->at( i ).opacity.userDefinedMinMax.second;
-        QJsonArray opacityArray;
-        const auto& omap = m_transfer_function->at( i ).opacity.map;
-        for( float v : omap )
-        {
-            opacityArray.append( v );
-        }
-        tfObj[QString::fromUtf8( Protocol::Key::OpacityMap )] = opacityArray;
-        // -------------------------
-        transferFunctionsArray.append( tfObj );
-
-        const auto& testcmap = m_transfer_function->at(i).color.map;
-        const auto& testomap = m_transfer_function->at(i).opacity.map;
+        ui->opacityServerSideMinDoubleSpinBox->setValue( c.serverSideMinMax.first );
+        ui->opacityServerSideMaxDoubleSpinBox->setValue( c.serverSideMinMax.second );
+        ui->opacityHistogram                 ->setDatas( c.histogram );
     }
-
-    QJsonObject root;
-    root[QString::fromUtf8( Protocol::Key::Event )] = QString::fromUtf8( Protocol::Events::TransferFunctionParameter );
-    root[QString::fromUtf8( Protocol::Key::ColorSynthesizer )] = QString::fromUtf8( m_transfer_function->colorSynthesizer() );
-    root[QString::fromUtf8( Protocol::Key::OpacitySynthesizer )] = QString::fromUtf8( m_transfer_function->opacitySynthesizer() );
-    root[QString::fromUtf8( Protocol::Key::Data )] = transferFunctionsArray;
-    m_web_sockets->text()->sendTextMessage( QJsonDocument( root ).toJson( QJsonDocument::Compact ) );
-    emit transferFunctionUpdate();
 }
 
 void TransferFunctionEditor::onNumberOfTransferFunctionValueChanged( const int numberOfTransferFunction )
 {
     if( !m_transfer_function ) return;
 
-    int currentCount = static_cast<int>( m_transfer_function->count() );
+    constexpr int bins = 256;
 
-    if( numberOfTransferFunction > currentCount )
+    const int current = static_cast<int>( m_transfer_function->count() );
+    const int target  = numberOfTransferFunction;
+
+    auto makeDefaultItem = []() -> TransferFunction::Item
     {
-        // 追加
-        for( int i = 0; i < numberOfTransferFunction - currentCount; ++i )
+        TransferFunction::Item item;
+        item.color.variable            = "q1";
+        item.color.rangeMode           = TransferFunction::UserRange;
+        item.color.userDefinedMinMax   = { 0.0, 1.0 };
+        item.color.serverSideMinMax    = { 0.0, 1.0 };
+        item.color.map                 = toStdVectorColors( defaultColor() );
+        item.color.histogram           = std::vector<int>( bins, 0 );
+
+        item.opacity.variable          = "q1";
+        item.opacity.rangeMode         = TransferFunction::UserRange;
+        item.opacity.userDefinedMinMax = { 0.0, 1.0 };
+        item.opacity.serverSideMinMax  = { 0.0, 1.0 };
+        item.opacity.histogram         = std::vector<int>( bins, 0 );
+
+        item.opacity.map.resize( bins );
+        for( int i = 0; i < bins; ++i )
         {
-            TransferFunction::Item item;
+            item.opacity.map[i] = static_cast<float>( i ) / static_cast<float>( bins - 1 );
+        }
 
-            item.color.variable             = "q1";
-            item.color.rangeMode            = TransferFunction::UserRange;
-            item.color.userDefinedMinMax    = std::pair<double,double>( 0, 1 );
-            item.color.serverSideMinMax     = std::pair<double,double>( 0, 1 );
-            item.color.map                  = toStdVectorColors( defaultColor() );
-            item.color.histogram            = std::vector<int>( 256,  0 );
+        return item;
+    };
 
-            item.opacity.variable           = "q1";
-            item.opacity.rangeMode          = TransferFunction::UserRange;
-            item.opacity.userDefinedMinMax  = std::pair<double,double>( 0, 1 );
-            item.opacity.serverSideMinMax   = std::pair<double,double>( 0, 1 );
-            item.opacity.map.resize( 256 );
-            for( int i = 0; i < 256; ++i )
-            {
-                item.opacity.map[i] = static_cast<float>( i ) / 255.0f;
-            }
-            item.opacity.histogram          = std::vector<int>( 256,  0 );
-
-            m_transfer_function->addTransferFunction( item );
+    if( target > current )
+    {
+        const int add = target - current;
+        for( int i = 0; i < add; ++i )
+        {
+            m_transfer_function->addTransferFunction( makeDefaultItem() );
         }
     }
-    else if( numberOfTransferFunction < currentCount )
+    else if( target < current )
     {
-        // 削除
-        for( int i = 0; i < currentCount - numberOfTransferFunction; ++i )
+        const int remove = current - target;
+        for( int i = 0; i < remove; ++i )
         {
             m_transfer_function->removeTransferFunction( m_transfer_function->count() - 1 );
         }
     }
 
-    // 以下でコンボボックスの更新
-    ui->colorFunctionComboBox->blockSignals( true );
-    ui->opacityFunctionComboBox->blockSignals( true );
+    // NOTE:コンボボックスのアップデート
+    const int tfCount = static_cast<int>( m_transfer_function->count() );
 
-    size_t tfCount = m_transfer_function->count();
-
-    // Color
-    int currentColorIndex      = ui->colorFunctionComboBox->currentIndex();
-    int newColorMaxIndex       = static_cast<int>( tfCount ) - 1;
-
-    // 範囲から外れていれば丸める
-    if( currentColorIndex > newColorMaxIndex ) currentColorIndex = newColorMaxIndex;
-    if( currentColorIndex < 0 )                currentColorIndex = 0;
-
-    // アイテム削除
-    while( ui->colorFunctionComboBox->count() > static_cast<int>( tfCount ) )
+    auto syncCombo = [tfCount]( QComboBox* combo, const QString& prefix )
     {
-        ui->colorFunctionComboBox->removeItem( ui->colorFunctionComboBox->count() - 1 );
-    }
+        int index          = combo->currentIndex();
+        const int maxIndex = tfCount - 1;
 
-    // アイテム追加
-    for( size_t i = ui->colorFunctionComboBox->count(); i < tfCount; ++i )
-    {
-        ui->colorFunctionComboBox->addItem( QString( "C%1" ).arg( i + 1 ) );
-    }
+        if( tfCount <= 0 )
+        {
+            combo->clear();
+            combo->setCurrentIndex( -1 );
+            return;
+        }
 
-    // 選択復元
-    ui->colorFunctionComboBox->setCurrentIndex( currentColorIndex );
+        if( index > maxIndex ) index = maxIndex;
+        if( index < 0 )        index = 0;
 
-    // Opacity
-    int currentOpacityIndex    = ui->opacityFunctionComboBox->currentIndex();
-    int newOpacityMaxIndex     = static_cast<int>( tfCount ) - 1;
+        while( combo->count() > tfCount )
+        {
+            combo->removeItem( combo->count() - 1 );
+        }
 
-    if( currentOpacityIndex > newOpacityMaxIndex ) currentOpacityIndex = newOpacityMaxIndex;
-    if( currentOpacityIndex < 0 )                  currentOpacityIndex = 0;
+        for( int i = combo->count(); i < tfCount; ++i )
+        {
+            combo->addItem( QString( "%1%2" ).arg( prefix ).arg( i + 1 ) ); // NOTE:C1,C2... / O1,O2...
+        }
 
-    while( ui->opacityFunctionComboBox->count() > static_cast<int>( tfCount ) )
-    {
-        ui->opacityFunctionComboBox->removeItem( ui->opacityFunctionComboBox->count() - 1 );
-    }
+        combo->setCurrentIndex( index );
+    };
 
-    for( size_t i = ui->opacityFunctionComboBox->count(); i < tfCount; ++i )
-    {
-        ui->opacityFunctionComboBox->addItem( QString( "O%1" ).arg( i + 1 ) );
-    }
-
-    ui->opacityFunctionComboBox->setCurrentIndex( currentOpacityIndex );
-
-    ui->colorFunctionComboBox->blockSignals( false );
-    ui->opacityFunctionComboBox->blockSignals( false );
-
-    // UI更新
-    updateUI();    
+    syncCombo( ui->colorFunctionComboBox,   "C" );
+    syncCombo( ui->opacityFunctionComboBox, "O" );
 }
 
+// Color
 void TransferFunctionEditor::onColorSynthesizerChanged( const QString &colorSynthesizer )
 {
     if( !m_transfer_function ) return;
@@ -583,18 +664,16 @@ void TransferFunctionEditor::onColorSynthesizerChanged( const QString &colorSynt
 
 void TransferFunctionEditor::onColorComboBoxChanged()
 {
-    updateUI();
+    updateUIFromUserInput( UpdateTarget::Color );
+    updateUIFromServer( UpdateTarget::Color );
 }
 
-void TransferFunctionEditor::onColorFunctionVariableChanged( const QString &colorFunctionVariable )
+void TransferFunctionEditor::onColorFunctionVariableChanged( const QString& colorFunctionVariable )
 {
-    if( !m_transfer_function ) return;
-    int colorIndex = ui->colorFunctionComboBox->currentIndex();
-    if( colorIndex >= 0 && colorIndex < static_cast<int>( m_transfer_function->count() ) )
-    {
-        auto& colorItem = m_transfer_function->at( colorIndex ).color;
-        colorItem.variable = colorFunctionVariable.toUtf8().constData();
-    }
+    updateSelectedColorTransferFunction( ui->colorFunctionComboBox, [&]( TransferFunction::ColorTransferFunction& c )
+                                        {
+                                            c.variable = colorFunctionVariable.toUtf8().constData();
+                                        } );
 }
 
 void TransferFunctionEditor::onColorFunctionVariableEditorClicked()
@@ -612,74 +691,54 @@ void TransferFunctionEditor::onColorFunctionVariableEditorClicked()
             QStandardItemModel* model = m_variable_editor.model();
             for( int i = 0; i < model->rowCount(); ++i )
             {
-                QString var = model->item( i, 1 )->text(); // 1列目がVariable
+                QString var = model->item( i, 1 )->text();
                 if( i < static_cast<int>( m_transfer_function->count() ) )
                 {
                     auto& colorItem = m_transfer_function->at( i ).color;
                     colorItem.variable = var.toUtf8().constData();
                 }
             }
-            updateUI();
+            updateUIFromUserInput( UpdateTarget::Color );
         }
     }
 }
 
 void TransferFunctionEditor::onColorRangeModeRadioButtonClicked()
 {
-    if( !m_transfer_function ) return;
-    int colorIndex = ui->colorFunctionComboBox->currentIndex();
-    if( colorIndex >= 0 && colorIndex < static_cast<int>( m_transfer_function->count() ) )
-    {
-        auto& colorItem = m_transfer_function->at( colorIndex ).color;
-        if( ui->colorUserDefinedMinMaxRadioButton->isChecked() )
-        {
-            colorItem.rangeMode = TransferFunction::UserRange;
-        }
-        else
-        {
-            colorItem.rangeMode = TransferFunction::ServerSide;
-        }
-    }
+    updateSelectedColorTransferFunction( ui->colorFunctionComboBox, [&]( TransferFunction::ColorTransferFunction& c )
+                                        {
+                                            c.rangeMode = ui->colorUserDefinedMinMaxRadioButton->isChecked()
+                                            ? TransferFunction::UserRange
+                                            : TransferFunction::ServerSide;
+                                        } );
 }
 
-void TransferFunctionEditor::onColorUserDefinedMinChanged( const double &colorUserDefinedMin )
+void TransferFunctionEditor::onColorUserDefinedMinChanged( const double colorUserDefinedMin )
 {
-    if( !m_transfer_function ) return;
-    int colorIndex = ui->colorFunctionComboBox->currentIndex();
-    if( colorIndex >= 0 && colorIndex < static_cast<int>( m_transfer_function->count() ) )
-    {
-        auto& colorItem = m_transfer_function->at( colorIndex ).color;
-        colorItem.userDefinedMinMax.first = colorUserDefinedMin;
-    }
+    updateSelectedColorTransferFunction( ui->colorFunctionComboBox, [&]( auto& c ) { c.userDefinedMinMax.first = colorUserDefinedMin; } );
 }
 
-void TransferFunctionEditor::onColorUserDefinedMaxChanged( const double &colorUserDefinedMax )
+void TransferFunctionEditor::onColorUserDefinedMaxChanged( const double colorUserDefinedMax )
 {
-    if( !m_transfer_function ) return;
-    int colorIndex = ui->colorFunctionComboBox->currentIndex();
-    if( colorIndex >= 0 && colorIndex < static_cast<int>( m_transfer_function->count() ) )
-    {
-        auto& colorItem = m_transfer_function->at( colorIndex ).color;
-        colorItem.userDefinedMinMax.second = colorUserDefinedMax;
-    }
+    updateSelectedColorTransferFunction( ui->colorFunctionComboBox, [&]( auto& c ) { c.userDefinedMinMax.second = colorUserDefinedMax; } );
 }
 
 void TransferFunctionEditor::onColorMapEditorClicked()
 {
     if( !m_transfer_function ) return;
-    int colorIndex = ui->colorFunctionComboBox->currentIndex();
-    if( colorIndex >= 0 && colorIndex < static_cast<int>( m_transfer_function->count() ) )
-    {
-        m_color_map_editor.adjustSize();
-        m_color_map_editor.setDefaultColorMap( ui->colorMap->getColors() );
 
-        if( m_color_map_editor.exec() == QDialog::Accepted )
-        {
-            auto& colorItem = m_transfer_function->at( colorIndex ).color;
-            colorItem.map = toStdVectorColors( m_color_map_editor.getColorMap() );
-        }
-        updateUI();
+    m_color_map_editor.adjustSize();
+    m_color_map_editor.setDefaultColorMap( ui->colorMap->getColors() );
+
+    if( m_color_map_editor.exec() == QDialog::Accepted )
+    {
+        updateSelectedColorTransferFunction( ui->colorFunctionComboBox, [&]( auto& c )
+                                            {
+                                                c.map = toStdVectorColors( m_color_map_editor.getColorMap() );
+                                            } );
     }
+
+    updateUIFromUserInput( UpdateTarget::Color );
 }
 
 // Opacity
@@ -691,18 +750,16 @@ void TransferFunctionEditor::onOpacitySynthesizerChanged( const QString &opacity
 
 void TransferFunctionEditor::onOpacityComboBoxChanged()
 {
-    updateUI();
+    updateUIFromUserInput( UpdateTarget::Opacity );
+    updateUIFromServer( UpdateTarget::Opacity );
 }
 
-void TransferFunctionEditor::onOpacityFunctionVariableChanged( const QString &opacityFunctionVariable )
+void TransferFunctionEditor::onOpacityFunctionVariableChanged( const QString& opacityFunctionVariable )
 {
-    if( !m_transfer_function ) return;
-    int opacityIndex = ui->opacityFunctionComboBox->currentIndex();
-    if( opacityIndex >= 0 && opacityIndex < static_cast<int>( m_transfer_function->count() ) )
-    {
-        auto& opacityItem = m_transfer_function->at( opacityIndex ).opacity;
-        opacityItem.variable = opacityFunctionVariable.toUtf8().constData();
-    }
+    updateSelectedOpacityTransferFunction( ui->opacityFunctionComboBox, [&]( TransferFunction::OpacityTransferFunction& c )
+                                          {
+                                              c.variable = opacityFunctionVariable.toUtf8().constData();
+                                          } );
 }
 
 void TransferFunctionEditor::onOpacityFunctionVariableEditorClicked()
@@ -720,74 +777,54 @@ void TransferFunctionEditor::onOpacityFunctionVariableEditorClicked()
             QStandardItemModel* model = m_variable_editor.model();
             for( int i = 0; i < model->rowCount(); ++i )
             {
-                QString var = model->item( i, 1 )->text(); // 1列目がVariable
+                QString var = model->item( i, 1 )->text();
                 if( i < static_cast<int>( m_transfer_function->count() ) )
                 {
                     auto& opacityItem = m_transfer_function->at( i ).opacity;
                     opacityItem.variable = var.toUtf8().constData();
                 }
             }
-            updateUI();
+            updateUIFromUserInput( UpdateTarget::Opacity );
         }
     }
 }
 
 void TransferFunctionEditor::onOpacityRangeModeRadioButtonClicked()
 {
-    if( !m_transfer_function ) return;
-    int opacityIndex = ui->opacityFunctionComboBox->currentIndex();
-    if( opacityIndex >= 0 && opacityIndex < static_cast<int>( m_transfer_function->count() ) )
-    {
-        auto& opacityItem = m_transfer_function->at( opacityIndex ).opacity;
-        if( ui->opacityUserDefinedMinMaxRadioButton->isChecked() )
-        {
-            opacityItem.rangeMode = TransferFunction::UserRange;
-        }
-        else
-        {
-            opacityItem.rangeMode = TransferFunction::ServerSide;
-        }
-    }
+    updateSelectedOpacityTransferFunction( ui->opacityFunctionComboBox, [&]( TransferFunction::OpacityTransferFunction& o )
+                                          {
+                                              o.rangeMode = ui->opacityUserDefinedMinMaxRadioButton->isChecked()
+                                              ? TransferFunction::UserRange
+                                              : TransferFunction::ServerSide;
+                                          } );
 }
 
-void TransferFunctionEditor::onOpacityUserDefinedMinChanged( const double &opacityUserDefinedMin )
+void TransferFunctionEditor::onOpacityUserDefinedMinChanged( const double opacityUserDefinedMin )
 {
-    if( !m_transfer_function ) return;
-    int opacityIndex = ui->opacityFunctionComboBox->currentIndex();
-    if( opacityIndex >= 0 && opacityIndex < static_cast<int>( m_transfer_function->count() ) )
-    {
-        auto& opacityItem = m_transfer_function->at( opacityIndex ).opacity;
-        opacityItem.userDefinedMinMax.first = opacityUserDefinedMin;
-    }
+    updateSelectedOpacityTransferFunction( ui->opacityFunctionComboBox, [&]( auto& o ) { o.userDefinedMinMax.first = opacityUserDefinedMin; } );
 }
 
-void TransferFunctionEditor::onOpacityUserDefinedMaxChanged( const double &opacityUserDefinedMax )
+void TransferFunctionEditor::onOpacityUserDefinedMaxChanged( const double opacityUserDefinedMax )
 {
-    if( !m_transfer_function ) return;
-    int opacityIndex = ui->opacityFunctionComboBox->currentIndex();
-    if( opacityIndex >= 0 && opacityIndex < static_cast<int>( m_transfer_function->count() ) )
-    {
-        auto& opacityItem = m_transfer_function->at( opacityIndex ).opacity;
-        opacityItem.userDefinedMinMax.second = opacityUserDefinedMax;
-    }
+    updateSelectedOpacityTransferFunction( ui->opacityFunctionComboBox, [&]( auto& o ) { o.userDefinedMinMax.second = opacityUserDefinedMax; } );
 }
 
 void TransferFunctionEditor::onOpacityMapEditorClicked()
 {
     if( !m_transfer_function ) return;
-    int opacityIndex = ui->opacityFunctionComboBox->currentIndex();
-    if( opacityIndex >= 0 && opacityIndex < static_cast<int>( m_transfer_function->count() ) )
-    {
-        m_opacity_map_editor.adjustSize();
-        m_opacity_map_editor.setDefaultOpacityMap( ui->opacityMap->getOpacities() );
 
-        if( m_opacity_map_editor.exec() == QDialog::Accepted )
-        {
-            auto& opacityItem = m_transfer_function->at( opacityIndex ).opacity;
-            opacityItem.map = toStdVectorOpacities( m_opacity_map_editor.getOpacityMap() );
-        }
-        updateUI();
+    m_opacity_map_editor.adjustSize();
+    m_opacity_map_editor.setDefaultOpacityMap( ui->opacityMap->getOpacities() );
+
+    if( m_opacity_map_editor.exec() == QDialog::Accepted )
+    {
+        updateSelectedOpacityTransferFunction( ui->opacityFunctionComboBox, [&]( auto& o )
+                                              {
+                                                  o.map = toStdVectorOpacities( m_opacity_map_editor.getOpacityMap() );
+                                              } );
     }
+
+    updateUIFromUserInput( UpdateTarget::Opacity );
 }
 
 void TransferFunctionEditor::onExport()
@@ -824,8 +861,8 @@ void TransferFunctionEditor::onExport()
             for( const auto& c : tf.color.map )
             {
                 colorTable << QString::number( c.red() )
-                           << QString::number( c.green() )
-                           << QString::number( c.blue() );
+                << QString::number( c.green() )
+                << QString::number( c.blue() );
             }
             out << "TF_NAME" << idx << "_TABLE_C=" << colorTable.join( "," ) << "\n";
         }
@@ -932,10 +969,174 @@ void TransferFunctionEditor::onImport()
             }
         }
     }
-    updateUI();
+    updateUIFromUserInput( UpdateTarget::Both );
 }
 
 void TransferFunctionEditor::onApply()
 {
-    applyTransferFunction();
+    if( !m_web_sockets->isConnected() ) { return; }
+    if( !m_transfer_function ) return;
+
+    if( !m_has_last_sent )
+    {
+        m_last_sent_tf   = *m_transfer_function;
+        m_has_last_sent  = true;
+        // NOTE:初回接続時にもし差分がなかった場合の処理
+        // 未実装です、必要になる場面はないかもしれません。
+    }
+
+    auto nearlyEqual = []( double a, double b )
+    {
+        const double eps = 1e-12;
+        return std::abs(a - b) <= eps;
+    };
+
+    auto sameColorMap = []( const std::vector<kvs::RGBColor>& a, const std::vector<kvs::RGBColor>& b ) -> bool
+    {
+        if( a.size() != b.size() ) return false;
+        for( size_t i = 0; i < a.size(); ++i )
+        {
+            if( a[i].red()   != b[i].red() )   return false;
+            if( a[i].green() != b[i].green() ) return false;
+            if( a[i].blue()  != b[i].blue() )  return false;
+        }
+        return true;
+    };
+
+    auto sameOpacityMap = []( const std::vector<float>& a,
+                             const std::vector<float>& b ) -> bool
+    {
+        if( a.size() != b.size() ) return false;
+        for( size_t i = 0; i < a.size(); ++i )
+        {
+            if( std::abs( (double)a[i] - (double)b[i] ) > 1e-7 ) return false;
+        }
+        return true;
+    };
+
+    const int curCount  = static_cast<int>( m_transfer_function->count() );
+    const int prevCount = static_cast<int>( m_last_sent_tf.count() );
+
+    QJsonObject transferFunctionParameter;
+    transferFunctionParameter[QString::fromUtf8( Protocol::Key::Event )] = QString::fromUtf8( Protocol::Events::TransferFunctionParameter );
+
+    if( curCount != prevCount )
+    {
+        transferFunctionParameter["TfCount"] = curCount;
+    }
+
+    // Synthesizer 差分
+    const QString curColorSynth    = QString::fromUtf8( m_transfer_function->colorSynthesizer() );
+    const QString curOpacitySynth  = QString::fromUtf8( m_transfer_function->opacitySynthesizer() );
+    const QString prevColorSynth   = QString::fromUtf8( m_last_sent_tf.colorSynthesizer() );
+    const QString prevOpacitySynth = QString::fromUtf8( m_last_sent_tf.opacitySynthesizer() );
+
+    if( curColorSynth != prevColorSynth )
+        transferFunctionParameter[QString::fromUtf8( Protocol::Key::ColorSynthesizer )] = curColorSynth;
+
+    if( curOpacitySynth != prevOpacitySynth )
+        transferFunctionParameter[QString::fromUtf8( Protocol::Key::OpacitySynthesizer )] = curOpacitySynth;
+
+    QJsonArray patches;
+
+    for( int i = 0; i < curCount; ++i )
+    {
+        QJsonObject patch;
+        patch["Index"] = i;
+
+        const bool full = ( i >= prevCount );
+
+        const auto& curItem = m_transfer_function->at( i );
+        const auto* prevItem = full ? nullptr : &m_last_sent_tf.at( i );
+
+        const QString kColorVariable      = QString::fromUtf8( Protocol::Key::ColorVariable );
+        const QString kColorRangeMode     = QString::fromUtf8( Protocol::Key::ColorRangeMode );
+        const QString kColorUserRangeMin  = QString::fromUtf8( Protocol::Key::ColorUserRangeMin );
+        const QString kColorUserRangeMax  = QString::fromUtf8( Protocol::Key::ColorUserRangeMax );
+        const QString kColorMap           = QString::fromUtf8( Protocol::Key::ColorMap );
+
+        const QString kOpacityVariable    = QString::fromUtf8( Protocol::Key::OpacityVariable );
+        const QString kOpacityRangeMode   = QString::fromUtf8( Protocol::Key::OpacityRangeMode );
+        const QString kOpacityUserRangeMin= QString::fromUtf8( Protocol::Key::OpacityUserRangeMin );
+        const QString kOpacityUserRangeMax= QString::fromUtf8( Protocol::Key::OpacityUserRangeMax );
+        const QString kOpacityMap         = QString::fromUtf8( Protocol::Key::OpacityMap );
+
+        // Color
+        if( full || curItem.color.variable != prevItem->color.variable )
+            patch[kColorVariable] = QString::fromUtf8( curItem.color.variable );
+
+        if( full || curItem.color.rangeMode != prevItem->color.rangeMode )
+            patch[kColorRangeMode] = (int)curItem.color.rangeMode;
+
+        if( full || !nearlyEqual( curItem.color.userDefinedMinMax.first, prevItem->color.userDefinedMinMax.first ) )
+            patch[kColorUserRangeMin] = curItem.color.userDefinedMinMax.first;
+
+        if( full || !nearlyEqual( curItem.color.userDefinedMinMax.second, prevItem->color.userDefinedMinMax.second ) )
+            patch[kColorUserRangeMax] = curItem.color.userDefinedMinMax.second;
+
+        // ColorMap(Range変更では送らない)
+        if( full || !sameColorMap(curItem.color.map, prevItem->color.map) )
+        {
+            QJsonArray colorArray;
+            const auto& cmap = curItem.color.map;
+            for( const auto& c : cmap )
+            {
+                QJsonArray rgb;
+                rgb.append( c.red() );
+                rgb.append( c.green() );
+                rgb.append( c.blue() );
+                colorArray.append( rgb );
+            }
+            patch[kColorMap] = colorArray;
+        }
+
+        // Opacity
+        if( full || curItem.opacity.variable != prevItem->opacity.variable )
+            patch[kOpacityVariable] = QString::fromUtf8( curItem.opacity.variable );
+
+        if( full || curItem.opacity.rangeMode != prevItem->opacity.rangeMode )
+            patch[kOpacityRangeMode] = (int)curItem.opacity.rangeMode;
+
+        if( full || !nearlyEqual( curItem.opacity.userDefinedMinMax.first, prevItem->opacity.userDefinedMinMax.first ) )
+            patch[kOpacityUserRangeMin] = curItem.opacity.userDefinedMinMax.first;
+
+        if( full || !nearlyEqual( curItem.opacity.userDefinedMinMax.second, prevItem->opacity.userDefinedMinMax.second ) )
+            patch[kOpacityUserRangeMax] = curItem.opacity.userDefinedMinMax.second;
+
+        // OpacityMap(Range変更では送らない)
+        if( full || !sameOpacityMap(curItem.opacity.map, prevItem->opacity.map) )
+        {
+            QJsonArray opacityArray;
+            const auto& omap = curItem.opacity.map;
+            for( float v : omap ) opacityArray.append( v );
+            patch[kOpacityMap] = opacityArray;
+        }
+
+        if( patch.keys().size() > 1 )
+            patches.append( patch );
+    }
+
+    const bool hasAnyPatch = !patches.isEmpty();
+    const bool hasMeta =
+        transferFunctionParameter.contains("TfCount") ||
+        transferFunctionParameter.contains(QString::fromUtf8(Protocol::Key::ColorSynthesizer)) ||
+        transferFunctionParameter.contains(QString::fromUtf8(Protocol::Key::OpacitySynthesizer));
+
+    if( !hasAnyPatch && !hasMeta )
+    {
+        // NOTE:変更がない
+        return;
+    }
+
+    transferFunctionParameter[QString::fromUtf8( Protocol::Key::Data )] = patches;
+
+    m_web_sockets->text()->sendTextMessage(
+        QJsonDocument( transferFunctionParameter ).toJson( QJsonDocument::Compact ) );
+
+    // NOTE:最終送信内容の更新
+    m_last_sent_tf  = *m_transfer_function;
+    m_has_last_sent = true;
+
+    emit transferFunctionUpdate();
+    // qDebug().noquote() << "[TransferFunctionEditor::onApply] diff(pretty):\n" << QJsonDocument( transferFunctionParameter ).toJson( QJsonDocument::Indented );
 }

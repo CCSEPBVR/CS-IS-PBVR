@@ -2,13 +2,15 @@
 #define COLORMAPSELECTORTOOLBAR_H
 
 #include <QToolBar>
+#include <QHBoxLayout>
 #include <QLabel>
 #include <QComboBox>
-#include <QHBoxLayout>
-#include <QStandardItem>
+#include <QPushButton>
 
-#include "Screen.h"
 #include <kvs/ColorMapBar>
+#include "Screen.h"
+
+#include "../../Shared/TransferFunction.h"
 
 class ColorMapSelectorToolBar : public QToolBar
 {
@@ -18,22 +20,33 @@ public:
     explicit ColorMapSelectorToolBar( kvs::qt::jaea::Screen* screen, QWidget *parent = nullptr );
     ~ColorMapSelectorToolBar();
 
+    // ColorMapBar
     void setColorMapBar( kvs::ColorMapBar* color_map_bar ) { m_color_map_bar = color_map_bar; }
     kvs::ColorMapBar* colorMapBar() const { return m_color_map_bar; }
 
+signals:
+
 public slots:
-    void updateColorMapBar( QStandardItemModel* model ); // FIXME:不要
-    void onLoadParameter( const QString& filePath );
-    void onSaveParameter( const QString& filePath );
+    void onTransferFunctionUpdate( TransferFunction* lastSentTransferFunction );
+
+    void onLoadParameter( const QString& filePath ); // KPI
+    void onSaveParameter( const QString& filePath ); // KPI
 
 private:
     QLabel* m_color_function_label;
     QComboBox* m_color_function_combo_box;
-    kvs::qt::jaea::Screen* m_screen = nullptr;
+
+    kvs::qt::jaea::Screen* m_screen   = nullptr;
     kvs::ColorMapBar* m_color_map_bar = nullptr;
 
+    TransferFunction m_transfer_function_storage;
+    TransferFunction* m_transfer_function = nullptr;
+
+    void updateColorMapByIndex( int index );
+    void updateCurrentIndex();
+
 private slots:
-    void updateUIFromCurrentItem(); // FIXME:メソッド名を変更した方がいいと思います。
+    void onColorFunctionComboBoxIndexChanged( int index );
 };
 
 #endif // COLORMAPSELECTORTOOLBAR_H

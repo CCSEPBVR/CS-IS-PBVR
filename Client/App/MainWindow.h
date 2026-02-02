@@ -2,16 +2,17 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QFileDialog>
 
-#include <kvs/qt/Application>
-#include "Screen.h"
-#include <kvs/StochasticRenderingCompositor>
 #include <kvs/ColorMapBar>
-#include <kvs/OrientationAxis>
 #include <kvs/Label>
+#include <kvs/OrientationAxis>
+#include <kvs/StochasticRenderingCompositor>
+#include <kvs/qt/Application>
+#include "Screen.h" // <kvs/qt/Screen>
 
-#include "WebSocketPair.h"
 #include "VizMode.h"
+#include "WebSocketPair.h"
 
 #include "ColorMapSelectorToolBar.h"
 #include "PlayBackControlToolBar.h"
@@ -43,97 +44,101 @@ public:
     explicit MainWindow( kvs::qt::Application& app, QWidget *parent = nullptr );
     ~MainWindow();
 
+signals:
+    void screenInitialized();
+    void updateInitialRepetitionLevel();
+    void load( const QString& filePath ); // KPI
+    void save( const QString& filePath ); // KPI
+
 public slots:
     void onUpdateStatusBarMessage( const QString& message );
+    void onUpdateServerState( const bool serverState ); // true: 接続中 , false: 未接続
+
+    // ObjectEditor
     void onUpdateNumberOfVector( const int numberOfVector );
 
-signals:
-    void readyScreen();
-    void updateInitialRepetitionLevel();
-    // FIXME:KPI
-    void load( const QString& filePath );
-    void save( const QString& filePath );
-
 private:
-    static constexpr int DefaultRepetitionLevel = 4;
-    static constexpr int DefaultScreenSize      = 620;
+    static constexpr int k_default_repetition_level  = 4;
+    static constexpr int k_default_screen_resolution = 620;
 
     Ui::MainWindow *ui;
 
-    kvs::qt::jaea::Screen* m_screen                             = nullptr;
-    kvs::StochasticRenderingCompositor* m_compositor            = nullptr;
-    kvs::ColorMapBar* m_color_map_bar                           = nullptr;
-    kvs::OrientationAxis* m_orientation_axis                    = nullptr;
-    kvs::Label* m_fps_label                                     = nullptr;
-    kvs::Label* m_time_step_label                               = nullptr;
+    kvs::qt::jaea::Screen* m_screen                  = nullptr;
+    kvs::StochasticRenderingCompositor* m_compositor = nullptr;
+    kvs::ColorMapBar* m_color_map_bar                = nullptr;
+    kvs::OrientationAxis* m_orientation_axis         = nullptr;
+    kvs::Label* m_fps_label                          = nullptr;
+    kvs::Label* m_time_step_label                    = nullptr;
 
-    // FIXME:VRで初期位置でkvs::glsl::ParticleBasedRendererを使用している場合、表示されない不具合の対策用です(参考URL:https://github.com/CCSEPBVR/CS-IS-PBVR/blob/develop/Client/Widgets/RepetitionLevelControl.cpp)
-    kvs::Xform m_initialize_camera_xform;
+    // FIXME:VR初期位置でkvs::glsl::ParticleBasedRendererを使用している場合、表示されないように見える不具合の対策用です。(参考URL:https://github.com/CCSEPBVR/CS-IS-PBVR/blob/develop/Client/Widgets/RepetitionLevelControl.cpp)
+    kvs::Xform m_initialize_camera_xform = kvs::Xform(
+        kvs::Mat4(
+            1, 0, 0, 0,
+            0, 1, 0, 0,
+            0, 0, 1, 12,
+            0, 0, 0, 1
+            )
+        );
 
-    WebSocketPair* m_web_sockets                                = nullptr;
-    Viz::Mode* m_viz_mode                                       = nullptr;
+    WebSocketPair* m_web_sockets = nullptr;
+    Viz::Mode* m_viz_mode        = nullptr;
 
 #ifdef OPENXR_SCREEN
     VRHandControllerListener* m_vr_listener;
 #endif
 
-    // FIXME:KPI
-    QAction* m_load_action = nullptr;
-    QAction* m_save_action = nullptr;
+    QAction* m_load_action = nullptr; // KPI
+    QAction* m_save_action = nullptr; // KPI
 
     // ToolBar
-    ColorMapSelectorToolBar* m_color_map_bar_selector_tool_bar = nullptr; // NOTE:KPI関係有
-    PlayBackControlToolBar* m_play_back_control_tool_bar       = nullptr; // NOTE:通信関係有
-    TimeStepControlToolBar* m_time_step_control_tool_bar       = nullptr; // NOTE:通信関係有 KPI関係有
-    TotalParticlesToolBar* m_total_particles_tool_bar          = nullptr;
+    ColorMapSelectorToolBar* m_color_map_bar_selector_tool_bar = nullptr; // KPI
+    PlayBackControlToolBar*  m_play_back_control_tool_bar      = nullptr; //     WebSocket Operator
+    TimeStepControlToolBar*  m_time_step_control_tool_bar      = nullptr; // KPI WebSocket Operator
+    TotalParticlesToolBar*   m_total_particles_tool_bar        = nullptr;
+
+    // Action
+    QAction* m_animation_control_action        = nullptr;
+    QAction* m_communication_action            = nullptr;
+    QAction* m_glyph_editor_action             = nullptr;
+    QAction* m_object_editor_action            = nullptr;
+    QAction* m_plot_over_line_editor_action    = nullptr;
+    QAction* m_point_size_control_action       = nullptr;
+    QAction* m_preference_action               = nullptr;
+    QAction* m_repetition_level_control_action = nullptr;
+    QAction* m_shading_control_action          = nullptr;
+    QAction* m_transfer_function_editor_action = nullptr;
+    QAction* m_volume_transform_action         = nullptr;
 
     // Widget
-    QAction* m_animation_control_action                        = nullptr;
-    AnimationControl* m_animation_control                      = nullptr; // NOTE:KPI関係有
+    AnimationControl* m_animation_control              = nullptr; // KPI
+    Communication* m_communication                     = nullptr; // KPI WebSocket Operator
+    GlyphEditor* m_glyph_editor                        = nullptr; // KPI WebSocket Operator
+    ObjectEditor* m_object_editor                      = nullptr; // KPI WebSocket Operator
+    PlotOverLineEditor* m_plot_over_line_editor        = nullptr; // KPI WebSocket Operator
+    PointSizeControl* m_point_size_control             = nullptr; // KPI
+    Preference* m_preference                           = nullptr;
+    RepetitionLevelControl* m_repetition_level_control = nullptr; // KPI
+    ShadingControl* m_shading_control                  = nullptr; // KPI
+    TransferFunctionEditor* m_transfer_function_editor = nullptr; // KPI WebSocket Operator
+    VolumeTransform* m_volume_transform                = nullptr; // KPI
 
-    QAction* m_communication_action                            = nullptr;
-    Communication* m_communication                             = nullptr; // NOTE:通信関係有 KPI関係有
+    // Initializer
+    void initializeToolBar();
+    void initializeMenuBar();
 
-    QAction* m_glyph_editor_action                             = nullptr;
-    GlyphEditor* m_glyph_editor                                = nullptr; // NOTE:通信関係有 KPI関係有
+    void initializeAnimationControl();
+    void initializeCommunication();
+    void initializeGlyphEditor();
+    void initializeObjectEditor();
+    void initializePlotOverLineEditor();
+    void initializePointSizeControl();
+    void initializePreference();
+    void initializeRepetitionLevelControl();
+    void initializeShadingControl();
+    void initializeTransferFunctionEditor();
+    void initializeVolumeTransform();
 
-    QAction* m_object_editor_action                            = nullptr;
-    ObjectEditor* m_object_editor                              = nullptr; // NOTE:通信関係有 KPI関係有
-
-    QAction* m_plot_over_line_editor_action                    = nullptr;
-    PlotOverLineEditor* m_plot_over_line_editor                = nullptr; // NOTE:通信関係有 KPI関係有
-
-    QAction* m_point_size_control_action                       = nullptr;
-    PointSizeControl* m_point_size_control                     = nullptr; // NOTE:KPI関係有
-
-    QAction* m_preference_action                               = nullptr;
-    Preference* m_preference                                   = nullptr;
-
-    QAction* m_repetition_level_control_action                 = nullptr;
-    RepetitionLevelControl* m_repetition_level_control         = nullptr; // NOTE:KPI関係有
-
-    QAction* m_shading_control_action                          = nullptr;
-    ShadingControl* m_shading_control                          = nullptr; // NOTE:KPI関係有
-
-    QAction* m_transfer_function_editor_action                 = nullptr;
-    TransferFunctionEditor* m_transfer_function_editor         = nullptr; // NOTE:通信関係有 KPI関係有
-
-    QAction* m_volume_transform_action                         = nullptr;
-    VolumeTransform* m_volume_transform                        = nullptr; // NOTE:KPI関係有
-
-    void toolBarInitialize();
-    void animationControlInitialize();
-    void communicationInitialize();
-    void glyphEditorInitialize();
-    void objectEditorInitialize();
-    void plotOverLineEditorInitialize();
-    void pointSizeControlInitialize();
-    void preferenceInitialize();
-    void repetitionLevelControlInitialize();
-    void shadingControlInitialize();
-    void transferFunctionEditorInitialize();
-    void volumeTransformInitialize();
-    void initializeAfterShow();
+    void initializeShaderAndFonts();
 
 private slots:
     void onAnimationControl()       { m_animation_control->show();        }
@@ -148,10 +153,8 @@ private slots:
     void onTransferFunctionEditor() { m_transfer_function_editor->show(); }
     void onVolumeTransform()        { m_volume_transform->show();         }
 
-    void onUpdateServerState( bool serverState ); // true:接続中
-
-    void onLoad();
-    void onSave();
+    void onLoad(); // KPI
+    void onSave(); // KPI
 };
 
 #endif // MAINWINDOW_H

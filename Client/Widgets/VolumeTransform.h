@@ -3,8 +3,8 @@
 
 #include <QDockWidget>
 
-#include "Screen.h"
 #include <kvs/RotationMatrix33>
+#include "Screen.h" // <kvs/qt/Screen>
 
 namespace Ui
 {
@@ -19,13 +19,12 @@ public:
     explicit VolumeTransform( kvs::qt::jaea::Screen* screen, QWidget *parent = nullptr );
     ~VolumeTransform();
 
-public slots:
-    // FIXME:KPI
-    void onLoadParameter( const QString& filePath );
-    void onSaveParameter( const QString& filePath );
-
 signals:
     void updateTranslation(); // FIXME:シグナルスロットの接続が必要
+
+public slots:
+    void onLoadParameter( const QString& filePath ); // KPI
+    void onSaveParameter( const QString& filePath ); // KPI
 
 private:
     Ui::VolumeTransform *ui;
