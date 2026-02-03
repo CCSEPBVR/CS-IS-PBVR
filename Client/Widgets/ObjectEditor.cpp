@@ -1225,7 +1225,7 @@ void ObjectEditor::sendNeedSameTimeStepReplacePatches( const std::function<bool(
     if( patchArray.isEmpty() ) { return; }
 
     QJsonObject msg;
-    msg[ QString::fromUtf8( Protocol::Key::Event ) ]   = QString::fromUtf8( Protocol::Events::ObjectInfoParameter );
+    msg[ QString::fromUtf8( Protocol::Key::Event ) ]   = QString::fromUtf8( Protocol::Events::ServerSideSameTimeStepReplace );
     msg[ QString::fromUtf8( Protocol::Key::Objects ) ] = patchArray;
 
     m_web_sockets->text()->sendTextMessage( QJsonDocument( msg ).toJson( QJsonDocument::Compact ) );

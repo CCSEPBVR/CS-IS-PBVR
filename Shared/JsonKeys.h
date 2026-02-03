@@ -166,25 +166,26 @@ inline constexpr std::string_view MaxLimit                  = "MaxLimit";
 
 namespace Events
 {
-inline constexpr std::string_view Join                      = "Join";
-inline constexpr std::string_view Left                      = "Left";
-inline constexpr std::string_view ID                        = "ID";
-inline constexpr std::string_view Operator                  = "Operator";
-inline constexpr std::string_view TransferOperator          = "TransferOperator";
-inline constexpr std::string_view Initialize                = "Initialize";
-inline constexpr std::string_view Chat                      = "Chat";
-inline constexpr std::string_view ShareView                 = "ShareView";
-inline constexpr std::string_view SharePoint                = "SharePoint";
-inline constexpr std::string_view FileList                  = "FileList";
-inline constexpr std::string_view SelectedFile              = "SelectedFile";
-inline constexpr std::string_view ObjectDelete              = "ObjectDelete";
-inline constexpr std::string_view ObjectInfoParameter       = "ObjectInfoParameter";
-inline constexpr std::string_view TransferFunctionParameter = "TransferFunctionParameter";
-inline constexpr std::string_view GlyphParameter            = "GlyphParameter";
-inline constexpr std::string_view PlotOverLineParameter     = "PlotOverLineParameter";
-inline constexpr std::string_view RequestDataAt             = "RequestDataAt";
-inline constexpr std::string_view TimeStepControlParameter  = "TimeStepControlParameter";
-inline constexpr std::string_view LatestTimeStep            = "LatestTimeStep";
+inline constexpr std::string_view Join                          = "Join";
+inline constexpr std::string_view Left                          = "Left";
+inline constexpr std::string_view ID                            = "ID";
+inline constexpr std::string_view Operator                      = "Operator";
+inline constexpr std::string_view TransferOperator              = "TransferOperator";
+inline constexpr std::string_view Initialize                    = "Initialize";
+inline constexpr std::string_view Chat                          = "Chat";
+inline constexpr std::string_view ShareView                     = "ShareView";
+inline constexpr std::string_view SharePoint                    = "SharePoint";
+inline constexpr std::string_view FileList                      = "FileList";
+inline constexpr std::string_view SelectedFile                  = "SelectedFile";
+inline constexpr std::string_view ObjectDelete                  = "ObjectDelete";
+inline constexpr std::string_view ObjectInfoParameter           = "ObjectInfoParameter";
+inline constexpr std::string_view ServerSideSameTimeStepReplace = "ServerSideSameTimeStepReplace";
+inline constexpr std::string_view TransferFunctionParameter     = "TransferFunctionParameter";
+inline constexpr std::string_view GlyphParameter                = "GlyphParameter";
+inline constexpr std::string_view PlotOverLineParameter         = "PlotOverLineParameter";
+inline constexpr std::string_view RequestDataAt                 = "RequestDataAt";
+inline constexpr std::string_view TimeStepControlParameter      = "TimeStepControlParameter";
+inline constexpr std::string_view LatestTimeStep                = "LatestTimeStep";
 }
 }
 #endif // JSONKEYS_H

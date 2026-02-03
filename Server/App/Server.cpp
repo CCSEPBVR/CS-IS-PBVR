@@ -193,20 +193,21 @@ void Server::onMessage(uWS::WebSocket<false, true, PerSocket>* ws, std::string_v
         const std::string event = received[Protocol::Key::Event].get<std::string>();
 
         if (event == "Template") std::cout << __LINE__ << std::endl;
-        else if (event == Protocol::Events::TransferOperator)          transferOperator(ws, received);
-        else if (event == Protocol::Events::Chat)                      chat(ws, received);
-        else if (event == Protocol::Events::ShareView)                 shareView(ws, received);
-        else if (event == Protocol::Events::SharePoint)                sharePoint(ws, received);
-        else if (event == Protocol::Events::Initialize)                initialize(ws, received);
-        else if (event == Protocol::Events::RequestDataAt)             requestDataAt(ws, received);
-        else if (event == Protocol::Events::TimeStepControlParameter)  receiveTimeStepControlParameter(ws, received);
-        else if (event == Protocol::Events::GlyphParameter)            receiveGlyphParameter(ws, received);
-        else if (event == Protocol::Events::ObjectInfoParameter)       receiveObjectInfoParameter(ws, received);
-        else if (event == Protocol::Events::PlotOverLineParameter)     receivePlotOverLineParameter(ws, received);
-        else if (event == Protocol::Events::TransferFunctionParameter) receiveTransferFunctionParameter(ws, received);
-        else if (event == "fileList")                                  fileList(ws, received);
-        else if (event == Protocol::Events::SelectedFile)              selectedFile(ws, received);
-        else if (event == Protocol::Events::ObjectDelete)              receiveObjectDelete(ws, received);
+        else if (event == Protocol::Events::TransferOperator)              transferOperator(ws, received);
+        else if (event == Protocol::Events::Chat)                          chat(ws, received);
+        else if (event == Protocol::Events::ShareView)                     shareView(ws, received);
+        else if (event == Protocol::Events::SharePoint)                    sharePoint(ws, received);
+        else if (event == Protocol::Events::Initialize)                    initialize(ws, received);
+        else if (event == Protocol::Events::RequestDataAt)                 requestDataAt(ws, received);
+        else if (event == Protocol::Events::TimeStepControlParameter)      receiveTimeStepControlParameter(ws, received);
+        else if (event == Protocol::Events::GlyphParameter)                receiveGlyphParameter(ws, received);
+        else if (event == Protocol::Events::ObjectInfoParameter)           receiveObjectInfoParameter(ws, received);
+        else if (event == Protocol::Events::ServerSideSameTimeStepReplace) receiveServerSideSameTimeStepReplace(ws, received);
+        else if (event == Protocol::Events::PlotOverLineParameter)         receivePlotOverLineParameter(ws, received);
+        else if (event == Protocol::Events::TransferFunctionParameter)     receiveTransferFunctionParameter(ws, received);
+        else if (event == "fileList")                                      fileList(ws, received);
+        else if (event == Protocol::Events::SelectedFile)                  selectedFile(ws, received);
+        else if (event == Protocol::Events::ObjectDelete)                  receiveObjectDelete(ws, received);
         else std::cout << "[Server] Unknown Event : " << event << std::endl;
     }
 }
@@ -1248,6 +1249,33 @@ void Server::receiveObjectInfoParameter(uWS::WebSocket<false, true, PerSocket>* 
     }
 
     ws->publish( k_text_topic, received.dump(), uWS::OpCode::TEXT );
+}
+
+void Server::receiveServerSideSameTimeStepReplace( uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received )
+{
+    std::cout << __LINE__ << std::endl;
+    if (received.contains(Protocol::Key::Objects) && received[Protocol::Key::Objects].is_array())
+    {
+        for (const auto& patch : received[Protocol::Key::Objects])
+        {
+            if (!patch.contains(Protocol::Key::UUID) || !patch[Protocol::Key::UUID].is_string()) continue;
+            const std::string uuid = patch[Protocol::Key::UUID].get<std::string>();
+
+            auto it = std::find_if(m_objects->begin(), m_objects->end(),
+                                   [&](const ObjectInfoExtractor::ObjectInfo& info)
+                                   {
+                                       return info.uuid == uuid;
+                                   });
+
+            if (it == m_objects->end()) continue;
+
+            ObjectInfoExtractor::ObjectInfo& info = *it;
+            if (patch.contains(Protocol::Key::NeedSameTimeStepReplace))
+            {
+                info.needSameTimeStepReplace = true;
+            }
+        }
+    }
 }
 
 void Server::receivePlotOverLineParameter(uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received)
