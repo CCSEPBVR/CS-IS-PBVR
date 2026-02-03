@@ -43,6 +43,21 @@ ParameterFileWriter::ParameterFileWriter()
     std::cout << "PlotOverLineParameterPath:" << m_pol_parameter_path      << std::endl;
 }
 
+std::string ParameterFileWriter::getParticleParameterPath()
+{
+    return m_particle_parameter_path;
+}
+
+std::string ParameterFileWriter::getGlyphParameterPath()
+{
+    return m_glyph_parameter_path;
+}
+
+std::string ParameterFileWriter::getPOLParameterPath()
+{
+    return m_pol_parameter_path;
+}
+
 void ParameterFileWriter::getParticleParameter( const ParticleProperty& particle_property )
 {
     std::string client_sampling_method;

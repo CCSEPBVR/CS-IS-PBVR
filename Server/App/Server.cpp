@@ -408,10 +408,34 @@ void Server::initialize(uWS::WebSocket<false, true, PerSocket>* ws, const nlohma
 
         ParticleMonitor particleMonitor;
         particleMonitor.check();
+
+        std::string tfFilePath_old;
+        std::string visParamDir;
+        std::string tfFilename;
+        const char *envBuf = NULL;
+        envBuf = std::getenv( "VIS_PARAM_DIR" );
+        if (envBuf == NULL) {
+            visParamDir = "./";
+        }
+        else {
+            visParamDir = envBuf;
+            if (visParamDir[visParamDir.size() - 1] != '/') {
+                visParamDir += "/";
+            }
+        }
+        envBuf = std::getenv( "TF_NAME" );
+        if (envBuf == NULL) {
+            tfFilename = "default";
+        }
+        else {
+            tfFilename = envBuf;
+        }
+        tfFilePath_old = visParamDir + tfFilename + "_old.tf";     
+
         int counter = 0;
 
         // InSituでオブジェクト生成が開始されるまで待機
-        while (!particleMonitor.stepExisted())
+        while (!particleMonitor.stepExisted() || !std::filesystem::exists(tfFilePath_old))
         {
             particleMonitor.check();
             std::string baseString = "Waiting for simulation object generation ";

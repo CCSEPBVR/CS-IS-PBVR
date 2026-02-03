@@ -16,6 +16,9 @@ private:
 
 public:
     ParameterFileWriter();
+    std::string getParticleParameterPath();
+    std::string getGlyphParameterPath();
+    std::string getPOLParameterPath();
     void getParticleParameter( const ParticleProperty& particle_property );
     void getGlyphParameter( const GlyphProperty& glyph_property );
     void getPlotOverLineParameter( const PlotOverLineProperty& pol_property );
