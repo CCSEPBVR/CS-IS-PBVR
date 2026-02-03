@@ -1022,7 +1022,7 @@ void TransferFunctionEditor::onApply()
 
     if( curCount != prevCount )
     {
-        transferFunctionParameter["TfCount"] = curCount;
+        transferFunctionParameter["TFNumber"] = curCount;
     }
 
     // Synthesizer 差分
@@ -1118,7 +1118,7 @@ void TransferFunctionEditor::onApply()
 
     const bool hasAnyPatch = !patches.isEmpty();
     const bool hasMeta =
-        transferFunctionParameter.contains("TfCount") ||
+        transferFunctionParameter.contains("TFNumber") ||
         transferFunctionParameter.contains(QString::fromUtf8(Protocol::Key::ColorSynthesizer)) ||
         transferFunctionParameter.contains(QString::fromUtf8(Protocol::Key::OpacitySynthesizer));
 

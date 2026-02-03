@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>422</width>
-    <height>567</height>
+    <height>591</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -25,52 +25,33 @@
         <string>Connect</string>
        </attribute>
        <layout class="QGridLayout" name="gridLayout_2">
-        <item row="0" column="0">
+        <item row="1" column="0">
          <widget class="QGroupBox" name="groupBox">
           <property name="title">
            <string>Setting</string>
           </property>
           <layout class="QGridLayout" name="gridLayout_6">
-           <item row="0" column="0">
-            <widget class="QGroupBox" name="groupBox_2">
-             <property name="title">
-              <string>Mode</string>
+           <item row="4" column="0">
+            <spacer name="horizontalSpacer_2">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
              </property>
-             <layout class="QHBoxLayout" name="horizontalLayout_2">
-              <item>
-               <widget class="QRadioButton" name="localVizRadioButton">
-                <property name="toolTip">
-                 <string>The client and server run on the same machine.</string>
-                </property>
-                <property name="text">
-                 <string>Local Viz.(Client &amp;&amp; Server)</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QRadioButton" name="remoteVizClientServerRadioButton">
-                <property name="toolTip">
-                 <string>The server application runs on the remote machine.</string>
-                </property>
-                <property name="text">
-                 <string>Remote Viz.(Client &amp;&amp; Server)</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QRadioButton" name="remoteVizInsituRadioButton">
-                <property name="toolTip">
-                 <string>The daemon tool runs on the remote machine.</string>
-                </property>
-                <property name="text">
-                 <string>Remote Viz.(In-Situ)</string>
-                </property>
-               </widget>
-              </item>
-             </layout>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>40</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+           <item row="4" column="1">
+            <widget class="QPushButton" name="settingApplyPushButton">
+             <property name="text">
+              <string>Apply</string>
+             </property>
             </widget>
            </item>
-           <item row="1" column="0">
+           <item row="2" column="0" colspan="2">
             <widget class="QGroupBox" name="groupBox_3">
              <property name="title">
               <string>Sampling Type</string>
@@ -100,7 +81,7 @@
              </layout>
             </widget>
            </item>
-           <item row="2" column="0">
+           <item row="3" column="0" colspan="2">
             <layout class="QGridLayout" name="gridLayout_9">
              <item row="1" column="2">
               <widget class="QPushButton" name="transferFunctionFilePathPushButton">
@@ -146,75 +127,49 @@
              </item>
             </layout>
            </item>
-          </layout>
-         </widget>
-        </item>
-        <item row="1" column="0">
-         <widget class="QGroupBox" name="groupBox_4">
-          <property name="title">
-           <string>Connect to Server</string>
-          </property>
-          <layout class="QGridLayout" name="gridLayout_5">
-           <item row="1" column="1">
-            <widget class="QPushButton" name="connectPushButton">
-             <property name="text">
-              <string>Connect</string>
+           <item row="1" column="0" colspan="2">
+            <widget class="QGroupBox" name="groupBox_2">
+             <property name="title">
+              <string>Mode</string>
              </property>
+             <layout class="QHBoxLayout" name="horizontalLayout_2">
+              <item>
+               <widget class="QRadioButton" name="localVizRadioButton">
+                <property name="toolTip">
+                 <string>The client and server run on the same machine.</string>
+                </property>
+                <property name="text">
+                 <string>Local Viz.(Client &amp;&amp; Server)</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QRadioButton" name="remoteVizClientServerRadioButton">
+                <property name="toolTip">
+                 <string>The server application runs on the remote machine.</string>
+                </property>
+                <property name="text">
+                 <string>Remote Viz.(Client &amp;&amp; Server)</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QRadioButton" name="remoteVizInsituRadioButton">
+                <property name="toolTip">
+                 <string>The daemon tool runs on the remote machine.</string>
+                </property>
+                <property name="text">
+                 <string>Remote Viz.(In-Situ)</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
             </widget>
-           </item>
-           <item row="0" column="0" colspan="3">
-            <widget class="QLineEdit" name="addressLineEdit">
-             <property name="placeholderText">
-              <string>ex., wss://127.0.0.1:60000</string>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="2">
-            <widget class="QPushButton" name="disconnectPushButton">
-             <property name="text">
-              <string>Disconnect</string>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="0">
-            <spacer name="horizontalSpacer">
-             <property name="orientation">
-              <enum>Qt::Horizontal</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>40</width>
-               <height>20</height>
-              </size>
-             </property>
-            </spacer>
            </item>
           </layout>
          </widget>
         </item>
         <item row="3" column="0">
-         <widget class="QGroupBox" name="groupBox_6">
-          <property name="title">
-           <string>Chat</string>
-          </property>
-          <layout class="QGridLayout" name="gridLayout_8">
-           <item row="0" column="0" colspan="2">
-            <widget class="QTextBrowser" name="textBrowser"/>
-           </item>
-           <item row="1" column="0" colspan="2">
-            <widget class="QLineEdit" name="chatLineEdit">
-             <property name="text">
-              <string/>
-             </property>
-             <property name="placeholderText">
-              <string>Write a message... (Press Enter to send)</string>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </widget>
-        </item>
-        <item row="2" column="0">
          <widget class="QGroupBox" name="groupBox_5">
           <property name="toolTip">
            <string/>
@@ -271,6 +226,71 @@
               <bool>true</bool>
              </property>
             </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item row="4" column="0">
+         <widget class="QGroupBox" name="groupBox_6">
+          <property name="title">
+           <string>Chat</string>
+          </property>
+          <layout class="QGridLayout" name="gridLayout_8">
+           <item row="0" column="0" colspan="2">
+            <widget class="QTextBrowser" name="textBrowser"/>
+           </item>
+           <item row="1" column="0" colspan="2">
+            <widget class="QLineEdit" name="chatLineEdit">
+             <property name="text">
+              <string/>
+             </property>
+             <property name="placeholderText">
+              <string>Write a message... (Press Enter to send)</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item row="0" column="0">
+         <widget class="QGroupBox" name="groupBox_4">
+          <property name="title">
+           <string>Connect to Server</string>
+          </property>
+          <layout class="QGridLayout" name="gridLayout_5">
+           <item row="1" column="1">
+            <widget class="QPushButton" name="connectPushButton">
+             <property name="text">
+              <string>Connect</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="0" colspan="3">
+            <widget class="QLineEdit" name="addressLineEdit">
+             <property name="placeholderText">
+              <string>ex., wss://127.0.0.1:60000</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="2">
+            <widget class="QPushButton" name="disconnectPushButton">
+             <property name="text">
+              <string>Disconnect</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="0">
+            <spacer name="horizontalSpacer">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>40</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
            </item>
           </layout>
          </widget>

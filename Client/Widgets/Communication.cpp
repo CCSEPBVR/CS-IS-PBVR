@@ -14,15 +14,15 @@ Communication::Communication( kvs::qt::jaea::Screen* screen, WebSocketPair* webS
     ui->disconnectPushButton->setEnabled( false ); // NOTE:起動時デフォルトは未接続のため無効
     ui->addressLineEdit->setText( "ws://127.0.0.1:60000" );
 
+    connect( ui->connectPushButton                 ,&QPushButton::clicked             , this, &Communication::onConnectClicked );
+    connect( ui->disconnectPushButton              ,&QPushButton::clicked             , this, &Communication::onDisconnectClicked );
+
     connect( ui->localVizRadioButton               ,&QRadioButton::clicked            , this, &Communication::onModeClicked );
     connect( ui->remoteVizClientServerRadioButton  ,&QRadioButton::clicked            , this, &Communication::onModeClicked );
     connect( ui->remoteVizInsituRadioButton        ,&QRadioButton::clicked            , this, &Communication::onModeClicked );
-
     connect( ui->volumeDataFilePathPushButton      ,&QPushButton::clicked             , this, &Communication::onVolumeDataFilePathClicked );
     connect( ui->transferFunctionFilePathPushButton,&QPushButton::clicked             , this, &Communication::onTransferFunctionFilePathClicked );
-
-    connect( ui->connectPushButton                 ,&QPushButton::clicked             , this, &Communication::onConnectClicked );
-    connect( ui->disconnectPushButton              ,&QPushButton::clicked             , this, &Communication::onDisconnectClicked );
+    connect( ui->settingApplyPushButton            ,&QPushButton::clicked             , this, &Communication::onSettingsApplyClicked );
 
     connect( ui->transferOperatorApplyPushButton   ,&QPushButton::clicked             , this, &Communication::onTransferOperator );
     connect( ui->chatLineEdit                      ,&QLineEdit::returnPressed         , this, &Communication::onSendChatMessage );
@@ -53,59 +53,7 @@ void Communication::onSaveParameter( const QString& filePath )
 
 void Communication::webSocketConnected()
 {
-    if( m_web_sockets->isConnected() )
-    {
-        emit updateServerState( true );
-
-        ui->localVizRadioButton               ->setEnabled( false );
-        ui->remoteVizClientServerRadioButton  ->setEnabled( false );
-        ui->remoteVizInsituRadioButton        ->setEnabled( false );
-
-        ui->uniformRadioButton                ->setEnabled( false );
-        ui->metropolisRadioButton             ->setEnabled( false );
-        ui->rejectionRadioButton              ->setEnabled( false );
-
-        ui->volumeDataFilePathLineEdit        ->setEnabled( false );
-        ui->volumeDataFilePathPushButton      ->setEnabled( false );
-        ui->transferFunctionFilePathLineEdit  ->setEnabled( false );
-        ui->transferFunctionFilePathPushButton->setEnabled( false );
-
-        ui->addressLineEdit                   ->setEnabled( false );
-        ui->connectPushButton                 ->setEnabled( false );
-        ui->disconnectPushButton              ->setEnabled( true );
-
-        updateVizMode();
-
-        QString pointObjectUUID = QUuid::createUuid().toString( QUuid::WithoutBraces );
-        QString glyphObjectUUID = QUuid::createUuid().toString( QUuid::WithoutBraces );
-
-        const bool is_client_server_mode = ui->localVizRadioButton->isChecked() || ui->remoteVizClientServerRadioButton->isChecked();
-
-        const ObjectInfoExtractor::Format pointObjectFormat =
-            is_client_server_mode ?
-                ObjectInfoExtractor::Format::ClientServerPointObject :
-                ObjectInfoExtractor::Format::InsituServerPointObject;
-
-        const ObjectInfoExtractor::Format glyphObjectFormat = ObjectInfoExtractor::Format::ServerGlyphObject;
-
-        QJsonArray uuidArray;
-        uuidArray.append( pointObjectUUID );
-        uuidArray.append( glyphObjectUUID );
-
-        QJsonArray formatArray;
-        formatArray.append( pointObjectFormat );
-        formatArray.append( glyphObjectFormat );
-
-        m_web_sockets->text()->sendTextMessage(
-            QJsonDocument( {
-                           { QString::fromUtf8( Protocol::Key::Event)                    , QString::fromUtf8(Protocol::Events::Initialize) },
-                           { QString::fromUtf8( Protocol::Key::VolumeDataFilePath )      , ui->volumeDataFilePathLineEdit->text() },
-                           { QString::fromUtf8( Protocol::Key::TransferFunctionFilePath ), ui->transferFunctionFilePathLineEdit->text() },
-                           { QString::fromUtf8( Protocol::Key::UUID )                    , uuidArray },
-                           { QString::fromUtf8( Protocol::Key::Format )                  , formatArray },
-                           } ).toJson( QJsonDocument::Compact )
-            );
-    }
+    // NOTE:Unuse
 }
 
 void Communication::webSocketDisconnected()
@@ -168,14 +116,37 @@ void Communication::receiveID( const QJsonObject& payload )
 
 void Communication::receiveOperator( const QJsonObject& payload )
 {
-    const bool isOperator = payload.value( QString::fromUtf8( Protocol::Key::IsOperator ) ).toBool(); // NOTE:操作権限の有無 true: 権限有り, false: 権限無し
+    const auto kVizMode    = QString::fromUtf8( "VizMode" );
+    const auto kUserID     = QString::fromUtf8( Protocol::Key::UserID );
+    const auto kIsOperator = QString::fromUtf8( Protocol::Key::IsOperator );
 
-    m_is_operator = isOperator;
-    emit updateOperatorState( m_is_operator );
+
+    emit updateServerState( true );
+
+    if( payload.contains( kVizMode ))
+    {
+        *m_viz_mode = static_cast<Viz::Mode>( payload.value( kVizMode ).toInt() );
+    }
+
+    if( payload.contains( kUserID ) && payload.contains( kIsOperator ) )
+    {
+        const int userID = payload.value( kUserID ).toInt();           // NOTE:権限があるUserID
+        const bool isOperator = payload.value( kIsOperator ).toBool(); // NOTE:操作権限の有無 true: 権限有り, false: 権限無し
+        if( m_user_id == userID )
+        {
+            m_is_operator = isOperator;
+            emit updateOperatorState( m_is_operator );
+        }
+        else
+        {
+            m_is_operator = false;
+            emit updateOperatorState( m_is_operator );
+        }
+    }
 
     ui->isOperatorLineEdit->setText( m_is_operator ? "true" : "false" );
     ui->textBrowser->append( m_is_operator ? "--- You have operator privilege"
-                                          : "--- You are not operator" );
+                                           : "--- You are not operator" );
 }
 
 void Communication::receiveTransferOperator( const QJsonObject& payload )
@@ -314,13 +285,38 @@ void Communication::receiveSharePoint( const QJsonObject& payload )
 
 void Communication::updateVizMode()
 {
-    *m_viz_mode = Viz::Mode::Local;
+    // NOTE:Unuse
+}
 
-    if( !m_web_sockets->isConnected() ) return;
+void Communication::onConnectClicked()
+{
+    if( m_web_sockets->isConnected() )
+    {
+        emit updateStatusBarMessage( "Already connected." );
+        return;
+    }
 
-    if( ui->localVizRadioButton->isChecked() )                   *m_viz_mode = Viz::Mode::LocalClientAndServer;
-    else if( ui->remoteVizClientServerRadioButton->isChecked() ) *m_viz_mode = Viz::Mode::RemoteClientAndServer;
-    else if( ui->remoteVizInsituRadioButton->isChecked() )       *m_viz_mode = Viz::Mode::RemoteInSitu;
+    m_user_uuid = QUuid::createUuid().toString( QUuid::WithoutBraces );
+    const QString address       = ui->addressLineEdit->text().toUtf8().constData(); // FIXME:wssで接続できません。SSL対応が必要かもしれません
+    const QString binaryAddress = address + "/binary?uuid=" + m_user_uuid;
+    const QString textAddress   = address + "/text?uuid=" + m_user_uuid;
+
+    emit updateStatusBarMessage( "Connecting to " + address );
+    if( m_web_sockets->binary() ) m_web_sockets->binary()->open( QUrl( binaryAddress ) );
+    if( m_web_sockets->text() )   m_web_sockets->text()  ->open( QUrl( textAddress ) );
+}
+
+void Communication::onDisconnectClicked()
+{
+    if( !m_web_sockets->isConnected() )
+    {
+        emit updateStatusBarMessage( k_not_connected_text );
+        return;
+    }
+
+    m_user_uuid.clear();
+    emit updateStatusBarMessage( "Disconnect." );
+    m_web_sockets->closeAll();
 }
 
 void Communication::onModeClicked()
@@ -362,44 +358,71 @@ void Communication::onTransferFunctionFilePathClicked()
     ui->transferFunctionFilePathLineEdit->setText( filePath );
 }
 
-void Communication::onConnectClicked()
+void Communication::onSettingsApplyClicked()
 {
     if( m_web_sockets->isConnected() )
     {
-        emit updateStatusBarMessage( "Already connected." );
-        return;
+        // NOTE:モードが選択されていない場合は警告
+        if( !ui->localVizRadioButton             ->isChecked() &&
+            !ui->remoteVizClientServerRadioButton->isChecked() &&
+            !ui->remoteVizInsituRadioButton      ->isChecked() )
+        {
+            emit updateStatusBarMessage( "Please select a visualization mode." );
+            return;
+        }
+
+        ui->localVizRadioButton               ->setEnabled( false );
+        ui->remoteVizClientServerRadioButton  ->setEnabled( false );
+        ui->remoteVizInsituRadioButton        ->setEnabled( false );
+
+        ui->uniformRadioButton                ->setEnabled( false );
+        ui->metropolisRadioButton             ->setEnabled( false );
+        ui->rejectionRadioButton              ->setEnabled( false );
+
+        ui->volumeDataFilePathLineEdit        ->setEnabled( false );
+        ui->volumeDataFilePathPushButton      ->setEnabled( false );
+        ui->transferFunctionFilePathLineEdit  ->setEnabled( false );
+        ui->transferFunctionFilePathPushButton->setEnabled( false );
+
+        ui->addressLineEdit                   ->setEnabled( false );
+        ui->connectPushButton                 ->setEnabled( false );
+        ui->disconnectPushButton              ->setEnabled( true );
+
+        if( ui->localVizRadioButton->isChecked() )                   *m_viz_mode = Viz::Mode::LocalClientAndServer;
+        else if( ui->remoteVizClientServerRadioButton->isChecked() ) *m_viz_mode = Viz::Mode::RemoteClientAndServer;
+        else if( ui->remoteVizInsituRadioButton->isChecked() )       *m_viz_mode = Viz::Mode::RemoteInSitu;
+
+        QString pointObjectUUID = QUuid::createUuid().toString( QUuid::WithoutBraces );
+        QString glyphObjectUUID = QUuid::createUuid().toString( QUuid::WithoutBraces );
+
+        const bool is_client_server_mode = ui->localVizRadioButton->isChecked() || ui->remoteVizClientServerRadioButton->isChecked();
+
+        const ObjectInfoExtractor::Format pointObjectFormat =
+            is_client_server_mode ?
+                ObjectInfoExtractor::Format::ClientServerPointObject :
+                ObjectInfoExtractor::Format::InsituServerPointObject;
+
+        const ObjectInfoExtractor::Format glyphObjectFormat = ObjectInfoExtractor::Format::ServerGlyphObject;
+
+        QJsonArray uuidArray;
+        uuidArray.append( pointObjectUUID );
+        uuidArray.append( glyphObjectUUID );
+
+        QJsonArray formatArray;
+        formatArray.append( pointObjectFormat );
+        formatArray.append( glyphObjectFormat );
+
+        m_web_sockets->text()->sendTextMessage(
+            QJsonDocument( {
+                           { QString::fromUtf8( Protocol::Key::Event)                    , QString::fromUtf8(Protocol::Events::Initialize) },
+                           { "VizMode"                                                   , static_cast<int>( *m_viz_mode ) },
+                           { QString::fromUtf8( Protocol::Key::VolumeDataFilePath )      , ui->volumeDataFilePathLineEdit->text() },
+                           { QString::fromUtf8( Protocol::Key::TransferFunctionFilePath ), ui->transferFunctionFilePathLineEdit->text() },
+                           { QString::fromUtf8( Protocol::Key::UUID )                    , uuidArray },
+                           { QString::fromUtf8( Protocol::Key::Format )                  , formatArray },
+                           } ).toJson( QJsonDocument::Compact )
+            );
     }
-
-    // NOTE:モードが選択されていない場合は警告
-    if( !ui->localVizRadioButton             ->isChecked() &&
-        !ui->remoteVizClientServerRadioButton->isChecked() &&
-        !ui->remoteVizInsituRadioButton      ->isChecked() )
-    {
-        emit updateStatusBarMessage( "Please select a visualization mode." );
-        return;
-    }
-
-    m_user_uuid = QUuid::createUuid().toString( QUuid::WithoutBraces );
-    const QString address       = ui->addressLineEdit->text().toUtf8().constData(); // FIXME:wssで接続できません。SSL対応が必要かもしれません
-    const QString binaryAddress = address + "/binary?uuid=" + m_user_uuid;
-    const QString textAddress   = address + "/text?uuid=" + m_user_uuid;
-
-    emit updateStatusBarMessage( "Connecting to " + address );
-    if( m_web_sockets->binary() ) m_web_sockets->binary()->open( QUrl( binaryAddress ) );
-    if( m_web_sockets->text() )   m_web_sockets->text()  ->open( QUrl( textAddress ) );
-}
-
-void Communication::onDisconnectClicked()
-{
-    if( !m_web_sockets->isConnected() )
-    {
-        emit updateStatusBarMessage( k_not_connected_text );
-        return;
-    }
-
-    m_user_uuid.clear();
-    emit updateStatusBarMessage( "Disconnect." );
-    m_web_sockets->closeAll();
 }
 
 void Communication::onBinaryWebSocketConnected()

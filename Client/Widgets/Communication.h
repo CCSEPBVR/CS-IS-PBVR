@@ -89,11 +89,13 @@ private:
                                          const kvs::ValueArray<kvs::UInt8>& colors ); // FIXME:通信処理(Communication)の責務を超えているため、Utilsへ移動してください
 
 private slots:
+    void onConnectClicked();
+    void onDisconnectClicked();
+
     void onModeClicked();
     void onVolumeDataFilePathClicked();
     void onTransferFunctionFilePathClicked();
-    void onConnectClicked();
-    void onDisconnectClicked();
+    void onSettingsApplyClicked();
 
     void onTransferOperator();
     void onSendChatMessage();

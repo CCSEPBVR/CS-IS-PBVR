@@ -122,13 +122,9 @@ void Server::onUpgrade(uWS::HttpResponse<SSL>* res, uWS::HttpRequest* req, struc
     // ClientState 準備
     if (m_clients.find(uuid) == m_clients.end())
     {
-        const bool isOperator = m_clients.empty(); // 追加前のサイズで判定
-
         auto client = std::make_shared<ClientState>();
         client->userUUID = uuid;
         client->userID = m_next_user_id++;
-        client->isOperator = isOperator;
-        std::cout << "[Server] User[" << client->userID << "] operator :" << client->isOperator << std::endl;
         m_clients.emplace(uuid, std::move(client));
     }
 
@@ -182,12 +178,6 @@ void Server::onOpen(uWS::WebSocket<false, true, PerSocket>* ws, SocketType socke
                 nlohmann::json msg;
                 msg[Protocol::Key::Event] = Protocol::Events::ID;
                 msg[Protocol::Key::UserID] = client->userID;
-                ws->getUserData()->state->text_ws->send(msg.dump(), uWS::OpCode::TEXT);
-            }
-            {
-                nlohmann::json msg;
-                msg[Protocol::Key::Event] = Protocol::Events::Operator;
-                msg[Protocol::Key::IsOperator] = client->isOperator;
                 ws->getUserData()->state->text_ws->send(msg.dump(), uWS::OpCode::TEXT);
             }
         }
@@ -328,6 +318,18 @@ void Server::sharePoint(uWS::WebSocket<false, true, PerSocket>* ws, const nlohma
 void Server::initialize(uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received)
 {
     // std::cout << "[Server] initialize" << std::endl;
+
+    int VizMode = received["VizMode"];
+    // NOTE:最初にInitializeイベントを発行したユーザに操作権を付与
+    ws->getUserData()->state->isOperator = true;
+    std::cout << "[Server] User[" << ws->getUserData()->state->userID << "] operator :" << ws->getUserData()->state->isOperator << std::endl;
+    nlohmann::json operatorMsg;
+    operatorMsg[Protocol::Key::Event]      = Protocol::Events::Operator;
+    operatorMsg["VizMode"]                 = VizMode;
+    operatorMsg[Protocol::Key::UserID]     = ws->getUserData()->state->userID;
+    operatorMsg[Protocol::Key::IsOperator] = ws->getUserData()->state->isOperator;
+    m_u_web_sockets.publish( k_text_topic, operatorMsg.dump(), uWS::OpCode::TEXT );
+
     std::string volumeDataFilePath = received[Protocol::Key::VolumeDataFilePath];
     std::string transferFunctionFilePath = received[Protocol::Key::TransferFunctionFilePath];
 
@@ -1245,11 +1247,7 @@ void Server::receiveObjectInfoParameter(uWS::WebSocket<false, true, PerSocket>* 
         ppw.writeParticleParameterFile();
     }
 
-    nlohmann::json msg;
-    if (received.contains(Protocol::Key::ResultMinObjectCoords)) msg[Protocol::Key::ResultMinObjectCoords] = received.at(Protocol::Key::ResultMinObjectCoords);
-    if (received.contains(Protocol::Key::ResultMaxObjectCoords)) msg[Protocol::Key::ResultMaxObjectCoords] = received.at(Protocol::Key::ResultMaxObjectCoords);
-    if (received.contains(Protocol::Key::Objects))               msg[Protocol::Key::Objects] = received.at(Protocol::Key::Objects);
-    ws->publish(k_text_topic, msg.dump(), uWS::OpCode::TEXT);
+    ws->publish( k_text_topic, received.dump(), uWS::OpCode::TEXT );
 }
 
 void Server::receivePlotOverLineParameter(uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received)
@@ -1311,15 +1309,15 @@ void Server::receivePlotOverLineParameter(uWS::WebSocket<false, true, PerSocket>
         ppw.writePlotOverLineParameterFile();
     }
 
-    ws->publish(k_text_topic, received.dump(), uWS::OpCode::TEXT);
+    ws->publish( k_text_topic, received.dump(), uWS::OpCode::TEXT );
 }
 
 void Server::receiveTransferFunctionParameter(uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received)
 {
     // resize
-    if (received.contains("TfCount"))
+    if (received.contains("TFNumber"))
     {
-        const int n = received["TfCount"].get<int>();
+        const int n = received["TFNumber"].get<int>();
         m_particle_property->m_transfunc_array.resize(n);
     }
 
@@ -1540,10 +1538,7 @@ void Server::receiveTransferFunctionParameter(uWS::WebSocket<false, true, PerSoc
         ppw.writeParticleParameterFile();
     }
 
-    nlohmann::json msg;
-    msg[Protocol::Key::Event] = Protocol::Events::TransferFunctionParameter;
-    msg[Protocol::Key::Data] = received.value(Protocol::Key::Data, nlohmann::json::array());
-    ws->publish("Notice", msg.dump(), uWS::OpCode::TEXT);
+    ws->publish( k_text_topic, received.dump(), uWS::OpCode::TEXT );
 }
 
 void Server::fileList(uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received)
