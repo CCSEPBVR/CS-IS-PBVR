@@ -156,10 +156,18 @@ void GlyphEditor::onReceiveGlyphParameter( const QJsonObject& payload )
     }
 
     // Direction
-    if( payload.contains( kDirection1 ) && payload.contains( kDirection2 ) && payload.contains( kDirection3 ) )
+    if( payload.contains( kDirection1 ) )
     {
         ui->direction1ComboBox->setCurrentIndex( payload.value( kDirection1 ).toInt() );
+    }
+
+    if( payload.contains( kDirection2 ) )
+    {
         ui->direction2ComboBox->setCurrentIndex( payload.value( kDirection2 ).toInt() );
+    }
+
+    if( payload.contains( kDirection3 ) )
+    {
         ui->direction3ComboBox->setCurrentIndex( payload.value( kDirection3 ).toInt() );
     }
 

@@ -95,6 +95,7 @@ void TransferFunctionEditor::onReceiveTransferFunctionParameter( const QJsonObje
     const auto kColorSynthesizer      = QString::fromUtf8( Protocol::Key::ColorSynthesizer );
     const auto kOpacitySynthesizer    = QString::fromUtf8( Protocol::Key::OpacitySynthesizer );
     const auto kData                  = QString::fromUtf8( Protocol::Key::Data );
+    const auto kIndex                 = QString::fromUtf8( "Index" );
 
     const auto kColorVariable         = QString::fromUtf8( Protocol::Key::ColorVariable );
     const auto kColorRangeMode        = QString::fromUtf8( Protocol::Key::ColorRangeMode );
@@ -134,39 +135,38 @@ void TransferFunctionEditor::onReceiveTransferFunctionParameter( const QJsonObje
 
     if( !payload.contains( kData ) || !payload.value( kData ).isArray() ) return;
     const QJsonArray tfArray = payload.value( kData ).toArray();
-    const int tfNumber       = tfArray.size();
 
-    for( int i = 0; i < tfNumber; ++i )
+    const int curCount = static_cast<int>( m_transfer_function->count() );
+
+    auto applyPatchToIndex = [&]( int idx, const QJsonObject& tf )
     {
-        const QJsonValue v = tfArray.at( i );
-        if( !v.isObject() ) continue;
-
-        const QJsonObject tf = v.toObject();
+        if( idx < 0 || idx >= curCount ) { return; }
 
         // Color
         if( tf.contains( kColorVariable ) )
         {
-            m_transfer_function->at( i ).color.variable = tf.value( kColorVariable ).toString().toUtf8().constData();
+            m_transfer_function->at( idx ).color.variable = tf.value( kColorVariable ).toString().toUtf8().constData();
         }
         if( tf.contains( kColorRangeMode ) )
         {
-            m_transfer_function->at( i ).color.rangeMode = static_cast<TransferFunction::RangeMode>( tf.value( kColorRangeMode ).toInt() );
+            m_transfer_function->at( idx ).color.rangeMode =
+                static_cast<TransferFunction::RangeMode>( tf.value( kColorRangeMode ).toInt() );
         }
         if( tf.contains( kColorUserRangeMin ) )
         {
-            m_transfer_function->at( i ).color.userDefinedMinMax.first = tf.value( kColorUserRangeMin ).toDouble();
+            m_transfer_function->at( idx ).color.userDefinedMinMax.first = tf.value( kColorUserRangeMin ).toDouble();
         }
         if( tf.contains( kColorUserRangeMax ) )
         {
-            m_transfer_function->at( i ).color.userDefinedMinMax.second = tf.value( kColorUserRangeMax ).toDouble();
+            m_transfer_function->at( idx ).color.userDefinedMinMax.second = tf.value( kColorUserRangeMax ).toDouble();
         }
         if( tf.contains( kColorServerRangeMin ) )
         {
-            m_transfer_function->at( i ).color.serverSideMinMax.first = tf.value( kColorServerRangeMin ).toDouble();
+            m_transfer_function->at( idx ).color.serverSideMinMax.first = tf.value( kColorServerRangeMin ).toDouble();
         }
         if( tf.contains( kColorServerRangeMax ) )
         {
-            m_transfer_function->at( i ).color.serverSideMinMax.second = tf.value( kColorServerRangeMax ).toDouble();
+            m_transfer_function->at( idx ).color.serverSideMinMax.second = tf.value( kColorServerRangeMax ).toDouble();
         }
         if( tf.contains( kColorMap ) && tf.value( kColorMap ).isArray() )
         {
@@ -189,9 +189,8 @@ void TransferFunctionEditor::onReceiveTransferFunctionParameter( const QJsonObje
                 }
             }
 
-            m_transfer_function->at( i ).color.map = std::move( colorMapTemp );
+            m_transfer_function->at( idx ).color.map = std::move( colorMapTemp );
         }
-
         if( tf.contains( kColorHistogram ) && tf.value( kColorHistogram ).isArray() )
         {
             const QJsonArray colorHistArr = tf.value( kColorHistogram ).toArray();
@@ -204,33 +203,34 @@ void TransferFunctionEditor::onReceiveTransferFunctionParameter( const QJsonObje
                 colorHistogramTemp.push_back( hv.toInt() );
             }
 
-            m_transfer_function->at( i ).color.histogram = std::move( colorHistogramTemp );
+            m_transfer_function->at( idx ).color.histogram = std::move( colorHistogramTemp );
         }
 
         // Opacity
         if( tf.contains( kOpacityVariable ) )
         {
-            m_transfer_function->at( i ).opacity.variable = tf.value( kOpacityVariable ).toString().toUtf8().constData();
+            m_transfer_function->at( idx ).opacity.variable = tf.value( kOpacityVariable ).toString().toUtf8().constData();
         }
         if( tf.contains( kOpacityRangeMode ) )
         {
-            m_transfer_function->at( i ).opacity.rangeMode = static_cast<TransferFunction::RangeMode>( tf.value( kOpacityRangeMode ).toInt() );
+            m_transfer_function->at( idx ).opacity.rangeMode =
+                static_cast<TransferFunction::RangeMode>( tf.value( kOpacityRangeMode ).toInt() );
         }
         if( tf.contains( kOpacityUserRangeMin ) )
         {
-            m_transfer_function->at( i ).opacity.userDefinedMinMax.first = tf.value( kOpacityUserRangeMin ).toDouble();
+            m_transfer_function->at( idx ).opacity.userDefinedMinMax.first = tf.value( kOpacityUserRangeMin ).toDouble();
         }
         if( tf.contains( kOpacityUserRangeMax ) )
         {
-            m_transfer_function->at( i ).opacity.userDefinedMinMax.second = tf.value( kOpacityUserRangeMax ).toDouble();
+            m_transfer_function->at( idx ).opacity.userDefinedMinMax.second = tf.value( kOpacityUserRangeMax ).toDouble();
         }
         if( tf.contains( kOpacityServerRangeMin ) )
         {
-            m_transfer_function->at( i ).opacity.serverSideMinMax.first = tf.value( kOpacityServerRangeMin ).toDouble();
+            m_transfer_function->at( idx ).opacity.serverSideMinMax.first = tf.value( kOpacityServerRangeMin ).toDouble();
         }
         if( tf.contains( kOpacityServerRangeMax ) )
         {
-            m_transfer_function->at( i ).opacity.serverSideMinMax.second = tf.value( kOpacityServerRangeMax ).toDouble();
+            m_transfer_function->at( idx ).opacity.serverSideMinMax.second = tf.value( kOpacityServerRangeMax ).toDouble();
         }
         if( tf.contains( kOpacityMap ) && tf.value( kOpacityMap ).isArray() )
         {
@@ -244,25 +244,41 @@ void TransferFunctionEditor::onReceiveTransferFunctionParameter( const QJsonObje
                 opacityMapTemp.push_back( static_cast<float>( ov.toDouble() ) );
             }
 
-            m_transfer_function->at( i ).opacity.map = std::move( opacityMapTemp );
+            m_transfer_function->at( idx ).opacity.map = std::move( opacityMapTemp );
         }
         if( tf.contains( kOpacityHistogram ) && tf.value( kOpacityHistogram ).isArray() )
         {
-            const QJsonArray OpacityHistArr = tf.value( kOpacityHistogram ).toArray();
+            const QJsonArray opacityHistArr = tf.value( kOpacityHistogram ).toArray();
 
-            std::vector<int> OpacityHistogramTemp;
-            OpacityHistogramTemp.reserve( OpacityHistArr.size() );
+            std::vector<int> opacityHistogramTemp;
+            opacityHistogramTemp.reserve( opacityHistArr.size() );
 
-            for( const QJsonValue& hv : OpacityHistArr )
+            for( const QJsonValue& hv : opacityHistArr )
             {
-                OpacityHistogramTemp.push_back( hv.toInt() );
+                opacityHistogramTemp.push_back( hv.toInt() );
             }
 
-            m_transfer_function->at( i ).opacity.histogram = std::move( OpacityHistogramTemp );
+            m_transfer_function->at( idx ).opacity.histogram = std::move( opacityHistogramTemp );
         }
+    };
+
+    for( int i = 0; i < tfArray.size(); ++i )
+    {
+        const QJsonValue v = tfArray.at( i );
+        if( !v.isObject() ) continue;
+
+        const QJsonObject tf = v.toObject();
+
+        int idx = i;
+        if( tf.contains( kIndex ) )
+        {
+            idx = tf.value( kIndex ).toInt();
+        }
+
+        applyPatchToIndex( idx, tf );
     }
 
-    m_last_sent_tf = *m_transfer_function;
+    m_last_sent_tf  = *m_transfer_function;
     m_has_last_sent = true;
 
     // NOTE:初回導通なので両UIを更新

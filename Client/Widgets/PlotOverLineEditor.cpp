@@ -240,6 +240,8 @@ void PlotOverLineEditor::onReceivePlotOverLineParameter( const QJsonObject& payl
 
     m_last_snap_shot     = captureUiSnapshot();
     m_has_last_snap_shot = true;
+
+    onCreateLine();
 }
 
 void PlotOverLineEditor::onLoadParameter( const QString& filePath )
