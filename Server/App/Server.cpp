@@ -8,6 +8,7 @@
 #include <vismodule/InitialStep>
 #include <vismodule/GeneratePOL>
 #include <vismodule/ParticleMonitor>
+#include <vismodule/ParameterFileReader>
 #include <vismodule/ParameterFileWriter>
 
 Server::Server(int port)
@@ -931,8 +932,73 @@ void Server::requestDataAt(uWS::WebSocket<false, true, PerSocket>* ws, const nlo
         }
 
         // Transfer Function
+        ParticleProperty* tmpParticleProperty = nullptr;
+
+        if (m_server_mode == ServerMode::CS)
+        {
+            tmpParticleProperty = m_particle_property;
+        }
+        else // m_server_mode == ServerMode::IS
+        {
+            tmpParticleProperty = new ParticleProperty();
+            tmpParticleProperty->m_camera = new vismodule::Camera();
+            tmpParticleProperty->m_camera->setWindowSize(620, 620); // FIXME:クライアント側から送信されるようになったら削除
+            tmpParticleProperty->m_transfunc_synthesizer = new TransferFunctionSynthesizer();
+
+            const char *envBuf = NULL;
+            std::string visParamDir;
+            std::string tfFilePath;
+
+            envBuf = std::getenv("VIS_PARAM_DIR");
+
+            if (envBuf == NULL) {
+                visParamDir = "./";
+            }
+            else {
+                visParamDir = envBuf;
+                if (visParamDir[visParamDir.size() - 1] != '/') {
+                    visParamDir += "/";
+                }
+            }
+
+            tfFilePath = visParamDir;
+
+            envBuf = std::getenv("TF_NAME");
+
+            std::stringstream step;
+            step << '_' << std::setw( 5 ) << std::setfill( '0' ) << timeStep;
+
+            if (envBuf == NULL) {
+                tfFilePath     += "default" + step.str() + ".tf";
+            }
+            else {
+                tfFilePath     += envBuf;
+                tfFilePath     += step.str() + ".tf";
+            }
+
+            std::cout << "tfFilePath:" << tfFilePath << std::endl;
+
+            ParameterFileReader ppr;
+
+            ppr.readParticleParameterFile(tfFilePath.c_str());
+            ppr.setParticleParameter(*tmpParticleProperty);
+
+            const int tfNumber = tmpParticleProperty->m_transfunc_array.size();
+
+            for (size_t i = 0; i < tfNumber; ++i)
+            {
+                // m_particle_propertyのヒストグラムをtmpParticlePropertyにコピーする
+                vismodule::UInt64* fromColorPointer   = m_particle_property->m_transfunc_array[i].m_color_histogram;
+                vismodule::UInt64* toColorPointer     = tmpParticleProperty->m_transfunc_array[i].m_color_histogram;
+                vismodule::UInt64* fromOpacityPointer = m_particle_property->m_transfunc_array[i].m_opacity_histogram;
+                vismodule::UInt64* toOpacityPointer   = tmpParticleProperty->m_transfunc_array[i].m_opacity_histogram;
+                std::copy( fromColorPointer, fromColorPointer + DEFAULT_NBINS, toColorPointer );
+                std::copy( fromOpacityPointer, fromOpacityPointer + DEFAULT_NBINS, toOpacityPointer );
+            }
+        }
+
         nlohmann::json transferFunctions = nlohmann::json::array();
-        const int tfNumber = m_particle_property->m_transfunc_array.size();
+        const int tfNumber = tmpParticleProperty->m_transfunc_array.size();
         const int tfResolution = 256;
 
         for (size_t i = 0; i < tfNumber; ++i)
@@ -940,15 +1006,15 @@ void Server::requestDataAt(uWS::WebSocket<false, true, PerSocket>* ws, const nlo
             nlohmann::json tf;
 
             // Color
-            tf[Protocol::Key::ColorRangeMode] = static_cast<std::uint8_t>(m_particle_property->m_transfunc_array[i].m_server_color_range_mode);
-            tf[Protocol::Key::ColorUserRangeMin] = m_particle_property->m_transfunc_array[i].userColorMinValue();
-            tf[Protocol::Key::ColorUserRangeMax] = m_particle_property->m_transfunc_array[i].userColorMaxValue();
-            tf[Protocol::Key::ColorServerRangeMin] = m_particle_property->m_transfunc_array[i].serverColorMinValue(); // FIXME: m_particle_property->m_transfunc_array[i].serverColorMin();となるようにしてください
-            tf[Protocol::Key::ColorServerRangeMax] = m_particle_property->m_transfunc_array[i].serverColorMaxValue(); // FIXME: m_particle_property->m_transfunc_array[i].serverColorMax();となるようにしてください
+            tf[Protocol::Key::ColorRangeMode] = static_cast<std::uint8_t>(tmpParticleProperty->m_transfunc_array[i].m_server_color_range_mode);
+            tf[Protocol::Key::ColorUserRangeMin] = tmpParticleProperty->m_transfunc_array[i].userColorMinValue();
+            tf[Protocol::Key::ColorUserRangeMax] = tmpParticleProperty->m_transfunc_array[i].userColorMaxValue();
+            tf[Protocol::Key::ColorServerRangeMin] = tmpParticleProperty->m_transfunc_array[i].serverColorMinValue(); // FIXME: tmpParticleProperty->m_transfunc_array[i].serverColorMin();となるようにしてください
+            tf[Protocol::Key::ColorServerRangeMax] = tmpParticleProperty->m_transfunc_array[i].serverColorMaxValue(); // FIXME: tmpParticleProperty->m_transfunc_array[i].serverColorMax();となるようにしてください
 
             {
                 nlohmann::json color_map_json = nlohmann::json::array();
-                auto color_table = m_particle_property->m_transfunc_array[i].colorMap().table();
+                auto color_table = tmpParticleProperty->m_transfunc_array[i].colorMap().table();
                 const std::uint8_t* cptr = color_table.pointer();
 
                 for (int j = 0; j < tfResolution; ++j)
@@ -965,7 +1031,7 @@ void Server::requestDataAt(uWS::WebSocket<false, true, PerSocket>* ws, const nlo
 
             {
                 nlohmann::json colorHistogramJson = nlohmann::json::array();
-                const vismodule::UInt64* hist = m_particle_property->m_transfunc_array[i].colorHistogram();
+                const vismodule::UInt64* hist = tmpParticleProperty->m_transfunc_array[i].colorHistogram();
 
                 for (int j = 0; j < tfResolution; ++j)
                 {
@@ -975,15 +1041,15 @@ void Server::requestDataAt(uWS::WebSocket<false, true, PerSocket>* ws, const nlo
             }
 
             // Opacity
-            tf[Protocol::Key::OpacityRangeMode] = static_cast<std::uint8_t>(m_particle_property->m_transfunc_array[i].m_server_opacity_range_mode);
-            tf[Protocol::Key::OpacityUserRangeMin] = m_particle_property->m_transfunc_array[i].userOpacityMinValue();
-            tf[Protocol::Key::OpacityUserRangeMax] = m_particle_property->m_transfunc_array[i].userOpacityMaxValue();
-            tf[Protocol::Key::OpacityServerRangeMin] = m_particle_property->m_transfunc_array[i].serverOpacityMinValue();
-            tf[Protocol::Key::OpacityServerRangeMax] = m_particle_property->m_transfunc_array[i].serverOpacityMaxValue();
+            tf[Protocol::Key::OpacityRangeMode] = static_cast<std::uint8_t>(tmpParticleProperty->m_transfunc_array[i].m_server_opacity_range_mode);
+            tf[Protocol::Key::OpacityUserRangeMin] = tmpParticleProperty->m_transfunc_array[i].userOpacityMinValue();
+            tf[Protocol::Key::OpacityUserRangeMax] = tmpParticleProperty->m_transfunc_array[i].userOpacityMaxValue();
+            tf[Protocol::Key::OpacityServerRangeMin] = tmpParticleProperty->m_transfunc_array[i].serverOpacityMinValue();
+            tf[Protocol::Key::OpacityServerRangeMax] = tmpParticleProperty->m_transfunc_array[i].serverOpacityMaxValue();
 
             {
                 nlohmann::json opacityHistogramJson = nlohmann::json::array();
-                const vismodule::UInt64* hist = m_particle_property->m_transfunc_array[i].opacityHistogram();
+                const vismodule::UInt64* hist = tmpParticleProperty->m_transfunc_array[i].opacityHistogram();
 
                 for (int j = 0; j < tfResolution; ++j)
                 {
@@ -999,31 +1065,11 @@ void Server::requestDataAt(uWS::WebSocket<false, true, PerSocket>* ws, const nlo
         transferFunctionParameter[Protocol::Key::Data] = transferFunctions;
         msg[Protocol::Key::TransferFunctionParameter] = std::move(transferFunctionParameter);
 
-        // ISで伝達関数のrange modeが1つでもserver side rangeの場合default.tfに書き込む
         if (m_server_mode == ServerMode::IS)
         {
-            bool isServerSideRangeUsed = false;
-            for (size_t i = 0; i < tfNumber; i++)
-            {
-                if (m_particle_property->m_transfunc_array[i].m_server_color_range_mode == NamedTransferFunction::ServerRangeMode::ServerSide)
-                {
-                    isServerSideRangeUsed = true;
-                    break;
-                }
-
-                if (m_particle_property->m_transfunc_array[i].m_server_opacity_range_mode == NamedTransferFunction::ServerRangeMode::ServerSide)
-                {
-                    isServerSideRangeUsed = true;
-                    break;
-                }
-            }
-
-            if (isServerSideRangeUsed)
-            {
-                ParameterFileWriter ppw;
-                ppw.getParticleParameter(*m_particle_property);
-                ppw.writeParticleParameterFile();
-            }
+            delete tmpParticleProperty->m_camera;
+            delete tmpParticleProperty->m_transfunc_synthesizer;
+            delete tmpParticleProperty;
         }
 
         m_u_web_sockets.publish(k_text_topic, msg.dump(), uWS::OpCode::TEXT);

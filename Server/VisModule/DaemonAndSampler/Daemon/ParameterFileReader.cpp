@@ -81,11 +81,17 @@ void ParameterFileReader::readParticleParameterFile( const char* fname )
 
         const std::string tag_base = ss.str();
         m_name_list_file.setName( tag_base + "VAR_C" );
-        m_name_list_file.setName( tag_base + "MIN_C" );
-        m_name_list_file.setName( tag_base + "MAX_C" );
+        m_name_list_file.setName( tag_base + "RANGE_MODE_C" );
+        m_name_list_file.setName( tag_base + "SERVER_MIN_C" );
+        m_name_list_file.setName( tag_base + "SERVER_MAX_C" );
+        m_name_list_file.setName( tag_base + "USER_MIN_C" );
+        m_name_list_file.setName( tag_base + "USER_MAX_C" );
         m_name_list_file.setName( tag_base + "VAR_O" );
-        m_name_list_file.setName( tag_base + "MIN_O" );
-        m_name_list_file.setName( tag_base + "MAX_O" );
+        m_name_list_file.setName( tag_base + "RANGE_MODE_O" );
+        m_name_list_file.setName( tag_base + "SERVER_MIN_O" );
+        m_name_list_file.setName( tag_base + "SERVER_MAX_O" );
+        m_name_list_file.setName( tag_base + "USER_MIN_O" );
+        m_name_list_file.setName( tag_base + "USER_MAX_O" );
         m_name_list_file.setName( tag_base + "TABLE_C" );
         m_name_list_file.setName( tag_base + "TABLE_O" );
     }
@@ -122,11 +128,17 @@ void ParameterFileReader::readParticleParameterFile( const char* fname )
 
             const std::string tag_base = ss.str();
             m_name_list_file.deleteLine( tag_base + "VAR_C" );
-            m_name_list_file.deleteLine( tag_base + "MIN_C" );
-            m_name_list_file.deleteLine( tag_base + "MAX_C" );
+            m_name_list_file.deleteLine( tag_base + "RANGE_MODE_C" );
+            m_name_list_file.deleteLine( tag_base + "SERVER_MIN_C" );
+            m_name_list_file.deleteLine( tag_base + "SERVER_MAX_C" );
+            m_name_list_file.deleteLine( tag_base + "USER_MIN_C" );
+            m_name_list_file.deleteLine( tag_base + "USER_MAX_C" );
             m_name_list_file.deleteLine( tag_base + "VAR_O" );
-            m_name_list_file.deleteLine( tag_base + "MIN_O" );
-            m_name_list_file.deleteLine( tag_base + "MAX_O" );
+            m_name_list_file.deleteLine( tag_base + "RANGE_MODE_O" );
+            m_name_list_file.deleteLine( tag_base + "SERVER_MIN_O" );
+            m_name_list_file.deleteLine( tag_base + "SERVER_MAX_O" );
+            m_name_list_file.deleteLine( tag_base + "USER_MIN_O" );
+            m_name_list_file.deleteLine( tag_base + "USER_MAX_O" );
             m_name_list_file.deleteLine( tag_base + "TABLE_C" );
             m_name_list_file.deleteLine( tag_base + "TABLE_O" );
         }
@@ -394,23 +406,57 @@ void ParameterFileReader::setParticleParameter( ParticleProperty& particle_prope
         particle_property.m_transfunc_array[n].m_resolution = resolution;
         particle_property.m_transfunc_array[n].m_name = s_name.str();
 
-        const std::string color_variable  = m_name_list_file.getValue<std::string>( tag_base + "VAR_C" );
-        const std::string opacity_varible = m_name_list_file.getValue<std::string>( tag_base + "VAR_O" );
-        const float color_min             = m_name_list_file.getValue<float>( tag_base + "MIN_C" );
-        const float color_max             = m_name_list_file.getValue<float>( tag_base + "MAX_C" );
-        const float opacity_min           = m_name_list_file.getValue<float>( tag_base + "MIN_O" );
-        const float opacity_max           = m_name_list_file.getValue<float>( tag_base + "MAX_O" );
-        std::string s_color               = m_name_list_file.getValue<std::string>( tag_base + "TABLE_C" );
-        std::string s_opacity             = m_name_list_file.getValue<std::string>( tag_base + "TABLE_O" );
+        const std::string color_variable         = m_name_list_file.getValue<std::string>( tag_base + "VAR_C" );
+        const std::string opacity_varible        = m_name_list_file.getValue<std::string>( tag_base + "VAR_O" );
+        const std::string color_range_mode       = m_name_list_file.getValue<std::string>( tag_base + "RANGE_MODE_C" );
+        const std::string opacity_range_mode     = m_name_list_file.getValue<std::string>( tag_base + "RANGE_MODE_O" );
+        const float server_color_min             = m_name_list_file.getValue<float>( tag_base + "SERVER_MIN_C" );
+        const float server_color_max             = m_name_list_file.getValue<float>( tag_base + "SERVER_MAX_C" );
+        const float user_color_min               = m_name_list_file.getValue<float>( tag_base + "USER_MIN_C" );
+        const float user_color_max               = m_name_list_file.getValue<float>( tag_base + "USER_MAX_C" );
+        const float server_opacity_min           = m_name_list_file.getValue<float>( tag_base + "SERVER_MIN_O" );
+        const float server_opacity_max           = m_name_list_file.getValue<float>( tag_base + "SERVER_MAX_O" );
+        const float user_opacity_min             = m_name_list_file.getValue<float>( tag_base + "USER_MIN_O" );
+        const float user_opacity_max             = m_name_list_file.getValue<float>( tag_base + "USER_MAX_O" );
+        std::string s_color                      = m_name_list_file.getValue<std::string>( tag_base + "TABLE_C" );
+        std::string s_opacity                    = m_name_list_file.getValue<std::string>( tag_base + "TABLE_O" );
 
-        particle_property.m_transfunc_array[n].m_server_color_range_mode   = NamedTransferFunction::ServerRangeMode::UserRange;
-        particle_property.m_transfunc_array[n].m_server_opacity_range_mode = NamedTransferFunction::ServerRangeMode::UserRange;
-        particle_property.m_transfunc_array[n].m_color_variable            = color_variable;
-        particle_property.m_transfunc_array[n].m_opacity_variable          = opacity_varible;
-        particle_property.m_transfunc_array[n].m_user_color_variable_min   = color_min;
-        particle_property.m_transfunc_array[n].m_user_color_variable_max   = color_max;
-        particle_property.m_transfunc_array[n].m_user_opacity_variable_min = opacity_min;
-        particle_property.m_transfunc_array[n].m_user_opacity_variable_max = opacity_max;
+        if ( color_range_mode == "ServerSide" )
+        {
+            particle_property.m_transfunc_array[n].m_server_color_range_mode = NamedTransferFunction::ServerRangeMode::ServerSide;
+        }
+        else if ( color_range_mode == "UserRange" )
+        {
+            particle_property.m_transfunc_array[n].m_server_color_range_mode = NamedTransferFunction::ServerRangeMode::UserRange;
+        }
+        else
+        {
+            std::cout << "ERROR:Color Range Mode is unknown" << std::endl;
+        }
+
+        if ( opacity_range_mode == "ServerSide" )
+        {
+            particle_property.m_transfunc_array[n].m_server_opacity_range_mode = NamedTransferFunction::ServerRangeMode::ServerSide;
+        }
+        else if ( opacity_range_mode == "UserRange" )
+        {
+            particle_property.m_transfunc_array[n].m_server_opacity_range_mode = NamedTransferFunction::ServerRangeMode::UserRange;
+        }
+        else
+        {
+            std::cout << "ERROR:Opacity Range Mode is unknown" << std::endl;
+        }
+
+        particle_property.m_transfunc_array[n].m_color_variable              = color_variable;
+        particle_property.m_transfunc_array[n].m_opacity_variable            = opacity_varible;
+        particle_property.m_transfunc_array[n].m_server_color_variable_min   = server_color_min;
+        particle_property.m_transfunc_array[n].m_server_color_variable_max   = server_color_max;
+        particle_property.m_transfunc_array[n].m_server_opacity_variable_min = server_opacity_min;
+        particle_property.m_transfunc_array[n].m_server_opacity_variable_max = server_opacity_max;
+        particle_property.m_transfunc_array[n].m_user_color_variable_min     = user_color_min;
+        particle_property.m_transfunc_array[n].m_user_color_variable_max     = user_color_max;
+        particle_property.m_transfunc_array[n].m_user_opacity_variable_min   = user_opacity_min;
+        particle_property.m_transfunc_array[n].m_user_opacity_variable_max   = user_opacity_max;
 
         std::replace( s_color.begin(), s_color.end(), ',', ' ' );
         std::replace( s_opacity.begin(), s_opacity.end(), ',', ' ' );
@@ -443,8 +489,32 @@ void ParameterFileReader::setParticleParameter( ParticleProperty& particle_prope
 
         particle_property.m_transfunc_array[n].setColorMap( color_map );
         particle_property.m_transfunc_array[n].setOpacityMap( opacity_map );
-        particle_property.m_transfunc_array[n].setColorRange( color_min, color_max );
-        particle_property.m_transfunc_array[n].setOpacityRange( opacity_min, opacity_max );
+
+        if ( particle_property.m_transfunc_array[n].m_server_color_range_mode == NamedTransferFunction::ServerRangeMode::ServerSide )
+        {
+            particle_property.m_transfunc_array[n].setColorRange( server_color_min, server_color_max );
+        }
+        else if ( particle_property.m_transfunc_array[n].m_server_color_range_mode == NamedTransferFunction::ServerRangeMode::UserRange )
+        {
+            particle_property.m_transfunc_array[n].setColorRange( user_color_min, user_color_max );
+        }
+        else
+        {
+            std::cout << "ERROR:Color Range Mode is unknown" << std::endl;
+        }
+
+        if ( particle_property.m_transfunc_array[n].m_server_opacity_range_mode == NamedTransferFunction::ServerRangeMode::ServerSide )
+        {
+            particle_property.m_transfunc_array[n].setOpacityRange( server_opacity_min, server_opacity_max );
+        }
+        else if ( particle_property.m_transfunc_array[n].m_server_opacity_range_mode == NamedTransferFunction::ServerRangeMode::UserRange )
+        {
+            particle_property.m_transfunc_array[n].setOpacityRange( user_opacity_min, user_opacity_max );
+        }
+        else
+        {
+            std::cout << "ERROR:Opacity Range Mode is unknown" << std::endl;
+        }
 
         // particle_property.m_transfunc_array[n].m_selection = NamedTransferFunctionParameter::SelectTransferFunction;
 

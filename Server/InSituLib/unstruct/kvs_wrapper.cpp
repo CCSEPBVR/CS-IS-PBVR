@@ -144,13 +144,12 @@ bool generate_particles(
     GlyphProperty glyph_property;
     PlotOverLineProperty pol_property;
     MultiVolumePropertyList mvpl;
-    static NameListFile particleNameListFile;
     static NameListFile glyphNameListFile;
     static NameListFile POLNameListFile;
     particle_property.m_transfunc_synthesizer = new TransferFunctionSynthesizer();
     particle_property.m_camera                = new vismodule::Camera();
 
-    SetParticleParameter( dom, tfFilePath, tfFilePath_old, particle_property, mvpl, particleNameListFile );
+    SetParticleParameter( dom, tfFilePath, tfFilePath_old, particle_property, mvpl );
     SetGlyphParameter( glyphParameterPath, glyphParameterPath_old, glyph_property, glyphNameListFile );
     SetPlotOverLineParameter( plotOverLineParameterPath, plotOverLineParameterPath_old, pol_property, POLNameListFile );
 
@@ -259,12 +258,6 @@ bool generate_particles(
 
     OutputCoordMinMaxFile( dom, coordMinMaxFilePath );
 
-    if ( mpi_rank == 0 )
-    {
-        particleNameListFile.setFileName( tfFilePath_step );
-        particleNameListFile.write();
-    }
-
     // データ出力
     OutputParticles(
         particle_property, mvpl, start_time_step, time_step, tf_number, nvariables, particleFilePrefix,
@@ -283,6 +276,17 @@ bool generate_particles(
     if ( pol_property.m_plot_flag )
     {
         OutputLine( time_step, plotOverLineFilePrefix, values_on_line, mask, x_axis );
+    }
+
+    // OutputParticleで書き込んだdefault_old.tfファイルを読み込みdefault_xxx.tfに書き込む
+    if ( mpi_rank == 0 )
+    {
+        ParameterFileReader ppr;
+        NameListFile nameListFile;
+        ppr.readParticleParameterFile( tfFilePath_old.c_str() );
+        nameListFile = ppr.getNameListFile();
+        nameListFile.setFileName( tfFilePath_step );
+        nameListFile.write();
     }
    
     // 粒子ファイル書き込みスレッドが終了するまで待機
@@ -334,8 +338,7 @@ bool SetParticleParameter(
     const std::string& tfFilePath,
     const std::string& tfFilePath_old,
     ParticleProperty& particle_property,
-    MultiVolumePropertyList& mvpl,
-    NameListFile& nameListFile
+    MultiVolumePropertyList& mvpl
 )
 {
     int mpi_rank;
@@ -346,28 +349,28 @@ bool SetParticleParameter(
 #endif
 
     ParameterFileReader ppr;
+    NameListFile nameListFile;
+
     int size = 0;
     char* buf;
 
     if ( mpi_rank == 0 )
     {
-        bool is_file_exist = false;
         std::ifstream tfFile( tfFilePath );
 
         if ( tfFile.good() )
         {
-            is_file_exist = true;
             ppr.readParticleParameterFile( tfFilePath.c_str() );
             nameListFile = ppr.getNameListFile();
             std::rename( tfFilePath.c_str(), tfFilePath_old.c_str() );
         }
         else
         {
-            ppr.setNameListFile( nameListFile );
+            ppr.readParticleParameterFile( tfFilePath_old.c_str() );
+            nameListFile = ppr.getNameListFile();
         }
 
-        if ( is_file_exist ) size = nameListFile.byteSize();
-        else size = 0;
+        size = nameListFile.byteSize();
 
         if ( size > 0 )
         {
@@ -543,13 +546,12 @@ bool generate_particles_vtk( int time_step, vtkUnstructuredGrid* ucd )
     GlyphProperty glyph_property;
     PlotOverLineProperty pol_property;
     MultiVolumePropertyList mvpl;
-    static NameListFile particleNameListFile;
     static NameListFile glyphNameListFile;
     static NameListFile POLNameListFile;
     particle_property.m_transfunc_synthesizer = new TransferFunctionSynthesizer();
     particle_property.m_camera                = new vismodule::Camera();
 
-    SetParticleParameter( dom, tfFilePath, tfFilePath_old, particle_property, mvpl, particleNameListFile );
+    SetParticleParameter( dom, tfFilePath, tfFilePath_old, particle_property, mvpl );
     SetGlyphParameter( glyphParameterPath, glyphParameterPath_old, glyph_property, glyphNameListFile );
     SetPlotOverLineParameter( plotOverLineParameterPath, plotOverLineParameterPath_old, pol_property, POLNameListFile );
 
@@ -700,12 +702,6 @@ bool generate_particles_vtk( int time_step, vtkUnstructuredGrid* ucd )
 
     OutputCoordMinMaxFile( dom, coordMinMaxFilePath );
 
-    if ( mpi_rank == 0 )
-    {
-        particleNameListFile.setFileName( tfFilePath_step );
-        particleNameListFile.write();
-    }
-
     // データ出力
     OutputParticles(
         particle_property, mvpl, start_time_step, time_step, tf_number, nvariables, particleFilePrefix,
@@ -724,6 +720,16 @@ bool generate_particles_vtk( int time_step, vtkUnstructuredGrid* ucd )
     if ( pol_property.m_plot_flag )
     {
         OutputLine( time_step, plotOverLineFilePrefix, values_on_line, mask, x_axis );
+    }
+
+    // OutputParticleで書き込んだdefault_old.tfファイルを読み込みdefault_xxx.tfに書き込む
+    if ( mpi_rank == 0 )
+        ParameterFileReader ppr;
+        NameListFile nameListFile;
+        ppr.readParticleParameterFile( tfFilePath_old.c_str() );
+        nameListFile = ppr.getNameListFile();
+        particleNameListFile.setFileName( tfFilePath_step );
+        particleNameListFile.write();
     }
 
     // 粒子ファイル書き込みスレッドが終了するまで待機

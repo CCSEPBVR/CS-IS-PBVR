@@ -5,6 +5,7 @@
 #include <vismodule/KVSMLObjectPoint>
 #include <vismodule/KVSMLObjectPlotOverLine>
 #include <vismodule/ParameterFileReader>
+#include <vismodule/ParameterFileWriter>
 
 #ifndef CPU_VER
 #include <mpi.h>
@@ -379,7 +380,7 @@ auto safe_append = [](auto& dst, auto const& src, char const* what){
 }
 
 void OutputParticles(
-    const ParticleProperty& particle_property,
+    ParticleProperty& particle_property,
     const MultiVolumePropertyList& mvpl,
     const int start_time_step,
     const int time_step,
@@ -622,9 +623,9 @@ void OutputParticles(
     }
 #endif
 
-    // historyファイルの出力
     if( mpi_rank == 0 )
     {
+        // historyファイルの出力
         std::ofstream ofs2( histryFilePath.c_str(), std::ios::out);
         ofs2 << "TF_NUMBER=" << tf_number << std::endl;
 
@@ -655,6 +656,19 @@ void OutputParticles(
         ofs2 << "PARTICLE_LIMIT="          << particle_property.m_particle_limit       << std::endl;
         ofs2 << "END_HISTORY_FILE=SUCCESS" << std::endl;
         ofs2.close();
+
+        // ServerSideMinMaxを更新してからdefault.tfファイルを出力
+        for( size_t i = 0; i < tf_number; i++ )
+        {
+            particle_property.m_transfunc_array[i].m_server_color_variable_min   = min_array_recv[2 * i + 1];
+            particle_property.m_transfunc_array[i].m_server_color_variable_max   = max_array_recv[2 * i + 1];
+            particle_property.m_transfunc_array[i].m_server_opacity_variable_min = min_array_recv[2 * i    ];
+            particle_property.m_transfunc_array[i].m_server_opacity_variable_max = max_array_recv[2 * i    ];
+        }
+
+        ParameterFileWriter ppw;
+        ppw.getParticleParameter( particle_property );
+        ppw.writeParticleParameterOldFile();
     }
 
     delete min_array_recv;

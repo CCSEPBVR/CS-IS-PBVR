@@ -8,30 +8,38 @@ ParameterFileWriter::ParameterFileWriter()
 
     if ( envBuf == nullptr )
     {
-        m_particle_parameter_path = "./";
-        m_glyph_parameter_path    = "./";
-        m_pol_parameter_path      = "./";
+        m_particle_parameter_path     = "./";
+        m_particle_parameter_old_path = "./";
+        m_glyph_parameter_path        = "./";
+        m_pol_parameter_path          = "./";
     }
     else
     {
-        m_particle_parameter_path = envBuf;
-        if ( m_particle_parameter_path[m_particle_parameter_path.size() - 1] != '/' ) m_particle_parameter_path += "/";
-        if ( m_glyph_parameter_path[m_glyph_parameter_path.size() - 1] != '/' )       m_glyph_parameter_path    += "/";
-        if ( m_pol_parameter_path[m_pol_parameter_path.size() - 1] != '/' )           m_pol_parameter_path      += "/";
+        m_particle_parameter_path     = envBuf;
+        m_particle_parameter_old_path = envBuf;
+        m_glyph_parameter_path        = envBuf;
+        m_pol_parameter_path          = envBuf;
+        if ( m_particle_parameter_path[m_particle_parameter_path.size() - 1] != '/' )         m_particle_parameter_path     += "/";
+        if ( m_particle_parameter_old_path[m_particle_parameter_old_path.size() - 1] != '/' ) m_particle_parameter_old_path += "/";
+        if ( m_glyph_parameter_path[m_glyph_parameter_path.size() - 1] != '/' )               m_glyph_parameter_path        += "/";
+        if ( m_pol_parameter_path[m_pol_parameter_path.size() - 1] != '/' )                   m_pol_parameter_path          += "/";
     }
 
     envBuf = std::getenv( "TF_NAME" );
 
     if ( envBuf == nullptr )
     {
-        m_particle_parameter_path += "default.tf";
-        m_glyph_parameter_path    += "parameter.gly";
-        m_pol_parameter_path      += "parameter.pol";
+        m_particle_parameter_path     += "default.tf";
+        m_particle_parameter_old_path += "default_old.tf";
+        m_glyph_parameter_path        += "parameter.gly";
+        m_pol_parameter_path          += "parameter.pol";
     }
     else
     {
-        m_particle_parameter_path +=  envBuf;
-        m_particle_parameter_path += ".tf";
+        m_particle_parameter_path += envBuf;
+        m_particle_parameter_path     += ".tf";
+        m_particle_parameter_old_path += envBuf;
+        m_particle_parameter_old_path += ".tf";
         m_glyph_parameter_path    += envBuf;
         m_glyph_parameter_path    += ".tf";
         m_pol_parameter_path      += envBuf;
@@ -96,30 +104,36 @@ void ParameterFileWriter::getParticleParameter( const ParticleProperty& particle
 
         const std::string tag_base = ss.str();
 
+        m_name_list_file.setLine( tag_base + "SERVER_MIN_C", particle_property.m_transfunc_array[n].m_server_color_variable_min );
+        m_name_list_file.setLine( tag_base + "SERVER_MAX_C", particle_property.m_transfunc_array[n].m_server_color_variable_max );
+        m_name_list_file.setLine( tag_base + "USER_MIN_C", particle_property.m_transfunc_array[n].m_user_color_variable_min );
+        m_name_list_file.setLine( tag_base + "USER_MAX_C", particle_property.m_transfunc_array[n].m_user_color_variable_max );
+
         switch ( particle_property.m_transfunc_array[n].m_server_color_range_mode )
         {
         case NamedTransferFunction::ServerRangeMode::ServerSide:
-            m_name_list_file.setLine( tag_base + "MIN_C", particle_property.m_transfunc_array[n].m_server_color_variable_min );
-            m_name_list_file.setLine( tag_base + "MAX_C", particle_property.m_transfunc_array[n].m_server_color_variable_max );
+            m_name_list_file.setLine( tag_base + "RANGE_MODE_C", "ServerSide" );
             break;
         case NamedTransferFunction::ServerRangeMode::UserRange:
-            m_name_list_file.setLine( tag_base + "MIN_C", particle_property.m_transfunc_array[n].m_user_color_variable_min );
-            m_name_list_file.setLine( tag_base + "MAX_C", particle_property.m_transfunc_array[n].m_user_color_variable_max );
+            m_name_list_file.setLine( tag_base + "RANGE_MODE_C", "UserRange" );
             break;
         default:
             std::cout << "ERROR:Range Mode is unknown" << std::endl;
             break;
         }
 
+        m_name_list_file.setLine( tag_base + "SERVER_MIN_O", particle_property.m_transfunc_array[n].m_server_opacity_variable_min );
+        m_name_list_file.setLine( tag_base + "SERVER_MAX_O", particle_property.m_transfunc_array[n].m_server_opacity_variable_max );
+        m_name_list_file.setLine( tag_base + "USER_MIN_O", particle_property.m_transfunc_array[n].m_user_opacity_variable_min );
+        m_name_list_file.setLine( tag_base + "USER_MAX_O", particle_property.m_transfunc_array[n].m_user_opacity_variable_max );
+
         switch ( particle_property.m_transfunc_array[n].m_server_opacity_range_mode )
         {
         case NamedTransferFunction::ServerRangeMode::ServerSide:
-            m_name_list_file.setLine( tag_base + "MIN_O", particle_property.m_transfunc_array[n].m_server_opacity_variable_min );
-            m_name_list_file.setLine( tag_base + "MAX_O", particle_property.m_transfunc_array[n].m_server_opacity_variable_max );
+            m_name_list_file.setLine( tag_base + "RANGE_MODE_O", "ServerSide" );
             break;
         case NamedTransferFunction::ServerRangeMode::UserRange:
-            m_name_list_file.setLine( tag_base + "MIN_O", particle_property.m_transfunc_array[n].m_user_opacity_variable_min );
-            m_name_list_file.setLine( tag_base + "MAX_O", particle_property.m_transfunc_array[n].m_user_opacity_variable_max );
+            m_name_list_file.setLine( tag_base + "RANGE_MODE_O", "UserRange" );
             break;
         default:
             std::cout << "ERROR:Range Mode is unknown" << std::endl;
@@ -269,6 +283,12 @@ void ParameterFileWriter::getPlotOverLineParameter( const PlotOverLineProperty& 
 void ParameterFileWriter::writeParticleParameterFile()
 {
     m_name_list_file.setFileName( m_particle_parameter_path );
+    m_name_list_file.write();
+}
+
+void ParameterFileWriter::writeParticleParameterOldFile()
+{
+    m_name_list_file.setFileName( m_particle_parameter_old_path );
     m_name_list_file.write();
 }
 

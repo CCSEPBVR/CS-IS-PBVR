@@ -83,7 +83,7 @@ void MakeGlyph(
 );
 
 void OutputParticles(
-    const ParticleProperty& particle_property,
+    ParticleProperty& particle_property,
     const MultiVolumePropertyList& mvpl,
     const int start_time_step,
     const int time_step,
