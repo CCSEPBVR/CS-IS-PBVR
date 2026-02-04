@@ -140,6 +140,15 @@ MainWindow::MainWindow( kvs::qt::Application& app, QWidget *parent )
     initializeShaderAndFonts();
 
     emit screenInitialized();
+
+#ifdef OPENXR_SCREEN
+    m_vr_listener = new VRHandControllerListener( m_screen );
+    m_screen->addEvent( m_vr_listener );
+    // connect( m_vr_listener, &VRHandControllerListener::sendVRSharePoint, m_communication, &Communication::onSendVRSharePoint );
+
+    connect( m_vr_listener, &VRHandControllerListener::drawVRPlotOverLine          , m_plot_over_line_editor, &PlotOverLineEditor::onDrawVRPlotOverLine );
+    connect( m_vr_listener, &VRHandControllerListener::toggleShowHideVRPlotOverLine, m_plot_over_line_editor, &PlotOverLineEditor::onToggleShowHideVRPlotOverLine );
+#endif
 }
 
 MainWindow::~MainWindow()

@@ -244,6 +244,26 @@ void PlotOverLineEditor::onReceivePlotOverLineParameter( const QJsonObject& payl
     onCreateLine();
 }
 
+void PlotOverLineEditor::onDrawVRPlotOverLine( kvs::Real32 coordArray[ 2 * 3 ] )
+{
+    if( !m_web_sockets->isConnected() ) return;
+
+    ui->startCoordsXDoubleSpinBox->setValue( coordArray[0] );
+    ui->startCoordsYDoubleSpinBox->setValue( coordArray[1] );
+    ui->startCoordsZDoubleSpinBox->setValue( coordArray[2] );
+    ui->endCoordsXDoubleSpinBox  ->setValue( coordArray[3] );
+    ui->endCoordsYDoubleSpinBox  ->setValue( coordArray[4] );
+    ui->endCoordsZDoubleSpinBox  ->setValue( coordArray[5] );
+    onApply();
+}
+
+void PlotOverLineEditor::onToggleShowHideVRPlotOverLine()
+{
+    if( !m_web_sockets->isConnected() ) return;
+    ui->plotOverLineGroupBox->setChecked( !ui->plotOverLineGroupBox->isChecked() );
+    onApply();
+}
+
 void PlotOverLineEditor::onLoadParameter( const QString& filePath )
 {
     qDebug() << __FILE__ << ":" << __func__ << ":" << filePath;

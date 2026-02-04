@@ -7,6 +7,7 @@
 class VRHandControllerListener : public QObject, public kvs::EventListener
 {
     Q_OBJECT
+
 public:
     explicit VRHandControllerListener( kvs::qt::jaea::Screen* screen );
     ~VRHandControllerListener();
@@ -14,11 +15,12 @@ public:
     void onEvent( kvs::EventBase* event ) override;
 
 signals:
-    void sendVRSharePoint( kvs::Real32 CoordArray[ 2 * 3 ], kvs::Real32 AnotherArray[ 3 ] );
-    void drawPlotOverLine( kvs::Real32 CoordArray[ 2 * 3 ] );
-    void showHidePlotOverLine();
+    void sendVRSharePoint( kvs::Real32 coordArray[ 2 * 3 ], kvs::Real32 directionArray[ 3 ] );
+    void drawVRPlotOverLine( kvs::Real32 coordArray[ 2 * 3 ] );
+    void toggleShowHideVRPlotOverLine();
+
 private:
-    kvs::qt::jaea::Screen* m_screen       = nullptr;
+    kvs::qt::jaea::Screen* m_screen = nullptr;
 };
 
 #endif // VRHANDCONTROLLERLISTENER_H

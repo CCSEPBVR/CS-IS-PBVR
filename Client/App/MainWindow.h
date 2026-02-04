@@ -14,6 +14,10 @@
 #include "VizMode.h"
 #include "WebSocketPair.h"
 
+#ifdef OPENXR_SCREEN
+#include "VRHandControllerListener.h"
+#endif
+
 #include "ColorMapSelectorToolBar.h"
 #include "PlayBackControlToolBar.h"
 #include "TimeStepControlToolBar.h"

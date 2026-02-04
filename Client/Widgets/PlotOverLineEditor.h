@@ -45,6 +45,9 @@ public slots:
     void onReceivePlotOverLineParameter( const QJsonObject& payload );
     // void onReceivePlotOverLineParameter( const QJsonObject& payload );
 
+    void onDrawVRPlotOverLine( kvs::Real32 coordArray[ 2 * 3 ] );
+    void onToggleShowHideVRPlotOverLine();
+
     void onLoadParameter( const QString& filePath ); // KPI
     void onSaveParameter( const QString& filePath ); // KPI
 
