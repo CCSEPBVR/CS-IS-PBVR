@@ -713,22 +713,6 @@ void ObjectEditor::onReceiveObjectInfoParameter( const QJsonObject& payload )
         }
     }
 
-    for( int row = 0; row < m_model->rowCount(); row++ )
-    {
-        QStandardItem* nameItem = m_model->item( row, 0 );
-        if( !nameItem ) continue;
-
-        QVariant var = nameItem->data( Qt::UserRole );
-        if( !var.canConvert<ObjectInfoExtractor::ObjectInfo>() ) continue;
-
-        auto info = var.value<ObjectInfoExtractor::ObjectInfo>();
-        if( info.objectID.first != -1 && info.objectID.second != -1 )
-        {
-            m_screen->scene()->object( info.objectID.first )->setMinMaxObjectCoords( m_result_min_object_coords, m_result_max_object_coords );
-            m_screen->scene()->object( info.objectID.first )->setMinMaxExternalCoords( m_result_min_object_coords, m_result_max_object_coords );
-        }
-    }
-
     m_screen->scene()->objectManager()->push_centering_xform();
     emit updateFocus( m_result_min_object_coords, m_result_max_object_coords );
     m_screen->scene()->objectManager()->updateMinMaxCoords();
@@ -1804,22 +1788,6 @@ void ObjectEditor::onApply()
     // NOTE:resultObjectCoordsの反映
     m_result_min_object_coords = resultMinObjectCoords;
     m_result_max_object_coords = resultMaxObjectCoords;
-
-    for( int row = 0; row < m_model->rowCount(); row++ )
-    {
-        QStandardItem* nameItem = m_model->item( row, 0 );
-        if( !nameItem ) continue;
-
-        QVariant var = nameItem->data( Qt::UserRole );
-        if( !var.canConvert<ObjectInfoExtractor::ObjectInfo>() ) continue;
-
-        auto info = var.value<ObjectInfoExtractor::ObjectInfo>();
-        if( info.objectID.first != -1 && info.objectID.second != -1 )
-        {
-            m_screen->scene()->object( info.objectID.first )->setMinMaxObjectCoords( m_result_min_object_coords, m_result_max_object_coords );
-            m_screen->scene()->object( info.objectID.first )->setMinMaxExternalCoords( m_result_min_object_coords, m_result_max_object_coords );
-        }
-    }
 
     m_screen->scene()->objectManager()->push_centering_xform();
     emit updateFocus( m_result_min_object_coords, m_result_max_object_coords );

@@ -21,6 +21,7 @@ PlotOverLineEditor::PlotOverLineEditor( kvs::qt::jaea::Screen* screen, WebSocket
 
     // NOTE:予め始点終点、線を登録しておく
     m_start_point_object = new kvs::PointObject( kvs::ValueArray<kvs::Real32>{ 0.0f, 0.0f, 0.0f } );
+    m_start_point_object->setName( "StartPointObject" );
     m_start_point_object->setXform( initializeXform );
     m_start_point_object->setColor( kvs::RGBColor::Red() );
     m_start_point_object->setSize( 20 );
@@ -28,6 +29,7 @@ PlotOverLineEditor::PlotOverLineEditor( kvs::qt::jaea::Screen* screen, WebSocket
     m_screen->registerObject( m_start_point_object, startPointRenderer );
 
     m_end_point_object = new kvs::PointObject( kvs::ValueArray<kvs::Real32>{ 0.0f, 0.0f, 0.0f } );
+    m_end_point_object->setName( "EndPointObject" );
     m_end_point_object->setXform( initializeXform );
     m_end_point_object->setColor( kvs::RGBColor::Blue() );
     m_end_point_object->setSize( 20 );
@@ -134,13 +136,11 @@ void PlotOverLineEditor::onUpdateFocus( kvs::Vec3 resultMinObjectCoords, kvs::Ve
 {
     if( m_start_point_object && m_end_point_object )
     {
-        m_start_point_object->setMinMaxObjectCoords( resultMinObjectCoords, resultMaxObjectCoords );
-        m_start_point_object->setMinMaxExternalCoords( resultMinObjectCoords, resultMaxObjectCoords );
-        m_end_point_object->setMinMaxObjectCoords( resultMinObjectCoords, resultMaxObjectCoords );
-        m_end_point_object->setMinMaxExternalCoords( resultMinObjectCoords, resultMaxObjectCoords );
-
-        m_plot_over_line_object->setMinMaxObjectCoords( resultMinObjectCoords, resultMaxObjectCoords );
-        m_plot_over_line_object->setMinMaxExternalCoords( resultMinObjectCoords, resultMaxObjectCoords );
+        for( int i= 1; i < m_screen->scene()->numberOfObjects(); i++ )
+        {
+            m_screen->scene()->object( i )->setMinMaxObjectCoords( resultMinObjectCoords, resultMaxObjectCoords );
+            m_screen->scene()->object( i )->setMinMaxExternalCoords( resultMinObjectCoords, resultMaxObjectCoords );
+        }
 
         m_screen->scene()->objectManager()->updateMinMaxCoords();
         m_screen->scene()->objectManager()->updateExternalCoords();
@@ -738,5 +738,5 @@ void PlotOverLineEditor::onApply()
     m_last_snap_shot = now;
     m_has_last_snap_shot = true;
 
-    qDebug().noquote() << "[PlotOverLineEditor::onApply] diff(pretty):\n" << QJsonDocument( plotOverLineParameter ).toJson( QJsonDocument::Indented );
+    // qDebug().noquote() << "[PlotOverLineEditor::onApply] diff(pretty):\n" << QJsonDocument( plotOverLineParameter ).toJson( QJsonDocument::Indented );
 }

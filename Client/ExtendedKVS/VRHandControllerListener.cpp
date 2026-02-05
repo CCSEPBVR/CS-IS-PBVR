@@ -76,8 +76,8 @@ void VRHandControllerListener::onEvent( kvs::EventBase* event )
                                 endZCoordinateMovement += m_screen->openxrInteractor()->endPoint()->externalCenter().z();
                             }
 
-                            qDebug() << "start: (" << startXCoordinateMovement << ", " << startYCoordinateMovement << ", " << startZCoordinateMovement << ")";
-                            qDebug() << "  end: (" <<   endXCoordinateMovement << ", " <<   endYCoordinateMovement << ", " <<   endZCoordinateMovement << ")";
+                            // qDebug() << "start: (" << startXCoordinateMovement << ", " << startYCoordinateMovement << ", " << startZCoordinateMovement << ")";
+                            // qDebug() << "  end: (" <<   endXCoordinateMovement << ", " <<   endYCoordinateMovement << ", " <<   endZCoordinateMovement << ")";
                             kvs::Real32 coordArray[ 2 * 3 ] =
                                 {
                                     kvs::Real32( startXCoordinateMovement ), kvs::Real32( startYCoordinateMovement ), kvs::Real32( startZCoordinateMovement ),
@@ -127,34 +127,30 @@ void VRHandControllerListener::onEvent( kvs::EventBase* event )
                                 endZCoordinateMovement += m_screen->openxrInteractor()->endPoint()->externalCenter().z();
                             }
 
-                            qDebug() << "start: (" << startXCoordinateMovement << ", " << startYCoordinateMovement << ", " << startZCoordinateMovement << ")";
-                            qDebug() << "  end: (" <<   endXCoordinateMovement << ", " <<   endYCoordinateMovement << ", " <<   endZCoordinateMovement << ")";
+                            // qDebug() << "start: (" << startXCoordinateMovement << ", " << startYCoordinateMovement << ", " << startZCoordinateMovement << ")";
+                            // qDebug() << "  end: (" <<   endXCoordinateMovement << ", " <<   endYCoordinateMovement << ", " <<   endZCoordinateMovement << ")";
                             kvs::Real32 coordArray[ 2 * 3 ] =
                                 {
                                     kvs::Real32( startXCoordinateMovement ), kvs::Real32( startYCoordinateMovement ), kvs::Real32( startZCoordinateMovement ),
                                     kvs::Real32( endXCoordinateMovement )  , kvs::Real32( endYCoordinateMovement )  , kvs::Real32( endZCoordinateMovement ),
                                 };
 
-                            // コントローラのインデックス（右手）
-                            kvs::UInt32 ops_index = m_screen->openxrInteractor()->screen()->opsHand();
+                            // NOTE:ture 左手  ,false 右手
+                            kvs::UInt32 index = false
+                                                    ? kvs::UInt32( kvs::Side::Left )
+                                                    : kvs::UInt32( kvs::Side::Right );
 
-                            // walkthrough でワールド座標系に変換されたコントローラ姿勢
-                            kvs::Xform walkthrough_xform = m_screen->openxrInteractor()->screen()->walkthrough();
-                            kvs::Xform ops_controller_xform = walkthrough_xform * cs.xform[ops_index];
+                            kvs::Xform walkthroughXform = m_screen->openxrInteractor()->screen()->walkthrough();
+                            kvs::Xform controllerXform = walkthroughXform * cs.xform[index];
 
-                            // 回転行列を取得
-                            kvs::Mat3 R = ops_controller_xform.rotation();
+                            kvs::Mat3 R = controllerXform.rotation();
 
-                            // Forward ベクトルを抽出（OpenGL 系では -Z が forward）
                             kvs::Vec3 forward( -R[0][2], -R[1][2], -R[2][2] );
                             forward.normalize();
 
-                            // directionArray （向き）
-                            kvs::Real32 directionArray[3] = {
-                                forward.x(), forward.y(), forward.z()
-                            };
+                            kvs::Real32 directionArray[3] = { forward.x(), forward.y(), forward.z() };
 
-                            emit sendVRSharePoint( coordArray, directionArray );
+                            emit vrSharePoint( coordArray, directionArray );
                         }
                         if( j == kvs::Controller::Button::Y )
                         {

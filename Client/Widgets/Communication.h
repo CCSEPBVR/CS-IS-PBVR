@@ -4,10 +4,13 @@
 #include <QDockWidget>
 #include <QFileDialog>
 
+#include <kvs/StochasticPolygonRenderer>
 #include "Screen.h" // <kvs/qt/Screen>
 
 #include "VizMode.h"
 #include "WebSocketPair.h"
+
+#include "ClientUtils.h"
 
 #include "../../Shared/JsonKeys.h"
 #include "../../Shared/ObjectInfoExtractor.h"
@@ -50,7 +53,7 @@ signals:
     void updateObjectLatestTimeStep( const QJsonObject& payload );
 
 public slots:
-    // void onVRSharePoint( kvs::Real32 CoordArray[ 2 * 3 ], kvs::Real32 DirectionArray[ 3 ] );
+    void onVRSharePoint( kvs::Real32 CoordArray[ 2 * 3 ], kvs::Real32 DirectionArray[ 3 ] );
     void onLoadParameter( const QString& filePath ); // KPI
     void onSaveParameter( const QString& filePath ); // KPI
 
@@ -68,6 +71,8 @@ private:
     int m_user_id                   = -1;
     bool m_is_operator              = false;
 
+    int m_max_shared_user_id =      -1;
+
     void webSocketConnected();
     void webSocketDisconnected();
 
@@ -83,10 +88,6 @@ private:
     void receiveChat            ( const QJsonObject& payload );
     void receiveShareView       ( const QJsonObject& payload ); // FIXME:実装部コメントアウト中(使用する場合は解除)
     void receiveSharePoint      ( const QJsonObject& payload ); // FIXME:実装部コメントアウト中(使用する場合は解除)
-    kvs::PolygonObject* createArrowGlyph( const kvs::ValueArray<kvs::Real32>& coords,
-                                         const kvs::ValueArray<kvs::Real32>& directions,
-                                         const kvs::ValueArray<kvs::Real32>& sizes,
-                                         const kvs::ValueArray<kvs::UInt8>& colors ); // FIXME:通信処理(Communication)の責務を超えているため、Utilsへ移動してください
 
 private slots:
     void onConnectClicked();

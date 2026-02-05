@@ -144,7 +144,7 @@ MainWindow::MainWindow( kvs::qt::Application& app, QWidget *parent )
 #ifdef OPENXR_SCREEN
     m_vr_listener = new VRHandControllerListener( m_screen );
     m_screen->addEvent( m_vr_listener );
-    // connect( m_vr_listener, &VRHandControllerListener::sendVRSharePoint, m_communication, &Communication::onSendVRSharePoint );
+    connect( m_vr_listener, &VRHandControllerListener::vrSharePoint, m_communication, &Communication::onVRSharePoint );
 
     connect( m_vr_listener, &VRHandControllerListener::drawVRPlotOverLine          , m_plot_over_line_editor, &PlotOverLineEditor::onDrawVRPlotOverLine );
     connect( m_vr_listener, &VRHandControllerListener::toggleShowHideVRPlotOverLine, m_plot_over_line_editor, &PlotOverLineEditor::onToggleShowHideVRPlotOverLine );
@@ -393,10 +393,11 @@ void MainWindow::initializeCommunication()
         // NOTE:バイナリソケット用
         connect( m_communication, &Communication::unpack, m_object_editor, &ObjectEditor::onUnpack );
 
-        // NOTE:テキストソケット用
+        // NOTE:テキストソケット用        
         connect( m_communication, &Communication::receiveTimeStepControlParameter , m_time_step_control_tool_bar, &TimeStepControlToolBar::onReceiveTimeStepControlParameter );
         connect( m_communication, &Communication::receiveGlyphParameter           , m_glyph_editor              , &GlyphEditor           ::onReceiveGlyphParameter );
-        connect( m_communication, &Communication::receiveObjectInfoParameter      , m_object_editor             , &ObjectEditor          ::onReceiveObjectInfoParameter ); connect( m_communication, &Communication::receivePlotOverLineParameter    , m_plot_over_line_editor     , &PlotOverLineEditor    ::onReceivePlotOverLineParameter );
+        connect( m_communication, &Communication::receiveObjectInfoParameter      , m_object_editor             , &ObjectEditor          ::onReceiveObjectInfoParameter );
+        connect( m_communication, &Communication::receivePlotOverLineParameter    , m_plot_over_line_editor     , &PlotOverLineEditor    ::onReceivePlotOverLineParameter );
         connect( m_communication, &Communication::receiveTransferFunctionParameter, m_transfer_function_editor  , &TransferFunctionEditor::onReceiveTransferFunctionParameter );
 
         connect( m_communication, &Communication::receiveRequestDataAtTransferFunctionParameter, m_transfer_function_editor, &TransferFunctionEditor::onReceiveRequestDataAtTransferFunctionParameter );
@@ -445,7 +446,7 @@ void MainWindow::initializePlotOverLineEditor()
     {
         m_plot_over_line_editor->adjustSize();
         m_plot_over_line_editor->close();
-        addDockWidget( Qt::LeftDockWidgetArea, m_plot_over_line_editor );        
+        addDockWidget( Qt::LeftDockWidgetArea, m_plot_over_line_editor );
     }
 }
 

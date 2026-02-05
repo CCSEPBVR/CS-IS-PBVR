@@ -32,6 +32,7 @@ public:
 
 signals:
     void updateStatusBarMessage( const QString& message );
+    void sharePointFocus( const kvs::Vec3 resultMinObjectCoords, const kvs::Vec3 resultMaxObjectCoords );
     void plotOverLineParameterUpdate();
 
 public slots:
