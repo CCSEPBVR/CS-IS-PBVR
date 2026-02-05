@@ -897,11 +897,32 @@ void Server::requestDataAt(uWS::WebSocket<false, true, PerSocket>* ws, const nlo
                         break;
                     }
                 }
-                kvsml_object_pol = GeneratePOLCS(file_path, timeStep, *m_pol_property, *m_multi_volume_property_list);
+
+                // ボリュームデータの開始タイムステップ、最終タイムステップの範囲内でのみPOLを生成する
+                const int volumeStartStep = m_multi_volume_property_list->m_total_start_steps;
+                const int volumeLastStep  = m_multi_volume_property_list->m_total_last_step;
+
+                if ((timeStep >= volumeStartStep) && (timeStep <= volumeLastStep))
+                {
+                    kvsml_object_pol = GeneratePOLCS(file_path, timeStep, *m_pol_property, *m_multi_volume_property_list);
+                }
             }
             else if (m_server_mode == ServerMode::IS)
             {
-                kvsml_object_pol = GeneratePOLIS(timeStep, *m_pol_property, *m_multi_volume_property_list);
+                ParticleMonitor pm;
+                pm.check();
+
+                if (pm.stepExisted())
+                {
+                    // 粒子データの開始タイムステップ、最新タイムステップの範囲内でのみPOLを生成する
+                    const int pointStartStep  = pm.particleStatusFile().getStartTimeStep();
+                    const int pointLatestStep = pm.particleStatusFile().getLatestTimeStep();
+
+                    if ((timeStep >= pointStartStep) && (timeStep <= pointLatestStep))
+                    {
+                        kvsml_object_pol = GeneratePOLIS(timeStep, *m_pol_property, *m_multi_volume_property_list);
+                    }
+                }
             }
 
             if (kvsml_object_pol)
