@@ -74,16 +74,6 @@ private:
     kvs::Label* m_fps_label                          = nullptr;
     kvs::Label* m_time_step_label                    = nullptr;
 
-    // FIXME:VR初期位置でkvs::glsl::ParticleBasedRendererを使用している場合、表示されないように見える不具合の対策用です。(参考URL:https://github.com/CCSEPBVR/CS-IS-PBVR/blob/develop/Client/Widgets/RepetitionLevelControl.cpp)
-    kvs::Xform m_initialize_camera_xform = kvs::Xform(
-        kvs::Mat4(
-            1, 0, 0, 0,
-            0, 1, 0, 0,
-            0, 0, 1, 12,
-            0, 0, 0, 1
-            )
-        );
-
     WebSocketPair* m_web_sockets = nullptr;
     Viz::Mode* m_viz_mode        = nullptr;
 

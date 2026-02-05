@@ -1315,12 +1315,29 @@ void ObjectEditor::registerObject( ObjectInfoExtractor::ObjectInfo& info )
     std::unique_ptr<kvs::StochasticLineRenderer> stochasticLineRenderer;
     std::unique_ptr<kvs::StochasticTexturedPolygonRenderer> stochasticTexturedPolygonRenderer;
 
+#ifdef OPENXR_SCREEN
+    const kvs::Xform initialXform
+        (
+            kvs::Mat4(
+                1, 0, 0, 0 ,
+                0, 1, 0, 0 ,
+                0, 0, 1, 12,
+                0, 0, 0, 1
+                )
+            );
+    kvs::Vec3 translationOffset = m_screen->scene()->camera()->xform().translation() - initialXform.translation();
+#endif
+
     switch( info.format )
     {
     case ObjectInfoExtractor::ClientServerPointObject:
     case ObjectInfoExtractor::InsituServerPointObject:
         particleBasedRenderer = std::make_unique<kvs::glsl::ParticleBasedRenderer>();
         particleBasedRenderer.get()->enableShuffle();
+#ifdef OPENXR_SCREEN
+        particleBasedRenderer.get()->setTranslationOffset( translationOffset );
+        particleBasedRenderer.get()->setObjectDepth( m_screen->scene()->objectManager()->xform().scaling().z() / m_screen->scene()->camera()->xform().scaling().z() );
+#endif
         emit shading( particleBasedRenderer.get() );
         info.objectID = m_screen->registerObject( info.object, particleBasedRenderer.release() );
         break;
@@ -1334,6 +1351,10 @@ void ObjectEditor::registerObject( ObjectInfoExtractor::ObjectInfo& info )
     case ObjectInfoExtractor::PointObjectPTS:
         particleBasedRenderer = std::make_unique<kvs::glsl::ParticleBasedRenderer>();
         particleBasedRenderer.get()->enableShuffle();
+#ifdef OPENXR_SCREEN
+        particleBasedRenderer.get()->setTranslationOffset( translationOffset );
+        particleBasedRenderer.get()->setObjectDepth( m_screen->scene()->objectManager()->xform().scaling().z() / m_screen->scene()->camera()->xform().scaling().z() );
+#endif
         emit shading( particleBasedRenderer.get() );
         info.objectID = m_screen->registerObject( info.object, particleBasedRenderer.release() );
         break;

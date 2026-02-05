@@ -38,6 +38,19 @@ void RepetitionLevelControl::onApply()
 
     const int size = m_screen->scene()->IDManager()->size();
 
+#ifdef OPENXR_SCREEN
+    const kvs::Xform initialXform
+        (
+            kvs::Mat4(
+                1, 0, 0, 0 ,
+                0, 1, 0, 0 ,
+                0, 0, 1, 12,
+                0, 0, 0, 1
+                )
+            );
+    kvs::Vec3 translationOffset = m_screen->scene()->camera()->xform().translation() - initialXform.translation();
+#endif
+
     for( int index = 0; index < size; ++index )
     {
         const auto id = m_screen->scene()->IDManager()->id( index );
@@ -57,7 +70,10 @@ void RepetitionLevelControl::onApply()
 
         auto* newRenderer = new kvs::glsl::ParticleBasedRenderer();
         newRenderer->enableShuffle();
-
+#ifdef OPENXR_SCREEN
+        newRenderer->setTranslationOffset( translationOffset );
+        newRenderer->setObjectDepth( m_screen->scene()->objectManager()->xform().scaling().z() / m_screen->scene()->camera()->xform().scaling().z() );
+#endif
         // NOTE:レンダラーを作り直したのでシェーディングも設定しなおす必要がある
         emit shading( newRenderer );
 
