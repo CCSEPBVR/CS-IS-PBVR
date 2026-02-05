@@ -474,8 +474,9 @@ bool initializeParameters(
     //*max_opacity = 0.98;
     *max_opacity = 0.9;
     //*subpixel_level = CalculateSubpixelLevel( *particle_limit , camera, sampling_step, total_volume, object );
-    //*subpixel_level = 1.f;
+//    *subpixel_level = 1.f;
     *subpixel_level = 2.f;
+//    *subpixel_level = 3.f; // 4 scalar
 
     //std::cout<<"Generator::\n";
     Generator::CalculateDensityParameters(
@@ -3406,8 +3407,9 @@ void EnsembleGenerateParticles( int time_step,
     float particle_density         = particleBase.m_particle_density        ;
     float particle_data_size_limit = particleBase.m_particle_data_size_limit;
     // repeat level を手動設定
-    int   repetitions             = 24 ;
-    //int   repetitions             = 9 ;
+//    int   repetitions             = 24 ; // 4 scalar
+//    int   repetitions             = 18 ;
+    int   repetitions             = 9 ;
     parameter_file_opened = particleBase.m_parameter_file_opened;
     const int max_nparticles = (int)max_density + 1;
 
@@ -3565,6 +3567,8 @@ void EnsembleGenerateParticles( int time_step,
                         th_timer.start();
 
                         local_coord_array[p_id] = cell[thid] -> randomSampling_MT( &MT );
+                        // デバッグ用の座標固定
+//                        local_coord_array[p_id] = kvs::Vector3f (0,0,0);
                         th_timer.stop();
                         timeN[5] += th_timer.sec();
                         p_id ++;
@@ -3852,11 +3856,6 @@ void EnsembleGenerateParticles( int time_step,
             // 通信完了待ち
            MPI_Waitall(2, reqs, MPI_STATUSES_IGNORE);
 
-           
-           for (int i =0;i < 12; i++)
-{
-    std::cout << mpi_rank <<  ": recv_cellids = " << recv_cellids[i] << std::endl;
-}
 
 //            MPI_Isend(vertex_scalars.data(), send_size, MPI_FLOAT,
             MPI_Isend(send_scalars.data(), send_size, MPI_FLOAT,
@@ -4044,14 +4043,16 @@ void EnsembleGenerateParticles( int time_step,
     //棄却法を適応する
 #if 1
 
-// 常用対数を取るための計算
+//// 常用対数を取るための計算
  std::vector<float> log_vertex_scalars(vertex_scalars.size());
        float delta = 1e-30;
+       int N = 0; // OutputFuncで正規化したオーダー
 #pragma omp simd
        for (int i = 0; i < vertex_scalars.size(); i++ )
        {
 //           log_vertex_scalars[ i ]     = std::log10(vertex_scalars[ i ]); 
-           log_vertex_scalars[ i ]     =  vertex_scalars[ i ] > delta ? std::log10(vertex_scalars[ i ]): -30; 
+//           log_vertex_scalars[ i ]     =  vertex_scalars[ i ] > delta ? std::log10(vertex_scalars[ i ]) : -30; 
+           log_vertex_scalars[ i ]     =  vertex_scalars[ i ] > delta ? std::log10(vertex_scalars[ i ]) -N : -30; 
        }
 
     timer.stop();
@@ -4302,24 +4303,24 @@ void EnsembleGenerateParticles( int time_step,
                 th_timer.stop();
                 th_timeN[5] += th_timer.sec();
                 th_timer.start();
-                //丸め誤差の影響排除のための正規化
+//                //丸め誤差の影響排除のための正規化
 //            #pragma omp simd
 //                    for (int j= 0; j <remain_BLK ;j++)
 //                    {
-//                        scalar_array[j]           *= 1e6;
-//                        average_scalars[i+j]      *= 1e6;
-//                        average_normals[3*(i+j)+0]*= 1e6;
-//                        average_normals[3*(i+j)+1]*= 1e6;
-//                        average_normals[3*(i+j)+2]*= 1e6;
-//                        grad_array_x[j]           *= 1e6;
-//                        grad_array_y[j]           *= 1e6;
-//                        grad_array_z[j]           *= 1e6;
+//                        scalar_array[j]           *= 1e2;
+//                        average_scalars[i+j]      *= 1e2;
+//                        average_normals[3*(i+j)+0]*= 1e2;
+//                        average_normals[3*(i+j)+1]*= 1e2;
+//                        average_normals[3*(i+j)+2]*= 1e2;
+//                        grad_array_x[j]           *= 1e2;
+//                        grad_array_y[j]           *= 1e2;
+//                        grad_array_z[j]           *= 1e2;
 //                    }
 
             #pragma omp simd
                     for (int j= 0; j <remain_BLK ;j++)
                     {
-//                        vertex_scalars[i+j]       = (scalar_array[j] - average_scalars[i+j])*(scalar_array[j] - average_scalars[i+j]);
+                        vertex_scalars[i+j]       = (scalar_array[j] - average_scalars[i+j])*(scalar_array[j] - average_scalars[i+j]);
                         //vertex_scalars[i+j]       =  (1e6*scalar_array[j] - 1e6*average_scalars[i+j])*(1e6*scalar_array[j] - 1e6*average_scalars[i+j]);
                         vertex_normals[3*(i+j)+0] = (scalar_array[j] - average_scalars[i+j])*(grad_array_x[j] - average_normals[3*(i+j)+0]);
                         vertex_normals[3*(i+j)+1] = (scalar_array[j] - average_scalars[i+j])*(grad_array_y[j] - average_normals[3*(i+j)+1]);
@@ -4589,25 +4590,26 @@ void EnsembleGenerateParticles( int time_step,
                         recv_normals_average_array_y[j] = recv_normals_average[3*(i+j)+1];
                         recv_normals_average_array_z[j] = recv_normals_average[3*(i+j)+2];
                     }
-
-                    //丸め誤差の影響排除のための正規化
+//                    //丸め誤差の影響排除のための正規化
 //            #pragma omp simd
 //                    for (int j= 0; j <remain_BLK ;j++)
 //                    {
-//                        scalar_array[j]           *= 1e6;
-//                        grad_array_x[j]           *= 1e6;
-//                        grad_array_y[j]           *= 1e6;
-//                        grad_array_z[j]           *= 1e6;
+//                        scalar_array[j]           *= 1e2;
+//                        grad_array_x[j]           *= 1e2;
+//                        grad_array_y[j]           *= 1e2;
+//                        grad_array_z[j]           *= 1e2;
 //                    }
 
             #pragma omp simd
                     for( int j = 0; j < remain_BLK; j++ ) 
                     {
+//           if((i+j)%10000 == 0)std::cerr << "scalar_array[j] = " <<  scalar_array[j] << " recv_scalars_average[i+j] = " << recv_scalars_average[i+j] <<std::endl; 
 //                        // 算出データを受信データと足し合わせる
                         recv_scalars[i+j]       = (scalar_array[j] - recv_scalars_average[i+j] )*(scalar_array[j] - recv_scalars_average[  i+j    ]) + recv_scalars[i+j] ;
                         recv_normals_array_x[j] = (scalar_array[j] - recv_scalars_average[i+j] )*(grad_array_x[j] - recv_normals_average_array_x[j]) + recv_normals_array_x[j];
                         recv_normals_array_y[j] = (scalar_array[j] - recv_scalars_average[i+j] )*(grad_array_y[j] - recv_normals_average_array_y[j]) + recv_normals_array_y[j];
                         recv_normals_array_z[j] = (scalar_array[j] - recv_scalars_average[i+j] )*(grad_array_z[j] - recv_normals_average_array_z[j]) + recv_normals_array_z[j];
+           if((i+j) == 0  && mpi_rank < 4 )std::cerr << "recv_scalars[j] =  " << recv_scalars[i+j]  << ", scalar_array[j] = " <<  scalar_array[j] << " recv_scalars_average[i+j] = " << recv_scalars_average[i+j] <<std::endl; 
                     }
                     for( int j = 0; j < remain_BLK; j++ ) 
                     {
@@ -4648,6 +4650,7 @@ void EnsembleGenerateParticles( int time_step,
        // 集計された分散値を計算
        //const float invert_num = 1.f/float(mpi_size);  
        const float invert_num = 1.f/float(ens_number); 
+       #pragma omp simd
        for (int i = 0; i < vertex_scalars.size();  i++ )
        {
            vertex_scalars[ i ]   *=   invert_num; 
@@ -4656,19 +4659,39 @@ void EnsembleGenerateParticles( int time_step,
            vertex_normals[3*i + 2] *=  -2.f*invert_num;// 2.f は分散計算式の係数
        }
 
+//       timer.stop();
+//       std::cout << mpi_rank <<  ": var_shift_exe_time =" << timer.sec() << std::endl;
+    } // end if(mpi_size ==1)
+
+//        float delta = 1e-30;
+        //　変動け異数に変換 平均が0の場合は計数値はほぼ0とする。
+         std::vector<float> co_varietion(vertex_scalars.size());
+
+       #pragma omp simd
+       for (int i = 0; i < vertex_scalars.size();  i++ )
+       {
+//           if(average_scalars[i] > 1e-5 && vertex_scalars[ i ] > 1e-10 )
+           if(average_scalars[i] > 1e-6 && vertex_scalars[ i ] > 1e-12 )
+           co_varietion[ i ]   =  std::sqrt(vertex_scalars[ i ] )/ average_scalars[i];
+           else
+               co_varietion[ i ]   = delta;
+//           vertex_scalars[ i ]   =  average_scalars[i] == 0 ? delta :std::sqrt(vertex_scalars[ i ] )/ average_scalars[i];
+//           vertex_scalars[ i ]   =  average_scalars[i] > delta ? std::sqrt(vertex_scalars[ i ] )/ average_scalars[i] : delta;
+//           co_varietion[ i ]   =  average_scalars[i] > 1e-5 ? std::sqrt(vertex_scalars[ i ] )/ average_scalars[i] : delta;
+//           if(i%10000 == 0)std::cerr << "vertex_scalars[ i ] = " << std::sqrt(vertex_scalars[ i ] ) << " average_scalars[i] = " << average_scalars[i] <<std::endl; 
+       }
+ 
 // 常用対数を取るための計算
- std::vector<float> log_vertex_scalars(vertex_scalars.size());
- float delta = 1e-30;
+// std::vector<float> log_vertex_scalars(vertex_scalars.size());
+   log_vertex_scalars.resize(vertex_scalars.size());
 #pragma omp simd
        for (int i = 0; i < vertex_scalars.size(); i++ )
        {
 //           log_vertex_scalars[ i ]     =  std::log10(vertex_scalars[ i ]); 
-           log_vertex_scalars[ i ]     =  vertex_scalars[ i ] > delta ? std::log10(vertex_scalars[ i ]): -30; 
+//           log_vertex_scalars[ i ]     =  vertex_scalars[ i ] > delta ? std::log10(vertex_scalars[ i ]): -30; 
+//           log_vertex_scalars[ i ]     =  co_varietion[ i ] > delta ? std::log10(co_varietion[ i ])  : -30; 
+           log_vertex_scalars[ i ]     =  co_varietion[ i ] > delta ? std::log10(co_varietion[ i ]) : -30; 
        }
-
-//       timer.stop();
-//       std::cout << mpi_rank <<  ": var_shift_exe_time =" << timer.sec() << std::endl;
-    } // end if(mpi_size ==1)
 
 
     //分散用配列を宣言 
@@ -4753,6 +4776,7 @@ void EnsembleGenerateParticles( int time_step,
                 //opacity 計算 
                 for( int j = 0; j < remain_BLK; j++ ) 
                 {
+//                    opacity_array[j] = tf.opacityMap().at(co_varietion[ i+j ]);
                     opacity_array[j] = tf.opacityMap().at(log_vertex_scalars[ i+j ]);
 //                    opacity_array[j] = tf.opacityMap().at(vertex_scalars[ i+j ]);
                 }
@@ -4777,8 +4801,10 @@ void EnsembleGenerateParticles( int time_step,
                {
                 th_timer.start();
                    // Calculate a color.
-                   const kvs::RGBColor color( tf.colorMap().at( log_vertex_scalars[ i+j ] ) );
+                   const kvs::RGBColor color( tf.colorMap().at( co_varietion[ i+j ] ) );
+                   //const kvs::RGBColor color( tf.colorMap().at( log_vertex_scalars[ i+j ] ) );
 //                   const kvs::RGBColor color( tf.colorMap().at( vertex_scalars[ i+j ] ) );
+//                   if((i+j)%10000 == 0)std::cerr << "log_vertex_scalars[ i+j ] = " << log_vertex_scalars[ i+j ] <<std::endl; 
                 th_timer.stop();
                 th_timeN[7] += th_timer.sec();
                 th_timer.start();
