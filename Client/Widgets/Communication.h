@@ -25,6 +25,13 @@ class Communication : public QDockWidget
     Q_OBJECT
 
 public:
+    enum SamplingType
+    {
+        Uniform    = 0,
+        Metropolis = 1,
+        Rejection  = 2,
+    };
+
     explicit Communication( kvs::qt::jaea::Screen* screen, WebSocketPair* webSockets, Viz::Mode* vizMode, QWidget *parent = nullptr );
     ~Communication();
 

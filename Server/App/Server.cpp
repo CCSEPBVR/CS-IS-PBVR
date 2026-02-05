@@ -321,7 +321,7 @@ void Server::initialize(uWS::WebSocket<false, true, PerSocket>* ws, const nlohma
 {
     // std::cout << "[Server] initialize" << std::endl;
 
-    int VizMode = received["VizMode"];
+    int VizMode = received["VizMode"];    
     // NOTE:最初にInitializeイベントを発行したユーザに操作権を付与
     ws->getUserData()->state->isOperator = true;
     std::cout << "[Server] User[" << ws->getUserData()->state->userID << "] operator :" << ws->getUserData()->state->isOperator << std::endl;
@@ -331,6 +331,8 @@ void Server::initialize(uWS::WebSocket<false, true, PerSocket>* ws, const nlohma
     operatorMsg[Protocol::Key::UserID]     = ws->getUserData()->state->userID;
     operatorMsg[Protocol::Key::IsOperator] = ws->getUserData()->state->isOperator;
     m_u_web_sockets.publish( k_text_topic, operatorMsg.dump(), uWS::OpCode::TEXT );
+
+    SamplingType samplingType = static_cast<SamplingType>( received.at( "SamplingType" ).get<int>() );
 
     std::string volumeDataFilePath = received[Protocol::Key::VolumeDataFilePath];
     std::string transferFunctionFilePath = received[Protocol::Key::TransferFunctionFilePath];
@@ -376,6 +378,21 @@ void Server::initialize(uWS::WebSocket<false, true, PerSocket>* ws, const nlohma
             *m_particle_property,
             *m_multi_volume_property_list
         );
+
+        switch( samplingType )
+        {
+        case SamplingType::Uniform:
+            m_particle_property->m_sampling_method = 'u';
+            break;
+        case SamplingType::Metropolis:
+            m_particle_property->m_sampling_method = 'm';
+            break;
+        case SamplingType::Rejection:
+            m_particle_property->m_sampling_method = 'r';
+            break;
+        default:
+            break;
+        }
 
         if (!isSuccess)
         {
@@ -449,6 +466,21 @@ void Server::initialize(uWS::WebSocket<false, true, PerSocket>* ws, const nlohma
             *m_particle_property,
             *m_multi_volume_property_list
         );
+
+        switch( samplingType )
+        {
+        case SamplingType::Uniform:
+            m_particle_property->m_sampling_method = 'u';
+            break;
+        case SamplingType::Metropolis:
+            m_particle_property->m_sampling_method = 'm';
+            break;
+        case SamplingType::Rejection:
+            m_particle_property->m_sampling_method = 'r';
+            break;
+        default:
+            break;
+        }
 
         InitialStepIS(
             m_multi_volume_property_list->m_total_start_steps,

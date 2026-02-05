@@ -49,6 +49,13 @@ class Server
 public:
     enum class SocketType { Binary, Text };
 
+    enum SamplingType
+    {
+        Uniform    = 0,
+        Metropolis = 1,
+        Rejection  = 2,
+    };
+
     Server( int port );
     ~Server();
 

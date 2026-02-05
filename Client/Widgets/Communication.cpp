@@ -429,6 +429,11 @@ void Communication::onSettingsApplyClicked()
         else if( ui->remoteVizClientServerRadioButton->isChecked() ) *m_viz_mode = Viz::Mode::RemoteClientAndServer;
         else if( ui->remoteVizInsituRadioButton->isChecked() )       *m_viz_mode = Viz::Mode::RemoteInSitu;
 
+        SamplingType samplingType;
+        if( ui->uniformRadioButton->isChecked() )         samplingType = SamplingType::Uniform;
+        else if( ui->metropolisRadioButton->isChecked() ) samplingType = SamplingType::Metropolis;
+        else if( ui->rejectionRadioButton->isChecked() )  samplingType = SamplingType::Rejection;
+
         QString pointObjectUUID = QUuid::createUuid().toString( QUuid::WithoutBraces );
         QString glyphObjectUUID = QUuid::createUuid().toString( QUuid::WithoutBraces );
 
@@ -453,6 +458,7 @@ void Communication::onSettingsApplyClicked()
             QJsonDocument( {
                            { QString::fromUtf8( Protocol::Key::Event)                    , QString::fromUtf8(Protocol::Events::Initialize) },
                            { "VizMode"                                                   , static_cast<int>( *m_viz_mode ) },
+                           { "SamplingType"                                              , static_cast<int>( samplingType ) },
                            { QString::fromUtf8( Protocol::Key::VolumeDataFilePath )      , ui->volumeDataFilePathLineEdit->text() },
                            { QString::fromUtf8( Protocol::Key::TransferFunctionFilePath ), ui->transferFunctionFilePathLineEdit->text() },
                            { QString::fromUtf8( Protocol::Key::UUID )                    , uuidArray },
