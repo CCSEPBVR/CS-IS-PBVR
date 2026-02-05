@@ -495,17 +495,17 @@ void Server::initialize(uWS::WebSocket<false, true, PerSocket>* ws, const nlohma
         objectInfo.tmpIsKeepFinal = false;
         objectInfo.isKeepFinal = false;
 
-        objectInfo.name = volumeDataFileName;                                       // FIXME:サーバ担当者
-        objectInfo.extension = volumeDataFileExtension;                                  // FIXME:サーバ担当者
+        objectInfo.name = volumeDataFileName;
+        objectInfo.extension = volumeDataFileExtension;
         objectInfo.directory = volumeDataNativeFilePath;
         objectInfo.format = pointObjectFormat;
         objectInfo.timeStep = std::pair<int, int>(start_step, last_step);
         objectInfo.tmpIsFocus = false;
         objectInfo.isFocus = false;
-        objectInfo.minObjectCoord = { min_x, min_y, min_z };                                  // FIXME:サーバ担当者
-        objectInfo.maxObjectCoord = { max_x, max_y, max_z };                                  // FIXME:サーバ担当者
-        objectInfo.minExternalCoord = { min_x, min_y, min_z };                                  // FIXME:サーバ担当者
-        objectInfo.maxExternalCoord = { max_x, max_y, max_z };                                  // FIXME:サーバ担当者
+        objectInfo.minObjectCoord = { min_x, min_y, min_z };
+        objectInfo.maxObjectCoord = { max_x, max_y, max_z };
+        objectInfo.minExternalCoord = { min_x, min_y, min_z };
+        objectInfo.maxExternalCoord = { max_x, max_y, max_z };
 
         // サーバポイントオブジェクト(ClientServer/In-Situ共通)
         objectInfo.tmpParticleLimit = 10000000;
@@ -514,13 +514,13 @@ void Server::initialize(uWS::WebSocket<false, true, PerSocket>* ws, const nlohma
         objectInfo.extraOpacityFactor = 1.0;
 
         // サーバポイントオブジェクト(ClientServerのみ)
-        objectInfo.numberOfVector = m_multi_volume_property_list->m_total_number_ingredients; // FIXME:サーバ担当者
-        objectInfo.numberOfElements = m_multi_volume_property_list->m_total_number_elements;    // FIXME:サーバ担当者
-        objectInfo.numberOfSubvolume = m_multi_volume_property_list->m_total_number_subvolumes;  // FIXME:サーバ担当者
-        objectInfo.numberOfNodes = m_multi_volume_property_list->m_total_number_nodes;       // FIXME:サーバ担当者
-        objectInfo.elementType = m_multi_volume_property_list->m_list[0].m_elem_type;      // FIXME:サーバ担当者
-        objectInfo.fileType = m_multi_volume_property_list->m_list[0].m_file_type;      // FIXME:サーバ担当者
-        objectInfo.stepNumber = m_multi_volume_property_list->m_total_number_steps;       // FIXME:サーバ担当者
+        objectInfo.numberOfVector = m_multi_volume_property_list->m_total_number_ingredients;
+        objectInfo.numberOfElements = m_multi_volume_property_list->m_total_number_elements;
+        objectInfo.numberOfSubvolume = m_multi_volume_property_list->m_total_number_subvolumes;
+        objectInfo.numberOfNodes = m_multi_volume_property_list->m_total_number_nodes;
+        objectInfo.elementType = m_multi_volume_property_list->m_list[0].m_elem_type;
+        objectInfo.fileType = m_multi_volume_property_list->m_list[0].m_file_type;
+        objectInfo.stepNumber = m_multi_volume_property_list->m_total_number_steps;
         objectInfo.tmpCoordinateX = "";
         objectInfo.coordinateX = "";
         objectInfo.tmpCoordinateY = "";
@@ -606,17 +606,17 @@ void Server::initialize(uWS::WebSocket<false, true, PerSocket>* ws, const nlohma
                 objectInfoGlyph.tmpIsKeepFinal = false;
                 objectInfoGlyph.isKeepFinal = false;
 
-                objectInfoGlyph.name = volumeDataFileName;                                       // FIXME:サーバ担当者
-                objectInfoGlyph.extension = volumeDataFileExtension;                                  // FIXME:サーバ担当者
+                objectInfoGlyph.name = volumeDataFileName;
+                objectInfoGlyph.extension = volumeDataFileExtension;
                 objectInfoGlyph.directory = volumeDataNativeFilePath;
                 objectInfoGlyph.format = glyphObjectFormat;
                 objectInfoGlyph.timeStep = std::pair<int, int>(start_step, last_step);
                 objectInfoGlyph.tmpIsFocus = false;
                 objectInfoGlyph.isFocus = false;
-                objectInfoGlyph.minObjectCoord = { min_x, min_y, min_z };                                  // FIXME:サーバ担当者
-                objectInfoGlyph.maxObjectCoord = { max_x, max_y, max_z };                                  // FIXME:サーバ担当者
-                objectInfoGlyph.minExternalCoord = { min_x, min_y, min_z };                                  // FIXME:サーバ担当者
-                objectInfoGlyph.maxExternalCoord = { max_x, max_y, max_z };                                  // FIXME:サーバ担当者
+                objectInfoGlyph.minObjectCoord = { min_x, min_y, min_z };
+                objectInfoGlyph.maxObjectCoord = { max_x, max_y, max_z };
+                objectInfoGlyph.minExternalCoord = { min_x, min_y, min_z };
+                objectInfoGlyph.maxExternalCoord = { max_x, max_y, max_z };
 
                 // サーバポイントオブジェクト(ClientServer/In-Situ共通)
                 objectInfoGlyph.tmpParticleLimit = 10000000;
@@ -625,13 +625,13 @@ void Server::initialize(uWS::WebSocket<false, true, PerSocket>* ws, const nlohma
                 objectInfoGlyph.extraOpacityFactor = 1.0;
 
                 // サーバポイントオブジェクト(ClientServerのみ)
-                objectInfoGlyph.numberOfVector = m_multi_volume_property_list->m_total_number_ingredients; // FIXME:サーバ担当者
-                objectInfoGlyph.numberOfElements = m_multi_volume_property_list->m_total_number_elements;    // FIXME:サーバ担当者
-                objectInfoGlyph.numberOfSubvolume = m_multi_volume_property_list->m_total_number_subvolumes;  // FIXME:サーバ担当者
-                objectInfoGlyph.numberOfNodes = m_multi_volume_property_list->m_total_number_nodes;       // FIXME:サーバ担当者
-                objectInfoGlyph.elementType = m_multi_volume_property_list->m_list[0].m_elem_type;      // FIXME:サーバ担当者
-                objectInfoGlyph.fileType = m_multi_volume_property_list->m_list[0].m_file_type;      // FIXME:サーバ担当者
-                objectInfoGlyph.stepNumber = m_multi_volume_property_list->m_total_number_steps;       // FIXME:サーバ担当者
+                objectInfoGlyph.numberOfVector = m_multi_volume_property_list->m_total_number_ingredients;
+                objectInfoGlyph.numberOfElements = m_multi_volume_property_list->m_total_number_elements;
+                objectInfoGlyph.numberOfSubvolume = m_multi_volume_property_list->m_total_number_subvolumes;
+                objectInfoGlyph.numberOfNodes = m_multi_volume_property_list->m_total_number_nodes;
+                objectInfoGlyph.elementType = m_multi_volume_property_list->m_list[0].m_elem_type;
+                objectInfoGlyph.fileType = m_multi_volume_property_list->m_list[0].m_file_type;
+                objectInfoGlyph.stepNumber = m_multi_volume_property_list->m_total_number_steps;
                 objectInfoGlyph.tmpCoordinateX = "";
                 objectInfoGlyph.coordinateX = "";
                 objectInfoGlyph.tmpCoordinateY = "";
@@ -718,8 +718,8 @@ void Server::initialize(uWS::WebSocket<false, true, PerSocket>* ws, const nlohma
         tf[Protocol::Key::ColorRangeMode] = static_cast<std::uint8_t>(m_particle_property->m_transfunc_array[i].m_server_color_range_mode);
         tf[Protocol::Key::ColorUserRangeMin] = m_particle_property->m_transfunc_array[i].userColorMinValue();
         tf[Protocol::Key::ColorUserRangeMax] = m_particle_property->m_transfunc_array[i].userColorMaxValue();
-        tf[Protocol::Key::ColorServerRangeMin] = m_particle_property->m_transfunc_array[i].serverColorMinValue(); // FIXME: m_particle_property->m_transfunc_array[i].serverColorMin();となるようにしてください
-        tf[Protocol::Key::ColorServerRangeMax] = m_particle_property->m_transfunc_array[i].serverColorMaxValue(); // FIXME: m_particle_property->m_transfunc_array[i].serverColorMax();となるようにしてください
+        tf[Protocol::Key::ColorServerRangeMin] = m_particle_property->m_transfunc_array[i].serverColorMinValue();
+        tf[Protocol::Key::ColorServerRangeMax] = m_particle_property->m_transfunc_array[i].serverColorMaxValue();
 
         nlohmann::json color_map_json = nlohmann::json::array();
         auto color_table = m_particle_property->m_transfunc_array[i].colorMap().table();
@@ -1030,8 +1030,8 @@ void Server::requestDataAt(uWS::WebSocket<false, true, PerSocket>* ws, const nlo
             tf[Protocol::Key::ColorRangeMode] = static_cast<std::uint8_t>(tmpParticleProperty->m_transfunc_array[i].m_server_color_range_mode);
             tf[Protocol::Key::ColorUserRangeMin] = tmpParticleProperty->m_transfunc_array[i].userColorMinValue();
             tf[Protocol::Key::ColorUserRangeMax] = tmpParticleProperty->m_transfunc_array[i].userColorMaxValue();
-            tf[Protocol::Key::ColorServerRangeMin] = tmpParticleProperty->m_transfunc_array[i].serverColorMinValue(); // FIXME: tmpParticleProperty->m_transfunc_array[i].serverColorMin();となるようにしてください
-            tf[Protocol::Key::ColorServerRangeMax] = tmpParticleProperty->m_transfunc_array[i].serverColorMaxValue(); // FIXME: tmpParticleProperty->m_transfunc_array[i].serverColorMax();となるようにしてください
+            tf[Protocol::Key::ColorServerRangeMin] = tmpParticleProperty->m_transfunc_array[i].serverColorMinValue();
+            tf[Protocol::Key::ColorServerRangeMax] = tmpParticleProperty->m_transfunc_array[i].serverColorMaxValue();
 
             {
                 nlohmann::json color_map_json = nlohmann::json::array();

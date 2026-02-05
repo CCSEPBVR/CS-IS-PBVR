@@ -20,7 +20,7 @@ public:
     ~VolumeTransform();
 
 signals:
-    void updateTranslation(); // FIXME:シグナルスロットの接続が必要
+    void updateTranslation();
 
 public slots:
     void onLoadParameter( const QString& filePath ); // KPI

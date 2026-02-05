@@ -87,7 +87,7 @@ private:
     void receiveTransferOperator( const QJsonObject& payload );
     void receiveChat            ( const QJsonObject& payload );
     void receiveShareView       ( const QJsonObject& payload ); // FIXME:実装部コメントアウト中(使用する場合は解除)
-    void receiveSharePoint      ( const QJsonObject& payload ); // FIXME:実装部コメントアウト中(使用する場合は解除)
+    void receiveSharePoint      ( const QJsonObject& payload );
 
 private slots:
     void onConnectClicked();
