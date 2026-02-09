@@ -724,12 +724,13 @@ bool generate_particles_vtk( int time_step, vtkUnstructuredGrid* ucd )
 
     // OutputParticleで書き込んだdefault_old.tfファイルを読み込みdefault_xxx.tfに書き込む
     if ( mpi_rank == 0 )
+    {
         ParameterFileReader ppr;
         NameListFile nameListFile;
         ppr.readParticleParameterFile( tfFilePath_old.c_str() );
         nameListFile = ppr.getNameListFile();
-        particleNameListFile.setFileName( tfFilePath_step );
-        particleNameListFile.write();
+        nameListFile.setFileName( tfFilePath_step );
+        nameListFile.write();
     }
 
     // 粒子ファイル書き込みスレッドが終了するまで待機

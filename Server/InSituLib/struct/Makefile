@@ -20,6 +20,8 @@ else
 	CXXFLAGS += -DCPU_VER
 endif
 
+CXXFLAGS += -I../../Utils
+CXXFLAGS += -I../../App
 CXXFLAGS += -I../shared
 CXXFLAGS += -I${VISMODULE_SOURCE_DIR}
 CXXFLAGS += -I${FUNCTION_PARSER_DIR}

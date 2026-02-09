@@ -913,8 +913,6 @@ void MakeParticleMinMax(
 	mpi_size = 1;
 #endif
 
-std::cout << "rank:" << rank << ":" << __FILE__ << ":" << __LINE__ <<  ":" << __func__ << std::endl;
-
     for( int i = 0; i < tf_number; i++ )
     {
         max_array[2 * i + 1] = vismodule::Math::Max( max_array[2 * i + 1], transfer_function_synthesizer->m_c_max[i] );
@@ -922,6 +920,4 @@ std::cout << "rank:" << rank << ":" << __FILE__ << ":" << __LINE__ <<  ":" << __
         max_array[2 * i    ] = vismodule::Math::Max( max_array[2 * i    ], transfer_function_synthesizer->m_o_max[i] );
         min_array[2 * i    ] = vismodule::Math::Min( min_array[2 * i    ], transfer_function_synthesizer->m_o_min[i] );
     }
-
-std::cout << "rank:" << rank << ":" << __FILE__ << ":" << __LINE__ <<  ":" << __func__ << std::endl;
 }

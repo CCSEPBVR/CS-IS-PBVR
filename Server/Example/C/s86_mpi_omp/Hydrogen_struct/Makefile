@@ -28,10 +28,13 @@ endif
 endif
 
 CXXFLAGS += -I./ \
+            -I../../../../Utils \
+            -I../../../../App \
             -I${INSITU_DIR} \
             -I${INSITU_COMMON_DIR} \
             -I${VISMODULE_SOURCE_DIR} \
-            -I${FUNC_DIR}
+            -I${FUNC_DIR} \
+            -I${KVS_DIR}/include
 
 ifdef KVS_DIR
 include $(KVS_DIR)/kvs.conf

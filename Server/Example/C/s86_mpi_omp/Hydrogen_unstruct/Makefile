@@ -28,6 +28,8 @@ endif
 endif
 
 CXXFLAGS += -I./ \
+            -I../../../../Utils \
+            -I../../../../App \
             -I${INSITU_DIR} \
             -I${INSITU_COMMON_DIR} \
             -I${VISMODULE_SOURCE_DIR} \
