@@ -17,7 +17,10 @@
 
 #include <vismodule/Vector2>
 #include <vismodule/Vector3>
+
+#ifndef CPU_VER
 #include <mpi.h>
+#endif
 
 /*===========================================================================*/
 /**
