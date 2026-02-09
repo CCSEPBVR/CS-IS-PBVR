@@ -27,6 +27,7 @@ MainWindow::MainWindow( kvs::qt::Application& app, QWidget *parent )
     , m_glyph_editor                   ( new GlyphEditor( m_web_sockets, this ) )
     , m_object_editor                  ( new ObjectEditor( m_screen, m_web_sockets, m_viz_mode, this ) )
     , m_plot_over_line_editor          ( new PlotOverLineEditor( m_screen, m_web_sockets, this ) )
+    , m_plot_over_time_editor          ( new PlotOverTimeEditor( m_screen, m_web_sockets, this ) )
     , m_point_size_control             ( new PointSizeControl( m_screen, this ) )
     , m_preference                     ( new Preference( this ) )
     , m_repetition_level_control       ( new RepetitionLevelControl( m_screen, m_compositor, this ) )
@@ -88,6 +89,7 @@ MainWindow::MainWindow( kvs::qt::Application& app, QWidget *parent )
                 if( m_glyph_editor                    ) m_glyph_editor                   ->onLoadParameter( filePath );
                 if( m_object_editor                   ) m_object_editor                  ->onLoadParameter( filePath );
                 if( m_plot_over_line_editor           ) m_plot_over_line_editor          ->onLoadParameter( filePath );
+                if( m_plot_over_time_editor           ) m_plot_over_time_editor          ->onLoadParameter( filePath );
                 if( m_point_size_control              ) m_point_size_control             ->onLoadParameter( filePath );
                 if( m_repetition_level_control        ) m_repetition_level_control       ->onLoadParameter( filePath );
                 if( m_shading_control                 ) m_shading_control                ->onLoadParameter( filePath );
@@ -108,6 +110,7 @@ MainWindow::MainWindow( kvs::qt::Application& app, QWidget *parent )
                 if( m_glyph_editor                    ) m_glyph_editor                   ->onSaveParameter( filePath );
                 if( m_object_editor                   ) m_object_editor                  ->onSaveParameter( filePath );
                 if( m_plot_over_line_editor           ) m_plot_over_line_editor          ->onSaveParameter( filePath );
+                if( m_plot_over_time_editor           ) m_plot_over_time_editor          ->onSaveParameter( filePath );
                 if( m_point_size_control              ) m_point_size_control             ->onSaveParameter( filePath );
                 if( m_repetition_level_control        ) m_repetition_level_control       ->onSaveParameter( filePath );
                 if( m_shading_control                 ) m_shading_control                ->onSaveParameter( filePath );
@@ -127,6 +130,7 @@ MainWindow::MainWindow( kvs::qt::Application& app, QWidget *parent )
     initializeGlyphEditor();
     initializeObjectEditor();
     initializePlotOverLineEditor();
+    initializePlotOverTimeEditor();
     initializePointSizeControl();
     initializePreference();
     initializeRepetitionLevelControl();
@@ -144,11 +148,14 @@ MainWindow::MainWindow( kvs::qt::Application& app, QWidget *parent )
 #ifdef OPENXR_SCREEN
     m_vr_listener = new VRHandControllerListener( m_screen );
     m_screen->addEvent( m_vr_listener );
-    connect( m_vr_listener, &VRHandControllerListener::toggleShowHideVRPlotOverLine, m_plot_over_line_editor, &PlotOverLineEditor::onToggleShowHideVRPlotOverLine );
     connect( m_vr_listener, &VRHandControllerListener::drawVRPlotOverLine          , m_plot_over_line_editor, &PlotOverLineEditor::onDrawVRPlotOverLine );
+    connect( m_vr_listener, &VRHandControllerListener::toggleShowHideVRPlotOverLine, m_plot_over_line_editor, &PlotOverLineEditor::onToggleShowHideVRPlotOverLine );
 
-    connect( m_vr_listener, &VRHandControllerListener::toggleShowHideSharePoint    , m_communication, &Communication::onToggleShowHideSharePoint );
-    connect( m_vr_listener, &VRHandControllerListener::vrSharePoint                , m_communication, &Communication::onVRSharePoint );
+    connect( m_vr_listener, &VRHandControllerListener::drawVRPlotOverTime          , m_plot_over_time_editor, &PlotOverTimeEditor::onDrawVRPlotOverTime );
+    connect( m_vr_listener, &VRHandControllerListener::toggleShowHideVRPlotOverTime, m_plot_over_time_editor, &PlotOverTimeEditor::onToggleShowHideVRPlotOverTime );
+    
+    connect( m_vr_listener, &VRHandControllerListener::toggleShowHideSharePoint    , m_communication        , &Communication::onToggleShowHideSharePoint );
+    connect( m_vr_listener, &VRHandControllerListener::vrSharePoint                , m_communication        , &Communication::onVRSharePoint );
 #endif
 }
 
@@ -181,6 +188,11 @@ void MainWindow::onUpdateServerState( bool serverState )
         m_plot_over_line_editor_action->setEnabled( serverState );
         m_plot_over_line_editor->reset();
     }
+    if( m_plot_over_time_editor )
+    {
+        m_plot_over_time_editor_action->setEnabled( serverState );
+        m_plot_over_time_editor->reset();
+    }
     if ( m_transfer_function_editor )
     {
         m_transfer_function_editor_action->setEnabled( serverState );
@@ -196,6 +208,7 @@ void MainWindow::onUpdateServerState( bool serverState )
         m_glyph_editor->close();
     }
     if( m_plot_over_line_editor )    { m_plot_over_line_editor->close(); }
+    if( m_plot_over_time_editor )    { m_plot_over_time_editor->close(); }
     if( m_transfer_function_editor ) { m_transfer_function_editor->close(); }
 }
 
@@ -218,6 +231,11 @@ void MainWindow::onUpdateNumberOfVector( const int numberOfVector )
     if( m_plot_over_line_editor )
     {
         m_plot_over_line_editor->onUpdateNumberOfVector( numberOfVector );
+    }
+
+    if( m_plot_over_time_editor )
+    {
+        m_plot_over_time_editor->onUpdateNumberOfVector( numberOfVector );
     }
 }
 
@@ -299,6 +317,12 @@ void MainWindow::initializeMenuBar()
         m_plot_over_line_editor_action->setEnabled( false ); // NOTE:サーバ接続前は無効
         connect( m_plot_over_line_editor_action, &QAction::triggered, this, &MainWindow::onPlotOverLineEditor );
     }
+    if( m_plot_over_time_editor )
+    {
+        m_plot_over_time_editor_action = new QAction( tr( "Plot Over Time Editor" ), this );
+        m_plot_over_time_editor_action->setEnabled( false ); // NOTE:サーバ接続前は無効
+        connect( m_plot_over_time_editor_action, &QAction::triggered, this, &MainWindow::onPlotOverTimeEditor );
+    }
     if( m_point_size_control )
     {
         m_point_size_control_action = new QAction( tr( "Point Size Control" ), this );
@@ -343,6 +367,7 @@ void MainWindow::initializeMenuBar()
             m_glyph_editor_action             ||
             m_object_editor_action            ||
             m_plot_over_line_editor_action    ||
+            m_plot_over_time_editor_action    ||
             m_point_size_control_action       ||
             m_repetition_level_control_action ||
             m_shading_control_action          ||
@@ -355,6 +380,7 @@ void MainWindow::initializeMenuBar()
     add( ui->menuTools, m_glyph_editor_action );
     add( ui->menuTools, m_object_editor_action );
     add( ui->menuTools, m_plot_over_line_editor_action );
+    add( ui->menuTools, m_plot_over_time_editor_action );
     add( ui->menuTools, m_point_size_control_action );
     add( ui->menuTools, m_repetition_level_control_action );
     add( ui->menuTools, m_shading_control_action );
@@ -389,6 +415,7 @@ void MainWindow::initializeCommunication()
         connect( m_communication, &Communication::updateOperatorState, m_glyph_editor              , &GlyphEditor           ::onOperatorStateUpdate );
         connect( m_communication, &Communication::updateOperatorState, m_object_editor             , &ObjectEditor          ::onOperatorStateUpdate );
         connect( m_communication, &Communication::updateOperatorState, m_plot_over_line_editor     , &PlotOverLineEditor    ::onOperatorStateUpdate );
+        connect( m_communication, &Communication::updateOperatorState, m_plot_over_time_editor     , &PlotOverTimeEditor    ::onOperatorStateUpdate );
         connect( m_communication, &Communication::updateOperatorState, m_transfer_function_editor  , &TransferFunctionEditor::onOperatorStateUpdate );
 
         // NOTE:バイナリソケット用
@@ -399,6 +426,7 @@ void MainWindow::initializeCommunication()
         connect( m_communication, &Communication::receiveGlyphParameter           , m_glyph_editor              , &GlyphEditor           ::onReceiveGlyphParameter );
         connect( m_communication, &Communication::receiveObjectInfoParameter      , m_object_editor             , &ObjectEditor          ::onReceiveObjectInfoParameter );
         connect( m_communication, &Communication::receivePlotOverLineParameter    , m_plot_over_line_editor     , &PlotOverLineEditor    ::onReceivePlotOverLineParameter );
+        connect( m_communication, &Communication::receivePlotOverTimeParameter    , m_plot_over_time_editor     , &PlotOverTimeEditor    ::onReceivePlotOverTimeParameter );
         connect( m_communication, &Communication::receiveTransferFunctionParameter, m_transfer_function_editor  , &TransferFunctionEditor::onReceiveTransferFunctionParameter );
 
         connect( m_communication, &Communication::receiveRequestDataAtTransferFunctionParameter, m_transfer_function_editor, &TransferFunctionEditor::onReceiveRequestDataAtTransferFunctionParameter );
@@ -448,6 +476,16 @@ void MainWindow::initializePlotOverLineEditor()
         m_plot_over_line_editor->adjustSize();
         m_plot_over_line_editor->close();
         addDockWidget( Qt::LeftDockWidgetArea, m_plot_over_line_editor );
+    }
+}
+
+void MainWindow::initializePlotOverTimeEditor()
+{
+    if( m_plot_over_time_editor )
+    {
+        m_plot_over_time_editor->adjustSize();
+        m_plot_over_time_editor->close();
+        addDockWidget( Qt::LeftDockWidgetArea, m_plot_over_time_editor );
     }
 }
 

@@ -718,6 +718,7 @@ void Communication::onTextWebSocketMessageReceived( const QString& receivedMessa
     {
         const QString kGlyphParameter            = QString::fromUtf8( Protocol::Key::GlyphParameter );
         const QString kPlotOverLineParameter     = QString::fromUtf8( Protocol::Key::PlotOverLineParameter );
+        const QString kPlotOverTimeParameter     = QString::fromUtf8( Protocol::Key::PlotOverTimeParameter );
         const QString kTransferFunctionParameter = QString::fromUtf8( Protocol::Key::TransferFunctionParameter );
         if( obj.contains( kGlyphParameter ) && obj.value( kGlyphParameter ).isObject() )
         {
@@ -729,6 +730,11 @@ void Communication::onTextWebSocketMessageReceived( const QString& receivedMessa
             const QJsonObject plotOverLineParameter = obj.value( kPlotOverLineParameter ).toObject();
             emit receivePlotOverLineParameter( plotOverLineParameter );
         }
+        if( obj.contains( kPlotOverTimeParameter )     && obj.value( kPlotOverTimeParameter ).isObject() )
+        {
+            const QJsonObject plotOverTimeParameter = obj.value( kPlotOverTimeParameter ).toObject();
+            emit receivePlotOverTimeParameter( plotOverTimeParameter );
+        }
         if( obj.contains( kTransferFunctionParameter ) && obj.value( kTransferFunctionParameter ).isObject() )
         {
             const QJsonObject transferFunctionParameter = obj.value( kTransferFunctionParameter ).toObject();
@@ -738,11 +744,17 @@ void Communication::onTextWebSocketMessageReceived( const QString& receivedMessa
     else if( event == QString::fromUtf8( Protocol::Events::RequestDataAt ) )
     {
         const QString kPlotOverLineParameter     = QString::fromUtf8( Protocol::Key::PlotOverLineParameter );
+        const QString kPlotOverTimeParameter     = QString::fromUtf8( Protocol::Key::PlotOverTimeParameter );
         const QString kTransferFunctionParameter = QString::fromUtf8( Protocol::Key::TransferFunctionParameter );
         if( obj.contains( kPlotOverLineParameter ) && obj.value( kPlotOverLineParameter ).isObject() )
         {
             const QJsonObject plotOverLineParameter = obj.value( kPlotOverLineParameter ).toObject();
             emit receivePlotOverLineParameter( plotOverLineParameter );
+        }
+        if( obj.contains( kPlotOverTimeParameter ) && obj.value( kPlotOverTimeParameter ).isObject() )
+        {
+            const QJsonObject plotOverTimeParameter = obj.value( kPlotOverTimeParameter ).toObject();
+            emit receivePlotOverTimeParameter( plotOverTimeParameter );
         }
         if( obj.contains( kTransferFunctionParameter ) && obj.value( kTransferFunctionParameter ).isObject() )
         {
@@ -754,6 +766,7 @@ void Communication::onTextWebSocketMessageReceived( const QString& receivedMessa
     else if( event == QString::fromUtf8( Protocol::Events::GlyphParameter ) )            emit receiveGlyphParameter( obj );
     else if( event == QString::fromUtf8( Protocol::Events::ObjectInfoParameter ) )       emit receiveObjectInfoParameter( obj );
     else if( event == QString::fromUtf8( Protocol::Events::PlotOverLineParameter ) )     emit receivePlotOverLineParameter( obj );
+    else if( event == QString::fromUtf8( Protocol::Events::PlotOverTimeParameter ) )     emit receivePlotOverTimeParameter( obj );
     else if( event == QString::fromUtf8( Protocol::Events::TransferFunctionParameter ) ) emit receiveTransferFunctionParameter( obj );
     else if( event == QString::fromUtf8( Protocol::Events::SelectedFile ) )              emit receiveSelectedFile( obj );
     else if( event == QString::fromUtf8( Protocol::Events::ObjectDelete ) )              emit receiveObjectDelete( obj );

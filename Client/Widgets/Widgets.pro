@@ -27,6 +27,7 @@ HEADERS += \
     OpacityMapEditor.h \
     PlayBackControlToolBar.h \
     PlotOverLineEditor.h \
+    PlotOverTimeEditor.h \
     PointSizeControl.h \
     Preference.h \
     RemoteFileDialog.h \
@@ -53,6 +54,7 @@ SOURCES += \
     OpacityMapEditor.cpp \
     PlayBackControlToolBar.cpp \
     PlotOverLineEditor.cpp \
+    PlotOverTimeEditor.cpp \
     PointSizeControl.cpp \
     Preference.cpp \
     RepetitionLevelControl.cpp \
@@ -75,6 +77,7 @@ FORMS += \
     ObjectEditor.ui \
     OpacityMapEditor.ui \
     PlotOverLineEditor.ui \
+    PlotOverTimeEditor.ui \
     PointSizeControl.ui \
     Preference.ui \
     RepetitionLevelControl.ui \

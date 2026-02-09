@@ -99,6 +99,7 @@ private:
     void receiveObjectInfoParameter(uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received);
     void receiveServerSideSameTimeStepReplace(uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received);
     void receivePlotOverLineParameter(uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received);
+    void receivePlotOverTimeParameter(uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received);
     void receiveTransferFunctionParameter(uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received);
     void fileList(uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received);
     void selectedFile(uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received);

@@ -60,6 +60,7 @@ void VRHandControllerListener::onEvent( kvs::EventBase* event )
                     }
                     else if( j == kvs::Controller::Button::Y )
                     {
+                        emit toggleShowHideVRPlotOverTime();
                     }
                     else if( j == kvs::Controller::Button::X )
                     {
@@ -92,6 +93,18 @@ void VRHandControllerListener::onEvent( kvs::EventBase* event )
                     }
                     else if( j == kvs::Controller::Button::Y )
                     {
+                        auto coord = makeCoordArrayForLine(
+                            scene,
+                            m_screen->openxrInteractor()->startInitialTranslation(),
+                            m_screen->openxrInteractor()->endInitialTranslation(),
+                            m_screen->openxrInteractor()->startPoint(),
+                            m_screen->openxrInteractor()->endPoint()
+                            );
+
+                        kvs::Real32 coordArray[6];
+                        std::copy( coord.begin(), coord.end(), coordArray );
+
+                        emit drawVRPlotOverTime( coordArray );
                     }
                     else if( j == kvs::Controller::Button::X )
                     {

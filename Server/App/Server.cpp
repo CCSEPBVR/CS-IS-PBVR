@@ -213,6 +213,7 @@ void Server::onMessage(uWS::WebSocket<false, true, PerSocket>* ws, std::string_v
         else if (event == Protocol::Events::ObjectInfoParameter)           receiveObjectInfoParameter(ws, received);
         else if (event == Protocol::Events::ServerSideSameTimeStepReplace) receiveServerSideSameTimeStepReplace(ws, received);
         else if (event == Protocol::Events::PlotOverLineParameter)         receivePlotOverLineParameter(ws, received);
+        else if (event == Protocol::Events::PlotOverTimeParameter)         receivePlotOverTimeParameter(ws, received);
         else if (event == Protocol::Events::TransferFunctionParameter)     receiveTransferFunctionParameter(ws, received);
         else if (event == "fileList")                                      fileList(ws, received);
         else if (event == Protocol::Events::SelectedFile)                  selectedFile(ws, received);
@@ -1525,6 +1526,13 @@ void Server::receivePlotOverLineParameter(uWS::WebSocket<false, true, PerSocket>
         ppw.getPlotOverLineParameter(*m_pol_property);
         ppw.writePlotOverLineParameterFile();
     }
+
+    ws->publish( k_text_topic, received.dump(), uWS::OpCode::TEXT );
+}
+
+void Server::receivePlotOverTimeParameter(uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received)
+{
+    // std::cout << "[Server] plot over time parameter" << std::endl;
 
     ws->publish( k_text_topic, received.dump(), uWS::OpCode::TEXT );
 }

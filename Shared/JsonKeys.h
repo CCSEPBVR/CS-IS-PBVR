@@ -26,6 +26,7 @@ inline constexpr std::string_view TransferFunctionFilePath  = "TransferFunctionF
 inline constexpr std::string_view TransferFunctionParameter = "TransferFunctionParameter";
 inline constexpr std::string_view GlyphParameter            = "GlyphParameter";
 inline constexpr std::string_view PlotOverLineParameter     = "PlotOverLineParameter";
+inline constexpr std::string_view PlotOverTimeParameter     = "PlotOverTimeParameter";
 
 // Update IS TimeStep
 inline constexpr std::string_view UpdateMaxTimeStep         = "UpdateMaxTimeStep";
@@ -130,6 +131,9 @@ inline constexpr std::string_view ValueOnLine               = "ValueOnLine";
 inline constexpr std::string_view XAxis                     = "XAxis";
 inline constexpr std::string_view Mask                      = "Mask";
 
+// PlotOverTimeEditor
+inline constexpr std::string_view Coords                    = "Coords";
+
 inline constexpr std::string_view TimeStep                  = "TimeStep";
 
 // RemoteFileDialog
@@ -183,6 +187,7 @@ inline constexpr std::string_view ServerSideSameTimeStepReplace = "ServerSideSam
 inline constexpr std::string_view TransferFunctionParameter     = "TransferFunctionParameter";
 inline constexpr std::string_view GlyphParameter                = "GlyphParameter";
 inline constexpr std::string_view PlotOverLineParameter         = "PlotOverLineParameter";
+inline constexpr std::string_view PlotOverTimeParameter         = "PlotOverTimeParameter";
 inline constexpr std::string_view RequestDataAt                 = "RequestDataAt";
 inline constexpr std::string_view TimeStepControlParameter      = "TimeStepControlParameter";
 inline constexpr std::string_view LatestTimeStep                = "LatestTimeStep";

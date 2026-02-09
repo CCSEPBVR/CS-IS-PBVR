@@ -28,6 +28,7 @@
 #include "GlyphEditor.h"
 #include "ObjectEditor.h"
 #include "PlotOverLineEditor.h"
+#include "PlotOverTimeEditor.h"
 #include "PointSizeControl.h"
 #include "Preference.h"
 #include "RepetitionLevelControl.h"
@@ -96,6 +97,7 @@ private:
     QAction* m_glyph_editor_action             = nullptr;
     QAction* m_object_editor_action            = nullptr;
     QAction* m_plot_over_line_editor_action    = nullptr;
+    QAction* m_plot_over_time_editor_action    = nullptr;
     QAction* m_point_size_control_action       = nullptr;
     QAction* m_preference_action               = nullptr;
     QAction* m_repetition_level_control_action = nullptr;
@@ -109,6 +111,7 @@ private:
     GlyphEditor* m_glyph_editor                        = nullptr; // KPI WebSocket Operator
     ObjectEditor* m_object_editor                      = nullptr; // KPI WebSocket Operator
     PlotOverLineEditor* m_plot_over_line_editor        = nullptr; // KPI WebSocket Operator
+    PlotOverTimeEditor* m_plot_over_time_editor        = nullptr; // KPI WebSocket Operator
     PointSizeControl* m_point_size_control             = nullptr; // KPI
     Preference* m_preference                           = nullptr;
     RepetitionLevelControl* m_repetition_level_control = nullptr; // KPI
@@ -125,6 +128,7 @@ private:
     void initializeGlyphEditor();
     void initializeObjectEditor();
     void initializePlotOverLineEditor();
+    void initializePlotOverTimeEditor();
     void initializePointSizeControl();
     void initializePreference();
     void initializeRepetitionLevelControl();
@@ -140,6 +144,7 @@ private slots:
     void onGlyphEditor()            { m_glyph_editor->show();             }
     void onObjectEditor()           { m_object_editor->show();            }
     void onPlotOverLineEditor()     { m_plot_over_line_editor->show();    }
+    void onPlotOverTimeEditor()     { m_plot_over_time_editor->show();    }
     void onPointSizeControl()       { m_point_size_control->show();       }
     void onPreference()             { m_preference->show();               }
     void onRepetitionLevelControl() { m_repetition_level_control->show(); }

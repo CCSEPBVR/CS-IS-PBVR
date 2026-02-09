@@ -48,6 +48,7 @@ signals:
     void receiveGlyphParameter           ( const QJsonObject& payload );
     void receiveObjectInfoParameter      ( const QJsonObject& payload );
     void receivePlotOverLineParameter    ( const QJsonObject& payload );
+    void receivePlotOverTimeParameter    ( const QJsonObject& payload );
     void receiveTransferFunctionParameter( const QJsonObject& payload );
 
     // NOTE:時系列更新用

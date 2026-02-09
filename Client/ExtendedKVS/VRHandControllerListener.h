@@ -25,6 +25,9 @@ signals:
     void toggleShowHideVRPlotOverLine();
     void drawVRPlotOverLine( kvs::Real32 coordArray[ 2 * 3 ] );
 
+    void toggleShowHideVRPlotOverTime();
+    void drawVRPlotOverTime( kvs::Real32 coordArray[ 2 * 3 ] );
+    
     void toggleShowHideSharePoint();
     void vrSharePoint( kvs::Real32 coordArray[ 2 * 3 ], kvs::Real32 directionArray[ 3 ] );
 
