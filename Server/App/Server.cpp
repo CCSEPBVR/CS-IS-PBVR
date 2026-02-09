@@ -19,6 +19,14 @@ Server::Server(int port)
     , m_pol_property(new PlotOverLineProperty())
     , m_objects(new std::vector<ObjectInfoExtractor::ObjectInfo>())
 {
+#ifndef CPU_VER
+    MPI_Comm_size( MPI_COMM_WORLD, &m_mpi_size );
+    MPI_Comm_rank( MPI_COMM_WORLD, &m_mpi_rank );
+#else
+	m_mpi_size = 1;
+    m_mpi_rank = 0
+#endif
+
     m_particle_property->m_camera = new vismodule::Camera();
     m_particle_property->m_camera->setWindowSize(620, 620); // FIXME:クライアント側から送信されるようになったら削除
     m_particle_property->m_transfunc_synthesizer = new TransferFunctionSynthesizer();
@@ -371,12 +379,48 @@ void Server::initialize(uWS::WebSocket<false, true, PerSocket>* ws, const nlohma
 #endif
         m_server_mode = ServerMode::CS;
 
-        bool isSuccess = false;
-        isSuccess = SetDefaultParticleParameterCS(
-            volumeDataNativeFilePath,
+        bool isFileLoadSuccess = true;
+
+        if (!std::filesystem::exists(volumeDataNativeFilePath))
+        {
+            std::cerr << "ERROR: The volume object file doesn't exist.(rank:" << m_mpi_rank << ")" << std::endl;
+            std::cerr << "INFO: volume object file: " << volumeDataNativeFilePath << "(rank:" << m_mpi_rank << ")" << std::endl;
+            isFileLoadSuccess = false;
+        }
+
+        // 伝達関数のファイルパスが指定されていて、そのファイルが存在しない場合
+        if ((transferFunctionNativeFilePath != "") && !std::filesystem::exists(transferFunctionNativeFilePath))
+        {
+            std::cerr << "ERROR: The transfer function file doesn't exist.(rank:" << m_mpi_rank << ")" << std::endl;
+            std::cerr << "INFO: transfer function file: " << transferFunctionNativeFilePath << "(rank:" << m_mpi_rank << ")" << std::endl;
+            isFileLoadSuccess = false;
+        }
+
+        m_multi_volume_property_list->loadVolumeDataFile(volumeDataNativeFilePath);
+
+        if (m_multi_volume_property_list->m_list.size() <= 0)
+        {
+            std::cerr << "ERROR: Failed to load the volume object file.(rank:" << m_mpi_rank << ")" << std::endl;
+            std::cerr << "INFO: volume object file: " << volumeDataNativeFilePath << "(rank:" << m_mpi_rank << ")" << std::endl;
+            isFileLoadSuccess = false;
+        }
+
+        if (!isFileLoadSuccess)
+        {
+            // FIXME:ファイルを読み込むことが出来なかったことをクライアントに伝える
+            return;
+        }
+
+        // Workerが動いている場合, 初回導通信号をWorkerに送信する
+        if (m_mpi_size > 1)
+        {
+            SendInitialStepSignal(volumeDataNativeFilePath, transferFunctionNativeFilePath);
+        }
+
+        SetDefaultParticleParameterCS(
             transferFunctionNativeFilePath,
-            *m_particle_property,
-            *m_multi_volume_property_list
+            *m_multi_volume_property_list,
+            *m_particle_property
         );
 
         switch( samplingType )
@@ -394,12 +438,6 @@ void Server::initialize(uWS::WebSocket<false, true, PerSocket>* ws, const nlohma
             break;
         }
 
-        if (!isSuccess)
-        {
-            // FIXME:ファイルを読み込むことが出来なかったことをクライアントに伝える
-            return;
-        }
-
         InitialStepCS(
             volumeDataNativeFilePath,
             m_multi_volume_property_list->m_total_start_steps,
@@ -408,14 +446,9 @@ void Server::initialize(uWS::WebSocket<false, true, PerSocket>* ws, const nlohma
         );
 
         // NOTE:成分数3以上の場合グリフのデフォルトパラメータを設定
-        if (m_multi_volume_property_list->m_total_number_ingredients >= 3)
-        {
-            SetDefaultGlyphParameterCS(*m_glyph_property);
-        }
-        else
-        {
-            m_glyph_property->m_glyph_flag = false;
-        }
+        bool isGlyphEnabled = m_multi_volume_property_list->m_total_number_ingredients >= 3;
+        m_glyph_property->m_glyph_flag = isGlyphEnabled;
+        SetDefaultGlyphParameterCS(*m_glyph_property);
 
         // NOTE:プロットオーバーラインのデフォルトパラメータを設定
         SetDefaultPOLParameterCS(*m_pol_property);
@@ -493,14 +526,9 @@ void Server::initialize(uWS::WebSocket<false, true, PerSocket>* ws, const nlohma
         );
 
         // NOTE:成分数3以上の場合グリフのデフォルトパラメータを設定
-        if (m_multi_volume_property_list->m_total_number_ingredients >= 3)
-        {
-            SetDefaultGlyphParameterIS(*m_glyph_property);
-        }
-        else
-        {
-            m_glyph_property->m_glyph_flag = false;
-        }
+        bool isGlyphEnabled = m_multi_volume_property_list->m_total_number_ingredients >= 3;
+        m_glyph_property->m_glyph_flag = isGlyphEnabled;
+        SetDefaultGlyphParameterCS(*m_glyph_property);
 
         // NOTE:プロットオーバーラインのデフォルトパラメータを設定
         SetDefaultPOLParameterIS(*m_pol_property);
@@ -940,6 +968,7 @@ void Server::requestDataAt(uWS::WebSocket<false, true, PerSocket>* ws, const nlo
 
                 if ((timeStep >= volumeStartStep) && (timeStep <= volumeLastStep))
                 {
+                    SendGeneratePlorOverLineSignal(file_path, timeStep);
                     kvsml_object_pol = GeneratePOLCS(file_path, timeStep, *m_pol_property, *m_multi_volume_property_list);
                 }
             }
@@ -1247,9 +1276,17 @@ void Server::receiveGlyphParameter(uWS::WebSocket<false, true, PerSocket>* ws, c
         }
     }
 
-    // ISモードの場合はグラフパラメータをファイルに書き込む
-    if (m_server_mode == ServerMode::IS)
+    if (m_server_mode == ServerMode::CS)
     {
+        // WorkerにGlyphパラメータを送信する
+        if (m_mpi_size > 1)
+        {
+            SendGlyphPropertySignal(*m_glyph_property);
+        }
+    }
+    else // m_server_mode == ServerMode::IS
+    {
+        // グリフパラメータをパラメータファイルに書き込む
         ParameterFileWriter ppw;
         ppw.getGlyphParameter(*m_glyph_property);
         ppw.writeGlyphParameterFile();
@@ -1360,16 +1397,21 @@ void Server::receiveObjectInfoParameter(uWS::WebSocket<false, true, PerSocket>* 
         }
     }
 
-    // CSの場合粒子パラメータの再計算
     if (m_server_mode == ServerMode::CS)
     {
+        // Workerに粒子パラメータを送信する
+        if (m_mpi_size > 1)
+        {
+            SendParticlePropertySignal(*m_particle_property);
+        }
+
+        // 粒子パラメータの再計算
         m_particle_property->m_sampling_step = CalculateSamplingStep(*m_multi_volume_property_list) / m_particle_property->m_extra_opacity_factor;
         m_particle_property->m_subpixel_level = CalculateSubpixelLevel(*m_particle_property, *m_multi_volume_property_list, *m_particle_property->m_camera);
     }
-    // ISの場合粒子パラメータをパラメータファイルに書き込む
-    // m_server_mode == ServerMode::IS
-    else
+    else // m_server_mode == ServerMode::IS
     {
+        // パラメータファイルに粒子パラメータを書き込む
         ParameterFileWriter ppw;
         ppw.getParticleParameter(*m_particle_property);
         ppw.writeParticleParameterFile();
@@ -1456,9 +1498,17 @@ void Server::receivePlotOverLineParameter(uWS::WebSocket<false, true, PerSocket>
         }
     }
 
-    // ISモードの場合はプロットオーバーラインパラメータをファイルに書き込む
-    if (m_server_mode == ServerMode::IS)
+    if (m_server_mode == ServerMode::CS)
     {
+        // WorkerにPOLパラメータを送信する
+        if (m_mpi_size > 1)
+        {
+            SendPlotOverLinePropertySignal(*m_pol_property);
+        }
+    }
+    else // m_server_mode == ServerMode::IS
+    {
+        // パラメータファイルにPOLパラメータを書き込む
         ParameterFileWriter ppw;
         ppw.getPlotOverLineParameter(*m_pol_property);
         ppw.writePlotOverLineParameterFile();
@@ -1685,9 +1735,17 @@ void Server::receiveTransferFunctionParameter(uWS::WebSocket<false, true, PerSoc
 
     m_particle_property->UpdateTransferFunctionSynthesizer();
 
-    // ISの場合粒子パラメータをパラメータファイルに書き込む
-    if (m_server_mode == ServerMode::IS)
+    if (m_server_mode == ServerMode::CS)
     {
+        // Workerに粒子パラメータを送信する
+        if (m_mpi_size > 1)
+        {
+            SendParticlePropertySignal(*m_particle_property);
+        }
+    }
+    else // m_server_mode == ServerMode::IS
+    {
+        // パラメータファイルに粒子パラメータファイルを書き込む
         ParameterFileWriter ppw;
         ppw.getParticleParameter(*m_particle_property);
         ppw.writeParticleParameterFile();

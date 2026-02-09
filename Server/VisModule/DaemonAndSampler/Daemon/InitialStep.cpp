@@ -14,10 +14,9 @@
 
 // 初回通信用 デフォルトパラメータを設定する(CS)
 bool SetDefaultParticleParameterCS(
-    const std::string& volume_data_file_name,
     const std::string& transfer_function_file_name,
-    ParticleProperty& particle_property,
-    MultiVolumePropertyList& mvpl
+    const MultiVolumePropertyList& mvpl,
+    ParticleProperty& particle_property
 )
 {
     int rank;
@@ -39,16 +38,6 @@ bool SetDefaultParticleParameterCS(
     particle_property.m_latency_threshold        = -1.0;
     particle_property.m_job_id_pack_size         = 1;
 
-    mvpl.searchFile( volume_data_file_name );
-
-    if ( mvpl.m_list.size() <= 0 )
-    {
-        if ( rank == 0 )
-        {
-            std::cerr << "Error: pfifile doesn't exist(rank:" << rank << ")" << std::endl;
-        }
-        return false;
-    }
 
     particle_property.m_sampling_step  = CalculateSamplingStep( mvpl ) / particle_property.m_extra_opacity_factor;
     particle_property.m_subpixel_level = CalculateSubpixelLevel( particle_property, mvpl, *particle_property.m_camera );
@@ -337,9 +326,6 @@ void InitialStepCS(
     }
 #endif
 
-    // min,maxの更新
-    MakeParticleMinMax( particle_property.m_transfunc_synthesizer, tf_number, tmp_max, tmp_min );
-
     vr = setVariablerange2( tmp_max, tmp_min, tf_number );
     vr.show();
 
@@ -517,12 +503,14 @@ void InitialStepCS(
     }
 #endif
 
-    // histogramの格納
-    for( int i = 0; i < tf_number; i++ )
+    if ( rank == 0 )
     {
-        // histogram
-        std::copy( tmp_c_bins + ( DEFAULT_NBINS * i ), tmp_c_bins + ( DEFAULT_NBINS * ( i + 1 ) ), particle_property.m_transfunc_array[i].m_color_histogram );
-        std::copy( tmp_o_bins + ( DEFAULT_NBINS * i ), tmp_o_bins + ( DEFAULT_NBINS * ( i + 1 ) ), particle_property.m_transfunc_array[i].m_opacity_histogram );
+        // histogramの格納
+        for( int i = 0; i < tf_number; i++ )
+        {
+            std::copy( tmp_c_bins + ( DEFAULT_NBINS * i ), tmp_c_bins + ( DEFAULT_NBINS * ( i + 1 ) ), particle_property.m_transfunc_array[i].m_color_histogram );
+            std::copy( tmp_o_bins + ( DEFAULT_NBINS * i ), tmp_o_bins + ( DEFAULT_NBINS * ( i + 1 ) ), particle_property.m_transfunc_array[i].m_opacity_histogram );
+        }
     }
 
     nan_error = false;

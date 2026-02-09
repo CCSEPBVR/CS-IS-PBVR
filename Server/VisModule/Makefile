@@ -13,7 +13,7 @@ include ./Makefile.def
 #=============================================================================
 #  INCLUDE_PATH, LIBRARY_PATH, LINK_LIBRARY, INSTALL_DIR.
 #=============================================================================
-INCLUDE_PATH := -I. -I../FunctionParser
+INCLUDE_PATH := -I. -I../App -I../FunctionParser
 
 ifdef KVS_DIR
 include $(KVS_DIR)/kvs.conf

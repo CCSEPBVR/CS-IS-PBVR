@@ -136,8 +136,9 @@ TARGET := pbvr_server
 
 OBJS := \
 	$(OUTDIR)/main.o \
-	$(OUTDIR)/Server.o
-
+	$(OUTDIR)/Server.o \
+	$(OUTDIR)/ServerWorker.o \
+	$(OUTDIR)/TaskSignalTransferProtocol.o
 
 all: $(TARGET)
 

@@ -5,6 +5,9 @@
 #include <vector>
 #include <string>
 #include <sys/stat.h>
+
+#include "ServerMode.h"
+
 #include <vismodule/UnstructuredVolumeObject>
 #include <vismodule/MultiVolumeProperty>
 #include <vismodule/ExtendedTransferFunction>

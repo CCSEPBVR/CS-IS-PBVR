@@ -2572,7 +2572,7 @@ void MultiVolumePropertyList::cropTimeStep( const int s, const int e )
     m_total_number_steps = m_total_last_step - m_total_start_steps + 1;
 }
 
-void MultiVolumePropertyList::searchFile( const std::string& filename )
+void MultiVolumePropertyList::loadVolumeDataFile( const std::string& filename )
 {
                     size_t found_pfl  = filename.find(".pfl");
                     size_t found_pfi  = filename.find(".pfi");

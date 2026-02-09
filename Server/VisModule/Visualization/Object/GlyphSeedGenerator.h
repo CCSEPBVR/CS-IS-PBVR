@@ -19,6 +19,8 @@
 #include <vector>
 #include <string>
 
+#include "ServerMode.h"
+
 #include <vismodule/ValueArray>
 #include <vismodule/Camera>
 #include <vismodule/Argument>

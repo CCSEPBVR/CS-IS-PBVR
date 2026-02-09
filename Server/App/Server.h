@@ -68,6 +68,9 @@ private:
     std::unordered_map<std::string, std::shared_ptr<ClientState>> m_clients;
     int m_next_user_id = 0;
 
+    int m_mpi_size;
+    int m_mpi_rank;
+
     ServerMode m_server_mode;
 
     GlyphProperty* m_glyph_property;

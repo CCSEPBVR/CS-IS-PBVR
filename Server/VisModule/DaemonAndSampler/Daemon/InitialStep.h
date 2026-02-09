@@ -11,10 +11,9 @@
 #include <kvs/PointObject>
 
 bool SetDefaultParticleParameterCS(
-    const std::string& volume_data_file_name,
     const std::string& transfer_function_file_name,
-    ParticleProperty& particle_property,
-    MultiVolumePropertyList& mvpl
+    const MultiVolumePropertyList& mvpl,
+    ParticleProperty& particle_property
 );
 
 void InitialStepCS(

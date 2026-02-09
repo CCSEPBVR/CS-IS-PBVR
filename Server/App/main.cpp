@@ -1,4 +1,5 @@
 #include "Server.h"
+#include "ServerWorker.h"
 // #include "ServerWIP.h"
 
 #ifndef CPU_VER
@@ -31,6 +32,11 @@ int main( int argc, char *argv[] )
     if ( rank == 0 )
     {
         Server server( port );
+    }
+    else
+    {
+        ServerWorker server_worker;
+        server_worker.Run();
     }
 
 #ifndef CPU_VER
