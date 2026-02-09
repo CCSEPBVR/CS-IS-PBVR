@@ -199,36 +199,63 @@ void Communication::receiveChat( const QJsonObject& payload )
 
 void Communication::receiveShareView( const QJsonObject& payload )
 {
-    // int userID = dataArray[QString::fromUtf8( Protocol::Key::UserID )].toInt();    // 着目点共有を行った送信者
-    // QString userIDStr = QString::number( userID );
-    // QJsonArray matrixArray = dataArray[QString::fromUtf8( Protocol::Key::Matrix )].toArray();
-    // kvs::Matrix44f mat;
-    // for( int row = 0; row < 4; ++row )
-    // {
-    //     QJsonArray row_array = matrixArray.at( row ).toArray();
-    //     for( int col = 0; col < 4; ++col )
-    //     {
-    //         mat[row][col] = static_cast<float>( row_array.at( col ).toDouble() );
-    //     }
-    // }
+    const int userID = payload[QString::fromUtf8( Protocol::Key::UserID )].toInt();
+    const QString userIDStr = QString::number( userID );
 
-    // // kvs::Xform に変換
-    // kvs::Xform recieveXform( mat );
-    // if( !m_share_view_list_model )
-    // {
-    //     m_share_view_list_model = new QStandardItemModel( this );
-    //     ui->shareListView->setModel( m_share_view_list_model );
-    //     connect( ui->shareListView, &QListView::doubleClicked, this, &Communication::onItemDoubleClicked );
-    // }
-    // // 表示用ラベル作成
-    // QString label = "User[" + userIDStr + "] View";
+    QJsonArray matrixArray = payload[QString::fromUtf8( Protocol::Key::Matrix )].toArray();
+    kvs::Matrix44f mat;
+    for( int row = 0; row < 4; ++row )
+    {
+        QJsonArray row_array = matrixArray.at( row ).toArray();
+        for( int col = 0; col < 4; ++col )
+        {
+            mat[row][col] = static_cast<float>( row_array.at( col ).toDouble() );
+        }
+    }
 
-    // // QStandardItem 作成し、xform をデータとして格納
-    // QStandardItem* item = new QStandardItem( label );
-    // item->setData( QVariant::fromValue( recieveXform ), Qt::UserRole + 1 );
-    // // 編集不可にする
-    // item->setFlags( item->flags() & ~Qt::ItemIsEditable );
-    // m_share_view_list_model->appendRow( item );
+    kvs::Xform recieveXform( mat );
+
+    if( !m_share_view_list_model )
+    {
+        m_share_view_list_model = new QStandardItemModel( this );
+        ui->shareListView->setModel( m_share_view_list_model );
+        connect( ui->shareListView, &QListView::doubleClicked, this, &Communication::onItemDoubleClicked );
+    }
+
+    const QString label = "User[" + userIDStr + "] View";
+
+    // Role 定義（分かりやすく）
+    constexpr int RoleXform  = Qt::UserRole + 1;
+    constexpr int RoleUserID = Qt::UserRole + 2;
+
+    // 既存アイテムを UserID で検索
+    QStandardItem* target_item = nullptr;
+    for( int row = 0; row < m_share_view_list_model->rowCount(); ++row )
+    {
+        QStandardItem* it = m_share_view_list_model->item( row );
+        if( !it ) continue;
+
+        if( it->data( RoleUserID ).toInt() == userID )
+        {
+            target_item = it;
+            break;
+        }
+    }
+
+    if( target_item )
+    {
+        target_item->setText( label );
+        target_item->setData( QVariant::fromValue( recieveXform ), RoleXform );
+        target_item->setData( userID, RoleUserID );
+    }
+    else
+    {
+        QStandardItem* item = new QStandardItem( label );
+        item->setData( QVariant::fromValue( recieveXform ), RoleXform );
+        item->setData( userID, RoleUserID );
+        item->setFlags( item->flags() & ~Qt::ItemIsEditable );
+        m_share_view_list_model->appendRow( item );
+    }
 }
 
 void Communication::receiveSharePoint( const QJsonObject& payload )
@@ -543,6 +570,22 @@ void Communication::onSendChatMessage()
                                                           { QString::fromUtf8( Protocol::Key::Text ) , text },
                                                           } ).toJson( QJsonDocument::Compact ) );
     ui->chatLineEdit->clear();
+}
+
+void Communication::onItemDoubleClicked(const QModelIndex& index)
+{
+    if( !index.isValid() ) return;
+
+    QVariant data = index.data( Qt::UserRole + 1 );
+    if( data.canConvert<kvs::Xform>() )
+    {
+        m_screen->reset();
+        kvs::Xform xform = data.value<kvs::Xform>();
+        m_screen->scene()->objectManager()->rotate( xform.rotation() );
+        m_screen->scene()->objectManager()->translate( xform.translation() );
+        m_screen->scene()->objectManager()->scale( xform.scaling() );
+    }
+    m_screen->update();
 }
 
 void Communication::onShareView()

@@ -80,6 +80,8 @@ private:
 
     int m_max_shared_user_id =      -1;
 
+    QStandardItemModel* m_share_view_list_model = nullptr;
+
     void webSocketConnected();
     void webSocketDisconnected();
 
@@ -107,6 +109,7 @@ private slots:
 
     void onTransferOperator();
     void onSendChatMessage();
+    void onItemDoubleClicked( const QModelIndex& index );
     void onShareView();
 
     void onBinaryWebSocketConnected();
