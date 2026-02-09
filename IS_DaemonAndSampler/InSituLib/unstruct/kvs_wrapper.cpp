@@ -474,7 +474,7 @@ bool initializeParameters(
 #endif
     //*max_opacity = 0.98;
     *max_opacity = 0.9;
-    //*subpixel_level = CalculateSubpixelLevel( *particle_limit , camera, sampling_step, total_volume, object );
+//    *subpixel_level = CalculateSubpixelLevel( *particle_limit , camera, sampling_step, total_volume, object );
 //    *subpixel_level = 1.f;
     *subpixel_level = 2.f;
 //    *subpixel_level = 3.f; // 4 scalar
@@ -592,6 +592,10 @@ void generate_particles( int time_step, domain_parameters dom,
                              float* coordinates, int ncoords,
                              unsigned int* connections, int ncells, const  pbvr::VolumeObjectBase::CellType& celltype )
 {
+    int mpi_rank;
+    MPI_Comm_rank( MPI_COMM_WORLD, &mpi_rank );
+    kvs::Timer timer( kvs::Timer::Start );
+
     static ParamInfo param;
     pbvr_parameters particleBase;
     bool skip_flag;
@@ -600,6 +604,8 @@ void generate_particles( int time_step, domain_parameters dom,
     particleBase.m_nvariables = nvariables; 
     PlotOverLine plot_over_line;
     plot_over_line.SetPOLParameter(time_step);
+    timer.stop();
+    if(mpi_rank == 0 ) std::cout << "initialize_time = " << timer.sec() << std::endl;
     if (skip_flag == false)
     {
         // デフォルト設定を伝達関数に設定
@@ -610,17 +616,20 @@ void generate_particles( int time_step, domain_parameters dom,
     }    
     else
     {
+    timer.start();
         GenerateParticles(time_step, dom, values,
             nvariables, coordinates, ncoords,
             connections, ncells, celltype, particleBase);
+    timer.stop();
+    std::cout << "generate_time = " << timer.sec() <<  std::endl;
 
-        GenerateGlyphs(time_step, dom, values,
-            nvariables, coordinates, ncoords,
-            connections, ncells, celltype);
-         callPlotOverLine(time_step, dom, values,
-             nvariables, coordinates, ncoords,
-             connections, ncells, celltype, &plot_over_line);                                        
-         plot_over_line.OutputLine(time_step);
+//        GenerateGlyphs(time_step, dom, values,
+//            nvariables, coordinates, ncoords,
+//            connections, ncells, celltype);
+//         callPlotOverLine(time_step, dom, values,
+//             nvariables, coordinates, ncoords,
+//             connections, ncells, celltype, &plot_over_line);                                        
+//         plot_over_line.OutputLine(time_step);
  
 
 
@@ -1852,6 +1861,8 @@ void GenerateParticles( int time_step,
                            }
                         }
 
+//                        if(thid == 0 && cell_BLK == 0 && o_scalars_array[cell_BLK][0] > 0 )std::cout << "o_scalars_array[cell_BLK][i] = " << o_scalars_array[cell_BLK][0] << std::endl; 
+//                        if(thid == 0 &&  o_scalars_array[cell_BLK][0] > -8 )std::cout << "o_scalars_array[cell_BLK][i] = " << o_scalars_array[cell_BLK][0] << std::endl; 
                         // 20190128 修正
                         th_O_min[i] = th_O_min[i] < o_scalars_array[cell_BLK][i] ? th_O_min[i] : o_scalars_array[cell_BLK][i];
                         th_O_max[i] = th_O_max[i] > o_scalars_array[cell_BLK][i] ? th_O_max[i] : o_scalars_array[cell_BLK][i];
@@ -1877,6 +1888,7 @@ void GenerateParticles( int time_step,
                     float density = Generator::CalculateDensity( cell_opacity_array[cell_BLK],
                                                                        sampling_volume_inverse,
                                                                        max_opacity, max_density );
+//                  if(cell_opacity_array[cell_BLK] > 0)  std::cout << "density = " << density <<  ", cell_opacity_array[cell_BLK] =  " << cell_opacity_array[cell_BLK] << ", sampling_volume_inverse = " << sampling_volume_inverse  << std::endl;
 #ifdef REJECTION
                     density             = cell_opacity_array[cell_BLK] < 0.0039 ? 0.0 : density; //  less than 1/256
 #endif
@@ -1885,7 +1897,9 @@ void GenerateParticles( int time_step,
                         = calculate_number_of_particles( density, interp[thid][0]->volume(), &MT ) ;
                 nparticles_array[cell_BLK] *= particle_density;
                 nparticles_num += nparticles_array[cell_BLK];
+                if(nparticles_array[cell_BLK] > 0 ) std::cout << "nparticles_array[cell_BLK] = " << nparticles_array[cell_BLK] << "nparticles_num = " << nparticles_num << std::endl;
             }
+
         /////////////////////////////// Synthesized~ (), CalculateOpacity() ///////////////////////////////////
         /////////////////////////////// CalculateOpacity(), CalculateColor() ///////////////////////////////////
             for(int cell_BLK = 0; cell_BLK < remain; cell_BLK++ )
@@ -3577,7 +3591,6 @@ void EnsembleGenerateParticles( int time_step,
 //                       th_timer.stop();
 //                       timeN[5] += th_timer.sec();
                        p_id ++;
-//                    if(p_id == SIMD_BLK_SIZE || cell_BLK == remain)
                        if(p_id == SIMD_BLK_SIZE )
                        {
 //                           th_timer.start();
@@ -3950,6 +3963,7 @@ void EnsembleGenerateParticles( int time_step,
 #endif
             timer.stop();
             shift_exe_time += timer.sec();
+            std::cout << mpi_rank <<  ": shift_time_step["<< step <<"] =" << timer.sec() << std::endl;
 
             // 受け取った座標情報で、recv先の条件下でのスカラー値を計算
             
@@ -4568,6 +4582,7 @@ void EnsembleGenerateParticles( int time_step,
 
             timer.stop();
             shift_exe_time += timer.sec();
+            std::cout << mpi_rank <<  ": var_shift_time_step["<< step <<"] =" << timer.sec() << std::endl;
            // 受け取った座標情報で、recv先の条件下でのスカラー値を計算
             timer.start();
  
