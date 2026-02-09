@@ -682,27 +682,25 @@ void CellByCellMetropolisSampling::generate_particles_struct(
                         // ブロック内でのループ回数を取得
                         const int zero_id = ii < SIMDW ? SIMDW : p_id;
 
-                        if ( I < SIMDW )
-                        {
-                            const vismodule::Vector3f vertex( (float)i, (float)j, (float)k );
-                            const vismodule::Vector3f coord_l( RandomSamplingInCube( vertex, &MT ) );
-                            const vismodule::Vector3f coord_g(
-                                (coord_l.x() * cell_length.x()) + min_vec.x(),
-                                (coord_l.y() * cell_length.y()) + min_vec.y(),
-                                (coord_l.z() * cell_length.z()) + min_vec.z()
-                            );
+                        const vismodule::Vector3f vertex( (float)i, (float)j, (float)k );
+                        const vismodule::Vector3f coord_l( RandomSamplingInCube( vertex, &MT ) );
+                        const vismodule::Vector3f coord_g(
+                            (coord_l.x() * cell_length.x()) + min_vec.x(),
+                            (coord_l.y() * cell_length.y()) + min_vec.y(),
+                            (coord_l.z() * cell_length.z()) + min_vec.z()
+                        );
 
-                            p_x_l[p_id] = coord_l.x();
-                            p_y_l[p_id] = coord_l.y();
-                            p_z_l[p_id] = coord_l.z();
-                            p_x_g[p_id] = coord_g.x();
-                            p_y_g[p_id] = coord_g.y();
-                            p_z_g[p_id] = coord_g.z();
+                        p_x_l[p_id] = coord_l.x();
+                        p_y_l[p_id] = coord_l.y();
+                        p_z_l[p_id] = coord_l.z();
+                        p_x_g[p_id] = coord_g.x();
+                        p_y_g[p_id] = coord_g.y();
+                        p_z_g[p_id] = coord_g.z();
 
-                            p_id++;
-                        }
-                        // if( p_id == SIMDW || I == SIMDW )
-                        if( p_id == SIMDW || (I == SIMDW && p_id > 0) )
+                        p_id++;
+
+                        if( p_id == SIMDW || I == SIMDW )
+                        // if( p_id == SIMDW || (I == SIMDW && p_id > 0) )
                         {
                             // セグフォエラー対策
                             if ( p_id > 0 )
@@ -727,21 +725,19 @@ void CellByCellMetropolisSampling::generate_particles_struct(
                             );
 
                             // SIMDループ
-                            // for( int pp = 0; pp < SIMDW; pp++ )
-                            for ( int pp = 0; pp < p_id; pp++ )
+                            for( int pp = 0; pp < SIMDW; pp++ )
+                            // for ( int pp = 0; pp < p_id; pp++ )
                             {
-                                /*
-                                const float density_tmp =
-                                pp < zero_id ?
-                                Generator::CalculateDensity( particle_opacity[pp],
-                                sampling_volume_inverse,
-                                max_opacity, max_density ) : 0;
-                                */
-                                const float density_tmp = Generator::CalculateDensity(
+                                const float density_tmp = pp < zero_id ? Generator::CalculateDensity(
                                     particle_opacity[pp],
                                     sampling_volume_inverse,
                                     max_opacity, max_density
-                                );
+                                ) : 0;
+                                // const float density_tmp = Generator::CalculateDensity(
+                                //     particle_opacity[pp],
+                                //     sampling_volume_inverse,
+                                //     max_opacity, max_density
+                                // );
                                 
                                 if ( !vismodule::Math::IsZero( density_tmp ) )
                                 {
@@ -761,35 +757,33 @@ void CellByCellMetropolisSampling::generate_particles_struct(
                     const int zero_id = I < SIMDW ? SIMDW : pp_id;
                     int nparticles_count = 0;
 
-                    for( int p = 0; p < nparticles_I; p++ )
-                    // for( int p = 0; p < nparticles_I; p += SIMDW )
+                    // for( int p = 0; p < nparticles_I; p++ )
+                    for( int p = 0; p < nparticles_I; p += SIMDW )
                     {
                         // nparticles_count = 0;
                         while (1)
                         {
                             bool finish_flag = false;
-                            if ( I < SIMDW )
-                            {
-                                const vismodule::Vector3f vertex( (float)i, (float)j, (float)k );
-                                const vismodule::Vector3f coord_l( RandomSamplingInCube( vertex, &MT ) );
-                                const vismodule::Vector3f coord_g(
-                                    (coord_l.x() * cell_length.x()) + min_vec.x(),
-                                    (coord_l.y() * cell_length.y()) + min_vec.y(),
-                                    (coord_l.z() * cell_length.z()) + min_vec.z()
-                                );
 
-                                p_x_l[pp_id] = coord_l.x();
-                                p_y_l[pp_id] = coord_l.y();
-                                p_z_l[pp_id] = coord_l.z();
-                                p_x_g[pp_id] = coord_g.x();
-                                p_y_g[pp_id] = coord_g.y();
-                                p_z_g[pp_id] = coord_g.z();
+                            const vismodule::Vector3f vertex( (float)i, (float)j, (float)k );
+                            const vismodule::Vector3f coord_l( RandomSamplingInCube( vertex, &MT ) );
+                            const vismodule::Vector3f coord_g(
+                                (coord_l.x() * cell_length.x()) + min_vec.x(),
+                                (coord_l.y() * cell_length.y()) + min_vec.y(),
+                                (coord_l.z() * cell_length.z()) + min_vec.z()
+                            );
 
-                                pp_id++;
-                            }
+                            p_x_l[pp_id] = coord_l.x();
+                            p_y_l[pp_id] = coord_l.y();
+                            p_z_l[pp_id] = coord_l.z();
+                            p_x_g[pp_id] = coord_g.x();
+                            p_y_g[pp_id] = coord_g.y();
+                            p_z_g[pp_id] = coord_g.z();
 
-                            // if( pp_id == SIMDW || I == SIMDW )
-                            if( pp_id == SIMDW || (I == SIMDW && pp_id > 0) )
+                            pp_id++;
+
+                            if( pp_id == SIMDW || I == SIMDW )
+                            // if( pp_id == SIMDW || (I == SIMDW && pp_id > 0) )
                             {
                                 // セグフォエラー対策
                                 if ( pp_id > 0 )
@@ -863,22 +857,20 @@ void CellByCellMetropolisSampling::generate_particles_struct(
                                 }
 
                                 // SIMDループ
-                                // for( int pp = 0; pp < SIMDW; pp++ )
-                                for ( int pp = 0; pp < pp_id; pp++ )
+                                for( int pp = 0; pp < SIMDW; pp++ )
+                                // for ( int pp = 0; pp < pp_id; pp++ )
                                 {
                                     // timed_section_start(td_CalculateDensity,thid);
-                                    /*
-                                        const float density_trial =
-                                        pp < zero_id ?
-                                        Generator::CalculateDensity( particle_opacity[pp],
-                                        sampling_volume_inverse,
-                                        max_opacity, max_density ) : 0;
-                                    */
-                                    const float density_trial = Generator::CalculateDensity(
+                                    const float density_trial = pp < zero_id ? Generator::CalculateDensity(
                                         particle_opacity[pp],
                                         sampling_volume_inverse,
                                         max_opacity, max_density
-                                    );
+                                    ) : 0;
+                                    // const float density_trial = Generator::CalculateDensity(
+                                    //     particle_opacity[pp],
+                                    //     sampling_volume_inverse,
+                                    //     max_opacity, max_density
+                                    // );
                                     // timed_section_end(td_CalculateDensity,thid);
 
                                     // Metropolis法
