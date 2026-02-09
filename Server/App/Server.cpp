@@ -482,6 +482,10 @@ void Server::initialize(uWS::WebSocket<false, true, PerSocket>* ws, const nlohma
             break;
         }
 
+        ParameterFileWriter ppw;
+        ppw.getParticleParameter(*m_particle_property);
+        ppw.writeParticleParameterFile();
+
         InitialStepIS(
             m_multi_volume_property_list->m_total_start_steps,
             *m_particle_property,
