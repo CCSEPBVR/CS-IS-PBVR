@@ -60,6 +60,7 @@ signals:
     void updateObjectLatestTimeStep( const QJsonObject& payload );
 
 public slots:
+    void onToggleShowHideSharePoint();
     void onVRSharePoint( kvs::Real32 CoordArray[ 2 * 3 ], kvs::Real32 DirectionArray[ 3 ] );
     void onLoadParameter( const QString& filePath ); // KPI
     void onSaveParameter( const QString& filePath ); // KPI

@@ -304,23 +304,35 @@ void Server::shareView(uWS::WebSocket<false, true, PerSocket>* ws, const nlohman
 
 void Server::sharePoint(uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received)
 {
-    // std::cout << "[Server] share point" << std::endl;
-    const auto& x = received[Protocol::Key::X];
-    const auto& y = received[Protocol::Key::Y];
-    const auto& z = received[Protocol::Key::Z];
-    const auto& dx = received[Protocol::Key::Dx];
-    const auto& dy = received[Protocol::Key::Dy];
-    const auto& dz = received[Protocol::Key::Dz];
+    const bool hasXYZD =
+        received.contains(Protocol::Key::X) &&
+        received.contains(Protocol::Key::Y) &&
+        received.contains(Protocol::Key::Z) &&
+        received.contains(Protocol::Key::Dx) &&
+        received.contains(Protocol::Key::Dy) &&
+        received.contains(Protocol::Key::Dz);
+
+    const bool hasEnableOnly = received.contains(Protocol::Key::Enable);
+
+    if (!hasXYZD && !hasEnableOnly) { return; }
 
     nlohmann::json msg;
     msg[Protocol::Key::Event] = Protocol::Events::SharePoint;
     msg[Protocol::Key::UserID] = ws->getUserData()->state->userID;
-    msg[Protocol::Key::X] = x;
-    msg[Protocol::Key::Y] = y;
-    msg[Protocol::Key::Z] = z;
-    msg[Protocol::Key::Dx] = dx;
-    msg[Protocol::Key::Dy] = dy;
-    msg[Protocol::Key::Dz] = dz;
+
+    if (hasXYZD)
+    {
+        msg[Protocol::Key::X] = received[Protocol::Key::X];
+        msg[Protocol::Key::Y] = received[Protocol::Key::Y];
+        msg[Protocol::Key::Z] = received[Protocol::Key::Z];
+        msg[Protocol::Key::Dx] = received[Protocol::Key::Dx];
+        msg[Protocol::Key::Dy] = received[Protocol::Key::Dy];
+        msg[Protocol::Key::Dz] = received[Protocol::Key::Dz];
+    }
+    else
+    {
+        msg[Protocol::Key::Enable] = received[Protocol::Key::Enable];
+    }
 
     m_u_web_sockets.publish(k_text_topic, msg.dump(), uWS::OpCode::TEXT);
 }

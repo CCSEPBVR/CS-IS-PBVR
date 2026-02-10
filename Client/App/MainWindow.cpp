@@ -147,7 +147,8 @@ MainWindow::MainWindow( kvs::qt::Application& app, QWidget *parent )
     connect( m_vr_listener, &VRHandControllerListener::toggleShowHideVRPlotOverLine, m_plot_over_line_editor, &PlotOverLineEditor::onToggleShowHideVRPlotOverLine );
     connect( m_vr_listener, &VRHandControllerListener::drawVRPlotOverLine          , m_plot_over_line_editor, &PlotOverLineEditor::onDrawVRPlotOverLine );
 
-    connect( m_vr_listener, &VRHandControllerListener::vrSharePoint, m_communication, &Communication::onVRSharePoint );
+    connect( m_vr_listener, &VRHandControllerListener::toggleShowHideSharePoint    , m_communication, &Communication::onToggleShowHideSharePoint );
+    connect( m_vr_listener, &VRHandControllerListener::vrSharePoint                , m_communication, &Communication::onVRSharePoint );
 #endif
 }
 

@@ -63,7 +63,7 @@ void VRHandControllerListener::onEvent( kvs::EventBase* event )
                     }
                     else if( j == kvs::Controller::Button::X )
                     {
-                        // emit toggleSharePoint() // FIXME
+                        emit toggleShowHideSharePoint();
                     }
                 }
             }

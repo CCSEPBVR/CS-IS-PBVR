@@ -41,6 +41,26 @@ Communication::~Communication()
     delete ui;
 }
 
+void Communication::onToggleShowHideSharePoint()
+{
+    if( !m_web_sockets->isConnected() )
+    {
+        emit updateStatusBarMessage( k_not_connected_text );
+        return;
+    }
+
+    auto* obj = m_screen->scene()->object( m_user_id + "_SharedGlyph" );
+    if( obj == nullptr ) { return; }
+
+    const bool toggle = !obj->isVisible();
+
+    m_web_sockets->text()->sendTextMessage( QJsonDocument( {
+                                                          { QString::fromUtf8( Protocol::Key::Event ) , QString::fromUtf8( Protocol::Events::SharePoint ) },
+                                                          { QString::fromUtf8( Protocol::Key::Enable ),  toggle },
+                                                          }
+                                                         ).toJson( QJsonDocument::Compact ) );
+}
+
 void Communication::onVRSharePoint( kvs::Real32 CoordArray[ 2 * 3 ], kvs::Real32 DirectionArray[ 3 ] )
 {
     if( !m_web_sockets->isConnected() )
@@ -261,22 +281,60 @@ void Communication::receiveShareView( const QJsonObject& payload )
 void Communication::receiveSharePoint( const QJsonObject& payload )
 {
     // NOTE:PlotOverLineEditorがnullptrじゃない場合のみ機能します。
-    const kvs::Vec3 startPointMinObjectCoords = m_screen->scene()->object( "StartPointObject" )->minObjectCoord();
-    const kvs::Vec3 startPointMaxObjectCoords = m_screen->scene()->object( "StartPointObject" )->maxObjectCoord();
-    if( startPointMinObjectCoords == startPointMaxObjectCoords ) { return; }
-
-    const int userID = payload[QString::fromUtf8( Protocol::Key::UserID )].toInt(); // 着目点共有を行った送信者
+    const int userID = payload[QString::fromUtf8( Protocol::Key::UserID )].toInt(); // NOTE:着目点共有を行ったUserID
     if( userID > m_max_shared_user_id )
     {
         m_max_shared_user_id = userID;
     }
-    const QString userIDStr = QString::number( userID );
-    const double x          = payload[QString::fromUtf8( Protocol::Key::X )].toDouble();
-    const double y          = payload[QString::fromUtf8( Protocol::Key::Y )].toDouble();
-    const double z          = payload[QString::fromUtf8( Protocol::Key::Z )].toDouble();
-    const double dx         = payload[QString::fromUtf8( Protocol::Key::Dx )].toDouble();
-    const double dy         = payload[QString::fromUtf8( Protocol::Key::Dy )].toDouble();
-    const double dz         = payload[QString::fromUtf8( Protocol::Key::Dz )].toDouble();
+
+    const QString glyph_name = QString::number( userID ) + "_SharedGlyph";
+
+    // Enable
+    if( payload.contains( QString::fromUtf8( Protocol::Key::Enable ) ) )
+    {
+        const bool enable = payload[QString::fromUtf8( Protocol::Key::Enable )].toBool();
+
+        auto* obj = m_screen->scene()->object( userID + "_SharedGlyph" );
+        if( obj == nullptr )
+        {
+            return;
+        }
+
+        if( enable ) { obj->show(); }
+        else         { obj->hide(); }
+
+        m_screen->update();
+        return;
+    }
+
+    // XYZD
+    const kvs::Vec3 startPointMinObjectCoords = m_screen->scene()->object( "StartPointObject" )->minObjectCoord();
+    const kvs::Vec3 startPointMaxObjectCoords = m_screen->scene()->object( "StartPointObject" )->maxObjectCoord();
+    if( startPointMinObjectCoords == startPointMaxObjectCoords ) { return; }
+
+    const auto kX  = QString::fromUtf8( Protocol::Key::X );
+    const auto kY  = QString::fromUtf8( Protocol::Key::Y );
+    const auto kZ  = QString::fromUtf8( Protocol::Key::Z );
+    const auto kDx = QString::fromUtf8( Protocol::Key::Dx );
+    const auto kDy = QString::fromUtf8( Protocol::Key::Dy );
+    const auto kDz = QString::fromUtf8( Protocol::Key::Dz );
+
+    if( !payload.contains( kX )  ||
+        !payload.contains( kY )  ||
+        !payload.contains( kZ )  ||
+        !payload.contains( kDx ) ||
+        !payload.contains( kDy ) ||
+        !payload.contains( kDz ) )
+    {
+        return;
+    }
+
+    const double x  = payload[kX].toDouble();
+    const double y  = payload[kY].toDouble();
+    const double z  = payload[kZ].toDouble();
+    const double dx = payload[kDx].toDouble();
+    const double dy = payload[kDy].toDouble();
+    const double dz = payload[kDz].toDouble();
 
     kvs::Real32 CoordArray[ 1 * 3 ] =
         {
@@ -296,6 +354,7 @@ void Communication::receiveSharePoint( const QJsonObject& payload )
     // シーン全体のサイズを基準にした base_size
     kvs::Vec3 min_coord = m_screen->scene()->objectManager()->minObjectCoord();
     kvs::Vec3 max_coord = m_screen->scene()->objectManager()->maxObjectCoord();
+
     kvs::Vec3 diag = max_coord - min_coord;
     float scene_size = diag.length();
     float base_size = scene_size * 0.005f; // シーン全体に対する割合
@@ -305,13 +364,14 @@ void Communication::receiveSharePoint( const QJsonObject& payload )
     float scalingFactor = xform.scaling().x(); // (x,y,z が同じなら x でOK)
 
     // スケーリングに反比例させることで拡大縮小に依存しないサイズにする
-    kvs::Real32 SizeArray[1] = { base_size / scalingFactor };
+    kvs::Real32 SizeArray[ 1 ] = { base_size / scalingFactor };
 #else
     kvs::Xform currentObjectManagerXform = m_screen->scene()->objectManager()->xform(); // 現在のオブジェクトマネージャーのTranslation, Scaling, Rotationを取得する。
     float scalingFactor = 1 / ( currentObjectManagerXform.inverse() * m_screen->scene()->object( m_screen->scene()->numberOfObjects() - 1 )->xform() ).scaling().x();
-    kvs::Real32 SizeArray[ 1 ] = {
-        0.5f * scalingFactor,
-    };
+    kvs::Real32 SizeArray[ 1 ] =
+        {
+            0.5f * scalingFactor,
+        };
 #endif
 
     kvs::UInt8 ColorArray[ 1 * 3 ] =
@@ -319,7 +379,7 @@ void Communication::receiveSharePoint( const QJsonObject& payload )
             0, 255, 0,
         };
 
-    kvs::ValueArray<kvs::Real32> coords   ( CoordArray, 1 * 3 );
+    kvs::ValueArray<kvs::Real32> coords    ( CoordArray, 1 * 3 );
     kvs::ValueArray<kvs::Real32> direction( DirectionArray, 1 * 3 );
     kvs::ValueArray<kvs::Real32> size     ( SizeArray, 1 );
     kvs::ValueArray<kvs::UInt8>  colors   ( ColorArray, 1 * 3 );
@@ -343,6 +403,7 @@ void Communication::receiveSharePoint( const QJsonObject& payload )
         sharedPolygon->setMinMaxObjectCoords( startPointMinObjectCoords, startPointMaxObjectCoords );
         sharedPolygon->setMinMaxExternalCoords( startPointMinObjectCoords, startPointMaxObjectCoords );
         m_screen->scene()->replaceObject( userID + "_SharedGlyph", sharedPolygon );
+
         m_screen->update();
     }
 }
