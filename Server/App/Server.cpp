@@ -24,7 +24,7 @@ Server::Server(int port)
     MPI_Comm_rank( MPI_COMM_WORLD, &m_mpi_rank );
 #else
 	m_mpi_size = 1;
-    m_mpi_rank = 0
+    m_mpi_rank = 0;
 #endif
 
     m_particle_property->m_camera = new vismodule::Camera();

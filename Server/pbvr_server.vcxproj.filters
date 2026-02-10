@@ -30,12 +30,30 @@
     <ClInclude Include="App\Server.h">
       <Filter>ヘッダー ファイル\App</Filter>
     </ClInclude>
+    <ClInclude Include="App\TaskSignal.h">
+      <Filter>ヘッダー ファイル\App</Filter>
+    </ClInclude>
+    <ClInclude Include="App\TaskSignalTransferProtocol.h">
+      <Filter>ヘッダー ファイル\App</Filter>
+    </ClInclude>
+    <ClInclude Include="App\ServerMode.h">
+      <Filter>ヘッダー ファイル\App</Filter>
+    </ClInclude>
+    <ClInclude Include="App\ServerWorker.h">
+      <Filter>ヘッダー ファイル\App</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="App\main.cpp">
       <Filter>ソース ファイル\App</Filter>
     </ClCompile>
     <ClCompile Include="App\Server.cpp">
+      <Filter>ソース ファイル\App</Filter>
+    </ClCompile>
+    <ClCompile Include="App\ServerWorker.cpp">
+      <Filter>ソース ファイル\App</Filter>
+    </ClCompile>
+    <ClCompile Include="App\TaskSignalTransferProtocol.cpp">
       <Filter>ソース ファイル\App</Filter>
     </ClCompile>
   </ItemGroup>

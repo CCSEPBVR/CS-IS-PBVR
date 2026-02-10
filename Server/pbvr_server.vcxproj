@@ -20,11 +20,17 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="App\Server.h" />
+    <ClInclude Include="App\ServerMode.h" />
+    <ClInclude Include="App\ServerWorker.h" />
+    <ClInclude Include="App\TaskSignal.h" />
+    <ClInclude Include="App\TaskSignalTransferProtocol.h" />
     <ClInclude Include="Utils\Worker.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="App\main.cpp" />
     <ClCompile Include="App\Server.cpp" />
+    <ClCompile Include="App\ServerWorker.cpp" />
+    <ClCompile Include="App\TaskSignalTransferProtocol.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
