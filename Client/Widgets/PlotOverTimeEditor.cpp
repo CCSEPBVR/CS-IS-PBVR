@@ -12,6 +12,39 @@ PlotOverTimeEditor::PlotOverTimeEditor( kvs::qt::jaea::Screen* screen, WebSocket
     ui->setupUi( this );
     ui->customPlotArea->addWidget( m_q_custom_plot );
 
+    if( m_q_custom_plot->graphCount() == 0 )
+    {
+        m_q_custom_plot->addGraph();
+        QPen pen; pen.setWidth( 2 );
+        m_q_custom_plot->graph( 0 )->setPen( pen );
+        m_q_custom_plot->graph( 0 )->setLineStyle( QCPGraph::lsLine );
+        m_q_custom_plot->graph( 0 )->setScatterStyle( QCPScatterStyle::ssNone );
+        m_q_custom_plot->graph( 0 )->setAdaptiveSampling( true );
+    }
+
+    if( m_q_custom_plot->graphCount() == 1 )
+    {
+        m_q_custom_plot->addGraph();
+        QPen pen; pen.setWidth( 2 );
+        pen.setColor( QColor( 0, 0, 0, 80 ) );
+        m_q_custom_plot->graph( 1 )->setPen( pen );
+        m_q_custom_plot->graph( 1 )->setLineStyle( QCPGraph::lsLine );
+        m_q_custom_plot->graph( 1 )->setScatterStyle( QCPScatterStyle::ssNone );
+        m_q_custom_plot->graph( 1 )->setAdaptiveSampling( true );
+    }
+
+    m_q_custom_plot->setNotAntialiasedElements( QCP::aeAll );
+
+    m_q_custom_plot->setInteractions( QCP::iRangeDrag | QCP::iRangeZoom );
+    m_q_custom_plot->axisRect()->setRangeDrag( Qt::Horizontal | Qt::Vertical );
+    m_q_custom_plot->axisRect()->setRangeZoom( Qt::Horizontal | Qt::Vertical );
+
+    m_q_custom_plot->xAxis->setLabel( "Step" );
+    m_q_custom_plot->yAxis->setLabel( "Wave" );
+    m_q_custom_plot->yAxis->setRange( -1.5, 1.5 );
+
+    m_q_custom_plot->xAxis->setRange( 0.0, 5.0 );
+
     const kvs::Xform initializeXform = kvs::Xform( kvs::Mat4(
         1, 0, 0, 0,
         0, 1, 0, 0,
@@ -31,9 +64,47 @@ PlotOverTimeEditor::PlotOverTimeEditor( kvs::qt::jaea::Screen* screen, WebSocket
 
     calculateInitialTranslation();
 
+    connect( m_q_custom_plot, &QCustomPlot::mousePress,
+                     this, [&]( QMouseEvent* )
+                     {
+                         m_user_interacting = true;
+                         m_follow_right_edge = false;
+                     } );
+
+    connect( m_q_custom_plot, &QCustomPlot::mouseRelease,
+                     this, [&]( QMouseEvent* )
+                     {
+                         m_user_interacting = false;
+                     } );
+
+    connect( m_q_custom_plot, &QCustomPlot::mouseWheel,
+                     this, [&]( QWheelEvent* )
+                     {
+                         m_follow_right_edge = false;
+                     } );
+
+    connect( m_q_custom_plot, &QCustomPlot::mouseDoubleClick,
+                     this, [&]( QMouseEvent* )
+                     {
+                         m_follow_right_edge = true;
+                     } );
+
+    if( m_combo_connection ) disconnect( m_combo_connection );
+
+    m_combo_connection = connect(
+        ui->displayGraphComboBox,
+        QOverload<int>::of(&QComboBox::currentIndexChanged),
+        this,
+        &PlotOverTimeEditor::onDisplayGraphComboBoxChanged
+        );
+
+
     connect( ui->resetPlotViewPushButton, &QPushButton::clicked, this, &PlotOverTimeEditor::onResetPlotView ) ;
     connect( ui->plotOverTimeGroupBox   , &QGroupBox::toggled  , this, &PlotOverTimeEditor::onPlotOverTimeGroupBoxCheckBox );
     connect( ui->applyPushButton        , &QPushButton::clicked, this, &PlotOverTimeEditor::onApply );
+
+    m_plot_inited = true;
+    m_need_rebuild = true;
 }
 
 PlotOverTimeEditor::~PlotOverTimeEditor()
@@ -51,8 +122,6 @@ void PlotOverTimeEditor::onOperatorStateUpdate( const bool operatorState )
     m_is_operator = operatorState;
 
     ui->plotOverTimeGroupBox->setEnabled( m_is_operator );
-    ui->resolutionSpinBox   ->setEnabled( m_is_operator );
-    ui->targetComboBox      ->setEnabled( m_is_operator );
 }
 
 void PlotOverTimeEditor::onUpdateNumberOfVector( const int numberOfVector )
@@ -64,36 +133,34 @@ void PlotOverTimeEditor::onUpdateNumberOfVector( const int numberOfVector )
         m_variable_list << variableName;
     }
 
-    ui->targetComboBox->clear();
-    ui->targetComboBox->addItems( m_variable_list );
+    ui->displayGraphComboBox->blockSignals( true );
+    ui->displayGraphComboBox->clear();
+    ui->displayGraphComboBox->addItems( m_variable_list );
+    ui->displayGraphComboBox->setCurrentIndex( 0 );
+    ui->displayGraphComboBox->blockSignals( false );
+
+    m_value_buffers.resize( numberOfVector );
+    for( int i = 0; i < m_value_buffers.size(); ++i )
+    {
+        m_value_buffers[i].clear();
+    }
+    m_time_buffer.clear();
+
+    m_need_rebuild = true;
 }
 
 void PlotOverTimeEditor::onReceivePlotOverTimeParameter( const QJsonObject& payload )
 {
     const auto kEnable      = QString::fromUtf8( Protocol::Key::Enable );
-    const auto kResolution  = QString::fromUtf8( Protocol::Key::Resolution );
-    const auto kTarget      = QString::fromUtf8( Protocol::Key::Target );
     const auto kCoords      = QString::fromUtf8( Protocol::Key::Coords );
 
-    const auto kValue = QString::fromUtf8( Protocol::Key::ValueOnLine );
-    const auto kXAxis = QString::fromUtf8( Protocol::Key::XAxis );
-    const auto kMask  = QString::fromUtf8( Protocol::Key::Mask );
+    const auto kTimeStep    = QString::fromUtf8( Protocol::Key::TimeStep );
+    const auto kValueOnTime = QString::fromUtf8( Protocol::Key::ValueOnTime );
+    const auto kSamples     = QString::fromUtf8( Protocol::Key::Samples );
 
     if( payload.contains( kEnable ) )
     {
         ui->plotOverTimeGroupBox->setChecked( payload.value( kEnable ).toBool() );
-    }
-
-    if( payload.contains( kResolution ) )
-    {
-        ui->resolutionSpinBox->setValue( payload.value( kResolution ).toInt() );
-    }
-
-    if( payload.contains( kTarget ) )
-    {
-        const int targetIndex = payload.value( kTarget ).toInt();
-        if( 0 <= targetIndex && targetIndex < ui->targetComboBox->count() )
-            ui->targetComboBox->setCurrentIndex( targetIndex );
     }
 
     if( payload.contains( kCoords ) )
@@ -105,6 +172,7 @@ void PlotOverTimeEditor::onReceivePlotOverTimeParameter( const QJsonObject& payl
             {
                 kvs::Xform currentObjectManagerXform = m_screen->scene()->objectManager()->xform(); // NOTE:ObjectManagerのxformを取得
                 float scalingFactor = 1 / ( currentObjectManagerXform.inverse() * m_point_object->xform() ).scaling().x();
+
                 float finalX = ( coords.at( 0 ).toDouble() - m_point_object->externalCenter().x() ) +
                                ( (
                                     ( ( currentObjectManagerXform.translation().x() * currentObjectManagerXform.inverse().scaling().x() ) * currentObjectManagerXform.rotation()[0][0] ) +
@@ -148,36 +216,109 @@ void PlotOverTimeEditor::onReceivePlotOverTimeParameter( const QJsonObject& payl
         }
     }
 
-    if( payload.contains( kValue ) &&
-        payload.contains( kXAxis ) &&
-        payload.contains( kMask ) )
+    bool plotUpdated  = false;
+    double tLatest    = 0.0;
+    bool forceRebuild = false;
+
+    // ★追加：今回の受信で「新規に追加した点」の数
+    int addedCount = 0;
+
+    auto safeVal = []( const QJsonValue& v ) -> double
     {
-        const QJsonArray valuesArr = payload.value( kValue ).toArray();
-        const QJsonArray xAxisArr  = payload.value( kXAxis ).toArray();
-        const QJsonArray maskArr   = payload.value( kMask ).toArray();
+        const double x = v.isDouble() ? v.toDouble() : 0.0;
+        return std::isfinite( x ) ? x : 0.0;
+    };
 
-        std::vector<float> valuesOnLine;
-        valuesOnLine.reserve( valuesArr.size() );
-        for( const auto& v : valuesArr )
+    auto applyOneSample = [&]( int step, const QJsonArray& arr )
+    {
+        const int n = arr.size();
+        if( n <= 0 ) return;
+
+        if( m_value_buffers.size() != n )
         {
-            valuesOnLine.push_back( static_cast<float>( v.toDouble() ) );
+            m_value_buffers.resize( n );
+            for( auto& buf : m_value_buffers ) buf.clear();
+            m_time_buffer.clear();
+            m_need_rebuild = true;
+            forceRebuild   = true;
         }
 
-        std::vector<float> xAxis;
-        xAxis.reserve( xAxisArr.size() );
-        for( const auto& x : xAxisArr )
+        const double t = static_cast<double>( step );
+
+        if( !m_time_buffer.isEmpty() && static_cast<int>( m_time_buffer.back() ) == step )
         {
-            xAxis.push_back( static_cast<float>( x.toDouble() ) );
+            // 上書き（追加ではない）
+            for( int i = 0; i < n; ++i )
+            {
+                if( !m_value_buffers[i].isEmpty() )
+                    m_value_buffers[i].back() = safeVal( arr[i] );
+            }
+        }
+        else
+        {
+            // 穴埋めが走ったら描画は必ず再構築
+            if( !m_time_buffer.isEmpty() )
+            {
+                const int lastStep = static_cast<int>( m_time_buffer.back() );
+                if( step > lastStep + 1 )
+                {
+                    for( int s = lastStep + 1; s < step; ++s )
+                    {
+                        m_time_buffer.push_back( static_cast<double>( s ) );
+                        for( int i = 0; i < n; ++i ) m_value_buffers[i].push_back( 0.0 );
+                    }
+                    m_need_rebuild = true;
+                    forceRebuild   = true;
+                }
+            }
+
+            m_time_buffer.push_back( t );
+            for( int i = 0; i < n; ++i )
+                m_value_buffers[i].push_back( safeVal( arr[i] ) );
+
+            // ★追加：新規追加したのでカウント
+            ++addedCount;
         }
 
-        std::vector<bool> mask;
-        mask.reserve( maskArr.size() );
-        for( const auto& m : maskArr )
+        // 長さ合わせ
+        const int len = m_time_buffer.size();
+        for( int i = 0; i < m_value_buffers.size(); ++i )
         {
-            mask.push_back( m.toInt() != 0 );
+            while( m_value_buffers[i].size() < len ) m_value_buffers[i].push_back( 0.0 );
+            while( m_value_buffers[i].size() > len ) m_value_buffers[i].removeLast();
         }
 
-        setPlotData( xAxis, mask, valuesOnLine );
+        plotUpdated = true;
+        tLatest     = t;
+    };
+
+    if( payload.contains( kSamples ) && payload.value( kSamples ).isArray() )
+    {
+        const QJsonArray samples = payload.value( kSamples ).toArray();
+
+        for( const QJsonValue& v : samples )
+        {
+            if( !v.isObject() ) continue;
+
+            const QJsonObject one = v.toObject();
+            if( !one.contains( kTimeStep ) || !one.contains( kValueOnTime ) ) continue;
+
+            const QJsonValue stepVal  = one.value( kTimeStep );
+            const QJsonValue valueVal = one.value( kValueOnTime );
+
+            if( !stepVal.isDouble() ) continue;
+            if( !valueVal.isArray() ) continue;
+
+            applyOneSample( stepVal.toInt(), valueVal.toArray() );
+        }
+    }
+
+    if( addedCount >= 2 ) forceRebuild = true;
+
+    if( plotUpdated )
+    {
+        int idx = ui->displayGraphComboBox ? ui->displayGraphComboBox->currentIndex() : 0;
+        redrawPlotFromBuffers( idx, tLatest, /*forceRebuild=*/(forceRebuild || m_need_rebuild) );
     }
 
     m_last_snap_shot     = captureUiSnapshot();
@@ -273,9 +414,75 @@ PlotOverTimeEditor::PlotOverTimeUiSnapshot PlotOverTimeEditor::captureUiSnapshot
 {
     PlotOverTimeUiSnapshot s;
     s.enable     = ui->plotOverTimeGroupBox->isChecked();
-    s.resolution = ui->resolutionSpinBox->value();
-    s.target     = ui->targetComboBox->currentIndex();
     return s;
+}
+
+void PlotOverTimeEditor::redrawPlotFromBuffers( int index, double tLatest, bool forceRebuild )
+{
+    if( !m_q_custom_plot ) return;
+    if( m_q_custom_plot->graphCount() < 2 ) return;
+    if( m_time_buffer.isEmpty() ) return;
+    if( m_value_buffers.isEmpty() ) return;
+
+    const int n = m_value_buffers.size();
+    if( n <= 0 ) return;
+
+    if( index < 0 ) index = 0;
+    if( index >= n ) index = n - 1;
+
+    const QVector<double>& yBuf = m_value_buffers[index];
+
+    auto gWindow  = m_q_custom_plot->graph(0);
+    auto gHistory = m_q_custom_plot->graph(1);
+
+    constexpr double windowSteps = 10.0;
+
+    const bool rebuild = forceRebuild || m_need_rebuild;
+
+    if( rebuild )
+    {
+        gWindow->data()->clear();
+        gHistory->data()->clear();
+
+        gHistory->setData( m_time_buffer, yBuf );
+
+        double viewWidth = m_q_custom_plot->xAxis->range().size();
+        if( !( viewWidth > 0.0 ) ) viewWidth = windowSteps;
+
+        const double tMin = tLatest - viewWidth;
+
+        QVector<double> tWin;
+        QVector<double> yWin;
+        tWin.reserve( m_time_buffer.size() );
+        yWin.reserve( m_time_buffer.size() );
+
+        for( int i = 0; i < m_time_buffer.size(); ++i )
+        {
+            if( m_time_buffer[i] >= tMin )
+            {
+                tWin.push_back( m_time_buffer[i] );
+                yWin.push_back( yBuf[i] );
+            }
+        }
+
+        gWindow->setData( tWin, yWin );
+
+        m_need_rebuild = false;
+    }
+    else
+    {
+        const double yLatest = yBuf.back();
+        gHistory->addData( tLatest, yLatest );
+        gWindow->addData( tLatest, yLatest );
+        gWindow->data()->removeBefore( tLatest - windowSteps );
+    }
+
+    if( m_follow_right_edge && !m_user_interacting )
+    {
+        m_q_custom_plot->xAxis->setRange( tLatest, windowSteps, Qt::AlignRight );
+    }
+
+    m_q_custom_plot->replot( QCustomPlot::rpQueuedReplot );
 }
 
 void PlotOverTimeEditor::calculateInitialTranslation()
@@ -284,76 +491,12 @@ void PlotOverTimeEditor::calculateInitialTranslation()
     m_point_initial_translation = kvs::Vec3( tmp.x(), tmp.y(), tmp.z() );
 }
 
-void PlotOverTimeEditor::setPlotData( std::vector<float> xAxis, std::vector<bool> mask, std::vector<float> values )
+void PlotOverTimeEditor::onDisplayGraphComboBoxChanged( int index )
 {
-    // メインスレッドで実行する必要がある場合
-    if( QApplication::instance()->thread() != QThread::currentThread() )
-    {
-        QMetaObject::invokeMethod( this, [=]() { setPlotData(xAxis, mask, values); }, Qt::QueuedConnection );
-        return;
-    }
+    if( m_time_buffer.isEmpty() ) return;
 
-    // 初期化：極端に大きい/小さい値を設定
-    m_x_min = std::numeric_limits<double>::max();
-    m_x_max = std::numeric_limits<double>::lowest();
-    m_y_min = std::numeric_limits<double>::max();
-    m_y_max = std::numeric_limits<double>::lowest();
-
-    QVector<double> x( xAxis.size() ), y(values.size() );
-    for( size_t i = 0; i < x.size(); i++ )
-    {
-        x[i] = xAxis[i];
-        if( mask[i] )
-        {
-            if( x[i] < m_x_min )
-            {
-                m_x_min = x[i];
-            }
-            if( x[i] > m_x_max )
-            {
-                m_x_max = x[i];
-            }
-        }
-    }
-    for( size_t i = 0; i < x.size(); i++ )
-    {
-        if( mask[i] )
-        {
-            y[i] = values[i];
-            if( y[i] < m_y_min )
-            {
-                m_y_min = y[i];
-            }
-            if( y[i] > m_y_max )
-            {
-                m_y_max = y[i];
-            }
-        }
-        else
-        {
-            y[i] = std::numeric_limits<double>::quiet_NaN();
-        }
-    }
-
-    // グラフにデータを追加
-    m_q_custom_plot->addGraph(); // 新しいグラフを追加
-    m_q_custom_plot->graph( 0 )->setData( x, y ); // データを設定
-
-    // 軸ラベルを設定
-    m_q_custom_plot->xAxis->setLabel( "xAxis" );
-    m_q_custom_plot->yAxis->setLabel( "Values" );
-
-    // 軸の範囲を設定
-    m_q_custom_plot->xAxis->setRange( m_x_min, m_x_max ); // x軸範囲
-    m_q_custom_plot->yAxis->setRange( m_y_min, m_y_max ); // y軸範囲
-    m_q_custom_plot->xAxis->ticker()->setTickCount( 10 );
-    m_q_custom_plot->yAxis->ticker()->setTickCount( 10 );
-
-    // ズームとドラッグを有効化
-    m_q_custom_plot->setInteractions( QCP::iRangeZoom | QCP::iRangeDrag );
-
-    // グラフを再描画
-    m_q_custom_plot->replot();
+    const double tLatest = m_time_buffer.back();
+    redrawPlotFromBuffers( index, tLatest, /*forceRebuild=*/true );
 }
 
 void PlotOverTimeEditor::onResetPlotView()
@@ -384,8 +527,6 @@ void PlotOverTimeEditor::onApply()
 
     const auto kEvent      = QString::fromUtf8( Protocol::Key::Event );
     const auto kEnable     = QString::fromUtf8( Protocol::Key::Enable );
-    const auto kResolution = QString::fromUtf8( Protocol::Key::Resolution );
-    const auto kTarget     = QString::fromUtf8( Protocol::Key::Target );
     const auto kCoords     = QString::fromUtf8( Protocol::Key::Coords );
 
     const PlotOverTimeUiSnapshot now = captureUiSnapshot();
@@ -394,14 +535,6 @@ void PlotOverTimeEditor::onApply()
     // Enable
     if( now.enable != m_last_snap_shot.enable )
         diff.insert( kEnable, now.enable );
-
-    // Resolution
-    if( now.resolution != m_last_snap_shot.resolution )
-        diff.insert( kResolution, now.resolution );
-
-    // Target
-    if( now.target != m_last_snap_shot.target )
-        diff.insert( kTarget, now.target );
 
     QJsonObject plotOverTimeParameter;
     plotOverTimeParameter.insert( kEvent, QString::fromUtf8( Protocol::Events::PlotOverTimeParameter ) );

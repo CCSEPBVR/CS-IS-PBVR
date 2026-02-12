@@ -88,6 +88,7 @@ private:
     void onMessage(uWS::WebSocket<false, true, PerSocket>* ws, std::string_view msg, uWS::OpCode);
     void onClose(uWS::WebSocket<false, true, PerSocket>* ws, int /*code*/, std::string_view /*msg*/);
 
+    void someMethod(uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received);
     void transferOperator(uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received);
     void chat(uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received);
     void shareView(uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received);

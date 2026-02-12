@@ -133,6 +133,8 @@ inline constexpr std::string_view Mask                      = "Mask";
 
 // PlotOverTimeEditor
 inline constexpr std::string_view Coords                    = "Coords";
+inline constexpr std::string_view ValueOnTime               = "ValueOnTime";
+inline constexpr std::string_view Samples                   = "Samples";
 
 inline constexpr std::string_view TimeStep                  = "TimeStep";
 

@@ -74,6 +74,16 @@ private:
     double m_y_coord;
     double m_z_coord;
 
+    QVector<double> m_time_buffer;
+    QVector<QVector<double>> m_value_buffers;
+
+    bool m_plot_inited       = false;
+    bool m_follow_right_edge = true;
+    bool m_user_interacting  = false;
+    bool m_need_rebuild      = true;
+
+    QMetaObject::Connection m_combo_connection;
+
     struct PlotOverTimeUiSnapshot
     {
         bool enable = false;
@@ -88,11 +98,11 @@ private:
     static bool fuzzyEqual( double a, double b );
     static bool sameVec3( const double a[3], const double b[3] );
 
+    void redrawPlotFromBuffers( int index, double tLatest, bool forceRebuild );
     void calculateInitialTranslation();
 
-    void setPlotData( std::vector<float> xAxis, std::vector<bool> mask, std::vector<float> values );
-
 public slots:
+     void onDisplayGraphComboBoxChanged( int index );
     void onResetPlotView();
     void onPlotOverTimeGroupBoxCheckBox();
     void onApply();

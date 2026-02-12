@@ -217,7 +217,7 @@ void Server::onMessage(uWS::WebSocket<false, true, PerSocket>* ws, std::string_v
         else if (event == Protocol::Events::TransferFunctionParameter)     receiveTransferFunctionParameter(ws, received);
         else if (event == "fileList")                                      fileList(ws, received);
         else if (event == Protocol::Events::SelectedFile)                  selectedFile(ws, received);
-        else if (event == Protocol::Events::ObjectDelete)                  receiveObjectDelete(ws, received);
+        else if (event == Protocol::Events::ObjectDelete)                  receiveObjectDelete(ws, received);        
         else std::cout << "[Server] Unknown Event : " << event << std::endl;
     }
 }
@@ -263,6 +263,56 @@ void Server::onClose(uWS::WebSocket<false, true, PerSocket>* ws, int /*code*/, s
         msg[Protocol::Key::UserID] = userID;
         m_u_web_sockets.publish(k_text_topic, msg.dump(), uWS::OpCode::TEXT);
     }
+}
+
+#include <random> // FIXME:ダミーデータ作成用、本データ(物理量にした場合は削除してください)
+
+void Server::someMethod( uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received )
+{
+    if( !ws ) return;
+
+    constexpr int kBatch = 4; // FIXME:送信する予定のタイムステップの総数(ex.0~3の場合 kBatch = 4)
+
+    constexpr int numberOfVector = 2; // FIXME:送信する予定のValueOnTimeの総数(物理量数q1~qN) 他メンバ変数からとってくることを想定する場合不要
+
+    static std::atomic<int> s_step{0}; // FIXME:ダミーデータ用
+
+    static thread_local std::mt19937 rng( std::random_device{}() ); // FIXME:ダミーデータ作成用、本データ(物理量にした場合は削除してください)
+    std::uniform_real_distribution<double> dist( -1.0, 1.0 );       // FIXME:ダミーデータ作成用、本データ(物理量にした場合は削除してください)
+
+    nlohmann::json samples = nlohmann::json::array();
+
+    int baseStep = s_step.load(); // FIXME:ダミーデータ作成用、本データ(物理量にした場合は削除してください)
+
+    for( int i = 0; i < kBatch; ++i )
+    {
+        int timeStep = baseStep + i;
+
+        nlohmann::json valueArray = nlohmann::json::array();
+        for( int j = 0; j < numberOfVector; ++j )
+        {
+            double v = dist( rng ); // FIXME:実際の物理量を入れてください
+            valueArray.push_back( v );
+        }
+
+        nlohmann::json one;
+        one[Protocol::Key::TimeStep]    = timeStep;
+        one[Protocol::Key::ValueOnTime] = std::move( valueArray );
+
+        samples.push_back( std::move( one ) );
+    }
+
+    s_step.store( baseStep + kBatch ); // FIXME:ダミーデータ作成用、本データ(物理量にした場合は削除してください)
+
+    nlohmann::json msg;
+    msg[Protocol::Key::Event]   = Protocol::Events::PlotOverTimeParameter;
+    msg[Protocol::Key::Samples] = std::move( samples );
+
+    std::string payload = msg.dump();
+
+    m_u_web_sockets.getLoop()->defer([payload, this]() {
+        m_u_web_sockets.publish( k_text_topic, payload, uWS::OpCode::TEXT );
+    });
 }
 
 void Server::transferOperator(uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received)
