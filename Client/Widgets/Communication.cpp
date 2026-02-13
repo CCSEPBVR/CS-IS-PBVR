@@ -101,15 +101,20 @@ void Communication::onSaveParameter( const QString& filePath )
 
 void Communication::webSocketConnected()
 {
-    // NOTE:Unuse
+    if( !m_web_sockets->isConnected() )
+    {
+        m_is_operator = true;
+        emit updateOperatorState( m_is_operator );
+    }
 }
 
 void Communication::webSocketDisconnected()
 {
     if( !m_web_sockets->isConnected() )
     {
+        *m_viz_mode = Viz::Mode::Local;
         m_user_id = -1;
-        m_is_operator = false;
+        m_is_operator = true;
 
         emit updateServerState( false );
         emit updateOperatorState( m_is_operator );
@@ -134,8 +139,6 @@ void Communication::webSocketDisconnected()
         ui->IDLineEdit->clear();
         ui->isOperatorLineEdit->clear();
         ui->textBrowser->clear();
-
-        updateVizMode();
     }
 }
 

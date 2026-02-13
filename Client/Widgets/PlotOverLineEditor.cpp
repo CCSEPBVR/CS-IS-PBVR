@@ -93,6 +93,14 @@ PlotOverLineEditor::~PlotOverLineEditor()
 void PlotOverLineEditor::reset()
 {
     m_has_last_snap_shot = false;
+
+    ui->plotOverLineGroupBox     ->setEnabled( false );
+    ui->startCoordsXDoubleSpinBox->setValue( 0.0 );
+    ui->startCoordsYDoubleSpinBox->setValue( 0.0 );
+    ui->startCoordsZDoubleSpinBox->setValue( 0.0 );
+    ui->endCoordsXDoubleSpinBox  ->setValue( 0.0 );
+    ui->endCoordsYDoubleSpinBox  ->setValue( 0.0 );
+    ui->endCoordsZDoubleSpinBox  ->setValue( 0.0 );
 }
 
 void PlotOverLineEditor::onOperatorStateUpdate( const bool operatorState )

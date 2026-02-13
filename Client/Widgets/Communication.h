@@ -78,7 +78,7 @@ private:
 
     QString m_user_uuid;
     int m_user_id                   = -1;
-    bool m_is_operator              = false;
+    bool m_is_operator              = true;
 
     int m_max_shared_user_id =      -1;
 

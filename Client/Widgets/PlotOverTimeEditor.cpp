@@ -115,6 +115,47 @@ PlotOverTimeEditor::~PlotOverTimeEditor()
 void PlotOverTimeEditor::reset()
 {
     m_has_last_snap_shot = false;
+
+    ui->plotOverTimeGroupBox->setEnabled( false );
+
+    if( m_point_object != nullptr )
+    {
+        kvs::Xform currentObjectManagerXform = m_screen->scene()->objectManager()->xform(); // NOTE:ObjectManagerのxformを取得
+        float scalingFactor = 1 / ( currentObjectManagerXform.inverse() * m_point_object->xform() ).scaling().x();
+        float finalX = ( 0.0 - m_point_object->externalCenter().x() ) +
+                       ( (
+                            ( ( currentObjectManagerXform.translation().x() * currentObjectManagerXform.inverse().scaling().x() ) * currentObjectManagerXform.rotation()[0][0] ) +
+                            ( ( currentObjectManagerXform.translation().y() * currentObjectManagerXform.inverse().scaling().y() ) * currentObjectManagerXform.rotation()[1][0] ) +
+                            ( ( currentObjectManagerXform.translation().z() * currentObjectManagerXform.inverse().scaling().z() ) * currentObjectManagerXform.rotation()[2][0] )
+                            ) * scalingFactor
+                        ) +
+                       ( m_point_initial_translation.x() * scalingFactor );
+
+        float finalY = ( 0.0 - m_point_object->externalCenter().y() ) +
+                       ( (
+                            ( ( currentObjectManagerXform.translation().x() * currentObjectManagerXform.inverse().scaling().x() ) * currentObjectManagerXform.rotation()[0][1] ) +
+                            ( ( currentObjectManagerXform.translation().y() * currentObjectManagerXform.inverse().scaling().y() ) * currentObjectManagerXform.rotation()[1][1] ) +
+                            ( ( currentObjectManagerXform.translation().z() * currentObjectManagerXform.inverse().scaling().z() ) * currentObjectManagerXform.rotation()[2][1] )
+                            ) * scalingFactor
+                        ) +
+                       ( m_point_initial_translation.y() * scalingFactor );
+
+        float finalZ = ( 0.0 - m_point_object->externalCenter().z() ) +
+                       ( (
+                            ( ( currentObjectManagerXform.translation().x() * currentObjectManagerXform.inverse().scaling().x() ) * currentObjectManagerXform.rotation()[0][2] ) +
+                            ( ( currentObjectManagerXform.translation().y() * currentObjectManagerXform.inverse().scaling().y() ) * currentObjectManagerXform.rotation()[1][2] ) +
+                            ( ( currentObjectManagerXform.translation().z() * currentObjectManagerXform.inverse().scaling().z() ) * currentObjectManagerXform.rotation()[2][2] )
+                            ) * scalingFactor
+                        ) +
+                       ( m_point_initial_translation.z() * scalingFactor );
+
+        kvs::Xform rotation    = kvs::Xform::Rotation( m_point_object->xform().rotation() );
+        kvs::Xform scaling     = kvs::Xform::Scaling( m_point_object->xform().scaling() );
+        kvs::Xform translation = kvs::Xform::Translation( kvs::Vec3( finalX, finalY, finalZ ) );
+
+        kvs::Xform newXform = rotation * scaling * translation;
+        m_point_object->setXform( newXform );
+    }
 }
 
 void PlotOverTimeEditor::onOperatorStateUpdate( const bool operatorState )

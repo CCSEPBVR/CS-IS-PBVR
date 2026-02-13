@@ -97,7 +97,39 @@ ObjectEditor::~ObjectEditor()
 
 void ObjectEditor::reset()
 {
+    if( !m_model ) { return; }
 
+    if( m_screen && m_screen->scene() )
+    {
+        const int rows = m_model->rowCount();
+        for( int row = 0; row < rows; ++row )
+        {
+            QStandardItem* item = m_model->item( row, 0 );
+            if( !item ) continue;
+
+            const QVariant v = item->data( Qt::UserRole );
+            if( !v.canConvert<ObjectInfoExtractor::ObjectInfo>() ) continue;
+
+            const auto info = v.value<ObjectInfoExtractor::ObjectInfo>();
+            if( info.objectID.first != -1 )
+            {
+                m_screen->scene()->removeObject( info.objectID.first );
+            }
+        }
+    }
+
+    if( m_model->rowCount() > 0 )
+    {
+        m_model->removeRows( 0, m_model->rowCount() );
+    }
+
+    calculateTotalMinMaxTimeStep();
+    if( m_screen ) m_screen->update();
+
+    setWidgetsVisible( m_group_common_object_widgets,              false );
+    setWidgetsVisible( m_group_common_server_point_object_widgets, false );
+    setWidgetsVisible( m_group_client_server_point_object_widgets, false );
+    setWidgetsVisible( m_group_nontexture_polygon_object_widgets,  false );
 }
 
 void ObjectEditor::onOperatorStateUpdate( const bool operatorState )

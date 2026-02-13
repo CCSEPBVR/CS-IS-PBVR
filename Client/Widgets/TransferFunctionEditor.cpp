@@ -55,6 +55,9 @@ TransferFunctionEditor::~TransferFunctionEditor()
 
 void TransferFunctionEditor::reset()
 {
+    ui->numberOfTransferFunctionSpinBox->setValue( 0 );
+    ui->colorSynthesizerLineEdit  ->clear();
+    ui->opacitySynthesizerLineEdit->clear();
 }
 
 void TransferFunctionEditor::onOperatorStateUpdate( const bool operatorState )

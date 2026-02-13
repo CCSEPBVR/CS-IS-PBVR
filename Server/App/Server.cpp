@@ -105,7 +105,15 @@ Server::~Server()
 
 void Server::reset()
 {
+    if( !m_objects ) { return; }
 
+    m_objects->clear();
+    m_objects->shrink_to_fit();
+
+    // FIXME:以下In-Situモードのみ
+    // FIXME:"Waiting for simulation object generation "でている間にresetが機能しない。
+    // FIXME:LastStepMonitorLoopを止める必要がある
+    std::cout << "[Server] reset(): cleared all objects" << std::endl;
 }
 
 void Server::onUpgrade(uWS::HttpResponse<SSL>* res, uWS::HttpRequest* req, struct us_socket_context_t* context, SocketType socketType)
@@ -257,6 +265,11 @@ void Server::onClose(uWS::WebSocket<false, true, PerSocket>* ws, int /*code*/, s
         }
         m_clients.erase(uuid);
         std::cout << "[Server] Removed client UUID=" << uuid << std::endl;
+
+        if( m_clients.empty() )
+        {
+            reset();
+        }
 
         nlohmann::json msg;
         msg[Protocol::Key::Event] = Protocol::Events::Left;

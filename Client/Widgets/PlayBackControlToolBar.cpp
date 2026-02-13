@@ -64,7 +64,6 @@ PlayBackControlToolBar::~PlayBackControlToolBar() {}
 
 void PlayBackControlToolBar::reset()
 {
-
 }
 
 void PlayBackControlToolBar::onDataRequestCompleted()
