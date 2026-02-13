@@ -86,6 +86,7 @@ public:
         std::string tmpCoordinateZ          = "";
         std::string coordinateZ             = "";
         bool isExport                       = false;
+        std::string exportFilePath          = "";
 
         // Nontexture Polygon Object Info
         kvs::RGBColor tmpPolygonColor       = { 128, 128, 128 };

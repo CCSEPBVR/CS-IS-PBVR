@@ -19,6 +19,7 @@ ObjectEditor::ObjectEditor( kvs::qt::jaea::Screen* screen, WebSocketPair* websoc
     m_model->setHorizontalHeaderLabels( { "Name", "Format", "Display", "Keep Initial", "Keep Final" } );
     ui->treeView->setModel( m_model );
 
+    ui->exportPushButton->setCheckable( true );
     ui->colorClickableLabel->setAutoFillBackground( true );
 
     m_group_common_object_widgets =
@@ -78,7 +79,7 @@ ObjectEditor::ObjectEditor( kvs::qt::jaea::Screen* screen, WebSocketPair* websoc
     connect( ui->coordinateXLineEdit            , &QLineEdit::textChanged               , this, &ObjectEditor::onCoordinateLineEditTextChanged );
     connect( ui->coordinateYLineEdit            , &QLineEdit::textChanged               , this, &ObjectEditor::onCoordinateLineEditTextChanged );
     connect( ui->coordinateZLineEdit            , &QLineEdit::textChanged               , this, &ObjectEditor::onCoordinateLineEditTextChanged );
-    // connect( ui->exportPushButton               , &QPushButton::clicked                 , this, &ObjectEditor::onExportButtonClicked );
+    connect( ui->exportPushButton               , &QPushButton::clicked                 , this, &ObjectEditor::onExportButtonClicked );
 
     // テスクチャ無しポリゴン(.stlのみ) // FIXME:KVSMLPolygonObjectは不透明度のみ操作できるようにしたほうがいいかもしれません。
     connect( ui->colorClickableLabel            , &ClickableLabel::doubleClicked        , this, &ObjectEditor::onColorLabelDoubleClicked );
@@ -1029,6 +1030,7 @@ void ObjectEditor::updateUI( const QModelIndex& index )
     ui->coordinateXLineEdit      ->setText( QString::fromUtf8( info.tmpCoordinateX ) );
     ui->coordinateYLineEdit      ->setText( QString::fromUtf8( info.tmpCoordinateY ) );
     ui->coordinateZLineEdit      ->setText( QString::fromUtf8( info.tmpCoordinateZ ) );
+    ui->exportPushButton         ->setChecked( info.isExport );
 
     // テスクチャ無しポリゴン(.stlのみ) // FIXME:KVSMLPolygonObjectは不透明度のみ操作できるようにしたほうがいいかもしれません。
     QPalette palette = ui->colorClickableLabel->palette();
@@ -1424,6 +1426,39 @@ void ObjectEditor::replaceObject( ObjectInfoExtractor::ObjectInfo& info )
     }
 }
 
+void ObjectEditor::exportPointObject( const ObjectInfoExtractor::ObjectInfo& info, int requestTimeStep )
+{
+    if( !info.isExport ) { return; }
+
+    if( info.format != ObjectInfoExtractor::Format::ClientServerPointObject &&
+        info.format != ObjectInfoExtractor::Format::InsituServerPointObject )
+    {
+        return;
+    }
+
+    auto* pointObject = static_cast<kvs::PointObject*>( info.object );
+    if( !pointObject ) { return; }
+
+    const QString exportDir = QString::fromStdString( info.exportFilePath );
+    if( exportDir.isEmpty() ) return;
+
+    const QString fullPath =
+        exportDir + "/" +
+        QString::fromStdString( info.name ) + "_" +
+        QString( "%1" ).arg( requestTimeStep, 5, 10, QChar( '0' ) ) +
+        ".kvsml";
+
+    if( QFileInfo( fullPath ).exists() ) { return; }
+
+    kvs::KVSMLPointObject* kvsml = new kvs::PointExporter<kvs::KVSMLPointObject>( pointObject );
+
+    if( !kvsml ) return;
+
+    kvsml->setWritingDataTypeToExternalBinary();
+    kvsml->write( toNativePath( fullPath.toStdString() ) );
+    delete kvsml;
+}
+
 void ObjectEditor::dataRequestComplete( const int requestTimeStep )
 {
     updateVisibility( requestTimeStep );
@@ -1448,6 +1483,8 @@ void ObjectEditor::dataRequestComplete( const int requestTimeStep )
             {
                 replaceObject( info );
             }
+
+            exportPointObject( info, requestTimeStep );
         }
         QVariant newVar;
         newVar.setValue( info );
@@ -1490,6 +1527,54 @@ void ObjectEditor::onCoordinateLineEditTextChanged()
                                           info.tmpCoordinateY = ui->coordinateYLineEdit->text().toUtf8().constData();
                                           info.tmpCoordinateZ = ui->coordinateZLineEdit->text().toUtf8().constData();
                                       } );
+}
+
+void ObjectEditor::onExportButtonClicked()
+{
+    bool checked = ui->exportPushButton->isChecked();
+
+    if( !checked )
+    {
+        updateSelectedObjectInfoParameter(
+            []( auto &info )
+            {
+                info.isExport       = false;
+                info.exportFilePath = "";
+            }
+            );
+        return;
+    }
+
+    QString exportDirPath = QFileDialog::getExistingDirectory(
+        this,
+        tr( "Select Export Directory" ),
+        QDir::homePath(),
+        QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks
+        );
+
+    // キャンセルされた場合
+    if( exportDirPath.isEmpty() )
+    {
+        ui->exportPushButton->setChecked( false );
+
+        updateSelectedObjectInfoParameter(
+            []( auto &info )
+            {
+                info.isExport       = false;
+                info.exportFilePath = "";
+            }
+            );
+        return;
+    }
+
+    // 正常に選択された場合
+    updateSelectedObjectInfoParameter(
+        [exportDirPath]( auto &info )
+        {
+            info.exportFilePath = exportDirPath.toStdString();
+            info.isExport       = true;
+        }
+        );
 }
 
 void ObjectEditor::onColorLabelDoubleClicked()
@@ -1819,8 +1904,8 @@ void ObjectEditor::onApply()
     m_screen->update();
 
     if( ( *m_viz_mode == Viz::Mode::LocalClientAndServer  ||
-         *m_viz_mode == Viz::Mode::RemoteClientAndServer ||
-         *m_viz_mode == Viz::Mode::RemoteInSitu ) &&
+          *m_viz_mode == Viz::Mode::RemoteClientAndServer ||
+          *m_viz_mode == Viz::Mode::RemoteInSitu ) &&
         m_web_sockets->isConnected() )
     {
         QJsonObject objectInfoParameter;

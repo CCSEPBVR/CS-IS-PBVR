@@ -208,4 +208,14 @@ inline kvs::PolygonObject* createArrowGlyph(
     return polygon;
 }
 
+inline std::string toNativePath( const std::string& path )
+{
+    std::string nativePath = path;
+#ifdef _WIN32
+    for ( char& c : nativePath )
+        if ( c == '/' ) c = '\\';
+#endif
+    return nativePath;
+}
+
 #endif // CLIENT_UTILS_H

@@ -8,6 +8,7 @@
 #include <QFileDialog>
 
 #include <kvs/ParticleBasedRenderer>
+#include <kvs/PointExporter>
 #include <kvs/StochasticLineRenderer>
 #include <kvs/StochasticPolygonRenderer>
 #include <kvs/StochasticTexturedPolygonRenderer>
@@ -19,6 +20,7 @@
 
 #include "RemoteFileDialog.h"
 
+#include "ClientUtils.h"
 #include "../../Shared/JsonKeys.h"
 #include "../../Shared/ObjectInfoExtractor.h"
 
@@ -102,6 +104,7 @@ private:
     void updateVisibility( const int requestTimeStep );
     void registerObject( ObjectInfoExtractor::ObjectInfo& info );
     void replaceObject( ObjectInfoExtractor::ObjectInfo& info );
+    void exportPointObject( const ObjectInfoExtractor::ObjectInfo& info, int requestTimeStep );
     void dataRequestComplete( const int requestTimeStep );
 
 private slots:
@@ -116,6 +119,7 @@ private slots:
 
     // サーバポイントオブジェクト(ClientServerのみ)
     void onCoordinateLineEditTextChanged();
+    void onExportButtonClicked();
 
     // テスクチャ無しポリゴン(.stlのみ) // FIXME:KVSMLPolygonObjectは不透明度のみ操作できるようにしたほうがいいかもしれません。
     void onColorLabelDoubleClicked();
