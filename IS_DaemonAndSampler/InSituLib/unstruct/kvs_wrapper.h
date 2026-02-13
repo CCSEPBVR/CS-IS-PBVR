@@ -111,6 +111,25 @@ extern "C" {
 
     } pbvr_parameters;
 
+    typedef struct
+    {
+        std::vector<kvs::Real32>& vertex_coords;
+        std::vector<kvs::Real32>& vertex_scalars;
+        std::vector<kvs::Real32>& vertex_normals;
+        std::vector<int>&         vertex_cellids;
+//        std::vector<kvs::UInt8>  average_colors;
+        std::vector<kvs::Real32> average_scalars;
+        std::vector<kvs::Real32> average_normals; 
+        std::vector<kvs::Real32> varience_scalars;
+        std::vector<kvs::Real32> varience_normals; 
+
+        int ncells;
+        int  MPIprocess_per_ensemble; 
+        int  ensemble_number; 
+    } Ensembleparameters;
+
+
+
 #if 0
     typedef struct
     {
