@@ -105,6 +105,9 @@ void Communication::webSocketConnected()
     {
         m_is_operator = true;
         emit updateOperatorState( m_is_operator );
+
+        ui->connectPushButton                 ->setEnabled( false );
+        ui->disconnectPushButton              ->setEnabled( true );
     }
 }
 
