@@ -126,6 +126,7 @@ extern "C" {
         int ncells;
         int  MPIprocess_per_ensemble; 
         int  ensemble_number; 
+        int  repitetion; 
     } Ensembleparameters;
 
 

@@ -475,8 +475,8 @@ bool initializeParameters(
     //*max_opacity = 0.98;
     *max_opacity = 0.9;
 //    *subpixel_level = CalculateSubpixelLevel( *particle_limit , camera, sampling_step, total_volume, object );
-//    *subpixel_level = 1.f;
-    *subpixel_level = 2.f;
+    *subpixel_level = 1.f;
+//    *subpixel_level = 2.f;
 //    *subpixel_level = 3.f; // 4 scalar
 
     //std::cout<<"Generator::\n";
@@ -3341,7 +3341,6 @@ void uniform_sampling(
 
 
     kvs::MersenneTwister MT( local_rank * nthreads );
-//    kvs::MersenneTwister MT( thid );
 //    std::vector<kvs::Real32> th_vertex_coords;
 //    std::vector<kvs::Real32> th_vertex_scalars;
 //    std::vector<kvs::Real32> th_vertex_normals;
@@ -3349,13 +3348,13 @@ void uniform_sampling(
 
     float time1=0, time2 =0, time3 =0, time4 = 0, time5 = 0;
     float timeN[20]= {0};
-//    kvs::Timer th_timer( kvs::Timer::Start );
+    kvs::Timer th_timer( kvs::Timer::Start );
 #if 1
 //#pragma omp for schedule( dynamic ) nowait
 #pragma omp for schedule(static) 
     for ( size_t index = 0; index < ncells; index += SIMD_BLK_SIZE )
     {
-//           th_timer.start();
+           th_timer.start();
            //ブロック内でのループ回数を取得
             int remain = ( ncells - index > SIMD_BLK_SIZE )? SIMD_BLK_SIZE: ncells - index;
 
@@ -3367,34 +3366,33 @@ void uniform_sampling(
                 cell_index[cell_BLK] = (kvs::UInt32)(index + cell_BLK);
             }
 
-//            th_timer.stop();
-//            timeN[0] += th_timer.sec();
-//            th_timer.start();
+            th_timer.stop();
+            timeN[0] += th_timer.sec();
+            th_timer.start();
 
             cell[thid]->bindCellArray( remain, cell_index );
 
-//            th_timer.stop();
-//            timeN[1] += th_timer.sec();
-//            th_timer.start();
+            th_timer.stop();
+            timeN[1] += th_timer.sec();
+            th_timer.start();
             
             cell[thid]->volumeArray( remain, volume_array);
-//            th_timer.stop();
-//            timeN[2] += th_timer.sec();
-//            th_timer.start();
+            th_timer.stop();
+            timeN[2] += th_timer.sec();
+            th_timer.start();
 
             //生成粒子数を計算
             #pragma simd
             for(int cell_BLK = 0; cell_BLK < remain; cell_BLK++ )
             {
                     nparticles_array[cell_BLK] 
-                        = calculate_number_of_particles( max_density, volume_array[cell_BLK], &MT ) *  particle_density ;
+                        = calculate_number_of_particles( max_density, volume_array[cell_BLK], &MT ) *  particle_density * ens_param.repitetion;
                         //=  size_t (max_density * volume_array[cell_BLK]) *  particle_density ;
 //                        = 10;
                         //if (thid == 0)std::cout << "mpi_rank = " << mpi_rank << ", nparticles_array[cell_BLK] = " << nparticles_array[cell_BLK] << std::endl; 
-                        //std::cout << "mpi_rank = " << mpi_rank << ", cell_BLK =" << cell_BLK << ", nparticles_array[cell_BLK] = " << nparticles_array[cell_BLK] << std::endl; 
             }
-//            th_timer.stop();
-//            timeN[3] += th_timer.sec();
+            th_timer.stop();
+            timeN[3] += th_timer.sec();
             // アンサンブル粒子データを作成
             int p_id = 0;
             float p_x_l[remain], p_y_l[remain], p_z_l[remain];
@@ -3406,46 +3404,45 @@ void uniform_sampling(
                 
                 for( int i = 0; i < nparticles_I; i+=SIMD_BLK_SIZE )
                 {
-//                    th_timer.start();
+                    th_timer.start();
                     //ブロック内でのループ回数を取得
                     int remain_BLK = ( nparticles_I - i > SIMD_BLK_SIZE )
                                                         ? SIMD_BLK_SIZE: nparticles_I - i;
 //                    const int zero_id = cell_BLK<SIMDW ? SIMDW : p_id;
 
-//                    th_timer.stop();
-//                    timeN[4] += th_timer.sec();
+                    th_timer.stop();
+                    timeN[4] += th_timer.sec();
                     if( cell_BLK < remain )
                     {
 #pragma simd
                    for( int j = 0; j < remain_BLK; j++ ) 
                    {
-//                       th_timer.start();
+                       th_timer.start();
                        cell_index[p_id] = index + cell_BLK;
-//                       cell_index[p_id] = cell_index[cell_BLK];
-//                       th_timer.stop();
-//                       timeN[4] += th_timer.sec();
-//                       th_timer.start();
+                       th_timer.stop();
+                       timeN[4] += th_timer.sec();
+                       th_timer.start();
 
                        local_coord_array[p_id] = cell[thid] -> randomSampling_MT( &MT );
                        // デバッグ用の座標固定
 //                        local_coord_array[p_id] = kvs::Vector3f (0,0,0);
-//                       th_timer.stop();
-//                       timeN[5] += th_timer.sec();
+                       th_timer.stop();
+                       timeN[5] += th_timer.sec();
                        p_id ++;
                        if(p_id == SIMD_BLK_SIZE )
                        {
-//                           th_timer.start();
+                           th_timer.start();
 
                            //補間器にセルを一括でバインド
                            cell[thid]->bindCellArray( p_id, cell_index );
-//                           th_timer.stop();
-//                           timeN[6] += th_timer.sec();
-//                           th_timer.start();
+                           th_timer.stop();
+                           timeN[6] += th_timer.sec();
+                           th_timer.start();
                            cell[thid]->setLocalPointArray(  p_id, local_coord_array );
 
-//                           th_timer.stop();
-//                           timeN[7] += th_timer.sec();
-//                           th_timer.start();
+                           th_timer.stop();
+                           timeN[7] += th_timer.sec();
+                           th_timer.start();
                            float scalar_array[p_id];
                            float grad_array_x[p_id];
                            float grad_array_y[p_id];
@@ -3458,14 +3455,14 @@ void uniform_sampling(
                            //                            grad_array_z );
 
                            cell[thid] -> scalar_ary( scalar_array, p_id);
-//                           th_timer.stop();
-//                           timeN[8] += th_timer.sec();
-//                           th_timer.start();
+                           th_timer.stop();
+                           timeN[8] += th_timer.sec();
+                           th_timer.start();
                            cell[thid] -> grad_ary( grad_array_x, grad_array_y, grad_array_z, p_id);
 
-//                           th_timer.stop();
-//                           timeN[9] += th_timer.sec();
-//                           th_timer.start();
+                           th_timer.stop();
+                           timeN[9] += th_timer.sec();
+                           th_timer.start();
                            // resize による最適化テスト
                            size_t base_c = per_thread_coords [thid].size();
                            size_t base_n = per_thread_normals[thid].size();
@@ -3496,26 +3493,26 @@ void uniform_sampling(
                                per_thread_cellids[thid][base_id + j] = cell_index[j];
 
                            }
-//                           th_timer.stop();
-//                           timeN[10] += th_timer.sec();
+                           th_timer.stop();
+                           timeN[10] += th_timer.sec();
                            p_id = 0;
                        } 
                    }
                     }// end if cell_BLK < remain 
                     if(cell_BLK == remain)  // p_id ==SIMD_BLK と一緒にしたかったが、無理っぽい
                     {
-//                        th_timer.start();
+                        th_timer.start();
 
                     //補間器にセルを一括でバインド
                     cell[thid]->bindCellArray( p_id, cell_index );
-//                    th_timer.stop();
-//                    timeN[6] += th_timer.sec();
-//                    th_timer.start();
+                    th_timer.stop();
+                    timeN[6] += th_timer.sec();
+                    th_timer.start();
                     cell[thid]->setLocalPointArray(  p_id, local_coord_array );
                     
-//                    th_timer.stop();
-//                    timeN[7] += th_timer.sec();
-//                    th_timer.start();
+                    th_timer.stop();
+                    timeN[7] += th_timer.sec();
+                    th_timer.start();
                     float scalar_array[p_id];
                     float grad_array_x[p_id];
                     float grad_array_y[p_id];
@@ -3528,14 +3525,14 @@ void uniform_sampling(
 //                            grad_array_z );
                         
                     cell[thid] -> scalar_ary( scalar_array, p_id);
-//                    th_timer.stop();
-//                    timeN[8] += th_timer.sec();
-//                    th_timer.start();
+                    th_timer.stop();
+                    timeN[8] += th_timer.sec();
+                    th_timer.start();
                     cell[thid] -> grad_ary( grad_array_x, grad_array_y, grad_array_z, p_id);
 
-//                    th_timer.stop();
-//                    timeN[9] += th_timer.sec();
-//                    th_timer.start();
+                    th_timer.stop();
+                    timeN[9] += th_timer.sec();
+                    th_timer.start();
 // resize による最適化テスト
                     size_t base_c = per_thread_coords [thid].size();
                     size_t base_n = per_thread_normals[thid].size();
@@ -3566,8 +3563,8 @@ void uniform_sampling(
                         per_thread_cellids[thid][base_id + j] = cell_index[j];
 
                     }
-//                        th_timer.stop();
-//                        timeN[10] += th_timer.sec();
+                        th_timer.stop();
+                        timeN[10] += th_timer.sec();
                     p_id = 0;
                     }
 
@@ -3576,37 +3573,87 @@ void uniform_sampling(
             }
     }
 #endif
+//#pragma omp barrier
+//#pragma omp critical
+//            {
+//                for(int i =0; i <  7; i++ )
+//                    timeN[i] += th_timeN[i]/nthreads;    
+//            }
 
 
-//    #pragma omp barrier
-//    th_timer.start();
-
-//    #pragma omp critical     // MPI間でインデックスがズレる模様
-//    {
-//        vertex_coords.insert (vertex_coords.end() , th_vertex_coords.begin() , th_vertex_coords.end() );
-//        vertex_scalars.insert(vertex_scalars.end(), th_vertex_scalars.begin(), th_vertex_scalars.end());
-//        vertex_normals.insert(vertex_normals.end(), th_vertex_normals.begin(), th_vertex_normals.end());
-//        vertex_cellids.insert(vertex_cellids.end(), th_vertex_cellids.begin(), th_vertex_cellids.end());
-//    }
-//    th_timer.stop();
-//    timeN[11] += th_timer.sec();
-//    th_timer.start();
-//        for (int i =0;i < 12; i++)
-//        {
-//            std::cout << mpi_rank <<  ": ave_sampling_time["<< i <<"] =" << timeN[i] << std::endl;
-//        }
+#pragma omp barrier
+#pragma omp critical
+        for (int i =0;i < 11; i++)
+        {
+            std::cout << mpi_rank <<  ": ave_sampling_time["<< i <<"] =" << timeN[i] << std::endl;
+        }
 }  //end omp loop
+timer.stop();
+    std::cout << mpi_rank <<  ": uniform_sampling_time =" << timer.sec() << std::endl;
+timer.start();
 
-for (int t=0; t<max_threads; ++t) 
+const size_t base_coords   = vertex_coords.size();
+const size_t base_scalars  = vertex_scalars.size();
+const size_t base_normals  = vertex_normals.size();
+const size_t base_cellids  = vertex_cellids.size();
+
+size_t add_coords  = 0, add_scalars = 0, add_normals = 0, add_cellids = 0;
+
+for (int t = 0; t < max_threads; ++t) 
 {
-    vertex_coords .insert(vertex_coords.end() , per_thread_coords [t].begin() , per_thread_coords[t].end() );
-    vertex_scalars.insert(vertex_scalars.end(), per_thread_scalars[t].begin(), per_thread_scalars[t].end());
-    vertex_normals.insert(vertex_normals.end(), per_thread_normals[t].begin(), per_thread_normals[t].end());
-    vertex_cellids.insert(vertex_cellids.end(), per_thread_cellids[t].begin(), per_thread_cellids[t].end());
+    add_coords  += per_thread_coords[t].size();
+    add_scalars += per_thread_scalars[t].size();
+    add_normals += per_thread_normals[t].size();
+    add_cellids += per_thread_cellids[t].size();
 }
 
-    timer.stop();
-    std::cout << mpi_rank <<  ": uniform_sampling_time =" << timer.sec() << std::endl;
+vertex_coords.resize(base_coords + add_coords);
+vertex_scalars.resize(base_scalars + add_scalars);
+vertex_normals.resize(base_normals + add_normals);
+vertex_cellids.resize(base_cellids + add_cellids);
+
+//方法1
+size_t off_c = base_coords;
+size_t off_s = base_scalars;
+size_t off_n = base_normals;
+size_t off_cl = base_cellids;
+for (int t = 0; t < max_threads; ++t) 
+{
+    const auto& src_c = per_thread_coords[t];
+    const auto& src_s = per_thread_scalars[t];
+    const auto& src_n = per_thread_normals[t];
+    const auto& src_cl= per_thread_cellids[t];
+    // 型が同じなら std::copy が最速寄り
+    std::copy(src_c.begin(), src_c.end(), vertex_coords.begin() + off_c);
+    off_c += src_c.size();
+    std::copy(src_s.begin(), src_s.end(), vertex_scalars.begin() + off_s);
+    off_s += src_s.size();
+    std::copy(src_n.begin(), src_n.end(), vertex_normals.begin() + off_n);
+    off_n += src_n.size();
+    std::copy(src_cl.begin(), src_cl.end(), vertex_cellids.begin() + off_cl);
+    off_cl += src_cl.size();
+}
+
+//方法2
+//vertex_coords.reserve (base_coords  + add_coords);
+//vertex_scalars.reserve(base_scalars + add_scalars);
+//vertex_normals.reserve(base_normals + add_normals);
+//vertex_cellids.reserve(base_cellids + add_cellids);
+//
+//for (int t = 0; t < max_threads; ++t) {
+//    vertex_coords .insert(vertex_coords.end(),
+//                          per_thread_coords[t].begin(),  per_thread_coords[t].end());
+//    vertex_scalars.insert(vertex_scalars.end(),
+//                          per_thread_scalars[t].begin(), per_thread_scalars[t].end());
+//    vertex_normals.insert(vertex_normals.end(),
+//                          per_thread_normals[t].begin(), per_thread_normals[t].end());
+//    vertex_cellids.insert(vertex_cellids.end(),
+//                          per_thread_cellids[t].begin(), per_thread_cellids[t].end());
+//}
+
+timer.stop();
+
+    std::cout << mpi_rank <<  ": ave_sampling_time[11] =" << timer.sec() << std::endl;
     std::cout << mpi_rank <<  ": uniform_nparticles : " <<  vertex_scalars.size()  << " particle_density = " << particle_density << std::endl;
 }
 
@@ -3628,19 +3675,27 @@ void ensemble_reduce_scatter(
     MPI_Comm_rank( MPI_COMM_WORLD, &mpi_rank );
     MPI_Comm_size( MPI_COMM_WORLD, &mpi_size );
 
+    float timeN[20]= {0};
+    kvs::Timer timer( kvs::Timer::Start );
     int ens_number = ens_param.ensemble_number;
     // 送信データの個数 
     const int local_size = ens_param.vertex_scalars.size(); 
-    int recv_size = 0;
+//    int recv_size = 0;
+    int recv_size = local_size;
 
+    //プロセス間で粒子数は同じという前提のもと、
+    //　不安制定を犠牲にallreduce をやめる
     // reduce演算のためにデータサイズを最小粒子数に揃える
-    MPI_Allreduce(&local_size, &recv_size, 1, MPI_INT, MPI_MIN, MPI_COMM_WORLD); 
+//    MPI_Allreduce(&local_size, &recv_size, 1, MPI_INT, MPI_MIN, MPI_COMM_WORLD); 
 
     std::vector<float>& vertex_scalars = ens_param.vertex_scalars;
     std::vector<float>& vertex_normals = ens_param.vertex_normals;
     std::vector<float>& vertex_coords  = ens_param.vertex_coords;
     std::vector<int>& vertex_cellids   = ens_param.vertex_cellids;
 
+    timer.stop();
+    timeN[0] += timer.sec();
+    timer.start();
     // debug
 //    for (int i = 0 ; i< vertex_scalars.size() ; i+= 1000000)
 //    {
@@ -3655,16 +3710,19 @@ void ensemble_reduce_scatter(
     int scalars_total = recv_size;
     int normals_total = 3*recv_size;
     int scalars_baseSize = scalars_total / ens_number;
-    int normals_baseSize = normals_total / ens_number;
+    //int normals_baseSize = normals_total / ens_number;
+    int normals_baseSize = 3*scalars_baseSize;
     int scalars_remainder = scalars_total % ens_number;
-    int normals_remainder = normals_total % ens_number;
+    //int normals_remainder = normals_total % ens_number;
+//    int normals_remainder = 3*scalars_remainder;
 
     int scalars_start = 0;
     int normals_start = 0;
-
+#pragma omp for
     for (int i = 0; i < ens_number; i++) {
         int scalars_chunkSize = scalars_baseSize + (i < scalars_remainder ? 1 : 0);
-        int normals_chunkSize = normals_baseSize + (i < normals_remainder ? 1 : 0);
+        //int normals_chunkSize = normals_baseSize + (i < normals_remainder ? 3 : 0);
+        int normals_chunkSize = normals_baseSize + (i < scalars_remainder ? 3 : 0);
 
 //        result.push_back(
         if(i == mpi_rank)
@@ -3686,13 +3744,17 @@ void ensemble_reduce_scatter(
 //        std::cout << mpi_rank << ", vertex_scalars["<<i<<"] = " << vertex_scalars [i] << "cell_id["<<i<<"] = " << div_vertex_cellids[i] << ", coords = " << ens_param.vertex_coords[3*i] << ", " << ens_param.vertex_coords[3*i+1] << ", " << ens_param.vertex_coords[3*i+2] << std::endl;
 //    }
 
-
     std::vector<int> scalars_counts(ens_number, scalars_total / ens_number);
+#pragma omp for
     for (int r = 0; r < scalars_total % ens_number; r++) scalars_counts[r]++;  // 余りを前から配る
 
     std::vector<int> normals_counts(ens_number, normals_total/ ens_number);
-    for (int r = 0; r < normals_total % ens_number; r++) normals_counts[r]++;  // 余りを前から配る
+#pragma omp for
+    for (int r = 0; r < scalars_total % ens_number; r++) normals_counts[r]+=3;  // 余りを前から配る
 
+    timer.stop();
+    timeN[1] += timer.sec();
+    timer.start();
     // 受信バッファ
     // 変数値
 //    std::vector<float> recv_scalars(recv_size); 
@@ -3711,6 +3773,7 @@ void ensemble_reduce_scatter(
     std::vector<float> recv_tmp_term(normals_counts[mpi_rank]);
 
     // 二乗の計算
+#pragma simd
     for (int i =0 ; i< recv_size ; i++ )
     {
         sq_scalars[i]   = vertex_scalars[i] * vertex_scalars[i];
@@ -3719,6 +3782,9 @@ void ensemble_reduce_scatter(
         tmp_term[3*i+2] = vertex_scalars[i] * vertex_normals[3*i+2];
     }
 
+    timer.stop();
+    timeN[2] += timer.sec();
+    timer.start();
      MPI_Barrier(MPI_COMM_WORLD);
 //     std::cout << "vertex_scalars.size() = " << vertex_scalars.size() << ", recv_scalars = " << recv_scalars.size() << ", scalars_counts[0] = " << scalars_counts[0] << ", scalars_counts[1] = " << scalars_counts[1] <<std::endl;
     // MPI_reduce による変数、法線の合算
@@ -3733,45 +3799,65 @@ void ensemble_reduce_scatter(
     
     MPI_Reduce_scatter(tmp_term.data(), recv_tmp_term.data(), normals_counts.data(), MPI_FLOAT,
             MPI_SUM, MPI_COMM_WORLD);
-     std::cout << __LINE__ <<std::endl;
  
+    timer.stop();
+    timeN[3] += timer.sec();
+    timer.start();
     // mpi_rank = 0 にて 平均値、分散計算処理
     // 平均値計算
     const float mpi_size_inv = 1 /float(mpi_size);  // 1アンサンブル 1MPIプロセスと仮定
     //        const float mpi_size_inv = ens_param.MPIprocess_per_ensemble /mpi_size;
+#pragma simd
     for (int i =0 ; i< scalars_counts[mpi_rank] ; i++ )
     {
         recv_scalars[i]    *= mpi_size_inv;
         recv_sq_scalars[i] *= mpi_size_inv;
     }
 
+#pragma simd
     for (int i =0 ; i< normals_counts[mpi_rank] ; i++ )
     {
-        recv_normals[i] *= mpi_size_inv;
+        recv_normals[i] *= -mpi_size_inv;
         recv_tmp_term[i] *= mpi_size_inv; 
     }
 
+    timer.stop();
+    timeN[4] += timer.sec();
+    timer.start();
     // 分散
+#pragma simd
     for (int i =0 ; i< scalars_counts[mpi_rank] ; i++ )
     {
         varience[i] = recv_sq_scalars[i] - recv_scalars[i]* recv_scalars[i] ;     
     }        
 
+#pragma simd
     for (int i =0 ; i< normals_counts[mpi_rank] ; i++ )
     {
-        varience_normals[i] = 2 * recv_tmp_term[i] - 2*recv_scalars[i] *recv_normals[i] ;     
+        varience_normals[i] = - 2 * recv_tmp_term[i] + 2*recv_scalars[i] *recv_normals[i] ;     
     }        
 
+    timer.stop();
+    timeN[5] += timer.sec();
+    timer.start();
     ens_param.average_scalars = recv_scalars;     
     ens_param.average_normals = recv_normals;     
     ens_param.varience_scalars= varience    ;
     ens_param.varience_normals= varience_normals;
+
+    timer.stop();
+    timeN[6] += timer.sec();
+    timer.start();
 
     //for (int i = 0 ; i< vertex_scalars.size() ; i+= 1000000)
 //    for (int i = 0 ; i< vertex_scalars.size() ; i+= 1)
 //    {
 //        std::cout << mpi_rank << ", varience["<<i<<"] = " << varience [i] << ", average_scalars["<<i<<"] = " << recv_scalars[i] << ", vertex_scalars["<<i<<"] = " << vertex_scalars[i] <<  ", coords = " << ens_param.vertex_coords[3*i] << ", " << ens_param.vertex_coords[3*i+1] << ", " << ens_param.vertex_coords[3*i+2] << std::endl;
 //    }
+    for (int i =0;i < 7; i++)
+    {
+        std::cout << mpi_rank <<  ": reduce_scatter_time["<< i <<"] =" << timeN[i] << std::endl;
+    }
 
 
 }
@@ -3794,6 +3880,9 @@ void ensemble_reduce(
     MPI_Comm_rank( MPI_COMM_WORLD, &mpi_rank );
     MPI_Comm_size( MPI_COMM_WORLD, &mpi_size );
 
+    float timeN[20]= {0};
+    kvs::Timer timer( kvs::Timer::Start );
+
     // 送信データの個数 
     const int local_size = ens_param.vertex_scalars.size(); 
     int recv_size = 0;
@@ -3803,6 +3892,9 @@ void ensemble_reduce(
     std::vector<float>& vertex_scalars = ens_param.vertex_scalars;
     std::vector<float>& vertex_normals = ens_param.vertex_normals;
 
+    timer.stop();
+    timeN[0] += timer.sec();
+    timer.start();
     // debug
 //    for (int i = vertex_scalars.size() -10; i< vertex_scalars.size() ; i++)
 //    for (int i = 0 ; i< vertex_scalars.size() ; i+= 1000000)
@@ -3827,6 +3919,7 @@ void ensemble_reduce(
     std::vector<float> recv_tmp_term(3*recv_size);
 
     // 二乗の計算
+#pragma simd 
     for (int i =0 ; i< recv_size ; i++ )
     {
         sq_scalars[i]   = vertex_scalars[i] * vertex_scalars[i];
@@ -3836,7 +3929,9 @@ void ensemble_reduce(
     }
 
 
-     std::cout << __LINE__ <<std::endl;
+    timer.stop();
+    timeN[1] += timer.sec();
+    timer.start();
      MPI_Barrier(MPI_COMM_WORLD);
      std::cout << "vertex_scalars.size() = " << vertex_scalars.size() << ", recv_scalars = " << recv_scalars.size() << ", local_size = " << local_size <<std::endl;
     // MPI_reduce による変数、法線の合算
@@ -3852,40 +3947,55 @@ void ensemble_reduce(
     MPI_Reduce(tmp_term.data(), recv_tmp_term.data(), 3*recv_size, MPI_FLOAT,
             MPI_SUM, 0, MPI_COMM_WORLD);
  
+    timer.stop();
+    timeN[2] += timer.sec();
+    timer.start();
     // mpi_rank = 0 にて 平均値、分散計算処理
     if(mpi_rank == 0)
     {
         // 平均値計算
         const float mpi_size_inv = 1 /float(mpi_size);  // 1アンサンブル 1MPIプロセスと仮定
 //        const float mpi_size_inv = ens_param.MPIprocess_per_ensemble /mpi_size;
+#pragma simd 
         for (int i =0 ; i< recv_size ; i++ )
         {
             recv_scalars[i]    *= mpi_size_inv;
             recv_sq_scalars[i] *= mpi_size_inv;
         }
 
+#pragma simd 
         for (int i =0 ; i< 3*recv_size ; i++ )
         {
-            recv_normals[i] *= mpi_size_inv;
+            recv_normals[i] *= -mpi_size_inv;
             recv_tmp_term[i] *= mpi_size_inv; 
         }
 
+    timer.stop();
+    timeN[3] += timer.sec();
+    timer.start();
         // 分散
+#pragma simd 
         for (int i =0 ; i< recv_size ; i++ )
         {
             varience[i] = recv_sq_scalars[i] - recv_scalars[i]* recv_scalars[i] ;     
         }        
 
+#pragma simd 
         for (int i =0 ; i< 3*recv_size ; i++ )
         {
-            varience_normals[i] = 2 * recv_tmp_term[i] - 2*recv_scalars[i] *recv_normals[i] ;     
+            varience_normals[i] = - 2 * recv_tmp_term[i] +  2*recv_scalars[i] *recv_normals[i] ;     
         }        
 
+    timer.stop();
+    timeN[4] += timer.sec();
+    timer.start();
          ens_param.average_scalars = recv_scalars;     
          ens_param.average_normals = recv_normals;     
          ens_param.varience_scalars= varience    ;
          ens_param.varience_normals= varience_normals;
 
+    timer.stop();
+    timeN[5] += timer.sec();
 //         for (int i = 0 ; i< vertex_scalars.size() ; i+= 1000000)
 //         {
 //             std::cout << mpi_rank << ", vertex_scalars["<<i<<"] = " << vertex_scalars [i] << "cell_id["<<i<<"] = " << ens_param.vertex_cellids[i] << ", coords = " << ens_param.vertex_coords[3*i] << ", " << ens_param.vertex_coords[3*i+1] << ", " << ens_param.vertex_coords[3*i+2] << std::endl;
@@ -3895,9 +4005,13 @@ void ensemble_reduce(
 //        std::cout << mpi_rank << ", varience["<<i<<"] = " << varience [i] << ", average_scalars["<<i<<"] = " << recv_scalars[i] << ", vertex_scalars["<<i<<"] = " << vertex_scalars[i] <<  ", coords = " << ens_param.vertex_coords[3*i] << ", " << ens_param.vertex_coords[3*i+1] << ", " << ens_param.vertex_coords[3*i+2] << std::endl;
 //    }
 
-
-
     } 
+    for (int i =0;i < 6; i++)
+    {
+        std::cout << mpi_rank <<  ": reduce_time["<< i <<"] =" << timeN[i] << std::endl;
+    }
+
+
 }
 
 void rejection_process(
@@ -3918,6 +4032,8 @@ void rejection_process(
     MPI_Comm_rank( MPI_COMM_WORLD, &mpi_rank );
     MPI_Comm_size( MPI_COMM_WORLD, &mpi_size );
 
+    float timeN[20]= {0};
+    kvs::Timer timer( kvs::Timer::Start );
     auto tf = particleBase.m_tf[0];
 
     float sampling_volume_inverse  = particleBase.m_sampling_volume_inverse ;
@@ -3955,7 +4071,7 @@ void rejection_process(
 
 ////// 常用対数を取るための計算
 // std::vector<float> log_vertex_scalars(vertex_scalars.size());
-//       float delta = 1e-30;
+       float delta = 1e-30;
 //       int N = 0; // OutputFuncで正規化したオーダー
 //#pragma omp simd
 //       for (int i = 0; i < vertex_scalars.size(); i++ )
@@ -3965,8 +4081,9 @@ void rejection_process(
 //           log_vertex_scalars[ i ]     =  vertex_scalars[ i ] > delta ? std::log10(vertex_scalars[ i ]) -N : -30; 
 //       }
 
-//    timer.stop();
-//    timer.start();
+    timer.stop();
+    timeN[0] += timer.sec();
+    timer.start();
 #pragma omp parallel
 {    
 #if _OPENMP
@@ -3996,152 +4113,151 @@ void rejection_process(
     float density_array_average[ SIMD_BLK_SIZE ];
     float density_array_varience[ SIMD_BLK_SIZE ];
     float th_timeN[20]= {0};
-//    kvs::Timer th_timer( kvs::Timer::Start );
+    kvs::Timer th_timer( kvs::Timer::Start );
 
 #pragma omp for  
-            for(int i =0; i< local_size ;i+= SIMD_BLK_SIZE)
-            {
-//                th_timer.start();
-                    //ブロック内でのループ回数を取得
-                    int remain_BLK = ( local_size - i > SIMD_BLK_SIZE )
-                                                        ? SIMD_BLK_SIZE: local_size - i;
-                    // セル登録
-            #pragma omp simd
-                    for( int j = 0; j < remain_BLK; j++ ) 
-                    {
-                        cell_index[j] = vertex_cellids[i + j];
-                    }
-                    cell[thid] -> bindCellArray(remain_BLK, cell_index);
+    for(int i =0; i< local_size ;i+= SIMD_BLK_SIZE)
+    {
+        th_timer.start();
+        //ブロック内でのループ回数を取得
+        int remain_BLK = ( local_size - i > SIMD_BLK_SIZE )
+            ? SIMD_BLK_SIZE: local_size - i;
+        // セル登録
+#pragma omp simd
+        for( int j = 0; j < remain_BLK; j++ ) 
+        {
+            cell_index[j] = vertex_cellids[i + j];
+        }
+        cell[thid] -> bindCellArray(remain_BLK, cell_index);
 
-//                th_timer.stop();
-//                th_timeN[0] += th_timer.sec();
-//                th_timer.start();
+        th_timer.stop();
+        th_timeN[0] += th_timer.sec();
+        th_timer.start();
 
-                //局所座標の詰め替え
-//            #pragma omp simd
-                    for( int j = 0; j < remain_BLK; j++ ) 
-                    {
-                        local_coord_array[j].x() = vertex_coords[ 3*(i+j)+ 0];
-                        local_coord_array[j].y() = vertex_coords[ 3*(i+j)+ 1];
-                        local_coord_array[j].z() = vertex_coords[ 3*(i+j)+ 2];
-                    }
+        //局所座標の詰め替え
+        //            #pragma omp simd
+        for( int j = 0; j < remain_BLK; j++ ) 
+        {
+            local_coord_array[j].x() = vertex_coords[ 3*(i+j)+ 0];
+            local_coord_array[j].y() = vertex_coords[ 3*(i+j)+ 1];
+            local_coord_array[j].z() = vertex_coords[ 3*(i+j)+ 2];
+        }
 
-//                th_timer.stop();
-//                th_timeN[1] += th_timer.sec();
-//                th_timer.start();
-                //座標の登録
-                cell[thid] -> setLocalPointArray(remain_BLK,local_coord_array);
+        th_timer.stop();
+        th_timeN[1] += th_timer.sec();
+        th_timer.start();
+        //座標の登録
+        cell[thid] -> setLocalPointArray(remain_BLK,local_coord_array);
 
-//                th_timer.stop();
-//                th_timeN[2] += th_timer.sec();
-//                th_timer.start();
-                //全体座標への変換
-                cell[thid] -> transformLocalToGlobalArray(remain_BLK,local_coord_array,global_coord_array);
+        th_timer.stop();
+        th_timeN[2] += th_timer.sec();
+        th_timer.start();
+        //全体座標への変換
+        cell[thid] -> transformLocalToGlobalArray(remain_BLK,local_coord_array,global_coord_array);
 
-//                th_timer.stop();
-//                th_timeN[3] += th_timer.sec();
-//                th_timer.start();
+        th_timer.stop();
+        th_timeN[3] += th_timer.sec();
+        th_timer.start();
 
-                //opacity 計算 
-                for( int j = 0; j < remain_BLK; j++ ) 
-                {
-                    opacity_array_average [j] = tf.opacityMap().at(average_scalars[ i+j ]);
-//                    opacity_array_average [j] = tf.opacityMap().at(vertex_scalars[ i+j ]);
-                    opacity_array_varience[j] = tf.opacityMap().at(varience_scalars[ i+j ]);
-//                    対数値を参照
-//                    opacity_array[j] = tf.opacityMap().at(log_vertex_scalars[ i+j ]);
-                }
-//                th_timer.stop();
-//                th_timeN[4] += th_timer.sec();
-//                th_timer.start();
+        //opacity 計算 
+        for( int j = 0; j < remain_BLK; j++ ) 
+        {
+            opacity_array_average [j] = tf.opacityMap().at(average_scalars[ i+j ]);
+            //                    opacity_array_average [j] = tf.opacityMap().at(vertex_scalars[ i+j ]);
+            opacity_array_varience[j] = tf.opacityMap().at(varience_scalars[ i+j ]);
+            //                    対数値を参照
+            //                    opacity_array[j] = tf.opacityMap().at(log_vertex_scalars[ i+j ]);
+        }
+        th_timer.stop();
+        th_timeN[4] += th_timer.sec();
+        th_timer.start();
 
 #pragma omp simd
-                for( int j = 0; j < remain_BLK; j++ ) 
-                {
-                    density_array_average [j] = opacity_array_average [j] < max_opacity ? -std::log( 1.0f - opacity_array_average [j] ) * sampling_volume_inverse: max_density;  
-                    density_array_varience[j] = opacity_array_varience[j] < max_opacity ? -std::log( 1.0f - opacity_array_varience[j] ) * sampling_volume_inverse: max_density;  
-                }
-//                    th_timer.stop();
-//                    th_timeN[5] += th_timer.sec();
+        for( int j = 0; j < remain_BLK; j++ ) 
+        {
+            density_array_average [j] = opacity_array_average [j] < max_opacity ? -std::log( 1.0f - opacity_array_average [j] ) * sampling_volume_inverse: max_density;  
+            density_array_varience[j] = opacity_array_varience[j] < max_opacity ? -std::log( 1.0f - opacity_array_varience[j] ) * sampling_volume_inverse: max_density;  
+        }
+        th_timer.stop();
+        th_timeN[5] += th_timer.sec();
 
-                for( int j = 0; j < remain_BLK; j++ ) 
-                {
-//                    th_timer.start();
-               const float R = MT.rand();
-//                th_timer.stop();
-//                th_timeN[6] += th_timer.sec();
-               if ( density_array_average[j] > max_density * R )
-               {
-//                th_timer.start();
-                   // Calculate a color.
-                   const kvs::RGBColor color( tf.colorMap().at( average_scalars[ i+j ] ) );
+        for( int j = 0; j < remain_BLK; j++ ) 
+        {
+            th_timer.start();
+            const float R = MT.rand();
+            th_timer.stop();
+            th_timeN[6] += th_timer.sec();
+            if ( density_array_average[j] > max_density * R )
+            {
+                th_timer.start();
+                // Calculate a color.
+                const kvs::RGBColor color( tf.colorMap().at( average_scalars[ i+j ] ) );
 //                   const kvs::RGBColor color( tf.colorMap().at( vertex_scalars[ i+j ] ) );
 //                    対数値を参照
 //                   const kvs::RGBColor color( tf.colorMap().at( log_vertex_scalars[ i+j ] ) );
-//                th_timer.stop();
-//                th_timeN[7] += th_timer.sec();
-//                th_timer.start();
+                th_timer.stop();
+                th_timeN[7] += th_timer.sec();
+                th_timer.start();
 
-                   // Calculate a normal.
-//                th_timer.stop();
-//                th_timeN[8] += th_timer.sec();
-//                th_timer.start();
+                // Calculate a normal.
+                th_timer.stop();
+                th_timeN[8] += th_timer.sec();
+                th_timer.start();
 
-                   // set coord, color, and normal to point object( this ).
-                   th_vertex_coords.push_back( global_coord_array[j].x() );
-                   th_vertex_coords.push_back( global_coord_array[j].y() );
-                   th_vertex_coords.push_back( global_coord_array[j].z() );
+                // set coord, color, and normal to point object( this ).
+                th_vertex_coords.push_back( global_coord_array[j].x() );
+                th_vertex_coords.push_back( global_coord_array[j].y() );
+                th_vertex_coords.push_back( global_coord_array[j].z() );
 
-                   th_vertex_colors.push_back( color.r() );
-                   th_vertex_colors.push_back( color.g() );
-                   th_vertex_colors.push_back( color.b() );
+                th_vertex_colors.push_back( color.r() );
+                th_vertex_colors.push_back( color.g() );
+                th_vertex_colors.push_back( color.b() );
 
-                   th_vertex_normals.push_back( average_normals[3*(i+j)+0] );
-                   th_vertex_normals.push_back( average_normals[3*(i+j)+1] );
-                   th_vertex_normals.push_back( average_normals[3*(i+j)+2] );
+                th_vertex_normals.push_back( average_normals[3*(i+j)+0] );
+                th_vertex_normals.push_back( average_normals[3*(i+j)+1] );
+                th_vertex_normals.push_back( average_normals[3*(i+j)+2] );
 
-//                th_timer.stop();
-//                th_timeN[9] += th_timer.sec();
-//                   if( average_scalars[ i+j ] > 100 ) std::cout << "average_scalars[ i+j ] = "  << average_scalars[ i+j ] << ", coords = " << global_coord_array[j] << std::endl;
-               }
-
-               if ( density_array_varience[j] > max_density * R )
-               {
-//                th_timer.start();
-                   // Calculate a color.
-                   const kvs::RGBColor color( tf.colorMap().at( varience_scalars[ i+j ] ) );
-//                    対数値を参照
-//                   const kvs::RGBColor color( tf.colorMap().at( log_vertex_scalars[ i+j ] ) );
-//                th_timer.stop();
-//                th_timeN[7] += th_timer.sec();
-//                th_timer.start();
-
-                   // Calculate a normal.
-//                th_timer.stop();
-//                th_timeN[8] += th_timer.sec();
-//                th_timer.start();
-
-                   // set coord, color, and normal to point object( this ).
-                   th_vertex_varience_coords.push_back( global_coord_array[j].x() );
-                   th_vertex_varience_coords.push_back( global_coord_array[j].y() );
-                   th_vertex_varience_coords.push_back( global_coord_array[j].z() );
-
-                   th_vertex_varience_colors.push_back( color.r() );
-                   th_vertex_varience_colors.push_back( color.g() );
-                   th_vertex_varience_colors.push_back( color.b() );
-
-                   th_vertex_varience_normals.push_back( varience_normals[3*(i+j)+0] );
-                   th_vertex_varience_normals.push_back( varience_normals[3*(i+j)+1] );
-                   th_vertex_varience_normals.push_back( varience_normals[3*(i+j)+2] );
-
-//                th_timer.stop();
-//                th_timeN[9] += th_timer.sec();
-
-
-               }
-                }
+                th_timer.stop();
+                th_timeN[9] += th_timer.sec();
+                //                   if( average_scalars[ i+j ] > 100 ) std::cout << "average_scalars[ i+j ] = "  << average_scalars[ i+j ] << ", coords = " << global_coord_array[j] << std::endl;
             }
-//                th_timer.start();
+
+            if ( density_array_varience[j] > max_density * R )
+            {
+                th_timer.start();
+                // Calculate a color.
+                const kvs::RGBColor color( tf.colorMap().at( varience_scalars[ i+j ] ) );
+                //                    対数値を参照
+                //                   const kvs::RGBColor color( tf.colorMap().at( log_vertex_scalars[ i+j ] ) );
+                th_timer.stop();
+                th_timeN[10] += th_timer.sec();
+                th_timer.start();
+
+                // Calculate a normal.
+                th_timer.stop();
+                th_timeN[11] += th_timer.sec();
+                th_timer.start();
+
+                // set coord, color, and normal to point object( this ).
+                th_vertex_varience_coords.push_back( global_coord_array[j].x() );
+                th_vertex_varience_coords.push_back( global_coord_array[j].y() );
+                th_vertex_varience_coords.push_back( global_coord_array[j].z() );
+
+                th_vertex_varience_colors.push_back( color.r() );
+                th_vertex_varience_colors.push_back( color.g() );
+                th_vertex_varience_colors.push_back( color.b() );
+
+                th_vertex_varience_normals.push_back( varience_normals[3*(i+j)+0] );
+                th_vertex_varience_normals.push_back( varience_normals[3*(i+j)+1] );
+                th_vertex_varience_normals.push_back( varience_normals[3*(i+j)+2] );
+
+                th_timer.stop();
+                th_timeN[12] += th_timer.sec();
+
+            }
+        }
+    }
+                th_timer.start();
 #pragma omp critical
        {
            result_average_coords.insert  (result_average_coords.end() , th_vertex_coords.begin() , th_vertex_coords.end());
@@ -4151,19 +4267,19 @@ void rejection_process(
            result_varience_colors.insert (result_varience_colors.end() , th_vertex_varience_colors.begin() , th_vertex_varience_colors.end());
            result_varience_normals.insert(result_varience_normals.end(), th_vertex_varience_normals.begin(), th_vertex_varience_normals.end());
        }
-//                th_timer.stop();
-//                th_timeN[10] += th_timer.sec();
-//#pragma omp critical
-//                {    
-//                    for (int i =0;i < 11; i++)
-//                    {
-//                        std::cout << mpi_rank <<  ": ave_rejection_time["<< i <<"] =" << th_timeN[i] << std::endl;
-//                    }
-//                }
+                th_timer.stop();
+                th_timeN[13] += th_timer.sec();
+#pragma omp critical
+                {    
+                    for (int i =0;i < 14; i++)
+                    {
+                        std::cout << mpi_rank <<  ": ave_rejection_time["<< i <<"] =" << th_timeN[i] << std::endl;
+                    }
+                }
 
 }
-//       timer.stop();
-//       std::cout << mpi_rank << ": rejection_exe_time =" << timer.sec() << std::endl;
+       timer.stop();
+       std::cout << mpi_rank << ": rejection_exe_time =" << timer.sec() << std::endl;
        int size = result_average_coords.size();
 #endif
 
@@ -4202,13 +4318,13 @@ void reduce_scatter_ensemble(pbvr::TransferFunction& tf,  std::vector< pbvr::Cel
     // repeat level を手動設定
 //    int   repetitions             = 24 ; // 4 scalar
 //    int   repetitions             = 18 ;
-    int   repetitions             = 9 ;
+    int   repetitions             = 8 ;
 //    parameter_file_opened = particleBase.m_parameter_file_opened;
     // アンサンブル数でrepetitionを徐算
     const int MPIprocess_per_ensemble = 1;  
     int ens_number = mpi_size/MPIprocess_per_ensemble;
-    repetitions /= ens_number;
-    if (repetitions < ens_number ) repetitions = 1;
+//    repetitions /= ens_number;
+//    if (repetitions < ens_number ) repetitions = 1;
 
 
     //　各粒子の変数データ
@@ -4240,7 +4356,8 @@ void reduce_scatter_ensemble(pbvr::TransferFunction& tf,  std::vector< pbvr::Cel
             varience_normals,
             ncells,
             MPIprocess_per_ensemble,
-            ens_number
+            ens_number,
+            repetitions
     };
 
     uniform_sampling(cell, 
@@ -4277,13 +4394,13 @@ void all_reduce_ensemble(pbvr::TransferFunction& tf,  std::vector< pbvr::CellBas
     // repeat level を手動設定
 //    int   repetitions             = 24 ; // 4 scalar
 //    int   repetitions             = 18 ;
-    int   repetitions             = 9 ;
+    int   repetitions             = 8 ;
 //    parameter_file_opened = particleBase.m_parameter_file_opened;
     // アンサンブル数でrepetitionを徐算
     const int MPIprocess_per_ensemble = 1;  
     int ens_number = mpi_size/MPIprocess_per_ensemble;
-    repetitions /= ens_number;
-    if (repetitions < ens_number ) repetitions = 1;
+//    repetitions /= ens_number;
+//    if (repetitions < ens_number ) repetitions = 1;
 
 
     //　各粒子の変数データ
@@ -4315,7 +4432,8 @@ void all_reduce_ensemble(pbvr::TransferFunction& tf,  std::vector< pbvr::CellBas
             varience_normals,
             ncells,
             MPIprocess_per_ensemble,
-            ens_number
+            ens_number,
+            repetitions
     };
 
     uniform_sampling(cell, 
@@ -4411,7 +4529,7 @@ void EnsembleGenerateParticles( int time_step,
     // repeat level を手動設定
 //    int   repetitions             = 24 ; // 4 scalar
 //    int   repetitions             = 18 ;
-    int   repetitions             = 9 ;
+    int   repetitions             = 8 ;
     parameter_file_opened = particleBase.m_parameter_file_opened;
 //    const int max_nparticles = (int)max_density + 1;
 
@@ -4424,8 +4542,8 @@ void EnsembleGenerateParticles( int time_step,
 
 //    float max_opacity              = 0.98;
     // Hydrogen
-    const float min_value = -5;
-    const float max_value = 10;
+    const float min_value = 0;
+    const float max_value = 255;
     const float var_min_value = -8;
     const float var_max_value =-8;
 ////    // spx 
@@ -4443,22 +4561,26 @@ void EnsembleGenerateParticles( int time_step,
     kvs::ValueArray<kvs::UInt8> cc_table(c_table);
         
     kvs::ColorMap color_map( cc_table, min_value, max_value  );
-//    kvs::OpacityMap opacity_map( tf_resolution, min_value, max_value );
-//    auto tf = kvs::TransferFunction( color_map );
+    kvs::OpacityMap opacity_map( tf_resolution, min_value, max_value );
+    //auto tf = kvs::TransferFunction( color_map );
+    auto tf = pbvr::TransferFunction( color_map );
  
 //  tf のハードコーディング 
 //	kvs::ColorMap color_map;
 //    auto tf = pbvr::TransferFunction( tf_resolution );
 //    tf.setColorMap(color_map) ;
 //    tf.setRange(min_value, max_value);
-//  .tfファイルを参照
-    auto tf = particleBase.m_tf[0];
-    const float max_value_tf = particleBase.m_tf[0].opacityMap().maxValue();
-    const float min_value_tf = particleBase.m_tf[0].opacityMap().minValue();
 
-    all_reduce_ensemble(tf, cell, particleBase, ncells);
-    
-//    reduce_scatter_ensemble(tf, cell, particleBase, ncells);
+//  .tfファイルを参照
+//    auto tf = particleBase.m_tf[0];
+//    const float max_value_tf = particleBase.m_tf[0].opacityMap().maxValue();
+//    const float min_value_tf = particleBase.m_tf[0].opacityMap().minValue();
+
+//    all_reduce_ensemble(tf, cell, particleBase, ncells);
+   
+    reduce_scatter_ensemble(tf, cell, particleBase, ncells);
+
+//#define OLD_ENSEMBLE
 
 #ifdef OLD_ENSEMBLE
         int nparticles[ ncells ];
@@ -5105,7 +5227,7 @@ void EnsembleGenerateParticles( int time_step,
 
 //// 常用対数を取るための計算
  std::vector<float> log_vertex_scalars(vertex_scalars.size());
-       float delta = 1e-30;
+     float delta = 1e-30;
        int N = 0; // OutputFuncで正規化したオーダー
 #pragma omp simd
        for (int i = 0; i < vertex_scalars.size(); i++ )
@@ -5190,9 +5312,9 @@ void EnsembleGenerateParticles( int time_step,
                 //opacity 計算 
                 for( int j = 0; j < remain_BLK; j++ ) 
                 {
-//                    opacity_array[j] = tf.opacityMap().at(vertex_scalars[ i+j ]);
+                    opacity_array[j] = tf.opacityMap().at(vertex_scalars[ i+j ]);
 //                    対数値を参照
-                    opacity_array[j] = tf.opacityMap().at(log_vertex_scalars[ i+j ]);
+//                    opacity_array[j] = tf.opacityMap().at(log_vertex_scalars[ i+j ]);
                 }
 //                th_timer.stop();
 //                th_timeN[4] += th_timer.sec();
@@ -5221,9 +5343,9 @@ void EnsembleGenerateParticles( int time_step,
                {
 //                th_timer.start();
                    // Calculate a color.
-//                   const kvs::RGBColor color( tf.colorMap().at( vertex_scalars[ i+j ] ) );
+                   const kvs::RGBColor color( tf.colorMap().at( vertex_scalars[ i+j ] ) );
 //                    対数値を参照
-                   const kvs::RGBColor color( tf.colorMap().at( log_vertex_scalars[ i+j ] ) );
+//                   const kvs::RGBColor color( tf.colorMap().at( log_vertex_scalars[ i+j ] ) );
 //                th_timer.stop();
 //                th_timeN[7] += th_timer.sec();
 //                th_timer.start();
