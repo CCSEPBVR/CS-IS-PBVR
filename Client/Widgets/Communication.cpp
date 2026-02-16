@@ -502,23 +502,6 @@ void Communication::onSettingsApplyClicked()
             return;
         }
 
-        ui->localVizRadioButton               ->setEnabled( false );
-        ui->remoteVizClientServerRadioButton  ->setEnabled( false );
-        ui->remoteVizInsituRadioButton        ->setEnabled( false );
-
-        ui->uniformRadioButton                ->setEnabled( false );
-        ui->metropolisRadioButton             ->setEnabled( false );
-        ui->rejectionRadioButton              ->setEnabled( false );
-
-        ui->volumeDataFilePathLineEdit        ->setEnabled( false );
-        ui->volumeDataFilePathPushButton      ->setEnabled( false );
-        ui->transferFunctionFilePathLineEdit  ->setEnabled( false );
-        ui->transferFunctionFilePathPushButton->setEnabled( false );
-
-        ui->addressLineEdit                   ->setEnabled( false );
-        ui->connectPushButton                 ->setEnabled( false );
-        ui->disconnectPushButton              ->setEnabled( true );
-
         if( ui->localVizRadioButton->isChecked() )                   *m_viz_mode = Viz::Mode::LocalClientAndServer;
         else if( ui->remoteVizClientServerRadioButton->isChecked() ) *m_viz_mode = Viz::Mode::RemoteClientAndServer;
         else if( ui->remoteVizInsituRadioButton->isChecked() )       *m_viz_mode = Viz::Mode::RemoteInSitu;
@@ -722,6 +705,23 @@ void Communication::onTextWebSocketMessageReceived( const QString& receivedMessa
     else if( event == QString::fromUtf8( Protocol::Events::SharePoint ) )       receiveSharePoint( obj );
     else if( event == QString::fromUtf8( Protocol::Events::Initialize ) )
     {
+        ui->localVizRadioButton               ->setEnabled( false );
+        ui->remoteVizClientServerRadioButton  ->setEnabled( false );
+        ui->remoteVizInsituRadioButton        ->setEnabled( false );
+
+        ui->uniformRadioButton                ->setEnabled( false );
+        ui->metropolisRadioButton             ->setEnabled( false );
+        ui->rejectionRadioButton              ->setEnabled( false );
+
+        ui->volumeDataFilePathLineEdit        ->setEnabled( false );
+        ui->volumeDataFilePathPushButton      ->setEnabled( false );
+        ui->transferFunctionFilePathLineEdit  ->setEnabled( false );
+        ui->transferFunctionFilePathPushButton->setEnabled( false );
+
+        ui->addressLineEdit                   ->setEnabled( false );
+        ui->connectPushButton                 ->setEnabled( false );
+        ui->disconnectPushButton              ->setEnabled( true );
+
         const QString kGlyphParameter            = QString::fromUtf8( Protocol::Key::GlyphParameter );
         const QString kPlotOverLineParameter     = QString::fromUtf8( Protocol::Key::PlotOverLineParameter );
         const QString kPlotOverTimeParameter     = QString::fromUtf8( Protocol::Key::PlotOverTimeParameter );
