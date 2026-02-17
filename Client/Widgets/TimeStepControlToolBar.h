@@ -69,7 +69,7 @@ private:
 
     WebSocketPair* m_web_sockets = nullptr;
 
-    bool m_is_operator           = false;
+    bool m_is_operator           = true;
 
     QTimer m_timer;
     bool m_is_reverse_mode  = false;

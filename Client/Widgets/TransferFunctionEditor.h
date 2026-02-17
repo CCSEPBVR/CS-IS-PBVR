@@ -52,7 +52,7 @@ private:
 
     WebSocketPair* m_web_sockets          = nullptr;
 
-    bool m_is_operator                    = false;
+    bool m_is_operator                    = true;
 
     TransferFunction* m_transfer_function = nullptr;
 

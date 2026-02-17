@@ -82,7 +82,7 @@ private:
 
     WebSocketPair* m_web_sockets    = nullptr;
 
-    bool m_is_operator              = false;
+    bool m_is_operator              = true;
 
     QStringList m_variable_list;
     double m_x_min;

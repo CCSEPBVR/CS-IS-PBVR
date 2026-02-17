@@ -77,7 +77,7 @@ private:
     WebSocketPair* m_web_sockets    = nullptr;
     Viz::Mode* m_viz_mode           = nullptr;
 
-    bool m_is_operator              = false;
+    bool m_is_operator              = true;
 
     QStandardItemModel *m_model     = nullptr;
 
