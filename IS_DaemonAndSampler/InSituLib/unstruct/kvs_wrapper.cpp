@@ -3693,6 +3693,30 @@ void ensemble_reduce_scatter(
     std::vector<float>& vertex_coords  = ens_param.vertex_coords;
     std::vector<int>& vertex_cellids   = ens_param.vertex_cellids;
 
+    // アンサンブル方向のコミュニティを作成する
+	MPI_Comm comm_col_vector, comm_row_vector;
+
+    // mpisize --> n_rows (grid parallelization)
+    //runtime_assert(mpi_size % ens_number == 0, "InvalidConfiguration: mpi size vs. ensemble size mismatched");
+    const auto n_rows = mpi_size / ens_number;
+
+//    // comm split: each ensemble member (column vector) //
+    const auto k_col = mpi_rank / n_rows;
+    MPI_Comm_split(MPI_COMM_WORLD, k_col, 0, &comm_col_vector);
+
+    // comm split: common grid lacation over ensmembers (row vector) //
+    const auto i_row = mpi_rank % n_rows;
+    MPI_Comm_split(MPI_COMM_WORLD, i_row, 0, &comm_row_vector);
+    int comm_size = 0; 
+    MPI_Comm_size( comm_row_vector, &comm_size );
+
+    int row_rank =0, row_size=1;
+    MPI_Comm_rank(comm_row_vector, &row_rank);
+    MPI_Comm_size(comm_row_vector, &row_size);
+
+    int col_rank =0, col_size=1;
+    MPI_Comm_rank(comm_col_vector, &col_rank);
+    MPI_Comm_size(comm_col_vector, &col_size);
     timer.stop();
     timeN[0] += timer.sec();
     timer.start();
@@ -3719,13 +3743,14 @@ void ensemble_reduce_scatter(
     int scalars_start = 0;
     int normals_start = 0;
 #pragma omp for
-    for (int i = 0; i < ens_number; i++) {
+    for (int i = 0; i < ens_number; i++) 
+    {
         int scalars_chunkSize = scalars_baseSize + (i < scalars_remainder ? 1 : 0);
         //int normals_chunkSize = normals_baseSize + (i < normals_remainder ? 3 : 0);
         int normals_chunkSize = normals_baseSize + (i < scalars_remainder ? 3 : 0);
 
-//        result.push_back(
-        if(i == mpi_rank)
+//        if(i == i_row)
+        if(i == k_col)
         {
             div_vertex_cellids.insert( div_vertex_cellids.end() , vertex_cellids.begin()  + scalars_start, vertex_cellids.begin() + scalars_start + scalars_chunkSize);
             div_vertex_coords .insert( div_vertex_coords .end() , vertex_coords.begin() + normals_start, vertex_coords.begin()  + normals_start + normals_chunkSize);
@@ -3755,22 +3780,35 @@ void ensemble_reduce_scatter(
     timer.stop();
     timeN[1] += timer.sec();
     timer.start();
+
+    // 念のため：row_size と ens_number の整合
+    if (row_size != ens_number) {
+        std::cerr << "row_size != ens_number: " << row_size << " vs " << ens_number << std::endl;
+        MPI_Abort(MPI_COMM_WORLD, 1);
+    }
+  
     // 受信バッファ
     // 変数値
 //    std::vector<float> recv_scalars(recv_size); 
-    std::vector<float> recv_scalars(scalars_counts[mpi_rank]); 
+//    std::vector<float> recv_scalars(scalars_counts[mpi_rank]); 
+    std::vector<float> recv_scalars(scalars_counts[row_rank]); 
     // 法線
 //    std::vector<float> recv_normals(3*recv_size);
-    std::vector<float> recv_normals(normals_counts[mpi_rank]);
+//    std::vector<float> recv_normals(normals_counts[mpi_rank]);
+    std::vector<float> recv_normals(normals_counts[row_rank]);
 
     // 分散用配列
-    std::vector<float> varience(scalars_counts[mpi_rank]);
+//    std::vector<float> varience(scalars_counts[mpi_rank]);
+    std::vector<float> varience(scalars_counts[row_rank]);
     std::vector<float> tmp_term(3*recv_size);
-    std::vector<float> varience_normals(normals_counts[mpi_rank]);
+    //std::vector<float> varience_normals(normals_counts[mpi_rank]);
+    std::vector<float> varience_normals(normals_counts[row_rank]);
         // 二乗
     std::vector<float> sq_scalars(recv_size);
-    std::vector<float> recv_sq_scalars(scalars_counts[mpi_rank]);
-    std::vector<float> recv_tmp_term(normals_counts[mpi_rank]);
+//    std::vector<float> recv_sq_scalars(scalars_counts[mpi_rank]);
+//    std::vector<float> recv_tmp_term(normals_counts[mpi_rank]);
+    std::vector<float> recv_sq_scalars(scalars_counts[row_rank]);
+    std::vector<float> recv_tmp_term(normals_counts[row_rank]);
 
     // 二乗の計算
 #pragma simd
@@ -3789,33 +3827,38 @@ void ensemble_reduce_scatter(
 //     std::cout << "vertex_scalars.size() = " << vertex_scalars.size() << ", recv_scalars = " << recv_scalars.size() << ", scalars_counts[0] = " << scalars_counts[0] << ", scalars_counts[1] = " << scalars_counts[1] <<std::endl;
     // MPI_reduce による変数、法線の合算
     MPI_Reduce_scatter(vertex_scalars.data(), recv_scalars.data(), scalars_counts.data(), MPI_FLOAT,
-            MPI_SUM, MPI_COMM_WORLD);
+//            MPI_SUM, MPI_COMM_WORLD);
+            MPI_SUM, comm_row_vector);
 
     MPI_Reduce_scatter(sq_scalars.data(), recv_sq_scalars.data(), scalars_counts.data(), MPI_FLOAT,
-            MPI_SUM, MPI_COMM_WORLD);
+//            MPI_SUM, MPI_COMM_WORLD);
+            MPI_SUM, comm_row_vector);
 
+    std::cout << __LINE__ <<std::endl;
     MPI_Reduce_scatter(vertex_normals.data(), recv_normals.data(), normals_counts.data(), MPI_FLOAT,
-            MPI_SUM, MPI_COMM_WORLD);
+//            MPI_SUM, MPI_COMM_WORLD);
+            MPI_SUM, comm_row_vector);
     
     MPI_Reduce_scatter(tmp_term.data(), recv_tmp_term.data(), normals_counts.data(), MPI_FLOAT,
-            MPI_SUM, MPI_COMM_WORLD);
+//            MPI_SUM, MPI_COMM_WORLD);
+            MPI_SUM, comm_row_vector);
  
     timer.stop();
     timeN[3] += timer.sec();
     timer.start();
     // mpi_rank = 0 にて 平均値、分散計算処理
     // 平均値計算
-    const float mpi_size_inv = 1 /float(mpi_size);  // 1アンサンブル 1MPIプロセスと仮定
-    //        const float mpi_size_inv = ens_param.MPIprocess_per_ensemble /mpi_size;
+//    const float mpi_size_inv = 1 /float(mpi_size);  // 1アンサンブル 1MPIプロセスと仮定
+           const float mpi_size_inv =float( ens_param.MPIprocess_per_ensemble) /float(mpi_size);
 #pragma simd
-    for (int i =0 ; i< scalars_counts[mpi_rank] ; i++ )
+    for (int i =0 ; i< scalars_counts[row_rank] ; i++ )
     {
         recv_scalars[i]    *= mpi_size_inv;
         recv_sq_scalars[i] *= mpi_size_inv;
     }
 
 #pragma simd
-    for (int i =0 ; i< normals_counts[mpi_rank] ; i++ )
+    for (int i =0 ; i< normals_counts[row_rank] ; i++ )
     {
         recv_normals[i] *= -mpi_size_inv;
         recv_tmp_term[i] *= mpi_size_inv; 
@@ -3826,13 +3869,13 @@ void ensemble_reduce_scatter(
     timer.start();
     // 分散
 #pragma simd
-    for (int i =0 ; i< scalars_counts[mpi_rank] ; i++ )
+    for (int i =0 ; i< scalars_counts[row_rank] ; i++ )
     {
         varience[i] = recv_sq_scalars[i] - recv_scalars[i]* recv_scalars[i] ;     
     }        
 
 #pragma simd
-    for (int i =0 ; i< normals_counts[mpi_rank] ; i++ )
+    for (int i =0 ; i< normals_counts[row_rank] ; i++ )
     {
         varience_normals[i] = - 2 * recv_tmp_term[i] + 2*recv_scalars[i] *recv_normals[i] ;     
     }        
@@ -3849,8 +3892,8 @@ void ensemble_reduce_scatter(
     timeN[6] += timer.sec();
     timer.start();
 
-    //for (int i = 0 ; i< vertex_scalars.size() ; i+= 1000000)
-//    for (int i = 0 ; i< vertex_scalars.size() ; i+= 1)
+//    for (int i = 0 ; i< vertex_scalars.size() ; i+= 1000000)
+////    for (int i = 0 ; i< vertex_scalars.size() ; i+= 1)
 //    {
 //        std::cout << mpi_rank << ", varience["<<i<<"] = " << varience [i] << ", average_scalars["<<i<<"] = " << recv_scalars[i] << ", vertex_scalars["<<i<<"] = " << vertex_scalars[i] <<  ", coords = " << ens_param.vertex_coords[3*i] << ", " << ens_param.vertex_coords[3*i+1] << ", " << ens_param.vertex_coords[3*i+2] << std::endl;
 //    }
@@ -4060,7 +4103,7 @@ void rejection_process(
 
     std::vector<float>& varience_scalars = ens_param.varience_scalars;
     std::vector<float>& varience_normals = ens_param.varience_normals;
-     std::cout << __LINE__ <<std::endl;
+     std::cout << mpi_rank << ", "<<__LINE__ <<std::endl;
     //棄却法を適応する
 #if 1
 
@@ -4321,7 +4364,7 @@ void reduce_scatter_ensemble(pbvr::TransferFunction& tf,  std::vector< pbvr::Cel
     int   repetitions             = 8 ;
 //    parameter_file_opened = particleBase.m_parameter_file_opened;
     // アンサンブル数でrepetitionを徐算
-    const int MPIprocess_per_ensemble = 1;  
+    const int MPIprocess_per_ensemble = 4;  
     int ens_number = mpi_size/MPIprocess_per_ensemble;
 //    repetitions /= ens_number;
 //    if (repetitions < ens_number ) repetitions = 1;
@@ -4534,8 +4577,8 @@ void EnsembleGenerateParticles( int time_step,
 //    const int max_nparticles = (int)max_density + 1;
 
     // アンサンブル数でrepetitionを徐算
-    const int MPIprocess_per_ensemble = 1;  
-    //const int MPIprocess_per_ensemble = 4;  
+//    const int MPIprocess_per_ensemble = 1;  
+      const int MPIprocess_per_ensemble = 4;  
     int ens_number = mpi_size/MPIprocess_per_ensemble;
     repetitions /= ens_number;
     if (repetitions < ens_number ) repetitions = 1;
@@ -4558,12 +4601,12 @@ void EnsembleGenerateParticles( int time_step,
     
     std::vector<kvs::UInt8> c_table ={5,48,97,6,50,100,7,52,102,8,54,105,9,56,108,10,58,111,11,60,114,12,62,116,14,64,119,15,66,122,16,68,125,17,70,128,18,72,131,19,74,134,20,76,136,21,78,139,22,80,142,23,83,145,24,85,148,25,87,151,27,89,154,28,91,157,29,93,160,30,95,163,31,98,166,32,100,169,33,102,172,35,104,173,37,105,174,38,107,175,40,109,176,41,111,177,43,113,178,45,114,178,46,116,179,47,118,180,49,120,181,50,121,182,51,123,183,53,125,184,54,127,185,55,129,186,57,130,187,58,132,188,59,134,189,60,136,189,61,138,190,63,140,191,64,141,192,65,143,193,66,145,194,67,147,195,71,149,196,74,151,197,78,153,198,81,154,199,85,156,200,88,158,201,91,160,202,95,162,203,98,164,204,101,166,205,104,168,206,107,170,207,110,172,209,113,174,210,116,175,211,118,177,212,121,179,213,124,181,214,127,183,215,130,185,216,132,187,217,135,189,218,138,191,219,141,193,220,143,195,221,146,197,222,149,198,223,151,200,223,154,201,224,157,202,225,159,203,226,162,205,226,164,206,227,167,207,228,169,208,228,172,210,229,174,211,230,177,212,231,179,214,231,182,215,232,184,216,233,187,217,234,189,219,234,192,220,235,194,221,236,197,223,236,199,224,237,202,225,238,204,226,239,207,228,239,209,229,240,210,230,240,212,230,241,213,231,241,215,232,241,216,232,241,218,233,242,219,234,242,221,235,242,222,235,242,224,236,243,225,237,243,227,237,243,228,238,244,230,239,244,231,239,244,233,240,244,234,241,245,235,241,245,237,242,245,238,243,245,240,244,246,241,244,246,243,245,246,244,246,246,246,246,247,247,247,247,247,246,245,248,245,243,248,244,241,248,243,240,249,242,238,249,241,236,249,239,234,250,238,232,250,237,230,250,236,228,250,235,227,251,234,225,251,233,223,251,232,221,251,231,219,251,230,217,252,229,215,252,228,214,252,227,212,252,225,210,252,224,208,252,223,206,253,222,204,253,221,203,253,220,201,253,219,199,253,217,196,253,215,193,252,212,191,252,210,188,252,208,185,252,206,182,252,204,179,251,202,177,251,200,174,251,197,171,250,195,168,250,193,165,250,191,163,249,189,160,249,187,157,248,184,154,248,182,152,248,180,149,247,178,146,247,176,143,246,174,141,246,171,138,245,169,135,245,167,133,244,165,130,243,162,128,242,160,126,241,157,124,240,155,122,239,152,119,238,149,117,237,147,115,235,144,113,234,142,111,233,139,109,232,136,107,231,134,105,230,131,103,229,128,101,227,126,99,226,123,97,225,120,95,224,118,93,223,115,91,221,112,89,220,110,87,219,107,85,218,104,83,217,102,81,215,99,79,214,96,77,213,94,76,211,91,74,210,89,73,208,86,71,207,84,70,206,82,68,204,79,67,203,77,66,201,74,64,200,72,63,198,69,62,197,66,60,196,64,59,194,61,57,193,58,56,191,55,55,190,53,53,188,50,52,187,46,51,185,43,49,184,40,48,182,36,47,181,33,46,179,29,44,178,24,43,175,23,43,172,22,42,169,21,42,166,20,41,162,19,41,159,18,40,156,17,40,153,15,39,150,14,39,147,13,38,144,12,38,141,11,37,138,10,37,135,9,36,132,8,36,129,7,35,126,6,35,123,5,34,120,4,34,117,3,33,115,2,33,112,2,33,109,1,32,106,1,32,103,0,31};
 
-    kvs::ValueArray<kvs::UInt8> cc_table(c_table);
-        
-    kvs::ColorMap color_map( cc_table, min_value, max_value  );
-    kvs::OpacityMap opacity_map( tf_resolution, min_value, max_value );
-    //auto tf = kvs::TransferFunction( color_map );
-    auto tf = pbvr::TransferFunction( color_map );
+//    kvs::ValueArray<kvs::UInt8> cc_table(c_table);
+//        
+//    kvs::ColorMap color_map( cc_table, min_value, max_value  );
+//    kvs::OpacityMap opacity_map( tf_resolution, min_value, max_value );
+//    //auto tf = kvs::TransferFunction( color_map );
+//    auto tf = pbvr::TransferFunction( color_map );
  
 //  tf のハードコーディング 
 //	kvs::ColorMap color_map;
@@ -4572,15 +4615,15 @@ void EnsembleGenerateParticles( int time_step,
 //    tf.setRange(min_value, max_value);
 
 //  .tfファイルを参照
-//    auto tf = particleBase.m_tf[0];
-//    const float max_value_tf = particleBase.m_tf[0].opacityMap().maxValue();
-//    const float min_value_tf = particleBase.m_tf[0].opacityMap().minValue();
+    auto tf = particleBase.m_tf[0];
+    const float max_value_tf = particleBase.m_tf[0].opacityMap().maxValue();
+    const float min_value_tf = particleBase.m_tf[0].opacityMap().minValue();
 
 //    all_reduce_ensemble(tf, cell, particleBase, ncells);
    
-    reduce_scatter_ensemble(tf, cell, particleBase, ncells);
+//    reduce_scatter_ensemble(tf, cell, particleBase, ncells);
 
-//#define OLD_ENSEMBLE
+#define OLD_ENSEMBLE
 
 #ifdef OLD_ENSEMBLE
         int nparticles[ ncells ];
