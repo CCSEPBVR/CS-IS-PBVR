@@ -1,9 +1,15 @@
 #include "AnimationControl.h"
 #include "ui_AnimationControl.h"
 
+#include <QFileDialog>
+#include <QDir>
+#include <QDataStream>
+#include <QDebug>
+#include <QCoreApplication>
+
 AnimationControl::AnimationControl( kvs::qt::jaea::Screen* screen, QWidget *parent )
-    : QDockWidget(parent)
-    , ui(new Ui::AnimationControl)
+    : QDockWidget( parent )
+    , ui( new Ui::AnimationControl )
     , m_screen( screen )
     , m_animation_timer( new QTimer( this ) )
     , m_animation_paused( false )
@@ -25,15 +31,24 @@ AnimationControl::~AnimationControl()
     delete ui;
 }
 
+static inline int CalcTotalAnimationFramesInclusiveEnds( int keyframes, int interp )
+{
+    if ( keyframes < 2 ) return 0;
+    if ( interp <= 0 ) return 0;
+
+    return 1 + ( keyframes - 1 ) * interp;
+}
+
 void AnimationControl::onAddKeyFrameAdd( kvs::Xform xform )
 {
     m_xforms.push_back( xform );
 
     ui->totalKeyFramesDisplayLabel->setText( QString::number( m_xforms.size() ) );
-    if( m_xforms.size() < 2 == false)
-    {
-        ui->totalAnimationFramesDisplayLabel->setText( QString::number( ( m_xforms.size() - 1 ) * ( ui->interpolationSpinBox->value() + 1 ) ) );
-    }
+
+    const int interp = ui->interpolationSpinBox->value();
+    ui->totalAnimationFramesDisplayLabel->setText(
+        QString::number( CalcTotalAnimationFramesInclusiveEnds( static_cast<int>( m_xforms.size() ), interp ) )
+        );
 }
 
 void AnimationControl::onRemoveLastKeyFrame()
@@ -44,14 +59,11 @@ void AnimationControl::onRemoveLastKeyFrame()
     }
 
     ui->totalKeyFramesDisplayLabel->setText( QString::number( m_xforms.size() ) );
-    if( m_xforms.size() < 2 == false)
-    {
-        ui->totalAnimationFramesDisplayLabel->setText( QString::number( ( m_xforms.size() - 1 ) * ( ui->interpolationSpinBox->value() + 1 ) ) );
-    }
-    else
-    {
-        ui->totalAnimationFramesDisplayLabel->setText( "0" );
-    }
+
+    const int interp = ui->interpolationSpinBox->value();
+    ui->totalAnimationFramesDisplayLabel->setText(
+        QString::number( CalcTotalAnimationFramesInclusiveEnds( static_cast<int>( m_xforms.size() ), interp ) )
+        );
 }
 
 void AnimationControl::onClearKeyFrame()
@@ -61,22 +73,33 @@ void AnimationControl::onClearKeyFrame()
     ui->totalAnimationFramesDisplayLabel->setText( "0" );
 }
 
+static inline void ApplyXform( kvs::qt::jaea::Screen* screen, const kvs::Xform& xf )
+{
+    screen->scene()->reset();
+    screen->scene()->objectManager()->translate( xf.translation() );
+    screen->scene()->objectManager()->scale( xf.scaling() );
+    screen->scene()->objectManager()->rotate( xf.rotation() );
+    screen->update();
+}
+
 void AnimationControl::onPlayKeyFrame()
 {
-    // キーフレームの数を取得
-    const int num_frames = m_xforms.size();
+    const int num_frames = static_cast<int>( m_xforms.size() );
 
-    // 補間ステップ数をUIから取得
-    const int interp_steps = ui->interpolationSpinBox->value();
+    const int interp = ui->interpolationSpinBox->value();
 
-    // キーフレームが不足している場合、警告をログに出力して関数を終了
     if( num_frames < 2 )
     {
         qWarning() << "Insufficient keyframes for animation.";
         return;
     }
 
-    // アニメーションが既に再生中であれば一時停止フラグをトグルし、タイマーを停止する
+    if( interp <= 0 )
+    {
+        qWarning() << "Interpolation must be > 0.";
+        return;
+    }
+
     if( m_animation_timer->isActive() )
     {
         m_animation_paused = !m_animation_paused;
@@ -87,45 +110,45 @@ void AnimationControl::onPlayKeyFrame()
         }
     }
 
+    m_animation_paused = false;
+
     int loop_counter = 0;
+    const bool capture = ui->captureComboBox->currentData().toBool();
 
-    // 各キーフレーム間で補間を行う
-    for( int i = 0; i < num_frames - 1; i++ )
     {
-        // 各キーフレームの間を指定されたステップ数で補間
-        for (int step = 0; step <= interp_steps; step++)
+        const kvs::Xform& first = m_xforms.front();
+        ApplyXform( m_screen, first );
+
+        if( capture ) { onScreenShot( loop_counter ); }
+        ++loop_counter;
+
+        QCoreApplication::processEvents();
+        m_animation_timer->start( 1000 );
+
+        if( m_animation_paused ) { return; }
+    }
+
+    for( int i = 0; i < num_frames - 1; ++i )
+    {
+        const kvs::Xform& start = m_xforms[i];
+        const kvs::Xform& end   = m_xforms[i + 1];
+
+        for( int step = 1; step <= interp; ++step )
         {
-            // キーフレーム i と i+1 の間を補間して新しい変換行列を取得
-            kvs::Xform Xform_new = InterpolateXform(step, interp_steps, m_xforms[i], m_xforms[i + 1]);
+            kvs::Xform xform_new = InterpolateXform( step, interp, start, end );
 
-            // オブジェクトマネージャーに新しい変換を適用
-            m_screen->scene()->reset();
-            m_screen->scene()->objectManager()->translate(Xform_new.translation());
-            m_screen->scene()->objectManager()->scale(Xform_new.scaling());
-            m_screen->scene()->objectManager()->rotate(Xform_new.rotation());
+            ApplyXform( m_screen, xform_new );
 
-            // 画面を更新
-            m_screen->update();
-            if( ui->captureComboBox->currentData().toBool() == true )
-            {
-                onScreenShot( loop_counter );
-            }
-            loop_counter++;
+            if( capture ) { onScreenShot( loop_counter ); }
+            ++loop_counter;
 
-            // アニメーション速度を調整するための遅延を追加（オプション）
             QCoreApplication::processEvents();
-            m_animation_timer->start(1000);
+            m_animation_timer->start( 1000 );
 
-            // アニメーションが一時停止されている場合はここでループを抜ける
-            if (m_animation_paused)
-            {
-                return;
-            }
-
+            if( m_animation_paused ) { return; }
         }
     }
 
-    // アニメーションが終了した場合はタイマーを停止
     m_animation_timer->stop();
 }
 
@@ -133,19 +156,19 @@ void AnimationControl::onLoadKeyFrameFile()
 {
     onClearKeyFrame();
 
-    QString file_name = QFileDialog::getOpenFileName(this, "Load Keyframes", QDir::currentPath(), "Binary Files (*.anim)");
-    if (file_name.isEmpty())
+    QString file_name = QFileDialog::getOpenFileName( this, "Load Keyframes", QDir::currentPath(), "Binary Files (*.anim)" );
+    if( file_name.isEmpty() )
         return;
 
-    QFile file(file_name);
-    if (!file.open(QIODevice::ReadOnly))
+    QFile file( file_name );
+    if( !file.open( QIODevice::ReadOnly ) )
     {
         qWarning() << "Could not open file for reading.";
         return;
     }
 
-    QDataStream in(&file);
-    while (!in.atEnd())
+    QDataStream in( &file );
+    while( !in.atEnd() )
     {
         float translation_x, translation_y, translation_z;
         float scaling_x, scaling_y, scaling_z;
@@ -160,14 +183,14 @@ void AnimationControl::onLoadKeyFrameFile()
             >> rotation_6 >> rotation_7 >> rotation_8;
 
         kvs::Xform xform(
-            kvs::Vec3(translation_x, translation_y, translation_z),
-            kvs::Vec3(scaling_x, scaling_y, scaling_z),
+            kvs::Vec3( translation_x, translation_y, translation_z ),
+            kvs::Vec3( scaling_x, scaling_y, scaling_z ),
             kvs::Mat3(
                 rotation_0, rotation_1, rotation_2,
                 rotation_3, rotation_4, rotation_5,
-                rotation_6, rotation_7, rotation_8));
+                rotation_6, rotation_7, rotation_8 ) );
 
-        onAddKeyFrameAdd(xform);
+        onAddKeyFrameAdd( xform );
     }
 
     file.close();
@@ -196,20 +219,20 @@ void AnimationControl::onSaveKeyFrameFile()
     for( const kvs::Xform& xform : m_xforms )
     {
         out << xform.translation().x()
-        << xform.translation().y()
-        << xform.translation().z()
-        << xform.scaling().x()
-        << xform.scaling().y()
-        << xform.scaling().z()
-        << xform.rotation()[0].x()
-        << xform.rotation()[0].y()
-        << xform.rotation()[0].z()
-        << xform.rotation()[1].x()
-        << xform.rotation()[1].y()
-        << xform.rotation()[1].z()
-        << xform.rotation()[2].x()
-        << xform.rotation()[2].y()
-        << xform.rotation()[2].z();
+            << xform.translation().y()
+            << xform.translation().z()
+            << xform.scaling().x()
+            << xform.scaling().y()
+            << xform.scaling().z()
+            << xform.rotation()[0].x()
+            << xform.rotation()[0].y()
+            << xform.rotation()[0].z()
+            << xform.rotation()[1].x()
+            << xform.rotation()[1].y()
+            << xform.rotation()[1].z()
+            << xform.rotation()[2].x()
+            << xform.rotation()[2].y()
+            << xform.rotation()[2].z();
     }
     file.close();
 }
@@ -221,7 +244,6 @@ void AnimationControl::onScreenShot(int loopCounter)
 
     QImage image = m_screen->grabFramebuffer();
 
-    // ファイル名を作成して保存
     QString full_file_name = file_name + "_" + frame_number + ".bmp";
     image.save( full_file_name );
 }
@@ -238,8 +260,7 @@ void AnimationControl::onSaveParameter( const QString& filePath )
 
 kvs::Xform AnimationControl::InterpolateXform( const int interp_step, const int num_frame, const kvs::Xform& start, const kvs::Xform& end )
 {
-    // range of the interpolation parametar t = [0,1].
-    float delta = 1.0 / ( float )num_frame;
+    float delta = 1.0f / ( float )num_frame;
     float t = delta * ( float )interp_step;
 
     kvs::Matrix33f rotation_0( start.rotation() );
@@ -250,13 +271,6 @@ kvs::Xform AnimationControl::InterpolateXform( const int interp_step, const int 
     kvs::Vector3f translation_1( end.translation() );
     kvs::Vector3f scaling_1( end.scaling() );
 
-    //KVS2.7.0
-    //MOD BY)T0603 2020.06.04
-    //kvs::Quaternion<float> q_0 = RtoQ( rotation_0 );
-    //kvs::Quaternion<float> q_1 = RtoQ( rotation_1 );
-    //kvs::Quaternion<float> q =
-    //      kvs::Quaternion<float>::sphericalLinearInterpolation( q_0, q_1, t, true, true );
-
     kvs::Quaternion q_0 = RtoQ( rotation_0 );
     kvs::Quaternion q_1 = RtoQ( rotation_1 );
     kvs::Quaternion q =
@@ -265,7 +279,6 @@ kvs::Xform AnimationControl::InterpolateXform( const int interp_step, const int 
     kvs::Matrix33f rotation = q.toMatrix();
 
     kvs::Vector3f translation = translation_1 * t + translation_0 * ( 1 - t );
-
     kvs::Vector3f scaling = scaling_1 * t + scaling_0 * ( 1 - t );
 
     kvs::Xform xform( translation, scaling, rotation );
@@ -334,9 +347,6 @@ kvs::Quaternion AnimationControl::RtoQ( const kvs::Matrix33f& R )
     q2 /= r;
     q3 /= r;
 
-    //KVS2.7.0
-    //MOD BY)T0603 2020.06.04
-    //return kvs::Quaternion<float>( q1, q2, q3, q0 );
     return kvs::Quaternion( q1, q2, q3, q0 );
 }
 
@@ -352,8 +362,8 @@ float AnimationControl::Norm( const float a, const float b, const float c, const
 
 void AnimationControl::onInterpolationValueChanged()
 {
-    if( m_xforms.size() < 2 == false )
-    {
-        ui->totalAnimationFramesDisplayLabel->setText( QString::number( ( m_xforms.size() - 1 ) * ( ui->interpolationSpinBox->value() + 1 ) ) );
-    }
+    const int interp = ui->interpolationSpinBox->value();
+    ui->totalAnimationFramesDisplayLabel->setText(
+        QString::number( CalcTotalAnimationFramesInclusiveEnds( static_cast<int>( m_xforms.size() ), interp ) )
+        );
 }
