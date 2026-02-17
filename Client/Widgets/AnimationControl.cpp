@@ -177,7 +177,7 @@ void AnimationControl::onSaveKeyFrameFile()
 {
     QString file_name = QFileDialog::getSaveFileName( this, "Save Keyframes", QDir::currentPath(), "Binary Files (*.anim)" );
 
-    if( file_name.right( 4 ) != ".anim" )
+    if( !file_name.endsWith( ".anim", Qt::CaseInsensitive ) )
     {
         file_name += ".anim";
     }
