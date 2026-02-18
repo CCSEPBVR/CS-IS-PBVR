@@ -67,13 +67,16 @@ bool SetParameterFilePath(
     std::string& particleFilePrefix,
     std::string& glyphFilePrefix,
     std::string& plotOverLineFilePrefix,
+    std::string& plotOverTimeFilePrefix,
     std::string& tfFilePath,
     std::string& tfFilePath_old,
     std::string& tfFilePath_step,
     std::string& glyphParameterPath,
     std::string& glyphParameterPath_old,
     std::string& plotOverLineParameterPath,
-    std::string& plotOverLineParameterPath_old
+    std::string& plotOverLineParameterPath_old,
+    std::string& plotOverTimeParameterPath,
+    std::string& plotOverTimeParameterPath_old
 )
 {
     int mpi_rank;
@@ -117,23 +120,27 @@ bool SetParameterFilePath(
         particleFilePrefix     = "./t_";
         glyphFilePrefix        = "./g_";
         plotOverLineFilePrefix = "./p_";
+        plotOverTimeFilePrefix = "./pt_";
     }
     else {
         coordMinMaxFilePath    = envBuf;
         particleFilePrefix     = envBuf;
         glyphFilePrefix        = envBuf;
         plotOverLineFilePrefix = envBuf;
+        plotOverTimeFilePrefix = envBuf;
         if (coordMinMaxFilePath[coordMinMaxFilePath.size() - 1] != '/') {
             coordMinMaxFilePath    += "/t_pfi_coords_minmax.txt";
             particleFilePrefix     += "/t_";
             glyphFilePrefix        += "/g_";
             plotOverLineFilePrefix += "/p_";
+            plotOverTimeFilePrefix += "/pt_";
         }
         else {
             coordMinMaxFilePath    += "t_pfi_coords_minmax.txt";
             particleFilePrefix     += "t_";
             glyphFilePrefix        += "g_";
             plotOverLineFilePrefix += "p_";
+            plotOverTimeFilePrefix += "pt_";
         }
     }
 
@@ -144,10 +151,13 @@ bool SetParameterFilePath(
     glyphParameterPath_old        = visParamDir + "parameter_old.gly";
     plotOverLineParameterPath     = visParamDir + "parameter.pol";
     plotOverLineParameterPath_old = visParamDir + "parameter_old.pol";
+    plotOverTimeParameterPath     = visParamDir + "parameter.pot";
+    plotOverTimeParameterPath_old = visParamDir + "parameter_old.pot";
 
     std::ifstream tfFile( tfFilePath );
     std::ifstream glyphParameterFile( glyphParameterPath );
     std::ifstream plotOverLineParameterFile( plotOverLineParameterPath );
+    std::ifstream plotOverTimeParameterFile( plotOverTimeParameterPath );
 
     if ( is_first_setting && mpi_rank == 0 )
     {
@@ -166,6 +176,12 @@ bool SetParameterFilePath(
         if ( !plotOverLineParameterFile.good() )
         {
             std::cout << "ERROR:parameter.pol is not existed." << std::endl;
+            return false;
+        }
+
+        if ( !plotOverTimeParameterFile.good() )
+        {
+            std::cout << "ERROR:parameter.pot is not existed." << std::endl;
             return false;
         }
     }
@@ -300,6 +316,71 @@ bool SetPlotOverLineParameter(
 
     if ( mpi_rank > 0 ) ppr.setNameListFile( nameListFile );
     ppr.setPlotOverLineParameter( pol_property );
+
+    return true;
+}
+
+bool SetPlotOverTimeParameter(
+    const std::string& plotOverTimeParameterPath,
+    const std::string& plotOverTimeParameterPath_old,
+    PlotOverTimeProperty& pot_property,
+    NameListFile& nameListFile
+)
+{
+    int mpi_rank;
+#ifndef CPU_VER
+    MPI_Comm_rank( MPI_COMM_WORLD, &mpi_rank );
+#else
+    mpi_rank = 0;
+#endif
+
+    ParameterFileReader ppr;
+    int size = 0;
+    char* buf;
+
+    if ( mpi_rank == 0 )
+    {
+        bool is_file_exist = false;
+        std::ifstream plotOverTimeParameterFile( plotOverTimeParameterPath );
+
+        if ( plotOverTimeParameterFile.good() )
+        {
+            is_file_exist = true;
+            ppr.readPlotOverTimeParameterFile( plotOverTimeParameterPath.c_str() );
+            nameListFile = ppr.getNameListFile();
+            std::rename( plotOverTimeParameterPath.c_str(), plotOverTimeParameterPath_old.c_str() );
+        }
+        else
+        {
+            ppr.setNameListFile( nameListFile );
+        }
+
+        if ( is_file_exist ) size = nameListFile.byteSize();
+        else size = 0;
+
+        if ( size > 0 )
+        {
+            buf = new char[size];
+            nameListFile.pack( buf );
+        }        
+    }
+
+#ifndef CPU_VER
+    MPI_Bcast( &size, 1, MPI_INT, 0, MPI_COMM_WORLD );
+#endif
+
+    if ( size > 0 )
+    {
+        if ( mpi_rank > 0 ) buf = new char [size];
+#ifndef CPU_VER
+        MPI_Bcast( buf, size, MPI_CHARACTER, 0, MPI_COMM_WORLD );
+#endif
+        if( mpi_rank > 0 ) nameListFile.unpack( buf );
+        delete[] buf;
+    }
+
+    if ( mpi_rank > 0 ) ppr.setNameListFile( nameListFile );
+    ppr.setPlotOverTimeParameter( pot_property );
 
     return true;
 }
@@ -757,4 +838,49 @@ void OutputLine(
 
     vismodule::KVSMLObjectPlotOverLine pol_object( tmp_values_on_line, tmp_x_axis, tmp_mask );
     pol_object.write( plotOverLineFilePath.c_str() );
+}
+
+void OutputPOT(
+    const int time_step,
+    const std::string& plotOverTimeFilePrefix,
+    const bool mask,
+    const std::vector<float>& value_on_time
+)
+{
+    int mpi_rank;
+    int mpi_size;
+#ifndef CPU_VER
+    MPI_Comm_rank( MPI_COMM_WORLD, &mpi_rank );
+    MPI_Comm_size( MPI_COMM_WORLD, &mpi_size );
+#else
+    mpi_rank = 0;
+    mpi_size = 1;
+#endif
+
+    std::stringstream ss;
+    ss << std::setfill('0') << std::setw(5) << time_step;
+    ss << "_";
+    ss << std::setfill('0') << std::setw(7) << ( mpi_rank + 1 );
+    ss << "_";
+    ss << std::setfill('0') << std::setw(7) << mpi_size;
+    ss << ".dat";
+
+    std::string plotOverTimeFilePath;
+    plotOverTimeFilePath = plotOverTimeFilePrefix + ss.str();
+
+    std::ofstream file( plotOverTimeFilePath );
+
+    if ( !file.is_open() ) {
+        std::cerr << "Failed to open the Plot Over Time file. FilePath: " << plotOverTimeFilePath << std::endl;
+        return;
+    }
+
+    if ( mask ) file << "TRUE" << std::endl;
+    else file << "FALSE" << std::endl;
+
+    for ( size_t i = 0; i < value_on_time.size(); i++ )
+    {
+        file << value_on_time[i] << " ";
+    }
+    file << std::endl;
 }

@@ -10,6 +10,7 @@
 #include <vismodule/ParticleProperty>
 #include <vismodule/GlyphProperty>
 #include <vismodule/PlotOverLineProperty>
+#include <vismodule/PlotOverTimeProperty>
 
 // add FJ start
 #ifndef SIMD_BLK_SIZE
@@ -44,13 +45,16 @@ bool SetParameterFilePath(
     std::string& particleFilePrefix,
     std::string& glyphFilePrefix,
     std::string& plotOverLineFilePrefix,
+    std::string& plotOverTimeFilePrefix,
     std::string& tfFilePath,
     std::string& tfFilePath_old,
     std::string& tfFilePath_step,
     std::string& glyphParameterPath,
     std::string& glyphParameterPath_old,
     std::string& plotOverLineParameterPath,
-    std::string& plotOverLineParameterPath_old
+    std::string& plotOverLineParameterPath_old,
+    std::string& plotOverTimeParameterPath,
+    std::string& plotOverTimeParameterPath_old
 );
 
 bool SetGlyphParameter(
@@ -64,6 +68,13 @@ bool SetPlotOverLineParameter(
     const std::string& plotOverLineParameterPath,
     const std::string& plotOverLineParameterPath_old,
     PlotOverLineProperty& pol_property,
+    NameListFile& nameListFile
+);
+
+bool SetPlotOverTimeParameter(
+    const std::string& plotOverTimeParameterPath,
+    const std::string& plotOverTimeParameterPath_old,
+    PlotOverTimeProperty& pot_property,
     NameListFile& nameListFile
 );
 
@@ -116,6 +127,13 @@ void OutputLine(
     const std::vector<float>& values_on_line,
     const std::vector<int>& mask,
     const std::vector<float>& x_axis
+);
+
+void OutputPOT(
+    const int time_step,
+    const std::string& plotOverTimeFilePrefix,
+    const bool mask,
+    const std::vector<float>& value_on_time
 );
 
 #endif // KVS_WRAPPER_COMMON_H_INCLUDED

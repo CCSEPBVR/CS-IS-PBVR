@@ -20,6 +20,7 @@
 #include <vismodule/PointObjectGenerator>
 #include <vismodule/GlyphSeedGenerator>
 #include <vismodule/PlotOverLineGenerator>
+#include <vismodule/PlotOverTimeGenerator>
 
 #include <vismodule/GenerateParticle>
 #include <vismodule/GenerateGlyph>
@@ -90,13 +91,16 @@ bool generate_particles(
     std::string particleFilePrefix;
     std::string glyphFilePrefix;
     std::string plotOverLineFilePrefix;
+    std::string plotOverTimeFilePrefix;
     std::string tfFilePath;
     std::string tfFilePath_old;
     std::string tfFilePath_step;
     std::string glyphParameterPath;
     std::string glyphParameterPath_old;
     std::string plotOverLineParameterPath;
-    std::string plotOverLineParameterPath_old; 
+    std::string plotOverLineParameterPath_old;
+    std::string plotOverTimeParameterPath;
+    std::string plotOverTimeParameterPath_old;
 
     result = SetParameterFilePath(
         time_step,
@@ -106,13 +110,16 @@ bool generate_particles(
         particleFilePrefix,
         glyphFilePrefix,
         plotOverLineFilePrefix,
+        plotOverTimeFilePrefix,
         tfFilePath,
         tfFilePath_old,
         tfFilePath_step,
         glyphParameterPath,
         glyphParameterPath_old,
         plotOverLineParameterPath,
-        plotOverLineParameterPath_old
+        plotOverLineParameterPath_old,
+        plotOverTimeParameterPath,
+        plotOverTimeParameterPath_old
     );
 
     if ( !result ) return false;
@@ -123,16 +130,18 @@ bool generate_particles(
     ParticleProperty particle_property;
     GlyphProperty glyph_property;
     PlotOverLineProperty pol_property;
+    PlotOverTimeProperty pot_property;
     MultiVolumePropertyList mvpl;
-    static NameListFile particleNameListFile;
     static NameListFile glyphNameListFile;
     static NameListFile POLNameListFile;
+    static NameListFile POTNameListFile;
     particle_property.m_transfunc_synthesizer = new TransferFunctionSynthesizer();
     particle_property.m_camera                = new vismodule::Camera();
 
-    SetParticleParameter( dom, tfFilePath, tfFilePath_old, particle_property, mvpl, particleNameListFile );
+    SetParticleParameter( dom, tfFilePath, tfFilePath_old, particle_property, mvpl );
     SetGlyphParameter( glyphParameterPath, glyphParameterPath_old, glyph_property, glyphNameListFile );
     SetPlotOverLineParameter( plotOverLineParameterPath, plotOverLineParameterPath_old, pol_property, POLNameListFile );
+    SetPlotOverTimeParameter( plotOverTimeParameterPath, plotOverTimeParameterPath_old, pot_property, POTNameListFile );
 
     const int tf_number  = particle_property.m_transfunc_array.size();
     const int resolution = pol_property.m_sampling_size;
@@ -173,6 +182,10 @@ bool generate_particles(
     std::vector<float> values_on_line( resolution, 0 );
     std::vector<int>   mask( resolution, 0 );
     std::vector<float> x_axis( resolution, 0 );
+
+    // plot over time paraemters
+    std::vector<float> value_on_time( nvariables, 0 );
+    bool pot_mask = false;
     
     ServerMode server_mode = ServerMode::IS;
     vismodule::PointObject* point_object = nullptr;
@@ -230,17 +243,16 @@ bool generate_particles(
                 values_on_line[i] = pol_object->values_on_line()[i];
             }
         }
-
         delete pol_object;
     }
 
-    OutputCoordMinMaxFile( dom, coordMinMaxFilePath );
-
-    if ( mpi_rank == 0 )
+    if ( pot_property.m_plot_flag )
     {
-        particleNameListFile.setFileName( tfFilePath_step );
-        particleNameListFile.write();
+        PlotOverTimeGenerator pot_generator;
+        pot_mask = pot_generator.GeneratePOTStruct( pot_property, dom, values, nvariables, value_on_time );
     }
+
+    OutputCoordMinMaxFile( dom, coordMinMaxFilePath );
 
     // データ出力
     OutputParticles(
@@ -260,6 +272,22 @@ bool generate_particles(
     if ( pol_property.m_plot_flag )
     {
         OutputLine( time_step, plotOverLineFilePrefix, values_on_line, mask, x_axis );
+    }
+
+    if ( pot_property.m_plot_flag )
+    {
+        OutputPOT( time_step, plotOverTimeFilePrefix, pot_mask, value_on_time );
+    }
+
+    // OutputParticleで書き込んだdefault_old.tfファイルを読み込みdefault_xxx.tfに書き込む
+    if ( mpi_rank == 0 )
+    {
+        ParameterFileReader ppr;
+        NameListFile nameListFile;
+        ppr.readParticleParameterFile( tfFilePath_old.c_str() );
+        nameListFile = ppr.getNameListFile();
+        nameListFile.setFileName( tfFilePath_step );
+        nameListFile.write();
     }
    
     // 粒子ファイル書き込みスレッドが終了するまで待機
@@ -311,8 +339,7 @@ bool SetParticleParameter(
     const std::string& tfFilePath,
     const std::string& tfFilePath_old,
     ParticleProperty& particle_property,
-    MultiVolumePropertyList& mvpl,
-    NameListFile& nameListFile
+    MultiVolumePropertyList& mvpl
 )
 {
     int mpi_rank;
@@ -323,28 +350,28 @@ bool SetParticleParameter(
 #endif
 
     ParameterFileReader ppr;
+    NameListFile nameListFile;
+
     int size = 0;
     char* buf;
 
     if ( mpi_rank == 0 )
     {
-        bool is_file_exist = false;
         std::ifstream tfFile( tfFilePath );
 
         if ( tfFile.good() )
         {
-            is_file_exist = true;
             ppr.readParticleParameterFile( tfFilePath.c_str() );
             nameListFile = ppr.getNameListFile();
             std::rename( tfFilePath.c_str(), tfFilePath_old.c_str() );
         }
         else
         {
-            ppr.setNameListFile( nameListFile );
+            ppr.readParticleParameterFile( tfFilePath_old.c_str() );
+            nameListFile = ppr.getNameListFile();
         }
 
-        if ( is_file_exist ) size = nameListFile.byteSize();
-        else size = 0;
+        size = nameListFile.byteSize();
 
         if ( size > 0 )
         {

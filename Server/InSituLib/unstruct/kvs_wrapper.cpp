@@ -26,6 +26,7 @@
 #include <vismodule/PointObjectGenerator>
 #include <vismodule/GlyphSeedGenerator>
 #include <vismodule/PlotOverLineGenerator>
+#include <vismodule/PlotOverTimeGenerator>
 
 #ifdef EXTEND_FILE_FORMAT
 #include <vismodule/UnstructuredVolumeImporter>
@@ -110,6 +111,7 @@ bool generate_particles(
     std::string particleFilePrefix;
     std::string glyphFilePrefix;
     std::string plotOverLineFilePrefix;
+    std::string plotOverTimeFilePrefix;
     std::string tfFilePath;
     std::string tfFilePath_old;
     std::string tfFilePath_step;
@@ -117,6 +119,8 @@ bool generate_particles(
     std::string glyphParameterPath_old;
     std::string plotOverLineParameterPath;
     std::string plotOverLineParameterPath_old; 
+    std::string plotOverTimeParameterPath;
+    std::string plotOverTimeParameterPath_old;
 
     result = SetParameterFilePath(
         time_step,
@@ -126,13 +130,16 @@ bool generate_particles(
         particleFilePrefix,
         glyphFilePrefix,
         plotOverLineFilePrefix,
+        plotOverTimeFilePrefix,
         tfFilePath,
         tfFilePath_old,
         tfFilePath_step,
         glyphParameterPath,
         glyphParameterPath_old,
         plotOverLineParameterPath,
-        plotOverLineParameterPath_old
+        plotOverLineParameterPath_old,
+        plotOverTimeParameterPath,
+        plotOverTimeParameterPath_old
     );
 
     if ( !result ) return false;
@@ -143,15 +150,18 @@ bool generate_particles(
     ParticleProperty particle_property;
     GlyphProperty glyph_property;
     PlotOverLineProperty pol_property;
+    PlotOverTimeProperty pot_property;
     MultiVolumePropertyList mvpl;
     static NameListFile glyphNameListFile;
     static NameListFile POLNameListFile;
+    static NameListFile POTNameListFile;
     particle_property.m_transfunc_synthesizer = new TransferFunctionSynthesizer();
     particle_property.m_camera                = new vismodule::Camera();
 
     SetParticleParameter( dom, tfFilePath, tfFilePath_old, particle_property, mvpl );
     SetGlyphParameter( glyphParameterPath, glyphParameterPath_old, glyph_property, glyphNameListFile );
     SetPlotOverLineParameter( plotOverLineParameterPath, plotOverLineParameterPath_old, pol_property, POLNameListFile );
+    SetPlotOverTimeParameter( plotOverTimeParameterPath, plotOverTimeParameterPath_old, pot_property, POTNameListFile );
 
     const int tf_number  = particle_property.m_transfunc_array.size();
     const int resolution = pol_property.m_sampling_size;
@@ -192,6 +202,10 @@ bool generate_particles(
     std::vector<float> values_on_line( resolution, 0 );
     std::vector<int>   mask( resolution, 0 );
     std::vector<float> x_axis( resolution, 0 );
+
+    // plot over time paraemters
+    std::vector<float> value_on_time( nvariables, 0 );
+    bool pot_mask = false;
 
     ServerMode server_mode = ServerMode::IS;
     vismodule::PointObject* point_object = nullptr;
@@ -256,6 +270,15 @@ bool generate_particles(
         delete pol_object;
     }
 
+    if ( pot_property.m_plot_flag )
+    {
+        PlotOverTimeGenerator pot_generator;
+        pot_mask = pot_generator.GeneratePOTUnstruct(
+            pot_property, values, nvariables, coordinates,
+            ncoords, connections, ncells, celltype, value_on_time
+        );
+    }
+
     OutputCoordMinMaxFile( dom, coordMinMaxFilePath );
 
     // データ出力
@@ -276,6 +299,11 @@ bool generate_particles(
     if ( pol_property.m_plot_flag )
     {
         OutputLine( time_step, plotOverLineFilePrefix, values_on_line, mask, x_axis );
+    }
+
+    if ( pot_property.m_plot_flag )
+    {
+        OutputPOT( time_step, plotOverTimeFilePrefix, pot_mask, value_on_time );
     }
 
     // OutputParticleで書き込んだdefault_old.tfファイルを読み込みdefault_xxx.tfに書き込む
@@ -463,20 +491,20 @@ bool SetParticleParameter(
 
     if( mpi_rank == 0 )
     {
-        fprintf( stdout , "---------initialize Parameters-------------------------------------------\n" );
-        fprintf( stdout , "particle_limit    = %20d\n"     , particle_limit                             );
-        fprintf( stdout , "extra_opacity_factor  = %20f\n" , extra_opacity_factor                       );
-        fprintf( stdout , "resolutin_height  = %20d\n"     , particle_property.m_camera->windowHeight() );
-        fprintf( stdout , "resolutin_width   = %20d\n"     , particle_property.m_camera->windowWidth()  );
-        fprintf( stdout , "total_volume      = %20.3e\n"   , total_volume                               );
-        fprintf( stdout , "  |-X             = %20f\n"     , object.maxObjectCoord().x()                );
-        fprintf( stdout , "  |-Y             = %20f\n"     , object.maxObjectCoord().y()                );
-        fprintf( stdout , "  |-Z             = %20f\n"     , object.maxObjectCoord().z()                );
-        fprintf( stdout , "max_opacity       = %20.3e\n"   , max_opacity                                );
-        fprintf( stdout , "max_density       = %20.3e\n"   , max_density                                );
-        fprintf( stdout , "sampling_step     = %20.3e\n"   , sampling_step                              );
-        fprintf( stdout , "subpixel_level    = %20d\n"     , subpixel_level                             );
-        fprintf( stdout , "-------------------------------------------------------------------------\n" );
+        fprintf( stdout , "---------initialize Parameters--------------------------------------------\n" );
+        fprintf( stdout , "particle_limit       = %20d\n"   , particle_limit                             );
+        fprintf( stdout , "extra_opacity_factor = %20f\n"   , extra_opacity_factor                       );
+        fprintf( stdout , "resolutin_height     = %20d\n"   , particle_property.m_camera->windowHeight() );
+        fprintf( stdout , "resolutin_width      = %20d\n"   , particle_property.m_camera->windowWidth()  );
+        fprintf( stdout , "total_volume         = %20.3e\n" , total_volume                               );
+        fprintf( stdout , "  |-X                = %20f\n"   , object.maxObjectCoord().x()                );
+        fprintf( stdout , "  |-Y                = %20f\n"   , object.maxObjectCoord().y()                );
+        fprintf( stdout , "  |-Z                = %20f\n"   , object.maxObjectCoord().z()                );
+        fprintf( stdout , "max_opacity          = %20.3e\n" , max_opacity                                );
+        fprintf( stdout , "max_density          = %20.3e\n" , max_density                                );
+        fprintf( stdout , "sampling_step        = %20.3e\n" , sampling_step                              );
+        fprintf( stdout , "subpixel_level       = %20d\n"   , subpixel_level                             );
+        fprintf( stdout , "--------------------------------------------------------------------------\n" );
     }
 
     return true;
@@ -512,6 +540,7 @@ bool generate_particles_vtk( int time_step, vtkUnstructuredGrid* ucd )
     std::string particleFilePrefix;
     std::string glyphFilePrefix;
     std::string plotOverLineFilePrefix;
+    std::string plotOverTimeFilePrefix;
     std::string tfFilePath;
     std::string tfFilePath_old;
     std::string tfFilePath_step;
@@ -519,6 +548,8 @@ bool generate_particles_vtk( int time_step, vtkUnstructuredGrid* ucd )
     std::string glyphParameterPath_old;
     std::string plotOverLineParameterPath;
     std::string plotOverLineParameterPath_old; 
+    std::string plotOverTimeParameterPath;
+    std::string plotOverTimeParameterPath_old;
 
     result = SetParameterFilePath(
         time_step,
@@ -528,13 +559,16 @@ bool generate_particles_vtk( int time_step, vtkUnstructuredGrid* ucd )
         particleFilePrefix,
         glyphFilePrefix,
         plotOverLineFilePrefix,
+        plotOverTimeFilePrefix,
         tfFilePath,
         tfFilePath_old,
         tfFilePath_step,
         glyphParameterPath,
         glyphParameterPath_old,
         plotOverLineParameterPath,
-        plotOverLineParameterPath_old
+        plotOverLineParameterPath_old,
+        plotOverTimeParameterPath,
+        plotOverTimeParameterPath_old
     );
 
     if ( !result ) return false;
@@ -545,15 +579,18 @@ bool generate_particles_vtk( int time_step, vtkUnstructuredGrid* ucd )
     ParticleProperty particle_property;
     GlyphProperty glyph_property;
     PlotOverLineProperty pol_property;
+    PlotOverTimeProperty pot_property;
     MultiVolumePropertyList mvpl;
     static NameListFile glyphNameListFile;
     static NameListFile POLNameListFile;
+    static NameListFile POTNameListFile;
     particle_property.m_transfunc_synthesizer = new TransferFunctionSynthesizer();
     particle_property.m_camera                = new vismodule::Camera();
 
     SetParticleParameter( dom, tfFilePath, tfFilePath_old, particle_property, mvpl );
     SetGlyphParameter( glyphParameterPath, glyphParameterPath_old, glyph_property, glyphNameListFile );
     SetPlotOverLineParameter( plotOverLineParameterPath, plotOverLineParameterPath_old, pol_property, POLNameListFile );
+    SetPlotOverTimeParameter( plotOverTimeParameterPath, plotOverTimeParameterPath_old, pot_property, POTNameListFile );
 
     const int tf_number  = particle_property.m_transfunc_array.size();
     const int resolution = pol_property.m_sampling_size;
@@ -595,6 +632,10 @@ bool generate_particles_vtk( int time_step, vtkUnstructuredGrid* ucd )
     std::vector<int>   mask( resolution, 0 );
     std::vector<float> x_axis( resolution, 0 );
 
+    // plot over time paraemters
+    std::vector<float> value_on_time;
+    bool pot_mask = false;
+
     int nvariables;
     
     // 先にセルタイプを持っておく
@@ -629,6 +670,8 @@ bool generate_particles_vtk( int time_step, vtkUnstructuredGrid* ucd )
             volume, tmp_dom, values, nvariables, coordinates,
             ncoords, connections, ncells, celltype
         );
+
+        if ( value_on_time.size() != nvariables ) value_on_time.resize( nvariables ); // Plot Over Time
 
         std::vector<Type*> raw_pointers_vector( nvariables );
         for ( size_t i = 0; i < nvariables; ++i )
@@ -698,6 +741,20 @@ bool generate_particles_vtk( int time_step, vtkUnstructuredGrid* ucd )
 
             delete pol_object;
         }
+
+        if ( pot_property.m_plot_flag )
+        {
+            PlotOverTimeGenerator pot_generator;
+
+            // すでにPlotOverTimeを取得している場合はスキップ
+            if ( !pot_mask )
+            {
+                pot_mask = pot_generator.GeneratePOTUnstruct(
+                    pot_property, raw_pointers_vector.data(), nvariables, coordinates.get(),
+                    ncoords, connections.get(), ncells, celltype, value_on_time
+                );
+            }
+        }
     } // for ( size_t i = 0; i < kvs_cell_type_vector.size(); i++ )
 
     OutputCoordMinMaxFile( dom, coordMinMaxFilePath );
@@ -720,6 +777,11 @@ bool generate_particles_vtk( int time_step, vtkUnstructuredGrid* ucd )
     if ( pol_property.m_plot_flag )
     {
         OutputLine( time_step, plotOverLineFilePrefix, values_on_line, mask, x_axis );
+    }
+
+    if ( pot_property.m_plot_flag )
+    {
+        OutputPOT( time_step, plotOverTimeFilePrefix, pot_mask, value_on_time );
     }
 
     // OutputParticleで書き込んだdefault_old.tfファイルを読み込みdefault_xxx.tfに書き込む
