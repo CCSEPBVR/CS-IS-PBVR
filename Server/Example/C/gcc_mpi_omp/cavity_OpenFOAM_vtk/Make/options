@@ -3,6 +3,8 @@ EXE_INC = \
     -I$(LIB_SRC)/finiteVolume/lnInclude \
     -I$(LIB_SRC)/meshTools/lnInclude \
     -DEXTEND_FILE_FORMAT \
+    -I../../../../Utils \
+    -I../../../../App \
     -I../../../../InSituLib/unstruct \
     -I../../../../VisModule \
     -I$(KVS_DIR)/include \

@@ -6,3 +6,4 @@ rm state.txt
 cp default_old.tf default.tf
 cp parameter_old.gly parameter.gly
 cp parameter_old.pol parameter.pol
+cp parameter_old.pot parameter.pot
