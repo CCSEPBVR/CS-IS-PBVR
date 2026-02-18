@@ -15,6 +15,7 @@
 #include <vismodule/ParticleProperty>
 #include <vismodule/GlyphProperty>
 #include <vismodule/PlotOverLineProperty>
+#include <vismodule/PlotOverTimeProperty>
 
 class ParameterFileReader
 {
@@ -22,6 +23,7 @@ private:
     NameListFile m_name_list_file;
     
     void set_default_parameter();
+    void set_default_pot_parameter();
 
     std::vector<int> getTableInt( std::string table_string );
     std::vector<float> getTableFloat( std::string table_string );
@@ -31,10 +33,12 @@ public:
     void readParticleParameterFile( const char* fname ); // ISのdefault.tfファイルを読み込む
     void readGlyphParameterFile( const char* fname );
     void readPlotOverLineParameterFile( const char* fname );
+    void readPlotOverTimeParameterFile( const char* fname );
     void setTransferFunctionParameter( ParticleProperty& particle_property ); // CSのConnect時に指定した.tfファイルを読み込んだ値を設定する
     void setParticleParameter( ParticleProperty& particle_property ); // ISのdefault.tfファイルを読み込んだ値を設定する
     void setGlyphParameter( GlyphProperty& glyph_property );
     void setPlotOverLineParameter( PlotOverLineProperty& pol_property );
+    void setPlotOverTimeParameter( PlotOverTimeProperty& pot_property );
     void setNameListFile( const NameListFile& nameListFile );
     const NameListFile& getNameListFile() const;
 };

@@ -222,6 +222,38 @@ void ParameterFileReader::readPlotOverLineParameterFile( const char* fname )
     return;
 }
 
+void ParameterFileReader::readPlotOverTimeParameterFile( const char* fname )
+{
+    m_name_list_file.setName( "PLOT_FLAG" );
+    m_name_list_file.setName( "TARGET_POINT" );
+    m_name_list_file.setName( "END_PARAMETER_FILE" );
+
+    m_name_list_file.setFileName( std::string( fname ) );
+
+    bool is_read_finished = false;
+
+    while ( !is_read_finished )
+    {
+        if ( !m_name_list_file.read() )
+        {
+            std::cout << "WARN:Failed to load the Plot Over Time parameter file. Set default parameters." << std::endl;
+            this->set_default_pot_parameter();
+            break;
+        }
+        else
+        {
+            std::string result = m_name_list_file.getValue<std::string>( "END_PARAMETER_FILE" );
+
+            if( result == "SUCCESS" )
+            {
+                is_read_finished = true;
+            }
+        }
+    }
+
+    return;
+}
+
 // CSのConnect時に指定した.tfファイルを読み込んだ値を設定する
 void ParameterFileReader::setTransferFunctionParameter( ParticleProperty& particle_property )
 {
@@ -791,6 +823,32 @@ void ParameterFileReader::setPlotOverLineParameter( PlotOverLineProperty& pol_pr
     std::cout << "pol_property.m_end_point[2]   = " << pol_property.m_end_point[2] << std::endl; 
 }
 
+void ParameterFileReader::setPlotOverTimeParameter( PlotOverTimeProperty& pot_property )
+{
+    std::string p_flag = m_name_list_file.getValue<std::string>("PLOT_FLAG");
+
+    if ( strcmp( p_flag.c_str(), "TRUE" ) == 0 )
+    {
+        pot_property.m_plot_flag = true;
+    }
+    else
+    {
+        pot_property.m_plot_flag = false;
+        return;
+    }
+
+    const std::string target_point_string = m_name_list_file.getValue<std::string>("TARGET_POINT");
+    const std::vector<float> target_point_float_table = getTableFloat( target_point_string );
+
+    pot_property.m_target_point[0] = target_point_float_table[0];
+    pot_property.m_target_point[1] = target_point_float_table[1];
+    pot_property.m_target_point[2] = target_point_float_table[2];
+
+    std::cout << "pot_property.m_target_point[0]:" << pot_property.m_target_point[0] << std::endl;
+    std::cout << "pot_property.m_target_point[1]:" << pot_property.m_target_point[1] << std::endl;
+    std::cout << "pot_property.m_target_point[2]:" << pot_property.m_target_point[2] << std::endl;
+}
+
 std::vector<int> ParameterFileReader::getTableInt( std::string table_string )
 {
     std::vector<int> table;
@@ -890,6 +948,13 @@ void ParameterFileReader::set_default_parameter()
     }
 
     m_name_list_file.setLine( "END_PARAMETER_FILE", "SUCCESS" );
+}
+
+void ParameterFileReader::set_default_pot_parameter()
+{
+    m_name_list_file.setLine( "PLOT_FLAG","TRUE" );
+    m_name_list_file.setLine( "TARGET_POINT", "0,0,0" );
+    m_name_list_file.setLine( "END_PARAMETER_FILE", "SUCCESS" );   
 }
 
 void ParameterFileReader::setNameListFile( const NameListFile& nameListFile )

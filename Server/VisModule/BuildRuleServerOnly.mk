@@ -214,6 +214,7 @@ $(OUTDIR)/./Visualization/Mapper/MetropolisSampling.o \
 $(OUTDIR)/./Visualization/Mapper/OpacityMap.o \
 $(OUTDIR)/./Visualization/Mapper/OrthoSlice.o \
 $(OUTDIR)/./Visualization/Mapper/PlotOverLine.o \
+$(OUTDIR)/./Visualization/Mapper/PlotOverTime.o \
 $(OUTDIR)/./Visualization/Mapper/PrismaticCell.o \
 $(OUTDIR)/./Visualization/Mapper/PyramidalCell.o \
 $(OUTDIR)/./Visualization/Mapper/QuadraticHexahedralCell.o \
@@ -239,6 +240,7 @@ $(OUTDIR)/./Visualization/Object/ObjectBase.o \
 $(OUTDIR)/./Visualization/Object/PointObject.o \
 $(OUTDIR)/./Visualization/Object/PointObjectGenerator.o \
 $(OUTDIR)/./Visualization/Object/PlotOverLineGenerator.o \
+$(OUTDIR)/./Visualization/Object/PlotOverTimeGenerator.o \
 $(OUTDIR)/./Visualization/Object/PolygonObject.o \
 $(OUTDIR)/./Visualization/Object/TableObject.o \
 $(OUTDIR)/./Visualization/Object/VolumeObjectBase.o \
