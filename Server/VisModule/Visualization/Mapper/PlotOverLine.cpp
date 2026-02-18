@@ -366,17 +366,6 @@ void PlotOverLine::calculate_x_axis( const vismodule::Vec3 P0, const vismodule::
 
 void PlotOverLine::for_structured_mesh( const vismodule::Vec3 P0, const vismodule::Vec3 P1 )
 {
-
-    // ISPBVRにおいて各プロセス内での開始位置と終端位置の補正処理をかける（統合の際に必要かどうかは用調査）
-    vismodule::Vec3 P0d, P1d; 
-    P0d.x() = P0.x();
-    P0d.y() = P0.y();
-    P0d.z() = P0.z();
-    
-    P1d.x() = P1.x();
-    P1d.y() = P1.y();
-    P1d.z() = P1.z();
-
     const size_t res_x = m_dom.resolution[0];
     const size_t res_y = m_dom.resolution[1];
     const size_t res_z = m_dom.resolution[2];
@@ -395,6 +384,12 @@ void PlotOverLine::for_structured_mesh( const vismodule::Vec3 P0, const vismodul
         4, 5, 6, 7,
         3, 2, 1, 0 };
 
+    // min of each process
+    const float x_min = m_dom.x_min;
+    const float y_min = m_dom.y_min;
+    const float z_min = m_dom.z_min;
+    const float cell_length = 1;
+
     for( size_t K = 0; K < nz; K++ )
     {
         for( size_t J = 0; J < ny; J++ )
@@ -403,15 +398,14 @@ void PlotOverLine::for_structured_mesh( const vismodule::Vec3 P0, const vismodul
             {
 
                 vismodule::Vec3 vertex[8];
-                vertex[0].set( I  , J+1, K+1 );
-                vertex[1].set( I  , J  , K+1 );
-                vertex[2].set( I+1, J  , K+1 );
-                vertex[3].set( I+1, J+1, K+1 );
-                vertex[4].set( I  , J+1, K   );
-                vertex[5].set( I  , J  , K   );
-                vertex[6].set( I+1, J  , K   );
-                vertex[7].set( I+1, J+1, K   );
-        
+                vertex[0].set( float(I    ) * cell_length + x_min  , float(J + 1) * cell_length + y_min, float(K + 1) * cell_length + z_min );
+                vertex[1].set( float(I    ) * cell_length + x_min  , float(J    ) * cell_length + y_min, float(K + 1) * cell_length + z_min );
+                vertex[2].set( float(I + 1) * cell_length + x_min  , float(J    ) * cell_length + y_min, float(K + 1) * cell_length + z_min );
+                vertex[3].set( float(I + 1) * cell_length + x_min  , float(J + 1) * cell_length + y_min, float(K + 1) * cell_length + z_min );
+                vertex[4].set( float(I    ) * cell_length + x_min  , float(J + 1) * cell_length + y_min, float(K    ) * cell_length + z_min );
+                vertex[5].set( float(I    ) * cell_length + x_min  , float(J    ) * cell_length + y_min, float(K    ) * cell_length + z_min );
+                vertex[6].set( float(I + 1) * cell_length + x_min  , float(J    ) * cell_length + y_min, float(K    ) * cell_length + z_min );
+                vertex[7].set( float(I + 1) * cell_length + x_min  , float(J + 1) * cell_length + y_min, float(K    ) * cell_length + z_min );
 
                 // Bounding Box
                 vismodule::Vec3 MinCoord( vertex[5] );
@@ -429,7 +423,9 @@ void PlotOverLine::for_structured_mesh( const vismodule::Vec3 P0, const vismodul
                         vertex[ face_id[fid  ] ] + vertex[ face_id[fid+1] ] +
                         vertex[ face_id[fid+2] ] + vertex[ face_id[fid+3] ]  ) * 0.25;
                 }
-                vismodule::Vec3 cell_center_vertex( I+0.5f, J+0.5f, K+0.5f );
+                vismodule::Vec3 cell_center_vertex((
+                    vertex[0] + vertex[1] + vertex[2] + vertex[3] +
+                    vertex[4] + vertex[5] + vertex[6] + vertex[7] ) * 0.125 ); 
 
                 vismodule::Real32 scalar[8];
                 scalar[0] = m_values[m_plot_variable][index( I  , J+1, K+1 )];
@@ -472,7 +468,7 @@ void PlotOverLine::for_structured_mesh( const vismodule::Vec3 P0, const vismodul
                         s[3] = scalar[ face_id[ face*4 + ((i+1) % 4) ] ];
 
                         //this->sampling_in_tetrahedra( P0, P1, vert, s );
-                        this->sampling_in_tetrahedra( P0d, P1d, vert, s );
+                        this->sampling_in_tetrahedra( P0, P1, vert, s );
                     }
                 }
             }
