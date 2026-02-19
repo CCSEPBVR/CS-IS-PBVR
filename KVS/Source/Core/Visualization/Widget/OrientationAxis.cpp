@@ -109,6 +109,11 @@ OrientationAxis::~OrientationAxis()
 /*===========================================================================*/
 void OrientationAxis::paintEvent()
 {
+    {
+        const auto p = BaseClass::anchorPosition();
+        Rectangle::setPosition( p.x(), p.y() );
+    }
+
     this->screenUpdated();
 
     if ( !BaseClass::isVisible() ) return;
