@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>764</width>
-    <height>474</height>
+    <width>1164</width>
+    <height>570</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -88,14 +88,14 @@
          <string>Opacity Map</string>
         </property>
         <layout class="QGridLayout" name="gridLayout_6">
-         <item row="4" column="0" alignment="Qt::AlignLeft">
+         <item row="4" column="0" alignment="">
           <widget class="QLabel" name="opacityMinLabel">
            <property name="text">
             <string>Min:</string>
            </property>
           </widget>
          </item>
-         <item row="4" column="1" alignment="Qt::AlignRight">
+         <item row="4" column="1" alignment="">
           <widget class="QLabel" name="opacityMaxLabel">
            <property name="text">
             <string>:Max</string>
@@ -131,6 +131,12 @@
          </item>
          <item row="0" column="0" colspan="2">
           <layout class="QFormLayout" name="formLayout_2">
+           <property name="fieldGrowthPolicy">
+            <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
+           </property>
+           <property name="labelAlignment">
+            <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+           </property>
            <item row="0" column="0">
             <widget class="QRadioButton" name="opacityUserDefinedMinMaxRadioButton">
              <property name="text">
@@ -311,14 +317,14 @@
          <string>Color Map</string>
         </property>
         <layout class="QGridLayout" name="gridLayout_3">
-         <item row="4" column="0" alignment="Qt::AlignLeft">
+         <item row="4" column="0" alignment="">
           <widget class="QLabel" name="colorMinLabel">
            <property name="text">
             <string>Min:</string>
            </property>
           </widget>
          </item>
-         <item row="4" column="1" alignment="Qt::AlignRight">
+         <item row="4" column="1" alignment="">
           <widget class="QLabel" name="colorMaxLabel">
            <property name="text">
             <string>:Max</string>
@@ -354,6 +360,15 @@
          </item>
          <item row="0" column="0" colspan="2">
           <layout class="QFormLayout" name="formLayout">
+           <property name="fieldGrowthPolicy">
+            <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
+           </property>
+           <property name="rowWrapPolicy">
+            <enum>QFormLayout::DontWrapRows</enum>
+           </property>
+           <property name="labelAlignment">
+            <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+           </property>
            <item row="0" column="0">
             <widget class="QRadioButton" name="colorUserDefinedMinMaxRadioButton">
              <property name="text">
@@ -512,6 +527,9 @@
      <layout class="QGridLayout" name="gridLayout_2">
       <item row="1" column="0">
        <layout class="QFormLayout" name="formLayout_3">
+        <property name="fieldGrowthPolicy">
+         <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
+        </property>
         <item row="0" column="0">
          <widget class="QLabel" name="numberOfTransferFunctionlabel">
           <property name="text">

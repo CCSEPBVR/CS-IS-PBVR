@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>179</width>
-    <height>132</height>
+    <width>268</width>
+    <height>181</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -38,6 +38,9 @@
          </item>
          <item row="0" column="1">
           <widget class="QLabel" name="dispCurrentRepetitionLevel">
+           <property name="frameShape">
+            <enum>QFrame::StyledPanel</enum>
+           </property>
            <property name="text">
             <string/>
            </property>
