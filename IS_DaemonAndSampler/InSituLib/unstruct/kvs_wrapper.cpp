@@ -1678,7 +1678,6 @@ void GenerateParticles( int time_step,
     timer.start();
 
   
-            std::cout <<  mpi_rank << ": "  <<  __FUNCTION__  << ": " << __LINE__ << std::endl;
     #pragma omp parallel
     {
 #if _OPENMP
@@ -3834,7 +3833,6 @@ void ensemble_reduce_scatter(
 //            MPI_SUM, MPI_COMM_WORLD);
             MPI_SUM, comm_row_vector);
 
-    std::cout << __LINE__ <<std::endl;
     MPI_Reduce_scatter(vertex_normals.data(), recv_normals.data(), normals_counts.data(), MPI_FLOAT,
 //            MPI_SUM, MPI_COMM_WORLD);
             MPI_SUM, comm_row_vector);
@@ -3848,8 +3846,7 @@ void ensemble_reduce_scatter(
     timer.start();
     // mpi_rank = 0 にて 平均値、分散計算処理
     // 平均値計算
-//    const float mpi_size_inv = 1 /float(mpi_size);  // 1アンサンブル 1MPIプロセスと仮定
-           const float mpi_size_inv =float( ens_param.MPIprocess_per_ensemble) /float(mpi_size);
+    const float mpi_size_inv =float( ens_param.MPIprocess_per_ensemble) /float(mpi_size);
 #pragma simd
     for (int i =0 ; i< scalars_counts[row_rank] ; i++ )
     {
@@ -3872,13 +3869,16 @@ void ensemble_reduce_scatter(
     for (int i =0 ; i< scalars_counts[row_rank] ; i++ )
     {
         varience[i] = recv_sq_scalars[i] - recv_scalars[i]* recv_scalars[i] ;     
+        varience_normals[3*i+0] = - 2 * recv_tmp_term[3*i+0] + 2*recv_scalars[i] *recv_normals[3*i+0] ;     
+        varience_normals[3*i+1] = - 2 * recv_tmp_term[3*i+1] + 2*recv_scalars[i] *recv_normals[3*i+1] ;     
+        varience_normals[3*i+2] = - 2 * recv_tmp_term[3*i+2] + 2*recv_scalars[i] *recv_normals[3*i+2] ;     
     }        
 
-#pragma simd
-    for (int i =0 ; i< normals_counts[row_rank] ; i++ )
-    {
-        varience_normals[i] = - 2 * recv_tmp_term[i] + 2*recv_scalars[i] *recv_normals[i] ;     
-    }        
+//#pragma simd
+//    for (int i =0 ; i< normals_counts[row_rank] ; i++ )
+//    {
+//        varience_normals[i] = - 2 * recv_tmp_term[i] + 2*recv_scalars[i] *recv_normals[i] ;     
+//    }        
 
     timer.stop();
     timeN[5] += timer.sec();
@@ -3926,14 +3926,41 @@ void ensemble_reduce(
     float timeN[20]= {0};
     kvs::Timer timer( kvs::Timer::Start );
 
+    int ens_number = ens_param.ensemble_number;
     // 送信データの個数 
     const int local_size = ens_param.vertex_scalars.size(); 
-    int recv_size = 0;
-    // reduce演算のためにデータサイズを最小粒子数に揃える
-    MPI_Allreduce(&local_size, &recv_size, 1, MPI_INT, MPI_MIN, MPI_COMM_WORLD); 
+    int recv_size = local_size;
+//    int recv_size = 0;
+//    // reduce演算のためにデータサイズを最小粒子数に揃える
+//    MPI_Allreduce(&local_size, &recv_size, 1, MPI_INT, MPI_MIN, MPI_COMM_WORLD); 
 
     std::vector<float>& vertex_scalars = ens_param.vertex_scalars;
     std::vector<float>& vertex_normals = ens_param.vertex_normals;
+
+    // アンサンブル方向のコミュニティを作成する
+	MPI_Comm comm_col_vector, comm_row_vector;
+
+    // mpisize --> n_rows (grid parallelization)
+    //runtime_assert(mpi_size % ens_number == 0, "InvalidConfiguration: mpi size vs. ensemble size mismatched");
+    const auto n_rows = mpi_size / ens_number;
+
+//    // comm split: each ensemble member (column vector) //
+    const auto k_col = mpi_rank / n_rows;
+    MPI_Comm_split(MPI_COMM_WORLD, k_col, 0, &comm_col_vector);
+
+    // comm split: common grid lacation over ensmembers (row vector) //
+    const auto i_row = mpi_rank % n_rows;
+    MPI_Comm_split(MPI_COMM_WORLD, i_row, 0, &comm_row_vector);
+    int comm_size = 0; 
+    MPI_Comm_size( comm_row_vector, &comm_size );
+
+    int row_rank =0, row_size=1;
+    MPI_Comm_rank(comm_row_vector, &row_rank);
+    MPI_Comm_size(comm_row_vector, &row_size);
+
+    int col_rank =0, col_size=1;
+    MPI_Comm_rank(comm_col_vector, &col_rank);
+    MPI_Comm_size(comm_col_vector, &col_size);
 
     timer.stop();
     timeN[0] += timer.sec();
@@ -3976,29 +4003,33 @@ void ensemble_reduce(
     timeN[1] += timer.sec();
     timer.start();
      MPI_Barrier(MPI_COMM_WORLD);
-     std::cout << "vertex_scalars.size() = " << vertex_scalars.size() << ", recv_scalars = " << recv_scalars.size() << ", local_size = " << local_size <<std::endl;
+//     std::cout << "vertex_scalars.size() = " << vertex_scalars.size() << ", recv_scalars = " << recv_scalars.size() << ", local_size = " << local_size <<std::endl;
     // MPI_reduce による変数、法線の合算
     MPI_Reduce(vertex_scalars.data(), recv_scalars.data(), recv_size, MPI_FLOAT,
-            MPI_SUM, 0, MPI_COMM_WORLD);
+//            MPI_SUM, 0, MPI_COMM_WORLD);
+            MPI_SUM, 0, comm_row_vector);
 
     MPI_Reduce(sq_scalars.data(), recv_sq_scalars.data(), recv_size, MPI_FLOAT,
-            MPI_SUM, 0, MPI_COMM_WORLD);
+//            MPI_SUM, 0, MPI_COMM_WORLD);
+            MPI_SUM, 0, comm_row_vector);
 
     MPI_Reduce(vertex_normals.data(), recv_normals.data(), 3*recv_size, MPI_FLOAT,
-            MPI_SUM, 0, MPI_COMM_WORLD);
+//            MPI_SUM, 0, MPI_COMM_WORLD);
+            MPI_SUM, 0, comm_row_vector);
     
     MPI_Reduce(tmp_term.data(), recv_tmp_term.data(), 3*recv_size, MPI_FLOAT,
-            MPI_SUM, 0, MPI_COMM_WORLD);
+//            MPI_SUM, 0, MPI_COMM_WORLD);
+            MPI_SUM, 0, comm_row_vector);
  
     timer.stop();
     timeN[2] += timer.sec();
     timer.start();
     // mpi_rank = 0 にて 平均値、分散計算処理
-    if(mpi_rank == 0)
+    //if(mpi_rank == 0)
+    if(k_col == 0)
     {
         // 平均値計算
-        const float mpi_size_inv = 1 /float(mpi_size);  // 1アンサンブル 1MPIプロセスと仮定
-//        const float mpi_size_inv = ens_param.MPIprocess_per_ensemble /mpi_size;
+        const float mpi_size_inv =float( ens_param.MPIprocess_per_ensemble) /float(mpi_size);
 #pragma simd 
         for (int i =0 ; i< recv_size ; i++ )
         {
@@ -4017,17 +4048,15 @@ void ensemble_reduce(
     timeN[3] += timer.sec();
     timer.start();
         // 分散
-#pragma simd 
-        for (int i =0 ; i< recv_size ; i++ )
-        {
-            varience[i] = recv_sq_scalars[i] - recv_scalars[i]* recv_scalars[i] ;     
-        }        
+#pragma simd
+    for (int i =0 ; i< recv_size; i++ )
+    {
+        varience[i] = recv_sq_scalars[i] - recv_scalars[i]* recv_scalars[i] ;     
+        varience_normals[3*i+0] = - 2 * recv_tmp_term[3*i+0] + 2*recv_scalars[i] *recv_normals[3*i+0] ;     
+        varience_normals[3*i+1] = - 2 * recv_tmp_term[3*i+1] + 2*recv_scalars[i] *recv_normals[3*i+1] ;     
+        varience_normals[3*i+2] = - 2 * recv_tmp_term[3*i+2] + 2*recv_scalars[i] *recv_normals[3*i+2] ;     
+    }        
 
-#pragma simd 
-        for (int i =0 ; i< 3*recv_size ; i++ )
-        {
-            varience_normals[i] = - 2 * recv_tmp_term[i] +  2*recv_scalars[i] *recv_normals[i] ;     
-        }        
 
     timer.stop();
     timeN[4] += timer.sec();
@@ -4077,7 +4106,8 @@ void rejection_process(
 
     float timeN[20]= {0};
     kvs::Timer timer( kvs::Timer::Start );
-    auto tf = particleBase.m_tf[0];
+    auto tf_a = particleBase.m_tf[0];
+    auto tf_v = particleBase.m_tf[1];
 
     float sampling_volume_inverse  = particleBase.m_sampling_volume_inverse ;
     float max_opacity              = particleBase.m_max_opacity             ;
@@ -4103,7 +4133,6 @@ void rejection_process(
 
     std::vector<float>& varience_scalars = ens_param.varience_scalars;
     std::vector<float>& varience_normals = ens_param.varience_normals;
-     std::cout << mpi_rank << ", "<<__LINE__ <<std::endl;
     //棄却法を適応する
 #if 1
 
@@ -4114,7 +4143,6 @@ void rejection_process(
 
 ////// 常用対数を取るための計算
 // std::vector<float> log_vertex_scalars(vertex_scalars.size());
-       float delta = 1e-30;
 //       int N = 0; // OutputFuncで正規化したオーダー
 //#pragma omp simd
 //       for (int i = 0; i < vertex_scalars.size(); i++ )
@@ -4123,6 +4151,32 @@ void rejection_process(
 ////           log_vertex_scalars[ i ]     =  vertex_scalars[ i ] > delta ? std::log10(vertex_scalars[ i ]) : -30; 
 //           log_vertex_scalars[ i ]     =  vertex_scalars[ i ] > delta ? std::log10(vertex_scalars[ i ]) -N : -30; 
 //       }
+    //　変動け異数に変換 平均が0の場合は計数値はほぼ0とする。
+    float delta = 1e-30;
+    float eps = 1e-5;
+    std::vector<float> co_varietion(vertex_scalars.size());
+    
+    #pragma omp simd
+    for (int i = 0; i < vertex_scalars.size();  i++ )
+    {
+        if(average_scalars[i] > eps )
+            co_varietion[ i ]   =  std::sqrt(varience_scalars[ i ] )/ vertex_scalars[i];
+        else
+            co_varietion[ i ]   = delta;
+    }
+ 
+    //棄却法を適応する
+//// 常用対数を取るための計算
+     std::vector<float> log_vertex_scalars(vertex_scalars.size());
+     std::vector<float> log_vertex_varience(vertex_scalars.size());
+       int N = 0; // OutputFuncで正規化したオーダー
+#pragma omp simd
+       for (int i = 0; i < vertex_scalars.size(); i++ )
+       {
+           log_vertex_scalars[ i ]     =  vertex_scalars [ i ] > delta ? std::log10(vertex_scalars [ i ]) -N : -30; 
+           log_vertex_varience[ i ]    =  co_varietion[ i ] > delta ? std::log10(co_varietion[ i ]) -N : -30; 
+       }
+
 
     timer.stop();
     timeN[0] += timer.sec();
@@ -4205,9 +4259,9 @@ void rejection_process(
         //opacity 計算 
         for( int j = 0; j < remain_BLK; j++ ) 
         {
-            opacity_array_average [j] = tf.opacityMap().at(average_scalars[ i+j ]);
+            opacity_array_average [j] = tf_a.opacityMap().at(average_scalars[ i+j ]);
             //                    opacity_array_average [j] = tf.opacityMap().at(vertex_scalars[ i+j ]);
-            opacity_array_varience[j] = tf.opacityMap().at(varience_scalars[ i+j ]);
+            opacity_array_varience[j] = tf_v.opacityMap().at(varience_scalars[ i+j ]);
             //                    対数値を参照
             //                    opacity_array[j] = tf.opacityMap().at(log_vertex_scalars[ i+j ]);
         }
@@ -4234,7 +4288,7 @@ void rejection_process(
             {
                 th_timer.start();
                 // Calculate a color.
-                const kvs::RGBColor color( tf.colorMap().at( average_scalars[ i+j ] ) );
+                const kvs::RGBColor color( tf_a.colorMap().at( average_scalars[ i+j ] ) );
 //                   const kvs::RGBColor color( tf.colorMap().at( vertex_scalars[ i+j ] ) );
 //                    対数値を参照
 //                   const kvs::RGBColor color( tf.colorMap().at( log_vertex_scalars[ i+j ] ) );
@@ -4269,7 +4323,7 @@ void rejection_process(
             {
                 th_timer.start();
                 // Calculate a color.
-                const kvs::RGBColor color( tf.colorMap().at( varience_scalars[ i+j ] ) );
+                const kvs::RGBColor color( tf_v.colorMap().at( varience_scalars[ i+j ] ) );
                 //                    対数値を参照
                 //                   const kvs::RGBColor color( tf.colorMap().at( log_vertex_scalars[ i+j ] ) );
                 th_timer.stop();
@@ -4403,15 +4457,25 @@ void reduce_scatter_ensemble(pbvr::TransferFunction& tf,  std::vector< pbvr::Cel
             repetitions
     };
 
+  
+    kvs::Timer timer( kvs::Timer::Start );
     uniform_sampling(cell, 
                      ens_param,
                      particleBase); 
+    timer.stop();
+//    std::cout << mpi_rank << ", uniform_sampling = " << timer.sec() << std::endl;  
+    timer.start();
 
     ensemble_reduce_scatter(cell, 
             ens_param,
             particleBase);
+    timer.stop();
+//    std::cout << mpi_rank << ", ensemble_reduce_scatter = " << timer.sec() << std::endl;  
+    timer.start();
 
     rejection_process(cell, ens_param, particleBase);
+    timer.stop();
+//    std::cout << mpi_rank << ", rejection_process = " << timer.sec() << std::endl;  
 }
 
 void all_reduce_ensemble(pbvr::TransferFunction& tf,  std::vector< pbvr::CellBase<Type>* > cell, pbvr_parameters& particleBase ,const  int ncells )
@@ -4440,7 +4504,7 @@ void all_reduce_ensemble(pbvr::TransferFunction& tf,  std::vector< pbvr::CellBas
     int   repetitions             = 8 ;
 //    parameter_file_opened = particleBase.m_parameter_file_opened;
     // アンサンブル数でrepetitionを徐算
-    const int MPIprocess_per_ensemble = 1;  
+    const int MPIprocess_per_ensemble = 4;  
     int ens_number = mpi_size/MPIprocess_per_ensemble;
 //    repetitions /= ens_number;
 //    if (repetitions < ens_number ) repetitions = 1;
@@ -4479,15 +4543,25 @@ void all_reduce_ensemble(pbvr::TransferFunction& tf,  std::vector< pbvr::CellBas
             repetitions
     };
 
+    kvs::Timer timer( kvs::Timer::Start );
     uniform_sampling(cell, 
                      ens_param,
                      particleBase); 
+    timer.stop();
+//    std::cout << mpi_rank << ", uniform_sampling = " << timer.sec() << std::endl;  
+    timer.start();
 
     ensemble_reduce(cell, 
             ens_param,
             particleBase);
 
-    if(mpi_rank == 0) rejection_process(cell, ens_param, particleBase);
+    timer.stop();
+//    std::cout << mpi_rank << ", ensemble_reduce = " << timer.sec() << std::endl;  
+    timer.start();
+
+    if(mpi_rank < MPIprocess_per_ensemble) rejection_process(cell, ens_param, particleBase);
+    timer.stop();
+//    std::cout << mpi_rank << ", ensemble_reduce = " << timer.sec() << std::endl;  
 }
 
 
@@ -4527,6 +4601,14 @@ void EnsembleGenerateParticles( int time_step,
     std::vector<kvs::Real32> average_scalars;
     std::vector<kvs::Real32> average_normals; 
     std::vector<int>         average_cellids;
+
+    // 分散値データ
+    std::vector<float> tmp_varience;
+    std::vector<float> tmp_varience_normals;
+    std::vector<float> varience;
+    std::vector<float> varience_coords;
+    std::vector<float> varience_colors;
+    std::vector<float> varience_normals;
 
 //  pbvr::cellbaseの宣言 
     std::vector< pbvr::CellBase<Type>* > cell;
@@ -4618,16 +4700,24 @@ void EnsembleGenerateParticles( int time_step,
     auto tf = particleBase.m_tf[0];
     const float max_value_tf = particleBase.m_tf[0].opacityMap().maxValue();
     const float min_value_tf = particleBase.m_tf[0].opacityMap().minValue();
+    auto tf_a = particleBase.m_tf[0];
+    auto tf_v = particleBase.m_tf[1];
 
-//    all_reduce_ensemble(tf, cell, particleBase, ncells);
+    all_reduce_ensemble(tf, cell, particleBase, ncells);
    
 //    reduce_scatter_ensemble(tf, cell, particleBase, ncells);
 
-#define OLD_ENSEMBLE
+//#define OLD_ENSEMBLE
 
 #ifdef OLD_ENSEMBLE
         int nparticles[ ncells ];
     kvs::Timer timer( kvs::Timer::Start );
+    
+    std::vector<kvs::Real32> per_thread_coords [max_threads];
+    std::vector<kvs::Real32> per_thread_scalars[max_threads];
+    std::vector<kvs::Real32> per_thread_normals[max_threads];
+    std::vector<int>         per_thread_cellids[max_threads];
+
 #pragma omp parallel
 {    
 #if _OPENMP
@@ -4653,13 +4743,13 @@ void EnsembleGenerateParticles( int time_step,
 
 
     kvs::MersenneTwister MT( thid + mpi_rank * nthreads );
-    std::vector<kvs::Real32> th_vertex_coords;
-    std::vector<kvs::Real32> th_vertex_scalars;
-    std::vector<kvs::Real32> th_vertex_normals;
-    std::vector<int>         th_vertex_cellids;
-    std::vector<kvs::Real32> th_vertex_normals_x;
-    std::vector<kvs::Real32> th_vertex_normals_y;
-    std::vector<kvs::Real32> th_vertex_normals_z;
+//    std::vector<kvs::Real32> th_vertex_coords;
+//    std::vector<kvs::Real32> th_vertex_scalars;
+//    std::vector<kvs::Real32> th_vertex_normals;
+//    std::vector<int>         th_vertex_cellids;
+//    std::vector<kvs::Real32> th_vertex_normals_x;
+//    std::vector<kvs::Real32> th_vertex_normals_y;
+//    std::vector<kvs::Real32> th_vertex_normals_z;
 
     float time1=0, time2 =0, time3 =0, time4 = 0, time5 = 0;
     float timeN[20]= {0};
@@ -4776,48 +4866,47 @@ void EnsembleGenerateParticles( int time_step,
 //                           timeN[9] += th_timer.sec();
 //                           th_timer.start();
                            // resize による最適化テスト
-                           size_t base_c = th_vertex_coords.size();
-                           size_t base_n = th_vertex_normals.size();
-                           size_t base_s = th_vertex_scalars.size();
-                           size_t base_id = th_vertex_cellids.size();
+                           size_t base_c  = per_thread_coords [thid].size();
+                           size_t base_n  = per_thread_normals[thid].size();
+                           size_t base_s  = per_thread_scalars[thid].size();
+                           size_t base_id = per_thread_cellids[thid].size();
 
-                           th_vertex_coords.resize(base_c + p_id * 3);
-                           th_vertex_normals.resize(base_n + p_id * 3);
-                           th_vertex_scalars.resize(base_s + p_id);
-                           th_vertex_cellids.resize(base_id + p_id);
+                           per_thread_coords [thid].resize(base_c + p_id * 3);
+                           per_thread_normals[thid].resize(base_n + p_id * 3);
+                           per_thread_scalars[thid].resize(base_s + p_id);
+                           per_thread_cellids[thid].resize(base_id + p_id);
 
 #pragma simd
                            for( int j = 0; j < p_id; j++ ) 
                            {
                                // resize による最適化テスト
                                size_t c = base_c + 3*j;
-                               th_vertex_coords[c+0] = local_coord_array[j].x();
-                               th_vertex_coords[c+1] = local_coord_array[j].y();
-                               th_vertex_coords[c+2] = local_coord_array[j].z();
-
-                               th_vertex_scalars[base_s + j] = scalar_array[j];
+                               per_thread_coords[thid][c+0] = local_coord_array[j].x();
+                               per_thread_coords[thid][c+1] = local_coord_array[j].y();
+                               per_thread_coords[thid][c+2] = local_coord_array[j].z();
+                               per_thread_scalars[thid][base_s + j] = scalar_array[j];
 
                                size_t n = base_n + 3*j;
-                               th_vertex_normals[n+0] = grad_array_x[j];
-                               th_vertex_normals[n+1] = grad_array_y[j];
-                               th_vertex_normals[n+2] = grad_array_z[j];
+                               per_thread_normals[thid][n+0] = grad_array_x[j];
+                               per_thread_normals[thid][n+1] = grad_array_y[j];
+                               per_thread_normals[thid][n+2] = grad_array_z[j];
 
-                               th_vertex_cellids[base_id + j] = cell_index[j];
+                               per_thread_cellids[thid][base_id + j] = cell_index[j];
 
-                               //                        th_vertex_coords.push_back( local_coord_array[j].x() );
-                               //                        th_vertex_coords.push_back( local_coord_array[j].y() );
-                               //                        th_vertex_coords.push_back( local_coord_array[j].z() );
+                               //                        per_thread_coords.push_back( local_coord_array[j].x() );
+                               //                        per_thread_coords.push_back( local_coord_array[j].y() );
+                               //                        per_thread_coords.push_back( local_coord_array[j].z() );
                                //
-                               //                        th_vertex_scalars.push_back( scalar_array[j] );
+                               //                        per_thread_scalars.push_back( scalar_array[j] );
                                //
-                               //                        th_vertex_normals.push_back( grad_array_x[j] );
-                               //                        th_vertex_normals.push_back( grad_array_y[j] );
-                               //                        th_vertex_normals.push_back( grad_array_z[j] );
-                               ////                        th_vertex_normals_x.push_back( grad_array_x[j] );
-                               ////                        th_vertex_normals_y.push_back( grad_array_y[j] );
-                               ////                        th_vertex_normals_z.push_back( grad_array_z[j] );
+                               //                        per_thread_normals.push_back( grad_array_x[j] );
+                               //                        per_thread_normals.push_back( grad_array_y[j] );
+                               //                        per_thread_normals.push_back( grad_array_z[j] );
+                               ////                        per_thread_normals_x.push_back( grad_array_x[j] );
+                               ////                        per_thread_normals_y.push_back( grad_array_y[j] );
+                               ////                        per_thread_normals_z.push_back( grad_array_z[j] );
                                //
-                               //                        th_vertex_cellids.push_back( cell_index[j] );
+                               //                        per_thread_cellids.push_back( cell_index[j] );
                            }
 //                           th_timer.stop();
 //                           timeN[10] += th_timer.sec();
@@ -4860,33 +4949,33 @@ void EnsembleGenerateParticles( int time_step,
 //                    timeN[9] += th_timer.sec();
 //                    th_timer.start();
 // resize による最適化テスト
-                    size_t base_c = th_vertex_coords.size();
-                    size_t base_n = th_vertex_normals.size();
-                    size_t base_s = th_vertex_scalars.size();
-                    size_t base_id = th_vertex_cellids.size();
+                    size_t base_c  = per_thread_coords [thid].size();
+                    size_t base_n  = per_thread_normals[thid].size();
+                    size_t base_s  = per_thread_scalars[thid].size();
+                    size_t base_id = per_thread_cellids[thid].size();
 
-                    th_vertex_coords.resize(base_c + p_id * 3);
-                    th_vertex_normals.resize(base_n + p_id * 3);
-                    th_vertex_scalars.resize(base_s + p_id);
-                    th_vertex_cellids.resize(base_id + p_id);
+                    per_thread_coords [thid].resize(base_c + p_id * 3);
+                    per_thread_normals[thid].resize(base_n + p_id * 3);
+                    per_thread_scalars[thid].resize(base_s + p_id);
+                    per_thread_cellids[thid].resize(base_id + p_id);
 
 #pragma simd
                     for( int j = 0; j < p_id; j++ ) 
                     {
 // resize による最適化テスト
                         size_t c = base_c + 3*j;
-                        th_vertex_coords[c+0] = local_coord_array[j].x();
-                        th_vertex_coords[c+1] = local_coord_array[j].y();
-                        th_vertex_coords[c+2] = local_coord_array[j].z();
-
-                        th_vertex_scalars[base_s + j] = scalar_array[j];
+                        per_thread_coords[thid][c+0] = local_coord_array[j].x();
+                        per_thread_coords[thid][c+1] = local_coord_array[j].y();
+                        per_thread_coords[thid][c+2] = local_coord_array[j].z();
+                        
+                        per_thread_scalars[thid][base_s + j] = scalar_array[j];
 
                         size_t n = base_n + 3*j;
-                        th_vertex_normals[n+0] = grad_array_x[j];
-                        th_vertex_normals[n+1] = grad_array_y[j];
-                        th_vertex_normals[n+2] = grad_array_z[j];
+                        per_thread_normals[thid][n+0] = grad_array_x[j];
+                        per_thread_normals[thid][n+1] = grad_array_y[j];
+                        per_thread_normals[thid][n+2] = grad_array_z[j];
 
-                        th_vertex_cellids[base_id + j] = cell_index[j];
+                        per_thread_cellids[thid][base_id + j] = cell_index[j];
 
                     }
 //                        th_timer.stop();
@@ -4899,84 +4988,16 @@ void EnsembleGenerateParticles( int time_step,
             }
     }
 #else
-#pragma omp for  
-    for ( size_t index = 0; index < ncells; index ++ )
-    {
-                th_timer.start();
-            cell[thid]->bindCell( index );
-                th_timer.stop();
-                timeN[0] += th_timer.sec();
-                th_timer.start();
-            // Calculate a number of particles in this cell.
-            const float volume_of_cell = cell[thid]->volume();
-                th_timer.stop();
-                timeN[1] += th_timer.sec();
-                th_timer.start();
-
-            size_t nparticles_in_cell 
-                = calculate_number_of_particles( max_density, volume_of_cell, &MT ) ;
-            nparticles_in_cell *= repetitions;
-                th_timer.stop();
-                timeN[2] += th_timer.sec();
-
-            // Generate a set of particles in this cell represented by v0,...,v3 and s0,...,s3.
-            for ( size_t particle = 0; particle < nparticles_in_cell; ++particle )
-            {
-                // Calculate a coord. // ローカル座標
-                th_timer.start();
-                const kvs::Vector3f coord = cell[thid]->randomSampling_MT( &MT);
-                th_timer.stop();
-                timeN[3] += th_timer.sec();
-                th_timer.start();
-                cell[thid]->setLocalPoint(coord); 
-                th_timer.stop();
-                timeN[4] += th_timer.sec();
-                // Calculate a color.
-                th_timer.start();
-                const float scalar = cell[thid]->scalar();
-                th_timer.stop();
-                timeN[5] += th_timer.sec();
-
-                // Calculate a normal.
-                /* NOTE: The gradient vector of the cell is reversed for shading on the rendering process.
-                */
-                th_timer.start();
-                const kvs::Vector3f normal( -cell[thid]->gradient() );
-                th_timer.stop();
-                timeN[6] += th_timer.sec();
-
-//                th_timer.start();
-                // set coord, color, and normal to point object( this ).
-                th_vertex_coords.push_back( coord.x() );
-                th_vertex_coords.push_back( coord.y() );
-                th_vertex_coords.push_back( coord.z() );
-
-                th_vertex_scalars.push_back( scalar );
-
-                th_vertex_normals.push_back( normal.x() );
-                th_vertex_normals.push_back( normal.y() );
-                th_vertex_normals.push_back( normal.z() );
-
-                th_vertex_cellids.push_back( index );
-
-                th_timer.stop();
-                timeN[7] += th_timer.sec();
-            } // end of 'paricle' for-loop
-
-    } // end of 'cell' for-loop
 #endif
-    #pragma omp barrier
-//    th_timer.start();
-    #pragma omp critical
-    {
-        vertex_coords.insert (vertex_coords.end() , th_vertex_coords.begin() , th_vertex_coords.end());
-        vertex_scalars.insert(vertex_scalars.end(), th_vertex_scalars.begin(), th_vertex_scalars.end());
-        vertex_normals.insert(vertex_normals.end(), th_vertex_normals.begin(), th_vertex_normals.end());
-        vertex_cellids.insert(vertex_cellids.end(), th_vertex_cellids.begin(), th_vertex_cellids.end());
-//        vertex_normals_x.insert(vertex_normals_x.end(), th_vertex_normals_x.begin(), th_vertex_normals_x.end());
-//        vertex_normals_y.insert(vertex_normals_y.end(), th_vertex_normals_y.begin(), th_vertex_normals_y.end());
-//        vertex_normals_z.insert(vertex_normals_z.end(), th_vertex_normals_z.begin(), th_vertex_normals_z.end());
-    }
+//    #pragma omp barrier
+////    th_timer.start();
+//    #pragma omp critical
+//    {
+//        vertex_coords .insert (vertex_coords.end() , th_vertex_coords.begin() , th_vertex_coords.end());
+//        vertex_scalars.insert(vertex_scalars.end(), th_vertex_scalars.begin(), th_vertex_scalars.end());
+//        vertex_normals.insert(vertex_normals.end(), th_vertex_normals.begin(), th_vertex_normals.end());
+//        vertex_cellids.insert(vertex_cellids.end(), th_vertex_cellids.begin(), th_vertex_cellids.end());
+//    }
 //    th_timer.stop();
 //    timeN[11] += th_timer.sec();
 //    th_timer.start();
@@ -4985,6 +5006,51 @@ void EnsembleGenerateParticles( int time_step,
 //            std::cout << mpi_rank <<  ": ave_sampling_time["<< i <<"] =" << timeN[i] << std::endl;
 //        }
 }  //end omp loop
+
+// スレッド間集約
+const size_t base_coords   = vertex_coords.size();
+const size_t base_scalars  = vertex_scalars.size();
+const size_t base_normals  = vertex_normals.size();
+const size_t base_cellids  = vertex_cellids.size();
+
+size_t add_coords  = 0, add_scalars = 0, add_normals = 0, add_cellids = 0;
+
+for (int t = 0; t < max_threads; ++t) 
+{
+    add_coords  += per_thread_coords[t].size();
+    add_scalars += per_thread_scalars[t].size();
+    add_normals += per_thread_normals[t].size();
+    add_cellids += per_thread_cellids[t].size();
+}
+
+vertex_coords.resize(base_coords + add_coords);
+vertex_scalars.resize(base_scalars + add_scalars);
+vertex_normals.resize(base_normals + add_normals);
+vertex_cellids.resize(base_cellids + add_cellids);
+
+//方法1
+size_t off_c = base_coords;
+size_t off_s = base_scalars;
+size_t off_n = base_normals;
+size_t off_cl = base_cellids;
+for (int t = 0; t < max_threads; ++t) 
+{
+    const auto& src_c = per_thread_coords[t];
+    const auto& src_s = per_thread_scalars[t];
+    const auto& src_n = per_thread_normals[t];
+    const auto& src_cl= per_thread_cellids[t];
+    // 型が同じなら std::copy が最速寄り
+    std::copy(src_c.begin(), src_c.end(), vertex_coords.begin() + off_c);
+    off_c += src_c.size();
+    std::copy(src_s.begin(), src_s.end(), vertex_scalars.begin() + off_s);
+    off_s += src_s.size();
+    std::copy(src_n.begin(), src_n.end(), vertex_normals.begin() + off_n);
+    off_n += src_n.size();
+    std::copy(src_cl.begin(), src_cl.end(), vertex_cellids.begin() + off_cl);
+    off_cl += src_cl.size();
+}
+
+
     timer.stop();
     std::cout << mpi_rank <<  ": uniform_sampling_time =" << timer.sec() << std::endl;
     std::cout << mpi_rank <<  ": uniform_nparticles : " <<  vertex_scalars.size()  << " particle_density = " << particle_density << std::endl;
@@ -5019,6 +5085,26 @@ void EnsembleGenerateParticles( int time_step,
         std::vector<float> recv_buff_float;
         std::vector<int> recv_buff_int;
 
+//        // 分散用配列
+//        std::vector<float> varience;
+//        std::vector<float> varience_normals;
+        // 二乗
+        std::vector<float> tmp_term(3*local_size);
+        std::vector<float> sq_scalars(local_size);
+//    std::vector<float> recv_sq_scalars(scalars_counts[mpi_rank]);
+//    std::vector<float> recv_tmp_term(normals_counts[mpi_rank]);
+        std::vector<float> recv_sq_scalars;
+        std::vector<float> recv_tmp_term;
+
+    // 二乗の計算
+#pragma simd
+    for (int i =0 ; i< local_size ; i++ )
+    {
+        sq_scalars[i]   = vertex_scalars[i] * vertex_scalars[i];
+        tmp_term[3*i+0] = vertex_scalars[i] * vertex_normals[3*i+0]; 
+        tmp_term[3*i+1] = vertex_scalars[i] * vertex_normals[3*i+1];  
+        tmp_term[3*i+2] = vertex_scalars[i] * vertex_normals[3*i+2];
+    }
 
         // 送信先（自分の次のrank）、受信元（自分の前のrank）
 //        int send_to = (mpi_rank + 1 ) % mpi_size;
@@ -5063,6 +5149,8 @@ void EnsembleGenerateParticles( int time_step,
              recv_coords.resize(3*recv_size);
              recv_cellids.resize(recv_size);
              recv_normals.resize(3*recv_size);
+             recv_sq_scalars.resize(recv_size);
+             recv_tmp_term.resize(3*recv_size);
 //             int tmp_recv_cellids[recv_size];
 
              // 送受信中にメモリ破壊が起きないよう送信用配列を宣言
@@ -5099,8 +5187,8 @@ void EnsembleGenerateParticles( int time_step,
 
            // 通信完了待ち
             MPI_Waitall(2, reqs, MPI_STATUSES_IGNORE);
+
             // 非同期送受信 normal
-//            MPI_Isend(vertex_normals.data(), 3*send_size, MPI_FLOAT,
             MPI_Isend(send_normals.data(), 3*send_size, MPI_FLOAT,
                     send_to, 13, MPI_COMM_WORLD, &reqs[0]);
             MPI_Irecv(recv_normals.data(), 3*recv_size, MPI_FLOAT,
@@ -5109,6 +5197,23 @@ void EnsembleGenerateParticles( int time_step,
             // 通信完了待ち
             MPI_Waitall(2, reqs, MPI_STATUSES_IGNORE);
 
+            // 非同期送受信 sq_scalar
+            MPI_Isend(sq_scalars.data(), send_size, MPI_FLOAT,
+                    send_to, 14, MPI_COMM_WORLD, &reqs[0]);
+            MPI_Irecv(recv_sq_scalars.data(), recv_size, MPI_FLOAT,
+                    recv_from, 14, MPI_COMM_WORLD, &reqs[1]);
+
+            // 通信完了待ち
+            MPI_Waitall(2, reqs, MPI_STATUSES_IGNORE);
+
+            // 非同期送受信 normal
+            MPI_Isend(tmp_term.data(), 3*send_size, MPI_FLOAT,
+                    send_to, 15, MPI_COMM_WORLD, &reqs[0]);
+            MPI_Irecv(recv_tmp_term.data(), 3*recv_size, MPI_FLOAT,
+                    recv_from, 15, MPI_COMM_WORLD, &reqs[1]);
+
+            // 通信完了待ち
+            MPI_Waitall(2, reqs, MPI_STATUSES_IGNORE);
 #else
 #endif
             timer.stop();
@@ -5191,6 +5296,9 @@ void EnsembleGenerateParticles( int time_step,
                     float recv_normals_array_x[remain_BLK];
                     float recv_normals_array_y[remain_BLK];
                     float recv_normals_array_z[remain_BLK];
+                    float recv_tmp_term_x[remain_BLK];
+                    float recv_tmp_term_y[remain_BLK];
+                    float recv_tmp_term_z[remain_BLK];
 
 //                th_timer.stop();
 //                th_timeN[5] += th_timer.sec();
@@ -5203,6 +5311,9 @@ void EnsembleGenerateParticles( int time_step,
                         recv_normals_array_x[j] = recv_normals[3*(i+j)];
                         recv_normals_array_y[j] = recv_normals[3*(i+j)+1];
                         recv_normals_array_z[j] = recv_normals[3*(i+j)+2];
+                        recv_tmp_term_x[j] = recv_tmp_term[3*(i+j)];
+                        recv_tmp_term_y[j] = recv_tmp_term[3*(i+j)+1];
+                        recv_tmp_term_z[j] = recv_tmp_term[3*(i+j)+2];
                     }
 
 
@@ -5210,16 +5321,23 @@ void EnsembleGenerateParticles( int time_step,
                     for( int j = 0; j < remain_BLK; j++ ) 
                     {
                         // 算出データを受信データと足し合わせる
-                        recv_scalars[i+j]     = recv_scalars[i+j] + scalar_array[j];
+                        recv_scalars[i+j]       = recv_scalars[i+j]    + scalar_array[j];
                         recv_normals_array_x[j] = recv_normals_array_x[j] + grad_array_x[j];
                         recv_normals_array_y[j] = recv_normals_array_y[j] + grad_array_y[j];
                         recv_normals_array_z[j] = recv_normals_array_z[j] + grad_array_z[j];
+                        recv_sq_scalars[i+j]    = recv_sq_scalars[i+j] + scalar_array[j] * scalar_array[j]; 
+                        recv_tmp_term_x[j]    = recv_tmp_term_x[j] + scalar_array[j] * grad_array_x[j]; 
+                        recv_tmp_term_y[j]    = recv_tmp_term_y[j] + scalar_array[j] * grad_array_y[j]; 
+                        recv_tmp_term_z[j]    = recv_tmp_term_z[j] + scalar_array[j] * grad_array_z[j]; 
                     }
                     for( int j = 0; j < remain_BLK; j++ ) 
                     {
                         recv_normals[3*(i+j)]   = recv_normals_array_x[j];
                         recv_normals[3*(i+j)+1] = recv_normals_array_y[j];
                         recv_normals[3*(i+j)+2] = recv_normals_array_z[j];
+                        recv_tmp_term[3*(i+j)]   = recv_tmp_term_x[j];
+                        recv_tmp_term[3*(i+j)+1] = recv_tmp_term_y[j];
+                        recv_tmp_term[3*(i+j)+2] = recv_tmp_term_z[j];
                     }
 //                th_timer.stop();
 //                th_timeN[6] += th_timer.sec();
@@ -5240,7 +5358,9 @@ void EnsembleGenerateParticles( int time_step,
             vertex_scalars = recv_scalars;
             vertex_normals = recv_normals;
             vertex_cellids = recv_cellids;
-            vertex_coords = recv_coords;
+            vertex_coords  = recv_coords;
+            sq_scalars     = recv_sq_scalars;
+            tmp_term       = recv_tmp_term;
             timer.stop();
             move_exe_time += timer.sec();
         } // end for loop shift step
@@ -5252,32 +5372,64 @@ void EnsembleGenerateParticles( int time_step,
 //        }
 
 
-
-       //　平均化処理 シフト処理の回数分徐算
+       //　平均,分散値の計算
+       tmp_varience.resize(vertex_scalars.size()); 
+       tmp_varience_normals.resize(3*vertex_scalars.size()); 
        const float invert_num = 1.f/float(ens_number); 
+       // 各項の算出
 #pragma omp simd
        for (int i = 0; i < vertex_scalars.size(); i++ )
        {
            vertex_scalars[ i ]     *= invert_num; 
-           vertex_normals[3*i + 0] *= -invert_num;
-           vertex_normals[3*i + 1] *= -invert_num;
-           vertex_normals[3*i + 2] *= -invert_num;
+           sq_scalars [ i ]        *= invert_num;
        }
+
+#pragma omp simd
+       for (int i = 0; i < tmp_term.size(); i++ )
+        {
+            tmp_term [ i ] =  -2.f* invert_num* tmp_term [ i ] ; 
+            vertex_normals[i] *= -invert_num;
+        }
+
+
+#pragma omp simd
+       for (int i = 0; i < vertex_scalars.size(); i++ )
+       {
+           tmp_varience[ i ]            = sq_scalars [ i ] - vertex_scalars[ i ] * vertex_scalars[ i ]; 
+           tmp_varience_normals[3*i+0]  = tmp_term [ i ] - (-2.f* vertex_scalars[ i ]* vertex_normals[3*i+0]);
+           tmp_varience_normals[3*i+1]  = tmp_term [ i ] - (-2.f* vertex_scalars[ i ]* vertex_normals[3*i+1]);
+           tmp_varience_normals[3*i+2]  = tmp_term [ i ] - (-2.f* vertex_scalars[ i ]* vertex_normals[3*i+2]);
+       }
+
+
 
     }
     //棄却法を適応する
 #if 1
 
+//　変動け異数に変換 平均が0の場合は計数値はほぼ0とする。
+    float delta = 1e-30;
+    float eps = 1e-5;
+    std::vector<float> co_varietion(vertex_scalars.size());
+    
+    #pragma omp simd
+    for (int i = 0; i < vertex_scalars.size();  i++ )
+    {
+        if(average_scalars[i] > eps )
+            co_varietion[ i ]   =  std::sqrt(tmp_varience[ i ] )/ vertex_scalars[i];
+        else
+            co_varietion[ i ]   = delta;
+    }
+ 
 //// 常用対数を取るための計算
- std::vector<float> log_vertex_scalars(vertex_scalars.size());
-     float delta = 1e-30;
+     std::vector<float> log_vertex_scalars(vertex_scalars.size());
+     std::vector<float> log_vertex_varience(vertex_scalars.size());
        int N = 0; // OutputFuncで正規化したオーダー
 #pragma omp simd
        for (int i = 0; i < vertex_scalars.size(); i++ )
        {
-//           log_vertex_scalars[ i ]     = std::log10(vertex_scalars[ i ]); 
-//           log_vertex_scalars[ i ]     =  vertex_scalars[ i ] > delta ? std::log10(vertex_scalars[ i ]) : -30; 
-           log_vertex_scalars[ i ]     =  vertex_scalars[ i ] > delta ? std::log10(vertex_scalars[ i ]) -N : -30; 
+           log_vertex_scalars[ i ]     =  vertex_scalars [ i ] > delta ? std::log10(vertex_scalars [ i ]) -N : -30; 
+           log_vertex_varience[ i ]    =  co_varietion[ i ] > delta ? std::log10(co_varietion[ i ]) -N : -30; 
        }
 
     timer.stop();
@@ -5297,14 +5449,19 @@ void EnsembleGenerateParticles( int time_step,
     std::vector<kvs::Real32> th_vertex_coords;
     std::vector<kvs::Real32> th_vertex_normals;
     std::vector<kvs::UInt8>  th_vertex_colors;
+    std::vector<kvs::Real32> th_vertex_varience_coords;
+    std::vector<kvs::Real32> th_vertex_varience_normals;
+    std::vector<kvs::UInt8>  th_vertex_varience_colors;
     std::vector<kvs::Real32>  th_vertex_scalars;
     std::vector<int>  th_vertex_cellids;
 
     kvs::UInt32 cell_index[ SIMD_BLK_SIZE ];
     kvs::Vector3f local_coord_array[ SIMD_BLK_SIZE ];
     kvs::Vector3f global_coord_array[ SIMD_BLK_SIZE ];
-    float opacity_array[ SIMD_BLK_SIZE ];
-    float density_array[ SIMD_BLK_SIZE ];
+    float opacity_array_average[ SIMD_BLK_SIZE ];
+    float density_array_average[ SIMD_BLK_SIZE ];
+    float opacity_array_varience[ SIMD_BLK_SIZE ];
+    float density_array_varience[ SIMD_BLK_SIZE ];
     float th_timeN[20]= {0};
 //    kvs::Timer th_timer( kvs::Timer::Start );
 
@@ -5355,9 +5512,13 @@ void EnsembleGenerateParticles( int time_step,
                 //opacity 計算 
                 for( int j = 0; j < remain_BLK; j++ ) 
                 {
-                    opacity_array[j] = tf.opacityMap().at(vertex_scalars[ i+j ]);
+//                    opacity_array[j] = tf.opacityMap().at(vertex_scalars[ i+j ]);
+//                    opacity_array_average [j] = tf_a.opacityMap().at(vertex_scalars[ i+j ]);
+//                    opacity_array_varience[j] = tf_v.opacityMap().at(tmp_varience[ i+j ]);
 //                    対数値を参照
-//                    opacity_array[j] = tf.opacityMap().at(log_vertex_scalars[ i+j ]);
+                    opacity_array_average[j]  = tf_a.opacityMap().at(log_vertex_scalars[ i+j ]);
+                    opacity_array_varience[j] = tf_v.opacityMap().at(log_vertex_varience[ i+j ]);
+//                    対数値を参照
                 }
 //                th_timer.stop();
 //                th_timeN[4] += th_timer.sec();
@@ -5366,7 +5527,9 @@ void EnsembleGenerateParticles( int time_step,
 #pragma omp simd
                 for( int j = 0; j < remain_BLK; j++ ) 
                 {
-                    density_array[j] = opacity_array[j] < max_opacity ? -std::log( 1.0f - opacity_array[j] ) * sampling_volume_inverse: max_density;  
+//                    density_array[j] = opacity_array[j] < max_opacity ? -std::log( 1.0f - opacity_array[j] ) * sampling_volume_inverse: max_density;  
+                    density_array_average [j] = opacity_array_average [j] < max_opacity ? -std::log( 1.0f - opacity_array_average [j] ) * sampling_volume_inverse: max_density;  
+                    density_array_varience[j] = opacity_array_varience[j] < max_opacity ? -std::log( 1.0f - opacity_array_varience[j] ) * sampling_volume_inverse: max_density;  
                 }
 //                    th_timer.stop();
 //                    th_timeN[5] += th_timer.sec();
@@ -5382,11 +5545,11 @@ void EnsembleGenerateParticles( int time_step,
                const float R = MT.rand();
 //                th_timer.stop();
 //                th_timeN[6] += th_timer.sec();
-               if ( density_array[j] > max_density * R )
+               if ( density_array_average[j] > max_density * R )
                {
 //                th_timer.start();
                    // Calculate a color.
-                   const kvs::RGBColor color( tf.colorMap().at( vertex_scalars[ i+j ] ) );
+                   const kvs::RGBColor color( tf_a.colorMap().at( vertex_scalars[ i+j ] ) );
 //                    対数値を参照
 //                   const kvs::RGBColor color( tf.colorMap().at( log_vertex_scalars[ i+j ] ) );
 //                th_timer.stop();
@@ -5415,6 +5578,41 @@ void EnsembleGenerateParticles( int time_step,
 //                th_timer.stop();
 //                th_timeN[9] += th_timer.sec();
                }
+
+               if ( density_array_varience[j] > max_density * R )
+               {
+//                th_timer.start();
+                   // Calculate a color.
+                   const kvs::RGBColor color( tf_v.colorMap().at( tmp_varience[ i+j ] ) );
+//                    対数値を参照
+//                   const kvs::RGBColor color( tf.colorMap().at( log_vertex_scalars[ i+j ] ) );
+//                th_timer.stop();
+//                th_timeN[7] += th_timer.sec();
+//                th_timer.start();
+
+                   // Calculate a normal.
+//                   const kvs::Vector3f normal( vertex_normals[3*(i+j)+0], vertex_normals[3*(i+j)+1], vertex_normals[3*(i+j)+2] );
+//                th_timer.stop();
+//                th_timeN[8] += th_timer.sec();
+//                th_timer.start();
+
+                   // set coord, color, and normal to point object( this ).
+                   th_vertex_varience_coords.push_back( global_coord_array[j].x() );
+                   th_vertex_varience_coords.push_back( global_coord_array[j].y() );
+                   th_vertex_varience_coords.push_back( global_coord_array[j].z() );
+
+                   th_vertex_varience_colors.push_back( color.r() );
+                   th_vertex_varience_colors.push_back( color.g() );
+                   th_vertex_varience_colors.push_back( color.b() );
+
+                   th_vertex_varience_normals.push_back( tmp_varience_normals[3*(i+j)+0] );
+                   th_vertex_varience_normals.push_back( tmp_varience_normals[3*(i+j)+1] );
+                   th_vertex_varience_normals.push_back( tmp_varience_normals[3*(i+j)+2] );
+
+//                th_timer.stop();
+//                th_timeN[9] += th_timer.sec();
+               }
+
                 }
             }
 //                th_timer.start();
@@ -5423,8 +5621,9 @@ void EnsembleGenerateParticles( int time_step,
            average_coords.insert (average_coords.end() , th_vertex_coords.begin() , th_vertex_coords.end());
            average_colors.insert (average_colors.end(), th_vertex_colors.begin() , th_vertex_colors.end());
            average_normals.insert(average_normals.end(), th_vertex_normals.begin(), th_vertex_normals.end());
-//           average_scalars.insert(average_scalars.end(), th_vertex_scalars.begin(), th_vertex_scalars.end());
-//           average_cellids.insert(average_cellids.end(), th_vertex_cellids.begin(), th_vertex_cellids.end());
+           varience_coords.insert (varience_coords.end() , th_vertex_varience_coords.begin() , th_vertex_varience_coords.end());
+           varience_colors.insert (varience_colors.end() , th_vertex_varience_colors.begin() , th_vertex_varience_colors.end());
+           varience_normals.insert(varience_normals.end(), th_vertex_varience_normals.begin(), th_vertex_varience_normals.end());
        }
 //                th_timer.stop();
 //                th_timeN[10] += th_timer.sec();
@@ -5448,8 +5647,11 @@ void EnsembleGenerateParticles( int time_step,
     particleBase.m_sample_coords.insert(particleBase.m_sample_coords.end()  , average_coords.begin() , average_coords.end());
     particleBase.m_sample_colors.insert(particleBase.m_sample_colors.end()  , average_colors.begin() , average_colors.end());
     particleBase.m_sample_normals.insert(particleBase.m_sample_normals.end(), average_normals.begin(), average_normals.end());
+    particleBase.m_varience_coords.insert( particleBase.m_varience_coords.end()  , varience_coords.begin() , varience_coords.end());
+    particleBase.m_varience_colors.insert( particleBase.m_varience_colors.end()  , varience_colors.begin() , varience_colors.end());
+    particleBase.m_varience_normals.insert(particleBase.m_varience_normals.end() , varience_normals.begin(), varience_normals.end());
 
-#if 1
+#if 0
     // 分散を計算する
     // cityLBM用の minmax設定
      if( particleBase.m_tf.size() >1 ) tf = particleBase.m_tf[1];
@@ -6577,7 +6779,6 @@ void EnsembleGenerateParticles( int time_step,
     {
              if (cell[i] != NULL)delete cell[i];
     }
-    std::cerr << mpi_rank << ", "  << __LINE__  << std::endl;
 }
 
 void EnsembleTest( int time_step,
