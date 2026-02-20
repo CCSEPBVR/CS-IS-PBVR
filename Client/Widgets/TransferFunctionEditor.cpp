@@ -672,6 +672,13 @@ void TransferFunctionEditor::onNumberOfTransferFunctionValueChanged( const int n
 
     syncCombo( ui->colorFunctionComboBox,   "C" );
     syncCombo( ui->opacityFunctionComboBox, "O" );
+
+    if( m_is_operator )
+    {
+        const bool hasTF = ( tfCount > 0 );
+        ui->exportPushButton->setEnabled( hasTF );
+        ui->applyPushButton ->setEnabled( hasTF );
+    }
 }
 
 // Color
