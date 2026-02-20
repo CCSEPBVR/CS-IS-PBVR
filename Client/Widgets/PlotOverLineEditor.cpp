@@ -175,6 +175,13 @@ void PlotOverLineEditor::onReceivePlotOverLineParameter( const QJsonObject& payl
     const auto kXAxis = QString::fromUtf8( Protocol::Key::XAxis );
     const auto kMask  = QString::fromUtf8( Protocol::Key::Mask );
 
+    const bool uiParameterUpdated =
+        payload.contains( kEnable ) ||
+        payload.contains( kResolution ) ||
+        payload.contains( kTarget ) ||
+        payload.contains( kStartCoords ) ||
+        payload.contains( kEndCoords );
+
     if( payload.contains( kEnable ) )
     {
         ui->plotOverLineGroupBox->setChecked( payload.value( kEnable ).toBool() );
@@ -246,8 +253,11 @@ void PlotOverLineEditor::onReceivePlotOverLineParameter( const QJsonObject& payl
         setPlotData( xAxis, mask, valuesOnLine );
     }
 
-    m_last_snap_shot     = captureUiSnapshot();
-    m_has_last_snap_shot = true;
+    if( uiParameterUpdated )
+    {
+        m_last_snap_shot     = captureUiSnapshot();
+        m_has_last_snap_shot = true;
+    }
 
     onCreateLine();
 }
