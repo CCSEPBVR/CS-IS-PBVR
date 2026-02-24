@@ -1,6 +1,7 @@
 #ifndef VIS_MODULE__EXTENDED_TRANSFER_FUNCTION_H_INCLUDE
 #define VIS_MODULE__EXTENDED_TRANSFER_FUNCTION_H_INCLUDE
 
+#include <cstdint>
 #include <vismodule/ColorMap>
 #include <vismodule/OpacityMap>
 #include <vismodule/TransferFunction>
