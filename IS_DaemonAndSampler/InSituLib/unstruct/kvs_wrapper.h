@@ -116,12 +116,24 @@ extern "C" {
         std::vector<kvs::Real32>& vertex_coords;
         std::vector<kvs::Real32>& vertex_scalars;
         std::vector<kvs::Real32>& vertex_normals;
+        // 法線ベクトルを各成分で分ける
+        std::vector<kvs::Real32>& vertex_normals_x;
+        std::vector<kvs::Real32>& vertex_normals_y;
+        std::vector<kvs::Real32>& vertex_normals_z;
         std::vector<int>&         vertex_cellids;
 //        std::vector<kvs::UInt8>  average_colors;
         std::vector<kvs::Real32> average_scalars;
         std::vector<kvs::Real32> average_normals; 
+        // 法線ベクトルを各成分で分ける
+        std::vector<kvs::Real32> average_normals_x; 
+        std::vector<kvs::Real32> average_normals_y; 
+        std::vector<kvs::Real32> average_normals_z; 
         std::vector<kvs::Real32> varience_scalars;
         std::vector<kvs::Real32> varience_normals; 
+        // 法線ベクトルを各成分で分ける
+        std::vector<kvs::Real32> varience_normals_x; 
+        std::vector<kvs::Real32> varience_normals_y; 
+        std::vector<kvs::Real32> varience_normals_z; 
 
         int ncells;
         int  MPIprocess_per_ensemble; 
