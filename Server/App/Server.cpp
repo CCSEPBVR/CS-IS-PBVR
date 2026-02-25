@@ -944,6 +944,12 @@ void Server::initialize(uWS::WebSocket<false, true, PerSocket>* ws, const nlohma
     plotOverLineParameter[Protocol::Key::EndCoords] = m_pol_property->m_end_point;
     msg[Protocol::Key::PlotOverLineParameter] = std::move(plotOverLineParameter);
 
+    // PlotOverTime
+    nlohmann::json plotOverLineParameter;
+    plotOverLineParameter[Protocol::Key::Enable] = m_pot_property->m_plot_flag;
+    plotOverLineParameter[Protocol::Key::Coords] = m_pot_property->m_target_point;
+    msg[Protocol::Key::PlotOverLineParameter] = std::move(plotOverLineParameter);
+
     m_u_web_sockets.publish(k_text_topic, msg.dump(), uWS::OpCode::TEXT);
 
     // ISの場合state.txtを監視しLAST_STEPが更新されたらクライアントにLAST_STEPを送信するスレッドを起動する
