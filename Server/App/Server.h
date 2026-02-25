@@ -21,6 +21,7 @@
 #include <vismodule/ParticleProperty>
 #include <vismodule/GlyphProperty>
 #include <vismodule/PlotOverLineProperty>
+#include <vismodule/PlotOverTimeProperty>
 
 #include "../../Shared/json.hpp"
 #include "../../Shared/JsonKeys.h"
@@ -77,10 +78,13 @@ private:
     MultiVolumePropertyList* m_multi_volume_property_list;
     ParticleProperty* m_particle_property;
     PlotOverLineProperty* m_pol_property;
+    PlotOverTimeProperty* m_pot_property;
     std::vector<ObjectInfoExtractor::ObjectInfo>* m_objects;
 
-    std::atomic<bool> m_last_step_monitor_is_running; // LAST_STEPを監視するスレッドに終了信号を送る変数
-    std::thread m_last_step_monitor_thread;           // state.txtのLAST_STEPを監視するスレッド
+    std::atomic<bool> m_last_step_monitor_is_running;     // LAST_STEPを監視するスレッドに終了信号を送る変数
+    std::thread m_last_step_monitor_thread;               // state.txtのLAST_STEPを監視するスレッド
+    std::atomic<bool> m_plot_over_time_sender_is_running; // Plot Over Timeをクライアントに送信するスレッドに終了信号を送る変数
+    std::thread m_plot_over_time_sender_thread;           // Plot Over Timeをクライアントに送信するスレッド
 
     void reset();
     void onUpgrade(uWS::HttpResponse<SSL>* res, uWS::HttpRequest* req, struct us_socket_context_t* context, SocketType type);
@@ -88,7 +92,6 @@ private:
     void onMessage(uWS::WebSocket<false, true, PerSocket>* ws, std::string_view msg, uWS::OpCode);
     void onClose(uWS::WebSocket<false, true, PerSocket>* ws, int /*code*/, std::string_view /*msg*/);
 
-    void someMethod(uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received);
     void transferOperator(uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received);
     void chat(uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received);
     void shareView(uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received);
@@ -110,6 +113,7 @@ private:
     std::vector<char> pack(const int timeStep);
     size_t calculateTotalSize() const;
     void LastStepMonitorLoop();
+    void PlotOverTimeSenderLoop();
 };
 
 #endif // SERVER_H

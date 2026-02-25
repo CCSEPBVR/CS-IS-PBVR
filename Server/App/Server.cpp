@@ -7,6 +7,7 @@
 #include <vismodule/KVSMLObjectPlotOverLine>
 #include <vismodule/InitialStep>
 #include <vismodule/GeneratePOL>
+#include <vismodule/GeneratePOT>
 #include <vismodule/ParticleMonitor>
 #include <vismodule/ParameterFileReader>
 #include <vismodule/ParameterFileWriter>
@@ -17,6 +18,7 @@ Server::Server(int port)
     , m_multi_volume_property_list(new MultiVolumePropertyList())
     , m_particle_property(new ParticleProperty())
     , m_pol_property(new PlotOverLineProperty())
+    , m_pot_property(new PlotOverTimeProperty())
     , m_objects(new std::vector<ObjectInfoExtractor::ObjectInfo>())
 {
 #ifndef CPU_VER
@@ -31,7 +33,8 @@ Server::Server(int port)
     m_particle_property->m_camera->setWindowSize(620, 620); // FIXME:クライアント側から送信されるようになったら削除
     m_particle_property->m_transfunc_synthesizer = new TransferFunctionSynthesizer();
 
-    m_last_step_monitor_is_running = true;
+    m_last_step_monitor_is_running     = true;
+    m_plot_over_time_sender_is_running = true;
 
     m_u_web_sockets.ws<PerSocket>("/binary",
         {
@@ -100,6 +103,13 @@ Server::~Server()
     if (m_last_step_monitor_thread.joinable()) // スレッドが起動している場合
     {
         m_last_step_monitor_thread.join(); // 終了待ち
+    }
+
+    // m_last_step_monitor_threadと同様
+    m_plot_over_time_sender_is_running.store(false);
+    if (m_plot_over_time_sender_thread.joinable())
+    {
+        m_plot_over_time_sender_thread.join();
     }
 }
 
@@ -276,56 +286,6 @@ void Server::onClose(uWS::WebSocket<false, true, PerSocket>* ws, int /*code*/, s
         msg[Protocol::Key::UserID] = userID;
         m_u_web_sockets.publish(k_text_topic, msg.dump(), uWS::OpCode::TEXT);
     }
-}
-
-#include <random> // FIXME:ダミーデータ作成用、本データ(物理量にした場合は削除してください)
-
-void Server::someMethod( uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received )
-{
-    if( !ws ) return;
-
-    constexpr int kBatch = 4; // FIXME:送信する予定のタイムステップの総数(ex.0~3の場合 kBatch = 4)
-
-    constexpr int numberOfVector = 2; // FIXME:送信する予定のValueOnTimeの総数(物理量数q1~qN) 他メンバ変数からとってくることを想定する場合不要
-
-    static std::atomic<int> s_step{0}; // FIXME:ダミーデータ用
-
-    static thread_local std::mt19937 rng( std::random_device{}() ); // FIXME:ダミーデータ作成用、本データ(物理量にした場合は削除してください)
-    std::uniform_real_distribution<double> dist( -1.0, 1.0 );       // FIXME:ダミーデータ作成用、本データ(物理量にした場合は削除してください)
-
-    nlohmann::json samples = nlohmann::json::array();
-
-    int baseStep = s_step.load(); // FIXME:ダミーデータ作成用、本データ(物理量にした場合は削除してください)
-
-    for( int i = 0; i < kBatch; ++i )
-    {
-        int timeStep = baseStep + i;
-
-        nlohmann::json valueArray = nlohmann::json::array();
-        for( int j = 0; j < numberOfVector; ++j )
-        {
-            double v = dist( rng ); // FIXME:実際の物理量を入れてください
-            valueArray.push_back( v );
-        }
-
-        nlohmann::json one;
-        one[Protocol::Key::TimeStep]    = timeStep;
-        one[Protocol::Key::ValueOnTime] = std::move( valueArray );
-
-        samples.push_back( std::move( one ) );
-    }
-
-    s_step.store( baseStep + kBatch ); // FIXME:ダミーデータ作成用、本データ(物理量にした場合は削除してください)
-
-    nlohmann::json msg;
-    msg[Protocol::Key::Event]   = Protocol::Events::PlotOverTimeParameter;
-    msg[Protocol::Key::Samples] = std::move( samples );
-
-    std::string payload = msg.dump();
-
-    m_u_web_sockets.getLoop()->defer([payload, this]() {
-        m_u_web_sockets.publish( k_text_topic, payload, uWS::OpCode::TEXT );
-    });
 }
 
 void Server::transferOperator(uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received)
@@ -604,10 +564,13 @@ void Server::initialize(uWS::WebSocket<false, true, PerSocket>* ws, const nlohma
         // NOTE:成分数3以上の場合グリフのデフォルトパラメータを設定
         bool isGlyphEnabled = m_multi_volume_property_list->m_total_number_ingredients >= 3;
         m_glyph_property->m_glyph_flag = isGlyphEnabled;
-        SetDefaultGlyphParameterCS(*m_glyph_property);
+        SetDefaultGlyphParameterIS(*m_glyph_property);
 
         // NOTE:プロットオーバーラインのデフォルトパラメータを設定
         SetDefaultPOLParameterIS(*m_pol_property);
+
+        // プロットオーバータイムのデフォルトパラメータを設定
+        SetDefaultPOTParameterIS(*m_pot_property);
     }
 
     // NOTE:以降共通処理
@@ -995,6 +958,16 @@ void Server::initialize(uWS::WebSocket<false, true, PerSocket>* ws, const nlohma
         {
             m_last_step_monitor_thread = std::thread([this]() { this->LastStepMonitorLoop(); });
         }
+
+        // m_last_step_monitor_threadと同様
+        if (m_plot_over_time_sender_thread.joinable())
+        {
+            std::cout << "WARNING:Plot Over Time Sender is already started." << std::endl;
+        }
+        else
+        {
+            m_plot_over_time_sender_thread = std::thread([this]() { this->PlotOverTimeSenderLoop(); });
+        }
     }
 }
 
@@ -1061,7 +1034,7 @@ void Server::requestDataAt(uWS::WebSocket<false, true, PerSocket>* ws, const nlo
 
                     if ((timeStep >= pointStartStep) && (timeStep <= pointLatestStep))
                     {
-                        kvsml_object_pol = GeneratePOLIS(timeStep, *m_pol_property, *m_multi_volume_property_list);
+                        kvsml_object_pol = GeneratePOLIS(timeStep, *m_pol_property);
                     }
                 }
             }
@@ -2567,12 +2540,12 @@ void Server::LastStepMonitorLoop()
         if (pm.stepExisted())
         {
             const int new_last_time_step = pm.particleStatusFile().getLatestTimeStep();
-            std::cout << "[Server] last step: " << new_last_time_step << std::endl;
+            std::cout << "[Server] LastStepMonitorLoop() last step: " << new_last_time_step << std::endl;
 
             // last step が更新された場合
             if (new_last_time_step >= 0 && new_last_time_step > old_last_time_step)
             {
-                std::cout << "[Server] updated: " << old_last_time_step << " -> " << new_last_time_step << std::endl;
+                std::cout << "[Server] LastStepMonitorLoop() updated: " << old_last_time_step << " -> " << new_last_time_step << std::endl;
 
                 old_last_time_step = new_last_time_step;
 
@@ -2597,12 +2570,12 @@ void Server::LastStepMonitorLoop()
             }
             else
             {
-                std::cout << "[Server] no update. last = " << old_last_time_step << std::endl;
+                // std::cout << "[Server] LastStepMonitorLoop() no update. last = " << old_last_time_step << std::endl;
             }
         }
         else
         {
-            std::cout << "[Server] Time step is not existed." << std::endl;
+            std::cout << "[Server] LastStepMonitorLoop() Time step is not existed." << std::endl;
         }
 
         std::cout << "[Server] LastStepMonitorLoop() working.." << std::endl;
@@ -2610,4 +2583,85 @@ void Server::LastStepMonitorLoop()
     }
 
     std::cout << "[Server] LastStepMonitorLoop() end" << std::endl;
+}
+
+void Server::PlotOverTimeSenderLoop()
+{
+    static int lastSendTimeStep = -1; // 前回どのタイムステップまでクライアントに送信したのかを記録する
+    int startTimeStep, latestTimeStep; // state.txtのSTART_STEP, LATEST_STEPを格納
+    int kBatch = 0;// 送信する予定のタイムステップの総数(ex.0~3の場合 kBatch = 4)
+
+    // state.txtを読み込む処理
+    // メインスレッドでの m_plot_over_time_sender_is_running の値の変更を監視し
+    // true -> false になったら終了する
+    while (m_plot_over_time_sender_is_running.load())
+    {
+        ParticleMonitor pm;
+        pm.check();
+
+        if (pm.stepExisted())
+        {
+            startTimeStep  = pm.particleStatusFile().getStartTimeStep();
+            latestTimeStep = pm.particleStatusFile().getLatestTimeStep();
+            // std::cout << "[Server] PlotOverTimeSenderLoop() latest time step: "    << latestTimeStep    << std::endl;
+            // std::cout << "[Server] PlotOverTimeSenderLoop() start time step: "     << startTimeStep     << std::endl;
+            // std::cout << "[Server] PlotOverTimeSenderLoop() last send time step: " << lastSendTimeStep  << std::endl;
+
+            if (startTimeStep < 0)  std::cout << "[Server] PlotOverTimeSenderLoop() start time step is invalid"  << std::endl;
+            if (latestTimeStep < 0) std::cout << "[Server] PlotOverTimeSenderLoop() latest time step is invalid" << std::endl;
+
+            if (lastSendTimeStep == -1) kBatch = latestTimeStep - startTimeStep + 1; // 初回
+            else kBatch = latestTimeStep - lastSendTimeStep; // 2回目以降
+
+            if ( kBatch > 0 ) std::cout << "[Server] PlotOverTimeSenderLoop() kBatch: " << kBatch << std::endl;
+
+            nlohmann::json samples = nlohmann::json::array();
+            
+            for(int i = 0; i < kBatch; ++i)
+            {
+                std::unique_ptr<vismodule::KVSMLObjectPlotOverTime> kvsmlObjectPOT;
+                bool pot_mask = false;
+                int timeStep = (lastSendTimeStep + 1) + i;
+
+                // 指定したtime stepのPlot Over Timeを取得する
+                kvsmlObjectPOT = GeneratePOTIS(timeStep, *m_pot_property);
+                vismodule::ValueArray<float> valuesOnTime;
+                valuesOnTime = kvsmlObjectPOT->values_on_time();
+
+                nlohmann::json valueArray = nlohmann::json::array();
+                for(int j = 0; j < valuesOnTime.size(); ++j)
+                {
+                    double v = double(valuesOnTime[j]); // FIXME:実際の物理量を入れてください
+                    valueArray.push_back( v );
+                }
+
+                nlohmann::json one;
+                one[Protocol::Key::TimeStep]    = timeStep;
+                one[Protocol::Key::ValueOnTime] = std::move( valueArray );
+
+                samples.push_back( std::move( one ) );
+            }
+
+            lastSendTimeStep = latestTimeStep; // 最後に送ったタイムステップの更新
+
+            nlohmann::json msg;
+            msg[Protocol::Key::Event]   = Protocol::Events::PlotOverTimeParameter;
+            msg[Protocol::Key::Samples] = std::move( samples );
+
+            std::string payload = msg.dump();
+
+            m_u_web_sockets.getLoop()->defer([payload, this]() {
+                m_u_web_sockets.publish( k_text_topic, payload, uWS::OpCode::TEXT );
+            });
+        }
+        else
+        {
+            std::cout << "[Server] PlotOverTimeSenderLoop() Time step is not existed." << std::endl;
+        }
+
+        std::cout << "[Server] PlotOverTimeSenderLoop() working.." << std::endl;
+        std::this_thread::sleep_for(std::chrono::seconds(1));
+    }
+
+    std::cout << "[Server] PlotOverTimeSenderLoop() end" << std::endl;
 }

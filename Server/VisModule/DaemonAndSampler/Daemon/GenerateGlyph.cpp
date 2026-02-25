@@ -392,6 +392,8 @@ std::unique_ptr<kvs::PolygonGlyphObject> GenerateGlyphCS(
 
 void SetDefaultGlyphParameterIS( GlyphProperty& glyph_property )
 {
+    if ( !glyph_property.m_glyph_flag ) return;
+
     const char *envBuf = NULL;
     std::string visParamDir;
     std::string glyphParameterPath;

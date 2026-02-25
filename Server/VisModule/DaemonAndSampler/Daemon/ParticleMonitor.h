@@ -12,10 +12,10 @@
 //#include <vismodule/GlyphObject>
 #include <vismodule/KVSMLObjectGlyph>
 #include <vismodule/KVSMLObjectPlotOverLine>
-//#include "KVSMLObjectGlyph.h"
+#include <vismodule/KVSMLObjectPlotOverTime>
 
 #include "PlotOverLineFile.h"
-//#include "KVSMLObjectPlotOverLine.h"
+#include "PlotOverTimeFile.h"
 
 class ParticleMonitor
 {
@@ -23,15 +23,18 @@ private:
     ParticleFile                       m_particle_file; 
     GlyphFile                          m_glyph_file; 
     PlotOverLineFile                   m_plot_over_line_file; 
+    PlotOverTimeFile                   m_plot_over_time_file; 
     ParticleStatusFile                 m_status_file; 
     ParticleHistoryFile                m_history_file; 
     std::string                        m_history_file_prefix;
     vismodule::PointObject             m_particle; 
     vismodule::KVSMLObjectGlyph        m_glyph; 
     vismodule::KVSMLObjectPlotOverLine m_plot_over_line; 
+    vismodule::KVSMLObjectPlotOverTime m_plot_over_time;
     vismodule::Int32                   m_time_step_particle;
     vismodule::Int32                   m_time_step_glyph;
     vismodule::Int32                   m_time_step_pol;
+    vismodule::Int32                   m_time_step_pot;
     vismodule::Vector3f                m_min_object_coord;
     vismodule::Vector3f                m_max_object_coord;
 
@@ -53,12 +56,14 @@ public:
     void setParticleFilePrefix( const std::string& prefix );
     void setGlyphFilePrefix( const std::string& prefix );
     void setPlotOverLineFilePrefix( const std::string& prefix );
+    void setPlotOverTimeFilePrefix( const std::string& prefix );
     void setParticleStatusFileName( const std::string& file_name );
     void setParticleHistoryFileName( const std::string& file_name );
     void setParticleHistoryFilePrefix( const std::string& prefix );
     bool setTimeStep_particle( const vismodule::Int32 time_step );
     bool setTimeStep_glyph( const vismodule::Int32 time_step );
     bool setTimeStep_pol( const vismodule::Int32 time_step );
+    bool setTimeStep_pot( const vismodule::Int32 time_step );
     void check();
     void readParticleHistoryFile();
     void readParticleFile();
@@ -66,9 +71,11 @@ public:
     void readGlyphFile();
     bool findPlotOverLineFile();
     void readPlotOverLineFile();
+    void readPlotOverTimeFile();
     void getParticle( vismodule::PointObject* object );
     void getGlyph( vismodule::KVSMLObjectGlyph* object );
     void getPlotOverLine( vismodule::KVSMLObjectPlotOverLine* object );
+    void getPlotOverTime( vismodule::KVSMLObjectPlotOverTime* object );
     //void getGlyph( vismodule::PointObject* object );
     vismodule::Int32 getSubpixelLevel();
     ParticleStatusFile& particleStatusFile();

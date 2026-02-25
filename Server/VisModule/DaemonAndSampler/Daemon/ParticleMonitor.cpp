@@ -5,12 +5,14 @@
 ParticleMonitor::ParticleMonitor():
     m_time_step_particle( -1 ),
     m_time_step_glyph( -1 ),
-    m_time_step_pol( -1 )
+    m_time_step_pol( -1 ),
+    m_time_step_pot( -1 )
 {
     const char *envBuf = NULL;
     std::string particlePath;
     std::string glyphFilePath;
     std::string plotOverLineFilePath;
+    std::string plotOverTimeFilePath;
     std::string visParamDir;
     std::string coordsMinMaxPath;
 
@@ -19,26 +21,31 @@ ParticleMonitor::ParticleMonitor():
         particlePath = "./t";
         glyphFilePath = "./g";
         plotOverLineFilePath = "./p";
+        plotOverTimeFilePath = "./pt";
     }
     else {
         particlePath = envBuf;
         glyphFilePath = envBuf;
         plotOverLineFilePath = envBuf;
+        plotOverTimeFilePath = envBuf;
         if (particlePath[particlePath.size() - 1] != '/') {
             particlePath += "/t";
             glyphFilePath += "/g";
             plotOverLineFilePath += "/p";
+            plotOverTimeFilePath += "/pt";
         }
         else {
             particlePath += "t";
             glyphFilePath += "g";
             plotOverLineFilePath += "p";
+            plotOverTimeFilePath += "pt";
         }
     }
 
     this->setParticleFilePrefix( particlePath );
     this->setGlyphFilePrefix( glyphFilePath );
     this->setPlotOverLineFilePrefix( plotOverLineFilePath );
+    this->setPlotOverTimeFilePrefix( plotOverTimeFilePath );
 
     envBuf = std::getenv( "VIS_PARAM_DIR" );
     if (envBuf == NULL) {
@@ -152,6 +159,11 @@ void ParticleMonitor::readPlotOverLineFile()
 //    TimerStop( 7 );
 }
 
+void ParticleMonitor::readPlotOverTimeFile()
+{
+    m_plot_over_time_file.setParameterFromFile();
+    m_plot_over_time_file.generatePOTObject( m_time_step_pot, &m_plot_over_time );
+}
 
 void ParticleMonitor::readParticleFile()
 {
@@ -188,6 +200,11 @@ void ParticleMonitor::setPlotOverLineFilePrefix( const std::string& prefix )
     m_plot_over_line_file.setFilePrefix( prefix );
 }
 
+void ParticleMonitor::setPlotOverTimeFilePrefix( const std::string& prefix )
+{
+    m_plot_over_time_file.setFilePrefix( prefix );
+}
+
 void ParticleMonitor::setParticleStatusFileName( const std::string& file_name )
 {
     m_status_file.setFileName( file_name );
@@ -219,6 +236,13 @@ bool ParticleMonitor::setTimeStep_pol( const vismodule::Int32 time_step )
     return changed;
 }
 
+bool ParticleMonitor::setTimeStep_pot( const vismodule::Int32 time_step )
+{
+    bool changed = ( m_time_step_pot != time_step ) && this->stepExisted();
+    m_time_step_pot = time_step;
+    return changed;
+}
+
 void ParticleMonitor::getParticle( vismodule::PointObject* object )
 {
     (*object) = m_particle;
@@ -238,6 +262,12 @@ void ParticleMonitor::getPlotOverLine( vismodule::KVSMLObjectPlotOverLine* objec
     object -> setXAxis(        m_plot_over_line.x_axis() );
     object -> setMask(        m_plot_over_line.mask() );
     object -> setValuesOnLine(    m_plot_over_line.values_on_line() );
+}
+
+void ParticleMonitor::getPlotOverTime( vismodule::KVSMLObjectPlotOverTime* object )
+{
+    object->setMask( m_plot_over_time.mask() );
+    object->setValuesOnTime( m_plot_over_time.values_on_time() );
 }
 
 vismodule::Int32 ParticleMonitor::getSubpixelLevel()

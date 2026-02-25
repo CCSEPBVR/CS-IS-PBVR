@@ -19,8 +19,7 @@ void SetDefaultPOLParameterIS( PlotOverLineProperty& pol_property );
 
 std::unique_ptr<vismodule::KVSMLObjectPlotOverLine> GeneratePOLIS(
     const int time_step,
-    const PlotOverLineProperty& pol_property,
-    MultiVolumePropertyList& mvpl
+    const PlotOverLineProperty& pol_property
 );
 
 #endif

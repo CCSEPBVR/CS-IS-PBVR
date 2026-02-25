@@ -175,8 +175,7 @@ const bool KVSMLObjectPlotOverLine::write( const std::string& filename )
     file << std::endl;
     for (int i = 0; i < m_mask.size(); i++ )
     {
-        if ( m_mask[i] ) file << 1 <<  " ";
-        else             file << 0 <<  " ";
+        file <<  m_mask[i]  <<  " " ;
     }
     file << std::endl;
     for (int i =0; i < m_values_on_line.size(); i++ )

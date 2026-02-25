@@ -249,11 +249,9 @@ void SetDefaultPOLParameterIS( PlotOverLineProperty& pol_property )
 
 std::unique_ptr<vismodule::KVSMLObjectPlotOverLine> GeneratePOLIS(
     const int time_step,
-    const PlotOverLineProperty& pol_property,
-    MultiVolumePropertyList& mvpl
+    const PlotOverLineProperty& pol_property
 )
 {
-    bool nan_error = false;
     const int resolution = pol_property.m_sampling_size;
 
     vismodule::KVSMLObjectPlotOverLine* tmp_obj = new vismodule::KVSMLObjectPlotOverLine;
@@ -296,7 +294,6 @@ std::unique_ptr<vismodule::KVSMLObjectPlotOverLine> GeneratePOLIS(
         }
     }
 
-    nan_error = false;
     delete tmp_obj;
 
     return std::make_unique<vismodule::KVSMLObjectPlotOverLine>( values_on_line, x_axis, mask );

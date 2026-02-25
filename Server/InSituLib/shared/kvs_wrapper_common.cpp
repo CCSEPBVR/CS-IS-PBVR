@@ -4,6 +4,7 @@
 #include <vector>
 #include <vismodule/KVSMLObjectPoint>
 #include <vismodule/KVSMLObjectPlotOverLine>
+#include <vismodule/KVSMLObjectPlotOverTime>
 #include <vismodule/ParameterFileReader>
 #include <vismodule/ParameterFileWriter>
 
@@ -868,19 +869,8 @@ void OutputPOT(
     std::string plotOverTimeFilePath;
     plotOverTimeFilePath = plotOverTimeFilePrefix + ss.str();
 
-    std::ofstream file( plotOverTimeFilePath );
+    vismodule::ValueArray<float> tmp_value_on_time( value_on_time );
 
-    if ( !file.is_open() ) {
-        std::cerr << "Failed to open the Plot Over Time file. FilePath: " << plotOverTimeFilePath << std::endl;
-        return;
-    }
-
-    if ( mask ) file << "TRUE" << std::endl;
-    else file << "FALSE" << std::endl;
-
-    for ( size_t i = 0; i < value_on_time.size(); i++ )
-    {
-        file << value_on_time[i] << " ";
-    }
-    file << std::endl;
+    vismodule::KVSMLObjectPlotOverTime pot_object( tmp_value_on_time, mask );
+    pot_object.write( plotOverTimeFilePath.c_str() );
 }

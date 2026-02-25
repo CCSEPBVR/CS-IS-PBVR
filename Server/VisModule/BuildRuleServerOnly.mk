@@ -33,6 +33,7 @@ $(OUTDIR)/./FileFormat/GrADS/Vars.o \
 $(OUTDIR)/./FileFormat/GrADS/XYZDef.o \
 $(OUTDIR)/./FileFormat/KVSMLObjectGlyph.o \
 $(OUTDIR)/./FileFormat/KVSMLObjectPlotOverLine.o \
+$(OUTDIR)/./FileFormat/KVSMLObjectPlotOverTime.o \
 $(OUTDIR)/./FileFormat/KVSML/CellTag.o \
 $(OUTDIR)/./FileFormat/KVSML/ColorMapTag.o \
 $(OUTDIR)/./FileFormat/KVSML/ColorTag.o \
@@ -272,13 +273,15 @@ $(OUTDIR)/./DaemonAndSampler/Daemon/ParticleHistoryFile.o \
 $(OUTDIR)/./DaemonAndSampler/Daemon/ParticleFile.o \
 $(OUTDIR)/./DaemonAndSampler/Daemon/ParticleStatusFile.o \
 $(OUTDIR)/./DaemonAndSampler/Daemon/PlotOverLineFile.o \
+$(OUTDIR)/./DaemonAndSampler/Daemon/PlotOverTimeFile.o \
 $(OUTDIR)/./DaemonAndSampler/Daemon/ParticleMonitor.o \
 $(OUTDIR)/./DaemonAndSampler/Daemon/SetDefaultTransferFunction.o \
 $(OUTDIR)/./DaemonAndSampler/Daemon/Timer.o \
 $(OUTDIR)/./DaemonAndSampler/Daemon/InitialStep.o \
 $(OUTDIR)/./DaemonAndSampler/Daemon/GenerateGlyph.o \
 $(OUTDIR)/./DaemonAndSampler/Daemon/GenerateParticle.o \
-$(OUTDIR)/./DaemonAndSampler/Daemon/GeneratePOL.o
+$(OUTDIR)/./DaemonAndSampler/Daemon/GeneratePOL.o \
+$(OUTDIR)/./DaemonAndSampler/Daemon/GeneratePOT.o
 
 
 
