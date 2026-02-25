@@ -110,7 +110,7 @@ const bool KVSMLObjectPlotOverTime::read( const std::string& filename )
 
     // values on time 
     std::getline( file, line_buffer );
-    std::cout << "INFO:" << __FILE__ << ", " << __func__ << ", " << __LINE__ << ", " << "line_buffer:" << line_buffer << std::endl;
+    // std::cout << "INFO:" << __FILE__ << ", " << __func__ << ", " << __LINE__ << ", " << "line_buffer:" << line_buffer << std::endl;
     data = this->split( line_buffer, ' ' );
     m_values_on_time.allocate( data.size() );
     for (size_t i = 0; i < data.size(); i++ )

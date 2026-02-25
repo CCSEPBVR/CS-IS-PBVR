@@ -12,6 +12,7 @@ ParameterFileWriter::ParameterFileWriter()
         m_particle_parameter_old_path = "./";
         m_glyph_parameter_path        = "./";
         m_pol_parameter_path          = "./";
+        m_pot_parameter_path          = "./";
     }
     else
     {
@@ -19,10 +20,12 @@ ParameterFileWriter::ParameterFileWriter()
         m_particle_parameter_old_path = envBuf;
         m_glyph_parameter_path        = envBuf;
         m_pol_parameter_path          = envBuf;
+        m_pot_parameter_path          = envBuf;
         if ( m_particle_parameter_path[m_particle_parameter_path.size() - 1] != '/' )         m_particle_parameter_path     += "/";
         if ( m_particle_parameter_old_path[m_particle_parameter_old_path.size() - 1] != '/' ) m_particle_parameter_old_path += "/";
         if ( m_glyph_parameter_path[m_glyph_parameter_path.size() - 1] != '/' )               m_glyph_parameter_path        += "/";
         if ( m_pol_parameter_path[m_pol_parameter_path.size() - 1] != '/' )                   m_pol_parameter_path          += "/";
+        if ( m_pot_parameter_path[m_pot_parameter_path.size() - 1] != '/' )                   m_pot_parameter_path          += "/";
     }
 
     envBuf = std::getenv( "TF_NAME" );
@@ -33,22 +36,26 @@ ParameterFileWriter::ParameterFileWriter()
         m_particle_parameter_old_path += "default_old.tf";
         m_glyph_parameter_path        += "parameter.gly";
         m_pol_parameter_path          += "parameter.pol";
+        m_pot_parameter_path          += "parameter.pot";
     }
     else
     {
         m_particle_parameter_path += envBuf;
         m_particle_parameter_path     += ".tf";
         m_particle_parameter_old_path += envBuf;
-        m_particle_parameter_old_path += ".tf";
+        m_particle_parameter_old_path += "_old.tf";
         m_glyph_parameter_path    += envBuf;
-        m_glyph_parameter_path    += ".tf";
+        m_glyph_parameter_path    += ".gly";
         m_pol_parameter_path      += envBuf;
-        m_pol_parameter_path      += ".tf";
+        m_pol_parameter_path      += ".pol";
+        m_pol_parameter_path      += envBuf;
+        m_pot_parameter_path      += ".pot";
     }
 
-    std::cout << "ParticleParameterPath:"     << m_particle_parameter_path << std::endl;
-    std::cout << "GlyphParameterPath:"        << m_glyph_parameter_path    << std::endl;
-    std::cout << "PlotOverLineParameterPath:" << m_pol_parameter_path      << std::endl;
+    // std::cout << "ParticleParameterPath:"     << m_particle_parameter_path << std::endl;
+    // std::cout << "GlyphParameterPath:"        << m_glyph_parameter_path    << std::endl;
+    // std::cout << "PlotOverLineParameterPath:" << m_pol_parameter_path      << std::endl;
+    // std::cout << "PlotOverTimeParameterPath:" << m_pot_parameter_path      << std::endl;
 }
 
 std::string ParameterFileWriter::getParticleParameterPath()
@@ -64,6 +71,11 @@ std::string ParameterFileWriter::getGlyphParameterPath()
 std::string ParameterFileWriter::getPOLParameterPath()
 {
     return m_pol_parameter_path;
+}
+
+std::string ParameterFileWriter::getPOTParameterPath()
+{
+    return m_pot_parameter_path;
 }
 
 void ParameterFileWriter::getParticleParameter( const ParticleProperty& particle_property )
@@ -280,6 +292,23 @@ void ParameterFileWriter::getPlotOverLineParameter( const PlotOverLineProperty& 
     m_name_list_file.setLine( "END_PARAMETER_FILE", "SUCCESS" );
 }
 
+void ParameterFileWriter::getPlotOverTimeParameter( const PlotOverTimeProperty& pot_property )
+{
+    std::string plot_flag = "FALSE";
+    if ( pot_property.m_plot_flag ) plot_flag = "TRUE";
+
+    // 各成分を文字列に変換
+    std::stringstream  target_point;
+    for ( size_t i = 0; i < 3; i++ )
+    {
+        target_point << pot_property.m_target_point[i] << ",";
+    }
+
+    m_name_list_file.setLine( "PLOT_FLAG", plot_flag );
+    m_name_list_file.setLine( "TARGET_POINT", target_point.str() );
+    m_name_list_file.setLine( "END_PARAMETER_FILE", "SUCCESS" );
+}
+
 void ParameterFileWriter::writeParticleParameterFile()
 {
     m_name_list_file.setFileName( m_particle_parameter_path );
@@ -301,6 +330,12 @@ void ParameterFileWriter::writeGlyphParameterFile()
 void ParameterFileWriter::writePlotOverLineParameterFile()
 {
     m_name_list_file.setFileName( m_pol_parameter_path );
+    m_name_list_file.write();
+}
+
+void ParameterFileWriter::writePlotOverTimeParameterFile()
+{
+    m_name_list_file.setFileName( m_pot_parameter_path );
     m_name_list_file.write();
 }
 

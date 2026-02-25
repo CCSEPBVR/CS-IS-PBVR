@@ -9,9 +9,10 @@
 
 void SetDefaultPOTParameterIS( PlotOverTimeProperty& pot_property );
 
-std::unique_ptr<vismodule::KVSMLObjectPlotOverTime> GeneratePOTIS(
+bool GeneratePOTIS(
     const int time_step,
-    const PlotOverTimeProperty& pot_property
+    const PlotOverTimeProperty& pot_property,
+    std::unique_ptr<vismodule::KVSMLObjectPlotOverTime>& kvsml_object_pot
 );
 
 #endif

@@ -159,10 +159,12 @@ void ParticleMonitor::readPlotOverLineFile()
 //    TimerStop( 7 );
 }
 
-void ParticleMonitor::readPlotOverTimeFile()
+bool ParticleMonitor::readPlotOverTimeFile()
 {
+    bool result = false;
     m_plot_over_time_file.setParameterFromFile();
-    m_plot_over_time_file.generatePOTObject( m_time_step_pot, &m_plot_over_time );
+    result = m_plot_over_time_file.generatePOTObject( m_time_step_pot, &m_plot_over_time );
+    return result;
 }
 
 void ParticleMonitor::readParticleFile()

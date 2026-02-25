@@ -16,7 +16,7 @@ private:
 public:
     void setFilePrefix( const std::string& prefix );
     void setParameterFromFile();
-    void generatePOTObject( const int time_step, vismodule::KVSMLObjectPlotOverTime *object );
+    bool generatePOTObject( const int time_step, vismodule::KVSMLObjectPlotOverTime *object );
 };
 
 #endif

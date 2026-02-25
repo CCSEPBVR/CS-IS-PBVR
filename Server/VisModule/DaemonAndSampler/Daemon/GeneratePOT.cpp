@@ -32,9 +32,10 @@ void SetDefaultPOTParameterIS( PlotOverTimeProperty& pot_property )
     ppr.setPlotOverTimeParameter( pot_property );
 }
 
-std::unique_ptr<vismodule::KVSMLObjectPlotOverTime> GeneratePOTIS(
+bool GeneratePOTIS(
     const int time_step,
-    const PlotOverTimeProperty& pot_property
+    const PlotOverTimeProperty& pot_property,
+    std::unique_ptr<vismodule::KVSMLObjectPlotOverTime>& kvsml_object_pot
 )
 {
     ParticleMonitor pm;
@@ -46,27 +47,28 @@ std::unique_ptr<vismodule::KVSMLObjectPlotOverTime> GeneratePOTIS(
     }
     else
     {
-        pm.setTimeStep_pot(0);
+        // pm.setTimeStep_pot(0);
+        std::cerr << __FILE__ << "," << __func__ << "," << __LINE__ << "ERROR: Time step is not exist." << std::endl;
+        return false;
     }
 
-    vismodule::KVSMLObjectPlotOverTime* tmp_obj = new vismodule::KVSMLObjectPlotOverTime;
     bool mask = false;
     vismodule::ValueArray<float> values_on_time;
     
     // get plot over line
-    pm.readPlotOverTimeFile();
-    pm.getPlotOverTime( tmp_obj );
+    bool result = false;
+    result = pm.readPlotOverTimeFile();
+    if ( !result ) return false; // データファイルが存在しないタイムステップはスキップ
+    pm.getPlotOverTime( kvsml_object_pot.get() );
 
-    mask = tmp_obj->mask();
+    mask = kvsml_object_pot->mask();
 
     if ( mask )
     {
-        values_on_time.allocate( tmp_obj->values_on_time().size() );
+        values_on_time.allocate( kvsml_object_pot->values_on_time().size() );
         values_on_time.fill( 0x00 );
-        memcpy( values_on_time.pointer(), tmp_obj->values_on_time().pointer(), tmp_obj->values_on_time().byteSize() );
+        memcpy( values_on_time.pointer(), kvsml_object_pot->values_on_time().pointer(), kvsml_object_pot->values_on_time().byteSize() );
     }
 
-    delete tmp_obj;
-
-    return std::make_unique<vismodule::KVSMLObjectPlotOverTime>( values_on_time, mask );
+    return true;
 }

@@ -794,7 +794,6 @@ void ParameterFileReader::setPlotOverLineParameter( PlotOverLineProperty& pol_pr
     else
     {
         pol_property.m_plot_flag = false;
-        return;
     }
 
     pol_property.m_sampling_size = m_name_list_file.getValue<int>("SAMPLING_SIZE");
@@ -834,7 +833,6 @@ void ParameterFileReader::setPlotOverTimeParameter( PlotOverTimeProperty& pot_pr
     else
     {
         pot_property.m_plot_flag = false;
-        return;
     }
 
     const std::string target_point_string = m_name_list_file.getValue<std::string>("TARGET_POINT");

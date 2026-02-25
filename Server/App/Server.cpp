@@ -1111,7 +1111,7 @@ void Server::requestDataAt(uWS::WebSocket<false, true, PerSocket>* ws, const nlo
                 tfFilePath     += step.str() + ".tf";
             }
 
-            std::cout << "tfFilePath:" << tfFilePath << std::endl;
+            // std::cout << "tfFilePath:" << tfFilePath << std::endl;
 
             ParameterFileReader ppr;
 
@@ -1569,6 +1569,33 @@ void Server::receivePlotOverLineParameter(uWS::WebSocket<false, true, PerSocket>
 void Server::receivePlotOverTimeParameter(uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received)
 {
     // std::cout << "[Server] plot over time parameter" << std::endl;
+
+    if (received.contains(Protocol::Key::Coords))
+    {
+        m_pot_property->m_plot_flag = true;
+
+        const auto& coords = received.at(Protocol::Key::Coords);
+        if (coords.size() == 3)
+        {
+            const double x = coords.at(0).get<double>();
+            const double y = coords.at(1).get<double>();
+            const double z = coords.at(2).get<double>();
+
+            std::cout << "Plot Over Time Coords : " << x << ", " << y << ", " << z << std::endl;
+
+            m_pot_property->m_target_point[0] = x;
+            m_pot_property->m_target_point[1] = y;
+            m_pot_property->m_target_point[2] = z;
+        }
+    }
+
+    if (m_server_mode == ServerMode::IS)
+    {
+        // パラメータファイルにPOLパラメータを書き込む
+        ParameterFileWriter ppw;
+        ppw.getPlotOverTimeParameter(*m_pot_property);
+        ppw.writePlotOverTimeParameterFile();
+    }
 
     ws->publish( k_text_topic, received.dump(), uWS::OpCode::TEXT );
 }
@@ -2624,7 +2651,12 @@ void Server::PlotOverTimeSenderLoop()
                 int timeStep = (lastSendTimeStep + 1) + i;
 
                 // 指定したtime stepのPlot Over Timeを取得する
-                kvsmlObjectPOT = GeneratePOTIS(timeStep, *m_pot_property);
+                bool result = false;
+                kvsmlObjectPOT = std::make_unique<vismodule::KVSMLObjectPlotOverTime>();
+                result = GeneratePOTIS(timeStep, *m_pot_property, kvsmlObjectPOT);
+
+                if ( !result ) continue; // データファイルが存在しないタイムステップはスキップ
+
                 vismodule::ValueArray<float> valuesOnTime;
                 valuesOnTime = kvsmlObjectPOT->values_on_time();
 

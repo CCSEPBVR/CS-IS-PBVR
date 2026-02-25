@@ -71,7 +71,7 @@ public:
     void readGlyphFile();
     bool findPlotOverLineFile();
     void readPlotOverLineFile();
-    void readPlotOverTimeFile();
+    bool readPlotOverTimeFile();
     void getParticle( vismodule::PointObject* object );
     void getGlyph( vismodule::KVSMLObjectGlyph* object );
     void getPlotOverLine( vismodule::KVSMLObjectPlotOverLine* object );
