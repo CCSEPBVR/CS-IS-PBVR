@@ -22,6 +22,7 @@
     <ClCompile Include="DaemonAndSampler\Daemon\GenerateGlyph.cpp" />
     <ClCompile Include="DaemonAndSampler\Daemon\GenerateParticle.cpp" />
     <ClCompile Include="DaemonAndSampler\Daemon\GeneratePOL.cpp" />
+    <ClCompile Include="DaemonAndSampler\Daemon\GeneratePOT.cpp" />
     <ClCompile Include="DaemonAndSampler\Daemon\GlyphFile.cpp" />
     <ClCompile Include="DaemonAndSampler\Daemon\InitialStep.cpp" />
     <ClCompile Include="DaemonAndSampler\Daemon\ParameterFileReader.cpp" />
@@ -31,6 +32,7 @@
     <ClCompile Include="DaemonAndSampler\Daemon\ParticleMonitor.cpp" />
     <ClCompile Include="DaemonAndSampler\Daemon\ParticleStatusFile.cpp" />
     <ClCompile Include="DaemonAndSampler\Daemon\PlotOverLineFile.cpp" />
+    <ClCompile Include="DaemonAndSampler\Daemon\PlotOverTimeFile.cpp" />
     <ClCompile Include="FileFormat\AggregateTypeSubvolume.cpp" />
     <ClCompile Include="FileFormat\AVSField\AVSField.cpp" />
     <ClCompile Include="FileFormat\AVSUCD\AVSUcd.cpp" />
@@ -40,6 +42,7 @@
     <ClCompile Include="FileFormat\FileFormatBase.cpp" />
     <ClCompile Include="FileFormat\KVSMLObjectGlyph.cpp" />
     <ClCompile Include="FileFormat\KVSMLObjectPlotOverLine.cpp" />
+    <ClCompile Include="FileFormat\KVSMLObjectPlotOverTime.cpp" />
     <ClCompile Include="FileFormat\KVSML\CellTag.cpp" />
     <ClCompile Include="FileFormat\KVSML\ColorMapTag.cpp" />
     <ClCompile Include="FileFormat\KVSML\ColorTag.cpp" />
@@ -126,12 +129,14 @@
     <ClCompile Include="Visualization\Mapper\MapperBase.cpp" />
     <ClCompile Include="Visualization\Mapper\OpacityMap.cpp" />
     <ClCompile Include="Visualization\Mapper\PlotOverLine.cpp" />
+    <ClCompile Include="Visualization\Mapper\PlotOverTime.cpp" />
     <ClCompile Include="Visualization\Mapper\TransferFunction.cpp" />
     <ClCompile Include="Visualization\Mapper\TransferFunctionSynthesizer.cpp" />
     <ClCompile Include="Visualization\Object\GeometryObjectBase.cpp" />
     <ClCompile Include="Visualization\Object\GlyphSeedGenerator.cpp" />
     <ClCompile Include="Visualization\Object\ObjectBase.cpp" />
     <ClCompile Include="Visualization\Object\PlotOverLineGenerator.cpp" />
+    <ClCompile Include="Visualization\Object\PlotOverTimeGenerator.cpp" />
     <ClCompile Include="Visualization\Object\PointObject.cpp" />
     <ClCompile Include="Visualization\Object\PointObjectGenerator.cpp" />
     <ClCompile Include="Visualization\Object\StructuredVolumeObject.cpp" />
@@ -149,6 +154,7 @@
     <ClInclude Include="DaemonAndSampler\Daemon\GenerateGlyph.h" />
     <ClInclude Include="DaemonAndSampler\Daemon\GenerateParticle.h" />
     <ClInclude Include="DaemonAndSampler\Daemon\GeneratePOL.h" />
+    <ClInclude Include="DaemonAndSampler\Daemon\GeneratePOT.h" />
     <ClInclude Include="DaemonAndSampler\Daemon\GlyphFile.h" />
     <ClInclude Include="DaemonAndSampler\Daemon\InitialStep.h" />
     <ClInclude Include="DaemonAndSampler\Daemon\ParameterFileReader.h" />
@@ -157,6 +163,7 @@
     <ClInclude Include="DaemonAndSampler\Daemon\ParticleHistoryFile.h" />
     <ClInclude Include="DaemonAndSampler\Daemon\ParticleMonitor.h" />
     <ClInclude Include="DaemonAndSampler\Daemon\ParticleStatusFile.h" />
+    <ClInclude Include="DaemonAndSampler\Daemon\PlotOverTimeFile.h" />
     <ClInclude Include="FileFormat\AggregateTypeSubvolume.h" />
     <ClInclude Include="FileFormat\AVSField\AVSField.h" />
     <ClInclude Include="FileFormat\AVSUCD\AVSUcd.h" />
@@ -167,6 +174,7 @@
     <ClInclude Include="FileFormat\FileFormatBase.h" />
     <ClInclude Include="FileFormat\KVSMLObjectGlyph.h" />
     <ClInclude Include="FileFormat\KVSMLObjectPlotOverLine.h" />
+    <ClInclude Include="FileFormat\KVSMLObjectPlotOverTime.h" />
     <ClInclude Include="FileFormat\KVSML\CellTag.h" />
     <ClInclude Include="FileFormat\KVSML\ColorMapTag.h" />
     <ClInclude Include="FileFormat\KVSML\ColorTag.h" />
@@ -254,12 +262,14 @@
     <ClInclude Include="Visualization\Mapper\MapperBase.h" />
     <ClInclude Include="Visualization\Mapper\OpacityMap.h" />
     <ClInclude Include="Visualization\Mapper\PlotOverLine.h" />
+    <ClInclude Include="Visualization\Mapper\PlotOverTime.h" />
     <ClInclude Include="Visualization\Mapper\TransferFunction.h" />
     <ClInclude Include="Visualization\Mapper\TransferFunctionSynthesizer.h" />
     <ClInclude Include="Visualization\Object\GeometryObjectBase.h" />
     <ClInclude Include="Visualization\Object\GlyphSeedGenerator.h" />
     <ClInclude Include="Visualization\Object\ObjectBase.h" />
     <ClInclude Include="Visualization\Object\PlotOverLineGenerator.h" />
+    <ClInclude Include="Visualization\Object\PlotOverTimeGenerator.h" />
     <ClInclude Include="Visualization\Object\PointObject.h" />
     <ClInclude Include="Visualization\Object\PointObjectGenerator.h" />
     <ClInclude Include="Visualization\Object\StructuredVolumeObject.h" />
@@ -269,6 +279,7 @@
     <ClInclude Include="Visualization\Property\MultiVolumeProperty.h" />
     <ClInclude Include="Visualization\Property\ParticleProperty.h" />
     <ClInclude Include="Visualization\Property\PlotOverLineProperty.h" />
+    <ClInclude Include="Visualization\Property\PlotOverTimeProperty.h" />
     <ClInclude Include="Visualization\Property\VariableRange.h" />
     <ClInclude Include="Visualization\Viewer\Camera.h" />
     <ClInclude Include="Visualization\Viewer\Xform.h" />
