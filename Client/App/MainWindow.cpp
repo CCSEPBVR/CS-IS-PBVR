@@ -463,6 +463,8 @@ void MainWindow::initializeObjectEditor()
 
         connect( m_object_editor, &ObjectEditor::updateTranslation       , m_plot_over_line_editor     , &PlotOverLineEditor::onUpdateTranslation );
 
+        connect( m_object_editor, &ObjectEditor::updateTranslation       , m_plot_over_time_editor     , &PlotOverTimeEditor::onUpdateTranslation );
+
         connect( m_object_editor, &ObjectEditor::shading, m_shading_control, &ShadingControl::onShading );
 
         connect( m_object_editor, &ObjectEditor::dataRequestCompleted    , m_time_step_control_tool_bar, &TimeStepControlToolBar::onDataRequestCompleted );

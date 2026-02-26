@@ -87,7 +87,7 @@ ObjectEditor::ObjectEditor( kvs::qt::jaea::Screen* screen, WebSocketPair* websoc
 
     connect( ui->browsePushButton               , &QPushButton::clicked                 , this, &ObjectEditor::onBrowse );
     connect( ui->deletePushButton               , &QPushButton::clicked                 , this, &ObjectEditor::onDelete );
-    connect( ui->applyPushButton                , &QPushButton::clicked                 , this, &ObjectEditor::onApply );
+    connect( ui->applyPushButton                , &QPushButton::clicked                 , this, &ObjectEditor::onApply );    
 }
 
 ObjectEditor::~ObjectEditor()

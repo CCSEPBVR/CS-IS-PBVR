@@ -40,6 +40,8 @@ public slots:
 
     void onUpdateNumberOfVector( const int numberOfVector );
 
+    void onUpdateTranslation();
+
     // NOTE:テキストソケット用
     void onReceivePlotOverTimeParameter( const QJsonObject& payload );
 
