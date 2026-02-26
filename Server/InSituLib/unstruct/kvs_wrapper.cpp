@@ -248,7 +248,8 @@ bool generate_particles(
         delete glyph_object;
     }
 
-    if ( pol_property.m_plot_flag )
+    // if ( pol_property.m_plot_flag )
+    if ( true ) // 常に生成し続ける、将来的に変わる可能性あり
     {
         vismodule::KVSMLObjectPlotOverLine* pol_object = new vismodule::KVSMLObjectPlotOverLine;
         PlotOverLineGenerator pol_generator;
@@ -270,7 +271,8 @@ bool generate_particles(
         delete pol_object;
     }
 
-    if ( pot_property.m_plot_flag )
+    // if ( pot_property.m_plot_flag )
+    if ( true ) // 常に生成し続ける、将来的に変わる可能性あり
     {
         PlotOverTimeGenerator pot_generator;
         pot_mask = pot_generator.GeneratePOTUnstruct(
@@ -296,12 +298,14 @@ bool generate_particles(
         );
     }
 
-    if ( pol_property.m_plot_flag )
+    // if ( pol_property.m_plot_flag )
+    if ( true ) // 常に出力し続ける、将来的に変わる可能性あり
     {
         OutputLine( time_step, plotOverLineFilePrefix, values_on_line, mask, x_axis );
     }
 
-    if ( pot_property.m_plot_flag )
+    // if ( pot_property.m_plot_flag )
+    if ( true ) // 常に出力し続ける、将来的に変わる可能性あり
     {
         OutputPOT( time_step, plotOverTimeFilePrefix, pot_mask, value_on_time );
     }
@@ -742,7 +746,8 @@ bool generate_particles_vtk( int time_step, vtkUnstructuredGrid* ucd )
             delete pol_object;
         }
 
-        if ( pot_property.m_plot_flag )
+        // if ( pot_property.m_plot_flag )
+        if ( true ) // 常に生成し続ける、将来的に変わる可能性あり
         {
             PlotOverTimeGenerator pot_generator;
 
@@ -779,7 +784,8 @@ bool generate_particles_vtk( int time_step, vtkUnstructuredGrid* ucd )
         OutputLine( time_step, plotOverLineFilePrefix, values_on_line, mask, x_axis );
     }
 
-    if ( pot_property.m_plot_flag )
+    // if ( pot_property.m_plot_flag )
+    if ( true ) // 常にファイルを出力し続ける、将来的に変更する可能性あり
     {
         OutputPOT( time_step, plotOverTimeFilePrefix, pot_mask, value_on_time );
     }
