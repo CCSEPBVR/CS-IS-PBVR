@@ -4,6 +4,7 @@
 #include <string>
 #include <sstream>
 #include <algorithm>
+#include <filesystem>
 #include <vismodule/Directory>
 #include <vismodule/File>
 #include <vismodule/Type>
@@ -28,7 +29,7 @@ public:
     void setFilePrefix( const std::string& prefix );
     void setParameterFromFile();
     void generatePointObject( const int time_step, vismodule::PointObject* object );
-    void generatePOLObject( const int time_step, vismodule::KVSMLObjectPlotOverLine* object );
+    bool generatePOLObject( const int time_step, vismodule::KVSMLObjectPlotOverLine* object );
     int subVolumeNumber () {return m_subvolume_number;}
     int getStartTimeStep () {return m_initial_step;}
     int getLatestTimeStep () {return m_final_step;}

@@ -107,10 +107,7 @@ bool PlotOverTimeFile::generatePOTObject( const int time_step, vismodule::KVSMLO
             fs::path filepath( filename );
 
             // ファイルが存在しない場合、オブジェクト生成失敗を返す
-            if ( !fs::exists( filepath ) )
-            {
-                return false;
-            }
+            if ( !fs::exists( filepath ) ) return false;
 
             vismodule::KVSMLObjectPlotOverTime tmpimp( filename );
 

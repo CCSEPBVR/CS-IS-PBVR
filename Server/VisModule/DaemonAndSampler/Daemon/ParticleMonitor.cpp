@@ -149,14 +149,12 @@ void ParticleMonitor::readGlyphFile()
 //    TimerStop( 7 );
 }
 
-void ParticleMonitor::readPlotOverLineFile()
+bool ParticleMonitor::readPlotOverLineFile()
 {
-//    TimerStart( 6 );
+    bool result = false;
     m_plot_over_line_file.setParameterFromFile();
-//    TimerStop( 6 );
-//    TimerStart( 7 );
-    m_plot_over_line_file.generatePOLObject( m_time_step_pol, &m_plot_over_line );
-//    TimerStop( 7 );
+    result = m_plot_over_line_file.generatePOLObject( m_time_step_pol, &m_plot_over_line );
+    return result;
 }
 
 bool ParticleMonitor::readPlotOverTimeFile()

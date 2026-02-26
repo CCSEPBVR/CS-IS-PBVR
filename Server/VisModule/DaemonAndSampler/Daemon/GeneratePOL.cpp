@@ -247,26 +247,12 @@ void SetDefaultPOLParameterIS( PlotOverLineProperty& pol_property )
     ppr.setPlotOverLineParameter( pol_property );
 }
 
-std::unique_ptr<vismodule::KVSMLObjectPlotOverLine> GeneratePOLIS(
+bool GeneratePOLIS(
     const int time_step,
-    const PlotOverLineProperty& pol_property
+    const PlotOverLineProperty& pol_property,
+    std::unique_ptr<vismodule::KVSMLObjectPlotOverLine>& kvsml_object_pol
 )
 {
-    const int resolution = pol_property.m_sampling_size;
-
-    vismodule::KVSMLObjectPlotOverLine* tmp_obj = new vismodule::KVSMLObjectPlotOverLine;
-    vismodule::ValueArray<float> values_on_line;
-    vismodule::ValueArray<float> x_axis;
-    vismodule::ValueArray<bool>  mask;
-
-    values_on_line.allocate( resolution );
-    x_axis.allocate( resolution );
-    mask.allocate( resolution );
-
-    values_on_line.fill( 0x00 );
-    x_axis.fill( 0x00 );
-    mask.fill( 0x00 );
-
     ParticleMonitor pm;
     pm.check();
 
@@ -276,25 +262,16 @@ std::unique_ptr<vismodule::KVSMLObjectPlotOverLine> GeneratePOLIS(
     }
     else
     {
-        pm.setTimeStep_pol(0);
+        // pm.setTimeStep_pol(0);
+        std::cerr << __FILE__ << "," << __func__ << "," << __LINE__ << "ERROR: Time step is not exist." << std::endl;
+        return false;
     }
     
     // get plot over line
-    pm.readPlotOverLineFile();
-    pm.getPlotOverLine( tmp_obj );
+    bool result = false;
+    result = pm.readPlotOverLineFile();
+    if ( !result ) return false; // データファイルが存在しないタイムステップはスキップ
+    pm.getPlotOverLine( kvsml_object_pol.get() );
 
-    // make parameter
-    for( size_t i = 0; i < resolution; i++ )
-    { 
-        x_axis[i] = tmp_obj->x_axis()[i];
-        if ( tmp_obj->mask()[i] )
-        {
-            mask[i]           = 1;
-            values_on_line[i] = tmp_obj->values_on_line()[i];
-        }
-    }
-
-    delete tmp_obj;
-
-    return std::make_unique<vismodule::KVSMLObjectPlotOverLine>( values_on_line, x_axis, mask );
+    return true;
 }

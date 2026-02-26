@@ -70,7 +70,7 @@ public:
     bool findGlyphFile();
     void readGlyphFile();
     bool findPlotOverLineFile();
-    void readPlotOverLineFile();
+    bool readPlotOverLineFile();
     bool readPlotOverTimeFile();
     void getParticle( vismodule::PointObject* object );
     void getGlyph( vismodule::KVSMLObjectGlyph* object );

@@ -82,94 +82,80 @@ void PlotOverLineFile::setParameterFromFile()
     m_kvsml_file_number = num_kvsml;
 }
 
-void PlotOverLineFile::generatePOLObject( const int time_step, vismodule::KVSMLObjectPlotOverLine* object )
+bool PlotOverLineFile::generatePOLObject( const int time_step, vismodule::KVSMLObjectPlotOverLine* object )
 {
     vismodule::UInt32 subvolume_num = m_subvolume_number;
     std::string prefix = m_file_prefix;
 
-    std::vector<bool> check_vol( subvolume_num, false );
-
+    std::vector<bool>  check_vol( subvolume_num, false );
     std::vector<float> xAxis;
-    std::vector<bool> Mask;
-    std::vector<float>  Values;
-    bool read_success = false;
-    bool resize_flag =true;
-    while( !read_success )
+    std::vector<bool>  Mask;
+    std::vector<float> Values;
+    bool resize_flag = true;
+
+    for ( int m = 0; m < subvolume_num; m++ )
     {
-        for ( int m = 0; m < subvolume_num; m++ )
-        {
+        std::vector<float>  tmp_xAxis;
+        std::vector<bool>   tmp_Mask;
+        std::vector<float>  tmp_Values;
 
-            std::vector<float>  tmp_xAxis;
-            std::vector<bool>   tmp_Mask;
-            std::vector<float>  tmp_Values;
-            if( !check_vol[m] )
+        std::stringstream suffix;
+        suffix << '_' << std::setw( 5 ) << std::setfill( '0' ) << time_step
+               << '_' << std::setw( 7 ) << std::setfill( '0' ) << m + 1
+               << '_' << std::setw( 7 ) << std::setfill( '0' ) << subvolume_num;
+        std::string filename = prefix + suffix.str() + ".dat";
+        namespace fs = std::filesystem;
+        fs::path filepath( filename );
+
+        // ファイルが存在しない場合、オブジェクト生成失敗を返す
+        if ( !fs::exists( filepath ) ) return false;
+
+        vismodule::KVSMLObjectPlotOverLine tmpimp(filename);
+
+        int num = tmpimp.x_axis().size();
+        for (int i = 0; i < num; i ++  )
+        {
+            tmp_xAxis.push_back( tmpimp.x_axis()[i] ); 
+            tmp_Mask.push_back( tmpimp.mask()[i] ); 
+            tmp_Values.push_back( tmpimp.values_on_line()[i] ); 
+        }
+
+        if ( resize_flag )
+        {
+            xAxis.resize( tmp_xAxis.size() );
+            Mask.resize( tmp_Mask.size() );
+            Values.resize( tmp_Values.size() );
+            xAxis       = tmp_xAxis;
+            resize_flag = false;
+        }
+        
+        for( size_t i = 0; i < tmp_Mask.size(); i++ )
+        { 
+            if ( tmp_Mask[i] ) 
             { 
-                std::stringstream suffix;
-                suffix << '_' << std::setw( 5 ) << std::setfill( '0' ) << time_step
-                    << '_' << std::setw( 7 ) << std::setfill( '0' ) << m + 1
-                    << '_' << std::setw( 7 ) << std::setfill( '0' ) << subvolume_num;
-                std::string filename = prefix + suffix.str() + ".dat";
-                vismodule::KVSMLObjectPlotOverLine tmpimp(filename);
-
-                if( tmpimp.isSuccess() ) check_vol[m] = true;
-
-                if ( check_vol[m] )
-                {
-                    int num = tmpimp.x_axis().size();
-                    for (int i = 0; i < num; i ++  )
-                    {
-                        tmp_xAxis.push_back( tmpimp.x_axis()[ i ]); 
-                        tmp_Mask.push_back( tmpimp.mask()[ i ]); 
-                        tmp_Values.push_back(   tmpimp.values_on_line()[i]); 
-                    }
-                }
-
-                if ( resize_flag)
-                {
-                   xAxis.resize(tmp_xAxis.size());
-                   Mask.resize(tmp_Mask.size());
-                   Values.resize(tmp_Values.size());
-                   xAxis = tmp_xAxis;
-                   resize_flag =false;
-                }
-                for(int i =0; i < tmp_Mask.size(); i++)
-                { 
-                    if (tmp_Mask[i]) 
-                    {
-                        Mask[i] = tmp_Mask[i];
-                        Values[i] = tmp_Values[i];
-                    } 
-                }
-
-
-            }
-        }
-
-        read_success = true;
-        for( int m = 0; m < subvolume_num; m++ )
-        {
-            if( !check_vol[m] )
-            {
-                read_success = false;
-                break;
-            }
+                Mask[i]   = tmp_Mask[i];
+                Values[i] = tmp_Values[i];
+            } 
         }
     }
 
-    vismodule::ValueArray<float> x_axis(xAxis);
-    vismodule::ValueArray<float> valuesOnLine(Values);
-
+    vismodule::ValueArray<float> x_axis( xAxis );
+    vismodule::ValueArray<float> valuesOnLine( Values );
     vismodule::ValueArray<bool>  mask;
-    mask.allocate(Mask.size());
-    mask.fill(false);
-    for(int i =0; i < Mask.size(); i++)
+
+    mask.allocate( Mask.size() );
+    mask.fill( false );
+
+    for ( size_t i = 0; i < Mask.size(); i++ )
     { 
-           mask[i] = Mask[i];
+        mask[i] = Mask[i];
     }
 
-    object-> setXAxis(x_axis);
-    object-> setMask(mask);
-    object-> setValuesOnLine(valuesOnLine);
+    object->setXAxis( x_axis );
+    object->setMask( mask );
+    object->setValuesOnLine( valuesOnLine );
+
+    return true;
 }
 
 

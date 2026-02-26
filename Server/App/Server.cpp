@@ -1004,6 +1004,7 @@ void Server::requestDataAt(uWS::WebSocket<false, true, PerSocket>* ws, const nlo
         if (m_pol_property->m_plot_flag)
         {
             std::unique_ptr<vismodule::KVSMLObjectPlotOverLine> kvsml_object_pol;
+            bool isSendEnabled = true;
 
             if (m_server_mode == ServerMode::CS)
             {
@@ -1040,12 +1041,13 @@ void Server::requestDataAt(uWS::WebSocket<false, true, PerSocket>* ws, const nlo
 
                     if ((timeStep >= pointStartStep) && (timeStep <= pointLatestStep))
                     {
-                        kvsml_object_pol = GeneratePOLIS(timeStep, *m_pol_property);
+                        kvsml_object_pol = std::make_unique<vismodule::KVSMLObjectPlotOverLine>();
+                        isSendEnabled = GeneratePOLIS(timeStep, *m_pol_property, kvsml_object_pol);
                     }
                 }
             }
 
-            if (kvsml_object_pol)
+            if (kvsml_object_pol && isSendEnabled)
             {
                 const size_t resolution = kvsml_object_pol->values_on_line().size();
 
@@ -1576,10 +1578,13 @@ void Server::receivePlotOverTimeParameter(uWS::WebSocket<false, true, PerSocket>
 {
     // std::cout << "[Server] plot over time parameter" << std::endl;
 
+    if (received.contains(Protocol::Key::Enable))
+    {
+        m_pot_property->m_plot_flag = received.at(Protocol::Key::Enable).get<bool>();
+    }
+
     if (received.contains(Protocol::Key::Coords))
     {
-        m_pot_property->m_plot_flag = true;
-
         const auto& coords = received.at(Protocol::Key::Coords);
         if (coords.size() == 3)
         {

@@ -17,9 +17,10 @@ std::unique_ptr<vismodule::KVSMLObjectPlotOverLine> GeneratePOLCS(
 
 void SetDefaultPOLParameterIS( PlotOverLineProperty& pol_property );
 
-std::unique_ptr<vismodule::KVSMLObjectPlotOverLine> GeneratePOLIS(
+bool GeneratePOLIS(
     const int time_step,
-    const PlotOverLineProperty& pol_property
+    const PlotOverLineProperty& pol_property,
+    std::unique_ptr<vismodule::KVSMLObjectPlotOverLine>& kvsml_object_pol
 );
 
 #endif
