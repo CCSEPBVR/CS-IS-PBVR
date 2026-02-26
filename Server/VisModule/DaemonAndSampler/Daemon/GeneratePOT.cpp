@@ -51,24 +51,12 @@ bool GeneratePOTIS(
         std::cerr << __FILE__ << "," << __func__ << "," << __LINE__ << "ERROR: Time step is not exist." << std::endl;
         return false;
     }
-
-    bool mask = false;
-    vismodule::ValueArray<float> values_on_time;
     
     // get plot over line
     bool result = false;
     result = pm.readPlotOverTimeFile();
     if ( !result ) return false; // データファイルが存在しないタイムステップはスキップ
     pm.getPlotOverTime( kvsml_object_pot.get() );
-
-    mask = kvsml_object_pot->mask();
-
-    if ( mask )
-    {
-        values_on_time.allocate( kvsml_object_pot->values_on_time().size() );
-        values_on_time.fill( 0x00 );
-        memcpy( values_on_time.pointer(), kvsml_object_pot->values_on_time().pointer(), kvsml_object_pot->values_on_time().byteSize() );
-    }
 
     return true;
 }
