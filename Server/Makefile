@@ -122,12 +122,12 @@ INCLUDE_PATH += -I$(KVS_UWS_DIR)/src -I$(KVS_UWS_DIR)/uSockets/src
 LIBRARY_PATH += -L/opt/homebrew/opt/openssl@3/lib
 LINK_LIBRARY += $(KVS_UWS_DIR)/uSockets/uSockets.a -lssl -lcrypto -lz
 
-SUBDIRS := Utils
-SUBDIRS += App
-
 #=========================================================
 # VPATH（検索パス）設定
 #=========================================================
+SUBDIRS := Utils
+SUBDIRS += App
+
 vpath %.cpp $(SUBDIRS)
 vpath %.h   $(SUBDIRS)
 
@@ -140,7 +140,15 @@ OBJS := \
 	$(OUTDIR)/ServerWorker.o \
 	$(OUTDIR)/TaskSignalTransferProtocol.o
 
-all: $(TARGET)
+THIRD_DIRS := VisModule
+THIRD_DIRS += InSituLib
+
+all: third $(TARGET)
+
+third:
+	for i in $(THIRD_DIRS); do \
+    	$(MAKE) -C $$i; \
+	done	
 
 $(TARGET): $(OBJS)
 	$(LD) $^ $(LDFLAGS) $(DEFINITIONS) $(LIBRARY_PATH) $(LINK_LIBRARY) -o $@
@@ -154,5 +162,7 @@ $(OUTDIR)/%.o: %.cpp
 	$(CPP) $(CPPFLAGS) $(DEFINITIONS) $(INCLUDE_PATH) -c $< -o $@
 
 clean:
+	for i in $(THIRD_DIRS); do \
+	$(MAKE) -C $$i clean; done
 	$(RMDIR) `find $(OUTDIR) -name "*.o"`
 	$(RM) $(TARGET)
