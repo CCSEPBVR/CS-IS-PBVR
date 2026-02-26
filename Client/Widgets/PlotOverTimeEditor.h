@@ -104,7 +104,7 @@ private:
 public slots:
      void onDisplayGraphComboBoxChanged( int index );
     void onResetPlotView();
-    void onPlotOverTimeGroupBoxCheckBox();
+    void onPlotOverTimeCheckBox();
     void onApply();
 };
 

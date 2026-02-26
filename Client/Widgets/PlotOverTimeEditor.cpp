@@ -100,7 +100,7 @@ PlotOverTimeEditor::PlotOverTimeEditor( kvs::qt::jaea::Screen* screen, WebSocket
 
 
     connect( ui->resetPlotViewPushButton, &QPushButton::clicked, this, &PlotOverTimeEditor::onResetPlotView ) ;
-    connect( ui->plotOverTimeGroupBox   , &QGroupBox::toggled  , this, &PlotOverTimeEditor::onPlotOverTimeGroupBoxCheckBox );
+    connect( ui->plotOverTimeCheckBox   , &QCheckBox::toggled  , this, &PlotOverTimeEditor::onPlotOverTimeCheckBox );
     connect( ui->applyPushButton        , &QPushButton::clicked, this, &PlotOverTimeEditor::onApply );
 
     m_plot_inited = true;
@@ -116,7 +116,7 @@ void PlotOverTimeEditor::reset()
 {
     m_has_last_snap_shot = false;
 
-    ui->plotOverTimeGroupBox->setEnabled( false );
+    ui->plotOverTimeCheckBox->setEnabled( false );
 
     if( m_point_object != nullptr )
     {
@@ -162,7 +162,7 @@ void PlotOverTimeEditor::onOperatorStateUpdate( const bool operatorState )
 {
     m_is_operator = operatorState;
 
-    ui->plotOverTimeGroupBox->setEnabled( m_is_operator );
+    ui->plotOverTimeCheckBox->setEnabled( m_is_operator );
 }
 
 void PlotOverTimeEditor::onUpdateNumberOfVector( const int numberOfVector )
@@ -199,9 +199,11 @@ void PlotOverTimeEditor::onReceivePlotOverTimeParameter( const QJsonObject& payl
     const auto kValueOnTime = QString::fromUtf8( Protocol::Key::ValueOnTime );
     const auto kSamples     = QString::fromUtf8( Protocol::Key::Samples );
 
+    const bool uiParameterUpdated = payload.contains( kEnable );
+
     if( payload.contains( kEnable ) )
     {
-        ui->plotOverTimeGroupBox->setChecked( payload.value( kEnable ).toBool() );
+        ui->plotOverTimeCheckBox->setChecked( payload.value( kEnable ).toBool() );
     }
 
     if( payload.contains( kCoords ) )
@@ -261,7 +263,6 @@ void PlotOverTimeEditor::onReceivePlotOverTimeParameter( const QJsonObject& payl
     double tLatest    = 0.0;
     bool forceRebuild = false;
 
-    // ★追加：今回の受信で「新規に追加した点」の数
     int addedCount = 0;
 
     auto safeVal = []( const QJsonValue& v ) -> double
@@ -288,7 +289,6 @@ void PlotOverTimeEditor::onReceivePlotOverTimeParameter( const QJsonObject& payl
 
         if( !m_time_buffer.isEmpty() && static_cast<int>( m_time_buffer.back() ) == step )
         {
-            // 上書き（追加ではない）
             for( int i = 0; i < n; ++i )
             {
                 if( !m_value_buffers[i].isEmpty() )
@@ -297,7 +297,6 @@ void PlotOverTimeEditor::onReceivePlotOverTimeParameter( const QJsonObject& payl
         }
         else
         {
-            // 穴埋めが走ったら描画は必ず再構築
             if( !m_time_buffer.isEmpty() )
             {
                 const int lastStep = static_cast<int>( m_time_buffer.back() );
@@ -317,11 +316,9 @@ void PlotOverTimeEditor::onReceivePlotOverTimeParameter( const QJsonObject& payl
             for( int i = 0; i < n; ++i )
                 m_value_buffers[i].push_back( safeVal( arr[i] ) );
 
-            // ★追加：新規追加したのでカウント
             ++addedCount;
         }
 
-        // 長さ合わせ
         const int len = m_time_buffer.size();
         for( int i = 0; i < m_value_buffers.size(); ++i )
         {
@@ -362,8 +359,11 @@ void PlotOverTimeEditor::onReceivePlotOverTimeParameter( const QJsonObject& payl
         redrawPlotFromBuffers( idx, tLatest, /*forceRebuild=*/(forceRebuild || m_need_rebuild) );
     }
 
-    m_last_snap_shot     = captureUiSnapshot();
-    m_has_last_snap_shot = true;
+    if( uiParameterUpdated )
+    {
+        m_last_snap_shot     = captureUiSnapshot();
+        m_has_last_snap_shot = true;
+    }
 }
 
 void PlotOverTimeEditor::onDrawVRPlotOverTime( kvs::Real32 coordArray[ 2 * 3 ] )
@@ -425,7 +425,7 @@ void PlotOverTimeEditor::onDrawVRPlotOverTime( kvs::Real32 coordArray[ 2 * 3 ] )
 void PlotOverTimeEditor::onToggleShowHideVRPlotOverTime()
 {
     if( !m_web_sockets->isConnected() ) return;
-    ui->plotOverTimeGroupBox->setChecked( !ui->plotOverTimeGroupBox->isChecked() );
+    ui->plotOverTimeCheckBox->setChecked( !ui->plotOverTimeCheckBox->isChecked() );
     onApply();
 }
 
@@ -454,7 +454,7 @@ bool PlotOverTimeEditor::sameVec3( const double a[3], const double b[3] )
 PlotOverTimeEditor::PlotOverTimeUiSnapshot PlotOverTimeEditor::captureUiSnapshot() const
 {
     PlotOverTimeUiSnapshot s;
-    s.enable     = ui->plotOverTimeGroupBox->isChecked();
+    s.enable     = ui->plotOverTimeCheckBox->isChecked();
     return s;
 }
 
@@ -547,10 +547,10 @@ void PlotOverTimeEditor::onResetPlotView()
     m_q_custom_plot->replot();
 }
 
-void PlotOverTimeEditor::onPlotOverTimeGroupBoxCheckBox()
+void PlotOverTimeEditor::onPlotOverTimeCheckBox()
 {
     if( !m_point_object ) { return; }
-    const bool visible = ui->plotOverTimeGroupBox->isChecked();
+    const bool visible = ui->plotOverTimeCheckBox->isChecked();
     m_point_object->setVisible( visible );
     m_screen->update();
 }
