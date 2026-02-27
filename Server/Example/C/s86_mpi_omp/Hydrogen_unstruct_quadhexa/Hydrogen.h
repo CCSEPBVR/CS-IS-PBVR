@@ -18,9 +18,6 @@
 #include <kvs/Vector3>
 #include <kvs/Vector2>
 #include <mpi.h>
-#include <kvs/AnyValueArray>
-#include <kvs/ValueArray>
-#include <kvs/Vector3>
 
 /*===========================================================================*/
 /**
