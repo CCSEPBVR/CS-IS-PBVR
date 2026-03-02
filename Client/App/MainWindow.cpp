@@ -560,6 +560,7 @@ void MainWindow::initializeVolumeTransform()
         addDockWidget( Qt::LeftDockWidgetArea, m_volume_transform );
 
         connect( m_volume_transform, &VolumeTransform::updateTranslation, m_plot_over_line_editor, &PlotOverLineEditor::onUpdateTranslation );
+        connect( m_volume_transform, &VolumeTransform::updateTranslation, m_plot_over_time_editor, &PlotOverTimeEditor::onUpdateTranslation );
     }
 }
 
