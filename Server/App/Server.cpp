@@ -1836,6 +1836,10 @@ void Server::receiveTransferFunctionParameter(uWS::WebSocket<false, true, PerSoc
         {
             SendParticlePropertySignal(*m_particle_property);
         }
+        
+        // 粒子パラメータの再計算
+        m_particle_property->m_sampling_step = CalculateSamplingStep(*m_multi_volume_property_list) / m_particle_property->m_extra_opacity_factor;
+        m_particle_property->m_subpixel_level = CalculateSubpixelLevel(*m_particle_property, *m_multi_volume_property_list, *m_particle_property->m_camera);
     }
     else // m_server_mode == ServerMode::IS
     {
