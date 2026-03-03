@@ -161,6 +161,8 @@ MainWindow::MainWindow( kvs::qt::Application& app, QWidget *parent )
 
 MainWindow::~MainWindow()
 {
+    m_web_sockets->binary()->close();
+    m_web_sockets->text()->close();
     delete m_viz_mode;
     delete m_web_sockets;
     delete m_time_step_label;
