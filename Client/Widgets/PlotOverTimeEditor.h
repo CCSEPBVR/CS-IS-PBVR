@@ -40,6 +40,7 @@ public slots:
 
     void onUpdateNumberOfVector( const int numberOfVector );
 
+    void onUpdateFocus( kvs::Vec3 resultMinObjectCoords, kvs::Vec3 resultMaxObjectCoords );
     void onUpdateTranslation();
 
     // NOTE:テキストソケット用

@@ -142,17 +142,16 @@ void PlotOverLineEditor::onUpdateNumberOfVector( const int numberOfVector )
 // NOTE:フォーカス対象のオブジェクトが変更された場合に呼び出される。
 void PlotOverLineEditor::onUpdateFocus( kvs::Vec3 resultMinObjectCoords, kvs::Vec3 resultMaxObjectCoords )
 {
-    if( m_start_point_object && m_end_point_object )
+    if( m_start_point_object && m_end_point_object && m_plot_over_line_object )
     {
-        for( int i= 1; i < m_screen->scene()->numberOfObjects(); i++ )
-        {
-            m_screen->scene()->object( i )->setMinMaxObjectCoords( resultMinObjectCoords, resultMaxObjectCoords );
-            m_screen->scene()->object( i )->setMinMaxExternalCoords( resultMinObjectCoords, resultMaxObjectCoords );
-        }
+        m_start_point_object->setMinMaxObjectCoords( resultMinObjectCoords, resultMaxObjectCoords );
+        m_start_point_object->setMinMaxExternalCoords( resultMinObjectCoords, resultMaxObjectCoords );
 
-        m_screen->scene()->objectManager()->updateMinMaxCoords();
-        m_screen->scene()->objectManager()->updateExternalCoords();
-        m_screen->update();
+        m_end_point_object->setMinMaxObjectCoords( resultMinObjectCoords, resultMaxObjectCoords );
+        m_end_point_object->setMinMaxExternalCoords( resultMinObjectCoords, resultMaxObjectCoords );
+
+        m_plot_over_line_object->setMinMaxObjectCoords( resultMinObjectCoords, resultMaxObjectCoords );
+        m_plot_over_line_object->setMinMaxExternalCoords( resultMinObjectCoords, resultMaxObjectCoords );
     }
 }
 

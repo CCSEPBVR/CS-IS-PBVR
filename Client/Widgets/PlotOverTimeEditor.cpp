@@ -191,6 +191,16 @@ void PlotOverTimeEditor::onUpdateNumberOfVector( const int numberOfVector )
 }
 
 // NOTE:フォーカス対象のオブジェクトが変更された場合に呼び出される。
+void PlotOverTimeEditor::onUpdateFocus( kvs::Vec3 resultMinObjectCoords, kvs::Vec3 resultMaxObjectCoords )
+{
+    if( m_point_object )
+    {
+        m_point_object->setMinMaxObjectCoords( resultMinObjectCoords, resultMaxObjectCoords );
+        m_point_object->setMinMaxExternalCoords( resultMinObjectCoords, resultMaxObjectCoords );
+    }
+}
+
+// NOTE:フォーカス対象のオブジェクトが変更された場合に呼び出される。
 void PlotOverTimeEditor::onUpdateTranslation()
 {
     if( m_point_object != nullptr )
