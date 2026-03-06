@@ -61,7 +61,7 @@ void Communication::onToggleShowHideSharePoint()
                                                          ).toJson( QJsonDocument::Compact ) );
 }
 
-void Communication::onVRSharePoint( kvs::Real32 CoordArray[ 2 * 3 ], kvs::Real32 DirectionArray[ 3 ] )
+void Communication::onDrawVRSharePoint( kvs::Real32 CoordArray[ 2 * 3 ], kvs::Real32 DirectionArray[ 2 * 3 ] )
 {
     if( !m_web_sockets->isConnected() )
     {

@@ -155,7 +155,7 @@ MainWindow::MainWindow( kvs::qt::Application& app, QWidget *parent )
     connect( m_vr_listener, &VRHandControllerListener::toggleShowHideVRPlotOverTime, m_plot_over_time_editor, &PlotOverTimeEditor::onToggleShowHideVRPlotOverTime );
     
     connect( m_vr_listener, &VRHandControllerListener::toggleShowHideSharePoint    , m_communication        , &Communication::onToggleShowHideSharePoint );
-    connect( m_vr_listener, &VRHandControllerListener::vrSharePoint                , m_communication        , &Communication::onVRSharePoint );
+    connect( m_vr_listener, &VRHandControllerListener::drawVRSharePoint            , m_communication        , &Communication::onDrawVRSharePoint );
 #endif
 }
 
