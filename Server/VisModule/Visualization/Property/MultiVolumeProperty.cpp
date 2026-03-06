@@ -2582,6 +2582,7 @@ void MultiVolumePropertyList::loadVolumeDataFile( const std::string& filename )
                     size_t found_inp  = filename.find(".inp");
                     size_t found_pvtu = filename.find(".pvtu");
                     size_t found_case = filename.find(".case");
+
                     if ( found_pfl != std::string::npos )
                     {
                         std::string pflfile = filename;
@@ -2609,6 +2610,10 @@ void MultiVolumePropertyList::loadVolumeDataFile( const std::string& filename )
                         std::cout << ".vtmファイルが選択されました" << std::endl;
                         size_t found_asterisk = vtmfile.find( '*' );
 
+#ifdef _WIN32
+                        std::replace(vtmfile.begin(), vtmfile.end(), '\\', '/');
+#endif
+
                         // 単一ファイルの場合
                         if ( found_asterisk == std::string::npos )
                         {
@@ -2628,6 +2633,10 @@ void MultiVolumePropertyList::loadVolumeDataFile( const std::string& filename )
                         std::cout << ".vtuファイルが選択されました" << std::endl;
                         size_t found_asterisk = vtufile.find( '*' );
 
+#ifdef _WIN32
+                        std::replace(vtufile.begin(), vtufile.end(), '\\', '/');
+#endif
+
                         // 単一ファイルの場合
                         if ( found_asterisk == std::string::npos )
                         {
@@ -2644,6 +2653,10 @@ void MultiVolumePropertyList::loadVolumeDataFile( const std::string& filename )
                         std::string vtifile = filename;
                         std::cout << ".vtiファイルが選択されました" << std::endl;
                         size_t found_asterisk = vtifile.find( '*' );
+
+#ifdef _WIN32
+                        std::replace(vtifile.begin(), vtifile.end(), '\\', '/');
+#endif
 
                         // 単一ファイルの場合
                         if ( found_asterisk == std::string::npos )
@@ -2662,6 +2675,10 @@ void MultiVolumePropertyList::loadVolumeDataFile( const std::string& filename )
                         std::cout << ".inpファイルが選択されました" << std::endl;
                         size_t found_asterisk = inpfile.find( '*' );
 
+#ifdef _WIN32
+                        std::replace(inpfile.begin(), inpfile.end(), '\\', '/');
+#endif
+
                         // 単一ファイルの場合
                         if ( found_asterisk == std::string::npos )
                         {
@@ -2679,6 +2696,10 @@ void MultiVolumePropertyList::loadVolumeDataFile( const std::string& filename )
                         std::cout << ".pvtuファイルが選択されました" << std::endl;
                         size_t found_asterisk = pvtufile.find( '*' );
 
+#ifdef _WIN32
+                        std::replace(pvtufile.begin(), pvtufile.end(), '\\', '/');
+#endif
+
                         // 単一ファイルの場合
                         if ( found_asterisk == std::string::npos )
                         {
@@ -2695,6 +2716,10 @@ void MultiVolumePropertyList::loadVolumeDataFile( const std::string& filename )
                         std::string casefile = filename;
                         std::cout << ".caseファイルが選択されました" << std::endl;
                         size_t found_asterisk = casefile.find( '*' );
+
+#ifdef _WIN32
+                        std::replace(casefile.begin(), casefile.end(), '\\', '/');
+#endif
 
                         // 単一ファイルの場合
                         if ( found_asterisk == std::string::npos )

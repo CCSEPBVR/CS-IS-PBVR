@@ -417,11 +417,56 @@ void Server::initialize(uWS::WebSocket<false, true, PerSocket>* ws, const nlohma
 
         bool isFileLoadSuccess = true;
 
-        if (!std::filesystem::exists(volumeDataNativeFilePath))
+        // ファイルパスにワイルドカードが含まれている場合
+        if (volumeDataNativeFilePath.find('*') != std::string::npos)
         {
-            std::cerr << "ERROR: The volume object file doesn't exist.(rank:" << m_mpi_rank << ")" << std::endl;
-            std::cerr << "INFO: volume object file: " << volumeDataNativeFilePath << "(rank:" << m_mpi_rank << ")" << std::endl;
-            isFileLoadSuccess = false;
+            auto dir = fileSystemPath.parent_path();
+            auto filename = fileSystemPath.filename().string();
+
+            // ディレクトリが存在する場合
+            if (std::filesystem::exists(dir))
+            {
+                // アスタリスクを数値の正規表現に変換
+                std::string regexStr = std::regex_replace(filename, std::regex("\\*"), "[0-9]+");
+                std::cout << "regexStr:" << regexStr << std::endl;
+                std::regex pattern(regexStr);
+                bool isFileFound = false;
+
+                // ディレクトリ内のファイルを走査
+                for (const auto& entry : std::filesystem::directory_iterator(dir))
+                {
+                    if (std::regex_match(entry.path().filename().string(), pattern))
+                    {
+                        isFileFound = true;
+                        std::cout << "INFO: The volume object file is found.(rank:" << m_mpi_rank << ")" << std::endl;
+                    }
+                }
+
+                // ファイルが見つからなかった場合
+                if (!isFileFound)
+                {
+                    std::cerr << "ERROR: The volume object file doesn't exist.(rank:" << m_mpi_rank << ")" << std::endl;
+                    std::cerr << "INFO: volume object file: " << volumeDataNativeFilePath << "(rank:" << m_mpi_rank << ")" << std::endl;
+                    isFileLoadSuccess = false;
+                }
+            }
+            // ディレクトリが存在しない場合
+            else
+            {
+                std::cerr << "ERROR: The directory for the volume object file path doesn't exist.(rank:" << m_mpi_rank << ")" << std::endl;
+                std::cerr << "INFO: Directory path: " << dir << "(rank:" << m_mpi_rank << ")" << std::endl;
+                isFileLoadSuccess = false;
+            }
+        }
+        // ファイルパスにワイルドカードが含まれていない場合
+        else
+        {
+            if (!std::filesystem::exists(volumeDataNativeFilePath))
+            {
+                std::cerr << "ERROR: The volume object file doesn't exist.(rank:" << m_mpi_rank << ")" << std::endl;
+                std::cerr << "INFO: volume object file: " << volumeDataNativeFilePath << "(rank:" << m_mpi_rank << ")" << std::endl;
+                isFileLoadSuccess = false;
+            }
         }
 
         // 伝達関数のファイルパスが指定されていて、そのファイルが存在しない場合
@@ -432,7 +477,7 @@ void Server::initialize(uWS::WebSocket<false, true, PerSocket>* ws, const nlohma
             isFileLoadSuccess = false;
         }
 
-        m_multi_volume_property_list->loadVolumeDataFile(volumeDataNativeFilePath);
+        if (isFileLoadSuccess) m_multi_volume_property_list->loadVolumeDataFile(volumeDataNativeFilePath);
 
         if (m_multi_volume_property_list->m_list.size() <= 0)
         {
