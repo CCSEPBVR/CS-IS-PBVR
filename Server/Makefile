@@ -31,6 +31,9 @@ ifdef MPICXXFLAGS
 CPPFLAGS += $(MPICXXFLAGS)
 endif
 
+# ヘッダファイルを修正した際にも自動で反映される
+CPPFLAGS += -MMD -MP
+
 #=============================================================================
 #  Definition.
 #=============================================================================
@@ -142,6 +145,7 @@ OBJS := \
 
 THIRD_DIRS := VisModule
 THIRD_DIRS += InSituLib
+THIRD_DIRS += FunctionParser
 
 all: third $(TARGET)
 
@@ -153,13 +157,13 @@ third:
 $(TARGET): $(OBJS)
 	$(LD) $^ $(LDFLAGS) $(DEFINITIONS) $(LIBRARY_PATH) $(LINK_LIBRARY) -o $@
 
-$(OUTDIR)/%.o: %.cpp %.h
-	$(MKDIR) $(OUTDIR)
-	$(CPP) $(CPPFLAGS) $(DEFINITIONS) $(INCLUDE_PATH) -c $< -o $@
-
 $(OUTDIR)/%.o: %.cpp
 	$(MKDIR) $(OUTDIR)
 	$(CPP) $(CPPFLAGS) $(DEFINITIONS) $(INCLUDE_PATH) -c $< -o $@
+
+# コンパイル時に.dという依存関係リストが生成される
+# どのヘッダを修正しても関係するすべての.cppが再ビルトされる
+-include $(OBJS:.o=.d)
 
 clean:
 	for i in $(THIRD_DIRS); do \
