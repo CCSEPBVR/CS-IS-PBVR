@@ -91,10 +91,19 @@ LDFLAGS += -L$(VTK_LIB_PATH) \
 -lvtklz4-$(VTK_VERSION) \
 -lvtkCommonSystem-$(VTK_VERSION) \
 -lvtkCommonMisc-$(VTK_VERSION) \
--lvtkpugixml-$(VTK_VERSION) \
--ldl
+-lvtkpugixml-$(VTK_VERSION)
 endif
 endif
+
+#######################################
+# Runtime loading of shared libraries
+#######################################
+LDFLAGS += -ldl
+
+#######################################
+# filesystem
+#######################################
+LDFLAGS += -lstdc++fs
 
 TEST_SRCS = \
 main.cpp \

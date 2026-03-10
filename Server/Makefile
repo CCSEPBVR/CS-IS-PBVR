@@ -112,11 +112,20 @@ LINK_LIBRARY += -lkvsSupportExtendedFileFormat \
 -lvtklz4-$(VTK_VERSION) \
 -lvtkCommonSystem-$(VTK_VERSION) \
 -lvtkCommonMisc-$(VTK_VERSION) \
--lvtkpugixml-$(VTK_VERSION) \
--ldl
+-lvtkpugixml-$(VTK_VERSION)
 DEFINITIONS += -DEXTEND_FILE_FORMAT
 endif
 endif
+
+#=============================================================================
+# Runtime loading of shared libraries
+#=============================================================================
+LINK_LIBRARY += -ldl
+
+#==========================================================
+# filesystem
+#==========================================================
+LINK_LIBRARY += -lstdc++fs
 
 #=============================================================================
 # uWebSockets
