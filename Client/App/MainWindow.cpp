@@ -157,6 +157,42 @@ MainWindow::MainWindow( kvs::qt::Application& app, QWidget *parent )
     connect( m_vr_listener, &VRHandControllerListener::toggleShowHideSharePoint    , m_communication        , &Communication::onToggleShowHideSharePoint );
     connect( m_vr_listener, &VRHandControllerListener::drawVRSharePoint            , m_communication        , &Communication::onDrawVRSharePoint );
 #endif
+
+    std::vector<kvs::Real32> polygonCoords =
+        {
+            0.0f, 0.0f, 0.0f,
+            0.0f, 0.0f, 0.0f,
+            0.0f, 0.0f, 0.0f
+        };
+
+    std::vector<kvs::UInt32> polygonConnections =
+        {
+            0, 1, 2
+        };
+
+    std::vector<kvs::UInt8> polygonColors =
+        {
+            200, 200, 255
+        };
+
+    const kvs::Xform initializeXform = kvs::Xform(
+        kvs::Mat4(
+            1, 0, 0, 0,
+            0, 1, 0, 0,
+            0, 0, 1, 0,
+            0, 0, 0, 1 ) );
+
+    m_dummy_object = new kvs::PolygonObject();
+    m_dummy_object->setName( "Dummy" );
+    m_dummy_object->setXform( initializeXform );
+    m_dummy_object->setCoords( kvs::ValueArray<kvs::Real32>( polygonCoords ) );
+    m_dummy_object->setConnections( kvs::ValueArray<kvs::UInt32>( polygonConnections ) );
+    m_dummy_object->setColors( kvs::ValueArray<kvs::UInt8>( polygonColors ) );
+    m_dummy_object->setPolygonType( kvs::PolygonObject::Triangle );
+    m_dummy_object->setColorType( kvs::PolygonObject::PolygonColor );
+    m_dummy_object->setNormalType( kvs::PolygonObject::VertexNormal );
+    m_dummy_object->setOpacity( 128 );
+    m_screen->registerObject( m_dummy_object, new kvs::StochasticPolygonRenderer() );
 }
 
 MainWindow::~MainWindow()
@@ -172,6 +208,15 @@ MainWindow::~MainWindow()
     delete m_compositor;
     delete m_screen;
     delete ui;
+}
+
+void MainWindow::onUpdateFocus( kvs::Vec3 resultMinObjectCoords, kvs::Vec3 resultMaxObjectCoords )
+{
+    if( m_dummy_object )
+    {
+        m_dummy_object->setMinMaxObjectCoords( resultMinObjectCoords, resultMaxObjectCoords );
+        m_dummy_object->setMinMaxExternalCoords( resultMinObjectCoords, resultMaxObjectCoords );
+    }
 }
 
 void MainWindow::onUpdateStatusBarMessage( const QString& message )
@@ -461,6 +506,7 @@ void MainWindow::initializeObjectEditor()
 
         connect( m_object_editor, &ObjectEditor::updateTotalTimeStepRange, m_time_step_control_tool_bar, &TimeStepControlToolBar::onUpdateTotalTimeStepRange );
 
+        connect( m_object_editor, &ObjectEditor::updateFocus             , this                        , &MainWindow::onUpdateFocus );
         connect( m_object_editor, &ObjectEditor::updateFocus             , m_plot_over_line_editor     , &PlotOverLineEditor::onUpdateFocus );
         connect( m_object_editor, &ObjectEditor::updateFocus             , m_plot_over_time_editor     , &PlotOverTimeEditor::onUpdateFocus );
 

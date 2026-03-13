@@ -154,7 +154,7 @@ kvs::Vec3 VRHandControllerListener::calculateCoord( kvs::Scene* scene, const kvs
 {
     kvs::Xform om = scene->objectManager()->xform();
 
-    const auto* last_obj = scene->object( scene->numberOfObjects() - 1 );
+    const auto* last_obj = scene->object( "Dummy" );
     const float scalingFactor = 1.0f / ( om.inverse() * last_obj->xform() ).scaling().x();
 
     const kvs::Vec3 pT = ( om.inverse() * p->xform() ).translation();

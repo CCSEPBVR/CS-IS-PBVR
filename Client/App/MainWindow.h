@@ -56,6 +56,7 @@ signals:
     void save( const QString& filePath ); // KPI
 
 public slots:
+    void onUpdateFocus( kvs::Vec3 resultMinObjectCoords, kvs::Vec3 resultMaxObjectCoords );
     void onUpdateStatusBarMessage( const QString& message );
     void onUpdateServerState( const bool serverState ); // true: 接続中 , false: 未接続
 
@@ -74,6 +75,7 @@ private:
     kvs::OrientationAxis* m_orientation_axis         = nullptr;
     kvs::Label* m_fps_label                          = nullptr;
     kvs::Label* m_time_step_label                    = nullptr;
+    kvs::PolygonObject* m_dummy_object               = nullptr;
 
     WebSocketPair* m_web_sockets = nullptr;
     Viz::Mode* m_viz_mode        = nullptr;
