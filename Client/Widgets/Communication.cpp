@@ -34,11 +34,39 @@ Communication::Communication( kvs::qt::jaea::Screen* screen, WebSocketPair* webS
     connect( m_web_sockets->text()                 ,&QWebSocket::connected            , this, &Communication::onTextWebSocketConnected );         // 接続成功(テキスト)
     connect( m_web_sockets->text()                 ,&QWebSocket::disconnected         , this, &Communication::onTextWebSocketDisconnected );      // 接続切断(テキスト)
     connect( m_web_sockets->text()                 ,&QWebSocket::textMessageReceived  , this, &Communication::onTextWebSocketMessageReceived );   // メッセージ受信(テキスト)
+
+    m_share_polygon_object = createDummyPolygonObject( "sharePolygonObject" );
+    auto* renderer = new kvs::StochasticPolygonRenderer();
+    m_screen->scene()->registerObject( m_share_polygon_object, renderer );
+    m_share_polygon_object->hide();
 }
 
 Communication::~Communication()
 {
     delete ui;
+}
+
+void Communication::onUpdateFocus( kvs::Vec3 resultMinObjectCoords, kvs::Vec3 resultMaxObjectCoords )
+{
+    if( m_share_polygon_object )
+    {
+        m_share_polygon_object->setMinMaxObjectCoords( resultMinObjectCoords, resultMaxObjectCoords );
+        m_share_polygon_object->setMinMaxExternalCoords( resultMinObjectCoords, resultMaxObjectCoords );
+    }
+
+    for( const auto& [userID, _] : m_shared_users )
+    {
+        std::string name = userID + "_SharedGlyph";
+
+        auto* obj = m_screen->scene()->object( name );
+        if( obj == nullptr )
+        {
+            continue;
+        }
+
+        obj->setMinMaxObjectCoords( resultMinObjectCoords, resultMaxObjectCoords );
+        obj->setMinMaxExternalCoords( resultMinObjectCoords, resultMaxObjectCoords );
+    }
 }
 
 void Communication::onToggleShowHideSharePoint()
@@ -49,10 +77,9 @@ void Communication::onToggleShowHideSharePoint()
         return;
     }
 
-    auto* obj = m_screen->scene()->object( m_user_id + "_SharedGlyph" );
-    if( obj == nullptr ) { return; }
-
-    const bool toggle = !obj->isVisible();
+    if( m_share_polygon_object == nullptr ) { return; }
+    const bool toggle = !m_share_polygon_object->isVisible();
+    m_share_polygon_object->setVisible( toggle );
 
     m_web_sockets->text()->sendTextMessage( QJsonDocument( {
                                                           { QString::fromUtf8( Protocol::Key::Event ) , QString::fromUtf8( Protocol::Events::SharePoint ) },
@@ -69,6 +96,8 @@ void Communication::onDrawVRSharePoint( kvs::Real32 CoordArray[ 2 * 3 ], kvs::Re
         return;
     }
 
+    const bool visible = m_share_polygon_object->isVisible();
+
     double x = CoordArray[0];
     double y = CoordArray[1];
     double z = CoordArray[2];
@@ -76,6 +105,76 @@ void Communication::onDrawVRSharePoint( kvs::Real32 CoordArray[ 2 * 3 ], kvs::Re
     double dx = DirectionArray[0];
     double dy = DirectionArray[1];
     double dz = DirectionArray[2];
+
+    {
+        kvs::Real32 CoordArray[ 1 * 3 ] =
+            {
+                kvs::Real32( x ),
+                kvs::Real32( y ),
+                kvs::Real32( z ),
+            };
+
+        kvs::Real32 DirectionArray[ 1 * 3 ] =
+            {
+                kvs::Real32( dx ),
+                kvs::Real32( dy ),
+                kvs::Real32( dz ),
+            };
+
+#ifdef OPENXR_SCREEN
+        // シーン全体のサイズを基準にした base_size
+        kvs::Vec3 min_coord = m_screen->scene()->objectManager()->minObjectCoord();
+        kvs::Vec3 max_coord = m_screen->scene()->objectManager()->maxObjectCoord();
+
+        kvs::Vec3 diag = max_coord - min_coord;
+        float scene_size = diag.length();
+        float base_size = scene_size * 0.005f; // シーン全体に対する割合
+
+        // 現在のスケーリング値を取得
+        kvs::Xform xform = m_screen->scene()->objectManager()->xform();
+        float scalingFactor = xform.scaling().x(); // (x,y,z が同じなら x でOK)
+
+        // スケーリングに反比例させることで拡大縮小に依存しないサイズにする
+        kvs::Real32 SizeArray[ 1 ] = { base_size / scalingFactor };
+#else
+        kvs::Xform currentObjectManagerXform = m_screen->scene()->objectManager()->xform(); // 現在のオブジェクトマネージャーのTranslation, Scaling, Rotationを取得する。
+        float scalingFactor = 1 / ( currentObjectManagerXform.inverse() * m_screen->scene()->object( m_screen->scene()->numberOfObjects() - 1 )->xform() ).scaling().x();
+        kvs::Real32 SizeArray[ 1 ] =
+            {
+                0.5f * scalingFactor,
+            };
+#endif
+
+        kvs::UInt8 ColorArray[ 1 * 3 ] =
+            {
+                0, 255, 0,
+            };
+
+        kvs::ValueArray<kvs::Real32> coords   ( CoordArray, 1 * 3 );
+        kvs::ValueArray<kvs::Real32> direction( DirectionArray, 1 * 3 );
+        kvs::ValueArray<kvs::Real32> size     ( SizeArray, 1 );
+        kvs::ValueArray<kvs::UInt8>  colors   ( ColorArray, 1 * 3 );
+
+        kvs::PolygonObject* sharePolygonObject = createArrowGlyph( coords, direction, size, colors );
+
+        if( !sharePolygonObject ) return;
+
+        sharePolygonObject->setName( "sharePolygonObject" );
+        sharePolygonObject->setXform( m_screen->scene()->objectManager()->xform() );
+
+        sharePolygonObject->setMinMaxObjectCoords(
+            m_screen->scene()->object( "StartPointObject" )->minObjectCoord(),
+            m_screen->scene()->object( "StartPointObject" )->maxObjectCoord()
+            );
+        sharePolygonObject->setMinMaxExternalCoords(
+            m_screen->scene()->object( "StartPointObject" )->minExternalCoord(),
+            m_screen->scene()->object( "StartPointObject" )->maxExternalCoord()
+            );
+        sharePolygonObject->setVisible( visible );
+
+        m_screen->scene()->replaceObject( "sharePolygonObject", sharePolygonObject );
+        m_share_polygon_object = sharePolygonObject;
+    }
 
     m_web_sockets->text()->sendTextMessage( QJsonDocument( {
                                                              { QString::fromUtf8( Protocol::Key::Event ), QString::fromUtf8( Protocol::Events::SharePoint ) },
@@ -157,6 +256,16 @@ void Communication::receiveLeft( const QJsonObject& payload )
     const int userID = payload.value( QString::fromUtf8( Protocol::Key::UserID ) ).toInt(); // NOTE:退出者のUserID
 
     ui->textBrowser->append( QString( "--- User[%1] Left" ).arg( userID ) );
+
+    const std::string objectName = userID + "_SharedGlyph";
+
+    if( m_screen->scene()->object( objectName ) != nullptr )
+    {
+        m_screen->scene()->removeObject( objectName );
+        m_screen->update();
+    }
+
+    m_shared_users.erase( userID );
 }
 
 void Communication::receiveID( const QJsonObject& payload )
@@ -288,17 +397,18 @@ void Communication::receiveSharePoint( const QJsonObject& payload )
 {
     // NOTE:PlotOverLineEditorがnullptrじゃない場合のみ機能します。
     const int userID = payload[QString::fromUtf8( Protocol::Key::UserID )].toInt(); // NOTE:着目点共有を行ったUserID
-    if( userID > m_max_shared_user_id )
-    {
-        m_max_shared_user_id = userID;
-    }
-
-    const QString glyph_name = QString::number( userID ) + "_SharedGlyph";
+    m_shared_users.emplace( userID, false );
 
     // Enable
     if( payload.contains( QString::fromUtf8( Protocol::Key::Enable ) ) )
     {
         const bool enable = payload[QString::fromUtf8( Protocol::Key::Enable )].toBool();
+
+        auto it = m_shared_users.find( userID );
+        if( it != m_shared_users.end() )
+        {
+            it->second = enable;
+        }
 
         auto* obj = m_screen->scene()->object( userID + "_SharedGlyph" );
         if( obj == nullptr )
@@ -342,75 +452,87 @@ void Communication::receiveSharePoint( const QJsonObject& payload )
     const double dy = payload[kDy].toDouble();
     const double dz = payload[kDz].toDouble();
 
-    kvs::Real32 CoordArray[ 1 * 3 ] =
+    {
         {
-            kvs::Real32( x ),
-            kvs::Real32( y ),
-            kvs::Real32( z ),
-        };
+            kvs::Real32 CoordArray[ 1 * 3 ] =
+                {
+                    kvs::Real32( x ),
+                    kvs::Real32( y ),
+                    kvs::Real32( z ),
+                };
 
-    kvs::Real32 DirectionArray[ 1 * 3 ] =
-        {
-            kvs::Real32( dx ),
-            kvs::Real32( dy ),
-            kvs::Real32( dz ),
-        };
+            kvs::Real32 DirectionArray[ 1 * 3 ] =
+                {
+                    kvs::Real32( dx ),
+                    kvs::Real32( dy ),
+                    kvs::Real32( dz ),
+                };
 
 #ifdef OPENXR_SCREEN
-    // シーン全体のサイズを基準にした base_size
-    kvs::Vec3 min_coord = m_screen->scene()->objectManager()->minObjectCoord();
-    kvs::Vec3 max_coord = m_screen->scene()->objectManager()->maxObjectCoord();
+            // シーン全体のサイズを基準にした base_size
+            kvs::Vec3 min_coord = m_screen->scene()->objectManager()->minObjectCoord();
+            kvs::Vec3 max_coord = m_screen->scene()->objectManager()->maxObjectCoord();
 
-    kvs::Vec3 diag = max_coord - min_coord;
-    float scene_size = diag.length();
-    float base_size = scene_size * 0.005f; // シーン全体に対する割合
+            kvs::Vec3 diag = max_coord - min_coord;
+            float scene_size = diag.length();
+            float base_size = scene_size * 0.005f; // シーン全体に対する割合
 
-    // 現在のスケーリング値を取得
-    kvs::Xform xform = m_screen->scene()->objectManager()->xform();
-    float scalingFactor = xform.scaling().x(); // (x,y,z が同じなら x でOK)
+            // 現在のスケーリング値を取得
+            kvs::Xform xform = m_screen->scene()->objectManager()->xform();
+            float scalingFactor = xform.scaling().x(); // (x,y,z が同じなら x でOK)
 
-    // スケーリングに反比例させることで拡大縮小に依存しないサイズにする
-    kvs::Real32 SizeArray[ 1 ] = { base_size / scalingFactor };
+            // スケーリングに反比例させることで拡大縮小に依存しないサイズにする
+            kvs::Real32 SizeArray[ 1 ] = { base_size / scalingFactor };
 #else
-    kvs::Xform currentObjectManagerXform = m_screen->scene()->objectManager()->xform(); // 現在のオブジェクトマネージャーのTranslation, Scaling, Rotationを取得する。
-    float scalingFactor = 1 / ( currentObjectManagerXform.inverse() * m_screen->scene()->object( m_screen->scene()->numberOfObjects() - 1 )->xform() ).scaling().x();
-    kvs::Real32 SizeArray[ 1 ] =
-        {
-            0.5f * scalingFactor,
-        };
+            kvs::Xform currentObjectManagerXform = m_screen->scene()->objectManager()->xform(); // 現在のオブジェクトマネージャーのTranslation, Scaling, Rotationを取得する。
+            float scalingFactor = 1 / ( currentObjectManagerXform.inverse() * m_screen->scene()->object( m_screen->scene()->numberOfObjects() - 1 )->xform() ).scaling().x();
+            kvs::Real32 SizeArray[ 1 ] =
+                {
+                    0.5f * scalingFactor,
+                };
 #endif
 
-    kvs::UInt8 ColorArray[ 1 * 3 ] =
-        {
-            0, 255, 0,
-        };
+            kvs::UInt8 ColorArray[ 1 * 3 ] =
+                {
+                    0, 255, 0,
+                };
 
-    kvs::ValueArray<kvs::Real32> coords    ( CoordArray, 1 * 3 );
-    kvs::ValueArray<kvs::Real32> direction( DirectionArray, 1 * 3 );
-    kvs::ValueArray<kvs::Real32> size     ( SizeArray, 1 );
-    kvs::ValueArray<kvs::UInt8>  colors   ( ColorArray, 1 * 3 );
+            kvs::ValueArray<kvs::Real32> coords   ( CoordArray, 1 * 3 );
+            kvs::ValueArray<kvs::Real32> direction( DirectionArray, 1 * 3 );
+            kvs::ValueArray<kvs::Real32> size     ( SizeArray, 1 );
+            kvs::ValueArray<kvs::UInt8>  colors   ( ColorArray, 1 * 3 );
 
-    if( m_screen->scene()->object( userID + "_SharedGlyph" ) == nullptr )
-    {
-        kvs::PolygonObject* sharedPolygon = createArrowGlyph( coords, direction, size, colors );
-        sharedPolygon->setName( userID + "_SharedGlyph" );
-        sharedPolygon->setXform( m_screen->scene()->objectManager()->xform() );
-        sharedPolygon->setMinMaxObjectCoords( startPointMinObjectCoords, startPointMaxObjectCoords );
-        sharedPolygon->setMinMaxExternalCoords( startPointMinObjectCoords, startPointMaxObjectCoords );
-        kvs::StochasticPolygonRenderer* renderer = new kvs::StochasticPolygonRenderer();
-        m_screen->registerObject( sharedPolygon, renderer );
-        m_screen->update();
-    }
-    else
-    {
-        kvs::PolygonObject* sharedPolygon = createArrowGlyph( coords, direction, size, colors );
-        sharedPolygon->setName( userID + "_SharedGlyph" );
-        sharedPolygon->setXform( m_screen->scene()->objectManager()->xform() );
-        sharedPolygon->setMinMaxObjectCoords( startPointMinObjectCoords, startPointMaxObjectCoords );
-        sharedPolygon->setMinMaxExternalCoords( startPointMinObjectCoords, startPointMaxObjectCoords );
-        m_screen->scene()->replaceObject( userID + "_SharedGlyph", sharedPolygon );
+            kvs::PolygonObject* sharePolygonObject = createArrowGlyph( coords, direction, size, colors );
 
-        m_screen->update();
+            if( !sharePolygonObject ) return;
+
+            if( m_screen->scene()->object( userID + "_SharedGlyph" ) == nullptr )
+            {
+                kvs::PolygonObject* sharedPolygon = createArrowGlyph( coords, direction, size, colors );
+                sharedPolygon->setName( userID + "_SharedGlyph" );
+                sharedPolygon->setXform( m_screen->scene()->objectManager()->xform() );
+                sharedPolygon->setMinMaxObjectCoords( startPointMinObjectCoords, startPointMaxObjectCoords );
+                sharedPolygon->setMinMaxExternalCoords( startPointMinObjectCoords, startPointMaxObjectCoords );
+                sharedPolygon->setVisible( m_shared_users.at( userID ) );
+
+                kvs::StochasticPolygonRenderer* renderer = new kvs::StochasticPolygonRenderer();
+                m_screen->registerObject( sharedPolygon, renderer );
+                m_screen->update();
+            }
+            else
+            {
+                const bool visible = m_screen->scene()->object( userID + "_SharedGlyph" )->isVisible();
+                kvs::PolygonObject* sharedPolygon = createArrowGlyph( coords, direction, size, colors );
+                sharedPolygon->setName( userID + "_SharedGlyph" );
+                sharedPolygon->setXform( m_screen->scene()->objectManager()->xform() );
+                sharedPolygon->setMinMaxObjectCoords( startPointMinObjectCoords, startPointMaxObjectCoords );
+                sharedPolygon->setMinMaxExternalCoords( startPointMinObjectCoords, startPointMaxObjectCoords );
+                sharedPolygon->setVisible( visible );
+                m_screen->scene()->replaceObject( userID + "_SharedGlyph", sharedPolygon );
+
+                m_screen->update();
+            }
+        }
     }
 }
 

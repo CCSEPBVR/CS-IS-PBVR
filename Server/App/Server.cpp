@@ -358,7 +358,7 @@ void Server::sharePoint(uWS::WebSocket<false, true, PerSocket>* ws, const nlohma
         msg[Protocol::Key::Enable] = received[Protocol::Key::Enable];
     }
 
-    m_u_web_sockets.publish(k_text_topic, msg.dump(), uWS::OpCode::TEXT);
+    ws->publish(k_text_topic, msg.dump(), uWS::OpCode::TEXT);
 }
 
 void Server::initialize(uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received)

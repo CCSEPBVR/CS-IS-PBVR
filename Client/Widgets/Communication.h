@@ -61,6 +61,8 @@ signals:
     void updateObjectLatestTimeStep( const QJsonObject& payload );
 
 public slots:
+    void onUpdateFocus( kvs::Vec3 resultMinObjectCoords, kvs::Vec3 resultMaxObjectCoords );
+
     void onToggleShowHideSharePoint();
     void onDrawVRSharePoint( kvs::Real32 CoordArray[ 2 * 3 ], kvs::Real32 DirectionArray[ 2 * 3 ] );
     void onLoadParameter( const QString& filePath ); // KPI
@@ -80,7 +82,9 @@ private:
     int m_user_id                   = -1;
     bool m_is_operator              = true;
 
-    int m_max_shared_user_id =      -1;
+    kvs::PolygonObject* m_share_polygon_object = nullptr;
+
+    std::map<int, bool> m_shared_users;
 
     QStandardItemModel* m_share_view_list_model = nullptr;
 

@@ -78,6 +78,46 @@ inline std::vector<float> toStdVectorOpacities( const QVector<float>& values )
     return vec;
 }
 
+inline kvs::PolygonObject* createDummyPolygonObject( std::string str )
+{
+    std::vector<kvs::Real32> polygonCoords =
+        {
+            0.0f, 0.0f, 0.0f,
+            0.0f, 0.0f, 0.0f,
+            0.0f, 0.0f, 0.0f
+        };
+
+    std::vector<kvs::UInt32> polygonConnections =
+        {
+            0, 1, 2
+        };
+
+    std::vector<kvs::UInt8> polygonColors =
+        {
+            200, 200, 255
+        };
+
+    const kvs::Xform initializeXform = kvs::Xform(
+        kvs::Mat4(
+            1, 0, 0, 0,
+            0, 1, 0, 0,
+            0, 0, 1, 0,
+            0, 0, 0, 1 ) );
+
+    kvs::PolygonObject* object = new kvs::PolygonObject();
+    object->setName( str );
+    object->setXform( initializeXform );
+    object->setCoords( kvs::ValueArray<kvs::Real32>( polygonCoords ) );
+    object->setConnections( kvs::ValueArray<kvs::UInt32>( polygonConnections ) );
+    object->setColors( kvs::ValueArray<kvs::UInt8>( polygonColors ) );
+    object->setPolygonType( kvs::PolygonObject::Triangle );
+    object->setColorType( kvs::PolygonObject::PolygonColor );
+    object->setNormalType( kvs::PolygonObject::VertexNormal );
+    object->setOpacity( 128 );
+
+    return object;
+}
+
 inline kvs::PolygonObject* createArrowGlyph(
         const kvs::ValueArray<kvs::Real32>& coords,
         const kvs::ValueArray<kvs::Real32>& directions,

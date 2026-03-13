@@ -507,6 +507,7 @@ void MainWindow::initializeObjectEditor()
         connect( m_object_editor, &ObjectEditor::updateTotalTimeStepRange, m_time_step_control_tool_bar, &TimeStepControlToolBar::onUpdateTotalTimeStepRange );
 
         connect( m_object_editor, &ObjectEditor::updateFocus             , this                        , &MainWindow::onUpdateFocus );
+        connect( m_object_editor, &ObjectEditor::updateFocus             , m_communication             , &Communication::onUpdateFocus );
         connect( m_object_editor, &ObjectEditor::updateFocus             , m_plot_over_line_editor     , &PlotOverLineEditor::onUpdateFocus );
         connect( m_object_editor, &ObjectEditor::updateFocus             , m_plot_over_time_editor     , &PlotOverTimeEditor::onUpdateFocus );
 
