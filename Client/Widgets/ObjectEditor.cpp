@@ -1196,6 +1196,8 @@ void ObjectEditor::addObjectInfoToModel( ObjectInfoExtractor::ObjectInfo& object
     ui->treeView->setCurrentIndex( index );
 
     calculateTotalMinMaxTimeStep();
+
+    if( objectInfo.tmpIsFocus ) { onApply(); }
 }
 
 void ObjectEditor::calculateTotalMinMaxTimeStep()
