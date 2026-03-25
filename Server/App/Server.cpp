@@ -656,10 +656,10 @@ void Server::initialize(uWS::WebSocket<false, true, PerSocket>* ws, const nlohma
         objectInfo.maxExternalCoord = { max_x, max_y, max_z };
 
         // サーバポイントオブジェクト(ClientServer/In-Situ共通)
-        objectInfo.tmpParticleLimit = 10000000;
-        objectInfo.particleLimit = 10000000;
+        objectInfo.tmpParticleLimit = m_particle_property->m_particle_limit;
+        objectInfo.particleLimit    = m_particle_property->m_particle_limit;
         objectInfo.tmpExtraOpacityFactor = 1.0;
-        objectInfo.extraOpacityFactor = 1.0;
+        objectInfo.extraOpacityFactor    = 1.0;
 
         // サーバポイントオブジェクト(ClientServerのみ)
         objectInfo.numberOfVector = m_multi_volume_property_list->m_total_number_ingredients;
