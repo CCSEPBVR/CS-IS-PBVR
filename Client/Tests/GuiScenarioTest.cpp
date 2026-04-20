@@ -2,6 +2,7 @@
 
 #include <QAbstractItemModel>
 #include <QApplication>
+#include <QCoreApplication>
 #include <QDateTime>
 #include <QDir>
 #include <QElapsedTimer>
@@ -32,6 +33,24 @@ constexpr int k_jump_button_disable_timeout_ms = 5000;
 constexpr int k_jump_button_enable_timeout_ms = 120000;
 constexpr int k_screenshot_settle_ms = 1000;
 kvs::qt::Application* g_test_app = nullptr;
+
+QString findRepoRootFrom( const QString& start_path )
+{
+    QDir dir( start_path );
+    while ( dir.exists() )
+    {
+        if ( dir.exists( QStringLiteral( ".git" ) ) &&
+             dir.exists( QStringLiteral( "Client" ) ) &&
+             dir.exists( QStringLiteral( "Server" ) ) )
+        {
+            return dir.absolutePath();
+        }
+
+        if ( !dir.cdUp() ) { break; }
+    }
+
+    return QString();
+}
 }
 
 QString GuiScenarioTest::envOrDefault( const char* name, const QString& fallback ) const
@@ -40,10 +59,30 @@ QString GuiScenarioTest::envOrDefault( const char* name, const QString& fallback
     return value.isEmpty() ? fallback : value;
 }
 
+QString GuiScenarioTest::defaultServerExecutablePath() const
+{
+#if defined( Q_OS_WIN )
+    return sourceTreePath( QStringLiteral( "Server/x64/Release/pbvr_server.exe" ) );
+#elif defined( Q_OS_MACOS )
+    return sourceTreePath( QStringLiteral( "Server/pbvr_server" ) );
+#else
+    return sourceTreePath( QStringLiteral( "Server/pbvr_server" ) );
+#endif
+}
+
 QString GuiScenarioTest::repoRootPath() const
 {
-    const QDir tests_source_dir( QFileInfo( QString::fromUtf8( __FILE__ ) ).absolutePath() );
-    return QDir::cleanPath( tests_source_dir.absoluteFilePath( QStringLiteral( "../.." ) ) );
+    const QString app_root = findRepoRootFrom( QCoreApplication::applicationDirPath() );
+    if ( !app_root.isEmpty() ) { return app_root; }
+
+    const QString cwd_root = findRepoRootFrom( QDir::currentPath() );
+    if ( !cwd_root.isEmpty() ) { return cwd_root; }
+
+    const QString source_root =
+        findRepoRootFrom( QFileInfo( QString::fromUtf8( __FILE__ ) ).absolutePath() );
+    if ( !source_root.isEmpty() ) { return source_root; }
+
+    return QDir::currentPath();
 }
 
 QString GuiScenarioTest::sourceTreePath( const QString& relative_path_from_repo_root ) const
@@ -67,12 +106,10 @@ bool GuiScenarioTest::waitForCondition( const std::function<bool()>& condition, 
 
 void GuiScenarioTest::initTestCase()
 {
-    m_server_executable = envOrDefault(
-        "PBVR_SERVER_EXE",
-        sourceTreePath( QStringLiteral( "Server/x64/Release/pbvr_server.exe" ) ) );
+    m_server_executable = defaultServerExecutablePath();
     m_volume_data_path = envOrDefault(
         "PBVR_VOLUME_DATA",
-        QStringLiteral( "C:/Users/SAKAMOTO/work/RegressionTestData/ucd/spx.pfi" ) );
+        QStringLiteral( "/Users/sakamoto/Work/SampleData/ucd/old/out/spx.pfl" ) );
 
     const QString default_screenshot =
         sourceTreePath(
@@ -190,7 +227,7 @@ void GuiScenarioTest::performs_remote_viz_jump_scenario()
 
     QTest::mouseClick( apply_button, Qt::LeftButton );
 
-    auto* jump_button = playback_tool_bar->findChild<QPushButton*>( "m_jump_push_button" );
+    auto* jump_button = playback_tool_bar->jumpButton();
     QVERIFY2( jump_button != nullptr, "m_jump_push_button not found" );
     QVERIFY2( jump_button->isEnabled(), "m_jump_push_button is disabled" );
 
