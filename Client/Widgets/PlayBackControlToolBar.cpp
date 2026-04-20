@@ -22,6 +22,16 @@ PlayBackControlToolBar::PlayBackControlToolBar( WebSocketPair* websockets, QWidg
     m_loop_push_button      = createPushButton( "://Resources/images/loop.svg", iconSize, pushButtonSize, this );
     m_loop_push_button      ->setCheckable( true );
 
+    m_first_push_button     ->setObjectName( "m_first_push_button" );
+    m_previous_push_button  ->setObjectName( "m_previous_push_button" );
+    m_reverse_push_button   ->setObjectName( "m_reverse_push_button" );
+    m_play_push_button      ->setObjectName( "m_play_push_button" );
+    m_next_push_button      ->setObjectName( "m_next_push_button" );
+    m_last_push_button      ->setObjectName( "m_last_push_button" );
+    m_keep_last_push_button ->setObjectName( "m_keep_last_push_button" );
+    m_jump_push_button      ->setObjectName( "m_jump_push_button" );
+    m_loop_push_button      ->setObjectName( "m_loop_push_button" );
+
     m_buttons =
         {
             m_first_push_button,
