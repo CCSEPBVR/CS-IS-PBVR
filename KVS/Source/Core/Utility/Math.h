@@ -5,6 +5,7 @@
  */
 /****************************************************************************/
 #pragma once
+#include <cstddef>
 #include <cmath>
 #include <stddef.h>
 
