@@ -430,6 +430,7 @@ void Preference::applyFontColorSetting()
 void Preference::defaultSettings()
 {
     //ColorMapBar
+    ui->captionLineEdit->clear();
     ui->orientationTypeComboBox->setCurrentIndex( Horizontal );
     //OrientationAxis
     ui->axisTypeComboBox->setCurrentIndex( CorneredAxis );
