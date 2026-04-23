@@ -10,13 +10,14 @@ class Worker : public QObject
 {
     Q_OBJECT
 public:
-    explicit Worker( QStandardItemModel* model, kvs::qt::jaea::Screen* screen,  int requestTimeStep, kvs::Vec3 resultMinObjectCoords, kvs::Vec3 resultMaxObjectCoords, QObject* parent = nullptr )
+    explicit Worker( QStandardItemModel* model, kvs::qt::jaea::Screen* screen, int requestTimeStep, kvs::Vec3 resultMinObjectCoords, kvs::Vec3 resultMaxObjectCoords, bool skipServerManagedFormats = false, QObject* parent = nullptr )
         : QObject( parent )
         , m_model( model )
         , m_screen( screen )
         , m_request_time_step( requestTimeStep )
         , m_result_min_object_coords( resultMinObjectCoords )
         , m_result_max_object_coords( resultMaxObjectCoords )
+        , m_skip_server_managed_formats( skipServerManagedFormats )
     {
     }
 
@@ -32,6 +33,14 @@ public slots:
             if( !var.canConvert<ObjectInfoExtractor::ObjectInfo>() ) continue;
 
             ObjectInfoExtractor::ObjectInfo info = var.value<ObjectInfoExtractor::ObjectInfo>();
+
+            if( m_skip_server_managed_formats &&
+                ( info.format == ObjectInfoExtractor::ClientServerPointObject ||
+                  info.format == ObjectInfoExtractor::InsituServerPointObject ||
+                  info.format == ObjectInfoExtractor::ServerGlyphObject ) )
+            {
+                continue;
+            }
 
             int resultTimeStep = -1;
 
@@ -113,6 +122,7 @@ private:
     int m_request_time_step;
     kvs::Vec3 m_result_min_object_coords;
     kvs::Vec3 m_result_max_object_coords;
+    bool m_skip_server_managed_formats = false;
 
     void importObject( ObjectInfoExtractor::ObjectInfo& info, const int&  requestTimeStep )
     {

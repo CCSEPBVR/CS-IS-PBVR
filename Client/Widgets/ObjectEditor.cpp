@@ -1,6 +1,32 @@
 #include "ObjectEditor.h"
 #include "ui_ObjectEditor.h"
 
+namespace
+{
+bool IsHybridServerManagedFormat( const ObjectInfoExtractor::Format format )
+{
+    return format == ObjectInfoExtractor::Format::ClientServerPointObject ||
+           format == ObjectInfoExtractor::Format::InsituServerPointObject ||
+           format == ObjectInfoExtractor::Format::ServerGlyphObject;
+}
+
+bool IsServerManagedObject( const Viz::Mode mode, const ObjectInfoExtractor::Format format )
+{
+    switch( mode )
+    {
+    case Viz::Mode::Local:
+        return false;
+    case Viz::Mode::LocalClientAndServer:
+        return IsHybridServerManagedFormat( format );
+    case Viz::Mode::RemoteClientAndServer:
+    case Viz::Mode::RemoteInSitu:
+        return true;
+    default:
+        return false;
+    }
+}
+}
+
 // FIXME:エクスポート機能が未実装です
 ObjectEditor::ObjectEditor( kvs::qt::jaea::Screen* screen, WebSocketPair* websockets, Viz::Mode* vizMode, QWidget *parent )
     : QDockWidget( parent )
@@ -98,6 +124,10 @@ ObjectEditor::~ObjectEditor()
 void ObjectEditor::reset()
 {
     if( !m_model ) { return; }
+
+    m_pending_request_time_step = -1;
+    m_is_waiting_local_request = false;
+    m_is_waiting_server_request = false;
 
     if( m_screen && m_screen->scene() )
     {
@@ -609,14 +639,14 @@ void ObjectEditor::onUnpack( const QByteArray& binary )
 
         ObjectInfoExtractor::ObjectInfo info = var.value<ObjectInfoExtractor::ObjectInfo>();
 
-        if( receivedUUIDs.find( info.uuid ) == receivedUUIDs.end() )
+        if( IsServerManagedObject( *m_viz_mode, info.format ) && receivedUUIDs.find( info.uuid ) == receivedUUIDs.end() )
         {
             info.object = nullptr;
             nameItem->setData( QVariant::fromValue( info ), Qt::UserRole );
         }
     }
 
-    dataRequestComplete( timeStep );
+    completeServerDataRequest( timeStep );
 }
 
 void ObjectEditor::onReceiveObjectInfoParameter( const QJsonObject& payload )
@@ -972,9 +1002,8 @@ void ObjectEditor::onRequestDataAt( int requestTimeStep )
     switch( *m_viz_mode )
     {
     case Viz::Mode::Local:
-    case Viz::Mode::LocalClientAndServer:
     {
-        Worker* worker = new Worker( m_model, m_screen, requestTimeStep, m_result_min_object_coords, m_result_max_object_coords );
+        Worker* worker = new Worker( m_model, m_screen, requestTimeStep, m_result_min_object_coords, m_result_max_object_coords, false );
         QThread* thread = new QThread;
 
         worker->moveToThread( thread );
@@ -983,33 +1012,20 @@ void ObjectEditor::onRequestDataAt( int requestTimeStep )
         connect( worker, &Worker::done     , thread, &QThread::quit );
         connect( worker, &Worker::done     , worker, &Worker::deleteLater );
         connect( thread, &QThread::finished, thread, &QThread::deleteLater );
-        connect( worker, &Worker::done     , this  , [this, requestTimeStep]() { dataRequestComplete( requestTimeStep ); } );
+        connect( worker, &Worker::done     , this  , [this, requestTimeStep]() { completeLocalDataRequest( requestTimeStep ); } );
 
         thread->start();
+        break;
+    }
+    case Viz::Mode::LocalClientAndServer:
+    {
+        beginHybridDataRequest( requestTimeStep );
         break;
     }
     case Viz::Mode::RemoteClientAndServer:
     case Viz::Mode::RemoteInSitu:
     {
-        if( m_web_sockets->isConnected() )
-        {
-            QJsonArray resultMinObjectCoords;
-            resultMinObjectCoords.append( m_result_min_object_coords.x() );
-            resultMinObjectCoords.append( m_result_min_object_coords.y() );
-            resultMinObjectCoords.append( m_result_min_object_coords.z() );
-
-            QJsonArray resultMaxObjectCoords;
-            resultMaxObjectCoords.append( m_result_max_object_coords.x() );
-            resultMaxObjectCoords.append( m_result_max_object_coords.y() );
-            resultMaxObjectCoords.append( m_result_max_object_coords.z() );
-
-            m_web_sockets->text()->sendTextMessage( QJsonDocument( {
-                                                                  { QString::fromUtf8( Protocol::Key::Event )                , QString::fromUtf8( Protocol::Events::RequestDataAt ) },
-                                                                  { QString::fromUtf8( Protocol::Key::TimeStep )             , requestTimeStep },
-                                                                  { QString::fromUtf8( Protocol::Key::ResultMinObjectCoords ), resultMinObjectCoords },
-                                                                  { QString::fromUtf8( Protocol::Key::ResultMaxObjectCoords ), resultMaxObjectCoords },
-                                                                  } ).toJson( QJsonDocument::Compact ) );
-        }
+        requestServerDataAt( requestTimeStep );
         break;
     }
     default:
@@ -1509,7 +1525,99 @@ void ObjectEditor::exportPointObject( const ObjectInfoExtractor::ObjectInfo& inf
     delete kvsml;
 }
 
-void ObjectEditor::dataRequestComplete( const int requestTimeStep )
+void ObjectEditor::requestServerDataAt( const int requestTimeStep )
+{
+    if( !m_web_sockets->isConnected() ) return;
+
+    QJsonArray resultMinObjectCoords;
+    resultMinObjectCoords.append( m_result_min_object_coords.x() );
+    resultMinObjectCoords.append( m_result_min_object_coords.y() );
+    resultMinObjectCoords.append( m_result_min_object_coords.z() );
+
+    QJsonArray resultMaxObjectCoords;
+    resultMaxObjectCoords.append( m_result_max_object_coords.x() );
+    resultMaxObjectCoords.append( m_result_max_object_coords.y() );
+    resultMaxObjectCoords.append( m_result_max_object_coords.z() );
+
+    m_web_sockets->text()->sendTextMessage( QJsonDocument( {
+                                                          { QString::fromUtf8( Protocol::Key::Event )                , QString::fromUtf8( Protocol::Events::RequestDataAt ) },
+                                                          { QString::fromUtf8( Protocol::Key::TimeStep )             , requestTimeStep },
+                                                          { QString::fromUtf8( Protocol::Key::ResultMinObjectCoords ), resultMinObjectCoords },
+                                                          { QString::fromUtf8( Protocol::Key::ResultMaxObjectCoords ), resultMaxObjectCoords },
+                                                          } ).toJson( QJsonDocument::Compact ) );
+}
+
+void ObjectEditor::beginHybridDataRequest( const int requestTimeStep )
+{
+    m_pending_request_time_step = requestTimeStep;
+    m_is_waiting_local_request = true;
+    m_is_waiting_server_request = m_web_sockets->isConnected();
+
+    Worker* worker = new Worker( m_model, m_screen, requestTimeStep, m_result_min_object_coords, m_result_max_object_coords, true );
+    QThread* thread = new QThread;
+
+    worker->moveToThread( thread );
+
+    connect( thread, &QThread::started , worker, &Worker::process );
+    connect( worker, &Worker::done     , thread, &QThread::quit );
+    connect( worker, &Worker::done     , worker, &Worker::deleteLater );
+    connect( thread, &QThread::finished, thread, &QThread::deleteLater );
+    connect( worker, &Worker::done     , this  , [this, requestTimeStep]() { completeLocalDataRequest( requestTimeStep ); } );
+
+    thread->start();
+    if( m_is_waiting_server_request )
+    {
+        requestServerDataAt( requestTimeStep );
+    }
+}
+
+void ObjectEditor::completeLocalDataRequest( const int requestTimeStep )
+{
+    const bool is_hybrid_request =
+        *m_viz_mode == Viz::Mode::LocalClientAndServer &&
+        m_pending_request_time_step == requestTimeStep;
+
+    dataRequestComplete( requestTimeStep, !is_hybrid_request, true, !is_hybrid_request );
+
+    if( is_hybrid_request )
+    {
+        m_is_waiting_local_request = false;
+        if( !m_is_waiting_server_request )
+        {
+            m_pending_request_time_step = -1;
+            m_is_waiting_local_request = false;
+            m_is_waiting_server_request = false;
+            emit dataRequestCompleted( requestTimeStep );
+        }
+    }
+}
+
+void ObjectEditor::completeServerDataRequest( const int requestTimeStep )
+{
+    const bool is_hybrid_request =
+        *m_viz_mode == Viz::Mode::LocalClientAndServer &&
+        m_pending_request_time_step == requestTimeStep;
+
+    dataRequestComplete( requestTimeStep, !is_hybrid_request, false, true );
+
+    if( is_hybrid_request )
+    {
+        m_is_waiting_server_request = false;
+        if( !m_is_waiting_local_request )
+        {
+            m_pending_request_time_step = -1;
+            m_is_waiting_local_request = false;
+            m_is_waiting_server_request = false;
+            emit dataRequestCompleted( requestTimeStep );
+        }
+    }
+}
+
+void ObjectEditor::dataRequestComplete(
+    const int requestTimeStep,
+    const bool notifyCompletion,
+    const bool processLocalObjects,
+    const bool processServerObjects )
 {
     updateVisibility( requestTimeStep );
 
@@ -1522,6 +1630,14 @@ void ObjectEditor::dataRequestComplete( const int requestTimeStep )
         if( !var.canConvert<ObjectInfoExtractor::ObjectInfo>() ) continue;
 
         ObjectInfoExtractor::ObjectInfo info = var.value<ObjectInfoExtractor::ObjectInfo>();
+        const bool isServerManagedObject = IsServerManagedObject( *m_viz_mode, info.format );
+
+        if( ( isServerManagedObject && !processServerObjects ) ||
+            ( !isServerManagedObject && !processLocalObjects ) )
+        {
+            continue;
+        }
+
         if( info.object != nullptr )
         {
             info.object->setXform( m_screen->scene()->objectManager()->xform() );
@@ -1541,7 +1657,10 @@ void ObjectEditor::dataRequestComplete( const int requestTimeStep )
         item->setData( newVar, Qt::UserRole );
     }
 
-    emit dataRequestCompleted( requestTimeStep );
+    if( notifyCompletion )
+    {
+        emit dataRequestCompleted( requestTimeStep );
+    }
     m_screen->update();
 }
 

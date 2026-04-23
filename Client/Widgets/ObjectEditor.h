@@ -90,6 +90,10 @@ private:
     kvs::Vec3 m_result_min_object_coords;
     kvs::Vec3 m_result_max_object_coords;
 
+    int m_pending_request_time_step = -1;
+    bool m_is_waiting_local_request = false;
+    bool m_is_waiting_server_request = false;
+
     void setWidgetsVisible( const QList<QWidget*>& widgets, const bool visible );
     void updateUI( const QModelIndex& index );
 
@@ -105,7 +109,15 @@ private:
     void registerObject( ObjectInfoExtractor::ObjectInfo& info );
     void replaceObject( ObjectInfoExtractor::ObjectInfo& info );
     void exportPointObject( const ObjectInfoExtractor::ObjectInfo& info, int requestTimeStep );
-    void dataRequestComplete( const int requestTimeStep );
+    void requestServerDataAt( const int requestTimeStep );
+    void beginHybridDataRequest( const int requestTimeStep );
+    void completeLocalDataRequest( const int requestTimeStep );
+    void completeServerDataRequest( const int requestTimeStep );
+    void dataRequestComplete(
+        const int requestTimeStep,
+        const bool notifyCompletion = true,
+        const bool processLocalObjects = true,
+        const bool processServerObjects = true );
 
 private slots:
     void onSelectionChanged( const QItemSelection &selected, const QItemSelection &deselected );
