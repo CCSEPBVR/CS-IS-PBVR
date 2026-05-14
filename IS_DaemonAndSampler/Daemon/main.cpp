@@ -253,15 +253,15 @@ int main( int argc, char** argv )
                 plotOverLineFilePath = envBuf;
                 if (particlePath[particlePath.size() - 1] != '/') {
                     //particlePath += "/t";
-                    //particlePath += "/var";
-                    particlePath += "/ske";
+                    particlePath += "/var";
+                    //particlePath += "/ske";
                     glyphFilePath += "/g";
                     plotOverLineFilePath += "/p";
                 }
                 else {
                     //particlePath += "t";
-                    //particlePath += "var";
-                    particlePath += "ske";
+                    particlePath += "var";
+                    //particlePath += "ske";
                     glyphFilePath += "g";
                     plotOverLineFilePath += "p";
                 }
