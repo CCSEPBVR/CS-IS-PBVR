@@ -1,21 +1,201 @@
 include(../SETTINGS.pri)
+include(TestsConfig.pri)
 
 TEMPLATE = app
 CONFIG += console testcase
 QT += testlib
 
 TARGET = pbvr_client_qtest
+CLIENT_DIR = $$clean_path($$PWD/..)
 
 INCLUDEPATH += $$PWD
 INCLUDEPATH += $$PWD/../App
 
 HEADERS += \
     ../App/MainWindow.h \
-    GuiScenarioTest.h
+    TestAppContext.h \
+    TestOutputPaths.h
 
 SOURCES += \
-    GuiScenarioTest.cpp \
+    TestMain.cpp \
+    TestOutputPaths.cpp \
     ../App/MainWindow.cpp
+
+DEFINES += PBVR_TEST_NO_MAIN
+
+equals(TEST_ENABLE_MENUBAR, 1) {
+    DEFINES += PBVR_ENABLE_TEST_MENUBAR
+    HEADERS += MenuBarTest.h
+    SOURCES += MenuBarTest.cpp
+}
+
+equals(TEST_ENABLE_SCREEN, 1) {
+    DEFINES += PBVR_ENABLE_TEST_SCREEN
+    HEADERS += ScreenTest.h
+    SOURCES += ScreenTest.cpp
+}
+
+equals(TEST_ENABLE_PLAYBACKCONTROLTOOLBAR, 1) {
+    DEFINES += PBVR_ENABLE_TEST_PLAYBACKCONTROLTOOLBAR
+    HEADERS += PlayBackControlToolBarTest.h
+    SOURCES += PlayBackControlToolBarTest.cpp
+}
+
+equals(TEST_ENABLE_TIMESTEPCONTROLTOOLBAR, 1) {
+    DEFINES += PBVR_ENABLE_TEST_TIMESTEPCONTROLTOOLBAR
+    HEADERS += TimeStepControlToolBarTest.h
+    SOURCES += TimeStepControlToolBarTest.cpp
+}
+
+equals(TEST_ENABLE_COLORMAPSELECTORTOOLBAR, 1) {
+    DEFINES += PBVR_ENABLE_TEST_COLORMAPSELECTORTOOLBAR
+    HEADERS += ColorMapSelectorToolBarTest.h
+    SOURCES += ColorMapSelectorToolBarTest.cpp
+}
+
+equals(TEST_ENABLE_TOTALPARTICLESTOOLBAR, 1) {
+    DEFINES += PBVR_ENABLE_TEST_TOTALPARTICLESTOOLBAR
+    HEADERS += TotalParticlesToolBarTest.h
+    SOURCES += TotalParticlesToolBarTest.cpp
+}
+
+equals(TEST_ENABLE_PREFERENCE, 1) {
+    DEFINES += PBVR_ENABLE_TEST_PREFERENCE
+    HEADERS += PreferenceTest.h
+    SOURCES += PreferenceTest.cpp
+}
+
+equals(TEST_ENABLE_COMMUNICATION, 1) {
+    DEFINES += PBVR_ENABLE_TEST_COMMUNICATION
+    HEADERS += CommunicationTest.h
+    SOURCES += CommunicationTest.cpp
+}
+
+equals(TEST_ENABLE_COMMUNICATION_USER_INFO, 1) {
+    DEFINES += PBVR_ENABLE_TEST_COMMUNICATION_USER_INFO
+    HEADERS += CommunicationUserInfoTest.h
+    SOURCES += CommunicationUserInfoTest.cpp
+}
+
+equals(TEST_ENABLE_COMMUNICATION_SETTING, 1) {
+    DEFINES += PBVR_ENABLE_TEST_COMMUNICATION_SETTING
+    HEADERS += CommunicationSettingTest.h
+    SOURCES += CommunicationSettingTest.cpp
+}
+
+equals(TEST_ENABLE_COMMUNICATION_SHARE_VIEW, 1) {
+    DEFINES += PBVR_ENABLE_TEST_COMMUNICATION_SHARE_VIEW
+    HEADERS += CommunicationShareViewTest.h
+    SOURCES += CommunicationShareViewTest.cpp
+}
+
+equals(TEST_ENABLE_ANIMATIONCONTROL, 1) {
+    DEFINES += PBVR_ENABLE_TEST_ANIMATIONCONTROL
+    HEADERS += AnimationControlTest.h
+    SOURCES += AnimationControlTest.cpp
+}
+
+equals(TEST_ENABLE_GLYPHEDITOR, 1) {
+    DEFINES += PBVR_ENABLE_TEST_GLYPHEDITOR
+    HEADERS += GlyphEditorTest.h
+    SOURCES += GlyphEditorTest.cpp
+}
+
+equals(TEST_ENABLE_OBJECTEDITOR, 1) {
+    DEFINES += PBVR_ENABLE_TEST_OBJECTEDITOR
+    HEADERS += ObjectEditorTest.h
+    SOURCES += ObjectEditorTest.cpp
+}
+
+equals(TEST_ENABLE_PLOTOVERLINEEDITOR, 1) {
+    DEFINES += PBVR_ENABLE_TEST_PLOTOVERLINEEDITOR
+    HEADERS += PlotOverLineEditorTest.h
+    SOURCES += PlotOverLineEditorTest.cpp
+}
+
+equals(TEST_ENABLE_POINTSIZECONTROL, 1) {
+    DEFINES += PBVR_ENABLE_TEST_POINTSIZECONTROL
+    HEADERS += PointSizeControlTest.h
+    SOURCES += PointSizeControlTest.cpp
+}
+
+equals(TEST_ENABLE_REPETITIONLEVELCONTROL, 1) {
+    DEFINES += PBVR_ENABLE_TEST_REPETITIONLEVELCONTROL
+    HEADERS += RepetitionLevelControlTest.h
+    SOURCES += RepetitionLevelControlTest.cpp
+}
+
+equals(TEST_ENABLE_SHADINGCONTROL, 1) {
+    DEFINES += PBVR_ENABLE_TEST_SHADINGCONTROL
+    HEADERS += ShadingControlTest.h
+    SOURCES += ShadingControlTest.cpp
+}
+
+equals(TEST_ENABLE_VOLUMETRANSFORM, 1) {
+    DEFINES += PBVR_ENABLE_TEST_VOLUMETRANSFORM
+    HEADERS += VolumeTransformTest.h
+    SOURCES += VolumeTransformTest.cpp
+}
+
+equals(TEST_ENABLE_TRANSFERFUNCTIONEDITOR_IMPORTEXPORT, 1) {
+    DEFINES += PBVR_ENABLE_TEST_TRANSFERFUNCTIONEDITOR_IMPORTEXPORT
+    HEADERS += TransferFunctionEditorImportExportTest.h
+    SOURCES += TransferFunctionEditorImportExportTest.cpp
+}
+
+equals(TEST_ENABLE_TRANSFERFUNCTIONEDITOR_CHANGE_TRANSFER_FUNCTION_NUMBER, 1) {
+    DEFINES += PBVR_ENABLE_TEST_TRANSFERFUNCTIONEDITOR_CHANGE_TRANSFER_FUNCTION_NUMBER
+    HEADERS += TransferFunctionEditorChangeTransferFunctionNumberTest.h
+    SOURCES += TransferFunctionEditorChangeTransferFunctionNumberTest.cpp
+}
+
+equals(TEST_ENABLE_TRANSFERFUNCTIONEDITOR_COLOR_FUNCTION_SYNTHESIZER, 1) {
+    DEFINES += PBVR_ENABLE_TEST_TRANSFERFUNCTIONEDITOR_COLOR_FUNCTION_SYNTHESIZER
+    HEADERS += TransferFunctionEditorColorFunctionSynthesizerTest.h
+    SOURCES += TransferFunctionEditorColorFunctionSynthesizerTest.cpp
+}
+
+equals(TEST_ENABLE_TRANSFERFUNCTIONEDITOR_OPACITY_FUNCTION_SYNTHESIZER, 1) {
+    DEFINES += PBVR_ENABLE_TEST_TRANSFERFUNCTIONEDITOR_OPACITY_FUNCTION_SYNTHESIZER
+    HEADERS += TransferFunctionEditorOpacityFunctionSynthesizerTest.h
+    SOURCES += TransferFunctionEditorOpacityFunctionSynthesizerTest.cpp
+}
+
+equals(TEST_ENABLE_TRANSFERFUNCTIONEDITOR_OPACITY_FUNCTION_VARIABLE, 1) {
+    DEFINES += PBVR_ENABLE_TEST_TRANSFERFUNCTIONEDITOR_OPACITY_FUNCTION_VARIABLE
+    HEADERS += TransferFunctionEditorOpacityFunctionVariableTest.h
+    SOURCES += TransferFunctionEditorOpacityFunctionVariableTest.cpp
+}
+
+equals(TEST_ENABLE_TRANSFERFUNCTIONEDITOR_COLOR_FUNCTION_VARIABLE, 1) {
+    DEFINES += PBVR_ENABLE_TEST_TRANSFERFUNCTIONEDITOR_COLOR_FUNCTION_VARIABLE
+    HEADERS += TransferFunctionEditorColorFunctionVariableTest.h
+    SOURCES += TransferFunctionEditorColorFunctionVariableTest.cpp
+}
+
+equals(TEST_ENABLE_TRANSFERFUNCTIONEDITOR_COLOR_MIN_MAX, 1) {
+    DEFINES += PBVR_ENABLE_TEST_TRANSFERFUNCTIONEDITOR_COLOR_MIN_MAX
+    HEADERS += TransferFunctionEditorColorMinMaxTest.h
+    SOURCES += TransferFunctionEditorColorMinMaxTest.cpp
+}
+
+equals(TEST_ENABLE_TRANSFERFUNCTIONEDITOR_OPACITY_MIN_MAX, 1) {
+    DEFINES += PBVR_ENABLE_TEST_TRANSFERFUNCTIONEDITOR_OPACITY_MIN_MAX
+    HEADERS += TransferFunctionEditorOpacityMinMaxTest.h
+    SOURCES += TransferFunctionEditorOpacityMinMaxTest.cpp
+}
+
+equals(TEST_ENABLE_TRANSFERFUNCTIONEDITOR_COLOR_MAP_EDIT, 1) {
+    DEFINES += PBVR_ENABLE_TEST_TRANSFERFUNCTIONEDITOR_COLOR_MAP_EDIT
+    HEADERS += TransferFunctionEditorColorMapEditTest.h
+    SOURCES += TransferFunctionEditorColorMapEditTest.cpp
+}
+
+equals(TEST_ENABLE_TRANSFERFUNCTIONEDITOR_OPACITY_MAP_EDIT, 1) {
+    DEFINES += PBVR_ENABLE_TEST_TRANSFERFUNCTIONEDITOR_OPACITY_MAP_EDIT
+    HEADERS += TransferFunctionEditorOpacityMapEditTest.h
+    SOURCES += TransferFunctionEditorOpacityMapEditTest.cpp
+}
 
 FORMS += \
     ../App/MainWindow.ui
@@ -26,18 +206,18 @@ RESOURCES += \
 win32 {
     LIBS += ws2_32.lib
     CONFIG(release, debug|release){
-        LIBS += -L../Widgets/release -lWidgets
-        LIBS += -L../FunctionParser/release -lFunctionParser
-        LIBS += -L../Utils/release -lUtils
-        LIBS += -L../ExtendedKVS/release -lExtendedKVS
-        LIBS += -L../ExtendedQT/release -lExtendedQT
+        LIBS += -L$$CLIENT_DIR/Widgets/release -lWidgets
+        LIBS += -L$$CLIENT_DIR/FunctionParser/release -lFunctionParser
+        LIBS += -L$$CLIENT_DIR/Utils/release -lUtils
+        LIBS += -L$$CLIENT_DIR/ExtendedKVS/release -lExtendedKVS
+        LIBS += -L$$CLIENT_DIR/ExtendedQT/release -lExtendedQT
     }
     else:CONFIG(debug, debug|release){
-        LIBS += -L../Widgets/debug -lWidgets
-        LIBS += -L../FunctionParser/debug -lFunctionParser
-        LIBS += -L../Utils/debug -lUtils
-        LIBS += -L../ExtendedKVS/debug -lExtendedKVS
-        LIBS += -L../ExtendedQT/debug -lExtendedQT
+        LIBS += -L$$CLIENT_DIR/Widgets/debug -lWidgets
+        LIBS += -L$$CLIENT_DIR/FunctionParser/debug -lFunctionParser
+        LIBS += -L$$CLIENT_DIR/Utils/debug -lUtils
+        LIBS += -L$$CLIENT_DIR/ExtendedKVS/debug -lExtendedKVS
+        LIBS += -L$$CLIENT_DIR/ExtendedQT/debug -lExtendedQT
     }
 
     !isEmpty( KVS_DIR ) {
@@ -69,11 +249,11 @@ win32 {
 }
 
 macx {
-    LIBS += -L../Widgets -lWidgets
-    LIBS += -L../FunctionParser -lFunctionParser
-    LIBS += -L../Utils -lUtils
-    LIBS += -L../ExtendedKVS -lExtendedKVS
-    LIBS += -L../ExtendedQT -lExtendedQT
+    LIBS += -L$$CLIENT_DIR/Widgets -lWidgets
+    LIBS += -L$$CLIENT_DIR/FunctionParser -lFunctionParser
+    LIBS += -L$$CLIENT_DIR/Utils -lUtils
+    LIBS += -L$$CLIENT_DIR/ExtendedKVS -lExtendedKVS
+    LIBS += -L$$CLIENT_DIR/ExtendedQT -lExtendedQT
 
     !isEmpty( KVS_DIR ) {
         equals( KVS_SUPPORT_QT, "1" ) {
@@ -93,11 +273,11 @@ macx {
 }
 
 unix:!macx {
-    LIBS += -L../Widgets -lWidgets
-    LIBS += -L../FunctionParser -lFunctionParser
-    LIBS += -L../Utils -lUtils
-    LIBS += -L../ExtendedKVS -lExtendedKVS
-    LIBS += -L../ExtendedQT -lExtendedQT
+    LIBS += -L$$CLIENT_DIR/Widgets -lWidgets
+    LIBS += -L$$CLIENT_DIR/FunctionParser -lFunctionParser
+    LIBS += -L$$CLIENT_DIR/Utils -lUtils
+    LIBS += -L$$CLIENT_DIR/ExtendedKVS -lExtendedKVS
+    LIBS += -L$$CLIENT_DIR/ExtendedQT -lExtendedQT
 
     !isEmpty( KVS_DIR ) {
         equals( KVS_SUPPORT_QT, "1" ) {
@@ -122,34 +302,34 @@ unix:!macx {
 
 win32 {
     CONFIG(release, debug|release) {
-        PRE_TARGETDEPS += ../Widgets/release/Widgets.lib
-        PRE_TARGETDEPS += ../FunctionParser/release/FunctionParser.lib
-        PRE_TARGETDEPS += ../Utils/release/Utils.lib
-        PRE_TARGETDEPS += ../ExtendedKVS/release/ExtendedKVS.lib
-        PRE_TARGETDEPS += ../ExtendedQT/release/ExtendedQT.lib
+        PRE_TARGETDEPS += $$CLIENT_DIR/Widgets/release/Widgets.lib
+        PRE_TARGETDEPS += $$CLIENT_DIR/FunctionParser/release/FunctionParser.lib
+        PRE_TARGETDEPS += $$CLIENT_DIR/Utils/release/Utils.lib
+        PRE_TARGETDEPS += $$CLIENT_DIR/ExtendedKVS/release/ExtendedKVS.lib
+        PRE_TARGETDEPS += $$CLIENT_DIR/ExtendedQT/release/ExtendedQT.lib
     } else:CONFIG(debug, debug|release) {
-        PRE_TARGETDEPS += ../Widgets/debug/Widgets.lib
-        PRE_TARGETDEPS += ../FunctionParser/debug/FunctionParser.lib
-        PRE_TARGETDEPS += ../Utils/debug/Utils.lib
-        PRE_TARGETDEPS += ../ExtendedKVS/debug/ExtendedKVS.lib
-        PRE_TARGETDEPS += ../ExtendedQT/debug/ExtendedQT.lib
+        PRE_TARGETDEPS += $$CLIENT_DIR/Widgets/debug/Widgets.lib
+        PRE_TARGETDEPS += $$CLIENT_DIR/FunctionParser/debug/FunctionParser.lib
+        PRE_TARGETDEPS += $$CLIENT_DIR/Utils/debug/Utils.lib
+        PRE_TARGETDEPS += $$CLIENT_DIR/ExtendedKVS/debug/ExtendedKVS.lib
+        PRE_TARGETDEPS += $$CLIENT_DIR/ExtendedQT/debug/ExtendedQT.lib
     }
 }
 
 macx {
-    PRE_TARGETDEPS += ../Widgets/libWidgets.a
-    PRE_TARGETDEPS += ../FunctionParser/libFunctionParser.a
-    PRE_TARGETDEPS += ../Utils/libUtils.a
-    PRE_TARGETDEPS += ../ExtendedKVS/libExtendedKVS.a
-    PRE_TARGETDEPS += ../ExtendedQT/libExtendedQT.a
+    PRE_TARGETDEPS += $$CLIENT_DIR/Widgets/libWidgets.a
+    PRE_TARGETDEPS += $$CLIENT_DIR/FunctionParser/libFunctionParser.a
+    PRE_TARGETDEPS += $$CLIENT_DIR/Utils/libUtils.a
+    PRE_TARGETDEPS += $$CLIENT_DIR/ExtendedKVS/libExtendedKVS.a
+    PRE_TARGETDEPS += $$CLIENT_DIR/ExtendedQT/libExtendedQT.a
 }
 
 unix:!macx {
-    PRE_TARGETDEPS += ../Widgets/libWidgets.a
-    PRE_TARGETDEPS += ../FunctionParser/libFunctionParser.a
-    PRE_TARGETDEPS += ../Utils/libUtils.a
-    PRE_TARGETDEPS += ../ExtendedKVS/libExtendedKVS.a
-    PRE_TARGETDEPS += ../ExtendedQT/libExtendedQT.a
+    PRE_TARGETDEPS += $$CLIENT_DIR/Widgets/libWidgets.a
+    PRE_TARGETDEPS += $$CLIENT_DIR/FunctionParser/libFunctionParser.a
+    PRE_TARGETDEPS += $$CLIENT_DIR/Utils/libUtils.a
+    PRE_TARGETDEPS += $$CLIENT_DIR/ExtendedKVS/libExtendedKVS.a
+    PRE_TARGETDEPS += $$CLIENT_DIR/ExtendedQT/libExtendedQT.a
 }
 
 !isEmpty( KVS_DIR ) {
@@ -158,13 +338,23 @@ unix:!macx {
 
     win32 {
         CONFIG(release, debug|release) {
+            TEST_RUNTIME_DIR = $$OUT_PWD/release
+        } else:CONFIG(debug, debug|release) {
+            TEST_RUNTIME_DIR = $$OUT_PWD/debug
+        }
+
+        TEST_RUNTIME_DIR_WIN = $$replace(TEST_RUNTIME_DIR, /, \\)
+        FONT_DIR_WIN = $$replace(FONT_DIR, /, \\)
+        SHADER_DIR_WIN = $$replace(SHADER_DIR, /, \\)
+
+        CONFIG(release, debug|release) {
             QMAKE_POST_LINK = \
-                rmdir /s /q .\release\Font & mkdir .\release\Font & xcopy "$$replace(FONT_DIR, /, \\)\*" .\release\Font & \
-                rmdir /s /q .\release\Shader & mkdir .\release\Shader & xcopy "$$replace(SHADER_DIR, /, \\)\*" .\release\Shader
+                if exist "$$TEST_RUNTIME_DIR_WIN\\Font" rmdir /s /q "$$TEST_RUNTIME_DIR_WIN\\Font" & mkdir "$$TEST_RUNTIME_DIR_WIN\\Font" & xcopy "$$FONT_DIR_WIN\\*" "$$TEST_RUNTIME_DIR_WIN\\Font\\" /E /I /Y & \
+                if exist "$$TEST_RUNTIME_DIR_WIN\\Shader" rmdir /s /q "$$TEST_RUNTIME_DIR_WIN\\Shader" & mkdir "$$TEST_RUNTIME_DIR_WIN\\Shader" & xcopy "$$SHADER_DIR_WIN\\*" "$$TEST_RUNTIME_DIR_WIN\\Shader\\" /E /I /Y
         } else:CONFIG(debug, debug|release) {
             QMAKE_POST_LINK = \
-                rmdir /s /q .\debug\Font & mkdir .\debug\Font & xcopy "$$replace(FONT_DIR, /, \\)\*" .\debug\Font & \
-                rmdir /s /q .\debug\Shader & mkdir .\debug\Shader & xcopy "$$replace(SHADER_DIR, /, \\)\*" .\debug\Shader
+                if exist "$$TEST_RUNTIME_DIR_WIN\\Font" rmdir /s /q "$$TEST_RUNTIME_DIR_WIN\\Font" & mkdir "$$TEST_RUNTIME_DIR_WIN\\Font" & xcopy "$$FONT_DIR_WIN\\*" "$$TEST_RUNTIME_DIR_WIN\\Font\\" /E /I /Y & \
+                if exist "$$TEST_RUNTIME_DIR_WIN\\Shader" rmdir /s /q "$$TEST_RUNTIME_DIR_WIN\\Shader" & mkdir "$$TEST_RUNTIME_DIR_WIN\\Shader" & xcopy "$$SHADER_DIR_WIN\\*" "$$TEST_RUNTIME_DIR_WIN\\Shader\\" /E /I /Y
         }
 
         equals( KVS_ENABLE_GLEW, "1" ) {
@@ -221,12 +411,14 @@ unix:!macx {
     }
 
     macx {
-        QMAKE_POST_LINK = rm -rf pbvr_client_qtest.app/Contents/MacOS/Font && mkdir -p pbvr_client_qtest.app/Contents/MacOS/Font && cp -rf $$FONT_DIR/* pbvr_client_qtest.app/Contents/MacOS/Font/ && \
-                          rm -rf pbvr_client_qtest.app/Contents/MacOS/Shader && mkdir -p pbvr_client_qtest.app/Contents/MacOS/Shader && cp -rf $$SHADER_DIR/* pbvr_client_qtest.app/Contents/MacOS/Shader/
+        TEST_RUNTIME_DIR = $$OUT_PWD/$${TARGET}.app/Contents/MacOS
+        QMAKE_POST_LINK = rm -rf "$$TEST_RUNTIME_DIR/Font" && mkdir -p "$$TEST_RUNTIME_DIR/Font" && cp -rf "$$FONT_DIR/"* "$$TEST_RUNTIME_DIR/Font/" && \
+                          rm -rf "$$TEST_RUNTIME_DIR/Shader" && mkdir -p "$$TEST_RUNTIME_DIR/Shader" && cp -rf "$$SHADER_DIR/"* "$$TEST_RUNTIME_DIR/Shader/"
     }
 
     unix:!macx {
-        QMAKE_POST_LINK = rm -rf Font && mkdir Font && cp -rf $$FONT_DIR/* Font && \
-                          rm -rf Shader && mkdir Shader && cp -rf $$SHADER_DIR/* Shader
+        TEST_RUNTIME_DIR = $$OUT_PWD
+        QMAKE_POST_LINK = rm -rf "$$TEST_RUNTIME_DIR/Font" && mkdir -p "$$TEST_RUNTIME_DIR/Font" && cp -rf "$$FONT_DIR/"* "$$TEST_RUNTIME_DIR/Font/" && \
+                          rm -rf "$$TEST_RUNTIME_DIR/Shader" && mkdir -p "$$TEST_RUNTIME_DIR/Shader" && cp -rf "$$SHADER_DIR/"* "$$TEST_RUNTIME_DIR/Shader/"
     }
 }
