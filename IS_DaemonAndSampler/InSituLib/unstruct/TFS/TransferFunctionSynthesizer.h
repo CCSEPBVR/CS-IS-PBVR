@@ -175,6 +175,15 @@ public:
         std::vector<pbvr::TransferFunction>& tf,
         kvs::RGBColor *color_seq);
 
+    void CalculateScalarsArray(
+        std::vector< pbvr::CellBase<Type>* > interp ,
+        const int loop_cnt,
+        const kvs::Vector3f *local_coord,
+        const kvs::Vector3f *global_coord,
+        std::vector<pbvr::TransferFunction>& tf,
+        float *scalars_array);
+
+
     void SynthesizedOpacityScalarsArray(
         std::vector< pbvr::CellBase<Type>* > interp ,
         const int loop_cnt,

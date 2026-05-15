@@ -4806,6 +4806,157 @@ void all_reduce_ensemble(pbvr::TransferFunction& tf,  std::vector< pbvr::CellBas
 //    std::cout << mpi_rank << ", ensemble_reduce = " << timer.sec() << std::endl;  
 }
 
+void calculation_glad(const int nparticles_count, const int nvariables,
+        TransferFunctionSynthesizer* th_tfs, 
+        std::vector<pbvr::TransferFunction>& th_tf, 
+        const std::vector< pbvr::CellBase<Type>* > interp, 
+        const kvs::Vector3f* local_coord_array, 
+        const kvs::UInt32* cell_index,
+        float* grad_array_x, 
+        float* grad_array_y, 
+        float* grad_array_z)
+{
+
+    kvs::Vector3f l_plus_coord[ SIMD_BLK_SIZE ];
+    kvs::Vector3f l_minus_coord[ SIMD_BLK_SIZE ];
+    kvs::Vector3f g_plus_coord[ SIMD_BLK_SIZE ];
+    kvs::Vector3f g_minus_coord[ SIMD_BLK_SIZE ];
+    float S_plus_opacity[ SIMD_BLK_SIZE ];
+    float S_minus_opacity[ SIMD_BLK_SIZE ];
+//    float dsdx_array[ SIMD_BLK_SIZE ];
+//    float dsdy_array[ SIMD_BLK_SIZE ];
+//    float dsdz_array[ SIMD_BLK_SIZE ];
+
+
+                    for( int j = 0; j < nvariables; j++ )
+                    {
+                        interp[j]->bindCellArray( nparticles_count, cell_index );
+                    }
+
+
+                    // dsdx ----------------------------------------
+                    for( int j = 0; j < nparticles_count; j++ )
+                    {
+                        l_plus_coord[j] = local_coord_array[j] + kvs::Vector3f(0.1,0,0);
+                        l_minus_coord[j] = local_coord_array[j] + kvs::Vector3f(-0.1,0,0);
+
+                    }
+
+                    interp[0]->setLocalPointArray( nparticles_count, l_plus_coord );
+                    interp[0]->transformLocalToGlobalArray( nparticles_count,
+                                                                  l_plus_coord,
+                                                                  g_plus_coord );
+
+                    interp[0]->setLocalPointArray( nparticles_count, l_minus_coord );
+                    interp[0]->transformLocalToGlobalArray( nparticles_count,
+                                                                  l_minus_coord,
+                                                                  g_minus_coord );
+
+
+                    th_tfs->CalculateOpacityArray( interp,
+                                                         nparticles_count,
+                                                         l_plus_coord,
+                                                         g_plus_coord,
+                                                         th_tf,
+                                                         S_plus_opacity );
+                    th_tfs->CalculateOpacityArray( interp,
+                                                         nparticles_count,
+                                                         l_minus_coord,
+                                                         g_minus_coord,
+                                                         th_tf,
+                                                         S_minus_opacity );
+
+                    for( int j = 0; j < nparticles_count; j++ )
+                    {
+                        grad_array_x[j] = ( S_plus_opacity[j] - S_minus_opacity[j] )*5.0;
+                    }
+                // ------------------------------------------------
+
+                    // dsdy ----------------------------------------
+                    for( int j = 0; j < nparticles_count; j++ )
+                    {
+                        l_plus_coord[j] = local_coord_array[j] + kvs::Vector3f(0,0.1,0);
+                        l_minus_coord[j] = local_coord_array[j] + kvs::Vector3f(0,-0.1,0);
+                    }
+
+                    interp[0]->setLocalPointArray( nparticles_count, l_plus_coord );
+                    interp[0]->transformLocalToGlobalArray( nparticles_count,
+                                                                  l_plus_coord,
+                                                                  g_plus_coord );
+
+                    interp[0]->setLocalPointArray( nparticles_count, l_minus_coord );
+                    interp[0]->transformLocalToGlobalArray( nparticles_count,
+                                                                  l_minus_coord,
+                                                                  g_minus_coord );
+
+                    th_tfs->CalculateOpacityArray( interp,
+                                                         nparticles_count,
+                                                         l_plus_coord,
+                                                         g_plus_coord,
+                                                         th_tf,
+                                                         S_plus_opacity );
+                    th_tfs->CalculateOpacityArray( interp,
+                                                         nparticles_count,
+                                                         l_minus_coord,
+                                                         g_minus_coord,
+                                                         th_tf,
+                                                         S_minus_opacity );
+
+                    for( int j = 0; j < nparticles_count; j++ )
+                    {
+                        grad_array_y[j] = ( S_plus_opacity[j] - S_minus_opacity[j] )*5.0;
+                    }
+                // ------------------------------------------------
+                    // dsdz ----------------------------------------
+                    for( int j = 0; j < nparticles_count; j++ )
+                    {
+                        l_plus_coord[j] = local_coord_array[j] + kvs::Vector3f(0,0,0.1);
+                        l_minus_coord[j] = local_coord_array[j] + kvs::Vector3f(0,0,-0.1);
+                    }
+
+                    interp[0]->setLocalPointArray( nparticles_count, l_plus_coord );
+                    interp[0]->transformLocalToGlobalArray( nparticles_count,
+                                                            l_plus_coord,
+                                                            g_plus_coord );
+
+                    interp[0]->setLocalPointArray( nparticles_count, l_minus_coord );
+                    interp[0]->transformLocalToGlobalArray( nparticles_count,
+                                                                  l_minus_coord,
+                                                                  g_minus_coord );
+
+                    th_tfs->CalculateOpacityArray( interp,
+                                                   nparticles_count,
+                                                   l_plus_coord,
+                                                   g_plus_coord,
+                                                   th_tf,
+                                                   S_plus_opacity );
+                    th_tfs->CalculateOpacityArray( interp,
+                                                         nparticles_count,
+                                                         l_minus_coord,
+                                                         g_minus_coord,
+                                                         th_tf,
+                                                         S_minus_opacity );
+
+                    for( int j = 0; j < nparticles_count; j++ )
+                    {
+                        grad_array_x[j] = ( S_plus_opacity[j] - S_minus_opacity[j] )*5.0;
+                    }
+                // ------------------------------------------------
+//                    //grad_arrayの算出
+//                    for( int j = 0; j < nparticles_count; j++ )
+//                    {
+//                        //JacobiMatrixでメンバ変数を使用しているので再度バインド
+//                        interp[thid][0]->bindCell( cell_index[j] );
+//
+//                        const kvs::Vector3f g( -dsdx_array[j], -dsdy_array[j], -dsdz_array[j] );
+//                        const kvs::Matrix33f J = interp[thid][0]->JacobiMatrix();
+//                        float determinant = 0.0f;
+//                        const kvs::Vector3f G = J.inverse( &determinant ) * g;
+//                        grad_array[j] = kvs::Math::IsZero( determinant ) ? kvs::Vector3f( 0.0f, 0.0f, 0.0f ) : G;
+//                    }
+
+
+}
 
 void EnsembleGenerateParticles( int time_step,
                          domain_parameters dom,
@@ -4853,7 +5004,8 @@ void EnsembleGenerateParticles( int time_step,
     std::vector<float> varience_normals;
 
 //  pbvr::cellbaseの宣言 
-    std::vector< pbvr::CellBase<Type>* > cell;
+//    std::vector< pbvr::CellBase<Type>* > cell;
+    std::vector< std::vector< pbvr::CellBase<Type>* > >  cell;
     cell.resize( max_threads );
 
     switch ( celltype )
@@ -4863,7 +5015,13 @@ void EnsembleGenerateParticles( int time_step,
                 if (mpi_rank == 0) std::cout << "celltype: tetrahedra " << std::endl; 
                 for ( int i = 0; i < max_threads; i++ )
                 {
-                    cell[i]  = new pbvr::TetrahedralCell<Type>( values[0], coordinates, ncoords, connections, ncells );
+                    cell[ i ].resize( nvariables );
+                    for ( int j = 0; j < nvariables; j++ )
+                    {
+                        cell[i][j]  = new pbvr::TetrahedralCell<Type>( values[j], coordinates, ncoords, connections, ncells );
+                    }
+
+//                    cell[i]  = new pbvr::TetrahedralCell<Type>( values[0], coordinates, ncoords, connections, ncells );
                 }
                 break;
             }
@@ -4872,7 +5030,13 @@ void EnsembleGenerateParticles( int time_step,
                 if (mpi_rank == 0) std::cout << "celltype: Hexahedra " << std::endl; 
                 for ( int i = 0; i < max_threads; i++ )
                 {
-                     cell[i]  = new pbvr::HexahedralCell<Type>( values[0], coordinates, ncoords, connections, ncells );
+                    cell[ i ].resize( nvariables );
+                    for ( int j = 0; j < nvariables; j++ )
+                    {
+                        cell[i][j]  = new pbvr::HexahedralCell<Type>( values[j], coordinates, ncoords, connections, ncells );
+                    }
+
+//                     cell[i]  = new pbvr::HexahedralCell<Type>( values[0], coordinates, ncoords, connections, ncells );
                 }
                 break;
             }
@@ -4886,7 +5050,7 @@ void EnsembleGenerateParticles( int time_step,
             }
        }
 
-//    int   tf_number                = particleBase.m_tf_number;
+    int   tf_number                = particleBase.m_tf_number;
     float sampling_volume_inverse  = particleBase.m_sampling_volume_inverse ;
     float max_opacity              = particleBase.m_max_opacity             ;
     float max_density              = particleBase.m_max_density             ;
@@ -4894,30 +5058,20 @@ void EnsembleGenerateParticles( int time_step,
     float particle_density         = particleBase.m_particle_density        ;
     float particle_data_size_limit = particleBase.m_particle_data_size_limit;
     // repeat level を手動設定
-//    int   repetitions             = 24 ; // 4 scalar
-//    float   repetitions             = 1.f ;
+    float   repetitions             = 1.f ;
 //    float   repetitions             = 8.f ;
-    float   repetitions             = 9.f ;
+//    float   repetitions             = 9.f ;
     parameter_file_opened = particleBase.m_parameter_file_opened;
 //    const int max_nparticles = (int)max_density + 1;
 
     // アンサンブル数でrepetitionを徐算
-//    const int MPIprocess_per_ensemble = 1;  
-      const int MPIprocess_per_ensemble = 4;  
+    const int MPIprocess_per_ensemble = 1;  
+//      const int MPIprocess_per_ensemble = 4;  
     int ens_number = mpi_size/MPIprocess_per_ensemble;
     repetitions /= (float)ens_number;
     std::cout << "repetitions = " << repetitions << std::endl;
 
-//    float max_opacity              = 0.98;
-    // Hydrogen
-    const float min_value = 0;
-    const float max_value = 255;
-    const float var_min_value = -8;
-    const float var_max_value =-8;
-////    // spx 
-//    const float min_value = 0.2;
-//    const float max_value = 1;
-    
+   
     
     const int tf_resolution = 256;
 
@@ -4941,11 +5095,81 @@ void EnsembleGenerateParticles( int time_step,
 
 //  .tfファイルを参照
     auto tf = particleBase.m_tf[0];
-    auto tf_var = particleBase.m_tf[1];
+    auto tf_var = particleBase.m_tf[0];
     const float max_value_tf = particleBase.m_tf[0].opacityMap().maxValue();
     const float min_value_tf = particleBase.m_tf[0].opacityMap().minValue();
     auto tf_a = particleBase.m_tf[0];
     auto tf_v = particleBase.m_tf[0];
+
+    //ヒストグラム
+    int nbins = 256;
+    kvs::ValueArray<float> o_min( tf_number );//TFSから読み込む最大最小値
+    kvs::ValueArray<float> o_max( tf_number );
+    kvs::ValueArray<float> c_min( tf_number );
+    kvs::ValueArray<float> c_max( tf_number );
+
+    kvs::ValueArray<int> o_histogram( tf_number * nbins );//不透明度ヒストグラムの配列
+    kvs::ValueArray<int> c_histogram( tf_number * nbins );//色ヒストグラムの配列
+    
+    O_min_recv.allocate(tf_number);
+    O_max_recv.allocate(tf_number);
+    C_min_recv.allocate(tf_number);
+    C_max_recv.allocate(tf_number);
+    o_histogram_recv.allocate(tf_number * nbins);
+    c_histogram_recv.allocate(tf_number * nbins);
+
+    o_histogram.fill(0x00);
+    c_histogram.fill(0x00);
+
+    for( size_t i = 0; i < tf_number; i++ )
+    {
+        o_min[i] = particleBase.m_tf[i].opacityMap().minValue();
+        o_max[i] = particleBase.m_tf[i].opacityMap().maxValue();
+        c_min[i] = particleBase.m_tf[i].colorMap().minValue();
+        c_max[i] = particleBase.m_tf[i].colorMap().maxValue();
+    }
+
+    //最大最小値
+    kvs::ValueArray<float> O_min( tf_number );//計算して得る最大最小値
+    kvs::ValueArray<float> O_max( tf_number );
+    kvs::ValueArray<float> C_min( tf_number );
+    kvs::ValueArray<float> C_max( tf_number );
+
+    for ( size_t i = 0; i < tf_number; i++ ) //初期化
+    {
+        O_min[ i ] =  FLT_MAX;
+        O_max[ i ] = -FLT_MAX;
+        C_min[ i ] =  FLT_MAX;
+        C_max[ i ] = -FLT_MAX;
+    }
+
+    // Hydrogen
+    const float min_value = 0;
+    const float max_value = 255;
+    const float var_min_value = -8;
+    const float var_max_value =-8;
+////    // spx 
+//    const float min_value = 0.2;
+//    const float max_value = 1;
+ 
+    TransferFunctionSynthesizer** th_tfs = new TransferFunctionSynthesizer*[max_threads];
+    std::vector< std::vector<pbvr::TransferFunction> > th_tf;
+
+    for ( int n = 0; n < max_threads; n++ )
+    {
+        th_tfs[n] = new TransferFunctionSynthesizer( *m_tfs );
+    }
+
+    th_tf.resize( max_threads );
+    for ( int i = 0; i < max_threads; i++ )
+    {
+        th_tf[ i ].resize( tf_number );
+        for ( int j = 0; j < tf_number; j++ )
+        {
+            th_tf[i][j] = particleBase.m_tf[j];
+        }
+    }
+
 
 //    all_reduce_ensemble(tf, cell, particleBase, ncells);
    
@@ -4964,6 +5188,7 @@ void EnsembleGenerateParticles( int time_step,
     std::vector<kvs::Real32> per_thread_normals[max_threads];
     std::vector<int>         per_thread_cellids[max_threads];
 
+std::cout << mpi_rank << ", " <<  __LINE__ << std::endl;
 #pragma omp parallel
 {    
 #if _OPENMP
@@ -4986,6 +5211,16 @@ void EnsembleGenerateParticles( int time_step,
         kvs::Vector3f global_coord_array[ SIMD_BLK_SIZE ];
         float density_array[ SIMD_BLK_SIZE ];
         float volume_array[ SIMD_BLK_SIZE ];
+
+//        std::vector<float> o_scalars_array[ SIMD_BLK_SIZE ];
+        std::vector<float> c_scalars_array[ SIMD_BLK_SIZE ];
+
+        for (int i = 0; i < SIMD_BLK_SIZE; i++ )
+        {
+//            o_scalars_array[i].resize( tf_number );
+            c_scalars_array[i].resize( tf_number );
+        }
+
 
 
     kvs::MersenneTwister MT( thid + mpi_rank * nthreads );
@@ -5020,13 +5255,18 @@ void EnsembleGenerateParticles( int time_step,
             th_timeN[0] += th_timer.sec();
             th_timer.start();
 
-            cell[thid]->bindCellArray( remain, cell_index );
+            for(int i = 0; i < nvariables; i++)
+            {
+                cell[thid][i]->bindCellArray(remain, cell_index);
+            }
+
+//            cell[thid]->bindCellArray( remain, cell_index );
 
             th_timer.stop();
             th_timeN[1] += th_timer.sec();
             th_timer.start();
             
-            cell[thid]->volumeArray( remain, volume_array);
+            cell[thid][0]->volumeArray( remain, volume_array);
             th_timer.stop();
             th_timeN[2] += th_timer.sec();
             th_timer.start();
@@ -5036,7 +5276,8 @@ void EnsembleGenerateParticles( int time_step,
             for(int cell_BLK = 0; cell_BLK < remain; cell_BLK++ )
             {
                     nparticles_array[cell_BLK] 
-                        = calculate_number_of_particles( max_density, volume_array[cell_BLK], repetitions, &MT )  * particle_density ;
+//                        = calculate_number_of_particles( max_density, volume_array[cell_BLK], repetitions, &MT )  * particle_density ;
+                        = 10;
 //                    nparticles_array[cell_BLK] *= repetitions; 
             }
             th_timer.stop();
@@ -5072,7 +5313,7 @@ void EnsembleGenerateParticles( int time_step,
                        th_timeN[4] += th_timer.sec();
                        th_timer.start();
 
-                       local_coord_array[p_id] = cell[thid] -> randomSampling_MT( &MT );
+                       local_coord_array[p_id] = cell[thid][0] -> randomSampling_MT( &MT );
                        // デバッグ用の座標固定
 //                        local_coord_array[p_id] = kvs::Vector3f (0,0,0);
                        th_timer.stop();
@@ -5083,34 +5324,50 @@ void EnsembleGenerateParticles( int time_step,
                            th_timer.start();
 
                            //補間器にセルを一括でバインド
-                           cell[thid]->bindCellArray( p_id, cell_index );
+                           for( int k = 0; k < nvariables; k++ )
+                           {
+                                cell[thid][k]->bindCellArray( p_id, cell_index );
+                           }
+
+//                           cell[thid]->bindCellArray( p_id, cell_index );
                            th_timer.stop();
                            th_timeN[6] += th_timer.sec();
                            th_timer.start();
-                           cell[thid]->setLocalPointArray(  p_id, local_coord_array );
+                           cell[thid][0]->setLocalPointArray(  p_id, local_coord_array );
 
                            th_timer.stop();
                            th_timeN[7] += th_timer.sec();
                            th_timer.start();
+                           // global coord の計算
+                           cell[thid][0]->transformLocalToGlobalArray(  p_id, local_coord_array, global_coord_array );
+
+                           th_timer.stop();
+                           th_timeN[8] += th_timer.sec();
+                           th_timer.start();
+// 多変量の計算
+//                           std::vector<float> scalar_array(p_id);
                            float scalar_array[p_id];
                            float grad_array_x[p_id];
                            float grad_array_y[p_id];
                            float grad_array_z[p_id];
 
-                           //                    cell[thid]->CalcScalarGrad( p_id,
-                           //                            scalar_array,
-                           //                            grad_array_x,
-                           //                            grad_array_y,
-                           //                            grad_array_z );
-
-                           cell[thid] -> scalar_ary( scalar_array, p_id);
-                           th_timer.stop();
-                           th_timeN[8] += th_timer.sec();
-                           th_timer.start();
-                           cell[thid] -> grad_ary( grad_array_x, grad_array_y, grad_array_z, p_id);
-
+                           th_tfs[thid]->CalculateScalarsArray( cell[thid],
+                                   p_id,
+                                   local_coord_array,
+                                   global_coord_array,
+                                   th_tf[thid],
+                                   scalar_array );
+                                std::cout << "aft_scalar_array = " << scalar_array[0] << std::endl;
+//                           cell[thid] -> scalar_ary( scalar_array, p_id);
                            th_timer.stop();
                            th_timeN[9] += th_timer.sec();
+                           th_timer.start();
+// 多変量の勾配計算 
+                           calculation_glad(p_id, nvariables, th_tfs[thid], th_tf[thid], cell[thid], local_coord_array, cell_index, grad_array_x, grad_array_y, grad_array_z);
+//                           cell[thid] -> grad_ary( grad_array_x, grad_array_y, grad_array_z, p_id);
+
+                           th_timer.stop();
+                           th_timeN[10] += th_timer.sec();
                            th_timer.start();
                            // resize による最適化テスト
                            size_t base_c  = per_thread_coords [thid].size();
@@ -5140,20 +5397,6 @@ void EnsembleGenerateParticles( int time_step,
 
                                per_thread_cellids[thid][base_id + j] = cell_index[j];
 
-                               //                        per_thread_coords.push_back( local_coord_array[j].x() );
-                               //                        per_thread_coords.push_back( local_coord_array[j].y() );
-                               //                        per_thread_coords.push_back( local_coord_array[j].z() );
-                               //
-                               //                        per_thread_scalars.push_back( scalar_array[j] );
-                               //
-                               //                        per_thread_normals.push_back( grad_array_x[j] );
-                               //                        per_thread_normals.push_back( grad_array_y[j] );
-                               //                        per_thread_normals.push_back( grad_array_z[j] );
-                               ////                        per_thread_normals_x.push_back( grad_array_x[j] );
-                               ////                        per_thread_normals_y.push_back( grad_array_y[j] );
-                               ////                        per_thread_normals_z.push_back( grad_array_z[j] );
-                               //
-                               //                        per_thread_cellids.push_back( cell_index[j] );
                            }
                            th_timer.stop();
                            th_timeN[10] += th_timer.sec();
@@ -5166,34 +5409,48 @@ void EnsembleGenerateParticles( int time_step,
                         th_timer.start();
 
                     //補間器にセルを一括でバインド
-                    cell[thid]->bindCellArray( p_id, cell_index );
+                        for( int k = 0; k < nvariables; k++ )
+                        {
+                            cell[thid][k]->bindCellArray( p_id, cell_index );
+                        }
+
+
+//                    cell[thid][0]->bindCellArray( p_id, cell_index );
                     th_timer.stop();
                     th_timeN[6] += th_timer.sec();
                     th_timer.start();
-                    cell[thid]->setLocalPointArray(  p_id, local_coord_array );
+                    cell[thid][0]->setLocalPointArray(  p_id, local_coord_array );
                     
                     th_timer.stop();
                     th_timeN[7] += th_timer.sec();
+                    th_timer.start();
+                    // global coord の計算
+                    cell[thid][0]->transformLocalToGlobalArray(  p_id, local_coord_array, global_coord_array );
+                   
+                    th_timer.stop();
+                    th_timeN[8] += th_timer.sec();
                     th_timer.start();
                     float scalar_array[p_id];
                     float grad_array_x[p_id];
                     float grad_array_y[p_id];
                     float grad_array_z[p_id];
 
-//                    cell[thid]->CalcScalarGrad( p_id,
-//                            scalar_array,
-//                            grad_array_x,
-//                            grad_array_y,
-//                            grad_array_z );
-                        
-                    cell[thid] -> scalar_ary( scalar_array, p_id);
-                    th_timer.stop();
-                    th_timeN[8] += th_timer.sec();
-                    th_timer.start();
-                    cell[thid] -> grad_ary( grad_array_x, grad_array_y, grad_array_z, p_id);
-
+                    th_tfs[thid]->CalculateScalarsArray( cell[thid],
+                            p_id,
+                            local_coord_array,
+                            global_coord_array,
+                            th_tf[thid],
+                            scalar_array );
+                       
+//                    cell[thid][0] -> scalar_ary( scalar_array, p_id);
                     th_timer.stop();
                     th_timeN[9] += th_timer.sec();
+                    th_timer.start();
+                           calculation_glad(p_id, nvariables, th_tfs[thid], th_tf[thid], cell[thid], local_coord_array, cell_index, grad_array_x, grad_array_y, grad_array_z);
+//                    cell[thid][0] -> grad_ary( grad_array_x, grad_array_y, grad_array_z, p_id);
+
+                    th_timer.stop();
+                    th_timeN[10] += th_timer.sec();
                     th_timer.start();
 // resize による最適化テスト
                     size_t base_c  = per_thread_coords [thid].size();
@@ -5226,7 +5483,7 @@ void EnsembleGenerateParticles( int time_step,
 
                     }
                         th_timer.stop();
-                        th_timeN[10] += th_timer.sec();
+                        th_timeN[11] += th_timer.sec();
                     p_id = 0;
                    }
 
@@ -5236,22 +5493,13 @@ void EnsembleGenerateParticles( int time_step,
     }
 #else
 #endif
-//    #pragma omp barrier
-////    th_timer.start();
-//    #pragma omp critical
-//    {
-//        vertex_coords .insert (vertex_coords.end() , th_vertex_coords.begin() , th_vertex_coords.end());
-//        vertex_scalars.insert(vertex_scalars.end(), th_vertex_scalars.begin(), th_vertex_scalars.end());
-//        vertex_normals.insert(vertex_normals.end(), th_vertex_normals.begin(), th_vertex_normals.end());
-//        vertex_cellids.insert(vertex_cellids.end(), th_vertex_cellids.begin(), th_vertex_cellids.end());
-//    }
     th_timer.stop();
-    th_timeN[11] += th_timer.sec();
+    th_timeN[12] += th_timer.sec();
     th_timer.start();
 #pragma omp barrier
 #pragma omp critical
             {
-                for(int i =0; i <  12; i++ )
+                for(int i =0; i <  13; i++ )
                     timeN[i] += th_timeN[i]/nthreads;    
             }
 
@@ -5358,7 +5606,6 @@ for (int t = 0; t < T; ++t) {
 
 
     // シフト処理
-    //if (mpi_size > 1 )
     if (ens_number > 1 )
     {
 //            timer.start();
@@ -5386,9 +5633,6 @@ for (int t = 0; t < T; ++t) {
         std::vector<float> recv_buff_float;
         std::vector<int> recv_buff_int;
 
-//        // 分散用配列
-//        std::vector<float> varience;
-//        std::vector<float> varience_normals;
         // 二乗
         std::vector<float> tmp_term(3*local_size);
         std::vector<float> sq_scalars(local_size);
@@ -5464,17 +5708,6 @@ for (int t = 0; t < T; ++t) {
             double t1 = MPI_Wtime();
             t_size_wait += (t1 - t0);
 
-#if 0
-            // 4 size check
-            auto die = [&](const char* msg){
-                fprintf(stderr, "[rank %d] %s\n", mpi_rank, msg);
-                MPI_Abort(MPI_COMM_WORLD, 999);
-            };
-
-            if ((int)vertex_cellids.size() != send_size) die("vertex_cellids.size() != send_size");
-            if ((int)vertex_coords.size()  != 3*send_size) die("vertex_coords.size() != 3*send_size");
-            if ((int)vertex_normals.size() != 3*send_size) die("vertex_normals.size() != 3*send_size");            
-#endif          
             // 受け取った粒子数でメモリ確保
              recv_scalars.resize(recv_size);
              recv_coords.resize(3*recv_size);
@@ -5486,12 +5719,6 @@ for (int t = 0; t < T; ++t) {
 #if 1
              // ---- 送信：defensive copy をやめて vertex_* を直接送る ----
              // （ただし、後で vertex_* を上書きする前に send 完了を待つこと）
-             //MPI_Isend(vertex_cellids.data(), send_size,   MPI_INT,   send_to, 12, MPI_COMM_WORLD, &req_send[0]);
-             //MPI_Isend(vertex_scalars.data(), send_size,   MPI_FLOAT, send_to, 10, MPI_COMM_WORLD, &req_send[1]);
-             //MPI_Isend(vertex_coords.data(),  3*send_size, MPI_FLOAT, send_to, 11, MPI_COMM_WORLD, &req_send[2]);
-             //MPI_Isend(vertex_normals.data(), 3*send_size, MPI_FLOAT, send_to, 13, MPI_COMM_WORLD, &req_send[3]);
-             //MPI_Isend(sq_scalars.data(),     send_size,   MPI_FLOAT, send_to, 14, MPI_COMM_WORLD, &req_send[4]);
-             //MPI_Isend(tmp_term.data(),       3*send_size, MPI_FLOAT, send_to, 15, MPI_COMM_WORLD, &req_send[5]);
              MPI_Isend(v_cellids[cur].data(), send_size, MPI_INT,   send_to,   12, MPI_COMM_WORLD, &req_send[cur][0]);
              MPI_Isend(v_scalars[cur].data(), send_size, MPI_FLOAT, send_to,   10, MPI_COMM_WORLD, &req_send[cur][1]);
              MPI_Isend(v_coords [cur].data(), 3*send_size, MPI_FLOAT, send_to, 11, MPI_COMM_WORLD, &req_send[cur][2]);
@@ -5534,6 +5761,7 @@ for (int t = 0; t < T; ++t) {
                     
         kvs::UInt32 cell_index[ SIMD_BLK_SIZE ];
         kvs::Vector3f local_coord_array[ SIMD_BLK_SIZE ];
+        kvs::Vector3f global_coord_array[ SIMD_BLK_SIZE ];
 
         float th_timeN[20]= {0};
         kvs::Timer th_timer( kvs::Timer::Start );
@@ -5566,13 +5794,18 @@ for (int t = 0; t < T; ++t) {
                 th_timeN[1] += th_timer.sec();
                 th_timer.start();
                     // Calculate a color.
-                    cell[thid]->bindCellArray( remain_BLK, cell_index );
+                for( int k = 0; k < nvariables; k++ )
+                {
+                    cell[thid][k]->bindCellArray( remain_BLK, cell_index );
+                }
+
                 th_timer.stop();
                 th_timeN[2] += th_timer.sec();
                 th_timer.start();
 
-                    cell[thid]->setLocalPointArray(  remain_BLK, local_coord_array );
+                    cell[thid][0]->setLocalPointArray(  remain_BLK, local_coord_array );
 
+                    cell[thid][0]->transformLocalToGlobalArray(  remain_BLK, local_coord_array, global_coord_array );
                 th_timer.stop();
                 th_timeN[3] += th_timer.sec();
                 th_timer.start();
@@ -5586,9 +5819,18 @@ for (int t = 0; t < T; ++t) {
 //                            grad_array_x,
 //                            grad_array_y,
 //                            grad_array_z );
-                    cell[thid] -> scalar_ary( scalar_array, remain_BLK);
-                    cell[thid] -> grad_ary( grad_array_x, grad_array_y, grad_array_z, remain_BLK);
+//                    cell[thid][0] -> scalar_ary( scalar_array, remain_BLK);
+//                    cell[thid][0] -> grad_ary( grad_array_x, grad_array_y, grad_array_z, remain_BLK);
                         
+                    th_tfs[thid]->CalculateScalarsArray( cell[thid],
+                            remain_BLK,
+                            local_coord_array,
+                            global_coord_array,
+                            th_tf[thid],
+                            scalar_array );
+                       
+                           calculation_glad(remain_BLK, nvariables, th_tfs[thid], th_tf[thid], cell[thid], local_coord_array, cell_index, grad_array_x, grad_array_y, grad_array_z);
+
                 th_timer.stop();
                 th_timeN[4] += th_timer.sec();
                 th_timer.start();
@@ -5751,16 +5993,16 @@ for (int t = 0; t < T; ++t) {
             co_varietion[ i ]   = delta;
     }
 
-//// 常用対数を取るための計算
-     std::vector<float> log_vertex_scalars(vertex_scalars.size());
-     std::vector<float> log_vertex_varience(vertex_scalars.size());
-       int N = 0; // OutputFuncで正規化したオーダー
-#pragma omp simd
-       for (int i = 0; i < vertex_scalars.size(); i++ )
-       {
-           log_vertex_scalars[ i ]     =  vertex_scalars [ i ] > delta ? std::log10(vertex_scalars [ i ]) -N : -30; 
-           log_vertex_varience[ i ]    =  co_varietion[ i ] > delta ? std::log10(co_varietion[ i ]) -N : -30; 
-       }
+////// 常用対数を取るための計算
+//     std::vector<float> log_vertex_scalars(vertex_scalars.size());
+//     std::vector<float> log_vertex_varience(vertex_scalars.size());
+//       int N = 0; // OutputFuncで正規化したオーダー
+//#pragma omp simd
+//       for (int i = 0; i < vertex_scalars.size(); i++ )
+//       {
+//           log_vertex_scalars[ i ]     =  vertex_scalars [ i ] > delta ? std::log10(vertex_scalars [ i ]) -N : -30; 
+//           log_vertex_varience[ i ]    =  co_varietion[ i ] > delta ? std::log10(co_varietion[ i ]) -N : -30; 
+//       }
 
     timer.stop();
     timer.start();
@@ -5808,7 +6050,11 @@ for (int t = 0; t < T; ++t) {
                     {
                         cell_index[j] = vertex_cellids[i + j];
                     }
-                    cell[thid] -> bindCellArray(remain_BLK, cell_index);
+                    for( int k = 0; k < nvariables; k++ )
+                    {
+                        cell[thid][k]->bindCellArray( remain_BLK, cell_index );
+                    }
+//                    cell[thid][0] -> bindCellArray(remain_BLK, cell_index);
 
                 th_timer.stop();
                 th_timeN[0] += th_timer.sec();
@@ -5827,13 +6073,13 @@ for (int t = 0; t < T; ++t) {
                 th_timeN[1] += th_timer.sec();
                 th_timer.start();
                 //座標の登録
-                cell[thid] -> setLocalPointArray(remain_BLK,local_coord_array);
+                cell[thid][0] -> setLocalPointArray(remain_BLK,local_coord_array);
 
                 th_timer.stop();
                 th_timeN[2] += th_timer.sec();
                 th_timer.start();
                 //全体座標への変換
-                cell[thid] -> transformLocalToGlobalArray(remain_BLK,local_coord_array,global_coord_array);
+                cell[thid][0] -> transformLocalToGlobalArray(remain_BLK,local_coord_array,global_coord_array);
 
                 th_timer.stop();
                 th_timeN[3] += th_timer.sec();
@@ -5843,12 +6089,11 @@ for (int t = 0; t < T; ++t) {
                 for( int j = 0; j < remain_BLK; j++ ) 
                 {
 //                    opacity_array[j] = tf.opacityMap().at(vertex_scalars[ i+j ]);
-//                    opacity_array_average [j] = tf_a.opacityMap().at(vertex_scalars[ i+j ]);
-//                    opacity_array_varience[j] = tf_v.opacityMap().at(tmp_varience[ i+j ]);
+                    opacity_array_average [j] = tf_a.opacityMap().at(vertex_scalars[ i+j ]);
+                    opacity_array_varience[j] = tf_v.opacityMap().at(tmp_varience[ i+j ]);
 //                    対数値を参照
-                    opacity_array_average[j]  = tf_a.opacityMap().at(log_vertex_scalars[ i+j ]);
-                    opacity_array_varience[j] = tf_v.opacityMap().at(log_vertex_varience[ i+j ]);
-//                    対数値を参照
+//                    opacity_array_average[j]  = tf_a.opacityMap().at(log_vertex_scalars[ i+j ]);
+//                    opacity_array_varience[j] = tf_v.opacityMap().at(log_vertex_varience[ i+j ]);
                 }
                 th_timer.stop();
                 th_timeN[4] += th_timer.sec();
@@ -5871,11 +6116,13 @@ for (int t = 0; t < T; ++t) {
                 th_timeN[6] += th_timer.sec();
                if ( density_array_average[j] > max_density * R )
                {
+                   std::cout << mpi_rank << ", vertex_scalars[ i+j ] = " << vertex_scalars[ i+j ] << std::endl;
+                   std::cout << mpi_rank << ", normal_scalars[ i+j ] = " << vertex_normals[ i+j ] << std::endl;
                 th_timer.start();
                    // Calculate a color.
-//                   const kvs::RGBColor color( tf_a.colorMap().at( vertex_scalars[ i+j ] ) );
+                   const kvs::RGBColor color( tf_a.colorMap().at( vertex_scalars[ i+j ] ) );
 //                    対数値を参照
-                   const kvs::RGBColor color( tf.colorMap().at( log_vertex_scalars[ i+j ] ) );
+//                   const kvs::RGBColor color( tf.colorMap().at( log_vertex_scalars[ i+j ] ) );
                 th_timer.stop();
                 th_timeN[7] += th_timer.sec();
                 th_timer.start();
@@ -5906,9 +6153,10 @@ for (int t = 0; t < T; ++t) {
                {
                 th_timer.start();
                    // Calculate a color.
-//                   const kvs::RGBColor color( tf_v.colorMap().at( tmp_varience[ i+j ] ) );
+                   std::cout << mpi_rank << ", var_scalars[ i+j ] = " << tmp_varience[ i+j ] << std::endl;
+                   const kvs::RGBColor color( tf_v.colorMap().at( tmp_varience[ i+j ] ) );
 //                    対数値を参照
-                   const kvs::RGBColor color( tf_var.colorMap().at( log_vertex_scalars[ i+j ] ) );
+//                   const kvs::RGBColor color( tf_var.colorMap().at( log_vertex_scalars[ i+j ] ) );
                 th_timer.stop();
                 th_timeN[7] += th_timer.sec();
                 th_timer.start();
@@ -6322,11 +6570,15 @@ for (int t = 0; t < T; ++t) {
 //                th_timer.start();
 
                     // Calculate a color.
-                    cell[thid]->bindCellArray( remain_BLK, cell_index );
+                    for( int k = 0; k < nvariables; k++ )
+                    {
+                        cell[thid][k]->bindCellArray( remain_BLK, cell_index );
+                    }
+
 //                th_timer.stop();
 //                th_timeN[2] += th_timer.sec();
 //                th_timer.start();
-                    cell[thid]->setLocalPointArray(  remain_BLK, local_coord_array );
+                    cell[thid][0]->setLocalPointArray(  remain_BLK, local_coord_array );
 //                th_timer.stop();
 //                th_timeN[3] += th_timer.sec();
 //                th_timer.start();
@@ -6521,7 +6773,10 @@ for (int t = 0; t < T; ++t) {
                     {
                         cell_index[j] = vertex_cellids[i + j];
                     }
-                    cell[thid] -> bindCellArray(remain_BLK, cell_index);
+                    for( int k = 0; k < nvariables; k++ )
+                    {
+                        cell[thid][k]->bindCellArray( remain_BLK, cell_index );
+                    }
 
 //                th_timer.stop();
 //                th_timeN[0] += th_timer.sec();
@@ -6854,21 +7109,15 @@ for (int t = 0; t < T; ++t) {
 //            #pragma omp simd
                     for( int j = 0; j < remain_BLK; j++ ) 
                     {
-//                        local_coord_array[j][0] = recv_coords[ 3*(i+j)+ 0];
-//                        local_coord_array[j][1] = recv_coords[ 3*(i+j)+ 1];
-//                        local_coord_array[j][2] = recv_coords[ 3*(i+j)+ 2];
                           local_coord_array[j].set(recv_coords[ 3*(i+j)+ 0],recv_coords[ 3*(i+j)+ 1],recv_coords[ 3*(i+j)+ 2]);
                     }
-//                const kvs::Vector3f coord(recv_coords[3*i + 0], recv_coords[3*i + 1], recv_coords[3*i + 2]);
 
                     // Calculate a color.
-                    //cell[thid]->bindCell( recv_cellids[i] );
-                    cell[thid]->bindCellArray( remain_BLK, cell_index );
-                    cell[thid]->setLocalPointArray(  remain_BLK, local_coord_array );
-//                cell[thid] -> setLocalPoint(coord);
-//                const float scalar = cell[thid]->scalar();
-//                    // Calculate a normal.
-//                const kvs::Vector3f normal( -cell[thid]->gradient() );
+                    for( int k = 0; k < nvariables; k++ )
+                    {
+                        cell[thid][k]->bindCellArray( remain_BLK, cell_index );
+                    }
+                    cell[thid][0]->setLocalPointArray(  remain_BLK, local_coord_array );
 
                     float scalar_array[remain_BLK];
                     float grad_array_x[remain_BLK];
@@ -7079,14 +7328,14 @@ for (int t = 0; t < T; ++t) {
 #endif
 
     std::cout << mpi_rank << ": end sampling "  << std::endl;
-    int tf_number = particleBase.m_tf.size();
-    int nbins =256;
+//    int tf_number = particleBase.m_tf.size();
+//    int nbins =256;
 
-    kvs::ValueArray<int> o_histogram( tf_number * nbins );//不透明度ヒストグラムの配列
-    kvs::ValueArray<int> c_histogram( tf_number * nbins );//色ヒストグラムの配列
+//    kvs::ValueArray<int> o_histogram( tf_number * nbins );//不透明度ヒストグラムの配列
+//    kvs::ValueArray<int> c_histogram( tf_number * nbins );//色ヒストグラムの配列
 
-    o_histogram_recv.allocate(tf_number * nbins);
-    c_histogram_recv.allocate(tf_number * nbins);
+//    o_histogram_recv.allocate(tf_number * nbins);
+//    c_histogram_recv.allocate(tf_number * nbins);
 
     O_min_recv.allocate(tf_number);
     O_max_recv.allocate(tf_number);
@@ -7114,10 +7363,18 @@ for (int t = 0; t < T; ++t) {
 //        std::cout << mpi_rank <<" : particleBase.m_C_max["<< i << "] = " << particleBase.m_C_max[i] << std::endl;
     }
 
-    for ( int i = 0; i < max_threads; i++ )
+for ( int i = 0; i < max_threads; i++ )
     {
-             if (cell[i] != NULL)delete cell[i];
+        for ( int j = 0; j < nvariables; j++ )
+        {
+             if (cell[i][j] != NULL)delete cell[i][j];
+        }
     }
+ 
+//    for ( int i = 0; i < max_threads; i++ )
+//    {
+//             if (cell[i] != NULL)delete cell[i];
+//    }
 }
 
 void EnsembleTest( int time_step,

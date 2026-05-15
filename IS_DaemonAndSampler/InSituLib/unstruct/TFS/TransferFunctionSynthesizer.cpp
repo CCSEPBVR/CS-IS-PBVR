@@ -874,6 +874,119 @@ void TransferFunctionSynthesizer::CalculateOpacityArray(
 
 }
 
+void TransferFunctionSynthesizer::CalculateScalarsArray(
+    std::vector< pbvr::CellBase<Type>* > interp , 
+    const int loop_cnt,
+    const kvs::Vector3f *local_coord, 
+    const kvs::Vector3f *global_coord,
+    std::vector<pbvr::TransferFunction>& tf,
+    float *result_array)
+{
+//        std::stringstream debug;
+
+    //配列を追加
+    float scalar_array[interp.size()][loop_cnt];
+
+    float grad_array_x[interp.size()][loop_cnt];
+    float grad_array_y[interp.size()][loop_cnt];
+    float grad_array_z[interp.size()][loop_cnt];
+
+    //float local_coord_x[loop_cnt];
+    //float local_coord_y[loop_cnt];
+    //float local_coord_z[loop_cnt];
+
+    float global_coord_x[loop_cnt];
+    float global_coord_y[loop_cnt];
+    float global_coord_z[loop_cnt];
+
+    float eval_result[loop_cnt];
+    float opacity_map_array[m_opa_var.size()][loop_cnt];
+
+    for (int i = 0; i < loop_cnt; i++)
+    {
+        //local_coord_x[i] = local_coord[i].x();
+        //local_coord_y[i] = local_coord[i].y();
+        //local_coord_z[i] = local_coord[i].z();
+        global_coord_x[i] = global_coord[i].x();
+        global_coord_y[i] = global_coord[i].y();
+        global_coord_z[i] = global_coord[i].z();
+    }
+
+    size_t nvar = interp.size();
+
+    //bindCell, setLocalPoint, gradient, scalar をまとめてこの関数内部でSIMD化
+    for( size_t j= 0; j < nvar; j++ )
+    {
+        interp[j]->setLocalPointArray( loop_cnt,
+                                       local_coord );
+        interp[j]->CalcScalarGrad( loop_cnt,
+                                   scalar_array[j],
+                                   grad_array_x[j],
+                                   grad_array_y[j],
+                                   grad_array_z[j] );
+    }
+
+            std::cout << "scalar_array[j] = " << scalar_array[0][0] << std::endl;
+    m_var_value_array[X] = global_coord_x;
+    m_var_value_array[Y] = global_coord_y;
+    m_var_value_array[Z] = global_coord_z;
+
+    //std::cout <<"m_opa_var.size() =" <<m_opa_var.size() <<std::endl;
+    for( size_t i = 0; i < m_opa_var.size(); i++ )
+    {
+        //set variable eq. ex) Q1+Q2/Q3
+        m_rpn.setExpToken( &(m_opa_var[i].exp_token[0]) );
+        m_rpn.setVariableName( &(m_opa_var[i].var_name[0]) );
+        m_rpn.setNumber( &(m_opa_var[i].val_array[0]) );
+
+        size_t nvar = interp.size();
+
+        //id of Q1=4, Q2=8,,,,, Qn=4*n
+        for( size_t j= 0; j < nvar; j++ )
+        {
+            m_var_value_array[4*(j+1)  ] = &scalar_array[j][0];
+            m_var_value_array[4*(j+1)+1] = &grad_array_x[j][0];
+            m_var_value_array[4*(j+1)+2] = &grad_array_y[j][0];
+            m_var_value_array[4*(j+1)+3] = &grad_array_z[j][0];
+        }
+
+        m_rpn.setVariableValueArray( m_var_value_array );
+
+        //calc. m_opa_var
+        m_rpn.evalArray(eval_result, loop_cnt);
+
+        //set opacity A1,A2,,,Ai. start 116 in VarName(Token.h)
+        //m_var_value[ VAR_OFFSET_A+i ] = tf[i].opacityMap().at( m_scalars[i] );
+///        for( int jx=0; jx<loop_cnt; jx++ )
+///        {
+///            opacity_map_array[i][jx] = tf[i].opacityMap().at( eval_result[jx] );
+///        }
+//        m_var_value_array[ VAR_OFFSET_A+i ] = &opacity_map_array[i][0];
+        m_var_value_array[ VAR_OFFSET_A+i ] = &eval_result[0];
+            std::cout << "eval_result[0] = " << eval_result[0] << std::endl;
+ 
+    }
+    //set opacity function eq. ex) A1*A2+A3
+    m_rpn.setExpToken( &(m_opa_func.exp_token[0]) );
+    m_rpn.setVariableName( &(m_opa_func.var_name[0]) );
+    m_rpn.setNumber( &(m_opa_func.val_array[0]) );
+    // 20190118
+    //m_rpn.setVariableValue( &m_var_value[0] );
+    m_rpn.setVariableValueArray( m_var_value_array );
+
+    //calc. opacity function
+    m_rpn.evalArray(eval_result, loop_cnt);
+
+//        result_array = eval_result;
+//            std::cout << "result_result[0] = " << result_array[0] << std::endl;
+    for( int jx=0; jx<loop_cnt; jx++ )
+    {
+//        opacity_array[jx] = kvs::Math::Clamp<float>( eval_result[jx], 0.0, 1.0 );
+        result_array[jx] = eval_result[jx];
+    }
+
+}
+
 
 void TransferFunctionSynthesizer::CalculateOpacityArrayAverage(
     std::vector< pbvr::CellBase<Type>* > interp , 
