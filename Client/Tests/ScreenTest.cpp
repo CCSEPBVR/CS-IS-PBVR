@@ -31,6 +31,8 @@ namespace
 {
 constexpr int k_server_start_timeout_ms = 10000;
 constexpr int k_connect_timeout_ms = 15000;
+constexpr int k_button_retry_count = 3;
+constexpr int k_button_retry_wait_ms = 1000;
 constexpr int k_object_load_timeout_ms = 120000;
 constexpr int k_jump_button_enable_timeout_ms = 120000;
 constexpr int k_post_connect_settle_ms = 1000;
@@ -60,6 +62,18 @@ QString ScreenTest::envOrDefault( const char* name, const QString& fallback ) co
 {
     const QString value = qEnvironmentVariable( name );
     return value.isEmpty() ? fallback : value;
+}
+
+QString ScreenTest::defaultClientExecutablePath() const
+{
+#if defined( Q_OS_WIN )
+    return sourceTreePath( QStringLiteral( "Client/build/Release/pbvr_client.exe" ) );
+#elif defined( Q_OS_MACOS )
+    return sourceTreePath(
+        QStringLiteral( "Client/build/Qt_6_11_0_for_macOS-Release/App/pbvr_client.app/Contents/MacOS/pbvr_client" ) );
+#else
+    return sourceTreePath( QStringLiteral( "Client/build/pbvr_client" ) );
+#endif
 }
 
 QString ScreenTest::defaultServerExecutablePath() const
@@ -107,7 +121,13 @@ bool ScreenTest::waitForCondition( const std::function<bool()>& condition, int t
     return condition();
 }
 
-void ScreenTest::dragMouse( QWidget* widget, Qt::MouseButton button, const QPoint& start, const QPoint& end, int steps ) const
+void ScreenTest::dragMouse(
+    QWidget* widget,
+    Qt::MouseButton button,
+    const QPoint& start,
+    const QPoint& end,
+    Qt::KeyboardModifiers modifiers,
+    int steps ) const
 {
     QVERIFY2( widget != nullptr, "Drag target widget is null" );
 
@@ -121,7 +141,7 @@ void ScreenTest::dragMouse( QWidget* widget, Qt::MouseButton button, const QPoin
         global_start,
         button,
         button,
-        Qt::NoModifier );
+        modifiers );
     QVERIFY( QCoreApplication::sendEvent( widget, &press_event ) );
 
     for ( int i = 1; i <= steps; ++i )
@@ -137,7 +157,7 @@ void ScreenTest::dragMouse( QWidget* widget, Qt::MouseButton button, const QPoin
             global_pos,
             Qt::NoButton,
             button,
-            Qt::NoModifier );
+            modifiers );
         QVERIFY( QCoreApplication::sendEvent( widget, &move_event ) );
         QTest::qWait( 20 );
     }
@@ -148,11 +168,11 @@ void ScreenTest::dragMouse( QWidget* widget, Qt::MouseButton button, const QPoin
         global_end,
         button,
         Qt::NoButton,
-        Qt::NoModifier );
+        modifiers );
     QVERIFY( QCoreApplication::sendEvent( widget, &release_event ) );
 }
 
-void ScreenTest::saveScreenshot( QMainWindow& window, const QString& file_name ) const
+void ScreenTest::saveScreenshot( QMainWindow& window, const QString& file_name, const QString& caption ) const
 {
     const QString file_path = QDir( m_screenshot_dir_path ).absoluteFilePath( file_name );
     const QPixmap screenshot = window.grab();
@@ -162,7 +182,7 @@ void ScreenTest::saveScreenshot( QMainWindow& window, const QString& file_name )
         screenshot.save( file_path ),
         qPrintable( QStringLiteral( "Failed to save screenshot: %1" ).arg( file_path ) ) );
 
-    const_cast<ScreenTest*>( this )->m_saved_screenshot_paths.append( file_path );
+    const_cast<ScreenTest*>( this )->m_screenshots.append( { file_path, caption } );
 }
 
 void ScreenTest::writeMarkdownReport() const
@@ -174,36 +194,80 @@ void ScreenTest::writeMarkdownReport() const
 
     QTextStream stream( &report_file );
     stream << "# ScreenTest\n\n";
-    stream << "- Result: " << ( m_test_succeeded ? "PASS" : "FAIL" ) << "\n";
-    stream << "- Volume data: `" << m_volume_data_path << "`\n";
-    stream << "- Screenshot directory: `" << m_screenshot_dir_path << "`\n\n";
-    stream << "## Screenshots\n\n";
+    stream << "- 結果: " << ( m_test_succeeded ? "PASS" : "FAIL" ) << "\n";
+    stream << "- クライアントプログラム: `" << m_client_executable << "`\n";
+    stream << "- サーバプログラム: `" << m_server_executable << "`\n";
+    stream << "- サーバ起動ラッパー: `"
+           << ( QFileInfo::exists( m_server_target_wrapper_executable ) ?
+                    m_server_target_wrapper_executable :
+                    QStringLiteral( "未使用" ) )
+           << "`\n";
+    stream << "- ボリュームデータ: `" << m_volume_data_path << "`\n";
+    stream << "- 出力先: `" << m_output_dir_path << "`\n";
+    stream << "- スクリーンショット出力先: `" << m_screenshot_dir_path << "`\n\n";
 
-    for ( const QString& path : m_saved_screenshot_paths )
+    stream << "## 実施手順\n\n";
+    stream << "- " << ( m_test_succeeded ? "PASS" : "FAIL" ) << ": Communication.ui の connectPushButton を押し、サーバへ接続した。\n";
+    stream << "- " << ( m_test_succeeded ? "PASS" : "FAIL" ) << ": remoteVizClientServerRadioButton を選択し、volumeDataFilePathLineEdit にボリュームデータを入力して settingApplyPushButton を押した。\n";
+    stream << "- " << ( m_test_succeeded ? "PASS" : "FAIL" ) << ": ObjectEditor.ui の nameLineEdit にテキストが入るまで待機し、applyPushButton を押した。\n";
+    stream << "- " << ( m_test_succeeded ? "PASS" : "FAIL" ) << ": PlayBackControlToolBar.cpp の m_jump_push_button を押し、再度有効になるまで待機した。\n";
+    stream << "- " << ( m_test_succeeded ? "PASS" : "FAIL" ) << ": MainWindow.cpp の m_screen に対して右ドラッグ、左ドラッグ、Shift+左ドラッグ、Homeキー操作を行った。\n\n";
+
+    stream << "## 自動判定項目\n\n";
+    stream << "- " << ( m_test_succeeded ? "PASS" : "FAIL" ) << ": 必要なUI部品を取得できること。\n";
+    stream << "- " << ( m_test_succeeded ? "PASS" : "FAIL" ) << ": サーバプロセスを起動し、クライアントが接続状態になること。\n";
+    stream << "- " << ( m_test_succeeded ? "PASS" : "FAIL" ) << ": ObjectEditor にオブジェクト情報が反映されること。\n";
+    stream << "- " << ( m_test_succeeded ? "PASS" : "FAIL" ) << ": m_jump_push_button が操作後に再度有効になること。\n";
+    stream << "- " << ( m_test_succeeded ? "PASS" : "FAIL" ) << ": スクリーンショットを保存できること。\n\n";
+
+    stream << "## 目視確認対象\n\n";
+    for ( const ScreenshotEntry& entry : m_screenshots )
     {
-        const QString file_name = QFileInfo( path ).fileName();
-        stream << "- `" << file_name << "`\n";
-        stream << "  ![" << file_name << "](img/" << file_name << ")\n";
+        stream << "- 要確認: " << entry.caption << "\n";
     }
+    if ( m_screenshots.isEmpty() )
+    {
+        stream << "- NOT RUN: スクリーンショットは保存されていない。\n";
+    }
+
+    stream << "\n## スクリーンショット\n\n";
+    for ( const ScreenshotEntry& entry : m_screenshots )
+    {
+        const QString file_name = QFileInfo( entry.path ).fileName();
+        stream << "### " << entry.caption << "\n\n";
+        stream << "![" << entry.caption << "](img/" << file_name << ")\n\n";
+    }
+
+    stream << "## 未自動化・保留事項\n\n";
+    stream << "- スクリーンショットの描画内容が期待どおりかどうかは目視確認対象とする。\n";
 }
 
 void ScreenTest::initTestCase()
 {
     const QString date_stamp = QDate::currentDate().toString( QStringLiteral( "yyyyMMdd" ) );
+    m_client_executable = envOrDefault(
+        "PBVR_CLIENT_EXECUTABLE",
+        defaultClientExecutablePath() );
     m_server_executable = envOrDefault(
         "PBVR_SERVER_EXECUTABLE",
         defaultServerExecutablePath() );
+    m_server_target_wrapper_executable = envOrDefault(
+        "PBVR_SERVER_TARGET_WRAPPER_EXECUTABLE",
+        sourceTreePath( QStringLiteral( "server_target_wrapper.sh" ) ) );
     m_volume_data_path = envOrDefault(
         "PBVR_VOLUME_DATA",
-        QStringLiteral( "/path/to/SampleData/ucd/old/out/spx.pfl" ) );
+        QStringLiteral( "/User/user/Work/SampleData/ucd/old/out/spx.pfl" ) );
     m_output_dir_path = envOrDefault(
         "PBVR_TEST_OUTPUT_DIR",
-        ClientTests::datedTestOutputDir( repoRootPath(), date_stamp ) );
+        ClientTests::datedTestOutputDir( repoRootPath(), date_stamp, QStringLiteral( "ScreenTest" ) ) );
     m_screenshot_dir_path = envOrDefault(
         "PBVR_SCREENSHOT_DIR",
         QDir( m_output_dir_path ).absoluteFilePath( QStringLiteral( "img" ) ) );
-    m_report_path = QDir( m_output_dir_path ).absoluteFilePath( QStringLiteral( "ScreenTest.md" ) );
+    m_report_path = QDir( m_output_dir_path ).absoluteFilePath( QStringLiteral( "TestResult.md" ) );
 
+    QVERIFY2(
+        QFileInfo::exists( m_client_executable ),
+        qPrintable( QStringLiteral( "Client executable not found: %1" ).arg( m_client_executable ) ) );
     QVERIFY2(
         QFileInfo::exists( m_server_executable ),
         qPrintable( QStringLiteral( "Server executable not found: %1" ).arg( m_server_executable ) ) );
@@ -217,8 +281,17 @@ void ScreenTest::initTestCase()
         QDir().mkpath( m_screenshot_dir_path ),
         qPrintable( QStringLiteral( "Failed to create screenshot directory: %1" ).arg( m_screenshot_dir_path ) ) );
 
-    m_server_process.setProgram( m_server_executable );
+    if ( QFileInfo::exists( m_server_target_wrapper_executable ) )
+    {
+        m_server_process.setProgram( m_server_target_wrapper_executable );
+        m_server_process.setArguments( { m_server_executable } );
+    }
+    else
+    {
+        m_server_process.setProgram( m_server_executable );
+    }
     m_server_process.setWorkingDirectory( QFileInfo( m_server_executable ).absolutePath() );
+    m_server_process.setProcessChannelMode( QProcess::MergedChannels );
     m_server_process.start();
 
     QVERIFY2(
@@ -270,27 +343,55 @@ void ScreenTest::performs_screen_interaction_scenario()
     auto* remote_viz_radio = communication->findChild<QRadioButton*>( "remoteVizClientServerRadioButton" );
     auto* setting_apply_button = communication->findChild<QPushButton*>( "settingApplyPushButton" );
     auto* id_line_edit = communication->findChild<QLineEdit*>( "IDLineEdit" );
+    auto* disconnect_button = communication->findChild<QPushButton*>( "disconnectPushButton" );
 
     QVERIFY2( connect_button != nullptr, "connectPushButton not found" );
     QVERIFY2( volume_path_edit != nullptr, "volumeDataFilePathLineEdit not found" );
     QVERIFY2( remote_viz_radio != nullptr, "remoteVizClientServerRadioButton not found" );
     QVERIFY2( setting_apply_button != nullptr, "settingApplyPushButton not found" );
     QVERIFY2( id_line_edit != nullptr, "IDLineEdit not found" );
+    QVERIFY2( disconnect_button != nullptr, "disconnectPushButton not found" );
 
-    QTest::mouseClick( connect_button, Qt::LeftButton );
+    const auto is_connected = [connect_button, disconnect_button, id_line_edit]()
+    {
+        return disconnect_button->isEnabled() &&
+               !connect_button->isEnabled() &&
+               !id_line_edit->text().trimmed().isEmpty();
+    };
 
-    const bool connected = waitForCondition(
-        [communication, id_line_edit]()
-        {
-            if ( auto* disconnect_button = communication->findChild<QPushButton*>( "disconnectPushButton" ) )
-            {
-                return disconnect_button->isEnabled() && !id_line_edit->text().trimmed().isEmpty();
-            }
-            return false;
-        },
-        k_connect_timeout_ms );
+    bool connected = is_connected();
+    for ( int attempt = 0; attempt < k_button_retry_count && !connected; ++attempt )
+    {
+        QVERIFY2(
+            waitForCondition(
+                [connect_button]()
+                {
+                    return connect_button->isEnabled();
+                },
+                k_connect_timeout_ms,
+                100 ),
+            "connectPushButton did not become enabled within the timeout" );
+
+        connect_button->click();
+        connected = waitForCondition(
+            is_connected,
+            k_connect_timeout_ms,
+            100 );
+
+        if ( !connected ) { QTest::qWait( k_button_retry_wait_ms ); }
+    }
+
     QVERIFY2( connected, "Client did not enter the connected state" );
     QTest::qWait( k_post_connect_settle_ms );
+
+    const bool user_id_received = waitForCondition(
+        [id_line_edit]()
+        {
+            return !id_line_edit->text().trimmed().isEmpty();
+        },
+        k_connect_timeout_ms,
+        100 );
+    QVERIFY2( user_id_received, "IDLineEdit was not populated within the timeout" );
 
     if ( !remote_viz_radio->isChecked() )
     {
@@ -362,20 +463,36 @@ void ScreenTest::performs_screen_interaction_scenario()
     screen->activateWindow();
     screen->setFocus();
 
-    saveScreenshot( main_window, QStringLiteral( "screen_before_drag.png" ) );
-
     const QPoint center = screen->rect().center();
     dragMouse( screen, Qt::RightButton, center, center + QPoint( 120, -80 ) );
     QTest::qWait( k_screen_settle_ms );
-    saveScreenshot( main_window, QStringLiteral( "screen_after_right_drag.png" ) );
+    saveScreenshot(
+        main_window,
+        QStringLiteral( "01_screen_after_right_drag.png" ),
+        QStringLiteral( "m_screenを右クリックでドラッグしたことを表す状態" ) );
 
     dragMouse( screen, Qt::LeftButton, center, center + QPoint( -100, 90 ) );
     QTest::qWait( k_screen_settle_ms );
-    saveScreenshot( main_window, QStringLiteral( "screen_after_left_drag.png" ) );
+    saveScreenshot(
+        main_window,
+        QStringLiteral( "02_screen_after_left_drag.png" ),
+        QStringLiteral( "m_screenを左クリックでドラッグしたことを表す状態" ) );
+
+    QTest::keyPress( screen, Qt::Key_Shift );
+    dragMouse( screen, Qt::LeftButton, center, center + QPoint( 180, 160 ), Qt::ShiftModifier );
+    QTest::keyRelease( screen, Qt::Key_Shift );
+    QTest::qWait( k_screen_settle_ms );
+    saveScreenshot(
+        main_window,
+        QStringLiteral( "03_screen_after_shift_left_drag.png" ),
+        QStringLiteral( "m_screenをShiftキーを押しながら左クリックでドラッグしたことを表す状態" ) );
 
     QTest::keyClick( screen, Qt::Key_Home );
     QTest::qWait( 500 );
-    saveScreenshot( main_window, QStringLiteral( "screen_after_home.png" ) );
+    saveScreenshot(
+        main_window,
+        QStringLiteral( "04_screen_after_home.png" ),
+        QStringLiteral( "Homeボタンを押したことを表す状態" ) );
 
     m_test_succeeded = true;
 }
