@@ -33,6 +33,7 @@
 #include "../Widgets/PlotOverLineEditor.h"
 #include "../Widgets/PlotOverTimeEditor.h"
 #include "../Widgets/PointSizeControl.h"
+#include "../Widgets/Preference.h"
 #include "../Widgets/RepetitionLevelControl.h"
 #include "../Widgets/ShadingControl.h"
 #include "../Widgets/TransferFunctionEditor.h"
@@ -55,6 +56,8 @@ constexpr int k_post_connect_settle_ms = 1000;
 constexpr int k_post_apply_settle_ms = 3000;
 constexpr int k_top_level_widget_timeout_ms = 5000;
 constexpr int k_widget_close_timeout_ms = 5000;
+constexpr int k_button_retry_count = 3;
+constexpr int k_button_retry_wait_ms = 500;
 kvs::qt::Application* g_test_app = nullptr;
 
 QString findRepoRootFrom( const QString& start_path )
@@ -170,6 +173,10 @@ void MenuBarTest::triggerAction( QAction* action, int settle_ms ) const
     QVERIFY2( action->isEnabled(), qPrintable( QStringLiteral( "Action is disabled: %1" ).arg( action->text() ) ) );
 
     action->trigger();
+    while ( QWidget* popup = QApplication::activePopupWidget() )
+    {
+        popup->close();
+    }
     QTest::qWait( settle_ms );
 }
 
@@ -200,21 +207,34 @@ void MenuBarTest::writeMarkdownReport() const
 
     QTextStream stream( &report_file );
     stream << "# MenuBarTest\n\n";
-    stream << "- Result: " << ( m_test_succeeded ? "PASS" : "FAIL" ) << "\n";
-    stream << "- Client executable: `" << m_client_executable << "`\n";
-    stream << "- Server executable: `" << m_server_executable << "`\n";
-    stream << "- Volume data: `" << m_volume_data_path << "`\n";
-    stream << "- Transfer function: `" << m_transfer_function_path << "`\n";
-    stream << "- Screenshot directory: `" << m_screenshot_dir_path << "`\n\n";
-    stream << "## Screenshots\n\n";
+    stream << "## テスト結果\n\n";
+    stream << "- 結果: " << ( m_test_succeeded ? "PASS" : "FAIL" ) << "\n";
+    stream << "- クライアントプログラム: `" << m_client_executable << "`\n";
+    stream << "- サーバプログラム: `" << m_server_executable << "`\n";
+    stream << "- サーバ起動ラッパー: `" << m_server_target_wrapper_executable << "`\n";
+    stream << "- ボリュームデータ: `" << m_volume_data_path << "`\n";
+    stream << "- 伝達関数ファイル: `" << m_transfer_function_path << "`\n";
+    stream << "- スクリーンショット出力先: `" << m_screenshot_dir_path << "`\n\n";
+    stream << "## 実施内容\n\n";
+    stream << "1. Communication でサーバに接続し、Remote Viz.(Client && Server) を選択しました。\n";
+    stream << "2. ボリュームデータと伝達関数ファイルを設定して Apply を押しました。\n";
+    stream << "3. Object Editor の nameLineEdit にテキストが入るまで待機し、Apply を押しました。\n";
+    stream << "4. PlayBackControlToolBar の m_jump_push_button が有効になるまで待機し、ボタンを押しました。\n";
+    stream << "5. Object Editor と Communication を閉じた後、メニュー項目を順に開いてスクリーンショットを取得しました。\n\n";
+    stream << "## スクリーンショット\n\n";
 
     for ( const ScreenshotEntry& entry : m_screenshots )
     {
+        const QString screenshot_path =
+            QDir( m_screenshot_dir_path ).absoluteFilePath( entry.file_name );
+        const QString relative_screenshot_path =
+            QDir( QFileInfo( m_report_path ).absolutePath() ).relativeFilePath( screenshot_path );
+
         stream << "### " << entry.caption << "\n\n";
         stream << "!["
                << entry.caption
-               << "](img/"
-               << entry.file_name
+               << "]("
+               << relative_screenshot_path
                << ")\n\n";
     }
 }
@@ -224,23 +244,29 @@ void MenuBarTest::initTestCase()
     const QString date_stamp = QDate::currentDate().toString( QStringLiteral( "yyyyMMdd" ) );
     m_client_executable = envOrDefault(
         "PBVR_CLIENT_EXECUTABLE",
-        QStringLiteral( "/path/to/CS-IS-PBVR/Client/build/Qt_6_11_0_for_macOS-Release/App/pbvr_client.app/Contents/MacOS/pbvr_client" ) );
+        QStringLiteral( "/Users/user/Work/CS-IS-PBVR/Client/build/Qt_6_11_0_for_macOS-Release/App/pbvr_client.app/Contents/MacOS/pbvr_client" ) );
     m_server_executable = envOrDefault(
         "PBVR_SERVER_EXECUTABLE",
-        QStringLiteral( "/path/to/CS-IS-PBVR/Server/pbvr_server" ) );
+        QStringLiteral( "/Users/user/Work/CS-IS-PBVR/Server/pbvr_server" ) );
+    m_server_target_wrapper_executable = envOrDefault(
+        "PBVR_SERVER_TARGET_WRAPPER_EXECUTABLE",
+        sourceTreePath( QStringLiteral( "server_target_wrapper.sh" ) ) );
     m_volume_data_path = envOrDefault(
         "PBVR_VOLUME_DATA",
-        QStringLiteral( "/path/to/reg_test_data/unstruct/mej_iofiles_downsize4_step80_90/Piece/example.pfl" ) );
+        QStringLiteral( "/Users/user/Work/reg_test_data/unstruct/mej_iofiles_downsize4_step80_90/Piece/example.pfl" ) );
     m_transfer_function_path = envOrDefault(
         "PBVR_TRANSFER_FUNCTION",
-        QStringLiteral( "/path/to/reg_test_data/unstruct/mej_v2.tfe" ) );
-    m_output_dir_path = envOrDefault(
-        "PBVR_TEST_OUTPUT_DIR",
-        ClientTests::datedTestOutputDir( repoRootPath(), date_stamp ) );
+        QStringLiteral( "/Users/user/Work/reg_test_data/unstruct/mej_v2.tfe" ) );
+    m_report_dir_path = envOrDefault(
+        "PBVR_TEST_REPORT_DIR",
+        ClientTests::datedTestOutputDir(
+            repoRootPath(),
+            date_stamp,
+            QStringLiteral( "MenuBarTest" ) ) );
     m_screenshot_dir_path = envOrDefault(
         "PBVR_SCREENSHOT_DIR",
-        QDir( m_output_dir_path ).absoluteFilePath( QStringLiteral( "img" ) ) );
-    m_report_path = QDir( m_output_dir_path ).absoluteFilePath( QStringLiteral( "MenuBarTest.md" ) );
+        QDir( m_report_dir_path ).absoluteFilePath( QStringLiteral( "img" ) ) );
+    m_report_path = QDir( m_report_dir_path ).absoluteFilePath( QStringLiteral( "TestResult.md" ) );
 
     QVERIFY2(
         QFileInfo::exists( m_client_executable ),
@@ -249,20 +275,25 @@ void MenuBarTest::initTestCase()
         QFileInfo::exists( m_server_executable ),
         qPrintable( QStringLiteral( "Server executable not found: %1" ).arg( m_server_executable ) ) );
     QVERIFY2(
+        QFileInfo::exists( m_server_target_wrapper_executable ),
+        qPrintable( QStringLiteral( "Server target wrapper executable not found: %1" ).arg( m_server_target_wrapper_executable ) ) );
+    QVERIFY2(
         QFileInfo::exists( m_volume_data_path ),
         qPrintable( QStringLiteral( "Volume data file not found: %1" ).arg( m_volume_data_path ) ) );
     QVERIFY2(
         QFileInfo::exists( m_transfer_function_path ),
         qPrintable( QStringLiteral( "Transfer function file not found: %1" ).arg( m_transfer_function_path ) ) );
     QVERIFY2(
-        QDir().mkpath( m_output_dir_path ),
-        qPrintable( QStringLiteral( "Failed to create output directory: %1" ).arg( m_output_dir_path ) ) );
+        QDir().mkpath( m_report_dir_path ),
+        qPrintable( QStringLiteral( "Failed to create report directory: %1" ).arg( m_report_dir_path ) ) );
     QVERIFY2(
         QDir().mkpath( m_screenshot_dir_path ),
         qPrintable( QStringLiteral( "Failed to create screenshot directory: %1" ).arg( m_screenshot_dir_path ) ) );
 
-    m_server_process.setProgram( m_server_executable );
+    m_server_process.setProgram( m_server_target_wrapper_executable );
+    m_server_process.setArguments( { m_server_executable } );
     m_server_process.setWorkingDirectory( QFileInfo( m_server_executable ).absolutePath() );
+    m_server_process.setProcessChannelMode( QProcess::SeparateChannels );
     m_server_process.start();
 
     QVERIFY2(
@@ -313,27 +344,48 @@ void MenuBarTest::performs_menu_bar_scenario()
     auto* transfer_function_path_edit = communication->findChild<QLineEdit*>( "transferFunctionFilePathLineEdit" );
     auto* setting_apply_button = communication->findChild<QPushButton*>( "settingApplyPushButton" );
     auto* id_line_edit = communication->findChild<QLineEdit*>( "IDLineEdit" );
+    auto* disconnect_button = communication->findChild<QPushButton*>( "disconnectPushButton" );
 
     QVERIFY2( connect_button != nullptr, "connectPushButton not found" );
+    QVERIFY2( disconnect_button != nullptr, "disconnectPushButton not found" );
     QVERIFY2( remote_viz_radio != nullptr, "remoteVizClientServerRadioButton not found" );
     QVERIFY2( volume_path_edit != nullptr, "volumeDataFilePathLineEdit not found" );
     QVERIFY2( transfer_function_path_edit != nullptr, "transferFunctionFilePathLineEdit not found" );
     QVERIFY2( setting_apply_button != nullptr, "settingApplyPushButton not found" );
     QVERIFY2( id_line_edit != nullptr, "IDLineEdit not found" );
 
-    QTest::mouseClick( connect_button, Qt::LeftButton );
+    const auto connected = [connect_button, disconnect_button, id_line_edit]()
+    {
+        return disconnect_button->isEnabled() &&
+               !connect_button->isEnabled() &&
+               !id_line_edit->text().trimmed().isEmpty();
+    };
 
-    const bool connected = waitForCondition(
-        [communication, id_line_edit]()
+    for ( int attempt = 0; attempt < k_button_retry_count && !connected(); ++attempt )
+    {
+        QVERIFY2(
+            waitForCondition(
+                [connect_button]()
+                {
+                    return connect_button->isEnabled();
+                },
+                k_connect_timeout_ms,
+                100 ),
+            "connectPushButton did not become enabled within the timeout" );
+
+        main_window.raise();
+        main_window.activateWindow();
+        QTest::qWait( k_window_settle_ms );
+        QTest::mouseClick( connect_button, Qt::LeftButton );
+
+        if ( connected() || waitForCondition( connected, k_connect_timeout_ms, 100 ) )
         {
-            if ( auto* disconnect_button = communication->findChild<QPushButton*>( "disconnectPushButton" ) )
-            {
-                return disconnect_button->isEnabled() && !id_line_edit->text().trimmed().isEmpty();
-            }
-            return false;
-        },
-        k_connect_timeout_ms );
-    QVERIFY2( connected, "Client did not enter the connected state" );
+            break;
+        }
+
+        QTest::qWait( k_button_retry_wait_ms );
+    }
+    QVERIFY2( connected(), "Client did not enter the connected state" );
     QTest::qWait( k_post_connect_settle_ms );
 
     if ( !remote_viz_radio->isChecked() )
@@ -392,20 +444,78 @@ void MenuBarTest::performs_menu_bar_scenario()
     QTest::qWait( k_window_settle_ms );
 
     saveScreenshot(
-        QStringLiteral( "main_window_overview.png" ),
-        QStringLiteral( "Main window after closing Object Editor and Communication" ) );
+        QStringLiteral( "00_main_window_after_close.png" ),
+        QStringLiteral( "Object Editor と Communication を閉じた状態" ) );
 
     QMenu* pbvr_client_menu = main_window.findChild<QMenu*>( "menuPBVRClient" );
     openMenu( main_window, pbvr_client_menu );
     saveScreenshot(
-        QStringLiteral( "menu_pbvr_client_open.png" ),
-        QStringLiteral( "pbvr_client menu expanded" ) );
+        QStringLiteral( "01_menu_pbvr_client_clicked.png" ),
+        QStringLiteral( "pbvr_client をクリックしたことを表す" ) );
+
+    QAction* preference_action = findActionByText( &main_window, QStringLiteral( "Preference" ) );
+    triggerAction( preference_action, k_dialog_settle_ms );
+
+    auto* preference = main_window.findChild<Preference*>();
+    QVERIFY2( preference != nullptr, "Preference dialog not found" );
+    QVERIFY2(
+        waitForCondition(
+            [preference]()
+            {
+                return preference->isVisible();
+            },
+            k_top_level_widget_timeout_ms,
+            100 ),
+        "Preference dialog did not become visible" );
+
+    saveScreenshot(
+        QStringLiteral( "02_preference_clicked.png" ),
+        QStringLiteral( "Preference をクリックしたことを表す" ) );
+
+    preference->close();
+    QVERIFY2(
+        waitForCondition(
+            [preference]()
+            {
+                return !preference->isVisible();
+            },
+            k_widget_close_timeout_ms,
+            100 ),
+        "Preference dialog did not close" );
 
     QMenu* tools_menu = main_window.findChild<QMenu*>( "menuTools" );
     openMenu( main_window, tools_menu );
     saveScreenshot(
-        QStringLiteral( "menu_tools_open.png" ),
-        QStringLiteral( "Tools menu expanded" ) );
+        QStringLiteral( "03_menu_tools_clicked.png" ),
+        QStringLiteral( "Tools をクリックしたことを表す" ) );
+
+    QAction* communication_action = findActionByText( &main_window, QStringLiteral( "Communication" ) );
+    triggerAction( communication_action, k_dialog_settle_ms );
+
+    QVERIFY2(
+        waitForCondition(
+            [communication]()
+            {
+                return communication->isVisible();
+            },
+            k_top_level_widget_timeout_ms,
+            100 ),
+        "Communication did not become visible" );
+
+    saveScreenshot(
+        QStringLiteral( "04_communication_clicked.png" ),
+        QStringLiteral( "Communication をクリックしたことを表す" ) );
+
+    communication->close();
+    QVERIFY2(
+        waitForCondition(
+            [communication]()
+            {
+                return !communication->isVisible();
+            },
+            k_widget_close_timeout_ms,
+            100 ),
+        "Communication did not close" );
 
     struct ActionScenario
     {
@@ -416,16 +526,16 @@ void MenuBarTest::performs_menu_bar_scenario()
     };
 
     const ActionScenario scenarios[] = {
-        { "Animation Control", "tools_animation_control.png", "Animation Control opened", [&main_window]() { return main_window.findChild<AnimationControl*>(); } },
-        { "Glyph Editor", "tools_glyph_editor.png", "Glyph Editor opened", [&main_window]() { return main_window.findChild<GlyphEditor*>(); } },
-        { "Object Editor", "tools_object_editor.png", "Object Editor reopened from Tools", [object_editor]() { return object_editor; } },
-        { "Plot Over Line Editor", "tools_plot_over_line_editor.png", "Plot Over Line Editor opened", [&main_window]() { return main_window.findChild<PlotOverLineEditor*>(); } },
-        { "Plot Over Time Editor", "tools_plot_over_time_editor.png", "Plot Over Time Editor opened", [&main_window]() { return main_window.findChild<PlotOverTimeEditor*>(); } },
-        { "Point Size Control", "tools_point_size_control.png", "Point Size Control opened", [&main_window]() { return main_window.findChild<PointSizeControl*>(); } },
-        { "Repetition Level Control", "tools_repetition_level_control.png", "Repetition Level Control opened", [&main_window]() { return main_window.findChild<RepetitionLevelControl*>(); } },
-        { "Shading Control", "tools_shading_control.png", "Shading Control opened", [&main_window]() { return main_window.findChild<ShadingControl*>(); } },
-        { "Transfer Function Editor", "tools_transfer_function_editor.png", "Transfer Function Editor opened", [&main_window]() { return main_window.findChild<TransferFunctionEditor*>(); } },
-        { "Volume Transform", "tools_volume_transform.png", "Volume Transform opened", [&main_window]() { return main_window.findChild<VolumeTransform*>(); } }
+        { "Animation Control", "05_animation_control_clicked.png", "Animation Control をクリックしたことを表す", [&main_window]() { return main_window.findChild<AnimationControl*>(); } },
+        { "Glyph Editor", "06_glyph_editor_clicked.png", "Glyph Editor をクリックしたことを表す", [&main_window]() { return main_window.findChild<GlyphEditor*>(); } },
+        { "Object Editor", "07_object_editor_clicked.png", "Object Editor をクリックしたことを表す", [object_editor]() { return object_editor; } },
+        { "Plot Over Line Editor", "08_plot_over_line_editor_clicked.png", "Plot Over Line Editor をクリックしたことを表す", [&main_window]() { return main_window.findChild<PlotOverLineEditor*>(); } },
+        { "Plot Over Time Editor", "09_plot_over_time_editor_clicked.png", "Plot Over Time Editor をクリックしたことを表す", [&main_window]() { return main_window.findChild<PlotOverTimeEditor*>(); } },
+        { "Point Size Control", "10_point_size_control_clicked.png", "Point Size Control をクリックしたことを表す", [&main_window]() { return main_window.findChild<PointSizeControl*>(); } },
+        { "Repetition Level Control", "11_repetition_level_control_clicked.png", "Repetition Level Control をクリックしたことを表す", [&main_window]() { return main_window.findChild<RepetitionLevelControl*>(); } },
+        { "Shading Control", "12_shading_control_clicked.png", "Shading Control をクリックしたことを表す", [&main_window]() { return main_window.findChild<ShadingControl*>(); } },
+        { "Transfer Function Editor", "13_transfer_function_editor_clicked.png", "Transfer Function Editor をクリックしたことを表す", [&main_window]() { return main_window.findChild<TransferFunctionEditor*>(); } },
+        { "Volume Transform", "14_volume_transform_clicked.png", "VolumeTransform をクリックしたことを表す", [&main_window]() { return main_window.findChild<VolumeTransform*>(); } }
     };
 
     for ( const ActionScenario& scenario : scenarios )

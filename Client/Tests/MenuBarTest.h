@@ -42,9 +42,10 @@ private:
     QProcess m_server_process;
     QString m_client_executable;
     QString m_server_executable;
+    QString m_server_target_wrapper_executable;
     QString m_volume_data_path;
     QString m_transfer_function_path;
-    QString m_output_dir_path;
+    QString m_report_dir_path;
     QString m_screenshot_dir_path;
     QString m_report_path;
     QVector<ScreenshotEntry> m_screenshots;
