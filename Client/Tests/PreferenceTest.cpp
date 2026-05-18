@@ -12,16 +12,19 @@
 #include <QElapsedTimer>
 #include <QFile>
 #include <QFileInfo>
+#include <QGuiApplication>
 #include <QGroupBox>
 #include <QLineEdit>
 #include <QMainWindow>
+#include <QMetaObject>
+#include <QPixmap>
 #include <QPushButton>
+#include <QScreen>
 #include <QSpinBox>
+#include <QTextStream>
 #include <QTest>
 #include <QTimer>
 #include <QWidget>
-
-#include <csignal>
 
 #include "../App/MainWindow.h"
 #include "../ExtendedQT/ClickableLabel.h"
@@ -34,10 +37,14 @@ namespace
 constexpr int k_window_settle_ms = 500;
 constexpr int k_short_wait_ms = 1000;
 constexpr int k_long_wait_ms = 3000;
-constexpr int k_recording_finish_timeout_ms = 15000;
-constexpr int k_dialog_timeout_ms = 5000;
 constexpr int k_combo_popup_timeout_ms = 5000;
+constexpr int k_capture_settle_ms = 300;
 kvs::qt::Application* g_test_app = nullptr;
+
+void logStep( const QString& message )
+{
+    qInfo().noquote() << message;
+}
 
 QString findRepoRootFrom( const QString& start_path )
 {
@@ -95,71 +102,10 @@ bool PreferenceTest::waitForCondition( const std::function<bool()>& condition, i
     while ( timer.elapsed() < timeout_ms )
     {
         if ( condition() ) { return true; }
-        QTest::qWait( interval_ms );
+    QTest::qWait( interval_ms );
     }
 
     return condition();
-}
-
-void PreferenceTest::startVideoRecording()
-{
-    if ( QFileInfo::exists( m_video_file_path ) )
-    {
-        QVERIFY2(
-            QFile::remove( m_video_file_path ),
-            qPrintable( QStringLiteral( "Failed to remove existing video: %1" ).arg( m_video_file_path ) ) );
-    }
-
-    m_recording_process.setProgram( QStringLiteral( "screencapture" ) );
-    m_recording_process.setArguments(
-        {
-            QStringLiteral( "-v" ),
-            QStringLiteral( "-k" ),
-            QStringLiteral( "-m" ),
-            QStringLiteral( "-x" ),
-            m_video_file_path
-        } );
-    m_recording_process.start();
-
-    QVERIFY2(
-        m_recording_process.waitForStarted( 5000 ),
-        qPrintable( QStringLiteral( "Failed to start video recording: %1" ).arg( m_recording_process.errorString() ) ) );
-}
-
-void PreferenceTest::stopVideoRecording()
-{
-    if ( m_recording_process.state() == QProcess::NotRunning )
-    {
-        QVERIFY2(
-            QFileInfo::exists( m_video_file_path ),
-            qPrintable( QStringLiteral( "Recorded video was not created: %1" ).arg( m_video_file_path ) ) );
-        return;
-    }
-
-    const qint64 pid = m_recording_process.processId();
-    if ( pid > 0 )
-    {
-        ::kill( static_cast<pid_t>( pid ), SIGINT );
-    }
-    else
-    {
-        m_recording_process.terminate();
-    }
-
-    if ( !m_recording_process.waitForFinished( k_recording_finish_timeout_ms ) )
-    {
-        m_recording_process.terminate();
-    }
-    if ( m_recording_process.state() != QProcess::NotRunning &&
-         !m_recording_process.waitForFinished( 5000 ) )
-    {
-        m_recording_process.kill();
-        m_recording_process.waitForFinished( 5000 );
-    }
-
-    QVERIFY2(
-        QFileInfo::exists( m_video_file_path ),
-        qPrintable( QStringLiteral( "Recorded video was not created: %1" ).arg( m_video_file_path ) ) );
 }
 
 void PreferenceTest::clickButtonAndWait( QPushButton* button, int wait_ms ) const
@@ -254,7 +200,6 @@ QColorDialog* PreferenceTest::waitForColorDialog( int timeout_ms ) const
 void PreferenceTest::selectColor( QWidget* target, const QColor& color ) const
 {
     QVERIFY2( target != nullptr, "Color target widget was not found" );
-    Q_UNUSED( color );
 
     auto* clickable_label = qobject_cast<ClickableLabel*>( target );
     QVERIFY2( clickable_label != nullptr, "Color target is not ClickableLabel" );
@@ -266,13 +211,14 @@ void PreferenceTest::selectColor( QWidget* target, const QColor& color ) const
         &closer_timer,
         &QTimer::timeout,
         qApp,
-        [&closer_timer]()
+        [&closer_timer, color]()
         {
             for ( QWidget* widget : QApplication::topLevelWidgets() )
             {
                 auto* dialog = qobject_cast<QColorDialog*>( widget );
                 if ( dialog == nullptr || !dialog->isVisible() ) { continue; }
 
+                dialog->setCurrentColor( color );
                 auto* button_box = dialog->findChild<QDialogButtonBox*>();
                 if ( button_box == nullptr ) { continue; }
 
@@ -289,6 +235,85 @@ void PreferenceTest::selectColor( QWidget* target, const QColor& color ) const
 
     QMetaObject::invokeMethod( clickable_label, "doubleClicked", Qt::DirectConnection );
     closer_timer.stop();
+
+    const QColor selected_color = clickable_label->palette().color( QPalette::Window );
+    QCOMPARE( selected_color, color );
+}
+
+void PreferenceTest::saveScreenshot( const QString& file_name, const QString& caption )
+{
+    QTest::qWait( k_capture_settle_ms );
+
+    QScreen* screen = QGuiApplication::primaryScreen();
+    QVERIFY2( screen != nullptr, "Primary screen not found" );
+
+    const QString file_path = QDir( m_screenshot_dir_path ).absoluteFilePath( file_name );
+    const QPixmap screenshot = screen->grabWindow( 0 );
+
+    QVERIFY2( !screenshot.isNull(), "Failed to capture screenshot from the primary screen" );
+    QVERIFY2(
+        screenshot.save( file_path ),
+        qPrintable( QStringLiteral( "Failed to save screenshot: %1" ).arg( file_path ) ) );
+
+    m_screenshots.push_back( { file_name, caption } );
+    m_visual_checks.push_back( caption );
+}
+
+void PreferenceTest::writeMarkdownReport() const
+{
+    if ( m_report_path.isEmpty() ) { return; }
+
+    QFile report_file( m_report_path );
+    QVERIFY2(
+        report_file.open( QIODevice::WriteOnly | QIODevice::Text | QIODevice::Truncate ),
+        qPrintable( QStringLiteral( "Failed to open markdown report: %1" ).arg( m_report_path ) ) );
+
+    QTextStream stream( &report_file );
+    stream << "# PreferenceTest\n\n";
+    stream << "- 結果: " << ( m_test_succeeded ? "PASS" : "FAIL" ) << "\n";
+    stream << "- クライアントプログラム: `" << m_client_executable << "`\n";
+    stream << "- 出力先: `" << m_output_dir_path << "`\n";
+    stream << "- スクリーンショット出力先: `" << m_screenshot_dir_path << "`\n\n";
+
+    stream << "## 実施手順\n\n";
+    for ( const StepEntry& step : m_steps )
+    {
+        stream << "- " << ( step.completed ? "PASS" : "NOT RUN" ) << ": " << step.description << "\n";
+    }
+
+    stream << "\n## 自動判定項目\n\n";
+    for ( const CheckEntry& check : m_checks )
+    {
+        stream << "- " << ( check.passed ? "PASS" : "FAIL" ) << ": " << check.description << "\n";
+    }
+
+    stream << "\n## 目視確認対象\n\n";
+    for ( const QString& caption : m_visual_checks )
+    {
+        stream << "- 要確認: " << caption << "\n";
+    }
+
+    stream << "\n## スクリーンショット\n\n";
+    for ( const ScreenshotEntry& entry : m_screenshots )
+    {
+        stream << "### " << entry.caption << "\n\n";
+        stream << "![" << entry.caption << "](img/" << entry.file_name << ")\n\n";
+    }
+
+    stream << "## 未自動化・保留事項\n\n";
+    stream << "- スクリーンショットに写るカラーマップバー、OrientationAxis、背景色、文字色、ラベル表示の視覚的な正しさは目視確認対象です。\n";
+}
+
+void PreferenceTest::markStepCompleted( const QString& description )
+{
+    m_steps.push_back( { description, true } );
+    logStep( description );
+}
+
+void PreferenceTest::recordCheck( const QString& description, bool passed )
+{
+    m_checks.push_back( { description, passed } );
+    QVERIFY2( passed, qPrintable( description ) );
 }
 
 void PreferenceTest::initTestCase()
@@ -296,11 +321,14 @@ void PreferenceTest::initTestCase()
     const QString date_stamp = QDate::currentDate().toString( QStringLiteral( "yyyyMMdd" ) );
     m_client_executable = envOrDefault(
         "PBVR_CLIENT_EXECUTABLE",
-        QStringLiteral( "/path/to/CS-IS-PBVR/Client/build/Qt_6_11_0_for_macOS-Release/App/pbvr_client.app/Contents/MacOS/pbvr_client" ) );
+        QStringLiteral( "/Users/user/Work/CS-IS-PBVR/Client/build/Qt_6_11_0_for_macOS-Release/App/pbvr_client.app/Contents/MacOS/pbvr_client" ) );
     m_output_dir_path = envOrDefault(
         "PBVR_TEST_OUTPUT_DIR",
-        ClientTests::datedTestOutputDir( repoRootPath(), date_stamp ) );
-    m_video_file_path = QDir( m_output_dir_path ).absoluteFilePath( QStringLiteral( "PreferenceTest.mov" ) );
+        ClientTests::datedTestOutputDir( repoRootPath(), date_stamp, QStringLiteral( "PreferenceTest" ) ) );
+    m_screenshot_dir_path = envOrDefault(
+        "PBVR_SCREENSHOT_DIR",
+        QDir( m_output_dir_path ).absoluteFilePath( QStringLiteral( "img" ) ) );
+    m_report_path = QDir( m_output_dir_path ).absoluteFilePath( QStringLiteral( "TestResult.md" ) );
 
     QVERIFY2(
         QFileInfo::exists( m_client_executable ),
@@ -308,14 +336,14 @@ void PreferenceTest::initTestCase()
     QVERIFY2(
         QDir().mkpath( m_output_dir_path ),
         qPrintable( QStringLiteral( "Failed to create output directory: %1" ).arg( m_output_dir_path ) ) );
+    QVERIFY2(
+        QDir().mkpath( m_screenshot_dir_path ),
+        qPrintable( QStringLiteral( "Failed to create screenshot directory: %1" ).arg( m_screenshot_dir_path ) ) );
 }
 
 void PreferenceTest::cleanupTestCase()
 {
-    if ( m_recording_process.state() != QProcess::NotRunning )
-    {
-        stopVideoRecording();
-    }
+    writeMarkdownReport();
 }
 
 void PreferenceTest::performs_preference_scenario()
@@ -332,6 +360,7 @@ void PreferenceTest::performs_preference_scenario()
     main_window.raise();
     main_window.activateWindow();
     QTest::qWait( k_window_settle_ms );
+    markStepCompleted( QStringLiteral( "クライアントプログラムを起動した。" ) );
 
     auto* preference = main_window.findChild<Preference*>();
     QVERIFY2( preference != nullptr, "Preference dialog was not found" );
@@ -341,14 +370,12 @@ void PreferenceTest::performs_preference_scenario()
     QVERIFY2( preference->fpsLabel() != nullptr, "Preference fps label is not initialized" );
     QVERIFY2( preference->timeStepLabel() != nullptr, "Preference time step label is not initialized" );
 
-    startVideoRecording();
-    QTest::qWait( k_short_wait_ms );
-
     preference->show();
     preference->raise();
     preference->activateWindow();
     QVERIFY( QTest::qWaitForWindowExposed( preference ) );
     QTest::qWait( k_window_settle_ms );
+    markStepCompleted( QStringLiteral( "Preference.uiを開いた。" ) );
 
     auto* default_button = preference->findChild<QPushButton*>( "defaultPushButton" );
     auto* apply_button = preference->findChild<QPushButton*>( "applyPushButton" );
@@ -385,88 +412,152 @@ void PreferenceTest::performs_preference_scenario()
     QVERIFY2( font_color_label != nullptr, "fontColorClickableLabel not found" );
 
     clickButtonAndWait( default_button, k_short_wait_ms );
-    QCOMPARE( caption_line_edit->text(), QString() );
+    recordCheck( QStringLiteral( "defaultPushButtonでcaptionLineEditが空になる。" ), caption_line_edit->text().isEmpty() );
     clickButtonAndWait( apply_button, k_long_wait_ms );
+    markStepCompleted( QStringLiteral( "defaultPushButtonとapplyPushButtonを押した。" ) );
+    saveScreenshot( QStringLiteral( "01_default_state.png" ), QStringLiteral( "デフォルトの状態を表す。" ) );
 
     setGroupBoxChecked( color_map_bar_group_box, false );
-    QTest::qWait( k_short_wait_ms );
     clickButtonAndWait( apply_button, k_long_wait_ms );
+    recordCheck( QStringLiteral( "colorMapBarGroupBoxのチェックを外せる。" ), !color_map_bar_group_box->isChecked() );
+    markStepCompleted( QStringLiteral( "colorMapBarGroupBoxのチェックを外してapplyPushButtonを押した。" ) );
+    saveScreenshot( QStringLiteral( "02_color_map_bar_hidden.png" ), QStringLiteral( "colorMapBarが非表示になることを表す。" ) );
 
     setGroupBoxChecked( color_map_bar_group_box, true );
-    QTest::qWait( k_short_wait_ms );
     clickButtonAndWait( apply_button, k_long_wait_ms );
+    recordCheck( QStringLiteral( "colorMapBarGroupBoxをチェックできる。" ), color_map_bar_group_box->isChecked() );
+    markStepCompleted( QStringLiteral( "colorMapBarGroupBoxをチェックしてapplyPushButtonを押した。" ) );
 
     setLineEditText( caption_line_edit, QStringLiteral( "test" ) );
-    QTest::qWait( k_short_wait_ms );
     clickButtonAndWait( apply_button, k_long_wait_ms );
+    recordCheck( QStringLiteral( "captionLineEditにtestを入力できる。" ), caption_line_edit->text() == QStringLiteral( "test" ) );
+    markStepCompleted( QStringLiteral( "captionLineEditにtestを書き込み、applyPushButtonを押した。" ) );
+    saveScreenshot( QStringLiteral( "03_color_map_bar_caption.png" ), QStringLiteral( "カラーマップバーのcaptionが表示されることを表す。" ) );
 
     selectComboBoxItem( orientation_type_combo_box, 1 );
-    QTest::qWait( k_short_wait_ms );
     clickButtonAndWait( apply_button, k_long_wait_ms );
+    recordCheck( QStringLiteral( "orientationTypeComboBoxの2番目を選択できる。" ), orientation_type_combo_box->currentIndex() == 1 );
+    markStepCompleted( QStringLiteral( "orientationTypeComboBoxの2番目を選択してapplyPushButtonを押した。" ) );
+    saveScreenshot( QStringLiteral( "04_color_map_bar_vertical.png" ), QStringLiteral( "カラーマップバーが垂直に表示されることを表す。" ) );
 
     setGroupBoxChecked( orientation_axis_group_box, false );
-    QTest::qWait( k_short_wait_ms );
     clickButtonAndWait( apply_button, k_long_wait_ms );
+    recordCheck( QStringLiteral( "orientationAxisGroupBoxのチェックを外せる。" ), !orientation_axis_group_box->isChecked() );
+    markStepCompleted( QStringLiteral( "orientationAxisGroupBoxのチェックを外してapplyPushButtonを押した。" ) );
+    saveScreenshot( QStringLiteral( "05_orientation_axis_hidden.png" ), QStringLiteral( "orientationAxisが非表示になることを表す。" ) );
 
     setGroupBoxChecked( orientation_axis_group_box, true );
-    QTest::qWait( k_short_wait_ms );
     clickButtonAndWait( apply_button, k_long_wait_ms );
+    recordCheck( QStringLiteral( "orientationAxisGroupBoxをチェックできる。" ), orientation_axis_group_box->isChecked() );
+    markStepCompleted( QStringLiteral( "orientationAxisGroupBoxをチェックしてapplyPushButtonを押した。" ) );
 
     selectComboBoxItem( axis_type_combo_box, 1 );
-    QTest::qWait( k_short_wait_ms );
     clickButtonAndWait( apply_button, k_long_wait_ms );
+    recordCheck( QStringLiteral( "axisTypeComboBoxの2番目を選択できる。" ), axis_type_combo_box->currentIndex() == 1 );
+    markStepCompleted( QStringLiteral( "axisTypeComboBoxの2番目を選択してapplyPushButtonを押した。" ) );
+    saveScreenshot( QStringLiteral( "06_orientation_axis_centered_axis.png" ), QStringLiteral( "orientationAxisのAxisTypeがCenteredAxisになることを表す。" ) );
 
     selectComboBoxItem( axis_type_combo_box, 2 );
-    QTest::qWait( k_short_wait_ms );
     clickButtonAndWait( apply_button, k_long_wait_ms );
+    recordCheck( QStringLiteral( "axisTypeComboBoxの3番目を選択できる。" ), axis_type_combo_box->currentIndex() == 2 );
+    markStepCompleted( QStringLiteral( "axisTypeComboBoxの3番目を選択してapplyPushButtonを押した。" ) );
+    saveScreenshot( QStringLiteral( "07_orientation_axis_none_axis.png" ), QStringLiteral( "orientationAxisのAxisTypeがNoneAxisになることを表す。" ) );
+
+    selectComboBoxItem( axis_type_combo_box, 0 );
+    clickButtonAndWait( apply_button, k_long_wait_ms );
+    recordCheck( QStringLiteral( "axisTypeComboBoxを1番目に戻せる。" ), axis_type_combo_box->currentIndex() == 0 );
+    markStepCompleted( QStringLiteral( "axisTypeComboBoxの1番目を選択してapplyPushButtonを押した。" ) );
 
     selectComboBoxItem( box_type_combo_box, 0 );
-    QTest::qWait( k_short_wait_ms );
     clickButtonAndWait( apply_button, k_long_wait_ms );
+    recordCheck( QStringLiteral( "boxTypeComboBoxの1番目を選択できる。" ), box_type_combo_box->currentIndex() == 0 );
+    markStepCompleted( QStringLiteral( "boxTypeComboBoxの1番目を選択してapplyPushButtonを押した。" ) );
+    saveScreenshot( QStringLiteral( "08_orientation_axis_wired_box.png" ), QStringLiteral( "orientationAxisのBoxTypeがWiredBoxになることを表す。" ) );
+
+    selectComboBoxItem( box_type_combo_box, 1 );
+    clickButtonAndWait( apply_button, k_long_wait_ms );
+    recordCheck( QStringLiteral( "boxTypeComboBoxの2番目を選択できる。" ), box_type_combo_box->currentIndex() == 1 );
+    markStepCompleted( QStringLiteral( "boxTypeComboBoxの2番目を選択してapplyPushButtonを押した。" ) );
 
     selectColor( background_color_label, Qt::white );
-    QTest::qWait( k_short_wait_ms );
     clickButtonAndWait( apply_button, k_long_wait_ms );
+    recordCheck(
+            QStringLiteral( "backGroundColorClickableLabelで白を選択できる。" ),
+            background_color_label->palette().color( QPalette::Window ) == QColor( Qt::white ) );
+    markStepCompleted( QStringLiteral( "backGroundColorClickableLabelで白を選択してapplyPushButtonを押した。" ) );
+    saveScreenshot( QStringLiteral( "09_background_white.png" ), QStringLiteral( "スクリーンの背景色が白になることを表す。" ) );
 
     setSpinBoxValue( width_spin_box, 500 );
-    QTest::qWait( k_short_wait_ms );
-    clickButtonAndWait( apply_button, k_long_wait_ms );
-
     setSpinBoxValue( height_spin_box, 500 );
-    QTest::qWait( k_short_wait_ms );
     clickButtonAndWait( apply_button, k_long_wait_ms );
+    recordCheck( QStringLiteral( "widthSpinBoxとheightSpinBoxを500に設定できる。" ), width_spin_box->value() == 500 && height_spin_box->value() == 500 );
+    markStepCompleted( QStringLiteral( "widthSpinBoxを500、heightSpinBoxを500に設定してapplyPushButtonを押した。" ) );
+    saveScreenshot( QStringLiteral( "10_resolution_500x500.png" ), QStringLiteral( "スクリーンの解像度が500x500になることを表す。" ) );
 
     selectComboBoxItem( show_fps_combo_box, 0 );
-    QTest::qWait( k_short_wait_ms );
     clickButtonAndWait( apply_button, k_long_wait_ms );
+    recordCheck( QStringLiteral( "showFPSComboBoxの1番目を選択できる。" ), show_fps_combo_box->currentIndex() == 0 );
+    markStepCompleted( QStringLiteral( "showFPSComboBoxの1番目を選択してapplyPushButtonを押した。" ) );
+    saveScreenshot( QStringLiteral( "11_fps_label_shown.png" ), QStringLiteral( "スクリーンのFPSラベルが表示されることを表す。" ) );
 
     selectComboBoxItem( show_time_step_combo_box, 0 );
-    QTest::qWait( k_short_wait_ms );
     clickButtonAndWait( apply_button, k_long_wait_ms );
+    recordCheck( QStringLiteral( "showTimeStepComboBoxの1番目を選択できる。" ), show_time_step_combo_box->currentIndex() == 0 );
+    markStepCompleted( QStringLiteral( "showTimeStepComboBoxの1番目を選択してapplyPushButtonを押した。" ) );
+    saveScreenshot( QStringLiteral( "12_time_step_label_shown.png" ), QStringLiteral( "スクリーンのTimeStepラベルが表示されることを表す。" ) );
 
-    selectColor( font_color_label, Qt::white );
-    QTest::qWait( k_short_wait_ms );
+    selectColor( font_color_label, Qt::blue );
     clickButtonAndWait( apply_button, k_long_wait_ms );
+    recordCheck(
+            QStringLiteral( "fontColorClickableLabelで青を選択できる。" ),
+            font_color_label->palette().color( QPalette::Window ) == QColor( Qt::blue ) );
+    markStepCompleted( QStringLiteral( "fontColorClickableLabelで青を選択してapplyPushButtonを押した。" ) );
+    saveScreenshot( QStringLiteral( "13_font_blue.png" ), QStringLiteral( "スクリーンの文字の色が青になることを表す。" ) );
 
     clickButtonAndWait( default_button, k_short_wait_ms );
-    QCOMPARE( caption_line_edit->text(), QString() );
+    recordCheck( QStringLiteral( "defaultPushButtonでcaptionLineEditが再び空になる。" ), caption_line_edit->text().isEmpty() );
     clickButtonAndWait( apply_button, k_long_wait_ms );
+    markStepCompleted( QStringLiteral( "defaultPushButtonとapplyPushButtonを押してデフォルト設定に戻した。" ) );
+    saveScreenshot( QStringLiteral( "14_default_restored.png" ), QStringLiteral( "デフォルトの設定に戻ることを表す。" ) );
 
     setLineEditText( caption_line_edit, QStringLiteral( "test" ) );
-    QTest::qWait( k_short_wait_ms );
+    recordCheck( QStringLiteral( "cancel前にcaptionLineEditへtestを入力できる。" ), caption_line_edit->text() == QStringLiteral( "test" ) );
+    markStepCompleted( QStringLiteral( "captionLineEditにtestを書き込んだ。" ) );
+    saveScreenshot( QStringLiteral( "15_caption_entered_before_cancel.png" ), QStringLiteral( "ColorMapBarのCaptionにtestと書き込んだことを表す。" ) );
+
     clickButtonAndWait( cancel_button, k_short_wait_ms );
+    recordCheck( QStringLiteral( "cancelPushButtonでPreference.uiが閉じる。" ), !preference->isVisible() );
+    markStepCompleted( QStringLiteral( "cancelPushButtonを押した。" ) );
+    saveScreenshot( QStringLiteral( "16_cancel_closed.png" ), QStringLiteral( "修正した変更が反映されずPreference.uiが閉じたことを表す。" ) );
 
     preference->show();
     preference->raise();
     preference->activateWindow();
     QVERIFY( QTest::qWaitForWindowExposed( preference ) );
     QTest::qWait( k_window_settle_ms );
+    markStepCompleted( QStringLiteral( "Preference.uiを再度開いた。" ) );
 
     setLineEditText( caption_line_edit, QStringLiteral( "test" ) );
-    QTest::qWait( k_short_wait_ms );
-    clickButtonAndWait( ok_button, k_long_wait_ms );
+    recordCheck( QStringLiteral( "ok前にcaptionLineEditへtestを入力できる。" ), caption_line_edit->text() == QStringLiteral( "test" ) );
+    markStepCompleted( QStringLiteral( "captionLineEditにtestを書き込んだ。" ) );
+    saveScreenshot( QStringLiteral( "17_caption_entered_before_ok.png" ), QStringLiteral( "ColorMapBarのCaptionにtestと書き込んだことを表す。" ) );
 
-    stopVideoRecording();
+    clickButtonAndWait( ok_button, k_long_wait_ms );
+    recordCheck( QStringLiteral( "okPushButtonでPreference.uiが閉じる。" ), !preference->isVisible() );
+    markStepCompleted( QStringLiteral( "okPushButtonを押した。" ) );
+    saveScreenshot( QStringLiteral( "18_ok_closed_applied.png" ), QStringLiteral( "修正した変更を反映してPreference.uiが閉じたことを表す。" ) );
+
+    main_window.hide();
+    QTest::qWait( k_window_settle_ms );
+    main_window.show();
+    QVERIFY( QTest::qWaitForWindowExposed( &main_window ) );
+    main_window.raise();
+    main_window.activateWindow();
+    QTest::qWait( k_long_wait_ms );
+    markStepCompleted( QStringLiteral( "クライアントプログラムを再起動した。" ) );
+    saveScreenshot( QStringLiteral( "19_after_restart.png" ), QStringLiteral( "クライアントプログラムを再起動しても修正した内容が保存されていることを確認する。" ) );
+
+    m_test_succeeded = true;
 }
 
 } // namespace ClientTests
