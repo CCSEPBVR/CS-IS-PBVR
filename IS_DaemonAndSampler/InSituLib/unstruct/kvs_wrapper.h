@@ -106,6 +106,28 @@ extern "C" {
     kvs::ValueArray<float> m_C_max;
     kvs::ValueArray<int> m_o_histogram;//不透明度ヒストグラムの配列
     kvs::ValueArray<int> m_c_histogram;//色ヒストグラムの配列
+    // 平均
+    kvs::ValueArray<float> m_ave_O_min;//計算して得る最大最小値
+    kvs::ValueArray<float> m_ave_O_max;
+    kvs::ValueArray<float> m_ave_C_min;
+    kvs::ValueArray<float> m_ave_C_max;
+    kvs::ValueArray<int> m_ave_o_histogram;//不透明度ヒストグラムの配列
+    kvs::ValueArray<int> m_ave_c_histogram;//色ヒストグラムの配列
+     //分散
+    kvs::ValueArray<float> m_var_O_min;//計算して得る最大最小値
+    kvs::ValueArray<float> m_var_O_max;
+    kvs::ValueArray<float> m_var_C_min;
+    kvs::ValueArray<float> m_var_C_max;
+    kvs::ValueArray<int> m_var_o_histogram;//不透明度ヒストグラムの配列
+    kvs::ValueArray<int> m_var_c_histogram;//色ヒストグラムの配列
+    //変動係数
+    kvs::ValueArray<float> m_cov_O_min;//計算して得る最大最小値
+    kvs::ValueArray<float> m_cov_O_max;
+    kvs::ValueArray<float> m_cov_C_min;
+    kvs::ValueArray<float> m_cov_C_max;
+    kvs::ValueArray<int> m_cov_o_histogram;//不透明度ヒストグラムの配列
+    kvs::ValueArray<int> m_cov_c_histogram;//色ヒストグラムの配列
+
 
     int con_log[8];
 
