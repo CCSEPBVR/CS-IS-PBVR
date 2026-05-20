@@ -2661,6 +2661,24 @@ void ens_OutputParticles(int time_step, int nvariables, pbvr_parameters& particl
     MPI_Comm_rank( MPI_COMM_WORLD, &mpi_rank );
     int tf_number = particleBase.m_tf_number;
     int nbins = 256;
+    kvs::ValueArray<float> ave_O_min_recv(tf_number);
+    kvs::ValueArray<float> ave_O_max_recv(tf_number);
+    kvs::ValueArray<float> ave_C_min_recv(tf_number);
+    kvs::ValueArray<float> ave_C_max_recv(tf_number);
+    kvs::ValueArray<int> ave_o_histogram_recv(tf_number * nbins);
+    kvs::ValueArray<int> ave_c_histogram_recv(tf_number * nbins);
+    kvs::ValueArray<float> var_O_min_recv(tf_number);
+    kvs::ValueArray<float> var_O_max_recv(tf_number);
+    kvs::ValueArray<float> var_C_min_recv(tf_number);
+    kvs::ValueArray<float> var_C_max_recv(tf_number);
+    kvs::ValueArray<int> var_o_histogram_recv(tf_number * nbins);
+    kvs::ValueArray<int> var_c_histogram_recv(tf_number * nbins);
+    kvs::ValueArray<float> cov_O_min_recv(tf_number);
+    kvs::ValueArray<float> cov_O_max_recv(tf_number);
+    kvs::ValueArray<float> cov_C_min_recv(tf_number);
+    kvs::ValueArray<float> cov_C_max_recv(tf_number);
+    kvs::ValueArray<int> cov_o_histogram_recv(tf_number * nbins);
+    kvs::ValueArray<int> cov_c_histogram_recv(tf_number * nbins);
 
     if (skip_flag)
     {
@@ -2856,6 +2874,66 @@ void ens_OutputParticles(int time_step, int nvariables, pbvr_parameters& particl
         c_histogram_recv.fill(0x00);
         MPI_Reduce( particleBase.m_c_histogram.pointer(), c_histogram_recv.pointer(),
                     tf_number*nbins, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD );
+
+        ave_O_min_recv.fill(0x00);
+        ave_O_max_recv.fill(0x00);
+        ave_C_min_recv.fill(0x00);
+        ave_C_max_recv.fill(0x00);
+        MPI_Reduce( particleBase.m_ave_O_min.pointer(), ave_O_min_recv.pointer(),
+                    tf_number, MPI_FLOAT, MPI_MIN, 0, MPI_COMM_WORLD );
+        MPI_Reduce( particleBase.m_ave_O_max.pointer(), ave_O_max_recv.pointer(),
+                    tf_number, MPI_FLOAT, MPI_MAX, 0, MPI_COMM_WORLD );
+        MPI_Reduce( particleBase.m_ave_C_min.pointer(), ave_C_min_recv.pointer(),
+                    tf_number, MPI_FLOAT, MPI_MIN, 0, MPI_COMM_WORLD );
+        MPI_Reduce( particleBase.m_ave_C_max.pointer(), ave_C_max_recv.pointer(),
+                    tf_number, MPI_FLOAT, MPI_MAX, 0, MPI_COMM_WORLD );
+
+        ave_o_histogram_recv.fill(0x00);
+        MPI_Reduce( particleBase.m_ave_o_histogram.pointer(), ave_o_histogram_recv.pointer(),
+                    tf_number*nbins, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD );
+        ave_c_histogram_recv.fill(0x00);
+        MPI_Reduce( particleBase.m_ave_c_histogram.pointer(), ave_c_histogram_recv.pointer(),
+                    tf_number*nbins, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD );
+
+        var_O_min_recv.fill(0x00);
+        var_O_max_recv.fill(0x00);
+        var_C_min_recv.fill(0x00);
+        var_C_max_recv.fill(0x00);
+        MPI_Reduce( particleBase.m_var_O_min.pointer(), var_O_min_recv.pointer(),
+                    tf_number, MPI_FLOAT, MPI_MIN, 0, MPI_COMM_WORLD );
+        MPI_Reduce( particleBase.m_var_O_max.pointer(), var_O_max_recv.pointer(),
+                    tf_number, MPI_FLOAT, MPI_MAX, 0, MPI_COMM_WORLD );
+        MPI_Reduce( particleBase.m_var_C_min.pointer(), var_C_min_recv.pointer(),
+                    tf_number, MPI_FLOAT, MPI_MIN, 0, MPI_COMM_WORLD );
+        MPI_Reduce( particleBase.m_var_C_max.pointer(), var_C_max_recv.pointer(),
+                    tf_number, MPI_FLOAT, MPI_MAX, 0, MPI_COMM_WORLD );
+
+        var_o_histogram_recv.fill(0x00);
+        MPI_Reduce( particleBase.m_var_o_histogram.pointer(), var_o_histogram_recv.pointer(),
+                    tf_number*nbins, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD );
+        var_c_histogram_recv.fill(0x00);
+        MPI_Reduce( particleBase.m_var_c_histogram.pointer(), var_c_histogram_recv.pointer(),
+                    tf_number*nbins, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD );
+
+        cov_O_min_recv.fill(0x00);
+        cov_O_max_recv.fill(0x00);
+        cov_C_min_recv.fill(0x00);
+        cov_C_max_recv.fill(0x00);
+        MPI_Reduce( particleBase.m_cov_O_min.pointer(), cov_O_min_recv.pointer(),
+                    tf_number, MPI_FLOAT, MPI_MIN, 0, MPI_COMM_WORLD );
+        MPI_Reduce( particleBase.m_cov_O_max.pointer(), cov_O_max_recv.pointer(),
+                    tf_number, MPI_FLOAT, MPI_MAX, 0, MPI_COMM_WORLD );
+        MPI_Reduce( particleBase.m_cov_C_min.pointer(), cov_C_min_recv.pointer(),
+                    tf_number, MPI_FLOAT, MPI_MIN, 0, MPI_COMM_WORLD );
+        MPI_Reduce( particleBase.m_cov_C_max.pointer(), cov_C_max_recv.pointer(),
+                    tf_number, MPI_FLOAT, MPI_MAX, 0, MPI_COMM_WORLD );
+
+        cov_o_histogram_recv.fill(0x00);
+        MPI_Reduce( particleBase.m_cov_o_histogram.pointer(), cov_o_histogram_recv.pointer(),
+                    tf_number*nbins, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD );
+        cov_c_histogram_recv.fill(0x00);
+        MPI_Reduce( particleBase.m_cov_c_histogram.pointer(), cov_c_histogram_recv.pointer(),
+                    tf_number*nbins, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD );
     }
 
 //    timer.stop();
@@ -2906,6 +2984,63 @@ void ens_OutputParticles(int time_step, int nvariables, pbvr_parameters& particl
             for(int j=0; j<nbins; j++)
             {
                 ofs2<<c_histogram_recv[j + i*nbins]<<",";
+            }
+            ofs2<<std::endl;
+
+            ofs2<<"AVE_MIN_O"<<i+1<<"="<<ave_O_min_recv[i]<<std::endl;
+            ofs2<<"AVE_MAX_O"<<i+1<<"="<<ave_O_max_recv[i]<<std::endl;
+            ofs2<<"AVE_MIN_C"<<i+1<<"="<<ave_C_min_recv[i]<<std::endl;
+            ofs2<<"AVE_MAX_C"<<i+1<<"="<<ave_C_max_recv[i]<<std::endl;
+            ofs2<<"AVE_RESOLUTION_O"<<i+1<<"="<<nbins<<std::endl;
+            ofs2<<"AVE_HISTOGRAM_O"<<i+1<<"=";
+            for(int j=0; j<nbins; j++)
+            {
+                ofs2<<ave_o_histogram_recv[j + i*nbins]<<",";
+            }
+            ofs2<<std::endl;
+            ofs2<<"AVE_RESOLUTION_C"<<i+1<<"="<<nbins<<std::endl;
+            ofs2<<"AVE_HISTOGRAM_C"<<i+1<<"=";
+            for(int j=0; j<nbins; j++)
+            {
+                ofs2<<ave_c_histogram_recv[j + i*nbins]<<",";
+            }
+            ofs2<<std::endl;
+
+            ofs2<<"VAR_MIN_O"<<i+1<<"="<<var_O_min_recv[i]<<std::endl;
+            ofs2<<"VAR_MAX_O"<<i+1<<"="<<var_O_max_recv[i]<<std::endl;
+            ofs2<<"VAR_MIN_C"<<i+1<<"="<<var_C_min_recv[i]<<std::endl;
+            ofs2<<"VAR_MAX_C"<<i+1<<"="<<var_C_max_recv[i]<<std::endl;
+            ofs2<<"VAR_RESOLUTION_O"<<i+1<<"="<<nbins<<std::endl;
+            ofs2<<"VAR_HISTOGRAM_O"<<i+1<<"=";
+            for(int j=0; j<nbins; j++)
+            {
+                ofs2<<var_o_histogram_recv[j + i*nbins]<<",";
+            }
+            ofs2<<std::endl;
+            ofs2<<"VAR_RESOLUTION_C"<<i+1<<"="<<nbins<<std::endl;
+            ofs2<<"VAR_HISTOGRAM_C"<<i+1<<"=";
+            for(int j=0; j<nbins; j++)
+            {
+                ofs2<<var_c_histogram_recv[j + i*nbins]<<",";
+            }
+            ofs2<<std::endl;
+
+            ofs2<<"COV_MIN_O"<<i+1<<"="<<cov_O_min_recv[i]<<std::endl;
+            ofs2<<"COV_MAX_O"<<i+1<<"="<<cov_O_max_recv[i]<<std::endl;
+            ofs2<<"COV_MIN_C"<<i+1<<"="<<cov_C_min_recv[i]<<std::endl;
+            ofs2<<"COV_MAX_C"<<i+1<<"="<<cov_C_max_recv[i]<<std::endl;
+            ofs2<<"COV_RESOLUTION_O"<<i+1<<"="<<nbins<<std::endl;
+            ofs2<<"COV_HISTOGRAM_O"<<i+1<<"=";
+            for(int j=0; j<nbins; j++)
+            {
+                ofs2<<cov_o_histogram_recv[j + i*nbins]<<",";
+            }
+            ofs2<<std::endl;
+            ofs2<<"COV_RESOLUTION_C"<<i+1<<"="<<nbins<<std::endl;
+            ofs2<<"COV_HISTOGRAM_C"<<i+1<<"=";
+            for(int j=0; j<nbins; j++)
+            {
+                ofs2<<cov_c_histogram_recv[j + i*nbins]<<",";
             }
             ofs2<<std::endl;
         }
@@ -3091,169 +3226,6 @@ void ens_OutputParticles(int time_step, int nvariables, pbvr_parameters& particl
             }
             delete point_object;
         }
-    }
-#endif
-#if  0
-    if (skip_flag)
-    {
-    //　歪度のファイル出力
-    ///-------------------------------------//
-    ///--------歪度配列をファイル出力----------//
-    //--------------------------------------//
-    kvs::ValueArray<float> coords( particleBase.m_skewness_coords );
-    kvs::ValueArray<Byte>  colors( particleBase.m_skewness_colors );
-    kvs::ValueArray<float> normals(particleBase.m_skewness_normals );
-
-        static bool first_step = true;
-        static MPI_Comm new_comm;
-        static int count;
-        static int num_nodes;
-    /* 各ノード毎に粒子データを出力する。 */
-    if( first_step )
-    {
-        int numprocs, myrank;
-        int resultlen;
-        char procname[MPI_MAX_PROCESSOR_NAME];
-        char* procname_bak;
-        char* procname_g;
-        char* procname_p;
-
-        MPI_Comm_size( MPI_COMM_WORLD, &numprocs );
-        MPI_Comm_rank( MPI_COMM_WORLD, &myrank );
-
-        /* ノード名を取得し、各ランクで共有する. */
-        MPI_Get_processor_name( procname, &resultlen );
-        procname_g = new char[ MPI_MAX_PROCESSOR_NAME * numprocs ];
-        MPI_Allgather( procname,   MPI_MAX_PROCESSOR_NAME, MPI_CHAR,
-                       procname_g, MPI_MAX_PROCESSOR_NAME, MPI_CHAR,
-                       MPI_COMM_WORLD );
-
-        int color;
-        count = 1;
-        for( color = 0; color < numprocs; color++ )
-        {
-            procname_p = procname_g + MPI_MAX_PROCESSOR_NAME * color;
-
-            /* 要素の隣同士を比較して差異があった場合にカウントし, *
-             * ノード毎に連続した番号を割り当てる.                 */
-            if( color > 0 )
-            {
-                procname_bak = procname_p - MPI_MAX_PROCESSOR_NAME;
-                if( strcmp( procname_p, procname_bak ) != 0 )
-                    count++;
-            }
-
-            /* 自分のノード名が一致した要素番号をコミュニケータ分割のcolorとする */
-            if( strcmp( procname_p, procname ) == 0 )
-                break;
-        }
-
-        delete[] procname_g;
-        
-        MPI_Comm_split( MPI_COMM_WORLD, color, myrank, &new_comm );
-        
-        int split_numprocs;
-        MPI_Comm_size( new_comm, &split_numprocs );
-        
-        /*
-         * 各ノードに均等にランクが割り当てられることを前提とし,
-         * 分割前のプロセス数と分割後のプロセス数の非を粒子ファイル数とする.
-         */
-        num_nodes = numprocs / split_numprocs;
-        if( numprocs % split_numprocs > 0 ) num_nodes++;
-        first_step = false;
-        std::cout << "num_nodes = " << num_nodes  << "numprocs = " << numprocs << ", split_numprocs = " << split_numprocs << std::endl;
-    }   
-    
-    /*
-     * ファイル名の粒子データのファイル名を入力する.
-     * countが各ファイルで連続でない場合,ファイルが不在と見なしてデーモンでスピンロックがかかる.
-     */
-#if 0
-    char filename[256];
-    sprintf(filename, "./jupiter_particle_out/t_%05d_",time_step);
-    sprintf(filename,"%s%07d_%07d.kvsml", filename, count, num_nodes );
-#else
-    // 20181226 start  環境変数で指定したファイルパスを参照する
-    std::stringstream ss;
-    //add by shimomura 20240614
-//    ss << std::setfill('0') << std::setw(2) << static_cast<int>(celltype);
-//    ss << "_";
-    ss << std::setfill('0') << std::setw(5) << time_step;
-    ss << "_";
-    ss << std::setfill('0') << std::setw(7) << count;
-    ss << "_";
-    ss << std::setfill('0') << std::setw(7) << num_nodes;
-    ss << ".kvsml";
-//    particleBase.m_ptcFilePath += ss.str();
-    particleBase.m_skeFilePath = particleBase.m_visParamDir + "particle_out/ske_";
-    particleBase.m_skeFilePath += ss.str();
-    // 20181226 end
-#endif
-
-    int particle_size = coords.size();
-    int *recvcounts;
-    int *displs;
-    int  new_number_of_process;
-    int new_rank;
-
-    MPI_Comm_rank( new_comm, &new_rank );
-    MPI_Comm_size( new_comm, &new_number_of_process );
-
-    /*
-     *  recvcounts: 各ランク毎の受信バッファサイズ.
-     *  displs:     受信先バッファ上の各ランク毎の受信バッファの位置(オフセット)
-     */
-
-    displs = new int[ new_number_of_process ];
-    recvcounts = new int[ new_number_of_process ];
-
-    MPI_Allgather( &particle_size, 1, MPI_INT,
-                   recvcounts,     1, MPI_INT,
-                   new_comm );
-    displs[0] = 0;
-    for( int i =1; i< new_number_of_process; i++ )
-        displs[i] = displs[i-1] + recvcounts[i-1];
-
-    kvs::ValueArray<float> new_coords(  displs[new_number_of_process-1] + recvcounts[new_number_of_process-1] );
-    kvs::ValueArray<Byte>  new_colors(  displs[new_number_of_process-1] + recvcounts[new_number_of_process-1] );
-    kvs::ValueArray<float> new_normals( displs[new_number_of_process-1] + recvcounts[new_number_of_process-1] );
-
-    MPI_Gatherv( coords.pointer(),   particle_size, MPI_FLOAT,
-                 new_coords.pointer(), recvcounts, displs, MPI_FLOAT,
-                 0, new_comm );
-
-    MPI_Gatherv( colors.pointer(),   particle_size, MPI_BYTE,
-                 new_colors.pointer(), recvcounts, displs, MPI_BYTE,
-                 0, new_comm );
-
-    MPI_Gatherv( normals.pointer(),   particle_size, MPI_FLOAT,
-                 new_normals.pointer(), recvcounts, displs, MPI_FLOAT,
-                 0, new_comm );
-
-    /*  分割後コミュニケータのランク0で出力する  */
-    if( new_rank == 0 )
-    {
-        kvs::PointObject* point_object = new kvs::PointObject( new_coords, new_colors, new_normals, particleBase.m_subpixel_level );
-        point_object->setMinMaxObjectCoords( particleBase.m_min_vec, particleBase.m_max_vec );
-        // If async_io is enabled, use worker thread to write kvsml data and state.txt
-        if (async_io_enabled){
-            pbvr::ParticleWriteThread* particle_write_thread =  &pwt;
-            particle_write_thread->join(true);
-            particle_write_thread->setPointObject( point_object );
-            particle_write_thread->setFilename(particleBase.m_skeFilePath.c_str());
-            particle_write_thread->setTimestep(time_step ,particleBase.m_stateFilePath.c_str());
-            particle_write_thread->setStartTimestep(st_time_step); //add by shimomura 20240808
-            particle_write_thread->work(true);
-        }// If async_io is disabled, use kvs::PointExporter here in main thread.
-        else{
-            kvs::KVSMLObjectPoint* kvsml_object = new kvs::PointExporter<kvs::KVSMLObjectPoint>( point_object );
-            kvsml_object->setWritingDataType( kvs::KVSMLObjectPoint::ExternalBinary );
-            kvsml_object->write( particleBase.m_skeFilePath.c_str() );
-            delete kvsml_object;
-        }
-        delete point_object;
-    }
     }
 #endif
 }
@@ -3851,12 +3823,6 @@ void ensemble_reduce_scatter(
 //    timer.stop();
 //    timeN[0] += timer.sec();
 //    timer.start();
-    // debug
-//    for (int i = 0 ; i< vertex_scalars.size() ; i+= 1000000)
-//    {
-//        std::cout << mpi_rank << ", vertex_scalars["<<i<<"] = " << vertex_scalars [i] << "cell_id["<<i<<"] = " << ens_param.vertex_cellids[i] << ", coords = " << ens_param.vertex_coords[3*i] << ", " << ens_param.vertex_coords[3*i+1] << ", " << ens_param.vertex_coords[3*i+2] << std::endl;
-//    }
-
     // vertex_scalars , normal, cellid, coordをアンサンブル数で等分する 
     std::vector<float> div_vertex_scalars;
     std::vector<float> div_vertex_normals;
@@ -4040,9 +4006,6 @@ void ensemble_reduce_scatter(
     for (int i =0 ; i< scalars_counts[row_rank] ; i++ )
     {
         varience[i] = recv_sq_scalars[i] - recv_scalars[i]* recv_scalars[i] ;     
-//        varience_normals[3*i+0] = - 2 * recv_tmp_term[3*i+0] + 2*recv_scalars[i] *recv_normals[3*i+0] ;     
-//        varience_normals[3*i+1] = - 2 * recv_tmp_term[3*i+1] + 2*recv_scalars[i] *recv_normals[3*i+1] ;     
-//        varience_normals[3*i+2] = - 2 * recv_tmp_term[3*i+2] + 2*recv_scalars[i] *recv_normals[3*i+2] ;     
         varience_normals_x[i] = - 2 * recv_tmp_term_x[i] + 2*recv_scalars[i] *recv_normals_x[i] ;     
         varience_normals_y[i] = - 2 * recv_tmp_term_y[i] + 2*recv_scalars[i] *recv_normals_x[i] ;     
         varience_normals_z[i] = - 2 * recv_tmp_term_z[i] + 2*recv_scalars[i] *recv_normals_x[i] ;     
@@ -4065,11 +4028,6 @@ void ensemble_reduce_scatter(
     timer.stop();
     timeN[6] += timer.sec();
 //    timer.start();
-
-//    for (int i =0;i < 7; i++)
-//    {
-//        std::cout << mpi_rank <<  ": reduce_scatter_time["<< i <<"] =" << timeN[i] << std::endl;
-//    }
 
 //    timer.stop();
     float recv_time[20] ={0};
@@ -4143,13 +4101,6 @@ void ensemble_reduce(
     timer.stop();
     timeN[0] += timer.sec();
     timer.start();
-    // debug
-//    for (int i = vertex_scalars.size() -10; i< vertex_scalars.size() ; i++)
-//    for (int i = 0 ; i< vertex_scalars.size() ; i+= 1000000)
-//    {
-//        std::cout << mpi_rank << ", vertex_scalars["<<i<<"] = " << vertex_scalars [i] << "cell_id["<<i<<"] = " << ens_param.vertex_cellids[i] << ", coords = " << ens_param.vertex_coords[3*i] << ", " << ens_param.vertex_coords[3*i+1] << ", " << ens_param.vertex_coords[3*i+2] << std::endl;
-//    }
-
     // 受信バッファ
     // 変数値
     std::vector<float> recv_scalars(recv_size); 
@@ -4246,15 +4197,6 @@ void ensemble_reduce(
 
     timer.stop();
     timeN[5] += timer.sec();
-//         for (int i = 0 ; i< vertex_scalars.size() ; i+= 1000000)
-//         {
-//             std::cout << mpi_rank << ", vertex_scalars["<<i<<"] = " << vertex_scalars [i] << "cell_id["<<i<<"] = " << ens_param.vertex_cellids[i] << ", coords = " << ens_param.vertex_coords[3*i] << ", " << ens_param.vertex_coords[3*i+1] << ", " << ens_param.vertex_coords[3*i+2] << std::endl;
-//         }
-//    for (int i = 0 ; i< vertex_scalars.size() ; i+= 1)
-//    {
-//        std::cout << mpi_rank << ", varience["<<i<<"] = " << varience [i] << ", average_scalars["<<i<<"] = " << recv_scalars[i] << ", vertex_scalars["<<i<<"] = " << vertex_scalars[i] <<  ", coords = " << ens_param.vertex_coords[3*i] << ", " << ens_param.vertex_coords[3*i+1] << ", " << ens_param.vertex_coords[3*i+2] << std::endl;
-//    }
-
     } 
     for (int i =0;i < 6; i++)
     {
@@ -4954,20 +4896,153 @@ void calculation_glad(const int nparticles_count, const int nvariables,
                         grad_array_x[j] = ( S_plus_opacity[j] - S_minus_opacity[j] )*5.0;
                     }
                 // ------------------------------------------------
-//                    //grad_arrayの算出
-//                    for( int j = 0; j < nparticles_count; j++ )
-//                    {
-//                        //JacobiMatrixでメンバ変数を使用しているので再度バインド
-//                        interp[thid][0]->bindCell( cell_index[j] );
-//
-//                        const kvs::Vector3f g( -dsdx_array[j], -dsdy_array[j], -dsdz_array[j] );
-//                        const kvs::Matrix33f J = interp[thid][0]->JacobiMatrix();
-//                        float determinant = 0.0f;
-//                        const kvs::Vector3f G = J.inverse( &determinant ) * g;
-//                        grad_array[j] = kvs::Math::IsZero( determinant ) ? kvs::Vector3f( 0.0f, 0.0f, 0.0f ) : G;
-//                    }
 
+}
 
+static void calc_histogram_minmax_arrays(
+        const int tf_number,
+        const int ncells,
+        const int nbins,
+        const std::vector<float>& o_values,
+        const std::vector<float>& c_values,
+        const kvs::ValueArray<float>& o_min,
+        const kvs::ValueArray<float>& o_max,
+        const kvs::ValueArray<float>& c_min,
+        const kvs::ValueArray<float>& c_max,
+        kvs::ValueArray<int>& o_histogram,
+        kvs::ValueArray<int>& c_histogram,
+        std::vector<float>& tmp_O_min,
+        std::vector<float>& tmp_O_max,
+        std::vector<float>& tmp_C_min,
+        std::vector<float>& tmp_C_max )
+{
+#pragma omp parallel
+    {
+        kvs::ValueArray<float> th_O_min( tf_number );
+        kvs::ValueArray<float> th_O_max( tf_number );
+        kvs::ValueArray<float> th_C_min( tf_number );
+        kvs::ValueArray<float> th_C_max( tf_number );
+
+        for ( int i = 0; i < tf_number; i++ )
+        {
+            th_O_min[ i ] =  FLT_MAX;
+            th_O_max[ i ] = -FLT_MAX;
+            th_C_min[ i ] =  FLT_MAX;
+            th_C_max[ i ] = -FLT_MAX;
+        }
+
+        kvs::ValueArray<int> th_o_histogram( tf_number * nbins );
+        kvs::ValueArray<int> th_c_histogram( tf_number * nbins );
+
+        th_o_histogram.fill(0x00);
+        th_c_histogram.fill(0x00);
+
+#pragma omp for schedule( dynamic ) nowait
+        for ( size_t index = 0; index < ncells; index++ )
+        {
+            std::vector<bool> o_zero_flag(tf_number);
+            std::vector<bool> c_zero_flag(tf_number);
+            for( int i = 0; i < tf_number; i++ )
+            {
+                o_zero_flag[i] = false;
+                c_zero_flag[i] = false;
+                if ( kvs::Math::Equal<float>(o_max[i], o_min[i] ) )
+                {
+                    o_zero_flag[i] = true;
+                    for (int k = 0; k < nbins; k++)
+                    {
+                        th_o_histogram[ k + nbins * i ]++;
+                    }
+                }
+
+                if ( kvs::Math::Equal<float>(c_max[i], c_min[i] ) )
+                {
+                    c_zero_flag[i] = true;
+                    for (int k = 0; k < nbins; k++)
+                    {
+                        th_c_histogram[ k + nbins * i ]++;
+                    }
+                }
+            }
+
+            for( int i = 0; i < tf_number; i++ )
+            {
+                const int offset = ncells * i + index;
+                const float o_value = o_values[offset];
+                const float c_value = c_values[offset];
+                if (!o_zero_flag[i])
+                {
+                    float h = (o_value - o_min[i]) / ( o_max[i] - o_min[i] ) * nbins;
+                    int H = (int)h;
+                    if( 0 <= H && H <= nbins )
+                    {
+                        if( H == nbins ) H--;
+                        th_o_histogram[ H + nbins * i ]++;
+                    }
+                }
+
+                if (!c_zero_flag[i])
+                {
+                    float h = (c_value - c_min[i]) / ( c_max[i] - c_min[i] ) * nbins;
+                    int H = (int)h;
+                    if( 0 <= H && H <= nbins )
+                    {
+                        if( H == nbins ) H--;
+                        th_c_histogram[ H + nbins * i ]++;
+                    }
+                }
+
+                th_O_min[i] = th_O_min[i] < o_value ? th_O_min[i] : o_value;
+                th_O_max[i] = th_O_max[i] > o_value ? th_O_max[i] : o_value;
+                th_C_min[i] = th_C_min[i] < c_value ? th_C_min[i] : c_value;
+                th_C_max[i] = th_C_max[i] > c_value ? th_C_max[i] : c_value;
+            }
+        }
+#pragma omp barrier
+#pragma omp critical
+        {
+            for( int n = 0; n < tf_number * nbins; n++ )
+            {
+                o_histogram[n] += th_o_histogram[n];
+                c_histogram[n] += th_c_histogram[n];
+            }
+
+            for( int i = 0; i < tf_number; i++ )
+            {
+                tmp_O_min[i] = tmp_O_min[i] < th_O_min[i] ? tmp_O_min[i] : th_O_min[i];
+                tmp_O_max[i] = tmp_O_max[i] > th_O_max[i] ? tmp_O_max[i] : th_O_max[i];
+                tmp_C_min[i] = tmp_C_min[i] < th_C_min[i] ? tmp_C_min[i] : th_C_min[i];
+                tmp_C_max[i] = tmp_C_max[i] > th_C_max[i] ? tmp_C_max[i] : th_C_max[i];
+            }
+        }
+    }
+}
+
+static void init_histogram_minmax(
+        const int tf_number,
+        const int nbins,
+        kvs::ValueArray<float>& O_min,
+        kvs::ValueArray<float>& O_max,
+        kvs::ValueArray<float>& C_min,
+        kvs::ValueArray<float>& C_max,
+        kvs::ValueArray<int>& o_histogram,
+        kvs::ValueArray<int>& c_histogram )
+{
+    O_min.allocate(tf_number);
+    O_max.allocate(tf_number);
+    C_min.allocate(tf_number);
+    C_max.allocate(tf_number);
+    o_histogram.allocate(tf_number * nbins);
+    c_histogram.allocate(tf_number * nbins);
+    o_histogram.fill(0x00);
+    c_histogram.fill(0x00);
+    for ( int i = 0; i < tf_number; i++ )
+    {
+        O_min[i] =  FLT_MAX;
+        O_max[i] = -FLT_MAX;
+        C_min[i] =  FLT_MAX;
+        C_max[i] = -FLT_MAX;
+    }
 }
 
 void calc_histogram(const int tf_number,const int nvariables, const int ncells , const int ens_number,
@@ -4992,24 +5067,50 @@ void calc_histogram(const int tf_number,const int nvariables, const int ncells ,
 
     std::vector<float> o_scalars_array( tf_number*ncells );
     std::vector<float> c_scalars_array( tf_number*ncells );
+    std::vector<float> o_sq_scalars_array( tf_number*ncells );
+    std::vector<float> c_sq_scalars_array( tf_number*ncells );
     
-    std::vector<float> tmp_O_min( tf_number );
-    std::vector<float> tmp_O_max( tf_number );
-    std::vector<float> tmp_C_min( tf_number );
-    std::vector<float> tmp_C_max( tf_number );
+    std::vector<float> tmp_ave_O_min( tf_number );
+    std::vector<float> tmp_ave_O_max( tf_number );
+    std::vector<float> tmp_ave_C_min( tf_number );
+    std::vector<float> tmp_ave_C_max( tf_number );
+    std::vector<float> tmp_var_O_min( tf_number );
+    std::vector<float> tmp_var_O_max( tf_number );
+    std::vector<float> tmp_var_C_min( tf_number );
+    std::vector<float> tmp_var_C_max( tf_number );
+    std::vector<float> tmp_cov_O_min( tf_number );
+    std::vector<float> tmp_cov_O_max( tf_number );
+    std::vector<float> tmp_cov_C_min( tf_number );
+    std::vector<float> tmp_cov_C_max( tf_number );
 
     for ( size_t i = 0; i < tf_number; i++ ) //初期化
     {
-        tmp_O_min[ i ] =  FLT_MAX;
-        tmp_O_max[ i ] = -FLT_MAX;
-        tmp_C_min[ i ] =  FLT_MAX;
-        tmp_C_max[ i ] = -FLT_MAX;
+        tmp_ave_O_min[ i ] =  FLT_MAX;
+        tmp_ave_O_max[ i ] = -FLT_MAX;
+        tmp_ave_C_min[ i ] =  FLT_MAX;
+        tmp_ave_C_max[ i ] = -FLT_MAX;
+        tmp_var_O_min[ i ] =  FLT_MAX;
+        tmp_var_O_max[ i ] = -FLT_MAX;
+        tmp_var_C_min[ i ] =  FLT_MAX;
+        tmp_var_C_max[ i ] = -FLT_MAX;
+        tmp_cov_O_min[ i ] =  FLT_MAX;
+        tmp_cov_O_max[ i ] = -FLT_MAX;
+        tmp_cov_C_min[ i ] =  FLT_MAX;
+        tmp_cov_C_max[ i ] = -FLT_MAX;
     }
 
-    particleBase.m_ave_o_histogram.allocate(tf_number*nbins);
-    particleBase.m_ave_c_histogram.allocate(tf_number*nbins);
-    particleBase.m_ave_o_histogram.fill(0x00);
-    particleBase.m_ave_c_histogram.fill(0x00);
+    init_histogram_minmax(tf_number, nbins,
+            particleBase.m_ave_O_min, particleBase.m_ave_O_max,
+            particleBase.m_ave_C_min, particleBase.m_ave_C_max,
+            particleBase.m_ave_o_histogram, particleBase.m_ave_c_histogram);
+    init_histogram_minmax(tf_number, nbins,
+            particleBase.m_var_O_min, particleBase.m_var_O_max,
+            particleBase.m_var_C_min, particleBase.m_var_C_max,
+            particleBase.m_var_o_histogram, particleBase.m_var_c_histogram);
+    init_histogram_minmax(tf_number, nbins,
+            particleBase.m_cov_O_min, particleBase.m_cov_O_max,
+            particleBase.m_cov_C_min, particleBase.m_cov_C_max,
+            particleBase.m_cov_o_histogram, particleBase.m_cov_c_histogram);
 
 #pragma omp parallel
     {    
@@ -5083,8 +5184,11 @@ void calc_histogram(const int tf_number,const int nvariables, const int ncells ,
             {
                 for(int cell_BLK = 0; cell_BLK < remain; cell_BLK++ )
                 {
-                    o_scalars_array[remain*i + index + cell_BLK] = th_o_scalars_array[cell_BLK][i];
-                    c_scalars_array[remain*i + index + cell_BLK] = th_c_scalars_array[cell_BLK][i];
+                    const int offset = ncells * i + index + cell_BLK;
+                    o_scalars_array[offset] = th_o_scalars_array[cell_BLK][i];
+                    c_scalars_array[offset] = th_c_scalars_array[cell_BLK][i];
+                    o_sq_scalars_array[offset] = th_o_scalars_array[cell_BLK][i] * th_o_scalars_array[cell_BLK][i];
+                    c_sq_scalars_array[offset] = th_c_scalars_array[cell_BLK][i] * th_c_scalars_array[cell_BLK][i];
                 }
             }
         }
@@ -5095,7 +5199,6 @@ void calc_histogram(const int tf_number,const int nvariables, const int ncells ,
     MPI_Comm comm_col_vector, comm_row_vector;
 
     // mpisize --> n_rows (grid parallelization)
-    //runtime_assert(mpi_size % ens_number == 0, "InvalidConfiguration: mpi size vs. ensemble size mismatched");
     const auto n_rows = mpi_size / ens_number;
 
     //    // comm split: each ensemble member (column vector) //
@@ -5120,29 +5223,8 @@ void calc_histogram(const int tf_number,const int nvariables, const int ncells ,
     // 変数値
     std::vector<float> recv_o_scalars(tf_number * ncells); 
     std::vector<float> recv_c_scalars(tf_number * ncells); 
-
-    //    for(int i = 0; i < )
-
-
-    //    // 分散用配列
-    //    std::vector<float> varience(recv_size);
-    //    std::vector<float> tmp_term(3*recv_size);
-    //    std::vector<float> varience_normals(3*recv_size);
-    //        // 二乗
-    //    std::vector<float> sq_scalars(recv_size);
-    //    std::vector<float> recv_sq_scalars(recv_size);
-    //    std::vector<float> recv_tmp_term(3*recv_size);
-    //
-    //    // 二乗の計算
-    //#pragma simd 
-    //    for (int i =0 ; i< recv_size ; i++ )
-    //    {
-    //        sq_scalars[i]   = vertex_scalars[i] * vertex_scalars[i];
-    //        tmp_term[3*i+0] = vertex_scalars[i] * vertex_normals[3*i+0]; 
-    //        tmp_term[3*i+1] = vertex_scalars[i] * vertex_normals[3*i+1];  
-    //        tmp_term[3*i+2] = vertex_scalars[i] * vertex_normals[3*i+2];
-    //    }
-
+    std::vector<float> recv_o_sq_scalars(tf_number * ncells); 
+    std::vector<float> recv_c_sq_scalars(tf_number * ncells); 
 
     MPI_Barrier(MPI_COMM_WORLD);
     //     std::cout << "vertex_scalars.size() = " << vertex_scalars.size() << ", recv_scalars = " << recv_scalars.size() << ", local_size = " << local_size <<std::endl;
@@ -5153,17 +5235,12 @@ void calc_histogram(const int tf_number,const int nvariables, const int ncells ,
     MPI_Reduce(c_scalars_array.data(), recv_c_scalars.data(), tf_number*ncells, MPI_FLOAT,
             MPI_SUM, 0, comm_row_vector);
 
-    //    MPI_Reduce(sq_scalars.data(), recv_sq_scalars.data(), ncells, MPI_FLOAT,
-    ////            MPI_SUM, 0, MPI_COMM_WORLD);
-    //            MPI_SUM, 0, comm_row_vector);
-    //
-    //    MPI_Reduce(vertex_normals.data(), recv_normals.data(), 3*ncells, MPI_FLOAT,
-    ////            MPI_SUM, 0, MPI_COMM_WORLD);
-    //            MPI_SUM, 0, comm_row_vector);
-    //    
-    //    MPI_Reduce(tmp_term.data(), recv_tmp_term.data(), 3*ncells, MPI_FLOAT,
-    ////            MPI_SUM, 0, MPI_COMM_WORLD);
-    //            MPI_SUM, 0, comm_row_vector);
+    MPI_Reduce(o_sq_scalars_array.data(), recv_o_sq_scalars.data(), tf_number*ncells, MPI_FLOAT,
+            MPI_SUM, 0, comm_row_vector);
+
+    MPI_Reduce(c_sq_scalars_array.data(), recv_c_sq_scalars.data(), tf_number*ncells, MPI_FLOAT,
+            MPI_SUM, 0, comm_row_vector);
+
     // mpi_rank = 0 にて 平均値、分散計算処理
     //if(mpi_rank == 0)
     if(k_col == 0)
@@ -5180,169 +5257,74 @@ void calc_histogram(const int tf_number,const int nvariables, const int ncells ,
             //            recv_sq_scalars[i] *= mpi_size_inv;
         }
 
-        //#pragma simd 
-        //        for (int i =0 ; i< 3*ncells ; i++ )
-        //        {
-        //            recv_normals[i] *= -mpi_size_inv;
-        //            recv_tmp_term[i] *= mpi_size_inv; 
-        //        }
+        std::vector<float> var_o_scalars(tf_number * ncells);
+        std::vector<float> var_c_scalars(tf_number * ncells);
+        std::vector<float> cov_o_scalars(tf_number * ncells);
+        std::vector<float> cov_c_scalars(tf_number * ncells);
+        const float delta = 1e-30;
+        const float eps = 1e-5;
 
-        //        // 分散
-        //#pragma simd
-        //    for (int i =0 ; i< ncells; i++ )
-        //    {
-        //        varience[i] = recv_sq_scalars[i] - recv_scalars[i]* recv_scalars[i] ;     
-        //        varience_normals[3*i+0] = - 2 * recv_tmp_term[3*i+0] + 2*recv_scalars[i] *recv_normals[3*i+0] ;     
-        //        varience_normals[3*i+1] = - 2 * recv_tmp_term[3*i+1] + 2*recv_scalars[i] *recv_normals[3*i+1] ;     
-        //        varience_normals[3*i+2] = - 2 * recv_tmp_term[3*i+2] + 2*recv_scalars[i] *recv_normals[3*i+2] ;     
-        //    }        
+#pragma simd
+        for (int i = 0; i < ncells * tf_number; i++ )
+        {
+            recv_o_sq_scalars[i] *= mpi_size_inv;
+            recv_c_sq_scalars[i] *= mpi_size_inv;
+            var_o_scalars[i] = recv_o_sq_scalars[i] - recv_o_scalars[i] * recv_o_scalars[i];
+            var_c_scalars[i] = recv_c_sq_scalars[i] - recv_c_scalars[i] * recv_c_scalars[i];
+            if (var_o_scalars[i] < 0.0f) var_o_scalars[i] = 0.0f;
+            if (var_c_scalars[i] < 0.0f) var_c_scalars[i] = 0.0f;
+            cov_o_scalars[i] = recv_o_scalars[i] > eps ? std::sqrt(var_o_scalars[i]) / recv_o_scalars[i] : delta;
+            cov_c_scalars[i] = recv_c_scalars[i] > eps ? std::sqrt(var_c_scalars[i]) / recv_c_scalars[i] : delta;
+        }
 
+        calc_histogram_minmax_arrays(tf_number, ncells, nbins,
+                recv_o_scalars, recv_c_scalars, o_min, o_max, c_min, c_max,
+                particleBase.m_ave_o_histogram, particleBase.m_ave_c_histogram,
+                tmp_ave_O_min, tmp_ave_O_max, tmp_ave_C_min, tmp_ave_C_max);
+        for( int n = 0; n < tf_number * nbins; n++ )
+        {
+            particleBase.m_o_histogram[n] += particleBase.m_ave_o_histogram[n];
+            particleBase.m_c_histogram[n] += particleBase.m_ave_c_histogram[n];
+        }
 
-#pragma omp parallel
-        {    
-#if _OPENMP
-            int nthreads = omp_get_num_threads();
-            int thid     = omp_get_thread_num();
-#else
-            int nthreads = 1;
-            int thid     = 0;
-#endif
-            float cell_opacity_array[ SIMD_BLK_SIZE ];
-            int nparticles_array[ SIMD_BLK_SIZE ];
-            int th_total_particles =0;
+        calc_histogram_minmax_arrays(tf_number, ncells, nbins,
+                var_o_scalars, var_c_scalars, o_min, o_max, c_min, c_max,
+                particleBase.m_var_o_histogram, particleBase.m_var_c_histogram,
+                tmp_var_O_min, tmp_var_O_max, tmp_var_C_min, tmp_var_C_max);
 
-            //最大最小値
-            kvs::ValueArray<float> th_O_min( tf_number );//計算して得る最大最小値
-            kvs::ValueArray<float> th_O_max( tf_number );
-            kvs::ValueArray<float> th_C_min( tf_number );
-            kvs::ValueArray<float> th_C_max( tf_number );
-
-            for ( int i = 0; i < tf_number; i++ ) //初期化
-            {
-                th_O_min[ i ] =  FLT_MAX;
-                th_O_max[ i ] = -FLT_MAX;
-                th_C_min[ i ] =  FLT_MAX;
-                th_C_max[ i ] = -FLT_MAX;
-            }
-
-            kvs::ValueArray<int> th_o_histogram( tf_number * nbins );//不透明度
-            kvs::ValueArray<int> th_c_histogram( tf_number * nbins );//色
-
-            th_o_histogram.fill(0x00);
-            th_c_histogram.fill(0x00);
-            kvs::MersenneTwister MT( thid + mpi_rank * nthreads );
-
-#pragma omp for schedule( dynamic ) nowait
-            for ( size_t index = 0; index < ncells; index += 1 )
-            {
-//                std::cout << "recv_o_scalars = " << recv_o_scalars[index] << std::endl;
-                // min = max 例外処理
-                std::vector<bool> o_zero_flag(tf_number); 
-                std::vector<bool> c_zero_flag(tf_number); 
-                for( int i = 0; i < tf_number; i++ )
-                {
-                    o_zero_flag[i] = false;
-                    c_zero_flag[i] = false;
-                    if ( kvs::Math::Equal<float>(o_max[i], o_min[i] ))   //0　判定ならば、一様分布にする
-                    {
-                        o_zero_flag[i] = true;
-                        for (int k =0 ; k< nbins; k++)
-                        {
-                            th_o_histogram[ k+nbins*i] ++;
-                        }
-                    }
-
-                    if ( kvs::Math::Equal<float>(c_max[i], c_min[i] ))   //0　判定ならば、一様分布にする
-                    {
-                        c_zero_flag[i] = true;
-
-                        for (int k =0 ; k< nbins; k++)
-                        {
-                            th_c_histogram[ k+nbins*i] ++;
-                        }
-                    }
-                }
-
-                for( int i = 0; i < tf_number; i++ )
-                {
-                    if (!o_zero_flag[i]) 
-                    {
-                        float h = (recv_o_scalars[ncells*i+index] - o_min[i])/( o_max[i] - o_min[i] )*nbins;
-                        int H = (int)h;
- //                       std::cout << "H = " << H <<std::endl;
-                        if( 0 <= H && H <= nbins )
-                        {
-                            if( H == nbins ) H--;
-                            th_o_histogram[ H + nbins*i]++;
-                        }
-                    }
-
-                    if (!c_zero_flag[i]) 
-                    {
-                        float h = (recv_c_scalars[ncells*i+index] - c_min[i])/( c_max[i] - c_min[i] )*nbins;
-                        int H = (int)h;
-                        if( 0 <= H && H <= nbins )
-                        {
-                            if( H == nbins ) H--;
-                            th_c_histogram[ H + nbins*i]++;
-                        }
-                    }
-
-                    // minmax 計算
-                    th_O_min[i] = th_O_min[i] < recv_o_scalars[ncells*i+index] ? th_O_min[i] : recv_o_scalars[ncells*i+index];
-                    th_O_max[i] = th_O_max[i] > recv_o_scalars[ncells*i+index] ? th_O_max[i] : recv_o_scalars[ncells*i+index];
-                    th_C_min[i] = th_C_min[i] < recv_c_scalars[ncells*i+index] ? th_C_min[i] : recv_c_scalars[ncells*i+index];
-                    th_C_max[i] = th_C_max[i] > recv_c_scalars[ncells*i+index] ? th_C_max[i] : recv_c_scalars[ncells*i+index];
-                }
-            } // end cell loop
-#pragma omp barrier
-#pragma omp critical
-            {
-                for( int n = 0; n < tf_number * nbins; n++ )
-                {
-                    particleBase.m_o_histogram[n]     += th_o_histogram[n];
-                    particleBase.m_c_histogram[n]     += th_c_histogram[n];
-                    particleBase.m_ave_o_histogram[n] += th_o_histogram[n];
-                    particleBase.m_ave_c_histogram[n] += th_c_histogram[n];
-                }
-
-                //最大最小値
-                for( int i = 0; i < tf_number; i++ )
-                {
-                    //不透明度
-                    tmp_O_min[i] = tmp_O_min[i] < th_O_min[i] ? tmp_O_min[i] : th_O_min[i];
-                    tmp_O_max[i] = tmp_O_max[i] > th_O_max[i] ? tmp_O_max[i] : th_O_max[i];
-                    //色
-                    tmp_C_min[i] = tmp_C_min[i] < th_C_min[i] ? tmp_C_min[i] : th_C_min[i];
-                    tmp_C_max[i] = tmp_C_max[i] > th_C_max[i] ? tmp_C_max[i] : th_C_max[i];
-                }
-            }
-        } //end omp 
+        calc_histogram_minmax_arrays(tf_number, ncells, nbins,
+                cov_o_scalars, cov_c_scalars, o_min, o_max, c_min, c_max,
+                particleBase.m_cov_o_histogram, particleBase.m_cov_c_histogram,
+                tmp_cov_O_min, tmp_cov_O_max, tmp_cov_C_min, tmp_cov_C_max);
     }
    
-    particleBase.m_ave_O_max.allocate(tf_number);
-    particleBase.m_ave_O_min.allocate(tf_number);
-    particleBase.m_ave_C_max.allocate(tf_number);
-    particleBase.m_ave_C_min.allocate(tf_number);
     for( int i = 0; i < tf_number; i++ )
     {
         //不透明度
-        particleBase.m_O_min[i] = particleBase.m_O_min[i] < tmp_O_min[i] ? particleBase.m_O_min[i] : tmp_O_min[i];
-        particleBase.m_O_max[i] = particleBase.m_O_max[i] > tmp_O_max[i] ? particleBase.m_O_max[i] : tmp_O_max[i];
-        std::cout << mpi_rank <<" : particleBase.m_o_min["<< i << "] = " << particleBase.m_O_min[i] << std::endl;
-        std::cout << mpi_rank <<" : particleBase.m_o_max["<< i << "] = " << particleBase.m_O_max[i] << std::endl;
+        particleBase.m_O_min[i] = particleBase.m_O_min[i] < tmp_ave_O_min[i] ? particleBase.m_O_min[i] : tmp_ave_O_min[i];
+        particleBase.m_O_max[i] = particleBase.m_O_max[i] > tmp_ave_O_max[i] ? particleBase.m_O_max[i] : tmp_ave_O_max[i];
         //色
-        particleBase.m_C_min[i] = particleBase.m_C_min[i] < tmp_C_min[i] ? particleBase.m_C_min[i] : tmp_C_min[i];
-        particleBase.m_C_max[i] = particleBase.m_C_max[i] > tmp_C_max[i] ? particleBase.m_C_max[i] : tmp_C_max[i];
-        std::cout << mpi_rank <<" : particleBase.m_C_min["<< i << "] = " << particleBase.m_C_min[i] << std::endl;
-        std::cout << mpi_rank <<" : particleBase.m_C_max["<< i << "] = " << particleBase.m_C_max[i] << std::endl;
+        particleBase.m_C_min[i] = particleBase.m_C_min[i] < tmp_ave_C_min[i] ? particleBase.m_C_min[i] : tmp_ave_C_min[i];
+        particleBase.m_C_max[i] = particleBase.m_C_max[i] > tmp_ave_C_max[i] ? particleBase.m_C_max[i] : tmp_ave_C_max[i];
         //平均
         //不透明度
-        particleBase.m_ave_O_min[i] = particleBase.m_ave_O_min[i] < tmp_O_min[i] ? particleBase.m_ave_O_min[i] : tmp_O_min[i];
-        particleBase.m_ave_O_max[i] = particleBase.m_ave_O_max[i] > tmp_O_max[i] ? particleBase.m_ave_O_max[i] : tmp_O_max[i];
+        particleBase.m_ave_O_min[i] = particleBase.m_ave_O_min[i] < tmp_ave_O_min[i] ? particleBase.m_ave_O_min[i] : tmp_ave_O_min[i];
+        particleBase.m_ave_O_max[i] = particleBase.m_ave_O_max[i] > tmp_ave_O_max[i] ? particleBase.m_ave_O_max[i] : tmp_ave_O_max[i];
         //色
-        particleBase.m_ave_C_min[i] = particleBase.m_ave_C_min[i] < tmp_C_min[i] ? particleBase.m_ave_C_min[i] : tmp_C_min[i];
-        particleBase.m_ave_C_max[i] = particleBase.m_ave_C_max[i] > tmp_C_max[i] ? particleBase.m_ave_C_max[i] : tmp_C_max[i];
+        particleBase.m_ave_C_min[i] = particleBase.m_ave_C_min[i] < tmp_ave_C_min[i] ? particleBase.m_ave_C_min[i] : tmp_ave_C_min[i];
+        particleBase.m_ave_C_max[i] = particleBase.m_ave_C_max[i] > tmp_ave_C_max[i] ? particleBase.m_ave_C_max[i] : tmp_ave_C_max[i];
+
+        //分散
+        particleBase.m_var_O_min[i] = particleBase.m_var_O_min[i] < tmp_var_O_min[i] ? particleBase.m_var_O_min[i] : tmp_var_O_min[i];
+        particleBase.m_var_O_max[i] = particleBase.m_var_O_max[i] > tmp_var_O_max[i] ? particleBase.m_var_O_max[i] : tmp_var_O_max[i];
+        particleBase.m_var_C_min[i] = particleBase.m_var_C_min[i] < tmp_var_C_min[i] ? particleBase.m_var_C_min[i] : tmp_var_C_min[i];
+        particleBase.m_var_C_max[i] = particleBase.m_var_C_max[i] > tmp_var_C_max[i] ? particleBase.m_var_C_max[i] : tmp_var_C_max[i];
+
+        //変動係数
+        particleBase.m_cov_O_min[i] = particleBase.m_cov_O_min[i] < tmp_cov_O_min[i] ? particleBase.m_cov_O_min[i] : tmp_cov_O_min[i];
+        particleBase.m_cov_O_max[i] = particleBase.m_cov_O_max[i] > tmp_cov_O_max[i] ? particleBase.m_cov_O_max[i] : tmp_cov_O_max[i];
+        particleBase.m_cov_C_min[i] = particleBase.m_cov_C_min[i] < tmp_cov_C_min[i] ? particleBase.m_cov_C_min[i] : tmp_cov_C_min[i];
+        particleBase.m_cov_C_max[i] = particleBase.m_cov_C_max[i] > tmp_cov_C_max[i] ? particleBase.m_cov_C_max[i] : tmp_cov_C_max[i];
 
     }
 
@@ -6680,4 +6662,3 @@ void EnsembleTest( int time_step,
                          unsigned int* connections, int ncells, const pbvr::VolumeObjectBase::CellType& celltype, pbvr_parameters& particleBase) //celltype  enum 型に変更
 {
 }
-
