@@ -18,7 +18,6 @@
 #include <iomanip>
 #include <memory>
 
-#include "kvs_wrapper.h"
 #include "TFS/CellByCellParticleGenerator.h"
 #include "TFS/TransferFunctionSynthesizer.h"
 #include "TFS/ParamInfo.h"
@@ -3228,6 +3227,169 @@ void ens_OutputParticles(int time_step, int nvariables, pbvr_parameters& particl
         }
     }
 #endif
+#if  0
+    if (skip_flag)
+    {
+    //　歪度のファイル出力
+    ///-------------------------------------//
+    ///--------歪度配列をファイル出力----------//
+    //--------------------------------------//
+    kvs::ValueArray<float> coords( particleBase.m_skewness_coords );
+    kvs::ValueArray<Byte>  colors( particleBase.m_skewness_colors );
+    kvs::ValueArray<float> normals(particleBase.m_skewness_normals );
+
+        static bool first_step = true;
+        static MPI_Comm new_comm;
+        static int count;
+        static int num_nodes;
+    /* 各ノード毎に粒子データを出力する。 */
+    if( first_step )
+    {
+        int numprocs, myrank;
+        int resultlen;
+        char procname[MPI_MAX_PROCESSOR_NAME];
+        char* procname_bak;
+        char* procname_g;
+        char* procname_p;
+
+        MPI_Comm_size( MPI_COMM_WORLD, &numprocs );
+        MPI_Comm_rank( MPI_COMM_WORLD, &myrank );
+
+        /* ノード名を取得し、各ランクで共有する. */
+        MPI_Get_processor_name( procname, &resultlen );
+        procname_g = new char[ MPI_MAX_PROCESSOR_NAME * numprocs ];
+        MPI_Allgather( procname,   MPI_MAX_PROCESSOR_NAME, MPI_CHAR,
+                       procname_g, MPI_MAX_PROCESSOR_NAME, MPI_CHAR,
+                       MPI_COMM_WORLD );
+
+        int color;
+        count = 1;
+        for( color = 0; color < numprocs; color++ )
+        {
+            procname_p = procname_g + MPI_MAX_PROCESSOR_NAME * color;
+
+            /* 要素の隣同士を比較して差異があった場合にカウントし, *
+             * ノード毎に連続した番号を割り当てる.                 */
+            if( color > 0 )
+            {
+                procname_bak = procname_p - MPI_MAX_PROCESSOR_NAME;
+                if( strcmp( procname_p, procname_bak ) != 0 )
+                    count++;
+            }
+
+            /* 自分のノード名が一致した要素番号をコミュニケータ分割のcolorとする */
+            if( strcmp( procname_p, procname ) == 0 )
+                break;
+        }
+
+        delete[] procname_g;
+        
+        MPI_Comm_split( MPI_COMM_WORLD, color, myrank, &new_comm );
+        
+        int split_numprocs;
+        MPI_Comm_size( new_comm, &split_numprocs );
+        
+        /*
+         * 各ノードに均等にランクが割り当てられることを前提とし,
+         * 分割前のプロセス数と分割後のプロセス数の非を粒子ファイル数とする.
+         */
+        num_nodes = numprocs / split_numprocs;
+        if( numprocs % split_numprocs > 0 ) num_nodes++;
+        first_step = false;
+        std::cout << "num_nodes = " << num_nodes  << "numprocs = " << numprocs << ", split_numprocs = " << split_numprocs << std::endl;
+    }   
+    
+    /*
+     * ファイル名の粒子データのファイル名を入力する.
+     * countが各ファイルで連続でない場合,ファイルが不在と見なしてデーモンでスピンロックがかかる.
+     */
+#if 0
+    char filename[256];
+    sprintf(filename, "./jupiter_particle_out/t_%05d_",time_step);
+    sprintf(filename,"%s%07d_%07d.kvsml", filename, count, num_nodes );
+#else
+    // 20181226 start  環境変数で指定したファイルパスを参照する
+    std::stringstream ss;
+    //add by shimomura 20240614
+//    ss << std::setfill('0') << std::setw(2) << static_cast<int>(celltype);
+//    ss << "_";
+    ss << std::setfill('0') << std::setw(5) << time_step;
+    ss << "_";
+    ss << std::setfill('0') << std::setw(7) << count;
+    ss << "_";
+    ss << std::setfill('0') << std::setw(7) << num_nodes;
+    ss << ".kvsml";
+//    particleBase.m_ptcFilePath += ss.str();
+    particleBase.m_skeFilePath = particleBase.m_visParamDir + "particle_out/ske_";
+    particleBase.m_skeFilePath += ss.str();
+    // 20181226 end
+#endif
+
+    int particle_size = coords.size();
+    int *recvcounts;
+    int *displs;
+    int  new_number_of_process;
+    int new_rank;
+
+    MPI_Comm_rank( new_comm, &new_rank );
+    MPI_Comm_size( new_comm, &new_number_of_process );
+
+    /*
+     *  recvcounts: 各ランク毎の受信バッファサイズ.
+     *  displs:     受信先バッファ上の各ランク毎の受信バッファの位置(オフセット)
+     */
+
+    displs = new int[ new_number_of_process ];
+    recvcounts = new int[ new_number_of_process ];
+
+    MPI_Allgather( &particle_size, 1, MPI_INT,
+                   recvcounts,     1, MPI_INT,
+                   new_comm );
+    displs[0] = 0;
+    for( int i =1; i< new_number_of_process; i++ )
+        displs[i] = displs[i-1] + recvcounts[i-1];
+
+    kvs::ValueArray<float> new_coords(  displs[new_number_of_process-1] + recvcounts[new_number_of_process-1] );
+    kvs::ValueArray<Byte>  new_colors(  displs[new_number_of_process-1] + recvcounts[new_number_of_process-1] );
+    kvs::ValueArray<float> new_normals( displs[new_number_of_process-1] + recvcounts[new_number_of_process-1] );
+
+    MPI_Gatherv( coords.pointer(),   particle_size, MPI_FLOAT,
+                 new_coords.pointer(), recvcounts, displs, MPI_FLOAT,
+                 0, new_comm );
+
+    MPI_Gatherv( colors.pointer(),   particle_size, MPI_BYTE,
+                 new_colors.pointer(), recvcounts, displs, MPI_BYTE,
+                 0, new_comm );
+
+    MPI_Gatherv( normals.pointer(),   particle_size, MPI_FLOAT,
+                 new_normals.pointer(), recvcounts, displs, MPI_FLOAT,
+                 0, new_comm );
+
+    /*  分割後コミュニケータのランク0で出力する  */
+    if( new_rank == 0 )
+    {
+        kvs::PointObject* point_object = new kvs::PointObject( new_coords, new_colors, new_normals, particleBase.m_subpixel_level );
+        point_object->setMinMaxObjectCoords( particleBase.m_min_vec, particleBase.m_max_vec );
+        // If async_io is enabled, use worker thread to write kvsml data and state.txt
+        if (async_io_enabled){
+            pbvr::ParticleWriteThread* particle_write_thread =  &pwt;
+            particle_write_thread->join(true);
+            particle_write_thread->setPointObject( point_object );
+            particle_write_thread->setFilename(particleBase.m_skeFilePath.c_str());
+            particle_write_thread->setTimestep(time_step ,particleBase.m_stateFilePath.c_str());
+            particle_write_thread->setStartTimestep(st_time_step); //add by shimomura 20240808
+            particle_write_thread->work(true);
+        }// If async_io is disabled, use kvs::PointExporter here in main thread.
+        else{
+            kvs::KVSMLObjectPoint* kvsml_object = new kvs::PointExporter<kvs::KVSMLObjectPoint>( point_object );
+            kvsml_object->setWritingDataType( kvs::KVSMLObjectPoint::ExternalBinary );
+            kvsml_object->write( particleBase.m_skeFilePath.c_str() );
+            delete kvsml_object;
+        }
+        delete point_object;
+    }
+    }
+#endif
 }
 
 void ensemble_generate_particles( int time_step, domain_parameters dom,
@@ -3823,6 +3985,12 @@ void ensemble_reduce_scatter(
 //    timer.stop();
 //    timeN[0] += timer.sec();
 //    timer.start();
+    // debug
+//    for (int i = 0 ; i< vertex_scalars.size() ; i+= 1000000)
+//    {
+//        std::cout << mpi_rank << ", vertex_scalars["<<i<<"] = " << vertex_scalars [i] << "cell_id["<<i<<"] = " << ens_param.vertex_cellids[i] << ", coords = " << ens_param.vertex_coords[3*i] << ", " << ens_param.vertex_coords[3*i+1] << ", " << ens_param.vertex_coords[3*i+2] << std::endl;
+//    }
+
     // vertex_scalars , normal, cellid, coordをアンサンブル数で等分する 
     std::vector<float> div_vertex_scalars;
     std::vector<float> div_vertex_normals;
@@ -4006,6 +4174,9 @@ void ensemble_reduce_scatter(
     for (int i =0 ; i< scalars_counts[row_rank] ; i++ )
     {
         varience[i] = recv_sq_scalars[i] - recv_scalars[i]* recv_scalars[i] ;     
+//        varience_normals[3*i+0] = - 2 * recv_tmp_term[3*i+0] + 2*recv_scalars[i] *recv_normals[3*i+0] ;     
+//        varience_normals[3*i+1] = - 2 * recv_tmp_term[3*i+1] + 2*recv_scalars[i] *recv_normals[3*i+1] ;     
+//        varience_normals[3*i+2] = - 2 * recv_tmp_term[3*i+2] + 2*recv_scalars[i] *recv_normals[3*i+2] ;     
         varience_normals_x[i] = - 2 * recv_tmp_term_x[i] + 2*recv_scalars[i] *recv_normals_x[i] ;     
         varience_normals_y[i] = - 2 * recv_tmp_term_y[i] + 2*recv_scalars[i] *recv_normals_x[i] ;     
         varience_normals_z[i] = - 2 * recv_tmp_term_z[i] + 2*recv_scalars[i] *recv_normals_x[i] ;     
@@ -4028,6 +4199,11 @@ void ensemble_reduce_scatter(
     timer.stop();
     timeN[6] += timer.sec();
 //    timer.start();
+
+//    for (int i =0;i < 7; i++)
+//    {
+//        std::cout << mpi_rank <<  ": reduce_scatter_time["<< i <<"] =" << timeN[i] << std::endl;
+//    }
 
 //    timer.stop();
     float recv_time[20] ={0};
@@ -4101,6 +4277,13 @@ void ensemble_reduce(
     timer.stop();
     timeN[0] += timer.sec();
     timer.start();
+    // debug
+//    for (int i = vertex_scalars.size() -10; i< vertex_scalars.size() ; i++)
+//    for (int i = 0 ; i< vertex_scalars.size() ; i+= 1000000)
+//    {
+//        std::cout << mpi_rank << ", vertex_scalars["<<i<<"] = " << vertex_scalars [i] << "cell_id["<<i<<"] = " << ens_param.vertex_cellids[i] << ", coords = " << ens_param.vertex_coords[3*i] << ", " << ens_param.vertex_coords[3*i+1] << ", " << ens_param.vertex_coords[3*i+2] << std::endl;
+//    }
+
     // 受信バッファ
     // 変数値
     std::vector<float> recv_scalars(recv_size); 
@@ -4197,6 +4380,15 @@ void ensemble_reduce(
 
     timer.stop();
     timeN[5] += timer.sec();
+//         for (int i = 0 ; i< vertex_scalars.size() ; i+= 1000000)
+//         {
+//             std::cout << mpi_rank << ", vertex_scalars["<<i<<"] = " << vertex_scalars [i] << "cell_id["<<i<<"] = " << ens_param.vertex_cellids[i] << ", coords = " << ens_param.vertex_coords[3*i] << ", " << ens_param.vertex_coords[3*i+1] << ", " << ens_param.vertex_coords[3*i+2] << std::endl;
+//         }
+//    for (int i = 0 ; i< vertex_scalars.size() ; i+= 1)
+//    {
+//        std::cout << mpi_rank << ", varience["<<i<<"] = " << varience [i] << ", average_scalars["<<i<<"] = " << recv_scalars[i] << ", vertex_scalars["<<i<<"] = " << vertex_scalars[i] <<  ", coords = " << ens_param.vertex_coords[3*i] << ", " << ens_param.vertex_coords[3*i+1] << ", " << ens_param.vertex_coords[3*i+2] << std::endl;
+//    }
+
     } 
     for (int i =0;i < 6; i++)
     {
@@ -4896,6 +5088,19 @@ void calculation_glad(const int nparticles_count, const int nvariables,
                         grad_array_x[j] = ( S_plus_opacity[j] - S_minus_opacity[j] )*5.0;
                     }
                 // ------------------------------------------------
+//                    //grad_arrayの算出
+//                    for( int j = 0; j < nparticles_count; j++ )
+//                    {
+//                        //JacobiMatrixでメンバ変数を使用しているので再度バインド
+//                        interp[thid][0]->bindCell( cell_index[j] );
+//
+//                        const kvs::Vector3f g( -dsdx_array[j], -dsdy_array[j], -dsdz_array[j] );
+//                        const kvs::Matrix33f J = interp[thid][0]->JacobiMatrix();
+//                        float determinant = 0.0f;
+//                        const kvs::Vector3f G = J.inverse( &determinant ) * g;
+//                        grad_array[j] = kvs::Math::IsZero( determinant ) ? kvs::Vector3f( 0.0f, 0.0f, 0.0f ) : G;
+//                    }
+
 
 }
 
@@ -4970,6 +5175,7 @@ static void calc_histogram_minmax_arrays(
                 const int offset = ncells * i + index;
                 const float o_value = o_values[offset];
                 const float c_value = c_values[offset];
+
                 if (!o_zero_flag[i])
                 {
                     float h = (o_value - o_min[i]) / ( o_max[i] - o_min[i] ) * nbins;
@@ -5199,6 +5405,7 @@ void calc_histogram(const int tf_number,const int nvariables, const int ncells ,
     MPI_Comm comm_col_vector, comm_row_vector;
 
     // mpisize --> n_rows (grid parallelization)
+    //runtime_assert(mpi_size % ens_number == 0, "InvalidConfiguration: mpi size vs. ensemble size mismatched");
     const auto n_rows = mpi_size / ens_number;
 
     //    // comm split: each ensemble member (column vector) //
@@ -5226,6 +5433,29 @@ void calc_histogram(const int tf_number,const int nvariables, const int ncells ,
     std::vector<float> recv_o_sq_scalars(tf_number * ncells); 
     std::vector<float> recv_c_sq_scalars(tf_number * ncells); 
 
+    //    for(int i = 0; i < )
+
+
+    //    // 分散用配列
+    //    std::vector<float> varience(recv_size);
+    //    std::vector<float> tmp_term(3*recv_size);
+    //    std::vector<float> varience_normals(3*recv_size);
+    //        // 二乗
+    //    std::vector<float> sq_scalars(recv_size);
+    //    std::vector<float> recv_sq_scalars(recv_size);
+    //    std::vector<float> recv_tmp_term(3*recv_size);
+    //
+    //    // 二乗の計算
+    //#pragma simd 
+    //    for (int i =0 ; i< recv_size ; i++ )
+    //    {
+    //        sq_scalars[i]   = vertex_scalars[i] * vertex_scalars[i];
+    //        tmp_term[3*i+0] = vertex_scalars[i] * vertex_normals[3*i+0]; 
+    //        tmp_term[3*i+1] = vertex_scalars[i] * vertex_normals[3*i+1];  
+    //        tmp_term[3*i+2] = vertex_scalars[i] * vertex_normals[3*i+2];
+    //    }
+
+
     MPI_Barrier(MPI_COMM_WORLD);
     //     std::cout << "vertex_scalars.size() = " << vertex_scalars.size() << ", recv_scalars = " << recv_scalars.size() << ", local_size = " << local_size <<std::endl;
     // MPI_reduce による変数の合算
@@ -5241,6 +5471,17 @@ void calc_histogram(const int tf_number,const int nvariables, const int ncells ,
     MPI_Reduce(c_sq_scalars_array.data(), recv_c_sq_scalars.data(), tf_number*ncells, MPI_FLOAT,
             MPI_SUM, 0, comm_row_vector);
 
+    //    MPI_Reduce(sq_scalars.data(), recv_sq_scalars.data(), ncells, MPI_FLOAT,
+    ////            MPI_SUM, 0, MPI_COMM_WORLD);
+    //            MPI_SUM, 0, comm_row_vector);
+    //
+    //    MPI_Reduce(vertex_normals.data(), recv_normals.data(), 3*ncells, MPI_FLOAT,
+    ////            MPI_SUM, 0, MPI_COMM_WORLD);
+    //            MPI_SUM, 0, comm_row_vector);
+    //    
+    //    MPI_Reduce(tmp_term.data(), recv_tmp_term.data(), 3*ncells, MPI_FLOAT,
+    ////            MPI_SUM, 0, MPI_COMM_WORLD);
+    //            MPI_SUM, 0, comm_row_vector);
     // mpi_rank = 0 にて 平均値、分散計算処理
     //if(mpi_rank == 0)
     if(k_col == 0)
@@ -5256,6 +5497,13 @@ void calc_histogram(const int tf_number,const int nvariables, const int ncells ,
             recv_c_scalars[i]    *= mpi_size_inv;
             //            recv_sq_scalars[i] *= mpi_size_inv;
         }
+
+        //#pragma simd 
+        //        for (int i =0 ; i< 3*ncells ; i++ )
+        //        {
+        //            recv_normals[i] *= -mpi_size_inv;
+        //            recv_tmp_term[i] *= mpi_size_inv; 
+        //        }
 
         std::vector<float> var_o_scalars(tf_number * ncells);
         std::vector<float> var_c_scalars(tf_number * ncells);
@@ -5303,9 +5551,13 @@ void calc_histogram(const int tf_number,const int nvariables, const int ncells ,
         //不透明度
         particleBase.m_O_min[i] = particleBase.m_O_min[i] < tmp_ave_O_min[i] ? particleBase.m_O_min[i] : tmp_ave_O_min[i];
         particleBase.m_O_max[i] = particleBase.m_O_max[i] > tmp_ave_O_max[i] ? particleBase.m_O_max[i] : tmp_ave_O_max[i];
+        std::cout << mpi_rank <<" : particleBase.m_o_min["<< i << "] = " << particleBase.m_O_min[i] << std::endl;
+        std::cout << mpi_rank <<" : particleBase.m_o_max["<< i << "] = " << particleBase.m_O_max[i] << std::endl;
         //色
         particleBase.m_C_min[i] = particleBase.m_C_min[i] < tmp_ave_C_min[i] ? particleBase.m_C_min[i] : tmp_ave_C_min[i];
         particleBase.m_C_max[i] = particleBase.m_C_max[i] > tmp_ave_C_max[i] ? particleBase.m_C_max[i] : tmp_ave_C_max[i];
+        std::cout << mpi_rank <<" : particleBase.m_C_min["<< i << "] = " << particleBase.m_C_min[i] << std::endl;
+        std::cout << mpi_rank <<" : particleBase.m_C_max["<< i << "] = " << particleBase.m_C_max[i] << std::endl;
         //平均
         //不透明度
         particleBase.m_ave_O_min[i] = particleBase.m_ave_O_min[i] < tmp_ave_O_min[i] ? particleBase.m_ave_O_min[i] : tmp_ave_O_min[i];
@@ -5376,6 +5628,9 @@ void EnsembleGenerateParticles( int time_step,
     std::vector<float> varience_coords;
     std::vector<float> varience_colors;
     std::vector<float> varience_normals;
+    std::vector<float> cov_coords;
+    std::vector<float> cov_colors;
+    std::vector<float> cov_normals;
 
 //  pbvr::cellbaseの宣言 
 //    std::vector< pbvr::CellBase<Type>* > cell;
@@ -6207,14 +6462,6 @@ for (int t = 0; t < T; ++t) {
                     float grad_array_y[remain_BLK];
                     float grad_array_z[remain_BLK];
 
-//                    cell[thid]->CalcScalarGrad( remain_BLK,
-//                            scalar_array,
-//                            grad_array_x,
-//                            grad_array_y,
-//                            grad_array_z );
-//                    cell[thid][0] -> scalar_ary( scalar_array, remain_BLK);
-//                    cell[thid][0] -> grad_ary( grad_array_x, grad_array_y, grad_array_z, remain_BLK);
-                        
                     th_tfs[thid]->CalculateScalarsArray( cell[thid],
                             remain_BLK,
                             local_coord_array,
@@ -6224,7 +6471,6 @@ for (int t = 0; t < T; ++t) {
                        
                            calculation_glad(remain_BLK, nvariables, th_tfs[thid], th_tf[thid], cell[thid], local_coord_array, cell_index, grad_array_x, grad_array_y, grad_array_z);
 
-    std::cout << mpi_rank << __LINE__ <<std::endl;
                 th_timer.stop();
                 th_timeN[4] += th_timer.sec();
                 th_timer.start();
@@ -6381,7 +6627,6 @@ for (int t = 0; t < T; ++t) {
     for (int i = 0; i < vertex_scalars.size();  i++ )
     {
         if(vertex_scalars[i] > eps )
-//            co_varietion[ i ]   =  std::sqrt(tmp_varience[ i ] )/ vertex_scalars[i];
             co_varietion[ i ]   =  std::sqrt(tmp_varience[ i ]) / vertex_scalars[i];
         else
             co_varietion[ i ]   = delta;
@@ -6418,6 +6663,9 @@ for (int t = 0; t < T; ++t) {
     std::vector<kvs::Real32> th_vertex_varience_coords;
     std::vector<kvs::Real32> th_vertex_varience_normals;
     std::vector<kvs::UInt8>  th_vertex_varience_colors;
+    std::vector<kvs::Real32> th_vertex_cov_coords;
+    std::vector<kvs::Real32> th_vertex_cov_normals;
+    std::vector<kvs::UInt8>  th_vertex_cov_colors;
     std::vector<kvs::Real32>  th_vertex_scalars;
     std::vector<int>  th_vertex_cellids;
 
@@ -6428,6 +6676,8 @@ for (int t = 0; t < T; ++t) {
     float density_array_average[ SIMD_BLK_SIZE ];
     float opacity_array_varience[ SIMD_BLK_SIZE ];
     float density_array_varience[ SIMD_BLK_SIZE ];
+    float opacity_array_cov[ SIMD_BLK_SIZE ];
+    float density_array_cov[ SIMD_BLK_SIZE ];
     float th_timeN[20]= {0};
     kvs::Timer th_timer( kvs::Timer::Start );
 
@@ -6484,6 +6734,7 @@ for (int t = 0; t < T; ++t) {
 //                    opacity_array[j] = tf.opacityMap().at(vertex_scalars[ i+j ]);
                     opacity_array_average [j] = tf_a.opacityMap().at(vertex_scalars[ i+j ]);
                     opacity_array_varience[j] = tf_v.opacityMap().at(tmp_varience[ i+j ]);
+                    opacity_array_cov[j]      = tf_v.opacityMap().at(co_varietion[ i+j ]);
 //                    対数値を参照
 //                    opacity_array_average[j]  = tf_a.opacityMap().at(log_vertex_scalars[ i+j ]);
 //                    opacity_array_varience[j] = tf_v.opacityMap().at(log_vertex_varience[ i+j ]);
@@ -6497,6 +6748,7 @@ for (int t = 0; t < T; ++t) {
                 {
                     density_array_average [j] = opacity_array_average [j] < max_opacity ? -std::log( 1.0f - opacity_array_average [j] ) * sampling_volume_inverse: max_density;  
                     density_array_varience[j] = opacity_array_varience[j] < max_opacity ? -std::log( 1.0f - opacity_array_varience[j] ) * sampling_volume_inverse: max_density;  
+                    density_array_cov[j]      = opacity_array_cov[j]      < max_opacity ? -std::log( 1.0f - opacity_array_cov[j] )      * sampling_volume_inverse: max_density;  
                 }
                     th_timer.stop();
                     th_timeN[5] += th_timer.sec();
@@ -6576,6 +6828,29 @@ for (int t = 0; t < T; ++t) {
                 th_timeN[9] += th_timer.sec();
                }
 
+               if ( density_array_cov[j] > max_density * R )
+               {
+                th_timer.start();
+                   const kvs::RGBColor color( tf_v.colorMap().at( co_varietion[ i+j ] ) );
+                th_timer.stop();
+                th_timeN[7] += th_timer.sec();
+                th_timer.start();
+
+                   th_vertex_cov_coords.push_back( global_coord_array[j].x() );
+                   th_vertex_cov_coords.push_back( global_coord_array[j].y() );
+                   th_vertex_cov_coords.push_back( global_coord_array[j].z() );
+
+                   th_vertex_cov_colors.push_back( color.r() );
+                   th_vertex_cov_colors.push_back( color.g() );
+                   th_vertex_cov_colors.push_back( color.b() );
+
+                   th_vertex_cov_normals.push_back( tmp_varience_normals[3*(i+j)+0] );
+                   th_vertex_cov_normals.push_back( tmp_varience_normals[3*(i+j)+1] );
+                   th_vertex_cov_normals.push_back( tmp_varience_normals[3*(i+j)+2] );
+                th_timer.stop();
+                th_timeN[9] += th_timer.sec();
+               }
+
                 }
             }
                 th_timer.start();
@@ -6587,6 +6862,9 @@ for (int t = 0; t < T; ++t) {
            varience_coords.insert (varience_coords.end() , th_vertex_varience_coords.begin() , th_vertex_varience_coords.end());
            varience_colors.insert (varience_colors.end() , th_vertex_varience_colors.begin() , th_vertex_varience_colors.end());
            varience_normals.insert(varience_normals.end(), th_vertex_varience_normals.begin(), th_vertex_varience_normals.end());
+           cov_coords.insert (cov_coords.end() , th_vertex_cov_coords.begin() , th_vertex_cov_coords.end());
+           cov_colors.insert (cov_colors.end() , th_vertex_cov_colors.begin() , th_vertex_cov_colors.end());
+           cov_normals.insert(cov_normals.end(), th_vertex_cov_normals.begin(), th_vertex_cov_normals.end());
        }
                 th_timer.stop();
                 th_timeN[10] += th_timer.sec();
@@ -6630,8 +6908,9 @@ for (int t = 0; t < T; ++t) {
     particleBase.m_varience_coords.insert( particleBase.m_varience_coords.end()  , varience_coords.begin() , varience_coords.end());
     particleBase.m_varience_colors.insert( particleBase.m_varience_colors.end()  , varience_colors.begin() , varience_colors.end());
     particleBase.m_varience_normals.insert(particleBase.m_varience_normals.end() , varience_normals.begin(), varience_normals.end());
-
-
+    particleBase.m_cov_coords.insert( particleBase.m_cov_coords.end()  , cov_coords.begin() , cov_coords.end());
+    particleBase.m_cov_colors.insert( particleBase.m_cov_colors.end()  , cov_colors.begin() , cov_colors.end());
+    particleBase.m_cov_normals.insert(particleBase.m_cov_normals.end() , cov_normals.begin(), cov_normals.end());
 #endif
 
     std::cout << mpi_rank << ": end sampling "  << std::endl;

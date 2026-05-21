@@ -77,6 +77,9 @@ extern "C" {
     std::vector<float>  m_varience_coords;
     std::vector<Byte>   m_varience_colors;
     std::vector<float>  m_varience_normals;
+    std::vector<float>  m_cov_coords;
+    std::vector<Byte>   m_cov_colors;
+    std::vector<float>  m_cov_normals;
     std::vector<float>  m_skewness_coords;
     std::vector<Byte>   m_skewness_colors;
     std::vector<float>  m_skewness_normals;
@@ -86,6 +89,7 @@ extern "C" {
     std::string m_tfFilename;
     std::string m_visParamDir;
     std::string m_varFilePath;
+    std::string m_covFilePath;
     std::string m_skeFilePath;
     //static ParamInfo m_param;
     kvs::Vector3f m_min_vec, m_max_vec;
