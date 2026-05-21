@@ -2770,6 +2770,7 @@ void ens_OutputParticles(int time_step, int nvariables, pbvr_parameters& particl
     ss << "_";
     ss << std::setfill('0') << std::setw(7) << num_nodes;
     ss << ".kvsml";
+    particleBase.m_ptcFilePath = particleBase.m_visParamDir + "particle_out/ave_";
     particleBase.m_ptcFilePath += ss.str();
     // 20181226 end
 #endif
