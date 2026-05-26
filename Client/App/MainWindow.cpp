@@ -1,6 +1,7 @@
 #include "MainWindow.h"
 #include "ui_MainWindow.h"
 #include <QPushButton>
+#include <kvs/EventTimer>
 #include <kvs/PointImporter>
 #include <kvs/PolygonImporter>
 #include <kvs/StochasticPolygonRenderer>
@@ -197,6 +198,13 @@ MainWindow::MainWindow( kvs::qt::Application& app, QWidget *parent )
 
 MainWindow::~MainWindow()
 {
+    if ( m_compositor && m_compositor->eventTimer() )
+    {
+        m_compositor->eventTimer()->stop();
+        delete m_compositor->eventTimer();
+        m_compositor->setEventTimer( nullptr );
+    }
+
     m_web_sockets->binary()->close();
     m_web_sockets->text()->close();
     delete m_viz_mode;

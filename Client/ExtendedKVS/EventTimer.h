@@ -25,7 +25,7 @@ class EventTimer : public QObject, public kvs::EventTimer
 {
 public:
     EventTimer(kvs::EventListener* listener) : kvs::EventTimer(listener) {}
-    virtual ~EventTimer() {}
+    virtual ~EventTimer() { this->stop(); }
 
 public:
     void start(int msec);
