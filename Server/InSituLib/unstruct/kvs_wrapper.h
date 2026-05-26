@@ -50,6 +50,18 @@ void generate_particles(
     const vismodule::VolumeObjectBase::CellType& celltypes
 );
 
+bool ensemble_generate_particles(
+    int time_step,
+    domain_parameters_unstruct dom,
+    Type** values,
+    int nvariables,
+    float* coordinates,
+    int ncoords,
+    unsigned int* connections,
+    int ncells,
+    const vismodule::VolumeObjectBase::CellType& celltypes
+);
+
 #ifdef EXTEND_FILE_FORMAT
 void generate_particles_vtk(
     int time_step,
