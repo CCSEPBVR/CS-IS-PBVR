@@ -305,7 +305,7 @@ void SetDefalutParameter( TransferFunctionSynthesizer* tfs,
     
 }
 
-
+#ifndef ENSEMBLE 
 void readTFfromParamInfo( ParamInfo* param,
                           std::vector<pbvr::TransferFunction>& tf,
                           TransferFunctionSynthesizer* tfs )
@@ -354,8 +354,6 @@ void readTFfromParamInfo( ParamInfo* param,
         tf.push_back(tfBuf);
     }
     
-
-#if 1
     // add by shimomura 2024/03/25
     std::string  equation;
 
@@ -401,10 +399,166 @@ void readTFfromParamInfo( ParamInfo* param,
 
     tfs->setColorVariable( var );
     var.clear();
-#endif 
 
 }
 
+#elif
+void readTFfromParamInfo( ParamInfo* param,
+                          std::vector<pbvr::TransferFunction>& ave_tf,
+                          std::vector<pbvr::TransferFunction>& var_tf,
+                          std::vector<pbvr::TransferFunction>& cov_tf,
+                          TransferFunctionSynthesizer* tfs )
+{
+
+    int mpi_rank;
+    MPI_Comm_rank( MPI_COMM_WORLD, &mpi_rank );
+
+    //Read TFS
+    std::vector<int> i_table;
+    std::vector<float> f_table;
+    EquationToken eq;
+    std::vector<EquationToken> var;
+    int tf_number;
+    // get TF_NUMBER
+    tf_number = param->getInt( "TF_NUMBER" );
+
+    //Read 1D tf
+    int resolution = param->getInt( "TF_RESOLUTION" );
+    float min, max;
+
+    tf.clear();
+
+    // 平均
+    for ( size_t i = 0; i < tf_number; i++ )
+    {
+        std::stringstream tss;
+        tss << "AVE_TF_NAME" << i + 1 << "_";
+        const std::string tag_base = tss.str();
+
+        min = param->getFloat( tag_base +"MIN_C" );
+        max = param->getFloat( tag_base +"MAX_C" );
+        i_table = param->getTableInt( tag_base + "TABLE_C" );
+        kvs::ValueArray<kvs::UInt8> u_table( i_table.size() );
+        for( size_t j = 0; j<i_table.size(); j++ ) u_table[j] = (kvs::UInt8)i_table[j];
+        kvs::ColorMap color_map( u_table, min, max );
+
+        min = param->getFloat( tag_base +"MIN_O" );
+        max = param->getFloat( tag_base +"MAX_O" );
+        f_table = param->getTableFloat( tag_base + "TABLE_O" );
+        kvs::ValueArray<float> ff_table( f_table );
+        kvs::OpacityMap opacity_map( ff_table, min, max );
+
+        pbvr::TransferFunction tfBuf;
+        tfBuf.setColorMap( color_map );
+        tfBuf.setOpacityMap( opacity_map );
+        ave_tf.push_back(tfBuf);
+    }
+
+    // 分散
+    for ( size_t i = 0; i < tf_number; i++ )
+    {
+        std::stringstream tss;
+        tss << "VAR_TF_NAME" << i + 1 << "_";
+        const std::string tag_base = tss.str();
+
+        min = param->getFloat( tag_base +"MIN_C" );
+        max = param->getFloat( tag_base +"MAX_C" );
+        i_table = param->getTableInt( tag_base + "TABLE_C" );
+        kvs::ValueArray<kvs::UInt8> u_table( i_table.size() );
+        for( size_t j = 0; j<i_table.size(); j++ ) u_table[j] = (kvs::UInt8)i_table[j];
+        kvs::ColorMap color_map( u_table, min, max );
+
+        min = param->getFloat( tag_base +"MIN_O" );
+        max = param->getFloat( tag_base +"MAX_O" );
+        f_table = param->getTableFloat( tag_base + "TABLE_O" );
+        kvs::ValueArray<float> ff_table( f_table );
+        kvs::OpacityMap opacity_map( ff_table, min, max );
+
+        pbvr::TransferFunction tfBuf;
+        tfBuf.setColorMap( color_map );
+        tfBuf.setOpacityMap( opacity_map );
+        var_tf.push_back(tfBuf);
+    }
+
+    // 変動係数
+    for ( size_t i = 0; i < tf_number; i++ )
+    {
+        std::stringstream tss;
+        tss << "COV_TF_NAME" << i + 1 << "_";
+        const std::string tag_base = tss.str();
+
+        min = param->getFloat( tag_base +"MIN_C" );
+        max = param->getFloat( tag_base +"MAX_C" );
+        i_table = param->getTableInt( tag_base + "TABLE_C" );
+        kvs::ValueArray<kvs::UInt8> u_table( i_table.size() );
+        for( size_t j = 0; j<i_table.size(); j++ ) u_table[j] = (kvs::UInt8)i_table[j];
+        kvs::ColorMap color_map( u_table, min, max );
+
+        min = param->getFloat( tag_base +"MIN_O" );
+        max = param->getFloat( tag_base +"MAX_O" );
+        f_table = param->getTableFloat( tag_base + "TABLE_O" );
+        kvs::ValueArray<float> ff_table( f_table );
+        kvs::OpacityMap opacity_map( ff_table, min, max );
+
+        pbvr::TransferFunction tfBuf;
+        tfBuf.setColorMap( color_map );
+        tfBuf.setOpacityMap( opacity_map );
+        cov_tf.push_back(tfBuf);
+    }
+
+
+
+    // add by shimomura 2024/03/25
+    std::string  equation;
+
+    equation = param->getString( "OPACITY_SYNTH" );
+    std::replace(equation.begin(), equation.end(), 'O', 'a');
+    eq = tfs->convert_token(equation);
+    tfs->setOpacityFunction( eq );
+
+    equation = param->getString( "COLOR_SYNTH" );
+    std::replace(equation.begin(), equation.end(), 'C', 'c');
+    eq = tfs->convert_token(equation);
+    tfs->setColorFunction( eq );
+
+
+    for ( size_t i = 0; i < tf_number; i++ )
+    {
+        std::stringstream tss;
+        tss << "TF_NAME" << i + 1 << "_";
+        const std::string tag_base = tss.str();
+
+        equation = param->getString( tag_base +"VAR_C" );
+        eq = tfs->convert_token(equation);
+
+
+        var.push_back( eq );
+
+    }
+
+    tfs->setOpacityVariable( var );
+
+    var.clear();
+    for ( size_t i = 0; i < tf_number; i++ )
+    {
+        std::stringstream tss;
+        tss << "TF_NAME" << i + 1 << "_";
+        const std::string tag_base = tss.str();
+
+        equation = param->getString( tag_base +"VAR_O" );
+        eq = tfs->convert_token(equation);
+
+        var.push_back( eq );
+    }
+
+    tfs->setColorVariable( var );
+    var.clear();
+
+}
+#endif 
+
+///        initializeParameters( m_tfs, particleBase->m_tf, m_param, object, &particleBase->m_sampling_volume_inverse, &particleBase->m_max_opacity, &particleBase->m_max_density,
+///                             &particleBase->m_subpixel_level, &particleBase->m_particle_density, &particleBase->m_particle_limit, &particleBase->m_particle_data_size_limit, visParamDir, tfFilename, time_step );
 bool initializeParameters(
     TransferFunctionSynthesizer* tfs,
     std::vector<pbvr::TransferFunction>& tf,
@@ -417,6 +571,15 @@ bool initializeParameters(
     const std::string &tfFilename, 
     const int time_step )
 //    const std::string &tfFilename )
+ 
+//bool initializeParameters(
+//    TransferFunctionSynthesizer* tfs,
+//    ParamInfo *param_info,
+//    pbvr_parameters* particleBase;
+//    const kvs::ObjectBase* object,
+//    const std::string &visParamDir,
+//    const std::string &tfFilename, 
+//    const int time_step )
 {
     //std::cout<<"param.LoadIN()\n";
     ParamInfo& param = (*param_info);
@@ -953,6 +1116,8 @@ bool SetParameter(const domain_parameters dom, pbvr_parameters* particleBase, Pa
     particleBase->m_max_vec = max_vec;
     if(mpi_rank==RANK) std::cout<<"max_vec:"<<max_vec<<std::endl;
     bool tmp_parameter_file_opened =
+//        initializeParameters( m_tfs, particleBase->m_tf, m_param, object, &particleBase->m_sampling_volume_inverse, &particleBase->m_max_opacity, &particleBase->m_max_density,
+//                             &particleBase->m_subpixel_level, &particleBase->m_particle_density, &particleBase->m_particle_limit, &particleBase->m_particle_data_size_limit, visParamDir, tfFilename, time_step );
         initializeParameters( m_tfs, particleBase->m_tf, m_param, object, &particleBase->m_sampling_volume_inverse, &particleBase->m_max_opacity, &particleBase->m_max_density,
                              &particleBase->m_subpixel_level, &particleBase->m_particle_density, &particleBase->m_particle_limit, &particleBase->m_particle_data_size_limit, visParamDir, tfFilename, time_step );
 
@@ -5987,7 +6152,7 @@ void EnsembleGenerateParticles( int time_step,
                                    global_coord_array,
                                    th_tf[thid],
                                    scalar_array );
-                                std::cout << "aft_scalar_array = " << scalar_array[0] << std::endl;
+//                                std::cout << "aft_scalar_array = " << scalar_array[0] << std::endl;
 //                           cell[thid] -> scalar_ary( scalar_array, p_id);
                            th_timer.stop();
                            th_timeN[9] += th_timer.sec();

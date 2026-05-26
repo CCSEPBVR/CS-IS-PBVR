@@ -103,6 +103,9 @@ extern "C" {
     int m_nvariables;
 
     std::vector<pbvr::TransferFunction> m_tf ;
+    std::vector<pbvr::TransferFunction> m_ave_tf ;
+    std::vector<pbvr::TransferFunction> m_var_tf ;
+    std::vector<pbvr::TransferFunction> m_cov_tf ;
     int m_tf_number;
     kvs::ValueArray<float> m_O_min;//計算して得る最大最小値
     kvs::ValueArray<float> m_O_max;
