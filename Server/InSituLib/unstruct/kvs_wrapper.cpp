@@ -912,6 +912,7 @@ bool ensemble_generate_particles(
     std::vector<vismodule::Real32> sq_scalars;
     std::vector<vismodule::Real32> tmp_term;
 
+    std::cout << __LINE__ << std::endl; 
 #pragma omp parallel
     {
 #if _OPENMP
@@ -1050,6 +1051,7 @@ bool ensemble_generate_particles(
         }
     }
 
+    std::cout << __LINE__ << std::endl; 
     std::vector<std::vector<float> > v_scalars( 2 );
     std::vector<std::vector<float> > v_coords( 2 );
     std::vector<std::vector<float> > v_normals( 2 );
@@ -1198,6 +1200,7 @@ bool ensemble_generate_particles(
         co_varietion[i] = vertex_scalars[i] > eps ? std::sqrt( tmp_varience[i] ) / vertex_scalars[i] : delta;
     }
 
+    std::cout << __LINE__ << std::endl; 
 #pragma omp parallel
     {
 #if _OPENMP
@@ -1287,8 +1290,10 @@ bool ensemble_generate_particles(
     return false;
 #endif
 
+    std::cout << __LINE__ << std::endl; 
 #ifndef CPU_VER
-    MakeParticleMinMax( particle_property.m_transfunc_synthesizer, tf_number, tmp_max.data(), tmp_min.data() );
+    //MakeParticleMinMax( particle_property.m_transfunc_synthesizer, tf_number, tmp_max.data(), tmp_min.data() );
+    std::cout << __LINE__ << std::endl; 
 
     OutputCoordMinMaxFile( dom, coordMinMaxFilePath );
 

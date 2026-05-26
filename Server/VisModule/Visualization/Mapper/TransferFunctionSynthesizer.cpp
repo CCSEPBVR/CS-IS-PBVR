@@ -2308,11 +2308,11 @@ void TransferFunctionSynthesizer::CalculateOpacityArray(
 
 
 void TransferFunctionSynthesizer::CalculateScalarsArray(
-    std::vector< pbvr::CellBase<Type>* > interp ,
+    std::vector< vismodule::CellBase<Type>* > interp ,
     const int loop_cnt,
-    const kvs::Vector3f *local_coord,
-    const kvs::Vector3f *global_coord,
-    std::vector<pbvr::TransferFunction>& tf,
+    const vismodule::Vector3f *local_coord,
+    const vismodule::Vector3f *global_coord,
+    std::vector<vismodule::TransferFunction>& tf,
     float *result_array)
 {
 //        std::stringstream debug;
@@ -2359,7 +2359,6 @@ void TransferFunctionSynthesizer::CalculateScalarsArray(
                                    grad_array_z[j] );
     }
 
-            std::cout << "scalar_array[j] = " << scalar_array[0][0] << std::endl;
     m_var_value_array[X] = global_coord_x;
     m_var_value_array[Y] = global_coord_y;
     m_var_value_array[Z] = global_coord_z;
@@ -2396,8 +2395,6 @@ void TransferFunctionSynthesizer::CalculateScalarsArray(
 ///        }
 //        m_var_value_array[ VAR_OFFSET_A+i ] = &opacity_map_array[i][0];
         m_var_value_array[ VAR_OFFSET_A+i ] = &eval_result[0];
-            std::cout << "eval_result[0] = " << eval_result[0] << std::endl;
-
     }
 
     //            std::cout << "result_result[0] = " << result_array[0] << std::endl;
