@@ -653,7 +653,7 @@ void Communication::onSettingsApplyClicked()
         formatArray.append( pointObjectFormat );
         formatArray.append( glyphObjectFormat );
 
-        m_web_sockets->text()->sendTextMessage(
+        const QString message = QString::fromUtf8(
             QJsonDocument( {
                            { QString::fromUtf8( Protocol::Key::Event)                    , QString::fromUtf8(Protocol::Events::Initialize) },
                            { "VizMode"                                                   , static_cast<int>( *m_viz_mode ) },
@@ -662,8 +662,9 @@ void Communication::onSettingsApplyClicked()
                            { QString::fromUtf8( Protocol::Key::TransferFunctionFilePath ), ui->transferFunctionFilePathLineEdit->text() },
                            { QString::fromUtf8( Protocol::Key::UUID )                    , uuidArray },
                            { QString::fromUtf8( Protocol::Key::Format )                  , formatArray },
-                           } ).toJson( QJsonDocument::Compact )
-            );
+                           } ).toJson( QJsonDocument::Compact ) );
+        m_web_sockets->text()->sendTextMessage( message );
+        emit textMessageSent( message );
     }
 }
 

@@ -39,6 +39,7 @@ signals:
     void updateStatusBarMessage( const QString& message );
     void updateServerState( const bool serverState );     // true: 接続中 , false: 未接続
     void updateOperatorState( const bool operatorState ); // true: 権限有り, false: 権限無し
+    void textMessageSent( const QString& message );
 
     // NOTE:バイナリソケット用
     void unpack( const QByteArray& binary );
