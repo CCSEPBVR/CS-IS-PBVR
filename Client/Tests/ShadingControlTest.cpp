@@ -28,7 +28,6 @@
 
 namespace
 {
-constexpr int k_server_start_timeout_ms = 10000;
 constexpr int k_connect_timeout_ms = 15000;
 constexpr int k_object_load_timeout_ms = 120000;
 constexpr int k_jump_button_enable_timeout_ms = 120000;
@@ -68,7 +67,7 @@ namespace ClientTests
 QString ShadingControlTest::envOrDefault( const char* name, const QString& fallback ) const
 {
     const QString value = qEnvironmentVariable( name );
-    return value.isEmpty() ? fallback : value;
+    return value.isEmpty() ? ClientTests::configuredPath( name, repoRootPath(), fallback ) : value;
 }
 
 QString ShadingControlTest::repoRootPath() const
@@ -172,7 +171,7 @@ void ShadingControlTest::writeMarkdownReport() const
     stream << "- 結果: " << ( m_test_succeeded ? "PASS" : "FAIL" ) << "\n";
     stream << "- クライアントプログラム: `" << m_client_executable << "`\n";
     stream << "- サーバプログラム: `" << m_server_executable << "`\n";
-    stream << "- サーバ起動ラッパー: `" << m_server_target_wrapper_executable << "`\n";
+    stream << "- サーバターゲットラッパー: `" << m_server_target_wrapper_executable << "`\n";
     stream << "- ボリュームデータ: `" << m_volume_data_path << "`\n";
     stream << "- 出力先: `" << m_output_dir_path << "`\n";
     stream << "- スクリーンショット出力先: `" << m_screenshot_dir_path << "`\n\n";
@@ -182,6 +181,36 @@ void ShadingControlTest::writeMarkdownReport() const
     {
         stream << "- " << ( step.completed ? "PASS" : "NOT RUN" ) << ": " << step.description << "\n";
     }
+    if ( m_steps.empty() )
+    {
+        stream << "- NOT RUN: テスト手順は実行されていない。\n";
+    }
+
+    stream << "\n## 自動判定項目\n\n";
+    if ( m_test_succeeded )
+    {
+        stream << "- PASS: Communication.ui の connectPushButton、remoteVizClientServerRadioButton、volumeDataFilePathLineEdit、settingApplyPushButton を取得して操作できた。\n";
+        stream << "- PASS: TestPathConfig.ini の SPX_VOLUME_DATA を volumeDataFilePathLineEdit に設定できた。\n";
+        stream << "- PASS: ObjectEditor.ui の nameLineEdit にテキストが入るまで待機し、applyPushButton を押せた。\n";
+        stream << "- PASS: PlayBackControlToolBar.cpp の m_jump_push_button を押し、再度有効になるまで待機できた。\n";
+        stream << "- PASS: ShadingControl.ui の各ラジオボタンと DoubleSpinBox を objectName で取得して操作できた。\n";
+        stream << "- PASS: スクリーンショットと Markdown レポートを指定ディレクトリへ保存できた。\n";
+    }
+    else
+    {
+        stream << "- FAIL: テストが最後まで完了しなかった。QtTest の失敗箇所を確認する。\n";
+    }
+
+    stream << "\n## 目視確認対象\n\n";
+    for ( const ScreenshotEntry& entry : m_screenshots )
+    {
+        stream << "- 要確認: " << entry.caption << "\n";
+    }
+    if ( m_screenshots.empty() )
+    {
+        stream << "- NOT RUN: スクリーンショットは保存されていない。\n";
+    }
+    stream << "- 注意: スクリーンショットの視覚的な正しさは自動判定していない。\n";
 
     stream << "\n## スクリーンショット\n\n";
     for ( const ScreenshotEntry& entry : m_screenshots )
@@ -189,10 +218,13 @@ void ShadingControlTest::writeMarkdownReport() const
         stream << "### " << entry.caption << "\n\n";
         stream << "!["
                << entry.caption
-               << "](img/"
+               << "](./img/"
                << entry.file_name
                << ")\n\n";
     }
+
+    stream << "## 未自動化・保留事項\n\n";
+    stream << "- Shading 種別および Ambient / Diffuse / Specular / Shininess 変更後の3D表示内容は、保存したスクリーンショットを目視確認する。\n";
 }
 
 void ShadingControlTest::markStepCompleted( const QString& description )
@@ -367,7 +399,7 @@ void ShadingControlTest::selectShadingRadioButton( const ClientHandles& client, 
 void ShadingControlTest::captureShadingState( const QString& file_name, const QString& caption )
 {
     saveScreenshot( file_name, caption );
-    markStepCompleted( QStringLiteral( "スクリーンショットを撮影: %1" ).arg( caption ) );
+    markStepCompleted( QStringLiteral( "%1をスクリーンショット撮影した。" ).arg( caption ) );
 }
 
 void ShadingControlTest::initTestCase()
@@ -375,16 +407,16 @@ void ShadingControlTest::initTestCase()
     const QString date_stamp = QDate::currentDate().toString( QStringLiteral( "yyyyMMdd" ) );
     m_client_executable = envOrDefault(
         "PBVR_CLIENT_EXECUTABLE",
-        QStringLiteral( "/path/to/CS-IS-PBVR/Client/build/Qt_6_11_0_for_macOS-Release/App/pbvr_client.app/Contents/MacOS/pbvr_client" ) );
+        ClientTests::configuredPath( "PBVR_CLIENT_EXECUTABLE", repoRootPath() ) );
     m_server_executable = envOrDefault(
         "PBVR_SERVER_EXECUTABLE",
-        QStringLiteral( "/path/to/CS-IS-PBVR/Server/pbvr_server" ) );
+        ClientTests::configuredPath( "PBVR_SERVER_EXECUTABLE", repoRootPath() ) );
     m_server_target_wrapper_executable = envOrDefault(
         "PBVR_SERVER_TARGET_WRAPPER_EXECUTABLE",
-        sourceTreePath( QStringLiteral( "server_target_wrapper.sh" ) ) );
+        ClientTests::configuredPath( "PBVR_SERVER_TARGET_WRAPPER_EXECUTABLE", repoRootPath() ) );
     m_volume_data_path = envOrDefault(
         "PBVR_VOLUME_DATA",
-        QStringLiteral( "/path/to/SampleData/ucd/old/out/spx.pfl" ) );
+        ClientTests::configuredPath( "SPX_VOLUME_DATA", repoRootPath() ) );
     m_output_dir_path = envOrDefault(
         "PBVR_TEST_OUTPUT_DIR",
         ClientTests::datedTestOutputDir( repoRootPath(), date_stamp, QStringLiteral( "ShadingControlTest" ) ) );
@@ -395,15 +427,6 @@ void ShadingControlTest::initTestCase()
     m_test_succeeded = false;
 
     QVERIFY2(
-        QFileInfo::exists( m_client_executable ),
-        qPrintable( QStringLiteral( "Client executable not found: %1" ).arg( m_client_executable ) ) );
-    QVERIFY2(
-        QFileInfo::exists( m_server_executable ),
-        qPrintable( QStringLiteral( "Server executable not found: %1" ).arg( m_server_executable ) ) );
-    QVERIFY2(
-        QFileInfo::exists( m_server_target_wrapper_executable ),
-        qPrintable( QStringLiteral( "Server target wrapper executable not found: %1" ).arg( m_server_target_wrapper_executable ) ) );
-    QVERIFY2(
         QFileInfo::exists( m_volume_data_path ),
         qPrintable( QStringLiteral( "Volume data file not found: %1" ).arg( m_volume_data_path ) ) );
     QVERIFY2(
@@ -413,14 +436,6 @@ void ShadingControlTest::initTestCase()
         QDir().mkpath( m_screenshot_dir_path ),
         qPrintable( QStringLiteral( "Failed to create screenshot directory: %1" ).arg( m_screenshot_dir_path ) ) );
 
-    m_server_process.setProgram( m_server_target_wrapper_executable );
-    m_server_process.setArguments( { m_server_executable } );
-    m_server_process.setWorkingDirectory( QFileInfo( m_server_executable ).absolutePath() );
-    m_server_process.start();
-
-    QVERIFY2(
-        m_server_process.waitForStarted( k_server_start_timeout_ms ),
-        qPrintable( QStringLiteral( "Failed to start server: %1" ).arg( m_server_process.errorString() ) ) );
 }
 
 void ShadingControlTest::cleanupTestCase()
@@ -443,7 +458,7 @@ void ShadingControlTest::performs_shading_control_scenario()
     QVERIFY2( g_test_app != nullptr, "Test application is not initialized" );
 
     MainWindow main_window( *g_test_app );
-    main_window.show();
+    showTestWindowCentered( &main_window );
     QVERIFY( QTest::qWaitForWindowExposed( &main_window ) );
 
     ClientHandles client = resolveClientHandles( main_window );
@@ -462,75 +477,101 @@ void ShadingControlTest::performs_shading_control_scenario()
     clickJumpAndWaitForCompletion( client );
     markStepCompleted( QStringLiteral( "PlayBackControlToolBar.cpp: m_jump_push_buttonを押し、有効化を待ってから3秒待機しました。" ) );
 
-    captureShadingState(
-        QStringLiteral( "00_after_jump.png" ),
-        QStringLiteral( "ジャンプ完了後" ) );
-
     bringShadingControlToFront( client.shading_control );
     markStepCompleted( QStringLiteral( "ShadingControl.uiを開きました。" ) );
 
     selectShadingRadioButton( client, client.none_radio_button, QStringLiteral( "ShadingControl.ui: noneRadioButtonを選択しました。" ) );
-    captureShadingState( QStringLiteral( "01_none.png" ), QStringLiteral( "noneRadioButton選択後" ) );
-
-    selectShadingRadioButton( client, client.phong_radio_button, QStringLiteral( "ShadingControl.ui: phongRadioButtonを選択しました。" ) );
-    captureShadingState( QStringLiteral( "02_phong.png" ), QStringLiteral( "phongRadioButton選択後" ) );
-
-    selectShadingRadioButton( client, client.blinn_phong_radio_button, QStringLiteral( "ShadingControl.ui: blinnPhongRadioButtonを選択しました。" ) );
-    captureShadingState( QStringLiteral( "03_blinn_phong.png" ), QStringLiteral( "blinnPhongRadioButton選択後" ) );
+    captureShadingState(
+        QStringLiteral( "01_none_radio_button.png" ),
+        QStringLiteral( "Noneラジオボタンを押下したオブジェクト" ) );
 
     selectShadingRadioButton( client, client.lambert_radio_button, QStringLiteral( "ShadingControl.ui: lambertRadioButtonを選択しました。" ) );
-    captureShadingState( QStringLiteral( "04_lambert.png" ), QStringLiteral( "lambertRadioButton選択後" ) );
+    captureShadingState(
+        QStringLiteral( "02_lambert_radio_button.png" ),
+        QStringLiteral( "Lambertラジオボタンを押下したオブジェクト" ) );
+
+    selectShadingRadioButton( client, client.phong_radio_button, QStringLiteral( "ShadingControl.ui: phongRadioButtonを選択しました。" ) );
+    captureShadingState(
+        QStringLiteral( "03_phong_radio_button.png" ),
+        QStringLiteral( "Phongラジオボタンを押下したオブジェクト" ) );
+
+    selectShadingRadioButton( client, client.blinn_phong_radio_button, QStringLiteral( "ShadingControl.ui: blinnPhongRadioButtonを選択しました。" ) );
+    captureShadingState(
+        QStringLiteral( "04_blinn_phong_radio_button.png" ),
+        QStringLiteral( "BlinnPhongラジオボタンを押下したオブジェクト" ) );
+
+    selectShadingRadioButton( client, client.lambert_radio_button, QStringLiteral( "ShadingControl.ui: lambertRadioButtonを選択しました。" ) );
+    captureShadingState(
+        QStringLiteral( "05_before_ambient_change.png" ),
+        QStringLiteral( "Ambientを変更する前のオブジェクト" ) );
 
     setSpinBoxValue( client.ambient_double_spin_box, 0.0 );
     markStepCompleted( QStringLiteral( "AmbientDoubleSpinBoxに0を入力しました。" ) );
-    captureShadingState( QStringLiteral( "05_ambient_0.png" ), QStringLiteral( "AmbientDoubleSpinBox 0" ) );
+    captureShadingState(
+        QStringLiteral( "06_ambient_0.png" ),
+        QStringLiteral( "Ambientを0に変更した時のオブジェクト" ) );
 
     setSpinBoxValue( client.ambient_double_spin_box, 1.0 );
     markStepCompleted( QStringLiteral( "AmbientDoubleSpinBoxに1を入力しました。" ) );
-    captureShadingState( QStringLiteral( "06_ambient_1.png" ), QStringLiteral( "AmbientDoubleSpinBox 1" ) );
+    captureShadingState(
+        QStringLiteral( "07_ambient_1.png" ),
+        QStringLiteral( "Ambientを1に変更した時のオブジェクト" ) );
 
     setSpinBoxValue( client.ambient_double_spin_box, 0.4 );
     markStepCompleted( QStringLiteral( "AmbientDoubleSpinBoxに0.4を入力しました。" ) );
-    captureShadingState( QStringLiteral( "07_ambient_0_4.png" ), QStringLiteral( "AmbientDoubleSpinBox 0.4" ) );
+    captureShadingState(
+        QStringLiteral( "08_before_diffuse_change.png" ),
+        QStringLiteral( "Diffuseを変更する前のオブジェクト" ) );
 
     setSpinBoxValue( client.diffuse_double_spin_box, 0.0 );
     markStepCompleted( QStringLiteral( "DiffuseDoubleSpinBoxに0を入力しました。" ) );
-    captureShadingState( QStringLiteral( "08_diffuse_0.png" ), QStringLiteral( "DiffuseDoubleSpinBox 0" ) );
+    captureShadingState(
+        QStringLiteral( "09_diffuse_0.png" ),
+        QStringLiteral( "Diffuseを0に変更した時のオブジェクト" ) );
 
     setSpinBoxValue( client.diffuse_double_spin_box, 1.0 );
     markStepCompleted( QStringLiteral( "DiffuseDoubleSpinBoxに1を入力しました。" ) );
-    captureShadingState( QStringLiteral( "09_diffuse_1.png" ), QStringLiteral( "DiffuseDoubleSpinBox 1" ) );
+    captureShadingState(
+        QStringLiteral( "10_diffuse_1.png" ),
+        QStringLiteral( "Diffuseを1に変更した時のオブジェクト" ) );
 
     setSpinBoxValue( client.diffuse_double_spin_box, 0.4 );
     markStepCompleted( QStringLiteral( "DiffuseDoubleSpinBoxに0.4を入力しました。" ) );
-    captureShadingState( QStringLiteral( "10_diffuse_0_4.png" ), QStringLiteral( "DiffuseDoubleSpinBox 0.4" ) );
 
     selectShadingRadioButton( client, client.phong_radio_button, QStringLiteral( "ShadingControl.ui: phongRadioButtonを選択しました。" ) );
-    captureShadingState( QStringLiteral( "11_phong_again.png" ), QStringLiteral( "phongRadioButton再選択後" ) );
+    captureShadingState(
+        QStringLiteral( "11_before_specular_change.png" ),
+        QStringLiteral( "Specularを変更する前のオブジェクト" ) );
 
     setSpinBoxValue( client.specular_double_spin_box, 0.0 );
     markStepCompleted( QStringLiteral( "SpecularDoubleSpinBoxに0を入力しました。" ) );
-    captureShadingState( QStringLiteral( "12_specular_0.png" ), QStringLiteral( "SpecularDoubleSpinBox 0" ) );
+    captureShadingState(
+        QStringLiteral( "12_specular_0.png" ),
+        QStringLiteral( "Specularを0に設定した時のオブジェクト" ) );
 
     setSpinBoxValue( client.specular_double_spin_box, 1.0 );
     markStepCompleted( QStringLiteral( "SpecularDoubleSpinBoxに1を入力しました。" ) );
-    captureShadingState( QStringLiteral( "13_specular_1.png" ), QStringLiteral( "SpecularDoubleSpinBox 1" ) );
+    captureShadingState(
+        QStringLiteral( "13_specular_1.png" ),
+        QStringLiteral( "Specularを1に設定した時のオブジェクト" ) );
 
     setSpinBoxValue( client.specular_double_spin_box, 0.6 );
     markStepCompleted( QStringLiteral( "SpecularDoubleSpinBoxに0.6を入力しました。" ) );
-    captureShadingState( QStringLiteral( "14_specular_0_6.png" ), QStringLiteral( "SpecularDoubleSpinBox 0.6" ) );
+    captureShadingState(
+        QStringLiteral( "14_before_shininess_change.png" ),
+        QStringLiteral( "Shininessを変更する前のオブジェクト" ) );
 
     setSpinBoxValue( client.shininess_double_spin_box, 0.0 );
     markStepCompleted( QStringLiteral( "ShininessDoubleSpinBoxに0を入力しました。" ) );
-    captureShadingState( QStringLiteral( "15_shininess_0.png" ), QStringLiteral( "ShininessDoubleSpinBox 0" ) );
+    captureShadingState(
+        QStringLiteral( "15_shininess_0.png" ),
+        QStringLiteral( "Shininessを0に設定した時のオブジェクト" ) );
 
     setSpinBoxValue( client.shininess_double_spin_box, 100.0 );
     markStepCompleted( QStringLiteral( "ShininessDoubleSpinBoxに100を入力しました。" ) );
-    captureShadingState( QStringLiteral( "16_shininess_100.png" ), QStringLiteral( "ShininessDoubleSpinBox 100" ) );
-
-    setSpinBoxValue( client.shininess_double_spin_box, 30.0 );
-    markStepCompleted( QStringLiteral( "ShininessDoubleSpinBoxに30を入力しました。" ) );
-    captureShadingState( QStringLiteral( "17_shininess_30.png" ), QStringLiteral( "ShininessDoubleSpinBox 30" ) );
+    captureShadingState(
+        QStringLiteral( "16_shininess_100.png" ),
+        QStringLiteral( "Shininessを100に設定した時のオブジェクト" ) );
 
     m_test_succeeded = true;
 }

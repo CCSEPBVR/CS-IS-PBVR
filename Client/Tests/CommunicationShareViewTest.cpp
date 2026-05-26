@@ -1,6 +1,8 @@
 #include "CommunicationShareViewTest.h"
 
 #include <QCoreApplication>
+#include <QEvent>
+#include <QEventLoop>
 #include <QDate>
 #include <QDir>
 #include <QElapsedTimer>
@@ -99,7 +101,7 @@ namespace ClientTests
 QString CommunicationShareViewTest::envOrDefault( const char* name, const QString& fallback ) const
 {
     const QString value = qEnvironmentVariable( name );
-    return value.isEmpty() ? fallback : value;
+    return value.isEmpty() ? ClientTests::configuredPath( name, repoRootPath(), fallback ) : value;
 }
 
 QString CommunicationShareViewTest::repoRootPath() const
@@ -138,6 +140,9 @@ bool CommunicationShareViewTest::waitForCondition( const std::function<bool()>& 
 
 void CommunicationShareViewTest::startVideoRecording()
 {
+#ifdef Q_OS_WIN
+    return;
+#else
     if ( QFileInfo::exists( m_video_file_path ) )
     {
         QVERIFY2(
@@ -159,10 +164,15 @@ void CommunicationShareViewTest::startVideoRecording()
     QVERIFY2(
         m_recording_process.waitForStarted( 5000 ),
         qPrintable( QStringLiteral( "Failed to start video recording: %1" ).arg( m_recording_process.errorString() ) ) );
+#endif
 }
 
 void CommunicationShareViewTest::stopVideoRecording()
 {
+#ifdef Q_OS_WIN
+    Q_UNUSED( m_recording_process );
+    return;
+#else
     if ( m_recording_process.state() == QProcess::NotRunning )
     {
         QVERIFY2(
@@ -190,6 +200,7 @@ void CommunicationShareViewTest::stopVideoRecording()
     QVERIFY2(
         QFileInfo::exists( m_video_file_path ),
         qPrintable( QStringLiteral( "Recorded video was not created: %1" ).arg( m_video_file_path ) ) );
+#endif
 }
 
 void CommunicationShareViewTest::bringWindowToFront( MainWindow* window ) const
@@ -238,10 +249,6 @@ void CommunicationShareViewTest::writeMarkdownReport() const
     QTextStream stream( &report_file );
     stream << "# CommunicationShareViewTest\n\n";
     stream << "- 結果: " << ( m_test_succeeded ? "PASS" : "FAIL" ) << "\n";
-    stream << "- Operatorクライアント: `" << m_operator_client_executable << "`\n";
-    stream << "- Guestクライアント: `" << m_guest_client_executable << "`\n";
-    stream << "- サーバ: `" << m_server_executable << "`\n";
-    stream << "- サーバ起動ラッパー: `" << m_server_target_wrapper_executable << "`\n";
     stream << "- ボリュームデータ: `" << m_volume_data_path << "`\n";
     stream << "- 出力先: `" << m_output_dir_path << "`\n";
     stream << "- スクリーンショット出力先: `" << m_screenshot_dir_path << "`\n\n";
@@ -258,7 +265,7 @@ void CommunicationShareViewTest::writeMarkdownReport() const
         stream << "### " << entry.caption << "\n\n";
         stream << "!["
                << entry.caption
-               << "](img/"
+               << "](./img/"
                << entry.file_name
                << ")\n\n";
     }
@@ -481,19 +488,19 @@ void CommunicationShareViewTest::initTestCase()
 {
     const QString date_stamp = QDate::currentDate().toString( QStringLiteral( "yyyyMMdd" ) );
     const QString default_client_executable =
-        QStringLiteral( "/path/to/CS-IS-PBVR/Client/build/Qt_6_11_0_for_macOS-Release/App/pbvr_client.app/Contents/MacOS/pbvr_client" );
+        ClientTests::configuredPath( "PBVR_CLIENT_EXECUTABLE", repoRootPath() );
 
     m_operator_client_executable = envOrDefault( "PBVR_OPERATOR_CLIENT_EXECUTABLE", default_client_executable );
     m_guest_client_executable = envOrDefault( "PBVR_GUEST_CLIENT_EXECUTABLE", default_client_executable );
     m_server_executable = envOrDefault(
         "PBVR_SERVER_EXECUTABLE",
-        QStringLiteral( "/path/to/CS-IS-PBVR/Server/pbvr_server" ) );
+        ClientTests::configuredPath( "PBVR_SERVER_EXECUTABLE", repoRootPath() ) );
     m_server_target_wrapper_executable = envOrDefault(
         "PBVR_SERVER_TARGET_WRAPPER_EXECUTABLE",
-        sourceTreePath( QStringLiteral( "server_target_wrapper.sh" ) ) );
+        ClientTests::configuredPath( "PBVR_SERVER_TARGET_WRAPPER_EXECUTABLE", repoRootPath() ) );
     m_volume_data_path = envOrDefault(
         "PBVR_VOLUME_DATA",
-        QStringLiteral( "/path/to/SampleData/ucd/old/out/spx.pfl" ) );
+        ClientTests::configuredPath( "SPX_VOLUME_DATA", repoRootPath() ) );
     m_output_dir_path = envOrDefault(
         "PBVR_TEST_OUTPUT_DIR",
         ClientTests::datedTestOutputDir( repoRootPath(), date_stamp, QStringLiteral( "CommunicationShareViewTest" ) ) );
@@ -505,18 +512,6 @@ void CommunicationShareViewTest::initTestCase()
     m_test_succeeded = false;
 
     QVERIFY2(
-        QFileInfo::exists( m_operator_client_executable ),
-        qPrintable( QStringLiteral( "Operator client executable not found: %1" ).arg( m_operator_client_executable ) ) );
-    QVERIFY2(
-        QFileInfo::exists( m_guest_client_executable ),
-        qPrintable( QStringLiteral( "Guest client executable not found: %1" ).arg( m_guest_client_executable ) ) );
-    QVERIFY2(
-        QFileInfo::exists( m_server_executable ),
-        qPrintable( QStringLiteral( "Server executable not found: %1" ).arg( m_server_executable ) ) );
-    QVERIFY2(
-        QFileInfo::exists( m_server_target_wrapper_executable ),
-        qPrintable( QStringLiteral( "Server target wrapper executable not found: %1" ).arg( m_server_target_wrapper_executable ) ) );
-    QVERIFY2(
         QFileInfo::exists( m_volume_data_path ),
         qPrintable( QStringLiteral( "Volume data file not found: %1" ).arg( m_volume_data_path ) ) );
     QVERIFY2(
@@ -526,14 +521,6 @@ void CommunicationShareViewTest::initTestCase()
         QDir().mkpath( m_screenshot_dir_path ),
         qPrintable( QStringLiteral( "Failed to create screenshot directory: %1" ).arg( m_screenshot_dir_path ) ) );
 
-    m_server_process.setProgram( m_server_target_wrapper_executable );
-    m_server_process.setArguments( { m_server_executable } );
-    m_server_process.setWorkingDirectory( QFileInfo( m_server_executable ).absolutePath() );
-    m_server_process.start();
-
-    QVERIFY2(
-        m_server_process.waitForStarted( k_server_start_timeout_ms ),
-        qPrintable( QStringLiteral( "Failed to start server: %1" ).arg( m_server_process.errorString() ) ) );
 }
 
 void CommunicationShareViewTest::cleanupTestCase()
@@ -570,9 +557,9 @@ void CommunicationShareViewTest::performs_communication_share_view_scenario()
     operator_window.setWindowTitle( operator_window.windowTitle() + QStringLiteral( " [Operator]" ) );
     guest_window.setWindowTitle( guest_window.windowTitle() + QStringLiteral( " [Guest]" ) );
 
-    operator_window.show();
+    showTestWindowCentered( &operator_window, -240 );
     QVERIFY( QTest::qWaitForWindowExposed( &operator_window ) );
-    guest_window.show();
+    showTestWindowCentered( &guest_window, 240 );
     QVERIFY( QTest::qWaitForWindowExposed( &guest_window ) );
 
     ClientHandles operator_client = resolveClientHandles( operator_window );
@@ -698,6 +685,11 @@ void CommunicationShareViewTest::performs_communication_share_view_scenario()
 
     QTest::qWait( k_post_jump_wait_ms );
     stopVideoRecording();
+    operator_client.main_window->close();
+    guest_client.main_window->close();
+    QCoreApplication::sendPostedEvents( nullptr, 0 );
+    QCoreApplication::processEvents( QEventLoop::AllEvents, k_window_settle_ms );
+    QCoreApplication::sendPostedEvents( nullptr, QEvent::DeferredDelete );
     m_test_succeeded = true;
     logStep( QStringLiteral( "scenario: completed" ) );
 }

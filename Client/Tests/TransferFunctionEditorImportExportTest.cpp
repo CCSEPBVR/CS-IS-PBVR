@@ -69,13 +69,13 @@ QString findRepoRootFrom( const QString& start_path )
 }
 }
 
-QString TransferFunctionEditor::ImportExportTest::envOrDefault( const char* name, const QString& fallback ) const
+QString TransferFunctionEditorTest::ImportExportTest::envOrDefault( const char* name, const QString& fallback ) const
 {
     const QString value = qEnvironmentVariable( name );
-    return value.isEmpty() ? fallback : value;
+    return value.isEmpty() ? ClientTests::configuredPath( name, repoRootPath(), fallback ) : value;
 }
 
-QString TransferFunctionEditor::ImportExportTest::repoRootPath() const
+QString TransferFunctionEditorTest::ImportExportTest::repoRootPath() const
 {
     const QString app_root = findRepoRootFrom( QCoreApplication::applicationDirPath() );
     if ( !app_root.isEmpty() ) { return app_root; }
@@ -90,12 +90,12 @@ QString TransferFunctionEditor::ImportExportTest::repoRootPath() const
     return QDir::currentPath();
 }
 
-QString TransferFunctionEditor::ImportExportTest::sourceTreePath( const QString& relative_path_from_repo_root ) const
+QString TransferFunctionEditorTest::ImportExportTest::sourceTreePath( const QString& relative_path_from_repo_root ) const
 {
     return QDir::cleanPath( QDir( repoRootPath() ).absoluteFilePath( relative_path_from_repo_root ) );
 }
 
-bool TransferFunctionEditor::ImportExportTest::waitForCondition( const std::function<bool()>& condition, int timeout_ms, int interval_ms ) const
+bool TransferFunctionEditorTest::ImportExportTest::waitForCondition( const std::function<bool()>& condition, int timeout_ms, int interval_ms ) const
 {
     QElapsedTimer timer;
     timer.start();
@@ -109,7 +109,7 @@ bool TransferFunctionEditor::ImportExportTest::waitForCondition( const std::func
     return condition();
 }
 
-void TransferFunctionEditor::ImportExportTest::bringWindowToFront( MainWindow* window ) const
+void TransferFunctionEditorTest::ImportExportTest::bringWindowToFront( MainWindow* window ) const
 {
     QVERIFY2( window != nullptr, "MainWindow is null" );
     window->show();
@@ -118,7 +118,7 @@ void TransferFunctionEditor::ImportExportTest::bringWindowToFront( MainWindow* w
     QTest::qWait( k_window_settle_ms );
 }
 
-void TransferFunctionEditor::ImportExportTest::bringTransferFunctionEditorToFront( TransferFunctionEditor* editor ) const
+void TransferFunctionEditorTest::ImportExportTest::bringTransferFunctionEditorToFront( TransferFunctionEditor* editor ) const
 {
     QVERIFY2( editor != nullptr, "TransferFunctionEditor is null" );
     editor->show();
@@ -128,7 +128,14 @@ void TransferFunctionEditor::ImportExportTest::bringTransferFunctionEditorToFron
     QTest::qWait( k_window_settle_ms );
 }
 
-void TransferFunctionEditor::ImportExportTest::setLineEditText( QLineEdit* line_edit, const QString& text ) const
+void TransferFunctionEditorTest::ImportExportTest::closeTransferFunctionEditor( TransferFunctionEditor* editor ) const
+{
+    QVERIFY2( editor != nullptr, "TransferFunctionEditor is null" );
+    editor->close();
+    QTest::qWait( k_window_settle_ms );
+}
+
+void TransferFunctionEditorTest::ImportExportTest::setLineEditText( QLineEdit* line_edit, const QString& text ) const
 {
     QVERIFY2( line_edit != nullptr, "Target line edit was not found" );
     line_edit->setFocus();
@@ -137,7 +144,7 @@ void TransferFunctionEditor::ImportExportTest::setLineEditText( QLineEdit* line_
     QCOMPARE( line_edit->text(), QDir::toNativeSeparators( text ) );
 }
 
-void TransferFunctionEditor::ImportExportTest::saveScreenshot( const QString& file_name, const QString& caption )
+void TransferFunctionEditorTest::ImportExportTest::saveScreenshot( const QString& file_name, const QString& caption )
 {
     QTest::qWait( k_capture_settle_ms );
 
@@ -155,7 +162,7 @@ void TransferFunctionEditor::ImportExportTest::saveScreenshot( const QString& fi
     m_screenshots.push_back( { file_name, caption } );
 }
 
-void TransferFunctionEditor::ImportExportTest::writeMarkdownReport() const
+void TransferFunctionEditorTest::ImportExportTest::writeMarkdownReport() const
 {
     QFile report_file( m_report_path );
     QVERIFY2(
@@ -165,8 +172,6 @@ void TransferFunctionEditor::ImportExportTest::writeMarkdownReport() const
     QTextStream stream( &report_file );
     stream << "# TransferFunctionEditor::ImportExportTest\n\n";
     stream << "- 結果: " << ( m_test_succeeded ? "PASS" : "FAIL" ) << "\n";
-    stream << "- クライアントプログラム: `" << m_client_executable << "`\n";
-    stream << "- サーバプログラム: `" << m_server_executable << "`\n";
     stream << "- ボリュームデータ: `" << m_volume_data_path << "`\n";
     stream << "- import元: `" << m_import_tfe_path << "`\n";
     stream << "- export先: `" << m_export_tfe_path << "`\n";
@@ -185,19 +190,19 @@ void TransferFunctionEditor::ImportExportTest::writeMarkdownReport() const
         stream << "### " << entry.caption << "\n\n";
         stream << "!["
                << entry.caption
-               << "](img/"
+               << "](./img/"
                << entry.file_name
                << ")\n\n";
     }
 }
 
-void TransferFunctionEditor::ImportExportTest::markStepCompleted( const QString& description )
+void TransferFunctionEditorTest::ImportExportTest::markStepCompleted( const QString& description )
 {
     m_steps.push_back( { description, true } );
     logStep( description );
 }
 
-QFileDialog* TransferFunctionEditor::ImportExportTest::waitForFileDialog( int timeout_ms ) const
+QFileDialog* TransferFunctionEditorTest::ImportExportTest::waitForFileDialog( int timeout_ms ) const
 {
     QFileDialog* dialog = nullptr;
     const bool dialog_found = waitForCondition(
@@ -220,7 +225,7 @@ QFileDialog* TransferFunctionEditor::ImportExportTest::waitForFileDialog( int ti
     return dialog_found ? dialog : nullptr;
 }
 
-void TransferFunctionEditor::ImportExportTest::selectFileFromDialog( const QString& file_path, bool require_existing_file ) const
+void TransferFunctionEditorTest::ImportExportTest::selectFileFromDialog( const QString& file_path, bool require_existing_file ) const
 {
     QFileDialog* dialog = waitForFileDialog( k_dialog_timeout_ms );
     QVERIFY2( dialog != nullptr, "File dialog was not shown" );
@@ -265,8 +270,8 @@ void TransferFunctionEditor::ImportExportTest::selectFileFromDialog( const QStri
     QMetaObject::invokeMethod( dialog, "accept", Qt::QueuedConnection );
 }
 
-TransferFunctionEditor::ImportExportTest::ClientHandles
-TransferFunctionEditor::ImportExportTest::resolveClientHandles( MainWindow& window ) const
+TransferFunctionEditorTest::ImportExportTest::ClientHandles
+TransferFunctionEditorTest::ImportExportTest::resolveClientHandles( MainWindow& window ) const
 {
     ClientHandles handles;
     const auto require = []( bool condition, const char* message )
@@ -320,7 +325,7 @@ TransferFunctionEditor::ImportExportTest::resolveClientHandles( MainWindow& wind
     return handles;
 }
 
-void TransferFunctionEditor::ImportExportTest::connectClient( const ClientHandles& client ) const
+void TransferFunctionEditorTest::ImportExportTest::connectClient( const ClientHandles& client ) const
 {
     bringWindowToFront( client.main_window );
     QVERIFY2(
@@ -343,7 +348,7 @@ void TransferFunctionEditor::ImportExportTest::connectClient( const ClientHandle
         "Client did not enter the connected state" );
 }
 
-void TransferFunctionEditor::ImportExportTest::disconnectClient( const ClientHandles& client ) const
+void TransferFunctionEditorTest::ImportExportTest::disconnectClient( const ClientHandles& client ) const
 {
     bringWindowToFront( client.main_window );
     QVERIFY2(
@@ -364,7 +369,7 @@ void TransferFunctionEditor::ImportExportTest::disconnectClient( const ClientHan
         "Client did not enter the disconnected state" );
 }
 
-void TransferFunctionEditor::ImportExportTest::configureRemoteVisualization( const ClientHandles& client ) const
+void TransferFunctionEditorTest::ImportExportTest::configureRemoteVisualization( const ClientHandles& client ) const
 {
     bringWindowToFront( client.main_window );
     if ( !client.remote_viz_client_server_radio->isChecked() )
@@ -380,7 +385,7 @@ void TransferFunctionEditor::ImportExportTest::configureRemoteVisualization( con
     QTest::qWait( k_short_wait_ms );
 }
 
-void TransferFunctionEditor::ImportExportTest::waitForObjectAndApply( const ClientHandles& client ) const
+void TransferFunctionEditorTest::ImportExportTest::waitForObjectAndApply( const ClientHandles& client ) const
 {
     QVERIFY2(
         waitForCondition(
@@ -398,7 +403,7 @@ void TransferFunctionEditor::ImportExportTest::waitForObjectAndApply( const Clie
     QTest::qWait( k_short_wait_ms );
 }
 
-void TransferFunctionEditor::ImportExportTest::clickJumpAndWaitForCompletion( const ClientHandles& client ) const
+void TransferFunctionEditorTest::ImportExportTest::clickJumpAndWaitForCompletion( const ClientHandles& client ) const
 {
     QVERIFY2(
         waitForCondition( [client]() { return client.jump_button->isEnabled(); }, k_jump_button_enable_timeout_ms, 200 ),
@@ -414,7 +419,7 @@ void TransferFunctionEditor::ImportExportTest::clickJumpAndWaitForCompletion( co
     QTest::qWait( k_after_jump_wait_ms );
 }
 
-void TransferFunctionEditor::ImportExportTest::importTransferFunction( const ClientHandles& client, const QString& file_path )
+void TransferFunctionEditorTest::ImportExportTest::importTransferFunction( const ClientHandles& client, const QString& file_path )
 {
     bringTransferFunctionEditorToFront( client.transfer_function_editor );
     QVERIFY2( client.tf_import_button->isEnabled(), "importPushButton is disabled" );
@@ -427,7 +432,7 @@ void TransferFunctionEditor::ImportExportTest::importTransferFunction( const Cli
     QTest::qWait( k_short_wait_ms );
 }
 
-void TransferFunctionEditor::ImportExportTest::exportTransferFunction( const ClientHandles& client, const QString& file_path )
+void TransferFunctionEditorTest::ImportExportTest::exportTransferFunction( const ClientHandles& client, const QString& file_path )
 {
     bringTransferFunctionEditorToFront( client.transfer_function_editor );
     QVERIFY2( client.tf_export_button->isEnabled(), "exportPushButton is disabled" );
@@ -448,7 +453,7 @@ void TransferFunctionEditor::ImportExportTest::exportTransferFunction( const Cli
         qPrintable( QStringLiteral( "Exported transfer function was not created: %1" ).arg( file_path ) ) );
 }
 
-void TransferFunctionEditor::ImportExportTest::selectThirdColorFunction( const ClientHandles& client ) const
+void TransferFunctionEditorTest::ImportExportTest::selectThirdColorFunction( const ClientHandles& client ) const
 {
     bringTransferFunctionEditorToFront( client.transfer_function_editor );
     QVERIFY2( client.tf_color_function_combo_box != nullptr, "colorFunctionComboBox was not found" );
@@ -462,7 +467,7 @@ void TransferFunctionEditor::ImportExportTest::selectThirdColorFunction( const C
     QTest::qWait( k_short_wait_ms );
 }
 
-bool TransferFunctionEditor::ImportExportTest::findPresetCell( QTableWidget* table, const QString& preset_name, int* row, int* column ) const
+bool TransferFunctionEditorTest::ImportExportTest::findPresetCell( QTableWidget* table, const QString& preset_name, int* row, int* column ) const
 {
     if ( table == nullptr || row == nullptr || column == nullptr ) { return false; }
 
@@ -489,7 +494,7 @@ bool TransferFunctionEditor::ImportExportTest::findPresetCell( QTableWidget* tab
     return false;
 }
 
-void TransferFunctionEditor::ImportExportTest::applyCoolToWarmColorMap( const ClientHandles& client )
+void TransferFunctionEditorTest::ImportExportTest::applyCoolToWarmColorMap( const ClientHandles& client )
 {
     bringTransferFunctionEditorToFront( client.transfer_function_editor );
 
@@ -567,30 +572,30 @@ void TransferFunctionEditor::ImportExportTest::applyCoolToWarmColorMap( const Cl
     QTest::qWait( k_short_wait_ms );
 }
 
-void TransferFunctionEditor::ImportExportTest::initTestCase()
+void TransferFunctionEditorTest::ImportExportTest::initTestCase()
 {
     const QString date_stamp = QDate::currentDate().toString( QStringLiteral( "yyyyMMdd" ) );
     m_client_executable = envOrDefault(
         "PBVR_CLIENT_EXECUTABLE",
-        QStringLiteral( "/path/to/CS-IS-PBVR/Client/build/Qt_6_11_0_for_macOS-Release/App/pbvr_client.app/Contents/MacOS/pbvr_client" ) );
+        ClientTests::configuredPath( "PBVR_CLIENT_EXECUTABLE", repoRootPath() ) );
     m_server_executable = envOrDefault(
         "PBVR_SERVER_EXECUTABLE",
-        QStringLiteral( "/path/to/CS-IS-PBVR/Server/pbvr_server" ) );
+        ClientTests::configuredPath( "PBVR_SERVER_EXECUTABLE", repoRootPath() ) );
     m_server_target_wrapper_executable = envOrDefault(
         "PBVR_SERVER_TARGET_WRAPPER_EXECUTABLE",
-        sourceTreePath( QStringLiteral( "server_target_wrapper.sh" ) ) );
+        ClientTests::configuredPath( "PBVR_SERVER_TARGET_WRAPPER_EXECUTABLE", repoRootPath() ) );
     m_volume_data_path = envOrDefault(
         "PBVR_VOLUME_DATA",
-        QStringLiteral( "/path/to/SampleData/fld/out/gt5d.pfi" ) );
+        ClientTests::configuredPath( "GT5D_VOLUME_DATA", repoRootPath() ) );
     m_import_tfe_path = envOrDefault(
-        "PBVR_IMPORT_TFE",
-        QStringLiteral( "/path/to/SampleData/fld/demo.tfe" ) );
+        "GT5D_TRANSFER_FUNCTION",
+        ClientTests::configuredPath( "GT5D_TRANSFER_FUNCTION", repoRootPath() ) );
     m_export_tfe_path = envOrDefault(
-        "PBVR_EXPORT_TFE",
-        QStringLiteral( "/path/to/SampleData/fld/out/demo_test.tfe" ) );
+        "GT5D_TRANSFER_FUNCTION_EXPORT_TEST",
+        ClientTests::configuredPath( "GT5D_TRANSFER_FUNCTION_EXPORT_TEST", repoRootPath() ) );
     m_output_dir_path = envOrDefault(
         "PBVR_TEST_OUTPUT_DIR",
-        ClientTests::datedTestOutputDir( repoRootPath(), date_stamp, QStringLiteral( "TransferFunctionEditor/ImportExportTest" ) ) );
+        ClientTests::datedTestOutputDir( repoRootPath(), date_stamp, QStringLiteral( "TransferFunctionEditorTest/ImportExportTest" ) ) );
     m_screenshot_dir_path = envOrDefault(
         "PBVR_SCREENSHOT_DIR",
         QDir( m_output_dir_path ).absoluteFilePath( QStringLiteral( "img" ) ) );
@@ -600,23 +605,12 @@ void TransferFunctionEditor::ImportExportTest::initTestCase()
     QVERIFY2( QDir().mkpath( m_output_dir_path ), qPrintable( QStringLiteral( "Failed to create output directory: %1" ).arg( m_output_dir_path ) ) );
     QVERIFY2( QDir().mkpath( m_screenshot_dir_path ), qPrintable( QStringLiteral( "Failed to create screenshot directory: %1" ).arg( m_screenshot_dir_path ) ) );
 
-    QVERIFY2( QFileInfo::exists( m_client_executable ), qPrintable( QStringLiteral( "Client executable not found: %1" ).arg( m_client_executable ) ) );
-    QVERIFY2( QFileInfo::exists( m_server_executable ), qPrintable( QStringLiteral( "Server executable not found: %1" ).arg( m_server_executable ) ) );
-    QVERIFY2( QFileInfo::exists( m_server_target_wrapper_executable ), qPrintable( QStringLiteral( "Server target wrapper executable not found: %1" ).arg( m_server_target_wrapper_executable ) ) );
     QVERIFY2( QFileInfo::exists( m_volume_data_path ), qPrintable( QStringLiteral( "Volume data file not found: %1" ).arg( m_volume_data_path ) ) );
     QVERIFY2( QFileInfo::exists( m_import_tfe_path ), qPrintable( QStringLiteral( "Import transfer function file not found: %1" ).arg( m_import_tfe_path ) ) );
 
-    m_server_process.setProgram( m_server_target_wrapper_executable );
-    m_server_process.setArguments( { m_server_executable } );
-    m_server_process.setWorkingDirectory( QFileInfo( m_server_executable ).absolutePath() );
-    m_server_process.start();
-
-    QVERIFY2(
-        m_server_process.waitForStarted( k_server_start_timeout_ms ),
-        qPrintable( QStringLiteral( "Failed to start server: %1" ).arg( m_server_process.errorString() ) ) );
 }
 
-void TransferFunctionEditor::ImportExportTest::cleanupTestCase()
+void TransferFunctionEditorTest::ImportExportTest::cleanupTestCase()
 {
     if ( m_server_process.state() != QProcess::NotRunning )
     {
@@ -627,7 +621,7 @@ void TransferFunctionEditor::ImportExportTest::cleanupTestCase()
     writeMarkdownReport();
 }
 
-void TransferFunctionEditor::ImportExportTest::performs_import_export_scenario()
+void TransferFunctionEditorTest::ImportExportTest::performs_import_export_scenario()
 {
     if ( g_test_app == nullptr )
     {
@@ -636,7 +630,7 @@ void TransferFunctionEditor::ImportExportTest::performs_import_export_scenario()
     QVERIFY2( g_test_app != nullptr, "Test application is not initialized" );
 
     MainWindow main_window( *g_test_app );
-    main_window.show();
+    showTestWindowCentered( &main_window );
     QVERIFY( QTest::qWaitForWindowExposed( &main_window ) );
 
     ClientHandles client = resolveClientHandles( main_window );
@@ -666,9 +660,11 @@ void TransferFunctionEditor::ImportExportTest::performs_import_export_scenario()
 
     clickJumpAndWaitForCompletion( client );
     markStepCompleted( QStringLiteral( "PlayBackControlToolBar.cpp: import後にm_jump_push_buttonを押し、有効化を待ってから3秒待機しました。" ) );
+    closeTransferFunctionEditor( client.transfer_function_editor );
     bringWindowToFront( client.main_window );
     saveScreenshot( QStringLiteral( "03_object_after_import.png" ), QStringLiteral( "伝達関数をimportした後のオブジェクトの状態" ) );
     markStepCompleted( QStringLiteral( "スクリーンショットを撮影: 伝達関数をimportした後のオブジェクトの状態" ) );
+    bringTransferFunctionEditorToFront( client.transfer_function_editor );
     QTest::qWait( k_short_wait_ms );
 
     bringTransferFunctionEditorToFront( client.transfer_function_editor );
@@ -716,9 +712,11 @@ void TransferFunctionEditor::ImportExportTest::performs_import_export_scenario()
 
     clickJumpAndWaitForCompletion( client );
     markStepCompleted( QStringLiteral( "PlayBackControlToolBar.cpp: exportした伝達関数のimport後にm_jump_push_buttonを押し、有効化を待ってから3秒待機しました。" ) );
+    closeTransferFunctionEditor( client.transfer_function_editor );
     bringWindowToFront( client.main_window );
     saveScreenshot( QStringLiteral( "08_object_after_reimport_exported.png" ), QStringLiteral( "exportした伝達関数をimportした後のオブジェクトの状態" ) );
     markStepCompleted( QStringLiteral( "スクリーンショットを撮影: exportした伝達関数をimportした後のオブジェクトの状態" ) );
+    bringTransferFunctionEditorToFront( client.transfer_function_editor );
     QTest::qWait( k_short_wait_ms );
 
     m_test_succeeded = true;
@@ -730,7 +728,7 @@ int main( int argc, char** argv )
     QCoreApplication::setAttribute( Qt::AA_DontUseNativeDialogs );
     kvs::qt::Application app( argc, argv );
     g_test_app = &app;
-    TransferFunctionEditor::ImportExportTest test;
+    TransferFunctionEditorTest::ImportExportTest test;
     return QTest::qExec( &test, argc, argv );
 }
 #endif

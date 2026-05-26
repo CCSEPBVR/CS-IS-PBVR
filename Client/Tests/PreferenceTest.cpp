@@ -71,7 +71,7 @@ namespace ClientTests
 QString PreferenceTest::envOrDefault( const char* name, const QString& fallback ) const
 {
     const QString value = qEnvironmentVariable( name );
-    return value.isEmpty() ? fallback : value;
+    return value.isEmpty() ? ClientTests::configuredPath( name, repoRootPath(), fallback ) : value;
 }
 
 QString PreferenceTest::repoRootPath() const
@@ -271,7 +271,6 @@ void PreferenceTest::writeMarkdownReport() const
     QTextStream stream( &report_file );
     stream << "# PreferenceTest\n\n";
     stream << "- 結果: " << ( m_test_succeeded ? "PASS" : "FAIL" ) << "\n";
-    stream << "- クライアントプログラム: `" << m_client_executable << "`\n";
     stream << "- 出力先: `" << m_output_dir_path << "`\n";
     stream << "- スクリーンショット出力先: `" << m_screenshot_dir_path << "`\n\n";
 
@@ -297,7 +296,7 @@ void PreferenceTest::writeMarkdownReport() const
     for ( const ScreenshotEntry& entry : m_screenshots )
     {
         stream << "### " << entry.caption << "\n\n";
-        stream << "![" << entry.caption << "](img/" << entry.file_name << ")\n\n";
+        stream << "![" << entry.caption << "](./img/" << entry.file_name << ")\n\n";
     }
 
     stream << "## 未自動化・保留事項\n\n";
@@ -321,7 +320,7 @@ void PreferenceTest::initTestCase()
     const QString date_stamp = QDate::currentDate().toString( QStringLiteral( "yyyyMMdd" ) );
     m_client_executable = envOrDefault(
         "PBVR_CLIENT_EXECUTABLE",
-        QStringLiteral( "/Users/user/Work/CS-IS-PBVR/Client/build/Qt_6_11_0_for_macOS-Release/App/pbvr_client.app/Contents/MacOS/pbvr_client" ) );
+        ClientTests::configuredPath( "PBVR_CLIENT_EXECUTABLE", repoRootPath() ) );
     m_output_dir_path = envOrDefault(
         "PBVR_TEST_OUTPUT_DIR",
         ClientTests::datedTestOutputDir( repoRootPath(), date_stamp, QStringLiteral( "PreferenceTest" ) ) );
@@ -330,9 +329,6 @@ void PreferenceTest::initTestCase()
         QDir( m_output_dir_path ).absoluteFilePath( QStringLiteral( "img" ) ) );
     m_report_path = QDir( m_output_dir_path ).absoluteFilePath( QStringLiteral( "TestResult.md" ) );
 
-    QVERIFY2(
-        QFileInfo::exists( m_client_executable ),
-        qPrintable( QStringLiteral( "Client executable not found: %1" ).arg( m_client_executable ) ) );
     QVERIFY2(
         QDir().mkpath( m_output_dir_path ),
         qPrintable( QStringLiteral( "Failed to create output directory: %1" ).arg( m_output_dir_path ) ) );
@@ -355,7 +351,7 @@ void PreferenceTest::performs_preference_scenario()
     QVERIFY2( g_test_app != nullptr, "Test application is not initialized" );
 
     MainWindow main_window( *g_test_app );
-    main_window.show();
+    showTestWindowCentered( &main_window );
     QVERIFY( QTest::qWaitForWindowExposed( &main_window ) );
     main_window.raise();
     main_window.activateWindow();
@@ -549,7 +545,7 @@ void PreferenceTest::performs_preference_scenario()
 
     main_window.hide();
     QTest::qWait( k_window_settle_ms );
-    main_window.show();
+    showTestWindowCentered( &main_window );
     QVERIFY( QTest::qWaitForWindowExposed( &main_window ) );
     main_window.raise();
     main_window.activateWindow();

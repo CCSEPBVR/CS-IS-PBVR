@@ -1,28 +1,42 @@
 #include "PlayBackControlToolBarTest.h"
 
+#ifdef Q_OS_WIN
+#include <winsock2.h>
+#include <windows.h>
+#endif
+
 #include <QApplication>
 #include <QCoreApplication>
 #include <QDate>
+#include <QDebug>
 #include <QDir>
 #include <QElapsedTimer>
+#include <QEventLoop>
 #include <QFile>
 #include <QFileDialog>
 #include <QFileInfo>
+#include <QGuiApplication>
 #include <QLineEdit>
 #include <QListView>
 #include <QMainWindow>
+#include <QPoint>
 #include <QProcessEnvironment>
 #include <QPushButton>
 #include <QRadioButton>
+#include <QRect>
+#include <QScreen>
+#include <QString>
 #include <QSpinBox>
+#include <QStandardPaths>
 #include <QTimer>
 #include <QToolBar>
 #include <QTreeView>
+#include <QtGlobal>
+#include <QWindow>
 #include <QWidget>
 #include <QTest>
 
 #include <csignal>
-
 #include "../App/MainWindow.h"
 #include "../Widgets/Communication.h"
 #include "../Widgets/ObjectEditor.h"
@@ -42,6 +56,74 @@ constexpr int k_post_apply_settle_ms = 3000;
 constexpr int k_action_wait_ms = 2000;
 constexpr int k_recording_finish_timeout_ms = 15000;
 kvs::qt::Application* g_test_app = nullptr;
+
+#ifdef Q_OS_WIN
+QRect physicalWindowGeometryForRecording( QWidget* target_window, QScreen* fallback_screen )
+{
+    if ( target_window != nullptr && target_window->windowHandle() != nullptr )
+    {
+        const HWND hwnd = reinterpret_cast<HWND>( target_window->windowHandle()->winId() );
+        RECT window_rect;
+        if ( hwnd != nullptr && GetWindowRect( hwnd, &window_rect ) )
+        {
+            QRect physical_window_geometry(
+                window_rect.left,
+                window_rect.top,
+                window_rect.right - window_rect.left,
+                window_rect.bottom - window_rect.top );
+
+            const HMONITOR monitor = MonitorFromWindow( hwnd, MONITOR_DEFAULTTONEAREST );
+            if ( monitor != nullptr )
+            {
+                MONITORINFO monitor_info;
+                monitor_info.cbSize = sizeof( MONITORINFO );
+                if ( GetMonitorInfo( monitor, &monitor_info ) )
+                {
+                    const RECT monitor_rect = monitor_info.rcMonitor;
+                    const QRect physical_monitor_geometry(
+                        monitor_rect.left,
+                        monitor_rect.top,
+                        monitor_rect.right - monitor_rect.left,
+                        monitor_rect.bottom - monitor_rect.top );
+                    physical_window_geometry = physical_window_geometry.intersected( physical_monitor_geometry );
+                }
+            }
+
+            physical_window_geometry.setWidth( physical_window_geometry.width() & ~1 );
+            physical_window_geometry.setHeight( physical_window_geometry.height() & ~1 );
+            return physical_window_geometry;
+        }
+    }
+
+    QScreen* screen = fallback_screen;
+    if ( target_window != nullptr && target_window->windowHandle() != nullptr &&
+         target_window->windowHandle()->screen() != nullptr )
+    {
+        screen = target_window->windowHandle()->screen();
+    }
+
+    if ( screen == nullptr )
+    {
+        return QRect();
+    }
+
+    const QRect logical_geometry =
+        target_window != nullptr ? target_window->frameGeometry() : screen->geometry();
+    const qreal device_pixel_ratio = screen->devicePixelRatio();
+
+    // Qt reports window geometry in logical pixels while ffmpeg gdigrab uses
+    // physical desktop pixels. Convert explicitly for scaled displays such as
+    // Windows 150% scaling.
+    QRect physical_geometry(
+        qRound( logical_geometry.x() * device_pixel_ratio ),
+        qRound( logical_geometry.y() * device_pixel_ratio ),
+        qRound( logical_geometry.width() * device_pixel_ratio ),
+        qRound( logical_geometry.height() * device_pixel_ratio ) );
+    physical_geometry.setWidth( physical_geometry.width() & ~1 );
+    physical_geometry.setHeight( physical_geometry.height() & ~1 );
+    return physical_geometry;
+}
+#endif
 
 QString findRepoRootFrom( const QString& start_path )
 {
@@ -68,7 +150,7 @@ namespace ClientTests
 QString PlayBackControlToolBarTest::envOrDefault( const char* name, const QString& fallback ) const
 {
     const QString value = qEnvironmentVariable( name );
-    return value.isEmpty() ? fallback : value;
+    return value.isEmpty() ? ClientTests::configuredPath( name, repoRootPath(), fallback ) : value;
 }
 
 QString PlayBackControlToolBarTest::repoRootPath() const
@@ -212,7 +294,7 @@ QSpinBox* PlayBackControlToolBarTest::findNextTimeStepSpinBox( QToolBar* tool_ba
     return nullptr;
 }
 
-void PlayBackControlToolBarTest::startVideoRecording()
+void PlayBackControlToolBarTest::startVideoRecording( QWidget* target_window )
 {
     if ( QFileInfo::exists( m_video_file_path ) )
     {
@@ -221,6 +303,117 @@ void PlayBackControlToolBarTest::startVideoRecording()
             qPrintable( QStringLiteral( "Failed to remove existing video: %1" ).arg( m_video_file_path ) ) );
     }
 
+#ifdef Q_OS_WIN
+    if ( target_window != nullptr )
+    {
+        target_window->raise();
+        target_window->activateWindow();
+        QCoreApplication::processEvents( QEventLoop::AllEvents, 200 );
+    }
+
+    const QString ffmpeg_path = envOrDefault(
+        "PBVR_FFMPEG_EXECUTABLE",
+        QStandardPaths::findExecutable( QStringLiteral( "ffmpeg" ) ) );
+    if ( ffmpeg_path.isEmpty() )
+    {
+        qWarning().noquote()
+            << QStringLiteral( "Video recording skipped: ffmpeg was not found. "
+                               "Set PBVR_FFMPEG_EXECUTABLE or add ffmpeg to PATH." );
+        m_video_recording_available = false;
+        return;
+    }
+
+    QScreen* target_screen = nullptr;
+    if ( target_window != nullptr )
+    {
+        if ( target_window->windowHandle() != nullptr )
+        {
+            target_screen = target_window->windowHandle()->screen();
+        }
+        if ( target_screen == nullptr )
+        {
+            const QPoint window_center = target_window->frameGeometry().center();
+            target_screen = QGuiApplication::screenAt( window_center );
+        }
+        if ( target_screen == nullptr )
+        {
+            target_screen = target_window->screen();
+        }
+    }
+    if ( target_screen == nullptr )
+    {
+        target_screen = QGuiApplication::primaryScreen();
+    }
+
+    QVERIFY2( target_screen != nullptr, "Screen for video recording was not found" );
+
+    const QRect available_geometry = target_screen->availableGeometry();
+    if ( target_window != nullptr )
+    {
+        QRect frame = target_window->frameGeometry();
+        if ( !available_geometry.contains( frame ) )
+        {
+            QSize target_size = target_window->size();
+            const int frame_extra_width = frame.width() - target_window->width();
+            const int frame_extra_height = frame.height() - target_window->height();
+            target_size.setWidth(
+                qMin( target_size.width(), qMax( 320, available_geometry.width() - frame_extra_width - 40 ) ) );
+            target_size.setHeight(
+                qMin( target_size.height(), qMax( 240, available_geometry.height() - frame_extra_height - 40 ) ) );
+            target_window->resize( target_size );
+            QCoreApplication::processEvents( QEventLoop::AllEvents, 200 );
+
+            frame = target_window->frameGeometry();
+            QPoint top_left = available_geometry.center() - QPoint( frame.width() / 2, frame.height() / 2 );
+            const int max_x = qMax( available_geometry.left(), available_geometry.right() - frame.width() + 1 );
+            const int max_y = qMax( available_geometry.top(), available_geometry.bottom() - frame.height() + 1 );
+            top_left.setX( qBound( available_geometry.left(), top_left.x(), max_x ) );
+            top_left.setY( qBound( available_geometry.top(), top_left.y(), max_y ) );
+            target_window->move( top_left );
+            QCoreApplication::processEvents( QEventLoop::AllEvents, 200 );
+        }
+    }
+
+    const QRect recording_geometry =
+        physicalWindowGeometryForRecording( target_window, target_screen );
+    QVERIFY2( recording_geometry.isValid(), "Window geometry for video recording was not found" );
+    qInfo().noquote()
+        << QStringLiteral( "Recording window logical geometry: %1,%2 %3x%4 DPR:%5 physical geometry: %6,%7 %8x%9" )
+               .arg( target_window != nullptr ? target_window->frameGeometry().x() : target_screen->geometry().x() )
+               .arg( target_window != nullptr ? target_window->frameGeometry().y() : target_screen->geometry().y() )
+               .arg( target_window != nullptr ? target_window->frameGeometry().width() : target_screen->geometry().width() )
+               .arg( target_window != nullptr ? target_window->frameGeometry().height() : target_screen->geometry().height() )
+               .arg( target_screen->devicePixelRatio() )
+               .arg( recording_geometry.x() )
+               .arg( recording_geometry.y() )
+               .arg( recording_geometry.width() )
+               .arg( recording_geometry.height() );
+
+    m_recording_process.setProgram( ffmpeg_path );
+    m_recording_process.setArguments(
+        {
+            QStringLiteral( "-y" ),
+            QStringLiteral( "-f" ),
+            QStringLiteral( "gdigrab" ),
+            QStringLiteral( "-framerate" ),
+            QStringLiteral( "30" ),
+            QStringLiteral( "-offset_x" ),
+            QString::number( recording_geometry.x() ),
+            QStringLiteral( "-offset_y" ),
+            QString::number( recording_geometry.y() ),
+            QStringLiteral( "-video_size" ),
+            QStringLiteral( "%1x%2" ).arg( recording_geometry.width() ).arg( recording_geometry.height() ),
+            QStringLiteral( "-i" ),
+            QStringLiteral( "desktop" ),
+            QStringLiteral( "-vcodec" ),
+            QStringLiteral( "libx264" ),
+            QStringLiteral( "-pix_fmt" ),
+            QStringLiteral( "yuv420p" ),
+            QStringLiteral( "-movflags" ),
+            QStringLiteral( "+faststart" ),
+            m_video_file_path
+        } );
+#else
     m_recording_process.setProgram( QStringLiteral( "screencapture" ) );
     m_recording_process.setArguments(
         {
@@ -230,23 +423,43 @@ void PlayBackControlToolBarTest::startVideoRecording()
             QStringLiteral( "-x" ),
             m_video_file_path
         } );
+#endif
+
+    m_video_recording_available = true;
+    m_recording_process.setProcessChannelMode( QProcess::MergedChannels );
     m_recording_process.start();
 
-    QVERIFY2(
-        m_recording_process.waitForStarted( 5000 ),
-        qPrintable( QStringLiteral( "Failed to start video recording: %1" ).arg( m_recording_process.errorString() ) ) );
+    if ( !m_recording_process.waitForStarted( 5000 ) )
+    {
+        m_video_recording_available = false;
+        QVERIFY2(
+            false,
+            qPrintable( QStringLiteral( "Failed to start video recording: %1" ).arg( m_recording_process.errorString() ) ) );
+    }
 }
 
 void PlayBackControlToolBarTest::stopVideoRecording()
 {
+#ifdef Q_OS_WIN
+    if ( !m_video_recording_available )
+    {
+        return;
+    }
+#endif
+
     if ( m_recording_process.state() == QProcess::NotRunning )
     {
+        const QFileInfo video_file_info( m_video_file_path );
         QVERIFY2(
-            QFileInfo::exists( m_video_file_path ),
+            video_file_info.exists() && video_file_info.size() > 0,
             qPrintable( QStringLiteral( "Recorded video was not created: %1" ).arg( m_video_file_path ) ) );
         return;
     }
 
+#ifdef Q_OS_WIN
+    m_recording_process.write( "q" );
+    m_recording_process.closeWriteChannel();
+#else
     const qint64 pid = m_recording_process.processId();
     if ( pid > 0 )
     {
@@ -256,6 +469,7 @@ void PlayBackControlToolBarTest::stopVideoRecording()
     {
         m_recording_process.terminate();
     }
+#endif
 
     if ( !m_recording_process.waitForFinished( k_recording_finish_timeout_ms ) )
     {
@@ -268,8 +482,15 @@ void PlayBackControlToolBarTest::stopVideoRecording()
         m_recording_process.waitForFinished( 5000 );
     }
 
+    const QString recorder_output = QString::fromLocal8Bit( m_recording_process.readAll() ).trimmed();
+    if ( !recorder_output.isEmpty() )
+    {
+        qInfo().noquote() << recorder_output;
+    }
+
+    const QFileInfo video_file_info( m_video_file_path );
     QVERIFY2(
-        QFileInfo::exists( m_video_file_path ),
+        video_file_info.exists() && video_file_info.size() > 0,
         qPrintable( QStringLiteral( "Recorded video was not created: %1" ).arg( m_video_file_path ) ) );
 }
 
@@ -278,18 +499,15 @@ void PlayBackControlToolBarTest::initTestCase()
     const QString date_stamp = QDate::currentDate().toString( QStringLiteral( "yyyyMMdd" ) );
     m_client_executable = envOrDefault(
         "PBVR_CLIENT_EXECUTABLE",
-        QStringLiteral( "/path/to/CS-IS-PBVR/Client/build/Qt_6_11_0_for_macOS-Release/App/pbvr_client.app/Contents/MacOS/pbvr_client" ) );
+        ClientTests::configuredPath( "PBVR_CLIENT_EXECUTABLE", repoRootPath() ) );
     m_object_file_path = envOrDefault(
-        "PBVR_OBJECT_FILE",
-        QStringLiteral( "/path/to/SampleData/stl/clock/clock_00000.stl" ) );
+        "CLOCK_POLYGON_DATA",
+        ClientTests::configuredPath( "CLOCK_POLYGON_DATA", repoRootPath() ) );
     m_output_dir_path = envOrDefault(
         "PBVR_TEST_OUTPUT_DIR",
         ClientTests::datedTestOutputDir( repoRootPath(), date_stamp ) );
-    m_video_file_path = QDir( m_output_dir_path ).absoluteFilePath( QStringLiteral( "PlayBackControlToolBarTest.mov" ) );
+    m_video_file_path = QDir( m_output_dir_path ).absoluteFilePath( QStringLiteral( "PlayBackControlToolBarTest.mp4" ) );
 
-    QVERIFY2(
-        QFileInfo::exists( m_client_executable ),
-        qPrintable( QStringLiteral( "Client executable not found: %1" ).arg( m_client_executable ) ) );
     QVERIFY2(
         QFileInfo::exists( m_object_file_path ),
         qPrintable( QStringLiteral( "Object file not found: %1" ).arg( m_object_file_path ) ) );
@@ -315,7 +533,7 @@ void PlayBackControlToolBarTest::performs_playback_control_toolbar_scenario()
     QVERIFY2( g_test_app != nullptr, "Test application is not initialized" );
 
     MainWindow main_window( *g_test_app );
-    main_window.show();
+    showTestWindowCentered( &main_window );
     QVERIFY( QTest::qWaitForWindowExposed( &main_window ) );
 
     auto* object_editor = main_window.findChild<ObjectEditor*>();
@@ -398,7 +616,7 @@ void PlayBackControlToolBarTest::performs_playback_control_toolbar_scenario()
 
     clickButtonAndWait( jump_button, k_action_wait_ms );
 
-    startVideoRecording();
+    startVideoRecording( &main_window );
     QTest::qWait( k_action_wait_ms );
 
     clickButtonAndWait( last_button, k_action_wait_ms );
@@ -430,6 +648,21 @@ void PlayBackControlToolBarTest::performs_playback_control_toolbar_scenario()
     clickButtonAndWait( loop_button, k_action_wait_ms );
 
     stopVideoRecording();
+
+    QVERIFY2(
+        waitForCondition(
+            [jump_button]()
+            {
+                return jump_button->isEnabled();
+            },
+            k_jump_button_enable_timeout_ms,
+            100 ),
+        "m_jump_push_button did not become enabled before teardown" );
+
+    main_window.close();
+    QCoreApplication::sendPostedEvents( nullptr, 0 );
+    QCoreApplication::processEvents( QEventLoop::AllEvents, k_window_settle_ms );
+    QCoreApplication::sendPostedEvents( nullptr, QEvent::DeferredDelete );
 
     m_test_succeeded = true;
 }

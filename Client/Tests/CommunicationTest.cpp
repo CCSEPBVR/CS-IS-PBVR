@@ -4,6 +4,8 @@
 #include <QAction>
 #include <QApplication>
 #include <QCoreApplication>
+#include <QEvent>
+#include <QEventLoop>
 #include <QDate>
 #include <QDir>
 #include <QDoubleSpinBox>
@@ -13,6 +15,9 @@
 #include <QFileInfo>
 #include <QGuiApplication>
 #include <QItemSelectionModel>
+#include <QJsonArray>
+#include <QJsonDocument>
+#include <QJsonObject>
 #include <QLabel>
 #include <QLineEdit>
 #include <QListView>
@@ -49,12 +54,10 @@
 
 namespace
 {
-constexpr int k_server_start_timeout_ms = 10000;
 constexpr int k_connect_timeout_ms = 15000;
 constexpr int k_disconnect_timeout_ms = 15000;
 constexpr int k_object_load_timeout_ms = 120000;
 constexpr int k_jump_button_enable_timeout_ms = 180000;
-constexpr int k_server_output_timeout_ms = 180000;
 constexpr int k_dialog_timeout_ms = 15000;
 constexpr int k_share_list_timeout_ms = 15000;
 constexpr int k_share_view_apply_timeout_ms = 5000;
@@ -111,6 +114,98 @@ bool xformsNearlyEqual( const kvs::Xform& lhs, const kvs::Xform& rhs )
 {
     return matricesNearlyEqual( lhs.toMatrix(), rhs.toMatrix() );
 }
+
+QString normalizedPathForCompare( const QString& path )
+{
+    return path.isEmpty() ? QString() : QDir::cleanPath( path );
+}
+
+bool verifyInitializeMessage(
+    const QSignalSpy& spy,
+    int expected_sampling_type,
+    const QString& expected_volume_path,
+    const QString& expected_transfer_function_path,
+    QString* error_message )
+{
+    auto fail = [error_message]( const QString& message )
+    {
+        if ( error_message != nullptr )
+        {
+            *error_message = message;
+        }
+        return false;
+    };
+
+    if ( spy.isEmpty() )
+    {
+        return fail( QStringLiteral( "Communication did not send an initialize message" ) );
+    }
+
+    const QString message = spy.last().at( 0 ).toString();
+    QJsonParseError parse_error;
+    const QJsonDocument document = QJsonDocument::fromJson( message.toUtf8(), &parse_error );
+    if ( parse_error.error != QJsonParseError::NoError )
+    {
+        return fail( QStringLiteral( "Initialize message JSON parse error: %1" ).arg( parse_error.errorString() ) );
+    }
+    if ( !document.isObject() )
+    {
+        return fail( QStringLiteral( "Initialize message was not a JSON object: %1" ).arg( message ) );
+    }
+
+    const QJsonObject object = document.object();
+    const QString event = object.value( QString::fromUtf8( Protocol::Key::Event ) ).toString();
+    if ( event != QString::fromUtf8( Protocol::Events::Initialize ) )
+    {
+        return fail( QStringLiteral( "Unexpected Event: %1" ).arg( event ) );
+    }
+
+    const int viz_mode = object.value( QStringLiteral( "VizMode" ) ).toInt( -1 );
+    if ( viz_mode != static_cast<int>( Viz::Mode::RemoteClientAndServer ) )
+    {
+        return fail( QStringLiteral( "Unexpected VizMode: %1" ).arg( viz_mode ) );
+    }
+
+    const int sampling_type = object.value( QStringLiteral( "SamplingType" ) ).toInt( -1 );
+    if ( sampling_type != expected_sampling_type )
+    {
+        return fail(
+            QStringLiteral( "Unexpected SamplingType: expected %1, actual %2" )
+                .arg( expected_sampling_type )
+                .arg( sampling_type ) );
+    }
+
+    const QString volume_path = object.value( QString::fromUtf8( Protocol::Key::VolumeDataFilePath ) ).toString();
+    if ( normalizedPathForCompare( volume_path ) != normalizedPathForCompare( expected_volume_path ) )
+    {
+        return fail(
+            QStringLiteral( "Unexpected VolumeDataFilePath: expected '%1', actual '%2'" )
+                .arg( expected_volume_path, volume_path ) );
+    }
+
+    const QString transfer_function_path =
+        object.value( QString::fromUtf8( Protocol::Key::TransferFunctionFilePath ) ).toString();
+    if ( normalizedPathForCompare( transfer_function_path ) != normalizedPathForCompare( expected_transfer_function_path ) )
+    {
+        return fail(
+            QStringLiteral( "Unexpected TransferFunctionFilePath: expected '%1', actual '%2'" )
+                .arg( expected_transfer_function_path, transfer_function_path ) );
+    }
+
+    const int uuid_count = object.value( QString::fromUtf8( Protocol::Key::UUID ) ).toArray().size();
+    if ( uuid_count != 2 )
+    {
+        return fail( QStringLiteral( "Unexpected UUID array size: %1" ).arg( uuid_count ) );
+    }
+
+    const int format_count = object.value( QString::fromUtf8( Protocol::Key::Format ) ).toArray().size();
+    if ( format_count != 2 )
+    {
+        return fail( QStringLiteral( "Unexpected Format array size: %1" ).arg( format_count ) );
+    }
+
+    return true;
+}
 }
 
 namespace ClientTests
@@ -125,7 +220,7 @@ CommunicationTest::CommunicationTest( QObject* parent )
 QString CommunicationTest::envOrDefault( const char* name, const QString& fallback ) const
 {
     const QString value = qEnvironmentVariable( name );
-    return value.isEmpty() ? fallback : value;
+    return value.isEmpty() ? ClientTests::configuredPath( name, repoRootPath(), fallback ) : value;
 }
 
 QString CommunicationTest::repoRootPath() const
@@ -164,6 +259,9 @@ bool CommunicationTest::waitForCondition( const std::function<bool()>& condition
 
 void CommunicationTest::startVideoRecording()
 {
+#ifdef Q_OS_WIN
+    return;
+#else
     if ( QFileInfo::exists( m_video_file_path ) )
     {
         QVERIFY2(
@@ -185,10 +283,15 @@ void CommunicationTest::startVideoRecording()
     QVERIFY2(
         m_recording_process.waitForStarted( 5000 ),
         qPrintable( QStringLiteral( "Failed to start video recording: %1" ).arg( m_recording_process.errorString() ) ) );
+#endif
 }
 
 void CommunicationTest::stopVideoRecording()
 {
+#ifdef Q_OS_WIN
+    Q_UNUSED( m_recording_process );
+    return;
+#else
     if ( m_recording_process.state() == QProcess::NotRunning )
     {
         return;
@@ -214,20 +317,7 @@ void CommunicationTest::stopVideoRecording()
         m_recording_process.kill();
         m_recording_process.waitForFinished( 5000 );
     }
-}
-
-void CommunicationTest::appendServerOutput()
-{
-    while ( m_server_process.bytesAvailable() > 0 || m_server_process.waitForReadyRead( 10 ) )
-    {
-        m_server_output_buffer.append( QString::fromLocal8Bit( m_server_process.readAll() ) );
-    }
-}
-
-void CommunicationTest::clearServerOutput()
-{
-    appendServerOutput();
-    m_server_output_buffer.clear();
+#endif
 }
 
 void CommunicationTest::bringWindowToFront( MainWindow* window ) const
@@ -276,10 +366,6 @@ void CommunicationTest::writeMarkdownReport() const
     QTextStream stream( &report_file );
     stream << "# CommunicationTest\n\n";
     stream << "- 結果: " << ( m_test_succeeded ? "PASS" : "FAIL" ) << "\n";
-    stream << "- Operatorクライアント: `" << m_operator_client_executable << "`\n";
-    stream << "- Guestクライアント: `" << m_guest_client_executable << "`\n";
-    stream << "- サーバプログラム: `" << m_server_executable << "`\n";
-    stream << "- サーバ起動ラッパー: `" << m_server_target_wrapper_executable << "`\n";
     stream << "- 出力先: `" << m_output_dir_path << "`\n";
     stream << "- スクリーンショット出力先: `" << m_screenshot_dir_path << "`\n\n";
 
@@ -289,17 +375,11 @@ void CommunicationTest::writeMarkdownReport() const
         stream << "- " << ( step.completed ? "PASS" : "NOT RUN" ) << ": " << step.description << "\n";
     }
 
-    stream << "\n## サーバ出力確認\n\n";
-    for ( const ServerCheckEntry& check : m_server_checks )
-    {
-        stream << "- " << ( check.found ? "PASS" : "FAIL" ) << ": `" << check.expected_text << "`\n";
-    }
-
     stream << "\n## スクリーンショット\n\n";
     for ( const ScreenshotEntry& entry : m_screenshots )
     {
         stream << "### " << entry.caption << "\n\n";
-        stream << "![" << entry.caption << "](img/" << entry.file_name << ")\n\n";
+        stream << "![" << entry.caption << "](./img/" << entry.file_name << ")\n\n";
     }
 }
 
@@ -642,22 +722,6 @@ void CommunicationTest::openToolsMenuAndCapture(
     client.tools_menu->hide();
 }
 
-void CommunicationTest::expectServerOutput( const QString& expected_text )
-{
-    const bool found = waitForCondition(
-        [this, expected_text]()
-        {
-            const_cast<CommunicationTest*>( this )->appendServerOutput();
-            return m_server_output_buffer.contains( expected_text );
-        },
-        k_server_output_timeout_ms,
-        200 );
-    m_server_checks.push_back( { expected_text, found } );
-    QVERIFY2(
-        found,
-        qPrintable( QStringLiteral( "Server output did not contain expected text: %1" ).arg( expected_text ) ) );
-}
-
 QFileDialog* CommunicationTest::waitForFileDialog( int timeout_ms ) const
 {
     QFileDialog* dialog = nullptr;
@@ -823,16 +887,10 @@ void CommunicationTest::initTestCase()
 {
     const QString date_stamp = QDate::currentDate().toString( QStringLiteral( "yyyyMMdd" ) );
     const QString default_client_executable =
-        QStringLiteral( "/path/to/CS-IS-PBVR/Client/build/Qt_6_11_0_for_macOS-Release/App/pbvr_client.app/Contents/MacOS/pbvr_client" );
+        ClientTests::configuredPath( "PBVR_CLIENT_EXECUTABLE", repoRootPath() );
 
     m_operator_client_executable = envOrDefault( "PBVR_OPERATOR_CLIENT_EXECUTABLE", default_client_executable );
     m_guest_client_executable = envOrDefault( "PBVR_GUEST_CLIENT_EXECUTABLE", default_client_executable );
-    m_server_executable = envOrDefault(
-        "PBVR_SERVER_EXECUTABLE",
-        QStringLiteral( "/path/to/CS-IS-PBVR/Server/pbvr_server" ) );
-    m_server_target_wrapper_executable = envOrDefault(
-        "PBVR_SERVER_TARGET_WRAPPER_EXECUTABLE",
-        sourceTreePath( QStringLiteral( "server_target_wrapper.sh" ) ) );
     m_output_dir_path = envOrDefault(
         "PBVR_TEST_OUTPUT_DIR",
         ClientTests::datedTestOutputDir( repoRootPath(), date_stamp, QStringLiteral( "CommunicationTest" ) ) );
@@ -844,33 +902,12 @@ void CommunicationTest::initTestCase()
     m_test_succeeded = false;
 
     QVERIFY2(
-        QFileInfo::exists( m_operator_client_executable ),
-        qPrintable( QStringLiteral( "Operator client executable not found: %1" ).arg( m_operator_client_executable ) ) );
-    QVERIFY2(
-        QFileInfo::exists( m_guest_client_executable ),
-        qPrintable( QStringLiteral( "Guest client executable not found: %1" ).arg( m_guest_client_executable ) ) );
-    QVERIFY2(
-        QFileInfo::exists( m_server_executable ),
-        qPrintable( QStringLiteral( "Server executable not found: %1" ).arg( m_server_executable ) ) );
-    QVERIFY2(
-        QFileInfo::exists( m_server_target_wrapper_executable ),
-        qPrintable( QStringLiteral( "Server target wrapper executable not found: %1" ).arg( m_server_target_wrapper_executable ) ) );
-    QVERIFY2(
         QDir().mkpath( m_output_dir_path ),
         qPrintable( QStringLiteral( "Failed to create output directory: %1" ).arg( m_output_dir_path ) ) );
     QVERIFY2(
         QDir().mkpath( m_screenshot_dir_path ),
         qPrintable( QStringLiteral( "Failed to create screenshot directory: %1" ).arg( m_screenshot_dir_path ) ) );
 
-    m_server_process.setProgram( m_server_target_wrapper_executable );
-    m_server_process.setArguments( { m_server_executable } );
-    m_server_process.setWorkingDirectory( QFileInfo( m_server_executable ).absolutePath() );
-    m_server_process.setProcessChannelMode( QProcess::MergedChannels );
-    m_server_process.start();
-
-    QVERIFY2(
-        m_server_process.waitForStarted( k_server_start_timeout_ms ),
-        qPrintable( QStringLiteral( "Failed to start server: %1" ).arg( m_server_process.errorString() ) ) );
 }
 
 void CommunicationTest::cleanupTestCase()
@@ -878,12 +915,6 @@ void CommunicationTest::cleanupTestCase()
     if ( m_recording_process.state() != QProcess::NotRunning )
     {
         stopVideoRecording();
-    }
-
-    if ( m_server_process.state() != QProcess::NotRunning )
-    {
-        m_server_process.kill();
-        m_server_process.waitForFinished( 5000 );
     }
 
     writeMarkdownReport();
@@ -904,9 +935,9 @@ void CommunicationTest::performs_communication_scenario()
     operator_window.setWindowTitle( operator_window.windowTitle() + QStringLiteral( " [Operator]" ) );
     guest_window.setWindowTitle( guest_window.windowTitle() + QStringLiteral( " [Guest]" ) );
 
-    operator_window.show();
+    showTestWindowCentered( &operator_window, -240 );
     QVERIFY( QTest::qWaitForWindowExposed( &operator_window ) );
-    guest_window.show();
+    showTestWindowCentered( &guest_window, 240 );
     QVERIFY( QTest::qWaitForWindowExposed( &guest_window ) );
 
     ClientHandles operator_client = resolveClientHandles( operator_window );
@@ -917,15 +948,15 @@ void CommunicationTest::performs_communication_scenario()
     guest_client.object_editor->show();
 
     const QString piece_example =
-        QStringLiteral( "/path/to/reg_test_data/unstruct/mej_iofiles_downsize4_step80_90/Piece/example.pfl" );
-    const QString mej_v2 = QStringLiteral( "/path/to/reg_test_data/unstruct/mej_v2.tfe" );
-    const QString spx = QStringLiteral( "/path/to/SampleData/ucd/old/out/spx.pfl" );
-    const QString gt5d = QStringLiteral( "/path/to/SampleData/fld/out/gt5d.pfi" );
-    const QString gt5d_tfe = QStringLiteral( "/path/to/SampleData/fld/demo.tfe" );
-    const QString mej = QStringLiteral( "/path/to/reg_test_data/unstruct/mej_iofiles_downsize4_step80_90/mej/mej_example.pfl" );
-    const QString mej_tfe = QStringLiteral( "/path/to/reg_test_data/unstruct/mej_iofiles_downsize4_step80_90/mej/mej_v2.tfe" );
-    const QString hydrogen = QStringLiteral( "/path/to/reg_test_data/struct/Hydrogen/hydro.pfi" );
-    const QString tornado = QStringLiteral( "/path/to/reg_test_data/struct/tornado/test.pfi" );
+        ClientTests::configuredPath( "MEJ_VOLUME_DATA", repoRootPath() );
+    const QString mej_v2 = ClientTests::configuredPath( "MEJ_TRANSFER_FUNCTION", repoRootPath() );
+    const QString spx = ClientTests::configuredPath( "SPX_VOLUME_DATA", repoRootPath() );
+    const QString gt5d = ClientTests::configuredPath( "GT5D_VOLUME_DATA", repoRootPath() );
+    const QString gt5d_tfe = ClientTests::configuredPath( "GT5D_TRANSFER_FUNCTION", repoRootPath() );
+    const QString mej = ClientTests::configuredPath( "MEJ_VOLUME_DATA", repoRootPath() );
+    const QString mej_tfe = ClientTests::configuredPath( "MEJ_TRANSFER_FUNCTION", repoRootPath() );
+    const QString hydrogen = ClientTests::configuredPath( "HYDROGEN_VOLUME_DATA", repoRootPath() );
+    const QString tornado = ClientTests::configuredPath( "TORNADO_VOLUME_DATA", repoRootPath() );
 
     for ( const QString& file_path : { piece_example, mej_v2, spx, gt5d, gt5d_tfe, mej, mej_tfe, hydrogen, tornado } )
     {
@@ -947,6 +978,7 @@ void CommunicationTest::performs_communication_scenario()
         QStringLiteral( "04_operator_tools_enabled.png" ),
         QStringLiteral( "ToolsメニューでGlyph Editor, Plot Over Line Editor, Plot Over Time Editor, Transfer Function Editorが有効な状態" ),
         true );
+    bringWindowToFront( guest_client.main_window );
     saveScreenshot( QStringLiteral( "05_guest_piece_object.png" ), QStringLiteral( "Guest用画面にオブジェクトが表示された状態" ) );
     markStepCompleted( QStringLiteral( "Operator用 localVizRadioButtonでPieceデータを読み込み、Operator/Guestの表示とTools有効状態を確認しました。" ) );
 
@@ -960,25 +992,49 @@ void CommunicationTest::performs_communication_scenario()
         false );
     markStepCompleted( QStringLiteral( "Guest/OperatorのdisconnectPushButtonを押し、ChatクリアとTools無効状態を確認しました。" ) );
 
-    clearServerOutput();
     ensureConnected( operator_client );
+    QSignalSpy uniform_initialize_spy( operator_client.communication, &Communication::textMessageSent );
     generateObject( operator_client, operator_client.remote_viz_client_server_radio, spx, QString(), nullptr );
-    expectServerOutput( QStringLiteral( "GPU - Uniform sampling" ) );
-    markStepCompleted( QStringLiteral( "spxでGPU - Uniform samplingのサーバ出力を確認しました。" ) );
+    QString initialize_message_error;
+    QVERIFY2(
+        verifyInitializeMessage(
+            uniform_initialize_spy,
+            static_cast<int>( Communication::SamplingType::Uniform ),
+            spx,
+            QString(),
+            &initialize_message_error ),
+        qPrintable( initialize_message_error ) );
+    markStepCompleted( QStringLiteral( "spxでUniform samplingの送信JSONとリモート粒子生成を確認しました。" ) );
 
-    clearServerOutput();
     ensureDisconnected( operator_client );
     ensureConnected( operator_client );
+    QSignalSpy metropolis_initialize_spy( operator_client.communication, &Communication::textMessageSent );
     generateObject( operator_client, operator_client.remote_viz_client_server_radio, spx, QString(), operator_client.metropolis_radio );
-    expectServerOutput( QStringLiteral( "GPU - Metropolis sampling" ) );
-    markStepCompleted( QStringLiteral( "metropolisRadioButtonでGPU - Metropolis samplingのサーバ出力を確認しました。" ) );
+    initialize_message_error.clear();
+    QVERIFY2(
+        verifyInitializeMessage(
+            metropolis_initialize_spy,
+            static_cast<int>( Communication::SamplingType::Metropolis ),
+            spx,
+            QString(),
+            &initialize_message_error ),
+        qPrintable( initialize_message_error ) );
+    markStepCompleted( QStringLiteral( "metropolisRadioButtonで送信JSONとリモート粒子生成を確認しました。" ) );
 
-    clearServerOutput();
     ensureDisconnected( operator_client );
     ensureConnected( operator_client );
+    QSignalSpy rejection_initialize_spy( operator_client.communication, &Communication::textMessageSent );
     generateObject( operator_client, operator_client.remote_viz_client_server_radio, spx, QString(), operator_client.rejection_radio );
-    expectServerOutput( QStringLiteral( "GPU - Rejection sampling" ) );
-    markStepCompleted( QStringLiteral( "rejectionRadioButtonでGPU - Rejection samplingのサーバ出力を確認しました。" ) );
+    initialize_message_error.clear();
+    QVERIFY2(
+        verifyInitializeMessage(
+            rejection_initialize_spy,
+            static_cast<int>( Communication::SamplingType::Rejection ),
+            spx,
+            QString(),
+            &initialize_message_error ),
+        qPrintable( initialize_message_error ) );
+    markStepCompleted( QStringLiteral( "rejectionRadioButtonで送信JSONとリモート粒子生成を確認しました。" ) );
 
     ensureDisconnected( operator_client );
     ensureConnected( operator_client );
@@ -1083,13 +1139,13 @@ void CommunicationTest::performs_communication_scenario()
     setLineEditText( operator_client.transfer_operator_id_line_edit, guest_id );
     operator_client.transfer_operator_apply_button->click();
     QTest::qWait( k_short_wait_ms );
-    saveScreenshot( QStringLiteral( "24_operator_transfer_operator.png" ), QStringLiteral( "操作権限をGuest用画面に移譲した状態" ) );
+    saveScreenshot( QStringLiteral( "24_operator_transfer_operator.png" ), QStringLiteral( "Operator用画面が操作権限をGuest用画面に移譲した状態" ) );
     QVERIFY2(
         waitForCondition( [guest_client]() { return guest_client.is_operator_line_edit->text().trimmed() == QStringLiteral( "true" ); }, k_connect_timeout_ms, 100 ),
         "Guest did not become operator within the timeout" );
+    bringWindowToFront( guest_client.main_window );
     saveScreenshot( QStringLiteral( "25_guest_received_operator.png" ), QStringLiteral( "Guest用画面が操作権限をOperator用画面から受け取った状態" ) );
 
-    bringWindowToFront( operator_client.main_window );
     setLineEditText( operator_client.chat_line_edit, QStringLiteral( "test1" ) );
     QTest::keyClick( operator_client.chat_line_edit, Qt::Key_Return );
     QVERIFY2(
@@ -1097,7 +1153,7 @@ void CommunicationTest::performs_communication_scenario()
         "Guest chat view did not receive test1" );
     saveScreenshot( QStringLiteral( "26_guest_received_chat_test1.png" ), QStringLiteral( "Guest用画面がOperator用画面からチャットtest1を受け取った状態" ) );
 
-    bringWindowToFront( guest_client.main_window );
+    bringWindowToFront( operator_client.main_window );
     setLineEditText( guest_client.chat_line_edit, QStringLiteral( "test2" ) );
     QTest::keyClick( guest_client.chat_line_edit, Qt::Key_Return );
     QVERIFY2(
@@ -1187,6 +1243,11 @@ void CommunicationTest::performs_communication_scenario()
     markStepCompleted( QStringLiteral( "GuestからShare Viewを送信し、OperatorのshareListViewの1番目をダブルクリックして視点共有を確認しました。" ) );
 
     stopVideoRecording();
+    operator_client.main_window->close();
+    guest_client.main_window->close();
+    QCoreApplication::sendPostedEvents( nullptr, 0 );
+    QCoreApplication::processEvents( QEventLoop::AllEvents, k_window_settle_ms );
+    QCoreApplication::sendPostedEvents( nullptr, QEvent::DeferredDelete );
     m_test_succeeded = true;
 }
 

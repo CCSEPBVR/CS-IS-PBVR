@@ -5,6 +5,11 @@
 
 namespace ClientTests
 {
+QString testPathConfigFilePath( const QString& repo_root_path );
+QString configuredPath(
+    const char* name,
+    const QString& repo_root_path,
+    const QString& fallback = QString() );
 QString testOutputRootPath( const QString& repo_root_path );
 QString datedTestOutputDir(
     const QString& repo_root_path,

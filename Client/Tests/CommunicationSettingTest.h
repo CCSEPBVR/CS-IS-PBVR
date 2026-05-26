@@ -22,13 +22,6 @@ class CommunicationSettingTest : public QObject
     Q_OBJECT
 
 private:
-    struct SamplingCheckEntry
-    {
-        QString label;
-        QString expected_message;
-        bool verified = false;
-    };
-
     struct ClientHandles
     {
         MainWindow* main_window = nullptr;
@@ -62,8 +55,6 @@ private:
     bool waitForCondition( const std::function<bool()>& condition, int timeout_ms, int interval_ms = 50 ) const;
     void startVideoRecording();
     void stopVideoRecording();
-    void appendServerOutput();
-    void clearServerOutput();
     void bringWindowToFront( MainWindow* window ) const;
     void setLineEditText( QLineEdit* line_edit, const QString& text ) const;
     ClientHandles resolveClientHandles( MainWindow& window ) const;
@@ -73,21 +64,15 @@ private:
     void configureLocalSampling( const ClientHandles& client, QRadioButton* sampling_radio ) const;
     void waitForObjectAndApply( const ClientHandles& client ) const;
     void clickJumpAndWaitForCompletion( const ClientHandles& client ) const;
-    void waitForServerSamplingMessage( const QString& text );
-    void markSamplingCheckVerified( const QString& text );
     void writeSummaryReport() const;
 
-    QProcess m_server_process;
     QProcess m_recording_process;
     QString m_client_executable;
-    QString m_server_executable;
     QString m_volume_data_path;
     QString m_transfer_function_path;
     QString m_output_dir_path;
     QString m_video_file_path;
     QString m_summary_file_path;
-    QString m_server_output_buffer;
-    QList<SamplingCheckEntry> m_sampling_checks;
     bool m_test_succeeded = false;
 };
 }

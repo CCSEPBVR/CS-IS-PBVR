@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QProcess>
 #include <QString>
+#include <QVector>
 #include <functional>
 
 class QAction;
@@ -15,6 +16,8 @@ class QLineEdit;
 class QPushButton;
 class QRadioButton;
 class QSpinBox;
+class QStandardItemModel;
+class QTreeView;
 
 class MainWindow;
 class Communication;
@@ -57,6 +60,7 @@ private:
         QLineEdit* id_line_edit = nullptr;
         QLineEdit* is_operator_line_edit = nullptr;
         QLineEdit* object_name_line_edit = nullptr;
+        QTreeView* object_tree_view = nullptr;
         QRadioButton* size_variable_array_radio = nullptr;
         QSpinBox* size_number_of_variables_spin_box = nullptr;
         QGridLayout* size_variable_grid_layout = nullptr;
@@ -66,6 +70,7 @@ private:
         QDoubleSpinBox* scale_factor_spin_box = nullptr;
         QGroupBox* plot_over_line_group_box = nullptr;
         QComboBox* target_combo_box = nullptr;
+        QSpinBox* resolution_spin_box = nullptr;
         QDoubleSpinBox* start_coords_x_spin_box = nullptr;
         QDoubleSpinBox* start_coords_y_spin_box = nullptr;
         QDoubleSpinBox* start_coords_z_spin_box = nullptr;
@@ -73,6 +78,18 @@ private:
         QDoubleSpinBox* end_coords_y_spin_box = nullptr;
         QDoubleSpinBox* end_coords_z_spin_box = nullptr;
         QDoubleSpinBox* rotation_x_axis_spin_box = nullptr;
+    };
+
+    struct StepEntry
+    {
+        QString description;
+        bool completed = false;
+    };
+
+    struct ScreenshotEntry
+    {
+        QString file_name;
+        QString caption;
     };
 
 private slots:
@@ -98,11 +115,17 @@ private:
     void setGroupBoxChecked( QGroupBox* group_box, bool checked, const char* object_name ) const;
     void selectRadioButton( QRadioButton* radio_button, const char* object_name ) const;
     void selectComboBoxItem( QComboBox* combo_box, int index ) const;
+    void saveScreenshot( const QString& file_name, const QString& caption );
+    void writeMarkdownReport() const;
+    void addStep( const QString& description );
+    void markStepCompleted( const QString& description );
     ClientHandles resolveClientHandles( MainWindow& window ) const;
     void ensureConnected( const ClientHandles& client ) const;
     void ensureDisconnected( const ClientHandles& client ) const;
     void waitForOperatorPrivileges( const ClientHandles& client ) const;
     void configureRemoteVisualization( const ClientHandles& client, const QString& volume_path, const QString& transfer_function_path ) const;
+    QStandardItemModel* waitForObjectModel( const ClientHandles& client ) const;
+    void setObjectDisplayItemChecked( const ClientHandles& client, int row, bool checked ) const;
     void waitForObjectAndApply( const ClientHandles& client ) const;
     void clickJumpAndWaitForCompletion( const ClientHandles& client ) const;
     QComboBox* comboBoxAtGridRow( QGridLayout* grid_layout, int row ) const;
@@ -122,6 +145,7 @@ private:
         double end_y,
         double end_z,
         int target_index = -1 ) const;
+    void applyPlotOverLineResolution( const ClientHandles& client, int resolution ) const;
     void prepareSecondDatasetConnection( const ClientHandles& client ) const;
 
     QProcess m_server_process;
@@ -133,7 +157,12 @@ private:
     QString m_unstructured_volume_data_path;
     QString m_transfer_function_path;
     QString m_output_dir_path;
+    QString m_screenshot_dir_path;
+    QString m_report_path;
     QString m_video_file_path;
+    QVector<StepEntry> m_steps;
+    QVector<ScreenshotEntry> m_screenshots;
+    bool m_test_succeeded = false;
 };
 }
 

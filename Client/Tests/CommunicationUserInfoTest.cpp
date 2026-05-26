@@ -1,6 +1,8 @@
 #include "CommunicationUserInfoTest.h"
 
 #include <QCoreApplication>
+#include <QEvent>
+#include <QEventLoop>
 #include <QDate>
 #include <QDir>
 #include <QElapsedTimer>
@@ -66,7 +68,7 @@ namespace ClientTests
 QString CommunicationUserInfoTest::envOrDefault( const char* name, const QString& fallback ) const
 {
     const QString value = qEnvironmentVariable( name );
-    return value.isEmpty() ? fallback : value;
+    return value.isEmpty() ? ClientTests::configuredPath( name, repoRootPath(), fallback ) : value;
 }
 
 QString CommunicationUserInfoTest::repoRootPath() const
@@ -105,6 +107,9 @@ bool CommunicationUserInfoTest::waitForCondition( const std::function<bool()>& c
 
 void CommunicationUserInfoTest::startVideoRecording()
 {
+#ifdef Q_OS_WIN
+    return;
+#else
     if ( QFileInfo::exists( m_video_file_path ) )
     {
         QVERIFY2(
@@ -126,10 +131,15 @@ void CommunicationUserInfoTest::startVideoRecording()
     QVERIFY2(
         m_recording_process.waitForStarted( 5000 ),
         qPrintable( QStringLiteral( "Failed to start video recording: %1" ).arg( m_recording_process.errorString() ) ) );
+#endif
 }
 
 void CommunicationUserInfoTest::stopVideoRecording()
 {
+#ifdef Q_OS_WIN
+    Q_UNUSED( m_recording_process );
+    return;
+#else
     if ( m_recording_process.state() == QProcess::NotRunning )
     {
         QVERIFY2(
@@ -162,6 +172,7 @@ void CommunicationUserInfoTest::stopVideoRecording()
     QVERIFY2(
         QFileInfo::exists( m_video_file_path ),
         qPrintable( QStringLiteral( "Recorded video was not created: %1" ).arg( m_video_file_path ) ) );
+#endif
 }
 
 void CommunicationUserInfoTest::bringWindowToFront( MainWindow* window ) const
@@ -328,30 +339,21 @@ void CommunicationUserInfoTest::initTestCase()
 {
     const QString date_stamp = QDate::currentDate().toString( QStringLiteral( "yyyyMMdd" ) );
     const QString default_client_executable =
-        QStringLiteral( "/path/to/CS-IS-PBVR/Client/build/Qt_6_11_0_for_macOS-Release/App/pbvr_client.app/Contents/MacOS/pbvr_client" );
+        ClientTests::configuredPath( "PBVR_CLIENT_EXECUTABLE", repoRootPath() );
 
     m_operator_client_executable = envOrDefault( "PBVR_OPERATOR_CLIENT_EXECUTABLE", default_client_executable );
     m_guest_client_executable = envOrDefault( "PBVR_GUEST_CLIENT_EXECUTABLE", default_client_executable );
     m_server_executable = envOrDefault(
         "PBVR_SERVER_EXECUTABLE",
-        QStringLiteral( "/path/to/CS-IS-PBVR/Server/pbvr_server" ) );
+        ClientTests::configuredPath( "PBVR_SERVER_EXECUTABLE", repoRootPath() ) );
     m_volume_data_path = envOrDefault(
         "PBVR_VOLUME_DATA",
-        QStringLiteral( "/path/to/SampleData/ucd/old/out/spx.pfl" ) );
+        ClientTests::configuredPath( "SPX_VOLUME_DATA", repoRootPath() ) );
     m_output_dir_path = envOrDefault(
         "PBVR_TEST_OUTPUT_DIR",
         ClientTests::datedTestOutputDir( repoRootPath(), date_stamp ) );
     m_video_file_path = QDir( m_output_dir_path ).absoluteFilePath( QStringLiteral( "CommunicationUserInfoTest.mov" ) );
 
-    QVERIFY2(
-        QFileInfo::exists( m_operator_client_executable ),
-        qPrintable( QStringLiteral( "Operator client executable not found: %1" ).arg( m_operator_client_executable ) ) );
-    QVERIFY2(
-        QFileInfo::exists( m_guest_client_executable ),
-        qPrintable( QStringLiteral( "Guest client executable not found: %1" ).arg( m_guest_client_executable ) ) );
-    QVERIFY2(
-        QFileInfo::exists( m_server_executable ),
-        qPrintable( QStringLiteral( "Server executable not found: %1" ).arg( m_server_executable ) ) );
     QVERIFY2(
         QFileInfo::exists( m_volume_data_path ),
         qPrintable( QStringLiteral( "Volume data file not found: %1" ).arg( m_volume_data_path ) ) );
@@ -359,14 +361,6 @@ void CommunicationUserInfoTest::initTestCase()
         QDir().mkpath( m_output_dir_path ),
         qPrintable( QStringLiteral( "Failed to create output directory: %1" ).arg( m_output_dir_path ) ) );
 
-    m_server_process.setProgram( m_server_executable );
-    m_server_process.setWorkingDirectory( QFileInfo( m_server_executable ).absolutePath() );
-    m_server_process.setProcessChannelMode( QProcess::MergedChannels );
-    m_server_process.start();
-
-    QVERIFY2(
-        m_server_process.waitForStarted( k_server_start_timeout_ms ),
-        qPrintable( QStringLiteral( "Failed to start server: %1" ).arg( m_server_process.errorString() ) ) );
 }
 
 void CommunicationUserInfoTest::cleanupTestCase()
@@ -398,9 +392,9 @@ void CommunicationUserInfoTest::performs_communication_user_info_scenario()
     operator_window.setWindowTitle( operator_window.windowTitle() + QStringLiteral( " [Operator]" ) );
     guest_window.setWindowTitle( guest_window.windowTitle() + QStringLiteral( " [Guest]" ) );
 
-    operator_window.show();
+    showTestWindowCentered( &operator_window, -240 );
     QVERIFY( QTest::qWaitForWindowExposed( &operator_window ) );
-    guest_window.show();
+    showTestWindowCentered( &guest_window, 240 );
     QVERIFY( QTest::qWaitForWindowExposed( &guest_window ) );
 
     ClientHandles operator_client = resolveClientHandles( operator_window );
@@ -471,6 +465,11 @@ void CommunicationUserInfoTest::performs_communication_user_info_scenario()
 
     bringWindowToFront( guest_client.main_window );
     stopVideoRecording();
+    operator_client.main_window->close();
+    guest_client.main_window->close();
+    QCoreApplication::sendPostedEvents( nullptr, 0 );
+    QCoreApplication::processEvents( QEventLoop::AllEvents, k_window_settle_ms );
+    QCoreApplication::sendPostedEvents( nullptr, QEvent::DeferredDelete );
     logStep( QStringLiteral( "scenario: completed" ) );
 }
 

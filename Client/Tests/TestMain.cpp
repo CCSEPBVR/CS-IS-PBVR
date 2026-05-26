@@ -1,6 +1,17 @@
 #include <QCoreApplication>
+#include <QEvent>
+#include <QEventLoop>
 #include <QDebug>
+#include <QApplication>
+#include <QGuiApplication>
+#include <QWindow>
+#include <QPoint>
+#include <QRect>
+#include <QScreen>
+#include <QSize>
 #include <QTest>
+#include <QtGlobal>
+#include <QWidget>
 
 #include <kvs/qt/Application>
 
@@ -126,16 +137,45 @@ namespace
 {
 static kvs::qt::Application* g_pbvr_test_application = nullptr;
 
+void cleanupBetweenTests()
+{
+    for ( QWidget* widget : QApplication::topLevelWidgets() )
+    {
+        if ( widget != nullptr )
+        {
+            widget->close();
+        }
+    }
+
+    QCoreApplication::sendPostedEvents( nullptr, 0 );
+    QCoreApplication::processEvents( QEventLoop::AllEvents, 200 );
+    QCoreApplication::sendPostedEvents( nullptr, QEvent::DeferredDelete );
+    QCoreApplication::processEvents( QEventLoop::AllEvents, 200 );
+
+    QCoreApplication::sendPostedEvents( nullptr, 0 );
+    QCoreApplication::processEvents( QEventLoop::AllEvents, 200 );
+    QCoreApplication::sendPostedEvents( nullptr, QEvent::DeferredDelete );
+    QCoreApplication::processEvents( QEventLoop::AllEvents, 200 );
+}
+
+int qExecWithCleanup( QObject* test, int argc, char** argv )
+{
+    const int result = QTest::qExec( test, argc, argv );
+    cleanupBetweenTests();
+    return result;
+}
+
 int runEnabledTests( int argc, char** argv )
 {
     int result = 0;
     bool has_enabled_test = false;
+    cleanupBetweenTests();
 
 #ifdef PBVR_ENABLE_TEST_MENUBAR
     {
         has_enabled_test = true;
         MenuBarTest test;
-        result |= QTest::qExec( &test, argc, argv );
+        result |= qExecWithCleanup( &test, argc, argv );
     }
 #endif
 
@@ -143,7 +183,7 @@ int runEnabledTests( int argc, char** argv )
     {
         has_enabled_test = true;
         ScreenTest test;
-        result |= QTest::qExec( &test, argc, argv );
+        result |= qExecWithCleanup( &test, argc, argv );
     }
 #endif
 
@@ -151,7 +191,7 @@ int runEnabledTests( int argc, char** argv )
     {
         has_enabled_test = true;
         ClientTests::PlayBackControlToolBarTest test;
-        result |= QTest::qExec( &test, argc, argv );
+        result |= qExecWithCleanup( &test, argc, argv );
     }
 #endif
 
@@ -159,7 +199,7 @@ int runEnabledTests( int argc, char** argv )
     {
         has_enabled_test = true;
         ClientTests::TimeStepControlToolBarTest test;
-        result |= QTest::qExec( &test, argc, argv );
+        result |= qExecWithCleanup( &test, argc, argv );
     }
 #endif
 
@@ -167,7 +207,7 @@ int runEnabledTests( int argc, char** argv )
     {
         has_enabled_test = true;
         ClientTests::ColorMapSelectorToolBarTest test;
-        result |= QTest::qExec( &test, argc, argv );
+        result |= qExecWithCleanup( &test, argc, argv );
     }
 #endif
 
@@ -175,7 +215,7 @@ int runEnabledTests( int argc, char** argv )
     {
         has_enabled_test = true;
         ClientTests::TotalParticlesToolBarTest test;
-        result |= QTest::qExec( &test, argc, argv );
+        result |= qExecWithCleanup( &test, argc, argv );
     }
 #endif
 
@@ -183,7 +223,7 @@ int runEnabledTests( int argc, char** argv )
     {
         has_enabled_test = true;
         ClientTests::PreferenceTest test;
-        result |= QTest::qExec( &test, argc, argv );
+        result |= qExecWithCleanup( &test, argc, argv );
     }
 #endif
 
@@ -191,7 +231,7 @@ int runEnabledTests( int argc, char** argv )
     {
         has_enabled_test = true;
         ClientTests::CommunicationTest test;
-        result |= QTest::qExec( &test, argc, argv );
+        result |= qExecWithCleanup( &test, argc, argv );
     }
 #endif
 
@@ -199,7 +239,7 @@ int runEnabledTests( int argc, char** argv )
     {
         has_enabled_test = true;
         ClientTests::CommunicationUserInfoTest test;
-        result |= QTest::qExec( &test, argc, argv );
+        result |= qExecWithCleanup( &test, argc, argv );
     }
 #endif
 
@@ -207,7 +247,7 @@ int runEnabledTests( int argc, char** argv )
     {
         has_enabled_test = true;
         ClientTests::CommunicationSettingTest test;
-        result |= QTest::qExec( &test, argc, argv );
+        result |= qExecWithCleanup( &test, argc, argv );
     }
 #endif
 
@@ -215,7 +255,7 @@ int runEnabledTests( int argc, char** argv )
     {
         has_enabled_test = true;
         ClientTests::CommunicationShareViewTest test;
-        result |= QTest::qExec( &test, argc, argv );
+        result |= qExecWithCleanup( &test, argc, argv );
     }
 #endif
 
@@ -223,7 +263,7 @@ int runEnabledTests( int argc, char** argv )
     {
         has_enabled_test = true;
         ClientTests::AnimationControlTest test;
-        result |= QTest::qExec( &test, argc, argv );
+        result |= qExecWithCleanup( &test, argc, argv );
     }
 #endif
 
@@ -231,7 +271,7 @@ int runEnabledTests( int argc, char** argv )
     {
         has_enabled_test = true;
         ClientTests::GlyphEditorTest test;
-        result |= QTest::qExec( &test, argc, argv );
+        result |= qExecWithCleanup( &test, argc, argv );
     }
 #endif
 
@@ -239,7 +279,7 @@ int runEnabledTests( int argc, char** argv )
     {
         has_enabled_test = true;
         ClientTests::ObjectEditorTest test;
-        result |= QTest::qExec( &test, argc, argv );
+        result |= qExecWithCleanup( &test, argc, argv );
     }
 #endif
 
@@ -247,7 +287,7 @@ int runEnabledTests( int argc, char** argv )
     {
         has_enabled_test = true;
         ClientTests::PlotOverLineEditorTest test;
-        result |= QTest::qExec( &test, argc, argv );
+        result |= qExecWithCleanup( &test, argc, argv );
     }
 #endif
 
@@ -255,7 +295,7 @@ int runEnabledTests( int argc, char** argv )
     {
         has_enabled_test = true;
         ClientTests::PointSizeControlTest test;
-        result |= QTest::qExec( &test, argc, argv );
+        result |= qExecWithCleanup( &test, argc, argv );
     }
 #endif
 
@@ -263,7 +303,7 @@ int runEnabledTests( int argc, char** argv )
     {
         has_enabled_test = true;
         ClientTests::RepetitionLevelControlTest test;
-        result |= QTest::qExec( &test, argc, argv );
+        result |= qExecWithCleanup( &test, argc, argv );
     }
 #endif
 
@@ -271,7 +311,7 @@ int runEnabledTests( int argc, char** argv )
     {
         has_enabled_test = true;
         ClientTests::ShadingControlTest test;
-        result |= QTest::qExec( &test, argc, argv );
+        result |= qExecWithCleanup( &test, argc, argv );
     }
 #endif
 
@@ -279,15 +319,15 @@ int runEnabledTests( int argc, char** argv )
     {
         has_enabled_test = true;
         ClientTests::VolumeTransformTest test;
-        result |= QTest::qExec( &test, argc, argv );
+        result |= qExecWithCleanup( &test, argc, argv );
     }
 #endif
 
 #ifdef PBVR_ENABLE_TEST_TRANSFERFUNCTIONEDITOR_IMPORTEXPORT
     {
         has_enabled_test = true;
-        TransferFunctionEditor::ImportExportTest test;
-        result |= QTest::qExec( &test, argc, argv );
+        TransferFunctionEditorTest::ImportExportTest test;
+        result |= qExecWithCleanup( &test, argc, argv );
     }
 #endif
 
@@ -295,7 +335,7 @@ int runEnabledTests( int argc, char** argv )
     {
         has_enabled_test = true;
         TransferFunctionEditorTest::ChangeTransferFunctionNumberTest test;
-        result |= QTest::qExec( &test, argc, argv );
+        result |= qExecWithCleanup( &test, argc, argv );
     }
 #endif
 
@@ -303,7 +343,7 @@ int runEnabledTests( int argc, char** argv )
     {
         has_enabled_test = true;
         TransferFunctionEditorTest::ColorFunctionSynthesizerTest test;
-        result |= QTest::qExec( &test, argc, argv );
+        result |= qExecWithCleanup( &test, argc, argv );
     }
 #endif
 
@@ -311,7 +351,7 @@ int runEnabledTests( int argc, char** argv )
     {
         has_enabled_test = true;
         TransferFunctionEditorTest::OpacityFunctionSynthesizerTest test;
-        result |= QTest::qExec( &test, argc, argv );
+        result |= qExecWithCleanup( &test, argc, argv );
     }
 #endif
 
@@ -319,7 +359,7 @@ int runEnabledTests( int argc, char** argv )
     {
         has_enabled_test = true;
         TransferFunctionEditorTest::OpacityFunctionVariableTest test;
-        result |= QTest::qExec( &test, argc, argv );
+        result |= qExecWithCleanup( &test, argc, argv );
     }
 #endif
 
@@ -327,7 +367,7 @@ int runEnabledTests( int argc, char** argv )
     {
         has_enabled_test = true;
         TransferFunctionEditorTest::ColorFunctionVariableTest test;
-        result |= QTest::qExec( &test, argc, argv );
+        result |= qExecWithCleanup( &test, argc, argv );
     }
 #endif
 
@@ -335,7 +375,7 @@ int runEnabledTests( int argc, char** argv )
     {
         has_enabled_test = true;
         TransferFunctionEditorTest::ColorMinMaxTest test;
-        result |= QTest::qExec( &test, argc, argv );
+        result |= qExecWithCleanup( &test, argc, argv );
     }
 #endif
 
@@ -343,7 +383,7 @@ int runEnabledTests( int argc, char** argv )
     {
         has_enabled_test = true;
         TransferFunctionEditorTest::OpacityMinMaxTest test;
-        result |= QTest::qExec( &test, argc, argv );
+        result |= qExecWithCleanup( &test, argc, argv );
     }
 #endif
 
@@ -351,7 +391,7 @@ int runEnabledTests( int argc, char** argv )
     {
         has_enabled_test = true;
         TransferFunctionEditorTest::ColorMapEditTest test;
-        result |= QTest::qExec( &test, argc, argv );
+        result |= qExecWithCleanup( &test, argc, argv );
     }
 #endif
 
@@ -359,7 +399,7 @@ int runEnabledTests( int argc, char** argv )
     {
         has_enabled_test = true;
         TransferFunctionEditorTest::OpacityMapEditTest test;
-        result |= QTest::qExec( &test, argc, argv );
+        result |= qExecWithCleanup( &test, argc, argv );
     }
 #endif
 
@@ -403,6 +443,82 @@ int runEnabledTests( int argc, char** argv )
 kvs::qt::Application* pbvrTestApplication()
 {
     return g_pbvr_test_application;
+}
+
+void showTestWindowCentered( QWidget* window, int horizontal_offset )
+{
+    if ( window == nullptr )
+    {
+        return;
+    }
+
+    QScreen* screen = QGuiApplication::primaryScreen();
+    if ( screen == nullptr )
+    {
+        window->show();
+        return;
+    }
+
+    const QRect available = screen->availableGeometry();
+    window->adjustSize();
+
+    QSize window_size = window->size();
+    if ( !window_size.isValid() || window_size.isEmpty() )
+    {
+        window_size = window->sizeHint();
+    }
+
+    const QSize max_window_size(
+        qMax( 320, available.width() - 80 ),
+        qMax( 240, available.height() - 80 ) );
+    if ( window_size.width() > max_window_size.width() ||
+         window_size.height() > max_window_size.height() )
+    {
+        window_size.setWidth( qMin( window_size.width(), max_window_size.width() ) );
+        window_size.setHeight( qMin( window_size.height(), max_window_size.height() ) );
+        window->resize( window_size );
+    }
+
+    QPoint top_left = available.center() - QPoint( window_size.width() / 2, window_size.height() / 2 );
+    top_left.rx() += horizontal_offset;
+    const int max_x = qMax( available.left(), available.right() - window_size.width() + 1 );
+    const int max_y = qMax( available.top(), available.bottom() - window_size.height() + 1 );
+    top_left.setX( qBound( available.left(), top_left.x(), max_x ) );
+    top_left.setY( qBound( available.top(), top_left.y(), max_y ) );
+
+    window->move( top_left );
+    window->show();
+    QCoreApplication::processEvents( QEventLoop::AllEvents, 100 );
+
+    if ( window->windowHandle() != nullptr )
+    {
+        window->windowHandle()->setScreen( screen );
+    }
+
+    QRect frame = window->frameGeometry();
+    if ( frame.width() > max_window_size.width() ||
+         frame.height() > max_window_size.height() )
+    {
+        const int frame_extra_width = frame.width() - window->width();
+        const int frame_extra_height = frame.height() - window->height();
+        QSize adjusted_size = window->size();
+        adjusted_size.setWidth(
+            qMin( adjusted_size.width(), qMax( 320, max_window_size.width() - frame_extra_width ) ) );
+        adjusted_size.setHeight(
+            qMin( adjusted_size.height(), qMax( 240, max_window_size.height() - frame_extra_height ) ) );
+        window->resize( adjusted_size );
+        QCoreApplication::processEvents( QEventLoop::AllEvents, 100 );
+        frame = window->frameGeometry();
+    }
+
+    top_left = available.center() - QPoint( frame.width() / 2, frame.height() / 2 );
+    top_left.rx() += horizontal_offset;
+    const int max_frame_x = qMax( available.left(), available.right() - frame.width() + 1 );
+    const int max_frame_y = qMax( available.top(), available.bottom() - frame.height() + 1 );
+    top_left.setX( qBound( available.left(), top_left.x(), max_frame_x ) );
+    top_left.setY( qBound( available.top(), top_left.y(), max_frame_y ) );
+    window->move( top_left );
+    QCoreApplication::processEvents( QEventLoop::AllEvents, 100 );
 }
 
 int main( int argc, char** argv )

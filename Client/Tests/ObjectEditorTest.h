@@ -5,6 +5,7 @@
 #include <QProcess>
 #include <QString>
 #include <functional>
+#include <vector>
 
 class QLineEdit;
 class QLabel;
@@ -33,6 +34,18 @@ class ObjectEditorTest : public QObject
     Q_OBJECT
 
 private:
+    struct ScreenshotEntry
+    {
+        QString file_name;
+        QString caption;
+    };
+
+    struct StepEntry
+    {
+        QString description;
+        bool completed = false;
+    };
+
     struct ClientHandles
     {
         MainWindow* main_window = nullptr;
@@ -81,18 +94,25 @@ private:
     void stopVideoRecording();
     void bringWindowToFront( MainWindow* window ) const;
     void setLineEditText( QLineEdit* line_edit, const QString& text ) const;
+    void saveScreenshot( const QString& file_name, const QString& caption );
+    void writeMarkdownReport() const;
+    void addStep( const QString& description );
+    void markStepCompleted( const QString& description );
     ClientHandles resolveClientHandles( MainWindow& window ) const;
     void ensureConnected( const ClientHandles& client );
+    void ensureDisconnected( const ClientHandles& client ) const;
     void configureRemoteVisualization( const ClientHandles& client ) const;
+    void configureRemoteVisualizationWithoutVolume( const ClientHandles& client ) const;
     void applyObjectEditor( const ClientHandles& client ) const;
     void waitForObjectAndApply( const ClientHandles& client ) const;
     void clickJumpAndWaitForCompletion( const ClientHandles& client ) const;
+    void clickNextAndWaitForCompletion( const ClientHandles& client ) const;
     QStandardItemModel* waitForObjectModel( const ClientHandles& client ) const;
     void selectObjectRow( const ClientHandles& client, int row ) const;
     void setModelCheckState( const ClientHandles& client, int row, int column, bool checked, const char* item_name ) const;
-    void setDisplayItemChecked( const ClientHandles& client, bool checked ) const;
-    void setKeepInitialChecked( const ClientHandles& client, bool checked ) const;
-    void setKeepFinalChecked( const ClientHandles& client, bool checked ) const;
+    void setDisplayItemChecked( const ClientHandles& client, int row, bool checked ) const;
+    void setKeepInitialChecked( const ClientHandles& client, int row, bool checked ) const;
+    void setKeepFinalChecked( const ClientHandles& client, int row, bool checked ) const;
     void setSpinBoxValue( QSpinBox* spin_box, int value, const char* object_name ) const;
     void setDoubleSpinBoxValue( QDoubleSpinBox* spin_box, double value, const char* object_name ) const;
     void setCheckBoxState( QCheckBox* check_box, bool checked, const char* object_name ) const;
@@ -112,9 +132,15 @@ private:
     QString m_server_executable;
     QString m_server_target_wrapper_executable;
     QString m_volume_data_path;
+    QString m_point_data_path;
     QString m_object_data_path;
     QString m_output_dir_path;
+    QString m_screenshot_dir_path;
+    QString m_report_path;
     QString m_video_file_path;
+    std::vector<ScreenshotEntry> m_screenshots;
+    std::vector<StepEntry> m_steps;
+    bool m_test_succeeded = false;
 };
 }
 

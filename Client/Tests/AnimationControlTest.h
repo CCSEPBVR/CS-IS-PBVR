@@ -66,7 +66,7 @@ private:
     bool waitForCondition( const std::function<bool()>& condition, int timeout_ms, int interval_ms = 50 ) const;
     QFileDialog* waitForFileDialog( int timeout_ms ) const;
     void selectFileFromDialog( const QString& file_path, bool require_existing_file ) const;
-    void startVideoRecording();
+    void startVideoRecording( QWidget* target_window );
     void stopVideoRecording();
     void bringWindowToFront( MainWindow* window ) const;
     void setLineEditText( QLineEdit* line_edit, const QString& text ) const;
@@ -92,6 +92,7 @@ private:
     QString m_capture_base_name;
     QString m_capture_dir_path;
     QString m_original_current_path;
+    bool m_video_recording_available = false;
 };
 }
 

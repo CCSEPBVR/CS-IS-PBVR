@@ -1,6 +1,8 @@
 #include "CommunicationSettingTest.h"
 
 #include <QCoreApplication>
+#include <QEvent>
+#include <QEventLoop>
 #include <QDate>
 #include <QDir>
 #include <QElapsedTimer>
@@ -24,12 +26,10 @@
 
 namespace
 {
-constexpr int k_server_start_timeout_ms = 10000;
 constexpr int k_connect_timeout_ms = 15000;
 constexpr int k_disconnect_timeout_ms = 15000;
 constexpr int k_object_load_timeout_ms = 120000;
 constexpr int k_jump_button_enable_timeout_ms = 120000;
-constexpr int k_server_message_timeout_ms = 120000;
 constexpr int k_recording_finish_timeout_ms = 15000;
 constexpr int k_window_settle_ms = 500;
 constexpr int k_short_wait_ms = 1000;
@@ -70,7 +70,7 @@ namespace ClientTests
 QString CommunicationSettingTest::envOrDefault( const char* name, const QString& fallback ) const
 {
     const QString value = qEnvironmentVariable( name );
-    return value.isEmpty() ? fallback : value;
+    return value.isEmpty() ? ClientTests::configuredPath( name, repoRootPath(), fallback ) : value;
 }
 
 QString CommunicationSettingTest::repoRootPath() const
@@ -109,6 +109,9 @@ bool CommunicationSettingTest::waitForCondition( const std::function<bool()>& co
 
 void CommunicationSettingTest::startVideoRecording()
 {
+#ifdef Q_OS_WIN
+    return;
+#else
     if ( QFileInfo::exists( m_video_file_path ) )
     {
         QVERIFY2(
@@ -130,10 +133,15 @@ void CommunicationSettingTest::startVideoRecording()
     QVERIFY2(
         m_recording_process.waitForStarted( 5000 ),
         qPrintable( QStringLiteral( "Failed to start video recording: %1" ).arg( m_recording_process.errorString() ) ) );
+#endif
 }
 
 void CommunicationSettingTest::stopVideoRecording()
 {
+#ifdef Q_OS_WIN
+    Q_UNUSED( m_recording_process );
+    return;
+#else
     if ( m_recording_process.state() == QProcess::NotRunning )
     {
         QVERIFY2(
@@ -166,20 +174,7 @@ void CommunicationSettingTest::stopVideoRecording()
     QVERIFY2(
         QFileInfo::exists( m_video_file_path ),
         qPrintable( QStringLiteral( "Recorded video was not created: %1" ).arg( m_video_file_path ) ) );
-}
-
-void CommunicationSettingTest::appendServerOutput()
-{
-    if ( m_server_process.bytesAvailable() > 0 || m_server_process.waitForReadyRead( 10 ) )
-    {
-        m_server_output_buffer.append( QString::fromLocal8Bit( m_server_process.readAll() ) );
-    }
-}
-
-void CommunicationSettingTest::clearServerOutput()
-{
-    appendServerOutput();
-    m_server_output_buffer.clear();
+#endif
 }
 
 void CommunicationSettingTest::bringWindowToFront( MainWindow* window ) const
@@ -439,35 +434,6 @@ void CommunicationSettingTest::clickJumpAndWaitForCompletion( const ClientHandle
     QTest::qWait( k_jump_finish_wait_ms );
 }
 
-void CommunicationSettingTest::waitForServerSamplingMessage( const QString& text )
-{
-    QVERIFY2(
-        waitForCondition(
-            [this, text]()
-            {
-                appendServerOutput();
-                return m_server_output_buffer.contains( text, Qt::CaseSensitive );
-            },
-            k_server_message_timeout_ms,
-            100 ),
-        qPrintable( QStringLiteral( "Server output did not contain '%1'. Current output: %2" )
-                        .arg( text, m_server_output_buffer ) ) );
-
-    markSamplingCheckVerified( text );
-}
-
-void CommunicationSettingTest::markSamplingCheckVerified( const QString& text )
-{
-    for ( SamplingCheckEntry& entry : m_sampling_checks )
-    {
-        if ( entry.expected_message == text )
-        {
-            entry.verified = true;
-            return;
-        }
-    }
-}
-
 void CommunicationSettingTest::writeSummaryReport() const
 {
     QFile report_file( m_summary_file_path );
@@ -478,23 +444,12 @@ void CommunicationSettingTest::writeSummaryReport() const
     QTextStream stream( &report_file );
     stream << "# CommunicationSettingTest\n\n";
     stream << "- Result: " << ( m_test_succeeded ? "PASS" : "FAIL" ) << "\n";
-    stream << "- Client executable: `" << m_client_executable << "`\n";
-    stream << "- Server executable: `" << m_server_executable << "`\n";
     stream << "- Volume data: `" << m_volume_data_path << "`\n";
     stream << "- Transfer function: `" << m_transfer_function_path << "`\n";
     stream << "- Video: `" << m_video_file_path << "`\n";
     stream << "- Output directory: `" << m_output_dir_path << "`\n\n";
-    stream << "## Server Sampling Checks\n\n";
-
-    for ( const SamplingCheckEntry& entry : m_sampling_checks )
-    {
-        stream << "- " << entry.label << ": " << ( entry.verified ? "PASS" : "NOT VERIFIED" ) << "\n";
-        stream << "  Expected message: `" << entry.expected_message << "`\n";
-    }
-
-    stream << "\n## Notes\n\n";
-    stream << "- This report records whether CommunicationSettingTest confirmed each expected server output string.\n";
-    stream << "- If an item is `NOT VERIFIED`, the scenario stopped before that server message was confirmed.\n";
+    stream << "## Notes\n\n";
+    stream << "- Server stdout sampling checks are covered by CommunicationMessageTest as outgoing JSON checks.\n";
 }
 
 void CommunicationSettingTest::initTestCase()
@@ -502,34 +457,20 @@ void CommunicationSettingTest::initTestCase()
     const QString date_stamp = QDate::currentDate().toString( QStringLiteral( "yyyyMMdd" ) );
     m_client_executable = envOrDefault(
         "PBVR_CLIENT_EXECUTABLE",
-        QStringLiteral( "/path/to/CS-IS-PBVR/Client/build/Qt_6_11_0_for_macOS-Release/App/pbvr_client.app/Contents/MacOS/pbvr_client" ) );
-    m_server_executable = envOrDefault(
-        "PBVR_SERVER_EXECUTABLE",
-        QStringLiteral( "/path/to/CS-IS-PBVR/Server/pbvr_server" ) );
+        ClientTests::configuredPath( "PBVR_CLIENT_EXECUTABLE", repoRootPath() ) );
     m_volume_data_path = envOrDefault(
         "PBVR_VOLUME_DATA",
-        QStringLiteral( "/path/to/reg_test_data/unstruct/mej_iofiles_downsize4_step80_90/Piece/example.pfl" ) );
+        ClientTests::configuredPath( "MEJ_VOLUME_DATA", repoRootPath() ) );
     m_transfer_function_path = envOrDefault(
-        "PBVR_TRANSFER_FUNCTION",
-        QStringLiteral( "/path/to/reg_test_data/unstruct/mej_v2.tfe" ) );
+        "MEJ_TRANSFER_FUNCTION",
+        ClientTests::configuredPath( "MEJ_TRANSFER_FUNCTION", repoRootPath() ) );
     m_output_dir_path = envOrDefault(
         "PBVR_TEST_OUTPUT_DIR",
         ClientTests::datedTestOutputDir( repoRootPath(), date_stamp ) );
     m_video_file_path = QDir( m_output_dir_path ).absoluteFilePath( QStringLiteral( "CommunicationSettingTest.mov" ) );
     m_summary_file_path = QDir( m_output_dir_path ).absoluteFilePath( QStringLiteral( "CommunicationSettingTest.md" ) );
-    m_sampling_checks = {
-        { QStringLiteral( "Uniform sampling" ), QStringLiteral( "GPU - Uniform sampling" ), false },
-        { QStringLiteral( "Metropolis sampling" ), QStringLiteral( "GPU - Metropolis sampling" ), false },
-        { QStringLiteral( "Rejection sampling" ), QStringLiteral( "GPU - Rejection sampling" ), false }
-    };
     m_test_succeeded = false;
 
-    QVERIFY2(
-        QFileInfo::exists( m_client_executable ),
-        qPrintable( QStringLiteral( "Client executable not found: %1" ).arg( m_client_executable ) ) );
-    QVERIFY2(
-        QFileInfo::exists( m_server_executable ),
-        qPrintable( QStringLiteral( "Server executable not found: %1" ).arg( m_server_executable ) ) );
     QVERIFY2(
         QFileInfo::exists( m_volume_data_path ),
         qPrintable( QStringLiteral( "Volume data file not found: %1" ).arg( m_volume_data_path ) ) );
@@ -540,14 +481,6 @@ void CommunicationSettingTest::initTestCase()
         QDir().mkpath( m_output_dir_path ),
         qPrintable( QStringLiteral( "Failed to create output directory: %1" ).arg( m_output_dir_path ) ) );
 
-    m_server_process.setProgram( m_server_executable );
-    m_server_process.setWorkingDirectory( QFileInfo( m_server_executable ).absolutePath() );
-    m_server_process.setProcessChannelMode( QProcess::MergedChannels );
-    m_server_process.start();
-
-    QVERIFY2(
-        m_server_process.waitForStarted( k_server_start_timeout_ms ),
-        qPrintable( QStringLiteral( "Failed to start server: %1" ).arg( m_server_process.errorString() ) ) );
 }
 
 void CommunicationSettingTest::cleanupTestCase()
@@ -555,12 +488,6 @@ void CommunicationSettingTest::cleanupTestCase()
     if ( m_recording_process.state() != QProcess::NotRunning )
     {
         stopVideoRecording();
-    }
-
-    if ( m_server_process.state() != QProcess::NotRunning )
-    {
-        m_server_process.kill();
-        m_server_process.waitForFinished( 5000 );
     }
 
     writeSummaryReport();
@@ -587,30 +514,28 @@ void CommunicationSettingTest::performs_communication_setting_scenario()
     logStep( QStringLiteral( "scenario: uniform begin" ) );
     configureLocalSampling( client, client.uniform_radio );
     waitForObjectAndApply( client );
-    clearServerOutput();
     clickJumpAndWaitForCompletion( client );
-    waitForServerSamplingMessage( QStringLiteral( "GPU - Uniform sampling" ) );
     QTest::qWait( k_short_wait_ms );
 
     logStep( QStringLiteral( "scenario: metropolis begin" ) );
     ensureDisconnected( client );
     configureLocalSampling( client, client.metropolis_radio );
     waitForObjectAndApply( client );
-    clearServerOutput();
     clickJumpAndWaitForCompletion( client );
-    waitForServerSamplingMessage( QStringLiteral( "GPU - Metropolis sampling" ) );
     QTest::qWait( k_short_wait_ms );
 
     logStep( QStringLiteral( "scenario: rejection begin" ) );
     ensureDisconnected( client );
     configureLocalSampling( client, client.rejection_radio );
     waitForObjectAndApply( client );
-    clearServerOutput();
     clickJumpAndWaitForCompletion( client );
-    waitForServerSamplingMessage( QStringLiteral( "GPU - Rejection sampling" ) );
     QTest::qWait( k_short_wait_ms );
 
     stopVideoRecording();
+    client_window.close();
+    QCoreApplication::sendPostedEvents( nullptr, 0 );
+    QCoreApplication::processEvents( QEventLoop::AllEvents, k_window_settle_ms );
+    QCoreApplication::sendPostedEvents( nullptr, QEvent::DeferredDelete );
     m_test_succeeded = true;
     logStep( QStringLiteral( "scenario: completed" ) );
 }

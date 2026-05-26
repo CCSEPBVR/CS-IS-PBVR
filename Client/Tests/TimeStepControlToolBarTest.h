@@ -10,6 +10,7 @@ class QFileDialog;
 class QPushButton;
 class QSpinBox;
 class QToolBar;
+class QWidget;
 
 namespace ClientTests
 {
@@ -31,7 +32,7 @@ private:
     void selectFileFromDialog( const QString& file_path ) const;
     void clickButtonAndWait( QPushButton* button, int wait_ms ) const;
     QList<QSpinBox*> findSpinBoxes( QToolBar* tool_bar ) const;
-    void startVideoRecording();
+    void startVideoRecording( QWidget* target_window );
     void stopVideoRecording();
 
     QProcess m_recording_process;
@@ -39,6 +40,7 @@ private:
     QString m_object_file_path;
     QString m_output_dir_path;
     QString m_video_file_path;
+    bool m_video_recording_available = false;
 };
 }
 

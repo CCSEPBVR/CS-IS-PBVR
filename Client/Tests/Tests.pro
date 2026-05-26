@@ -6,7 +6,7 @@ CONFIG += console testcase
 QT += testlib
 
 TARGET = pbvr_client_qtest
-CLIENT_DIR = $$clean_path($$PWD/..)
+CLIENT_DIR = $$clean_path($$OUT_PWD/..)
 
 INCLUDEPATH += $$PWD
 INCLUDEPATH += $$PWD/../App
@@ -205,6 +205,7 @@ RESOURCES += \
 
 win32 {
     LIBS += ws2_32.lib
+    LIBS += user32.lib
     CONFIG(release, debug|release){
         LIBS += -L$$CLIENT_DIR/Widgets/release -lWidgets
         LIBS += -L$$CLIENT_DIR/FunctionParser/release -lFunctionParser

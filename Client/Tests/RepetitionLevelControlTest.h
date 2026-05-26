@@ -10,6 +10,7 @@
 class QLineEdit;
 class QPushButton;
 class QRadioButton;
+class QSpinBox;
 
 class MainWindow;
 class Communication;
@@ -50,6 +51,7 @@ private:
         QPushButton* jump_button = nullptr;
         QPushButton* repetition_apply_button = nullptr;
         QRadioButton* remote_viz_client_server_radio = nullptr;
+        QSpinBox* new_repetition_level_spin_box = nullptr;
         QLineEdit* volume_data_path_line_edit = nullptr;
         QLineEdit* id_line_edit = nullptr;
         QLineEdit* object_name_line_edit = nullptr;
@@ -76,7 +78,8 @@ private:
     void configureRemoteVisualization( const ClientHandles& client ) const;
     void waitForObjectAndApply( const ClientHandles& client ) const;
     void clickJumpAndWaitForCompletion( const ClientHandles& client ) const;
-    void openRepetitionLevelControlAndApply( const ClientHandles& client ) const;
+    void openRepetitionLevelControl( const ClientHandles& client ) const;
+    void applyRepetitionLevel( const ClientHandles& client, int repetition_level ) const;
 
     QProcess m_server_process;
     QString m_client_executable;

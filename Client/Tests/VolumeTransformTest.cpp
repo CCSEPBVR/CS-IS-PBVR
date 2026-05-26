@@ -68,7 +68,7 @@ namespace ClientTests
 QString VolumeTransformTest::envOrDefault( const char* name, const QString& fallback ) const
 {
     const QString value = qEnvironmentVariable( name );
-    return value.isEmpty() ? fallback : value;
+    return value.isEmpty() ? ClientTests::configuredPath( name, repoRootPath(), fallback ) : value;
 }
 
 QString VolumeTransformTest::repoRootPath() const
@@ -172,7 +172,7 @@ void VolumeTransformTest::writeMarkdownReport() const
     stream << "- 結果: " << ( m_test_succeeded ? "PASS" : "FAIL" ) << "\n";
     stream << "- クライアントプログラム: `" << m_client_executable << "`\n";
     stream << "- サーバプログラム: `" << m_server_executable << "`\n";
-    stream << "- サーバ起動ラッパー: `" << m_server_target_wrapper_executable << "`\n";
+    stream << "- サーバターゲットラッパー: `" << m_server_target_wrapper_executable << "`\n";
     stream << "- ボリュームデータ: `" << m_volume_data_path << "`\n";
     stream << "- 出力先: `" << m_output_dir_path << "`\n";
     stream << "- スクリーンショット出力先: `" << m_screenshot_dir_path << "`\n\n";
@@ -183,16 +183,35 @@ void VolumeTransformTest::writeMarkdownReport() const
         stream << "- " << ( step.completed ? "PASS" : "NOT RUN" ) << ": " << step.description << "\n";
     }
 
+    const QString auto_status = m_test_succeeded ? QStringLiteral( "PASS" ) : QStringLiteral( "FAIL" );
+    stream << "\n## 自動判定項目\n\n";
+    stream << "- " << auto_status << ": Communication.ui の connectPushButton / disconnectPushButton / remoteVizClientServerRadioButton / volumeDataFilePathLineEdit / settingApplyPushButton を取得できること。\n";
+    stream << "- " << auto_status << ": connectPushButton 押下後に接続状態となり、IDLineEdit にIDが表示されること。\n";
+    stream << "- " << auto_status << ": volumeDataFilePathLineEdit に TestPathConfig.ini の SPX_VOLUME_DATA を入力できること。\n";
+    stream << "- " << auto_status << ": ObjectEditor.ui の nameLineEdit にテキストが入り、applyPushButton を押せること。\n";
+    stream << "- " << auto_status << ": PlayBackControlToolBar.cpp の m_jump_push_button を押下後、再度有効になること。\n";
+    stream << "- " << auto_status << ": VolumeTransform.ui の各 DoubleSpinBox に指定値を設定でき、applyPushButton を押せること。\n";
+    stream << "- " << auto_status << ": Markdown レポートとスクリーンショットファイルを出力できること。\n\n";
+
+    stream << "## 目視確認対象\n\n";
+    for ( const ScreenshotEntry& entry : m_screenshots )
+    {
+        stream << "- 要確認: " << entry.caption << "\n";
+    }
+
     stream << "\n## スクリーンショット\n\n";
     for ( const ScreenshotEntry& entry : m_screenshots )
     {
         stream << "### " << entry.caption << "\n\n";
         stream << "!["
                << entry.caption
-               << "](img/"
+               << "](./img/"
                << entry.file_name
                << ")\n\n";
     }
+
+    stream << "## 未自動化・保留事項\n\n";
+    stream << "- VolumeTransform 適用後の3D表示が期待通り変化しているかは、スクリーンショットを目視確認してください。\n";
 }
 
 void VolumeTransformTest::markStepCompleted( const QString& description )
@@ -371,16 +390,16 @@ void VolumeTransformTest::initTestCase()
     const QString date_stamp = QDate::currentDate().toString( QStringLiteral( "yyyyMMdd" ) );
     m_client_executable = envOrDefault(
         "PBVR_CLIENT_EXECUTABLE",
-        QStringLiteral( "/path/to/CS-IS-PBVR/Client/build/Qt_6_11_0_for_macOS-Release/App/pbvr_client.app/Contents/MacOS/pbvr_client" ) );
+        ClientTests::configuredPath( "PBVR_CLIENT_EXECUTABLE", repoRootPath() ) );
     m_server_executable = envOrDefault(
         "PBVR_SERVER_EXECUTABLE",
-        QStringLiteral( "/path/to/CS-IS-PBVR/Server/pbvr_server" ) );
+        ClientTests::configuredPath( "PBVR_SERVER_EXECUTABLE", repoRootPath() ) );
     m_server_target_wrapper_executable = envOrDefault(
         "PBVR_SERVER_TARGET_WRAPPER_EXECUTABLE",
-        sourceTreePath( QStringLiteral( "server_target_wrapper.sh" ) ) );
+        ClientTests::configuredPath( "PBVR_SERVER_TARGET_WRAPPER_EXECUTABLE", repoRootPath() ) );
     m_volume_data_path = envOrDefault(
         "PBVR_VOLUME_DATA",
-        QStringLiteral( "/path/to/SampleData/ucd/old/out/spx.pfl" ) );
+        ClientTests::configuredPath( "SPX_VOLUME_DATA", repoRootPath() ) );
     m_output_dir_path = envOrDefault(
         "PBVR_TEST_OUTPUT_DIR",
         ClientTests::datedTestOutputDir( repoRootPath(), date_stamp, QStringLiteral( "VolumeTransformTest" ) ) );
@@ -391,15 +410,6 @@ void VolumeTransformTest::initTestCase()
     m_test_succeeded = false;
 
     QVERIFY2(
-        QFileInfo::exists( m_client_executable ),
-        qPrintable( QStringLiteral( "Client executable not found: %1" ).arg( m_client_executable ) ) );
-    QVERIFY2(
-        QFileInfo::exists( m_server_executable ),
-        qPrintable( QStringLiteral( "Server executable not found: %1" ).arg( m_server_executable ) ) );
-    QVERIFY2(
-        QFileInfo::exists( m_server_target_wrapper_executable ),
-        qPrintable( QStringLiteral( "Server target wrapper executable not found: %1" ).arg( m_server_target_wrapper_executable ) ) );
-    QVERIFY2(
         QFileInfo::exists( m_volume_data_path ),
         qPrintable( QStringLiteral( "Volume data file not found: %1" ).arg( m_volume_data_path ) ) );
     QVERIFY2(
@@ -409,14 +419,6 @@ void VolumeTransformTest::initTestCase()
         QDir().mkpath( m_screenshot_dir_path ),
         qPrintable( QStringLiteral( "Failed to create screenshot directory: %1" ).arg( m_screenshot_dir_path ) ) );
 
-    m_server_process.setProgram( m_server_target_wrapper_executable );
-    m_server_process.setArguments( { m_server_executable } );
-    m_server_process.setWorkingDirectory( QFileInfo( m_server_executable ).absolutePath() );
-    m_server_process.start();
-
-    QVERIFY2(
-        m_server_process.waitForStarted( k_server_start_timeout_ms ),
-        qPrintable( QStringLiteral( "Failed to start server: %1" ).arg( m_server_process.errorString() ) ) );
 }
 
 void VolumeTransformTest::cleanupTestCase()
@@ -439,7 +441,7 @@ void VolumeTransformTest::performs_volume_transform_scenario()
     QVERIFY2( g_test_app != nullptr, "Test application is not initialized" );
 
     MainWindow main_window( *g_test_app );
-    main_window.show();
+    showTestWindowCentered( &main_window );
     QVERIFY( QTest::qWaitForWindowExposed( &main_window ) );
 
     ClientHandles client = resolveClientHandles( main_window );
@@ -459,8 +461,8 @@ void VolumeTransformTest::performs_volume_transform_scenario()
     markStepCompleted( QStringLiteral( "PlayBackControlToolBar.cpp: m_jump_push_buttonを押し、有効化を待ってから3秒待機しました。" ) );
 
     captureVolumeTransformState(
-        QStringLiteral( "00_after_jump.png" ),
-        QStringLiteral( "ジャンプ完了後" ) );
+        QStringLiteral( "00_before_volume_transform.png" ),
+        QStringLiteral( "VolumeTransformを変更する前のオブジェクト" ) );
 
     bringVolumeTransformToFront( client.volume_transform );
     markStepCompleted( QStringLiteral( "VolumeTransform.uiを開きました。" ) );
@@ -468,65 +470,63 @@ void VolumeTransformTest::performs_volume_transform_scenario()
     setSpinBoxValue( client.translation_x_axis_spin_box, 1.0 );
     markStepCompleted( QStringLiteral( "VolumeTransform.ui: translationXAxisDoubleSpinBoxに1を入力しました。" ) );
     applyVolumeTransform( client, QStringLiteral( "VolumeTransform.ui: applyPushButtonを押しました。" ) );
-    captureVolumeTransformState( QStringLiteral( "01_translation_x_1.png" ), QStringLiteral( "translationXAxisDoubleSpinBox 1" ) );
+    captureVolumeTransformState(
+        QStringLiteral( "01_translation_x_axis.png" ),
+        QStringLiteral( "オブジェクトがX軸方向に移動することを表す" ) );
 
     setSpinBoxValue( client.translation_x_axis_spin_box, 0.0 );
     markStepCompleted( QStringLiteral( "VolumeTransform.ui: translationXAxisDoubleSpinBoxに0を入力しました。" ) );
-    applyVolumeTransform( client, QStringLiteral( "VolumeTransform.ui: applyPushButtonを押しました。" ) );
-
     setSpinBoxValue( client.translation_y_axis_spin_box, 1.0 );
     markStepCompleted( QStringLiteral( "VolumeTransform.ui: translationYAxisDoubleSpinBoxに1を入力しました。" ) );
     applyVolumeTransform( client, QStringLiteral( "VolumeTransform.ui: applyPushButtonを押しました。" ) );
-    captureVolumeTransformState( QStringLiteral( "02_translation_y_1.png" ), QStringLiteral( "translationYAxisDoubleSpinBox 1" ) );
+    captureVolumeTransformState(
+        QStringLiteral( "02_translation_y_axis.png" ),
+        QStringLiteral( "オブジェクトがY軸方向に移動することを表す" ) );
 
     setSpinBoxValue( client.translation_y_axis_spin_box, 0.0 );
     markStepCompleted( QStringLiteral( "VolumeTransform.ui: translationYAxisDoubleSpinBoxに0を入力しました。" ) );
-    applyVolumeTransform( client, QStringLiteral( "VolumeTransform.ui: applyPushButtonを押しました。" ) );
-
     setSpinBoxValue( client.translation_z_axis_spin_box, 1.0 );
     markStepCompleted( QStringLiteral( "VolumeTransform.ui: translationZAxisDoubleSpinBoxに1を入力しました。" ) );
     applyVolumeTransform( client, QStringLiteral( "VolumeTransform.ui: applyPushButtonを押しました。" ) );
-    captureVolumeTransformState( QStringLiteral( "03_translation_z_1.png" ), QStringLiteral( "translationZAxisDoubleSpinBox 1" ) );
+    captureVolumeTransformState(
+        QStringLiteral( "03_translation_z_axis.png" ),
+        QStringLiteral( "オブジェクトがZ軸方向に移動することを表す" ) );
 
     setSpinBoxValue( client.translation_z_axis_spin_box, 0.0 );
     markStepCompleted( QStringLiteral( "VolumeTransform.ui: translationZAxisDoubleSpinBoxに0を入力しました。" ) );
-    applyVolumeTransform( client, QStringLiteral( "VolumeTransform.ui: applyPushButtonを押しました。" ) );
-
     setSpinBoxValue( client.scale_spin_box, 2.0 );
     markStepCompleted( QStringLiteral( "VolumeTransform.ui: scaleDoubleSpinBoxに2を入力しました。" ) );
     applyVolumeTransform( client, QStringLiteral( "VolumeTransform.ui: applyPushButtonを押しました。" ) );
-    captureVolumeTransformState( QStringLiteral( "04_scale_2.png" ), QStringLiteral( "scaleDoubleSpinBox 2" ) );
+    captureVolumeTransformState(
+        QStringLiteral( "04_scale_2.png" ),
+        QStringLiteral( "オブジェクトが拡大したことを表す" ) );
 
     setSpinBoxValue( client.scale_spin_box, 1.0 );
     markStepCompleted( QStringLiteral( "VolumeTransform.ui: scaleDoubleSpinBoxに1を入力しました。" ) );
-    applyVolumeTransform( client, QStringLiteral( "VolumeTransform.ui: applyPushButtonを押しました。" ) );
-
     setSpinBoxValue( client.rotation_x_axis_spin_box, 90.0 );
     markStepCompleted( QStringLiteral( "VolumeTransform.ui: rotationXAxisDoubleSpinBoxに90を入力しました。" ) );
     applyVolumeTransform( client, QStringLiteral( "VolumeTransform.ui: applyPushButtonを押しました。" ) );
-    captureVolumeTransformState( QStringLiteral( "05_rotation_x_90.png" ), QStringLiteral( "rotationXAxisDoubleSpinBox 90" ) );
+    captureVolumeTransformState(
+        QStringLiteral( "05_rotation_x_axis.png" ),
+        QStringLiteral( "オブジェクトがX軸に対して回転することを表す" ) );
 
     setSpinBoxValue( client.rotation_x_axis_spin_box, 0.0 );
     markStepCompleted( QStringLiteral( "VolumeTransform.ui: rotationXAxisDoubleSpinBoxに0を入力しました。" ) );
-    applyVolumeTransform( client, QStringLiteral( "VolumeTransform.ui: applyPushButtonを押しました。" ) );
-
     setSpinBoxValue( client.rotation_y_axis_spin_box, 90.0 );
     markStepCompleted( QStringLiteral( "VolumeTransform.ui: rotationYAxisDoubleSpinBoxに90を入力しました。" ) );
     applyVolumeTransform( client, QStringLiteral( "VolumeTransform.ui: applyPushButtonを押しました。" ) );
-    captureVolumeTransformState( QStringLiteral( "06_rotation_y_90.png" ), QStringLiteral( "rotationYAxisDoubleSpinBox 90" ) );
+    captureVolumeTransformState(
+        QStringLiteral( "06_rotation_y_axis.png" ),
+        QStringLiteral( "オブジェクトがY軸に対して回転することを表す" ) );
 
     setSpinBoxValue( client.rotation_y_axis_spin_box, 0.0 );
     markStepCompleted( QStringLiteral( "VolumeTransform.ui: rotationYAxisDoubleSpinBoxに0を入力しました。" ) );
-    applyVolumeTransform( client, QStringLiteral( "VolumeTransform.ui: applyPushButtonを押しました。" ) );
-
     setSpinBoxValue( client.rotation_z_axis_spin_box, 90.0 );
     markStepCompleted( QStringLiteral( "VolumeTransform.ui: rotationZAxisDoubleSpinBoxに90を入力しました。" ) );
     applyVolumeTransform( client, QStringLiteral( "VolumeTransform.ui: applyPushButtonを押しました。" ) );
-    captureVolumeTransformState( QStringLiteral( "07_rotation_z_90.png" ), QStringLiteral( "rotationZAxisDoubleSpinBox 90" ) );
-
-    setSpinBoxValue( client.rotation_z_axis_spin_box, 0.0 );
-    markStepCompleted( QStringLiteral( "VolumeTransform.ui: rotationZAxisDoubleSpinBoxに0を入力しました。" ) );
-    applyVolumeTransform( client, QStringLiteral( "VolumeTransform.ui: applyPushButtonを押しました。" ) );
+    captureVolumeTransformState(
+        QStringLiteral( "07_rotation_z_axis.png" ),
+        QStringLiteral( "オブジェクトがZ軸に対して回転することを表す" ) );
 
     m_test_succeeded = true;
 }

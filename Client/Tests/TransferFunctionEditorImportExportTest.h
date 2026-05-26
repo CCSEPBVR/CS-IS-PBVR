@@ -21,7 +21,9 @@ class Communication;
 class ObjectEditor;
 class PlayBackControlToolBar;
 
-class TransferFunctionEditor::ImportExportTest : public QObject
+namespace TransferFunctionEditorTest
+{
+class ImportExportTest : public QObject
 {
     Q_OBJECT
 
@@ -73,6 +75,7 @@ private:
     bool waitForCondition( const std::function<bool()>& condition, int timeout_ms, int interval_ms = 50 ) const;
     void bringWindowToFront( MainWindow* window ) const;
     void bringTransferFunctionEditorToFront( TransferFunctionEditor* editor ) const;
+    void closeTransferFunctionEditor( TransferFunctionEditor* editor ) const;
     void setLineEditText( QLineEdit* line_edit, const QString& text ) const;
     void saveScreenshot( const QString& file_name, const QString& caption );
     void writeMarkdownReport() const;
@@ -105,5 +108,6 @@ private:
     std::vector<StepEntry> m_steps;
     bool m_test_succeeded = false;
 };
+}
 
 #endif // TRANSFERFUNCTIONEDITORIMPORTEXPORTTEST_H

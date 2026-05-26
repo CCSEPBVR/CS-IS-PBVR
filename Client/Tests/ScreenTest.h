@@ -29,8 +29,6 @@ private:
     };
 
     QString envOrDefault( const char* name, const QString& fallback ) const;
-    QString defaultClientExecutablePath() const;
-    QString defaultServerExecutablePath() const;
     QString repoRootPath() const;
     QString sourceTreePath( const QString& relative_path_from_repo_root ) const;
     bool waitForCondition( const std::function<bool()>& condition, int timeout_ms, int interval_ms = 50 ) const;

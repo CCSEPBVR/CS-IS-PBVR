@@ -14,16 +14,20 @@
 #include <QFile>
 #include <QFileDialog>
 #include <QFileInfo>
+#include <QGuiApplication>
 #include <QItemSelectionModel>
 #include <QLabel>
 #include <QLineEdit>
 #include <QListView>
+#include <QPixmap>
 #include <QPushButton>
 #include <QRadioButton>
+#include <QScreen>
 #include <QSpinBox>
 #include <QStandardItem>
 #include <QStandardItemModel>
 #include <QTest>
+#include <QTextStream>
 #include <QTimer>
 #include <QTreeView>
 #include <QWidget>
@@ -49,6 +53,7 @@ constexpr int k_jump_button_enable_timeout_ms = 120000;
 constexpr int k_recording_finish_timeout_ms = 15000;
 constexpr int k_window_settle_ms = 500;
 constexpr int k_short_wait_ms = 1000;
+constexpr int k_capture_settle_ms = 700;
 constexpr int k_dialog_timeout_ms = 15000;
 constexpr int k_button_retry_count = 3;
 constexpr int k_button_retry_wait_ms = 500;
@@ -69,6 +74,13 @@ QString connectionStateSummary(
         .arg( disconnect_button != nullptr && disconnect_button->isEnabled() ? QStringLiteral( "true" ) : QStringLiteral( "false" ) )
         .arg( id_line_edit != nullptr ? id_line_edit->text().trimmed() : QStringLiteral( "<null>" ) );
 }
+
+#ifdef Q_OS_WIN
+bool isWindowsDrivePathPart( const QString& part )
+{
+    return part.size() == 2 && part.at( 0 ).isLetter() && part.at( 1 ) == QChar( ':' );
+}
+#endif
 
 QString findRepoRootFrom( const QString& start_path )
 {
@@ -95,7 +107,7 @@ namespace ClientTests
 QString ObjectEditorTest::envOrDefault( const char* name, const QString& fallback ) const
 {
     const QString value = qEnvironmentVariable( name );
-    return value.isEmpty() ? fallback : value;
+    return value.isEmpty() ? ClientTests::configuredPath( name, repoRootPath(), fallback ) : value;
 }
 
 QString ObjectEditorTest::repoRootPath() const
@@ -134,6 +146,9 @@ bool ObjectEditorTest::waitForCondition( const std::function<bool()>& condition,
 
 void ObjectEditorTest::startVideoRecording()
 {
+#ifdef Q_OS_WIN
+    return;
+#else
     if ( QFileInfo::exists( m_video_file_path ) )
     {
         QVERIFY2(
@@ -155,10 +170,15 @@ void ObjectEditorTest::startVideoRecording()
     QVERIFY2(
         m_recording_process.waitForStarted( 5000 ),
         qPrintable( QStringLiteral( "Failed to start video recording: %1" ).arg( m_recording_process.errorString() ) ) );
+#endif
 }
 
 void ObjectEditorTest::stopVideoRecording()
 {
+#ifdef Q_OS_WIN
+    Q_UNUSED( m_recording_process );
+    return;
+#else
     if ( m_recording_process.state() == QProcess::NotRunning )
     {
         QVERIFY2(
@@ -191,6 +211,7 @@ void ObjectEditorTest::stopVideoRecording()
     QVERIFY2(
         QFileInfo::exists( m_video_file_path ),
         qPrintable( QStringLiteral( "Recorded video was not created: %1" ).arg( m_video_file_path ) ) );
+#endif
 }
 
 void ObjectEditorTest::bringWindowToFront( MainWindow* window ) const
@@ -212,6 +233,97 @@ void ObjectEditorTest::setLineEditText( QLineEdit* line_edit, const QString& tex
         QTest::keyClicks( line_edit, QDir::toNativeSeparators( text ) );
     }
     QCOMPARE( line_edit->text(), QDir::toNativeSeparators( text ) );
+}
+
+void ObjectEditorTest::saveScreenshot( const QString& file_name, const QString& caption )
+{
+    QTest::qWait( k_capture_settle_ms );
+    QScreen* screen = QGuiApplication::primaryScreen();
+    QVERIFY2( screen != nullptr, "Primary screen not found" );
+
+    const QString file_path = QDir( m_screenshot_dir_path ).absoluteFilePath( file_name );
+    const QPixmap screenshot = screen->grabWindow( 0 );
+    QVERIFY2( !screenshot.isNull(), "Failed to capture screenshot from the primary screen" );
+    QVERIFY2(
+        screenshot.save( file_path ),
+        qPrintable( QStringLiteral( "Failed to save screenshot: %1" ).arg( file_path ) ) );
+
+    m_screenshots.push_back( { file_name, caption } );
+}
+
+void ObjectEditorTest::writeMarkdownReport() const
+{
+    QFile report_file( m_report_path );
+    QVERIFY2(
+        report_file.open( QIODevice::WriteOnly | QIODevice::Text | QIODevice::Truncate ),
+        qPrintable( QStringLiteral( "Failed to open markdown report: %1" ).arg( m_report_path ) ) );
+
+    QTextStream stream( &report_file );
+    stream << "# ObjectEditorTest\n\n";
+    stream << "- 結果: " << ( m_test_succeeded ? "PASS" : "FAIL" ) << "\n";
+    stream << "- クライアントプログラム: `" << m_client_executable << "`\n";
+    stream << "- サーバプログラム: `" << m_server_executable << "`\n";
+    stream << "- ボリュームデータ: `" << m_volume_data_path << "`\n";
+    stream << "- SPXポイントデータ: `" << m_point_data_path << "`\n";
+    stream << "- ポリゴンデータ: `" << m_object_data_path << "`\n";
+    stream << "- 出力先: `" << m_output_dir_path << "`\n";
+    stream << "- スクリーンショット出力先: `" << m_screenshot_dir_path << "`\n\n";
+
+    stream << "## 実施手順\n\n";
+    for ( const StepEntry& step : m_steps )
+    {
+        stream << "- " << ( step.completed ? "PASS" : "NOT RUN" ) << ": " << step.description << "\n";
+    }
+    if ( m_steps.empty() )
+    {
+        stream << "- NOT RUN: テスト手順は実行されていない。\n";
+    }
+
+    stream << "\n## 自動判定項目\n\n";
+    stream << "- " << ( m_test_succeeded ? "PASS" : "FAIL" ) << ": 必要な UI 部品を objectName で取得できること。\n";
+    stream << "- " << ( m_test_succeeded ? "PASS" : "FAIL" ) << ": ファイル選択後に ObjectEditor の nameLineEdit が更新されること。\n";
+    stream << "- " << ( m_test_succeeded ? "PASS" : "FAIL" ) << ": Display / Keep Initial / Keep Final / Focus / Color / Opacity / Particle Limit / Coordinate の UI 値を設定できること。\n";
+    stream << "- " << ( m_test_succeeded ? "PASS" : "FAIL" ) << ": PlayBackControlToolBar の Jump / Next / First 操作後に対象ボタンが再度有効になること。\n";
+    stream << "- " << ( m_test_succeeded ? "PASS" : "FAIL" ) << ": スクリーンショットと Markdown レポートを指定ディレクトリへ保存できること。\n\n";
+
+    stream << "## 目視確認対象\n\n";
+    for ( const ScreenshotEntry& entry : m_screenshots )
+    {
+        stream << "- 要確認: " << entry.caption << "\n";
+    }
+    if ( m_screenshots.empty() )
+    {
+        stream << "- NOT RUN: スクリーンショットは保存されていない。\n";
+    }
+
+    stream << "\n## スクリーンショット\n\n";
+    for ( const ScreenshotEntry& entry : m_screenshots )
+    {
+        stream << "### " << entry.caption << "\n\n";
+        stream << "![" << entry.caption << "](./img/" << entry.file_name << ")\n\n";
+    }
+
+    stream << "## 未自動化・保留事項\n\n";
+    stream << "- 3D 表示内容が説明どおりかどうかは、保存したスクリーンショットを目視確認する。\n";
+}
+
+void ObjectEditorTest::addStep( const QString& description )
+{
+    m_steps.push_back( { description, false } );
+}
+
+void ObjectEditorTest::markStepCompleted( const QString& description )
+{
+    for ( StepEntry& step : m_steps )
+    {
+        if ( step.description == description )
+        {
+            step.completed = true;
+            return;
+        }
+    }
+
+    m_steps.push_back( { description, true } );
 }
 
 QString ObjectEditorTest::serverProcessSummary()
@@ -403,6 +515,28 @@ void ObjectEditorTest::ensureConnected( const ClientHandles& client )
     QFAIL( "Client did not enter the connected state after clicking connectPushButton" );
 }
 
+void ObjectEditorTest::ensureDisconnected( const ClientHandles& client ) const
+{
+    bringWindowToFront( client.main_window );
+    if ( client.connect_button->isEnabled() && !client.disconnect_button->isEnabled() )
+    {
+        return;
+    }
+
+    QVERIFY2( client.disconnect_button->isEnabled(), "disconnectPushButton is not enabled" );
+    QTest::mouseClick( client.disconnect_button, Qt::LeftButton );
+    QVERIFY2(
+        waitForCondition(
+            [client]()
+            {
+                return client.connect_button->isEnabled() && !client.disconnect_button->isEnabled();
+            },
+            k_connect_timeout_ms,
+            100 ),
+        "Client did not enter the disconnected state after clicking disconnectPushButton" );
+    QTest::qWait( k_short_wait_ms );
+}
+
 void ObjectEditorTest::configureRemoteVisualization( const ClientHandles& client ) const
 {
     bringWindowToFront( client.main_window );
@@ -418,6 +552,22 @@ void ObjectEditorTest::configureRemoteVisualization( const ClientHandles& client
     setLineEditText( client.volume_data_path_line_edit, m_volume_data_path );
     QTest::qWait( k_short_wait_ms );
     QTest::mouseClick( client.setting_apply_button, Qt::LeftButton );
+}
+
+void ObjectEditorTest::configureRemoteVisualizationWithoutVolume( const ClientHandles& client ) const
+{
+    bringWindowToFront( client.main_window );
+    if ( !client.remote_viz_client_server_radio->isChecked() )
+    {
+        QTest::mouseClick( client.remote_viz_client_server_radio, Qt::LeftButton );
+        QVERIFY2(
+            client.remote_viz_client_server_radio->isChecked(),
+            "remoteVizClientServerRadioButton was not checked" );
+    }
+    QTest::qWait( k_short_wait_ms );
+    setLineEditText( client.volume_data_path_line_edit, QString() );
+    QTest::mouseClick( client.setting_apply_button, Qt::LeftButton );
+    QTest::qWait( k_short_wait_ms );
 }
 
 void ObjectEditorTest::applyObjectEditor( const ClientHandles& client ) const
@@ -508,6 +658,34 @@ void ObjectEditorTest::clickJumpAndWaitForCompletion( const ClientHandles& clien
     QTest::qWait( k_short_wait_ms );
 }
 
+void ObjectEditorTest::clickNextAndWaitForCompletion( const ClientHandles& client ) const
+{
+    QVERIFY2(
+        waitForCondition(
+            [client]()
+            {
+                return client.next_button->isEnabled();
+            },
+            k_jump_button_enable_timeout_ms,
+            200 ),
+        "m_next_push_button did not become enabled within the timeout" );
+
+    QTest::mouseClick( client.next_button, Qt::LeftButton );
+    QTest::qWait( k_short_wait_ms );
+
+    QVERIFY2(
+        waitForCondition(
+            [client]()
+            {
+                return client.next_button->isEnabled();
+            },
+            k_jump_button_enable_timeout_ms,
+            200 ),
+        "m_next_push_button did not become enabled again within the timeout" );
+
+    QTest::qWait( k_short_wait_ms );
+}
+
 void ObjectEditorTest::selectObjectRow( const ClientHandles& client, int row ) const
 {
     QStandardItemModel* model = waitForObjectModel( client );
@@ -542,19 +720,19 @@ void ObjectEditorTest::setModelCheckState( const ClientHandles& client, int row,
     applyObjectEditor( client );
 }
 
-void ObjectEditorTest::setDisplayItemChecked( const ClientHandles& client, bool checked ) const
+void ObjectEditorTest::setDisplayItemChecked( const ClientHandles& client, int row, bool checked ) const
 {
-    setModelCheckState( client, 0, 2, checked, "ObjectEditor display item was not found" );
+    setModelCheckState( client, row, 2, checked, "ObjectEditor display item was not found" );
 }
 
-void ObjectEditorTest::setKeepInitialChecked( const ClientHandles& client, bool checked ) const
+void ObjectEditorTest::setKeepInitialChecked( const ClientHandles& client, int row, bool checked ) const
 {
-    setModelCheckState( client, 0, 3, checked, "ObjectEditor keepInitial item was not found" );
+    setModelCheckState( client, row, 3, checked, "ObjectEditor keepInitial item was not found" );
 }
 
-void ObjectEditorTest::setKeepFinalChecked( const ClientHandles& client, bool checked ) const
+void ObjectEditorTest::setKeepFinalChecked( const ClientHandles& client, int row, bool checked ) const
 {
-    setModelCheckState( client, 0, 4, checked, "ObjectEditor keepFinal item was not found" );
+    setModelCheckState( client, row, 4, checked, "ObjectEditor keepFinal item was not found" );
 }
 
 void ObjectEditorTest::setSpinBoxValue( QSpinBox* spin_box, int value, const char* object_name ) const
@@ -666,9 +844,19 @@ void ObjectEditorTest::selectFileFromDialog( const QString& file_path ) const
     const QFileInfo file_info( file_path );
     QVERIFY2( file_info.exists(), qPrintable( QStringLiteral( "Target file does not exist: %1" ).arg( file_path ) ) );
 
+    const QStringList name_filters = dialog->nameFilters();
+    for ( const QString& filter : name_filters )
+    {
+        if ( filter.contains( QStringLiteral( "All Files" ), Qt::CaseInsensitive ) ||
+             filter.contains( QStringLiteral( "*.*" ) ) )
+        {
+            dialog->selectNameFilter( filter );
+            break;
+        }
+    }
     dialog->setDirectory( file_info.absolutePath() );
     QTest::qWait( 300 );
-    dialog->selectFile( file_info.fileName() );
+    dialog->selectFile( file_info.absoluteFilePath() );
     QCoreApplication::processEvents();
 
     if ( auto* list_view = dialog->findChild<QListView*>( "listView" ) )
@@ -730,7 +918,15 @@ void ObjectEditorTest::selectFileFromRemoteDialog( QDialog* dialog, const QStrin
     auto* ok_button = find_button( QStringLiteral( "OK" ) );
     QVERIFY2( ok_button != nullptr, "Remote file dialog OK button was not found" );
 
-    const QStringList path_parts = QDir::cleanPath( file_path ).split( '/', Qt::SkipEmptyParts );
+    QStringList path_parts = QDir::cleanPath( file_path ).split( '/', Qt::SkipEmptyParts );
+#ifdef Q_OS_WIN
+    if ( !path_parts.isEmpty() && isWindowsDrivePathPart( path_parts.first() ) )
+    {
+        const QString target_drive = path_parts.first().toUpper();
+        logStep( QStringLiteral( "remote dialog: skipping local drive '%1'" ).arg( target_drive ) );
+        path_parts.removeFirst();
+    }
+#endif
     QString current_path = QStringLiteral( "/" );
 
     for ( int part_index = 0; part_index < path_parts.size(); ++part_index )
@@ -760,6 +956,7 @@ void ObjectEditorTest::selectFileFromRemoteDialog( QDialog* dialog, const QStrin
                 if ( index.data().toString() != part ) { continue; }
 
                 tree_view->scrollTo( index );
+                tree_view->setCurrentIndex( index );
                 tree_view->selectionModel()->setCurrentIndex(
                     index,
                     QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Rows );
@@ -768,7 +965,20 @@ void ObjectEditorTest::selectFileFromRemoteDialog( QDialog* dialog, const QStrin
                 if ( is_last )
                 {
                     logStep( QStringLiteral( "remote dialog: selecting file '%1'" ).arg( part ) );
-                    QTest::mouseClick( ok_button, Qt::LeftButton );
+                    const bool invoked = QMetaObject::invokeMethod( dialog, "onOk", Qt::DirectConnection );
+                    if ( !invoked )
+                    {
+                        QTest::mouseClick( ok_button, Qt::LeftButton );
+                    }
+                    QVERIFY2(
+                        waitForCondition(
+                            [dialog]()
+                            {
+                                return !dialog->isVisible();
+                            },
+                            k_dialog_timeout_ms,
+                            50 ),
+                        "Remote file dialog did not close after selecting the file" );
                 }
                 else
                 {
@@ -847,7 +1057,7 @@ void ObjectEditorTest::browseAndLoadObject( const ClientHandles& client, const Q
     bringWindowToFront( client.main_window );
     auto selection_finished = std::make_shared<bool>( false );
     QTimer::singleShot(
-        0,
+        300,
         qApp,
         [this, file_path, selection_finished]()
         {
@@ -889,7 +1099,6 @@ void ObjectEditorTest::browseAndLoadObject( const ClientHandles& client, const Q
             100 ),
         "ObjectEditor did not load the browsed object" );
     QTest::qWait( k_short_wait_ms );
-    applyObjectEditor( client );
 }
 
 void ObjectEditorTest::clickFirstAndWait( const ClientHandles& client ) const
@@ -917,58 +1126,55 @@ void ObjectEditorTest::initTestCase()
     const QString date_stamp = QDate::currentDate().toString( QStringLiteral( "yyyyMMdd" ) );
     m_client_executable = envOrDefault(
         "PBVR_CLIENT_EXECUTABLE",
-        QStringLiteral( "/path/to/CS-IS-PBVR/Client/build/Qt_6_11_0_for_macOS-Release/App/pbvr_client.app/Contents/MacOS/pbvr_client" ) );
+        ClientTests::configuredPath( "PBVR_CLIENT_EXECUTABLE", repoRootPath() ) );
     m_server_executable = envOrDefault(
         "PBVR_SERVER_EXECUTABLE",
-        QStringLiteral( "/path/to/CS-IS-PBVR/Server/pbvr_server" ) );
+        ClientTests::configuredPath( "PBVR_SERVER_EXECUTABLE", repoRootPath() ) );
     m_server_target_wrapper_executable = envOrDefault(
         "PBVR_SERVER_TARGET_WRAPPER_EXECUTABLE",
-        sourceTreePath( QStringLiteral( "server_target_wrapper.sh" ) ) );
+        ClientTests::configuredPath( "PBVR_SERVER_TARGET_WRAPPER_EXECUTABLE", repoRootPath() ) );
     m_volume_data_path = envOrDefault(
         "PBVR_VOLUME_DATA",
-        QStringLiteral( "/path/to/reg_test_data/unstruct/ucd/spx/spx.pfi" ) );
+        ClientTests::configuredPath( "SPX_VOLUME_DATA", repoRootPath() ) );
+    m_point_data_path = envOrDefault(
+        "SPX_POINT_DATA",
+        ClientTests::configuredPath( "SPX_POINT_DATA", repoRootPath() ) );
     m_object_data_path = envOrDefault(
-        "PBVR_OBJECT_DATA",
-        QStringLiteral( "/path/to/SampleData/stl/clock/clock_00000.stl" ) );
+        "CLOCK_POLYGON_DATA",
+        ClientTests::configuredPath( "CLOCK_POLYGON_DATA", repoRootPath() ) );
     m_output_dir_path = envOrDefault(
         "PBVR_TEST_OUTPUT_DIR",
-        ClientTests::datedTestOutputDir( repoRootPath(), date_stamp ) );
+        ClientTests::datedTestOutputDir( repoRootPath(), date_stamp, QStringLiteral( "ObjectEditorTest" ) ) );
+    m_screenshot_dir_path = envOrDefault(
+        "PBVR_SCREENSHOT_DIR",
+        QDir( m_output_dir_path ).absoluteFilePath( QStringLiteral( "img" ) ) );
+    m_report_path = QDir( m_output_dir_path ).absoluteFilePath( QStringLiteral( "TestResult.md" ) );
     m_video_file_path = QDir( m_output_dir_path ).absoluteFilePath( QStringLiteral( "ObjectEditorTest.mov" ) );
 
     QVERIFY2(
-        QFileInfo::exists( m_client_executable ),
-        qPrintable( QStringLiteral( "Client executable not found: %1" ).arg( m_client_executable ) ) );
-    QVERIFY2(
-        QFileInfo::exists( m_server_executable ),
-        qPrintable( QStringLiteral( "Server executable not found: %1" ).arg( m_server_executable ) ) );
-    QVERIFY2(
-        QFileInfo::exists( m_server_target_wrapper_executable ),
-        qPrintable( QStringLiteral( "Server target wrapper executable not found: %1" ).arg( m_server_target_wrapper_executable ) ) );
-    QVERIFY2(
         QFileInfo::exists( m_volume_data_path ),
         qPrintable( QStringLiteral( "Volume data file not found: %1" ).arg( m_volume_data_path ) ) );
+    QVERIFY2(
+        QFileInfo::exists( m_point_data_path ),
+        qPrintable( QStringLiteral( "Point data file not found: %1" ).arg( m_point_data_path ) ) );
     QVERIFY2(
         QFileInfo::exists( m_object_data_path ),
         qPrintable( QStringLiteral( "Object data file not found: %1" ).arg( m_object_data_path ) ) );
     QVERIFY2(
         QDir().mkpath( m_output_dir_path ),
         qPrintable( QStringLiteral( "Failed to create output directory: %1" ).arg( m_output_dir_path ) ) );
-
-    m_server_process.setProgram( m_server_target_wrapper_executable );
-    m_server_process.setArguments( { m_server_executable } );
-    m_server_process.setWorkingDirectory( QFileInfo( m_server_executable ).absolutePath() );
-    m_server_process.setProcessChannelMode( QProcess::SeparateChannels );
-    m_server_process.start();
-
     QVERIFY2(
-        m_server_process.waitForStarted( k_server_start_timeout_ms ),
-        qPrintable( QStringLiteral( "Failed to start server: %1" ).arg( m_server_process.errorString() ) ) );
+        QDir().mkpath( m_screenshot_dir_path ),
+        qPrintable( QStringLiteral( "Failed to create screenshot directory: %1" ).arg( m_screenshot_dir_path ) ) );
+
     QTest::qWait( 500 );
     logStep( QStringLiteral( "initTestCase: server %1" ).arg( serverProcessSummary() ) );
 }
 
 void ObjectEditorTest::cleanupTestCase()
 {
+    writeMarkdownReport();
+
     if ( m_recording_process.state() != QProcess::NotRunning )
     {
         stopVideoRecording();
@@ -991,7 +1197,7 @@ void ObjectEditorTest::performs_object_editor_scenario()
     QVERIFY2( g_test_app != nullptr, "Test application is not initialized" );
 
     MainWindow main_window( *g_test_app );
-    main_window.show();
+    showTestWindowCentered( &main_window );
     QVERIFY( QTest::qWaitForWindowExposed( &main_window ) );
 
     ClientHandles client = resolveClientHandles( main_window );
@@ -1001,113 +1207,427 @@ void ObjectEditorTest::performs_object_editor_scenario()
     startVideoRecording();
     logStep( QStringLiteral( "scenario: recording started" ) );
 
-    ensureConnected( client );
-    configureRemoteVisualization( client );
-    waitForObjectAndApply( client );
-    clickJumpAndWaitForCompletion( client );
-
-    logStep( QStringLiteral( "scenario: uncheck display and re-apply" ) );
-    setDisplayItemChecked( client, false );
-    clickJumpAndWaitForCompletion( client );
-
-    logStep( QStringLiteral( "scenario: check display and re-apply" ) );
-    setDisplayItemChecked( client, true );
-    clickJumpAndWaitForCompletion( client );
-
-    logStep( QStringLiteral( "scenario: set particle limit" ) );
-    setSpinBoxValue( client.particle_limit_spin_box, 1000000, "particleLimitSpinBox not found" );
-    applyObjectEditor( client );
-    clickJumpAndWaitForCompletion( client );
-
-    logStep( QStringLiteral( "scenario: set coordinate x" ) );
-    setLineEditText( client.coordinate_x_line_edit, QStringLiteral( "7" ) );
-    applyObjectEditor( client );
-    clickJumpAndWaitForCompletion( client );
-
-    logStep( QStringLiteral( "scenario: clear coordinate x" ) );
-    setLineEditText( client.coordinate_x_line_edit, QString() );
-    applyObjectEditor( client );
-    clickJumpAndWaitForCompletion( client );
-
-    logStep( QStringLiteral( "scenario: set coordinate y" ) );
-    setLineEditText( client.coordinate_y_line_edit, QStringLiteral( "3" ) );
-    applyObjectEditor( client );
-    clickJumpAndWaitForCompletion( client );
-
-    logStep( QStringLiteral( "scenario: clear coordinate y" ) );
-    setLineEditText( client.coordinate_y_line_edit, QString() );
-    applyObjectEditor( client );
-    clickJumpAndWaitForCompletion( client );
-
-    logStep( QStringLiteral( "scenario: set coordinate z" ) );
-    setLineEditText( client.coordinate_z_line_edit, QStringLiteral( "-4" ) );
-    applyObjectEditor( client );
-    clickJumpAndWaitForCompletion( client );
-
-    logStep( QStringLiteral( "scenario: clear coordinate z" ) );
-    setLineEditText( client.coordinate_z_line_edit, QString() );
-    applyObjectEditor( client );
-    clickJumpAndWaitForCompletion( client );
-
-    logStep( QStringLiteral( "scenario: browse object file" ) );
-    browseAndLoadObject( client, m_object_data_path, 2 );
-    clickJumpAndWaitForCompletion( client );
-
-    logStep( QStringLiteral( "scenario: set focus on second row" ) );
-    selectObjectRow( client, 1 );
-    setCheckBoxState( client.focus_check_box, true, "focusCheckBox not found" );
-    applyObjectEditor( client );
-    clickJumpAndWaitForCompletion( client );
-
-    logStep( QStringLiteral( "scenario: set time step limits" ) );
-    setSpinBoxValue( client.min_limit_time_step_spin_box, 0, "m_min_limit_time_step_spin_box not found" );
-    QTest::qWait( k_short_wait_ms );
-    setSpinBoxValue( client.max_limit_time_step_spin_box, 11, "m_max_limit_time_step_spin_box not found" );
-    QTest::qWait( k_short_wait_ms );
-
-    logStep( QStringLiteral( "scenario: set keep initial" ) );
-    setKeepInitialChecked( client, true );
-    advanceTimeSteps( client, 10 );
-
-    logStep( QStringLiteral( "scenario: set keep final" ) );
-    setKeepInitialChecked( client, false );
-    setKeepFinalChecked( client, true );
-    clickFirstAndWait( client );
-    advanceTimeSteps( client, 10 );
-    clickFirstAndWait( client );
-
-    logStep( QStringLiteral( "scenario: change second row appearance" ) );
-    selectObjectRow( client, 1 );
-    setDoubleSpinBoxValue( client.opacity_double_spin_box, 1.0, "opacityDoubleSpinBox not found" );
-    auto color_selected = std::make_shared<bool>( false );
-    QTimer::singleShot(
-        0,
-        qApp,
-        [this, color_selected]()
+    bool scenario_aborted = false;
+    const auto run_step = [this, &scenario_aborted]( const QString& description, const std::function<void()>& body )
+    {
+        if ( scenario_aborted )
         {
-            chooseColorFromDialog( QColor( Qt::red ) );
-            *color_selected = true;
-        } );
-    QMetaObject::invokeMethod( client.color_clickable_label, "doubleClicked", Qt::DirectConnection );
-    QVERIFY2(
-        waitForCondition(
-            [color_selected]()
-            {
-                return *color_selected;
-            },
-            k_dialog_timeout_ms,
-            50 ),
-        "Color selection did not complete" );
-    QTest::qWait( k_short_wait_ms );
-    applyObjectEditor( client );
-    clickJumpAndWaitForCompletion( client );
+            addStep( description );
+            return;
+        }
 
-    logStep( QStringLiteral( "scenario: delete selected object" ) );
-    QTest::mouseClick( client.delete_button, Qt::LeftButton );
-    QTest::qWait( k_short_wait_ms );
+        addStep( description );
+        logStep( QStringLiteral( "scenario: %1" ).arg( description ) );
+        body();
+        if ( QTest::currentTestFailed() )
+        {
+            scenario_aborted = true;
+            return;
+        }
+        markStepCompleted( description );
+    };
+
+    run_step(
+        QStringLiteral( "CLOCK_POLYGON_DATA を ObjectEditor へ読み込んで Display ON の状態を撮影する。" ),
+        [&]()
+        {
+            browseAndLoadObject( client, m_object_data_path, 1 );
+            applyObjectEditor( client );
+            clickJumpAndWaitForCompletion( client );
+            saveScreenshot(
+                QStringLiteral( "01_display_on.png" ),
+                QStringLiteral( "Display が ON のときにオブジェクトが表示されること。" ) );
+        } );
+
+    run_step(
+        QStringLiteral( "ObjectEditor の 1 行目 displayItem を OFF にして Display OFF の状態を撮影する。" ),
+        [&]()
+        {
+            setDisplayItemChecked( client, 0, false );
+            clickJumpAndWaitForCompletion( client );
+            saveScreenshot(
+                QStringLiteral( "02_display_off.png" ),
+                QStringLiteral( "Display が OFF のときにオブジェクトが表示されないこと。" ) );
+        } );
+
+    run_step(
+        QStringLiteral( "SPX_POINT_DATA を追加し、spx の Keep Initial ON / Keep Final OFF / Current Time Step 0 を撮影する。" ),
+        [&]()
+        {
+            browseAndLoadObject( client, m_point_data_path, 2 );
+            QVERIFY2(
+                waitForCondition(
+                    [client]()
+                    {
+                        return client.object_name_line_edit->text().contains( QStringLiteral( "spx" ), Qt::CaseInsensitive );
+                    },
+                    k_object_load_timeout_ms,
+                    100 ),
+                "ObjectEditor nameLineEdit did not contain 'spx'" );
+            setDisplayItemChecked( client, 0, true );
+            setKeepInitialChecked( client, 1, true );
+            setKeepFinalChecked( client, 1, false );
+            selectObjectRow( client, 1 );
+            setCheckBoxState( client.focus_check_box, true, "focusCheckBox not found" );
+            applyObjectEditor( client );
+            clickJumpAndWaitForCompletion( client );
+            saveScreenshot(
+                QStringLiteral( "03_spx_keep_initial_t0.png" ),
+                QStringLiteral( "spx の Keep Initial が ON、Keep Final が OFF、Current Time Step が 0 のときに clock と spx のオブジェクトが表示されること。" ) );
+        } );
+
+    run_step(
+        QStringLiteral( "spx の Keep Initial ON / Keep Final OFF / Current Time Step 1 を撮影する。" ),
+        [&]()
+        {
+            clickNextAndWaitForCompletion( client );
+            saveScreenshot(
+                QStringLiteral( "04_spx_keep_initial_t1.png" ),
+                QStringLiteral( "spx の Keep Initial が ON、Keep Final が OFF、Current Time Step が 1 のときに clock と spx のオブジェクトが表示されること。" ) );
+        } );
+
+    run_step(
+        QStringLiteral( "spx の Keep Initial ON / Keep Final OFF / Current Time Step 2 を撮影する。" ),
+        [&]()
+        {
+            clickNextAndWaitForCompletion( client );
+            saveScreenshot(
+                QStringLiteral( "05_spx_keep_initial_t2.png" ),
+                QStringLiteral( "spx の Keep Initial が ON、Keep Final が OFF、Current Time Step が 2 のときに clock のオブジェクトのみ表示されること。" ) );
+        } );
+
+    run_step(
+        QStringLiteral( "spx を Keep Initial OFF / Keep Final ON に変更し、Current Time Step 0 を撮影する。" ),
+        [&]()
+        {
+            setKeepInitialChecked( client, 1, false );
+            setKeepFinalChecked( client, 1, true );
+            applyObjectEditor( client );
+            clickFirstAndWait( client );
+            saveScreenshot(
+                QStringLiteral( "06_spx_keep_final_t0.png" ),
+                QStringLiteral( "spx の Keep Initial が OFF、Keep Final が ON、Current Time Step が 0 のときに clock のオブジェクトのみ表示されること。" ) );
+        } );
+
+    run_step(
+        QStringLiteral( "spx の Keep Initial OFF / Keep Final ON / Current Time Step 1 を撮影する。" ),
+        [&]()
+        {
+            clickNextAndWaitForCompletion( client );
+            saveScreenshot(
+                QStringLiteral( "07_spx_keep_final_t1.png" ),
+                QStringLiteral( "spx の Keep Initial が OFF、Keep Final が ON、Current Time Step が 1 のときに clock と spx のオブジェクトが表示されること。" ) );
+        } );
+
+    run_step(
+        QStringLiteral( "spx の Keep Initial OFF / Keep Final ON / Current Time Step 2 を撮影する。" ),
+        [&]()
+        {
+            clickNextAndWaitForCompletion( client );
+            saveScreenshot(
+                QStringLiteral( "08_spx_keep_final_t2.png" ),
+                QStringLiteral( "spx の Keep Initial が OFF、Keep Final が ON、Current Time Step が 2 のときに clock と spx のオブジェクトが表示されること。" ) );
+        } );
+
+    run_step(
+        QStringLiteral( "オフラインのポリゴンオブジェクト色をグリーンへ変更して撮影する。" ),
+        [&]()
+        {
+            selectObjectRow( client, 0 );
+            auto color_selected = std::make_shared<bool>( false );
+            QTimer::singleShot(
+                0,
+                qApp,
+                [this, color_selected]()
+                {
+                    chooseColorFromDialog( QColor( Qt::green ) );
+                    *color_selected = true;
+                } );
+            QMetaObject::invokeMethod( client.color_clickable_label, "doubleClicked", Qt::DirectConnection );
+            QVERIFY2(
+                waitForCondition(
+                    [color_selected]()
+                    {
+                        return *color_selected;
+                    },
+                    k_dialog_timeout_ms,
+                    50 ),
+                "Color selection did not complete" );
+            applyObjectEditor( client );
+            clickNextAndWaitForCompletion( client );
+            saveScreenshot(
+                QStringLiteral( "09_offline_polygon_green.png" ),
+                QStringLiteral( "オフラインでポリゴンオブジェクトの色を変更できること。" ) );
+        } );
+
+    run_step(
+        QStringLiteral( "オフラインのポリゴンオブジェクト opacity を 0.1 に下げて撮影する。" ),
+        [&]()
+        {
+            setDoubleSpinBoxValue( client.opacity_double_spin_box, 0.1, "opacityDoubleSpinBox not found" );
+            applyObjectEditor( client );
+            clickNextAndWaitForCompletion( client );
+            saveScreenshot(
+                QStringLiteral( "10_offline_polygon_opacity_01.png" ),
+                QStringLiteral( "オフラインでポリゴンオブジェクトの opacity を下げられること。" ) );
+        } );
+
+    run_step(
+        QStringLiteral( "オフラインのポリゴンオブジェクト opacity を 1 に上げて撮影する。" ),
+        [&]()
+        {
+            setDoubleSpinBoxValue( client.opacity_double_spin_box, 1.0, "opacityDoubleSpinBox not found" );
+            applyObjectEditor( client );
+            clickNextAndWaitForCompletion( client );
+            saveScreenshot(
+                QStringLiteral( "11_offline_polygon_opacity_1.png" ),
+                QStringLiteral( "オフラインでポリゴンオブジェクトの opacity を上げられること。" ) );
+        } );
+
+    run_step(
+        QStringLiteral( "オンラインで CLOCK_POLYGON_DATA を読み込み、opacity変更前を撮影する。" ),
+        [&]()
+        {
+            ensureConnected( client );
+            configureRemoteVisualizationWithoutVolume( client );
+            browseAndLoadObject( client, m_object_data_path, 1 );
+            applyObjectEditor( client );
+            clickJumpAndWaitForCompletion( client );
+            saveScreenshot(
+                QStringLiteral( "12_online_polygon_opacity_before.png" ),
+                QStringLiteral( "オンラインでポリゴンオブジェクトの opacity 変更前を撮影する。" ) );
+        } );
+
+    run_step(
+        QStringLiteral( "オンラインのポリゴンオブジェクト opacity を 0.1 に下げて撮影する。" ),
+        [&]()
+        {
+            setDoubleSpinBoxValue( client.opacity_double_spin_box, 0.1, "opacityDoubleSpinBox not found" );
+            applyObjectEditor( client );
+            clickJumpAndWaitForCompletion( client );
+            saveScreenshot(
+                QStringLiteral( "13_online_polygon_opacity_01.png" ),
+                QStringLiteral( "オンラインでポリゴンオブジェクトの opacity を下げられること。" ) );
+        } );
+
+    run_step(
+        QStringLiteral( "オンラインのポリゴンオブジェクト opacity を 1 に上げて撮影する。" ),
+        [&]()
+        {
+            setDoubleSpinBoxValue( client.opacity_double_spin_box, 1.0, "opacityDoubleSpinBox not found" );
+            applyObjectEditor( client );
+            clickJumpAndWaitForCompletion( client );
+            saveScreenshot(
+                QStringLiteral( "14_online_polygon_opacity_1.png" ),
+                QStringLiteral( "オンラインでポリゴンオブジェクトの opacity を上げられること。" ) );
+        } );
+
+    run_step(
+        QStringLiteral( "再接続して SPX_VOLUME_DATA を読み込み、Particle Limit 変更前を撮影する。" ),
+        [&]()
+        {
+            ensureDisconnected( client );
+            ensureConnected( client );
+            configureRemoteVisualization( client );
+            waitForObjectAndApply( client );
+            clickJumpAndWaitForCompletion( client );
+            saveScreenshot(
+                QStringLiteral( "15_particle_limit_before.png" ),
+                QStringLiteral( "Particle Limit を変更する前のオブジェクト。" ) );
+        } );
+
+    run_step(
+        QStringLiteral( "Particle Limit を 5000 に変更して撮影する。" ),
+        [&]()
+        {
+            setSpinBoxValue( client.particle_limit_spin_box, 5000, "particleLimitSpinBox not found" );
+            applyObjectEditor( client );
+            clickJumpAndWaitForCompletion( client );
+            saveScreenshot(
+                QStringLiteral( "16_particle_limit_5000.png" ),
+                QStringLiteral( "Particle Limit を小さくしたオブジェクト。" ) );
+        } );
+
+    run_step(
+        QStringLiteral( "Particle Limit を 100000000 に変更して撮影する。" ),
+        [&]()
+        {
+            setSpinBoxValue( client.particle_limit_spin_box, 100000000, "particleLimitSpinBox not found" );
+            applyObjectEditor( client );
+            clickJumpAndWaitForCompletion( client );
+            saveScreenshot(
+                QStringLiteral( "17_particle_limit_100000000.png" ),
+                QStringLiteral( "Particle Limit を大きくしたオブジェクト。" ) );
+        } );
+
+    run_step(
+        QStringLiteral( "Coordinate の X に X*2 を設定して撮影する。" ),
+        [&]()
+        {
+            setSpinBoxValue( client.particle_limit_spin_box, 10000000, "particleLimitSpinBox not found" );
+            applyObjectEditor( client );
+            clickJumpAndWaitForCompletion( client );
+            setLineEditText( client.coordinate_x_line_edit, QStringLiteral( "X*2" ) );
+            applyObjectEditor( client );
+            clickJumpAndWaitForCompletion( client );
+            saveScreenshot(
+                QStringLiteral( "18_coordinate_x_x2.png" ),
+                QStringLiteral( "Coordinate の X に X*2 と設定したオブジェクト。" ) );
+        } );
+
+    run_step(
+        QStringLiteral( "Coordinate の Y に Y*2 を設定して撮影する。" ),
+        [&]()
+        {
+            setLineEditText( client.coordinate_x_line_edit, QStringLiteral( "" ) );
+            setLineEditText( client.coordinate_y_line_edit, QStringLiteral( "Y*2" ) );
+            applyObjectEditor( client );
+            clickJumpAndWaitForCompletion( client );
+            saveScreenshot(
+                QStringLiteral( "19_coordinate_y_y2.png" ),
+                QStringLiteral( "Coordinate の Y に Y*2 と設定したオブジェクト。" ) );
+        } );
+
+    run_step(
+        QStringLiteral( "Coordinate の Z に Z*2 を設定して撮影する。" ),
+        [&]()
+        {
+            setLineEditText( client.coordinate_y_line_edit, QStringLiteral( "" ) );
+            setLineEditText( client.coordinate_z_line_edit, QStringLiteral( "Z*2" ) );
+            applyObjectEditor( client );
+            clickJumpAndWaitForCompletion( client );
+            saveScreenshot(
+                QStringLiteral( "20_coordinate_z_z2.png" ),
+                QStringLiteral( "Coordinate の Z に Z*2 と設定したオブジェクト。" ) );
+        } );
+
+    run_step(
+        QStringLiteral( "オフラインで browsePushButton からファイルダイアログを開けることを撮影する。" ),
+        [&]()
+        {
+            ensureDisconnected( client );
+            auto dialog_handled = std::make_shared<bool>( false );
+            QTimer::singleShot(
+                300,
+                qApp,
+                [this, dialog_handled]()
+                {
+                    QDialog* dialog = waitFor3dDataDialog( k_dialog_timeout_ms );
+                    QVERIFY2( dialog != nullptr, "Offline 3D data selection dialog was not shown" );
+                    saveScreenshot(
+                        QStringLiteral( "21_offline_file_dialog.png" ),
+                        QStringLiteral( "... ボタンからオフラインでのファイルダイアログを開くことができること。" ) );
+                    dialog->reject();
+                    *dialog_handled = true;
+                } );
+            QTest::mouseClick( client.browse_button, Qt::LeftButton );
+            QVERIFY2(
+                waitForCondition(
+                    [dialog_handled]()
+                    {
+                        return *dialog_handled;
+                    },
+                    k_dialog_timeout_ms,
+                    50 ),
+                "Offline file dialog was not captured and closed" );
+            QTest::qWait( k_short_wait_ms );
+        } );
+
+    run_step(
+        QStringLiteral( "オンラインで browsePushButton からファイルダイアログを開けることを撮影し、CLOCK_POLYGON_DATA を読み込む。" ),
+        [&]()
+        {
+            ensureConnected( client );
+            configureRemoteVisualizationWithoutVolume( client );
+            auto dialog_handled = std::make_shared<bool>( false );
+            QTimer::singleShot(
+                300,
+                qApp,
+                [this, dialog_handled]()
+                {
+                    QDialog* dialog = waitFor3dDataDialog( k_dialog_timeout_ms );
+                    QVERIFY2( dialog != nullptr, "Online 3D data selection dialog was not shown" );
+                    saveScreenshot(
+                        QStringLiteral( "22_online_file_dialog.png" ),
+                        QStringLiteral( "... ボタンからオンラインでのファイルダイアログを開くことができること。" ) );
+                    if ( qobject_cast<QFileDialog*>( dialog ) != nullptr )
+                    {
+                        selectFileFromDialog( m_object_data_path );
+                    }
+                    else
+                    {
+                        selectFileFromRemoteDialog( dialog, m_object_data_path );
+                    }
+                    *dialog_handled = true;
+                } );
+            QTest::mouseClick( client.browse_button, Qt::LeftButton );
+            QVERIFY2(
+                waitForCondition(
+                    [dialog_handled]()
+                    {
+                        return *dialog_handled;
+                    },
+                    k_dialog_timeout_ms,
+                    50 ),
+                "Online file dialog was not captured and selected" );
+            QVERIFY2(
+                waitForCondition(
+                    [client]()
+                    {
+                        return client.object_tree_view->model() != nullptr &&
+                               client.object_tree_view->model()->rowCount() > 0 &&
+                               !client.object_name_line_edit->text().trimmed().isEmpty();
+                    },
+                    k_object_load_timeout_ms,
+                    100 ),
+                "ObjectEditor did not load CLOCK_POLYGON_DATA" );
+            applyObjectEditor( client );
+            clickJumpAndWaitForCompletion( client );
+            saveScreenshot(
+                QStringLiteral( "23_online_before_delete.png" ),
+                QStringLiteral( "オンラインで Delete ボタンを押す前の状態。" ) );
+        } );
+
+    run_step(
+        QStringLiteral( "オンラインで 1 行目を選択して Delete ボタンを押した後を撮影する。" ),
+        [&]()
+        {
+            selectObjectRow( client, 0 );
+            QTest::mouseClick( client.delete_button, Qt::LeftButton );
+            QTest::qWait( k_short_wait_ms );
+            saveScreenshot(
+                QStringLiteral( "24_online_after_delete.png" ),
+                QStringLiteral( "オンラインで Delete ボタンを押した後の状態。" ) );
+        } );
+
+    run_step(
+        QStringLiteral( "オフラインで CLOCK_POLYGON_DATA を読み込み、Delete ボタンを押す前を撮影する。" ),
+        [&]()
+        {
+            ensureDisconnected( client );
+            browseAndLoadObject( client, m_object_data_path, 1 );
+            applyObjectEditor( client );
+            clickJumpAndWaitForCompletion( client );
+            saveScreenshot(
+                QStringLiteral( "25_offline_before_delete.png" ),
+                QStringLiteral( "オフラインで Delete ボタンを押す前の状態。" ) );
+        } );
+
+    run_step(
+        QStringLiteral( "オフラインで 1 行目を選択して Delete ボタンを押した後を撮影する。" ),
+        [&]()
+        {
+            selectObjectRow( client, 0 );
+            QTest::mouseClick( client.delete_button, Qt::LeftButton );
+            QTest::qWait( k_short_wait_ms );
+            saveScreenshot(
+                QStringLiteral( "26_offline_after_delete.png" ),
+                QStringLiteral( "オフラインで Delete ボタンを押した後の状態。" ) );
+        } );
 
     stopVideoRecording();
     logStep( QStringLiteral( "scenario: completed" ) );
+    m_test_succeeded = !scenario_aborted && !QTest::currentTestFailed();
 }
 
 } // namespace ClientTests

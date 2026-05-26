@@ -33,13 +33,14 @@ private:
     void selectFileFromDialog( const QString& file_path ) const;
     void clickButtonAndWait( QPushButton* button, int wait_ms ) const;
     QSpinBox* findNextTimeStepSpinBox( QToolBar* tool_bar ) const;
-    void startVideoRecording();
+    void startVideoRecording( QWidget* target_window );
     void stopVideoRecording();
     QProcess m_recording_process;
     QString m_client_executable;
     QString m_object_file_path;
     QString m_output_dir_path;
     QString m_video_file_path;
+    bool m_video_recording_available = false;
     bool m_test_succeeded = false;
 };
 }

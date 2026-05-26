@@ -82,7 +82,7 @@ QString findRepoRootFrom( const QString& start_path )
 QString MenuBarTest::envOrDefault( const char* name, const QString& fallback ) const
 {
     const QString value = qEnvironmentVariable( name );
-    return value.isEmpty() ? fallback : value;
+    return value.isEmpty() ? ClientTests::configuredPath( name, repoRootPath(), fallback ) : value;
 }
 
 QString MenuBarTest::repoRootPath() const
@@ -209,9 +209,6 @@ void MenuBarTest::writeMarkdownReport() const
     stream << "# MenuBarTest\n\n";
     stream << "## テスト結果\n\n";
     stream << "- 結果: " << ( m_test_succeeded ? "PASS" : "FAIL" ) << "\n";
-    stream << "- クライアントプログラム: `" << m_client_executable << "`\n";
-    stream << "- サーバプログラム: `" << m_server_executable << "`\n";
-    stream << "- サーバ起動ラッパー: `" << m_server_target_wrapper_executable << "`\n";
     stream << "- ボリュームデータ: `" << m_volume_data_path << "`\n";
     stream << "- 伝達関数ファイル: `" << m_transfer_function_path << "`\n";
     stream << "- スクリーンショット出力先: `" << m_screenshot_dir_path << "`\n\n";
@@ -244,19 +241,19 @@ void MenuBarTest::initTestCase()
     const QString date_stamp = QDate::currentDate().toString( QStringLiteral( "yyyyMMdd" ) );
     m_client_executable = envOrDefault(
         "PBVR_CLIENT_EXECUTABLE",
-        QStringLiteral( "/Users/user/Work/CS-IS-PBVR/Client/build/Qt_6_11_0_for_macOS-Release/App/pbvr_client.app/Contents/MacOS/pbvr_client" ) );
+        ClientTests::configuredPath( "PBVR_CLIENT_EXECUTABLE", repoRootPath() ) );
     m_server_executable = envOrDefault(
         "PBVR_SERVER_EXECUTABLE",
-        QStringLiteral( "/Users/user/Work/CS-IS-PBVR/Server/pbvr_server" ) );
+        ClientTests::configuredPath( "PBVR_SERVER_EXECUTABLE", repoRootPath() ) );
     m_server_target_wrapper_executable = envOrDefault(
         "PBVR_SERVER_TARGET_WRAPPER_EXECUTABLE",
-        sourceTreePath( QStringLiteral( "server_target_wrapper.sh" ) ) );
+        ClientTests::configuredPath( "PBVR_SERVER_TARGET_WRAPPER_EXECUTABLE", repoRootPath() ) );
     m_volume_data_path = envOrDefault(
         "PBVR_VOLUME_DATA",
-        QStringLiteral( "/Users/user/Work/reg_test_data/unstruct/mej_iofiles_downsize4_step80_90/Piece/example.pfl" ) );
+        ClientTests::configuredPath( "MEJ_VOLUME_DATA", repoRootPath() ) );
     m_transfer_function_path = envOrDefault(
-        "PBVR_TRANSFER_FUNCTION",
-        QStringLiteral( "/Users/user/Work/reg_test_data/unstruct/mej_v2.tfe" ) );
+        "MEJ_TRANSFER_FUNCTION",
+        ClientTests::configuredPath( "MEJ_TRANSFER_FUNCTION", repoRootPath() ) );
     m_report_dir_path = envOrDefault(
         "PBVR_TEST_REPORT_DIR",
         ClientTests::datedTestOutputDir(
@@ -268,15 +265,6 @@ void MenuBarTest::initTestCase()
         QDir( m_report_dir_path ).absoluteFilePath( QStringLiteral( "img" ) ) );
     m_report_path = QDir( m_report_dir_path ).absoluteFilePath( QStringLiteral( "TestResult.md" ) );
 
-    QVERIFY2(
-        QFileInfo::exists( m_client_executable ),
-        qPrintable( QStringLiteral( "Client executable not found: %1" ).arg( m_client_executable ) ) );
-    QVERIFY2(
-        QFileInfo::exists( m_server_executable ),
-        qPrintable( QStringLiteral( "Server executable not found: %1" ).arg( m_server_executable ) ) );
-    QVERIFY2(
-        QFileInfo::exists( m_server_target_wrapper_executable ),
-        qPrintable( QStringLiteral( "Server target wrapper executable not found: %1" ).arg( m_server_target_wrapper_executable ) ) );
     QVERIFY2(
         QFileInfo::exists( m_volume_data_path ),
         qPrintable( QStringLiteral( "Volume data file not found: %1" ).arg( m_volume_data_path ) ) );
@@ -290,15 +278,6 @@ void MenuBarTest::initTestCase()
         QDir().mkpath( m_screenshot_dir_path ),
         qPrintable( QStringLiteral( "Failed to create screenshot directory: %1" ).arg( m_screenshot_dir_path ) ) );
 
-    m_server_process.setProgram( m_server_target_wrapper_executable );
-    m_server_process.setArguments( { m_server_executable } );
-    m_server_process.setWorkingDirectory( QFileInfo( m_server_executable ).absolutePath() );
-    m_server_process.setProcessChannelMode( QProcess::SeparateChannels );
-    m_server_process.start();
-
-    QVERIFY2(
-        m_server_process.waitForStarted( k_server_start_timeout_ms ),
-        qPrintable( QStringLiteral( "Failed to start server: %1" ).arg( m_server_process.errorString() ) ) );
 }
 
 void MenuBarTest::cleanupTestCase()
@@ -321,7 +300,7 @@ void MenuBarTest::performs_menu_bar_scenario()
     QVERIFY2( g_test_app != nullptr, "Test application is not initialized" );
 
     MainWindow main_window( *g_test_app );
-    main_window.show();
+    showTestWindowCentered( &main_window );
     QVERIFY( QTest::qWaitForWindowExposed( &main_window ) );
 
     auto* communication = main_window.findChild<Communication*>();

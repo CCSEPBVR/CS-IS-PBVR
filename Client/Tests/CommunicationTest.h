@@ -50,12 +50,6 @@ private:
         bool completed = false;
     };
 
-    struct ServerCheckEntry
-    {
-        QString expected_text;
-        bool found = false;
-    };
-
     struct ClientHandles
     {
         MainWindow* main_window = nullptr;
@@ -114,8 +108,6 @@ private:
     bool waitForCondition( const std::function<bool()>& condition, int timeout_ms, int interval_ms = 50 ) const;
     void startVideoRecording();
     void stopVideoRecording();
-    void appendServerOutput();
-    void clearServerOutput();
     void bringWindowToFront( MainWindow* window ) const;
     void setLineEditText( QLineEdit* line_edit, const QString& text ) const;
     void saveScreenshot( const QString& file_name, const QString& caption );
@@ -146,7 +138,6 @@ private:
         const QString& file_name,
         const QString& caption,
         bool expected_enabled );
-    void expectServerOutput( const QString& expected_text );
     QFileDialog* waitForFileDialog( int timeout_ms ) const;
     void selectFileFromBrowseDialog(
         const ClientHandles& client,
@@ -159,20 +150,15 @@ private:
     void selectShareViewTab( const ClientHandles& client ) const;
     void dragScreenLeftButton( QWidget* widget ) const;
 
-    QProcess m_server_process;
     QProcess m_recording_process;
     QString m_operator_client_executable;
     QString m_guest_client_executable;
-    QString m_server_executable;
-    QString m_server_target_wrapper_executable;
     QString m_output_dir_path;
     QString m_screenshot_dir_path;
     QString m_report_path;
     QString m_video_file_path;
-    QString m_server_output_buffer;
     std::vector<ScreenshotEntry> m_screenshots;
     std::vector<StepEntry> m_steps;
-    std::vector<ServerCheckEntry> m_server_checks;
     bool m_test_succeeded = false;
 };
 }
