@@ -392,6 +392,192 @@ void AppendRejectedStatisticParticle(
     normals.push_back( normal.z() );
 }
 
+struct EnsembleStatisticRange
+{
+    std::vector<float> min_values;
+    std::vector<float> max_values;
+    std::vector<vismodule::UInt64> o_bins;
+    std::vector<vismodule::UInt64> c_bins;
+};
+
+bool EnsembleHistogramBin(
+    const float value,
+    const float min_value,
+    const float max_value,
+    size_t& bin
+)
+{
+    if ( value < min_value || value > max_value ) return false;
+
+    bin = 0;
+    if ( vismodule::Math::Equal<float>( min_value, max_value ) ) return true;
+
+    const float position = ( value - min_value ) / ( max_value - min_value ) * DEFAULT_NBINS;
+    bin = static_cast<size_t>( position );
+    if ( bin >= DEFAULT_NBINS ) bin = DEFAULT_NBINS - 1;
+    return true;
+}
+
+EnsembleStatisticRange MakeEnsembleStatisticRange(
+    const std::vector<float>& values,
+    const int tf_number,
+    const std::vector<NamedTransferFunction>& transfunc_array
+)
+{
+    EnsembleStatisticRange range;
+    range.min_values.assign( tf_number * 2, FLT_MAX );
+    range.max_values.assign( tf_number * 2, -FLT_MAX );
+    range.o_bins.assign( tf_number * DEFAULT_NBINS, 0 );
+    range.c_bins.assign( tf_number * DEFAULT_NBINS, 0 );
+
+    if ( values.empty() ) return range;
+
+    float min_value = FLT_MAX;
+    float max_value = -FLT_MAX;
+    for ( const float value : values )
+    {
+        min_value = vismodule::Math::Min( min_value, value );
+        max_value = vismodule::Math::Max( max_value, value );
+    }
+
+    for ( int i = 0; i < tf_number; i++ )
+    {
+        range.min_values[2 * i    ] = min_value;
+        range.max_values[2 * i    ] = max_value;
+        range.min_values[2 * i + 1] = min_value;
+        range.max_values[2 * i + 1] = max_value;
+    }
+
+    const size_t max_histogram_samples = 100000;
+    const size_t stride = std::max<size_t>( 1, ( values.size() + max_histogram_samples - 1 ) / max_histogram_samples );
+
+    for ( size_t i = 0; i < values.size(); i += stride )
+    {
+        for ( int tf = 0; tf < tf_number; tf++ )
+        {
+            size_t o_bin = 0;
+            size_t c_bin = 0;
+            if ( EnsembleHistogramBin(
+                values[i],
+                transfunc_array[tf].opacityMap().minValue(),
+                transfunc_array[tf].opacityMap().maxValue(),
+                o_bin ) )
+            {
+                range.o_bins[o_bin + tf * DEFAULT_NBINS]++;
+            }
+            if ( EnsembleHistogramBin(
+                values[i],
+                transfunc_array[tf].colorMap().minValue(),
+                transfunc_array[tf].colorMap().maxValue(),
+                c_bin ) )
+            {
+                range.c_bins[c_bin + tf * DEFAULT_NBINS]++;
+            }
+        }
+    }
+
+    return range;
+}
+
+void ReduceEnsembleStatisticRange(
+    EnsembleStatisticRange& range,
+    const int tf_number
+)
+{
+#ifndef CPU_VER
+    std::vector<float> min_recv( tf_number * 2, FLT_MAX );
+    std::vector<float> max_recv( tf_number * 2, -FLT_MAX );
+    std::vector<vismodule::UInt64> o_bins_recv( tf_number * DEFAULT_NBINS, 0 );
+    std::vector<vismodule::UInt64> c_bins_recv( tf_number * DEFAULT_NBINS, 0 );
+
+    MPI_Reduce( range.min_values.data(), min_recv.data(), tf_number * 2, MPI_FLOAT, MPI_MIN, 0, MPI_COMM_WORLD );
+    MPI_Reduce( range.max_values.data(), max_recv.data(), tf_number * 2, MPI_FLOAT, MPI_MAX, 0, MPI_COMM_WORLD );
+    MPI_Reduce( range.o_bins.data(), o_bins_recv.data(), tf_number * DEFAULT_NBINS, MPI_UNSIGNED_LONG, MPI_SUM, 0, MPI_COMM_WORLD );
+    MPI_Reduce( range.c_bins.data(), c_bins_recv.data(), tf_number * DEFAULT_NBINS, MPI_UNSIGNED_LONG, MPI_SUM, 0, MPI_COMM_WORLD );
+
+    range.min_values.swap( min_recv );
+    range.max_values.swap( max_recv );
+    range.o_bins.swap( o_bins_recv );
+    range.c_bins.swap( c_bins_recv );
+#endif
+}
+
+void WritePrefixedStatisticHistory(
+    std::ofstream& ofs,
+    const std::string& prefix,
+    const EnsembleStatisticRange& range,
+    const int tf_number
+)
+{
+    for ( int i = 0; i < tf_number; i++ )
+    {
+        ofs << prefix << "_MIN_O" << ( i + 1 ) << "=" << range.min_values[2 * i    ] << std::endl;
+        ofs << prefix << "_MAX_O" << ( i + 1 ) << "=" << range.max_values[2 * i    ] << std::endl;
+        ofs << prefix << "_MIN_C" << ( i + 1 ) << "=" << range.min_values[2 * i + 1] << std::endl;
+        ofs << prefix << "_MAX_C" << ( i + 1 ) << "=" << range.max_values[2 * i + 1] << std::endl;
+        ofs << prefix << "_RESOLUTION_O" << ( i + 1 ) << "=" << DEFAULT_NBINS << std::endl;
+        ofs << prefix << "_HISTOGRAM_O" << ( i + 1 ) << "=";
+        for ( size_t j = 0; j < DEFAULT_NBINS; j++ )
+        {
+            ofs << range.o_bins[j + i * DEFAULT_NBINS] << ",";
+        }
+        ofs << std::endl;
+        ofs << prefix << "_RESOLUTION_C" << ( i + 1 ) << "=" << DEFAULT_NBINS << std::endl;
+        ofs << prefix << "_HISTOGRAM_C" << ( i + 1 ) << "=";
+        for ( size_t j = 0; j < DEFAULT_NBINS; j++ )
+        {
+            ofs << range.c_bins[j + i * DEFAULT_NBINS] << ",";
+        }
+        ofs << std::endl;
+    }
+}
+
+void OutputEnsembleStatisticHistory(
+    ParticleProperty& particle_property,
+    const int tf_number,
+    const int nvariables,
+    const std::string& historyFilePath,
+    EnsembleStatisticRange average_range,
+    EnsembleStatisticRange variance_range,
+    EnsembleStatisticRange coefficient_range
+)
+{
+    ReduceEnsembleStatisticRange( average_range, tf_number );
+    ReduceEnsembleStatisticRange( variance_range, tf_number );
+    ReduceEnsembleStatisticRange( coefficient_range, tf_number );
+
+    int mpi_rank;
+#ifndef CPU_VER
+    MPI_Comm_rank( MPI_COMM_WORLD, &mpi_rank );
+#else
+    mpi_rank = 0;
+#endif
+
+    if ( mpi_rank != 0 ) return;
+
+    std::ofstream ofs( historyFilePath.c_str(), std::ios::out );
+    ofs << "TF_NUMBER=" << tf_number << std::endl;
+    WritePrefixedStatisticHistory( ofs, "AVE", average_range, tf_number );
+    WritePrefixedStatisticHistory( ofs, "VAR", variance_range, tf_number );
+    WritePrefixedStatisticHistory( ofs, "COV", coefficient_range, tf_number );
+    ofs << "N_VARIABLES=" << nvariables << std::endl;
+    ofs << "PARTICLE_LIMIT=" << particle_property.m_particle_limit << std::endl;
+    ofs << "END_HISTORY_FILE=SUCCESS" << std::endl;
+    ofs.close();
+
+    for ( int i = 0; i < tf_number; i++ )
+    {
+        particle_property.m_transfunc_array[i].m_server_opacity_variable_min = average_range.min_values[2 * i    ];
+        particle_property.m_transfunc_array[i].m_server_opacity_variable_max = average_range.max_values[2 * i    ];
+        particle_property.m_transfunc_array[i].m_server_color_variable_min   = average_range.min_values[2 * i + 1];
+        particle_property.m_transfunc_array[i].m_server_color_variable_max   = average_range.max_values[2 * i + 1];
+    }
+
+    ParameterFileWriter ppw;
+    ppw.getParticleParameter( particle_property );
+    ppw.writeParticleParameterOldFile();
+}
+
 } // namespace
 
 void OutputCoordMinMaxFile(
@@ -912,7 +1098,6 @@ bool ensemble_generate_particles(
     std::vector<vismodule::Real32> sq_scalars;
     std::vector<vismodule::Real32> tmp_term;
 
-    std::cout << __LINE__ << std::endl; 
 #pragma omp parallel
     {
 #if _OPENMP
@@ -1051,7 +1236,6 @@ bool ensemble_generate_particles(
         }
     }
 
-    std::cout << __LINE__ << std::endl; 
     std::vector<std::vector<float> > v_scalars( 2 );
     std::vector<std::vector<float> > v_coords( 2 );
     std::vector<std::vector<float> > v_normals( 2 );
@@ -1099,6 +1283,7 @@ bool ensemble_generate_particles(
         MPI_Isend( v_sq[cur].data(), send_size, MPI_FLOAT, send_to, 14, MPI_COMM_WORLD, &req_send[4] );
         MPI_Isend( v_tmp[cur].data(), 3 * send_size, MPI_FLOAT, send_to, 15, MPI_COMM_WORLD, &req_send[5] );
         MPI_Waitall( 6, req_recv, MPI_STATUSES_IGNORE );
+        MPI_Waitall( 6, req_send, MPI_STATUSES_IGNORE );
 
 #pragma omp parallel
         {
@@ -1118,7 +1303,8 @@ bool ensemble_generate_particles(
             float grad_array_z[SIMD_BLK_SIZE];
             for ( int i = 0; i < SIMD_BLK_SIZE; i++ ) o_scalars_array[i].resize( tf_number );
 
-#pragma omp for schedule( dynamic )
+//#pragma omp for schedule( dynamic )
+#pragma omp for 
             for ( int i = 0; i < recv_size; i += SIMD_BLK_SIZE )
             {
                 const int remain_BLK = ( recv_size - i > SIMD_BLK_SIZE ) ? SIMD_BLK_SIZE : recv_size - i;
@@ -1153,7 +1339,6 @@ bool ensemble_generate_particles(
             }
         }
 
-        MPI_Waitall( 6, req_send, MPI_STATUSES_IGNORE );
         v_scalars[nxt].swap( recv_scalars );
         v_coords[nxt].swap( recv_coords );
         v_normals[nxt].swap( recv_normals );
@@ -1200,7 +1385,28 @@ bool ensemble_generate_particles(
         co_varietion[i] = vertex_scalars[i] > eps ? std::sqrt( tmp_varience[i] ) / vertex_scalars[i] : delta;
     }
 
-    std::cout << __LINE__ << std::endl; 
+    EnsembleStatisticRange average_range = MakeEnsembleStatisticRange(
+        vertex_scalars, tf_number, particle_property.m_transfunc_array
+    );
+    EnsembleStatisticRange variance_range = MakeEnsembleStatisticRange(
+        tmp_varience, tf_number, particle_property.m_transfunc_array
+    );
+    EnsembleStatisticRange coefficient_range = MakeEnsembleStatisticRange(
+        co_varietion, tf_number, particle_property.m_transfunc_array
+    );
+
+    particle_property.m_transfunc_synthesizer->m_o_min.resize( tf_number );
+    particle_property.m_transfunc_synthesizer->m_o_max.resize( tf_number );
+    particle_property.m_transfunc_synthesizer->m_c_min.resize( tf_number );
+    particle_property.m_transfunc_synthesizer->m_c_max.resize( tf_number );
+    for ( int i = 0; i < tf_number; i++ )
+    {
+        particle_property.m_transfunc_synthesizer->m_o_min[i] = average_range.min_values[2 * i    ];
+        particle_property.m_transfunc_synthesizer->m_o_max[i] = average_range.max_values[2 * i    ];
+        particle_property.m_transfunc_synthesizer->m_c_min[i] = average_range.min_values[2 * i + 1];
+        particle_property.m_transfunc_synthesizer->m_c_max[i] = average_range.max_values[2 * i + 1];
+    }
+
 #pragma omp parallel
     {
 #if _OPENMP
@@ -1290,17 +1496,12 @@ bool ensemble_generate_particles(
     return false;
 #endif
 
-    std::cout << __LINE__ << std::endl; 
 #ifndef CPU_VER
-    //MakeParticleMinMax( particle_property.m_transfunc_synthesizer, tf_number, tmp_max.data(), tmp_min.data() );
-    std::cout << __LINE__ << std::endl; 
-
     OutputCoordMinMaxFile( dom, coordMinMaxFilePath );
 
-    OutputParticles(
-        particle_property, mvpl, start_time_step, time_step, tf_number, nvariables, averageFilePrefix,
-        stateFilePath, historyFilePath, average_coords, average_colors,
-        average_normals, tmp_c_bins.data(), tmp_o_bins.data(), tmp_max.data(), tmp_min.data()
+    OutputEnsembleStatisticParticles(
+        particle_property, mvpl, time_step, averageFilePrefix,
+        average_coords, average_colors, average_normals
     );
 
     OutputEnsembleStatisticParticles(
@@ -1311,6 +1512,11 @@ bool ensemble_generate_particles(
     OutputEnsembleStatisticParticles(
         particle_property, mvpl, time_step, coefficientFilePrefix,
         coefficient_coords, coefficient_colors, coefficient_normals
+    );
+
+    OutputEnsembleStatisticHistory(
+        particle_property, tf_number, nvariables, historyFilePath,
+        average_range, variance_range, coefficient_range
     );
 
     if ( mpi_rank == 0 )
