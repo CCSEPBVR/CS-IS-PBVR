@@ -13,6 +13,7 @@
 #include <vismodule/ParticleMonitor>
 #include <vismodule/ParameterFileReader>
 #include <vismodule/ParameterFileWriter>
+#include <vismodule/TransferFunctionJsonWriter>
 
 namespace
 {
@@ -1956,6 +1957,32 @@ void Server::receiveTransferFunctionParameter(uWS::WebSocket<false, true, PerSoc
         ParameterFileWriter ppw;
         ppw.getParticleParameter(*m_particle_property);
         ppw.writeParticleParameterFile();
+        // JSON ファイルで出力
+        std::cout << "------------------------------------Export json ------------------------------------------" << std::endl;
+        std::string json_name;
+        const char *envBuf = NULL;
+        envBuf = std::getenv( "VIS_PARAM_DIR" );
+
+        if ( envBuf == nullptr ) json_name = "./";
+        else
+        {
+            json_name = envBuf;
+            json_name += "/" ;
+        }
+
+        envBuf = std::getenv( "TF_NAME" );
+    
+        if ( envBuf == nullptr )
+        {
+            json_name     += "default.json";
+        }
+        else
+        {
+            json_name += envBuf;
+            json_name += ".json";
+        }
+       TransferFunctionJsonWriter::WriteTfJson(*m_particle_property, json_name);
+
     }
 
     ws->publish( k_text_topic, received.dump(), uWS::OpCode::TEXT );

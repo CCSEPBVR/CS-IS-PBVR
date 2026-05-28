@@ -107,7 +107,13 @@ LINK_LIBRARY += -lkvsSupportExtendedFileFormat \
 -lvtkloguru-$(VTK_VERSION) \
 -lvtkIOCore-$(VTK_VERSION) \
 -lvtkCommonSystem-$(VTK_VERSION) \
--lvtkCommonMisc-$(VTK_VERSION)
+-lvtkCommonMisc-$(VTK_VERSION) \
+-lvtkexpat-$(VTK_VERSION)\
+-lvtkzlib-$(VTK_VERSION)\
+-lvtkdoubleconversion-$(VTK_VERSION)\
+-lvtklzma-$(VTK_VERSION)\
+-lvtklz4-$(VTK_VERSION)\
+-lvtkpugixml-$(VTK_VERSION)
 
 DEFINITIONS += -DEXTEND_FILE_FORMAT
 endif

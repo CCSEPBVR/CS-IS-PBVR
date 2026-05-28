@@ -277,6 +277,7 @@ $(OUTDIR)/./DaemonAndSampler/Daemon/PlotOverTimeFile.o \
 $(OUTDIR)/./DaemonAndSampler/Daemon/ParticleMonitor.o \
 $(OUTDIR)/./DaemonAndSampler/Daemon/SetDefaultTransferFunction.o \
 $(OUTDIR)/./DaemonAndSampler/Daemon/Timer.o \
+$(OUTDIR)/./DaemonAndSampler/Daemon/TransferFunctionJsonWriter.o \
 $(OUTDIR)/./DaemonAndSampler/Daemon/InitialStep.o \
 $(OUTDIR)/./DaemonAndSampler/Daemon/GenerateGlyph.o \
 $(OUTDIR)/./DaemonAndSampler/Daemon/GenerateParticle.o \
