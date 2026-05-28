@@ -1,6 +1,11 @@
 #include "Communication.h"
 #include "ui_Communication.h"
 
+#ifdef Q_OS_LINUX
+#include <QColor>
+#include <QPalette>
+#endif
+
 Communication::Communication( kvs::qt::jaea::Screen* screen, WebSocketPair* webSockets, Viz::Mode* vizMode, QWidget* parent )
     : QDockWidget( parent )
     , ui( new Ui::Communication )
@@ -9,6 +14,20 @@ Communication::Communication( kvs::qt::jaea::Screen* screen, WebSocketPair* webS
     , m_viz_mode( vizMode )
 {
     ui->setupUi( this );
+
+#ifdef Q_OS_LINUX
+    const auto setPlaceholderTextColor = []( QLineEdit* line_edit )
+    {
+        QPalette palette = line_edit->palette();
+        palette.setColor( QPalette::PlaceholderText, QColor( 128, 128, 128, 255 ) );
+        line_edit->setPalette( palette );
+    };
+
+    setPlaceholderTextColor( ui->volumeDataFilePathLineEdit );
+    setPlaceholderTextColor( ui->transferFunctionFilePathLineEdit );
+    setPlaceholderTextColor( ui->transferOperatorIDlineEdit );
+    setPlaceholderTextColor( ui->chatLineEdit );
+#endif
 
     ui->uniformRadioButton->setChecked( true );    // NOTE:起動時デフォルトはUniformサンプリング
     ui->disconnectPushButton->setEnabled( false ); // NOTE:起動時デフォルトは未接続のため無効
