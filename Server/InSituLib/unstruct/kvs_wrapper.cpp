@@ -574,8 +574,7 @@ void OutputEnsembleStatisticHistory(
     }
 
     ParameterFileWriter ppw;
-    ppw.getParticleParameter( particle_property );
-    ppw.writeParticleParameterOldFile();
+    ppw.writeTF2OldJson( particle_property );
 }
 
 } // namespace
@@ -965,9 +964,9 @@ bool ensemble_generate_particles(
     std::string glyphFilePrefix;
     std::string plotOverLineFilePrefix;
     std::string plotOverTimeFilePrefix;
-    std::string tfFilePath;
-    std::string tfFilePath_old;
-    std::string tfFilePath_step;
+    std::string tfJsonPath;
+    std::string tfJsonPath_old;
+    std::string tfJsonPath_step;
     std::string glyphParameterPath;
     std::string glyphParameterPath_old;
     std::string plotOverLineParameterPath;
@@ -984,9 +983,9 @@ bool ensemble_generate_particles(
         glyphFilePrefix,
         plotOverLineFilePrefix,
         plotOverTimeFilePrefix,
-        tfFilePath,
-        tfFilePath_old,
-        tfFilePath_step,
+        tfJsonPath,
+        tfJsonPath_old,
+        tfJsonPath_step,
         glyphParameterPath,
         glyphParameterPath_old,
         plotOverLineParameterPath,
@@ -1002,7 +1001,11 @@ bool ensemble_generate_particles(
     particle_property.m_transfunc_synthesizer = new TransferFunctionSynthesizer();
     particle_property.m_camera = new vismodule::Camera();
 
-    SetParticleParameter( dom, tfFilePath, tfFilePath_old, particle_property, mvpl );
+    bool object_generation_enabled = false;
+    SetParticleParameter(
+        dom, tfJsonPath, tfJsonPath_old, particle_property, mvpl,
+        nvariables, object_generation_enabled
+    );
 
     const int tf_number = particle_property.m_transfunc_array.size();
     std::vector<vismodule::TransferFunction> transfer_functions( tf_number );
@@ -1521,12 +1524,9 @@ bool ensemble_generate_particles(
 
     if ( mpi_rank == 0 )
     {
-        ParameterFileReader ppr;
-        NameListFile nameListFile;
-        ppr.readParticleParameterFile( tfFilePath_old.c_str() );
-        nameListFile = ppr.getNameListFile();
-        nameListFile.setFileName( tfFilePath_step );
-        nameListFile.write();
+        std::ifstream src( tfJsonPath_old.c_str(), std::ios::binary );
+        std::ofstream dst( tfJsonPath_step.c_str(), std::ios::binary );
+        dst << src.rdbuf();
     }
 
     if ( async_io_enabled )

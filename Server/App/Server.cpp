@@ -13,7 +13,6 @@
 #include <vismodule/ParticleMonitor>
 #include <vismodule/ParameterFileReader>
 #include <vismodule/ParameterFileWriter>
-#include <vismodule/TransferFunctionJsonWriter>
 
 namespace
 {

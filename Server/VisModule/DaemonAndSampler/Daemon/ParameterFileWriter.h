@@ -27,14 +27,11 @@ public:
     std::string getGlyphParameterPath();
     std::string getPOLParameterPath();
     std::string getPOTParameterPath();
-    void getParticleParameter( const ParticleProperty& particle_property );
     void getGlyphParameter( const GlyphProperty& glyph_property );
     void getPlotOverLineParameter( const PlotOverLineProperty& pol_property );
     void getPlotOverTimeParameter( const PlotOverTimeProperty& pot_property );
     void writeTF2Json( const ParticleProperty& particle_property );
     void writeTF2OldJson( const ParticleProperty& particle_property );
-    void writeParticleParameterFile();
-    void writeParticleParameterOldFile();
     void writeGlyphParameterFile();
     void writePlotOverLineParameterFile();
     void writePlotOverTimeParameterFile();
