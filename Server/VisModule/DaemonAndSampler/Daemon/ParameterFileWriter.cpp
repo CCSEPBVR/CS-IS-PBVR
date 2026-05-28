@@ -309,10 +309,40 @@ void ParameterFileWriter::getPlotOverTimeParameter( const PlotOverTimeProperty& 
     m_name_list_file.setLine( "END_PARAMETER_FILE", "SUCCESS" );
 }
 
+void ParameterFileWriter::writeTF2Json(const ParticleProperty& particle_property )
+{
+        // JSON ファイルで出力
+        std::cout << "------------------------------------Export json ------------------------------------------" << std::endl;
+        std::string json_name;
+        const char *envBuf = NULL;
+        envBuf = std::getenv( "VIS_PARAM_DIR" );
+
+        if ( envBuf == nullptr ) json_name = "./";
+        else
+        {
+            json_name = envBuf;
+            json_name += "/" ;
+        }
+
+        envBuf = std::getenv( "TF_NAME" );
+    
+        if ( envBuf == nullptr )
+        {
+            json_name     += "default.json";
+        }
+        else
+        {
+            json_name += envBuf;
+            json_name += ".json";
+        }
+       TransferFunctionJsonWriter::WriteTfJson(particle_property, json_name);
+}
+
 void ParameterFileWriter::writeParticleParameterFile()
 {
     m_name_list_file.setFileName( m_particle_parameter_path );
     m_name_list_file.write();
+
 }
 
 void ParameterFileWriter::writeParticleParameterOldFile()

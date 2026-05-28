@@ -6,6 +6,7 @@
 #include <vismodule/GlyphProperty>
 #include <vismodule/PlotOverLineProperty>
 #include <vismodule/PlotOverTimeProperty>
+#include <vismodule/TransferFunctionJsonWriter>
 
 class ParameterFileWriter
 {
@@ -27,6 +28,7 @@ public:
     void getGlyphParameter( const GlyphProperty& glyph_property );
     void getPlotOverLineParameter( const PlotOverLineProperty& pol_property );
     void getPlotOverTimeParameter( const PlotOverTimeProperty& pot_property );
+    void writeTF2Json(const ParticleProperty& particle_property );
     void writeParticleParameterFile();
     void writeParticleParameterOldFile();
     void writeGlyphParameterFile();
