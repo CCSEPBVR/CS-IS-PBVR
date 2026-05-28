@@ -197,8 +197,8 @@ void generate_particles(
     std::string glyphFilePrefix;
     std::string plotOverLineFilePrefix;
     std::string plotOverTimeFilePrefix;
-    std::string tfFilePath;
-    std::string tfFilePath_old;
+    std::string tfJsonPath;
+    std::string tfJsonPath_old;
     std::string tfFilePath_step;
     std::string glyphParameterPath;
     std::string glyphParameterPath_old;
@@ -216,8 +216,8 @@ void generate_particles(
         glyphFilePrefix,
         plotOverLineFilePrefix,
         plotOverTimeFilePrefix,
-        tfFilePath,
-        tfFilePath_old,
+        tfJsonPath,
+        tfJsonPath_old,
         tfFilePath_step,
         glyphParameterPath,
         glyphParameterPath_old,
@@ -243,7 +243,7 @@ void generate_particles(
 
     bool object_generation_enabled = false;
     SetParticleParameter(
-        dom, tfFilePath, tfFilePath_old, particle_property, mvpl,
+        dom, tfJsonPath, tfJsonPath_old, particle_property, mvpl,
         nvariables, object_generation_enabled
     );
     if ( object_generation_enabled )
@@ -401,17 +401,6 @@ void generate_particles(
         OutputPOT( time_step, plotOverTimeFilePrefix, pot_mask, value_on_time );
     }
 
-    // OutputParticleで書き込んだdefault_old.tfファイルを読み込みdefault_xxx.tfに書き込む
-    if ( object_generation_enabled && mpi_rank == 0 )
-    {
-        ParameterFileReader ppr;
-        NameListFile nameListFile;
-        ppr.readParticleParameterFile( tfFilePath_old.c_str() );
-        nameListFile = ppr.getNameListFile();
-        nameListFile.setFileName( tfFilePath_step );
-        nameListFile.write();
-    }
-   
     // 粒子ファイル書き込みスレッドが終了するまで待機
     // async_io_enabled, pwtはkvs_wrapper_common.cppに宣言
     if ( async_io_enabled )
@@ -457,8 +446,8 @@ void generate_particles(
 
 bool SetParticleParameter( 
     const domain_parameters_unstruct& dom,
-    const std::string& tfFilePath,
-    const std::string& tfFilePath_old,
+    const std::string& tfJsonPath,
+    const std::string& tfJsonPath_old,
     ParticleProperty& particle_property,
     MultiVolumePropertyList& mvpl,
     const int nvariables,
@@ -473,7 +462,6 @@ bool SetParticleParameter(
 #endif
 
     ParameterFileReader ppr;
-    NameListFile nameListFile;
 
     int size = 0;
     char* buf = NULL;
@@ -481,27 +469,24 @@ bool SetParticleParameter(
 
     if ( mpi_rank == 0 )
     {
-        std::ifstream tfFile( tfFilePath );
-        std::ifstream tfFileOld( tfFilePath_old );
+        std::ifstream tfJson( tfJsonPath );
+        std::ifstream tfJsonOld( tfJsonPath_old );
 
-        if ( tfFile.good() )
+        if ( tfJson.good() )
         {
-            ppr.readParticleParameterFile( tfFilePath.c_str() );
-            nameListFile = ppr.getNameListFile();
-            std::rename( tfFilePath.c_str(), tfFilePath_old.c_str() );
+            ppr.readTransferFunctionFromJson( tfJsonPath.c_str(), particle_property );
             object_generation_enabled_int = 1;
         }
-        else if ( tfFileOld.good() )
+        else if ( tfJsonOld.good() )
         {
-            ppr.readParticleParameterFile( tfFilePath_old.c_str() );
-            nameListFile = ppr.getNameListFile();
+            ppr.readTransferFunctionFromJson( tfJsonPath_old.c_str(), particle_property );
             object_generation_enabled_int = 1;
         }
         else
         {
             std::cout << "================================================================" << std::endl;
-            std::cout << "[WARN] " << FileNameOnly( tfFilePath ) << " and "
-                      << FileNameOnly( tfFilePath_old ) << " do not exist." << std::endl;
+            std::cout << "[WARN] " << FileNameOnly( tfJsonPath ) << " and "
+                      << FileNameOnly( tfJsonPath_old ) << " do not exist." << std::endl;
             std::cout << "[INFO] VIS_PARAM_DIR = " << EnvValueOrUnset( "VIS_PARAM_DIR" ) << std::endl;
             std::cout << "[INFO] PARTICLE_DIR  = " << EnvValueOrUnset( "PARTICLE_DIR" ) << std::endl;
             std::cout << "[INFO] Set default particle parameters and skip object generation." << std::endl;
@@ -510,14 +495,16 @@ bool SetParticleParameter(
 
         if ( object_generation_enabled_int )
         {
-            size = nameListFile.byteSize();
+            size = particle_property.byteSize();
+            std::cout << "size = " << size << std::endl;
 
             if ( size > 0 )
             {
                 buf = new char[size];
-                nameListFile.pack( buf );
+                particle_property.pack( buf );
             }
         }
+
     }
 
 #ifndef CPU_VER
@@ -532,13 +519,12 @@ bool SetParticleParameter(
 #ifndef CPU_VER
         MPI_Bcast( buf, size, MPI_CHARACTER, 0, MPI_COMM_WORLD );
 #endif
-        if( mpi_rank > 0 ) nameListFile.unpack( buf );
+        if( mpi_rank > 0 ) particle_property.unpack( buf );
         delete[] buf;
     }
 
     if ( object_generation_enabled )
     {
-        if ( mpi_rank > 0 ) ppr.setNameListFile( nameListFile );
         ppr.setParticleParameter( particle_property );
     }
     else
@@ -662,8 +648,8 @@ void generate_particles_vtk( int time_step, vtkUnstructuredGrid* ucd )
     std::string glyphFilePrefix;
     std::string plotOverLineFilePrefix;
     std::string plotOverTimeFilePrefix;
-    std::string tfFilePath;
-    std::string tfFilePath_old;
+    std::string tfJsonPath;
+    std::string tfJsonPath_old;
     std::string tfFilePath_step;
     std::string glyphParameterPath;
     std::string glyphParameterPath_old;
@@ -681,8 +667,8 @@ void generate_particles_vtk( int time_step, vtkUnstructuredGrid* ucd )
         glyphFilePrefix,
         plotOverLineFilePrefix,
         plotOverTimeFilePrefix,
-        tfFilePath,
-        tfFilePath_old,
+        tfJsonPath,
+        tfJsonPath_old,
         tfFilePath_step,
         glyphParameterPath,
         glyphParameterPath_old,
@@ -767,7 +753,7 @@ void generate_particles_vtk( int time_step, vtkUnstructuredGrid* ucd )
 
     bool object_generation_enabled = false;
     SetParticleParameter(
-        dom, tfFilePath, tfFilePath_old, particle_property, mvpl,
+        dom, tfJsonPath, tfJsonPath_old, particle_property, mvpl,
         first_nvariables, object_generation_enabled
     );
     if ( object_generation_enabled )
@@ -969,17 +955,6 @@ void generate_particles_vtk( int time_step, vtkUnstructuredGrid* ucd )
     if ( object_generation_enabled ) // 常にファイルを出力し続ける、将来的に変更する可能性あり
     {
         OutputPOT( time_step, plotOverTimeFilePrefix, pot_mask, value_on_time );
-    }
-
-    // OutputParticleで書き込んだdefault_old.tfファイルを読み込みdefault_xxx.tfに書き込む
-    if ( object_generation_enabled && mpi_rank == 0 )
-    {
-        ParameterFileReader ppr;
-        NameListFile nameListFile;
-        ppr.readParticleParameterFile( tfFilePath_old.c_str() );
-        nameListFile = ppr.getNameListFile();
-        nameListFile.setFileName( tfFilePath_step );
-        nameListFile.write();
     }
 
     // 粒子ファイル書き込みスレッドが終了するまで待機

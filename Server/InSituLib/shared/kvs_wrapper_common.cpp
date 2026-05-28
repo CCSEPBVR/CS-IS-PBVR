@@ -269,8 +269,8 @@ void SetParameterFilePath(
     std::string& glyphFilePrefix,
     std::string& plotOverLineFilePrefix,
     std::string& plotOverTimeFilePrefix,
-    std::string& tfFilePath,
-    std::string& tfFilePath_old,
+    std::string& tfJsonPath,
+    std::string& tfJsonPath_old,
     std::string& tfFilePath_step,
     std::string& glyphParameterPath,
     std::string& glyphParameterPath_old,
@@ -337,8 +337,8 @@ void SetParameterFilePath(
         }
     }
 
-    tfFilePath                    = visParamDir + tfFilename + ".tf";
-    tfFilePath_old                = visParamDir + tfFilename + "_old.tf";
+    tfJsonPath                    = visParamDir + tfFilename + ".json";
+    tfJsonPath_old                = visParamDir + tfFilename + "_old.json";
     tfFilePath_step               = visParamDir + tfFilename + step.str() + ".tf";
     glyphParameterPath            = visParamDir + "parameter.gly";
     glyphParameterPath_old        = visParamDir + "parameter_old.gly";
@@ -347,6 +347,8 @@ void SetParameterFilePath(
     plotOverTimeParameterPath     = visParamDir + "parameter.pot";
     plotOverTimeParameterPath_old = visParamDir + "parameter_old.pot";
 
+    is_first_setting = false;
+    return true;
 }
 
 bool SetGlyphParameter(
@@ -872,7 +874,7 @@ void OutputParticleHistory(
         {
             ParameterFileWriter ppw;
             ppw.getParticleParameter( particle_property );
-            ppw.writeParticleParameterOldFile();
+            ppw.writeTF2OldJson( particle_property ); //old_Jsonファイル出力
         }
     }
 

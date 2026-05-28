@@ -30,8 +30,8 @@ void OutputCoordMinMaxFile(
 
 bool SetParticleParameter( 
     const domain_parameters_unstruct& dom,
-    const std::string& tfFilePath,
-    const std::string& tfFilePath_old,
+    const std::string& tfJsonPath,
+    const std::string& tfJsonPath_old,
     ParticleProperty& particle_property,
     MultiVolumePropertyList& mvpl,
     const int nvariables,

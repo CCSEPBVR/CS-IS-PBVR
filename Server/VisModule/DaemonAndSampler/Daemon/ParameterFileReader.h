@@ -17,6 +17,7 @@
 #include <vismodule/GlyphProperty>
 #include <vismodule/PlotOverLineProperty>
 #include <vismodule/PlotOverTimeProperty>
+#include <vismodule/TransferFunctionJsonWriter>
 
 class ParameterFileReader
 {
@@ -31,6 +32,7 @@ private:
 public:
     void readTransferFunctionFile( const char* fname ); // CSのConnect時に指定した.tfファイルを読み込む
     void readParticleParameterFile( const char* fname ); // ISのdefault.tfファイルを読み込む
+    void readTransferFunctionFromJson( const char* fname, ParticleProperty& particle_property ); // ISのdefault.jsonファイルを読み込む
     void readGlyphParameterFile( const char* fname );
     void readPlotOverLineParameterFile( const char* fname );
     void readPlotOverTimeParameterFile( const char* fname );
