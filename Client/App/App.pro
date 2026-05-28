@@ -33,9 +33,9 @@ win32 {
         LIBS += -L../ExtendedQT/debug -lExtendedQT
     }
 
-    !isEmpty( KVS_DIR ) {
+    !isEmpty( PBVR_KVS_INSTALL_DIR ) {
         equals( KVS_SUPPORT_QT, "1" ) {
-            LIBS += -L$$KVS_DIR/lib -lkvsSupportQt -lkvsCore
+            LIBS += -L$$PBVR_KVS_INSTALL_DIR/lib -lkvsSupportQt -lkvsCore
         }
         equals( KVS_ENABLE_OPENGL, "1" ) {
             LIBS += -lopengl32
@@ -48,16 +48,16 @@ win32 {
         }
         equals( KVS_SUPPORT_GLUT, "1" ) {
             LIBS += -L$$KVS_GLUT_DIR/lib -lfreeglut
-            LIBS += -L$$KVS_DIR/lib -lkvsSupportGLUT
+            LIBS += -L$$PBVR_KVS_INSTALL_DIR/lib -lkvsSupportGLUT
         }
         equals( KVS_SUPPORT_OPENXR, "1" ) {
-            LIBS += -L$$KVS_DIR/lib -lkvsSupportOpenXR
+            LIBS += -L$$PBVR_KVS_INSTALL_DIR/lib -lkvsSupportOpenXR
             LIBS += -L$$KVS_OPENXR_DIR/lib -lopenxr_loader
             LIBS += -lgdi32
         }
     }
     !isEmpty( KVS_ASSIMP_DIR ) {
-        LIBS += -L$$KVS_ASSIMP_DIR/lib/release -lassimp-vc143-mt
+        LIBS += -L$$KVS_ASSIMP_DIR/lib -lassimp-vc143-mt
     }
 }
 
@@ -68,9 +68,9 @@ macx {
     LIBS += -L../ExtendedKVS -lExtendedKVS
     LIBS += -L../ExtendedQT -lExtendedQT
 
-    !isEmpty( KVS_DIR ) {
+    !isEmpty( PBVR_KVS_INSTALL_DIR ) {
         equals( KVS_SUPPORT_QT, "1" ) {
-            LIBS += -L$$KVS_DIR/lib -lkvsSupportQt -lkvsCore
+            LIBS += -L$$PBVR_KVS_INSTALL_DIR/lib -lkvsSupportQt -lkvsCore
         }
         equals( KVS_ENABLE_OPENGL, "1" ) {
             LIBS += -framework OpenGL
@@ -81,7 +81,7 @@ macx {
         }
         equals( KVS_SUPPORT_GLUT, "1" ) {
             LIBS += -framework GLUT
-            LIBS += -L$$KVS_DIR/lib -lkvsSupportGLUT
+            LIBS += -L$$PBVR_KVS_INSTALL_DIR/lib -lkvsSupportGLUT
         }
     }
     !isEmpty( KVS_ASSIMP_DIR ) {
@@ -96,9 +96,9 @@ unix:!macx {
     LIBS += -L../ExtendedKVS -lExtendedKVS
     LIBS += -L../ExtendedQT -lExtendedQT
 
-    !isEmpty( KVS_DIR ) {
+    !isEmpty( PBVR_KVS_INSTALL_DIR ) {
         equals( KVS_SUPPORT_QT, "1" ) {
-            LIBS += -L$$KVS_DIR/lib -lkvsSupportQt -lkvsCore
+            LIBS += -L$$PBVR_KVS_INSTALL_DIR/lib -lkvsSupportQt -lkvsCore
         }
         equals( KVS_ENABLE_OPENGL, "1" ) {
             LIBS += -lGL
@@ -110,7 +110,7 @@ unix:!macx {
         }
         equals( KVS_SUPPORT_GLUT, "1" ) {
             LIBS += -lglut
-            LIBS += -L$$KVS_DIR/lib -lkvsSupportGLUT
+            LIBS += -L$$PBVR_KVS_INSTALL_DIR/lib -lkvsSupportGLUT
         }
     }
     !isEmpty( KVS_ASSIMP_DIR ) {
@@ -182,9 +182,9 @@ unix:!macx {
 #=============================================================================
 # QMAKE_POST_LINK
 #=============================================================================
-!isEmpty( KVS_DIR ) {
-    FONT_DIR = $$KVS_DIR/include/Core/Visualization/Font
-    SHADER_DIR = $$KVS_DIR/include/Core/Visualization/Shader
+!isEmpty( PBVR_KVS_INSTALL_DIR ) {
+    FONT_DIR = $$PBVR_KVS_INSTALL_DIR/include/Core/Visualization/Font
+    SHADER_DIR = $$PBVR_KVS_INSTALL_DIR/include/Core/Visualization/Shader
 
     win32 {
         CONFIG(release, debug|release) {
@@ -242,7 +242,7 @@ unix:!macx {
             QMAKE_EXTRA_TARGETS += copy_openxr
             POST_TARGETDEPS += copy_openxr
 
-            COPY_MODEL_SRC = $$KVS_DIR/resources/SupportOpenXR/Models
+            COPY_MODEL_SRC = $$PBVR_KVS_INSTALL_DIR/resources/SupportOpenXR/Models
             COPY_MODEL_SRC ~= s|/|\\|g
             copy_hand_model.target = copy_hand_model
             copy_hand_model.commands = $$QMAKE_COPY_DIR $$COPY_MODEL_SRC $$COPY_OPENXR_DEST\\Models

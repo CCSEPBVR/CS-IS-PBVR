@@ -43,8 +43,9 @@ ifndef MPICXX
 DEFINITIONS += -DCPU_VER
 endif
 
-ifdef KVS_DIR
-include $(KVS_DIR)/kvs.conf
+PBVR_KVS_INSTALL_DIR := $(abspath ../KVS/Install)
+ifneq ($(wildcard $(PBVR_KVS_INSTALL_DIR)/kvs.conf),)
+include $(PBVR_KVS_INSTALL_DIR)/kvs.conf
 ifeq "$(KVS_SUPPORT_EXTENDED_FILE_FORMAT)" "1"
 DEFINITIONS += -DEXTEND_FILE_FORMAT
 endif
@@ -69,15 +70,15 @@ LINK_LIBRARY := -lvisModule -lpbvrFunc
 #=============================================================================
 # KVS
 #=============================================================================
-INCLUDE_PATH += -I$(KVS_DIR)/include
-LIBRARY_PATH += -L$(KVS_DIR)/lib
+INCLUDE_PATH += -I$(PBVR_KVS_INSTALL_DIR)/include
+LIBRARY_PATH += -L$(PBVR_KVS_INSTALL_DIR)/lib
 LINK_LIBRARY += -lkvsCore
 
 #=============================================================================
 # VTK
 #=============================================================================
-ifdef KVS_DIR
-include $(KVS_DIR)/kvs.conf
+ifneq ($(wildcard $(PBVR_KVS_INSTALL_DIR)/kvs.conf),)
+include $(PBVR_KVS_INSTALL_DIR)/kvs.conf
 ifeq "$(KVS_SUPPORT_EXTENDED_FILE_FORMAT)" "1"
 INCLUDE_PATH += -I$(VTK_INCLUDE_PATH)
 LIBRARY_PATH += -L$(VTK_LIB_PATH)

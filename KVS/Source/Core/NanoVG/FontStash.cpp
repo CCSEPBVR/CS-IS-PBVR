@@ -5,6 +5,11 @@
  */
 /*****************************************************************************/
 #include "FontStash.h"
+#include <fstream>
+#include <vector>
+#if defined( _WIN32 )
+#include <windows.h>
+#endif
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -21,12 +26,74 @@
 
 namespace
 {
+bool Exists( const std::string& filename )
+{
+    std::ifstream ifs( filename.c_str(), std::ios::in | std::ios::binary );
+    return ifs.good();
+}
+
+std::string DirectoryName( const std::string& path )
+{
+    const std::string::size_type pos = path.find_last_of( "/\\" );
+    return pos == std::string::npos ? std::string() : path.substr( 0, pos );
+}
+
+std::string JoinPath( const std::string& lhs, const std::string& rhs )
+{
+    if ( lhs.empty() ) return rhs;
+    const char back = lhs[lhs.size() - 1];
+    if ( back == '/' || back == '\\' ) return lhs + rhs;
+    return lhs + "/" + rhs;
+}
+
+std::string ExecutableDirectory()
+{
+#if defined( _WIN32 )
+    char path[MAX_PATH] = {};
+    const DWORD size = GetModuleFileNameA( NULL, path, MAX_PATH );
+    return size == 0 ? std::string() : DirectoryName( std::string( path, size ) );
+#else
+    return std::string();
+#endif
+}
+
+std::vector<std::string> ParentDirectories( const std::string& path )
+{
+    std::vector<std::string> dirs;
+    std::string dir = path;
+    for ( int i = 0; i < 12 && !dir.empty(); ++i )
+    {
+        dirs.push_back( dir );
+        const std::string parent = DirectoryName( dir );
+        if ( parent.empty() || parent == dir ) break;
+        dir = parent;
+    }
+    return dirs;
+}
+
+std::string FindKVSInstallDirectory()
+{
+    std::vector<std::string> bases = ParentDirectories( "." );
+    const std::vector<std::string> executable_bases = ParentDirectories( ExecutableDirectory() );
+    bases.insert( bases.end(), executable_bases.begin(), executable_bases.end() );
+
+    for ( size_t i = 0; i < bases.size(); ++i )
+    {
+        const std::string candidate = JoinPath( bases[i], "KVS/Install" );
+        if ( Exists( JoinPath( candidate, "kvs.conf" ) ) )
+        {
+            return candidate;
+        }
+    }
+
+    return std::string();
+}
 
 std::string KVSFontPath()
 {
     const std::string sep = kvs::Directory::Separator();
-    const char* kvs_dir = std::getenv("KVS_DIR");
-    if ( kvs_dir != NULL )
+    const std::string kvs_dir = FindKVSInstallDirectory();
+    if ( !kvs_dir.empty() )
     {
         std::string path = std::string( kvs_dir ) + sep;
         path += "include" + sep;

@@ -24,8 +24,8 @@ win32 {
         # LIBS += -L../Utils/debug -lUtils
     }
 
-    !isEmpty( KVS_DIR ) {
-        LIBS += -L$$KVS_DIR/lib -lkvsCore
+    !isEmpty( PBVR_KVS_INSTALL_DIR ) {
+        LIBS += -L$$PBVR_KVS_INSTALL_DIR/lib -lkvsCore
         equals( KVS_ENABLE_OPENGL, "1" ) {
             LIBS += -lopengl32
         }
@@ -66,8 +66,8 @@ win32 {
 macx {
     # LIBS += -L../Utils -lUtils
 
-    !isEmpty( KVS_DIR ) {
-        LIBS += -L$$KVS_DIR/lib -lkvsCore
+    !isEmpty( PBVR_KVS_INSTALL_DIR ) {
+        LIBS += -L$$PBVR_KVS_INSTALL_DIR/lib -lkvsCore
     }
     !isEmpty( KVS_ASSIMP_DIR ) {
         LIBS += -L$$KVS_ASSIMP_DIR/lib -lassimp -lIrrXML -lzlibstatic
@@ -82,8 +82,8 @@ macx {
 unix:!macx {
     # LIBS += -L../Utils -lUtils
 
-    !isEmpty( KVS_DIR ) {
-        LIBS += -L$$KVS_DIR/lib -lkvsCore
+    !isEmpty( PBVR_KVS_INSTALL_DIR ) {
+        LIBS += -L$$PBVR_KVS_INSTALL_DIR/lib -lkvsCore
     }
     !isEmpty( KVS_ASSIMP_DIR ) {
         LIBS += -L$$KVS_ASSIMP_DIR/lib -lassimp -lIrrXML -lzlibstatic

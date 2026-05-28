@@ -57,7 +57,7 @@ include ../../Makefile.def
 INCLUDE_PATH := -I.. $(VTK_INCLUDE_OPTION)
 LIBRARY_PATH := $(VTK_LIBRARY_OPTION)
 LINK_LIBRARY := $(VTK_LINK_LIBRARY)
-INSTALL_DIR  := $(KVS_DIR)
+INSTALL_DIR  := $(abspath ../../Install)
 
 
 #=============================================================================

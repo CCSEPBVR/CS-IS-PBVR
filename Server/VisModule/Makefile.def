@@ -322,8 +322,9 @@ ifeq "$(VIS_MODULE_SUPPORT_OPENCABIN)" "1"
 DEFINITIONS += -DVIS_MODULE_SUPPORT_OPENCABIN
 endif
 
-ifdef KVS_DIR
-include $(KVS_DIR)/kvs.conf
+PBVR_KVS_INSTALL_DIR ?= $(abspath ../../KVS/Install)
+ifneq ($(wildcard $(PBVR_KVS_INSTALL_DIR)/kvs.conf),)
+include $(PBVR_KVS_INSTALL_DIR)/kvs.conf
 ifeq "$(KVS_SUPPORT_EXTENDED_FILE_FORMAT)" "1"
 CXXFLAGS += -DEXTEND_FILE_FORMAT
 endif

@@ -15,7 +15,7 @@ include ../../Makefile.def
 INCLUDE_PATH := -I.. $(GLUT_INCLUDE_PATH)
 LIBRARY_PATH := $(GLUT_LIBRARY_PATH)
 LINK_LIBRARY := $(GLUT_LINK_LIBRARY)
-INSTALL_DIR  := $(KVS_DIR)
+INSTALL_DIR  := $(abspath ../../Install)
 
 
 #=============================================================================

@@ -15,7 +15,7 @@
 INCLUDE_PATH = /I..\..\Source
 LIBRARY_PATH = /LIBPATH:..\..\Source\Core\$(OUTDIR)
 LINK_LIBRARY = $(LIB_KVS_CORE)
-INSTALL_DIR  = $(KVS_DIR)
+INSTALL_DIR  = ..\..\Install
 
 
 #=============================================================================

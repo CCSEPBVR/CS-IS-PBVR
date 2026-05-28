@@ -5,14 +5,14 @@
   <PropertyGroup />
   <ItemDefinitionGroup>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(SolutionDir)App;$(SolutionDir)Utils;$(SolutionDir)FunctionParser;$(SolutionDir)VisModule;$(SolutionDir)..\Shared;$(KVS_DIR)\include;$(KVS_GLUT_DIR)\include\GL;$(VCPKG_ROOT)\installed\x64-windows-static\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)App;$(SolutionDir)Utils;$(SolutionDir)FunctionParser;$(SolutionDir)VisModule;$(SolutionDir)..\Shared;$(MSBuildThisFileDirectory)..\KVS\Install\include;$(KVS_GLUT_DIR)\include\GL;$(VCPKG_ROOT)\installed\x64-windows-static\include</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <DisableSpecificWarnings>4996;4305;4267;4101;4244</DisableSpecificWarnings>
       <PreprocessorDefinitions>CPU_VER;NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>$(SolutionDir)$(Platform)\$(Configuration);$(KVS_DIR)\lib;$(KVS_GLUT_DIR)\lib;$(VCPKG_ROOT)\installed\x64-windows-static\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)$(Platform)\$(Configuration);$(MSBuildThisFileDirectory)..\KVS\Install\lib;$(KVS_GLUT_DIR)\lib;$(VCPKG_ROOT)\installed\x64-windows-static\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>VisModule.lib;FunctionParser.lib;kvsCore.lib;uSockets.lib;libuv.lib;zlib.lib;opengl32.lib;glu32.lib;glew32.lib;iphlpapi.lib;userenv.lib;shlwapi.lib;Dbghelp.lib;%(AdditionalDependencies);$(CoreLibraryDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>

@@ -15,7 +15,7 @@
 INCLUDE_PATH = /I.. $(CUDA_INCLUDE_PATH)
 LIBRARY_PATH = $(CUDA_LIBRARY_PATH)
 LINK_LIBRARY = $(CUDA_LINK_LIBRARY)
-INSTALL_DIR  = $(KVS_DIR)
+INSTALL_DIR  = ..\..\Install
 
 
 #=============================================================================

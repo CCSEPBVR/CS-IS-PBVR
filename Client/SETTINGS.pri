@@ -74,18 +74,18 @@ unix:!android {
 
 !isEmpty(target.path): INSTALLS += target
 
-KVS_DIR         = $$(KVS_DIR)
+PBVR_KVS_INSTALL_DIR = $$clean_path($$PWD/../KVS/Install)
 KVS_GLEW_DIR    = $$(KVS_GLEW_DIR)
 KVS_GLUT_DIR    = $$(KVS_GLUT_DIR)
 KVS_OPENXR_DIR  = $$(KVS_OPENXR_DIR)
 KVS_IMGUI_DIR   = $$(KVS_IMGUI_DIR)
 KVS_ASSIMP_DIR  = $$(KVS_ASSIMP_DIR)
 
-isEmpty( KVS_DIR ) {
-    error( "The environment variable KVS_DIR is not defined." )
+!exists( $$PBVR_KVS_INSTALL_DIR/kvs.conf ) {
+    error( "KVS is not installed in $$PBVR_KVS_INSTALL_DIR." )
 }
 else {
-    include( $$KVS_DIR/kvs.conf )
+    include( $$PBVR_KVS_INSTALL_DIR/kvs.conf )
     win32 {
         DEFINES += WIN32 _MBCS NOMINMAX _SCL_SECURE_NO_DEPRECATE _CRT_SECURE_NO_DEPRECATE _CRT_NONSTDC_NO_DEPRECATE
     }
@@ -94,7 +94,7 @@ else {
     } else {
         DEFINES += NDEBUG
     }
-    INCLUDEPATH += $$KVS_DIR/include
+    INCLUDEPATH += $$PBVR_KVS_INSTALL_DIR/include
 
     equals( KVS_ENABLE_OPENGL, "1" ) {  # すべてのプラットフォームで必要
         message( "KVS_ENABLE_OPENGL" )

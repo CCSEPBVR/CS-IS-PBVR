@@ -33,6 +33,7 @@
     <ClCompile Include="DaemonAndSampler\Daemon\ParticleStatusFile.cpp" />
     <ClCompile Include="DaemonAndSampler\Daemon\PlotOverLineFile.cpp" />
     <ClCompile Include="DaemonAndSampler\Daemon\PlotOverTimeFile.cpp" />
+    <ClCompile Include="DaemonAndSampler\Daemon\TransferFunctionJsonWriter.cpp" />
     <ClCompile Include="FileFormat\AggregateTypeSubvolume.cpp" />
     <ClCompile Include="FileFormat\AVSField\AVSField.cpp" />
     <ClCompile Include="FileFormat\AVSUCD\AVSUcd.cpp" />
@@ -164,6 +165,7 @@
     <ClInclude Include="DaemonAndSampler\Daemon\ParticleMonitor.h" />
     <ClInclude Include="DaemonAndSampler\Daemon\ParticleStatusFile.h" />
     <ClInclude Include="DaemonAndSampler\Daemon\PlotOverTimeFile.h" />
+    <ClInclude Include="DaemonAndSampler\Daemon\TransferFunctionJsonWriter.h" />
     <ClInclude Include="FileFormat\AggregateTypeSubvolume.h" />
     <ClInclude Include="FileFormat\AVSField\AVSField.h" />
     <ClInclude Include="FileFormat\AVSUCD\AVSUcd.h" />

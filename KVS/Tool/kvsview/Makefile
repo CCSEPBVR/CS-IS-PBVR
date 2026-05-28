@@ -15,7 +15,7 @@ include ../../Makefile.def
 INCLUDE_PATH := -I../../Source
 LIBRARY_PATH := -L../../Source/Core/$(OUTDIR)
 LINK_LIBRARY := -lkvsCore
-INSTALL_DIR  := $(KVS_DIR)
+INSTALL_DIR  := $(abspath ../../Install)
 
 
 #=============================================================================

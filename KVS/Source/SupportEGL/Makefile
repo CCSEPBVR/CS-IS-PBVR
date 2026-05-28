@@ -15,7 +15,7 @@ include ../../Makefile.def
 INCLUDE_PATH := -I.. $(GL_INCLUDE_PATH) $(EGL_INCLUDE_PATH)
 LIBRARY_PATH := $(GL_LIBRARY_PATH) $(EGL_LIBRARY_PATH)
 LINK_LIBRARY := $(GL_LINK_LIBRARY) $(EGL_LINK_LIBRARY)
-INSTALL_DIR  := $(KVS_DIR)
+INSTALL_DIR  := $(abspath ../../Install)
 
 
 #=============================================================================

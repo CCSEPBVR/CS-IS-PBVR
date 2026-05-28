@@ -185,8 +185,9 @@ OUTDIR := $(SOLUTION)
 #=============================================================================
 #  KVS_INCLUDE_PATH, KVS_LIBRARY_PATH, KVS_LINK_LIBRARY
 #=============================================================================
-KVS_INCLUDE_PATH := $(KVS_DIR)/include
-KVS_LIBRARY_PATH := $(KVS_DIR)/lib
+PBVR_KVS_INSTALL_DIR ?= $(abspath ../../KVS/Install)
+KVS_INCLUDE_PATH := $(PBVR_KVS_INSTALL_DIR)/include
+KVS_LIBRARY_PATH := $(PBVR_KVS_INSTALL_DIR)/lib
 KVS_LINK_LIBRARY := -lkvsCore
 
 

@@ -25,7 +25,8 @@ CXXFLAGS += -I../../App
 CXXFLAGS += -I../shared
 CXXFLAGS += -I${VISMODULE_SOURCE_DIR}
 CXXFLAGS += -I${FUNCTION_PARSER_DIR}
-CXXFLAGS += -I${KVS_DIR}/include
+PBVR_KVS_INSTALL_DIR ?= $(abspath ../../../KVS/Install)
+CXXFLAGS += -I$(PBVR_KVS_INSTALL_DIR)/include
 CXXFLAGS += -w -DNO_CLIENT
 
 all : ${PROG}

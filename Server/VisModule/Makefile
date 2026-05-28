@@ -15,12 +15,13 @@ include ./Makefile.def
 #=============================================================================
 INCLUDE_PATH := -I. -I../App -I../FunctionParser
 
-ifdef KVS_DIR
-include $(KVS_DIR)/kvs.conf
+PBVR_KVS_INSTALL_DIR := $(abspath ../../KVS/Install)
+ifneq ($(wildcard $(PBVR_KVS_INSTALL_DIR)/kvs.conf),)
+include $(PBVR_KVS_INSTALL_DIR)/kvs.conf
 ifeq "$(KVS_SUPPORT_EXTENDED_FILE_FORMAT)" "1"
-INCLUDE_PATH += -I$(KVS_DIR)/include -I$(VTK_INCLUDE_PATH)
+INCLUDE_PATH += -I$(PBVR_KVS_INSTALL_DIR)/include -I$(VTK_INCLUDE_PATH)
 else
-INCLUDE_PATH += -I$(KVS_DIR)/include
+INCLUDE_PATH += -I$(PBVR_KVS_INSTALL_DIR)/include
 endif
 endif
 

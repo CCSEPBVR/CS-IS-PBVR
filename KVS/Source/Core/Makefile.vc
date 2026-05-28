@@ -15,7 +15,7 @@
 INCLUDE_PATH = /I..
 LIBRARY_PATH =
 LINK_LIBRARY =
-INSTALL_DIR  = $(KVS_DIR)
+INSTALL_DIR  = ..\..\Install
 
 
 #=============================================================================

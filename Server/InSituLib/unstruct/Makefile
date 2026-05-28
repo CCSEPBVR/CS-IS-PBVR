@@ -25,15 +25,16 @@ CXXFLAGS += -I../../App
 CXXFLAGS += -I../shared
 CXXFLAGS += -I${VISMODULE_SOURCE_DIR}
 CXXFLAGS += -I${FUNCTION_PARSER_DIR}
-CXXFLAGS += -I${KVS_DIR}/include
+PBVR_KVS_INSTALL_DIR ?= $(abspath ../../../KVS/Install)
+CXXFLAGS += -I$(PBVR_KVS_INSTALL_DIR)/include
 CXXFLAGS += -w -DNO_CLIENT
 
-ifdef KVS_DIR
-include $(KVS_DIR)/kvs.conf
+ifneq ($(wildcard $(PBVR_KVS_INSTALL_DIR)/kvs.conf),)
+include $(PBVR_KVS_INSTALL_DIR)/kvs.conf
 ifeq "$(KVS_SUPPORT_EXTENDED_FILE_FORMAT)" "1"
 CXXFLAGS += -std=c++17 -DEXTEND_FILE_FORMAT
 CXXFLAGS += \
--I$(KVS_DIR)/include \
+-I$(PBVR_KVS_INSTALL_DIR)/include \
 -I$(VTK_INCLUDE_PATH) \
 -I./Filter
 @echo "INFO:KVS_SUPPORT_EXTENDED_FILE_FORMAT=1. OpenFOAM is available."	
@@ -41,7 +42,7 @@ else
 @echo "INFO:KVS_SUPPORT_EXTENDED_FILE_FORMAT=0. OpenFOAM is not available."	
 endif
 else
-@echo "INFO:KVS_DIR is not found. OpenFOAM is not available."
+@echo "INFO:KVS install is not found. OpenFOAM is not available."
 endif
 
 all : ${PROG}

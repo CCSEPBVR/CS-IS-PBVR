@@ -15,7 +15,7 @@ include ../Makefile.def
 INCLUDE_PATH :=
 LIBRARY_PATH :=
 LINK_LIBRARY :=
-INSTALL_DIR  := $(KVS_DIR)
+INSTALL_DIR  := $(abspath ../Install)
 
 
 #=============================================================================
