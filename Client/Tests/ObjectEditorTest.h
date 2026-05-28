@@ -90,8 +90,6 @@ private:
     QString repoRootPath() const;
     QString sourceTreePath( const QString& relative_path_from_repo_root ) const;
     bool waitForCondition( const std::function<bool()>& condition, int timeout_ms, int interval_ms = 50 ) const;
-    void startVideoRecording();
-    void stopVideoRecording();
     void bringWindowToFront( MainWindow* window ) const;
     void setLineEditText( QLineEdit* line_edit, const QString& text ) const;
     void saveScreenshot( const QString& file_name, const QString& caption );
@@ -127,7 +125,6 @@ private:
     QString serverProcessSummary();
 
     QProcess m_server_process;
-    QProcess m_recording_process;
     QString m_client_executable;
     QString m_server_executable;
     QString m_server_target_wrapper_executable;
@@ -137,7 +134,6 @@ private:
     QString m_output_dir_path;
     QString m_screenshot_dir_path;
     QString m_report_path;
-    QString m_video_file_path;
     std::vector<ScreenshotEntry> m_screenshots;
     std::vector<StepEntry> m_steps;
     bool m_test_succeeded = false;

@@ -124,6 +124,36 @@ QRect physicalWindowGeometryForRecording( QWidget* target_window, QScreen* fallb
 }
 #endif
 
+#ifdef Q_OS_LINUX
+QRect physicalWindowGeometryForRecording( QWidget* target_window, QScreen* fallback_screen )
+{
+    QScreen* screen = fallback_screen;
+    if ( target_window != nullptr && target_window->windowHandle() != nullptr &&
+         target_window->windowHandle()->screen() != nullptr )
+    {
+        screen = target_window->windowHandle()->screen();
+    }
+
+    if ( screen == nullptr )
+    {
+        return QRect();
+    }
+
+    const QRect logical_geometry =
+        target_window != nullptr ? target_window->frameGeometry() : screen->geometry();
+    const qreal device_pixel_ratio = screen->devicePixelRatio();
+
+    QRect physical_geometry(
+        qRound( logical_geometry.x() * device_pixel_ratio ),
+        qRound( logical_geometry.y() * device_pixel_ratio ),
+        qRound( logical_geometry.width() * device_pixel_ratio ),
+        qRound( logical_geometry.height() * device_pixel_ratio ) );
+    physical_geometry.setWidth( physical_geometry.width() & ~1 );
+    physical_geometry.setHeight( physical_geometry.height() & ~1 );
+    return physical_geometry;
+}
+#endif
+
 void logStep( const QString& message )
 {
     qInfo().noquote() << message;
@@ -269,7 +299,7 @@ void AnimationControlTest::startVideoRecording( QWidget* target_window )
             qPrintable( QStringLiteral( "Failed to remove existing video: %1" ).arg( m_video_file_path ) ) );
     }
 
-#ifdef Q_OS_WIN
+#if defined( Q_OS_WIN ) || defined( Q_OS_LINUX )
     if ( target_window != nullptr )
     {
         target_window->raise();
@@ -356,6 +386,7 @@ void AnimationControlTest::startVideoRecording( QWidget* target_window )
                .arg( recording_geometry.height() );
 
     m_recording_process.setProgram( ffmpeg_path );
+#ifdef Q_OS_WIN
     m_recording_process.setArguments(
         {
             QStringLiteral( "-y" ),
@@ -379,6 +410,34 @@ void AnimationControlTest::startVideoRecording( QWidget* target_window )
             QStringLiteral( "+faststart" ),
             m_video_file_path
         } );
+#else
+    const QString display = qEnvironmentVariable(
+        "PBVR_FFMPEG_X11_DISPLAY",
+        qEnvironmentVariable( "DISPLAY" ) );
+    QVERIFY2(
+        !display.isEmpty(),
+        "DISPLAY was not set. Linux video recording with ffmpeg requires an X11 display." );
+
+    m_recording_process.setArguments(
+        {
+            QStringLiteral( "-y" ),
+            QStringLiteral( "-f" ),
+            QStringLiteral( "x11grab" ),
+            QStringLiteral( "-framerate" ),
+            QStringLiteral( "30" ),
+            QStringLiteral( "-video_size" ),
+            QStringLiteral( "%1x%2" ).arg( recording_geometry.width() ).arg( recording_geometry.height() ),
+            QStringLiteral( "-i" ),
+            QStringLiteral( "%1+%2,%3" ).arg( display ).arg( recording_geometry.x() ).arg( recording_geometry.y() ),
+            QStringLiteral( "-vcodec" ),
+            QStringLiteral( "libx264" ),
+            QStringLiteral( "-pix_fmt" ),
+            QStringLiteral( "yuv420p" ),
+            QStringLiteral( "-movflags" ),
+            QStringLiteral( "+faststart" ),
+            m_video_file_path
+        } );
+#endif
 #else
     m_recording_process.setProgram( QStringLiteral( "screencapture" ) );
     m_recording_process.setArguments(
@@ -406,7 +465,7 @@ void AnimationControlTest::startVideoRecording( QWidget* target_window )
 
 void AnimationControlTest::stopVideoRecording()
 {
-#ifdef Q_OS_WIN
+#if defined( Q_OS_WIN ) || defined( Q_OS_LINUX )
     if ( !m_video_recording_available )
     {
         return;

@@ -103,8 +103,6 @@ private:
     QString sourceTreePath( const QString& relative_path_from_repo_root ) const;
     QString serverProcessSummary() const;
     bool waitForCondition( const std::function<bool()>& condition, int timeout_ms, int interval_ms = 50 ) const;
-    void startVideoRecording();
-    void stopVideoRecording();
     void bringWindowToFront( MainWindow* window ) const;
     void bringGlyphEditorToFront( GlyphEditor* editor ) const;
     void bringPlotOverLineEditorToFront( PlotOverLineEditor* editor ) const;
@@ -149,7 +147,6 @@ private:
     void prepareSecondDatasetConnection( const ClientHandles& client ) const;
 
     QProcess m_server_process;
-    QProcess m_recording_process;
     QString m_client_executable;
     QString m_server_executable;
     QString m_server_target_wrapper_executable;
@@ -159,7 +156,6 @@ private:
     QString m_output_dir_path;
     QString m_screenshot_dir_path;
     QString m_report_path;
-    QString m_video_file_path;
     QVector<StepEntry> m_steps;
     QVector<ScreenshotEntry> m_screenshots;
     bool m_test_succeeded = false;

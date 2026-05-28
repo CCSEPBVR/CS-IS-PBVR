@@ -36,8 +36,6 @@
 #include "TestAppContext.h"
 #include "TestOutputPaths.h"
 
-#include <csignal>
-
 namespace
 {
 constexpr int k_server_start_timeout_ms = 10000;
@@ -48,7 +46,6 @@ constexpr int k_jump_button_enable_timeout_ms = 120000;
 constexpr int k_glyph_editor_ready_timeout_ms = 120000;
 constexpr int k_plot_over_line_ready_timeout_ms = 120000;
 constexpr int k_combo_popup_timeout_ms = 5000;
-constexpr int k_recording_finish_timeout_ms = 15000;
 constexpr int k_window_settle_ms = 500;
 constexpr int k_short_wait_ms = 1000;
 constexpr int k_post_jump_wait_ms = 3000;
@@ -124,8 +121,12 @@ QString PlotOverLineEditorTest::sourceTreePath( const QString& relative_path_fro
 QString PlotOverLineEditorTest::serverProcessSummary() const
 {
     auto& server_process = const_cast<QProcess&>( m_server_process );
-    const QString stdout_text = QString::fromLocal8Bit( server_process.readAllStandardOutput() ).trimmed();
-    const QString stderr_text = QString::fromLocal8Bit( server_process.readAllStandardError() ).trimmed();
+    const QString stdout_text = server_process.isOpen()
+        ? QString::fromLocal8Bit( server_process.readAllStandardOutput() ).trimmed()
+        : QString();
+    const QString stderr_text = server_process.isOpen()
+        ? QString::fromLocal8Bit( server_process.readAllStandardError() ).trimmed()
+        : QString();
     return QStringLiteral( "state=%1 exitCode=%2 exitStatus=%3 stdout=\"%4\" stderr=\"%5\"" )
         .arg( static_cast<int>( m_server_process.state() ) )
         .arg( m_server_process.exitCode() )
@@ -146,76 +147,6 @@ bool PlotOverLineEditorTest::waitForCondition( const std::function<bool()>& cond
     }
 
     return condition();
-}
-
-void PlotOverLineEditorTest::startVideoRecording()
-{
-#ifdef Q_OS_WIN
-    return;
-#else
-    if ( QFileInfo::exists( m_video_file_path ) )
-    {
-        QVERIFY2(
-            QFile::remove( m_video_file_path ),
-            qPrintable( QStringLiteral( "Failed to remove existing video: %1" ).arg( m_video_file_path ) ) );
-    }
-
-    m_recording_process.setProgram( QStringLiteral( "screencapture" ) );
-    m_recording_process.setArguments(
-        {
-            QStringLiteral( "-v" ),
-            QStringLiteral( "-k" ),
-            QStringLiteral( "-m" ),
-            QStringLiteral( "-x" ),
-            m_video_file_path
-        } );
-    m_recording_process.start();
-
-    QVERIFY2(
-        m_recording_process.waitForStarted( 5000 ),
-        qPrintable( QStringLiteral( "Failed to start video recording: %1" ).arg( m_recording_process.errorString() ) ) );
-#endif
-}
-
-void PlotOverLineEditorTest::stopVideoRecording()
-{
-#ifdef Q_OS_WIN
-    Q_UNUSED( m_recording_process );
-    return;
-#else
-    if ( m_recording_process.state() == QProcess::NotRunning )
-    {
-        QVERIFY2(
-            QFileInfo::exists( m_video_file_path ),
-            qPrintable( QStringLiteral( "Recorded video was not created: %1" ).arg( m_video_file_path ) ) );
-        return;
-    }
-
-    const qint64 pid = m_recording_process.processId();
-    if ( pid > 0 )
-    {
-        ::kill( static_cast<pid_t>( pid ), SIGINT );
-    }
-    else
-    {
-        m_recording_process.terminate();
-    }
-
-    if ( !m_recording_process.waitForFinished( k_recording_finish_timeout_ms ) )
-    {
-        m_recording_process.terminate();
-    }
-    if ( m_recording_process.state() != QProcess::NotRunning &&
-         !m_recording_process.waitForFinished( 5000 ) )
-    {
-        m_recording_process.kill();
-        m_recording_process.waitForFinished( 5000 );
-    }
-
-    QVERIFY2(
-        QFileInfo::exists( m_video_file_path ),
-        qPrintable( QStringLiteral( "Recorded video was not created: %1" ).arg( m_video_file_path ) ) );
-#endif
 }
 
 void PlotOverLineEditorTest::bringWindowToFront( MainWindow* window ) const
@@ -1142,7 +1073,6 @@ void PlotOverLineEditorTest::initTestCase()
         "PBVR_SCREENSHOT_DIR",
         QDir( m_output_dir_path ).absoluteFilePath( QStringLiteral( "img" ) ) );
     m_report_path = QDir( m_output_dir_path ).absoluteFilePath( QStringLiteral( "TestResult.md" ) );
-    m_video_file_path = QDir( m_output_dir_path ).absoluteFilePath( QStringLiteral( "PlotOverLineEditorTest.mov" ) );
 
     QVERIFY2(
         QFileInfo::exists( m_structured_volume_data_path ),
@@ -1167,11 +1097,6 @@ void PlotOverLineEditorTest::cleanupTestCase()
 {
     writeMarkdownReport();
 
-    if ( m_recording_process.state() != QProcess::NotRunning )
-    {
-        stopVideoRecording();
-    }
-
     if ( m_server_process.state() != QProcess::NotRunning )
     {
         m_server_process.kill();
@@ -1187,9 +1112,6 @@ void PlotOverLineEditorTest::performs_plot_over_line_editor_scenario()
         g_test_app = pbvrTestApplication();
     }
     QVERIFY2( g_test_app != nullptr, "Test application is not initialized" );
-
-    startVideoRecording();
-    logStep( QStringLiteral( "scenario: recording started" ) );
 
     MainWindow main_window( *g_test_app );
     showTestWindowCentered( &main_window );
@@ -1368,7 +1290,6 @@ void PlotOverLineEditorTest::performs_plot_over_line_editor_scenario()
         } );
 
     bringWindowToFront( client.main_window );
-    stopVideoRecording();
     logStep( QStringLiteral( "scenario: completed" ) );
     m_test_succeeded = !scenario_aborted && !QTest::currentTestFailed();
 }

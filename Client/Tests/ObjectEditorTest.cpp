@@ -42,15 +42,12 @@
 #include "TestAppContext.h"
 #include "TestOutputPaths.h"
 
-#include <csignal>
-
 namespace
 {
 constexpr int k_server_start_timeout_ms = 10000;
 constexpr int k_connect_timeout_ms = 15000;
 constexpr int k_object_load_timeout_ms = 120000;
 constexpr int k_jump_button_enable_timeout_ms = 120000;
-constexpr int k_recording_finish_timeout_ms = 15000;
 constexpr int k_window_settle_ms = 500;
 constexpr int k_short_wait_ms = 1000;
 constexpr int k_capture_settle_ms = 700;
@@ -142,76 +139,6 @@ bool ObjectEditorTest::waitForCondition( const std::function<bool()>& condition,
     }
 
     return condition();
-}
-
-void ObjectEditorTest::startVideoRecording()
-{
-#ifdef Q_OS_WIN
-    return;
-#else
-    if ( QFileInfo::exists( m_video_file_path ) )
-    {
-        QVERIFY2(
-            QFile::remove( m_video_file_path ),
-            qPrintable( QStringLiteral( "Failed to remove existing video: %1" ).arg( m_video_file_path ) ) );
-    }
-
-    m_recording_process.setProgram( QStringLiteral( "screencapture" ) );
-    m_recording_process.setArguments(
-        {
-            QStringLiteral( "-v" ),
-            QStringLiteral( "-k" ),
-            QStringLiteral( "-m" ),
-            QStringLiteral( "-x" ),
-            m_video_file_path
-        } );
-    m_recording_process.start();
-
-    QVERIFY2(
-        m_recording_process.waitForStarted( 5000 ),
-        qPrintable( QStringLiteral( "Failed to start video recording: %1" ).arg( m_recording_process.errorString() ) ) );
-#endif
-}
-
-void ObjectEditorTest::stopVideoRecording()
-{
-#ifdef Q_OS_WIN
-    Q_UNUSED( m_recording_process );
-    return;
-#else
-    if ( m_recording_process.state() == QProcess::NotRunning )
-    {
-        QVERIFY2(
-            QFileInfo::exists( m_video_file_path ),
-            qPrintable( QStringLiteral( "Recorded video was not created: %1" ).arg( m_video_file_path ) ) );
-        return;
-    }
-
-    const qint64 pid = m_recording_process.processId();
-    if ( pid > 0 )
-    {
-        ::kill( static_cast<pid_t>( pid ), SIGINT );
-    }
-    else
-    {
-        m_recording_process.terminate();
-    }
-
-    if ( !m_recording_process.waitForFinished( k_recording_finish_timeout_ms ) )
-    {
-        m_recording_process.terminate();
-    }
-    if ( m_recording_process.state() != QProcess::NotRunning &&
-         !m_recording_process.waitForFinished( 5000 ) )
-    {
-        m_recording_process.kill();
-        m_recording_process.waitForFinished( 5000 );
-    }
-
-    QVERIFY2(
-        QFileInfo::exists( m_video_file_path ),
-        qPrintable( QStringLiteral( "Recorded video was not created: %1" ).arg( m_video_file_path ) ) );
-#endif
 }
 
 void ObjectEditorTest::bringWindowToFront( MainWindow* window ) const
@@ -328,8 +255,12 @@ void ObjectEditorTest::markStepCompleted( const QString& description )
 
 QString ObjectEditorTest::serverProcessSummary()
 {
-    const QString stdout_text = QString::fromLocal8Bit( m_server_process.readAllStandardOutput() ).trimmed();
-    const QString stderr_text = QString::fromLocal8Bit( m_server_process.readAllStandardError() ).trimmed();
+    const QString stdout_text = m_server_process.isOpen()
+        ? QString::fromLocal8Bit( m_server_process.readAllStandardOutput() ).trimmed()
+        : QString();
+    const QString stderr_text = m_server_process.isOpen()
+        ? QString::fromLocal8Bit( m_server_process.readAllStandardError() ).trimmed()
+        : QString();
     return QStringLiteral( "state=%1 exitCode=%2 exitStatus=%3 stdout=\"%4\" stderr=\"%5\"" )
         .arg( static_cast<int>( m_server_process.state() ) )
         .arg( m_server_process.exitCode() )
@@ -1149,7 +1080,6 @@ void ObjectEditorTest::initTestCase()
         "PBVR_SCREENSHOT_DIR",
         QDir( m_output_dir_path ).absoluteFilePath( QStringLiteral( "img" ) ) );
     m_report_path = QDir( m_output_dir_path ).absoluteFilePath( QStringLiteral( "TestResult.md" ) );
-    m_video_file_path = QDir( m_output_dir_path ).absoluteFilePath( QStringLiteral( "ObjectEditorTest.mov" ) );
 
     QVERIFY2(
         QFileInfo::exists( m_volume_data_path ),
@@ -1175,11 +1105,6 @@ void ObjectEditorTest::cleanupTestCase()
 {
     writeMarkdownReport();
 
-    if ( m_recording_process.state() != QProcess::NotRunning )
-    {
-        stopVideoRecording();
-    }
-
     if ( m_server_process.state() != QProcess::NotRunning )
     {
         m_server_process.kill();
@@ -1203,9 +1128,6 @@ void ObjectEditorTest::performs_object_editor_scenario()
     ClientHandles client = resolveClientHandles( main_window );
     client.communication->show();
     client.object_editor->show();
-
-    startVideoRecording();
-    logStep( QStringLiteral( "scenario: recording started" ) );
 
     bool scenario_aborted = false;
     const auto run_step = [this, &scenario_aborted]( const QString& description, const std::function<void()>& body )
@@ -1625,7 +1547,6 @@ void ObjectEditorTest::performs_object_editor_scenario()
                 QStringLiteral( "オフラインで Delete ボタンを押した後の状態。" ) );
         } );
 
-    stopVideoRecording();
     logStep( QStringLiteral( "scenario: completed" ) );
     m_test_succeeded = !scenario_aborted && !QTest::currentTestFailed();
 }

@@ -15,16 +15,19 @@ TimeStepControlToolBar::TimeStepControlToolBar( WebSocketPair* websockets, QWidg
 
     m_next_time_step_label    = new QLabel( "Next Time Step :", this );
     m_next_time_step_spin_box = new QSpinBox( this );
+    m_next_time_step_spin_box->setObjectName( "m_next_time_step_spin_box" );
     m_next_time_step_spin_box->setRange( 0, 0 );
     m_next_time_step_spin_box->setFixedWidth( 100 );
 
     m_min_limit_time_step_label    = new QLabel( "Min :", this );
     m_min_limit_time_step_spin_box = new QSpinBox( this );
+    m_min_limit_time_step_spin_box->setObjectName( "m_min_limit_time_step_spin_box" );
     m_min_limit_time_step_spin_box->setRange( 0, 0 );
     m_min_limit_time_step_spin_box->setFixedWidth( 100 );
 
     m_max_limit_time_step_label    = new QLabel( "Max :", this );
     m_max_limit_time_step_spin_box = new QSpinBox( this );
+    m_max_limit_time_step_spin_box->setObjectName( "m_max_limit_time_step_spin_box" );
     m_max_limit_time_step_spin_box->setRange( 0, 0 );
     m_max_limit_time_step_spin_box->setFixedWidth( 100 );
 
@@ -38,6 +41,7 @@ TimeStepControlToolBar::TimeStepControlToolBar( WebSocketPair* websockets, QWidg
 
     m_update_interval_label    = new QLabel( "Step Interval :", this );
     m_update_interval_spin_box = new QSpinBox( this );
+    m_update_interval_spin_box->setObjectName( "m_update_interval_spin_box" );
     m_update_interval_spin_box->setRange( 0, 60000 );
     m_update_interval_spin_box->setValue( 100 );
     m_update_interval_spin_box->setSuffix( "ms" );
@@ -116,6 +120,8 @@ void TimeStepControlToolBar::onUpdateTotalTimeStepRange( int min, int max, const
     m_min_limit_time_step_spin_box->setMaximum( max );
     m_max_limit_time_step_spin_box->setMinimum( min );
     m_max_limit_time_step_spin_box->setMaximum( max );
+    m_next_time_step_spin_box->setMinimum( min );
+    m_next_time_step_spin_box->setMaximum( max );
 
     if( isSingleObject )
     {
