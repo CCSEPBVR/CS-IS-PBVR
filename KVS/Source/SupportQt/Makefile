@@ -13,6 +13,7 @@ include ../../Makefile.def
 #  Makefile for Qt.
 #=============================================================================
 QT_MAKEFILE := BuildRule.mk
+INSTALL_DIR := $(abspath ../../Install)
 
 
 #=============================================================================
@@ -41,4 +42,4 @@ install:: $(QT_MAKEFILE)
 #  qmake.
 #=============================================================================
 $(QT_MAKEFILE):
-	$(QMAKE) -o $(QT_MAKEFILE) $(SOLUTION).pro
+	$(QMAKE) -o $(QT_MAKEFILE) $(SOLUTION).pro KVS_INSTALL_DIR=$(INSTALL_DIR)

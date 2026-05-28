@@ -13,6 +13,7 @@
 #  Makefile for OpenXR.
 #=============================================================================
 OPENXR_MAKEFILE = BuildRule.vc.mk
+INSTALL_DIR = ..\..\Install
 
 
 #=============================================================================
@@ -41,4 +42,4 @@ install:: $(OPENXR_MAKEFILE)
 #  qmake.
 #=============================================================================
 $(OPENXR_MAKEFILE):
-	$(QMAKE) -o $(OPENXR_MAKEFILE) $(SOLUTION).pro
+	$(QMAKE) -o $(OPENXR_MAKEFILE) $(SOLUTION).pro KVS_INSTALL_DIR=../../Install

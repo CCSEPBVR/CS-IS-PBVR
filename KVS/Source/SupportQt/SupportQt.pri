@@ -5,11 +5,10 @@
 #=============================================================================
 #  KVS directory
 #=============================================================================
-KVS_DIR = $$(KVS_DIR)
-
-isEmpty( KVS_DIR ) {
-    error( "KVS_DIR is not defined." )
+isEmpty( KVS_INSTALL_DIR ) {
+    KVS_INSTALL_DIR = $$clean_path( $$PWD/../../Install )
 }
+KVS_DIR = $$KVS_INSTALL_DIR
 
 
 #=============================================================================
