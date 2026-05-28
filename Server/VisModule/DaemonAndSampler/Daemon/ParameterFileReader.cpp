@@ -58,6 +58,101 @@ std::vector<float> JsonFloatTable( const nlohmann::json& params, const std::stri
 
     return values;
 }
+
+float JsonRangeValue(
+    const nlohmann::json& range,
+    const std::string& range_name,
+    const std::string& bound_name,
+    const float fallback = 0.0f )
+{
+    if ( !range.contains( range_name ) ) return fallback;
+    const nlohmann::json& value = range.at( range_name );
+    if ( !value.is_object() || !value.contains( bound_name ) ) return fallback;
+    return value.at( bound_name ).get<float>();
+}
+
+nlohmann::json BuildLegacyParametersFromReadableJson( const nlohmann::json& root )
+{
+    nlohmann::json params = root.value( "parameters", nlohmann::json::object() );
+    const nlohmann::json& settings = root.at( "settings" );
+    const nlohmann::json& transfer_functions = root.at( "transfer_functions" );
+
+    const nlohmann::json& sampling = settings.value( "sampling", nlohmann::json::object() );
+    const nlohmann::json& image = settings.value( "image", nlohmann::json::object() );
+    const nlohmann::json& transfer_settings = settings.value( "transfer_function", nlohmann::json::object() );
+
+    if ( sampling.contains( "method" ) ) params["SAMPLING_METHOD"] = sampling.at( "method" );
+    if ( sampling.contains( "particle_limit" ) ) params["PARTICLE_LIMIT"] = sampling.at( "particle_limit" );
+    if ( sampling.contains( "particle_data_size_limit" ) ) params["PARTICLE_DATA_SIZE_LIMIT"] = sampling.at( "particle_data_size_limit" );
+    if ( image.contains( "width" ) ) params["RESOLUTION_WIDTH"] = image.at( "width" );
+    if ( image.contains( "height" ) ) params["RESOLUTION_HEIGHT"] = image.at( "height" );
+    if ( transfer_settings.contains( "resolution" ) ) params["TF_RESOLUTION"] = transfer_settings.at( "resolution" );
+    if ( transfer_settings.contains( "count" ) ) params["TF_NUMBER"] = transfer_settings.at( "count" );
+    else params["TF_NUMBER"] = transfer_functions.size();
+    if ( transfer_settings.contains( "color_synthesis" ) ) params["COLOR_SYNTH"] = transfer_settings.at( "color_synthesis" );
+    if ( transfer_settings.contains( "opacity_synthesis" ) ) params["OPACITY_SYNTH"] = transfer_settings.at( "opacity_synthesis" );
+
+    for ( size_t i = 0; i < transfer_functions.size(); ++i )
+    {
+        const nlohmann::json& tf = transfer_functions.at( i );
+        std::stringstream ss;
+        ss << "TF_NAME" << i + 1 << "_";
+        const std::string tag_base = ss.str();
+
+        if ( tf.contains( "color" ) )
+        {
+            const nlohmann::json& color = tf.at( "color" );
+            if ( color.contains( "variable" ) ) params[tag_base + "VAR_C"] = color.at( "variable" );
+            if ( color.contains( "range" ) )
+            {
+                const nlohmann::json& range = color.at( "range" );
+                if ( range.contains( "mode" ) ) params[tag_base + "RANGE_MODE_C"] = range.at( "mode" );
+                params[tag_base + "SERVER_MIN_C"] = JsonRangeValue( range, "server", "min" );
+                params[tag_base + "SERVER_MAX_C"] = JsonRangeValue( range, "server", "max" );
+                params[tag_base + "USER_MIN_C"] = JsonRangeValue( range, "user", "min" );
+                params[tag_base + "USER_MAX_C"] = JsonRangeValue( range, "user", "max" );
+            }
+            if ( color.contains( "map" ) )
+            {
+                const nlohmann::json& map = color.at( "map" );
+                if ( map.contains( "values" ) ) params[tag_base + "TABLE_C"] = map.at( "values" );
+            }
+        }
+
+        if ( tf.contains( "opacity" ) )
+        {
+            const nlohmann::json& opacity = tf.at( "opacity" );
+            if ( opacity.contains( "variable" ) ) params[tag_base + "VAR_O"] = opacity.at( "variable" );
+            if ( opacity.contains( "range" ) )
+            {
+                const nlohmann::json& range = opacity.at( "range" );
+                if ( range.contains( "mode" ) ) params[tag_base + "RANGE_MODE_O"] = range.at( "mode" );
+                params[tag_base + "SERVER_MIN_O"] = JsonRangeValue( range, "server", "min" );
+                params[tag_base + "SERVER_MAX_O"] = JsonRangeValue( range, "server", "max" );
+                params[tag_base + "USER_MIN_O"] = JsonRangeValue( range, "user", "min" );
+                params[tag_base + "USER_MAX_O"] = JsonRangeValue( range, "user", "max" );
+            }
+            if ( opacity.contains( "map" ) )
+            {
+                const nlohmann::json& map = opacity.at( "map" );
+                if ( map.contains( "values" ) ) params[tag_base + "TABLE_O"] = map.at( "values" );
+            }
+        }
+    }
+
+    if ( !params.contains( "END_PARAMETER_FILE" ) ) params["END_PARAMETER_FILE"] = "SUCCESS";
+    return params;
+}
+
+nlohmann::json TransferFunctionParameters( const nlohmann::json& root )
+{
+    if ( root.contains( "settings" ) && root.contains( "transfer_functions" ) )
+    {
+        return BuildLegacyParametersFromReadableJson( root );
+    }
+
+    return root.at( "parameters" );
+}
 }
 
 // CSのConnect時に指定した.tfファイルを読み込む
@@ -233,7 +328,7 @@ void ParameterFileReader::readTransferFunctionFromJson( const char* fname, Parti
         }
        nlohmann::json tf = TransferFunctionJsonWriter::LoadTfJson(json_name);
 
-       const nlohmann::json& params = tf["parameters"];
+       const nlohmann::json params = TransferFunctionParameters( tf );
 
        const std::string size_sampling_method                  = params.value( "SAMPLING_METHOD", std::string( "" ) );
        particle_property.m_particle_limit                      = params.value( "PARTICLE_LIMIT", 0 );
