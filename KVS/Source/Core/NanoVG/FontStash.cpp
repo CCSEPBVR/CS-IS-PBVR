@@ -9,6 +9,13 @@
 #include <vector>
 #if defined( _WIN32 )
 #include <windows.h>
+#elif defined( __APPLE__ )
+#include <mach-o/dyld.h>
+#include <limits.h>
+#include <unistd.h>
+#else
+#include <limits.h>
+#include <unistd.h>
 #endif
 #include <cstdio>
 #include <cstdlib>
@@ -52,8 +59,31 @@ std::string ExecutableDirectory()
     char path[MAX_PATH] = {};
     const DWORD size = GetModuleFileNameA( NULL, path, MAX_PATH );
     return size == 0 ? std::string() : DirectoryName( std::string( path, size ) );
+#elif defined( __APPLE__ )
+    char path[PATH_MAX] = {};
+    uint32_t size = sizeof( path );
+    if ( _NSGetExecutablePath( path, &size ) != 0 ) return std::string();
+    char resolved[PATH_MAX] = {};
+    const char* executable = realpath( path, resolved );
+    return DirectoryName( executable ? std::string( executable ) : std::string( path ) );
+#elif defined( __linux__ )
+    char path[PATH_MAX] = {};
+    const ssize_t size = readlink( "/proc/self/exe", path, sizeof( path ) - 1 );
+    if ( size <= 0 ) return std::string();
+    path[size] = '\0';
+    return DirectoryName( std::string( path ) );
 #else
     return std::string();
+#endif
+}
+
+std::string CurrentDirectory()
+{
+#if defined( _WIN32 )
+    return std::string();
+#else
+    char path[PATH_MAX] = {};
+    return getcwd( path, sizeof( path ) ) ? std::string( path ) : std::string();
 #endif
 }
 
@@ -73,12 +103,23 @@ std::vector<std::string> ParentDirectories( const std::string& path )
 
 std::string FindKVSInstallDirectory()
 {
-    std::vector<std::string> bases = ParentDirectories( "." );
+    std::vector<std::string> bases = ParentDirectories( CurrentDirectory() );
     const std::vector<std::string> executable_bases = ParentDirectories( ExecutableDirectory() );
     bases.insert( bases.end(), executable_bases.begin(), executable_bases.end() );
 
-    for ( size_t i = 0; i < bases.size(); ++i )
+    const char* kvs_dir = std::getenv( "KVS_DIR" );
+    if ( kvs_dir && Exists( JoinPath( kvs_dir, "kvs.conf" ) ) )
     {
+        return std::string( kvs_dir );
+    }
+
+    for ( std::size_t i = 0; i < bases.size(); ++i )
+    {
+        if ( Exists( JoinPath( bases[i], "kvs.conf" ) ) )
+        {
+            return bases[i];
+        }
+
         const std::string candidate = JoinPath( bases[i], "KVS/Install" );
         if ( Exists( JoinPath( candidate, "kvs.conf" ) ) )
         {
@@ -126,6 +167,13 @@ public:
         if ( !kvs_shader_path.empty() )
         {
             m_search_path_list.push_back( kvs_shader_path );
+        }
+
+        // Add bundled font directory next to the executable.
+        const std::string executable_dir = ExecutableDirectory();
+        if ( !executable_dir.empty() )
+        {
+            m_search_path_list.push_back( JoinPath( executable_dir, "Font" ) );
         }
 
         // Add current directory (".").
