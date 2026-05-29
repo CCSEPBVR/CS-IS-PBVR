@@ -1061,7 +1061,7 @@ void calculation_glad(const int nparticles_count, const int nvariables,
 
                     for( int j = 0; j < nparticles_count; j++ )
                     {
-                        grad_array_x[j] = ( S_plus_opacity[j] - S_minus_opacity[j] )*5.0;
+                        grad_array_z[j] = ( S_plus_opacity[j] - S_minus_opacity[j] )*5.0;
                     }
 }
 
@@ -1152,7 +1152,7 @@ bool ensemble_generate_particles(
         nvariables, object_generation_enabled
     );
     TransferFunctionSynthesizer** th_tfs = new TransferFunctionSynthesizer*[max_threads];
-    std::vector< std::vector<vismodule::TransferFunction> > th_tf;
+//    std::vector< std::vector<vismodule::TransferFunction> > th_tf;
 
     for ( int n = 0; n < max_threads; n++ )
     {
@@ -1160,10 +1160,16 @@ bool ensemble_generate_particles(
     }
 
     const int tf_number = particle_property.m_transfunc_array.size();
-    std::vector<vismodule::TransferFunction> transfer_functions( tf_number );
-    for ( int i = 0; i < tf_number; i++ )
+    //std::vector<vismodule::TransferFunction> transfer_functions( tf_number );
+    std::vector<std::vector<vismodule::TransferFunction>> transfer_functions( max_threads );
+    for ( int i = 0; i < max_threads; i++ )
     {
-        transfer_functions[i] = particle_property.m_transfunc_array[i];
+        transfer_functions[ i ].resize( tf_number );
+        for ( int j = 0; j < tf_number; j++ )
+        {
+            transfer_functions[i][j] = particle_property.m_transfunc_array[j];
+        }
+//        transfer_functions[i] = particle_property.m_transfunc_array[i];
     }
 
     const std::string averageFilePrefix = EnsembleParticleFilePrefix( particleFilePrefix, "ave_" );
@@ -1332,10 +1338,10 @@ bool ensemble_generate_particles(
                                 cell[thid][0]->setLocalPointArray( p_id, local_coord_array );
                                 cell[thid][0]->transformLocalToGlobalArray( p_id, local_coord_array, global_coord_array );
                                 particle_property.m_transfunc_synthesizer->CalculateScalarsArray(
-                                    cell[thid], p_id, local_coord_array, global_coord_array, transfer_functions, scalar_array
+                                    cell[thid], p_id, local_coord_array, global_coord_array, transfer_functions[thid], scalar_array
                                 );
 //                                cell[thid][0]->CalcAveragedScalarGrad( p_id, grad_scalar, grad_array_x, grad_array_y, grad_array_z );
-                                calculation_glad(p_id, nvariables, th_tfs[thid], th_tf[thid], cell[thid], local_coord_array, cell_index, grad_array_x, grad_array_y, grad_array_z);
+                                calculation_glad(p_id, nvariables, th_tfs[thid], transfer_functions[thid], cell[thid], local_coord_array, cell_index, grad_array_x, grad_array_y, grad_array_z);
                                 for ( int k = 0; k < p_id; k++ )
                                 {
                                     th_vertex_scalars.push_back( scalar_array[k] );
@@ -1361,13 +1367,12 @@ bool ensemble_generate_particles(
                         cell[thid][0]->setLocalPointArray( p_id, local_coord_array );
                         cell[thid][0]->transformLocalToGlobalArray( p_id, local_coord_array, global_coord_array );
                         particle_property.m_transfunc_synthesizer->CalculateScalarsArray(
-                            cell[thid], p_id, local_coord_array, global_coord_array, transfer_functions, scalar_array
+                            cell[thid], p_id, local_coord_array, global_coord_array, transfer_functions[thid], scalar_array
                         );
 //                        cell[thid][0]->CalcAveragedScalarGrad( p_id, grad_scalar, grad_array_x, grad_array_y, grad_array_z );
-                        calculation_glad(p_id, nvariables, th_tfs[thid], th_tf[thid], cell[thid], local_coord_array, cell_index, grad_array_x, grad_array_y, grad_array_z);
+                        calculation_glad(p_id, nvariables, th_tfs[thid], transfer_functions[thid], cell[thid], local_coord_array, cell_index, grad_array_x, grad_array_y, grad_array_z);
                         for ( int k = 0; k < p_id; k++ )
                         {
-                            std::cout << "scalar_array[k] = " << scalar_array[k] << std::endl;
                             th_vertex_scalars.push_back( scalar_array[k] );
                             th_vertex_coords.push_back( local_coord_array[k].x() );
                             th_vertex_coords.push_back( local_coord_array[k].y() );
@@ -1398,7 +1403,6 @@ bool ensemble_generate_particles(
         }
     }
 
-    std::cout << __LINE__ <<std::endl;
     std::vector<std::vector<float> > v_scalars( 2 );
     std::vector<std::vector<float> > v_coords( 2 );
     std::vector<std::vector<float> > v_normals( 2 );
@@ -1485,14 +1489,12 @@ bool ensemble_generate_particles(
                 cell[thid][0]->setLocalPointArray( remain_BLK, local_coord_array );
                 cell[thid][0]->transformLocalToGlobalArray( remain_BLK, local_coord_array, global_coord_array );
                 particle_property.m_transfunc_synthesizer->CalculateScalarsArray(
-                    cell[thid], remain_BLK, local_coord_array, global_coord_array, transfer_functions, scalar_array
+                    cell[thid], remain_BLK, local_coord_array, global_coord_array, transfer_functions[thid], scalar_array
                 );
-//                cell[thid][0]->CalcAveragedScalarGrad( remain_BLK, grad_scalar, grad_array_x, grad_array_y, grad_array_z );
-                calculation_glad(remain_BLK, nvariables, th_tfs[thid], th_tf[thid], cell[thid], local_coord_array, cell_index, grad_array_x, grad_array_y, grad_array_z);
+                calculation_glad(remain_BLK, nvariables, th_tfs[thid], transfer_functions[thid], cell[thid], local_coord_array, cell_index, grad_array_x, grad_array_y, grad_array_z);
                 for ( int j = 0; j < remain_BLK; j++ )
                 {
                     const float scalar = scalar_array[j];
-                    std::cout << "scalar = " << scalar  << std::endl;
                     recv_scalars[i + j] += scalar;
                     recv_normals[3 * ( i + j )] += -grad_array_x[j];
                     recv_normals[3 * ( i + j ) + 1] += -grad_array_y[j];
@@ -1577,7 +1579,6 @@ bool ensemble_generate_particles(
         particle_property.m_transfunc_synthesizer->m_c_max[i] = average_range.max_values[2 * i + 1];
     }
 
-    std::cout << __LINE__ <<std::endl;
 #pragma omp parallel
     {
 #if _OPENMP
@@ -1630,17 +1631,17 @@ bool ensemble_generate_particles(
                     tmp_varience_normals[3 * idx + 2]
                 );
                 AppendRejectedStatisticParticle(
-                    vertex_scalars[idx], global_coord_array[j], average_normal, transfer_functions[0],
+                    vertex_scalars[idx], global_coord_array[j], average_normal, transfer_functions[thid][0],
                     sampling_volume_inverse, max_opacity, max_density, &mt,
                     th_average_coords, th_average_colors, th_average_normals
                 );
                 AppendRejectedStatisticParticle(
-                    tmp_varience[idx], global_coord_array[j], variance_normal, transfer_functions[0],
+                    tmp_varience[idx], global_coord_array[j], variance_normal, transfer_functions[thid][0],
                     sampling_volume_inverse, max_opacity, max_density, &mt,
                     th_variance_coords, th_variance_colors, th_variance_normals
                 );
                 AppendRejectedStatisticParticle(
-                    co_varietion[idx], global_coord_array[j], variance_normal, transfer_functions[0],
+                    co_varietion[idx], global_coord_array[j], variance_normal, transfer_functions[thid][0],
                     sampling_volume_inverse, max_opacity, max_density, &mt,
                     th_coefficient_coords, th_coefficient_colors, th_coefficient_normals
                 );
@@ -1666,6 +1667,13 @@ bool ensemble_generate_particles(
     delete particle_property.m_camera;
     return false;
 #endif
+
+
+    for(int i=0; i<max_threads; i++)
+    {
+        delete th_tfs[i];
+    }
+    delete[] th_tfs;
 
 #ifndef CPU_VER
     OutputCoordMinMaxFile( dom, coordMinMaxFilePath );
@@ -1697,6 +1705,7 @@ bool ensemble_generate_particles(
         dst << src.rdbuf();
     }
 
+    std::cout << mpi_rank << ", " << __LINE__ << std::endl;
     if ( async_io_enabled )
     {
         std::cout << "Particle write thread is active." << std::endl;

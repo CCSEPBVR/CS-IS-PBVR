@@ -38,10 +38,16 @@ TransferFunctionSynthesizer::TransferFunctionSynthesizer():
     };
 
     EquationToken opa_var_2 = {
-        {VARIABLE, VARIABLE, PLUS, END}, //q1+q2 -> q1 q2 +
-        {Q1, Q1},
+        {VARIABLE, END}, //q1+q2 -> q1 q2 +
+        {Q1},
         {}
     };
+
+//    EquationToken opa_var_2 = {
+//        {VARIABLE, VARIABLE, PLUS, END}, //q1+q2 -> q1 q2 +
+//        {Q1, Q1},
+//        {}
+//    };
 
     m_opa_var.push_back( opa_var_2 );
 
@@ -51,9 +57,15 @@ TransferFunctionSynthesizer::TransferFunctionSynthesizer():
         {0,2,0,0,2}//,2,,2,
     };
 
+//    EquationToken col_var_2 = {
+//        {VARIABLE, VARIABLE, PLUS, END}, //q1+q2 -> q1 q2 +
+//        {Q1, Q1},
+//        {}
+//    };
+
     EquationToken col_var_2 = {
-        {VARIABLE, VARIABLE, PLUS, END}, //q1+q2 -> q1 q2 +
-        {Q1, Q1},
+        {VARIABLE, END}, //q1+q2 -> q1 q2 +
+        {Q1 },
         {}
     };
 
