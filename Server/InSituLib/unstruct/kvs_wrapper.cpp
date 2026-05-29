@@ -515,14 +515,14 @@ void WritePrefixedStatisticHistory(
         ofs << prefix << "_MAX_O" << ( i + 1 ) << "=" << range.max_values[2 * i    ] << std::endl;
         ofs << prefix << "_MIN_C" << ( i + 1 ) << "=" << range.min_values[2 * i + 1] << std::endl;
         ofs << prefix << "_MAX_C" << ( i + 1 ) << "=" << range.max_values[2 * i + 1] << std::endl;
-        ofs << prefix << "_RESOLUTION_O" << ( i + 1 ) << "=" << DEFAULT_NBINS << std::endl;
+//        ofs << prefix << "_RESOLUTION_O" << ( i + 1 ) << "=" << DEFAULT_NBINS << std::endl;
         ofs << prefix << "_HISTOGRAM_O" << ( i + 1 ) << "=";
         for ( size_t j = 0; j < DEFAULT_NBINS; j++ )
         {
             ofs << range.o_bins[j + i * DEFAULT_NBINS] << ",";
         }
         ofs << std::endl;
-        ofs << prefix << "_RESOLUTION_C" << ( i + 1 ) << "=" << DEFAULT_NBINS << std::endl;
+//        ofs << prefix << "_RESOLUTION_C" << ( i + 1 ) << "=" << DEFAULT_NBINS << std::endl;
         ofs << prefix << "_HISTOGRAM_C" << ( i + 1 ) << "=";
         for ( size_t j = 0; j < DEFAULT_NBINS; j++ )
         {
@@ -557,6 +557,7 @@ void OutputEnsembleStatisticHistory(
 
     std::ofstream ofs( historyFilePath.c_str(), std::ios::out );
     ofs << "TF_NUMBER=" << tf_number << std::endl;
+    ofs << "RESOLUTION=" << DEFAULT_NBINS << std::endl;
     WritePrefixedStatisticHistory( ofs, "AVE", average_range, tf_number );
     WritePrefixedStatisticHistory( ofs, "VAR", variance_range, tf_number );
     WritePrefixedStatisticHistory( ofs, "COV", coefficient_range, tf_number );
@@ -610,7 +611,7 @@ void OutputCoordMinMaxFile(
 }
 
 // 変数配列用のソルバー関数
-void generate_particles(
+bool generate_particles(
     int time_step,
     domain_parameters_unstruct dom,
     Type** values,
@@ -926,7 +927,144 @@ void generate_particles(
     delete particle_property.m_transfunc_synthesizer;
     delete particle_property.m_camera;
 
+    return true;
 }
+
+void calculation_glad(const int nparticles_count, const int nvariables,
+        TransferFunctionSynthesizer* th_tfs,
+        std::vector<vismodule::TransferFunction>& th_tf,
+        const std::vector< vismodule::CellBase<Type>* > interp,
+        const vismodule::Vector3f* local_coord_array,
+        const vismodule::UInt32* cell_index,
+        float* grad_array_x,
+        float* grad_array_y,
+        float* grad_array_z)
+{
+
+    vismodule::Vector3f l_plus_coord[ SIMD_BLK_SIZE ];
+    vismodule::Vector3f l_minus_coord[ SIMD_BLK_SIZE ];
+    vismodule::Vector3f g_plus_coord[ SIMD_BLK_SIZE ];
+    vismodule::Vector3f g_minus_coord[ SIMD_BLK_SIZE ];
+    float S_plus_opacity[ SIMD_BLK_SIZE ];
+    float S_minus_opacity[ SIMD_BLK_SIZE ];
+
+
+                    for( int j = 0; j < nvariables; j++ )
+                    {
+                        interp[j]->bindCellArray( nparticles_count, cell_index );
+                    }
+
+
+                    // dsdx ----------------------------------------
+                    for( int j = 0; j < nparticles_count; j++ )
+                    {
+                        l_plus_coord[j] = local_coord_array[j] + vismodule::Vector3f(0.1,0,0);
+                        l_minus_coord[j] = local_coord_array[j] + vismodule::Vector3f(-0.1,0,0);
+
+                    }
+
+                    interp[0]->setLocalPointArray( nparticles_count, l_plus_coord );
+                    interp[0]->transformLocalToGlobalArray( nparticles_count,
+                                                                  l_plus_coord,
+                                                                  g_plus_coord );
+
+                    interp[0]->setLocalPointArray( nparticles_count, l_minus_coord );
+                    interp[0]->transformLocalToGlobalArray( nparticles_count,
+                                                                  l_minus_coord,
+                                                                  g_minus_coord );
+
+
+                    th_tfs->CalculateOpacityArray( interp,
+                                                         nparticles_count,
+                                                         l_plus_coord,
+                                                         g_plus_coord,
+                                                         th_tf,
+                                                         S_plus_opacity );
+                    th_tfs->CalculateOpacityArray( interp,
+                                                         nparticles_count,
+                                                         l_minus_coord,
+                                                         g_minus_coord,
+                                                         th_tf,
+                                                         S_minus_opacity );
+
+                    for( int j = 0; j < nparticles_count; j++ )
+                    {
+                        grad_array_x[j] = ( S_plus_opacity[j] - S_minus_opacity[j] )*5.0;
+                    }
+                // ------------------------------------------------
+
+                    // dsdy ----------------------------------------
+                    for( int j = 0; j < nparticles_count; j++ )
+                    {
+                        l_plus_coord[j] = local_coord_array[j] + vismodule::Vector3f(0,0.1,0);
+                        l_minus_coord[j] = local_coord_array[j] + vismodule::Vector3f(0,-0.1,0);
+                    }
+
+                    interp[0]->setLocalPointArray( nparticles_count, l_plus_coord );
+                    interp[0]->transformLocalToGlobalArray( nparticles_count,
+                                                                  l_plus_coord,
+                                                                  g_plus_coord );
+
+                    interp[0]->setLocalPointArray( nparticles_count, l_minus_coord );
+                    interp[0]->transformLocalToGlobalArray( nparticles_count,
+                                                                  l_minus_coord,
+                                                                  g_minus_coord );
+
+                    th_tfs->CalculateOpacityArray( interp,
+                                                         nparticles_count,
+                                                         l_plus_coord,
+                                                         g_plus_coord,
+                                                         th_tf,
+                                                         S_plus_opacity );
+                    th_tfs->CalculateOpacityArray( interp,
+                                                         nparticles_count,
+                                                         l_minus_coord,
+                                                         g_minus_coord,
+                                                         th_tf,
+                                                         S_minus_opacity );
+
+                    for( int j = 0; j < nparticles_count; j++ )
+                    {
+                        grad_array_y[j] = ( S_plus_opacity[j] - S_minus_opacity[j] )*5.0;
+                    }
+                // ------------------------------------------------
+                    // dsdz ----------------------------------------
+                    // dsdz ----------------------------------------
+                    for( int j = 0; j < nparticles_count; j++ )
+                    {
+                        l_plus_coord[j] = local_coord_array[j] + vismodule::Vector3f(0,0,0.1);
+                        l_minus_coord[j] = local_coord_array[j] + vismodule::Vector3f(0,0,-0.1);
+                    }
+
+                    interp[0]->setLocalPointArray( nparticles_count, l_plus_coord );
+                    interp[0]->transformLocalToGlobalArray( nparticles_count,
+                                                            l_plus_coord,
+                                                            g_plus_coord );
+
+                    interp[0]->setLocalPointArray( nparticles_count, l_minus_coord );
+                    interp[0]->transformLocalToGlobalArray( nparticles_count,
+                                                                  l_minus_coord,
+                                                                  g_minus_coord );
+
+                    th_tfs->CalculateOpacityArray( interp,
+                                                   nparticles_count,
+                                                   l_plus_coord,
+                                                   g_plus_coord,
+                                                   th_tf,
+                                                   S_plus_opacity );
+                    th_tfs->CalculateOpacityArray( interp,
+                                                         nparticles_count,
+                                                         l_minus_coord,
+                                                         g_minus_coord,
+                                                         th_tf,
+                                                         S_minus_opacity );
+
+                    for( int j = 0; j < nparticles_count; j++ )
+                    {
+                        grad_array_x[j] = ( S_plus_opacity[j] - S_minus_opacity[j] )*5.0;
+                    }
+}
+
 
 bool ensemble_generate_particles(
     int time_step,
@@ -940,6 +1078,13 @@ bool ensemble_generate_particles(
     const vismodule::VolumeObjectBase::CellType& celltype
 )
 {
+#if _OPENMP
+    int max_threads = omp_get_max_threads();
+#else
+    int max_threads = 1;
+#endif
+
+
     int mpi_rank;
     int mpi_size;
 #ifndef CPU_VER
@@ -1006,6 +1151,13 @@ bool ensemble_generate_particles(
         dom, tfJsonPath, tfJsonPath_old, particle_property, mvpl,
         nvariables, object_generation_enabled
     );
+    TransferFunctionSynthesizer** th_tfs = new TransferFunctionSynthesizer*[max_threads];
+    std::vector< std::vector<vismodule::TransferFunction> > th_tf;
+
+    for ( int n = 0; n < max_threads; n++ )
+    {
+        th_tfs[n] = new TransferFunctionSynthesizer( *particle_property.m_transfunc_synthesizer );
+    }
 
     const int tf_number = particle_property.m_transfunc_array.size();
     std::vector<vismodule::TransferFunction> transfer_functions( tf_number );
@@ -1041,12 +1193,6 @@ bool ensemble_generate_particles(
         delete particle_property.m_camera;
         return false;
     }
-
-#if _OPENMP
-    const int max_threads = omp_get_max_threads();
-#else
-    const int max_threads = 1;
-#endif
 
     std::vector<std::vector<vismodule::CellBase<Type>*> > cell( max_threads );
     for ( int thread = 0; thread < max_threads; thread++ )
@@ -1090,9 +1236,16 @@ bool ensemble_generate_particles(
     const float sampling_volume_inverse = particle_property.m_transfunc_synthesizer->getSamplingVolumeInverse();
     const float max_opacity = particle_property.m_transfunc_synthesizer->getMaxOpacity();
     const float max_density = particle_property.m_transfunc_synthesizer->getMaxDensity();
+    float   repetitions             = 1.f;  // スタブデータ
     const float particle_density = 1.0f;
-    const int ens_number = mpi_size;
-    const float repetitions = 1.0f / static_cast<float>( ens_number );
+    const int ens_per_MPIprocess = 1;
+    const int ens_number = mpi_size/ens_per_MPIprocess;
+    if (ens_number % ens_per_MPIprocess != 0 )
+    {
+        std::cerr << "error !! need  ens_number % ens_per_MPIprocess = 0!!  " << std::endl;
+        return false;
+    } 
+    repetitions = 1.0f / static_cast<float>( ens_number );
 
     std::vector<vismodule::Real32> vertex_coords;
     std::vector<vismodule::Real32> vertex_scalars;
@@ -1100,6 +1253,8 @@ bool ensemble_generate_particles(
     std::vector<int> vertex_cellids;
     std::vector<vismodule::Real32> sq_scalars;
     std::vector<vismodule::Real32> tmp_term;
+
+
 
 #pragma omp parallel
     {
@@ -1152,7 +1307,8 @@ bool ensemble_generate_particles(
             for ( int cell_BLK = 0; cell_BLK < remain; cell_BLK++ )
             {
                 nparticles_array[cell_BLK] = static_cast<int>(
-                    CalculateNumberOfParticlesV35( max_density, volume_array[cell_BLK], particle_density * repetitions, &mt )
+                    //CalculateNumberOfParticlesV35( max_density, volume_array[cell_BLK], particle_density * repetitions, &mt )
+                    5
                 );
             }
 
@@ -1178,7 +1334,8 @@ bool ensemble_generate_particles(
                                 particle_property.m_transfunc_synthesizer->CalculateScalarsArray(
                                     cell[thid], p_id, local_coord_array, global_coord_array, transfer_functions, scalar_array
                                 );
-                                cell[thid][0]->CalcAveragedScalarGrad( p_id, grad_scalar, grad_array_x, grad_array_y, grad_array_z );
+//                                cell[thid][0]->CalcAveragedScalarGrad( p_id, grad_scalar, grad_array_x, grad_array_y, grad_array_z );
+                                calculation_glad(p_id, nvariables, th_tfs[thid], th_tf[thid], cell[thid], local_coord_array, cell_index, grad_array_x, grad_array_y, grad_array_z);
                                 for ( int k = 0; k < p_id; k++ )
                                 {
                                     th_vertex_scalars.push_back( scalar_array[k] );
@@ -1206,9 +1363,11 @@ bool ensemble_generate_particles(
                         particle_property.m_transfunc_synthesizer->CalculateScalarsArray(
                             cell[thid], p_id, local_coord_array, global_coord_array, transfer_functions, scalar_array
                         );
-                        cell[thid][0]->CalcAveragedScalarGrad( p_id, grad_scalar, grad_array_x, grad_array_y, grad_array_z );
+//                        cell[thid][0]->CalcAveragedScalarGrad( p_id, grad_scalar, grad_array_x, grad_array_y, grad_array_z );
+                        calculation_glad(p_id, nvariables, th_tfs[thid], th_tf[thid], cell[thid], local_coord_array, cell_index, grad_array_x, grad_array_y, grad_array_z);
                         for ( int k = 0; k < p_id; k++ )
                         {
+                            std::cout << "scalar_array[k] = " << scalar_array[k] << std::endl;
                             th_vertex_scalars.push_back( scalar_array[k] );
                             th_vertex_coords.push_back( local_coord_array[k].x() );
                             th_vertex_coords.push_back( local_coord_array[k].y() );
@@ -1239,6 +1398,7 @@ bool ensemble_generate_particles(
         }
     }
 
+    std::cout << __LINE__ <<std::endl;
     std::vector<std::vector<float> > v_scalars( 2 );
     std::vector<std::vector<float> > v_coords( 2 );
     std::vector<std::vector<float> > v_normals( 2 );
@@ -1288,6 +1448,7 @@ bool ensemble_generate_particles(
         MPI_Waitall( 6, req_recv, MPI_STATUSES_IGNORE );
         MPI_Waitall( 6, req_send, MPI_STATUSES_IGNORE );
 
+    std::cout << __LINE__ <<std::endl;
 #pragma omp parallel
         {
 #if _OPENMP
@@ -1326,10 +1487,12 @@ bool ensemble_generate_particles(
                 particle_property.m_transfunc_synthesizer->CalculateScalarsArray(
                     cell[thid], remain_BLK, local_coord_array, global_coord_array, transfer_functions, scalar_array
                 );
-                cell[thid][0]->CalcAveragedScalarGrad( remain_BLK, grad_scalar, grad_array_x, grad_array_y, grad_array_z );
+//                cell[thid][0]->CalcAveragedScalarGrad( remain_BLK, grad_scalar, grad_array_x, grad_array_y, grad_array_z );
+                calculation_glad(remain_BLK, nvariables, th_tfs[thid], th_tf[thid], cell[thid], local_coord_array, cell_index, grad_array_x, grad_array_y, grad_array_z);
                 for ( int j = 0; j < remain_BLK; j++ )
                 {
                     const float scalar = scalar_array[j];
+                    std::cout << "scalar = " << scalar  << std::endl;
                     recv_scalars[i + j] += scalar;
                     recv_normals[3 * ( i + j )] += -grad_array_x[j];
                     recv_normals[3 * ( i + j ) + 1] += -grad_array_y[j];
@@ -1361,6 +1524,7 @@ bool ensemble_generate_particles(
     std::vector<float> tmp_varience( vertex_scalars.size() );
     std::vector<float> tmp_varience_normals( 3 * vertex_scalars.size() );
     const float invert_num = 1.0f / static_cast<float>( ens_number );
+    std::cout << "invert_num = " << invert_num << std::endl;
     for ( size_t i = 0; i < vertex_scalars.size(); i++ )
     {
         vertex_scalars[i] *= invert_num;
@@ -1374,6 +1538,7 @@ bool ensemble_generate_particles(
     for ( size_t i = 0; i < vertex_scalars.size(); i++ )
     {
         tmp_varience[i] = sq_scalars[i] - vertex_scalars[i] * vertex_scalars[i];
+//        std::cout << "tmp_varience[i] = "  << tmp_varience[i] << ", sq_scalars[i] = " << sq_scalars[i] << ", vertex_scalars = " << vertex_scalars[i] << std::endl;
         if ( tmp_varience[i] < 0.0f ) tmp_varience[i] = 0.0f;
         tmp_varience_normals[3 * i] = tmp_term[3 * i] - ( -2.0f * vertex_scalars[i] * vertex_normals[3 * i] );
         tmp_varience_normals[3 * i + 1] = tmp_term[3 * i + 1] - ( -2.0f * vertex_scalars[i] * vertex_normals[3 * i + 1] );
@@ -1394,6 +1559,8 @@ bool ensemble_generate_particles(
     EnsembleStatisticRange variance_range = MakeEnsembleStatisticRange(
         tmp_varience, tf_number, particle_property.m_transfunc_array
     );
+    std::cout << "var_max = " << variance_range.max_values[0] << std::endl;
+    std::cout << "var_min = " << variance_range.min_values[0] << std::endl;
     EnsembleStatisticRange coefficient_range = MakeEnsembleStatisticRange(
         co_varietion, tf_number, particle_property.m_transfunc_array
     );
@@ -1410,6 +1577,7 @@ bool ensemble_generate_particles(
         particle_property.m_transfunc_synthesizer->m_c_max[i] = average_range.max_values[2 * i + 1];
     }
 
+    std::cout << __LINE__ <<std::endl;
 #pragma omp parallel
     {
 #if _OPENMP
@@ -1652,7 +1820,6 @@ bool SetParticleParameter(
         }
 
         size = particle_property.byteSize();
-        std::cout << "size = " << size << std::endl;
 
         if ( size > 0 )
         {
@@ -1758,7 +1925,7 @@ bool SetParticleParameter(
     particle_property.m_transfunc_synthesizer->setSamplingVolumeInverse( sampling_volume_inverse );
 
 
-    if( mpi_rank == 0 )
+    if( mpi_rank == 1 )
     {
         fprintf( stdout , "---------initialize Parameters--------------------------------------------\n" );
         fprintf( stdout , "particle_limit       = %20d\n"   , particle_limit                             );
@@ -1781,7 +1948,7 @@ bool SetParticleParameter(
 
 #ifdef EXTEND_FILE_FORMAT
 // vtk用のソルバー関数
-void generate_particles_vtk( int time_step, vtkUnstructuredGrid* ucd )
+bool generate_particles_vtk( int time_step, vtkUnstructuredGrid* ucd )
 {
     int mpi_rank;
     int mpi_size;
@@ -2202,6 +2369,7 @@ void generate_particles_vtk( int time_step, vtkUnstructuredGrid* ucd )
     delete particle_property.m_transfunc_synthesizer;
     delete particle_property.m_camera;
 
+    return true;
 }
 
 void SetDomain( vtkUnstructuredGrid* ucd, domain_parameters_unstruct* dom )

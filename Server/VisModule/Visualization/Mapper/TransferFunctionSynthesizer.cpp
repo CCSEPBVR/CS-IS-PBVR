@@ -2373,6 +2373,7 @@ void TransferFunctionSynthesizer::CalculateScalarsArray(
 
         size_t nvar = interp.size();
 
+        std::cout << "scalar_array[j][0] = " << scalar_array[0][0] << std::endl;
         //id of Q1=4, Q2=8,,,,, Qn=4*n
         for( size_t j= 0; j < nvar; j++ )
         {
@@ -2397,11 +2398,11 @@ void TransferFunctionSynthesizer::CalculateScalarsArray(
         m_var_value_array[ VAR_OFFSET_A+i ] = &eval_result[0];
     }
 
-    //            std::cout << "result_result[0] = " << result_array[0] << std::endl;
     for( int jx=0; jx<loop_cnt; jx++ )
     {
         result_array[jx] = eval_result[jx];
     }
+                std::cout << "result_result[0] = " << result_array[0] << std::endl;
 
 }
 
