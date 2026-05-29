@@ -271,7 +271,7 @@ void SetParameterFilePath(
     std::string& plotOverTimeFilePrefix,
     std::string& tfJsonPath,
     std::string& tfJsonPath_old,
-    std::string& tfFilePath_step,
+    std::string& tfJsonPath_step,
     std::string& glyphParameterPath,
     std::string& glyphParameterPath_old,
     std::string& plotOverLineParameterPath,
@@ -339,7 +339,7 @@ void SetParameterFilePath(
 
     tfJsonPath                    = visParamDir + tfFilename + ".json";
     tfJsonPath_old                = visParamDir + tfFilename + "_old.json";
-    tfFilePath_step               = visParamDir + tfFilename + step.str() + ".tf";
+    tfJsonPath_step               = visParamDir + tfFilename + step.str() + ".json";
     glyphParameterPath            = visParamDir + "parameter.gly";
     glyphParameterPath_old        = visParamDir + "parameter_old.gly";
     plotOverLineParameterPath     = visParamDir + "parameter.pol";

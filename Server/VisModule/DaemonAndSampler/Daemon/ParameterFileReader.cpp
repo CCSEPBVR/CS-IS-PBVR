@@ -521,6 +521,7 @@ void ParameterFileReader::readTransferFunctionFromJson( const char* fname, Parti
             const std::string tag_base = tss.str();
 
             equation = params.value( tag_base + "VAR_O", std::string( "" ) );
+            std::cout << "equation =  " << equation  << std::endl;
             std::replace( equation.begin(), equation.end(), 'X', 'x' );
             std::replace( equation.begin(), equation.end(), 'Y', 'y' );
             std::replace( equation.begin(), equation.end(), 'Z', 'z' );

@@ -199,7 +199,7 @@ void generate_particles(
     std::string plotOverTimeFilePrefix;
     std::string tfJsonPath;
     std::string tfJsonPath_old;
-    std::string tfFilePath_step;
+    std::string tfJsonPath_step;
     std::string glyphParameterPath;
     std::string glyphParameterPath_old;
     std::string plotOverLineParameterPath;
@@ -218,7 +218,7 @@ void generate_particles(
         plotOverTimeFilePrefix,
         tfJsonPath,
         tfJsonPath_old,
-        tfFilePath_step,
+        tfJsonPath_step,
         glyphParameterPath,
         glyphParameterPath_old,
         plotOverLineParameterPath,
@@ -520,6 +520,7 @@ bool SetParticleParameter(
         MPI_Bcast( buf, size, MPI_CHARACTER, 0, MPI_COMM_WORLD );
 #endif
         if( mpi_rank > 0 ) particle_property.unpack( buf );
+        particle_property.UpdateTransferFunctionSynthesizer();
         delete[] buf;
     }
 
