@@ -508,7 +508,7 @@ void MakeParticle(
     std::vector<float>& normals
 )
 {
-    size_t nmemb = point_object->nvertices() * 3;
+    std::size_t nmemb = point_object->nvertices() * 3;
     vismodule::ValueArray<vismodule::Real32> coords_array ( point_object->coords().pointer() , nmemb );
     vismodule::ValueArray<vismodule::UInt8>  colors_array ( point_object->colors().pointer() , nmemb );
     vismodule::ValueArray<vismodule::Real32> normals_array( point_object->normals().pointer(), nmemb );
@@ -786,7 +786,7 @@ void OutputParticleHistory(
     c_bins_recv = new vismodule::UInt64[tf_number * DEFAULT_NBINS];
     o_bins_recv = new vismodule::UInt64[tf_number * DEFAULT_NBINS];
 
-    for ( size_t i = 0; i < (tf_number * DEFAULT_NBINS); i++ )
+    for ( std::size_t i = 0; i < (tf_number * DEFAULT_NBINS); i++ )
     {
         c_bins_recv[i] = 0;
         o_bins_recv[i] = 0;
@@ -810,7 +810,7 @@ void OutputParticleHistory(
     max_array_recv = new float[tf_number * 2]; // color, opacity
     min_array_recv = new float[tf_number * 2]; // color, opacity
 
-    for ( size_t i = 0; i < (tf_number * 2); i++ )
+    for ( std::size_t i = 0; i < (tf_number * 2); i++ )
     {
         max_array_recv[i] = FLT_MIN;
         min_array_recv[i] = FLT_MAX;
@@ -820,7 +820,7 @@ void OutputParticleHistory(
     MPI_Reduce( max_array, max_array_recv, (tf_number * 2), MPI_FLOAT, MPI_MAX, 0, MPI_COMM_WORLD );
     MPI_Reduce( min_array, min_array_recv, (tf_number * 2), MPI_FLOAT, MPI_MIN, 0, MPI_COMM_WORLD );
 #else
-    for( size_t i = 0; i < (tf_number * 2); i++ )
+    for( std::size_t i = 0; i < (tf_number * 2); i++ )
     {
         max_array_recv[i] = max_array[i];
         min_array_recv[i] = min_array[i];
@@ -833,7 +833,7 @@ void OutputParticleHistory(
         std::ofstream ofs2( histryFilePath.c_str(), std::ios::out);
         ofs2 << "TF_NUMBER=" << tf_number << std::endl;
 
-        for( size_t i = 0; i < tf_number; i++ )
+        for( std::size_t i = 0; i < tf_number; i++ )
         {
             ofs2 << "MIN_O" << (i + 1) << "=" << min_array_recv[2 * i    ] << std::endl;
             ofs2 << "MAX_O" << (i + 1) << "=" << max_array_recv[2 * i    ] << std::endl;
@@ -841,14 +841,14 @@ void OutputParticleHistory(
             ofs2 << "MAX_C" << (i + 1) << "=" << max_array_recv[2 * i + 1] << std::endl;
             ofs2 << "RESOLUTION_O" << (i + 1) << "=" << DEFAULT_NBINS << std::endl;
             ofs2 << "HISTOGRAM_O"  << (i + 1) << "=";
-            for ( size_t j = 0; j < DEFAULT_NBINS; j++ )
+            for ( std::size_t j = 0; j < DEFAULT_NBINS; j++ )
             {
                 ofs2 << o_bins_recv[j + (i * DEFAULT_NBINS)] << ",";
             }
             ofs2 << std::endl;
             ofs2 << "RESOLUTION_C" << (i + 1) << "=" << DEFAULT_NBINS << std::endl;
             ofs2 << "HISTOGRAM_C"  << (i + 1) << "=";
-            for ( size_t j = 0; j < DEFAULT_NBINS; j++ )
+            for ( std::size_t j = 0; j < DEFAULT_NBINS; j++ )
             {
                 ofs2 << c_bins_recv[j + (i * DEFAULT_NBINS)] << ",";
             }
@@ -862,7 +862,7 @@ void OutputParticleHistory(
         ofs2.close();
 
         // ServerSideMinMaxを更新してからdefault.tfファイルを出力
-        for( size_t i = 0; i < tf_number; i++ )
+        for( std::size_t i = 0; i < tf_number; i++ )
         {
             particle_property.m_transfunc_array[i].m_server_color_variable_min   = min_array_recv[2 * i + 1];
             particle_property.m_transfunc_array[i].m_server_color_variable_max   = max_array_recv[2 * i + 1];
@@ -986,7 +986,7 @@ void OutputLine(
     // MPI does not support bool type so use int type
     // vismodule::KVSMLObjectPlotOverLine::m_mask is defined as bool type
     vismodule::ValueArray<bool> tmp_mask( mask.size() );
-    for ( size_t i = 0; i < mask.size(); i++ )
+    for ( std::size_t i = 0; i < mask.size(); i++ )
     {
         if ( mask[i] != 0 ) tmp_mask[i] = true;
     }

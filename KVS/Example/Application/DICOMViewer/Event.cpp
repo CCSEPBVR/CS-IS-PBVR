@@ -41,8 +41,8 @@ void Init::update( void )
 
     // Register the DICOM image as ImageObject to the screen.
     const kvs::Dicom* dicom = m_parameter->dicom_list[0];
-    const size_t width = dicom->column();
-    const size_t height = dicom->row();
+    const std::size_t width = dicom->column();
+    const std::size_t height = dicom->row();
     const kvs::ValueArray<kvs::UInt8> data = dicom->pixelData();
     const kvs::ImageObject::PixelType type = kvs::ImageObject::Gray8;
     kvs::ImageObject* object = new kvs::ImageObject( width, height, data, type );

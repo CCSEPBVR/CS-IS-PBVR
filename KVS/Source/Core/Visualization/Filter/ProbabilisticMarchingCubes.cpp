@@ -27,7 +27,7 @@ private:
     double m_mean1 = 0.0;
     double m_mean2 = 0.0;
     double m_cov = 0.0;
-    size_t m_dim = 0;
+    std::size_t m_dim = 0;
 
 public:
     OnlineCov() = default;
@@ -50,10 +50,10 @@ class OnlineCovMatrix
 public:
     using Cov = std::vector<OnlineCov>;
     using Array = std::vector<OnlineCov::Value>;
-    static size_t Size() { return 8; }
+    static std::size_t Size() { return 8; }
 
 private:
-    const size_t m_dim = Size();
+    const std::size_t m_dim = Size();
     Cov m_cov{ ( m_dim + 1 ) * m_dim / 2 };
 
 public:
@@ -69,9 +69,9 @@ public:
          * a2          7   8
          * a3              9
          */
-        for ( size_t i = 0, index = 0; i < m_dim; ++i )
+        for ( std::size_t i = 0, index = 0; i < m_dim; ++i )
         {
-            for ( size_t j = i; j < m_dim; ++j, ++index )
+            for ( std::size_t j = i; j < m_dim; ++j, ++index )
             {
                 m_cov[index].add( a[i], a[j] );
             }
@@ -81,7 +81,7 @@ public:
     Array average() const
     {
         Array ret( m_dim );
-        for ( size_t i = 0; i < m_dim; ++i)
+        for ( std::size_t i = 0; i < m_dim; ++i)
         {
             ret[i] = m_cov[i].average();
         }
@@ -91,9 +91,9 @@ public:
     Array covariance() const
     {
         Array ret( m_dim * m_dim );
-        for ( size_t i = 0, index = 0; i < m_dim; ++i )
+        for ( std::size_t i = 0, index = 0; i < m_dim; ++i )
         {
-            for ( size_t j = i; j < m_dim; ++j, ++index )
+            for ( std::size_t j = i; j < m_dim; ++j, ++index )
             {
                 ret[ m_dim * i + j ] = m_cov[index].covariance();
                 ret[ m_dim * j + i ] = ret[ m_dim * i + j ];
@@ -138,9 +138,9 @@ public:
 
     kvs::ValueArray<float> average0() const
     {
-        const size_t size = m_dim.x() * m_dim.y() * m_dim.z();
+        const std::size_t size = m_dim.x() * m_dim.y() * m_dim.z();
         kvs::ValueArray<float> ret( size );
-        for ( size_t i = 0; i < size; ++i)
+        for ( std::size_t i = 0; i < size; ++i)
         {
             ret[i] = m_cov[i].average()[0];
         }
@@ -149,9 +149,9 @@ public:
 
     kvs::ValueArray<float> covariance0() const
     {
-        const size_t size = m_dim.x() * m_dim.y() * m_dim.z();
+        const std::size_t size = m_dim.x() * m_dim.y() * m_dim.z();
         kvs::ValueArray<float> ret( size );
-        for ( size_t i = 0; i < size; ++i)
+        for ( std::size_t i = 0; i < size; ++i)
         {
             ret[i] = m_cov[i].covariance()[0];
         }
@@ -160,9 +160,9 @@ public:
 
     Matrix average() const
     {
-        const size_t size = m_dim.x() * m_dim.y() * m_dim.z();
+        const std::size_t size = m_dim.x() * m_dim.y() * m_dim.z();
         Matrix ret( size );
-        for ( size_t  i = 0; i < size; ++i )
+        for ( std::size_t  i = 0; i < size; ++i )
         {
             ret[i] = m_cov[i].average();
         }
@@ -171,10 +171,10 @@ public:
 
     Matrix covariance() const
     {
-        const size_t n = OnlineCovMatrix::Size();
-        const size_t size = m_dim.x() * m_dim.y() * m_dim.z();
+        const std::size_t n = OnlineCovMatrix::Size();
+        const std::size_t size = m_dim.x() * m_dim.y() * m_dim.z();
         Matrix ret( size, OnlineCovMatrix::Array( n * n ) );
-        size_t index = 0;
+        std::size_t index = 0;
         for ( auto&& i : ret )
         {
             i = m_cov[index++].covariance();
@@ -184,10 +184,10 @@ public:
 
     Matrix choleskyCovariance()
     {
-        const size_t n = OnlineCovMatrix::Size();
-        const size_t size = m_dim.x() * m_dim.y() * m_dim.z();
+        const std::size_t n = OnlineCovMatrix::Size();
+        const std::size_t size = m_dim.x() * m_dim.y() * m_dim.z();
         Matrix ret( size, OnlineCovMatrix::Array( n * n ) );
-        size_t index = 0;
+        std::size_t index = 0;
         for ( auto&& cov : ret )
         {
             cov = m_cov[index++].covariance();
@@ -203,11 +203,11 @@ private:
         const auto dimx = m_dim.x() + 1;
         const auto dimy = m_dim.y() + 1;
         const auto dimxy = dimx * dimy;
-        for ( size_t i = 0, index = 0; i < m_dim.z(); ++i )
+        for ( std::size_t i = 0, index = 0; i < m_dim.z(); ++i )
         {
-            for ( size_t j = 0; j < m_dim.y(); ++j )
+            for ( std::size_t j = 0; j < m_dim.y(); ++j )
             {
-                for ( size_t k = 0; k < m_dim.x(); ++k, ++index )
+                for ( std::size_t k = 0; k < m_dim.x(); ++k, ++index )
                 {
                     OnlineCovMatrix::Array values = {
                         static_cast<float>( array[ dimxy * i       + dimx * j       + k     ] ),
@@ -227,16 +227,16 @@ private:
 
     OnlineCovMatrix::Array cholesky_decomposition( const OnlineCovMatrix::Array& cov )
     {
-        const size_t n = OnlineCovMatrix::Size();
+        const std::size_t n = OnlineCovMatrix::Size();
         const float epsilon = 0.000001;
 
         OnlineCovMatrix::Array l( n * n );
-        for ( size_t i = 0; i < n; ++i )
+        for ( std::size_t i = 0; i < n; ++i )
         {
-            for ( size_t k = 0; k < (i + 1); ++k )
+            for ( std::size_t k = 0; k < (i + 1); ++k )
             {
                 double sum = 0;
-                for ( size_t j = 0; j < k; ++j )
+                for ( std::size_t j = 0; j < k; ++j )
                 {
                     sum += l[ i * n + j ] * l[ k * n + j ];
                 }
@@ -283,9 +283,9 @@ inline std::vector<float> MultivariateDistribution(
     const OnlineCovMatrix::Array& mean )
 {
     std::vector<float> ret(8);
-    for ( size_t i = 0; i < 8; ++i )
+    for ( std::size_t i = 0; i < 8; ++i )
     {
-        for ( size_t j = 0; j < 8; ++j )
+        for ( std::size_t j = 0; j < 8; ++j )
         {
             ret[i] += cov[ i * 8 + j ] * dist[j];
         }
@@ -298,19 +298,19 @@ inline kvs::ValueArray<float> ProbabilityDensityFunction(
     const OnlineCovVolume::Matrix& cov,
     const OnlineCovVolume::Matrix& mean,
     const float threshold,
-    const size_t samples )
+    const std::size_t samples )
 {
     std::random_device seed_gen;
     std::mt19937 engine( seed_gen() );
     std::normal_distribution<> normal_dist( 0.0, 1.0 );
 
-    const size_t size = mean.size();
+    const std::size_t size = mean.size();
     kvs::ValueArray<float> prob( size );
-    for ( size_t i = 0; i < size; ++i )
+    for ( std::size_t i = 0; i < size; ++i )
     {
         int crossings = 0;
         std::vector<float> dist(8);
-        for ( size_t j = 0; j < samples; ++j )
+        for ( std::size_t j = 0; j < samples; ++j )
         {
             std::generate( dist.begin(), dist.end(), [&]() { return normal_dist(engine); } );
 
@@ -331,11 +331,11 @@ inline kvs::ValueArray<float> MeanValues(
     const auto Nz = resolution.z();
     kvs::ValueArray<float> values( Nx * Ny * Nz );
 
-    for ( size_t k = 0; k < Nz-1; ++k )
+    for ( std::size_t k = 0; k < Nz-1; ++k )
     {
-        for ( size_t j = 0; j < Ny-1; ++j )
+        for ( std::size_t j = 0; j < Ny-1; ++j )
         {
-            for ( size_t i = 0; i < Nx-1; ++i )
+            for ( std::size_t i = 0; i < Nx-1; ++i )
             {
                 auto index = (Nx-1)*(Ny-1)* k + (Nx-1)*j + i;
 
@@ -389,7 +389,7 @@ ThisClass::SuperClass* ThisClass::exec( const kvs::ObjectBase* object )
         return nullptr;
     }
 
-    size_t index = 0;
+    std::size_t index = 0;
     auto volume0 = object_list->load( index );
     if ( volume0.veclen() != 1 )
     {
@@ -457,11 +457,11 @@ void ThisClass::filtering_uniform(
     auto Insert = [&] ( const kvs::Vec3ui& base_ijk, const float value )
     {
         const auto distance = Distance();
-        for ( size_t k = 0; k < 2; ++k )
+        for ( std::size_t k = 0; k < 2; ++k )
         {
-            for ( size_t j = 0; j < 2; ++j )
+            for ( std::size_t j = 0; j < 2; ++j )
             {
-                for ( size_t i = 0; i < 2; ++i )
+                for ( std::size_t i = 0; i < 2; ++i )
                 {
                     const auto ijk = kvs::Vec3ui( i, j, k );
                     const auto index = IndexOf( base_ijk + ijk );
@@ -472,11 +472,11 @@ void ThisClass::filtering_uniform(
     };
 
     const auto dims = volume.resolution() - kvs::Vec3ui( 1, 1, 1 );
-    for ( size_t k = 0, grid_index = 0; k < dims.z(); ++k )
+    for ( std::size_t k = 0, grid_index = 0; k < dims.z(); ++k )
     {
-        for ( size_t j = 0; j < dims.y(); ++j )
+        for ( std::size_t j = 0; j < dims.y(); ++j )
         {
-            for ( size_t i = 0; i < dims.x(); ++i, ++grid_index )
+            for ( std::size_t i = 0; i < dims.x(); ++i, ++grid_index )
             {
                 const auto ijk = kvs::Vec3ui( i, j, k );
                 const auto value = values[ grid_index ];
@@ -520,11 +520,11 @@ void ThisClass::filtering_rectilinear(
     auto Insert = [&] ( const kvs::Vec3ui& base_ijk, const float value )
     {
         const auto distance = Distance( base_ijk );
-        for ( size_t k = 0; k < 2; ++k )
+        for ( std::size_t k = 0; k < 2; ++k )
         {
-            for ( size_t j = 0; j < 2; ++j )
+            for ( std::size_t j = 0; j < 2; ++j )
             {
-                for ( size_t i = 0; i < 2; ++i )
+                for ( std::size_t i = 0; i < 2; ++i )
                 {
                     const auto local_ijk = kvs::Vec3ui( i, j, k );
                     const auto index = IndexOf( base_ijk + local_ijk );
@@ -535,11 +535,11 @@ void ThisClass::filtering_rectilinear(
     };
 
     const auto dims = volume.resolution() - kvs::Vec3ui( 1, 1, 1 );
-    for ( size_t k = 0, grid_index = 0; k < dims.z(); ++k )
+    for ( std::size_t k = 0, grid_index = 0; k < dims.z(); ++k )
     {
-        for ( size_t j = 0; j < dims.y(); ++j )
+        for ( std::size_t j = 0; j < dims.y(); ++j )
         {
-            for ( size_t i = 0; i < dims.x(); ++i, ++grid_index )
+            for ( std::size_t i = 0; i < dims.x(); ++i, ++grid_index )
             {
                 const auto ijk = kvs::Vec3ui( i, j, k );
                 const auto value = values[ grid_index ];

@@ -41,7 +41,7 @@ class Tubeline : public vismodule::FilterBase, public vismodule::PolygonObject
 
 protected:
 
-    size_t m_ndivisions; ///< number of divisions of circle
+    std::size_t m_ndivisions; ///< number of divisions of circle
 
 public:
 
@@ -49,13 +49,13 @@ public:
 
     Tubeline(
         const vismodule::LineObject& object,
-        const size_t ndivisions = 6 );
+        const std::size_t ndivisions = 6 );
 
     virtual ~Tubeline( void );
 
 public:
 
-    void setNDivisions( const size_t ndivisions );
+    void setNDivisions( const std::size_t ndivisions );
 
 public:
 
@@ -81,7 +81,7 @@ protected:
         const vismodule::ValueArray<vismodule::Real32> line_vertices,
         const vismodule::ValueArray<vismodule::Real32> line_sizes,
         const vismodule::ValueArray<vismodule::UInt8> line_colors,
-        const size_t nvertices,
+        const std::size_t nvertices,
         const vismodule::PolygonObject::ColorType color_type );
 
     void calculate_circles(
@@ -109,7 +109,7 @@ protected:
         std::vector<vismodule::Real32>* normals,
         const std::vector<vismodule::Vector3f>& start_circle,
         const std::vector<vismodule::Vector3f>& end_circle,
-        const size_t vertex_number );
+        const std::size_t vertex_number );
 };
 
 } // end of namespace vismodule

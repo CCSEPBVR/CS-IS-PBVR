@@ -15,7 +15,7 @@ namespace
 {
 
 template <typename T>
-inline void Flip( T* data, const size_t width, const size_t height, const size_t ncomps )
+inline void Flip( T* data, const std::size_t width, const std::size_t height, const std::size_t ncomps )
 {
     // NOTE: Gallium softpipe driver doesn't support "upside-down" rendering
     // which would be needed for the OSMESA_Y_UP=TRUE case. Therefore, the
@@ -39,15 +39,15 @@ inline void Flip( T* data, const size_t width, const size_t height, const size_t
 
     if ( y_flip )
     {
-        const size_t stride = width * ncomps;
+        const std::size_t stride = width * ncomps;
 
         T* pdata = data;
-        const size_t end_line = height / 2;
-        for ( size_t i = 0; i < end_line; i++ )
+        const std::size_t end_line = height / 2;
+        for ( std::size_t i = 0; i < end_line; i++ )
         {
             T* src = pdata + ( i * stride );
             T* dst = pdata + ( ( height - i - 1 ) * stride );
-            for ( size_t j = 0; j < stride; j++ )
+            for ( std::size_t j = 0; j < stride; j++ )
             {
                 std::swap( *src, *dst );
                 src++; dst++;
@@ -70,8 +70,8 @@ kvs::ValueArray<kvs::UInt8> ScreenBase::readbackColorBuffer( GLenum mode ) const
     kvs::OpenGL::SetReadBuffer( mode );
     kvs::OpenGL::SetPixelStorageMode( GL_PACK_ALIGNMENT, GLint(4) );
 
-    const size_t width = this->width();
-    const size_t height = this->height();
+    const std::size_t width = this->width();
+    const std::size_t height = this->height();
     kvs::ValueArray<kvs::UInt8> buffer( width * height * 4 );
     kvs::OpenGL::ReadPixels( 0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, buffer.data() );
     ::Flip( buffer.data(), width, height, 4 );
@@ -84,8 +84,8 @@ kvs::ValueArray<kvs::Real32> ScreenBase::readbackDepthBuffer( GLenum mode ) cons
     kvs::OpenGL::SetReadBuffer( mode );
     kvs::OpenGL::SetPixelStorageMode( GL_PACK_ALIGNMENT, GLint(4) );
 
-    const size_t width = this->width();
-    const size_t height = this->height();
+    const std::size_t width = this->width();
+    const std::size_t height = this->height();
     kvs::ValueArray<kvs::Real32> buffer( width * height );
     kvs::OpenGL::ReadPixels( 0, 0, width, height, GL_DEPTH_COMPONENT, GL_FLOAT, buffer.data() );
     ::Flip( buffer.data(), width, height, 1 );
@@ -147,13 +147,13 @@ void ScreenBase::draw()
 
 kvs::ColorImage ScreenBase::capture() const
 {
-    const size_t width = BaseClass::width();
-    const size_t height = BaseClass::height();
+    const std::size_t width = BaseClass::width();
+    const std::size_t height = BaseClass::height();
 
     // RGBA to RGB
     const kvs::ValueArray<kvs::UInt8>& buffer = m_surface.buffer();
     kvs::ValueArray<kvs::UInt8> pixels( width * height * 3 );
-    for ( size_t i = 0; i < width * height; i++ )
+    for ( std::size_t i = 0; i < width * height; i++ )
     {
         pixels[ 3 * i + 0 ] = buffer[ 4 * i + 0 ];
         pixels[ 3 * i + 1 ] = buffer[ 4 * i + 1 ];

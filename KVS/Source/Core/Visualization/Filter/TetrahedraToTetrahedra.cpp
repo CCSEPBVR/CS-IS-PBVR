@@ -28,7 +28,7 @@ public:
 
 private:
 
-    size_t m_index; ///< index of the connection ID
+    std::size_t m_index; ///< index of the connection ID
     Bucket m_bucket; ///< bucket for the IDs
 
 public:
@@ -218,15 +218,15 @@ template <typename T>
 void TetrahedraToTetrahedra::subdivide_8_tetrahedra( const kvs::UnstructuredVolumeObject* volume )
 {
     // Quadratic tetrahedral cells.
-    const size_t tet2_ncells = volume->numberOfCells();
+    const std::size_t tet2_ncells = volume->numberOfCells();
     const kvs::UInt32* tet2_pconnections = volume->connections().data();
 
     // Tetrahedral cells.
-    const size_t ndivisions = 8;
-    const size_t tet_ncells = tet2_ncells * ndivisions;
+    const std::size_t ndivisions = 8;
+    const std::size_t tet_ncells = tet2_ncells * ndivisions;
     kvs::ValueArray<kvs::UInt32> tet_connections( tet_ncells * 4 );
     kvs::UInt32* tet_pconnections = tet_connections.data();
-    for ( size_t i = 0; i < tet2_ncells; i++ )
+    for ( std::size_t i = 0; i < tet2_ncells; i++ )
     {
         const kvs::UInt32 id0 = *(tet2_pconnections++);
         const kvs::UInt32 id1 = *(tet2_pconnections++);
@@ -319,13 +319,13 @@ void TetrahedraToTetrahedra::subdivide_8_tetrahedra( const kvs::UnstructuredVolu
 template <typename T>
 void TetrahedraToTetrahedra::remove_quadratic_nodes( const kvs::UnstructuredVolumeObject* volume )
 {
-    const size_t tet2_ncells = volume->numberOfCells();
+    const std::size_t tet2_ncells = volume->numberOfCells();
     const kvs::UInt32* tet2_pconnections = volume->connections().data();
     const T* tet2_pvalues = static_cast<const T*>( volume->values().data() );
     const kvs::Real32* tet2_pcoords = volume->coords().data();
 
     ::IDMap id_map;
-    for ( size_t i = 0; i < tet2_ncells; i++ )
+    for ( std::size_t i = 0; i < tet2_ncells; i++ )
     {
         const kvs::UInt32 id0 = tet2_pconnections[ 10 * i + 0 ];
         const kvs::UInt32 id1 = tet2_pconnections[ 10 * i + 1 ];
@@ -338,10 +338,10 @@ void TetrahedraToTetrahedra::remove_quadratic_nodes( const kvs::UnstructuredVolu
         id_map.insert( id3 );
     }
 
-    const size_t tet_ncells = tet2_ncells;
+    const std::size_t tet_ncells = tet2_ncells;
     kvs::ValueArray<kvs::UInt32> tet_connections( tet_ncells * 4 );
     kvs::UInt32* tet_pconnections = tet_connections.data();
-    for ( size_t i = 0; i < tet2_ncells; i++ )
+    for ( std::size_t i = 0; i < tet2_ncells; i++ )
     {
         const kvs::UInt32 id0 = tet2_pconnections[ 10 * i + 0 ];
         const kvs::UInt32 id1 = tet2_pconnections[ 10 * i + 1 ];
@@ -354,8 +354,8 @@ void TetrahedraToTetrahedra::remove_quadratic_nodes( const kvs::UnstructuredVolu
         *(tet_pconnections++) = id_map.bucket().find( id3 )->second;
     }
 
-    const size_t tet_veclen = volume->veclen();
-    const size_t tet_nnodes = id_map.bucket().size();
+    const std::size_t tet_veclen = volume->veclen();
+    const std::size_t tet_nnodes = id_map.bucket().size();
     kvs::ValueArray<T> tet_values( tet_nnodes * tet_veclen );
     kvs::ValueArray<kvs::Real32> tet_coords( tet_nnodes * 3 );
     T* tet_pvalues = tet_values.data();
@@ -364,7 +364,7 @@ void TetrahedraToTetrahedra::remove_quadratic_nodes( const kvs::UnstructuredVolu
     while ( id != id_map.bucket().end() )
     {
         // Value array.
-        for ( size_t i = 0; i < tet_veclen; i++ )
+        for ( std::size_t i = 0; i < tet_veclen; i++ )
         {
             tet_pvalues[ id->second * tet_veclen + i ] = tet2_pvalues[ id->first * tet_veclen + i ];
         }

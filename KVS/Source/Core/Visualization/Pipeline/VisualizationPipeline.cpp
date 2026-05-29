@@ -17,7 +17,7 @@
 
 // Static parameters.
 #include <vector>
-namespace { size_t Counter = 0; }
+namespace { std::size_t Counter = 0; }
 namespace { bool Flag = true; }
 namespace { std::vector<kvs::VisualizationPipeline*> context; }
 
@@ -32,7 +32,7 @@ namespace
 /*===========================================================================*/
 void ExitFunction()
 {
-    for ( size_t i = 0; i < ::context.size(); i++)
+    for ( std::size_t i = 0; i < ::context.size(); i++)
     {
         if ( ::context[i] ) ::context[i]->~VisualizationPipeline();
     }
@@ -408,7 +408,7 @@ VisualizationPipeline::ModuleList::iterator VisualizationPipeline::find_module(
 size_t VisualizationPipeline::count_module(
     const kvs::PipelineModule::Category category ) const
 {
-    size_t counter = 0;
+    std::size_t counter = 0;
 
     ModuleList::const_iterator module = m_module_list.begin();
     ModuleList::const_iterator end = m_module_list.end();

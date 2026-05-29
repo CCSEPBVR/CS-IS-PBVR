@@ -37,7 +37,7 @@ private:
     vismodule::TCPSocket*  m_handler; //< handler
     vismodule::IPAddress   m_ip;      //< IP address
     int              m_port;    //< port number
-    size_t           m_ntrials; //< number of trials
+    std::size_t           m_ntrials; //< number of trials
 
 public:
 
@@ -45,7 +45,7 @@ public:
 
     Connector( vismodule::TCPSocket* handler );
 
-    Connector( const vismodule::IPAddress& ip, const int port, const size_t ntrials );
+    Connector( const vismodule::IPAddress& ip, const int port, const std::size_t ntrials );
 
     ~Connector( void );
 
@@ -55,7 +55,7 @@ public:
 
     void close( void );
 
-    const bool connect( const vismodule::IPAddress& ip, const int port, const size_t ntrials );
+    const bool connect( const vismodule::IPAddress& ip, const int port, const std::size_t ntrials );
 
     const bool reconnect();
 

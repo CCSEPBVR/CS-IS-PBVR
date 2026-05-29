@@ -62,7 +62,7 @@ const bool VertexTag::hasNVertices( void ) const
  *  @return number of vertices
  */
 /*===========================================================================*/
-const size_t VertexTag::nvertices( void ) const
+const std::size_t VertexTag::nvertices( void ) const
 {
     return( m_nvertices );
 }
@@ -73,7 +73,7 @@ const size_t VertexTag::nvertices( void ) const
  *  @param  nvertices [in] number of vertices
  */
 /*===========================================================================*/
-void VertexTag::setNVertices( const size_t nvertices )
+void VertexTag::setNVertices( const std::size_t nvertices )
 {
     m_has_nvertices = true;
     m_nvertices = nvertices;

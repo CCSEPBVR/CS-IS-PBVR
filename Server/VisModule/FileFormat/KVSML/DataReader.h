@@ -26,32 +26,32 @@ namespace kvsml
 
 const bool ReadCoordData(
     const vismodule::XMLNode::SuperClass* parent,
-    const size_t ncoords,
+    const std::size_t ncoords,
     vismodule::ValueArray<vismodule::Real32>* coords );
 
 const bool ReadColorData(
     const vismodule::XMLNode::SuperClass* parent,
-    const size_t ncolors,
+    const std::size_t ncolors,
     vismodule::ValueArray<vismodule::UInt8>* colors );
 
 const bool ReadNormalData(
     const vismodule::XMLNode::SuperClass* parent,
-    const size_t nnormals,
+    const std::size_t nnormals,
     vismodule::ValueArray<vismodule::Real32>* normals );
 
 const bool ReadSizeData(
     const vismodule::XMLNode::SuperClass* parent,
-    const size_t nsizes,
+    const std::size_t nsizes,
     vismodule::ValueArray<vismodule::Real32>* sizes );
 
 const bool ReadConnectionData(
     const vismodule::XMLNode::SuperClass* parent,
-    const size_t nconnections,
+    const std::size_t nconnections,
     vismodule::ValueArray<vismodule::UInt32>* connections );
 
 const bool ReadOpacityData(
     const vismodule::XMLNode::SuperClass* parent,
-    const size_t nopacities,
+    const std::size_t nopacities,
     vismodule::ValueArray<vismodule::UInt8>* opacities );
 
 } // end of namespace kvsml

@@ -86,7 +86,7 @@ const GLenum Texture2D::wrapT( void ) const
  *  Returns the texture width.
  */
 /*==========================================================================*/
-const size_t Texture2D::width( void ) const
+const std::size_t Texture2D::width( void ) const
 {
     return( m_width );
 }
@@ -96,7 +96,7 @@ const size_t Texture2D::width( void ) const
  *  Returns the texture height.
  */
 /*==========================================================================*/
-const size_t Texture2D::height( void ) const
+const std::size_t Texture2D::height( void ) const
 {
     return( m_height );
 }
@@ -133,7 +133,7 @@ void Texture2D::setWrapT( const GLenum wrap_t )
  *  Create the texture.
  */
 /*==========================================================================*/
-void Texture2D::create( const size_t width, const size_t height )
+void Texture2D::create( const std::size_t width, const std::size_t height )
 {
     m_width  = width;
     m_height = height;
@@ -165,11 +165,11 @@ void Texture2D::create( const size_t width, const size_t height )
  */
 /*==========================================================================*/
 void Texture2D::download(
-    const size_t width,
-    const size_t height,
+    const std::size_t width,
+    const std::size_t height,
     const void*  pixels,
-    const size_t xoffset,
-    const size_t yoffset )
+    const std::size_t xoffset,
+    const std::size_t yoffset )
 {
     GLint swap;
     GLint alignment;
@@ -182,8 +182,8 @@ void Texture2D::download(
 
     if ( !m_is_downloaded )
     {
-//        const size_t ext_width  = 1 << ( vismodule::Math::Log2Smallest( width ) );
-//        const size_t ext_height = 1 << ( vismodule::Math::Log2Smallest( height ) );
+//        const std::size_t ext_width  = 1 << ( vismodule::Math::Log2Smallest( width ) );
+//        const std::size_t ext_height = 1 << ( vismodule::Math::Log2Smallest( height ) );
 
         const GLint level = 0;  // level-of-detail number
         const GLint border = 0; // border width (0 or 1)

@@ -42,7 +42,7 @@ public:
 
 private:
 
-    size_t m_resolution; ///< table resolution
+    std::size_t m_resolution; ///< table resolution
     float  m_min_value;  ///< min. value
     float  m_max_value;  ///< max. value
     Points m_points;     ///< control point list
@@ -52,13 +52,13 @@ public:
 
     ColorMap( void );
 
-    explicit ColorMap( const size_t resolution );
+    explicit ColorMap( const std::size_t resolution );
 
     explicit ColorMap( const Table& table );
 
     ColorMap( const ColorMap& other );
 
-    ColorMap( const size_t resolution, const float min_value, const float max_value );
+    ColorMap( const std::size_t resolution, const float min_value, const float max_value );
 
     ColorMap( const Table& table, const float min_value, const float max_value );
 
@@ -70,7 +70,7 @@ public:
 
     const float maxValue( void ) const;
 
-    const size_t resolution( void ) const;
+    const std::size_t resolution( void ) const;
 
     const Points& points( void ) const;
 
@@ -82,7 +82,7 @@ public:
 
     void setRange( const float min_value, const float max_value );
 
-    void setResolution( const size_t resolution );
+    void setResolution( const std::size_t resolution );
 
     void addPoint( const float value, const vismodule::RGBColor color );
 
@@ -92,7 +92,7 @@ public:
 
 public:
 
-    const vismodule::RGBColor operator []( const size_t index ) const;
+    const vismodule::RGBColor operator []( const std::size_t index ) const;
 
     const vismodule::RGBColor at( const float value ) const;
 

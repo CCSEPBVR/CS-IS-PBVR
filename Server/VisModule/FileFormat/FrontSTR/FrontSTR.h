@@ -39,8 +39,8 @@ class FrontSTR : public vismodule::FileFormatBase
 
 protected:
 
-    size_t m_nmeshes; ///< number of mesh data
-    size_t m_nresults; ///< number of result data
+    std::size_t m_nmeshes; ///< number of mesh data
+    std::size_t m_nresults; ///< number of result data
     vismodule::fstr::MeshData* m_mesh_data; ///< mesh data
     vismodule::fstr::ResultData* m_result_data; ///< result data
 
@@ -58,13 +58,13 @@ public:
 
 public:
 
-    const size_t numberOfMeshData( void ) const;
+    const std::size_t numberOfMeshData( void ) const;
 
-    const size_t numberOfResultData( void ) const;
+    const std::size_t numberOfResultData( void ) const;
 
-    const vismodule::fstr::MeshData& meshData( const size_t index = 0 ) const;
+    const vismodule::fstr::MeshData& meshData( const std::size_t index = 0 ) const;
 
-    const vismodule::fstr::ResultData& resultData( const size_t index = 0 ) const;
+    const vismodule::fstr::ResultData& resultData( const std::size_t index = 0 ) const;
 
 public:
 

@@ -49,7 +49,7 @@ int main() {
 
 
 
-    size_t ret = fread(psiContent, sizeof (float), totalCoordinates, psi_fh);
+    std::size_t ret = fread(psiContent, sizeof (float), totalCoordinates, psi_fh);
     fclose(psi_fh);
     printf("FREAD psi: %lu\n", ret);
 

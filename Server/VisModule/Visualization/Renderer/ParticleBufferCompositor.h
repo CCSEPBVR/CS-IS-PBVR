@@ -54,9 +54,9 @@ protected:
     double m_accumulation_time; ///< accumulation time
 #endif
 
-    size_t                m_num_projected_particles; ///< number of projected points
-    size_t                m_num_stored_particles;    ///< number of stored points
-    size_t                m_subpixel_level;          ///< subpixel level
+    std::size_t                m_num_projected_particles; ///< number of projected points
+    std::size_t                m_num_stored_particles;    ///< number of stored points
+    std::size_t                m_subpixel_level;          ///< subpixel level
     vismodule::ObjectManager*   m_object_manager;          ///< pointer to the object manager
     vismodule::RendererManager* m_renderer_manager;        ///< pointer to the renderer manager
     vismodule::IDManager*       m_id_manager;              ///< pointer to the ID manager
@@ -83,12 +83,12 @@ public:
 
     void link( vismodule::PointObject* object, vismodule::ParticleVolumeRenderer* renderer );
 
-    const size_t numOfProjectedParticles( void ) const;
+    const std::size_t numOfProjectedParticles( void ) const;
 
-    const size_t numOfStoredParticles( void ) const;
+    const std::size_t numOfStoredParticles( void ) const;
 
 #if TEST__MESUREMENT_ACCUMLATION_TIME
-    const size_t accumulationTime( void ) const;
+    const std::size_t accumulationTime( void ) const;
 #endif
 
     void clearList( void );

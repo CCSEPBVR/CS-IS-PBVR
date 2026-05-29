@@ -111,7 +111,7 @@ private:
 
     void assignOperator(int oldOperatorID, int newOperatorID);
     std::vector<char> pack(const int timeStep);
-    size_t calculateTotalSize() const;
+    std::size_t calculateTotalSize() const;
     void LastStepMonitorLoop();
     void PlotOverTimeSenderLoop();
 };

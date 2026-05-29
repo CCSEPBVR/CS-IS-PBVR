@@ -60,7 +60,7 @@ private:
     const kvs::UnstructuredVolumeObject* m_ref_volume; ///< pointer to the volume data
 
     kvs::Texture3D m_preintegration_texture; ///< pre-integration texture
-    size_t m_k_size; ///< k-buffer size (2 or 6)
+    std::size_t m_k_size; ///< k-buffer size (2 or 6)
     Meshes* m_meshes; ///< tetrahedral meshes for HAVS
     bool m_enable_vbo; ///< flag for checking if VBO is enabled
     kvs::VertexBufferObject m_vertex_coords; ///< VBO (coordinate array)
@@ -70,20 +70,20 @@ private:
     kvs::ProgramObject m_shader_begin; ///< shader (begin)
     kvs::ProgramObject m_shader_kbuffer; ///< shader (kbuffer)
     kvs::ProgramObject m_shader_end; ///< shader (end)
-    size_t m_ntargets; ///< number of targets (MRTs)
+    std::size_t m_ntargets; ///< number of targets (MRTs)
     kvs::FrameBufferObject m_mrt_framebuffer; ///< MRT frame buffer object
     kvs::Texture2D m_mrt_texture[4]; ///< MRT textures
     float m_modelview[16]; ///< modelview matrix
 
 public:
     HAVSVolumeRenderer();
-    HAVSVolumeRenderer( kvs::UnstructuredVolumeObject* volume, const size_t k_size = 2 );
+    HAVSVolumeRenderer( kvs::UnstructuredVolumeObject* volume, const std::size_t k_size = 2 );
     virtual ~HAVSVolumeRenderer();
 
-    void setKBufferSize( const size_t k_size ) { m_k_size = k_size; }
+    void setKBufferSize( const std::size_t k_size ) { m_k_size = k_size; }
     void enableVBO() { m_enable_vbo = true; }
     void disableVBO() { m_enable_vbo = false; }
-    size_t kBufferSize() const { return m_k_size; }
+    std::size_t kBufferSize() const { return m_k_size; }
     bool isVBOEnabled() const { return m_enable_vbo; }
 
     void exec( kvs::ObjectBase* object, kvs::Camera* camera, kvs::Light* light );
@@ -122,8 +122,8 @@ public:
     Interval() {}
 
     void addFace( const kvs::UInt32 f ) { m_faces.push_back(f); }
-    size_t size() const { return m_faces.size(); }
-    kvs::UInt32 face( const size_t index ) { return m_faces[index]; }
+    std::size_t size() const { return m_faces.size(); }
+    kvs::UInt32 face( const std::size_t index ) { return m_faces[index]; }
 };
 
 /*===========================================================================*/
@@ -135,37 +135,37 @@ class HAVSVolumeRenderer::Histogram
 {
 private:
     HAVSVolumeRenderer::Interval* m_scalar_table;
-    size_t m_nbuckets;
-    size_t m_nfaces;
+    std::size_t m_nbuckets;
+    std::size_t m_nfaces;
 
 public:
     Histogram() { this->defineBuckets( 128 ); }
     ~Histogram() { this->cleanup(); }
 
-    kvs::UInt32 face( const size_t index, const size_t f ) const { return m_scalar_table[index].face(f); }
-    size_t bucketSize( const size_t index ) const { return m_scalar_table[index].size(); }
-    size_t nbuckets() const { return m_nbuckets; }
-    size_t nfaces() const { return m_nfaces; }
+    kvs::UInt32 face( const std::size_t index, const std::size_t f ) const { return m_scalar_table[index].face(f); }
+    std::size_t bucketSize( const std::size_t index ) const { return m_scalar_table[index].size(); }
+    std::size_t nbuckets() const { return m_nbuckets; }
+    std::size_t nfaces() const { return m_nfaces; }
 
-    void defineBuckets( const size_t nbuckets )
+    void defineBuckets( const std::size_t nbuckets )
     {
         m_nbuckets = nbuckets;
         m_scalar_table = new HAVSVolumeRenderer::Interval[ nbuckets ];
         m_nfaces = 0;
     }
 
-    void addFace( const float scalar, const size_t f )
+    void addFace( const float scalar, const std::size_t f )
     {
-        size_t i = static_cast<size_t>( scalar * m_nbuckets );
+        std::size_t i = static_cast<size_t>( scalar * m_nbuckets );
         if ( i > m_nbuckets - 1 ) { i = m_nbuckets - 1; }
         m_scalar_table[i].addFace(f);
         m_nfaces++;
     }
 
-    size_t maxBucketSize() const
+    std::size_t maxBucketSize() const
     {
-        size_t max = 0;
-        for ( size_t i = 0; i < m_nbuckets; i++ )
+        std::size_t max = 0;
+        for ( std::size_t i = 0; i < m_nbuckets; i++ )
         {
             max = kvs::Math::Max( max, m_scalar_table[i].size() );
         }
@@ -262,7 +262,7 @@ public:
     }
 
     void setBoundary( const bool boundary ) const { m_boundary = boundary; }
-    kvs::UInt32 index( const size_t i ) const { return m_index[i]; }
+    kvs::UInt32 index( const std::size_t i ) const { return m_index[i]; }
     bool isBoundary() const { return m_boundary; }
 };
 
@@ -308,12 +308,12 @@ private:
     HAVSVolumeRenderer::SortedFace* m_sorted_faces;
     HAVSVolumeRenderer::Vertex* m_centers;
     HAVSVolumeRenderer::SortedFace* m_radix_temp;
-    size_t m_nvertices;
-    size_t m_ntetrahedra;
-    size_t m_nfaces;
-    size_t m_nboundaryfaces;
-    size_t m_ninternalfaces;
-    size_t m_nrenderfaces;
+    std::size_t m_nvertices;
+    std::size_t m_ntetrahedra;
+    std::size_t m_nfaces;
+    std::size_t m_nboundaryfaces;
+    std::size_t m_ninternalfaces;
+    std::size_t m_nrenderfaces;
     float m_diagonal;
     kvs::Vector3f m_bb_min;
     kvs::Vector3f m_bb_max;
@@ -323,15 +323,15 @@ public:
     Meshes();
     ~Meshes();
 
-    const Face& face( const size_t index ) { return m_faces[index]; }
-    kvs::UInt32 sortedFace( const size_t face_id ) { return m_sorted_faces[face_id].face(); }
+    const Face& face( const std::size_t index ) { return m_faces[index]; }
+    kvs::UInt32 sortedFace( const std::size_t face_id ) { return m_sorted_faces[face_id].face(); }
     const kvs::ValueArray<kvs::Real32>& coords() const { return m_coords; }
     const kvs::ValueArray<kvs::UInt32>& connections() const { return m_connections; }
     const kvs::ValueArray<kvs::Real32>& values() const { return m_values; }
-    size_t nvertices() const { return m_nvertices; }
-    size_t ntetrahedra() const { return m_ntetrahedra; }
-    size_t nfaces() const { return m_nfaces; }
-    size_t nrenderfaces() const { return m_nrenderfaces; }
+    std::size_t nvertices() const { return m_nvertices; }
+    std::size_t ntetrahedra() const { return m_ntetrahedra; }
+    std::size_t nfaces() const { return m_nfaces; }
+    std::size_t nrenderfaces() const { return m_nrenderfaces; }
     float depthScale() const { return m_depth_scale; }
     float diagonal() const { return m_diagonal; }
 

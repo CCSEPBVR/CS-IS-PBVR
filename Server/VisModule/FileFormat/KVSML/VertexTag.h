@@ -38,7 +38,7 @@ public:
 protected:
 
     bool m_has_nvertices; ///< flag to check whether 'nvertices' is specified or not
-    size_t m_nvertices; ///< number of vertices
+    std::size_t m_nvertices; ///< number of vertices
 
 public:
 
@@ -50,11 +50,11 @@ public:
 
     const bool hasNVertices( void ) const;
 
-    const size_t nvertices( void ) const;
+    const std::size_t nvertices( void ) const;
 
 public:
 
-    void setNVertices( const size_t nvertices );
+    void setNVertices( const std::size_t nvertices );
 
 public:
 

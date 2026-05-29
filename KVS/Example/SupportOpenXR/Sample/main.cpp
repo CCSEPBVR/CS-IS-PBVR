@@ -28,7 +28,7 @@
 
 kvs::PointObject* CreatePointObject()
 {
-    const size_t N = 4;
+    const std::size_t N = 4;
     kvs::Real32 CoordArray[N * 3] = {
         1.0, 0.0, 2.0,
         2.0, 0.0, 2.0,
@@ -57,10 +57,10 @@ kvs::PointObject* CreatePointObject()
 
 kvs::StructuredVolumeObject* CreateStructuredVolumeObject()
 {
-    const size_t dimx = 3;
-    const size_t dimy = 3;
-    const size_t dimz = 3;
-    const size_t veclen = 1;
+    const std::size_t dimx = 3;
+    const std::size_t dimy = 3;
+    const std::size_t dimz = 3;
+    const std::size_t veclen = 1;
 
     kvs::UInt8 ValueArray[dimx * dimy * dimz * veclen] = {
         0,  10,    0,
@@ -87,9 +87,9 @@ kvs::StructuredVolumeObject* CreateStructuredVolumeObject()
 
 kvs::UnstructuredVolumeObject* CreateUnstructuredVolumeObject()
 {
-    const size_t nnodes = 7;
-    const size_t ncells = 5;
-    const size_t veclen = 1;
+    const std::size_t nnodes = 7;
+    const std::size_t ncells = 5;
+    const std::size_t veclen = 1;
 
     kvs::Real32 CoordArray[nnodes * 3] = {
         0.0,  7.0,  7.0,
@@ -269,7 +269,7 @@ int main(int argc, char** argv)
         delete point;
         delete volume;
 
-        const size_t ndivisions = 20;
+        const std::size_t ndivisions = 20;
         auto* object = new kvs::Tubeline(line, ndivisions);
         delete line;
 

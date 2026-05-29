@@ -109,7 +109,7 @@ template <typename T>
 inline void PrismaticCell<T>::scalar_ary( float* scalar_array, const int loop_cnt) const 
 {
     #pragma ivdep
-    for ( size_t i = 0; i < loop_cnt ; i++ )
+    for ( std::size_t i = 0; i < loop_cnt ; i++ )
     {
         //scalar_array[i]= static_cast<vismodule::Real32>( m_interpolation_functions_array[0][j] * m_scalars_array[0][j] );
         scalar_array[i] =  BaseClass::m_interpolation_functions_array[0][i] * BaseClass::m_scalars_array[0][i] 
@@ -542,7 +542,7 @@ const vismodule::Vector3f PrismaticCell<T>::randomSampling_MT( vismodule::Mersen
 template <typename T>
 const vismodule::Real32 PrismaticCell<T>::volume() const
 {
-    const size_t N = 9;
+    const std::size_t N = 9;
     vismodule::Vector3f P[ N ] =
     {
         vismodule::Vector3f( 0.3f, 0.3f, 0.2f ),
@@ -557,7 +557,7 @@ const vismodule::Real32 PrismaticCell<T>::volume() const
     };
 
     float S = 0.0f;
-    for ( size_t i = 0; i < N; i++ )
+    for ( std::size_t i = 0; i < N; i++ )
     {
         this->setLocalPoint( P[i] );
         const vismodule::Matrix33f J = BaseClass::JacobiMatrix();

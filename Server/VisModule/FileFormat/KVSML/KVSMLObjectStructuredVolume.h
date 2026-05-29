@@ -54,7 +54,7 @@ protected:
     std::string        m_grid_type;     ///< grid type
     bool               m_has_label;     ///< data label is specified or not
     std::string        m_label;         ///< data label
-    size_t             m_veclen;        ///< vector length
+    std::size_t             m_veclen;        ///< vector length
     vismodule::Vector3ui     m_resolution;    ///< grid resolution
     bool               m_has_min_value; ///< min. value is specified or not
     bool               m_has_max_value; ///< max. value is specified or not
@@ -85,7 +85,7 @@ public:
 
     const std::string& label( void ) const;
 
-    const size_t veclen( void ) const;
+    const std::size_t veclen( void ) const;
 
     const vismodule::Vector3ui& resolution( void ) const;
 
@@ -109,7 +109,7 @@ public:
 
     void setLabel( const std::string& label );
 
-    void setVeclen( const size_t veclen );
+    void setVeclen( const std::size_t veclen );
 
     void setResolution( const vismodule::Vector3ui& resolution );
 

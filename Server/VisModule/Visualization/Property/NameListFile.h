@@ -42,9 +42,9 @@ public:
     inline void write();
     inline bool read();
 
-    inline size_t byteSize() const;
-    inline size_t pack( char* buf ) const;
-    inline size_t unpack( const char* buf );
+    inline std::size_t byteSize() const;
+    inline std::size_t pack( char* buf ) const;
+    inline std::size_t unpack( const char* buf );
 
     inline bool operator==( NameListFile& name_list_file );
     inline bool operator!=( NameListFile& name_list_file );
@@ -115,7 +115,7 @@ inline bool NameListFile::read()
 
     while ( std::getline( ifs, line ) )
     {
-        size_t pos;
+        std::size_t pos;
         while ( ( pos = line.find_first_of( " 　\t\r\n" ) ) != std::string::npos )
         {
             line.erase( pos, 1 );
@@ -161,9 +161,9 @@ inline bool NameListFile::getCount( const std::string& name )
     return true;
 }
 
-inline size_t NameListFile::byteSize() const
+inline std::size_t NameListFile::byteSize() const
 {
-    size_t index = 0;
+    std::size_t index = 0;
    
     index += vismodule::Serializer::byteSize( m_name_list.size() );
     for ( std::map<std::string, std::string>::const_iterator i = m_name_list.begin(); i != m_name_list.end(); i++ )
@@ -175,9 +175,9 @@ inline size_t NameListFile::byteSize() const
     return index;    
 }
 
-inline size_t NameListFile::pack( char* buf ) const
+inline std::size_t NameListFile::pack( char* buf ) const
 {
-    size_t index = 0;
+    std::size_t index = 0;
    
     index += vismodule::Serializer::write( buf + index, m_name_list.size() );
     for ( std::map<std::string, std::string>::const_iterator i = m_name_list.begin(); i != m_name_list.end(); i++ )
@@ -189,16 +189,16 @@ inline size_t NameListFile::pack( char* buf ) const
     return index;
 }
 
-inline size_t NameListFile::unpack( const char* buf )
+inline std::size_t NameListFile::unpack( const char* buf )
 {
     std::string nm;
     std::string val;
-    size_t s;
-    size_t index = 0;
+    std::size_t s;
+    std::size_t index = 0;
 
     //index += vismodule::Serializer::read( buf + index, s );
     index += vismodule::Serializer::read( buf + index, &s );
-    for ( size_t i = 0; i != s; i++ )
+    for ( std::size_t i = 0; i != s; i++ )
     {
         index += vismodule::Serializer::read( buf + index, &nm );
         index += vismodule::Serializer::read( buf + index, &val );

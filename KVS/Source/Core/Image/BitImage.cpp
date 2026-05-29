@@ -59,13 +59,13 @@ inline void Thresholding(
     const kvs::GrayImage& image,
     kvs::ValueArray<kvs::UInt8>& data )
 {
-    const size_t width = image.width();
-    const size_t height = image.height();
-    const size_t bpl = ( width + 7 ) >> 3;
+    const std::size_t width = image.width();
+    const std::size_t height = image.height();
+    const std::size_t bpl = ( width + 7 ) >> 3;
 
-    for ( size_t j = 0; j < height; j++ )
+    for ( std::size_t j = 0; j < height; j++ )
     {
-        for ( size_t i = 0; i < width; i++ )
+        for ( std::size_t i = 0; i < width; i++ )
         {
             const kvs::UInt8 value = image.pixel( i, j );
             if ( value < threshold )
@@ -90,15 +90,15 @@ inline void Dithering(
     const kvs::GrayImage& image,
     kvs::ValueArray<kvs::UInt8>& data )
 {
-    const size_t width = image.width();
-    const size_t height = image.height();
-    const size_t bpl = ( width + 7 ) >> 3;
+    const std::size_t width = image.width();
+    const std::size_t height = image.height();
+    const std::size_t bpl = ( width + 7 ) >> 3;
     const double r = 1.0 / 15.0;
     const kvs::Matrix44d dmask = ( mask - kvs::Mat4d::Constant( 8.0 ) ) * r;
 
-    for ( size_t j = 0; j < width; j++ )
+    for ( std::size_t j = 0; j < width; j++ )
     {
-        for ( size_t i = 0; i < height; i++ )
+        for ( std::size_t i = 0; i < height; i++ )
         {
             const double p = image.pixel( i, j ) / 255.0;
             if ( kvs::Math::Floor( p + dmask[i%4][j%4] + 0.5 ) == 1 )
@@ -127,9 +127,9 @@ inline kvs::ValueArray<kvs::UInt32> Histogram( const kvs::GrayImage& image )
 
     kvs::ValueArray<kvs::UInt32> count( 256 );
     count.fill( 0 );
-    for ( size_t index = 0; index < npixels; index++ )
+    for ( std::size_t index = 0; index < npixels; index++ )
     {
-        const size_t value = data[index];
+        const std::size_t value = data[index];
         count[ value ] += 1;
     }
 
@@ -151,22 +151,22 @@ BitImage::BinarizationMethod BitImage::PTile()
 {
     return [] ( const kvs::GrayImage& image, BaseClass::PixelData& data )
     {
-        const size_t width = image.width();
-        const size_t height= image.height();
+        const std::size_t width = image.width();
+        const std::size_t height= image.height();
         const double ratio = 1.0 / static_cast<double>( width * height );
         const kvs::ValueArray<kvs::UInt32> histogram = ::Histogram( image );
 
         // Create the cumulative frequency.
         kvs::ValueArray<double> cum( 256 );
         cum[0] = histogram[0];
-        for ( size_t i = 1; i < 256; i++ ) cum[i] = cum[i-1] + static_cast<double>(histogram[i]);
-        for ( size_t i = 0; i < 256; i++ ) cum[i] = cum[i] * ratio;
+        for ( std::size_t i = 1; i < 256; i++ ) cum[i] = cum[i-1] + static_cast<double>(histogram[i]);
+        for ( std::size_t i = 0; i < 256; i++ ) cum[i] = cum[i] * ratio;
 
         const double p = 0.4;
         double diff = 100.0;
         double temp = 0.0;
-        size_t threshold = 0;
-        for ( size_t i = 0; i < 256; i++ )
+        std::size_t threshold = 0;
+        for ( std::size_t i = 0; i < 256; i++ )
         {
             temp = kvs::Math::Abs( p - cum[i] );
             if ( temp < diff )
@@ -189,43 +189,43 @@ BitImage::BinarizationMethod BitImage::Distinction()
 {
     return [] ( const kvs::GrayImage& image, BaseClass::PixelData& data )
     {
-        const size_t width = image.width();
-        const size_t height= image.height();
+        const std::size_t width = image.width();
+        const std::size_t height= image.height();
         const double ratio = 1.0 / static_cast<double>( width * height );
         const kvs::ValueArray<kvs::UInt32> histogram = ::Histogram( image );
 
         // Create the probability distribution.
         kvs::ValueArray<double> p( 256 );
-        for ( size_t i = 0; i < 256; i++ ) p[i] = static_cast<double>(histogram[i]) * ratio;
+        for ( std::size_t i = 0; i < 256; i++ ) p[i] = static_cast<double>(histogram[i]) * ratio;
 
         // Calculate the sum of the probability distribution for each class.
         kvs::ValueArray<double> w1( 256 ); w1.fill( 0 );
         kvs::ValueArray<double> w2( 256 ); w2.fill( 0 );
-        for ( size_t i = 0; i < 256; i++ )
+        for ( std::size_t i = 0; i < 256; i++ )
         {
-            for ( size_t j = 0; j <   i; j++ ) w1[i] += p[j];
-            for ( size_t k = i; k < 256; k++ ) w2[i] += p[k];
+            for ( std::size_t j = 0; j <   i; j++ ) w1[i] += p[j];
+            for ( std::size_t k = i; k < 256; k++ ) w2[i] += p[k];
         }
         // Calculate the mean for each class.
         kvs::ValueArray<double> m1( 256 ); m1.fill( 0 );
         kvs::ValueArray<double> m2( 256 ); m2.fill( 0 );
-        for ( size_t i = 0; i < 256; i++ )
+        for ( std::size_t i = 0; i < 256; i++ )
         {
-            for ( size_t j = 0; j <   i; j++ ) m1[i] += static_cast<double>(j) * p[j] / w1[i];
-            for ( size_t k = i; k < 256; k++ ) m2[i] += static_cast<double>(k) * p[k] / w2[i];
+            for ( std::size_t j = 0; j <   i; j++ ) m1[i] += static_cast<double>(j) * p[j] / w1[i];
+            for ( std::size_t k = i; k < 256; k++ ) m2[i] += static_cast<double>(k) * p[k] / w2[i];
         }
 
         // Calculate the variance for each class.
         kvs::ValueArray<double> s2_1( 256 ); s2_1.fill( 0 );
         kvs::ValueArray<double> s2_2( 256 ); s2_2.fill( 0 );
-        for ( size_t i = 0; i < 256; i++ )
+        for ( std::size_t i = 0; i < 256; i++ )
         {
             const double v = static_cast<double>(i);
-            for ( size_t j = 0; j < i; j++ )
+            for ( std::size_t j = 0; j < i; j++ )
             {
                 s2_1[i] += p[j] * ( v - m1[i] ) * ( v - m1[i] ) / w1[i];
             }
-            for ( size_t k = 0; k < 256; k++ )
+            for ( std::size_t k = 0; k < 256; k++ )
             {
                 s2_2[i] += p[k] * ( v - m2[i] ) * ( v - m2[i] ) / w2[i];
             }
@@ -236,8 +236,8 @@ BitImage::BinarizationMethod BitImage::Distinction()
         kvs::ValueArray<double> s2_b( 256 ); s2_b.fill( 0 );
         kvs::ValueArray<double> s2_w( 256 ); s2_w.fill( 0 );
         double max_ratio = 0.0;
-        size_t threshold = 0;
-        for ( size_t i = 0; i < 256; i++ )
+        std::size_t threshold = 0;
+        for ( std::size_t i = 0; i < 256; i++ )
         {
             // The variance between the classes.
             s2_b[i] = w1[i] * w2[i] * ( m1[i] - m2[i] ) * ( m1[i] - m2[i] );
@@ -372,7 +372,7 @@ BitImage::BinarizationMethod BitImage::DotConcentrate()
  *  @param bit [in] bit flag
  */
 /*==========================================================================*/
-BitImage::BitImage( const size_t width, const size_t height, const bool bit )
+BitImage::BitImage( const std::size_t width, const std::size_t height, const bool bit )
 {
     BaseClass::create( width, height, kvs::ImageBase::Bit );
     this->fill( bit );
@@ -387,8 +387,8 @@ BitImage::BitImage( const size_t width, const size_t height, const bool bit )
  */
 /*==========================================================================*/
 BitImage::BitImage(
-    const size_t width,
-    const size_t height,
+    const std::size_t width,
+    const std::size_t height,
     const kvs::ValueArray<kvs::UInt8>& pixels )
 {
     BaseClass::create( width, height, kvs::ImageBase::Bit, pixels );
@@ -425,10 +425,10 @@ BitImage::BitImage( const std::string& filename )
  *  @return pixel value
  */
 /*==========================================================================*/
-bool BitImage::pixel( const size_t index ) const
+bool BitImage::pixel( const std::size_t index ) const
 {
-    const size_t i = index / BaseClass::width();
-    const size_t j = index % BaseClass::width();
+    const std::size_t i = index / BaseClass::width();
+    const std::size_t j = index % BaseClass::width();
     return this->pixel( i, j );
 }
 
@@ -440,7 +440,7 @@ bool BitImage::pixel( const size_t index ) const
  *  @return pixel value
  */
 /*==========================================================================*/
-bool BitImage::pixel( const size_t i, const size_t j ) const
+bool BitImage::pixel( const std::size_t i, const std::size_t j ) const
 {
     const auto* pixels = BaseClass::pixels().data();
     const auto bpl = BaseClass::bytesPerLine();
@@ -456,7 +456,7 @@ bool BitImage::pixel( const size_t i, const size_t j ) const
  *  @return true if the create process is done successfully
  */
 /*===========================================================================*/
-bool BitImage::create( const size_t width, const size_t height, const bool bit )
+bool BitImage::create( const std::size_t width, const std::size_t height, const bool bit )
 {
     if ( BaseClass::create( width, height, kvs::ImageBase::Bit ) )
     {
@@ -476,8 +476,8 @@ bool BitImage::create( const size_t width, const size_t height, const bool bit )
  */
 /*===========================================================================*/
 bool BitImage::create(
-    const size_t width,
-    const size_t height,
+    const std::size_t width,
+    const std::size_t height,
     const kvs::ValueArray<kvs::UInt8>& pixels )
 {
     return BaseClass::create( width, height, kvs::ImageBase::Bit, pixels );
@@ -490,10 +490,10 @@ bool BitImage::create(
  *  @param pixel [in] pixel value
  */
 /*==========================================================================*/
-void BitImage::setPixel( const size_t index, const bool pixel )
+void BitImage::setPixel( const std::size_t index, const bool pixel )
 {
-    const size_t i = index / BaseClass::width();
-    const size_t j = index % BaseClass::width();
+    const std::size_t i = index / BaseClass::width();
+    const std::size_t j = index % BaseClass::width();
     if ( pixel ) this->set_bit( i, j );
     else this->reset_bit( i, j );
 }
@@ -506,7 +506,7 @@ void BitImage::setPixel( const size_t index, const bool pixel )
  *  @param pixel [in] pixel value
  */
 /*==========================================================================*/
-void BitImage::setPixel( const size_t i, const size_t j, const bool pixel )
+void BitImage::setPixel( const std::size_t i, const std::size_t j, const bool pixel )
 {
     if ( pixel ) this->set_bit( i, j );
     else this->reset_bit( i, j );
@@ -520,27 +520,27 @@ void BitImage::setPixel( const size_t i, const size_t j, const bool pixel )
 /*===========================================================================*/
 size_t BitImage::count() const
 {
-    size_t counter = 0;
+    std::size_t counter = 0;
 
     const auto height = BaseClass::height();
     const auto bpl = BaseClass::bytesPerLine();
     const auto padding = BaseClass::padding();
     const auto* pixels = BaseClass::pixels().data();
-    for ( size_t j = 0; j < height; j++ )
+    for ( std::size_t j = 0; j < height; j++ )
     {
-        const size_t line_head = j * bpl;
-        for ( size_t i = 0; i < bpl - 1; i++ )
+        const std::size_t line_head = j * bpl;
+        for ( std::size_t i = 0; i < bpl - 1; i++ )
         {
-            const size_t data_head = line_head + i;
-            for ( size_t b = 0; b < 8; b++ )
+            const std::size_t data_head = line_head + i;
+            for ( std::size_t b = 0; b < 8; b++ )
             {
                 if ( ( pixels[data_head] & ::SetBitMask[b] ) == 255 ) counter++;
             }
         }
 
         // Decrement padding bit.
-        const size_t data_head = line_head + ( bpl - 1 );
-        for ( size_t b = 0; b < 8 - padding; b++ )
+        const std::size_t data_head = line_head + ( bpl - 1 );
+        for ( std::size_t b = 0; b < 8 - padding; b++ )
         {
             if ( ( pixels[data_head] & ::SetBitMask[b] ) == 255 ) counter++;
         }
@@ -560,10 +560,10 @@ void BitImage::fill( const bool bit )
     const kvs::UInt8 mask = ( bit ) ? ( ::SetBitMask[8] ) : ( ::ResetBitMask[8] );
 
     auto* pixels = BaseClass::pixelData().data();
-    for ( size_t j = 0; j < BaseClass::height(); j++ )
+    for ( std::size_t j = 0; j < BaseClass::height(); j++ )
     {
-        const size_t line_head = j * BaseClass::bytesPerLine();
-        for ( size_t i = 0; i < BaseClass::bytesPerLine(); i++ )
+        const std::size_t line_head = j * BaseClass::bytesPerLine();
+        for ( std::size_t i = 0; i < BaseClass::bytesPerLine(); i++ )
         {
             pixels[ line_head + i ] = mask;
         }
@@ -576,10 +576,10 @@ void BitImage::fill( const bool bit )
  *  @param  index [in] pixel index
  */
 /*===========================================================================*/
-void BitImage::invert( const size_t index )
+void BitImage::invert( const std::size_t index )
 {
-    const size_t i = index / BaseClass::width();
-    const size_t j = index % BaseClass::width();
+    const std::size_t i = index / BaseClass::width();
+    const std::size_t j = index % BaseClass::width();
     this->invert( i, j );
 }
 
@@ -590,7 +590,7 @@ void BitImage::invert( const size_t index )
  *  @param  j [in] index along the horizontal axis
  */
 /*===========================================================================*/
-void BitImage::invert( const size_t i, const size_t j )
+void BitImage::invert( const std::size_t i, const std::size_t j )
 {
     auto* pixels = BaseClass::pixelData().data();
     const auto bpl = BaseClass::bytesPerLine();
@@ -604,13 +604,13 @@ void BitImage::invert( const size_t i, const size_t j )
 /*===========================================================================*/
 void BitImage::invert()
 {
-    const size_t height = BaseClass::height();
-    const size_t bpl = BaseClass::bytesPerLine();
+    const std::size_t height = BaseClass::height();
+    const std::size_t bpl = BaseClass::bytesPerLine();
     kvs::UInt8* pixels = BaseClass::pixelData().data();
-    for( size_t j = 0; j < height; j++ )
+    for( std::size_t j = 0; j < height; j++ )
     {
-        const size_t line_head = j * bpl;
-        for( size_t i = 0; i < bpl; i++ )
+        const std::size_t line_head = j * bpl;
+        for( std::size_t i = 0; i < bpl; i++ )
         {
             pixels[ line_head + i ] = ~pixels[ line_head + i ];
         }
@@ -710,7 +710,7 @@ bool BitImage::write( const std::string& filename )
  *  @param  j [in] index along the horizontal axis
  */
 /*===========================================================================*/
-void BitImage::set_bit( const size_t i, const size_t j )
+void BitImage::set_bit( const std::size_t i, const std::size_t j )
 {
     auto* pixels = BaseClass::pixelData().data();
     const auto bpl = BaseClass::bytesPerLine();
@@ -724,7 +724,7 @@ void BitImage::set_bit( const size_t i, const size_t j )
  *  @param  j [in] index along the horizontal axis
  */
 /*===========================================================================*/
-void BitImage::reset_bit( const size_t i, const size_t j )
+void BitImage::reset_bit( const std::size_t i, const std::size_t j )
 {
     auto* pixels = BaseClass::pixelData().data();
     const auto bpl = BaseClass::bytesPerLine();

@@ -115,7 +115,7 @@ void StreamlineBase::setVectorLengthThreshold( const float length )
  *  @param  times [in] integration times
  */
 /*===========================================================================*/
-void StreamlineBase::setIntegrationTimesThreshold( const size_t times )
+void StreamlineBase::setIntegrationTimesThreshold( const std::size_t times )
 {
     m_integration_times_threshold = times;
 }
@@ -191,8 +191,8 @@ void StreamlineBase::extract_lines(
     std::vector<vismodule::UInt8>  colors;
 
     // Calculate streamline for each seed point.
-    const size_t npoints = m_seed_points->nvertices();
-    for ( size_t index = 0; index < npoints; index++ )
+    const std::size_t npoints = m_seed_points->nvertices();
+    for ( std::size_t index = 0; index < npoints; index++ )
     {
         std::vector<vismodule::Real32> line_coords;
         std::vector<vismodule::UInt8> line_colors;
@@ -202,20 +202,20 @@ void StreamlineBase::extract_lines(
             if ( !this->check_for_acceptance( line_coords ) ) continue;
 
             // Set the first vertex ID to the connections.
-            const size_t dimension = 3;
-            const size_t start_id = coords.size() / dimension;
+            const std::size_t dimension = 3;
+            const std::size_t start_id = coords.size() / dimension;
             connections.push_back( static_cast<vismodule::UInt32>( start_id ) );
 
             // Set the line coordinate and color value array to the coords and colors, respectively.
-            const size_t ncoords = line_coords.size();
-            for( size_t i = 0; i < ncoords; i++ )
+            const std::size_t ncoords = line_coords.size();
+            for( std::size_t i = 0; i < ncoords; i++ )
             {
                 coords.push_back( line_coords[i] );
                 colors.push_back( line_colors[i] );
             }
 
             // Set the last vertex ID to the connections.
-            const size_t last_id = coords.size() / dimension - 1;
+            const std::size_t last_id = coords.size() / dimension - 1;
             connections.push_back( static_cast<vismodule::UInt32>( last_id ) );
         }
     }
@@ -240,7 +240,7 @@ void StreamlineBase::extract_lines(
 const bool StreamlineBase::calculate_line(
     std::vector<vismodule::Real32>* coords,
     std::vector<vismodule::UInt8>* colors,
-    const size_t index )
+    const std::size_t index )
 {
     const vismodule::Vector3f seed_point = m_seed_points->coord( index );
     if ( !this->check_for_inside_volume( seed_point ) ) return( false );
@@ -290,11 +290,11 @@ const bool StreamlineBase::calculate_line(
             return( false );
         }
 
-        const size_t nvertices1 = tmp_coords1.size() / 3;
-        for( size_t i = 0; i < nvertices1; i++ )
+        const std::size_t nvertices1 = tmp_coords1.size() / 3;
+        for( std::size_t i = 0; i < nvertices1; i++ )
         {
-            const size_t id  = nvertices1 - i - 1;
-            const size_t id3 = 3 * id;
+            const std::size_t id  = nvertices1 - i - 1;
+            const std::size_t id3 = 3 * id;
 
             coords->push_back( tmp_coords1[id3  ] );
             coords->push_back( tmp_coords1[id3+1] );
@@ -304,10 +304,10 @@ const bool StreamlineBase::calculate_line(
             colors->push_back( tmp_colors1[id3+2] );
         }
 
-        const size_t nvertices2 = tmp_coords2.size() / 3;
-        for( size_t i = 1; i < nvertices2; i++ )
+        const std::size_t nvertices2 = tmp_coords2.size() / 3;
+        for( std::size_t i = 1; i < nvertices2; i++ )
         {
-            const size_t id3 = 3 * i;
+            const std::size_t id3 = 3 * i;
 
             coords->push_back( tmp_coords2[id3  ] );
             coords->push_back( tmp_coords2[id3+1] );
@@ -356,7 +356,7 @@ const bool StreamlineBase::calculate_one_side(
     colors->push_back( col.g() );
     colors->push_back( col.b() );
 
-    size_t integral_times = 0;
+    std::size_t integral_times = 0;
     for ( ; ; )
     {
         // Calculate the next vertex.
@@ -601,7 +601,7 @@ const bool StreamlineBase::check_for_vector_length( const vismodule::Vector3f& d
  *  @return true if the given number is bigger than the threshold
  */
 /*===========================================================================*/
-const bool StreamlineBase::check_for_integration_times( const size_t times )
+const bool StreamlineBase::check_for_integration_times( const std::size_t times )
 {
     return( times >= m_integration_times_threshold );
 }

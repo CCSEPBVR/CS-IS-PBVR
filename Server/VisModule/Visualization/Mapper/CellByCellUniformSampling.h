@@ -56,14 +56,14 @@ class CellByCellUniformSampling : public vismodule::MapperBase, public vismodule
 private:
 
     const vismodule::Camera*     m_camera;         ///< camera (reference)
-    size_t                 m_subpixel_level; ///< subpixel level
+    std::size_t                 m_subpixel_level; ///< subpixel level
     float                  m_sampling_step;  ///< sampling step in the object coordinate
     float                  m_object_depth;   ///< object depth
     vismodule::ValueArray<float> m_density_map;    ///< density map
     TransferFunctionSynthesizer* m_transfer_function_synthesizer;
     std::vector<vismodule::TransferFunction> m_transfer_function_array; 
 
-    const size_t m_normal_ingredient;
+    const std::size_t m_normal_ingredient;
 
     vismodule::CoordSynthesizerStrings* m_coord_synthesizer_strings;
 
@@ -101,7 +101,7 @@ public:
 
 public:
 
-    const size_t subpixelLevel() const;
+    const std::size_t subpixelLevel() const;
 
     const float samplingStep() const;
 
@@ -109,7 +109,7 @@ public:
 
     void attachCamera( const vismodule::Camera& camera );
 
-    void setSubpixelLevel( const size_t subpixel_level );
+    void setSubpixelLevel( const std::size_t subpixel_level );
 
     void setSamplingStep( const float sampling_step );
 
@@ -117,7 +117,7 @@ public:
 
 private:
    
-    const size_t calculate_number_of_particles(
+    const std::size_t calculate_number_of_particles(
     const float density,
     const float volume_of_cell,
     vismodule::MersenneTwister* MT ); 
@@ -132,7 +132,7 @@ public:
         const  vismodule::VolumeObjectBase::CellType& celltype) ;
 
 private: 
-    const size_t calculate_number_of_particles( const float density, const float volume_of_cell );
+    const std::size_t calculate_number_of_particles( const float density, const float volume_of_cell );
 
     void calculate_histogram( vismodule::ValueArray<int>&   th_o_histogram,
                           vismodule::ValueArray<int>&   th_c_histogram,

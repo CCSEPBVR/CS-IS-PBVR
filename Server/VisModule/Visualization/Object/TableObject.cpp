@@ -94,7 +94,7 @@ void TableObject::addColumn( const vismodule::AnyValueArray& array, const std::s
     if ( type == typeid( vismodule::Int8 ) )
     {
         const vismodule::Int8* value = static_cast<const vismodule::Int8*>( array.pointer() );
-        for( size_t i = 0; i < array.size(); i++ )
+        for( std::size_t i = 0; i < array.size(); i++ )
         {
             min_value = vismodule::Math::Min( min_value, vismodule::Real64( value[i] ) );
             max_value = vismodule::Math::Max( max_value, vismodule::Real64( value[i] ) );
@@ -103,7 +103,7 @@ void TableObject::addColumn( const vismodule::AnyValueArray& array, const std::s
     else if ( type == typeid( vismodule::UInt8 ) )
     {
         const vismodule::UInt8* value = static_cast<const vismodule::UInt8*>( array.pointer() );
-        for( size_t i = 0; i < array.size(); i++ )
+        for( std::size_t i = 0; i < array.size(); i++ )
         {
             min_value = vismodule::Math::Min( min_value, vismodule::Real64( value[i] ) );
             max_value = vismodule::Math::Max( max_value, vismodule::Real64( value[i] ) );
@@ -112,7 +112,7 @@ void TableObject::addColumn( const vismodule::AnyValueArray& array, const std::s
     else if ( type == typeid( vismodule::Int16 ) )
     {
         const vismodule::Int16* value = static_cast<const vismodule::Int16*>( array.pointer() );
-        for( size_t i = 0; i < array.size(); i++ )
+        for( std::size_t i = 0; i < array.size(); i++ )
         {
             min_value = vismodule::Math::Min( min_value, vismodule::Real64( value[i] ) );
             max_value = vismodule::Math::Max( max_value, vismodule::Real64( value[i] ) );
@@ -121,7 +121,7 @@ void TableObject::addColumn( const vismodule::AnyValueArray& array, const std::s
     else if ( type == typeid( vismodule::UInt16 ) )
     {
         const vismodule::UInt16* value = static_cast<const vismodule::UInt16*>( array.pointer() );
-        for( size_t i = 0; i < array.size(); i++ )
+        for( std::size_t i = 0; i < array.size(); i++ )
         {
             min_value = vismodule::Math::Min( min_value, vismodule::Real64( value[i] ) );
             max_value = vismodule::Math::Max( max_value, vismodule::Real64( value[i] ) );
@@ -130,7 +130,7 @@ void TableObject::addColumn( const vismodule::AnyValueArray& array, const std::s
     else if ( type == typeid( vismodule::Int32 ) )
     {
         const vismodule::Int32* value = static_cast<const vismodule::Int32*>( array.pointer() );
-        for( size_t i = 0; i < array.size(); i++ )
+        for( std::size_t i = 0; i < array.size(); i++ )
         {
             min_value = vismodule::Math::Min( min_value, vismodule::Real64( value[i] ) );
             max_value = vismodule::Math::Max( max_value, vismodule::Real64( value[i] ) );
@@ -139,7 +139,7 @@ void TableObject::addColumn( const vismodule::AnyValueArray& array, const std::s
     else if ( type == typeid( vismodule::UInt32 ) )
     {
         const vismodule::UInt32* value = static_cast<const vismodule::UInt32*>( array.pointer() );
-        for( size_t i = 0; i < array.size(); i++ )
+        for( std::size_t i = 0; i < array.size(); i++ )
         {
             min_value = vismodule::Math::Min( min_value, vismodule::Real64( value[i] ) );
             max_value = vismodule::Math::Max( max_value, vismodule::Real64( value[i] ) );
@@ -148,7 +148,7 @@ void TableObject::addColumn( const vismodule::AnyValueArray& array, const std::s
     else if ( type == typeid( vismodule::Int64 ) )
     {
         const vismodule::Int64* value = static_cast<const vismodule::Int64*>( array.pointer() );
-        for( size_t i = 0; i < array.size(); i++ )
+        for( std::size_t i = 0; i < array.size(); i++ )
         {
             min_value = vismodule::Math::Min( min_value, vismodule::Real64( value[i] ) );
             max_value = vismodule::Math::Max( max_value, vismodule::Real64( value[i] ) );
@@ -157,7 +157,7 @@ void TableObject::addColumn( const vismodule::AnyValueArray& array, const std::s
     else if ( type == typeid( vismodule::UInt64 ) )
     {
         const vismodule::UInt64* value = static_cast<const vismodule::UInt64*>( array.pointer() );
-        for( size_t i = 0; i < array.size(); i++ )
+        for( std::size_t i = 0; i < array.size(); i++ )
         {
             min_value = vismodule::Math::Min( min_value, vismodule::Real64( value[i] ) );
             max_value = vismodule::Math::Max( max_value, vismodule::Real64( value[i] ) );
@@ -166,7 +166,7 @@ void TableObject::addColumn( const vismodule::AnyValueArray& array, const std::s
     else if ( type == typeid( vismodule::Real32 ) )
     {
         const vismodule::Real32* value = static_cast<const vismodule::Real32*>( array.pointer() );
-        for( size_t i = 0; i < array.size(); i++ )
+        for( std::size_t i = 0; i < array.size(); i++ )
         {
             min_value = vismodule::Math::Min( min_value, vismodule::Real64( value[i] ) );
             max_value = vismodule::Math::Max( max_value, vismodule::Real64( value[i] ) );
@@ -175,7 +175,7 @@ void TableObject::addColumn( const vismodule::AnyValueArray& array, const std::s
     else if ( type == typeid( vismodule::Real64 ) )
     {
         const vismodule::Real64* value = static_cast<const vismodule::Real64*>( array.pointer() );
-        for( size_t i = 0; i < array.size(); i++ )
+        for( std::size_t i = 0; i < array.size(); i++ )
         {
             min_value = vismodule::Math::Min( min_value, vismodule::Real64( value[i] ) );
             max_value = vismodule::Math::Max( max_value, vismodule::Real64( value[i] ) );
@@ -201,7 +201,7 @@ void TableObject::addColumn( const vismodule::AnyValueArray& array, const std::s
  *  @return number of columns
  */
 /*===========================================================================*/
-const size_t TableObject::ncolumns( void ) const
+const std::size_t TableObject::ncolumns( void ) const
 {
     return( m_ncolumns );
 }
@@ -212,7 +212,7 @@ const size_t TableObject::ncolumns( void ) const
  *  @return number of rows
  */
 /*===========================================================================*/
-const size_t TableObject::nrows( void ) const
+const std::size_t TableObject::nrows( void ) const
 {
     return( m_nrows );
 }
@@ -235,7 +235,7 @@ const TableObject::LabelList TableObject::labelList( void ) const
  *  @return label
  */
 /*===========================================================================*/
-const std::string TableObject::label( const size_t index ) const
+const std::string TableObject::label( const std::size_t index ) const
 {
     return( m_labels[index] );
 }
@@ -258,7 +258,7 @@ const TableObject::ColumnList TableObject::columnList( void ) const
  *  @return column array
  */
 /*===========================================================================*/
-const vismodule::AnyValueArray& TableObject::column( const size_t index ) const
+const vismodule::AnyValueArray& TableObject::column( const std::size_t index ) const
 {
     return( m_columns[index] );
 }
@@ -281,7 +281,7 @@ const TableObject::ValueList TableObject::minValueList( void ) const
  *  @return minimum value
  */
 /*===========================================================================*/
-const vismodule::Real64 TableObject::minValue( const size_t index ) const
+const vismodule::Real64 TableObject::minValue( const std::size_t index ) const
 {
     return( m_min_values[index] );
 }
@@ -304,7 +304,7 @@ const TableObject::ValueList TableObject::maxValueList( void ) const
  *  @return maximum value
  */
 /*===========================================================================*/
-const vismodule::Real64 TableObject::maxValue( const size_t index ) const
+const vismodule::Real64 TableObject::maxValue( const std::size_t index ) const
 {
     return( m_max_values[index] );
 }
@@ -316,7 +316,7 @@ const vismodule::Real64 TableObject::maxValue( const size_t index ) const
  *  @param  value [in] minimum value
  */
 /*===========================================================================*/
-void TableObject::setMinValue( const size_t column_index, const vismodule::Real64 value )
+void TableObject::setMinValue( const std::size_t column_index, const vismodule::Real64 value )
 {
     if ( value > m_min_ranges[column_index] ) { this->setMinRange( column_index, value ); }
     m_min_values[column_index] = value;
@@ -329,7 +329,7 @@ void TableObject::setMinValue( const size_t column_index, const vismodule::Real6
  *  @param  value [in] maximum value
  */
 /*===========================================================================*/
-void TableObject::setMaxValue( const size_t column_index, const vismodule::Real64 value )
+void TableObject::setMaxValue( const std::size_t column_index, const vismodule::Real64 value )
 {
     if ( value < m_max_ranges[column_index] ) { this->setMaxRange( column_index, value ); }
     m_max_values[column_index] = value;
@@ -342,7 +342,7 @@ void TableObject::setMaxValue( const size_t column_index, const vismodule::Real6
  *  @param  range [in] range value
  */
 /*===========================================================================*/
-void TableObject::setMinRange( const size_t column_index, const vismodule::Real64 range )
+void TableObject::setMinRange( const std::size_t column_index, const vismodule::Real64 range )
 {
     const vismodule::Real64 min_value = this->minValue(column_index);
     const vismodule::Real64 max_range = m_max_ranges[column_index];
@@ -353,8 +353,8 @@ void TableObject::setMinRange( const size_t column_index, const vismodule::Real6
     if ( vismodule::Math::Equal( min_range_old, min_range_new ) ) return;
     m_min_ranges[column_index] = min_range_new;
 
-    const size_t nrows = this->nrows();
-    const size_t ncolumns = this->ncolumns();
+    const std::size_t nrows = this->nrows();
+    const std::size_t ncolumns = this->ncolumns();
     if ( min_range_new > min_range_old )
     {
         /* In case of flags turned off, you just have to check whether the value
@@ -364,7 +364,7 @@ void TableObject::setMinRange( const size_t column_index, const vismodule::Real6
          *  (after)  |xxxAxxxxBooo*xxxxxx|  A: min_range_old, B: min_range_new
          */
         const vismodule::AnyValueArray& column = this->column( column_index );
-        for ( size_t i = 0; i < nrows; i++ )
+        for ( std::size_t i = 0; i < nrows; i++ )
         {
             const vismodule::Real64 value = column.to<vismodule::Real64>( i );
             if (  min_range_old <= value && value <= min_range_new )
@@ -380,10 +380,10 @@ void TableObject::setMinRange( const size_t column_index, const vismodule::Real6
          *  (before) |xxxxxxxx+ooo*xxxxxx|  o: on, x: off, +: min_range, *: max_range
          *  (after)  |xxxAooooBooo*xxxxxx|  A: min_range, B: min_range_old
          */
-        for ( size_t i = 0; i < nrows; i++ )
+        for ( std::size_t i = 0; i < nrows; i++ )
         {
             m_inside_range_list[i] = 1;
-            for ( size_t j = 0; j < ncolumns; j++ )
+            for ( std::size_t j = 0; j < ncolumns; j++ )
             {
                 const vismodule::AnyValueArray& column = this->column( j );
                 const vismodule::Real64 value = column.to<vismodule::Real64>( i );
@@ -404,7 +404,7 @@ void TableObject::setMinRange( const size_t column_index, const vismodule::Real6
  *  @param  range [in] range value
  */
 /*===========================================================================*/
-void TableObject::setMaxRange( const size_t column_index, const vismodule::Real64 range )
+void TableObject::setMaxRange( const std::size_t column_index, const vismodule::Real64 range )
 {
     const vismodule::Real64 min_range = m_min_ranges[column_index];
     const vismodule::Real64 max_value = this->maxValue(column_index);
@@ -415,8 +415,8 @@ void TableObject::setMaxRange( const size_t column_index, const vismodule::Real6
     if ( vismodule::Math::Equal( max_range_old, max_range_new ) ) return;
     m_max_ranges[column_index] = max_range_new;
 
-    const size_t nrows = this->nrows();
-    const size_t ncolumns = this->ncolumns();
+    const std::size_t nrows = this->nrows();
+    const std::size_t ncolumns = this->ncolumns();
     if ( max_range_new > max_range_old )
     {
         /* In case of flags turned on, you have to check the all of colums.
@@ -424,10 +424,10 @@ void TableObject::setMaxRange( const size_t column_index, const vismodule::Real6
          *  (before) |xxx*oooooooo+xxxxxx|  o: on, x: off, *: min_range, +: max_range
          *  (after)  |xxx*ooooooooAoooBxx|  A: max_range_old, B: max_range_new
          */
-        for ( size_t i = 0; i < nrows; i++ )
+        for ( std::size_t i = 0; i < nrows; i++ )
         {
             m_inside_range_list[i] = 1;
-            for ( size_t j = 0; j < ncolumns; j++ )
+            for ( std::size_t j = 0; j < ncolumns; j++ )
             {
                 const vismodule::AnyValueArray& column = this->column( j );
                 const vismodule::Real64 value = column.to<vismodule::Real64>( i );
@@ -448,7 +448,7 @@ void TableObject::setMaxRange( const size_t column_index, const vismodule::Real6
          *  (after)  |xxx*ooooBxxxAxxxxxx|  A: max_range_old, B: max_range_new
          */
         const vismodule::AnyValueArray& column = this->column( column_index );
-        for ( size_t i = 0; i < nrows; i++ )
+        for ( std::size_t i = 0; i < nrows; i++ )
         {
             const vismodule::Real64 value = column.to<vismodule::Real64>( i );
             if (  max_range_new <= value && value <= max_range_old )
@@ -467,7 +467,7 @@ void TableObject::setMaxRange( const size_t column_index, const vismodule::Real6
  *  @param  max_range [in] maximum range value
  */
 /*===========================================================================*/
-void TableObject::setRange( const size_t column_index, const vismodule::Real64 min_range, const vismodule::Real64 max_range )
+void TableObject::setRange( const std::size_t column_index, const vismodule::Real64 min_range, const vismodule::Real64 max_range )
 {
     this->setMinRange( column_index, min_range );
     this->setMaxRange( column_index, max_range );
@@ -480,7 +480,7 @@ void TableObject::setRange( const size_t column_index, const vismodule::Real64 m
  *  @param  drange [in] distance of range value
  */
 /*===========================================================================*/
-void TableObject::moveMinRange( const size_t column_index, const vismodule::Real64 drange )
+void TableObject::moveMinRange( const std::size_t column_index, const vismodule::Real64 drange )
 {
     const vismodule::Real64 min_range = this->minRange( column_index );
     this->setMinRange( column_index, min_range + drange );
@@ -493,7 +493,7 @@ void TableObject::moveMinRange( const size_t column_index, const vismodule::Real
  *  @param  drange [in] distance of range value
  */
 /*===========================================================================*/
-void TableObject::moveMaxRange( const size_t column_index, const vismodule::Real64 drange )
+void TableObject::moveMaxRange( const std::size_t column_index, const vismodule::Real64 drange )
 {
     const vismodule::Real64 max_range = this->maxRange( column_index );
     this->setMaxRange( column_index, max_range + drange );
@@ -506,7 +506,7 @@ void TableObject::moveMaxRange( const size_t column_index, const vismodule::Real
  *  @param  drange [in] distance of range value
  */
 /*===========================================================================*/
-void TableObject::moveRange( const size_t column_index, const vismodule::Real64 drange )
+void TableObject::moveRange( const std::size_t column_index, const vismodule::Real64 drange )
 {
     const vismodule::Real64 min_range = this->minRange( column_index );
     const vismodule::Real64 max_range = this->maxRange( column_index );
@@ -537,7 +537,7 @@ void TableObject::moveRange( const size_t column_index, const vismodule::Real64 
  *  @param  column_index [in] column index
  */
 /*===========================================================================*/
-void TableObject::resetRange( const size_t column_index )
+void TableObject::resetRange( const std::size_t column_index )
 {
     this->setMinRange( column_index, this->minValue(column_index) );
     this->setMaxRange( column_index, this->maxValue(column_index) );
@@ -550,8 +550,8 @@ void TableObject::resetRange( const size_t column_index )
 /*===========================================================================*/
 void TableObject::resetRange( void )
 {
-    const size_t ncolumns = this->ncolumns();
-    for ( size_t i = 0; i < ncolumns; i++ )
+    const std::size_t ncolumns = this->ncolumns();
+    for ( std::size_t i = 0; i < ncolumns; i++ )
     {
         m_max_ranges[i] = this->maxValue(i);
         m_min_ranges[i] = this->minValue(i);
@@ -600,7 +600,7 @@ const vismodule::TableObject::RangeList& TableObject::insideRangeList( void ) co
  *  @return minimum range value
  */
 /*===========================================================================*/
-const vismodule::Real64 TableObject::minRange( const size_t column_index ) const
+const vismodule::Real64 TableObject::minRange( const std::size_t column_index ) const
 {
     return( m_min_ranges[column_index] );
 }
@@ -612,7 +612,7 @@ const vismodule::Real64 TableObject::minRange( const size_t column_index ) const
  *  @return maximum range value
  */
 /*===========================================================================*/
-const vismodule::Real64 TableObject::maxRange( const size_t column_index ) const
+const vismodule::Real64 TableObject::maxRange( const std::size_t column_index ) const
 {
     return( m_max_ranges[column_index] );
 }
@@ -624,7 +624,7 @@ const vismodule::Real64 TableObject::maxRange( const size_t column_index ) const
  *  @return true, if the value is inside the range
  */
 /*===========================================================================*/
-const bool TableObject::insideRange( const size_t row_index ) const
+const bool TableObject::insideRange( const std::size_t row_index ) const
 {
     return( m_inside_range_list[row_index] == 1 );
 }
@@ -664,16 +664,16 @@ template<> void TableObject::addColumn<vismodule::Real32>( const std::vector<vis
 template<> void TableObject::addColumn<vismodule::Real64>( const std::vector<vismodule::Real64>& array, const std::string& label );
 template<> void TableObject::addColumn<std::string>( const std::vector<std::string>& array, const std::string& label );
 
-template<> const vismodule::Int8& TableObject::at<vismodule::Int8>( const size_t row, const size_t column ) const;
-template<> const vismodule::UInt8& TableObject::at<vismodule::UInt8>( const size_t row, const size_t column ) const;
-template<> const vismodule::Int16& TableObject::at<vismodule::Int16>( const size_t row, const size_t column ) const;
-template<> const vismodule::UInt16& TableObject::at<vismodule::UInt16>( const size_t row, const size_t column ) const;
-template<> const vismodule::Int32& TableObject::at<vismodule::Int32>( const size_t row, const size_t column ) const;
-template<> const vismodule::UInt32& TableObject::at<vismodule::UInt32>( const size_t row, const size_t column ) const;
-template<> const vismodule::Int64& TableObject::at<vismodule::Int64>( const size_t row, const size_t column ) const;
-template<> const vismodule::UInt64& TableObject::at<vismodule::UInt64>( const size_t row, const size_t column ) const;
-template<> const vismodule::Real32& TableObject::at<vismodule::Real32>( const size_t row, const size_t column ) const;
-template<> const vismodule::Real64& TableObject::at<vismodule::Real64>( const size_t row, const size_t column ) const;
-template<> const std::string& TableObject::at<std::string>( const size_t row, const size_t column ) const;
+template<> const vismodule::Int8& TableObject::at<vismodule::Int8>( const std::size_t row, const std::size_t column ) const;
+template<> const vismodule::UInt8& TableObject::at<vismodule::UInt8>( const std::size_t row, const std::size_t column ) const;
+template<> const vismodule::Int16& TableObject::at<vismodule::Int16>( const std::size_t row, const std::size_t column ) const;
+template<> const vismodule::UInt16& TableObject::at<vismodule::UInt16>( const std::size_t row, const std::size_t column ) const;
+template<> const vismodule::Int32& TableObject::at<vismodule::Int32>( const std::size_t row, const std::size_t column ) const;
+template<> const vismodule::UInt32& TableObject::at<vismodule::UInt32>( const std::size_t row, const std::size_t column ) const;
+template<> const vismodule::Int64& TableObject::at<vismodule::Int64>( const std::size_t row, const std::size_t column ) const;
+template<> const vismodule::UInt64& TableObject::at<vismodule::UInt64>( const std::size_t row, const std::size_t column ) const;
+template<> const vismodule::Real32& TableObject::at<vismodule::Real32>( const std::size_t row, const std::size_t column ) const;
+template<> const vismodule::Real64& TableObject::at<vismodule::Real64>( const std::size_t row, const std::size_t column ) const;
+template<> const std::string& TableObject::at<std::string>( const std::size_t row, const std::size_t column ) const;
 
 } // end of namespace vismodule

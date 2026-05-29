@@ -124,11 +124,11 @@ public:
     using Bucket = std::multimap<Key,Value>;
 
 private:
-    size_t m_nvertices = 0; ///< number of vertices of the original data
+    std::size_t m_nvertices = 0; ///< number of vertices of the original data
     Bucket m_bucket{}; ///< bucket for the edge data
 
 public:
-    EdgeMap( const size_t nvertices ):
+    EdgeMap( const std::size_t nvertices ):
         m_nvertices( nvertices ) {}
 
     void insert( const kvs::UInt32 v0, const kvs::UInt32 v1 )
@@ -161,7 +161,7 @@ public:
 
         Bucket::const_iterator e = m_bucket.begin();
         Bucket::const_iterator last = m_bucket.end();
-        size_t connection_index = 0;
+        std::size_t connection_index = 0;
         while ( e != last )
         {
             connections[ connection_index++ ] = e->second.first;
@@ -175,9 +175,9 @@ public:
 
 kvs::ValueArray<kvs::UInt32> GetConnections( const kvs::PolygonObject& polygon )
 {
-    const size_t nconnections = polygon.numberOfConnections();
-    const size_t ncorners = size_t( polygon.polygonType() );
-    const size_t npolygons = ( nconnections == 0 ) ?
+    const std::size_t nconnections = polygon.numberOfConnections();
+    const std::size_t ncorners = size_t( polygon.polygonType() );
+    const std::size_t npolygons = ( nconnections == 0 ) ?
         polygon.numberOfVertices() / ncorners : nconnections;
 
     EdgeMap edge_map( polygon.numberOfVertices() );
@@ -185,7 +185,7 @@ kvs::ValueArray<kvs::UInt32> GetConnections( const kvs::PolygonObject& polygon )
     {
         if ( polygon.polygonType() == kvs::PolygonObject::Triangle )
         {
-            for ( size_t i = 0; i < npolygons; i++ )
+            for ( std::size_t i = 0; i < npolygons; i++ )
             {
                 const kvs::UInt32 v0 =  polygon.connections().at( 3 * i );
                 const kvs::UInt32 v1 =  polygon.connections().at( 3 * i + 1 );
@@ -197,7 +197,7 @@ kvs::ValueArray<kvs::UInt32> GetConnections( const kvs::PolygonObject& polygon )
         }
         else if ( polygon.polygonType() == kvs::PolygonObject::Quadrangle )
         {
-            for ( size_t i = 0; i < npolygons; i++ )
+            for ( std::size_t i = 0; i < npolygons; i++ )
             {
                 const kvs::UInt32 v0 =  polygon.connections().at( 4 * i );
                 const kvs::UInt32 v1 =  polygon.connections().at( 4 * i + 1 );
@@ -214,7 +214,7 @@ kvs::ValueArray<kvs::UInt32> GetConnections( const kvs::PolygonObject& polygon )
     {
         if ( polygon.polygonType() == kvs::PolygonObject::Triangle )
         {
-            for ( size_t i = 0; i < npolygons; i++ )
+            for ( std::size_t i = 0; i < npolygons; i++ )
             {
                 const kvs::UInt32 v0 =  3 * i;
                 const kvs::UInt32 v1 =  3 * i + 1;
@@ -226,7 +226,7 @@ kvs::ValueArray<kvs::UInt32> GetConnections( const kvs::PolygonObject& polygon )
         }
         else if ( polygon.polygonType() == kvs::PolygonObject::Quadrangle )
         {
-            for ( size_t i = 0; i < npolygons; i++ )
+            for ( std::size_t i = 0; i < npolygons; i++ )
             {
                 const kvs::UInt32 v0 =  4 * i;
                 const kvs::UInt32 v1 =  4 * i + 1;
@@ -488,7 +488,7 @@ size_t LineObject::numberOfSizes() const
  *  @return connection
  */
 /*===========================================================================*/
-const kvs::Vec2ui LineObject::connection( const size_t index ) const
+const kvs::Vec2ui LineObject::connection( const std::size_t index ) const
 {
     return kvs::Vec2ui( (unsigned int*)m_connections.data() + 2 * index );
 }
@@ -500,7 +500,7 @@ const kvs::Vec2ui LineObject::connection( const size_t index ) const
  *  @return size
  */
 /*===========================================================================*/
-kvs::Real32 LineObject::size( const size_t index ) const
+kvs::Real32 LineObject::size( const std::size_t index ) const
 {
     return m_sizes[index];
 }

@@ -22,9 +22,9 @@
 namespace
 {
 //#ifdef PATH_MAX
-//const size_t MaxPathLength = PATH_MAX;
+//const std::size_t MaxPathLength = PATH_MAX;
 //#else
-//const size_t MaxPathLength = 4096;
+//const std::size_t MaxPathLength = 4096;
 //#endif
 }
 
@@ -198,7 +198,7 @@ size_t File::byteSize() const
         }
 
         file.seekg( 0, std::ios::end );
-        size_t byte_size = static_cast<size_t>( file.tellg() );
+        std::size_t byte_size = static_cast<size_t>( file.tellg() );
         return byte_size;
     }
     return 0;

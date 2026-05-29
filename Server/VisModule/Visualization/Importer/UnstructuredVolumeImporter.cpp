@@ -312,14 +312,14 @@ UnstructuredVolumeImporter::UnstructuredVolumeImporter( const std::string& filen
 {
     std::string edit_filename = filename; // ファイル名編集用の文字列
     std::string time_step_str = std::to_string( st ); // タイムステップを文字列に変換
-    size_t found_asterisk = edit_filename.find( '*' ); // ファイル名に時系列ファイルのアスタリスクが含まれているか確認
+    std::size_t found_asterisk = edit_filename.find( '*' ); // ファイル名に時系列ファイルのアスタリスクが含まれているか確認
 
     // ファイルの拡張子を確認
-    size_t found_vtm  = edit_filename.find( ".vtm" );
-    size_t found_vtu  = edit_filename.find( ".vtu" );
-    size_t found_inp  = edit_filename.find( ".inp" );
-    size_t found_pvtu = edit_filename.find( ".pvtu" );
-    size_t found_case = edit_filename.find( ".case" );
+    std::size_t found_vtm  = edit_filename.find( ".vtm" );
+    std::size_t found_vtu  = edit_filename.find( ".vtu" );
+    std::size_t found_inp  = edit_filename.find( ".inp" );
+    std::size_t found_pvtu = edit_filename.find( ".pvtu" );
+    std::size_t found_case = edit_filename.find( ".case" );
 
     // 時系列ファイルの場合、アスタリスクをタイムステップに置換
     if ( found_asterisk != std::string::npos )
@@ -503,21 +503,21 @@ void UnstructuredVolumeImporter::import( const vismodule::AVSField& field )
         return;
     }
 
-    const size_t line_size  = field.dim().x();
-    const size_t slice_size = field.dim().y();
+    const std::size_t line_size  = field.dim().x();
+    const std::size_t slice_size = field.dim().y();
     const vismodule::Vector3ui ncells( field.dim() - vismodule::Vector3ui( 1, 1, 1 ) );
     SuperClass::Connections connections( ncells.x() * ncells.y() * ncells.z() * 8 );
 
-    size_t vertex_index = 0;
-    size_t connection_index = 0;
+    std::size_t vertex_index = 0;
+    std::size_t connection_index = 0;
 
-    for ( size_t z = 0; z < ncells.z(); ++z )
+    for ( std::size_t z = 0; z < ncells.z(); ++z )
     {
-        for ( size_t y = 0; y < ncells.y(); ++y )
+        for ( std::size_t y = 0; y < ncells.y(); ++y )
         {
-            for ( size_t x = 0; x < ncells.x(); ++x )
+            for ( std::size_t x = 0; x < ncells.x(); ++x )
             {
-                const size_t local_vertex_index[8] =
+                const std::size_t local_vertex_index[8] =
                 {
                     vertex_index,
                     vertex_index + 1,

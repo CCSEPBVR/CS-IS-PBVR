@@ -76,11 +76,11 @@ public:
 
     GrayImage( void );
 
-    GrayImage( const size_t width, const size_t height );
+    GrayImage( const std::size_t width, const std::size_t height );
 
-    GrayImage( const size_t width, const size_t height, const vismodule::UInt8* data );
+    GrayImage( const std::size_t width, const std::size_t height, const vismodule::UInt8* data );
 
-    GrayImage( const size_t width, const size_t height, const vismodule::ValueArray<vismodule::UInt8>& data );
+    GrayImage( const std::size_t width, const std::size_t height, const vismodule::ValueArray<vismodule::UInt8>& data );
 
     GrayImage( const vismodule::GrayImage& image );
 
@@ -101,15 +101,15 @@ public:
 
 public:
 
-    const vismodule::UInt8 pixel( const size_t index ) const;
+    const vismodule::UInt8 pixel( const std::size_t index ) const;
 
-    const vismodule::UInt8 pixel( const size_t i, const size_t j ) const;
+    const vismodule::UInt8 pixel( const std::size_t i, const std::size_t j ) const;
 
 public:
 
-    void set( const size_t index, const vismodule::UInt8 pixel );
+    void set( const std::size_t index, const vismodule::UInt8 pixel );
 
-    void set( const size_t i, const size_t j, const vismodule::UInt8 pixel );
+    void set( const std::size_t i, const std::size_t j, const vismodule::UInt8 pixel );
 
 public:
 
@@ -118,10 +118,10 @@ public:
     template <typename InterpolationMethod>
     void scale( const double ratio, InterpolationMethod method );
 
-    void resize( const size_t width, const size_t height );
+    void resize( const std::size_t width, const std::size_t height );
 
     template <typename InterpolationMethod>
-    void resize( const size_t width, const size_t height, InterpolationMethod method );
+    void resize( const std::size_t width, const std::size_t height, InterpolationMethod method );
 
 public:
 

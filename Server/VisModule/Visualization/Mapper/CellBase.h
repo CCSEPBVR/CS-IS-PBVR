@@ -47,7 +47,7 @@ class CellBase
 
 protected:
 
-    size_t         m_nnodes; ///< number of nodes
+    std::size_t         m_nnodes; ///< number of nodes
     vismodule::Vector3f* m_vertices; ///< coordinates of the nodes
     T*             m_scalars; ///< scalar values of the nodes
     vismodule::Real32*   m_interpolation_functions; ///< interpolation functions
@@ -81,7 +81,7 @@ protected:
 public:
 
     CellBase( const vismodule::UnstructuredVolumeObject& volume );
-    CellBase( const vismodule::UnstructuredVolumeObject& volume, const size_t cell_type );
+    CellBase( const vismodule::UnstructuredVolumeObject& volume, const std::size_t cell_type );
     CellBase( T* values,
               float* coords, int ncoords,
               unsigned int* connections, int ncells, int cell_type);
@@ -105,9 +105,9 @@ public:
     
     virtual void grad_ary( float* grad_array_x, float* grad_array_y, float* grad_array_z,  const int loop_cnt ) const = 0;
     
-    virtual void bindCell_wVolume( const vismodule::UInt32 index, const size_t n = 0 );
+    virtual void bindCell_wVolume( const vismodule::UInt32 index, const std::size_t n = 0 );
     
-    virtual void bindCell( const vismodule::UInt32 index ,const size_t n = 0);
+    virtual void bindCell( const vismodule::UInt32 index ,const std::size_t n = 0);
 
     virtual void setGlobalPoint( const vismodule::Vector3f& point ) const;
 
@@ -169,7 +169,7 @@ public:
 
     const vismodule::Vector3f localPoint() const;
 
-    const size_t numberOfNodes() const;
+    const std::size_t numberOfNodes() const;
 
     const vismodule::Matrix33f JacobiMatrix() const;
 
@@ -189,8 +189,8 @@ public:
 template <typename T>
 inline void CellBase<T>::allocate()
 {
-    const size_t dimension = 3;
-    const size_t nnodes = m_nnodes;
+    const std::size_t dimension = 3;
+    const std::size_t nnodes = m_nnodes;
 
     try
     {
@@ -301,7 +301,7 @@ inline CellBase<T>::CellBase(
 /*===========================================================================*/
 template <typename T>
 inline CellBase<T>::CellBase(
-    const vismodule::UnstructuredVolumeObject& volume, const size_t cell_type ):
+    const vismodule::UnstructuredVolumeObject& volume, const std::size_t cell_type ):
     m_nnodes( cell_type ),
     m_global_point( 0, 0, 0 ),
     m_local_point( 0, 0, 0 ),
@@ -328,8 +328,8 @@ inline CellBase<T>::CellBase(
     m_global_point( 0, 0, 0 ),
     m_local_point( 0, 0, 0 )
 {
-    const size_t dimension = 3;
-    const size_t nnodes = m_nnodes;
+    const std::size_t dimension = 3;
+    const std::size_t nnodes = m_nnodes;
     try
     {
         m_vertices = new vismodule::Vector3f [nnodes];
@@ -413,20 +413,20 @@ inline CellBase<T>::~CellBase()
  */
 /*===========================================================================*/
 template <typename T>  /// using UnstructuredVolumeObject!!
-inline void CellBase<T>::bindCell_wVolume( const vismodule::UInt32 index, const size_t n )
+inline void CellBase<T>::bindCell_wVolume( const vismodule::UInt32 index, const std::size_t n )
 {
     // Aliases.
     const vismodule::UnstructuredVolumeObject* volume = m_reference_volume;
     const vismodule::UInt32* const connections = volume->connections().pointer();
     const vismodule::Real32* const coords = volume->coords().pointer();
     const T* const values = static_cast<const T*>( volume->values().pointer() );
-    const size_t vnodes = volume->nnodes();
+    const std::size_t vnodes = volume->nnodes();
 
 
-    const size_t nnodes = m_nnodes;
+    const std::size_t nnodes = m_nnodes;
 //    std::cout << "vnodes =" << vnodes << ", nnodes = " <<  nnodes  << std::endl;
     const vismodule::UInt32 connection_index = nnodes * index;
-    for ( size_t i = 0, j = 0; i < nnodes; i++, j+=3 )
+    for ( std::size_t i = 0, j = 0; i < nnodes; i++, j+=3 )
     {
         const vismodule::UInt32 node_index = connections[ connection_index + i ];
         m_scalars[i] = values[ vnodes * n + node_index ];
@@ -446,16 +446,16 @@ inline void CellBase<T>::bindCell_wVolume( const vismodule::UInt32 index, const 
 }
 
 template <typename T>
-inline void CellBase<T>::bindCell( const vismodule::UInt32 index, const size_t n )
+inline void CellBase<T>::bindCell( const vismodule::UInt32 index, const std::size_t n )
 {
     // Aliases.
     const vismodule::UInt32* const connections = m_connections;
     const vismodule::Real32* const coords = m_coords;
     const T* const values = m_values;
 
-    const size_t nnodes = m_nnodes;//num of polyhedra vertices
+    const std::size_t nnodes = m_nnodes;//num of polyhedra vertices
     const vismodule::UInt32 connection_index = nnodes * index;
-    for ( size_t i = 0, j=0 ;i < nnodes; i++, j += 3 )
+    for ( std::size_t i = 0, j=0 ;i < nnodes; i++, j += 3 )
     {
         const vismodule::UInt32 node_index = connections[ connection_index + i ];
         m_scalars[i] = values[ node_index ];
@@ -480,9 +480,9 @@ inline void CellBase<T>::bindCellArray( const int loop_cnt, const vismodule::UIn
     const vismodule::UInt32* const connections = m_connections;
     const vismodule::Real32* const coords = m_coords;
     const T* const values = m_values;
-    const size_t nnodes = m_nnodes;//num of polyhedra vertices
+    const std::size_t nnodes = m_nnodes;//num of polyhedra vertices
 
-    for ( size_t j = 0; j < nnodes; j++ )
+    for ( std::size_t j = 0; j < nnodes; j++ )
     {
         for (int i =0; i<  loop_cnt; i++ )
         { 
@@ -574,9 +574,9 @@ inline const vismodule::Vector3f CellBase<T>::transformGlobalToLocal( const vism
     // Calculate the coordinate of 'global' in the local coordinate
     // by using Newton-Raphson method.
     const float TinyValue = static_cast<float>( 1.e-6 );
-    const size_t MaxLoop = 100;
+    const std::size_t MaxLoop = 100;
     vismodule::Vector3f x0( 0.25f, 0.25f, 0.25f ); // Initial point in local coordinate.
-    for ( size_t i = 0; i < MaxLoop; i++ )
+    for ( std::size_t i = 0; i < MaxLoop; i++ )
     {
         this->setLocalPoint( x0 );
         const vismodule::Vector3f X0( this->transformLocalToGlobal( x0 ) );
@@ -605,16 +605,16 @@ inline const vismodule::Vector3f CellBase<T>::transformLocalToGlobal( const vism
 
     const float* N = m_interpolation_functions;
     const vismodule::Vector3f* V = m_vertices;
-    const size_t nnodes = m_nnodes;
+    const std::size_t nnodes = m_nnodes;
 
     float X = 0;
-    for ( size_t i = 0; i < nnodes; i++ ) X += N[i] * V[i].x();
+    for ( std::size_t i = 0; i < nnodes; i++ ) X += N[i] * V[i].x();
 
     float Y = 0;
-    for ( size_t i = 0; i < nnodes; i++ ) Y += N[i] * V[i].y();
+    for ( std::size_t i = 0; i < nnodes; i++ ) Y += N[i] * V[i].y();
 
     float Z = 0;
-    for ( size_t i = 0; i < nnodes; i++ ) Z += N[i] * V[i].z();
+    for ( std::size_t i = 0; i < nnodes; i++ ) Z += N[i] * V[i].z();
 
     return vismodule::Vector3f( X, Y, Z );
 }
@@ -630,15 +630,15 @@ inline void CellBase<T>::transformLocalToGlobalArray( const int loop_cnt, const 
 //    const float* N = m_interpolation_functions_array[j];
 //    const vismodule::Vector3f* V = m_vertices_array[j];
     //const vismodule::Vector3f* V = m_vertices;
-    const size_t nnodes = m_nnodes;
+    const std::size_t nnodes = m_nnodes;
 
 
         float X = 0;
-        for ( size_t i = 0; i < nnodes; i++ ) X += m_interpolation_functions_array[i][j] * m_vertices_array[i][j].x(); 
+        for ( std::size_t i = 0; i < nnodes; i++ ) X += m_interpolation_functions_array[i][j] * m_vertices_array[i][j].x(); 
         float Y = 0;
-        for ( size_t i = 0; i < nnodes; i++ ) Y += m_interpolation_functions_array[i][j] * m_vertices_array[i][j].y(); 
+        for ( std::size_t i = 0; i < nnodes; i++ ) Y += m_interpolation_functions_array[i][j] * m_vertices_array[i][j].y(); 
         float Z = 0;
-        for ( size_t i = 0; i < nnodes; i++ ) Z += m_interpolation_functions_array[i][j] * m_vertices_array[i][j].z(); 
+        for ( std::size_t i = 0; i < nnodes; i++ ) Z += m_interpolation_functions_array[i][j] * m_vertices_array[i][j].z(); 
         global_array[j] = vismodule::Vector3f( X, Y, Z );
     }
 }
@@ -693,11 +693,11 @@ inline const vismodule::Real32 CellBase<T>::volume() const
 template <typename T>
 inline const vismodule::Real32 CellBase<T>::averagedScalar() const
 {
-    const size_t nnodes = m_nnodes;
+    const std::size_t nnodes = m_nnodes;
     const vismodule::Real32 w = 1.0f / nnodes;
 
     vismodule::Real32 S = 0;
-    for ( size_t i = 0; i < nnodes; i++ )
+    for ( std::size_t i = 0; i < nnodes; i++ )
     {
         S += static_cast<vismodule::Real32>( m_scalars[i] );
     }
@@ -713,12 +713,12 @@ inline const vismodule::Real32 CellBase<T>::averagedScalar() const
 template <typename T>
 inline const vismodule::Real32 CellBase<T>::scalar() const
 {
-    const size_t nnodes = m_nnodes;
+    const std::size_t nnodes = m_nnodes;
     const float* N = m_interpolation_functions;
     const T* s = m_scalars;
 
     vismodule::Real32 S = 0;
-    for ( size_t i = 0; i < nnodes; i++ )
+    for ( std::size_t i = 0; i < nnodes; i++ )
     {
         S += static_cast<vismodule::Real32>( N[i] * s[i] );
     }
@@ -744,7 +744,7 @@ inline const vismodule::Vector3f CellBase<T>::gradient() const
     double dsdx = 0.0f;
     double dsdy = 0.0f;
     double dsdz = 0.0f;
-    for ( size_t i = 0; i < nnodes; i++ )
+    for ( std::size_t i = 0; i < nnodes; i++ )
     {
         dsdx += static_cast<double>( s[i] * dNdx[i] );
         dsdy += static_cast<double>( s[i] * dNdy[i] );
@@ -759,9 +759,9 @@ inline const vismodule::Vector3f CellBase<T>::gradient() const
     // calc scale factor
     double minValue = (std::numeric_limits<double>::max)();
 
-    for ( size_t i = 0; i < 3; i++ ) 
+    for ( std::size_t i = 0; i < 3; i++ ) 
     {
-        for( size_t k = 0; k < 3; k++ )
+        for( std::size_t k = 0; k < 3; k++ )
         {
             if ( J[i][k] != 0 && vismodule::Math::Abs(J[i][k]) < minValue )
             {
@@ -867,7 +867,7 @@ inline const vismodule::Vector3f CellBase<T>::localPoint() const
  */
 /*===========================================================================*/
 template <typename T>
-inline const size_t CellBase<T>::numberOfNodes() const
+inline const std::size_t CellBase<T>::numberOfNodes() const
 {
     return m_nnodes;
 }
@@ -897,7 +897,7 @@ inline const vismodule::Matrix33f CellBase<T>::JacobiMatrix() const
     float dXdz = 0;
     float dYdz = 0;
     float dZdz = 0;
-    for ( size_t i = 0, j = 0; i < nnodes; i++, j+=3 )
+    for ( std::size_t i = 0, j = 0; i < nnodes; i++, j+=3 )
     {
         dXdx += dNdx[i] * V[i].x();
         dYdx += dNdx[i] * V[i].y();
@@ -932,7 +932,7 @@ inline const vismodule::Matrix33d CellBase<T>::JacobiMatrix_d() const
     double dYdz = 0;
     double dZdz = 0;
 
-    for ( size_t i = 0, j = 0; i < nnodes; i++, j+=3 )
+    for ( std::size_t i = 0, j = 0; i < nnodes; i++, j+=3 )
     {
         dXdx += dNdx[i] * V[i].x();
         dYdx += dNdx[i] * V[i].y();

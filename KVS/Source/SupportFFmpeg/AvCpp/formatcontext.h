@@ -26,13 +26,13 @@ using AvioInterruptCb = std::function<int()>;
 struct CustomIO
 {
     virtual ~CustomIO() {}
-    virtual int     write(const uint8_t *data, size_t size) 
+    virtual int     write(const uint8_t *data, std::size_t size) 
     {
         static_cast<void>(data);
         static_cast<void>(size);
         return -1; 
     }
-    virtual int     read(uint8_t *data, size_t size)
+    virtual int     read(uint8_t *data, std::size_t size)
     {
         static_cast<void>(data);
         static_cast<void>(size);
@@ -75,7 +75,7 @@ public:
     //
     // Streams
     //
-    size_t streamsCount() const;
+    std::size_t streamsCount() const;
     Stream stream(size_t idx);
     Stream stream(size_t idx, OptionalErrorCode ec);
     Stream addStream(const Codec &codec, OptionalErrorCode ec = throws());
@@ -85,9 +85,9 @@ public:
     //
     bool seekable() const noexcept;
     void seek(const Timestamp& timestamp, OptionalErrorCode ec = throws());
-    void seek(const Timestamp& timestamp, size_t streamIndex, OptionalErrorCode ec = throws());
+    void seek(const Timestamp& timestamp, std::size_t streamIndex, OptionalErrorCode ec = throws());
     void seek(const Timestamp& timestamp, bool anyFrame, OptionalErrorCode ec = throws());
-    void seek(const Timestamp& timestamp, size_t streamIndex, bool anyFrame, OptionalErrorCode ec = throws());
+    void seek(const Timestamp& timestamp, std::size_t streamIndex, bool anyFrame, OptionalErrorCode ec = throws());
 
     void seek(int64_t position, int streamIndex, int flags, OptionalErrorCode ec = throws());
 
@@ -119,25 +119,25 @@ public:
     void openInput(const std::string& uri, Dictionary &formatOptions, InputFormat format, OptionalErrorCode ec = throws());
     void openInput(const std::string& uri, Dictionary &&formatOptions, InputFormat format, OptionalErrorCode ec = throws());
 
-    static constexpr size_t CUSTOM_IO_DEFAULT_BUFFER_SIZE = 200000;
+    static constexpr std::size_t CUSTOM_IO_DEFAULT_BUFFER_SIZE = 200000;
 
     void openInput(CustomIO    *io,
                    OptionalErrorCode ec = throws(),
-                   size_t       internalBufferSize = CUSTOM_IO_DEFAULT_BUFFER_SIZE)
+                   std::size_t       internalBufferSize = CUSTOM_IO_DEFAULT_BUFFER_SIZE)
     {
         return openInput(io, InputFormat(), ec, internalBufferSize);
     }
     void openInput(CustomIO    *io,
                    Dictionary  &formatOptions,
                    OptionalErrorCode ec = throws(),
-                   size_t       internalBufferSize = CUSTOM_IO_DEFAULT_BUFFER_SIZE)
+                   std::size_t       internalBufferSize = CUSTOM_IO_DEFAULT_BUFFER_SIZE)
     {
         return openInput(io, formatOptions, InputFormat(), ec, internalBufferSize);
     }
     void openInput(CustomIO    *io,
                    Dictionary &&formatOptions,
                    OptionalErrorCode ec = throws(),
-                   size_t       internalBufferSize = CUSTOM_IO_DEFAULT_BUFFER_SIZE)
+                   std::size_t       internalBufferSize = CUSTOM_IO_DEFAULT_BUFFER_SIZE)
     {
         return openInput(io, std::move(formatOptions), InputFormat(), ec, internalBufferSize);
     }
@@ -145,17 +145,17 @@ public:
     void openInput(CustomIO    *io,
                    InputFormat  format,
                    OptionalErrorCode ec = throws(),
-                   size_t       internalBufferSize = CUSTOM_IO_DEFAULT_BUFFER_SIZE);
+                   std::size_t       internalBufferSize = CUSTOM_IO_DEFAULT_BUFFER_SIZE);
     void openInput(CustomIO    *io,
                    Dictionary  &formatOptions,
                    InputFormat  format,
                    OptionalErrorCode ec = throws(),
-                   size_t       internalBufferSize = CUSTOM_IO_DEFAULT_BUFFER_SIZE);
+                   std::size_t       internalBufferSize = CUSTOM_IO_DEFAULT_BUFFER_SIZE);
     void openInput(CustomIO    *io,
                    Dictionary &&formatOptions,
                    InputFormat  format,
                    OptionalErrorCode ec = throws(),
-                   size_t       internalBufferSize = CUSTOM_IO_DEFAULT_BUFFER_SIZE);
+                   std::size_t       internalBufferSize = CUSTOM_IO_DEFAULT_BUFFER_SIZE);
 
     void findStreamInfo(OptionalErrorCode ec = throws());
     void findStreamInfo(DictionaryArray &streamsOptions, OptionalErrorCode ec = throws());
@@ -175,7 +175,7 @@ public:
     //void openOutput(const std::string& uri, Dictionary &options, OutputFormat format, OptionalErrorCode ec = throws());
     //void openOutput(const std::string& uri, Dictionary &&options, OutputFormat format, OptionalErrorCode ec = throws());
 
-    void openOutput(CustomIO *io, OptionalErrorCode ec = throws(), size_t internalBufferSize = CUSTOM_IO_DEFAULT_BUFFER_SIZE);
+    void openOutput(CustomIO *io, OptionalErrorCode ec = throws(), std::size_t internalBufferSize = CUSTOM_IO_DEFAULT_BUFFER_SIZE);
 
     void writeHeader(OptionalErrorCode ec = throws());
     void writeHeader(Dictionary &options, OptionalErrorCode ec = throws());
@@ -189,10 +189,10 @@ public:
     bool checkUncodedFrameWriting(size_t streamIndex, std::error_code &ec) noexcept;
     bool checkUncodedFrameWriting(size_t streamIndex) noexcept;
 
-    void writeUncodedFrame(class VideoFrame &frame, size_t streamIndex, OptionalErrorCode ec = throws());
-    void writeUncodedFrameDirect(class VideoFrame &frame, size_t streamIndex, OptionalErrorCode ec = throws());
-    void writeUncodedFrame(class AudioSamples &frame, size_t streamIndex, OptionalErrorCode ec = throws());
-    void writeUncodedFrameDirect(class AudioSamples &frame, size_t streamIndex, OptionalErrorCode ec = throws());
+    void writeUncodedFrame(class VideoFrame &frame, std::size_t streamIndex, OptionalErrorCode ec = throws());
+    void writeUncodedFrameDirect(class VideoFrame &frame, std::size_t streamIndex, OptionalErrorCode ec = throws());
+    void writeUncodedFrame(class AudioSamples &frame, std::size_t streamIndex, OptionalErrorCode ec = throws());
+    void writeUncodedFrameDirect(class AudioSamples &frame, std::size_t streamIndex, OptionalErrorCode ec = throws());
 
     void writeTrailer(OptionalErrorCode ec = throws());
 
@@ -208,13 +208,13 @@ private:
     int         avioInterruptCb();
     void        setupInterruptHandling();
     void        resetSocketAccess();
-    void        findStreamInfo(AVDictionary **options, size_t optionsCount, OptionalErrorCode ec);
+    void        findStreamInfo(AVDictionary **options, std::size_t optionsCount, OptionalErrorCode ec);
     void        closeCodecContexts();
     int         checkPbError(int stat);
 
-    void        openCustomIO(CustomIO *io, size_t internalBufferSize, bool isWritable, OptionalErrorCode ec);
-    void        openCustomIOInput(CustomIO *io, size_t internalBufferSize, OptionalErrorCode ec);
-    void        openCustomIOOutput(CustomIO *io, size_t internalBufferSize, OptionalErrorCode ec);
+    void        openCustomIO(CustomIO *io, std::size_t internalBufferSize, bool isWritable, OptionalErrorCode ec);
+    void        openCustomIOInput(CustomIO *io, std::size_t internalBufferSize, OptionalErrorCode ec);
+    void        openCustomIOOutput(CustomIO *io, std::size_t internalBufferSize, OptionalErrorCode ec);
 
 private:
     std::shared_ptr<char>                              m_monitor {new char};

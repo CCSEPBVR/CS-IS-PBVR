@@ -99,7 +99,7 @@ public:
          *
          * @return calculated length of string in bytes
          */
-        size_t length() const noexcept
+        std::size_t length() const noexcept
         {
             return strlen(c_str());
         }
@@ -414,8 +414,8 @@ public:
      * @return
      */
     /// @{
-    size_t      count() const noexcept;
-    size_t      size() const noexcept;
+    std::size_t      count() const noexcept;
+    std::size_t      size() const noexcept;
     /// @}
 
     /**
@@ -591,7 +591,7 @@ public:
 
     DictionaryArray() = default;
     DictionaryArray(std::initializer_list<Dictionary> dicts);
-    DictionaryArray(AVDictionary **dicts, size_t count, bool takeOwning = true);
+    DictionaryArray(AVDictionary **dicts, std::size_t count, bool takeOwning = true);
 
     DictionaryArray(const DictionaryArray& rhs);
     DictionaryArray& operator=(const DictionaryArray& rhs);
@@ -599,11 +599,11 @@ public:
     DictionaryArray(DictionaryArray&&) = default;
     DictionaryArray& operator=(DictionaryArray&&) = default;
 
-    void assign(AVDictionary **dicts, size_t count, bool takeOwning = true);
+    void assign(AVDictionary **dicts, std::size_t count, bool takeOwning = true);
     void reserve(size_t size);
     void resize(size_t size);
 
-    size_t size() const;
+    std::size_t size() const;
 
     void pushBack(const Dictionary &dict);
     void pushBack(Dictionary &&dict);

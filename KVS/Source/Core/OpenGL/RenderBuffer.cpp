@@ -19,7 +19,7 @@ namespace kvs
  *  @param  height [in] buffer height
  */
 /*===========================================================================*/
-void RenderBuffer::create( const size_t width, const size_t height )
+void RenderBuffer::create( const std::size_t width, const std::size_t height )
 {
     KVS_ASSERT( m_id == 0 );
 

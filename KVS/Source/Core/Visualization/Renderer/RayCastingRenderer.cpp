@@ -78,7 +78,7 @@ void RayCastingRenderer::exec(
         BaseClass::setDevicePixelRatio( camera->devicePixelRatio() );
         const int framebuffer_width = BaseClass::framebufferWidth();
         const int framebuffer_height = BaseClass::framebufferHeight();
-        const size_t npixels = framebuffer_width * framebuffer_height;
+        const std::size_t npixels = framebuffer_width * framebuffer_height;
         BaseClass::allocateColorData( npixels * 4 );
         BaseClass::allocateDepthData( npixels );
         kvs::OpenGL::GetModelViewMatrix( m_modelview );
@@ -153,12 +153,12 @@ void RayCastingRenderer::rasterize(
     auto* const depth_data = BaseClass::depthData().data();
 
     // LOD control.
-    size_t ray_width = 1;
+    std::size_t ray_width = 1;
     if ( m_enable_lod )
     {
         float modelview[16];
         kvs::OpenGL::GetModelViewMatrix( modelview );
-        for ( size_t i = 0; i < 16; i++ )
+        for ( std::size_t i = 0; i < 16; i++ )
         {
             if ( m_modelview[i] != modelview[i] )
             {
@@ -179,19 +179,19 @@ void RayCastingRenderer::rasterize(
     kvs::VolumeRayIntersector ray( volume, modelview, projection, viewport );
 
     // Execute ray casting.
-    const size_t width = BaseClass::framebufferWidth();
-    const size_t height = BaseClass::framebufferHeight();
+    const std::size_t width = BaseClass::framebufferWidth();
+    const std::size_t height = BaseClass::framebufferHeight();
     const auto& shader = BaseClass::shader();
     const auto& cmap = BaseClass::transferFunction().colorMap();
     const auto& omap = BaseClass::transferFunction().opacityMap();
     const float step = m_step;
     const float opaque = m_opaque;
-    size_t depth_index = 0;
-    size_t pixel_index = 0;
-    for ( size_t y = 0; y < height; y += ray_width )
+    std::size_t depth_index = 0;
+    std::size_t pixel_index = 0;
+    for ( std::size_t y = 0; y < height; y += ray_width )
     {
-        const size_t offset = y * width;
-        for ( size_t x = 0; x < width; x += ray_width, depth_index = offset + x, pixel_index = depth_index * 4 )
+        const std::size_t offset = y * width;
+        for ( std::size_t x = 0; x < width; x += ray_width, depth_index = offset + x, pixel_index = depth_index * 4 )
         {
             ray.setOrigin( x, y );
 
@@ -266,30 +266,30 @@ void RayCastingRenderer::rasterize(
     {
         pixel_index = 0;
         depth_index = 0;
-        for ( size_t y = 0; y < height; y += ray_width )
+        for ( std::size_t y = 0; y < height; y += ray_width )
         {
             // Shift the y position of the mask by -ray_width/2.
-            const size_t Y = kvs::Math::Max( int( y - ray_width / 2 ), 0 );
+            const std::size_t Y = kvs::Math::Max( int( y - ray_width / 2 ), 0 );
 
-            const size_t offset = y * width;
-            for ( size_t x = 0; x < width; x += ray_width, depth_index = offset + x, pixel_index = depth_index * 4 )
+            const std::size_t offset = y * width;
+            for ( std::size_t x = 0; x < width; x += ray_width, depth_index = offset + x, pixel_index = depth_index * 4 )
             {
                 // Shift the x position of the mask by -ray_width/2.
-                const size_t X = kvs::Math::Max( int( x - ray_width / 2 ), 0 );
+                const std::size_t X = kvs::Math::Max( int( x - ray_width / 2 ), 0 );
 
                 const auto r = pixel_data[ pixel_index ];
                 const auto g = pixel_data[ pixel_index + 1 ];
                 const auto b = pixel_data[ pixel_index + 2 ];
                 const auto a = pixel_data[ pixel_index + 3 ];
                 const auto d = depth_data[ depth_index ];
-                for ( size_t j = 0; j < ray_width && Y + j < height; j++ )
+                for ( std::size_t j = 0; j < ray_width && Y + j < height; j++ )
                 {
-                    const size_t J = Y + j;
-                    for ( size_t i = 0; i < ray_width && X + i < width; i++ )
+                    const std::size_t J = Y + j;
+                    for ( std::size_t i = 0; i < ray_width && X + i < width; i++ )
                     {
-                        const size_t I = X + i;
-                        const size_t index = J * width + I;
-                        const size_t index4 = index * 4;
+                        const std::size_t I = X + i;
+                        const std::size_t index = J * width + I;
+                        const std::size_t index4 = index * 4;
                         pixel_data[ index4 ] = r;
                         pixel_data[ index4 + 1 ] = g;
                         pixel_data[ index4 + 2 ] = b;

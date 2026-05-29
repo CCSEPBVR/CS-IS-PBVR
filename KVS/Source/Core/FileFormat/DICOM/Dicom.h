@@ -111,10 +111,10 @@ public:
     const std::ios::pos_type& position() const;
     const kvs::ValueArray<char>& rawData() const;
     kvs::ValueArray<kvs::UInt8> pixelData() const;
-    int rawValue( const size_t index ) const;
-    int rawValue( const size_t i, const size_t j ) const;
-    int value( const size_t index ) const;
-    int value( const size_t x, const size_t y ) const;
+    int rawValue( const std::size_t index ) const;
+    int rawValue( const std::size_t i, const std::size_t j ) const;
+    int value( const std::size_t index ) const;
+    int value( const std::size_t x, const std::size_t y ) const;
 
     void setRawData( const kvs::ValueArray<char>& raw_data );
     void changeWindow( const int level, const int width );

@@ -38,7 +38,7 @@ public:
 protected:
 
     bool m_has_nnodes; ///< flag to check whether 'nnodes' is specified or not
-    size_t m_nnodes; ///< number of nodes
+    std::size_t m_nnodes; ///< number of nodes
 
 public:
 
@@ -50,11 +50,11 @@ public:
 
     const bool hasNNodes( void ) const;
 
-    const size_t nnodes( void ) const;
+    const std::size_t nnodes( void ) const;
 
 public:
 
-    void setNNodes( const size_t nnodes );
+    void setNNodes( const std::size_t nnodes );
 
 public:
 

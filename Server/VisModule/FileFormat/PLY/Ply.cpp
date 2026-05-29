@@ -110,7 +110,7 @@ void Ply::calculateMinMaxCoord( void )
     m_min_coord = vismodule::Vector3f( std::numeric_limits<float>::max() );
     m_max_coord = vismodule::Vector3f( std::numeric_limits<float>::min() );
     const vismodule::Real32* pcoords = m_coords.pointer();
-    for ( size_t i = 0; i < m_nverts; i++ )
+    for ( std::size_t i = 0; i < m_nverts; i++ )
     {
         const vismodule::Real32 x= *(pcoords++);
         const vismodule::Real32 y= *(pcoords++);
@@ -134,7 +134,7 @@ void Ply::calculateNormals( void )
     m_normals.allocate( m_nverts * 3 );
     const vismodule::UInt32* pconnections = m_connections.pointer();
     const vismodule::Real32* pcoords = m_coords.pointer();
-    for ( size_t i = 0; i < m_nfaces; i++ )
+    for ( std::size_t i = 0; i < m_nfaces; i++ )
     {
         // Calculate normal vector for each triangles.
         const vismodule::UInt32 index0 = *(pconnections++);
@@ -163,7 +163,7 @@ void Ply::calculateNormals( void )
         counter[ index2 ] += 1;
     }
 
-    for ( size_t i = 0; i < m_nverts; i++ )
+    for ( std::size_t i = 0; i < m_nverts; i++ )
     {
         if ( counter[i] == 0 ) continue;
         m_normals[ 3 * i + 0 ] /= static_cast<vismodule::Real32>( counter[i] );
@@ -233,12 +233,12 @@ const Ply::FileType Ply::fileType( void ) const
     return( m_file_type );
 }
 
-const size_t Ply::numberOfVertices( void ) const
+const std::size_t Ply::numberOfVertices( void ) const
 {
     return( m_nverts );
 }
 
-const size_t Ply::numberOfFaces( void ) const
+const std::size_t Ply::numberOfFaces( void ) const
 {
     return( m_nfaces );
 }
@@ -506,7 +506,7 @@ const bool Ply::write( const std::string& filename )
         return( false );
     }
 
-    const size_t nverts = m_nverts;
+    const std::size_t nverts = m_nverts;
     vismodule::ply::ply_element_count( ply, "vertex", int( nverts ) );
     vismodule::ply::ply_describe_property( ply, "vertex", &::VertProps[0] );
     vismodule::ply::ply_describe_property( ply, "vertex", &::VertProps[1] );
@@ -528,7 +528,7 @@ const bool Ply::write( const std::string& filename )
 
     if ( m_nfaces > 0 )
     {
-        const size_t nfaces = m_nfaces;
+        const std::size_t nfaces = m_nfaces;
         vismodule::ply::ply_element_count( ply, "face", int( nfaces ) );
         vismodule::ply::ply_describe_property( ply, "face", &::FaceProps[0] );
     }
@@ -539,7 +539,7 @@ const bool Ply::write( const std::string& filename )
     const vismodule::UInt8* pcolors = m_colors.pointer();
     const vismodule::Real32* pnormals = m_normals.pointer();
     vismodule::ply::ply_put_element_setup( ply, "vertex" );
-    for ( size_t i = 0; i < nverts; i++ )
+    for ( std::size_t i = 0; i < nverts; i++ )
     {
         ::Vertex* vertex = (::Vertex*)malloc( sizeof(::Vertex) );
         if ( vertex ) memset( vertex, 0, sizeof(::Vertex) );
@@ -569,10 +569,10 @@ const bool Ply::write( const std::string& filename )
 
     if ( m_has_connections )
     {
-        const size_t nfaces = m_nfaces;
+        const std::size_t nfaces = m_nfaces;
         const vismodule::UInt32* pconnections = m_connections.pointer();
         vismodule::ply::ply_put_element_setup( ply, "face" );
-        for ( size_t i = 0; i < nfaces; i++ )
+        for ( std::size_t i = 0; i < nfaces; i++ )
         {
             ::Face* face = (::Face*)malloc( sizeof(::Face) );
             if ( face ) memset( face, 0, sizeof(::Face) );

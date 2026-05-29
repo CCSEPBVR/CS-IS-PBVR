@@ -88,11 +88,11 @@ public:
 
     BitImage( void );
 
-    BitImage( const size_t width, const size_t height, const bool bit = true );
+    BitImage( const std::size_t width, const std::size_t height, const bool bit = true );
 
-    BitImage( const size_t width, const size_t height, const vismodule::UInt8* data );
+    BitImage( const std::size_t width, const std::size_t height, const vismodule::UInt8* data );
 
-    BitImage( const size_t width, const size_t height, const vismodule::ValueArray<vismodule::UInt8>& data );
+    BitImage( const std::size_t width, const std::size_t height, const vismodule::ValueArray<vismodule::UInt8>& data );
 
     BitImage( const vismodule::BitImage& image );
 
@@ -111,19 +111,19 @@ public:
 
 public:
 
-    const bool pixel( const size_t index ) const;
+    const bool pixel( const std::size_t index ) const;
 
-    const bool pixel( const size_t i, const size_t j ) const;
+    const bool pixel( const std::size_t i, const std::size_t j ) const;
 
 public:
 
-    void set( const size_t index, const bool pixel );
+    void set( const std::size_t index, const bool pixel );
 
-    void set( const size_t i, const size_t j, const bool pixel );
+    void set( const std::size_t i, const std::size_t j, const bool pixel );
 
-    void flip( const size_t index );
+    void flip( const std::size_t index );
 
-    void flip( const size_t i, const size_t j );
+    void flip( const std::size_t i, const std::size_t j );
 
 public:
 
@@ -131,7 +131,7 @@ public:
 
     void flip( void );
 
-    const size_t count( void ) const;
+    const std::size_t count( void ) const;
 
 public:
 
@@ -141,9 +141,9 @@ public:
 
 protected:
 
-    void set_bit( const size_t i, const size_t j );
+    void set_bit( const std::size_t i, const std::size_t j );
 
-    void reset_bit( const size_t i, const size_t j );
+    void reset_bit( const std::size_t i, const std::size_t j );
 };
 
 /*===========================================================================*/

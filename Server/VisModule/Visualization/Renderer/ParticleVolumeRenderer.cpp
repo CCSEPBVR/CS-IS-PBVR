@@ -43,7 +43,7 @@ ParticleVolumeRenderer::ParticleVolumeRenderer( void ):
 /*==========================================================================*/
 ParticleVolumeRenderer::ParticleVolumeRenderer(
     const vismodule::PointObject* point,
-    const size_t            subpixel_level ):
+    const std::size_t            subpixel_level ):
     m_ref_point( NULL )
 {
     BaseClass::setShader( vismodule::Shader::Lambert() );
@@ -109,7 +109,7 @@ void ParticleVolumeRenderer::attachPointObject( const vismodule::PointObject* po
  *  @param subpixel_level [in] subpixel level
  */
 /*==========================================================================*/
-void ParticleVolumeRenderer::setSubpixelLevel( const size_t subpixel_level )
+void ParticleVolumeRenderer::setSubpixelLevel( const std::size_t subpixel_level )
 {
     m_subpixel_level = subpixel_level;
 }
@@ -141,7 +141,7 @@ const vismodule::ParticleBuffer* ParticleVolumeRenderer::particleBuffer( void ) 
  *  Get the subpixel level.
  */
 /*==========================================================================*/
-const size_t ParticleVolumeRenderer::subpixelLevel( void ) const
+const std::size_t ParticleVolumeRenderer::subpixelLevel( void ) const
 {
     return( m_subpixel_level );
 }
@@ -172,9 +172,9 @@ void ParticleVolumeRenderer::disableRendering( void )
  */
 /*==========================================================================*/
 bool ParticleVolumeRenderer::create_particle_buffer(
-    const size_t width,
-    const size_t height,
-    const size_t subpixel_level )
+    const std::size_t width,
+    const std::size_t height,
+    const std::size_t subpixel_level )
 {
     m_buffer = new vismodule::ParticleBuffer( width, height, subpixel_level );
     if( !m_buffer ) return( false );
@@ -253,8 +253,8 @@ void ParticleVolumeRenderer::project_particle(
     const vismodule::Light*       light )
 {
     float t[16]; camera->getCombinedMatrix( &t );
-    const size_t w = camera->windowWidth() / 2;
-    const size_t h = camera->windowHeight() / 2;
+    const std::size_t w = camera->windowWidth() / 2;
+    const std::size_t h = camera->windowHeight() / 2;
 
     // Set shader initial parameters.
     BaseClass::m_shader->set( camera, light );
@@ -264,13 +264,13 @@ void ParticleVolumeRenderer::project_particle(
     m_buffer->attachPointObject( point );
 
     // Aliases.
-    const size_t       nv = point->nvertices();
+    const std::size_t       nv = point->nvertices();
     const vismodule::Real32* v  = point->coords().pointer();
 
-    size_t index3 = 0;
-    const size_t bounds_width  = m_width  - 1;
-    const size_t bounds_height = m_height - 1;
-    for( size_t index = 0; index < nv; index++, index3 += 3 )
+    std::size_t index3 = 0;
+    const std::size_t bounds_width  = m_width  - 1;
+    const std::size_t bounds_height = m_height - 1;
+    for( std::size_t index = 0; index < nv; index++, index3 += 3 )
     {
         /* Calculate the projected point position in the window coordinate system.
          * Ex.) Camera::projectObjectToWindow().

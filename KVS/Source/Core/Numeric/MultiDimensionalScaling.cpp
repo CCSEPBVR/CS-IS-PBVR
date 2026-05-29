@@ -22,11 +22,11 @@ namespace
 template <typename T>
 inline void ToSquare( kvs::Matrix<T>& m )
 {
-    const size_t ncolumns = m.columnSize();
-    const size_t nrows = m.rowSize();
-    for ( size_t i = 0; i < ncolumns; i++ )
+    const std::size_t ncolumns = m.columnSize();
+    const std::size_t nrows = m.rowSize();
+    for ( std::size_t i = 0; i < ncolumns; i++ )
     {
-        for ( size_t j = 0; j < nrows; j++ )
+        for ( std::size_t j = 0; j < nrows; j++ )
         {
             m[i][j] = m[i][j] * m[i][j];
         }
@@ -49,8 +49,8 @@ namespace kvs
 template <typename T>
 T MultiDimensionalScaling<T>::Euclidean(
     const kvs::ValueTable<T>& data,
-    const size_t i,
-    const size_t j )
+    const std::size_t i,
+    const std::size_t j )
 {
     kvs::ValueTable<T>& d = const_cast<kvs::ValueTable<T>& >( data );
     auto rowi = d.beginRow(i);
@@ -78,8 +78,8 @@ T MultiDimensionalScaling<T>::Euclidean(
 template <typename T>
 T MultiDimensionalScaling<T>::Manhattan(
     const kvs::ValueTable<T>& data,
-    const size_t i,
-    const size_t j )
+    const std::size_t i,
+    const std::size_t j )
 {
     kvs::ValueTable<T>& d = const_cast<kvs::ValueTable<T>& >( data );
     auto rowi = d.beginRow(i);
@@ -109,11 +109,11 @@ kvs::Matrix<T> MultiDimensionalScaling<T>::DistanceMatrix(
     Distance distance )
 {
     // Distance matrix
-    const size_t N = data.rowSize();
+    const std::size_t N = data.rowSize();
     kvs::Matrix<T> D( N, N );
-    for ( size_t i = 0; i < N; i++ )
+    for ( std::size_t i = 0; i < N; i++ )
     {
-        for ( size_t j = i + 1; j < N; j++ )
+        for ( std::size_t j = i + 1; j < N; j++ )
         {
             D[i][j] = distance( data, i, j );
             D[j][i] = D[i][j];
@@ -132,7 +132,7 @@ kvs::Matrix<T> MultiDimensionalScaling<T>::DistanceMatrix(
 template <typename T>
 MultiDimensionalScaling<T>::MultiDimensionalScaling(
     const kvs::ValueTable<T>& data,
-    const size_t ncomponents ):
+    const std::size_t ncomponents ):
     m_ncomponents( ncomponents )
 {
     this->fit( data );
@@ -150,7 +150,7 @@ template <typename T>
 MultiDimensionalScaling<T>::MultiDimensionalScaling(
     const kvs::ValueTable<T>& data,
     Distance distance,
-    const size_t ncomponents ):
+    const std::size_t ncomponents ):
     m_distance( distance ),
     m_ncomponents( ncomponents )
 {
@@ -167,7 +167,7 @@ MultiDimensionalScaling<T>::MultiDimensionalScaling(
 template <typename T>
 MultiDimensionalScaling<T>::MultiDimensionalScaling(
     const kvs::Matrix<T>& matrix,
-    const size_t ncomponents ):
+    const std::size_t ncomponents ):
     m_ncomponents( ncomponents )
 {
     this->fit( matrix );
@@ -194,8 +194,8 @@ void MultiDimensionalScaling<T>::fit( const kvs::ValueTable<T>& data )
 template <typename T>
 void MultiDimensionalScaling<T>::fit( const kvs::Matrix<T>& matrix )
 {
-    const size_t n = matrix.rowSize(); // number of points
-    const size_t k = m_ncomponents; // dimension of the points in the embedded space
+    const std::size_t n = matrix.rowSize(); // number of points
+    const std::size_t k = m_ncomponents; // dimension of the points in the embedded space
 
     // Inner product matrix (P) can be solved by Young-Householder transformation.
     const auto& D = matrix;
@@ -216,7 +216,7 @@ void MultiDimensionalScaling<T>::fit( const kvs::Matrix<T>& matrix )
     const kvs::Vector<T> diag( k, eval.data() );
     const kvs::Matrix<T> A = kvs::Matrix<T>::Diagonal( diag );
     kvs::Matrix<T> Q( k, n );
-    for ( size_t i = 0; i < k; i++ ) { Q[i] = evec[i].normalized(); }
+    for ( std::size_t i = 0; i < k; i++ ) { Q[i] = evec[i].normalized(); }
     m_embedded_points = A * Q;
 }
 

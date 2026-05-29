@@ -20,7 +20,7 @@ namespace kvs
  *  @param  dof [in] degree of freedom
  */
 /*===========================================================================*/
-StudentTDistribution::StudentTDistribution( const size_t dof ):
+StudentTDistribution::StudentTDistribution( const std::size_t dof ):
     m_dof( dof )
 {
     KVS_ASSERT( dof > 0 );
@@ -37,7 +37,7 @@ StudentTDistribution::StudentTDistribution( const size_t dof ):
 /*===========================================================================*/
 kvs::Real64 StudentTDistribution::pdf( const kvs::Real64 t ) const
 {
-    const size_t n = m_dof;
+    const std::size_t n = m_dof;
     if ( n == 1 )
     {
         return 1.0 / ( kvs::Math::PI() * ( 1.0 + t * t ) );
@@ -73,7 +73,7 @@ kvs::Real64 StudentTDistribution::pdf( const kvs::Real64 t ) const
 /*===========================================================================*/
 kvs::Real64 StudentTDistribution::cdf( const kvs::Real64 t ) const
 {
-    const size_t n = m_dof;
+    const std::size_t n = m_dof;
     if ( n == 1 )
     {
         return 0.5 + ( 1.0 / kvs::Math::PI() ) * std::atan( t );

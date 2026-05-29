@@ -75,9 +75,9 @@ public:
     bool hasExternalCoord() const { return m_object_tag.hasExternalCoord(); }
     const std::string& label() const { return m_value_tag.label(); }
     const std::string& unit() const { return m_value_tag.unit(); }
-    size_t veclen() const { return m_value_tag.veclen(); }
-    size_t nnodes() const { return m_node_tag.nnodes(); }
-    size_t ncells() const { return m_cell_tag.ncells(); }
+    std::size_t veclen() const { return m_value_tag.veclen(); }
+    std::size_t nnodes() const { return m_node_tag.nnodes(); }
+    std::size_t ncells() const { return m_cell_tag.ncells(); }
     double minValue() const { return m_value_tag.minValue(); }
     double maxValue() const { return m_value_tag.maxValue(); }
     const kvs::Vec3& minObjectCoord() const { return m_object_tag.minObjectCoord(); }
@@ -95,9 +95,9 @@ public:
     void setCellType( const std::string& type ) { m_volume_tag.setCellType( type ); }
     void setLabel( const std::string& label ) { m_value_tag.setLabel( label ); }
     void setUnit( const std::string& unit ) { m_value_tag.setUnit( unit ); }
-    void setVeclen( const size_t veclen ) { m_value_tag.setVeclen( veclen ); }
-    void setNNodes( const size_t nnodes ) { m_node_tag.setNNodes( nnodes ); }
-    void setNCells( const size_t ncells ) { m_cell_tag.setNCells( ncells ); }
+    void setVeclen( const std::size_t veclen ) { m_value_tag.setVeclen( veclen ); }
+    void setNNodes( const std::size_t nnodes ) { m_node_tag.setNNodes( nnodes ); }
+    void setNCells( const std::size_t ncells ) { m_cell_tag.setNCells( ncells ); }
     void setMinValue( const double value ) { m_value_tag.setMinValue( value ); }
     void setMaxValue( const double value ) { m_value_tag.setMaxValue( value ); }
     void setValues( const kvs::AnyValueArray& values ) { m_values = values; }

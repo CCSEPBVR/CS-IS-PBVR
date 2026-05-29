@@ -148,7 +148,7 @@ void GrADS::print( std::ostream& os, const kvs::Indent& indent ) const
     os << indent << "Filename : " << BaseClass::filename() << std::endl;
     os << indent << "Number of data files : " << m_data_list.size() << std::endl;
     GriddedBinaryDataFileList::const_iterator data = m_data_list.begin();
-    size_t i = 0;
+    std::size_t i = 0;
     while ( data != m_data_list.end() )
     {
         os << indent.nextIndent() << "Data file [" << i << "] : " << data->filename() << std::endl;
@@ -209,8 +209,8 @@ void GrADS::print( std::ostream& os, const kvs::Indent& indent ) const
     const kvs::FileList files = directory.fileList();
 
     kvs::grads::TDef tdef = m_data_descriptor.tdef();
-    const size_t tnum = m_data_descriptor.tdef().num;
-    for ( size_t i = 0; i < tnum; ++i, ++tdef )
+    const std::size_t tnum = m_data_descriptor.tdef().num;
+    for ( std::size_t i = 0; i < tnum; ++i, ++tdef )
     {
         std::string data_filename = template_data_filename;
         data_filename = ::ReplaceYear( data_filename, tdef.start.year );

@@ -74,19 +74,19 @@ typedef enum {
 //        ElementTypeUnknown      ///< Unknown element type.
 //};
 
-//    static const size_t quaddiv[6] = {0,1,2,
+//    static const std::size_t quaddiv[6] = {0,1,2,
 //                                      0,2,3};  // quad分割用インデックス
 //
-//    static const size_t tetdiv[4] = {0,1,2,3};  // tetraインデックス
+//    static const std::size_t tetdiv[4] = {0,1,2,3};  // tetraインデックス
 //
-//    static const size_t pyrdiv[8] = {0,1,2,3,
+//    static const std::size_t pyrdiv[8] = {0,1,2,3,
 //                                     0,3,4,1};  // pyramid分割用インデックス
 //
-//    static const size_t pridiv[12] = {0,3,4,5,
+//    static const std::size_t pridiv[12] = {0,3,4,5,
 //                                      4,1,0,2,
 //                                      2,4,5,0}; // prism分割用インデックス
 //
-static const size_t hexdiv[5][4] = {
+static const std::size_t hexdiv[5][4] = {
     {1, 3, 0, 4},
     {4, 6, 5, 1},
     {4, 7, 6, 3},

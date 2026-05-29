@@ -112,7 +112,7 @@ const std::string& KVSMLObjectStructuredVolume::label( void ) const
  *  @return vector length
  */
 /*===========================================================================*/
-const size_t KVSMLObjectStructuredVolume::veclen( void ) const
+const std::size_t KVSMLObjectStructuredVolume::veclen( void ) const
 {
     return( m_veclen );
 }
@@ -198,7 +198,7 @@ void KVSMLObjectStructuredVolume::setLabel( const std::string& label )
  *  @param  veclen [in] vector length
  */
 /*===========================================================================*/
-void KVSMLObjectStructuredVolume::setVeclen( const size_t veclen )
+void KVSMLObjectStructuredVolume::setVeclen( const std::size_t veclen )
 {
     m_veclen = veclen;
 }
@@ -331,9 +331,9 @@ const bool KVSMLObjectStructuredVolume::read( const std::string& filename )
 
     // <DataArray>
     const vismodule::Vector3ui resolution = volume_tag.resolution();
-    const size_t nnodes = resolution.x() * resolution.y() * resolution.z();
-    const size_t veclen = value_tag.veclen();
-    const size_t nelements = nnodes * veclen;
+    const std::size_t nnodes = resolution.x() * resolution.y() * resolution.z();
+    const std::size_t veclen = value_tag.veclen();
+    const std::size_t nelements = nnodes * veclen;
     vismodule::kvsml::DataArrayTag values;
     if ( !values.read( value_tag.node(), nelements, &m_values ) )
     {
@@ -355,9 +355,9 @@ const bool KVSMLObjectStructuredVolume::read( const std::string& filename )
 
         // <DataArray>
         vismodule::kvsml::DataArrayTag coords;
-        const size_t dimension = 3;
-        size_t coord_nelements = 0;
-        for ( size_t i = 0; i < dimension; i++ ) coord_nelements += resolution[i];
+        const std::size_t dimension = 3;
+        std::size_t coord_nelements = 0;
+        for ( std::size_t i = 0; i < dimension; i++ ) coord_nelements += resolution[i];
         if ( !coords.read( coord_tag.node(), coord_nelements, &m_coords ) )
         {
             visModuleMessageError( "Cannot read <%s> for <%s>.",
@@ -377,8 +377,8 @@ const bool KVSMLObjectStructuredVolume::read( const std::string& filename )
 
         // <DataArray>
         vismodule::kvsml::DataArrayTag coords;
-        const size_t dimension = 3;
-        const size_t coord_nelements = nnodes * dimension;
+        const std::size_t dimension = 3;
+        const std::size_t coord_nelements = nnodes * dimension;
         if ( !coords.read( coord_tag.node(), coord_nelements, &m_coords ) )
         {
             visModuleMessageError( "Cannot read <%s> for <%s>.",

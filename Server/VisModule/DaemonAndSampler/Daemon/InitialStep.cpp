@@ -90,7 +90,7 @@ bool SetDefaultParticleParameterCS(
         eq = particle_property.m_transfunc_synthesizer->convert_token( "c1" );
         particle_property.m_transfunc_synthesizer->setColorFunction( eq );
 
-        for ( size_t i = 0; i < tf_number; i++ )
+        for ( std::size_t i = 0; i < tf_number; i++ )
         {
             std::stringstream cc, qq, tt, ff;
             cc << "C"  << i + 1;
@@ -283,7 +283,7 @@ void InitialStepCS(
                     store_volume_in_variables_array_unstruct( volume, dom, values, nvariables, coordinates, ncoords, connections, ncells, celltype );
 
                     std::vector<Type*> raw_pointers_vector( nvariables );
-                    for ( size_t i = 0; i < nvariables; ++i )
+                    for ( std::size_t i = 0; i < nvariables; ++i )
                     {
                         raw_pointers_vector[i] = values.get()[i].get();
                     }
@@ -300,7 +300,7 @@ void InitialStepCS(
 
 
                     std::vector<Type*> raw_pointers_vector( nvariables );
-                    for ( size_t i = 0; i < nvariables; ++i )
+                    for ( std::size_t i = 0; i < nvariables; ++i )
                     {
                         raw_pointers_vector[i] = values.get()[i].get();
                     }                        
@@ -354,7 +354,7 @@ void InitialStepCS(
     vr = setVariablerange2( tmp_max, tmp_min, tf_number );
     vr.show();
 
-    for( size_t i = 0; i < tf_number; i++ )
+    for( std::size_t i = 0; i < tf_number; i++ )
     {
         std::stringstream ss; 
         ss << (i + 1); 
@@ -479,7 +479,7 @@ void InitialStepCS(
                     store_volume_in_variables_array_unstruct( volume, dom, values, nvariables, coordinates, ncoords, connections, ncells, celltype );
 
                     std::vector<Type*> raw_pointers_vector( nvariables );
-                    for ( size_t i = 0; i < nvariables; ++i )
+                    for ( std::size_t i = 0; i < nvariables; ++i )
                     {
                         raw_pointers_vector[i] = values.get()[i].get();
                     }
@@ -495,7 +495,7 @@ void InitialStepCS(
                     store_volume_in_variables_array_struct( volume, dom, resolution, values, nvariables, ncoords );
 
                     std::vector<Type*> raw_pointers_vector( nvariables );
-                    for ( size_t i = 0; i < nvariables; ++i )
+                    for ( std::size_t i = 0; i < nvariables; ++i )
                     {
                         raw_pointers_vector[i] = values.get()[i].get();
                     }                        

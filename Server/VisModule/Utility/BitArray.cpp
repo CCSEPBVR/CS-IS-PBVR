@@ -75,7 +75,7 @@ BitArray::BitArray( void ):
     this->create_counter();
 }
 
-BitArray::BitArray( size_t nvalues ):
+BitArray::BitArray( std::size_t nvalues ):
     m_counter( 0 ),
     m_nvalues( 0 ),
     m_values( 0 )
@@ -83,7 +83,7 @@ BitArray::BitArray( size_t nvalues ):
     this->allocate( nvalues );
 }
 
-BitArray::BitArray( const vismodule::UInt8* values, const size_t nvalues ):
+BitArray::BitArray( const vismodule::UInt8* values, const std::size_t nvalues ):
     m_counter( 0 ),
     m_nvalues( 0 ),
     m_values( 0 )
@@ -91,7 +91,7 @@ BitArray::BitArray( const vismodule::UInt8* values, const size_t nvalues ):
     this->deepCopy( values, nvalues );
 }
 
-BitArray::BitArray( const bool* values, const size_t nvalues ):
+BitArray::BitArray( const bool* values, const std::size_t nvalues ):
     m_counter( 0 ),
     m_nvalues( 0 ),
     m_values( 0 )
@@ -112,7 +112,7 @@ BitArray::~BitArray( void )
     this->deallocate();
 }
 
-const bool BitArray::operator [] ( size_t index ) const
+const bool BitArray::operator [] ( std::size_t index ) const
 {
     VIS_MODULE_ASSERT( index < m_nvalues );
 
@@ -132,8 +132,8 @@ BitArray& BitArray::operator = ( const BitArray& other )
 
 BitArray& BitArray::operator &= ( const BitArray& other ) // AND
 {
-    const size_t byte_size = this->byteSize();
-    for( size_t index = 0; index < byte_size; index++ )
+    const std::size_t byte_size = this->byteSize();
+    for( std::size_t index = 0; index < byte_size; index++ )
     {
         m_values[index] &= other.m_values[index];
     }
@@ -143,8 +143,8 @@ BitArray& BitArray::operator &= ( const BitArray& other ) // AND
 
 BitArray& BitArray::operator |= ( const BitArray& other ) // OR
 {
-    const size_t byte_size = this->byteSize();
-    for( size_t index = 0; index < byte_size; index++ )
+    const std::size_t byte_size = this->byteSize();
+    for( std::size_t index = 0; index < byte_size; index++ )
     {
         m_values[index] |= other.m_values[index];
     }
@@ -154,8 +154,8 @@ BitArray& BitArray::operator |= ( const BitArray& other ) // OR
 
 BitArray& BitArray::operator ^= ( const BitArray& other ) // XOR
 {
-    const size_t byte_size = this->byteSize();
-    for( size_t index = 0; index < byte_size; index++ )
+    const std::size_t byte_size = this->byteSize();
+    for( std::size_t index = 0; index < byte_size; index++ )
     {
         m_values[index] |= ( ~other.m_values[index] );
     }
@@ -166,15 +166,15 @@ BitArray& BitArray::operator ^= ( const BitArray& other ) // XOR
 // set all 1 to table
 void BitArray::set( void )
 {
-    const size_t byte_size = this->byteSize();
-    for( size_t index = 0; index < byte_size; index++ )
+    const std::size_t byte_size = this->byteSize();
+    for( std::size_t index = 0; index < byte_size; index++ )
     {
         m_values[index] = ::ResetBitMask[8]; // 1111,1111
     }
 }
 
 // set true the "bit" position of table
-void BitArray::set( size_t index )
+void BitArray::set( std::size_t index )
 {
     m_values[ ::BitToByte( index ) ] |= ::SetBitMask[ index & 7 ];
 }
@@ -182,15 +182,15 @@ void BitArray::set( size_t index )
 // set all 0 to table
 void BitArray::reset( void )
 {
-    const size_t byte_size = this->byteSize();
-    for( size_t index = 0; index < byte_size; index++ )
+    const std::size_t byte_size = this->byteSize();
+    for( std::size_t index = 0; index < byte_size; index++ )
     {
         m_values[index] = ::SetBitMask[8]; // 0000,0000
     }
 }
 
 // set false the "bit" position of table
-void BitArray::reset( size_t index )
+void BitArray::reset( std::size_t index )
 {
     m_values[ ::BitToByte( index ) ] &= ::ResetBitMask[ index & 7 ];
 }
@@ -198,15 +198,15 @@ void BitArray::reset( size_t index )
 // reverse all value of table
 void BitArray::flip( void )
 {
-    const size_t byte_size = this->byteSize();
-    for( size_t index = 0; index < byte_size; index++ )
+    const std::size_t byte_size = this->byteSize();
+    for( std::size_t index = 0; index < byte_size; index++ )
     {
         m_values[ index ] = ~m_values[ index ];
     }
 }
 
 // reverse the value of "bit" position
-void BitArray::flip( size_t index )
+void BitArray::flip( std::size_t index )
 {
     m_values[ ::BitToByte( index ) ] ^= ::SetBitMask[ index & 7 ];
 }
@@ -214,13 +214,13 @@ void BitArray::flip( size_t index )
 // count the true value
 size_t BitArray::count( void ) const
 {
-    size_t ret     = 0;
-    size_t counter = 0;
-    const size_t byte_size = this->byteSize();
-    const size_t nbits     = m_nvalues - 1;
-    for( size_t index = 0; index < byte_size; index++ )
+    std::size_t ret     = 0;
+    std::size_t counter = 0;
+    const std::size_t byte_size = this->byteSize();
+    const std::size_t nbits     = m_nvalues - 1;
+    for( std::size_t index = 0; index < byte_size; index++ )
     {
-        for( size_t bit_index = 0; bit_index < 8; bit_index++ )
+        for( std::size_t bit_index = 0; bit_index < 8; bit_index++ )
         {
             if( ( m_values[index] & ::SetBitMask[bit_index] ) != 0 )
             {
@@ -236,27 +236,27 @@ size_t BitArray::count( void ) const
 };
 
 // return the "bit" position value
-bool BitArray::test( size_t index ) const
+bool BitArray::test( std::size_t index ) const
 {
     return( ( m_values[ ::BitToByte( index ) ] & ::SetBitMask[ index & 7 ] ) != 0 );
 }
 
-const size_t BitArray::size( void ) const
+const std::size_t BitArray::size( void ) const
 {
     return( m_nvalues );
 }
 
-const size_t BitArray::byteSize( void ) const
+const std::size_t BitArray::byteSize( void ) const
 {
     return( ::BitToByte( m_nvalues + 7 ) );
 }
 
-const size_t BitArray::bitSize( void ) const
+const std::size_t BitArray::bitSize( void ) const
 {
     return( ::ByteToBit( this->byteSize() ) );
 }
 
-const size_t BitArray::paddingBit( void ) const
+const std::size_t BitArray::paddingBit( void ) const
 {
     return( this->bitSize() - m_nvalues );
 }
@@ -287,25 +287,25 @@ void BitArray::deepCopy( const BitArray& other )
             other.byteSize() );
 }
 
-void BitArray::deepCopy( const vismodule::UInt8* values, const size_t nvalues )
+void BitArray::deepCopy( const vismodule::UInt8* values, const std::size_t nvalues )
 {
     memcpy( this->allocate( nvalues ),
             values,
             ::BitToByte( nvalues + 7 ) );
 }
 
-void BitArray::deepCopy( const bool* values, const size_t nvalues )
+void BitArray::deepCopy( const bool* values, const std::size_t nvalues )
 {
     this->allocate( nvalues );
 
-    for ( size_t index = 0; index < m_nvalues; index++ )
+    for ( std::size_t index = 0; index < m_nvalues; index++ )
     {
         if ( values[index] ) this->set( index );
         else                 this->reset( index );
     }
 }
 
-vismodule::UInt8* BitArray::allocate( size_t nvalues )
+vismodule::UInt8* BitArray::allocate( std::size_t nvalues )
 {
     this->unref();
     this->create_counter();

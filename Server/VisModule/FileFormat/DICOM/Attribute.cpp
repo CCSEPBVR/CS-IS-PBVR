@@ -19,8 +19,8 @@ namespace
 {
 
 const char*  Part10Code     = "DICM";
-const size_t Part10CodeSize = 4;
-const size_t Part10CodeSeek = 128;
+const std::size_t Part10CodeSize = 4;
+const std::size_t Part10CodeSeek = 128;
 
 } // end of namespace
 

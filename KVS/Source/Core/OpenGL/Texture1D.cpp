@@ -29,7 +29,7 @@ void Texture1D::Unbind()
  *  @brief  Create the texture.
  */
 /*==========================================================================*/
-void Texture1D::create( const size_t width, const void* data )
+void Texture1D::create( const std::size_t width, const void* data )
 {
     KVS_ASSERT( width > 0 );
     KVS_ASSERT( static_cast<GLint>( width ) <= kvs::OpenGL::MaxTextureSize() );
@@ -63,9 +63,9 @@ void Texture1D::release()
  */
 /*==========================================================================*/
 void Texture1D::load(
-    const size_t width,
+    const std::size_t width,
     const void* data,
-    const size_t offset )
+    const std::size_t offset )
 {
     const GLint swap = kvs::OpenGL::Integer( GL_UNPACK_SWAP_BYTES );
     const GLint alignment = kvs::OpenGL::Integer( GL_UNPACK_ALIGNMENT );
@@ -98,8 +98,8 @@ void Texture1D::load(
 void Texture1D::loadFromFrameBuffer(
     const int x,
     const int y,
-    const size_t width,
-    const size_t offset )
+    const std::size_t width,
+    const std::size_t offset )
 {
 //    const GLint swap = kvs::OpenGL::Integer( GL_UNPACK_SWAP_BYTES );
 //    const GLint alignment = kvs::OpenGL::Integer( GL_UNPACK_ALIGNMENT );

@@ -32,8 +32,8 @@ public:
     GLenum type() const { return m_type; }
     void setFormat( const GLenum format );
     void setType( const GLenum type );
-    void readPixels( const int x, const int y, const size_t width, const size_t height, void* pixels, const GLenum buffer = 0 ) const;
-    void drawPixels( const int x, const int y, const size_t width, const size_t height, const void* pixels, const GLenum buffer = 0 ) const;
+    void readPixels( const int x, const int y, const std::size_t width, const std::size_t height, void* pixels, const GLenum buffer = 0 ) const;
+    void drawPixels( const int x, const int y, const std::size_t width, const std::size_t height, const void* pixels, const GLenum buffer = 0 ) const;
 };
 
 } // end of namespace kvs

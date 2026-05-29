@@ -67,11 +67,11 @@ inline std::string TypeName( const std::type_info& type )
 /*===========================================================================*/
 template <typename T>
 inline kvs::ValueArray<T> ReadInternalData(
-    const size_t nelements,
+    const std::size_t nelements,
     kvs::Tokenizer& tokenizer )
 {
     kvs::ValueArray<T> result( nelements );
-    for ( size_t i = 0; i < nelements; i++ )
+    for ( std::size_t i = 0; i < nelements; i++ )
     {
         result[i] = kvs::kvsml::temporal::To<T>( tokenizer.token() );
     }
@@ -135,7 +135,7 @@ inline std::string GetDataType( const kvs::AnyValueArray& data_array )
 template <typename T>
 inline bool ReadInternalData(
     kvs::AnyValueArray* data_array,
-    const size_t nelements,
+    const std::size_t nelements,
     kvs::Tokenizer& tokenizer )
 {
     *data_array = kvs::AnyValueArray( kvs::kvsml::temporal::ReadInternalData<T>( nelements, tokenizer ) );
@@ -154,7 +154,7 @@ inline bool ReadInternalData(
 template <typename T>
 inline bool ReadInternalData(
     kvs::ValueArray<T>* data_array,
-    const size_t nelements,
+    const std::size_t nelements,
     kvs::Tokenizer& tokenizer )
 {
     *data_array = kvs::kvsml::temporal::ReadInternalData<T>( nelements, tokenizer );
@@ -174,7 +174,7 @@ inline bool ReadInternalData(
 template <typename T>
 inline bool ReadExternalData(
     kvs::AnyValueArray* data_array,
-    const size_t nelements,
+    const std::size_t nelements,
     const std::string& filename,
     const std::string& format )
 {
@@ -189,7 +189,7 @@ inline bool ReadExternalData(
             return false;
         }
 
-        const size_t data_size = data_array->size();
+        const std::size_t data_size = data_array->size();
         if ( fread( data_array->data(), sizeof(T), data_size, ifs ) != data_size )
         {
             kvsMessageError("Cannot read '%s'.", filename.c_str());
@@ -209,7 +209,7 @@ inline bool ReadExternalData(
         }
 
         fseek( ifs, 0, SEEK_END );
-        const size_t size = ftell( ifs );
+        const std::size_t size = ftell( ifs );
 
         char* buffer = static_cast<char*>( malloc( sizeof(char) * size ) );
         if ( !buffer )
@@ -230,7 +230,7 @@ inline bool ReadExternalData(
 
         const char* delim = " ,\t\n";
         char* value = strtok( buffer, delim );
-        for ( size_t i = 0; i < nelements; i++ )
+        for ( std::size_t i = 0; i < nelements; i++ )
         {
             if ( value )
             {
@@ -265,7 +265,7 @@ inline bool ReadExternalData(
 template <typename T1, typename T2>
 inline bool ReadExternalData(
     kvs::ValueArray<T1>* out_array,
-    const size_t nelements,
+    const std::size_t nelements,
     const std::string& filename,
     const std::string& format )
 {
@@ -282,7 +282,7 @@ inline bool ReadExternalData(
 
         if ( typeid( T1 ) == typeid( T2 ) )
         {
-            const size_t data_size = data_array.size();
+            const std::size_t data_size = data_array.size();
             if ( fread( data_array.data(), sizeof( T1 ), data_size, ifs ) != data_size )
             {
                 kvsMessageError( "Cannot read '%s'.",filename.c_str() );
@@ -292,8 +292,8 @@ inline bool ReadExternalData(
         }
         else
         {
-            const size_t nloops = data_array.size();
-            for ( size_t i = 0; i < nloops; i++ )
+            const std::size_t nloops = data_array.size();
+            for ( std::size_t i = 0; i < nloops; i++ )
             {
                 T2 data = T2(0);
                 if ( fread( &data, sizeof(T2), 1, ifs ) != 1 )
@@ -317,7 +317,7 @@ inline bool ReadExternalData(
         }
 
         fseek( ifs, 0, SEEK_END );
-        const size_t size = ftell( ifs );
+        const std::size_t size = ftell( ifs );
 
         std::vector<char> buffer( size );
 
@@ -332,7 +332,7 @@ inline bool ReadExternalData(
 
         const char* delim = " ,\t\n";
         char* value = strtok( &( buffer[0] ), delim );
-        for ( size_t i = 0; i < nelements; i++ )
+        for ( std::size_t i = 0; i < nelements; i++ )
         {
             if ( value )
             {
@@ -378,46 +378,46 @@ inline bool WriteExternalData(
 
         const std::string delim(", ");
         const std::type_info& data_type = data_array.typeInfo()->type();
-        const size_t data_size = data_array.size();
+        const std::size_t data_size = data_array.size();
         if ( data_type == typeid(kvs::Int8) )
         {
             const kvs::Int8* values = static_cast<const kvs::Int8*>( data_array.data() );
-            for ( size_t i = 0; i < data_size; i++ ) ofs << kvs::Int16(values[i]) << delim;
+            for ( std::size_t i = 0; i < data_size; i++ ) ofs << kvs::Int16(values[i]) << delim;
         }
         else if ( data_type == typeid(kvs::UInt8) )
         {
             const kvs::UInt8* values = static_cast<const kvs::UInt8*>( data_array.data() );
-            for ( size_t i = 0; i < data_size; i++ ) ofs << kvs::UInt16(values[i]) << delim;
+            for ( std::size_t i = 0; i < data_size; i++ ) ofs << kvs::UInt16(values[i]) << delim;
         }
         else if ( data_type == typeid(kvs::Int16) )
         {
             const kvs::Int16* values = static_cast<const kvs::Int16*>( data_array.data() );
-            for ( size_t i = 0; i < data_size; i++ ) ofs << values[i] << delim;
+            for ( std::size_t i = 0; i < data_size; i++ ) ofs << values[i] << delim;
         }
         else if ( data_type == typeid(kvs::UInt16) )
         {
             const kvs::UInt16* values = static_cast<const kvs::UInt16*>( data_array.data() );
-            for ( size_t i = 0; i < data_size; i++ ) ofs << values[i] << delim;
+            for ( std::size_t i = 0; i < data_size; i++ ) ofs << values[i] << delim;
         }
         else if ( data_type == typeid(kvs::Int32) )
         {
             const kvs::Int32* values = static_cast<const kvs::Int32*>( data_array.data() );
-            for ( size_t i = 0; i < data_size; i++ ) ofs << values[i] << delim;
+            for ( std::size_t i = 0; i < data_size; i++ ) ofs << values[i] << delim;
         }
         else if ( data_type == typeid(kvs::UInt32) )
         {
             const kvs::UInt32* values = static_cast<const kvs::UInt32*>( data_array.data() );
-            for ( size_t i = 0; i < data_size; i++ ) ofs << values[i] << delim;
+            for ( std::size_t i = 0; i < data_size; i++ ) ofs << values[i] << delim;
         }
         else if ( data_type == typeid(kvs::Real32) )
         {
             const kvs::Real32* values = static_cast<const kvs::Real32*>( data_array.data() );
-            for ( size_t i = 0; i < data_size; i++ ) ofs << values[i] << delim;
+            for ( std::size_t i = 0; i < data_size; i++ ) ofs << values[i] << delim;
         }
         else if ( data_type == typeid(kvs::Real64) )
         {
             const kvs::Real64* values = static_cast<const kvs::Real64*>( data_array.data() );
-            for ( size_t i = 0; i < data_size; i++ ) ofs << values[i] << delim;
+            for ( std::size_t i = 0; i < data_size; i++ ) ofs << values[i] << delim;
         }
 
         ofs.close();
@@ -431,7 +431,7 @@ inline bool WriteExternalData(
             return false;
         }
         const void* data_pointer = data_array.data();
-        const size_t data_byte_size = data_array.byteSize();
+        const std::size_t data_byte_size = data_array.byteSize();
         ofs.write( static_cast<const char*>(data_pointer), data_byte_size );
         ofs.close();
     }
@@ -469,14 +469,14 @@ inline bool WriteExternalData(
         }
 
         const std::string delim(", ");
-        const size_t data_size = data_array.size();
+        const std::size_t data_size = data_array.size();
         if ( typeid(T) == typeid(kvs::Int8) || typeid(T) == typeid(kvs::UInt8) )
         {
-            for ( size_t i = 0; i < data_size; i++ ) ofs << int( data_array[i] ) << delim;
+            for ( std::size_t i = 0; i < data_size; i++ ) ofs << int( data_array[i] ) << delim;
         }
         else
         {
-            for ( size_t i = 0; i < data_size; i++ ) ofs << data_array[i] << delim;
+            for ( std::size_t i = 0; i < data_size; i++ ) ofs << data_array[i] << delim;
         }
 
         ofs.close();
@@ -490,7 +490,7 @@ inline bool WriteExternalData(
             return false;
         }
         const char* data_pointer = reinterpret_cast<const char*>( data_array.data() );
-        const size_t data_byte_size = data_array.byteSize();
+        const std::size_t data_byte_size = data_array.byteSize();
         ofs.write( data_pointer, data_byte_size );
         ofs.close();
     }

@@ -123,8 +123,8 @@ int CellTreeLocator::findCell( const kvs::Vec3 p )
 
 void CellTreeLocator::clearCache()
 {
-    for ( size_t i = 0; i < 32; i++ ) { m_cache1[ i ] = -1; }
-    for ( size_t i = 0; i < 16; i++ ) { m_cache2[ i ] = -1; }
+    for ( std::size_t i = 0; i < 32; i++ ) { m_cache1[ i ] = -1; }
+    for ( std::size_t i = 0; i < 16; i++ ) { m_cache2[ i ] = -1; }
 
     m_cache1[0] = 0;
     m_cache2[0] = 0;

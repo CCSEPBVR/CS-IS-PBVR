@@ -185,17 +185,17 @@ inline void TrilinearInterpolator::attachPoint( const Vector3f& point )
     VIS_MODULE_ASSERT( 0.0f <= point.z() && point.z() <= resolution.z() - 1.0f );
 
     // Temporary index.
-    const size_t ti = static_cast<size_t>( point.x() );
-    const size_t tj = static_cast<size_t>( point.y() );
-    const size_t tk = static_cast<size_t>( point.z() );
+    const std::size_t ti = static_cast<size_t>( point.x() );
+    const std::size_t tj = static_cast<size_t>( point.y() );
+    const std::size_t tk = static_cast<size_t>( point.z() );
 
     // Addjustment index for boundary.
-    const size_t i = ( ti >= resolution.x() - 1 ) ? resolution.x() - 2 : ti;
-    const size_t j = ( tj >= resolution.y() - 1 ) ? resolution.y() - 2 : tj;
-    const size_t k = ( tk >= resolution.z() - 1 ) ? resolution.z() - 2 : tk;
+    const std::size_t i = ( ti >= resolution.x() - 1 ) ? resolution.x() - 2 : ti;
+    const std::size_t j = ( tj >= resolution.y() - 1 ) ? resolution.y() - 2 : tj;
+    const std::size_t k = ( tk >= resolution.z() - 1 ) ? resolution.z() - 2 : tk;
 
-    const size_t line_size  = m_reference_volume->nnodesPerLine();
-    const size_t slice_size = m_reference_volume->nnodesPerSlice();
+    const std::size_t line_size  = m_reference_volume->nnodesPerLine();
+    const std::size_t slice_size = m_reference_volume->nnodesPerSlice();
 
     // Calculate index.
     m_grid_index.set( i, j, k );
@@ -239,19 +239,19 @@ inline void TrilinearInterpolator::attachPoint_woSIMD( const vismodule::Vector3f
     VIS_MODULE_ASSERT( 0.0f <= point.z() && point.z() <= resolution.z() - 1.0f );
 
     // Temporary index.
-    const size_t ti = static_cast<size_t>( point.x() );
-    const size_t tj = static_cast<size_t>( point.y() );
-    const size_t tk = static_cast<size_t>( point.z() );
+    const std::size_t ti = static_cast<size_t>( point.x() );
+    const std::size_t tj = static_cast<size_t>( point.y() );
+    const std::size_t tk = static_cast<size_t>( point.z() );
 
     // Addjustment index for boundary.
-    const size_t i = ( ti >= resolution.x() - 1 ) ? resolution.x() - 2 : ti;
-    const size_t j = ( tj >= resolution.y() - 1 ) ? resolution.y() - 2 : tj;
-    const size_t k = ( tk >= resolution.z() - 1 ) ? resolution.z() - 2 : tk;
+    const std::size_t i = ( ti >= resolution.x() - 1 ) ? resolution.x() - 2 : ti;
+    const std::size_t j = ( tj >= resolution.y() - 1 ) ? resolution.y() - 2 : tj;
+    const std::size_t k = ( tk >= resolution.z() - 1 ) ? resolution.z() - 2 : tk;
 
-    //const size_t line_size  = m_reference_volume->nnodesPerLine();
-    //const size_t slice_size = m_reference_volume->nnodesPerSlice();
-    const size_t line_size  = m_line_size ;
-    const size_t slice_size = m_slice_size;
+    //const std::size_t line_size  = m_reference_volume->nnodesPerLine();
+    //const std::size_t slice_size = m_reference_volume->nnodesPerSlice();
+    const std::size_t line_size  = m_line_size ;
+    const std::size_t slice_size = m_slice_size;
 
     // Calculate index.
     m_grid_index.set( i, j, k );
@@ -294,14 +294,14 @@ inline void TrilinearInterpolator::attachPoint( const float* p_x, const float* p
     for( int I=0; I < SIMDW; I++ )
     {
         // Temporary index.
-        const size_t ti = static_cast<size_t>( p_x[I] );
-        const size_t tj = static_cast<size_t>( p_y[I] );
-        const size_t tk = static_cast<size_t>( p_z[I] );
+        const std::size_t ti = static_cast<size_t>( p_x[I] );
+        const std::size_t tj = static_cast<size_t>( p_y[I] );
+        const std::size_t tk = static_cast<size_t>( p_z[I] );
 
         // Addjustment index for boundary.
-        const size_t i = ( ti >= resolution.x() - 1 ) ? resolution.x() - 2 : ti;
-        const size_t j = ( tj >= resolution.y() - 1 ) ? resolution.y() - 2 : tj;
-        const size_t k = ( tk >= resolution.z() - 1 ) ? resolution.z() - 2 : tk;
+        const std::size_t i = ( ti >= resolution.x() - 1 ) ? resolution.x() - 2 : ti;
+        const std::size_t j = ( tj >= resolution.y() - 1 ) ? resolution.y() - 2 : tj;
+        const std::size_t k = ( tk >= resolution.z() - 1 ) ? resolution.z() - 2 : tk;
 
         // Calculate index.
         m_grid_index_i[I] = i;
@@ -445,7 +445,7 @@ inline void TrilinearInterpolator::gradient( float* g_x, float* g_y, float* g_z 
         float dsdy = 0.0f;
         float dsdz = 0.0f;
 
-        for ( size_t i = 0; i < nnodes; i++ )
+        for ( std::size_t i = 0; i < nnodes; i++ )
         {
             dsdx += data[ m_index[i][I] ] * m_dNdx[i][I];
             dsdy += data[ m_index[i][I] ] * m_dNdy[i][I];
@@ -467,12 +467,12 @@ inline const vismodule::Vector3f TrilinearInterpolator::gradient( void ) const
     const T* const data = reinterpret_cast<const T*>( m_reference_volume->values().pointer() );
 
     const vismodule::Vector3ui resolution = m_reference_volume->resolution();
-    const size_t line_size  = m_reference_volume->nnodesPerLine();
-    const size_t slice_size = m_reference_volume->nnodesPerSlice();
+    const std::size_t line_size  = m_reference_volume->nnodesPerLine();
+    const std::size_t slice_size = m_reference_volume->nnodesPerSlice();
 
-    const size_t i = m_grid_index.x();
-    const size_t j = m_grid_index.y();
-    const size_t k = m_grid_index.z();
+    const std::size_t i = m_grid_index.x();
+    const std::size_t j = m_grid_index.y();
+    const std::size_t k = m_grid_index.z();
 
     if ( i == 0 )
     {

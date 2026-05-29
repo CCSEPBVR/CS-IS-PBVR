@@ -12,7 +12,7 @@
 namespace
 {
 
-inline size_t BytePerPixel( const GLint format )
+inline std::size_t BytePerPixel( const GLint format )
 {
     switch ( format )
     {
@@ -43,9 +43,9 @@ namespace kvs
 namespace osmesa
 {
 
-bool Surface::create( const size_t width, const size_t height, const int format )
+bool Surface::create( const std::size_t width, const std::size_t height, const int format )
 {
-    const size_t bpp = ::BytePerPixel( format );
+    const std::size_t bpp = ::BytePerPixel( format );
     m_width = width;
     m_height = height;
     m_buffer.allocate( m_width * m_height * bpp );

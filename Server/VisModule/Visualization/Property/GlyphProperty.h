@@ -66,12 +66,12 @@ struct GlyphProperty
         size += vismodule::Serializer::byteSize( m_glyph_size_max );
 
         size += vismodule::Serializer::byteSize( m_glyph_color_map_table.size() );
-        for ( size_t i = 0; i < m_glyph_color_map_table.size(); i++ )
+        for ( std::size_t i = 0; i < m_glyph_color_map_table.size(); i++ )
         {
             size += vismodule::Serializer::byteSize( m_glyph_color_map_table[i] );
         }
 
-        for ( size_t i = 0; i < 3; i++ )
+        for ( std::size_t i = 0; i < 3; i++ )
         {
             size += vismodule::Serializer::byteSize( m_direction_variable[i] );
         }
@@ -79,7 +79,7 @@ struct GlyphProperty
         size += vismodule::Serializer::byteSize( m_size_sampling_method );
 
         size += vismodule::Serializer::byteSize( m_size_variable.size() );
-        for ( size_t i = 0; i < m_size_variable.size(); i++ )
+        for ( std::size_t i = 0; i < m_size_variable.size(); i++ )
         {
             size += vismodule::Serializer::byteSize( m_size_variable[i] );
         }
@@ -88,7 +88,7 @@ struct GlyphProperty
         size += vismodule::Serializer::byteSize( m_color_data_sampling_method );
 
         size += vismodule::Serializer::byteSize( m_color_data_variable.size() );
-        for ( size_t i = 0; i < m_color_data_variable.size(); i++ )
+        for ( std::size_t i = 0; i < m_color_data_variable.size(); i++ )
         {
             size += vismodule::Serializer::byteSize( m_color_data_variable[i] );
         }
@@ -96,9 +96,9 @@ struct GlyphProperty
         return size;
     }
 
-    size_t pack( char* buf ) const
+    std::size_t pack( char* buf ) const
     {
-        size_t index = 0;
+        std::size_t index = 0;
         TaskSignal task_signal = TaskSignal::UPDATE_GLYPH_PROPERTY;
 
         index += vismodule::Serializer::write( buf + index, task_signal );
@@ -113,12 +113,12 @@ struct GlyphProperty
         index += vismodule::Serializer::write( buf + index, m_glyph_size_max );
 
         index += vismodule::Serializer::write( buf + index, m_glyph_color_map_table.size() );
-        for ( size_t i = 0; i < m_glyph_color_map_table.size(); i++ )
+        for ( std::size_t i = 0; i < m_glyph_color_map_table.size(); i++ )
         {
             index += vismodule::Serializer::write( buf + index, m_glyph_color_map_table[i] );
         }
 
-        for ( size_t i = 0; i < 3; i++ )
+        for ( std::size_t i = 0; i < 3; i++ )
         {
             index += vismodule::Serializer::write( buf + index, m_direction_variable[i] );
         }
@@ -126,7 +126,7 @@ struct GlyphProperty
         index += vismodule::Serializer::write( buf + index, m_size_sampling_method );
 
         index += vismodule::Serializer::write( buf + index, m_size_variable.size() );
-        for ( size_t i = 0; i < m_size_variable.size(); i++ )
+        for ( std::size_t i = 0; i < m_size_variable.size(); i++ )
         {
             index += vismodule::Serializer::write( buf + index, m_size_variable[i] );
         }
@@ -135,7 +135,7 @@ struct GlyphProperty
         index += vismodule::Serializer::write( buf + index, m_color_data_sampling_method );
 
         index += vismodule::Serializer::write( buf + index, m_color_data_variable.size() );
-        for ( size_t i = 0; i < m_color_data_variable.size(); i++ )
+        for ( std::size_t i = 0; i < m_color_data_variable.size(); i++ )
         {
             index += vismodule::Serializer::write( buf + index, m_color_data_variable[i] );
         }
@@ -143,12 +143,12 @@ struct GlyphProperty
         return index;
     }
 
-    size_t unpack( const char* buf )
+    std::size_t unpack( const char* buf )
     {
-        size_t index = 0;
+        std::size_t index = 0;
         int64_t tmp_char_size;
         char* tmp_char = NULL;
-        size_t size;
+        std::size_t size;
         TaskSignal task_signal;
 
         index += vismodule::Serializer::read( buf + index, &task_signal );
@@ -164,14 +164,14 @@ struct GlyphProperty
 
         m_glyph_color_map_table.clear();
         index += vismodule::Serializer::read( buf + index, &size );
-        for ( size_t i = 0; i < size; i++ )
+        for ( std::size_t i = 0; i < size; i++ )
         {
             int32_t value = 0;
             index += vismodule::Serializer::read( buf + index, &value );
             m_glyph_color_map_table.push_back( value );
         }
 
-        for ( size_t i = 0; i < 3; i++ )
+        for ( std::size_t i = 0; i < 3; i++ )
         {
             index += vismodule::Serializer::read( buf + index, &m_direction_variable[i] );
         }
@@ -179,7 +179,7 @@ struct GlyphProperty
         index += vismodule::Serializer::read( buf + index, &m_size_sampling_method );
 
         index += vismodule::Serializer::read( buf + index, &size );
-        for ( size_t i = 0; i < size; i++ )
+        for ( std::size_t i = 0; i < size; i++ )
         {
             std::string value = "";
             index += vismodule::Serializer::read( buf + index, &value );
@@ -191,7 +191,7 @@ struct GlyphProperty
 
         m_color_data_variable.clear();
         index += vismodule::Serializer::read( buf + index, &size );
-        for ( size_t i = 0; i < size; i++ )
+        for ( std::size_t i = 0; i < size; i++ )
         {
             std::string value = "";
             index += vismodule::Serializer::read( buf + index, &value );
@@ -288,12 +288,12 @@ struct GlyphProperty
         std::cout << "distribution_mode          : " << distribution_mode_string          << std::endl;
         std::cout << "color_data_sampling_method : " << color_data_sampling_method_string << std::endl;
 
-        for ( size_t i = 0; i < m_size_variable.size(); i++ )
+        for ( std::size_t i = 0; i < m_size_variable.size(); i++ )
         {
             std::cout << "size_variable[" << i << "]           : " << m_size_variable[i] << std::endl;
         }
 
-        for ( size_t i = 0; i < m_color_data_variable.size(); i++ )
+        for ( std::size_t i = 0; i < m_color_data_variable.size(); i++ )
         {
             std::cout << "color_data_variable[" << i << "]     : " << m_color_data_variable[i] << std::endl;
         }

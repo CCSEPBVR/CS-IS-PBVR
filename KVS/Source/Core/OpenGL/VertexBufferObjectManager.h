@@ -66,8 +66,8 @@ public:
 private:
     kvs::VertexBufferObject m_vbo{}; ///< vertex buffer object (VBO)
     kvs::IndexBufferObject m_ibo{}; ///< index buffer object (IBO)
-    size_t m_vbo_size = 0; ///< data size of VBO
-    size_t m_ibo_size = 0; ///< data size of IBO
+    std::size_t m_vbo_size = 0; ///< data size of VBO
+    std::size_t m_ibo_size = 0; ///< data size of IBO
 
     VertexBuffer m_vertex_array; ///< vertex array buffer
     VertexBuffer m_color_array; ///< color array buffer
@@ -88,7 +88,7 @@ public:
     const VertexBuffer& texCoordArray() const { return m_tex_coord_array; }
     const IndexBuffer& indexArray() const { return m_index_array; }
     const VertexAttribBuffers& vertexAttribArrays() const { return m_vertex_attrib_arrays; }
-    const VertexAttribBuffer& vertexAttribArray( const size_t index ) const { return m_vertex_attrib_arrays[index]; }
+    const VertexAttribBuffer& vertexAttribArray( const std::size_t index ) const { return m_vertex_attrib_arrays[index]; }
 
     void setVertexArray( const VertexBuffer& buffer ) { m_vertex_array = buffer; }
     void setColorArray( const VertexBuffer& buffer ) { m_color_array = buffer; }
@@ -97,12 +97,12 @@ public:
     void setIndexArray( const IndexBuffer& buffer ) { m_index_array = buffer; }
     void setVertexAttribArray( const VertexAttribBuffer& buffer );
 
-    void setVertexArray( const kvs::AnyValueArray& array, const size_t dim, const size_t stride = 0 );
-    void setColorArray( const kvs::AnyValueArray& array, const size_t dim, const size_t stride = 0 );
-    void setNormalArray( const kvs::AnyValueArray& array, const size_t stride = 0 );
-    void setTexCoordArray( const kvs::AnyValueArray& array, const size_t dim, const size_t stride = 0 );
+    void setVertexArray( const kvs::AnyValueArray& array, const std::size_t dim, const std::size_t stride = 0 );
+    void setColorArray( const kvs::AnyValueArray& array, const std::size_t dim, const std::size_t stride = 0 );
+    void setNormalArray( const kvs::AnyValueArray& array, const std::size_t stride = 0 );
+    void setTexCoordArray( const kvs::AnyValueArray& array, const std::size_t dim, const std::size_t stride = 0 );
     void setIndexArray( const kvs::AnyValueArray& array );
-    void setVertexAttribArray( const kvs::AnyValueArray& array, const size_t index, const size_t dim, const bool normalized = false, const size_t stride = 0 );
+    void setVertexAttribArray( const kvs::AnyValueArray& array, const std::size_t index, const std::size_t dim, const bool normalized = false, const std::size_t stride = 0 );
 
     void create();
     void bind() const;
@@ -117,7 +117,7 @@ public:
     void drawElements( GLenum mode, const kvs::ValueArray<GLsizei>& count );
 
 private:
-    size_t vertex_buffer_object_size() const;
+    std::size_t vertex_buffer_object_size() const;
     void enable_client_state() const;
     void disable_client_state() const;
 };

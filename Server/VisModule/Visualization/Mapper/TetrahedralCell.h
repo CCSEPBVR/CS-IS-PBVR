@@ -141,7 +141,7 @@ template <typename T>
 inline void TetrahedralCell<T>::scalar_ary(float*  scalar_array, const int loop_cnt) const 
 {
     #pragma ivdep
-    for ( size_t i = 0; i < loop_cnt ; i++ )
+    for ( std::size_t i = 0; i < loop_cnt ; i++ )
     {
         //scalar_array[i]= static_cast<vismodule::Real32>( m_interpolation_functions_array[0][j] * m_scalars_array[0][j] );
         scalar_array[i] =  BaseClass::m_interpolation_functions_array[0][i] * BaseClass::m_scalars_array[0][i] 
@@ -715,7 +715,7 @@ public:
 
     const vismodule::Real32* differentialFunctions( const vismodule::Vector3f& point ) const;
 
-    void bindCell( const vismodule::UInt32 cell, const size_t n = 0 );
+    void bindCell( const vismodule::UInt32 cell, const std::size_t n = 0 );
 
     void setGlobalPoint( const vismodule::Vector3f& point ) const;
 
@@ -791,7 +791,7 @@ inline const vismodule::Real32* TetrahedralCell<T>::differentialFunctions( const
  */
 /*===========================================================================*/
 template <typename T>
-inline void TetrahedralCell<T>::bindCell( const vismodule::UInt32 index, const size_t n )
+inline void TetrahedralCell<T>::bindCell( const vismodule::UInt32 index, const std::size_t n )
 {
     BaseClass::bindCell( index, n );
 

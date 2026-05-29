@@ -119,8 +119,8 @@ private:
     void update_shader_program( const kvs::Shader::ShadingModel& shading_model, const bool shading_enabled );
     void setup_shader_program( const kvs::Shader::ShadingModel& shading_model, const kvs::ObjectBase* object, const kvs::Camera* camera, const kvs::Light* light );
 
-    void create_framebuffer( const size_t width, const size_t height );
-    void update_framebuffer( const size_t width, const size_t height );
+    void create_framebuffer( const std::size_t width, const std::size_t height );
+    void update_framebuffer( const std::size_t width, const std::size_t height );
 
     void create_buffer_object( const kvs::StructuredVolumeObject* volume );
     void update_buffer_object( const kvs::StructuredVolumeObject* volume );

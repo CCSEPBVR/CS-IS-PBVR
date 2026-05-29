@@ -224,15 +224,15 @@ public:
         // left volume * left nodes + right volume * right nnodes
 
         // for the fist split, a proper dimension is choosed for the least cost
-        for ( size_t d = 0; d < 3; ++d )
+        for ( std::size_t d = 0; d < 3; ++d )
         {
             unsigned int sum = 0;
-            for ( size_t n = 0; n < nbuckets -1; ++n )
+            for ( std::size_t n = 0; n < nbuckets -1; ++n )
             {
                 float lmax = -std::numeric_limits<float>::max();
                 float rmin =  std::numeric_limits<float>::max();
-                for ( size_t m = 0; m <= n; ++m ) { if ( b[d][m].max > lmax ) { lmax = b[d][m].max; } }
-                for ( size_t m = n + 1; m < nbuckets; ++m ) { if ( b[d][m].min < rmin ) { rmin = b[d][m].min; } }
+                for ( std::size_t m = 0; m <= n; ++m ) { if ( b[d][m].max > lmax ) { lmax = b[d][m].max; } }
+                for ( std::size_t m = n + 1; m < nbuckets; ++m ) { if ( b[d][m].min < rmin ) { rmin = b[d][m].min; } }
 
                 sum += b[d][n].cnt;
 
@@ -311,7 +311,7 @@ public:
 
     BoundingBox() {}
 
-    BoundingBox( const kvs::UnstructuredVolumeObject* object, size_t cindex )
+    BoundingBox( const kvs::UnstructuredVolumeObject* object, std::size_t cindex )
     {
         // create a bounding box based on a specific object and cell index
         float max = std::numeric_limits<float>::max();
@@ -319,11 +319,11 @@ public:
 
         float xmax(min), xmin(max), ymax(min), ymin(max), zmax(min), zmin(max);
 
-        size_t length = object->numberOfCellNodes();
+        std::size_t length = object->numberOfCellNodes();
         const kvs::UnstructuredVolumeObject::Connections& connections = object->connections();
         const kvs::UnstructuredVolumeObject::Coords& coords = object->coords();
 
-        for ( size_t i = 0; i < length; i ++ )
+        for ( std::size_t i = 0; i < length; i ++ )
         {
             // connections is a array of a period of Celltype
             // for Tet1 for example:
@@ -339,7 +339,7 @@ public:
             // coords[ 3 * pos + 1 ]
             // coords[ 3 * pos + 2 ]
 
-            size_t pos = connections[ length*cindex+i ];
+            std::size_t pos = connections[ length*cindex+i ];
 
             // for x
             if ( coords[ 3*pos ] < xmin ) { xmin = coords[ 3*pos ]; }
@@ -406,7 +406,7 @@ public:
 
     void build( kvs::CellTree& ct, const kvs::UnstructuredVolumeObject* volume )
     {
-        const size_t ncells = volume->numberOfCells();
+        const std::size_t ncells = volume->numberOfCells();
         m_pc = new PerCell[ ncells ];
 
         // max[3], min[3] are the bounding box of the whole data
@@ -423,7 +423,7 @@ public:
         };
 
         // m_pc coressponds to each cell
-        for ( size_t i = 0; i < ncells; ++i )
+        for ( std::size_t i = 0; i < ncells; ++i )
         {
             m_pc[i].ind = i;
 
@@ -482,7 +482,7 @@ public:
 
             ct.leaves.resize( ncells );
 
-            for ( size_t i = 0; i < ncells; ++i ) { ct.leaves[i] = m_pc[i].ind; }
+            for ( std::size_t i = 0; i < ncells; ++i ) { ct.leaves[i] = m_pc[i].ind; }
         }
         else
         {
@@ -510,7 +510,7 @@ public:
             // the max and min values of them
             for ( const PerCell* pc=begin; pc!=end; ++pc )
             {
-                for ( size_t d = 0; d < 3; ++d )
+                for ( std::size_t d = 0; d < 3; ++d )
                 {
                     float cen = (pc->min[d] + pc->max[d])/2.0f; //center of a certain dimension
                     // (distance from center to min) / (distance from max to min) * nbuckets, of a certain dimension
@@ -533,16 +533,16 @@ public:
             // left volume * left nnodes + right volume * right nnodes
 
             // for the fist split, a proper dimension is chosen for the least cost
-            for( size_t d = 0; d < 3; ++d )
+            for( std::size_t d = 0; d < 3; ++d )
             {
                 unsigned int sum = 0;
-                for ( size_t n = 0; n < nbuckets-1; ++n )
+                for ( std::size_t n = 0; n < nbuckets-1; ++n )
                 {
                     float lmax = -std::numeric_limits<float>::max();
                     float rmin =  std::numeric_limits<float>::max();
 
-                    for ( size_t m = 0; m <= n; ++m ) { if ( b[d][m].max > lmax ) { lmax = b[d][m].max; } }
-                    for ( size_t m = n + 1; m < nbuckets; ++m ) { if ( b[d][m].min < rmin ) { rmin = b[d][m].min; } }
+                    for ( std::size_t m = 0; m <= n; ++m ) { if ( b[d][m].max > lmax ) { lmax = b[d][m].max; } }
+                    for ( std::size_t m = n + 1; m < nbuckets; ++m ) { if ( b[d][m].min < rmin ) { rmin = b[d][m].min; } }
                     sum += b[d][n].cnt;
                     float lvol = (lmax-min[d])/ext[d]; // left volume
                     float rvol = (max[d]-rmin)/ext[d]; // right volume
@@ -638,7 +638,7 @@ public:
             // nn points to toot's left child's left child initially
             std::vector<kvs::CellTree::Node>::iterator nn = ct.nodes.begin()+3;
 
-            for ( size_t i = 1; ni != ct.nodes.end(); ++ni, i++ )
+            for ( std::size_t i = 1; ni != ct.nodes.end(); ++ni, i++ )
             {
                 if ( ni->isLeaf() ) { continue; }
                 if( !mask[i] )
@@ -665,7 +665,7 @@ public:
 
             ct.leaves.resize( ncells );
 
-            for ( size_t i = 0; i < ncells; ++i ) { ct.leaves[i] = m_pc[i].ind; }
+            for ( std::size_t i = 0; i < ncells; ++i ) { ct.leaves[i] = m_pc[i].ind; }
         }
     }
 
@@ -693,7 +693,7 @@ public:
         // the max and min values of them
         for ( const PerCell* pc = begin; pc != end; ++pc )
         {
-            for ( size_t d = 0; d < 3; ++d )
+            for ( std::size_t d = 0; d < 3; ++d )
             {
                 float cen = (pc->min[d] + pc->max[d])/2.0f; //center of a certain dimension
                 // (distance from center to min) / (distance from max to min) * nbuckets, of a certain dimension
@@ -717,16 +717,16 @@ public:
         // left volume * left nnodes + right volume * right nnodes
 
         // for the fist split, a proper dimension is chosen for the least cost
-        for ( size_t d = 0; d < 3; ++d )
+        for ( std::size_t d = 0; d < 3; ++d )
         {
             unsigned int sum = 0;
-            for ( size_t n=0; n<nbuckets-1; ++n )
+            for ( std::size_t n=0; n<nbuckets-1; ++n )
             {
                 float lmax = -std::numeric_limits<float>::max();
                 float rmin =  std::numeric_limits<float>::max();
 
-                for ( size_t m = 0; m <= n; ++m ) { if ( b[d][m].max > lmax ) { lmax = b[d][m].max; } }
-                for ( size_t m = n+1; m < nbuckets; ++m ) { if ( b[d][m].min < rmin ) { rmin = b[d][m].min; } }
+                for ( std::size_t m = 0; m <= n; ++m ) { if ( b[d][m].max > lmax ) { lmax = b[d][m].max; } }
+                for ( std::size_t m = n+1; m < nbuckets; ++m ) { if ( b[d][m].min < rmin ) { rmin = b[d][m].min; } }
 
                 sum += b[d][n].cnt;
 

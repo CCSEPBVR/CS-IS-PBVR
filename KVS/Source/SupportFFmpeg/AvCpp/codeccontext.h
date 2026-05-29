@@ -133,7 +133,7 @@ protected:
 
 
     std::pair<int, const std::error_category*>
-    decodeCommon(AVFrame *outFrame, const class Packet &inPacket, size_t offset, int &frameFinished,
+    decodeCommon(AVFrame *outFrame, const class Packet &inPacket, std::size_t offset, int &frameFinished,
                  int (*decodeProc)(AVCodecContext*, AVFrame*,int *, const AVPacket *)) noexcept;
 
     std::pair<int, const std::error_category*>
@@ -145,7 +145,7 @@ public:
     std::pair<int, const std::error_category*>
     decodeCommon(T &outFrame,
                  const class Packet &inPacket,
-                 size_t offset,
+                 std::size_t offset,
                  int &frameFinished,
                  int (*decodeProc)(AVCodecContext *, AVFrame *, int *, const AVPacket *));
 
@@ -417,8 +417,8 @@ public:
      *         output undefined.
      */
     VideoFrame decode(const Packet &packet,
-                      size_t offset,
-                      size_t &decodedBytes,
+                      std::size_t offset,
+                      std::size_t &decodedBytes,
                       OptionalErrorCode ec = throws(),
                       bool    autoAllocateFrame = true);
 
@@ -426,8 +426,8 @@ public:
 private:
     VideoFrame decodeVideo(OptionalErrorCode ec,
                            const Packet &packet,
-                           size_t offset,
-                           size_t *decodedBytes,
+                           std::size_t offset,
+                           std::size_t *decodedBytes,
                            bool    autoAllocateFrame);
 
 };
@@ -581,7 +581,7 @@ public:
     AudioDecoderContext& operator=(AudioDecoderContext&& other);
 
     AudioSamples decode(const Packet &inPacket, OptionalErrorCode ec = throws());
-    AudioSamples decode(const Packet &inPacket, size_t offset, OptionalErrorCode ec = throws());
+    AudioSamples decode(const Packet &inPacket, std::size_t offset, OptionalErrorCode ec = throws());
 
 };
 

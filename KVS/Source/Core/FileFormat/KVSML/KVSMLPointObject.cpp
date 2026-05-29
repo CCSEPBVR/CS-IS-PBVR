@@ -177,7 +177,7 @@ bool KVSMLPointObject::read( const std::string& filename )
         const kvs::XMLNode::SuperClass* parent = vertex_tag.node();
 
         // <Coord>
-        const size_t ncoords = vertex_tag.nvertices();
+        const std::size_t ncoords = vertex_tag.nvertices();
         if ( !kvs::kvsml::ReadCoordData( parent, ncoords, &m_coords ) )
         {
             return false;
@@ -190,7 +190,7 @@ bool KVSMLPointObject::read( const std::string& filename )
         }
 
         // <Color>
-        const size_t ncolors = vertex_tag.nvertices();
+        const std::size_t ncolors = vertex_tag.nvertices();
         if ( !kvs::kvsml::ReadColorData( parent, ncolors, &m_colors ) )
         {
             return false;
@@ -206,14 +206,14 @@ bool KVSMLPointObject::read( const std::string& filename )
         }
 
         // <Normal>
-        const size_t nnormals = vertex_tag.nvertices();
+        const std::size_t nnormals = vertex_tag.nvertices();
         if ( !kvs::kvsml::ReadNormalData( parent, nnormals, &m_normals ) )
         {
             return false;
         }
 
         // <Size>
-        const size_t nsizes = vertex_tag.nvertices();
+        const std::size_t nsizes = vertex_tag.nvertices();
         if ( !kvs::kvsml::ReadSizeData( parent, nsizes, &m_sizes ) )
         {
             return false;
@@ -264,7 +264,7 @@ bool KVSMLPointObject::write( const std::string& filename )
     }
 
     // <Vertex nvertices="xxx">
-    const size_t dimension = 3;
+    const std::size_t dimension = 3;
     kvs::kvsml::VertexTag vertex_tag;
     vertex_tag.setNVertices( m_coords.size() / dimension );
     if ( !vertex_tag.write( point_tag.node() ) )

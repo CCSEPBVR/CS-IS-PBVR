@@ -29,7 +29,7 @@
 namespace Generator = vismodule::CellByCellParticleGenerator;
 
 static bool is_initial_step = true;
-static size_t start_time_step = 0;
+static std::size_t start_time_step = 0;
 
 static void CollectParticleMinMax(
     ParticleProperty& particle_property,
@@ -232,7 +232,7 @@ void generate_particles(
     tmp_max = new float[tf_number * 2]; // color, opacity
     tmp_min = new float[tf_number * 2]; // color, opacity
 
-    for ( size_t i = 0; i < (DEFAULT_NBINS * tf_number); i++ )
+    for ( std::size_t i = 0; i < (DEFAULT_NBINS * tf_number); i++ )
     {
         tmp_c_bins[i] = 0;
         tmp_o_bins[i] = 0;
@@ -299,7 +299,7 @@ void generate_particles(
                 pol_property, dom, values, nvariables, pol_object
             );
 
-            for( size_t i = 0; i < resolution; i++ )
+            for( std::size_t i = 0; i < resolution; i++ )
             {
                 x_axis[i] = pol_object->x_axis()[i];
                 if ( pol_object->mask()[i] )

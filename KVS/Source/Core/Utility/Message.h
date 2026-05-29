@@ -220,7 +220,7 @@ private:
         std::string buffer;
         buffer.resize( 64 );
 
-        size_t n = std::vsnprintf( &buffer[0], buffer.size(), fmt, args );
+        std::size_t n = std::vsnprintf( &buffer[0], buffer.size(), fmt, args );
         if ( n > buffer.size() )
         {
             buffer.resize( n + 1 );

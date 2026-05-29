@@ -43,7 +43,7 @@ protected:
     bool m_has_min_value; ///< flag to check whether 'min_value' is specified or not
     bool m_has_max_value; ///< flag to check whether 'max_value' is specified or not
     std::string m_label; ///< data label
-    size_t m_veclen; ///< vector length
+    std::size_t m_veclen; ///< vector length
     double m_min_value; ///< minimum value
     double m_max_value; ///< maximum value
 
@@ -65,7 +65,7 @@ public:
 
     const std::string& label( void ) const;
 
-    const size_t veclen( void ) const;
+    const std::size_t veclen( void ) const;
 
     const double minValue( void ) const;
 
@@ -75,7 +75,7 @@ public:
 
     void setLabel( const std::string& label );
 
-    void setVeclen( const size_t veclen );
+    void setVeclen( const std::size_t veclen );
 
     void setMinValue( const double min_value );
 

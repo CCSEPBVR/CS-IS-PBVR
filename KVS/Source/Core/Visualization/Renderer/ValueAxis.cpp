@@ -136,7 +136,7 @@ int ValueAxis::drawTickLabelsOnTop( kvs::Painter& painter )
     {
         const kvs::FontMetrics& metrics = painter.fontMetrics();
         const float dx = ( x1 - x0 ) / ( m_nticks - 1 );
-        for ( size_t i = 0; i < m_nticks; ++i )
+        for ( std::size_t i = 0; i < m_nticks; ++i )
         {
             const double value = m_min + i * ( m_max - m_min ) / ( m_nticks - 1 );
             const auto v = kvs::String::From( value, precision, fixed, scientific );
@@ -177,7 +177,7 @@ int ValueAxis::drawTickLabelsOnBottom( kvs::Painter& painter )
     {
         const kvs::FontMetrics& metrics = painter.fontMetrics();
         const float dx = ( x1 - x0 ) / ( m_nticks - 1 );
-        for ( size_t i = 0; i < m_nticks; ++i )
+        for ( std::size_t i = 0; i < m_nticks; ++i )
         {
             const double value = m_min + i * ( m_max - m_min ) / ( m_nticks - 1 );
             const auto v = kvs::String::From( value, precision, fixed, scientific );
@@ -219,7 +219,7 @@ int ValueAxis::drawTickLabelsOnLeft( kvs::Painter& painter )
     {
         const kvs::FontMetrics& metrics = painter.fontMetrics();
         const float dy = ( y1 - y0 ) / ( m_nticks - 1 );
-        for ( size_t i = 0; i < m_nticks; ++i )
+        for ( std::size_t i = 0; i < m_nticks; ++i )
         {
             const double value = m_min + i * ( m_max - m_min ) / ( m_nticks - 1 );
             const auto v = kvs::String::From( value, precision, fixed, scientific );
@@ -262,7 +262,7 @@ int ValueAxis::drawTickLabelsOnRight( kvs::Painter& painter )
     {
         const kvs::FontMetrics& metrics = painter.fontMetrics();
         const float dy = ( y1 - y0 ) / ( m_nticks - 1 );
-        for ( size_t i = 0; i < m_nticks; ++i )
+        for ( std::size_t i = 0; i < m_nticks; ++i )
         {
             const double value = m_min + i * ( m_max - m_min ) / ( m_nticks - 1 );
             const auto v = kvs::String::From( value, precision, fixed, scientific );
@@ -297,7 +297,7 @@ void ValueAxis::drawTickMarksOnTop( kvs::Painter& painter )
     const float y = y0 * dpr;
     const float dy = m_tick_direction * m_tick_mark_length * dpr;
     const float dx = ( ( x1 - x0 ) / ( m_nticks - 1 ) ) * dpr;
-    for ( size_t i = 0; i < m_nticks; ++i, x += dx )
+    for ( std::size_t i = 0; i < m_nticks; ++i, x += dx )
     {
         kvs::OpenGL::SetLineWidth( m_tick_mark_width );
         kvs::OpenGL::Begin( GL_LINES );
@@ -326,7 +326,7 @@ void ValueAxis::drawTickMarksOnBottom( kvs::Painter& painter )
     const float y = y1 * dpr;
     const float dy = m_tick_direction * m_tick_mark_length * dpr;
     const float dx = ( ( x1 - x0 ) / ( m_nticks - 1 ) ) * dpr;
-    for ( size_t i = 0; i < m_nticks; ++i, x += dx )
+    for ( std::size_t i = 0; i < m_nticks; ++i, x += dx )
     {
         kvs::OpenGL::SetLineWidth( m_tick_mark_width );
         kvs::OpenGL::Begin( GL_LINES );
@@ -355,7 +355,7 @@ void ValueAxis::drawTickMarksOnLeft( kvs::Painter& painter )
     const float x = x0 * dpr;
     const float dx = m_tick_direction * m_tick_mark_length * dpr;
     const float dy = ( ( y1 - y0 ) / ( m_nticks - 1 ) ) * dpr;
-    for ( size_t i = 0; i < m_nticks; ++i, y -= dy )
+    for ( std::size_t i = 0; i < m_nticks; ++i, y -= dy )
     {
         kvs::OpenGL::SetLineWidth( m_tick_mark_width );
         kvs::OpenGL::Begin( GL_LINES );
@@ -384,7 +384,7 @@ void ValueAxis::drawTickMarksOnRight( kvs::Painter& painter )
     const float x = x1 * dpr;
     const float dx = m_tick_direction * m_tick_mark_length * dpr;
     const float dy = ( ( y1 - y0 ) / ( m_nticks - 1 ) ) * dpr;
-    for ( size_t i = 0; i < m_nticks; ++i, y -= dy )
+    for ( std::size_t i = 0; i < m_nticks; ++i, y -= dy )
     {
         kvs::OpenGL::SetLineWidth( m_tick_mark_width );
         kvs::OpenGL::Begin( GL_LINES );

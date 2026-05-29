@@ -74,7 +74,7 @@ size_t SystemInformation::NumberOfProcessors()
 #elif defined ( KVS_PLATFORM_MACOSX )
     int nprocessors = 0;
     int mib[2] = { CTL_HW, HW_NCPU };
-    size_t length = sizeof( nprocessors );
+    std::size_t length = sizeof( nprocessors );
     int ret = sysctl( mib, 2, &nprocessors, &length, NULL, 0 );
     if ( ret == -1 )
     {
@@ -127,7 +127,7 @@ size_t SystemInformation::TotalMemorySize()
 #elif defined ( KVS_PLATFORM_MACOSX )
 #if defined ( KVS_PLATFORM_CPU_64 )
     uint64_t memory_size = 0;
-    size_t length = sizeof( memory_size );
+    std::size_t length = sizeof( memory_size );
     int ret = sysctlbyname( "hw.memsize", &memory_size, &length, NULL, 0 );
     if ( ret == -1 )
     {
@@ -137,7 +137,7 @@ size_t SystemInformation::TotalMemorySize()
     return memory_size;
 #else
     uint32_t memory_size = 0;
-    size_t length = sizeof( memory_size );
+    std::size_t length = sizeof( memory_size );
     int ret = sysctlbyname( "hw.physmem", &memory_size, &length, NULL, 0 );
     if ( ret == -1 )
     {

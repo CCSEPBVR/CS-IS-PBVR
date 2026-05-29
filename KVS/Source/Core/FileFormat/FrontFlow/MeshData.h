@@ -29,10 +29,10 @@ class MeshData
 {
 private:
 
-    size_t m_dimensions; ///< dimensions (2 or 3)
-    size_t m_nnodes_per_element; ///< number of nodes per a element
-    size_t m_nnodes; ///< number of nodes
-    size_t m_nelements; ///< number of elements
+    std::size_t m_dimensions; ///< dimensions (2 or 3)
+    std::size_t m_nnodes_per_element; ///< number of nodes per a element
+    std::size_t m_nnodes; ///< number of nodes
+    std::size_t m_nelements; ///< number of elements
     kvs::ValueArray<kvs::Real32> m_coords; ///< coordinate values
     kvs::ValueArray<kvs::UInt32> m_connections; ///< connection values
 
@@ -41,10 +41,10 @@ public:
     MeshData();
     MeshData( const std::string filename );
 
-    size_t dimensions() const;
-    size_t nnodesPerElement() const;
-    size_t nnodes() const;
-    size_t nelements() const;
+    std::size_t dimensions() const;
+    std::size_t nnodesPerElement() const;
+    std::size_t nnodes() const;
+    std::size_t nelements() const;
     const kvs::ValueArray<kvs::Real32>& coords() const;
     const kvs::ValueArray<kvs::UInt32>& connections() const;
 

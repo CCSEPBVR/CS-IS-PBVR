@@ -57,7 +57,7 @@ size_t VertexTag::nvertices() const
  *  @param  nvertices [in] number of vertices
  */
 /*===========================================================================*/
-void VertexTag::setNVertices( const size_t nvertices )
+void VertexTag::setNVertices( const std::size_t nvertices )
 {
     m_has_nvertices = true;
     m_nvertices = nvertices;

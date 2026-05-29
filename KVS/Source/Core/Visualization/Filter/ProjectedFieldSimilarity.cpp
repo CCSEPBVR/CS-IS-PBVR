@@ -26,10 +26,10 @@ inline kvs::Matrix<float> DistanceMatrix(
     const auto nvolumes = volumes.size();
     kvs::Matrix<float> d( nvolumes, nvolumes );
     #pragma omp parallel for
-    for ( size_t i = 0; i < nvolumes - 1; ++i )
+    for ( std::size_t i = 0; i < nvolumes - 1; ++i )
     {
         #pragma omp parallel for
-        for ( size_t j = i + 1; j < nvolumes; ++j )
+        for ( std::size_t j = i + 1; j < nvolumes; ++j )
         {
             auto vi = volumes.load( i );
             auto vj = volumes.load( j );
@@ -46,10 +46,10 @@ inline kvs::Matrix<float> DistanceMatrix(
     const auto nvolumes = volumes.size();
     kvs::Matrix<float> d( nvolumes, nvolumes );
     #pragma omp parallel for
-    for ( size_t i = 0; i < nvolumes - 1; ++i )
+    for ( std::size_t i = 0; i < nvolumes - 1; ++i )
     {
         #pragma omp parallel for
-        for ( size_t j = i + 1; j < nvolumes; ++j )
+        for ( std::size_t j = i + 1; j < nvolumes; ++j )
         {
             auto vi = volumes.load( i );
             auto vj = volumes.load( j );

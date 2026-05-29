@@ -457,7 +457,7 @@ int read_geom( void )
     float *coordx = NULL;
     float *coordy = NULL;
     float *coordz = NULL;
-    size_t i;
+    std::size_t i;
 
     sprintf(filename, "%s/%s", Fparam.in_dir, Fparam.geom_file);
 

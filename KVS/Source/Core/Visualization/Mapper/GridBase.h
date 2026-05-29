@@ -24,8 +24,8 @@ class GridBase
 {
 private:
 
-    size_t m_nnodes; ///< number of nodes
-    size_t m_veclen; ///< vector length
+    std::size_t m_nnodes; ///< number of nodes
+    std::size_t m_veclen; ///< vector length
     kvs::Vec3ui m_base_index; ///< base index
     kvs::Real32* m_values; ///< values
     kvs::Real32* m_interpolation_functions;
@@ -51,12 +51,12 @@ public:
     kvs::Vec3 vector() const;
     kvs::Vec3 gradientVector() const;
 
-    size_t veclen() const { return m_veclen; }
-    size_t numberOfCellNodes() const { return m_nnodes; }
+    std::size_t veclen() const { return m_veclen; }
+    std::size_t numberOfCellNodes() const { return m_nnodes; }
     kvs::Real32* interpolationFunctions() const { return m_interpolation_functions; }
     kvs::Real32* differentialFunctions() const { return m_differential_functions; }
     const kvs::Real32* values() const { return m_values; }
-    kvs::Real32 value( const size_t index ) const { return m_values[ index ]; }
+    kvs::Real32 value( const std::size_t index ) const { return m_values[ index ]; }
     const kvs::Vec3ui baseIndex() const { return m_base_index; }
     const kvs::Vec3 localPoint() const { return m_local_point; }
     const kvs::StructuredVolumeObject* referenceVolume() const { return m_reference_volume; }

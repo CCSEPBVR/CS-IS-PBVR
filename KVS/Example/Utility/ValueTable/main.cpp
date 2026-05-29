@@ -3,7 +3,7 @@
 #include <kvs/Timer>
 
 
-void PerfTest( const size_t size, const size_t n )
+void PerfTest( const std::size_t size, const std::size_t n )
 {
     std::cout << "Performance Test" << std::endl;
 
@@ -15,7 +15,7 @@ void PerfTest( const size_t size, const size_t n )
     {
         Table t;
         kvs::Timer timer( kvs::Timer::Start );
-        for ( size_t i = 0; i < n; ++i ) { t = Table::Random( size, size ); }
+        for ( std::size_t i = 0; i < n; ++i ) { t = Table::Random( size, size ); }
         timer.stop();
         std::cout << indent << "Random: " << timer.sec() << " [sec]" << std::endl;
     }
@@ -26,7 +26,7 @@ void PerfTest( const size_t size, const size_t n )
     {
         Table t;
         kvs::Timer timer( kvs::Timer::Start );
-        for ( size_t i = 0; i < n; ++i ) { t = Table::Linear( size, size ); }
+        for ( std::size_t i = 0; i < n; ++i ) { t = Table::Linear( size, size ); }
         timer.stop();
         std::cout << indent << "Linear: " << timer.sec() << " [sec]" << std::endl;
     }
@@ -37,9 +37,9 @@ void PerfTest( const size_t size, const size_t n )
         Table t = Table::Random( size, size );
         {
             kvs::Timer timer( kvs::Timer::Start );
-            for ( size_t j = 0; j < size; ++j )
+            for ( std::size_t j = 0; j < size; ++j )
             {
-                for ( size_t i = 0; i < size; ++i )
+                for ( std::size_t i = 0; i < size; ++i )
                 {
                     t.at( i, j ) *= 2;
                 }
@@ -50,9 +50,9 @@ void PerfTest( const size_t size, const size_t n )
 
         {
             kvs::Timer timer( kvs::Timer::Start );
-            for ( size_t i = 0; i < size; ++i )
+            for ( std::size_t i = 0; i < size; ++i )
             {
-                for ( size_t j = 0; j < size; ++j )
+                for ( std::size_t j = 0; j < size; ++j )
                 {
                     t.at( i, j ) *= 2;
                 }
@@ -99,8 +99,8 @@ int main()
 
     std::cout << "Initialization" << std::endl;
     {
-        const size_t ncols = 4;
-        const size_t nrows = 3;
+        const std::size_t ncols = 4;
+        const std::size_t nrows = 3;
         kvs::ValueTable<float> v1( nrows, ncols );
         v1[0][0] = 1.0f; v1[1][0] = 2.0f; v1[2][0] = 9.0f; v1[3][0] = 2.0f;
         v1[0][1] = 2.0f; v1[1][1] = 4.0f; v1[2][1] = 7.0f; v1[3][1] = 9.0f;
@@ -123,7 +123,7 @@ int main()
         std::cout << indent.nextIndent() << "row 0: " << v2.row(0).format() << std::endl;
 
         kvs::ValueTable<int> v3;
-        for ( size_t col = 0; col < ncols; ++col )
+        for ( std::size_t col = 0; col < ncols; ++col )
         {
             v3.pushBackColumn( kvs::ValueArray<int>::Random( nrows, 10, 99 ) );
         }
@@ -131,7 +131,7 @@ int main()
         std::cout << indent << "v.pushBackColumn( kvs::ValueArray<int>::Random( nrows, 1, 9 ) );" << std::endl;
         std::cout << indent << "..." << std::endl;
         std::cout << indent.nextIndent() << "v: " << v3.format() << std::endl;
-        for ( size_t row = 0; row < nrows; ++row )
+        for ( std::size_t row = 0; row < nrows; ++row )
         {
             std::cout << indent.nextIndent() << "row " << row << ": " << v3.row(row).format() << std::endl;
         }
@@ -181,8 +181,8 @@ int main()
 
     std::cout << "Random" << std::endl;
     {
-        const size_t nrows = 3;
-        const size_t ncols = 4;
+        const std::size_t nrows = 3;
+        const std::size_t ncols = 4;
         auto v = kvs::ValueTable<int>::Random( nrows, ncols );
         std::cout << indent << "kvs::ValueTable<int>::Random( nrows, ncols ); // nrows = 3, ncols = 4" << std::endl;
         std::cout << indent.nextIndent() << v.format() << std::endl;
@@ -206,8 +206,8 @@ int main()
 
     std::cout << "Linear" << std::endl;
     {
-        const size_t nrows = 3;
-        const size_t ncols = 4;
+        const std::size_t nrows = 3;
+        const std::size_t ncols = 4;
         auto v1 = kvs::ValueTable<int>::Linear( nrows, ncols );
         std::cout << indent << "kvs::ValueTable<int>::Linear( nrows, ncols );" << std::endl;
         std::cout << indent.nextIndent() << v1.format() << std::endl;
@@ -318,8 +318,8 @@ int main()
     // Faltten.
     std::cout << "Faltten" << std::endl;
     {
-        const size_t nrows = 3;
-        const size_t ncols = 3;
+        const std::size_t nrows = 3;
+        const std::size_t ncols = 3;
         auto v = kvs::ValueTable<int>::Random( nrows, ncols, 0, 9 );
         std::cout << "v = " << v.format() << std::endl;
 
@@ -334,13 +334,13 @@ int main()
     // Slicing.
     std::cout << "Slicing" << std::endl;
     {
-        const size_t nrows = 3;
-        const size_t ncols = 4;
+        const std::size_t nrows = 3;
+        const std::size_t ncols = 4;
         auto v = kvs::ValueTable<int>::Linear( nrows, ncols );
         std::cout << "v = " << v.format() << std::endl;
 
         std::cout << indent << "Column-major order slicing" << std::endl;
-        for ( size_t i = 0; i < ncols; ++i )
+        for ( std::size_t i = 0; i < ncols; ++i )
         {
             std::cout << indent.nextIndent() << "col " << i << ": "
                       << kvs::ValueArray<int>( v.beginColumn(i), v.endColumn(i) ).format() << std::endl;
@@ -349,7 +349,7 @@ int main()
                   << kvs::ValueArray<int>( v.beginColumn(1), v.endColumn(2) ).format() << std::endl;
 
         std::cout << indent << "Row-major order slicing" << std::endl;
-        for ( size_t i = 0; i < nrows; ++i )
+        for ( std::size_t i = 0; i < nrows; ++i )
         {
             std::cout << indent.nextIndent() << "row " << i << ": "
                       << kvs::ValueArray<int>( v.beginRow(i), v.endRow(i) ).format() << std::endl;

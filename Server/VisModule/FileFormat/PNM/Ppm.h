@@ -43,15 +43,15 @@ public:
 private:
 
     Ppm::Header                 m_header; ///< header information
-    size_t                      m_width;  ///< width
-    size_t                      m_height; ///< height
+    std::size_t                      m_width;  ///< width
+    std::size_t                      m_height; ///< height
     vismodule::ValueArray<vismodule::UInt8> m_data;   ///< pixel data
 
 public:
 
     Ppm( void );
 
-    Ppm( const size_t width, const size_t height, const vismodule::ValueArray<vismodule::UInt8>& data );
+    Ppm( const std::size_t width, const std::size_t height, const vismodule::ValueArray<vismodule::UInt8>& data );
 
     Ppm( const std::string& filename );
 
@@ -61,9 +61,9 @@ public:
 
 public:
 
-    const size_t width( void ) const;
+    const std::size_t width( void ) const;
 
-    const size_t height( void ) const;
+    const std::size_t height( void ) const;
 
     const vismodule::ValueArray<vismodule::UInt8>& data( void ) const;
 

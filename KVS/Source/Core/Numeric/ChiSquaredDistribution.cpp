@@ -19,7 +19,7 @@ namespace kvs
  *  @param  dof [in] degree of freedom
  */
 /*===========================================================================*/
-ChiSquaredDistribution::ChiSquaredDistribution( const size_t dof ):
+ChiSquaredDistribution::ChiSquaredDistribution( const std::size_t dof ):
     m_dof( dof )
 {
     kvs::GammaFunction gamma;

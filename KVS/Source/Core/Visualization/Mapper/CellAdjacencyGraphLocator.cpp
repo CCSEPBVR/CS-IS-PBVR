@@ -144,7 +144,7 @@ int CellAdjacencyGraphLocator::findCell( const kvs::Vec3 p )
         float min = std::numeric_limits<float>::max();
         float distance = 0.0f;
         kvs::Vec3 center;
-        for ( size_t i = 0; i < m_nrandtests; i++ )
+        for ( std::size_t i = 0; i < m_nrandtests; i++ )
         {
             temp_startindex = ::RandomCellIndex( BaseClass::volume() );
             BaseClass::cell()->bindCell( temp_startindex );
@@ -169,7 +169,7 @@ int CellAdjacencyGraphLocator::findCell( const kvs::Vec3 p )
             float min = std::numeric_limits<float>::max();
             float distance = 0.0f;
             kvs::Vec3 center;
-            for ( size_t i = 0; i < m_nrandtests; i ++ )
+            for ( std::size_t i = 0; i < m_nrandtests; i ++ )
             {
                 temp_startindex = ::RandomCellIndex( BaseClass::volume() );
                 BaseClass::cell()->bindCell( temp_startindex );
@@ -232,7 +232,7 @@ int CellAdjacencyGraphLocator::find_cell( const kvs::Vec3 p, const int start_cel
             }
 
             BaseClass::cell()->bindCell( current_cellid );
-            for ( size_t i = 0; i < 4; i ++ )
+            for ( std::size_t i = 0; i < 4; i ++ )
             {
                 ::Plane p(
                     BaseClass::cell()->coords()[TetCellFaces[ 3*i+0 ]],
@@ -267,7 +267,7 @@ int CellAdjacencyGraphLocator::find_cell( const kvs::Vec3 p, const int start_cel
                 // step < 1 and step = max of all the step found
                 // and then set the current index 
                 float step_save = step;
-                for ( size_t i = 0; i < m_adjacency_graph->mask().size(); i++ )
+                for ( std::size_t i = 0; i < m_adjacency_graph->mask().size(); i++ )
                 {
                     if ( m_adjacency_graph->mask()[i] == 0 )
                     {

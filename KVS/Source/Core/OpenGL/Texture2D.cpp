@@ -29,7 +29,7 @@ void Texture2D::Unbind()
  *  @brief  Create the texture.
  */
 /*==========================================================================*/
-void Texture2D::create( const size_t width, const size_t height, const void* data )
+void Texture2D::create( const std::size_t width, const std::size_t height, const void* data )
 {
     KVS_ASSERT( width > 0 );
     KVS_ASSERT( static_cast<GLint>( width ) <= kvs::OpenGL::MaxTextureSize() );
@@ -68,11 +68,11 @@ void Texture2D::release()
  */
 /*==========================================================================*/
 void Texture2D::load(
-    const size_t width,
-    const size_t height,
+    const std::size_t width,
+    const std::size_t height,
     const void* data,
-    const size_t xoffset,
-    const size_t yoffset )
+    const std::size_t xoffset,
+    const std::size_t yoffset )
 {
     const GLint swap = kvs::OpenGL::Integer( GL_UNPACK_SWAP_BYTES );
     const GLint alignment = kvs::OpenGL::Integer( GL_UNPACK_ALIGNMENT );
@@ -107,10 +107,10 @@ void Texture2D::load(
 void Texture2D::loadFromFrameBuffer(
     const int x,
     const int y,
-    const size_t width,
-    const size_t height,
-    const size_t xoffset,
-    const size_t yoffset )
+    const std::size_t width,
+    const std::size_t height,
+    const std::size_t xoffset,
+    const std::size_t yoffset )
 {
 //    const GLint swap = kvs::OpenGL::Integer( GL_UNPACK_SWAP_BYTES );
 //    const GLint alignment = kvs::OpenGL::Integer( GL_UNPACK_ALIGNMENT );

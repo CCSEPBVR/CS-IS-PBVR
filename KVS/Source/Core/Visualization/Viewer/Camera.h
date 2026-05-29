@@ -42,8 +42,8 @@ private:
     float m_bottom = -5.0f; ///< bottom plane position
     float m_top = 5.0f; ///< top plane position
     kvs::Mat4 m_projection_matrix = kvs::Mat4::Identity();
-    size_t m_window_width = 512; ///< window width
-    size_t m_window_height = 512; ///< window height
+    std::size_t m_window_width = 512; ///< window width
+    std::size_t m_window_height = 512; ///< window height
 
 public:
     Camera();
@@ -61,7 +61,7 @@ public:
     void setBottom( const float bottom );
     void setTop( const float top );
     void setProjectionMatrix( const kvs::Mat4& projection_matrix );
-    void setWindowSize( const size_t width, const size_t height );
+    void setWindowSize( const std::size_t width, const std::size_t height );
     void setPosition( const kvs::Vec3& position );
     void setPosition( const kvs::Vec3& position, const kvs::Vec3& look_at );
     void setPosition( const kvs::Vec3& position, const kvs::Vec3& look_at, const kvs::Vec3& up );
@@ -77,8 +77,8 @@ public:
     float right() const { return m_right; }
     float bottom() const { return m_bottom; }
     float top() const { return m_top; }
-    size_t windowWidth() const { return m_window_width; }
-    size_t windowHeight() const { return m_window_height; }
+    std::size_t windowWidth() const { return m_window_width; }
+    std::size_t windowHeight() const { return m_window_height; }
     float devicePixelRatio() const;
     const kvs::Vec3 position() const;
     const kvs::Vec3 upVector() const;

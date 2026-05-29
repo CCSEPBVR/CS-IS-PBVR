@@ -163,7 +163,7 @@ void ParameterFileReader::readTransferFunctionFile( const char* fname )
     m_name_list_file.setName( "TF_SYNTH_C" );
     m_name_list_file.setName( "TF_SYNTH_O" );
 
-    for ( size_t i = 0; i < BEFORE_READ_TF_NUMBER; i++ )
+    for ( std::size_t i = 0; i < BEFORE_READ_TF_NUMBER; i++ )
     {
         std::stringstream ss;
         ss << "TF_NAME" << i + 1 << "_";
@@ -193,7 +193,7 @@ void ParameterFileReader::readTransferFunctionFile( const char* fname )
     const int tf_number = m_name_list_file.getValue<int>( "TF_NUMBER" );
     if ( tf_number < BEFORE_READ_TF_NUMBER )
     {
-        for ( size_t i = tf_number; i < BEFORE_READ_TF_NUMBER; i++ )
+        for ( std::size_t i = tf_number; i < BEFORE_READ_TF_NUMBER; i++ )
         {
             std::stringstream ss;
             ss << "TF_NAME" << i + 1 << "_";
@@ -227,7 +227,7 @@ void ParameterFileReader::readParticleParameterFile( const char* fname )
     m_name_list_file.setName( "OPACITY_SYNTH" );
     m_name_list_file.setName( "TF_NUMBER" );
 
-    for ( size_t n = 0; n < BEFORE_READ_TF_NUMBER; n++ )
+    for ( std::size_t n = 0; n < BEFORE_READ_TF_NUMBER; n++ )
     {
         std::stringstream ss;
         ss << "TF_NAME" << n + 1 << "_";
@@ -647,7 +647,7 @@ void ParameterFileReader::setTransferFunctionParameter( ParticleProperty& partic
     particle_property.m_transfunc_array.clear();
     particle_property.m_transfunc_array.resize( tf_number );
 
-    for ( size_t i = 0; i < tf_number; i++ )
+    for ( std::size_t i = 0; i < tf_number; i++ )
     {
         std::stringstream ss;
         ss << "TF_NAME" << i + 1 << "_";
@@ -686,9 +686,9 @@ void ParameterFileReader::setTransferFunctionParameter( ParticleProperty& partic
         vismodule::ColorMap::Table color_table( tf_resolution * 3 );
         vismodule::OpacityMap::Table opacity_table( tf_resolution );
 
-        for ( size_t j = 0; j < tf_resolution; j++ )
+        for ( std::size_t j = 0; j < tf_resolution; j++ )
         {
-            for ( size_t c = 0; c < 3; c++ )
+            for ( std::size_t c = 0; c < 3; c++ )
             {
                 int color_e;
                 ss_color >> color_e;
@@ -696,7 +696,7 @@ void ParameterFileReader::setTransferFunctionParameter( ParticleProperty& partic
             }
         }
 
-        for ( size_t j = 0; j < tf_resolution; j++ )
+        for ( std::size_t j = 0; j < tf_resolution; j++ )
         {
             float opacity;
             ss_opacity >> opacity;
@@ -727,7 +727,7 @@ void ParameterFileReader::setTransferFunctionParameter( ParticleProperty& partic
 
     std::vector<EquationToken> var;
 
-    for ( size_t i = 0; i < tf_number; i++ )
+    for ( std::size_t i = 0; i < tf_number; i++ )
     {
         std::stringstream tss;
         tss << "TF_NAME" << i + 1 << "_";
@@ -745,7 +745,7 @@ void ParameterFileReader::setTransferFunctionParameter( ParticleProperty& partic
     particle_property.m_transfunc_synthesizer->setColorVariable( var );
     var.clear();
 
-    for ( size_t i = 0; i < tf_number; i++ )
+    for ( std::size_t i = 0; i < tf_number; i++ )
     {
         std::stringstream tss;
         tss << "TF_NAME" << i + 1 << "_";
@@ -794,11 +794,11 @@ void ParameterFileReader::setParticleParameter( ParticleProperty& particle_prope
         return;   
     }
 
-    const size_t width               = m_name_list_file.getValue<size_t>( "RESOLUTION_WIDTH" );
-    const size_t height              = m_name_list_file.getValue<size_t>( "RESOLUTION_HEIGHT" );
+    const std::size_t width               = m_name_list_file.getValue<size_t>( "RESOLUTION_WIDTH" );
+    const std::size_t height              = m_name_list_file.getValue<size_t>( "RESOLUTION_HEIGHT" );
     particle_property.m_camera->setWindowSize( width, height );
 
-    const size_t resolution          = m_name_list_file.getValue<int>( "TF_RESOLUTION" );
+    const std::size_t resolution          = m_name_list_file.getValue<int>( "TF_RESOLUTION" );
     const int tf_number              = m_name_list_file.getValue<int>( "TF_NUMBER" );
 
     particle_property.m_transfunc_array.clear();
@@ -806,7 +806,7 @@ void ParameterFileReader::setParticleParameter( ParticleProperty& particle_prope
     // particle_property.m_voleqn.clear();
     // particle_property.m_voleqn.resize( tf_number );
     
-    for ( size_t n = 0; n < tf_number; n++ )
+    for ( std::size_t n = 0; n < tf_number; n++ )
     {
         std::stringstream ss;
         ss << "TF_NAME" << n + 1 << "_";
@@ -881,9 +881,9 @@ void ParameterFileReader::setParticleParameter( ParticleProperty& particle_prope
         vismodule::ColorMap::Table color_table( resolution * 3 );
         vismodule::OpacityMap::Table opacity_table( resolution );
 
-        for ( size_t i = 0; i < resolution; i++ )
+        for ( std::size_t i = 0; i < resolution; i++ )
         {
-            for ( size_t c = 0; c < 3; c++ )
+            for ( std::size_t c = 0; c < 3; c++ )
             {
                 int color_e;
                 ss_color >> color_e;
@@ -891,7 +891,7 @@ void ParameterFileReader::setParticleParameter( ParticleProperty& particle_prope
             }
         }
 
-        for ( size_t i = 0; i < resolution; i++ )
+        for ( std::size_t i = 0; i < resolution; i++ )
         {
             float opacity;
             ss_opacity >> opacity;
@@ -951,7 +951,7 @@ void ParameterFileReader::setParticleParameter( ParticleProperty& particle_prope
 
     std::vector<EquationToken> var;
 
-    for ( size_t i = 0; i < tf_number; i++ )
+    for ( std::size_t i = 0; i < tf_number; i++ )
     {
         std::stringstream tss;
         tss << "TF_NAME" << i + 1 << "_";
@@ -969,7 +969,7 @@ void ParameterFileReader::setParticleParameter( ParticleProperty& particle_prope
     particle_property.m_transfunc_synthesizer->setColorVariable( var );
     var.clear();
 
-    for ( size_t i = 0; i < tf_number; i++ )
+    for ( std::size_t i = 0; i < tf_number; i++ )
     {
         std::stringstream tss;
         tss << "TF_NAME" << i + 1 << "_";
@@ -1091,7 +1091,7 @@ void ParameterFileReader::setGlyphParameter( GlyphProperty& glyph_property )
     const std::vector<std::string> size_variables_string_table       = getTableString( size_variables_string );
 
     glyph_property.m_size_variable.resize( size_variables_string_table.size() );
-    for ( size_t i = 0; i < size_variables_string_table.size(); i++ )
+    for ( std::size_t i = 0; i < size_variables_string_table.size(); i++ )
     {
         glyph_property.m_size_variable[i] = size_variables_string_table[i];
     }
@@ -1100,7 +1100,7 @@ void ParameterFileReader::setGlyphParameter( GlyphProperty& glyph_property )
     const std::vector<std::string> color_data_variables_string_table = getTableString( color_data_variables_string );
     
     glyph_property.m_color_data_variable.resize( color_data_variables_string_table.size() );
-    for ( size_t i = 0; i < color_data_variables_string_table.size(); i++ )
+    for ( std::size_t i = 0; i < color_data_variables_string_table.size(); i++ )
     {
         glyph_property.m_color_data_variable[i] = color_data_variables_string_table[i];
     }
@@ -1115,7 +1115,7 @@ void ParameterFileReader::setGlyphParameter( GlyphProperty& glyph_property )
         return;
     }
 
-    for ( size_t i = 0; i < 3; i++ )
+    for ( std::size_t i = 0; i < 3; i++ )
     {
         glyph_property.m_direction_variable[i] = direction_variables_string_table[i];
     }
@@ -1130,7 +1130,7 @@ void ParameterFileReader::setGlyphParameter( GlyphProperty& glyph_property )
     vismodule::ValueArray<vismodule::UInt8> color_map_uint_table( color_map_int_table.size() );
     glyph_property.m_glyph_color_map_table.clear();
     glyph_property.m_glyph_color_map_table.reserve( color_map_int_table.size() );
-    for ( size_t i = 0; i < color_map_int_table.size(); i++ )
+    for ( std::size_t i = 0; i < color_map_int_table.size(); i++ )
     {
         glyph_property.m_glyph_color_map_table.push_back( static_cast<int32_t>( color_map_int_table[i] ) );
         color_map_uint_table[i] = (vismodule::UInt8)color_map_int_table[i];
@@ -1152,17 +1152,17 @@ void ParameterFileReader::setGlyphParameter( GlyphProperty& glyph_property )
     std::cout << "glyph_property.m_number_of_sampling_point   = " << glyph_property.m_number_of_sampling_point << std::endl;
     std::cout << "glyph_property.m_color_data_sampling_method = " << color_sampling_method                     << std::endl;
 
-    for( size_t i = 0; i < glyph_property.m_size_variable.size(); i++ )
+    for( std::size_t i = 0; i < glyph_property.m_size_variable.size(); i++ )
     {
         std::cout << "glyph_property.m_size_variable[" << i << "]          = " << glyph_property.m_size_variable[i] << std::endl; 
     }
 
-    for( size_t i = 0; i < glyph_property.m_color_data_variable.size(); i++ )
+    for( std::size_t i = 0; i < glyph_property.m_color_data_variable.size(); i++ )
     {
         std::cout << "glyph_property.m_color_data_variable[" << i << "]     = " << glyph_property.m_color_data_variable[i] <<  std::endl; 
     }
 
-    for ( size_t i = 0; i < 3; i++ )
+    for ( std::size_t i = 0; i < 3; i++ )
     {
         std::cout << "glyph_property.m_direction_variable[" << i << "]     = " << glyph_property.m_direction_variable[i] <<  std::endl; 
     }
@@ -1301,20 +1301,20 @@ void ParameterFileReader::set_default_parameter()
     
     std::stringstream tag_c, table_c;
     
-    for ( size_t i = 0; i < color_table.size(); i++ )
+    for ( std::size_t i = 0; i < color_table.size(); i++ )
     {
         table_c << static_cast<int>( color_table.at( i ) ) << ",";
     }
     
     std::stringstream tag_o, table_o;
     
-    for ( size_t i = 0; i < opacity_table.size(); i++ )
+    for ( std::size_t i = 0; i < opacity_table.size(); i++ )
     {
         table_o << opacity_table.at( i ) << ",";
     }
     
     int tf_size = DEFAULT_TF_NUMBER;
-    for ( size_t n = 0; n < tf_size ; n++ )
+    for ( std::size_t n = 0; n < tf_size ; n++ )
     {
         std::stringstream ss;
         ss << "TF_NAME" << n + 1 << "_";

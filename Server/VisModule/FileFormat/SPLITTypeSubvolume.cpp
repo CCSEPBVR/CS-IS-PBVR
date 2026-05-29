@@ -39,9 +39,9 @@ namespace
  *  @return number of nodes per element
  */
 /*===========================================================================*/
-inline const size_t GetNumberOfNodesPerElement( const std::string& cell_type )
+inline const std::size_t GetNumberOfNodesPerElement( const std::string& cell_type )
 {
-    size_t nnodes = 0;
+    std::size_t nnodes = 0;
     if ( cell_type == "tetrahedra" ) nnodes = 4;
     else if ( cell_type == "quadratic tetrahedra" ) nnodes = 10;
     else if ( cell_type == "hexahedra" ) nnodes = 8;
@@ -150,7 +150,7 @@ const std::string& SPLITTypeSubvolume::label() const
  *  @return vector length
  */
 /*===========================================================================*/
-const size_t SPLITTypeSubvolume::veclen() const
+const std::size_t SPLITTypeSubvolume::veclen() const
 {
     return m_vector_length;
 }
@@ -161,7 +161,7 @@ const size_t SPLITTypeSubvolume::veclen() const
  *  @return number of nodes
  */
 /*===========================================================================*/
-const size_t SPLITTypeSubvolume::nnodes() const
+const std::size_t SPLITTypeSubvolume::nnodes() const
 {
     return m_nnodes;
 }
@@ -172,7 +172,7 @@ const size_t SPLITTypeSubvolume::nnodes() const
  *  @return number of cells
  */
 /*===========================================================================*/
-const size_t SPLITTypeSubvolume::ncells() const
+const std::size_t SPLITTypeSubvolume::ncells() const
 {
     return m_ncells;
 }
@@ -264,7 +264,7 @@ void SPLITTypeSubvolume::setLabel( const std::string& label )
  *  @param  veclen [in] vector length
  */
 /*===========================================================================*/
-void SPLITTypeSubvolume::setVeclen( const size_t veclen )
+void SPLITTypeSubvolume::setVeclen( const std::size_t veclen )
 {
     m_vector_length = veclen;
 }
@@ -275,7 +275,7 @@ void SPLITTypeSubvolume::setVeclen( const size_t veclen )
  *  @param  nnodes [in] number of nodes
  */
 /*===========================================================================*/
-void SPLITTypeSubvolume::setNNodes( const size_t nnodes )
+void SPLITTypeSubvolume::setNNodes( const std::size_t nnodes )
 {
     m_nnodes = nnodes;
 }
@@ -286,7 +286,7 @@ void SPLITTypeSubvolume::setNNodes( const size_t nnodes )
  *  @param  ncells [in] number of cells
  */
 /*===========================================================================*/
-void SPLITTypeSubvolume::setNCells( const size_t ncells )
+void SPLITTypeSubvolume::setNCells( const std::size_t ncells )
 {
     m_ncells = ncells;
 }
@@ -433,7 +433,7 @@ const bool SPLITTypeSubvolume::read( const std::string& filename )
     }
 
     // <DataArray>
-    const size_t value_nelements = m_nnodes * m_vector_length;
+    const std::size_t value_nelements = m_nnodes * m_vector_length;
     vismodule::kvsml::DataArrayTag values;
     if ( !values.read( value_tag.node(), value_nelements, &m_values ) )
     {
@@ -452,8 +452,8 @@ const bool SPLITTypeSubvolume::read( const std::string& filename )
     }
 
     // <DataArray>
-    const size_t dimension = 3;
-    const size_t coord_nelements = m_nnodes * dimension;
+    const std::size_t dimension = 3;
+    const std::size_t coord_nelements = m_nnodes * dimension;
     vismodule::kvsml::DataArrayTag coords;
     if ( !coords.read( coord_tag.node(), coord_nelements, &m_coords ) )
     {
@@ -487,8 +487,8 @@ const bool SPLITTypeSubvolume::read( const std::string& filename )
     }
 
     // <DataArray>
-    const size_t nnodes_per_element = ::GetNumberOfNodesPerElement( m_cell_type );
-    const size_t connection_nelements = m_ncells * nnodes_per_element;
+    const std::size_t nnodes_per_element = ::GetNumberOfNodesPerElement( m_cell_type );
+    const std::size_t connection_nelements = m_ncells * nnodes_per_element;
     vismodule::kvsml::DataArrayTag connections;
     if ( !connections.read( connection_tag.node(), connection_nelements, &m_connections ) )
     {

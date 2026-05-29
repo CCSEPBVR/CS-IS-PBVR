@@ -32,7 +32,7 @@ private:
     kvs::Vec2i m_p0{ 0, 0 }; ///< mouse pressing position
     kvs::Vec2i m_p1{ 0, 0 }; ///< mouse moving position
     kvs::Vec2i m_p{ 0, 0 };  ///< current mouse position
-    size_t m_selected_axis = 0; ///< selected axis ID
+    std::size_t m_selected_axis = 0; ///< selected axis ID
     bool m_range_setting = false; ///< range selecting mode if true
     bool m_range_moving = false; ///< range moving mode if true
     kvs::Painter m_painter{}; ///< painter

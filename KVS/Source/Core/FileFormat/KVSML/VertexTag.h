@@ -27,14 +27,14 @@ public:
 
 private:
     bool m_has_nvertices; ///< flag to check whether 'nvertices' is specified or not
-    size_t m_nvertices; ///< number of vertices
+    std::size_t m_nvertices; ///< number of vertices
 
 public:
     VertexTag();
 
     bool hasNVertices() const;
-    size_t nvertices() const;
-    void setNVertices( const size_t nvertices );
+    std::size_t nvertices() const;
+    void setNVertices( const std::size_t nvertices );
 
     bool read( const kvs::XMLNode::SuperClass* parent );
     bool write( kvs::XMLNode::SuperClass* parent );

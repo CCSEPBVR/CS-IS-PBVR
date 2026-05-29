@@ -19,7 +19,7 @@ namespace
 {
 
 // Default values.
-const size_t NumberOfChannels = 3;
+const std::size_t NumberOfChannels = 3;
 kvs::ColorMap::ColorMapFunction DefaultColorMap = kvs::ColorMap::BrewerRdBu;
 
 }
@@ -33,7 +33,7 @@ void ColorMap::SetDefaultColorMap( ColorMapFunction func )
     ::DefaultColorMap = func;
 }
 
-kvs::ColorMap ColorMap::DefaultColorMap( const size_t resolution )
+kvs::ColorMap ColorMap::DefaultColorMap( const std::size_t resolution )
 {
     return ::DefaultColorMap( resolution );
 }
@@ -45,7 +45,7 @@ kvs::ColorMap ColorMap::DefaultColorMap( const size_t resolution )
  *  @return rainbow colormap
  */
 /*===========================================================================*/
-kvs::ColorMap ColorMap::Rainbow( const size_t resolution )
+kvs::ColorMap ColorMap::Rainbow( const std::size_t resolution )
 {
     const auto hue_min = 0.0f;
     const auto hue_mid = 120.0f / 360.0f;
@@ -77,7 +77,7 @@ kvs::ColorMap ColorMap::Rainbow( const size_t resolution )
  *      https://www.kennethmoreland.com/color-maps/
  */
 /*===========================================================================*/
-kvs::ColorMap ColorMap::CoolWarm( const size_t resolution )
+kvs::ColorMap ColorMap::CoolWarm( const std::size_t resolution )
 {
     std::list<kvs::RGBColor> colors = {
         {  59, 76, 192 },
@@ -104,7 +104,7 @@ kvs::ColorMap ColorMap::CoolWarm( const size_t resolution )
  *      http://colorbrewer2.org
  */
 /*===========================================================================*/
-kvs::ColorMap ColorMap::BrewerBrBG( const size_t resolution )
+kvs::ColorMap ColorMap::BrewerBrBG( const std::size_t resolution )
 {
     std::list<kvs::RGBColor> colors = {
         {  84,  48,   5 },
@@ -141,7 +141,7 @@ kvs::ColorMap ColorMap::BrewerBrBG( const size_t resolution )
  *      http://colorbrewer2.org
  */
 /*===========================================================================*/
-kvs::ColorMap ColorMap::BrewerPiYG( const size_t resolution )
+kvs::ColorMap ColorMap::BrewerPiYG( const std::size_t resolution )
 {
     std::list<kvs::RGBColor> colors = {
         { 142,   1,  82 },
@@ -178,7 +178,7 @@ kvs::ColorMap ColorMap::BrewerPiYG( const size_t resolution )
  *      http://colorbrewer2.org
  */
 /*===========================================================================*/
-kvs::ColorMap ColorMap::BrewerPRGn( const size_t resolution )
+kvs::ColorMap ColorMap::BrewerPRGn( const std::size_t resolution )
 {
     std::list<kvs::RGBColor> colors = {
         {  64,   0,  75 },
@@ -215,7 +215,7 @@ kvs::ColorMap ColorMap::BrewerPRGn( const size_t resolution )
  *      http://colorbrewer2.org
  */
 /*===========================================================================*/
-kvs::ColorMap ColorMap::BrewerPuOr( const size_t resolution )
+kvs::ColorMap ColorMap::BrewerPuOr( const std::size_t resolution )
 {
     std::list<kvs::RGBColor> colors = {
         { 127,  59,   8 },
@@ -252,7 +252,7 @@ kvs::ColorMap ColorMap::BrewerPuOr( const size_t resolution )
  *      http://colorbrewer2.org
  */
 /*===========================================================================*/
-kvs::ColorMap ColorMap::BrewerRdBu( const size_t resolution )
+kvs::ColorMap ColorMap::BrewerRdBu( const std::size_t resolution )
 {
     std::list<kvs::RGBColor> colors = {
         { 103,   0,  31 },
@@ -289,7 +289,7 @@ kvs::ColorMap ColorMap::BrewerRdBu( const size_t resolution )
  *      http://colorbrewer2.org
  */
 /*===========================================================================*/
-kvs::ColorMap ColorMap::BrewerRdGy( const size_t resolution )
+kvs::ColorMap ColorMap::BrewerRdGy( const std::size_t resolution )
 {
     std::list<kvs::RGBColor> colors = {
         { 103,   0,  31 },
@@ -326,7 +326,7 @@ kvs::ColorMap ColorMap::BrewerRdGy( const size_t resolution )
  *      http://colorbrewer2.org
  */
 /*===========================================================================*/
-kvs::ColorMap ColorMap::BrewerRdYlBu( const size_t resolution )
+kvs::ColorMap ColorMap::BrewerRdYlBu( const std::size_t resolution )
 {
     std::list<kvs::RGBColor> colors = {
         { 165,   0,  38 },
@@ -363,7 +363,7 @@ kvs::ColorMap ColorMap::BrewerRdYlBu( const size_t resolution )
  *      http://colorbrewer2.org
  */
 /*===========================================================================*/
-kvs::ColorMap ColorMap::BrewerRdYlGn( const size_t resolution )
+kvs::ColorMap ColorMap::BrewerRdYlGn( const std::size_t resolution )
 {
     std::list<kvs::RGBColor> colors = {
         { 165,   0,  38 },
@@ -400,7 +400,7 @@ kvs::ColorMap ColorMap::BrewerRdYlGn( const size_t resolution )
  *      http://colorbrewer2.org
  */
 /*===========================================================================*/
-kvs::ColorMap ColorMap::BrewerSpectral( const size_t resolution )
+kvs::ColorMap ColorMap::BrewerSpectral( const std::size_t resolution )
 {
     std::list<kvs::RGBColor> colors = {
         { 158,   1,  66 },
@@ -437,7 +437,7 @@ kvs::ColorMap ColorMap::BrewerSpectral( const size_t resolution )
  *      http://colorbrewer2.org
  */
 /*===========================================================================*/
-kvs::ColorMap ColorMap::BrewerSingleHueGreys( const size_t resolution )
+kvs::ColorMap ColorMap::BrewerSingleHueGreys( const std::size_t resolution )
 {
     std::list<kvs::RGBColor> colors = {
         { 255, 255, 255 },
@@ -472,7 +472,7 @@ kvs::ColorMap ColorMap::BrewerSingleHueGreys( const size_t resolution )
  *      http://colorbrewer2.org
  */
 /*===========================================================================*/
-kvs::ColorMap ColorMap::BrewerSingleHueGreens( const size_t resolution )
+kvs::ColorMap ColorMap::BrewerSingleHueGreens( const std::size_t resolution )
 {
     std::list<kvs::RGBColor> colors = {
         { 247, 252, 245 },
@@ -507,7 +507,7 @@ kvs::ColorMap ColorMap::BrewerSingleHueGreens( const size_t resolution )
  *      http://colorbrewer2.org
  */
 /*===========================================================================*/
-kvs::ColorMap ColorMap::BrewerSingleHueBlues( const size_t resolution )
+kvs::ColorMap ColorMap::BrewerSingleHueBlues( const std::size_t resolution )
 {
     std::list<kvs::RGBColor> colors = {
         { 247, 251, 255 },
@@ -542,7 +542,7 @@ kvs::ColorMap ColorMap::BrewerSingleHueBlues( const size_t resolution )
  *      http://colorbrewer2.org
  */
 /*===========================================================================*/
-kvs::ColorMap ColorMap::BrewerSingleHueReds( const size_t resolution )
+kvs::ColorMap ColorMap::BrewerSingleHueReds( const std::size_t resolution )
 {
     std::list<kvs::RGBColor> colors = {
         { 255, 245, 240 },
@@ -577,7 +577,7 @@ kvs::ColorMap ColorMap::BrewerSingleHueReds( const size_t resolution )
  *      http://colorbrewer2.org
  */
 /*===========================================================================*/
-kvs::ColorMap ColorMap::BrewerSingleHuePurples( const size_t resolution )
+kvs::ColorMap ColorMap::BrewerSingleHuePurples( const std::size_t resolution )
 {
     std::list<kvs::RGBColor> colors = {
         { 252, 251, 253 },
@@ -613,7 +613,7 @@ kvs::ColorMap ColorMap::BrewerSingleHuePurples( const size_t resolution )
  *      http://colorbrewer2.org
  */
 /*===========================================================================*/
-kvs::ColorMap ColorMap::BrewerSingleHueOranges( const size_t resolution )
+kvs::ColorMap ColorMap::BrewerSingleHueOranges( const std::size_t resolution )
 {
     std::list<kvs::RGBColor> colors = {
         { 255, 245, 235 },
@@ -642,7 +642,7 @@ kvs::ColorMap ColorMap::BrewerSingleHueOranges( const size_t resolution )
  *  @return viridis colormap
  */
 /*===========================================================================*/
-kvs::ColorMap ColorMap::Viridis( const size_t resolution )
+kvs::ColorMap ColorMap::Viridis( const std::size_t resolution )
 {
     std::list<kvs::RGBColor> colors = {
         { 253, 231,  37 },
@@ -672,7 +672,7 @@ kvs::ColorMap ColorMap::Viridis( const size_t resolution )
  *  @return plasma colormap
  */
 /*===========================================================================*/
-kvs::ColorMap ColorMap::Plasma( const size_t resolution )
+kvs::ColorMap ColorMap::Plasma( const std::size_t resolution )
 {
     std::list<kvs::RGBColor> colors = {
         { 239, 248,  33 },
@@ -702,7 +702,7 @@ kvs::ColorMap ColorMap::Plasma( const size_t resolution )
  *  @return inferno colormap
  */
 /*===========================================================================*/
-kvs::ColorMap ColorMap::Inferno( const size_t resolution )
+kvs::ColorMap ColorMap::Inferno( const std::size_t resolution )
 {
     std::list<kvs::RGBColor> colors = {
         { 252, 254, 164 },
@@ -732,7 +732,7 @@ kvs::ColorMap ColorMap::Inferno( const size_t resolution )
  *  @return magma colormap
  */
 /*===========================================================================*/
-kvs::ColorMap ColorMap::Magma( const size_t resolution )
+kvs::ColorMap ColorMap::Magma( const std::size_t resolution )
 {
     std::list<kvs::RGBColor> colors = {
         { 251, 252, 191 },
@@ -762,7 +762,7 @@ kvs::ColorMap ColorMap::Magma( const size_t resolution )
  *  @return cividis colormap
  */
 /*===========================================================================*/
-kvs::ColorMap ColorMap::Cividis( const size_t resolution )
+kvs::ColorMap ColorMap::Cividis( const std::size_t resolution )
 {
     std::list<kvs::RGBColor> colors = {
         { 255, 233,  69 },
@@ -793,7 +793,7 @@ kvs::ColorMap ColorMap::Cividis( const size_t resolution )
  *  @param  max_value [in] max value
  */
 /*==========================================================================*/
-ColorMap::ColorMap( const size_t resolution, const float min_value, const float max_value ):
+ColorMap::ColorMap( const std::size_t resolution, const float min_value, const float max_value ):
     m_color_space( RGBSpace ),
     m_resolution( resolution ),
     m_min_value( min_value ),
@@ -821,21 +821,21 @@ ColorMap::ColorMap( const ColorMap::Table& table, const float min_value, const f
 {
 }
 
-ColorMap::ColorMap( const size_t resolution, const Points& points ):
+ColorMap::ColorMap( const std::size_t resolution, const Points& points ):
     m_resolution( resolution )
 {
     this->setPoints( points );
     this->create();
 }
 
-ColorMap::ColorMap( const size_t resolution, const Points& points, const float min_value, const float max_value )
+ColorMap::ColorMap( const std::size_t resolution, const Points& points, const float min_value, const float max_value )
 {
     this->setPoints( points );
     this->setRange( min_value, max_value );
     this->create();
 }
 
-ColorMap::ColorMap( const size_t resolution, const std::list<kvs::RGBColor>& colors )
+ColorMap::ColorMap( const std::size_t resolution, const std::list<kvs::RGBColor>& colors )
 {
     this->setPoints( colors );
     this->create();
@@ -878,13 +878,13 @@ void ColorMap::addPoint( const float value, const kvs::HSVColor color )
 
 void ColorMap::setPoints( const std::list<kvs::RGBColor>& colors )
 {
-    const size_t ncolors = colors.size();
+    const std::size_t ncolors = colors.size();
     const float stride = 1.0f / ( ncolors - 1 );
 
     this->addPoint( 0.0f, colors.front() ); // start point
     auto color = colors.begin(); color++;
     auto end = colors.end(); end--;
-    size_t index = 1;
+    std::size_t index = 1;
     while ( color != end )
     {
         const float value = kvs::Math::Round( m_resolution * stride * index );
@@ -936,7 +936,7 @@ void ColorMap::create()
 
         const float stride = ( max_value - min_value ) / static_cast<float>( m_resolution - 1 );
         float f = min_value;
-        for ( size_t i = 0; i < m_resolution; ++i, f += stride )
+        for ( std::size_t i = 0; i < m_resolution; ++i, f += stride )
         {
             Points::iterator p = m_points.begin();
             Points::iterator last = m_points.end();
@@ -1025,11 +1025,11 @@ void ColorMap::create()
  *  @retval RGB color value
  */
 /*==========================================================================*/
-const kvs::RGBColor ColorMap::operator []( const size_t index ) const
+const kvs::RGBColor ColorMap::operator []( const std::size_t index ) const
 {
     KVS_ASSERT( index < this->resolution() );
 
-    const size_t offset = ::NumberOfChannels * index;
+    const std::size_t offset = ::NumberOfChannels * index;
     return kvs::RGBColor( m_table.data() + offset );
 }
 
@@ -1045,8 +1045,8 @@ const kvs::RGBColor ColorMap::at( const float value ) const
     const float v0 = kvs::Math::Clamp( value, m_min_value, m_max_value );
     const float r = static_cast<float>( m_resolution - 1 );
     const float v = ( v0 - m_min_value ) / ( m_max_value - m_min_value ) * r;
-    const size_t s0 = static_cast<size_t>( v );
-    const size_t s1 = kvs::Math::Min( s0 + 1, m_resolution - 1 );
+    const std::size_t s0 = static_cast<size_t>( v );
+    const std::size_t s1 = kvs::Math::Min( s0 + 1, m_resolution - 1 );
 
     const kvs::RGBColor c0( m_table.data() + ::NumberOfChannels * s0 );
     const kvs::RGBColor c1( m_table.data() + ::NumberOfChannels * s1 );

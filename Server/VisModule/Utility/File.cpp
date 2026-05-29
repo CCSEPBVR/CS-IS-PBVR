@@ -28,9 +28,9 @@
 namespace
 {
 #ifdef PATH_MAX
-const size_t MaxPathLength = PATH_MAX;
+const std::size_t MaxPathLength = PATH_MAX;
 #else
-const size_t MaxPathLength = 4096;
+const std::size_t MaxPathLength = 4096;
 #endif
 }
 
@@ -215,7 +215,7 @@ const std::string File::extension( bool complete ) const
  *  @return file size [byte]
  */
 /*==========================================================================*/
-const size_t File::byteSize( void ) const
+const std::size_t File::byteSize( void ) const
 {
     if ( this->isExisted() )
     {
@@ -226,7 +226,7 @@ const size_t File::byteSize( void ) const
             return( 0 );
         }
 
-        size_t byte_size = 0;
+        std::size_t byte_size = 0;
         std::streamoff p = file.tellg();
         {
             file.seekg( 0, std::ios::end );

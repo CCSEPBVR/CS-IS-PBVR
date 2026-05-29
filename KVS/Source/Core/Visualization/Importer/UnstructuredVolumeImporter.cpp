@@ -253,21 +253,21 @@ void UnstructuredVolumeImporter::import( const kvs::AVSField* field )
         return;
     }
 
-    const size_t line_size  = field->dim().x();
-    const size_t slice_size = field->dim().y();
+    const std::size_t line_size  = field->dim().x();
+    const std::size_t slice_size = field->dim().y();
     const kvs::Vector3ui ncells( field->dim() - kvs::Vector3ui( 1, 1, 1 ) );
     SuperClass::Connections connections( ncells.x() * ncells.y() * ncells.z() * 8 );
 
-    size_t vertex_index = 0;
-    size_t connection_index = 0;
+    std::size_t vertex_index = 0;
+    std::size_t connection_index = 0;
 
-    for ( size_t z = 0; z < ncells.z(); ++z )
+    for ( std::size_t z = 0; z < ncells.z(); ++z )
     {
-        for ( size_t y = 0; y < ncells.y(); ++y )
+        for ( std::size_t y = 0; y < ncells.y(); ++y )
         {
-            for ( size_t x = 0; x < ncells.x(); ++x )
+            for ( std::size_t x = 0; x < ncells.x(); ++x )
             {
-                const size_t local_vertex_index[8] =
+                const std::size_t local_vertex_index[8] =
                 {
                     vertex_index,
                     vertex_index + 1,
@@ -309,7 +309,7 @@ void UnstructuredVolumeImporter::import( const kvs::AVSField* field )
 
 void UnstructuredVolumeImporter::import( const kvs::FieldViewData* const data )
 {
-    const size_t NumberOfNodesPerElement[5] = {
+    const std::size_t NumberOfNodesPerElement[5] = {
         0, // N/A
         4, // Tetra (1)
         8, // Hexa (2)
@@ -328,15 +328,15 @@ void UnstructuredVolumeImporter::import( const kvs::FieldViewData* const data )
     if ( data->importingGridIndex() == data->numberOfGrids() )
     {
         const int etype = data->importingElementType();
-        const size_t vindex = data->importingVariableIndex();
+        const std::size_t vindex = data->importingVariableIndex();
 
         KVS_ASSERT( FieldViewData::Tet <= etype && etype <= FieldViewData::Pyr );
         KVS_ASSERT( vindex < data->numberOfVariables() );
 
-        const size_t veclen = data->grid(0).variables[ vindex ].type;
-        const size_t nnodes_per_cell = NumberOfNodesPerElement[ etype ];
-        const size_t total_nnodes = data->totalNumberOfNodes();
-        const size_t total_ncells = data->totalNumberOfElements( etype );
+        const std::size_t veclen = data->grid(0).variables[ vindex ].type;
+        const std::size_t nnodes_per_cell = NumberOfNodesPerElement[ etype ];
+        const std::size_t total_nnodes = data->totalNumberOfNodes();
+        const std::size_t total_ncells = data->totalNumberOfElements( etype );
 
         kvs::ValueArray<kvs::Real32> coords( total_nnodes * 3 );
         kvs::ValueArray<kvs::Real32> values( total_nnodes * veclen );
@@ -345,14 +345,14 @@ void UnstructuredVolumeImporter::import( const kvs::FieldViewData* const data )
         kvs::Real32* pvalues = values.data();
         kvs::UInt32* pconnections = connections.data();
 
-        const size_t ngrids = data->numberOfGrids();
-        for ( size_t i = 0; i < ngrids; i++ )
+        const std::size_t ngrids = data->numberOfGrids();
+        for ( std::size_t i = 0; i < ngrids; i++ )
         {
             // i-th grid.
             const FieldViewData::Grid& grid = data->grid(i);
 
-            const size_t nnodes = data->grid(i).nnodes;
-            for ( size_t j = 0; j < nnodes; j++ )
+            const std::size_t nnodes = data->grid(i).nnodes;
+            for ( std::size_t j = 0; j < nnodes; j++ )
             {
                 // Coordinate values.
                 *(pcoords++) = grid.nodes[j].x;
@@ -360,7 +360,7 @@ void UnstructuredVolumeImporter::import( const kvs::FieldViewData* const data )
                 *(pcoords++) = grid.nodes[j].z;
 
                 // Node values.
-                for ( size_t k = 0; k < veclen; k++ )
+                for ( std::size_t k = 0; k < veclen; k++ )
                 {
                     *(pvalues++) = grid.variables[ vindex + k ].data[j];
                 }
@@ -368,9 +368,9 @@ void UnstructuredVolumeImporter::import( const kvs::FieldViewData* const data )
 
             if ( grid.nelements[etype] != 0 )
             {
-                const size_t offset = nnodes * i;
-                const size_t ncells = grid.nelements[0];
-                for ( size_t j = 0; j < ncells; j++ )
+                const std::size_t offset = nnodes * i;
+                const std::size_t ncells = grid.nelements[0];
+                for ( std::size_t j = 0; j < ncells; j++ )
                 {
                     if ( grid.elements[j].type == etype )
                     {
@@ -427,8 +427,8 @@ void UnstructuredVolumeImporter::import( const kvs::FieldViewData* const data )
     else
     {
         const int etype = data->importingElementType();
-        const size_t gindex = data->importingGridIndex();
-        const size_t vindex = data->importingVariableIndex();
+        const std::size_t gindex = data->importingGridIndex();
+        const std::size_t vindex = data->importingVariableIndex();
 
         KVS_ASSERT( FieldViewData::Tet <= etype && etype <= FieldViewData::Pyr );
         KVS_ASSERT( gindex < data->numberOfGrids() );
@@ -442,13 +442,13 @@ void UnstructuredVolumeImporter::import( const kvs::FieldViewData* const data )
             return;
         }
 
-        const size_t nnodes = grid.nodes.size();
-        const size_t ncells = grid.nelements[ etype ];
-        const size_t veclen = grid.variables[ vindex ].type;
-        const size_t nnodes_per_cell = NumberOfNodesPerElement[ etype ];
+        const std::size_t nnodes = grid.nodes.size();
+        const std::size_t ncells = grid.nelements[ etype ];
+        const std::size_t veclen = grid.variables[ vindex ].type;
+        const std::size_t nnodes_per_cell = NumberOfNodesPerElement[ etype ];
 
         kvs::ValueArray<kvs::Real32> coords( nnodes * 3 );
-        for ( size_t i = 0; i < nnodes; i++ )
+        for ( std::size_t i = 0; i < nnodes; i++ )
         {
             coords[ 3 * i + 0 ] = grid.nodes[i].x;
             coords[ 3 * i + 1 ] = grid.nodes[i].y;
@@ -456,7 +456,7 @@ void UnstructuredVolumeImporter::import( const kvs::FieldViewData* const data )
         }
 
         kvs::ValueArray<kvs::UInt32> connections( ncells * nnodes_per_cell );
-        for ( size_t i = 0, j = 0; i < grid.nelements[0]; i++ )
+        for ( std::size_t i = 0, j = 0; i < grid.nelements[0]; i++ )
         {
             KVS_ASSERT( j < ncells * nnodes_per_cell );
             if ( grid.elements[i].type == etype )
@@ -513,7 +513,7 @@ void UnstructuredVolumeImporter::import( const kvs::FieldViewData* const data )
             KVS_ASSERT( vindex + 2 < data->numberOfVariables() );
             KVS_ASSERT( grid.variables[ vindex + 0 ].type == grid.variables[ vindex + 1 ].type );
             KVS_ASSERT( grid.variables[ vindex + 1 ].type == grid.variables[ vindex + 2 ].type );
-            for ( size_t i = 0; i < nnodes; i++ )
+            for ( std::size_t i = 0; i < nnodes; i++ )
             {
                 values[ 3 * i + 0 ] = grid.variables[ vindex + 0 ].data[ i ];
                 values[ 3 * i + 1 ] = grid.variables[ vindex + 1 ].data[ i ];

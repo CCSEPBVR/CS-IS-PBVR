@@ -12,7 +12,7 @@
 #include <vismodule/TransferFunctionProperty>
 #include <vismodule/MultiVolumeProperty>
 
-// const static size_t TF_COUNT = 5;
+// const static std::size_t TF_COUNT = 5;
 #include "../../../FunctionParser/ReversePolishNotation.h"
 #include "../../../FunctionParser/Token.h"
 
@@ -83,7 +83,7 @@ private:
     
 //    EquationToken convert_token(std::string expression); 
     
-    size_t m_component;
+    std::size_t m_component;
     QuantityMap m_qmap;
 };
 

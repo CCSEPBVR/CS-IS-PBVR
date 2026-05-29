@@ -28,12 +28,12 @@ private:
 public:
 
     Acceptor();
-    Acceptor( const int port, const size_t ntrials );
+    Acceptor( const int port, const std::size_t ntrials );
     ~Acceptor();
 
     bool open();
     void close();
-    bool bind( const int port, const size_t ntrials );
+    bool bind( const int port, const std::size_t ntrials );
     kvs::TCPSocket* newConnection();
     int receive( kvs::MessageBlock* block, kvs::SocketAddress* client_address = 0 );
 

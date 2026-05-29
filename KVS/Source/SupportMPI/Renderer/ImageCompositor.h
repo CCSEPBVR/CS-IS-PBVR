@@ -35,8 +35,8 @@ private:
     int m_rank = 0; ///< MPI rank (my rank)
     int m_size = 0; ///< MPI size (number of nodes)
     MPI_Comm m_comm = 0; ///< MPI communicator
-    size_t m_width = 0; ///< image width
-    size_t m_height = 0; ///< image height
+    std::size_t m_width = 0; ///< image width
+    std::size_t m_height = 0; ///< image height
     unsigned int m_pixel_type = 0; ///< pixel type (RGBA 32-bit or RGBA-Z 64-bit)
     unsigned int m_merge_type = 0; ///< merge type (depth-testing or alpha-blending)
 
@@ -45,7 +45,7 @@ public:
     ImageCompositor( const kvs::mpi::Communicator& comm );
     ~ImageCompositor();
 
-    bool initialize( const size_t width, const size_t height, const bool enable_depth_testing = false );
+    bool initialize( const std::size_t width, const std::size_t height, const bool enable_depth_testing = false );
     bool destroy();
     bool run( kvs::ValueArray<kvs::UInt8>& color_buffer );
     bool run( kvs::ValueArray<kvs::UInt8>& color_buffer, const kvs::Real32 depth, const bool btof = true );

@@ -17,17 +17,17 @@
 namespace
 {
 
-void Flip( const size_t width, const size_t height, kvs::UInt8* pixels )
+void Flip( const std::size_t width, const std::size_t height, kvs::UInt8* pixels )
 {
-    const size_t stride = width * 3;
+    const std::size_t stride = width * 3;
 
     kvs::UInt8* pdata = pixels;
-    const size_t end_line = height / 2;
-    for ( size_t i = 0; i < end_line; i++ )
+    const std::size_t end_line = height / 2;
+    for ( std::size_t i = 0; i < end_line; i++ )
     {
         kvs::UInt8* src = pdata + ( i * stride );
         kvs::UInt8* dst = pdata + ( ( height - i - 1 ) * stride );
-        for ( size_t j = 0; j < stride; j++ )
+        for ( std::size_t j = 0; j < stride; j++ )
         {
             std::swap( *src, *dst );
             src++; dst++;
@@ -67,7 +67,7 @@ bool Bmp::CheckExtension( const std::string& filename )
  *  @param  data   [in] pixel data
  */
 /*==========================================================================*/
-Bmp::Bmp( const size_t width, const size_t height, const kvs::ValueArray<kvs::UInt8>& pixels ):
+Bmp::Bmp( const std::size_t width, const std::size_t height, const kvs::ValueArray<kvs::UInt8>& pixels ):
     m_width( width ),
     m_height( height ),
     m_bpp( 3 ),
@@ -144,22 +144,22 @@ bool Bmp::read( const std::string& filename )
     m_bpp = 24;
 
     // NOTE: 24-bit color data (R, G, and B channels) only supported.
-    const size_t nchannels = 3;
+    const std::size_t nchannels = 3;
     m_pixels.allocate( m_width * m_height * nchannels );
 
     kvs::UInt8* data = m_pixels.data();
-    const size_t bpl = m_width * ( m_bpp / 8 );
-    const size_t padding = ( m_width * ( m_info_header.bpp() / 8 ) ) % 4;
-    const size_t upper_left = ( m_height - 1 ) * bpl;
-    const size_t received = m_info_header.bpp() == 24 ? 0 : 1;
-    for ( size_t j = 0; j < m_height; j++ )
+    const std::size_t bpl = m_width * ( m_bpp / 8 );
+    const std::size_t padding = ( m_width * ( m_info_header.bpp() / 8 ) ) % 4;
+    const std::size_t upper_left = ( m_height - 1 ) * bpl;
+    const std::size_t received = m_info_header.bpp() == 24 ? 0 : 1;
+    for ( std::size_t j = 0; j < m_height; j++ )
     {
         // The origin of BMP is a lower-left point.
-        const size_t line_index = upper_left - j * bpl;
-        for ( size_t i = 0; i < m_width; i++ )
+        const std::size_t line_index = upper_left - j * bpl;
+        for ( std::size_t i = 0; i < m_width; i++ )
         {
             // BGR -> RGB
-            const size_t index = line_index + 3 * i;
+            const std::size_t index = line_index + 3 * i;
             ifs.read( (char*)( data + index + 2 ), 1 );
             ifs.read( (char*)( data + index + 1 ), 1 );
             ifs.read( (char*)( data + index + 0 ), 1 );
@@ -207,25 +207,25 @@ bool Bmp::write( const std::string& filename )
 
     kvs::UInt8* data = m_pixels.data();
 
-    const size_t bpp = 3;
-    const size_t bpl = m_width * bpp;
-    const size_t padding = m_width % 4;
-    const size_t lower_left = ( m_height - 1 ) * bpl;
-    for ( size_t j = 0; j < m_height; j++ )
+    const std::size_t bpp = 3;
+    const std::size_t bpl = m_width * bpp;
+    const std::size_t padding = m_width % 4;
+    const std::size_t lower_left = ( m_height - 1 ) * bpl;
+    for ( std::size_t j = 0; j < m_height; j++ )
     {
         // The origin of BMP is a lower-left point.
-        const size_t line_index = lower_left - j * bpl;
-        for ( size_t i = 0; i < m_width; i++ )
+        const std::size_t line_index = lower_left - j * bpl;
+        for ( std::size_t i = 0; i < m_width; i++ )
         {
             // RGB -> BGR
-            const size_t index = line_index + 3 * i;
+            const std::size_t index = line_index + 3 * i;
             ofs.write( reinterpret_cast<char*>( data + index + 2 ), 1 );
             ofs.write( reinterpret_cast<char*>( data + index + 1 ), 1 );
             ofs.write( reinterpret_cast<char*>( data + index + 0 ), 1 );
         }
 
         // Padding.
-        for ( size_t i = 0; i < padding; i++ ) ofs.write( "0", 1 );
+        for ( std::size_t i = 0; i < padding; i++ ) ofs.write( "0", 1 );
     }
 
     ofs.close();

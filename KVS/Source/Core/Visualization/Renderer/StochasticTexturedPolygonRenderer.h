@@ -71,8 +71,8 @@ private:
 
     bool m_has_normal; ///< check flag for the normal array
     bool m_has_connection; ///< check flag for the connection array
-    size_t m_random_index; ///< index used for refering the random texture
-    size_t m_texture_2d_coord_index; ///< index used for refering the texture 2d coords
+    std::size_t m_random_index; ///< index used for refering the random texture
+    std::size_t m_texture_2d_coord_index; ///< index used for refering the texture 2d coords
     float m_polygon_offset; ///< polygon offset
     kvs::ProgramObject m_shader_program; ///< shader program
     kvs::VertexBufferObject m_vbo; ///< vertex buffer object

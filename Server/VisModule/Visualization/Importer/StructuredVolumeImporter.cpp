@@ -202,11 +202,11 @@ StructuredVolumeImporter::StructuredVolumeImporter( const std::string& filename,
 {
     std::string edit_filename = filename; // ファイル名編集用の文字列
     std::string time_step_str = std::to_string( st ); // タイムステップを文字列に変換
-    size_t found_asterisk = edit_filename.find( '*' ); // ファイル名に時系列ファイルのアスタリスクが含まれているか確認
+    std::size_t found_asterisk = edit_filename.find( '*' ); // ファイル名に時系列ファイルのアスタリスクが含まれているか確認
 
     // ファイルの拡張子を確認
-    size_t found_vtm = edit_filename.find( ".vtm" );
-    size_t found_vti = edit_filename.find( ".vti" );
+    std::size_t found_vtm = edit_filename.find( ".vtm" );
+    std::size_t found_vti = edit_filename.find( ".vti" );
 
     // 時系列ファイルの場合、アスタリスクをタイムステップに置換
     if ( found_asterisk != std::string::npos )
@@ -420,9 +420,9 @@ void StructuredVolumeImporter::import( const vismodule::AVSField* field )
 //    const float spacing = static_cast<float>( dicom_list.sliceSpacing() );
 //    const float thickness = static_cast<float>( dicom_list.sliceThickness() );
 //
-//    const size_t x_size = dicom_list.width();
-//    const size_t y_size = dicom_list.height();
-//    const size_t z_size = dicom_list.nslices();
+//    const std::size_t x_size = dicom_list.width();
+//    const std::size_t y_size = dicom_list.height();
+//    const std::size_t z_size = dicom_list.nslices();
 //    const float x_ratio = dicom_list.pixelSpacing()[0];
 //    const float y_ratio = dicom_list.pixelSpacing()[1];
 //    const float z_ratio = vismodule::Math::IsZero( spacing ) ? thickness : spacing;
@@ -486,10 +486,10 @@ void StructuredVolumeImporter::import( const vismodule::AVSField* field )
 //    const vismodule::DicomList* dicom_list,
 //    const bool shift )
 //{
-//    const size_t width = dicom_list->width();
-//    const size_t height = dicom_list->height();
-//    const size_t nslices = dicom_list->nslices();
-//    const size_t nnodes = width * height * nslices;
+//    const std::size_t width = dicom_list->width();
+//    const std::size_t height = dicom_list->height();
+//    const std::size_t nslices = dicom_list->nslices();
+//    const std::size_t nnodes = width * height * nslices;
 //
 //    const double min_range = static_cast<double>( vismodule::Value<T>::Min() );
 //    const double max_range = static_cast<double>( vismodule::Value<T>::Max() );
@@ -498,17 +498,17 @@ void StructuredVolumeImporter::import( const vismodule::AVSField* field )
 //    values.template allocate<T>( nnodes );
 //
 //    T* pvalues = static_cast<T*>( values.pointer() );
-//    for ( size_t k = 0; k < nslices; k++ )
+//    for ( std::size_t k = 0; k < nslices; k++ )
 //    {
 //        const vismodule::Dicom* dicom = (*dicom_list)[k];
 //        const T* const raw_data = reinterpret_cast<const T*>( dicom->rawData().pointer() );
 //        const int shift_value = shift ? dicom->minRawValue() : 0;
 //
-//        for ( size_t j = 0; j < height; j++ )
+//        for ( std::size_t j = 0; j < height; j++ )
 //        {
-//            for ( size_t i = 0; i < width; i++ )
+//            for ( std::size_t i = 0; i < width; i++ )
 //            {
-//                const size_t pixel_index = ( height - j - 1 ) * width + i;
+//                const std::size_t pixel_index = ( height - j - 1 ) * width + i;
 //                double value = static_cast<double>( raw_data[ pixel_index ] );
 //                value = value - shift_value;
 //                value = vismodule::Math::Clamp( value, min_range, max_range );

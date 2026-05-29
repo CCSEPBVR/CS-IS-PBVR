@@ -98,7 +98,7 @@ inline float CalculateSamplingStep( const MultiVolumePropertyList& mvpl )
 }
 
 //kawamura2: This calculates optimized subpixel level.
-inline size_t CalculateSubpixelLevel( const ParticleProperty& param,
+inline std::size_t CalculateSubpixelLevel( const ParticleProperty& param,
                                       const MultiVolumePropertyList& mvpl,
                                       const vismodule::Camera& camera )
 {

@@ -96,7 +96,7 @@ SphereGlyph::~SphereGlyph( void )
  *  @param  nslices [in] number of slices.
  */
 /*===========================================================================*/
-void SphereGlyph::setNSlices( const size_t nslices )
+void SphereGlyph::setNSlices( const std::size_t nslices )
 {
     m_nslices = nslices;
 }
@@ -107,7 +107,7 @@ void SphereGlyph::setNSlices( const size_t nslices )
  *  @param  nstacks [in] number of stacks.
  */
 /*===========================================================================*/
-void SphereGlyph::setNStacks( const size_t nstacks )
+void SphereGlyph::setNStacks( const std::size_t nstacks )
 {
     m_nstacks = nstacks;
 }
@@ -166,11 +166,11 @@ void SphereGlyph::draw( void )
     this->initialize();
     BaseClass::applyMaterial();
 
-    const size_t npoints = BaseClass::m_coords.size() / 3;
+    const std::size_t npoints = BaseClass::m_coords.size() / 3;
 
     if ( BaseClass::m_directions.size() == 0 )
     {
-        for ( size_t i = 0, index = 0; i < npoints; i++, index += 3 )
+        for ( std::size_t i = 0, index = 0; i < npoints; i++, index += 3 )
         {
             const vismodule::Vector3f position( BaseClass::m_coords.pointer() + index );
             const vismodule::Real32 size = BaseClass::m_sizes[i];
@@ -186,7 +186,7 @@ void SphereGlyph::draw( void )
     }
     else
     {
-        for( size_t i = 0, index = 0; i < npoints; i++, index += 3 )
+        for( std::size_t i = 0, index = 0; i < npoints; i++, index += 3 )
         {
             const vismodule::Vector3f position( BaseClass::m_coords.pointer() + index );
             const vismodule::Vector3f direction( BaseClass::m_directions.pointer() + index );
@@ -212,7 +212,7 @@ void SphereGlyph::draw( void )
 /*===========================================================================*/
 SphereGlyph::BaseClass::SuperClass* SphereGlyph::exec_point_object( const vismodule::PointObject* point )
 {
-    const size_t nvertices = point->nvertices();
+    const std::size_t nvertices = point->nvertices();
 
 //    BaseClass::set_min_max_coords( point, this );
     {
@@ -274,7 +274,7 @@ SphereGlyph::BaseClass::SuperClass* SphereGlyph::exec_point_object( const vismod
     {
         const vismodule::Real32 size = point->size();
         vismodule::ValueArray<vismodule::Real32> sizes( nvertices );
-        for ( size_t i = 0; i < nvertices; i++ ) sizes[i] = size;
+        for ( std::size_t i = 0; i < nvertices; i++ ) sizes[i] = size;
         BaseClass::setSizes( sizes );
     }
     else
@@ -286,7 +286,7 @@ SphereGlyph::BaseClass::SuperClass* SphereGlyph::exec_point_object( const vismod
     {
         const vismodule::RGBColor color = point->color();
         vismodule::ValueArray<vismodule::UInt8> colors( nvertices * 3 );
-        for ( size_t i = 0, j = 0; i < nvertices; i++, j += 3 )
+        for ( std::size_t i = 0, j = 0; i < nvertices; i++, j += 3 )
         {
             colors[j]   = color.r();
             colors[j+1] = color.r();
@@ -301,7 +301,7 @@ SphereGlyph::BaseClass::SuperClass* SphereGlyph::exec_point_object( const vismod
 
     const vismodule::UInt8 opacity = static_cast<vismodule::UInt8>( 255 );
     vismodule::ValueArray<vismodule::UInt8> opacities( nvertices );
-    for ( size_t i = 0; i < nvertices; i++ ) opacities[i] = opacity;
+    for ( std::size_t i = 0; i < nvertices; i++ ) opacities[i] = opacity;
     BaseClass::setOpacities( opacities );
 
     return( this );

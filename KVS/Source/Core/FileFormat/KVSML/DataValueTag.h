@@ -35,7 +35,7 @@ public:
     DataValueTag();
 
     template <typename T>
-    bool read( const kvs::XMLNode::SuperClass* parent, const size_t nelements, kvs::ValueArray<T>* data );
+    bool read( const kvs::XMLNode::SuperClass* parent, const std::size_t nelements, kvs::ValueArray<T>* data );
     template <typename T>
     bool write( kvs::XMLNode::SuperClass* parent, const kvs::ValueArray<T>& data );
 
@@ -47,7 +47,7 @@ private:
 template <typename T>
 inline bool DataValueTag::read(
     const kvs::XMLNode::SuperClass* parent,
-    const size_t nelements,
+    const std::size_t nelements,
     kvs::ValueArray<T>* data )
 {
     const std::string tag_name = BaseClass::name();
@@ -88,14 +88,14 @@ inline bool DataValueTag::write(
     kvs::XMLElement element( tag_name );
 
     std::ostringstream oss( std::ostringstream::out );
-    const size_t data_size = data.size();
+    const std::size_t data_size = data.size();
     if ( typeid(T) == typeid(kvs::Int8) || typeid(T) == typeid(kvs::UInt8) )
     {
-        for ( size_t i = 0; i < data_size; i++ ) oss << int( data[i] ) << " ";
+        for ( std::size_t i = 0; i < data_size; i++ ) oss << int( data[i] ) << " ";
     }
     else
     {
-        for ( size_t i = 0; i < data_size; i++ ) oss << data[i] << " ";
+        for ( std::size_t i = 0; i < data_size; i++ ) oss << data[i] << " ";
     }
 
     // Insert the data array as string-stream to the parent node.

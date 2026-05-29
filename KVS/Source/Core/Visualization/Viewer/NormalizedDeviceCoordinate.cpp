@@ -37,8 +37,8 @@ NormalizedDeviceCoordinate::NormalizedDeviceCoordinate( const kvs::Vec3& positio
 const WindowCoordinate NormalizedDeviceCoordinate::toWindowCoordinate(
     const int x,
     const int y,
-    const size_t width,
-    const size_t height ) const
+    const std::size_t width,
+    const std::size_t height ) const
 {
     const float px = ( m_position[0] + 1.0f ) * width * 0.5f + x;
     const float py = ( m_position[1] + 1.0f ) * height * 0.5f + y;

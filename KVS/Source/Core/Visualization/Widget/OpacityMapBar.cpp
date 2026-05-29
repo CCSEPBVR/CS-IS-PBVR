@@ -18,9 +18,9 @@ namespace
 {
 const double MinValue = 0.0f;
 const double MaxValue = 255.0f;
-const size_t OpacityMapBarWidth = 150;
-const size_t OpacityMapBarHeight = 30;
-const size_t OpacityMapBarMargin = 10;
+const std::size_t OpacityMapBarWidth = 150;
+const std::size_t OpacityMapBarHeight = 30;
+const std::size_t OpacityMapBarMargin = 10;
 }
 
 
@@ -198,7 +198,7 @@ int OpacityMapBar::adjustedWidth()
     BaseClass::painter().begin( BaseClass::screen() );
     const kvs::FontMetrics metrics = BaseClass::painter().fontMetrics();
 
-    size_t width = 0;
+    std::size_t width = 0;
     switch ( m_orientation )
     {
     case OpacityMapBar::Horizontal:
@@ -211,8 +211,8 @@ int OpacityMapBar::adjustedWidth()
     {
         const std::string min_value = kvs::String::From( m_min_value );
         const std::string max_value = kvs::String::From( m_max_value );
-        const size_t min_text_width = metrics.width( min_value );
-        const size_t max_text_width = metrics.width( max_value );
+        const std::size_t min_text_width = metrics.width( min_value );
+        const std::size_t max_text_width = metrics.width( max_value );
         width = ( min_value.size() > max_value.size() ) ? min_text_width : max_text_width;
         width += BaseClass::margin() * 2;
         width = kvs::Math::Max( width, ::OpacityMapBarHeight );
@@ -235,10 +235,10 @@ int OpacityMapBar::adjustedHeight()
 {
     BaseClass::painter().begin( BaseClass::screen() );
     const kvs::FontMetrics metrics = BaseClass::painter().fontMetrics();
-    const size_t text_height = metrics.height();
+    const std::size_t text_height = metrics.height();
     BaseClass::painter().end();
 
-    size_t height = 0;
+    std::size_t height = 0;
     switch( m_orientation )
     {
     case OpacityMapBar::Horizontal:
@@ -260,9 +260,9 @@ int OpacityMapBar::adjustedHeight()
 /*===========================================================================*/
 void OpacityMapBar::create_texture()
 {
-    const size_t nchannels = 1;
-    const size_t width = m_opacity_map.resolution();
-    const size_t height = 1;
+    const std::size_t nchannels = 1;
+    const std::size_t width = m_opacity_map.resolution();
+    const std::size_t height = 1;
     const kvs::Real32* data = m_opacity_map.table().data();
 
     m_texture.release();
@@ -274,7 +274,7 @@ void OpacityMapBar::create_texture()
 
 void OpacityMapBar::create_checkerboard()
 {
-    const size_t nchannels = 3;
+    const std::size_t nchannels = 3;
     const int width = 16;
     const int height = 16;
 

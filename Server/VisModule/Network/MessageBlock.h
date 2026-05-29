@@ -51,7 +51,7 @@ public:
 
     MessageBlock( void );
 
-    MessageBlock( const void* data, const size_t data_size );
+    MessageBlock( const void* data, const std::size_t data_size );
 
     MessageBlock( const std::string& data );
 
@@ -62,13 +62,13 @@ public:
 
 public:
 
-    size_t size( void ) const;
+    std::size_t size( void ) const;
 
     void* pointer( void );
 
     const void* pointer( void ) const;
 
-    size_t blockSize( void ) const;
+    std::size_t blockSize( void ) const;
 
     void* blockPointer( void );
 
@@ -78,14 +78,14 @@ public:
 
 public:
 
-    void copy( const void* data, const size_t data_size );
+    void copy( const void* data, const std::size_t data_size );
 
     void copy( const std::string& data );
 
     template <typename T>
     void copy( const std::vector<T>& data );
 
-    void* allocate( const size_t data_size );
+    void* allocate( const std::size_t data_size );
 
     void deallocate( void );
 

@@ -116,7 +116,7 @@ public:
         std::string baseName = pathObject.stem().string(); // "prefix_XXXXX"
 
         ObjectInfo objectInfo;
-        size_t underscorePos = baseName.find( '_' );
+        std::size_t underscorePos = baseName.find( '_' );
         if( underscorePos != std::string::npos )
         {
             objectInfo.name = baseName.substr( 0, underscorePos );

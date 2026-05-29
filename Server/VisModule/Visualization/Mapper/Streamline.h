@@ -58,7 +58,7 @@ protected:
     const bool check_for_termination(
         const vismodule::Vector3f& current_vertex,
         const vismodule::Vector3f& direction,
-        const size_t integration_times,
+        const std::size_t integration_times,
         const vismodule::Vector3f& next_vertex );
 
     const vismodule::Vector3f interpolate_vector( const vismodule::Vector3f& vertex, const vismodule::Vector3f& direction );

@@ -34,10 +34,10 @@ class MeshData
 {
 protected:
 
-    size_t m_dimensions; ///< dimensions (2 or 3)
-    size_t m_nnodes_per_element; ///< number of nodes per a element
-    size_t m_nnodes; ///< number of nodes
-    size_t m_nelements; ///< number of elements
+    std::size_t m_dimensions; ///< dimensions (2 or 3)
+    std::size_t m_nnodes_per_element; ///< number of nodes per a element
+    std::size_t m_nnodes; ///< number of nodes
+    std::size_t m_nelements; ///< number of elements
     vismodule::ValueArray<vismodule::Real32> m_coords; ///< coordinate values
     vismodule::ValueArray<vismodule::UInt32> m_connections; ///< connection values
 
@@ -49,13 +49,13 @@ public:
 
 public:
 
-    const size_t dimensions( void ) const;
+    const std::size_t dimensions( void ) const;
 
-    const size_t nnodesPerElement( void ) const;
+    const std::size_t nnodesPerElement( void ) const;
 
-    const size_t nnodes( void ) const;
+    const std::size_t nnodes( void ) const;
 
-    const size_t nelements( void ) const;
+    const std::size_t nelements( void ) const;
 
     const vismodule::ValueArray<vismodule::Real32>& coords( void ) const;
 

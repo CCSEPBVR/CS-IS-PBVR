@@ -66,7 +66,7 @@ template <typename T>
 QRSolver<T>& QRSolver<T>::operator = ( const kvs::Vector<T>& v )
 {
     this->resize( v.size() );
-    for( size_t i = 0; i < this->size(); i++ ){ (*this)[i] = v[i]; }
+    for( std::size_t i = 0; i < this->size(); i++ ){ (*this)[i] = v[i]; }
 
     return *this;
 }

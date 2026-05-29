@@ -19,7 +19,7 @@
 
 namespace
 {
-const size_t Defaultm_resolution = 256;
+const std::size_t Defaultm_resolution = 256;
 }
 
 namespace vismodule
@@ -31,7 +31,7 @@ namespace vismodule
  *  @param  resolution [in] m_resolution.
  */
 /*==========================================================================*/
-TransferFunction::TransferFunction( const size_t resolution ):
+TransferFunction::TransferFunction( const std::size_t resolution ):
     m_color_map( resolution ),
     m_opacity_map( resolution )
 {
@@ -284,7 +284,7 @@ const vismodule::OpacityMap& TransferFunction::opacityMap() const
  *  @brief  Returns the resolution.
  */
 /*==========================================================================*/
-const size_t TransferFunction::resolution() const
+const std::size_t TransferFunction::resolution() const
 {
     VIS_MODULE_ASSERT( m_opacity_map.resolution() == m_color_map.resolution() );
     return m_opacity_map.resolution();
@@ -296,7 +296,7 @@ const size_t TransferFunction::resolution() const
  *  @param  resolution [in] resolution
  */
 /*==========================================================================*/
-void TransferFunction::create( const size_t resolution )
+void TransferFunction::create( const std::size_t resolution )
 {
     m_opacity_map.setResolution( resolution );
     m_opacity_map.create();

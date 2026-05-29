@@ -30,12 +30,12 @@ class Header
 private:
 
     std::string m_magic; ///< magic number
-    size_t m_width; ///< image width
-    size_t m_height; ///< image height
-    size_t m_max; ///< max color/gray value
-    size_t m_bpp; ///< bit per pixel (1:bit, 8:gray, 24:color)
-    size_t m_bpl; ///< byte per line
-    size_t m_size; ///< data size [byte]
+    std::size_t m_width; ///< image width
+    std::size_t m_height; ///< image height
+    std::size_t m_max; ///< max color/gray value
+    std::size_t m_bpp; ///< bit per pixel (1:bit, 8:gray, 24:color)
+    std::size_t m_bpl; ///< byte per line
+    std::size_t m_size; ///< data size [byte]
     std::streampos m_offset; ///< starting position of image data, in bytes.
 
 public:
@@ -45,15 +45,15 @@ public:
     virtual ~Header();
 
     std::string magic() const;
-    size_t width() const;
-    size_t height() const;
-    size_t maxValue() const;
-    size_t bpp() const;
-    size_t bpl() const;
-    size_t size() const;
+    std::size_t width() const;
+    std::size_t height() const;
+    std::size_t maxValue() const;
+    std::size_t bpp() const;
+    std::size_t bpl() const;
+    std::size_t size() const;
     std::streampos offset() const;
 
-    void set( const std::string& magic, const size_t width, const size_t height );
+    void set( const std::string& magic, const std::size_t width, const std::size_t height );
 
     bool isP1() const;
     bool isP2() const;
@@ -67,9 +67,9 @@ public:
 
 private:
 
-    size_t bit_per_pixel() const;
-    size_t byte_per_line() const;
-    size_t data_size() const;
+    std::size_t bit_per_pixel() const;
+    std::size_t byte_per_line() const;
+    std::size_t data_size() const;
     void skip_header( std::ifstream& ifs );
     void skip_comment_line( std::ifstream& ifs );
     void next_line( std::ifstream& ifs );

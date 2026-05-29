@@ -60,7 +60,7 @@ void StreamlineBase::mapping( Integrator* integrator )
     std::vector<kvs::UInt8> colors;
     std::vector<kvs::UInt32> connections;
 
-    for ( size_t i = 0; i < m_seed_points->numberOfVertices(); i++ )
+    for ( std::size_t i = 0; i < m_seed_points->numberOfVertices(); i++ )
     {
         kvs::Vec3 point = m_seed_points->coord( i );
         if ( !integrator->contains( point ) ) { continue; }
@@ -76,8 +76,8 @@ void StreamlineBase::mapping( Integrator* integrator )
         colors.push_back( color.g() );
         colors.push_back( color.b() );
 
-        const size_t id0 = coords.size() / 3 - 1;
-        for ( size_t j = 0; !this->isTerminatedByIntegrationTimes(j); j++ )
+        const std::size_t id0 = coords.size() / 3 - 1;
+        for ( std::size_t j = 0; !this->isTerminatedByIntegrationTimes(j); j++ )
         {
             point = integrator->next( point );
             if ( !integrator->contains( point ) ) { break; }
@@ -93,7 +93,7 @@ void StreamlineBase::mapping( Integrator* integrator )
             colors.push_back( color.g() );
             colors.push_back( color.b() );
         }
-        const size_t id1 = coords.size() / 3 - 1;
+        const std::size_t id1 = coords.size() / 3 - 1;
 
         if ( id0 != id1 )
         {
@@ -125,7 +125,7 @@ bool StreamlineBase::isTerminatedByVectorLength( const kvs::Vec3& vector )
     return false;
 }
 
-bool StreamlineBase::isTerminatedByIntegrationTimes( const size_t times )
+bool StreamlineBase::isTerminatedByIntegrationTimes( const std::size_t times )
 {
     if ( m_enable_integration_times_condition )
     {

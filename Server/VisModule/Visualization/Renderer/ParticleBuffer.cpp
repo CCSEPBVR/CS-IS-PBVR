@@ -35,9 +35,9 @@ ParticleBuffer::ParticleBuffer( void ):
  */
 /*==========================================================================*/
 ParticleBuffer::ParticleBuffer(
-    const size_t width,
-    const size_t height,
-    const size_t subpixel_level ):
+    const std::size_t width,
+    const std::size_t height,
+    const std::size_t subpixel_level ):
     m_ref_shader( NULL )
 {
     this->create( width, height, subpixel_level );
@@ -58,7 +58,7 @@ ParticleBuffer::~ParticleBuffer( void )
  *  Return the buffer width.
  */
 /*==========================================================================*/
-const size_t ParticleBuffer::width( void ) const
+const std::size_t ParticleBuffer::width( void ) const
 {
     return( m_width );
 }
@@ -68,7 +68,7 @@ const size_t ParticleBuffer::width( void ) const
  *  Return the buffer height.
  */
 /*==========================================================================*/
-const size_t ParticleBuffer::height( void ) const
+const std::size_t ParticleBuffer::height( void ) const
 {
     return( m_height );
 }
@@ -90,7 +90,7 @@ const vismodule::ValueArray<vismodule::UInt32>& ParticleBuffer::indexBuffer( voi
  *  @return stored index in the index buffer
  */
 /*==========================================================================*/
-const vismodule::UInt32 ParticleBuffer::index( const size_t index ) const
+const vismodule::UInt32 ParticleBuffer::index( const std::size_t index ) const
 {
     return( m_index_buffer[index] );
 }
@@ -112,7 +112,7 @@ const vismodule::ValueArray<vismodule::Real32>& ParticleBuffer::depthBuffer( voi
  *  @return stored depth in the depth buffer
  */
 /*==========================================================================*/
-const vismodule::Real32 ParticleBuffer::depth( const size_t index ) const
+const vismodule::Real32 ParticleBuffer::depth( const std::size_t index ) const
 {
     return( m_depth_buffer[index] );
 }
@@ -142,7 +142,7 @@ const vismodule::PointObject* ParticleBuffer::pointObject( void ) const
  *  Return the number of projected particles.
  */
 /*==========================================================================*/
-const size_t ParticleBuffer::numOfProjectedParticles( void ) const
+const std::size_t ParticleBuffer::numOfProjectedParticles( void ) const
 {
     return( m_num_of_projected_particles );
 }
@@ -152,7 +152,7 @@ const size_t ParticleBuffer::numOfProjectedParticles( void ) const
  *  Return the number of stored particles.
  */
 /*==========================================================================*/
-const size_t ParticleBuffer::numOfStoredParticles( void ) const
+const std::size_t ParticleBuffer::numOfStoredParticles( void ) const
 {
     return( m_num_of_stored_particles );
 }
@@ -163,7 +163,7 @@ const size_t ParticleBuffer::numOfStoredParticles( void ) const
  *  @param subpixel_level [in] subpixel level
  */
 /*==========================================================================*/
-void ParticleBuffer::setSubpixelLevel( const size_t subpixel_level )
+void ParticleBuffer::setSubpixelLevel( const std::size_t subpixel_level )
 {
     m_subpixel_level = subpixel_level;
 }
@@ -221,11 +221,11 @@ void ParticleBuffer::disableShading( void )
  */
 /*==========================================================================*/
 bool ParticleBuffer::create(
-    const size_t width,
-    const size_t height,
-    const size_t subpixel_level )
+    const std::size_t width,
+    const std::size_t height,
+    const std::size_t subpixel_level )
 {
-    const size_t npixels = width * height;
+    const std::size_t npixels = width * height;
 
     m_width                   = width;
     m_height                  = height;
@@ -242,7 +242,7 @@ bool ParticleBuffer::create(
         return( false );
     }
 
-    const size_t subpixeled_npixels = npixels * subpixel_level * subpixel_level;
+    const std::size_t subpixeled_npixels = npixels * subpixel_level * subpixel_level;
     m_index_buffer.allocate( subpixeled_npixels );
     m_depth_buffer.allocate( subpixeled_npixels );
 
@@ -303,29 +303,29 @@ void ParticleBuffer::create_image_with_shading(
     const float inv_ssize = 1.0f / ( m_subpixel_level * m_subpixel_level );
     const float normalize_alpha = 255.0f * inv_ssize;
 
-    size_t pindex   = 0;
-    size_t pindex4  = 0;
-    size_t by_start = 0;
-    const size_t bw = m_extended_width;
-    for( size_t py = 0; py < m_height; py++, by_start += m_subpixel_level )
+    std::size_t pindex   = 0;
+    std::size_t pindex4  = 0;
+    std::size_t by_start = 0;
+    const std::size_t bw = m_extended_width;
+    for( std::size_t py = 0; py < m_height; py++, by_start += m_subpixel_level )
     {
-        size_t bx_start = 0;
-        for( size_t px = 0; px < m_width; px++, pindex++, pindex4 += 4, bx_start += m_subpixel_level )
+        std::size_t bx_start = 0;
+        for( std::size_t px = 0; px < m_width; px++, pindex++, pindex4 += 4, bx_start += m_subpixel_level )
         {
             float R = 0.0f;
             float G = 0.0f;
             float B = 0.0f;
             float D = 0.0f;
-            size_t npoints = 0;
-            for( size_t by = by_start; by < by_start + m_subpixel_level; by++ )
+            std::size_t npoints = 0;
+            for( std::size_t by = by_start; by < by_start + m_subpixel_level; by++ )
             {
-                const size_t bindex_start = bw * by;
-                for( size_t bx = bx_start; bx < bx_start + m_subpixel_level; bx++ )
+                const std::size_t bindex_start = bw * by;
+                for( std::size_t bx = bx_start; bx < bx_start + m_subpixel_level; bx++ )
                 {
-                    const size_t bindex = bindex_start + bx;
+                    const std::size_t bindex = bindex_start + bx;
                     if( m_depth_buffer[bindex] > 0.0f )
                     {
-                        const size_t point_index3 = 3 * m_index_buffer[ bindex ];
+                        const std::size_t point_index3 = 3 * m_index_buffer[ bindex ];
 
                         const vismodule::Vector3f vertex( point_coords + point_index3 );
                         const vismodule::Vector3f normal( point_normal + point_index3 );
@@ -363,29 +363,29 @@ void ParticleBuffer::create_image_without_shading(
     const float inv_ssize = 1.0f / ( m_subpixel_level * m_subpixel_level );
     const float normalize_alpha = 255.0f * inv_ssize;
 
-    size_t pindex   = 0;
-    size_t pindex4  = 0;
-    size_t by_start = 0;
-    const size_t bw = m_extended_width;
-    for( size_t py = 0; py < m_height; py++, by_start += m_subpixel_level )
+    std::size_t pindex   = 0;
+    std::size_t pindex4  = 0;
+    std::size_t by_start = 0;
+    const std::size_t bw = m_extended_width;
+    for( std::size_t py = 0; py < m_height; py++, by_start += m_subpixel_level )
     {
-        size_t bx_start = 0;
-        for( size_t px = 0; px < m_width; px++, pindex++, pindex4 += 4, bx_start += m_subpixel_level )
+        std::size_t bx_start = 0;
+        for( std::size_t px = 0; px < m_width; px++, pindex++, pindex4 += 4, bx_start += m_subpixel_level )
         {
             float R = 0.0f;
             float G = 0.0f;
             float B = 0.0f;
             float D = 0.0f;
-            size_t npoints = 0;
-            for( size_t by = by_start; by < by_start + m_subpixel_level; by++ )
+            std::size_t npoints = 0;
+            for( std::size_t by = by_start; by < by_start + m_subpixel_level; by++ )
             {
-                const size_t bindex_start = bw * by;
-                for( size_t bx = bx_start; bx < bx_start + m_subpixel_level; bx++ )
+                const std::size_t bindex_start = bw * by;
+                for( std::size_t bx = bx_start; bx < bx_start + m_subpixel_level; bx++ )
                 {
-                    const size_t bindex = bindex_start + bx;
+                    const std::size_t bindex = bindex_start + bx;
                     if( m_depth_buffer[bindex] > 0.0f )
                     {
-                        const size_t point_index3 = 3 * m_index_buffer[ bindex ];
+                        const std::size_t point_index3 = 3 * m_index_buffer[ bindex ];
 
                         R += point_color[ point_index3 + 0 ];
                         G += point_color[ point_index3 + 1 ];

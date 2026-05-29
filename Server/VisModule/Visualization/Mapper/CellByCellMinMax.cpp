@@ -137,7 +137,7 @@ CellByCellMinMax::~CellByCellMinMax()
  *  @return sub-pixel level
  */
 /*===========================================================================*/
-const size_t CellByCellMinMax::subpixelLevel() const
+const std::size_t CellByCellMinMax::subpixelLevel() const
 {
     return m_subpixel_level;
 }
@@ -181,7 +181,7 @@ void CellByCellMinMax::attachCamera( const vismodule::Camera& camera )
  *  @param  m_subpixel_level [in] sub-pixel level
  */
 /*===========================================================================*/
-void CellByCellMinMax::setSubpixelLevel( const size_t subpixel_level )
+void CellByCellMinMax::setSubpixelLevel( const std::size_t subpixel_level )
 {
     m_subpixel_level = subpixel_level;
 }
@@ -257,7 +257,7 @@ void CellByCellMinMax::generate_minmax_struct(
     vismodule::ValueArray<float> c_min( tf_number );
     vismodule::ValueArray<float> c_max( tf_number );
 
-    for( size_t i = 0; i < tf_number; i++ )
+    for( std::size_t i = 0; i < tf_number; i++ )
     {
         o_min[i] = m_transfer_function_array[i].opacityMap().minValue();
         o_max[i] = m_transfer_function_array[i].opacityMap().maxValue();
@@ -272,7 +272,7 @@ void CellByCellMinMax::generate_minmax_struct(
     vismodule::ValueArray<float> C_max( tf_number );
 
     // initialize
-    for ( size_t i = 0; i < tf_number; i++ )
+    for ( std::size_t i = 0; i < tf_number; i++ )
     {
         O_min[i] =  FLT_MAX;
         O_max[i] = -FLT_MAX;
@@ -465,7 +465,7 @@ void CellByCellMinMax::generate_minmax_struct(
         #pragma omp critical
         {
             // 最大最小値
-            for( size_t i = 0; i < tf_number; i++ )
+            for( std::size_t i = 0; i < tf_number; i++ )
             {
                 // 不透明度
                 O_min[i] = O_min[i] < th_O_min[i] ? O_min[i] : th_O_min[i];
@@ -476,7 +476,7 @@ void CellByCellMinMax::generate_minmax_struct(
             }
         } // end of omp critical
     }
-        for( size_t i = 0; i < tf_number; i++ )
+        for( std::size_t i = 0; i < tf_number; i++ )
         {
             o_min[i] = O_min[i];
             o_max[i] = O_max[i];
@@ -535,7 +535,7 @@ void CellByCellMinMax::generate_minmax_unstruct(
 )
 {
     double start = GetTime();
-    size_t resolution = DEFAULT_NBINS;
+    std::size_t resolution = DEFAULT_NBINS;
 
     int tf_number                  = m_transfer_function_array.size();
     float sampling_volume_inverse  = m_transfer_function_synthesizer->getSamplingVolumeInverse();
@@ -721,7 +721,7 @@ void CellByCellMinMax::generate_minmax_unstruct(
     m_o_histogram.fill(0x00);
     m_c_histogram.fill(0x00);
 
-    for( size_t i = 0; i < tf_number; i++ )
+    for( std::size_t i = 0; i < tf_number; i++ )
     {
         o_min[i] = m_transfer_function_array[i].opacityMap().minValue();
         o_max[i] = m_transfer_function_array[i].opacityMap().maxValue();
@@ -741,7 +741,7 @@ void CellByCellMinMax::generate_minmax_unstruct(
     std::vector<float> vertex_normals;
 
     // initialize
-    for ( size_t i = 0; i < tf_number; i++ )
+    for ( std::size_t i = 0; i < tf_number; i++ )
     {
         O_min[i] =  FLT_MAX;
         O_max[i] = -FLT_MAX;
@@ -907,7 +907,7 @@ void CellByCellMinMax::generate_minmax_unstruct(
 
             for( int cell_BLK = 0; cell_BLK < remain; cell_BLK++ )
             {
-                for( size_t i = 0; i < tf_number; i++ )
+                for( std::size_t i = 0; i < tf_number; i++ )
                 {
                     th_O_min[i] = th_O_min[i] < o_scalars_array[cell_BLK][i] ? th_O_min[i] : o_scalars_array[cell_BLK][i];
                     th_O_max[i] = th_O_max[i] > o_scalars_array[cell_BLK][i] ? th_O_max[i] : o_scalars_array[cell_BLK][i];
@@ -920,7 +920,7 @@ void CellByCellMinMax::generate_minmax_unstruct(
 #pragma omp critical
         {
             // 最大最小値
-            for( size_t i = 0; i < tf_number; i++ )
+            for( std::size_t i = 0; i < tf_number; i++ )
             {
                 // 不透明度
                 O_min[i] = O_min[i] < th_O_min[i] ? O_min[i] : th_O_min[i];
@@ -931,7 +931,7 @@ void CellByCellMinMax::generate_minmax_unstruct(
             }
         }
     }
-        for( size_t i = 0; i < tf_number; i++ )
+        for( std::size_t i = 0; i < tf_number; i++ )
         {
             o_min[i] = O_min[i];
             o_max[i] = O_max[i];
@@ -945,7 +945,7 @@ void CellByCellMinMax::generate_minmax_unstruct(
     m_transfer_function_synthesizer->m_c_min.resize(tf_number);
     m_transfer_function_synthesizer->m_c_max.resize(tf_number);
 
-    for ( size_t i = 0; i < tf_number; i++ )
+    for ( std::size_t i = 0; i < tf_number; i++ )
     {
         m_transfer_function_synthesizer->m_o_min[i] = O_min[i];
         m_transfer_function_synthesizer->m_o_max[i] = O_max[i];

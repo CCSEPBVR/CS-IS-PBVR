@@ -33,13 +33,13 @@ public:
 
 private:
     static double m_max_tolerance; ///< tolerance
-    static size_t m_max_iterations; ///< maximum number of iterations
+    static std::size_t m_max_iterations; ///< maximum number of iterations
 
 public:
     static void SetMaxTolerance( const double tolerance ) { m_max_tolerance = tolerance; }
-    static void SetMaxIterations( const size_t iterations ) { m_max_iterations = iterations; }
+    static void SetMaxIterations( const std::size_t iterations ) { m_max_iterations = iterations; }
     static double MaxTolerance() { return m_max_tolerance; }
-    static size_t MaxIterations() { return m_max_iterations; }
+    static std::size_t MaxIterations() { return m_max_iterations; }
 
 private:
     MatrixType m_matrix_type; ///< matrix type (symmetric or unsymmetric)
@@ -51,9 +51,9 @@ public:
     EigenDecomposition( const kvs::Matrix<T>& m, MatrixType type = EigenDecomposition::Unknown );
 
     const kvs::Matrix<T>& eigenVectors() const { return m_eigen_vectors; }
-    const kvs::Vector<T>& eigenVector( const size_t index ) const { return m_eigen_vectors[index]; }
+    const kvs::Vector<T>& eigenVector( const std::size_t index ) const { return m_eigen_vectors[index]; }
     const kvs::Vector<T>& eigenValues() const { return m_eigen_values; }
-    T eigenValue( const size_t index ) const { return m_eigen_values[index]; }
+    T eigenValue( const std::size_t index ) const { return m_eigen_values[index]; }
 
     void setMatrix( const kvs::Matrix<T>& m, MatrixType type = EigenDecomposition::Unknown );
     void decompose();

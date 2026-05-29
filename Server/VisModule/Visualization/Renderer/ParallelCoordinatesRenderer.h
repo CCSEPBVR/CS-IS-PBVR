@@ -52,7 +52,7 @@ protected:
     mutable bool m_enable_anti_aliasing; ///< flag for anti-aliasing (AA)
     mutable bool m_enable_multisample_anti_aliasing; ///< flag for multisample anti-aliasing (MSAA)
 
-    size_t        m_active_axis;  ///< index of active axis
+    std::size_t        m_active_axis;  ///< index of active axis
     vismodule::UInt8    m_line_opacity; ///< line opacity
     vismodule::Real32   m_line_width;   ///< line width
     vismodule::ColorMap m_color_map;    ///< color map
@@ -81,7 +81,7 @@ public:
 
     void setColorMap( const vismodule::ColorMap& color_map );
 
-    void selectAxis( const size_t index );
+    void selectAxis( const std::size_t index );
 
     int topMargin( void ) const;
 
@@ -91,7 +91,7 @@ public:
 
     int rightMargin( void ) const;
 
-    size_t activeAxis( void ) const;
+    std::size_t activeAxis( void ) const;
 
     vismodule::UInt8 lineOpacity( void ) const;
 

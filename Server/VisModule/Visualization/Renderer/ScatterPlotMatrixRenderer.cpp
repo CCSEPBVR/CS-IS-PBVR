@@ -367,8 +367,8 @@ void ScatterPlotMatrixRenderer::exec( vismodule::ObjectBase* object, vismodule::
                 glEnd();
             }
 
-            const size_t x_index = j;
-            const size_t y_index = ncolumns - i - 1;
+            const std::size_t x_index = j;
+            const std::size_t y_index = ncolumns - i - 1;
             if ( x_index == y_index ) continue;
 
             // X and Y values.
@@ -389,8 +389,8 @@ void ScatterPlotMatrixRenderer::exec( vismodule::ObjectBase* object, vismodule::
             if ( m_active_axis >= 0 )
             {
                 const vismodule::AnyValueArray& color_axis_values = table->column( m_active_axis );
-                const size_t nrows = table->nrows();
-                for ( size_t k = 0; k < nrows; k++ )
+                const std::size_t nrows = table->nrows();
+                for ( std::size_t k = 0; k < nrows; k++ )
                 {
                     if ( !table->insideRange( k ) ) continue;
 
@@ -411,8 +411,8 @@ void ScatterPlotMatrixRenderer::exec( vismodule::ObjectBase* object, vismodule::
                 const vismodule::UInt8 opacity = m_point_opacity;
                 glColor4ub( color.r(), color.g(), color.b(), opacity );
 
-                const size_t nrows = table->nrows();
-                for ( size_t k = 0; k < nrows; k++ )
+                const std::size_t nrows = table->nrows();
+                for ( std::size_t k = 0; k < nrows; k++ )
                 {
                     if ( !table->insideRange( k ) ) continue;
 

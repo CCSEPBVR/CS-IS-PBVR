@@ -26,14 +26,14 @@ class StructuredExtractScalar : public kvs::FilterBase, public kvs::StructuredVo
     kvsModuleSuperClass( kvs::StructuredVolumeObject );
 
 private:
-    size_t m_offset;
+    std::size_t m_offset;
 
 public:
     StructuredExtractScalar(): m_offset( 0 ) {}
-    StructuredExtractScalar( const kvs::StructuredVolumeObject* volume, const size_t offset );
+    StructuredExtractScalar( const kvs::StructuredVolumeObject* volume, const std::size_t offset );
     virtual ~StructuredExtractScalar() {}
 
-    void setOffset( const size_t offset ) { m_offset = offset; }
+    void setOffset( const std::size_t offset ) { m_offset = offset; }
 
     SuperClass* exec( const kvs::ObjectBase* object );
 

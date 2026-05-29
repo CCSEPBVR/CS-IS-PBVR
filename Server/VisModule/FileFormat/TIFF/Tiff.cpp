@@ -164,7 +164,7 @@ size_t Tiff::get_width( void ) const
         return( 0 );
     }
 
-    size_t ret = 0;
+    std::size_t ret = 0;
     switch( entry->type() )
     {
     case vismodule::tiff::Short:
@@ -197,7 +197,7 @@ size_t Tiff::get_height( void ) const
         return( 0 );
     }
 
-    size_t ret = 0;
+    std::size_t ret = 0;
     switch( entry->type() )
     {
     case vismodule::tiff::Short:
@@ -226,12 +226,12 @@ size_t Tiff::get_bits_per_sample( void ) const
     // Default = 1.
     if ( entry == m_ifd.entryList().end() )
     {
-        const size_t default_value = 1;
+        const std::size_t default_value = 1;
         return( default_value );
     }
 
-    size_t ret = 0;
-    for ( size_t i = 0; i < entry->count(); i++ )
+    std::size_t ret = 0;
+    for ( std::size_t i = 0; i < entry->count(); i++ )
     {
         ret += entry->values().at<vismodule::UInt16>(i); // vismodule::tiff::Short
     }
@@ -252,7 +252,7 @@ size_t Tiff::get_samples_per_pixel( void ) const
     // Default = 1.
     if ( entry == m_ifd.entryList().end() )
     {
-        const size_t default_value = 1;
+        const std::size_t default_value = 1;
         return( default_value );
     }
 
@@ -301,11 +301,11 @@ size_t Tiff::get_rows_per_strip( void ) const
     // Default = 2**32 - 1.
     if ( entry == m_ifd.entryList().end() )
     {
-        const size_t default_value = ( vismodule::UInt64( 1 ) << 32 ) - 1;
+        const std::size_t default_value = ( vismodule::UInt64( 1 ) << 32 ) - 1;
         return( default_value );
     }
 
-    size_t ret = 0;
+    std::size_t ret = 0;
     switch( entry->type() )
     {
     case vismodule::tiff::Short:
@@ -351,7 +351,7 @@ size_t Tiff::get_compression_mode( void ) const
     // Default = 1 (non compression).
     if ( entry == m_ifd.entryList().end() )
     {
-        const size_t default_value = 1;
+        const std::size_t default_value = 1;
         return( default_value );
     }
 
@@ -400,8 +400,8 @@ Tiff::ColorMode Tiff::get_color_mode( void ) const
 {
     Tiff::ColorMode color_mode = Tiff::UnknownColorMode;
 
-    const size_t bps = ( m_bits_per_sample > 0 ) ? m_bits_per_sample : this->get_bits_per_sample();
-    const size_t spp = this->get_samples_per_pixel();
+    const std::size_t bps = ( m_bits_per_sample > 0 ) ? m_bits_per_sample : this->get_bits_per_sample();
+    const std::size_t spp = this->get_samples_per_pixel();
     if ( spp == 1 )
     {
         switch ( bps )
@@ -420,7 +420,7 @@ Tiff::ColorMode Tiff::get_color_mode( void ) const
         }
     }
 
-    size_t photometric_interpretation = this->get_photometirc_interpretation();
+    std::size_t photometric_interpretation = this->get_photometirc_interpretation();
     switch ( photometric_interpretation )
     {
     case 0:
@@ -444,15 +444,15 @@ vismodule::AnyValueArray Tiff::get_raw_data( std::ifstream& ifs ) const
 
     const vismodule::AnyValueArray offsets = this->get_strip_offsets();
     const vismodule::AnyValueArray bytes   = this->get_strip_bytes();
-    const size_t             count   = offsets.size();
+    const std::size_t             count   = offsets.size();
     if ( m_color_mode == Tiff::Gray8 )
     {
         raw_data.allocate<vismodule::UInt8>( m_width * m_height );
         vismodule::UInt8* data = reinterpret_cast<vismodule::UInt8*>( raw_data.pointer() );
-        for ( size_t i = 0; i < count; i++ )
+        for ( std::size_t i = 0; i < count; i++ )
         {
-            const size_t offset = offsets.at<vismodule::UInt32>(i);
-            const size_t byte   = bytes.at<vismodule::UInt32>(i);
+            const std::size_t offset = offsets.at<vismodule::UInt32>(i);
+            const std::size_t byte   = bytes.at<vismodule::UInt32>(i);
             ifs.seekg( offset, std::ios::beg );
             ifs.read( reinterpret_cast<char*>( data ), byte );
             data += byte / sizeof( vismodule::UInt8 );
@@ -463,10 +463,10 @@ vismodule::AnyValueArray Tiff::get_raw_data( std::ifstream& ifs ) const
     {
         raw_data.allocate<vismodule::UInt16>( m_width * m_height );
         vismodule::UInt16* data = reinterpret_cast<vismodule::UInt16*>( raw_data.pointer() );
-        for ( size_t i = 0; i < count; i++ )
+        for ( std::size_t i = 0; i < count; i++ )
         {
-            const size_t offset = offsets.at<vismodule::UInt32>(i);
-            const size_t byte   = bytes.at<vismodule::UInt32>(i);
+            const std::size_t offset = offsets.at<vismodule::UInt32>(i);
+            const std::size_t byte   = bytes.at<vismodule::UInt32>(i);
             ifs.seekg( offset, std::ios::beg );
             ifs.read( reinterpret_cast<char*>( data ), byte );
             data += byte / sizeof( vismodule::UInt16 );
@@ -477,10 +477,10 @@ vismodule::AnyValueArray Tiff::get_raw_data( std::ifstream& ifs ) const
     {
         raw_data.allocate<vismodule::UInt8>( m_width * m_height * 3 );
         vismodule::UInt8* data = reinterpret_cast<vismodule::UInt8*>( raw_data.pointer() );
-        for ( size_t i = 0; i < count; i++ )
+        for ( std::size_t i = 0; i < count; i++ )
         {
-            const size_t offset = offsets.at<vismodule::UInt32>(i);
-            const size_t byte   = bytes.at<vismodule::UInt32>(i);
+            const std::size_t offset = offsets.at<vismodule::UInt32>(i);
+            const std::size_t byte   = bytes.at<vismodule::UInt32>(i);
             ifs.seekg( offset, std::ios::beg );
             ifs.read( reinterpret_cast<char*>( data ), byte );
             data += byte / sizeof( vismodule::UInt8 );

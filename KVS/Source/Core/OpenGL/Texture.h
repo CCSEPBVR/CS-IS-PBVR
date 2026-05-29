@@ -35,9 +35,9 @@ private:
     GLenum m_wrap_s = GL_CLAMP; ///< wrap method for s-axis
     GLenum m_wrap_t = GL_CLAMP; ///< wrap method for t-axis
     GLenum m_wrap_r = GL_CLAMP; ///< wrap method for r-axis
-    size_t m_width = 0; ///< texture width
-    size_t m_height = 0; ///< texture height
-    size_t m_depth = 0; ///< texture depth
+    std::size_t m_width = 0; ///< texture width
+    std::size_t m_height = 0; ///< texture height
+    std::size_t m_depth = 0; ///< texture depth
 
 public:
     class Binder;
@@ -116,9 +116,9 @@ public:
     GLenum wrapS() const { return m_wrap_s; }
     GLenum wrapT() const { return m_wrap_t; }
     GLenum wrapR() const { return m_wrap_r; }
-    size_t width() const { return m_width; }
-    size_t height() const { return m_height; }
-    size_t depth() const { return m_depth; }
+    std::size_t width() const { return m_width; }
+    std::size_t height() const { return m_height; }
+    std::size_t depth() const { return m_depth; }
 
     void setMagFilter( const GLenum mag_filter ) { m_mag_filter = mag_filter; }
     void setMinFilter( const GLenum min_filter ) { m_min_filter = min_filter; }
@@ -126,8 +126,8 @@ public:
     void setWrapT( const GLenum wrap_t ) { m_wrap_t = wrap_t; }
     void setWrapR( const GLenum wrap_r ) { m_wrap_r = wrap_r; }
     void setPixelFormat( const GLint  internal_format, const GLenum external_format, const GLenum external_type );
-    void setPixelFormat( const size_t nchannels, const size_t bytes_per_channel );
-    void setSize( const size_t width, const size_t height = 0, const size_t depth = 0 );
+    void setPixelFormat( const std::size_t nchannels, const std::size_t bytes_per_channel );
+    void setSize( const std::size_t width, const std::size_t height = 0, const std::size_t depth = 0 );
 
     void bind() const;
     void unbind() const;
@@ -160,13 +160,13 @@ protected:
     void setPixelStorageMode( GLenum pname, GLint param );
 
 private:
-//    size_t get_nchannels( const GLenum external_format ) const;
-//    size_t get_channel_size( const GLenum external_type ) const;
-    void estimate_pixel_format( const size_t nchannels, const size_t bytes_per_channel );
-    void determine_pixel_format_for_1_channel( const size_t bytes_per_channel );
-    void determine_pixel_format_for_2_channel( const size_t bytes_per_channel );
-    void determine_pixel_format_for_3_channel( const size_t bytes_per_channel );
-    void determine_pixel_format_for_4_channel( const size_t bytes_per_channel );
+//    std::size_t get_nchannels( const GLenum external_format ) const;
+//    std::size_t get_channel_size( const GLenum external_type ) const;
+    void estimate_pixel_format( const std::size_t nchannels, const std::size_t bytes_per_channel );
+    void determine_pixel_format_for_1_channel( const std::size_t bytes_per_channel );
+    void determine_pixel_format_for_2_channel( const std::size_t bytes_per_channel );
+    void determine_pixel_format_for_3_channel( const std::size_t bytes_per_channel );
+    void determine_pixel_format_for_4_channel( const std::size_t bytes_per_channel );
 };
 
 /*===========================================================================*/

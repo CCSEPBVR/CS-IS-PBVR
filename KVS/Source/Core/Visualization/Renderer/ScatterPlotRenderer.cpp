@@ -85,8 +85,8 @@ void ScatterPlotRenderer::drawBackground( const kvs::Rectangle& rect, const floa
 void ScatterPlotRenderer::drawPolyline(
     const kvs::Rectangle& rect,
     kvs::TableObject* table,
-    const size_t x_index,
-    const size_t y_index )
+    const std::size_t x_index,
+    const std::size_t y_index )
 {
     if ( !m_polyline_visible ) { return; } // invisible
 
@@ -109,7 +109,7 @@ void ScatterPlotRenderer::drawPolyline(
     engine->beginPath();
 
     // Set start point.
-    for ( size_t i = 0; i < nrows; i++ )
+    for ( std::size_t i = 0; i < nrows; i++ )
     {
         if ( !table->insideRange( i ) ) continue;
         const auto x_value = x_values[i].to<kvs::Real64>();
@@ -121,7 +121,7 @@ void ScatterPlotRenderer::drawPolyline(
     }
 
     // Set points on the polyline.
-    for ( size_t i = 0; i < nrows; i++ )
+    for ( std::size_t i = 0; i < nrows; i++ )
     {
         if ( !table->insideRange( i ) ) continue;
         const auto x_value = x_values[i].to<kvs::Real64>();
@@ -141,8 +141,8 @@ void ScatterPlotRenderer::drawPolyline(
 void ScatterPlotRenderer::drawPoint(
     const kvs::Rectangle& rect,
     kvs::TableObject* table,
-    const size_t x_index,
-    const size_t y_index,
+    const std::size_t x_index,
+    const std::size_t y_index,
     const bool has_values )
 {
     const auto& x_values = table->column( x_index );
@@ -172,7 +172,7 @@ void ScatterPlotRenderer::drawPoint(
 
         engine->setStrokeWidth( m_edge_width );
         engine->setStrokeColor( kvs::RGBAColor( m_edge_color, m_edge_opacity ) );
-        for ( size_t i = 0; i < nrows; i++ )
+        for ( std::size_t i = 0; i < nrows; i++ )
         {
             if ( !table->insideRange( i ) ) continue;
 
@@ -196,7 +196,7 @@ void ScatterPlotRenderer::drawPoint(
         engine->setFillColor( kvs::RGBAColor( color, opacity ) );
         engine->setStrokeWidth( m_edge_width );
         engine->setStrokeColor( kvs::RGBAColor( m_edge_color, m_edge_opacity ) );
-        for ( size_t i = 0; i < nrows; i++ )
+        for ( std::size_t i = 0; i < nrows; i++ )
         {
             if ( !table->insideRange( i ) ) continue;
             const auto x_value = x_values[i].to<kvs::Real64>();

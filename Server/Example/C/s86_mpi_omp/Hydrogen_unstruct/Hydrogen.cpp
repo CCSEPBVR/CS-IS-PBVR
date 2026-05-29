@@ -90,11 +90,11 @@ int Hydrogen::generate_volume( void )
     vismodule::UInt64 slice_size = static_cast<vismodule::UInt32>( dim1 * dim2 );
     vismodule::UInt64 vertex_index = 0;
     vismodule::UInt64 connection_index = 0;
-    for ( size_t z = 0; z < dim3-1; ++z )
+    for ( std::size_t z = 0; z < dim3-1; ++z )
     {
-        for ( size_t y = 0; y < dim2-1; ++y )
+        for ( std::size_t y = 0; y < dim2-1; ++y )
         {
-            for ( size_t x = 0; x < dim1-1; ++x )
+            for ( std::size_t x = 0; x < dim1-1; ++x )
             {
                 const vismodule::UInt64 local_vertex_index[8] =
                 {

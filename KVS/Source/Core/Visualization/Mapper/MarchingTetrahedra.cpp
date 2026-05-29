@@ -166,11 +166,11 @@ void MarchingTetrahedra::extract_surfaces_with_duplication(
     const kvs::UInt32* connections =
         static_cast<const kvs::UInt32*>( volume->connections().data() );
 
-    const size_t ncells = volume->numberOfCells();
+    const std::size_t ncells = volume->numberOfCells();
 
     // Extract surfaces.
-    size_t index = 0;
-    size_t local_index[4];
+    std::size_t index = 0;
+    std::size_t local_index[4];
     for ( kvs::UInt32 cell = 0; cell < ncells; ++cell, index += 4 )
     {
         // Calculate the indices of the target cell.
@@ -180,12 +180,12 @@ void MarchingTetrahedra::extract_surfaces_with_duplication(
         local_index[3] = connections[ index + 3 ];
 
         // Calculate the index of the reference table.
-        const size_t table_index = this->calculate_table_index<T>( local_index );
+        const std::size_t table_index = this->calculate_table_index<T>( local_index );
         if ( table_index == 0 ) continue;
         if ( table_index == 15 ) continue;
 
         // Calculate the triangle polygons.
-        for ( size_t i = 0; MarchingTetrahedraTable::TriangleID[ table_index ][i] != -1; i += 3 )
+        for ( std::size_t i = 0; MarchingTetrahedraTable::TriangleID[ table_index ][i] != -1; i += 3 )
         {
             // Refer the edge IDs from the TriangleTable by using the table_index.
             const int e0 = MarchingTetrahedraTable::TriangleID[table_index][i];
@@ -249,8 +249,8 @@ void MarchingTetrahedra::extract_surfaces_without_duplication(
     kvs::IgnoreUnusedVariable( volume );
 
 #if NOT_YET_IMPLEMENTED
-    const size_t nedges     = volume->adjacency()->nedges();
-    const size_t byte_size  = sizeof( size_t ) * nedges;
+    const std::size_t nedges     = volume->adjacency()->nedges();
+    const std::size_t byte_size  = sizeof( std::size_t ) * nedges;
     kvs::UInt32* vertex_map = static_cast<kvs::UInt32*>( malloc( byte_size ) );
     if ( !vertex_map )
     {
@@ -304,7 +304,7 @@ size_t MarchingTetrahedra::calculate_table_index( const size_t* local_index ) co
     const T* const values = static_cast<const T*>( BaseClass::volume()->values().data() );
     const double isolevel = m_isolevel;
 
-    size_t table_index = 0;
+    std::size_t table_index = 0;
     if ( static_cast<double>( values[ local_index[0] ] ) > isolevel ) { table_index |=   1; }
     if ( static_cast<double>( values[ local_index[1] ] ) > isolevel ) { table_index |=   2; }
     if ( static_cast<double>( values[ local_index[2] ] ) > isolevel ) { table_index |=   4; }
@@ -329,8 +329,8 @@ const kvs::Vec3 MarchingTetrahedra::interpolate_vertex(
     const T* const values = static_cast<const T*>( BaseClass::volume()->values().data() );
     const kvs::Real32* const coords = BaseClass::volume()->coords().data();
 
-    const size_t coord0_index = 3 * vertex0;
-    const size_t coord1_index = 3 * vertex1;
+    const std::size_t coord0_index = 3 * vertex0;
+    const std::size_t coord1_index = 3 * vertex1;
 
     auto v0 = static_cast<double>( values[ vertex0 ] );
     auto v1 = static_cast<double>( values[ vertex1 ] );
@@ -363,13 +363,13 @@ void MarchingTetrahedra::calculate_isopoints(
 
     const T* const values = static_cast<const T*>( volume->values().data() );
     const kvs::EdgeConnections* const edge_connections = volume->adjacency()->edgeConnections();
-    const size_t nedges = volume->adjacency()->nedges();
+    const std::size_t nedges = volume->adjacency()->nedges();
     const double isolevel = m_isolevel;
 
-    for ( size_t edge = 0; edge < nedges ; ++edge )
+    for ( std::size_t edge = 0; edge < nedges ; ++edge )
     {
-        const size_t vertex0 = edge_connections->vertex( edge, 0 );
-        const size_t vertex1 = edge_connections->vertex( edge, 1 );
+        const std::size_t vertex0 = edge_connections->vertex( edge, 0 );
+        const std::size_t vertex1 = edge_connections->vertex( edge, 1 );
 
         if ( ( values[ vertex0 ] > isolevel ) == ( values[ vertex1 ] > isolevel ) ) { continue; }
 
@@ -402,10 +402,10 @@ void MarchingTetrahedra::connect_isopoints(
 
     const kvs::VertexGraph* const vertex_graph = volume->adjacency()->vertexGraph();
     const kvs::UInt32* const volume_connections = volum->connections()->data();
-    const size_t ncells = volume->numberOfCells();
+    const std::size_t ncells = volume->numberOfCells();
 
-    size_t index = 0;
-    size_t local_index[4];
+    std::size_t index = 0;
+    std::size_t local_index[4];
     for ( kvs::UInt32 cell = 0; cell < ncells; ++cell, index += 4 )
     {
         // Calculate the indices of the target cell.
@@ -415,23 +415,23 @@ void MarchingTetrahedra::connect_isopoints(
         local_index[3] = volume_connections[ index + 3 ];
 
         // Calculate the index of the reference table.
-        const size_t table_index = this->calculate_table_index<T>( local_index );
+        const std::size_t table_index = this->calculate_table_index<T>( local_index );
         if ( table_index == 0 ) continue;
         if ( table_index == 15 ) continue;
 
-        for ( size_t i = 0; MarchingTetrahedraTable::TriangleID[table_index][i] != -1; i += 3 )
+        for ( std::size_t i = 0; MarchingTetrahedraTable::TriangleID[table_index][i] != -1; i += 3 )
         {
             const int local_e0 = MarchingTetrahedraTable::TriangleID[table_index][i];
             const int local_e1 = MarchingTetrahedraTable::TriangleID[table_index][i+1];
             const int local_e2 = MarchingTetrahedraTable::TriangleID[table_index][i+2];
 
-            const size_t e0 = vertex_graph->edge(
+            const std::size_t e0 = vertex_graph->edge(
                 local_index[ MarchingTetrahedraTable::VertexID[0][0] ],
                 local_index[ MarchingTetrahedraTable::VertexID[0][1] ]);
-            const size_t e1 = vertex_graph->edge(
+            const std::size_t e1 = vertex_graph->edge(
                 local_index[ MarchingTetrahedraTable::VertexID[1][0] ],
                 local_index[ MarchingTetrahedraTable::VertexID[1][1] ]);
-            const size_t e2 = vertex_graph->edge(
+            const std::size_t e2 = vertex_graph->edge(
                 local_index[ MarchingTetrahedraTable::VertexID[2][0] ],
                 local_index[ MarchingTetrahedraTable::VertexID[2][1] ]);
 
@@ -464,7 +464,7 @@ void MarchingTetrahedra::calculate_normals_on_polygon(
 
     const kvs::Real32* const coords_ptr = &coords[ 0 ];
 
-    const size_t size = connections.size();
+    const std::size_t size = connections.size();
     for ( kvs::UInt32 index = 0; index < size; index += 3 )
     {
         const kvs::UInt32 coord0_index = 3 * connections[ index     ];
@@ -505,7 +505,7 @@ void MarchingTetrahedra::calculate_normals_on_vertex(
 
     const kvs::Real32* const coords_ptr = &coords[ 0 ];
 
-    const size_t size = connections.size();
+    const std::size_t size = connections.size();
     for ( kvs::UInt32 index = 0; index < size; index += 3 )
     {
         const kvs::UInt32 coord0_index = 3 * connections[ index     ];

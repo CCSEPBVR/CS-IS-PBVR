@@ -52,7 +52,7 @@ protected:
 protected:
 
     static double m_max_tolerance;  ///< tolerance
-    static size_t m_max_iterations; ///< maximum number of iterations
+    static std::size_t m_max_iterations; ///< maximum number of iterations
 
 public:
 
@@ -68,11 +68,11 @@ public:
 
     const vismodule::Matrix<T>& eigenVectors( void ) const;
 
-    const vismodule::Vector<T>& eigenVector( const size_t index ) const;
+    const vismodule::Vector<T>& eigenVector( const std::size_t index ) const;
 
     const vismodule::Vector<T>& eigenValues( void ) const;
 
-    const T eigenValue( const size_t index ) const;
+    const T eigenValue( const std::size_t index ) const;
 
 public:
 
@@ -88,7 +88,7 @@ public:
 
     static void SetMaxTolerance( const double max_tolerance );
 
-    static void SetMaxIterations( const size_t max_iterations );
+    static void SetMaxIterations( const std::size_t max_iterations );
 
 private:
 

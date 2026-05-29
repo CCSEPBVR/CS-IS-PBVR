@@ -29,11 +29,11 @@ class SystemInformation
 {
 public:
 
-    static const size_t nprocessors( void );
+    static const std::size_t nprocessors( void );
 
-    static const size_t totalMemorySize( void );
+    static const std::size_t totalMemorySize( void );
 
-    static const size_t freeMemorySize( void );
+    static const std::size_t freeMemorySize( void );
 };
 
 } // end of namespace vismodule

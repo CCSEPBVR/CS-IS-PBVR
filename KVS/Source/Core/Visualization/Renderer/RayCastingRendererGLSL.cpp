@@ -31,12 +31,12 @@ kvs::AnyValueArray NormalizeValues(
     const kvs::Real32 max_value )
 {
     const kvs::Real32 scale = 1.0f / ( max_value - min_value );
-    const size_t nnodes = volume->numberOfNodes();
+    const std::size_t nnodes = volume->numberOfNodes();
     const T* src = static_cast<const T*>( volume->values().data() );
 
     kvs::ValueArray<kvs::Real32> data( nnodes );
     kvs::Real32* dst = data.data();
-    for ( size_t i = 0; i < nnodes; i++ )
+    for ( std::size_t i = 0; i < nnodes; i++ )
     {
         *(dst++) = static_cast<kvs::Real32>(( *(src++) - min_value ) * scale);
     }
@@ -55,12 +55,12 @@ template <typename DstType, typename SrcType>
 kvs::AnyValueArray SignedToUnsigned( const kvs::StructuredVolumeObject* volume )
 {
     const SrcType min = kvs::Value<SrcType>::Min();
-    const size_t nvalues = volume->values().size();
+    const std::size_t nvalues = volume->values().size();
     const SrcType* src = static_cast<const SrcType*>( volume->values().data() );
 
     kvs::ValueArray<DstType> data( nvalues );
     DstType* dst = data.data();
-    for ( size_t i = 0; i < nvalues; i++ )
+    for ( std::size_t i = 0; i < nvalues; i++ )
     {
         *(dst++) = static_cast<DstType>( *(src++) - min );
     }
@@ -88,9 +88,9 @@ void RayCastingRenderer::BufferObject::create(
     const kvs::StructuredVolumeObject* volume,
     const kvs::TransferFunction& tfunc )
 {
-    const size_t width = volume->resolution().x();
-    const size_t height = volume->resolution().y();
-    const size_t depth = volume->resolution().z();
+    const std::size_t width = volume->resolution().x();
+    const std::size_t height = volume->resolution().y();
+    const std::size_t depth = volume->resolution().z();
 
     GLenum data_format = 0;
     GLenum data_type = 0;
@@ -236,7 +236,7 @@ void RayCastingRenderer::BoundingBufferObject::create(
      */
     const kvs::Vec3u min( 0, 0, 0 );
     const kvs::Vec3u max( volume->resolution() - kvs::Vec3u( 1, 1, 1 ) );
-    const size_t nelements = 72; // = 4 vertices x 3 dimensions x 6 faces
+    const std::size_t nelements = 72; // = 4 vertices x 3 dimensions x 6 faces
 
     const float minx = static_cast<float>( min.x() );
     const float miny = static_cast<float>( min.y() );
@@ -499,8 +499,8 @@ void RayCastingRenderer::exec(
     BaseClass::startTimer();
     kvs::OpenGL::WithPushedAttrib p( GL_ALL_ATTRIB_BITS );
 
-    const size_t width = camera->windowWidth();
-    const size_t height = camera->windowHeight();
+    const std::size_t width = camera->windowWidth();
+    const std::size_t height = camera->windowHeight();
     auto* volume = kvs::StructuredVolumeObject::DownCast( object );
 
     const auto ncells = volume->resolution() - kvs::Vec3u::Constant(1);
@@ -519,8 +519,8 @@ void RayCastingRenderer::exec(
         BaseClass::setWindowSize( width, height );
         BaseClass::setDevicePixelRatio( camera->devicePixelRatio() );
         BaseClass::setObject( volume );
-        const size_t framebuffer_width = BaseClass::framebufferWidth();
-        const size_t framebuffer_height = BaseClass::framebufferHeight();
+        const std::size_t framebuffer_width = BaseClass::framebufferWidth();
+        const std::size_t framebuffer_height = BaseClass::framebufferHeight();
         this->create_shader_program( BaseClass::shader(), BaseClass::isShadingEnabled() );
         this->create_framebuffer( framebuffer_width, framebuffer_height );
         this->create_buffer_object( volume );
@@ -529,16 +529,16 @@ void RayCastingRenderer::exec(
     if ( BaseClass::isWindowResized( width, height ) )
     {
         BaseClass::setWindowSize( width, height );
-        const size_t framebuffer_width = BaseClass::framebufferWidth();
-        const size_t framebuffer_height = BaseClass::framebufferHeight();
+        const std::size_t framebuffer_width = BaseClass::framebufferWidth();
+        const std::size_t framebuffer_height = BaseClass::framebufferHeight();
         this->update_framebuffer( framebuffer_width, framebuffer_height );
     }
 
     if ( BaseClass::isObjectChanged( volume ) )
     {
         BaseClass::setObject( volume );
-        const size_t framebuffer_width = BaseClass::framebufferWidth();
-        const size_t framebuffer_height = BaseClass::framebufferHeight();
+        const std::size_t framebuffer_width = BaseClass::framebufferWidth();
+        const std::size_t framebuffer_height = BaseClass::framebufferHeight();
         this->update_shader_program( BaseClass::shader(), BaseClass::isShadingEnabled() );
         this->update_framebuffer( framebuffer_width, framebuffer_height );
         this->update_buffer_object( volume );
@@ -546,7 +546,7 @@ void RayCastingRenderer::exec(
 
     if ( !m_transfer_function_texture.isValid() )
     {
-        const size_t width = BaseClass::transferFunction().resolution();
+        const std::size_t width = BaseClass::transferFunction().resolution();
         const auto table = BaseClass::transferFunction().table();
         m_transfer_function_texture.release();
         m_transfer_function_texture.setWrapS( GL_CLAMP_TO_EDGE );
@@ -663,8 +663,8 @@ void RayCastingRenderer::setup_shader_program(
     const kvs::Light* light )
 {
     // Copy the depth and color buffer to each corresponding textures.
-    const size_t framebuffer_width = BaseClass::framebufferWidth();
-    const size_t framebuffer_height = BaseClass::framebufferHeight();
+    const std::size_t framebuffer_width = BaseClass::framebufferWidth();
+    const std::size_t framebuffer_height = BaseClass::framebufferHeight();
     {
         kvs::Texture::Binder unit6( m_depth_texture, 5 );
         m_depth_texture.loadFromFrameBuffer( 0, 0, framebuffer_width, framebuffer_height );
@@ -685,9 +685,9 @@ void RayCastingRenderer::setup_shader_program(
  *  @param  height [in] framebuffer height
  */
 /*===========================================================================*/
-void RayCastingRenderer::create_framebuffer( const size_t width, const size_t height )
+void RayCastingRenderer::create_framebuffer( const std::size_t width, const std::size_t height )
 {
-    const size_t size = 32;
+    const std::size_t size = 32;
     const auto rnd = kvs::ValueArray<kvs::UInt8>::Random( size * size );
     m_jittering_texture.setWrapS( GL_REPEAT );
     m_jittering_texture.setWrapT( GL_REPEAT );
@@ -741,7 +741,7 @@ void RayCastingRenderer::create_framebuffer( const size_t width, const size_t he
  *  @param  height [in] framebuffer height
  */
 /*===========================================================================*/
-void RayCastingRenderer::update_framebuffer( const size_t width, const size_t height )
+void RayCastingRenderer::update_framebuffer( const std::size_t width, const std::size_t height )
 {
     m_jittering_texture.release();
     m_depth_texture.release();

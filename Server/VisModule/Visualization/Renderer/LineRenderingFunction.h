@@ -39,9 +39,9 @@ void Rendering_Strip_VCs_S( const vismodule::LineObject& line )
     glLineWidth( line->size( 0 ) );
     glBegin( GL_LINE_STRIP );
     {
-        const size_t nvertices = line->nvertices();
+        const std::size_t nvertices = line->nvertices();
 
-        for( size_t i = 0; i < nvertices; i++ )
+        for( std::size_t i = 0; i < nvertices; i++ )
         {
             const vismodule::RGBColor& color    = line->color(i);
             const vismodule::Vector3f& position = line->coord(i);
@@ -61,8 +61,8 @@ void Rendering_Strip_VCs_S( const vismodule::LineObject& line )
 /*==========================================================================*/
 void Rendering_Strip_VCs_Ss( const vismodule::LineObject& line )
 {
-    const size_t nlines = line->nvertices() - 1;
-    for( size_t i = 0; i < nlines; i++ )
+    const std::size_t nlines = line->nvertices() - 1;
+    for( std::size_t i = 0; i < nlines; i++ )
     {
         glLineWidth( line->size(i) );
 
@@ -92,13 +92,13 @@ void Rendering_Strip_LC_S( const vismodule::LineObject& line )
 {
     glLineWidth( line->size( 0 ) );
 
-    const size_t         nvertices = line->nvertices();
+    const std::size_t         nvertices = line->nvertices();
     const vismodule::RGBColor& color     = line->color(0);
 
     glBegin( GL_LINE_STRIP );
     {
         glColor3ub( color.r(), color.g(), color.b() );
-        for( size_t i = 0; i < nvertices; i++ )
+        for( std::size_t i = 0; i < nvertices; i++ )
         {
             const vismodule::Vector3f& position = line->coord(i);
             glVertex3f( position.x(), position.y(), position.z() );
@@ -117,11 +117,11 @@ void Rendering_Strip_LCs_S( const vismodule::LineObject& line )
 {
     glLineWidth( line->size( 0 ) );
 
-    const size_t num = line->nvertices() - 1;
+    const std::size_t num = line->nvertices() - 1;
 
     glBegin( GL_LINES );
     {
-        for( size_t i = 0; i < num; i++ )
+        for( std::size_t i = 0; i < num; i++ )
         {
             const vismodule::RGBColor& color     = line->color(i);
             const vismodule::Vector3f& position1 = line->coord(i);
@@ -143,11 +143,11 @@ void Rendering_Strip_LCs_S( const vismodule::LineObject& line )
 /*==========================================================================*/
 void Rendering_Strip_LC_Ss( const vismodule::LineObject& line )
 {
-    const size_t         num   = line->nvertices() - 1;
+    const std::size_t         num   = line->nvertices() - 1;
     const vismodule::RGBColor& color = line->color(0);
     glColor3ub( color.r(), color.g(), color.b() );
 
-    for( size_t i = 0; i < num; i++ )
+    for( std::size_t i = 0; i < num; i++ )
     {
         glLineWidth( line->size( i ) );
 
@@ -171,9 +171,9 @@ void Rendering_Strip_LC_Ss( const vismodule::LineObject& line )
 /*==========================================================================*/
 void Rendering_Strip_LCs_Ss( const vismodule::LineObject& line )
 {
-    const size_t num = line->nvertices() - 1;
+    const std::size_t num = line->nvertices() - 1;
 
-    for( size_t i = 0; i < num; i++ )
+    for( std::size_t i = 0; i < num; i++ )
     {
         const vismodule::RGBColor& color     = line->color(i);
         const vismodule::Vector3f& position1 = line->coord(i);
@@ -203,10 +203,10 @@ void Rendering_Uniline_VCs_S( const vismodule::LineObject& line )
 
     glBegin( GL_LINE_STRIP );
     {
-        const size_t nconnections = line->nconnections();
-        for( size_t i = 0; i < nconnections; i++ )
+        const std::size_t nconnections = line->nconnections();
+        for( std::size_t i = 0; i < nconnections; i++ )
         {
-            size_t id = *( line->connections().pointer() + i );
+            std::size_t id = *( line->connections().pointer() + i );
 
             const vismodule::RGBColor& color    = line->color(id);
             const vismodule::Vector3f& position = line->coord(id);
@@ -226,11 +226,11 @@ void Rendering_Uniline_VCs_S( const vismodule::LineObject& line )
 /*==========================================================================*/
 void Rendering_Uniline_VCs_Ss( const vismodule::LineObject& line )
 {
-    const size_t num = line->nconnections() - 1;
-    for( size_t i = 0; i < num; i++ )
+    const std::size_t num = line->nconnections() - 1;
+    for( std::size_t i = 0; i < num; i++ )
     {
-        size_t id1 = *( line->connections().pointer() + i   );
-        size_t id2 = *( line->connections().pointer() + i+1 );
+        std::size_t id1 = *( line->connections().pointer() + i   );
+        std::size_t id2 = *( line->connections().pointer() + i+1 );
 
         const vismodule::RGBColor& color1    = line->color(id1);
         const vismodule::RGBColor& color2    = line->color(id2);
@@ -264,9 +264,9 @@ void Rendering_Uniline_LC_S( const vismodule::LineObject& line )
         const vismodule::RGBColor& color = line->color(0);
         glColor3ub( color.r(), color.g(), color.b() );
 
-        const size_t nconnections = line->nconnections();
+        const std::size_t nconnections = line->nconnections();
 
-        for( size_t i = 0; i < nconnections; i++ )
+        for( std::size_t i = 0; i < nconnections; i++ )
         {
             const vismodule::Vector3f& position = line->coord(i);
             glVertex3d( position.x(), position.y(), position.z() );
@@ -287,8 +287,8 @@ void Rendering_Uniline_LCs_S( const vismodule::LineObject& line )
 
     glBegin( GL_LINES );
     {
-        const size_t num = line->nconnections() - 1;
-        for( size_t i = 0; i < num; i++ )
+        const std::size_t num = line->nconnections() - 1;
+        for( std::size_t i = 0; i < num; i++ )
         {
             const vismodule::RGBColor& color     = line->color(i);
             const vismodule::Vector3f& position1 = line->coord(i);
@@ -313,9 +313,9 @@ void Rendering_Uniline_LC_Ss( const vismodule::LineObject& line )
     const vismodule::RGBColor& color = line->color(0);
     glColor3ub( color.r(), color.g(), color.b() );
 
-    const size_t num = line->nconnections() - 1;
+    const std::size_t num = line->nconnections() - 1;
 
-    for( size_t i = 0; i < num; i++ )
+    for( std::size_t i = 0; i < num; i++ )
     {
         const vismodule::Vector3f& position1 = line->coord(i  );
         const vismodule::Vector3f& position2 = line->coord(i+1);
@@ -338,8 +338,8 @@ void Rendering_Uniline_LC_Ss( const vismodule::LineObject& line )
 /*==========================================================================*/
 void Rendering_Uniline_LCs_Ss( const vismodule::LineObject& line )
 {
-    const size_t num = line->nconnections() - 1;
-    for( size_t i = 0; i < num; i++ )
+    const std::size_t num = line->nconnections() - 1;
+    for( std::size_t i = 0; i < num; i++ )
     {
         const vismodule::RGBColor& color     = line->color(i);
         const vismodule::Vector3f& position1 = line->coord(i);
@@ -366,16 +366,16 @@ void Rendering_Polyline_VCs_S( const vismodule::LineObject& line )
 {
     glLineWidth( line->size( 0 ) );
 
-    const size_t nconnections = line->nconnections();
-    for( size_t i = 0; i < nconnections; i++ )
+    const std::size_t nconnections = line->nconnections();
+    for( std::size_t i = 0; i < nconnections; i++ )
     {
-        const size_t index = 2 * i;
-        const size_t id1   = *( line->connections().pointer() + index );
-        const size_t id2   = *( line->connections().pointer() + index + 1 );
+        const std::size_t index = 2 * i;
+        const std::size_t id1   = *( line->connections().pointer() + index );
+        const std::size_t id2   = *( line->connections().pointer() + index + 1 );
 
         glBegin( GL_LINE_STRIP );
         {
-            for( size_t j = id1; j <= id2; j++ )
+            for( std::size_t j = id1; j <= id2; j++ )
             {
                 const vismodule::RGBColor& color    = line->color(j);
                 const vismodule::Vector3f& position = line->coord(j);
@@ -397,14 +397,14 @@ void Rendering_Polyline_VCs_S( const vismodule::LineObject& line )
 void Rendering_Polyline_VCs_Ss( const vismodule::LineObject& line )
 {
     int ctr = 0;
-    const size_t nconnections = line->nconnections();
-    for( size_t i = 0; i < nconnections; i++ )
+    const std::size_t nconnections = line->nconnections();
+    for( std::size_t i = 0; i < nconnections; i++ )
     {
-        const size_t index = 2*i;
-        const size_t id1   = *( line->connections().pointer() + index   );
-        const size_t id2   = *( line->connections().pointer() + index+1 );
+        const std::size_t index = 2*i;
+        const std::size_t id1   = *( line->connections().pointer() + index   );
+        const std::size_t id2   = *( line->connections().pointer() + index+1 );
 
-        for( size_t j = id1; j < id2; j++ )
+        for( std::size_t j = id1; j < id2; j++ )
         {
             const vismodule::RGBColor& color1    = line->color(j);
             const vismodule::RGBColor& color2    = line->color(j+1);
@@ -436,19 +436,19 @@ void Rendering_Polyline_LC_S( const vismodule::LineObject& line )
 {
     glLineWidth( line->size( 0 ) );
 
-    const size_t nconnections = line->nconnections();
-    for( size_t i = 0; i < nconnections; i++ )
+    const std::size_t nconnections = line->nconnections();
+    for( std::size_t i = 0; i < nconnections; i++ )
     {
-        const size_t index = 2 * i;
-        const size_t id1   = *( line->connections().pointer() + index );
-        const size_t id2   = *( line->connections().pointer() + index + 1 );
+        const std::size_t index = 2 * i;
+        const std::size_t id1   = *( line->connections().pointer() + index );
+        const std::size_t id2   = *( line->connections().pointer() + index + 1 );
 
         glBegin( GL_LINE_STRIP );
         {
             const vismodule::RGBColor& color = line->color(0);
             glColor3ub( color.r(), color.g(), color.b() );
 
-            for( size_t j = id1; j < id2; j++ )
+            for( std::size_t j = id1; j < id2; j++ )
             {
                 const vismodule::Vector3f& position1 = line->coord(j);
                 const vismodule::Vector3f& position2 = line->coord(j+1);
@@ -472,16 +472,16 @@ void Rendering_Polyline_LCs_S( const vismodule::LineObject& line )
     glLineWidth( line->size( 0 ) );
 
     int ctr = 0;
-    const size_t nconnections = line->nconnections();
-    for( size_t i = 0; i < nconnections; i++ )
+    const std::size_t nconnections = line->nconnections();
+    for( std::size_t i = 0; i < nconnections; i++ )
     {
-        const size_t index = 2 * i;
-        const size_t id1   = *( line->connections().pointer() + index );
-        const size_t id2   = *( line->connections().pointer() + index + 1 );
+        const std::size_t index = 2 * i;
+        const std::size_t id1   = *( line->connections().pointer() + index );
+        const std::size_t id2   = *( line->connections().pointer() + index + 1 );
 
         glBegin( GL_LINE_STRIP );
         {
-            for( size_t j = id1; j < id2; j++ )
+            for( std::size_t j = id1; j < id2; j++ )
             {
                 const vismodule::Vector3f& position1 = line->coord(j);
                 const vismodule::Vector3f& position2 = line->coord(j+1);
@@ -506,17 +506,17 @@ void Rendering_Polyline_LCs_S( const vismodule::LineObject& line )
 void Rendering_Polyline_LC_Ss( const vismodule::LineObject& line )
 {
     int ctr = 0;
-    const size_t nconnections = line->nconnections();
-    for( size_t i = 0; i < nconnections; i++ )
+    const std::size_t nconnections = line->nconnections();
+    for( std::size_t i = 0; i < nconnections; i++ )
     {
-        const size_t index = 2*i;
-        const size_t id1   = *( line->connections().pointer() + index   );
-        const size_t id2   = *( line->connections().pointer() + index+1 );
+        const std::size_t index = 2*i;
+        const std::size_t id1   = *( line->connections().pointer() + index   );
+        const std::size_t id2   = *( line->connections().pointer() + index+1 );
 
         const vismodule::RGBColor& color = line->color(0);
         glColor3ub( color.r(), color.g(), color.b() );
 
-        for( size_t j = id1; j < id2; j++ )
+        for( std::size_t j = id1; j < id2; j++ )
         {
             const vismodule::Vector3f& position1 = line->coord(j);
             const vismodule::Vector3f& position2 = line->coord(j+1);
@@ -543,14 +543,14 @@ void Rendering_Polyline_LC_Ss( const vismodule::LineObject& line )
 void Rendering_Polyline_LCs_Ss( const vismodule::LineObject& line )
 {
     int ctr = 0;
-    const size_t nconnections = line->nconnections();
-    for( size_t i = 0; i < nconnections; i++ )
+    const std::size_t nconnections = line->nconnections();
+    for( std::size_t i = 0; i < nconnections; i++ )
     {
-        const size_t index = 2*i;
-        const size_t id1   = *( line->connections().pointer() + index   );
-        const size_t id2   = *( line->connections().pointer() + index+1 );
+        const std::size_t index = 2*i;
+        const std::size_t id1   = *( line->connections().pointer() + index   );
+        const std::size_t id2   = *( line->connections().pointer() + index+1 );
 
-        for( size_t j = id1; j < id2; j++ )
+        for( std::size_t j = id1; j < id2; j++ )
         {
             const vismodule::RGBColor& color     = line->color(ctr);
             const vismodule::Vector3f& position1 = line->coord(j);
@@ -582,10 +582,10 @@ void Rendering_Segment_VCs_S( const vismodule::LineObject& line )
 
     glBegin( GL_LINES );
     {
-        const size_t num = line->nconnections() * 2;
-        for( size_t i = 0; i < num; i++ )
+        const std::size_t num = line->nconnections() * 2;
+        for( std::size_t i = 0; i < num; i++ )
         {
-            const size_t id = *( line->connections().pointer() + i );
+            const std::size_t id = *( line->connections().pointer() + i );
 
             const vismodule::RGBColor& color    = line->color(id);
             const vismodule::Vector3f& position = line->coord(id);
@@ -605,12 +605,12 @@ void Rendering_Segment_VCs_S( const vismodule::LineObject& line )
 /*==========================================================================*/
 void Rendering_Segment_VCs_Ss( const vismodule::LineObject& line )
 {
-    const size_t nconnections = line->nconnections();
-    for( size_t i = 0; i < nconnections; i++ )
+    const std::size_t nconnections = line->nconnections();
+    for( std::size_t i = 0; i < nconnections; i++ )
     {
-        const size_t index = 2*i;
-        const size_t id1   = *( line->connections().pointer() + index   );
-        const size_t id2   = *( line->connections().pointer() + index+1 );
+        const std::size_t index = 2*i;
+        const std::size_t id1   = *( line->connections().pointer() + index   );
+        const std::size_t id2   = *( line->connections().pointer() + index+1 );
 
         const vismodule::RGBColor& color1    = line->color(id1);
         const vismodule::RGBColor& color2    = line->color(id2);
@@ -644,10 +644,10 @@ void Rendering_Segment_LC_S( const vismodule::LineObject& line )
 
     glBegin( GL_LINES );
     {
-        const size_t num = line->nconnections() * 2;
-        for( size_t i = 0; i < num; i++ )
+        const std::size_t num = line->nconnections() * 2;
+        for( std::size_t i = 0; i < num; i++ )
         {
-            const size_t id = *( line->connections().pointer() + i );
+            const std::size_t id = *( line->connections().pointer() + i );
             const vismodule::Vector3f& position = line->coord(id);
 
             glVertex3f( position.x(), position.y(), position.z() );
@@ -668,14 +668,14 @@ void Rendering_Segment_LCs_S( const vismodule::LineObject& line )
 
     glBegin( GL_LINES );
     {
-        const size_t nconnections = line->nconnections();
-        for( size_t i = 0; i < nconnections; i++ )
+        const std::size_t nconnections = line->nconnections();
+        for( std::size_t i = 0; i < nconnections; i++ )
         {
             const vismodule::RGBColor& color = line->color(i);
 
-            const size_t index = 2 * i;
-            const size_t id1 = *( line->connections().pointer() + index   );
-            const size_t id2 = *( line->connections().pointer() + index+1 );
+            const std::size_t index = 2 * i;
+            const std::size_t id1 = *( line->connections().pointer() + index   );
+            const std::size_t id2 = *( line->connections().pointer() + index+1 );
 
             const vismodule::Vector3f& position1 = line->coord(id1);
             const vismodule::Vector3f& position2 = line->coord(id2);
@@ -699,12 +699,12 @@ void Rendering_Segment_LC_Ss( const vismodule::LineObject& line )
     const vismodule::RGBColor& color = line->color(0);
     glColor3ub( color.r(), color.g(), color.b() );
 
-    const size_t nconnections = line->nconnections();
-    for( size_t i = 0; i < nconnections; i++ )
+    const std::size_t nconnections = line->nconnections();
+    for( std::size_t i = 0; i < nconnections; i++ )
     {
-        const size_t index = 2*i;
-        const size_t id1   = *( line->connections().pointer() + index );
-        const size_t id2   = *( line->connections().pointer() + index+1 );
+        const std::size_t index = 2*i;
+        const std::size_t id1   = *( line->connections().pointer() + index );
+        const std::size_t id2   = *( line->connections().pointer() + index+1 );
 
         const vismodule::Vector3f& position1 = line->coord(id1);
         const vismodule::Vector3f& position2 = line->coord(id2);
@@ -727,14 +727,14 @@ void Rendering_Segment_LC_Ss( const vismodule::LineObject& line )
 /*==========================================================================*/
 void Rendering_Segment_LCs_Ss( const vismodule::LineObject& line )
 {
-    const size_t nconnections = line->nconnections();
-    for( size_t i = 0; i < nconnections; i++ )
+    const std::size_t nconnections = line->nconnections();
+    for( std::size_t i = 0; i < nconnections; i++ )
     {
         const vismodule::RGBColor& color = line->color(i);
 
-        const size_t index = 2 * i;
-        const size_t id1 = *( line->connections().pointer() + index   );
-        const size_t id2 = *( line->connections().pointer() + index+1 );
+        const std::size_t index = 2 * i;
+        const std::size_t id1 = *( line->connections().pointer() + index   );
+        const std::size_t id2 = *( line->connections().pointer() + index+1 );
         const vismodule::Vector3f& position1 = line->coord(id1);
         const vismodule::Vector3f& position2 = line->coord(id2);
 
@@ -840,8 +840,8 @@ LineRenderingFunctionType Rendering[NumberOfRenderingTypes] =
 
 LineRenderingType GetLineRenderingType( const vismodule::LineObject& line )
 {
-    const size_t nsizes    = line->nsizes();
-    const size_t ncolors   = line->ncolors();
+    const std::size_t nsizes    = line->nsizes();
+    const std::size_t ncolors   = line->ncolors();
 
     switch( line->lineType() )
     {

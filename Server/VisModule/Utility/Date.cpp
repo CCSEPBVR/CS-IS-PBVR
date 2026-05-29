@@ -70,7 +70,7 @@ const char* DayOfWeekShortName[] = {
     "Sat"
 };
 
-const size_t DaysInMonth[] = {
+const std::size_t DaysInMonth[] = {
     31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31
 };
 

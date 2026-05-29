@@ -37,7 +37,7 @@ ParticleBasedRenderer::ParticleBasedRenderer():
 /*==========================================================================*/
 ParticleBasedRenderer::ParticleBasedRenderer(
     const kvs::PointObject* point,
-    const size_t subpixel_level ):
+    const std::size_t subpixel_level ):
     m_ref_point( NULL ),
     m_enable_rendering( true ),
     m_subpixel_level( 1 ),
@@ -92,11 +92,11 @@ void ParticleBasedRenderer::exec(
  */
 /*==========================================================================*/
 bool ParticleBasedRenderer::createParticleBuffer(
-    const size_t width,
-    const size_t height,
-    const size_t subpixel_level )
+    const std::size_t width,
+    const std::size_t height,
+    const std::size_t subpixel_level )
 {
-    const size_t dpr = BaseClass::devicePixelRatio();
+    const std::size_t dpr = BaseClass::devicePixelRatio();
     m_buffer = new kvs::ParticleBuffer( width, height, subpixel_level, dpr );
     if ( !m_buffer ) return( false );
 
@@ -137,12 +137,12 @@ void ParticleBasedRenderer::create_image(
     const kvs::Light* light )
 {
     // Current rendering window size.
-    const size_t current_width = BaseClass::windowWidth();
-    const size_t current_height = BaseClass::windowHeight();
+    const std::size_t current_width = BaseClass::windowWidth();
+    const std::size_t current_height = BaseClass::windowHeight();
 
     // Updated rendering window size
-    const size_t width = camera->windowWidth();
-    const size_t height = camera->windowHeight();
+    const std::size_t width = camera->windowWidth();
+    const std::size_t height = camera->windowHeight();
 
     // Create memory region for the buffers, if the screen size is changed.
     if ( ( current_width != width ) || ( current_height != height ) )
@@ -151,7 +151,7 @@ void ParticleBasedRenderer::create_image(
         BaseClass::setDevicePixelRatio( camera->devicePixelRatio() );
         const int framebuffer_width = BaseClass::framebufferWidth();
         const int framebuffer_height = BaseClass::framebufferHeight();
-        const size_t npixels = framebuffer_width * framebuffer_height;
+        const std::size_t npixels = framebuffer_width * framebuffer_height;
         BaseClass::allocateColorData( npixels * 4 );
         BaseClass::allocateDepthData( npixels );
 
@@ -182,8 +182,8 @@ void ParticleBasedRenderer::project_particle(
     kvs::Xform pvm( camera->projectionMatrix() * camera->viewingMatrix() * point->modelingMatrix() );
     float t[16]; pvm.toArray( t );
 
-    const size_t w = camera->windowWidth() / 2;
-    const size_t h = camera->windowHeight() / 2;
+    const std::size_t w = camera->windowWidth() / 2;
+    const std::size_t h = camera->windowHeight() / 2;
 
     // Set shader initial parameters.
     BaseClass::shader().set( camera, light, point );
@@ -193,13 +193,13 @@ void ParticleBasedRenderer::project_particle(
     m_buffer->attachPointObject( point );
 
     // Aliases.
-    const size_t nv = point->numberOfVertices();
+    const std::size_t nv = point->numberOfVertices();
     const kvs::Real32* v = point->coords().data();
 
-    size_t index3 = 0;
-    const size_t bounds_width = BaseClass::windowWidth() - 1;
-    const size_t bounds_height = BaseClass::windowHeight() - 1;
-    for ( size_t index = 0; index < nv; index++, index3 += 3 )
+    std::size_t index3 = 0;
+    const std::size_t bounds_width = BaseClass::windowWidth() - 1;
+    const std::size_t bounds_height = BaseClass::windowHeight() - 1;
+    for ( std::size_t index = 0; index < nv; index++, index3 += 3 )
     {
         /* Calculate the projected point position in the window coordinate system.
          * Ex.) Camera::projectObjectToWindow().

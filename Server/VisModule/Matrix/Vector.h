@@ -38,14 +38,14 @@ class Vector
 
 private:
 
-    size_t m_size;     ///< Vector size( dimension ).
+    std::size_t m_size;     ///< Vector size( dimension ).
     T*     m_elements; ///< Array of elements.
 
 public:
 
-    explicit Vector( const size_t size = 0 );
+    explicit Vector( const std::size_t size = 0 );
 
-    Vector( const size_t size, const T* elements );
+    Vector( const std::size_t size, const T* elements );
 
     Vector( const std::vector<T>& std_vector );
 
@@ -58,7 +58,7 @@ public:
 
 public:
 
-    void setSize( const size_t size );
+    void setSize( const std::size_t size );
 
     void zero( void );
 
@@ -66,7 +66,7 @@ public:
 
 public:
 
-    const size_t size( void ) const;
+    const std::size_t size( void ) const;
 
 public:
 
@@ -85,8 +85,8 @@ public:
 
 public:
 
-    const T  operator []( const size_t index ) const;
-    T&       operator []( const size_t index );
+    const T  operator []( const std::size_t index ) const;
+    T&       operator []( const std::size_t index );
 
 public:
 
@@ -113,11 +113,11 @@ public:
     friend const bool operator ==( const Vector& lhs, const Vector& rhs )
     {
         // Alias.
-        const size_t size = lhs.size();
+        const std::size_t size = lhs.size();
 
         bool result = ( lhs.size() == rhs.size() );
 
-        for ( size_t i = 0; i < size; ++i )
+        for ( std::size_t i = 0; i < size; ++i )
         {
             result = result && vismodule::Math::Equal( lhs[i], rhs[i] );
         }
@@ -261,9 +261,9 @@ public:
     friend std::ostream& operator << ( std::ostream& os, const Vector& rhs )
     {
         // Alias.
-        const size_t size = rhs.size();
+        const std::size_t size = rhs.size();
 
-        for( size_t i = 0; i < size - 1; ++i )
+        for( std::size_t i = 0; i < size - 1; ++i )
         {
             os <<  rhs[i] << " ";
         }
@@ -282,7 +282,7 @@ public:
  */
 /*==========================================================================*/
 template <typename T>
-inline Vector<T>::Vector( const size_t size )
+inline Vector<T>::Vector( const std::size_t size )
     : m_size( 0 )
     , m_elements( 0 )
 {
@@ -300,7 +300,7 @@ inline Vector<T>::Vector( const size_t size )
  */
 /*==========================================================================*/
 template <typename T>
-inline Vector<T>::Vector( const size_t size, const T* elements )
+inline Vector<T>::Vector( const std::size_t size, const T* elements )
     : m_size( 0 )
     , m_elements( 0 )
 {
@@ -324,10 +324,10 @@ inline Vector<T>::Vector( const std::vector<T>& std_vector )
     this->setSize( std_vector.size() );
 
     // Alias.
-    const size_t size = this->size();
+    const std::size_t size = this->size();
     T* const     v    = m_elements;
 
-    for ( size_t i = 0; i < size; ++i )
+    for ( std::size_t i = 0; i < size; ++i )
     {
         v[i] = std_vector[i];
     }
@@ -386,7 +386,7 @@ inline Vector<T>& Vector<T>::operator =( const Vector& rhs )
  */
 /*==========================================================================*/
 template <typename T>
-inline void Vector<T>::setSize( const size_t size )
+inline void Vector<T>::setSize( const std::size_t size )
 {
     if ( this->size() != size )
     {
@@ -413,10 +413,10 @@ template <typename T>
 inline void Vector<T>::zero( void )
 {
     // Alias.
-    const size_t size = this->size();
+    const std::size_t size = this->size();
     T* const     v    = m_elements;
 
-    for ( size_t i = 0; i < size; ++i )
+    for ( std::size_t i = 0; i < size; ++i )
     {
         v[i] = T( 0 );
     }
@@ -444,7 +444,7 @@ inline void Vector<T>::swap( Vector& other )
  */
 /*==========================================================================*/
 template <typename T>
-inline const size_t Vector<T>::size( void ) const
+inline const std::size_t Vector<T>::size( void ) const
 {
     return( m_size );
 }
@@ -518,12 +518,12 @@ template <typename T>
 inline const double Vector<T>::length2( void ) const
 {
     // Alias.
-    const size_t   size = this->size();
+    const std::size_t   size = this->size();
     const T* const v    = m_elements;
 
     double result = 0.0;
 
-    for ( size_t i = 0; i < size; ++i )
+    for ( std::size_t i = 0; i < size; ++i )
     {
         result += v[i] * v[i];
     }
@@ -546,12 +546,12 @@ inline const T Vector<T>::dot( const Vector<T>& other ) const
     VIS_MODULE_ASSERT( this->size() == other.size() );
 
     // Alias.
-    const size_t   size     = this->size();
+    const std::size_t   size     = this->size();
     const T* const v = m_elements;
 
     T result( 0 );
 
-    for ( size_t i = 0; i < size; ++i )
+    for ( std::size_t i = 0; i < size; ++i )
     {
         result += v[i] * other[i];
     }
@@ -569,7 +569,7 @@ inline const T Vector<T>::dot( const Vector<T>& other ) const
  */
 /*==========================================================================*/
 template <typename T>
-inline const T Vector<T>::operator []( const size_t index ) const
+inline const T Vector<T>::operator []( const std::size_t index ) const
 {
     VIS_MODULE_ASSERT( index < this->size() );
 
@@ -586,7 +586,7 @@ inline const T Vector<T>::operator []( const size_t index ) const
  */
 /*==========================================================================*/
 template <typename T>
-inline T& Vector<T>::operator []( const size_t index )
+inline T& Vector<T>::operator []( const std::size_t index )
 {
     VIS_MODULE_ASSERT( index < this->size() );
 
@@ -608,10 +608,10 @@ inline Vector<T>& Vector<T>::operator +=( const Vector& rhs )
     VIS_MODULE_ASSERT( this->size() == rhs.size() );
 
     // Alias.
-    const size_t size = this->size();
+    const std::size_t size = this->size();
     T* const     v    = m_elements;
 
-    for( size_t i = 0; i < size; ++i )
+    for( std::size_t i = 0; i < size; ++i )
     {
         v[i] = static_cast<T>( v[i] + rhs[i] );
     }
@@ -634,10 +634,10 @@ inline Vector<T>& Vector<T>::operator -=( const Vector& rhs )
     VIS_MODULE_ASSERT( this->size() == rhs.size() );
 
     // Alias.
-    const size_t size = this->size();
+    const std::size_t size = this->size();
     T* const     v    = m_elements;
 
-    for( size_t i = 0; i < size; ++i )
+    for( std::size_t i = 0; i < size; ++i )
     {
         v[i] = static_cast<T>( v[i] - rhs[i] );
     }
@@ -658,10 +658,10 @@ template <typename T>
 inline Vector<T>& Vector<T>::operator *= ( const Vector& rhs )
 {
     // Alias.
-    const size_t size = this->size();
+    const std::size_t size = this->size();
     T* const     v    = m_elements;
 
-    for( size_t i = 0; i < size; ++i )
+    for( std::size_t i = 0; i < size; ++i )
     {
         v[i] = static_cast<T>( v[i] * rhs[i] );
     }
@@ -682,10 +682,10 @@ template <typename T>
 inline Vector<T>& Vector<T>::operator *= ( const T rhs )
 {
     // Alias.
-    const size_t size = this->size();
+    const std::size_t size = this->size();
     T* const     v    = m_elements;
 
-    for( size_t i = 0; i < size; ++i )
+    for( std::size_t i = 0; i < size; ++i )
     {
         v[i] = static_cast<T>( v[i] * rhs );
     }
@@ -706,10 +706,10 @@ template <typename T>
 inline Vector<T>& Vector<T>::operator /= ( const T rhs )
 {
     // Alias.
-    const size_t size = this->size();
+    const std::size_t size = this->size();
     T* const     v    = m_elements;
 
-    for( size_t i = 0; i < size; ++i )
+    for( std::size_t i = 0; i < size; ++i )
     {
         v[i] = static_cast<T>( v[i] / rhs );
     }

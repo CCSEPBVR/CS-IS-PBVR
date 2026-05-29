@@ -30,7 +30,7 @@ private:
 
 public:
 
-    explicit TransferFunction( const size_t resolution = 256 );
+    explicit TransferFunction( const std::size_t resolution = 256 );
     TransferFunction( const std::string& filename );
     TransferFunction( const kvs::ColorMap& color_map );
     TransferFunction( const kvs::OpacityMap& opacity_map );
@@ -50,10 +50,10 @@ public:
     float maxValue() const;
     const kvs::ColorMap& colorMap() const;
     const kvs::OpacityMap& opacityMap() const;
-    size_t resolution() const;
+    std::size_t resolution() const;
     kvs::ValueArray<kvs::Real32> table() const;
 
-    void create( const size_t resolution );
+    void create( const std::size_t resolution );
     bool read( const std::string& filename );
     bool write( const std::string& filename );
 

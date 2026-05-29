@@ -45,14 +45,14 @@ int main( int argc, char** argv )
 #endif
 
 #if USE_DRIVER_API
-    const size_t ngpus = kvs::cuda::DriverAPI::Device::Count();
+    const std::size_t ngpus = kvs::cuda::DriverAPI::Device::Count();
     std::cout << "Num. of GPUs: " << ngpus << std::endl;
 #else // USE_RUNTIME_API
-    const size_t ngpus = kvs::cuda::Device::Count();
+    const std::size_t ngpus = kvs::cuda::Device::Count();
     std::cout << "Num. of GPUs: " << ngpus << std::endl;
 #endif
 
-    for ( size_t i = 0; i < ngpus; i++ )
+    for ( std::size_t i = 0; i < ngpus; i++ )
     {
 #if USE_DRIVER_API
         kvs::cuda::DriverAPI::Device device( i );

@@ -17,7 +17,7 @@ namespace kvs
 class StampTimerList
 {
 private:
-    size_t m_max_nstamps = 0; ///< max. number of stamps in the stamp timers
+    std::size_t m_max_nstamps = 0; ///< max. number of stamps in the stamp timers
     std::vector<kvs::StampTimer> m_stamp_timers{}; ///< stamp timer list
 
 public:
@@ -67,13 +67,13 @@ inline void StampTimerList::print(
     std::ostream& os,
     const std::string delim ) const
 {
-    const size_t nrows = m_max_nstamps;
-    const size_t ncols = m_stamp_timers.size();
+    const std::size_t nrows = m_max_nstamps;
+    const std::size_t ncols = m_stamp_timers.size();
     if ( ncols == 0 ) { return; }
 
     if ( this->has_title() )
     {
-        for ( size_t j = 0; j < ncols - 1; ++j )
+        for ( std::size_t j = 0; j < ncols - 1; ++j )
         {
             const auto& title = m_stamp_timers[j].title();
             os << title << delim;
@@ -82,9 +82,9 @@ inline void StampTimerList::print(
         os << title << std::endl;
     }
 
-    for ( size_t i = 0; i < nrows; ++i )
+    for ( std::size_t i = 0; i < nrows; ++i )
     {
-        for ( size_t j = 0; j < ncols - 1; ++j )
+        for ( std::size_t j = 0; j < ncols - 1; ++j )
         {
             const auto& col = m_stamp_timers[j];
             if ( i < col.numberOfStamps() ) { os << col.times()[i] << delim; }

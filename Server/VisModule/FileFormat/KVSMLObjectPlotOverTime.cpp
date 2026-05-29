@@ -142,7 +142,7 @@ const bool KVSMLObjectPlotOverTime::write( const std::string& filename )
     else file << "FALSE" << std::endl;
 
     // values over time
-    for ( size_t i = 0; i < m_values_on_time.size(); i++ )
+    for ( std::size_t i = 0; i < m_values_on_time.size(); i++ )
     {
         file << m_values_on_time[i] << " ";
     }
@@ -165,7 +165,7 @@ std::ostream& operator <<( std::ostream& os, const KVSMLObjectPlotOverTime& rhs 
     else os << "m_mask: FALSE" << std::endl;
 
     // values over time
-    for ( size_t i = 0; i < rhs.m_values_on_time.size(); i++ )
+    for ( std::size_t i = 0; i < rhs.m_values_on_time.size(); i++ )
     {
         os << rhs.m_values_on_time[i] << ",";
     }

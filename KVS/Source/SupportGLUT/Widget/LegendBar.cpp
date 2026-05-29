@@ -18,9 +18,9 @@ namespace { namespace Default
 {
 const double MinValue = 0.0f;
 const double MaxValue = 255.0f;
-const size_t LegendBarWidth = 200;
-const size_t LegendBarHeight = 20;
-const size_t LegendBarMargin = 10;
+const std::size_t LegendBarWidth = 200;
+const std::size_t LegendBarHeight = 20;
+const std::size_t LegendBarMargin = 10;
 } }
 
 
@@ -202,7 +202,7 @@ void LegendBar::resizeEvent( int width, int height )
 /*===========================================================================*/
 int LegendBar::adjustedWidth()
 {
-    size_t width = 0;
+    std::size_t width = 0;
     switch ( m_orientation )
     {
     case LegendBar::Horizontal:
@@ -234,7 +234,7 @@ int LegendBar::adjustedWidth()
 /*===========================================================================*/
 int LegendBar::adjustedHeight()
 {
-    size_t height = 0;
+    std::size_t height = 0;
     switch( m_orientation )
     {
     case LegendBar::Horizontal:
@@ -256,9 +256,9 @@ int LegendBar::adjustedHeight()
 /*===========================================================================*/
 void LegendBar::create_texture()
 {
-    const size_t      nchannels  = 3;
-    const size_t      width  = m_colormap.resolution();
-    const size_t      height = 1;
+    const std::size_t      nchannels  = 3;
+    const std::size_t      width  = m_colormap.resolution();
+    const std::size_t      height = 1;
     const kvs::UInt8* data   = m_colormap.table().data();
 
     m_texture.release();
@@ -372,7 +372,7 @@ void LegendBar::draw_border( const int x, const int y, const int width, const in
     {
         const float w = width / m_ndivisions;
         const float h = height;
-        for( size_t i = 1; i < m_ndivisions; i++ )
+        for( std::size_t i = 1; i < m_ndivisions; i++ )
         {
             kvs::OpenGL::Vertices( kvs::Vec2( x + w * i, y ), kvs::Vec2( x + w * i, y + h ) );
         }
@@ -382,7 +382,7 @@ void LegendBar::draw_border( const int x, const int y, const int width, const in
     {
         const float w = width;
         const float h = height / m_ndivisions;
-        for( size_t i = 1; i < m_ndivisions; i++ )
+        for( std::size_t i = 1; i < m_ndivisions; i++ )
         {
             kvs::OpenGL::Vertices( kvs::Vec2( x, y + h * i ), kvs::Vec2( x + w, y + h * i ) );
         }

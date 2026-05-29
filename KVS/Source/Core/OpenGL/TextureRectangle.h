@@ -41,14 +41,14 @@ public:
 
     bool isLoaded() const { return m_is_loaded; }
 
-    void create( const size_t width, const size_t height, const void* data = NULL );
+    void create( const std::size_t width, const std::size_t height, const void* data = NULL );
     void release();
     void load(
-        const size_t width,
-        const size_t height,
+        const std::size_t width,
+        const std::size_t height,
         const void*  data,
-        const size_t xoffset = 0,
-        const size_t yoffset = 0 );
+        const std::size_t xoffset = 0,
+        const std::size_t yoffset = 0 );
 };
 
 } // end of namespace kvs

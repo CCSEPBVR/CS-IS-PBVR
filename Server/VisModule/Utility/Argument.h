@@ -26,8 +26,8 @@ public:
     std::vector<vismodule::TransferFunction> m_transfunc_array; // use CellByCellxxxSampling
     TransferFunctionSynthesizer* m_transfunc_synthesizer;
     int m_time_step;
-    size_t m_subpixel_level;
-    size_t m_repeat_level;
+    std::size_t m_subpixel_level;
+    std::size_t m_repeat_level;
     int m_level_index;
     int m_port;
     float m_sampling_step;
@@ -39,8 +39,8 @@ public:
     float m_particle_data_size_limit;
     std::string m_output_data_base;
     vismodule::Camera* m_camera;
-    size_t m_window_width;
-    size_t m_window_height;
+    std::size_t m_window_width;
+    std::size_t m_window_height;
     std::string m_x_synthesis;
     std::string m_y_synthesis;
     std::string m_z_synthesis;
@@ -55,7 +55,7 @@ public:
     };
 
     std::vector<VolumeEquation>        m_voleqn;
-    size_t m_normal_ingredient;
+    std::size_t m_normal_ingredient;
 
     VariableRange m_server_side_variable_range;
 
@@ -163,7 +163,7 @@ public:
         if ( this->hasOption( "plimit" ) ) m_particle_limit = this->optionValue<int>( "plimit" );
         if ( this->hasOption( "vin" ) )
         {
-            size_t pos;
+            std::size_t pos;
             std::string input = this->optionValue<std::string>( "vin" );
 
 #if 0

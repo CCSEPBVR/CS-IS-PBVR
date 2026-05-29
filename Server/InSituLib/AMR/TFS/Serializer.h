@@ -1,7 +1,7 @@
 //
-// instance ‚Ì sizeof ‚ÍƒRƒ“ƒpƒCƒ‰AŠÂ‹«ˆË‘¶
-// serialize ‚·‚é‚Æ‚«‚ÌƒoƒCƒg—ñ‚Ì‘å‚«‚³‚ÍA•K—v‚Èƒƒ“ƒo‚ğƒCƒ“ƒXƒ^ƒ“ƒX‰»‚·‚é‚½‚ß‚É‰ü‚ß‚ÄŒvZ‚·‚é
-// std::string ‚Åó‚¯“n‚·‚Æ '\0' ‚ğ“r’†‚ÅŠÜ‚ŞƒoƒCƒg—ñ‚Ì‚ÉA.c_str() ‚Å“¾‚ç‚ê‚éƒoƒCƒg—ñ‚©‚çÄ\’z‚Å‚«‚È‚­‚È‚é
+// instance ï¿½ï¿½ sizeof ï¿½ÍƒRï¿½ï¿½ï¿½pï¿½Cï¿½ï¿½ï¿½Aï¿½Â‹ï¿½ï¿½Ë‘ï¿½
+// serialize ï¿½ï¿½ï¿½ï¿½Æ‚ï¿½ï¿½Ìƒoï¿½Cï¿½gï¿½ï¿½Ì‘å‚«ï¿½ï¿½ï¿½ÍAï¿½Kï¿½vï¿½Èƒï¿½ï¿½ï¿½ï¿½oï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½Xï¿½^ï¿½ï¿½ï¿½Xï¿½ï¿½ï¿½ï¿½ï¿½é‚½ï¿½ß‚É‰ï¿½ï¿½ß‚ÄŒvï¿½Zï¿½ï¿½ï¿½ï¿½
+// std::string ï¿½Åó‚¯“nï¿½ï¿½ï¿½ï¿½ '\0' ï¿½ï¿½rï¿½ï¿½ï¿½ÅŠÜ‚Şƒoï¿½Cï¿½gï¿½ï¿½Ìï¿½ï¿½ÉA.c_str() ï¿½Å“ï¿½ï¿½ï¿½ï¿½ï¿½oï¿½Cï¿½gï¿½ñ‚©‚ï¿½Ä\ï¿½zï¿½Å‚ï¿½ï¿½È‚ï¿½ï¿½È‚ï¿½
 //
 #pragma once
 
@@ -22,54 +22,54 @@ class Serializer
 {
 public:
     template<typename T>
-    static size_t byteSize( const T& object )
+    static std::size_t byteSize( const T& object )
     {
         return sizeof( object );
     }
     template<typename T>
-    static size_t pack( char* buf, const T& object )
+    static std::size_t pack( char* buf, const T& object )
     {
         std::memcpy( buf, object, sizeof( object ) );
         return sizeof( object );
     }
     template<typename T>
-    static size_t unpack( const char* buf, T& object )
+    static std::size_t unpack( const char* buf, T& object )
     {
         std::memcpy( object, buf, sizeof( object ) );
         return sizeof( object );
     }
     template<typename T>
-    static size_t writeArray( char* buf, const T& t )
+    static std::size_t writeArray( char* buf, const T& t )
     {
         std::memcpy( buf, t, sizeof( t ) );
         return sizeof( t );
     }
     template<typename T>
-    static size_t writeArray( char* buf, const T* t, size_t sz )
+    static std::size_t writeArray( char* buf, const T* t, std::size_t sz )
     {
         std::memcpy( buf, t, sizeof( T )*sz );
         return sizeof( T ) * sz;
     }
     template<typename T>
-    static size_t readArray( const char* buf, T& t )
+    static std::size_t readArray( const char* buf, T& t )
     {
         std::memcpy( t, buf, sizeof( t ) );
         return sizeof( t );
     }
     template<typename T>
-    static size_t readArray( const char* buf, T* t, size_t sz )
+    static std::size_t readArray( const char* buf, T* t, std::size_t sz )
     {
         std::memcpy( t, buf, sizeof( T )*sz );
         return sizeof( T ) * sz;
     }
     template<typename T>
-    static size_t write( char* buf, const T& t )
+    static std::size_t write( char* buf, const T& t )
     {
         std::memcpy( buf, &t, sizeof( t ) );
         return sizeof( t );
     }
     template<typename T>
-    static size_t read( const char* buf, T& t )
+    static std::size_t read( const char* buf, T& t )
     {
         std::memcpy( &t, buf, sizeof( t ) );
         return sizeof( t );

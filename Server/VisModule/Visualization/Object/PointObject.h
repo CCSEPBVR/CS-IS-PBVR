@@ -157,11 +157,11 @@ public:
 
     const BaseClass::GeometryType geometryType() const;
 
-    const size_t nsizes() const;
+    const std::size_t nsizes() const;
 
 public:
 
-    const vismodule::Real32 size( const size_t index = 0 ) const;
+    const vismodule::Real32 size( const std::size_t index = 0 ) const;
 
     const vismodule::ValueArray<vismodule::Real32>& sizes() const;
 

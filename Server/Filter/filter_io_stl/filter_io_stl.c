@@ -199,8 +199,8 @@ int read_ascii_facet(FILE* ifs, float *active_facet) {
  * @param ifs
  * @return 
  */
-size_t fread_ei( int* buf_ptr, size_t size, size_t num,FILE* ifs) {
-    size_t bcount=fread(buf_ptr, size, num, ifs);
+size_t fread_ei( int* buf_ptr, std::size_t size, std::size_t num,FILE* ifs) {
+    std::size_t bcount=fread(buf_ptr, size, num, ifs);
     int n;
     if (ENDIAN) {
 	for ( n = 0; n < num; n++) {
@@ -217,8 +217,8 @@ size_t fread_ei( int* buf_ptr, size_t size, size_t num,FILE* ifs) {
  * @param ifs
  * @return 
  */
-size_t fread_ef( float* buf_ptr, size_t size, size_t num,FILE* ifs) {
-    size_t bcount = fread(buf_ptr, size, num, ifs);
+size_t fread_ef( float* buf_ptr, std::size_t size, std::size_t num,FILE* ifs) {
+    std::size_t bcount = fread(buf_ptr, size, num, ifs);
     int n;
     if (ENDIAN) {
 	for ( n = 0; n < num; n++) {
@@ -305,7 +305,7 @@ int stl_bin_read_data(int step_loop) {//  free(value);
 }
 
 bool stringBeginsWith(const char *str, const char *pre) {
-    size_t lenpre = strlen(pre),
+    std::size_t lenpre = strlen(pre),
 	    lenstr = strlen(str);
 
     return lenstr < lenpre ? false : strncmp(pre, str, lenpre) == 0;

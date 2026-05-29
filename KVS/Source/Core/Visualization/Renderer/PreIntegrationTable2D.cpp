@@ -33,7 +33,7 @@ double AlphaToTau( double alpha )
 kvs::ValueArray<float> DoubleToFloat( const kvs::ValueArray<double>& src )
 {
     kvs::ValueArray<float> dst( src.size() );
-    for ( size_t i = 0; i < src.size(); ++i )
+    for ( std::size_t i = 0; i < src.size(); ++i )
     {
         dst[i] = static_cast<float>( src[i] );
     }
@@ -74,22 +74,22 @@ const kvs::ValueArray<kvs::Real32> PreIntegrationTable2D::T() const
  *  @param  resolution [in] resolution of the inverse T values
  */
 /*===========================================================================*/
-kvs::ValueArray<kvs::Real32> PreIntegrationTable2D::inverseT( const size_t resolution ) const
+kvs::ValueArray<kvs::Real32> PreIntegrationTable2D::inverseT( const std::size_t resolution ) const
 {
     KVS_ASSERT( resolution > 1 );
 
     kvs::ValueArray<kvs::Real64> T = m_T;
-    const size_t table_size = T.size();
+    const std::size_t table_size = T.size();
     KVS_ASSERT( table_size > 1 );
 
     const double max_T = T.back();
     const float L = 1.0f / ( table_size - 1 );
     kvs::ValueArray<kvs::Real32> T_inv( resolution );
-    size_t scalar_index = 1;
+    std::size_t scalar_index = 1;
     double T0 = T[0];
     double T1 = T[1];
     double s0 = 0.0;
-    for ( size_t i = 0; i < resolution; i++ )
+    for ( std::size_t i = 0; i < resolution; i++ )
     {
         const double value_T = i * max_T / ( resolution - 1 );
         while ( value_T >= T1 )
@@ -118,11 +118,11 @@ kvs::ValueArray<kvs::Real32> PreIntegrationTable2D::inverseT( const size_t resol
 void PreIntegrationTable2D::setTransferFunction( const kvs::TransferFunction& transfer_function )
 {
     const kvs::ValueArray<kvs::Real32> omap = transfer_function.opacityMap().table();
-    const size_t resolution = omap.size();
+    const std::size_t resolution = omap.size();
     KVS_ASSERT( resolution > 1 );
 
     kvs::ValueArray<kvs::Real64> tau( resolution );
-    for ( size_t i = 0; i < resolution; i++ )
+    for ( std::size_t i = 0; i < resolution; i++ )
     {
         tau[i] = ::AlphaToTau( omap[i] );
     }
@@ -132,7 +132,7 @@ void PreIntegrationTable2D::setTransferFunction( const kvs::TransferFunction& tr
     double Tau = 0.0f;
     double tau0 = tau[0];
     T[0] = Tau;
-    for ( size_t i = 1; i < resolution; i++ )
+    for ( std::size_t i = 1; i < resolution; i++ )
     {
         double tau1 = tau[i];
         Tau += L / 2.0 * ( tau1 + tau0 );
@@ -154,11 +154,11 @@ void PreIntegrationTable2D::create()
     kvs::ValueArray<kvs::Real64> T = m_T;
     kvs::ValueArray<kvs::Real64> tau = m_tau;
 
-    const size_t resolution = tau.size();
+    const std::size_t resolution = tau.size();
     kvs::ValueArray<kvs::Real32> table( resolution * resolution );
-    for ( size_t i = 0, index = 0; i < resolution; i++ )
+    for ( std::size_t i = 0, index = 0; i < resolution; i++ )
     {
-        for ( size_t j = 0; j < resolution; j++, index++ )
+        for ( std::size_t j = 0; j < resolution; j++, index++ )
         {
             if ( i == j )
             {

@@ -34,8 +34,8 @@ public:
 private:
 
     Pgm::Header m_header; ///< header information
-    size_t m_width; ///< width
-    size_t m_height; ///< height
+    std::size_t m_width; ///< width
+    std::size_t m_height; ///< height
     kvs::ValueArray<kvs::UInt8> m_pixels; ///< pixel data
 
 public:
@@ -45,12 +45,12 @@ public:
 public:
 
     Pgm();
-    Pgm( const size_t width, const size_t height, const kvs::ValueArray<kvs::UInt8>& pixels );
+    Pgm( const std::size_t width, const std::size_t height, const kvs::ValueArray<kvs::UInt8>& pixels );
     Pgm( const std::string& filename );
 
     const Pgm::Header& header() const;
-    size_t width() const;
-    size_t height() const;
+    std::size_t width() const;
+    std::size_t height() const;
     const kvs::ValueArray<kvs::UInt8>& pixels() const;
 
     void print( std::ostream& os, const kvs::Indent& indent = kvs::Indent(0) ) const;

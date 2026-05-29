@@ -123,7 +123,7 @@ template <typename T>
 inline void QuadraticTetrahedralCell<T>::scalar_ary( float*  scalar_array, const int loop_cnt) const 
 {
     #pragma ivdep
-    for ( size_t i = 0; i < loop_cnt ; i++ )
+    for ( std::size_t i = 0; i < loop_cnt ; i++ )
     {
         //scalar_array[i]= static_cast<vismodule::Real32>( m_interpolation_functions_array[0][j] * m_scalars_array[0][j] );
         scalar_array[i] =  BaseClass::m_interpolation_functions_array[ 0][i] * BaseClass::m_scalars_array[ 0][i] 
@@ -721,7 +721,7 @@ inline const vismodule::Real32 QuadraticTetrahedralCell<T>::volume() const
     };
 
     float sum_metric = 0;
-    for ( size_t i = 0 ; i < 8 ; i++ )
+    for ( std::size_t i = 0 ; i < 8 ; i++ )
     {
         BaseClass::setLocalPoint( c[i] );
         const vismodule::Matrix33f J = BaseClass::JacobiMatrix();

@@ -163,7 +163,7 @@ std::unique_ptr<vismodule::KVSMLObjectPlotOverLine> GeneratePOLCS(
                     store_volume_in_variables_array_unstruct( volume, dom, values, nvariables, coordinates, ncoords, connections, ncells, celltype );
 
                     std::vector<Type*> raw_pointers_vector( nvariables );
-                    for ( size_t i = 0; i < nvariables; ++i )
+                    for ( std::size_t i = 0; i < nvariables; ++i )
                     {
                         raw_pointers_vector[i] = values.get()[i].get();
                     }
@@ -189,7 +189,7 @@ std::unique_ptr<vismodule::KVSMLObjectPlotOverLine> GeneratePOLCS(
                     store_volume_in_variables_array_struct( volume, dom, resolution, values, nvariables, ncoords );
 
                     std::vector<Type*> raw_pointers_vector( nvariables );
-                    for ( size_t i = 0; i < nvariables; ++i )
+                    for ( std::size_t i = 0; i < nvariables; ++i )
                     {
                         raw_pointers_vector[i] = values.get()[i].get();
                     }                        
@@ -217,7 +217,7 @@ std::unique_ptr<vismodule::KVSMLObjectPlotOverLine> GeneratePOLCS(
             // generate plot over line end
 
             // store the value of tmp_obj in a variable array for jobCollect.
-            for( size_t i = 0; i < resolution; i++ )
+            for( std::size_t i = 0; i < resolution; i++ )
             { 
                 tmp_axis[i] = tmp_obj->x_axis()[i];
                 if ( tmp_obj->mask()[i] )
@@ -235,7 +235,7 @@ std::unique_ptr<vismodule::KVSMLObjectPlotOverLine> GeneratePOLCS(
 #endif
 
         // aggregate the variable array.
-        for( size_t i = 0; i < resolution; i++ )
+        for( std::size_t i = 0; i < resolution; i++ )
         { 
             x_axis[i] = tmp_axis[i];
             if ( tmp_mask[i] )

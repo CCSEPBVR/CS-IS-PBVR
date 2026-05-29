@@ -190,7 +190,7 @@ void ObjectEditor::onOperatorStateUpdate( const bool operatorState )
 void ObjectEditor::onUnpack( const QByteArray& binary )
 {
     const char* dataPtr = binary.constData();
-    size_t offset = 0;
+    std::size_t offset = 0;
 
     // Time Step
     int timeStep = 0;
@@ -241,7 +241,7 @@ void ObjectEditor::onUnpack( const QByteArray& binary )
             case ObjectInfoExtractor::InsituServerPointObject:
             case ObjectInfoExtractor::PointObjectKVSML:
             {
-                size_t numberOfVertices = 0;
+                std::size_t numberOfVertices = 0;
                 std::memcpy( &numberOfVertices, dataPtr + offset, sizeof(size_t) );
                 offset += sizeof(size_t);
 
@@ -278,7 +278,7 @@ void ObjectEditor::onUnpack( const QByteArray& binary )
             case ObjectInfoExtractor::PointObjectLAS:
             case ObjectInfoExtractor::PointObjectPTS:
             {
-                size_t numberOfVertices = 0;
+                std::size_t numberOfVertices = 0;
                 std::memcpy( &numberOfVertices, dataPtr + offset, sizeof(size_t) );
                 offset += sizeof(size_t);
 
@@ -323,7 +323,7 @@ void ObjectEditor::onUnpack( const QByteArray& binary )
                 std::memcpy( &normalType, dataPtr + offset, sizeof(kvs::PolygonObject::NormalType) );
                 offset += sizeof(kvs::PolygonObject::NormalType);
 
-                size_t nCoords;
+                std::size_t nCoords;
                 std::memcpy( &nCoords, dataPtr + offset, sizeof(size_t) );
                 offset += sizeof(size_t);
 
@@ -331,7 +331,7 @@ void ObjectEditor::onUnpack( const QByteArray& binary )
                 std::memcpy( coords.data(), dataPtr + offset, sizeof(kvs::Real32) * nCoords );
                 offset += sizeof(kvs::Real32) * nCoords;
 
-                size_t nColors;
+                std::size_t nColors;
                 std::memcpy( &nColors, dataPtr + offset, sizeof(size_t) );
                 offset += sizeof(size_t);
 
@@ -339,7 +339,7 @@ void ObjectEditor::onUnpack( const QByteArray& binary )
                 std::memcpy( colors.data(), dataPtr + offset, sizeof(kvs::UInt8) * nColors );
                 offset += sizeof(kvs::UInt8) * nColors;
 
-                size_t nNormals;
+                std::size_t nNormals;
                 std::memcpy( &nNormals, dataPtr + offset, sizeof(size_t) );
                 offset += sizeof(size_t);
 
@@ -347,7 +347,7 @@ void ObjectEditor::onUnpack( const QByteArray& binary )
                 std::memcpy( normals.data(), dataPtr + offset, sizeof(kvs::Real32) * nNormals );
                 offset += sizeof(kvs::Real32) * nNormals;
 
-                size_t nConnections;
+                std::size_t nConnections;
                 std::memcpy( &nConnections, dataPtr + offset, sizeof(size_t) );
                 offset += sizeof(size_t);
 
@@ -355,7 +355,7 @@ void ObjectEditor::onUnpack( const QByteArray& binary )
                 std::memcpy( connections.data(), dataPtr + offset, sizeof(kvs::UInt32) * nConnections );
                 offset += sizeof(kvs::UInt32) * nConnections;
 
-                size_t nOpacities;
+                std::size_t nOpacities;
                 std::memcpy( &nOpacities, dataPtr + offset, sizeof(size_t) );
                 offset += sizeof(size_t);
 
@@ -402,7 +402,7 @@ void ObjectEditor::onUnpack( const QByteArray& binary )
                 std::memcpy( &normalType, dataPtr + offset, sizeof(kvs::TexturedPolygonObject::NormalType) );
                 offset += sizeof(kvs::TexturedPolygonObject::NormalType);
 
-                size_t nCoords;
+                std::size_t nCoords;
                 std::memcpy( &nCoords, dataPtr + offset, sizeof(size_t) );
                 offset += sizeof(size_t);
 
@@ -410,7 +410,7 @@ void ObjectEditor::onUnpack( const QByteArray& binary )
                 std::memcpy( coords.data(), dataPtr + offset, sizeof(kvs::Real32) * nCoords );
                 offset += sizeof(kvs::Real32) * nCoords;
 
-                size_t nColors;
+                std::size_t nColors;
                 std::memcpy( &nColors, dataPtr + offset, sizeof(size_t) );
                 offset += sizeof(size_t);
 
@@ -418,7 +418,7 @@ void ObjectEditor::onUnpack( const QByteArray& binary )
                 std::memcpy( colors.data(), dataPtr + offset, sizeof(kvs::UInt8) * nColors );
                 offset += sizeof(kvs::UInt8) * nColors;
 
-                size_t nNormals;
+                std::size_t nNormals;
                 std::memcpy( &nNormals, dataPtr + offset, sizeof(size_t) );
                 offset += sizeof(size_t);
 
@@ -426,7 +426,7 @@ void ObjectEditor::onUnpack( const QByteArray& binary )
                 std::memcpy( normals.data(), dataPtr + offset, sizeof(kvs::Real32) * nNormals );
                 offset += sizeof(kvs::Real32) * nNormals;
 
-                size_t nConnections;
+                std::size_t nConnections;
                 std::memcpy( &nConnections, dataPtr + offset, sizeof(size_t) );
                 offset += sizeof(size_t);
 
@@ -434,7 +434,7 @@ void ObjectEditor::onUnpack( const QByteArray& binary )
                 std::memcpy( connections.data(), dataPtr + offset, sizeof(kvs::UInt32) * nConnections );
                 offset += sizeof(kvs::UInt32) * nConnections;
 
-                size_t nOpacities;
+                std::size_t nOpacities;
                 std::memcpy( &nOpacities, dataPtr + offset, sizeof(size_t) );
                 offset += sizeof(size_t);
 
@@ -442,7 +442,7 @@ void ObjectEditor::onUnpack( const QByteArray& binary )
                 std::memcpy( opacities.data(), dataPtr + offset, sizeof(kvs::UInt8) * nOpacities );
                 offset += sizeof(kvs::UInt8) * nOpacities;
 
-                size_t nTexture2DCoords;
+                std::size_t nTexture2DCoords;
                 std::memcpy( &nTexture2DCoords, dataPtr + offset, sizeof(size_t) );
                 offset += sizeof(size_t);
 
@@ -450,7 +450,7 @@ void ObjectEditor::onUnpack( const QByteArray& binary )
                 std::memcpy( texture2DCoords.data(), dataPtr + offset, sizeof(kvs::Real32) * nTexture2DCoords );
                 offset += sizeof(kvs::Real32) * nTexture2DCoords;
 
-                size_t nTextureIds;
+                std::size_t nTextureIds;
                 std::memcpy( &nTextureIds, dataPtr + offset, sizeof(size_t) );
                 offset += sizeof(size_t);
 
@@ -459,19 +459,19 @@ void ObjectEditor::onUnpack( const QByteArray& binary )
                 offset += sizeof(kvs::UInt32) * nTextureIds;
 
                 // --- mapIdToColorArray ---
-                size_t mapColorSize;
+                std::size_t mapColorSize;
                 memcpy( &mapColorSize, dataPtr + offset, sizeof(size_t) );
                 offset += sizeof(size_t);
 
                 std::map<kvs::UInt32, kvs::ValueArray<kvs::UInt8>> mapColor;
 
-                for( size_t i = 0; i < mapColorSize; i++ )
+                for( std::size_t i = 0; i < mapColorSize; i++ )
                 {
                     kvs::UInt32 id;
                     memcpy( &id, dataPtr + offset, sizeof(kvs::UInt32) );
                     offset += sizeof(kvs::UInt32);
 
-                    size_t arrSize;
+                    std::size_t arrSize;
                     memcpy( &arrSize, dataPtr + offset, sizeof(size_t) );
                     offset += sizeof(size_t);
 
@@ -483,13 +483,13 @@ void ObjectEditor::onUnpack( const QByteArray& binary )
                 }
 
                 // --- width ---
-                size_t mapWSize;
+                std::size_t mapWSize;
                 memcpy( &mapWSize, dataPtr + offset, sizeof(size_t) );
                 offset += sizeof(size_t);
 
                 std::map<kvs::UInt32, kvs::UInt32> mapW;
 
-                for( size_t i = 0; i < mapWSize; i++ )
+                for( std::size_t i = 0; i < mapWSize; i++ )
                 {
                     kvs::UInt32 id, w;
                     memcpy( &id, dataPtr + offset, sizeof(kvs::UInt32) );
@@ -500,13 +500,13 @@ void ObjectEditor::onUnpack( const QByteArray& binary )
                 }
 
                 // --- height ---
-                size_t mapHSize;
+                std::size_t mapHSize;
                 memcpy( &mapHSize, dataPtr + offset, sizeof(size_t) );
                 offset += sizeof(size_t);
 
                 std::map<kvs::UInt32, kvs::UInt32> mapH;
 
-                for( size_t i = 0; i < mapHSize; i++ )
+                for( std::size_t i = 0; i < mapHSize; i++ )
                 {
                     kvs::UInt32 id, h;
                     memcpy( &id, dataPtr + offset, sizeof(kvs::UInt32) );
@@ -559,7 +559,7 @@ void ObjectEditor::onUnpack( const QByteArray& binary )
                 // std::memcpy( &normalType, dataPtr + offset, sizeof(kvs::LineObject::NormalType) );
                 // offset += sizeof(kvs::LineObject::NormalType);
 
-                size_t nCoords;
+                std::size_t nCoords;
                 std::memcpy( &nCoords, dataPtr + offset, sizeof(size_t) );
                 offset += sizeof(size_t);
 
@@ -567,7 +567,7 @@ void ObjectEditor::onUnpack( const QByteArray& binary )
                 std::memcpy( coords.data(), dataPtr + offset, sizeof(kvs::Real32) * nCoords );
                 offset += sizeof(kvs::Real32) * nCoords;
 
-                size_t nColors;
+                std::size_t nColors;
                 std::memcpy( &nColors, dataPtr + offset, sizeof(size_t) );
                 offset += sizeof(size_t);
 
@@ -575,7 +575,7 @@ void ObjectEditor::onUnpack( const QByteArray& binary )
                 std::memcpy( colors.data(), dataPtr + offset, sizeof(kvs::UInt8) * nColors );
                 offset += sizeof(kvs::UInt8) * nColors;
 
-                size_t nNormals;
+                std::size_t nNormals;
                 std::memcpy( &nNormals, dataPtr + offset, sizeof(size_t) );
                 offset += sizeof(size_t);
 
@@ -583,7 +583,7 @@ void ObjectEditor::onUnpack( const QByteArray& binary )
                 std::memcpy( normals.data(), dataPtr + offset, sizeof(kvs::Real32) * nNormals );
                 offset += sizeof(kvs::Real32) * nNormals;
 
-                size_t nConnections;
+                std::size_t nConnections;
                 std::memcpy( &nConnections, dataPtr + offset, sizeof(size_t) );
                 offset += sizeof(size_t);
 
@@ -591,7 +591,7 @@ void ObjectEditor::onUnpack( const QByteArray& binary )
                 std::memcpy( connections.data(), dataPtr + offset, sizeof(kvs::UInt32) * nConnections );
                 offset += sizeof(kvs::UInt32) * nConnections;
 
-                size_t nSizes;
+                std::size_t nSizes;
                 std::memcpy( &nSizes, dataPtr + offset, sizeof(size_t) );
                 offset += sizeof(size_t);
 

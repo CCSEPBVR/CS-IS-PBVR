@@ -40,9 +40,9 @@ public:
 public:
 
     bool m_has_width; ///< flag to check whether 'width' is specified or not
-    size_t m_width; ///< image width
+    std::size_t m_width; ///< image width
     bool m_has_height; ///< flag to check whether 'height' is specified or not
-    size_t m_height; ///< image height
+    std::size_t m_height; ///< image height
 
 public:
 
@@ -54,17 +54,17 @@ public:
 
     const bool hasWidth( void ) const;
 
-    const size_t width( void ) const;
+    const std::size_t width( void ) const;
 
     const bool hasHeight( void ) const;
 
-    const size_t height( void ) const;
+    const std::size_t height( void ) const;
 
 public:
 
-    void setWidth( const size_t width );
+    void setWidth( const std::size_t width );
 
-    void setHeight( const size_t height );
+    void setHeight( const std::size_t height );
 
 public:
 

@@ -159,7 +159,7 @@ void GenerateParticleCS(
                     store_volume_in_variables_array_unstruct( volume, dom, values, nvariables, coordinates, ncoords, connections, ncells, celltype );
 
                     std::vector<Type*> raw_pointers_vector( nvariables );
-                    for ( size_t i = 0; i < nvariables; ++i )
+                    for ( std::size_t i = 0; i < nvariables; ++i )
                     {
                         raw_pointers_vector[i] = values.get()[i].get();
                     }
@@ -175,7 +175,7 @@ void GenerateParticleCS(
                     store_volume_in_variables_array_struct( volume, dom, resolution, values, nvariables, ncoords );
 
                     std::vector<Type*> raw_pointers_vector( nvariables );
-                    for ( size_t i = 0; i < nvariables; ++i )
+                    for ( std::size_t i = 0; i < nvariables; ++i )
                     {
                         raw_pointers_vector[i] = values.get()[i].get();
                     }                        
@@ -229,7 +229,7 @@ void GenerateParticleCS(
     vr = setVariablerange2( tmp_max, tmp_min, tf_number );
     vr.show();
 
-    for( size_t i = 0; i < tf_number; i++ )
+    for( std::size_t i = 0; i < tf_number; i++ )
     {
         std::stringstream ss; 
         ss << (i + 1); 
@@ -355,7 +355,7 @@ void GenerateParticleCS(
                     store_volume_in_variables_array_unstruct( volume, dom, values, nvariables, coordinates, ncoords, connections, ncells, celltype );
 
                     std::vector<Type*> raw_pointers_vector( nvariables );
-                    for ( size_t i = 0; i < nvariables; ++i )
+                    for ( std::size_t i = 0; i < nvariables; ++i )
                     {
                         raw_pointers_vector[i] = values.get()[i].get();
                     }
@@ -371,7 +371,7 @@ void GenerateParticleCS(
                     store_volume_in_variables_array_struct( volume, dom, resolution, values, nvariables, ncoords );
 
                     std::vector<Type*> raw_pointers_vector( nvariables );
-                    for ( size_t i = 0; i < nvariables; ++i )
+                    for ( std::size_t i = 0; i < nvariables; ++i )
                     {
                         raw_pointers_vector[i] = values.get()[i].get();
                     }                        
@@ -424,7 +424,7 @@ void GenerateParticleCS(
             recv_obj->setNormals( vismodule_normals );
         }
 #else
-        size_t nmemb = send_obj->nvertices() * 3;
+        std::size_t nmemb = send_obj->nvertices() * 3;
         vismodule::ValueArray<vismodule::Real32> vismodule_coords ( send_obj->coords().pointer() , nmemb );
         vismodule::ValueArray<vismodule::UInt8>  vismodule_colors ( send_obj->colors().pointer() , nmemb );
         vismodule::ValueArray<vismodule::Real32> vismodule_normals( send_obj->normals().pointer(), nmemb );
@@ -443,9 +443,9 @@ void GenerateParticleCS(
 
             if ( point_object->coords().size() > 0 )
             {
-                const size_t ncoords  = point_object->coords().size() + recv_obj->coords().size();
-                const size_t ncolors  = point_object->colors().size() + recv_obj->colors().size();
-                const size_t nnormals = point_object->normals().size() + recv_obj->normals().size();
+                const std::size_t ncoords  = point_object->coords().size() + recv_obj->coords().size();
+                const std::size_t ncolors  = point_object->colors().size() + recv_obj->colors().size();
+                const std::size_t nnormals = point_object->normals().size() + recv_obj->normals().size();
 
                 kvs_coords.allocate( ncoords );
                 kvs_colors.allocate( ncolors );
@@ -468,9 +468,9 @@ void GenerateParticleCS(
             }
             else
             {
-                const size_t ncoords = recv_obj->coords().size();
-                const size_t ncolors  = recv_obj->colors().size();
-                const size_t nnormals = recv_obj->normals().size();
+                const std::size_t ncoords = recv_obj->coords().size();
+                const std::size_t ncolors  = recv_obj->colors().size();
+                const std::size_t nnormals = recv_obj->normals().size();
 
                 kvs_coords.allocate( ncoords );
                 kvs_colors.allocate( ncolors );
@@ -567,9 +567,9 @@ void GenerateParticleIS(
     kvs::ValueArray<kvs::UInt8>  kvs_colors;
     kvs::ValueArray<kvs::Real32> kvs_normals;
 
-    const size_t ncoords  = vismodule_point_object->coords().size();
-    const size_t ncolors  = vismodule_point_object->colors().size();
-    const size_t nnormals = vismodule_point_object->normals().size();
+    const std::size_t ncoords  = vismodule_point_object->coords().size();
+    const std::size_t ncolors  = vismodule_point_object->colors().size();
+    const std::size_t nnormals = vismodule_point_object->normals().size();
 
     kvs_coords.allocate( ncoords );
     kvs_colors.allocate( ncolors );
@@ -682,13 +682,13 @@ void generate_volume(
     vismodule::VolumeObjectBase*& volume
 )
 {
-    size_t found_kvsml = file_path.find(".kvsml");
-    size_t found_vtm   = file_path.find(".vtm");
-    size_t found_vtu   = file_path.find(".vtu");
-    size_t found_vti   = file_path.find(".vti");
-    size_t found_inp   = file_path.find(".inp");
-    size_t found_pvtu  = file_path.find(".pvtu");
-    size_t found_case  = file_path.find(".case");
+    std::size_t found_kvsml = file_path.find(".kvsml");
+    std::size_t found_vtm   = file_path.find(".vtm");
+    std::size_t found_vtu   = file_path.find(".vtu");
+    std::size_t found_vti   = file_path.find(".vti");
+    std::size_t found_inp   = file_path.find(".inp");
+    std::size_t found_pvtu  = file_path.find(".pvtu");
+    std::size_t found_case  = file_path.find(".case");
 
     if ( found_kvsml != std::string::npos )
     {

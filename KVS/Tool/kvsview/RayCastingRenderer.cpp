@@ -157,7 +157,7 @@ kvs::TransferFunction Argument::transferFunction(
     }
     else
     {
-        const size_t resolution = 256;
+        const std::size_t resolution = 256;
         return kvs::TransferFunction( resolution );
     }
 }

@@ -26,10 +26,10 @@
 int main( void )
 {
     // Output the information of KVS version.
-    const size_t number = kvs::Version::Number();
-    const size_t major_number = kvs::Version::MajorNumber();
-    const size_t minor_number = kvs::Version::MinorNumber();
-    const size_t patch_number = kvs::Version::PatchNumber();
+    const std::size_t number = kvs::Version::Number();
+    const std::size_t major_number = kvs::Version::MajorNumber();
+    const std::size_t minor_number = kvs::Version::MinorNumber();
+    const std::size_t patch_number = kvs::Version::PatchNumber();
     const char* version_name = kvs::Version::Name();
     std::cout << "Number: " << number << std::endl;
     std::cout << "Major number: " << major_number << std::endl;

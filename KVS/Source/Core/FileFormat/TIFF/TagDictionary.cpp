@@ -43,7 +43,7 @@ kvs::tiff::Tag TagDictionary::find( const kvs::UInt16 tag_id ) const
 
 void TagDictionary::create_dictionary()
 {
-    for ( size_t i = 0; i < kvs::tiff::TagTableSize; i++ )
+    for ( std::size_t i = 0; i < kvs::tiff::TagTableSize; i++ )
     {
         kvs::UInt16 key   = kvs::tiff::TagTable[i].id();
         std::string value = kvs::tiff::TagTable[i].name();

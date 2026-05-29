@@ -80,7 +80,7 @@ void QuadraticHexahedralCell::updateDifferentialFunctions( const kvs::Vec3& loca
     const float q = local.y();
     const float r = local.z();
 
-    const size_t nnodes = BaseClass::numberOfCellNodes();
+    const std::size_t nnodes = BaseClass::numberOfCellNodes();
     kvs::Real32* dN = BaseClass::differentialFunctions();
     kvs::Real32* dNdp = dN;
     kvs::Real32* dNdq = dNdp + nnodes;
@@ -158,7 +158,7 @@ void QuadraticHexahedralCell::updateDifferentialFunctions( const kvs::Vec3& loca
 /*===========================================================================*/
 kvs::Real32 QuadraticHexahedralCell::volume() const
 {
-    const size_t resolution = 3;
+    const std::size_t resolution = 3;
     const float sampling_length = 1.0f / (float)resolution;
     const float adjustment = sampling_length * 0.5f;
 
@@ -166,13 +166,13 @@ kvs::Real32 QuadraticHexahedralCell::volume() const
 
     float sum_metric = 0;
 
-    for( size_t k = 0 ; k < resolution ; k++ )
+    for( std::size_t k = 0 ; k < resolution ; k++ )
     {
         sampling_position[ 2 ] +=  sampling_length;
-        for( size_t j = 0 ; j < resolution ; j++ )
+        for( std::size_t j = 0 ; j < resolution ; j++ )
         {
             sampling_position[ 1 ] += sampling_length;
-            for( size_t i = 0 ; i < resolution ; i++ )
+            for( std::size_t i = 0 ; i < resolution ; i++ )
             {
                 sampling_position[ 0 ] += sampling_length;
 

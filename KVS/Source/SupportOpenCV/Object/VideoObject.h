@@ -37,9 +37,9 @@ public:
 private:
     kvs::opencv::CaptureDevice m_device; ///< video capture device
     PixelType m_type = PixelType::Color24; ///< pixel type
-    size_t m_width = 0; ///< capture widht
-    size_t m_height = 0; ///< capture height
-    size_t m_nchannels = 0; ///< number of channels
+    std::size_t m_width = 0; ///< capture widht
+    std::size_t m_height = 0; ///< capture height
+    std::size_t m_nchannels = 0; ///< number of channels
 
 public:
     VideoObject() = default;
@@ -48,9 +48,9 @@ public:
 
     const kvs::opencv::CaptureDevice& device() const { return m_device; }
     PixelType type() const { return m_type; }
-    size_t width() const { return m_width; }
-    size_t height() const { return m_height; }
-    size_t numberOfChannels() const { return m_nchannels; }
+    std::size_t width() const { return m_width; }
+    std::size_t height() const { return m_height; }
+    std::size_t numberOfChannels() const { return m_nchannels; }
 
     void shallowCopy( const VideoObject& other );
 

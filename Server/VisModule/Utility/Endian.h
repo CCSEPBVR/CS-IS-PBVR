@@ -74,10 +74,10 @@ inline void Swap8Bytes( volatile void* value )
  *  @param  n [in] number of elements
  */
 /*===========================================================================*/
-inline void Swap2Bytes( volatile void* value, size_t n )
+inline void Swap2Bytes( volatile void* value, std::size_t n )
 {
     volatile unsigned char* v = static_cast<volatile unsigned char*>( value );
-    for ( size_t i = 0; i < n; i++ ) { Swap2Bytes( v ); v += 2; }
+    for ( std::size_t i = 0; i < n; i++ ) { Swap2Bytes( v ); v += 2; }
 }
 
 /*===========================================================================*/
@@ -87,10 +87,10 @@ inline void Swap2Bytes( volatile void* value, size_t n )
  *  @param  n [in] number of elements
  */
 /*===========================================================================*/
-inline void Swap4Bytes( volatile void* value, size_t n )
+inline void Swap4Bytes( volatile void* value, std::size_t n )
 {
     volatile unsigned char* v = static_cast<volatile unsigned char*>( value );
-    for ( size_t i = 0; i < n; i++ ) { Swap4Bytes( v ); v += 4; }
+    for ( std::size_t i = 0; i < n; i++ ) { Swap4Bytes( v ); v += 4; }
 }
 
 /*===========================================================================*/
@@ -100,10 +100,10 @@ inline void Swap4Bytes( volatile void* value, size_t n )
  *  @param  n [in] number of elements
  */
 /*===========================================================================*/
-inline void Swap8Bytes( volatile void* value, size_t n )
+inline void Swap8Bytes( volatile void* value, std::size_t n )
 {
     volatile unsigned char* v = static_cast<volatile unsigned char*>( value );
-    for ( size_t i = 0; i < n; i++ ) { Swap8Bytes( v ); v += 8; }
+    for ( std::size_t i = 0; i < n; i++ ) { Swap8Bytes( v ); v += 8; }
 }
 
 } // end of namespace
@@ -276,7 +276,7 @@ inline void Swap( std::string& )
  *  @brief  Swaps the array of 8-bit integer value. (inaction)
  */
 /*===========================================================================*/
-inline void Swap( vismodule::Int8*, size_t )
+inline void Swap( vismodule::Int8*, std::size_t )
 {
 }
 
@@ -285,7 +285,7 @@ inline void Swap( vismodule::Int8*, size_t )
  *  @brief  Swaps the array of 8-bit integer value. (inaction)
  */
 /*===========================================================================*/
-inline void Swap( vismodule::UInt8*, size_t )
+inline void Swap( vismodule::UInt8*, std::size_t )
 {
 }
 
@@ -296,7 +296,7 @@ inline void Swap( vismodule::UInt8*, size_t )
  *  @param  n [in] number of elements
  */
 /*===========================================================================*/
-inline void Swap( vismodule::Int16* value, size_t n )
+inline void Swap( vismodule::Int16* value, std::size_t n )
 {
     Swap2Bytes( value, n );
 }
@@ -308,7 +308,7 @@ inline void Swap( vismodule::Int16* value, size_t n )
  *  @param  n [in] number of elements
  */
 /*===========================================================================*/
-inline void Swap( vismodule::UInt16* value, size_t n )
+inline void Swap( vismodule::UInt16* value, std::size_t n )
 {
     Swap2Bytes( value, n );
 }
@@ -320,7 +320,7 @@ inline void Swap( vismodule::UInt16* value, size_t n )
  *  @param  n [in] number of elements
  */
 /*===========================================================================*/
-inline void Swap( vismodule::Int32* value, size_t n )
+inline void Swap( vismodule::Int32* value, std::size_t n )
 {
     Swap4Bytes( value, n );
 }
@@ -332,7 +332,7 @@ inline void Swap( vismodule::Int32* value, size_t n )
  *  @param  n [in] number of elements
  */
 /*===========================================================================*/
-inline void Swap( vismodule::UInt32* value, size_t n )
+inline void Swap( vismodule::UInt32* value, std::size_t n )
 {
     Swap4Bytes( value, n );
 }
@@ -344,7 +344,7 @@ inline void Swap( vismodule::UInt32* value, size_t n )
  *  @param  n [in] number of elements
  */
 /*===========================================================================*/
-inline void Swap( vismodule::Int64* value, size_t n )
+inline void Swap( vismodule::Int64* value, std::size_t n )
 {
     Swap8Bytes( value, n );
 }
@@ -356,7 +356,7 @@ inline void Swap( vismodule::Int64* value, size_t n )
  *  @param  n [in] number of elements
  */
 /*===========================================================================*/
-inline void Swap( vismodule::UInt64* value, size_t n )
+inline void Swap( vismodule::UInt64* value, std::size_t n )
 {
     Swap8Bytes( value, n );
 }
@@ -368,7 +368,7 @@ inline void Swap( vismodule::UInt64* value, size_t n )
  *  @param  n [in] number of elements
  */
 /*===========================================================================*/
-inline void Swap( vismodule::Real32* value, size_t n )
+inline void Swap( vismodule::Real32* value, std::size_t n )
 {
     Swap4Bytes( value, n );
 }
@@ -380,7 +380,7 @@ inline void Swap( vismodule::Real32* value, size_t n )
  *  @param  n [in] number of elements
  */
 /*===========================================================================*/
-inline void Swap( vismodule::Real64* value, size_t n )
+inline void Swap( vismodule::Real64* value, std::size_t n )
 {
     Swap8Bytes( value, n );
 }
@@ -390,7 +390,7 @@ inline void Swap( vismodule::Real64* value, size_t n )
  *  @brief  Swaps the array of string value. (inaction)
  */
 /*===========================================================================*/
-inline void Swap( std::string*, size_t )
+inline void Swap( std::string*, std::size_t )
 {
 }
 

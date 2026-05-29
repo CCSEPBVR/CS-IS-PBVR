@@ -186,8 +186,8 @@ void MarchingHexahedra::extract_surfaces_with_duplication(
         static_cast<const vismodule::UInt32*>( volume.connections().pointer() );
 
     // Extract surfaces.
-    size_t index = 0;
-    size_t local_index[8];
+    std::size_t index = 0;
+    std::size_t local_index[8];
     for ( vismodule::UInt32 cell = 0; cell < ncells; ++cell, index += 8 )
     {
         // Calculate the indices of the target cell.
@@ -201,12 +201,12 @@ void MarchingHexahedra::extract_surfaces_with_duplication(
         local_index[7] = connections[ index + 3 ];
 
         // Calculate the index of the reference table.
-        const size_t table_index = this->calculate_table_index<T>( local_index );
+        const std::size_t table_index = this->calculate_table_index<T>( local_index );
         if ( table_index == 0 ) continue;
         if ( table_index == 255 ) continue;
 
         // Calculate the triangle polygons.
-        for ( size_t i = 0; MarchingHexahedraTable::TriangleID[ table_index ][i] != -1; i += 3 )
+        for ( std::size_t i = 0; MarchingHexahedraTable::TriangleID[ table_index ][i] != -1; i += 3 )
         {
             // Refer the edge IDs from the TriangleTable by using the table_index.
             const int e0 = MarchingHexahedraTable::TriangleID[table_index][i];
@@ -270,12 +270,12 @@ void MarchingHexahedra::extract_surfaces_with_duplication(
  */
 /*==========================================================================*/
 template <typename T>
-const size_t MarchingHexahedra::calculate_table_index( const size_t* local_index ) const
+const std::size_t MarchingHexahedra::calculate_table_index( const size_t* local_index ) const
 {
     const T* const values = static_cast<const T*>( BaseClass::m_volume->values().pointer() );
     const double isolevel = m_isolevel;
 
-    size_t table_index = 0;
+    std::size_t table_index = 0;
     if ( static_cast<double>( values[ local_index[0] ] ) > isolevel ) { table_index |=   1; }
     if ( static_cast<double>( values[ local_index[1] ] ) > isolevel ) { table_index |=   2; }
     if ( static_cast<double>( values[ local_index[2] ] ) > isolevel ) { table_index |=   4; }
@@ -304,8 +304,8 @@ const vismodule::Vector3f MarchingHexahedra::interpolate_vertex(
     const T* const values = static_cast<const T*>( BaseClass::m_volume->values().pointer() );
     const vismodule::Real32* const coords = BaseClass::m_volume->coords().pointer();
 
-    const size_t coord0_index = 3 * vertex0;
-    const size_t coord1_index = 3 * vertex1;
+    const std::size_t coord0_index = 3 * vertex0;
+    const std::size_t coord1_index = 3 * vertex1;
 
     const double v0 = static_cast<double>( values[ vertex0 ] );
     const double v1 = static_cast<double>( values[ vertex1 ] );

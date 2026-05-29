@@ -44,7 +44,7 @@ public:
 protected:
 
     bool   m_enable_rendering; ///< rendering flag
-    size_t m_subpixel_level;   ///< number of divisions in a pixel
+    std::size_t m_subpixel_level;   ///< number of divisions in a pixel
     vismodule::ParticleBuffer* m_buffer; ///< particle buffer
 
     // Reference data (NOTE: not allocated in thie class).
@@ -54,7 +54,7 @@ public:
 
     ParticleVolumeRenderer( void );
 
-    ParticleVolumeRenderer( const vismodule::PointObject* point, const size_t subpixel_level = 1 );
+    ParticleVolumeRenderer( const vismodule::PointObject* point, const std::size_t subpixel_level = 1 );
 
     virtual ~ParticleVolumeRenderer( void );
 
@@ -66,7 +66,7 @@ public:
 
     void attachPointObject( const vismodule::PointObject* point );
 
-    void setSubpixelLevel( const size_t subpixel_level );
+    void setSubpixelLevel( const std::size_t subpixel_level );
 
 /*
     template <typename ShadingType>
@@ -83,7 +83,7 @@ public:
 
     const vismodule::ParticleBuffer* particleBuffer( void ) const;
 
-    const size_t subpixelLevel( void ) const;
+    const std::size_t subpixelLevel( void ) const;
 
 public:
 
@@ -93,7 +93,7 @@ public:
 
 protected:
 
-    bool create_particle_buffer( const size_t width, const size_t height, const size_t subpixel_level );
+    bool create_particle_buffer( const std::size_t width, const std::size_t height, const std::size_t subpixel_level );
 
     void clean_particle_buffer( void );
 

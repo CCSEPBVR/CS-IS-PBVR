@@ -14,8 +14,8 @@
 namespace
 {
 
-const size_t CharacterHeight = 12;
-const size_t MaxLineLength   = 255;
+const std::size_t CharacterHeight = 12;
+const std::size_t MaxLineLength   = 255;
 
 inline void DrawString( const std::string& str, const kvs::Vec2& pos )
 {
@@ -29,7 +29,7 @@ inline void DrawString( const std::string& str, const kvs::Vec2& pos )
 
 inline void DrawStrings( const std::vector<std::string>& strs, const kvs::Vec2& pos )
 {
-    for ( size_t line = 0; line < strs.size(); line++ )
+    for ( std::size_t line = 0; line < strs.size(); line++ )
     {
         const kvs::Vec2 offset( 0.0f, CharacterHeight * line );
         DrawString( strs[line],  pos - offset );
@@ -63,7 +63,7 @@ Text::Text():
  *  @param y [in] y value of the text position
  */
 /*==========================================================================*/
-void Text::setPosition( const size_t x, const size_t y )
+void Text::setPosition( const std::size_t x, const std::size_t y )
 {
     m_x = x;
     m_y = y;

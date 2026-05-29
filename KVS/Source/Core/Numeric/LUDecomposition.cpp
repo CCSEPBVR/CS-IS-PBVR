@@ -12,7 +12,7 @@
 namespace kvs
 {
 
-template <typename T> size_t LUDecomposition<T>::m_max_iterations = 30;
+template <typename T> std::size_t LUDecomposition<T>::m_max_iterations = 30;
 
 /*===========================================================================*/
 /**
@@ -21,7 +21,7 @@ template <typename T> size_t LUDecomposition<T>::m_max_iterations = 30;
  */
 /*===========================================================================*/
 template <typename T>
-void LUDecomposition<T>::SetMaxIterations( const size_t max_iterations )
+void LUDecomposition<T>::SetMaxIterations( const std::size_t max_iterations )
 {
     m_max_iterations = max_iterations;
 }
@@ -104,9 +104,9 @@ void LUDecomposition<T>::setMatrix( const kvs::Matrix33<T>& m )
     m_u.resize( 3, 3 );
     m_pivots.resize( 3 );
     m_lu.resize( 3, 3 );
-    for ( size_t i = 0; i < 3; i++ )
+    for ( std::size_t i = 0; i < 3; i++ )
     {
-        for ( size_t j = 0; j < 3; j++ )
+        for ( std::size_t j = 0; j < 3; j++ )
         {
             m_lu[i][j] = m[i][j];
         }
@@ -126,9 +126,9 @@ void LUDecomposition<T>::setMatrix( const kvs::Matrix44<T>& m )
     m_u.resize( 4, 4 );
     m_pivots.resize( 4 );
     m_lu.resize( 4, 4 );
-    for ( size_t i = 0; i < 4; i++ )
+    for ( std::size_t i = 0; i < 4; i++ )
     {
-        for ( size_t j = 0; j < 4; j++ )
+        for ( std::size_t j = 0; j < 4; j++ )
         {
             m_lu[i][j] = m[i][j];
         }

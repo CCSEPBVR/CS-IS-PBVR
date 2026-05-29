@@ -304,7 +304,7 @@ void ServerWIP::transferfunction( uWS::WebSocket<false, true, PerSocket>* ws, co
 
     // std::cout << "Color Synthesizer: " << colorSynthesizer << std::endl;
     // std::cout << "Opacity Synthesizer: " << opacitySynthesizer << std::endl;
-    for( size_t i = 0; i < dataArray.size(); ++i )
+    for( std::size_t i = 0; i < dataArray.size(); ++i )
     {
         const auto& tf = dataArray[i];
         // std::cout << "----- Transfer Function Row " << i << " -----" << std::endl;
@@ -750,9 +750,9 @@ void ServerWIP::objectInfoUpdate( uWS::WebSocket<false, true, PerSocket>* ws, co
 
 std::vector<char> ServerWIP::pack( const int timeStep )
 {
-    size_t totalSize = calculateTotalSize();
+    std::size_t totalSize = calculateTotalSize();
     std::vector<char> buffer( totalSize );
-    size_t offset = 0;
+    std::size_t offset = 0;
 
     // Time Step
     std::memcpy( buffer.data() + offset, &timeStep, sizeof(int) );
@@ -785,7 +785,7 @@ std::vector<char> ServerWIP::pack( const int timeStep )
         {
             auto* pointObject = static_cast<kvs::PointObject*>( info.object );
 
-            const size_t numberOfVertices   = pointObject->numberOfVertices();                                  // numberOfVertices
+            const std::size_t numberOfVertices   = pointObject->numberOfVertices();                                  // numberOfVertices
             std::memcpy( buffer.data() + offset, &numberOfVertices, sizeof(size_t) );
             offset += sizeof(size_t);
 
@@ -815,7 +815,7 @@ std::vector<char> ServerWIP::pack( const int timeStep )
         {
             auto* pointObject = static_cast<kvs::PointObject*>( info.object );
 
-            const size_t numberOfVertices   = pointObject->numberOfVertices();                                  // numberOfVertices
+            const std::size_t numberOfVertices   = pointObject->numberOfVertices();                                  // numberOfVertices
             std::memcpy( buffer.data() + offset, &numberOfVertices, sizeof(size_t) );
             offset += sizeof(size_t);
 
@@ -854,7 +854,7 @@ std::vector<char> ServerWIP::pack( const int timeStep )
             std::memcpy( buffer.data() + offset, &normalType, sizeof(kvs::PolygonObject::NormalType) );
             offset += sizeof(kvs::PolygonObject::NormalType);
 
-            const size_t nCoords = polygonObject->coords().size();                                                  // coords.size()
+            const std::size_t nCoords = polygonObject->coords().size();                                                  // coords.size()
             std::memcpy( buffer.data() + offset, &nCoords, sizeof(size_t) );
             offset += sizeof(size_t);
 
@@ -862,7 +862,7 @@ std::vector<char> ServerWIP::pack( const int timeStep )
             std::memcpy( buffer.data() + offset, coords.data(), sizeof(kvs::Real32) * coords.size() );
             offset += sizeof(kvs::Real32) * coords.size();
 
-            const size_t nColors = polygonObject->colors().size();                                                  // colors.size()
+            const std::size_t nColors = polygonObject->colors().size();                                                  // colors.size()
             std::memcpy( buffer.data() + offset, &nColors, sizeof(size_t) );
             offset += sizeof(size_t);
 
@@ -870,7 +870,7 @@ std::vector<char> ServerWIP::pack( const int timeStep )
             std::memcpy( buffer.data() + offset, colors.data(), sizeof(kvs::UInt8) * colors.size() );
             offset += sizeof(kvs::UInt8) * colors.size();
 
-            const size_t nNormals = polygonObject->normals().size();                                                // normals.size()
+            const std::size_t nNormals = polygonObject->normals().size();                                                // normals.size()
             std::memcpy( buffer.data() + offset, &nNormals, sizeof(size_t) );
             offset += sizeof(size_t);
 
@@ -878,7 +878,7 @@ std::vector<char> ServerWIP::pack( const int timeStep )
             std::memcpy( buffer.data() + offset, normals.data(), sizeof(kvs::Real32) * normals.size() );
             offset += sizeof(kvs::Real32) * normals.size();
 
-            const size_t nConnections = polygonObject->connections().size();                                        // connections.size()
+            const std::size_t nConnections = polygonObject->connections().size();                                        // connections.size()
             std::memcpy( buffer.data() + offset, &nConnections, sizeof(size_t) );
             offset += sizeof(size_t);
 
@@ -886,7 +886,7 @@ std::vector<char> ServerWIP::pack( const int timeStep )
             std::memcpy( buffer.data() + offset, connections.data(), sizeof(kvs::UInt32) * connections.size() );
             offset += sizeof(kvs::UInt32) * connections.size();
 
-            const size_t nOpacities = polygonObject->opacities().size();                                            // opacities.size()
+            const std::size_t nOpacities = polygonObject->opacities().size();                                            // opacities.size()
             std::memcpy( buffer.data() + offset, &nOpacities, sizeof(size_t) );
             offset += sizeof(size_t);
 
@@ -920,7 +920,7 @@ std::vector<char> ServerWIP::pack( const int timeStep )
             std::memcpy( buffer.data() + offset, &normalType, sizeof(kvs::TexturedPolygonObject::NormalType) );
             offset += sizeof(kvs::TexturedPolygonObject::NormalType);
 
-            const size_t nCoords = texturedPolygonObject->coords().size();                                                  // coords.size()
+            const std::size_t nCoords = texturedPolygonObject->coords().size();                                                  // coords.size()
             std::memcpy( buffer.data() + offset, &nCoords, sizeof(size_t) );
             offset += sizeof(size_t);
 
@@ -928,7 +928,7 @@ std::vector<char> ServerWIP::pack( const int timeStep )
             std::memcpy( buffer.data() + offset, coords.data(), sizeof(kvs::Real32) * coords.size() );
             offset += sizeof(kvs::Real32) * coords.size();
 
-            const size_t nColors = texturedPolygonObject->colors().size();                                                  // colors.size()
+            const std::size_t nColors = texturedPolygonObject->colors().size();                                                  // colors.size()
             std::memcpy( buffer.data() + offset, &nColors, sizeof(size_t) );
             offset += sizeof(size_t);
 
@@ -936,7 +936,7 @@ std::vector<char> ServerWIP::pack( const int timeStep )
             std::memcpy( buffer.data() + offset, colors.data(), sizeof(kvs::UInt8) * colors.size() );
             offset += sizeof(kvs::UInt8) * colors.size();
 
-            const size_t nNormals = texturedPolygonObject->normals().size();                                                // normals.size()
+            const std::size_t nNormals = texturedPolygonObject->normals().size();                                                // normals.size()
             std::memcpy( buffer.data() + offset, &nNormals, sizeof(size_t) );
             offset += sizeof(size_t);
 
@@ -944,7 +944,7 @@ std::vector<char> ServerWIP::pack( const int timeStep )
             std::memcpy( buffer.data() + offset, normals.data(), sizeof(kvs::Real32) * normals.size() );
             offset += sizeof(kvs::Real32) * normals.size();
 
-            const size_t nConnections = texturedPolygonObject->connections().size();                                        // connections.size()
+            const std::size_t nConnections = texturedPolygonObject->connections().size();                                        // connections.size()
             std::memcpy( buffer.data() + offset, &nConnections, sizeof(size_t) );
             offset += sizeof(size_t);
 
@@ -952,7 +952,7 @@ std::vector<char> ServerWIP::pack( const int timeStep )
             std::memcpy( buffer.data() + offset, connections.data(), sizeof(kvs::UInt32) * connections.size() );
             offset += sizeof(kvs::UInt32) * connections.size();
 
-            const size_t nOpacities = texturedPolygonObject->opacities().size();                                            // opacities.size()
+            const std::size_t nOpacities = texturedPolygonObject->opacities().size();                                            // opacities.size()
             std::memcpy( buffer.data() + offset, &nOpacities, sizeof(size_t) );
             offset += sizeof(size_t);
 
@@ -960,7 +960,7 @@ std::vector<char> ServerWIP::pack( const int timeStep )
             std::memcpy( buffer.data() + offset, opacities.data(), sizeof(kvs::UInt8) * opacities.size() );
             offset += sizeof(kvs::UInt8) * opacities.size();
 
-            const size_t nTexture2DCoords = texturedPolygonObject->texture2DCoords().size();                                // texture2DCoords().size()
+            const std::size_t nTexture2DCoords = texturedPolygonObject->texture2DCoords().size();                                // texture2DCoords().size()
             std::memcpy( buffer.data() + offset, &nTexture2DCoords, sizeof(size_t) );
             offset += sizeof(size_t);
 
@@ -968,7 +968,7 @@ std::vector<char> ServerWIP::pack( const int timeStep )
             std::memcpy( buffer.data() + offset, texture2DCoords.data(), sizeof(kvs::Real32) * texture2DCoords.size() );
             offset += sizeof(kvs::Real32) * texture2DCoords.size();
 
-            const size_t nTextureIds = texturedPolygonObject->textureIds().size();                                          // textureIds().size()
+            const std::size_t nTextureIds = texturedPolygonObject->textureIds().size();                                          // textureIds().size()
             std::memcpy( buffer.data() + offset, &nTextureIds, sizeof(size_t) );
             offset += sizeof(size_t);
 
@@ -978,7 +978,7 @@ std::vector<char> ServerWIP::pack( const int timeStep )
 
             {
                 const auto& mapColor = texturedPolygonObject->mapIdToColorArray();
-                size_t mapSize = mapColor.size();
+                std::size_t mapSize = mapColor.size();
                 memcpy( buffer.data() + offset, &mapSize, sizeof(size_t) );
                 offset += sizeof(size_t);
 
@@ -989,7 +989,7 @@ std::vector<char> ServerWIP::pack( const int timeStep )
                     offset += sizeof(kvs::UInt32);
 
                     const auto& arr = kv.second;
-                    size_t arrSize = arr.size();
+                    std::size_t arrSize = arr.size();
                     memcpy( buffer.data() + offset, &arrSize, sizeof(size_t) );
                     offset += sizeof(size_t);
 
@@ -1000,7 +1000,7 @@ std::vector<char> ServerWIP::pack( const int timeStep )
 
             {
                 const auto& mapW = texturedPolygonObject->mapIdToImageWidth();
-                size_t mapSize = mapW.size();
+                std::size_t mapSize = mapW.size();
                 memcpy( buffer.data() + offset, &mapSize, sizeof(size_t) );
                 offset += sizeof(size_t);
 
@@ -1016,7 +1016,7 @@ std::vector<char> ServerWIP::pack( const int timeStep )
 
             {
                 const auto& mapH = texturedPolygonObject->mapIdToImageHeight();
-                size_t mapSize = mapH.size();
+                std::size_t mapSize = mapH.size();
                 memcpy( buffer.data() + offset, &mapSize, sizeof(size_t) );
                 offset += sizeof(size_t);
 
@@ -1052,7 +1052,7 @@ std::vector<char> ServerWIP::pack( const int timeStep )
             std::memcpy( buffer.data() + offset, &colorType, sizeof(kvs::LineObject::ColorType) );
             offset += sizeof(kvs::LineObject::ColorType);
 
-            const size_t nCoords = lineObject->coords().size();                                                     // coords.size()
+            const std::size_t nCoords = lineObject->coords().size();                                                     // coords.size()
             std::memcpy( buffer.data() + offset, &nCoords, sizeof(size_t) );
             offset += sizeof(size_t);
 
@@ -1060,7 +1060,7 @@ std::vector<char> ServerWIP::pack( const int timeStep )
             std::memcpy( buffer.data() + offset, coords.data(), sizeof(kvs::Real32) * coords.size() );
             offset += sizeof(kvs::Real32) * coords.size();
 
-            const size_t nColors = lineObject->colors().size();                                                     // colors.size()
+            const std::size_t nColors = lineObject->colors().size();                                                     // colors.size()
             std::memcpy( buffer.data() + offset, &nColors, sizeof(size_t) );
             offset += sizeof(size_t);
 
@@ -1068,7 +1068,7 @@ std::vector<char> ServerWIP::pack( const int timeStep )
             std::memcpy( buffer.data() + offset, colors.data(), sizeof(kvs::UInt8) * colors.size() );
             offset += sizeof(kvs::UInt8) * colors.size();
 
-            const size_t nNormals = lineObject->normals().size();                                                   // normals.size()
+            const std::size_t nNormals = lineObject->normals().size();                                                   // normals.size()
             std::memcpy( buffer.data() + offset, &nNormals, sizeof(size_t) );
             offset += sizeof(size_t);
 
@@ -1076,7 +1076,7 @@ std::vector<char> ServerWIP::pack( const int timeStep )
             std::memcpy( buffer.data() + offset, normals.data(), sizeof(kvs::Real32) * normals.size() );
             offset += sizeof(kvs::Real32) * normals.size();
 
-            const size_t nConnections = lineObject->connections().size();                                           // connections.size()
+            const std::size_t nConnections = lineObject->connections().size();                                           // connections.size()
             std::memcpy( buffer.data() + offset, &nConnections, sizeof(size_t) );
             offset += sizeof(size_t);
 
@@ -1084,7 +1084,7 @@ std::vector<char> ServerWIP::pack( const int timeStep )
             std::memcpy( buffer.data() + offset, connections.data(), sizeof(kvs::UInt32) * connections.size() );    // connections
             offset += sizeof(kvs::UInt32) * connections.size();
 
-            const size_t nSizes = lineObject->sizes().size();                                                       // sizes.size()
+            const std::size_t nSizes = lineObject->sizes().size();                                                       // sizes.size()
             std::memcpy( buffer.data() + offset, &nSizes, sizeof(size_t) );
             offset += sizeof(size_t);
 
@@ -1110,7 +1110,7 @@ std::vector<char> ServerWIP::pack( const int timeStep )
 
 size_t ServerWIP::calculateTotalSize() const
 {
-    size_t totalSize = 0;
+    std::size_t totalSize = 0;
 
     // Time Step
     totalSize += sizeof(int);
@@ -1134,7 +1134,7 @@ size_t ServerWIP::calculateTotalSize() const
         case ObjectInfoExtractor::PointObjectKVSML:
         {
             auto* pointObject = static_cast<kvs::PointObject*>( info.object );
-            size_t numberOfVertices = pointObject->numberOfVertices();
+            std::size_t numberOfVertices = pointObject->numberOfVertices();
             totalSize += sizeof(size_t);                                // numberOfVertices
 
             totalSize += sizeof(kvs::Real32) * 3 * numberOfVertices;    // coords
@@ -1149,7 +1149,7 @@ size_t ServerWIP::calculateTotalSize() const
         case ObjectInfoExtractor::PointObjectPTS:
         {
             auto* pointObject = static_cast<kvs::PointObject*>( info.object );
-            size_t numberOfVertices = pointObject->numberOfVertices();
+            std::size_t numberOfVertices = pointObject->numberOfVertices();
             totalSize += sizeof(size_t);                                // numberOfVertices
 
             totalSize += sizeof(kvs::Real32) * 3 * numberOfVertices;    // coords
@@ -1221,7 +1221,7 @@ size_t ServerWIP::calculateTotalSize() const
             for( const auto& kv : texturedPolygonObject->mapIdToColorArray() )
             {
                 const kvs::UInt32 id = kv.first;
-                const size_t size = kv.second.size();
+                const std::size_t size = kv.second.size();
 
                 totalSize += sizeof(kvs::UInt32);                                                   // id
                 totalSize += sizeof(size_t);                                                        // array size

@@ -29,7 +29,7 @@ int main( int argc, char** argv )
     screen.create();
 
     const kvs::Font font( kvs::Font::Sans, kvs::Font::Bold, 20 );
-    const size_t h = kvs::FontMetrics( font, screen.paintDevice() ).height();
+    const std::size_t h = kvs::FontMetrics( font, screen.paintDevice() ).height();
 
     // Viridis
     kvs::Label viridis_label( &screen );

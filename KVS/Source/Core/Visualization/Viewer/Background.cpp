@@ -138,7 +138,7 @@ void Background::setImage( const kvs::ColorImage& image )
  *  @param  index [in] color index (0-3)
  */
 /*==========================================================================*/
-const kvs::RGBColor& Background::color( size_t index ) const
+const kvs::RGBColor& Background::color( std::size_t index ) const
 {
     return m_color[index];
 }

@@ -26,7 +26,7 @@
 namespace
 {
 
-inline size_t Length( const char* str )
+inline std::size_t Length( const char* str )
 {
     const char* p = str;
     while ( *p ) p++;
@@ -84,14 +84,14 @@ String::~String( void )
     m_size = 0;
 }
 
-char& String::operator []( size_t index )
+char& String::operator []( std::size_t index )
 {
     VIS_MODULE_ASSERT( index <= m_size );
 
     return( m_data[ index ] );
 }
 
-const char String::operator []( size_t index ) const
+const char String::operator []( std::size_t index ) const
 {
     VIS_MODULE_ASSERT( index <= m_size );
 
@@ -102,7 +102,7 @@ String& String::operator =( const std::string& str )
 {
     if ( str.size() > 0 )
     {
-        size_t size = str.size();
+        std::size_t size = str.size();
 
 //        if ( m_data ) delete [] m_data;
 
@@ -126,7 +126,7 @@ String& String::operator =( const String& str )
 {
     if ( str.size() > 0 )
     {
-        size_t size = str.size();
+        std::size_t size = str.size();
 
         m_data = new char [ size + 1 ];
         if ( !m_data )
@@ -150,7 +150,7 @@ String& String::operator +=( const std::string& str )
 
     if ( m_size > 0 )
     {
-        size_t size = m_size + str.size();
+        std::size_t size = m_size + str.size();
 
         char* data = new char [ size + 1 ];
         if ( !data )
@@ -182,7 +182,7 @@ String& String::operator +=( const String& str )
 
     if ( m_size > 0 )
     {
-        size_t size = m_size + str.size();
+        std::size_t size = m_size + str.size();
 
         char* data = new char [ size + 1 ];
         if ( !data )
@@ -251,14 +251,14 @@ std::ostream& operator <<( std::ostream& os, const String& str )
     return( os );
 }
 
-char& String::at( size_t index )
+char& String::at( std::size_t index )
 {
     VIS_MODULE_ASSERT( index <= m_size );
 
     return( m_data[ index ] );
 }
 
-const char String::at( size_t index ) const
+const char String::at( std::size_t index ) const
 {
     VIS_MODULE_ASSERT( index <= m_size );
 
@@ -275,7 +275,7 @@ const char* String::data( void ) const
     return( m_data );
 }
 
-const size_t String::size( void ) const
+const std::size_t String::size( void ) const
 {
     return( m_size );
 }
@@ -290,7 +290,7 @@ void String::upper( void )
     }
 }
 
-void String::upper( size_t index )
+void String::upper( std::size_t index )
 {
     VIS_MODULE_ASSERT( index < m_size );
 
@@ -307,7 +307,7 @@ void String::lower( void )
     }
 }
 
-void String::lower( size_t index )
+void String::lower( std::size_t index )
 {
     VIS_MODULE_ASSERT( index < m_size );
 
@@ -317,7 +317,7 @@ void String::lower( size_t index )
 void String::format( const char* str, ... )
 {
     int    size        = 0;
-    size_t buffer_size = 256;
+    std::size_t buffer_size = 256;
     char*  buffer      = NULL;
 
     va_list args;

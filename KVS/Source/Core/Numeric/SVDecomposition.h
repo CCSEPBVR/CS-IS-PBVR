@@ -26,10 +26,10 @@ private:
     kvs::Matrix<T> m_u; ///< U matrix (left singular matrix)
     kvs::Vector<T> m_w; ///< diagonal elements of W matrix (singular values)
     kvs::Matrix<T> m_v; ///< V matrix (right singular matrix)
-    static size_t m_max_iterations; ///< maximum number of iterations
+    static std::size_t m_max_iterations; ///< maximum number of iterations
 
 public:
-    static void SetMaxIterations( const size_t max_iterations );
+    static void SetMaxIterations( const std::size_t max_iterations );
 
 public:
     SVDecomposition();

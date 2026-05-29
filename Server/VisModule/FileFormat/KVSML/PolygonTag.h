@@ -38,7 +38,7 @@ public:
 protected:
 
     bool m_has_npolygons; ///< flag to check whether 'npolygons' is specified or not
-    size_t m_npolygons; ///< number of polygons
+    std::size_t m_npolygons; ///< number of polygons
 
 public:
 
@@ -50,11 +50,11 @@ public:
 
     const bool hasNPolygons( void ) const;
 
-    const size_t npolygons( void ) const;
+    const std::size_t npolygons( void ) const;
 
 public:
 
-    void setNPolygons( const size_t npolygons );
+    void setNPolygons( const std::size_t npolygons );
 
 public:
 

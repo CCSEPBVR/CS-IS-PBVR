@@ -47,7 +47,7 @@ std::ostream& operator << ( std::ostream& os, const Entry& entry )
     if( entry.type() == vismodule::tiff::Ascii )
     {
         std::string value;
-        for ( size_t i = 0; i < entry.count(); i++ )
+        for ( std::size_t i = 0; i < entry.count(); i++ )
         {
             value.push_back( entry.values().at<char>(i) );
         }
@@ -56,7 +56,7 @@ std::ostream& operator << ( std::ostream& os, const Entry& entry )
     else
     {
         os << "Value: ";
-        for ( size_t i = 0; i < entry.count(); i++ )
+        for ( std::size_t i = 0; i < entry.count(); i++ )
         {
             os << entry.values().at<vismodule::UInt32>(i) << " ";
         }
@@ -119,7 +119,7 @@ bool Entry::read( std::ifstream& ifs )
     }
 
     // Read values.
-    const size_t byte_size = vismodule::tiff::ValueTypeSize[m_type] * m_count;
+    const std::size_t byte_size = vismodule::tiff::ValueTypeSize[m_type] * m_count;
     if ( byte_size > 4 )
     {
         const std::ifstream::pos_type end_of_entry = ifs.tellg();
@@ -144,7 +144,7 @@ bool Entry::read( std::ifstream& ifs )
     return( true );
 }
 
-void* Entry::allocate_values( const size_t nvalues, const size_t value_type )
+void* Entry::allocate_values( const std::size_t nvalues, const std::size_t value_type )
 {
     switch( value_type )
     {

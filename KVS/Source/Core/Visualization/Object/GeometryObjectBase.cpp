@@ -90,7 +90,7 @@ void GeometryObjectBase::setColor( const kvs::RGBColor& color )
 /*===========================================================================*/
 size_t GeometryObjectBase::numberOfVertices() const
 {
-    const size_t dimension = 3;
+    const std::size_t dimension = 3;
     return m_coords.size() / dimension;
 }
 
@@ -102,7 +102,7 @@ size_t GeometryObjectBase::numberOfVertices() const
 /*===========================================================================*/
 size_t GeometryObjectBase::numberOfColors() const
 {
-    const size_t nchannels = 3;
+    const std::size_t nchannels = 3;
     return m_colors.size() / nchannels;
 }
 
@@ -114,7 +114,7 @@ size_t GeometryObjectBase::numberOfColors() const
 /*===========================================================================*/
 size_t GeometryObjectBase::numberOfNormals() const
 {
-    const size_t dimension = 3;
+    const std::size_t dimension = 3;
     return m_normals.size() / dimension;
 }
 
@@ -125,9 +125,9 @@ size_t GeometryObjectBase::numberOfNormals() const
  *  @return coordinate value
  */
 /*===========================================================================*/
-const kvs::Vec3 GeometryObjectBase::coord( const size_t index ) const
+const kvs::Vec3 GeometryObjectBase::coord( const std::size_t index ) const
 {
-    const size_t dimension = 3;
+    const std::size_t dimension = 3;
     return kvs::Vec3( m_coords.data() + dimension * index );
 }
 
@@ -138,9 +138,9 @@ const kvs::Vec3 GeometryObjectBase::coord( const size_t index ) const
  *  @return color value
  */
 /*===========================================================================*/
-const kvs::RGBColor GeometryObjectBase::color( const size_t index ) const
+const kvs::RGBColor GeometryObjectBase::color( const std::size_t index ) const
 {
-    const size_t nchannels = 3;
+    const std::size_t nchannels = 3;
     return kvs::RGBColor( m_colors.data() + nchannels * index );
 }
 
@@ -151,9 +151,9 @@ const kvs::RGBColor GeometryObjectBase::color( const size_t index ) const
  *  @return normal vector
  */
 /*===========================================================================*/
-const kvs::Vec3 GeometryObjectBase::normal( const size_t index ) const
+const kvs::Vec3 GeometryObjectBase::normal( const std::size_t index ) const
 {
-    const size_t dimension = 3;
+    const std::size_t dimension = 3;
     return kvs::Vec3( m_normals.data() + dimension * index );
 }
 

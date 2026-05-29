@@ -42,7 +42,7 @@ public:
                               const std::string& green_function_string,
                               const std::string& blue_function_string,
                               const std::string& opacity_function_string,
-                              const size_t      resolution,
+                              const std::size_t      resolution,
                               const float       min_value,
                               const float       max_value );
     ~ExtendedTransferFunction();

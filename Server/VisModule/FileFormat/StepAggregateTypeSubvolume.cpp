@@ -30,9 +30,9 @@ namespace
  *  @return number of nodes per element
  */
 /*===========================================================================*/
-inline const size_t GetNumberOfNodesPerElement( const std::string& cell_type )
+inline const std::size_t GetNumberOfNodesPerElement( const std::string& cell_type )
 {
-    size_t nnodes = 0;
+    std::size_t nnodes = 0;
     if ( cell_type == "tetrahedra" ) nnodes = 4;
     else if ( cell_type == "quadratic tetrahedra" ) nnodes = 10;
     else if ( cell_type == "hexahedra" ) nnodes = 8;
@@ -80,9 +80,9 @@ StepAggregateTypeSubvolume::StepAggregateTypeSubvolume( const std::string& filen
     int32_t numNodes;
     int32_t m_number_elements;
     int32_t elemNodes;
-    size_t  numPreElements;
-    size_t  numPreNodes;
-    size_t  offset;
+    std::size_t  numPreElements;
+    std::size_t  numPreNodes;
+    std::size_t  offset;
 
     //-------------------------------------------------------------------------------------------------
     // load pfi file
@@ -319,7 +319,7 @@ const std::string StepAggregateTypeSubvolume::cellType() const
  *  @return vector length
  */
 /*===========================================================================*/
-const size_t StepAggregateTypeSubvolume::veclen() const
+const std::size_t StepAggregateTypeSubvolume::veclen() const
 {
     return m_vector_length;
 }
@@ -330,7 +330,7 @@ const size_t StepAggregateTypeSubvolume::veclen() const
  *  @return number of nodes
  */
 /*===========================================================================*/
-const size_t StepAggregateTypeSubvolume::nnodes() const
+const std::size_t StepAggregateTypeSubvolume::nnodes() const
 {
     return m_nnodes;
 }
@@ -341,7 +341,7 @@ const size_t StepAggregateTypeSubvolume::nnodes() const
  *  @return number of cells
  */
 /*===========================================================================*/
-const size_t StepAggregateTypeSubvolume::ncells() const
+const std::size_t StepAggregateTypeSubvolume::ncells() const
 {
     return m_ncells;
 }
@@ -396,7 +396,7 @@ void StepAggregateTypeSubvolume::setCellType( const std::string& cell_type )
  *  @param  veclen [in] vector length
  */
 /*===========================================================================*/
-void StepAggregateTypeSubvolume::setVeclen( const size_t veclen )
+void StepAggregateTypeSubvolume::setVeclen( const std::size_t veclen )
 {
     m_vector_length = veclen;
 }
@@ -407,7 +407,7 @@ void StepAggregateTypeSubvolume::setVeclen( const size_t veclen )
  *  @param  nnodes [in] number of nodes
  */
 /*===========================================================================*/
-void StepAggregateTypeSubvolume::setNNodes( const size_t nnodes )
+void StepAggregateTypeSubvolume::setNNodes( const std::size_t nnodes )
 {
     m_nnodes = nnodes;
 }
@@ -418,7 +418,7 @@ void StepAggregateTypeSubvolume::setNNodes( const size_t nnodes )
  *  @param  ncells [in] number of cells
  */
 /*===========================================================================*/
-void StepAggregateTypeSubvolume::setNCells( const size_t ncells )
+void StepAggregateTypeSubvolume::setNCells( const std::size_t ncells )
 {
     m_ncells = ncells;
 }

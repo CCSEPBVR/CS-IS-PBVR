@@ -237,10 +237,10 @@ int TCPSocket::receive( void* message, const int message_size )
 /*==========================================================================*/
 int TCPSocket::receive( MessageBlock* message )
 {
-    size_t message_size = 0;
+    std::size_t message_size = 0;
     int status = vismodule::Socket::receive_peek( vismodule::Socket::id(),
                                             (char*)&message_size,
-                                            sizeof( size_t ) );
+                                            sizeof( std::size_t ) );
     if( status == -1 ) return( status );
 
     message->allocate( ntohl( message_size ) );

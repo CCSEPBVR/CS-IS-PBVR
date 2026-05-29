@@ -15,7 +15,7 @@
 // Constant variables
 namespace
 {
-const size_t MaxLineLength = 255;
+const std::size_t MaxLineLength = 255;
 }
 
 
@@ -78,12 +78,12 @@ void Label::addText( const char* text, ... )
 /*===========================================================================*/
 int Label::adjustedWidth()
 {
-    size_t max_width = 0;
+    std::size_t max_width = 0;
     BaseClass::painter().begin( BaseClass::screen() );
     const kvs::FontMetrics metrics = BaseClass::painter().fontMetrics();
-    for ( size_t i = 0; i < m_text_list.size(); i++ )
+    for ( std::size_t i = 0; i < m_text_list.size(); i++ )
     {
-        const size_t line_width = metrics.width( m_text_list[i] );
+        const std::size_t line_width = metrics.width( m_text_list[i] );
         max_width = kvs::Math::Max( max_width, line_width );
     }
     BaseClass::painter().end();
@@ -101,8 +101,8 @@ int Label::adjustedHeight()
 {
     BaseClass::painter().begin( BaseClass::screen() );
     const kvs::FontMetrics metrics = BaseClass::painter().fontMetrics();
-    const size_t nlines = m_text_list.size();
-    const size_t character_height = metrics.height();
+    const std::size_t nlines = m_text_list.size();
+    const std::size_t character_height = metrics.height();
     BaseClass::painter().end();
     return nlines * character_height + BaseClass::margin() * 2;
 }
@@ -123,8 +123,8 @@ void Label::paintEvent()
 
     const int x = BaseClass::x() + BaseClass::margin();
     const int y = BaseClass::y() + BaseClass::margin();
-    const size_t character_height = BaseClass::painter().fontMetrics().height();
-    for ( size_t line = 0; line < m_text_list.size(); line++ )
+    const std::size_t character_height = BaseClass::painter().fontMetrics().height();
+    for ( std::size_t line = 0; line < m_text_list.size(); line++ )
     {
         const kvs::Vec2i p( x, y + character_height * ( line + 1 ) );
         BaseClass::painter().drawText( p, m_text_list[line] );

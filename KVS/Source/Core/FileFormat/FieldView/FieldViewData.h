@@ -44,7 +44,7 @@ public:
 
     struct BoundaryCondition
     {
-        size_t ntypes = 0; // number of boundary face types
+        std::size_t ntypes = 0; // number of boundary face types
         std::vector<int> results{}; // 1: data is defined on the face, 0: not defined
         std::vector<int> normals{}; // normal information of the face
         std::vector<std::string> names{}; // face name
@@ -77,8 +77,8 @@ public:
 
     struct Grid
     {
-        size_t nnodes = 0; // number of nodes
-        size_t nelements[5] = {}; // 0-all, 1-tet, 2-hex, 3-prism, 4-pyramid
+        std::size_t nnodes = 0; // number of nodes
+        std::size_t nelements[5] = {}; // 0-all, 1-tet, 2-hex, 3-prism, 4-pyramid
         std::vector<Node> nodes{}; // nodes
         std::vector<Face> faces{}; // boundary faces
         std::vector<Element> elements{}; // elements
@@ -93,15 +93,15 @@ private:
     Version m_version{}; // version numbers
     Constant m_constant{}; // constant numbers
     BoundaryCondition m_boundary_condition{}; // boundary condition
-    size_t m_nvariables = 0; ///< number of variables
-    size_t m_nvariables_on_face = 0; ///< number of variables on the boundary face
-    size_t m_ngrids = 0; ///< number of grid data
+    std::size_t m_nvariables = 0; ///< number of variables
+    std::size_t m_nvariables_on_face = 0; ///< number of variables on the boundary face
+    std::size_t m_ngrids = 0; ///< number of grid data
     std::vector<std::string> m_variable_names{}; ///< variable names
     std::vector<std::string> m_variable_names_on_face{}; ///< variable names on the boundary face
     std::vector<Grid> m_grids{}; ///< grid data
     mutable int m_importing_element_type = 0; ///< importing element type
-    mutable size_t m_importing_grid_index = 0; ///< importing grid index
-    mutable size_t m_importing_variable_index = 0; ///< importing variable index
+    mutable std::size_t m_importing_grid_index = 0; ///< importing grid index
+    mutable std::size_t m_importing_variable_index = 0; ///< importing variable index
 
 public:
     FieldViewData() = default;
@@ -110,23 +110,23 @@ public:
     const Version& version() const { return m_version; }
     const Constant& constant() const { return m_constant; }
     const BoundaryCondition& boundaryCondition() const { return m_boundary_condition; }
-    size_t numberOfVariables() const { return m_nvariables; }
-    size_t numberOfVariablesOnFace() const { return m_nvariables_on_face; }
-    size_t numberOfGrids() const { return m_ngrids; }
+    std::size_t numberOfVariables() const { return m_nvariables; }
+    std::size_t numberOfVariablesOnFace() const { return m_nvariables_on_face; }
+    std::size_t numberOfGrids() const { return m_ngrids; }
     const std::string& variableName( const int index = 0 ) const { return m_variable_names[index]; }
     const std::string& variableNameOnFace( const int index = 0 ) const { return m_variable_names_on_face[index]; }
     const Grid& grid( const int index = 0 ) const { return m_grids[index]; }
 
-    size_t totalNumberOfNodes() const;
-    size_t totalNumberOfElements( const size_t etype = 0 ) const;
-    size_t totalNumberOfTetElements() const { return this->totalNumberOfElements(1); }
-    size_t totalNumberOfHexElements() const { return this->totalNumberOfElements(2); }
-    size_t totalNumberOfPrismElements() const { return this->totalNumberOfElements(3); }
-    size_t totalNumberOfPyramidElements() const { return this->totalNumberOfElements(4); }
+    std::size_t totalNumberOfNodes() const;
+    std::size_t totalNumberOfElements( const std::size_t etype = 0 ) const;
+    std::size_t totalNumberOfTetElements() const { return this->totalNumberOfElements(1); }
+    std::size_t totalNumberOfHexElements() const { return this->totalNumberOfElements(2); }
+    std::size_t totalNumberOfPrismElements() const { return this->totalNumberOfElements(3); }
+    std::size_t totalNumberOfPyramidElements() const { return this->totalNumberOfElements(4); }
 
     int importingElementType() const { return m_importing_element_type; }
-    size_t importingGridIndex() const { return m_importing_grid_index; }
-    size_t importingVariableIndex() const { return m_importing_variable_index; }
+    std::size_t importingGridIndex() const { return m_importing_grid_index; }
+    std::size_t importingVariableIndex() const { return m_importing_variable_index; }
 
     void setImportingElementType( const int etype ) const { m_importing_element_type = etype; }
     void setImportingElementTypeToAll() const { this->setImportingElementType(0); }
@@ -134,19 +134,19 @@ public:
     void setImportingElementTypeToHex() const { this->setImportingElementType(2); }
     void setImportingElementTypeToPrism() const { this->setImportingElementType(3); }
     void setImportingElementTypeToPyramid() const { this->setImportingElementType(4); }
-    void setImportingGridIndex( const size_t gindex ) const { m_importing_grid_index = gindex; }
-    void setImportingVariableIndex( const size_t vindex ) const { m_importing_variable_index = vindex; }
+    void setImportingGridIndex( const std::size_t gindex ) const { m_importing_grid_index = gindex; }
+    void setImportingVariableIndex( const std::size_t vindex ) const { m_importing_variable_index = vindex; }
 
     void print( std::ostream& os, const kvs::Indent& indent = kvs::Indent(0) ) const;
     bool read( const std::string& filename );
     bool read( const std::string& gfilename, const std::string& rfilename );
     bool readAscii( const std::string& filename );
     bool readBinary( const std::string& filename );
-    bool readBinary( const std::string& filename, bool swap, size_t offset );
+    bool readBinary( const std::string& filename, bool swap, std::size_t offset );
     bool readBinaryGrid( const std::string& filename );
-    bool readBinaryGrid( const std::string& filename, bool swap, size_t offset );
+    bool readBinaryGrid( const std::string& filename, bool swap, std::size_t offset );
     bool readBinaryResult( const std::string& filename );
-    bool readBinaryResult( const std::string& filename, bool swap, size_t offset );
+    bool readBinaryResult( const std::string& filename, bool swap, std::size_t offset );
 
 private:
     bool write( const std::string& ) { return false; }
@@ -155,24 +155,24 @@ private:
     void read_constants( FILE* fp );
     void read_grids( FILE* fp );
     void read_variable_names( FILE* fp );
-    void read_nodes( FILE* fp, size_t gindex );
-    void read_elements( FILE* fp, size_t gindex );
-    void read_variables( FILE* fp, size_t gindex );
+    void read_nodes( FILE* fp, std::size_t gindex );
+    void read_elements( FILE* fp, std::size_t gindex );
+    void read_variables( FILE* fp, std::size_t gindex );
 
-    void read_magic( FILE* fp, bool swap, size_t offset );
-    void read_title( FILE* fp, bool swap, size_t offset );
-    void read_version( FILE* fp, bool swap, size_t offset );
-    void read_constants( FILE* fp, bool swap, size_t offset );
-    void read_boundary_condition( FILE* fp, bool swap, size_t offset );
-    void read_grids( FILE* fp, bool swap, size_t offset );
-    void read_variable_names( FILE* fp, bool swap, size_t offset );
-    void read_variable_names_on_face( FILE* fp, bool swap, size_t offset );
-    void read_nnodes( FILE* fp, bool swap, size_t offset, size_t gindex );
-    void read_nodes( FILE* fp, bool swap, size_t offset, size_t gindex );
-    void read_faces( FILE* fp, bool swap, size_t offset, size_t gindex );
-    void read_elements( FILE* fp, bool swap, size_t offset, size_t gindex );
-    void read_variables( FILE* fp, bool swap, size_t offset, size_t gindex );
-    void read_variables_on_face( FILE* fp, bool swap, size_t offset, size_t gindex );
+    void read_magic( FILE* fp, bool swap, std::size_t offset );
+    void read_title( FILE* fp, bool swap, std::size_t offset );
+    void read_version( FILE* fp, bool swap, std::size_t offset );
+    void read_constants( FILE* fp, bool swap, std::size_t offset );
+    void read_boundary_condition( FILE* fp, bool swap, std::size_t offset );
+    void read_grids( FILE* fp, bool swap, std::size_t offset );
+    void read_variable_names( FILE* fp, bool swap, std::size_t offset );
+    void read_variable_names_on_face( FILE* fp, bool swap, std::size_t offset );
+    void read_nnodes( FILE* fp, bool swap, std::size_t offset, std::size_t gindex );
+    void read_nodes( FILE* fp, bool swap, std::size_t offset, std::size_t gindex );
+    void read_faces( FILE* fp, bool swap, std::size_t offset, std::size_t gindex );
+    void read_elements( FILE* fp, bool swap, std::size_t offset, std::size_t gindex );
+    void read_variables( FILE* fp, bool swap, std::size_t offset, std::size_t gindex );
+    void read_variables_on_face( FILE* fp, bool swap, std::size_t offset, std::size_t gindex );
 };
 
 } // end of namespace kvs

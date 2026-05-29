@@ -116,9 +116,9 @@ public:
     PolygonType polygonType() const { return m_polygon_type; }
     ColorType colorType() const { return m_color_type; }
     NormalType normalType() const { return m_normal_type; }
-    size_t numberOfConnections() const;
-    size_t numberOfOpacities() const { return m_opacities.size(); }
-    kvs::UInt8 opacity( const size_t index = 0 ) const { return m_opacities[index]; }
+    std::size_t numberOfConnections() const;
+    std::size_t numberOfOpacities() const { return m_opacities.size(); }
+    kvs::UInt8 opacity( const std::size_t index = 0 ) const { return m_opacities[index]; }
 
     const kvs::ValueArray<kvs::UInt32>& connections() const { return m_connections; }
     const kvs::ValueArray<kvs::UInt8>& opacities() const { return m_opacities; }

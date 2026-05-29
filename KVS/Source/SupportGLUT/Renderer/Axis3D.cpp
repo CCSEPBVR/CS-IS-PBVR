@@ -193,7 +193,7 @@ void Axis3D::setNumberOfGridlines( const kvs::Vector3ui& ngridlines )
  *  @param  ngridlines [in] number of gridlines
  */
 /*===========================================================================*/
-void Axis3D::setNumberOfXGridlines( const size_t ngridlines )
+void Axis3D::setNumberOfXGridlines( const std::size_t ngridlines )
 {
     m_ngridlines[0] = kvs::UInt32( ngridlines );
 }
@@ -204,7 +204,7 @@ void Axis3D::setNumberOfXGridlines( const size_t ngridlines )
  *  @param  ngridlines [in] number of gridlines
  */
 /*===========================================================================*/
-void Axis3D::setNumberOfYGridlines( const size_t ngridlines )
+void Axis3D::setNumberOfYGridlines( const std::size_t ngridlines )
 {
     m_ngridlines[1] = kvs::UInt32( ngridlines );
 }
@@ -215,7 +215,7 @@ void Axis3D::setNumberOfYGridlines( const size_t ngridlines )
  *  @param  ngridlines [in] number of gridlines
  */
 /*===========================================================================*/
-void Axis3D::setNumberOfZGridlines( const size_t ngridlines )
+void Axis3D::setNumberOfZGridlines( const std::size_t ngridlines )
 {
     m_ngridlines[2] = kvs::UInt32( ngridlines );
 }
@@ -630,7 +630,7 @@ kvs::LineObject* Axis3D::outputLineObject( const kvs::ObjectBase* object ) const
         const kvs::Real32 interval_z = ( max_z - min_z ) / ( m_ngridlines.z() + 1 );
 
         kvs::Real32 x = min_x;
-        for ( size_t i = 0; i < m_ngridlines.x(); i++ )
+        for ( std::size_t i = 0; i < m_ngridlines.x(); i++ )
         {
             x += interval_x;
             coords.push_back( x ); coords.push_back( max_y ); coords.push_back( min_z );
@@ -641,7 +641,7 @@ kvs::LineObject* Axis3D::outputLineObject( const kvs::ObjectBase* object ) const
         }
 
         kvs::Real32 y = min_y;
-        for ( size_t i = 0; i < m_ngridlines.y(); i++ )
+        for ( std::size_t i = 0; i < m_ngridlines.y(); i++ )
         {
             y += interval_y;
             coords.push_back( min_x ); coords.push_back( y ); coords.push_back( max_z );
@@ -652,7 +652,7 @@ kvs::LineObject* Axis3D::outputLineObject( const kvs::ObjectBase* object ) const
         }
 
         kvs::Real32 z = min_z;
-        for ( size_t i = 0; i < m_ngridlines.z(); i++ )
+        for ( std::size_t i = 0; i < m_ngridlines.z(); i++ )
         {
             z += interval_z;
             coords.push_back( max_x ); coords.push_back( min_y ); coords.push_back( z );
@@ -662,13 +662,13 @@ kvs::LineObject* Axis3D::outputLineObject( const kvs::ObjectBase* object ) const
             coords.push_back( min_x ); coords.push_back( min_y ); coords.push_back( z );
         }
 
-        for ( size_t i = 7; i < coords.size() / 3; i++ )
+        for ( std::size_t i = 7; i < coords.size() / 3; i++ )
         {
             connections.push_back( i );
         }
 
-        const size_t ngridlines = m_ngridlines.x() * m_ngridlines.y() * m_ngridlines.z();
-        for( size_t i = 0; i < ngridlines; i++ )
+        const std::size_t ngridlines = m_ngridlines.x() * m_ngridlines.y() * m_ngridlines.z();
+        for( std::size_t i = 0; i < ngridlines; i++ )
         {
             sizes.push_back( m_gridline_width );
             colors.push_back( m_gridline_color.r() );
@@ -792,7 +792,7 @@ void Axis3D::draw_xy_gridlines( const kvs::Vector3f& min_coord, const kvs::Vecto
     glBegin( GL_LINES );
     kvs::Real32 x = min_coord.x();
     const kvs::Real32 x_interval = ( max_coord.x() - min_coord.x() ) / ( m_ngridlines.x() + 1 );
-    for ( size_t i = 0; i < m_ngridlines.x(); i++ )
+    for ( std::size_t i = 0; i < m_ngridlines.x(); i++ )
     {
         x += x_interval;
         glVertex3f( x, min_coord.y(), depth_z );
@@ -804,7 +804,7 @@ void Axis3D::draw_xy_gridlines( const kvs::Vector3f& min_coord, const kvs::Vecto
     glBegin( GL_LINES );
     kvs::Real32 y = min_coord.y();
     const kvs::Real32 y_interval = ( max_coord.y() - min_coord.y() ) / ( m_ngridlines.y() + 1 );
-    for ( size_t i = 0; i < m_ngridlines.y(); i++ )
+    for ( std::size_t i = 0; i < m_ngridlines.y(); i++ )
     {
         y += y_interval;
         glVertex3f( min_coord.x(), y, depth_z );
@@ -842,7 +842,7 @@ void Axis3D::draw_yz_gridlines( const kvs::Vector3f& min_coord, const kvs::Vecto
     glBegin( GL_LINES );
     kvs::Real32 y = min_coord.z();
     const kvs::Real32 y_interval = ( max_coord.y() - min_coord.y() ) / ( m_ngridlines.y() + 1 );
-    for ( size_t i = 0; i < m_ngridlines.y(); i++ )
+    for ( std::size_t i = 0; i < m_ngridlines.y(); i++ )
     {
         y += y_interval;
         glVertex3f( depth_x, y, min_coord.z() );
@@ -854,7 +854,7 @@ void Axis3D::draw_yz_gridlines( const kvs::Vector3f& min_coord, const kvs::Vecto
     glBegin( GL_LINES );
     kvs::Real32 z = min_coord.z();
     const kvs::Real32 z_interval = ( max_coord.z() - min_coord.z() ) / ( m_ngridlines.z() + 1 );
-    for ( size_t i = 0; i < m_ngridlines.z(); i++ )
+    for ( std::size_t i = 0; i < m_ngridlines.z(); i++ )
     {
         z += z_interval;
         glVertex3f( depth_x, min_coord.y(), z );
@@ -892,7 +892,7 @@ void Axis3D::draw_zx_gridlines( const kvs::Vector3f& min_coord, const kvs::Vecto
     glBegin( GL_LINES );
     kvs::Real32 z = min_coord.z();
     const kvs::Real32 z_interval = ( max_coord.z() - min_coord.z() ) / ( m_ngridlines.z() + 1 );
-    for ( size_t i = 0; i < m_ngridlines.z(); i++ )
+    for ( std::size_t i = 0; i < m_ngridlines.z(); i++ )
     {
         z += z_interval;
         glVertex3f( min_coord.x(), depth_y, z );
@@ -904,7 +904,7 @@ void Axis3D::draw_zx_gridlines( const kvs::Vector3f& min_coord, const kvs::Vecto
     glBegin( GL_LINES );
     kvs::Real32 x = min_coord.x();
     const kvs::Real32 x_interval = ( max_coord.x() - min_coord.x() ) / ( m_ngridlines.x() + 1 );
-    for ( size_t i = 0; i < m_ngridlines.x(); i++ )
+    for ( std::size_t i = 0; i < m_ngridlines.x(); i++ )
     {
         x += x_interval;
         glVertex3f( x, depth_y, min_coord.z() );
@@ -991,8 +991,8 @@ void Axis3D::draw_labels( const kvs::Vector3f& min_coord, const kvs::Vector3f& m
 
             glColor3ub( m_value_color.r(), m_value_color.g(), m_value_color.b() );
 
-            const size_t nlines = size_t( m_ngridlines.x() ) + 2;
-            for ( size_t i = 0; i < nlines; i++ )
+            const std::size_t nlines = size_t( m_ngridlines.x() ) + 2;
+            for ( std::size_t i = 0; i < nlines; i++ )
             {
                 std::string number = kvs::String::From( min_value.x() + dvalue.x() * i );
                 const float x = min_coord.x() + interval.x() * i;
@@ -1047,8 +1047,8 @@ void Axis3D::draw_labels( const kvs::Vector3f& min_coord, const kvs::Vector3f& m
 
             glColor3ub( m_value_color.r(), m_value_color.g(), m_value_color.b() );
 
-            const size_t nlines = size_t( m_ngridlines.y() ) + 2;
-            for ( size_t i = 0; i < nlines; i++ )
+            const std::size_t nlines = size_t( m_ngridlines.y() ) + 2;
+            for ( std::size_t i = 0; i < nlines; i++ )
             {
                 std::string number = kvs::String::From( min_value.y() + dvalue.y() * i );
                 const float x = position.x() + offset.x();
@@ -1100,8 +1100,8 @@ void Axis3D::draw_labels( const kvs::Vector3f& min_coord, const kvs::Vector3f& m
 
             glColor3ub( m_label_color.r(), m_value_color.g(), m_value_color.b() );
 
-            const size_t nlines = size_t( m_ngridlines.z() ) + 2;
-            for ( size_t i = 0; i < nlines; i++ )
+            const std::size_t nlines = size_t( m_ngridlines.z() ) + 2;
+            for ( std::size_t i = 0; i < nlines; i++ )
             {
                 std::string number = kvs::String::From( min_value.z() + dvalue.z() * i );
                 const float x = position.x() + offset.x();

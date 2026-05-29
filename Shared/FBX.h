@@ -75,7 +75,7 @@ public:
     const kvs::ValueArray<kvs::ValueArray<kvs::UInt8>>& colorArrays() const { return m_color_arrays; }
     const kvs::ValueArray<kvs::UInt32>& imageWidths() const { return m_image_widths; }
     const kvs::ValueArray<kvs::UInt32>& imageHeights() const { return m_image_heights; }
-    size_t numberOfTriangles() const { return m_normals.size() / 3; }
+    std::size_t numberOfTriangles() const { return m_normals.size() / 3; }
 
     void setFileType( const FileType file_type ) { m_file_type = file_type; }
     void setNormals( const kvs::ValueArray<kvs::Real32>& normals ) { m_normals = normals; }
@@ -161,7 +161,7 @@ public:
             {
                 unsigned int mesh_idx = node->mMeshes[mi];
                 const aiMesh* mesh = scene->mMeshes[mesh_idx];
-                size_t base_idx = coords.size() / 3;
+                std::size_t base_idx = coords.size() / 3;
                 kvs::UInt32 tid = mesh_texture_ids[mesh_idx];
 
                 // 頂点・法線・UV・テクスチャID（頂点単位）
@@ -237,7 +237,7 @@ public:
                 continue;
             }
 
-            size_t pix_cnt = static_cast<size_t>( w ) * h;
+            std::size_t pix_cnt = static_cast<size_t>( w ) * h;
             kvs::ValueArray<kvs::UInt8> pixels( pix_cnt * 4 );
             if( n == 4 )
             {
@@ -245,7 +245,7 @@ public:
             }
             else if( n == 3 )
             {
-                for( size_t i = 0; i < pix_cnt; ++i )
+                for( std::size_t i = 0; i < pix_cnt; ++i )
                 {
                     pixels[i*4+0] = data[i*3+0];
                     pixels[i*4+1] = data[i*3+1];

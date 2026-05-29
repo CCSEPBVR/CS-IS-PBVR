@@ -24,7 +24,7 @@ public:
 
     kvs::python::Object find( kvs::python::Object& key ) const;
     kvs::python::Object find( const std::string& key ) const;
-    size_t size() const;
+    std::size_t size() const;
     void clear();
 };
 

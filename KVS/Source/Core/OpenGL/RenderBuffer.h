@@ -22,8 +22,8 @@ class RenderBuffer
 private:
     GLuint m_id = 0; ///< buffer ID
     GLenum m_internal_format = 0; ///< render buffer internal format
-    size_t m_width = 0; ///< buffer width
-    size_t m_height = 0; ///< buffer height
+    std::size_t m_width = 0; ///< buffer width
+    std::size_t m_height = 0; ///< buffer height
 
 public:
     class Binder;
@@ -36,12 +36,12 @@ public:
 
     GLuint id() const { return m_id; }
     GLenum internalFormat() const { return m_internal_format; }
-    size_t width() const { return m_width; }
-    size_t height() const { return m_height; }
+    std::size_t width() const { return m_width; }
+    std::size_t height() const { return m_height; }
 
     void setInternalFormat( const GLenum format ) { m_internal_format = format; }
 
-    void create( const size_t width, const size_t height );
+    void create( const std::size_t width, const std::size_t height );
     void release();
     void bind() const;
     void unbind() const;

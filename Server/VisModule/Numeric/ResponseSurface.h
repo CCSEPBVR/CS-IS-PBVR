@@ -43,9 +43,9 @@ class ResponseSurface : public vismodule::Vector<T>
 
 protected:
 
-    size_t m_npoints; ///< number of data points
-    size_t m_nvariables; ///< number of independent variables (ex. x,y -> 2 )
-    size_t m_nterms; ///< number of terms (ex. x,y -> 6 = {1, x, y, x^2, y^2, xy})
+    std::size_t m_npoints; ///< number of data points
+    std::size_t m_nvariables; ///< number of independent variables (ex. x,y -> 2 )
+    std::size_t m_nterms; ///< number of terms (ex. x,y -> 6 = {1, x, y, x^2, y^2, xy})
     vismodule::BitArray m_mask; ///< mask table for the active coefficients
     vismodule::Matrix<T> m_coefficient_matrix; ///< coeffiecinet matrix (matrix of independent variable)
     vismodule::Vector<T> m_responses; ///< response values (vector of dependent variable)
@@ -69,9 +69,9 @@ public:
 
 public:
 
-    const size_t npoints( void ) const;
+    const std::size_t npoints( void ) const;
 
-    const size_t nvariables( void ) const;
+    const std::size_t nvariables( void ) const;
 
     const T Rsquare( void ) const;
 

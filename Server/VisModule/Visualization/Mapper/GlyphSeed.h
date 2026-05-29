@@ -92,7 +92,7 @@ private:
    void  DistributionSampling_struct( domain_parameters_struct dom, Type** values, int nvariables);
    void  DistributionSampling_unstruct(const vismodule::VolumeObjectBase::CellType& celltype);
 
-   const size_t calculate_number_of_particles(
+   const std::size_t calculate_number_of_particles(
            const float density,
            const float volume_of_cell,
            vismodule::MersenneTwister* MT );

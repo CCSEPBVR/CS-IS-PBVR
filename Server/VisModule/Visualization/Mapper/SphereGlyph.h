@@ -41,8 +41,8 @@ class SphereGlyph : public vismodule::GlyphBase
 protected:
 
     GLUquadricObj* m_sphere; ///< glyph primitive
-    size_t m_nslices; ///< number of subdivisions around the z-axis (lines of longitude)
-    size_t m_nstacks; ///< number of subdivisions along the z-axis (lines of latitude)
+    std::size_t m_nslices; ///< number of subdivisions around the z-axis (lines of longitude)
+    std::size_t m_nstacks; ///< number of subdivisions along the z-axis (lines of latitude)
 
 public:
 
@@ -62,9 +62,9 @@ public:
 
 public:
 
-    void setNSlices( const size_t nslices );
+    void setNSlices( const std::size_t nslices );
 
-    void setNStacks( const size_t nstacks );
+    void setNStacks( const std::size_t nstacks );
 
 /*
     const ObjectType objectType( void ) const

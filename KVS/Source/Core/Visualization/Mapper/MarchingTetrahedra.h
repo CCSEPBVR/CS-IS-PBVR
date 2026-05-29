@@ -49,7 +49,7 @@ private:
     template <typename T> void extract_surfaces( const kvs::UnstructuredVolumeObject* volume );
     template <typename T> void extract_surfaces_with_duplication( const kvs::UnstructuredVolumeObject* volume );
     template <typename T> void extract_surfaces_without_duplication( const kvs::UnstructuredVolumeObject* volume );
-    template <typename T> size_t calculate_table_index( const size_t* local_index ) const;
+    template <typename T> std::size_t calculate_table_index( const size_t* local_index ) const;
     template <typename T> const kvs::Vec3 interpolate_vertex( const int vertex0, const int vertex1 ) const;
 
 #if NOT_YET_IMPLEMENTED

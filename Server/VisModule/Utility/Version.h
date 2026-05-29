@@ -41,9 +41,9 @@ namespace Version
  *  @return version number
  */
 /*==========================================================================*/
-inline const size_t Number( void )
+inline const std::size_t Number( void )
 {
-    const size_t version_number =
+    const std::size_t version_number =
         100 * VIS_MODULE_VERSION_MAJOR +
         10  * VIS_MODULE_VERSION_MINOR +
         1   * VIS_MODULE_VERSION_PATCH;
@@ -57,7 +57,7 @@ inline const size_t Number( void )
  *  @return major version number
  */
 /*==========================================================================*/
-inline const size_t MajorNumber( void )
+inline const std::size_t MajorNumber( void )
 {
     return( VIS_MODULE_VERSION_MAJOR );
 }
@@ -68,7 +68,7 @@ inline const size_t MajorNumber( void )
  *  @return minor version number
  */
 /*==========================================================================*/
-inline const size_t MinorNumber( void )
+inline const std::size_t MinorNumber( void )
 {
     return( VIS_MODULE_VERSION_MINOR );
 }
@@ -79,7 +79,7 @@ inline const size_t MinorNumber( void )
  *  @return patch version number
  */
 /*==========================================================================*/
-inline const size_t PatchNumber( void )
+inline const std::size_t PatchNumber( void )
 {
     return( VIS_MODULE_VERSION_PATCH );
 }

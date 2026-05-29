@@ -17,7 +17,7 @@ ExtendedTransferFunction::ExtendedTransferFunction( const std::string& red_funct
                                                     const std::string& green_function_string,
                                                     const std::string& blue_function_string,
                                                     const std::string& opacity_function_string,
-                                                    const size_t      resolution,
+                                                    const std::size_t      resolution,
                                                     const float       min_value,
                                                     const float       max_value ):
     TransferFunction( resolution )
@@ -48,7 +48,7 @@ ExtendedTransferFunction::ExtendedTransferFunction( const std::string& red_funct
 
     const float stride = ( max_value - min_value ) / ( resolution - 1 );
     float x = min_value;
-    for ( size_t i = 0; i < resolution; ++i, x += stride )
+    for ( std::size_t i = 0; i < resolution; ++i, x += stride )
     {
         vismodule::UInt8 r, g, b;
         float opacity;

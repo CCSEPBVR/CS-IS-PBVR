@@ -69,9 +69,9 @@ public:
     void scalar_ary( float* scalar_array, const int loop_cnt ) const;
     void grad_ary( float* grad_array_x, float* grad_array_y, float* grad_array_z, const int loop_cnt ) const;
 
-    void bindCell( const vismodule::UInt32 cell, const size_t n = 0 );
+    void bindCell( const vismodule::UInt32 cell, const std::size_t n = 0 );
     
-    void bindCell_wVolume( const vismodule::UInt32 index, const size_t n = 0 );
+    void bindCell_wVolume( const vismodule::UInt32 index, const std::size_t n = 0 );
 
     const vismodule::Vector3f randomSampling() const;
     const vismodule::Vector3f randomSampling_MT( vismodule::MersenneTwister* MT  ) const;
@@ -130,7 +130,7 @@ template <typename T>
 inline void PyramidalCell<T>::scalar_ary( float*  scalar_array, const int loop_cnt) const 
 {
     #pragma ivdep
-    for ( size_t i = 0; i < loop_cnt ; i++ )
+    for ( std::size_t i = 0; i < loop_cnt ; i++ )
     {
         //scalar_array[i]= static_cast<vismodule::Real32>( m_interpolation_functions_array[0][j] * m_scalars_array[0][j] );
         scalar_array[i] =  BaseClass::m_interpolation_functions_array[0][i] * BaseClass::m_scalars_array[0][i] 
@@ -527,7 +527,7 @@ inline void PyramidalCell<T>::differentialFunctions_array( const vismodule::Vect
  */
 /*===========================================================================*/
 template <typename T>
-inline void PyramidalCell<T>::bindCell( const vismodule::UInt32 index, const size_t n )
+inline void PyramidalCell<T>::bindCell( const vismodule::UInt32 index, const std::size_t n )
 {
     BaseClass::bindCell( index, n );
 
@@ -545,7 +545,7 @@ inline void PyramidalCell<T>::bindCell( const vismodule::UInt32 index, const siz
 }
 
 template <typename T>
-inline void PyramidalCell<T>::bindCell_wVolume( const vismodule::UInt32 index, const size_t n )
+inline void PyramidalCell<T>::bindCell_wVolume( const vismodule::UInt32 index, const std::size_t n )
 {
     BaseClass::bindCell_wVolume( index, n );
 

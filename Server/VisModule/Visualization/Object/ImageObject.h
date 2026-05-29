@@ -52,8 +52,8 @@ public:
 protected:
 
     ImageObject::PixelType      m_type;   ///< pixel type
-    size_t                      m_width;  ///< image width
-    size_t                      m_height; ///< image height
+    std::size_t                      m_width;  ///< image width
+    std::size_t                      m_height; ///< image height
     vismodule::ValueArray<vismodule::UInt8> m_data;   ///< pixel data
 
 public:
@@ -61,8 +61,8 @@ public:
     ImageObject( void );
 
     ImageObject(
-        const size_t                       width,
-        const size_t                       height,
+        const std::size_t                       width,
+        const std::size_t                       height,
         const vismodule::ValueArray<vismodule::UInt8>& data,
         const ImageObject::PixelType       type = ImageObject::Color24 );
 
@@ -88,21 +88,21 @@ public:
 
     const ImageObject::PixelType type( void ) const;
 
-    const size_t width( void ) const;
+    const std::size_t width( void ) const;
 
-    const size_t height( void ) const;
+    const std::size_t height( void ) const;
 
     const vismodule::ValueArray<vismodule::UInt8>& data( void ) const;
 
-    const size_t bitsPerPixel( void ) const;
+    const std::size_t bitsPerPixel( void ) const;
 
-    const size_t bytesPerPixel( void ) const;
+    const std::size_t bytesPerPixel( void ) const;
 
-    const size_t nchannels( void ) const;
+    const std::size_t nchannels( void ) const;
 
 protected:
 
-    const size_t get_npixels( void ) const;
+    const std::size_t get_npixels( void ) const;
 };
 
 } // end of namespace vismodule

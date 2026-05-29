@@ -267,12 +267,12 @@ void Bounds::draw_circle_bounds( const kvs::ObjectBase* object )
     const kvs::Real32 b = sqrt2 * y1;  const kvs::Real32 b2 = b * b;
     const kvs::Real32 c = sqrt2 * z1;  const kvs::Real32 c2 = c * c;
 
-    const size_t division = static_cast<size_t>( m_division );
+    const std::size_t division = static_cast<size_t>( m_division );
 
     // Circle (0) on XY plane
     kvs::OpenGL::Begin( GL_LINE_LOOP );
     const kvs::Real32 a2b2 = a2 * b2;
-    for ( size_t i = 0; i <= division; i++ )
+    for ( std::size_t i = 0; i <= division; i++ )
     {
         const kvs::Real32 angle = diff_angle * i;
         const kvs::Real32 sin = std::sin( angle );
@@ -291,7 +291,7 @@ void Bounds::draw_circle_bounds( const kvs::ObjectBase* object )
     // Circle (1) on YZ plane
     kvs::OpenGL::Begin( GL_LINE_LOOP );
     const float b2c2 = b2 * c2;
-    for ( size_t i = 0; i <= division; i++ )
+    for ( std::size_t i = 0; i <= division; i++ )
     {
         const kvs::Real32 angle = diff_angle * i;
         const kvs::Real32 sin = std::sin( angle );
@@ -310,7 +310,7 @@ void Bounds::draw_circle_bounds( const kvs::ObjectBase* object )
     // Circle (2) on ZX plane
     kvs::OpenGL::Begin( GL_LINE_LOOP );
     const kvs::Real32 c2a2 = c2 * a2;
-    for ( size_t i = 0; i <= division; i++ )
+    for ( std::size_t i = 0; i <= division; i++ )
     {
         const kvs::Real32 angle = diff_angle * i;
         const kvs::Real32 sin = std::sin( angle );
@@ -547,13 +547,13 @@ kvs::LineObject* Bounds::output_circle_bounds( const kvs::ObjectBase* object ) c
     const kvs::Real32 b = sqrt2 * y1;  const kvs::Real32 b2 = b * b;
     const kvs::Real32 c = sqrt2 * z1;  const kvs::Real32 c2 = c * c;
 
-    const size_t division = static_cast<size_t>( m_division );
+    const std::size_t division = static_cast<size_t>( m_division );
 
     kvs::UInt32 vertex_id = 0;
 
     // Circle (0) on XY plane
     const kvs::Real32 a2b2 = a2 * b2;
-    for ( size_t i = 0; i <= division; i++ )
+    for ( std::size_t i = 0; i <= division; i++ )
     {
         const kvs::Real32 angle = diff_angle * i;
         const kvs::Real32 sin = std::sin( angle );
@@ -575,7 +575,7 @@ kvs::LineObject* Bounds::output_circle_bounds( const kvs::ObjectBase* object ) c
 
     // Circle (1) on YZ plane
     const float b2c2 = b2 * c2;
-    for ( size_t i = 0; i <= division; i++ )
+    for ( std::size_t i = 0; i <= division; i++ )
     {
         const kvs::Real32 angle = diff_angle * i;
         const kvs::Real32 sin = std::sin( angle );
@@ -597,7 +597,7 @@ kvs::LineObject* Bounds::output_circle_bounds( const kvs::ObjectBase* object ) c
 
     // Circle (2) on ZX plane
     const kvs::Real32 c2a2 = c2 * a2;
-    for ( size_t i = 0; i <= division; i++ )
+    for ( std::size_t i = 0; i <= division; i++ )
     {
         const kvs::Real32 angle = diff_angle * i;
         const kvs::Real32 sin = std::sin( angle );

@@ -38,7 +38,7 @@ public:
 protected:
 
     bool m_has_ncells; ///< flag to check whether 'ncells' is specified or not
-    size_t m_ncells; ///< number of cells
+    std::size_t m_ncells; ///< number of cells
 
 public:
 
@@ -50,11 +50,11 @@ public:
 
     const bool hasNCells( void ) const;
 
-    const size_t ncells( void ) const;
+    const std::size_t ncells( void ) const;
 
 public:
 
-    void setNCells( const size_t ncells );
+    void setNCells( const std::size_t ncells );
 
 public:
 

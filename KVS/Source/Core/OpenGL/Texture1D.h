@@ -33,10 +33,10 @@ public:
 
     bool isLoaded() const { return m_is_loaded; }
 
-    void create( const size_t width, const void* data = nullptr );
+    void create( const std::size_t width, const void* data = nullptr );
     void release();
-    void load( const size_t width, const void* data, const size_t offset = 0 );
-    void loadFromFrameBuffer( const int x, const int y, const size_t width, const size_t offset = 0 );
+    void load( const std::size_t width, const void* data, const std::size_t offset = 0 );
+    void loadFromFrameBuffer( const int x, const int y, const std::size_t width, const std::size_t offset = 0 );
 };
 
 } // end of namespace kvs

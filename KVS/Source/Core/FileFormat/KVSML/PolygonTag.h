@@ -27,14 +27,14 @@ public:
 
 private:
     bool m_has_npolygons; ///< flag to check whether 'npolygons' is specified or not
-    size_t m_npolygons; ///< number of polygons
+    std::size_t m_npolygons; ///< number of polygons
 
 public:
     PolygonTag();
 
     bool hasNPolygons() const;
-    size_t npolygons() const;
-    void setNPolygons( const size_t npolygons );
+    std::size_t npolygons() const;
+    void setNPolygons( const std::size_t npolygons );
 
     bool read( const kvs::XMLNode::SuperClass* parent );
     bool write( kvs::XMLNode::SuperClass* parent );

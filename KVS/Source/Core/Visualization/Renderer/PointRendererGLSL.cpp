@@ -26,11 +26,11 @@ kvs::ValueArray<kvs::UInt8> VertexColors( const kvs::PointObject* point )
 {
     if ( point->numberOfVertices() == point->numberOfColors() ) return point->colors();
 
-    const size_t nvertices = point->numberOfVertices();
+    const std::size_t nvertices = point->numberOfVertices();
     const kvs::RGBColor color = point->color();
 
     kvs::ValueArray<kvs::UInt8> colors( nvertices * 3 );
-    for ( size_t i = 0; i < nvertices; i++ )
+    for ( std::size_t i = 0; i < nvertices; i++ )
     {
         colors[ 3 * i + 0 ] = color.r();
         colors[ 3 * i + 1 ] = color.g();
@@ -79,7 +79,7 @@ void PointRenderer::BufferObject::create( const kvs::ObjectBase* object )
 void PointRenderer::BufferObject::draw( const kvs::ObjectBase* object )
 {
     const auto* point = kvs::PointObject::DownCast( object );
-    const size_t nvertices = point->numberOfVertices();
+    const std::size_t nvertices = point->numberOfVertices();
 
     kvs::VertexBufferObjectManager::Binder bind( m_manager );
     m_manager.drawArrays( GL_POINTS, 0, nvertices );
@@ -194,8 +194,8 @@ void PointRenderer::exec(
     BaseClass::startTimer();
     kvs::OpenGL::WithPushedAttrib p( GL_ALL_ATTRIB_BITS );
 
-    const size_t width = camera->windowWidth();
-    const size_t height = camera->windowHeight();
+    const std::size_t width = camera->windowWidth();
+    const std::size_t height = camera->windowHeight();
     const auto shading_enabled = BaseClass::isShadingEnabled();
     auto& shading_model = *m_shading_model;
 

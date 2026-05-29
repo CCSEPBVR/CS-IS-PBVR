@@ -34,7 +34,7 @@ MetropolisSampling::MetropolisSampling():
 /*==========================================================================*/
 MetropolisSampling::MetropolisSampling(
     const kvs::VolumeObjectBase* volume,
-    const size_t                 nparticles ):
+    const std::size_t                 nparticles ):
     kvs::MapperBase(),
     kvs::PointObject(),
     m_nparticles( nparticles )
@@ -52,7 +52,7 @@ MetropolisSampling::MetropolisSampling(
 /*==========================================================================*/
 MetropolisSampling::MetropolisSampling(
     const kvs::VolumeObjectBase* volume,
-    const size_t                 nparticles,
+    const std::size_t                 nparticles,
     const kvs::TransferFunction& transfer_function ):
     kvs::MapperBase( transfer_function ),
     kvs::PointObject(),
@@ -86,7 +86,7 @@ size_t MetropolisSampling::nparticles() const
  *  @param  npoints [in] number of points
  */
 /*==========================================================================*/
-void MetropolisSampling::setNParticles( const size_t nparticles )
+void MetropolisSampling::setNParticles( const std::size_t nparticles )
 {
     m_nparticles = nparticles;
 }
@@ -202,12 +202,12 @@ void MetropolisSampling::generate_particles( const kvs::StructuredVolumeObject* 
 
     // Attach the initial particle to the interpolator and get a rho value.
     interpolator.attachPoint( particle );
-    size_t scalar = static_cast<size_t>( interpolator.template scalar<T>() );
+    std::size_t scalar = static_cast<size_t>( interpolator.template scalar<T>() );
     float  rho    = BaseClass::opacityMap()[ scalar ];
     float  trial_rho( 0.0f );
 
     // Point sampling process.
-    size_t counter = 0;
+    std::size_t counter = 0;
     while( counter < m_nparticles )
     {
         trial_particle.set( static_cast<float>(R() * r.x()),
@@ -224,7 +224,7 @@ void MetropolisSampling::generate_particles( const kvs::StructuredVolumeObject* 
             // Adopt the particle.
             const kvs::Vector3f gradient = interpolator.template gradient<T>();
 //            this->adopt_particle( counter, trial_particle, scalar, gradient );
-            const size_t index3 = counter * 3;
+            const std::size_t index3 = counter * 3;
             coords[ index3 + 0 ]  = trial_particle.x();
             coords[ index3 + 1 ]  = trial_particle.y();
             coords[ index3 + 2 ]  = trial_particle.z();
@@ -248,7 +248,7 @@ void MetropolisSampling::generate_particles( const kvs::StructuredVolumeObject* 
                 // Adopt the particle.
                 const kvs::Vector3f gradient = interpolator.template gradient<T>();
 //                this->adopt_particle( counter, trial_particle, scalar, gradient );
-                const size_t index3 = counter * 3;
+                const std::size_t index3 = counter * 3;
                 coords[ index3 + 0 ]  = trial_particle.x();
                 coords[ index3 + 1 ]  = trial_particle.y();
                 coords[ index3 + 2 ]  = trial_particle.z();
@@ -272,7 +272,7 @@ void MetropolisSampling::generate_particles( const kvs::StructuredVolumeObject* 
                 scalar = interpolator.template scalar<T>();
                 const kvs::Vector3f gradient = interpolator.template gradient<T>();
 //                this->adopt_particle( counter, particle, scalar, gradient );
-                const size_t index3 = counter * 3;
+                const std::size_t index3 = counter * 3;
                 coords[ index3 + 0 ]  = particle.x();
                 coords[ index3 + 1 ]  = particle.y();
                 coords[ index3 + 2 ]  = particle.z();
@@ -314,12 +314,12 @@ void MetropolisSampling::generate_particles<kvs::UInt16>( const kvs::StructuredV
 /*==========================================================================*/
 /*
 void MetropolisSampling::adopt_particle(
-    const size_t         index,
+    const std::size_t         index,
     const kvs::Vector3f& coord,
-    const size_t         scalar,
+    const std::size_t         scalar,
     const kvs::Vector3f& gradient )
 {
-    const size_t index3 = index * 3;
+    const std::size_t index3 = index * 3;
     m_coords[ index3 + 0 ]  = coord.x();
     m_coords[ index3 + 1 ]  = coord.y();
     m_coords[ index3 + 2 ]  = coord.z();

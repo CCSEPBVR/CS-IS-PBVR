@@ -21,7 +21,7 @@ class CategoryAxis : public kvs::ValueAxis
 {
 private:
     kvs::StringList m_category_labels{}; ///< category label list
-    size_t m_stride = 1; ///< label stride
+    std::size_t m_stride = 1; ///< label stride
 
 public:
     CategoryAxis( Align align = Bottom ):
@@ -35,12 +35,12 @@ public:
     virtual ~CategoryAxis() = default;
 
     const kvs::StringList& categoryLabels() const { return m_category_labels; }
-    const std::string& categoryLabel( const size_t index ) const { return m_category_labels[ index ]; }
-    size_t numberOfCategories() const { return m_category_labels.size(); }
-    size_t stride() const { return m_stride; }
+    const std::string& categoryLabel( const std::size_t index ) const { return m_category_labels[ index ]; }
+    std::size_t numberOfCategories() const { return m_category_labels.size(); }
+    std::size_t stride() const { return m_stride; }
 
     void setCategoryLabels( const kvs::StringList& labels ) { m_category_labels = labels; }
-    void setStride( const size_t stride ) { m_stride = stride; }
+    void setStride( const std::size_t stride ) { m_stride = stride; }
 
     virtual void draw( kvs::Painter& painter );
 

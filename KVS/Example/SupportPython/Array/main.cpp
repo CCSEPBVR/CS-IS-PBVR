@@ -12,7 +12,7 @@
 void Print( std::ostream& os, const kvs::ValueArray<kvs::Real32>& array )
 {
     os << "{ " << std::flush;
-    for ( size_t i = 0; i < array.size(); i++ )
+    for ( std::size_t i = 0; i < array.size(); i++ )
     {
         os << array[i] << ", ";
     }

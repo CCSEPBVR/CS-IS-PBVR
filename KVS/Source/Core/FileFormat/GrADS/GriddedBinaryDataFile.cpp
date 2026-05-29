@@ -23,15 +23,15 @@ namespace grads
  */
 /*===========================================================================*/
 const kvs::ValueArray<kvs::Real32> GriddedBinaryDataFile::values(
-    const size_t vindex,
+    const std::size_t vindex,
     const kvs::Vec3ui& dim ) const
 {
-    const size_t size = dim.x() * dim.y() * dim.z();
+    const std::size_t size = dim.x() * dim.y() * dim.z();
     if ( m_values.size() < ( vindex + 1 ) * size ) return kvs::ValueArray<kvs::Real32>();
 
     kvs::ValueArray<kvs::Real32> dst( size );
     kvs::Real32* src = m_values.data() + vindex * size;
-    for ( size_t i = 0; i < size; i++ ) { dst[i] = src[i]; }
+    for ( std::size_t i = 0; i < size; i++ ) { dst[i] = src[i]; }
 
     return dst;
 }
@@ -66,11 +66,11 @@ bool GriddedBinaryDataFile::load() const
 
     if ( m_sequential )
     {
-        const size_t element_size = sizeof( kvs::Real32 ) + 4 * sizeof( kvs::Int16 );
-        const size_t nelements = static_cast<size_t>( file_size / element_size );
+        const std::size_t element_size = sizeof( kvs::Real32 ) + 4 * sizeof( kvs::Int16 );
+        const std::size_t nelements = static_cast<size_t>( file_size / element_size );
         m_values.allocate( nelements );
 
-        for ( size_t i = 0; i < nelements; i++ )
+        for ( std::size_t i = 0; i < nelements; i++ )
         {
             kvs::Int16 padding[4];
             kvs::Real32 value;
@@ -84,8 +84,8 @@ bool GriddedBinaryDataFile::load() const
     }
     else
     {
-        const size_t element_size = sizeof( kvs::Real32 );
-        const size_t nelements = static_cast<size_t>( file_size / element_size );
+        const std::size_t element_size = sizeof( kvs::Real32 );
+        const std::size_t nelements = static_cast<size_t>( file_size / element_size );
         m_values.allocate( nelements );
 
         ifs.read( (char*)( m_values.data() ), file_size );

@@ -273,8 +273,8 @@ int TCPServer::receive( kvs::MessageBlock* message, kvs::SocketAddress* client_a
     kvs::Socket::id_type id = this->accept( client_address );
     if( id != kvs::Socket::InvalidID )
     {
-        size_t data_size = 0;
-        int status = kvs::Socket::receive_peek( id, (char*)&data_size, sizeof( size_t ) );
+        std::size_t data_size = 0;
+        int status = kvs::Socket::receive_peek( id, (char*)&data_size, sizeof( std::size_t ) );
         if( status == -1 ) return( status );
 
         message->allocate( ntohl( data_size ) );

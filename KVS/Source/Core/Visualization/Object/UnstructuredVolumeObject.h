@@ -42,8 +42,8 @@ public:
 
 private:
     CellType m_cell_type = UnknownCellType; ///< Cell type.
-    size_t m_nnodes = 0; ///< Number of nodes.
-    size_t m_ncells = 0; ///< Number of cells.
+    std::size_t m_nnodes = 0; ///< Number of nodes.
+    std::size_t m_ncells = 0; ///< Number of cells.
     Connections m_connections{}; ///< Connection ( Node ID ) array.
 
 public:
@@ -64,15 +64,15 @@ public:
     void setCellTypeToPyramid() { this->setCellType( Pyramid ); }
     void setCellTypeToPoint() { this->setCellType( Point ); }
     void setCellTypeToPrism() { this->setCellType( Prism ); }
-    void setNumberOfNodes( const size_t nnodes ) { m_nnodes = nnodes; }
-    void setNumberOfCells( const size_t ncells ) { m_ncells = ncells; }
+    void setNumberOfNodes( const std::size_t nnodes ) { m_nnodes = nnodes; }
+    void setNumberOfCells( const std::size_t ncells ) { m_ncells = ncells; }
     void setConnections( const Connections& connections ) { m_connections = connections; }
 
     CellType cellType() const { return m_cell_type; }
-    size_t numberOfNodes() const { return m_nnodes; }
-    size_t numberOfCells() const { return m_ncells; }
+    std::size_t numberOfNodes() const { return m_nnodes; }
+    std::size_t numberOfCells() const { return m_ncells; }
     const Connections& connections() const { return m_connections; }
-    size_t numberOfCellNodes() const;
+    std::size_t numberOfCellNodes() const;
 
     void updateMinMaxCoords();
     void updateMinMaxValues() const;
@@ -80,9 +80,9 @@ public:
 public:
     KVS_DEPRECATED( UnstructuredVolumeObject(
                         const CellType cell_type,
-                        const size_t nnodes,
-                        const size_t ncells,
-                        const size_t veclen,
+                        const std::size_t nnodes,
+                        const std::size_t ncells,
+                        const std::size_t veclen,
                         const Coords& coords,
                         const Connections& connections,
                         const Values& values ) )
@@ -97,10 +97,10 @@ public:
         this->setConnections( connections );
     }
 
-    KVS_DEPRECATED( void setNNodes( const size_t nnodes ) ) { this->setNumberOfNodes( nnodes ); }
-    KVS_DEPRECATED( void setNCells( const size_t ncells ) ) { this->setNumberOfCells( ncells ); }
-    KVS_DEPRECATED( size_t nnodes() const ) { return this->numberOfNodes(); }
-    KVS_DEPRECATED( size_t ncells() const ) { return this->numberOfCells(); }
+    KVS_DEPRECATED( void setNNodes( const std::size_t nnodes ) ) { this->setNumberOfNodes( nnodes ); }
+    KVS_DEPRECATED( void setNCells( const std::size_t ncells ) ) { this->setNumberOfCells( ncells ); }
+    KVS_DEPRECATED( std::size_t nnodes() const ) { return this->numberOfNodes(); }
+    KVS_DEPRECATED( std::size_t ncells() const ) { return this->numberOfCells(); }
     KVS_DEPRECATED( friend std::ostream& operator << ( std::ostream& os, const UnstructuredVolumeObject& object ) );
 };
 

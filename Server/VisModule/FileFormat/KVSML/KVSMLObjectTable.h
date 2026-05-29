@@ -51,8 +51,8 @@ protected:
     vismodule::kvsml::KVSMLTag m_kvsml_tag;   ///< KVSML tag information
     vismodule::kvsml::ObjectTag m_object_tag; ///< Object tag information
     WritingDataType m_writing_type; ///< writing data type
-    size_t m_nrows; ///< number of rows
-    size_t m_ncolumns; ///< number of columns
+    std::size_t m_nrows; ///< number of rows
+    std::size_t m_ncolumns; ///< number of columns
     std::vector<std::string> m_labels; ///< column label list
     std::vector<vismodule::AnyValueArray> m_columns; ///< column list
     std::vector<bool> m_has_min_values; ///< min. value flag list
@@ -78,9 +78,9 @@ public:
 
     const vismodule::kvsml::ObjectTag& objectTag( void ) const;
 
-    const size_t nrows( void ) const;
+    const std::size_t nrows( void ) const;
 
-    const size_t ncolumns( void ) const;
+    const std::size_t ncolumns( void ) const;
 
     const std::vector<std::string>& labelList( void ) const;
 
@@ -108,13 +108,13 @@ public:
 
     void setWritingDataType( const WritingDataType writing_type );
 
-    void setMinValue( const size_t column_index, const double value );
+    void setMinValue( const std::size_t column_index, const double value );
 
-    void setMaxValue( const size_t column_index, const double value );
+    void setMaxValue( const std::size_t column_index, const double value );
 
-    void setMinRange( const size_t column_index, const double range );
+    void setMinRange( const std::size_t column_index, const double range );
 
-    void setMaxRange( const size_t column_index, const double range );
+    void setMaxRange( const std::size_t column_index, const double range );
 
     void addColumn( const vismodule::AnyValueArray& column, const std::string& label );
 

@@ -58,7 +58,7 @@ KMeansClustering::KMeansClustering( const kvs::TableObject* table ):
 /*===========================================================================*/
 KMeansClustering::KMeansClustering(
     const kvs::TableObject* table,
-    const size_t nclusters,
+    const std::size_t nclusters,
     const ClusteringMethod clustering_method,
     const SeedingMethod seeding_method ):
     m_clustering_method( clustering_method ),
@@ -151,7 +151,7 @@ void KMeansClustering::simple_kmeans( const kvs::TableObject* object )
 
     if ( m_cluster_centers ) delete [] m_cluster_centers;
     m_cluster_centers = new kvs::ValueArray<kvs::Real32> [ m_nclusters ];
-    for ( size_t i = 0; i < m_nclusters; i++ )
+    for ( std::size_t i = 0; i < m_nclusters; i++ )
     {
         m_cluster_centers[i] = kmeans.clusterCenter(i);
     }
@@ -184,7 +184,7 @@ void KMeansClustering::fast_kmeans( const kvs::TableObject* object )
 
     if ( m_cluster_centers ) delete [] m_cluster_centers;
     m_cluster_centers = new kvs::ValueArray<kvs::Real32> [ m_nclusters ];
-    for ( size_t i = 0; i < m_nclusters; i++ )
+    for ( std::size_t i = 0; i < m_nclusters; i++ )
     {
         m_cluster_centers[i] = kmeans.clusterCenter(i);
     }
@@ -200,7 +200,7 @@ void KMeansClustering::adaptive_kmeans( const kvs::TableObject* object )
 {
     // If 'm_nclusters' is zero, max. number of iterations is set to 100,
     // otherwise 'm_nclusters' is assumed as max. number of iterations.
-    const size_t max_nclusters = m_nclusters > 0 ? m_nclusters : 100;
+    const std::size_t max_nclusters = m_nclusters > 0 ? m_nclusters : 100;
 
     kvs::AdaptiveKMeans kmeans;
     kmeans.setMaxNumberOfClusters( max_nclusters );
@@ -223,7 +223,7 @@ void KMeansClustering::adaptive_kmeans( const kvs::TableObject* object )
 
     if ( m_cluster_centers ) delete [] m_cluster_centers;
     m_cluster_centers = new kvs::ValueArray<kvs::Real32> [ m_nclusters ];
-    for ( size_t i = 0; i < m_nclusters; i++ )
+    for ( std::size_t i = 0; i < m_nclusters; i++ )
     {
         m_cluster_centers[i] = kmeans.clusterCenter(i);
     }

@@ -35,8 +35,8 @@ inline kvs::Real32 GetEuclideanDistance(
     const kvs::ValueArray<kvs::Real32>& x1 )
 {
     kvs::Real32 distance = 0.0f;
-    const size_t nrows = x0.size();
-    for ( size_t i = 0; i < nrows; i++ )
+    const std::size_t nrows = x0.size();
+    for ( std::size_t i = 0; i < nrows; i++ )
     {
         const kvs::Real32 diff = x1[i] - x0[i];
         distance += diff * diff;
@@ -56,12 +56,12 @@ inline kvs::Real32 GetEuclideanDistance(
 /*===========================================================================*/
 inline void InitializeCenterWithRandomSeeding(
     const kvs::AnyValueTable& table,
-    const size_t nclusters,
+    const std::size_t nclusters,
     kvs::MersenneTwister& random,
     kvs::ValueArray<kvs::Real32>* center )
 {
-    const size_t nrows = table.column(0).size();
-    for ( size_t i = 0; i < nclusters; i++ )
+    const std::size_t nrows = table.column(0).size();
+    for ( std::size_t i = 0; i < nclusters; i++ )
     {
         const kvs::UInt32 index = static_cast<kvs::UInt32>( nrows * random.rand() );
         center[i] = table.rowAsValueArray<kvs::Real32>( index );
@@ -79,23 +79,23 @@ inline void InitializeCenterWithRandomSeeding(
 /*===========================================================================*/
 inline void InitializeCenterWithSmartSeeding(
     const kvs::AnyValueTable& table,
-    const size_t nclusters,
+    const std::size_t nclusters,
     kvs::MersenneTwister& random,
     kvs::ValueArray<kvs::Real32>* center )
 {
-    const size_t nrows = table.column(0).size();
-    const size_t ncolumns = table.columnSize();
+    const std::size_t nrows = table.column(0).size();
+    const std::size_t ncolumns = table.columnSize();
     const kvs::UInt32 index = static_cast<kvs::UInt32>( nrows * random.rand() );
     center[0] = table.rowAsValueArray<kvs::Real32>( index );
 
-    for ( size_t i = 1; i < nclusters; i++ )
+    for ( std::size_t i = 1; i < nclusters; i++ )
     {
         kvs::Real32 S = 0.0;
         kvs::Real32* D = new kvs::Real32 [ nrows ];
-        for ( size_t j = 0; j < nrows; j++ )
+        for ( std::size_t j = 0; j < nrows; j++ )
         {
             kvs::Real32 distance = kvs::Value<kvs::Real32>::Max();
-            for ( size_t k = 0; k < nclusters; k++ )
+            for ( std::size_t k = 0; k < nclusters; k++ )
             {
                 const kvs::Real32 d = GetEuclideanDistance( table.rowAsValueArray<kvs::Real32>(j), center[k] );
                 if ( d < distance ) { distance = d; }
@@ -104,9 +104,9 @@ inline void InitializeCenterWithSmartSeeding(
             S += distance * distance;
         }
 
-        size_t index = 0;
+        std::size_t index = 0;
         kvs::Real32 P = 0.0;
-        for ( size_t j = 0; j < nrows; j++ )
+        for ( std::size_t j = 0; j < nrows; j++ )
         {
             const kvs::Real32 DD = D[j] * D[j];
             if ( P < kvs::Math::Max( P, DD / S ) )
@@ -116,7 +116,7 @@ inline void InitializeCenterWithSmartSeeding(
             }
         }
 
-        for ( size_t j = 0; j < ncolumns; j++ )
+        for ( std::size_t j = 0; j < ncolumns; j++ )
         {
             center[i].at(j) = table.column(j).at<kvs::Real32>( index );
         }
@@ -142,7 +142,7 @@ namespace
  */
 /*===========================================================================*/
 inline void PointAllCtrs(
-    const size_t nclusters,
+    const std::size_t nclusters,
     const kvs::ValueArray<kvs::Real32>& xi,
     const kvs::ValueArray<kvs::Real32>* c,
     kvs::UInt32& ai,
@@ -153,7 +153,7 @@ inline void PointAllCtrs(
 
     kvs::UInt32 index = 0;
     kvs::Real32 dmin = kvs::Value<kvs::Real32>::Max();
-    for ( size_t j = 0; j < nclusters; j++ )
+    for ( std::size_t j = 0; j < nclusters; j++ )
     {
         const kvs::Real32 d = ::GetEuclideanDistance( xi, c[j] );
         if ( d < dmin )
@@ -167,7 +167,7 @@ inline void PointAllCtrs(
     ui = ::GetEuclideanDistance( xi, c[ai] );
 
     dmin = kvs::Value<kvs::Real32>::Max();
-    for ( size_t j = 0; j < nclusters; j++ )
+    for ( std::size_t j = 0; j < nclusters; j++ )
     {
         if ( j != ai )
         {
@@ -192,7 +192,7 @@ inline void PointAllCtrs(
  */
 /*===========================================================================*/
 inline void Initialize(
-    const size_t nclusters,
+    const std::size_t nclusters,
     const kvs::AnyValueTable& table,
     const kvs::ValueArray<kvs::Real32>* c,
     kvs::ValueArray<kvs::UInt32>& q,
@@ -203,20 +203,20 @@ inline void Initialize(
 {
     // Algorithm 2: INITIALIZE( c, x, q, c', u, l, a )
 
-    for ( size_t j = 0; j < nclusters; j++ )
+    for ( std::size_t j = 0; j < nclusters; j++ )
     {
         q[j] = 0;
         cp[j].fill( 0x00 );
     }
 
-    const size_t nrows = table.column(0).size();
-    const size_t ncolumns = table.columnSize();
-    for ( size_t i = 0; i < nrows; i++ )
+    const std::size_t nrows = table.column(0).size();
+    const std::size_t ncolumns = table.columnSize();
+    for ( std::size_t i = 0; i < nrows; i++ )
     {
         const kvs::ValueArray<kvs::Real32> xi = table.rowAsValueArray<kvs::Real32>(i);
         PointAllCtrs( nclusters, xi, c, a[i], u[i], l[i] );
         q[a[i]] += 1;
-        for ( size_t k = 0; k < ncolumns; k++ )
+        for ( std::size_t k = 0; k < ncolumns; k++ )
         {
             cp[a[i]][k] += xi[k];
         }
@@ -240,14 +240,14 @@ inline void MoveCenters(
 {
     // Algorithm 4: MOVE-CENTERS( c', q, c, p )
 
-    const size_t nclusters = q.size();
-    for ( size_t j = 0; j < nclusters; j++ )
+    const std::size_t nclusters = q.size();
+    for ( std::size_t j = 0; j < nclusters; j++ )
     {
         kvs::ValueArray<kvs::Real32> cs = c[j].clone();
 
-        const size_t nrows = cp[j].size();
+        const std::size_t nrows = cp[j].size();
         const kvs::Real32 qj = static_cast<kvs::Real32>( q[j] );
-        for ( size_t k = 0; k < nrows; k++ )
+        for ( std::size_t k = 0; k < nrows; k++ )
         {
             c[j][k] = cp[j][k] / qj;
         }
@@ -276,8 +276,8 @@ inline void UpdateBounds(
     kvs::UInt32 rp = 0;
 
     kvs::Real32 pmax = kvs::Value<kvs::Real32>::Min();
-    const size_t nclusters = p.size();
-    for ( size_t j = 0; j < nclusters; j++ )
+    const std::size_t nclusters = p.size();
+    for ( std::size_t j = 0; j < nclusters; j++ )
     {
         if ( p[j] > pmax )
         {
@@ -287,7 +287,7 @@ inline void UpdateBounds(
     }
 
     pmax = kvs::Value<kvs::Real32>::Min();
-    for ( size_t j = 0; j < nclusters; j++ )
+    for ( std::size_t j = 0; j < nclusters; j++ )
     {
         if ( j != r )
         {
@@ -299,8 +299,8 @@ inline void UpdateBounds(
         }
     }
 
-    const size_t nrows = u.size();
-    for ( size_t i = 0; i < nrows; i++ )
+    const std::size_t nrows = u.size();
+    for ( std::size_t i = 0; i < nrows; i++ )
     {
         u[i] += p[a[i]];
         l[i] -= ( r == a[i] ) ? p[rp] : p[r];
@@ -316,13 +316,13 @@ inline void UpdateBounds(
  */
 /*===========================================================================*/
 inline void Update(
-    const size_t m,
+    const std::size_t m,
     const kvs::ValueArray<kvs::UInt32>& a,
     kvs::ValueArray<kvs::UInt32>& q )
 {
-    size_t counter = 0;
-    const size_t nrows = a.size();
-    for ( size_t i = 0; i < nrows; i++ )
+    std::size_t counter = 0;
+    const std::size_t nrows = a.size();
+    for ( std::size_t i = 0; i < nrows; i++ )
     {
         if ( a[i] == m ) counter++;
     }
@@ -340,20 +340,20 @@ inline void Update(
  */
 /*===========================================================================*/
 inline void Update(
-    const size_t m,
+    const std::size_t m,
     const kvs::AnyValueTable& table,
     const kvs::ValueArray<kvs::UInt32>& a,
     kvs::ValueArray<kvs::Real32>* cp )
 {
-    const size_t nrows = a.size();
-    const size_t ncolumns = table.columnSize();
+    const std::size_t nrows = a.size();
+    const std::size_t ncolumns = table.columnSize();
 
     cp[m].fill( 0x00 );
-    for ( size_t i = 0; i < nrows; i++ )
+    for ( std::size_t i = 0; i < nrows; i++ )
     {
         if ( a[i] == m )
         {
-            for ( size_t k = 0; k < ncolumns; k++ )
+            for ( std::size_t k = 0; k < ncolumns; k++ )
             {
                 cp[m][k] += table.column(k).at<kvs::Real32>(i);
             }
@@ -380,9 +380,9 @@ void FastKMeans::run()
         return;
     }
 
-    const size_t ncolumns = m_input_table.columnSize();
-    const size_t nrows = m_input_table.column(0).size();
-    for ( size_t i = 1; i < m_input_table.columnSize(); i++ )
+    const std::size_t ncolumns = m_input_table.columnSize();
+    const std::size_t nrows = m_input_table.column(0).size();
+    for ( std::size_t i = 1; i < m_input_table.columnSize(); i++ )
     {
         if ( nrows != m_input_table.column(i).size() )
         {
@@ -404,7 +404,7 @@ void FastKMeans::run()
     kvs::ValueArray<kvs::Real32> p( m_nclusters );
     kvs::ValueArray<kvs::Real32> s( m_nclusters );
 
-    for ( size_t j = 0; j < m_nclusters; j++ )
+    for ( std::size_t j = 0; j < m_nclusters; j++ )
     {
         c[j].allocate( ncolumns );
         cp[j].allocate( ncolumns );
@@ -444,14 +444,14 @@ void FastKMeans::run()
 
     // Clustering.
     bool converged = false;
-    size_t counter = 0;
+    std::size_t counter = 0;
     while ( !converged )
     {
         // Update s.
-        for ( size_t j = 0; j < m_nclusters; j++ )
+        for ( std::size_t j = 0; j < m_nclusters; j++ )
         {
             kvs::Real32 dmin = kvs::Value<kvs::Real32>::Max();
-            for ( size_t jp = 0; jp < m_nclusters; jp++ )
+            for ( std::size_t jp = 0; jp < m_nclusters; jp++ )
             {
                 if ( jp != j )
                 {
@@ -462,7 +462,7 @@ void FastKMeans::run()
             s[j] = dmin;
         }
 
-        for ( size_t i = 0; i < nrows; i++ )
+        for ( std::size_t i = 0; i < nrows; i++ )
         {
             const kvs::Real32 m = kvs::Math::Max( s[a[i]] * 0.5f, l[i] );
             if ( u[i] > m ) // First bound test.
@@ -493,7 +493,7 @@ void FastKMeans::run()
 
         // Convergence test.
         converged = true;
-        for ( size_t j = 0; j < m_nclusters; j++ )
+        for ( std::size_t j = 0; j < m_nclusters; j++ )
         {
             if ( !( p[j] < m_tolerance ) ) { converged = false; break; }
         }

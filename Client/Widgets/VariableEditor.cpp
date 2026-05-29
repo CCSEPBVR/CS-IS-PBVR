@@ -36,9 +36,9 @@ void VariableEditor::initialize()
     m_model->setColumnCount( 2 );
     m_model->setHorizontalHeaderLabels( QStringList() << "Name" << "Variable" );
 
-    const size_t count = m_transfer_function->count();
+    const std::size_t count = m_transfer_function->count();
 
-    for( size_t i = 0; i < count; ++i )
+    for( std::size_t i = 0; i < count; ++i )
     {
         QString name;
         QString variable;

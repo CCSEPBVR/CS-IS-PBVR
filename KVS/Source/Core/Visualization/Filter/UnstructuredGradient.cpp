@@ -95,21 +95,21 @@ UnstructuredGradient::SuperClass* UnstructuredGradient::exec( const kvs::ObjectB
 /*===========================================================================*/
 void UnstructuredGradient::scalar_gradient( const kvs::UnstructuredVolumeObject* volume )
 {
-    const size_t ncells = volume->numberOfCells();
-    const size_t nnodes = volume->numberOfNodes();
+    const std::size_t ncells = volume->numberOfCells();
+    const std::size_t nnodes = volume->numberOfNodes();
     const kvs::UInt32* connections = volume->connections().data();
 
     kvs::InverseDistanceWeighting<kvs::Vec3> idw( nnodes );
     kvs::PrismaticCell cell( volume );
     const kvs::Vec3 center = cell.localCenter();
-    for ( size_t i = 0; i < ncells; i++ )
+    for ( std::size_t i = 0; i < ncells; i++ )
     {
         cell.bindCell( i );
         cell.setLocalPoint( center );
         const kvs::Vec3 V = cell.gradientVector();
 
         const kvs::Vec3 c = cell.center();
-        for ( size_t j = 0; j < cell.numberOfCellNodes(); j++ )
+        for ( std::size_t j = 0; j < cell.numberOfCellNodes(); j++ )
         {
             const kvs::UInt32 id = *( connections++ );
             const kvs::Real32 d = ( cell.coord(j) - c ).length();
@@ -131,21 +131,21 @@ void UnstructuredGradient::scalar_gradient( const kvs::UnstructuredVolumeObject*
 /*===========================================================================*/
 void UnstructuredGradient::vector_gradient( const kvs::UnstructuredVolumeObject* volume )
 {
-    const size_t ncells = volume->numberOfCells();
-    const size_t nnodes = volume->numberOfNodes();
+    const std::size_t ncells = volume->numberOfCells();
+    const std::size_t nnodes = volume->numberOfNodes();
     const kvs::UInt32* connections = volume->connections().data();
 
     kvs::InverseDistanceWeighting<kvs::Mat3> idw( nnodes );
     kvs::PrismaticCell cell( volume );
     const kvs::Vec3 center = cell.localCenter();
-    for ( size_t i = 0; i < ncells; i++ )
+    for ( std::size_t i = 0; i < ncells; i++ )
     {
         cell.bindCell( i );
         cell.setLocalPoint( center );
         const kvs::Mat3 T = cell.gradientTensor();
 
         const kvs::Vec3 c = cell.center();
-        for ( size_t j = 0; j < cell.numberOfCellNodes(); j++ )
+        for ( std::size_t j = 0; j < cell.numberOfCellNodes(); j++ )
         {
             const kvs::UInt32 id = *( connections++ );
             const kvs::Real32 d = ( cell.coord(j) - c ).length();

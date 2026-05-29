@@ -300,9 +300,9 @@ const vismodule::ObjectBase::ObjectType GeometryObjectBase::objectType() const
  *  @return number of the vertices
  */
 /*===========================================================================*/
-const size_t GeometryObjectBase::nvertices() const
+const std::size_t GeometryObjectBase::nvertices() const
 {
-    const size_t dimension = 3;
+    const std::size_t dimension = 3;
     return m_coords.size() / dimension;
 }
 
@@ -312,9 +312,9 @@ const size_t GeometryObjectBase::nvertices() const
  *  @return number of the colors
  */
 /*===========================================================================*/
-const size_t GeometryObjectBase::ncolors() const
+const std::size_t GeometryObjectBase::ncolors() const
 {
-    const size_t nchannels = 3;
+    const std::size_t nchannels = 3;
     return m_colors.size() / nchannels;
 }
 
@@ -324,9 +324,9 @@ const size_t GeometryObjectBase::ncolors() const
  *  @return number of the normal vectors
  */
 /*===========================================================================*/
-const size_t GeometryObjectBase::nnormals() const
+const std::size_t GeometryObjectBase::nnormals() const
 {
-    const size_t dimension = 3;
+    const std::size_t dimension = 3;
     return m_normals.size() / dimension;
 }
 
@@ -337,9 +337,9 @@ const size_t GeometryObjectBase::nnormals() const
  *  @return coordinate value
  */
 /*===========================================================================*/
-const vismodule::Vector3f GeometryObjectBase::coord( const size_t index ) const
+const vismodule::Vector3f GeometryObjectBase::coord( const std::size_t index ) const
 {
-    const size_t dimension = 3;
+    const std::size_t dimension = 3;
     return vismodule::Vector3f( m_coords.pointer() + dimension * index );
 }
 
@@ -350,9 +350,9 @@ const vismodule::Vector3f GeometryObjectBase::coord( const size_t index ) const
  *  @return color value
  */
 /*===========================================================================*/
-const vismodule::RGBColor GeometryObjectBase::color( const size_t index ) const
+const vismodule::RGBColor GeometryObjectBase::color( const std::size_t index ) const
 {
-    const size_t nchannels = 3;
+    const std::size_t nchannels = 3;
     return vismodule::RGBColor( m_colors.pointer() + nchannels * index );
 }
 
@@ -363,9 +363,9 @@ const vismodule::RGBColor GeometryObjectBase::color( const size_t index ) const
  *  @return normal vector
  */
 /*===========================================================================*/
-const vismodule::Vector3f GeometryObjectBase::normal( const size_t index ) const
+const vismodule::Vector3f GeometryObjectBase::normal( const std::size_t index ) const
 {
-    const size_t dimension = 3;
+    const std::size_t dimension = 3;
     return vismodule::Vector3f( m_normals.pointer() + dimension * index );
 }
 

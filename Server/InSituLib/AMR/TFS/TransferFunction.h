@@ -39,7 +39,7 @@ private:
 
 public:
 
-    explicit TransferFunction( const size_t resolution = 256 );
+    explicit TransferFunction( const std::size_t resolution = 256 );
 
     //TransferFunction( const std::string& filename );
 
@@ -85,11 +85,11 @@ public:
 
 public:
 
-    const size_t resolution( void ) const;
+    const std::size_t resolution( void ) const;
 
 public:
 
-    void create( const size_t resolution );
+    void create( const std::size_t resolution );
 
     const bool read( const std::string& filename );
 

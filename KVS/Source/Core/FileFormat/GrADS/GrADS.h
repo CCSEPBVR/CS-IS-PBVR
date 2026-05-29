@@ -42,7 +42,7 @@ public:
 
     const DataDescriptorFile& dataDescriptor() const { return m_data_descriptor; }
     const GriddedBinaryDataFileList& dataList() const { return m_data_list; }
-    const GriddedBinaryDataFile& data( const size_t index ) const { return m_data_list[index]; }
+    const GriddedBinaryDataFile& data( const std::size_t index ) const { return m_data_list[index]; }
 
     void print( std::ostream& os, const kvs::Indent& indent = kvs::Indent(0) ) const;
     bool read( const std::string& filename );

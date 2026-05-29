@@ -98,24 +98,24 @@ protected:
     void extract_pyramid_plane(
         const vismodule::UnstructuredVolumeObject& volume );
 
-    const size_t calculate_table_index(
-        const size_t x,
-        const size_t y,
-        const size_t z ) const;
+    const std::size_t calculate_table_index(
+        const std::size_t x,
+        const std::size_t y,
+        const std::size_t z ) const;
 
-    const size_t calculate_tetrahedra_table_index(
+    const std::size_t calculate_tetrahedra_table_index(
         const size_t* local_index ) const;
 
-    const size_t calculate_hexahedra_table_index(
+    const std::size_t calculate_hexahedra_table_index(
         const size_t* local_index ) const;
 
-    const size_t calculate_pyramid_table_index(
+    const std::size_t calculate_pyramid_table_index(
         const size_t* local_index ) const;
 
     const float substitute_plane_equation(
-        const size_t x,
-        const size_t y,
-        const size_t z ) const;
+        const std::size_t x,
+        const std::size_t y,
+        const std::size_t z ) const;
 
     const float substitute_plane_equation(
         const vismodule::Vector3f& vertex ) const;
@@ -133,8 +133,8 @@ protected:
     template <typename T>
     const double interpolate_value(
         const vismodule::UnstructuredVolumeObject& volume,
-        const size_t                         index0,
-        const size_t                         index1 ) const;
+        const std::size_t                         index0,
+        const std::size_t                         index1 ) const;
 };
 
 } // end of namespace vismodule

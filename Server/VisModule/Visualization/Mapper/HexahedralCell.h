@@ -125,7 +125,7 @@ template <typename T>
 inline void HexahedralCell<T>::scalar_ary(float*  scalar_array, const int loop_cnt) const 
 {
     #pragma ivdep
-    for ( size_t i = 0; i < loop_cnt ; i++ )
+    for ( std::size_t i = 0; i < loop_cnt ; i++ )
     {
         //scalar_array[i]= static_cast<vismodule::Real32>( m_interpolation_functions_array[0][j] * m_scalars_array[0][j] );
         scalar_array[i] =  BaseClass::m_interpolation_functions_array[0][i] * BaseClass::m_scalars_array[0][i] 
@@ -628,7 +628,7 @@ const vismodule::Vector3f HexahedralCell<T>::randomSampling_MT(vismodule::Mersen
 template <typename T>
 inline const vismodule::Real32 HexahedralCell<T>::volume() const
 {
-    const size_t resolution = 3;
+    const std::size_t resolution = 3;
     const float sampling_length = 1.0f / ( float )resolution;
     const float adjustment = sampling_length * 0.5f;
 
@@ -636,13 +636,13 @@ inline const vismodule::Real32 HexahedralCell<T>::volume() const
 
     float sum_metric = 0;
 
-    for ( size_t k = 0 ; k < resolution ; k++ )
+    for ( std::size_t k = 0 ; k < resolution ; k++ )
     {
         sampling_position[ 2 ] +=  sampling_length;
-        for ( size_t j = 0 ; j < resolution ; j++ )
+        for ( std::size_t j = 0 ; j < resolution ; j++ )
         {
             sampling_position[ 1 ] += sampling_length;
-            for ( size_t i = 0 ; i < resolution ; i++ )
+            for ( std::size_t i = 0 ; i < resolution ; i++ )
             {
                 sampling_position[ 0 ] += sampling_length;
 

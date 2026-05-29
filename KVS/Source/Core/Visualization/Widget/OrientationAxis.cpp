@@ -18,7 +18,7 @@
 // Constant variables
 namespace
 {
-const size_t AxisWindowSize = 80;
+const std::size_t AxisWindowSize = 80;
 }
 
 

@@ -501,7 +501,7 @@ kvs::ValueArray<kvs::UInt8> Dicom::pixelData() const
  *  @return  
  */
 /*===========================================================================*/
-int Dicom::rawValue( const size_t index ) const
+int Dicom::rawValue( const std::size_t index ) const
 {
     int ret = 0;
 
@@ -544,7 +544,7 @@ int Dicom::rawValue( const size_t index ) const
  *  @return 
  */
 /*===========================================================================*/
-int Dicom::rawValue( const size_t i, const size_t j ) const
+int Dicom::rawValue( const std::size_t i, const std::size_t j ) const
 {
     return this->rawValue( m_column * j + i );
 }
@@ -556,7 +556,7 @@ int Dicom::rawValue( const size_t i, const size_t j ) const
  *  @return rescaled pixel value
  */
 /*===========================================================================*/
-int Dicom::value( const size_t index ) const
+int Dicom::value( const std::size_t index ) const
 {
     const int raw_value = this->rawValue( index );
 
@@ -571,9 +571,9 @@ int Dicom::value( const size_t index ) const
  *  @return rescaled pixel value
  */
 /*===========================================================================*/
-int Dicom::value( const size_t x, const size_t y ) const
+int Dicom::value( const std::size_t x, const std::size_t y ) const
 {
-    const size_t raw_value = this->rawValue( x, y );
+    const std::size_t raw_value = this->rawValue( x, y );
 
     return kvs::Math::Round( raw_value * m_rescale_slope + m_rescale_intersept );
 }
@@ -793,7 +793,7 @@ bool Dicom::read_data( std::ifstream& ifs )
     ifs.seekg( m_position, std::ios::beg );
 
     // Read the raw data.
-    const size_t raw_data_size = m_row * m_column * ( m_bits_allocated >> 3 );
+    const std::size_t raw_data_size = m_row * m_column * ( m_bits_allocated >> 3 );
     m_raw_data.allocate( raw_data_size );
 
     ifs.read( m_raw_data.data(), raw_data_size );
@@ -991,8 +991,8 @@ kvs::ValueArray<kvs::UInt8> Dicom::rescale_pixel_data( const int level, const in
 
     const T* raw_data = reinterpret_cast<const T*>( m_raw_data.data() );
 
-    const size_t npixels = m_row * m_column;
-    for( size_t index = 0; index < npixels; index++ )
+    const std::size_t npixels = m_row * m_column;
+    for( std::size_t index = 0; index < npixels; index++ )
     {
         double temp_value  = raw_data[index] * m_rescale_slope + m_rescale_intersept;
         double pixel_value = ( ( temp_value - level ) / width + 0.5 ) * 255.0;
@@ -1015,8 +1015,8 @@ kvs::ValueArray<kvs::UInt8> Dicom::rescale_pixel_data<kvs::Int8>( const int leve
 
     const kvs::Int8* raw_data = reinterpret_cast<const kvs::Int8*>( m_raw_data.data() );
 
-    const size_t npixels = m_row * m_column;
-    for( size_t index = 0; index < npixels; index++ )
+    const std::size_t npixels = m_row * m_column;
+    for( std::size_t index = 0; index < npixels; index++ )
     {
         pixel_data[index] = static_cast<kvs::UInt8>( raw_data[index] - kvs::Value<kvs::Int8>::Min() );
     }
@@ -1036,8 +1036,8 @@ kvs::ValueArray<kvs::UInt8> Dicom::rescale_pixel_data<kvs::UInt8>( const int lev
 
     const kvs::UInt8* raw_data = reinterpret_cast<const kvs::UInt8*>( m_raw_data.data() );
 
-    const size_t npixels = m_row * m_column;
-    for( size_t index = 0; index < npixels; index++ )
+    const std::size_t npixels = m_row * m_column;
+    for( std::size_t index = 0; index < npixels; index++ )
     {
         pixel_data[index] = raw_data[index];
     }

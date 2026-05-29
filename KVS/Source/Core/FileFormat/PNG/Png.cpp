@@ -63,8 +63,8 @@ bool Png::CheckExtension( const std::string& filename )
  */
 /*===========================================================================*/
 Png::Png(
-    const size_t width,
-    const size_t height,
+    const std::size_t width,
+    const std::size_t height,
     const kvs::ValueArray<kvs::UInt8>& pixels ):
     m_width( width ),
     m_height( height ),

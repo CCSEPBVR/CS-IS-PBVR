@@ -29,7 +29,7 @@ void TextureRectangle::Unbind()
  *  @brief  Create the texture.
  */
 /*==========================================================================*/
-void TextureRectangle::create( const size_t width, const size_t height, const void* data )
+void TextureRectangle::create( const std::size_t width, const std::size_t height, const void* data )
 {
     KVS_ASSERT( width > 0 );
     KVS_ASSERT( static_cast<GLint>( width ) <= kvs::OpenGL::MaxTextureSize() );
@@ -68,11 +68,11 @@ void TextureRectangle::release()
  */
 /*==========================================================================*/
 void TextureRectangle::load(
-    const size_t width,
-    const size_t height,
+    const std::size_t width,
+    const std::size_t height,
     const void*  data,
-    const size_t xoffset,
-    const size_t yoffset )
+    const std::size_t xoffset,
+    const std::size_t yoffset )
 {
 //    const GLint swap = kvs::OpenGL::Integer( GL_UNPACK_SWAP_BYTES );
 //    const GLint alignment = kvs::OpenGL::Integer( GL_UNPACK_ALIGNMENT );

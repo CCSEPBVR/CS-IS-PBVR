@@ -44,7 +44,7 @@ size_t NumberOfVertices( const kvs::PolygonObject* polygon )
          ( polygon->normalType() == kvs::PolygonObject::PolygonNormal ||
            polygon->colorType() == kvs::PolygonObject::PolygonColor ) )
     {
-        const size_t nfaces = polygon->numberOfConnections();
+        const std::size_t nfaces = polygon->numberOfConnections();
         return nfaces * 3;
     }
 
@@ -160,7 +160,7 @@ void StochasticPolygonRenderer::Engine::RenderPass::setup(
 void StochasticPolygonRenderer::Engine::RenderPass::draw(
     const kvs::ObjectBase* object )
 {
-    const size_t size = m_parent->randomTextureSize();
+    const std::size_t size = m_parent->randomTextureSize();
     const int count = m_parent->repetitionCount() * ::RandomNumber();
     const float offset_x = static_cast<float>( ( count ) % size );
     const float offset_y = static_cast<float>( ( count / size ) % size );

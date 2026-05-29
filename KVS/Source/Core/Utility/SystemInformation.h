@@ -20,9 +20,9 @@ namespace kvs
 class SystemInformation
 {
 public:
-    static size_t NumberOfProcessors();
-    static size_t TotalMemorySize();
-    static size_t FreeMemorySize();
+    static std::size_t NumberOfProcessors();
+    static std::size_t TotalMemorySize();
+    static std::size_t FreeMemorySize();
 
 private:
     SystemInformation();

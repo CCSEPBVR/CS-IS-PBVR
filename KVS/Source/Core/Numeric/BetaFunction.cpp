@@ -170,7 +170,7 @@ kvs::Real64 BetaFunction::regularizedLowerIncompleteBeta(
 
 kvs::Real64 BetaFunction::continued_fraction( const kvs::Real64 a, const kvs::Real64 b, const kvs::Real64 x ) const
 {
-    const size_t max_iterations = 100;
+    const std::size_t max_iterations = 100;
     const kvs::Real64 epsilon = 1.0e-8;
     const kvs::Real64 fpmin = 1.0e-30;
 
@@ -183,7 +183,7 @@ kvs::Real64 BetaFunction::continued_fraction( const kvs::Real64 a, const kvs::Re
     d = 1.0 / d;
     kvs::Real64 h = d;
     bool converged = false;
-    for ( size_t m = 1; m <= max_iterations; m++ )
+    for ( std::size_t m = 1; m <= max_iterations; m++ )
     {
         const kvs::Real64 m2 = 2.0 * m;
         kvs::Real64 aa = m * ( b - m ) * x / ( ( qam + m2 ) * ( a + m2 ) );

@@ -33,12 +33,12 @@ namespace gf
 std::ostream& operator << ( std::ostream& os, const File& f )
 {
     os << "file type header: " << f.m_file_type_header << std::endl;
-    for ( size_t i = 0; i < f.m_comment_list.size(); i++ )
+    for ( std::size_t i = 0; i < f.m_comment_list.size(); i++ )
     {
         os << "comment[" << i << "]: " << f.m_comment_list[i];
     }
 
-    for ( size_t i = 0; i < f.m_data_set_list.size(); i++ )
+    for ( std::size_t i = 0; i < f.m_data_set_list.size(); i++ )
     {
         os << "data_set[" << i << "]:" << std::endl;
         os << f.m_data_set_list[i];
@@ -175,7 +175,7 @@ bool File::read_ascii( const std::string filename )
         return false;
     }
 
-    const size_t line_size = 256;
+    const std::size_t line_size = 256;
     char line[line_size];
     memset( line, 0, line_size );
 
@@ -195,7 +195,7 @@ bool File::read_ascii( const std::string filename )
     sscanf( line, "%d", &ncomments );
 
     // Read commnets.
-    for ( size_t i = 0; i < size_t( ncomments ); i++ )
+    for ( std::size_t i = 0; i < size_t( ncomments ); i++ )
     {
         if ( !fgets( line, line_size, fp ) )
         {
@@ -259,8 +259,8 @@ bool File::read_binary( const std::string filename, const bool swap )
 
     // Read commnets.
     char comment[60];
-    char initialize[60]; for ( size_t i = 0; i < 60; i++ ) initialize[i] = '\0';
-    for ( size_t i = 0; i < size_t( ncomments ); i++ )
+    char initialize[60]; for ( std::size_t i = 0; i < 60; i++ ) initialize[i] = '\0';
+    for ( std::size_t i = 0; i < size_t( ncomments ); i++ )
     {
         memcpy( comment, initialize, 60 );
         ::Seek( fp, 4, SEEK_CUR );

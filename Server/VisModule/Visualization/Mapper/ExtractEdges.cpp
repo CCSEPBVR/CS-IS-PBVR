@@ -39,12 +39,12 @@ public:
 
 private:
 
-    size_t m_nvertices; ///< number of vertices of the original data
+    std::size_t m_nvertices; ///< number of vertices of the original data
     Bucket m_bucket; ///< bucket for the edge data
 
 public:
 
-    EdgeMap( const size_t nvertices );
+    EdgeMap( const std::size_t nvertices );
 
 public:
 
@@ -59,7 +59,7 @@ public:
  *  @param  nvertices [in] number of vertices of the orignal volume data
  */
 /*===========================================================================*/
-EdgeMap::EdgeMap( const size_t nvertices ):
+EdgeMap::EdgeMap( const std::size_t nvertices ):
     m_nvertices( nvertices )
 {
 }
@@ -107,7 +107,7 @@ const vismodule::ValueArray<vismodule::UInt32> EdgeMap::serialize( void )
 
     Bucket::const_iterator e = m_bucket.begin();
     Bucket::const_iterator last = m_bucket.end();
-    size_t connection_index = 0;
+    std::size_t connection_index = 0;
     while ( e != last )
     {
         connections[ connection_index++ ] = e->second.first;
@@ -284,15 +284,15 @@ void ExtractEdges::calculate_uniform_coords( const vismodule::StructuredVolumeOb
         volume_size.y() / static_cast<float>( ngrids.y() ),
         volume_size.z() / static_cast<float>( ngrids.z() ) );
 
-    for ( size_t k = 0; k < resolution.z(); ++k )
+    for ( std::size_t k = 0; k < resolution.z(); ++k )
     {
         const float z =
             grid_size.z() * static_cast<float>( k );
-        for ( size_t j = 0; j < resolution.y(); ++j )
+        for ( std::size_t j = 0; j < resolution.y(); ++j )
         {
             const float y =
                 grid_size.y() * static_cast<float>( j );
-            for ( size_t i = 0; i < resolution.x(); ++i )
+            for ( std::size_t i = 0; i < resolution.x(); ++i )
             {
                 const float x =
                     grid_size.x() * static_cast<float>( i );
@@ -329,10 +329,10 @@ void ExtractEdges::calculate_rectilinear_coords( const vismodule::StructuredVolu
 /*===========================================================================*/
 void ExtractEdges::calculate_connections( const vismodule::StructuredVolumeObject& volume )
 {
-    const size_t line_size = volume.nnodesPerLine();
-    const size_t slice_size = volume.nnodesPerSlice();
+    const std::size_t line_size = volume.nnodesPerLine();
+    const std::size_t slice_size = volume.nnodesPerSlice();
     const Vector3ui resolution( volume.resolution() );
-    const size_t nedges =
+    const std::size_t nedges =
         3 * ( resolution.x() - 1 ) * ( resolution.y() - 1 ) * ( resolution.z() - 1 ) +
         2 * ( resolution.x() - 1 ) * ( resolution.y() - 1 ) +
         2 * ( resolution.y() - 1 ) * ( resolution.z() - 1 ) +
@@ -344,11 +344,11 @@ void ExtractEdges::calculate_connections( const vismodule::StructuredVolumeObjec
 
     vismodule::UInt32 volume_vertex = 0;
     vismodule::UInt32 connection_index = 0;
-    for ( size_t z = 0; z < resolution.z(); ++z )
+    for ( std::size_t z = 0; z < resolution.z(); ++z )
     {
-        for ( size_t y = 0; y < resolution.y(); ++y )
+        for ( std::size_t y = 0; y < resolution.y(); ++y )
         {
-            for ( size_t x = 0; x < resolution.x(); ++x )
+            for ( std::size_t x = 0; x < resolution.x(); ++x )
             {
                 if ( x != resolution.x() - 1 )
                 {
@@ -460,11 +460,11 @@ void ExtractEdges::calculate_tetrahedra_connections(
     const vismodule::UnstructuredVolumeObject& volume )
 {
     const vismodule::UInt32* connections = volume.connections().pointer();
-    const size_t ncells = volume.ncells();
-    const size_t nnodes = volume.nnodes();
+    const std::size_t ncells = volume.ncells();
+    const std::size_t nnodes = volume.nnodes();
 
     ::EdgeMap edge_map( nnodes );
-    for ( size_t cell_index = 0, connection_index = 0; cell_index < ncells; cell_index++ )
+    for ( std::size_t cell_index = 0, connection_index = 0; cell_index < ncells; cell_index++ )
     {
         const vismodule::UInt32 local_vertex0 = connections[ connection_index     ];
         const vismodule::UInt32 local_vertex1 = connections[ connection_index + 1 ];
@@ -493,11 +493,11 @@ void ExtractEdges::calculate_hexahedra_connections(
     const vismodule::UnstructuredVolumeObject& volume )
 {
     const vismodule::UInt32* connections = volume.connections().pointer();
-    const size_t ncells = volume.ncells();
-    const size_t nnodes = volume.nnodes();
+    const std::size_t ncells = volume.ncells();
+    const std::size_t nnodes = volume.nnodes();
 
     ::EdgeMap edge_map( nnodes );
-    for ( size_t cell_index = 0, connection_index = 0; cell_index < ncells; cell_index++ )
+    for ( std::size_t cell_index = 0, connection_index = 0; cell_index < ncells; cell_index++ )
     {
         const vismodule::UInt32 local_vertex0 = connections[ connection_index     ];
         const vismodule::UInt32 local_vertex1 = connections[ connection_index + 1 ];
@@ -536,11 +536,11 @@ void ExtractEdges::calculate_quadratic_tetrahedra_connections(
     const vismodule::UnstructuredVolumeObject& volume )
 {
     const vismodule::UInt32* connections = volume.connections().pointer();
-    const size_t ncells = volume.ncells();
-    const size_t nnodes = volume.nnodes();
+    const std::size_t ncells = volume.ncells();
+    const std::size_t nnodes = volume.nnodes();
 
     ::EdgeMap edge_map( nnodes );
-    for ( size_t cell_index = 0, connection_index = 0; cell_index < ncells; cell_index++ )
+    for ( std::size_t cell_index = 0, connection_index = 0; cell_index < ncells; cell_index++ )
     {
         const vismodule::UInt32 local_vertex0 = connections[ connection_index     ];
         const vismodule::UInt32 local_vertex1 = connections[ connection_index + 1 ];
@@ -581,11 +581,11 @@ void ExtractEdges::calculate_quadratic_hexahedra_connections(
     const vismodule::UnstructuredVolumeObject& volume )
 {
     const vismodule::UInt32* connections = volume.connections().pointer();
-    const size_t ncells = volume.ncells();
-    const size_t nnodes = volume.nnodes();
+    const std::size_t ncells = volume.ncells();
+    const std::size_t nnodes = volume.nnodes();
 
     ::EdgeMap edge_map( nnodes );
-    for ( size_t cell_index = 0, connection_index = 0; cell_index < ncells; cell_index++ )
+    for ( std::size_t cell_index = 0, connection_index = 0; cell_index < ncells; cell_index++ )
     {
         const vismodule::UInt32 local_vertex0  = connections[ connection_index      ];
         const vismodule::UInt32 local_vertex1  = connections[ connection_index +  1 ];
@@ -662,7 +662,7 @@ void ExtractEdges::calculate_colors( const vismodule::VolumeObjectBase& volume )
     const vismodule::Real64 normalize_factor =
         static_cast<vismodule::Real64>( cmap.resolution() - 1 ) / ( max_value - min_value );
 
-    const size_t veclen = m_volume->veclen();
+    const std::size_t veclen = m_volume->veclen();
     if ( veclen == 1 )
     {
         while ( value < end )
@@ -680,7 +680,7 @@ void ExtractEdges::calculate_colors( const vismodule::VolumeObjectBase& volume )
         while( value < end )
         {
             vismodule::Real64 magnitude = 0.0;
-            for ( size_t i = 0; i < veclen; ++i )
+            for ( std::size_t i = 0; i < veclen; ++i )
             {
                 magnitude += vismodule::Math::Square( static_cast<vismodule::Real64>( *value ) );
                 ++value;

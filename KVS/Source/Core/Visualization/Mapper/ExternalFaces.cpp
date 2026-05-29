@@ -30,13 +30,13 @@ namespace
  *  @param  color_level [out] pointer to the color indices
  */
 /*===========================================================================*/
-template <const size_t N, typename T>
+template <const std::size_t N, typename T>
 inline void GetColorIndices(
     const T* value,
     const kvs::Real64 min_value,
     const kvs::Real64 max_value,
-    const size_t veclen,
-    const size_t colormap_resolution,
+    const std::size_t veclen,
+    const std::size_t colormap_resolution,
     const kvs::UInt32 node_index[N],
     kvs::UInt32 (*color_index)[N] )
 {
@@ -46,7 +46,7 @@ inline void GetColorIndices(
     // Scalar data.
     if ( veclen == 1 )
     {
-        for ( size_t i = 0; i < N; i++ )
+        for ( std::size_t i = 0; i < N; i++ )
         {
             (*color_index)[i] = kvs::UInt32( normalize * ( kvs::Real64( value[ node_index[i] ] ) - min_value ) );
         }
@@ -56,15 +56,15 @@ inline void GetColorIndices(
     {
         // In case of the vector component, the magnitude value is calculated.
         kvs::Real64 magnitude[N]; memset( magnitude, 0, sizeof( kvs::Real64 ) * N );
-        for ( size_t i = 0; i < veclen; ++i )
+        for ( std::size_t i = 0; i < veclen; ++i )
         {
-            for ( size_t j = 0; j < N; j++ )
+            for ( std::size_t j = 0; j < N; j++ )
             {
                 magnitude[j] += kvs::Math::Square( kvs::Real64( value[ veclen * node_index[j] + i ] ) );
             }
         }
 
-        for ( size_t i = 0; i < N; i++ )
+        for ( std::size_t i = 0; i < N; i++ )
         {
             magnitude[i] = std::sqrt( magnitude[i] );
             (*color_index)[i] = kvs::UInt32( normalize * ( magnitude[i] - min_value ) );
@@ -88,7 +88,7 @@ public:
         this->set( id0, id1, id2 );
     }
 
-    kvs::UInt32 id( const size_t index ) const
+    kvs::UInt32 id( const std::size_t index ) const
     {
         return m_id[ index ];
     }
@@ -100,10 +100,10 @@ public:
 
     friend bool operator == ( const TriangleFace& f0, const TriangleFace& f1 )
     {
-        for ( size_t i = 0; i < 3; i++ )
+        for ( std::size_t i = 0; i < 3; i++ )
         {
             bool flag = false;
-            for ( size_t j = 0; j < 3; j++ )
+            for ( std::size_t j = 0; j < 3; j++ )
             {
                 if ( f0.id(i) == f1.id(j) ) { flag = true; continue; }
             }
@@ -129,7 +129,7 @@ public:
         this->set( id0, id1, id2, id3 );
     }
 
-    kvs::UInt32 id( const size_t index ) const
+    kvs::UInt32 id( const std::size_t index ) const
     {
         return m_id[ index ];
     }
@@ -141,10 +141,10 @@ public:
 
     friend bool operator == ( const QuadrangleFace& f0, const QuadrangleFace& f1 )
     {
-        for ( size_t i = 0; i < 4; i++ )
+        for ( std::size_t i = 0; i < 4; i++ )
         {
             bool flag = false;
-            for ( size_t j = 0; j < 4; j++ )
+            for ( std::size_t j = 0; j < 4; j++ )
             {
                 if ( f0.id(i) == f1.id(j) ) { flag = true; continue; }
             }
@@ -167,11 +167,11 @@ public:
     typedef std::multimap<Key,Value> Bucket;
 
 private:
-    size_t m_nvertices; ///< number of vertices of the original data
+    std::size_t m_nvertices; ///< number of vertices of the original data
     Bucket m_bucket; ///< bucket for the edge data
 
 public:
-    TriangleFaceMap( const size_t nvertices ):
+    TriangleFaceMap( const std::size_t nvertices ):
         m_nvertices( nvertices ) {}
 
     const Bucket& bucket() const { return m_bucket; }
@@ -222,11 +222,11 @@ public:
     typedef std::multimap<Key,Value> Bucket;
 
 private:
-    size_t m_nvertices; ///< number of vertices of the original data
+    std::size_t m_nvertices; ///< number of vertices of the original data
     Bucket m_bucket; ///< bucket for the edge data
 
 public:
-    QuadrangleFaceMap( const size_t nvertices ):
+    QuadrangleFaceMap( const std::size_t nvertices ):
         m_nvertices( nvertices ) {}
 
     const Bucket& bucket() const { return m_bucket; }
@@ -276,8 +276,8 @@ inline void CreateTetrahedraFaceMap(
     TriangleFaceMap* face_map )
 {
     const kvs::UInt32* connections = volume->connections().data();
-    const size_t ncells = volume->numberOfCells();
-    for ( size_t cell_index = 0, connection_index = 0; cell_index < ncells; cell_index++ )
+    const std::size_t ncells = volume->numberOfCells();
+    for ( std::size_t cell_index = 0, connection_index = 0; cell_index < ncells; cell_index++ )
     {
         // Local vertices of the tetrahedral cell.
         const kvs::UInt32 v0 = connections[ connection_index     ];
@@ -306,8 +306,8 @@ inline void CreateQuadraticTetrahedraFaceMap(
     TriangleFaceMap* face_map )
 {
     const kvs::UInt32* connections = volume->connections().data();
-    const size_t ncells = volume->numberOfCells();
-    for ( size_t cell_index = 0, connection_index = 0; cell_index < ncells; cell_index++ )
+    const std::size_t ncells = volume->numberOfCells();
+    for ( std::size_t cell_index = 0, connection_index = 0; cell_index < ncells; cell_index++ )
     {
         // Local vertices of the quadratic tetrahedral cell.
         const kvs::UInt32 v0 = connections[ connection_index     ];
@@ -357,8 +357,8 @@ inline void CreateHexahedraFaceMap(
     QuadrangleFaceMap* face_map )
 {
     const kvs::UInt32* connections = volume->connections().data();
-    const size_t ncells = volume->numberOfCells();
-    for ( size_t cell_index = 0, connection_index = 0; cell_index < ncells; cell_index++ )
+    const std::size_t ncells = volume->numberOfCells();
+    for ( std::size_t cell_index = 0, connection_index = 0; cell_index < ncells; cell_index++ )
     {
         // Local vertices of the quadratic tetrahedral cell.
         const kvs::UInt32 v0 = connections[ connection_index     ];
@@ -393,8 +393,8 @@ inline void CreateQuadraticHexahedraFaceMap(
     QuadrangleFaceMap* face_map )
 {
     const kvs::UInt32* connections = volume->connections().data();
-    const size_t ncells = volume->numberOfCells();
-    for ( size_t cell_index = 0, connection_index = 0; cell_index < ncells; cell_index++ )
+    const std::size_t ncells = volume->numberOfCells();
+    for ( std::size_t cell_index = 0, connection_index = 0; cell_index < ncells; cell_index++ )
     {
         // Local vertices of the quadratic tetrahedral cell.
         const kvs::UInt32 v0  = connections[ connection_index      ];
@@ -439,7 +439,7 @@ inline void CreatePrismFaceMap(
 {
     const auto* connections = volume->connections().data();
     const auto ncells = volume->numberOfCells();
-    for ( size_t cell_index = 0, connection_index = 0; cell_index < ncells; cell_index++ )
+    for ( std::size_t cell_index = 0, connection_index = 0; cell_index < ncells; cell_index++ )
     {
         // Local vertices of the prism cell.
         const auto v0  = connections[ connection_index      ];
@@ -468,7 +468,7 @@ inline void CreatePyramidFaceMap(
 {
     const auto* connections = volume->connections().data();
     const auto ncells = volume->numberOfCells();
-    for ( size_t cell_index = 0, connection_index = 0; cell_index < ncells; cell_index++ )
+    for ( std::size_t cell_index = 0, connection_index = 0; cell_index < ncells; cell_index++ )
     {
         // Local vertices of the prism cell.
         const auto v0  = connections[ connection_index      ];
@@ -514,11 +514,11 @@ void CalculateFaces(
     if ( !volume->hasMinMaxValues() ) { volume->updateMinMaxValues(); }
     const kvs::Real64 min_value = volume->minValue();
     const kvs::Real64 max_value = volume->maxValue();
-    const size_t veclen = volume->veclen();
+    const std::size_t veclen = volume->veclen();
     const T* value = reinterpret_cast<const T*>( volume->values().data() );
 
-    const size_t nfaces = face_map.bucket().size();
-    const size_t nvertices = nfaces * 3;
+    const std::size_t nfaces = face_map.bucket().size();
+    const std::size_t nvertices = nfaces * 3;
     const kvs::Real32* volume_coord = volume->coords().data();
 
     coords->allocate( nvertices * 3 );
@@ -603,13 +603,13 @@ void CalculateFaces(
     if ( !volume->hasMinMaxValues() ) { volume->updateMinMaxValues(); }
     const kvs::Real64 min_value = volume->minValue();
     const kvs::Real64 max_value = volume->maxValue();
-    const size_t veclen = volume->veclen();
+    const std::size_t veclen = volume->veclen();
     const T* value = reinterpret_cast<const T*>( volume->values().data() );
 
     // A quadrangle face is composed of two triangle faces
-    const size_t nfaces = face_map.bucket().size() * 2;
-//    const size_t nvertices = nfaces * 4;
-    const size_t nvertices = nfaces * 3;
+    const std::size_t nfaces = face_map.bucket().size() * 2;
+//    const std::size_t nvertices = nfaces * 4;
+    const std::size_t nvertices = nfaces * 3;
     const kvs::Real32* volume_coord = volume->coords().data();
 
     coords->allocate( nvertices * 3 );
@@ -717,14 +717,14 @@ void CalculateFaces(
     if ( !volume->hasMinMaxValues() ) { volume->updateMinMaxValues(); }
     const kvs::Real64 min_value = volume->minValue();
     const kvs::Real64 max_value = volume->maxValue();
-    const size_t veclen = volume->veclen();
+    const std::size_t veclen = volume->veclen();
     const T* value = reinterpret_cast<const T*>( volume->values().data() );
 
-    const size_t tri_nfaces = tri_face_map.bucket().size();
-    const size_t quad_nfaces = quad_face_map.bucket().size() * 2; // div into two tri faces.
+    const std::size_t tri_nfaces = tri_face_map.bucket().size();
+    const std::size_t quad_nfaces = quad_face_map.bucket().size() * 2; // div into two tri faces.
 
-    const size_t nfaces = tri_nfaces + quad_nfaces;
-    const size_t nvertices = nfaces * 3;
+    const std::size_t nfaces = tri_nfaces + quad_nfaces;
+    const std::size_t nvertices = nfaces * 3;
     const kvs::Real32* volume_coord = volume->coords().data();
 
     coords->allocate( nvertices * 3 );
@@ -1043,12 +1043,12 @@ void ExternalFaces::calculate_uniform_coords( const kvs::StructuredVolumeObject*
         volume_size.y() / static_cast<float>( ngrids.y() ),
         volume_size.z() / static_cast<float>( ngrids.z() ) );
 
-    const size_t nexternal_faces =
+    const std::size_t nexternal_faces =
         ( 2 * ngrids.x() * ngrids.y() +
           2 * ngrids.y() * ngrids.z() +
           2 * ngrids.z() * ngrids.x() ) * 2;
-//    const size_t nexternal_vertices = nexternal_faces * 4;
-    const size_t nexternal_vertices = nexternal_faces * 3;
+//    const std::size_t nexternal_vertices = nexternal_faces * 4;
+    const std::size_t nexternal_vertices = nexternal_faces * 3;
 
     kvs::ValueArray<kvs::Real32> coords( 3 * nexternal_vertices );
     kvs::Real32* coord = coords.data();
@@ -1060,10 +1060,10 @@ void ExternalFaces::calculate_uniform_coords( const kvs::StructuredVolumeObject*
     {
         const float z = 0.0f;
         const kvs::Vec3 n( 0.0f, 0.0f, -1.0f );
-        for ( size_t j = 0; j < ngrids.y(); j++ )
+        for ( std::size_t j = 0; j < ngrids.y(); j++ )
         {
             const float y = grid_size.y() * static_cast<float>( j );
-            for ( size_t i = 0; i < ngrids.x(); i++ )
+            for ( std::size_t i = 0; i < ngrids.x(); i++ )
             {
                 const float x = grid_size.x() * static_cast<float>( i );
                 // v3
@@ -1108,10 +1108,10 @@ void ExternalFaces::calculate_uniform_coords( const kvs::StructuredVolumeObject*
     {
         const float z = grid_size.z() * static_cast<float>( ngrids.z() );
         const kvs::Vec3 n( 0.0f, 0.0f, 1.0f );
-        for ( size_t j = 0; j < ngrids.y(); j++ )
+        for ( std::size_t j = 0; j < ngrids.y(); j++ )
         {
             const float y = grid_size.y() * static_cast<float>( j );
-            for ( size_t i = 0; i < ngrids.x(); i++ )
+            for ( std::size_t i = 0; i < ngrids.x(); i++ )
             {
                 const float x = grid_size.x() * static_cast<float>( i );
                 // v0
@@ -1156,10 +1156,10 @@ void ExternalFaces::calculate_uniform_coords( const kvs::StructuredVolumeObject*
     {
         const float x = 0.0f;
         const kvs::Vec3 n( -1.0f, 0.0f, 0.0f );
-        for ( size_t j = 0; j < ngrids.y(); j++ )
+        for ( std::size_t j = 0; j < ngrids.y(); j++ )
         {
             const float y = grid_size.y() * static_cast<float>( j );
-            for ( size_t k = 0; k < ngrids.z(); k++ )
+            for ( std::size_t k = 0; k < ngrids.z(); k++ )
             {
                 const float z = grid_size.z() * static_cast<float>( k );
                 // v0
@@ -1204,10 +1204,10 @@ void ExternalFaces::calculate_uniform_coords( const kvs::StructuredVolumeObject*
     {
         const float x = grid_size.y() * static_cast<float>( ngrids.x() );
         const kvs::Vec3 n( 1.0f, 0.0f, 0.0f );
-        for ( size_t j = 0; j < ngrids.y(); j++ )
+        for ( std::size_t j = 0; j < ngrids.y(); j++ )
         {
             const float y = grid_size.y() * static_cast<float>( j );
-            for ( size_t k = 0; k < ngrids.z(); k++ )
+            for ( std::size_t k = 0; k < ngrids.z(); k++ )
             {
                 const float z = grid_size.z() * static_cast<float>( k );
                 // v3
@@ -1252,10 +1252,10 @@ void ExternalFaces::calculate_uniform_coords( const kvs::StructuredVolumeObject*
     {
         const float y = 0.0f;
         const kvs::Vec3 n( 0.0f, -1.0f, 0.0f );
-        for ( size_t k = 0; k < ngrids.z(); k++ )
+        for ( std::size_t k = 0; k < ngrids.z(); k++ )
         {
             const float z = grid_size.z() * static_cast<float>( k );
-            for ( size_t i = 0; i < ngrids.x(); i++ )
+            for ( std::size_t i = 0; i < ngrids.x(); i++ )
             {
                 const float x = grid_size.x() * static_cast<float>( i );
                 // v0
@@ -1300,10 +1300,10 @@ void ExternalFaces::calculate_uniform_coords( const kvs::StructuredVolumeObject*
     {
         const float y = grid_size.y() * static_cast<float>( ngrids.y() );
         const kvs::Vec3 n( 0.0f, 1.0f, 0.0f );
-        for ( size_t k = 0; k < ngrids.z(); k++ )
+        for ( std::size_t k = 0; k < ngrids.z(); k++ )
         {
             const float z = grid_size.z() * static_cast<float>( k );
-            for ( size_t i = 0; i < ngrids.x(); i++ )
+            for ( std::size_t i = 0; i < ngrids.x(); i++ )
             {
                 const float x = grid_size.x() * static_cast<float>( i );
                 // v3
@@ -1356,19 +1356,19 @@ void ExternalFaces::calculate_uniform_coords( const kvs::StructuredVolumeObject*
 /*===========================================================================*/
 void ExternalFaces::calculate_rectilinear_coords( const kvs::StructuredVolumeObject* volume )
 {
-    const size_t dimx = volume->resolution().x();
-    const size_t dimy = volume->resolution().y();
-    const size_t dimz = volume->resolution().z();
+    const std::size_t dimx = volume->resolution().x();
+    const std::size_t dimy = volume->resolution().y();
+    const std::size_t dimz = volume->resolution().z();
     const kvs::Real32* xcoords = volume->coords().data();
     const kvs::Real32* ycoords = xcoords + dimx;
     const kvs::Real32* zcoords = ycoords + dimy;
 
-    const size_t nfaces =
+    const std::size_t nfaces =
         ( 2 * ( dimx - 1 ) * ( dimy - 1 ) +
           2 * ( dimy - 1 ) * ( dimz - 1 ) +
           2 * ( dimz - 1 ) * ( dimx - 1 ) ) * 2;
-//    const size_t nvertices = nfaces * 4;
-    const size_t nvertices = nfaces * 3;
+//    const std::size_t nvertices = nfaces * 4;
+    const std::size_t nvertices = nfaces * 3;
 
     kvs::ValueArray<kvs::Real32> coords( 3 * nvertices );
     kvs::Real32* coord = coords.data();
@@ -1380,11 +1380,11 @@ void ExternalFaces::calculate_rectilinear_coords( const kvs::StructuredVolumeObj
     {
         const float z = zcoords[0];
         const kvs::Vec3 n( 0.0f, 0.0f, -1.0f );
-        for ( size_t j = 0; j < dimy - 1; j++ )
+        for ( std::size_t j = 0; j < dimy - 1; j++ )
         {
             const float y0 = ycoords[j];
             const float y1 = ycoords[j+1];
-            for ( size_t i = 0; i < dimx - 1; i++ )
+            for ( std::size_t i = 0; i < dimx - 1; i++ )
             {
                 const float x0 = xcoords[i];
                 const float x1 = xcoords[i+1];
@@ -1430,11 +1430,11 @@ void ExternalFaces::calculate_rectilinear_coords( const kvs::StructuredVolumeObj
     {
         const float z = zcoords[dimz-1];
         const kvs::Vec3 n( 0.0f, 0.0f, 1.0f );
-        for ( size_t j = 0; j < dimy - 1; j++ )
+        for ( std::size_t j = 0; j < dimy - 1; j++ )
         {
             const float y0 = ycoords[j];
             const float y1 = ycoords[j+1];
-            for ( size_t i = 0; i < dimx - 1; i++ )
+            for ( std::size_t i = 0; i < dimx - 1; i++ )
             {
                 const float x0 = xcoords[i];
                 const float x1 = xcoords[i+1];
@@ -1480,11 +1480,11 @@ void ExternalFaces::calculate_rectilinear_coords( const kvs::StructuredVolumeObj
     {
         const float x = xcoords[0];
         const kvs::Vec3 n( -1.0f, 0.0f, 0.0f );
-        for ( size_t j = 0; j < dimy - 1; j++ )
+        for ( std::size_t j = 0; j < dimy - 1; j++ )
         {
             const float y0 = ycoords[j];
             const float y1 = ycoords[j+1];
-            for ( size_t k = 0; k < dimz - 1; k++ )
+            for ( std::size_t k = 0; k < dimz - 1; k++ )
             {
                 const float z0 = zcoords[k];
                 const float z1 = zcoords[k+1];
@@ -1530,11 +1530,11 @@ void ExternalFaces::calculate_rectilinear_coords( const kvs::StructuredVolumeObj
     {
         const float x = xcoords[dimx-1];
         const kvs::Vec3 n( 1.0f, 0.0f, 0.0f );
-        for ( size_t j = 0; j < dimy - 1; j++ )
+        for ( std::size_t j = 0; j < dimy - 1; j++ )
         {
             const float y0 = ycoords[j];
             const float y1 = ycoords[j+1];
-            for ( size_t k = 0; k < dimz - 1; k++ )
+            for ( std::size_t k = 0; k < dimz - 1; k++ )
             {
                 const float z0 = zcoords[k];
                 const float z1 = zcoords[k+1];
@@ -1580,11 +1580,11 @@ void ExternalFaces::calculate_rectilinear_coords( const kvs::StructuredVolumeObj
     {
         const float y = ycoords[0];
         const kvs::Vec3 n( 0.0f, -1.0f, 0.0f );
-        for ( size_t k = 0; k < dimz - 1; k++ )
+        for ( std::size_t k = 0; k < dimz - 1; k++ )
         {
             const float z0 = zcoords[k];
             const float z1 = zcoords[k+1];
-            for ( size_t i = 0; i < dimx - 1; i++ )
+            for ( std::size_t i = 0; i < dimx - 1; i++ )
             {
                 const float x0 = xcoords[i];
                 const float x1 = xcoords[i+1];
@@ -1630,11 +1630,11 @@ void ExternalFaces::calculate_rectilinear_coords( const kvs::StructuredVolumeObj
     {
         const float y = ycoords[dimy-1];
         const kvs::Vec3 n( 0.0f, 1.0f, 0.0f );
-        for ( size_t k = 0; k < dimz - 1; k++ )
+        for ( std::size_t k = 0; k < dimz - 1; k++ )
         {
             const float z0 = zcoords[k];
             const float z1 = zcoords[k+1];
-            for ( size_t i = 0; i < dimx - 1; i++ )
+            for ( std::size_t i = 0; i < dimx - 1; i++ )
             {
                 const float x0 = xcoords[i];
                 const float x1 = xcoords[i+1];
@@ -1707,19 +1707,19 @@ void ExternalFaces::calculate_colors( const kvs::StructuredVolumeObject* volume 
     if ( !volume->hasMinMaxValues() ) { volume->updateMinMaxValues(); }
     const kvs::Real64 min_value = volume->minValue();
     const kvs::Real64 max_value = volume->maxValue();
-    const size_t veclen = volume->veclen();
-    const size_t nnodes_per_line = volume->numberOfNodesPerLine();
-    const size_t nnodes_per_slice = volume->numberOfNodesPerSlice();
+    const std::size_t veclen = volume->veclen();
+    const std::size_t nnodes_per_line = volume->numberOfNodesPerLine();
+    const std::size_t nnodes_per_slice = volume->numberOfNodesPerSlice();
     const kvs::Vec3u resolution( volume->resolution() );
     const kvs::Vec3u ngrids( resolution - kvs::Vec3u( 1, 1, 1 ) );
     const T* value = reinterpret_cast<const T*>( volume->values().data() );
 
-    const size_t nexternal_faces =
+    const std::size_t nexternal_faces =
         ( 2 * ngrids.x() * ngrids.y() +
           2 * ngrids.y() * ngrids.z() +
           2 * ngrids.z() * ngrids.x() ) * 2;
-//    const size_t nexternal_vertices = nexternal_faces * 4;
-    const size_t nexternal_vertices = nexternal_faces * 3;
+//    const std::size_t nexternal_vertices = nexternal_faces * 4;
+    const std::size_t nexternal_vertices = nexternal_faces * 3;
 
     const kvs::ColorMap cmap( BaseClass::colorMap() );
 
@@ -1731,11 +1731,11 @@ void ExternalFaces::calculate_colors( const kvs::StructuredVolumeObject* volume 
 
     // XY (Z=0) plane.
     {
-        const size_t k = 0;
-        const size_t offset0 = k * nnodes_per_line;
-        for ( size_t j = 0, offset = offset0; j < ngrids.y(); j++, offset = offset0 + j * nnodes_per_line )
+        const std::size_t k = 0;
+        const std::size_t offset0 = k * nnodes_per_line;
+        for ( std::size_t j = 0, offset = offset0; j < ngrids.y(); j++, offset = offset0 + j * nnodes_per_line )
         {
-            for ( size_t i = 0; i < ngrids.x(); i++, offset += 1 )
+            for ( std::size_t i = 0; i < ngrids.x(); i++, offset += 1 )
             {
                 node_index[0] = offset;
                 node_index[1] = node_index[0] + 1;
@@ -1773,11 +1773,11 @@ void ExternalFaces::calculate_colors( const kvs::StructuredVolumeObject* volume 
 
     // XY (Z=ngrids.z()) plane.
     {
-        const size_t k = ngrids.z();
-        const size_t offset0 = k * nnodes_per_slice;
-        for ( size_t j = 0, offset = offset0; j < ngrids.y(); j++, offset = offset0 + j * nnodes_per_line )
+        const std::size_t k = ngrids.z();
+        const std::size_t offset0 = k * nnodes_per_slice;
+        for ( std::size_t j = 0, offset = offset0; j < ngrids.y(); j++, offset = offset0 + j * nnodes_per_line )
         {
-            for ( size_t i = 0; i < ngrids.x(); i++, offset += 1 )
+            for ( std::size_t i = 0; i < ngrids.x(); i++, offset += 1 )
             {
                 node_index[0] = offset;
                 node_index[1] = node_index[0] + 1;
@@ -1815,11 +1815,11 @@ void ExternalFaces::calculate_colors( const kvs::StructuredVolumeObject* volume 
 
     // YZ (X=0) plane.
     {
-        const size_t i = 0;
-        const size_t offset0 = i;
-        for ( size_t j = 0, offset = offset0; j < ngrids.y(); j++, offset = offset0 + j * nnodes_per_line )
+        const std::size_t i = 0;
+        const std::size_t offset0 = i;
+        for ( std::size_t j = 0, offset = offset0; j < ngrids.y(); j++, offset = offset0 + j * nnodes_per_line )
         {
-            for ( size_t k = 0; k < ngrids.z(); k++, offset += nnodes_per_slice )
+            for ( std::size_t k = 0; k < ngrids.z(); k++, offset += nnodes_per_slice )
             {
                 node_index[0] = offset;
                 node_index[1] = node_index[0] + nnodes_per_slice;
@@ -1857,11 +1857,11 @@ void ExternalFaces::calculate_colors( const kvs::StructuredVolumeObject* volume 
 
     // YZ (X=ngrids.x()) plane.
     {
-        const size_t i = ngrids.x();
-        const size_t offset0 = i;
-        for ( size_t j = 0, offset = offset0; j < ngrids.y(); j++, offset = offset0 + j * nnodes_per_line )
+        const std::size_t i = ngrids.x();
+        const std::size_t offset0 = i;
+        for ( std::size_t j = 0, offset = offset0; j < ngrids.y(); j++, offset = offset0 + j * nnodes_per_line )
         {
-            for ( size_t k = 0; k < ngrids.z(); k++, offset += nnodes_per_slice )
+            for ( std::size_t k = 0; k < ngrids.z(); k++, offset += nnodes_per_slice )
             {
                 node_index[0] = offset;
                 node_index[1] = node_index[0] + nnodes_per_slice;
@@ -1899,11 +1899,11 @@ void ExternalFaces::calculate_colors( const kvs::StructuredVolumeObject* volume 
 
     // XZ (Y=0) plane.
     {
-        const size_t j = 0;
-        const size_t offset0 = j * nnodes_per_line;
-        for ( size_t k = 0, offset = offset0; k < ngrids.z(); k++, offset =  offset0 + k * nnodes_per_slice )
+        const std::size_t j = 0;
+        const std::size_t offset0 = j * nnodes_per_line;
+        for ( std::size_t k = 0, offset = offset0; k < ngrids.z(); k++, offset =  offset0 + k * nnodes_per_slice )
         {
-            for ( size_t i = 0; i < ngrids.x(); i++, offset += 1 )
+            for ( std::size_t i = 0; i < ngrids.x(); i++, offset += 1 )
             {
                 node_index[0] = offset;
                 node_index[1] = node_index[0] + 1;
@@ -1941,11 +1941,11 @@ void ExternalFaces::calculate_colors( const kvs::StructuredVolumeObject* volume 
 
     // XZ (Y=ngrids.y()) plane.
     {
-        const size_t j = ngrids.y();
-        const size_t offset0 = j * nnodes_per_line;
-        for ( size_t k = 0, offset = offset0; k < ngrids.z(); k++, offset = offset0 + k * nnodes_per_slice )
+        const std::size_t j = ngrids.y();
+        const std::size_t offset0 = j * nnodes_per_line;
+        for ( std::size_t k = 0, offset = offset0; k < ngrids.z(); k++, offset = offset0 + k * nnodes_per_slice )
         {
-            for ( size_t i = 0; i < ngrids.x(); i++, offset += 1 )
+            for ( std::size_t i = 0; i < ngrids.x(); i++, offset += 1 )
             {
                 node_index[0] = offset;
                 node_index[1] = node_index[0] + 1;

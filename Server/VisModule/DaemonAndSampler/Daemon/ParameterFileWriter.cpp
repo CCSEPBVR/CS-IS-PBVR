@@ -107,9 +107,9 @@ void ParameterFileWriter::getParticleParameter( const ParticleProperty& particle
     m_name_list_file.setLine( "TF_RESOLUTION", particle_property.m_transfunc_array[0].m_resolution );
     m_name_list_file.setLine( "TF_NUMBER"    , (int)particle_property.m_transfunc_array.size() );
 
-    const size_t tf_number = particle_property.m_transfunc_array.size();
+    const std::size_t tf_number = particle_property.m_transfunc_array.size();
 
-    for ( size_t n = 0; n < tf_number; n++ )
+    for ( std::size_t n = 0; n < tf_number; n++ )
     {
         std::stringstream ss;
         ss << "TF_NAME" << n + 1 << "_";
@@ -159,7 +159,7 @@ void ParameterFileWriter::getParticleParameter( const ParticleProperty& particle
 
         tag_c << tag_base << "TABLE_C";
 
-        for ( size_t i = 0; i < color_table.size(); i++ )
+        for ( std::size_t i = 0; i < color_table.size(); i++ )
         {
             table_c << static_cast<int>( color_table.at( i ) ) << ",";
         }
@@ -170,7 +170,7 @@ void ParameterFileWriter::getParticleParameter( const ParticleProperty& particle
 
         tag_o << tag_base << "TABLE_O";
 
-        for ( size_t i = 0; i < opacity_table.size(); i++ )
+        for ( std::size_t i = 0; i < opacity_table.size(); i++ )
         {
             table_o << opacity_table.at( i ) << ",";
         }
@@ -181,7 +181,7 @@ void ParameterFileWriter::getParticleParameter( const ParticleProperty& particle
     m_name_list_file.setLine( "COLOR_SYNTH"  , particle_property.m_color_transfer_function_synthesis );
     m_name_list_file.setLine( "OPACITY_SYNTH", particle_property.m_opacity_transfer_function_synthesis );
 
-    for ( size_t n = 0; n < tf_number; n++ )
+    for ( std::size_t n = 0; n < tf_number; n++ )
     {
         std::stringstream ss;
         ss << "TF_NAME" << n + 1 << "_";
@@ -221,18 +221,18 @@ void ParameterFileWriter::getGlyphParameter( const GlyphProperty& glyph_property
 
     // 各成分を文字列に変換
     std::stringstream  size_variable, color_data_variable;
-    for ( size_t i = 0; i < glyph_property.m_size_variable.size(); i++ )
+    for ( std::size_t i = 0; i < glyph_property.m_size_variable.size(); i++ )
     {
         size_variable  << glyph_property.m_size_variable.at( i ) << ",";
     }
 
-    for ( size_t i = 0; i < glyph_property.m_color_data_variable.size(); i++ )
+    for ( std::size_t i = 0; i < glyph_property.m_color_data_variable.size(); i++ )
     {
         color_data_variable  << glyph_property.m_color_data_variable.at( i ) << ",";
     }
 
     std::stringstream  direction_variable;
-    for ( size_t i = 0; i < 3; i++ )
+    for ( std::size_t i = 0; i < 3; i++ )
     {
         direction_variable  << glyph_property.m_direction_variable[ i ] << ",";
     }
@@ -260,7 +260,7 @@ void ParameterFileWriter::getGlyphParameter( const GlyphProperty& glyph_property
 
     std::stringstream table;
 
-    for ( size_t i = 0; i < glyph_property.m_glyph_color_map_table.size(); i++ )
+    for ( std::size_t i = 0; i < glyph_property.m_glyph_color_map_table.size(); i++ )
     {
         table << glyph_property.m_glyph_color_map_table.at( i ) << ",";
     }
@@ -280,7 +280,7 @@ void ParameterFileWriter::getPlotOverLineParameter( const PlotOverLineProperty& 
 
     // 各成分を文字列に変換
     std::stringstream  start_point, end_point;
-    for ( size_t i = 0; i < 3; i++ )
+    for ( std::size_t i = 0; i < 3; i++ )
     {
         start_point  << pol_property.m_start_point[i] << ",";
         end_point    << pol_property.m_end_point[i]   << ",";
@@ -299,7 +299,7 @@ void ParameterFileWriter::getPlotOverTimeParameter( const PlotOverTimeProperty& 
 
     // 各成分を文字列に変換
     std::stringstream  target_point;
-    for ( size_t i = 0; i < 3; i++ )
+    for ( std::size_t i = 0; i < 3; i++ )
     {
         target_point << pot_property.m_target_point[i] << ",";
     }

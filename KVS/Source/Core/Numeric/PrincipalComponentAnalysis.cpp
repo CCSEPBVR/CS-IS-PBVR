@@ -23,11 +23,11 @@ namespace
 template <typename T>
 inline kvs::Matrix<T> Covariance( const kvs::ValueTable<T>& data )
 {
-    const size_t ncols = data.columnSize();
+    const std::size_t ncols = data.columnSize();
     kvs::Matrix<T> cov( ncols, ncols );
-    for ( size_t row = 0; row < ncols; ++row )
+    for ( std::size_t row = 0; row < ncols; ++row )
     {
-        for ( size_t col = 0; col < ncols; ++col )
+        for ( std::size_t col = 0; col < ncols; ++col )
         {
             cov[row][col] = kvs::Stat::OnlineCov( data[row], data[col] );
             if ( row != col ) { cov[col][row] = cov[row][col]; }
@@ -45,9 +45,9 @@ inline kvs::Matrix<T> Covariance( const kvs::ValueTable<T>& data )
 template <typename T>
 inline kvs::Vector<T> Mean( const kvs::ValueTable<T>& data )
 {
-    const size_t ncols = data.columnSize();
+    const std::size_t ncols = data.columnSize();
     kvs::Vector<T> mean( ncols );
-    for ( size_t i = 0; i < ncols; i++ )
+    for ( std::size_t i = 0; i < ncols; i++ )
     {
         mean[i] = kvs::Stat::OnlineMean( data.column(i) );
     }
@@ -65,10 +65,10 @@ inline kvs::Matrix<T> Deviation( const kvs::ValueTable<T>& data )
 {
     auto& d = const_cast<kvs::ValueTable<T>& >( data );
     const auto mean = Mean( data );
-    const size_t nrows = data.rowSize();
-    const size_t ncols = data.columnSize();
+    const std::size_t nrows = data.rowSize();
+    const std::size_t ncols = data.columnSize();
     kvs::Matrix<T> matrix( nrows, ncols );
-    for ( size_t i = 0; i < nrows; i++ )
+    for ( std::size_t i = 0; i < nrows; i++ )
     {
         matrix[i] = kvs::Vector<T>( d.beginRow(i), d.endRow(i) ) - mean;
     }
@@ -91,7 +91,7 @@ namespace kvs
 template <typename T>
 PrincipalComponentAnalysis<T>::PrincipalComponentAnalysis(
     const kvs::ValueTable<T>& data,
-    const size_t ncomponents ):
+    const std::size_t ncomponents ):
     m_ncomponents( ncomponents )
 {
     this->fit( data );
@@ -115,7 +115,7 @@ void PrincipalComponentAnalysis<T>::fit( const kvs::ValueTable<T>& data )
     m_components.resize( m_ncomponents, cov.columnSize() );
     m_explained_variance.resize( m_ncomponents );
     m_explained_variance_ratio.resize( m_ncomponents );
-    for ( size_t i = 0; i < m_ncomponents; i++ )
+    for ( std::size_t i = 0; i < m_ncomponents; i++ )
     {
         m_components[i] = eigen.eigenVectors()[i];
         m_explained_variance[i] = eigen.eigenValues()[i];

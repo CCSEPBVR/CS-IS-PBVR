@@ -119,7 +119,7 @@ bool PlotOverTimeFile::generatePOTObject( const int time_step, vismodule::KVSMLO
                 {
                     Mask = true;
 
-                    size_t num = tmpimp.values_on_time().size();
+                    std::size_t num = tmpimp.values_on_time().size();
                     for (size_t i = 0; i < num; i++ )
                     {
                         Values.push_back( tmpimp.values_on_time()[i]);

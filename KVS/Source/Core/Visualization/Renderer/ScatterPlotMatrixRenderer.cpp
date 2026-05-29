@@ -37,13 +37,13 @@ void ScatterPlotMatrixRenderer::exec( kvs::ObjectBase* object, kvs::Camera* came
         const int width = camera->windowWidth();
         const int height = camera->windowHeight();
         const kvs::Rectangle content = BaseClass::margins().content( width, height );
-        const size_t M = table->numberOfColumns(); // number of dimensions
+        const std::size_t M = table->numberOfColumns(); // number of dimensions
         const float Lx = float( content.width() - m_padding * ( M - 1 ) ) / M; // length for each x axis
         const float Ly = float( content.height() - m_padding * ( M - 1 ) ) / M; // length for each y axis
 
-        for ( size_t j = 0; j < M; ++j )
+        for ( std::size_t j = 0; j < M; ++j )
         {
-            for ( size_t i = 0; i < M; ++i )
+            for ( std::size_t i = 0; i < M; ++i )
             {
                 const int x0 = content.x0() + ( Lx + m_padding ) * i;
                 const int y0 = content.y0() + ( Ly + m_padding ) * j;
@@ -51,8 +51,8 @@ void ScatterPlotMatrixRenderer::exec( kvs::ObjectBase* object, kvs::Camera* came
 
                 BaseClass::drawBackground( rect, dpr );
 
-                const size_t x_index = i;
-                const size_t y_index = j;
+                const std::size_t x_index = i;
+                const std::size_t y_index = j;
                 // if ( x_index == y_index ) { continue; } // diagonal region
 
                 kvs::NanoVG* engine = BaseClass::painter().device()->renderEngine();

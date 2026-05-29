@@ -17,9 +17,9 @@
 // Constant variables
 namespace
 {
-const size_t Margin = 10;
-const size_t Width = 350;
-const size_t Height = 50;
+const std::size_t Margin = 10;
+const std::size_t Width = 350;
+const std::size_t Height = 50;
 const kvs::RGBColor RectColor = kvs::RGBColor( 255, 255, 255 );
 const kvs::RGBColor RectEdgeColor = kvs::RGBColor( 230, 230, 230 );
 }
@@ -247,8 +247,8 @@ int HistogramBar::adjustedWidth()
 {
     BaseClass::painter().begin( BaseClass::screen() );
     const kvs::FontMetrics metrics = BaseClass::painter().fontMetrics();
-    const size_t text_width = metrics.width( m_caption );
-    const size_t width = text_width + BaseClass::margin() * 2;
+    const std::size_t text_width = metrics.width( m_caption );
+    const std::size_t width = text_width + BaseClass::margin() * 2;
     BaseClass::painter().end();
     return kvs::Math::Max( width, ::Width );
 }
@@ -337,10 +337,10 @@ void HistogramBar::draw_palette()
 /*===========================================================================*/
 const kvs::ValueArray<kvs::UInt8> HistogramBar::get_histogram_image() const
 {
-    const size_t nchannels = 4;
-    const size_t width = m_table.numberOfBins();
-    const size_t height = width;
-    const size_t npixels = width * height;
+    const std::size_t nchannels = 4;
+    const std::size_t width = m_table.numberOfBins();
+    const std::size_t height = width;
+    const std::size_t npixels = width * height;
 
     // HistogramBar image data.
     kvs::ValueArray<kvs::UInt8> data( npixels * nchannels );
@@ -350,20 +350,20 @@ const kvs::ValueArray<kvs::UInt8> HistogramBar::get_histogram_image() const
     {
         const float g = kvs::Math::Clamp( m_bias_parameter, 0.0f, 1.0f );
         const kvs::Real32 normalized_factor = 1.0f / m_table.maxCount();
-        for ( size_t i = 0; i < width; i++ )
+        for ( std::size_t i = 0; i < width; i++ )
         {
             // Calculate bias parameter.
             // Bias function: b(f,g) = f^{ln(g)/ln(0.5)}
             //  f: frequecny count that is normalized in [0,1]
             //  g: bias parameter in [0,1]
-            const size_t n = m_table.bin().at(i); // frequency count
+            const std::size_t n = m_table.bin().at(i); // frequency count
             const float f = n * normalized_factor; // normalized frequency count in [0,1]
             const float b = std::pow( f, static_cast<float>( std::log(g) / std::log(0.5) ) );
 
-            const size_t h = static_cast<size_t>( b * height + 0.5f );
-            for ( size_t j = 0; j < h; j++ )
+            const std::size_t h = static_cast<size_t>( b * height + 0.5f );
+            for ( std::size_t j = 0; j < h; j++ )
             {
-                const size_t index = i + j * width;
+                const std::size_t index = i + j * width;
                 data[ 4 * index + 0 ] = m_graph_color.r();
                 data[ 4 * index + 1 ] = m_graph_color.g();
                 data[ 4 * index + 2 ] = m_graph_color.b();
@@ -379,15 +379,15 @@ const kvs::ValueArray<kvs::UInt8> HistogramBar::get_histogram_image() const
 void HistogramBar::calculate_density_curve()
 {
     // Temporary array (biased histogram).
-    const size_t width = m_table.numberOfBins();
+    const std::size_t width = m_table.numberOfBins();
     kvs::ValueArray<kvs::Real32> temp( width );
     temp.fill( 0 );
 
     const kvs::Real32 normalized_factor = 1.0f / m_table.maxCount();
-    for ( size_t index = 0; index < width; index++ )
+    for ( std::size_t index = 0; index < width; index++ )
     {
         // Calculate bias parameter.
-        const size_t n = m_table.bin().at( index ); // frequency count
+        const std::size_t n = m_table.bin().at( index ); // frequency count
         const float f = n * normalized_factor; // normalized frequency count in [0,1]
         temp[index] = f;
 //        temp[index] = n;
@@ -400,11 +400,11 @@ void HistogramBar::calculate_density_curve()
     const float h = 0.9 / std::pow( width, 0.2 ); // band width
 
     kvs::Real32 max_density = 0;
-    for ( size_t i = 0; i < width; i++ )
+    for ( std::size_t i = 0; i < width; i++ )
     {
         float sum = 0;
         const float xi = temp[i];
-        for ( size_t j = 0; j < width; j++ )
+        for ( std::size_t j = 0; j < width; j++ )
         {
             const float xj = temp[j];
             sum += ::GaussianKernel( ( xi - xj ) / h );
@@ -414,7 +414,7 @@ void HistogramBar::calculate_density_curve()
         max_density = kvs::Math::Max( max_density, m_density_curve[i] );
     }
 
-    for ( size_t i = 0; i < width; i++ ) m_density_curve[i] /= max_density;
+    for ( std::size_t i = 0; i < width; i++ ) m_density_curve[i] /= max_density;
 }
 */
 
@@ -425,9 +425,9 @@ void HistogramBar::calculate_density_curve()
 /*===========================================================================*/
 void HistogramBar::create_texture()
 {
-    const size_t nchannels = 4;
-    const size_t width = m_table.numberOfBins();
-    const size_t height = width;
+    const std::size_t nchannels = 4;
+    const std::size_t width = m_table.numberOfBins();
+    const std::size_t height = width;
 
     m_texture.release();
     m_texture.setPixelFormat( nchannels, sizeof( kvs::UInt8 ) );

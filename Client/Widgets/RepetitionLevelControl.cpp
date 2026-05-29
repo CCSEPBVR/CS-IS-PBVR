@@ -18,7 +18,7 @@ RepetitionLevelControl::~RepetitionLevelControl()
 
 void RepetitionLevelControl::onUpdateCurrentRepetitionLevel()
 {
-    const size_t currentRepetitionLevel = m_compositor->repetitionLevel();
+    const std::size_t currentRepetitionLevel = m_compositor->repetitionLevel();
     ui->dispCurrentRepetitionLevel->setText( QString::number( currentRepetitionLevel ) );
 }
 
@@ -34,7 +34,7 @@ void RepetitionLevelControl::onSaveParameter( const QString& filePath )
 
 void RepetitionLevelControl::onApply()
 {
-    const size_t repetitionLevel = static_cast<size_t>( ui->spinBoxNewRepetitionLevel->value() );
+    const std::size_t repetitionLevel = static_cast<size_t>( ui->spinBoxNewRepetitionLevel->value() );
 
     const int size = m_screen->scene()->IDManager()->size();
 

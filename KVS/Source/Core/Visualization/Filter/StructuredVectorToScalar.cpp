@@ -94,17 +94,17 @@ StructuredVectorToScalar::SuperClass* StructuredVectorToScalar::exec( const kvs:
 template <typename T>
 void StructuredVectorToScalar::calculate_magnitude( const kvs::StructuredVolumeObject* volume )
 {
-    const size_t veclen = volume->veclen();
-    const size_t nnodes = volume->numberOfNodes();
+    const std::size_t veclen = volume->veclen();
+    const std::size_t nnodes = volume->numberOfNodes();
 
     kvs::ValueArray<kvs::Real32> values( nnodes );
     kvs::Real32* dst = values.data();
     const T* src = static_cast<const T*>( volume->values().data() );
 
-    for ( size_t i = 0; i < nnodes; i++ )
+    for ( std::size_t i = 0; i < nnodes; i++ )
     {
         kvs::Real32 magnitude = 0;
-        for ( size_t j = 0; j < veclen; j++ )
+        for ( std::size_t j = 0; j < veclen; j++ )
         {
             magnitude += kvs::Math::Square( static_cast<kvs::Real32>( *(src++) ) );
         }

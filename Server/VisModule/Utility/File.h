@@ -69,7 +69,7 @@ public:
 
     const std::string extension( bool complete = false ) const;
 
-    const size_t byteSize( void ) const;
+    const std::size_t byteSize( void ) const;
 
     const bool isFile( void ) const;
 

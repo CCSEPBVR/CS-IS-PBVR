@@ -199,8 +199,8 @@ bool Main::exec()
     // Resizing
     if ( arg.hasOption("r") )
     {
-        const size_t width  = arg.optionValue<size_t>("r",0);
-        const size_t height = arg.optionValue<size_t>("r",1);
+        const std::size_t width  = arg.optionValue<size_t>("r",0);
+        const std::size_t height = arg.optionValue<size_t>("r",1);
         image.resize( width, height );
     }
 

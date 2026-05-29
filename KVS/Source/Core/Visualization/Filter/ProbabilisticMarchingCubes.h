@@ -34,7 +34,7 @@ class ProbabilisticMarchingCubes :
 
 private:
     double m_isolevel = 0.0; ///< isolevel
-    size_t m_nsamples = 1000; ///< number of sampling points
+    std::size_t m_nsamples = 1000; ///< number of sampling points
     kvs::ValueArray<float> m_mean_values{}; ///< mean values
 
 public:
@@ -43,7 +43,7 @@ public:
     ProbabilisticMarchingCubes(
         const kvs::StructuredVolumeObjectList* objects,
         const double isolevel = 0.0,
-        const size_t nsamples = 100 ):
+        const std::size_t nsamples = 100 ):
         m_isolevel( isolevel ),
         m_nsamples( nsamples )
     {
@@ -51,7 +51,7 @@ public:
     }
 
     void setIsolevel( const double isolevel ) { m_isolevel = isolevel; }
-    void setNumberOfSamples( const size_t nsamples ) { m_nsamples = nsamples; }
+    void setNumberOfSamples( const std::size_t nsamples ) { m_nsamples = nsamples; }
     const kvs::ValueArray<float>& meanValues() const { return m_mean_values; }
 
     SuperClass* exec( const kvs::ObjectBase* object );

@@ -38,17 +38,17 @@ class Matrix
 
 private:
 
-    size_t          m_nrows;    ///< Number of rows.
-    size_t          m_ncolumns; ///< Number of columns.
+    std::size_t          m_nrows;    ///< Number of rows.
+    std::size_t          m_ncolumns; ///< Number of columns.
     vismodule::Vector<T>* m_rows;     ///< Row vectors.
 
 public:
 
     Matrix( void );
 
-    Matrix( const size_t nrows, const size_t ncolumns );
+    Matrix( const std::size_t nrows, const std::size_t ncolumns );
 
-    Matrix( const size_t nrows, const size_t ncolumns, const T* const elements );
+    Matrix( const std::size_t nrows, const std::size_t ncolumns, const T* const elements );
 
     ~Matrix( void );
 
@@ -59,7 +59,7 @@ public:
 
 public:
 
-    void setSize( const size_t nrows, const size_t ncolumns );
+    void setSize( const std::size_t nrows, const std::size_t ncolumns );
 
     void zero( void );
 
@@ -69,9 +69,9 @@ public:
 
 public:
 
-    const size_t nrows( void ) const;
+    const std::size_t nrows( void ) const;
 
-    const size_t ncolumns( void ) const;
+    const std::size_t ncolumns( void ) const;
 
 public:
 
@@ -89,12 +89,12 @@ public:
 
     const T determinant( void ) const;
 
-    const size_t pivot( const size_t row_index ) const;
+    const std::size_t pivot( const std::size_t row_index ) const;
 
 public:
 
-    const vismodule::Vector<T>& operator []( const size_t index ) const;
-    vismodule::Vector<T>&       operator []( const size_t index );
+    const vismodule::Vector<T>& operator []( const std::size_t index ) const;
+    vismodule::Vector<T>&       operator []( const std::size_t index );
 
 public:
 
@@ -121,11 +121,11 @@ public:
     friend const bool operator ==( const Matrix& lhs, const Matrix& rhs )
     {
         // Alias.
-        const size_t nrows = lhs.nrows();
+        const std::size_t nrows = lhs.nrows();
 
         bool result = ( lhs.nrows() == rhs.nrows() );
 
-        for ( size_t r = 0; r < nrows; ++r )
+        for ( std::size_t r = 0; r < nrows; ++r )
         {
             result = result && ( lhs[r] == rhs[r] );
         }
@@ -199,18 +199,18 @@ public:
         VIS_MODULE_ASSERT( lhs.ncolumns() == rhs.nrows() );
 
         // Alias.
-        const size_t L = lhs.nrows();
-        const size_t M = lhs.ncolumns();
-        const size_t N = rhs.ncolumns();
+        const std::size_t L = lhs.nrows();
+        const std::size_t M = lhs.ncolumns();
+        const std::size_t N = rhs.ncolumns();
 
         Matrix result( L, N );
 
-        for ( size_t r = 0; r < L; ++r )
+        for ( std::size_t r = 0; r < L; ++r )
         {
-            for ( size_t c = 0; c < N; ++c )
+            for ( std::size_t c = 0; c < N; ++c )
             {
                 result[r][c] = T( 0 );
-                for ( size_t k = 0; k < M; ++k )
+                for ( std::size_t k = 0; k < M; ++k )
                 {
                     result[r][c] += lhs[r][k] * rhs[k][c];
                 }
@@ -235,14 +235,14 @@ public:
         VIS_MODULE_ASSERT( lhs.ncolumns() == rhs.size() );
 
         // Alias.
-        const size_t nrows    = lhs.nrows();
-        const size_t ncolumns = lhs.ncolumns();
+        const std::size_t nrows    = lhs.nrows();
+        const std::size_t ncolumns = lhs.ncolumns();
 
         vismodule::Vector<T> result( nrows );
 
-        for ( size_t r = 0; r < nrows; ++r )
+        for ( std::size_t r = 0; r < nrows; ++r )
         {
-            for ( size_t c = 0; c < ncolumns; ++c )
+            for ( std::size_t c = 0; c < ncolumns; ++c )
             {
                 result[r] += lhs[r][c] * rhs[c];
             }
@@ -266,14 +266,14 @@ public:
         VIS_MODULE_ASSERT( lhs.size() == rhs.nrows() );
 
         // Alias.
-        const size_t nrows    = rhs.nrows();
-        const size_t ncolumns = rhs.ncolumns();
+        const std::size_t nrows    = rhs.nrows();
+        const std::size_t ncolumns = rhs.ncolumns();
 
         vismodule::Vector<T> result( ncolumns );
 
-        for ( size_t c = 0; c < ncolumns; ++c )
+        for ( std::size_t c = 0; c < ncolumns; ++c )
         {
-            for ( size_t r = 0; r < nrows; ++r )
+            for ( std::size_t r = 0; r < nrows; ++r )
             {
                 result[c] += lhs[r] * rhs[r][c];
             }
@@ -349,9 +349,9 @@ public:
     friend std::ostream& operator <<( std::ostream& os, const Matrix& rhs )
     {
         // Alias.
-        const size_t nrows = rhs.nrows();
+        const std::size_t nrows = rhs.nrows();
 
-        for( size_t r = 0; r < nrows - 1; ++r )
+        for( std::size_t r = 0; r < nrows - 1; ++r )
         {
             os <<  rhs[r] << std::endl;
         }
@@ -378,7 +378,7 @@ inline Matrix<T>::Matrix( void ):
  */
 /*==========================================================================*/
 template<typename T>
-inline Matrix<T>::Matrix( const size_t nrows, const size_t ncolumns )
+inline Matrix<T>::Matrix( const std::size_t nrows, const std::size_t ncolumns )
     : m_nrows( 0 )
     , m_ncolumns( 0 )
     , m_rows( 0 )
@@ -398,7 +398,7 @@ inline Matrix<T>::Matrix( const size_t nrows, const size_t ncolumns )
  */
 /*==========================================================================*/
 template<typename T>
-inline Matrix<T>::Matrix( const size_t nrows, const size_t ncolumns, const T* const elements )
+inline Matrix<T>::Matrix( const std::size_t nrows, const std::size_t ncolumns, const T* const elements )
     : m_nrows( 0 )
     , m_ncolumns( 0 )
     , m_rows( 0 )
@@ -408,10 +408,10 @@ inline Matrix<T>::Matrix( const size_t nrows, const size_t ncolumns, const T* co
     // Alias.
     Vector<T>* const m = m_rows;
 
-    size_t index = 0;
-    for ( size_t r = 0; r < nrows; ++r )
+    std::size_t index = 0;
+    for ( std::size_t r = 0; r < nrows; ++r )
     {
-        for ( size_t c = 0; c < ncolumns; ++c )
+        for ( std::size_t c = 0; c < ncolumns; ++c )
         {
             m[r][c]= elements[ index ];
             ++index;
@@ -435,10 +435,10 @@ inline Matrix<T>::Matrix( const Matrix& other )
     this->setSize( other.nrows(), other.ncolumns() );
 
     // Alias.
-    const size_t          nrows = this->nrows();
+    const std::size_t          nrows = this->nrows();
     vismodule::Vector<T>* const m     = m_rows;
 
-    for ( size_t r = 0; r < nrows; ++r )
+    for ( std::size_t r = 0; r < nrows; ++r )
     {
         m[r] = other[r];
     }
@@ -457,10 +457,10 @@ inline Matrix<T>& Matrix<T>::operator =( const Matrix& rhs )
     this->setSize( rhs.nrows(), rhs.ncolumns() );
 
     // Alias.
-    const size_t          nrows = this->nrows();
+    const std::size_t          nrows = this->nrows();
     vismodule::Vector<T>* const m     = m_rows;
 
-    for ( size_t r = 0; r < nrows; ++r )
+    for ( std::size_t r = 0; r < nrows; ++r )
     {
         m[r] = rhs[r];
     }
@@ -488,7 +488,7 @@ inline Matrix<T>::~Matrix( void )
  */
 /*==========================================================================*/
 template<typename T>
-inline void Matrix<T>::setSize( const size_t nrows, const size_t ncolumns )
+inline void Matrix<T>::setSize( const std::size_t nrows, const std::size_t ncolumns )
 {
     if ( this->nrows() != nrows || this->ncolumns() != ncolumns )
     {
@@ -502,7 +502,7 @@ inline void Matrix<T>::setSize( const size_t nrows, const size_t ncolumns )
         {
             m_rows = new vismodule::Vector<T>[ nrows ];
 
-            for ( size_t r = 0; r < nrows; ++r )
+            for ( std::size_t r = 0; r < nrows; ++r )
             {
                 m_rows[r].setSize( ncolumns );
             }
@@ -520,10 +520,10 @@ inline void Matrix<T>::setSize( const size_t nrows, const size_t ncolumns )
 template<typename T>
 inline void Matrix<T>::zero( void )
 {
-    const size_t          nrows = this->nrows();
+    const std::size_t          nrows = this->nrows();
     vismodule::Vector<T>* const m     = m_rows;
 
-    for ( size_t r = 0; r < nrows; ++r )
+    for ( std::size_t r = 0; r < nrows; ++r )
     {
         m[r].zero();
     }
@@ -540,12 +540,12 @@ inline void Matrix<T>::identity( void )
     VIS_MODULE_ASSERT( this->nrows() == this->ncolumns() );
 
     // Alias.
-    const size_t          nrows = this->nrows();
+    const std::size_t          nrows = this->nrows();
     vismodule::Vector<T>* const m     = m_rows;
 
     this->zero();
 
-    for ( size_t r = 0; r < nrows; ++r )
+    for ( std::size_t r = 0; r < nrows; ++r )
     {
         m[r][r] = T( 1 );
     }
@@ -574,7 +574,7 @@ inline void Matrix<T>::swap( Matrix& other )
  */
 /*==========================================================================*/
 template<typename T>
-inline const size_t Matrix<T>::nrows( void ) const
+inline const std::size_t Matrix<T>::nrows( void ) const
 {
     return( m_nrows );
 }
@@ -587,7 +587,7 @@ inline const size_t Matrix<T>::nrows( void ) const
  */
 /*==========================================================================*/
 template<typename T>
-inline const size_t Matrix<T>::ncolumns( void ) const
+inline const std::size_t Matrix<T>::ncolumns( void ) const
 {
     return( m_ncolumns );
 }
@@ -619,15 +619,15 @@ template<typename T>
 inline Matrix<T>& Matrix<T>::transpose( void )
 {
     // Alias
-    const size_t          nrows    = this->nrows();
-    const size_t          ncolumns = this->ncolumns();
+    const std::size_t          nrows    = this->nrows();
+    const std::size_t          ncolumns = this->ncolumns();
     vismodule::Vector<T>* const m        = m_rows;
 
     if ( nrows == ncolumns )
     {
-        for ( size_t r = 0; r < nrows; ++r )
+        for ( std::size_t r = 0; r < nrows; ++r )
         {
-            for ( size_t c = r + 1; c < ncolumns; ++c )
+            for ( std::size_t c = r + 1; c < ncolumns; ++c )
             {
                 std::swap( m[r][c], m[c][r] );
             }
@@ -637,9 +637,9 @@ inline Matrix<T>& Matrix<T>::transpose( void )
     {
         Matrix result( ncolumns, nrows );
 
-        for ( size_t r = 0; r < nrows; ++r )
+        for ( std::size_t r = 0; r < nrows; ++r )
         {
-            for ( size_t c = 0; c < ncolumns; ++c )
+            for ( std::size_t c = 0; c < ncolumns; ++c )
             {
                 result[c][r] = m[r][c];
             }
@@ -683,18 +683,18 @@ inline Matrix<T>& Matrix<T>::inverse( T* determinant )
     vismodule::IgnoreUnusedVariable( determinant );
 
     // Alias.
-    const size_t          size     = this->nrows();
-    const size_t          nrows    = this->nrows();
-    const size_t          ncolumns = this->ncolumns();
+    const std::size_t          size     = this->nrows();
+    const std::size_t          nrows    = this->nrows();
+    const std::size_t          ncolumns = this->ncolumns();
     vismodule::Vector<T>* const m     = m_rows;
 
     Matrix<T> result( nrows, nrows );
     result.identity();
 
-    for ( size_t k = 0; k < size; k++ )
+    for ( std::size_t k = 0; k < size; k++ )
     {
         // Search a pivot row.
-        const size_t pivot_row = this->pivot( k );
+        const std::size_t pivot_row = this->pivot( k );
 
         // Swap the k-row and the pivot_row.
         if ( k != pivot_row )
@@ -706,19 +706,19 @@ inline Matrix<T>& Matrix<T>::inverse( T* determinant )
         // Forward elimination
         const T diagonal_element = m[k][k];
 
-        for ( size_t c = 0; c < ncolumns; ++c )
+        for ( std::size_t c = 0; c < ncolumns; ++c )
         {
             m[k][c]      /= diagonal_element;
             result[k][c] /= diagonal_element;
         }
 
-        for ( size_t r = 0; r < nrows; ++r )
+        for ( std::size_t r = 0; r < nrows; ++r )
         {
             // Skip the pivot_row.
             if ( r != k )
             {
                 const T value = m[r][k];
-                for( size_t c = 0; c < ncolumns; ++c )
+                for( std::size_t c = 0; c < ncolumns; ++c )
                 {
                     m[r][c]      -= value * m[k][c];
                     result[r][c] -= value * result[k][c];
@@ -756,12 +756,12 @@ inline const T Matrix<T>::trace( void ) const
     VIS_MODULE_ASSERT( this->nrows() == this->ncolumns() );
 
     // Alias.
-    const size_t          nrows = this->nrows();
+    const std::size_t          nrows = this->nrows();
     vismodule::Vector<T>* const m     = m_rows;
 
     T result = T( 0 );
 
-    for ( size_t r = 0; r < nrows; ++r )
+    for ( std::size_t r = 0; r < nrows; ++r )
     {
         result += m[r][r];
     }
@@ -782,16 +782,16 @@ inline const T Matrix<T>::determinant( void ) const
     VIS_MODULE_ASSERT( this->nrows() == this->ncolumns() );
 
     // Alias
-    const size_t size     = this->nrows();
-    const size_t nrows    = this->nrows();
-    const size_t ncolumns = this->ncolumns();
+    const std::size_t size     = this->nrows();
+    const std::size_t nrows    = this->nrows();
+    const std::size_t ncolumns = this->ncolumns();
 
     Matrix<T> result( *this );
     T det = T( 1 );
 
-    for ( size_t k = 0; k < size; ++k )
+    for ( std::size_t k = 0; k < size; ++k )
     {
-        const size_t pivot_row = result.pivot( k );
+        const std::size_t pivot_row = result.pivot( k );
 
         if( k != pivot_row )
         {
@@ -800,11 +800,11 @@ inline const T Matrix<T>::determinant( void ) const
 
         det *= result[k][k];
 
-        for ( size_t r = k + 1; r < nrows; ++r )
+        for ( std::size_t r = k + 1; r < nrows; ++r )
         {
             const T value = result[r][k] / result[k][k];
 
-            for ( size_t c = k + 1; c < ncolumns; ++c )
+            for ( std::size_t c = k + 1; c < ncolumns; ++c )
             {
                 result[r][c] -= value * result[k][c];
             }
@@ -815,17 +815,17 @@ inline const T Matrix<T>::determinant( void ) const
 }
 
 template<typename T>
-inline const size_t Matrix<T>::pivot( const size_t column ) const
+inline const std::size_t Matrix<T>::pivot( const std::size_t column ) const
 {
     // Alias
-    const size_t          nrows = this->nrows();
+    const std::size_t          nrows = this->nrows();
     vismodule::Vector<T>* const m     = m_rows;
 
     // Search a max absolute value in the vector of a given row index.
     T      max = T( 0 );
-    size_t k   = column;
+    std::size_t k   = column;
 
-    for ( size_t r = column; r < nrows; r++ )
+    for ( std::size_t r = column; r < nrows; r++ )
     {
         const T abs = vismodule::Math::Abs( m[r][column] );
         if( abs > max )
@@ -848,7 +848,7 @@ inline const size_t Matrix<T>::pivot( const size_t column ) const
  */
 /*==========================================================================*/
 template<typename T>
-inline const vismodule::Vector<T>& Matrix<T>::operator []( const size_t index ) const
+inline const vismodule::Vector<T>& Matrix<T>::operator []( const std::size_t index ) const
 {
     VIS_MODULE_ASSERT( index < this->nrows() );
 
@@ -865,7 +865,7 @@ inline const vismodule::Vector<T>& Matrix<T>::operator []( const size_t index ) 
  */
 /*==========================================================================*/
 template<typename T>
-inline vismodule::Vector<T>& Matrix<T>::operator []( const size_t index )
+inline vismodule::Vector<T>& Matrix<T>::operator []( const std::size_t index )
 {
     VIS_MODULE_ASSERT( index < this->nrows() );
 
@@ -888,10 +888,10 @@ inline Matrix<T>& Matrix<T>::operator +=( const Matrix& rhs )
     VIS_MODULE_ASSERT( this->ncolumns() == rhs.ncolumns() );
 
     // Alias.
-    const size_t          nrows = this->nrows();
+    const std::size_t          nrows = this->nrows();
     vismodule::Vector<T>* const m     = m_rows;
 
-    for ( size_t r = 0; r < nrows; ++r )
+    for ( std::size_t r = 0; r < nrows; ++r )
     {
         m[r] += rhs[r];
     }
@@ -915,10 +915,10 @@ inline Matrix<T>& Matrix<T>::operator -=( const Matrix& rhs )
     VIS_MODULE_ASSERT( this->ncolumns() == rhs.ncolumns() );
 
     // Alias.
-    const size_t          nrows = this->nrows();
+    const std::size_t          nrows = this->nrows();
     vismodule::Vector<T>* const m     = m_rows;
 
-    for ( size_t r = 0; r < nrows; ++r )
+    for ( std::size_t r = 0; r < nrows; ++r )
     {
         m[r] -= rhs[r];
     }
@@ -958,10 +958,10 @@ template<typename T>
 inline Matrix<T>& Matrix<T>::operator *=( const T rhs )
 {
     // Alias.
-    const size_t          nrows = this->nrows();
+    const std::size_t          nrows = this->nrows();
     vismodule::Vector<T>* const m     = m_rows;
 
-    for ( size_t r = 0; r < nrows; ++r )
+    for ( std::size_t r = 0; r < nrows; ++r )
     {
         m[r] *= rhs;
     }
@@ -982,10 +982,10 @@ template<typename T>
 inline Matrix<T>& Matrix<T>::operator /=( const T rhs )
 {
     // Alias.
-    const size_t          nrows = this->nrows();
+    const std::size_t          nrows = this->nrows();
     vismodule::Vector<T>* const m     = m_rows;
 
-    for ( size_t r = 0; r < nrows; ++r )
+    for ( std::size_t r = 0; r < nrows; ++r )
     {
         m[r] /= rhs;
     }

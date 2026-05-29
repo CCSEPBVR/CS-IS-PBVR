@@ -59,8 +59,8 @@ protected:
     float m_right; ///< right plane position
     float m_bottom; ///< bottom plane position
     float m_top; ///< top plane position
-    size_t m_window_width; ///< window width
-    size_t m_window_height; ///< window height
+    std::size_t m_window_width; ///< window width
+    std::size_t m_window_height; ///< window height
 
 public:
 
@@ -92,7 +92,7 @@ public:
 
     void setTop( const float top );
 
-    void setWindowSize( const size_t width, const size_t height );
+    void setWindowSize( const std::size_t width, const std::size_t height );
 
 public:
 
@@ -122,9 +122,9 @@ public:
 
     const float top( void ) const;
 
-    const size_t windowWidth( void ) const;
+    const std::size_t windowWidth( void ) const;
 
-    const size_t windowHeight( void ) const;
+    const std::size_t windowHeight( void ) const;
 
 public:
 

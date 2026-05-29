@@ -259,7 +259,7 @@ public:
         return m_raw->extended_data[plane];;
     }
 
-    size_t size(size_t plane) const {
+    std::size_t size(size_t plane) const {
         if (!m_raw || plane >= size_t(AV_NUM_DATA_POINTERS + m_raw->nb_extended_buf))
             return 0;
         AVBufferRef *buf = plane < AV_NUM_DATA_POINTERS ?
@@ -270,10 +270,10 @@ public:
         return size_t(buf->size);
     }
 
-    size_t size() const {
+    std::size_t size() const {
         if (!m_raw)
             return 0;
-        size_t total = 0;
+        std::size_t total = 0;
         if (m_raw->buf[0]) {
             for (size_t i = 0; i < AV_NUM_DATA_POINTERS && m_raw->buf[i]; i++) {
                 total += m_raw->buf[i]->size;
@@ -332,7 +332,7 @@ public:
 
     VideoFrame() = default;
     VideoFrame(PixelFormat pixelFormat, int width, int height, int align = 1);
-    VideoFrame(const uint8_t *data, size_t size, PixelFormat pixelFormat, int width, int height, int align = 1);
+    VideoFrame(const uint8_t *data, std::size_t size, PixelFormat pixelFormat, int width, int height, int align = 1);
 
     VideoFrame(const VideoFrame &other);
     VideoFrame(VideoFrame &&other);
@@ -356,8 +356,8 @@ public:
     Rational               sampleAspectRatio() const;
     void                   setSampleAspectRatio(const Rational& sampleAspectRatio);
 
-    size_t                 bufferSize(int align = 1, OptionalErrorCode ec = throws()) const;
-    bool                   copyToBuffer(uint8_t *dst, size_t size, int align = 1, OptionalErrorCode ec = throws());
+    std::size_t                 bufferSize(int align = 1, OptionalErrorCode ec = throws()) const;
+    bool                   copyToBuffer(uint8_t *dst, std::size_t size, int align = 1, OptionalErrorCode ec = throws());
     bool                   copyToBuffer(std::vector<uint8_t>& dst, int align = 1, OptionalErrorCode ec = throws());
 };
 
@@ -369,7 +369,7 @@ public:
 
     AudioSamples() = default;
     AudioSamples(SampleFormat sampleFormat, int samplesCount, uint64_t channelLayout, int sampleRate, int align = SampleFormat::AlignDefault);
-    AudioSamples(const uint8_t *data, size_t size,
+    AudioSamples(const uint8_t *data, std::size_t size,
                   SampleFormat sampleFormat, int samplesCount, uint64_t channelLayout, int sampleRate, int align = SampleFormat::AlignDefault);
 
     AudioSamples(const AudioSamples &other);
@@ -385,7 +385,7 @@ public:
     int            channelsCount() const;
     uint64_t channelsLayout() const;
     int            sampleRate() const;
-    size_t         sampleBitDepth(OptionalErrorCode ec = throws()) const;
+    std::size_t         sampleBitDepth(OptionalErrorCode ec = throws()) const;
     bool           isPlanar() const;
 
     std::string    channelsLayoutString() const;

@@ -107,7 +107,7 @@ HAVSVolumeRenderer::HAVSVolumeRenderer():
     this->initialize();
 }
 
-HAVSVolumeRenderer::HAVSVolumeRenderer( kvs::UnstructuredVolumeObject* volume, const size_t k_size )
+HAVSVolumeRenderer::HAVSVolumeRenderer( kvs::UnstructuredVolumeObject* volume, const std::size_t k_size )
 {
     BaseClass::setShader( kvs::Shader::Lambert() );
     this->initialize();
@@ -198,17 +198,17 @@ void HAVSVolumeRenderer::initialize_geometry()
 {
     if ( this->isVBOEnabled() )
     {
-        const size_t coords_size = m_meshes->coords().byteSize();
+        const std::size_t coords_size = m_meshes->coords().byteSize();
         const kvs::Real32* coords_pointer = m_meshes->coords().data();
         m_vertex_coords.setUsage( GL_STATIC_DRAW_ARB );
         m_vertex_coords.create( coords_size, coords_pointer );
 
-        const size_t values_size = m_meshes->values().byteSize();
+        const std::size_t values_size = m_meshes->values().byteSize();
         const kvs::Real32* values_pointer = m_meshes->values().data();
         m_vertex_values.setUsage( GL_STATIC_DRAW_ARB );
         m_vertex_values.create( values_size, values_pointer );
 
-        const size_t faces_size = m_meshes->nfaces() * 3 * sizeof(GLuint);
+        const std::size_t faces_size = m_meshes->nfaces() * 3 * sizeof(GLuint);
         m_vertex_indices.setUsage( GL_STREAM_DRAW_ARB );
         m_vertex_indices.create( faces_size );
     }
@@ -249,8 +249,8 @@ void HAVSVolumeRenderer::initialize_table()
     const float min_value = static_cast<float>( m_ref_volume->minValue() );
     const float max_value = static_cast<float>( m_ref_volume->maxValue() );
     const float max_size_of_cell = m_meshes->depthScale() * 2.0f;
-    const size_t dim_scalar = 128;
-    const size_t dim_depth = 128;
+    const std::size_t dim_scalar = 128;
+    const std::size_t dim_depth = 128;
     kvs::PreIntegrationTable3D table;
     table.setScalarResolution( dim_scalar );
     table.setDepthResolution( dim_depth );
@@ -272,7 +272,7 @@ void HAVSVolumeRenderer::initialize_framebuffer()
     else { m_ntargets = 4; }
 
     // Create FBO textures
-    for ( size_t i = 0; i < m_ntargets; i++ )
+    for ( std::size_t i = 0; i < m_ntargets; i++ )
     {
         m_mrt_texture[i].setWrapS( GL_CLAMP );
         m_mrt_texture[i].setWrapT( GL_CLAMP );
@@ -305,7 +305,7 @@ void HAVSVolumeRenderer::initialize_framebuffer()
 void HAVSVolumeRenderer::update_framebuffer()
 {
     // Reallocate textures
-    for ( size_t i = 0; i < m_ntargets; i++ )
+    for ( std::size_t i = 0; i < m_ntargets; i++ )
     {
         m_mrt_texture[i].release();
         m_mrt_texture[i].create( BaseClass::windowWidth(), BaseClass::windowHeight() );
@@ -378,9 +378,9 @@ void HAVSVolumeRenderer::sort_geometry( kvs::Camera* camera, kvs::ObjectBase* ob
         m_pindices = static_cast<GLuint*>( m_vertex_indices.map( kvs::IndexBufferObject::WriteOnly ) );
     }
 
-    for ( size_t i = 0, index = 0; i < m_meshes->nrenderfaces(); i++ )
+    for ( std::size_t i = 0, index = 0; i < m_meshes->nrenderfaces(); i++ )
     {
-        for ( size_t j = 0; j < 3; j++, index++ )
+        for ( std::size_t j = 0; j < 3; j++, index++ )
         {
             const kvs::UInt32 face_index = m_meshes->sortedFace( i );
             const GLuint vertex_index = static_cast<GLuint>( m_meshes->face( face_index ).index( j ) );
@@ -399,8 +399,8 @@ void HAVSVolumeRenderer::draw_initialization_pass()
 {
     kvs::ProgramObject::Binder binder( m_shader_begin );
 
-    const size_t width = BaseClass::windowWidth();
-    const size_t height = BaseClass::windowHeight();
+    const std::size_t width = BaseClass::windowWidth();
+    const std::size_t height = BaseClass::windowHeight();
     kvs::OpenGL::WithPushedMatrix p1( GL_MODELVIEW );
     p1.loadIdentity();
     {
@@ -498,8 +498,8 @@ void HAVSVolumeRenderer::draw_flush_pass()
     }
 
     // Draw k-1 quads to flush A-buffer
-    const size_t width = BaseClass::windowWidth();
-    const size_t height = BaseClass::windowHeight();
+    const std::size_t width = BaseClass::windowWidth();
+    const std::size_t height = BaseClass::windowHeight();
     kvs::OpenGL::WithPushedMatrix p1( GL_MODELVIEW );
     p1.loadIdentity();
     {
@@ -507,7 +507,7 @@ void HAVSVolumeRenderer::draw_flush_pass()
         p2.loadIdentity();
         {
             kvs::OpenGL::SetOrtho( 0, width, 0, height );
-            for ( size_t i = 0; i < this->kBufferSize() - 1; i++ )
+            for ( std::size_t i = 0; i < this->kBufferSize() - 1; i++ )
             {
                 kvs::OpenGL::Begin( GL_QUADS );
                 kvs::OpenGL::Vertex( GLint(0), GLint(0) );
@@ -525,8 +525,8 @@ void HAVSVolumeRenderer::draw_flush_pass()
 void HAVSVolumeRenderer::draw_texture()
 {
     // Setup 2D view
-    const size_t width = BaseClass::windowWidth();
-    const size_t height = BaseClass::windowHeight();
+    const std::size_t width = BaseClass::windowWidth();
+    const std::size_t height = BaseClass::windowHeight();
     kvs::OpenGL::WithPushedMatrix p1( GL_MODELVIEW );
     p1.loadIdentity();
     {
@@ -607,13 +607,13 @@ void HAVSVolumeRenderer::Meshes::setVolume( const kvs::UnstructuredVolumeObject*
 
     // Normalize scalars
     if ( !volume->hasMinMaxValues() ) const_cast<kvs::UnstructuredVolumeObject*>(volume)->updateMinMaxValues();
-    const size_t nvalues = volume->values().size();
+    const std::size_t nvalues = volume->values().size();
     const float* values = static_cast<const float*>(volume->values().data());
     const float min_value = static_cast<float>( volume->minValue() );
     const float max_value = static_cast<float>( volume->maxValue() );
     const float range = max_value - min_value;
     m_values.allocate( nvalues );
-    for ( size_t i = 0; i < nvalues; i++ )
+    for ( std::size_t i = 0; i < nvalues; i++ )
     {
         m_values[i] = ( values[i] - min_value ) / range;
     }
@@ -638,7 +638,7 @@ void HAVSVolumeRenderer::Meshes::build()
     std::pair<FaceSet::iterator,bool> result4;
 
     const kvs::UInt32* pconnections = m_connections.data();
-    for ( size_t i = 0; i < m_ntetrahedra; i++ )
+    for ( std::size_t i = 0; i < m_ntetrahedra; i++ )
     {
         const kvs::UInt32 id0 = pconnections[4*i+0];
         const kvs::UInt32 id1 = pconnections[4*i+1];
@@ -681,9 +681,9 @@ void HAVSVolumeRenderer::Meshes::build()
     m_radix_temp = new HAVSVolumeRenderer::SortedFace [ m_nfaces ];
 
     face_it = face_set.begin();
-    size_t boundary_face_index = 0;
-    size_t internal_face_index = 0;
-    size_t face_index = 0;
+    std::size_t boundary_face_index = 0;
+    std::size_t internal_face_index = 0;
+    std::size_t face_index = 0;
     while ( face_it != face_set.end() )
     {
         HAVSVolumeRenderer::Face f = *face_it++;
@@ -701,7 +701,7 @@ void HAVSVolumeRenderer::Meshes::build()
 
     // Build centers.
     float max_edge_length = 0.0f;
-    for ( size_t i = 0; i < m_nfaces; i++ )
+    for ( std::size_t i = 0; i < m_nfaces; i++ )
     {
         const HAVSVolumeRenderer::Face f = m_faces[i];
         const HAVSVolumeRenderer::Vertex v1(
@@ -739,13 +739,13 @@ void HAVSVolumeRenderer::Meshes::sort( HAVSVolumeRenderer::Vertex eye )
 {
     HAVSVolumeRenderer::SortedFace sorted_face;
     ::FloatOrInt dist2;
-    size_t sorted_face_count = 0;
-    size_t i = 0;
+    std::size_t sorted_face_count = 0;
+    std::size_t i = 0;
 
     // Add boundary faces first.
     for ( i = 0; i < m_nboundaryfaces; i++ )
     {
-        const size_t f = m_boundary_faces[i];
+        const std::size_t f = m_boundary_faces[i];
         const HAVSVolumeRenderer::Vertex fc = m_centers[f];
         dist2.f = static_cast<float>(( eye - fc ).norm2());
         sorted_face = HAVSVolumeRenderer::SortedFace( f, dist2.i );
@@ -753,10 +753,10 @@ void HAVSVolumeRenderer::Meshes::sort( HAVSVolumeRenderer::Vertex eye )
     }
 
     // Add internal faces as determined by LOD budget
-    const size_t internal_count = m_nrenderfaces - m_nboundaryfaces;
+    const std::size_t internal_count = m_nrenderfaces - m_nboundaryfaces;
     for ( i = 0; i < internal_count; i++ )
     {
-        const size_t f = m_internal_faces[i];
+        const std::size_t f = m_internal_faces[i];
         const HAVSVolumeRenderer::Vertex fc = m_centers[f];
         dist2.f = static_cast<float>(( eye - fc ).norm2());
         sorted_face = HAVSVolumeRenderer::SortedFace( f, dist2.i );

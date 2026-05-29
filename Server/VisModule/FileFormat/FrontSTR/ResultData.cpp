@@ -42,7 +42,7 @@ ResultData::ResultData( void ):
  *  @return number of nodes
  */
 /*===========================================================================*/
-const size_t ResultData::numberOfNodes( void ) const
+const std::size_t ResultData::numberOfNodes( void ) const
 {
     return( m_nnodes );
 }
@@ -53,7 +53,7 @@ const size_t ResultData::numberOfNodes( void ) const
  *  @return number of cells
  */
 /*===========================================================================*/
-const size_t ResultData::numberOfCells( void ) const
+const std::size_t ResultData::numberOfCells( void ) const
 {
     return( m_ncells );
 }
@@ -64,7 +64,7 @@ const size_t ResultData::numberOfCells( void ) const
  *  @return number of components per node
  */
 /*===========================================================================*/
-const size_t ResultData::numberOfComponentsPerNode( void ) const
+const std::size_t ResultData::numberOfComponentsPerNode( void ) const
 {
     return( m_ncomponents_per_node );
 }
@@ -75,7 +75,7 @@ const size_t ResultData::numberOfComponentsPerNode( void ) const
  *  @return number of components per cell
  */
 /*===========================================================================*/
-const size_t ResultData::numberOfComponentsPerCell( void ) const
+const std::size_t ResultData::numberOfComponentsPerCell( void ) const
 {
     return( m_ncomponents_per_cell );
 }
@@ -162,21 +162,21 @@ const bool ResultData::readData( const std::string& filename )
 
     // Reading values for nodes.
     vismodule::ValueArray<vismodule::Real32>* values_temp = new vismodule::ValueArray<vismodule::Real32> [ m_ncomponents_per_node ];
-    for ( size_t i = 0; i < m_ncomponents_per_node; i++ )
+    for ( std::size_t i = 0; i < m_ncomponents_per_node; i++ )
     {
         values_temp[i].allocate( m_nnodes * m_veclens[i] );
         values_temp[i].fill( 0 );
     }
 
-    for ( size_t i = 0; i < m_nnodes; i++ )
+    for ( std::size_t i = 0; i < m_nnodes; i++ )
     {
-        size_t node_index = 0; ifs >> node_index; node_index -= 1;
+        std::size_t node_index = 0; ifs >> node_index; node_index -= 1;
         if ( node_index >= m_nnodes ) break;
-        for ( size_t j = 0; j < m_ncomponents_per_node; j++ )
+        for ( std::size_t j = 0; j < m_ncomponents_per_node; j++ )
         {
-            const size_t veclen = m_veclens[j];
-            const size_t index = node_index * veclen;
-            for ( size_t k = 0; k < veclen; k++ )
+            const std::size_t veclen = m_veclens[j];
+            const std::size_t index = node_index * veclen;
+            for ( std::size_t k = 0; k < veclen; k++ )
             {
                 vismodule::Real32 value = 0.0f; ifs >> value;
                 values_temp[j][ index + k ] = value;
@@ -184,7 +184,7 @@ const bool ResultData::readData( const std::string& filename )
         }
     }
 
-    for ( size_t i = 0; i < m_ncomponents_per_node; i++ )
+    for ( std::size_t i = 0; i < m_ncomponents_per_node; i++ )
     {
         m_values.push_back( values_temp[i] );
         values_temp[i].deallocate();
@@ -246,22 +246,22 @@ const bool ResultData::readDividedData( const std::string& filename )
 
     // Reading values for nodes.
     vismodule::ValueArray<vismodule::Real32>* values_temp = new vismodule::ValueArray<vismodule::Real32> [ m_ncomponents_per_node ];
-    for ( size_t i = 0; i < m_ncomponents_per_node; i++ )
+    for ( std::size_t i = 0; i < m_ncomponents_per_node; i++ )
     {
         values_temp[i].allocate( m_nnodes * m_veclens[i] );
         values_temp[i].fill( 0 );
     }
 
-    for ( size_t i = 0; i < m_nnodes; i++ )
+    for ( std::size_t i = 0; i < m_nnodes; i++ )
     {
         // In divided result data, the index is global, this line is not used for now,
         // but will be used later.
-        size_t node_index = 0; ifs >> node_index;
-        for ( size_t j = 0; j < m_ncomponents_per_node; j++ )
+        std::size_t node_index = 0; ifs >> node_index;
+        for ( std::size_t j = 0; j < m_ncomponents_per_node; j++ )
         {
-            const size_t veclen = m_veclens[j];
-            const size_t index = i * veclen;
-            for ( size_t k = 0; k < veclen; k++ )
+            const std::size_t veclen = m_veclens[j];
+            const std::size_t index = i * veclen;
+            for ( std::size_t k = 0; k < veclen; k++ )
             {
                 vismodule::Real32 value = 0.0f; ifs >> value;
                 values_temp[j][ index + k ] = value;
@@ -269,7 +269,7 @@ const bool ResultData::readDividedData( const std::string& filename )
         }
     }
 
-    for ( size_t i = 0; i < m_ncomponents_per_node; i++ )
+    for ( std::size_t i = 0; i < m_ncomponents_per_node; i++ )
     {
         m_values.push_back( values_temp[i] );
         values_temp[i].deallocate();
@@ -318,9 +318,9 @@ const bool ResultData::read_veclens( std::string& line, std::ifstream& ifs )
     if ( !std::getline( ifs, line ) ) return( false );
 
     std::stringstream buffer( line );
-    for ( size_t i = 0; i < m_ncomponents_per_node; i++ )
+    for ( std::size_t i = 0; i < m_ncomponents_per_node; i++ )
     {
-        size_t veclen = 0; buffer >> veclen;
+        std::size_t veclen = 0; buffer >> veclen;
         m_veclens.push_back( veclen );
     }
 
@@ -338,7 +338,7 @@ const bool ResultData::read_veclens( std::string& line, std::ifstream& ifs )
 const bool ResultData::read_labels( std::string& line, std::ifstream& ifs )
 {
     // Reading labels of components.
-    for ( size_t i = 0; i < m_ncomponents_per_node; i++ )
+    for ( std::size_t i = 0; i < m_ncomponents_per_node; i++ )
     {
         if ( !std::getline( ifs, line ) ) return( false );
         m_labels.push_back( line );

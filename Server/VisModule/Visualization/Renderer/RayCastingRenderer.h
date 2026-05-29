@@ -42,7 +42,7 @@ private:
 
     float  m_step;       ///< sampling step
     float  m_opaque;     ///< opaque value for early ray termination
-    size_t m_ray_width;  ///< ray width
+    std::size_t m_ray_width;  ///< ray width
     bool   m_enable_lod; ///< enable LOD rendering
     float  m_modelview_matrix[16]; ///< modelview matrix
 
@@ -75,7 +75,7 @@ public:
         m_opaque = opaque;
     }
 
-    void enableLODControl( const size_t ray_width = 3 )
+    void enableLODControl( const std::size_t ray_width = 3 )
     {
         m_enable_lod = true;
         this->enableCoarseRendering( ray_width );
@@ -87,7 +87,7 @@ public:
         this->disableCoarseRendering();
     }
 
-    void enableCoarseRendering( const size_t ray_width = 3 )
+    void enableCoarseRendering( const std::size_t ray_width = 3 )
     {
         m_ray_width = ray_width;
     }

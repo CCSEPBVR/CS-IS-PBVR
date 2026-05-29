@@ -116,7 +116,7 @@ void ThisClass::exec( kvs::ObjectBase* object, kvs::Camera* camera, kvs::Light* 
     this->updateColorMapRange( table );
     this->updateAntiAliasing();
 
-    const size_t naxes = table->numberOfColumns();
+    const std::size_t naxes = table->numberOfColumns();
     const float dx = float( x1 - x0 ) / ( naxes - 1 );
 
     auto y_normalize = [&] ( double v, double v_min, double v_max )
@@ -124,7 +124,7 @@ void ThisClass::exec( kvs::ObjectBase* object, kvs::Camera* camera, kvs::Light* 
         return y1 - ( y1 - y0 ) * ( v - v_min ) / ( v_max - v_min );
     };
 
-    auto y_value = [&] ( const size_t axis, const size_t row )
+    auto y_value = [&] ( const std::size_t axis, const std::size_t row )
     {
         const kvs::Real64 min_value = table->minValue( axis );
         const kvs::Real64 max_value = table->maxValue( axis );
@@ -136,8 +136,8 @@ void ThisClass::exec( kvs::ObjectBase* object, kvs::Camera* camera, kvs::Light* 
     render.begin();
     {
         const auto& color_axis_values = table->column( m_active_axis );
-        const size_t nrows = table->column(0).size();
-        for ( size_t i = 0; i < nrows; ++i )
+        const std::size_t nrows = table->column(0).size();
+        for ( std::size_t i = 0; i < nrows; ++i )
         {
             if ( !table->insideRange( i ) ) continue;
 
@@ -149,7 +149,7 @@ void ThisClass::exec( kvs::ObjectBase* object, kvs::Camera* camera, kvs::Light* 
                 kvs::OpenGL::Color( kvs::RGBAColor( color, m_line_opacity ) );
 
                 auto x = static_cast<kvs::Real64>( m_margins.left() );
-                for ( size_t j = 0; j < naxes; ++j, x += dx )
+                for ( std::size_t j = 0; j < naxes; ++j, x += dx )
                 {
                     const auto p = kvs::Vec2( x, y_value( j, i ) );
                     kvs::OpenGL::Vertex( p * dpr );

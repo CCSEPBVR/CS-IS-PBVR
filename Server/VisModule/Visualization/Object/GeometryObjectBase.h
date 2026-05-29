@@ -117,19 +117,19 @@ public:
 
     virtual const GeometryType geometryType() const = 0;
 
-    const size_t nvertices() const;
+    const std::size_t nvertices() const;
 
-    const size_t ncolors() const;
+    const std::size_t ncolors() const;
 
-    const size_t nnormals() const;
+    const std::size_t nnormals() const;
 
 public:
 
-    const vismodule::Vector3f coord( const size_t index = 0 ) const;
+    const vismodule::Vector3f coord( const std::size_t index = 0 ) const;
 
-    const vismodule::RGBColor color( const size_t index = 0 ) const;
+    const vismodule::RGBColor color( const std::size_t index = 0 ) const;
 
-    const vismodule::Vector3f normal( const size_t index = 0 ) const;
+    const vismodule::Vector3f normal( const std::size_t index = 0 ) const;
 
 public:
 

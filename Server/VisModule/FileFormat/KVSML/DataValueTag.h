@@ -50,7 +50,7 @@ public:
 public:
 
     template <typename T>
-    const bool read( const vismodule::XMLNode::SuperClass* parent, const size_t nelements, vismodule::ValueArray<T>* data );
+    const bool read( const vismodule::XMLNode::SuperClass* parent, const std::size_t nelements, vismodule::ValueArray<T>* data );
 
     template <typename T>
     const bool write( vismodule::XMLNode::SuperClass* parent, const vismodule::ValueArray<T>& data );
@@ -65,7 +65,7 @@ private:
 template <typename T>
 inline const bool DataValueTag::read(
     const vismodule::XMLNode::SuperClass* parent,
-    const size_t nelements,
+    const std::size_t nelements,
     vismodule::ValueArray<T>* data )
 {
     const std::string tag_name = BaseClass::name();
@@ -106,14 +106,14 @@ inline const bool DataValueTag::write(
     vismodule::XMLElement element( tag_name );
 
     std::ostringstream oss( std::ostringstream::out );
-    const size_t data_size = data.size();
+    const std::size_t data_size = data.size();
     if ( typeid(T) == typeid(vismodule::Int8) || typeid(T) == typeid(vismodule::UInt8) )
     {
-        for ( size_t i = 0; i < data_size; i++ ) oss << int(data.at(i)) << " ";
+        for ( std::size_t i = 0; i < data_size; i++ ) oss << int(data.at(i)) << " ";
     }
     else
     {
-        for ( size_t i = 0; i < data_size; i++ ) oss << data.at(i) << " ";
+        for ( std::size_t i = 0; i < data_size; i++ ) oss << data.at(i) << " ";
     }
 
     // Insert the data array as string-stream to the parent node.

@@ -26,8 +26,8 @@ class VolumeRendererBase : public kvs::RendererBase
     kvsModule( kvs::VolumeRendererBase, Renderer );
 
 private:
-    size_t m_window_width = 0; ///< window width
-    size_t m_window_height = 0; ///< window height
+    std::size_t m_window_width = 0; ///< window width
+    std::size_t m_window_height = 0; ///< window height
     float m_device_pixel_ratio = 1.0f; ///< device pixel ratio
     kvs::ValueArray<kvs::Real32> m_depth_data{}; ///< depth data as float type
     kvs::ValueArray<kvs::UInt8> m_color_data{}; ///< color (RGBA) data as uchar type
@@ -46,10 +46,10 @@ public:
         kvs::Camera* camera = nullptr,
         kvs::Light* light  = nullptr ) = 0;
 
-    size_t windowWidth() const { return m_window_width; }
-    size_t windowHeight() const { return m_window_height; }
-    size_t framebufferWidth() const { return static_cast<size_t>( m_window_width * m_device_pixel_ratio ); }
-    size_t framebufferHeight() const { return static_cast<size_t>( m_window_height * m_device_pixel_ratio ); }
+    std::size_t windowWidth() const { return m_window_width; }
+    std::size_t windowHeight() const { return m_window_height; }
+    std::size_t framebufferWidth() const { return static_cast<size_t>( m_window_width * m_device_pixel_ratio ); }
+    std::size_t framebufferHeight() const { return static_cast<size_t>( m_window_height * m_device_pixel_ratio ); }
     float devicePixelRatio() const { return m_device_pixel_ratio; }
     template <typename ShadingType>
     void setShader( const ShadingType shader );
@@ -67,14 +67,14 @@ protected:
     kvs::Shader::ShadingModel& shader() { return *m_shader; }
     kvs::TransferFunction& transferFunction() { return m_tfunc; }
     const kvs::ObjectBase* object() const { return m_object; }
-    void setWindowSize( const size_t width, const size_t height ) { m_window_width = width; m_window_height = height; }
+    void setWindowSize( const std::size_t width, const std::size_t height ) { m_window_width = width; m_window_height = height; }
     void setDevicePixelRatio( const float dpr ) { m_device_pixel_ratio = dpr; }
     void setObject( const kvs::ObjectBase* object ) { m_object = object; }
     bool isWindowCreated() { return m_window_width == 0 && m_window_height == 0; }
-    bool isWindowResized( size_t w, size_t h ) { return m_window_width != w || m_window_height != h; }
+    bool isWindowResized( std::size_t w, std::size_t h ) { return m_window_width != w || m_window_height != h; }
     bool isObjectChanged( const kvs::ObjectBase* o ) { return m_object != o; }
-    void allocateDepthData( const size_t size );
-    void allocateColorData( const size_t size );
+    void allocateDepthData( const std::size_t size );
+    void allocateColorData( const std::size_t size );
     void fillDepthData( const kvs::Real32 value );
     void fillColorData( const kvs::UInt8 value );
     void readImage();

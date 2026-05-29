@@ -62,17 +62,17 @@ public:
     void setColor( const kvs::RGBColor& color );
 
     GeometryType geometryType() const { return m_geometry_type; }
-    size_t numberOfVertices() const;
-    size_t numberOfColors() const;
-    size_t numberOfNormals() const;
+    std::size_t numberOfVertices() const;
+    std::size_t numberOfColors() const;
+    std::size_t numberOfNormals() const;
 
     const kvs::ValueArray<kvs::Real32>& coords() const { return m_coords; }
     const kvs::ValueArray<kvs::UInt8>& colors() const { return m_colors; }
     const kvs::ValueArray<kvs::Real32>& normals() const { return m_normals; }
 
-    const kvs::Vec3 coord( const size_t index = 0 ) const;
-    const kvs::RGBColor color( const size_t index = 0 ) const;
-    const kvs::Vec3 normal( const size_t index = 0 ) const;
+    const kvs::Vec3 coord( const std::size_t index = 0 ) const;
+    const kvs::RGBColor color( const std::size_t index = 0 ) const;
+    const kvs::Vec3 normal( const std::size_t index = 0 ) const;
 
     void updateMinMaxCoords();
 
@@ -133,9 +133,9 @@ public:
         this->setColor( kvs::RGBColor( 255, 255, 255 ) );
     }
 
-    KVS_DEPRECATED( size_t nvertices() const ) { return this->numberOfVertices(); }
-    KVS_DEPRECATED( size_t ncolors() const ) { return this->numberOfColors(); }
-    KVS_DEPRECATED( size_t nnormals() const ) { return this->numberOfNormals(); }
+    KVS_DEPRECATED( std::size_t nvertices() const ) { return this->numberOfVertices(); }
+    KVS_DEPRECATED( std::size_t ncolors() const ) { return this->numberOfColors(); }
+    KVS_DEPRECATED( std::size_t nnormals() const ) { return this->numberOfNormals(); }
     KVS_DEPRECATED( friend std::ostream& operator << ( std::ostream& os, const GeometryObjectBase& object ) );
 };
 

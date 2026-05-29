@@ -63,7 +63,7 @@ void FrequencyTable::create( const kvs::VolumeObjectBase* volume )
  *  @param  channel [in] color element channel (0, 1, 2, 3)
  */
 /*==========================================================================*/
-void FrequencyTable::create( const kvs::ImageObject* image, const size_t channel )
+void FrequencyTable::create( const kvs::ImageObject* image, const std::size_t channel )
 {
     // Calculate the min/max range value and the number of bins.
     this->calculate_range( image );
@@ -83,7 +83,7 @@ void FrequencyTable::create( const kvs::ImageObject* image, const size_t channel
  *  @return counts
  */
 /*==========================================================================*/
-kvs::UInt64 FrequencyTable::operator [] ( const size_t index ) const
+kvs::UInt64 FrequencyTable::operator [] ( const std::size_t index ) const
 {
     return m_bin[ index ];
 }
@@ -95,7 +95,7 @@ kvs::UInt64 FrequencyTable::operator [] ( const size_t index ) const
  *  @return counts
  */
 /*==========================================================================*/
-kvs::UInt64 FrequencyTable::at( const size_t index ) const
+kvs::UInt64 FrequencyTable::at( const std::size_t index ) const
 {
     return m_bin[ index ];
 }
@@ -303,7 +303,7 @@ void FrequencyTable::count_bin( const kvs::VolumeObjectBase* volume )
  *  @param  channel [in] color element channel (0, 1, 2, 3)
  */
 /*==========================================================================*/
-void FrequencyTable::count_bin( const kvs::ImageObject* image, const size_t channel )
+void FrequencyTable::count_bin( const kvs::ImageObject* image, const std::size_t channel )
 {
     switch ( image->pixelType() )
     {

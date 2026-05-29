@@ -42,7 +42,7 @@ public:
 private:
     kvs::kvsml::KVSMLTag m_kvsml_tag; ///< KVSML tag information
     WritingDataType m_writing_type; ///< writing data type
-    size_t m_resolution; ///< resolution
+    std::size_t m_resolution; ///< resolution
     float m_min_value; ///< min. scalar value
     float m_max_value; ///< max. scalar value
     OpacityPointList m_opacity_point_list; ///< opacity point list
@@ -60,7 +60,7 @@ public:
     virtual ~KVSMLTransferFunction();
 
     const kvs::kvsml::KVSMLTag& KVSMLTag() const { return m_kvsml_tag; }
-    size_t resolution() const { return m_resolution; }
+    std::size_t resolution() const { return m_resolution; }
     float minValue() const { return m_min_value; }
     float maxValue() const { return m_max_value; }
     const OpacityPointList& opacityPointList() const { return m_opacity_point_list; }
@@ -68,7 +68,7 @@ public:
     const kvs::ValueArray<kvs::Real32>& opacities() const { return m_opacities; }
     const kvs::ValueArray<kvs::UInt8>& colors() const { return m_colors; }
 
-    void setResolution( const size_t resolution ) { m_resolution = resolution; }
+    void setResolution( const std::size_t resolution ) { m_resolution = resolution; }
     void setRange( const float min_value, const float max_value ) { m_min_value = min_value; m_max_value = max_value; }
     void setWritingDataType( const WritingDataType type ) { m_writing_type = type; }
     void setWritingDataTypeToAscii() { this->setWritingDataType( Ascii ); }

@@ -62,8 +62,8 @@ public:
     void updateMinMaxValues();
     void setMinMaxValues( const float min_value, const float max_value );
 
-    size_t size() const;
-    Object load( const size_t index ) const;
+    std::size_t size() const;
+    Object load( const std::size_t index ) const;
     bool load();
 };
 

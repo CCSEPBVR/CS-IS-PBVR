@@ -38,7 +38,7 @@ Pgm::Pgm( void )
  *  @param data   [in] pixel data
  */
 /*==========================================================================*/
-Pgm::Pgm( const size_t width, const size_t height, const vismodule::ValueArray<vismodule::UInt8>& data ):
+Pgm::Pgm( const std::size_t width, const std::size_t height, const vismodule::ValueArray<vismodule::UInt8>& data ):
     m_width( width ),
     m_height( height ),
     m_data( data )
@@ -75,7 +75,7 @@ const Pgm::Header& Pgm::header( void ) const
  *  @return image width
  */
 /*==========================================================================*/
-const size_t Pgm::width( void ) const
+const std::size_t Pgm::width( void ) const
 {
     return( m_width );
 }
@@ -86,7 +86,7 @@ const size_t Pgm::width( void ) const
  *  @return image height
  */
 /*==========================================================================*/
-const size_t Pgm::height( void ) const
+const std::size_t Pgm::height( void ) const
 {
     return( m_height );
 }
@@ -130,15 +130,15 @@ const bool Pgm::read( const std::string& filename )
     m_height  = m_header.height();
 
     // Allocate the pixel data.
-    const size_t npixels = m_width * m_height;
+    const std::size_t npixels = m_width * m_height;
     m_data.allocate( npixels );
 
     // Ascii data.
     if ( m_header.isP2() )
     {
-        for ( size_t i = 0; i < npixels; i++ )
+        for ( std::size_t i = 0; i < npixels; i++ )
         {
-            size_t v;
+            std::size_t v;
             ifs >> v;
 
             m_data[i] = static_cast<vismodule::UInt8>( v );

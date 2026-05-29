@@ -72,7 +72,7 @@ public:
     void setColor( const vismodule::RGBAColor& color0, const vismodule::RGBAColor& color1,
                    const vismodule::RGBAColor& color2, const vismodule::RGBAColor& color3 );
 
-    const vismodule::RGBColor& color( size_t index = 0 ) const;
+    const vismodule::RGBColor& color( std::size_t index = 0 ) const;
 
 //    void setImage( const ImageObject& image );
 

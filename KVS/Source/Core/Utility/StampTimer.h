@@ -55,7 +55,7 @@ public:
     const std::string& unitString() const { return m_unit_strings.at( this->unit() ); }
     const Times& times() const { return m_times; }
     Time time() const { return this->time( m_timer ); }
-    size_t numberOfStamps() const { return m_times.size(); }
+    std::size_t numberOfStamps() const { return m_times.size(); }
     Time last() const { return m_times.back(); }
 
     Time totalTime() const { return std::accumulate( std::begin( m_times ), std::end( m_times ), 0.0 ); }

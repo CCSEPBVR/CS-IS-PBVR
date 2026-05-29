@@ -19,7 +19,7 @@ namespace kvs
 /*===========================================================================*/
 StructuredExtractScalar::StructuredExtractScalar(
     const kvs::StructuredVolumeObject* volume,
-    const size_t offset ):
+    const std::size_t offset ):
     m_offset( offset )
 {
     this->exec( volume );
@@ -79,11 +79,11 @@ StructuredExtractScalar::SuperClass* StructuredExtractScalar::exec( const kvs::O
 template <typename T>
 void StructuredExtractScalar::slice_scalar( const kvs::StructuredVolumeObject* volume )
 {
-    const size_t veclen = volume->veclen();
-    const size_t nnodes = volume->numberOfNodes();
+    const std::size_t veclen = volume->veclen();
+    const std::size_t nnodes = volume->numberOfNodes();
     const kvs::ValueArray<T> vectors = volume->values().asValueArray<T>();
     kvs::ValueArray<T> scalars( nnodes );
-    for ( size_t i = 0; i < nnodes; i++ ) { scalars[i] = vectors[ veclen * i + m_offset ]; }
+    for ( std::size_t i = 0; i < nnodes; i++ ) { scalars[i] = vectors[ veclen * i + m_offset ]; }
 
     SuperClass::setGridTypeToUniform();
     SuperClass::setVeclen( 1 );

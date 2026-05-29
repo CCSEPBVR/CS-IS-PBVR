@@ -150,7 +150,7 @@ public:
 private:
 
     std::string m_label; ///< data label
-    size_t m_veclen; ///< Vector length.
+    std::size_t m_veclen; ///< Vector length.
 
     Coords m_coords; ///< Coordinate array.
     Values m_values; ///< Value array.
@@ -170,7 +170,7 @@ public:
     VolumeObjectBase();
 
     VolumeObjectBase(
-        const size_t     veclen,
+        const std::size_t     veclen,
         const Coords&    coords,
         const Values&    values );
 
@@ -192,7 +192,7 @@ public:
 
     void setLabel( const std::string& label );
 
-    void setVeclen( const size_t veclen );
+    void setVeclen( const std::size_t veclen );
 
     void setCoords( const Coords& values );
 
@@ -209,7 +209,7 @@ public:
 
     const std::string& label() const;
 
-    const size_t veclen() const;
+    const std::size_t veclen() const;
 
     const Coords& coords() const;
 
@@ -234,7 +234,7 @@ public:
 
     virtual const CellType cellType() const = 0;
 
-    virtual const size_t nnodes() const = 0;
+    virtual const std::size_t nnodes() const = 0;
 
     void updateMinMaxValues() const;
 
@@ -277,12 +277,12 @@ void VolumeObjectBase::calculate_min_max_values() const
         vismodule::Real64 min_value = vismodule::Value<vismodule::Real64>::Max();
         vismodule::Real64 max_value = vismodule::Value<vismodule::Real64>::Min();
 
-        const size_t veclen = m_veclen;
+        const std::size_t veclen = m_veclen;
 
         while ( value < end )
         {
             vismodule::Real64 magnitude = 0.0;
-            for ( size_t i = 0; i < veclen; ++i )
+            for ( std::size_t i = 0; i < veclen; ++i )
             {
                 magnitude += static_cast<vismodule::Real64>( ( *value ) * ( *value ) );
                 ++value;

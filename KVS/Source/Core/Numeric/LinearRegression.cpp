@@ -17,10 +17,10 @@ namespace
 template <typename T>
 T DevSQ( const kvs::Vector<T>& vec )
 {
-    const size_t n = vec.size();
+    const std::size_t n = vec.size();
     T sum = T(0);
     T sum2 = T(0);
-    for ( size_t i = 0; i < n; i++ )
+    for ( std::size_t i = 0; i < n; i++ )
     {
         sum += vec[i];
         sum2 += vec[i] * vec[i];
@@ -58,24 +58,24 @@ void LinearRegression<T>::fit( const kvs::ValueArray<T>& dep, const kvs::ValueTa
     KVS_ASSERT( dep.size() == indep.column(0).size() );
 
     // Dependent (Y) and independent (Xi) variables
-    const size_t nrows = dep.size();
-    const size_t ncols = indep.columnSize() + 1;
+    const std::size_t nrows = dep.size();
+    const std::size_t ncols = indep.columnSize() + 1;
     kvs::Vector<T> Y( nrows );
     kvs::Matrix<T> X( nrows, ncols );
-    for ( size_t i = 0; i < nrows; i++ )
+    for ( std::size_t i = 0; i < nrows; i++ )
     {
         kvs::Vector<T>& Xi = X[i];
         Y[i] = dep[i];
         Xi[0] = 1.0f;
-        for ( size_t j = 1; j < ncols; j++ )
+        for ( std::size_t j = 1; j < ncols; j++ )
         {
             Xi[j] = indep[j-1][i];
         }
     }
 
     // Degree of freedom
-    const size_t n = dep.size();
-    const size_t k = indep.columnSize();
+    const std::size_t n = dep.size();
+    const std::size_t k = indep.columnSize();
     m_dof = n - k - 1;
 
     // Regression coefficients
@@ -94,7 +94,7 @@ void LinearRegression<T>::fit( const kvs::ValueArray<T>& dep, const kvs::ValueTa
     // Standard error
     const kvs::Real64 ve = rss / m_dof;
     m_standard_errors.resize( m_coef.size() );
-    for ( size_t i = 0; i < m_coef.size(); i++ )
+    for ( std::size_t i = 0; i < m_coef.size(); i++ )
     {
         m_standard_errors[i] = std::sqrt( ve * XtX_inv[i][i] );
     }
@@ -106,7 +106,7 @@ void LinearRegression<T>::test()
     m_t_values.resize( m_coef.size() );
     m_p_values.resize( m_coef.size() );
     kvs::StudentTDistribution tdist( m_dof );
-    for ( size_t i = 0; i < m_coef.size(); i++ )
+    for ( std::size_t i = 0; i < m_coef.size(); i++ )
     {
         m_t_values[i] = m_coef[i] / m_standard_errors[i];
         m_p_values[i] = 2.0 * ( 1.0 - tdist.cdf( m_t_values[i] ) );

@@ -72,8 +72,8 @@ void VertexBufferObjectManager::setVertexAttribArray(
 /*===========================================================================*/
 void VertexBufferObjectManager::setVertexArray(
     const kvs::AnyValueArray& array,
-    const size_t dim,
-    const size_t stride )
+    const std::size_t dim,
+    const std::size_t stride )
 {
     m_vertex_array.type = ::GLType( array );
     m_vertex_array.size = array.byteSize();
@@ -92,8 +92,8 @@ void VertexBufferObjectManager::setVertexArray(
 /*===========================================================================*/
 void VertexBufferObjectManager::setColorArray(
     const kvs::AnyValueArray& array,
-    const size_t dim,
-    const size_t stride )
+    const std::size_t dim,
+    const std::size_t stride )
 {
     m_color_array.type = ::GLType( array );
     m_color_array.size = array.byteSize();
@@ -111,7 +111,7 @@ void VertexBufferObjectManager::setColorArray(
 /*===========================================================================*/
 void VertexBufferObjectManager::setNormalArray(
     const kvs::AnyValueArray& array,
-    const size_t stride )
+    const std::size_t stride )
 {
     m_normal_array.type = ::GLType( array );
     m_normal_array.size = array.byteSize();
@@ -130,8 +130,8 @@ void VertexBufferObjectManager::setNormalArray(
 /*===========================================================================*/
 void VertexBufferObjectManager::setTexCoordArray(
     const kvs::AnyValueArray& array,
-    const size_t dim,
-    const size_t stride )
+    const std::size_t dim,
+    const std::size_t stride )
 {
     m_tex_coord_array.type = ::GLType( array );
     m_tex_coord_array.size = array.byteSize();
@@ -166,10 +166,10 @@ void VertexBufferObjectManager::setIndexArray(
 /*===========================================================================*/
 void VertexBufferObjectManager::setVertexAttribArray(
     const kvs::AnyValueArray& array,
-    const size_t index,
-    const size_t dim,
+    const std::size_t index,
+    const std::size_t dim,
     const bool normalized,
-    const size_t stride )
+    const std::size_t stride )
 {
     VertexAttribBuffer attrib_array;
     attrib_array.type = ::GLType( array );
@@ -201,12 +201,12 @@ void VertexBufferObjectManager::setVertexAttribArray(
 /*===========================================================================*/
 void VertexBufferObjectManager::create()
 {
-    const size_t vbo_size = this->vertex_buffer_object_size();
+    const std::size_t vbo_size = this->vertex_buffer_object_size();
     if ( vbo_size > 0 )
     {
         m_vbo.create( vbo_size );
         {
-            size_t offset = 0;
+            std::size_t offset = 0;
             m_vbo.bind();
             if ( m_vertex_array.size > 0 )
             {
@@ -244,7 +244,7 @@ void VertexBufferObjectManager::create()
                     m_tex_coord_array.offset );
             }
 
-            for ( size_t i = 0; i < m_vertex_attrib_arrays.size(); i++ )
+            for ( std::size_t i = 0; i < m_vertex_attrib_arrays.size(); i++ )
             {
                 if ( m_vertex_attrib_arrays[i].size > 0 )
                 {
@@ -259,7 +259,7 @@ void VertexBufferObjectManager::create()
             m_vbo.unbind();
         }
 
-        const size_t ibo_size = m_index_array.size;
+        const std::size_t ibo_size = m_index_array.size;
         if ( ibo_size > 0 )
         {
             m_ibo.create( ibo_size );
@@ -417,12 +417,12 @@ void VertexBufferObjectManager::drawElements(
 /*===========================================================================*/
 size_t VertexBufferObjectManager::vertex_buffer_object_size() const
 {
-    size_t vbo_size = 0;
+    std::size_t vbo_size = 0;
     vbo_size += BufferObject::PaddedBufferSize( m_vertex_array.size );
     vbo_size += BufferObject::PaddedBufferSize( m_color_array.size );
     vbo_size += BufferObject::PaddedBufferSize( m_normal_array.size );
     vbo_size += BufferObject::PaddedBufferSize( m_tex_coord_array.size );
-    for ( size_t i = 0; i < m_vertex_attrib_arrays.size(); i++ )
+    for ( std::size_t i = 0; i < m_vertex_attrib_arrays.size(); i++ )
     {
         vbo_size += BufferObject::PaddedBufferSize( m_vertex_attrib_arrays[i].size );
     }
@@ -468,7 +468,7 @@ void VertexBufferObjectManager::enable_client_state() const
         kvs::OpenGL::TexCoordPointer( array.dim, array.type, array.stride, offset );
     }
 
-    for ( size_t i = 0; i < m_vertex_attrib_arrays.size(); i++ )
+    for ( std::size_t i = 0; i < m_vertex_attrib_arrays.size(); i++ )
     {
         const VertexAttribBuffer& array = m_vertex_attrib_arrays[i];
         if ( array.size > 0 )
@@ -513,7 +513,7 @@ void VertexBufferObjectManager::disable_client_state() const
         kvs::OpenGL::DisableClientState( GL_TEXTURE_COORD_ARRAY );
     }
 
-    for ( size_t i = 0; i < m_vertex_attrib_arrays.size(); i++ )
+    for ( std::size_t i = 0; i < m_vertex_attrib_arrays.size(); i++ )
     {
         const VertexAttribBuffer& array = m_vertex_attrib_arrays[i];
         if ( array.size > 0 )

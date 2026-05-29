@@ -46,7 +46,7 @@ private:
     GLenum m_target_binding = 0; ///< target binding
     GLenum m_usage = 0; ///< usage
     GLuint m_id = 0; ///< buffer ID
-    size_t m_size = 0; ///< buffer size [byte]
+    std::size_t m_size = 0; ///< buffer size [byte]
     bool m_is_loaded = false; ///< test whether the memory is allocated on the GPU or not
 
 public:
@@ -64,12 +64,12 @@ public:
     GLuint id() const { return m_id; }
     GLenum target() const { return m_target; }
     GLenum targetBinding() const { return m_target_binding; }
-    size_t size() const { return m_size; }
+    std::size_t size() const { return m_size; }
 
     void setUsage( const GLenum usage ) { m_usage = usage; }
-    void setSize( const size_t size ) { m_size = size; }
+    void setSize( const std::size_t size ) { m_size = size; }
 
-    void create( const size_t size, const void* data = NULL );
+    void create( const std::size_t size, const void* data = NULL );
     void release();
     void bind() const;
     void unbind() const;
@@ -77,7 +77,7 @@ public:
     bool isValid() const;
     bool isBound() const;
 
-    GLsizeiptr load( const size_t size, const void* data, const size_t offset = 0 );
+    GLsizeiptr load( const std::size_t size, const void* data, const std::size_t offset = 0 );
     void* map( const GLenum type = AccessType::ReadWrite ) { return this->mapBuffer( type ); }
     void unmap() { this->unmapBuffer(); }
 

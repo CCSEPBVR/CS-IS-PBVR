@@ -139,7 +139,7 @@ bool MeshData::read( const std::string filename )
     }
 
     const kvs::gf::DataSet& data_set = file.dataSet(0);
-    for ( size_t i = 0; i < data_set.dataList().size(); i++ )
+    for ( std::size_t i = 0; i < data_set.dataList().size(); i++ )
     {
         const kvs::gf::Data& data = data_set.data(i);
         const std::string& keyword = data.keyword();
@@ -164,10 +164,10 @@ bool MeshData::read( const std::string filename )
                 m_nnodes_per_element = data.num();
                 m_nelements = data.num2();
                 const kvs::Int32* src = data.intArray().data();
-                const size_t size = data.intArray().size();
+                const std::size_t size = data.intArray().size();
                 m_connections.allocate( size );
                 kvs::UInt32* dst = m_connections.data();
-                for ( size_t i = 0; i < size; i++ )
+                for ( std::size_t i = 0; i < size; i++ )
                     dst[i] = static_cast<kvs::UInt32>( src[i] - 1 );
             }
         }

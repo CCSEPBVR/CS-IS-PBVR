@@ -115,7 +115,7 @@ size_t FlowData::nsteps() const
  *  @return time value
  */
 /*===========================================================================*/
-kvs::Real32 FlowData::time( const size_t index ) const
+kvs::Real32 FlowData::time( const std::size_t index ) const
 {
     KVS_ASSERT( index < m_nsteps );
     return m_times[ index ];
@@ -128,7 +128,7 @@ kvs::Real32 FlowData::time( const size_t index ) const
  *  @return step value
  */
 /*===========================================================================*/
-kvs::Int32 FlowData::step( const size_t index ) const
+kvs::Int32 FlowData::step( const std::size_t index ) const
 {
     KVS_ASSERT( index < m_nsteps );
     return m_steps[ index ];
@@ -141,7 +141,7 @@ kvs::Int32 FlowData::step( const size_t index ) const
  *  @return velocity value array
  */
 /*===========================================================================*/
-const kvs::ValueArray<kvs::Real32>& FlowData::velocities( const size_t index ) const
+const kvs::ValueArray<kvs::Real32>& FlowData::velocities( const std::size_t index ) const
 {
     KVS_ASSERT( index < m_nsteps );
     return m_velocities[ index ];
@@ -154,7 +154,7 @@ const kvs::ValueArray<kvs::Real32>& FlowData::velocities( const size_t index ) c
  *  @return pressure value array
  */
 /*===========================================================================*/
-const kvs::ValueArray<kvs::Real32>& FlowData::pressures( const size_t index ) const
+const kvs::ValueArray<kvs::Real32>& FlowData::pressures( const std::size_t index ) const
 {
     KVS_ASSERT( index < m_nsteps );
     return m_pressures[ index ];
@@ -195,10 +195,10 @@ bool FlowData::read( const std::string filename )
     m_velocities = new kvs::ValueArray<kvs::Real32> [ m_nsteps ];
     m_pressures = new kvs::ValueArray<kvs::Real32> [ m_nsteps ];
 
-    for ( size_t i = 0; i < m_nsteps; i++ )
+    for ( std::size_t i = 0; i < m_nsteps; i++ )
     {
         const kvs::gf::DataSet& data_set = file.dataSet(i);
-        for ( size_t j = 0; j < data_set.dataList().size(); j++ )
+        for ( std::size_t j = 0; j < data_set.dataList().size(); j++ )
         {
             const kvs::gf::Data& data = data_set.data(j);
             const std::string& keyword = data.keyword();

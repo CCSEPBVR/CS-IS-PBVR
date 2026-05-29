@@ -62,7 +62,7 @@ protected:
     IntegrationDirection m_integration_direction; ///< integration direction
     float m_integration_interval; ///< integration interval in the object coordinate
     float m_vector_length_threshold; ///< threshold of the vector length
-    size_t m_integration_times_threshold; ///< threshold of the integration times
+    std::size_t m_integration_times_threshold; ///< threshold of the integration times
     bool m_enable_boundary_condition; ///< flag for the boundray condition
     bool m_enable_vector_length_condition; ///< flag for the vector length condition
     bool m_enable_integration_times_condition; ///< flag for the integration times
@@ -85,7 +85,7 @@ public:
 
     void setVectorLengthThreshold( const float length );
 
-    void setIntegrationTimesThreshold( const size_t times );
+    void setIntegrationTimesThreshold( const std::size_t times );
 
     void setEnableBoundaryCondition( const bool enabled );
 
@@ -104,7 +104,7 @@ protected:
     virtual const bool check_for_termination(
         const vismodule::Vector3f& current_vertex,
         const vismodule::Vector3f& direction,
-        const size_t integration_times,
+        const std::size_t integration_times,
         const vismodule::Vector3f& next_vertex ) = 0;
 
     virtual const vismodule::Vector3f interpolate_vector( const vismodule::Vector3f& vertex, const vismodule::Vector3f& direction ) = 0;
@@ -123,7 +123,7 @@ protected:
     const bool calculate_line(
         std::vector<vismodule::Real32>* vertices,
         std::vector<vismodule::UInt8>* colors,
-        const size_t index );
+        const std::size_t index );
 
     const bool calculate_one_side(
         std::vector<vismodule::Real32>* coords,
@@ -157,7 +157,7 @@ protected:
 
     const bool check_for_vector_length( const vismodule::Vector3f& direction );
 
-    const bool check_for_integration_times( const size_t times );
+    const bool check_for_integration_times( const std::size_t times );
 };
 
 } // end of namespace vismodule

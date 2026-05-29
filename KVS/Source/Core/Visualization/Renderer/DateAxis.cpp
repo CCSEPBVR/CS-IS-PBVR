@@ -72,14 +72,14 @@ int DateAxis::drawTickLabelsOnTop( kvs::Painter& painter )
     const float x1 = rect().x1();
     const float y0 = rect().y0();
     const kvs::FontMetrics& metrics = painter.fontMetrics();
-    const size_t nticks = ValueAxis::numberOfTicks();
+    const std::size_t nticks = ValueAxis::numberOfTicks();
     const float stride = ( x1 - x0 ) / ( nticks - 1 );
 
     const int nyears = m_max_date.year() - m_min_date.year();
-    const size_t nmonths = nyears * 12 + ( m_max_date.month() - m_min_date.month() ) + 1;
+    const std::size_t nmonths = nyears * 12 + ( m_max_date.month() - m_min_date.month() ) + 1;
 
     kvs::Date date = m_min_date;
-    for ( size_t i = 0; i < nticks; ++i )
+    for ( std::size_t i = 0; i < nticks; ++i )
     {
         const auto d = date.monthString() + " " + kvs::String::From( date.year() );
         const int x = x0 + stride * i - metrics.width( d ) / 2;
@@ -104,14 +104,14 @@ int DateAxis::drawTickLabelsOnBottom( kvs::Painter& painter )
     const float x1 = rect().x1();
     const float y1 = rect().y1();
     const kvs::FontMetrics& metrics = painter.fontMetrics();
-    const size_t nticks = ValueAxis::numberOfTicks();
+    const std::size_t nticks = ValueAxis::numberOfTicks();
     const double stride = double( x1 - x0 ) / ( nticks - 1 );
 
     const int nyears = m_max_date.year() - m_min_date.year();
-    const size_t nmonths = nyears * 12 + ( m_max_date.month() - m_min_date.month() ) + 1;
+    const std::size_t nmonths = nyears * 12 + ( m_max_date.month() - m_min_date.month() ) + 1;
 
     kvs::Date date = m_min_date;
-    for ( size_t i = 0; i < nticks; ++i )
+    for ( std::size_t i = 0; i < nticks; ++i )
     {
         const std::string d = date.monthString() + " " + kvs::String::From( date.year() );
         const int x = x0 + stride * i - metrics.width( d ) / 2;
@@ -136,16 +136,16 @@ int DateAxis::drawTickLabelsOnLeft( kvs::Painter& painter )
     const float y0 = rect().y0();
     const float y1 = rect().y1();
     const kvs::FontMetrics& metrics = painter.fontMetrics();
-    const size_t nticks = ValueAxis::numberOfTicks();
+    const std::size_t nticks = ValueAxis::numberOfTicks();
     const float stride = ( y1 - y0 ) / ( nticks - 1 );
     const int offset = 3; // additional offset between the axis and tick label
 
     const int nyears = m_max_date.year() - m_min_date.year();
-    const size_t nmonths = nyears * 12 + ( m_max_date.month() - m_min_date.month() ) + 1;
+    const std::size_t nmonths = nyears * 12 + ( m_max_date.month() - m_min_date.month() ) + 1;
 
     int margin = 0;
     kvs::Date date = m_min_date;
-    for ( size_t i = 0; i < nticks; ++i )
+    for ( std::size_t i = 0; i < nticks; ++i )
     {
         const std::string d = date.monthString() + " " + kvs::String::From( date.year() );
         const int x = x0 - metrics.width( d ) - ValueAxis::labelOffset() - offset;
@@ -171,16 +171,16 @@ int DateAxis::drawTickLabelsOnRight( kvs::Painter& painter )
     const float y0 = rect().y0();
     const float y1 = rect().y1();
     const kvs::FontMetrics& metrics = painter.fontMetrics();
-    const size_t nticks = ValueAxis::numberOfTicks();
+    const std::size_t nticks = ValueAxis::numberOfTicks();
     const float stride = ( y1 - y0 ) / ( nticks - 1 );
     const int offset = 3; // additional offset between the axis and tick label
 
     const int nyears = m_max_date.year() - m_min_date.year();
-    const size_t nmonths = nyears * 12 + ( m_max_date.month() - m_min_date.month() ) + 1;
+    const std::size_t nmonths = nyears * 12 + ( m_max_date.month() - m_min_date.month() ) + 1;
 
     int margin = 0;
     kvs::Date date = m_min_date;
-    for ( size_t i = 0; i < nticks; ++i )
+    for ( std::size_t i = 0; i < nticks; ++i )
     {
         const std::string d = date.monthString() + " " + kvs::String::From( date.year() );
         const int x = x1 + ValueAxis::labelOffset() + offset;

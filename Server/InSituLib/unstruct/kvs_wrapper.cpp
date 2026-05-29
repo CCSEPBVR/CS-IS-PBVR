@@ -43,7 +43,7 @@
 namespace Generator = vismodule::CellByCellParticleGenerator;
 
 static bool is_initial_step = true;
-static size_t start_time_step = 0;
+static std::size_t start_time_step = 0;
 
 static void CollectParticleMinMax(
     ParticleProperty& particle_property,
@@ -270,7 +270,7 @@ void generate_particles(
     tmp_max = new float[tf_number * 2]; // color, opacity
     tmp_min = new float[tf_number * 2]; // color, opacity
 
-    for ( size_t i = 0; i < (DEFAULT_NBINS * tf_number); i++ )
+    for ( std::size_t i = 0; i < (DEFAULT_NBINS * tf_number); i++ )
     {
         tmp_c_bins[i] = 0;
         tmp_o_bins[i] = 0;
@@ -342,7 +342,7 @@ void generate_particles(
                 ncoords, connections, ncells, celltype, pol_object
             );
 
-            for( size_t i = 0; i < resolution; i++ )
+            for( std::size_t i = 0; i < resolution; i++ )
             {
                 x_axis[i] = pol_object->x_axis()[i];
                 if ( pol_object->mask()[i] )
@@ -780,7 +780,7 @@ void generate_particles_vtk( int time_step, vtkUnstructuredGrid* ucd )
     tmp_max = new float[tf_number * 2]; // color, opacity
     tmp_min = new float[tf_number * 2]; // color, opacity
 
-    for ( size_t i = 0; i < (DEFAULT_NBINS * tf_number); i++ )
+    for ( std::size_t i = 0; i < (DEFAULT_NBINS * tf_number); i++ )
     {
         tmp_c_bins[i] = 0;
         tmp_o_bins[i] = 0;
@@ -821,7 +821,7 @@ void generate_particles_vtk( int time_step, vtkUnstructuredGrid* ucd )
         if ( value_on_time.size() != nvariables ) value_on_time.resize( nvariables ); // Plot Over Time
 
         std::vector<Type*> raw_pointers_vector( nvariables );
-        for ( size_t j = 0; j < nvariables; ++j )
+        for ( std::size_t j = 0; j < nvariables; ++j )
         {
             raw_pointers_vector[j] = values.get()[j].get();
         }
@@ -870,7 +870,7 @@ void generate_particles_vtk( int time_step, vtkUnstructuredGrid* ucd )
                     ncoords, connections.get(), ncells, celltype, pol_object
                 );
 
-                for( size_t j = 0; j < resolution; j++ )
+                for( std::size_t j = 0; j < resolution; j++ )
                 {
                     x_axis[j] = pol_object->x_axis()[j];
                     if ( pol_object->mask()[j] )
@@ -905,7 +905,7 @@ void generate_particles_vtk( int time_step, vtkUnstructuredGrid* ucd )
         first_connections, first_ncells, first_celltype
     );
 
-    for ( size_t i = 1; i < kvs_cell_type_vector.size(); i++ )
+    for ( std::size_t i = 1; i < kvs_cell_type_vector.size(); i++ )
     {
         std::unique_ptr<std::unique_ptr<Type[]>[]> values;
         int nvariables = 0;

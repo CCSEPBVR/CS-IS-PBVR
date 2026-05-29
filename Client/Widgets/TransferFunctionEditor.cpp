@@ -1020,7 +1020,7 @@ void TransferFunctionEditor::onApply()
     auto sameColorMap = []( const std::vector<kvs::RGBColor>& a, const std::vector<kvs::RGBColor>& b ) -> bool
     {
         if( a.size() != b.size() ) return false;
-        for( size_t i = 0; i < a.size(); ++i )
+        for( std::size_t i = 0; i < a.size(); ++i )
         {
             if( a[i].red()   != b[i].red() )   return false;
             if( a[i].green() != b[i].green() ) return false;
@@ -1033,7 +1033,7 @@ void TransferFunctionEditor::onApply()
                              const std::vector<float>& b ) -> bool
     {
         if( a.size() != b.size() ) return false;
-        for( size_t i = 0; i < a.size(); ++i )
+        for( std::size_t i = 0; i < a.size(); ++i )
         {
             if( std::abs( (double)a[i] - (double)b[i] ) > 1e-7 ) return false;
         }

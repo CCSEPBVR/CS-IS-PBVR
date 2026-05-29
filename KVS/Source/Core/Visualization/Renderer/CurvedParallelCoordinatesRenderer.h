@@ -23,13 +23,13 @@ class CurvedParallelCoordinatesRenderer : public kvs::ParallelCoordinatesRendere
     kvsModuleBaseClass( kvs::ParallelCoordinatesRenderer );
 
 private:
-    size_t m_nintervals = 10; ///< number of intervals
+    std::size_t m_nintervals = 10; ///< number of intervals
 
 public:
     CurvedParallelCoordinatesRenderer()= default;
 
-    void setNumberOfIntervals( const size_t nintervals ) { m_nintervals = nintervals; }
-    size_t numberOfIntervals() const { return m_nintervals; }
+    void setNumberOfIntervals( const std::size_t nintervals ) { m_nintervals = nintervals; }
+    std::size_t numberOfIntervals() const { return m_nintervals; }
 
     void exec( kvs::ObjectBase* object, kvs::Camera* camera, kvs::Light* light );
 };

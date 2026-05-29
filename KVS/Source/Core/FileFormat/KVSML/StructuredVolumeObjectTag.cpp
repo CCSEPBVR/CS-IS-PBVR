@@ -142,7 +142,7 @@ bool StructuredVolumeObjectTag::read( const kvs::XMLNode::SuperClass* parent )
         kvs::Tokenizer t( resolution, delim );
 
         unsigned int values[3];
-        for ( size_t i = 0; i < 3; i++ )
+        for ( std::size_t i = 0; i < 3; i++ )
         {
             if ( t.isLast() )
             {

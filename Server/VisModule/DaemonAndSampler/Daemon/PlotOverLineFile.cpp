@@ -129,7 +129,7 @@ bool PlotOverLineFile::generatePOLObject( const int time_step, vismodule::KVSMLO
             resize_flag = false;
         }
         
-        for( size_t i = 0; i < tmp_Mask.size(); i++ )
+        for( std::size_t i = 0; i < tmp_Mask.size(); i++ )
         { 
             if ( tmp_Mask[i] ) 
             { 
@@ -146,7 +146,7 @@ bool PlotOverLineFile::generatePOLObject( const int time_step, vismodule::KVSMLO
     mask.allocate( Mask.size() );
     mask.fill( false );
 
-    for ( size_t i = 0; i < Mask.size(); i++ )
+    for ( std::size_t i = 0; i < Mask.size(); i++ )
     { 
         mask[i] = Mask[i];
     }

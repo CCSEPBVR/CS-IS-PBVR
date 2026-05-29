@@ -591,7 +591,7 @@ const vismodule::ValueArray<vismodule::UInt8> Dicom::pixelData( void ) const
  *  @return  
  */
 /*===========================================================================*/
-const int Dicom::rawValue( const size_t index ) const
+const int Dicom::rawValue( const std::size_t index ) const
 {
     int ret = 0;
 
@@ -634,7 +634,7 @@ const int Dicom::rawValue( const size_t index ) const
  *  @return 
  */
 /*===========================================================================*/
-const int Dicom::rawValue( const size_t i, const size_t j ) const
+const int Dicom::rawValue( const std::size_t i, const std::size_t j ) const
 {
     return( this->rawValue( m_column * j + i ) );
 }
@@ -646,7 +646,7 @@ const int Dicom::rawValue( const size_t i, const size_t j ) const
  *  @return rescaled pixel value
  */
 /*===========================================================================*/
-const int Dicom::value( const size_t index ) const
+const int Dicom::value( const std::size_t index ) const
 {
     const int raw_value = this->rawValue( index );
 
@@ -661,9 +661,9 @@ const int Dicom::value( const size_t index ) const
  *  @return rescaled pixel value
  */
 /*===========================================================================*/
-const int Dicom::value( const size_t x, const size_t y ) const
+const int Dicom::value( const std::size_t x, const std::size_t y ) const
 {
-    const size_t raw_value = this->rawValue( x, y );
+    const std::size_t raw_value = this->rawValue( x, y );
 
     return( vismodule::Math::Round( raw_value * m_rescale_slope + m_rescale_intersept ) );
 }
@@ -853,7 +853,7 @@ const bool Dicom::read_data( std::ifstream& ifs )
     ifs.seekg( m_position, std::ios::beg );
 
     // Read the raw data.
-    const size_t raw_data_size = m_row * m_column * ( m_bits_allocated >> 3 );
+    const std::size_t raw_data_size = m_row * m_column * ( m_bits_allocated >> 3 );
     m_raw_data.allocate( raw_data_size );
 
     ifs.read( m_raw_data.pointer(), raw_data_size );
@@ -1058,8 +1058,8 @@ const vismodule::ValueArray<vismodule::UInt8> Dicom::rescale_pixel_data( const i
 
     const T* raw_data = reinterpret_cast<const T*>( m_raw_data.pointer() );
 
-    const size_t npixels = m_row * m_column;
-    for( size_t index = 0; index < npixels; index++ )
+    const std::size_t npixels = m_row * m_column;
+    for( std::size_t index = 0; index < npixels; index++ )
     {
         double temp_value  = raw_data[index] * m_rescale_slope + m_rescale_intersept;
         double pixel_value = ( ( temp_value - level ) / width + 0.5 ) * 255.0;
@@ -1082,8 +1082,8 @@ const vismodule::ValueArray<vismodule::UInt8> Dicom::rescale_pixel_data<vismodul
 
     const vismodule::Int8* raw_data = reinterpret_cast<const vismodule::Int8*>( m_raw_data.pointer() );
 
-    const size_t npixels = m_row * m_column;
-    for( size_t index = 0; index < npixels; index++ )
+    const std::size_t npixels = m_row * m_column;
+    for( std::size_t index = 0; index < npixels; index++ )
     {
         pixel_data[index] = static_cast<vismodule::UInt8>( raw_data[index] - vismodule::Value<vismodule::Int8>::Min() );
     }
@@ -1103,8 +1103,8 @@ const vismodule::ValueArray<vismodule::UInt8> Dicom::rescale_pixel_data<vismodul
 
     const vismodule::UInt8* raw_data = reinterpret_cast<const vismodule::UInt8*>( m_raw_data.pointer() );
 
-    const size_t npixels = m_row * m_column;
-    for( size_t index = 0; index < npixels; index++ )
+    const std::size_t npixels = m_row * m_column;
+    for( std::size_t index = 0; index < npixels; index++ )
     {
         pixel_data[index] = raw_data[index];
     }

@@ -137,7 +137,7 @@ CellByCellMetropolisSampling::~CellByCellMetropolisSampling()
  *  @return sub-pixel level
  */
 /*===========================================================================*/
-const size_t CellByCellMetropolisSampling::subpixelLevel() const
+const std::size_t CellByCellMetropolisSampling::subpixelLevel() const
 {
     return m_subpixel_level;
 }
@@ -181,7 +181,7 @@ void CellByCellMetropolisSampling::attachCamera( const vismodule::Camera& camera
  *  @param  m_subpixel_level [in] sub-pixel level
  */
 /*===========================================================================*/
-void CellByCellMetropolisSampling::setSubpixelLevel( const size_t subpixel_level )
+void CellByCellMetropolisSampling::setSubpixelLevel( const std::size_t subpixel_level )
 {
     m_subpixel_level = subpixel_level;
 }
@@ -268,7 +268,7 @@ void CellByCellMetropolisSampling::generate_particles_struct(
     m_o_histogram.fill(0x00);
     m_c_histogram.fill(0x00);
 
-    for( size_t i = 0; i < tf_number; i++ )
+    for( std::size_t i = 0; i < tf_number; i++ )
     {
         o_min[i] = m_transfer_function_array[i].opacityMap().minValue();
         o_max[i] = m_transfer_function_array[i].opacityMap().maxValue();
@@ -456,7 +456,7 @@ void CellByCellMetropolisSampling::generate_particles_struct(
                 std::vector<bool> o_zero_flag(tf_number);
                 std::vector<bool> c_zero_flag(tf_number);
 
-                for( size_t i = 0; i < tf_number; i++ )
+                for( std::size_t i = 0; i < tf_number; i++ )
                 {
                     o_zero_flag[i] = false;
                     c_zero_flag[i] = false;
@@ -752,7 +752,7 @@ void CellByCellMetropolisSampling::generate_particles_struct(
                         if( finish_flag == true ) break;
                     } // end of for max_loop
 
-                    size_t nduplications = 0; // number of duplications
+                    std::size_t nduplications = 0; // number of duplications
                     const int nparticles_I = I < SIMDW ? nparticles[I] : 1;
                     // const int nparticles_I  = I < SIMDW ? nparticles[I] : SIMDW - pp_id;
                     const int zero_id = I < SIMDW ? SIMDW : pp_id;
@@ -991,7 +991,7 @@ void CellByCellMetropolisSampling::generate_particles_unstruct(  domain_paramete
 {
     //2023 shimomura
     double start = GetTime();
-    size_t resolution = DEFAULT_NBINS;
+    std::size_t resolution = DEFAULT_NBINS;
 
     int tf_number                  = m_transfer_function_array.size();
     float sampling_volume_inverse  = m_transfer_function_synthesizer->getSamplingVolumeInverse();
@@ -1175,7 +1175,7 @@ void CellByCellMetropolisSampling::generate_particles_unstruct(  domain_paramete
     m_o_histogram.fill(0x00);
     m_c_histogram.fill(0x00);
     
-    for( size_t i = 0; i < tf_number; i++ )
+    for( std::size_t i = 0; i < tf_number; i++ )
     {
         o_min[i] = m_transfer_function_array[i].opacityMap().minValue();
         o_max[i] = m_transfer_function_array[i].opacityMap().maxValue();
@@ -1323,7 +1323,7 @@ void CellByCellMetropolisSampling::generate_particles_unstruct(  domain_paramete
             std::vector<bool> o_zero_flag(tf_number);
             std::vector<bool> c_zero_flag(tf_number);
 
-            for( size_t i = 0; i < tf_number; i++ )
+            for( std::size_t i = 0; i < tf_number; i++ )
             {
                 o_zero_flag[i] = false;
                 c_zero_flag[i] = false;
@@ -1348,7 +1348,7 @@ void CellByCellMetropolisSampling::generate_particles_unstruct(  domain_paramete
 
             for( int cell_BLK = 0; cell_BLK < remain; cell_BLK++ )
             {
-                for( size_t i = 0; i < tf_number; i++ )
+                for( std::size_t i = 0; i < tf_number; i++ )
                 {
                     if ( !o_zero_flag[i] )
                     {
@@ -1408,19 +1408,19 @@ void CellByCellMetropolisSampling::generate_particles_unstruct(  domain_paramete
             for(int cell_BLK = 0; cell_BLK < remain; cell_BLK++ )
             {
                 float density;
-                size_t degree;
+                std::size_t degree;
                 vismodule::Vector3f point;
                 float scalar;
                 vismodule::Vector3f point_trial;
                 vismodule::Vector3f global_point_trial;
-                size_t degree_trial;
+                std::size_t degree_trial;
                 float density_trial;
 
                 // calculate itnitial value
                 /* NOTE: The gradient vector of the cell is reversed for shading on the rendering process. */
-                const size_t max_loop = nparticles_array[cell_BLK] * 10;
+                const std::size_t max_loop = nparticles_array[cell_BLK] * 10;
 
-                for ( size_t i = 0; i < max_loop; i+=SIMD_BLK_SIZE )
+                for ( std::size_t i = 0; i < max_loop; i+=SIMD_BLK_SIZE )
                 {
                     bool finish_flag = false;
                     //ブロック内でのループ回数を取得
@@ -1464,7 +1464,7 @@ void CellByCellMetropolisSampling::generate_particles_unstruct(  domain_paramete
                     if( finish_flag == true ) break;
                 }
 
-                size_t nduplications = 0; // number of duplications
+                std::size_t nduplications = 0; // number of duplications
                 for( int i = 0; i < nparticles_array[cell_BLK]; i+=SIMD_BLK_SIZE )
                 {
                     //ブロック内でのループ回数を取得
@@ -1783,7 +1783,7 @@ void CellByCellMetropolisSampling::generate_particles_unstruct(  domain_paramete
     return;
 }
 
-const size_t CellByCellMetropolisSampling::calculate_number_of_particles(
+const std::size_t CellByCellMetropolisSampling::calculate_number_of_particles(
     const float density,
     const float volume_of_cell,
     vismodule::MersenneTwister* MT ) 
@@ -1791,7 +1791,7 @@ const size_t CellByCellMetropolisSampling::calculate_number_of_particles(
     const float N = density * volume_of_cell;
     const float R = MT->rand();
 
-    size_t n = static_cast<size_t>( N ); 
+    std::size_t n = static_cast<size_t>( N ); 
     if ( N - n > R )
     {    
         ++n; 

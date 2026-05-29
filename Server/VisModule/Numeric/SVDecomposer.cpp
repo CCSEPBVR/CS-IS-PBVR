@@ -21,7 +21,7 @@
 namespace vismodule
 {
 
-template <typename T> size_t SVDecomposer<T>::m_max_iterations = 30;
+template <typename T> std::size_t SVDecomposer<T>::m_max_iterations = 30;
 
 /*===========================================================================*/
 /**
@@ -172,9 +172,9 @@ void SVDecomposer<T>::setMatrix( const vismodule::Matrix33<T>& m )
     m_w.setSize( 3 );
     m_v.setSize( 3, 3 );
     m_u.setSize( 3, 3 );
-    for ( size_t i = 0; i < 3; i++ )
+    for ( std::size_t i = 0; i < 3; i++ )
     {
-        for ( size_t j = 0; j < 3; j++ )
+        for ( std::size_t j = 0; j < 3; j++ )
         {
             m_u[i][j] = m[i][j];
         }
@@ -193,9 +193,9 @@ void SVDecomposer<T>::setMatrix( const vismodule::Matrix44<T>& m )
     m_w.setSize( 4 );
     m_v.setSize( 4, 4 );
     m_u.setSize( 4, 4 );
-    for ( size_t i = 0; i < 4; i++ )
+    for ( std::size_t i = 0; i < 4; i++ )
     {
-        for ( size_t j = 0; j < 4; j++ )
+        for ( std::size_t j = 0; j < 4; j++ )
         {
             m_u[i][j] = m[i][j];
         }
@@ -559,7 +559,7 @@ void SVDecomposer<T>::correctSingularValues( void )
 }
 
 template <typename T>
-void SVDecomposer<T>::SetMaxIterations( const size_t max_iterations )
+void SVDecomposer<T>::SetMaxIterations( const std::size_t max_iterations )
 {
     m_max_iterations = max_iterations;
 }

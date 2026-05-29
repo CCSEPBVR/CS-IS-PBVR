@@ -206,7 +206,7 @@ std::unique_ptr<kvs::PolygonGlyphObject> GenerateGlyphCS(
                     store_volume_in_variables_array_unstruct( volume, dom, values, nvariables, coordinates, ncoords, connections, ncells, celltype );
 
                     std::vector<Type*> raw_pointers_vector( nvariables );
-                    for ( size_t i = 0; i < nvariables; ++i )
+                    for ( std::size_t i = 0; i < nvariables; ++i )
                     {
                         raw_pointers_vector[i] = values.get()[i].get();
                     }
@@ -234,7 +234,7 @@ std::unique_ptr<kvs::PolygonGlyphObject> GenerateGlyphCS(
                     store_volume_in_variables_array_struct( volume, dom, resolution, values, nvariables, ncoords );
 
                     std::vector<Type*> raw_pointers_vector( nvariables );
-                    for ( size_t i = 0; i < nvariables; ++i )
+                    for ( std::size_t i = 0; i < nvariables; ++i )
                     {
                         raw_pointers_vector[i] = values.get()[i].get();
                     }
@@ -315,7 +315,7 @@ std::unique_ptr<kvs::PolygonGlyphObject> GenerateGlyphCS(
     /*
     std::cout << "recv_obj->directions():" << std::endl;
     int counter = 0;
-    for ( size_t i = 0; i < recv_obj->directions().size(); i++ )
+    for ( std::size_t i = 0; i < recv_obj->directions().size(); i++ )
     {
         if ( i % 3 == 0 ) std::cout << counter << ":";
         
@@ -339,10 +339,10 @@ std::unique_ptr<kvs::PolygonGlyphObject> GenerateGlyphCS(
 
             if ( glyph_object->coords().size() > 0 )
             {
-                const size_t ncoords     = glyph_object->coords().size() + recv_obj->coords().size();
-                const size_t ncolors     = glyph_object->colors().size() + recv_obj->colors().size();
-                const size_t ndirections = glyph_object->directions().size() + recv_obj->directions().size();
-                const size_t nsizes      = glyph_object->sizes().size() + recv_obj->sizes().size();
+                const std::size_t ncoords     = glyph_object->coords().size() + recv_obj->coords().size();
+                const std::size_t ncolors     = glyph_object->colors().size() + recv_obj->colors().size();
+                const std::size_t ndirections = glyph_object->directions().size() + recv_obj->directions().size();
+                const std::size_t nsizes      = glyph_object->sizes().size() + recv_obj->sizes().size();
 
                 kvs_coords.allocate( ncoords );
                 kvs_colors.allocate( ncolors );
@@ -370,10 +370,10 @@ std::unique_ptr<kvs::PolygonGlyphObject> GenerateGlyphCS(
             }
             else
             {
-                const size_t ncoords     = recv_obj->coords().size();
-                const size_t ncolors     = recv_obj->colors().size();
-                const size_t ndirections = recv_obj->directions().size();
-                const size_t nsizes      = recv_obj->sizes().size();
+                const std::size_t ncoords     = recv_obj->coords().size();
+                const std::size_t ncolors     = recv_obj->colors().size();
+                const std::size_t ndirections = recv_obj->directions().size();
+                const std::size_t nsizes      = recv_obj->sizes().size();
 
                 kvs_coords.allocate( ncoords );
                 kvs_colors.allocate( ncolors );
@@ -419,7 +419,7 @@ std::unique_ptr<kvs::PolygonGlyphObject> GenerateGlyphCS(
     /*
     std::cout << "glyph_object->directions():" << std::endl;
     int counter = 0;
-    for ( size_t i = 0; i < glyph_object->directions().size(); i++ )
+    for ( std::size_t i = 0; i < glyph_object->directions().size(); i++ )
     {
         if ( i % 3 == 0 ) std::cout << counter << ":";
         
@@ -437,7 +437,7 @@ std::unique_ptr<kvs::PolygonGlyphObject> GenerateGlyphCS(
     kvs::ValueArray<kvs::Real32> kvs_scaled_sizes;
     kvs_scaled_sizes.allocate( glyph_object->sizes().size() );
 
-    for ( size_t i = 0; i < glyph_object->sizes().size(); i++ )
+    for ( std::size_t i = 0; i < glyph_object->sizes().size(); i++ )
     {
         kvs_scaled_sizes[i] = glyph_object->sizes()[i] * glyph_property.m_scale_factor;
     }
@@ -549,10 +549,10 @@ std::unique_ptr<kvs::PolygonGlyphObject> GenerateGlyphIS(
     kvs::ValueArray<kvs::Real32> kvs_directions;
     kvs::ValueArray<kvs::Real32> kvs_sizes;
 
-    const size_t ncoords     = recv_obj->coords().size();
-    const size_t ncolors     = recv_obj->colors().size();
-    const size_t ndirections = recv_obj->directions().size();
-    const size_t nsizes      = recv_obj->sizes().size();
+    const std::size_t ncoords     = recv_obj->coords().size();
+    const std::size_t ncolors     = recv_obj->colors().size();
+    const std::size_t ndirections = recv_obj->directions().size();
+    const std::size_t nsizes      = recv_obj->sizes().size();
 
     kvs_coords.allocate( ncoords );
     kvs_colors.allocate( ncolors );
@@ -577,7 +577,7 @@ std::unique_ptr<kvs::PolygonGlyphObject> GenerateGlyphIS(
     kvs::ValueArray<kvs::Real32> kvs_scaled_sizes;
     kvs_scaled_sizes.allocate( glyph_object->sizes().size() );
 
-    for ( size_t i = 0; i < glyph_object->sizes().size(); i++ )
+    for ( std::size_t i = 0; i < glyph_object->sizes().size(); i++ )
     {
         kvs_scaled_sizes[i] = glyph_object->sizes()[i] * glyph_property.m_scale_factor;
     }

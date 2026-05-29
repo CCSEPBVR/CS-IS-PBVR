@@ -36,8 +36,8 @@ public:
     IDManager();
     virtual ~IDManager();
 
-    IDPair id( size_t index ) const;
-    size_t size() const;
+    IDPair id( std::size_t index ) const;
+    std::size_t size() const;
     void insert( int object_id, int renderer_id );
     void insertObjectID( int object_id );
     void insertRendererID( int renderer_id );

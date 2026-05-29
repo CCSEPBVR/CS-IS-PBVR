@@ -40,7 +40,7 @@ public:
     const kvs::ValueArray<kvs::Real32> tau() const;
     const kvs::ValueArray<kvs::Real32> T() const;
     const kvs::ValueArray<kvs::Real32>& table() const { return m_table; }
-    kvs::ValueArray<kvs::Real32> inverseT( const size_t resolution ) const;
+    kvs::ValueArray<kvs::Real32> inverseT( const std::size_t resolution ) const;
 
     void setTransferFunction( const kvs::TransferFunction& transfer_function );
     void create();

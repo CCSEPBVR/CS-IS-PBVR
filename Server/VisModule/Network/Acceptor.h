@@ -40,7 +40,7 @@ public:
 
     Acceptor( void );
 
-    Acceptor( const int port, const size_t ntrials );
+    Acceptor( const int port, const std::size_t ntrials );
 
     ~Acceptor( void );
 
@@ -50,7 +50,7 @@ public:
 
     void close( void );
 
-    const bool bind( const int port, const size_t ntrials );
+    const bool bind( const int port, const std::size_t ntrials );
 
     vismodule::TCPSocket* newConnection( void );
 

@@ -47,8 +47,8 @@ protected:
 
     vismodule::kvsml::KVSMLTag         m_kvsml_tag;    ///< KVSML tag information
     vismodule::kvsml::ObjectTag        m_object_tag;   ///< Object tag information
-    size_t                       m_width;        ///< image width
-    size_t                       m_height;       ///< image height
+    std::size_t                       m_width;        ///< image width
+    std::size_t                       m_height;       ///< image height
     std::string                  m_pixel_type;   ///< pixel type
     WritingDataType              m_writing_type; ///< writing data type
     vismodule::ValueArray<vismodule::UInt8>  m_data;         ///< color(r,g,b) array
@@ -69,9 +69,9 @@ public:
 
 public:
 
-    const size_t width( void ) const;
+    const std::size_t width( void ) const;
 
-    const size_t height( void ) const;
+    const std::size_t height( void ) const;
 
     const std::string& pixelType( void ) const;
 
@@ -79,9 +79,9 @@ public:
 
 public:
 
-    void setWidth( const size_t width );
+    void setWidth( const std::size_t width );
 
-    void setHeight( const size_t height );
+    void setHeight( const std::size_t height );
 
     void setPixelType( const std::string& pixel_type );
 

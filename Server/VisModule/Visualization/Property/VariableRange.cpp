@@ -73,7 +73,7 @@ void VariableRange::merge( const VariableRange& vr )
 
 size_t VariableRange::byteSize() const
 {
-    size_t s = 0;
+    std::size_t s = 0;
 
     s += vismodule::Serializer::byteSize( m_min.size() );
     for ( range_map_t::const_iterator i = m_min.begin(); i != m_min.end(); i++ )
@@ -93,7 +93,7 @@ size_t VariableRange::byteSize() const
 
 size_t VariableRange::pack( char* buf ) const
 {
-    size_t index = 0;
+    std::size_t index = 0;
 
     index += vismodule::Serializer::write( buf + index, m_min.size() );
     for ( range_map_t::const_iterator i = m_min.begin(); i != m_min.end(); i++ )
@@ -115,18 +115,18 @@ size_t VariableRange::unpack( const char* buf )
 {
     std::string nm;
     float val;
-    size_t s;
-    size_t index = 0;
+    std::size_t s;
+    std::size_t index = 0;
 
     index += vismodule::Serializer::read( buf + index, &s );
-    for ( size_t i = 0; i != s; i++ )
+    for ( std::size_t i = 0; i != s; i++ )
     {
         index += vismodule::Serializer::read( buf + index, &nm );
         index += vismodule::Serializer::read( buf + index, &val );
         m_min[nm] = val;
     }
     index += vismodule::Serializer::read( buf + index, &s );
-    for ( size_t i = 0; i != s; i++ )
+    for ( std::size_t i = 0; i != s; i++ )
     {
         index += vismodule::Serializer::read( buf + index, &nm );
         index += vismodule::Serializer::read( buf + index, &val );

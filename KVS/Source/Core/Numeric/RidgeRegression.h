@@ -23,7 +23,7 @@ template <typename T>
 class RidgeRegression
 {
 private:
-    size_t m_dof; ///< degree of freedom
+    std::size_t m_dof; ///< degree of freedom
     kvs::Vector<T> m_coef;
     kvs::Real64 m_r2; ///< R square ()
     kvs::Real64 m_adjusted_r2; ///< adjusted R square

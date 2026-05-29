@@ -42,15 +42,15 @@ public:
 private:
 
     Pbm::Header   m_header;  ///< header information
-    size_t        m_width;   ///< width
-    size_t        m_height;  ///< height
+    std::size_t        m_width;   ///< width
+    std::size_t        m_height;  ///< height
     vismodule::BitArray m_data;    ///< bit pixel data
 
 public:
 
     Pbm( void );
 
-    Pbm( const size_t width, const size_t height, const vismodule::BitArray& data );
+    Pbm( const std::size_t width, const std::size_t height, const vismodule::BitArray& data );
 
     Pbm( const std::string& filename );
 
@@ -60,9 +60,9 @@ public:
 
 public:
 
-    const size_t width( void ) const;
+    const std::size_t width( void ) const;
 
-    const size_t height( void ) const;
+    const std::size_t height( void ) const;
 
     const vismodule::BitArray& data( void ) const;
 

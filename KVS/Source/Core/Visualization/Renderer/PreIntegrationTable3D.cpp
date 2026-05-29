@@ -43,9 +43,9 @@ inline kvs::Vec4 ColorVec4( const kvs::RGBColor& color, const float opacity )
  *  @return index
  */
 /*===========================================================================*/
-inline size_t Index( const float s, const std::vector<float>& scalars )
+inline std::size_t Index( const float s, const std::vector<float>& scalars )
 {
-    size_t index = 0;
+    std::size_t index = 0;
 
     float s0 = scalars[0];
     float s1 = s0;
@@ -110,19 +110,19 @@ inline kvs::ValueArray<float> Serialize(
     const kvs::TransferFunction& transfer_function,
     const float min_scalar,
     const float max_scalar,
-    const size_t resolution )
+    const std::size_t resolution )
 {
     const float S0 = min_scalar;
     const float S1 = max_scalar;
-    const size_t N = resolution;
+    const std::size_t N = resolution;
 
     // Convert the KVS transfer function table to floating-point vectors of the color and opacity.
-    const size_t size = transfer_function.resolution();
+    const std::size_t size = transfer_function.resolution();
     const kvs::ColorMap& cmap = transfer_function.colorMap();
     const kvs::OpacityMap& omap = transfer_function.opacityMap();
     std::vector<kvs::Vec4> colors;
     std::vector<float> scalars;
-    for ( size_t i = 0; i < size; i++ )
+    for ( std::size_t i = 0; i < size; i++ )
     {
         const kvs::Vec4 color = ColorVec4( cmap[i], omap[i] );
         const float w = i / float( size - 1 );
@@ -141,9 +141,9 @@ inline kvs::ValueArray<float> Serialize(
     kvs::ValueArray<kvs::Real32> array( 4 * N );
     float s = S0;
     const float ds = ( S1 - S0 ) / float( N - 1 );
-    for ( size_t i = 0, i4 = 0; i < N; i++, i4 = i4 + 4 )
+    for ( std::size_t i = 0, i4 = 0; i < N; i++, i4 = i4 + 4 )
     {
-        const size_t index = Index( s, scalars );
+        const std::size_t index = Index( s, scalars );
         const float s0 = scalars[ index - 1 ];
         const float s1 = scalars[ index ];
         const kvs::Vec4 c0 = colors[ index - 1 ];
@@ -214,7 +214,7 @@ PreIntegrationTable3D::PreIntegrationTable3D()
  *  @param  depth_resolution [in] resolution of the depth axis
  */
 /*===========================================================================*/
-PreIntegrationTable3D::PreIntegrationTable3D( const size_t scalar_resolution, const size_t depth_resolution ):
+PreIntegrationTable3D::PreIntegrationTable3D( const std::size_t scalar_resolution, const std::size_t depth_resolution ):
     m_scalar_resolution( scalar_resolution ),
     m_depth_resolution( depth_resolution )
 {
@@ -235,7 +235,7 @@ void PreIntegrationTable3D::setTransferFunction(
 {
     const float S0 = min_scalar;
     const float S1 = max_scalar;
-    const size_t N = m_scalar_resolution;
+    const std::size_t N = m_scalar_resolution;
     m_transfer_function = ::Serialize( transfer_function, S0, S1, N );
 }
 
@@ -248,7 +248,7 @@ void PreIntegrationTable3D::setTransferFunction(
 void PreIntegrationTable3D::create( const float max_size_of_cell )
 {
     // Compute pre-integration table.
-    const size_t slice_size = 4 * m_scalar_resolution * m_scalar_resolution;
+    const std::size_t slice_size = 4 * m_scalar_resolution * m_scalar_resolution;
     m_table.allocate( slice_size * m_depth_resolution );
     m_table.fill( 0.0f );
 
@@ -257,7 +257,7 @@ void PreIntegrationTable3D::create( const float max_size_of_cell )
     this->compute_exact_level( slice0, dl );
 
     float l = dl;
-    for ( size_t i = 1; i < m_depth_resolution; i++ )
+    for ( std::size_t i = 1; i < m_depth_resolution; i++ )
     {
         l += dl;
         kvs::Real32* slice = slice0 + i * slice_size;
@@ -275,11 +275,11 @@ void PreIntegrationTable3D::create( const float max_size_of_cell )
 /*===========================================================================*/
 void PreIntegrationTable3D::compute_exact_level( float* slice0, const float dl )
 {
-    const size_t N = m_scalar_resolution;
+    const std::size_t N = m_scalar_resolution;
     const kvs::ValueArray<kvs::Real32>& TF = m_transfer_function;
-    for ( size_t sb = 0, index = 0; sb < N; sb++ )
+    for ( std::size_t sb = 0, index = 0; sb < N; sb++ )
     {
-        for ( size_t sf = 0; sf < N; sf++, index++ )
+        for ( std::size_t sf = 0; sf < N; sf++, index++ )
         {
             kvs::Vec4 c( 0.0f, 0.0f, 0.0f, 0.0f );
 
@@ -290,13 +290,13 @@ void PreIntegrationTable3D::compute_exact_level( float* slice0, const float dl )
             }
             else
             {
-                const size_t smin = kvs::Math::Min( sb, sf );
-                const size_t smax = kvs::Math::Max( sb, sf );
+                const std::size_t smin = kvs::Math::Min( sb, sf );
+                const std::size_t smax = kvs::Math::Max( sb, sf );
 
-                const size_t M = 32; // supersampling factor
+                const std::size_t M = 32; // supersampling factor
                 const float dw = 1.0f / static_cast<float>( M - 1 );
                 const float t = dw * dl / static_cast<float>( smax - smin );
-                for ( size_t k = smin; k < smax; k++ )
+                for ( std::size_t k = smin; k < smax; k++ )
                 {
                     // Opacity correction.
                     const kvs::Vec4 c0 = ::OpacityWeightedColor( kvs::Vec4( &TF[4*k] ), t );
@@ -304,7 +304,7 @@ void PreIntegrationTable3D::compute_exact_level( float* slice0, const float dl )
 
                     // Acutual composition.
                     float w = 0.0f;
-                    for ( size_t m = 0; m < M; m++, w += dw )
+                    for ( std::size_t m = 0; m < M; m++, w += dw )
                     {
                         const kvs::Vec4 ck = ::Interpolate( c0, c1, w );
                         c = c + ck * ( 1.0f - c[3] );
@@ -337,16 +337,16 @@ void PreIntegrationTable3D::compute_incremental_level(
     const float l,
     const float dl )
 {
-    const size_t N = m_scalar_resolution;
-    for ( size_t i = 0, index = 0; i < N; i++ )
+    const std::size_t N = m_scalar_resolution;
+    for ( std::size_t i = 0, index = 0; i < N; i++ )
     {
-        for ( size_t j = 0; j < N; j++, index++ )
+        for ( std::size_t j = 0; j < N; j++, index++ )
         {
             const float sf = ( 2.0f * j + 1.0f ) / ( 2.0f * N );
             const float sb = ( 2.0f * i + 1.0f ) / ( 2.0f * N );
             const float sp = ( ( l - dl ) * sf + ( dl * sb ) ) / l;
 
-            const size_t k = static_cast<size_t>( sp * N - 0.5f );
+            const std::size_t k = static_cast<size_t>( sp * N - 0.5f );
             const float w = sp * N - ( k + 0.5f );
 
             kvs::Vec4 c; // current color

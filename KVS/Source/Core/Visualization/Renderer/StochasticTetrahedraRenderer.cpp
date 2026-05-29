@@ -51,11 +51,11 @@ int RandomNumber()
 /*===========================================================================*/
 kvs::ValueArray<kvs::UInt16> RandomIndices(
     const kvs::UnstructuredVolumeObject* volume,
-    const size_t size )
+    const std::size_t size )
 {
-    const size_t nnodes = volume->numberOfNodes();
+    const std::size_t nnodes = volume->numberOfNodes();
     kvs::ValueArray<kvs::UInt16> indices( nnodes * 2 );
-    for ( size_t i = 0; i < nnodes; i++ )
+    for ( std::size_t i = 0; i < nnodes; i++ )
     {
         const unsigned int count = i * RandomNumber();
         indices[ 2 * i + 0 ] = static_cast<kvs::UInt16>( ( count ) % size );
@@ -81,9 +81,9 @@ kvs::ValueArray<kvs::Real32> NormalizedValuesForType(
     const kvs::Real64 normalized_factor = 1.0 / ( max_value - min_value );
 
     const T* src = static_cast<const T*>( volume->values().data() );
-    const size_t nvalues = volume->values().size();
+    const std::size_t nvalues = volume->values().size();
     kvs::ValueArray<kvs::Real32> dst( nvalues );
-    for ( size_t i = 0; i < nvalues; i++ )
+    for ( std::size_t i = 0; i < nvalues; i++ )
     {
         dst[i] = static_cast<kvs::Real32>( ( src[i] - min_value ) * normalized_factor );
     }
@@ -120,14 +120,14 @@ kvs::ValueArray<kvs::Real32> NormalizedValues(
 kvs::ValueArray<kvs::Real32> VertexNormalsForType(
     const kvs::UnstructuredVolumeObject* volume )
 {
-    const size_t nnodes = volume->numberOfNodes();
-    const size_t ncells = volume->numberOfCells();
+    const std::size_t nnodes = volume->numberOfNodes();
+    const std::size_t ncells = volume->numberOfCells();
     kvs::TetrahedralCell cell( volume );
     kvs::ValueArray<kvs::Int32> counter( nnodes );
     kvs::ValueArray<kvs::Real32> normals( nnodes * 3 );
     counter.fill(0);
     normals.fill(0);
-    for ( size_t i = 0; i < ncells; i++ )
+    for ( std::size_t i = 0; i < ncells; i++ )
     {
         cell.bindCell( i );
         const kvs::Vec3 g = -cell.gradientVector();
@@ -158,7 +158,7 @@ kvs::ValueArray<kvs::Real32> VertexNormalsForType(
         normals[ 3 * index3 + 2 ] += g.z();
     }
 
-    for ( size_t i = 0; i < nnodes; i++ )
+    for ( std::size_t i = 0; i < nnodes; i++ )
     {
         const kvs::Real32 c = static_cast<kvs::Real32>( counter[i] );
         const kvs::Vec3 v( normals.data() + 3 * i );
@@ -275,7 +275,7 @@ void StochasticTetrahedraRenderer::setShaderFiles( const std::string& vert_file,
 void StochasticTetrahedraRenderer::Engine::TransferFunctionBuffer::create(
     const kvs::TransferFunction& tfunc )
 {
-    const size_t width = tfunc.resolution();
+    const std::size_t width = tfunc.resolution();
     const auto table = tfunc.table();
     m_texture.setWrapS( GL_CLAMP_TO_EDGE );
     m_texture.setMagFilter( GL_LINEAR );
@@ -352,9 +352,9 @@ void StochasticTetrahedraRenderer::Engine::PreIntegrationBuffer::release()
 
 void StochasticTetrahedraRenderer::Engine::DecompositionBuffer::create()
 {
-    const size_t size = 81;
+    const std::size_t size = 81;
     kvs::ValueArray<GLubyte> table( size * 4 );
-    for ( size_t i = 0; i < size; i++ )
+    for ( std::size_t i = 0; i < size; i++ )
     {
         table[ i * 4 + 0 ] = kvs::ProjectedTetrahedraTable::PatternInfo[i][1] * 32;
         table[ i * 4 + 1 ] = kvs::ProjectedTetrahedraTable::PatternInfo[i][2] * 32;
@@ -401,7 +401,7 @@ void StochasticTetrahedraRenderer::Engine::BufferObject::create(
 void StochasticTetrahedraRenderer::Engine::BufferObject::draw(
     const kvs::UnstructuredVolumeObject* volume )
 {
-    const size_t ncells = volume->numberOfCells();
+    const std::size_t ncells = volume->numberOfCells();
     kvs::VertexBufferObjectManager::Binder bind( m_manager );
     m_manager.drawElements( GL_LINES_ADJACENCY_EXT, 4 * ncells );
 }
@@ -585,7 +585,7 @@ void StochasticTetrahedraRenderer::Engine::draw(
 {
     kvs::OpenGL::WithEnabled d( GL_DEPTH_TEST );
 
-    const size_t size = randomTextureSize();
+    const std::size_t size = randomTextureSize();
     const int count = repetitionCount() * ::RandomNumber();
     const float offset_x = static_cast<float>( ( count ) % size );
     const float offset_y = static_cast<float>( ( count / size ) % size );

@@ -65,8 +65,8 @@ WindowCoordinate::WindowCoordinate(
     const kvs::Vec3& position,
     const int x,
     const int y,
-    const size_t width,
-    const size_t height ):
+    const std::size_t width,
+    const std::size_t height ):
     m_position( position ),
     m_x( x ),
     m_y( y ),

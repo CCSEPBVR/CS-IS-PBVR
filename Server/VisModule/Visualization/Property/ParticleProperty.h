@@ -11,8 +11,8 @@
 struct ParticleProperty
 {
     // property for visualization
-    size_t m_subpixel_level;
-    size_t m_repeat_level;
+    std::size_t m_subpixel_level;
+    std::size_t m_repeat_level;
     int m_level_index;
     float m_sampling_step;
     char m_sampling_method;
@@ -47,7 +47,7 @@ struct ParticleProperty
         std::vector<EquationToken> var_c;
         std::vector<EquationToken> var_o;
 
-        for( size_t i = 0; i < m_transfunc_array.size(); ++i )
+        for( std::size_t i = 0; i < m_transfunc_array.size(); ++i )
         {
             // Color variable token
             {
@@ -90,7 +90,7 @@ struct ParticleProperty
         size += sizeof( m_particle_data_size_limit );
         size += vismodule::Serializer::byteSize<vismodule::Camera>( *m_camera );
         size += vismodule::Serializer::byteSize( m_transfunc_array.size() );
-        for ( size_t i = 0; i < m_transfunc_array.size(); i++ )
+        for ( std::size_t i = 0; i < m_transfunc_array.size(); i++ )
         {
             size += vismodule::Serializer::byteSize( m_transfunc_array[i].m_resolution );
             size += vismodule::Serializer::byteSize( m_transfunc_array[i].m_name );
@@ -106,19 +106,19 @@ struct ParticleProperty
         }
         size += sizeof( m_color_transfer_function_synthesis );
         size += sizeof( m_opacity_transfer_function_synthesis );
-        size += sizeof( size_t );
+        size += sizeof( std::size_t );
         size += sizeof( char ) * ( m_x_synthesis.size() + 1 );
-        size += sizeof( size_t );
+        size += sizeof( std::size_t );
         size += sizeof( char ) * ( m_y_synthesis.size() + 1 );
-        size += sizeof( size_t );
+        size += sizeof( std::size_t );
         size += sizeof( char ) * ( m_z_synthesis.size() + 1 );
 
         return size;
     }
 
-    size_t pack( char* buf ) const
+    std::size_t pack( char* buf ) const
     {
-        size_t index = 0;
+        std::size_t index = 0;
         TaskSignal task_signal = TaskSignal::UPDATE_PARTICLE_PROPERTY;
 
         index += vismodule::Serializer::write( buf + index, task_signal );
@@ -135,7 +135,7 @@ struct ParticleProperty
         index += vismodule::Serializer::pack( buf + index, *m_camera );
 
         index += vismodule::Serializer::write( buf + index, m_transfunc_array.size() );
-        for ( size_t i = 0; i < m_transfunc_array.size(); i++ )
+        for ( std::size_t i = 0; i < m_transfunc_array.size(); i++ )
         {
             index += vismodule::Serializer::write( buf + index, m_transfunc_array[i].m_resolution );
             index += vismodule::Serializer::write( buf + index, m_transfunc_array[i].m_name );
@@ -162,9 +162,9 @@ struct ParticleProperty
         return index;
     }
 
-    size_t unpack( const char* buf )
+    std::size_t unpack( const char* buf )
     {
-        size_t index = 0;
+        std::size_t index = 0;
         int64_t tmp_char_size;
         char* tmp_char = NULL;
         TaskSignal task_signal;
@@ -182,13 +182,13 @@ struct ParticleProperty
         index += vismodule::Serializer::read( buf + index, &m_particle_data_size_limit );
         index += vismodule::Serializer::unpack( buf + index, m_camera );
 
-        size_t tf_number;
+        std::size_t tf_number;
         index += vismodule::Serializer::read( buf + index, &tf_number );
         
         m_transfunc_array.clear();
         m_transfunc_array.resize( tf_number );
 
-        for ( size_t i = 0; i < tf_number; i++ )
+        for ( std::size_t i = 0; i < tf_number; i++ )
         {
             index += vismodule::Serializer::read( buf + index, &m_transfunc_array[i].m_resolution );
             index += vismodule::Serializer::read( buf + index, &m_transfunc_array[i].m_name );

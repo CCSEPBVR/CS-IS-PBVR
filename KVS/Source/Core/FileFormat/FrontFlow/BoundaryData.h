@@ -29,16 +29,16 @@ class BoundaryData
 {
 private:
 
-    size_t m_dimensions; ///< dimensions (2 or 3)
-    size_t m_nnodes_inlet; ///< number of inlet boundary nodes
-    size_t m_nnodes_wall; ///< number of wall boundary nodes
-    size_t m_nnodes_symetric; ///< number of symetric boundary nodes
-    size_t m_nnodes_cyclic; ///< number of cyclic boundary nodes
-    size_t m_nnodes_body; ///< number of body surface boundary nodes
-    size_t m_nnodes_free; ///< number of free boundary nodes
-    size_t m_nnodes_moving_wall; ///< number of moving wall boundary nodes
-    size_t m_nnodes_inter_connect; ///< number of inter connect boundary nodes
-    size_t m_nnodes_temp; ///< number of temperature boundary nodes
+    std::size_t m_dimensions; ///< dimensions (2 or 3)
+    std::size_t m_nnodes_inlet; ///< number of inlet boundary nodes
+    std::size_t m_nnodes_wall; ///< number of wall boundary nodes
+    std::size_t m_nnodes_symetric; ///< number of symetric boundary nodes
+    std::size_t m_nnodes_cyclic; ///< number of cyclic boundary nodes
+    std::size_t m_nnodes_body; ///< number of body surface boundary nodes
+    std::size_t m_nnodes_free; ///< number of free boundary nodes
+    std::size_t m_nnodes_moving_wall; ///< number of moving wall boundary nodes
+    std::size_t m_nnodes_inter_connect; ///< number of inter connect boundary nodes
+    std::size_t m_nnodes_temp; ///< number of temperature boundary nodes
     kvs::ValueArray<kvs::UInt32> m_connections_inlet; ///< inlet boundary nodes
     kvs::ValueArray<kvs::UInt32> m_connections_wall; ///< wall boundary nodes
     kvs::ValueArray<kvs::UInt32> m_connections_symetric; ///< symetric boundary nodes
@@ -59,16 +59,16 @@ public:
     BoundaryData();
     BoundaryData( const std::string filename );
 
-    size_t dimensions() const;
-    size_t nnodesInlet() const;
-    size_t nnodesWall() const;
-    size_t nnodesSymetric() const;
-    size_t nnodesCyclic() const;
-    size_t nnodesBody() const;
-    size_t nnodesFree() const;
-    size_t nnodesMovingWall() const;
-    size_t nnodesInterConnect() const;
-    size_t nnodesTemp() const;
+    std::size_t dimensions() const;
+    std::size_t nnodesInlet() const;
+    std::size_t nnodesWall() const;
+    std::size_t nnodesSymetric() const;
+    std::size_t nnodesCyclic() const;
+    std::size_t nnodesBody() const;
+    std::size_t nnodesFree() const;
+    std::size_t nnodesMovingWall() const;
+    std::size_t nnodesInterConnect() const;
+    std::size_t nnodesTemp() const;
     const kvs::ValueArray<kvs::UInt32>& connectionsInlet() const;
     const kvs::ValueArray<kvs::UInt32>& connectionsWall() const;
     const kvs::ValueArray<kvs::UInt32>& connectionsSymetric() const;

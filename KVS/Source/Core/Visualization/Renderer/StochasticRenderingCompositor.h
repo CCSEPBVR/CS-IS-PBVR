@@ -37,10 +37,10 @@ protected:
 private:
     kvs::Timer m_timer; ///< timer for measuring rendering speed
     kvs::Scene* m_scene = nullptr; ///< pointer to the scene
-    size_t m_window_width = 0; ///< window width
-    size_t m_window_height = 0; ///< window height
-    size_t m_repetition_level = 1; ///< repetition level
-    size_t m_coarse_level = 1; ///< repetition level for the coarse rendering (LOD)
+    std::size_t m_window_width = 0; ///< window width
+    std::size_t m_window_height = 0; ///< window height
+    std::size_t m_repetition_level = 1; ///< repetition level
+    std::size_t m_coarse_level = 1; ///< repetition level for the coarse rendering (LOD)
     bool m_enable_lod = false; ///< flag for LOD rendering
     bool m_enable_refinement = false; ///< flag for progressive refinement rendering
     kvs::Mat4 m_object_xform{}; ///< object xform matrix used for LOD control
@@ -54,10 +54,10 @@ public:
     StochasticRenderingCompositor( kvs::Scene* scene ): m_scene( scene ) {}
     virtual ~StochasticRenderingCompositor() {}
     const kvs::Timer& timer() const { return m_timer; }
-    size_t repetitionLevel() const { return m_repetition_level; }
+    std::size_t repetitionLevel() const { return m_repetition_level; }
     bool isLODControlEnabled() const { return m_enable_lod; }
     bool isRefinementEnabled() const { return m_enable_refinement; }
-    void setRepetitionLevel( const size_t repetition_level ) { m_repetition_level = repetition_level; }
+    void setRepetitionLevel( const std::size_t repetition_level ) { m_repetition_level = repetition_level; }
     void setLODControlEnabled( const bool enable = true ) { m_enable_lod = enable; }
     void setRefinementEnabled( const bool enable = true ) { m_enable_refinement = enable; }
     void enableLODControl() { this->setLODControlEnabled( true ); }
@@ -83,7 +83,7 @@ private:
     bool is_window_created() const;
     bool is_window_resized() const;
     bool is_object_changed( Object* object, Renderer* renderer );
-    size_t lod_control();
+    std::size_t lod_control();
     kvs::Mat4 object_xform();
     template <class Function> void for_each_object( Function function );
     template <class Function> void for_each_ensemble( Function function );
@@ -102,7 +102,7 @@ template <class Function>
 inline void StochasticRenderingCompositor::for_each_object( Function function )
 {
     const auto size = m_scene->IDManager()->size();
-    for ( size_t i = 0; i < size; i++ )
+    for ( std::size_t i = 0; i < size; i++ )
     {
         auto id = m_scene->IDManager()->id( i );
         auto* object = m_scene->objectManager()->object( id.first );
@@ -121,7 +121,7 @@ template <class Function>
 inline void StochasticRenderingCompositor::for_each_ensemble( Function function )
 {
     const auto repetitions = this->lod_control();
-    for ( size_t i = 0; i < repetitions; i++ )
+    for ( std::size_t i = 0; i < repetitions; i++ )
     {
         function( m_ensemble_buffer );
     }

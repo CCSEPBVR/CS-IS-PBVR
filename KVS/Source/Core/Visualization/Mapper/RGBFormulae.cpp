@@ -83,7 +83,7 @@ namespace RGBFormulae
  *  @return colormap
  */
 /*===========================================================================*/
-kvs::ColorMap Create( const int index0, const int index1, const int index2, const size_t resolution )
+kvs::ColorMap Create( const int index0, const int index1, const int index2, const std::size_t resolution )
 {
     int rindex = index0;
     int gindex = index1;
@@ -102,7 +102,7 @@ kvs::ColorMap Create( const int index0, const int index1, const int index2, cons
 
     kvs::ColorMap::Table table( 3 * resolution );
     kvs::UInt8* color = table.data();
-    for ( size_t i = 0; i < resolution; ++i )
+    for ( std::size_t i = 0; i < resolution; ++i )
     {
         const double x = static_cast<double>(i) / ( resolution - 1 );
         const double rx = rnegative ? 1.0 - x : x;

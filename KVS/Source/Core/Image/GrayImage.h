@@ -42,28 +42,28 @@ public:
 
 public:
     GrayImage() = default;
-    GrayImage( const size_t width, const size_t height );
-    GrayImage( const size_t width, const size_t height, const PixelData& data );
-    GrayImage( const size_t width, const size_t height, const PixelData& data, const int channel );
-    GrayImage( const size_t width, const size_t height, const kvs::ValueArray<kvs::Real32>& data );
+    GrayImage( const std::size_t width, const std::size_t height );
+    GrayImage( const std::size_t width, const std::size_t height, const PixelData& data );
+    GrayImage( const std::size_t width, const std::size_t height, const PixelData& data, const int channel );
+    GrayImage( const std::size_t width, const std::size_t height, const kvs::ValueArray<kvs::Real32>& data );
     GrayImage( const kvs::ColorImage& image, const int channel );
     GrayImage( const kvs::ColorImage& image, GrayScalingMethod method = MedianValue() );
     explicit GrayImage( const kvs::BitImage& image );
     explicit GrayImage( const std::string& filename );
 
-    bool create( const size_t width, const size_t height );
-    bool create( const size_t width, const size_t height, const PixelData& pixels );
-    bool create( const size_t width, const size_t height, const PixelData& pixels, const int channel );
-    bool create( const size_t width, const size_t height, const kvs::ValueArray<kvs::Real32>& data );
+    bool create( const std::size_t width, const std::size_t height );
+    bool create( const std::size_t width, const std::size_t height, const PixelData& pixels );
+    bool create( const std::size_t width, const std::size_t height, const PixelData& pixels, const int channel );
+    bool create( const std::size_t width, const std::size_t height, const kvs::ValueArray<kvs::Real32>& data );
 
-    kvs::UInt8 pixel( const size_t index ) const;
-    kvs::UInt8 pixel( const size_t i, const size_t j ) const;
+    kvs::UInt8 pixel( const std::size_t index ) const;
+    kvs::UInt8 pixel( const std::size_t i, const std::size_t j ) const;
 
-    void setPixel( const size_t index, const kvs::UInt8 pixel );
-    void setPixel( const size_t i, const size_t j, const kvs::UInt8 pixel );
+    void setPixel( const std::size_t index, const kvs::UInt8 pixel );
+    void setPixel( const std::size_t i, const std::size_t j, const kvs::UInt8 pixel );
 
     void scale( const double ratio, Interpolator interpolator = Bilinear() );
-    void resize( const size_t width, const size_t height, Interpolator interpolator = Bilinear() );
+    void resize( const std::size_t width, const std::size_t height, Interpolator interpolator = Bilinear() );
     bool read( const std::string& filename );
     bool write( const std::string& filename ) const;
 

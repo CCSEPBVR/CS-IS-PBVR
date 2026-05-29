@@ -176,15 +176,15 @@ public:
 
     const ColorType colorType( void ) const;
 
-    const size_t nconnections( void ) const;
+    const std::size_t nconnections( void ) const;
 
-    const size_t nsizes( void ) const;
+    const std::size_t nsizes( void ) const;
 
 public:
 
-    const vismodule::Vector2ui connection( const size_t index = 0 ) const;
+    const vismodule::Vector2ui connection( const std::size_t index = 0 ) const;
 
-    const vismodule::Real32 size( const size_t index = 0 ) const;
+    const vismodule::Real32 size( const std::size_t index = 0 ) const;
 
 public:
 

@@ -268,12 +268,12 @@ inline float PI()
     return 6 * std::asin( 0.5f );
 }
 
-inline size_t BitToByte( size_t value )
+inline std::size_t BitToByte( std::size_t value )
 {
     return value >> 3;
 }
 
-inline size_t ByteToBit( size_t value )
+inline std::size_t ByteToBit( std::size_t value )
 {
     return value << 3;
 }

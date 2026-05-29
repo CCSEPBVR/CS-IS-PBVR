@@ -27,20 +27,20 @@ public:
 
 private:
     bool m_has_nrows; ///< flag to check whether 'nrows' is specified or not
-    size_t m_nrows; ///< number of rows
+    std::size_t m_nrows; ///< number of rows
     bool m_has_ncolumns; ///< flag to check whether 'ncolumns' is specified or not
-    size_t m_ncolumns; ///< number of columns
+    std::size_t m_ncolumns; ///< number of columns
 
 public:
     TableObjectTag();
 
     bool hasNRows() const;
-    size_t nrows() const;
+    std::size_t nrows() const;
     bool hasNColumns() const;
-    size_t ncolumns() const;
+    std::size_t ncolumns() const;
 
-    void setNRows( const size_t nrows );
-    void setNColumns( const size_t ncolumns );
+    void setNRows( const std::size_t nrows );
+    void setNColumns( const std::size_t ncolumns );
 
     bool read( const kvs::XMLNode::SuperClass* parent );
     bool write( kvs::XMLNode::SuperClass* parent );

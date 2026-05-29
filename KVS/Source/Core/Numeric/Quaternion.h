@@ -91,12 +91,12 @@ public:
     float angle() const;
 
 public:
-    float& operator [] ( size_t index )
+    float& operator [] ( std::size_t index )
     {
         return m_elements[ index ];
     }
 
-    const float& operator [] ( size_t index ) const
+    const float& operator [] ( std::size_t index ) const
     {
         return m_elements[ index ];
     }
@@ -187,8 +187,8 @@ public:
 
     friend std::ostream& operator << ( std::ostream& os, const Quaternion& q )
     {
-        const size_t width     = 8;
-        const size_t precision = 3;
+        const std::size_t width     = 8;
+        const std::size_t precision = 3;
 
         const std::ios_base::fmtflags original_flags( os.flags() );
 

@@ -50,12 +50,12 @@ public:
 private:
 
     Type m_type; ///< mesh type
-    size_t m_code; ///< mesh code
-    size_t m_scale; ///< scale of the maps
-    size_t m_survey_year; ///< survey year of the maps
-    size_t m_modified_year; ///< modified year of the maps
-    size_t m_digitalisation_year; ///< digitalisation year of the maps
-    size_t m_foliar_num; ///< number of foliars
+    std::size_t m_code; ///< mesh code
+    std::size_t m_scale; ///< scale of the maps
+    std::size_t m_survey_year; ///< survey year of the maps
+    std::size_t m_modified_year; ///< modified year of the maps
+    std::size_t m_digitalisation_year; ///< digitalisation year of the maps
+    std::size_t m_foliar_num; ///< number of foliars
     char m_first_name[20]; ///< name of the 1st map
     bool m_first_flg; ///< flag for the 1st map
     char m_second_name[20]; ///< name of the 2nd map
@@ -64,7 +64,7 @@ private:
     bool m_third_flg; ///< flag for the 3rd map
     char m_forth_name[20]; ///< name of the 4th map
     bool m_forth_flg; ///< flag for the 4th map
-    size_t m_record_num; ///< number of records
+    std::size_t m_record_num; ///< number of records
     char m_comment[80]; ///< comment
     bool m_record_flg[320]; ///< a set of record flag
 

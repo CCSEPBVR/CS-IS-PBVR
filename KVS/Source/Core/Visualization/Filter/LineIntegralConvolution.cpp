@@ -149,7 +149,7 @@ void LineIntegralConvolution::create_noise_volume( const kvs::StructuredVolumeOb
     kvs::MersenneTwister R;
 
     // Create a white noise volume.
-    for ( size_t i = 0; i < volume->numberOfNodes(); i++ )
+    for ( std::size_t i = 0; i < volume->numberOfNodes(); i++ )
     {
         *(pdata++) = static_cast<kvs::UInt8>( R() * 255.0 );
     }
@@ -184,11 +184,11 @@ void LineIntegralConvolution::convolution( const kvs::StructuredVolumeObject* vo
     const kvs::Vector3ui resol( volume->resolution() );
 
     unsigned int counter = 0;
-    for( size_t k = 0; k < resol.z(); k++ )
+    for( std::size_t k = 0; k < resol.z(); k++ )
     {
-        for( size_t j = 0; j < resol.y(); j++ )
+        for( std::size_t j = 0; j < resol.y(); j++ )
         {
-            for( size_t i = 0; i < resol.x(); i++ )
+            for( std::size_t i = 0; i < resol.x(); i++ )
             {
                 int i_c = i;
                 int j_c = j;

@@ -46,7 +46,7 @@ inline kvs::ValueArray<kvs::Real32> VertexCoords( const kvs::LineObject* line )
         {
             std::vector<kvs::Real32> coords;
             const auto nsegments = line->numberOfVertices() - 1;
-            for ( size_t i = 0; i < nsegments; ++i )
+            for ( std::size_t i = 0; i < nsegments; ++i )
             {
                 const auto c0 = line->coord( i + 0 );
                 const auto c1 = line->coord( i + 1 );
@@ -67,7 +67,7 @@ inline kvs::ValueArray<kvs::Real32> VertexCoords( const kvs::LineObject* line )
         {
             std::vector<kvs::Real32> coords;
             const auto nsegments = line->numberOfConnections() - 1;
-            for ( size_t i = 0; i < nsegments; ++i )
+            for ( std::size_t i = 0; i < nsegments; ++i )
             {
                 const auto id0 = line->connections().at( i + 0 );
                 const auto id1 = line->connections().at( i + 1 );
@@ -89,13 +89,13 @@ inline kvs::ValueArray<kvs::Real32> VertexCoords( const kvs::LineObject* line )
         if ( ncolors > 1 )
         {
             std::vector<kvs::Real32> coords;
-            const size_t nlines = line->numberOfConnections();
-            for ( size_t i = 0; i < nlines; ++i )
+            const std::size_t nlines = line->numberOfConnections();
+            for ( std::size_t i = 0; i < nlines; ++i )
             {
                 const auto id = 2 * i;
                 const auto id0 = line->connections().at( id + 0 );
                 const auto id1 = line->connections().at( id + 1 );
-                for ( size_t j = id0; j < id1; ++j )
+                for ( std::size_t j = id0; j < id1; ++j )
                 {
                     const auto c0 = line->coord( j + 0 );
                     const auto c1 = line->coord( j + 1 );
@@ -117,7 +117,7 @@ inline kvs::ValueArray<kvs::Real32> VertexCoords( const kvs::LineObject* line )
         {
             std::vector<kvs::Real32> coords;
             const auto nsegments = line->numberOfConnections();
-            for ( size_t i = 0; i < nsegments; ++i )
+            for ( std::size_t i = 0; i < nsegments; ++i )
             {
                 const auto id0 = line->connections().at( 2 * i + 0 );
                 const auto id1 = line->connections().at( 2 * i + 1 );
@@ -164,7 +164,7 @@ inline kvs::ValueArray<kvs::UInt8> VertexColors( const kvs::LineObject* line )
         {
             std::vector<kvs::UInt8> colors;
             const auto nsegments = line->numberOfVertices() - 1;
-            for ( size_t i = 0; i < nsegments; ++i )
+            for ( std::size_t i = 0; i < nsegments; ++i )
             {
                 const auto c = line->color( i );
                 colors.push_back( c.r() );
@@ -184,7 +184,7 @@ inline kvs::ValueArray<kvs::UInt8> VertexColors( const kvs::LineObject* line )
         {
             std::vector<kvs::UInt8> colors;
             const auto nsegments = line->numberOfConnections() - 1;
-            for ( size_t i = 0; i < nsegments; ++i )
+            for ( std::size_t i = 0; i < nsegments; ++i )
             {
                 const auto c = line->color( i );
                 colors.push_back( c.r() );
@@ -204,12 +204,12 @@ inline kvs::ValueArray<kvs::UInt8> VertexColors( const kvs::LineObject* line )
         {
             std::vector<kvs::UInt8> colors;
             const auto nlines = line->numberOfConnections();
-            for ( size_t i = 0, index = 0; i < nlines; ++i )
+            for ( std::size_t i = 0, index = 0; i < nlines; ++i )
             {
                 const auto id = 2 * i;
                 const auto id0 = line->connections().at( id + 0 );
                 const auto id1 = line->connections().at( id + 1 );
-                for ( size_t j = id0; j < id1; ++j, ++index )
+                for ( std::size_t j = id0; j < id1; ++j, ++index )
                 {
                     const auto c = line->color( index );
                     colors.push_back( c.r() );
@@ -230,7 +230,7 @@ inline kvs::ValueArray<kvs::UInt8> VertexColors( const kvs::LineObject* line )
         {
             std::vector<kvs::UInt8> colors;
             const auto nsegments = line->numberOfConnections();
-            for ( size_t i = 0; i < nsegments; ++i )
+            for ( std::size_t i = 0; i < nsegments; ++i )
             {
                 const auto c = line->color( i );
                 colors.push_back( c.r() );
@@ -254,7 +254,7 @@ inline kvs::ValueArray<kvs::UInt8> VertexColors( const kvs::LineObject* line )
     if ( ncolors == 1 )
     {
         const auto c = line->color();
-        for ( size_t i = 0; i < nvertices; ++i )
+        for ( std::size_t i = 0; i < nvertices; ++i )
         {
             colors[ 3 * i + 0 ] = c.r();
             colors[ 3 * i + 1 ] = c.g();
@@ -287,7 +287,7 @@ void LineRenderer::BufferObject::create( const kvs::ObjectBase* object )
             const kvs::UInt32* pconnections = line->connections().data();
             m_first_array.allocate( line->numberOfConnections() );
             m_count_array.allocate( m_first_array.size() );
-            for ( size_t i = 0; i < m_first_array.size(); ++i )
+            for ( std::size_t i = 0; i < m_first_array.size(); ++i )
             {
                 m_first_array[i] = pconnections[ 2 * i ];
                 m_count_array[i] = pconnections[ 2 * i + 1 ] - pconnections[ 2 * i ] + 1;
@@ -316,7 +316,7 @@ void LineRenderer::BufferObject::draw( const kvs::ObjectBase* object )
     {
         if ( ::HasConnections( line ) )
         {
-            const size_t nlines = line->numberOfConnections();
+            const std::size_t nlines = line->numberOfConnections();
             switch ( line->lineType() )
             {
             case kvs::LineObject::Uniline:
@@ -338,13 +338,13 @@ void LineRenderer::BufferObject::draw( const kvs::ObjectBase* object )
             if ( line->lineType() == kvs::LineObject::Strip &&
                  line->coords().byteSize() == size_t( m_manager.vertexArray().size ) )
             {
-                const size_t nvertices = line->numberOfVertices();
+                const std::size_t nvertices = line->numberOfVertices();
                 m_manager.drawArrays( GL_LINE_STRIP, 0, nvertices );
             }
             else
             {
-                const size_t nelements = m_manager.vertexArray().size / sizeof( kvs::Real32 );
-                const size_t nvertices = nelements / 3;
+                const std::size_t nelements = m_manager.vertexArray().size / sizeof( kvs::Real32 );
+                const std::size_t nvertices = nelements / 3;
                 m_manager.drawArrays( GL_LINES, 0, nvertices );
             }
         }
@@ -459,8 +459,8 @@ void LineRenderer::exec( kvs::ObjectBase* object, kvs::Camera* camera, kvs::Ligh
     BaseClass::startTimer();
     kvs::OpenGL::WithPushedAttrib p( GL_ALL_ATTRIB_BITS );
 
-    const size_t width = camera->windowWidth();
-    const size_t height = camera->windowHeight();
+    const std::size_t width = camera->windowWidth();
+    const std::size_t height = camera->windowHeight();
     const auto shading_enabled = BaseClass::isShadingEnabled();
     auto& shading_model = *m_shading_model;
 

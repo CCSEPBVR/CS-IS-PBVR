@@ -19,7 +19,7 @@ void SendInitialStepSignal( const std::string& volume_data_file_path, const std:
     MPI_Bcast( &size, 1, MPI_INT, 0, MPI_COMM_WORLD );
 #endif
 
-    size_t index = 0;
+    std::size_t index = 0;
     char* buf;
     buf = new char[size];
     
@@ -67,7 +67,7 @@ void SendGenerateObjectSignal( const TaskSignal task_signal, const std::string& 
     MPI_Bcast( &size, 1, MPI_INT, 0, MPI_COMM_WORLD );
 #endif
 
-    size_t index = 0;
+    std::size_t index = 0;
     char* buf;
     buf = new char[size];
     
@@ -141,7 +141,7 @@ void SendPlotOverLinePropertySignal( const PlotOverLineProperty& pol_property )
 
 void ReceiveInitialStepSignal( const char* buf, std::string& volume_data_file_path, std::string& transfer_function_file_path )
 {
-    size_t index = 0;
+    std::size_t index = 0;
     int64_t tmp_char_size;
     char* tmp_char = NULL;
     TaskSignal tmp_task_signal;
@@ -163,7 +163,7 @@ void ReceiveInitialStepSignal( const char* buf, std::string& volume_data_file_pa
 
 void ReceiveGenerateObjectSignal( const char* buf, std::string& volume_data_file_path, int& time_step )
 {
-    size_t index = 0;
+    std::size_t index = 0;
     int64_t tmp_char_size;
     char* tmp_char = NULL;
     TaskSignal task_signal;

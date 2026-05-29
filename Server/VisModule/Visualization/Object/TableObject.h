@@ -48,8 +48,8 @@ public:
 
 protected:
 
-    size_t m_nrows; ///< number of rows
-    size_t m_ncolumns; ///< number of columns
+    std::size_t m_nrows; ///< number of rows
+    std::size_t m_ncolumns; ///< number of columns
     LabelList m_labels; ///< label list
     ColumnList m_columns; ///< column list
     ValueList m_min_values; ///< min. values for each column
@@ -80,46 +80,46 @@ public:
     template <typename T>
     void addColumn( const std::vector<T>& array, const std::string& label = "" );
 
-    const size_t ncolumns( void ) const;
+    const std::size_t ncolumns( void ) const;
 
-    const size_t nrows( void ) const;
+    const std::size_t nrows( void ) const;
 
     const LabelList labelList( void ) const;
 
-    const std::string label( const size_t index ) const;
+    const std::string label( const std::size_t index ) const;
 
     const ColumnList columnList( void ) const;
 
-    const vismodule::AnyValueArray& column( const size_t index ) const;
+    const vismodule::AnyValueArray& column( const std::size_t index ) const;
 
     const ValueList minValueList( void ) const;
 
-    const vismodule::Real64 minValue( const size_t index ) const;
+    const vismodule::Real64 minValue( const std::size_t index ) const;
 
     const ValueList maxValueList( void ) const;
 
-    const vismodule::Real64 maxValue( const size_t index ) const;
+    const vismodule::Real64 maxValue( const std::size_t index ) const;
 
     template <typename T>
-    const T& at( const size_t row, const size_t column ) const;
+    const T& at( const std::size_t row, const std::size_t column ) const;
 
-    void setMinValue( const size_t column_index, const vismodule::Real64 value );
+    void setMinValue( const std::size_t column_index, const vismodule::Real64 value );
 
-    void setMaxValue( const size_t column_index, const vismodule::Real64 value );
+    void setMaxValue( const std::size_t column_index, const vismodule::Real64 value );
 
-    void setMinRange( const size_t column_index, const vismodule::Real64 range );
+    void setMinRange( const std::size_t column_index, const vismodule::Real64 range );
 
-    void setMaxRange( const size_t column_index, const vismodule::Real64 range );
+    void setMaxRange( const std::size_t column_index, const vismodule::Real64 range );
 
-    void setRange( const size_t column_index, const vismodule::Real64 min_range, const vismodule::Real64 max_range );
+    void setRange( const std::size_t column_index, const vismodule::Real64 min_range, const vismodule::Real64 max_range );
 
-    void moveMinRange( const size_t column_index, const vismodule::Real64 drange );
+    void moveMinRange( const std::size_t column_index, const vismodule::Real64 drange );
 
-    void moveMaxRange( const size_t column_index, const vismodule::Real64 drange );
+    void moveMaxRange( const std::size_t column_index, const vismodule::Real64 drange );
 
-    void moveRange( const size_t column_index, const vismodule::Real64 drange );
+    void moveRange( const std::size_t column_index, const vismodule::Real64 drange );
 
-    void resetRange( const size_t column_index );
+    void resetRange( const std::size_t column_index );
 
     void resetRange( void );
 
@@ -131,11 +131,11 @@ public:
 
     const RangeList& insideRangeList( void ) const;
 
-    const vismodule::Real64 minRange( const size_t column_index ) const;
+    const vismodule::Real64 minRange( const std::size_t column_index ) const;
 
-    const vismodule::Real64 maxRange( const size_t column_index ) const;
+    const vismodule::Real64 maxRange( const std::size_t column_index ) const;
 
-    const bool insideRange( const size_t row_index ) const;
+    const bool insideRange( const std::size_t row_index ) const;
 
     const ObjectType objectType( void ) const;
 };
@@ -174,7 +174,7 @@ inline void TableObject::addColumn( const std::vector<T>& array, const std::stri
  */
 /*===========================================================================*/
 template <typename T>
-inline const T& TableObject::at( const size_t row, const size_t column ) const
+inline const T& TableObject::at( const std::size_t row, const std::size_t column ) const
 {
     return( this->column( column ).template at<T>( row ) );
 }

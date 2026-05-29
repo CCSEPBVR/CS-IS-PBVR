@@ -161,7 +161,7 @@ std::unique_ptr<T, void(*)(void*)> mallocz(size_t size)
 }
 
 template<typename T>
-std::unique_ptr<T, void(*)(void*)> memdup(const void *p, size_t size)
+std::unique_ptr<T, void(*)(void*)> memdup(const void *p, std::size_t size)
 {
     return {static_cast<T*>(av_memdup(p, size)), av_free};
 }
@@ -366,7 +366,7 @@ T guessValue(const T& value, const L * list, C endListComparator)
 
 
 template<typename T, typename Container>
-void array_to_container(const T* array, std::size_t nelemnts, Container &container)
+void array_to_container(const T* array, std::size_t  nelemnts, Container &container)
 {
     if (!array || nelemnts == 0)
         return;
