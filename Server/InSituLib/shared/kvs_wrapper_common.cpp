@@ -436,8 +436,6 @@ void SetParameterFilePath(
     plotOverTimeParameterPath     = visParamDir + "plot_over_time_parameter.json";
     plotOverTimeParameterPath_old = visParamDir + "plot_over_time_parameter_old.json";
 
-    is_first_setting = false;
-    return true;
 }
 
 bool SetGlyphParameter(

@@ -855,7 +855,7 @@ bool generate_particles(
 
     OutputParticleHistory(
         particle_property, tf_number, nvariables, historyFilePath,
-        object_generation_enabled, tmp_c_bins, tmp_o_bins, tmp_max, tmp_min
+        tmp_c_bins, tmp_o_bins, tmp_max, tmp_min
     );
 
     if ( object_generation_enabled && glyph_property.m_glyph_flag )
@@ -1101,7 +1101,6 @@ bool ensemble_generate_particles(
         start_time_step = time_step;
     }
 
-    bool result = false;
     std::string historyFilePath;
     std::string stateFilePath;
     std::string coordMinMaxFilePath;
@@ -1119,7 +1118,7 @@ bool ensemble_generate_particles(
     std::string plotOverTimeParameterPath;
     std::string plotOverTimeParameterPath_old;
 
-    result = SetParameterFilePath(
+    SetParameterFilePath(
         time_step,
         historyFilePath,
         stateFilePath,
@@ -1138,8 +1137,6 @@ bool ensemble_generate_particles(
         plotOverTimeParameterPath,
         plotOverTimeParameterPath_old
     );
-
-    if ( !result ) return false;
 
     ParticleProperty particle_property;
     MultiVolumePropertyList mvpl;
@@ -1452,7 +1449,6 @@ bool ensemble_generate_particles(
         MPI_Waitall( 6, req_recv, MPI_STATUSES_IGNORE );
         MPI_Waitall( 6, req_send, MPI_STATUSES_IGNORE );
 
-    std::cout << __LINE__ <<std::endl;
 #pragma omp parallel
         {
 #if _OPENMP
@@ -1705,7 +1701,6 @@ bool ensemble_generate_particles(
         dst << src.rdbuf();
     }
 
-    std::cout << mpi_rank << ", " << __LINE__ << std::endl;
     if ( async_io_enabled )
     {
         std::cout << "Particle write thread is active." << std::endl;
@@ -2307,7 +2302,7 @@ bool generate_particles_vtk( int time_step, vtkUnstructuredGrid* ucd )
 
     OutputParticleHistory(
         particle_property, tf_number, nvariables, historyFilePath,
-        object_generation_enabled, tmp_c_bins, tmp_o_bins, tmp_max, tmp_min
+        tmp_c_bins, tmp_o_bins, tmp_max, tmp_min
     );
 
     if ( object_generation_enabled && glyph_property.m_glyph_flag )

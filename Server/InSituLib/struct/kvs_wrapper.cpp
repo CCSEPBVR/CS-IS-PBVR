@@ -359,7 +359,7 @@ void generate_particles(
 
     OutputParticleHistory(
         particle_property, tf_number, nvariables, historyFilePath,
-        object_generation_enabled, tmp_c_bins, tmp_o_bins, tmp_max, tmp_min
+        tmp_c_bins, tmp_o_bins, tmp_max, tmp_min
     );
 
     if ( object_generation_enabled && glyph_property.m_glyph_flag )
