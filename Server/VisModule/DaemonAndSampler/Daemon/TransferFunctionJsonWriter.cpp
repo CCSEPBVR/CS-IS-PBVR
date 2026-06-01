@@ -244,12 +244,11 @@ nlohmann::json BuildHumanReadableView( const ParticleProperty& particle_property
     view["purpose"] = "Particle-based volume rendering parameters for PBVR.";
     view["editing_notes"] = nlohmann::json::array(
     {
-        "Use settings for global rendering and sampling controls.",
-        "Each transfer_functions entry maps one simulation variable to color and opacity.",
-        "range.mode is UserRange when user.min/user.max are applied; ServerSide applies server.min/server.max.",
-        "color.map.values is a flat RGB uint8 array with 3 values per control point.",
-        "opacity.map.values is a float array in the range 0 to 1.",
-        "The parameters object is kept for legacy reader compatibility and is generated from the same values."
+        "The settings section contains global particle sampling settings.",
+        "Each transfer_functions entry defines the mapping between a physical quantity computed by a synthesis expression and its corresponding color and opacity. ",
+        "The range.mode field specifies the min/max values used for histogram generation. When set to UserRange, user.min and user.max are used. When set to ServerSide, server.min and server.max are used.",
+        "The color.map.values field contains a flat uint8 RGB array with three components (R, G, B) per control point.",
+        "The opacity.map.values field contains a one-dimensional array of floating-point values in the range [0, 1].",
     } );
 
     view["settings"]["sampling"]["method"] = SamplingMethodName( particle_property.m_sampling_method );
@@ -324,8 +323,8 @@ nlohmann::json ToJson( const ParticleProperty& particle_property )
 {
     nlohmann::json root;
     root["format"] = "PBVR transfer-function parameters";
-    root["schema_version"] = 2;
-    root["compatibility"] = "The parameters object preserves the legacy default.tf keys used by ParameterFileReader.";
+    root["schema_version"] = 1;
+//    root["compatibility"] = "The parameters object preserves the legacy default.tf keys used by ParameterFileReader.";
 //    root["order"] = nlohmann::json::array();
 //    root["parameters"] = nlohmann::json::object();
 
