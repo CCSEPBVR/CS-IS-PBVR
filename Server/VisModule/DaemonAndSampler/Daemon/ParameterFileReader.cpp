@@ -1,9 +1,137 @@
 #include "ParameterFileReader.h"
+
+#include <stdexcept>
+
 #define DEFAULT_TF_NUMBER 5
 #define BEFORE_READ_TF_NUMBER 99
 
 namespace
 {
+
+std::string JsonPathForTransferFunction( const size_t index, const std::string& field )
+{
+    std::stringstream stream;
+    stream << "transfer_functions[" << index << "]." << field;
+    return stream.str();
+}
+
+const nlohmann::json& JsonRequiredObject( const nlohmann::json& parent, const std::string& key )
+{
+    if ( !parent.contains( key ) || !parent.at( key ).is_object() )
+    {
+        throw std::runtime_error( "Invalid default.json: missing object '" + key + "'" );
+    }
+    return parent.at( key );
+}
+
+const nlohmann::json& JsonRequiredArray( const nlohmann::json& parent, const std::string& key )
+{
+    if ( !parent.contains( key ) || !parent.at( key ).is_array() )
+    {
+        throw std::runtime_error( "Invalid default.json: missing array '" + key + "'" );
+    }
+    return parent.at( key );
+}
+
+bool JsonContainsAny( const nlohmann::json& parent, const std::string& key, const std::string& alternate_key )
+{
+    return parent.contains( key ) || parent.contains( alternate_key );
+}
+
+template <typename T>
+T JsonValueWithAlternate(
+    const nlohmann::json& parent,
+    const std::string& key,
+    const std::string& alternate_key,
+    const T& fallback )
+{
+    if ( parent.contains( key ) ) return parent.at( key ).get<T>();
+    if ( !alternate_key.empty() && parent.contains( alternate_key ) ) return parent.at( alternate_key ).get<T>();
+    return fallback;
+}
+
+size_t JsonSizeValueWithAlternate(
+    const nlohmann::json& parent,
+    const std::string& key,
+    const std::string& alternate_key,
+    const size_t fallback )
+{
+    return JsonValueWithAlternate<size_t>( parent, key, alternate_key, fallback );
+}
+
+void ValidateMapSize(
+    const nlohmann::json& map,
+    const std::string& path,
+    const size_t expected_value_count )
+{
+    const nlohmann::json& values = JsonRequiredArray( map, "values" );
+    if ( map.contains( "length" ) )
+    {
+        const size_t length = map.at( "length" ).get<size_t>();
+        if ( length != values.size() )
+        {
+            std::stringstream message;
+            message << "Invalid default.json: " << path << ".length is " << length
+                    << " but " << path << ".values.size() is " << values.size();
+            throw std::runtime_error( message.str() );
+        }
+    }
+
+    if ( values.size() != expected_value_count )
+    {
+        std::stringstream message;
+        message << "Invalid default.json: " << path << ".values.size() is " << values.size()
+                << " but expected " << expected_value_count;
+        throw std::runtime_error( message.str() );
+    }
+}
+
+void ValidateReadableTransferFunctionJson( const nlohmann::json& root )
+{
+    const nlohmann::json& settings = JsonRequiredObject( root, "settings" );
+    const nlohmann::json& transfer_functions = JsonRequiredArray( root, "transfer_functions" );
+    const nlohmann::json& transfer_settings = JsonRequiredObject( settings, "transfer_function" );
+
+    if ( !JsonContainsAny( transfer_settings, "count", "transfer_function_count" ) )
+    {
+        throw std::runtime_error( "Invalid default.json: missing settings.transfer_function.count" );
+    }
+    if ( !JsonContainsAny( transfer_settings, "resolution", "transfer_function_resolution" ) )
+    {
+        throw std::runtime_error( "Invalid default.json: missing settings.transfer_function.resolution" );
+    }
+
+    const size_t tf_count = JsonSizeValueWithAlternate(
+        transfer_settings, "count", "transfer_function_count", transfer_functions.size() );
+    const size_t resolution = JsonSizeValueWithAlternate(
+        transfer_settings, "resolution", "transfer_function_resolution", 0 );
+
+    if ( tf_count != transfer_functions.size() )
+    {
+        std::stringstream message;
+        message << "Invalid default.json: settings.transfer_function.count is " << tf_count
+                << " but transfer_functions.size() is " << transfer_functions.size();
+        throw std::runtime_error( message.str() );
+    }
+
+    for ( size_t i = 0; i < transfer_functions.size(); ++i )
+    {
+        const nlohmann::json& tf = transfer_functions.at( i );
+        const nlohmann::json& color = JsonRequiredObject( tf, "color" );
+        const nlohmann::json& opacity = JsonRequiredObject( tf, "opacity" );
+        const nlohmann::json& color_map = JsonRequiredObject( color, "map" );
+        const nlohmann::json& opacity_map = JsonRequiredObject( opacity, "map" );
+
+        ValidateMapSize(
+            color_map,
+            JsonPathForTransferFunction( i, "color.map" ),
+            resolution * 3 );
+        ValidateMapSize(
+            opacity_map,
+            JsonPathForTransferFunction( i, "opacity.map" ),
+            resolution );
+    }
+}
 
 std::vector<int> JsonIntTable( const nlohmann::json& params, const std::string& key )
 {
@@ -71,6 +199,15 @@ float JsonRangeValue(
     return value.at( bound_name ).get<float>();
 }
 
+std::string JsonRangeMode( const nlohmann::json& range )
+{
+    if ( range.contains( "mode" ) ) return range.at( "mode" ).get<std::string>();
+    const std::string active_range = range.value( "active_range", std::string( "user" ) );
+    if ( active_range == "server" ) return "ServerSide";
+    if ( active_range == "user" ) return "UserRange";
+    return "";
+}
+
 nlohmann::json BuildLegacyParametersFromReadableJson( const nlohmann::json& root )
 {
     nlohmann::json params = root.value( "parameters", nlohmann::json::object() );
@@ -84,10 +221,13 @@ nlohmann::json BuildLegacyParametersFromReadableJson( const nlohmann::json& root
     if ( sampling.contains( "method" ) ) params["SAMPLING_METHOD"] = sampling.at( "method" );
     if ( sampling.contains( "particle_limit" ) ) params["PARTICLE_LIMIT"] = sampling.at( "particle_limit" );
     if ( sampling.contains( "particle_data_size_limit" ) ) params["PARTICLE_DATA_SIZE_LIMIT"] = sampling.at( "particle_data_size_limit" );
+    if ( sampling.contains( "particle_data_size_limit_unit" ) ) params["PARTICLE_DATA_SIZE_LIMIT_UNIT"] = sampling.at( "particle_data_size_limit_unit" );
     if ( image.contains( "width" ) ) params["RESOLUTION_WIDTH"] = image.at( "width" );
     if ( image.contains( "height" ) ) params["RESOLUTION_HEIGHT"] = image.at( "height" );
     if ( transfer_settings.contains( "resolution" ) ) params["TF_RESOLUTION"] = transfer_settings.at( "resolution" );
+    else if ( transfer_settings.contains( "transfer_function_resolution" ) ) params["TF_RESOLUTION"] = transfer_settings.at( "transfer_function_resolution" );
     if ( transfer_settings.contains( "count" ) ) params["TF_NUMBER"] = transfer_settings.at( "count" );
+    else if ( transfer_settings.contains( "transfer_function_count" ) ) params["TF_NUMBER"] = transfer_settings.at( "transfer_function_count" );
     else params["TF_NUMBER"] = transfer_functions.size();
     if ( transfer_settings.contains( "color_synthesis" ) ) params["COLOR_SYNTH"] = transfer_settings.at( "color_synthesis" );
     if ( transfer_settings.contains( "opacity_synthesis" ) ) params["OPACITY_SYNTH"] = transfer_settings.at( "opacity_synthesis" );
@@ -99,6 +239,9 @@ nlohmann::json BuildLegacyParametersFromReadableJson( const nlohmann::json& root
         ss << "TF_NAME" << i + 1 << "_";
         const std::string tag_base = ss.str();
 
+        if ( tf.contains( "id" ) ) params[tag_base + "ID"] = tf.at( "id" );
+        if ( tf.contains( "label" ) ) params[tag_base + "LABEL"] = tf.at( "label" );
+
         if ( tf.contains( "color" ) )
         {
             const nlohmann::json& color = tf.at( "color" );
@@ -106,7 +249,7 @@ nlohmann::json BuildLegacyParametersFromReadableJson( const nlohmann::json& root
             if ( color.contains( "range" ) )
             {
                 const nlohmann::json& range = color.at( "range" );
-                if ( range.contains( "mode" ) ) params[tag_base + "RANGE_MODE_C"] = range.at( "mode" );
+                params[tag_base + "RANGE_MODE_C"] = JsonRangeMode( range );
                 params[tag_base + "SERVER_MIN_C"] = JsonRangeValue( range, "server", "min" );
                 params[tag_base + "SERVER_MAX_C"] = JsonRangeValue( range, "server", "max" );
                 params[tag_base + "USER_MIN_C"] = JsonRangeValue( range, "user", "min" );
@@ -126,7 +269,7 @@ nlohmann::json BuildLegacyParametersFromReadableJson( const nlohmann::json& root
             if ( opacity.contains( "range" ) )
             {
                 const nlohmann::json& range = opacity.at( "range" );
-                if ( range.contains( "mode" ) ) params[tag_base + "RANGE_MODE_O"] = range.at( "mode" );
+                params[tag_base + "RANGE_MODE_O"] = JsonRangeMode( range );
                 params[tag_base + "SERVER_MIN_O"] = JsonRangeValue( range, "server", "min" );
                 params[tag_base + "SERVER_MAX_O"] = JsonRangeValue( range, "server", "max" );
                 params[tag_base + "USER_MIN_O"] = JsonRangeValue( range, "user", "min" );
@@ -148,6 +291,7 @@ nlohmann::json TransferFunctionParameters( const nlohmann::json& root )
 {
     if ( root.contains( "settings" ) && root.contains( "transfer_functions" ) )
     {
+        ValidateReadableTransferFunctionJson( root );
         return BuildLegacyParametersFromReadableJson( root );
     }
 
@@ -326,17 +470,31 @@ void ParameterFileReader::readTransferFunctionFromJson( const char* fname, Parti
             json_name += envBuf;
             json_name += ".json";
         }
-       nlohmann::json tf = TransferFunctionJsonWriter::LoadTfJson(json_name);
-
-       const nlohmann::json params = TransferFunctionParameters( tf );
+       nlohmann::json params;
+       try
+       {
+           const nlohmann::json tf = TransferFunctionJsonWriter::LoadTfJson(json_name);
+           params = TransferFunctionParameters( tf );
+       }
+       catch ( const std::exception& e )
+       {
+           std::cout << "ERROR:Failed to import json '" << json_name << "': " << e.what() << std::endl;
+           return;
+       }
 
        const std::string size_sampling_method                  = params.value( "SAMPLING_METHOD", std::string( "" ) );
        particle_property.m_particle_limit                      = params.value( "PARTICLE_LIMIT", 0 );
        // particle_property.m_extra_opacity_factor                = m_name_list_file.getValue<float>( "EXTRA_OPACITY_FACTOR" ); // 一時的にコメントアウト
        particle_property.m_extra_opacity_factor                = 1; // 一時的にハードコーティング
        particle_property.m_particle_data_size_limit            = params.value( "PARTICLE_DATA_SIZE_LIMIT", 0.0f );
+       const std::string particle_data_size_limit_unit          = params.value( "PARTICLE_DATA_SIZE_LIMIT_UNIT", std::string( "MB" ) );
        particle_property.m_color_transfer_function_synthesis   = params.value( "COLOR_SYNTH", std::string( "" ) );
        particle_property.m_opacity_transfer_function_synthesis = params.value( "OPACITY_SYNTH", std::string( "" ) );
+       if ( particle_data_size_limit_unit != "MB" )
+       {
+           std::cout << "WARN:particle_data_size_limit_unit is '" << particle_data_size_limit_unit
+                     << "', but ParticleProperty stores this value as MB." << std::endl;
+       }
        if ( size_sampling_method == "Uniform" )
        {
            particle_property.m_sampling_method = 'u';
@@ -361,6 +519,24 @@ void ParameterFileReader::readTransferFunctionFromJson( const char* fname, Parti
 
        const size_t resolution          = params.value( "TF_RESOLUTION", 0 );
        const int tf_number              = params.value( "TF_NUMBER", 0 );
+       if ( tf_number < 0 )
+       {
+           std::cout << "ERROR:TF_NUMBER is negative." << std::endl;
+           return;
+       }
+
+       std::cout << "PBVR JSON import summary" << std::endl;
+       std::cout << "  file                         : " << json_name << std::endl;
+       std::cout << "  sampling.method              : " << size_sampling_method << std::endl;
+       std::cout << "  sampling.particle_limit      : " << particle_property.m_particle_limit << std::endl;
+       std::cout << "  sampling.data_size_limit     : " << particle_property.m_particle_data_size_limit
+                 << " " << particle_data_size_limit_unit << std::endl;
+       std::cout << "  image.width                  : " << width << std::endl;
+       std::cout << "  image.height                 : " << height << std::endl;
+       std::cout << "  transfer_function.count      : " << tf_number << std::endl;
+       std::cout << "  transfer_function.resolution : " << resolution << std::endl;
+       std::cout << "  transfer_function.color_syn  : " << particle_property.m_color_transfer_function_synthesis << std::endl;
+       std::cout << "  transfer_function.opacity_syn: " << particle_property.m_opacity_transfer_function_synthesis << std::endl;
 
        particle_property.m_transfunc_array.clear();
        particle_property.m_transfunc_array.resize( tf_number );
@@ -395,6 +571,31 @@ void ParameterFileReader::readTransferFunctionFromJson( const char* fname, Parti
         const float user_opacity_max             = params.value( tag_base + "USER_MAX_O", 0.0f );
         const std::vector<int> color_values      = JsonIntTable( params, tag_base + "TABLE_C" );
         const std::vector<float> opacity_values  = JsonFloatTable( params, tag_base + "TABLE_O" );
+        const int tf_id                          = params.value( tag_base + "ID", static_cast<int>( n + 1 ) );
+        const std::string tf_label               = params.value( tag_base + "LABEL", std::string( "" ) );
+
+        if ( color_values.size() != resolution * 3 )
+        {
+            std::cout << "ERROR:" << tag_base << "TABLE_C size is " << color_values.size()
+                      << ", but expected " << resolution * 3 << "." << std::endl;
+            return;
+        }
+        if ( opacity_values.size() != resolution )
+        {
+            std::cout << "ERROR:" << tag_base << "TABLE_O size is " << opacity_values.size()
+                      << ", but expected " << resolution << "." << std::endl;
+            return;
+        }
+
+        std::cout << "  transfer_functions[" << n << "] id=" << tf_id;
+        if ( !tf_label.empty() ) std::cout << " label=" << tf_label;
+        std::cout << " color.variable=" << color_variable
+                  << " opacity.variable=" << opacity_varible
+                  << " color.range.mode=" << color_range_mode
+                  << " opacity.range.mode=" << opacity_range_mode
+                  << " color.map.values=" << color_values.size()
+                  << " opacity.map.values=" << opacity_values.size()
+                  << std::endl;
 
         if ( color_range_mode == "ServerSide" )
         {

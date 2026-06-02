@@ -20,6 +20,7 @@
 #include <vismodule/ParticleProperty>
 
 #include <vismodule/ParameterFileReader>
+#include <vismodule/ParameterFileWriter>
 
 // Generate
 #include <vismodule/GenerateParticle>

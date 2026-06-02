@@ -262,6 +262,23 @@ struct ParticleProperty
         std::cout << "particle_data_size_limit            : " << m_particle_data_size_limit            << std::endl;
         std::cout << "color_transfer_function_synthesis   : " << m_color_transfer_function_synthesis   << std::endl;
         std::cout << "opacity_transfer_function_synthesis : " << m_opacity_transfer_function_synthesis << std::endl;
+        std::cout << "transfer_function_count             : " << m_transfunc_array.size()              << std::endl;
+        for ( std::size_t i = 0; i < m_transfunc_array.size(); ++i )
+        {
+            const NamedTransferFunction& tf = m_transfunc_array[i];
+            std::cout << "transfer_function[" << i << "].name           : " << tf.m_name << std::endl;
+            std::cout << "transfer_function[" << i << "].resolution     : " << tf.m_resolution << std::endl;
+            std::cout << "transfer_function[" << i << "].color_variable : " << tf.m_color_variable << std::endl;
+            std::cout << "transfer_function[" << i << "].opacity_variable: " << tf.m_opacity_variable << std::endl;
+            std::cout << "transfer_function[" << i << "].color_range    : "
+                      << tf.m_user_color_variable_min << ", " << tf.m_user_color_variable_max << std::endl;
+            std::cout << "transfer_function[" << i << "].opacity_range  : "
+                      << tf.m_user_opacity_variable_min << ", " << tf.m_user_opacity_variable_max << std::endl;
+            std::cout << "transfer_function[" << i << "].color_map_size : "
+                      << tf.colorMap().table().size() << std::endl;
+            std::cout << "transfer_function[" << i << "].opacity_map_size: "
+                      << tf.opacityMap().table().size() << std::endl;
+        }
         std::cout << "x_synthesis                         : " << m_x_synthesis                         << std::endl;
         std::cout << "y_synthesis                         : " << m_y_synthesis                         << std::endl;
         std::cout << "z_synthesis                         : " << m_z_synthesis                         << std::endl;

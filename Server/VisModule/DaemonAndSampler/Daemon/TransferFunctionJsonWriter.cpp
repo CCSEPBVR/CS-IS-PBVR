@@ -231,7 +231,6 @@ nlohmann::json RangeDescription(
     const float user_max )
 {
     nlohmann::json range;
-    range["mode"] = mode;
     range["active_range"] = mode == "ServerSide" ? "server" : "user";
     range["server"] = { { "min", server_min }, { "max", server_max } };
     range["user"] = { { "min", user_min }, { "max", user_max } };
@@ -245,8 +244,8 @@ nlohmann::json BuildHumanReadableView( const ParticleProperty& particle_property
     view["editing_notes"] = nlohmann::json::array(
     {
         "The settings section contains global particle sampling settings.",
-        "Each transfer_functions entry defines the mapping between a physical quantity computed by a synthesis expression and its corresponding color and opacity. ",
-        "The range.mode field specifies the min/max values used for histogram generation. When set to UserRange, user.min and user.max are used. When set to ServerSide, server.min and server.max are used.",
+        "Each transfer_functions entry defines the mapping between a physical quantity computed by a synthesis expression and its corresponding color and opacity.",
+        "The range.active_range field specifies the min/max values used for histogram generation. When set to user, user.min and user.max are used. When set to server, server.min and server.max are used.",
         "The color.map.values field contains a flat uint8 RGB array with three components (R, G, B) per control point.",
         "The opacity.map.values field contains a one-dimensional array of floating-point values in the range [0, 1].",
     } );
@@ -262,10 +261,10 @@ nlohmann::json BuildHumanReadableView( const ParticleProperty& particle_property
         view["settings"]["image"]["height"] = particle_property.m_camera->windowHeight();
     }
 
-    view["settings"]["transfer_function"]["count"] = particle_property.m_transfunc_array.size();
+    view["settings"]["transfer_function"]["transfer_function_count"] = particle_property.m_transfunc_array.size();
     if ( !particle_property.m_transfunc_array.empty() )
     {
-        view["settings"]["transfer_function"]["resolution"] = particle_property.m_transfunc_array[0].m_resolution;
+        view["settings"]["transfer_function"]["transfer_function_resolution"] = particle_property.m_transfunc_array[0].m_resolution;
     }
     view["settings"]["transfer_function"]["color_synthesis"] = particle_property.m_color_transfer_function_synthesis;
     view["settings"]["transfer_function"]["opacity_synthesis"] = particle_property.m_opacity_transfer_function_synthesis;
@@ -384,6 +383,8 @@ nlohmann::json ToJson( const ParticleProperty& particle_property )
 
     const nlohmann::json view = BuildHumanReadableView( particle_property );
     root["purpose"] = view["purpose"];
+    root["documentation"]["transfer_function_editor_jp"] = "https://github.com/CCSEPBVR/CS-IS-PBVR/wiki/TransferFunctionEditor_JP";
+    root["documentation"]["transfer_function_editor_en"] = "https://github.com/CCSEPBVR/CS-IS-PBVR/wiki/TransferFunctionEditor_EN";
     root["editing_notes"] = view["editing_notes"];
     root["settings"] = view["settings"];
     root["transfer_functions"] = view["transfer_functions"];
