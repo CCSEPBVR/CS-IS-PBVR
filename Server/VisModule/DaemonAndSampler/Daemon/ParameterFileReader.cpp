@@ -1,5 +1,6 @@
 #include "ParameterFileReader.h"
 #include <exception>
+#include <stdexcept>
 #define DEFAULT_TF_NUMBER 5
 #define BEFORE_READ_TF_NUMBER 99
 
@@ -709,6 +710,19 @@ bool ParameterFileReader::readTransferFunctionFromJson( const char* fname, Parti
            std::cout << "ERROR:Transfer function resolution or count is invalid." << std::endl;
            return false;
        }
+
+       std::cout << "PBVR JSON import summary" << std::endl;
+       std::cout << "  file                         : " << fname << std::endl;
+       std::cout << "  sampling.method              : " << size_sampling_method << std::endl;
+       std::cout << "  sampling.particle_limit      : " << particle_property.m_particle_limit << std::endl;
+       std::cout << "  sampling.data_size_limit     : " << particle_property.m_particle_data_size_limit
+                 << " " << particle_data_size_limit_unit << std::endl;
+       std::cout << "  image.width                  : " << width << std::endl;
+       std::cout << "  image.height                 : " << height << std::endl;
+       std::cout << "  transfer_function.count      : " << tf_number << std::endl;
+       std::cout << "  transfer_function.resolution : " << resolution << std::endl;
+       std::cout << "  transfer_function.color_syn  : " << particle_property.m_color_transfer_function_synthesis << std::endl;
+       std::cout << "  transfer_function.opacity_syn: " << particle_property.m_opacity_transfer_function_synthesis << std::endl;
 
        particle_property.m_transfunc_array.clear();
        particle_property.m_transfunc_array.resize( tf_number );
