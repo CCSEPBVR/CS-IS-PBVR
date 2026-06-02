@@ -243,11 +243,12 @@ nlohmann::json BuildHumanReadableView( const ParticleProperty& particle_property
     view["purpose"] = "Particle-based volume rendering parameters for PBVR.";
     view["editing_notes"] = nlohmann::json::array(
     {
-        "The settings section contains global particle sampling settings.",
+        "The settings section contains global settings shared across the visualization.",
         "Each transfer_functions entry defines the mapping between a physical quantity computed by a synthesis expression and its corresponding color and opacity.",
         "The range.active_range field specifies the min/max values used for histogram generation. When set to user, user.min and user.max are used. When set to server, server.min and server.max are used.",
         "The color.map.values field contains a flat uint8 RGB array with three components (R, G, B) per control point.",
         "The opacity.map.values field contains a one-dimensional array of floating-point values in the range [0, 1].",
+        "color_synthesis and opacity_synthesis specify the synthesis expressions defined in the Transfer Function Editor.",
     } );
 
     view["settings"]["sampling"]["method"] = SamplingMethodName( particle_property.m_sampling_method );
