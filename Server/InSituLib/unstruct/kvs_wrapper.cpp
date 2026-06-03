@@ -1241,15 +1241,28 @@ bool ensemble_generate_particles(
     const int tf_number = particle_property.m_transfunc_array.size();
     //std::vector<vismodule::TransferFunction> transfer_functions( tf_number );
     std::vector<std::vector<vismodule::TransferFunction>> transfer_functions( max_threads );
+    std::vector<std::vector<vismodule::TransferFunction>>           mean_transfer_functions( max_threads );
+    std::vector<std::vector<vismodule::TransferFunction>>       variance_transfer_functions( max_threads );
+    std::vector<std::vector<vismodule::TransferFunction>> coef_variation_transfer_functions( max_threads );
     for ( int i = 0; i < max_threads; i++ )
     {
         transfer_functions[ i ].resize( tf_number );
+                  mean_transfer_functions[ i ].resize( tf_number );
+              variance_transfer_functions[ i ].resize( tf_number );
+        coef_variation_transfer_functions[ i ].resize( tf_number );
         for ( int j = 0; j < tf_number; j++ )
         {
             transfer_functions[i][j] = particle_property.m_transfunc_array[j];
+                      mean_transfer_functions[i][j] = particle_property.m_mean_transfer_function_array[j];
+                  variance_transfer_functions[i][j] = particle_property.m_variance_transfer_function_array[j];
+            coef_variation_transfer_functions[i][j] = particle_property.m_coefficient_of_variation_transfer_function_array[j];
         }
 //        transfer_functions[i] = particle_property.m_transfunc_array[i];
     }
+
+    std::cout << "particle_property.mean_max = " << particle_property.m_mean_transfer_function_array[0].colorMap().maxValue() << std::endl;
+    std::cout << "particle_property.var_max = " << particle_property.m_variance_transfer_function_array[0].colorMap().maxValue() << std::endl;
+
 
     const std::string averageFilePrefix = EnsembleParticleFilePrefix( particleFilePrefix, "ave_" );
     const std::string varianceFilePrefix = EnsembleParticleFilePrefix( particleFilePrefix, "var_" );
@@ -1392,8 +1405,8 @@ bool ensemble_generate_particles(
             for ( int cell_BLK = 0; cell_BLK < remain; cell_BLK++ )
             {
                 nparticles_array[cell_BLK] = static_cast<int>(
-                    CalculateNumberOfParticlesV35( max_density, volume_array[cell_BLK], particle_density * repetitions, &mt )
-//                    5
+//                    CalculateNumberOfParticlesV35( max_density, volume_array[cell_BLK], particle_density * repetitions, &mt )
+                    5
                 );
             }
 
@@ -1409,8 +1422,8 @@ bool ensemble_generate_particles(
                         for ( int j = 0; j < remain_BLK; j++ )
                         {
                             cell_index[p_id] = static_cast<vismodule::UInt32>( index + cell_BLK );
-                            local_coord_array[p_id] = cell[thid][0]->randomSampling_MT( &mt );
-//                            local_coord_array[p_id] = vismodule::Vector3f (0,0,0);
+//                            local_coord_array[p_id] = cell[thid][0]->randomSampling_MT( &mt );
+                            local_coord_array[p_id] = vismodule::Vector3f (0,0,0);
                             p_id++;
                             if ( p_id == SIMD_BLK_SIZE )
                             {
@@ -1418,7 +1431,7 @@ bool ensemble_generate_particles(
                                 cell[thid][0]->setLocalPointArray( p_id, local_coord_array );
                                 cell[thid][0]->transformLocalToGlobalArray( p_id, local_coord_array, global_coord_array );
                                 particle_property.m_transfunc_synthesizer->CalculateScalarsArray(
-                                    cell[thid], p_id, local_coord_array, global_coord_array, transfer_functions[thid], scalar_array
+                                    cell[thid], p_id, local_coord_array, global_coord_array, mean_transfer_functions[thid], scalar_array
                                 );
 //                                calculation_glad(p_id, nvariables, th_tfs[thid], transfer_functions[thid], cell[thid], local_coord_array, cell_index, grad_array_x, grad_array_y, grad_array_z);
                                 calculation_chain_rule_grad(
@@ -1457,7 +1470,7 @@ bool ensemble_generate_particles(
                         cell[thid][0]->setLocalPointArray( p_id, local_coord_array );
                         cell[thid][0]->transformLocalToGlobalArray( p_id, local_coord_array, global_coord_array );
                         particle_property.m_transfunc_synthesizer->CalculateScalarsArray(
-                            cell[thid], p_id, local_coord_array, global_coord_array, transfer_functions[thid], scalar_array
+                            cell[thid], p_id, local_coord_array, global_coord_array, mean_transfer_functions[thid], scalar_array
                         );
 //                        calculation_glad(p_id, nvariables, th_tfs[thid], transfer_functions[thid], cell[thid], local_coord_array, cell_index, grad_array_x, grad_array_y, grad_array_z);
                                 calculation_chain_rule_grad(
@@ -1589,7 +1602,7 @@ bool ensemble_generate_particles(
                 cell[thid][0]->setLocalPointArray( remain_BLK, local_coord_array );
                 cell[thid][0]->transformLocalToGlobalArray( remain_BLK, local_coord_array, global_coord_array );
                 particle_property.m_transfunc_synthesizer->CalculateScalarsArray(
-                    cell[thid], remain_BLK, local_coord_array, global_coord_array, transfer_functions[thid], scalar_array
+                    cell[thid], remain_BLK, local_coord_array, global_coord_array, mean_transfer_functions[thid], scalar_array
                 );
 //                calculation_glad(remain_BLK, nvariables, th_tfs[thid], transfer_functions[thid], cell[thid], local_coord_array, cell_index, grad_array_x, grad_array_y, grad_array_z);
                                 calculation_chain_rule_grad(
@@ -1666,13 +1679,13 @@ bool ensemble_generate_particles(
     }
 
     EnsembleStatisticRange average_range = MakeEnsembleStatisticRange(
-        vertex_scalars, tf_number, particle_property.m_transfunc_array
+        vertex_scalars, tf_number, particle_property.m_mean_transfer_function_array
     );
     EnsembleStatisticRange variance_range = MakeEnsembleStatisticRange(
-        tmp_varience, tf_number, particle_property.m_transfunc_array
+        tmp_varience, tf_number, particle_property.m_variance_transfer_function_array 
     );
     EnsembleStatisticRange co_variation_range = MakeEnsembleStatisticRange(
-        co_varietion, tf_number, particle_property.m_transfunc_array
+        co_varietion, tf_number, particle_property.m_coefficient_of_variation_transfer_function_array
     );
 
     particle_property.m_transfunc_synthesizer->m_o_min.resize( tf_number );
@@ -1739,18 +1752,19 @@ bool ensemble_generate_particles(
                     tmp_varience_normals[3 * idx + 2]
                 );
 
+//                std::cout << "tmp_varience_normals = " << variance_normal <<std::endl;
                 AppendRejectedStatisticParticle(
-                    vertex_scalars[idx], global_coord_array[j], average_normal, transfer_functions[thid][0],
+                    vertex_scalars[idx], global_coord_array[j], average_normal, mean_transfer_functions[thid][0],
                     sampling_volume_inverse, max_opacity, max_density, &mt,
                     th_average_coords, th_average_colors, th_average_normals
                 );
                 AppendRejectedStatisticParticle(
-                    tmp_varience[idx], global_coord_array[j], variance_normal, transfer_functions[thid][0],
+                    tmp_varience[idx], global_coord_array[j], variance_normal, variance_transfer_functions[thid][0],
                     sampling_volume_inverse, max_opacity, max_density, &mt,
                     th_variance_coords, th_variance_colors, th_variance_normals
                 );
                 AppendRejectedStatisticParticle(
-                    co_varietion[idx], global_coord_array[j], variance_normal, transfer_functions[thid][0],
+                    co_varietion[idx], global_coord_array[j], variance_normal, coef_variation_transfer_functions[thid][0],
                     sampling_volume_inverse, max_opacity, max_density, &mt,
                     th_coefficient_coords, th_coefficient_colors, th_coefficient_normals
                 );
