@@ -574,6 +574,14 @@ void OutputEnsembleStatisticHistory(
         particle_property.m_transfunc_array[i].m_server_opacity_variable_max = average_range.max_values[2 * i    ];
         particle_property.m_transfunc_array[i].m_server_color_variable_min   = average_range.min_values[2 * i + 1];
         particle_property.m_transfunc_array[i].m_server_color_variable_max   = average_range.max_values[2 * i + 1];
+        std::copy(
+            average_range.o_bins.begin() + i * DEFAULT_NBINS,
+            average_range.o_bins.begin() + ( i + 1 ) * DEFAULT_NBINS,
+            particle_property.m_transfunc_array[i].m_opacity_histogram );
+        std::copy(
+            average_range.c_bins.begin() + i * DEFAULT_NBINS,
+            average_range.c_bins.begin() + ( i + 1 ) * DEFAULT_NBINS,
+            particle_property.m_transfunc_array[i].m_color_histogram );
     }
 
     ParameterFileWriter ppw;
