@@ -57,6 +57,8 @@
 #include <kvs/extendedfileformat/VtkImporter>
 #endif
 
+#include "ChainRuleNormal.h"
+
 namespace Generator = vismodule::CellByCellParticleGenerator;
 
 static bool is_initial_step = true;
@@ -539,12 +541,12 @@ void OutputEnsembleStatisticHistory(
     const std::string& historyFilePath,
     EnsembleStatisticRange average_range,
     EnsembleStatisticRange variance_range,
-    EnsembleStatisticRange coefficient_range
+    EnsembleStatisticRange co_variation_range
 )
 {
     ReduceEnsembleStatisticRange( average_range, tf_number );
     ReduceEnsembleStatisticRange( variance_range, tf_number );
-    ReduceEnsembleStatisticRange( coefficient_range, tf_number );
+    ReduceEnsembleStatisticRange( co_variation_range, tf_number );
 
     int mpi_rank;
 #ifndef CPU_VER
@@ -560,7 +562,7 @@ void OutputEnsembleStatisticHistory(
     ofs << "RESOLUTION=" << DEFAULT_NBINS << std::endl;
     WritePrefixedStatisticHistory( ofs, "AVE", average_range, tf_number );
     WritePrefixedStatisticHistory( ofs, "VAR", variance_range, tf_number );
-    WritePrefixedStatisticHistory( ofs, "COV", coefficient_range, tf_number );
+    WritePrefixedStatisticHistory( ofs, "COV", co_variation_range, tf_number );
     ofs << "N_VARIABLES=" << nvariables << std::endl;
     ofs << "PARTICLE_LIMIT=" << particle_property.m_particle_limit << std::endl;
     ofs << "END_HISTORY_FILE=SUCCESS" << std::endl;
@@ -928,6 +930,78 @@ bool generate_particles(
     delete particle_property.m_camera;
 
     return true;
+}
+
+void calculation_chain_rule_grad(
+    const int nparticles_count,
+    const int nvariables,
+    TransferFunctionSynthesizer* th_tfs,
+    const std::vector< vismodule::CellBase<Type>* > interp,
+    const vismodule::Vector3f* local_coord_array,
+    const vismodule::UInt32* cell_index,
+    float* grad_array_x,
+    float* grad_array_y,
+    float* grad_array_z )
+{
+    float scalar_array[nvariables][SIMD_BLK_SIZE];
+    float grad_qx[nvariables][SIMD_BLK_SIZE];
+    float grad_qy[nvariables][SIMD_BLK_SIZE];
+    float grad_qz[nvariables][SIMD_BLK_SIZE];
+
+    for ( int j = 0; j < nvariables; ++j )
+    {
+        interp[j]->bindCellArray( nparticles_count, cell_index );
+        interp[j]->setLocalPointArray( nparticles_count, local_coord_array );
+        interp[j]->CalcScalarGrad(
+            nparticles_count,
+            scalar_array[j],
+            grad_qx[j],
+            grad_qy[j],
+            grad_qz[j] );
+    }
+
+    const std::vector<EquationToken> opa_vars = th_tfs->opacityVariable();
+    if ( opa_vars.empty() ) return;
+
+    const EquationToken& expr = opa_vars[0]; // まず TF 数 1 個想定
+
+    pbvr::ChainRuleNormalWorkspace workspace;
+    workspace.setExpression( expr, nvariables );
+
+    float q_values[128];
+    vismodule::Vector3f grad_q[128];
+
+    for ( int p = 0; p < nparticles_count; ++p )
+    {
+        for ( int v = 0; v < nvariables; ++v )
+        {
+            q_values[v] = scalar_array[v][p];
+            grad_q[v] = vismodule::Vector3f(
+                grad_qx[v][p],
+                grad_qy[v][p],
+                grad_qz[v][p] );
+        }
+
+        vismodule::Vector3f grad_F;
+        const bool ok = workspace.computeGradient(
+            expr,
+            q_values,
+            grad_q,
+            nvariables,
+            &grad_F );
+
+        if ( !ok )
+        {
+            grad_array_x[p] = 0.0f;
+            grad_array_y[p] = 0.0f;
+            grad_array_z[p] = 0.0f;
+            continue;
+        }
+
+        grad_array_x[p] = grad_F.x();
+        grad_array_y[p] = grad_F.y();
+        grad_array_z[p] = grad_F.z();
+    }
 }
 
 void calculation_glad(const int nparticles_count, const int nvariables,
@@ -1310,8 +1384,8 @@ bool ensemble_generate_particles(
             for ( int cell_BLK = 0; cell_BLK < remain; cell_BLK++ )
             {
                 nparticles_array[cell_BLK] = static_cast<int>(
-                    //CalculateNumberOfParticlesV35( max_density, volume_array[cell_BLK], particle_density * repetitions, &mt )
-                    5
+                    CalculateNumberOfParticlesV35( max_density, volume_array[cell_BLK], particle_density * repetitions, &mt )
+//                    5
                 );
             }
 
@@ -1328,6 +1402,7 @@ bool ensemble_generate_particles(
                         {
                             cell_index[p_id] = static_cast<vismodule::UInt32>( index + cell_BLK );
                             local_coord_array[p_id] = cell[thid][0]->randomSampling_MT( &mt );
+//                            local_coord_array[p_id] = vismodule::Vector3f (0,0,0);
                             p_id++;
                             if ( p_id == SIMD_BLK_SIZE )
                             {
@@ -1337,8 +1412,18 @@ bool ensemble_generate_particles(
                                 particle_property.m_transfunc_synthesizer->CalculateScalarsArray(
                                     cell[thid], p_id, local_coord_array, global_coord_array, transfer_functions[thid], scalar_array
                                 );
-//                                cell[thid][0]->CalcAveragedScalarGrad( p_id, grad_scalar, grad_array_x, grad_array_y, grad_array_z );
-                                calculation_glad(p_id, nvariables, th_tfs[thid], transfer_functions[thid], cell[thid], local_coord_array, cell_index, grad_array_x, grad_array_y, grad_array_z);
+//                                calculation_glad(p_id, nvariables, th_tfs[thid], transfer_functions[thid], cell[thid], local_coord_array, cell_index, grad_array_x, grad_array_y, grad_array_z);
+                                calculation_chain_rule_grad(
+                                        p_id,
+                                        nvariables,
+                                        th_tfs[thid],
+                                        cell[thid],
+                                        local_coord_array,
+                                        cell_index,
+                                        grad_array_x,
+                                        grad_array_y,
+                                        grad_array_z );
+
                                 for ( int k = 0; k < p_id; k++ )
                                 {
                                     th_vertex_scalars.push_back( scalar_array[k] );
@@ -1366,8 +1451,19 @@ bool ensemble_generate_particles(
                         particle_property.m_transfunc_synthesizer->CalculateScalarsArray(
                             cell[thid], p_id, local_coord_array, global_coord_array, transfer_functions[thid], scalar_array
                         );
-//                        cell[thid][0]->CalcAveragedScalarGrad( p_id, grad_scalar, grad_array_x, grad_array_y, grad_array_z );
-                        calculation_glad(p_id, nvariables, th_tfs[thid], transfer_functions[thid], cell[thid], local_coord_array, cell_index, grad_array_x, grad_array_y, grad_array_z);
+//                        calculation_glad(p_id, nvariables, th_tfs[thid], transfer_functions[thid], cell[thid], local_coord_array, cell_index, grad_array_x, grad_array_y, grad_array_z);
+                                calculation_chain_rule_grad(
+                                        p_id,
+                                        nvariables,
+                                        th_tfs[thid],
+                                        cell[thid],
+                                        local_coord_array,
+                                        cell_index,
+                                        grad_array_x,
+                                        grad_array_y,
+                                        grad_array_z );
+
+
                         for ( int k = 0; k < p_id; k++ )
                         {
                             th_vertex_scalars.push_back( scalar_array[k] );
@@ -1487,12 +1583,24 @@ bool ensemble_generate_particles(
                 particle_property.m_transfunc_synthesizer->CalculateScalarsArray(
                     cell[thid], remain_BLK, local_coord_array, global_coord_array, transfer_functions[thid], scalar_array
                 );
-                calculation_glad(remain_BLK, nvariables, th_tfs[thid], transfer_functions[thid], cell[thid], local_coord_array, cell_index, grad_array_x, grad_array_y, grad_array_z);
+//                calculation_glad(remain_BLK, nvariables, th_tfs[thid], transfer_functions[thid], cell[thid], local_coord_array, cell_index, grad_array_x, grad_array_y, grad_array_z);
+                                calculation_chain_rule_grad(
+                                        remain_BLK,
+                                        nvariables,
+                                        th_tfs[thid],
+                                        cell[thid],
+                                        local_coord_array,
+                                        cell_index,
+                                        grad_array_x,
+                                        grad_array_y,
+                                        grad_array_z );
+
+
                 for ( int j = 0; j < remain_BLK; j++ )
                 {
                     const float scalar = scalar_array[j];
                     recv_scalars[i + j] += scalar;
-                    recv_normals[3 * ( i + j )] += -grad_array_x[j];
+                    recv_normals[3 * ( i + j )]     += -grad_array_x[j];
                     recv_normals[3 * ( i + j ) + 1] += -grad_array_y[j];
                     recv_normals[3 * ( i + j ) + 2] += -grad_array_z[j];
                     recv_sq_scalars[i + j] += scalar * scalar;
@@ -1522,7 +1630,6 @@ bool ensemble_generate_particles(
     std::vector<float> tmp_varience( vertex_scalars.size() );
     std::vector<float> tmp_varience_normals( 3 * vertex_scalars.size() );
     const float invert_num = 1.0f / static_cast<float>( ens_number );
-    std::cout << "invert_num = " << invert_num << std::endl;
     for ( size_t i = 0; i < vertex_scalars.size(); i++ )
     {
         vertex_scalars[i] *= invert_num;
@@ -1536,9 +1643,8 @@ bool ensemble_generate_particles(
     for ( size_t i = 0; i < vertex_scalars.size(); i++ )
     {
         tmp_varience[i] = sq_scalars[i] - vertex_scalars[i] * vertex_scalars[i];
-//        std::cout << "tmp_varience[i] = "  << tmp_varience[i] << ", sq_scalars[i] = " << sq_scalars[i] << ", vertex_scalars = " << vertex_scalars[i] << std::endl;
         if ( tmp_varience[i] < 0.0f ) tmp_varience[i] = 0.0f;
-        tmp_varience_normals[3 * i] = tmp_term[3 * i] - ( -2.0f * vertex_scalars[i] * vertex_normals[3 * i] );
+        tmp_varience_normals[3 * i] = tmp_term[3 * i] - ( -2.0f  * vertex_scalars[i] * vertex_normals[3 * i] );
         tmp_varience_normals[3 * i + 1] = tmp_term[3 * i + 1] - ( -2.0f * vertex_scalars[i] * vertex_normals[3 * i + 1] );
         tmp_varience_normals[3 * i + 2] = tmp_term[3 * i + 2] - ( -2.0f * vertex_scalars[i] * vertex_normals[3 * i + 2] );
     }
@@ -1557,9 +1663,7 @@ bool ensemble_generate_particles(
     EnsembleStatisticRange variance_range = MakeEnsembleStatisticRange(
         tmp_varience, tf_number, particle_property.m_transfunc_array
     );
-    std::cout << "var_max = " << variance_range.max_values[0] << std::endl;
-    std::cout << "var_min = " << variance_range.min_values[0] << std::endl;
-    EnsembleStatisticRange coefficient_range = MakeEnsembleStatisticRange(
+    EnsembleStatisticRange co_variation_range = MakeEnsembleStatisticRange(
         co_varietion, tf_number, particle_property.m_transfunc_array
     );
 
@@ -1626,6 +1730,7 @@ bool ensemble_generate_particles(
                     tmp_varience_normals[3 * idx + 1],
                     tmp_varience_normals[3 * idx + 2]
                 );
+
                 AppendRejectedStatisticParticle(
                     vertex_scalars[idx], global_coord_array[j], average_normal, transfer_functions[thid][0],
                     sampling_volume_inverse, max_opacity, max_density, &mt,
@@ -1691,7 +1796,7 @@ bool ensemble_generate_particles(
 
     OutputEnsembleStatisticHistory(
         particle_property, tf_number, nvariables, historyFilePath,
-        average_range, variance_range, coefficient_range
+        average_range, variance_range, co_variation_range
     );
 
     if ( mpi_rank == 0 )
