@@ -235,11 +235,10 @@ nlohmann::json RangeDescription(
     return range;
 }
 
-nlohmann::json BuildHumanReadableView( const ParticleProperty& particle_property )
+nlohmann::json TransferFunctionArrayToJson( const std::vector<NamedTransferFunction>& transfer_functions )
 {
-    nlohmann::json view;
-    view["purpose"] = "Particle-based volume rendering parameters for PBVR.";
-    view["editing_notes"] = nlohmann::json::array(
+    nlohmann::json array = nlohmann::json::array();
+    for ( size_t i = 0; i < transfer_functions.size(); ++i )
     {
         "The settings section contains global settings shared across the visualization.",
         "Each transfer_functions entry defines the mapping between a physical quantity computed by a synthesis expression and its corresponding color and opacity.",
@@ -247,7 +246,7 @@ nlohmann::json BuildHumanReadableView( const ParticleProperty& particle_property
         "The color.map.values field contains a flat uint8 RGB array with three components (R, G, B) per control point.",
         "The opacity.map.values field contains a one-dimensional array of floating-point values in the range [0, 1].",
         "color_synthesis and opacity_synthesis specify the synthesis expressions defined in the Transfer Function Editor.",
-    } );
+    }
 
     view["settings"]["sampling"]["method"] = SamplingMethodName( particle_property.m_sampling_method );
     view["settings"]["sampling"]["particle_limit"] = particle_property.m_particle_limit;
@@ -302,8 +301,51 @@ nlohmann::json BuildHumanReadableView( const ParticleProperty& particle_property
             opacity_table.size(),
             opacity_table );
 
-        view["transfer_functions"].push_back( tf );
+        array.push_back( tf );
     }
+
+    return array;
+}
+
+nlohmann::json BuildHumanReadableView( const ParticleProperty& particle_property )
+{
+    nlohmann::json view;
+    view["purpose"] = "Particle-based volume rendering parameters for PBVR.";
+    view["editing_notes"] = nlohmann::json::array(
+    {
+        "The settings section contains global settings shared across the visualization.",
+        "Each transfer_functions entry defines the mapping between a physical quantity computed by a synthesis expression and its corresponding color and opacity.",
+        "The range.active_range field specifies the min/max values used for histogram generation. When set to user, user.min and user.max are used. When set to server, server.min and server.max are used.",
+        "The color.map.values field contains a flat uint8 RGB array with three components (R, G, B) per control point.",
+        "The opacity.map.values field contains a one-dimensional array of floating-point values in the range [0, 1].",
+        "color_synthesis and opacity_synthesis specify the synthesis expressions defined in the Transfer Function Editor.",
+        "The mean_transfer_functions, variance_transfer_functions, and coefficient_of_variation_transfer_functions sections contain transfer-function parameters for ensemble statistics."
+    } );
+
+    view["settings"]["sampling"]["method"] = SamplingMethodName( particle_property.m_sampling_method );
+    view["settings"]["sampling"]["particle_limit"] = particle_property.m_particle_limit;
+    view["settings"]["sampling"]["particle_data_size_limit"] = particle_property.m_particle_data_size_limit;
+    view["settings"]["sampling"]["particle_data_size_limit_unit"] = "MB";
+
+    if ( particle_property.m_camera != 0 )
+    {
+        view["settings"]["image"]["width"] = particle_property.m_camera->windowWidth();
+        view["settings"]["image"]["height"] = particle_property.m_camera->windowHeight();
+    }
+
+    view["settings"]["transfer_function"]["transfer_function_count"] = particle_property.m_transfunc_array.size();
+    if ( !particle_property.m_transfunc_array.empty() )
+    {
+        view["settings"]["transfer_function"]["transfer_function_resolution"] = particle_property.m_transfunc_array[0].m_resolution;
+    }
+    view["settings"]["transfer_function"]["color_synthesis"] = particle_property.m_color_transfer_function_synthesis;
+    view["settings"]["transfer_function"]["opacity_synthesis"] = particle_property.m_opacity_transfer_function_synthesis;
+
+    view["transfer_functions"] = TransferFunctionArrayToJson( particle_property.m_transfunc_array );
+    view["mean_transfer_functions"] = TransferFunctionArrayToJson( particle_property.m_mean_transfer_function_array );
+    view["variance_transfer_functions"] = TransferFunctionArrayToJson( particle_property.m_variance_transfer_function_array );
+    view["coefficient_of_variation_transfer_functions"] =
+        TransferFunctionArrayToJson( particle_property.m_coefficient_of_variation_transfer_function_array );
 
     return view;
 }
@@ -325,6 +367,10 @@ nlohmann::json ToJson( const ParticleProperty& particle_property )
     root["editing_notes"] = view["editing_notes"];
     root["settings"] = view["settings"];
     root["transfer_functions"] = view["transfer_functions"];
+    root["mean_transfer_functions"] = view["mean_transfer_functions"];
+    root["variance_transfer_functions"] = view["variance_transfer_functions"];
+    root["coefficient_of_variation_transfer_functions"] =
+        view["coefficient_of_variation_transfer_functions"];
 
     return root;
 }

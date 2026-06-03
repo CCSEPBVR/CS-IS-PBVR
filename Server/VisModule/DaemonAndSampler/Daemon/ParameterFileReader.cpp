@@ -7,10 +7,10 @@
 namespace
 {
 
-std::string JsonPathForTransferFunction( const size_t index, const std::string& field )
+std::string JsonPathForTransferFunction( const std::string& section_name, const size_t index, const std::string& field )
 {
     std::stringstream stream;
-    stream << "transfer_functions[" << index << "]." << field;
+    stream << section_name << "[" << index << "]." << field;
     return stream.str();
 }
 
@@ -85,32 +85,36 @@ void ValidateMapSize(
     }
 }
 
-void ValidateReadableTransferFunctionJson( const nlohmann::json& root )
+void ValidateTransferFunctionSection(
+    const nlohmann::json& root,
+    const std::string& section_name,
+    const size_t resolution,
+    const bool required )
 {
-    const nlohmann::json& settings = JsonRequiredObject( root, "settings" );
-    const nlohmann::json& transfer_functions = JsonRequiredArray( root, "transfer_functions" );
-    const nlohmann::json& transfer_settings = JsonRequiredObject( settings, "transfer_function" );
-
-    if ( !JsonContainsAny( transfer_settings, "count", "transfer_function_count" ) )
+    if ( !root.contains( section_name ) )
     {
-        throw std::runtime_error( "Invalid default.json: missing settings.transfer_function.count" );
-    }
-    if ( !JsonContainsAny( transfer_settings, "resolution", "transfer_function_resolution" ) )
-    {
-        throw std::runtime_error( "Invalid default.json: missing settings.transfer_function.resolution" );
+        if ( required )
+        {
+            throw std::runtime_error( "Invalid default.json: missing array '" + section_name + "'" );
+        }
+        return;
     }
 
-    const size_t tf_count = JsonSizeValueWithAlternate(
-        transfer_settings, "count", "transfer_function_count", transfer_functions.size() );
-    const size_t resolution = JsonSizeValueWithAlternate(
-        transfer_settings, "resolution", "transfer_function_resolution", 0 );
-
-    if ( tf_count != transfer_functions.size() )
+    const nlohmann::json& transfer_functions = JsonRequiredArray( root, section_name );
+    if ( section_name == "transfer_functions" )
     {
-        std::stringstream message;
-        message << "Invalid default.json: settings.transfer_function.count is " << tf_count
-                << " but transfer_functions.size() is " << transfer_functions.size();
-        throw std::runtime_error( message.str() );
+        const nlohmann::json& settings = JsonRequiredObject( root, "settings" );
+        const nlohmann::json& transfer_settings = JsonRequiredObject( settings, "transfer_function" );
+        const size_t tf_count = JsonSizeValueWithAlternate(
+            transfer_settings, "count", "transfer_function_count", transfer_functions.size() );
+
+        if ( tf_count != transfer_functions.size() )
+        {
+            std::stringstream message;
+            message << "Invalid default.json: settings.transfer_function.count is " << tf_count
+                    << " but transfer_functions.size() is " << transfer_functions.size();
+            throw std::runtime_error( message.str() );
+        }
     }
 
     for ( size_t i = 0; i < transfer_functions.size(); ++i )
@@ -123,11 +127,11 @@ void ValidateReadableTransferFunctionJson( const nlohmann::json& root )
 
         ValidateMapSize(
             color_map,
-            JsonPathForTransferFunction( i, "color.map" ),
+            JsonPathForTransferFunction( section_name, i, "color.map" ),
             resolution * 3 );
         ValidateMapSize(
             opacity_map,
-            JsonPathForTransferFunction( i, "opacity.map" ),
+            JsonPathForTransferFunction( section_name, i, "opacity.map" ),
             resolution );
     }
 }
@@ -349,6 +353,28 @@ void ApplyPlotOverTimeParameterJson( const nlohmann::json& root, PlotOverTimePro
 {
     pot_property.m_plot_flag = root.at( "enabled" ).get<bool>();
     ReadFloat3( root, "target_point", pot_property.m_target_point, "plot over time" );
+void ValidateReadableTransferFunctionJson( const nlohmann::json& root )
+{
+    const nlohmann::json& settings = JsonRequiredObject( root, "settings" );
+    JsonRequiredArray( root, "transfer_functions" );
+    const nlohmann::json& transfer_settings = JsonRequiredObject( settings, "transfer_function" );
+
+    if ( !JsonContainsAny( transfer_settings, "count", "transfer_function_count" ) )
+    {
+        throw std::runtime_error( "Invalid default.json: missing settings.transfer_function.count" );
+    }
+    if ( !JsonContainsAny( transfer_settings, "resolution", "transfer_function_resolution" ) )
+    {
+        throw std::runtime_error( "Invalid default.json: missing settings.transfer_function.resolution" );
+    }
+
+    const size_t resolution = JsonSizeValueWithAlternate(
+        transfer_settings, "resolution", "transfer_function_resolution", 0 );
+
+    ValidateTransferFunctionSection( root, "transfer_functions", resolution, true );
+    ValidateTransferFunctionSection( root, "mean_transfer_functions", resolution, false );
+    ValidateTransferFunctionSection( root, "variance_transfer_functions", resolution, false );
+    ValidateTransferFunctionSection( root, "coefficient_of_variation_transfer_functions", resolution, false );
 }
 
 std::vector<int> JsonIntTable( const nlohmann::json& params, const std::string& key )
@@ -426,15 +452,17 @@ std::string JsonRangeMode( const nlohmann::json& range )
     return "";
 }
 
-nlohmann::json BuildLegacyParametersFromReadableJson( const nlohmann::json& root )
+nlohmann::json BuildLegacyParametersFromReadableJson(
+    const nlohmann::json& root,
+    const std::string& section_name = "transfer_functions" )
 {
     nlohmann::json params = root.value( "parameters", nlohmann::json::object() );
     const nlohmann::json& settings = root.at( "settings" );
-    const nlohmann::json& transfer_functions = root.at( "transfer_functions" );
+    const nlohmann::json transfer_functions = root.value( section_name, nlohmann::json::array() );
 
-    const nlohmann::json& sampling = settings.value( "sampling", nlohmann::json::object() );
-    const nlohmann::json& image = settings.value( "image", nlohmann::json::object() );
-    const nlohmann::json& transfer_settings = settings.value( "transfer_function", nlohmann::json::object() );
+    const nlohmann::json sampling = settings.value( "sampling", nlohmann::json::object() );
+    const nlohmann::json image = settings.value( "image", nlohmann::json::object() );
+    const nlohmann::json transfer_settings = settings.value( "transfer_function", nlohmann::json::object() );
 
     if ( sampling.contains( "method" ) ) params["SAMPLING_METHOD"] = sampling.at( "method" );
     if ( sampling.contains( "particle_limit" ) ) params["PARTICLE_LIMIT"] = sampling.at( "particle_limit" );
@@ -444,8 +472,8 @@ nlohmann::json BuildLegacyParametersFromReadableJson( const nlohmann::json& root
     if ( image.contains( "height" ) ) params["RESOLUTION_HEIGHT"] = image.at( "height" );
     if ( transfer_settings.contains( "resolution" ) ) params["TF_RESOLUTION"] = transfer_settings.at( "resolution" );
     else if ( transfer_settings.contains( "transfer_function_resolution" ) ) params["TF_RESOLUTION"] = transfer_settings.at( "transfer_function_resolution" );
-    if ( transfer_settings.contains( "count" ) ) params["TF_NUMBER"] = transfer_settings.at( "count" );
-    else if ( transfer_settings.contains( "transfer_function_count" ) ) params["TF_NUMBER"] = transfer_settings.at( "transfer_function_count" );
+    if ( section_name == "transfer_functions" && transfer_settings.contains( "count" ) ) params["TF_NUMBER"] = transfer_settings.at( "count" );
+    else if ( section_name == "transfer_functions" && transfer_settings.contains( "transfer_function_count" ) ) params["TF_NUMBER"] = transfer_settings.at( "transfer_function_count" );
     else params["TF_NUMBER"] = transfer_functions.size();
     if ( transfer_settings.contains( "color_synthesis" ) ) params["COLOR_SYNTH"] = transfer_settings.at( "color_synthesis" );
     if ( transfer_settings.contains( "opacity_synthesis" ) ) params["OPACITY_SYNTH"] = transfer_settings.at( "opacity_synthesis" );
@@ -510,6 +538,168 @@ nlohmann::json TransferFunctionParameters( const nlohmann::json& root )
     }
 
     return root.at( "parameters" );
+}
+
+nlohmann::json TransferFunctionSectionParameters( const nlohmann::json& root, const std::string& section_name )
+{
+    if ( root.contains( "settings" ) && root.contains( "transfer_functions" ) )
+    {
+        ValidateReadableTransferFunctionJson( root );
+        return BuildLegacyParametersFromReadableJson( root, section_name );
+    }
+
+    return nlohmann::json::object();
+}
+
+bool SetTransferFunctionArrayFromParameters(
+    const nlohmann::json& params,
+    const size_t resolution,
+    const std::string& section_name,
+    std::vector<NamedTransferFunction>& transfer_function_array )
+{
+    const int tf_number = params.value( "TF_NUMBER", 0 );
+    if ( tf_number < 0 )
+    {
+        std::cout << "ERROR:" << section_name << " TF_NUMBER is negative." << std::endl;
+        return false;
+    }
+
+    transfer_function_array.clear();
+    transfer_function_array.resize( tf_number );
+
+    for ( size_t n = 0; n < static_cast<size_t>( tf_number ); n++ )
+    {
+        std::stringstream ss;
+        ss << "TF_NAME" << n + 1 << "_";
+
+        std::stringstream s_name;
+        s_name << "t" << n + 1;
+
+        const std::string tag_base = ss.str();
+        transfer_function_array[n].m_resolution = resolution;
+        transfer_function_array[n].m_name = s_name.str();
+
+        const std::string color_variable         = params.value( tag_base + "VAR_C", std::string( "" ) );
+        const std::string opacity_variable       = params.value( tag_base + "VAR_O", std::string( "" ) );
+        const std::string color_range_mode       = params.value( tag_base + "RANGE_MODE_C", std::string( "" ) );
+        const std::string opacity_range_mode     = params.value( tag_base + "RANGE_MODE_O", std::string( "" ) );
+        const float server_color_min             = params.value( tag_base + "SERVER_MIN_C", 0.0f );
+        const float server_color_max             = params.value( tag_base + "SERVER_MAX_C", 0.0f );
+        const float user_color_min               = params.value( tag_base + "USER_MIN_C", 0.0f );
+        const float user_color_max               = params.value( tag_base + "USER_MAX_C", 0.0f );
+        const float server_opacity_min           = params.value( tag_base + "SERVER_MIN_O", 0.0f );
+        const float server_opacity_max           = params.value( tag_base + "SERVER_MAX_O", 0.0f );
+        const float user_opacity_min             = params.value( tag_base + "USER_MIN_O", 0.0f );
+        const float user_opacity_max             = params.value( tag_base + "USER_MAX_O", 0.0f );
+        const std::vector<int> color_values      = JsonIntTable( params, tag_base + "TABLE_C" );
+        const std::vector<float> opacity_values  = JsonFloatTable( params, tag_base + "TABLE_O" );
+        const int tf_id                          = params.value( tag_base + "ID", static_cast<int>( n + 1 ) );
+        const std::string tf_label               = params.value( tag_base + "LABEL", std::string( "" ) );
+
+        if ( color_values.size() != resolution * 3 )
+        {
+            std::cout << "ERROR:" << section_name << "." << tag_base << "TABLE_C size is "
+                      << color_values.size() << ", but expected " << resolution * 3 << "." << std::endl;
+            return false;
+        }
+        if ( opacity_values.size() != resolution )
+        {
+            std::cout << "ERROR:" << section_name << "." << tag_base << "TABLE_O size is "
+                      << opacity_values.size() << ", but expected " << resolution << "." << std::endl;
+            return false;
+        }
+
+        std::cout << "  " << section_name << "[" << n << "] id=" << tf_id;
+        if ( !tf_label.empty() ) std::cout << " label=" << tf_label;
+        std::cout << " color.variable=" << color_variable
+                  << " opacity.variable=" << opacity_variable
+                  << " color.range.mode=" << color_range_mode
+                  << " opacity.range.mode=" << opacity_range_mode
+                  << " color.map.values=" << color_values.size()
+                  << " opacity.map.values=" << opacity_values.size()
+                  << std::endl;
+
+        if ( color_range_mode == "ServerSide" )
+        {
+            transfer_function_array[n].m_server_color_range_mode = NamedTransferFunction::ServerRangeMode::ServerSide;
+        }
+        else if ( color_range_mode == "UserRange" )
+        {
+            transfer_function_array[n].m_server_color_range_mode = NamedTransferFunction::ServerRangeMode::UserRange;
+        }
+        else
+        {
+            std::cout << "ERROR:" << section_name << " Color Range Mode is unknown" << std::endl;
+            return false;
+        }
+
+        if ( opacity_range_mode == "ServerSide" )
+        {
+            transfer_function_array[n].m_server_opacity_range_mode = NamedTransferFunction::ServerRangeMode::ServerSide;
+        }
+        else if ( opacity_range_mode == "UserRange" )
+        {
+            transfer_function_array[n].m_server_opacity_range_mode = NamedTransferFunction::ServerRangeMode::UserRange;
+        }
+        else
+        {
+            std::cout << "ERROR:" << section_name << " Opacity Range Mode is unknown" << std::endl;
+            return false;
+        }
+
+        transfer_function_array[n].m_color_variable              = color_variable;
+        transfer_function_array[n].m_opacity_variable            = opacity_variable;
+        transfer_function_array[n].m_server_color_variable_min   = server_color_min;
+        transfer_function_array[n].m_server_color_variable_max   = server_color_max;
+        transfer_function_array[n].m_server_opacity_variable_min = server_opacity_min;
+        transfer_function_array[n].m_server_opacity_variable_max = server_opacity_max;
+        transfer_function_array[n].m_user_color_variable_min     = user_color_min;
+        transfer_function_array[n].m_user_color_variable_max     = user_color_max;
+        transfer_function_array[n].m_user_opacity_variable_min   = user_opacity_min;
+        transfer_function_array[n].m_user_opacity_variable_max   = user_opacity_max;
+
+        vismodule::ColorMap::Table color_table( resolution * 3 );
+        vismodule::OpacityMap::Table opacity_table( resolution );
+
+        for ( size_t i = 0; i < resolution; i++ )
+        {
+            for ( size_t c = 0; c < 3; c++ )
+            {
+                color_table.at( i * 3 + c ) = color_values.at( i * 3 + c );
+            }
+        }
+
+        for ( size_t i = 0; i < resolution; i++ )
+        {
+            opacity_table.at( i ) = opacity_values.at( i );
+        }
+
+        vismodule::ColorMap color_map( color_table );
+        vismodule::OpacityMap opacity_map( opacity_table );
+
+        transfer_function_array[n].setColorMap( color_map );
+        transfer_function_array[n].setOpacityMap( opacity_map );
+
+        if ( transfer_function_array[n].m_server_color_range_mode == NamedTransferFunction::ServerRangeMode::ServerSide )
+        {
+            transfer_function_array[n].setColorRange( server_color_min, server_color_max );
+        }
+        else
+        {
+            transfer_function_array[n].setColorRange( user_color_min, user_color_max );
+        }
+
+        if ( transfer_function_array[n].m_server_opacity_range_mode == NamedTransferFunction::ServerRangeMode::ServerSide )
+        {
+            transfer_function_array[n].setOpacityRange( server_opacity_min, server_opacity_max );
+        }
+        else
+        {
+            transfer_function_array[n].setOpacityRange( user_opacity_min, user_opacity_max );
+        }
+    }
+
+    return true;
 }
 }
 
@@ -724,134 +914,172 @@ bool ParameterFileReader::readTransferFunctionFromJson( const char* fname, Parti
        std::cout << "  transfer_function.color_syn  : " << particle_property.m_color_transfer_function_synthesis << std::endl;
        std::cout << "  transfer_function.opacity_syn: " << particle_property.m_opacity_transfer_function_synthesis << std::endl;
 
-       particle_property.m_transfunc_array.clear();
-       particle_property.m_transfunc_array.resize( tf_number );
-       // particle_property.m_voleqn.clear();
-       // particle_property.m_voleqn.resize( tf_number );
-
-       for ( size_t n = 0; n < tf_number; n++ )
+       if ( !SetTransferFunctionArrayFromParameters(
+                params,
+                resolution,
+                "transfer_functions",
+                particle_property.m_transfunc_array ) )
        {
-           std::stringstream ss;
-           ss << "TF_NAME" << n + 1 << "_";
+            std::stringstream ss;
+            ss << "TF_NAME" << n + 1 << "_";
 
-           std::stringstream s_name;
-           std::stringstream f_name;
-        s_name << "t" << n + 1;
-        f_name << "_F" << n + 1 << "_VAR_";
+            std::stringstream s_name;
+            std::stringstream f_name;
+            s_name << "t" << n + 1;
+            f_name << "_F" << n + 1 << "_VAR_";
 
-        const std::string tag_base = ss.str();
-        particle_property.m_transfunc_array[n].m_resolution = resolution;
-        particle_property.m_transfunc_array[n].m_name = s_name.str();
+            const std::string tag_base = ss.str();
+            particle_property.m_transfunc_array[n].m_resolution = resolution;
+            particle_property.m_transfunc_array[n].m_name = s_name.str();
 
-        const std::string color_variable         = params.value( tag_base + "VAR_C", std::string( "" ) );                                                              
-        const std::string opacity_varible        = params.value( tag_base + "VAR_O", std::string( "" ) );
-        const std::string color_range_mode       = params.value( tag_base + "RANGE_MODE_C", std::string( "" ) );
-        const std::string opacity_range_mode     = params.value( tag_base + "RANGE_MODE_O", std::string( "" ) );
-        const float user_color_min               = params.value( tag_base + "USER_MIN_C", 0.0f );
-        const float user_color_max               = params.value( tag_base + "USER_MAX_C", 0.0f );
-        const float user_opacity_min             = params.value( tag_base + "USER_MIN_O", 0.0f );
-        const float user_opacity_max             = params.value( tag_base + "USER_MAX_O", 0.0f );
-        const std::vector<int> color_values      = JsonIntTable( params, tag_base + "TABLE_C" );
-        const std::vector<float> opacity_values  = JsonFloatTable( params, tag_base + "TABLE_O" );
-        const int tf_id                          = params.value( tag_base + "ID", static_cast<int>( n + 1 ) );
-        const std::string tf_label               = params.value( tag_base + "LABEL", std::string( "" ) );
+            const std::string color_variable         = params.value( tag_base + "VAR_C", std::string( "" ) );                                                              
+            const std::string opacity_varible        = params.value( tag_base + "VAR_O", std::string( "" ) );
+            const std::string color_range_mode       = params.value( tag_base + "RANGE_MODE_C", std::string( "" ) );
+            const std::string opacity_range_mode     = params.value( tag_base + "RANGE_MODE_O", std::string( "" ) );
+            const float user_color_min               = params.value( tag_base + "USER_MIN_C", 0.0f );
+            const float user_color_max               = params.value( tag_base + "USER_MAX_C", 0.0f );
+            const float user_opacity_min             = params.value( tag_base + "USER_MIN_O", 0.0f );
+            const float user_opacity_max             = params.value( tag_base + "USER_MAX_O", 0.0f );
+            const std::vector<int> color_values      = JsonIntTable( params, tag_base + "TABLE_C" );
+            const std::vector<float> opacity_values  = JsonFloatTable( params, tag_base + "TABLE_O" );
+            const int tf_id                          = params.value( tag_base + "ID", static_cast<int>( n + 1 ) );
+            const std::string tf_label               = params.value( tag_base + "LABEL", std::string( "" ) );
 
-        if ( color_values.size() != resolution * 3 )
-        {
-            std::cout << "ERROR:" << tag_base << "TABLE_C size is " << color_values.size()
-                      << ", but expected " << resolution * 3 << "." << std::endl;
-            return false;
-        }
-        if ( opacity_values.size() != resolution )
-        {
-            std::cout << "ERROR:" << tag_base << "TABLE_O size is " << opacity_values.size()
-                      << ", but expected " << resolution << "." << std::endl;
-            return false;
-        }
-
-        std::cout << "  transfer_functions[" << n << "] id=" << tf_id;
-        if ( !tf_label.empty() ) std::cout << " label=" << tf_label;
-        std::cout << " color.variable=" << color_variable
-                  << " opacity.variable=" << opacity_varible
-                  << " color.range.mode=" << color_range_mode
-                  << " opacity.range.mode=" << opacity_range_mode
-                  << " color.map.values=" << color_values.size()
-                  << " opacity.map.values=" << opacity_values.size()
-                  << std::endl;
-
-        if ( color_range_mode == "ServerSide" )
-        {
-            particle_property.m_transfunc_array[n].m_server_color_range_mode = NamedTransferFunction::ServerRangeMode::ServerSide;
-        }
-        else if ( color_range_mode == "UserRange" )
-        {
-            particle_property.m_transfunc_array[n].m_server_color_range_mode = NamedTransferFunction::ServerRangeMode::UserRange;
-        }
-        else
-        {
-            std::cout << "ERROR:Color Range Mode is unknown" << std::endl;
-        }
-
-        if ( opacity_range_mode == "ServerSide" )
-        {
-            particle_property.m_transfunc_array[n].m_server_opacity_range_mode = NamedTransferFunction::ServerRangeMode::ServerSide;
-        }
-        else if ( opacity_range_mode == "UserRange" )
-        {
-            particle_property.m_transfunc_array[n].m_server_opacity_range_mode = NamedTransferFunction::ServerRangeMode::UserRange;
-        }
-        else
-        {
-            std::cout << "ERROR:Opacity Range Mode is unknown" << std::endl;
-        }
-
-        particle_property.m_transfunc_array[n].m_color_variable              = color_variable;
-        particle_property.m_transfunc_array[n].m_opacity_variable            = opacity_varible;
-        particle_property.m_transfunc_array[n].m_user_color_variable_min     = user_color_min;
-        particle_property.m_transfunc_array[n].m_user_color_variable_max     = user_color_max;
-        particle_property.m_transfunc_array[n].m_user_opacity_variable_min   = user_opacity_min;
-        particle_property.m_transfunc_array[n].m_user_opacity_variable_max   = user_opacity_max;
-
-        vismodule::ColorMap::Table color_table( resolution * 3 );
-        vismodule::OpacityMap::Table opacity_table( resolution );
-
-        for ( size_t i = 0; i < resolution; i++ )
-        {
-            for ( size_t c = 0; c < 3; c++ )
+            if ( color_values.size() != resolution * 3 )
             {
-                color_table.at( i * 3 + c ) = color_values.at( i * 3 + c );
+                std::cout << "ERROR:" << tag_base << "TABLE_C size is " << color_values.size()
+                        << ", but expected " << resolution * 3 << "." << std::endl;
+                return false;
             }
-        }
+            if ( opacity_values.size() != resolution )
+            {
+                std::cout << "ERROR:" << tag_base << "TABLE_O size is " << opacity_values.size()
+                        << ", but expected " << resolution << "." << std::endl;
+                return false;
+            }
 
-        for ( size_t i = 0; i < resolution; i++ )
-        {
-            opacity_table.at( i ) = opacity_values.at( i );
-        }
+            std::cout << "  transfer_functions[" << n << "] id=" << tf_id;
+            if ( !tf_label.empty() ) std::cout << " label=" << tf_label;
+            std::cout << " color.variable=" << color_variable
+                    << " opacity.variable=" << opacity_varible
+                    << " color.range.mode=" << color_range_mode
+                    << " opacity.range.mode=" << opacity_range_mode
+                    << " color.map.values=" << color_values.size()
+                    << " opacity.map.values=" << opacity_values.size()
+                    << std::endl;
 
-        vismodule::ColorMap color_map( color_table );
-        vismodule::OpacityMap opacity_map( opacity_table );
+            if ( color_range_mode == "ServerSide" )
+            {
+                particle_property.m_transfunc_array[n].m_server_color_range_mode = NamedTransferFunction::ServerRangeMode::ServerSide;
+            }
+            else if ( color_range_mode == "UserRange" )
+            {
+                particle_property.m_transfunc_array[n].m_server_color_range_mode = NamedTransferFunction::ServerRangeMode::UserRange;
+            }
+            else
+            {
+                std::cout << "ERROR:Color Range Mode is unknown" << std::endl;
+            }
 
-        particle_property.m_transfunc_array[n].setColorMap( color_map );
-        particle_property.m_transfunc_array[n].setOpacityMap( opacity_map );
+            if ( opacity_range_mode == "ServerSide" )
+            {
+                particle_property.m_transfunc_array[n].m_server_opacity_range_mode = NamedTransferFunction::ServerRangeMode::ServerSide;
+            }
+            else if ( opacity_range_mode == "UserRange" )
+            {
+                particle_property.m_transfunc_array[n].m_server_opacity_range_mode = NamedTransferFunction::ServerRangeMode::UserRange;
+            }
+            else
+            {
+                std::cout << "ERROR:Opacity Range Mode is unknown" << std::endl;
+            }
 
-        if ( particle_property.m_transfunc_array[n].m_server_color_range_mode == NamedTransferFunction::ServerRangeMode::UserRange )
-        {
-            particle_property.m_transfunc_array[n].setColorRange( user_color_min, user_color_max );
-        }
-        else if ( particle_property.m_transfunc_array[n].m_server_color_range_mode != NamedTransferFunction::ServerRangeMode::ServerSide )
-        {
-            std::cout << "ERROR:Color Range Mode is unknown" << std::endl;
-        }
+            particle_property.m_transfunc_array[n].m_color_variable              = color_variable;
+            particle_property.m_transfunc_array[n].m_opacity_variable            = opacity_varible;
+            particle_property.m_transfunc_array[n].m_user_color_variable_min     = user_color_min;
+            particle_property.m_transfunc_array[n].m_user_color_variable_max     = user_color_max;
+            particle_property.m_transfunc_array[n].m_user_opacity_variable_min   = user_opacity_min;
+            particle_property.m_transfunc_array[n].m_user_opacity_variable_max   = user_opacity_max;
 
-        if ( particle_property.m_transfunc_array[n].m_server_opacity_range_mode == NamedTransferFunction::ServerRangeMode::UserRange )
-        {
-            particle_property.m_transfunc_array[n].setOpacityRange( user_opacity_min, user_opacity_max );
-        }
-        else if ( particle_property.m_transfunc_array[n].m_server_opacity_range_mode != NamedTransferFunction::ServerRangeMode::ServerSide )
-        {
-            std::cout << "ERROR:Opacity Range Mode is unknown" << std::endl;
-        }
+            vismodule::ColorMap::Table color_table( resolution * 3 );
+            vismodule::OpacityMap::Table opacity_table( resolution );
+
+            for ( size_t i = 0; i < resolution; i++ )
+            {
+                for ( size_t c = 0; c < 3; c++ )
+                {
+                    color_table.at( i * 3 + c ) = color_values.at( i * 3 + c );
+                }
+            }
+
+            for ( size_t i = 0; i < resolution; i++ )
+            {
+                opacity_table.at( i ) = opacity_values.at( i );
+            }
+
+            vismodule::ColorMap color_map( color_table );
+            vismodule::OpacityMap opacity_map( opacity_table );
+
+            particle_property.m_transfunc_array[n].setColorMap( color_map );
+            particle_property.m_transfunc_array[n].setOpacityMap( opacity_map );
+
+            if ( particle_property.m_transfunc_array[n].m_server_color_range_mode == NamedTransferFunction::ServerRangeMode::UserRange )
+            {
+                particle_property.m_transfunc_array[n].setColorRange( user_color_min, user_color_max );
+            }
+            else if ( particle_property.m_transfunc_array[n].m_server_color_range_mode != NamedTransferFunction::ServerRangeMode::ServerSide )
+            {
+                std::cout << "ERROR:Color Range Mode is unknown" << std::endl;
+            }
+
+            if ( particle_property.m_transfunc_array[n].m_server_opacity_range_mode == NamedTransferFunction::ServerRangeMode::UserRange )
+            {
+                particle_property.m_transfunc_array[n].setOpacityRange( user_opacity_min, user_opacity_max );
+            }
+            else if ( particle_property.m_transfunc_array[n].m_server_opacity_range_mode != NamedTransferFunction::ServerRangeMode::ServerSide )
+            {
+                std::cout << "ERROR:Opacity Range Mode is unknown" << std::endl;
+            }
        }
+
+       const nlohmann::json mean_params =
+           TransferFunctionSectionParameters( tf, "mean_transfer_functions" );
+       const nlohmann::json variance_params =
+           TransferFunctionSectionParameters( tf, "variance_transfer_functions" );
+       const nlohmann::json coefficient_params =
+           TransferFunctionSectionParameters( tf, "coefficient_of_variation_transfer_functions" );
+
+       if ( !SetTransferFunctionArrayFromParameters(
+                mean_params,
+                resolution,
+                "mean_transfer_functions",
+                particle_property.m_mean_transfer_function_array ) )
+       {
+           return;
+       }
+       if ( !SetTransferFunctionArrayFromParameters(
+                variance_params,
+                resolution,
+                "variance_transfer_functions",
+                particle_property.m_variance_transfer_function_array ) )
+       {
+           return;
+       }
+       if ( !SetTransferFunctionArrayFromParameters(
+                coefficient_params,
+                resolution,
+                "coefficient_of_variation_transfer_functions",
+                particle_property.m_coefficient_of_variation_transfer_function_array ) )
+       {
+           return;
+       }
+
+       std::cout << "  mean_transfer_functions.count: "
+                 << particle_property.m_mean_transfer_function_array.size() << std::endl;
+       std::cout << "  variance_transfer_functions.count: "
+                 << particle_property.m_variance_transfer_function_array.size() << std::endl;
+       std::cout << "  coefficient_of_variation_transfer_functions.count: "
+                 << particle_property.m_coefficient_of_variation_transfer_function_array.size() << std::endl;
         std::string equation;
         EquationToken eq;
 
