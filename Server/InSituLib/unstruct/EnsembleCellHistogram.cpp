@@ -398,7 +398,7 @@ bool FillStatisticRange(
     pbvr::EnsembleStatisticRange& range )
 {
     if ( nbins != DEFAULT_NBINS ) return false;
-    if ( tf_number <= 0 || tf_number > nvariables ) return false;
+    if ( tf_number <= 0 || nvariables <= 0 ) return false;
     if ( global_min.size() != static_cast<std::size_t>( 3 * nvariables ) ||
          global_max.size() != static_cast<std::size_t>( 3 * nvariables ) ||
          global_histogram.size() != static_cast<std::size_t>( 3 * nvariables * nbins ) ) return false;
@@ -409,8 +409,10 @@ bool FillStatisticRange(
     range.c_bins.assign( static_cast<std::size_t>( tf_number * DEFAULT_NBINS ), 0 );
 
     // Test mapping: transfer-function i corresponds to physical variable i.
-    // The same cell-statistic histogram is stored for opacity and color.
-    for ( int i = 0; i < tf_number; ++i )
+    // If there are more transfer functions than variables, the unmatched TFs
+    // stay zero-filled so history output never reads past the range arrays.
+    const int mapped_tf_number = std::min( tf_number, nvariables );
+    for ( int i = 0; i < mapped_tf_number; ++i )
     {
         const std::size_t range_index = StatisticRangeIndex( statistic_id, i, nvariables );
         range.min_values[2 * i    ] = global_min[range_index];
@@ -898,7 +900,7 @@ bool ComputeAndStoreEnsembleCellHistogram(
     const int mpi_rank = CommRank( ensemble_comm );
     const int ensemble_size = CommSize( ensemble_comm );
     const int tf_number = static_cast<int>( particle_property.m_transfunc_array.size() );
-    if ( tf_number <= 0 || tf_number > nvariables ) return false;
+    if ( tf_number <= 0 ) return false;
 
     if ( log != NULL )
     {

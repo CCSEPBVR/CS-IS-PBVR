@@ -500,6 +500,20 @@ void ReduceEnsembleStatisticRange(
 #endif
 }
 
+void EnsureEnsembleStatisticRangeSize(
+    EnsembleStatisticRange& range,
+    const int tf_number
+)
+{
+    const size_t value_size = static_cast<size_t>( tf_number * 2 );
+    const size_t histogram_size = static_cast<size_t>( tf_number * DEFAULT_NBINS );
+
+    if ( range.min_values.size() < value_size ) range.min_values.resize( value_size, 0.0f );
+    if ( range.max_values.size() < value_size ) range.max_values.resize( value_size, 0.0f );
+    if ( range.o_bins.size() < histogram_size ) range.o_bins.resize( histogram_size, 0 );
+    if ( range.c_bins.size() < histogram_size ) range.c_bins.resize( histogram_size, 0 );
+}
+
 void WritePrefixedStatisticHistory(
     std::ofstream& ofs,
     const std::string& prefix,
@@ -570,6 +584,10 @@ void OutputEnsembleStatisticHistory(
     MPI_Comm ensemble_comm = MPI_COMM_WORLD
 )
 {
+    EnsureEnsembleStatisticRangeSize( average_range, tf_number );
+    EnsureEnsembleStatisticRangeSize( variance_range, tf_number );
+    EnsureEnsembleStatisticRangeSize( co_variation_range, tf_number );
+
     ReduceEnsembleStatisticRange( average_range, tf_number, ensemble_comm );
     ReduceEnsembleStatisticRange( variance_range, tf_number, ensemble_comm );
     ReduceEnsembleStatisticRange( co_variation_range, tf_number, ensemble_comm );
