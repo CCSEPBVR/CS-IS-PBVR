@@ -1284,6 +1284,7 @@ bool ensemble_generate_particles(
     const bool gen_flag = object_generation_enabled;
     if ( !gen_flag )
     {
+//        particle_property.m_repeat_level = 1.f; // スタブデータ
         tf_number = nvariables;
         EnsembleStatisticRange average_range;
         EnsembleStatisticRange variance_range;
@@ -1318,6 +1319,17 @@ bool ensemble_generate_particles(
                     co_variation_range,
                     MPI_COMM_WORLD );
         }
+
+    
+//    // debaggu　用
+//        if ( mpi_rank == 0 )
+//    {
+//        ParameterFileWriter ppw;
+//        ppw.writeTF2Json( particle_property, tfJsonPath_step ); //時間ステップファイル出力
+//        ppw.writeTF2OldJson( particle_property ); //old_Jsonファイル更新
+// 
+//    }
+
 
     }
     else
@@ -1422,10 +1434,12 @@ bool ensemble_generate_particles(
         }
     }
 
+    particle_property.m_repeat_level = 1.f; // スタブデータ
+
     const float sampling_volume_inverse = particle_property.m_transfunc_synthesizer->getSamplingVolumeInverse();
     const float max_opacity = particle_property.m_transfunc_synthesizer->getMaxOpacity();
     const float max_density = particle_property.m_transfunc_synthesizer->getMaxDensity();
-    float   repetitions             = 1.f;  // スタブデータ
+    float   repetitions             = particle_property.m_repeat_level;  //
     const float particle_density = 1.0f;
     const int ens_per_MPIprocess = 1;
     const int ens_number = mpi_size/ens_per_MPIprocess;
@@ -1919,14 +1933,13 @@ bool ensemble_generate_particles(
         }
     }
 
-    } // end initial flag
     if ( mpi_rank == 0 )
     {
         std::ifstream src( tfJsonPath_old.c_str(), std::ios::binary );
         std::ofstream dst( tfJsonPath_step.c_str(), std::ios::binary );
         dst << src.rdbuf();
     }
-
+    } // end initial flag
     if ( async_io_enabled )
     {
         std::cout << "Particle write thread is active." << std::endl;
