@@ -1261,6 +1261,50 @@ bool ensemble_generate_particles(
         dom, tfJsonPath, tfJsonPath_old, particle_property, mvpl,
         nvariables, object_generation_enabled
     );
+    int tf_number = particle_property.m_transfunc_array.size();
+
+    const bool gen_flag = object_generation_enabled;
+    if ( !gen_flag )
+    {
+        tf_number = nvariables;
+
+        EnsembleStatisticRange average_range;
+        EnsembleStatisticRange variance_range;
+        EnsembleStatisticRange co_variation_range;
+        pbvr::EnsembleCellHistogramLog histogram_log;
+
+        const bool ok = pbvr::ComputeAndStoreEnsembleCellHistogram(
+                values,
+                nvariables,
+                coordinates,
+                ncoords,
+                connections,
+                ncells,
+                celltype,
+                MPI_COMM_WORLD, // ensemble_comm があればそれを渡す
+                DEFAULT_NBINS,
+                particle_property,
+                average_range,
+                variance_range,
+                co_variation_range,
+                &histogram_log );
+
+        if ( ok )
+        {
+            OutputEnsembleStatisticHistory(
+                    particle_property,
+                    tf_number,
+                    nvariables,
+                    historyFilePath,
+                    average_range,
+                    variance_range,
+                    co_variation_range,
+                    MPI_COMM_WORLD );
+        }
+
+    }
+    else
+    {
     TransferFunctionSynthesizer** th_tfs = new TransferFunctionSynthesizer*[max_threads];
 //    std::vector< std::vector<vismodule::TransferFunction> > th_tf;
 
@@ -1269,7 +1313,6 @@ bool ensemble_generate_particles(
         th_tfs[n] = new TransferFunctionSynthesizer( *particle_property.m_transfunc_synthesizer );
     }
 
-    const int tf_number = particle_property.m_transfunc_array.size();
     //std::vector<vismodule::TransferFunction> transfer_functions( tf_number );
     std::vector<std::vector<vismodule::TransferFunction>> transfer_functions( max_threads );
     std::vector<std::vector<vismodule::TransferFunction>>           mean_transfer_functions( max_threads );
@@ -1846,12 +1889,20 @@ bool ensemble_generate_particles(
         particle_property, mvpl, time_step, coefficientFilePrefix,
         coefficient_coords, coefficient_colors, coefficient_normals
     );
-
     OutputEnsembleStatisticHistory(
         particle_property, tf_number, nvariables, historyFilePath,
         average_range, variance_range, co_variation_range
     );
 
+    for ( int thread = 0; thread < max_threads; thread++ )
+    {
+        for ( int variable = 0; variable < nvariables; variable++ )
+        {
+            delete cell[thread][variable];
+        }
+    }
+
+    } // end initial flag
     if ( mpi_rank == 0 )
     {
         std::ifstream src( tfJsonPath_old.c_str(), std::ios::binary );
@@ -1888,16 +1939,8 @@ bool ensemble_generate_particles(
         ofs.close();
     }
 
-    for ( int thread = 0; thread < max_threads; thread++ )
-    {
-        for ( int variable = 0; variable < nvariables; variable++ )
-        {
-            delete cell[thread][variable];
-        }
-    }
-    delete particle_property.m_transfunc_synthesizer;
-    delete particle_property.m_camera;
-
+        delete particle_property.m_transfunc_synthesizer;
+        delete particle_property.m_camera;
     return true;
 #endif
 }
@@ -1912,6 +1955,7 @@ bool SetParticleParameter(
     bool& object_generation_enabled
 )
 {
+    bool result = true;
     int mpi_rank;
 #ifndef CPU_VER
     MPI_Comm_rank( MPI_COMM_WORLD, &mpi_rank );
@@ -1979,6 +2023,10 @@ bool SetParticleParameter(
 
             SetDefaultParticleParameter( particle_property, mvpl, nvariables );
             object_generation_enabled_int = 0;
+        }
+        else
+        {
+            result = false;
         }
 
         size = particle_property.byteSize();
@@ -2105,7 +2153,7 @@ bool SetParticleParameter(
         fprintf( stdout , "--------------------------------------------------------------------------\n" );
     }
 
-    return true;
+    return result;
 }
 
 #ifdef EXTEND_FILE_FORMAT
