@@ -6,6 +6,8 @@ FUNCTION_PARSER_DIR        = ../../FunctionParser
 
 OBJS  = \
 ../shared/kvs_wrapper_common.o \
+ChainRuleNormal.o \
+EnsembleCellHistogram.o \
 kvs_wrapper.o
 
 PROG = libInSituPBVR.a

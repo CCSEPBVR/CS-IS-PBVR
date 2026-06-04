@@ -1285,7 +1285,6 @@ bool ensemble_generate_particles(
     if ( !gen_flag )
     {
         tf_number = nvariables;
-
         EnsembleStatisticRange average_range;
         EnsembleStatisticRange variance_range;
         EnsembleStatisticRange co_variation_range;

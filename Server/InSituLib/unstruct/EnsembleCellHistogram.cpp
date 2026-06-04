@@ -899,7 +899,8 @@ bool ComputeAndStoreEnsembleCellHistogram(
 
     const int mpi_rank = CommRank( ensemble_comm );
     const int ensemble_size = CommSize( ensemble_comm );
-    const int tf_number = static_cast<int>( particle_property.m_transfunc_array.size() );
+    //const int tf_number = static_cast<int>( particle_property.m_transfunc_array.size() );
+    const int tf_number = nvariables; // 各変数のヒストグラムを計算する
     if ( tf_number <= 0 ) return false;
 
     if ( log != NULL )
