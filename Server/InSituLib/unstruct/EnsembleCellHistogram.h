@@ -33,12 +33,23 @@ struct EnsembleCellHistogramLog
     int nbins;
     int comm_size;
     std::size_t histogram_bytes;
+    double cell_center_eval_seconds;
+    double ensemble_moments_mpi_seconds;
+    double statistics_seconds;
     double local_minmax_seconds;
     double global_minmax_mpi_seconds;
     double local_histogram_seconds;
     double global_histogram_mpi_seconds;
 
     EnsembleCellHistogramLog();
+};
+
+struct EnsembleStatisticRange
+{
+    std::vector<float> min_values;
+    std::vector<float> max_values;
+    std::vector<vismodule::UInt64> o_bins;
+    std::vector<vismodule::UInt64> c_bins;
 };
 
 bool ComputeLocalCellCenterMinMax(
@@ -72,12 +83,12 @@ bool ComputeLocalCellCenterHistogram(
     const std::vector<float>& global_min,
     const std::vector<float>& global_max,
     int nbins,
-    std::vector<long long>& local_histogram,
+    std::vector<int>& local_histogram,
     EnsembleCellHistogramLog* log = NULL );
 
 bool ReduceGlobalHistogram(
-    const std::vector<long long>& local_histogram,
-    std::vector<long long>& global_histogram,
+    const std::vector<int>& local_histogram,
+    std::vector<int>& global_histogram,
     int nvariables,
     int nbins,
     MPI_Comm comm,
@@ -87,7 +98,7 @@ bool WriteHistogramResult(
     const std::string& filename,
     const std::vector<float>& global_min,
     const std::vector<float>& global_max,
-    const std::vector<long long>& global_histogram,
+    const std::vector<int>& global_histogram,
     int nvariables,
     int nbins,
     int mpi_rank );
@@ -108,7 +119,7 @@ bool ComputeAndWriteEnsembleCellHistogram(
 bool StoreGlobalCellHistogramToParticleProperty(
     const std::vector<float>& global_min,
     const std::vector<float>& global_max,
-    const std::vector<long long>& global_histogram,
+    const std::vector<int>& global_histogram,
     int nvariables,
     int nbins,
     int mpi_rank,
@@ -125,6 +136,22 @@ bool ComputeAndStoreEnsembleCellHistogram(
     MPI_Comm ensemble_comm,
     int nbins,
     ParticleProperty& particle_property,
+    EnsembleCellHistogramLog* log = NULL );
+
+bool ComputeAndStoreEnsembleCellHistogram(
+    Type** values,
+    int nvariables,
+    float* coordinates,
+    int ncoords,
+    unsigned int* connections,
+    int ncells,
+    const vismodule::VolumeObjectBase::CellType& celltype,
+    MPI_Comm ensemble_comm,
+    int nbins,
+    ParticleProperty& particle_property,
+    EnsembleStatisticRange& average_range,
+    EnsembleStatisticRange& variance_range,
+    EnsembleStatisticRange& co_variation_range,
     EnsembleCellHistogramLog* log = NULL );
 
 void PrintEnsembleCellHistogramLog(

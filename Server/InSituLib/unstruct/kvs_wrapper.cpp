@@ -58,6 +58,7 @@
 #endif
 
 #include "ChainRuleNormal.h"
+#include "EnsembleCellHistogram.h"
 
 namespace Generator = vismodule::CellByCellParticleGenerator;
 
@@ -152,6 +153,8 @@ static void GenerateParticleObject(
 
 namespace
 {
+
+using pbvr::EnsembleStatisticRange;
 
 std::string EnsembleParticleFilePrefix(
     const std::string& particleFilePrefix,
@@ -394,14 +397,6 @@ void AppendRejectedStatisticParticle(
     normals.push_back( normal.z() );
 }
 
-struct EnsembleStatisticRange
-{
-    std::vector<float> min_values;
-    std::vector<float> max_values;
-    std::vector<vismodule::UInt64> o_bins;
-    std::vector<vismodule::UInt64> c_bins;
-};
-
 bool EnsembleHistogramBin(
     const float value,
     const float min_value,
@@ -483,7 +478,8 @@ EnsembleStatisticRange MakeEnsembleStatisticRange(
 
 void ReduceEnsembleStatisticRange(
     EnsembleStatisticRange& range,
-    const int tf_number
+    const int tf_number,
+    MPI_Comm comm = MPI_COMM_WORLD
 )
 {
 #ifndef CPU_VER
@@ -492,10 +488,10 @@ void ReduceEnsembleStatisticRange(
     std::vector<vismodule::UInt64> o_bins_recv( tf_number * DEFAULT_NBINS, 0 );
     std::vector<vismodule::UInt64> c_bins_recv( tf_number * DEFAULT_NBINS, 0 );
 
-    MPI_Reduce( range.min_values.data(), min_recv.data(), tf_number * 2, MPI_FLOAT, MPI_MIN, 0, MPI_COMM_WORLD );
-    MPI_Reduce( range.max_values.data(), max_recv.data(), tf_number * 2, MPI_FLOAT, MPI_MAX, 0, MPI_COMM_WORLD );
-    MPI_Reduce( range.o_bins.data(), o_bins_recv.data(), tf_number * DEFAULT_NBINS, MPI_UNSIGNED_LONG, MPI_SUM, 0, MPI_COMM_WORLD );
-    MPI_Reduce( range.c_bins.data(), c_bins_recv.data(), tf_number * DEFAULT_NBINS, MPI_UNSIGNED_LONG, MPI_SUM, 0, MPI_COMM_WORLD );
+    MPI_Reduce( range.min_values.data(), min_recv.data(), tf_number * 2, MPI_FLOAT, MPI_MIN, 0, comm );
+    MPI_Reduce( range.max_values.data(), max_recv.data(), tf_number * 2, MPI_FLOAT, MPI_MAX, 0, comm );
+    MPI_Reduce( range.o_bins.data(), o_bins_recv.data(), tf_number * DEFAULT_NBINS, MPI_UNSIGNED_LONG, MPI_SUM, 0, comm );
+    MPI_Reduce( range.c_bins.data(), c_bins_recv.data(), tf_number * DEFAULT_NBINS, MPI_UNSIGNED_LONG, MPI_SUM, 0, comm );
 
     range.min_values.swap( min_recv );
     range.max_values.swap( max_recv );
@@ -534,6 +530,35 @@ void WritePrefixedStatisticHistory(
     }
 }
 
+void StoreStatisticRangeToTransferFunctions(
+    const EnsembleStatisticRange& range,
+    std::vector<NamedTransferFunction>& transfer_functions,
+    const int tf_number
+)
+{
+    if ( static_cast<int>( transfer_functions.size() ) < tf_number ) return;
+    if ( range.min_values.size() < static_cast<size_t>( tf_number * 2 ) ||
+         range.max_values.size() < static_cast<size_t>( tf_number * 2 ) ||
+         range.o_bins.size() < static_cast<size_t>( tf_number * DEFAULT_NBINS ) ||
+         range.c_bins.size() < static_cast<size_t>( tf_number * DEFAULT_NBINS ) ) return;
+
+    for ( int i = 0; i < tf_number; i++ )
+    {
+        transfer_functions[i].m_server_opacity_variable_min = range.min_values[2 * i    ];
+        transfer_functions[i].m_server_opacity_variable_max = range.max_values[2 * i    ];
+        transfer_functions[i].m_server_color_variable_min   = range.min_values[2 * i + 1];
+        transfer_functions[i].m_server_color_variable_max   = range.max_values[2 * i + 1];
+        std::copy(
+            range.o_bins.begin() + i * DEFAULT_NBINS,
+            range.o_bins.begin() + ( i + 1 ) * DEFAULT_NBINS,
+            transfer_functions[i].m_opacity_histogram );
+        std::copy(
+            range.c_bins.begin() + i * DEFAULT_NBINS,
+            range.c_bins.begin() + ( i + 1 ) * DEFAULT_NBINS,
+            transfer_functions[i].m_color_histogram );
+    }
+}
+
 void OutputEnsembleStatisticHistory(
     ParticleProperty& particle_property,
     const int tf_number,
@@ -541,16 +566,17 @@ void OutputEnsembleStatisticHistory(
     const std::string& historyFilePath,
     EnsembleStatisticRange average_range,
     EnsembleStatisticRange variance_range,
-    EnsembleStatisticRange co_variation_range
+    EnsembleStatisticRange co_variation_range,
+    MPI_Comm ensemble_comm = MPI_COMM_WORLD
 )
 {
-    ReduceEnsembleStatisticRange( average_range, tf_number );
-    ReduceEnsembleStatisticRange( variance_range, tf_number );
-    ReduceEnsembleStatisticRange( co_variation_range, tf_number );
+    ReduceEnsembleStatisticRange( average_range, tf_number, ensemble_comm );
+    ReduceEnsembleStatisticRange( variance_range, tf_number, ensemble_comm );
+    ReduceEnsembleStatisticRange( co_variation_range, tf_number, ensemble_comm );
 
     int mpi_rank;
 #ifndef CPU_VER
-    MPI_Comm_rank( MPI_COMM_WORLD, &mpi_rank );
+    MPI_Comm_rank( ensemble_comm, &mpi_rank );
 #else
     mpi_rank = 0;
 #endif
@@ -568,21 +594,26 @@ void OutputEnsembleStatisticHistory(
     ofs << "END_HISTORY_FILE=SUCCESS" << std::endl;
     ofs.close();
 
-    for ( int i = 0; i < tf_number; i++ )
+    if ( particle_property.m_mean_transfer_function_array.empty() )
     {
-        particle_property.m_transfunc_array[i].m_server_opacity_variable_min = average_range.min_values[2 * i    ];
-        particle_property.m_transfunc_array[i].m_server_opacity_variable_max = average_range.max_values[2 * i    ];
-        particle_property.m_transfunc_array[i].m_server_color_variable_min   = average_range.min_values[2 * i + 1];
-        particle_property.m_transfunc_array[i].m_server_color_variable_max   = average_range.max_values[2 * i + 1];
-        std::copy(
-            average_range.o_bins.begin() + i * DEFAULT_NBINS,
-            average_range.o_bins.begin() + ( i + 1 ) * DEFAULT_NBINS,
-            particle_property.m_transfunc_array[i].m_opacity_histogram );
-        std::copy(
-            average_range.c_bins.begin() + i * DEFAULT_NBINS,
-            average_range.c_bins.begin() + ( i + 1 ) * DEFAULT_NBINS,
-            particle_property.m_transfunc_array[i].m_color_histogram );
+        particle_property.m_mean_transfer_function_array = particle_property.m_transfunc_array;
     }
+    if ( particle_property.m_variance_transfer_function_array.empty() )
+    {
+        particle_property.m_variance_transfer_function_array = particle_property.m_transfunc_array;
+    }
+    if ( particle_property.m_coefficient_of_variation_transfer_function_array.empty() )
+    {
+        particle_property.m_coefficient_of_variation_transfer_function_array = particle_property.m_transfunc_array;
+    }
+
+    StoreStatisticRangeToTransferFunctions( average_range, particle_property.m_transfunc_array, tf_number );
+    StoreStatisticRangeToTransferFunctions( average_range, particle_property.m_mean_transfer_function_array, tf_number );
+    StoreStatisticRangeToTransferFunctions( variance_range, particle_property.m_variance_transfer_function_array, tf_number );
+    StoreStatisticRangeToTransferFunctions(
+        co_variation_range,
+        particle_property.m_coefficient_of_variation_transfer_function_array,
+        tf_number );
 
     ParameterFileWriter ppw;
     ppw.writeTF2OldJson( particle_property );
