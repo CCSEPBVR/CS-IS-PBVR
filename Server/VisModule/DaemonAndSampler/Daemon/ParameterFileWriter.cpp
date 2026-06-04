@@ -32,8 +32,8 @@ ParameterFileWriter::ParameterFileWriter()
 
     if ( envBuf == nullptr )
     {
-        m_particle_parameter_path     += "default.tf";
-        m_particle_parameter_old_path += "default_old.tf";
+        m_particle_parameter_path     += "default.json";
+        m_particle_parameter_old_path += "default_old.json";
         m_glyph_parameter_path        += "parameter.gly";
         m_pol_parameter_path          += "parameter.pol";
         m_pot_parameter_path          += "parameter.pot";
@@ -41,9 +41,9 @@ ParameterFileWriter::ParameterFileWriter()
     else
     {
         m_particle_parameter_path += envBuf;
-        m_particle_parameter_path     += ".tf";
+        m_particle_parameter_path     += ".json";
         m_particle_parameter_old_path += envBuf;
-        m_particle_parameter_old_path += "_old.tf";
+        m_particle_parameter_old_path += "_old.json";
         m_glyph_parameter_path    += envBuf;
         m_glyph_parameter_path    += ".gly";
         m_pol_parameter_path      += envBuf;
@@ -309,40 +309,18 @@ void ParameterFileWriter::getPlotOverTimeParameter( const PlotOverTimeProperty& 
     m_name_list_file.setLine( "END_PARAMETER_FILE", "SUCCESS" );
 }
 
-void ParameterFileWriter::writeTF2Json(const ParticleProperty& particle_property , const std::string  json_name)
+void ParameterFileWriter::writeTF2Json( const ParticleProperty& particle_property )
 {
         // JSON ファイルで出力
         std::cout << "------------------------------------Export json ------------------------------------------" << std::endl;
-       TransferFunctionJsonWriter::WriteTfJson(particle_property, json_name);
+       TransferFunctionJsonWriter::WriteTfJson( particle_property, m_particle_parameter_path );
 }
 
-void ParameterFileWriter::writeTF2OldJson(const ParticleProperty& particle_property )
+void ParameterFileWriter::writeTF2OldJson( const ParticleProperty& particle_property )
 {
         // JSON ファイルで出力
         std::cout << "------------------------------------Export json ------------------------------------------" << std::endl;
-        std::string json_name;
-        const char *envBuf = NULL;
-        envBuf = std::getenv( "VIS_PARAM_DIR" );
-
-        if ( envBuf == nullptr ) json_name = "./";
-        else
-        {
-            json_name = envBuf;
-            json_name += "/" ;
-        }
-
-        envBuf = std::getenv( "TF_NAME" );
-    
-        if ( envBuf == nullptr )
-        {
-            json_name     += "default_old.json";
-        }
-        else
-        {
-            json_name += envBuf;
-            json_name += "_old.json";
-        }
-       TransferFunctionJsonWriter::WriteTfJson(particle_property, json_name);
+       TransferFunctionJsonWriter::WriteTfJson( particle_property, m_particle_parameter_old_path );
 }
 
 void ParameterFileWriter::writeParticleParameterFile()

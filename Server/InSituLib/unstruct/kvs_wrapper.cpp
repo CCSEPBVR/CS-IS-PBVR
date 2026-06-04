@@ -402,6 +402,14 @@ void generate_particles(
         OutputPOT( time_step, plotOverTimeFilePrefix, pot_mask, value_on_time );
     }
 
+    // OutputParticlesで更新したdefault_old.jsonをtimestep別JSONに保存する
+    if ( object_generation_enabled && mpi_rank == 0 )
+    {
+        std::ifstream src( tfJsonPath_old.c_str(), std::ios::binary );
+        std::ofstream dst( tfJsonPath_step.c_str(), std::ios::binary );
+        dst << src.rdbuf();
+    }
+
     // 粒子ファイル書き込みスレッドが終了するまで待機
     // async_io_enabled, pwtはkvs_wrapper_common.cppに宣言
     if ( async_io_enabled )
@@ -473,37 +481,42 @@ bool SetParticleParameter(
         std::ifstream tfJson( tfJsonPath );
         std::ifstream tfJsonOld( tfJsonPath_old );
 
+        bool loaded = false;
         if ( tfJson.good() )
         {
-            ppr.readTransferFunctionFromJson( tfJsonPath.c_str(), particle_property );
-            object_generation_enabled_int = 1;
+            loaded = ppr.readTransferFunctionFromJson( tfJsonPath.c_str(), particle_property );
         }
-        else if ( tfJsonOld.good() )
+        if ( !loaded && tfJsonOld.good() )
         {
-            ppr.readTransferFunctionFromJson( tfJsonPath_old.c_str(), particle_property );
+            loaded = ppr.readTransferFunctionFromJson( tfJsonPath_old.c_str(), particle_property );
+        }
+
+        if ( loaded )
+        {
             object_generation_enabled_int = 1;
         }
         else
         {
             std::cout << "================================================================" << std::endl;
-            std::cout << "[WARN] " << FileNameOnly( tfJsonPath ) << " and "
-                      << FileNameOnly( tfJsonPath_old ) << " do not exist." << std::endl;
+            std::cout << "[WARN] Failed to load transfer function json." << std::endl;
+            std::cout << "[WARN] Files: " << FileNameOnly( tfJsonPath ) << " and "
+                      << FileNameOnly( tfJsonPath_old ) << std::endl;
             std::cout << "[INFO] VIS_PARAM_DIR = " << EnvValueOrUnset( "VIS_PARAM_DIR" ) << std::endl;
             std::cout << "[INFO] PARTICLE_DIR  = " << EnvValueOrUnset( "PARTICLE_DIR" ) << std::endl;
             std::cout << "[INFO] Set default particle parameters and skip object generation." << std::endl;
             std::cout << "================================================================" << std::endl;
+
+            SetDefaultParticleParameter( particle_property, mvpl, nvariables );
+            object_generation_enabled_int = 0;
         }
 
-        if ( object_generation_enabled_int )
-        {
-            size = particle_property.byteSize();
-            std::cout << "size = " << size << std::endl;
+        size = particle_property.byteSize();
+        std::cout << "size = " << size << std::endl;
 
-            if ( size > 0 )
-            {
-                buf = new char[size];
-                particle_property.pack( buf );
-            }
+        if ( size > 0 )
+        {
+            buf = new char[size];
+            particle_property.pack( buf );
         }
 
     }
@@ -524,14 +537,9 @@ bool SetParticleParameter(
         particle_property.UpdateTransferFunctionSynthesizer();
         delete[] buf;
     }
-
-    if ( object_generation_enabled )
-    {
-        ppr.setParticleParameter( particle_property );
-    }
     else
     {
-        SetDefaultParticleParameter( particle_property, mvpl, nvariables );
+        return false;
     }
 
     vismodule::Vector3f min_object_coords(
@@ -652,7 +660,7 @@ void generate_particles_vtk( int time_step, vtkUnstructuredGrid* ucd )
     std::string plotOverTimeFilePrefix;
     std::string tfJsonPath;
     std::string tfJsonPath_old;
-    std::string tfFilePath_step;
+    std::string tfJsonPath_step;
     std::string glyphParameterPath;
     std::string glyphParameterPath_old;
     std::string plotOverLineParameterPath;
@@ -671,7 +679,7 @@ void generate_particles_vtk( int time_step, vtkUnstructuredGrid* ucd )
         plotOverTimeFilePrefix,
         tfJsonPath,
         tfJsonPath_old,
-        tfFilePath_step,
+        tfJsonPath_step,
         glyphParameterPath,
         glyphParameterPath_old,
         plotOverLineParameterPath,
@@ -957,6 +965,14 @@ void generate_particles_vtk( int time_step, vtkUnstructuredGrid* ucd )
     if ( object_generation_enabled ) // 常にファイルを出力し続ける、将来的に変更する可能性あり
     {
         OutputPOT( time_step, plotOverTimeFilePrefix, pot_mask, value_on_time );
+    }
+
+    // OutputParticlesで更新したdefault_old.jsonをtimestep別JSONに保存する
+    if ( object_generation_enabled && mpi_rank == 0 )
+    {
+        std::ifstream src( tfJsonPath_old.c_str(), std::ios::binary );
+        std::ofstream dst( tfJsonPath_step.c_str(), std::ios::binary );
+        dst << src.rdbuf();
     }
 
     // 粒子ファイル書き込みスレッドが終了するまで待機

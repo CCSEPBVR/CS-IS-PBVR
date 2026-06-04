@@ -58,7 +58,7 @@ void SetParameterFilePath(
     std::string& plotOverTimeFilePrefix,
     std::string& tfJsonPath,
     std::string& tfJsonPath_old,
-    std::string& tfFilePath_step,
+    std::string& tfJsonPath_step,
     std::string& glyphParameterPath,
     std::string& glyphParameterPath_old,
     std::string& plotOverLineParameterPath,

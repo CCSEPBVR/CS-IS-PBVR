@@ -23,7 +23,7 @@ void InitialStepCS(
     MultiVolumePropertyList& mvpl
 );
 
-void SetDefaultParticleParameterIS(
+bool SetDefaultParticleParameterIS(
     ParticleProperty& particle_property,
     MultiVolumePropertyList& mvpl
 );

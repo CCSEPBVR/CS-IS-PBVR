@@ -552,7 +552,7 @@ void Server::initialize(uWS::WebSocket<false, true, PerSocket>* ws, const nlohma
         ParticleMonitor particleMonitor;
         particleMonitor.check();
 
-        std::string tfFilePath_old;
+        std::string tfJsonPath_old;
         std::string visParamDir;
         std::string tfFilename;
         const char *envBuf = NULL;
@@ -573,7 +573,7 @@ void Server::initialize(uWS::WebSocket<false, true, PerSocket>* ws, const nlohma
         else {
             tfFilename = envBuf;
         }
-        tfFilePath_old = visParamDir + tfFilename + "_old.tf";     
+        tfJsonPath_old = visParamDir + tfFilename + "_old.json";
 
         int counter = 0;
 
@@ -587,10 +587,14 @@ void Server::initialize(uWS::WebSocket<false, true, PerSocket>* ws, const nlohma
             counter++;
         }
 
-        SetDefaultParticleParameterIS(
+        if ( !SetDefaultParticleParameterIS(
             *m_particle_property,
             *m_multi_volume_property_list
-        );
+        ) )
+        {
+            std::cerr << "ERROR:Failed to initialize IS particle parameters." << std::endl;
+            return;
+        }
 
         switch( samplingType )
         {
@@ -607,15 +611,8 @@ void Server::initialize(uWS::WebSocket<false, true, PerSocket>* ws, const nlohma
             break;
         }
 
-        std::ifstream tfFileOld( tfFilePath_old );
-
-        // default_old.tfが存在する場合のみdefault.tfを出力する
-        if ( tfFileOld.good() )
-        {
-            ParameterFileWriter ppw;
-            ppw.getParticleParameter(*m_particle_property);
-            ppw.writeParticleParameterFile();
-        }
+        ParameterFileWriter ppw;
+        ppw.writeTF2Json(*m_particle_property);
 
         InitialStepIS(
             m_multi_volume_property_list->m_total_start_steps,
@@ -1152,7 +1149,7 @@ void Server::requestDataAt(uWS::WebSocket<false, true, PerSocket>* ws, const nlo
 
             const char *envBuf = NULL;
             std::string visParamDir;
-            std::string tfFilePath;
+            std::string tfJsonPath;
 
             envBuf = std::getenv("VIS_PARAM_DIR");
 
@@ -1166,7 +1163,7 @@ void Server::requestDataAt(uWS::WebSocket<false, true, PerSocket>* ws, const nlo
                 }
             }
 
-            tfFilePath = visParamDir;
+            tfJsonPath = visParamDir;
 
             envBuf = std::getenv("TF_NAME");
 
@@ -1174,26 +1171,21 @@ void Server::requestDataAt(uWS::WebSocket<false, true, PerSocket>* ws, const nlo
             step << '_' << std::setw( 5 ) << std::setfill( '0' ) << timeStep;
 
             if (envBuf == NULL) {
-                tfFilePath     += "default" + step.str() + ".tf";
+                tfJsonPath     += "default" + step.str() + ".json";
             }
             else {
-                tfFilePath     += envBuf;
-                tfFilePath     += step.str() + ".tf";
+                tfJsonPath     += envBuf;
+                tfJsonPath     += step.str() + ".json";
             }
 
-            std::ifstream tfFile( tfFilePath.c_str() );
+            // std::cout << "tfJsonPath:" << tfJsonPath << std::endl;
 
-            if ( tfFile.good() )
-            {
-                ParameterFileReader ppr;
-                ppr.readParticleParameterFile(tfFilePath.c_str());
-                ppr.setParticleParameter(*tmpParticleProperty);
-            }
-            else
+            ParameterFileReader ppr;
+            if ( !ppr.readTransferFunctionFromJson(tfJsonPath.c_str(), *tmpParticleProperty) )
             {
                 std::cout << "================================================================" << std::endl;
-                std::cout << "[WARN] Step particle parameter file does not exist." << std::endl;
-                std::cout << "[WARN] File: " << tfFilePath << std::endl;
+                std::cout << "[WARN] Failed to load step transfer function json." << std::endl;
+                std::cout << "[WARN] File: " << tfJsonPath << std::endl;
                 std::cout << "[INFO] VIS_PARAM_DIR = " << EnvValueOrUnset( "VIS_PARAM_DIR" ) << std::endl;
                 std::cout << "[INFO] PARTICLE_DIR  = " << EnvValueOrUnset( "PARTICLE_DIR" ) << std::endl;
                 std::cout << "[INFO] Set default particle parameters." << std::endl;
@@ -1548,39 +1540,9 @@ void Server::receiveObjectInfoParameter(uWS::WebSocket<false, true, PerSocket>* 
     }
     else // m_server_mode == ServerMode::IS
     {
-        std::string tfFilePath_old;
-        std::string visParamDir;
-        std::string tfFilename;
-        const char *envBuf = NULL;
-        envBuf = std::getenv( "VIS_PARAM_DIR" );
-        if (envBuf == NULL) {
-            visParamDir = "./";
-        }
-        else {
-            visParamDir = envBuf;
-            if (visParamDir[visParamDir.size() - 1] != '/') {
-                visParamDir += "/";
-            }
-        }
-        envBuf = std::getenv( "TF_NAME" );
-        if (envBuf == NULL) {
-            tfFilename = "default";
-        }
-        else {
-            tfFilename = envBuf;
-        }
-        tfFilePath_old = visParamDir + tfFilename + "_old.tf";
-
-        std::ifstream tfFileOld( tfFilePath_old );
-
-        // default_old.tfが存在する場合のみdefault.tfを出力する
-        if ( tfFileOld.good() )
-        {
-            // パラメータファイルに粒子パラメータを書き込む
-            ParameterFileWriter ppw;
-            ppw.getParticleParameter(*m_particle_property);
-            ppw.writeParticleParameterFile();
-        }
+        // パラメータファイルに粒子パラメータを書き込む
+        ParameterFileWriter ppw;
+        ppw.writeTF2Json(*m_particle_property);
     }
 
     ws->publish( k_text_topic, received.dump(), uWS::OpCode::TEXT );
@@ -1953,33 +1915,7 @@ void Server::receiveTransferFunctionParameter(uWS::WebSocket<false, true, PerSoc
     {
         // パラメータファイルに粒子パラメータファイルを書き込む
         ParameterFileWriter ppw;
-        ppw.getParticleParameter(*m_particle_property);
-        ppw.writeParticleParameterFile();
-
-        std::string json_name;
-        const char *envBuf = NULL;
-        envBuf = std::getenv( "VIS_PARAM_DIR" );
-       
-        if ( envBuf == nullptr ) json_name = "./";
-        else
-        {   
-            json_name = envBuf;
-            json_name += "/" ;
-        }
-        
-        envBuf = std::getenv( "TF_NAME" );
-        
-        if ( envBuf == nullptr )
-        {   
-            json_name     += "default.json";
-        }
-        else
-        {   
-            json_name += envBuf;
-            json_name += ".json";
-        }
-
-        ppw.writeTF2Json(*m_particle_property, json_name);
+        ppw.writeTF2Json(*m_particle_property);
     }
 
     ws->publish( k_text_topic, received.dump(), uWS::OpCode::TEXT );

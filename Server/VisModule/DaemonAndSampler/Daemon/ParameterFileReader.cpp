@@ -1,7 +1,5 @@
 #include "ParameterFileReader.h"
-
-#include <stdexcept>
-
+#include <exception>
 #define DEFAULT_TF_NUMBER 5
 #define BEFORE_READ_TF_NUMBER 99
 
@@ -357,7 +355,7 @@ void ParameterFileReader::readTransferFunctionFile( const char* fname )
     }
 }
 
-// ISのdefault.tfファイルを読み込む
+// ISの旧形式default.tfファイルを読み込む
 void ParameterFileReader::readParticleParameterFile( const char* fname )
 {
     m_name_list_file.setName( "SAMPLING_METHOD" );
@@ -444,43 +442,15 @@ void ParameterFileReader::readParticleParameterFile( const char* fname )
     return;
 }
 
-// ISのdefault.jsonファイルを読み込む
-void ParameterFileReader::readTransferFunctionFromJson( const char* fname, ParticleProperty& particle_property )
+// ISのdefault.json/default_old.jsonファイルを読み込む
+bool ParameterFileReader::readTransferFunctionFromJson( const char* fname, ParticleProperty& particle_property )
 {
+    try
+    {
         std::cout << "------------------------------------Import json ------------------------------------------" << std::endl;
-        std::string json_name;
-        const char *envBuf = NULL;
-        envBuf = std::getenv( "VIS_PARAM_DIR" );
+       nlohmann::json tf = TransferFunctionJsonWriter::LoadTfJson( fname );
 
-        if ( envBuf == nullptr ) json_name = "./";
-        else
-        {
-            json_name = envBuf;
-            json_name += "/" ;
-        }
-
-        envBuf = std::getenv( "TF_NAME" );
-    
-        if ( envBuf == nullptr )
-        {
-            json_name     += "default.json";
-        }
-        else
-        {
-            json_name += envBuf;
-            json_name += ".json";
-        }
-       nlohmann::json params;
-       try
-       {
-           const nlohmann::json tf = TransferFunctionJsonWriter::LoadTfJson(json_name);
-           params = TransferFunctionParameters( tf );
-       }
-       catch ( const std::exception& e )
-       {
-           std::cout << "ERROR:Failed to import json '" << json_name << "': " << e.what() << std::endl;
-           return;
-       }
+       const nlohmann::json params = TransferFunctionParameters( tf );
 
        const std::string size_sampling_method                  = params.value( "SAMPLING_METHOD", std::string( "" ) );
        particle_property.m_particle_limit                      = params.value( "PARTICLE_LIMIT", 0 );
@@ -510,7 +480,7 @@ void ParameterFileReader::readTransferFunctionFromJson( const char* fname, Parti
        else
        {
            std::cout << "ERROR:particle sampling method is not selected." << std::endl;
-           return;
+           return false;
        }
 
        const size_t width               = params.value( "RESOLUTION_WIDTH", 0 );
@@ -519,24 +489,11 @@ void ParameterFileReader::readTransferFunctionFromJson( const char* fname, Parti
 
        const size_t resolution          = params.value( "TF_RESOLUTION", 0 );
        const int tf_number              = params.value( "TF_NUMBER", 0 );
-       if ( tf_number < 0 )
+       if ( resolution == 0 || tf_number <= 0 )
        {
-           std::cout << "ERROR:TF_NUMBER is negative." << std::endl;
-           return;
+           std::cout << "ERROR:Transfer function resolution or count is invalid." << std::endl;
+           return false;
        }
-
-       std::cout << "PBVR JSON import summary" << std::endl;
-       std::cout << "  file                         : " << json_name << std::endl;
-       std::cout << "  sampling.method              : " << size_sampling_method << std::endl;
-       std::cout << "  sampling.particle_limit      : " << particle_property.m_particle_limit << std::endl;
-       std::cout << "  sampling.data_size_limit     : " << particle_property.m_particle_data_size_limit
-                 << " " << particle_data_size_limit_unit << std::endl;
-       std::cout << "  image.width                  : " << width << std::endl;
-       std::cout << "  image.height                 : " << height << std::endl;
-       std::cout << "  transfer_function.count      : " << tf_number << std::endl;
-       std::cout << "  transfer_function.resolution : " << resolution << std::endl;
-       std::cout << "  transfer_function.color_syn  : " << particle_property.m_color_transfer_function_synthesis << std::endl;
-       std::cout << "  transfer_function.opacity_syn: " << particle_property.m_opacity_transfer_function_synthesis << std::endl;
 
        particle_property.m_transfunc_array.clear();
        particle_property.m_transfunc_array.resize( tf_number );
@@ -578,13 +535,13 @@ void ParameterFileReader::readTransferFunctionFromJson( const char* fname, Parti
         {
             std::cout << "ERROR:" << tag_base << "TABLE_C size is " << color_values.size()
                       << ", but expected " << resolution * 3 << "." << std::endl;
-            return;
+            return false;
         }
         if ( opacity_values.size() != resolution )
         {
             std::cout << "ERROR:" << tag_base << "TABLE_O size is " << opacity_values.size()
                       << ", but expected " << resolution << "." << std::endl;
-            return;
+            return false;
         }
 
         std::cout << "  transfer_functions[" << n << "] id=" << tf_id;
@@ -733,7 +690,15 @@ void ParameterFileReader::readTransferFunctionFromJson( const char* fname, Parti
         particle_property.m_transfunc_synthesizer->setOpacityVariable( var );
         var.clear();
 
-    return;
+        return true;
+    }
+    catch ( const std::exception& e )
+    {
+        std::cerr << "ERROR:Failed to read transfer function json: "
+                  << fname << std::endl;
+        std::cerr << "ERROR:" << e.what() << std::endl;
+        return false;
+    }
 }
 
 void ParameterFileReader::readGlyphParameterFile( const char* fname )
@@ -967,7 +932,7 @@ void ParameterFileReader::setTransferFunctionParameter( ParticleProperty& partic
     return;
 }
 
-// ISのdefault.tfファイルを読み込んだ値を設定する
+// ISの旧形式default.tfファイルを読み込んだ値を設定する
 void ParameterFileReader::setParticleParameter( ParticleProperty& particle_property )
 {
     const std::string size_sampling_method                  = m_name_list_file.getValue<std::string>("SAMPLING_METHOD");

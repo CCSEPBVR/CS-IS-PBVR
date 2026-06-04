@@ -861,7 +861,7 @@ void OutputParticleHistory(
         ofs2 << "END_HISTORY_FILE=SUCCESS" << std::endl;
         ofs2.close();
 
-        // ServerSideMinMaxを更新してからdefault.tfファイルを出力
+        // ServerSideMinMaxを更新してからdefault_old.jsonファイルを出力
         for( std::size_t i = 0; i < tf_number; i++ )
         {
             particle_property.m_transfunc_array[i].m_server_color_variable_min   = min_array_recv[2 * i + 1];
