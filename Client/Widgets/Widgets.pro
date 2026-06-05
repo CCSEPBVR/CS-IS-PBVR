@@ -35,6 +35,7 @@ HEADERS += \
     ShadingControl.h \
     TimeStepControlToolBar.h \
     TotalParticlesToolBar.h \
+    EnsembleTransferFunctionEditor.h \
     TransferFunctionEditor.h \
     VariableEditor.h \
     VizMode.h \
@@ -61,6 +62,7 @@ SOURCES += \
     ShadingControl.cpp \
     TimeStepControlToolBar.cpp \
     TotalParticlesToolBar.cpp \
+    EnsembleTransferFunctionEditor.cpp \
     TransferFunctionEditor.cpp \
     VariableEditor.cpp \
     VolumeTransform.cpp
@@ -82,6 +84,7 @@ FORMS += \
     Preference.ui \
     RepetitionLevelControl.ui \
     ShadingControl.ui \
+    EnsembleTransferFunctionEditor.ui \
     TransferFunctionEditor.ui \
     VariableEditor.ui \
     VolumeTransform.ui

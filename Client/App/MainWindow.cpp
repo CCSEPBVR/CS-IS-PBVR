@@ -33,6 +33,7 @@ MainWindow::MainWindow( kvs::qt::Application& app, QWidget *parent )
     , m_preference                     ( new Preference( this ) )
     , m_repetition_level_control       ( new RepetitionLevelControl( m_screen, m_compositor, this ) )
     , m_shading_control                ( new ShadingControl( m_screen, this ) )
+    , m_ensemble_transfer_function_editor( new EnsembleTransferFunctionEditor( this ) )
     , m_transfer_function_editor       ( new TransferFunctionEditor( m_web_sockets, this ) )
     , m_volume_transform               ( new VolumeTransform( m_screen, this ) )
 {
@@ -136,6 +137,7 @@ MainWindow::MainWindow( kvs::qt::Application& app, QWidget *parent )
     initializePreference();
     initializeRepetitionLevelControl();
     initializeShadingControl();
+    initializeEnsembleTransferFunctionEditor();
     initializeTransferFunctionEditor();
     initializeVolumeTransform();
 
@@ -399,6 +401,11 @@ void MainWindow::initializeMenuBar()
         m_shading_control_action = new QAction( tr( "Shading Control" ), this );
         connect( m_shading_control_action, &QAction::triggered, this, &MainWindow::onShadingControl );
     }
+    if( m_ensemble_transfer_function_editor )
+    {
+        m_ensemble_transfer_function_editor_action = new QAction( tr( "Ensemble Transfer Function Editor" ), this );
+        connect( m_ensemble_transfer_function_editor_action, &QAction::triggered, this, &MainWindow::onEnsembleTransferFunctionEditor );
+    }
     if( m_transfer_function_editor )
     {
         m_transfer_function_editor_action = new QAction( tr( "Transfer Function Editor" ), this );
@@ -426,6 +433,7 @@ void MainWindow::initializeMenuBar()
             m_point_size_control_action       ||
             m_repetition_level_control_action ||
             m_shading_control_action          ||
+            m_ensemble_transfer_function_editor_action ||
             m_transfer_function_editor_action ||
             m_volume_transform_action ) )
     {
@@ -439,6 +447,7 @@ void MainWindow::initializeMenuBar()
     add( ui->menuTools, m_point_size_control_action );
     add( ui->menuTools, m_repetition_level_control_action );
     add( ui->menuTools, m_shading_control_action );
+    add( ui->menuTools, m_ensemble_transfer_function_editor_action );
     add( ui->menuTools, m_transfer_function_editor_action );
     add( ui->menuTools, m_volume_transform_action );
 }
@@ -593,6 +602,15 @@ void MainWindow::initializeShadingControl()
         m_shading_control->adjustSize();
         m_shading_control->close();
         addDockWidget( Qt::LeftDockWidgetArea, m_shading_control );
+    }
+}
+
+void MainWindow::initializeEnsembleTransferFunctionEditor()
+{
+    if( m_ensemble_transfer_function_editor )
+    {
+        m_ensemble_transfer_function_editor->adjustSize();
+        m_ensemble_transfer_function_editor->close();
     }
 }
 

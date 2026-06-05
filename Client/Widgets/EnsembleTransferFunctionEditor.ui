@@ -1,0 +1,739 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>EnsembleTransferFunctionEditor</class>
+ <widget class="QDialog" name="EnsembleTransferFunctionEditor">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1100</width>
+    <height>560</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Ensemble Transfer Function Editor</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="QGroupBox" name="m_statistics_synthesizer_group_box">
+     <property name="title">
+      <string>Statistics Synthesizer</string>
+     </property>
+     <layout class="QVBoxLayout" name="m_main_layout">
+      <item>
+       <layout class="QFormLayout" name="m_statistics_synthesizer_form_layout">
+        <property name="fieldGrowthPolicy">
+         <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
+        </property>
+        <item row="0" column="0">
+         <widget class="QLabel" name="m_statistics_synthesizer_label">
+          <property name="text">
+           <string>Synthesizer:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="1">
+         <widget class="QLineEdit" name="m_statistics_synthesizer_line_edit"/>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="m_statistics_selection_layout">
+        <item>
+         <spacer name="m_statistics_left_spacer">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
+         <widget class="QRadioButton" name="m_average_radio_button">
+          <property name="text">
+           <string>Average</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="m_statistics_middle_spacer_1">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
+         <widget class="QRadioButton" name="m_variance_radio_button">
+          <property name="text">
+           <string>Variance</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="m_statistics_middle_spacer_2">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
+         <widget class="QRadioButton" name="m_coefficient_variation_radio_button">
+          <property name="text">
+           <string>Coefficient Variation</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="m_statistics_right_spacer">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="m_transfer_function_layout">
+        <item>
+         <widget class="QGroupBox" name="m_average_transfer_function_group_box">
+          <property name="title">
+           <string>Average</string>
+          </property>
+          <layout class="QVBoxLayout" name="m_average_transfer_function_layout">
+           <item>
+            <widget class="QGroupBox" name="m_average_color_map_group_box">
+             <property name="title">
+              <string>Color Map</string>
+             </property>
+             <layout class="QVBoxLayout" name="m_average_color_map_layout">
+              <item>
+               <!-- Embed point: replace or initialize with the existing TransferFunctionEditor ColorMap widget behavior. -->
+               <widget class="ColorMap" name="m_average_color_map" native="true">
+                <property name="minimumSize">
+                 <size>
+                  <width>0</width>
+                  <height>80</height>
+                 </size>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </item>
+           <item>
+            <widget class="QGroupBox" name="m_average_opacity_map_group_box">
+             <property name="title">
+              <string>Opacity Map</string>
+             </property>
+             <layout class="QVBoxLayout" name="m_average_opacity_map_layout">
+              <item>
+               <!-- Embed point: replace or initialize with the existing TransferFunctionEditor OpacityMap widget behavior. -->
+               <widget class="OpacityMap" name="m_average_opacity_map" native="true">
+                <property name="minimumSize">
+                 <size>
+                  <width>0</width>
+                  <height>80</height>
+                 </size>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </item>
+           <item>
+            <widget class="QGroupBox" name="m_average_histogram_group_box">
+             <property name="title">
+              <string>Histogram</string>
+             </property>
+             <layout class="QVBoxLayout" name="m_average_histogram_layout">
+              <item>
+               <!-- Embed point: replace or initialize with the existing TransferFunctionEditor Histogram widget behavior. -->
+               <widget class="Histogram" name="m_average_histogram" native="true">
+                <property name="minimumSize">
+                 <size>
+                  <width>0</width>
+                  <height>80</height>
+                 </size>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item>
+         <widget class="QGroupBox" name="m_variance_transfer_function_group_box">
+          <property name="title">
+           <string>Variance</string>
+          </property>
+          <layout class="QVBoxLayout" name="m_variance_transfer_function_layout">
+           <item>
+            <widget class="QGroupBox" name="m_variance_color_map_group_box">
+             <property name="title">
+              <string>Color Map</string>
+             </property>
+             <layout class="QVBoxLayout" name="m_variance_color_map_layout">
+              <item>
+               <!-- Embed point: replace or initialize with the existing TransferFunctionEditor ColorMap widget behavior. -->
+               <widget class="ColorMap" name="m_variance_color_map" native="true">
+                <property name="minimumSize">
+                 <size>
+                  <width>0</width>
+                  <height>80</height>
+                 </size>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </item>
+           <item>
+            <widget class="QGroupBox" name="m_variance_opacity_map_group_box">
+             <property name="title">
+              <string>Opacity Map</string>
+             </property>
+             <layout class="QVBoxLayout" name="m_variance_opacity_map_layout">
+              <item>
+               <!-- Embed point: replace or initialize with the existing TransferFunctionEditor OpacityMap widget behavior. -->
+               <widget class="OpacityMap" name="m_variance_opacity_map" native="true">
+                <property name="minimumSize">
+                 <size>
+                  <width>0</width>
+                  <height>80</height>
+                 </size>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </item>
+           <item>
+            <widget class="QGroupBox" name="m_variance_histogram_group_box">
+             <property name="title">
+              <string>Histogram</string>
+             </property>
+             <layout class="QVBoxLayout" name="m_variance_histogram_layout">
+              <item>
+               <!-- Embed point: replace or initialize with the existing TransferFunctionEditor Histogram widget behavior. -->
+               <widget class="Histogram" name="m_variance_histogram" native="true">
+                <property name="minimumSize">
+                 <size>
+                  <width>0</width>
+                  <height>80</height>
+                 </size>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item>
+         <widget class="QGroupBox" name="m_coefficient_variation_transfer_function_group_box">
+          <property name="title">
+           <string>Coefficient Variation</string>
+          </property>
+          <layout class="QVBoxLayout" name="m_coefficient_variation_transfer_function_layout">
+           <item>
+            <widget class="QGroupBox" name="m_coefficient_variation_color_map_group_box">
+             <property name="title">
+              <string>Color Map</string>
+             </property>
+             <layout class="QVBoxLayout" name="m_coefficient_variation_color_map_layout">
+              <item>
+               <!-- Embed point: replace or initialize with the existing TransferFunctionEditor ColorMap widget behavior. -->
+               <widget class="ColorMap" name="m_coefficient_variation_color_map" native="true">
+                <property name="minimumSize">
+                 <size>
+                  <width>0</width>
+                  <height>80</height>
+                 </size>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </item>
+           <item>
+            <widget class="QGroupBox" name="m_coefficient_variation_opacity_map_group_box">
+             <property name="title">
+              <string>Opacity Map</string>
+             </property>
+             <layout class="QVBoxLayout" name="m_coefficient_variation_opacity_map_layout">
+              <item>
+               <!-- Embed point: replace or initialize with the existing TransferFunctionEditor OpacityMap widget behavior. -->
+               <widget class="OpacityMap" name="m_coefficient_variation_opacity_map" native="true">
+                <property name="minimumSize">
+                 <size>
+                  <width>0</width>
+                  <height>80</height>
+                 </size>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </item>
+           <item>
+            <widget class="QGroupBox" name="m_coefficient_variation_histogram_group_box">
+             <property name="title">
+              <string>Histogram</string>
+             </property>
+             <layout class="QVBoxLayout" name="m_coefficient_variation_histogram_layout">
+              <item>
+               <!-- Embed point: replace or initialize with the existing TransferFunctionEditor Histogram widget behavior. -->
+               <widget class="Histogram" name="m_coefficient_variation_histogram" native="true">
+                <property name="minimumSize">
+                 <size>
+                  <width>0</width>
+                  <height>80</height>
+                 </size>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="m_min_max_layout">
+        <item>
+         <widget class="QGroupBox" name="m_average_min_max_group_box">
+         <property name="title">
+          <string>Average MinMax</string>
+         </property>
+          <layout class="QFormLayout" name="m_average_min_max_layout">
+           <property name="fieldGrowthPolicy">
+            <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
+           </property>
+           <item row="0" column="0">
+            <widget class="QRadioButton" name="m_average_user_min_max_radio_button">
+             <property name="text">
+              <string>User Defined Min Max:</string>
+             </property>
+             <property name="checked">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <layout class="QHBoxLayout" name="m_average_user_min_max_input_layout">
+             <item>
+              <widget class="QDoubleSpinBox" name="m_average_user_min_double_spin_box">
+               <property name="decimals">
+                <number>8</number>
+               </property>
+               <property name="minimum">
+                <double>-100000000000000000.000000000000000</double>
+               </property>
+               <property name="maximum">
+                <double>100000000000000000.000000000000000</double>
+               </property>
+               <property name="singleStep">
+                <double>0.100000000000000</double>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QDoubleSpinBox" name="m_average_user_max_double_spin_box">
+               <property name="decimals">
+                <number>8</number>
+               </property>
+               <property name="minimum">
+                <double>-100000000000000000.000000000000000</double>
+               </property>
+               <property name="maximum">
+                <double>100000000000000000.000000000000000</double>
+               </property>
+               <property name="singleStep">
+                <double>0.100000000000000</double>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item row="1" column="0">
+            <widget class="QRadioButton" name="m_average_server_min_max_radio_button">
+             <property name="text">
+              <string>Server Side Min Max:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="1">
+            <layout class="QHBoxLayout" name="m_average_server_min_max_input_layout">
+             <item>
+              <widget class="QDoubleSpinBox" name="m_average_server_min_double_spin_box">
+               <property name="readOnly">
+                <bool>true</bool>
+               </property>
+               <property name="buttonSymbols">
+                <enum>QAbstractSpinBox::NoButtons</enum>
+               </property>
+               <property name="decimals">
+                <number>8</number>
+               </property>
+               <property name="minimum">
+                <double>-100000000000000000.000000000000000</double>
+               </property>
+               <property name="maximum">
+                <double>100000000000000000.000000000000000</double>
+               </property>
+               <property name="singleStep">
+                <double>0.100000000000000</double>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QDoubleSpinBox" name="m_average_server_max_double_spin_box">
+               <property name="readOnly">
+                <bool>true</bool>
+               </property>
+               <property name="buttonSymbols">
+                <enum>QAbstractSpinBox::NoButtons</enum>
+               </property>
+               <property name="decimals">
+                <number>8</number>
+               </property>
+               <property name="minimum">
+                <double>-100000000000000000.000000000000000</double>
+               </property>
+               <property name="maximum">
+                <double>100000000000000000.000000000000000</double>
+               </property>
+               <property name="singleStep">
+                <double>0.100000000000000</double>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item>
+         <widget class="QGroupBox" name="m_variance_min_max_group_box">
+         <property name="title">
+          <string>Variance MinMax</string>
+         </property>
+          <layout class="QFormLayout" name="m_variance_min_max_layout">
+           <property name="fieldGrowthPolicy">
+            <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
+           </property>
+           <item row="0" column="0">
+            <widget class="QRadioButton" name="m_variance_user_min_max_radio_button">
+             <property name="text">
+              <string>User Defined Min Max:</string>
+             </property>
+             <property name="checked">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <layout class="QHBoxLayout" name="m_variance_user_min_max_input_layout">
+             <item>
+              <widget class="QDoubleSpinBox" name="m_variance_user_min_double_spin_box">
+               <property name="decimals">
+                <number>8</number>
+               </property>
+               <property name="minimum">
+                <double>-100000000000000000.000000000000000</double>
+               </property>
+               <property name="maximum">
+                <double>100000000000000000.000000000000000</double>
+               </property>
+               <property name="singleStep">
+                <double>0.100000000000000</double>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QDoubleSpinBox" name="m_variance_user_max_double_spin_box">
+               <property name="decimals">
+                <number>8</number>
+               </property>
+               <property name="minimum">
+                <double>-100000000000000000.000000000000000</double>
+               </property>
+               <property name="maximum">
+                <double>100000000000000000.000000000000000</double>
+               </property>
+               <property name="singleStep">
+                <double>0.100000000000000</double>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item row="1" column="0">
+            <widget class="QRadioButton" name="m_variance_server_min_max_radio_button">
+             <property name="text">
+              <string>Server Side Min Max:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="1">
+            <layout class="QHBoxLayout" name="m_variance_server_min_max_input_layout">
+             <item>
+              <widget class="QDoubleSpinBox" name="m_variance_server_min_double_spin_box">
+               <property name="readOnly">
+                <bool>true</bool>
+               </property>
+               <property name="buttonSymbols">
+                <enum>QAbstractSpinBox::NoButtons</enum>
+               </property>
+               <property name="decimals">
+                <number>8</number>
+               </property>
+               <property name="minimum">
+                <double>-100000000000000000.000000000000000</double>
+               </property>
+               <property name="maximum">
+                <double>100000000000000000.000000000000000</double>
+               </property>
+               <property name="singleStep">
+                <double>0.100000000000000</double>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QDoubleSpinBox" name="m_variance_server_max_double_spin_box">
+               <property name="readOnly">
+                <bool>true</bool>
+               </property>
+               <property name="buttonSymbols">
+                <enum>QAbstractSpinBox::NoButtons</enum>
+               </property>
+               <property name="decimals">
+                <number>8</number>
+               </property>
+               <property name="minimum">
+                <double>-100000000000000000.000000000000000</double>
+               </property>
+               <property name="maximum">
+                <double>100000000000000000.000000000000000</double>
+               </property>
+               <property name="singleStep">
+                <double>0.100000000000000</double>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item>
+         <widget class="QGroupBox" name="m_coefficient_variation_min_max_group_box">
+         <property name="title">
+          <string>Coefficient Variation MinMax</string>
+         </property>
+          <layout class="QFormLayout" name="m_coefficient_variation_min_max_layout">
+           <property name="fieldGrowthPolicy">
+            <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
+           </property>
+           <item row="0" column="0">
+            <widget class="QRadioButton" name="m_coefficient_variation_user_min_max_radio_button">
+             <property name="text">
+              <string>User Defined Min Max:</string>
+             </property>
+             <property name="checked">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <layout class="QHBoxLayout" name="m_coefficient_variation_user_min_max_input_layout">
+             <item>
+              <widget class="QDoubleSpinBox" name="m_coefficient_variation_user_min_double_spin_box">
+               <property name="decimals">
+                <number>8</number>
+               </property>
+               <property name="minimum">
+                <double>-100000000000000000.000000000000000</double>
+               </property>
+               <property name="maximum">
+                <double>100000000000000000.000000000000000</double>
+               </property>
+               <property name="singleStep">
+                <double>0.100000000000000</double>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QDoubleSpinBox" name="m_coefficient_variation_user_max_double_spin_box">
+               <property name="decimals">
+                <number>8</number>
+               </property>
+               <property name="minimum">
+                <double>-100000000000000000.000000000000000</double>
+               </property>
+               <property name="maximum">
+                <double>100000000000000000.000000000000000</double>
+               </property>
+               <property name="singleStep">
+                <double>0.100000000000000</double>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item row="1" column="0">
+            <widget class="QRadioButton" name="m_coefficient_variation_server_min_max_radio_button">
+             <property name="text">
+              <string>Server Side Min Max:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="1">
+            <layout class="QHBoxLayout" name="m_coefficient_variation_server_min_max_input_layout">
+             <item>
+              <widget class="QDoubleSpinBox" name="m_coefficient_variation_server_min_double_spin_box">
+               <property name="readOnly">
+                <bool>true</bool>
+               </property>
+               <property name="buttonSymbols">
+                <enum>QAbstractSpinBox::NoButtons</enum>
+               </property>
+               <property name="decimals">
+                <number>8</number>
+               </property>
+               <property name="minimum">
+                <double>-100000000000000000.000000000000000</double>
+               </property>
+               <property name="maximum">
+                <double>100000000000000000.000000000000000</double>
+               </property>
+               <property name="singleStep">
+                <double>0.100000000000000</double>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QDoubleSpinBox" name="m_coefficient_variation_server_max_double_spin_box">
+               <property name="readOnly">
+                <bool>true</bool>
+               </property>
+               <property name="buttonSymbols">
+                <enum>QAbstractSpinBox::NoButtons</enum>
+               </property>
+               <property name="decimals">
+                <number>8</number>
+               </property>
+               <property name="minimum">
+                <double>-100000000000000000.000000000000000</double>
+               </property>
+               <property name="maximum">
+                <double>100000000000000000.000000000000000</double>
+               </property>
+               <property name="singleStep">
+                <double>0.100000000000000</double>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+          </layout>
+         </widget>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="m_command_button_layout">
+     <item>
+      <spacer name="m_command_button_spacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="m_export_push_button">
+       <property name="text">
+        <string>Export</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="m_import_push_button">
+       <property name="text">
+        <string>Import</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="m_apply_push_button">
+       <property name="text">
+        <string>Apply</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>ColorMap</class>
+   <extends>QWidget</extends>
+   <header>ColorMap.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>OpacityMap</class>
+   <extends>QWidget</extends>
+   <header>OpacityMap.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>Histogram</class>
+   <extends>QWidget</extends>
+   <header>Histogram.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>

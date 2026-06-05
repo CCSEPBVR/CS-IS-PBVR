@@ -33,6 +33,7 @@
 #include "Preference.h"
 #include "RepetitionLevelControl.h"
 #include "ShadingControl.h"
+#include "EnsembleTransferFunctionEditor.h"
 #include "TransferFunctionEditor.h"
 #include "VolumeTransform.h"
 
@@ -103,9 +104,10 @@ private:
     QAction* m_point_size_control_action       = nullptr;
     QAction* m_preference_action               = nullptr;
     QAction* m_repetition_level_control_action = nullptr;
-    QAction* m_shading_control_action          = nullptr;
-    QAction* m_transfer_function_editor_action = nullptr;
-    QAction* m_volume_transform_action         = nullptr;
+    QAction* m_shading_control_action                   = nullptr;
+    QAction* m_ensemble_transfer_function_editor_action = nullptr;
+    QAction* m_transfer_function_editor_action          = nullptr;
+    QAction* m_volume_transform_action                  = nullptr;
 
     // Widget
     AnimationControl* m_animation_control              = nullptr; // KPI
@@ -118,6 +120,7 @@ private:
     Preference* m_preference                           = nullptr;
     RepetitionLevelControl* m_repetition_level_control = nullptr; // KPI
     ShadingControl* m_shading_control                  = nullptr; // KPI
+    EnsembleTransferFunctionEditor* m_ensemble_transfer_function_editor = nullptr;
     TransferFunctionEditor* m_transfer_function_editor = nullptr; // KPI WebSocket Operator
     VolumeTransform* m_volume_transform                = nullptr; // KPI
 
@@ -135,6 +138,7 @@ private:
     void initializePreference();
     void initializeRepetitionLevelControl();
     void initializeShadingControl();
+    void initializeEnsembleTransferFunctionEditor();
     void initializeTransferFunctionEditor();
     void initializeVolumeTransform();
 
@@ -151,6 +155,7 @@ private slots:
     void onPreference()             { m_preference->show();               }
     void onRepetitionLevelControl() { m_repetition_level_control->show(); }
     void onShadingControl()         { m_shading_control->show();          }
+    void onEnsembleTransferFunctionEditor() { m_ensemble_transfer_function_editor->show(); }
     void onTransferFunctionEditor() { m_transfer_function_editor->show(); }
     void onVolumeTransform()        { m_volume_transform->show();         }
 
