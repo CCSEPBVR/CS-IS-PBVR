@@ -65,6 +65,7 @@ public slots:
     void onTransferFunctionUpdate();
 
     void onRequestDataAt( int requestTimeStep );
+    void setRequestedStatistic( const QString& statistic );
 
     void onLoadParameter( const QString& filePath ); // KPI
     void onSaveParameter( const QString& filePath ); // KPI
@@ -78,6 +79,7 @@ private:
     Viz::Mode* m_viz_mode           = nullptr;
 
     bool m_is_operator              = true;
+    QString m_requested_statistic;
 
     QStandardItemModel *m_model     = nullptr;
 

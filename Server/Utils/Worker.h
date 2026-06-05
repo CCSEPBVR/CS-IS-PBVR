@@ -1,6 +1,8 @@
 #ifndef WORKER_H
 #define WORKER_H
 
+#include <cstdlib>
+#include <cstring>
 #include <functional>
 
 #include "../../Shared/ObjectInfoExtractor.h"
@@ -17,6 +19,7 @@
 #include <vismodule/Camera>
 #include <vismodule/TransferFunctionSynthesizer>
 #include <vismodule/Calculate>
+#include <vismodule/ParticleMonitor>
 
 class Worker
 {
@@ -27,13 +30,15 @@ public:
         const int requestTimeStep, std::vector<ObjectInfoExtractor::ObjectInfo>* objects,
         kvs::Vec3 resultMinObjectCoords, kvs::Vec3 resultMaxObjectCoords,
         const ServerMode server_mode, ParticleProperty* particle_property, GlyphProperty* glyph_property,
-        PlotOverLineProperty* pol_property, MultiVolumePropertyList* multi_volume_property_list
+        PlotOverLineProperty* pol_property, MultiVolumePropertyList* multi_volume_property_list,
+        const std::string& statistic = ""
         )
         : m_request_time_step( requestTimeStep ) , m_objects( objects )
         , m_result_min_object_coords( resultMinObjectCoords )
         , m_result_max_object_coords( resultMaxObjectCoords )
         , m_server_mode(server_mode), m_particle_property( particle_property ), m_glyph_property( glyph_property )
         , m_pol_property( pol_property ), m_multi_volume_property_list( multi_volume_property_list )
+        , m_statistic( statistic )
     {}
 
     void setDoneCallBack( DoneCallBack callBack ) { m_done_call_back = std::move( callBack ); }
@@ -105,6 +110,7 @@ private:
     GlyphProperty* m_glyph_property = nullptr;
     PlotOverLineProperty* m_pol_property = nullptr;
     MultiVolumePropertyList* m_multi_volume_property_list = nullptr;
+    std::string m_statistic;
 
 private:
     // format に応じて正しい型で delete する（基底 dtor が virtual でない問題を回避）
@@ -178,7 +184,14 @@ private:
 
         case ObjectInfoExtractor::InsituServerPointObject:
             pointObject = std::make_unique<kvs::PointObject>();
-            GenerateParticleIS( requestTimeStep, *m_particle_property, *m_multi_volume_property_list, pointObject );
+            if ( m_statistic.empty() )
+            {
+                GenerateParticleIS( requestTimeStep, *m_particle_property, *m_multi_volume_property_list, pointObject );
+            }
+            else
+            {
+                GenerateStatisticParticleIS( requestTimeStep, m_statistic, pointObject );
+            }
             pointObject->setMinMaxObjectCoords( m_result_min_object_coords, m_result_max_object_coords );
             pointObject->setMinMaxExternalCoords( m_result_min_object_coords, m_result_max_object_coords );
             info.object = pointObject.release();
@@ -256,6 +269,79 @@ private:
             << info.extension;
 
         return fullPath.str();
+    }
+
+    static std::string statisticPrefix( const std::string& statistic )
+    {
+        if ( statistic == "mean" ) return "ave";
+        if ( statistic == "variance" ) return "var";
+        if ( statistic == "cv" ) return "cov";
+        return "";
+    }
+
+    static std::string particleDirectoryPrefix( const std::string& prefix )
+    {
+        const char* envBuf = std::getenv( "PARTICLE_DIR" );
+        std::string particlePath;
+        if ( envBuf == nullptr )
+        {
+            particlePath = "./" + prefix;
+        }
+        else
+        {
+            particlePath = envBuf;
+#ifdef _WIN32
+            const char path_sep = '\\';
+#else
+            const char path_sep = '/';
+#endif
+            if ( particlePath[particlePath.size() - 1] != path_sep ) particlePath += path_sep;
+            particlePath += prefix;
+        }
+        return particlePath;
+    }
+
+    static void GenerateStatisticParticleIS(
+        const int timeStep,
+        const std::string& statistic,
+        std::unique_ptr<kvs::PointObject>& pointObject )
+    {
+        const std::string prefix = statisticPrefix( statistic );
+        if ( prefix.empty() )
+        {
+            return;
+        }
+
+        ParticleMonitor pm;
+        pm.setParticleFilePrefix( particleDirectoryPrefix( prefix ) );
+        pm.check();
+        pm.setTimeStep_particle( pm.stepExisted() ? timeStep : 0 );
+        pm.readParticleFile();
+
+        vismodule::PointObject* vismodulePointObject = new vismodule::PointObject;
+        pm.getParticle( vismodulePointObject );
+
+        kvs::ValueArray<kvs::Real32> kvsCoords;
+        kvs::ValueArray<kvs::UInt8> kvsColors;
+        kvs::ValueArray<kvs::Real32> kvsNormals;
+
+        const size_t ncoords = vismodulePointObject->coords().size();
+        const size_t ncolors = vismodulePointObject->colors().size();
+        const size_t nnormals = vismodulePointObject->normals().size();
+
+        kvsCoords.allocate( ncoords );
+        kvsColors.allocate( ncolors );
+        kvsNormals.allocate( nnormals );
+
+        std::memcpy( kvsCoords.data(), vismodulePointObject->coords().pointer(), vismodulePointObject->coords().byteSize() );
+        std::memcpy( kvsColors.data(), vismodulePointObject->colors().pointer(), vismodulePointObject->colors().byteSize() );
+        std::memcpy( kvsNormals.data(), vismodulePointObject->normals().pointer(), vismodulePointObject->normals().byteSize() );
+
+        pointObject->setCoords( kvsCoords );
+        pointObject->setColors( kvsColors );
+        pointObject->setNormals( kvsNormals );
+
+        delete vismodulePointObject;
     }
 
 public:

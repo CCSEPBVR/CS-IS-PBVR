@@ -23,6 +23,7 @@ public:
 
 signals:
     void shading( kvs::RendererBase* rendererBase );
+    void repetitionLevelApplied( size_t repetitionLevel );
 
 public slots:
     void onUpdateCurrentRepetitionLevel();

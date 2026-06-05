@@ -82,6 +82,7 @@ void RepetitionLevelControl::onApply()
 
     m_compositor->setRepetitionLevel( repetitionLevel );
     m_compositor->screen()->redraw();
+    emit repetitionLevelApplied( repetitionLevel );
 
     onUpdateCurrentRepetitionLevel();
 }

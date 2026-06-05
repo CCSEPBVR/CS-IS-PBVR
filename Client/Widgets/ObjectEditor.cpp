@@ -1033,6 +1033,11 @@ void ObjectEditor::onRequestDataAt( int requestTimeStep )
     }
 }
 
+void ObjectEditor::setRequestedStatistic( const QString& statistic )
+{
+    m_requested_statistic = statistic;
+}
+
 void ObjectEditor::onLoadParameter( const QString& filePath )
 {
     qDebug() << __FILE__ << ":" << __func__ << ":" << filePath;
@@ -1539,12 +1544,17 @@ void ObjectEditor::requestServerDataAt( const int requestTimeStep )
     resultMaxObjectCoords.append( m_result_max_object_coords.y() );
     resultMaxObjectCoords.append( m_result_max_object_coords.z() );
 
-    m_web_sockets->text()->sendTextMessage( QJsonDocument( {
-                                                          { QString::fromUtf8( Protocol::Key::Event )                , QString::fromUtf8( Protocol::Events::RequestDataAt ) },
-                                                          { QString::fromUtf8( Protocol::Key::TimeStep )             , requestTimeStep },
-                                                          { QString::fromUtf8( Protocol::Key::ResultMinObjectCoords ), resultMinObjectCoords },
-                                                          { QString::fromUtf8( Protocol::Key::ResultMaxObjectCoords ), resultMaxObjectCoords },
-                                                          } ).toJson( QJsonDocument::Compact ) );
+    QJsonObject request;
+    request[QString::fromUtf8( Protocol::Key::Event )] = QString::fromUtf8( Protocol::Events::RequestDataAt );
+    request[QString::fromUtf8( Protocol::Key::TimeStep )] = requestTimeStep;
+    request[QString::fromUtf8( Protocol::Key::ResultMinObjectCoords )] = resultMinObjectCoords;
+    request[QString::fromUtf8( Protocol::Key::ResultMaxObjectCoords )] = resultMaxObjectCoords;
+    if ( !m_requested_statistic.isEmpty() )
+    {
+        request[QString::fromUtf8( Protocol::Key::Statistics )] = m_requested_statistic;
+    }
+
+    m_web_sockets->text()->sendTextMessage( QJsonDocument( request ).toJson( QJsonDocument::Compact ) );
 }
 
 void ObjectEditor::beginHybridDataRequest( const int requestTimeStep )

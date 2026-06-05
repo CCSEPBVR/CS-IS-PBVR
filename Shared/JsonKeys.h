@@ -105,6 +105,9 @@ inline constexpr std::string_view OpacityServerRangeMin     = "OpacityServerRang
 inline constexpr std::string_view OpacityServerRangeMax     = "OpacityServerRangeMax";
 inline constexpr std::string_view OpacityMap                = "OpacityMap";
 inline constexpr std::string_view OpacityHistogram          = "OpacityHistogram";
+inline constexpr std::string_view Statistic                 = "Statistic";
+inline constexpr std::string_view Statistics                = "Statistics";
+inline constexpr std::string_view RepeatLevel               = "RepeatLevel";
 
 // GlyphEditor
 inline constexpr std::string_view Type                      = "Type"; // FIXME:リモートファイルダイアログと重複している。
@@ -187,6 +190,7 @@ inline constexpr std::string_view ObjectDelete                  = "ObjectDelete"
 inline constexpr std::string_view ObjectInfoParameter           = "ObjectInfoParameter";
 inline constexpr std::string_view ServerSideSameTimeStepReplace = "ServerSideSameTimeStepReplace";
 inline constexpr std::string_view TransferFunctionParameter     = "TransferFunctionParameter";
+inline constexpr std::string_view EnsembleStatisticsParameter   = "EnsembleStatisticsParameter";
 inline constexpr std::string_view GlyphParameter                = "GlyphParameter";
 inline constexpr std::string_view PlotOverLineParameter         = "PlotOverLineParameter";
 inline constexpr std::string_view PlotOverTimeParameter         = "PlotOverTimeParameter";

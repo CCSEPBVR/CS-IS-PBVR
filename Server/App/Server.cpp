@@ -5,6 +5,8 @@
 #include <chrono>
 #include <cstdlib>
 #include <fstream>
+#include <algorithm>
+#include <cctype>
 
 #include <vismodule/KVSMLObjectPlotOverLine>
 #include <vismodule/InitialStep>
@@ -20,6 +22,187 @@ std::string EnvValueOrUnset( const char* name )
 {
     const char* value = std::getenv( name );
     return value ? std::string( value ) : std::string( "(unset)" );
+}
+
+std::string NormalizeStatisticName( std::string statistic )
+{
+    std::transform( statistic.begin(), statistic.end(), statistic.begin(),
+        []( unsigned char c ) { return static_cast<char>( std::tolower( c ) ); } );
+    if ( statistic == "average" || statistic == "avg" ) return "mean";
+    if ( statistic == "cov" || statistic == "coefficient_variation" ||
+         statistic == "coefficient_of_variation" || statistic == "coefficient-of-variation" )
+    {
+        return "cv";
+    }
+    return statistic;
+}
+
+std::string StatisticFromRequest( const nlohmann::json& received )
+{
+    if ( received.contains( Protocol::Key::Statistics ) )
+    {
+        const auto& statistics = received.at( Protocol::Key::Statistics );
+        if ( statistics.is_string() ) return NormalizeStatisticName( statistics.get<std::string>() );
+        if ( statistics.is_array() && !statistics.empty() && statistics.at( 0 ).is_string() )
+        {
+            return NormalizeStatisticName( statistics.at( 0 ).get<std::string>() );
+        }
+    }
+    if ( received.contains( Protocol::Key::Statistic ) && received.at( Protocol::Key::Statistic ).is_string() )
+    {
+        return NormalizeStatisticName( received.at( Protocol::Key::Statistic ).get<std::string>() );
+    }
+    return "";
+}
+
+std::vector<NamedTransferFunction>* StatisticTransferFunctionArray(
+    ParticleProperty& particle_property,
+    const std::string& statistic )
+{
+    const std::string normalized = NormalizeStatisticName( statistic );
+    if ( normalized == "mean" ) return &particle_property.m_mean_transfer_function_array;
+    if ( normalized == "variance" ) return &particle_property.m_variance_transfer_function_array;
+    if ( normalized == "cv" ) return &particle_property.m_coefficient_of_variation_transfer_function_array;
+    return nullptr;
+}
+
+void ApplyTransferFunctionPatch( NamedTransferFunction& tf, const nlohmann::json& patch )
+{
+    bool color_range_changed = false;
+    bool opacity_range_changed = false;
+    bool color_map_changed = false;
+    bool opacity_map_changed = false;
+
+    if ( patch.contains( Protocol::Key::ColorVariable ) )
+    {
+        tf.m_color_variable = patch[Protocol::Key::ColorVariable].get<std::string>();
+    }
+    if ( patch.contains( Protocol::Key::ColorRangeMode ) )
+    {
+        tf.m_server_color_range_mode =
+            static_cast<NamedTransferFunction::ServerRangeMode>( patch[Protocol::Key::ColorRangeMode].get<int>() );
+        color_range_changed = true;
+    }
+    if ( patch.contains( Protocol::Key::ColorUserRangeMin ) )
+    {
+        tf.m_user_color_variable_min = patch[Protocol::Key::ColorUserRangeMin].get<double>();
+        color_range_changed = true;
+    }
+    if ( patch.contains( Protocol::Key::ColorUserRangeMax ) )
+    {
+        tf.m_user_color_variable_max = patch[Protocol::Key::ColorUserRangeMax].get<double>();
+        color_range_changed = true;
+    }
+    if ( patch.contains( Protocol::Key::ColorServerRangeMin ) )
+    {
+        tf.m_server_color_variable_min = patch[Protocol::Key::ColorServerRangeMin].get<double>();
+        color_range_changed = true;
+    }
+    if ( patch.contains( Protocol::Key::ColorServerRangeMax ) )
+    {
+        tf.m_server_color_variable_max = patch[Protocol::Key::ColorServerRangeMax].get<double>();
+        color_range_changed = true;
+    }
+    if ( patch.contains( Protocol::Key::ColorMap ) && patch[Protocol::Key::ColorMap].is_array() )
+    {
+        std::vector<vismodule::UInt8> c_table;
+        c_table.reserve( 256 * 3 );
+        for ( const auto& rgbArr : patch[Protocol::Key::ColorMap] )
+        {
+            if ( rgbArr.is_array() && rgbArr.size() == 3 )
+            {
+                c_table.push_back( static_cast<vismodule::UInt8>( rgbArr[0].get<int>() ) );
+                c_table.push_back( static_cast<vismodule::UInt8>( rgbArr[1].get<int>() ) );
+                c_table.push_back( static_cast<vismodule::UInt8>( rgbArr[2].get<int>() ) );
+            }
+        }
+        vismodule::ValueArray<vismodule::UInt8> cc_table( c_table );
+        vismodule::ColorMap color_map( cc_table );
+        if ( tf.m_server_color_range_mode == NamedTransferFunction::ServerRangeMode::UserRange )
+        {
+            color_map.setRange( tf.m_user_color_variable_min, tf.m_user_color_variable_max );
+        }
+        else if ( tf.m_server_color_range_mode == NamedTransferFunction::ServerRangeMode::ServerSide )
+        {
+            color_map.setRange( tf.m_server_color_variable_min, tf.m_server_color_variable_max );
+        }
+        tf.setColorMap( color_map );
+        color_map_changed = true;
+    }
+    if ( color_range_changed && !color_map_changed )
+    {
+        auto color_map = tf.colorMap();
+        if ( tf.m_server_color_range_mode == NamedTransferFunction::ServerRangeMode::UserRange )
+        {
+            color_map.setRange( tf.m_user_color_variable_min, tf.m_user_color_variable_max );
+        }
+        else if ( tf.m_server_color_range_mode == NamedTransferFunction::ServerRangeMode::ServerSide )
+        {
+            color_map.setRange( tf.m_server_color_variable_min, tf.m_server_color_variable_max );
+        }
+        tf.setColorMap( color_map );
+    }
+
+    if ( patch.contains( Protocol::Key::OpacityVariable ) )
+    {
+        tf.m_opacity_variable = patch[Protocol::Key::OpacityVariable].get<std::string>();
+    }
+    if ( patch.contains( Protocol::Key::OpacityRangeMode ) )
+    {
+        tf.m_server_opacity_range_mode =
+            static_cast<NamedTransferFunction::ServerRangeMode>( patch[Protocol::Key::OpacityRangeMode].get<int>() );
+        opacity_range_changed = true;
+    }
+    if ( patch.contains( Protocol::Key::OpacityUserRangeMin ) )
+    {
+        tf.m_user_opacity_variable_min = patch[Protocol::Key::OpacityUserRangeMin].get<double>();
+        opacity_range_changed = true;
+    }
+    if ( patch.contains( Protocol::Key::OpacityUserRangeMax ) )
+    {
+        tf.m_user_opacity_variable_max = patch[Protocol::Key::OpacityUserRangeMax].get<double>();
+        opacity_range_changed = true;
+    }
+    if ( patch.contains( Protocol::Key::OpacityServerRangeMin ) )
+    {
+        tf.m_server_opacity_variable_min = patch[Protocol::Key::OpacityServerRangeMin].get<double>();
+        opacity_range_changed = true;
+    }
+    if ( patch.contains( Protocol::Key::OpacityServerRangeMax ) )
+    {
+        tf.m_server_opacity_variable_max = patch[Protocol::Key::OpacityServerRangeMax].get<double>();
+        opacity_range_changed = true;
+    }
+    if ( patch.contains( Protocol::Key::OpacityMap ) && patch[Protocol::Key::OpacityMap].is_array() )
+    {
+        std::vector<float> o_table;
+        o_table.reserve( 256 );
+        for ( const auto& v : patch[Protocol::Key::OpacityMap] ) o_table.push_back( v.get<float>() );
+        vismodule::ValueArray<float> oo_table( o_table );
+        vismodule::OpacityMap opacity_map( oo_table );
+        if ( tf.m_server_opacity_range_mode == NamedTransferFunction::ServerRangeMode::UserRange )
+        {
+            opacity_map.setRange( tf.m_user_opacity_variable_min, tf.m_user_opacity_variable_max );
+        }
+        else if ( tf.m_server_opacity_range_mode == NamedTransferFunction::ServerRangeMode::ServerSide )
+        {
+            opacity_map.setRange( tf.m_server_opacity_variable_min, tf.m_server_opacity_variable_max );
+        }
+        tf.setOpacityMap( opacity_map );
+        opacity_map_changed = true;
+    }
+    if ( opacity_range_changed && !opacity_map_changed )
+    {
+        auto opacity_map = tf.opacityMap();
+        if ( tf.m_server_opacity_range_mode == NamedTransferFunction::ServerRangeMode::UserRange )
+        {
+            opacity_map.setRange( tf.m_user_opacity_variable_min, tf.m_user_opacity_variable_max );
+        }
+        else if ( tf.m_server_opacity_range_mode == NamedTransferFunction::ServerRangeMode::ServerSide )
+        {
+            opacity_map.setRange( tf.m_server_opacity_variable_min, tf.m_server_opacity_variable_max );
+        }
+        tf.setOpacityMap( opacity_map );
 }
 }
 
@@ -244,6 +427,7 @@ void Server::onMessage(uWS::WebSocket<false, true, PerSocket>* ws, std::string_v
         else if (event == Protocol::Events::PlotOverLineParameter)         receivePlotOverLineParameter(ws, received);
         else if (event == Protocol::Events::PlotOverTimeParameter)         receivePlotOverTimeParameter(ws, received);
         else if (event == Protocol::Events::TransferFunctionParameter)     receiveTransferFunctionParameter(ws, received);
+        else if (event == Protocol::Events::EnsembleStatisticsParameter)   receiveEnsembleStatisticsParameter(ws, received);
         else if (event == "fileList")                                      fileList(ws, received);
         else if (event == Protocol::Events::SelectedFile)                  selectedFile(ws, received);
         else if (event == Protocol::Events::ObjectDelete)                  receiveObjectDelete(ws, received);        
@@ -1045,8 +1229,9 @@ void Server::requestDataAt(uWS::WebSocket<false, true, PerSocket>* ws, const nlo
     const auto& maxJson = received.at(Protocol::Key::ResultMaxObjectCoords);
     kvs::Vec3 minObjectCoords(minJson[0].get<float>(), minJson[1].get<float>(), minJson[2].get<float>());
     kvs::Vec3 maxObjectCoords(maxJson[0].get<float>(), maxJson[1].get<float>(), maxJson[2].get<float>());
+    const std::string statistic = StatisticFromRequest( received );
 
-    Worker worker(timeStep, m_objects, minObjectCoords, maxObjectCoords, m_server_mode, m_particle_property, m_glyph_property, m_pol_property, m_multi_volume_property_list);
+    Worker worker(timeStep, m_objects, minObjectCoords, maxObjectCoords, m_server_mode, m_particle_property, m_glyph_property, m_pol_property, m_multi_volume_property_list, statistic);
     worker.setDoneCallBack([this, ws, timeStep]() {
         std::vector<char> buffer = pack(timeStep);
 
@@ -1939,6 +2124,76 @@ void Server::receiveTransferFunctionParameter(uWS::WebSocket<false, true, PerSoc
         ParameterFileWriter ppw;
         ppw.writeTF2Json(*m_particle_property);
     }
+
+    ws->publish( k_text_topic, received.dump(), uWS::OpCode::TEXT );
+}
+
+void Server::receiveEnsembleStatisticsParameter(uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received)
+{
+    if ( m_server_mode != ServerMode::IS )
+    {
+        std::cout << "[Server] EnsembleStatisticsParameter is ignored because server mode is not IS." << std::endl;
+        ws->publish( k_text_topic, received.dump(), uWS::OpCode::TEXT );
+        return;
+    }
+
+    if ( received.contains( Protocol::Key::RepeatLevel ) )
+    {
+        m_particle_property->m_repeat_level = received.at( Protocol::Key::RepeatLevel ).get<size_t>();
+    }
+
+    if ( received.contains( "TFNumber" ) )
+    {
+        const int n = received.at( "TFNumber" ).get<int>();
+        if ( n >= 0 )
+        {
+            if ( m_particle_property->m_transfunc_array.size() < static_cast<size_t>( n ) )
+            {
+                m_particle_property->m_transfunc_array.resize( n );
+            }
+            m_particle_property->m_mean_transfer_function_array.resize( n );
+            m_particle_property->m_variance_transfer_function_array.resize( n );
+            m_particle_property->m_coefficient_of_variation_transfer_function_array.resize( n );
+        }
+    }
+
+    if ( received.contains( Protocol::Key::ColorSynthesizer ) )
+    {
+        m_particle_property->m_color_transfer_function_synthesis =
+            received.value( Protocol::Key::ColorSynthesizer, "C1" );
+    }
+    if ( received.contains( Protocol::Key::OpacitySynthesizer ) )
+    {
+        m_particle_property->m_opacity_transfer_function_synthesis =
+            received.value( Protocol::Key::OpacitySynthesizer, "O1" );
+    }
+
+    if ( received.contains( Protocol::Key::Data ) && received.at( Protocol::Key::Data ).is_array() )
+    {
+        for ( const auto& patch : received.at( Protocol::Key::Data ) )
+        {
+            if ( !patch.is_object() ) continue;
+            if ( !patch.contains( Protocol::Key::Statistic ) || !patch.at( Protocol::Key::Statistic ).is_string() ) continue;
+            if ( !patch.contains( Protocol::Key::Index ) ) continue;
+
+            auto* transfer_functions = StatisticTransferFunctionArray(
+                *m_particle_property,
+                patch.at( Protocol::Key::Statistic ).get<std::string>() );
+            if ( transfer_functions == nullptr ) continue;
+
+            const int idx = patch.at( Protocol::Key::Index ).get<int>();
+            if ( idx < 0 ) continue;
+            if ( idx >= static_cast<int>( transfer_functions->size() ) )
+            {
+                transfer_functions->resize( idx + 1 );
+            }
+
+            ApplyTransferFunctionPatch( transfer_functions->at( idx ), patch );
+        }
+    }
+
+    ParameterFileWriter ppw;
+    ppw.writeTF2Json( *m_particle_property );
 
     ws->publish( k_text_topic, received.dump(), uWS::OpCode::TEXT );
 }

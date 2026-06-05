@@ -33,7 +33,7 @@ MainWindow::MainWindow( kvs::qt::Application& app, QWidget *parent )
     , m_preference                     ( new Preference( this ) )
     , m_repetition_level_control       ( new RepetitionLevelControl( m_screen, m_compositor, this ) )
     , m_shading_control                ( new ShadingControl( m_screen, this ) )
-    , m_ensemble_transfer_function_editor( new EnsembleTransferFunctionEditor( this ) )
+    , m_ensemble_transfer_function_editor( new EnsembleTransferFunctionEditor( m_web_sockets, this ) )
     , m_transfer_function_editor       ( new TransferFunctionEditor( m_web_sockets, this ) )
     , m_volume_transform               ( new VolumeTransform( m_screen, this ) )
 {
@@ -590,6 +590,7 @@ void MainWindow::initializeRepetitionLevelControl()
         addDockWidget( Qt::LeftDockWidgetArea, m_repetition_level_control );
 
         connect( m_repetition_level_control, &RepetitionLevelControl::shading, m_shading_control, &ShadingControl::onShading );
+        connect( m_repetition_level_control, &RepetitionLevelControl::repetitionLevelApplied, m_ensemble_transfer_function_editor, &EnsembleTransferFunctionEditor::setRepeatLevel );
 
         emit updateInitialRepetitionLevel();
     }
@@ -611,6 +612,7 @@ void MainWindow::initializeEnsembleTransferFunctionEditor()
     {
         m_ensemble_transfer_function_editor->adjustSize();
         m_ensemble_transfer_function_editor->close();
+        connect( m_ensemble_transfer_function_editor, &EnsembleTransferFunctionEditor::statisticChanged, m_object_editor, &ObjectEditor::setRequestedStatistic );
     }
 }
 
