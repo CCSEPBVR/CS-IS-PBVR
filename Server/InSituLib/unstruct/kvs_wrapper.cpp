@@ -1939,7 +1939,9 @@ bool ensemble_generate_particles(
         std::ofstream dst( tfJsonPath_step.c_str(), std::ios::binary );
         dst << src.rdbuf();
     }
+#endif
     } // end initial flag
+#ifndef CPU_VER
     if ( async_io_enabled )
     {
         std::cout << "Particle write thread is active." << std::endl;
@@ -1968,11 +1970,11 @@ bool ensemble_generate_particles(
         ofs << "LATEST_STEP = " << time_step << std::endl;
         ofs.close();
     }
+#endif
 
         delete particle_property.m_transfunc_synthesizer;
         delete particle_property.m_camera;
     return true;
-#endif
 }
 
 bool SetParticleParameter( 

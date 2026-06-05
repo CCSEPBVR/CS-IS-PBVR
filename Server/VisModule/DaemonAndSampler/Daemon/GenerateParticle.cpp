@@ -537,18 +537,27 @@ void GenerateParticleIS(
 
     pm.check();
 
+    if( !pm.stepExisted() )
+    {
+        std::cout << "[GenerateParticleIS] particle step does not exist. Send empty point object." << std::endl;
+        point_object->setCoords( kvs::ValueArray<kvs::Real32>() );
+        point_object->setColors( kvs::ValueArray<kvs::UInt8>() );
+        point_object->setNormals( kvs::ValueArray<kvs::Real32>() );
+        return;
+    }
+
     if( pm.stepExisted() )
     {
         // pm.setTimeStep_particle( pm.particleStatusFile().getLatestTimeStep() );
         pm.setTimeStep_particle( time_step );
     }
-    else
-    {
-        pm.setTimeStep_particle(0);
-    }
     pm.readParticleHistoryFile();
 
     tf_number = pm.particleHistoryFile().colorHistogramArray().size();
+    if( particle_property.m_transfunc_array.size() < static_cast<size_t>( tf_number ) )
+    {
+        particle_property.m_transfunc_array.resize( tf_number );
+    }
 
     vismodule::UInt64* tmp_c_bins;
     vismodule::UInt64* tmp_o_bins;

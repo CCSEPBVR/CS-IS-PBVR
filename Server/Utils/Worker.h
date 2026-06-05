@@ -4,6 +4,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <functional>
+#include <iostream>
 
 #include "../../Shared/ObjectInfoExtractor.h"
 
@@ -190,7 +191,10 @@ private:
             }
             else
             {
-                GenerateStatisticParticleIS( requestTimeStep, m_statistic, pointObject );
+                if ( !GenerateStatisticParticleIS( requestTimeStep, m_statistic, pointObject ) )
+                {
+                    std::cout << "[Worker] statistic particle is not available: " << m_statistic << std::endl;
+                }
             }
             pointObject->setMinMaxObjectCoords( m_result_min_object_coords, m_result_max_object_coords );
             pointObject->setMinMaxExternalCoords( m_result_min_object_coords, m_result_max_object_coords );
@@ -295,13 +299,13 @@ private:
 #else
             const char path_sep = '/';
 #endif
-            if ( particlePath[particlePath.size() - 1] != path_sep ) particlePath += path_sep;
+            if ( particlePath.empty() || particlePath[particlePath.size() - 1] != path_sep ) particlePath += path_sep;
             particlePath += prefix;
         }
         return particlePath;
     }
 
-    static void GenerateStatisticParticleIS(
+    static bool GenerateStatisticParticleIS(
         const int timeStep,
         const std::string& statistic,
         std::unique_ptr<kvs::PointObject>& pointObject )
@@ -309,13 +313,24 @@ private:
         const std::string prefix = statisticPrefix( statistic );
         if ( prefix.empty() )
         {
-            return;
+            pointObject->setCoords( kvs::ValueArray<kvs::Real32>() );
+            pointObject->setColors( kvs::ValueArray<kvs::UInt8>() );
+            pointObject->setNormals( kvs::ValueArray<kvs::Real32>() );
+            return false;
         }
 
         ParticleMonitor pm;
         pm.setParticleFilePrefix( particleDirectoryPrefix( prefix ) );
         pm.check();
-        pm.setTimeStep_particle( pm.stepExisted() ? timeStep : 0 );
+        if ( !pm.stepExisted() )
+        {
+            pointObject->setCoords( kvs::ValueArray<kvs::Real32>() );
+            pointObject->setColors( kvs::ValueArray<kvs::UInt8>() );
+            pointObject->setNormals( kvs::ValueArray<kvs::Real32>() );
+            return false;
+        }
+
+        pm.setTimeStep_particle( timeStep );
         pm.readParticleFile();
 
         vismodule::PointObject* vismodulePointObject = new vismodule::PointObject;
@@ -342,6 +357,7 @@ private:
         pointObject->setNormals( kvsNormals );
 
         delete vismodulePointObject;
+        return true;
     }
 
 public:

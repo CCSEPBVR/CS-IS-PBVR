@@ -1229,7 +1229,7 @@ void Server::requestDataAt(uWS::WebSocket<false, true, PerSocket>* ws, const nlo
     const auto& maxJson = received.at(Protocol::Key::ResultMaxObjectCoords);
     kvs::Vec3 minObjectCoords(minJson[0].get<float>(), minJson[1].get<float>(), minJson[2].get<float>());
     kvs::Vec3 maxObjectCoords(maxJson[0].get<float>(), maxJson[1].get<float>(), maxJson[2].get<float>());
-    const std::string statistic = StatisticFromRequest( received );
+    const std::string statistic = ( m_server_mode == ServerMode::IS ) ? StatisticFromRequest( received ) : "";
 
     Worker worker(timeStep, m_objects, minObjectCoords, maxObjectCoords, m_server_mode, m_particle_property, m_glyph_property, m_pol_property, m_multi_volume_property_list, statistic);
     worker.setDoneCallBack([this, ws, timeStep]() {
