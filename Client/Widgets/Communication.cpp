@@ -5,6 +5,7 @@
 #include <QColor>
 #include <QPalette>
 #endif
+#include <QDebug>
 
 Communication::Communication( kvs::qt::jaea::Screen* screen, WebSocketPair* webSockets, Viz::Mode* vizMode, QWidget* parent )
     : QDockWidget( parent )
@@ -699,6 +700,7 @@ void Communication::onBinaryWebSocketDisconnected()
 
 void Communication::onBinaryWebSocketMessageReceived( const QByteArray& binary )
 {
+    qDebug() << "[Client][Binary] received bytes =" << binary.size();
     emit unpack( binary );
 }
 

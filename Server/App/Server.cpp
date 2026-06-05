@@ -1230,15 +1230,24 @@ void Server::requestDataAt(uWS::WebSocket<false, true, PerSocket>* ws, const nlo
     kvs::Vec3 minObjectCoords(minJson[0].get<float>(), minJson[1].get<float>(), minJson[2].get<float>());
     kvs::Vec3 maxObjectCoords(maxJson[0].get<float>(), maxJson[1].get<float>(), maxJson[2].get<float>());
     const std::string statistic = ( m_server_mode == ServerMode::IS ) ? StatisticFromRequest( received ) : "";
+    std::cout << "[Server][RequestDataAt] received timestep=" << timeStep
+              << ", statistic=" << ( statistic.empty() ? "<none>" : statistic )
+              << ", mode=" << ( m_server_mode == ServerMode::IS ? "IS" : "CS" )
+              << ", objects=" << ( m_objects ? m_objects->size() : 0 )
+              << std::endl;
 
     Worker worker(timeStep, m_objects, minObjectCoords, maxObjectCoords, m_server_mode, m_particle_property, m_glyph_property, m_pol_property, m_multi_volume_property_list, statistic);
     worker.setDoneCallBack([this, ws, timeStep]() {
         std::vector<char> buffer = pack(timeStep);
+        std::cout << "[Server][RequestDataAt] packed bytes=" << buffer.size()
+                  << ", timestep=" << timeStep << std::endl;
 
         // バイナリ送信
         m_u_web_sockets.getLoop()->defer([buffer, this]() {
-            std::cout << "[Server] publish UUID + PointObjects..." << std::endl;
-            m_u_web_sockets.publish(k_binary_topic, std::string_view(buffer.data(), buffer.size()), uWS::OpCode::BINARY);
+            std::cout << "[Server][Binary] publish UUID + PointObjects bytes=" << buffer.size() << std::endl;
+            const bool published =
+                m_u_web_sockets.publish(k_binary_topic, std::string_view(buffer.data(), buffer.size()), uWS::OpCode::BINARY);
+            std::cout << "[Server][Binary] publish result=" << published << std::endl;
         });
 
         nlohmann::json msg;
@@ -1497,6 +1506,7 @@ void Server::requestDataAt(uWS::WebSocket<false, true, PerSocket>* ws, const nlo
         m_u_web_sockets.publish(k_text_topic, msg.dump(), uWS::OpCode::TEXT);
     });
     worker.process();
+    std::cout << "[Server][RequestDataAt] worker.process finished timestep=" << timeStep << std::endl;
 }
 
 void Server::receiveTimeStepControlParameter(uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received)
@@ -2386,6 +2396,8 @@ std::vector<char> Server::pack(const int timeStep)
     std::size_t totalSize = calculateTotalSize();
     std::vector<char> buffer(totalSize);
     std::size_t offset = 0;
+    std::cout << "[Server][pack] begin timestep=" << timeStep
+              << ", totalSize=" << totalSize << std::endl;
 
     // Time Step
     std::memcpy(buffer.data() + offset, &timeStep, sizeof(int));
@@ -2393,10 +2405,19 @@ std::vector<char> Server::pack(const int timeStep)
 
     for (const auto& info : *m_objects)
     {
-        if (info.object == nullptr) continue; // nullptrである場合は送信しない
+        if (info.object == nullptr)
+        {
+            std::cout << "[Server][pack] skip null object uuid=" << info.uuid
+                      << ", format=" << static_cast<int>( info.format ) << std::endl;
+            continue;
+        }
 
         // UUID
         uint32_t uuidLen = static_cast<uint32_t>(info.uuid.size());
+        std::cout << "[Server][pack] object uuid=" << info.uuid
+                  << ", format=" << static_cast<int>( info.format )
+                  << ", currentImportedTimeStep=" << info.currentImportedTimeStep
+                  << std::endl;
 
         std::memcpy(buffer.data() + offset, &uuidLen, sizeof(uint32_t));
         offset += sizeof(uint32_t);
@@ -2419,6 +2440,11 @@ std::vector<char> Server::pack(const int timeStep)
             auto* pointObject = static_cast<kvs::PointObject*>(info.object);
 
             const std::size_t numberOfVertices = pointObject->numberOfVertices();                                  // numberOfVertices
+            std::cout << "[Server][pack] point vertices=" << numberOfVertices
+                      << ", coords=" << pointObject->coords().size()
+                      << ", colors=" << pointObject->colors().size()
+                      << ", normals=" << pointObject->normals().size()
+                      << std::endl;
             std::memcpy(buffer.data() + offset, &numberOfVertices, sizeof(size_t));
             offset += sizeof(size_t);
 

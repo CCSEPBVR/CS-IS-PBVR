@@ -595,6 +595,11 @@ void GenerateParticleIS(
     point_object->setCoords( kvs_coords );
     point_object->setColors( kvs_colors );
     point_object->setNormals( kvs_normals );
+    std::cout << "[GenerateParticleIS] loaded vertices=" << point_object->numberOfVertices()
+              << ", coords=" << point_object->coords().size()
+              << ", colors=" << point_object->colors().size()
+              << ", normals=" << point_object->normals().size()
+              << std::endl;
 
     // get histgram start
     int c_count = 0;

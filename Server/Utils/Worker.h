@@ -313,6 +313,7 @@ private:
         const std::string prefix = statisticPrefix( statistic );
         if ( prefix.empty() )
         {
+            std::cout << "[Worker][StatisticParticle] unknown statistic=" << statistic << std::endl;
             pointObject->setCoords( kvs::ValueArray<kvs::Real32>() );
             pointObject->setColors( kvs::ValueArray<kvs::UInt8>() );
             pointObject->setNormals( kvs::ValueArray<kvs::Real32>() );
@@ -320,10 +321,16 @@ private:
         }
 
         ParticleMonitor pm;
-        pm.setParticleFilePrefix( particleDirectoryPrefix( prefix ) );
+        const std::string particlePrefix = particleDirectoryPrefix( prefix );
+        std::cout << "[Worker][StatisticParticle] read statistic=" << statistic
+                  << ", prefix=" << particlePrefix
+                  << ", timestep=" << timeStep << std::endl;
+        pm.setParticleFilePrefix( particlePrefix );
         pm.check();
         if ( !pm.stepExisted() )
         {
+            std::cout << "[Worker][StatisticParticle] step does not exist for prefix="
+                      << particlePrefix << std::endl;
             pointObject->setCoords( kvs::ValueArray<kvs::Real32>() );
             pointObject->setColors( kvs::ValueArray<kvs::UInt8>() );
             pointObject->setNormals( kvs::ValueArray<kvs::Real32>() );
@@ -355,6 +362,12 @@ private:
         pointObject->setCoords( kvsCoords );
         pointObject->setColors( kvsColors );
         pointObject->setNormals( kvsNormals );
+        std::cout << "[Worker][StatisticParticle] loaded vertices="
+                  << pointObject->numberOfVertices()
+                  << ", coords=" << pointObject->coords().size()
+                  << ", colors=" << pointObject->colors().size()
+                  << ", normals=" << pointObject->normals().size()
+                  << std::endl;
 
         delete vismodulePointObject;
         return true;

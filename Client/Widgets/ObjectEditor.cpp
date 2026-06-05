@@ -1,6 +1,8 @@
 #include "ObjectEditor.h"
 #include "ui_ObjectEditor.h"
 
+#include <QDebug>
+
 namespace
 {
 bool IsHybridServerManagedFormat( const ObjectInfoExtractor::Format format )
@@ -189,6 +191,13 @@ void ObjectEditor::onOperatorStateUpdate( const bool operatorState )
 
 void ObjectEditor::onUnpack( const QByteArray& binary )
 {
+    qDebug() << "[Client][ObjectEditor] onUnpack bytes =" << binary.size();
+    if( binary.size() < static_cast<int>( sizeof(int) ) )
+    {
+        qDebug() << "[Client][ObjectEditor] binary too small for timestep.";
+        return;
+    }
+
     const char* dataPtr = binary.constData();
     std::size_t offset = 0;
 
@@ -196,9 +205,13 @@ void ObjectEditor::onUnpack( const QByteArray& binary )
     int timeStep = 0;
     std::memcpy( &timeStep, dataPtr + offset, sizeof(int) );
     offset += sizeof(int);
+    qDebug() << "[Client][ObjectEditor] unpack timestep =" << timeStep
+             << "model rows =" << m_model->rowCount();
 
     // 送信されてきたUUIDを記録する
     std::unordered_set<std::string> receivedUUIDs;
+    int receivedObjects = 0;
+    int matchedObjects = 0;
 
     while( offset < static_cast<size_t>( binary.size() ) )
     {
@@ -213,6 +226,10 @@ void ObjectEditor::onUnpack( const QByteArray& binary )
         std::string uuid( uuidLen, '\0' );
         std::memcpy( uuid.data(), dataPtr + offset, uuidLen );
         offset += uuidLen;
+        ++receivedObjects;
+        qDebug() << "[Client][ObjectEditor] object payload uuid =" << QString::fromStdString( uuid )
+                 << "uuidLen =" << uuidLen
+                 << "offset =" << static_cast<qulonglong>( offset );
 
         receivedUUIDs.insert( uuid );
 
@@ -221,6 +238,7 @@ void ObjectEditor::onUnpack( const QByteArray& binary )
         offset += sizeof(int);
 
         // NOTE:モデル内のUUIDと一致する場合objectを更新する。
+        bool matched = false;
         for( int row = 0; row < m_model->rowCount(); ++row )
         {
             QStandardItem* nameItem = m_model->item( row, 0 );
@@ -230,6 +248,8 @@ void ObjectEditor::onUnpack( const QByteArray& binary )
             ObjectInfoExtractor::ObjectInfo info = var.value<ObjectInfoExtractor::ObjectInfo>();
 
             if( info.uuid != uuid ) continue;
+            matched = true;
+            ++matchedObjects;
 
             // NOTE:UUIDが一致したのでobjectを更新
 
@@ -244,6 +264,9 @@ void ObjectEditor::onUnpack( const QByteArray& binary )
                 std::size_t numberOfVertices = 0;
                 std::memcpy( &numberOfVertices, dataPtr + offset, sizeof(size_t) );
                 offset += sizeof(size_t);
+                qDebug() << "[Client][ObjectEditor] point object matched row =" << row
+                         << "vertices =" << static_cast<qulonglong>( numberOfVertices )
+                         << "currentImportedTimeStep =" << currentImportedTimeStep;
 
                 kvs::ValueArray<kvs::Real32> coords( numberOfVertices * 3 );
                 std::memcpy( coords.data(), dataPtr + offset, sizeof(kvs::Real32) * 3 * numberOfVertices );
@@ -281,6 +304,9 @@ void ObjectEditor::onUnpack( const QByteArray& binary )
                 std::size_t numberOfVertices = 0;
                 std::memcpy( &numberOfVertices, dataPtr + offset, sizeof(size_t) );
                 offset += sizeof(size_t);
+                qDebug() << "[Client][ObjectEditor] point object LAS/PTS matched row =" << row
+                         << "vertices =" << static_cast<qulonglong>( numberOfVertices )
+                         << "currentImportedTimeStep =" << currentImportedTimeStep;
 
                 kvs::ValueArray<kvs::Real32> coords( numberOfVertices * 3 );
                 std::memcpy( coords.data(), dataPtr + offset, sizeof(kvs::Real32) * 3 * numberOfVertices );
@@ -326,6 +352,9 @@ void ObjectEditor::onUnpack( const QByteArray& binary )
                 std::size_t nCoords;
                 std::memcpy( &nCoords, dataPtr + offset, sizeof(size_t) );
                 offset += sizeof(size_t);
+                qDebug() << "[Client][ObjectEditor] polygon/glyph matched row =" << row
+                         << "coords count =" << static_cast<qulonglong>( nCoords )
+                         << "currentImportedTimeStep =" << currentImportedTimeStep;
 
                 kvs::ValueArray<kvs::Real32> coords( nCoords );
                 std::memcpy( coords.data(), dataPtr + offset, sizeof(kvs::Real32) * nCoords );
@@ -628,7 +657,18 @@ void ObjectEditor::onUnpack( const QByteArray& binary )
             nameItem->setData( QVariant::fromValue( info ), Qt::UserRole );
             break;
         }
+        if( !matched )
+        {
+            qDebug() << "[Client][ObjectEditor] WARNING: received uuid is not in model. uuid ="
+                     << QString::fromStdString( uuid )
+                     << "offset =" << static_cast<qulonglong>( offset );
+        }
     }
+
+    qDebug() << "[Client][ObjectEditor] unpack loop done receivedObjects =" << receivedObjects
+             << "matchedObjects =" << matchedObjects
+             << "final offset =" << static_cast<qulonglong>( offset )
+             << "binary size =" << binary.size();
 
     // NOTE:受信していないUUIDのobjectをnullptrに更新する
     for( int row = 0; row < m_model->rowCount(); ++row )
@@ -1554,6 +1594,10 @@ void ObjectEditor::requestServerDataAt( const int requestTimeStep )
         request[QString::fromUtf8( Protocol::Key::Statistics )] = m_requested_statistic;
     }
 
+    qDebug() << "[Client][ObjectEditor] send RequestDataAt timestep =" << requestTimeStep
+             << "statistics =" << ( m_requested_statistic.isEmpty() ? QStringLiteral( "<none>" ) : m_requested_statistic )
+             << "text connected =" << m_web_sockets->text()->isValid()
+             << "binary connected =" << m_web_sockets->binary()->isValid();
     m_web_sockets->text()->sendTextMessage( QJsonDocument( request ).toJson( QJsonDocument::Compact ) );
 }
 
