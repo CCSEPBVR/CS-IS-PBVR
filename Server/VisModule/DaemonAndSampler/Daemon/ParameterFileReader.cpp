@@ -468,6 +468,7 @@ nlohmann::json BuildLegacyParametersFromReadableJson(
     if ( sampling.contains( "particle_limit" ) ) params["PARTICLE_LIMIT"] = sampling.at( "particle_limit" );
     if ( sampling.contains( "particle_data_size_limit" ) ) params["PARTICLE_DATA_SIZE_LIMIT"] = sampling.at( "particle_data_size_limit" );
     if ( sampling.contains( "particle_data_size_limit_unit" ) ) params["PARTICLE_DATA_SIZE_LIMIT_UNIT"] = sampling.at( "particle_data_size_limit_unit" );
+    if ( sampling.contains( "repeat_level" ) ) params["REPEAT_LEVEL"] = sampling.at( "repeat_level" );
     if ( image.contains( "width" ) ) params["RESOLUTION_WIDTH"] = image.at( "width" );
     if ( image.contains( "height" ) ) params["RESOLUTION_HEIGHT"] = image.at( "height" );
     if ( transfer_settings.contains( "resolution" ) ) params["TF_RESOLUTION"] = transfer_settings.at( "resolution" );
