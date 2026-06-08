@@ -28,8 +28,76 @@
 
 namespace Generator = vismodule::CellByCellParticleGenerator;
 
-static bool is_initial_step = false;
+static bool is_initial_step = true;
 static size_t start_time_step = 0;
+
+static void CollectParticleMinMax(
+    ParticleProperty& particle_property,
+    const domain_parameters_struct& dom,
+    Type** values,
+    const int nvariables,
+    const int tf_number,
+    float* tmp_max,
+    float* tmp_min
+)
+{
+    vismodule::PointObjectGenerator point_object_generator;
+    const char tmp_sampling_method = particle_property.m_sampling_method;
+    particle_property.m_sampling_method = 'x';
+
+    vismodule::PointObject* point_object = point_object_generator.GenerateParticleStruct(
+        particle_property, dom, values, nvariables, ServerMode::IS
+    );
+
+    MakeParticleMinMax( particle_property.m_transfunc_synthesizer, tf_number, tmp_max, tmp_min );
+
+    delete point_object;
+    particle_property.m_sampling_method = tmp_sampling_method;
+}
+
+static void CollectParticleHistogram(
+    ParticleProperty& particle_property,
+    const domain_parameters_struct& dom,
+    Type** values,
+    const int nvariables,
+    const int tf_number,
+    vismodule::UInt64* tmp_c_bins,
+    vismodule::UInt64* tmp_o_bins
+)
+{
+    vismodule::PointObjectGenerator point_object_generator;
+    const char tmp_sampling_method = particle_property.m_sampling_method;
+    particle_property.m_sampling_method = 'h';
+
+    vismodule::PointObject* point_object = point_object_generator.GenerateParticleStruct(
+        particle_property, dom, values, nvariables, ServerMode::IS
+    );
+
+    MakeHistgram( point_object, tf_number, tmp_c_bins, tmp_o_bins );
+
+    delete point_object;
+    particle_property.m_sampling_method = tmp_sampling_method;
+}
+
+static void GenerateParticleObject(
+    ParticleProperty& particle_property,
+    const domain_parameters_struct& dom,
+    Type** values,
+    const int nvariables,
+    std::vector<float>& particle_coords,
+    std::vector<Byte>& particle_colors,
+    std::vector<float>& particle_normals
+)
+{
+    vismodule::PointObjectGenerator point_object_generator;
+    vismodule::PointObject* point_object = point_object_generator.GenerateParticleStruct(
+        particle_property, dom, values, nvariables, ServerMode::IS
+    );
+
+    MakeParticle( point_object, particle_coords, particle_colors, particle_normals );
+
+    delete point_object;
+}
 
 void OutputCoordMinMaxFile(
     const domain_parameters_struct& dom,
@@ -138,13 +206,20 @@ bool generate_particles(
     particle_property.m_transfunc_synthesizer = new TransferFunctionSynthesizer();
     particle_property.m_camera                = new vismodule::Camera();
 
-    SetParticleParameter( dom, tfFilePath, tfFilePath_old, particle_property, mvpl );
-    SetGlyphParameter( glyphParameterPath, glyphParameterPath_old, glyph_property, glyphNameListFile );
-    SetPlotOverLineParameter( plotOverLineParameterPath, plotOverLineParameterPath_old, pol_property, POLNameListFile );
-    SetPlotOverTimeParameter( plotOverTimeParameterPath, plotOverTimeParameterPath_old, pot_property, POTNameListFile );
+    bool object_generation_enabled = false;
+    SetParticleParameter(
+        dom, tfFilePath, tfFilePath_old, particle_property, mvpl,
+        nvariables, object_generation_enabled
+    );
+    if ( object_generation_enabled )
+    {
+        SetGlyphParameter( glyphParameterPath, glyphParameterPath_old, glyph_property, glyphNameListFile );
+        SetPlotOverLineParameter( plotOverLineParameterPath, plotOverLineParameterPath_old, pol_property, POLNameListFile );
+        SetPlotOverTimeParameter( plotOverTimeParameterPath, plotOverTimeParameterPath_old, pot_property, POTNameListFile );
+    }
 
     const int tf_number  = particle_property.m_transfunc_array.size();
-    const int resolution = pol_property.m_sampling_size;
+    const int resolution = object_generation_enabled ? pol_property.m_sampling_size : 0;
 
     // particle parameters
     std::vector<float> particle_coords;
@@ -188,82 +263,81 @@ bool generate_particles(
     bool pot_mask = false;
     
     ServerMode server_mode = ServerMode::IS;
-    vismodule::PointObject* point_object = nullptr;
-    vismodule::PointObjectGenerator point_object_generator;
-
-    char tmp_sampling_method = particle_property.m_sampling_method;
-    particle_property.m_sampling_method = 'x';
-
-    point_object = point_object_generator.GenerateParticleStruct(
-        particle_property, dom, values, nvariables, ServerMode::IS
+    CollectParticleMinMax(
+        particle_property, dom, values, nvariables, tf_number, tmp_max, tmp_min
     );
 
-    MakeParticleMinMax( particle_property.m_transfunc_synthesizer, tf_number, tmp_max, tmp_min ); // CS common
-
-    particle_property.m_sampling_method = tmp_sampling_method;
-
-    point_object = point_object_generator.GenerateParticleStruct(
-        particle_property, dom, values, nvariables, ServerMode::IS
+    CollectParticleHistogram(
+        particle_property, dom, values, nvariables, tf_number, tmp_c_bins, tmp_o_bins
     );
 
-    MakeParticle( point_object, particle_coords, particle_colors, particle_normals ); // InSitu only
-    MakeHistgram( point_object, tf_number, tmp_c_bins, tmp_o_bins ); // CS common
-
-    delete point_object;
-
-    if ( glyph_property.m_glyph_flag )
+    if ( object_generation_enabled )
     {
-        vismodule::KVSMLObjectGlyph* glyph_object = new vismodule::KVSMLObjectGlyph;
-        vismodule::GlyphSeedGenerator glyph_creator;
-        int number_of_divide = mpi_size;
-        glyph_creator.GenerateGlyphStruct(
-            glyph_property, number_of_divide, dom,
-            values, nvariables, server_mode, glyph_object
+        GenerateParticleObject(
+            particle_property, dom, values, nvariables,
+            particle_coords, particle_colors, particle_normals
         );
 
-        MakeGlyph( glyph_object, glyph_coords, glyph_vectors, glyph_sizes, glyph_colors ); // InSitu only
+        if ( glyph_property.m_glyph_flag )
+        {
+            vismodule::KVSMLObjectGlyph* glyph_object = new vismodule::KVSMLObjectGlyph;
+            vismodule::GlyphSeedGenerator glyph_creator;
+            int number_of_divide = mpi_size;
+            glyph_creator.GenerateGlyphStruct(
+                glyph_property, number_of_divide, dom,
+                values, nvariables, server_mode, glyph_object
+            );
 
-        delete glyph_object;
-    }
+            MakeGlyph( glyph_object, glyph_coords, glyph_vectors, glyph_sizes, glyph_colors ); // InSitu only
 
-    // if ( pol_property.m_plot_flag )
-    if ( true ) // 常に生成し続ける、将来的に変わる可能性あり
-    {
-        vismodule::KVSMLObjectPlotOverLine* pol_object = new vismodule::KVSMLObjectPlotOverLine;
-        PlotOverLineGenerator pol_generator;
-        pol_generator.GeneratePOLStruct(
-            pol_property, dom, values, nvariables, pol_object
-        );
-
-        for( size_t i = 0; i < resolution; i++ )
-        { 
-            x_axis[i] = pol_object->x_axis()[i];
-            if ( pol_object->mask()[i] )
-            {
-                mask[i]           = 1;
-                values_on_line[i] = pol_object->values_on_line()[i];
-            }
+            delete glyph_object;
         }
-        delete pol_object;
-    }
 
-    // if ( pot_property.m_plot_flag )
-    if ( true ) // 常に生成し続ける、将来的に変わる可能性あり
-    {
-        PlotOverTimeGenerator pot_generator;
-        pot_mask = pot_generator.GeneratePOTStruct( pot_property, dom, values, nvariables, value_on_time );
+        // if ( pol_property.m_plot_flag )
+        if ( true ) // 常に生成し続ける、将来的に変わる可能性あり
+        {
+            vismodule::KVSMLObjectPlotOverLine* pol_object = new vismodule::KVSMLObjectPlotOverLine;
+            PlotOverLineGenerator pol_generator;
+            pol_generator.GeneratePOLStruct(
+                pol_property, dom, values, nvariables, pol_object
+            );
+
+            for( size_t i = 0; i < resolution; i++ )
+            {
+                x_axis[i] = pol_object->x_axis()[i];
+                if ( pol_object->mask()[i] )
+                {
+                    mask[i]           = 1;
+                    values_on_line[i] = pol_object->values_on_line()[i];
+                }
+            }
+            delete pol_object;
+        }
+
+        // if ( pot_property.m_plot_flag )
+        if ( true ) // 常に生成し続ける、将来的に変わる可能性あり
+        {
+            PlotOverTimeGenerator pot_generator;
+            pot_mask = pot_generator.GeneratePOTStruct( pot_property, dom, values, nvariables, value_on_time );
+        }
     }
 
     OutputCoordMinMaxFile( dom, coordMinMaxFilePath );
 
-    // データ出力
-    OutputParticles(
-        particle_property, mvpl, start_time_step, time_step, tf_number, nvariables, particleFilePrefix,
-        stateFilePath, historyFilePath, particle_coords, particle_colors,
-        particle_normals, tmp_c_bins, tmp_o_bins, tmp_max, tmp_min
+    if ( object_generation_enabled )
+    {
+        OutputParticleFiles(
+            particle_property, mvpl, time_step, particleFilePrefix,
+            particle_coords, particle_colors, particle_normals
+        );
+    }
+
+    OutputParticleHistory(
+        particle_property, tf_number, nvariables, historyFilePath,
+        object_generation_enabled, tmp_c_bins, tmp_o_bins, tmp_max, tmp_min
     );
 
-    if ( glyph_property.m_glyph_flag )
+    if ( object_generation_enabled && glyph_property.m_glyph_flag )
     {
         OutputGlyphs(
             time_step, glyphFilePrefix, glyph_coords,
@@ -272,19 +346,19 @@ bool generate_particles(
     }
 
     // if ( pol_property.m_plot_flag )
-    if ( true ) // 常に出力し続ける、将来的に変わる可能性あり
+    if ( object_generation_enabled ) // 常に出力し続ける、将来的に変わる可能性あり
     {
         OutputLine( time_step, plotOverLineFilePrefix, values_on_line, mask, x_axis );
     }
 
     // if ( pot_property.m_plot_flag )
-    if ( true ) // 常に出力し続ける、将来的に変わる可能性あり
+    if ( object_generation_enabled ) // 常に出力し続ける、将来的に変わる可能性あり
     {
         OutputPOT( time_step, plotOverTimeFilePrefix, pot_mask, value_on_time );
     }
 
     // OutputParticleで書き込んだdefault_old.tfファイルを読み込みdefault_xxx.tfに書き込む
-    if ( mpi_rank == 0 )
+    if ( object_generation_enabled && mpi_rank == 0 )
     {
         ParameterFileReader ppr;
         NameListFile nameListFile;
@@ -328,10 +402,10 @@ bool generate_particles(
         ofs.close();
     }
    
-    delete tmp_c_bins;
-    delete tmp_o_bins;
-    delete tmp_max;
-    delete tmp_min;
+    delete[] tmp_c_bins;
+    delete[] tmp_o_bins;
+    delete[] tmp_max;
+    delete[] tmp_min;
     delete particle_property.m_transfunc_synthesizer;
     delete particle_property.m_camera;
 
@@ -343,7 +417,9 @@ bool SetParticleParameter(
     const std::string& tfFilePath,
     const std::string& tfFilePath_old,
     ParticleProperty& particle_property,
-    MultiVolumePropertyList& mvpl
+    MultiVolumePropertyList& mvpl,
+    const int nvariables,
+    bool& object_generation_enabled
 )
 {
     int mpi_rank;
@@ -357,36 +433,55 @@ bool SetParticleParameter(
     NameListFile nameListFile;
 
     int size = 0;
-    char* buf;
+    char* buf = NULL;
+    int object_generation_enabled_int = 0;
 
     if ( mpi_rank == 0 )
     {
         std::ifstream tfFile( tfFilePath );
+        std::ifstream tfFileOld( tfFilePath_old );
 
         if ( tfFile.good() )
         {
             ppr.readParticleParameterFile( tfFilePath.c_str() );
             nameListFile = ppr.getNameListFile();
             std::rename( tfFilePath.c_str(), tfFilePath_old.c_str() );
+            object_generation_enabled_int = 1;
         }
-        else
+        else if ( tfFileOld.good() )
         {
             ppr.readParticleParameterFile( tfFilePath_old.c_str() );
             nameListFile = ppr.getNameListFile();
+            object_generation_enabled_int = 1;
+        }
+        else
+        {
+            std::cout << "================================================================" << std::endl;
+            std::cout << "[WARN] " << FileNameOnly( tfFilePath ) << " and "
+                      << FileNameOnly( tfFilePath_old ) << " do not exist." << std::endl;
+            std::cout << "[INFO] VIS_PARAM_DIR = " << EnvValueOrUnset( "VIS_PARAM_DIR" ) << std::endl;
+            std::cout << "[INFO] PARTICLE_DIR  = " << EnvValueOrUnset( "PARTICLE_DIR" ) << std::endl;
+            std::cout << "[INFO] Set default particle parameters and skip object generation." << std::endl;
+            std::cout << "================================================================" << std::endl;
         }
 
-        size = nameListFile.byteSize();
-
-        if ( size > 0 )
+        if ( object_generation_enabled_int )
         {
-            buf = new char[size];
-            nameListFile.pack( buf );
+            size = nameListFile.byteSize();
+
+            if ( size > 0 )
+            {
+                buf = new char[size];
+                nameListFile.pack( buf );
+            }
         }
     }
 
 #ifndef CPU_VER
+    MPI_Bcast( &object_generation_enabled_int, 1, MPI_INT, 0, MPI_COMM_WORLD );
     MPI_Bcast( &size, 1, MPI_INT, 0, MPI_COMM_WORLD );
 #endif
+    object_generation_enabled = object_generation_enabled_int != 0;
 
     if ( size > 0 )
     {
@@ -398,8 +493,15 @@ bool SetParticleParameter(
         delete[] buf;
     }
 
-    if ( mpi_rank > 0 ) ppr.setNameListFile( nameListFile );
-    ppr.setParticleParameter( particle_property );
+    if ( object_generation_enabled )
+    {
+        if ( mpi_rank > 0 ) ppr.setNameListFile( nameListFile );
+        ppr.setParticleParameter( particle_property );
+    }
+    else
+    {
+        SetDefaultParticleParameter( particle_property, mvpl, nvariables );
+    }
 
     vismodule::Vector3f min_object_coords(
         dom.x_global_min,

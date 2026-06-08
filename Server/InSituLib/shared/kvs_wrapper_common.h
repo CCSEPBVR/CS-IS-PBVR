@@ -29,6 +29,16 @@ void begin_wrapper_async_io();
 
 void end_wrapper_async_io();
 
+std::string FileNameOnly( const std::string& file_path );
+
+std::string EnvValueOrUnset( const char* name );
+
+void SetDefaultParticleParameter(
+    ParticleProperty& particle_property,
+    MultiVolumePropertyList& mvpl,
+    const int nvariables
+);
+
 size_t CalculateSubpixelLevel(
     const int particle_limit,
     const vismodule::Camera& camera,
@@ -91,6 +101,28 @@ void MakeGlyph(
     std::vector<float>& vectors,
     std::vector<float>& sizes,
     std::vector<unsigned char>& colors
+);
+
+void OutputParticleFiles(
+    ParticleProperty& particle_property,
+    const MultiVolumePropertyList& mvpl,
+    const int time_step,
+    const std::string& particleFilePrefix,
+    const std::vector<float>& coords,
+    const std::vector<Byte>& colors,
+    const std::vector<float>& normals
+);
+
+void OutputParticleHistory(
+    ParticleProperty& particle_property,
+    const int tf_number,
+    const int nvariables,
+    const std::string& histryFilePath,
+    const bool update_parameter_file,
+    const vismodule::UInt64* c_bins,
+    const vismodule::UInt64* o_bins,
+    const float* max_array,
+    const float* min_array
 );
 
 void OutputParticles(

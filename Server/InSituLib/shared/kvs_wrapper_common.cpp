@@ -1,12 +1,16 @@
 #include "kvs_wrapper_common.h"
+#include <cstdlib>
 #include <cstdio>
 #include <fstream>
+#include <sstream>
 #include <vector>
 #include <vismodule/KVSMLObjectPoint>
 #include <vismodule/KVSMLObjectPlotOverLine>
 #include <vismodule/KVSMLObjectPlotOverTime>
 #include <vismodule/ParameterFileReader>
 #include <vismodule/ParameterFileWriter>
+#include <vismodule/TransferFunction>
+#include <vismodule/TransferFunctionSynthesizer>
 
 #ifndef CPU_VER
 #include <mpi.h>
@@ -37,6 +41,87 @@ void end_wrapper_async_io()
         pwt.join(true);
         async_io_enabled=false;
     }
+}
+
+std::string FileNameOnly( const std::string& file_path )
+{
+    const std::string::size_type pos = file_path.find_last_of( "/\\" );
+    if ( pos == std::string::npos ) return file_path;
+    return file_path.substr( pos + 1 );
+}
+
+std::string EnvValueOrUnset( const char* name )
+{
+    const char* value = std::getenv( name );
+    return value ? std::string( value ) : std::string( "(unset)" );
+}
+
+void SetDefaultParticleParameter(
+    ParticleProperty& particle_property,
+    MultiVolumePropertyList& mvpl,
+    const int nvariables
+)
+{
+    const int tf_number     = nvariables > 0 ? nvariables : 1;
+    const int TF_resolution = 256;
+
+    particle_property.m_level_index              = 1;
+    particle_property.m_repeat_level             = 4;
+    particle_property.m_sampling_method          = 'u';
+    particle_property.m_particle_data_size_limit = 20;
+    particle_property.m_particle_limit           = 10000000;
+    particle_property.m_extra_opacity_factor     = 1;
+    particle_property.m_latency_threshold        = -1.0;
+    particle_property.m_job_id_pack_size         = 1;
+    particle_property.m_color_transfer_function_synthesis   = "C1";
+    particle_property.m_opacity_transfer_function_synthesis = "O1";
+    particle_property.m_transfunc_array.clear();
+    particle_property.m_transfunc_array.resize( tf_number );
+    mvpl.m_total_number_ingredients = tf_number;
+
+    vismodule::TransferFunction default_transfer_function( TF_resolution );
+    default_transfer_function.setColorRange( 0, 1 );
+    default_transfer_function.setOpacityRange( 0, 1 );
+
+    std::vector<EquationToken> var_o;
+    std::vector<EquationToken> var_c;
+
+    EquationToken eq = particle_property.m_transfunc_synthesizer->convert_token( "a1" );
+    particle_property.m_transfunc_synthesizer->setOpacityFunction( eq );
+
+    eq = particle_property.m_transfunc_synthesizer->convert_token( "c1" );
+    particle_property.m_transfunc_synthesizer->setColorFunction( eq );
+
+    for ( int i = 0; i < tf_number; i++ )
+    {
+        std::stringstream qq, tt;
+        qq << "q" << i + 1;
+        tt << "t" << i + 1;
+
+        NamedTransferFunction named_transfer_function( default_transfer_function );
+        named_transfer_function.m_name                         = tt.str();
+        named_transfer_function.m_color_variable               = qq.str();
+        named_transfer_function.m_opacity_variable             = qq.str();
+        named_transfer_function.m_server_color_variable_min    = 0;
+        named_transfer_function.m_server_color_variable_max    = 1;
+        named_transfer_function.m_server_opacity_variable_min  = 0;
+        named_transfer_function.m_server_opacity_variable_max  = 1;
+        named_transfer_function.m_user_color_variable_min      = 0;
+        named_transfer_function.m_user_color_variable_max      = 1;
+        named_transfer_function.m_user_opacity_variable_min    = 0;
+        named_transfer_function.m_user_opacity_variable_max    = 1;
+        named_transfer_function.m_server_color_range_mode      = NamedTransferFunction::ServerRangeMode::ServerSide;
+        named_transfer_function.m_server_opacity_range_mode    = NamedTransferFunction::ServerRangeMode::ServerSide;
+        named_transfer_function.m_resolution                   = TF_resolution;
+        particle_property.m_transfunc_array[i] = named_transfer_function;
+
+        var_o.push_back( particle_property.m_transfunc_synthesizer->convert_token( qq.str() ) );
+        var_c.push_back( particle_property.m_transfunc_synthesizer->convert_token( qq.str() ) );
+    }
+
+    particle_property.m_transfunc_synthesizer->setOpacityVariable( var_o );
+    particle_property.m_transfunc_synthesizer->setColorVariable( var_c );
+    particle_property.m_camera->setWindowSize( 620, 620 );
 }
 
 size_t CalculateSubpixelLevel(
@@ -156,31 +241,27 @@ bool SetParameterFilePath(
     plotOverTimeParameterPath_old = visParamDir + "parameter_old.pot";
 
     std::ifstream tfFile( tfFilePath );
+    std::ifstream tfFileOld( tfFilePath_old );
     std::ifstream glyphParameterFile( glyphParameterPath );
     std::ifstream plotOverLineParameterFile( plotOverLineParameterPath );
     std::ifstream plotOverTimeParameterFile( plotOverTimeParameterPath );
 
     if ( is_first_setting && mpi_rank == 0 )
     {
-        if ( !tfFile.good() )
-        {
-            std::cout << "ERROR:default.tf is not existed." << std::endl;
-            return false;
-        }
-
-        if ( !glyphParameterFile.good() )
+        const bool has_particle_parameter_file = tfFile.good() || tfFileOld.good();
+        if ( has_particle_parameter_file && !glyphParameterFile.good() )
         {
             std::cout << "ERROR:parameter.gly is not existed." << std::endl;
             return false;
         }
 
-        if ( !plotOverLineParameterFile.good() )
+        if ( has_particle_parameter_file && !plotOverLineParameterFile.good() )
         {
             std::cout << "ERROR:parameter.pol is not existed." << std::endl;
             return false;
         }
 
-        if ( !plotOverTimeParameterFile.good() )
+        if ( has_particle_parameter_file && !plotOverTimeParameterFile.good() )
         {
             std::cout << "ERROR:parameter.pot is not existed." << std::endl;
             return false;
@@ -461,32 +542,16 @@ auto safe_append = [](auto& dst, auto const& src, char const* what){
     safe_append(colors , k, "m_glyph_colors");
 }
 
-void OutputParticles(
+void OutputParticleFiles(
     ParticleProperty& particle_property,
     const MultiVolumePropertyList& mvpl,
-    const int start_time_step,
     const int time_step,
-    const int tf_number,
-    const int nvariables,
     const std::string& particleFilePrefix,
-    const std::string& stateFilePath,
-    const std::string& histryFilePath,
     const std::vector<float>& coords,
     const std::vector<Byte>& colors,
-    const std::vector<float>& normals,
-    const vismodule::UInt64* c_bins,
-    const vismodule::UInt64* o_bins,
-    const float* max_array,
-    const float* min_array
+    const std::vector<float>& normals
 )
 {
-    int mpi_rank;
-#ifndef CPU_VER
-    MPI_Comm_rank( MPI_COMM_WORLD, &mpi_rank );
-#else
-    mpi_rank = 0;
-#endif
-
     ///-------------------------------------//
     ///--------粒子配列をファイル出力----------//
     //--------------------------------------//
@@ -658,6 +723,29 @@ void OutputParticles(
         delete point_object;
     }
 
+    delete[] displs;
+    delete[] recvcounts;
+}
+
+void OutputParticleHistory(
+    ParticleProperty& particle_property,
+    const int tf_number,
+    const int nvariables,
+    const std::string& histryFilePath,
+    const bool update_parameter_file,
+    const vismodule::UInt64* c_bins,
+    const vismodule::UInt64* o_bins,
+    const float* max_array,
+    const float* min_array
+)
+{
+    int mpi_rank;
+#ifndef CPU_VER
+    MPI_Comm_rank( MPI_COMM_WORLD, &mpi_rank );
+#else
+    mpi_rank = 0;
+#endif
+
     // histgram receiver
     vismodule::UInt64* c_bins_recv;
     vismodule::UInt64* o_bins_recv;
@@ -748,15 +836,47 @@ void OutputParticles(
             particle_property.m_transfunc_array[i].m_server_opacity_variable_max = max_array_recv[2 * i    ];
         }
 
-        ParameterFileWriter ppw;
-        ppw.getParticleParameter( particle_property );
-        ppw.writeParticleParameterOldFile();
+        if ( update_parameter_file )
+        {
+            ParameterFileWriter ppw;
+            ppw.getParticleParameter( particle_property );
+            ppw.writeParticleParameterOldFile();
+        }
     }
 
-    delete min_array_recv;
-    delete max_array_recv;
-    delete c_bins_recv;
-    delete o_bins_recv;
+    delete[] min_array_recv;
+    delete[] max_array_recv;
+    delete[] c_bins_recv;
+    delete[] o_bins_recv;
+}
+
+void OutputParticles(
+    ParticleProperty& particle_property,
+    const MultiVolumePropertyList& mvpl,
+    const int,
+    const int time_step,
+    const int tf_number,
+    const int nvariables,
+    const std::string& particleFilePrefix,
+    const std::string&,
+    const std::string& histryFilePath,
+    const std::vector<float>& coords,
+    const std::vector<Byte>& colors,
+    const std::vector<float>& normals,
+    const vismodule::UInt64* c_bins,
+    const vismodule::UInt64* o_bins,
+    const float* max_array,
+    const float* min_array
+)
+{
+    OutputParticleFiles(
+        particle_property, mvpl, time_step, particleFilePrefix,
+        coords, colors, normals
+    );
+    OutputParticleHistory(
+        particle_property, tf_number, nvariables, histryFilePath, true,
+        c_bins, o_bins, max_array, min_array
+    );
 }
 
 void OutputGlyphs(

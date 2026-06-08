@@ -3,6 +3,8 @@
 #include "../../Shared/TransferFunction.h"
 #include <filesystem>
 #include <chrono>
+#include <cstdlib>
+#include <fstream>
 
 #include <vismodule/KVSMLObjectPlotOverLine>
 #include <vismodule/InitialStep>
@@ -11,6 +13,15 @@
 #include <vismodule/ParticleMonitor>
 #include <vismodule/ParameterFileReader>
 #include <vismodule/ParameterFileWriter>
+
+namespace
+{
+std::string EnvValueOrUnset( const char* name )
+{
+    const char* value = std::getenv( name );
+    return value ? std::string( value ) : std::string( "(unset)" );
+}
+}
 
 Server::Server(int port)
     : m_port(port)
@@ -567,7 +578,7 @@ void Server::initialize(uWS::WebSocket<false, true, PerSocket>* ws, const nlohma
         int counter = 0;
 
         // InSituでオブジェクト生成が開始されるまで待機
-        while (!particleMonitor.stepExisted() || !std::filesystem::exists(tfFilePath_old))
+        while (!particleMonitor.stepExisted())
         {
             particleMonitor.check();
             std::string baseString = "Waiting for simulation object generation ";
@@ -1164,12 +1175,30 @@ void Server::requestDataAt(uWS::WebSocket<false, true, PerSocket>* ws, const nlo
                 tfFilePath     += step.str() + ".tf";
             }
 
-            // std::cout << "tfFilePath:" << tfFilePath << std::endl;
+            std::ifstream tfFile( tfFilePath.c_str() );
 
-            ParameterFileReader ppr;
+            if ( tfFile.good() )
+            {
+                ParameterFileReader ppr;
+                ppr.readParticleParameterFile(tfFilePath.c_str());
+                ppr.setParticleParameter(*tmpParticleProperty);
+            }
+            else
+            {
+                std::cout << "================================================================" << std::endl;
+                std::cout << "[WARN] Step particle parameter file does not exist." << std::endl;
+                std::cout << "[WARN] File: " << tfFilePath << std::endl;
+                std::cout << "[INFO] VIS_PARAM_DIR = " << EnvValueOrUnset( "VIS_PARAM_DIR" ) << std::endl;
+                std::cout << "[INFO] PARTICLE_DIR  = " << EnvValueOrUnset( "PARTICLE_DIR" ) << std::endl;
+                std::cout << "[INFO] Set default particle parameters." << std::endl;
+                std::cout << "================================================================" << std::endl;
 
-            ppr.readParticleParameterFile(tfFilePath.c_str());
-            ppr.setParticleParameter(*tmpParticleProperty);
+                SetFallbackParticleParameterIS(
+                    *tmpParticleProperty,
+                    *m_multi_volume_property_list,
+                    static_cast<int>( m_particle_property->m_transfunc_array.size() )
+                );
+            }
 
             const int tfNumber = tmpParticleProperty->m_transfunc_array.size();
 

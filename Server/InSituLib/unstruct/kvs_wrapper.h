@@ -33,7 +33,9 @@ bool SetParticleParameter(
     const std::string& tfFilePath,
     const std::string& tfFilePath_old,
     ParticleProperty& particle_property,
-    MultiVolumePropertyList& mvpl
+    MultiVolumePropertyList& mvpl,
+    const int nvariables,
+    bool& object_generation_enabled
 );
 
 bool generate_particles(

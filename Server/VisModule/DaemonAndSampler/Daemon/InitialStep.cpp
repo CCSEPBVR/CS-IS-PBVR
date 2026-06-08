@@ -1,4 +1,7 @@
 #include <array>
+#include <cstdlib>
+#include <fstream>
+#include <sstream>
 
 #include <vismodule/InitialStep>
 #include <vismodule/Calculate>
@@ -524,6 +527,80 @@ void InitialStepCS(
     delete[] tmp_o_bins;
 }
 
+static std::string EnvValueOrUnsetIS( const char* name )
+{
+    const char* value = std::getenv( name );
+    return value ? std::string( value ) : std::string( "(unset)" );
+}
+
+void SetFallbackParticleParameterIS(
+    ParticleProperty& particle_property,
+    MultiVolumePropertyList& mvpl,
+    const int nvariables
+)
+{
+    const int tf_number     = nvariables > 0 ? nvariables : 1;
+    const int TF_resolution = 256;
+
+    particle_property.m_level_index              = 1;
+    particle_property.m_repeat_level             = 4;
+    particle_property.m_sampling_method          = 'u';
+    particle_property.m_particle_data_size_limit = 20;
+    particle_property.m_particle_limit           = 10000000;
+    particle_property.m_extra_opacity_factor     = 1;
+    particle_property.m_latency_threshold        = -1.0;
+    particle_property.m_job_id_pack_size         = 1;
+    particle_property.m_color_transfer_function_synthesis   = "C1";
+    particle_property.m_opacity_transfer_function_synthesis = "O1";
+    particle_property.m_transfunc_array.clear();
+    particle_property.m_transfunc_array.resize( tf_number );
+    mvpl.m_total_number_ingredients = tf_number;
+
+    vismodule::TransferFunction default_transfer_function( TF_resolution );
+    default_transfer_function.setColorRange( 0, 1 );
+    default_transfer_function.setOpacityRange( 0, 1 );
+
+    std::vector<EquationToken> var_o;
+    std::vector<EquationToken> var_c;
+
+    EquationToken eq = particle_property.m_transfunc_synthesizer->convert_token( "a1" );
+    particle_property.m_transfunc_synthesizer->setOpacityFunction( eq );
+
+    eq = particle_property.m_transfunc_synthesizer->convert_token( "c1" );
+    particle_property.m_transfunc_synthesizer->setColorFunction( eq );
+
+    for ( int i = 0; i < tf_number; i++ )
+    {
+        std::stringstream qq, tt;
+        qq << "q" << i + 1;
+        tt << "t" << i + 1;
+
+        NamedTransferFunction named_transfer_function( default_transfer_function );
+        named_transfer_function.m_name                         = tt.str();
+        named_transfer_function.m_color_variable               = qq.str();
+        named_transfer_function.m_opacity_variable             = qq.str();
+        named_transfer_function.m_server_color_variable_min    = 0;
+        named_transfer_function.m_server_color_variable_max    = 1;
+        named_transfer_function.m_server_opacity_variable_min  = 0;
+        named_transfer_function.m_server_opacity_variable_max  = 1;
+        named_transfer_function.m_user_color_variable_min      = 0;
+        named_transfer_function.m_user_color_variable_max      = 1;
+        named_transfer_function.m_user_opacity_variable_min    = 0;
+        named_transfer_function.m_user_opacity_variable_max    = 1;
+        named_transfer_function.m_server_color_range_mode      = NamedTransferFunction::ServerRangeMode::ServerSide;
+        named_transfer_function.m_server_opacity_range_mode    = NamedTransferFunction::ServerRangeMode::ServerSide;
+        named_transfer_function.m_resolution                   = TF_resolution;
+        particle_property.m_transfunc_array[i] = named_transfer_function;
+
+        var_o.push_back( particle_property.m_transfunc_synthesizer->convert_token( qq.str() ) );
+        var_c.push_back( particle_property.m_transfunc_synthesizer->convert_token( qq.str() ) );
+    }
+
+    particle_property.m_transfunc_synthesizer->setOpacityVariable( var_o );
+    particle_property.m_transfunc_synthesizer->setColorVariable( var_c );
+    particle_property.m_camera->setWindowSize( 620, 620 );
+}
+
 void SetDefaultParticleParameterIS(
     ParticleProperty& particle_property,
     MultiVolumePropertyList& mvpl
@@ -612,9 +689,30 @@ void SetDefaultParticleParameterIS(
     // particle_property.m_extra_opacity_factor = pm.particleHistoryFile().ExtraOpacityFactor();
     particle_property.m_extra_opacity_factor = 1;
 
-    ParameterFileReader ppr;
-    ppr.readParticleParameterFile( tfFilePath_old.c_str() );
-    ppr.setParticleParameter( particle_property );
+    std::ifstream tfFileOld( tfFilePath_old.c_str() );
+
+    if ( tfFileOld.good() )
+    {
+        ParameterFileReader ppr;
+        ppr.readParticleParameterFile( tfFilePath_old.c_str() );
+        ppr.setParticleParameter( particle_property );
+    }
+    else
+    {
+        std::cout << "================================================================" << std::endl;
+        std::cout << "[WARN] Particle parameter file does not exist." << std::endl;
+        std::cout << "[WARN] File: " << tfFilePath_old << std::endl;
+        std::cout << "[INFO] VIS_PARAM_DIR = " << EnvValueOrUnsetIS( "VIS_PARAM_DIR" ) << std::endl;
+        std::cout << "[INFO] PARTICLE_DIR  = " << EnvValueOrUnsetIS( "PARTICLE_DIR" ) << std::endl;
+        std::cout << "[INFO] Set default particle parameters." << std::endl;
+        std::cout << "================================================================" << std::endl;
+
+        SetFallbackParticleParameterIS(
+            particle_property,
+            mvpl,
+            pm.particleHistoryFile().nVariables()
+        );
+    }
 
     return;
 }

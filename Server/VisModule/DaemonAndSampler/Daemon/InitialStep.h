@@ -28,6 +28,12 @@ void SetDefaultParticleParameterIS(
     MultiVolumePropertyList& mvpl
 );
 
+void SetFallbackParticleParameterIS(
+    ParticleProperty& particle_property,
+    MultiVolumePropertyList& mvpl,
+    const int nvariables
+);
+
 void InitialStepIS(
     const int time_step,
     ParticleProperty& particle_property,
