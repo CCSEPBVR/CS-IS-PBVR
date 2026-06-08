@@ -339,6 +339,11 @@ private:
 
         pm.setTimeStep_particle( timeStep );
         pm.readParticleFile();
+        std::cout << "[Worker][StatisticParticle] monitor subpixel="
+                  << pm.getSubpixelLevel()
+                  << ", requested timestep=" << timeStep
+                  << std::endl;
+
 
         vismodule::PointObject* vismodulePointObject = new vismodule::PointObject;
         pm.getParticle( vismodulePointObject );

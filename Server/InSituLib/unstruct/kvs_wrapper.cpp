@@ -544,6 +544,35 @@ void WritePrefixedStatisticHistory(
     }
 }
 
+void WriteStatisticHistory(
+    std::ofstream& ofs,
+    const EnsembleStatisticRange& range,
+    const int tf_number
+)
+{
+    for ( int i = 0; i < tf_number; i++ )
+    {
+        ofs << "MIN_O" << ( i + 1 ) << "=" << range.min_values[2 * i    ] << std::endl;
+        ofs << "MAX_O" << ( i + 1 ) << "=" << range.max_values[2 * i    ] << std::endl;
+        ofs << "MIN_C" << ( i + 1 ) << "=" << range.min_values[2 * i + 1] << std::endl;
+        ofs << "MAX_C" << ( i + 1 ) << "=" << range.max_values[2 * i + 1] << std::endl;
+        ofs << "RESOLUTION_O" << ( i + 1 ) << "=" << DEFAULT_NBINS << std::endl;
+        ofs << "HISTOGRAM_O" << ( i + 1 ) << "=";
+        for ( size_t j = 0; j < DEFAULT_NBINS; j++ )
+        {
+            ofs << range.o_bins[j + i * DEFAULT_NBINS] << ",";
+        }
+        ofs << std::endl;
+        ofs << "RESOLUTION_C" << ( i + 1 ) << "=" << DEFAULT_NBINS << std::endl;
+        ofs << "HISTOGRAM_C" << ( i + 1 ) << "=";
+        for ( size_t j = 0; j < DEFAULT_NBINS; j++ )
+        {
+            ofs << range.c_bins[j + i * DEFAULT_NBINS] << ",";
+        }
+        ofs << std::endl;
+    }
+}
+
 void StoreStatisticRangeToTransferFunctions(
     const EnsembleStatisticRange& range,
     std::vector<NamedTransferFunction>& transfer_functions,
@@ -604,6 +633,7 @@ void OutputEnsembleStatisticHistory(
     std::ofstream ofs( historyFilePath.c_str(), std::ios::out );
     ofs << "TF_NUMBER=" << tf_number << std::endl;
     ofs << "RESOLUTION=" << DEFAULT_NBINS << std::endl;
+    WriteStatisticHistory( ofs, average_range, tf_number );
     WritePrefixedStatisticHistory( ofs, "AVE", average_range, tf_number );
     WritePrefixedStatisticHistory( ofs, "VAR", variance_range, tf_number );
     WritePrefixedStatisticHistory( ofs, "COV", co_variation_range, tf_number );
@@ -1317,7 +1347,7 @@ bool ensemble_generate_particles(
                     average_range,
                     variance_range,
                     co_variation_range,
-                    MPI_COMM_WORLD );
+                    MPI_COMM_WORLD );  // 空間領域方向のcomm を指定
         }
 
     
@@ -1365,6 +1395,7 @@ bool ensemble_generate_particles(
 
     std::cout << "particle_property.mean_max = " << particle_property.m_mean_transfer_function_array[0].colorMap().maxValue() << std::endl;
     std::cout << "particle_property.var_max = " << particle_property.m_variance_transfer_function_array[0].colorMap().maxValue() << std::endl;
+    std::cout << "particle_property.cov_max = " << particle_property.m_coefficient_of_variation_transfer_function_array[0].colorMap().maxValue() << std::endl;
 
 
     const std::string averageFilePrefix = EnsembleParticleFilePrefix( particleFilePrefix, "ave_" );

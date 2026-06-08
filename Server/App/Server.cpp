@@ -1372,7 +1372,9 @@ void Server::requestDataAt(uWS::WebSocket<false, true, PerSocket>* ws, const nlo
                 tfJsonPath     += step.str() + ".json";
             }
 
-            // std::cout << "tfJsonPath:" << tfJsonPath << std::endl;
+            std::cout << "[Server][RequestDataAt][TF] read path=" << tfFilePath
+                      << ", exists=" << std::filesystem::exists( tfFilePath )
+                      << std::endl;
 
             ParameterFileReader ppr;
             if ( !ppr.readTransferFunctionFromJson(tfJsonPath.c_str(), *tmpParticleProperty) )

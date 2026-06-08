@@ -534,12 +534,9 @@ void GenerateParticleIS(
     VariableRange vr;
 
     std::cout << "time_step:" << time_step << std::endl;
-    std::cout << "debug "<< __LINE__  << std::endl;
-    std::cout << "debug _ 492 " << std::endl;
 
     pm.check();
 
-    std::cout << "debug _ 494 " << std::endl;
     if( !pm.stepExisted() )
     {
         std::cout << "[GenerateParticleIS] particle step does not exist. Send empty point object." << std::endl;
