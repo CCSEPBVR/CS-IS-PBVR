@@ -3,8 +3,10 @@
 
 #include "ColorMap.h"
 #include "OpacityMap.h"
+#include "../ExtendedQT/Histogram.h"
 
 #include <QButtonGroup>
+#include <QDebug>
 #include <QDoubleSpinBox>
 #include <QEvent>
 #include <QFile>
@@ -17,6 +19,8 @@
 #include <QMouseEvent>
 #include <QPushButton>
 #include <QRadioButton>
+
+#include <cmath>
 
 #include "../../Shared/JsonKeys.h"
 
@@ -214,6 +218,39 @@ QVector<float> ReadOpacityMap( const QJsonValue& value, bool* ok )
     *ok = !opacities.isEmpty();
     return opacities;
 }
+
+QString NormalizeStatisticName( const QString& statistic )
+{
+    const QString normalized = statistic.trimmed().toLower();
+    if( normalized == QStringLiteral( "average" ) || normalized == QStringLiteral( "avg" ) ||
+        normalized == QStringLiteral( "mean" ) )
+    {
+        return QStringLiteral( "average" );
+    }
+    if( normalized == QStringLiteral( "variance" ) ) return QStringLiteral( "variance" );
+    if( normalized == QStringLiteral( "cv" ) || normalized == QStringLiteral( "cov" ) ||
+        normalized == QStringLiteral( "coefficient_variation" ) ||
+        normalized == QStringLiteral( "coefficient of variation" ) ||
+        normalized == QStringLiteral( "coefficient-of-variation" ) )
+    {
+        return QStringLiteral( "cv" );
+    }
+    return QString();
+}
+
+std::vector<int> ReadHistogram( const QJsonValue& value, bool* ok )
+{
+    std::vector<int> histogram;
+    *ok = false;
+    if( !value.isArray() ) return histogram;
+
+    const QJsonArray array = value.toArray();
+    histogram.reserve( static_cast<size_t>( array.size() ) );
+    for( const auto& entry : array ) histogram.push_back( entry.toInt() );
+
+    *ok = true;
+    return histogram;
+}
 }
 
 EnsembleTransferFunctionEditor::EnsembleTransferFunctionEditor( WebSocketPair* websockets, QWidget* parent )
@@ -298,6 +335,134 @@ void EnsembleTransferFunctionEditor::initializeTransferFunctionWidgets()
 void EnsembleTransferFunctionEditor::setRepeatLevel( size_t repeatLevel )
 {
     m_repeat_level = repeatLevel;
+}
+
+void EnsembleTransferFunctionEditor::onReceiveEnsembleStatisticsParameter( const QJsonObject& payload )
+{
+    const QString dataKey = QString::fromUtf8( Protocol::Key::Data );
+    if( !payload.value( dataKey ).isArray() )
+    {
+        qDebug() << "[Client][EnsembleTFE] EnsembleStatisticsParameter has no Data array";
+        return;
+    }
+
+    auto updateBlock = [&]( const QString& displayName,
+                            QDoubleSpinBox* serverMinSpinBox,
+                            QDoubleSpinBox* serverMaxSpinBox,
+                            Histogram* histogramWidget,
+                            const QJsonObject& patch )
+    {
+        const QString minKey = QString::fromUtf8( Protocol::Key::OpacityServerRangeMin );
+        const QString maxKey = QString::fromUtf8( Protocol::Key::OpacityServerRangeMax );
+        const QString histogramKey = QString::fromUtf8( Protocol::Key::OpacityHistogram );
+
+        if( patch.value( minKey ).isDouble() && patch.value( maxKey ).isDouble() )
+        {
+            const double opacityMin = patch.value( minKey ).toDouble();
+            const double opacityMax = patch.value( maxKey ).toDouble();
+            if( !std::isfinite( opacityMin ) || !std::isfinite( opacityMax ) )
+            {
+                qDebug() << "[Client][EnsembleTFE] ignore invalid server range for" << displayName
+                         << "min =" << opacityMin << "max =" << opacityMax
+                         << "reason = non-finite";
+            }
+            else if( opacityMin > opacityMax )
+            {
+                qDebug() << "[Client][EnsembleTFE] ignore invalid server range for" << displayName
+                         << "min =" << opacityMin << "max =" << opacityMax
+                         << "reason = min > max";
+            }
+            else
+            {
+                serverMinSpinBox->setValue( opacityMin );
+                serverMaxSpinBox->setValue( opacityMax );
+                qDebug() << "[Client][EnsembleTFE] update server range for" << displayName
+                         << "min =" << opacityMin << "max =" << opacityMax;
+            }
+        }
+        else
+        {
+            qDebug() << "[Client][EnsembleTFE] keep server range for" << displayName
+                     << "reason = missing opacity range keys";
+        }
+
+        if( patch.contains( histogramKey ) )
+        {
+            bool histogramOk = false;
+            const std::vector<int> histogram = ReadHistogram( patch.value( histogramKey ), &histogramOk );
+            if( histogramOk )
+            {
+                // Empty histograms are treated as an explicit request to clear the display.
+                histogramWidget->setDatas( histogram );
+                histogramWidget->update();
+                qDebug() << "[Client][EnsembleTFE] update histogram for" << displayName
+                         << "bins =" << histogram.size();
+            }
+            else
+            {
+                qDebug() << "[Client][EnsembleTFE] keep histogram for" << displayName
+                         << "reason = OpacityHistogram is not an array";
+            }
+        }
+        else
+        {
+            qDebug() << "[Client][EnsembleTFE] keep histogram for" << displayName
+                     << "reason = missing OpacityHistogram";
+        }
+    };
+
+    const QJsonArray data = payload.value( dataKey ).toArray();
+    for( const auto& value : data )
+    {
+        if( !value.isObject() )
+        {
+            qDebug() << "[Client][EnsembleTFE] skip non-object statistics patch";
+            continue;
+        }
+
+        const QJsonObject patch = value.toObject();
+        const int index = patch.value( QString::fromUtf8( Protocol::Key::Index ) ).toInt( 0 );
+        if( index != 0 )
+        {
+            qDebug() << "[Client][EnsembleTFE] skip statistics patch with unsupported Index =" << index;
+            continue;
+        }
+
+        const QString statistic = NormalizeStatisticName(
+            patch.value( QString::fromUtf8( Protocol::Key::Statistic ) ).toString() );
+        qDebug() << "[Client][EnsembleTFE] receive statistic patch"
+                 << patch.value( QString::fromUtf8( Protocol::Key::Statistic ) ).toString()
+                 << "normalized =" << statistic;
+
+        if( statistic == QStringLiteral( "average" ) )
+        {
+            updateBlock( QStringLiteral( "Average" ),
+                         ui->m_average_server_min_double_spin_box,
+                         ui->m_average_server_max_double_spin_box,
+                         ui->m_average_histogram,
+                         patch );
+        }
+        else if( statistic == QStringLiteral( "variance" ) )
+        {
+            updateBlock( QStringLiteral( "Variance" ),
+                         ui->m_variance_server_min_double_spin_box,
+                         ui->m_variance_server_max_double_spin_box,
+                         ui->m_variance_histogram,
+                         patch );
+        }
+        else if( statistic == QStringLiteral( "cv" ) )
+        {
+            updateBlock( QStringLiteral( "Coefficient of Variation" ),
+                         ui->m_coefficient_variation_server_min_double_spin_box,
+                         ui->m_coefficient_variation_server_max_double_spin_box,
+                         ui->m_coefficient_variation_histogram,
+                         patch );
+        }
+        else
+        {
+            qDebug() << "[Client][EnsembleTFE] skip unknown statistic patch";
+        }
+    }
 }
 
 QString EnsembleTransferFunctionEditor::selectedStatistic() const

@@ -9,6 +9,7 @@
 #include "WebSocketPair.h"
 
 class QButtonGroup;
+class QJsonObject;
 
 namespace Ui
 {
@@ -28,6 +29,7 @@ signals:
 
 public slots:
     void setRepeatLevel( size_t repeatLevel );
+    void onReceiveEnsembleStatisticsParameter( const QJsonObject& payload );
 
 private:
     Ui::EnsembleTransferFunctionEditor* ui;

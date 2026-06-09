@@ -918,6 +918,7 @@ void Communication::onTextWebSocketMessageReceived( const QString& receivedMessa
     else if( event == QString::fromUtf8( Protocol::Events::PlotOverLineParameter ) )     emit receivePlotOverLineParameter( obj );
     else if( event == QString::fromUtf8( Protocol::Events::PlotOverTimeParameter ) )     emit receivePlotOverTimeParameter( obj );
     else if( event == QString::fromUtf8( Protocol::Events::TransferFunctionParameter ) ) emit receiveTransferFunctionParameter( obj );
+    else if( event == QString::fromUtf8( Protocol::Events::EnsembleStatisticsParameter ) ) emit receiveEnsembleStatisticsParameter( obj );
     else if( event == QString::fromUtf8( Protocol::Events::SelectedFile ) )              emit receiveSelectedFile( obj );
     else if( event == QString::fromUtf8( Protocol::Events::ObjectDelete ) )              emit receiveObjectDelete( obj );
     else if( event == QString::fromUtf8( Protocol::Events::LatestTimeStep ) )            emit updateObjectLatestTimeStep( obj );
