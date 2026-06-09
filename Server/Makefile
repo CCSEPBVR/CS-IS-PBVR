@@ -143,16 +143,44 @@ OBJS := \
 	$(OUTDIR)/ServerWorker.o \
 	$(OUTDIR)/TaskSignalTransferProtocol.o
 
-THIRD_DIRS := VisModule
-THIRD_DIRS += InSituLib
-THIRD_DIRS += FunctionParser
+SERVER_THIRD_DIRS := VisModule
+SERVER_THIRD_DIRS += InSituLib
+SERVER_THIRD_DIRS += FunctionParser
 
-all: third $(TARGET)
+BUILD_TARGETS :=
+CLEAN_DIRS :=
+
+ifeq "$(PBVR_MAKE_FILTER)" "1"
+BUILD_TARGETS += filter
+CLEAN_DIRS += Filter
+endif
+
+ifeq "$(PBVR_MAKE_SERVER)" "1"
+BUILD_TARGETS += server
+CLEAN_DIRS += $(SERVER_THIRD_DIRS)
+endif
+
+ifeq "$(PBVR_MAKE_KVSML_COMVERTER)" "1"
+BUILD_TARGETS += kvsml_converter
+CLEAN_DIRS += KVSMLConverter
+endif
+
+.PHONY: all server third filter kvsml_converter clean
+
+all: $(BUILD_TARGETS)
+
+server: third $(TARGET)
 
 third:
-	for i in $(THIRD_DIRS); do \
+	for i in $(SERVER_THIRD_DIRS); do \
     	$(MAKE) -C $$i; \
 	done	
+
+filter:
+	$(MAKE) -C Filter
+
+kvsml_converter:
+	$(MAKE) -C KVSMLConverter
 
 $(TARGET): $(OBJS)
 	$(LD) $^ $(LDFLAGS) $(DEFINITIONS) $(LIBRARY_PATH) $(LINK_LIBRARY) -o $@
@@ -166,7 +194,11 @@ $(OUTDIR)/%.o: %.cpp
 -include $(OBJS:.o=.d)
 
 clean:
-	for i in $(THIRD_DIRS); do \
+ifneq "$(strip $(CLEAN_DIRS))" ""
+	for i in $(CLEAN_DIRS); do \
 	$(MAKE) -C $$i clean; done
+endif
+ifeq "$(PBVR_MAKE_SERVER)" "1"
 	$(RMDIR) `find $(OUTDIR) -name "*.o"`
 	$(RM) $(TARGET)
+endif
