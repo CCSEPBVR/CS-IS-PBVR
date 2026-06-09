@@ -95,7 +95,7 @@
         <item>
          <widget class="QRadioButton" name="m_coefficient_variation_radio_button">
           <property name="text">
-           <string>Coefficient Variation</string>
+           <string>Coefficient of Variation</string>
           </property>
           <property name="checked">
            <bool>true</bool>
@@ -260,7 +260,7 @@
         <item>
          <widget class="QGroupBox" name="m_coefficient_variation_transfer_function_group_box">
           <property name="title">
-           <string>Coefficient Variation</string>
+           <string>Coefficient of Variation</string>
           </property>
           <layout class="QVBoxLayout" name="m_coefficient_variation_transfer_function_layout">
            <item>
@@ -559,7 +559,7 @@
         <item>
          <widget class="QGroupBox" name="m_coefficient_variation_min_max_group_box">
          <property name="title">
-          <string>Coefficient Variation MinMax</string>
+          <string>Coefficient of Variation MinMax</string>
          </property>
           <layout class="QFormLayout" name="m_coefficient_variation_min_max_layout">
            <property name="fieldGrowthPolicy">

@@ -4,6 +4,8 @@
 #include <cstddef>
 #include <QDialog>
 
+#include "ColorMapEditor.h"
+#include "OpacityMapEditor.h"
 #include "WebSocketPair.h"
 
 class QButtonGroup;
@@ -32,6 +34,8 @@ private:
 
     WebSocketPair* m_web_sockets = nullptr;
     size_t m_repeat_level = 4;
+    ColorMapEditor m_color_map_editor;
+    OpacityMapEditor m_opacity_map_editor;
 
     QButtonGroup* m_statistics_group = nullptr;
     QButtonGroup* m_average_min_max_group = nullptr;
@@ -39,10 +43,17 @@ private:
     QButtonGroup* m_coefficient_variation_min_max_group = nullptr;
 
     void initializeButtonGroups();
+    void initializeTransferFunctionWidgets();
     QString selectedStatistic() const;
+    bool validateForApply() const;
+    bool validateForExport() const;
+
+    bool eventFilter( QObject* watched, QEvent* event ) override;
 
 private slots:
     void onApply();
+    void onExport();
+    void onImport();
 };
 
 #endif // ENSEMBLETRANSFERFUNCTIONEDITOR_H
