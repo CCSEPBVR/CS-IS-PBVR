@@ -1229,7 +1229,10 @@ void Server::requestDataAt(uWS::WebSocket<false, true, PerSocket>* ws, const nlo
     const auto& maxJson = received.at(Protocol::Key::ResultMaxObjectCoords);
     kvs::Vec3 minObjectCoords(minJson[0].get<float>(), minJson[1].get<float>(), minJson[2].get<float>());
     kvs::Vec3 maxObjectCoords(maxJson[0].get<float>(), maxJson[1].get<float>(), maxJson[2].get<float>());
-    const std::string statistic = ( m_server_mode == ServerMode::IS ) ? StatisticFromRequest( received ) : "";
+    //const std::string statistic = ( m_server_mode == ServerMode::IS ) ? StatisticFromRequest( received ) : "";
+//    const std::string statistic = "mean"; //stab
+//    const std::string statistic = "variance"; //stab
+    const std::string statistic = "cv"; //stab
     std::cout << "[Server][RequestDataAt] received timestep=" << timeStep
               << ", statistic=" << ( statistic.empty() ? "<none>" : statistic )
               << ", mode=" << ( m_server_mode == ServerMode::IS ? "IS" : "CS" )
