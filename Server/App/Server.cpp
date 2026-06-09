@@ -7,6 +7,7 @@
 #include <fstream>
 #include <algorithm>
 #include <cctype>
+#include <cmath>
 
 #include <vismodule/KVSMLObjectPlotOverLine>
 #include <vismodule/InitialStep>
@@ -64,6 +65,83 @@ std::vector<NamedTransferFunction>* StatisticTransferFunctionArray(
     if ( normalized == "variance" ) return &particle_property.m_variance_transfer_function_array;
     if ( normalized == "cv" ) return &particle_property.m_coefficient_of_variation_transfer_function_array;
     return nullptr;
+}
+
+void AppendStatisticTransferFunctionPatches(
+    nlohmann::json& data,
+    const std::string& statistic,
+    const std::vector<NamedTransferFunction>& transfer_functions )
+{
+    for ( size_t i = 0; i < transfer_functions.size(); ++i )
+    {
+        const NamedTransferFunction& tf = transfer_functions[i];
+        const double opacity_min = tf.serverOpacityMinValue();
+        const double opacity_max = tf.serverOpacityMaxValue();
+        const double color_min = tf.serverColorMinValue();
+        const double color_max = tf.serverColorMaxValue();
+
+        if ( !std::isfinite( opacity_min ) || !std::isfinite( opacity_max ) ||
+             !std::isfinite( color_min ) || !std::isfinite( color_max ) )
+        {
+            std::cout << "[Server][EnsembleStatisticsParameter] skip statistic=" << statistic
+                      << ", index=" << i << ", reason=non-finite range" << std::endl;
+            continue;
+        }
+        if ( opacity_min > opacity_max || color_min > color_max )
+        {
+            std::cout << "[Server][EnsembleStatisticsParameter] skip statistic=" << statistic
+                      << ", index=" << i << ", reason=min > max" << std::endl;
+            continue;
+        }
+
+        nlohmann::json patch;
+        patch[Protocol::Key::Statistic] = statistic;
+        patch[Protocol::Key::Index] = static_cast<int>( i );
+        patch[Protocol::Key::OpacityServerRangeMin] = opacity_min;
+        patch[Protocol::Key::OpacityServerRangeMax] = opacity_max;
+        patch[Protocol::Key::ColorServerRangeMin] = color_min;
+        patch[Protocol::Key::ColorServerRangeMax] = color_max;
+
+        nlohmann::json opacity_histogram = nlohmann::json::array();
+        const vismodule::UInt64* opacity_hist = tf.opacityHistogram();
+        for ( int j = 0; j < DEFAULT_NBINS; ++j )
+        {
+            opacity_histogram.push_back( static_cast<int>( opacity_hist[j] ) );
+        }
+        patch[Protocol::Key::OpacityHistogram] = std::move( opacity_histogram );
+
+        nlohmann::json color_histogram = nlohmann::json::array();
+        const vismodule::UInt64* color_hist = tf.colorHistogram();
+        for ( int j = 0; j < DEFAULT_NBINS; ++j )
+        {
+            color_histogram.push_back( static_cast<int>( color_hist[j] ) );
+        }
+        patch[Protocol::Key::ColorHistogram] = std::move( color_histogram );
+
+        data.push_back( std::move( patch ) );
+    }
+}
+
+nlohmann::json BuildEnsembleStatisticsParameter( const ParticleProperty& particle_property )
+{
+    nlohmann::json data = nlohmann::json::array();
+    AppendStatisticTransferFunctionPatches(
+        data,
+        "average",
+        particle_property.m_mean_transfer_function_array );
+    AppendStatisticTransferFunctionPatches(
+        data,
+        "variance",
+        particle_property.m_variance_transfer_function_array );
+    AppendStatisticTransferFunctionPatches(
+        data,
+        "cv",
+        particle_property.m_coefficient_of_variation_transfer_function_array );
+
+    nlohmann::json msg;
+    msg[Protocol::Key::Event] = Protocol::Events::EnsembleStatisticsParameter;
+    msg[Protocol::Key::Data] = std::move( data );
+    return msg;
 }
 
 void ApplyTransferFunctionPatch( NamedTransferFunction& tf, const nlohmann::json& patch )
@@ -1509,6 +1587,19 @@ void Server::requestDataAt(uWS::WebSocket<false, true, PerSocket>* ws, const nlo
         }
 
         m_u_web_sockets.publish(k_text_topic, msg.dump(), uWS::OpCode::TEXT);
+
+        if ( m_server_mode == ServerMode::IS )
+        {
+            nlohmann::json ensembleStatisticsParameter = BuildEnsembleStatisticsParameter( *m_particle_property );
+            size_t data_size = 0;
+            if ( ensembleStatisticsParameter.contains( Protocol::Key::Data ) &&
+                 ensembleStatisticsParameter.at( Protocol::Key::Data ).is_array() )
+            {
+                data_size = ensembleStatisticsParameter.at( Protocol::Key::Data ).size();
+            }
+            std::cout << "[Server][EnsembleStatisticsParameter] publish patches=" << data_size << std::endl;
+            m_u_web_sockets.publish( k_text_topic, ensembleStatisticsParameter.dump(), uWS::OpCode::TEXT );
+        }
     });
     worker.process();
     std::cout << "[Server][RequestDataAt] worker.process finished timestep=" << timeStep << std::endl;
