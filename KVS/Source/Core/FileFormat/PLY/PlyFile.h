@@ -38,7 +38,7 @@ WARRANTY OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.
 #define KVS__PLY_FILE_H_INCLUDE
 
 #include <cstdio>
-#include <cstddef>
+#include <stddef.h>
 
 
 namespace kvs

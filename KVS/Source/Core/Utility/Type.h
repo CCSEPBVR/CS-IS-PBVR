@@ -5,6 +5,7 @@
  */
 /****************************************************************************/
 #pragma once
+#include <stddef.h>
 #include <typeinfo>
 #include <kvs/Compiler>
 #include <kvs/Platform>

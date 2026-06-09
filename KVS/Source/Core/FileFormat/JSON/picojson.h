@@ -32,7 +32,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include <cstddef>
+#include <stddef.h>
 #include <iostream>
 #include <iterator>
 #include <limits>

@@ -6,6 +6,7 @@
 /*****************************************************************************/
 #pragma once
 #include <cstdio>
+#include <stddef.h>
 
 
 namespace kvs

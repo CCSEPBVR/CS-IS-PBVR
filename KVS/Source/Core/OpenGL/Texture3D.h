@@ -7,7 +7,7 @@
 #pragma once
 #include <kvs/Texture>
 #include <kvs/Deprecated>
-#include <cstddef>
+#include <stddef.h>
 
 
 namespace kvs

@@ -5,6 +5,7 @@
  */
 /****************************************************************************/
 #pragma once
+#include <stddef.h>
 #include <string>
 #include <kvs/Texture1D>
 #include <kvs/Texture2D>

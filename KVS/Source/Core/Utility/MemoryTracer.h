@@ -8,6 +8,7 @@
 #include <map>
 #include <ostream>
 #include <kvs/Platform>
+#include <kvs/Type>
 
 
 #if defined ( KVS_ENABLE_MEM_DEBUG )

@@ -5,6 +5,7 @@
  */
 /****************************************************************************/
 #pragma once
+#include <stddef.h>
 #include <kvs/OpenGL>
 #include <kvs/Deprecated>
 

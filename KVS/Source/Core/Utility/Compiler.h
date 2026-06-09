@@ -5,6 +5,8 @@
  */
 /****************************************************************************/
 #pragma once
+#include <stddef.h>
+
 #define KVS_COMPILER_NUMBER( x )           # x
 #define KVS_COMPILER_NUMBER_TO_STRING( x ) KVS_COMPILER_NUMBER( x )
 

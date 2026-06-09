@@ -5,7 +5,7 @@
  */
 /****************************************************************************/
 #pragma once
-#include <cstddef>
+#include <stddef.h>
 #if defined ( KVS_ENABLE_THREAD_SAFE )
 #include <kvs/Mutex>
 #endif
