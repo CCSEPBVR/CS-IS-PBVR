@@ -176,12 +176,25 @@ void ParticleHistoryFile::assign_name_list( const NameListFile& name_list_file )
         m_opacity_histogram_array.push_back( this->split_csv<int>( nml.getValue<std::string>( "HISTOGRAM_O" + idxbuf ) ) );
     }
 
+    auto histogramSum = []( const std::vector<int>& histogram )
+    {
+        int sum = 0;
+        for ( const int value : histogram )
+        {
+            sum += value;
+        }
+        return sum;
+    };
+
     auto readStatistic = [&]( const std::string& prefix,
+                              const std::string& statistic_name,
                               VariableRange& variable_range,
                               HistogramArray& color_histogram_array,
                               HistogramArray& opacity_histogram_array )
     {
         bool has_statistic = false;
+        color_histogram_array.resize( cur_tf_number );
+        opacity_histogram_array.resize( cur_tf_number );
         for ( int i = 0; i < cur_tf_number; i++ )
         {
             std::stringstream ss;
@@ -225,25 +238,34 @@ void ParticleHistoryFile::assign_name_list( const NameListFile& name_list_file )
                 color_histogram = this->split_csv<int>( nml.getValue<std::string>( histogram_c_key ) );
             }
 
-            opacity_histogram_array.push_back( opacity_histogram );
-            color_histogram_array.push_back( color_histogram );
+            opacity_histogram_array[i] = opacity_histogram;
+            color_histogram_array[i] = color_histogram;
             has_statistic = true;
+            std::cout << "[Server][ParticleHistoryFile][EnsembleHistogram]"
+                      << " statistic=" << statistic_name
+                      << " index=" << i
+                      << " bins=" << opacity_histogram.size()
+                      << " sum=" << histogramSum( opacity_histogram )
+                      << std::endl;
         }
         return has_statistic;
     };
 
     const bool has_average = readStatistic(
         "AVE_",
+        "average",
         m_average_variable_range,
         m_average_color_histogram_array,
         m_average_opacity_histogram_array );
     const bool has_variance = readStatistic(
         "VAR_",
+        "variance",
         m_variance_variable_range,
         m_variance_color_histogram_array,
         m_variance_opacity_histogram_array );
     const bool has_coefficient_of_variation = readStatistic(
         "COV_",
+        "cv",
         m_coefficient_of_variation_variable_range,
         m_coefficient_of_variation_color_histogram_array,
         m_coefficient_of_variation_opacity_histogram_array );

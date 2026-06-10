@@ -1,7 +1,26 @@
 #include "ExtendedTransferFunction.h"
 
+#include <algorithm>
+
 ExtendedTransferFunction::ExtendedTransferFunction()
 {
+    m_resolution = DEFAULT_NBINS;
+    m_equation_red.clear();
+    m_equation_green.clear();
+    m_equation_blue.clear();
+    m_equation_opacity.clear();
+    m_user_color_variable_min = 0.0f;
+    m_user_color_variable_max = 0.0f;
+    m_user_opacity_variable_min = 0.0f;
+    m_user_opacity_variable_max = 0.0f;
+    m_server_color_variable_min = 0.0f;
+    m_server_color_variable_max = 0.0f;
+    m_server_opacity_variable_min = 0.0f;
+    m_server_opacity_variable_max = 0.0f;
+    std::fill_n( m_color_histogram, DEFAULT_NBINS, 0 );
+    std::fill_n( m_opacity_histogram, DEFAULT_NBINS, 0 );
+    m_has_color_histogram = false;
+    m_has_opacity_histogram = false;
 }
 
 ExtendedTransferFunction::~ExtendedTransferFunction()
@@ -11,6 +30,23 @@ ExtendedTransferFunction::~ExtendedTransferFunction()
 ExtendedTransferFunction::ExtendedTransferFunction( const TransferFunction& tf ):
     TransferFunction( tf )
 {
+    m_resolution = DEFAULT_NBINS;
+    m_equation_red.clear();
+    m_equation_green.clear();
+    m_equation_blue.clear();
+    m_equation_opacity.clear();
+    m_user_color_variable_min = 0.0f;
+    m_user_color_variable_max = 0.0f;
+    m_user_opacity_variable_min = 0.0f;
+    m_user_opacity_variable_max = 0.0f;
+    m_server_color_variable_min = 0.0f;
+    m_server_color_variable_max = 0.0f;
+    m_server_opacity_variable_min = 0.0f;
+    m_server_opacity_variable_max = 0.0f;
+    std::fill_n( m_color_histogram, DEFAULT_NBINS, 0 );
+    std::fill_n( m_opacity_histogram, DEFAULT_NBINS, 0 );
+    m_has_color_histogram = false;
+    m_has_opacity_histogram = false;
 }
 
 ExtendedTransferFunction::ExtendedTransferFunction( const std::string& red_function_string,
@@ -22,6 +58,23 @@ ExtendedTransferFunction::ExtendedTransferFunction( const std::string& red_funct
                                                     const float       max_value ):
     TransferFunction( resolution )
 {
+    m_resolution = static_cast<int32_t>( resolution );
+    m_equation_red = red_function_string;
+    m_equation_green = green_function_string;
+    m_equation_blue = blue_function_string;
+    m_equation_opacity = opacity_function_string;
+    m_user_color_variable_min = min_value;
+    m_user_color_variable_max = max_value;
+    m_user_opacity_variable_min = min_value;
+    m_user_opacity_variable_max = max_value;
+    m_server_color_variable_min = min_value;
+    m_server_color_variable_max = max_value;
+    m_server_opacity_variable_min = min_value;
+    m_server_opacity_variable_max = max_value;
+    std::fill_n( m_color_histogram, DEFAULT_NBINS, 0 );
+    std::fill_n( m_opacity_histogram, DEFAULT_NBINS, 0 );
+    m_has_color_histogram = false;
+    m_has_opacity_histogram = false;
 /*
     std::string rfstr = red_function_string;
     std::string gfstr = green_function_string;
@@ -88,5 +141,3 @@ ExtendedTransferFunction::ExtendedTransferFunction( const std::string& red_funct
 //
 //    return *this;
 //}
-
-

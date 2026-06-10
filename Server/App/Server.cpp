@@ -67,6 +67,44 @@ std::vector<NamedTransferFunction>* StatisticTransferFunctionArray(
     return nullptr;
 }
 
+int HistogramSum( const vismodule::UInt64* histogram )
+{
+    int sum = 0;
+    if ( histogram == nullptr ) return sum;
+    for ( int i = 0; i < DEFAULT_NBINS; ++i )
+    {
+        sum += static_cast<int>( histogram[i] );
+    }
+    return sum;
+}
+
+void DebugStatisticTransferFunctionArray(
+    const std::string& statistic,
+    const std::vector<NamedTransferFunction>& transfer_functions )
+{
+    std::cout << "[Server][EnsembleStatisticsParameter][debug] statistic=" << statistic
+              << ", transfer_functions.size=" << transfer_functions.size() << std::endl;
+    if ( transfer_functions.empty() )
+    {
+        std::cout << "[Server][EnsembleStatisticsParameter][debug] statistic=" << statistic
+                  << " has no transfer functions. No patches can be generated." << std::endl;
+        return;
+    }
+
+    for ( size_t i = 0; i < transfer_functions.size(); ++i )
+    {
+        const NamedTransferFunction& tf = transfer_functions[i];
+        std::cout << "[Server][EnsembleStatisticsParameter][debug]"
+                  << " statistic=" << statistic
+                  << " index=" << i
+                  << " bins=" << ( tf.m_has_opacity_histogram ? DEFAULT_NBINS : 0 )
+                  << " sum=" << HistogramSum( tf.opacityHistogram() )
+                  << " opacityRange=[" << tf.serverOpacityMinValue()
+                  << ", " << tf.serverOpacityMaxValue() << "]"
+                  << std::endl;
+    }
+}
+
 void AppendStatisticTransferFunctionPatches(
     nlohmann::json& data,
     const std::string& statistic,
@@ -74,24 +112,41 @@ void AppendStatisticTransferFunctionPatches(
 {
     for ( size_t i = 0; i < transfer_functions.size(); ++i )
     {
+        if ( i != 0 )
+        {
+            std::cout << "[Server][EnsembleStatisticsParameter] skip statistic=" << statistic
+                      << ", index=" << i << ", reason=unsupported index" << std::endl;
+            continue;
+        }
+
         const NamedTransferFunction& tf = transfer_functions[i];
         const double opacity_min = tf.serverOpacityMinValue();
         const double opacity_max = tf.serverOpacityMaxValue();
-        const double color_min = tf.serverColorMinValue();
-        const double color_max = tf.serverColorMaxValue();
+        double color_min = tf.serverColorMinValue();
+        double color_max = tf.serverColorMaxValue();
 
-        if ( !std::isfinite( opacity_min ) || !std::isfinite( opacity_max ) ||
-             !std::isfinite( color_min ) || !std::isfinite( color_max ) )
+        if ( !std::isfinite( opacity_min ) || !std::isfinite( opacity_max ) )
         {
             std::cout << "[Server][EnsembleStatisticsParameter] skip statistic=" << statistic
                       << ", index=" << i << ", reason=non-finite range" << std::endl;
             continue;
         }
-        if ( opacity_min > opacity_max || color_min > color_max )
+        if ( opacity_min > opacity_max )
         {
             std::cout << "[Server][EnsembleStatisticsParameter] skip statistic=" << statistic
                       << ", index=" << i << ", reason=min > max" << std::endl;
             continue;
+        }
+        if ( !tf.m_has_opacity_histogram )
+        {
+            std::cout << "[Server][EnsembleStatisticsParameter] skip statistic=" << statistic
+                      << ", index=" << i << ", reason=missing opacity histogram" << std::endl;
+            continue;
+        }
+        if ( !std::isfinite( color_min ) || !std::isfinite( color_max ) || color_min > color_max )
+        {
+            color_min = opacity_min;
+            color_max = opacity_max;
         }
 
         nlohmann::json patch;
@@ -125,14 +180,23 @@ void AppendStatisticTransferFunctionPatches(
 nlohmann::json BuildEnsembleStatisticsParameter( const ParticleProperty& particle_property )
 {
     nlohmann::json data = nlohmann::json::array();
-    AppendStatisticTransferFunctionPatches(
-        data,
+    DebugStatisticTransferFunctionArray(
         "average",
         particle_property.m_mean_transfer_function_array );
     AppendStatisticTransferFunctionPatches(
         data,
+        "average",
+        particle_property.m_mean_transfer_function_array );
+    DebugStatisticTransferFunctionArray(
         "variance",
         particle_property.m_variance_transfer_function_array );
+    AppendStatisticTransferFunctionPatches(
+        data,
+        "variance",
+        particle_property.m_variance_transfer_function_array );
+    DebugStatisticTransferFunctionArray(
+        "cv",
+        particle_property.m_coefficient_of_variation_transfer_function_array );
     AppendStatisticTransferFunctionPatches(
         data,
         "cv",
@@ -1270,8 +1334,22 @@ void Server::initialize(uWS::WebSocket<false, true, PerSocket>* ws, const nlohma
     plotOverTimeParameter[Protocol::Key::Enable] = m_pot_property->m_plot_flag;
     plotOverTimeParameter[Protocol::Key::Coords] = m_pot_property->m_target_point;
     msg[Protocol::Key::PlotOverTimeParameter] = std::move(plotOverTimeParameter);
-    
+
     m_u_web_sockets.publish(k_text_topic, msg.dump(), uWS::OpCode::TEXT);
+
+    if ( m_server_mode == ServerMode::IS )
+    {
+        nlohmann::json ensembleStatisticsParameter = BuildEnsembleStatisticsParameter( *m_particle_property );
+        size_t data_size = 0;
+        if ( ensembleStatisticsParameter.contains( Protocol::Key::Data ) &&
+             ensembleStatisticsParameter.at( Protocol::Key::Data ).is_array() )
+        {
+            data_size = ensembleStatisticsParameter.at( Protocol::Key::Data ).size();
+        }
+        std::cout << "[Server][EnsembleStatisticsParameter] initialize publish patches="
+                  << data_size << std::endl;
+        m_u_web_sockets.publish( k_text_topic, ensembleStatisticsParameter.dump(), uWS::OpCode::TEXT );
+    }
 
     // ISの場合state.txtを監視しLAST_STEPが更新されたらクライアントにLAST_STEPを送信するスレッドを起動する
     if (m_server_mode == ServerMode::IS)

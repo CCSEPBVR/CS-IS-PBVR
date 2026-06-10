@@ -33,6 +33,8 @@ public:
 
     vismodule::UInt64 m_color_histogram[DEFAULT_NBINS];
     vismodule::UInt64 m_opacity_histogram[DEFAULT_NBINS];
+    bool m_has_color_histogram;
+    bool m_has_opacity_histogram;
 
 public:
 
@@ -88,14 +90,18 @@ public:
 public:
     NamedTransferFunction() :
         m_selection( SelectExtendTransferFunction ),
+        m_server_color_range_mode( ServerRangeMode::Unknown ),
+        m_server_opacity_range_mode( ServerRangeMode::Unknown ),
         m_name( "" ), m_color_variable( "" ), m_opacity_variable( "" )
     {
     }
 
     NamedTransferFunction( const TransferFunction& tf ) :
+        ExtendedTransferFunction( tf ),
         m_selection( SelectExtendTransferFunction ),
-        m_name( "" ), m_color_variable( "" ), m_opacity_variable( "" ),
-        ExtendedTransferFunction( tf )
+        m_server_color_range_mode( ServerRangeMode::Unknown ),
+        m_server_opacity_range_mode( ServerRangeMode::Unknown ),
+        m_name( "" ), m_color_variable( "" ), m_opacity_variable( "" )
     {
     }
 

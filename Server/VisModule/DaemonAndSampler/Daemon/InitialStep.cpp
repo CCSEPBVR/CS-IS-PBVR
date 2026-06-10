@@ -38,6 +38,7 @@ void ApplyStatisticHistoryToTransferFunctions(
         std::fill_n( transfer_functions[i].m_opacity_histogram, DEFAULT_NBINS, 0 );
         const std::vector<int>& opacity_histogram = opacity_histograms[i];
         const int opacity_bins = static_cast<int>( opacity_histogram.size() );
+        transfer_functions[i].m_has_opacity_histogram = opacity_bins > 0;
         for ( int b = 0; b < DEFAULT_NBINS && b < opacity_bins; ++b )
         {
             transfer_functions[i].m_opacity_histogram[b] =
@@ -45,15 +46,22 @@ void ApplyStatisticHistoryToTransferFunctions(
         }
 
         std::fill_n( transfer_functions[i].m_color_histogram, DEFAULT_NBINS, 0 );
+        transfer_functions[i].m_has_color_histogram = false;
         if ( i < static_cast<int>( color_histograms.size() ) )
         {
             const std::vector<int>& color_histogram = color_histograms[i];
             const int color_bins = static_cast<int>( color_histogram.size() );
+            transfer_functions[i].m_has_color_histogram = color_bins > 0;
             for ( int b = 0; b < DEFAULT_NBINS && b < color_bins; ++b )
             {
                 transfer_functions[i].m_color_histogram[b] =
                     static_cast<vismodule::UInt64>( color_histogram[b] );
             }
+        }
+
+        if ( !transfer_functions[i].m_has_opacity_histogram )
+        {
+            continue;
         }
 
         std::stringstream ss;
