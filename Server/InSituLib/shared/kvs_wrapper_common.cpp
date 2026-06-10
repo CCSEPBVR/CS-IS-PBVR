@@ -24,6 +24,106 @@ namespace Generator = vismodule::CellByCellParticleGenerator;
 bool async_io_enabled = false;
 pbvr::ParticleWriteThread pwt;
 
+namespace
+{
+
+std::string ToTableString( const std::vector<int32_t>& values )
+{
+    std::stringstream table;
+    for ( size_t i = 0; i < values.size(); i++ )
+    {
+        table << values[i] << ",";
+    }
+    return table.str();
+}
+
+std::vector<int32_t> DefaultGlyphColorMapTable()
+{
+    std::vector<int32_t> table = {
+        59,76,192,60,78,194,61,80,195,62,81,197,64,83,198,65,85,200,66,86,201,67,88,203,68,90,204,69,92,206,71,93,207,72,95,209,73,97,210,74,99,211,75,100,213,77,102,214,78,104,215,79,105,217,80,107,218,82,109,219,83,110,221,84,112,222,85,114,223,87,115,224,88,117,225,89,119,226,90,120,228,92,122,229,93,124,230,94,125,231,95,127,232,97,128,233,98,130,234,99,132,235,101,133,236,102,135,237,103,136,238,105,138,239,106,139,239,107,141,240,109,142,241,110,144,242,111,145,243,113,147,243,114,148,244,115,150,245,117,151,246,118,153,246,119,154,247,121,156,248,122,157,248,124,159,249,125,160,249,126,161,250,128,163,250,129,164,251,130,166,251,132,167,252,133,168,252,135,170,252,136,171,253,137,172,253,139,173,253,140,175,254,141,176,254,143,177,254,144,178,254,146,180,254,147,181,255,148,182,255,150,183,255,151,184,255,153,185,255,154,187,255,155,188,255,157,189,255,158,190,255,159,191,255,161,192,255,162,193,255,164,194,254,165,195,254,166,196,254,168,197,254,169,198,254,170,199,253,172,200,253,173,201,253,174,201,252,176,202,252,177,203,252,178,204,251,180,205,251,181,206,250,182,206,250,183,207,249,185,208,249,186,209,248,187,209,248,189,210,247,190,211,246,191,211,246,192,212,245,193,212,244,195,213,244,196,214,243,197,214,242,198,215,241,200,215,241,201,216,240,202,216,239,203,216,238,204,217,237,205,217,236,206,218,235,208,218,234,209,218,233,210,219,232,211,219,231,212,219,230,213,219,229,214,220,228,215,220,227,216,220,226,217,220,225,218,220,224,219,221,222,220,221,221,221,220,220,222,220,219,223,219,217,225,219,216,226,218,214,227,218,213,228,217,211,229,217,210,229,216,209,230,216,207,231,215,206,232,214,204,233,214,203,234,213,201,235,212,200,235,211,198,236,211,197,237,210,195,238,209,194,238,208,192,239,207,191,239,206,189,240,206,187,241,205,186,241,204,184,242,203,183,242,202,181,243,201,180,243,200,178,244,199,177,244,198,175,244,197,173,245,196,172,245,195,170,245,193,169,246,192,167,246,191,166,246,190,164,246,189,162,247,188,161,247,186,159,247,185,158,247,184,156,247,183,155,247,181,153,247,180,151,247,179,150,247,178,148,247,176,147,247,175,145,247,173,143,247,172,142,247,171,140,247,169,139,247,168,137,247,166,136,246,165,134,246,163,132,246,162,131,246,160,129,245,159,128,245,157,126,245,156,125,244,154,123,244,153,122,244,151,120,243,149,119,243,148,117,242,146,116,242,144,114,241,143,112,241,141,111,240,139,109,240,138,108,239,136,106,239,134,105,238,133,104,237,131,102,237,129,101,236,127,99,235,125,98,234,124,96,234,122,95,233,120,93,232,118,92,231,116,90,230,114,89,229,112,88,229,111,86,228,109,85,227,107,83,226,105,82,225,103,81,224,101,79,223,99,78,222,97,77,221,95,75,220,93,74,219,91,73,218,89,71,216,86,70,215,84,69,214,82,67,213,80,66,212,78,65,211,76,63,209,73,62,208,71,61,207,69,60,206,67,59,204,64,57,203,62,56,202,59,55,200,57,54,199,54,52,198,52,51,196,49,50,195,46,49,193,43,48,192,40,47,191,37,46,189,34,44,188,30,43,186,26,42,185,22,41,183,17,40,182,11,39,180,4,38
+    };
+    return table;
+}
+
+NameListFile DefaultGlyphParameterNameListFile()
+{
+    NameListFile nameListFile;
+    nameListFile.setLine( "GLYPH_FLAG", "FALSE" );
+    nameListFile.setLine( "SCALE_FACTOR", 1 );
+    nameListFile.setLine( "STRIDE", 3 );
+    nameListFile.setLine( "SEED", 1 );
+    nameListFile.setLine( "NUMBER_OF_SMAPLING_POINT", 1000 );
+    nameListFile.setLine( "GLYPH_COLOR_MAX", 1 );
+    nameListFile.setLine( "GLYPH_COLOR_MIN", 0 );
+    nameListFile.setLine( "GLYPH_TYPE", "Arrow" );
+    nameListFile.setLine( "SIZE_VARIABLES", "q1," );
+    nameListFile.setLine( "COLOR_VARIABLES", "q1," );
+    nameListFile.setLine( "DIRECTION_VARIABLES", "q1,q2,q3," );
+    nameListFile.setLine( "DISTRIBUTION_MODE", "UniformDistribution" );
+    nameListFile.setLine( "SIZE_SAMPLING_METHOD", "Constant" );
+    nameListFile.setLine( "COLOR_DATA_SAMPLING_METHOD", "Constant" );
+    nameListFile.setLine( "GLYPH_COLOR_MAP_TABLE", ToTableString( DefaultGlyphColorMapTable() ) );
+    nameListFile.setLine( "END_PARAMETER_FILE", "SUCCESS" );
+    return nameListFile;
+}
+
+NameListFile DefaultPlotOverLineParameterNameListFile()
+{
+    NameListFile nameListFile;
+    nameListFile.setLine( "PLOT_FLAG", "FALSE" );
+    nameListFile.setLine( "PLOT_VARIABLE", "q1" );
+    nameListFile.setLine( "SAMPLING_SIZE", 256 );
+    nameListFile.setLine( "START_POINT", "0,0,0," );
+    nameListFile.setLine( "END_POINT", "1,1,1," );
+    nameListFile.setLine( "END_PARAMETER_FILE", "SUCCESS" );
+    return nameListFile;
+}
+
+NameListFile DefaultPlotOverTimeParameterNameListFile()
+{
+    NameListFile nameListFile;
+    nameListFile.setLine( "PLOT_FLAG", "FALSE" );
+    nameListFile.setLine( "TARGET_POINT", "0,0,0," );
+    nameListFile.setLine( "END_PARAMETER_FILE", "SUCCESS" );
+    return nameListFile;
+}
+
+void BroadcastNameListFile( NameListFile& nameListFile, const int mpi_rank )
+{
+    int size = 0;
+    char* buf = NULL;
+
+    if ( mpi_rank == 0 )
+    {
+        size = static_cast<int>( nameListFile.byteSize() );
+        if ( size > 0 )
+        {
+            buf = new char[size];
+            nameListFile.pack( buf );
+        }
+    }
+
+#ifndef CPU_VER
+    MPI_Bcast( &size, 1, MPI_INT, 0, MPI_COMM_WORLD );
+#endif
+
+    if ( size > 0 )
+    {
+        if ( mpi_rank > 0 ) buf = new char [size];
+#ifndef CPU_VER
+        MPI_Bcast( buf, size, MPI_CHARACTER, 0, MPI_COMM_WORLD );
+#endif
+        if ( mpi_rank > 0 )
+        {
+            nameListFile = NameListFile();
+            nameListFile.unpack( buf );
+        }
+        delete[] buf;
+    }
+}
+
+} // namespace
+
 /**
  * @brief begin_wrapper_async_io , call to begin async wrapper output
  */
@@ -54,6 +154,21 @@ std::string EnvValueOrUnset( const char* name )
 {
     const char* value = std::getenv( name );
     return value ? std::string( value ) : std::string( "(unset)" );
+}
+
+void PrintMissingParameterFileWarning(
+    const std::string& parameterPath,
+    const std::string& parameterPath_old,
+    const std::string& defaultParameterMessage
+)
+{
+    std::cout << "================================================================" << std::endl;
+    std::cout << "[WARN] " << FileNameOnly( parameterPath ) << " and "
+              << FileNameOnly( parameterPath_old ) << " do not exist." << std::endl;
+    std::cout << "[INFO] VIS_PARAM_DIR = " << EnvValueOrUnset( "VIS_PARAM_DIR" ) << std::endl;
+    std::cout << "[INFO] PARTICLE_DIR  = " << EnvValueOrUnset( "PARTICLE_DIR" ) << std::endl;
+    std::cout << "[INFO] " << defaultParameterMessage << std::endl;
+    std::cout << "================================================================" << std::endl;
 }
 
 void SetDefaultParticleParameter(
@@ -145,7 +260,7 @@ size_t CalculateSubpixelLevel(
     return static_cast<size_t>( subpixel_level + 0.5f );
 }
 
-bool SetParameterFilePath(
+void SetParameterFilePath(
     const int time_step,
     std::string& historyFilePath,
     std::string& stateFilePath,
@@ -165,16 +280,8 @@ bool SetParameterFilePath(
     std::string& plotOverTimeParameterPath_old
 )
 {
-    int mpi_rank;
-#ifndef CPU_VER
-    MPI_Comm_rank( MPI_COMM_WORLD, &mpi_rank );
-#else
-    mpi_rank = 0;
-#endif
-
     std::string visParamDir;
     std::string tfFilename;
-    static bool is_first_setting = true;
 
     const char *envBuf = NULL;
     envBuf = std::getenv( "VIS_PARAM_DIR" );
@@ -240,36 +347,6 @@ bool SetParameterFilePath(
     plotOverTimeParameterPath     = visParamDir + "parameter.pot";
     plotOverTimeParameterPath_old = visParamDir + "parameter_old.pot";
 
-    std::ifstream tfFile( tfFilePath );
-    std::ifstream tfFileOld( tfFilePath_old );
-    std::ifstream glyphParameterFile( glyphParameterPath );
-    std::ifstream plotOverLineParameterFile( plotOverLineParameterPath );
-    std::ifstream plotOverTimeParameterFile( plotOverTimeParameterPath );
-
-    if ( is_first_setting && mpi_rank == 0 )
-    {
-        const bool has_particle_parameter_file = tfFile.good() || tfFileOld.good();
-        if ( has_particle_parameter_file && !glyphParameterFile.good() )
-        {
-            std::cout << "ERROR:parameter.gly is not existed." << std::endl;
-            return false;
-        }
-
-        if ( has_particle_parameter_file && !plotOverLineParameterFile.good() )
-        {
-            std::cout << "ERROR:parameter.pol is not existed." << std::endl;
-            return false;
-        }
-
-        if ( has_particle_parameter_file && !plotOverTimeParameterFile.good() )
-        {
-            std::cout << "ERROR:parameter.pot is not existed." << std::endl;
-            return false;
-        }
-    }
-
-    is_first_setting = false;
-    return true;
 }
 
 bool SetGlyphParameter(
@@ -287,51 +364,36 @@ bool SetGlyphParameter(
 #endif
 
     ParameterFileReader ppr;
-    int size = 0;
-    char* buf;
 
     if ( mpi_rank == 0 )
     {
-        bool is_file_exist = false;
         std::ifstream glyphParameterFile( glyphParameterPath );
+        std::ifstream glyphParameterFileOld( glyphParameterPath_old );
 
         if ( glyphParameterFile.good() )
         {
-            is_file_exist = true;
             ppr.readGlyphParameterFile( glyphParameterPath.c_str() );
             nameListFile = ppr.getNameListFile();
             std::rename( glyphParameterPath.c_str(), glyphParameterPath_old.c_str() );
         }
+        else if ( glyphParameterFileOld.good() )
+        {
+            ppr.readGlyphParameterFile( glyphParameterPath_old.c_str() );
+            nameListFile = ppr.getNameListFile();
+        }
         else
         {
-            ppr.setNameListFile( nameListFile );
-        }
-
-        if ( is_file_exist ) size = nameListFile.byteSize();
-        else size = 0;
-
-        if ( size > 0 )
-        {
-            buf = new char[size];
-            nameListFile.pack( buf );
+            PrintMissingParameterFileWarning(
+                glyphParameterPath,
+                glyphParameterPath_old,
+                "Set default glyph parameters."
+            );
+            nameListFile = DefaultGlyphParameterNameListFile();
         }
     }
 
-#ifndef CPU_VER
-    MPI_Bcast( &size, 1, MPI_INT, 0, MPI_COMM_WORLD );
-#endif
-
-    if ( size > 0 )
-    {
-        if ( mpi_rank > 0 ) buf = new char [size];
-#ifndef CPU_VER
-        MPI_Bcast( buf, size, MPI_CHARACTER, 0, MPI_COMM_WORLD );
-#endif
-        if( mpi_rank > 0 ) nameListFile.unpack( buf );
-        delete[] buf;
-    }
-
-    if ( mpi_rank > 0 ) ppr.setNameListFile( nameListFile );
+    BroadcastNameListFile( nameListFile, mpi_rank );
+    ppr.setNameListFile( nameListFile );
     ppr.setGlyphParameter( glyph_property );
 
     return true;
@@ -352,51 +414,36 @@ bool SetPlotOverLineParameter(
 #endif
 
     ParameterFileReader ppr;
-    int size = 0;
-    char* buf;
 
     if ( mpi_rank == 0 )
     {
-        bool is_file_exist = false;
         std::ifstream plotOverLineParameterFile( plotOverLineParameterPath );
+        std::ifstream plotOverLineParameterFileOld( plotOverLineParameterPath_old );
 
         if ( plotOverLineParameterFile.good() )
         {
-            is_file_exist = true;
             ppr.readPlotOverLineParameterFile( plotOverLineParameterPath.c_str() );
             nameListFile = ppr.getNameListFile();
             std::rename( plotOverLineParameterPath.c_str(), plotOverLineParameterPath_old.c_str() );
         }
+        else if ( plotOverLineParameterFileOld.good() )
+        {
+            ppr.readPlotOverLineParameterFile( plotOverLineParameterPath_old.c_str() );
+            nameListFile = ppr.getNameListFile();
+        }
         else
         {
-            ppr.setNameListFile( nameListFile );
+            PrintMissingParameterFileWarning(
+                plotOverLineParameterPath,
+                plotOverLineParameterPath_old,
+                "Set default plot over line parameters."
+            );
+            nameListFile = DefaultPlotOverLineParameterNameListFile();
         }
-
-        if ( is_file_exist ) size = nameListFile.byteSize();
-        else size = 0;
-
-        if ( size > 0 )
-        {
-            buf = new char[size];
-            nameListFile.pack( buf );
-        }        
     }
 
-#ifndef CPU_VER
-    MPI_Bcast( &size, 1, MPI_INT, 0, MPI_COMM_WORLD );
-#endif
-
-    if ( size > 0 )
-    {
-        if ( mpi_rank > 0 ) buf = new char [size];
-#ifndef CPU_VER
-        MPI_Bcast( buf, size, MPI_CHARACTER, 0, MPI_COMM_WORLD );
-#endif
-        if( mpi_rank > 0 ) nameListFile.unpack( buf );
-        delete[] buf;
-    }
-
-    if ( mpi_rank > 0 ) ppr.setNameListFile( nameListFile );
+    BroadcastNameListFile( nameListFile, mpi_rank );
+    ppr.setNameListFile( nameListFile );
     ppr.setPlotOverLineParameter( pol_property );
 
     return true;
@@ -417,51 +464,36 @@ bool SetPlotOverTimeParameter(
 #endif
 
     ParameterFileReader ppr;
-    int size = 0;
-    char* buf;
 
     if ( mpi_rank == 0 )
     {
-        bool is_file_exist = false;
         std::ifstream plotOverTimeParameterFile( plotOverTimeParameterPath );
+        std::ifstream plotOverTimeParameterFileOld( plotOverTimeParameterPath_old );
 
         if ( plotOverTimeParameterFile.good() )
         {
-            is_file_exist = true;
             ppr.readPlotOverTimeParameterFile( plotOverTimeParameterPath.c_str() );
             nameListFile = ppr.getNameListFile();
             std::rename( plotOverTimeParameterPath.c_str(), plotOverTimeParameterPath_old.c_str() );
         }
+        else if ( plotOverTimeParameterFileOld.good() )
+        {
+            ppr.readPlotOverTimeParameterFile( plotOverTimeParameterPath_old.c_str() );
+            nameListFile = ppr.getNameListFile();
+        }
         else
         {
-            ppr.setNameListFile( nameListFile );
+            PrintMissingParameterFileWarning(
+                plotOverTimeParameterPath,
+                plotOverTimeParameterPath_old,
+                "Set default plot over time parameters."
+            );
+            nameListFile = DefaultPlotOverTimeParameterNameListFile();
         }
-
-        if ( is_file_exist ) size = nameListFile.byteSize();
-        else size = 0;
-
-        if ( size > 0 )
-        {
-            buf = new char[size];
-            nameListFile.pack( buf );
-        }        
     }
 
-#ifndef CPU_VER
-    MPI_Bcast( &size, 1, MPI_INT, 0, MPI_COMM_WORLD );
-#endif
-
-    if ( size > 0 )
-    {
-        if ( mpi_rank > 0 ) buf = new char [size];
-#ifndef CPU_VER
-        MPI_Bcast( buf, size, MPI_CHARACTER, 0, MPI_COMM_WORLD );
-#endif
-        if( mpi_rank > 0 ) nameListFile.unpack( buf );
-        delete[] buf;
-    }
-
-    if ( mpi_rank > 0 ) ppr.setNameListFile( nameListFile );
+    BroadcastNameListFile( nameListFile, mpi_rank );
+    ppr.setNameListFile( nameListFile );
     ppr.setPlotOverTimeParameter( pot_property );
 
     return true;

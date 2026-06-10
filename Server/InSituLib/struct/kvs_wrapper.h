@@ -24,7 +24,7 @@ void OutputCoordMinMaxFile(
     const std::string& coordMinMaxFilePath
 );
 
-bool generate_particles(
+void generate_particles(
     int time_step,
     domain_parameters_struct dom,
     Type** volume_data,

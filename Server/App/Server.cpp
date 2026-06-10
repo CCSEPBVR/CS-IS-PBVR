@@ -607,9 +607,15 @@ void Server::initialize(uWS::WebSocket<false, true, PerSocket>* ws, const nlohma
             break;
         }
 
-        ParameterFileWriter ppw;
-        ppw.getParticleParameter(*m_particle_property);
-        ppw.writeParticleParameterFile();
+        std::ifstream tfFileOld( tfFilePath_old );
+
+        // default_old.tfが存在する場合のみdefault.tfを出力する
+        if ( tfFileOld.good() )
+        {
+            ParameterFileWriter ppw;
+            ppw.getParticleParameter(*m_particle_property);
+            ppw.writeParticleParameterFile();
+        }
 
         InitialStepIS(
             m_multi_volume_property_list->m_total_start_steps,
@@ -1542,10 +1548,39 @@ void Server::receiveObjectInfoParameter(uWS::WebSocket<false, true, PerSocket>* 
     }
     else // m_server_mode == ServerMode::IS
     {
-        // パラメータファイルに粒子パラメータを書き込む
-        ParameterFileWriter ppw;
-        ppw.getParticleParameter(*m_particle_property);
-        ppw.writeParticleParameterFile();
+        std::string tfFilePath_old;
+        std::string visParamDir;
+        std::string tfFilename;
+        const char *envBuf = NULL;
+        envBuf = std::getenv( "VIS_PARAM_DIR" );
+        if (envBuf == NULL) {
+            visParamDir = "./";
+        }
+        else {
+            visParamDir = envBuf;
+            if (visParamDir[visParamDir.size() - 1] != '/') {
+                visParamDir += "/";
+            }
+        }
+        envBuf = std::getenv( "TF_NAME" );
+        if (envBuf == NULL) {
+            tfFilename = "default";
+        }
+        else {
+            tfFilename = envBuf;
+        }
+        tfFilePath_old = visParamDir + tfFilename + "_old.tf";
+
+        std::ifstream tfFileOld( tfFilePath_old );
+
+        // default_old.tfが存在する場合のみdefault.tfを出力する
+        if ( tfFileOld.good() )
+        {
+            // パラメータファイルに粒子パラメータを書き込む
+            ParameterFileWriter ppw;
+            ppw.getParticleParameter(*m_particle_property);
+            ppw.writeParticleParameterFile();
+        }
     }
 
     ws->publish( k_text_topic, received.dump(), uWS::OpCode::TEXT );

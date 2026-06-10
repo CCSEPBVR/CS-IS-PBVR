@@ -162,7 +162,7 @@ void OutputCoordMinMaxFile(
 }
 
 // 変数配列用のソルバー関数
-bool generate_particles(
+void generate_particles(
     int time_step,
     domain_parameters_unstruct dom,
     Type** values,
@@ -190,7 +190,6 @@ bool generate_particles(
         start_time_step = time_step;
     }
 
-    bool result = false;
     std::string historyFilePath;
     std::string stateFilePath;
     std::string coordMinMaxFilePath;
@@ -208,7 +207,7 @@ bool generate_particles(
     std::string plotOverTimeParameterPath;
     std::string plotOverTimeParameterPath_old;
 
-    result = SetParameterFilePath(
+    SetParameterFilePath(
         time_step,
         historyFilePath,
         stateFilePath,
@@ -227,8 +226,6 @@ bool generate_particles(
         plotOverTimeParameterPath,
         plotOverTimeParameterPath_old
     );
-
-    if ( !result ) return false;
 
     char  arg_dummy0[] = "dummy";
     char* arg_dummy[]  = { arg_dummy0, NULL };
@@ -456,7 +453,6 @@ bool generate_particles(
     delete particle_property.m_transfunc_synthesizer;
     delete particle_property.m_camera;
 
-    return true;
 }
 
 bool SetParticleParameter( 
@@ -638,7 +634,7 @@ bool SetParticleParameter(
 
 #ifdef EXTEND_FILE_FORMAT
 // vtk用のソルバー関数
-bool generate_particles_vtk( int time_step, vtkUnstructuredGrid* ucd )
+void generate_particles_vtk( int time_step, vtkUnstructuredGrid* ucd )
 {
     int mpi_rank;
     int mpi_size;
@@ -659,7 +655,6 @@ bool generate_particles_vtk( int time_step, vtkUnstructuredGrid* ucd )
         start_time_step = time_step;
     }
 
-    bool result = false;
     std::string historyFilePath;
     std::string stateFilePath;
     std::string coordMinMaxFilePath;
@@ -677,7 +672,7 @@ bool generate_particles_vtk( int time_step, vtkUnstructuredGrid* ucd )
     std::string plotOverTimeParameterPath;
     std::string plotOverTimeParameterPath_old;
 
-    result = SetParameterFilePath(
+    SetParameterFilePath(
         time_step,
         historyFilePath,
         stateFilePath,
@@ -696,8 +691,6 @@ bool generate_particles_vtk( int time_step, vtkUnstructuredGrid* ucd )
         plotOverTimeParameterPath,
         plotOverTimeParameterPath_old
     );
-
-    if ( !result ) return false;
 
     char  arg_dummy0[] = "dummy";
     char* arg_dummy[]  = { arg_dummy0, NULL };
@@ -726,9 +719,11 @@ bool generate_particles_vtk( int time_step, vtkUnstructuredGrid* ucd )
 
     if ( kvs_cell_type_vector.empty() )
     {
+        std::cerr << "ERROR: No supported cell types were found in the input VTK unstructured grid." << std::endl;
+        std::cout << "time_step = " << time_step << std::endl;
         delete particle_property.m_transfunc_synthesizer;
         delete particle_property.m_camera;
-        return false;
+        return;
     }
 
     auto convert_cell_type = [&](
@@ -1028,7 +1023,6 @@ bool generate_particles_vtk( int time_step, vtkUnstructuredGrid* ucd )
     delete particle_property.m_transfunc_synthesizer;
     delete particle_property.m_camera;
 
-    return true;
 }
 
 void SetDomain( vtkUnstructuredGrid* ucd, domain_parameters_unstruct* dom )

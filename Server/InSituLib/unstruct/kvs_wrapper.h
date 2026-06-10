@@ -38,7 +38,7 @@ bool SetParticleParameter(
     bool& object_generation_enabled
 );
 
-bool generate_particles(
+void generate_particles(
     int time_step,
     domain_parameters_unstruct dom,
     Type** values,
@@ -51,7 +51,7 @@ bool generate_particles(
 );
 
 #ifdef EXTEND_FILE_FORMAT
-bool generate_particles_vtk(
+void generate_particles_vtk(
     int time_step,
     vtkUnstructuredGrid* ucd
 );

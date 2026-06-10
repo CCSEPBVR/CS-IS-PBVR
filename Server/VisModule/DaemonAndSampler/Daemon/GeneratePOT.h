@@ -7,6 +7,8 @@
 #include <vismodule/PlotOverTimeProperty>
 #include <vismodule/KVSMLObjectPlotOverTime>
 
+void SetDefaultPOTParameter( PlotOverTimeProperty& pot_property );
+
 void SetDefaultPOTParameterIS( PlotOverTimeProperty& pot_property );
 
 bool GeneratePOTIS(

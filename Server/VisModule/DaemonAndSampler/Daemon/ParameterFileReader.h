@@ -6,6 +6,7 @@
 #include <fstream>
 #include <map>
 #include <algorithm>
+#include <vector>
 #include <vismodule/Type>
 #include <vismodule/Vector3>
 #include <vismodule/Camera>
@@ -23,7 +24,6 @@ private:
     NameListFile m_name_list_file;
     
     void set_default_parameter();
-    void set_default_pot_parameter();
 
     std::vector<int> getTableInt( std::string table_string );
     std::vector<float> getTableFloat( std::string table_string );

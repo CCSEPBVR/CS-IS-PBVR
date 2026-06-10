@@ -41,18 +41,16 @@ int main( int argc, char** argv )
     };
 
     int time_step = 0;
-    bool result = false;
 
     begin_wrapper_async_io();
     for(;;)
     {
         if(mpi_rank==0) hydro.show();
 
-        result = generate_particles( time_step, dom,
+        generate_particles( time_step, dom,
                             hydro.values, hydro.nvariables,
                             hydro.coords, hydro.nnodes,
                             hydro.connections, hydro.ncells, vismodule::VolumeObjectBase::CellType::Prism );
-        if ( !result ) return -1;
         time_step++;
     }
     end_wrapper_async_io();

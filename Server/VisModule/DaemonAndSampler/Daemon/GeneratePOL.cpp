@@ -1,4 +1,8 @@
 #include <array>
+#include <cstdlib>
+#include <fstream>
+#include <iostream>
+#include <string>
 
 #include <vismodule/GenerateParticle>
 #include <vismodule/GeneratePOL>
@@ -15,7 +19,33 @@
 #include <vismodule/JobCollector>
 #endif
 
-void SetDefaultPOLParameterCS( PlotOverLineProperty& pol_property )
+namespace
+{
+
+std::string EnvValueOrUnsetIS( const char* name )
+{
+    const char* value = std::getenv( name );
+    return value ? std::string( value ) : std::string( "(unset)" );
+}
+
+void PrintMissingParameterFileWarning(
+    const std::string& parameter_name,
+    const std::string& file_name,
+    const std::string& default_parameter_message
+)
+{
+    std::cout << "================================================================" << std::endl;
+    std::cout << "[WARN] " << parameter_name << " does not exist." << std::endl;
+    std::cout << "[WARN] File: " << file_name << std::endl;
+    std::cout << "[INFO] VIS_PARAM_DIR = " << EnvValueOrUnsetIS( "VIS_PARAM_DIR" ) << std::endl;
+    std::cout << "[INFO] PARTICLE_DIR  = " << EnvValueOrUnsetIS( "PARTICLE_DIR" ) << std::endl;
+    std::cout << "[INFO] " << default_parameter_message << std::endl;
+    std::cout << "================================================================" << std::endl;
+}
+
+} // namespace
+
+void SetDefaultPOLParameter( PlotOverLineProperty& pol_property )
 {
     pol_property.m_plot_flag      = false;
     pol_property.m_plot_variable  = "q1";
@@ -26,6 +56,11 @@ void SetDefaultPOLParameterCS( PlotOverLineProperty& pol_property )
     pol_property.m_end_point[1]   = 1;
     pol_property.m_end_point[2]   = 1;
     pol_property.m_sampling_size  = 256;
+}
+
+void SetDefaultPOLParameterCS( PlotOverLineProperty& pol_property )
+{
+    SetDefaultPOLParameter( pol_property );
 }
 
 std::unique_ptr<vismodule::KVSMLObjectPlotOverLine> GeneratePOLCS(
@@ -222,7 +257,6 @@ void SetDefaultPOLParameterIS( PlotOverLineProperty& pol_property )
 {
     const char *envBuf = NULL;
     std::string visParamDir;
-    std::string plotOverLineParameterPath;
     std::string plotOverLineParameterPath_old;
     ParameterFileReader ppr;
 
@@ -238,10 +272,20 @@ void SetDefaultPOLParameterIS( PlotOverLineProperty& pol_property )
         }
     }
 
-    plotOverLineParameterPath     =  visParamDir;
     plotOverLineParameterPath_old =  visParamDir;
-    plotOverLineParameterPath     += "parameter.pol";
     plotOverLineParameterPath_old += "parameter_old.pol";
+
+    std::ifstream plotOverLineParameterFileOld( plotOverLineParameterPath_old );
+    if ( !plotOverLineParameterFileOld.good() )
+    {
+        PrintMissingParameterFileWarning(
+            "Plot over line parameter file",
+            "parameter_old.pol",
+            "Set default plot over line parameters."
+        );
+        SetDefaultPOLParameter( pol_property );
+        return;
+    }
 
     ppr.readPlotOverLineParameterFile( plotOverLineParameterPath_old.c_str() );
     ppr.setPlotOverLineParameter( pol_property );

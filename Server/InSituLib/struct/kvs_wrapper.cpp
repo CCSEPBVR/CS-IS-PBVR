@@ -129,7 +129,7 @@ void OutputCoordMinMaxFile(
     }
 }
 
-bool generate_particles(
+void generate_particles(
     int time_step,
     domain_parameters_struct dom,
     Type** values, 
@@ -152,7 +152,6 @@ bool generate_particles(
         start_time_step = time_step;
     }
 
-    bool result = false;
     std::string historyFilePath;    
     std::string stateFilePath;
     std::string coordMinMaxFilePath;
@@ -170,7 +169,7 @@ bool generate_particles(
     std::string plotOverTimeParameterPath;
     std::string plotOverTimeParameterPath_old;
 
-    result = SetParameterFilePath(
+    SetParameterFilePath(
         time_step,
         historyFilePath,
         stateFilePath,
@@ -189,8 +188,6 @@ bool generate_particles(
         plotOverTimeParameterPath,
         plotOverTimeParameterPath_old
     );
-
-    if ( !result ) return false;
 
     char  arg_dummy0[] = "dummy";
     char* arg_dummy[]  = { arg_dummy0, NULL };
@@ -409,7 +406,6 @@ bool generate_particles(
     delete particle_property.m_transfunc_synthesizer;
     delete particle_property.m_camera;
 
-    return true;
 }
 
 bool SetParticleParameter( 

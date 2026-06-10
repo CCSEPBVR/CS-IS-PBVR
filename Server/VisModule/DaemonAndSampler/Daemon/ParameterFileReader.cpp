@@ -174,7 +174,6 @@ void ParameterFileReader::readGlyphParameterFile( const char* fname )
     {
         if( !m_name_list_file.read() )
         {
-            this->set_default_parameter();
             break;
         }
 
@@ -206,8 +205,6 @@ void ParameterFileReader::readPlotOverLineParameterFile( const char* fname )
     {
         if( !m_name_list_file.read() )
         {
-            std::cout << "!m_name_list_file.read()" << std::endl;
-            this->set_default_parameter();
             break;
         }
 
@@ -236,8 +233,6 @@ void ParameterFileReader::readPlotOverTimeParameterFile( const char* fname )
     {
         if ( !m_name_list_file.read() )
         {
-            std::cout << "WARN:Failed to load the Plot Over Time parameter file. Set default parameters." << std::endl;
-            this->set_default_pot_parameter();
             break;
         }
         else
@@ -617,7 +612,6 @@ void ParameterFileReader::setGlyphParameter( GlyphProperty& glyph_property )
     else
     {
         glyph_property.m_glyph_flag = false;
-        return;
     }
 
     const std::string glyph_type_string = m_name_list_file.getValue<std::string>( "GLYPH_TYPE" );
@@ -747,12 +741,17 @@ void ParameterFileReader::setGlyphParameter( GlyphProperty& glyph_property )
     const std::string color_map_string   = m_name_list_file.getValue<std::string>( "GLYPH_COLOR_MAP_TABLE" );
     const std::vector<int> color_map_int_table = getTableInt( color_map_string );
     vismodule::ValueArray<vismodule::UInt8> color_map_uint_table( color_map_int_table.size() );
+    glyph_property.m_glyph_color_map_table.clear();
+    glyph_property.m_glyph_color_map_table.reserve( color_map_int_table.size() );
     for ( size_t i = 0; i < color_map_int_table.size(); i++ )
     {
+        glyph_property.m_glyph_color_map_table.push_back( static_cast<int32_t>( color_map_int_table[i] ) );
         color_map_uint_table[i] = (vismodule::UInt8)color_map_int_table[i];
     }
     vismodule::ColorMap color_map( color_map_uint_table, glyph_color_min, glyph_color_max );
     glyph_property.m_color_map = color_map;
+    glyph_property.m_glyph_size_min = 0;
+    glyph_property.m_glyph_size_max = 1;
 
 #if 1 // debug
     std::cout << "glyph_property.m_direction_variable[0]      = " << glyph_property.m_direction_variable[0]    << std::endl;
@@ -946,13 +945,6 @@ void ParameterFileReader::set_default_parameter()
     }
 
     m_name_list_file.setLine( "END_PARAMETER_FILE", "SUCCESS" );
-}
-
-void ParameterFileReader::set_default_pot_parameter()
-{
-    m_name_list_file.setLine( "PLOT_FLAG","TRUE" );
-    m_name_list_file.setLine( "TARGET_POINT", "0,0,0" );
-    m_name_list_file.setLine( "END_PARAMETER_FILE", "SUCCESS" );   
 }
 
 void ParameterFileReader::setNameListFile( const NameListFile& nameListFile )

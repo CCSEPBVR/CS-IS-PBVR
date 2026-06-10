@@ -3,6 +3,8 @@
 #include <vismodule/MultiVolumeProperty>
 #include <kvs/PolygonGlyphObject>
 
+void SetDefaultGlyphParameter( GlyphProperty& glyph_property );
+
 void SetDefaultGlyphParameterCS( GlyphProperty& glyph_property );
 
 std::unique_ptr<kvs::PolygonGlyphObject> GenerateGlyphCS(

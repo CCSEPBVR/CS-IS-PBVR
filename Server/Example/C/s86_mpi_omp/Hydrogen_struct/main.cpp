@@ -75,7 +75,6 @@ int main( int argc, char** argv )
     };
 
     int time_step = 0;
-    bool result = false;
 
     begin_wrapper_async_io();
     //for(int i=0;i<20;i++)
@@ -83,8 +82,7 @@ int main( int argc, char** argv )
     {
         if(mpi_rank==0) hydro.show();
 
-        result = generate_particles( time_step, dom, hydro.values, hydro.nvariables );
-        if ( !result ) return -1;
+        generate_particles( time_step, dom, hydro.values, hydro.nvariables );
         time_step++;
     }
     end_wrapper_async_io();

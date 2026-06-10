@@ -47,7 +47,7 @@ size_t CalculateSubpixelLevel(
     const vismodule::ObjectBase* volume
 );
 
-bool SetParameterFilePath(
+void SetParameterFilePath(
     const int time_step,
     std::string& historyFilePath,
     std::string& stateFilePath,

@@ -1,13 +1,51 @@
 #include "GeneratePOT.h"
 
+#include <cstdlib>
+#include <fstream>
+#include <iostream>
+#include <string>
+
 #include <vismodule/ParticleMonitor>
 #include <vismodule/ParameterFileReader>
+
+namespace
+{
+
+std::string EnvValueOrUnsetIS( const char* name )
+{
+    const char* value = std::getenv( name );
+    return value ? std::string( value ) : std::string( "(unset)" );
+}
+
+void PrintMissingParameterFileWarning(
+    const std::string& parameter_name,
+    const std::string& file_name,
+    const std::string& default_parameter_message
+)
+{
+    std::cout << "================================================================" << std::endl;
+    std::cout << "[WARN] " << parameter_name << " does not exist." << std::endl;
+    std::cout << "[WARN] File: " << file_name << std::endl;
+    std::cout << "[INFO] VIS_PARAM_DIR = " << EnvValueOrUnsetIS( "VIS_PARAM_DIR" ) << std::endl;
+    std::cout << "[INFO] PARTICLE_DIR  = " << EnvValueOrUnsetIS( "PARTICLE_DIR" ) << std::endl;
+    std::cout << "[INFO] " << default_parameter_message << std::endl;
+    std::cout << "================================================================" << std::endl;
+}
+
+} // namespace
+
+void SetDefaultPOTParameter( PlotOverTimeProperty& pot_property )
+{
+    pot_property.m_plot_flag = false;
+    pot_property.m_target_point[0] = 0;
+    pot_property.m_target_point[1] = 0;
+    pot_property.m_target_point[2] = 0;
+}
 
 void SetDefaultPOTParameterIS( PlotOverTimeProperty& pot_property )
 {
     const char *envBuf = NULL;
     std::string visParamDir;
-    std::string plotOverTimeParameterPath;
     std::string plotOverTimeParameterPath_old;
     ParameterFileReader ppr;
 
@@ -23,10 +61,20 @@ void SetDefaultPOTParameterIS( PlotOverTimeProperty& pot_property )
         }
     }
 
-    plotOverTimeParameterPath     =  visParamDir;
     plotOverTimeParameterPath_old =  visParamDir;
-    plotOverTimeParameterPath     += "parameter.pot";
     plotOverTimeParameterPath_old += "parameter_old.pot";
+
+    std::ifstream plotOverTimeParameterFileOld( plotOverTimeParameterPath_old );
+    if ( !plotOverTimeParameterFileOld.good() )
+    {
+        PrintMissingParameterFileWarning(
+            "Plot over time parameter file",
+            "parameter_old.pot",
+            "Set default plot over time parameters."
+        );
+        SetDefaultPOTParameter( pot_property );
+        return;
+    }
 
     ppr.readPlotOverTimeParameterFile( plotOverTimeParameterPath_old.c_str() );
     ppr.setPlotOverTimeParameter( pot_property );

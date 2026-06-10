@@ -1,4 +1,9 @@
 #include <array>
+#include <cstdlib>
+#include <fstream>
+#include <iostream>
+#include <string>
+#include <vector>
 
 #include <vismodule/Calculate>
 #include <vismodule/JobDispatcher>
@@ -15,17 +20,45 @@
     #include <vismodule/JobCollector>
 #endif
 
-void SetDefaultGlyphParameterCS( GlyphProperty& glyph_property )
+namespace
 {
-    if ( !glyph_property.m_glyph_flag ) return;
 
-    std::vector<int32_t> glyph_color_map_table = {59,76,192,60,78,194,61,80,195,62,81,197,64,83,198,65,85,200,66,86,201,67,88,203,68,90,204,69,92,206,71,93,207,72,95,209,73,97,210,74,99,211,75,100,213,77,102,214,78,104,215,79,105,217,80,107,218,82,109,219,83,110,221,84,112,222,85,114,223,87,115,224,88,117,225,89,119,226,90,120,228,92,122,229,93,124,230,94,125,231,95,127,232,97,128,233,98,130,234,99,132,235,101,133,236,102,135,237,103,136,238,105,138,239,106,139,239,107,141,240,109,142,241,110,144,242,111,145,243,113,147,243,114,148,244,115,150,245,117,151,246,118,153,246,119,154,247,121,156,248,122,157,248,124,159,249,125,160,249,126,161,250,128,163,250,129,164,251,130,166,251,132,167,252,133,168,252,135,170,252,136,171,253,137,172,253,139,173,253,140,175,254,141,176,254,143,177,254,144,178,254,146,180,254,147,181,255,148,182,255,150,183,255,151,184,255,153,185,255,154,187,255,155,188,255,157,189,255,158,190,255,159,191,255,161,192,255,162,193,255,164,194,254,165,195,254,166,196,254,168,197,254,169,198,254,170,199,253,172,200,253,173,201,253,174,201,252,176,202,252,177,203,252,178,204,251,180,205,251,181,206,250,182,206,250,183,207,249,185,208,249,186,209,248,187,209,248,189,210,247,190,211,246,191,211,246,192,212,245,193,212,244,195,213,244,196,214,243,197,214,242,198,215,241,200,215,241,201,216,240,202,216,239,203,216,238,204,217,237,205,217,236,206,218,235,208,218,234,209,218,233,210,219,232,211,219,231,212,219,230,213,219,229,214,220,228,215,220,227,216,220,226,217,220,225,218,220,224,219,221,222,220,221,221,221,220,220,222,220,219,223,219,217,225,219,216,226,218,214,227,218,213,228,217,211,229,217,210,229,216,209,230,216,207,231,215,206,232,214,204,233,214,203,234,213,201,235,212,200,235,211,198,236,211,197,237,210,195,238,209,194,238,208,192,239,207,191,239,206,189,240,206,187,241,205,186,241,204,184,242,203,183,242,202,181,243,201,180,243,200,178,244,199,177,244,198,175,244,197,173,245,196,172,245,195,170,245,193,169,246,192,167,246,191,166,246,190,164,246,189,162,247,188,161,247,186,159,247,185,158,247,184,156,247,183,155,247,181,153,247,180,151,247,179,150,247,178,148,247,176,147,247,175,145,247,173,143,247,172,142,247,171,140,247,169,139,247,168,137,247,166,136,246,165,134,246,163,132,246,162,131,246,160,129,245,159,128,245,157,126,245,156,125,244,154,123,244,153,122,244,151,120,243,149,119,243,148,117,242,146,116,242,144,114,241,143,112,241,141,111,240,139,109,240,138,108,239,136,106,239,134,105,238,133,104,237,131,102,237,129,101,236,127,99,235,125,98,234,124,96,234,122,95,233,120,93,232,118,92,231,116,90,230,114,89,229,112,88,229,111,86,228,109,85,227,107,83,226,105,82,225,103,81,224,101,79,223,99,78,222,97,77,221,95,75,220,93,74,219,91,73,218,89,71,216,86,70,215,84,69,214,82,67,213,80,66,212,78,65,211,76,63,209,73,62,208,71,61,207,69,60,206,67,59,204,64,57,203,62,56,202,59,55,200,57,54,199,54,52,198,52,51,196,49,50,195,46,49,193,43,48,192,40,47,191,37,46,189,34,44,188,30,43,186,26,42,185,22,41,183,17,40,182,11,39,180,4,38};
-    
-    // std::vector<std::string> size_variables = { "q1", "q2", "q3" };
-    // std::vector<std::string> color_data_variables = { "q1", "q2", "q3" };
+std::string EnvValueOrUnsetIS( const char* name )
+{
+    const char* value = std::getenv( name );
+    return value ? std::string( value ) : std::string( "(unset)" );
+}
+
+void PrintMissingParameterFileWarning(
+    const std::string& parameter_name,
+    const std::string& file_name,
+    const std::string& default_parameter_message
+)
+{
+    std::cout << "================================================================" << std::endl;
+    std::cout << "[WARN] " << parameter_name << " does not exist." << std::endl;
+    std::cout << "[WARN] File: " << file_name << std::endl;
+    std::cout << "[INFO] VIS_PARAM_DIR = " << EnvValueOrUnsetIS( "VIS_PARAM_DIR" ) << std::endl;
+    std::cout << "[INFO] PARTICLE_DIR  = " << EnvValueOrUnsetIS( "PARTICLE_DIR" ) << std::endl;
+    std::cout << "[INFO] " << default_parameter_message << std::endl;
+    std::cout << "================================================================" << std::endl;
+}
+
+std::vector<int32_t> DefaultGlyphColorMapTable()
+{
+    std::vector<int32_t> table = {
+        59,76,192,60,78,194,61,80,195,62,81,197,64,83,198,65,85,200,66,86,201,67,88,203,68,90,204,69,92,206,71,93,207,72,95,209,73,97,210,74,99,211,75,100,213,77,102,214,78,104,215,79,105,217,80,107,218,82,109,219,83,110,221,84,112,222,85,114,223,87,115,224,88,117,225,89,119,226,90,120,228,92,122,229,93,124,230,94,125,231,95,127,232,97,128,233,98,130,234,99,132,235,101,133,236,102,135,237,103,136,238,105,138,239,106,139,239,107,141,240,109,142,241,110,144,242,111,145,243,113,147,243,114,148,244,115,150,245,117,151,246,118,153,246,119,154,247,121,156,248,122,157,248,124,159,249,125,160,249,126,161,250,128,163,250,129,164,251,130,166,251,132,167,252,133,168,252,135,170,252,136,171,253,137,172,253,139,173,253,140,175,254,141,176,254,143,177,254,144,178,254,146,180,254,147,181,255,148,182,255,150,183,255,151,184,255,153,185,255,154,187,255,155,188,255,157,189,255,158,190,255,159,191,255,161,192,255,162,193,255,164,194,254,165,195,254,166,196,254,168,197,254,169,198,254,170,199,253,172,200,253,173,201,253,174,201,252,176,202,252,177,203,252,178,204,251,180,205,251,181,206,250,182,206,250,183,207,249,185,208,249,186,209,248,187,209,248,189,210,247,190,211,246,191,211,246,192,212,245,193,212,244,195,213,244,196,214,243,197,214,242,198,215,241,200,215,241,201,216,240,202,216,239,203,216,238,204,217,237,205,217,236,206,218,235,208,218,234,209,218,233,210,219,232,211,219,231,212,219,230,213,219,229,214,220,228,215,220,227,216,220,226,217,220,225,218,220,224,219,221,222,220,221,221,221,220,220,222,220,219,223,219,217,225,219,216,226,218,214,227,218,213,228,217,211,229,217,210,229,216,209,230,216,207,231,215,206,232,214,204,233,214,203,234,213,201,235,212,200,235,211,198,236,211,197,237,210,195,238,209,194,238,208,192,239,207,191,239,206,189,240,206,187,241,205,186,241,204,184,242,203,183,242,202,181,243,201,180,243,200,178,244,199,177,244,198,175,244,197,173,245,196,172,245,195,170,245,193,169,246,192,167,246,191,166,246,190,164,246,189,162,247,188,161,247,186,159,247,185,158,247,184,156,247,183,155,247,181,153,247,180,151,247,179,150,247,178,148,247,176,147,247,175,145,247,173,143,247,172,142,247,171,140,247,169,139,247,168,137,247,166,136,246,165,134,246,163,132,246,162,131,246,160,129,245,159,128,245,157,126,245,156,125,244,154,123,244,153,122,244,151,120,243,149,119,243,148,117,242,146,116,242,144,114,241,143,112,241,141,111,240,139,109,240,138,108,239,136,106,239,134,105,238,133,104,237,131,102,237,129,101,236,127,99,235,125,98,234,124,96,234,122,95,233,120,93,232,118,92,231,116,90,230,114,89,229,112,88,229,111,86,228,109,85,227,107,83,226,105,82,225,103,81,224,101,79,223,99,78,222,97,77,221,95,75,220,93,74,219,91,73,218,89,71,216,86,70,215,84,69,214,82,67,213,80,66,212,78,65,211,76,63,209,73,62,208,71,61,207,69,60,206,67,59,204,64,57,203,62,56,202,59,55,200,57,54,199,54,52,198,52,51,196,49,50,195,46,49,193,43,48,192,40,47,191,37,46,189,34,44,188,30,43,186,26,42,185,22,41,183,17,40,182,11,39,180,4,38
+    };
+    return table;
+}
+
+} // namespace
+
+void SetDefaultGlyphParameter( GlyphProperty& glyph_property )
+{
     std::vector<std::string> size_variables = { "q1" };
     std::vector<std::string> color_data_variables = { "q1" };
-    
+
     glyph_property.m_glyph_type                 = GlyphType::Arrow;
     glyph_property.m_scale_factor               = 1;
     glyph_property.m_direction_variable[0]      = "q1";
@@ -34,19 +67,34 @@ void SetDefaultGlyphParameterCS( GlyphProperty& glyph_property )
     glyph_property.m_size_sampling_method       = DataDefines::Constant;
     glyph_property.m_size_variable              = size_variables;
     glyph_property.m_distribution_mode          = GlyphMode::UniformDistribution;
-    // glyph_property.m_distribution_mode          = GlyphMode::EveryNthPoints;
     glyph_property.m_number_of_sampling_point   = 1000;
     glyph_property.m_seed                       = 1;
     glyph_property.m_stride                     = 3;
     glyph_property.m_color_data_sampling_method = DataDefines::Constant;
     glyph_property.m_color_data_variable        = color_data_variables;
-    glyph_property.m_glyph_color_map_table      = glyph_color_map_table;
+    glyph_property.m_glyph_color_map_table      = DefaultGlyphColorMapTable();
     glyph_property.m_glyph_color_min            = 0;
     glyph_property.m_glyph_color_max            = 1;
     glyph_property.m_glyph_size_min             = 0;
     glyph_property.m_glyph_size_max             = 1;
-    
-    return;
+
+    vismodule::ValueArray<vismodule::UInt8> color_map_table( glyph_property.m_glyph_color_map_table.size() );
+    for ( size_t i = 0; i < glyph_property.m_glyph_color_map_table.size(); i++ )
+    {
+        color_map_table[i] = static_cast<vismodule::UInt8>( glyph_property.m_glyph_color_map_table[i] );
+    }
+    glyph_property.m_color_map = vismodule::ColorMap(
+        color_map_table,
+        glyph_property.m_glyph_color_min,
+        glyph_property.m_glyph_color_max
+    );
+}
+
+void SetDefaultGlyphParameterCS( GlyphProperty& glyph_property )
+{
+    if ( !glyph_property.m_glyph_flag ) return;
+
+    SetDefaultGlyphParameter( glyph_property );
 }
 
 std::unique_ptr<kvs::PolygonGlyphObject> GenerateGlyphCS(
@@ -396,7 +444,6 @@ void SetDefaultGlyphParameterIS( GlyphProperty& glyph_property )
 
     const char *envBuf = NULL;
     std::string visParamDir;
-    std::string glyphParameterPath;
     std::string glyphParameterPath_old;
     ParameterFileReader ppr;
 
@@ -412,10 +459,20 @@ void SetDefaultGlyphParameterIS( GlyphProperty& glyph_property )
         }
     }
 
-    glyphParameterPath     = visParamDir;
     glyphParameterPath_old = visParamDir;
-    glyphParameterPath     += "parameter.gly";
     glyphParameterPath_old += "parameter_old.gly";
+
+    std::ifstream glyphParameterFileOld( glyphParameterPath_old );
+    if ( !glyphParameterFileOld.good() )
+    {
+        PrintMissingParameterFileWarning(
+            "Glyph parameter file",
+            "parameter_old.gly",
+            "Set default glyph parameters."
+        );
+        SetDefaultGlyphParameter( glyph_property );
+        return;
+    }
 
     ppr.readGlyphParameterFile( glyphParameterPath_old.c_str() );
 
@@ -520,4 +577,3 @@ std::unique_ptr<kvs::PolygonGlyphObject> GenerateGlyphIS(
         static_cast<kvs::PolygonGlyphObject::GlyphType>( glyph_property.m_glyph_type )
     );
 }
-
