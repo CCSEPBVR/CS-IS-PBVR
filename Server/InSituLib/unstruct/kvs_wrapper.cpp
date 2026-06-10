@@ -1229,6 +1229,7 @@ void calculation_glad(const int nparticles_count, const int nvariables,
 
 bool ensemble_generate_particles(
     int time_step,
+    const int num_ensemble,
     domain_parameters_unstruct dom,
     Type** values,
     int nvariables,

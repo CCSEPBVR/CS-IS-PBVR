@@ -48,13 +48,15 @@ int main( int argc, char** argv )
 
     int time_step = 0;
     bool result = false;
+    int ens_num = 1;
+    MPI_Comm_size( MPI_COMM_WORLD, &ens_num );
 
     begin_wrapper_async_io();
     for(int i =0;i<1;i ++ )
     {
         if(mpi_rank==RANK) hydro.show();
 
-        result = ensemble_generate_particles( time_step, dom,
+        result = ensemble_generate_particles( time_step, ens_num, dom,
                             hydro.values, hydro.nvariables,
                             hydro.coords, hydro.nnodes,
                             hydro.connections, hydro.ncells, vismodule::VolumeObjectBase::CellType::Hexahedra );
