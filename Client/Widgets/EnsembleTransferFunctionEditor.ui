@@ -57,6 +57,9 @@
           <property name="text">
            <string>Average</string>
           </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
          </widget>
         </item>
         <item>
@@ -96,9 +99,6 @@
          <widget class="QRadioButton" name="m_coefficient_variation_radio_button">
           <property name="text">
            <string>Coefficient of Variation</string>
-          </property>
-          <property name="checked">
-           <bool>true</bool>
           </property>
          </widget>
         </item>
