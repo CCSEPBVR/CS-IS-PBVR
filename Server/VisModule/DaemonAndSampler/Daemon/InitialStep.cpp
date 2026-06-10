@@ -16,6 +16,64 @@
     #include <vismodule/JobCollector>
 #endif
 
+namespace
+{
+void ApplyStatisticHistoryToTransferFunctions(
+    const std::vector<std::vector<int>>& color_histograms,
+    const std::vector<std::vector<int>>& opacity_histograms,
+    VariableRange& variable_range,
+    std::vector<NamedTransferFunction>& transfer_functions,
+    const char* statistic_name )
+{
+    const int tf_number = static_cast<int>( opacity_histograms.size() );
+    if ( tf_number <= 0 ) return;
+
+    if ( transfer_functions.size() < static_cast<size_t>( tf_number ) )
+    {
+        transfer_functions.resize( tf_number );
+    }
+
+    for ( int i = 0; i < tf_number; ++i )
+    {
+        std::fill_n( transfer_functions[i].m_opacity_histogram, DEFAULT_NBINS, 0 );
+        const std::vector<int>& opacity_histogram = opacity_histograms[i];
+        const int opacity_bins = static_cast<int>( opacity_histogram.size() );
+        for ( int b = 0; b < DEFAULT_NBINS && b < opacity_bins; ++b )
+        {
+            transfer_functions[i].m_opacity_histogram[b] =
+                static_cast<vismodule::UInt64>( opacity_histogram[b] );
+        }
+
+        std::fill_n( transfer_functions[i].m_color_histogram, DEFAULT_NBINS, 0 );
+        if ( i < static_cast<int>( color_histograms.size() ) )
+        {
+            const std::vector<int>& color_histogram = color_histograms[i];
+            const int color_bins = static_cast<int>( color_histogram.size() );
+            for ( int b = 0; b < DEFAULT_NBINS && b < color_bins; ++b )
+            {
+                transfer_functions[i].m_color_histogram[b] =
+                    static_cast<vismodule::UInt64>( color_histogram[b] );
+            }
+        }
+
+        std::stringstream ss;
+        ss << ( i + 1 );
+        const std::string idxbuf = ss.str();
+        transfer_functions[i].m_server_color_variable_min =
+            variable_range.min( "t" + idxbuf + "_var_c" );
+        transfer_functions[i].m_server_color_variable_max =
+            variable_range.max( "t" + idxbuf + "_var_c" );
+        transfer_functions[i].m_server_opacity_variable_min =
+            variable_range.min( "t" + idxbuf + "_var_o" );
+        transfer_functions[i].m_server_opacity_variable_max =
+            variable_range.max( "t" + idxbuf + "_var_o" );
+    }
+
+    std::cout << "[InitialStepIS] applied ensemble statistic history statistic="
+              << statistic_name << ", tf_number=" << tf_number << std::endl;
+}
+}
+
 // 初回通信用 デフォルトパラメータを設定する(CS)
 bool SetDefaultParticleParameterCS(
     const std::string& transfer_function_file_name,
@@ -821,6 +879,32 @@ void InitialStepIS(
         particle_property.m_transfunc_array[i].m_server_color_variable_max   = vr.max( "t" + idxbuf + "_var_c" );
         particle_property.m_transfunc_array[i].m_server_opacity_variable_min = vr.min( "t" + idxbuf + "_var_o" );
         particle_property.m_transfunc_array[i].m_server_opacity_variable_max = vr.max( "t" + idxbuf + "_var_o" );
+    }
+
+    if ( pm.particleHistoryFile().hasEnsembleStatisticHistogram() )
+    {
+        ApplyStatisticHistoryToTransferFunctions(
+            pm.particleHistoryFile().averageColorHistogramArray(),
+            pm.particleHistoryFile().averageOpacityHistogramArray(),
+            pm.particleHistoryFile().averageVariableRange(),
+            particle_property.m_mean_transfer_function_array,
+            "average" );
+        ApplyStatisticHistoryToTransferFunctions(
+            pm.particleHistoryFile().varianceColorHistogramArray(),
+            pm.particleHistoryFile().varianceOpacityHistogramArray(),
+            pm.particleHistoryFile().varianceVariableRange(),
+            particle_property.m_variance_transfer_function_array,
+            "variance" );
+        ApplyStatisticHistoryToTransferFunctions(
+            pm.particleHistoryFile().coefficientOfVariationColorHistogramArray(),
+            pm.particleHistoryFile().coefficientOfVariationOpacityHistogramArray(),
+            pm.particleHistoryFile().coefficientOfVariationVariableRange(),
+            particle_property.m_coefficient_of_variation_transfer_function_array,
+            "cv" );
+    }
+    else
+    {
+        std::cout << "[InitialStepIS] ensemble statistic history is not available." << std::endl;
     }
 
     delete[] tmp_c_bins;

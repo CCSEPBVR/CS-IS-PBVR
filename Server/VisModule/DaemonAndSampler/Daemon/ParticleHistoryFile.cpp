@@ -7,6 +7,7 @@
 ParticleHistoryFile::ParticleHistoryFile()
 {
     this->set_name();
+    m_has_ensemble_statistic_histogram = false;
     m_nvariables           = 0;
     m_particle_limit       = 0;
     m_extra_opacity_factor = 0;
@@ -16,6 +17,7 @@ ParticleHistoryFile::ParticleHistoryFile( const std::string& file ):
     m_file_name( file )
 {
     this->set_name();
+    m_has_ensemble_statistic_histogram = false;
     m_nvariables           = 0;
     m_particle_limit       = 0;
     m_extra_opacity_factor = 0;
@@ -72,6 +74,17 @@ void ParticleHistoryFile::set_name()
         m_name.push_back( "MAX_C" + ss.str() );
         m_name.push_back( "HISTOGRAM_C" + ss.str() );
         m_name.push_back( "HISTOGRAM_O" + ss.str() );
+
+        const std::string prefixes[] = { "AVE_", "VAR_", "COV_" };
+        for ( const std::string& prefix : prefixes )
+        {
+            m_name.push_back( prefix + "MIN_O" + ss.str() );
+            m_name.push_back( prefix + "MIN_C" + ss.str() );
+            m_name.push_back( prefix + "MAX_O" + ss.str() );
+            m_name.push_back( prefix + "MAX_C" + ss.str() );
+            m_name.push_back( prefix + "HISTOGRAM_C" + ss.str() );
+            m_name.push_back( prefix + "HISTOGRAM_O" + ss.str() );
+        }
     }
     m_name.push_back( "N_VARIABLES" );
     // m_name.push_back( "EXTRA_OPACITY_FACTOR" ); // 一時的にコメントアウト
@@ -129,6 +142,16 @@ void ParticleHistoryFile::assign_name_list( const NameListFile& name_list_file )
     m_variable_range.clear();
     m_color_histogram_array.clear();
     m_opacity_histogram_array.clear();
+    m_average_variable_range.clear();
+    m_variance_variable_range.clear();
+    m_coefficient_of_variation_variable_range.clear();
+    m_average_color_histogram_array.clear();
+    m_average_opacity_histogram_array.clear();
+    m_variance_color_histogram_array.clear();
+    m_variance_opacity_histogram_array.clear();
+    m_coefficient_of_variation_color_histogram_array.clear();
+    m_coefficient_of_variation_opacity_histogram_array.clear();
+    m_has_ensemble_statistic_histogram = false;
     int cur_tf_number = 0;
     const bool exist = nml.getCount( "TF_NUMBER" );
     if (exist) {
@@ -152,6 +175,86 @@ void ParticleHistoryFile::assign_name_list( const NameListFile& name_list_file )
         m_color_histogram_array.push_back( this->split_csv<int>( nml.getValue<std::string>( "HISTOGRAM_C" + idxbuf ) ) );
         m_opacity_histogram_array.push_back( this->split_csv<int>( nml.getValue<std::string>( "HISTOGRAM_O" + idxbuf ) ) );
     }
+
+    auto readStatistic = [&]( const std::string& prefix,
+                              VariableRange& variable_range,
+                              HistogramArray& color_histogram_array,
+                              HistogramArray& opacity_histogram_array )
+    {
+        bool has_statistic = false;
+        for ( int i = 0; i < cur_tf_number; i++ )
+        {
+            std::stringstream ss;
+            ss << ( i + 1 );
+            const std::string idxbuf = ss.str();
+            const std::string min_o_key = prefix + "MIN_O" + idxbuf;
+            const std::string max_o_key = prefix + "MAX_O" + idxbuf;
+            const std::string min_c_key = prefix + "MIN_C" + idxbuf;
+            const std::string max_c_key = prefix + "MAX_C" + idxbuf;
+            const std::string histogram_o_key = prefix + "HISTOGRAM_O" + idxbuf;
+            const std::string histogram_c_key = prefix + "HISTOGRAM_C" + idxbuf;
+
+            const bool has_required_opacity =
+                !nml.getValue<std::string>( min_o_key ).empty() &&
+                !nml.getValue<std::string>( max_o_key ).empty() &&
+                !nml.getValue<std::string>( histogram_o_key ).empty();
+
+            if ( !has_required_opacity )
+            {
+                continue;
+            }
+
+            variable_range.setValue( "t" + idxbuf + "_var_o", nml.getValue<vismodule::Real32>( min_o_key ) );
+            variable_range.setValue( "t" + idxbuf + "_var_o", nml.getValue<vismodule::Real32>( max_o_key ) );
+            if ( !nml.getValue<std::string>( min_c_key ).empty() &&
+                 !nml.getValue<std::string>( max_c_key ).empty() )
+            {
+                variable_range.setValue( "t" + idxbuf + "_var_c", nml.getValue<vismodule::Real32>( min_c_key ) );
+                variable_range.setValue( "t" + idxbuf + "_var_c", nml.getValue<vismodule::Real32>( max_c_key ) );
+            }
+
+            std::vector<int> opacity_histogram = this->split_csv<int>( nml.getValue<std::string>( histogram_o_key ) );
+            if ( opacity_histogram.empty() )
+            {
+                continue;
+            }
+
+            std::vector<int> color_histogram;
+            if ( !nml.getValue<std::string>( histogram_c_key ).empty() )
+            {
+                color_histogram = this->split_csv<int>( nml.getValue<std::string>( histogram_c_key ) );
+            }
+
+            opacity_histogram_array.push_back( opacity_histogram );
+            color_histogram_array.push_back( color_histogram );
+            has_statistic = true;
+        }
+        return has_statistic;
+    };
+
+    const bool has_average = readStatistic(
+        "AVE_",
+        m_average_variable_range,
+        m_average_color_histogram_array,
+        m_average_opacity_histogram_array );
+    const bool has_variance = readStatistic(
+        "VAR_",
+        m_variance_variable_range,
+        m_variance_color_histogram_array,
+        m_variance_opacity_histogram_array );
+    const bool has_coefficient_of_variation = readStatistic(
+        "COV_",
+        m_coefficient_of_variation_variable_range,
+        m_coefficient_of_variation_color_histogram_array,
+        m_coefficient_of_variation_opacity_histogram_array );
+
+    m_has_ensemble_statistic_histogram = has_average || has_variance || has_coefficient_of_variation;
+    std::cout << "[Server][ParticleHistoryFile] ensemble statistic history"
+              << " has=" << m_has_ensemble_statistic_histogram
+              << " average=" << m_average_opacity_histogram_array.size()
+              << " variance=" << m_variance_opacity_histogram_array.size()
+              << " cv=" << m_coefficient_of_variation_opacity_histogram_array.size()
+              << std::endl;
 
 }
 
@@ -263,4 +366,49 @@ ParticleHistoryFile::HistogramArray& ParticleHistoryFile::colorHistogramArray()
 ParticleHistoryFile::HistogramArray& ParticleHistoryFile::opacityHistogramArray()
 {
    return m_opacity_histogram_array;
+}
+
+VariableRange& ParticleHistoryFile::averageVariableRange()
+{
+   return m_average_variable_range;
+}
+
+VariableRange& ParticleHistoryFile::varianceVariableRange()
+{
+   return m_variance_variable_range;
+}
+
+VariableRange& ParticleHistoryFile::coefficientOfVariationVariableRange()
+{
+   return m_coefficient_of_variation_variable_range;
+}
+
+ParticleHistoryFile::HistogramArray& ParticleHistoryFile::averageColorHistogramArray()
+{
+   return m_average_color_histogram_array;
+}
+
+ParticleHistoryFile::HistogramArray& ParticleHistoryFile::averageOpacityHistogramArray()
+{
+   return m_average_opacity_histogram_array;
+}
+
+ParticleHistoryFile::HistogramArray& ParticleHistoryFile::varianceColorHistogramArray()
+{
+   return m_variance_color_histogram_array;
+}
+
+ParticleHistoryFile::HistogramArray& ParticleHistoryFile::varianceOpacityHistogramArray()
+{
+   return m_variance_opacity_histogram_array;
+}
+
+ParticleHistoryFile::HistogramArray& ParticleHistoryFile::coefficientOfVariationColorHistogramArray()
+{
+   return m_coefficient_of_variation_color_histogram_array;
+}
+
+ParticleHistoryFile::HistogramArray& ParticleHistoryFile::coefficientOfVariationOpacityHistogramArray()
+{
+   return m_coefficient_of_variation_opacity_histogram_array;
 }
