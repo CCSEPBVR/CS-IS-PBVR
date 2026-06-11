@@ -1553,8 +1553,8 @@ bool ensemble_generate_particles(
             for ( int cell_BLK = 0; cell_BLK < remain; cell_BLK++ )
             {
                 nparticles_array[cell_BLK] = static_cast<int>(
-//                    CalculateNumberOfParticlesV35( max_density, volume_array[cell_BLK], particle_density * repetitions, &mt )
-                    5
+                    CalculateNumberOfParticlesV35( max_density, volume_array[cell_BLK], particle_density * repetitions, &mt )
+//                    5
                 );
             }
 
@@ -1578,7 +1578,7 @@ bool ensemble_generate_particles(
                                 for ( int k = 0; k < nvariables; k++ ) cell[thid][k]->bindCellArray( p_id, cell_index );
                                 cell[thid][0]->setLocalPointArray( p_id, local_coord_array );
                                 cell[thid][0]->transformLocalToGlobalArray( p_id, local_coord_array, global_coord_array );
-                                particle_property.m_transfunc_synthesizer->CalculateScalarsArray(
+                                th_tfs[thid]->CalculateScalarsArray(
                                     cell[thid], p_id, local_coord_array, global_coord_array, mean_transfer_functions[thid], scalar_array
                                 );
 //                                calculation_glad(p_id, nvariables, th_tfs[thid], transfer_functions[thid], cell[thid], local_coord_array, cell_index, grad_array_x, grad_array_y, grad_array_z);
@@ -1617,7 +1617,7 @@ bool ensemble_generate_particles(
                         for ( int k = 0; k < nvariables; k++ ) cell[thid][k]->bindCellArray( p_id, cell_index );
                         cell[thid][0]->setLocalPointArray( p_id, local_coord_array );
                         cell[thid][0]->transformLocalToGlobalArray( p_id, local_coord_array, global_coord_array );
-                        particle_property.m_transfunc_synthesizer->CalculateScalarsArray(
+                        th_tfs[thid]->CalculateScalarsArray(
                             cell[thid], p_id, local_coord_array, global_coord_array, mean_transfer_functions[thid], scalar_array
                         );
 //                        calculation_glad(p_id, nvariables, th_tfs[thid], transfer_functions[thid], cell[thid], local_coord_array, cell_index, grad_array_x, grad_array_y, grad_array_z);
@@ -1710,8 +1710,8 @@ bool ensemble_generate_particles(
                       << std::endl;
             return false;
         }
-        const int send_size = static_cast<int>( send_count );
-        int recv_size = 0;
+      const int send_size = static_cast<int>( send_count );
+      int recv_size = 0;
         if ( use_stable_ensemble_comm )
         {
             MPI_Sendrecv(
@@ -1828,7 +1828,7 @@ bool ensemble_generate_particles(
                 for ( int k = 0; k < nvariables; k++ ) cell[thid][k]->bindCellArray( remain_BLK, cell_index );
                 cell[thid][0]->setLocalPointArray( remain_BLK, local_coord_array );
                 cell[thid][0]->transformLocalToGlobalArray( remain_BLK, local_coord_array, global_coord_array );
-                particle_property.m_transfunc_synthesizer->CalculateScalarsArray(
+                th_tfs[thid]->CalculateScalarsArray(
                     cell[thid], remain_BLK, local_coord_array, global_coord_array, mean_transfer_functions[thid], scalar_array
                 );
 //                calculation_glad(remain_BLK, nvariables, th_tfs[thid], transfer_functions[thid], cell[thid], local_coord_array, cell_index, grad_array_x, grad_array_y, grad_array_z);
