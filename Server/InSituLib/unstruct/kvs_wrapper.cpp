@@ -30,6 +30,9 @@
 #include <vismodule/TransferFunctionSynthesizer>
 #include <vismodule/StructuredVolumeObject>
 #include <vismodule/UnstructuredVolumeObject>
+#ifdef ENABLE_ENSEMBLE_TIMER
+#include <vismodule/Timer>
+#endif
 
 #ifndef CPU_VER
 #include <mpi.h>
@@ -166,6 +169,248 @@ bool UseStableEnsembleCommunication()
            std::strcmp( value, "false" ) != 0 &&
            std::strcmp( value, "FALSE" ) != 0;
 }
+
+#ifdef ENABLE_ENSEMBLE_TIMER
+enum EnsembleTimerSection
+{
+    EnsembleTimerTotal = 0,
+    EnsembleTimerSetParameterPath,
+    EnsembleTimerReadParameterFile,
+    EnsembleTimerInitTransferFunctions,
+    EnsembleTimerCreateCells,
+    EnsembleTimerSamplingPrepare,
+    EnsembleTimerOmpUniformSampling,
+    EnsembleTimerUniformCalculateScalars,
+    EnsembleTimerUniformChainRuleGrad,
+    EnsembleTimerThreadParticleMerge,
+    EnsembleTimerMpiShiftExchange,
+    EnsembleTimerMpiShiftSizeExchange,
+    EnsembleTimerMpiShiftAllocRecvBuffer,
+    EnsembleTimerMpiShiftPayloadAll,
+    EnsembleTimerMpiShiftPayloadCellids,
+    EnsembleTimerMpiShiftPayloadScalars,
+    EnsembleTimerMpiShiftPayloadCoords,
+    EnsembleTimerMpiShiftPayloadNormals,
+    EnsembleTimerMpiShiftPayloadSq,
+    EnsembleTimerMpiShiftPayloadTmp,
+    EnsembleTimerOmpShiftInterpolation,
+    EnsembleTimerShiftCalculateScalars,
+    EnsembleTimerShiftChainRuleGrad,
+    EnsembleTimerStatAverageVariance,
+    EnsembleTimerStatHistogram,
+    EnsembleTimerOmpRejection,
+    EnsembleTimerRejectionThreadMerge,
+    EnsembleTimerCleanupTfs,
+    EnsembleTimerOutputCoordMinmax,
+    EnsembleTimerOutputParticlesAve,
+    EnsembleTimerOutputParticlesVar,
+    EnsembleTimerOutputParticlesCov,
+    EnsembleTimerOutputHistory,
+    EnsembleTimerCleanupCells,
+    EnsembleTimerWriteTfFile,
+    EnsembleTimerAsyncIoWait,
+    EnsembleTimerFinalBarrierState,
+    EnsembleTimerSectionCount
+};
+
+struct EnsembleTimerSectionDef
+{
+    const char* parent;
+    const char* section;
+    int level;
+};
+
+const EnsembleTimerSectionDef EnsembleTimerSections[EnsembleTimerSectionCount] =
+{
+    { "root", "ensemble_generate_particles_total", 0 },
+    { "ensemble_generate_particles_total", "set_parameter_path", 1 },
+    { "ensemble_generate_particles_total", "read_parameter_file", 1 },
+    { "ensemble_generate_particles_total", "init_transfer_functions", 1 },
+    { "ensemble_generate_particles_total", "create_cells", 1 },
+    { "ensemble_generate_particles_total", "sampling_prepare", 1 },
+    { "ensemble_generate_particles_total", "omp_uniform_sampling", 1 },
+    { "omp_uniform_sampling", "uniform_calculate_scalars_array", 2 },
+    { "omp_uniform_sampling", "uniform_chain_rule_grad", 2 },
+    { "omp_uniform_sampling", "thread_particle_merge", 2 },
+    { "ensemble_generate_particles_total", "mpi_shift_exchange", 1 },
+    { "mpi_shift_exchange", "mpi_shift_size_exchange", 2 },
+    { "mpi_shift_exchange", "mpi_shift_alloc_recv_buffer", 2 },
+    { "mpi_shift_exchange", "mpi_shift_payload_all", 2 },
+    { "mpi_shift_exchange", "mpi_shift_payload_cellids", 2 },
+    { "mpi_shift_exchange", "mpi_shift_payload_scalars", 2 },
+    { "mpi_shift_exchange", "mpi_shift_payload_coords", 2 },
+    { "mpi_shift_exchange", "mpi_shift_payload_normals", 2 },
+    { "mpi_shift_exchange", "mpi_shift_payload_sq", 2 },
+    { "mpi_shift_exchange", "mpi_shift_payload_tmp", 2 },
+    { "mpi_shift_exchange", "omp_shift_interpolation", 2 },
+    { "omp_shift_interpolation", "shift_calculate_scalars_array", 3 },
+    { "omp_shift_interpolation", "shift_chain_rule_grad", 3 },
+    { "ensemble_generate_particles_total", "stat_average_variance", 1 },
+    { "ensemble_generate_particles_total", "stat_histogram", 1 },
+    { "ensemble_generate_particles_total", "omp_rejection", 1 },
+    { "omp_rejection", "rejection_thread_merge", 2 },
+    { "ensemble_generate_particles_total", "cleanup_tfs", 1 },
+    { "ensemble_generate_particles_total", "output_coord_minmax", 1 },
+    { "ensemble_generate_particles_total", "output_particles_ave", 1 },
+    { "ensemble_generate_particles_total", "output_particles_var", 1 },
+    { "ensemble_generate_particles_total", "output_particles_cov", 1 },
+    { "ensemble_generate_particles_total", "output_history", 1 },
+    { "ensemble_generate_particles_total", "cleanup_cells", 1 },
+    { "ensemble_generate_particles_total", "write_tf_file", 1 },
+    { "ensemble_generate_particles_total", "async_io_wait", 1 },
+    { "ensemble_generate_particles_total", "final_barrier_state", 1 }
+};
+
+bool EnsembleTimerVerbose()
+{
+    const char* value = std::getenv( "PBVR_ENSEMBLE_TIMER_VERBOSE" );
+    if ( value == NULL ) return false;
+    return std::strcmp( value, "0" ) != 0 &&
+           std::strcmp( value, "false" ) != 0 &&
+           std::strcmp( value, "FALSE" ) != 0;
+}
+
+class EnsembleTimerCollector
+{
+private:
+    int m_step;
+    int m_max_threads;
+    std::vector<double> m_seconds;
+    std::vector<std::vector<double> > m_thread_seconds;
+
+public:
+    EnsembleTimerCollector( const int step, const int max_threads ):
+        m_step( step ),
+        m_max_threads( max_threads ),
+        m_seconds( EnsembleTimerSectionCount, 0.0 ),
+        m_thread_seconds( EnsembleTimerSectionCount, std::vector<double>( max_threads, 0.0 ) )
+    {
+    }
+
+    void add( const EnsembleTimerSection section, const double seconds )
+    {
+        m_seconds[section] += seconds;
+    }
+
+    void addThread( const EnsembleTimerSection section, const int thread, const double seconds )
+    {
+        if ( thread < 0 || thread >= m_max_threads ) return;
+        m_thread_seconds[section][thread] += seconds;
+    }
+
+    void printCsv( const int mpi_rank, const int mpi_size ) const
+    {
+        static bool summary_header_written = false;
+        std::ofstream summary_ofs;
+        std::ostream* summary_out = &std::cout;
+        if ( mpi_rank == 0 )
+        {
+            summary_ofs.open( "ensemble_timer_summary.csv", std::ios::app );
+            if ( summary_ofs.is_open() ) summary_out = &summary_ofs;
+            if ( !summary_header_written )
+            {
+                *summary_out
+                    << "step,scope,parent_section,section,level,mpi_avg_sec,mpi_max_sec,mpi_min_sec,"
+                    << "thread_avg_sec,thread_max_sec,thread_min_sec" << std::endl;
+                summary_header_written = true;
+            }
+        }
+
+        const bool verbose = EnsembleTimerVerbose();
+        for ( int i = 0; i < EnsembleTimerSectionCount; i++ )
+        {
+            const double local = m_seconds[i];
+            const int local_active = local > 0.0 ? 1 : 0;
+            const double local_min_candidate = local_active ? local : DBL_MAX;
+            double sum = local;
+            double max_value = local;
+            double min_value = local_min_candidate;
+            int active = local_active;
+
+#ifndef CPU_VER
+            MPI_Reduce( &local, &sum, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD );
+            MPI_Reduce( &local, &max_value, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD );
+            MPI_Reduce( &local_min_candidate, &min_value, 1, MPI_DOUBLE, MPI_MIN, 0, MPI_COMM_WORLD );
+            MPI_Reduce( &local_active, &active, 1, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD );
+#endif
+
+            double thread_sum = 0.0;
+            double thread_max = 0.0;
+            double thread_min = 0.0;
+            int thread_count = 0;
+            for ( int t = 0; t < m_max_threads; t++ )
+            {
+                const double value = m_thread_seconds[i][t];
+                if ( value <= 0.0 ) continue;
+                thread_sum += value;
+                thread_max = thread_count == 0 ? value : std::max( thread_max, value );
+                thread_min = thread_count == 0 ? value : std::min( thread_min, value );
+                thread_count++;
+            }
+            const double thread_avg = thread_count > 0 ? thread_sum / static_cast<double>( thread_count ) : 0.0;
+            const int local_thread_active = thread_count > 0 ? 1 : 0;
+            const double thread_min_candidate = local_thread_active ? thread_min : DBL_MAX;
+            double thread_avg_sum = thread_avg;
+            double thread_max_global = thread_max;
+            double thread_min_global = thread_min_candidate;
+            int thread_active = local_thread_active;
+
+#ifndef CPU_VER
+            MPI_Reduce( &thread_avg, &thread_avg_sum, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD );
+            MPI_Reduce( &thread_max, &thread_max_global, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD );
+            MPI_Reduce( &thread_min_candidate, &thread_min_global, 1, MPI_DOUBLE, MPI_MIN, 0, MPI_COMM_WORLD );
+            MPI_Reduce( &local_thread_active, &thread_active, 1, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD );
+#endif
+
+            if ( mpi_rank == 0 && ( active > 0 || thread_active > 0 ) )
+            {
+                const double mpi_avg = sum / static_cast<double>( mpi_size );
+                const double thread_avg_global = thread_active > 0 ? thread_avg_sum / static_cast<double>( thread_active ) : 0.0;
+                *summary_out << m_step << ",ensemble_generate_particles,"
+                             << EnsembleTimerSections[i].parent << ","
+                             << EnsembleTimerSections[i].section << ","
+                             << EnsembleTimerSections[i].level << ","
+                             << std::setprecision( 9 ) << mpi_avg << ","
+                             << max_value << ","
+                             << min_value << ","
+                             << thread_avg_global << ","
+                             << thread_max_global << ","
+                             << thread_min_global << std::endl;
+            }
+
+            if ( verbose )
+            {
+                std::cout << m_step << ",ensemble_generate_particles_rank,"
+                          << mpi_rank << ","
+                          << EnsembleTimerSections[i].section << ","
+                          << local << std::endl;
+            }
+        }
+    }
+};
+
+class EnsembleTimerScope
+{
+private:
+    EnsembleTimerCollector* m_collector;
+    EnsembleTimerSection m_section;
+    vismodule::Timer m_timer;
+
+public:
+    EnsembleTimerScope( EnsembleTimerCollector* collector, const EnsembleTimerSection section ):
+        m_collector( collector ),
+        m_section( section )
+    {
+        m_timer.start();
+    }
+
+    ~EnsembleTimerScope()
+    {
+        m_timer.stop();
+        m_collector->add( m_section, m_timer.sec() );
+    }
+};
+#endif
 
 std::string EnsembleParticleFilePrefix(
     const std::string& particleFilePrefix,
@@ -732,7 +977,6 @@ bool generate_particles(
     mpi_rank = 0;
     mpi_size = 1;
 #endif
-
     if ( is_initial_step == true )
     {
         is_initial_step = false;
@@ -1267,6 +1511,11 @@ bool ensemble_generate_particles(
     mpi_rank = 0;
     mpi_size = 1;
 #endif
+#ifdef ENABLE_ENSEMBLE_TIMER
+    EnsembleTimerCollector ensemble_timer( time_step, max_threads );
+    vismodule::Timer ensemble_total_timer;
+    ensemble_total_timer.start();
+#endif
 
     if ( is_initial_step == true )
     {
@@ -1291,25 +1540,30 @@ bool ensemble_generate_particles(
     std::string plotOverTimeParameterPath;
     std::string plotOverTimeParameterPath_old;
 
-    SetParameterFilePath(
-        time_step,
-        historyFilePath,
-        stateFilePath,
-        coordMinMaxFilePath,
-        particleFilePrefix,
-        glyphFilePrefix,
-        plotOverLineFilePrefix,
-        plotOverTimeFilePrefix,
-        tfJsonPath,
-        tfJsonPath_old,
-        tfJsonPath_step,
-        glyphParameterPath,
-        glyphParameterPath_old,
-        plotOverLineParameterPath,
-        plotOverLineParameterPath_old,
-        plotOverTimeParameterPath,
-        plotOverTimeParameterPath_old
-    );
+    {
+#ifdef ENABLE_ENSEMBLE_TIMER
+        EnsembleTimerScope timer_scope( &ensemble_timer, EnsembleTimerSetParameterPath );
+#endif
+        SetParameterFilePath(
+            time_step,
+            historyFilePath,
+            stateFilePath,
+            coordMinMaxFilePath,
+            particleFilePrefix,
+            glyphFilePrefix,
+            plotOverLineFilePrefix,
+            plotOverTimeFilePrefix,
+            tfJsonPath,
+            tfJsonPath_old,
+            tfJsonPath_step,
+            glyphParameterPath,
+            glyphParameterPath_old,
+            plotOverLineParameterPath,
+            plotOverLineParameterPath_old,
+            plotOverTimeParameterPath,
+            plotOverTimeParameterPath_old
+        );
+    }
 
     ParticleProperty particle_property;
     MultiVolumePropertyList mvpl;
@@ -1317,10 +1571,15 @@ bool ensemble_generate_particles(
     particle_property.m_camera = new vismodule::Camera();
 
     bool object_generation_enabled = false;
-    SetParticleParameter(
-        dom, tfJsonPath, tfJsonPath_old, particle_property, mvpl,
-        nvariables, object_generation_enabled
-    );
+    {
+#ifdef ENABLE_ENSEMBLE_TIMER
+        EnsembleTimerScope timer_scope( &ensemble_timer, EnsembleTimerReadParameterFile );
+#endif
+        SetParticleParameter(
+            dom, tfJsonPath, tfJsonPath_old, particle_property, mvpl,
+            nvariables, object_generation_enabled
+        );
+    }
     int tf_number = particle_property.m_transfunc_array.size();
 
     const bool gen_flag = object_generation_enabled;
@@ -1333,33 +1592,44 @@ bool ensemble_generate_particles(
         EnsembleStatisticRange co_variation_range;
         pbvr::EnsembleCellHistogramLog histogram_log;
 
-        const bool ok = pbvr::ComputeAndStoreEnsembleCellHistogram(
-                values,
-                nvariables,
-                coordinates,
-                ncoords,
-                connections,
-                ncells,
-                celltype,
-                MPI_COMM_WORLD, // ensemble_comm があればそれを渡す
-                DEFAULT_NBINS,
-                particle_property,
-                average_range,
-                variance_range,
-                co_variation_range,
-                &histogram_log );
-
-        if ( ok )
+        bool ok = false;
         {
-            OutputEnsembleStatisticHistory(
-                    particle_property,
-                    tf_number,
+#ifdef ENABLE_ENSEMBLE_TIMER
+            EnsembleTimerScope timer_scope( &ensemble_timer, EnsembleTimerStatHistogram );
+#endif
+            ok = pbvr::ComputeAndStoreEnsembleCellHistogram(
+                    values,
                     nvariables,
-                    historyFilePath,
+                    coordinates,
+                    ncoords,
+                    connections,
+                    ncells,
+                    celltype,
+                    MPI_COMM_WORLD, // ensemble_comm があればそれを渡す
+                    DEFAULT_NBINS,
+                    particle_property,
                     average_range,
                     variance_range,
                     co_variation_range,
-                    MPI_COMM_WORLD );  // 空間領域方向のcomm を指定
+                    &histogram_log );
+        }
+
+        if ( ok )
+        {
+            {
+#ifdef ENABLE_ENSEMBLE_TIMER
+                EnsembleTimerScope timer_scope( &ensemble_timer, EnsembleTimerOutputHistory );
+#endif
+                OutputEnsembleStatisticHistory(
+                        particle_property,
+                        tf_number,
+                        nvariables,
+                        historyFilePath,
+                        average_range,
+                        variance_range,
+                        co_variation_range,
+                        MPI_COMM_WORLD );  // 空間領域方向のcomm を指定
+            }
         }
 
     
@@ -1379,30 +1649,35 @@ bool ensemble_generate_particles(
     TransferFunctionSynthesizer** th_tfs = new TransferFunctionSynthesizer*[max_threads];
 //    std::vector< std::vector<vismodule::TransferFunction> > th_tf;
 
-    for ( int n = 0; n < max_threads; n++ )
-    {
-        th_tfs[n] = new TransferFunctionSynthesizer( *particle_property.m_transfunc_synthesizer );
-    }
-
     //std::vector<vismodule::TransferFunction> transfer_functions( tf_number );
     std::vector<std::vector<vismodule::TransferFunction>> transfer_functions( max_threads );
     std::vector<std::vector<vismodule::TransferFunction>>           mean_transfer_functions( max_threads );
     std::vector<std::vector<vismodule::TransferFunction>>       variance_transfer_functions( max_threads );
     std::vector<std::vector<vismodule::TransferFunction>> coef_variation_transfer_functions( max_threads );
-    for ( int i = 0; i < max_threads; i++ )
     {
-        transfer_functions[ i ].resize( tf_number );
-                  mean_transfer_functions[ i ].resize( tf_number );
-              variance_transfer_functions[ i ].resize( tf_number );
-        coef_variation_transfer_functions[ i ].resize( tf_number );
-        for ( int j = 0; j < tf_number; j++ )
+#ifdef ENABLE_ENSEMBLE_TIMER
+        EnsembleTimerScope timer_scope( &ensemble_timer, EnsembleTimerInitTransferFunctions );
+#endif
+        for ( int n = 0; n < max_threads; n++ )
         {
-            transfer_functions[i][j] = particle_property.m_transfunc_array[j];
-                      mean_transfer_functions[i][j] = particle_property.m_mean_transfer_function_array[j];
-                  variance_transfer_functions[i][j] = particle_property.m_variance_transfer_function_array[j];
-            coef_variation_transfer_functions[i][j] = particle_property.m_coefficient_of_variation_transfer_function_array[j];
+            th_tfs[n] = new TransferFunctionSynthesizer( *particle_property.m_transfunc_synthesizer );
         }
+
+        for ( int i = 0; i < max_threads; i++ )
+        {
+            transfer_functions[ i ].resize( tf_number );
+                      mean_transfer_functions[ i ].resize( tf_number );
+                  variance_transfer_functions[ i ].resize( tf_number );
+            coef_variation_transfer_functions[ i ].resize( tf_number );
+            for ( int j = 0; j < tf_number; j++ )
+            {
+                transfer_functions[i][j] = particle_property.m_transfunc_array[j];
+                          mean_transfer_functions[i][j] = particle_property.m_mean_transfer_function_array[j];
+                      variance_transfer_functions[i][j] = particle_property.m_variance_transfer_function_array[j];
+                coef_variation_transfer_functions[i][j] = particle_property.m_coefficient_of_variation_transfer_function_array[j];
+            }
 //        transfer_functions[i] = particle_property.m_transfunc_array[i];
+        }
     }
 
     std::cout << "particle_property.mean_max = " << particle_property.m_mean_transfer_function_array[0].colorMap().maxValue() << std::endl;
@@ -1439,59 +1714,72 @@ bool ensemble_generate_particles(
     }
 
     std::vector<std::vector<vismodule::CellBase<Type>*> > cell( max_threads );
-    for ( int thread = 0; thread < max_threads; thread++ )
     {
-        cell[thread].resize( nvariables, nullptr );
-        for ( int variable = 0; variable < nvariables; variable++ )
+#ifdef ENABLE_ENSEMBLE_TIMER
+        EnsembleTimerScope timer_scope( &ensemble_timer, EnsembleTimerCreateCells );
+#endif
+        for ( int thread = 0; thread < max_threads; thread++ )
         {
-            switch ( celltype )
+            cell[thread].resize( nvariables, nullptr );
+            for ( int variable = 0; variable < nvariables; variable++ )
             {
-            case vismodule::VolumeObjectBase::Tetrahedra:
-                cell[thread][variable] = new vismodule::TetrahedralCell<Type>( values[variable], coordinates, ncoords, connections, ncells );
-                break;
-            case vismodule::VolumeObjectBase::Hexahedra:
-                cell[thread][variable] = new vismodule::HexahedralCell<Type>( values[variable], coordinates, ncoords, connections, ncells );
-                break;
-            case vismodule::VolumeObjectBase::QuadraticTetrahedra:
-                cell[thread][variable] = new vismodule::QuadraticTetrahedralCell<Type>( values[variable], coordinates, ncoords, connections, ncells );
-                break;
-            case vismodule::VolumeObjectBase::QuadraticHexahedra:
-                cell[thread][variable] = new vismodule::QuadraticHexahedralCell<Type>( values[variable], coordinates, ncoords, connections, ncells );
-                break;
-            case vismodule::VolumeObjectBase::Prism:
-                cell[thread][variable] = new vismodule::PrismaticCell<Type>( values[variable], coordinates, ncoords, connections, ncells );
-                break;
-            case vismodule::VolumeObjectBase::Pyramid:
-                cell[thread][variable] = new vismodule::PyramidalCell<Type>( values[variable], coordinates, ncoords, connections, ncells );
-                break;
-            default:
-                std::cout << "Unsupported cell type." << std::endl;
-                for ( int i = 0; i <= thread; i++ )
+                switch ( celltype )
                 {
-                    for ( int j = 0; j < nvariables; j++ ) delete cell[i][j];
+                case vismodule::VolumeObjectBase::Tetrahedra:
+                    cell[thread][variable] = new vismodule::TetrahedralCell<Type>( values[variable], coordinates, ncoords, connections, ncells );
+                    break;
+                case vismodule::VolumeObjectBase::Hexahedra:
+                    cell[thread][variable] = new vismodule::HexahedralCell<Type>( values[variable], coordinates, ncoords, connections, ncells );
+                    break;
+                case vismodule::VolumeObjectBase::QuadraticTetrahedra:
+                    cell[thread][variable] = new vismodule::QuadraticTetrahedralCell<Type>( values[variable], coordinates, ncoords, connections, ncells );
+                    break;
+                case vismodule::VolumeObjectBase::QuadraticHexahedra:
+                    cell[thread][variable] = new vismodule::QuadraticHexahedralCell<Type>( values[variable], coordinates, ncoords, connections, ncells );
+                    break;
+                case vismodule::VolumeObjectBase::Prism:
+                    cell[thread][variable] = new vismodule::PrismaticCell<Type>( values[variable], coordinates, ncoords, connections, ncells );
+                    break;
+                case vismodule::VolumeObjectBase::Pyramid:
+                    cell[thread][variable] = new vismodule::PyramidalCell<Type>( values[variable], coordinates, ncoords, connections, ncells );
+                    break;
+                default:
+                    std::cout << "Unsupported cell type." << std::endl;
+                    for ( int i = 0; i <= thread; i++ )
+                    {
+                        for ( int j = 0; j < nvariables; j++ ) delete cell[i][j];
+                    }
+                    delete particle_property.m_transfunc_synthesizer;
+                    delete particle_property.m_camera;
+                    return false;
                 }
-                delete particle_property.m_transfunc_synthesizer;
-                delete particle_property.m_camera;
-                return false;
             }
         }
     }
 
     particle_property.m_repeat_level = 1.f; // スタブデータ
 
-    const float sampling_volume_inverse = particle_property.m_transfunc_synthesizer->getSamplingVolumeInverse();
-    const float max_opacity = particle_property.m_transfunc_synthesizer->getMaxOpacity();
-    const float max_density = particle_property.m_transfunc_synthesizer->getMaxDensity();
-    float   repetitions             = particle_property.m_repeat_level;  //
+    float sampling_volume_inverse = 0.0f;
+    float max_opacity = 0.0f;
+    float max_density = 0.0f;
+    float repetitions = particle_property.m_repeat_level;  //
     const float particle_density = 1.0f;
     const int MPIprocess_per_ensemble = mpi_size/num_ensemble;
     const int ens_number = num_ensemble;
-    if ( MPIprocess_per_ensemble % ens_number != 0 )
     {
-        std::cerr << "error !! need  ens_number % MPIprocess_per_ensemble = 0!!  " << std::endl;
-        return false;
-    } 
-    repetitions = 1.0f / static_cast<float>( ens_number );
+#ifdef ENABLE_ENSEMBLE_TIMER
+        EnsembleTimerScope timer_scope( &ensemble_timer, EnsembleTimerSamplingPrepare );
+#endif
+        sampling_volume_inverse = particle_property.m_transfunc_synthesizer->getSamplingVolumeInverse();
+        max_opacity = particle_property.m_transfunc_synthesizer->getMaxOpacity();
+        max_density = particle_property.m_transfunc_synthesizer->getMaxDensity();
+        if ( MPIprocess_per_ensemble % ens_number != 0 )
+        {
+            std::cerr << "error !! need  ens_number % MPIprocess_per_ensemble = 0!!  " << std::endl;
+            return false;
+        }
+        repetitions = 1.0f / static_cast<float>( ens_number );
+    }
 
     std::vector<vismodule::Real32> vertex_coords;
     std::vector<vismodule::Real32> vertex_scalars;
@@ -1502,6 +1790,14 @@ bool ensemble_generate_particles(
 
 
 
+#ifdef ENABLE_ENSEMBLE_TIMER
+    std::vector<double> uniform_thread_times( max_threads, 0.0 );
+    std::vector<double> uniform_scalar_times( max_threads, 0.0 );
+    std::vector<double> uniform_chain_times( max_threads, 0.0 );
+    std::vector<double> uniform_merge_times( max_threads, 0.0 );
+    vismodule::Timer uniform_timer;
+    uniform_timer.start();
+#endif
 #pragma omp parallel
     {
 #if _OPENMP
@@ -1510,6 +1806,13 @@ bool ensemble_generate_particles(
 #else
         const int nthreads = 1;
         const int thid = 0;
+#endif
+#ifdef ENABLE_ENSEMBLE_TIMER
+        vismodule::Timer thread_timer;
+        thread_timer.start();
+        double th_uniform_scalar_time = 0.0;
+        double th_uniform_chain_time = 0.0;
+        double th_uniform_merge_time = 0.0;
 #endif
         vismodule::UInt32 cell_index[SIMD_BLK_SIZE];
         vismodule::Vector3f local_coord_array[SIMD_BLK_SIZE];
@@ -1578,10 +1881,22 @@ bool ensemble_generate_particles(
                                 for ( int k = 0; k < nvariables; k++ ) cell[thid][k]->bindCellArray( p_id, cell_index );
                                 cell[thid][0]->setLocalPointArray( p_id, local_coord_array );
                                 cell[thid][0]->transformLocalToGlobalArray( p_id, local_coord_array, global_coord_array );
+#ifdef ENABLE_ENSEMBLE_TIMER
+                                vismodule::Timer scalar_timer;
+                                scalar_timer.start();
+#endif
                                 th_tfs[thid]->CalculateScalarsArray(
                                     cell[thid], p_id, local_coord_array, global_coord_array, mean_transfer_functions[thid], scalar_array
                                 );
+#ifdef ENABLE_ENSEMBLE_TIMER
+                                scalar_timer.stop();
+                                th_uniform_scalar_time += scalar_timer.sec();
+#endif
 //                                calculation_glad(p_id, nvariables, th_tfs[thid], transfer_functions[thid], cell[thid], local_coord_array, cell_index, grad_array_x, grad_array_y, grad_array_z);
+#ifdef ENABLE_ENSEMBLE_TIMER
+                                vismodule::Timer chain_timer;
+                                chain_timer.start();
+#endif
                                 calculation_chain_rule_grad(
                                         p_id,
                                         nvariables,
@@ -1592,6 +1907,10 @@ bool ensemble_generate_particles(
                                         grad_array_x,
                                         grad_array_y,
                                         grad_array_z );
+#ifdef ENABLE_ENSEMBLE_TIMER
+                                chain_timer.stop();
+                                th_uniform_chain_time += chain_timer.sec();
+#endif
 
                                 for ( int k = 0; k < p_id; k++ )
                                 {
@@ -1617,10 +1936,22 @@ bool ensemble_generate_particles(
                         for ( int k = 0; k < nvariables; k++ ) cell[thid][k]->bindCellArray( p_id, cell_index );
                         cell[thid][0]->setLocalPointArray( p_id, local_coord_array );
                         cell[thid][0]->transformLocalToGlobalArray( p_id, local_coord_array, global_coord_array );
+#ifdef ENABLE_ENSEMBLE_TIMER
+                        vismodule::Timer scalar_timer;
+                        scalar_timer.start();
+#endif
                         th_tfs[thid]->CalculateScalarsArray(
                             cell[thid], p_id, local_coord_array, global_coord_array, mean_transfer_functions[thid], scalar_array
                         );
+#ifdef ENABLE_ENSEMBLE_TIMER
+                        scalar_timer.stop();
+                        th_uniform_scalar_time += scalar_timer.sec();
+#endif
 //                        calculation_glad(p_id, nvariables, th_tfs[thid], transfer_functions[thid], cell[thid], local_coord_array, cell_index, grad_array_x, grad_array_y, grad_array_z);
+#ifdef ENABLE_ENSEMBLE_TIMER
+                        vismodule::Timer chain_timer;
+                        chain_timer.start();
+#endif
                                 calculation_chain_rule_grad(
                                         p_id,
                                         nvariables,
@@ -1631,6 +1962,10 @@ bool ensemble_generate_particles(
                                         grad_array_x,
                                         grad_array_y,
                                         grad_array_z );
+#ifdef ENABLE_ENSEMBLE_TIMER
+                        chain_timer.stop();
+                        th_uniform_chain_time += chain_timer.sec();
+#endif
 
 
                         for ( int k = 0; k < p_id; k++ )
@@ -1654,6 +1989,10 @@ bool ensemble_generate_particles(
             }
         }
 
+#ifdef ENABLE_ENSEMBLE_TIMER
+        vismodule::Timer merge_timer;
+        merge_timer.start();
+#endif
 #pragma omp critical
         {
             vertex_coords.insert( vertex_coords.end(), th_vertex_coords.begin(), th_vertex_coords.end() );
@@ -1663,7 +2002,27 @@ bool ensemble_generate_particles(
             sq_scalars.insert( sq_scalars.end(), th_sq_scalars.begin(), th_sq_scalars.end() );
             tmp_term.insert( tmp_term.end(), th_tmp_term.begin(), th_tmp_term.end() );
         }
+#ifdef ENABLE_ENSEMBLE_TIMER
+        merge_timer.stop();
+        th_uniform_merge_time += merge_timer.sec();
+        thread_timer.stop();
+        uniform_thread_times[thid] += thread_timer.sec();
+        uniform_scalar_times[thid] += th_uniform_scalar_time;
+        uniform_chain_times[thid] += th_uniform_chain_time;
+        uniform_merge_times[thid] += th_uniform_merge_time;
+#endif
     }
+#ifdef ENABLE_ENSEMBLE_TIMER
+    uniform_timer.stop();
+    ensemble_timer.add( EnsembleTimerOmpUniformSampling, uniform_timer.sec() );
+    for ( int t = 0; t < max_threads; t++ )
+    {
+        ensemble_timer.addThread( EnsembleTimerOmpUniformSampling, t, uniform_thread_times[t] );
+        ensemble_timer.addThread( EnsembleTimerUniformCalculateScalars, t, uniform_scalar_times[t] );
+        ensemble_timer.addThread( EnsembleTimerUniformChainRuleGrad, t, uniform_chain_times[t] );
+        ensemble_timer.addThread( EnsembleTimerThreadParticleMerge, t, uniform_merge_times[t] );
+    }
+#endif
 
     std::vector<std::vector<float> > v_scalars( 2 );
     std::vector<std::vector<float> > v_coords( 2 );
@@ -1686,6 +2045,13 @@ bool ensemble_generate_particles(
     {
         std::cout << "PBVR_ENSEMBLE_STABLE_COMM=1: use MPI_Sendrecv for ensemble exchange." << std::endl;
     }
+#endif
+#ifdef ENABLE_ENSEMBLE_TIMER
+    std::vector<double> shift_interp_thread_times( max_threads, 0.0 );
+    std::vector<double> shift_scalar_thread_times( max_threads, 0.0 );
+    std::vector<double> shift_chain_thread_times( max_threads, 0.0 );
+    vismodule::Timer mpi_shift_timer;
+    mpi_shift_timer.start();
 #endif
     for ( int shift = 1; shift < ens_number; shift++ )
     {
@@ -1710,8 +2076,12 @@ bool ensemble_generate_particles(
                       << std::endl;
             return false;
         }
-      const int send_size = static_cast<int>( send_count );
-      int recv_size = 0;
+        const int send_size = static_cast<int>( send_count );
+        int recv_size = 0;
+#ifdef ENABLE_ENSEMBLE_TIMER
+        vismodule::Timer mpi_size_timer;
+        mpi_size_timer.start();
+#endif
         if ( use_stable_ensemble_comm )
         {
             MPI_Sendrecv(
@@ -1727,6 +2097,10 @@ bool ensemble_generate_particles(
             MPI_Irecv( &recv_size, 1, MPI_INT, recv_from, 0, MPI_COMM_WORLD, &reqs[1] );
             MPI_Waitall( 2, reqs, MPI_STATUSES_IGNORE );
         }
+#ifdef ENABLE_ENSEMBLE_TIMER
+        mpi_size_timer.stop();
+        ensemble_timer.add( EnsembleTimerMpiShiftSizeExchange, mpi_size_timer.sec() );
+#endif
         if ( recv_size < 0 || recv_size > INT_MAX / 3 )
         {
             std::cerr << "Invalid ensemble exchange receive size at rank " << mpi_rank
@@ -1734,47 +2108,92 @@ bool ensemble_generate_particles(
             return false;
         }
 
+#ifdef ENABLE_ENSEMBLE_TIMER
+        vismodule::Timer alloc_timer;
+        alloc_timer.start();
+#endif
         std::vector<float> recv_scalars( recv_size );
         std::vector<float> recv_coords( 3 * recv_size );
         std::vector<float> recv_normals( 3 * recv_size );
         std::vector<int> recv_cellids( recv_size );
         std::vector<float> recv_sq_scalars( recv_size );
         std::vector<float> recv_tmp_term( 3 * recv_size );
+#ifdef ENABLE_ENSEMBLE_TIMER
+        alloc_timer.stop();
+        ensemble_timer.add( EnsembleTimerMpiShiftAllocRecvBuffer, alloc_timer.sec() );
+#endif
         if ( use_stable_ensemble_comm )
         {
+#ifdef ENABLE_ENSEMBLE_TIMER
+            vismodule::Timer payload_timer;
+            payload_timer.start();
+#endif
             MPI_Sendrecv(
                 v_cellids[cur].data(), send_size, MPI_INT, send_to, 12,
                 recv_cellids.data(), recv_size, MPI_INT, recv_from, 12,
                 MPI_COMM_WORLD, MPI_STATUS_IGNORE
             );
+#ifdef ENABLE_ENSEMBLE_TIMER
+            payload_timer.stop();
+            ensemble_timer.add( EnsembleTimerMpiShiftPayloadCellids, payload_timer.sec() );
+            payload_timer.start();
+#endif
             MPI_Sendrecv(
                 v_scalars[cur].data(), send_size, MPI_FLOAT, send_to, 10,
                 recv_scalars.data(), recv_size, MPI_FLOAT, recv_from, 10,
                 MPI_COMM_WORLD, MPI_STATUS_IGNORE
             );
+#ifdef ENABLE_ENSEMBLE_TIMER
+            payload_timer.stop();
+            ensemble_timer.add( EnsembleTimerMpiShiftPayloadScalars, payload_timer.sec() );
+            payload_timer.start();
+#endif
             MPI_Sendrecv(
                 v_coords[cur].data(), 3 * send_size, MPI_FLOAT, send_to, 11,
                 recv_coords.data(), 3 * recv_size, MPI_FLOAT, recv_from, 11,
                 MPI_COMM_WORLD, MPI_STATUS_IGNORE
             );
+#ifdef ENABLE_ENSEMBLE_TIMER
+            payload_timer.stop();
+            ensemble_timer.add( EnsembleTimerMpiShiftPayloadCoords, payload_timer.sec() );
+            payload_timer.start();
+#endif
             MPI_Sendrecv(
                 v_normals[cur].data(), 3 * send_size, MPI_FLOAT, send_to, 13,
                 recv_normals.data(), 3 * recv_size, MPI_FLOAT, recv_from, 13,
                 MPI_COMM_WORLD, MPI_STATUS_IGNORE
             );
+#ifdef ENABLE_ENSEMBLE_TIMER
+            payload_timer.stop();
+            ensemble_timer.add( EnsembleTimerMpiShiftPayloadNormals, payload_timer.sec() );
+            payload_timer.start();
+#endif
             MPI_Sendrecv(
                 v_sq[cur].data(), send_size, MPI_FLOAT, send_to, 14,
                 recv_sq_scalars.data(), recv_size, MPI_FLOAT, recv_from, 14,
                 MPI_COMM_WORLD, MPI_STATUS_IGNORE
             );
+#ifdef ENABLE_ENSEMBLE_TIMER
+            payload_timer.stop();
+            ensemble_timer.add( EnsembleTimerMpiShiftPayloadSq, payload_timer.sec() );
+            payload_timer.start();
+#endif
             MPI_Sendrecv(
                 v_tmp[cur].data(), 3 * send_size, MPI_FLOAT, send_to, 15,
                 recv_tmp_term.data(), 3 * recv_size, MPI_FLOAT, recv_from, 15,
                 MPI_COMM_WORLD, MPI_STATUS_IGNORE
             );
+#ifdef ENABLE_ENSEMBLE_TIMER
+            payload_timer.stop();
+            ensemble_timer.add( EnsembleTimerMpiShiftPayloadTmp, payload_timer.sec() );
+#endif
         }
         else
         {
+#ifdef ENABLE_ENSEMBLE_TIMER
+            vismodule::Timer payload_all_timer;
+            payload_all_timer.start();
+#endif
             MPI_Request req_recv[6];
             MPI_Request req_send[6];
             MPI_Irecv( recv_cellids.data(), recv_size, MPI_INT, recv_from, 12, MPI_COMM_WORLD, &req_recv[0] );
@@ -1791,14 +2210,28 @@ bool ensemble_generate_particles(
             MPI_Isend( v_tmp[cur].data(), 3 * send_size, MPI_FLOAT, send_to, 15, MPI_COMM_WORLD, &req_send[5] );
             MPI_Waitall( 6, req_recv, MPI_STATUSES_IGNORE );
             MPI_Waitall( 6, req_send, MPI_STATUSES_IGNORE );
+#ifdef ENABLE_ENSEMBLE_TIMER
+            payload_all_timer.stop();
+            ensemble_timer.add( EnsembleTimerMpiShiftPayloadAll, payload_all_timer.sec() );
+#endif
         }
 
+#ifdef ENABLE_ENSEMBLE_TIMER
+        vismodule::Timer shift_interp_timer;
+        shift_interp_timer.start();
+#endif
 #pragma omp parallel
         {
 #if _OPENMP
             const int thid = omp_get_thread_num();
 #else
             const int thid = 0;
+#endif
+#ifdef ENABLE_ENSEMBLE_TIMER
+            vismodule::Timer thread_timer;
+            thread_timer.start();
+            double th_shift_scalar_time = 0.0;
+            double th_shift_chain_time = 0.0;
 #endif
             vismodule::UInt32 cell_index[SIMD_BLK_SIZE];
             vismodule::Vector3f local_coord_array[SIMD_BLK_SIZE];
@@ -1828,10 +2261,22 @@ bool ensemble_generate_particles(
                 for ( int k = 0; k < nvariables; k++ ) cell[thid][k]->bindCellArray( remain_BLK, cell_index );
                 cell[thid][0]->setLocalPointArray( remain_BLK, local_coord_array );
                 cell[thid][0]->transformLocalToGlobalArray( remain_BLK, local_coord_array, global_coord_array );
+#ifdef ENABLE_ENSEMBLE_TIMER
+                vismodule::Timer scalar_timer;
+                scalar_timer.start();
+#endif
                 th_tfs[thid]->CalculateScalarsArray(
                     cell[thid], remain_BLK, local_coord_array, global_coord_array, mean_transfer_functions[thid], scalar_array
                 );
+#ifdef ENABLE_ENSEMBLE_TIMER
+                scalar_timer.stop();
+                th_shift_scalar_time += scalar_timer.sec();
+#endif
 //                calculation_glad(remain_BLK, nvariables, th_tfs[thid], transfer_functions[thid], cell[thid], local_coord_array, cell_index, grad_array_x, grad_array_y, grad_array_z);
+#ifdef ENABLE_ENSEMBLE_TIMER
+                vismodule::Timer chain_timer;
+                chain_timer.start();
+#endif
                                 calculation_chain_rule_grad(
                                         remain_BLK,
                                         nvariables,
@@ -1842,6 +2287,10 @@ bool ensemble_generate_particles(
                                         grad_array_x,
                                         grad_array_y,
                                         grad_array_z );
+#ifdef ENABLE_ENSEMBLE_TIMER
+                chain_timer.stop();
+                th_shift_chain_time += chain_timer.sec();
+#endif
 
 
                 for ( int j = 0; j < remain_BLK; j++ )
@@ -1857,7 +2306,17 @@ bool ensemble_generate_particles(
                     recv_tmp_term[3 * ( i + j ) + 2] += scalar * grad_array_z[j];
                 }
             }
+#ifdef ENABLE_ENSEMBLE_TIMER
+            thread_timer.stop();
+            shift_interp_thread_times[thid] += thread_timer.sec();
+            shift_scalar_thread_times[thid] += th_shift_scalar_time;
+            shift_chain_thread_times[thid] += th_shift_chain_time;
+#endif
         }
+#ifdef ENABLE_ENSEMBLE_TIMER
+        shift_interp_timer.stop();
+        ensemble_timer.add( EnsembleTimerOmpShiftInterpolation, shift_interp_timer.sec() );
+#endif
 
         v_scalars[nxt].swap( recv_scalars );
         v_coords[nxt].swap( recv_coords );
@@ -1867,6 +2326,16 @@ bool ensemble_generate_particles(
         v_tmp[nxt].swap( recv_tmp_term );
         std::swap( cur, nxt );
     }
+#ifdef ENABLE_ENSEMBLE_TIMER
+    mpi_shift_timer.stop();
+    ensemble_timer.add( EnsembleTimerMpiShiftExchange, mpi_shift_timer.sec() );
+    for ( int t = 0; t < max_threads; t++ )
+    {
+        ensemble_timer.addThread( EnsembleTimerOmpShiftInterpolation, t, shift_interp_thread_times[t] );
+        ensemble_timer.addThread( EnsembleTimerShiftCalculateScalars, t, shift_scalar_thread_times[t] );
+        ensemble_timer.addThread( EnsembleTimerShiftChainRuleGrad, t, shift_chain_thread_times[t] );
+    }
+#endif
 
     vertex_scalars.swap( v_scalars[cur] );
     vertex_coords.swap( v_coords[cur] );
@@ -1877,6 +2346,11 @@ bool ensemble_generate_particles(
 
     std::vector<float> tmp_varience( vertex_scalars.size() );
     std::vector<float> tmp_varience_normals( 3 * vertex_scalars.size() );
+    std::vector<float> co_varietion( vertex_scalars.size() );
+    {
+#ifdef ENABLE_ENSEMBLE_TIMER
+        EnsembleTimerScope timer_scope( &ensemble_timer, EnsembleTimerStatAverageVariance );
+#endif
     const float invert_num = 1.0f / static_cast<float>( ens_number );
     for ( size_t i = 0; i < vertex_scalars.size(); i++ )
     {
@@ -1899,40 +2373,59 @@ bool ensemble_generate_particles(
 
     const float delta = 1.0e-30f;
     const float eps = 1.0e-5f;
-    std::vector<float> co_varietion( vertex_scalars.size() );
     for ( size_t i = 0; i < vertex_scalars.size(); i++ )
     {
         co_varietion[i] = vertex_scalars[i] > eps ? std::sqrt( tmp_varience[i] ) / vertex_scalars[i] : delta;
     }
-
-    EnsembleStatisticRange average_range = MakeEnsembleStatisticRange(
-        vertex_scalars, tf_number, particle_property.m_mean_transfer_function_array
-    );
-    EnsembleStatisticRange variance_range = MakeEnsembleStatisticRange(
-        tmp_varience, tf_number, particle_property.m_variance_transfer_function_array 
-    );
-    EnsembleStatisticRange co_variation_range = MakeEnsembleStatisticRange(
-        co_varietion, tf_number, particle_property.m_coefficient_of_variation_transfer_function_array
-    );
-
-    particle_property.m_transfunc_synthesizer->m_o_min.resize( tf_number );
-    particle_property.m_transfunc_synthesizer->m_o_max.resize( tf_number );
-    particle_property.m_transfunc_synthesizer->m_c_min.resize( tf_number );
-    particle_property.m_transfunc_synthesizer->m_c_max.resize( tf_number );
-    for ( int i = 0; i < tf_number; i++ )
-    {
-        particle_property.m_transfunc_synthesizer->m_o_min[i] = average_range.min_values[2 * i    ];
-        particle_property.m_transfunc_synthesizer->m_o_max[i] = average_range.max_values[2 * i    ];
-        particle_property.m_transfunc_synthesizer->m_c_min[i] = average_range.min_values[2 * i + 1];
-        particle_property.m_transfunc_synthesizer->m_c_max[i] = average_range.max_values[2 * i + 1];
     }
 
+    EnsembleStatisticRange average_range;
+    EnsembleStatisticRange variance_range;
+    EnsembleStatisticRange co_variation_range;
+    {
+#ifdef ENABLE_ENSEMBLE_TIMER
+        EnsembleTimerScope timer_scope( &ensemble_timer, EnsembleTimerStatHistogram );
+#endif
+        average_range = MakeEnsembleStatisticRange(
+            vertex_scalars, tf_number, particle_property.m_mean_transfer_function_array
+        );
+        variance_range = MakeEnsembleStatisticRange(
+            tmp_varience, tf_number, particle_property.m_variance_transfer_function_array
+        );
+        co_variation_range = MakeEnsembleStatisticRange(
+            co_varietion, tf_number, particle_property.m_coefficient_of_variation_transfer_function_array
+        );
+
+        particle_property.m_transfunc_synthesizer->m_o_min.resize( tf_number );
+        particle_property.m_transfunc_synthesizer->m_o_max.resize( tf_number );
+        particle_property.m_transfunc_synthesizer->m_c_min.resize( tf_number );
+        particle_property.m_transfunc_synthesizer->m_c_max.resize( tf_number );
+        for ( int i = 0; i < tf_number; i++ )
+        {
+            particle_property.m_transfunc_synthesizer->m_o_min[i] = average_range.min_values[2 * i    ];
+            particle_property.m_transfunc_synthesizer->m_o_max[i] = average_range.max_values[2 * i    ];
+            particle_property.m_transfunc_synthesizer->m_c_min[i] = average_range.min_values[2 * i + 1];
+            particle_property.m_transfunc_synthesizer->m_c_max[i] = average_range.max_values[2 * i + 1];
+        }
+    }
+
+#ifdef ENABLE_ENSEMBLE_TIMER
+    std::vector<double> rejection_thread_times( max_threads, 0.0 );
+    std::vector<double> rejection_merge_times( max_threads, 0.0 );
+    vismodule::Timer rejection_timer;
+    rejection_timer.start();
+#endif
 #pragma omp parallel
     {
 #if _OPENMP
         const int thid = omp_get_thread_num();
 #else
         const int thid = 0;
+#endif
+#ifdef ENABLE_ENSEMBLE_TIMER
+        vismodule::Timer thread_timer;
+        thread_timer.start();
+        double th_rejection_merge_time = 0.0;
 #endif
         std::vector<float> th_average_coords;
         std::vector<Byte> th_average_colors;
@@ -1998,6 +2491,10 @@ bool ensemble_generate_particles(
             }
         }
 
+#ifdef ENABLE_ENSEMBLE_TIMER
+        vismodule::Timer merge_timer;
+        merge_timer.start();
+#endif
 #pragma omp critical
         {
             average_coords.insert( average_coords.end(), th_average_coords.begin(), th_average_coords.end() );
@@ -2010,7 +2507,23 @@ bool ensemble_generate_particles(
             coefficient_colors.insert( coefficient_colors.end(), th_coefficient_colors.begin(), th_coefficient_colors.end() );
             coefficient_normals.insert( coefficient_normals.end(), th_coefficient_normals.begin(), th_coefficient_normals.end() );
         }
+#ifdef ENABLE_ENSEMBLE_TIMER
+        merge_timer.stop();
+        th_rejection_merge_time += merge_timer.sec();
+        thread_timer.stop();
+        rejection_thread_times[thid] += thread_timer.sec();
+        rejection_merge_times[thid] += th_rejection_merge_time;
+#endif
     }
+#ifdef ENABLE_ENSEMBLE_TIMER
+    rejection_timer.stop();
+    ensemble_timer.add( EnsembleTimerOmpRejection, rejection_timer.sec() );
+    for ( int t = 0; t < max_threads; t++ )
+    {
+        ensemble_timer.addThread( EnsembleTimerOmpRejection, t, rejection_thread_times[t] );
+        ensemble_timer.addThread( EnsembleTimerRejectionThreadMerge, t, rejection_merge_times[t] );
+    }
+#endif
 #else
     std::cout << "ensemble_generate_particles requires MPI; CPU_VER path is disabled." << std::endl;
     delete particle_property.m_transfunc_synthesizer;
@@ -2019,34 +2532,68 @@ bool ensemble_generate_particles(
 #endif
 
 
+    {
+#ifdef ENABLE_ENSEMBLE_TIMER
+        EnsembleTimerScope timer_scope( &ensemble_timer, EnsembleTimerCleanupTfs );
+#endif
     for(int i=0; i<max_threads; i++)
     {
         delete th_tfs[i];
     }
     delete[] th_tfs;
+    }
 
 #ifndef CPU_VER
-    OutputCoordMinMaxFile( dom, coordMinMaxFilePath );
+    {
+#ifdef ENABLE_ENSEMBLE_TIMER
+        EnsembleTimerScope timer_scope( &ensemble_timer, EnsembleTimerOutputCoordMinmax );
+#endif
+        OutputCoordMinMaxFile( dom, coordMinMaxFilePath );
+    }
 
-    OutputEnsembleStatisticParticles(
-        particle_property, mvpl, time_step, averageFilePrefix,
-        average_coords, average_colors, average_normals
-    );
+    {
+#ifdef ENABLE_ENSEMBLE_TIMER
+        EnsembleTimerScope timer_scope( &ensemble_timer, EnsembleTimerOutputParticlesAve );
+#endif
+        OutputEnsembleStatisticParticles(
+            particle_property, mvpl, time_step, averageFilePrefix,
+            average_coords, average_colors, average_normals
+        );
+    }
 
-    OutputEnsembleStatisticParticles(
-        particle_property, mvpl, time_step, varianceFilePrefix,
-        variance_coords, variance_colors, variance_normals
-    );
+    {
+#ifdef ENABLE_ENSEMBLE_TIMER
+        EnsembleTimerScope timer_scope( &ensemble_timer, EnsembleTimerOutputParticlesVar );
+#endif
+        OutputEnsembleStatisticParticles(
+            particle_property, mvpl, time_step, varianceFilePrefix,
+            variance_coords, variance_colors, variance_normals
+        );
+    }
 
-    OutputEnsembleStatisticParticles(
-        particle_property, mvpl, time_step, coefficientFilePrefix,
-        coefficient_coords, coefficient_colors, coefficient_normals
-    );
-    OutputEnsembleStatisticHistory(
-        particle_property, tf_number, nvariables, historyFilePath,
-        average_range, variance_range, co_variation_range
-    );
+    {
+#ifdef ENABLE_ENSEMBLE_TIMER
+        EnsembleTimerScope timer_scope( &ensemble_timer, EnsembleTimerOutputParticlesCov );
+#endif
+        OutputEnsembleStatisticParticles(
+            particle_property, mvpl, time_step, coefficientFilePrefix,
+            coefficient_coords, coefficient_colors, coefficient_normals
+        );
+    }
+    {
+#ifdef ENABLE_ENSEMBLE_TIMER
+        EnsembleTimerScope timer_scope( &ensemble_timer, EnsembleTimerOutputHistory );
+#endif
+        OutputEnsembleStatisticHistory(
+            particle_property, tf_number, nvariables, historyFilePath,
+            average_range, variance_range, co_variation_range
+        );
+    }
 
+    {
+#ifdef ENABLE_ENSEMBLE_TIMER
+        EnsembleTimerScope timer_scope( &ensemble_timer, EnsembleTimerCleanupCells );
+#endif
     for ( int thread = 0; thread < max_threads; thread++ )
     {
         for ( int variable = 0; variable < nvariables; variable++ )
@@ -2054,9 +2601,13 @@ bool ensemble_generate_particles(
             delete cell[thread][variable];
         }
     }
+    }
 
     if ( mpi_rank == 0 )
     {
+#ifdef ENABLE_ENSEMBLE_TIMER
+        EnsembleTimerScope timer_scope( &ensemble_timer, EnsembleTimerWriteTfFile );
+#endif
         std::ifstream src( tfJsonPath_old.c_str(), std::ios::binary );
         std::ofstream dst( tfJsonPath_step.c_str(), std::ios::binary );
         dst << src.rdbuf();
@@ -2066,6 +2617,9 @@ bool ensemble_generate_particles(
 #ifndef CPU_VER
     if ( async_io_enabled )
     {
+#ifdef ENABLE_ENSEMBLE_TIMER
+        EnsembleTimerScope timer_scope( &ensemble_timer, EnsembleTimerAsyncIoWait );
+#endif
         std::cout << "Particle write thread is active." << std::endl;
         std::cout << "Waiting for particle write thread to finish." << std::endl;
         pbvr::ParticleWriteThread* particle_write_thread = &pwt;
@@ -2078,6 +2632,10 @@ bool ensemble_generate_particles(
     }
 
     std::cout << "Waiting for all processes to finish." << std::endl;
+    {
+#ifdef ENABLE_ENSEMBLE_TIMER
+        EnsembleTimerScope timer_scope( &ensemble_timer, EnsembleTimerFinalBarrierState );
+#endif
 #ifndef CPU_VER
     MPI_Barrier( MPI_COMM_WORLD );
 #endif
@@ -2092,8 +2650,14 @@ bool ensemble_generate_particles(
         ofs << "LATEST_STEP = " << time_step << std::endl;
         ofs.close();
     }
+    }
 #endif
 
+#ifdef ENABLE_ENSEMBLE_TIMER
+    ensemble_total_timer.stop();
+    ensemble_timer.add( EnsembleTimerTotal, ensemble_total_timer.sec() );
+    ensemble_timer.printCsv( mpi_rank, mpi_size );
+#endif
         delete particle_property.m_transfunc_synthesizer;
         delete particle_property.m_camera;
     return true;
