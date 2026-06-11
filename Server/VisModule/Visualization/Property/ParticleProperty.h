@@ -12,7 +12,7 @@ struct ParticleProperty
 {
     // property for visualization
     std::size_t m_subpixel_level;
-    std::size_t m_repeat_level;
+    std::size_t m_repeat_level = 1;
     int m_level_index;
     float m_sampling_step;
     char m_sampling_method;
