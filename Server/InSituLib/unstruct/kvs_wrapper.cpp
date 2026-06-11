@@ -10,6 +10,8 @@
 #include <vector>
 #include <memory>
 #include <cmath>
+#include <cstdlib>
+#include <climits>
 
 #include <vismodule/ValueArray>
 #include <vismodule/PointObject>
@@ -155,6 +157,15 @@ namespace
 {
 
 using pbvr::EnsembleStatisticRange;
+
+bool UseStableEnsembleCommunication()
+{
+    const char* value = std::getenv( "PBVR_ENSEMBLE_STABLE_COMM" );
+    if ( value == NULL ) return false;
+    return std::strcmp( value, "0" ) != 0 &&
+           std::strcmp( value, "false" ) != 0 &&
+           std::strcmp( value, "FALSE" ) != 0;
+}
 
 std::string EnsembleParticleFilePrefix(
     const std::string& particleFilePrefix,
@@ -1669,16 +1680,59 @@ bool ensemble_generate_particles(
 
     int cur = 0;
     int nxt = 1;
+    const bool use_stable_ensemble_comm = UseStableEnsembleCommunication();
+#ifndef CPU_VER
+    if ( mpi_rank == 0 && use_stable_ensemble_comm )
+    {
+        std::cout << "PBVR_ENSEMBLE_STABLE_COMM=1: use MPI_Sendrecv for ensemble exchange." << std::endl;
+    }
+#endif
     for ( int shift = 1; shift < ens_number; shift++ )
     {
         const int send_to = ( mpi_rank + 1 ) % mpi_size;
         const int recv_from = ( mpi_rank - 1 + mpi_size ) % mpi_size;
-        const int send_size = static_cast<int>( v_scalars[cur].size() );
+        const size_t send_count = v_scalars[cur].size();
+        if ( send_count > static_cast<size_t>( INT_MAX ) ||
+             send_count > static_cast<size_t>( INT_MAX / 3 ) ||
+             v_coords[cur].size() != 3 * send_count ||
+             v_normals[cur].size() != 3 * send_count ||
+             v_cellids[cur].size() != send_count ||
+             v_sq[cur].size() != send_count ||
+             v_tmp[cur].size() != 3 * send_count )
+        {
+            std::cerr << "Invalid ensemble exchange send buffer size at rank " << mpi_rank
+                      << ": scalars=" << v_scalars[cur].size()
+                      << ", coords=" << v_coords[cur].size()
+                      << ", normals=" << v_normals[cur].size()
+                      << ", cellids=" << v_cellids[cur].size()
+                      << ", sq=" << v_sq[cur].size()
+                      << ", tmp=" << v_tmp[cur].size()
+                      << std::endl;
+            return false;
+        }
+        const int send_size = static_cast<int>( send_count );
         int recv_size = 0;
-        MPI_Request reqs[2];
-        MPI_Isend( &send_size, 1, MPI_INT, send_to, 0, MPI_COMM_WORLD, &reqs[0] );
-        MPI_Irecv( &recv_size, 1, MPI_INT, recv_from, 0, MPI_COMM_WORLD, &reqs[1] );
-        MPI_Waitall( 2, reqs, MPI_STATUSES_IGNORE );
+        if ( use_stable_ensemble_comm )
+        {
+            MPI_Sendrecv(
+                &send_size, 1, MPI_INT, send_to, 0,
+                &recv_size, 1, MPI_INT, recv_from, 0,
+                MPI_COMM_WORLD, MPI_STATUS_IGNORE
+            );
+        }
+        else
+        {
+            MPI_Request reqs[2];
+            MPI_Isend( &send_size, 1, MPI_INT, send_to, 0, MPI_COMM_WORLD, &reqs[0] );
+            MPI_Irecv( &recv_size, 1, MPI_INT, recv_from, 0, MPI_COMM_WORLD, &reqs[1] );
+            MPI_Waitall( 2, reqs, MPI_STATUSES_IGNORE );
+        }
+        if ( recv_size < 0 || recv_size > INT_MAX / 3 )
+        {
+            std::cerr << "Invalid ensemble exchange receive size at rank " << mpi_rank
+                      << ": recv_size=" << recv_size << std::endl;
+            return false;
+        }
 
         std::vector<float> recv_scalars( recv_size );
         std::vector<float> recv_coords( 3 * recv_size );
@@ -1686,22 +1740,58 @@ bool ensemble_generate_particles(
         std::vector<int> recv_cellids( recv_size );
         std::vector<float> recv_sq_scalars( recv_size );
         std::vector<float> recv_tmp_term( 3 * recv_size );
-        MPI_Request req_recv[6];
-        MPI_Request req_send[6];
-        MPI_Irecv( recv_cellids.data(), recv_size, MPI_INT, recv_from, 12, MPI_COMM_WORLD, &req_recv[0] );
-        MPI_Irecv( recv_scalars.data(), recv_size, MPI_FLOAT, recv_from, 10, MPI_COMM_WORLD, &req_recv[1] );
-        MPI_Irecv( recv_coords.data(), 3 * recv_size, MPI_FLOAT, recv_from, 11, MPI_COMM_WORLD, &req_recv[2] );
-        MPI_Irecv( recv_normals.data(), 3 * recv_size, MPI_FLOAT, recv_from, 13, MPI_COMM_WORLD, &req_recv[3] );
-        MPI_Irecv( recv_sq_scalars.data(), recv_size, MPI_FLOAT, recv_from, 14, MPI_COMM_WORLD, &req_recv[4] );
-        MPI_Irecv( recv_tmp_term.data(), 3 * recv_size, MPI_FLOAT, recv_from, 15, MPI_COMM_WORLD, &req_recv[5] );
-        MPI_Isend( v_cellids[cur].data(), send_size, MPI_INT, send_to, 12, MPI_COMM_WORLD, &req_send[0] );
-        MPI_Isend( v_scalars[cur].data(), send_size, MPI_FLOAT, send_to, 10, MPI_COMM_WORLD, &req_send[1] );
-        MPI_Isend( v_coords[cur].data(), 3 * send_size, MPI_FLOAT, send_to, 11, MPI_COMM_WORLD, &req_send[2] );
-        MPI_Isend( v_normals[cur].data(), 3 * send_size, MPI_FLOAT, send_to, 13, MPI_COMM_WORLD, &req_send[3] );
-        MPI_Isend( v_sq[cur].data(), send_size, MPI_FLOAT, send_to, 14, MPI_COMM_WORLD, &req_send[4] );
-        MPI_Isend( v_tmp[cur].data(), 3 * send_size, MPI_FLOAT, send_to, 15, MPI_COMM_WORLD, &req_send[5] );
-        MPI_Waitall( 6, req_recv, MPI_STATUSES_IGNORE );
-        MPI_Waitall( 6, req_send, MPI_STATUSES_IGNORE );
+        if ( use_stable_ensemble_comm )
+        {
+            MPI_Sendrecv(
+                v_cellids[cur].data(), send_size, MPI_INT, send_to, 12,
+                recv_cellids.data(), recv_size, MPI_INT, recv_from, 12,
+                MPI_COMM_WORLD, MPI_STATUS_IGNORE
+            );
+            MPI_Sendrecv(
+                v_scalars[cur].data(), send_size, MPI_FLOAT, send_to, 10,
+                recv_scalars.data(), recv_size, MPI_FLOAT, recv_from, 10,
+                MPI_COMM_WORLD, MPI_STATUS_IGNORE
+            );
+            MPI_Sendrecv(
+                v_coords[cur].data(), 3 * send_size, MPI_FLOAT, send_to, 11,
+                recv_coords.data(), 3 * recv_size, MPI_FLOAT, recv_from, 11,
+                MPI_COMM_WORLD, MPI_STATUS_IGNORE
+            );
+            MPI_Sendrecv(
+                v_normals[cur].data(), 3 * send_size, MPI_FLOAT, send_to, 13,
+                recv_normals.data(), 3 * recv_size, MPI_FLOAT, recv_from, 13,
+                MPI_COMM_WORLD, MPI_STATUS_IGNORE
+            );
+            MPI_Sendrecv(
+                v_sq[cur].data(), send_size, MPI_FLOAT, send_to, 14,
+                recv_sq_scalars.data(), recv_size, MPI_FLOAT, recv_from, 14,
+                MPI_COMM_WORLD, MPI_STATUS_IGNORE
+            );
+            MPI_Sendrecv(
+                v_tmp[cur].data(), 3 * send_size, MPI_FLOAT, send_to, 15,
+                recv_tmp_term.data(), 3 * recv_size, MPI_FLOAT, recv_from, 15,
+                MPI_COMM_WORLD, MPI_STATUS_IGNORE
+            );
+        }
+        else
+        {
+            MPI_Request req_recv[6];
+            MPI_Request req_send[6];
+            MPI_Irecv( recv_cellids.data(), recv_size, MPI_INT, recv_from, 12, MPI_COMM_WORLD, &req_recv[0] );
+            MPI_Irecv( recv_scalars.data(), recv_size, MPI_FLOAT, recv_from, 10, MPI_COMM_WORLD, &req_recv[1] );
+            MPI_Irecv( recv_coords.data(), 3 * recv_size, MPI_FLOAT, recv_from, 11, MPI_COMM_WORLD, &req_recv[2] );
+            MPI_Irecv( recv_normals.data(), 3 * recv_size, MPI_FLOAT, recv_from, 13, MPI_COMM_WORLD, &req_recv[3] );
+            MPI_Irecv( recv_sq_scalars.data(), recv_size, MPI_FLOAT, recv_from, 14, MPI_COMM_WORLD, &req_recv[4] );
+            MPI_Irecv( recv_tmp_term.data(), 3 * recv_size, MPI_FLOAT, recv_from, 15, MPI_COMM_WORLD, &req_recv[5] );
+            MPI_Isend( v_cellids[cur].data(), send_size, MPI_INT, send_to, 12, MPI_COMM_WORLD, &req_send[0] );
+            MPI_Isend( v_scalars[cur].data(), send_size, MPI_FLOAT, send_to, 10, MPI_COMM_WORLD, &req_send[1] );
+            MPI_Isend( v_coords[cur].data(), 3 * send_size, MPI_FLOAT, send_to, 11, MPI_COMM_WORLD, &req_send[2] );
+            MPI_Isend( v_normals[cur].data(), 3 * send_size, MPI_FLOAT, send_to, 13, MPI_COMM_WORLD, &req_send[3] );
+            MPI_Isend( v_sq[cur].data(), send_size, MPI_FLOAT, send_to, 14, MPI_COMM_WORLD, &req_send[4] );
+            MPI_Isend( v_tmp[cur].data(), 3 * send_size, MPI_FLOAT, send_to, 15, MPI_COMM_WORLD, &req_send[5] );
+            MPI_Waitall( 6, req_recv, MPI_STATUSES_IGNORE );
+            MPI_Waitall( 6, req_send, MPI_STATUSES_IGNORE );
+        }
 
 #pragma omp parallel
         {
