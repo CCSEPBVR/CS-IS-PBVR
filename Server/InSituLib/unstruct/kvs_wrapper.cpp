@@ -1484,11 +1484,11 @@ bool ensemble_generate_particles(
     const float max_density = particle_property.m_transfunc_synthesizer->getMaxDensity();
     float   repetitions             = particle_property.m_repeat_level;  //
     const float particle_density = 1.0f;
-    const int ens_per_MPIprocess = 1;
-    const int ens_number = mpi_size/ens_per_MPIprocess;
-    if (ens_number % ens_per_MPIprocess != 0 )
+    const int MPIprocess_per_ensemble = mpi_size/num_ensemble;
+    const int ens_number = num_ensemble;
+    if ( MPIprocess_per_ensemble % ens_number != 0 )
     {
-        std::cerr << "error !! need  ens_number % ens_per_MPIprocess = 0!!  " << std::endl;
+        std::cerr << "error !! need  ens_number % MPIprocess_per_ensemble = 0!!  " << std::endl;
         return false;
     } 
     repetitions = 1.0f / static_cast<float>( ens_number );
@@ -1689,8 +1689,8 @@ bool ensemble_generate_particles(
 #endif
     for ( int shift = 1; shift < ens_number; shift++ )
     {
-        const int send_to = ( mpi_rank + 1 ) % mpi_size;
-        const int recv_from = ( mpi_rank - 1 + mpi_size ) % mpi_size;
+        const int send_to = ( mpi_rank + MPIprocess_per_ensemble ) % mpi_size;
+        const int recv_from = ( mpi_rank - MPIprocess_per_ensemble + mpi_size ) % mpi_size;
         const size_t send_count = v_scalars[cur].size();
         if ( send_count > static_cast<size_t>( INT_MAX ) ||
              send_count > static_cast<size_t>( INT_MAX / 3 ) ||
