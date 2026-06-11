@@ -1,5 +1,5 @@
 include ../../../../pbvr.conf
-PBVR_KVS_INSTALL_DIR = $(abspath ../../../../../../KVS/Install)
+PBVR_KVS_INSTALL_DIR = $(abspath ../../../../../KVS/Install)
 
 EXE_INC = \
     -I$(LIB_SRC)/finiteVolume/lnInclude \
@@ -31,8 +31,13 @@ EXE_LIBS = \
     -L../../../../FunctionParser -lpbvrFunc \
     -L$(PBVR_KVS_INSTALL_DIR)/lib -lkvsCore -lkvsSupportExtendedFileFormat \
     -L/lib64 \
-    -L${VTK_LIB_PATH} -lvtkFiltersExtraction-9.2 -lvtkIOXML-9.2 -lvtkIOXMLParser-9.2 -lvtkexpat-9.2 -lvtkParallelCore-9.2 -lvtkIOLegacy-9.2 -lvtkIOCore-9.2 -lvtkIOGeometry-9.2 -lvtkIOEnSight-9.2 \
-    -lvtkdoubleconversion-9.2 -lvtklz4-9.2 -lvtklzma-9.2 -lvtkFiltersStatistics-9.2 -lvtkFiltersGeneral-9.2 -lvtkFiltersGeometry-9.2 -lvtkFiltersParallel-9.2 -lvtkFiltersCore-9.2 -lvtkCommonExecutionModel-9.2  \
-    -lvtkzlib-9.2 -lvtkCommonColor-9.2 -lvtkfmt-9.2 -lvtkCommonDataModel-9.2 -lvtkpugixml-9.2 -lvtkCommonSystem-9.2 -lvtkCommonMisc-9.2 -lvtkCommonTransforms-9.2 \
-    -lvtkCommonMath-9.2 -lm -lvtkCommonCore-9.2 -lvtkloguru-9.2 -lvtksys-9.2
+    -L${VTK_LIB_PATH} -lvtkFiltersExtraction-${VTK_VERSION} -lvtkIOXML-${VTK_VERSION} \
+    -lvtkIOXMLParser-${VTK_VERSION} -lvtkexpat-${VTK_VERSION} -lvtkParallelCore-${VTK_VERSION} \
+    -lvtkIOLegacy-${VTK_VERSION} -lvtkIOCore-${VTK_VERSION} -lvtkIOGeometry-${VTK_VERSION} -lvtkIOEnSight-${VTK_VERSION} \
+    -lvtkdoubleconversion-${VTK_VERSION} -lvtklz4-${VTK_VERSION} -lvtklzma-${VTK_VERSION} -lvtkFiltersStatistics-${VTK_VERSION} \
+    -lvtkFiltersGeneral-${VTK_VERSION} -lvtkFiltersGeometry-${VTK_VERSION} -lvtkFiltersParallel-${VTK_VERSION} \
+    -lvtkFiltersCore-${VTK_VERSION} -lvtkCommonExecutionModel-${VTK_VERSION} -lvtkzlib-${VTK_VERSION} \
+    -lvtkCommonColor-${VTK_VERSION} -lvtkfmt-${VTK_VERSION} -lvtkCommonDataModel-${VTK_VERSION} -lvtkpugixml-${VTK_VERSION} \
+    -lvtkCommonSystem-${VTK_VERSION} -lvtkCommonMisc-${VTK_VERSION} -lvtkCommonTransforms-${VTK_VERSION} -lvtkCommonMath-${VTK_VERSION} \
+    -lm -lvtkCommonCore-${VTK_VERSION} -lvtkloguru-${VTK_VERSION} -lvtksys-${VTK_VERSION}
 
