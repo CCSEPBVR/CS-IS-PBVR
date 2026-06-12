@@ -180,8 +180,17 @@ enum EnsembleTimerSection
     EnsembleTimerCreateCells,
     EnsembleTimerSamplingPrepare,
     EnsembleTimerOmpUniformSampling,
+    EnsembleTimerUniformThreadSetup,
+    EnsembleTimerUniformCellIndexSetup,
+    EnsembleTimerUniformBindCellArray,
+    EnsembleTimerUniformVolumeCalculation,
+    EnsembleTimerUniformParticleCountCalculation,
+    EnsembleTimerUniformParticleSamplingLoop,
+    EnsembleTimerUniformLocalCoordGeneration,
+    EnsembleTimerUniformFlushPrepare,
     EnsembleTimerUniformCalculateScalars,
     EnsembleTimerUniformChainRuleGrad,
+    EnsembleTimerUniformStoreParticleData,
     EnsembleTimerThreadParticleMerge,
     EnsembleTimerMpiShiftExchange,
     EnsembleTimerMpiShiftSizeExchange,
@@ -229,8 +238,17 @@ const EnsembleTimerSectionDef EnsembleTimerSections[EnsembleTimerSectionCount] =
     { "ensemble_generate_particles_total", "create_cells", 1 },
     { "ensemble_generate_particles_total", "sampling_prepare", 1 },
     { "ensemble_generate_particles_total", "omp_uniform_sampling", 1 },
-    { "omp_uniform_sampling", "uniform_calculate_scalars_array", 2 },
-    { "omp_uniform_sampling", "uniform_chain_rule_grad", 2 },
+    { "omp_uniform_sampling", "uniform_thread_setup", 2 },
+    { "omp_uniform_sampling", "uniform_cell_index_setup", 2 },
+    { "omp_uniform_sampling", "uniform_bind_cell_array", 2 },
+    { "omp_uniform_sampling", "uniform_volume_calculation", 2 },
+    { "omp_uniform_sampling", "uniform_particle_count_calculation", 2 },
+    { "omp_uniform_sampling", "uniform_particle_sampling_loop", 2 },
+    { "uniform_particle_sampling_loop", "uniform_local_coord_generation", 3 },
+    { "uniform_particle_sampling_loop", "uniform_flush_prepare", 3 },
+    { "uniform_particle_sampling_loop", "uniform_calculate_scalars_array", 3 },
+    { "uniform_particle_sampling_loop", "uniform_chain_rule_grad", 3 },
+    { "uniform_particle_sampling_loop", "uniform_store_particle_data", 3 },
     { "omp_uniform_sampling", "thread_particle_merge", 2 },
     { "ensemble_generate_particles_total", "mpi_shift_exchange", 1 },
     { "mpi_shift_exchange", "mpi_shift_size_exchange", 2 },
@@ -1792,8 +1810,17 @@ bool ensemble_generate_particles(
 
 #ifdef ENABLE_ENSEMBLE_TIMER
     std::vector<double> uniform_thread_times( max_threads, 0.0 );
+    std::vector<double> uniform_setup_times( max_threads, 0.0 );
+    std::vector<double> uniform_cell_index_times( max_threads, 0.0 );
+    std::vector<double> uniform_bind_times( max_threads, 0.0 );
+    std::vector<double> uniform_volume_times( max_threads, 0.0 );
+    std::vector<double> uniform_particle_count_times( max_threads, 0.0 );
+    std::vector<double> uniform_sampling_loop_times( max_threads, 0.0 );
+    std::vector<double> uniform_local_coord_times( max_threads, 0.0 );
+    std::vector<double> uniform_flush_prepare_times( max_threads, 0.0 );
     std::vector<double> uniform_scalar_times( max_threads, 0.0 );
     std::vector<double> uniform_chain_times( max_threads, 0.0 );
+    std::vector<double> uniform_store_times( max_threads, 0.0 );
     std::vector<double> uniform_merge_times( max_threads, 0.0 );
     vismodule::Timer uniform_timer;
     uniform_timer.start();
@@ -1810,8 +1837,19 @@ bool ensemble_generate_particles(
 #ifdef ENABLE_ENSEMBLE_TIMER
         vismodule::Timer thread_timer;
         thread_timer.start();
+        vismodule::Timer setup_timer;
+        setup_timer.start();
+        double th_uniform_setup_time = 0.0;
+        double th_uniform_cell_index_time = 0.0;
+        double th_uniform_bind_time = 0.0;
+        double th_uniform_volume_time = 0.0;
+        double th_uniform_particle_count_time = 0.0;
+        double th_uniform_sampling_loop_time = 0.0;
+        double th_uniform_local_coord_time = 0.0;
+        double th_uniform_flush_prepare_time = 0.0;
         double th_uniform_scalar_time = 0.0;
         double th_uniform_chain_time = 0.0;
+        double th_uniform_store_time = 0.0;
         double th_uniform_merge_time = 0.0;
 #endif
         vismodule::UInt32 cell_index[SIMD_BLK_SIZE];
@@ -1834,25 +1872,57 @@ bool ensemble_generate_particles(
         std::vector<vismodule::Real32> th_sq_scalars;
         std::vector<vismodule::Real32> th_tmp_term;
         vismodule::MersenneTwister mt( thid + mpi_rank * nthreads );
+#ifdef ENABLE_ENSEMBLE_TIMER
+        setup_timer.stop();
+        th_uniform_setup_time += setup_timer.sec();
+#endif
 
 #pragma omp for schedule( dynamic ) nowait
         for ( size_t index = 0; index < static_cast<size_t>( ncells ); index += SIMD_BLK_SIZE )
         {
+#ifdef ENABLE_ENSEMBLE_TIMER
+            vismodule::Timer cell_index_timer;
+            cell_index_timer.start();
+#endif
             const int remain = ( ncells - index > SIMD_BLK_SIZE ) ? SIMD_BLK_SIZE : ncells - index;
             for ( int cell_BLK = 0; cell_BLK < remain; cell_BLK++ )
             {
                 cell_index[cell_BLK] = static_cast<vismodule::UInt32>( index + cell_BLK );
             }
+#ifdef ENABLE_ENSEMBLE_TIMER
+            cell_index_timer.stop();
+            th_uniform_cell_index_time += cell_index_timer.sec();
+#endif
+#ifdef ENABLE_ENSEMBLE_TIMER
+            vismodule::Timer bind_timer;
+            bind_timer.start();
+#endif
             for ( int variable = 0; variable < nvariables; variable++ )
             {
                 cell[thid][variable]->bindCellArray( remain, cell_index );
             }
+#ifdef ENABLE_ENSEMBLE_TIMER
+            bind_timer.stop();
+            th_uniform_bind_time += bind_timer.sec();
+#endif
+#ifdef ENABLE_ENSEMBLE_TIMER
+            vismodule::Timer volume_timer;
+            volume_timer.start();
+#endif
             for ( int cell_BLK = 0; cell_BLK < remain; cell_BLK++ )
             {
                 cell[thid][0]->bindCell( cell_index[cell_BLK] );
                 volume_array[cell_BLK] = cell[thid][0]->volume();
             }
+#ifdef ENABLE_ENSEMBLE_TIMER
+            volume_timer.stop();
+            th_uniform_volume_time += volume_timer.sec();
+#endif
 
+#ifdef ENABLE_ENSEMBLE_TIMER
+            vismodule::Timer particle_count_timer;
+            particle_count_timer.start();
+#endif
             for ( int cell_BLK = 0; cell_BLK < remain; cell_BLK++ )
             {
                 nparticles_array[cell_BLK] = static_cast<int>(
@@ -1860,8 +1930,16 @@ bool ensemble_generate_particles(
 //                    5
                 );
             }
+#ifdef ENABLE_ENSEMBLE_TIMER
+            particle_count_timer.stop();
+            th_uniform_particle_count_time += particle_count_timer.sec();
+#endif
 
             int p_id = 0;
+#ifdef ENABLE_ENSEMBLE_TIMER
+            vismodule::Timer sampling_loop_timer;
+            sampling_loop_timer.start();
+#endif
             for ( int cell_BLK = 0; cell_BLK < remain + 1; cell_BLK++ )
             {
                 const int nparticles_in_cell = cell_BLK < remain ? nparticles_array[cell_BLK] : 1;
@@ -1870,6 +1948,10 @@ bool ensemble_generate_particles(
                     const int remain_BLK = ( nparticles_in_cell - i > SIMD_BLK_SIZE ) ? SIMD_BLK_SIZE : nparticles_in_cell - i;
                     if ( cell_BLK < remain )
                     {
+#ifdef ENABLE_ENSEMBLE_TIMER
+                        vismodule::Timer local_coord_timer;
+                        local_coord_timer.start();
+#endif
                         for ( int j = 0; j < remain_BLK; j++ )
                         {
                             cell_index[p_id] = static_cast<vismodule::UInt32>( index + cell_BLK );
@@ -1878,9 +1960,19 @@ bool ensemble_generate_particles(
                             p_id++;
                             if ( p_id == SIMD_BLK_SIZE )
                             {
+#ifdef ENABLE_ENSEMBLE_TIMER
+                                local_coord_timer.stop();
+                                th_uniform_local_coord_time += local_coord_timer.sec();
+                                vismodule::Timer flush_prepare_timer;
+                                flush_prepare_timer.start();
+#endif
                                 for ( int k = 0; k < nvariables; k++ ) cell[thid][k]->bindCellArray( p_id, cell_index );
                                 cell[thid][0]->setLocalPointArray( p_id, local_coord_array );
                                 cell[thid][0]->transformLocalToGlobalArray( p_id, local_coord_array, global_coord_array );
+#ifdef ENABLE_ENSEMBLE_TIMER
+                                flush_prepare_timer.stop();
+                                th_uniform_flush_prepare_time += flush_prepare_timer.sec();
+#endif
 #ifdef ENABLE_ENSEMBLE_TIMER
                                 vismodule::Timer scalar_timer;
                                 scalar_timer.start();
@@ -1912,6 +2004,10 @@ bool ensemble_generate_particles(
                                 th_uniform_chain_time += chain_timer.sec();
 #endif
 
+#ifdef ENABLE_ENSEMBLE_TIMER
+                                vismodule::Timer store_timer;
+                                store_timer.start();
+#endif
                                 for ( int k = 0; k < p_id; k++ )
                                 {
                                     th_vertex_scalars.push_back( scalar_array[k] );
@@ -1927,15 +2023,34 @@ bool ensemble_generate_particles(
                                     th_tmp_term.push_back( scalar_array[k] * grad_array_y[k] );
                                     th_tmp_term.push_back( scalar_array[k] * grad_array_z[k] );
                                 }
+#ifdef ENABLE_ENSEMBLE_TIMER
+                                store_timer.stop();
+                                th_uniform_store_time += store_timer.sec();
+#endif
                                 p_id = 0;
+#ifdef ENABLE_ENSEMBLE_TIMER
+                                local_coord_timer.start();
+#endif
                             }
                         }
+#ifdef ENABLE_ENSEMBLE_TIMER
+                        local_coord_timer.stop();
+                        th_uniform_local_coord_time += local_coord_timer.sec();
+#endif
                     }
                     else if ( p_id > 0 )
                     {
+#ifdef ENABLE_ENSEMBLE_TIMER
+                        vismodule::Timer flush_prepare_timer;
+                        flush_prepare_timer.start();
+#endif
                         for ( int k = 0; k < nvariables; k++ ) cell[thid][k]->bindCellArray( p_id, cell_index );
                         cell[thid][0]->setLocalPointArray( p_id, local_coord_array );
                         cell[thid][0]->transformLocalToGlobalArray( p_id, local_coord_array, global_coord_array );
+#ifdef ENABLE_ENSEMBLE_TIMER
+                        flush_prepare_timer.stop();
+                        th_uniform_flush_prepare_time += flush_prepare_timer.sec();
+#endif
 #ifdef ENABLE_ENSEMBLE_TIMER
                         vismodule::Timer scalar_timer;
                         scalar_timer.start();
@@ -1968,6 +2083,10 @@ bool ensemble_generate_particles(
 #endif
 
 
+#ifdef ENABLE_ENSEMBLE_TIMER
+                        vismodule::Timer store_timer;
+                        store_timer.start();
+#endif
                         for ( int k = 0; k < p_id; k++ )
                         {
                             th_vertex_scalars.push_back( scalar_array[k] );
@@ -1983,10 +2102,18 @@ bool ensemble_generate_particles(
                             th_tmp_term.push_back( scalar_array[k] * grad_array_y[k] );
                             th_tmp_term.push_back( scalar_array[k] * grad_array_z[k] );
                         }
+#ifdef ENABLE_ENSEMBLE_TIMER
+                        store_timer.stop();
+                        th_uniform_store_time += store_timer.sec();
+#endif
                         p_id = 0;
                     }
                 }
             }
+#ifdef ENABLE_ENSEMBLE_TIMER
+            sampling_loop_timer.stop();
+            th_uniform_sampling_loop_time += sampling_loop_timer.sec();
+#endif
         }
 
 #ifdef ENABLE_ENSEMBLE_TIMER
@@ -2007,8 +2134,17 @@ bool ensemble_generate_particles(
         th_uniform_merge_time += merge_timer.sec();
         thread_timer.stop();
         uniform_thread_times[thid] += thread_timer.sec();
+        uniform_setup_times[thid] += th_uniform_setup_time;
+        uniform_cell_index_times[thid] += th_uniform_cell_index_time;
+        uniform_bind_times[thid] += th_uniform_bind_time;
+        uniform_volume_times[thid] += th_uniform_volume_time;
+        uniform_particle_count_times[thid] += th_uniform_particle_count_time;
+        uniform_sampling_loop_times[thid] += th_uniform_sampling_loop_time;
+        uniform_local_coord_times[thid] += th_uniform_local_coord_time;
+        uniform_flush_prepare_times[thid] += th_uniform_flush_prepare_time;
         uniform_scalar_times[thid] += th_uniform_scalar_time;
         uniform_chain_times[thid] += th_uniform_chain_time;
+        uniform_store_times[thid] += th_uniform_store_time;
         uniform_merge_times[thid] += th_uniform_merge_time;
 #endif
     }
@@ -2018,8 +2154,17 @@ bool ensemble_generate_particles(
     for ( int t = 0; t < max_threads; t++ )
     {
         ensemble_timer.addThread( EnsembleTimerOmpUniformSampling, t, uniform_thread_times[t] );
+        ensemble_timer.addThread( EnsembleTimerUniformThreadSetup, t, uniform_setup_times[t] );
+        ensemble_timer.addThread( EnsembleTimerUniformCellIndexSetup, t, uniform_cell_index_times[t] );
+        ensemble_timer.addThread( EnsembleTimerUniformBindCellArray, t, uniform_bind_times[t] );
+        ensemble_timer.addThread( EnsembleTimerUniformVolumeCalculation, t, uniform_volume_times[t] );
+        ensemble_timer.addThread( EnsembleTimerUniformParticleCountCalculation, t, uniform_particle_count_times[t] );
+        ensemble_timer.addThread( EnsembleTimerUniformParticleSamplingLoop, t, uniform_sampling_loop_times[t] );
+        ensemble_timer.addThread( EnsembleTimerUniformLocalCoordGeneration, t, uniform_local_coord_times[t] );
+        ensemble_timer.addThread( EnsembleTimerUniformFlushPrepare, t, uniform_flush_prepare_times[t] );
         ensemble_timer.addThread( EnsembleTimerUniformCalculateScalars, t, uniform_scalar_times[t] );
         ensemble_timer.addThread( EnsembleTimerUniformChainRuleGrad, t, uniform_chain_times[t] );
+        ensemble_timer.addThread( EnsembleTimerUniformStoreParticleData, t, uniform_store_times[t] );
         ensemble_timer.addThread( EnsembleTimerThreadParticleMerge, t, uniform_merge_times[t] );
     }
 #endif
