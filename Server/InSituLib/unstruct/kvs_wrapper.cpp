@@ -1718,17 +1718,6 @@ bool ensemble_generate_particles(
             }
         }
 
-    
-//    // debaggu　用
-//        if ( mpi_rank == 0 )
-//    {
-//        ParameterFileWriter ppw;
-//        ppw.writeTF2Json( particle_property, tfJsonPath_step ); //時間ステップファイル出力
-//        ppw.writeTF2OldJson( particle_property ); //old_Jsonファイル更新
-// 
-//    }
-
-
     }
     else
     {
@@ -1762,13 +1751,12 @@ bool ensemble_generate_particles(
                       variance_transfer_functions[i][j] = particle_property.m_variance_transfer_function_array[j];
                 coef_variation_transfer_functions[i][j] = particle_property.m_coefficient_of_variation_transfer_function_array[j];
             }
-//        transfer_functions[i] = particle_property.m_transfunc_array[i];
         }
     }
 
-    std::cout << "particle_property.mean_max = " << particle_property.m_mean_transfer_function_array[0].colorMap().maxValue() << std::endl;
-    std::cout << "particle_property.var_max = " << particle_property.m_variance_transfer_function_array[0].colorMap().maxValue() << std::endl;
-    std::cout << "particle_property.cov_max = " << particle_property.m_coefficient_of_variation_transfer_function_array[0].colorMap().maxValue() << std::endl;
+//    std::cout << "particle_property.mean_max = " << particle_property.m_mean_transfer_function_array[0].colorMap().maxValue() << std::endl;
+//    std::cout << "particle_property.var_max = " << particle_property.m_variance_transfer_function_array[0].colorMap().maxValue() << std::endl;
+//    std::cout << "particle_property.cov_max = " << particle_property.m_coefficient_of_variation_transfer_function_array[0].colorMap().maxValue() << std::endl;
 
 
     const std::string averageFilePrefix = EnsembleParticleFilePrefix( particleFilePrefix, "ave_" );
@@ -1843,7 +1831,7 @@ bool ensemble_generate_particles(
         }
     }
 
-    particle_property.m_repeat_level = 1.f; // スタブデータ
+//    particle_property.m_repeat_level = 1.f; // スタブデータ
 
     float sampling_volume_inverse = 0.0f;
     float max_opacity = 0.0f;
