@@ -295,13 +295,21 @@ private:
     int m_max_threads;
     std::vector<double> m_seconds;
     std::vector<std::vector<double> > m_thread_seconds;
+    unsigned long long m_uniform_particle_count;
+    unsigned long long m_average_particle_count;
+    unsigned long long m_variance_particle_count;
+    unsigned long long m_coefficient_particle_count;
 
 public:
     EnsembleTimerCollector( const int step, const int max_threads ):
         m_step( step ),
         m_max_threads( max_threads ),
         m_seconds( EnsembleTimerSectionCount, 0.0 ),
-        m_thread_seconds( EnsembleTimerSectionCount, std::vector<double>( max_threads, 0.0 ) )
+        m_thread_seconds( EnsembleTimerSectionCount, std::vector<double>( max_threads, 0.0 ) ),
+        m_uniform_particle_count( 0 ),
+        m_average_particle_count( 0 ),
+        m_variance_particle_count( 0 ),
+        m_coefficient_particle_count( 0 )
     {
     }
 
@@ -314,6 +322,21 @@ public:
     {
         if ( thread < 0 || thread >= m_max_threads ) return;
         m_thread_seconds[section][thread] += seconds;
+    }
+
+    void setUniformParticleCount( const unsigned long long count )
+    {
+        m_uniform_particle_count = count;
+    }
+
+    void setStatisticParticleCounts(
+        const unsigned long long average_count,
+        const unsigned long long variance_count,
+        const unsigned long long coefficient_count )
+    {
+        m_average_particle_count = average_count;
+        m_variance_particle_count = variance_count;
+        m_coefficient_particle_count = coefficient_count;
     }
 
     void printCsv( const int mpi_rank, const int mpi_size ) const
@@ -329,10 +352,51 @@ public:
             {
                 *summary_out
                     << "step,scope,parent_section,section,level,mpi_avg_sec,mpi_max_sec,mpi_min_sec,"
-                    << "thread_avg_sec,thread_max_sec,thread_min_sec" << std::endl;
+                    << "thread_avg_sec,thread_max_sec,thread_min_sec,"
+                    << "uniform_particle_count,"
+                    << "ave_particle_count,var_particle_count,cov_particle_count" << std::endl;
                 summary_header_written = true;
             }
         }
+
+        unsigned long long uniform_particle_count = m_uniform_particle_count;
+        unsigned long long average_particle_count = m_average_particle_count;
+        unsigned long long variance_particle_count = m_variance_particle_count;
+        unsigned long long coefficient_particle_count = m_coefficient_particle_count;
+#ifndef CPU_VER
+        MPI_Reduce(
+            &m_uniform_particle_count,
+            &uniform_particle_count,
+            1,
+            MPI_UNSIGNED_LONG_LONG,
+            MPI_SUM,
+            0,
+            MPI_COMM_WORLD );
+        MPI_Reduce(
+            &m_average_particle_count,
+            &average_particle_count,
+            1,
+            MPI_UNSIGNED_LONG_LONG,
+            MPI_SUM,
+            0,
+            MPI_COMM_WORLD );
+        MPI_Reduce(
+            &m_variance_particle_count,
+            &variance_particle_count,
+            1,
+            MPI_UNSIGNED_LONG_LONG,
+            MPI_SUM,
+            0,
+            MPI_COMM_WORLD );
+        MPI_Reduce(
+            &m_coefficient_particle_count,
+            &coefficient_particle_count,
+            1,
+            MPI_UNSIGNED_LONG_LONG,
+            MPI_SUM,
+            0,
+            MPI_COMM_WORLD );
+#endif
 
         const bool verbose = EnsembleTimerVerbose();
         for ( int i = 0; i < EnsembleTimerSectionCount; i++ )
@@ -393,7 +457,11 @@ public:
                              << min_value << ","
                              << thread_avg_global << ","
                              << thread_max_global << ","
-                             << thread_min_global << std::endl;
+                             << thread_min_global << ","
+                             << uniform_particle_count << ","
+                             << average_particle_count << ","
+                             << variance_particle_count << ","
+                             << coefficient_particle_count << std::endl;
             }
 
             if ( verbose )
@@ -2167,6 +2235,8 @@ bool ensemble_generate_particles(
         ensemble_timer.addThread( EnsembleTimerUniformStoreParticleData, t, uniform_store_times[t] );
         ensemble_timer.addThread( EnsembleTimerThreadParticleMerge, t, uniform_merge_times[t] );
     }
+    ensemble_timer.setUniformParticleCount(
+        static_cast<unsigned long long>( vertex_coords.size() / 3 ) );
 #endif
 
     std::vector<std::vector<float> > v_scalars( 2 );
@@ -2668,6 +2738,10 @@ bool ensemble_generate_particles(
         ensemble_timer.addThread( EnsembleTimerOmpRejection, t, rejection_thread_times[t] );
         ensemble_timer.addThread( EnsembleTimerRejectionThreadMerge, t, rejection_merge_times[t] );
     }
+    ensemble_timer.setStatisticParticleCounts(
+        static_cast<unsigned long long>( average_coords.size() / 3 ),
+        static_cast<unsigned long long>( variance_coords.size() / 3 ),
+        static_cast<unsigned long long>( coefficient_coords.size() / 3 ) );
 #endif
 #else
     std::cout << "ensemble_generate_particles requires MPI; CPU_VER path is disabled." << std::endl;
