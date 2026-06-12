@@ -340,6 +340,8 @@ void CommunicationTest::setLineEditText( QLineEdit* line_edit, const QString& te
 
 void CommunicationTest::saveScreenshot( const QString& file_name, const QString& caption )
 {
+    if ( !ClientTests::screenshotsEnabled() ) { return; }
+
     QTest::qWait( k_capture_settle_ms );
 
     QScreen* screen = QGuiApplication::primaryScreen();

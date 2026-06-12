@@ -40,6 +40,15 @@ QString normalizeConfiguredPath( const QString& path, const QString& repo_root_p
     return QDir::cleanPath( QDir( repo_root_path ).absoluteFilePath( expanded_path ) );
 }
 
+bool envFlagIsEnabled( const QString& value )
+{
+    const QString normalized = value.trimmed().toLower();
+    return normalized == QStringLiteral( "1" ) ||
+           normalized == QStringLiteral( "true" ) ||
+           normalized == QStringLiteral( "yes" ) ||
+           normalized == QStringLiteral( "on" );
+}
+
 } // namespace
 
 QString testPathConfigFilePath( const QString& repo_root_path )
@@ -95,6 +104,13 @@ QString datedTestOutputDir(
     }
 
     return QDir::cleanPath( path );
+}
+
+bool screenshotsEnabled()
+{
+    const QString disabled =
+        QProcessEnvironment::systemEnvironment().value( QStringLiteral( "PBVR_DISABLE_SCREENSHOTS" ) );
+    return !envFlagIsEnabled( disabled );
 }
 
 } // namespace ClientTests

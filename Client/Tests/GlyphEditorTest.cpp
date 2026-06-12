@@ -321,6 +321,8 @@ void GlyphEditorTest::selectComboBoxItem( QComboBox* combo_box, int index ) cons
 
 void GlyphEditorTest::saveScreenshot( const QString& file_name, const QString& caption )
 {
+    if ( !ClientTests::screenshotsEnabled() ) { return; }
+
     QTest::qWait( k_capture_settle_ms );
 
     QScreen* screen = QGuiApplication::primaryScreen();

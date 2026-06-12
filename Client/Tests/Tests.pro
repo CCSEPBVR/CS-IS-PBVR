@@ -131,6 +131,12 @@ equals(TEST_ENABLE_SHADINGCONTROL, 1) {
     SOURCES += ShadingControlTest.cpp
 }
 
+equals(TEST_ENABLE_SERVER, 1) {
+    DEFINES += PBVR_ENABLE_TEST_SERVER
+    HEADERS += ServerTest.h
+    SOURCES += ServerTest.cpp
+}
+
 equals(TEST_ENABLE_VOLUMETRANSFORM, 1) {
     DEFINES += PBVR_ENABLE_TEST_VOLUMETRANSFORM
     HEADERS += VolumeTransformTest.h
@@ -221,9 +227,9 @@ win32 {
         LIBS += -L$$CLIENT_DIR/ExtendedQT/debug -lExtendedQT
     }
 
-    !isEmpty( KVS_DIR ) {
+    !isEmpty( PBVR_KVS_INSTALL_DIR ) {
         equals( KVS_SUPPORT_QT, "1" ) {
-            LIBS += -L$$KVS_DIR/lib -lkvsSupportQt -lkvsCore
+            LIBS += -L$$PBVR_KVS_INSTALL_DIR/lib -lkvsSupportQt -lkvsCore
         }
         equals( KVS_ENABLE_OPENGL, "1" ) {
             LIBS += -lopengl32
@@ -236,10 +242,10 @@ win32 {
         }
         equals( KVS_SUPPORT_GLUT, "1" ) {
             LIBS += -L$$KVS_GLUT_DIR/lib -lfreeglut
-            LIBS += -L$$KVS_DIR/lib -lkvsSupportGLUT
+            LIBS += -L$$PBVR_KVS_INSTALL_DIR/lib -lkvsSupportGLUT
         }
         equals( KVS_SUPPORT_OPENXR, "1" ) {
-            LIBS += -L$$KVS_DIR/lib -lkvsSupportOpenXR
+            LIBS += -L$$PBVR_KVS_INSTALL_DIR/lib -lkvsSupportOpenXR
             LIBS += -L$$KVS_OPENXR_DIR/lib -lopenxr_loader
             LIBS += -lgdi32
         }
@@ -256,16 +262,16 @@ macx {
     LIBS += -L$$CLIENT_DIR/ExtendedKVS -lExtendedKVS
     LIBS += -L$$CLIENT_DIR/ExtendedQT -lExtendedQT
 
-    !isEmpty( KVS_DIR ) {
+    !isEmpty( PBVR_KVS_INSTALL_DIR ) {
         equals( KVS_SUPPORT_QT, "1" ) {
-            LIBS += -L$$KVS_DIR/lib -lkvsSupportQt -lkvsCore
+            LIBS += -L$$PBVR_KVS_INSTALL_DIR/lib -lkvsSupportQt -lkvsCore
         }
         equals( KVS_ENABLE_OPENGL, "1" ) {
             LIBS += -framework OpenGL
         }
         equals( KVS_SUPPORT_GLUT, "1" ) {
             LIBS += -framework GLUT
-            LIBS += -L$$KVS_DIR/lib -lkvsSupportGLUT
+            LIBS += -L$$PBVR_KVS_INSTALL_DIR/lib -lkvsSupportGLUT
         }
     }
     !isEmpty( KVS_ASSIMP_DIR ) {
@@ -280,9 +286,9 @@ unix:!macx {
     LIBS += -L$$CLIENT_DIR/ExtendedKVS -lExtendedKVS
     LIBS += -L$$CLIENT_DIR/ExtendedQT -lExtendedQT
 
-    !isEmpty( KVS_DIR ) {
+    !isEmpty( PBVR_KVS_INSTALL_DIR ) {
         equals( KVS_SUPPORT_QT, "1" ) {
-            LIBS += -L$$KVS_DIR/lib -lkvsSupportQt -lkvsCore
+            LIBS += -L$$PBVR_KVS_INSTALL_DIR/lib -lkvsSupportQt -lkvsCore
         }
         equals( KVS_ENABLE_OPENGL, "1" ) {
             LIBS += -lGL
@@ -292,7 +298,7 @@ unix:!macx {
         }
         equals( KVS_SUPPORT_GLUT, "1" ) {
             LIBS += -lglut
-            LIBS += -L$$KVS_DIR/lib -lkvsSupportGLUT
+            LIBS += -L$$PBVR_KVS_INSTALL_DIR/lib -lkvsSupportGLUT
         }
     }
     !isEmpty( KVS_ASSIMP_DIR ) {
@@ -333,93 +339,4 @@ unix:!macx {
     PRE_TARGETDEPS += $$CLIENT_DIR/ExtendedQT/libExtendedQT.a
 }
 
-!isEmpty( KVS_DIR ) {
-    FONT_DIR = $$KVS_DIR/include/Core/Visualization/Font
-    SHADER_DIR = $$KVS_DIR/include/Core/Visualization/Shader
-
-    win32 {
-        CONFIG(release, debug|release) {
-            TEST_RUNTIME_DIR = $$OUT_PWD/release
-        } else:CONFIG(debug, debug|release) {
-            TEST_RUNTIME_DIR = $$OUT_PWD/debug
-        }
-
-        TEST_RUNTIME_DIR_WIN = $$replace(TEST_RUNTIME_DIR, /, \\)
-        FONT_DIR_WIN = $$replace(FONT_DIR, /, \\)
-        SHADER_DIR_WIN = $$replace(SHADER_DIR, /, \\)
-
-        CONFIG(release, debug|release) {
-            QMAKE_POST_LINK = \
-                if exist "$$TEST_RUNTIME_DIR_WIN\\Font" rmdir /s /q "$$TEST_RUNTIME_DIR_WIN\\Font" & mkdir "$$TEST_RUNTIME_DIR_WIN\\Font" & xcopy "$$FONT_DIR_WIN\\*" "$$TEST_RUNTIME_DIR_WIN\\Font\\" /E /I /Y & \
-                if exist "$$TEST_RUNTIME_DIR_WIN\\Shader" rmdir /s /q "$$TEST_RUNTIME_DIR_WIN\\Shader" & mkdir "$$TEST_RUNTIME_DIR_WIN\\Shader" & xcopy "$$SHADER_DIR_WIN\\*" "$$TEST_RUNTIME_DIR_WIN\\Shader\\" /E /I /Y
-        } else:CONFIG(debug, debug|release) {
-            QMAKE_POST_LINK = \
-                if exist "$$TEST_RUNTIME_DIR_WIN\\Font" rmdir /s /q "$$TEST_RUNTIME_DIR_WIN\\Font" & mkdir "$$TEST_RUNTIME_DIR_WIN\\Font" & xcopy "$$FONT_DIR_WIN\\*" "$$TEST_RUNTIME_DIR_WIN\\Font\\" /E /I /Y & \
-                if exist "$$TEST_RUNTIME_DIR_WIN\\Shader" rmdir /s /q "$$TEST_RUNTIME_DIR_WIN\\Shader" & mkdir "$$TEST_RUNTIME_DIR_WIN\\Shader" & xcopy "$$SHADER_DIR_WIN\\*" "$$TEST_RUNTIME_DIR_WIN\\Shader\\" /E /I /Y
-        }
-
-        equals( KVS_ENABLE_GLEW, "1" ) {
-            COPY_GLEW_SRC = $$KVS_GLEW_DIR/bin
-            COPY_GLEW_SRC ~= s|/|\\|g
-            CONFIG(release, debug|release) {
-                COPY_GLEW_DEST = $$OUT_PWD/release
-            } else:CONFIG(debug, debug|release) {
-                COPY_GLEW_DEST = $$OUT_PWD/debug
-            }
-            COPY_GLEW_DEST ~= s|/|\\|g
-            copy_glew.target = copy_glew
-            copy_glew.commands = $$QMAKE_COPY $$COPY_GLEW_SRC\\glew32.dll $$COPY_GLEW_DEST
-            QMAKE_EXTRA_TARGETS += copy_glew
-            POST_TARGETDEPS += copy_glew
-        }
-
-        equals( KVS_SUPPORT_GLUT, "1" ) {
-            COPY_GLUT_SRC = $$KVS_GLUT_DIR/bin
-            COPY_GLUT_SRC ~= s|/|\\|g
-            CONFIG(release, debug|release) {
-                COPY_GLUT_DEST = $$OUT_PWD/release
-            } else:CONFIG(debug, debug|release) {
-                COPY_GLUT_DEST = $$OUT_PWD/debug
-            }
-            COPY_GLUT_DEST ~= s|/|\\|g
-            copy_glut.target = copy_glut
-            copy_glut.commands = $$QMAKE_COPY $$COPY_GLUT_SRC\\freeglut.dll $$COPY_GLUT_DEST
-            QMAKE_EXTRA_TARGETS += copy_glut
-            POST_TARGETDEPS += copy_glut
-        }
-
-        equals( KVS_SUPPORT_OPENXR, "1" ) {
-            COPY_OPENXR_SRC = $$KVS_OPENXR_DIR/bin
-            COPY_OPENXR_SRC ~= s|/|\\|g
-            CONFIG(release, debug|release) {
-                COPY_OPENXR_DEST = $$OUT_PWD/release
-            } else:CONFIG(debug, debug|release) {
-                COPY_OPENXR_DEST = $$OUT_PWD/debug
-            }
-            COPY_OPENXR_DEST ~= s|/|\\|g
-            copy_openxr.target = copy_openxr
-            copy_openxr.commands = $$QMAKE_COPY $$COPY_OPENXR_SRC\\openxr_loader.dll $$COPY_OPENXR_DEST
-            QMAKE_EXTRA_TARGETS += copy_openxr
-            POST_TARGETDEPS += copy_openxr
-
-            COPY_MODEL_SRC = $$KVS_DIR/resources/SupportOpenXR/Models
-            COPY_MODEL_SRC ~= s|/|\\|g
-            copy_hand_model.target = copy_hand_model
-            copy_hand_model.commands = $$QMAKE_COPY_DIR $$COPY_MODEL_SRC $$COPY_OPENXR_DEST\\Models
-            QMAKE_EXTRA_TARGETS += copy_hand_model
-            POST_TARGETDEPS += copy_hand_model
-        }
-    }
-
-    macx {
-        TEST_RUNTIME_DIR = $$OUT_PWD/$${TARGET}.app/Contents/MacOS
-        QMAKE_POST_LINK = rm -rf "$$TEST_RUNTIME_DIR/Font" && mkdir -p "$$TEST_RUNTIME_DIR/Font" && cp -rf "$$FONT_DIR/"* "$$TEST_RUNTIME_DIR/Font/" && \
-                          rm -rf "$$TEST_RUNTIME_DIR/Shader" && mkdir -p "$$TEST_RUNTIME_DIR/Shader" && cp -rf "$$SHADER_DIR/"* "$$TEST_RUNTIME_DIR/Shader/"
-    }
-
-    unix:!macx {
-        TEST_RUNTIME_DIR = $$OUT_PWD
-        QMAKE_POST_LINK = rm -rf "$$TEST_RUNTIME_DIR/Font" && mkdir -p "$$TEST_RUNTIME_DIR/Font" && cp -rf "$$FONT_DIR/"* "$$TEST_RUNTIME_DIR/Font/" && \
-                          rm -rf "$$TEST_RUNTIME_DIR/Shader" && mkdir -p "$$TEST_RUNTIME_DIR/Shader" && cp -rf "$$SHADER_DIR/"* "$$TEST_RUNTIME_DIR/Shader/"
-    }
-}
+include(../KvsRuntimeResources.pri)

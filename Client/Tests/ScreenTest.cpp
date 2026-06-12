@@ -151,6 +151,8 @@ void ScreenTest::dragMouse(
 
 void ScreenTest::saveScreenshot( QMainWindow& window, const QString& file_name, const QString& caption ) const
 {
+    if ( !ClientTests::screenshotsEnabled() ) { return; }
+
     const QString file_path = QDir( m_screenshot_dir_path ).absoluteFilePath( file_name );
     const QPixmap screenshot = window.grab();
 

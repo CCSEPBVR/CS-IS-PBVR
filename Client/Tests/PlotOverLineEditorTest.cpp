@@ -297,6 +297,8 @@ void PlotOverLineEditorTest::selectComboBoxItem( QComboBox* combo_box, int index
 
 void PlotOverLineEditorTest::saveScreenshot( const QString& file_name, const QString& caption )
 {
+    if ( !ClientTests::screenshotsEnabled() ) { return; }
+
     QTest::qWait( k_capture_settle_ms );
 
     QScreen* screen = QGuiApplication::primaryScreen();

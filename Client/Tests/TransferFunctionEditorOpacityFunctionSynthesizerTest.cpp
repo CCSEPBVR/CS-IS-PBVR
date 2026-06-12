@@ -202,6 +202,8 @@ void OpacityFunctionSynthesizerTest::setComboBoxIndex( QComboBox* combo_box, int
 
 void OpacityFunctionSynthesizerTest::saveScreenshot( const QString& file_name, const QString& caption )
 {
+    if ( !ClientTests::screenshotsEnabled() ) { return; }
+
     QTest::qWait( k_capture_settle_ms );
 
     QScreen* screen = QGuiApplication::primaryScreen();

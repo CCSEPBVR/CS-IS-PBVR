@@ -190,6 +190,8 @@ void ChangeTransferFunctionNumberTest::setComboBoxIndex( QComboBox* combo_box, i
 
 void ChangeTransferFunctionNumberTest::saveScreenshot( const QString& file_name, const QString& caption )
 {
+    if ( !ClientTests::screenshotsEnabled() ) { return; }
+
     QTest::qWait( k_capture_settle_ms );
 
     QScreen* screen = QGuiApplication::primaryScreen();

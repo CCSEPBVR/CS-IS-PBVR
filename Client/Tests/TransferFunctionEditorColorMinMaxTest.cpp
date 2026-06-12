@@ -157,6 +157,8 @@ void ColorMinMaxTest::setDoubleSpinBoxValue( QDoubleSpinBox* spin_box, double va
 
 void ColorMinMaxTest::saveScreenshot( const QString& file_name, const QString& caption )
 {
+    if ( !ClientTests::screenshotsEnabled() ) { return; }
+
     QTest::qWait( k_capture_settle_ms );
 
     QScreen* screen = QGuiApplication::primaryScreen();

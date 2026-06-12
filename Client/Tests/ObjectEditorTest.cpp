@@ -164,7 +164,10 @@ void ObjectEditorTest::setLineEditText( QLineEdit* line_edit, const QString& tex
 
 void ObjectEditorTest::saveScreenshot( const QString& file_name, const QString& caption )
 {
+    if ( !ClientTests::screenshotsEnabled() ) { return; }
+
     QTest::qWait( k_capture_settle_ms );
+
     QScreen* screen = QGuiApplication::primaryScreen();
     QVERIFY2( screen != nullptr, "Primary screen not found" );
 

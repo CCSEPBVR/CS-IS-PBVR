@@ -182,6 +182,8 @@ void MenuBarTest::triggerAction( QAction* action, int settle_ms ) const
 
 void MenuBarTest::saveScreenshot( const QString& file_name, const QString& caption ) const
 {
+    if ( !ClientTests::screenshotsEnabled() ) { return; }
+
     QTest::qWait( k_full_screen_capture_settle_ms );
 
     QScreen* screen = QGuiApplication::primaryScreen();

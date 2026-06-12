@@ -89,6 +89,10 @@
 #include "ShadingControlTest.h"
 #endif
 
+#ifdef PBVR_ENABLE_TEST_SERVER
+#include "ServerTest.h"
+#endif
+
 #ifdef PBVR_ENABLE_TEST_VOLUMETRANSFORM
 #include "VolumeTransformTest.h"
 #endif
@@ -311,6 +315,14 @@ int runEnabledTests( int argc, char** argv )
     {
         has_enabled_test = true;
         ClientTests::ShadingControlTest test;
+        result |= qExecWithCleanup( &test, argc, argv );
+    }
+#endif
+
+#ifdef PBVR_ENABLE_TEST_SERVER
+    {
+        has_enabled_test = true;
+        ClientTests::ServerTest test;
         result |= qExecWithCleanup( &test, argc, argv );
     }
 #endif

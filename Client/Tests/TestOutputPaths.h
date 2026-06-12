@@ -15,6 +15,7 @@ QString datedTestOutputDir(
     const QString& repo_root_path,
     const QString& date_stamp,
     const QString& relative_path_from_date = QString() );
+bool screenshotsEnabled();
 }
 
 #endif // TESTOUTPUTPATHS_H
