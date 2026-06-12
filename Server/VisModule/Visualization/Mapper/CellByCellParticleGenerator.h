@@ -681,7 +681,7 @@ inline const double CalculateTotalVolume( const vismodule::VolumeObjectBase& obj
         const vismodule::StructuredVolumeObject* volume =
             reinterpret_cast<const vismodule::StructuredVolumeObject*>( &object );
 
-        vismodule::Vector3ui length( volume->resolution() - vismodule::Vector3ui( 1, 1, 1 ) );
+        const vismodule::Vector3f length = volume->maxObjectCoord() - volume->minObjectCoord();
         return length.x() * length.y() * length.z();
     }
     else

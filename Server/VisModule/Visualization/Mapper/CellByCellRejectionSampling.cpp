@@ -393,6 +393,7 @@ void CellByCellRejectionSampling::generate_particles_struct(
             (max_vec.y() - min_vec.y() ) / ny_1,
             (max_vec.z() - min_vec.z() ) / nz_1
         );
+        const float cell_volume = cell_length.x() * cell_length.y() * cell_length.z();
 
         //-----------------------------------------//
         //----------------Histogram----------------//
@@ -634,7 +635,7 @@ void CellByCellRejectionSampling::generate_particles_struct(
 
 
                     // timed_section_start(td_CalculateNumPar,thid);
-                    const int np = calculate_number_of_particles( density, 1, &MT );
+                    const int np = calculate_number_of_particles( density, cell_volume, &MT );
                     // timed_section_end(td_CalculateNumPar,thid);
 
                     const int cell_id = I + J * SIMDW;
