@@ -62,6 +62,25 @@ private:
         QString status = QStringLiteral( "未実行" );
     };
 
+    struct CaseOptions
+    {
+        CaseOptions() = default;
+        explicit CaseOptions( int repetition_level_ )
+            : repetition_level( repetition_level_ )
+        {
+        }
+        CaseOptions( int repetition_level_, bool hide_glyph_, const QString& transfer_function_path_ )
+            : repetition_level( repetition_level_ )
+            , hide_glyph( hide_glyph_ )
+            , transfer_function_path( transfer_function_path_ )
+        {
+        }
+
+        int repetition_level = -1;
+        bool hide_glyph = false;
+        QString transfer_function_path;
+    };
+
     struct ClientHandles
     {
         MainWindow* main_window = nullptr;
@@ -81,6 +100,7 @@ private:
         QRadioButton* metropolis_radio = nullptr;
         QRadioButton* rejection_radio = nullptr;
         QLineEdit* volume_data_path_line_edit = nullptr;
+        QLineEdit* transfer_function_path_line_edit = nullptr;
         QLineEdit* id_line_edit = nullptr;
 
         QLineEdit* object_name_line_edit = nullptr;
@@ -127,8 +147,12 @@ private:
     void ensureDisconnected( const ClientHandles& client ) const;
     void ensureConnected( const ClientHandles& client ) const;
     void selectSamplingMode( const ClientHandles& client, SamplingMode sampling_mode ) const;
-    void loadDataset( const ClientHandles& client, const Dataset& data, SamplingMode sampling_mode );
-    void waitForObjectAndApply( const ClientHandles& client );
+    void loadDataset(
+        const ClientHandles& client,
+        const Dataset& data,
+        SamplingMode sampling_mode,
+        const QString& transfer_function_path = QString() );
+    void waitForObjectAndApply( const ClientHandles& client, bool hide_glyph = false );
     void clickJumpAndWaitForCompletion( const ClientHandles& client ) const;
     void applyRepetitionLevel( const ClientHandles& client, int repetition_level ) const;
     void setTimeStepAndJump( const ClientHandles& client, int time_step ) const;
@@ -155,6 +179,7 @@ private:
     QString m_screenshot_dir_path;
     QString m_report_path;
     std::vector<Dataset> m_datasets;
+    QString m_mej_transfer_function_path;
     std::vector<ScreenshotEntry> m_screenshots;
     std::vector<CaseEntry> m_cases;
     bool m_test_succeeded = false;

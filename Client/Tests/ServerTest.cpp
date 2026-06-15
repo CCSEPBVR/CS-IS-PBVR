@@ -21,6 +21,7 @@
 #include <QTextStream>
 #include <QTest>
 #include <QTreeView>
+#include <QVariant>
 
 #include <kvs/qt/Application>
 
@@ -236,12 +237,30 @@ void ServerTest::setSpinBoxValue( QSpinBox* spin_box, int value, const char* wid
 void ServerTest::selectRadioButton( QRadioButton* radio_button, const char* object_name ) const
 {
     QVERIFY2( radio_button != nullptr, object_name );
-    QVERIFY2( radio_button->isEnabled(), qPrintable( QStringLiteral( "%1 is disabled" ).arg( object_name ) ) );
-    if ( !radio_button->isChecked() )
+
+    if ( radio_button->isChecked() ) { return; }
+
+    QVERIFY2(
+        waitForCondition(
+            [radio_button]()
+            {
+                return radio_button->isEnabled() && radio_button->isVisible();
+            },
+            k_connect_timeout_ms,
+            100 ),
+        qPrintable( QStringLiteral( "%1 did not become clickable within the timeout" ).arg( object_name ) ) );
+
+    for ( int attempt = 0; attempt < 3; ++attempt )
     {
         QTest::mouseClick( radio_button, Qt::LeftButton );
+        if ( radio_button->isChecked() ) { return; }
+        QTest::qWait( 200 );
     }
-    QVERIFY2( radio_button->isChecked(), qPrintable( QStringLiteral( "%1 was not checked" ).arg( object_name ) ) );
+
+    radio_button->click();
+    QVERIFY2(
+        radio_button->isChecked(),
+        qPrintable( QStringLiteral( "%1 was not checked" ).arg( object_name ) ) );
     QTest::qWait( k_short_wait_ms );
 }
 
@@ -365,6 +384,8 @@ ServerTest::ClientHandles ServerTest::resolveClientHandles( MainWindow& window )
     handles.metropolis_radio = handles.communication->findChild<QRadioButton*>( "metropolisRadioButton" );
     handles.rejection_radio = handles.communication->findChild<QRadioButton*>( "rejectionRadioButton" );
     handles.volume_data_path_line_edit = handles.communication->findChild<QLineEdit*>( "volumeDataFilePathLineEdit" );
+    handles.transfer_function_path_line_edit =
+        handles.communication->findChild<QLineEdit*>( "transferFunctionFilePathLineEdit" );
     handles.id_line_edit = handles.communication->findChild<QLineEdit*>( "IDLineEdit" );
 
     handles.object_name_line_edit = handles.object_editor->findChild<QLineEdit*>( "nameLineEdit" );
@@ -401,6 +422,7 @@ ServerTest::ClientHandles ServerTest::resolveClientHandles( MainWindow& window )
     if ( !require( handles.metropolis_radio != nullptr, "metropolisRadioButton not found" ) ) { return handles; }
     if ( !require( handles.rejection_radio != nullptr, "rejectionRadioButton not found" ) ) { return handles; }
     if ( !require( handles.volume_data_path_line_edit != nullptr, "volumeDataFilePathLineEdit not found" ) ) { return handles; }
+    if ( !require( handles.transfer_function_path_line_edit != nullptr, "transferFunctionFilePathLineEdit not found" ) ) { return handles; }
     if ( !require( handles.id_line_edit != nullptr, "IDLineEdit not found" ) ) { return handles; }
     if ( !require( handles.object_name_line_edit != nullptr, "ObjectEditor nameLineEdit not found" ) ) { return handles; }
     if ( !require( handles.object_tree_view != nullptr, "ObjectEditor treeView not found" ) ) { return handles; }
@@ -484,7 +506,11 @@ void ServerTest::selectSamplingMode( const ClientHandles& client, SamplingMode s
     }
 }
 
-void ServerTest::loadDataset( const ClientHandles& client, const Dataset& data, SamplingMode sampling_mode )
+void ServerTest::loadDataset(
+    const ClientHandles& client,
+    const Dataset& data,
+    SamplingMode sampling_mode,
+    const QString& transfer_function_path )
 {
     if ( m_has_connected_once )
     {
@@ -497,6 +523,15 @@ void ServerTest::loadDataset( const ClientHandles& client, const Dataset& data, 
     selectRadioButton( client.remote_viz_client_server_radio, "remoteVizClientServerRadioButton" );
     selectSamplingMode( client, sampling_mode );
     setLineEditText( client.volume_data_path_line_edit, data.path );
+    if ( transfer_function_path.isEmpty() )
+    {
+        client.transfer_function_path_line_edit->clear();
+        QCOMPARE( client.transfer_function_path_line_edit->text(), QString() );
+    }
+    else
+    {
+        setLineEditText( client.transfer_function_path_line_edit, transfer_function_path );
+    }
 
     client.object_name_line_edit->clear();
     QCOMPARE( client.object_name_line_edit->text(), QString() );
@@ -509,7 +544,7 @@ void ServerTest::loadDataset( const ClientHandles& client, const Dataset& data, 
             .arg( data.key, samplingModeName( sampling_mode ), data.path ) );
 }
 
-void ServerTest::waitForObjectAndApply( const ClientHandles& client )
+void ServerTest::waitForObjectAndApply( const ClientHandles& client, bool hide_glyph )
 {
     QVERIFY2(
         waitForCondition(
@@ -527,6 +562,35 @@ void ServerTest::waitForObjectAndApply( const ClientHandles& client )
     auto* model = qobject_cast<QStandardItemModel*>( client.object_tree_view->model() );
     QVERIFY2( model != nullptr, "ObjectEditor model is not a QStandardItemModel" );
 
+    const auto is_glyph_row = [model]( int row )
+    {
+        QStandardItem* name_item = model->item( row, 0 );
+        if ( name_item == nullptr ) { return false; }
+
+        const QVariant var = name_item->data( Qt::UserRole );
+        if ( !var.canConvert<ObjectInfoExtractor::ObjectInfo>() ) { return false; }
+
+        const ObjectInfoExtractor::ObjectInfo info = var.value<ObjectInfoExtractor::ObjectInfo>();
+        return info.format == ObjectInfoExtractor::Format::ServerGlyphObject;
+    };
+
+    if ( hide_glyph )
+    {
+        QVERIFY2(
+            waitForCondition(
+                [model, is_glyph_row]()
+                {
+                    for ( int row = 0; row < model->rowCount(); ++row )
+                    {
+                        if ( is_glyph_row( row ) ) { return true; }
+                    }
+                    return false;
+                },
+                k_object_load_timeout_ms,
+                100 ),
+            "ObjectEditor ServerGlyphObject row was not populated within the timeout" );
+    }
+
     const QModelIndex first_index = model->index( 0, 0 );
     QVERIFY2( first_index.isValid(), "ObjectEditor first row is invalid" );
     client.object_tree_view->setCurrentIndex( first_index );
@@ -538,6 +602,19 @@ void ServerTest::waitForObjectAndApply( const ClientHandles& client )
     if ( display_item != nullptr && display_item->checkState() != Qt::Checked )
     {
         display_item->setCheckState( Qt::Checked );
+    }
+
+    if ( hide_glyph )
+    {
+        for ( int row = 0; row < model->rowCount(); ++row )
+        {
+            if ( !is_glyph_row( row ) ) { continue; }
+
+            QStandardItem* glyph_display_item = model->item( row, 2 );
+            QVERIFY2( glyph_display_item != nullptr, "ObjectEditor glyph display item was not found" );
+            glyph_display_item->setCheckState( Qt::Unchecked );
+            QCOMPARE( glyph_display_item->checkState(), Qt::Unchecked );
+        }
     }
 
     if ( !client.focus_check_box->isChecked() )
@@ -682,11 +759,12 @@ void ServerTest::initTestCase()
 {
     const QString date_stamp = QDate::currentDate().toString( QStringLiteral( "yyyyMMdd" ) );
     m_output_dir_path = QDir( repoRootPath() ).absoluteFilePath(
-        QStringLiteral( "Client/Tests/Output/%1/ServerTest" ).arg( date_stamp ) );
+        QStringLiteral( "Client/output-tests/%1/ServerTest" ).arg( date_stamp ) );
     m_screenshot_dir_path = QDir( m_output_dir_path ).absoluteFilePath( QStringLiteral( "img" ) );
     m_report_path = QDir( m_output_dir_path ).absoluteFilePath( QStringLiteral( "TestResult.md" ) );
     m_test_succeeded = false;
     m_has_connected_once = false;
+    m_mej_transfer_function_path = envOrDefault( "MEJ_TRANSFER_FUNCTION", QString() );
 
     m_datasets = {
         dataset( QStringLiteral( "ASCII_PFI_STRUCTURED_VOLUME_DATA" ) ),
@@ -705,6 +783,14 @@ void ServerTest::initTestCase()
         dataset( QStringLiteral( "LARGE_PYRAMID_VOLUME_DATA" ) ),
     };
     verifyDatasets();
+    QVERIFY2(
+        !m_mej_transfer_function_path.trimmed().isEmpty(),
+        "TestPathConfig.ini key is empty: MEJ_TRANSFER_FUNCTION" );
+    QVERIFY2(
+        configuredPathExists( m_mej_transfer_function_path ),
+        qPrintable(
+            QStringLiteral( "Configured transfer function path was not found. key=MEJ_TRANSFER_FUNCTION path=%1" )
+                .arg( m_mej_transfer_function_path ) ) );
 
     QVERIFY2(
         QDir().mkpath( m_output_dir_path ),
@@ -753,12 +839,17 @@ void ServerTest::performs_server_scenario()
     const Dataset large_pyramid = dataset( QStringLiteral( "LARGE_PYRAMID_VOLUME_DATA" ) );
 
     auto load_apply_jump_capture =
-        [this, &client]( const QString& case_id, const Dataset& data, SamplingMode sampling, const QString& caption, int repetition_level = -1 )
+        [this, &client](
+            const QString& case_id,
+            const Dataset& data,
+            SamplingMode sampling,
+            const QString& caption,
+            const CaseOptions& options )
         {
-            loadDataset( client, data, sampling );
-            waitForObjectAndApply( client );
+            loadDataset( client, data, sampling, options.transfer_function_path );
+            waitForObjectAndApply( client, options.hide_glyph );
             clickJumpAndWaitForCompletion( client );
-            captureCase( case_id, caption, repetition_level, &client );
+            captureCase( case_id, caption, options.repetition_level, &client );
         };
 
     runCase(
@@ -766,84 +857,84 @@ void ServerTest::performs_server_scenario()
         QStringLiteral( "ASCII PFI structured volume dataをUniformで表示する。" ),
         ascii_structured.key,
         ascii_structured.path,
-        [&]() { load_apply_jump_capture( QStringLiteral( "01_ascii_pfi_structured" ), ascii_structured, SamplingMode::Uniform, QStringLiteral( "ASCII pfi file Structured Volume Data" ) ); } );
+        [&]() { load_apply_jump_capture( QStringLiteral( "01_ascii_pfi_structured" ), ascii_structured, SamplingMode::Uniform, QStringLiteral( "ASCII pfi file Structured Volume Data" ), CaseOptions() ); } );
 
     runCase(
         QStringLiteral( "02_binary_pfi_structured" ),
         QStringLiteral( "Binary PFI structured volume dataをUniformで表示する。" ),
         binary_structured.key,
         binary_structured.path,
-        [&]() { load_apply_jump_capture( QStringLiteral( "02_binary_pfi_structured" ), binary_structured, SamplingMode::Uniform, QStringLiteral( "Binary pfi file Structured Volume Data" ) ); } );
+        [&]() { load_apply_jump_capture( QStringLiteral( "02_binary_pfi_structured" ), binary_structured, SamplingMode::Uniform, QStringLiteral( "Binary pfi file Structured Volume Data" ), CaseOptions() ); } );
 
     runCase(
         QStringLiteral( "03_ascii_pfl_unstructured" ),
         QStringLiteral( "ASCII PFL unstructured volume dataをUniformで表示する。" ),
         ascii_unstructured.key,
         ascii_unstructured.path,
-        [&]() { load_apply_jump_capture( QStringLiteral( "03_ascii_pfl_unstructured" ), ascii_unstructured, SamplingMode::Uniform, QStringLiteral( "ASCII pfl file Unstructured Volume Data" ) ); } );
+        [&]() { load_apply_jump_capture( QStringLiteral( "03_ascii_pfl_unstructured" ), ascii_unstructured, SamplingMode::Uniform, QStringLiteral( "ASCII pfl file Unstructured Volume Data" ), CaseOptions( -1, true, m_mej_transfer_function_path ) ); } );
 
     runCase(
         QStringLiteral( "04_binary_pfl_unstructured" ),
         QStringLiteral( "Binary PFL unstructured volume dataをUniformで表示する。" ),
         binary_unstructured.key,
         binary_unstructured.path,
-        [&]() { load_apply_jump_capture( QStringLiteral( "04_binary_pfl_unstructured" ), binary_unstructured, SamplingMode::Uniform, QStringLiteral( "Binary pfl file Unstructured Volume Data" ) ); } );
+        [&]() { load_apply_jump_capture( QStringLiteral( "04_binary_pfl_unstructured" ), binary_unstructured, SamplingMode::Uniform, QStringLiteral( "Binary pfl file Unstructured Volume Data" ), CaseOptions( -1, true, m_mej_transfer_function_path ) ); } );
 
     runCase(
         QStringLiteral( "05_uniform_structured" ),
         QStringLiteral( "ASCII PFI structured volume dataをUniformで表示する。" ),
         ascii_structured.key,
         ascii_structured.path,
-        [&]() { load_apply_jump_capture( QStringLiteral( "05_uniform_structured" ), ascii_structured, SamplingMode::Uniform, QStringLiteral( "Uniform Structured Volume Data" ) ); } );
+        [&]() { load_apply_jump_capture( QStringLiteral( "05_uniform_structured" ), ascii_structured, SamplingMode::Uniform, QStringLiteral( "Uniform Structured Volume Data" ), CaseOptions() ); } );
 
     runCase(
         QStringLiteral( "06_metropolis_structured" ),
         QStringLiteral( "ASCII PFI structured volume dataをMetropolisで表示する。" ),
         ascii_structured.key,
         ascii_structured.path,
-        [&]() { load_apply_jump_capture( QStringLiteral( "06_metropolis_structured" ), ascii_structured, SamplingMode::Metropolis, QStringLiteral( "Metropolis Structured Volume Data" ) ); } );
+        [&]() { load_apply_jump_capture( QStringLiteral( "06_metropolis_structured" ), ascii_structured, SamplingMode::Metropolis, QStringLiteral( "Metropolis Structured Volume Data" ), CaseOptions() ); } );
 
     runCase(
         QStringLiteral( "07_rejection_structured" ),
         QStringLiteral( "ASCII PFI structured volume dataをRejectionで表示する。" ),
         ascii_structured.key,
         ascii_structured.path,
-        [&]() { load_apply_jump_capture( QStringLiteral( "07_rejection_structured" ), ascii_structured, SamplingMode::Rejection, QStringLiteral( "Rejection Structured Volume Data" ) ); } );
+        [&]() { load_apply_jump_capture( QStringLiteral( "07_rejection_structured" ), ascii_structured, SamplingMode::Rejection, QStringLiteral( "Rejection Structured Volume Data" ), CaseOptions() ); } );
 
     runCase(
         QStringLiteral( "08_uniform_unstructured" ),
         QStringLiteral( "ASCII PFL unstructured volume dataをUniformで表示する。" ),
         ascii_unstructured.key,
         ascii_unstructured.path,
-        [&]() { load_apply_jump_capture( QStringLiteral( "08_uniform_unstructured" ), ascii_unstructured, SamplingMode::Uniform, QStringLiteral( "Uniform Unstructured Volume Data" ) ); } );
+        [&]() { load_apply_jump_capture( QStringLiteral( "08_uniform_unstructured" ), ascii_unstructured, SamplingMode::Uniform, QStringLiteral( "Uniform Unstructured Volume Data" ), CaseOptions( -1, true, m_mej_transfer_function_path ) ); } );
 
     runCase(
         QStringLiteral( "09_metropolis_unstructured" ),
         QStringLiteral( "ASCII PFL unstructured volume dataをMetropolisで表示する。" ),
         ascii_unstructured.key,
         ascii_unstructured.path,
-        [&]() { load_apply_jump_capture( QStringLiteral( "09_metropolis_unstructured" ), ascii_unstructured, SamplingMode::Metropolis, QStringLiteral( "Metropolis Unstructured Volume Data" ) ); } );
+        [&]() { load_apply_jump_capture( QStringLiteral( "09_metropolis_unstructured" ), ascii_unstructured, SamplingMode::Metropolis, QStringLiteral( "Metropolis Unstructured Volume Data" ), CaseOptions( -1, true, m_mej_transfer_function_path ) ); } );
 
     runCase(
         QStringLiteral( "10_rejection_unstructured" ),
         QStringLiteral( "ASCII PFL unstructured volume dataをRejectionで表示する。" ),
         ascii_unstructured.key,
         ascii_unstructured.path,
-        [&]() { load_apply_jump_capture( QStringLiteral( "10_rejection_unstructured" ), ascii_unstructured, SamplingMode::Rejection, QStringLiteral( "Rejection Unstructured Volume Data" ) ); } );
+        [&]() { load_apply_jump_capture( QStringLiteral( "10_rejection_unstructured" ), ascii_unstructured, SamplingMode::Rejection, QStringLiteral( "Rejection Unstructured Volume Data" ), CaseOptions( -1, true, m_mej_transfer_function_path ) ); } );
 
     runCase(
         QStringLiteral( "11_vti_t0_q1_rl32" ),
         QStringLiteral( "VTI volume dataのtime step 0、q1、Repetition Level 32を表示する。" ),
         vti.key,
         vti.path,
-        [&]() { load_apply_jump_capture( QStringLiteral( "11_vti_t0_q1_rl32" ), vti, SamplingMode::Uniform, QStringLiteral( "Vti/union_*.vti, time step:0, q1, Repetition Level:32" ), 32 ); } );
+        [&]() { load_apply_jump_capture( QStringLiteral( "11_vti_t0_q1_rl32" ), vti, SamplingMode::Uniform, QStringLiteral( "Vti/union_*.vti, time step:0, q1, Repetition Level:32" ), CaseOptions( 32 ) ); } );
 
     runCase(
         QStringLiteral( "12_tetra_hex_t0_q1_rl32" ),
         QStringLiteral( "TetraAndHexのtime step 0、q1、Repetition Level 32を表示する。" ),
         tetra_and_hex.key,
         tetra_and_hex.path,
-        [&]() { load_apply_jump_capture( QStringLiteral( "12_tetra_hex_t0_q1_rl32" ), tetra_and_hex, SamplingMode::Uniform, QStringLiteral( "TetraAndHex/tetra_and_hex_*.vtu, time step:0, q1, Repetition Level:32" ), 32 ); } );
+        [&]() { load_apply_jump_capture( QStringLiteral( "12_tetra_hex_t0_q1_rl32" ), tetra_and_hex, SamplingMode::Uniform, QStringLiteral( "TetraAndHex/tetra_and_hex_*.vtu, time step:0, q1, Repetition Level:32" ), CaseOptions( 32 ) ); } );
 
     runCase(
         QStringLiteral( "13_tetra_hex_t3_q1_rl32" ),
@@ -986,7 +1077,7 @@ void ServerTest::performs_server_scenario()
         [&]()
         {
             loadDataset( client, ensight, SamplingMode::Uniform );
-            waitForObjectAndApply( client );
+            waitForObjectAndApply( client, true );
             clickJumpAndWaitForCompletion( client );
             applyTransferFunctionSynthesizer( client, 6, QStringLiteral( "C6" ), QStringLiteral( "O6" ) );
             setTimeStepAndJump( client, 7 );
@@ -1002,6 +1093,7 @@ void ServerTest::performs_server_scenario()
         [&]()
         {
             setTimeStepAndJump( client, 9 );
+            waitForObjectAndApply( client, true );
             captureCase( QStringLiteral( "25_ensight_t9_q6_rl4" ), QStringLiteral( "depthCharge3D_EnsightGold/depthCharge3D.case, time step:9, q6, Repetition Level:4" ), 4, &client );
         } );
 
@@ -1024,7 +1116,7 @@ void ServerTest::performs_server_scenario()
         QStringLiteral( "LargeTetraのtime step 0、q1、Repetition Level 32を表示する。" ),
         large_tetra.key,
         large_tetra.path,
-        [&]() { load_apply_jump_capture( QStringLiteral( "27_large_tetra_t0_q1_rl32" ), large_tetra, SamplingMode::Uniform, QStringLiteral( "Large/LargeTetra/large_tetra.*.vtm, time step:0, q1, Repetition Level:32" ), 32 ); } );
+        [&]() { load_apply_jump_capture( QStringLiteral( "27_large_tetra_t0_q1_rl32" ), large_tetra, SamplingMode::Uniform, QStringLiteral( "Large/LargeTetra/large_tetra.*.vtm, time step:0, q1, Repetition Level:32" ), CaseOptions( 32 ) ); } );
 
     runCase(
         QStringLiteral( "28_large_tetra_t7_q1_rl32" ),
@@ -1042,7 +1134,7 @@ void ServerTest::performs_server_scenario()
         QStringLiteral( "LargeHexaのtime step 0、q1、Repetition Level 32を表示する。" ),
         large_hexa.key,
         large_hexa.path,
-        [&]() { load_apply_jump_capture( QStringLiteral( "29_large_hexa_t0_q1_rl32" ), large_hexa, SamplingMode::Uniform, QStringLiteral( "Large/LargeHexa/large_hexa.*.vtm, time step:0, q1, Repetition Level:32" ), 32 ); } );
+        [&]() { load_apply_jump_capture( QStringLiteral( "29_large_hexa_t0_q1_rl32" ), large_hexa, SamplingMode::Uniform, QStringLiteral( "Large/LargeHexa/large_hexa.*.vtm, time step:0, q1, Repetition Level:32" ), CaseOptions( 32 ) ); } );
 
     runCase(
         QStringLiteral( "30_large_hexa_t7_q1_rl32" ),
@@ -1060,7 +1152,7 @@ void ServerTest::performs_server_scenario()
         QStringLiteral( "LargePrismのtime step 0、q1、Repetition Level 32を表示する。" ),
         large_prism.key,
         large_prism.path,
-        [&]() { load_apply_jump_capture( QStringLiteral( "31_large_prism_t0_q1_rl32" ), large_prism, SamplingMode::Uniform, QStringLiteral( "Large/LargePrism/large_prism.*.vtm, time step:0, q1, Repetition Level:32" ), 32 ); } );
+        [&]() { load_apply_jump_capture( QStringLiteral( "31_large_prism_t0_q1_rl32" ), large_prism, SamplingMode::Uniform, QStringLiteral( "Large/LargePrism/large_prism.*.vtm, time step:0, q1, Repetition Level:32" ), CaseOptions( 32 ) ); } );
 
     runCase(
         QStringLiteral( "32_large_prism_t7_q1_rl32" ),
@@ -1078,7 +1170,7 @@ void ServerTest::performs_server_scenario()
         QStringLiteral( "LargePyramidのtime step 0、q1、Repetition Level 32を表示する。" ),
         large_pyramid.key,
         large_pyramid.path,
-        [&]() { load_apply_jump_capture( QStringLiteral( "33_large_pyramid_t0_q1_rl32" ), large_pyramid, SamplingMode::Uniform, QStringLiteral( "Large/LargePyramid/large_pyramid.*.vtm, time step:0, q1, Repetition Level:32" ), 32 ); } );
+        [&]() { load_apply_jump_capture( QStringLiteral( "33_large_pyramid_t0_q1_rl32" ), large_pyramid, SamplingMode::Uniform, QStringLiteral( "Large/LargePyramid/large_pyramid.*.vtm, time step:0, q1, Repetition Level:32" ), CaseOptions( 32 ) ); } );
 
     runCase(
         QStringLiteral( "34_large_pyramid_t7_q1_rl32" ),
