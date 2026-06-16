@@ -285,6 +285,19 @@ std::unique_ptr<kvs::PolygonGlyphObject> GenerateGlyphCS(
                 jc.jobCollect_glyph( send_obj, &nan_error, &wid );
             }
         }
+        else
+        {
+            recv_obj->clear();
+            recv_obj->setCoords( send_obj->coords() );
+            recv_obj->setColors( send_obj->colors() );
+            recv_obj->setDirections( send_obj->directions() );
+            recv_obj->setSizes( send_obj->sizes() );
+            recv_obj->setColorMin( send_obj->colorMin() );
+            recv_obj->setColorMax( send_obj->colorMax() );
+            recv_obj->setSizeMin( send_obj->sizeMin() );
+            recv_obj->setSizeMax( send_obj->sizeMax() );
+            printf(" %zu glyphs generated\n", send_obj->coords().size() / 3);
+        }
 #else
         recv_obj->clear();
         recv_obj->setCoords( send_obj->coords() );

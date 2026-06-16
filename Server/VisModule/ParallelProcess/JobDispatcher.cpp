@@ -162,6 +162,23 @@ int JobDispatcher::dispatchNext( const int worker_id, int* step, int* volume )
     MPI_Comm_size( MPI_COMM_WORLD, &size );
     MPI_Comm_rank( MPI_COMM_WORLD, &rank );
 
+    if ( size == 1 )
+    {
+        if ( m_next_job != m_job_list.end() )
+        {
+            const int jid = m_next_job->m_id;
+
+            *step   = m_job_list[jid].m_step;
+            *volume = m_job_list[jid].m_volume;
+            ret = 1;
+
+            m_next_job++;
+        }
+
+        VIS_MODULE_TIMER_END( 21 );
+        return ret;
+    }
+
     if ( rank == 0 )
     {
         VIS_MODULE_TIMER_STA( 31 );
@@ -170,7 +187,7 @@ int JobDispatcher::dispatchNext( const int worker_id, int* step, int* volume )
         MPI_Request* req2    = new MPI_Request[size];
         MPI_Status*  status2 = new MPI_Status [size];
 
-        if ( worker_id >= 0 && m_worker_list[worker_id].m_status == 1 )
+        if ( worker_id >= 0 && worker_id < static_cast<int>( m_worker_list.size() ) && m_worker_list[worker_id].m_status == 1 )
         {
             m_worker_list[worker_id].m_job->m_status = 2;
             m_worker_list[worker_id].m_status = 0;
@@ -191,7 +208,7 @@ int JobDispatcher::dispatchNext( const int worker_id, int* step, int* volume )
             std::flush( std::cerr );
 #endif
         }
-        else if ( worker_id >= 0 && m_worker_list[worker_id].m_status == 2 )
+        else if ( worker_id >= 0 && worker_id < static_cast<int>( m_worker_list.size() ) && m_worker_list[worker_id].m_status == 2 )
         {
             m_worker_list[worker_id].m_job->m_status = 2;
             m_worker_list[worker_id].m_job_id_count++;

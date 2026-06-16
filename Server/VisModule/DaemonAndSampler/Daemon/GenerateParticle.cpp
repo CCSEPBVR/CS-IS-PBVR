@@ -379,6 +379,18 @@ void GenerateParticleCS(
                 jc.jobCollect( send_obj, &vr, &nan_error, &wid );
             }
         }
+        else
+        {
+            size_t nmemb = send_obj->nvertices() * 3;
+            vismodule::ValueArray<vismodule::Real32> vismodule_coords ( send_obj->coords().pointer() , nmemb );
+            vismodule::ValueArray<vismodule::UInt8>  vismodule_colors ( send_obj->colors().pointer() , nmemb );
+            vismodule::ValueArray<vismodule::Real32> vismodule_normals( send_obj->normals().pointer(), nmemb );
+
+            recv_obj->clear();
+            recv_obj->setCoords( vismodule_coords );
+            recv_obj->setColors( vismodule_colors );
+            recv_obj->setNormals( vismodule_normals );
+        }
 #else
         size_t nmemb = send_obj->nvertices() * 3;
         vismodule::ValueArray<vismodule::Real32> vismodule_coords ( send_obj->coords().pointer() , nmemb );
