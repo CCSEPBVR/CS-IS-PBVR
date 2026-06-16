@@ -234,8 +234,8 @@ void ServerTest::setLineEditText( QLineEdit* line_edit, const QString& text ) co
     QVERIFY2( line_edit != nullptr, "Target line edit was not found" );
     line_edit->setFocus();
     line_edit->clear();
-    QTest::keyClicks( line_edit, QDir::toNativeSeparators( text ) );
-    QCOMPARE( line_edit->text(), QDir::toNativeSeparators( text ) );
+    QTest::keyClicks( line_edit, text );
+    QCOMPARE( line_edit->text(), text );
 }
 
 void ServerTest::setSpinBoxValue( QSpinBox* spin_box, int value, const char* widget_name ) const
