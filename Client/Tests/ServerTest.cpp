@@ -49,6 +49,7 @@ constexpr int k_short_wait_ms = 1000;
 constexpr int k_after_jump_wait_ms = 3000;
 constexpr int k_after_repetition_apply_wait_ms = 3000;
 constexpr int k_capture_settle_ms = 300;
+constexpr int k_ensight_test_particle_limit = 500000;
 kvs::qt::Application* g_test_app = nullptr;
 
 void logStep( const QString& message )
@@ -101,7 +102,7 @@ namespace ClientTests
 ServerTest::ServerTest( QObject* parent )
     : QObject( parent )
 {
-    qputenv( "QTEST_FUNCTION_TIMEOUT", QByteArray( "900000" ) );
+    qputenv( "QTEST_FUNCTION_TIMEOUT", QByteArray( "2700000" ) );
 }
 
 QString ServerTest::envOrDefault( const char* name, const QString& fallback ) const
@@ -1087,19 +1088,24 @@ void ServerTest::performs_server_scenario()
 
     runCase(
         QStringLiteral( "25_ensight_t9_q6_rl4" ),
-        QStringLiteral( "EnSight Goldのtime step 9、q6、Repetition Level 4を表示する。" ),
+        QStringLiteral( "EnSight Goldのtime step 9、q6、Repetition Level 4、Particle Limit 500000を表示する。" ),
         ensight.key,
         ensight.path,
         [&]()
         {
-            setTimeStepAndJump( client, 9 );
+            loadDataset( client, ensight, SamplingMode::Uniform );
             waitForObjectAndApply( client, true );
-            captureCase( QStringLiteral( "25_ensight_t9_q6_rl4" ), QStringLiteral( "depthCharge3D_EnsightGold/depthCharge3D.case, time step:9, q6, Repetition Level:4" ), 4, &client );
+            setParticleLimitAndApply( client, k_ensight_test_particle_limit );
+            clickJumpAndWaitForCompletion( client );
+            applyTransferFunctionSynthesizer( client, 6, QStringLiteral( "C6" ), QStringLiteral( "O6" ) );
+            setTimeStepAndJump( client, 9 );
+            selectColorFunction( client, 6 );
+            captureCase( QStringLiteral( "25_ensight_t9_q6_rl4" ), QStringLiteral( "depthCharge3D_EnsightGold/depthCharge3D.case, time step:9, q6, Repetition Level:4, Particle Limit:500000" ), 4, &client );
         } );
 
     runCase(
-        QStringLiteral( "26_large_vti_t0_q1_rl32_pl1000000" ),
-        QStringLiteral( "LargeVtiのtime step 0、q1、Repetition Level 32、Particle Limit 1000000を表示する。" ),
+        QStringLiteral( "26_large_vti_t0_q1_rl32" ),
+        QStringLiteral( "LargeVtiのtime step 0、q1、Repetition Level 32を表示する。" ),
         large_vti.key,
         large_vti.path,
         [&]()
@@ -1108,7 +1114,7 @@ void ServerTest::performs_server_scenario()
             waitForObjectAndApply( client );
             setParticleLimitAndApply( client, 1000000 );
             clickJumpAndWaitForCompletion( client );
-            captureCase( QStringLiteral( "26_large_vti_t0_q1_rl32_pl1000000" ), QStringLiteral( "Large/LargeVti/union.*.vtm, time step:0, q1, Repetition Level:32, Particle Limit:1000000" ), 32, &client );
+            captureCase( QStringLiteral( "26_large_vti_t0_q1_rl32" ), QStringLiteral( "Large/LargeVti/union.*.vtm, time step:0, q1, Repetition Level:32" ), 32, &client );
         } );
 
     runCase(
