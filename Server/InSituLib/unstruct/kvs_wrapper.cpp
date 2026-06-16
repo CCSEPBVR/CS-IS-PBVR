@@ -1831,8 +1831,6 @@ bool ensemble_generate_particles(
         }
     }
 
-//    particle_property.m_repeat_level = 1.f; // スタブデータ
-
     float sampling_volume_inverse = 0.0f;
     float max_opacity = 0.0f;
     float max_density = 0.0f;
@@ -1840,20 +1838,18 @@ bool ensemble_generate_particles(
     const float particle_density = 1.0f;
     const int MPIprocess_per_ensemble = mpi_size/num_ensemble;
     const int ens_number = num_ensemble;
-    {
 #ifdef ENABLE_ENSEMBLE_TIMER
         EnsembleTimerScope timer_scope( &ensemble_timer, EnsembleTimerSamplingPrepare );
 #endif
         sampling_volume_inverse = particle_property.m_transfunc_synthesizer->getSamplingVolumeInverse();
         max_opacity = particle_property.m_transfunc_synthesizer->getMaxOpacity();
         max_density = particle_property.m_transfunc_synthesizer->getMaxDensity();
-        if ( MPIprocess_per_ensemble % ens_number != 0 )
+        if ( mpi_size % MPIprocess_per_ensemble != 0 )
         {
             std::cerr << "error !! need  ens_number % MPIprocess_per_ensemble = 0!!  " << std::endl;
             return false;
-        }
-        repetitions = 1.0f / static_cast<float>( ens_number );
-    }
+        } 
+        repetitions /= static_cast<float>( ens_number );
 
     std::vector<vismodule::Real32> vertex_coords;
     std::vector<vismodule::Real32> vertex_scalars;
@@ -1982,7 +1978,7 @@ bool ensemble_generate_particles(
             for ( int cell_BLK = 0; cell_BLK < remain; cell_BLK++ )
             {
                 nparticles_array[cell_BLK] = static_cast<int>(
-                    CalculateNumberOfParticlesV35( max_density, volume_array[cell_BLK], particle_density * repetitions, &mt )
+                    CalculateNumberOfParticlesV35( max_density, volume_array[cell_BLK], repetitions, &mt )
 //                    5
                 );
             }
@@ -2011,8 +2007,8 @@ bool ensemble_generate_particles(
                         for ( int j = 0; j < remain_BLK; j++ )
                         {
                             cell_index[p_id] = static_cast<vismodule::UInt32>( index + cell_BLK );
-//                            local_coord_array[p_id] = cell[thid][0]->randomSampling_MT( &mt );
-                            local_coord_array[p_id] = vismodule::Vector3f (0,0,0);
+                            local_coord_array[p_id] = cell[thid][0]->randomSampling_MT( &mt );
+//                            local_coord_array[p_id] = vismodule::Vector3f (0,0,0);
                             p_id++;
                             if ( p_id == SIMD_BLK_SIZE )
                             {
@@ -3029,7 +3025,8 @@ bool SetParticleParameter(
                               * ( dom.y_global_max - dom.y_global_min )
                               * ( dom.z_global_max - dom.z_global_min );
 
-    const float max_opacity           = 0.98;
+    //const float max_opacity           = 0.98;
+    const float max_opacity           = 0.9;  //アンサンブル用調整
     const int particle_limit          = particle_property.m_particle_limit;
     const float extra_opacity_factor  = particle_property.m_extra_opacity_factor;
     particle_property.m_sampling_step = ( max - min ) / 1E1 / extra_opacity_factor;
