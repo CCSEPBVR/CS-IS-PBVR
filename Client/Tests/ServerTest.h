@@ -184,6 +184,7 @@ private:
     std::vector<CaseEntry> m_cases;
     bool m_test_succeeded = false;
     bool m_has_connected_once = false;
+    bool m_uses_remote_data_paths = false;
 };
 }
 

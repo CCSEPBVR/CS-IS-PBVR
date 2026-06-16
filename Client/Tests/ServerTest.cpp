@@ -16,6 +16,7 @@
 #include <QPushButton>
 #include <QRadioButton>
 #include <QScreen>
+#include <QSettings>
 #include <QSpinBox>
 #include <QStandardItemModel>
 #include <QTextStream>
@@ -78,6 +79,25 @@ QString findRepoRootFrom( const QString& start_path )
 bool containsWildcard( const QString& path )
 {
     return path.contains( QLatin1Char( '*' ) ) || path.contains( QLatin1Char( '?' ) );
+}
+
+bool configFlagIsEnabled( const QString& value )
+{
+    const QString normalized = value.trimmed().toLower();
+    return normalized == QStringLiteral( "1" ) ||
+           normalized == QStringLiteral( "true" ) ||
+           normalized == QStringLiteral( "yes" ) ||
+           normalized == QStringLiteral( "on" );
+}
+
+bool serverTestUsesRemoteDataPaths( const QString& repo_root_path )
+{
+    QSettings settings( ClientTests::testPathConfigFilePath( repo_root_path ), QSettings::IniFormat );
+    settings.beginGroup( QStringLiteral( "paths" ) );
+    const QString value = settings.value( QStringLiteral( "SERVER_TEST_REMOTE_DATA" ) ).toString();
+    settings.endGroup();
+
+    return configFlagIsEnabled( value );
 }
 
 QString samplingModeName( ClientTests::ServerTest::SamplingMode sampling_mode )
@@ -170,6 +190,8 @@ void ServerTest::verifyDatasets() const
         QVERIFY2(
             !data.path.trimmed().isEmpty(),
             qPrintable( QStringLiteral( "TestPathConfig.ini key is empty: %1" ).arg( data.key ) ) );
+        if ( m_uses_remote_data_paths ) { continue; }
+
         QVERIFY2(
             configuredPathExists( data.path ),
             qPrintable(
@@ -315,6 +337,7 @@ void ServerTest::writeMarkdownReport() const
     stream << "- 出力先: `" << m_output_dir_path << "`\n";
     stream << "- スクリーンショット出力先: `" << m_screenshot_dir_path << "`\n";
     stream << "- サーバ: 事前に起動済みのサーバへ接続する前提\n";
+    stream << "- データパス: " << ( m_uses_remote_data_paths ? "リモートサーバ上のパスとして扱う" : "ローカルパスとして存在確認する" ) << "\n";
     stream << "- 画像内容の自動比較: 実施しない\n\n";
 
     stream << "## 実施ケース\n\n";
@@ -332,7 +355,14 @@ void ServerTest::writeMarkdownReport() const
 
     stream << "\n## 自動判定項目\n\n";
     stream << "- " << ( m_test_succeeded ? "PASS" : "FAIL" ) << ": 指定したUI部品を取得し、操作できること。\n";
-    stream << "- " << ( m_test_succeeded ? "PASS" : "FAIL" ) << ": TestPathConfig.ini の Server Test 用パスが存在すること。ワイルドカード付きパスは1件以上一致すること。\n";
+    if ( m_uses_remote_data_paths )
+    {
+        stream << "- " << ( m_test_succeeded ? "PASS" : "FAIL" ) << ": TestPathConfig.ini の Server Test 用パスが設定されていること。ローカル存在確認は SERVER_TEST_REMOTE_DATA によりスキップする。\n";
+    }
+    else
+    {
+        stream << "- " << ( m_test_succeeded ? "PASS" : "FAIL" ) << ": TestPathConfig.ini の Server Test 用パスが存在すること。ワイルドカード付きパスは1件以上一致すること。\n";
+    }
     stream << "- " << ( m_test_succeeded ? "PASS" : "FAIL" ) << ": 各ケースで m_jump_push_button を押し、再度有効になるまで待機できること。\n";
     stream << "- " << ( m_test_succeeded ? "PASS" : "FAIL" ) << ": Markdown レポートとスクリーンショットを出力できること。\n";
     stream << "- 注意: 3D表示の見た目、粒子密度、描画差分の妥当性は目視確認する。\n\n";
@@ -765,6 +795,7 @@ void ServerTest::initTestCase()
     m_report_path = QDir( m_output_dir_path ).absoluteFilePath( QStringLiteral( "TestResult.md" ) );
     m_test_succeeded = false;
     m_has_connected_once = false;
+    m_uses_remote_data_paths = serverTestUsesRemoteDataPaths( repoRootPath() );
     m_mej_transfer_function_path = envOrDefault( "MEJ_TRANSFER_FUNCTION", QString() );
 
     m_datasets = {
@@ -787,11 +818,14 @@ void ServerTest::initTestCase()
     QVERIFY2(
         !m_mej_transfer_function_path.trimmed().isEmpty(),
         "TestPathConfig.ini key is empty: MEJ_TRANSFER_FUNCTION" );
-    QVERIFY2(
-        configuredPathExists( m_mej_transfer_function_path ),
-        qPrintable(
-            QStringLiteral( "Configured transfer function path was not found. key=MEJ_TRANSFER_FUNCTION path=%1" )
-                .arg( m_mej_transfer_function_path ) ) );
+    if ( !m_uses_remote_data_paths )
+    {
+        QVERIFY2(
+            configuredPathExists( m_mej_transfer_function_path ),
+            qPrintable(
+                QStringLiteral( "Configured transfer function path was not found. key=MEJ_TRANSFER_FUNCTION path=%1" )
+                    .arg( m_mej_transfer_function_path ) ) );
+    }
 
     QVERIFY2(
         QDir().mkpath( m_output_dir_path ),
