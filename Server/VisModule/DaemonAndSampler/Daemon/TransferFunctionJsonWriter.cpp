@@ -326,7 +326,7 @@ nlohmann::json BuildHumanReadableView( const ParticleProperty& particle_property
     view["settings"]["sampling"]["particle_limit"] = particle_property.m_particle_limit;
     view["settings"]["sampling"]["particle_data_size_limit"] = particle_property.m_particle_data_size_limit;
     view["settings"]["sampling"]["particle_data_size_limit_unit"] = "MB";
-    view["settings"]["sampling"]["m_repeat_level"] = particle_property.m_repeat_level;
+    view["settings"]["sampling"]["repeat_level"] = particle_property.m_repeat_level;
 
     if ( particle_property.m_camera != 0 )
     {

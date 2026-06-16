@@ -863,6 +863,7 @@ bool ParameterFileReader::readTransferFunctionFromJson( const char* fname, Parti
        particle_property.m_particle_limit                      = params.value( "PARTICLE_LIMIT", 0 );
        // particle_property.m_extra_opacity_factor                = m_name_list_file.getValue<float>( "EXTRA_OPACITY_FACTOR" ); // 一時的にコメントアウト
        particle_property.m_extra_opacity_factor                = 1; // 一時的にハードコーティング
+       particle_property.m_repeat_level                        = params.value("REPEAT_LEVEL",1.f); // 一時的にハードコーティング
        particle_property.m_particle_data_size_limit            = params.value( "PARTICLE_DATA_SIZE_LIMIT", 0.0f );
        const std::string particle_data_size_limit_unit          = params.value( "PARTICLE_DATA_SIZE_LIMIT_UNIT", std::string( "MB" ) );
        particle_property.m_color_transfer_function_synthesis   = params.value( "COLOR_SYNTH", std::string( "" ) );
