@@ -1,0 +1,15 @@
+CXX = g++
+CXXFLAGS = -O3 -march=native -fopenmp -std=c++17
+
+LD = g++
+LDFLAGS= -O3 -march=native -fopenmp
+
+MPICXX ?= mpic++
+MPICXXFLAGS = -O3 -march=native -fopenmp -std=c++17
+
+MPICC ?= mpicc
+MPICCFLAGS = -O3 -march=native -fopenmp -fcommon
+
+MPILD ?= mpic++
+MPILDFLAGS = -lstdc++ -fopenmp
+
