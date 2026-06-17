@@ -31,6 +31,7 @@ PBVR_KVS_INSTALL_DIR ?= $(abspath ../../../KVS/Install)
 CXXFLAGS += -I$(PBVR_KVS_INSTALL_DIR)/include
 CXXFLAGS += -w -DNO_CLIENT
 CXXFLAGS += -DENABLE_ENSEMBLE_TIMER
+CXXFLAGS += -DENABLE_HEX_TET_VOLUME
 
 ifneq ($(wildcard $(PBVR_KVS_INSTALL_DIR)/kvs.conf),)
 include $(PBVR_KVS_INSTALL_DIR)/kvs.conf

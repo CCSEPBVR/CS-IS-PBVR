@@ -2042,15 +2042,17 @@ bool ensemble_generate_particles(
             {
                 cell[thid][0]->bindCell( cell_index[cell_BLK] );
 #if defined( ENABLE_HEX_TET_VOLUME )
-                if ( celltype == vismodule::VolumeObjectBase::Hexahedra )
-                {
                     volume_array[cell_BLK] =
                         static_cast<vismodule::HexahedralCell<Type>*>( cell[thid][0] )->volumeByTetraDecomposition();
-                }
-                else
-                {
-                    volume_array[cell_BLK] = cell[thid][0]->volume();
-                }
+//                if ( celltype == vismodule::VolumeObjectBase::Hexahedra )
+//                {
+//                    volume_array[cell_BLK] =
+//                        static_cast<vismodule::HexahedralCell<Type>*>( cell[thid][0] )->volumeByTetraDecomposition();
+//                }
+//                else
+//                {
+//                    volume_array[cell_BLK] = cell[thid][0]->volume();
+//                }
 #else
                 volume_array[cell_BLK] = cell[thid][0]->volume();
 #endif
