@@ -35,9 +35,12 @@ int Hydrogen::generate_volume( void )
     const vismodule::UInt64 dim2 = resolution.y();
     const vismodule::UInt64 dim3 = resolution.z();
 
+    int ens_id = mpi_rank;
     const vismodule::Real64 dim= 128.0;
     const vismodule::Real64 kr = 32.0 / dim;
-    const vismodule::Real64 kd = 6.0;
+//    const vismodule::Real64 kd = 6.0;
+    const vismodule::Real64 kd = 1.0 + (float)(ens_id);
+    const vismodule::Real64 kr3 = 32.0 / dim * 0.1667 * kd;
 
     ncells = ( dim1 - 1 ) * ( dim2 - 1 )  * ( dim3 - 1 );
     nnodes = dim1 *  dim2  * dim3;
@@ -60,15 +63,20 @@ int Hydrogen::generate_volume( void )
         {
             for ( vismodule::UInt64 i = 0; i < dim1; ++i )
             {
+
                 //const float x = (float)i * cell_length + global_region[mpi_rank].x();
                 //const float y = (float)j * cell_length + global_region[mpi_rank].y();
                 const float x = (float)i * cell_length ;
                 const float y = (float)j * cell_length ;
                 const float z = (float)k * cell_length;
 
+                if(k == 0) 
+                {
+                    std::cout << "x = " << x << std::endl;
+                }
                 const vismodule::Real64 dx = kr * ( x - ( dim / 2.0 ) );
                 const vismodule::Real64 dy = kr * ( y - ( dim / 2.0 ) );
-                const vismodule::Real64 dz = kr * ( z - ( dim / 2.0 ) );
+                const vismodule::Real64 dz = kr3 * ( z - ( dim / 2.0 ) );
 //
 //
                 const vismodule::Real64 r = std::sqrt( dx * dx + dy * dy + dz * dz ) + 0.01;
@@ -81,8 +89,8 @@ int Hydrogen::generate_volume( void )
 //                values[2][index] = mpi_rank*0.1;
 //                values[3][index] = mpi_rank*0.1;
 //                values[0][index] = x;
-//                values[0][index] = static_cast<float>( c );
-//                values[1][index] = static_cast<float>( c );
+                values[0][index] = static_cast<float>( c );
+                values[1][index] = static_cast<float>( c );
 //                values[2][index] = static_cast<float>( c );
 //                values[3][index] = static_cast<float>( c );
                 index++;
@@ -149,6 +157,7 @@ Hydrogen::Hydrogen( void )
     //resolution = vismodule::Vector3ui( 64, 64, 128 );
     resolution = vismodule::Vector3ui( 4, 4, 4 );
 //    resolution = vismodule::Vector3ui( 128, 128, 128 );
+//    resolution = vismodule::Vector3ui( 256, 256, 256 );
 
     //cell_length = 1.0;
     cell_length = 127.f/(resolution.x()-1);
