@@ -705,6 +705,34 @@ inline const size_t CalculateNumberOfParticlesV35(
     return n;
 }
 
+inline size_t ExpandedCapacity( const size_t current_capacity, const size_t required_capacity )
+{
+    if ( current_capacity >= required_capacity ) return current_capacity;
+    size_t capacity = current_capacity > 0 ? current_capacity : 4096;
+    while ( capacity < required_capacity ) capacity *= 2;
+    return capacity;
+}
+
+void ReserveAdditionalUniformParticles(
+    const size_t additional_particles,
+    std::vector<vismodule::Real32>& coords,
+    std::vector<vismodule::Real32>& scalars,
+    std::vector<vismodule::Real32>& normals,
+    std::vector<int>& cellids,
+    std::vector<vismodule::Real32>& sq_scalars,
+    std::vector<vismodule::Real32>& tmp_term )
+{
+    const size_t particle_capacity = ExpandedCapacity( scalars.capacity(), scalars.size() + additional_particles );
+    scalars.reserve( particle_capacity );
+    cellids.reserve( particle_capacity );
+    sq_scalars.reserve( particle_capacity );
+
+    const size_t vector_capacity = particle_capacity * 3;
+    coords.reserve( vector_capacity );
+    normals.reserve( vector_capacity );
+    tmp_term.reserve( vector_capacity );
+}
+
 void AppendRejectedStatisticParticle(
     const float scalar,
     const vismodule::Vector3f& coord,
@@ -1360,13 +1388,15 @@ bool generate_particles(
     return true;
 }
 
-void calculation_chain_rule_grad(
+void calculate_scalar_and_chain_rule_grad(
     const int nparticles_count,
     const int nvariables,
     TransferFunctionSynthesizer* th_tfs,
-    const std::vector< vismodule::CellBase<Type>* > interp,
+    const std::vector< vismodule::CellBase<Type>* >& interp,
     const vismodule::Vector3f* local_coord_array,
+    const vismodule::Vector3f* global_coord_array,
     const vismodule::UInt32* cell_index,
+    float* scalar_result,
     float* grad_array_x,
     float* grad_array_y,
     float* grad_array_z )
@@ -1389,9 +1419,25 @@ void calculation_chain_rule_grad(
     }
 
     const std::vector<EquationToken> opa_vars = th_tfs->opacityVariable();
-    if ( opa_vars.empty() ) return;
+    if ( opa_vars.empty() )
+    {
+        for ( int p = 0; p < nparticles_count; ++p )
+        {
+            scalar_result[p] = 0.0f;
+            grad_array_x[p] = 0.0f;
+            grad_array_y[p] = 0.0f;
+            grad_array_z[p] = 0.0f;
+        }
+        return;
+    }
 
-    const EquationToken& expr = opa_vars[0]; // まず TF 数 1 個想定
+    const EquationToken& expr = opa_vars[0]; // 現状の統計粒子生成は TF 数 1 個想定
+    FuncParser::ReversePolishNotation rpn;
+    float variable_values[128] = { 0.0f };
+    rpn.setExpToken( const_cast<int*>( &( expr.exp_token[0] ) ) );
+    rpn.setVariableName( const_cast<int*>( &( expr.var_name[0] ) ) );
+    rpn.setNumber( const_cast<float*>( &( expr.val_array[0] ) ) );
+    rpn.setVariableValue( variable_values );
 
     pbvr::ChainRuleNormalWorkspace workspace;
     workspace.setExpression( expr, nvariables );
@@ -1401,14 +1447,24 @@ void calculation_chain_rule_grad(
 
     for ( int p = 0; p < nparticles_count; ++p )
     {
+        variable_values[X] = global_coord_array[p].x();
+        variable_values[Y] = global_coord_array[p].y();
+        variable_values[Z] = global_coord_array[p].z();
+
         for ( int v = 0; v < nvariables; ++v )
         {
             q_values[v] = scalar_array[v][p];
+            variable_values[4 * ( v + 1 )] = scalar_array[v][p];
+            variable_values[4 * ( v + 1 ) + 1] = grad_qx[v][p];
+            variable_values[4 * ( v + 1 ) + 2] = grad_qy[v][p];
+            variable_values[4 * ( v + 1 ) + 3] = grad_qz[v][p];
             grad_q[v] = vismodule::Vector3f(
                 grad_qx[v][p],
                 grad_qy[v][p],
                 grad_qz[v][p] );
         }
+
+        scalar_result[p] = rpn.eval();
 
         vismodule::Vector3f grad_F;
         const bool ok = workspace.computeGradient(
@@ -2030,52 +2086,61 @@ bool ensemble_generate_particles(
                                 vismodule::Timer scalar_timer;
                                 scalar_timer.start();
 #endif
-                                th_tfs[thid]->CalculateScalarsArray(
-                                    cell[thid], p_id, local_coord_array, global_coord_array, mean_transfer_functions[thid], scalar_array
-                                );
+	                                calculate_scalar_and_chain_rule_grad(
+	                                    p_id,
+	                                    nvariables,
+	                                    th_tfs[thid],
+	                                    cell[thid],
+	                                    local_coord_array,
+	                                    global_coord_array,
+	                                    cell_index,
+	                                    scalar_array,
+	                                    grad_array_x,
+	                                    grad_array_y,
+	                                    grad_array_z );
 #ifdef ENABLE_ENSEMBLE_TIMER
                                 scalar_timer.stop();
                                 th_uniform_scalar_time += scalar_timer.sec();
 #endif
 //                                calculation_glad(p_id, nvariables, th_tfs[thid], transfer_functions[thid], cell[thid], local_coord_array, cell_index, grad_array_x, grad_array_y, grad_array_z);
-#ifdef ENABLE_ENSEMBLE_TIMER
-                                vismodule::Timer chain_timer;
-                                chain_timer.start();
-#endif
-                                calculation_chain_rule_grad(
-                                        p_id,
-                                        nvariables,
-                                        th_tfs[thid],
-                                        cell[thid],
-                                        local_coord_array,
-                                        cell_index,
-                                        grad_array_x,
-                                        grad_array_y,
-                                        grad_array_z );
-#ifdef ENABLE_ENSEMBLE_TIMER
-                                chain_timer.stop();
-                                th_uniform_chain_time += chain_timer.sec();
-#endif
 
 #ifdef ENABLE_ENSEMBLE_TIMER
                                 vismodule::Timer store_timer;
                                 store_timer.start();
 #endif
-                                for ( int k = 0; k < p_id; k++ )
-                                {
-                                    th_vertex_scalars.push_back( scalar_array[k] );
-                                    th_vertex_coords.push_back( local_coord_array[k].x() );
-                                    th_vertex_coords.push_back( local_coord_array[k].y() );
-                                    th_vertex_coords.push_back( local_coord_array[k].z() );
-                                    th_vertex_cellids.push_back( cell_index[k] );
-                                    th_vertex_normals.push_back( -grad_array_x[k] );
-                                    th_vertex_normals.push_back( -grad_array_y[k] );
-                                    th_vertex_normals.push_back( -grad_array_z[k] );
-                                    th_sq_scalars.push_back( scalar_array[k] * scalar_array[k] );
-                                    th_tmp_term.push_back( scalar_array[k] * grad_array_x[k] );
-                                    th_tmp_term.push_back( scalar_array[k] * grad_array_y[k] );
-                                    th_tmp_term.push_back( scalar_array[k] * grad_array_z[k] );
-                                }
+                                ReserveAdditionalUniformParticles(
+                                    static_cast<size_t>( p_id ),
+                                    th_vertex_coords,
+	                                    th_vertex_scalars,
+	                                    th_vertex_normals,
+	                                    th_vertex_cellids,
+	                                    th_sq_scalars,
+	                                    th_tmp_term );
+	                                const size_t scalar_offset = th_vertex_scalars.size();
+	                                const size_t vector_offset = th_vertex_coords.size();
+	                                th_vertex_scalars.resize( scalar_offset + static_cast<size_t>( p_id ) );
+	                                th_vertex_cellids.resize( scalar_offset + static_cast<size_t>( p_id ) );
+	                                th_sq_scalars.resize( scalar_offset + static_cast<size_t>( p_id ) );
+	                                th_vertex_coords.resize( vector_offset + 3 * static_cast<size_t>( p_id ) );
+	                                th_vertex_normals.resize( vector_offset + 3 * static_cast<size_t>( p_id ) );
+	                                th_tmp_term.resize( vector_offset + 3 * static_cast<size_t>( p_id ) );
+	                                for ( int k = 0; k < p_id; k++ )
+	                                {
+	                                    const size_t s = scalar_offset + static_cast<size_t>( k );
+	                                    const size_t v = vector_offset + 3 * static_cast<size_t>( k );
+	                                    th_vertex_scalars[s] = scalar_array[k];
+	                                    th_vertex_coords[v] = local_coord_array[k].x();
+	                                    th_vertex_coords[v + 1] = local_coord_array[k].y();
+	                                    th_vertex_coords[v + 2] = local_coord_array[k].z();
+	                                    th_vertex_cellids[s] = cell_index[k];
+	                                    th_vertex_normals[v] = -grad_array_x[k];
+	                                    th_vertex_normals[v + 1] = -grad_array_y[k];
+	                                    th_vertex_normals[v + 2] = -grad_array_z[k];
+	                                    th_sq_scalars[s] = scalar_array[k] * scalar_array[k];
+	                                    th_tmp_term[v] = scalar_array[k] * grad_array_x[k];
+	                                    th_tmp_term[v + 1] = scalar_array[k] * grad_array_y[k];
+	                                    th_tmp_term[v + 2] = scalar_array[k] * grad_array_z[k];
+	                                }
 #ifdef ENABLE_ENSEMBLE_TIMER
                                 store_timer.stop();
                                 th_uniform_store_time += store_timer.sec();
@@ -2108,53 +2173,62 @@ bool ensemble_generate_particles(
                         vismodule::Timer scalar_timer;
                         scalar_timer.start();
 #endif
-                        th_tfs[thid]->CalculateScalarsArray(
-                            cell[thid], p_id, local_coord_array, global_coord_array, mean_transfer_functions[thid], scalar_array
-                        );
+	                        calculate_scalar_and_chain_rule_grad(
+	                            p_id,
+	                            nvariables,
+	                            th_tfs[thid],
+	                            cell[thid],
+	                            local_coord_array,
+	                            global_coord_array,
+	                            cell_index,
+	                            scalar_array,
+	                            grad_array_x,
+	                            grad_array_y,
+	                            grad_array_z );
 #ifdef ENABLE_ENSEMBLE_TIMER
                         scalar_timer.stop();
                         th_uniform_scalar_time += scalar_timer.sec();
 #endif
 //                        calculation_glad(p_id, nvariables, th_tfs[thid], transfer_functions[thid], cell[thid], local_coord_array, cell_index, grad_array_x, grad_array_y, grad_array_z);
-#ifdef ENABLE_ENSEMBLE_TIMER
-                        vismodule::Timer chain_timer;
-                        chain_timer.start();
-#endif
-                                calculation_chain_rule_grad(
-                                        p_id,
-                                        nvariables,
-                                        th_tfs[thid],
-                                        cell[thid],
-                                        local_coord_array,
-                                        cell_index,
-                                        grad_array_x,
-                                        grad_array_y,
-                                        grad_array_z );
-#ifdef ENABLE_ENSEMBLE_TIMER
-                        chain_timer.stop();
-                        th_uniform_chain_time += chain_timer.sec();
-#endif
 
 
 #ifdef ENABLE_ENSEMBLE_TIMER
                         vismodule::Timer store_timer;
                         store_timer.start();
 #endif
-                        for ( int k = 0; k < p_id; k++ )
-                        {
-                            th_vertex_scalars.push_back( scalar_array[k] );
-                            th_vertex_coords.push_back( local_coord_array[k].x() );
-                            th_vertex_coords.push_back( local_coord_array[k].y() );
-                            th_vertex_coords.push_back( local_coord_array[k].z() );
-                            th_vertex_cellids.push_back( cell_index[k] );
-                            th_vertex_normals.push_back( -grad_array_x[k] );
-                            th_vertex_normals.push_back( -grad_array_y[k] );
-                            th_vertex_normals.push_back( -grad_array_z[k] );
-                            th_sq_scalars.push_back( scalar_array[k] * scalar_array[k] );
-                            th_tmp_term.push_back( scalar_array[k] * grad_array_x[k] );
-                            th_tmp_term.push_back( scalar_array[k] * grad_array_y[k] );
-                            th_tmp_term.push_back( scalar_array[k] * grad_array_z[k] );
-                        }
+                        ReserveAdditionalUniformParticles(
+                            static_cast<size_t>( p_id ),
+                            th_vertex_coords,
+	                            th_vertex_scalars,
+	                            th_vertex_normals,
+	                            th_vertex_cellids,
+	                            th_sq_scalars,
+	                            th_tmp_term );
+	                        const size_t scalar_offset = th_vertex_scalars.size();
+	                        const size_t vector_offset = th_vertex_coords.size();
+	                        th_vertex_scalars.resize( scalar_offset + static_cast<size_t>( p_id ) );
+	                        th_vertex_cellids.resize( scalar_offset + static_cast<size_t>( p_id ) );
+	                        th_sq_scalars.resize( scalar_offset + static_cast<size_t>( p_id ) );
+	                        th_vertex_coords.resize( vector_offset + 3 * static_cast<size_t>( p_id ) );
+	                        th_vertex_normals.resize( vector_offset + 3 * static_cast<size_t>( p_id ) );
+	                        th_tmp_term.resize( vector_offset + 3 * static_cast<size_t>( p_id ) );
+	                        for ( int k = 0; k < p_id; k++ )
+	                        {
+	                            const size_t s = scalar_offset + static_cast<size_t>( k );
+	                            const size_t v = vector_offset + 3 * static_cast<size_t>( k );
+	                            th_vertex_scalars[s] = scalar_array[k];
+	                            th_vertex_coords[v] = local_coord_array[k].x();
+	                            th_vertex_coords[v + 1] = local_coord_array[k].y();
+	                            th_vertex_coords[v + 2] = local_coord_array[k].z();
+	                            th_vertex_cellids[s] = cell_index[k];
+	                            th_vertex_normals[v] = -grad_array_x[k];
+	                            th_vertex_normals[v + 1] = -grad_array_y[k];
+	                            th_vertex_normals[v + 2] = -grad_array_z[k];
+	                            th_sq_scalars[s] = scalar_array[k] * scalar_array[k];
+	                            th_tmp_term[v] = scalar_array[k] * grad_array_x[k];
+	                            th_tmp_term[v + 1] = scalar_array[k] * grad_array_y[k];
+	                            th_tmp_term[v + 2] = scalar_array[k] * grad_array_z[k];
+	                        }
 #ifdef ENABLE_ENSEMBLE_TIMER
                         store_timer.stop();
                         th_uniform_store_time += store_timer.sec();
@@ -2175,6 +2249,12 @@ bool ensemble_generate_particles(
 #endif
 #pragma omp critical
         {
+            vertex_coords.reserve( vertex_coords.size() + th_vertex_coords.size() );
+            vertex_scalars.reserve( vertex_scalars.size() + th_vertex_scalars.size() );
+            vertex_normals.reserve( vertex_normals.size() + th_vertex_normals.size() );
+            vertex_cellids.reserve( vertex_cellids.size() + th_vertex_cellids.size() );
+            sq_scalars.reserve( sq_scalars.size() + th_sq_scalars.size() );
+            tmp_term.reserve( tmp_term.size() + th_tmp_term.size() );
             vertex_coords.insert( vertex_coords.end(), th_vertex_coords.begin(), th_vertex_coords.end() );
             vertex_scalars.insert( vertex_scalars.end(), th_vertex_scalars.begin(), th_vertex_scalars.end() );
             vertex_normals.insert( vertex_normals.end(), th_vertex_normals.begin(), th_vertex_normals.end() );
@@ -2465,32 +2545,23 @@ bool ensemble_generate_particles(
                 vismodule::Timer scalar_timer;
                 scalar_timer.start();
 #endif
-                th_tfs[thid]->CalculateScalarsArray(
-                    cell[thid], remain_BLK, local_coord_array, global_coord_array, mean_transfer_functions[thid], scalar_array
-                );
+	                calculate_scalar_and_chain_rule_grad(
+	                    remain_BLK,
+	                    nvariables,
+	                    th_tfs[thid],
+	                    cell[thid],
+	                    local_coord_array,
+	                    global_coord_array,
+	                    cell_index,
+	                    scalar_array,
+	                    grad_array_x,
+	                    grad_array_y,
+	                    grad_array_z );
 #ifdef ENABLE_ENSEMBLE_TIMER
                 scalar_timer.stop();
                 th_shift_scalar_time += scalar_timer.sec();
 #endif
 //                calculation_glad(remain_BLK, nvariables, th_tfs[thid], transfer_functions[thid], cell[thid], local_coord_array, cell_index, grad_array_x, grad_array_y, grad_array_z);
-#ifdef ENABLE_ENSEMBLE_TIMER
-                vismodule::Timer chain_timer;
-                chain_timer.start();
-#endif
-                                calculation_chain_rule_grad(
-                                        remain_BLK,
-                                        nvariables,
-                                        th_tfs[thid],
-                                        cell[thid],
-                                        local_coord_array,
-                                        cell_index,
-                                        grad_array_x,
-                                        grad_array_y,
-                                        grad_array_z );
-#ifdef ENABLE_ENSEMBLE_TIMER
-                chain_timer.stop();
-                th_shift_chain_time += chain_timer.sec();
-#endif
 
 
                 for ( int j = 0; j < remain_BLK; j++ )
