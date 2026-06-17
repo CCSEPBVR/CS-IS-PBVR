@@ -268,19 +268,21 @@ inline void HexahedralCell<T>::grad_ary(float* grad_array_x, float* grad_array_y
 
         // calc scale factor
         double minValue = (std::numeric_limits<double>::max)();
-        std::vector<double> values = {
-            vismodule::Math::Abs(dXdx),vismodule::Math::Abs(dYdx),vismodule::Math::Abs(dZdx),
-            vismodule::Math::Abs(dXdy),vismodule::Math::Abs(dYdy),vismodule::Math::Abs(dZdy),
-            vismodule::Math::Abs(dXdz),vismodule::Math::Abs(dYdz),vismodule::Math::Abs(dZdz)
-        };
-
-        for ( double value : values )
-        {
-            if ( value != 0 && value < minValue )
-            {
-                minValue = value;
-            }
-        }
+#define VISMODULE_HEX_UPDATE_MIN_ABS( value ) \
+        do { \
+            const double abs_value = vismodule::Math::Abs( value ); \
+            if ( abs_value != 0 && abs_value < minValue ) minValue = abs_value; \
+        } while ( false )
+        VISMODULE_HEX_UPDATE_MIN_ABS( dXdx );
+        VISMODULE_HEX_UPDATE_MIN_ABS( dYdx );
+        VISMODULE_HEX_UPDATE_MIN_ABS( dZdx );
+        VISMODULE_HEX_UPDATE_MIN_ABS( dXdy );
+        VISMODULE_HEX_UPDATE_MIN_ABS( dYdy );
+        VISMODULE_HEX_UPDATE_MIN_ABS( dZdy );
+        VISMODULE_HEX_UPDATE_MIN_ABS( dXdz );
+        VISMODULE_HEX_UPDATE_MIN_ABS( dYdz );
+        VISMODULE_HEX_UPDATE_MIN_ABS( dZdz );
+#undef VISMODULE_HEX_UPDATE_MIN_ABS
 
         int order = 0;
 

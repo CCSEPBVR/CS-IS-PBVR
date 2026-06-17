@@ -47,9 +47,10 @@ namespace pbvr
 {
 
 ChainRuleNormalWorkspace::ChainRuleNormalWorkspace():
-    m_expr( NULL )
+    m_expr( NULL ),
+    m_variable_values( m_owned_variable_values )
 {
-    std::fill( m_variable_values, m_variable_values + 128, 0.0f );
+    std::fill( m_owned_variable_values, m_owned_variable_values + 128, 0.0f );
 }
 
 void ChainRuleNormalWorkspace::setExpression( const EquationToken& expr, std::size_t nvariables )
@@ -76,6 +77,12 @@ void ChainRuleNormalWorkspace::setExpression( const EquationToken& expr, std::si
     m_rpn.setExpToken( const_cast<int*>( &( expr.exp_token[0] ) ) );
     m_rpn.setVariableName( const_cast<int*>( &( expr.var_name[0] ) ) );
     m_rpn.setNumber( const_cast<float*>( &( expr.val_array[0] ) ) );
+    m_rpn.setVariableValue( m_variable_values );
+}
+
+void ChainRuleNormalWorkspace::setVariableValueBuffer( float* variable_values )
+{
+    m_variable_values = variable_values != NULL ? variable_values : m_owned_variable_values;
     m_rpn.setVariableValue( m_variable_values );
 }
 
@@ -116,13 +123,6 @@ bool ChainRuleNormalWorkspace::computeGradient(
 
     *grad_F = vismodule::Vector3f( 0.0f, 0.0f, 0.0f );
 
-    for ( std::size_t i = 0; i < nvariables; ++i )
-    {
-        const std::size_t variable_name = Q1 + 4 * i;
-        if ( variable_name >= 128 ) return false;
-        m_variable_values[variable_name] = q_values[i];
-    }
-
     for ( std::vector<std::size_t>::const_iterator it = m_active_variables.begin();
           it != m_active_variables.end(); ++it )
     {
@@ -160,6 +160,12 @@ bool ChainRuleNormalWorkspace::computeGradient(
     vismodule::Vector3f* grad_F )
 {
     this->setExpression( expr, nvariables );
+    for ( std::size_t i = 0; i < nvariables; ++i )
+    {
+        const std::size_t variable_name = Q1 + 4 * i;
+        if ( variable_name >= 128 ) return false;
+        m_variable_values[variable_name] = q_values[i];
+    }
     return this->computeGradient( q_values, grad_q, nvariables, grad_F );
 }
 

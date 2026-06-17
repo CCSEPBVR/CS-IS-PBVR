@@ -752,6 +752,7 @@ struct ChainRuleEvalContext
         rpn.setVariableName( &( expr.var_name[0] ) );
         rpn.setNumber( &( expr.val_array[0] ) );
         rpn.setVariableValue( variable_values );
+        workspace.setVariableValueBuffer( variable_values );
         workspace.setExpression( expr, static_cast<std::size_t>( nvariables ) );
         valid = true;
     }
@@ -1438,7 +1439,6 @@ void calculate_scalar_and_chain_rule_grad(
 
     for ( int j = 0; j < nvariables; ++j )
     {
-        interp[j]->bindCellArray( nparticles_count, cell_index );
         interp[j]->setLocalPointArray( nparticles_count, local_coord_array );
         interp[j]->CalcScalarGrad(
             nparticles_count,
@@ -1468,9 +1468,6 @@ void calculate_scalar_and_chain_rule_grad(
         chain_context.variable_values[X] = global_coord_array[p].x();
         chain_context.variable_values[Y] = global_coord_array[p].y();
         chain_context.variable_values[Z] = global_coord_array[p].z();
-        chain_context.workspace.setVariableValue( X, global_coord_array[p].x() );
-        chain_context.workspace.setVariableValue( Y, global_coord_array[p].y() );
-        chain_context.workspace.setVariableValue( Z, global_coord_array[p].z() );
 
         for ( int v = 0; v < nvariables; ++v )
         {
@@ -1480,10 +1477,6 @@ void calculate_scalar_and_chain_rule_grad(
             chain_context.variable_values[q + 1] = grad_qx[v][p];
             chain_context.variable_values[q + 2] = grad_qy[v][p];
             chain_context.variable_values[q + 3] = grad_qz[v][p];
-            chain_context.workspace.setVariableValue( q, scalar_array[v][p] );
-            chain_context.workspace.setVariableValue( q + 1, grad_qx[v][p] );
-            chain_context.workspace.setVariableValue( q + 2, grad_qy[v][p] );
-            chain_context.workspace.setVariableValue( q + 3, grad_qz[v][p] );
             grad_q[v] = vismodule::Vector3f(
                 grad_qx[v][p],
                 grad_qy[v][p],
