@@ -1838,6 +1838,7 @@ bool ensemble_generate_particles(
     const float particle_density = 1.0f;
     const int MPIprocess_per_ensemble = mpi_size/num_ensemble;
     const int ens_number = num_ensemble;
+    {  // 区間計測用の{}
 #ifdef ENABLE_ENSEMBLE_TIMER
         EnsembleTimerScope timer_scope( &ensemble_timer, EnsembleTimerSamplingPrepare );
 #endif
@@ -1850,7 +1851,7 @@ bool ensemble_generate_particles(
             return false;
         } 
         repetitions /= static_cast<float>( ens_number );
-
+    }
     std::vector<vismodule::Real32> vertex_coords;
     std::vector<vismodule::Real32> vertex_scalars;
     std::vector<vismodule::Real32> vertex_normals;
