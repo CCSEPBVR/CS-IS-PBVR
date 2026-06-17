@@ -19,6 +19,12 @@ public:
     ChainRuleNormalWorkspace();
 
     void setExpression( const EquationToken& expr, std::size_t nvariables );
+    void setVariableValue( std::size_t variable_name, float value );
+    bool computeGradient(
+        const float* q_values,
+        const vismodule::Vector3f* grad_q,
+        std::size_t nvariables,
+        vismodule::Vector3f* grad_F );
     bool computeGradient(
         const EquationToken& expr,
         const float* q_values,
@@ -34,8 +40,9 @@ public:
     const std::vector<std::size_t>& activeVariables() const;
 
 private:
-    float evalExpression( const EquationToken& expr );
+    float evalExpression();
 
+    const EquationToken* m_expr;
     std::vector<std::size_t> m_active_variables;
     float m_variable_values[128];
     FuncParser::ReversePolishNotation m_rpn;

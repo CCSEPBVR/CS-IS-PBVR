@@ -46,13 +46,15 @@ bool NearlyEqual( const vismodule::Vector3f& lhs, const vismodule::Vector3f& rhs
 namespace pbvr
 {
 
-ChainRuleNormalWorkspace::ChainRuleNormalWorkspace()
+ChainRuleNormalWorkspace::ChainRuleNormalWorkspace():
+    m_expr( NULL )
 {
     std::fill( m_variable_values, m_variable_values + 128, 0.0f );
 }
 
 void ChainRuleNormalWorkspace::setExpression( const EquationToken& expr, std::size_t nvariables )
 {
+    m_expr = &expr;
     m_active_variables.clear();
 
     for ( int i = 0; i < 128 && expr.exp_token[i] != END; ++i )
@@ -70,6 +72,17 @@ void ChainRuleNormalWorkspace::setExpression( const EquationToken& expr, std::si
     m_active_variables.erase(
         std::unique( m_active_variables.begin(), m_active_variables.end() ),
         m_active_variables.end() );
+
+    m_rpn.setExpToken( const_cast<int*>( &( expr.exp_token[0] ) ) );
+    m_rpn.setVariableName( const_cast<int*>( &( expr.var_name[0] ) ) );
+    m_rpn.setNumber( const_cast<float*>( &( expr.val_array[0] ) ) );
+    m_rpn.setVariableValue( m_variable_values );
+}
+
+void ChainRuleNormalWorkspace::setVariableValue( std::size_t variable_name, float value )
+{
+    if ( variable_name >= 128 ) return;
+    m_variable_values[variable_name] = value;
 }
 
 bool ChainRuleNormalWorkspace::computeGradient(
@@ -88,23 +101,18 @@ const std::vector<std::size_t>& ChainRuleNormalWorkspace::activeVariables() cons
     return m_active_variables;
 }
 
-float ChainRuleNormalWorkspace::evalExpression( const EquationToken& expr )
+float ChainRuleNormalWorkspace::evalExpression()
 {
-    m_rpn.setExpToken( const_cast<int*>( &( expr.exp_token[0] ) ) );
-    m_rpn.setVariableName( const_cast<int*>( &( expr.var_name[0] ) ) );
-    m_rpn.setNumber( const_cast<float*>( &( expr.val_array[0] ) ) );
-    m_rpn.setVariableValue( m_variable_values );
     return m_rpn.eval();
 }
 
 bool ChainRuleNormalWorkspace::computeGradient(
-    const EquationToken& expr,
     const float* q_values,
     const vismodule::Vector3f* grad_q,
     std::size_t nvariables,
     vismodule::Vector3f* grad_F )
 {
-    if ( grad_F == NULL || q_values == NULL || grad_q == NULL ) return false;
+    if ( m_expr == NULL || grad_F == NULL || q_values == NULL || grad_q == NULL ) return false;
 
     *grad_F = vismodule::Vector3f( 0.0f, 0.0f, 0.0f );
 
@@ -126,10 +134,10 @@ bool ChainRuleNormalWorkspace::computeGradient(
         const float eps = FiniteDifferenceScale * std::max( 1.0f, std::fabs( base ) );
 
         m_variable_values[variable_name] = base + eps;
-        const float plus = evalExpression( expr );
+        const float plus = evalExpression();
 
         m_variable_values[variable_name] = base - eps;
-        const float minus = evalExpression( expr );
+        const float minus = evalExpression();
 
         m_variable_values[variable_name] = base;
 
@@ -144,6 +152,17 @@ bool ChainRuleNormalWorkspace::computeGradient(
            std::isfinite( grad_F->z() );
 }
 
+bool ChainRuleNormalWorkspace::computeGradient(
+    const EquationToken& expr,
+    const float* q_values,
+    const vismodule::Vector3f* grad_q,
+    std::size_t nvariables,
+    vismodule::Vector3f* grad_F )
+{
+    this->setExpression( expr, nvariables );
+    return this->computeGradient( q_values, grad_q, nvariables, grad_F );
+}
+
 bool ComputeChainRuleGradient(
     const EquationToken& expr,
     const std::vector<float>& q_values,
@@ -152,7 +171,8 @@ bool ComputeChainRuleGradient(
 {
     ChainRuleNormalWorkspace workspace;
     workspace.setExpression( expr, q_values.size() );
-    return workspace.computeGradient( expr, q_values, grad_q, grad_F );
+    if ( q_values.size() != grad_q.size() || q_values.empty() ) return false;
+    return workspace.computeGradient( &q_values[0], &grad_q[0], q_values.size(), grad_F );
 }
 
 bool ComputeChainRuleNormal(

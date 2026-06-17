@@ -733,6 +733,36 @@ void ReserveAdditionalUniformParticles(
     tmp_term.reserve( vector_capacity );
 }
 
+struct ChainRuleEvalContext
+{
+    ChainRuleEvalContext():
+        valid( false )
+    {
+        std::fill( variable_values, variable_values + 128, 0.0f );
+    }
+
+    void initialize( TransferFunctionSynthesizer* tfs, const int nvariables )
+    {
+        valid = false;
+        const std::vector<EquationToken> opa_vars = tfs->opacityVariable();
+        if ( opa_vars.empty() ) return;
+
+        expr = opa_vars[0]; // 現状の統計粒子生成は TF 数 1 個想定
+        rpn.setExpToken( &( expr.exp_token[0] ) );
+        rpn.setVariableName( &( expr.var_name[0] ) );
+        rpn.setNumber( &( expr.val_array[0] ) );
+        rpn.setVariableValue( variable_values );
+        workspace.setExpression( expr, static_cast<std::size_t>( nvariables ) );
+        valid = true;
+    }
+
+    bool valid;
+    EquationToken expr;
+    FuncParser::ReversePolishNotation rpn;
+    pbvr::ChainRuleNormalWorkspace workspace;
+    float variable_values[128];
+};
+
 void AppendRejectedStatisticParticle(
     const float scalar,
     const vismodule::Vector3f& coord,
@@ -1391,7 +1421,7 @@ bool generate_particles(
 void calculate_scalar_and_chain_rule_grad(
     const int nparticles_count,
     const int nvariables,
-    TransferFunctionSynthesizer* th_tfs,
+    ChainRuleEvalContext& chain_context,
     const std::vector< vismodule::CellBase<Type>* >& interp,
     const vismodule::Vector3f* local_coord_array,
     const vismodule::Vector3f* global_coord_array,
@@ -1418,8 +1448,7 @@ void calculate_scalar_and_chain_rule_grad(
             grad_qz[j] );
     }
 
-    const std::vector<EquationToken> opa_vars = th_tfs->opacityVariable();
-    if ( opa_vars.empty() )
+    if ( !chain_context.valid )
     {
         for ( int p = 0; p < nparticles_count; ++p )
         {
@@ -1431,44 +1460,40 @@ void calculate_scalar_and_chain_rule_grad(
         return;
     }
 
-    const EquationToken& expr = opa_vars[0]; // 現状の統計粒子生成は TF 数 1 個想定
-    FuncParser::ReversePolishNotation rpn;
-    float variable_values[128] = { 0.0f };
-    rpn.setExpToken( const_cast<int*>( &( expr.exp_token[0] ) ) );
-    rpn.setVariableName( const_cast<int*>( &( expr.var_name[0] ) ) );
-    rpn.setNumber( const_cast<float*>( &( expr.val_array[0] ) ) );
-    rpn.setVariableValue( variable_values );
-
-    pbvr::ChainRuleNormalWorkspace workspace;
-    workspace.setExpression( expr, nvariables );
-
     float q_values[128];
     vismodule::Vector3f grad_q[128];
 
     for ( int p = 0; p < nparticles_count; ++p )
     {
-        variable_values[X] = global_coord_array[p].x();
-        variable_values[Y] = global_coord_array[p].y();
-        variable_values[Z] = global_coord_array[p].z();
+        chain_context.variable_values[X] = global_coord_array[p].x();
+        chain_context.variable_values[Y] = global_coord_array[p].y();
+        chain_context.variable_values[Z] = global_coord_array[p].z();
+        chain_context.workspace.setVariableValue( X, global_coord_array[p].x() );
+        chain_context.workspace.setVariableValue( Y, global_coord_array[p].y() );
+        chain_context.workspace.setVariableValue( Z, global_coord_array[p].z() );
 
         for ( int v = 0; v < nvariables; ++v )
         {
+            const std::size_t q = static_cast<std::size_t>( 4 * ( v + 1 ) );
             q_values[v] = scalar_array[v][p];
-            variable_values[4 * ( v + 1 )] = scalar_array[v][p];
-            variable_values[4 * ( v + 1 ) + 1] = grad_qx[v][p];
-            variable_values[4 * ( v + 1 ) + 2] = grad_qy[v][p];
-            variable_values[4 * ( v + 1 ) + 3] = grad_qz[v][p];
+            chain_context.variable_values[q] = scalar_array[v][p];
+            chain_context.variable_values[q + 1] = grad_qx[v][p];
+            chain_context.variable_values[q + 2] = grad_qy[v][p];
+            chain_context.variable_values[q + 3] = grad_qz[v][p];
+            chain_context.workspace.setVariableValue( q, scalar_array[v][p] );
+            chain_context.workspace.setVariableValue( q + 1, grad_qx[v][p] );
+            chain_context.workspace.setVariableValue( q + 2, grad_qy[v][p] );
+            chain_context.workspace.setVariableValue( q + 3, grad_qz[v][p] );
             grad_q[v] = vismodule::Vector3f(
                 grad_qx[v][p],
                 grad_qy[v][p],
                 grad_qz[v][p] );
         }
 
-        scalar_result[p] = rpn.eval();
+        scalar_result[p] = chain_context.rpn.eval();
 
         vismodule::Vector3f grad_F;
-        const bool ok = workspace.computeGradient(
-            expr,
+        const bool ok = chain_context.workspace.computeGradient(
             q_values,
             grad_q,
             nvariables,
@@ -1973,6 +1998,8 @@ bool ensemble_generate_particles(
         float grad_array_z[SIMD_BLK_SIZE];
         std::vector<float> o_scalars_array[SIMD_BLK_SIZE];
         for ( int i = 0; i < SIMD_BLK_SIZE; i++ ) o_scalars_array[i].resize( tf_number );
+        ChainRuleEvalContext chain_context;
+        chain_context.initialize( th_tfs[thid], nvariables );
 
         std::vector<vismodule::Real32> th_vertex_coords;
         std::vector<vismodule::Real32> th_vertex_scalars;
@@ -2089,7 +2116,7 @@ bool ensemble_generate_particles(
 	                                calculate_scalar_and_chain_rule_grad(
 	                                    p_id,
 	                                    nvariables,
-	                                    th_tfs[thid],
+	                                    chain_context,
 	                                    cell[thid],
 	                                    local_coord_array,
 	                                    global_coord_array,
@@ -2176,7 +2203,7 @@ bool ensemble_generate_particles(
 	                        calculate_scalar_and_chain_rule_grad(
 	                            p_id,
 	                            nvariables,
-	                            th_tfs[thid],
+	                            chain_context,
 	                            cell[thid],
 	                            local_coord_array,
 	                            global_coord_array,
@@ -2523,6 +2550,8 @@ bool ensemble_generate_particles(
             float grad_array_y[SIMD_BLK_SIZE];
             float grad_array_z[SIMD_BLK_SIZE];
             for ( int i = 0; i < SIMD_BLK_SIZE; i++ ) o_scalars_array[i].resize( tf_number );
+            ChainRuleEvalContext chain_context;
+            chain_context.initialize( th_tfs[thid], nvariables );
 
 //#pragma omp for schedule( dynamic )
 #pragma omp for 
@@ -2548,7 +2577,7 @@ bool ensemble_generate_particles(
 	                calculate_scalar_and_chain_rule_grad(
 	                    remain_BLK,
 	                    nvariables,
-	                    th_tfs[thid],
+	                    chain_context,
 	                    cell[thid],
 	                    local_coord_array,
 	                    global_coord_array,
