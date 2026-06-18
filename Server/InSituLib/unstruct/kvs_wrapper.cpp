@@ -190,6 +190,11 @@ enum EnsembleTimerSection
     EnsembleTimerUniformFlushPrepare,
     EnsembleTimerUniformCalculateScalars,
     EnsembleTimerUniformChainRuleGrad,
+    EnsembleTimerUniformCalcScalarGrad,
+    EnsembleTimerUniformQGradSetup,
+    EnsembleTimerUniformTfScalarEval,
+    EnsembleTimerUniformChainRuleDfdq,
+    EnsembleTimerUniformNormalNormalize,
     EnsembleTimerUniformStoreParticleData,
     EnsembleTimerThreadParticleMerge,
     EnsembleTimerMpiShiftExchange,
@@ -205,6 +210,11 @@ enum EnsembleTimerSection
     EnsembleTimerOmpShiftInterpolation,
     EnsembleTimerShiftCalculateScalars,
     EnsembleTimerShiftChainRuleGrad,
+    EnsembleTimerShiftCalcScalarGrad,
+    EnsembleTimerShiftQGradSetup,
+    EnsembleTimerShiftTfScalarEval,
+    EnsembleTimerShiftChainRuleDfdq,
+    EnsembleTimerShiftNormalNormalize,
     EnsembleTimerStatAverageVariance,
     EnsembleTimerStatHistogram,
     EnsembleTimerOmpRejection,
@@ -248,6 +258,11 @@ const EnsembleTimerSectionDef EnsembleTimerSections[EnsembleTimerSectionCount] =
     { "uniform_particle_sampling_loop", "uniform_flush_prepare", 3 },
     { "uniform_particle_sampling_loop", "uniform_calculate_scalars_array", 3 },
     { "uniform_particle_sampling_loop", "uniform_chain_rule_grad", 3 },
+    { "uniform_calculate_scalars_array", "uniform_calc_scalar_grad", 4 },
+    { "uniform_calculate_scalars_array", "uniform_q_values_grad_q_setup", 4 },
+    { "uniform_calculate_scalars_array", "uniform_tf_scalar_eval", 4 },
+    { "uniform_calculate_scalars_array", "uniform_chain_rule_dfdq", 4 },
+    { "uniform_calculate_scalars_array", "uniform_normal_normalize", 4 },
     { "uniform_particle_sampling_loop", "uniform_store_particle_data", 3 },
     { "omp_uniform_sampling", "thread_particle_merge", 2 },
     { "ensemble_generate_particles_total", "mpi_shift_exchange", 1 },
@@ -263,6 +278,11 @@ const EnsembleTimerSectionDef EnsembleTimerSections[EnsembleTimerSectionCount] =
     { "mpi_shift_exchange", "omp_shift_interpolation", 2 },
     { "omp_shift_interpolation", "shift_calculate_scalars_array", 3 },
     { "omp_shift_interpolation", "shift_chain_rule_grad", 3 },
+    { "shift_calculate_scalars_array", "shift_calc_scalar_grad", 4 },
+    { "shift_calculate_scalars_array", "shift_q_values_grad_q_setup", 4 },
+    { "shift_calculate_scalars_array", "shift_tf_scalar_eval", 4 },
+    { "shift_calculate_scalars_array", "shift_chain_rule_dfdq", 4 },
+    { "shift_calculate_scalars_array", "shift_normal_normalize", 4 },
     { "ensemble_generate_particles_total", "stat_average_variance", 1 },
     { "ensemble_generate_particles_total", "stat_histogram", 1 },
     { "ensemble_generate_particles_total", "omp_rejection", 1 },
@@ -1419,6 +1439,24 @@ bool generate_particles(
     return true;
 }
 
+struct ChainRuleTimingBreakdown
+{
+    double calc_scalar_grad;
+    double q_grad_setup;
+    double tf_scalar_eval;
+    double chain_rule_dfdq;
+    double normal_normalize;
+
+    ChainRuleTimingBreakdown():
+        calc_scalar_grad( 0.0 ),
+        q_grad_setup( 0.0 ),
+        tf_scalar_eval( 0.0 ),
+        chain_rule_dfdq( 0.0 ),
+        normal_normalize( 0.0 )
+    {
+    }
+};
+
 void calculate_scalar_and_chain_rule_grad(
     const int nparticles_count,
     const int nvariables,
@@ -1430,13 +1468,18 @@ void calculate_scalar_and_chain_rule_grad(
     float* scalar_result,
     float* grad_array_x,
     float* grad_array_y,
-    float* grad_array_z )
+    float* grad_array_z,
+    ChainRuleTimingBreakdown* timing )
 {
     float scalar_array[nvariables][SIMD_BLK_SIZE];
     float grad_qx[nvariables][SIMD_BLK_SIZE];
     float grad_qy[nvariables][SIMD_BLK_SIZE];
     float grad_qz[nvariables][SIMD_BLK_SIZE];
 
+#ifdef ENABLE_ENSEMBLE_TIMER
+    vismodule::Timer calc_scalar_grad_timer;
+    calc_scalar_grad_timer.start();
+#endif
     for ( int j = 0; j < nvariables; ++j )
     {
         interp[j]->setLocalPointArray( nparticles_count, local_coord_array );
@@ -1447,9 +1490,17 @@ void calculate_scalar_and_chain_rule_grad(
             grad_qy[j],
             grad_qz[j] );
     }
+#ifdef ENABLE_ENSEMBLE_TIMER
+    calc_scalar_grad_timer.stop();
+    if ( timing ) timing->calc_scalar_grad += calc_scalar_grad_timer.sec();
+#endif
 
     if ( !chain_context.valid )
     {
+#ifdef ENABLE_ENSEMBLE_TIMER
+        vismodule::Timer normal_timer;
+        normal_timer.start();
+#endif
         for ( int p = 0; p < nparticles_count; ++p )
         {
             scalar_result[p] = 0.0f;
@@ -1457,6 +1508,10 @@ void calculate_scalar_and_chain_rule_grad(
             grad_array_y[p] = 0.0f;
             grad_array_z[p] = 0.0f;
         }
+#ifdef ENABLE_ENSEMBLE_TIMER
+        normal_timer.stop();
+        if ( timing ) timing->normal_normalize += normal_timer.sec();
+#endif
         return;
     }
 
@@ -1465,6 +1520,10 @@ void calculate_scalar_and_chain_rule_grad(
 
     for ( int p = 0; p < nparticles_count; ++p )
     {
+#ifdef ENABLE_ENSEMBLE_TIMER
+        vismodule::Timer q_grad_setup_timer;
+        q_grad_setup_timer.start();
+#endif
         chain_context.variable_values[X] = global_coord_array[p].x();
         chain_context.variable_values[Y] = global_coord_array[p].y();
         chain_context.variable_values[Z] = global_coord_array[p].z();
@@ -1482,27 +1541,59 @@ void calculate_scalar_and_chain_rule_grad(
                 grad_qy[v][p],
                 grad_qz[v][p] );
         }
+#ifdef ENABLE_ENSEMBLE_TIMER
+        q_grad_setup_timer.stop();
+        if ( timing ) timing->q_grad_setup += q_grad_setup_timer.sec();
+#endif
 
+#ifdef ENABLE_ENSEMBLE_TIMER
+        vismodule::Timer tf_scalar_eval_timer;
+        tf_scalar_eval_timer.start();
+#endif
         scalar_result[p] = chain_context.rpn.eval();
+#ifdef ENABLE_ENSEMBLE_TIMER
+        tf_scalar_eval_timer.stop();
+        if ( timing ) timing->tf_scalar_eval += tf_scalar_eval_timer.sec();
+#endif
 
         vismodule::Vector3f grad_F;
+#ifdef ENABLE_ENSEMBLE_TIMER
+        vismodule::Timer chain_rule_timer;
+        chain_rule_timer.start();
+#endif
         const bool ok = chain_context.workspace.computeGradient(
             q_values,
             grad_q,
             nvariables,
             &grad_F );
+#ifdef ENABLE_ENSEMBLE_TIMER
+        chain_rule_timer.stop();
+        if ( timing ) timing->chain_rule_dfdq += chain_rule_timer.sec();
+#endif
 
+#ifdef ENABLE_ENSEMBLE_TIMER
+        vismodule::Timer normal_timer;
+        normal_timer.start();
+#endif
         if ( !ok )
         {
             grad_array_x[p] = 0.0f;
             grad_array_y[p] = 0.0f;
             grad_array_z[p] = 0.0f;
+#ifdef ENABLE_ENSEMBLE_TIMER
+            normal_timer.stop();
+            if ( timing ) timing->normal_normalize += normal_timer.sec();
+#endif
             continue;
         }
 
         grad_array_x[p] = grad_F.x();
         grad_array_y[p] = grad_F.y();
         grad_array_z[p] = grad_F.z();
+#ifdef ENABLE_ENSEMBLE_TIMER
+        normal_timer.stop();
+        if ( timing ) timing->normal_normalize += normal_timer.sec();
+#endif
     }
 }
 
@@ -1947,6 +2038,11 @@ bool ensemble_generate_particles(
     std::vector<double> uniform_flush_prepare_times( max_threads, 0.0 );
     std::vector<double> uniform_scalar_times( max_threads, 0.0 );
     std::vector<double> uniform_chain_times( max_threads, 0.0 );
+    std::vector<double> uniform_calc_scalar_grad_times( max_threads, 0.0 );
+    std::vector<double> uniform_q_grad_setup_times( max_threads, 0.0 );
+    std::vector<double> uniform_tf_scalar_eval_times( max_threads, 0.0 );
+    std::vector<double> uniform_chain_rule_dfdq_times( max_threads, 0.0 );
+    std::vector<double> uniform_normal_normalize_times( max_threads, 0.0 );
     std::vector<double> uniform_store_times( max_threads, 0.0 );
     std::vector<double> uniform_merge_times( max_threads, 0.0 );
     vismodule::Timer uniform_timer;
@@ -1976,6 +2072,11 @@ bool ensemble_generate_particles(
         double th_uniform_flush_prepare_time = 0.0;
         double th_uniform_scalar_time = 0.0;
         double th_uniform_chain_time = 0.0;
+        double th_uniform_calc_scalar_grad_time = 0.0;
+        double th_uniform_q_grad_setup_time = 0.0;
+        double th_uniform_tf_scalar_eval_time = 0.0;
+        double th_uniform_chain_rule_dfdq_time = 0.0;
+        double th_uniform_normal_normalize_time = 0.0;
         double th_uniform_store_time = 0.0;
         double th_uniform_merge_time = 0.0;
 #endif
@@ -2119,6 +2220,7 @@ bool ensemble_generate_particles(
 #ifdef ENABLE_ENSEMBLE_TIMER
                                 vismodule::Timer scalar_timer;
                                 scalar_timer.start();
+                                ChainRuleTimingBreakdown chain_rule_timing;
 #endif
 	                                calculate_scalar_and_chain_rule_grad(
 	                                    p_id,
@@ -2131,10 +2233,22 @@ bool ensemble_generate_particles(
 	                                    scalar_array,
 	                                    grad_array_x,
 	                                    grad_array_y,
-	                                    grad_array_z );
+	                                    grad_array_z,
+#ifdef ENABLE_ENSEMBLE_TIMER
+	                                    &chain_rule_timing
+#else
+	                                    0
+#endif
+	                                     );
 #ifdef ENABLE_ENSEMBLE_TIMER
                                 scalar_timer.stop();
                                 th_uniform_scalar_time += scalar_timer.sec();
+                                th_uniform_calc_scalar_grad_time += chain_rule_timing.calc_scalar_grad;
+                                th_uniform_q_grad_setup_time += chain_rule_timing.q_grad_setup;
+                                th_uniform_tf_scalar_eval_time += chain_rule_timing.tf_scalar_eval;
+                                th_uniform_chain_rule_dfdq_time += chain_rule_timing.chain_rule_dfdq;
+                                th_uniform_chain_time += chain_rule_timing.chain_rule_dfdq;
+                                th_uniform_normal_normalize_time += chain_rule_timing.normal_normalize;
 #endif
 //                                calculation_glad(p_id, nvariables, th_tfs[thid], transfer_functions[thid], cell[thid], local_coord_array, cell_index, grad_array_x, grad_array_y, grad_array_z);
 
@@ -2206,6 +2320,7 @@ bool ensemble_generate_particles(
 #ifdef ENABLE_ENSEMBLE_TIMER
                         vismodule::Timer scalar_timer;
                         scalar_timer.start();
+                        ChainRuleTimingBreakdown chain_rule_timing;
 #endif
 	                        calculate_scalar_and_chain_rule_grad(
 	                            p_id,
@@ -2218,10 +2333,22 @@ bool ensemble_generate_particles(
 	                            scalar_array,
 	                            grad_array_x,
 	                            grad_array_y,
-	                            grad_array_z );
+	                            grad_array_z,
+#ifdef ENABLE_ENSEMBLE_TIMER
+	                            &chain_rule_timing
+#else
+	                            0
+#endif
+	                             );
 #ifdef ENABLE_ENSEMBLE_TIMER
                         scalar_timer.stop();
                         th_uniform_scalar_time += scalar_timer.sec();
+                        th_uniform_calc_scalar_grad_time += chain_rule_timing.calc_scalar_grad;
+                        th_uniform_q_grad_setup_time += chain_rule_timing.q_grad_setup;
+                        th_uniform_tf_scalar_eval_time += chain_rule_timing.tf_scalar_eval;
+                        th_uniform_chain_rule_dfdq_time += chain_rule_timing.chain_rule_dfdq;
+                        th_uniform_chain_time += chain_rule_timing.chain_rule_dfdq;
+                        th_uniform_normal_normalize_time += chain_rule_timing.normal_normalize;
 #endif
 //                        calculation_glad(p_id, nvariables, th_tfs[thid], transfer_functions[thid], cell[thid], local_coord_array, cell_index, grad_array_x, grad_array_y, grad_array_z);
 
@@ -2311,6 +2438,11 @@ bool ensemble_generate_particles(
         uniform_flush_prepare_times[thid] += th_uniform_flush_prepare_time;
         uniform_scalar_times[thid] += th_uniform_scalar_time;
         uniform_chain_times[thid] += th_uniform_chain_time;
+        uniform_calc_scalar_grad_times[thid] += th_uniform_calc_scalar_grad_time;
+        uniform_q_grad_setup_times[thid] += th_uniform_q_grad_setup_time;
+        uniform_tf_scalar_eval_times[thid] += th_uniform_tf_scalar_eval_time;
+        uniform_chain_rule_dfdq_times[thid] += th_uniform_chain_rule_dfdq_time;
+        uniform_normal_normalize_times[thid] += th_uniform_normal_normalize_time;
         uniform_store_times[thid] += th_uniform_store_time;
         uniform_merge_times[thid] += th_uniform_merge_time;
 #endif
@@ -2331,6 +2463,11 @@ bool ensemble_generate_particles(
         ensemble_timer.addThread( EnsembleTimerUniformFlushPrepare, t, uniform_flush_prepare_times[t] );
         ensemble_timer.addThread( EnsembleTimerUniformCalculateScalars, t, uniform_scalar_times[t] );
         ensemble_timer.addThread( EnsembleTimerUniformChainRuleGrad, t, uniform_chain_times[t] );
+        ensemble_timer.addThread( EnsembleTimerUniformCalcScalarGrad, t, uniform_calc_scalar_grad_times[t] );
+        ensemble_timer.addThread( EnsembleTimerUniformQGradSetup, t, uniform_q_grad_setup_times[t] );
+        ensemble_timer.addThread( EnsembleTimerUniformTfScalarEval, t, uniform_tf_scalar_eval_times[t] );
+        ensemble_timer.addThread( EnsembleTimerUniformChainRuleDfdq, t, uniform_chain_rule_dfdq_times[t] );
+        ensemble_timer.addThread( EnsembleTimerUniformNormalNormalize, t, uniform_normal_normalize_times[t] );
         ensemble_timer.addThread( EnsembleTimerUniformStoreParticleData, t, uniform_store_times[t] );
         ensemble_timer.addThread( EnsembleTimerThreadParticleMerge, t, uniform_merge_times[t] );
     }
@@ -2364,6 +2501,11 @@ bool ensemble_generate_particles(
     std::vector<double> shift_interp_thread_times( max_threads, 0.0 );
     std::vector<double> shift_scalar_thread_times( max_threads, 0.0 );
     std::vector<double> shift_chain_thread_times( max_threads, 0.0 );
+    std::vector<double> shift_calc_scalar_grad_times( max_threads, 0.0 );
+    std::vector<double> shift_q_grad_setup_times( max_threads, 0.0 );
+    std::vector<double> shift_tf_scalar_eval_times( max_threads, 0.0 );
+    std::vector<double> shift_chain_rule_dfdq_times( max_threads, 0.0 );
+    std::vector<double> shift_normal_normalize_times( max_threads, 0.0 );
     vismodule::Timer mpi_shift_timer;
     mpi_shift_timer.start();
 #endif
@@ -2546,6 +2688,11 @@ bool ensemble_generate_particles(
             thread_timer.start();
             double th_shift_scalar_time = 0.0;
             double th_shift_chain_time = 0.0;
+            double th_shift_calc_scalar_grad_time = 0.0;
+            double th_shift_q_grad_setup_time = 0.0;
+            double th_shift_tf_scalar_eval_time = 0.0;
+            double th_shift_chain_rule_dfdq_time = 0.0;
+            double th_shift_normal_normalize_time = 0.0;
 #endif
             vismodule::UInt32 cell_index[SIMD_BLK_SIZE];
             vismodule::Vector3f local_coord_array[SIMD_BLK_SIZE];
@@ -2580,6 +2727,7 @@ bool ensemble_generate_particles(
 #ifdef ENABLE_ENSEMBLE_TIMER
                 vismodule::Timer scalar_timer;
                 scalar_timer.start();
+                ChainRuleTimingBreakdown chain_rule_timing;
 #endif
 	                calculate_scalar_and_chain_rule_grad(
 	                    remain_BLK,
@@ -2592,10 +2740,22 @@ bool ensemble_generate_particles(
 	                    scalar_array,
 	                    grad_array_x,
 	                    grad_array_y,
-	                    grad_array_z );
+	                    grad_array_z,
+#ifdef ENABLE_ENSEMBLE_TIMER
+	                    &chain_rule_timing
+#else
+	                    0
+#endif
+	                     );
 #ifdef ENABLE_ENSEMBLE_TIMER
                 scalar_timer.stop();
                 th_shift_scalar_time += scalar_timer.sec();
+                th_shift_calc_scalar_grad_time += chain_rule_timing.calc_scalar_grad;
+                th_shift_q_grad_setup_time += chain_rule_timing.q_grad_setup;
+                th_shift_tf_scalar_eval_time += chain_rule_timing.tf_scalar_eval;
+                th_shift_chain_rule_dfdq_time += chain_rule_timing.chain_rule_dfdq;
+                th_shift_chain_time += chain_rule_timing.chain_rule_dfdq;
+                th_shift_normal_normalize_time += chain_rule_timing.normal_normalize;
 #endif
 //                calculation_glad(remain_BLK, nvariables, th_tfs[thid], transfer_functions[thid], cell[thid], local_coord_array, cell_index, grad_array_x, grad_array_y, grad_array_z);
 
@@ -2618,6 +2778,11 @@ bool ensemble_generate_particles(
             shift_interp_thread_times[thid] += thread_timer.sec();
             shift_scalar_thread_times[thid] += th_shift_scalar_time;
             shift_chain_thread_times[thid] += th_shift_chain_time;
+            shift_calc_scalar_grad_times[thid] += th_shift_calc_scalar_grad_time;
+            shift_q_grad_setup_times[thid] += th_shift_q_grad_setup_time;
+            shift_tf_scalar_eval_times[thid] += th_shift_tf_scalar_eval_time;
+            shift_chain_rule_dfdq_times[thid] += th_shift_chain_rule_dfdq_time;
+            shift_normal_normalize_times[thid] += th_shift_normal_normalize_time;
 #endif
         }
 #ifdef ENABLE_ENSEMBLE_TIMER
@@ -2641,6 +2806,11 @@ bool ensemble_generate_particles(
         ensemble_timer.addThread( EnsembleTimerOmpShiftInterpolation, t, shift_interp_thread_times[t] );
         ensemble_timer.addThread( EnsembleTimerShiftCalculateScalars, t, shift_scalar_thread_times[t] );
         ensemble_timer.addThread( EnsembleTimerShiftChainRuleGrad, t, shift_chain_thread_times[t] );
+        ensemble_timer.addThread( EnsembleTimerShiftCalcScalarGrad, t, shift_calc_scalar_grad_times[t] );
+        ensemble_timer.addThread( EnsembleTimerShiftQGradSetup, t, shift_q_grad_setup_times[t] );
+        ensemble_timer.addThread( EnsembleTimerShiftTfScalarEval, t, shift_tf_scalar_eval_times[t] );
+        ensemble_timer.addThread( EnsembleTimerShiftChainRuleDfdq, t, shift_chain_rule_dfdq_times[t] );
+        ensemble_timer.addThread( EnsembleTimerShiftNormalNormalize, t, shift_normal_normalize_times[t] );
     }
 #endif
 
