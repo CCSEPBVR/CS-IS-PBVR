@@ -1,0 +1,19 @@
+CXX = icpx
+CXXFLAGS =
+
+CC = icx
+CCFLAGS =
+
+LD = icpx
+LDFLAGS =
+
+MPICXX = mpiicpx
+MPICXXFLAGS = -O3 -xHost -qopenmp
+
+MPICC = mpiicx
+MPICCFLAGS = -O3 -xHost -qopenmp -fcommon
+
+MPILD = mpiicpx
+MPILDFLAGS = -O3 -xHost -qopenmp
+
+LINKFILESYSTEM = 1

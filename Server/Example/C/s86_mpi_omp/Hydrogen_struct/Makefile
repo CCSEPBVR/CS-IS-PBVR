@@ -101,6 +101,12 @@ endif
 #######################################
 LDFLAGS += -ldl
 
+ifdef LINKFILESYSTEM
+ifeq "$(LINKFILESYSTEM)" "1"
+LDFLAGS += -lstdc++fs
+endif
+endif
+
 TEST_SRCS = \
 main.cpp \
 Hydrogen.cpp
