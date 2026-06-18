@@ -13,8 +13,10 @@ REPO_ROOT=$(CDPATH= cd -- "$BENCHMARK_DIR/.." && pwd)
 cd "$REPO_ROOT"
 
 . /etc/profile.d/modules.sh
-module load intel/cur
-module load mpt/cur
+module load cuda/11.4
+module load gnu/cur
+module load intel/2023.2.1
+module load mpt/2.23-ga
 
 export OMP_NUM_THREADS=2
 export KMP_AFFINITY=disabled

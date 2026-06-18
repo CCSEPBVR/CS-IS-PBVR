@@ -6,8 +6,10 @@ cd "$REPO_ROOT"
 
 if [ -f /etc/profile.d/modules.sh ]; then
   . /etc/profile.d/modules.sh
-  module load "$MODULE_INTEL"
-  module load "$MODULE_MPI"
+  [ -n "$MODULE_CUDA" ] && module load "$MODULE_CUDA"
+  [ -n "$MODULE_GNU" ] && module load "$MODULE_GNU"
+  [ -n "$MODULE_INTEL" ] && module load "$MODULE_INTEL"
+  [ -n "$MODULE_MPI" ] && module load "$MODULE_MPI"
 else
   echo "[build] /etc/profile.d/modules.sh not found; assuming compiler/MPI are already in PATH."
 fi

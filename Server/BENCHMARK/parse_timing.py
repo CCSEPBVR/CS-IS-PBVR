@@ -1,10 +1,8 @@
 #!/usr/bin/env python3
 """Parse PBVR timer logs and ensemble_timer_summary.csv files."""
-from __future__ import annotations
 
 import argparse
 import csv
-import math
 import os
 import re
 import statistics
@@ -18,14 +16,14 @@ TIMER_RE = re.compile(
 )
 
 
-def case_from_path(path: Path) -> str:
-    if path.name in {"ensemble_timer_summary.csv", "timing.csv"} and path.parent.name:
+def case_from_path(path):
+    if path.name in ("ensemble_timer_summary.csv", "timing.csv") and path.parent.name:
         return path.parent.name
     return path.stem
 
 
-def iter_inputs(inputs: list[str]) -> list[Path]:
-    paths: list[Path] = []
+def iter_inputs(inputs):
+    paths = []
     for item in inputs:
         p = Path(item)
         if p.is_dir():
@@ -37,7 +35,7 @@ def iter_inputs(inputs: list[str]) -> list[Path]:
     return sorted(set(paths))
 
 
-def parse_ensemble_summary(path: Path):
+def parse_ensemble_summary(path):
     case = case_from_path(path)
     summary_rows = []
     raw_rows = []
@@ -69,12 +67,11 @@ def parse_ensemble_summary(path: Path):
                 "thread_max_sec": row.get("thread_max_sec", ""),
                 "thread_min_sec": row.get("thread_min_sec", ""),
             })
-            # Rank -1 represents the already-reduced MPI max from ensemble_timer_summary.csv.
             raw_rows.append({"case": case, "rank": -1, "section": section, "time_sec": mx, "source": str(path)})
     return raw_rows, summary_rows
 
 
-def parse_text_log(path: Path):
+def parse_text_log(path):
     case = case_from_path(path)
     rows = []
     with path.open(errors="replace") as f:
@@ -94,11 +91,13 @@ def parse_text_log(path: Path):
 
 
 def summarize_raw(raw_rows):
-    groups: dict[tuple[str, str], list[float]] = defaultdict(list)
+    groups = defaultdict(list)
     for row in raw_rows:
         groups[(row["case"], row["section"])].append(float(row["time_sec"]))
     rows = []
-    for (case, section), vals in sorted(groups.items()):
+    for key in sorted(groups):
+        case, section = key
+        vals = groups[key]
         avg = sum(vals) / len(vals)
         mn = min(vals)
         mx = max(vals)
@@ -121,7 +120,7 @@ def summarize_raw(raw_rows):
     return rows
 
 
-def write_csv(path: Path, rows: list[dict], fieldnames: list[str]) -> None:
+def write_csv(path, rows, fieldnames):
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", newline="") as f:
         writer = csv.DictWriter(f, fieldnames=fieldnames, extrasaction="ignore")
@@ -129,7 +128,7 @@ def write_csv(path: Path, rows: list[dict], fieldnames: list[str]) -> None:
         writer.writerows(rows)
 
 
-def main() -> int:
+def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--input", action="append", default=[], help="file or directory; may be repeated")
     parser.add_argument("--output", default=os.environ.get("ANALYSIS_DIR", "benchmark_analysis"))
@@ -156,7 +155,7 @@ def main() -> int:
         "case", "section", "min", "avg", "max", "std", "max_over_avg", "source",
         "parent_section", "level", "thread_avg_sec", "thread_max_sec", "thread_min_sec"
     ])
-    print(f"parsed {len(paths)} files, wrote {out/'timing_raw.csv'} and {out/'timing_summary.csv'}")
+    print("parsed %d files, wrote %s and %s" % (len(paths), out / "timing_raw.csv", out / "timing_summary.csv"))
     return 0
 
 

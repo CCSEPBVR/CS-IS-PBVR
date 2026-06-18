@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 """Compare PBVR outputs with tolerance for floating-point text data."""
-from __future__ import annotations
 
 import argparse
 import csv
@@ -12,7 +11,7 @@ from pathlib import Path
 FLOAT_RE = re.compile(r"[-+]?(?:\d+\.\d*|\.\d+|\d+)(?:[eE][-+]?\d+)?")
 
 
-def file_hash(path: Path) -> str:
+def file_hash(path):
     h = hashlib.sha256()
     with path.open("rb") as f:
         for chunk in iter(lambda: f.read(1024 * 1024), b""):
@@ -20,7 +19,7 @@ def file_hash(path: Path) -> str:
     return h.hexdigest()
 
 
-def numeric_tokens(path: Path) -> list[float] | None:
+def numeric_tokens(path):
     try:
         text = path.read_text(errors="strict")
     except Exception:
@@ -34,7 +33,7 @@ def numeric_tokens(path: Path) -> list[float] | None:
     return vals
 
 
-def compare_file(ref: Path, cand: Path, rtol: float, atol: float) -> tuple[bool, str]:
+def compare_file(ref, cand, rtol, atol):
     if not cand.exists():
         return False, "candidate missing"
     if ref.stat().st_size == cand.stat().st_size and file_hash(ref) == file_hash(cand):
@@ -44,7 +43,7 @@ def compare_file(ref: Path, cand: Path, rtol: float, atol: float) -> tuple[bool,
     if a is None or b is None or not a or not b:
         return False, "binary/text differs"
     if len(a) != len(b):
-        return False, f"numeric token count differs: {len(a)} vs {len(b)}"
+        return False, "numeric token count differs: %d vs %d" % (len(a), len(b))
     max_abs = 0.0
     max_rel = 0.0
     for x, y in zip(a, b):
@@ -53,17 +52,17 @@ def compare_file(ref: Path, cand: Path, rtol: float, atol: float) -> tuple[bool,
         max_abs = max(max_abs, diff)
         max_rel = max(max_rel, diff / denom)
         if not math.isfinite(diff) or diff > atol + rtol * max(abs(x), abs(y)):
-            return False, f"numeric mismatch max_abs>tol at values {x} vs {y}"
-    return True, f"numeric within tolerance max_abs={max_abs:.6g} max_rel={max_rel:.6g}"
+            return False, "numeric mismatch max_abs>tol at values %s vs %s" % (x, y)
+    return True, "numeric within tolerance max_abs=%.6g max_rel=%.6g" % (max_abs, max_rel)
 
 
-def collect_files(root: Path) -> list[Path]:
+def collect_files(root):
     if root.is_file():
         return [root]
     return [p for p in root.rglob("*") if p.is_file()]
 
 
-def main() -> int:
+def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--reference", required=True)
     parser.add_argument("--candidate", required=True)
@@ -92,7 +91,7 @@ def main() -> int:
         writer = csv.DictWriter(f, fieldnames=["path", "ok", "detail"])
         writer.writeheader()
         writer.writerows(rows)
-    print(f"wrote {out}; status={'OK' if ok_all else 'NG'}")
+    print("wrote %s; status=%s" % (out, "OK" if ok_all else "NG"))
     return 0 if ok_all else 1
 
 

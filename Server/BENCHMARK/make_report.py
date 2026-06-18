@@ -1,31 +1,30 @@
 #!/usr/bin/env python3
 """Create a Markdown benchmark report from generated CSV summaries."""
-from __future__ import annotations
 
 import argparse
 import csv
 from pathlib import Path
 
 
-def read_rows(path: Path) -> list[dict[str, str]]:
+def read_rows(path):
     if not path.exists():
         return []
     with path.open(newline="") as f:
         return list(csv.DictReader(f))
 
 
-def md_table(rows: list[dict[str, str]], fields: list[str], limit: int = 40) -> str:
+def md_table(rows, fields, limit=40):
     if not rows:
         return "No data.\n"
     lines = ["| " + " | ".join(fields) + " |", "| " + " | ".join(["---"] * len(fields)) + " |"]
     for row in rows[:limit]:
         lines.append("| " + " | ".join(str(row.get(f, "")) for f in fields) + " |")
     if len(rows) > limit:
-        lines.append(f"\nShowing first {limit} of {len(rows)} rows.\n")
+        lines.append("\nShowing first %d of %d rows.\n" % (limit, len(rows)))
     return "\n".join(lines) + "\n"
 
 
-def main() -> int:
+def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--analysis", default="benchmark_analysis")
     parser.add_argument("--output", default="benchmark_analysis/BENCHMARK_REPORT.md")
@@ -52,7 +51,7 @@ def main() -> int:
     out = Path(args.output)
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text("\n".join(text), encoding="utf-8")
-    print(f"wrote {out}")
+    print("wrote %s" % out)
     return 0
 
 

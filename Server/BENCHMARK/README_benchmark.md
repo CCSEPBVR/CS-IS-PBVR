@@ -13,8 +13,10 @@ Codex を実行しているローカルPCでは、大規模な性能測定は行
 - Compiler: Intel oneAPI
 - MPI: HPE MPT
 - Module system: Environment Modules
-- Intel module: `intel/cur`
-- MPI module: `mpt/cur`
+- CUDA module: `cuda/11.4`
+- GNU module: `gnu/cur`
+- Intel module: `intel/2023.2.1`
+- MPI module: `mpt/2.23-ga`
 - MPI実行: `mpirun omplace`
 - MPI + OpenMP 実行: `mpirun omplace -nt ${OMP_NUM_THREADS}`
 - OpenMPスレッド数: `OMP_NUM_THREADS`
@@ -64,8 +66,10 @@ QUEUE=sc16
 PROJECT=job
 WALLTIME=00:30:00
 NCPUS_PER_NODE=40
-MODULE_INTEL=intel/cur
-MODULE_MPI=mpt/cur
+MODULE_CUDA=cuda/11.4
+MODULE_GNU=gnu/cur
+MODULE_INTEL=intel/2023.2.1
+MODULE_MPI=mpt/2.23-ga
 MPI_RUNNER=mpirun
 PLACEMENT_CMD='omplace -nt ${OMP_NUM_THREADS}'
 EXECUTABLE=Example/C/s86_mpi_omp/ens_Hydrogen_unstruct_mpi4/run
@@ -149,8 +153,10 @@ vi config.sh
 
 ```sh
 . /etc/profile.d/modules.sh
-module load intel/cur
-module load mpt/cur
+module load cuda/11.4
+module load gnu/cur
+module load intel/2023.2.1
+module load mpt/2.23-ga
 ```
 
 その後、`PBVR_MACHINE=Makefile_machine_s86_mpi_omp` を使ってビルドします。
