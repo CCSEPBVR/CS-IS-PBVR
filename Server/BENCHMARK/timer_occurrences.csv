@@ -1,0 +1,1756 @@
+file,line,code
+App/Server.cpp,5,#include <chrono>
+App/Server.cpp,496,"req->getHeader(""sec-websocket-key""),"
+App/Server.cpp,497,"req->getHeader(""sec-websocket-protocol""),"
+App/Server.cpp,498,"req->getHeader(""sec-websocket-extensions""),"
+App/Server.cpp,905,std::this_thread::sleep_for(std::chrono::seconds(1));
+App/Server.cpp,2825,const auto& arr = kv.second;
+App/Server.cpp,2846,"memcpy(buffer.data() + offset, &kv.second, sizeof(kvs::UInt32));"
+App/Server.cpp,2862,"memcpy(buffer.data() + offset, &kv.second, sizeof(kvs::UInt32));"
+App/Server.cpp,3058,const size_t size = kv.second.size();
+App/Server.cpp,3149,"info.timeStep.second = std::max(info.timeStep.first, new_last_time_step);"
+App/Server.cpp,3171,std::this_thread::sleep_for(std::chrono::seconds(1));
+App/Server.cpp,3257,std::this_thread::sleep_for(std::chrono::seconds(1));
+VisModule/VIS_MODULE_HEADER_LIST,63,Network/SocketTimer
+VisModule/VIS_MODULE_HEADER_LIST,118,Utility/Timer
+VisModule/VIS_MODULE_HEADER_LIST,143,Visualization/Event/TimerEventListener
+VisModule/VIS_MODULE_HEADER_LIST,247,Visualization/Renderer/VolumeRayIntersector
+FunctionParser/function_op.h,1204,// d(tan(F))/dx = sec(F) * sec(F) * f = f / (cos(F) * cos(F))
+App/App.pro,54,-lsecur32 \
+App/ServerWIP.h,157,"std::cout << ""info.timeStep                     : "" << info.timeStep.first << "", "" << info.timeStep.second  << std::endl;"
+App/ServerWIP.h,195,"std::cout << ""info.objectID                     : "" << info.objectID.first << "", "" << info.objectID.second  << std::endl;"
+Example/C/s86_mpi_omp/ens_Hydrogen_unstruct_mpi4/default_ensemble_statistics.json,7,"""The settings section contains global settings shared across the visualization."","
+Example/C/s86_mpi_omp/ens_Hydrogen_unstruct_mpi4/default_ensemble_statistics.json,13,"""The mean_transfer_functions, variance_transfer_functions, and coefficient_of_variation_transfer_functions sections contain transfer-function parameters for ensemble statistics."""
+VisModule/Utility/Time.cpp,31,"Time::Time( const int hour, const int minute, const int second ):"
+VisModule/Utility/Time.cpp,34,m_second( second )
+VisModule/Utility/Time.cpp,36,"m_total_seconds = this->convert_to_seconds( m_hour, m_minute, m_second );"
+VisModule/Utility/Time.cpp,47,m_second        = time.m_second;
+VisModule/Utility/Time.cpp,48,m_total_seconds = time.m_total_seconds;
+VisModule/Utility/Time.cpp,53,Time& Time::operator += ( const int seconds )
+VisModule/Utility/Time.cpp,55,this->addSeconds( seconds );
+VisModule/Utility/Time.cpp,60,Time& Time::operator -= ( const int seconds )
+VisModule/Utility/Time.cpp,62,this->subtractSeconds( seconds );
+VisModule/Utility/Time.cpp,67,"Time operator + ( const Time& time, const int seconds )"
+VisModule/Utility/Time.cpp,69,Time ret( time ); ret += seconds;
+VisModule/Utility/Time.cpp,74,"Time operator - ( const Time& time, const int seconds )"
+VisModule/Utility/Time.cpp,76,Time ret( time ); ret -= seconds;
+VisModule/Utility/Time.cpp,83,return( time1.m_total_seconds - time2.m_total_seconds );
+VisModule/Utility/Time.cpp,88,return( time1.m_total_seconds > time2.m_total_seconds );
+VisModule/Utility/Time.cpp,93,return( time1.m_total_seconds >= time2.m_total_seconds );
+VisModule/Utility/Time.cpp,98,return( time1.m_total_seconds < time2.m_total_seconds );
+VisModule/Utility/Time.cpp,103,return( time1.m_total_seconds <= time2.m_total_seconds );
+VisModule/Utility/Time.cpp,108,return( time1.m_total_seconds == time2.m_total_seconds );
+VisModule/Utility/Time.cpp,113,return( time1.m_total_seconds != time2.m_total_seconds );
+VisModule/Utility/Time.cpp,120,<< time.second();
+VisModule/Utility/Time.cpp,135,const int Time::second( void ) const
+VisModule/Utility/Time.cpp,137,return( m_second );
+VisModule/Utility/Time.cpp,142,return( m_total_seconds );
+VisModule/Utility/Time.cpp,152,m_second = time->tm_sec;
+VisModule/Utility/Time.cpp,153,"m_total_seconds = this->convert_to_seconds( m_hour, m_minute, m_second );"
+VisModule/Utility/Time.cpp,162,"char s[3]; sprintf( s, ""%02d"", m_second );"
+VisModule/Utility/Time.cpp,180,m_second = atoi( s.c_str() );
+VisModule/Utility/Time.cpp,193,m_second = atoi( s.c_str() );
+VisModule/Utility/Time.cpp,196,"m_total_seconds = this->convert_to_seconds( m_hour, m_minute, m_second );"
+VisModule/Utility/Time.cpp,202,"m_total_seconds = this->convert_to_seconds( m_hour, m_minute, m_second );"
+VisModule/Utility/Time.cpp,208,"m_total_seconds = this->convert_to_seconds( m_hour, m_minute, m_second );"
+VisModule/Utility/Time.cpp,223,"m_total_seconds = this->convert_to_seconds( m_hour, m_minute, m_second );"
+VisModule/Utility/Time.cpp,237,"m_total_seconds = this->convert_to_seconds( m_hour, m_minute, m_second );"
+VisModule/Utility/Time.cpp,240,void Time::addSeconds( const int second )
+VisModule/Utility/Time.cpp,242,m_total_seconds += second;
+VisModule/Utility/Time.cpp,244,*this = this->convert_from_seconds( m_total_seconds );
+VisModule/Utility/Time.cpp,247,void Time::subtractSeconds( const int second )
+VisModule/Utility/Time.cpp,249,m_total_seconds -= second;
+VisModule/Utility/Time.cpp,251,*this = this->convert_from_seconds( m_total_seconds );
+VisModule/Utility/Time.cpp,254,"const long Time::convert_to_seconds( const int hour, const int minute, const int second )"
+VisModule/Utility/Time.cpp,256,return( hour * 3600 + minute * 60 + second );
+VisModule/Utility/Time.cpp,259,const Time Time::convert_from_seconds( const int seconds )
+VisModule/Utility/Time.cpp,261,const int hour   = seconds / 3600;
+VisModule/Utility/Time.cpp,262,const int minute = ( seconds - hour * 3600 ) / 60;
+VisModule/Utility/Time.cpp,263,const int second = seconds - hour * 3600 - minute * 60;
+VisModule/Utility/Time.cpp,265,"return( Time( hour, minute, second ) );"
+InSituLib/shared/particle_write_thread.h,11,#include <vismodule/Timer>
+InSituLib/shared/particle_write_thread.h,54,vismodule::Timer timer;
+InSituLib/shared/particle_write_thread.h,55,timer.start();
+InSituLib/shared/particle_write_thread.h,64,timer.stop();
+InSituLib/shared/particle_write_thread.h,65,"std::cout<<""thread time =""<<timer.msec()<<""[msec]""<<std::endl;"
+App/ServerWIP.cpp,114,"req->getHeader( ""sec-websocket-key"" ),"
+App/ServerWIP.cpp,115,"req->getHeader( ""sec-websocket-protocol"" ),"
+App/ServerWIP.cpp,116,"req->getHeader( ""sec-websocket-extensions"" ),"
+App/ServerWIP.cpp,991,const auto& arr = kv.second;
+App/ServerWIP.cpp,1012,"memcpy( buffer.data() + offset, &kv.second, sizeof(kvs::UInt32) );"
+App/ServerWIP.cpp,1028,"memcpy( buffer.data() + offset, &kv.second, sizeof(kvs::UInt32) );"
+App/ServerWIP.cpp,1224,const size_t size = kv.second.size();
+InSituLib/shared/kvs_wrapper_common.h,23,"// Asynchronous io, using worker thread pwt."
+Example/C/s86_mpi_omp/ens_Hydrogen_unstruct_mpi4/default.json,53,"""The settings section contains global settings shared across the visualization."","
+Example/C/s86_mpi_omp/ens_Hydrogen_unstruct_mpi4/default.json,59,"""The mean_transfer_functions, variance_transfer_functions, and coefficient_of_variation_transfer_functions sections contain transfer-function parameters for ensemble statistics."""
+Example/C/s86_mpi_omp/ens_Hydrogen_unstruct_mpi4/ens9_ensemble_timer_summary.csv,1,"step,scope,parent_section,section,level,mpi_avg_sec,mpi_max_sec,mpi_min_sec,thread_avg_sec,thread_max_sec,thread_min_sec,uniform_particle_count,ave_particle_count,var_particle_count,cov_particle_count"
+Example/C/s86_mpi_omp/ens_Hydrogen_unstruct_mpi4/ens9_ensemble_timer_summary.csv,40,"step,scope,parent_section,section,level,mpi_avg_sec,mpi_max_sec,mpi_min_sec,thread_avg_sec,thread_max_sec,thread_min_sec,uniform_particle_count,ave_particle_count,var_particle_count,cov_particle_count"
+Example/C/s86_mpi_omp/ens_Hydrogen_unstruct_mpi4/ens9_ensemble_timer_summary.csv,79,"step,scope,parent_section,section,level,mpi_avg_sec,mpi_max_sec,mpi_min_sec,thread_avg_sec,thread_max_sec,thread_min_sec,uniform_particle_count,ave_particle_count,var_particle_count,cov_particle_count"
+FunctionParser/test.cpp,20,//#include <vismodule/Timer>
+InSituLib/unstruct/VertexTFGradient.cpp,118,"build_seconds( 0.0 ),"
+InSituLib/unstruct/VertexTFGradient.cpp,119,"gradient_seconds( 0.0 ),"
+InSituLib/unstruct/VertexTFGradient.cpp,120,compare_seconds( 0.0 )
+InSituLib/unstruct/VertexTFGradient.cpp,163,log->build_seconds += SecondsNow() - start;
+InSituLib/unstruct/VertexTFGradient.cpp,215,log->gradient_seconds += SecondsNow() - start;
+InSituLib/unstruct/VertexTFGradient.cpp,307,log->compare_seconds += SecondsNow() - start;
+InSituLib/unstruct/VertexTFGradient.cpp,319,"<< "", build_seconds="" << log.build_seconds"
+InSituLib/unstruct/VertexTFGradient.cpp,320,"<< "", gradient_seconds="" << log.gradient_seconds"
+InSituLib/unstruct/VertexTFGradient.cpp,321,"<< "", compare_seconds="" << log.compare_seconds"
+InSituLib/AMR/kvs_wrapper.h,4,"#include ""../shared/thread_timer.h"""
+InSituLib/shared/thread_timer.h,4,#include <chrono>
+InSituLib/shared/thread_timer.h,14,using hresclock       = std::chrono::high_resolution_clock;
+InSituLib/shared/thread_timer.h,15,"using dduration  = std::chrono::duration<double,std::milli>;"
+InSituLib/shared/thread_timer.h,113,* @brief timed_section_start  Begins counting time for a section
+InSituLib/shared/thread_timer.h,114,"* @param sd, section data pointer"
+InSituLib/shared/thread_timer.h,117,"static inline void timed_section_start(TimedScope& ts, size_t thid=0)"
+InSituLib/shared/thread_timer.h,121,"std::cout<<""timed_section_start::""<<ts.name<<"":""<<thid<<std::endl;"
+InSituLib/shared/thread_timer.h,132,* @brief timed_section_end  Ends counting of time for a section
+InSituLib/shared/thread_timer.h,133,"* @param sd , section data pointer"
+InSituLib/shared/thread_timer.h,136,"static inline void timed_section_end(TimedScope& ts, size_t thid=0)"
+InSituLib/shared/thread_timer.h,140,"std::cout<<""timed_section_end::""<<ts.name<<"":""<<thid<<std::endl;"
+InSituLib/AMR/kvs_wrapper.cpp,14,#include <kvs/Timer>
+InSituLib/AMR/kvs_wrapper.cpp,30,"// Asynchronous io, using worker thread pwt."
+InSituLib/AMR/kvs_wrapper.cpp,489,void show_timer( time_parameters time )
+InSituLib/AMR/kvs_wrapper.cpp,515,"printf(""initialize= %8.3e [sec/step]\n"", initialize);"
+InSituLib/AMR/kvs_wrapper.cpp,516,"printf(""sampling  = %8.3e [sec/step]\n"", sampling  );"
+InSituLib/AMR/kvs_wrapper.cpp,517,"printf(""witting   = %8.3e [sec/step]\n"", writting  );"
+InSituLib/AMR/kvs_wrapper.cpp,518,"printf(""mpi_reduce= %8.3e [sec/step]\n"", mpi_reduce);"
+InSituLib/AMR/kvs_wrapper.cpp,519,"printf(""write_text= %8.3e [sec/step]\n"", write_text);"
+InSituLib/AMR/kvs_wrapper.cpp,520,"printf(""total     = %8.3e [sec/step]\n"", total     );"
+InSituLib/AMR/kvs_wrapper.cpp,554,kvs::Timer timer( kvs::Timer::Start );
+InSituLib/AMR/kvs_wrapper.cpp,785,timer.stop();
+InSituLib/AMR/kvs_wrapper.cpp,786,time.initialize = timer.sec();
+InSituLib/AMR/kvs_wrapper.cpp,787,timer.start();
+InSituLib/AMR/kvs_wrapper.cpp,1181,timer.stop();
+InSituLib/AMR/kvs_wrapper.cpp,1182,time.sampling = timer.sec();
+InSituLib/AMR/kvs_wrapper.cpp,1184,timer.start();
+InSituLib/AMR/kvs_wrapper.cpp,1355,timer.stop();
+InSituLib/AMR/kvs_wrapper.cpp,1356,time.writting = timer.sec();
+InSituLib/AMR/kvs_wrapper.cpp,1357,timer.start();
+InSituLib/AMR/kvs_wrapper.cpp,1395,timer.stop();
+InSituLib/AMR/kvs_wrapper.cpp,1396,time.mpi_reduce = timer.sec();
+InSituLib/AMR/kvs_wrapper.cpp,1397,timer.start();
+InSituLib/AMR/kvs_wrapper.cpp,1459,timer.stop();
+InSituLib/AMR/kvs_wrapper.cpp,1460,time.write_text = timer.sec();
+InSituLib/AMR/kvs_wrapper.cpp,1462,show_timer( time );
+Example/C/s86_mpi_omp/ens_Hydrogen_unstruct_mpi4/RESET.sh,3,rm timer.out.*
+Example/C/s86_mpi_omp/ens_Hydrogen_unstruct_mpi4/default_old.json,53,"""The settings section contains global settings shared across the visualization."","
+Example/C/s86_mpi_omp/ens_Hydrogen_unstruct_mpi4/default_old.json,59,"""The mean_transfer_functions, variance_transfer_functions, and coefficient_of_variation_transfer_functions sections contain transfer-function parameters for ensemble statistics."""
+Example/C/s86_mpi_omp/Hydrogen_unstruct_tetra/RESET.sh,3,rm timer.out.*
+Example/C/s86_mpi_omp/Hydrogen_unstruct_quadhexa/RESET.sh,3,rm timer.out.*
+InSituLib/unstruct/EnsembleCellHistogram.h,36,double cell_center_eval_seconds;
+InSituLib/unstruct/EnsembleCellHistogram.h,37,double ensemble_moments_mpi_seconds;
+InSituLib/unstruct/EnsembleCellHistogram.h,38,double statistics_seconds;
+InSituLib/unstruct/EnsembleCellHistogram.h,39,double local_minmax_seconds;
+InSituLib/unstruct/EnsembleCellHistogram.h,40,double global_minmax_mpi_seconds;
+InSituLib/unstruct/EnsembleCellHistogram.h,41,double local_histogram_seconds;
+InSituLib/unstruct/EnsembleCellHistogram.h,42,double global_histogram_mpi_seconds;
+InSituLib/unstruct/kvs_wrapper.cpp,34,#include <vismodule/Timer>
+InSituLib/unstruct/kvs_wrapper.cpp,88,enum EnsembleTimerSection
+InSituLib/unstruct/kvs_wrapper.cpp,90,"EnsembleTimerTotal = 0,"
+InSituLib/unstruct/kvs_wrapper.cpp,91,"EnsembleTimerSetParameterPath,"
+InSituLib/unstruct/kvs_wrapper.cpp,92,"EnsembleTimerReadParameterFile,"
+InSituLib/unstruct/kvs_wrapper.cpp,93,"EnsembleTimerInitTransferFunctions,"
+InSituLib/unstruct/kvs_wrapper.cpp,94,"EnsembleTimerCreateCells,"
+InSituLib/unstruct/kvs_wrapper.cpp,95,"EnsembleTimerSamplingPrepare,"
+InSituLib/unstruct/kvs_wrapper.cpp,96,"EnsembleTimerOmpUniformSampling,"
+InSituLib/unstruct/kvs_wrapper.cpp,97,"EnsembleTimerUniformThreadSetup,"
+InSituLib/unstruct/kvs_wrapper.cpp,98,"EnsembleTimerUniformCellIndexSetup,"
+InSituLib/unstruct/kvs_wrapper.cpp,99,"EnsembleTimerUniformBindCellArray,"
+InSituLib/unstruct/kvs_wrapper.cpp,100,"EnsembleTimerUniformVolumeCalculation,"
+InSituLib/unstruct/kvs_wrapper.cpp,101,"EnsembleTimerUniformParticleCountCalculation,"
+InSituLib/unstruct/kvs_wrapper.cpp,102,"EnsembleTimerUniformParticleSamplingLoop,"
+InSituLib/unstruct/kvs_wrapper.cpp,103,"EnsembleTimerUniformLocalCoordGeneration,"
+InSituLib/unstruct/kvs_wrapper.cpp,104,"EnsembleTimerUniformFlushPrepare,"
+InSituLib/unstruct/kvs_wrapper.cpp,105,"EnsembleTimerUniformCalculateScalars,"
+InSituLib/unstruct/kvs_wrapper.cpp,106,"EnsembleTimerUniformChainRuleGrad,"
+InSituLib/unstruct/kvs_wrapper.cpp,107,"EnsembleTimerUniformCalcScalarGrad,"
+InSituLib/unstruct/kvs_wrapper.cpp,108,"EnsembleTimerUniformQGradSetup,"
+InSituLib/unstruct/kvs_wrapper.cpp,109,"EnsembleTimerUniformTfScalarEval,"
+InSituLib/unstruct/kvs_wrapper.cpp,110,"EnsembleTimerUniformChainRuleDfdq,"
+InSituLib/unstruct/kvs_wrapper.cpp,111,"EnsembleTimerUniformNormalNormalize,"
+InSituLib/unstruct/kvs_wrapper.cpp,112,"EnsembleTimerUniformStoreParticleData,"
+InSituLib/unstruct/kvs_wrapper.cpp,113,"EnsembleTimerThreadParticleMerge,"
+InSituLib/unstruct/kvs_wrapper.cpp,114,"EnsembleTimerMpiShiftExchange,"
+InSituLib/unstruct/kvs_wrapper.cpp,115,"EnsembleTimerMpiShiftSizeExchange,"
+InSituLib/unstruct/kvs_wrapper.cpp,116,"EnsembleTimerMpiShiftAllocRecvBuffer,"
+InSituLib/unstruct/kvs_wrapper.cpp,117,"EnsembleTimerMpiShiftPayloadAll,"
+InSituLib/unstruct/kvs_wrapper.cpp,118,"EnsembleTimerMpiShiftPayloadCellids,"
+InSituLib/unstruct/kvs_wrapper.cpp,119,"EnsembleTimerMpiShiftPayloadScalars,"
+InSituLib/unstruct/kvs_wrapper.cpp,120,"EnsembleTimerMpiShiftPayloadCoords,"
+InSituLib/unstruct/kvs_wrapper.cpp,121,"EnsembleTimerMpiShiftPayloadNormals,"
+InSituLib/unstruct/kvs_wrapper.cpp,122,"EnsembleTimerMpiShiftPayloadSq,"
+InSituLib/unstruct/kvs_wrapper.cpp,123,"EnsembleTimerMpiShiftPayloadTmp,"
+InSituLib/unstruct/kvs_wrapper.cpp,124,"EnsembleTimerOmpShiftInterpolation,"
+InSituLib/unstruct/kvs_wrapper.cpp,125,"EnsembleTimerShiftCalculateScalars,"
+InSituLib/unstruct/kvs_wrapper.cpp,126,"EnsembleTimerShiftChainRuleGrad,"
+InSituLib/unstruct/kvs_wrapper.cpp,127,"EnsembleTimerShiftCalcScalarGrad,"
+InSituLib/unstruct/kvs_wrapper.cpp,128,"EnsembleTimerShiftQGradSetup,"
+InSituLib/unstruct/kvs_wrapper.cpp,129,"EnsembleTimerShiftTfScalarEval,"
+InSituLib/unstruct/kvs_wrapper.cpp,130,"EnsembleTimerShiftChainRuleDfdq,"
+InSituLib/unstruct/kvs_wrapper.cpp,131,"EnsembleTimerShiftNormalNormalize,"
+InSituLib/unstruct/kvs_wrapper.cpp,132,"EnsembleTimerStatAverageVariance,"
+InSituLib/unstruct/kvs_wrapper.cpp,133,"EnsembleTimerStatHistogram,"
+InSituLib/unstruct/kvs_wrapper.cpp,134,"EnsembleTimerOmpRejection,"
+InSituLib/unstruct/kvs_wrapper.cpp,135,"EnsembleTimerRejectionThreadMerge,"
+InSituLib/unstruct/kvs_wrapper.cpp,136,"EnsembleTimerCleanupTfs,"
+InSituLib/unstruct/kvs_wrapper.cpp,137,"EnsembleTimerOutputCoordMinmax,"
+InSituLib/unstruct/kvs_wrapper.cpp,138,"EnsembleTimerOutputParticlesAve,"
+InSituLib/unstruct/kvs_wrapper.cpp,139,"EnsembleTimerOutputParticlesVar,"
+InSituLib/unstruct/kvs_wrapper.cpp,140,"EnsembleTimerOutputParticlesCov,"
+InSituLib/unstruct/kvs_wrapper.cpp,141,"EnsembleTimerOutputHistory,"
+InSituLib/unstruct/kvs_wrapper.cpp,142,"EnsembleTimerCleanupCells,"
+InSituLib/unstruct/kvs_wrapper.cpp,143,"EnsembleTimerWriteTfFile,"
+InSituLib/unstruct/kvs_wrapper.cpp,144,"EnsembleTimerAsyncIoWait,"
+InSituLib/unstruct/kvs_wrapper.cpp,145,"EnsembleTimerFinalBarrierState,"
+InSituLib/unstruct/kvs_wrapper.cpp,146,EnsembleTimerSectionCount
+InSituLib/unstruct/kvs_wrapper.cpp,149,struct EnsembleTimerSectionDef
+InSituLib/unstruct/kvs_wrapper.cpp,152,const char* section;
+InSituLib/unstruct/kvs_wrapper.cpp,156,const EnsembleTimerSectionDef EnsembleTimerSections[EnsembleTimerSectionCount] =
+InSituLib/unstruct/kvs_wrapper.cpp,216,bool EnsembleTimerVerbose()
+InSituLib/unstruct/kvs_wrapper.cpp,225,class EnsembleTimerCollector
+InSituLib/unstruct/kvs_wrapper.cpp,230,std::vector<double> m_seconds;
+InSituLib/unstruct/kvs_wrapper.cpp,231,std::vector<std::vector<double> > m_thread_seconds;
+InSituLib/unstruct/kvs_wrapper.cpp,238,"EnsembleTimerCollector( const int step, const int max_threads ):"
+InSituLib/unstruct/kvs_wrapper.cpp,241,"m_seconds( EnsembleTimerSectionCount, 0.0 ),"
+InSituLib/unstruct/kvs_wrapper.cpp,242,"m_thread_seconds( EnsembleTimerSectionCount, std::vector<double>( max_threads, 0.0 ) ),"
+InSituLib/unstruct/kvs_wrapper.cpp,250,"void add( const EnsembleTimerSection section, const double seconds )"
+InSituLib/unstruct/kvs_wrapper.cpp,252,m_seconds[section] += seconds;
+InSituLib/unstruct/kvs_wrapper.cpp,255,"void addThread( const EnsembleTimerSection section, const int thread, const double seconds )"
+InSituLib/unstruct/kvs_wrapper.cpp,258,m_thread_seconds[section][thread] += seconds;
+InSituLib/unstruct/kvs_wrapper.cpp,283,"summary_ofs.open( ""ensemble_timer_summary.csv"", std::ios::app );"
+InSituLib/unstruct/kvs_wrapper.cpp,288,"<< ""step,scope,parent_section,section,level,mpi_avg_sec,mpi_max_sec,mpi_min_sec,"""
+InSituLib/unstruct/kvs_wrapper.cpp,289,"<< ""thread_avg_sec,thread_max_sec,thread_min_sec,"""
+InSituLib/unstruct/kvs_wrapper.cpp,335,const bool verbose = EnsembleTimerVerbose();
+InSituLib/unstruct/kvs_wrapper.cpp,336,for ( int i = 0; i < EnsembleTimerSectionCount; i++ )
+InSituLib/unstruct/kvs_wrapper.cpp,338,const double local = m_seconds[i];
+InSituLib/unstruct/kvs_wrapper.cpp,359,const double value = m_thread_seconds[i][t];
+InSituLib/unstruct/kvs_wrapper.cpp,386,"<< EnsembleTimerSections[i].parent << "","""
+InSituLib/unstruct/kvs_wrapper.cpp,387,"<< EnsembleTimerSections[i].section << "","""
+InSituLib/unstruct/kvs_wrapper.cpp,388,"<< EnsembleTimerSections[i].level << "","""
+InSituLib/unstruct/kvs_wrapper.cpp,405,"<< EnsembleTimerSections[i].section << "","""
+InSituLib/unstruct/kvs_wrapper.cpp,412,class EnsembleTimerScope
+InSituLib/unstruct/kvs_wrapper.cpp,415,EnsembleTimerCollector* m_collector;
+InSituLib/unstruct/kvs_wrapper.cpp,416,EnsembleTimerSection m_section;
+InSituLib/unstruct/kvs_wrapper.cpp,417,vismodule::Timer m_timer;
+InSituLib/unstruct/kvs_wrapper.cpp,420,"EnsembleTimerScope( EnsembleTimerCollector* collector, const EnsembleTimerSection section ):"
+InSituLib/unstruct/kvs_wrapper.cpp,422,m_section( section )
+InSituLib/unstruct/kvs_wrapper.cpp,424,m_timer.start();
+InSituLib/unstruct/kvs_wrapper.cpp,427,~EnsembleTimerScope()
+InSituLib/unstruct/kvs_wrapper.cpp,429,m_timer.stop();
+InSituLib/unstruct/kvs_wrapper.cpp,430,"m_collector->add( m_section, m_timer.sec() );"
+InSituLib/unstruct/kvs_wrapper.cpp,1367,vismodule::Timer calc_scalar_grad_timer;
+InSituLib/unstruct/kvs_wrapper.cpp,1368,calc_scalar_grad_timer.start();
+InSituLib/unstruct/kvs_wrapper.cpp,1381,calc_scalar_grad_timer.stop();
+InSituLib/unstruct/kvs_wrapper.cpp,1382,if ( timing ) timing->calc_scalar_grad += calc_scalar_grad_timer.sec();
+InSituLib/unstruct/kvs_wrapper.cpp,1388,vismodule::Timer normal_timer;
+InSituLib/unstruct/kvs_wrapper.cpp,1389,normal_timer.start();
+InSituLib/unstruct/kvs_wrapper.cpp,1399,normal_timer.stop();
+InSituLib/unstruct/kvs_wrapper.cpp,1400,if ( timing ) timing->normal_normalize += normal_timer.sec();
+InSituLib/unstruct/kvs_wrapper.cpp,1411,vismodule::Timer q_grad_setup_timer;
+InSituLib/unstruct/kvs_wrapper.cpp,1412,q_grad_setup_timer.start();
+InSituLib/unstruct/kvs_wrapper.cpp,1432,q_grad_setup_timer.stop();
+InSituLib/unstruct/kvs_wrapper.cpp,1433,if ( timing ) timing->q_grad_setup += q_grad_setup_timer.sec();
+InSituLib/unstruct/kvs_wrapper.cpp,1437,vismodule::Timer tf_scalar_eval_timer;
+InSituLib/unstruct/kvs_wrapper.cpp,1438,tf_scalar_eval_timer.start();
+InSituLib/unstruct/kvs_wrapper.cpp,1442,tf_scalar_eval_timer.stop();
+InSituLib/unstruct/kvs_wrapper.cpp,1443,if ( timing ) timing->tf_scalar_eval += tf_scalar_eval_timer.sec();
+InSituLib/unstruct/kvs_wrapper.cpp,1448,vismodule::Timer chain_rule_timer;
+InSituLib/unstruct/kvs_wrapper.cpp,1449,chain_rule_timer.start();
+InSituLib/unstruct/kvs_wrapper.cpp,1457,chain_rule_timer.stop();
+InSituLib/unstruct/kvs_wrapper.cpp,1458,if ( timing ) timing->chain_rule_dfdq += chain_rule_timer.sec();
+InSituLib/unstruct/kvs_wrapper.cpp,1462,vismodule::Timer normal_timer;
+InSituLib/unstruct/kvs_wrapper.cpp,1463,normal_timer.start();
+InSituLib/unstruct/kvs_wrapper.cpp,1471,normal_timer.stop();
+InSituLib/unstruct/kvs_wrapper.cpp,1472,if ( timing ) timing->normal_normalize += normal_timer.sec();
+InSituLib/unstruct/kvs_wrapper.cpp,1481,normal_timer.stop();
+InSituLib/unstruct/kvs_wrapper.cpp,1482,if ( timing ) timing->normal_normalize += normal_timer.sec();
+InSituLib/unstruct/kvs_wrapper.cpp,1653,"EnsembleTimerCollector ensemble_timer( time_step, max_threads );"
+InSituLib/unstruct/kvs_wrapper.cpp,1654,vismodule::Timer ensemble_total_timer;
+InSituLib/unstruct/kvs_wrapper.cpp,1655,ensemble_total_timer.start();
+InSituLib/unstruct/kvs_wrapper.cpp,1684,"EnsembleTimerScope timer_scope( &ensemble_timer, EnsembleTimerSetParameterPath );"
+InSituLib/unstruct/kvs_wrapper.cpp,1717,"EnsembleTimerScope timer_scope( &ensemble_timer, EnsembleTimerReadParameterFile );"
+InSituLib/unstruct/kvs_wrapper.cpp,1736,"EnsembleTimerScope timer_scope( &ensemble_timer, EnsembleTimerStatHistogram );"
+InSituLib/unstruct/kvs_wrapper.cpp,1759,"EnsembleTimerScope timer_scope( &ensemble_timer, EnsembleTimerOutputHistory );"
+InSituLib/unstruct/kvs_wrapper.cpp,1786,"EnsembleTimerScope timer_scope( &ensemble_timer, EnsembleTimerInitTransferFunctions );"
+InSituLib/unstruct/kvs_wrapper.cpp,1845,"EnsembleTimerScope timer_scope( &ensemble_timer, EnsembleTimerCreateCells );"
+InSituLib/unstruct/kvs_wrapper.cpp,1895,"EnsembleTimerScope timer_scope( &ensemble_timer, EnsembleTimerSamplingPrepare );"
+InSituLib/unstruct/kvs_wrapper.cpp,1935,vismodule::Timer uniform_timer;
+InSituLib/unstruct/kvs_wrapper.cpp,1936,uniform_timer.start();
+InSituLib/unstruct/kvs_wrapper.cpp,1948,vismodule::Timer thread_timer;
+InSituLib/unstruct/kvs_wrapper.cpp,1949,thread_timer.start();
+InSituLib/unstruct/kvs_wrapper.cpp,1950,vismodule::Timer setup_timer;
+InSituLib/unstruct/kvs_wrapper.cpp,1951,setup_timer.start();
+InSituLib/unstruct/kvs_wrapper.cpp,1993,setup_timer.stop();
+InSituLib/unstruct/kvs_wrapper.cpp,1994,th_uniform_setup_time += setup_timer.sec();
+InSituLib/unstruct/kvs_wrapper.cpp,2001,vismodule::Timer cell_index_timer;
+InSituLib/unstruct/kvs_wrapper.cpp,2002,cell_index_timer.start();
+InSituLib/unstruct/kvs_wrapper.cpp,2010,cell_index_timer.stop();
+InSituLib/unstruct/kvs_wrapper.cpp,2011,th_uniform_cell_index_time += cell_index_timer.sec();
+InSituLib/unstruct/kvs_wrapper.cpp,2014,vismodule::Timer bind_timer;
+InSituLib/unstruct/kvs_wrapper.cpp,2015,bind_timer.start();
+InSituLib/unstruct/kvs_wrapper.cpp,2022,bind_timer.stop();
+InSituLib/unstruct/kvs_wrapper.cpp,2023,th_uniform_bind_time += bind_timer.sec();
+InSituLib/unstruct/kvs_wrapper.cpp,2026,vismodule::Timer volume_timer;
+InSituLib/unstruct/kvs_wrapper.cpp,2027,volume_timer.start();
+InSituLib/unstruct/kvs_wrapper.cpp,2049,volume_timer.stop();
+InSituLib/unstruct/kvs_wrapper.cpp,2050,th_uniform_volume_time += volume_timer.sec();
+InSituLib/unstruct/kvs_wrapper.cpp,2054,vismodule::Timer particle_count_timer;
+InSituLib/unstruct/kvs_wrapper.cpp,2055,particle_count_timer.start();
+InSituLib/unstruct/kvs_wrapper.cpp,2065,particle_count_timer.stop();
+InSituLib/unstruct/kvs_wrapper.cpp,2066,th_uniform_particle_count_time += particle_count_timer.sec();
+InSituLib/unstruct/kvs_wrapper.cpp,2071,vismodule::Timer sampling_loop_timer;
+InSituLib/unstruct/kvs_wrapper.cpp,2072,sampling_loop_timer.start();
+InSituLib/unstruct/kvs_wrapper.cpp,2083,vismodule::Timer local_coord_timer;
+InSituLib/unstruct/kvs_wrapper.cpp,2084,local_coord_timer.start();
+InSituLib/unstruct/kvs_wrapper.cpp,2095,local_coord_timer.stop();
+InSituLib/unstruct/kvs_wrapper.cpp,2096,th_uniform_local_coord_time += local_coord_timer.sec();
+InSituLib/unstruct/kvs_wrapper.cpp,2097,vismodule::Timer flush_prepare_timer;
+InSituLib/unstruct/kvs_wrapper.cpp,2098,flush_prepare_timer.start();
+InSituLib/unstruct/kvs_wrapper.cpp,2104,flush_prepare_timer.stop();
+InSituLib/unstruct/kvs_wrapper.cpp,2105,th_uniform_flush_prepare_time += flush_prepare_timer.sec();
+InSituLib/unstruct/kvs_wrapper.cpp,2108,vismodule::Timer scalar_timer;
+InSituLib/unstruct/kvs_wrapper.cpp,2109,scalar_timer.start();
+InSituLib/unstruct/kvs_wrapper.cpp,2131,scalar_timer.stop();
+InSituLib/unstruct/kvs_wrapper.cpp,2132,th_uniform_scalar_time += scalar_timer.sec();
+InSituLib/unstruct/kvs_wrapper.cpp,2143,vismodule::Timer store_timer;
+InSituLib/unstruct/kvs_wrapper.cpp,2144,store_timer.start();
+InSituLib/unstruct/kvs_wrapper.cpp,2180,store_timer.stop();
+InSituLib/unstruct/kvs_wrapper.cpp,2181,th_uniform_store_time += store_timer.sec();
+InSituLib/unstruct/kvs_wrapper.cpp,2185,local_coord_timer.start();
+InSituLib/unstruct/kvs_wrapper.cpp,2190,local_coord_timer.stop();
+InSituLib/unstruct/kvs_wrapper.cpp,2191,th_uniform_local_coord_time += local_coord_timer.sec();
+InSituLib/unstruct/kvs_wrapper.cpp,2197,vismodule::Timer flush_prepare_timer;
+InSituLib/unstruct/kvs_wrapper.cpp,2198,flush_prepare_timer.start();
+InSituLib/unstruct/kvs_wrapper.cpp,2204,flush_prepare_timer.stop();
+InSituLib/unstruct/kvs_wrapper.cpp,2205,th_uniform_flush_prepare_time += flush_prepare_timer.sec();
+InSituLib/unstruct/kvs_wrapper.cpp,2208,vismodule::Timer scalar_timer;
+InSituLib/unstruct/kvs_wrapper.cpp,2209,scalar_timer.start();
+InSituLib/unstruct/kvs_wrapper.cpp,2231,scalar_timer.stop();
+InSituLib/unstruct/kvs_wrapper.cpp,2232,th_uniform_scalar_time += scalar_timer.sec();
+InSituLib/unstruct/kvs_wrapper.cpp,2244,vismodule::Timer store_timer;
+InSituLib/unstruct/kvs_wrapper.cpp,2245,store_timer.start();
+InSituLib/unstruct/kvs_wrapper.cpp,2281,store_timer.stop();
+InSituLib/unstruct/kvs_wrapper.cpp,2282,th_uniform_store_time += store_timer.sec();
+InSituLib/unstruct/kvs_wrapper.cpp,2289,sampling_loop_timer.stop();
+InSituLib/unstruct/kvs_wrapper.cpp,2290,th_uniform_sampling_loop_time += sampling_loop_timer.sec();
+InSituLib/unstruct/kvs_wrapper.cpp,2295,vismodule::Timer merge_timer;
+InSituLib/unstruct/kvs_wrapper.cpp,2296,merge_timer.start();
+InSituLib/unstruct/kvs_wrapper.cpp,2314,merge_timer.stop();
+InSituLib/unstruct/kvs_wrapper.cpp,2315,th_uniform_merge_time += merge_timer.sec();
+InSituLib/unstruct/kvs_wrapper.cpp,2316,thread_timer.stop();
+InSituLib/unstruct/kvs_wrapper.cpp,2317,uniform_thread_times[thid] += thread_timer.sec();
+InSituLib/unstruct/kvs_wrapper.cpp,2338,uniform_timer.stop();
+InSituLib/unstruct/kvs_wrapper.cpp,2339,"ensemble_timer.add( EnsembleTimerOmpUniformSampling, uniform_timer.sec() );"
+InSituLib/unstruct/kvs_wrapper.cpp,2342,"ensemble_timer.addThread( EnsembleTimerOmpUniformSampling, t, uniform_thread_times[t] );"
+InSituLib/unstruct/kvs_wrapper.cpp,2343,"ensemble_timer.addThread( EnsembleTimerUniformThreadSetup, t, uniform_setup_times[t] );"
+InSituLib/unstruct/kvs_wrapper.cpp,2344,"ensemble_timer.addThread( EnsembleTimerUniformCellIndexSetup, t, uniform_cell_index_times[t] );"
+InSituLib/unstruct/kvs_wrapper.cpp,2345,"ensemble_timer.addThread( EnsembleTimerUniformBindCellArray, t, uniform_bind_times[t] );"
+InSituLib/unstruct/kvs_wrapper.cpp,2346,"ensemble_timer.addThread( EnsembleTimerUniformVolumeCalculation, t, uniform_volume_times[t] );"
+InSituLib/unstruct/kvs_wrapper.cpp,2347,"ensemble_timer.addThread( EnsembleTimerUniformParticleCountCalculation, t, uniform_particle_count_times[t] );"
+InSituLib/unstruct/kvs_wrapper.cpp,2348,"ensemble_timer.addThread( EnsembleTimerUniformParticleSamplingLoop, t, uniform_sampling_loop_times[t] );"
+InSituLib/unstruct/kvs_wrapper.cpp,2349,"ensemble_timer.addThread( EnsembleTimerUniformLocalCoordGeneration, t, uniform_local_coord_times[t] );"
+InSituLib/unstruct/kvs_wrapper.cpp,2350,"ensemble_timer.addThread( EnsembleTimerUniformFlushPrepare, t, uniform_flush_prepare_times[t] );"
+InSituLib/unstruct/kvs_wrapper.cpp,2351,"ensemble_timer.addThread( EnsembleTimerUniformCalculateScalars, t, uniform_scalar_times[t] );"
+InSituLib/unstruct/kvs_wrapper.cpp,2352,"ensemble_timer.addThread( EnsembleTimerUniformChainRuleGrad, t, uniform_chain_times[t] );"
+InSituLib/unstruct/kvs_wrapper.cpp,2353,"ensemble_timer.addThread( EnsembleTimerUniformCalcScalarGrad, t, uniform_calc_scalar_grad_times[t] );"
+InSituLib/unstruct/kvs_wrapper.cpp,2354,"ensemble_timer.addThread( EnsembleTimerUniformQGradSetup, t, uniform_q_grad_setup_times[t] );"
+InSituLib/unstruct/kvs_wrapper.cpp,2355,"ensemble_timer.addThread( EnsembleTimerUniformTfScalarEval, t, uniform_tf_scalar_eval_times[t] );"
+InSituLib/unstruct/kvs_wrapper.cpp,2356,"ensemble_timer.addThread( EnsembleTimerUniformChainRuleDfdq, t, uniform_chain_rule_dfdq_times[t] );"
+InSituLib/unstruct/kvs_wrapper.cpp,2357,"ensemble_timer.addThread( EnsembleTimerUniformNormalNormalize, t, uniform_normal_normalize_times[t] );"
+InSituLib/unstruct/kvs_wrapper.cpp,2358,"ensemble_timer.addThread( EnsembleTimerUniformStoreParticleData, t, uniform_store_times[t] );"
+InSituLib/unstruct/kvs_wrapper.cpp,2359,"ensemble_timer.addThread( EnsembleTimerThreadParticleMerge, t, uniform_merge_times[t] );"
+InSituLib/unstruct/kvs_wrapper.cpp,2361,ensemble_timer.setUniformParticleCount(
+InSituLib/unstruct/kvs_wrapper.cpp,2396,vismodule::Timer mpi_shift_timer;
+InSituLib/unstruct/kvs_wrapper.cpp,2397,mpi_shift_timer.start();
+InSituLib/unstruct/kvs_wrapper.cpp,2425,vismodule::Timer mpi_size_timer;
+InSituLib/unstruct/kvs_wrapper.cpp,2426,mpi_size_timer.start();
+InSituLib/unstruct/kvs_wrapper.cpp,2444,mpi_size_timer.stop();
+InSituLib/unstruct/kvs_wrapper.cpp,2445,"ensemble_timer.add( EnsembleTimerMpiShiftSizeExchange, mpi_size_timer.sec() );"
+InSituLib/unstruct/kvs_wrapper.cpp,2455,vismodule::Timer alloc_timer;
+InSituLib/unstruct/kvs_wrapper.cpp,2456,alloc_timer.start();
+InSituLib/unstruct/kvs_wrapper.cpp,2465,alloc_timer.stop();
+InSituLib/unstruct/kvs_wrapper.cpp,2466,"ensemble_timer.add( EnsembleTimerMpiShiftAllocRecvBuffer, alloc_timer.sec() );"
+InSituLib/unstruct/kvs_wrapper.cpp,2471,vismodule::Timer payload_timer;
+InSituLib/unstruct/kvs_wrapper.cpp,2472,payload_timer.start();
+InSituLib/unstruct/kvs_wrapper.cpp,2480,payload_timer.stop();
+InSituLib/unstruct/kvs_wrapper.cpp,2481,"ensemble_timer.add( EnsembleTimerMpiShiftPayloadCellids, payload_timer.sec() );"
+InSituLib/unstruct/kvs_wrapper.cpp,2482,payload_timer.start();
+InSituLib/unstruct/kvs_wrapper.cpp,2490,payload_timer.stop();
+InSituLib/unstruct/kvs_wrapper.cpp,2491,"ensemble_timer.add( EnsembleTimerMpiShiftPayloadScalars, payload_timer.sec() );"
+InSituLib/unstruct/kvs_wrapper.cpp,2492,payload_timer.start();
+InSituLib/unstruct/kvs_wrapper.cpp,2500,payload_timer.stop();
+InSituLib/unstruct/kvs_wrapper.cpp,2501,"ensemble_timer.add( EnsembleTimerMpiShiftPayloadCoords, payload_timer.sec() );"
+InSituLib/unstruct/kvs_wrapper.cpp,2502,payload_timer.start();
+InSituLib/unstruct/kvs_wrapper.cpp,2510,payload_timer.stop();
+InSituLib/unstruct/kvs_wrapper.cpp,2511,"ensemble_timer.add( EnsembleTimerMpiShiftPayloadNormals, payload_timer.sec() );"
+InSituLib/unstruct/kvs_wrapper.cpp,2512,payload_timer.start();
+InSituLib/unstruct/kvs_wrapper.cpp,2520,payload_timer.stop();
+InSituLib/unstruct/kvs_wrapper.cpp,2521,"ensemble_timer.add( EnsembleTimerMpiShiftPayloadSq, payload_timer.sec() );"
+InSituLib/unstruct/kvs_wrapper.cpp,2522,payload_timer.start();
+InSituLib/unstruct/kvs_wrapper.cpp,2530,payload_timer.stop();
+InSituLib/unstruct/kvs_wrapper.cpp,2531,"ensemble_timer.add( EnsembleTimerMpiShiftPayloadTmp, payload_timer.sec() );"
+InSituLib/unstruct/kvs_wrapper.cpp,2537,vismodule::Timer payload_all_timer;
+InSituLib/unstruct/kvs_wrapper.cpp,2538,payload_all_timer.start();
+InSituLib/unstruct/kvs_wrapper.cpp,2557,payload_all_timer.stop();
+InSituLib/unstruct/kvs_wrapper.cpp,2558,"ensemble_timer.add( EnsembleTimerMpiShiftPayloadAll, payload_all_timer.sec() );"
+InSituLib/unstruct/kvs_wrapper.cpp,2563,vismodule::Timer shift_interp_timer;
+InSituLib/unstruct/kvs_wrapper.cpp,2564,shift_interp_timer.start();
+InSituLib/unstruct/kvs_wrapper.cpp,2574,vismodule::Timer thread_timer;
+InSituLib/unstruct/kvs_wrapper.cpp,2575,thread_timer.start();
+InSituLib/unstruct/kvs_wrapper.cpp,2615,vismodule::Timer scalar_timer;
+InSituLib/unstruct/kvs_wrapper.cpp,2616,scalar_timer.start();
+InSituLib/unstruct/kvs_wrapper.cpp,2638,scalar_timer.stop();
+InSituLib/unstruct/kvs_wrapper.cpp,2639,th_shift_scalar_time += scalar_timer.sec();
+InSituLib/unstruct/kvs_wrapper.cpp,2664,thread_timer.stop();
+InSituLib/unstruct/kvs_wrapper.cpp,2665,shift_interp_thread_times[thid] += thread_timer.sec();
+InSituLib/unstruct/kvs_wrapper.cpp,2676,shift_interp_timer.stop();
+InSituLib/unstruct/kvs_wrapper.cpp,2677,"ensemble_timer.add( EnsembleTimerOmpShiftInterpolation, shift_interp_timer.sec() );"
+InSituLib/unstruct/kvs_wrapper.cpp,2689,mpi_shift_timer.stop();
+InSituLib/unstruct/kvs_wrapper.cpp,2690,"ensemble_timer.add( EnsembleTimerMpiShiftExchange, mpi_shift_timer.sec() );"
+InSituLib/unstruct/kvs_wrapper.cpp,2693,"ensemble_timer.addThread( EnsembleTimerOmpShiftInterpolation, t, shift_interp_thread_times[t] );"
+InSituLib/unstruct/kvs_wrapper.cpp,2694,"ensemble_timer.addThread( EnsembleTimerShiftCalculateScalars, t, shift_scalar_thread_times[t] );"
+InSituLib/unstruct/kvs_wrapper.cpp,2695,"ensemble_timer.addThread( EnsembleTimerShiftChainRuleGrad, t, shift_chain_thread_times[t] );"
+InSituLib/unstruct/kvs_wrapper.cpp,2696,"ensemble_timer.addThread( EnsembleTimerShiftCalcScalarGrad, t, shift_calc_scalar_grad_times[t] );"
+InSituLib/unstruct/kvs_wrapper.cpp,2697,"ensemble_timer.addThread( EnsembleTimerShiftQGradSetup, t, shift_q_grad_setup_times[t] );"
+InSituLib/unstruct/kvs_wrapper.cpp,2698,"ensemble_timer.addThread( EnsembleTimerShiftTfScalarEval, t, shift_tf_scalar_eval_times[t] );"
+InSituLib/unstruct/kvs_wrapper.cpp,2699,"ensemble_timer.addThread( EnsembleTimerShiftChainRuleDfdq, t, shift_chain_rule_dfdq_times[t] );"
+InSituLib/unstruct/kvs_wrapper.cpp,2700,"ensemble_timer.addThread( EnsembleTimerShiftNormalNormalize, t, shift_normal_normalize_times[t] );"
+InSituLib/unstruct/kvs_wrapper.cpp,2716,"EnsembleTimerScope timer_scope( &ensemble_timer, EnsembleTimerStatAverageVariance );"
+InSituLib/unstruct/kvs_wrapper.cpp,2751,"EnsembleTimerScope timer_scope( &ensemble_timer, EnsembleTimerStatHistogram );"
+InSituLib/unstruct/kvs_wrapper.cpp,2779,vismodule::Timer rejection_timer;
+InSituLib/unstruct/kvs_wrapper.cpp,2780,rejection_timer.start();
+InSituLib/unstruct/kvs_wrapper.cpp,2790,vismodule::Timer thread_timer;
+InSituLib/unstruct/kvs_wrapper.cpp,2791,thread_timer.start();
+InSituLib/unstruct/kvs_wrapper.cpp,2859,vismodule::Timer merge_timer;
+InSituLib/unstruct/kvs_wrapper.cpp,2860,merge_timer.start();
+InSituLib/unstruct/kvs_wrapper.cpp,2875,merge_timer.stop();
+InSituLib/unstruct/kvs_wrapper.cpp,2876,th_rejection_merge_time += merge_timer.sec();
+InSituLib/unstruct/kvs_wrapper.cpp,2877,thread_timer.stop();
+InSituLib/unstruct/kvs_wrapper.cpp,2878,rejection_thread_times[thid] += thread_timer.sec();
+InSituLib/unstruct/kvs_wrapper.cpp,2883,rejection_timer.stop();
+InSituLib/unstruct/kvs_wrapper.cpp,2884,"ensemble_timer.add( EnsembleTimerOmpRejection, rejection_timer.sec() );"
+InSituLib/unstruct/kvs_wrapper.cpp,2887,"ensemble_timer.addThread( EnsembleTimerOmpRejection, t, rejection_thread_times[t] );"
+InSituLib/unstruct/kvs_wrapper.cpp,2888,"ensemble_timer.addThread( EnsembleTimerRejectionThreadMerge, t, rejection_merge_times[t] );"
+InSituLib/unstruct/kvs_wrapper.cpp,2890,ensemble_timer.setStatisticParticleCounts(
+InSituLib/unstruct/kvs_wrapper.cpp,2905,"EnsembleTimerScope timer_scope( &ensemble_timer, EnsembleTimerCleanupTfs );"
+InSituLib/unstruct/kvs_wrapper.cpp,2917,"EnsembleTimerScope timer_scope( &ensemble_timer, EnsembleTimerOutputCoordMinmax );"
+InSituLib/unstruct/kvs_wrapper.cpp,2924,"EnsembleTimerScope timer_scope( &ensemble_timer, EnsembleTimerOutputParticlesAve );"
+InSituLib/unstruct/kvs_wrapper.cpp,2934,"EnsembleTimerScope timer_scope( &ensemble_timer, EnsembleTimerOutputParticlesVar );"
+InSituLib/unstruct/kvs_wrapper.cpp,2944,"EnsembleTimerScope timer_scope( &ensemble_timer, EnsembleTimerOutputParticlesCov );"
+InSituLib/unstruct/kvs_wrapper.cpp,2953,"EnsembleTimerScope timer_scope( &ensemble_timer, EnsembleTimerOutputHistory );"
+InSituLib/unstruct/kvs_wrapper.cpp,2963,"EnsembleTimerScope timer_scope( &ensemble_timer, EnsembleTimerCleanupCells );"
+InSituLib/unstruct/kvs_wrapper.cpp,2977,"EnsembleTimerScope timer_scope( &ensemble_timer, EnsembleTimerWriteTfFile );"
+InSituLib/unstruct/kvs_wrapper.cpp,2990,"EnsembleTimerScope timer_scope( &ensemble_timer, EnsembleTimerAsyncIoWait );"
+InSituLib/unstruct/kvs_wrapper.cpp,3006,"EnsembleTimerScope timer_scope( &ensemble_timer, EnsembleTimerFinalBarrierState );"
+InSituLib/unstruct/kvs_wrapper.cpp,3026,ensemble_total_timer.stop();
+InSituLib/unstruct/kvs_wrapper.cpp,3027,"ensemble_timer.add( EnsembleTimerTotal, ensemble_total_timer.sec() );"
+InSituLib/unstruct/kvs_wrapper.cpp,3028,"ensemble_timer.printCsv( mpi_rank, mpi_size );"
+Example/C/s86_mpi_omp/Hydrogen_unstruct_prism/RESET.sh,3,rm timer.out.*
+Example/C/s86_mpi_omp/Hydrogen_unstruct/default.json,7,"""The settings section contains global settings shared across the visualization."","
+Example/C/s86_mpi_omp/Hydrogen_unstruct/RESET.sh,3,rm timer.out.*
+InSituLib/unstruct/EnsembleCellHistogram.cpp,490,"cell_center_eval_seconds( 0.0 ),"
+InSituLib/unstruct/EnsembleCellHistogram.cpp,491,"ensemble_moments_mpi_seconds( 0.0 ),"
+InSituLib/unstruct/EnsembleCellHistogram.cpp,492,"statistics_seconds( 0.0 ),"
+InSituLib/unstruct/EnsembleCellHistogram.cpp,493,"local_minmax_seconds( 0.0 ),"
+InSituLib/unstruct/EnsembleCellHistogram.cpp,494,"global_minmax_mpi_seconds( 0.0 ),"
+InSituLib/unstruct/EnsembleCellHistogram.cpp,495,"local_histogram_seconds( 0.0 ),"
+InSituLib/unstruct/EnsembleCellHistogram.cpp,496,global_histogram_mpi_seconds( 0.0 )
+InSituLib/unstruct/EnsembleCellHistogram.cpp,570,log->local_minmax_seconds += SecondsNow() - start;
+InSituLib/unstruct/EnsembleCellHistogram.cpp,604,log->global_minmax_mpi_seconds += SecondsNow() - start;
+InSituLib/unstruct/EnsembleCellHistogram.cpp,674,log->local_histogram_seconds += SecondsNow() - start;
+InSituLib/unstruct/EnsembleCellHistogram.cpp,714,log->global_histogram_mpi_seconds += SecondsNow() - start;
+InSituLib/unstruct/EnsembleCellHistogram.cpp,921,if ( log != NULL ) log->cell_center_eval_seconds += SecondsNow() - start;
+InSituLib/unstruct/EnsembleCellHistogram.cpp,927,if ( log != NULL ) log->ensemble_moments_mpi_seconds += SecondsNow() - start;
+InSituLib/unstruct/EnsembleCellHistogram.cpp,936,if ( log != NULL ) log->statistics_seconds += SecondsNow() - start;
+InSituLib/unstruct/EnsembleCellHistogram.cpp,954,if ( log != NULL ) log->local_histogram_seconds += SecondsNow() - start;
+InSituLib/unstruct/EnsembleCellHistogram.cpp,996,"<< "", cell_center_eval_seconds="" << log.cell_center_eval_seconds"
+InSituLib/unstruct/EnsembleCellHistogram.cpp,997,"<< "", ensemble_moments_mpi_seconds="" << log.ensemble_moments_mpi_seconds"
+InSituLib/unstruct/EnsembleCellHistogram.cpp,998,"<< "", statistics_seconds="" << log.statistics_seconds"
+InSituLib/unstruct/EnsembleCellHistogram.cpp,999,"<< "", local_minmax_seconds="" << log.local_minmax_seconds"
+InSituLib/unstruct/EnsembleCellHistogram.cpp,1000,"<< "", global_minmax_mpi_seconds="" << log.global_minmax_mpi_seconds"
+InSituLib/unstruct/EnsembleCellHistogram.cpp,1001,"<< "", local_histogram_seconds="" << log.local_histogram_seconds"
+InSituLib/unstruct/EnsembleCellHistogram.cpp,1002,"<< "", global_histogram_mpi_seconds="" << log.global_histogram_mpi_seconds"
+Example/C/s86_mpi_omp/ens_Hydrogen_unstruct/default.json,53,"""The settings section contains global settings shared across the visualization."","
+Example/C/s86_mpi_omp/ens_Hydrogen_unstruct/default.json,59,"""The mean_transfer_functions, variance_transfer_functions, and coefficient_of_variation_transfer_functions sections contain transfer-function parameters for ensemble statistics."""
+Example/C/s86_mpi_omp/ens_Hydrogen_unstruct_mpi4/ensemble_timer_summary.csv,1,"step,scope,parent_section,section,level,mpi_avg_sec,mpi_max_sec,mpi_min_sec,thread_avg_sec,thread_max_sec,thread_min_sec,uniform_particle_count,ave_particle_count,var_particle_count,cov_particle_count"
+Example/C/s86_mpi_omp/ens_Hydrogen_unstruct_mpi4/ensemble_timer_summary.csv,40,"step,scope,parent_section,section,level,mpi_avg_sec,mpi_max_sec,mpi_min_sec,thread_avg_sec,thread_max_sec,thread_min_sec,uniform_particle_count,ave_particle_count,var_particle_count,cov_particle_count"
+Example/C/s86_mpi_omp/ens_Hydrogen_unstruct_mpi4/ensemble_timer_summary.csv,79,"step,scope,parent_section,section,level,mpi_avg_sec,mpi_max_sec,mpi_min_sec,thread_avg_sec,thread_max_sec,thread_min_sec,uniform_particle_count,ave_particle_count,var_particle_count,cov_particle_count"
+Example/C/s86_mpi_omp/ens_Hydrogen_unstruct_mpi4/ensemble_timer_summary.csv,118,"step,scope,parent_section,section,level,mpi_avg_sec,mpi_max_sec,mpi_min_sec,thread_avg_sec,thread_max_sec,thread_min_sec,uniform_particle_count,ave_particle_count,var_particle_count,cov_particle_count"
+InSituLib/unstruct/VertexTFGradient.h,26,double build_seconds;
+InSituLib/unstruct/VertexTFGradient.h,27,double gradient_seconds;
+InSituLib/unstruct/VertexTFGradient.h,28,double compare_seconds;
+Example/C/s86_mpi_omp/ens_Hydrogen_unstruct/RESET.sh,3,rm timer.out.*
+VisModule/Utility/MemoryTracer.cpp,245,if ( ( ( type == MemoryTracer::Delete      ) && ( node->second.type() == MemoryTracer::New      ) ) ||
+VisModule/Utility/MemoryTracer.cpp,246,( ( type == MemoryTracer::DeleteArray ) && ( node->second.type() == MemoryTracer::NewArray ) ) ||
+VisModule/Utility/MemoryTracer.cpp,247,( ( type == MemoryTracer::Free        ) && ( node->second.type() == MemoryTracer::Malloc   ) ) ||
+VisModule/Utility/MemoryTracer.cpp,248,( ( type == MemoryTracer::Free        ) && ( node->second.type() == MemoryTracer::Calloc   ) ) ||
+VisModule/Utility/MemoryTracer.cpp,249,( ( type == MemoryTracer::Free        ) && ( node->second.type() == MemoryTracer::Realloc  ) ) ||
+VisModule/Utility/MemoryTracer.cpp,250,( ( type == MemoryTracer::Realloc     ) && ( node->second.type() == MemoryTracer::Malloc   ) ) ||
+VisModule/Utility/MemoryTracer.cpp,251,( ( type == MemoryTracer::Realloc     ) && ( node->second.type() == MemoryTracer::Calloc   ) ) ||
+VisModule/Utility/MemoryTracer.cpp,252,( ( type == MemoryTracer::Realloc     ) && ( node->second.type() == MemoryTracer::Realloc  ) ) )
+VisModule/Utility/MemoryTracer.cpp,256,m_allocated_memory -= node->second.size();
+VisModule/Utility/MemoryTracer.cpp,312,const char* name = mem->second.name();
+VisModule/Utility/MemoryTracer.cpp,313,const int line = mem->second.line();
+VisModule/Utility/MemoryTracer.cpp,314,const size_t size = mem->second.size();
+VisModule/Utility/MemoryTracer.cpp,315,const std::string type = ::AllocationName[ mem->second.type() ];
+VisModule/Utility/MemoryTracer.cpp,360,bytes += mem->second.size();
+InSituLib/AMR/TFS/ParamInfo.cpp,331,"ofs << i->first  <<  ""="" << i->second << std::endl;"
+InSituLib/AMR/TFS/ParamInfo.cpp,345,index += jpv::Serializer::byteSize( i->second );
+InSituLib/AMR/TFS/ParamInfo.cpp,359,"index += jpv::Serializer::write( buf + index, i->second );"
+VisModule/Utility/Timer.h,3,*  @file Timer.h
+VisModule/Utility/Timer.h,11,*  $Id: Timer.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
+VisModule/Utility/Timer.h,37,"* In the default setting, Timer function is implemented by using gettimeofday()"
+VisModule/Utility/Timer.h,170,*  OS independent gettimeofday function.
+VisModule/Utility/Timer.h,179,* tv.tv_sec  = tb.time;
+VisModule/Utility/Timer.h,180,* tv.tv_usec = tb.millitm * 1000 + 500;
+VisModule/Utility/Timer.h,188,tv.tv_sec  = static_cast<long>( time.QuadPart / freq.QuadPart );
+VisModule/Utility/Timer.h,189,tv.tv_usec = static_cast<long>( ( static_cast<float>(time.QuadPart) / freq.QuadPart - tv.tv_sec ) * 1000000 );
+VisModule/Utility/Timer.h,194,tv.tv_sec  = t / 1000;
+VisModule/Utility/Timer.h,195,tv.tv_usec = t % 1000;
+VisModule/Utility/Timer.h,203,tv.tv_sec  = 0L;
+VisModule/Utility/Timer.h,204,tv.tv_usec = time.QuadPart * 1000L / freq.QuadPart;
+VisModule/Utility/Timer.h,206,tv.tv_sec  = 0L;
+VisModule/Utility/Timer.h,207,tv.tv_usec = timeGetTime() * 1000L;
+VisModule/Utility/Timer.h,211,"gettimeofday( &tv, NULL );"
+VisModule/Utility/Timer.h,219,*  @return CPU frequency [Hz] = [clock/sec]
+VisModule/Utility/Timer.h,233,// Sleep 1 sec.
+VisModule/Utility/Timer.h,289,*  Convert time-stamp to time [sec].
+VisModule/Utility/Timer.h,291,*  @return time [sec]
+VisModule/Utility/Timer.h,299,return( ts.tv_sec + ts.tv_usec * VIS_MODULE_TIMER_USEC_TO_SEC );
+VisModule/Utility/Timer.h,305,*  Convert time-stamp to time [msec].
+VisModule/Utility/Timer.h,307,*  @return time [msec]
+VisModule/Utility/Timer.h,315,return( ts.tv_sec  * VIS_MODULE_TIMER_SEC_TO_MSEC +
+VisModule/Utility/Timer.h,316,ts.tv_usec * VIS_MODULE_TIMER_USEC_TO_MSEC );
+VisModule/Utility/Timer.h,322,*  Convert time-stamp to time [usec].
+VisModule/Utility/Timer.h,324,*  @return time [usec]
+VisModule/Utility/Timer.h,332,return( ts.tv_sec * VIS_MODULE_TIMER_SEC_TO_USEC + ts.tv_usec );
+VisModule/Utility/Timer.h,351,ts.tv_sec  = ts1.tv_sec  - ts2.tv_sec;
+VisModule/Utility/Timer.h,352,ts.tv_usec = ts1.tv_usec - ts2.tv_usec;
+VisModule/Utility/Timer.h,359,*  Get difference time-stamp in second.
+VisModule/Utility/Timer.h,362,*  @return time-stamp [sec]
+VisModule/Utility/Timer.h,372,*  Get difference time-stamp in mili-second.
+VisModule/Utility/Timer.h,375,*  @return time-stamp [msec]
+VisModule/Utility/Timer.h,385,*  Get difference time-stamp in micro-second.
+VisModule/Utility/Timer.h,388,*  @return time-stamp [usec]
+VisModule/Utility/Timer.h,401,class Timer
+VisModule/Utility/Timer.h,403,visModuleClassName_without_virtual( vismodule::Timer );
+VisModule/Utility/Timer.h,416,Timer( void );
+VisModule/Utility/Timer.h,418,Timer( const Trigger trigger );
+VisModule/Utility/Timer.h,420,~Timer( void );
+VisModule/Utility/Timer.h,428,double sec( void ) const;
+VisModule/Utility/Timer.h,430,double msec( void ) const;
+VisModule/Utility/Timer.h,432,double usec( void ) const;
+VisModule/Utility/Timer.h,442,inline Timer::Timer( void )
+VisModule/Utility/Timer.h,448,m_start.tv_sec  = 0;
+VisModule/Utility/Timer.h,449,m_start.tv_usec = 0;
+VisModule/Utility/Timer.h,450,m_stop.tv_sec   = 0;
+VisModule/Utility/Timer.h,451,m_stop.tv_usec  = 0;
+VisModule/Utility/Timer.h,458,*  @param trigger [in] trigger ('vismodule::Timer::Start' is given)
+VisModule/Utility/Timer.h,461,inline Timer::Timer( Trigger trigger )
+VisModule/Utility/Timer.h,463,"visModuleMessageWarning( trigger == Timer::Start, ""Unknown trigger."" );"
+VisModule/Utility/Timer.h,474,inline Timer::~Timer( void )
+VisModule/Utility/Timer.h,480,*  Strat timer.
+VisModule/Utility/Timer.h,483,inline void Timer::start( void )
+VisModule/Utility/Timer.h,490,*  Stop timer.
+VisModule/Utility/Timer.h,493,inline void Timer::stop( void )
+VisModule/Utility/Timer.h,501,*  @return elapse time [sec]
+VisModule/Utility/Timer.h,504,inline double Timer::sec( void ) const
+VisModule/Utility/Timer.h,512,*  @return elapse time [msec]
+VisModule/Utility/Timer.h,515,inline double Timer::msec( void ) const
+VisModule/Utility/Timer.h,523,*  @return elapse time [usec]
+VisModule/Utility/Timer.h,526,inline double Timer::usec( void ) const
+VisModule/Utility/Timer.h,537,inline double Timer::fps( void ) const
+VisModule/Utility/Time.h,38,int  m_second;        ///< second
+VisModule/Utility/Time.h,39,long m_total_seconds; ///< total seconds
+VisModule/Utility/Time.h,45,"Time( const int hour, const int minute, const int second );"
+VisModule/Utility/Time.h,53,Time& operator += ( const int seconds );
+VisModule/Utility/Time.h,55,Time& operator -= ( const int seconds );
+VisModule/Utility/Time.h,57,"friend Time operator + ( const Time& time, const int seconds );"
+VisModule/Utility/Time.h,59,"friend Time operator - ( const Time& time, const int seconds );"
+VisModule/Utility/Time.h,83,const int second( void ) const;
+VisModule/Utility/Time.h,107,void addSeconds( const int second );
+VisModule/Utility/Time.h,109,void subtractSeconds( const int second );
+VisModule/Utility/Time.h,113,"const long convert_to_seconds( const int hour, const int minute, const int second );"
+VisModule/Utility/Time.h,115,const Time convert_from_seconds( const int seconds );
+Example/C/gcc_mpi_omp/windAroundBuildings_v2206/RESET.sh,3,rm timer.out.*
+Example/C/s86_mpi_omp/Hydrogen_unstruct_quadtetra/RESET.sh,3,rm timer.out.*
+InSituLib/AMR/TFS/TransferFunction.cpp,170,const kvs::RGBColor color = point->second;
+InSituLib/AMR/TFS/TransferFunction.cpp,189,const float opacity = point->second;
+InSituLib/AMR/TFS/TransferFunction.cpp,307,const kvs::RGBColor color = point->second;
+InSituLib/AMR/TFS/TransferFunction.cpp,329,const kvs::Real32 opacity = point->second;
+InSituLib/AMR/TFS/TransferFunction.cpp,364,"transfer_function.addColorPoint( point->first, point->second );"
+InSituLib/AMR/TFS/TransferFunction.cpp,379,"transfer_function.addOpacityPoint( point->first, point->second );"
+Example/C/s86_mpi_omp/Hydrogen_unstruct_pyramid/RESET.sh,3,rm timer.out.*
+VisModule/Matrix/Vector3.h,499,*  Returns the second element.
+VisModule/Matrix/Vector3.h,501,*  @return Reference of the second element.
+VisModule/Matrix/Vector3.h,512,*  Returns the second element.
+VisModule/Matrix/Vector3.h,514,*  @return Reference of the second element.
+Example/C/gcc_mpi_omp/windAroundBuildings_v2206/simpleFoam.C,75,#include <vismodule/Timer>
+Example/C/gcc_mpi_omp/windAroundBuildings_v2206/simpleFoam.C,92,#include <chrono>
+Example/C/gcc_mpi_omp/windAroundBuildings_v2206/Make/linux64GccDPInt32Opt/simpleFoam.C.dep,354,$(WM_PROJECT_DIR)/src/OpenFOAM/lnInclude/intersection.H \
+Example/C/gcc_mpi_omp/windAroundBuildings_v2206/Make/linux64GccDPInt32Opt/simpleFoam.C.dep,655,$(WM_PROJECT_DIR)/src/meshTools/lnInclude/faceAreaIntersect.H \
+Example/C/gcc_mpi_omp/windAroundBuildings_v2206/Make/linux64GccDPInt32Opt/simpleFoam.C.dep,659,$(WM_PROJECT_DIR)/src/meshTools/lnInclude/faceAreaIntersectI.H \
+Example/C/gcc_mpi_omp/windAroundBuildings_v2206/Make/linux64GccDPInt32Opt/simpleFoam.C.dep,919,../../../../InSituLib/unstruct/../shared/thread_timer.h \
+Example/C/s86_mpi_omp/Hydrogen_AMR/RESET.sh,3,rm timer.out.*
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_polyhedron/RESET.sh,3,rm timer.out.*
+Example/C/s86_mpi_omp/Hydrogen_struct/RESET.sh,3,rm timer.out.*
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_polyhedron/icoFoam.C,37,#include <kvs/Timer>
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_polyhedron/icoFoam.C,54,#include <chrono>
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_polyhedron/icoFoam.C,146,"Info<< ""ExecutionTime = "" << runTime.elapsedCpuTime() << "" s"""
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_polyhedron/icoFoam.C,147,"<< ""  ClockTime = "" << runTime.elapsedClockTime() << "" s"""
+VisModule/Matrix/Vector4.h,529,*  Returns the second element.
+VisModule/Matrix/Vector4.h,531,*  @return Reference of the second element.
+VisModule/Matrix/Vector4.h,542,*  Returns the second element.
+VisModule/Matrix/Vector4.h,544,*  @return Reference of the second element.
+VisModule/Utility/Date.cpp,256,t.tm_sec   = 0;
+VisModule/Matrix/Vector2.h,432,*  Returns the second element.
+VisModule/Matrix/Vector2.h,434,*  @return Reference of the second element.
+VisModule/Matrix/Vector2.h,445,*  Returns the second element.
+VisModule/Matrix/Vector2.h,447,*  @return Reference of the second element.
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/RESET.sh,3,rm timer.out.*
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/icoFoam.C,37,#include <vismodule/Timer>
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/icoFoam.C,54,#include <chrono>
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/icoFoam.C,143,"Info<< ""ExecutionTime = "" << runTime.elapsedCpuTime() << "" s"""
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/icoFoam.C,144,"<< ""  ClockTime = "" << runTime.elapsedClockTime() << "" s"""
+VisModule/Network/Socket.h,19,"#include ""SocketTimer.h"""
+VisModule/Network/Socket.h,132,const vismodule::SocketTimer*   timeout = 0 );
+VisModule/Network/Socket.h,134,int connect_complete( const vismodule::SocketTimer* timeout );
+VisModule/Thread/Thread.h,87,static void sleep( int sec );
+VisModule/Thread/Thread.h,89,static void msleep( int msec );
+VisModule/Thread/Thread.h,91,static void usleep( int usec );
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/Make/linux64GccDPInt32Opt/icoFoam.C.dep,49,../../../../InSituLib/unstruct/../shared/thread_timer.h \
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/Make/linux64GccDPInt32Opt/icoFoam.C.dep,296,$(WM_PROJECT_DIR)/src/OpenFOAM/lnInclude/intersection.H \
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/Make/linux64GccDPInt32Opt/icoFoam.C.dep,745,$(WM_PROJECT_DIR)/src/meshTools/lnInclude/faceAreaIntersect.H \
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/Make/linux64GccDPInt32Opt/icoFoam.C.dep,764,$(WM_PROJECT_DIR)/src/meshTools/lnInclude/faceAreaIntersectI.H \
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/Make/linux64GccDPInt32Opt/icoFoam.C.dep,851,../../../../InSituLib/unstruct/../shared/thread_timer.h :
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/Make/linux64GccDPInt32Opt/icoFoam.C.dep,1098,$(WM_PROJECT_DIR)/src/OpenFOAM/lnInclude/intersection.H :
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/Make/linux64GccDPInt32Opt/icoFoam.C.dep,1547,$(WM_PROJECT_DIR)/src/meshTools/lnInclude/faceAreaIntersect.H :
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/Make/linux64GccDPInt32Opt/icoFoam.C.dep,1566,$(WM_PROJECT_DIR)/src/meshTools/lnInclude/faceAreaIntersectI.H :
+VisModule/vismodule/SocketTimer,1,#include <Network/SocketTimer.h>
+VisModule/Network/TCPServer.cpp,18,"#include ""SocketTimer.h"""
+VisModule/Network/TCPServer.cpp,162,vismodule::TCPSocket* TCPServer::checkForNewConnection( const vismodule::SocketTimer* blocking_time )
+VisModule/Thread/Condition.h,76,"bool wait( vismodule::Mutex* mutex, int msec );"
+VisModule/Thread/Thread.cpp,197,*  Sleep the thread in second.
+VisModule/Thread/Thread.cpp,198,*  @param sec [in] second
+VisModule/Thread/Thread.cpp,201,void Thread::sleep( int sec )
+VisModule/Thread/Thread.cpp,204,Sleep( sec * 1000 );
+VisModule/Thread/Thread.cpp,207,"gettimeofday( &tv, 0 );"
+VisModule/Thread/Thread.cpp,209,ts.tv_sec  = tv.tv_sec + sec;
+VisModule/Thread/Thread.cpp,210,ts.tv_nsec = ( tv.tv_usec * 1000 );
+VisModule/Thread/Thread.cpp,217,*  Sleep the thread in mili-second.
+VisModule/Thread/Thread.cpp,218,*  @param msec [in] mili-second
+VisModule/Thread/Thread.cpp,221,void Thread::msleep( int msec )
+VisModule/Thread/Thread.cpp,224,Sleep( msec );
+VisModule/Thread/Thread.cpp,227,"gettimeofday( &tv, 0 );"
+VisModule/Thread/Thread.cpp,229,ts.tv_nsec  = ( tv.tv_usec + ( msec % 1000 ) * 1000 ) * 1000;
+VisModule/Thread/Thread.cpp,230,ts.tv_sec   = tv.tv_sec + ( msec / 1000 ) + ( ts.tv_nsec / 1000000000 );
+VisModule/Thread/Thread.cpp,231,ts.tv_nsec %= 1000000000;
+VisModule/Thread/Thread.cpp,238,*  Sleep the thread in micro-second.
+VisModule/Thread/Thread.cpp,239,*  @param usec [in] micro-second
+VisModule/Thread/Thread.cpp,242,void Thread::usleep( int usec )
+VisModule/Thread/Thread.cpp,245,Sleep( ( usec / 1000 ) + 1 );
+VisModule/Thread/Thread.cpp,248,"gettimeofday( &tv, 0 );"
+VisModule/Thread/Thread.cpp,250,ts.tv_nsec  = ( tv.tv_usec + ( usec % 1000000 ) ) * 1000;
+VisModule/Thread/Thread.cpp,251,ts.tv_sec   = tv.tv_sec + ( usec / 1000000 ) + ( ts.tv_nsec / 1000000000 );
+VisModule/Thread/Thread.cpp,252,ts.tv_nsec %= 1000000000;
+VisModule/Network/SocketSelector.h,18,"#include ""SocketTimer.h"""
+VisModule/Network/SocketSelector.h,63,int select( const vismodule::SocketTimer& timeout );
+VisModule/Network/SocketSelector.cpp,15,"#include ""SocketTimer.h"""
+VisModule/Network/SocketSelector.cpp,79,int SocketSelector::select( const vismodule::SocketTimer& timeout )
+VisModule/Network/SocketSelector.cpp,81,vismodule::SocketTimer temp = timeout;
+VisModule/Thread/Condition.cpp,127,*  @param msec [in] waiting time in mili-second
+VisModule/Thread/Condition.cpp,131,"bool Condition::wait( vismodule::Mutex* mutex, int msec )"
+VisModule/Thread/Condition.cpp,142,"int err = WaitForMultipleObjects( 2, m_handler.event, FALSE, msec );"
+VisModule/Thread/Condition.cpp,153,"gettimeofday( &tv, 0 );"
+VisModule/Thread/Condition.cpp,156,ti.tv_nsec  = ( tv.tv_usec + ( msec % 1000 ) * 1000 ) * 1000;
+VisModule/Thread/Condition.cpp,157,ti.tv_sec   = tv.tv_sec + ( msec / 1000 ) + ( ti.tv_nsec / 1000000000 );
+VisModule/Thread/Condition.cpp,158,ti.tv_nsec %= 1000000000;
+VisModule/Network/HttpConnector.cpp,16,"#include ""SocketTimer.h"""
+VisModule/Network/HttpConnector.cpp,41,"HttpConnector::HttpConnector( const vismodule::Url& url, const vismodule::SocketTimer* timeout )"
+VisModule/Network/HttpConnector.cpp,65,"bool HttpConnector::connect( const vismodule::Url& url, const vismodule::SocketTimer* timeout )"
+VisModule/FileFormat/AVSUCD/AVSUcd.cpp,76,"const char* const second_token = strtok( 0, ::Delimiter );"
+VisModule/FileFormat/AVSUCD/AVSUcd.cpp,78,if ( second_token != 0 )
+VisModule/BuildRule.vc.mk,131,$(OUTDIR)\.\Network\SocketTimer.obj \
+VisModule/BuildRule.vc.mk,192,$(OUTDIR)\.\Visualization\Event\TimerEventListener.obj \
+VisModule/BuildRule.vc.mk,285,$(OUTDIR)\.\Visualization\Renderer\VolumeRayIntersector.obj \
+VisModule/Network/SocketTimer.h,3,*  @file SocketTimer.h
+VisModule/Network/SocketTimer.h,11,*  $Id: SocketTimer.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
+VisModule/Network/SocketTimer.h,26,*  @class  Socket timer class.
+VisModule/Network/SocketTimer.h,29,class SocketTimer
+VisModule/Network/SocketTimer.h,31,visModuleClassName_without_virtual( vismodule::SocketTimer );
+VisModule/Network/SocketTimer.h,35,static const SocketTimer Zero;
+VisModule/Network/SocketTimer.h,43,SocketTimer( const double seconds = 0.0 );
+VisModule/Network/SocketTimer.h,47,const SocketTimer& operator = ( const SocketTimer& other );
+VisModule/Network/SocketTimer.h,49,"friend bool operator == ( const SocketTimer& other1, const SocketTimer& other2 );"
+VisModule/Network/SocketTimer.h,57,void setValue( const double seconds );
+VisModule/Network/Socket.cpp,17,"#include ""SocketTimer.h"""
+VisModule/Network/Socket.cpp,509,const vismodule::SocketTimer*   timeout )
+VisModule/Network/Socket.cpp,578,int Socket::connect_complete( const SocketTimer* timeout )
+VisModule/FileFormat/TIFF/TagTable.h,81,"vismodule::tiff::Tag( 328, ""max consecutive bad lines"" ),"
+VisModule/BuildRule.mk,131,$(OUTDIR)/./Network/SocketTimer.o \
+VisModule/BuildRule.mk,192,$(OUTDIR)/./Visualization/Event/TimerEventListener.o \
+VisModule/BuildRule.mk,285,$(OUTDIR)/./Visualization/Renderer/VolumeRayIntersector.o \
+VisModule/Network/TCPBarrierServer.cpp,18,#include <vismodule/SocketTimer>
+VisModule/Network/TCPBarrierServer.cpp,72,vismodule::TCPSocket* node = m_server->checkForNewConnection( &vismodule::SocketTimer::Zero );
+VisModule/BuildRuleServerOnly.mk,128,$(OUTDIR)/./Network/SocketTimer.o \
+VisModule/BuildRuleServerOnly.mk,279,$(OUTDIR)/./DaemonAndSampler/Daemon/Timer.o \
+VisModule/DaemonAndSampler/Daemon/ParameterFileReader.cpp,11,"std::string JsonPathForTransferFunction( const std::string& section_name, const size_t index, const std::string& field )"
+VisModule/DaemonAndSampler/Daemon/ParameterFileReader.cpp,14,"stream << section_name << ""["" << index << ""]."" << field;"
+VisModule/DaemonAndSampler/Daemon/ParameterFileReader.cpp,91,"const std::string& section_name,"
+VisModule/DaemonAndSampler/Daemon/ParameterFileReader.cpp,95,if ( !root.contains( section_name ) )
+VisModule/DaemonAndSampler/Daemon/ParameterFileReader.cpp,99,"throw std::runtime_error( ""Invalid default.json: missing array '"" + section_name + ""'"" );"
+VisModule/DaemonAndSampler/Daemon/ParameterFileReader.cpp,104,"const nlohmann::json& transfer_functions = JsonRequiredArray( root, section_name );"
+VisModule/DaemonAndSampler/Daemon/ParameterFileReader.cpp,105,"if ( section_name == ""transfer_functions"" )"
+VisModule/DaemonAndSampler/Daemon/ParameterFileReader.cpp,131,"JsonPathForTransferFunction( section_name, i, ""color.map"" ),"
+VisModule/DaemonAndSampler/Daemon/ParameterFileReader.cpp,135,"JsonPathForTransferFunction( section_name, i, ""opacity.map"" ),"
+VisModule/DaemonAndSampler/Daemon/ParameterFileReader.cpp,241,"const std::string& section_name = ""transfer_functions"" )"
+VisModule/DaemonAndSampler/Daemon/ParameterFileReader.cpp,245,"const nlohmann::json transfer_functions = root.value( section_name, nlohmann::json::array() );"
+VisModule/DaemonAndSampler/Daemon/ParameterFileReader.cpp,260,"if ( section_name == ""transfer_functions"" && transfer_settings.contains( ""count"" ) ) params[""TF_NUMBER""] = transfer_settings.at( ""count"" );"
+VisModule/DaemonAndSampler/Daemon/ParameterFileReader.cpp,261,"else if ( section_name == ""transfer_functions"" && transfer_settings.contains( ""transfer_function_count"" ) ) params[""TF_NUMBER""] = transfer_settings.at( ""transfer_function_count"" );"
+VisModule/DaemonAndSampler/Daemon/ParameterFileReader.cpp,332,"nlohmann::json TransferFunctionSectionParameters( const nlohmann::json& root, const std::string& section_name )"
+VisModule/DaemonAndSampler/Daemon/ParameterFileReader.cpp,337,"return BuildLegacyParametersFromReadableJson( root, section_name );"
+VisModule/DaemonAndSampler/Daemon/ParameterFileReader.cpp,346,"const std::string& section_name,"
+VisModule/DaemonAndSampler/Daemon/ParameterFileReader.cpp,352,"std::cout << ""ERROR:"" << section_name << "" TF_NUMBER is negative."" << std::endl;"
+VisModule/DaemonAndSampler/Daemon/ParameterFileReader.cpp,390,"std::cout << ""ERROR:"" << section_name << ""."" << tag_base << ""TABLE_C size is """
+VisModule/DaemonAndSampler/Daemon/ParameterFileReader.cpp,396,"std::cout << ""ERROR:"" << section_name << ""."" << tag_base << ""TABLE_O size is """
+VisModule/DaemonAndSampler/Daemon/ParameterFileReader.cpp,401,"std::cout << ""  "" << section_name << ""["" << n << ""] id="" << tf_id;"
+VisModule/DaemonAndSampler/Daemon/ParameterFileReader.cpp,421,"std::cout << ""ERROR:"" << section_name << "" Color Range Mode is unknown"" << std::endl;"
+VisModule/DaemonAndSampler/Daemon/ParameterFileReader.cpp,435,"std::cout << ""ERROR:"" << section_name << "" Opacity Range Mode is unknown"" << std::endl;"
+VisModule/Network/SocketTimer.cpp,3,*  @file SocketTimer.cpp
+VisModule/Network/SocketTimer.cpp,11,*  $Id: SocketTimer.cpp 602 2010-08-19 02:43:34Z naohisa.sakamoto $
+VisModule/Network/SocketTimer.cpp,14,"#include ""SocketTimer.h"""
+VisModule/Network/SocketTimer.cpp,20,const SocketTimer SocketTimer::Zero;
+VisModule/Network/SocketTimer.cpp,22,SocketTimer::SocketTimer( const double seconds )
+VisModule/Network/SocketTimer.cpp,24,this->setValue( seconds );
+VisModule/Network/SocketTimer.cpp,27,const SocketTimer& SocketTimer::operator = ( const SocketTimer& other )
+VisModule/Network/SocketTimer.cpp,29,m_value.tv_sec  = other.m_value.tv_sec;
+VisModule/Network/SocketTimer.cpp,30,m_value.tv_usec = other.m_value.tv_usec;
+VisModule/Network/SocketTimer.cpp,35,"bool operator == ( const SocketTimer& other1, const SocketTimer& other2 )"
+VisModule/Network/SocketTimer.cpp,37,return( other1.m_value.tv_sec  == other2.m_value.tv_sec &&
+VisModule/Network/SocketTimer.cpp,38,other1.m_value.tv_usec == other2.m_value.tv_usec );
+VisModule/Network/SocketTimer.cpp,41,const struct timeval& SocketTimer::value( void ) const
+VisModule/Network/SocketTimer.cpp,46,struct timeval& SocketTimer::value( void )
+VisModule/Network/SocketTimer.cpp,51,void SocketTimer::setValue( double seconds )
+VisModule/Network/SocketTimer.cpp,53,m_value.tv_sec  = static_cast<long>( seconds );
+VisModule/Network/SocketTimer.cpp,54,m_value.tv_usec = static_cast<long>( ( seconds - m_value.tv_sec ) * 1000000 );
+VisModule/Network/SocketTimer.cpp,57,bool SocketTimer::isZero( void ) const
+VisModule/Network/SocketTimer.cpp,59,return( m_value.tv_sec == 0 && m_value.tv_usec == 0 );
+VisModule/DaemonAndSampler/Daemon/Calculate.h,4,#include <vismodule/timer_simple>
+VisModule/ParallelProcess/JobCollector.cpp,8,#include <vismodule/timer_simple>
+VisModule/ParallelProcess/JobCollector.cpp,10,#include <vismodule/timer_simple>
+VisModule/ParallelProcess/timer_simple.h,50,// return msec
+VisModule/ParallelProcess/timer_simple.h,54,"gettimeofday( &tv, nullptr );"
+VisModule/ParallelProcess/timer_simple.h,55,// return msec
+VisModule/ParallelProcess/timer_simple.h,56,return ( double )( tv.tv_sec ) * 1000 + ( double )( tv.tv_usec ) * 1e-3;
+VisModule/FileFormat/TIFF/TagDictionary.cpp,45,name = tag->second;
+VisModule/Network/HttpConnector.h,19,"#include ""SocketTimer.h"""
+VisModule/Network/HttpConnector.h,47,"HttpConnector( const vismodule::Url& url, const vismodule::SocketTimer* timeout = 0 );"
+VisModule/Network/HttpConnector.h,53,"bool connect( const vismodule::Url& url, const vismodule::SocketTimer* timeout = 0 );"
+VisModule/Network/TCPSocket.cpp,17,"#include ""SocketTimer.h"""
+VisModule/Network/TCPSocket.cpp,42,"TCPSocket::TCPSocket( const vismodule::IPAddress& ip, const int port , const vismodule::SocketTimer* timeout ):"
+VisModule/Network/TCPSocket.cpp,56,"TCPSocket::TCPSocket( const vismodule::SocketAddress& socket_address, const vismodule::SocketTimer* timeout ):"
+VisModule/Network/TCPSocket.cpp,134,const vismodule::SocketTimer* timeout )
+VisModule/Network/TCPSocket.cpp,149,const vismodule::SocketTimer*   timeout )
+VisModule/Network/TCPSocket.cpp,177,bool TCPSocket::complete( const vismodule::SocketTimer* timeout )
+VisModule/ParallelProcess/JobDispatcher.cpp,8,#include <vismodule/timer_simple>
+VisModule/Network/TCPSocket.h,20,"#include ""SocketTimer.h"""
+VisModule/Network/TCPSocket.h,45,"TCPSocket( const vismodule::IPAddress& ip, const int port, const vismodule::SocketTimer* timeout = 0 );"
+VisModule/Network/TCPSocket.h,47,"TCPSocket( const vismodule::SocketAddress& socket_address, const vismodule::SocketTimer* timeout = 0 );"
+VisModule/Network/TCPSocket.h,59,"bool connect( const vismodule::IPAddress& ip, const int port, const vismodule::SocketTimer* timeout = 0 );"
+VisModule/Network/TCPSocket.h,61,"bool connect( const vismodule::SocketAddress& socket_address, const vismodule::SocketTimer* timeout = 0 );"
+VisModule/Network/TCPSocket.h,63,bool complete( const vismodule::SocketTimer* timer = 0 );
+VisModule/Network/TCPServer.h,18,"#include ""SocketTimer.h"""
+VisModule/Network/TCPServer.h,65,vismodule::TCPSocket* checkForNewConnection( const vismodule::SocketTimer* blocking_time = 0 );
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,160,typedef unsigned int __useconds_t;
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,161,typedef long int __suseconds_t;
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,170,typedef void * __timer_t;
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,838,"# 1 ""/usr/include/bits/types/timer_t.h"" 1 3 4"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,845,typedef __timer_t timer_t;
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,850,typedef __useconds_t useconds_t;
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,854,typedef __suseconds_t suseconds_t;
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,988,__time_t tv_sec;
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,989,__suseconds_t tv_usec;
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,997,__time_t tv_sec;
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,998,__syscall_slong_t tv_nsec;
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,1516,extern char *secure_getenv (const char *__name)
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,5492,typedef _T2 second_type;
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,5495,_T2 second;
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,5510,": first(), second() { }"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,5523,": first(), second() { }"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,5534,": first(__a), second(__b) { }"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,5543,": first(__a), second(__b) { }"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,5557,": first(__p.first), second(__p.second) { }"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,5566,": first(__p.first), second(__p.second) { }"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,5577,": first(std::forward<_U1>(__x)), second(__y) { }"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,5584,": first(std::forward<_U1>(__x)), second(__y) { }"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,5591,": first(__x), second(std::forward<_U2>(__y)) { }"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,5598,": first(__x), second(std::forward<_U2>(__y)) { }"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,5607,": first(std::forward<_U1>(__x)), second(std::forward<_U2>(__y)) { }"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,5616,": first(std::forward<_U1>(__x)), second(std::forward<_U2>(__y)) { }"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,5627,second(std::forward<_U2>(__p.second)) { }
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,5637,second(std::forward<_U2>(__p.second)) { }
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,5649,second = __p.second;
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,5662,second = std::forward<second_type>(__p.second);
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,5673,second = __p.second;
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,5684,second = std::forward<_U2>(__p.second);
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,5695,"swap(second, __p.second);"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,5714,{ return __x.first == __y.first && __x.second == __y.second; }
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,5721,|| (!(__y.first < __x.first) && __x.second < __y.second); }
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,8592,"extern int wcscasecmp (const wchar_t *__s1, const wchar_t *__s2) throw ();"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,8595,"extern int wcsncasecmp (const wchar_t *__s1, const wchar_t *__s2,"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,8600,"extern int wcscasecmp_l (const wchar_t *__s1, const wchar_t *__s2,"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,8603,"extern int wcsncasecmp_l (const wchar_t *__s1, const wchar_t *__s2,"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,11912,typedef _Arg2 second_argument_type;
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,12750,"typename _Predicate::second_argument_type, bool>"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,12763,const typename _Predicate::second_argument_type& __y) const
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,12868,": public unary_function<_Pair, typename _Pair::second_type>"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,12870,typename _Pair::second_type&
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,12872,{ return __x.second; }
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,12874,const typename _Pair::second_type&
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,12876,{ return __x.second; }
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,13080,": public unary_function<typename _Operation::second_argument_type,"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,13093,operator()(const typename _Operation::second_argument_type& __x) const
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,13099,operator()(typename _Operation::second_argument_type& __x) const
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,13120,typename _Operation::second_argument_type value;
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,13124,const typename _Operation::second_argument_type& __y)
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,13143,typedef typename _Operation::second_argument_type _Arg2_type;
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,13620,int tm_sec;
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,13640,"# 1 ""/usr/include/bits/types/struct_itimerspec.h"" 1 3 4"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,13648,struct itimerspec
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,13663,extern time_t time (time_t *__timer) throw ();
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,13707,extern struct tm *gmtime (const time_t *__timer) throw ();
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,13711,extern struct tm *localtime (const time_t *__timer) throw ();
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,13716,"extern struct tm *gmtime_r (const time_t *__restrict __timer,"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,13721,"extern struct tm *localtime_r (const time_t *__restrict __timer,"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,13730,extern char *ctime (const time_t *__timer) throw ();
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,13741,"extern char *ctime_r (const time_t *__restrict __timer,"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,13808,"extern int timer_create (clockid_t __clock_id,"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,13810,timer_t *__restrict __timerid) throw ();
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,13813,extern int timer_delete (timer_t __timerid) throw ();
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,13816,"extern int timer_settime (timer_t __timerid, int __flags,"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,13817,"const struct itimerspec *__restrict __value,"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,13818,struct itimerspec *__restrict __ovalue) throw ();
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,13821,"extern int timer_gettime (timer_t __timerid, struct itimerspec *__value)"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,13825,extern int timer_getoverrun (timer_t __timerid) throw ();
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,20253,"extern int strcasecmp (const char *__s1, const char *__s2)"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,20257,"extern int strncasecmp (const char *__s1, const char *__s2, size_t __n)"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,20265,"extern int strcasecmp_l (const char *__s1, const char *__s2, locale_t __loc)"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,20270,"extern int strncasecmp_l (const char *__s1, const char *__s2,"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,42960,{ return __pair.second; }
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,42965,{ return std::forward<_Tp2>(__pair.second); }
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,42970,{ return __pair.second; }
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,42975,{ return std::forward<const _Tp2>(__pair.second); }
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,43025,{ return __p.second; }
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,43030,{ return __p.second; }
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,43035,{ return std::move(__p.second); }
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,43040,{ return std::move(__p.second); }
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,43682,"set_intersection(_IIter1, _IIter1, _IIter2, _IIter2, _OIter);"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,43687,"set_intersection(_IIter1, _IIter1, _IIter2, _IIter2, _OIter, _Compare);"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,43881,_Distance __secondChild = __holeIndex;
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,43882,while (__secondChild < (__len - 1) / 2)
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,43884,__secondChild = 2 * (__secondChild + 1);
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,43885,"if (__comp(__first + __secondChild,"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,43886,__first + (__secondChild - 1)))
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,43887,__secondChild--;
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,43888,*(__first + __holeIndex) = std::move(*(__first + __secondChild));
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,43889,__holeIndex = __secondChild;
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,43891,if ((__len & 1) == 0 && __secondChild == (__len - 2) / 2)
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,43893,__secondChild = 2 * (__secondChild + 1);
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,43894,*(__first + __holeIndex) = std::move(*(__first + (__secondChild - 1)))
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,43896,__holeIndex = __secondChild - 1;
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,44429,_M_len = __p.second;
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,46611,_BidirectionalIterator __second_cut = __middle;
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,46618,__second_cut
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,46621,"__len22 = std::distance(__middle, __second_cut);"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,46626,"std::advance(__second_cut, __len22);"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,46628,"= std::__upper_bound(__first, __middle, *__second_cut,"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,46634,"= std::__rotate_adaptive(__first_cut, __middle, __second_cut,"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,46639,"std::__merge_adaptive(__new_middle, __second_cut, __last,"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,46667,_BidirectionalIterator __second_cut = __middle;
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,46674,__second_cut
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,46677,"__len22 = std::distance(__middle, __second_cut);"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,46682,"std::advance(__second_cut, __len22);"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,46684,"= std::__upper_bound(__first, __middle, *__second_cut,"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,46690,"= std::rotate(__first_cut, __middle, __second_cut);"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,46693,"std::__merge_without_buffer(__new_middle, __second_cut, __last,"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,47397,"return std::make_pair(*__p.first, *__p.second);"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,47407,"return std::make_pair(*__p.first, *__p.second);"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,47637,"std::iter_swap(__i++, __first + __pospos.second);"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,48421,"__set_intersection(_InputIterator1 __first1, _InputIterator1 __last1,"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,48443,"set_intersection(_InputIterator1 __first1, _InputIterator1 __last1,"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,48463,"return std::__set_intersection(__first1, __last1,"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,48471,"set_intersection(_InputIterator1 __first1, _InputIterator1 __last1,"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,48491,"return std::__set_intersection(__first1, __last1,"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,48843,if (__p.second < __n)
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,53198,inline const Type2& second() const
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,53204,inline Type2& second()
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,53239,"val = HashT2()(t.second(), val);"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,53248,"return Tuple2<Type2, Type1>(t.second(), t.first());"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,53259,return (a.first() == b.first() && a.second() == b.second());
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,53363,"insert(pair.first(), pair.second());"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,53836,"insert(pair.first(), pair.second());"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,63395,"SubList<DataType> secondHalf(list, listSize - n, n);"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,63398,inplaceReverseList(secondHalf);
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,69806,second() = s;
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,69837,inline const Type& second() const
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,69843,inline Type& second()
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,69851,if (first() == second())
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,69860,return second();
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,69864,if (second() != a)
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,69901,"return Pair<Type>(p.second(), p.first());"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,69908,return (a.first() == b.first() && a.second() == b.second());
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,69928,&& a.second() < b.second()
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,69959,is >> p.first() >> p.second();
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,69973,<< p.first() << token::SPACE << p.second()
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,70905,iter().second() = true;
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,74394,time_t elapsedClockTime() const;
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,74450,double elapsedCpuTime() const;
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,85575,} _timer;
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,90984,"# 1 ""/home/g6/a214026/OpenFOAM/env/OpenFOAM-v10/src/OpenFOAM/lnInclude/intersection.H"" 1"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,90985,"# 43 ""/home/g6/a214026/OpenFOAM/env/OpenFOAM-v10/src/OpenFOAM/lnInclude/intersection.H"""
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,90993,class intersection
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,91037,"::Foam::FatalError((__PRETTY_FUNCTION__), ""/home/g6/a214026/OpenFOAM/env/OpenFOAM-v10/src/OpenFOAM/lnInclude/intersection.H"", 94) << abort(FatalError);"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,91353,const intersection::algorithm alg =
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,91354,"intersection::algorithm::fullRay,"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,91355,const intersection::direction dir =
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,91356,intersection::direction::vector
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,91362,pointHit intersection
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,91368,"const intersection::algorithm alg,"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,96225,const intersection::algorithm =
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,96226,"intersection::algorithm::fullRay,"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,96227,const intersection::direction =
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,96228,intersection::direction::vector
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,96237,const intersection::algorithm =
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,96238,"intersection::algorithm::fullRay,"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,96239,const intersection::direction =
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,96240,intersection::direction::vector
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,97941,"const intersection::algorithm alg,"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,97942,const intersection::direction dir
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,98169,"const intersection::algorithm alg,"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,98170,const intersection::direction dir
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,119325,label sign = transSign.second();
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,119521,return globalIAndTransform.second()/transformPermutations_.size();
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,119530,return globalIAndTransform.second()%transformPermutations_.size();
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,119600,label sign = transSign.second();
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,143834,bool intersects
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,143845,bool intersects
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,144477,"# 1 ""/home/g6/a214026/OpenFOAM/env/OpenFOAM-v10/src/meshTools/lnInclude/faceAreaIntersect.H"" 1"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,144478,"# 41 ""/home/g6/a214026/OpenFOAM/env/OpenFOAM-v10/src/meshTools/lnInclude/faceAreaIntersect.H"""
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,144480,"# 42 ""/home/g6/a214026/OpenFOAM/env/OpenFOAM-v10/src/meshTools/lnInclude/faceAreaIntersect.H"" 2"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,144613,"scalar normalIntersect(const point& pnt0, const vector& dir) const;"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,144616,scalar normalIntersect(const ray& r) const
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,144618,"return normalIntersect(r.refPoint(), r.dir());"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,144624,"scalar lineIntersect(const line<Point, PointRef>& l) const"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,144626,"return normalIntersect(l.start(), l.vec());"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,144631,ray planeIntersect(const plane&) const;
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,144634,"point planePlaneIntersect(const plane&, const plane&) const;"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,144663,"# 43 ""/home/g6/a214026/OpenFOAM/env/OpenFOAM-v10/src/meshTools/lnInclude/faceAreaIntersect.H"" 2"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,144665,"# 44 ""/home/g6/a214026/OpenFOAM/env/OpenFOAM-v10/src/meshTools/lnInclude/faceAreaIntersect.H"" 2"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,145016,const intersection::algorithm =
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,145017,"intersection::algorithm::fullRay,"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,145018,const intersection::direction dir =
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,145019,intersection::direction::vector
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,145027,inline pointHit intersection
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,145031,"const intersection::algorithm alg,"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,145375,"const intersection::algorithm alg,"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,145376,const intersection::direction dir
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,145408,if (dir == intersection::direction::contactSphere)
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,145412,"return ray(p, q1 - n, alg, intersection::direction::vector);"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,145423,pointHit fastInter = intersection
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,145427,intersection::algorithm::fullRay
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,145455,)*intersection::planarTol();
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,145458,alg == intersection::algorithm::fullRay
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,145459,|| (alg == intersection::algorithm::halfRay && dist > -planarPointTol)
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,145461,alg == intersection::algorithm::visible
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,145492,"inline Foam::pointHit Foam::triangle<Point, PointRef>::intersection"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,145496,"const intersection::algorithm alg,"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,145510,"pointHit intersection(false, Zero, great, false);"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,145512,if (alg == intersection::algorithm::visible)
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,145518,return intersection;
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,145523,alg == intersection::algorithm::halfRay
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,145524,|| alg == intersection::algorithm::fullRay
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,145531,return intersection;
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,145546,return intersection;
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,145558,return intersection;
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,145564,if (alg == intersection::algorithm::halfRay && t < -tol)
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,145567,return intersection;
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,145570,intersection.setHit();
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,145571,intersection.setPoint(a_ + u*edge1 + v*edge2);
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,145572,intersection.setDistance(t);
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,145574,return intersection;
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,145763,"triangle<Point, PointRef>::intersection"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,145767,intersection::algorithm::fullRay
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,146041,"const intersection::algorithm = intersection::algorithm::fullRay,"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,146042,const intersection::direction dir = intersection::direction::vector
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,146046,inline pointHit intersection
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,146051,"const intersection::algorithm alg,"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,146055,inline pointHit intersection
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,146061,"const intersection::algorithm alg,"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,146399,"const intersection::algorithm alg,"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,146400,const intersection::direction dir
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,146408,inline Foam::pointHit Foam::triFace::intersection
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,146413,"const intersection::algorithm alg,"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,146417,"return this->tri(points).intersection(p, q, alg, tol);"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,146421,inline Foam::pointHit Foam::triFace::intersection
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,146427,"const intersection::algorithm alg,"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,146431,"return intersection(p, q, points, alg, tol);"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,146568,"# 46 ""/home/g6/a214026/OpenFOAM/env/OpenFOAM-v10/src/meshTools/lnInclude/faceAreaIntersect.H"" 2"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,146579,class faceAreaIntersect
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,146634,inline point planeIntersection
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,146657,scalar triangleIntersect
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,146670,faceAreaIntersect
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,146709,"# 1 ""/home/g6/a214026/OpenFOAM/env/OpenFOAM-v10/src/meshTools/lnInclude/faceAreaIntersectI.H"" 1"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,146710,"# 28 ""/home/g6/a214026/OpenFOAM/env/OpenFOAM-v10/src/meshTools/lnInclude/faceAreaIntersectI.H"""
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,146711,inline void Foam::faceAreaIntersect::setTriPoints
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,146727,inline Foam::faceAreaIntersect::triPoints Foam::faceAreaIntersect::getTriPoints
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,146753,inline Foam::point Foam::faceAreaIntersect::planeIntersection
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,146765,inline Foam::scalar Foam::faceAreaIntersect::triArea(const triPoints& t) const
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,146773,Foam::scalar& Foam::faceAreaIntersect::tolerance()
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,146777,"# 187 ""/home/g6/a214026/OpenFOAM/env/OpenFOAM-v10/src/meshTools/lnInclude/faceAreaIntersect.H"" 2"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,147131,template<class FindIntersectOp>
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,147146,const FindIntersectOp& fiOp
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,147150,template<class FindIntersectOp>
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,147158,"const FindIntersectOp& fiOp,"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,147163,template<class FindIntersectOp>
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,147169,const FindIntersectOp& fiOp
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,147431,template<class FindIntersectOp>
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,147436,const FindIntersectOp& fiOp
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,147440,template<class FindIntersectOp>
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,147445,const FindIntersectOp& fiOp
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,151684,template<class FindIntersectOp>
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,151699,const FindIntersectOp& fiOp
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,151798,bool intersected = octantBb.intersects
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,151811,if (intersected)
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,151845,template<class FindIntersectOp>
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,151853,"const FindIntersectOp& fiOp,"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,152037,template<class FindIntersectOp>
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,152043,const FindIntersectOp& fiOp
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,152073,"if (!treeBb.intersects(start, end, trackStart))"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,152082,"if (!treeBb.intersects(end, trackStart, trackEnd))"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,152786,typename Type::findIntersectOp(*this)
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,152803,typename Type::findIntersectOp(*this)
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,152809,template<class FindIntersectOp>
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,152814,const FindIntersectOp& fiOp
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,152822,template<class FindIntersectOp>
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,152827,const FindIntersectOp& fiOp
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,153240,class findIntersectOp
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,153246,findIntersectOp(const indexedOctree<treeDataPrimitivePatch>& tree);
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,153255,point& intersectionPoint
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,153260,class findAllIntersectOp
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,153268,findAllIntersectOp
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,153281,point& intersectionPoint
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,153286,class findSelfIntersectOp
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,153294,findSelfIntersectOp
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,153307,point& intersectionPoint
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,153369,static bool findIntersection
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,153375,point& intersectionPoint
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,153435,static void setIntersection
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,153459,static bool intersectAxesBundle
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,153471,static bool intersectBb
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,153480,static bool intersect
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,153494,static bool intersect
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,154190,Foam::treeDataPrimitivePatch<PatchType>::findIntersectOp::findIntersectOp
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,154200,Foam::treeDataPrimitivePatch<PatchType>::findAllIntersectOp::findAllIntersectOp
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,154213,findSelfIntersectOp::findSelfIntersectOp
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,154502,return triangleFuncs::intersectBb
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,154514,bool triIntersects = triangleFuncs::intersectBb
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,154522,if (triIntersects)
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,154625,bool Foam::treeDataPrimitivePatch<PatchType>::findIntersectOp::operator()
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,154630,point& intersectionPoint
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,154633,"return findIntersection(tree_, index, start, end, intersectionPoint);"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,154638,bool Foam::treeDataPrimitivePatch<PatchType>::findAllIntersectOp::operator()
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,154643,point& intersectionPoint
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,154651,"return findIntersection(tree_, index, start, end, intersectionPoint);"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,154656,bool Foam::treeDataPrimitivePatch<PatchType>::findSelfIntersectOp::operator()
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,154661,point& intersectionPoint
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,154680,"return findIntersection(tree_, index, start, end, intersectionPoint);"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,154690,bool Foam::treeDataPrimitivePatch<PatchType>::findIntersection
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,154696,point& intersectionPoint
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,154728,.intersection
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,154732,"intersection::algorithm::halfRay,"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,154740,inter = f.intersection
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,154746,"intersection::algorithm::halfRay,"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,154755,intersectionPoint = inter.hitPoint();
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,154818,const faceAreaIntersect::triangulationMode triMode_;
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,154840,void writeIntersectionOBJ
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,154878,"typedef autoPtr<AMIMethod> (*componentsConstructorPtr)( const primitivePatch& srcPatch, const primitivePatch& tgtPatch, const scalarField& srcMagSf, const scalarField& tgtMagSf, const faceAreaIntersect::triangulationMode& triMode, const bool reverseTarget, const bool requireMatch ); typedef HashTable<componentsConstructorPtr, word, string::hash> componentsConstructorTable; static componentsConstructorTable* componentsConstructorTablePtr_; static void constructcomponentsConstructorTables(); static void destroycomponentsConstructorTables(); template<class AMIMethodType> class addcomponentsConstructorToTable { public: static autoPtr<AMIMethod> New ( const primitivePatch& srcPatch, const primitivePatch& tgtPatch, const scalarField& srcMagSf, const scalarField& tgtMagSf, const faceAreaIntersect::triangulationMode& triMode, const bool reverseTarget, const bool requireMatch ) { return autoPtr<AMIMethod>(new AMIMethodType ( srcPatch, tgtPatch, srcMagSf, tgtMagSf, triMode, reverseTarget, requireMatch )); } addcomponentsConstructorToTable ( const word& lookup = AMIMethodType::typeName ) { constructcomponentsConstructorTables(); if (!componentsConstructorTablePtr_->insert(lookup, New)) { std::cerr<< ""Duplicate entry "" << lookup << "" in runtime selection table "" << ""AMIMethod"" << std::endl; error::safePrintStack(std::cerr); } } ~addcomponentsConstructorToTable() { destroycomponentsConstructorTables(); } }; template<class AMIMethodType> class addRemovablecomponentsConstructorToTable { const word& lookup_; public: static autoPtr<AMIMethod> New ( const primitivePatch& srcPatch, const primitivePatch& tgtPatch, const scalarField& srcMagSf, const scalarField& tgtMagSf, const faceAreaIntersect::triangulationMode& triMode, const bool reverseTarget, const bool requireMatch ) { return autoPtr<AMIMethod>(new AMIMethodType ( srcPatch, tgtPatch, srcMagSf, tgtMagSf, triMode, reverseTarget, requireMatch )); } addRemovablecomponentsConstructorToTable ( const word& lookup = AMIMethodType::typeName ) : lookup_(lookup) { constructcomponentsConstructorTables(); componentsConstructorTablePtr_->set(lookup, New); } ~addRemovablecomponentsConstructorToTable() { if (componentsConstructorTablePtr_) { componentsConstructorTablePtr_->erase(lookup_); } } };"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,154892,"const faceAreaIntersect::triangulationMode& triMode,"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,154909,"const faceAreaIntersect::triangulationMode& triMode,"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,155059,"const faceAreaIntersect::triangulationMode& triMode,"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,155831,const faceAreaIntersect::triangulationMode triMode_;
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,155976,"const faceAreaIntersect::triangulationMode& triMode,"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,155990,"const faceAreaIntersect::triangulationMode& triMode,"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,156226,const faceAreaIntersect::triangulationMode triMode
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,173114,"# 1 ""../../../../InSituLib/unstruct/../shared/thread_timer.h"" 1"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,173118,"# 1 ""/home/app/gcc/9.5.0/include/c++/9.5.0/chrono"" 1 3"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,173119,"# 32 ""/home/app/gcc/9.5.0/include/c++/9.5.0/chrono"" 3"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,173121,"# 33 ""/home/app/gcc/9.5.0/include/c++/9.5.0/chrono"" 3"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,173602,"# 39 ""/home/app/gcc/9.5.0/include/c++/9.5.0/chrono"" 2 3"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,173609,"# 42 ""/home/app/gcc/9.5.0/include/c++/9.5.0/chrono"" 2 3"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,173871,"# 43 ""/home/app/gcc/9.5.0/include/c++/9.5.0/chrono"" 2 3"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,173876,"# 59 ""/home/app/gcc/9.5.0/include/c++/9.5.0/chrono"" 3"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,173877,namespace chrono
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,173898,"typedef __success_type<chrono::duration<__cr, __r>> type;"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,173906,"struct common_type<chrono::duration<_Rep1, _Period1>,"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,173907,"chrono::duration<_Rep2, _Period2>>"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,173917,"typedef __success_type<chrono::time_point<_Clock, typename _CT::type>>"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,173926,"struct common_type<chrono::time_point<_Clock, _Duration1>,"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,173927,"chrono::time_point<_Clock, _Duration2>>"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,173932,namespace chrono
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,174026,"# 272 ""/home/app/gcc/9.5.0/include/c++/9.5.0/chrono"" 3"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,174348,"# 605 ""/home/app/gcc/9.5.0/include/c++/9.5.0/chrono"" 3"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,174349,"typedef duration<int64_t, nano> nanoseconds;"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,174352,"typedef duration<int64_t, micro> microseconds;"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,174355,"typedef duration<int64_t, milli> milliseconds;"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,174358,typedef duration<int64_t> seconds;
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,174433,"# 721 ""/home/app/gcc/9.5.0/include/c++/9.5.0/chrono"" 3"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,174514,"# 821 ""/home/app/gcc/9.5.0/include/c++/9.5.0/chrono"" 3"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,174524,typedef chrono::nanoseconds duration;
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,174527,"typedef chrono::time_point<system_clock, duration> time_point;"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,174542,return std::time_t(duration_cast<chrono::seconds>
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,174549,"typedef chrono::time_point<system_clock, seconds> __from;"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,174551,(__from(chrono::seconds(__t)));
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,174563,typedef chrono::nanoseconds duration;
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,174566,"typedef chrono::time_point<steady_clock, duration> time_point;"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,174573,"# 888 ""/home/app/gcc/9.5.0/include/c++/9.5.0/chrono"" 3"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,174585,inline namespace chrono_literals
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,174599,"constexpr chrono::duration<long double, ratio<3600,1>>"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,174601,"{ return chrono::duration<long double, ratio<3600,1>>{__hours}; }"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,174604,constexpr chrono::hours
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,174606,"{ return __check_overflow<chrono::hours, _Digits...>(); }"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,174608,"constexpr chrono::duration<long double, ratio<60,1>>"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,174610,"{ return chrono::duration<long double, ratio<60,1>>{__mins}; }"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,174613,constexpr chrono::minutes
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,174615,"{ return __check_overflow<chrono::minutes, _Digits...>(); }"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,174617,constexpr chrono::duration<long double>
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,174618,"operator""""s(long double __secs)"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,174619,{ return chrono::duration<long double>{__secs}; }
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,174622,constexpr chrono::seconds
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,174624,"{ return __check_overflow<chrono::seconds, _Digits...>(); }"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,174626,"constexpr chrono::duration<long double, milli>"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,174627,"operator""""ms(long double __msecs)"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,174628,"{ return chrono::duration<long double, milli>{__msecs}; }"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,174631,constexpr chrono::milliseconds
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,174633,"{ return __check_overflow<chrono::milliseconds, _Digits...>(); }"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,174635,"constexpr chrono::duration<long double, micro>"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,174636,"operator""""us(long double __usecs)"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,174637,"{ return chrono::duration<long double, micro>{__usecs}; }"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,174640,constexpr chrono::microseconds
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,174642,"{ return __check_overflow<chrono::microseconds, _Digits...>(); }"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,174644,"constexpr chrono::duration<long double, nano>"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,174645,"operator""""ns(long double __nsecs)"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,174646,"{ return chrono::duration<long double, nano>{__nsecs}; }"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,174649,constexpr chrono::nanoseconds
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,174651,"{ return __check_overflow<chrono::nanoseconds, _Digits...>(); }"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,174657,namespace chrono
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,174659,using namespace literals::chrono_literals;
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,174668,"# 5 ""../../../../InSituLib/unstruct/../shared/thread_timer.h"" 2"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,176692,__tm->tm_sec = __mem;
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,178930,": _Inherited(__in.first, __in.second) { }"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,178939,": _Inherited(__in.first, __in.second) { }"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,178949,std::forward<_U2>(__in.second)) { }
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,178959,std::forward<_U2>(__in.second)) { }
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,179073,": _Inherited(__tag, __a, __in.first, __in.second) { }"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,179083,": _Inherited(__tag, __a, __in.first, __in.second) { }"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,179093,std::forward<_U2>(__in.second)) { }
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,179104,std::forward<_U2>(__in.second)) { }
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,179150,this->_M_tail(*this)._M_head(*this) = __in.second;
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,179160,this->_M_tail(*this)._M_head(*this) = std::forward<_U2>(__in.second);
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,179543,"tuple<_Args1...> __first, tuple<_Args2...> __second)"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,179544,": pair(__first, __second,"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,179557,second(std::forward<_Args2>(std::get<_Indexes2>(__tuple2))...)
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,181353,"# 7 ""../../../../InSituLib/unstruct/../shared/thread_timer.h"" 2"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,182075,"auto __second_res = uninitialized_copy(__first, __first + __n, __result);"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,182077,"return {__first_res, __second_res};"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,185457,"# 8 ""../../../../InSituLib/unstruct/../shared/thread_timer.h"" 2"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,185487,"# 9 ""../../../../InSituLib/unstruct/../shared/thread_timer.h"" 2"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,185494,"# 14 ""../../../../InSituLib/unstruct/../shared/thread_timer.h"""
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,185495,using hresclock = std::chrono::high_resolution_clock;
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,185496,"using dduration = std::chrono::duration<double,std::milli>;"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,185598,"static inline void timed_section_start(TimedScope& ts, size_t thid=0)"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,185617,"static inline void timed_section_end(TimedScope& ts, size_t thid=0)"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,194369,"return std::distance(__p.first, __p.second);"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,194433,"return { __ret.first._M_const_cast(), __ret.second._M_const_cast() };"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,195023,if (__res.second)
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,195026,"return _Res(_M_insert_(__res.first, __res.second,"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,195050,"return _M_insert_(__res.first, __res.second,"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,195133,if (__res.second)
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,195134,"return _M_insert_(__res.first, __res.second,"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,195215,if (__res.second)
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,195216,"return _M_insert_(__res.first, __res.second,"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,195287,if (__res.second)
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,195288,"return _Res(_M_insert_node(__res.first, __res.second, __z), true);"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,195312,"return _M_insert_node(__res.first, __res.second, __z);"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,195334,if (__res.second)
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,195335,"return _M_insert_node(__res.first, __res.second, __z);"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,195360,if (__res.second)
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,195361,"return _M_insert_node(__res.first, __res.second, __z);"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,195409,"_M_erase_aux(__p.first, __p.second);"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,195456,"const size_type __n = std::distance(__p.first, __p.second);"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,195816,return (*__i).second;
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,195832,return (*__i).second;
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,195841,return (*__i).second;
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,195850,return (*__i).second;
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,198874,"# 1 ""../../../../VisModule/vismodule/Timer"" 1"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,198875,"# 1 ""../../../../VisModule/Utility/Timer.h"" 1"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,198876,"# 17 ""../../../../VisModule/Utility/Timer.h"""
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,198881,"# 18 ""../../../../VisModule/Utility/Timer.h"" 2"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,198885,"# 21 ""../../../../VisModule/Utility/Timer.h"" 2"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,198887,"# 22 ""../../../../VisModule/Utility/Timer.h"" 2"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,198907,"extern int gettimeofday (struct timeval *__restrict __tv,"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,198927,enum __itimer_which
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,198943,struct itimerval
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,198956,typedef int __itimer_which_t;
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,198961,"extern int getitimer (__itimer_which_t __which,"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,198962,struct itimerval *__value) throw ();
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,198967,"extern int setitimer (__itimer_which_t __which,"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,198968,"const struct itimerval *__restrict __new,"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,198969,struct itimerval *__restrict __old) throw ();
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,198994,"# 28 ""../../../../VisModule/Utility/Timer.h"" 2"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,199014,"# 29 ""../../../../VisModule/Utility/Timer.h"" 2"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,199017,"# 31 ""../../../../VisModule/Utility/Timer.h"" 2"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,199019,"# 32 ""../../../../VisModule/Utility/Timer.h"" 2"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,199021,"# 33 ""../../../../VisModule/Utility/Timer.h"" 2"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,199023,"# 34 ""../../../../VisModule/Utility/Timer.h"" 2"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,199024,"# 122 ""../../../../VisModule/Utility/Timer.h"""
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,199026,"# 122 ""../../../../VisModule/Utility/Timer.h"""
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,199029,"# 144 ""../../../../VisModule/Utility/Timer.h"""
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,199031,"# 174 ""../../../../VisModule/Utility/Timer.h"""
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,199034,"# 211 ""../../../../VisModule/Utility/Timer.h"""
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,199035,"gettimeofday( &tv,"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,199036,"# 211 ""../../../../VisModule/Utility/Timer.h"" 3 4"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,199038,"# 211 ""../../../../VisModule/Utility/Timer.h"""
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,199042,"# 222 ""../../../../VisModule/Utility/Timer.h"""
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,199050,"# 248 ""../../../../VisModule/Utility/Timer.h"""
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,199052,"# 248 ""../../../../VisModule/Utility/Timer.h"" 3 4"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,199054,"# 248 ""../../../../VisModule/Utility/Timer.h"""
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,199064,"# 265 ""../../../../VisModule/Utility/Timer.h"""
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,199086,"# 294 ""../../../../VisModule/Utility/Timer.h"""
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,199092,return( ts.tv_sec + ts.tv_usec * VIS_MODULE_TIMER_USEC_TO_SEC );
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,199095,"# 310 ""../../../../VisModule/Utility/Timer.h"""
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,199101,return( ts.tv_sec * VIS_MODULE_TIMER_SEC_TO_MSEC +
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,199102,ts.tv_usec * VIS_MODULE_TIMER_USEC_TO_MSEC );
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,199105,"# 327 ""../../../../VisModule/Utility/Timer.h"""
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,199111,return( ts.tv_sec * VIS_MODULE_TIMER_SEC_TO_USEC + ts.tv_usec );
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,199114,"# 344 ""../../../../VisModule/Utility/Timer.h"""
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,199122,ts.tv_sec = ts1.tv_sec - ts2.tv_sec;
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,199123,ts.tv_usec = ts1.tv_usec - ts2.tv_usec;
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,199127,"# 365 ""../../../../VisModule/Utility/Timer.h"""
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,199132,"# 378 ""../../../../VisModule/Utility/Timer.h"""
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,199137,"# 391 ""../../../../VisModule/Utility/Timer.h"""
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,199148,class Timer
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,199150,"public: const char* className() const { return ""vismodule::Timer""; };"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,199163,Timer( void );
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,199165,Timer( const Trigger trigger );
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,199167,~Timer( void );
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,199175,double sec( void ) const;
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,199177,double msec( void ) const;
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,199179,double usec( void ) const;
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,199189,inline Timer::Timer( void )
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,199195,m_start.tv_sec = 0;
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,199196,m_start.tv_usec = 0;
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,199197,m_stop.tv_sec = 0;
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,199198,m_stop.tv_usec = 0;
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,199208,inline Timer::Timer( Trigger trigger )
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,199221,inline Timer::~Timer( void )
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,199230,inline void Timer::start( void )
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,199240,inline void Timer::stop( void )
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,199251,inline double Timer::sec( void ) const
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,199262,inline double Timer::msec( void ) const
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,199273,inline double Timer::usec( void ) const
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,199284,inline double Timer::fps( void ) const
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,199290,"# 1 ""../../../../VisModule/vismodule/Timer"" 2"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,200206,"# 1 ""../../../../VisModule/vismodule/Timer"" 1"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,201793,"# 1 ""../../../../VisModule/vismodule/Timer"" 1"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,204483,extern double omp_get_wtime (void) throw ();
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,205289,"__attribute__((visibility(""default""))) int MPI_Group_intersection(MPI_Group group1, MPI_Group group2,"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,205638,"__attribute__((visibility(""default""))) double MPI_Wtime(void);"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,205950,"__attribute__((visibility(""default""))) int PMPI_Group_intersection(MPI_Group group1, MPI_Group group2,"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,206299,"__attribute__((visibility(""default""))) double PMPI_Wtime(void);"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,207609,"static Group Intersect(const Group &group1, const Group &group2);"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,209288,return (MPI_Wtime());
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,211064,"MPI::Group::Intersect(const MPI::Group &group1, const MPI::Group &group2)"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,211067,"(void)MPI_Group_intersection( group1, group2, &newgroup);"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,222461,typedef __kernel_long_t __kernel_suseconds_t;
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,222493,typedef int __kernel_timer_t;
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,222517,__s64 tv_sec;
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,222518,__u32 tv_nsec;
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,222764,extern unsigned int alarm (unsigned int __seconds) throw ();
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,222766,extern unsigned int sleep (unsigned int __seconds);
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,222774,"extern __useconds_t ualarm (__useconds_t __value, __useconds_t __interval)"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,222782,extern int usleep (__useconds_t __useconds);
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,224729,static void Delay(unsigned int msec);
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,225930,void IntersectWith(vtkIdList* otherIds);
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,227830,typedef std::size_t second_argument_type;
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,227835,second_argument_type __den) const noexcept
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,227900,typedef std::size_t second_argument_type;
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,227905,second_argument_type __den) const noexcept
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,228089,"return __h->_M_insert_unique_node(__n, __code, __p)->second;"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,228092,return __p->_M_v().second;
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,228114,"return __h->_M_insert_unique_node(__n, __code, __p)->second;"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,228117,return __p->_M_v().second;
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,228136,return __p->_M_v().second;
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,228155,return __p->_M_v().second;
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,228253,__n_elt).second)
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,228287,"__h._M_rehash(__do_rehash.second, __saved_state);"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,229346,"if (std::distance(__xrange.first, __xrange.second)"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,229347,"!= std::distance(__yrange.first, __yrange.second))"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,229350,"if (!_S_is_permutation(__xrange.first, __xrange.second,"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,229354,__itx = __xrange.second;
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,230961,"_M_rehash(__do_rehash.second, __saved_state);"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,230999,"_M_rehash(__do_rehash.second, __saved_state);"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,232539,indices = &pos->second;
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,235652,static int PlaneIntersectsAABB(
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,238128,int IntersectBox(const vtkBoundingBox& bbox);
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,238133,int Intersects(const vtkBoundingBox& bbox) const;
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,238140,"bool IntersectPlane(double origin[3], double normal[3]);"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,238146,"bool IntersectsSphere(double center[3], double squaredRadius) const;"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,238152,"bool IntersectsLine(const double p1[3], const double p2[3]) const;"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,238727,"virtual int IntersectWithLine(const double p1[3], const double p2[3], double tol, double& t,"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,238730,"virtual int IntersectWithCell(vtkCell* other, double tol = 0.0);"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,238731,"virtual int IntersectWithCell(vtkCell* other, const vtkBoundingBox& boudingBox,"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,246989,"int IntersectWithLine(const double p1[3], const double p2[3], double tol, double& t, double x[3],"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,247057,"int IntersectWithLine(const double p1[3], const double p2[3], double tol, double& t, double x[3],"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,249486,const Range intersect( const Range& other ) const
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,249688,"const bool intersection_of_boundingbox( const vismodule::Vec3 MinCoord,"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,250888,"# 1 ""../../../../VisModule/vismodule/Timer"" 1"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,251038,typename _Tp::second_argument_type>>
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,251041,typedef typename _Tp::second_argument_type second_argument_type;
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,255684,void IntersectFieldList(vtkDataSetAttributes* dsa);
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,256695,"int IntersectWithLine(const double p1[3], const double p2[3], double tol, double& t, double x[3],"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,256848,"int IntersectWithLine(const double p1[3], const double p2[3], double tol, double& t, double x[3],"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,257007,"int IntersectWithLine(const double p1[3], const double p2[3], double tol, double& t, double x[3],"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,257170,"int IntersectWithLine(const double p1[3], const double p2[3], double tol, double& t, double x[3],"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,259188,"__sleep_for(chrono::seconds, chrono::nanoseconds);"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,259193,"sleep_for(const chrono::duration<_Rep, _Period>& __rtime)"
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,259197,auto __s = chrono::duration_cast<chrono::seconds>(__rtime);
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,259198,auto __ns = chrono::duration_cast<chrono::nanoseconds>(__rtime - __s);
+Example/C/gcc_mpi_omp/cavity_OpenFOAM_vtk/preprocessed.cpp,259215,"sleep_until(const chrono::time_point<_Clock, _Duration>& __atime)"
+VisModule/Visualization/Event/TimerEventListener.h,3,*  @file   TimerEventListener.h
+VisModule/Visualization/Event/TimerEventListener.h,13,*  $Id: TimerEventListener.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
+VisModule/Visualization/Event/TimerEventListener.h,29,*  @brief  TimerEventListener class.
+VisModule/Visualization/Event/TimerEventListener.h,32,class TimerEventListener : public vismodule::EventListener
+VisModule/Visualization/Event/TimerEventListener.h,34,visModuleClassName( vismodule::TimerEventListener );
+VisModule/Visualization/Event/TimerEventListener.h,38,TimerEventListener( void );
+VisModule/Visualization/Event/TimerEventListener.h,40,virtual ~TimerEventListener( void );
+VisModule/DaemonAndSampler/Daemon/TransferFunctionJsonWriter.cpp,292,"""The settings section contains global settings shared across the visualization."","
+VisModule/DaemonAndSampler/Daemon/TransferFunctionJsonWriter.cpp,298,"""The mean_transfer_functions, variance_transfer_functions, and coefficient_of_variation_transfer_functions sections contain transfer-function parameters for ensemble statistics."""
+Example/Fortran/Hydrogen_AMR/RESET.sh,3,rm timer.out.*
+VisModule/vismodule/TimerEventListener,1,#include <Visualization/Event/TimerEventListener.h>
+VisModule/Visualization/Event/EventListener.cpp,92,this->timerEvent( e );
+VisModule/Visualization/Event/EventListener.cpp,231,*  @brief  Timer event function.
+VisModule/Visualization/Event/EventListener.cpp,232,*  @param  event [in] pointer to the timer event
+VisModule/Visualization/Event/EventListener.cpp,235,void EventListener::timerEvent( vismodule::TimeEvent* event )
+VisModule/DaemonAndSampler/Daemon/Connect.cpp,19,#include <vismodule/timer_simple>
+VisModule/DaemonAndSampler/Daemon/Connect.cpp,26,#include <vismodule/Timer>
+VisModule/DaemonAndSampler/Daemon/Connect.cpp,51,#include <vismodule/timer_simple>
+VisModule/DaemonAndSampler/Daemon/Connect.cpp,80,#include <DaemonAndSampler/Daemon/Timer.h>
+VisModule/DaemonAndSampler/Daemon/Connect.cpp,522,static int timer_count = 0;
+VisModule/DaemonAndSampler/Daemon/Connect.cpp,588,"jd, transfunc_creator, timer_count );"
+VisModule/DaemonAndSampler/Daemon/Connect.cpp,626,"jd, transfunc_creator, timer_count );"
+VisModule/DaemonAndSampler/Daemon/Connect.cpp,635,"jd,  transfunc_creator, timer_count, clntMes.m_initialize_parameter  );"
+VisModule/DaemonAndSampler/Daemon/Connect.cpp,644,"jd,  transfunc_creator, timer_count, clntMes.m_initialize_parameter  );"
+VisModule/DaemonAndSampler/Daemon/Connect.cpp,670,static int timer_count = 0;
+VisModule/DaemonAndSampler/Daemon/Connect.cpp,919,"jd, pts, timer_count );"
+VisModule/DaemonAndSampler/Daemon/Connect.cpp,925,timer_count++;
+VisModule/DaemonAndSampler/Daemon/Connect.cpp,926,if ( timer_count <= VIS_MODULE_TIMER_COUNT_NUM )
+VisModule/DaemonAndSampler/Daemon/Connect.cpp,1241,vismodule::Timer timer( vismodule::Timer::Start );
+VisModule/DaemonAndSampler/Daemon/Connect.cpp,1359,timer.stop();
+VisModule/DaemonAndSampler/Daemon/Connect.cpp,1360,"std::cout << ""Initialize: "" << timer.sec() << "" [sec/step]"" << std::endl;"
+VisModule/DaemonAndSampler/Daemon/Connect.cpp,1373,static int timer_count = 0;
+VisModule/DaemonAndSampler/Daemon/Connect.cpp,1547,"jd, pts, pm, timer,"
+VisModule/DaemonAndSampler/Daemon/Connect.cpp,1549,"timer_count, clntMes.m_initialize_parameter );"
+VisModule/DaemonAndSampler/Daemon/Connect.cpp,1565,"jd, pts, pm, timer,"
+VisModule/DaemonAndSampler/Daemon/Connect.cpp,1567,"timer_count, clntMes.m_initialize_parameter );"
+VisModule/DaemonAndSampler/Daemon/Connect.cpp,1570,if ( timer_count == VIS_MODULE_TIMER_COUNT_NUM )
+VisModule/DaemonAndSampler/Daemon/ParticleMonitor.cpp,2,"//#include ""Timer.h"""
+VisModule/DaemonAndSampler/Daemon/ParticleMonitor.cpp,3,//#include <vismodule/Timer>
+VisModule/DaemonAndSampler/Daemon/ParticleMonitor.cpp,144,//    TimerStart( 6 );
+VisModule/DaemonAndSampler/Daemon/ParticleMonitor.cpp,146,//    TimerStop( 6 );
+VisModule/DaemonAndSampler/Daemon/ParticleMonitor.cpp,147,//    TimerStart( 7 );
+VisModule/DaemonAndSampler/Daemon/ParticleMonitor.cpp,149,//    TimerStop( 7 );
+VisModule/DaemonAndSampler/Daemon/ParticleMonitor.cpp,170,//    TimerStart( 6 );
+VisModule/DaemonAndSampler/Daemon/ParticleMonitor.cpp,172,//    TimerStop( 6 );
+VisModule/DaemonAndSampler/Daemon/ParticleMonitor.cpp,173,//    TimerStart( 7 );
+VisModule/DaemonAndSampler/Daemon/ParticleMonitor.cpp,176,//    TimerStop( 7 );
+VisModule/vismodule/Timer,1,#include <Utility/Timer.h>
+VisModule/DaemonAndSampler/Daemon/Timer.h,4,void TimerInitialize();
+VisModule/DaemonAndSampler/Daemon/Timer.h,5,void TimerFinish( const int time_step );
+VisModule/DaemonAndSampler/Daemon/Timer.h,6,void TimerStart( int id );
+VisModule/DaemonAndSampler/Daemon/Timer.h,7,void TimerStop( int id );
+VisModule/Visualization/Event/EventBase.h,45,"TimerEvent            = visModuleBinary12(0000,1000,0000),"
+Example/Fortran/Hydrogen_unstruct/RESET.sh,3,rm timer.out.*
+VisModule/FileFormat/DICOM/VRDictionary.h,79,i->second );
+VisModule/FileFormat/DICOM/TagTable.h,138,"{ 0x0008, 0x2129, dcm::VR_IS,   ""Number of Event Timers""},"
+VisModule/FileFormat/DICOM/TagTable.h,141,"{ 0x0008, 0x2132, dcm::VR_LO,   ""Event Timer Name(s)""},"
+VisModule/FileFormat/DICOM/TagTable.h,535,"{ 0x0018, 0x7065, dcm::VR_DS,   ""Phototimer Setting""},"
+VisModule/FileFormat/DICOM/dictionary.txt,126,"(0008,2129) Number of Event Timers IS 1"
+VisModule/FileFormat/DICOM/dictionary.txt,129,"(0008,2132) Event Timer Name(s) LO 1-n"
+VisModule/FileFormat/DICOM/dictionary.txt,539,"(0018,7065) Phototimer Setting DS 1"
+VisModule/Visualization/Event/TimeEvent.cpp,32,*  @brief  Destructs the TimerEvent class.
+VisModule/Visualization/Event/TimeEvent.cpp,47,return( vismodule::EventBase::TimerEvent );
+VisModule/DaemonAndSampler/Daemon/Connect.h,14,#include <vismodule/timer_simple>
+VisModule/DaemonAndSampler/Daemon/Connect.h,21,#include <vismodule/Timer>
+VisModule/DaemonAndSampler/Daemon/Connect.h,45,#include <vismodule/timer_simple>
+Example/Fortran/Hydrogen_struct/RESET.sh,3,rm timer.out.*
+VisModule/Visualization/Event/TimerEventListener.cpp,3,*  @file   TimerEventListener.cpp
+VisModule/Visualization/Event/TimerEventListener.cpp,12,*  $Id: TimerEventListener.cpp 602 2010-08-19 02:43:34Z naohisa.sakamoto $
+VisModule/Visualization/Event/TimerEventListener.cpp,15,"#include ""TimerEventListener.h"""
+VisModule/Visualization/Event/TimerEventListener.cpp,21,TimerEventListener::TimerEventListener( void )
+VisModule/Visualization/Event/TimerEventListener.cpp,23,vismodule::EventListener::setEventType( vismodule::EventBase::TimerEvent );
+VisModule/Visualization/Event/TimerEventListener.cpp,26,TimerEventListener::~TimerEventListener( void )
+VisModule/Visualization/Event/TimerEventListener.cpp,30,void TimerEventListener::onEvent( vismodule::EventBase* event )
+VisModule/vismodule/timer_simple,1,#include <ParallelProcess/timer_simple.h>
+VisModule/DaemonAndSampler/Daemon/Timer.cpp,3,#include <sys/time.h>      /* gettimeofday */
+VisModule/DaemonAndSampler/Daemon/Timer.cpp,7,"#include ""Timer.h"""
+VisModule/DaemonAndSampler/Daemon/Timer.cpp,9,#define N_TIM (700+1)    /* num of timers. PLEASE MODIFY. */
+VisModule/DaemonAndSampler/Daemon/Timer.cpp,10,"#define FILENAME ""timer.out"" /* NULL(stdout) or filename(ex.""timer.out"") */"
+VisModule/DaemonAndSampler/Daemon/Timer.cpp,11,#define IGN_ZERO 1     /* 1: timer result is not printed if ncount[i] equals 0 */
+VisModule/DaemonAndSampler/Daemon/Timer.cpp,14,"static double timers[N_TIM], tsta[N_TIM];"
+VisModule/DaemonAndSampler/Daemon/Timer.cpp,24,void TimerInitialize()
+VisModule/DaemonAndSampler/Daemon/Timer.cpp,32,timers[i] = 0.0;
+VisModule/DaemonAndSampler/Daemon/Timer.cpp,38,/* set timer name. PLEASE MODIFY. */
+VisModule/DaemonAndSampler/Daemon/Timer.cpp,60,void TimerFinish( const int time_step )
+VisModule/DaemonAndSampler/Daemon/Timer.cpp,77,/* convert usec to sec */
+VisModule/DaemonAndSampler/Daemon/Timer.cpp,80,timers[i] *= 1.0e-6;
+VisModule/DaemonAndSampler/Daemon/Timer.cpp,83,/* check count of timer call */
+VisModule/DaemonAndSampler/Daemon/Timer.cpp,89,"printf( ""Error: TimerFinish: not pair Timer(Start|Stop), ID = %d\n"", i );"
+VisModule/DaemonAndSampler/Daemon/Timer.cpp,113,/* print timers */
+VisModule/DaemonAndSampler/Daemon/Timer.cpp,119,"i, name[i], timers[i], ncount[i] );"
+VisModule/DaemonAndSampler/Daemon/Timer.cpp,134,void TimerStart( int id )
+VisModule/DaemonAndSampler/Daemon/Timer.cpp,143,void TimerStop( int id )
+VisModule/DaemonAndSampler/Daemon/Timer.cpp,148,timers[id] += tend - tsta[id];
+VisModule/DaemonAndSampler/Daemon/Timer.cpp,159,"gettimeofday( &tm, NULL );"
+VisModule/DaemonAndSampler/Daemon/Timer.cpp,160,*t = tm.tv_sec * 1.0e6 + tm.tv_usec;
+VisModule/Visualization/Event/EventListener.h,82,virtual void timerEvent( vismodule::TimeEvent* event );
+VisModule/DaemonAndSampler/Daemon/ParamInfo.cpp,334,"ofs << i->first  <<  ""="" << i->second << std::endl;"
+VisModule/DaemonAndSampler/Daemon/ParamInfo.cpp,348,index += jpv::Serializer::byteSize( i->second );
+VisModule/DaemonAndSampler/Daemon/ParamInfo.cpp,362,"index += jpv::Serializer::write( buf + index, i->second );"
+VisModule/vismodule/qt/Timer,1,#include <SupportQt/Viewer/Timer.h>
+VisModule/Visualization/Object/PointObjectCreator.h,14,#include <vismodule/timer_simple>
+VisModule/Visualization/Object/PointObjectCreator.h,20,#include <vismodule/Timer>
+VisModule/Visualization/Object/PointObjectCreator.h,45,#include <vismodule/timer_simple>
+VisModule/vismodule/VolumeRayIntersector,1,#include <Visualization/Renderer/VolumeRayIntersector.h>
+VisModule/Numeric/ResponseSurface.cpp,287,"// Calculate second-order term's value (ex. x^2, y^2, z^2, ...)"
+VisModule/Visualization/Object/PointObjectGenerator.cpp,19,#include <vismodule/timer_simple>
+VisModule/Visualization/Filter/TetrahedraToTetrahedra.cpp,362,*(tet_pconnections++) = id_map.bucket().find( id0 )->second;
+VisModule/Visualization/Filter/TetrahedraToTetrahedra.cpp,363,*(tet_pconnections++) = id_map.bucket().find( id1 )->second;
+VisModule/Visualization/Filter/TetrahedraToTetrahedra.cpp,364,*(tet_pconnections++) = id_map.bucket().find( id2 )->second;
+VisModule/Visualization/Filter/TetrahedraToTetrahedra.cpp,365,*(tet_pconnections++) = id_map.bucket().find( id3 )->second;
+VisModule/Visualization/Filter/TetrahedraToTetrahedra.cpp,380,tet_pvalues[ id->second * tet_veclen + i ] = tet2_pvalues[ id->first * tet_veclen + i ];
+VisModule/Visualization/Filter/TetrahedraToTetrahedra.cpp,384,tet_pcoords[ id->second * 3 + 0 ] = tet2_pcoords[ id->first * 3 + 0 ];
+VisModule/Visualization/Filter/TetrahedraToTetrahedra.cpp,385,tet_pcoords[ id->second * 3 + 1 ] = tet2_pcoords[ id->first * 3 + 1 ];
+VisModule/Visualization/Filter/TetrahedraToTetrahedra.cpp,386,tet_pcoords[ id->second * 3 + 2 ] = tet2_pcoords[ id->first * 3 + 2 ];
+VisModule/Visualization/Filter/Tubeline.cpp,780,// Calculate vertices that are composed of the circles (cross-sections).
+VisModule/Visualization/Filter/Tubeline.cpp,792,// Calculate colors at the cross-sections.
+VisModule/FileFormat/KVSML/KVSMLTransferFunction.cpp,507,value_tag.setColor( point->second );
+VisModule/FileFormat/KVSML/KVSMLTransferFunction.cpp,559,value_tag.setOpacity( point->second );
+VisModule/Visualization/Mapper/CellByCellHistogram.cpp,42,#include <vismodule/timer_simple>
+VisModule/Visualization/Mapper/CellByCellHistogram.cpp,55,#include <vismodule/timer_simple>
+VisModule/Visualization/Mapper/CellByCellHistogram.cpp,316,// timer.stop();
+VisModule/Visualization/Mapper/CellByCellHistogram.cpp,317,// time.initialize = timer.sec();
+VisModule/Visualization/Mapper/CellByCellHistogram.cpp,318,// timer.start();
+VisModule/Visualization/Mapper/CellByCellHistogram.cpp,520,// timer.stop();
+VisModule/Visualization/Mapper/CellByCellHistogram.cpp,521,// time.sampling = timer.sec();
+VisModule/Visualization/Mapper/CellByCellHistogram.cpp,523,// timer.start();
+VisModule/Visualization/Mapper/CellByCellRejectionSampling.cpp,32,#include <vismodule/Timer>
+VisModule/Visualization/Mapper/CellByCellRejectionSampling.cpp,33,#include <vismodule/timer_simple>
+VisModule/Visualization/Mapper/CellByCellRejectionSampling.cpp,48,#include <vismodule/timer_simple>
+VisModule/Visualization/Mapper/CellByCellRejectionSampling.cpp,304,// timer.stop();
+VisModule/Visualization/Mapper/CellByCellRejectionSampling.cpp,305,// time.initialize = timer.sec();
+VisModule/Visualization/Mapper/CellByCellRejectionSampling.cpp,306,// timer.start();
+VisModule/Visualization/Mapper/CellByCellRejectionSampling.cpp,548,"// timed_section_start(td_CalculateOpacity,thid);"
+VisModule/Visualization/Mapper/CellByCellRejectionSampling.cpp,554,"// timed_section_end(td_CalculateOpacity,thid);"
+VisModule/Visualization/Mapper/CellByCellRejectionSampling.cpp,612,"// timed_section_start(td_CalculateOpacity,thid);"
+VisModule/Visualization/Mapper/CellByCellRejectionSampling.cpp,618,"// timed_section_end(td_CalculateOpacity,thid);"
+VisModule/Visualization/Mapper/CellByCellRejectionSampling.cpp,626,"// timed_section_start(td_CalculateDensity,thid);"
+VisModule/Visualization/Mapper/CellByCellRejectionSampling.cpp,633,"// timed_section_end(td_CalculateDensity,thid);"
+VisModule/Visualization/Mapper/CellByCellRejectionSampling.cpp,636,"// timed_section_start(td_CalculateNumPar,thid);"
+VisModule/Visualization/Mapper/CellByCellRejectionSampling.cpp,638,"// timed_section_end(td_CalculateNumPar,thid);"
+VisModule/Visualization/Mapper/CellByCellRejectionSampling.cpp,707,"// timed_section_start(td_CalculateOpacity,thid);"
+VisModule/Visualization/Mapper/CellByCellRejectionSampling.cpp,714,"// timed_section_end(td_CalculateOpacity,thid);"
+VisModule/Visualization/Mapper/CellByCellRejectionSampling.cpp,719,"// timed_section_start(td_CalculateColor,thid);"
+VisModule/Visualization/Mapper/CellByCellRejectionSampling.cpp,726,"// timed_section_end(td_CalculateColor,thid);"
+VisModule/Visualization/Mapper/CellByCellRejectionSampling.cpp,765,"// timed_section_start(td_CalculateDensity,thid);"
+VisModule/Visualization/Mapper/CellByCellRejectionSampling.cpp,778,"// timed_section_end(td_CalculateDensity,thid);"
+VisModule/Visualization/Mapper/CellByCellRejectionSampling.cpp,800,"// timed_section_end(td_VectorPush,thid);"
+VisModule/Visualization/Mapper/CellByCellRejectionSampling.cpp,809,"// timed_section_start(td_VectorIns,thid);"
+VisModule/Visualization/Mapper/CellByCellRejectionSampling.cpp,825,"// timed_section_end(td_VectorIns,thid);"
+VisModule/Visualization/Mapper/CellByCellRejectionSampling.cpp,839,// timer.stop();
+VisModule/Visualization/Mapper/CellByCellRejectionSampling.cpp,840,// time.sampling = timer.sec();
+VisModule/Visualization/Mapper/CellByCellRejectionSampling.cpp,842,// timer.start();
+VisModule/Visualization/Mapper/PlotOverLine.cpp,413,"if( this->intersection_of_boundingbox( MinCoord, MaxCoord, P0, P1 ) == false )"
+VisModule/Visualization/Mapper/PlotOverLine.cpp,552,"if( this->intersection_of_boundingbox( MinCoord, MaxCoord, P0, P1 ) == false )"
+VisModule/Visualization/Mapper/PlotOverLine.cpp,651,"if( this->intersection_of_boundingbox( MinCoord, MaxCoord, P0, P1 ) == false )"
+VisModule/Visualization/Mapper/PlotOverLine.cpp,756,"if( this->intersection_of_boundingbox( MinCoord, MaxCoord, P0, P1 ) == false )"
+VisModule/Visualization/Mapper/PlotOverLine.cpp,873,"if( this->intersection_of_boundingbox( MinCoord, MaxCoord, P0, P1 ) == false )"
+VisModule/Visualization/Mapper/PlotOverLine.cpp,973,"if( this->intersection_of_boundingbox( MinCoord, MaxCoord, P0, P1 ) == false )"
+VisModule/Visualization/Mapper/PlotOverLine.cpp,975,"//std::cout << ""Line P doesn't intersect tet's bounding box."" << std::endl;"
+VisModule/Visualization/Mapper/PlotOverLine.cpp,989,"//std::cout << __LINE__ << "": "" << ""P0 -> P1 line doesn't intersect tetrahedra."" << std::endl;"
+VisModule/Visualization/Mapper/PlotOverLine.cpp,1012,const bool PlotOverLine::intersection_of_boundingbox(
+VisModule/Visualization/Mapper/PlotOverLine.cpp,1156,t_range = t_range.intersect( tmp_range );
+VisModule/Visualization/Mapper/HexahedralCell.h,24,#include <vismodule/Timer>
+VisModule/Visualization/Mapper/CellByCellUniformSampling.cpp,42,#include <vismodule/timer_simple>
+VisModule/Visualization/Mapper/CellByCellUniformSampling.cpp,61,#include <vismodule/timer_simple>
+VisModule/Visualization/Mapper/CellByCellUniformSampling.cpp,333,// timer.stop();
+VisModule/Visualization/Mapper/CellByCellUniformSampling.cpp,334,// time.initialize = timer.sec();
+VisModule/Visualization/Mapper/CellByCellUniformSampling.cpp,335,// timer.start();
+VisModule/Visualization/Mapper/CellByCellUniformSampling.cpp,577,"// timed_section_start(td_CalculateOpacity,thid);"
+VisModule/Visualization/Mapper/CellByCellUniformSampling.cpp,583,"// timed_section_end(td_CalculateOpacity,thid);"
+VisModule/Visualization/Mapper/CellByCellUniformSampling.cpp,642,"// timed_section_start(td_CalculateOpacity,thid);"
+VisModule/Visualization/Mapper/CellByCellUniformSampling.cpp,648,"// timed_section_end(td_CalculateOpacity,thid);"
+VisModule/Visualization/Mapper/CellByCellUniformSampling.cpp,656,"// timed_section_start(td_CalculateDensity,thid);"
+VisModule/Visualization/Mapper/CellByCellUniformSampling.cpp,663,"// timed_section_end(td_CalculateDensity,thid);"
+VisModule/Visualization/Mapper/CellByCellUniformSampling.cpp,666,"// timed_section_start(td_CalculateNumPar,thid);"
+VisModule/Visualization/Mapper/CellByCellUniformSampling.cpp,668,"// timed_section_end(td_CalculateNumPar,thid);"
+VisModule/Visualization/Mapper/CellByCellUniformSampling.cpp,738,"// timed_section_start(td_CalculateOpacity,thid);"
+VisModule/Visualization/Mapper/CellByCellUniformSampling.cpp,745,"// timed_section_end(td_CalculateOpacity,thid);"
+VisModule/Visualization/Mapper/CellByCellUniformSampling.cpp,750,"// timed_section_start(td_CalculateColor,thid);"
+VisModule/Visualization/Mapper/CellByCellUniformSampling.cpp,757,"// timed_section_end(td_CalculateColor,thid);"
+VisModule/Visualization/Mapper/CellByCellUniformSampling.cpp,796,"// timed_section_start(td_CalculateDensity,thid);"
+VisModule/Visualization/Mapper/CellByCellUniformSampling.cpp,809,"// timed_section_end(td_CalculateDensity,thid);"
+VisModule/Visualization/Mapper/CellByCellUniformSampling.cpp,823,"// timed_section_end(td_VectorPush,thid);"
+VisModule/Visualization/Mapper/CellByCellUniformSampling.cpp,832,"// timed_section_start(td_VectorIns,thid);"
+VisModule/Visualization/Mapper/CellByCellUniformSampling.cpp,848,"// timed_section_end(td_VectorIns,thid);"
+VisModule/Visualization/Mapper/CellByCellUniformSampling.cpp,862,// timer.stop();
+VisModule/Visualization/Mapper/CellByCellUniformSampling.cpp,863,// time.sampling = timer.sec();
+VisModule/Visualization/Mapper/CellByCellUniformSampling.cpp,865,// timer.start();
+VisModule/Visualization/Mapper/MarchingTetrahedra.cpp,335,*  @brief  Interpolates a coordinate value of the intersected vertex.
+VisModule/Visualization/Mapper/CellByCellMinMax.cpp,42,#include <vismodule/timer_simple>
+VisModule/Visualization/Mapper/CellByCellMinMax.cpp,55,#include <vismodule/timer_simple>
+VisModule/Visualization/Mapper/CellByCellMinMax.cpp,305,// timer.stop();
+VisModule/Visualization/Mapper/CellByCellMinMax.cpp,306,// time.initialize = timer.sec();
+VisModule/Visualization/Mapper/CellByCellMinMax.cpp,307,// timer.start();
+VisModule/Visualization/Mapper/CellByCellMinMax.cpp,501,// timer.stop();
+VisModule/Visualization/Mapper/CellByCellMinMax.cpp,502,// time.sampling = timer.sec();
+VisModule/Visualization/Mapper/CellByCellMinMax.cpp,504,// timer.start();
+VisModule/Visualization/Mapper/CellByCellMetropolisSampling.cpp,33,#include <vismodule/timer_simple>
+VisModule/Visualization/Mapper/CellByCellMetropolisSampling.cpp,47,#include <vismodule/timer_simple>
+VisModule/Visualization/Mapper/CellByCellMetropolisSampling.cpp,308,// timer.stop();
+VisModule/Visualization/Mapper/CellByCellMetropolisSampling.cpp,309,// time.initialize = timer.sec();
+VisModule/Visualization/Mapper/CellByCellMetropolisSampling.cpp,310,// timer.start();
+VisModule/Visualization/Mapper/CellByCellMetropolisSampling.cpp,553,"// timed_section_start(td_CalculateOpacity,thid);"
+VisModule/Visualization/Mapper/CellByCellMetropolisSampling.cpp,559,"// timed_section_end(td_CalculateOpacity,thid);"
+VisModule/Visualization/Mapper/CellByCellMetropolisSampling.cpp,618,"// timed_section_start(td_CalculateOpacity,thid);"
+VisModule/Visualization/Mapper/CellByCellMetropolisSampling.cpp,624,"// timed_section_end(td_CalculateOpacity,thid);"
+VisModule/Visualization/Mapper/CellByCellMetropolisSampling.cpp,632,"// timed_section_start(td_CalculateDensity,thid);"
+VisModule/Visualization/Mapper/CellByCellMetropolisSampling.cpp,639,"// timed_section_end(td_CalculateDensity,thid);"
+VisModule/Visualization/Mapper/CellByCellMetropolisSampling.cpp,642,"// timed_section_start(td_CalculateNumPar,thid);"
+VisModule/Visualization/Mapper/CellByCellMetropolisSampling.cpp,645,"// timed_section_end(td_CalculateNumPar,thid);"
+VisModule/Visualization/Mapper/CellByCellMetropolisSampling.cpp,805,"// timed_section_start(td_CalculateOpacity,thid);"
+VisModule/Visualization/Mapper/CellByCellMetropolisSampling.cpp,812,"// timed_section_end(td_CalculateOpacity,thid);"
+VisModule/Visualization/Mapper/CellByCellMetropolisSampling.cpp,817,"// timed_section_start(td_CalculateColor,thid);"
+VisModule/Visualization/Mapper/CellByCellMetropolisSampling.cpp,824,"// timed_section_end(td_CalculateColor,thid);"
+VisModule/Visualization/Mapper/CellByCellMetropolisSampling.cpp,863,"// timed_section_start(td_CalculateDensity,thid);"
+VisModule/Visualization/Mapper/CellByCellMetropolisSampling.cpp,874,"// timed_section_end(td_CalculateDensity,thid);"
+VisModule/Visualization/Mapper/CellByCellMetropolisSampling.cpp,930,"// timed_section_start(td_VectorIns,thid);"
+VisModule/Visualization/Mapper/CellByCellMetropolisSampling.cpp,946,"// timed_section_end(td_VectorIns,thid);"
+VisModule/Visualization/Mapper/CellByCellMetropolisSampling.cpp,960,// timer.stop();
+VisModule/Visualization/Mapper/CellByCellMetropolisSampling.cpp,961,// time.sampling = timer.sec();
+VisModule/Visualization/Mapper/CellByCellMetropolisSampling.cpp,963,// timer.start();
+VisModule/Visualization/Mapper/PlotOverLine.h,76,// AND ( intersect )
+VisModule/Visualization/Mapper/PlotOverLine.h,77,const Range intersect( const Range& other ) const
+VisModule/Visualization/Mapper/PlotOverLine.h,289,"const bool intersection_of_boundingbox( const vismodule::Vec3 MinCoord,"
+VisModule/Visualization/Mapper/ExternalFaces.cpp,20,#include <vismodule/Timer>
+VisModule/Visualization/Mapper/ExternalFaces.cpp,244,if ( f->second == value )
+VisModule/Visualization/Mapper/ExternalFaces.cpp,525,node_index[0] = f->second.id(0);
+VisModule/Visualization/Mapper/ExternalFaces.cpp,526,node_index[1] = f->second.id(1);
+VisModule/Visualization/Mapper/ExternalFaces.cpp,527,node_index[2] = f->second.id(2);
+VisModule/Visualization/Mapper/TetrahedralCell.h,26,#include <vismodule/Timer>
+VisModule/Visualization/Mapper/TetrahedralCell.h,548,////    vismodule::Timer timer( vismodule::Timer::Start );
+VisModule/Visualization/Mapper/TetrahedralCell.h,555,////    timer.start();
+VisModule/Visualization/Mapper/TetrahedralCell.h,561,////    timer.stop();
+VisModule/Visualization/Mapper/TetrahedralCell.h,562,////    track[0] += timer.sec(); // 10_2_1
+VisModule/Visualization/Mapper/TetrahedralCell.h,563,////    timer.start();
+VisModule/Visualization/Mapper/TetrahedralCell.h,565,//    //    timer.stop();
+VisModule/Visualization/Mapper/TetrahedralCell.h,566,//    //    track[1] += timer.sec(); // 10_2_2
+VisModule/Visualization/Mapper/TetrahedralCell.h,567,//    //    timer.start();
+VisModule/Visualization/Mapper/TetrahedralCell.h,607,////    timer.stop();
+VisModule/Visualization/Mapper/TetrahedralCell.h,608,////    track[1] += timer.sec(); // 10_2_3
+VisModule/Visualization/Mapper/ColorMap.cpp,332,color = p->second;
+VisModule/Visualization/Mapper/ColorMap.cpp,341,const vismodule::RGBColor c0 = p0.second;
+VisModule/Visualization/Mapper/ColorMap.cpp,342,const vismodule::RGBColor c1 = p1.second;
+VisModule/Visualization/Mapper/ColorMap.cpp,360,color = p0.second;
+VisModule/Visualization/Mapper/MarchingPyramid.cpp,290,*  Interpolates a coordinate value of the intersected vertex.
+VisModule/Visualization/Mapper/CellAdjacencyGraph.cpp,326,if ( f->second == value )
+VisModule/Visualization/Mapper/CellAdjacencyGraph.cpp,329,m_graph.at( index ) = f->second.cellID();
+VisModule/Visualization/Mapper/CellAdjacencyGraph.cpp,330,m_graph.at( f->second.cellID() * 4 + f->second.faceID() ) = cell_id;
+VisModule/Visualization/Mapper/CellAdjacencyGraph.cpp,332,m_mask.set( f->second.cellID() * 4 + f->second.faceID() );
+VisModule/Visualization/Mapper/CellAdjacencyGraph.cpp,406,if ( f->second == value )
+VisModule/Visualization/Mapper/CellAdjacencyGraph.cpp,409,m_graph.at( index ) = f->second.cellID();
+VisModule/Visualization/Mapper/CellAdjacencyGraph.cpp,410,m_graph.at( f->second.cellID() * 6 + f->second.faceID() ) = cell_id;
+VisModule/Visualization/Mapper/CellAdjacencyGraph.cpp,412,m_mask.set( f->second.cellID() * 6 + f->second.faceID() );
+VisModule/Visualization/Viewer/IDManager.cpp,71,"insert( object_id, back().second );"
+VisModule/Visualization/Viewer/IDManager.cpp,88,if ( renderer_id == p->second ) object_ids.push_back( p->first );
+VisModule/Visualization/Viewer/IDManager.cpp,106,if ( object_id == p->first ) renderer_ids.push_back( p->second );
+VisModule/Visualization/Viewer/IDManager.cpp,114,return back().second;
+VisModule/Visualization/Viewer/IDManager.cpp,129,if ( object_id == p->first && renderer_id == p->second )
+VisModule/Visualization/Viewer/IDManager.cpp,169,if ( renderer_id == p->second )
+VisModule/Visualization/Viewer/IDManager.cpp,192,if ( renderer_id == p->second )
+VisModule/Visualization/Viewer/IDManager.cpp,214,back().second = renderer_id;
+VisModule/Visualization/Viewer/IDManager.cpp,223,p->second = renderer_id;
+VisModule/Visualization/Viewer/IDManager.cpp,235,p->second = renderer_id;
+VisModule/Visualization/Mapper/PlotOverLine.cpp_bu0822,465,"if( this->intersection_of_boundingbox( MinCoord, MaxCoord, P0, P1 ) == false )"
+VisModule/Visualization/Mapper/PlotOverLine.cpp_bu0822,614,"if( this->intersection_of_boundingbox( MinCoord, MaxCoord, P0, P1 ) == false )"
+VisModule/Visualization/Mapper/PlotOverLine.cpp_bu0822,713,"if( this->intersection_of_boundingbox( MinCoord, MaxCoord, P0, P1 ) == false )"
+VisModule/Visualization/Mapper/PlotOverLine.cpp_bu0822,813,"if( this->intersection_of_boundingbox( MinCoord, MaxCoord, P0, P1 ) == false )"
+VisModule/Visualization/Mapper/PlotOverLine.cpp_bu0822,929,"if( this->intersection_of_boundingbox( MinCoord, MaxCoord, P0, P1 ) == false )"
+VisModule/Visualization/Mapper/PlotOverLine.cpp_bu0822,1029,"if( this->intersection_of_boundingbox( MinCoord, MaxCoord, P0, P1 ) == false )"
+VisModule/Visualization/Mapper/PlotOverLine.cpp_bu0822,1031,"//std::cout << ""Line P doesn't intersect tet's bounding box."" << std::endl;"
+VisModule/Visualization/Mapper/PlotOverLine.cpp_bu0822,1045,"//std::cout << __LINE__ << "": "" << ""P0 -> P1 line doesn't intersect tetrahedra."" << std::endl;"
+VisModule/Visualization/Mapper/PlotOverLine.cpp_bu0822,1068,const bool PlotOverLine::intersection_of_boundingbox(
+VisModule/Visualization/Mapper/PlotOverLine.cpp_bu0822,1212,t_range = t_range.intersect( tmp_range );
+VisModule/Visualization/Mapper/ExtractEdges.cpp,20,#include <vismodule/Timer>
+VisModule/Visualization/Mapper/ExtractEdges.cpp,85,if ( ( e->second.first == v0 && e->second.second == v1 ) ||
+VisModule/Visualization/Mapper/ExtractEdges.cpp,86,( e->second.first == v1 && e->second.second == v0 ) )
+VisModule/Visualization/Mapper/ExtractEdges.cpp,113,connections[ connection_index++ ] = e->second.first;
+VisModule/Visualization/Mapper/ExtractEdges.cpp,114,connections[ connection_index++ ] = e->second.second;
+VisModule/Visualization/Mapper/MarchingCubes.cpp,371,*  @brief  Interpolates a coordinate value of the intersected vertex.
+VisModule/Visualization/Mapper/TransferFunction.cpp,180,const vismodule::RGBColor color = point->second;
+VisModule/Visualization/Mapper/TransferFunction.cpp,199,const float opacity = point->second;
+VisModule/Visualization/Mapper/TransferFunction.cpp,340,const vismodule::RGBColor color = point->second;
+VisModule/Visualization/Mapper/TransferFunction.cpp,362,const vismodule::Real32 opacity = point->second;
+VisModule/Visualization/Mapper/TransferFunction.cpp,397,"m_transfer_function.addColorPoint( point->first, point->second );"
+VisModule/Visualization/Mapper/TransferFunction.cpp,412,"m_transfer_function.addOpacityPoint( point->first, point->second );"
+VisModule/Visualization/Viewer/ObjectManager.cpp,138,ObjectIterator parent_ptr = map_id->second; // pointer to the parent
+VisModule/Visualization/Viewer/ObjectManager.cpp,198,ObjectIterator ptr = map_id->second; // pointer to the object
+VisModule/Visualization/Viewer/ObjectManager.cpp,233,ObjectIterator ptr = map_id->second; // pointer to the object
+VisModule/Visualization/Viewer/ObjectManager.cpp,274,ObjectIterator ptr = map_id->second; // pointer to the object
+VisModule/Visualization/Viewer/ObjectManager.cpp,314,ObjectIterator ptr = map_id->second; // pointer to the object
+VisModule/Visualization/Viewer/ObjectManager.cpp,387,ObjectIterator obj_ptr = map_id->second;
+VisModule/Visualization/Viewer/ObjectManager.cpp,406,ObjectIterator ptr = map_id->second; // pointer to the object
+VisModule/Visualization/Viewer/ObjectManager.cpp,460,ObjectIterator obj_ptr = map_id->second;
+VisModule/Visualization/Viewer/ObjectManager.cpp,505,ObjectIterator obj_ptr = map_id->second; // pointer to the object
+VisModule/Visualization/Viewer/ObjectManager.cpp,522,if ( *( i->second ) == &object ) return i->first;
+VisModule/Visualization/Viewer/ObjectManager.cpp,594,if ( m_active_object == p->second ) return p->first;
+VisModule/Visualization/Viewer/ObjectManager.cpp,616,m_active_object = map_id->second;
+VisModule/vismodule/glut/Timer,1,#include <SupportGLUT/Viewer/Timer.h>
+VisModule/Visualization/Mapper/OpacityMap.cpp,314,opacity = p->second;
+VisModule/Visualization/Mapper/OpacityMap.cpp,323,const float a0 = p0.second;
+VisModule/Visualization/Mapper/OpacityMap.cpp,324,const float a1 = p1.second;
+VisModule/Visualization/Mapper/OpacityMap.cpp,336,opacity = p0.second;
+VisModule/Visualization/Property/TransferFunctionProperty.cpp,203,std::string value = itr->second;
+VisModule/Visualization/Viewer/RendererManager.cpp,91,RendererIterator renderer_ptr = map_id->second; // pointer to the renderer
+VisModule/Visualization/Viewer/RendererManager.cpp,124,RendererIterator renderer_ptr = map_id->second;
+VisModule/Visualization/Viewer/RendererManager.cpp,160,RendererIterator ptr = map_id->second; // pointer to the renderer
+VisModule/Visualization/Viewer/RendererManager.cpp,192,RendererIterator old_renderer_ptr = map_id->second;
+VisModule/Visualization/Viewer/RendererManager.cpp,247,RendererIterator renderer_ptr = map_id->second;
+VisModule/Visualization/Viewer/RendererManager.cpp,266,RendererIterator renderer_ptr = map_id->second;
+VisModule/Visualization/Mapper/GlyphSeed.cpp,796,vismodule::Timer timer( vismodule::Timer::Start );
+VisModule/Visualization/Mapper/GlyphSeed.cpp,900,timer.start();
+VisModule/Visualization/Mapper/GlyphSeed.cpp,1226,//    timer.start();
+VisModule/Visualization/Mapper/MarchingHexahedra.cpp,293,*  Interpolates a coordinate value of the intersected vertex.
+VisModule/Visualization/Viewer/Mouse.h,20,#include <vismodule/Timer>
+VisModule/Visualization/Viewer/Mouse.h,65,vismodule::Timer    m_timer;        ///< auto check timer
+VisModule/Visualization/Property/MultiVolumeProperty.cpp,2324,auto& multi_block_format = time_and_format.second;
+VisModule/Visualization/Property/VariableRange.cpp,16,if ( imn == m_min.end() || val < imn->second )
+VisModule/Visualization/Property/VariableRange.cpp,20,if ( imx == m_max.end() || val > imx->second )
+VisModule/Visualization/Property/VariableRange.cpp,32,ret = imn->second;
+VisModule/Visualization/Property/VariableRange.cpp,43,ret = imx->second;
+VisModule/Visualization/Property/VariableRange.cpp,68,"setValue( nm, imn->second );"
+VisModule/Visualization/Property/VariableRange.cpp,69,"setValue( nm, imx->second );"
+VisModule/Visualization/Property/VariableRange.cpp,82,s += vismodule::Serializer::byteSize( i->second );
+VisModule/Visualization/Property/VariableRange.cpp,88,s += vismodule::Serializer::byteSize( i->second );
+VisModule/Visualization/Property/VariableRange.cpp,102,"index += vismodule::Serializer::write( buf + index, i->second );"
+VisModule/Visualization/Property/VariableRange.cpp,108,"index += vismodule::Serializer::write( buf + index, i->second );"
+VisModule/Visualization/Property/VariableRange.cpp,145,"std::cout << i->first << "":"" << i->second << "", "" << m_max[i->first] << std::endl;"
+VisModule/Visualization/Mapper/SlicePlane.cpp,926,*  @brief  Interpolate a coordinate value of a intersected vertex.
+VisModule/Visualization/Mapper/SlicePlane.cpp,945,*  @brief  Interpolate a value of a intersected vertex.
+VisModule/Visualization/Mapper/SlicePlane.cpp,981,*  @brief  Interpolate a value of a intersected vertex.
+VisModule/Visualization/Property/NameListFile.h,99,"ofs << i->first  <<  ""="" << i->second << std::endl;"
+VisModule/Visualization/Property/NameListFile.h,139,i->second = value;
+VisModule/Visualization/Property/NameListFile.h,172,index += vismodule::Serializer::byteSize( i->second );
+VisModule/Visualization/Property/NameListFile.h,186,"index += vismodule::Serializer::write( buf + index, i->second );"
+VisModule/Visualization/Property/NameListFile.h,215,if ( name_list_file.getValue<std::string>( i->first ) != i->second )
+VisModule/Visualization/Renderer/VolumeRayIntersector.h,3,*  @file VolumeRayIntersector.h
+VisModule/Visualization/Renderer/VolumeRayIntersector.h,11,*  $Id: VolumeRayIntersector.h 634 2010-10-13 07:04:05Z naohisa.sakamoto $
+VisModule/Visualization/Renderer/VolumeRayIntersector.h,31,class VolumeRayIntersector : public vismodule::Ray
+VisModule/Visualization/Renderer/VolumeRayIntersector.h,33,visModuleClassName_without_virtual( vismodule::VolumeRayIntersector );
+VisModule/Visualization/Renderer/VolumeRayIntersector.h,42,VolumeRayIntersector( const vismodule::VolumeObjectBase& volume );
+VisModule/Visualization/Renderer/VolumeRayIntersector.h,46,const bool isIntersected( void )
+VisModule/Visualization/Renderer/VolumeRayIntersector.h,49,"vismodule::Ray::isIntersected( m_vertex[0], m_vertex[3], m_vertex[2], m_vertex[1] ) ||"
+VisModule/Visualization/Renderer/VolumeRayIntersector.h,50,"vismodule::Ray::isIntersected( m_vertex[0], m_vertex[1], m_vertex[5], m_vertex[4] ) ||"
+VisModule/Visualization/Renderer/VolumeRayIntersector.h,51,"vismodule::Ray::isIntersected( m_vertex[1], m_vertex[2], m_vertex[6], m_vertex[5] ) ||"
+VisModule/Visualization/Renderer/VolumeRayIntersector.h,52,"vismodule::Ray::isIntersected( m_vertex[2], m_vertex[3], m_vertex[7], m_vertex[6] ) ||"
+VisModule/Visualization/Renderer/VolumeRayIntersector.h,53,"vismodule::Ray::isIntersected( m_vertex[3], m_vertex[0], m_vertex[4], m_vertex[7] ) ||"
+VisModule/Visualization/Renderer/VolumeRayIntersector.h,54,"vismodule::Ray::isIntersected( m_vertex[4], m_vertex[5], m_vertex[6], m_vertex[7] ) );"
+VisModule/Visualization/Mapper/CellBase.h,30,#include <vismodule/Timer>
+VisModule/Visualization/Mapper/CellBase.h,537,////    vismodule::Timer timer( vismodule::Timer::Start );
+VisModule/Visualization/Mapper/CellBase.h,540,////        timer.start();
+VisModule/Visualization/Mapper/CellBase.h,544,////        timer.stop();
+VisModule/Visualization/Mapper/CellBase.h,545,////        cal_time[0] += timer.sec();
+VisModule/Visualization/Mapper/CellBase.h,546,////        timer.start();
+VisModule/Visualization/Mapper/CellBase.h,555,////        timer.stop();
+VisModule/Visualization/Mapper/CellBase.h,556,////        cal_time[1] += timer.sec();
+VisModule/Visualization/Mapper/CellBase.h,980,//    vismodule::Timer timer( vismodule::Timer::Start );
+VisModule/Visualization/Mapper/CellBase.h,985,//        timer.start();
+VisModule/Visualization/Mapper/CellBase.h,991,//        timer.stop();
+VisModule/Visualization/Mapper/CellBase.h,992,//        cal_time[2] += timer.sec();
+VisModule/Visualization/Mapper/CellBase.h,993,//        timer.start();
+VisModule/Visualization/Mapper/CellBase.h,995,//        timer.stop();
+VisModule/Visualization/Mapper/CellBase.h,996,//        cal_time[3] += timer.sec();
+VisModule/Visualization/Mapper/CellBase.h,1003,//        timer.start();
+VisModule/Visualization/Mapper/CellBase.h,1011,//        timer.stop();
+VisModule/Visualization/Mapper/CellBase.h,1012,//        cal_time[4] += timer.sec();
+VisModule/Visualization/Mapper/CellBase.h,1013,//        timer.start();
+VisModule/Visualization/Mapper/CellBase.h,1018,//        timer.stop();
+VisModule/Visualization/Mapper/CellBase.h,1019,//        cal_time[5] += timer.sec();
+VisModule/Visualization/Mapper/CellBase.h,1022,//    timer.start();
+VisModule/Visualization/Mapper/CellBase.h,1024,//    timer.stop();
+VisModule/Visualization/Mapper/CellBase.h,1025,//    cal_time[2] += timer.sec();
+VisModule/Visualization/Mapper/CellBase.h,1026,//    timer.stop();
+VisModule/Visualization/Mapper/CellBase.h,1027,//    timer.start();
+VisModule/Visualization/Mapper/CellBase.h,1029,//    timer.stop();
+VisModule/Visualization/Mapper/CellBase.h,1030,//    cal_time[3] += timer.sec();
+VisModule/Visualization/Renderer/VolumeRayIntersector.cpp,3,*  @file VolumeRayIntersector.cpp
+VisModule/Visualization/Renderer/VolumeRayIntersector.cpp,11,*  $Id: VolumeRayIntersector.cpp 602 2010-08-19 02:43:34Z naohisa.sakamoto $
+VisModule/Visualization/Renderer/VolumeRayIntersector.cpp,14,"#include ""VolumeRayIntersector.h"""
+VisModule/Visualization/Renderer/VolumeRayIntersector.cpp,21,VolumeRayIntersector::VolumeRayIntersector( const vismodule::VolumeObjectBase& volume )
+VisModule/Visualization/Viewer/ScreenCore.cpp,391,vismodule::RendererBase* r = rm->renderer( id_pair.second );
+VisModule/Visualization/Viewer/Mouse.cpp,37,"m_timer(),"
+VisModule/Visualization/Viewer/Mouse.cpp,84,m_timer.start();
+VisModule/Visualization/Viewer/Mouse.cpp,155,m_timer.stop();
+VisModule/Visualization/Viewer/Mouse.cpp,164,if( m_timer.msec() < threshould_time )
+VisModule/Visualization/Renderer/RendererBase.cpp,64,*  Get the rendering timer.
+VisModule/Visualization/Renderer/RendererBase.cpp,67,const vismodule::Timer& RendererBase::timer( void ) const
+VisModule/Visualization/Renderer/RendererBase.cpp,69,return( m_timer );
+VisModule/Visualization/Renderer/RendererBase.cpp,74,*  Get the rendering timer.
+VisModule/Visualization/Renderer/RendererBase.cpp,77,vismodule::Timer& RendererBase::timer( void )
+VisModule/Visualization/Renderer/RendererBase.cpp,79,return( m_timer );
+VisModule/Visualization/Viewer/WindowBase.h,23,#include <vismodule/Timer>
+VisModule/Visualization/Viewer/WindowBase.h,52,vismodule::Timer         m_elapse_time_counter; ///< elapse time counter for double click event
+VisModule/Visualization/Viewer/ScreenBase.cpp,210,vismodule::RendererBase* renderer = m_renderer_manager->renderer( id_pair.second );
+VisModule/Visualization/Viewer/ScreenBase.h,75,vismodule::Timer            m_elapse_time_counter; ///< elapse time counter for double click event
+VisModule/Visualization/Renderer/Ray.h,76,const bool isIntersected(
+VisModule/Visualization/Renderer/Ray.h,81,const bool isIntersected(
+VisModule/Visualization/Renderer/ParticleVolumeRenderer.cpp,86,BaseClass::m_timer.start();
+VisModule/Visualization/Renderer/ParticleVolumeRenderer.cpp,92,BaseClass::m_timer.stop();
+VisModule/FileFormat/XML/TinyXML.h,517,/** XML Cdata section. Contained in an element.
+VisModule/Visualization/Importer/UnstructuredVolumeImporter.cpp,849,auto &multi_block_format = time_and_format.second;
+VisModule/Visualization/Renderer/PointRenderer.cpp,94,this->timer().start();
+VisModule/Visualization/Renderer/PointRenderer.cpp,96,this->timer().stop();
+VisModule/Visualization/Renderer/RendererBase.h,19,#include <vismodule/Timer>
+VisModule/Visualization/Renderer/RendererBase.h,44,vismodule::Timer   m_timer;        ///< timer
+VisModule/Visualization/Renderer/RendererBase.h,59,const vismodule::Timer& timer( void ) const;
+VisModule/Visualization/Renderer/RendererBase.h,63,vismodule::Timer& timer( void );
+VisModule/Visualization/Renderer/Ray.cpp,97,const bool Ray::isIntersected(
+VisModule/Visualization/Renderer/Ray.cpp,128,const bool Ray::isIntersected(
+VisModule/Visualization/Renderer/RayCastingRenderer.cpp,20,#include <vismodule/VolumeRayIntersector>
+VisModule/Visualization/Renderer/RayCastingRenderer.cpp,68,BaseClass::m_timer.start();
+VisModule/Visualization/Renderer/RayCastingRenderer.cpp,73,BaseClass::m_timer.stop();
+VisModule/Visualization/Renderer/RayCastingRenderer.cpp,185,vismodule::VolumeRayIntersector ray( volume );
+VisModule/Visualization/Renderer/RayCastingRenderer.cpp,207,// Intersection the ray with the bounding box.
+VisModule/Visualization/Renderer/RayCastingRenderer.cpp,208,if ( ray.isIntersected() )
+VisModule/Visualization/Renderer/LineRenderer.cpp,92,this->timer().start();
+VisModule/Visualization/Renderer/LineRenderer.cpp,94,this->timer().stop();
+VisModule/Visualization/Renderer/GlyphRenderer.cpp,60,BaseClass::timer().start();
+VisModule/Visualization/Renderer/GlyphRenderer.cpp,62,BaseClass::timer().stop();
+VisModule/Visualization/Renderer/PolygonRenderer.cpp,102,this->timer().start();
+VisModule/Visualization/Renderer/PolygonRenderer.cpp,104,this->timer().stop();
+VisModule/Visualization/Renderer/ParticleBufferCompositor.cpp,72,BaseClass::m_timer.start();
+VisModule/Visualization/Renderer/ParticleBufferCompositor.cpp,78,BaseClass::m_timer.stop();
+VisModule/Visualization/Renderer/ParticleBufferCompositor.cpp,291,vismodule::Timer timer;
+VisModule/Visualization/Renderer/ParticleBufferCompositor.cpp,321,timer.start();
+VisModule/Visualization/Renderer/ParticleBufferCompositor.cpp,323,timer.stop();
+VisModule/Visualization/Renderer/ParticleBufferCompositor.cpp,324,m_accumulation_time += timer.msec();
