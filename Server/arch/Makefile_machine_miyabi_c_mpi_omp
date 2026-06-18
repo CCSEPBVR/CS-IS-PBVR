@@ -1,21 +1,21 @@
-CXX = icpc
+CXX = icpx
 CXXFLAGS = -O3 -axSAPPHIRERAPIDS,CORE-AVX512 -qopenmp -std=c++17
 
-CC = icc
-CCFLAGS = -O3 -axSAPPHIRERAPIDS,CORE-AVX512 -qopenmp
+CC = icx
+CCFLAGS = -O3 -axSAPPHIRERAPIDS,CORE-AVX512 -qopenmp -fcommon
 
-LD = icpc
+LD = icpx
 LDFLAGS = -O3 -axSAPPHIRERAPIDS,CORE-AVX512 -qopenmp
 
-MPICXX = mpiicpc
+MPICXX = mpiicpx
 MPICXXFLAGS = -O3 -axSAPPHIRERAPIDS,CORE-AVX512 -qopenmp -std=c++17
 
-MPICC = mpiicc
-MPICCFLAGS = -O3 -axSAPPHIRERAPIDS,CORE-AVX512 -qopenmp
+MPICC = mpiicx
+MPICCFLAGS = -O3 -axSAPPHIRERAPIDS,CORE-AVX512 -qopenmp -fcommon
 
-MPILD = mpiicpc
+MPILD = mpiicpx
 MPILDFLAGS = -O3 -axSAPPHIRERAPIDS,CORE-AVX512 -qopenmp
 
-NTL_CC  = icc
-NTL_CXX = icpc
+NTL_CC  = icx
+NTL_CXX = icpx
 NTL_CFLAGS = -O3 -axSAPPHIRERAPIDS,CORE-AVX512 -fp-model precise
