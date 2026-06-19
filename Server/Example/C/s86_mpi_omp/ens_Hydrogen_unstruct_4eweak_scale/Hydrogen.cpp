@@ -30,8 +30,8 @@ namespace
 int weak_base_ensemble_from_env()
 {
     const char* env = std::getenv( "PBVR_WEAK_BASE_ENS" );
-    const int value = env ? std::atoi( env ) : 4;
-    return value > 0 ? value : 4;
+    const int value = env ? std::atoi( env ) : 2;
+    return value > 0 ? value : 2;
 }
 
 }
@@ -80,9 +80,9 @@ int Hydrogen::generate_volume( void )
             for ( vismodule::UInt64 i = 0; i < dim1; ++i )
             {
 
-                //const float x = (float)i * cell_length + global_region[mpi_rank].x();
+                const float x = (float)i * cell_length + global_region[ens_id].x();
                 //const float y = (float)j * cell_length + global_region[mpi_rank].y();
-                const float x = (float)i * cell_length ;
+                //const float x = (float)i * cell_length ;
                 const float y = (float)j * cell_length ;
                 const float z = (float)k * cell_length;
 
@@ -176,13 +176,14 @@ Hydrogen::Hydrogen( void )
     //resolution = vismodule::Vector3ui( 64, 64, 128 );
 //    resolution = vismodule::Vector3ui( 4, 4, 4 );
 //    resolution = vismodule::Vector3ui( 128, 128, 128 );
-    resolution = vismodule::Vector3ui( 256, 256, 256 );
+    resolution = vismodule::Vector3ui( 128, 256, 128 );
+//    resolution = vismodule::Vector3ui( 256, 256, 256 );
 
     //cell_length = 1.0;
     cell_length = 127.f/(resolution.x()-1);
 
-//    global_region[ 0 ] = vismodule::Vector2f(  0,  0 );
-//    global_region[ 1 ] = vismodule::Vector2f( 63,  0 );
+    global_region[ 0 ] = vismodule::Vector2f(  0,  0 );
+    global_region[ 1 ] = vismodule::Vector2f( 63,  0 );
 //    global_region[ 2 ] = vismodule::Vector2f( 63, 63 );
 //    global_region[ 3 ] = vismodule::Vector2f(  0, 63 );
 

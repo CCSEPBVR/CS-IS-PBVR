@@ -75,6 +75,7 @@ MPI_RUNNER=mpirun
 PLACEMENT_CMD=omplace
 EXECUTABLE=Example/C/s86_mpi_omp/ens_Hydrogen_unstruct/run
 WEAK_EXECUTABLE=Example/C/s86_mpi_omp/ens_Hydrogen_unstruct_4eweak_scale/run
+STRONG_EXECUTABLES="Example/C/s86_mpi_omp/ens_Hydrogen_unstruct/run Example/C/s86_mpi_omp/ens_Hydrogen_unstruct_mpi2/run Example/C/s86_mpi_omp/ens_Hydrogen_unstruct_mpi4/run Example/C/s86_mpi_omp/ens_Hydrogen_unstruct_mpi8/run Example/C/s86_mpi_omp/ens_Hydrogen_unstruct_mpi16/run"
 INPUT_ARGS=''
 OUTPUT_ROOT=benchmark_results
 JOB_ROOT=pbs_jobs
@@ -87,6 +88,7 @@ JOB_ROOT=pbs_jobs
 ```sh
 export EXECUTABLE=Example/C/s86_mpi_omp/ens_Hydrogen_unstruct/run
 export WEAK_EXECUTABLE=Example/C/s86_mpi_omp/ens_Hydrogen_unstruct_4eweak_scale/run
+export STRONG_EXECUTABLES="Example/C/s86_mpi_omp/ens_Hydrogen_unstruct/run Example/C/s86_mpi_omp/ens_Hydrogen_unstruct_mpi2/run Example/C/s86_mpi_omp/ens_Hydrogen_unstruct_mpi4/run Example/C/s86_mpi_omp/ens_Hydrogen_unstruct_mpi8/run Example/C/s86_mpi_omp/ens_Hydrogen_unstruct_mpi16/run"
 export INPUT_ARGS="default.json"
 ```
 
@@ -103,13 +105,21 @@ export INPUT_ARGS="default.json"
 
 強スケーリングの基本ケースは以下です。
 
-- `strong_2x1`
 - `strong_4x1`
 - `strong_8x1`
 - `strong_16x1`
 - `strong_32x1`
+- `strong_64x1`
 
-弱スケーリングケースは `PBVR_WEAK_BASE_ENS` の倍数になるMPI数で生成します。MPI x OpenMP構成探索では、`NCPUS_PER_NODE` の範囲内で `mpiprocs >= 2` の組み合わせだけを生成します。1ノード40コア想定では以下です。
+強スケーリングではアンサンブル数を4に固定するため、MPI数に応じて以下のExampleを使い分けます。
+
+- `strong_4x1`: `ens_Hydrogen_unstruct`
+- `strong_8x1`: `ens_Hydrogen_unstruct_mpi2`
+- `strong_16x1`: `ens_Hydrogen_unstruct_mpi4`
+- `strong_32x1`: `ens_Hydrogen_unstruct_mpi8`
+- `strong_64x1`: `ens_Hydrogen_unstruct_mpi16`
+
+弱スケーリングケースは総MPIプロセス数が `10,20,40,80` になるように生成します。1ノード40コア想定では、`weak_80` は `select=2:ncpus=40:mpiprocs=40:ompthreads=1` になり、`mpirun -n 80` で実行します。`PBVR_WEAK_BASE_ENS=4` の場合、10 MPIだけは4の倍数ではないため分布パターンの繰り返しが完全周期になりません。完全周期で比較したい場合は `PBVR_WEAK_BASE_ENS=5` など、10を割り切れる値にしてください。MPI x OpenMP構成探索では、`NCPUS_PER_NODE` の範囲内で `mpiprocs >= 2` の組み合わせだけを生成します。1ノード40コア想定では以下です。
 
 - `sweep_40x1`
 - `sweep_20x2`
@@ -128,7 +138,7 @@ export INPUT_ARGS="default.json"
 Example/C/s86_mpi_omp/ens_Hydrogen_unstruct_4eweak_scale/run
 ```
 
-このパスは `WEAK_EXECUTABLE` で変更できます。
+このパスは `WEAK_EXECUTABLE` で変更できます。通常の `EXECUTABLE` は正しさ確認とMPI x OpenMP構成探索に使い、強スケーリングは `generate_benchmark_cases.py` 内のMPI数別マッピングを優先します。
 
 このサンプルでは `effective_ens_id = mpi_rank % PBVR_WEAK_BASE_ENS` を使い、`kd = 1.0 + effective_ens_id` とします。デフォルトの `PBVR_WEAK_BASE_ENS` は4です。MPI数を4の倍数にすると、同じensemble patternが繰り返されます。
 
@@ -158,10 +168,10 @@ module load ${MODULE_MPI}
 export OMP_NUM_THREADS=${OMPTHREADS}
 export KMP_AFFINITY=disabled
 
-${MPI_RUNNER} -n ${MPIPROCS} omplace ${EXECUTABLE} ${INPUT_ARGS} > ${LOG_FILE} 2>&1
+${MPI_RUNNER} -n ${TOTAL_MPIPROCS} omplace ${EXECUTABLE} ${INPUT_ARGS} > ${LOG_FILE} 2>&1
 ```
 
-この環境では `omplace -nt ${OMP_NUM_THREADS}` を付けるとエラーになるため、`omplace` には `-nt` を付けません。MPIプロセス数は `mpirun -n ${MPIPROCS}` で指定し、OpenMPスレッド数は従来通り `OMP_NUM_THREADS` とPBSの `ompthreads` で管理します。
+この環境では `omplace -nt ${OMP_NUM_THREADS}` を付けるとエラーになるため、`omplace` には `-nt` を付けません。MPIプロセス数は `mpirun -n ${TOTAL_MPIPROCS}` で指定します。`TOTAL_MPIPROCS` は `nodes * mpiprocs` です。OpenMPスレッド数は従来通り `OMP_NUM_THREADS` とPBSの `ompthreads` で管理します。
 
 ## スパコン上での基本実行手順
 
@@ -194,7 +204,7 @@ vi config.sh
 ./build.sh
 ```
 
-`build.sh` は `Server/BENCHMARK` から実行しますが、内部では1階層上の `Server` を `REPO_ROOT` としてビルドします。通常用の `EXECUTABLE` と弱スケーリング用の `WEAK_EXECUTABLE` が異なる場合は両方のExampleをビルドします。このスクリプトは、マニュアルに基づいて以下を行います。
+`build.sh` は `Server/BENCHMARK` から実行しますが、内部では1階層上の `Server` を `REPO_ROOT` としてビルドします。通常用の `EXECUTABLE`、強スケーリング用の `STRONG_EXECUTABLES`、弱スケーリング用の `WEAK_EXECUTABLE` を重複排除してビルドします。このスクリプトは、マニュアルに基づいて以下を行います。
 
 ```sh
 . /etc/profile.d/modules.sh

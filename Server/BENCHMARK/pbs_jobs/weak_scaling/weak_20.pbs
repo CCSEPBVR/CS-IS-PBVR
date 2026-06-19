@@ -1,8 +1,8 @@
 #!/bin/sh
 #PBS -q sc16
-#PBS -l select=1:ncpus=40:mpiprocs=40:ompthreads=1
+#PBS -l select=1:ncpus=20:mpiprocs=20:ompthreads=1
 #PBS -l walltime=00:30:00
-#PBS -N weak_1
+#PBS -N weak_20
 #PBS -j oe
 #PBS -P job
 
@@ -31,16 +31,17 @@ EXEC_DIR=$(dirname "$EXEC_PATH")
 export VIS_PARAM_DIR="$EXEC_DIR"
 export PARTICLE_DIR="$EXEC_DIR/particle_out"
 
-OUTPUT_DIR="$BENCHMARK_DIR/benchmark_results/weak_1"
-LOG_FILE="$BENCHMARK_DIR/benchmark_results/weak_1/weak_1.log"
+OUTPUT_DIR="$BENCHMARK_DIR/benchmark_results/weak_20"
+LOG_FILE="$BENCHMARK_DIR/benchmark_results/weak_20/weak_20.log"
 mkdir -p "$OUTPUT_DIR"
+cd "$OUTPUT_DIR"
 
-echo "CASE=weak_1"
+echo "CASE=weak_20"
 echo "PHASE=weak_scaling"
 echo "PBS_NODEFILE=$PBS_NODEFILE"
 echo "REPO_ROOT=$REPO_ROOT"
 echo "BENCHMARK_DIR=$BENCHMARK_DIR"
 echo "OMP_NUM_THREADS=$OMP_NUM_THREADS"
-echo "COMMAND=mpirun -n 40 omplace $EXEC_PATH "
+echo "COMMAND=mpirun -n 20 omplace $EXEC_PATH "
 
-mpirun -n 40 omplace "$EXEC_PATH"  > "$LOG_FILE" 2>&1
+mpirun -n 20 omplace "$EXEC_PATH"  > "$LOG_FILE" 2>&1

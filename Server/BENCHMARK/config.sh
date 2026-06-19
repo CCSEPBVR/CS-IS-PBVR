@@ -26,6 +26,7 @@ MAKE_JOBS=${MAKE_JOBS:-4}
 # EXECUTABLE and WEAK_EXECUTABLE are relative to REPO_ROOT unless absolute paths are supplied.
 EXECUTABLE=${EXECUTABLE:-Example/C/s86_mpi_omp/ens_Hydrogen_unstruct/run}
 WEAK_EXECUTABLE=${WEAK_EXECUTABLE:-Example/C/s86_mpi_omp/ens_Hydrogen_unstruct_4eweak_scale/run}
+STRONG_EXECUTABLES=${STRONG_EXECUTABLES:-"Example/C/s86_mpi_omp/ens_Hydrogen_unstruct/run Example/C/s86_mpi_omp/ens_Hydrogen_unstruct_mpi2/run Example/C/s86_mpi_omp/ens_Hydrogen_unstruct_mpi4/run Example/C/s86_mpi_omp/ens_Hydrogen_unstruct_mpi8/run Example/C/s86_mpi_omp/ens_Hydrogen_unstruct_mpi16/run"}
 INPUT_ARGS=${INPUT_ARGS:-}
 
 # Benchmark outputs are relative to BENCHMARK_DIR unless absolute paths are supplied.

@@ -34,6 +34,7 @@ export PARTICLE_DIR="$EXEC_DIR/particle_out"
 OUTPUT_DIR="$BENCHMARK_DIR/benchmark_results/strong_4x1"
 LOG_FILE="$BENCHMARK_DIR/benchmark_results/strong_4x1/strong_4x1.log"
 mkdir -p "$OUTPUT_DIR"
+cd "$OUTPUT_DIR"
 
 echo "CASE=strong_4x1"
 echo "PHASE=strong_scaling"

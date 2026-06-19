@@ -17,6 +17,13 @@ def env(name, default):
 
 DEFAULT_EXECUTABLE = "Example/C/s86_mpi_omp/ens_Hydrogen_unstruct/run"
 DEFAULT_WEAK_EXECUTABLE = "Example/C/s86_mpi_omp/ens_Hydrogen_unstruct_4eweak_scale/run"
+DEFAULT_STRONG_EXECUTABLES = {
+    4: "Example/C/s86_mpi_omp/ens_Hydrogen_unstruct/run",
+    8: "Example/C/s86_mpi_omp/ens_Hydrogen_unstruct_mpi2/run",
+    16: "Example/C/s86_mpi_omp/ens_Hydrogen_unstruct_mpi4/run",
+    32: "Example/C/s86_mpi_omp/ens_Hydrogen_unstruct_mpi8/run",
+    64: "Example/C/s86_mpi_omp/ens_Hydrogen_unstruct_mpi16/run",
+}
 
 
 def add_case(rows, name, phase, nodes, mpiprocs, ompthreads,
@@ -42,6 +49,17 @@ def add_case(rows, name, phase, nodes, mpiprocs, ompthreads,
     })
 
 
+def split_total_mpi(total_mpi, ompthreads, ncpus_per_node):
+    nodes = max(1, (total_mpi * ompthreads + ncpus_per_node - 1) // ncpus_per_node)
+    while total_mpi % nodes != 0:
+        nodes += 1
+    mpiprocs = total_mpi // nodes
+    ncpus = mpiprocs * ompthreads
+    if ncpus > ncpus_per_node:
+        return None
+    return nodes, mpiprocs
+
+
 def build_cases(executable_arg=None, input_args_arg=None, weak_executable_arg=None):
     ncpus_per_node = int(env("NCPUS_PER_NODE", "40"))
     weak_base_ens = max(2, int(env("PBVR_WEAK_BASE_ENS", "4")))
@@ -61,17 +79,29 @@ def build_cases(executable_arg=None, input_args_arg=None, weak_executable_arg=No
                  input_name, output_root, walltime, case_executable or executable, input_args,
                  ncpus_per_node)
 
+    def add_total_mpi(name, phase, total_mpi, ompthreads, input_name, case_executable=None):
+        placement = split_total_mpi(total_mpi, ompthreads, ncpus_per_node)
+        if placement is None:
+            return
+        nodes, mpiprocs = placement
+        add(name, phase, nodes, mpiprocs, ompthreads, input_name, case_executable)
+
     add("correctness_mpi_2x1", "correctness", 1, 2, 1, small_input)
     add("correctness_mpi_2x2", "correctness", 1, 2, 2, small_input)
     add("correctness_hybrid_4x4", "correctness", 1, 4, 4, small_input)
 
-    for mpi in (2, 4, 8, 16, 32):
-        add("strong_%sx1" % mpi, "strong_scaling", 1, mpi, 1, strong_input)
+    for mpi in (4, 8, 16, 32, 64):
+        add_total_mpi(
+            "strong_%sx1" % mpi,
+            "strong_scaling",
+            mpi,
+            1,
+            strong_input,
+            DEFAULT_STRONG_EXECUTABLES.get(mpi, executable),
+        )
 
-    weak_mpiprocs = (ncpus_per_node // weak_base_ens) * weak_base_ens
-    weak_mpiprocs = max(weak_base_ens, weak_mpiprocs)
-    for nodes in (1, 2, 4):
-        add("weak_%s" % nodes, "weak_scaling", nodes, weak_mpiprocs, 1, weak_input, weak_executable)
+    for mpi in (10, 20, 40, 80):
+        add_total_mpi("weak_%s" % mpi, "weak_scaling", mpi, 1, weak_input, weak_executable)
 
     for mpi, omp in ((40, 1), (20, 2), (10, 4), (8, 5), (5, 8), (4, 10), (2, 20)):
         add("sweep_%sx%s" % (mpi, omp), "mpi_omp_sweep", 1, mpi, omp, strong_input)

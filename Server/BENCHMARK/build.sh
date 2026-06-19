@@ -36,10 +36,21 @@ build_example()
   fi
 }
 
-build_example "$EXECUTABLE"
-if [ "$WEAK_EXECUTABLE" != "$EXECUTABLE" ]; then
-  build_example "$WEAK_EXECUTABLE"
-fi
+BUILT_EXAMPLES=""
+build_example_once()
+{
+  case " $BUILT_EXAMPLES " in
+    *" $1 "*) return ;;
+  esac
+  BUILT_EXAMPLES="$BUILT_EXAMPLES $1"
+  build_example "$1"
+}
+
+build_example_once "$EXECUTABLE"
+for strong_executable in $STRONG_EXECUTABLES; do
+  build_example_once "$strong_executable"
+done
+build_example_once "$WEAK_EXECUTABLE"
 
 if [ "$BUILD_SERIAL" = "1" ]; then
   echo "[build] Optional serial build: PBVR_MACHINE=$PBVR_MACHINE_SERIAL"

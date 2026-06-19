@@ -34,6 +34,7 @@ export PARTICLE_DIR="$EXEC_DIR/particle_out"
 OUTPUT_DIR="$BENCHMARK_DIR/benchmark_results/correctness_hybrid_4x4"
 LOG_FILE="$BENCHMARK_DIR/benchmark_results/correctness_hybrid_4x4/correctness_hybrid_4x4.log"
 mkdir -p "$OUTPUT_DIR"
+cd "$OUTPUT_DIR"
 
 echo "CASE=correctness_hybrid_4x4"
 echo "PHASE=correctness"

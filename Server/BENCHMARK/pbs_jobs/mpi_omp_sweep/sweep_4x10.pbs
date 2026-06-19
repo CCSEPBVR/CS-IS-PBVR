@@ -34,6 +34,7 @@ export PARTICLE_DIR="$EXEC_DIR/particle_out"
 OUTPUT_DIR="$BENCHMARK_DIR/benchmark_results/sweep_4x10"
 LOG_FILE="$BENCHMARK_DIR/benchmark_results/sweep_4x10/sweep_4x10.log"
 mkdir -p "$OUTPUT_DIR"
+cd "$OUTPUT_DIR"
 
 echo "CASE=sweep_4x10"
 echo "PHASE=mpi_omp_sweep"

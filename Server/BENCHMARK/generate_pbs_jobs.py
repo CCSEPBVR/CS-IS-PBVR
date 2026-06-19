@@ -34,6 +34,7 @@ def render(row):
     input_args = row.get("input_args") or env("INPUT_ARGS", "")
     output_dir = row["output_dir"]
     log_file = "%s/%s.log" % (output_dir, row["case"])
+    total_mpiprocs = int(row["nodes"]) * int(row["mpiprocs"])
     job_name = row["case"][:15]
     project_line = "#PBS -P %s\n" % project if project else ""
     module_lines = []
@@ -73,6 +74,7 @@ export PARTICLE_DIR="$EXEC_DIR/particle_out"
 OUTPUT_DIR="$BENCHMARK_DIR/{output_dir}"
 LOG_FILE="$BENCHMARK_DIR/{log_file}"
 mkdir -p "$OUTPUT_DIR"
+cd "$OUTPUT_DIR"
 
 echo "CASE={case}"
 echo "PHASE={phase}"
@@ -80,14 +82,15 @@ echo "PBS_NODEFILE=$PBS_NODEFILE"
 echo "REPO_ROOT=$REPO_ROOT"
 echo "BENCHMARK_DIR=$BENCHMARK_DIR"
 echo "OMP_NUM_THREADS=$OMP_NUM_THREADS"
-echo "COMMAND={mpi_runner} -n {mpiprocs} omplace $EXEC_PATH {input_args}"
+echo "COMMAND={mpi_runner} -n {total_mpiprocs} omplace $EXEC_PATH {input_args}"
 
-{mpi_runner} -n {mpiprocs} omplace "$EXEC_PATH" {input_args} > "$LOG_FILE" 2>&1
+{mpi_runner} -n {total_mpiprocs} omplace "$EXEC_PATH" {input_args} > "$LOG_FILE" 2>&1
 """.format(
         queue=queue,
         nodes=row["nodes"],
         ncpus=row["ncpus"],
         mpiprocs=row["mpiprocs"],
+        total_mpiprocs=total_mpiprocs,
         ompthreads=row["ompthreads"],
         walltime=row["walltime"],
         job_name=job_name,
