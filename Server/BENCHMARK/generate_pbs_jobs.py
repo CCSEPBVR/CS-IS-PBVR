@@ -60,14 +60,15 @@ module purge
 
 export OMP_NUM_THREADS={ompthreads}
 export KMP_AFFINITY=disabled
-export VIS_PARAM_DIR=/home/g6/a214026/pbvr/UNPBVR/IntegPBVRv360_ensamble_TF/CS-IS-PBVR/Server/Example/C/s86_mpi_omp/ens_Hydrogen_unstruct
-export  PARTICLE_DIR=/home/g6/a214026/pbvr/UNPBVR/IntegPBVRv360_ensamble_TF/CS-IS-PBVR/Server/Example/C/s86_mpi_omp/ens_Hydrogen_unstruct/particle_out
 
 EXECUTABLE='{executable}'
 case "$EXECUTABLE" in
   /*) EXEC_PATH="$EXECUTABLE" ;;
   *) EXEC_PATH="$REPO_ROOT/$EXECUTABLE" ;;
 esac
+EXEC_DIR=$(dirname "$EXEC_PATH")
+export VIS_PARAM_DIR="$EXEC_DIR"
+export PARTICLE_DIR="$EXEC_DIR/particle_out"
 
 OUTPUT_DIR="$BENCHMARK_DIR/{output_dir}"
 LOG_FILE="$BENCHMARK_DIR/{log_file}"

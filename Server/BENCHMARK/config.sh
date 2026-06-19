@@ -9,6 +9,7 @@ QUEUE=${QUEUE:-sc16}
 PROJECT=${PROJECT:-job}
 WALLTIME=${WALLTIME:-00:30:00}
 NCPUS_PER_NODE=${NCPUS_PER_NODE:-40}
+PBVR_WEAK_BASE_ENS=${PBVR_WEAK_BASE_ENS:-4}
 
 MODULE_CUDA=${MODULE_CUDA:-cuda/11.4}
 MODULE_GNU=${MODULE_GNU:-gnu/cur}
@@ -22,8 +23,9 @@ PBVR_MACHINE_MPI_OMP=${PBVR_MACHINE_MPI_OMP:-Makefile_machine_s86_mpi_omp}
 PBVR_MACHINE_SERIAL=${PBVR_MACHINE_SERIAL:-Makefile_machine_s86}
 MAKE_JOBS=${MAKE_JOBS:-4}
 
-# EXECUTABLE is relative to REPO_ROOT unless an absolute path is supplied.
+# EXECUTABLE and WEAK_EXECUTABLE are relative to REPO_ROOT unless absolute paths are supplied.
 EXECUTABLE=${EXECUTABLE:-Example/C/s86_mpi_omp/ens_Hydrogen_unstruct/run}
+WEAK_EXECUTABLE=${WEAK_EXECUTABLE:-Example/C/s86_mpi_omp/ens_Hydrogen_unstruct_4eweak_scale/run}
 INPUT_ARGS=${INPUT_ARGS:-}
 
 # Benchmark outputs are relative to BENCHMARK_DIR unless absolute paths are supplied.

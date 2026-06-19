@@ -66,6 +66,7 @@ QUEUE=sc16
 PROJECT=job
 WALLTIME=00:30:00
 NCPUS_PER_NODE=40
+PBVR_WEAK_BASE_ENS=4
 MODULE_CUDA=cuda/11.4
 MODULE_GNU=gnu/cur
 MODULE_INTEL=intel/2023.2.1
@@ -73,6 +74,7 @@ MODULE_MPI=mpt/2.23-ga
 MPI_RUNNER=mpirun
 PLACEMENT_CMD=omplace
 EXECUTABLE=Example/C/s86_mpi_omp/ens_Hydrogen_unstruct/run
+WEAK_EXECUTABLE=Example/C/s86_mpi_omp/ens_Hydrogen_unstruct_4eweak_scale/run
 INPUT_ARGS=''
 OUTPUT_ROOT=benchmark_results
 JOB_ROOT=pbs_jobs
@@ -84,6 +86,7 @@ JOB_ROOT=pbs_jobs
 
 ```sh
 export EXECUTABLE=Example/C/s86_mpi_omp/ens_Hydrogen_unstruct/run
+export WEAK_EXECUTABLE=Example/C/s86_mpi_omp/ens_Hydrogen_unstruct_4eweak_scale/run
 export INPUT_ARGS="default.json"
 ```
 
@@ -106,7 +109,7 @@ export INPUT_ARGS="default.json"
 - `strong_16x1`
 - `strong_32x1`
 
-MPI x OpenMP構成探索では、`NCPUS_PER_NODE` の範囲内で `mpiprocs >= 2` の組み合わせだけを生成します。1ノード40コア想定では以下です。
+弱スケーリングケースは `PBVR_WEAK_BASE_ENS` の倍数になるMPI数で生成します。MPI x OpenMP構成探索では、`NCPUS_PER_NODE` の範囲内で `mpiprocs >= 2` の組み合わせだけを生成します。1ノード40コア想定では以下です。
 
 - `sweep_40x1`
 - `sweep_20x2`
@@ -115,6 +118,25 @@ MPI x OpenMP構成探索では、`NCPUS_PER_NODE` の範囲内で `mpiprocs >= 2
 - `sweep_5x8`
 - `sweep_4x10`
 - `sweep_2x20`
+
+
+## 弱スケーリング用Hydrogenサンプル
+
+強スケーリング、正しさ確認、MPI x OpenMP構成探索では従来の `ens_Hydrogen_unstruct` を使います。弱スケーリング評価だけ、MPI数を増やしても物理値分布が大きく変化しないように、以下の新規Exampleを使います。
+
+```text
+Example/C/s86_mpi_omp/ens_Hydrogen_unstruct_4eweak_scale/run
+```
+
+このパスは `WEAK_EXECUTABLE` で変更できます。
+
+このサンプルでは `effective_ens_id = mpi_rank % PBVR_WEAK_BASE_ENS` を使い、`kd = 1.0 + effective_ens_id` とします。デフォルトの `PBVR_WEAK_BASE_ENS` は4です。MPI数を4の倍数にすると、同じensemble patternが繰り返されます。
+
+分布確認ログは通常rank 0のみ出力します。全rankで確認したい場合は以下を指定します。
+
+```sh
+export PBVR_WEAK_DEBUG=1
+```
 
 ## PBSジョブの形式
 
@@ -172,7 +194,7 @@ vi config.sh
 ./build.sh
 ```
 
-`build.sh` は `Server/BENCHMARK` から実行しますが、内部では1階層上の `Server` を `REPO_ROOT` としてビルドします。このスクリプトは、マニュアルに基づいて以下を行います。
+`build.sh` は `Server/BENCHMARK` から実行しますが、内部では1階層上の `Server` を `REPO_ROOT` としてビルドします。通常用の `EXECUTABLE` と弱スケーリング用の `WEAK_EXECUTABLE` が異なる場合は両方のExampleをビルドします。このスクリプトは、マニュアルに基づいて以下を行います。
 
 ```sh
 . /etc/profile.d/modules.sh

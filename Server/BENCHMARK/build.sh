@@ -19,17 +19,25 @@ echo "[build] benchmark dir: $BENCHMARK_DIR"
 echo "[build] PBVR_MACHINE=$PBVR_MACHINE_MPI_OMP"
 make PBVR_MACHINE="$PBVR_MACHINE_MPI_OMP" -j "$MAKE_JOBS"
 
-EXEC_PATH=$EXECUTABLE
-case "$EXEC_PATH" in
-  /*) ;;
-  *) EXEC_PATH="$REPO_ROOT/$EXEC_PATH" ;;
-esac
-EXEC_DIR=$(dirname "$EXEC_PATH")
-if [ -f "$EXEC_DIR/Makefile" ]; then
-  echo "[build] Building example in $EXEC_DIR"
-  make -C "$EXEC_DIR" PBVR_MACHINE="$PBVR_MACHINE_MPI_OMP" -j "$MAKE_JOBS"
-else
-  echo "[build] Example Makefile not found at $EXEC_DIR; skipping example build."
+build_example()
+{
+  EXEC_PATH=$1
+  case "$EXEC_PATH" in
+    /*) ;;
+    *) EXEC_PATH="$REPO_ROOT/$EXEC_PATH" ;;
+  esac
+  EXEC_DIR=$(dirname "$EXEC_PATH")
+  if [ -f "$EXEC_DIR/Makefile" ]; then
+    echo "[build] Building example in $EXEC_DIR"
+    make -C "$EXEC_DIR" PBVR_MACHINE="$PBVR_MACHINE_MPI_OMP" -j "$MAKE_JOBS"
+  else
+    echo "[build] Example Makefile not found at $EXEC_DIR; skipping example build."
+  fi
+}
+
+build_example "$EXECUTABLE"
+if [ "$WEAK_EXECUTABLE" != "$EXECUTABLE" ]; then
+  build_example "$WEAK_EXECUTABLE"
 fi
 
 if [ "$BUILD_SERIAL" = "1" ]; then

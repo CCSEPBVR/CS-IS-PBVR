@@ -13,6 +13,7 @@ REPO_ROOT=$(CDPATH= cd -- "$BENCHMARK_DIR/.." && pwd)
 cd "$REPO_ROOT"
 
 . /etc/profile.d/modules.sh
+module purge
 module load cuda/11.4
 module load gnu/cur
 module load intel/2023.2.1
@@ -21,11 +22,14 @@ module load mpt/2.23-ga
 export OMP_NUM_THREADS=1
 export KMP_AFFINITY=disabled
 
-EXECUTABLE='Example/C/s86_mpi_omp/ens_Hydrogen_unstruct/run'
+EXECUTABLE='Example/C/s86_mpi_omp/ens_Hydrogen_unstruct_4eweak_scale/run'
 case "$EXECUTABLE" in
   /*) EXEC_PATH="$EXECUTABLE" ;;
   *) EXEC_PATH="$REPO_ROOT/$EXECUTABLE" ;;
 esac
+EXEC_DIR=$(dirname "$EXEC_PATH")
+export VIS_PARAM_DIR="$EXEC_DIR"
+export PARTICLE_DIR="$EXEC_DIR/particle_out"
 
 OUTPUT_DIR="$BENCHMARK_DIR/benchmark_results/weak_1"
 LOG_FILE="$BENCHMARK_DIR/benchmark_results/weak_1/weak_1.log"
