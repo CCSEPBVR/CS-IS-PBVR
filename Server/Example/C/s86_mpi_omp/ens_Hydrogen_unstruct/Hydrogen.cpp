@@ -70,10 +70,10 @@ int Hydrogen::generate_volume( void )
                 const float y = (float)j * cell_length ;
                 const float z = (float)k * cell_length;
 
-                if(k == 0) 
-                {
-                    std::cout << "x = " << x << std::endl;
-                }
+//                if(k == 0) 
+//                {
+//                    std::cout << "x = " << x << std::endl;
+//                }
                 const vismodule::Real64 dx = kr * ( x - ( dim / 2.0 ) );
                 const vismodule::Real64 dy = kr * ( y - ( dim / 2.0 ) );
                 const vismodule::Real64 dz = kr3 * ( z - ( dim / 2.0 ) );
@@ -84,8 +84,8 @@ int Hydrogen::generate_volume( void )
                 const vismodule::Real64 phi = kd * ( r*r ) * std::exp( -r/2 ) * ( 3*cos_theta*cos_theta-1 );
                 const vismodule::Real64  c = (phi * phi) > 255 ? 255 : (phi * phi);
 //                values[0][index] = index + mpi_rank*0.1;
-                values[0][index] = mpi_rank*0.1;
-                values[1][index] = mpi_rank*0.1;
+//                values[0][index] = mpi_rank*0.1;
+//                values[1][index] = mpi_rank*0.1;
 //                values[2][index] = mpi_rank*0.1;
 //                values[3][index] = mpi_rank*0.1;
 //                values[0][index] = x;
@@ -155,9 +155,9 @@ Hydrogen::Hydrogen( void )
 
     // Including halo region in x-y boundary
     //resolution = vismodule::Vector3ui( 64, 64, 128 );
-    resolution = vismodule::Vector3ui( 4, 4, 4 );
+//    resolution = vismodule::Vector3ui( 4, 4, 4 );
 //    resolution = vismodule::Vector3ui( 128, 128, 128 );
-//    resolution = vismodule::Vector3ui( 256, 256, 256 );
+    resolution = vismodule::Vector3ui( 256, 256, 256 );
 
     //cell_length = 1.0;
     cell_length = 127.f/(resolution.x()-1);
