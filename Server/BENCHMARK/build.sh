@@ -6,6 +6,7 @@ cd "$REPO_ROOT"
 
 if [ -f /etc/profile.d/modules.sh ]; then
   . /etc/profile.d/modules.sh
+  module purge
   [ -n "$MODULE_CUDA" ] && module load "$MODULE_CUDA"
   [ -n "$MODULE_GNU" ] && module load "$MODULE_GNU"
   [ -n "$MODULE_INTEL" ] && module load "$MODULE_INTEL"
