@@ -1,16 +1,16 @@
-# BOTTLENECK CANDIDATES
+# ボトルネック候補
 
-This is the static pre-run candidate list. The generated `benchmark_analysis/bottleneck_candidates.csv` is the measurement-driven list.
+このファイルは実測前の静的な候補一覧である。実測後の自動抽出結果は `benchmark_analysis/bottleneck_candidates.csv` を参照する。
 
-| Priority | Section / area | Symptom | Evidence | Hypothesis | Next check |
+| 優先度 | 区間 / 領域 | 症状 | 根拠 | 原因仮説 | 次に確認すること |
 | ---: | --- | --- | --- | --- | --- |
-| 1 | `uniform_volume_calculation` | Often dominant in particle generation | Timers in `InSituLib/unstruct/kvs_wrapper.cpp`; cell volume called inside sampling | Expensive HexahedralCell volume/Jacobian or repeated geometry work | Compare with cached/tetra volume experiments and inspect SIMD reports |
-| 1 | `uniform_particle_sampling_loop` | Heavy local compute | OpenMP dynamic loop around `InSituLib/unstruct/kvs_wrapper.cpp:1997` | Random coordinate generation, scalar interpolation, TF eval, particle push/store | Split by fine timers and check thread max/avg |
-| 1 | `uniform_calc_scalar_grad` / `shift_calc_scalar_grad` | Chain-rule normal work | Fine timers at `InSituLib/unstruct/kvs_wrapper.cpp:1367` onward | q/grad setup, TF eval, numerical dF/dq, normal normalize | Use fine sections: q setup, TF scalar eval, dF/dq, normalize |
-| 1 | `MPI_Gatherv` particle gather | Rank 0 concentration | `InSituLib/unstruct/kvs_wrapper.cpp:563-569` | Root memory bandwidth and network fan-in | Compare particle count imbalance and gather/output sections |
-| 1 | `mpi_shift_exchange` / `MPI_Waitall` | Wait time / communication | `InSituLib/unstruct/kvs_wrapper.cpp:2439-2555` | Payload imbalance, no useful overlap before wait | Inspect payload component timers and rank max/avg |
-| 2 | `thread_particle_merge` | OpenMP serialization | `InSituLib/unstruct/kvs_wrapper.cpp:2298` critical | Thread-local vector merge becomes serial | Measure merge contribution vs particle count |
-| 2 | `async_io_wait` / `output_particles_*` | I/O wait | output timers in ensemble timer enum | Slow storage or rank 0 write concentration | Separate I/O-inclusive and I/O-exclusive totals |
-| 2 | `EnsembleCellHistogram` moment `MPI_Allreduce` | Large collective payload | `InSituLib/unstruct/EnsembleCellHistogram.cpp:235-236` | `ncells * nvariables` float reductions | Measure collective time and memory footprint |
-| 2 | `stat_histogram` | Histogram construction/reduction | `EnsembleCellHistogram.cpp:635-695` and timer enum | Thread-local histogram merge and MPI_Reduce | Check bins, variables, OpenMP merge cost |
-| 3 | `MPI_Barrier` final/state sections | Slowest rank dominates | `InSituLib/unstruct/kvs_wrapper.cpp:1303`, `3009`, `3494` | Previous imbalance hidden by barrier | Correlate with previous max/avg sections |
+| 1 | `uniform_volume_calculation` | 粒子生成で支配的になりやすい | `InSituLib/unstruct/kvs_wrapper.cpp` のタイマー区間 | HexahedralCell の体積計算、ヤコビアン、幾何計算の重複 | 体積キャッシュ案、四面体分割版、SIMDレポートと比較する |
+| 1 | `uniform_particle_sampling_loop` | ローカル計算が重い | OpenMP dynamic loop around `InSituLib/unstruct/kvs_wrapper.cpp:1997` | 乱数、局所座標生成、補間、TF評価、粒子格納が集中 | fine timer と thread max/avg を確認する |
+| 1 | `uniform_calc_scalar_grad` / `shift_calc_scalar_grad` | チェーンルール法線計算が重い | `InSituLib/unstruct/kvs_wrapper.cpp:1367` 以降の細分化タイマー | q/grad setup、TF評価、dF/dq、正規化 | `q setup`, `TF eval`, `dF/dq`, `normalize` を分けて見る |
+| 1 | `MPI_Gatherv` 粒子 gather | rank 0 集中 | `InSituLib/unstruct/kvs_wrapper.cpp:563-569` | rank 0 のメモリ帯域、ネットワークfan-in | 粒子数不均衡と gather / output 区間を比較する |
+| 1 | `mpi_shift_exchange` / `MPI_Waitall` | 通信待ち | `InSituLib/unstruct/kvs_wrapper.cpp:2439-2555` | payload不均衡、非同期通信後すぐ待っている | payload別タイマーと rank max/avg を確認する |
+| 2 | `thread_particle_merge` | OpenMPの直列化 | `InSituLib/unstruct/kvs_wrapper.cpp:2298` の critical | thread-local vector のmergeが直列化 | 粒子数に対するmerge寄与率を見る |
+| 2 | `async_io_wait` / `output_particles_*` | I/O待ち | output系タイマー | ストレージ待ち、rank 0 書き込み集中 | I/O込み / I/O除外の総時間を分ける |
+| 2 | `EnsembleCellHistogram` の `MPI_Allreduce` | 集団通信payloadが大きい | `InSituLib/unstruct/EnsembleCellHistogram.cpp:235-236` | `ncells * nvariables` のfloat配列集約 | collective時間とメモリ量を見る |
+| 2 | `stat_histogram` | histogram作成/集約が重い | `EnsembleCellHistogram.cpp:635-695` | thread-local histogram merge と `MPI_Reduce` | bins数、変数数、OpenMP merge時間を見る |
+| 3 | `MPI_Barrier` final/state | 最遅rankに支配される | `InSituLib/unstruct/kvs_wrapper.cpp:1303`, `3009`, `3494` | 直前区間の不均衡がbarrierで見える | 直前区間の max/avg と相関を見る |

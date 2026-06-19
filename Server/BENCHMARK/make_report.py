@@ -15,12 +15,12 @@ def read_rows(path):
 
 def md_table(rows, fields, limit=40):
     if not rows:
-        return "No data.\n"
+        return "データなし。\n"
     lines = ["| " + " | ".join(fields) + " |", "| " + " | ".join(["---"] * len(fields)) + " |"]
     for row in rows[:limit]:
         lines.append("| " + " | ".join(str(row.get(f, "")) for f in fields) + " |")
     if len(rows) > limit:
-        lines.append("\nShowing first %d of %d rows.\n" % (limit, len(rows)))
+        lines.append("\n先頭 %d / %d 行を表示。\n" % (limit, len(rows)))
     return "\n".join(lines) + "\n"
 
 
@@ -37,15 +37,15 @@ def main():
     candidates = read_rows(root / "bottleneck_candidates.csv")
 
     text = []
-    text.append("# PBVR Benchmark Report\n")
-    text.append("This report is generated from existing PBVR timer CSV/log outputs. Parallel comparisons use the MPI max time, not only the average.\n")
-    text.append("## Scaling Summary\n")
+    text.append("# PBVR ベンチマークレポート\n")
+    text.append("このレポートは既存のPBVRタイマーCSV/ログから生成しています。並列比較では平均だけでなくMPI max時間を使います。\n")
+    text.append("## スケーリング概要\n")
     text.append(md_table(scaling, ["case", "nodes", "mpi", "omp", "total_cores", "total_time", "speedup", "efficiency"]))
-    text.append("## Bottleneck Candidates\n")
+    text.append("## ボトルネック候補\n")
     text.append(md_table(candidates, ["priority", "section", "symptom", "evidence", "hypothesis", "next_check"]))
-    text.append("## Section Summary\n")
+    text.append("## 区間別概要\n")
     text.append(md_table(sections, ["case", "section", "serial_time", "opt_avg", "opt_max", "speedup_vs_serial", "max_over_avg", "contribution"]))
-    text.append("## Timing Summary\n")
+    text.append("## タイマー概要\n")
     text.append(md_table(timing, ["case", "section", "min", "avg", "max", "max_over_avg", "thread_avg_sec", "thread_max_sec"]))
 
     out = Path(args.output)

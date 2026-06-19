@@ -1,87 +1,73 @@
-# TIMER REPORT
+# タイマーレポート
 
-## Timer Implementation
+## タイマー実装
 
-| Timer | File | Start line | End line | Target process | Rank-wise | Thread-wise | Usable for performance evaluation |
+| タイマー | ファイル | 開始行 | 終了行 | 対象処理 | rank別 | thread別 | 性能評価で使えるか |
 | --- | --- | ---: | ---: | --- | --- | --- | --- |
-| `vismodule::Timer` | `VisModule/Utility/Timer.*` | N/A | N/A | General elapsed time using wall clock | Depends on caller | Depends on caller | Yes for coarse wall time; use MPI max for parallel comparison |
-| `EnsembleTimerCollector` | `InSituLib/unstruct/kvs_wrapper.cpp` | 225 | 405 | Ensemble particle generation sections | Yes, MPI reduced avg/max/min | Yes, thread avg/max/min | Yes, primary existing timer |
-| `EnsembleTimerScope` | `InSituLib/unstruct/kvs_wrapper.cpp` | 412 | 430 | RAII section timer | Accumulated per rank | No by itself | Yes |
-| `ChainRuleTimingBreakdown` | `InSituLib/unstruct/kvs_wrapper.cpp` | around 1347 | around 1485 | Scalar + chain-rule gradient sub-sections | Folded into collector | Folded into collector | Yes, fine-grain local kernel diagnosis |
-| `AMR time struct` | `InSituLib/AMR/kvs_wrapper.cpp` | around 502 | 508 | AMR initialize/sampling/write/reduce | MPI max reduced | No | Yes for AMR path |
-| `particle_write_thread` timer | `InSituLib/shared/particle_write_thread.h` | 54 | 65 | Async particle file writing | No direct MPI reduction | Thread-local worker | Useful for I/O diagnosis |
-| `thread_timer` helpers | `InSituLib/shared/thread_timer.h` | 113 | 140 | Generic chrono timed sections | Caller-dependent | Caller-dependent | Potentially useful, not primary output |
+| `vismodule::Timer` | `VisModule/Utility/Timer.*` | N/A | N/A | 汎用wall clock計測 | 呼び出し側依存 | 呼び出し側依存 | 粗い区間計測に有効。並列比較ではMPI maxを見る。 |
+| `EnsembleTimerCollector` | `InSituLib/unstruct/kvs_wrapper.cpp` | 225 | 405 | ensemble粒子生成の区間計測 | MPI avg/max/minあり | thread avg/max/minあり | 主要な性能評価用タイマー。 |
+| `EnsembleTimerScope` | `InSituLib/unstruct/kvs_wrapper.cpp` | 412 | 430 | RAII形式の区間計測 | rank内集計 | 単体ではなし | 有効。 |
+| `ChainRuleTimingBreakdown` | `InSituLib/unstruct/kvs_wrapper.cpp` | around 1347 | around 1485 | scalar + chain-rule gradient の細分化 | collectorに集約 | collectorに集約 | 局所kernel診断に有効。 |
+| `AMR time struct` | `InSituLib/AMR/kvs_wrapper.cpp` | around 502 | 508 | AMR initialize/sampling/write/reduce | MPI max reduce | なし | AMRパス評価に有効。 |
+| `particle_write_thread` timer | `InSituLib/shared/particle_write_thread.h` | 54 | 65 | 非同期粒子書き込み | MPI集約なし | worker thread | I/O診断に有効。 |
+| `thread_timer` helpers | `InSituLib/shared/thread_timer.h` | 113 | 140 | chronoベースの汎用区間 | 呼び出し側依存 | 呼び出し側依存 | 補助的に利用可能。 |
 
-## Ensemble Timer CSV Format
+## Ensemble Timer CSV形式
 
-`InSituLib/unstruct/kvs_wrapper.cpp` writes `ensemble_timer_summary.csv` with:
+`InSituLib/unstruct/kvs_wrapper.cpp` は `ensemble_timer_summary.csv` を以下の形式で出力する。
 
 ```text
 step,scope,parent_section,section,level,mpi_avg_sec,mpi_max_sec,mpi_min_sec,thread_avg_sec,thread_max_sec,thread_min_sec,uniform_particle_count,ave_particle_count,var_particle_count,cov_particle_count
 ```
 
-The scripts intentionally compare parallel runs using `mpi_max_sec`, because the slowest rank determines elapsed time.
+並列実行では最遅rankが全体時間を決めるため、比較には `mpi_max_sec` を使う。
 
-## Existing Ensemble Sections
+## 主要タイマー区間
 
-| Timer name / section | File | Start line | End line | Classification | Rank-wise | Thread-wise | Use |
-| --- | --- | ---: | ---: | --- | --- | --- | --- |
-| `total` | `InSituLib/unstruct/kvs_wrapper.cpp` | 88 | 146 | total | yes | no | Overall elapsed time |
-| `set_parameter_path` | same | 88 | 146 | initialization | yes | no | Setup |
-| `read_parameter_file` | same | 88 | 146 | initialization / I/O | yes | no | Parameter I/O |
-| `init_transfer_functions` | same | 88 | 146 | initialization | yes | no | TF setup |
-| `create_cells` | same | 88 | 146 | data_conversion | yes | no | Cell object creation |
-| `sampling_prepare` | same | 88 | 146 | particle_generation | yes | no | Pre-sampling setup; verify if unexpectedly large |
-| `omp_uniform_sampling` | same | 88 | 146 | OpenMP_parallel_region | yes | yes | Uniform particle generation region |
-| `uniform_thread_setup` | same | 88 | 146 | initialization | yes | yes | Thread-local setup |
-| `uniform_cell_index_setup` | same | 88 | 146 | data_conversion | yes | yes | Cell index preparation |
-| `uniform_bind_cell_array` | same | 88 | 146 | interpolation | yes | yes | Cell binding |
-| `uniform_volume_calculation` | same | 88 | 146 | local_compute | yes | yes | Cell volume calculation |
-| `uniform_particle_count_calculation` | same | 88 | 146 | sampling | yes | yes | Particle count per cell |
-| `uniform_particle_sampling_loop` | same | 88 | 146 | sampling | yes | yes | Random local coordinate and particle creation loop |
-| `uniform_local_coord_generation` | same | 88 | 146 | sampling | yes | yes | Random/local coordinate generation |
-| `uniform_flush_prepare` | same | 88 | 146 | data_conversion | yes | yes | Buffer flush prep |
-| `uniform_calculate_scalars` | same | 88 | 146 | interpolation | yes | yes | Scalar interpolation |
-| `uniform_chain_rule_grad` | same | 88 | 146 | local_compute | yes | yes | Chain-rule normal calculation |
-| `uniform_calc_scalar_grad` | same | 88 | 146 | local_compute | yes | yes | Combined scalar/gradient helper total |
-| `uniform_q_values_grad_q_setup` | same | 88 | 146 | interpolation | yes | yes | q and grad_q setup |
-| `uniform_tf_scalar_eval` | same | 88 | 146 | visualization_kernel | yes | yes | TF scalar evaluation |
-| `uniform_chain_rule_dfdq` | same | 88 | 146 | visualization_kernel | yes | yes | dF/dq calculation |
-| `uniform_normal_normalize` | same | 88 | 146 | local_compute | yes | yes | Normal normalization |
-| `uniform_store_particle_data` | same | 88 | 146 | data_conversion | yes | yes | Particle buffer append/store |
-| `thread_particle_merge` | same | 88 | 146 | OpenMP_reduction / synchronization | yes | no | Critical merge candidate |
-| `mpi_shift_exchange` | same | 88 | 146 | halo_exchange / MPI_collective | yes | no | Ensemble ring exchange |
-| `mpi_shift_size_exchange` | same | 88 | 146 | MPI_collective | yes | no | Size exchange |
-| `mpi_shift_alloc_recv_buffer` | same | 88 | 146 | data_conversion | yes | no | Receive buffer allocation |
-| `mpi_shift_payload_all` | same | 88 | 146 | MPI_collective | yes | no | Payload send/receive |
-| `mpi_shift_payload_*` | same | 88 | 146 | pack / unpack / MPI_collective | yes | no | Payload component diagnosis |
-| `omp_shift_interpolation` | same | 88 | 146 | OpenMP_parallel_region | yes | yes | Shifted particle interpolation |
-| `shift_calculate_scalars` | same | 88 | 146 | interpolation | yes | yes | Scalar interpolation for shifted particles |
-| `shift_chain_rule_grad` | same | 88 | 146 | local_compute | yes | yes | Chain-rule normal for shifted particles |
-| `shift_calc_scalar_grad` | same | 88 | 146 | local_compute | yes | yes | Combined shift helper total |
-| `shift_q_values_grad_q_setup` | same | 88 | 146 | interpolation | yes | yes | Shift q and grad_q setup |
-| `shift_tf_scalar_eval` | same | 88 | 146 | visualization_kernel | yes | yes | Shift TF eval |
-| `shift_chain_rule_dfdq` | same | 88 | 146 | visualization_kernel | yes | yes | Shift dF/dq |
-| `shift_normal_normalize` | same | 88 | 146 | local_compute | yes | yes | Shift normal normalize |
-| `stat_average_variance` | same | 88 | 146 | local_compute | yes | no | Ensemble statistics |
-| `stat_histogram` | same | 88 | 146 | local_compute / MPI_collective | yes | no | Histogram creation/reduction |
-| `omp_rejection` | same | 88 | 146 | OpenMP_parallel_region | yes | yes | Rejection sampling/stat filtering |
-| `rejection_thread_merge` | same | 88 | 146 | synchronization | yes | no | Critical merge |
-| `cleanup_tfs` | same | 88 | 146 | finalization | yes | no | Cleanup |
-| `output_coord_minmax` | same | 88 | 146 | I/O / MPI_collective | yes | no | Coordinate range output |
-| `output_particles_*` | same | 88 | 146 | I/O | yes | no | Particle output |
-| `output_history` | same | 88 | 146 | I/O | yes | no | History output |
-| `async_io_wait` | same | 88 | 146 | I/O / synchronization | yes | no | Async write wait |
-| `final_barrier_state` | same | 88 | 146 | synchronization | yes | no | Final barrier/state wait |
+| section | 分類 | 内容 | 確認観点 |
+| --- | --- | --- | --- |
+| `ensemble_generate_particles_total` | total | 粒子生成全体 | 全体時間。 |
+| `set_parameter_path` | initialization | パラメータパス設定 | 不自然に大きい場合はファイル/パス処理を確認。 |
+| `read_parameter_file` | initialization / I/O | パラメータ読み込み | rank間偏りやI/O待ち。 |
+| `init_transfer_functions` | initialization | TF初期化 | 初期化コスト。 |
+| `create_cells` | data_conversion | Cell作成 | CellBase生成・bind前処理。 |
+| `sampling_prepare` | particle_generation | sampling前処理 | 本来小さい想定。大きい場合は範囲を再確認。 |
+| `omp_uniform_sampling` | OpenMP_parallel_region | uniform粒子生成のOpenMP領域 | thread max/avgを見る。 |
+| `uniform_bind_cell_array` | interpolation | Cell array bind | bind重複やcellアクセスの確認。 |
+| `uniform_volume_calculation` | local_compute | セル体積計算 | HexahedralCell体積計算のボトルネック候補。 |
+| `uniform_particle_count_calculation` | sampling | セルごとの粒子数計算 | 負荷分散に影響。 |
+| `uniform_particle_sampling_loop` | sampling | 粒子生成ループ本体 | 乱数、補間、TF、storeが含まれる。 |
+| `uniform_calculate_scalars` | interpolation | scalar補間 | chain-ruleと重複がないか確認。 |
+| `uniform_chain_rule_grad` | local_compute | chain-rule法線計算 | dF/dq、grad_q、normalize。 |
+| `uniform_calc_scalar_grad` | local_compute | scalar + gradient helper全体 | 細分化timerで内訳を見る。 |
+| `uniform_q_values_grad_q_setup` | interpolation | q値とgrad_qの準備 | 変数数依存。 |
+| `uniform_tf_scalar_eval` | visualization_kernel | TF評価 | Function parser評価コスト。 |
+| `uniform_chain_rule_dfdq` | visualization_kernel | dF/dq計算 | 数値微分なら評価回数に注意。 |
+| `uniform_normal_normalize` | local_compute | 法線正規化 | NaN/zero処理含む。 |
+| `thread_particle_merge` | synchronization | thread-local粒子bufferのmerge | critical直列化候補。 |
+| `mpi_shift_exchange` | halo_exchange / MPI | ensemble shift通信 | payload量とWait時間。 |
+| `mpi_shift_size_exchange` | MPI | shiftサイズ交換 | max/avgが高い場合は待ち。 |
+| `mpi_shift_payload_*` | MPI / pack / unpack | payload別通信 | cellids/scalars/coords/normals等の内訳。 |
+| `omp_shift_interpolation` | OpenMP_parallel_region | shift後補間 | thread不均衡。 |
+| `shift_calculate_scalars` | interpolation | shift粒子scalar計算 | uniform側との比較。 |
+| `shift_chain_rule_grad` | local_compute | shift粒子chain-rule法線 | uniform側との比較。 |
+| `stat_average_variance` | local_compute | 統計量計算 | ensemble統計の局所計算。 |
+| `stat_histogram` | local_compute / MPI | histogram作成/集約 | bins数・変数数・MPI_Reduce。 |
+| `omp_rejection` | OpenMP_parallel_region | rejection処理 | thread max/avg。 |
+| `rejection_thread_merge` | synchronization | rejection後merge | critical候補。 |
+| `output_particles_*` | I/O | 粒子出力 | I/O込み/除外で比較。 |
+| `output_history` | I/O | history出力 | rank 0 集中の可能性。 |
+| `async_io_wait` | I/O / synchronization | 非同期I/O待ち | I/Oボトルネック候補。 |
+| `final_barrier_state` | synchronization | 最終同期 | 直前の不均衡が現れる。 |
 
-## Performance Evaluation Guidance
+## 評価方針
 
-- Use `mpi_max_sec` for end-to-end and serial-vs-parallel comparisons.
-- Use `max_over_avg` to detect rank imbalance or collective wait.
-- Use `thread_max_sec / thread_avg_sec` manually for OpenMP imbalance where available.
-- For I/O-inclusive and I/O-exclusive views, subtract or filter `output_*`, `async_io_wait`, and `final_barrier_state` sections.
-- For compositing/gather diagnosis, inspect `MPI_Gatherv` sections indirectly via particle gather/output/compositing timers; add explicit timers only if current sections remain ambiguous.
+- serial相当またはbaselineとの比較では `mpi_max_sec` を使う。
+- `max_over_avg` が大きい区間は、負荷不均衡または通信待ちの候補とする。
+- OpenMPの偏りは `thread_max_sec / thread_avg_sec` を見る。
+- I/O込み総時間とI/O除外総時間は分けて評価する。
+- compositing / gather は `MPI_Gatherv` 周辺と output 系タイマーを重点確認する。
 
-## Raw Search CSV
+## raw CSV
 
-For complete timer-related search results, see `timer_occurrences.csv`.
+検索結果の一覧は `timer_occurrences.csv` を参照する。

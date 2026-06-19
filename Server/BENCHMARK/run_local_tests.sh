@@ -15,7 +15,10 @@ python3 -m py_compile \
 python3 generate_benchmark_cases.py --output "$CASES_CSV"
 python3 generate_pbs_jobs.py --cases "$CASES_CSV" --job-root "$JOB_ROOT"
 
-SAMPLE_TIMER="$REPO_ROOT/Example/C/s86_mpi_omp/ens_Hydrogen_unstruct_mpi4/ensemble_timer_summary.csv"
+SAMPLE_TIMER="$REPO_ROOT/Example/C/s86_mpi_omp/ens_Hydrogen_unstruct/ensemble_timer_summary.csv"
+if [ ! -f "$SAMPLE_TIMER" ]; then
+  SAMPLE_TIMER="$REPO_ROOT/Example/C/s86_mpi_omp/ens_Hydrogen_unstruct_mpi4/ensemble_timer_summary.csv"
+fi
 if [ -f "$SAMPLE_TIMER" ]; then
   python3 parse_timing.py --input "$SAMPLE_TIMER" --output "$ANALYSIS_DIR"
   python3 summarize_results.py --cases "$CASES_CSV" --timing "$ANALYSIS_DIR/timing_summary.csv" --output "$ANALYSIS_DIR"

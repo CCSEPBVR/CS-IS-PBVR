@@ -50,12 +50,12 @@ def choose_total(summary_by_case):
 
 def imbalance_label(max_over_avg):
     if max_over_avg >= 2.0:
-        return "strong imbalance or wait"
+        return "強い負荷不均衡または待ち"
     if max_over_avg >= 1.2:
-        return "needs review"
+        return "要確認"
     if max_over_avg >= 1.05:
-        return "mild imbalance"
-    return "good"
+        return "軽度の偏り"
+    return "良好"
 
 
 def main():
@@ -75,7 +75,11 @@ def main():
         by_case[row["case"]].append(row)
 
     totals = choose_total(by_case)
-    if "correctness_serial" in totals:
+    if "correctness_mpi_2x1" in totals:
+        baseline_case = "correctness_mpi_2x1"
+    elif "strong_2x1" in totals:
+        baseline_case = "strong_2x1"
+    elif "correctness_serial" in totals:
         baseline_case = "correctness_serial"
     elif "strong_1x1" in totals:
         baseline_case = "strong_1x1"
@@ -128,13 +132,13 @@ def main():
         })
         symptoms = []
         if contribution >= 0.15:
-            symptoms.append("large contribution")
+            symptoms.append("全体時間への寄与が大きい")
         if serial_time > 0 and speedup < 1.0:
-            symptoms.append("slower than serial section")
+            symptoms.append("基準ケースより遅い")
         if moa >= 1.2:
             symptoms.append(imbalance_label(moa))
         if any(key in section.lower() for key in ["mpi", "barrier", "shift", "gather", "output", "history", "io", "merge"]):
-            symptoms.append("communication/synchronization/io candidate")
+            symptoms.append("通信/同期/I/O候補")
         if symptoms:
             priority = 1 if contribution >= 0.25 or moa >= 2.0 else (2 if contribution >= 0.10 or moa >= 1.2 else 3)
             candidate_rows.append({
@@ -142,8 +146,8 @@ def main():
                 "section": section,
                 "symptom": "; ".join(sorted(set(symptoms))),
                 "evidence": "case=%s, opt_max=%.6g, contribution=%.3f, max/avg=%.3f" % (case, opt_max, contribution, moa),
-                "hypothesis": "load imbalance, collective wait, rank-0 concentration, or expensive local kernel",
-                "next_check": "inspect rank/thread raw timing and split compute/communication if the section remains dominant",
+                "hypothesis": "負荷不均衡、集団通信待ち、rank 0集中、または局所kernelの高コスト",
+                "next_check": "rank/thread別raw timingを確認し、支配的なら計算/通信をさらに分割する",
             })
 
     candidate_rows.sort(key=lambda r: (int(r["priority"]), r["section"]))

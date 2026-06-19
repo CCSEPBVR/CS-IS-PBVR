@@ -17,8 +17,8 @@ Codex を実行しているローカルPCでは、大規模な性能測定は行
 - GNU module: `gnu/cur`
 - Intel module: `intel/2023.2.1`
 - MPI module: `mpt/2.23-ga`
-- MPI実行: `mpirun omplace`
-- MPI + OpenMP 実行: `mpirun omplace -nt ${OMP_NUM_THREADS}`
+- MPI実行: `mpirun -n {mpiprocs} omplace`
+- MPI + OpenMP 実行: `mpirun -n {mpiprocs} omplace`
 - OpenMPスレッド数: `OMP_NUM_THREADS`
 - Intel OpenMP affinity: `KMP_AFFINITY=disabled`
 
@@ -71,8 +71,8 @@ MODULE_GNU=gnu/cur
 MODULE_INTEL=intel/2023.2.1
 MODULE_MPI=mpt/2.23-ga
 MPI_RUNNER=mpirun
-PLACEMENT_CMD='omplace -nt ${OMP_NUM_THREADS}'
-EXECUTABLE=Example/C/s86_mpi_omp/ens_Hydrogen_unstruct_mpi4/run
+PLACEMENT_CMD=omplace
+EXECUTABLE=Example/C/s86_mpi_omp/ens_Hydrogen_unstruct/run
 INPUT_ARGS=''
 OUTPUT_ROOT=benchmark_results
 JOB_ROOT=pbs_jobs
@@ -83,9 +83,38 @@ JOB_ROOT=pbs_jobs
 例:
 
 ```sh
-export EXECUTABLE=Example/C/s86_mpi_omp/ens_Hydrogen_unstruct_mpi4/run
+export EXECUTABLE=Example/C/s86_mpi_omp/ens_Hydrogen_unstruct/run
 export INPUT_ARGS="default.json"
 ```
+
+
+## 生成される主なケース
+
+今回の対象コードはアンサンブルシミュレーション前提で、1 MPIプロセスでは強制中断されます。そのため、`generate_benchmark_cases.py` は `mpiprocs=1` のケースを生成しません。
+
+正しさ確認の基本ケースは以下です。
+
+- `correctness_mpi_2x1`
+- `correctness_mpi_2x2`
+- `correctness_hybrid_4x4`
+
+強スケーリングの基本ケースは以下です。
+
+- `strong_2x1`
+- `strong_4x1`
+- `strong_8x1`
+- `strong_16x1`
+- `strong_32x1`
+
+MPI x OpenMP構成探索では、`NCPUS_PER_NODE` の範囲内で `mpiprocs >= 2` の組み合わせだけを生成します。1ノード40コア想定では以下です。
+
+- `sweep_40x1`
+- `sweep_20x2`
+- `sweep_10x4`
+- `sweep_8x5`
+- `sweep_5x8`
+- `sweep_4x10`
+- `sweep_2x20`
 
 ## PBSジョブの形式
 
@@ -107,16 +136,10 @@ module load ${MODULE_MPI}
 export OMP_NUM_THREADS=${OMPTHREADS}
 export KMP_AFFINITY=disabled
 
-${MPI_RUNNER} ${PLACEMENT_CMD} ${EXECUTABLE} ${INPUT_ARGS} > ${LOG_FILE} 2>&1
+${MPI_RUNNER} -n ${MPIPROCS} omplace ${EXECUTABLE} ${INPUT_ARGS} > ${LOG_FILE} 2>&1
 ```
 
-デフォルトでは、`PLACEMENT_CMD` は以下です。
-
-```sh
-omplace -nt ${OMP_NUM_THREADS}
-```
-
-これは、MPI + OpenMP ハイブリッド実行時に、1 MPIプロセスあたりのOpenMPスレッド数を `OMP_NUM_THREADS` と一致させるためです。
+この環境では `omplace -nt ${OMP_NUM_THREADS}` を付けるとエラーになるため、`omplace` には `-nt` を付けません。MPIプロセス数は `mpirun -n ${MPIPROCS}` で指定し、OpenMPスレッド数は従来通り `OMP_NUM_THREADS` とPBSの `ompthreads` で管理します。
 
 ## スパコン上での基本実行手順
 
@@ -209,7 +232,7 @@ python3 generate_pbs_jobs.py
 
 ```sh
 python3 compare_outputs.py \
-  --reference benchmark_results/correctness_serial \
+  --reference benchmark_results/correctness_mpi_2x1 \
   --candidate benchmark_results/correctness_hybrid_4x4 \
   --rtol 1e-5 \
   --atol 1e-7
@@ -233,7 +256,7 @@ python3 parse_timing.py --input benchmark_results
 既存の `ensemble_timer_summary.csv` がある場合もパースできます。
 
 ```sh
-python3 parse_timing.py --input Example/C/s86_mpi_omp/ens_Hydrogen_unstruct_mpi4/ensemble_timer_summary.csv
+python3 parse_timing.py --input Example/C/s86_mpi_omp/ens_Hydrogen_unstruct/ensemble_timer_summary.csv
 ```
 
 出力先はデフォルトで `benchmark_analysis/` です。
@@ -306,8 +329,8 @@ parallel_efficiency = speedup / total_cores
 小規模データで以下を比較します。
 
 - serial
-- 1 MPI x 1 thread
-- 1 MPI x N threads
+- 2 MPI x 1 thread
+- 2 MPI x N threads
 - M MPI x 1 thread
 - M MPI x T threads
 
@@ -353,7 +376,7 @@ parallel_efficiency = speedup / total_cores
 - 5 MPI x 8 threads
 - 4 MPI x 10 threads
 - 2 MPI x 20 threads
-- 1 MPI x 40 threads
+- 2 MPI x 20 threads
 
 40コア固定ではなくしたい場合は、`config.sh` の `NCPUS_PER_NODE` を変更してください。
 
@@ -389,4 +412,4 @@ PBSジョブ投入や大規模実行は行いません。
 - 並列版の評価では平均時間だけでなく、必ず最大rank時間を確認してください。
 - I/O込み時間とI/O除外時間は分けて確認してください。
 - compositing、`MPI_Gatherv`、`MPI_Waitall`、`MPI_Barrier`、OpenMP `critical` は重点確認対象です。
-- `correctness_serial` はケース名として用意していますが、完全な逐次版バイナリを使う場合は、`EXECUTABLE` やケース設定を逐次版に合わせてください。
+- 今回の対象コードは1 MPIプロセスでは動作しないため、`mpiprocs=1` のケースは生成しません。

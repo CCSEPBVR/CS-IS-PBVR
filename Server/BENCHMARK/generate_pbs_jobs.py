@@ -19,6 +19,9 @@ def shell_quote_arg(value):
     return value.replace("'", "'\\''")
 
 
+DEFAULT_EXECUTABLE = "Example/C/s86_mpi_omp/ens_Hydrogen_unstruct/run"
+
+
 def render(row):
     queue = env("QUEUE", "sc16")
     project = env("PROJECT", "job")
@@ -27,8 +30,7 @@ def render(row):
     module_intel = env("MODULE_INTEL", "intel/2023.2.1")
     module_mpi = env("MODULE_MPI", "mpt/2.23-ga")
     mpi_runner = env("MPI_RUNNER", "mpirun")
-    placement_cmd = env("PLACEMENT_CMD", "omplace -nt ${OMP_NUM_THREADS}")
-    executable = row.get("executable") or env("EXECUTABLE", "Example/C/s86_mpi_omp/ens_Hydrogen_unstruct_mpi4/run")
+    executable = row.get("executable") or env("EXECUTABLE", DEFAULT_EXECUTABLE)
     input_args = row.get("input_args") or env("INPUT_ARGS", "")
     output_dir = row["output_dir"]
     log_file = "%s/%s.log" % (output_dir, row["case"])
@@ -74,9 +76,9 @@ echo "PBS_NODEFILE=$PBS_NODEFILE"
 echo "REPO_ROOT=$REPO_ROOT"
 echo "BENCHMARK_DIR=$BENCHMARK_DIR"
 echo "OMP_NUM_THREADS=$OMP_NUM_THREADS"
-echo "COMMAND={mpi_runner} {placement_cmd} $EXEC_PATH {input_args}"
+echo "COMMAND={mpi_runner} -n {mpiprocs} omplace $EXEC_PATH {input_args}"
 
-{mpi_runner} {placement_cmd} "$EXEC_PATH" {input_args} > "$LOG_FILE" 2>&1
+{mpi_runner} -n {mpiprocs} omplace "$EXEC_PATH" {input_args} > "$LOG_FILE" 2>&1
 """.format(
         queue=queue,
         nodes=row["nodes"],
@@ -93,7 +95,6 @@ echo "COMMAND={mpi_runner} {placement_cmd} $EXEC_PATH {input_args}"
         case=row["case"],
         phase=row["phase"],
         mpi_runner=mpi_runner,
-        placement_cmd=placement_cmd,
         input_args=input_args,
     )
 
@@ -106,6 +107,8 @@ def main():
 
     root = Path(args.job_root)
     root.mkdir(parents=True, exist_ok=True)
+    for old_job in root.rglob("*.pbs"):
+        old_job.unlink()
     generated = []
 
     with open(args.cases, newline="") as f:

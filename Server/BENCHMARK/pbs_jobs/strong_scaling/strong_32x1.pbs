@@ -1,8 +1,8 @@
 #!/bin/sh
 #PBS -q sc16
-#PBS -l select=1:ncpus=40:mpiprocs=1:ompthreads=40
+#PBS -l select=1:ncpus=32:mpiprocs=32:ompthreads=1
 #PBS -l walltime=00:30:00
-#PBS -N sweep_1x40
+#PBS -N strong_32x1
 #PBS -j oe
 #PBS -P job
 
@@ -18,25 +18,25 @@ module load gnu/cur
 module load intel/2023.2.1
 module load mpt/2.23-ga
 
-export OMP_NUM_THREADS=40
+export OMP_NUM_THREADS=1
 export KMP_AFFINITY=disabled
 
-EXECUTABLE='Example/C/s86_mpi_omp/ens_Hydrogen_unstruct_mpi4/run'
+EXECUTABLE='Example/C/s86_mpi_omp/ens_Hydrogen_unstruct/run'
 case "$EXECUTABLE" in
   /*) EXEC_PATH="$EXECUTABLE" ;;
   *) EXEC_PATH="$REPO_ROOT/$EXECUTABLE" ;;
 esac
 
-OUTPUT_DIR="$BENCHMARK_DIR/benchmark_results/sweep_1x40"
-LOG_FILE="$BENCHMARK_DIR/benchmark_results/sweep_1x40/sweep_1x40.log"
+OUTPUT_DIR="$BENCHMARK_DIR/benchmark_results/strong_32x1"
+LOG_FILE="$BENCHMARK_DIR/benchmark_results/strong_32x1/strong_32x1.log"
 mkdir -p "$OUTPUT_DIR"
 
-echo "CASE=sweep_1x40"
-echo "PHASE=mpi_omp_sweep"
+echo "CASE=strong_32x1"
+echo "PHASE=strong_scaling"
 echo "PBS_NODEFILE=$PBS_NODEFILE"
 echo "REPO_ROOT=$REPO_ROOT"
 echo "BENCHMARK_DIR=$BENCHMARK_DIR"
 echo "OMP_NUM_THREADS=$OMP_NUM_THREADS"
-echo "COMMAND=mpirun omplace -nt ${OMP_NUM_THREADS} $EXEC_PATH "
+echo "COMMAND=mpirun -n 32 omplace $EXEC_PATH "
 
-mpirun omplace -nt ${OMP_NUM_THREADS} "$EXEC_PATH"  > "$LOG_FILE" 2>&1
+mpirun -n 32 omplace "$EXEC_PATH"  > "$LOG_FILE" 2>&1

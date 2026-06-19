@@ -15,9 +15,16 @@ def env(name, default):
     return os.environ.get(name, default)
 
 
+DEFAULT_EXECUTABLE = "Example/C/s86_mpi_omp/ens_Hydrogen_unstruct/run"
+
+
 def add_case(rows, name, phase, nodes, mpiprocs, ompthreads,
              input_name, output_root, walltime, executable, input_args,
              ncpus_per_node):
+    if mpiprocs < 2:
+        return
+    if mpiprocs * ompthreads > ncpus_per_node:
+        return
     ncpus = max(1, min(ncpus_per_node, mpiprocs * ompthreads))
     rows.append({
         "case": name,
@@ -34,11 +41,11 @@ def add_case(rows, name, phase, nodes, mpiprocs, ompthreads,
     })
 
 
-def build_cases():
+def build_cases(executable_arg=None, input_args_arg=None):
     ncpus_per_node = int(env("NCPUS_PER_NODE", "40"))
     output_root = env("OUTPUT_ROOT", "benchmark_results")
-    executable = env("EXECUTABLE", "Example/C/s86_mpi_omp/ens_Hydrogen_unstruct_mpi4/run")
-    input_args = env("INPUT_ARGS", "")
+    executable = executable_arg or env("EXECUTABLE", DEFAULT_EXECUTABLE)
+    input_args = input_args_arg if input_args_arg is not None else env("INPUT_ARGS", "")
     small_input = env("CORRECTNESS_INPUT", "small")
     strong_input = env("STRONG_INPUT", "fixed_global")
     weak_input = env("WEAK_INPUT", "weak_per_rank")
@@ -51,18 +58,17 @@ def build_cases():
                  input_name, output_root, walltime, executable, input_args,
                  ncpus_per_node)
 
-    add("correctness_serial", "correctness", 1, 1, 1, small_input)
-    add("correctness_mpi_1x1", "correctness", 1, 1, 1, small_input)
-    add("correctness_omp_1x8", "correctness", 1, 1, 8, small_input)
+    add("correctness_mpi_2x1", "correctness", 1, 2, 1, small_input)
+    add("correctness_mpi_2x2", "correctness", 1, 2, 2, small_input)
     add("correctness_hybrid_4x4", "correctness", 1, 4, 4, small_input)
 
-    for mpi in (1, 2, 4, 8):
+    for mpi in (2, 4, 8, 16, 32):
         add("strong_%sx1" % mpi, "strong_scaling", 1, mpi, 1, strong_input)
 
     for nodes in (1, 2, 4):
         add("weak_%s" % nodes, "weak_scaling", nodes, ncpus_per_node, 1, weak_input)
 
-    for mpi, omp in ((40, 1), (20, 2), (10, 4), (5, 8), (4, 10), (2, 20), (1, 40)):
+    for mpi, omp in ((40, 1), (20, 2), (10, 4), (8, 5), (5, 8), (4, 10), (2, 20)):
         add("sweep_%sx%s" % (mpi, omp), "mpi_omp_sweep", 1, mpi, omp, strong_input)
 
     return rows
@@ -71,9 +77,11 @@ def build_cases():
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", default=os.environ.get("CASES_CSV", "cases.csv"))
+    parser.add_argument("--executable", default=None)
+    parser.add_argument("--input-args", default=None)
     args = parser.parse_args()
 
-    rows = build_cases()
+    rows = build_cases(args.executable, args.input_args)
     with open(args.output, "w", newline="") as f:
         writer = csv.DictWriter(f, fieldnames=FIELDNAMES)
         writer.writeheader()

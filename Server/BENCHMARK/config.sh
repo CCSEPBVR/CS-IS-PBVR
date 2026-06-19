@@ -15,7 +15,7 @@ MODULE_GNU=${MODULE_GNU:-gnu/cur}
 MODULE_INTEL=${MODULE_INTEL:-intel/2023.2.1}
 MODULE_MPI=${MODULE_MPI:-mpt/2.23-ga}
 MPI_RUNNER=${MPI_RUNNER:-mpirun}
-PLACEMENT_CMD=${PLACEMENT_CMD:-'omplace -nt ${OMP_NUM_THREADS}'}
+PLACEMENT_CMD=${PLACEMENT_CMD:-omplace}
 OPENMP_PLACEMENT_CMD=${OPENMP_PLACEMENT_CMD:-dplace}
 
 PBVR_MACHINE_MPI_OMP=${PBVR_MACHINE_MPI_OMP:-Makefile_machine_s86_mpi_omp}
@@ -23,7 +23,7 @@ PBVR_MACHINE_SERIAL=${PBVR_MACHINE_SERIAL:-Makefile_machine_s86}
 MAKE_JOBS=${MAKE_JOBS:-4}
 
 # EXECUTABLE is relative to REPO_ROOT unless an absolute path is supplied.
-EXECUTABLE=${EXECUTABLE:-Example/C/s86_mpi_omp/ens_Hydrogen_unstruct_mpi4/run}
+EXECUTABLE=${EXECUTABLE:-Example/C/s86_mpi_omp/ens_Hydrogen_unstruct/run}
 INPUT_ARGS=${INPUT_ARGS:-}
 
 # Benchmark outputs are relative to BENCHMARK_DIR unless absolute paths are supplied.

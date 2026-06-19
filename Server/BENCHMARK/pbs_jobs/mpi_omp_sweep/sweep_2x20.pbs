@@ -21,7 +21,7 @@ module load mpt/2.23-ga
 export OMP_NUM_THREADS=20
 export KMP_AFFINITY=disabled
 
-EXECUTABLE='Example/C/s86_mpi_omp/ens_Hydrogen_unstruct_mpi4/run'
+EXECUTABLE='Example/C/s86_mpi_omp/ens_Hydrogen_unstruct/run'
 case "$EXECUTABLE" in
   /*) EXEC_PATH="$EXECUTABLE" ;;
   *) EXEC_PATH="$REPO_ROOT/$EXECUTABLE" ;;
@@ -37,6 +37,6 @@ echo "PBS_NODEFILE=$PBS_NODEFILE"
 echo "REPO_ROOT=$REPO_ROOT"
 echo "BENCHMARK_DIR=$BENCHMARK_DIR"
 echo "OMP_NUM_THREADS=$OMP_NUM_THREADS"
-echo "COMMAND=mpirun omplace -nt ${OMP_NUM_THREADS} $EXEC_PATH "
+echo "COMMAND=mpirun -n 2 omplace $EXEC_PATH "
 
-mpirun omplace -nt ${OMP_NUM_THREADS} "$EXEC_PATH"  > "$LOG_FILE" 2>&1
+mpirun -n 2 omplace "$EXEC_PATH"  > "$LOG_FILE" 2>&1
