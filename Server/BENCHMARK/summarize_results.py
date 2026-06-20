@@ -6,6 +6,50 @@ import csv
 from collections import defaultdict
 from pathlib import Path
 
+# Level-0 wall-clock section that bounds every other section.
+TOTAL_SECTION = "ensemble_generate_particles_total"
+
+# Time-decomposition categories for scaling_summary.csv.
+#
+# Sections are matched by name regardless of tree level. To avoid parent/child
+# double counting the L1 wrapper ``mpi_shift_exchange`` is intentionally NOT
+# summed; instead its L2 children are split: the transfer parts go to ``comm``
+# and ``omp_shift_interpolation`` goes to ``comp``. The L0 total is likewise
+# never summed here.
+CATEGORY_SECTIONS = {
+    "comm": (
+        "mpi_shift_size_exchange",
+        "mpi_shift_alloc_recv_buffer",
+        "mpi_shift_payload_all",
+    ),
+    "comp": (
+        "omp_uniform_sampling",
+        "omp_shift_interpolation",
+        "omp_rejection",
+        "create_cells",
+        "sampling_prepare",
+        "stat_average_variance",
+        "stat_histogram",
+    ),
+    "sync": (
+        "async_io_wait",
+        "final_barrier_state",
+    ),
+    "io": (
+        "read_parameter_file",
+        "set_parameter_path",
+        "init_transfer_functions",
+        "output_particles_ave",
+        "output_particles_var",
+        "output_particles_cov",
+        "output_coord_minmax",
+        "output_history",
+        "write_tf_file",
+        "cleanup_tfs",
+        "cleanup_cells",
+    ),
+}
+
 
 def read_csv(path):
     p = Path(path)
@@ -46,6 +90,47 @@ def choose_total(summary_by_case):
             chosen = max(f(row, "max") for row in rows)
         totals[case] = chosen or 0.0
     return totals
+
+
+def aggregate_sections(rows):
+    """Collapse repeated (section) rows for one case to a single max per section.
+
+    timing_summary.csv holds one row per (section, timestep); the per-section
+    max across timesteps is used as the representative value.
+    """
+    agg = defaultdict(float)
+    for row in rows:
+        sec = row["section"]
+        agg[sec] = max(agg[sec], f(row, "max"))
+    return agg
+
+
+def total_imbalance(rows):
+    """Worst-case max/avg (over ranks) of the total section across timesteps."""
+    moa = 0.0
+    for row in rows:
+        if row["section"] == TOTAL_SECTION:
+            moa = max(moa, f(row, "max_over_avg"))
+    return moa
+
+
+def decompose_time(rows, total):
+    """Return per-category times plus classified/overlap/comm_frac/imbalance."""
+    sec_max = aggregate_sections(rows)
+    cat_time = {cat: sum(sec_max.get(name, 0.0) for name in names)
+                for cat, names in CATEGORY_SECTIONS.items()}
+    classified = sum(cat_time.values())
+    return {
+        "comp_time": cat_time["comp"],
+        "comm_time": cat_time["comm"],
+        "sync_time": cat_time["sync"],
+        "io_time": cat_time["io"],
+        "classified_time": classified,
+        "overlap_time": max(0.0, classified - total),
+        "sum_frac": classified / total if total > 0 else 0.0,
+        "comm_frac": cat_time["comm"] / total if total > 0 else 0.0,
+        "imbalance": total_imbalance(rows),
+    }
 
 
 def imbalance_label(max_over_avg):
@@ -96,7 +181,7 @@ def main():
         nodes = int(meta.get("nodes", 1) or 1)
         cores = mpi * omp * nodes
         speedup = baseline_total / total if total > 0 else 0.0
-        scaling_rows.append({
+        row = {
             "case": case,
             "nodes": nodes,
             "mpi": mpi,
@@ -105,7 +190,9 @@ def main():
             "total_time": total,
             "speedup": speedup,
             "efficiency": speedup / cores if cores > 0 else 0.0,
-        })
+        }
+        row.update(decompose_time(by_case.get(case, []), total))
+        scaling_rows.append(row)
 
     serial_sections = {row["section"]: row for row in by_case.get(baseline_case, [])}
     section_rows = []
@@ -151,7 +238,11 @@ def main():
             })
 
     candidate_rows.sort(key=lambda r: (int(r["priority"]), r["section"]))
-    write_csv(out / "scaling_summary.csv", scaling_rows, ["case", "nodes", "mpi", "omp", "total_cores", "total_time", "speedup", "efficiency"])
+    write_csv(out / "scaling_summary.csv", scaling_rows, [
+        "case", "nodes", "mpi", "omp", "total_cores", "total_time", "speedup", "efficiency",
+        "comp_time", "comm_time", "sync_time", "io_time",
+        "classified_time", "overlap_time", "sum_frac", "comm_frac", "imbalance",
+    ])
     write_csv(out / "section_summary.csv", section_rows, ["case", "section", "serial_time", "opt_min", "opt_avg", "opt_max", "speedup_vs_serial", "max_over_avg", "contribution"])
     write_csv(out / "bottleneck_candidates.csv", candidate_rows, ["priority", "section", "symptom", "evidence", "hypothesis", "next_check"])
     print("wrote summaries under %s" % out)
