@@ -50,6 +50,19 @@ CATEGORY_SECTIONS = {
     ),
 }
 
+# Per-phase speedup baseline. efficiency is relativized to each phase's own
+# baseline so the ideal value is 1.0 (not 0.5 as with a global 2-core baseline).
+PHASE_BASELINE = {
+    "correctness": "correctness_mpi_2x1",
+    "strong_scaling": "strong_4x1",
+    "weak_scaling": "weak_10",
+    "mpi_omp_sweep": "sweep_40x1",
+}
+# Fixed-work phases: efficiency = speedup * cores_base / cores.
+EFFICIENCY_PHASES = ("correctness", "strong_scaling")
+# Weak scaling grows work with cores: weak_efficiency = T_base / Tp (no /cores).
+WEAK_EFFICIENCY_PHASES = ("weak_scaling",)
+
 
 def read_csv(path):
     p = Path(path)
@@ -90,6 +103,13 @@ def choose_total(summary_by_case):
             chosen = max(f(row, "max") for row in rows)
         totals[case] = chosen or 0.0
     return totals
+
+
+def cores_of(meta):
+    mpi = int(meta.get("mpiprocs", 1) or 1)
+    omp = int(meta.get("ompthreads", 1) or 1)
+    nodes = int(meta.get("nodes", 1) or 1)
+    return mpi * omp * nodes
 
 
 def aggregate_sections(rows):
@@ -170,26 +190,41 @@ def main():
         baseline_case = "strong_1x1"
     else:
         baseline_case = next(iter(totals), "")
-    baseline_total = totals.get(baseline_case, 0.0)
+    # Per-phase speedup baselines: phase -> (T_base, cores_base).
+    phase_base = {}
+    for ph, bcase in PHASE_BASELINE.items():
+        if bcase in totals and totals[bcase] > 0:
+            phase_base[ph] = (totals[bcase], cores_of(case_meta.get(bcase, {})))
 
     scaling_rows = []
     for case in sorted(totals):
         total = totals[case]
         meta = case_meta.get(case, {})
+        phase = meta.get("phase", "")
+        nodes = int(meta.get("nodes", 1) or 1)
         mpi = int(meta.get("mpiprocs", 1) or 1)
         omp = int(meta.get("ompthreads", 1) or 1)
-        nodes = int(meta.get("nodes", 1) or 1)
         cores = mpi * omp * nodes
-        speedup = baseline_total / total if total > 0 else 0.0
+        base = phase_base.get(phase)
+        cores_base = base[1] if base else ""
+        speedup = base[0] / total if base and total > 0 else ""
+        if phase in EFFICIENCY_PHASES and base and total > 0 and cores > 0:
+            efficiency = speedup * base[1] / cores
+        else:
+            efficiency = ""  # weak は weak_efficiency、sweep は時間比較のみで N/A
+        weak_efficiency = speedup if (phase in WEAK_EFFICIENCY_PHASES and base and total > 0) else ""
         row = {
             "case": case,
+            "phase": phase,
             "nodes": nodes,
             "mpi": mpi,
             "omp": omp,
             "total_cores": cores,
+            "cores_base": cores_base,
             "total_time": total,
             "speedup": speedup,
-            "efficiency": speedup / cores if cores > 0 else 0.0,
+            "efficiency": efficiency,
+            "weak_efficiency": weak_efficiency,
         }
         row.update(decompose_time(by_case.get(case, []), total))
         scaling_rows.append(row)
@@ -239,7 +274,8 @@ def main():
 
     candidate_rows.sort(key=lambda r: (int(r["priority"]), r["section"]))
     write_csv(out / "scaling_summary.csv", scaling_rows, [
-        "case", "nodes", "mpi", "omp", "total_cores", "total_time", "speedup", "efficiency",
+        "case", "phase", "nodes", "mpi", "omp", "total_cores", "cores_base",
+        "total_time", "speedup", "efficiency", "weak_efficiency",
         "comp_time", "comm_time", "sync_time", "io_time",
         "classified_time", "overlap_time", "sum_frac", "comm_frac", "imbalance",
     ])

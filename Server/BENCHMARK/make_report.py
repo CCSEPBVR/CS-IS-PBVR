@@ -40,7 +40,7 @@ def main():
     text.append("# PBVR ベンチマークレポート\n")
     text.append("このレポートは既存のPBVRタイマーCSV/ログから生成しています。並列比較では平均だけでなくMPI max時間を使います。\n")
     text.append("## スケーリング概要\n")
-    text.append(md_table(scaling, ["case", "nodes", "mpi", "omp", "total_cores", "total_time", "speedup", "efficiency"]))
+    text.append(md_table(scaling, ["case", "phase", "total_cores", "cores_base", "total_time", "speedup", "efficiency", "weak_efficiency"]))
     text.append("## ボトルネック候補\n")
     text.append(md_table(candidates, ["priority", "section", "symptom", "evidence", "hypothesis", "next_check"]))
     text.append("## 区間別概要\n")
