@@ -17,12 +17,17 @@ def env(name, default):
 
 DEFAULT_EXECUTABLE = "Example/C/s86_mpi_omp/ens_Hydrogen_unstruct/run"
 DEFAULT_WEAK_EXECUTABLE = "Example/C/s86_mpi_omp/ens_Hydrogen_unstruct_4eweak_scale/run"
+# Strong scaling now uses a SINGLE executable that keeps the global problem
+# size N fixed and only changes how many ranks split one ensemble at runtime
+# (mpi_per_ens = mpi_size / num_ensembles). This makes the strong_* series a
+# valid strong-scaling experiment (N fixed, p increases).
+DEFAULT_STRONG_EXECUTABLE = "Example/C/s86_mpi_omp/ens_Hydrogen_unstruct_strong/run"
 DEFAULT_STRONG_EXECUTABLES = {
-    4: "Example/C/s86_mpi_omp/ens_Hydrogen_unstruct/run",
-    8: "Example/C/s86_mpi_omp/ens_Hydrogen_unstruct_mpi2/run",
-    16: "Example/C/s86_mpi_omp/ens_Hydrogen_unstruct_mpi4/run",
-    32: "Example/C/s86_mpi_omp/ens_Hydrogen_unstruct_mpi8/run",
-    64: "Example/C/s86_mpi_omp/ens_Hydrogen_unstruct_mpi16/run",
+    4: DEFAULT_STRONG_EXECUTABLE,
+    8: DEFAULT_STRONG_EXECUTABLE,
+    16: DEFAULT_STRONG_EXECUTABLE,
+    32: DEFAULT_STRONG_EXECUTABLE,
+    64: DEFAULT_STRONG_EXECUTABLE,
 }
 
 
