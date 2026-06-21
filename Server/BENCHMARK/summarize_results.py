@@ -68,13 +68,13 @@ def read_csv(path):
     p = Path(path)
     if not p.exists():
         return []
-    with p.open(newline="") as f:
+    with p.open(newline="", encoding="utf-8-sig") as f:
         return list(csv.DictReader(f))
 
 
 def write_csv(path, rows, fields):
     path.parent.mkdir(parents=True, exist_ok=True)
-    with path.open("w", newline="") as f:
+    with path.open("w", newline="", encoding="utf-8-sig") as f:
         writer = csv.DictWriter(f, fieldnames=fields, extrasaction="ignore")
         writer.writeheader()
         writer.writerows(rows)

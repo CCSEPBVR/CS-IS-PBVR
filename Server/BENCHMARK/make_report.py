@@ -9,7 +9,7 @@ from pathlib import Path
 def read_rows(path):
     if not path.exists():
         return []
-    with path.open(newline="") as f:
+    with path.open(newline="", encoding="utf-8-sig") as f:
         return list(csv.DictReader(f))
 
 
