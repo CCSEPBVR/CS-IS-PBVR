@@ -33,14 +33,11 @@ public:
     void readTransferFunctionFile( const char* fname ); // CSのConnect時に指定した.tfファイルを読み込む
     void readParticleParameterFile( const char* fname ); // ISの旧形式default.tfファイルを読み込む
     bool readTransferFunctionFromJson( const char* fname, ParticleProperty& particle_property ); // ISのdefault.jsonファイルを読み込む
-    void readGlyphParameterFile( const char* fname );
-    void readPlotOverLineParameterFile( const char* fname );
-    void readPlotOverTimeParameterFile( const char* fname );
+    void readGlyphParameterFile( const char* fname, GlyphProperty& glyph_property );
+    void readPlotOverLineParameterFile( const char* fname, PlotOverLineProperty& pol_property );
+    void readPlotOverTimeParameterFile( const char* fname, PlotOverTimeProperty& pot_property );
     void setTransferFunctionParameter( ParticleProperty& particle_property ); // CSのConnect時に指定した.tfファイルを読み込んだ値を設定する
     void setParticleParameter( ParticleProperty& particle_property ); // ISの旧形式default.tfファイルを読み込んだ値を設定する
-    void setGlyphParameter( GlyphProperty& glyph_property );
-    void setPlotOverLineParameter( PlotOverLineProperty& pol_property );
-    void setPlotOverTimeParameter( PlotOverTimeProperty& pot_property );
     void setNameListFile( const NameListFile& nameListFile );
     const NameListFile& getNameListFile() const;
 };

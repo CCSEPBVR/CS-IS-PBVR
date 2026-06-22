@@ -197,9 +197,6 @@ void generate_particles(
     PlotOverLineProperty pol_property;
     PlotOverTimeProperty pot_property;
     MultiVolumePropertyList mvpl;
-    static NameListFile glyphNameListFile;
-    static NameListFile POLNameListFile;
-    static NameListFile POTNameListFile;
     particle_property.m_transfunc_synthesizer = new TransferFunctionSynthesizer();
     particle_property.m_camera                = new vismodule::Camera();
 
@@ -210,9 +207,9 @@ void generate_particles(
     );
     if ( object_generation_enabled )
     {
-        SetGlyphParameter( glyphParameterPath, glyphParameterPath_old, glyph_property, glyphNameListFile );
-        SetPlotOverLineParameter( plotOverLineParameterPath, plotOverLineParameterPath_old, pol_property, POLNameListFile );
-        SetPlotOverTimeParameter( plotOverTimeParameterPath, plotOverTimeParameterPath_old, pot_property, POTNameListFile );
+        SetGlyphParameter( glyphParameterPath, glyphParameterPath_old, glyph_property );
+        SetPlotOverLineParameter( plotOverLineParameterPath, plotOverLineParameterPath_old, pol_property );
+        SetPlotOverTimeParameter( plotOverTimeParameterPath, plotOverTimeParameterPath_old, pot_property );
     }
 
     const int tf_number  = particle_property.m_transfunc_array.size();

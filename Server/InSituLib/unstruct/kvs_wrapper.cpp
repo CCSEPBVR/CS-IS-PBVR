@@ -236,9 +236,6 @@ void generate_particles(
     PlotOverLineProperty pol_property;
     PlotOverTimeProperty pot_property;
     MultiVolumePropertyList mvpl;
-    static NameListFile glyphNameListFile;
-    static NameListFile POLNameListFile;
-    static NameListFile POTNameListFile;
     particle_property.m_transfunc_synthesizer = new TransferFunctionSynthesizer();
     particle_property.m_camera                = new vismodule::Camera();
 
@@ -249,9 +246,9 @@ void generate_particles(
     );
     if ( object_generation_enabled )
     {
-        SetGlyphParameter( glyphParameterPath, glyphParameterPath_old, glyph_property, glyphNameListFile );
-        SetPlotOverLineParameter( plotOverLineParameterPath, plotOverLineParameterPath_old, pol_property, POLNameListFile );
-        SetPlotOverTimeParameter( plotOverTimeParameterPath, plotOverTimeParameterPath_old, pot_property, POTNameListFile );
+        SetGlyphParameter( glyphParameterPath, glyphParameterPath_old, glyph_property );
+        SetPlotOverLineParameter( plotOverLineParameterPath, plotOverLineParameterPath_old, pol_property );
+        SetPlotOverTimeParameter( plotOverTimeParameterPath, plotOverTimeParameterPath_old, pot_property );
     }
 
     const int tf_number  = particle_property.m_transfunc_array.size();
@@ -696,81 +693,19 @@ void generate_particles_vtk( int time_step, vtkUnstructuredGrid* ucd )
     PlotOverLineProperty pol_property;
     PlotOverTimeProperty pot_property;
     MultiVolumePropertyList mvpl;
-    static NameListFile glyphNameListFile;
-    static NameListFile POLNameListFile;
-    static NameListFile POTNameListFile;
     particle_property.m_transfunc_synthesizer = new TransferFunctionSynthesizer();
     particle_property.m_camera                = new vismodule::Camera();
-
-    // 先にセルタイプを持っておく
-    kvs::ExtendedFileFormat::VtkXmlUnstructuredGrid input_vtu( ucd );
-    std::vector<kvs::UnstructuredVolumeObject::CellType> kvs_cell_type_vector;
-
-    for( auto vtu : input_vtu.eachCellType() )
-    {
-        kvs::ExtendedFileFormat::VtkImporter<kvs::ExtendedFileFormat::VtkXmlUnstructuredGrid> importer( &vtu );
-        kvs::UnstructuredVolumeObject* volume = &importer;
-        kvs_cell_type_vector.push_back( volume->cellType() );
-    }
-
-    if ( kvs_cell_type_vector.empty() )
-    {
-        std::cerr << "ERROR: No supported cell types were found in the input VTK unstructured grid." << std::endl;
-        std::cout << "time_step = " << time_step << std::endl;
-        delete particle_property.m_transfunc_synthesizer;
-        delete particle_property.m_camera;
-        return;
-    }
-
-    auto convert_cell_type = [&](
-        const kvs::UnstructuredVolumeObject::CellType kvs_cell_type_value,
-        std::unique_ptr<std::unique_ptr<Type[]>[]>& values,
-        int& nvariables,
-        std::unique_ptr<float[]>& coordinates,
-        int& ncoords,
-        std::unique_ptr<unsigned int[]>& connections,
-        int& ncells,
-        vismodule::VolumeObjectBase::CellType& celltype
-    )
-    {
-        vismodule::UnstructuredVolumeImporter importer;
-        int kvs_cell_type = static_cast<int>(kvs_cell_type_value);
-        importer.import( input_vtu, kvs_cell_type );
-        vismodule::UnstructuredVolumeObject* volume = &importer;
-
-        domain_parameters_unstruct tmp_dom; // not use
-        nvariables = 0;
-
-        // CS common
-        store_volume_in_variables_array_unstruct(
-            volume, tmp_dom, values, nvariables, coordinates,
-            ncoords, connections, ncells, celltype
-        );
-    };
-
-    std::unique_ptr<std::unique_ptr<Type[]>[]> first_values;
-    int first_nvariables = 0;
-    std::unique_ptr<float[]> first_coordinates;
-    int first_ncoords = 0;
-    std::unique_ptr<unsigned int[]> first_connections;
-    int first_ncells = 0;
-    vismodule::VolumeObjectBase::CellType first_celltype;
-
-    convert_cell_type(
-        kvs_cell_type_vector[0], first_values, first_nvariables, first_coordinates,
-        first_ncoords, first_connections, first_ncells, first_celltype
-    );
 
     bool object_generation_enabled = false;
     SetParticleParameter(
         dom, tfJsonPath, tfJsonPath_old, particle_property, mvpl,
-        first_nvariables, object_generation_enabled
+        nvariables, object_generation_enabled
     );
     if ( object_generation_enabled )
     {
-        SetGlyphParameter( glyphParameterPath, glyphParameterPath_old, glyph_property, glyphNameListFile );
-        SetPlotOverLineParameter( plotOverLineParameterPath, plotOverLineParameterPath_old, pol_property, POLNameListFile );
-        SetPlotOverTimeParameter( plotOverTimeParameterPath, plotOverTimeParameterPath_old, pot_property, POTNameListFile );
+        SetGlyphParameter( glyphParameterPath, glyphParameterPath_old, glyph_property );
+        SetPlotOverLineParameter( plotOverLineParameterPath, plotOverLineParameterPath_old, pol_property );
+        SetPlotOverTimeParameter( plotOverTimeParameterPath, plotOverTimeParameterPath_old, pot_property );
     }
 
     const int tf_number  = particle_property.m_transfunc_array.size();

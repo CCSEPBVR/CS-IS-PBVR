@@ -70,22 +70,19 @@ void SetParameterFilePath(
 bool SetGlyphParameter(
     const std::string& glyphParameterPath,
     const std::string& glyphParameterPath_old,
-    GlyphProperty& glyph_property,
-    NameListFile& nameListFile
+    GlyphProperty& glyph_property
 );
 
 bool SetPlotOverLineParameter(
     const std::string& plotOverLineParameterPath,
     const std::string& plotOverLineParameterPath_old,
-    PlotOverLineProperty& pol_property,
-    NameListFile& nameListFile
+    PlotOverLineProperty& pol_property
 );
 
 bool SetPlotOverTimeParameter(
     const std::string& plotOverTimeParameterPath,
     const std::string& plotOverTimeParameterPath_old,
-    PlotOverTimeProperty& pot_property,
-    NameListFile& nameListFile
+    PlotOverTimeProperty& pot_property
 );
 
 void MakeParticle(

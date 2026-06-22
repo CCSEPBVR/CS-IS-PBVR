@@ -273,22 +273,21 @@ void SetDefaultPOLParameterIS( PlotOverLineProperty& pol_property )
     }
 
     plotOverLineParameterPath_old =  visParamDir;
-    plotOverLineParameterPath_old += "parameter_old.pol";
+    plotOverLineParameterPath_old += "plot_over_line_parameter_old.json";
 
-    std::ifstream plotOverLineParameterFileOld( plotOverLineParameterPath_old );
-    if ( !plotOverLineParameterFileOld.good() )
+    std::ifstream parameterFileOld( plotOverLineParameterPath_old );
+    if ( !parameterFileOld.good() )
     {
         PrintMissingParameterFileWarning(
             "Plot over line parameter file",
-            "parameter_old.pol",
+            "plot_over_line_parameter_old.json",
             "Set default plot over line parameters."
         );
         SetDefaultPOLParameter( pol_property );
         return;
     }
 
-    ppr.readPlotOverLineParameterFile( plotOverLineParameterPath_old.c_str() );
-    ppr.setPlotOverLineParameter( pol_property );
+    ppr.readPlotOverLineParameterFile( plotOverLineParameterPath_old.c_str(), pol_property );
 }
 
 bool GeneratePOLIS(

@@ -1,6 +1,8 @@
 #ifndef  __PLOT_OVER_LINE_PROPERTY__
 #define  __PLOT_OVER_LINE_PROPERTY__
 
+#include <cstddef>
+#include <cstdint>
 #include <string>
 #include <vector>
 
@@ -21,21 +23,21 @@ struct PlotOverLineProperty
         int32_t size = 0;
         TaskSignal task_signal = TaskSignal::UPDATE_PLOT_OVER_LINE_PROPERTY;
 
-        size += sizeof( task_signal );
-        size += sizeof( m_plot_flag );
-        size += sizeof( m_plot_variable );
+        size += vismodule::Serializer::byteSize( task_signal );
+        size += vismodule::Serializer::byteSize( m_plot_flag );
+        size += vismodule::Serializer::byteSize( m_plot_variable );
 
         for ( std::size_t i = 0; i < 3; i++ )
         {
-            size += sizeof( m_start_point[i] );
+            size += vismodule::Serializer::byteSize( m_start_point[i] );
         }
 
         for ( std::size_t i = 0; i < 3; i++ )
         {
-            size += sizeof( m_end_point[i] );
+            size += vismodule::Serializer::byteSize( m_end_point[i] );
         }
 
-        size += sizeof( m_sampling_size );
+        size += vismodule::Serializer::byteSize( m_sampling_size );
 
         return size;
     }
@@ -64,7 +66,7 @@ struct PlotOverLineProperty
         return index;
     }
 
-    std::size_t unpack( char* buf )
+    std::size_t unpack( const char* buf )
     {
         std::size_t index = 0;
         TaskSignal task_signal;
@@ -105,4 +107,3 @@ struct PlotOverLineProperty
 };
 
 #endif // __PARAM_INFO_H__
-

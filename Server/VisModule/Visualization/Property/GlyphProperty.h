@@ -49,6 +49,16 @@ struct GlyphProperty
     DataDefines m_color_data_sampling_method;
     std::vector<std::string> m_color_data_variable;
 
+    void updateColorMap()
+    {
+        vismodule::ValueArray<vismodule::UInt8> color_map_uint_table( m_glyph_color_map_table.size() );
+        for ( std::size_t i = 0; i < m_glyph_color_map_table.size(); i++ )
+        {
+            color_map_uint_table[i] = static_cast<vismodule::UInt8>( m_glyph_color_map_table[i] );
+        }
+        m_color_map = vismodule::ColorMap( color_map_uint_table, m_glyph_color_min, m_glyph_color_max );
+    }
+
     int32_t byteSize() const
     {
         int32_t size = 0;
@@ -178,6 +188,7 @@ struct GlyphProperty
 
         index += vismodule::Serializer::read( buf + index, &m_size_sampling_method );
 
+        m_size_variable.clear();
         index += vismodule::Serializer::read( buf + index, &size );
         for ( std::size_t i = 0; i < size; i++ )
         {
@@ -197,6 +208,8 @@ struct GlyphProperty
             index += vismodule::Serializer::read( buf + index, &value );
             m_color_data_variable.push_back( value );
         }
+
+        this->updateColorMap();
 
         return index;
     }
@@ -341,4 +354,3 @@ inline DataDefines ConvertIntToDataDefines( int data_defines_int )
 }
 
 #endif // __PARAM_INFO_H__
-

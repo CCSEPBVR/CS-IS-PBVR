@@ -473,23 +473,21 @@ void SetDefaultGlyphParameterIS( GlyphProperty& glyph_property )
     }
 
     glyphParameterPath_old = visParamDir;
-    glyphParameterPath_old += "parameter_old.gly";
+    glyphParameterPath_old += "glyph_parameter_old.json";
 
-    std::ifstream glyphParameterFileOld( glyphParameterPath_old );
-    if ( !glyphParameterFileOld.good() )
+    std::ifstream parameterFileOld( glyphParameterPath_old );
+    if ( !parameterFileOld.good() )
     {
         PrintMissingParameterFileWarning(
             "Glyph parameter file",
-            "parameter_old.gly",
+            "glyph_parameter_old.json",
             "Set default glyph parameters."
         );
         SetDefaultGlyphParameter( glyph_property );
         return;
     }
 
-    ppr.readGlyphParameterFile( glyphParameterPath_old.c_str() );
-
-    ppr.setGlyphParameter( glyph_property );
+    ppr.readGlyphParameterFile( glyphParameterPath_old.c_str(), glyph_property );
 }
 
 std::unique_ptr<kvs::PolygonGlyphObject> GenerateGlyphIS(

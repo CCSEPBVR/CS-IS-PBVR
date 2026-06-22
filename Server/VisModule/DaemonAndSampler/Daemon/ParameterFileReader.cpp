@@ -131,6 +131,210 @@ void ValidateReadableTransferFunctionJson( const nlohmann::json& root )
     }
 }
 
+const nlohmann::json& GlyphRequiredObject( const nlohmann::json& parent, const std::string& key )
+{
+    if ( !parent.contains( key ) || !parent.at( key ).is_object() )
+    {
+        throw std::runtime_error( "Invalid glyph parameter json: missing object '" + key + "'" );
+    }
+    return parent.at( key );
+}
+
+const nlohmann::json& GlyphRequiredArray( const nlohmann::json& parent, const std::string& key )
+{
+    if ( !parent.contains( key ) || !parent.at( key ).is_array() )
+    {
+        throw std::runtime_error( "Invalid glyph parameter json: missing array '" + key + "'" );
+    }
+    return parent.at( key );
+}
+
+std::vector<std::string> GlyphStringArray( const nlohmann::json& parent, const std::string& key )
+{
+    std::vector<std::string> values;
+    const nlohmann::json& array = GlyphRequiredArray( parent, key );
+    values.reserve( array.size() );
+    for ( size_t i = 0; i < array.size(); ++i )
+    {
+        values.push_back( array.at( i ).get<std::string>() );
+    }
+    return values;
+}
+
+std::vector<int32_t> GlyphInt32Array( const nlohmann::json& parent, const std::string& key )
+{
+    std::vector<int32_t> values;
+    const nlohmann::json& array = GlyphRequiredArray( parent, key );
+    values.reserve( array.size() );
+    for ( size_t i = 0; i < array.size(); ++i )
+    {
+        values.push_back( array.at( i ).get<int32_t>() );
+    }
+    return values;
+}
+
+GlyphType GlyphTypeFromString( const std::string& name )
+{
+    if ( name == "Arrow" ) return GlyphType::Arrow;
+    if ( name == "Diamond" ) return GlyphType::Diamond;
+    if ( name == "Sphere" ) return GlyphType::Sphere;
+    throw std::runtime_error( "Invalid glyph parameter json: unknown type '" + name + "'" );
+}
+
+GlyphMode GlyphModeFromString( const std::string& name )
+{
+    if ( name == "UniformDistribution" ) return GlyphMode::UniformDistribution;
+    if ( name == "AllPoints" ) return GlyphMode::AllPoints;
+    if ( name == "EveryNthPoints" ) return GlyphMode::EveryNthPoints;
+    throw std::runtime_error( "Invalid glyph parameter json: unknown distribution_mode '" + name + "'" );
+}
+
+DataDefines DataDefinesFromString( const std::string& name, const std::string& key )
+{
+    if ( name == "Constant" ) return DataDefines::Constant;
+    if ( name == "VariableArray" ) return DataDefines::VariableArray;
+    throw std::runtime_error( "Invalid glyph parameter json: unknown " + key + " '" + name + "'" );
+}
+
+
+void ApplyGlyphDefault( GlyphProperty& glyph_property )
+{
+    std::vector<std::string> size_variables = { "q1" };
+    std::vector<std::string> color_data_variables = { "q1" };
+
+    glyph_property.m_glyph_flag                 = false;
+    glyph_property.m_glyph_type                 = GlyphType::Arrow;
+    glyph_property.m_scale_factor               = 1;
+    glyph_property.m_direction_variable[0]      = "q1";
+    glyph_property.m_direction_variable[1]      = "q2";
+    glyph_property.m_direction_variable[2]      = "q3";
+    glyph_property.m_size_sampling_method       = DataDefines::Constant;
+    glyph_property.m_size_variable              = size_variables;
+    glyph_property.m_distribution_mode          = GlyphMode::UniformDistribution;
+    glyph_property.m_number_of_sampling_point   = 1000;
+    glyph_property.m_seed                       = 1;
+    glyph_property.m_stride                     = 3;
+    glyph_property.m_color_data_sampling_method = DataDefines::Constant;
+    glyph_property.m_color_data_variable        = color_data_variables;
+    glyph_property.m_glyph_color_min            = 0;
+    glyph_property.m_glyph_color_max            = 1;
+    glyph_property.m_glyph_size_min             = 0;
+    glyph_property.m_glyph_size_max             = 1;
+    glyph_property.m_glyph_color_map_table.clear();
+}
+
+void ApplyGlyphParameterJson( const nlohmann::json& root, GlyphProperty& glyph_property )
+{
+    glyph_property.m_glyph_flag = root.at( "enabled" ).get<bool>();
+    if ( !glyph_property.m_glyph_flag )
+    {
+        return;
+    }
+
+    const nlohmann::json& size = GlyphRequiredObject( root, "size" );
+    const nlohmann::json& color_data = GlyphRequiredObject( root, "color_data" );
+    const nlohmann::json& color_range = GlyphRequiredObject( color_data, "range" );
+
+    glyph_property.m_glyph_type = GlyphTypeFromString( root.at( "type" ).get<std::string>() );
+    glyph_property.m_scale_factor = root.at( "scale_factor" ).get<float>();
+    glyph_property.m_distribution_mode = GlyphModeFromString( root.at( "distribution_mode" ).get<std::string>() );
+    glyph_property.m_stride = glyph_property.m_distribution_mode == GlyphMode::AllPoints
+        ? 1
+        : root.at( "stride" ).get<int>();
+    glyph_property.m_seed = root.at( "seed" ).get<int>();
+    glyph_property.m_number_of_sampling_point = root.at( "number_of_sampling_points" ).get<float>();
+
+    const std::vector<std::string> direction_variables = GlyphStringArray( root, "direction_variables" );
+    if ( direction_variables.size() < 3 )
+    {
+        throw std::runtime_error( "Invalid glyph parameter json: direction_variables must contain at least 3 values" );
+    }
+    for ( std::size_t i = 0; i < 3; i++ )
+    {
+        glyph_property.m_direction_variable[i] = direction_variables[i];
+    }
+
+    glyph_property.m_size_sampling_method = DataDefinesFromString(
+        size.at( "sampling_method" ).get<std::string>(), "size.sampling_method" );
+    glyph_property.m_size_variable = GlyphStringArray( size, "variables" );
+
+    glyph_property.m_color_data_sampling_method = DataDefinesFromString(
+        color_data.at( "sampling_method" ).get<std::string>(), "color_data.sampling_method" );
+    glyph_property.m_color_data_variable = GlyphStringArray( color_data, "variables" );
+    glyph_property.m_glyph_color_min = color_range.at( "min" ).get<float>();
+    glyph_property.m_glyph_color_max = color_range.at( "max" ).get<float>();
+    glyph_property.m_glyph_color_map_table = GlyphInt32Array( root, "color_map" );
+    glyph_property.updateColorMap();
+}
+
+const nlohmann::json& ParameterRequiredArray(
+    const nlohmann::json& parent,
+    const std::string& key,
+    const std::string& parameter_name )
+{
+    if ( !parent.contains( key ) || !parent.at( key ).is_array() )
+    {
+        throw std::runtime_error(
+            "Invalid " + parameter_name + " parameter json: missing array '" + key + "'" );
+    }
+    return parent.at( key );
+}
+
+void ApplyPlotOverLineDefault( PlotOverLineProperty& pol_property )
+{
+    pol_property.m_plot_flag = false;
+    pol_property.m_plot_variable = "q1";
+    pol_property.m_sampling_size = 256;
+    for ( std::size_t i = 0; i < 3; i++ )
+    {
+        pol_property.m_start_point[i] = 0.0f;
+        pol_property.m_end_point[i] = 1.0f;
+    }
+}
+
+void ApplyPlotOverTimeDefault( PlotOverTimeProperty& pot_property )
+{
+    pot_property.m_plot_flag = true;
+    for ( std::size_t i = 0; i < 3; i++ )
+    {
+        pot_property.m_target_point[i] = 0.0f;
+    }
+}
+
+void ReadFloat3(
+    const nlohmann::json& parent,
+    const std::string& key,
+    float values[3],
+    const std::string& parameter_name )
+{
+    const nlohmann::json& array = ParameterRequiredArray( parent, key, parameter_name );
+    if ( array.size() < 3 )
+    {
+        throw std::runtime_error(
+            "Invalid " + parameter_name + " parameter json: '" + key + "' must contain at least 3 values" );
+    }
+
+    for ( std::size_t i = 0; i < 3; i++ )
+    {
+        values[i] = array.at( i ).get<float>();
+    }
+}
+
+void ApplyPlotOverLineParameterJson( const nlohmann::json& root, PlotOverLineProperty& pol_property )
+{
+    pol_property.m_plot_flag = root.at( "enabled" ).get<bool>();
+    pol_property.m_plot_variable = root.at( "variable" ).get<std::string>();
+    pol_property.m_sampling_size = root.at( "sampling_size" ).get<int32_t>();
+    ReadFloat3( root, "start_point", pol_property.m_start_point, "plot over line" );
+    ReadFloat3( root, "end_point", pol_property.m_end_point, "plot over line" );
+}
+
+void ApplyPlotOverTimeParameterJson( const nlohmann::json& root, PlotOverTimeProperty& pot_property )
+{
+    pot_property.m_plot_flag = root.at( "enabled" ).get<bool>();
+    ReadFloat3( root, "target_point", pot_property.m_target_point, "plot over time" );
+}
+
 std::vector<int> JsonIntTable( const nlohmann::json& params, const std::string& key )
 {
     std::vector<int> values;
@@ -701,106 +905,73 @@ bool ParameterFileReader::readTransferFunctionFromJson( const char* fname, Parti
     }
 }
 
-void ParameterFileReader::readGlyphParameterFile( const char* fname )
+void ParameterFileReader::readGlyphParameterFile( const char* fname, GlyphProperty& glyph_property )
 {
-    m_name_list_file.setName( "GLYPH_FLAG" );
-    m_name_list_file.setName( "GLYPH_TYPE" );
-    m_name_list_file.setName( "SCALE_FACTOR" );
-    m_name_list_file.setName( "STRIDE" );
-    m_name_list_file.setName( "SEED" );
-    m_name_list_file.setName( "NUMBER_OF_SMAPLING_POINT" );
-    m_name_list_file.setName( "GLYPH_COLOR_MAX" );
-    m_name_list_file.setName( "GLYPH_COLOR_MIN" );
-    m_name_list_file.setName( "SIZE_VARIABLES" );
-    m_name_list_file.setName( "COLOR_VARIABLES" );
-    m_name_list_file.setName( "DIRECTION_VARIABLES" );
-    m_name_list_file.setName( "DISTRIBUTION_MODE" );
-    m_name_list_file.setName( "SIZE_SAMPLING_METHOD" );
-    m_name_list_file.setName( "COLOR_DATA_SAMPLING_METHOD" );
-    m_name_list_file.setName( "GLYPH_COLOR_MAP_TABLE" );
-    m_name_list_file.setName( "END_PARAMETER_FILE" );
-
-    m_name_list_file.setFileName( std::string( fname ) );
-
-    bool is_read_finished = false;
-
-    while( !is_read_finished )
+    try
     {
-        if( !m_name_list_file.read() )
+        std::ifstream file( fname );
+        if ( !file )
         {
-            break;
+            throw std::runtime_error( "failed to open file" );
         }
 
-        std::string result = m_name_list_file.getValue<std::string>( "END_PARAMETER_FILE" );
-
-        if( result == "SUCCESS" )
-        {
-            is_read_finished = true;
-        }
+        nlohmann::json root;
+        file >> root;
+        ApplyGlyphParameterJson( root, glyph_property );
     }
-
-    return;
+    catch ( const std::exception& e )
+    {
+        std::cerr << "ERROR:Failed to read glyph parameter json: "
+                  << fname << std::endl;
+        std::cerr << "ERROR:" << e.what() << std::endl;
+        ApplyGlyphDefault( glyph_property );
+    }
 }
 
-void ParameterFileReader::readPlotOverLineParameterFile( const char* fname )
+void ParameterFileReader::readPlotOverLineParameterFile( const char* fname, PlotOverLineProperty& pol_property )
 {
-    m_name_list_file.setName( "PLOT_FLAG" );
-    m_name_list_file.setName( "PLOT_VARIABLE" );
-    m_name_list_file.setName( "SAMPLING_SIZE" );
-    m_name_list_file.setName( "START_POINT" );
-    m_name_list_file.setName( "END_POINT" );
-    m_name_list_file.setName( "END_PARAMETER_FILE" );
-
-    m_name_list_file.setFileName( std::string( fname ) );
-
-    bool is_read_finished = false;
-
-    while( !is_read_finished )
+    try
     {
-        if( !m_name_list_file.read() )
+        std::ifstream file( fname );
+        if ( !file )
         {
-            break;
+            throw std::runtime_error( "failed to open file" );
         }
 
-        std::string result = m_name_list_file.getValue<std::string>( "END_PARAMETER_FILE" );
-
-        if( result == "SUCCESS" )
-        {
-            is_read_finished = true;
-        }
+        nlohmann::json root;
+        file >> root;
+        ApplyPlotOverLineParameterJson( root, pol_property );
     }
-
-    return;
+    catch ( const std::exception& e )
+    {
+        std::cerr << "ERROR:Failed to read plot over line parameter json: "
+                  << fname << std::endl;
+        std::cerr << "ERROR:" << e.what() << std::endl;
+        ApplyPlotOverLineDefault( pol_property );
+    }
 }
 
-void ParameterFileReader::readPlotOverTimeParameterFile( const char* fname )
+void ParameterFileReader::readPlotOverTimeParameterFile( const char* fname, PlotOverTimeProperty& pot_property )
 {
-    m_name_list_file.setName( "PLOT_FLAG" );
-    m_name_list_file.setName( "TARGET_POINT" );
-    m_name_list_file.setName( "END_PARAMETER_FILE" );
-
-    m_name_list_file.setFileName( std::string( fname ) );
-
-    bool is_read_finished = false;
-
-    while ( !is_read_finished )
+    try
     {
-        if ( !m_name_list_file.read() )
+        std::ifstream file( fname );
+        if ( !file )
         {
-            break;
+            throw std::runtime_error( "failed to open file" );
         }
-        else
-        {
-            std::string result = m_name_list_file.getValue<std::string>( "END_PARAMETER_FILE" );
 
-            if( result == "SUCCESS" )
-            {
-                is_read_finished = true;
-            }
-        }
+        nlohmann::json root;
+        file >> root;
+        ApplyPlotOverTimeParameterJson( root, pot_property );
     }
-
-    return;
+    catch ( const std::exception& e )
+    {
+        std::cerr << "ERROR:Failed to read plot over time parameter json: "
+                  << fname << std::endl;
+        std::cerr << "ERROR:" << e.what() << std::endl;
+        ApplyPlotOverTimeDefault( pot_property );
+    }
 }
 
 // CSのConnect時に指定した.tfファイルを読み込んだ値を設定する
@@ -1154,250 +1325,6 @@ void ParameterFileReader::setParticleParameter( ParticleProperty& particle_prope
     var.clear();
 
     return;
-}
-
-void ParameterFileReader::setGlyphParameter( GlyphProperty& glyph_property )
-{
-    const std::string g_flag = m_name_list_file.getValue<std::string>( "GLYPH_FLAG" );
-    if ( strcmp( g_flag.c_str(), "TRUE" ) == 0 )
-    {
-        glyph_property.m_glyph_flag = true;
-    }
-    else
-    {
-        glyph_property.m_glyph_flag = false;
-    }
-
-    const std::string glyph_type_string = m_name_list_file.getValue<std::string>( "GLYPH_TYPE" );
-    if ( strcmp( glyph_type_string.c_str(), "Arrow" ) == 0 )
-    {
-        glyph_property.m_glyph_type = GlyphType::Arrow;
-    }
-    else if ( strcmp( glyph_type_string.c_str(), "Diamond" ) == 0 )
-    {
-        glyph_property.m_glyph_type = GlyphType::Diamond;
-    }
-    else if ( strcmp( glyph_type_string.c_str(), "Sphere" ) == 0 )
-    {
-        glyph_property.m_glyph_type = GlyphType::Sphere;
-    }
-    else
-    {
-        std::cout << "ERROR:unknown glyph type, so skip generate glyph." << std::endl;
-        glyph_property.m_glyph_flag = false;
-        return;
-    }
-
-    glyph_property.m_scale_factor = m_name_list_file.getValue<float>("SCALE_FACTOR");
-
-    const std::string size_sampling_method = m_name_list_file.getValue<std::string>("SIZE_SAMPLING_METHOD");
-    if ( size_sampling_method == "Constant" )
-    {
-        glyph_property.m_size_sampling_method = DataDefines::Constant;
-    }
-    else if ( size_sampling_method == "VariableArray" )
-    {
-        glyph_property.m_size_sampling_method = DataDefines::VariableArray;
-    }
-    else
-    {
-        std::cout << "ERROR:size sampling method is not selected, so skip generate glyph." << std::endl;
-        glyph_property.m_glyph_flag = false;
-        return;        
-    }
-
-    const std::string distribution_mode = m_name_list_file.getValue<std::string>("DISTRIBUTION_MODE");
-    if ( distribution_mode == "AllPoints" )
-    {
-        glyph_property.m_distribution_mode = GlyphMode::AllPoints;
-    }
-    else if ( distribution_mode == "EveryNthPoints" )
-    {
-        glyph_property.m_distribution_mode = GlyphMode::EveryNthPoints;
-    }
-    else if ( distribution_mode == "UniformDistribution" )
-    {
-        glyph_property.m_distribution_mode = GlyphMode::UniformDistribution; 
-    }
-    else
-    {
-        std::cout << "ERROR:distribution mode is not selected, so skip generate glyph." << std::endl;
-        glyph_property.m_glyph_flag = false;
-        return;   
-    }
-
-    if ( distribution_mode == "AllPoints" )
-    {
-        glyph_property.m_stride = 1;
-    }
-    else
-    {
-        glyph_property.m_stride = m_name_list_file.getValue<int>("STRIDE");
-    }
-
-    glyph_property.m_seed                                  = m_name_list_file.getValue<int>("SEED");
-    glyph_property.m_number_of_sampling_point              = m_name_list_file.getValue<int>("NUMBER_OF_SMAPLING_POINT");
-
-    const std::string color_sampling_method = m_name_list_file.getValue<std::string>("COLOR_DATA_SAMPLING_METHOD");
-    if (color_sampling_method == "Constant" )
-    {
-        glyph_property.m_color_data_sampling_method = DataDefines::Constant;
-    }
-    else if (color_sampling_method == "VariableArray" )
-    {
-        glyph_property.m_color_data_sampling_method = DataDefines::VariableArray;
-    }
-    else
-    {
-        std::cout << "ERROR:color data sampling method is not selected, so skip generate glyph." << std::endl;
-        glyph_property.m_glyph_flag = false;
-        return;        
-    }
-
-    const std::string size_variables_string       = m_name_list_file.getValue<std::string>( "SIZE_VARIABLES" );
-    const std::vector<std::string> size_variables_string_table       = getTableString( size_variables_string );
-
-    glyph_property.m_size_variable.resize( size_variables_string_table.size() );
-    for ( std::size_t i = 0; i < size_variables_string_table.size(); i++ )
-    {
-        glyph_property.m_size_variable[i] = size_variables_string_table[i];
-    }
-
-    const std::string color_data_variables_string = m_name_list_file.getValue<std::string>( "COLOR_VARIABLES" );    
-    const std::vector<std::string> color_data_variables_string_table = getTableString( color_data_variables_string );
-    
-    glyph_property.m_color_data_variable.resize( color_data_variables_string_table.size() );
-    for ( std::size_t i = 0; i < color_data_variables_string_table.size(); i++ )
-    {
-        glyph_property.m_color_data_variable[i] = color_data_variables_string_table[i];
-    }
-    
-    const std::string direction_variables_string  = m_name_list_file.getValue<std::string>( "DIRECTION_VARIABLES" );
-    const std::vector<std::string> direction_variables_string_table  = getTableString( direction_variables_string );
-    
-    if ( direction_variables_string_table.size() < 3 )
-    {
-        std::cout << "INFO:direction variables number is less 3, so skip generate glyph." << std::endl;
-        glyph_property.m_glyph_flag = false;
-        return;
-    }
-
-    for ( std::size_t i = 0; i < 3; i++ )
-    {
-        glyph_property.m_direction_variable[i] = direction_variables_string_table[i];
-    }
-
-    const float glyph_color_min = m_name_list_file.getValue<float>("GLYPH_COLOR_MIN");
-    const float glyph_color_max = m_name_list_file.getValue<float>("GLYPH_COLOR_MAX");
-    glyph_property.m_glyph_color_min     = glyph_color_min;
-    glyph_property.m_glyph_color_max     = glyph_color_max;
-
-    const std::string color_map_string   = m_name_list_file.getValue<std::string>( "GLYPH_COLOR_MAP_TABLE" );
-    const std::vector<int> color_map_int_table = getTableInt( color_map_string );
-    vismodule::ValueArray<vismodule::UInt8> color_map_uint_table( color_map_int_table.size() );
-    glyph_property.m_glyph_color_map_table.clear();
-    glyph_property.m_glyph_color_map_table.reserve( color_map_int_table.size() );
-    for ( std::size_t i = 0; i < color_map_int_table.size(); i++ )
-    {
-        glyph_property.m_glyph_color_map_table.push_back( static_cast<int32_t>( color_map_int_table[i] ) );
-        color_map_uint_table[i] = (vismodule::UInt8)color_map_int_table[i];
-    }
-    vismodule::ColorMap color_map( color_map_uint_table, glyph_color_min, glyph_color_max );
-    glyph_property.m_color_map = color_map;
-    glyph_property.m_glyph_size_min = 0;
-    glyph_property.m_glyph_size_max = 1;
-
-#if 1 // debug
-    std::cout << "glyph_property.m_direction_variable[0]      = " << glyph_property.m_direction_variable[0]    << std::endl;
-    std::cout << "glyph_property.m_direction_variable[1]      = " << glyph_property.m_direction_variable[1]    << std::endl;
-    std::cout << "glyph_property.m_direction_variable[2]      = " << glyph_property.m_direction_variable[2]    << std::endl;
-    std::cout << "glyph_property.m_size_sampling_method       = " << size_sampling_method                      << std::endl;
-    std::cout << "glyph_property.m_distribution_mode          = " << distribution_mode                         << std::endl;
-    std::cout << "glyph_property.m_scale_factor               = " << glyph_property.m_scale_factor             << std::endl;
-    std::cout << "glyph_property.m_stride                     = " << glyph_property.m_stride                   << std::endl;
-    std::cout << "glyph_property.m_seed                       = " << glyph_property.m_seed                     << std::endl;
-    std::cout << "glyph_property.m_number_of_sampling_point   = " << glyph_property.m_number_of_sampling_point << std::endl;
-    std::cout << "glyph_property.m_color_data_sampling_method = " << color_sampling_method                     << std::endl;
-
-    for( std::size_t i = 0; i < glyph_property.m_size_variable.size(); i++ )
-    {
-        std::cout << "glyph_property.m_size_variable[" << i << "]          = " << glyph_property.m_size_variable[i] << std::endl; 
-    }
-
-    for( std::size_t i = 0; i < glyph_property.m_color_data_variable.size(); i++ )
-    {
-        std::cout << "glyph_property.m_color_data_variable[" << i << "]     = " << glyph_property.m_color_data_variable[i] <<  std::endl; 
-    }
-
-    for ( std::size_t i = 0; i < 3; i++ )
-    {
-        std::cout << "glyph_property.m_direction_variable[" << i << "]     = " << glyph_property.m_direction_variable[i] <<  std::endl; 
-    }
-#endif
-}
-
-void ParameterFileReader::setPlotOverLineParameter( PlotOverLineProperty& pol_property )
-{
-    std::string p_flag = m_name_list_file.getValue<std::string>("PLOT_FLAG");
-
-    if ( strcmp( p_flag.c_str(), "TRUE" ) == 0 )
-    {
-        pol_property.m_plot_flag = true;
-    }
-    else
-    {
-        pol_property.m_plot_flag = false;
-    }
-
-    pol_property.m_sampling_size = m_name_list_file.getValue<int>("SAMPLING_SIZE");
-    pol_property.m_plot_variable = m_name_list_file.getValue<std::string>("PLOT_VARIABLE");
-
-    const std::string start_point_string = m_name_list_file.getValue<std::string>("START_POINT");
-    const std::vector<float> start_point_float_table = getTableFloat( start_point_string );
-
-    pol_property.m_start_point[0] = start_point_float_table[0];
-    pol_property.m_start_point[1] = start_point_float_table[1];
-    pol_property.m_start_point[2] = start_point_float_table[2];
-
-    const std::string end_point_string = m_name_list_file.getValue<std::string>("END_POINT");
-    const std::vector<float> end_point_float_table = getTableFloat( end_point_string );
-    pol_property.m_end_point[0] = end_point_float_table[0];
-    pol_property.m_end_point[1] = end_point_float_table[1];
-    pol_property.m_end_point[2] = end_point_float_table[2];
-
-    std::cout << "pol_property.m_sampling_size  = " << pol_property.m_sampling_size << std::endl;
-    std::cout << "pol_property.m_plot_variable  = " << pol_property.m_plot_variable << std::endl;
-    std::cout << "pol_property.m_start_point[0] = " << pol_property.m_start_point[0] << std::endl;
-    std::cout << "pol_property.m_start_point[1] = " << pol_property.m_start_point[1] << std::endl;
-    std::cout << "pol_property.m_start_point[2] = " << pol_property.m_start_point[2] << std::endl;
-    std::cout << "pol_property.m_end_point[0]   = " << pol_property.m_end_point[0] << std::endl; 
-    std::cout << "pol_property.m_end_point[1]   = " << pol_property.m_end_point[1] << std::endl; 
-    std::cout << "pol_property.m_end_point[2]   = " << pol_property.m_end_point[2] << std::endl; 
-}
-
-void ParameterFileReader::setPlotOverTimeParameter( PlotOverTimeProperty& pot_property )
-{
-    std::string p_flag = m_name_list_file.getValue<std::string>("PLOT_FLAG");
-
-    if ( strcmp( p_flag.c_str(), "TRUE" ) == 0 )
-    {
-        pot_property.m_plot_flag = true;
-    }
-    else
-    {
-        pot_property.m_plot_flag = false;
-    }
-
-    const std::string target_point_string = m_name_list_file.getValue<std::string>("TARGET_POINT");
-    const std::vector<float> target_point_float_table = getTableFloat( target_point_string );
-
-    pot_property.m_target_point[0] = target_point_float_table[0];
-    pot_property.m_target_point[1] = target_point_float_table[1];
-    pot_property.m_target_point[2] = target_point_float_table[2];
-
-    std::cout << "pot_property.m_target_point[0]:" << pot_property.m_target_point[0] << std::endl;
-    std::cout << "pot_property.m_target_point[1]:" << pot_property.m_target_point[1] << std::endl;
-    std::cout << "pot_property.m_target_point[2]:" << pot_property.m_target_point[2] << std::endl;
 }
 
 std::vector<int> ParameterFileReader::getTableInt( std::string table_string )

@@ -82,10 +82,99 @@ NameListFile DefaultPlotOverLineParameterNameListFile()
 NameListFile DefaultPlotOverTimeParameterNameListFile()
 {
     NameListFile nameListFile;
-    nameListFile.setLine( "PLOT_FLAG", "FALSE" );
+    nameListFile.setLine( "PLOT_FLAG", "TRUE" );
     nameListFile.setLine( "TARGET_POINT", "0,0,0," );
     nameListFile.setLine( "END_PARAMETER_FILE", "SUCCESS" );
     return nameListFile;
+}
+
+void SetDefaultGlyphParameter( GlyphProperty& glyph_property )
+{
+    std::vector<std::string> size_variables = { "q1" };
+    std::vector<std::string> color_data_variables = { "q1" };
+
+    glyph_property.m_glyph_flag                 = false;
+    glyph_property.m_glyph_type                 = GlyphType::Arrow;
+    glyph_property.m_scale_factor               = 1;
+    glyph_property.m_direction_variable[0]      = "q1";
+    glyph_property.m_direction_variable[1]      = "q2";
+    glyph_property.m_direction_variable[2]      = "q3";
+    glyph_property.m_size_sampling_method       = DataDefines::Constant;
+    glyph_property.m_size_variable              = size_variables;
+    glyph_property.m_distribution_mode          = GlyphMode::UniformDistribution;
+    glyph_property.m_number_of_sampling_point   = 1000;
+    glyph_property.m_seed                       = 1;
+    glyph_property.m_stride                     = 3;
+    glyph_property.m_color_data_sampling_method = DataDefines::Constant;
+    glyph_property.m_color_data_variable        = color_data_variables;
+    glyph_property.m_glyph_color_map_table      = DefaultGlyphColorMapTable();
+    glyph_property.m_glyph_color_min            = 0;
+    glyph_property.m_glyph_color_max            = 1;
+    glyph_property.m_glyph_size_min             = 0;
+    glyph_property.m_glyph_size_max             = 1;
+
+    vismodule::ValueArray<vismodule::UInt8> color_map_table( glyph_property.m_glyph_color_map_table.size() );
+    for ( size_t i = 0; i < glyph_property.m_glyph_color_map_table.size(); i++ )
+    {
+        color_map_table[i] = static_cast<vismodule::UInt8>( glyph_property.m_glyph_color_map_table[i] );
+    }
+    glyph_property.m_color_map = vismodule::ColorMap(
+        color_map_table,
+        glyph_property.m_glyph_color_min,
+        glyph_property.m_glyph_color_max
+    );
+}
+
+void SetDefaultPlotOverLineParameter( PlotOverLineProperty& pol_property )
+{
+    pol_property.m_plot_flag      = false;
+    pol_property.m_plot_variable  = "q1";
+    pol_property.m_sampling_size  = 256;
+    pol_property.m_start_point[0] = 0;
+    pol_property.m_start_point[1] = 0;
+    pol_property.m_start_point[2] = 0;
+    pol_property.m_end_point[0]   = 1;
+    pol_property.m_end_point[1]   = 1;
+    pol_property.m_end_point[2]   = 1;
+}
+
+void SetDefaultPlotOverTimeParameter( PlotOverTimeProperty& pot_property )
+{
+    pot_property.m_plot_flag = true;
+    pot_property.m_target_point[0] = 0;
+    pot_property.m_target_point[1] = 0;
+    pot_property.m_target_point[2] = 0;
+}
+
+template <typename Property>
+void BroadcastProperty( Property& property, const int mpi_rank )
+{
+    int size = 0;
+    char* buf = nullptr;
+
+    if ( mpi_rank == 0 )
+    {
+        size = property.byteSize();
+        if ( size > 0 )
+        {
+            buf = new char[size];
+            property.pack( buf );
+        }
+    }
+
+#ifndef CPU_VER
+    MPI_Bcast( &size, 1, MPI_INT, 0, MPI_COMM_WORLD );
+#endif
+
+    if ( size > 0 )
+    {
+        if ( mpi_rank > 0 ) buf = new char[size];
+#ifndef CPU_VER
+        MPI_Bcast( buf, size, MPI_CHARACTER, 0, MPI_COMM_WORLD );
+#endif
+        if ( mpi_rank > 0 ) property.unpack( buf );
+        delete[] buf;
+    }
 }
 
 void BroadcastNameListFile( NameListFile& nameListFile, const int mpi_rank )
@@ -340,12 +429,12 @@ void SetParameterFilePath(
     tfJsonPath                    = visParamDir + tfFilename + ".json";
     tfJsonPath_old                = visParamDir + tfFilename + "_old.json";
     tfJsonPath_step               = visParamDir + tfFilename + step.str() + ".json";
-    glyphParameterPath            = visParamDir + "parameter.gly";
-    glyphParameterPath_old        = visParamDir + "parameter_old.gly";
-    plotOverLineParameterPath     = visParamDir + "parameter.pol";
-    plotOverLineParameterPath_old = visParamDir + "parameter_old.pol";
-    plotOverTimeParameterPath     = visParamDir + "parameter.pot";
-    plotOverTimeParameterPath_old = visParamDir + "parameter_old.pot";
+    glyphParameterPath            = visParamDir + "glyph_parameter.json";
+    glyphParameterPath_old        = visParamDir + "glyph_parameter_old.json";
+    plotOverLineParameterPath     = visParamDir + "plot_over_line_parameter.json";
+    plotOverLineParameterPath_old = visParamDir + "plot_over_line_parameter_old.json";
+    plotOverTimeParameterPath     = visParamDir + "plot_over_time_parameter.json";
+    plotOverTimeParameterPath_old = visParamDir + "plot_over_time_parameter_old.json";
 
     is_first_setting = false;
     return true;
@@ -354,8 +443,7 @@ void SetParameterFilePath(
 bool SetGlyphParameter(
     const std::string& glyphParameterPath,
     const std::string& glyphParameterPath_old,
-    GlyphProperty& glyph_property,
-    NameListFile& nameListFile
+    GlyphProperty& glyph_property
 )
 {
     int mpi_rank;
@@ -374,14 +462,12 @@ bool SetGlyphParameter(
 
         if ( glyphParameterFile.good() )
         {
-            ppr.readGlyphParameterFile( glyphParameterPath.c_str() );
-            nameListFile = ppr.getNameListFile();
+            ppr.readGlyphParameterFile( glyphParameterPath.c_str(), glyph_property );
             std::rename( glyphParameterPath.c_str(), glyphParameterPath_old.c_str() );
         }
         else if ( glyphParameterFileOld.good() )
         {
-            ppr.readGlyphParameterFile( glyphParameterPath_old.c_str() );
-            nameListFile = ppr.getNameListFile();
+            ppr.readGlyphParameterFile( glyphParameterPath_old.c_str(), glyph_property );
         }
         else
         {
@@ -390,13 +476,11 @@ bool SetGlyphParameter(
                 glyphParameterPath_old,
                 "Set default glyph parameters."
             );
-            nameListFile = DefaultGlyphParameterNameListFile();
+            SetDefaultGlyphParameter( glyph_property );
         }
     }
 
-    BroadcastNameListFile( nameListFile, mpi_rank );
-    ppr.setNameListFile( nameListFile );
-    ppr.setGlyphParameter( glyph_property );
+    BroadcastProperty( glyph_property, mpi_rank );
 
     return true;
 }
@@ -404,8 +488,7 @@ bool SetGlyphParameter(
 bool SetPlotOverLineParameter(
     const std::string& plotOverLineParameterPath,
     const std::string& plotOverLineParameterPath_old,
-    PlotOverLineProperty& pol_property,
-    NameListFile& nameListFile
+    PlotOverLineProperty& pol_property
 )
 {
     int mpi_rank;
@@ -419,19 +502,17 @@ bool SetPlotOverLineParameter(
 
     if ( mpi_rank == 0 )
     {
-        std::ifstream plotOverLineParameterFile( plotOverLineParameterPath );
-        std::ifstream plotOverLineParameterFileOld( plotOverLineParameterPath_old );
+        std::ifstream parameterFile( plotOverLineParameterPath );
+        std::ifstream parameterFileOld( plotOverLineParameterPath_old );
 
-        if ( plotOverLineParameterFile.good() )
+        if ( parameterFile.good() )
         {
-            ppr.readPlotOverLineParameterFile( plotOverLineParameterPath.c_str() );
-            nameListFile = ppr.getNameListFile();
+            ppr.readPlotOverLineParameterFile( plotOverLineParameterPath.c_str(), pol_property );
             std::rename( plotOverLineParameterPath.c_str(), plotOverLineParameterPath_old.c_str() );
         }
-        else if ( plotOverLineParameterFileOld.good() )
+        else if ( parameterFileOld.good() )
         {
-            ppr.readPlotOverLineParameterFile( plotOverLineParameterPath_old.c_str() );
-            nameListFile = ppr.getNameListFile();
+            ppr.readPlotOverLineParameterFile( plotOverLineParameterPath_old.c_str(), pol_property );
         }
         else
         {
@@ -440,13 +521,11 @@ bool SetPlotOverLineParameter(
                 plotOverLineParameterPath_old,
                 "Set default plot over line parameters."
             );
-            nameListFile = DefaultPlotOverLineParameterNameListFile();
+            SetDefaultPlotOverLineParameter( pol_property );
         }
     }
 
-    BroadcastNameListFile( nameListFile, mpi_rank );
-    ppr.setNameListFile( nameListFile );
-    ppr.setPlotOverLineParameter( pol_property );
+    BroadcastProperty( pol_property, mpi_rank );
 
     return true;
 }
@@ -454,8 +533,7 @@ bool SetPlotOverLineParameter(
 bool SetPlotOverTimeParameter(
     const std::string& plotOverTimeParameterPath,
     const std::string& plotOverTimeParameterPath_old,
-    PlotOverTimeProperty& pot_property,
-    NameListFile& nameListFile
+    PlotOverTimeProperty& pot_property
 )
 {
     int mpi_rank;
@@ -469,19 +547,17 @@ bool SetPlotOverTimeParameter(
 
     if ( mpi_rank == 0 )
     {
-        std::ifstream plotOverTimeParameterFile( plotOverTimeParameterPath );
-        std::ifstream plotOverTimeParameterFileOld( plotOverTimeParameterPath_old );
+        std::ifstream parameterFile( plotOverTimeParameterPath );
+        std::ifstream parameterFileOld( plotOverTimeParameterPath_old );
 
-        if ( plotOverTimeParameterFile.good() )
+        if ( parameterFile.good() )
         {
-            ppr.readPlotOverTimeParameterFile( plotOverTimeParameterPath.c_str() );
-            nameListFile = ppr.getNameListFile();
+            ppr.readPlotOverTimeParameterFile( plotOverTimeParameterPath.c_str(), pot_property );
             std::rename( plotOverTimeParameterPath.c_str(), plotOverTimeParameterPath_old.c_str() );
         }
-        else if ( plotOverTimeParameterFileOld.good() )
+        else if ( parameterFileOld.good() )
         {
-            ppr.readPlotOverTimeParameterFile( plotOverTimeParameterPath_old.c_str() );
-            nameListFile = ppr.getNameListFile();
+            ppr.readPlotOverTimeParameterFile( plotOverTimeParameterPath_old.c_str(), pot_property );
         }
         else
         {
@@ -490,13 +566,11 @@ bool SetPlotOverTimeParameter(
                 plotOverTimeParameterPath_old,
                 "Set default plot over time parameters."
             );
-            nameListFile = DefaultPlotOverTimeParameterNameListFile();
+            SetDefaultPlotOverTimeParameter( pot_property );
         }
     }
 
-    BroadcastNameListFile( nameListFile, mpi_rank );
-    ppr.setNameListFile( nameListFile );
-    ppr.setPlotOverTimeParameter( pot_property );
+    BroadcastProperty( pot_property, mpi_rank );
 
     return true;
 }

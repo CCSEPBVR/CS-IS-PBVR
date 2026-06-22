@@ -12,6 +12,9 @@ class ParameterFileWriter
 {
 private:
     NameListFile m_name_list_file;
+    nlohmann::json m_glyph_parameter_json;
+    nlohmann::json m_pol_parameter_json;
+    nlohmann::json m_pot_parameter_json;
     std::string m_particle_parameter_path;
     std::string m_particle_parameter_old_path;
     std::string m_glyph_parameter_path;

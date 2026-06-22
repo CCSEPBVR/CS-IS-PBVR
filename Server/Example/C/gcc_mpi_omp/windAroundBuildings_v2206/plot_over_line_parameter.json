@@ -1,0 +1,7 @@
+{
+    "enabled": true,
+    "variable": "q1",
+    "sampling_size": 256,
+    "start_point": [-20, 160, 50],
+    "end_point": [350, 160, 50]
+}
