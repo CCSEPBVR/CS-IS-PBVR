@@ -67,6 +67,7 @@ struct GlyphProperty
         size += vismodule::Serializer::byteSize( task_signal );
         size += vismodule::Serializer::byteSize( m_glyph_type );
         size += vismodule::Serializer::byteSize( m_glyph_flag );
+        size += vismodule::Serializer::byteSize( m_stride );
         size += vismodule::Serializer::byteSize( m_seed );
         size += vismodule::Serializer::byteSize( m_scale_factor );
         size += vismodule::Serializer::byteSize( m_number_of_sampling_point );
@@ -114,6 +115,7 @@ struct GlyphProperty
         index += vismodule::Serializer::write( buf + index, task_signal );
         index += vismodule::Serializer::write( buf + index, m_glyph_type );
         index += vismodule::Serializer::write( buf + index, m_glyph_flag );
+        index += vismodule::Serializer::write( buf + index, m_stride );
         index += vismodule::Serializer::write( buf + index, m_seed );
         index += vismodule::Serializer::write( buf + index, m_scale_factor );
         index += vismodule::Serializer::write( buf + index, m_number_of_sampling_point );
@@ -164,6 +166,7 @@ struct GlyphProperty
         index += vismodule::Serializer::read( buf + index, &task_signal );
         index += vismodule::Serializer::read( buf + index, &m_glyph_type );
         index += vismodule::Serializer::read( buf + index, &m_glyph_flag );
+        index += vismodule::Serializer::read( buf + index, &m_stride );
         index += vismodule::Serializer::read( buf + index, &m_seed );
         index += vismodule::Serializer::read( buf + index, &m_scale_factor );
         index += vismodule::Serializer::read( buf + index, &m_number_of_sampling_point );

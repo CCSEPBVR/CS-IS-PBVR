@@ -228,6 +228,21 @@ void ApplyGlyphParameterJson( const nlohmann::json& root, GlyphProperty& glyph_p
     glyph_property.m_glyph_flag = root.at( "enabled" ).get<bool>();
     if ( !glyph_property.m_glyph_flag )
     {
+        glyph_property.m_glyph_type = GlyphType::Arrow;
+        glyph_property.m_stride = 1;
+        glyph_property.m_seed = 0;
+        glyph_property.m_scale_factor = 1.0f;
+        glyph_property.m_number_of_sampling_point = 0.0f;
+        glyph_property.m_glyph_color_min = 0.0f;
+        glyph_property.m_glyph_color_max = 1.0f;
+        glyph_property.m_glyph_size_min = 0.0f;
+        glyph_property.m_glyph_size_max = 1.0f;
+        glyph_property.m_distribution_mode = GlyphMode::AllPoints;
+        glyph_property.m_size_sampling_method = DataDefines::Constant;
+        glyph_property.m_color_data_sampling_method = DataDefines::Constant;
+        glyph_property.m_glyph_color_map_table.clear();
+        glyph_property.m_size_variable.clear();
+        glyph_property.m_color_data_variable.clear();
         return;
     }
 
