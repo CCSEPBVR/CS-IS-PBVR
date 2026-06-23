@@ -26,7 +26,7 @@ void PlotOverLineFile::setParameterFromFile()
     vismodule::UInt32 step_length    = 5;
     vismodule::UInt32 div_length     = 7;
     vismodule::UInt32 div_num_length = 7;
-    vismodule::UInt32 suffix_length = static_cast<vismodule::UInt32>( std::string("dat").length() );
+    vismodule::UInt32 suffix_length = static_cast<vismodule::UInt32>( std::string("json").length() );
     std::string f_prefix = file_prefix.fileName();
 
     vismodule::Int32 file_length = f_prefix.length() + 1
@@ -43,7 +43,7 @@ void PlotOverLineFile::setParameterFromFile()
         if (sep == 0 && file_length == f_name.length())
         {
             std::string ext = fi->extension();
-            if ( ext == "dat" )
+            if ( ext == "json" )
             {
                 files.push_back(*fi);
             }
@@ -103,7 +103,7 @@ bool PlotOverLineFile::generatePOLObject( const int time_step, vismodule::KVSMLO
         suffix << '_' << std::setw( 5 ) << std::setfill( '0' ) << time_step
                << '_' << std::setw( 7 ) << std::setfill( '0' ) << m + 1
                << '_' << std::setw( 7 ) << std::setfill( '0' ) << subvolume_num;
-        std::string filename = prefix + suffix.str() + ".dat";
+        std::string filename = prefix + suffix.str() + ".json";
         namespace fs = std::filesystem;
         fs::path filepath( filename );
 
@@ -157,6 +157,5 @@ bool PlotOverLineFile::generatePOLObject( const int time_step, vismodule::KVSMLO
 
     return true;
 }
-
 
 

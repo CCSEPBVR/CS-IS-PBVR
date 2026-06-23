@@ -13,8 +13,66 @@
 /****************************************************************************/
 #include "KVSMLObjectPlotOverTime.h"
 
+#include <cmath>
 #include <fstream>
 #include <iostream>
+#include <stdexcept>
+#include "../../../Shared/json.hpp"
+
+namespace
+{
+
+void PrintPlotOverTimeError( const char* function_name, const int line, const std::string& message )
+{
+    std::cerr << "ERROR:" << __FILE__ << ", " << function_name << ", " << line << ", " << message << std::endl;
+}
+
+const nlohmann::json& RequiredArray( const nlohmann::json& root, const std::string& key )
+{
+    if ( !root.contains( key ) || !root.at( key ).is_array() )
+    {
+        throw std::runtime_error( "missing array '" + key + "'" );
+    }
+    return root.at( key );
+}
+
+vismodule::ValueArray<float> FloatArray( const nlohmann::json& root, const std::string& key )
+{
+    const nlohmann::json& array = RequiredArray( root, key );
+    vismodule::ValueArray<float> values;
+    values.allocate( array.size() );
+
+    for ( std::size_t i = 0; i < array.size(); i++ )
+    {
+        if ( !array.at( i ).is_number() )
+        {
+            throw std::runtime_error( "'" + key + "' contains a non-number value" );
+        }
+        values[i] = array.at( i ).get<float>();
+    }
+
+    return values;
+}
+
+float JsonSafeFloat( const float value )
+{
+    return std::isfinite( value ) ? value : 0.0f;
+}
+
+std::string InlineFloatArray( const vismodule::ValueArray<float>& values )
+{
+    std::ostringstream stream;
+    stream << '[';
+    for ( std::size_t i = 0; i < values.size(); i++ )
+    {
+        if ( i > 0 ) stream << ',';
+        stream << JsonSafeFloat( values[i] );
+    }
+    stream << ']';
+    return stream.str();
+}
+
+}
 
 namespace vismodule
 {
@@ -88,34 +146,37 @@ void KVSMLObjectPlotOverTime::setMask( const bool mask )
 const bool KVSMLObjectPlotOverTime::read( const std::string& filename )
 {
     std::ifstream file( filename );
-    m_filename = filename;
 
     if ( !file.is_open() ) {
         std::cerr << "ERROR:" << __FILE__ << ", " << __func__ << ", " << __LINE__ << ", " << "Failed to open the file: " << filename << std::endl;
         return false;
     }
 
-    std::string line_buffer;
-    std::vector<std::string> data;
-
-    // mask
-    std::getline( file, line_buffer );
-    if ( line_buffer == "TRUE" ) m_mask = true;
-    else if ( line_buffer == "FALSE" ) m_mask = false;
-    else
+    try
     {
-        std::cerr << "ERROR:" << __FILE__ << ", " << __func__ << ", " << __LINE__ << ", " << "Failed to load mask" << std::endl;
-        m_mask = false;
+        nlohmann::json root;
+        file >> root;
+
+        if ( !root.is_object() )
+        {
+            throw std::runtime_error( "root is not an object" );
+        }
+        if ( !root.contains( "mask" ) || !root.at( "mask" ).is_boolean() )
+        {
+            throw std::runtime_error( "missing boolean 'mask'" );
+        }
+
+        const bool mask = root.at( "mask" ).get<bool>();
+        vismodule::ValueArray<float> values_on_time = FloatArray( root, "values_on_time" );
+
+        m_filename = filename;
+        m_mask = mask;
+        m_values_on_time = values_on_time;
     }
-
-    // values on time 
-    std::getline( file, line_buffer );
-    // std::cout << "INFO:" << __FILE__ << ", " << __func__ << ", " << __LINE__ << ", " << "line_buffer:" << line_buffer << std::endl;
-    data = this->split( line_buffer, ' ' );
-    m_values_on_time.allocate( data.size() );
-    for (size_t i = 0; i < data.size(); i++ )
+    catch ( const std::exception& e )
     {
-        m_values_on_time[i] = std::stof( data[i] );
+        PrintPlotOverTimeError( __func__, __LINE__, "Failed to load JSON file '" + filename + "': " + e.what() );
+        return false;
     }
 
     return true;
@@ -137,16 +198,10 @@ const bool KVSMLObjectPlotOverTime::write( const std::string& filename )
         return false;
     }
 
-    // mask
-    if ( m_mask ) file << "TRUE" << std::endl;
-    else file << "FALSE" << std::endl;
-
-    // values over time
-    for ( std::size_t i = 0; i < m_values_on_time.size(); i++ )
-    {
-        file << m_values_on_time[i] << " ";
-    }
-    file << std::endl;
+    file << "{\n";
+    file << "    \"mask\": " << ( m_mask ? "true" : "false" ) << ",\n";
+    file << "    \"values_on_time\": " << InlineFloatArray( m_values_on_time ) << "\n";
+    file << "}\n";
 
     return true;
 }

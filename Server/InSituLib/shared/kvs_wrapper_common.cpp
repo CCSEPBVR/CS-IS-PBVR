@@ -1049,7 +1049,7 @@ void OutputLine(
     ss << std::setfill('0') << std::setw(7) << mpi_rank+1;
     ss << "_";
     ss << std::setfill('0') << std::setw(7) << mpi_size;
-    ss << ".dat";
+    ss << ".json";
     std::string plotOverLineFilePath;
     plotOverLineFilePath = plotOverLineFilePrefix + ss.str();
 
@@ -1062,7 +1062,7 @@ void OutputLine(
     vismodule::ValueArray<bool> tmp_mask( mask.size() );
     for ( std::size_t i = 0; i < mask.size(); i++ )
     {
-        if ( mask[i] != 0 ) tmp_mask[i] = true;
+        tmp_mask[i] = ( mask[i] != 0 );
     }
 
     vismodule::KVSMLObjectPlotOverLine pol_object( tmp_values_on_line, tmp_x_axis, tmp_mask );
@@ -1092,7 +1092,7 @@ void OutputPOT(
     ss << std::setfill('0') << std::setw(7) << ( mpi_rank + 1 );
     ss << "_";
     ss << std::setfill('0') << std::setw(7) << mpi_size;
-    ss << ".dat";
+    ss << ".json";
 
     std::string plotOverTimeFilePath;
     plotOverTimeFilePath = plotOverTimeFilePrefix + ss.str();
