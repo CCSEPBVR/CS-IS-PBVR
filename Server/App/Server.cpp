@@ -1202,13 +1202,35 @@ void Server::requestDataAt(uWS::WebSocket<false, true, PerSocket>* ws, const nlo
 
             for (size_t i = 0; i < tfNumber; ++i)
             {
-                // m_particle_propertyのヒストグラムをtmpParticlePropertyにコピーする
-                vismodule::UInt64* fromColorPointer   = m_particle_property->m_transfunc_array[i].m_color_histogram;
-                vismodule::UInt64* toColorPointer     = tmpParticleProperty->m_transfunc_array[i].m_color_histogram;
-                vismodule::UInt64* fromOpacityPointer = m_particle_property->m_transfunc_array[i].m_opacity_histogram;
-                vismodule::UInt64* toOpacityPointer   = tmpParticleProperty->m_transfunc_array[i].m_opacity_histogram;
+                const auto& source = m_particle_property->m_transfunc_array[i];
+                auto& destination = tmpParticleProperty->m_transfunc_array[i];
+
+                // m_particle_propertyの履歴由来情報をtmpParticlePropertyにコピーする
+                const vismodule::UInt64* fromColorPointer   = source.m_color_histogram;
+                vismodule::UInt64* toColorPointer           = destination.m_color_histogram;
+                const vismodule::UInt64* fromOpacityPointer = source.m_opacity_histogram;
+                vismodule::UInt64* toOpacityPointer         = destination.m_opacity_histogram;
                 std::copy( fromColorPointer, fromColorPointer + DEFAULT_NBINS, toColorPointer );
                 std::copy( fromOpacityPointer, fromOpacityPointer + DEFAULT_NBINS, toOpacityPointer );
+
+                destination.m_server_color_variable_min   = source.m_server_color_variable_min;
+                destination.m_server_color_variable_max   = source.m_server_color_variable_max;
+                destination.m_server_opacity_variable_min = source.m_server_opacity_variable_min;
+                destination.m_server_opacity_variable_max = source.m_server_opacity_variable_max;
+
+                if (destination.m_server_color_range_mode == NamedTransferFunction::ServerRangeMode::ServerSide)
+                {
+                    auto colorMap = destination.colorMap();
+                    colorMap.setRange(destination.m_server_color_variable_min, destination.m_server_color_variable_max);
+                    destination.setColorMap(colorMap);
+                }
+
+                if (destination.m_server_opacity_range_mode == NamedTransferFunction::ServerRangeMode::ServerSide)
+                {
+                    auto opacityMap = destination.opacityMap();
+                    opacityMap.setRange(destination.m_server_opacity_variable_min, destination.m_server_opacity_variable_max);
+                    destination.setOpacityMap(opacityMap);
+                }
             }
         }
 

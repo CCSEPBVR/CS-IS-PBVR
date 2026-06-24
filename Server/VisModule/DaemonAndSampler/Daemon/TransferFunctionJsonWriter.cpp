@@ -225,14 +225,11 @@ nlohmann::json TableDescription(
 
 nlohmann::json RangeDescription(
     const std::string& mode,
-    const float server_min,
-    const float server_max,
     const float user_min,
     const float user_max )
 {
     nlohmann::json range;
     range["active_range"] = mode == "ServerSide" ? "server" : "user";
-    range["server"] = { { "min", server_min }, { "max", server_max } };
     range["user"] = { { "min", user_min }, { "max", user_max } };
     return range;
 }
@@ -245,7 +242,7 @@ nlohmann::json BuildHumanReadableView( const ParticleProperty& particle_property
     {
         "The settings section contains global settings shared across the visualization.",
         "Each transfer_functions entry defines the mapping between a physical quantity computed by a synthesis expression and its corresponding color and opacity.",
-        "The range.active_range field specifies the min/max values used for histogram generation. When set to user, user.min and user.max are used. When set to server, server.min and server.max are used.",
+        "The range.active_range field specifies the min/max source used for histogram generation. When set to user, user.min and user.max are used. When set to server, server-side values are supplied from the timestep history file.",
         "The color.map.values field contains a flat uint8 RGB array with three components (R, G, B) per control point.",
         "The opacity.map.values field contains a one-dimensional array of floating-point values in the range [0, 1].",
         "color_synthesis and opacity_synthesis specify the synthesis expressions defined in the Transfer Function Editor.",
@@ -285,8 +282,6 @@ nlohmann::json BuildHumanReadableView( const ParticleProperty& particle_property
         tf["color"]["variable"] = source.m_color_variable;
         tf["color"]["range"] = RangeDescription(
             color_mode,
-            source.m_server_color_variable_min,
-            source.m_server_color_variable_max,
             source.m_user_color_variable_min,
             source.m_user_color_variable_max );
         tf["color"]["map"] = TableDescription(
@@ -298,8 +293,6 @@ nlohmann::json BuildHumanReadableView( const ParticleProperty& particle_property
         tf["opacity"]["variable"] = source.m_opacity_variable;
         tf["opacity"]["range"] = RangeDescription(
             opacity_mode,
-            source.m_server_opacity_variable_min,
-            source.m_server_opacity_variable_max,
             source.m_user_opacity_variable_min,
             source.m_user_opacity_variable_max );
         tf["opacity"]["map"] = TableDescription(

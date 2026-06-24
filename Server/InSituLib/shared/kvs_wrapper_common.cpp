@@ -8,7 +8,6 @@
 #include <vismodule/KVSMLObjectPlotOverLine>
 #include <vismodule/KVSMLObjectPlotOverTime>
 #include <vismodule/ParameterFileReader>
-#include <vismodule/ParameterFileWriter>
 #include <vismodule/TransferFunction>
 #include <vismodule/TransferFunctionSynthesizer>
 
@@ -840,7 +839,6 @@ void OutputParticleHistory(
     const int tf_number,
     const int nvariables,
     const std::string& histryFilePath,
-    const bool update_parameter_file,
     const vismodule::UInt64* c_bins,
     const vismodule::UInt64* o_bins,
     const float* max_array,
@@ -934,22 +932,6 @@ void OutputParticleHistory(
         ofs2 << "PARTICLE_LIMIT="          << particle_property.m_particle_limit       << std::endl;
         ofs2 << "END_HISTORY_FILE=SUCCESS" << std::endl;
         ofs2.close();
-
-        // ServerSideMinMaxを更新してからdefault_old.jsonファイルを出力
-        for( std::size_t i = 0; i < tf_number; i++ )
-        {
-            particle_property.m_transfunc_array[i].m_server_color_variable_min   = min_array_recv[2 * i + 1];
-            particle_property.m_transfunc_array[i].m_server_color_variable_max   = max_array_recv[2 * i + 1];
-            particle_property.m_transfunc_array[i].m_server_opacity_variable_min = min_array_recv[2 * i    ];
-            particle_property.m_transfunc_array[i].m_server_opacity_variable_max = max_array_recv[2 * i    ];
-        }
-
-        if ( update_parameter_file )
-        {
-            ParameterFileWriter ppw;
-            ppw.getParticleParameter( particle_property );
-            ppw.writeTF2OldJson( particle_property ); //old_Jsonファイル出力
-        }
     }
 
     delete[] min_array_recv;
@@ -982,7 +964,7 @@ void OutputParticles(
         coords, colors, normals
     );
     OutputParticleHistory(
-        particle_property, tf_number, nvariables, histryFilePath, true,
+        particle_property, tf_number, nvariables, histryFilePath,
         c_bins, o_bins, max_array, min_array
     );
 }

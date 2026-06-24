@@ -115,7 +115,6 @@ void OutputParticleHistory(
     const int tf_number,
     const int nvariables,
     const std::string& histryFilePath,
-    const bool update_parameter_file,
     const vismodule::UInt64* c_bins,
     const vismodule::UInt64* o_bins,
     const float* max_array,

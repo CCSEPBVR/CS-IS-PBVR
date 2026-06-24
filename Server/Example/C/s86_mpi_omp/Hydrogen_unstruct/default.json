@@ -6,7 +6,7 @@
     "editing_notes": [
         "The settings section contains global settings shared across the visualization.",
         "Each transfer_functions entry defines the mapping between a physical quantity computed by a synthesis expression and its corresponding color and opacity.",
-        "The range.active_range field specifies the min/max values used for histogram generation. When set to user, user.min and user.max are used. When set to server, server.min and server.max are used.",
+        "The range.active_range field specifies the min/max source used for histogram generation. When set to user, user.min and user.max are used. When set to server, server-side values are supplied from the timestep history file.",
         "The color.map.values field contains a flat uint8 RGB array with three components (R, G, B) per control point.",
         "The opacity.map.values field contains a one-dimensional array of floating-point values in the range [0, 1].",
         "color_synthesis and opacity_synthesis specify the synthesis expressions defined in the Transfer Function Editor."
@@ -43,10 +43,6 @@
                 },
                 "range": {
                     "active_range": "user",
-                    "server": {
-                        "max": 255.0,
-                        "min": 3.873637854923118e-09
-                    },
                     "user": {
                         "max": 255.0,
                         "min": 3.873640075369167e-09
@@ -65,10 +61,6 @@
                 },
                 "range": {
                     "active_range": "user",
-                    "server": {
-                        "max": 255.0,
-                        "min": 3.873637854923118e-09
-                    },
                     "user": {
                         "max": 255.0,
                         "min": 3.873640075369167e-09
@@ -87,10 +79,6 @@
                 },
                 "range": {
                     "active_range": "user",
-                    "server": {
-                        "max": 255.0,
-                        "min": 3.873637854923118e-09
-                    },
                     "user": {
                         "max": 255.0,
                         "min": 0.0
@@ -109,10 +97,6 @@
                 },
                 "range": {
                     "active_range": "user",
-                    "server": {
-                        "max": 255.0,
-                        "min": 3.873637854923118e-09
-                    },
                     "user": {
                         "max": 255.0,
                         "min": 0.0
@@ -131,10 +115,6 @@
                 },
                 "range": {
                     "active_range": "user",
-                    "server": {
-                        "max": 255.0,
-                        "min": 3.873637854923118e-09
-                    },
                     "user": {
                         "max": 255.0,
                         "min": 0.0
@@ -153,10 +133,6 @@
                 },
                 "range": {
                     "active_range": "user",
-                    "server": {
-                        "max": 255.0,
-                        "min": 3.873637854923118e-09
-                    },
                     "user": {
                         "max": 255.0,
                         "min": 0.0
@@ -175,10 +151,6 @@
                 },
                 "range": {
                     "active_range": "user",
-                    "server": {
-                        "max": 255.0,
-                        "min": 3.873637854923118e-09
-                    },
                     "user": {
                         "max": 255.0,
                         "min": 255.0
@@ -197,10 +169,6 @@
                 },
                 "range": {
                     "active_range": "user",
-                    "server": {
-                        "max": 255.0,
-                        "min": 3.873637854923118e-09
-                    },
                     "user": {
                         "max": 255.0,
                         "min": 255.0
