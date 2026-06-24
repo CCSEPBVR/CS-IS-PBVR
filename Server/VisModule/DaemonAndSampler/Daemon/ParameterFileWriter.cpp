@@ -1,7 +1,9 @@
 #include "ParameterFileWriter.h"
 
+#include <cstdio>
 #include <fstream>
 #include <ostream>
+#include <stdexcept>
 
 namespace
 {
@@ -370,20 +372,71 @@ void ParameterFileWriter::writeParticleParameterOldFile()
 
 void ParameterFileWriter::writeGlyphParameterFile()
 {
-    std::ofstream file( m_glyph_parameter_path );
+    const std::string tmp_json_file_path = m_glyph_parameter_path + ".tmp";
+
+    std::ofstream file( tmp_json_file_path.c_str() );
+    if ( !file )
+    {
+        throw std::runtime_error( "Cannot open temporary json file for writing: " + tmp_json_file_path );
+    }
+
     WriteGlyphParameterJson( file, m_glyph_parameter_json );
+    file.close();
+    if ( !file )
+    {
+        throw std::runtime_error( "Cannot write temporary json file: " + tmp_json_file_path );
+    }
+
+    if ( std::rename( tmp_json_file_path.c_str(), m_glyph_parameter_path.c_str() ) != 0 )
+    {
+        throw std::runtime_error( "Cannot rename temporary json file: " + tmp_json_file_path + " -> " + m_glyph_parameter_path );
+    }
 }
 
 void ParameterFileWriter::writePlotOverLineParameterFile()
 {
-    std::ofstream file( m_pol_parameter_path );
+    const std::string tmp_json_file_path = m_pol_parameter_path + ".tmp";
+
+    std::ofstream file( tmp_json_file_path.c_str() );
+    if ( !file )
+    {
+        throw std::runtime_error( "Cannot open temporary json file for writing: " + tmp_json_file_path );
+    }
+
     WritePlotOverLineParameterJson( file, m_pol_parameter_json );
+    file.close();
+    if ( !file )
+    {
+        throw std::runtime_error( "Cannot write temporary json file: " + tmp_json_file_path );
+    }
+
+    if ( std::rename( tmp_json_file_path.c_str(), m_pol_parameter_path.c_str() ) != 0 )
+    {
+        throw std::runtime_error( "Cannot rename temporary json file: " + tmp_json_file_path + " -> " + m_pol_parameter_path );
+    }
 }
 
 void ParameterFileWriter::writePlotOverTimeParameterFile()
 {
-    std::ofstream file( m_pot_parameter_path );
+    const std::string tmp_json_file_path = m_pot_parameter_path + ".tmp";
+
+    std::ofstream file( tmp_json_file_path.c_str() );
+    if ( !file )
+    {
+        throw std::runtime_error( "Cannot open temporary json file for writing: " + tmp_json_file_path );
+    }
+
     WritePlotOverTimeParameterJson( file, m_pot_parameter_json );
+    file.close();
+    if ( !file )
+    {
+        throw std::runtime_error( "Cannot write temporary json file: " + tmp_json_file_path );
+    }
+
+    if ( std::rename( tmp_json_file_path.c_str(), m_pot_parameter_path.c_str() ) != 0 )
+    {
+        throw std::runtime_error( "Cannot rename temporary json file: " + tmp_json_file_path + " -> " + m_pot_parameter_path );
+    }
 }
 
 const NameListFile& ParameterFileWriter::getNameListFile() const

@@ -1,5 +1,6 @@
 #include "TransferFunctionJsonWriter.h"
 
+#include <cstdio>
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
@@ -317,64 +318,6 @@ nlohmann::json ToJson( const ParticleProperty& particle_property )
     nlohmann::json root;
     root["format"] = "PBVR transfer-function parameters";
     root["schema_version"] = 1;
-//    root["compatibility"] = "The parameters object preserves the legacy default.tf keys used by ParameterFileReader.";
-//    root["order"] = nlohmann::json::array();
-//    root["parameters"] = nlohmann::json::object();
-
-//    AddParameter( root, "SAMPLING_METHOD", SamplingMethodName( particle_property.m_sampling_method ) );
-//    AddParameter( root, "PARTICLE_LIMIT", particle_property.m_particle_limit );
-//    AddParameter( root, "PARTICLE_DATA_SIZE_LIMIT", particle_property.m_particle_data_size_limit );
-//    if ( particle_property.m_camera != 0 )
-//    {
-//        AddParameter( root, "RESOLUTION_WIDTH", particle_property.m_camera->windowWidth() );
-//        AddParameter( root, "RESOLUTION_HEIGHT", particle_property.m_camera->windowHeight() );
-//    }
-//
-//    if ( !particle_property.m_transfunc_array.empty() )
-//    {
-//        AddParameter( root, "TF_RESOLUTION", particle_property.m_transfunc_array[0].m_resolution );
-//    }
-//    AddParameter( root, "TF_NUMBER", particle_property.m_transfunc_array.size() );
-//
-//    for ( size_t i = 0; i < particle_property.m_transfunc_array.size(); ++i )
-//    {
-//        const NamedTransferFunction& source = particle_property.m_transfunc_array[i];
-//        std::stringstream tag_stream;
-//        tag_stream << "TF_NAME" << i + 1 << "_";
-//        const std::string tag_base = tag_stream.str();
-//
-//        AddParameter( root, tag_base + "SERVER_MIN_C", source.m_server_color_variable_min );
-//        AddParameter( root, tag_base + "SERVER_MAX_C", source.m_server_color_variable_max );
-//        AddParameter( root, tag_base + "USER_MIN_C", source.m_user_color_variable_min );
-//        AddParameter( root, tag_base + "USER_MAX_C", source.m_user_color_variable_max );
-//        AddParameter( root, tag_base + "RANGE_MODE_C", RangeModeName( source.m_server_color_range_mode ) );
-//
-//        AddParameter( root, tag_base + "SERVER_MIN_O", source.m_server_opacity_variable_min );
-//        AddParameter( root, tag_base + "SERVER_MAX_O", source.m_server_opacity_variable_max );
-//        AddParameter( root, tag_base + "USER_MIN_O", source.m_user_opacity_variable_min );
-//        AddParameter( root, tag_base + "USER_MAX_O", source.m_user_opacity_variable_max );
-//        AddParameter( root, tag_base + "RANGE_MODE_O", RangeModeName( source.m_server_opacity_range_mode ) );
-//
-//        AddParameter( root, tag_base + "TABLE_C", ColorTableToJson( source ) );
-//        AddParameter( root, tag_base + "TABLE_O", OpacityTableToJson( source ) );
-//    }
-//
-//    AddParameter( root, "COLOR_SYNTH", particle_property.m_color_transfer_function_synthesis );
-//    AddParameter( root, "OPACITY_SYNTH", particle_property.m_opacity_transfer_function_synthesis );
-//
-//    for ( size_t i = 0; i < particle_property.m_transfunc_array.size(); ++i )
-//    {
-//        const NamedTransferFunction& source = particle_property.m_transfunc_array[i];
-//        std::stringstream tag_stream;
-//        tag_stream << "TF_NAME" << i + 1 << "_";
-//        const std::string tag_base = tag_stream.str();
-//
-//        AddParameter( root, tag_base + "VAR_C", source.m_color_variable );
-//        AddParameter( root, tag_base + "VAR_O", source.m_opacity_variable );
-//    }
-//
-//    AddParameter( root, "END_PARAMETER_FILE", "SUCCESS" );
-
     const nlohmann::json view = BuildHumanReadableView( particle_property );
     root["purpose"] = view["purpose"];
     root["documentation"]["transfer_function_editor_jp"] = "https://github.com/CCSEPBVR/CS-IS-PBVR/wiki/TransferFunctionEditor_JP";
@@ -389,61 +332,25 @@ nlohmann::json ToJson( const ParticleProperty& particle_property )
 void WriteTfJson( const ParticleProperty& particle_property, const std::string& json_file_path )
 {
     const nlohmann::json root = ToJson( particle_property );
+    const std::string tmp_json_file_path = json_file_path + ".tmp";
 
-    std::ofstream output( json_file_path.c_str() );
+    std::ofstream output( tmp_json_file_path.c_str() );
     if ( !output )
     {
-        throw std::runtime_error( "Cannot open json file for writing: " + json_file_path );
+        throw std::runtime_error( "Cannot open temporary json file for writing: " + tmp_json_file_path );
     }
 
     output << DumpReadableJson( root ) << std::endl;
-}
-
-nlohmann::json ParseTfFile( const std::string& tf_file_path )
-{
-    std::ifstream input( tf_file_path.c_str() );
-    if ( !input )
-    {
-        throw std::runtime_error( "Cannot open tf file: " + tf_file_path );
-    }
-
-    nlohmann::json root;
-    root["format"] = "PBVR default.tf";
-    root["source"] = tf_file_path;
-    root["order"] = nlohmann::json::array();
-    root["parameters"] = nlohmann::json::object();
-
-    std::string line;
-    while ( std::getline( input, line ) )
-    {
-        line = Trim( line );
-        if ( line.empty() || line[0] == '#' ) continue;
-
-        const std::string::size_type separator = line.find( '=' );
-        if ( separator == std::string::npos ) continue;
-
-        const std::string key = Trim( line.substr( 0, separator ) );
-        const std::string value = Trim( line.substr( separator + 1 ) );
-        if ( key.empty() ) continue;
-
-        root["order"].push_back( key );
-        root["parameters"][key] = ParseValue( value );
-    }
-
-    return root;
-}
-
-void WriteTfJson( const std::string& tf_file_path, const std::string& json_file_path )
-{
-    const nlohmann::json root = ParseTfFile( tf_file_path );
-
-    std::ofstream output( json_file_path.c_str() );
+    output.close();
     if ( !output )
     {
-        throw std::runtime_error( "Cannot open json file for writing: " + json_file_path );
+        throw std::runtime_error( "Cannot write temporary json file: " + tmp_json_file_path );
     }
 
-    output << DumpReadableJson( root ) << std::endl;
+    if ( std::rename( tmp_json_file_path.c_str(), json_file_path.c_str() ) != 0 )
+    {
+        throw std::runtime_error( "Cannot rename temporary json file: " + tmp_json_file_path + " -> " + json_file_path );
+    }
 }
 
 nlohmann::json LoadTfJson( const std::string& json_file_path )
