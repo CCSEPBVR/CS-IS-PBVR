@@ -110,6 +110,7 @@ vismodule::PointObject* PointObjectGenerator::GenerateParticleStruct(
     case 'x':
         std::cout << "MinMax " << std::endl;
         return new vismodule::CellByCellMinMax(
+            dom,
             values,
             nvariables,
             transfunc_array[0],

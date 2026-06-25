@@ -65,9 +65,11 @@ CellByCellMinMax::CellByCellMinMax(
     unsigned int* connections,
     int ncells,
     const vismodule::VolumeObjectBase::CellType& celltype, 
+    const vismodule::TransferFunction& transfer_function,
     const std::vector<vismodule::TransferFunction>& transfer_function_array, 
     TransferFunctionSynthesizer* transfunc_synthesizer
 ):
+vismodule::MapperBase( transfer_function ),
 m_transfer_function_array( transfer_function_array ),
 m_transfer_function_synthesizer( transfunc_synthesizer )
 {
@@ -83,6 +85,7 @@ CellByCellMinMax::CellByCellMinMax(
     const std::vector<vismodule::TransferFunction>& transfer_function_array,
     TransferFunctionSynthesizer* transfunc_synthesizer
 ):
+vismodule::MapperBase( transfer_function ),
 m_transfer_function_array( transfer_function_array ),
 m_transfer_function_synthesizer( transfunc_synthesizer )
 {

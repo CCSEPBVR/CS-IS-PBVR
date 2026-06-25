@@ -22,6 +22,7 @@
 #include <vismodule/UnstructuredVolumeObject>
 #include <vismodule/ClassName>
 #include <vismodule/Module>
+#include <vismodule/CellByCellParticleGenerator>
 #include <vismodule/TransferFunctionSynthesizer>
 #include <vismodule/TransferFunctionSynthesizerCreator>
 #include "ExtendedTransferFunction.h"
@@ -56,7 +57,7 @@ public:
         Type** values, int nvariables,
         float* coordinates, int ncoords,
         unsigned int* connections, int ncells,
-        const  vismodule::VolumeObjectBase::CellType& celltype ,
+        const  vismodule::VolumeObjectBase::CellType& celltype,
         const vismodule::TransferFunction& transfer_function,
         const std::vector<vismodule::TransferFunction>& transfer_function_array,
         TransferFunctionSynthesizer* transfunc_synthesizer
@@ -64,7 +65,7 @@ public:
 
     //constructor for struct 
     CellByCellMinMax(
-        domain_parameters_struct dom, 
+        domain_parameters_struct dom,
         Type** values,  
         int nvariables, 
         const vismodule::TransferFunction& transfer_function,
