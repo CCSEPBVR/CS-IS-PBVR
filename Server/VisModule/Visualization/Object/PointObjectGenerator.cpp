@@ -110,13 +110,11 @@ vismodule::PointObject* PointObjectGenerator::GenerateParticleStruct(
     case 'x':
         std::cout << "MinMax " << std::endl;
         return new vismodule::CellByCellMinMax(
-            dom,
             values,
             nvariables,
             transfunc_array[0],
             transfunc_array,
-            particle_property.m_transfunc_synthesizer,
-            css
+            particle_property.m_transfunc_synthesizer
         );
 
 
@@ -236,7 +234,6 @@ vismodule::PointObject* PointObjectGenerator::GenerateParticleUnstruct(
     case 'x':
         std::cout << "MinMax " << std::endl;
         return new vismodule::CellByCellMinMax( 
-            dom,
             values,
             nvariables,
             coordinates,
@@ -246,8 +243,7 @@ vismodule::PointObject* PointObjectGenerator::GenerateParticleUnstruct(
             celltype,
             transfunc_array[0],
             transfunc_array,
-            particle_property.m_transfunc_synthesizer,
-            css
+            particle_property.m_transfunc_synthesizer
         );
 
     default:
