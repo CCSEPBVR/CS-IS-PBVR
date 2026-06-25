@@ -261,6 +261,37 @@ void generate_particles(
         particle_property, dom, values, nvariables, tf_number, tmp_max, tmp_min
     );
 
+#ifndef CPU_VER
+    if ( mpi_size > 1 )
+    {
+        MPI_Allreduce( MPI_IN_PLACE, tmp_max, ( tf_number * 2 ), MPI_FLOAT, MPI_MAX, MPI_COMM_WORLD );
+        MPI_Allreduce( MPI_IN_PLACE, tmp_min, ( tf_number * 2 ), MPI_FLOAT, MPI_MIN, MPI_COMM_WORLD );
+    }
+#endif
+
+    for( std::size_t i = 0; i < tf_number; i++ )
+    {
+        const float color_variable_min   = tmp_min[2 * i + 1];
+        const float color_variable_max   = tmp_max[2 * i + 1];
+        const float opacity_variable_min = tmp_min[2 * i    ];
+        const float opacity_variable_max = tmp_max[2 * i    ];
+
+        particle_property.m_transfunc_array[i].m_server_color_variable_min   = color_variable_min;
+        particle_property.m_transfunc_array[i].m_server_color_variable_max   = color_variable_max;
+        particle_property.m_transfunc_array[i].m_server_opacity_variable_min = opacity_variable_min;
+        particle_property.m_transfunc_array[i].m_server_opacity_variable_max = opacity_variable_max;
+
+        if( particle_property.m_transfunc_array[i].m_server_color_range_mode == NamedTransferFunction::ServerRangeMode::ServerSide )
+        {
+            particle_property.m_transfunc_array[i].setColorRange( color_variable_min, color_variable_max );
+        }
+
+        if( particle_property.m_transfunc_array[i].m_server_opacity_range_mode == NamedTransferFunction::ServerRangeMode::ServerSide )
+        {
+            particle_property.m_transfunc_array[i].setOpacityRange( opacity_variable_min, opacity_variable_max );
+        }
+    }
+
     CollectParticleHistogram(
         particle_property, dom, values, nvariables, tf_number, tmp_c_bins, tmp_o_bins
     );

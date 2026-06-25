@@ -302,6 +302,37 @@ void generate_particles(
         ncoords, connections, ncells, celltype, tf_number, tmp_max, tmp_min
     );
 
+#ifndef CPU_VER
+    if ( mpi_size > 1 )
+    {
+        MPI_Allreduce( MPI_IN_PLACE, tmp_max, ( tf_number * 2 ), MPI_FLOAT, MPI_MAX, MPI_COMM_WORLD );
+        MPI_Allreduce( MPI_IN_PLACE, tmp_min, ( tf_number * 2 ), MPI_FLOAT, MPI_MIN, MPI_COMM_WORLD );
+    }
+#endif
+
+    for( std::size_t i = 0; i < tf_number; i++ )
+    {
+        const float color_variable_min   = tmp_min[2 * i + 1];
+        const float color_variable_max   = tmp_max[2 * i + 1];
+        const float opacity_variable_min = tmp_min[2 * i    ];
+        const float opacity_variable_max = tmp_max[2 * i    ];
+
+        particle_property.m_transfunc_array[i].m_server_color_variable_min   = color_variable_min;
+        particle_property.m_transfunc_array[i].m_server_color_variable_max   = color_variable_max;
+        particle_property.m_transfunc_array[i].m_server_opacity_variable_min = opacity_variable_min;
+        particle_property.m_transfunc_array[i].m_server_opacity_variable_max = opacity_variable_max;
+
+        if( particle_property.m_transfunc_array[i].m_server_color_range_mode == NamedTransferFunction::ServerRangeMode::ServerSide )
+        {
+            particle_property.m_transfunc_array[i].setColorRange( color_variable_min, color_variable_max );
+        }
+
+        if( particle_property.m_transfunc_array[i].m_server_opacity_range_mode == NamedTransferFunction::ServerRangeMode::ServerSide )
+        {
+            particle_property.m_transfunc_array[i].setOpacityRange( opacity_variable_min, opacity_variable_max );
+        }
+    }
+
     CollectParticleHistogram(
         particle_property, dom, values, nvariables, coordinates,
         ncoords, connections, ncells, celltype, tf_number, tmp_c_bins, tmp_o_bins
@@ -752,6 +783,64 @@ void generate_particles_vtk( int time_step, vtkUnstructuredGrid* ucd )
     std::vector<float> value_on_time;
     bool pot_mask = false;
 
+    int nvariables = 0;
+
+    // 先にセルタイプを持っておく
+    kvs::ExtendedFileFormat::VtkXmlUnstructuredGrid input_vtu( ucd );
+    std::vector<kvs::UnstructuredVolumeObject::CellType> kvs_cell_type_vector;
+
+    for( auto vtu : input_vtu.eachCellType() )
+    {
+        kvs::ExtendedFileFormat::VtkImporter<kvs::ExtendedFileFormat::VtkXmlUnstructuredGrid> importer( &vtu );
+        kvs::UnstructuredVolumeObject* volume = &importer;
+        kvs_cell_type_vector.push_back( volume->cellType() );
+    }
+
+    auto convert_cell_type = [&](
+        kvs::UnstructuredVolumeObject::CellType kvs_cell_type,
+        std::unique_ptr<std::unique_ptr<Type[]>[]>& values,
+        int& nvariables,
+        std::unique_ptr<float[]>& coordinates,
+        int& ncoords,
+        std::unique_ptr<unsigned int[]>& connections,
+        int& ncells,
+        vismodule::VolumeObjectBase::CellType& celltype
+    )
+    {
+        vismodule::UnstructuredVolumeImporter importer;
+        importer.import( input_vtu, static_cast<int>(kvs_cell_type) );
+        vismodule::UnstructuredVolumeObject* volume = &importer;
+        domain_parameters_unstruct tmp_dom; // not use
+        nvariables = 0;
+
+        store_volume_in_variables_array_unstruct(
+            volume, tmp_dom, values, nvariables, coordinates,
+            ncoords, connections, ncells, celltype
+        );
+    };
+
+    auto collect_cell_type_min_max = [&](
+        std::unique_ptr<std::unique_ptr<Type[]>[]>& values,
+        const int nvariables,
+        std::unique_ptr<float[]>& coordinates,
+        const int ncoords,
+        std::unique_ptr<unsigned int[]>& connections,
+        const int ncells,
+        const vismodule::VolumeObjectBase::CellType& celltype
+    )
+    {
+        std::vector<Type*> raw_pointers_vector( nvariables );
+        for ( std::size_t j = 0; j < nvariables; ++j )
+        {
+            raw_pointers_vector[j] = values.get()[j].get();
+        }
+
+        CollectParticleMinMax(
+            particle_property, dom, raw_pointers_vector.data(), nvariables, coordinates.get(),
+            ncoords, connections.get(), ncells, celltype, tf_number, tmp_max, tmp_min
+        );
+    };
+
     auto process_cell_type = [&](
         std::unique_ptr<std::unique_ptr<Type[]>[]>& values,
         const int nvariables,
@@ -772,11 +861,6 @@ void generate_particles_vtk( int time_step, vtkUnstructuredGrid* ucd )
         }
 
         ServerMode server_mode = ServerMode::IS;
-
-        CollectParticleMinMax(
-            particle_property, dom, raw_pointers_vector.data(), nvariables, coordinates.get(),
-            ncoords, connections.get(), ncells, celltype, tf_number, tmp_max, tmp_min
-        );
 
         CollectParticleHistogram(
             particle_property, dom, raw_pointers_vector.data(), nvariables, coordinates.get(),
@@ -845,15 +929,59 @@ void generate_particles_vtk( int time_step, vtkUnstructuredGrid* ucd )
         }
     };
 
-    process_cell_type(
-        first_values, first_nvariables, first_coordinates, first_ncoords,
-        first_connections, first_ncells, first_celltype
-    );
-
-    for ( std::size_t i = 1; i < kvs_cell_type_vector.size(); i++ )
+    for ( std::size_t i = 0; i < kvs_cell_type_vector.size(); i++ )
     {
         std::unique_ptr<std::unique_ptr<Type[]>[]> values;
-        int nvariables = 0;
+        nvariables = 0;
+        std::unique_ptr<float[]> coordinates;
+        int ncoords = 0;
+        std::unique_ptr<unsigned int[]> connections;
+        int ncells = 0;
+        vismodule::VolumeObjectBase::CellType celltype;
+
+        convert_cell_type(
+            kvs_cell_type_vector[i], values, nvariables, coordinates,
+            ncoords, connections, ncells, celltype
+        );
+
+        collect_cell_type_min_max( values, nvariables, coordinates, ncoords, connections, ncells, celltype );
+    } // for ( std::size_t i = 0; i < kvs_cell_type_vector.size(); i++ )
+
+#ifndef CPU_VER
+    if ( mpi_size > 1 )
+    {
+        MPI_Allreduce( MPI_IN_PLACE, tmp_max, ( tf_number * 2 ), MPI_FLOAT, MPI_MAX, MPI_COMM_WORLD );
+        MPI_Allreduce( MPI_IN_PLACE, tmp_min, ( tf_number * 2 ), MPI_FLOAT, MPI_MIN, MPI_COMM_WORLD );
+    }
+#endif
+
+    for( std::size_t i = 0; i < tf_number; i++ )
+    {
+        const float color_variable_min   = tmp_min[2 * i + 1];
+        const float color_variable_max   = tmp_max[2 * i + 1];
+        const float opacity_variable_min = tmp_min[2 * i    ];
+        const float opacity_variable_max = tmp_max[2 * i    ];
+
+        particle_property.m_transfunc_array[i].m_server_color_variable_min   = color_variable_min;
+        particle_property.m_transfunc_array[i].m_server_color_variable_max   = color_variable_max;
+        particle_property.m_transfunc_array[i].m_server_opacity_variable_min = opacity_variable_min;
+        particle_property.m_transfunc_array[i].m_server_opacity_variable_max = opacity_variable_max;
+
+        if( particle_property.m_transfunc_array[i].m_server_color_range_mode == NamedTransferFunction::ServerRangeMode::ServerSide )
+        {
+            particle_property.m_transfunc_array[i].setColorRange( color_variable_min, color_variable_max );
+        }
+
+        if( particle_property.m_transfunc_array[i].m_server_opacity_range_mode == NamedTransferFunction::ServerRangeMode::ServerSide )
+        {
+            particle_property.m_transfunc_array[i].setOpacityRange( opacity_variable_min, opacity_variable_max );
+        }
+    }
+
+    for ( std::size_t i = 0; i < kvs_cell_type_vector.size(); i++ )
+    {
+        std::unique_ptr<std::unique_ptr<Type[]>[]> values;
+        nvariables = 0;
         std::unique_ptr<float[]> coordinates;
         int ncoords = 0;
         std::unique_ptr<unsigned int[]> connections;
@@ -879,7 +1007,7 @@ void generate_particles_vtk( int time_step, vtkUnstructuredGrid* ucd )
     }
 
     OutputParticleHistory(
-        particle_property, tf_number, first_nvariables, historyFilePath,
+        particle_property, tf_number, nvariables, historyFilePath,
         object_generation_enabled, tmp_c_bins, tmp_o_bins, tmp_max, tmp_min
     );
 
