@@ -501,8 +501,10 @@ bool SetParticleParameter(
     ParameterFileReader ppr;
 
     int size = 0;
-    char* buf = NULL;
+    char* buf = nullptr;
     int object_generation_enabled_int = 0;
+    static bool hasCachedParticleProperty = false;
+    static std::vector<char> cachedParticlePropertyBuffer;
 
     if ( mpi_rank == 0 )
     {
@@ -513,6 +515,26 @@ bool SetParticleParameter(
         if ( tfJson.good() )
         {
             loaded = ppr.readTransferFunctionFromJson( tfJsonPath.c_str(), particle_property );
+            if ( loaded )
+            {
+                std::rename( tfJsonPath.c_str(), tfJsonPath_old.c_str() );
+            }
+        }
+        if ( !loaded && !tfJson.good() && hasCachedParticleProperty )
+        {
+            size = static_cast<int>( cachedParticlePropertyBuffer.size() );
+            if ( size > 0 )
+            {
+                buf = new char[size];
+                for ( int i = 0; i < size; ++i )
+                {
+                    buf[i] = cachedParticlePropertyBuffer[i];
+                }
+                particle_property.unpack( buf );
+                delete[] buf;
+                buf = nullptr;
+            }
+            loaded = size > 0;
         }
         if ( !loaded && tfJsonOld.good() )
         {
@@ -523,7 +545,7 @@ bool SetParticleParameter(
         {
             object_generation_enabled_int = 1;
         }
-        else
+        else if ( size == 0 )
         {
             std::cout << "================================================================" << std::endl;
             std::cout << "[WARN] Failed to load transfer function json." << std::endl;
@@ -545,6 +567,11 @@ bool SetParticleParameter(
         {
             buf = new char[size];
             particle_property.pack( buf );
+            if ( object_generation_enabled_int != 0 )
+            {
+                cachedParticlePropertyBuffer.assign( buf, buf + size );
+                hasCachedParticleProperty = true;
+            }
         }
 
     }
@@ -562,6 +589,11 @@ bool SetParticleParameter(
         MPI_Bcast( buf, size, MPI_CHARACTER, 0, MPI_COMM_WORLD );
 #endif
         if( mpi_rank > 0 ) particle_property.unpack( buf );
+        if ( mpi_rank > 0 && object_generation_enabled )
+        {
+            cachedParticlePropertyBuffer.assign( buf, buf + size );
+            hasCachedParticleProperty = true;
+        }
         particle_property.UpdateTransferFunctionSynthesizer();
         delete[] buf;
     }
