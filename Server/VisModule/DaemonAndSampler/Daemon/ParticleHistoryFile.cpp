@@ -1,4 +1,8 @@
 #include "ParticleHistoryFile.h"
+#include <fstream>
+#include <sstream>
+#include <stdexcept>
+#include "../../../Shared/json.hpp"
 
 ParticleHistoryFile::ParticleHistoryFile()
 {
@@ -153,18 +157,84 @@ void ParticleHistoryFile::assign_name_list( const NameListFile& name_list_file )
 
 void ParticleHistoryFile::read_name_list_file()
 {
-    NameListFile nlfile( m_file_name );
-
-    for( NameArray::iterator i = m_name.begin(); i != m_name.end(); i++ )
+    std::ifstream input( m_file_name.c_str() );
+    if ( !input )
     {
-        nlfile.setName( *i );
+        return;
     }
 
-    if( nlfile.read() ) {
-        while (!nlfile.getCount("END_HISTORY_FILE") || nlfile.getValue<std::string>("END_HISTORY_FILE") != "SUCCESS") {
-            nlfile.read();
+    try
+    {
+        nlohmann::json root;
+        input >> root;
+
+        m_variable_range.clear();
+        m_color_histogram_array.clear();
+        m_opacity_histogram_array.clear();
+
+        const int tf_number = root.at( "tf_number" ).get<int>();
+        m_nvariables = root.at( "nvariables" ).get<int>();
+        m_particle_limit = root.at( "particle_limit" ).get<int>();
+
+        const nlohmann::json& transfer_functions = root.at( "transfer_functions" );
+        for ( int i = 1; i <= tf_number; i++ )
+        {
+            std::stringstream ss;
+            ss << i;
+            const std::string idxbuf = ss.str();
+
+            std::stringstream opacity_key;
+            opacity_key << "O" << i;
+            const nlohmann::json& opacity = transfer_functions.at( opacity_key.str() );
+
+            std::stringstream color_key;
+            color_key << "C" << i;
+            const nlohmann::json& color = transfer_functions.at( color_key.str() );
+
+            m_variable_range.setValue(
+                "t" + idxbuf + "_var_o",
+                opacity.at( "min" ).get<vismodule::Real32>() );
+            m_variable_range.setValue(
+                "t" + idxbuf + "_var_o",
+                opacity.at( "max" ).get<vismodule::Real32>() );
+            m_variable_range.setValue(
+                "t" + idxbuf + "_var_c",
+                color.at( "min" ).get<vismodule::Real32>() );
+            m_variable_range.setValue(
+                "t" + idxbuf + "_var_c",
+                color.at( "max" ).get<vismodule::Real32>() );
+
+            const int opacity_resolution = opacity.at( "resolution" ).get<int>();
+            const std::vector<int> opacity_histogram = opacity.at( "histogram" ).get<std::vector<int> >();
+            if ( static_cast<int>( opacity_histogram.size() ) != opacity_resolution )
+            {
+                std::stringstream message;
+                message << "Invalid history json: histogram size is " << opacity_histogram.size()
+                        << " but resolution is " << opacity_resolution;
+                throw std::runtime_error( message.str() );
+            }
+
+            const int color_resolution = color.at( "resolution" ).get<int>();
+            const std::vector<int> color_histogram = color.at( "histogram" ).get<std::vector<int> >();
+            if ( static_cast<int>( color_histogram.size() ) != color_resolution )
+            {
+                std::stringstream message;
+                message << "Invalid history json: histogram size is " << color_histogram.size()
+                        << " but resolution is " << color_resolution;
+                throw std::runtime_error( message.str() );
+            }
+
+            m_opacity_histogram_array.push_back( opacity_histogram );
+            m_color_histogram_array.push_back( color_histogram );
         }
-        this->assign_name_list( nlfile );
+    }
+    catch ( const std::exception& )
+    {
+        m_variable_range.clear();
+        m_color_histogram_array.clear();
+        m_opacity_histogram_array.clear();
+        m_nvariables = 0;
+        m_particle_limit = 0;
     }
 }
 

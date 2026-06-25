@@ -180,7 +180,7 @@ void ParticleMonitor::readParticleHistoryFile()
 {
     std::stringstream step;
     step << '_' << std::setw( 5 ) << std::setfill( '0' ) << m_time_step_particle;
-    std::string history_file_name = m_history_file_prefix + step.str() + ".txt";
+    std::string history_file_name = m_history_file_prefix + step.str() + ".json";
     this->setParticleHistoryFileName( history_file_name );
     m_history_file.read();
 }

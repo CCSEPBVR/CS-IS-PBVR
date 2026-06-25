@@ -3,6 +3,7 @@
 #include <cstdio>
 #include <fstream>
 #include <sstream>
+#include <stdexcept>
 #include <vector>
 #include <vismodule/KVSMLObjectPoint>
 #include <vismodule/KVSMLObjectPlotOverLine>
@@ -392,7 +393,7 @@ void SetParameterFilePath(
 
     std::stringstream step;
     step << '_' << std::setw( 5 ) << std::setfill( '0' ) << time_step;
-    historyFilePath = visParamDir + "history" + step.str() + ".txt";
+    historyFilePath = visParamDir + "history" + step.str() + ".json";
     stateFilePath     = visParamDir + "state.txt";
     
     envBuf = std::getenv( "PARTICLE_DIR" );
@@ -901,37 +902,66 @@ void OutputParticleHistory(
 
     if( mpi_rank == 0 )
     {
-        // historyファイルの出力
-        std::ofstream ofs2( histryFilePath.c_str(), std::ios::out);
-        ofs2 << "TF_NUMBER=" << tf_number << std::endl;
+        std::ostringstream history_json;
+        history_json << "{\n";
+        history_json << "    \"tf_number\": " << tf_number << ",\n";
+        history_json << "    \"nvariables\": " << nvariables << ",\n";
+        history_json << "    \"particle_limit\": " << particle_property.m_particle_limit << ",\n";
+        history_json << "    \"transfer_functions\": {\n";
 
         for( std::size_t i = 0; i < tf_number; i++ )
         {
-            ofs2 << "MIN_O" << (i + 1) << "=" << min_array_recv[2 * i    ] << std::endl;
-            ofs2 << "MAX_O" << (i + 1) << "=" << max_array_recv[2 * i    ] << std::endl;
-            ofs2 << "MIN_C" << (i + 1) << "=" << min_array_recv[2 * i + 1] << std::endl;
-            ofs2 << "MAX_C" << (i + 1) << "=" << max_array_recv[2 * i + 1] << std::endl;
-            ofs2 << "RESOLUTION_O" << (i + 1) << "=" << DEFAULT_NBINS << std::endl;
-            ofs2 << "HISTOGRAM_O"  << (i + 1) << "=";
-            for ( std::size_t j = 0; j < DEFAULT_NBINS; j++ )
+            history_json << "        \"O" << ( i + 1 ) << "\": {\n";
+            history_json << "            \"min\": " << min_array_recv[2 * i] << ",\n";
+            history_json << "            \"max\": " << max_array_recv[2 * i] << ",\n";
+            history_json << "            \"resolution\": " << DEFAULT_NBINS << ",\n";
+            history_json << "            \"histogram\": [";
+            for( std::size_t j = 0; j < DEFAULT_NBINS; j++ )
             {
-                ofs2 << o_bins_recv[j + (i * DEFAULT_NBINS)] << ",";
+                if( j > 0 ) history_json << ", ";
+                history_json << o_bins_recv[j + ( i * DEFAULT_NBINS )];
             }
-            ofs2 << std::endl;
-            ofs2 << "RESOLUTION_C" << (i + 1) << "=" << DEFAULT_NBINS << std::endl;
-            ofs2 << "HISTOGRAM_C"  << (i + 1) << "=";
-            for ( std::size_t j = 0; j < DEFAULT_NBINS; j++ )
+            history_json << "]\n";
+            history_json << "        },\n";
+
+            history_json << "        \"C" << ( i + 1 ) << "\": {\n";
+            history_json << "            \"min\": " << min_array_recv[2 * i + 1] << ",\n";
+            history_json << "            \"max\": " << max_array_recv[2 * i + 1] << ",\n";
+            history_json << "            \"resolution\": " << DEFAULT_NBINS << ",\n";
+            history_json << "            \"histogram\": [";
+            for( std::size_t j = 0; j < DEFAULT_NBINS; j++ )
             {
-                ofs2 << c_bins_recv[j + (i * DEFAULT_NBINS)] << ",";
+                if( j > 0 ) history_json << ", ";
+                history_json << c_bins_recv[j + ( i * DEFAULT_NBINS )];
             }
-            ofs2 << std::endl;
+            history_json << "]\n";
+            history_json << "        }";
+            if( i + 1 < tf_number ) history_json << ",";
+            history_json << "\n";
         }
 
-        ofs2 << "N_VARIABLES="             << nvariables                               << std::endl;
-        // ofs2 << "EXTRA_OPACITY_FACTOR="    << particle_property.m_extra_opacity_factor << std::endl; // 一時的にコメントアウト
-        ofs2 << "PARTICLE_LIMIT="          << particle_property.m_particle_limit       << std::endl;
-        ofs2 << "END_HISTORY_FILE=SUCCESS" << std::endl;
+        history_json << "    }\n";
+        history_json << "}\n";
+
+        const std::string tmp_history_file_path = histryFilePath + ".tmp";
+        std::ofstream ofs2( tmp_history_file_path.c_str(), std::ios::out );
+        if( !ofs2 )
+        {
+            throw std::runtime_error( "Cannot open temporary history json file for writing: " + tmp_history_file_path );
+        }
+
+        ofs2 << history_json.str();
         ofs2.close();
+        if( !ofs2 )
+        {
+            throw std::runtime_error( "Cannot write temporary history json file: " + tmp_history_file_path );
+        }
+
+        if( std::rename( tmp_history_file_path.c_str(), histryFilePath.c_str() ) != 0 )
+        {
+            throw std::runtime_error(
+                "Cannot rename temporary history json file: " + tmp_history_file_path + " -> " + histryFilePath );
+        }
     }
 
     delete[] min_array_recv;
