@@ -467,8 +467,6 @@ nlohmann::json BuildLegacyParametersFromReadableJson( const nlohmann::json& root
             {
                 const nlohmann::json& range = color.at( "range" );
                 params[tag_base + "RANGE_MODE_C"] = JsonRangeMode( range );
-                params[tag_base + "SERVER_MIN_C"] = JsonRangeValue( range, "server", "min" );
-                params[tag_base + "SERVER_MAX_C"] = JsonRangeValue( range, "server", "max" );
                 params[tag_base + "USER_MIN_C"] = JsonRangeValue( range, "user", "min" );
                 params[tag_base + "USER_MAX_C"] = JsonRangeValue( range, "user", "max" );
             }
@@ -487,8 +485,6 @@ nlohmann::json BuildLegacyParametersFromReadableJson( const nlohmann::json& root
             {
                 const nlohmann::json& range = opacity.at( "range" );
                 params[tag_base + "RANGE_MODE_O"] = JsonRangeMode( range );
-                params[tag_base + "SERVER_MIN_O"] = JsonRangeValue( range, "server", "min" );
-                params[tag_base + "SERVER_MAX_O"] = JsonRangeValue( range, "server", "max" );
                 params[tag_base + "USER_MIN_O"] = JsonRangeValue( range, "user", "min" );
                 params[tag_base + "USER_MAX_O"] = JsonRangeValue( range, "user", "max" );
             }
@@ -737,12 +733,8 @@ bool ParameterFileReader::readTransferFunctionFromJson( const char* fname, Parti
         const std::string opacity_varible        = params.value( tag_base + "VAR_O", std::string( "" ) );
         const std::string color_range_mode       = params.value( tag_base + "RANGE_MODE_C", std::string( "" ) );
         const std::string opacity_range_mode     = params.value( tag_base + "RANGE_MODE_O", std::string( "" ) );
-        const float server_color_min             = params.value( tag_base + "SERVER_MIN_C", 0.0f );
-        const float server_color_max             = params.value( tag_base + "SERVER_MAX_C", 0.0f );
         const float user_color_min               = params.value( tag_base + "USER_MIN_C", 0.0f );
         const float user_color_max               = params.value( tag_base + "USER_MAX_C", 0.0f );
-        const float server_opacity_min           = params.value( tag_base + "SERVER_MIN_O", 0.0f );
-        const float server_opacity_max           = params.value( tag_base + "SERVER_MAX_O", 0.0f );
         const float user_opacity_min             = params.value( tag_base + "USER_MIN_O", 0.0f );
         const float user_opacity_max             = params.value( tag_base + "USER_MAX_O", 0.0f );
         const std::vector<int> color_values      = JsonIntTable( params, tag_base + "TABLE_C" );
@@ -801,10 +793,6 @@ bool ParameterFileReader::readTransferFunctionFromJson( const char* fname, Parti
 
         particle_property.m_transfunc_array[n].m_color_variable              = color_variable;
         particle_property.m_transfunc_array[n].m_opacity_variable            = opacity_varible;
-        particle_property.m_transfunc_array[n].m_server_color_variable_min   = server_color_min;
-        particle_property.m_transfunc_array[n].m_server_color_variable_max   = server_color_max;
-        particle_property.m_transfunc_array[n].m_server_opacity_variable_min = server_opacity_min;
-        particle_property.m_transfunc_array[n].m_server_opacity_variable_max = server_opacity_max;
         particle_property.m_transfunc_array[n].m_user_color_variable_min     = user_color_min;
         particle_property.m_transfunc_array[n].m_user_color_variable_max     = user_color_max;
         particle_property.m_transfunc_array[n].m_user_opacity_variable_min   = user_opacity_min;
@@ -832,28 +820,20 @@ bool ParameterFileReader::readTransferFunctionFromJson( const char* fname, Parti
         particle_property.m_transfunc_array[n].setColorMap( color_map );
         particle_property.m_transfunc_array[n].setOpacityMap( opacity_map );
 
-        if ( particle_property.m_transfunc_array[n].m_server_color_range_mode == NamedTransferFunction::ServerRangeMode::ServerSide )
-        {
-            particle_property.m_transfunc_array[n].setColorRange( server_color_min, server_color_max );
-        }
-        else if ( particle_property.m_transfunc_array[n].m_server_color_range_mode == NamedTransferFunction::ServerRangeMode::UserRange )
+        if ( particle_property.m_transfunc_array[n].m_server_color_range_mode == NamedTransferFunction::ServerRangeMode::UserRange )
         {
             particle_property.m_transfunc_array[n].setColorRange( user_color_min, user_color_max );
         }
-        else
+        else if ( particle_property.m_transfunc_array[n].m_server_color_range_mode != NamedTransferFunction::ServerRangeMode::ServerSide )
         {
             std::cout << "ERROR:Color Range Mode is unknown" << std::endl;
         }
 
-        if ( particle_property.m_transfunc_array[n].m_server_opacity_range_mode == NamedTransferFunction::ServerRangeMode::ServerSide )
-        {
-            particle_property.m_transfunc_array[n].setOpacityRange( server_opacity_min, server_opacity_max );
-        }
-        else if ( particle_property.m_transfunc_array[n].m_server_opacity_range_mode == NamedTransferFunction::ServerRangeMode::UserRange )
+        if ( particle_property.m_transfunc_array[n].m_server_opacity_range_mode == NamedTransferFunction::ServerRangeMode::UserRange )
         {
             particle_property.m_transfunc_array[n].setOpacityRange( user_opacity_min, user_opacity_max );
         }
-        else
+        else if ( particle_property.m_transfunc_array[n].m_server_opacity_range_mode != NamedTransferFunction::ServerRangeMode::ServerSide )
         {
             std::cout << "ERROR:Opacity Range Mode is unknown" << std::endl;
         }

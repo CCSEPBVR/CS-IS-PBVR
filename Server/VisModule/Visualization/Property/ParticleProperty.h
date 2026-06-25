@@ -201,6 +201,21 @@ struct ParticleProperty
             index += vismodule::Serializer::read( buf + index, &m_transfunc_array[i].m_user_opacity_variable_min );
             index += vismodule::Serializer::read( buf + index, &m_transfunc_array[i].m_user_opacity_variable_max );
             index += vismodule::Serializer::unpack<vismodule::TransferFunction>( buf + index, &m_transfunc_array[i] );
+
+            float user_color_min     = m_transfunc_array[i].m_user_color_variable_min;
+            float user_color_max     = m_transfunc_array[i].m_user_color_variable_max;
+            float user_opacity_min   = m_transfunc_array[i].m_user_opacity_variable_min;
+            float user_opacity_max   = m_transfunc_array[i].m_user_opacity_variable_max;
+
+            if ( m_transfunc_array[i].m_server_color_range_mode == NamedTransferFunction::ServerRangeMode::UserRange )
+            {
+                m_transfunc_array[i].setColorRange( user_color_min, user_color_max );
+            }
+
+            if ( m_transfunc_array[i].m_server_opacity_range_mode == NamedTransferFunction::ServerRangeMode::UserRange )
+            {
+                m_transfunc_array[i].setOpacityRange( user_opacity_min, user_opacity_max );
+            }
         }
 
         index += vismodule::Serializer::read( buf + index, &m_color_transfer_function_synthesis );
