@@ -169,7 +169,7 @@ inline void HexahedralCell<T>::scalar_ary(float*  scalar_array, const int loop_c
 template <typename T>
 inline void HexahedralCell<T>::grad_ary(float* grad_array_x, float* grad_array_y, float* grad_array_z, const int loop_cnt) const
 {
-    #pragma ivdep
+    #pragma omp simd
     for( int i = 0; i < loop_cnt; i++ )
     {
 
@@ -204,7 +204,6 @@ inline void HexahedralCell<T>::grad_ary(float* grad_array_x, float* grad_array_y
                               + ( BaseClass::m_scalars_array[ 6][i] * BaseClass::m_differential_functions_array[22][i]  )
                               + ( BaseClass::m_scalars_array[ 7][i] * BaseClass::m_differential_functions_array[23][i]  );
 
-        const vismodule::Vector3d g( dsdx, dsdy, dsdz );
 
         ///////////////////////// JacobiMatrix /////////////////////////
 
@@ -309,23 +308,11 @@ inline void HexahedralCell<T>::grad_ary(float* grad_array_x, float* grad_array_y
         VISMODULE_HEX_UPDATE_MIN_ABS( dZdz );
 #undef VISMODULE_HEX_UPDATE_MIN_ABS
 
-        int order = 0;
-
-        while ( minValue < 1.0 )
-        {
-            minValue *= 10.0;
-            --order;
-        }
-
-        while ( minValue >= 10.0 )
-        {
-            minValue /= 10.0;
-            ++order;
-        }
-
-        order = -order;
-
-        double scale_factor = std::pow(10.0, order);  
+        // Branchless scale factor (was two data-dependent while loops -> #15523,
+        // which blocked vectorization). order = -floor(log10(minValue)); 10^order.
+        // Pure conditioning factor that cancels in G = J^-1 * g (ULP-level only).
+        const int order = -static_cast<int>( std::floor( std::log10( minValue ) ) );
+        const double scale_factor = std::pow( 10.0, order );
         dXdx *= scale_factor;
         dXdy *= scale_factor;
         dXdz *= scale_factor;
@@ -358,27 +345,18 @@ inline void HexahedralCell<T>::grad_ary(float* grad_array_x, float* grad_array_y
 
         double determinant = (double)det33;
 
-        vismodule::Matrix33d J;
-/*
-        J.set( ( dYdy * dZdz - dZdy * dYdz ), ( dYdx * dZdz - dZdx * dYdz ), ( dXdx * dYdz - dYdx * dXdz ),
-               ( dXdy * dZdz - dZdy * dXdz ), ( dXdx * dZdz - dZdx * dXdz ), ( dXdx * dZdy - dZdx * dXdy ),
-               ( dXdy * dYdz - dYdy * dXdz ), ( dXdx * dYdz - dYdx * dXdz ), ( dXdx * dYdy - dYdx * dXdy ) );
-*/
-        // 20190128 修正
-        J.set( +det22[0], -det22[3], +det22[6],
-               -det22[1], +det22[4], -det22[7],
-               +det22[2], -det22[5], +det22[8] );
+        const double det_inverse = 1.0 / det33;
 
-        const double det_inverse = static_cast<double>( 1.0 / det33 );
+        // Expand J^-1 * g * scale_factor to plain scalars (was Matrix33d/Vector3d,
+        // AoS -> strided stores #15329). J rows = signed cofactors (det22) / det33;
+        // g = (dsdx, dsdy, dsdz); (M*v) = row_k . v.
+        const double Gx = (  det22[0] * dsdx - det22[3] * dsdy + det22[6] * dsdz ) * det_inverse * scale_factor;
+        const double Gy = ( -det22[1] * dsdx + det22[4] * dsdy - det22[7] * dsdz ) * det_inverse * scale_factor;
+        const double Gz = (  det22[2] * dsdx - det22[5] * dsdy + det22[8] * dsdz ) * det_inverse * scale_factor;
 
-        J *= det_inverse;
-        const vismodule::Vector3d G = J * g * scale_factor;
-
-        /////////////////////////   inverse   /////////////////////////
-
-        grad_array_x[i] =  vismodule::Math::IsZero( determinant ) ? 0.0f : G.x();
-        grad_array_y[i] =  vismodule::Math::IsZero( determinant ) ? 0.0f : G.y();
-        grad_array_z[i] =  vismodule::Math::IsZero( determinant ) ? 0.0f : G.z();
+        grad_array_x[i] =  vismodule::Math::IsZero( determinant ) ? 0.0f : static_cast<float>( Gx );
+        grad_array_y[i] =  vismodule::Math::IsZero( determinant ) ? 0.0f : static_cast<float>( Gy );
+        grad_array_z[i] =  vismodule::Math::IsZero( determinant ) ? 0.0f : static_cast<float>( Gz );
 
         /////////////////////////// gradient ///////////////////////////
 
