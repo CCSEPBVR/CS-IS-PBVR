@@ -29,12 +29,24 @@ case "$EXECUTABLE" in
 esac
 EXEC_DIR=$(dirname "$EXEC_PATH")
 export VIS_PARAM_DIR="$EXEC_DIR"
-export PARTICLE_DIR="$EXEC_DIR/particle_out"
 
 OUTPUT_DIR="$BENCHMARK_DIR/benchmark_results/sweep_2x20"
 LOG_FILE="$BENCHMARK_DIR/benchmark_results/sweep_2x20/sweep_2x20.log"
+# Isolate particle output per case (was $EXEC_DIR/particle_out, shared across
+# cases/concurrent jobs). Keeps each case's particles under its result dir.
+export PARTICLE_DIR="$OUTPUT_DIR/particle_out"
 mkdir -p "$OUTPUT_DIR"
 cd "$OUTPUT_DIR"
+
+# --- Always reset this case's previous results before running ---
+# ensemble_timer_summary.csv is opened in append mode (kvs_wrapper.cpp), so
+# stale rows from an earlier run would silently corrupt aggregation
+# (choose_total() picks the oldest run). Clear timer/history/state outputs and
+# the per-case particle dir so every run produces a single clean dataset.
+rm -f "$OUTPUT_DIR"/ensemble_timer_summary.csv "$OUTPUT_DIR"/*_ensemble_timer_summary.csv
+rm -f "$OUTPUT_DIR"/history_0* "$OUTPUT_DIR"/default_0* "$OUTPUT_DIR"/timer.out.* "$OUTPUT_DIR"/state.txt
+mkdir -p "$PARTICLE_DIR"
+rm -f "$PARTICLE_DIR"/*
 
 echo "CASE=sweep_2x20"
 echo "PHASE=mpi_omp_sweep"

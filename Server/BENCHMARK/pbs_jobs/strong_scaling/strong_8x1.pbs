@@ -1,6 +1,6 @@
 #!/bin/sh
 #PBS -q sc16
-#PBS -l select=1:ncpus=8:mpiprocs=8:ompthreads=1
+#PBS -l select=1:ncpus=40:mpiprocs=8:ompthreads=1
 #PBS -l walltime=00:30:00
 #PBS -N strong_8x1
 #PBS -j oe
@@ -22,19 +22,31 @@ module load mpt/2.23-ga
 export OMP_NUM_THREADS=1
 export KMP_AFFINITY=disabled
 
-EXECUTABLE='Example/C/s86_mpi_omp/ens_Hydrogen_unstruct_mpi2/run'
+EXECUTABLE='Example/C/s86_mpi_omp/ens_Hydrogen_unstruct_strong/run'
 case "$EXECUTABLE" in
   /*) EXEC_PATH="$EXECUTABLE" ;;
   *) EXEC_PATH="$REPO_ROOT/$EXECUTABLE" ;;
 esac
 EXEC_DIR=$(dirname "$EXEC_PATH")
 export VIS_PARAM_DIR="$EXEC_DIR"
-export PARTICLE_DIR="$EXEC_DIR/particle_out"
 
 OUTPUT_DIR="$BENCHMARK_DIR/benchmark_results/strong_8x1"
 LOG_FILE="$BENCHMARK_DIR/benchmark_results/strong_8x1/strong_8x1.log"
+# Isolate particle output per case (was $EXEC_DIR/particle_out, shared across
+# cases/concurrent jobs). Keeps each case's particles under its result dir.
+export PARTICLE_DIR="$OUTPUT_DIR/particle_out"
 mkdir -p "$OUTPUT_DIR"
 cd "$OUTPUT_DIR"
+
+# --- Always reset this case's previous results before running ---
+# ensemble_timer_summary.csv is opened in append mode (kvs_wrapper.cpp), so
+# stale rows from an earlier run would silently corrupt aggregation
+# (choose_total() picks the oldest run). Clear timer/history/state outputs and
+# the per-case particle dir so every run produces a single clean dataset.
+rm -f "$OUTPUT_DIR"/ensemble_timer_summary.csv "$OUTPUT_DIR"/*_ensemble_timer_summary.csv
+rm -f "$OUTPUT_DIR"/history_0* "$OUTPUT_DIR"/default_0* "$OUTPUT_DIR"/timer.out.* "$OUTPUT_DIR"/state.txt
+mkdir -p "$PARTICLE_DIR"
+rm -f "$PARTICLE_DIR"/*
 
 echo "CASE=strong_8x1"
 echo "PHASE=strong_scaling"

@@ -33,12 +33,15 @@ DEFAULT_STRONG_EXECUTABLES = {
 
 def add_case(rows, name, phase, nodes, mpiprocs, ompthreads,
              input_name, output_root, walltime, executable, input_args,
-             ncpus_per_node):
+             ncpus_per_node, full_node=False):
     if mpiprocs < 2:
         return
     if mpiprocs * ompthreads > ncpus_per_node:
         return
-    ncpus = max(1, min(ncpus_per_node, mpiprocs * ompthreads))
+    # full_node=True reserves all cores per node (full memory + node-exclusive),
+    # required for strong scaling: total memory is ~constant but ncpus shrinks,
+    # so low-rank cases (4,8) would otherwise OOM under a smaller cgroup mem limit.
+    ncpus = ncpus_per_node if full_node else max(1, min(ncpus_per_node, mpiprocs * ompthreads))
     rows.append({
         "case": name,
         "phase": phase,
@@ -79,17 +82,17 @@ def build_cases(executable_arg=None, input_args_arg=None, weak_executable_arg=No
 
     rows = []
 
-    def add(name, phase, nodes, mpiprocs, ompthreads, input_name, case_executable=None):
+    def add(name, phase, nodes, mpiprocs, ompthreads, input_name, case_executable=None, full_node=False):
         add_case(rows, name, phase, nodes, mpiprocs, ompthreads,
                  input_name, output_root, walltime, case_executable or executable, input_args,
-                 ncpus_per_node)
+                 ncpus_per_node, full_node)
 
-    def add_total_mpi(name, phase, total_mpi, ompthreads, input_name, case_executable=None):
+    def add_total_mpi(name, phase, total_mpi, ompthreads, input_name, case_executable=None, full_node=False):
         placement = split_total_mpi(total_mpi, ompthreads, ncpus_per_node)
         if placement is None:
             return
         nodes, mpiprocs = placement
-        add(name, phase, nodes, mpiprocs, ompthreads, input_name, case_executable)
+        add(name, phase, nodes, mpiprocs, ompthreads, input_name, case_executable, full_node)
 
     add("correctness_mpi_2x1", "correctness", 1, 2, 1, small_input)
     add("correctness_mpi_2x2", "correctness", 1, 2, 2, small_input)
@@ -103,6 +106,7 @@ def build_cases(executable_arg=None, input_args_arg=None, weak_executable_arg=No
             1,
             strong_input,
             DEFAULT_STRONG_EXECUTABLES.get(mpi, executable),
+            full_node=True,
         )
 
     for mpi in (10, 20, 40, 80):
