@@ -23,6 +23,19 @@
 //#include "SFMT/SFMT.h" 
 #include <vismodule/Timer>
 
+// Phase 2: portable alignment hint. The CellBase *_array rows are 64B-aligned
+// (one contiguous aligned block per array), but the compiler cannot infer this
+// from the pointer-of-pointer layout, so we assert it explicitly.
+#ifndef PBVR_ASSUME_ALIGNED64
+#  if defined(__INTEL_COMPILER) || defined(__INTEL_LLVM_COMPILER)
+#    define PBVR_ASSUME_ALIGNED64(p) __assume_aligned((p), 64)
+#  elif defined(__GNUC__)
+#    define PBVR_ASSUME_ALIGNED64(p) ((p) = static_cast<decltype(p)>(__builtin_assume_aligned((p), 64)))
+#  else
+#    define PBVR_ASSUME_ALIGNED64(p) ((void)0)
+#  endif
+#endif
+
 namespace vismodule
 {
 
@@ -126,18 +139,30 @@ inline HexahedralCell<T>::~HexahedralCell()
 template <typename T>
 inline void HexahedralCell<T>::scalar_ary(float*  scalar_array, const int loop_cnt) const 
 {
+    // Phase 2: hoist 64B-aligned row pointers so the compiler emits aligned loads
+    // (vmovaps) and drops the peel loop. Output is the caller buffer -> __restrict only.
+    const vismodule::Real32* N0 = BaseClass::m_interpolation_functions_array[0]; PBVR_ASSUME_ALIGNED64( N0 );
+    const vismodule::Real32* N1 = BaseClass::m_interpolation_functions_array[1]; PBVR_ASSUME_ALIGNED64( N1 );
+    const vismodule::Real32* N2 = BaseClass::m_interpolation_functions_array[2]; PBVR_ASSUME_ALIGNED64( N2 );
+    const vismodule::Real32* N3 = BaseClass::m_interpolation_functions_array[3]; PBVR_ASSUME_ALIGNED64( N3 );
+    const vismodule::Real32* N4 = BaseClass::m_interpolation_functions_array[4]; PBVR_ASSUME_ALIGNED64( N4 );
+    const vismodule::Real32* N5 = BaseClass::m_interpolation_functions_array[5]; PBVR_ASSUME_ALIGNED64( N5 );
+    const vismodule::Real32* N6 = BaseClass::m_interpolation_functions_array[6]; PBVR_ASSUME_ALIGNED64( N6 );
+    const vismodule::Real32* N7 = BaseClass::m_interpolation_functions_array[7]; PBVR_ASSUME_ALIGNED64( N7 );
+    const T* s0 = BaseClass::m_scalars_array[0]; PBVR_ASSUME_ALIGNED64( s0 );
+    const T* s1 = BaseClass::m_scalars_array[1]; PBVR_ASSUME_ALIGNED64( s1 );
+    const T* s2 = BaseClass::m_scalars_array[2]; PBVR_ASSUME_ALIGNED64( s2 );
+    const T* s3 = BaseClass::m_scalars_array[3]; PBVR_ASSUME_ALIGNED64( s3 );
+    const T* s4 = BaseClass::m_scalars_array[4]; PBVR_ASSUME_ALIGNED64( s4 );
+    const T* s5 = BaseClass::m_scalars_array[5]; PBVR_ASSUME_ALIGNED64( s5 );
+    const T* s6 = BaseClass::m_scalars_array[6]; PBVR_ASSUME_ALIGNED64( s6 );
+    const T* s7 = BaseClass::m_scalars_array[7]; PBVR_ASSUME_ALIGNED64( s7 );
+    float* __restrict out = scalar_array;
     #pragma ivdep
     for ( std::size_t i = 0; i < loop_cnt ; i++ )
     {
-        //scalar_array[i]= static_cast<vismodule::Real32>( m_interpolation_functions_array[0][j] * m_scalars_array[0][j] );
-        scalar_array[i] =  BaseClass::m_interpolation_functions_array[0][i] * BaseClass::m_scalars_array[0][i] 
-                        +  BaseClass::m_interpolation_functions_array[1][i] * BaseClass::m_scalars_array[1][i]
-                        +  BaseClass::m_interpolation_functions_array[2][i] * BaseClass::m_scalars_array[2][i]
-                        +  BaseClass::m_interpolation_functions_array[3][i] * BaseClass::m_scalars_array[3][i]
-                        +  BaseClass::m_interpolation_functions_array[4][i] * BaseClass::m_scalars_array[4][i]
-                        +  BaseClass::m_interpolation_functions_array[5][i] * BaseClass::m_scalars_array[5][i]
-                        +  BaseClass::m_interpolation_functions_array[6][i] * BaseClass::m_scalars_array[6][i]
-                        +  BaseClass::m_interpolation_functions_array[7][i] * BaseClass::m_scalars_array[7][i];
+        out[i] =  N0[i] * s0[i] + N1[i] * s1[i] + N2[i] * s2[i] + N3[i] * s3[i]
+                + N4[i] * s4[i] + N5[i] * s5[i] + N6[i] * s6[i] + N7[i] * s7[i];
     }
 }
 

@@ -15,6 +15,8 @@
 #define VIS_MODULE__CELL_BASE_H_INCLUDE
 
 #include <limits>
+#include <cstdlib>  // posix_memalign, free
+#include <cstring>  // memset
 
 #include <vismodule/DebugNew>
 #include <vismodule/ClassName>
@@ -74,6 +76,11 @@ protected:
     vismodule::Vector3f** m_vertices_array;
     vismodule::Real32**   m_interpolation_functions_array;
     vismodule::Real32**   m_differential_functions_array;
+    // Base pointers of the single aligned blocks backing the *_array rows above.
+    T*                   m_scalars_block = nullptr;
+    vismodule::Vector3f* m_vertices_block = nullptr;
+    vismodule::Real32*   m_interpolation_block = nullptr;
+    vismodule::Real32*   m_differential_block = nullptr;
 
     void allocate();
     void deallocate();
@@ -214,19 +221,38 @@ inline void CellBase<T>::allocate()
         if ( !m_vertices_vec ) throw "Cannot allocate memory for 'm_vertices_vec'";
         memset( m_vertices_vec, 0, sizeof( vismodule::Real32 ) * nnodes * dimension );
 
-        m_vertices_array  = new vismodule::Vector3f* [nnodes]; //[nnodes];
-        m_scalars_array   = new T* [nnodes]; //[nnodes];
-        m_interpolation_functions_array = new vismodule::Real32* [nnodes]; // [nnodes];
-        m_differential_functions_array  = new vismodule::Real32* [nnodes*dimension]; // [nnodes*3];
+        m_vertices_array  = new vismodule::Vector3f* [nnodes];
+        m_scalars_array   = new T* [nnodes];
+        m_interpolation_functions_array = new vismodule::Real32* [nnodes];
+        m_differential_functions_array  = new vismodule::Real32* [nnodes*dimension];
+
+        // Single contiguous, 64-byte-aligned block per array. Rows stay 64B-aligned
+        // because SIMD_BLK_SIZE*sizeof(elem) is a multiple of 64. Same [k][i] layout and
+        // values as before; removes per-row heap scatter and the unaligned-access penalty
+        // in scalar_ary/grad_ary. Vector3f rows are zero-initialized to match the original
+        // element ctor (Vector3f()->zero()); float rows stay uninitialized as before.
+        if ( posix_memalign( reinterpret_cast<void**>( &m_vertices_block ), 64,
+                             sizeof( vismodule::Vector3f ) * nnodes * SIMD_BLK_SIZE ) != 0 )
+            throw "Cannot allocate aligned memory for 'm_vertices_array'";
+        memset( m_vertices_block, 0, sizeof( vismodule::Vector3f ) * nnodes * SIMD_BLK_SIZE );
+        if ( posix_memalign( reinterpret_cast<void**>( &m_scalars_block ), 64,
+                             sizeof( T ) * nnodes * SIMD_BLK_SIZE ) != 0 )
+            throw "Cannot allocate aligned memory for 'm_scalars_array'";
+        if ( posix_memalign( reinterpret_cast<void**>( &m_interpolation_block ), 64,
+                             sizeof( vismodule::Real32 ) * nnodes * SIMD_BLK_SIZE ) != 0 )
+            throw "Cannot allocate aligned memory for 'm_interpolation_functions_array'";
+        if ( posix_memalign( reinterpret_cast<void**>( &m_differential_block ), 64,
+                             sizeof( vismodule::Real32 ) * nnodes * dimension * SIMD_BLK_SIZE ) != 0 )
+            throw "Cannot allocate aligned memory for 'm_differential_functions_array'";
         for (int i = 0; i<nnodes; i++ )
         {
-        m_vertices_array[i]  = new vismodule::Vector3f[SIMD_BLK_SIZE];
-        m_scalars_array[i]   = new T[SIMD_BLK_SIZE] ;  
-        m_interpolation_functions_array[i] = new vismodule::Real32[SIMD_BLK_SIZE] ;
-        m_differential_functions_array[3*i]  = new vismodule::Real32[SIMD_BLK_SIZE] ;
-        m_differential_functions_array[3*i+1]  = new vismodule::Real32[SIMD_BLK_SIZE] ;
-        m_differential_functions_array[3*i+2]  = new vismodule::Real32[SIMD_BLK_SIZE] ;
-        } 
+            m_vertices_array[i]  = m_vertices_block + i * SIMD_BLK_SIZE;
+            m_scalars_array[i]   = m_scalars_block + i * SIMD_BLK_SIZE;
+            m_interpolation_functions_array[i] = m_interpolation_block + i * SIMD_BLK_SIZE;
+            m_differential_functions_array[3*i]   = m_differential_block + ( 3*i )   * SIMD_BLK_SIZE;
+            m_differential_functions_array[3*i+1] = m_differential_block + ( 3*i+1 ) * SIMD_BLK_SIZE;
+            m_differential_functions_array[3*i+2] = m_differential_block + ( 3*i+2 ) * SIMD_BLK_SIZE;
+        }
     }
     catch ( char* error_message )
     {
@@ -251,29 +277,18 @@ inline void CellBase<T>::deallocate()
     if ( m_vertices_vec ) delete [] m_vertices_vec;
 
 //    //add by shimomura 2024/0603
-    if ( m_vertices_array)
-    { 
-        for (int i = 0; i<m_nnodes; i++ )  delete [] m_vertices_array[i];
-        delete [] m_vertices_array;
-    }
+    // Free the single aligned blocks (rows point into these), then the row-pointer arrays.
+    if ( m_vertices_block ) free( m_vertices_block );
+    if ( m_vertices_array ) delete [] m_vertices_array;
 
-    if ( m_scalars_array)
-    { 
-        for (int i = 0; i<m_nnodes; i++ )  delete [] m_scalars_array[i];
-        delete [] m_scalars_array;
-    }
+    if ( m_scalars_block ) free( m_scalars_block );
+    if ( m_scalars_array ) delete [] m_scalars_array;
 
-    if ( m_interpolation_functions_array )
-    {
-        for (int i = 0; i<m_nnodes; i++ )  delete [] m_interpolation_functions_array[i];
-        delete [] m_interpolation_functions_array;
-    }
+    if ( m_interpolation_block ) free( m_interpolation_block );
+    if ( m_interpolation_functions_array ) delete [] m_interpolation_functions_array;
 
-    if ( m_differential_functions_array )
-    {
-        for (int i = 0; i<m_nnodes*dimension; i++ )  delete [] m_differential_functions_array[i];
-        delete [] m_differential_functions_array;
-    }
+    if ( m_differential_block ) free( m_differential_block );
+    if ( m_differential_functions_array ) delete [] m_differential_functions_array;
 }
 
 /*===========================================================================*/
@@ -365,20 +380,38 @@ inline CellBase<T>::CellBase(
 //        m_differential_functions_array[i]  = new vismodule::Real32[nnodes*dimension] ;
 //        } 
 
-        m_vertices_array  = new vismodule::Vector3f* [nnodes]; //[nnodes];
-        m_scalars_array   = new T* [nnodes]; //[nnodes];  
-        m_interpolation_functions_array = new vismodule::Real32* [nnodes]; // [nnodes];
-        m_differential_functions_array  = new vismodule::Real32* [nnodes*dimension]; // [nnodes*3];
-   
+        m_vertices_array  = new vismodule::Vector3f* [nnodes];
+        m_scalars_array   = new T* [nnodes];
+        m_interpolation_functions_array = new vismodule::Real32* [nnodes];
+        m_differential_functions_array  = new vismodule::Real32* [nnodes*dimension];
+
+        // Single contiguous, 64-byte-aligned block per array. Rows stay 64B-aligned
+        // because SIMD_BLK_SIZE*sizeof(elem) is a multiple of 64. Same [k][i] layout and
+        // values as before; removes per-row heap scatter and the unaligned-access penalty
+        // in scalar_ary/grad_ary. Vector3f rows are zero-initialized to match the original
+        // element ctor (Vector3f()->zero()); float rows stay uninitialized as before.
+        if ( posix_memalign( reinterpret_cast<void**>( &m_vertices_block ), 64,
+                             sizeof( vismodule::Vector3f ) * nnodes * SIMD_BLK_SIZE ) != 0 )
+            throw "Cannot allocate aligned memory for 'm_vertices_array'";
+        memset( m_vertices_block, 0, sizeof( vismodule::Vector3f ) * nnodes * SIMD_BLK_SIZE );
+        if ( posix_memalign( reinterpret_cast<void**>( &m_scalars_block ), 64,
+                             sizeof( T ) * nnodes * SIMD_BLK_SIZE ) != 0 )
+            throw "Cannot allocate aligned memory for 'm_scalars_array'";
+        if ( posix_memalign( reinterpret_cast<void**>( &m_interpolation_block ), 64,
+                             sizeof( vismodule::Real32 ) * nnodes * SIMD_BLK_SIZE ) != 0 )
+            throw "Cannot allocate aligned memory for 'm_interpolation_functions_array'";
+        if ( posix_memalign( reinterpret_cast<void**>( &m_differential_block ), 64,
+                             sizeof( vismodule::Real32 ) * nnodes * dimension * SIMD_BLK_SIZE ) != 0 )
+            throw "Cannot allocate aligned memory for 'm_differential_functions_array'";
         for (int i = 0; i<nnodes; i++ )
         {
-        m_vertices_array[i]  = new vismodule::Vector3f[SIMD_BLK_SIZE];
-        m_scalars_array[i]   = new T[SIMD_BLK_SIZE] ;  
-        m_interpolation_functions_array[i] = new vismodule::Real32[SIMD_BLK_SIZE] ;
-        m_differential_functions_array[3*i]  = new vismodule::Real32[SIMD_BLK_SIZE] ;
-        m_differential_functions_array[3*i+1]  = new vismodule::Real32[SIMD_BLK_SIZE] ;
-        m_differential_functions_array[3*i+2]  = new vismodule::Real32[SIMD_BLK_SIZE] ;
-        } 
+            m_vertices_array[i]  = m_vertices_block + i * SIMD_BLK_SIZE;
+            m_scalars_array[i]   = m_scalars_block + i * SIMD_BLK_SIZE;
+            m_interpolation_functions_array[i] = m_interpolation_block + i * SIMD_BLK_SIZE;
+            m_differential_functions_array[3*i]   = m_differential_block + ( 3*i )   * SIMD_BLK_SIZE;
+            m_differential_functions_array[3*i+1] = m_differential_block + ( 3*i+1 ) * SIMD_BLK_SIZE;
+            m_differential_functions_array[3*i+2] = m_differential_block + ( 3*i+2 ) * SIMD_BLK_SIZE;
+        }
 
     }
     catch( char* error_message )
