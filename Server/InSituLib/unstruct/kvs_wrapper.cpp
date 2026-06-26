@@ -1457,6 +1457,88 @@ struct ChainRuleTimingBreakdown
     }
 };
 
+// SIMD (across-particle) block chain rule: replaces the per-particle tf_scalar_eval
+// + chain_rule_dfdq loop. Evaluates F and its finite-difference gradient for the
+// whole particle block via ReversePolishNotation::evalArraySIMD. Bit-identical to
+// the scalar path (same math / order); just vectorized across particles and with
+// far fewer eval() calls (per-block instead of per-particle).
+inline void chainRuleBlock(
+    ChainRuleEvalContext& ctx,
+    const int n,
+    const int nvariables,
+    float (*scalar_array)[SIMD_BLK_SIZE],
+    float (*grad_qx)[SIMD_BLK_SIZE],
+    float (*grad_qy)[SIMD_BLK_SIZE],
+    float (*grad_qz)[SIMD_BLK_SIZE],
+    const vismodule::Vector3f* coord,
+    float* scalar_out,
+    float* grad_array_x,
+    float* grad_array_y,
+    float* grad_array_z,
+    ChainRuleTimingBreakdown* timing )
+{
+    const float FD = 1.0e-5f;   // == ChainRuleNormal FiniteDifferenceScale
+    alignas(64) float xa[SIMD_BLK_SIZE], ya[SIMD_BLK_SIZE], za[SIMD_BLK_SIZE];
+    for ( int p = 0; p < n; ++p ) { xa[p] = coord[p].x(); ya[p] = coord[p].y(); za[p] = coord[p].z(); }
+
+    float* varr[NUMVAR];
+    for ( int i = 0; i < NUMVAR; ++i ) varr[i] = 0;
+    varr[X] = xa; varr[Y] = ya; varr[Z] = za;
+    for ( int v = 0; v < nvariables; ++v )
+    {
+        varr[Q1 + 4 * v]     = scalar_array[v];
+        varr[Q1 + 4 * v + 1] = grad_qx[v];
+        varr[Q1 + 4 * v + 2] = grad_qy[v];
+        varr[Q1 + 4 * v + 3] = grad_qz[v];
+    }
+    ctx.rpn.setVariableValueArray( varr );
+
+#ifdef ENABLE_ENSEMBLE_TIMER
+    vismodule::Timer t_eval; t_eval.start();
+#endif
+    ctx.rpn.evalArraySIMD( scalar_out, n );          // F (unperturbed)
+#ifdef ENABLE_ENSEMBLE_TIMER
+    t_eval.stop(); if ( timing ) timing->tf_scalar_eval += t_eval.sec();
+#endif
+
+    for ( int p = 0; p < n; ++p ) { grad_array_x[p] = 0.0f; grad_array_y[p] = 0.0f; grad_array_z[p] = 0.0f; }
+
+#ifdef ENABLE_ENSEMBLE_TIMER
+    vismodule::Timer t_cr; t_cr.start();
+#endif
+    alignas(64) float Fp[SIMD_BLK_SIZE], Fm[SIMD_BLK_SIZE], qs[SIMD_BLK_SIZE], eps[SIMD_BLK_SIZE];
+    const std::vector<std::size_t>& act = ctx.workspace.activeVariables();
+    for ( std::size_t k = 0; k < act.size(); ++k )
+    {
+        const int i = static_cast<int>( act[k] );
+        float* qi = scalar_array[i];                 // varr[Q1+4i] aliases this
+        for ( int p = 0; p < n; ++p ) { qs[p] = qi[p]; eps[p] = FD * std::max( 1.0f, std::fabs( qi[p] ) ); }
+        for ( int p = 0; p < n; ++p ) qi[p] = qs[p] + eps[p];
+        ctx.rpn.evalArraySIMD( Fp, n );
+        for ( int p = 0; p < n; ++p ) qi[p] = qs[p] - eps[p];
+        ctx.rpn.evalArraySIMD( Fm, n );
+        for ( int p = 0; p < n; ++p ) qi[p] = qs[p];
+        for ( int p = 0; p < n; ++p )
+        {
+            const float dF = ( Fp[p] - Fm[p] ) / ( 2.0f * eps[p] );
+            if ( std::isfinite( dF ) )
+            {
+                grad_array_x[p] += grad_qx[i][p] * dF;
+                grad_array_y[p] += grad_qy[i][p] * dF;
+                grad_array_z[p] += grad_qz[i][p] * dF;
+            }
+        }
+    }
+    for ( int p = 0; p < n; ++p )
+    {
+        if ( !( std::isfinite( grad_array_x[p] ) && std::isfinite( grad_array_y[p] ) && std::isfinite( grad_array_z[p] ) ) )
+        { grad_array_x[p] = 0.0f; grad_array_y[p] = 0.0f; grad_array_z[p] = 0.0f; }
+    }
+#ifdef ENABLE_ENSEMBLE_TIMER
+    t_cr.stop(); if ( timing ) timing->chain_rule_dfdq += t_cr.sec();
+#endif
+}
+
 void calculate_scalar_and_chain_rule_grad(
     const int nparticles_count,
     const int nvariables,
@@ -1514,6 +1596,15 @@ void calculate_scalar_and_chain_rule_grad(
 #endif
         return;
     }
+
+#ifdef PBVR_SIMD_CHAINRULE
+    chainRuleBlock( chain_context, nparticles_count, nvariables,
+                    scalar_array, grad_qx, grad_qy, grad_qz,
+                    global_coord_array,
+                    scalar_result, grad_array_x, grad_array_y, grad_array_z,
+                    timing );
+    return;
+#endif
 
     float q_values[128];
     vismodule::Vector3f grad_q[128];
