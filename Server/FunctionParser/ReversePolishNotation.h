@@ -10,6 +10,7 @@
 #include <sys/time.h>
 #endif
 #include "Token.h"
+#include <cstdlib>  // posix_memalign, free
 
 #define MAXVAL 128
 #define NUMVAR 128 //変数の数と一致すること
@@ -40,6 +41,7 @@ public:
 private:
     // 配列サイズ
     int m_array_size;
+    float* m_simd_stack = nullptr;  // evalArraySIMD: preallocated 64B-aligned stack
 // add FJ  end
 
 public:
@@ -61,6 +63,7 @@ public:
             //delete[] m_variable_value;
             //delete[] m_number;XVAL
             delete[] m_stack;
+            if ( m_simd_stack ) free( m_simd_stack );
         }
 
 public:
@@ -718,6 +721,90 @@ public:
             return;
         }
 // add FJ  end
+
+    // SIMD (across-particle) evaluation: computes the expression for n particles
+    // (n <= 128) at once into result[0..n). Variable values come from
+    // m_variable_value_array[name] (per-particle arrays). Preallocated 64B-aligned
+    // stack (no per-call heap). Matches eval() semantics; driven per particle-block.
+    void evalArraySIMD( float* result, const int n )
+    {
+        const int BLK = 128;          // = SIMD_BLK_SIZE (row stride / max block)
+        const int MAX_DEPTH = MAXVAL; // stack depth bound
+        if ( m_simd_stack == 0 )
+        {
+            void* p = 0;
+            if ( posix_memalign( &p, 64, sizeof( float ) * MAX_DEPTH * BLK ) != 0 )
+            { std::cout << "error: evalArraySIMD aligned alloc failed" << std::endl; return; }
+            m_simd_stack = static_cast<float*>( p );
+        }
+        int sp = 0;
+        int*   expr   = m_exp_token;
+        int*   name   = m_variable_name;
+        float* number = m_number;
+        float* const base = m_simd_stack;
+        while ( *expr != END )
+        {
+            switch ( *expr )
+            {
+            case VARIABLE: { const float* v = m_variable_value_array[*name]; float* t = base + ( sp++ ) * BLK;
+                #pragma omp simd
+                for ( int i = 0; i < n; i++ ) t[i] = v[i]; break; }
+            case VALUE:    { const float c = *number; float* t = base + ( sp++ ) * BLK;
+                #pragma omp simd
+                for ( int i = 0; i < n; i++ ) t[i] = c; break; }
+            case PLUS:   { const float* b = base + ( --sp ) * BLK; float* a = base + ( sp - 1 ) * BLK;
+                #pragma omp simd
+                for ( int i = 0; i < n; i++ ) a[i] = a[i] + b[i]; break; }
+            case MINUS:  { const float* b = base + ( --sp ) * BLK; float* a = base + ( sp - 1 ) * BLK;
+                #pragma omp simd
+                for ( int i = 0; i < n; i++ ) a[i] = a[i] - b[i]; break; }
+            case MULTI:  { const float* b = base + ( --sp ) * BLK; float* a = base + ( sp - 1 ) * BLK;
+                #pragma omp simd
+                for ( int i = 0; i < n; i++ ) a[i] = a[i] * b[i]; break; }
+            case DIVIDE: { const float* b = base + ( --sp ) * BLK; float* a = base + ( sp - 1 ) * BLK;
+                #pragma omp simd
+                for ( int i = 0; i < n; i++ ) a[i] = a[i] / b[i]; break; }
+            case POW:    { const float* b = base + ( --sp ) * BLK; float* a = base + ( sp - 1 ) * BLK;
+                #pragma omp simd
+                for ( int i = 0; i < n; i++ ) a[i] = std::pow( a[i], b[i] ); break; }
+            case MINUSF: { float* a = base + ( sp - 1 ) * BLK;
+                #pragma omp simd
+                for ( int i = 0; i < n; i++ ) a[i] = -a[i]; break; }
+            case SQRT:  { float* a=base+(sp-1)*BLK; for(int i=0;i<n;i++) a[i]=sqrt(a[i]); break; }
+            case CBRT:  { float* a=base+(sp-1)*BLK; for(int i=0;i<n;i++) a[i]=cbrt(a[i]); break; }
+            case LOG:   { float* a=base+(sp-1)*BLK; for(int i=0;i<n;i++) a[i]=log(a[i]); break; }
+            case LOG10: { float* a=base+(sp-1)*BLK; for(int i=0;i<n;i++) a[i]=log10(a[i]); break; }
+            case EXP:   { float* a=base+(sp-1)*BLK; for(int i=0;i<n;i++) a[i]=exp(a[i]); break; }
+            case ABS:   { float* a=base+(sp-1)*BLK; for(int i=0;i<n;i++) a[i]=fabs(a[i]); break; }
+            case FLOOR: { float* a=base+(sp-1)*BLK; for(int i=0;i<n;i++) a[i]=floor(a[i]); break; }
+            case CEIL:  { float* a=base+(sp-1)*BLK; for(int i=0;i<n;i++) a[i]=ceil(a[i]); break; }
+            case SIN:   { float* a=base+(sp-1)*BLK; for(int i=0;i<n;i++) a[i]=sin(a[i]); break; }
+            case COS:   { float* a=base+(sp-1)*BLK; for(int i=0;i<n;i++) a[i]=cos(a[i]); break; }
+            case TAN:   { float* a=base+(sp-1)*BLK; for(int i=0;i<n;i++) a[i]=tan(a[i]); break; }
+            case ASIN:  { float* a=base+(sp-1)*BLK; for(int i=0;i<n;i++) a[i]=asin(a[i]); break; }
+            case ACOS:  { float* a=base+(sp-1)*BLK; for(int i=0;i<n;i++) a[i]=acos(a[i]); break; }
+            case ATAN:  { float* a=base+(sp-1)*BLK; for(int i=0;i<n;i++) a[i]=atan(a[i]); break; }
+            case SINH:  { float* a=base+(sp-1)*BLK; for(int i=0;i<n;i++) a[i]=sinh(a[i]); break; }
+            case COSH:  { float* a=base+(sp-1)*BLK; for(int i=0;i<n;i++) a[i]=cosh(a[i]); break; }
+            case TANH:  { float* a=base+(sp-1)*BLK; for(int i=0;i<n;i++) a[i]=tanh(a[i]); break; }
+            case ASINH: { float* a=base+(sp-1)*BLK; for(int i=0;i<n;i++) a[i]=asinh(a[i]); break; }
+            case ACOSH: { float* a=base+(sp-1)*BLK; for(int i=0;i<n;i++) a[i]=acosh(a[i]); break; }
+            case ATANH: { float* a=base+(sp-1)*BLK; for(int i=0;i<n;i++) a[i]=atanh(a[i]); break; }
+            case HEAVI: { float* a=base+(sp-1)*BLK; for(int i=0;i<n;i++) a[i]= a[i]<=0 ? 0 : 1; break; }
+            case RECTFUNC: { float* a=base+(sp-1)*BLK; for(int i=0;i<n;i++) a[i]= fabs(a[i])>0.5 ? 0 : 1; break; }
+            case SIGMOID: { const float* b=base+(--sp)*BLK; float* a=base+(sp-1)*BLK; for(int i=0;i<n;i++) a[i]=1.0/(1.0+exp(b[i]*a[i])); break; }
+            case GAUSS:   { const float* b=base+(--sp)*BLK; float* a=base+(sp-1)*BLK; for(int i=0;i<n;i++) a[i]=exp(-a[i]*a[i]/(2*b[i])); break; }
+            case MIN: { const float* b=base+(--sp)*BLK; float* a=base+(sp-1)*BLK; for(int i=0;i<n;i++) a[i]=( b[i] < a[i] ) ? b[i] : a[i]; break; }
+            case MAX: { const float* b=base+(--sp)*BLK; float* a=base+(sp-1)*BLK; for(int i=0;i<n;i++) a[i]=( b[i] > a[i] ) ? b[i] : a[i]; break; }
+            case COMMA: break;
+            default: std::cout<<"unknown token. ->"<<*expr<<std::endl;
+            }
+            expr++; name++; number++;
+        }
+        const float* r = base + ( sp - 1 ) * BLK;
+        #pragma omp simd
+        for ( int i = 0; i < n; i++ ) result[i] = r[i];
+    }
 
 protected:
     /* push: fを値スタックにプッシュする*/
