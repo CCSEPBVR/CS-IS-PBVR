@@ -1502,6 +1502,19 @@ inline void chainRuleBlock(
 #endif
 
     for ( int p = 0; p < n; ++p ) { grad_array_x[p] = 0.0f; grad_array_y[p] = 0.0f; grad_array_z[p] = 0.0f; }
+#ifdef PBVR_SKIP_CHAINRULE
+    // Optional (OFF by default): skip the finite-difference chain rule that produces
+    // the statistic-particle normal, and assign a fixed placeholder gradient. The
+    // per-variable gradient (grad_ary / grad_q) is still computed in the caller, so
+    // TF expressions that reference gradient variables (dq*) remain correct, as does
+    // the particle scalar F (evaluated above). Requires PBVR_SIMD_CHAINRULE.
+    // NOTE: with this on, the mean/variance/cv particle normals and the
+    // tmp_term = scalar*normal statistic are no longer meaningful.
+    // Measured saving (chain rule only): compute ~6% (correctness 2x1),
+    // ~9% compute / ~7% total (strong_4x1).
+    for ( int p = 0; p < n; ++p ) { grad_array_x[p] = 1.0f; grad_array_y[p] = 0.0f; grad_array_z[p] = 0.0f; }
+    return;
+#endif
 
 #ifdef ENABLE_ENSEMBLE_TIMER
     vismodule::Timer t_cr; t_cr.start();
