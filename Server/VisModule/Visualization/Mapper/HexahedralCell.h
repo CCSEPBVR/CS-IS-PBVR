@@ -80,6 +80,14 @@ public:
 
     void scalar_ary( float* scalar_array, const int loop_cnt ) const;
     void grad_ary( float* grad_array_x, float* grad_array_y, float* grad_array_z, const int loop_cnt ) const;
+    bool supportsJacobianReuse() const { return true; }
+    void computeScaledInvJacobianArray( const int loop_cnt,
+            double (*cof)[SIMD_BLK_SIZE], double* det_inverse,
+            double* scale_factor, double* determinant ) const;
+    void gradFromScaledInvJacobianArray( const int loop_cnt,
+            const double (*cof)[SIMD_BLK_SIZE], const double* det_inverse,
+            const double* scale_factor, const double* determinant,
+            float* grad_array_x, float* grad_array_y, float* grad_array_z ) const;
     const vismodule::Vector3f randomSampling() const;
     const vismodule::Vector3f randomSampling_MT( vismodule::MersenneTwister* MT  ) const;
     //void  randomSampling_SFMT( sfmt_t *sfmt, vismodule::Vector3f *local_array, const int loop_cnt, std::vector<double> track);
@@ -361,6 +369,186 @@ inline void HexahedralCell<T>::grad_ary(float* grad_array_x, float* grad_array_y
         /////////////////////////// gradient ///////////////////////////
 
     }  //end of for i
+}
+
+template <typename T>
+inline void HexahedralCell<T>::computeScaledInvJacobianArray( const int loop_cnt,
+    double (*cof)[SIMD_BLK_SIZE], double* det_inverse,
+    double* scale_factor, double* determinant ) const
+{
+    // Candidate A: geometry-only half of grad_ary (Jacobian build + scale factor +
+    // 3x3 cofactor inverse). Identical for every variable sharing the mesh, so it is
+    // computed once and reused. Arithmetic lifted verbatim from grad_ary (same ops
+    // and order) so the reconstructed gradient stays bit-identical.
+    #pragma omp simd
+    for( int i = 0; i < loop_cnt; i++ )
+    {
+        double dXdx = ( BaseClass::m_differential_functions_array[ 0][i] * BaseClass::m_vertices_array[0][i].x() )
+                     + ( BaseClass::m_differential_functions_array[ 1][i] * BaseClass::m_vertices_array[1][i].x() )
+                     + ( BaseClass::m_differential_functions_array[ 2][i] * BaseClass::m_vertices_array[2][i].x() )
+                     + ( BaseClass::m_differential_functions_array[ 3][i] * BaseClass::m_vertices_array[3][i].x() )
+                     + ( BaseClass::m_differential_functions_array[ 4][i] * BaseClass::m_vertices_array[4][i].x() )
+                     + ( BaseClass::m_differential_functions_array[ 5][i] * BaseClass::m_vertices_array[5][i].x() )
+                     + ( BaseClass::m_differential_functions_array[ 6][i] * BaseClass::m_vertices_array[6][i].x() )
+                     + ( BaseClass::m_differential_functions_array[ 7][i] * BaseClass::m_vertices_array[7][i].x() );
+        double dYdx = ( BaseClass::m_differential_functions_array[ 0][i] * BaseClass::m_vertices_array[0][i].y() )
+                     + ( BaseClass::m_differential_functions_array[ 1][i] * BaseClass::m_vertices_array[1][i].y() )
+                     + ( BaseClass::m_differential_functions_array[ 2][i] * BaseClass::m_vertices_array[2][i].y() )
+                     + ( BaseClass::m_differential_functions_array[ 3][i] * BaseClass::m_vertices_array[3][i].y() )
+                     + ( BaseClass::m_differential_functions_array[ 4][i] * BaseClass::m_vertices_array[4][i].y() )
+                     + ( BaseClass::m_differential_functions_array[ 5][i] * BaseClass::m_vertices_array[5][i].y() )
+                     + ( BaseClass::m_differential_functions_array[ 6][i] * BaseClass::m_vertices_array[6][i].y() )
+                     + ( BaseClass::m_differential_functions_array[ 7][i] * BaseClass::m_vertices_array[7][i].y() );
+        double dZdx = ( BaseClass::m_differential_functions_array[ 0][i] * BaseClass::m_vertices_array[0][i].z() )
+                     + ( BaseClass::m_differential_functions_array[ 1][i] * BaseClass::m_vertices_array[1][i].z() )
+                     + ( BaseClass::m_differential_functions_array[ 2][i] * BaseClass::m_vertices_array[2][i].z() )
+                     + ( BaseClass::m_differential_functions_array[ 3][i] * BaseClass::m_vertices_array[3][i].z() )
+                     + ( BaseClass::m_differential_functions_array[ 4][i] * BaseClass::m_vertices_array[4][i].z() )
+                     + ( BaseClass::m_differential_functions_array[ 5][i] * BaseClass::m_vertices_array[5][i].z() )
+                     + ( BaseClass::m_differential_functions_array[ 6][i] * BaseClass::m_vertices_array[6][i].z() )
+                     + ( BaseClass::m_differential_functions_array[ 7][i] * BaseClass::m_vertices_array[7][i].z() );
+        double dXdy = ( BaseClass::m_differential_functions_array[ 8][i] * BaseClass::m_vertices_array[0][i].x() )
+                     + ( BaseClass::m_differential_functions_array[ 9][i] * BaseClass::m_vertices_array[1][i].x() )
+                     + ( BaseClass::m_differential_functions_array[10][i] * BaseClass::m_vertices_array[2][i].x() )
+                     + ( BaseClass::m_differential_functions_array[11][i] * BaseClass::m_vertices_array[3][i].x() )
+                     + ( BaseClass::m_differential_functions_array[12][i] * BaseClass::m_vertices_array[4][i].x() )
+                     + ( BaseClass::m_differential_functions_array[13][i] * BaseClass::m_vertices_array[5][i].x() )
+                     + ( BaseClass::m_differential_functions_array[14][i] * BaseClass::m_vertices_array[6][i].x() )
+                     + ( BaseClass::m_differential_functions_array[15][i] * BaseClass::m_vertices_array[7][i].x() );
+        double dYdy = ( BaseClass::m_differential_functions_array[ 8][i] * BaseClass::m_vertices_array[0][i].y() )
+                     + ( BaseClass::m_differential_functions_array[ 9][i] * BaseClass::m_vertices_array[1][i].y() )
+                     + ( BaseClass::m_differential_functions_array[10][i] * BaseClass::m_vertices_array[2][i].y() )
+                     + ( BaseClass::m_differential_functions_array[11][i] * BaseClass::m_vertices_array[3][i].y() )
+                     + ( BaseClass::m_differential_functions_array[12][i] * BaseClass::m_vertices_array[4][i].y() )
+                     + ( BaseClass::m_differential_functions_array[13][i] * BaseClass::m_vertices_array[5][i].y() )
+                     + ( BaseClass::m_differential_functions_array[14][i] * BaseClass::m_vertices_array[6][i].y() )
+                     + ( BaseClass::m_differential_functions_array[15][i] * BaseClass::m_vertices_array[7][i].y() );
+        double dZdy = ( BaseClass::m_differential_functions_array[ 8][i] * BaseClass::m_vertices_array[0][i].z() )
+                     + ( BaseClass::m_differential_functions_array[ 9][i] * BaseClass::m_vertices_array[1][i].z() )
+                     + ( BaseClass::m_differential_functions_array[10][i] * BaseClass::m_vertices_array[2][i].z() )
+                     + ( BaseClass::m_differential_functions_array[11][i] * BaseClass::m_vertices_array[3][i].z() )
+                     + ( BaseClass::m_differential_functions_array[12][i] * BaseClass::m_vertices_array[4][i].z() )
+                     + ( BaseClass::m_differential_functions_array[13][i] * BaseClass::m_vertices_array[5][i].z() )
+                     + ( BaseClass::m_differential_functions_array[14][i] * BaseClass::m_vertices_array[6][i].z() )
+                     + ( BaseClass::m_differential_functions_array[15][i] * BaseClass::m_vertices_array[7][i].z() );
+        double dXdz = ( BaseClass::m_differential_functions_array[16][i] * BaseClass::m_vertices_array[0][i].x() )
+                     + ( BaseClass::m_differential_functions_array[17][i] * BaseClass::m_vertices_array[1][i].x() )
+                     + ( BaseClass::m_differential_functions_array[18][i] * BaseClass::m_vertices_array[2][i].x() )
+                     + ( BaseClass::m_differential_functions_array[19][i] * BaseClass::m_vertices_array[3][i].x() )
+                     + ( BaseClass::m_differential_functions_array[20][i] * BaseClass::m_vertices_array[4][i].x() )
+                     + ( BaseClass::m_differential_functions_array[21][i] * BaseClass::m_vertices_array[5][i].x() )
+                     + ( BaseClass::m_differential_functions_array[22][i] * BaseClass::m_vertices_array[6][i].x() )
+                     + ( BaseClass::m_differential_functions_array[23][i] * BaseClass::m_vertices_array[7][i].x() );
+        double dYdz = ( BaseClass::m_differential_functions_array[16][i] * BaseClass::m_vertices_array[0][i].y() )
+                     + ( BaseClass::m_differential_functions_array[17][i] * BaseClass::m_vertices_array[1][i].y() )
+                     + ( BaseClass::m_differential_functions_array[18][i] * BaseClass::m_vertices_array[2][i].y() )
+                     + ( BaseClass::m_differential_functions_array[19][i] * BaseClass::m_vertices_array[3][i].y() )
+                     + ( BaseClass::m_differential_functions_array[20][i] * BaseClass::m_vertices_array[4][i].y() )
+                     + ( BaseClass::m_differential_functions_array[21][i] * BaseClass::m_vertices_array[5][i].y() )
+                     + ( BaseClass::m_differential_functions_array[22][i] * BaseClass::m_vertices_array[6][i].y() )
+                     + ( BaseClass::m_differential_functions_array[23][i] * BaseClass::m_vertices_array[7][i].y() );
+        double dZdz = ( BaseClass::m_differential_functions_array[16][i] * BaseClass::m_vertices_array[0][i].z() )
+                     + ( BaseClass::m_differential_functions_array[17][i] * BaseClass::m_vertices_array[1][i].z() )
+                     + ( BaseClass::m_differential_functions_array[18][i] * BaseClass::m_vertices_array[2][i].z() )
+                     + ( BaseClass::m_differential_functions_array[19][i] * BaseClass::m_vertices_array[3][i].z() )
+                     + ( BaseClass::m_differential_functions_array[20][i] * BaseClass::m_vertices_array[4][i].z() )
+                     + ( BaseClass::m_differential_functions_array[21][i] * BaseClass::m_vertices_array[5][i].z() )
+                     + ( BaseClass::m_differential_functions_array[22][i] * BaseClass::m_vertices_array[6][i].z() )
+                     + ( BaseClass::m_differential_functions_array[23][i] * BaseClass::m_vertices_array[7][i].z() );
+
+        // calc scale factor
+        double minValue = (std::numeric_limits<double>::max)();
+#define VISMODULE_HEX_INVJ_MIN_ABS( value ) \
+        do { \
+            const double abs_value = vismodule::Math::Abs( value ); \
+            if ( abs_value != 0 && abs_value < minValue ) minValue = abs_value; \
+        } while ( false )
+        VISMODULE_HEX_INVJ_MIN_ABS( dXdx );
+        VISMODULE_HEX_INVJ_MIN_ABS( dYdx );
+        VISMODULE_HEX_INVJ_MIN_ABS( dZdx );
+        VISMODULE_HEX_INVJ_MIN_ABS( dXdy );
+        VISMODULE_HEX_INVJ_MIN_ABS( dYdy );
+        VISMODULE_HEX_INVJ_MIN_ABS( dZdy );
+        VISMODULE_HEX_INVJ_MIN_ABS( dXdz );
+        VISMODULE_HEX_INVJ_MIN_ABS( dYdz );
+        VISMODULE_HEX_INVJ_MIN_ABS( dZdz );
+#undef VISMODULE_HEX_INVJ_MIN_ABS
+
+        const int order = -static_cast<int>( std::floor( std::log10( minValue ) ) );
+        const double sf = std::pow( 10.0, order );
+        dXdx *= sf; dXdy *= sf; dXdz *= sf;
+        dYdx *= sf; dYdy *= sf; dYdz *= sf;
+        dZdx *= sf; dZdy *= sf; dZdz *= sf;
+
+        cof[0][i] = dYdy * dZdz - dZdy * dYdz;
+        cof[1][i] = dXdy * dZdz - dZdy * dXdz;
+        cof[2][i] = dXdy * dYdz - dYdy * dXdz;
+        cof[3][i] = dYdx * dZdz - dZdx * dYdz;
+        cof[4][i] = dXdx * dZdz - dZdx * dXdz;
+        cof[5][i] = dXdx * dYdz - dYdx * dXdz;
+        cof[6][i] = dYdx * dZdy - dZdx * dYdy;
+        cof[7][i] = dXdx * dZdy - dZdx * dXdy;
+        cof[8][i] = dXdx * dYdy - dYdx * dXdy;
+
+        const double det33 =
+            dXdx * (dYdy * dZdz - dZdy * dYdz)
+          - dYdx * (dXdy * dZdz - dZdy * dXdz)
+          + dZdx * (dXdy * dYdz - dYdy * dXdz);
+
+        determinant[i]  = det33;
+        det_inverse[i]  = 1.0 / det33;
+        scale_factor[i] = sf;
+    }
+}
+
+template <typename T>
+inline void HexahedralCell<T>::gradFromScaledInvJacobianArray( const int loop_cnt,
+    const double (*cof)[SIMD_BLK_SIZE], const double* det_inverse,
+    const double* scale_factor, const double* determinant,
+    float* grad_array_x, float* grad_array_y, float* grad_array_z ) const
+{
+    // Candidate A: per-variable half of grad_ary. dsdx/dsdy/dsdz use THIS cell's
+    // scalars + shared shape-fn derivatives; the gradient is reconstructed with the
+    // shared inverse Jacobian using grad_ary's exact expression -> bit-identical.
+    #pragma omp simd
+    for( int i = 0; i < loop_cnt; i++ )
+    {
+        const double dsdx
+            = static_cast<double>( BaseClass::m_scalars_array[0][i] * BaseClass::m_differential_functions_array[ 0][i] )
+                              + ( BaseClass::m_scalars_array[1][i] * BaseClass::m_differential_functions_array[ 1][i] )
+                              + ( BaseClass::m_scalars_array[2][i] * BaseClass::m_differential_functions_array[ 2][i] )
+                              + ( BaseClass::m_scalars_array[3][i] * BaseClass::m_differential_functions_array[ 3][i] )
+                              + ( BaseClass::m_scalars_array[4][i] * BaseClass::m_differential_functions_array[ 4][i] )
+                              + ( BaseClass::m_scalars_array[5][i] * BaseClass::m_differential_functions_array[ 5][i] )
+                              + ( BaseClass::m_scalars_array[6][i] * BaseClass::m_differential_functions_array[ 6][i] )
+                              + ( BaseClass::m_scalars_array[7][i] * BaseClass::m_differential_functions_array[ 7][i] );
+        const double dsdy
+            = static_cast<double>( BaseClass::m_scalars_array[0][i] * BaseClass::m_differential_functions_array[ 8][i] )
+                              + ( BaseClass::m_scalars_array[1][i] * BaseClass::m_differential_functions_array[ 9][i] )
+                              + ( BaseClass::m_scalars_array[2][i] * BaseClass::m_differential_functions_array[10][i] )
+                              + ( BaseClass::m_scalars_array[3][i] * BaseClass::m_differential_functions_array[11][i] )
+                              + ( BaseClass::m_scalars_array[4][i] * BaseClass::m_differential_functions_array[12][i] )
+                              + ( BaseClass::m_scalars_array[5][i] * BaseClass::m_differential_functions_array[13][i] )
+                              + ( BaseClass::m_scalars_array[6][i] * BaseClass::m_differential_functions_array[14][i] )
+                              + ( BaseClass::m_scalars_array[7][i] * BaseClass::m_differential_functions_array[15][i] );
+        const double dsdz
+            = static_cast<double>( BaseClass::m_scalars_array[0][i] * BaseClass::m_differential_functions_array[16][i] )
+                              + ( BaseClass::m_scalars_array[1][i] * BaseClass::m_differential_functions_array[17][i] )
+                              + ( BaseClass::m_scalars_array[2][i] * BaseClass::m_differential_functions_array[18][i] )
+                              + ( BaseClass::m_scalars_array[3][i] * BaseClass::m_differential_functions_array[19][i] )
+                              + ( BaseClass::m_scalars_array[4][i] * BaseClass::m_differential_functions_array[20][i] )
+                              + ( BaseClass::m_scalars_array[5][i] * BaseClass::m_differential_functions_array[21][i] )
+                              + ( BaseClass::m_scalars_array[6][i] * BaseClass::m_differential_functions_array[22][i] )
+                              + ( BaseClass::m_scalars_array[7][i] * BaseClass::m_differential_functions_array[23][i] );
+
+        const double Gx = (  cof[0][i] * dsdx - cof[3][i] * dsdy + cof[6][i] * dsdz ) * det_inverse[i] * scale_factor[i];
+        const double Gy = ( -cof[1][i] * dsdx + cof[4][i] * dsdy - cof[7][i] * dsdz ) * det_inverse[i] * scale_factor[i];
+        const double Gz = (  cof[2][i] * dsdx - cof[5][i] * dsdy + cof[8][i] * dsdz ) * det_inverse[i] * scale_factor[i];
+
+        grad_array_x[i] = vismodule::Math::IsZero( determinant[i] ) ? 0.0f : static_cast<float>( Gx );
+        grad_array_y[i] = vismodule::Math::IsZero( determinant[i] ) ? 0.0f : static_cast<float>( Gy );
+        grad_array_z[i] = vismodule::Math::IsZero( determinant[i] ) ? 0.0f : static_cast<float>( Gz );
+    }
 }
 
 /*==========================================================================*/

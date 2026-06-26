@@ -1575,15 +1575,40 @@ void calculate_scalar_and_chain_rule_grad(
     vismodule::Timer calc_scalar_grad_timer;
     calc_scalar_grad_timer.start();
 #endif
-    for ( int j = 0; j < nvariables; ++j )
+    static const bool s_jac_reuse_disabled = ( getenv( "PBVR_NO_JACREUSE" ) != 0 );
+    if ( nvariables > 1 && interp[0]->supportsJacobianReuse() && !s_jac_reuse_disabled )
     {
-        interp[j]->setLocalPointArray( nparticles_count, local_coord_array );
-        interp[j]->CalcScalarGrad(
-            nparticles_count,
-            scalar_array[j],
-            grad_qx[j],
-            grad_qy[j],
-            grad_qz[j] );
+        // Candidate A: the inverse Jacobian is geometry-only (vertices + shape-fn
+        // derivatives) and identical across variables sharing coordinates/connections.
+        // Compute it once on interp[0], reuse it for every variable's gradient.
+        double cof[9][SIMD_BLK_SIZE];
+        double det_inverse[SIMD_BLK_SIZE];
+        double scale_factor[SIMD_BLK_SIZE];
+        double determinant[SIMD_BLK_SIZE];
+        interp[0]->setLocalPointArray( nparticles_count, local_coord_array );
+        interp[0]->computeScaledInvJacobianArray(
+            nparticles_count, cof, det_inverse, scale_factor, determinant );
+        for ( int j = 0; j < nvariables; ++j )
+        {
+            if ( j != 0 ) interp[j]->setLocalPointArray( nparticles_count, local_coord_array );
+            interp[j]->scalar_ary( scalar_array[j], nparticles_count );
+            interp[j]->gradFromScaledInvJacobianArray(
+                nparticles_count, cof, det_inverse, scale_factor, determinant,
+                grad_qx[j], grad_qy[j], grad_qz[j] );
+        }
+    }
+    else
+    {
+        for ( int j = 0; j < nvariables; ++j )
+        {
+            interp[j]->setLocalPointArray( nparticles_count, local_coord_array );
+            interp[j]->CalcScalarGrad(
+                nparticles_count,
+                scalar_array[j],
+                grad_qx[j],
+                grad_qy[j],
+                grad_qz[j] );
+        }
     }
 #ifdef ENABLE_ENSEMBLE_TIMER
     calc_scalar_grad_timer.stop();

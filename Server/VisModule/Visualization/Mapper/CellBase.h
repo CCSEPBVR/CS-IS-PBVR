@@ -111,6 +111,18 @@ public:
     virtual void scalar_ary( float* scalar_array, const int loop_cnt ) const = 0;
     
     virtual void grad_ary( float* grad_array_x, float* grad_array_y, float* grad_array_z,  const int loop_cnt ) const = 0;
+
+    // Candidate A (geometry reuse): the inverse Jacobian depends only on cell
+    // geometry (vertices + shape-fn derivatives) and is identical across all
+    // variables sharing coordinates/connections. Compute it once on interp[0]
+    // (computeScaledInvJacobianArray) and reuse it per variable
+    // (gradFromScaledInvJacobianArray). Default off; HexahedralCell overrides.
+    virtual bool supportsJacobianReuse() const { return false; }
+    virtual void computeScaledInvJacobianArray( const int,
+            double (*)[SIMD_BLK_SIZE], double*, double*, double* ) const {}
+    virtual void gradFromScaledInvJacobianArray( const int,
+            const double (*)[SIMD_BLK_SIZE], const double*, const double*, const double*,
+            float*, float*, float* ) const {}
     
     virtual void bindCell_wVolume( const vismodule::UInt32 index, const std::size_t n = 0 );
     
