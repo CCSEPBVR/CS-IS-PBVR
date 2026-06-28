@@ -135,6 +135,7 @@ public:
     virtual void setLocalGravityPoint() const = 0;
 
     virtual void bindCellArray( const int loop_cnt, const vismodule::UInt32 *cell_index );
+    void bindScalarsArray( const int loop_cnt, const vismodule::UInt32 *cell_index );
     virtual void setLocalPointArray( const int loop_cnt, const vismodule::Vector3f *local_array );
     virtual void transformLocalToGlobalArray( const int loop_cnt, const vismodule::Vector3f *local_array, vismodule::Vector3f *global_array);
     virtual void CalcScalarGrad(
@@ -514,6 +515,27 @@ inline void CellBase<T>::bindCell( const vismodule::UInt32 index, const std::siz
         //m_vertices_vec[i + 2] = coords[ coord_index + 2 ];
         m_vertices[i].set(coords+coord_index, 3);
         memcpy(m_vertices_vec+j, coords+coord_index, sizeof(vismodule::Real32)*3);
+    }
+}
+
+// bindScalarsArray: scalars-only counterpart of bindCellArray. The vertex gather is
+// identical across variables and unused for variables k>0 when the Jacobian-reuse path
+// is active, so this skips it. Also avoids the false scalar/vertex store dependence
+// (#15346) that prevented bindCellArray from vectorizing.
+template <typename T>
+inline void CellBase<T>::bindScalarsArray( const int loop_cnt, const vismodule::UInt32 *cell_index )
+{
+    const vismodule::UInt32* const connections = m_connections;
+    const T* const values = m_values;
+    const size_t nnodes = m_nnodes;
+
+    for ( size_t j = 0; j < nnodes; j++ )
+    {
+        for ( int i = 0; i < loop_cnt; i++ )
+        {
+            const vismodule::UInt32 connection_index = nnodes * cell_index[i];
+            m_scalars_array[j][i] = values[ connections[ connection_index + j ] ];
+        }
     }
 }
 

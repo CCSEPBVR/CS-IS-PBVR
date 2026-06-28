@@ -1862,6 +1862,25 @@ void calculation_glad(const int nparticles_count, const int nvariables,
 }
 
 
+// Bind all variables for a cell block. The vertex gather in bindCellArray is identical
+// across variables; when the Jacobian-reuse path is active (Hex, nvariables>1) the
+// variables k>0 never read their own m_vertices_array (geometry goes through cell[*][0]).
+// So bind full scalars+vertices for variable 0 and scalars only for the rest, skipping
+// the redundant vertex gather. PBVR_FULL_BIND forces the old full bind for every variable.
+static inline void bind_variables_scalars_opt(
+    std::vector< vismodule::CellBase<Type>* >& cells,
+    const int nvariables, const int n, const vismodule::UInt32* cell_index )
+{
+    static const bool full_bind = ( getenv( "PBVR_FULL_BIND" ) != 0 );
+    cells[0]->bindCellArray( n, cell_index );
+    const bool scalars_only = ( !full_bind && cells[0]->supportsJacobianReuse() );
+    for ( int k = 1; k < nvariables; ++k )
+    {
+        if ( scalars_only ) cells[k]->bindScalarsArray( n, cell_index );
+        else                cells[k]->bindCellArray( n, cell_index );
+    }
+}
+
 bool ensemble_generate_particles(
     int time_step,
     const int num_ensemble,
@@ -2256,10 +2275,7 @@ bool ensemble_generate_particles(
             vismodule::Timer bind_timer;
             bind_timer.start();
 #endif
-            for ( int variable = 0; variable < nvariables; variable++ )
-            {
-                cell[thid][variable]->bindCellArray( remain, cell_index );
-            }
+            bind_variables_scalars_opt( cell[thid], nvariables, remain, cell_index );
 #ifdef ENABLE_ENSEMBLE_TIMER
             bind_timer.stop();
             th_uniform_bind_time += bind_timer.sec();
@@ -2340,7 +2356,7 @@ bool ensemble_generate_particles(
                                 vismodule::Timer flush_prepare_timer;
                                 flush_prepare_timer.start();
 #endif
-                                for ( int k = 0; k < nvariables; k++ ) cell[thid][k]->bindCellArray( p_id, cell_index );
+                                bind_variables_scalars_opt( cell[thid], nvariables, p_id, cell_index );
                                 cell[thid][0]->setLocalPointArray( p_id, local_coord_array );
                                 cell[thid][0]->transformLocalToGlobalArray( p_id, local_coord_array, global_coord_array );
 #ifdef ENABLE_ENSEMBLE_TIMER
@@ -2440,7 +2456,7 @@ bool ensemble_generate_particles(
                         vismodule::Timer flush_prepare_timer;
                         flush_prepare_timer.start();
 #endif
-                        for ( int k = 0; k < nvariables; k++ ) cell[thid][k]->bindCellArray( p_id, cell_index );
+                        bind_variables_scalars_opt( cell[thid], nvariables, p_id, cell_index );
                         cell[thid][0]->setLocalPointArray( p_id, local_coord_array );
                         cell[thid][0]->transformLocalToGlobalArray( p_id, local_coord_array, global_coord_array );
 #ifdef ENABLE_ENSEMBLE_TIMER
@@ -2851,7 +2867,7 @@ bool ensemble_generate_particles(
                         recv_coords[3 * ( i + j ) + 2]
                     );
                 }
-                for ( int k = 0; k < nvariables; k++ ) cell[thid][k]->bindCellArray( remain_BLK, cell_index );
+                bind_variables_scalars_opt( cell[thid], nvariables, remain_BLK, cell_index );
                 cell[thid][0]->setLocalPointArray( remain_BLK, local_coord_array );
                 cell[thid][0]->transformLocalToGlobalArray( remain_BLK, local_coord_array, global_coord_array );
 #ifdef ENABLE_ENSEMBLE_TIMER
@@ -3061,7 +3077,7 @@ bool ensemble_generate_particles(
                     vertex_coords[3 * ( i + j ) + 2]
                 );
             }
-            for ( int k = 0; k < nvariables; k++ ) cell[thid][k]->bindCellArray( remain_BLK, cell_index );
+            bind_variables_scalars_opt( cell[thid], nvariables, remain_BLK, cell_index );
             cell[thid][0]->setLocalPointArray( remain_BLK, local_coord_array );
             cell[thid][0]->transformLocalToGlobalArray( remain_BLK, local_coord_array, global_coord_array );
 
