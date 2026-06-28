@@ -1881,6 +1881,69 @@ static inline void bind_variables_scalars_opt(
     }
 }
 
+// store_uniform_block: append n particles' data to the per-thread output vectors. __restrict
+// on the freshly-grown output regions tells the compiler they do not alias the (stack) input
+// arrays, clearing the false #15346 dependence that blocked vectorization. Same writes ->
+// bit-identical. Build -DPBVR_SCALAR_STORE to restore the old scalar loop.
+static inline void store_uniform_block(
+    const int n, const size_t scalar_offset, const size_t vector_offset,
+    std::vector<vismodule::Real32>& vs, std::vector<vismodule::Real32>& vc,
+    std::vector<vismodule::Real32>& vn, std::vector<int>& vi,
+    std::vector<vismodule::Real32>& vsq, std::vector<vismodule::Real32>& vt,
+    const float* scalar_array, const vismodule::Vector3f* local_coord_array,
+    const float* grad_array_x, const float* grad_array_y, const float* grad_array_z,
+    const vismodule::UInt32* cell_index )
+{
+#ifndef PBVR_SCALAR_STORE
+    vismodule::Real32* __restrict os = vs.data()  + scalar_offset;
+    vismodule::Real32* __restrict oq = vsq.data() + scalar_offset;
+    int*               __restrict oi = vi.data()  + scalar_offset;
+    vismodule::Real32* __restrict oc = vc.data()  + vector_offset;
+    vismodule::Real32* __restrict on = vn.data()  + vector_offset;
+    vismodule::Real32* __restrict ot = vt.data()  + vector_offset;
+    const vismodule::Vector3f* __restrict lc = local_coord_array;
+    const float* __restrict sa = scalar_array;
+    const float* __restrict gx = grad_array_x;
+    const float* __restrict gy = grad_array_y;
+    const float* __restrict gz = grad_array_z;
+    const vismodule::UInt32* __restrict ci = cell_index;
+    #pragma omp simd
+    for ( int k = 0; k < n; k++ )
+    {
+        os[k] = sa[k];
+        oq[k] = sa[k] * sa[k];
+        oi[k] = static_cast<int>( ci[k] );
+        oc[3*k]     = lc[k].x();
+        oc[3*k + 1] = lc[k].y();
+        oc[3*k + 2] = lc[k].z();
+        on[3*k]     = -gx[k];
+        on[3*k + 1] = -gy[k];
+        on[3*k + 2] = -gz[k];
+        ot[3*k]     = sa[k] * gx[k];
+        ot[3*k + 1] = sa[k] * gy[k];
+        ot[3*k + 2] = sa[k] * gz[k];
+    }
+#else
+    for ( int k = 0; k < n; k++ )
+    {
+        const size_t s = scalar_offset + static_cast<size_t>( k );
+        const size_t v = vector_offset + 3 * static_cast<size_t>( k );
+        vs[s] = scalar_array[k];
+        vc[v] = local_coord_array[k].x();
+        vc[v + 1] = local_coord_array[k].y();
+        vc[v + 2] = local_coord_array[k].z();
+        vi[s] = cell_index[k];
+        vn[v] = -grad_array_x[k];
+        vn[v + 1] = -grad_array_y[k];
+        vn[v + 2] = -grad_array_z[k];
+        vsq[s] = scalar_array[k] * scalar_array[k];
+        vt[v] = scalar_array[k] * grad_array_x[k];
+        vt[v + 1] = scalar_array[k] * grad_array_y[k];
+        vt[v + 2] = scalar_array[k] * grad_array_z[k];
+    }
+#endif
+}
+
 bool ensemble_generate_particles(
     int time_step,
     const int num_ensemble,
@@ -2418,23 +2481,11 @@ bool ensemble_generate_particles(
 	                                th_vertex_coords.resize( vector_offset + 3 * static_cast<size_t>( p_id ) );
 	                                th_vertex_normals.resize( vector_offset + 3 * static_cast<size_t>( p_id ) );
 	                                th_tmp_term.resize( vector_offset + 3 * static_cast<size_t>( p_id ) );
-	                                for ( int k = 0; k < p_id; k++ )
-	                                {
-	                                    const size_t s = scalar_offset + static_cast<size_t>( k );
-	                                    const size_t v = vector_offset + 3 * static_cast<size_t>( k );
-	                                    th_vertex_scalars[s] = scalar_array[k];
-	                                    th_vertex_coords[v] = local_coord_array[k].x();
-	                                    th_vertex_coords[v + 1] = local_coord_array[k].y();
-	                                    th_vertex_coords[v + 2] = local_coord_array[k].z();
-	                                    th_vertex_cellids[s] = cell_index[k];
-	                                    th_vertex_normals[v] = -grad_array_x[k];
-	                                    th_vertex_normals[v + 1] = -grad_array_y[k];
-	                                    th_vertex_normals[v + 2] = -grad_array_z[k];
-	                                    th_sq_scalars[s] = scalar_array[k] * scalar_array[k];
-	                                    th_tmp_term[v] = scalar_array[k] * grad_array_x[k];
-	                                    th_tmp_term[v + 1] = scalar_array[k] * grad_array_y[k];
-	                                    th_tmp_term[v + 2] = scalar_array[k] * grad_array_z[k];
-	                                }
+	                                store_uniform_block( p_id, scalar_offset, vector_offset,
+	                                    th_vertex_scalars, th_vertex_coords, th_vertex_normals,
+	                                    th_vertex_cellids, th_sq_scalars, th_tmp_term,
+	                                    scalar_array, local_coord_array,
+	                                    grad_array_x, grad_array_y, grad_array_z, cell_index );
 #ifdef ENABLE_ENSEMBLE_TIMER
                                 store_timer.stop();
                                 th_uniform_store_time += store_timer.sec();
@@ -2519,23 +2570,11 @@ bool ensemble_generate_particles(
 	                        th_vertex_coords.resize( vector_offset + 3 * static_cast<size_t>( p_id ) );
 	                        th_vertex_normals.resize( vector_offset + 3 * static_cast<size_t>( p_id ) );
 	                        th_tmp_term.resize( vector_offset + 3 * static_cast<size_t>( p_id ) );
-	                        for ( int k = 0; k < p_id; k++ )
-	                        {
-	                            const size_t s = scalar_offset + static_cast<size_t>( k );
-	                            const size_t v = vector_offset + 3 * static_cast<size_t>( k );
-	                            th_vertex_scalars[s] = scalar_array[k];
-	                            th_vertex_coords[v] = local_coord_array[k].x();
-	                            th_vertex_coords[v + 1] = local_coord_array[k].y();
-	                            th_vertex_coords[v + 2] = local_coord_array[k].z();
-	                            th_vertex_cellids[s] = cell_index[k];
-	                            th_vertex_normals[v] = -grad_array_x[k];
-	                            th_vertex_normals[v + 1] = -grad_array_y[k];
-	                            th_vertex_normals[v + 2] = -grad_array_z[k];
-	                            th_sq_scalars[s] = scalar_array[k] * scalar_array[k];
-	                            th_tmp_term[v] = scalar_array[k] * grad_array_x[k];
-	                            th_tmp_term[v + 1] = scalar_array[k] * grad_array_y[k];
-	                            th_tmp_term[v + 2] = scalar_array[k] * grad_array_z[k];
-	                        }
+	                        store_uniform_block( p_id, scalar_offset, vector_offset,
+	                            th_vertex_scalars, th_vertex_coords, th_vertex_normals,
+	                            th_vertex_cellids, th_sq_scalars, th_tmp_term,
+	                            scalar_array, local_coord_array,
+	                            grad_array_x, grad_array_y, grad_array_z, cell_index );
 #ifdef ENABLE_ENSEMBLE_TIMER
                         store_timer.stop();
                         th_uniform_store_time += store_timer.sec();
