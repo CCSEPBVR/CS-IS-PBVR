@@ -2268,25 +2268,26 @@ bool ensemble_generate_particles(
             vismodule::Timer volume_timer;
             volume_timer.start();
 #endif
+#if defined( ENABLE_HEX_TET_VOLUME ) && !defined( PBVR_SCALAR_VOLUME )
+            // Candidate 1: the cells were already loaded by bindCellArray() above, so
+            // reuse m_vertices_array and compute every volume with one vectorizable call
+            // instead of a per-cell virtual bindCell() (which blocked vectorization,
+            // #15333) plus a redundant gather. Bit-identical (same 6-tet decomposition
+            // and vertex order). Build -DPBVR_SCALAR_VOLUME to restore the old loop.
+            static_cast<vismodule::HexahedralCell<Type>*>( cell[thid][0] )
+                ->volumeArrayByTetraDecomposition( remain, volume_array );
+#else
             for ( int cell_BLK = 0; cell_BLK < remain; cell_BLK++ )
             {
                 cell[thid][0]->bindCell( cell_index[cell_BLK] );
 #if defined( ENABLE_HEX_TET_VOLUME )
                     volume_array[cell_BLK] =
                         static_cast<vismodule::HexahedralCell<Type>*>( cell[thid][0] )->volumeByTetraDecomposition();
-//                if ( celltype == vismodule::VolumeObjectBase::Hexahedra )
-//                {
-//                    volume_array[cell_BLK] =
-//                        static_cast<vismodule::HexahedralCell<Type>*>( cell[thid][0] )->volumeByTetraDecomposition();
-//                }
-//                else
-//                {
-//                    volume_array[cell_BLK] = cell[thid][0]->volume();
-//                }
 #else
                 volume_array[cell_BLK] = cell[thid][0]->volume();
 #endif
             }
+#endif
 #ifdef ENABLE_ENSEMBLE_TIMER
             volume_timer.stop();
             th_uniform_volume_time += volume_timer.sec();

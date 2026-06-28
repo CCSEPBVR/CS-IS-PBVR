@@ -933,6 +933,10 @@ inline void HexahedralCell<T>::volumeArrayByTetraDecomposition(
 {
     if ( volumes == NULL ) return;
 
+    // __restrict lets the compiler prove volumes does not alias m_vertices_array,
+    // clearing the assumed anti/flow dependence (#15346) that blocked vectorization.
+    vismodule::Real32* __restrict vol = volumes;
+    #pragma omp simd
     for ( int i = 0; i < loop_cnt; ++i )
     {
         const vismodule::Vector3f& v0 = BaseClass::m_vertices_array[0][i];
@@ -944,7 +948,7 @@ inline void HexahedralCell<T>::volumeArrayByTetraDecomposition(
         const vismodule::Vector3f& v6 = BaseClass::m_vertices_array[6][i];
         const vismodule::Vector3f& v7 = BaseClass::m_vertices_array[7][i];
 
-        volumes[i] =
+        vol[i] =
             HexahedralCellDetail::TetraVolume( v4, v5, v6, v2 ) +
             HexahedralCellDetail::TetraVolume( v4, v6, v7, v2 ) +
             HexahedralCellDetail::TetraVolume( v4, v7, v3, v2 ) +
