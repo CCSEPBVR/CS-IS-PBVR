@@ -690,6 +690,31 @@ template <typename T>
 inline void CellBase<T>::transformLocalToGlobalArray( const int loop_cnt, const vismodule::Vector3f *local_array, vismodule::Vector3f *global_array)
 {
 
+#ifndef PBVR_SCALAR_TRANSFORM
+    // Option 1: accumulate into a SoA temp (gx/gy/gz) so the per-particle loop vectorizes
+    // (the Vector3f AoS store was the #15346 dependence that blocked it), then do the cheap
+    // AoS transpose. Same i=0..nnodes accumulation order per axis -> bit-identical.
+    // Build -DPBVR_SCALAR_TRANSFORM to restore the old scalar loop.
+    (void)local_array;
+    float gx[SIMD_BLK_SIZE], gy[SIMD_BLK_SIZE], gz[SIMD_BLK_SIZE];
+    const size_t nnodes = m_nnodes;
+    #pragma omp simd
+    for ( int j = 0; j < loop_cnt; j++ )
+    {
+        float X = 0, Y = 0, Z = 0;
+        for ( size_t i = 0; i < nnodes; i++ )
+        {
+            const float N = m_interpolation_functions_array[i][j];
+            X += N * m_vertices_array[i][j].x();
+            Y += N * m_vertices_array[i][j].y();
+            Z += N * m_vertices_array[i][j].z();
+        }
+        gx[j] = X; gy[j] = Y; gz[j] = Z;
+    }
+    for ( int j = 0; j < loop_cnt; j++ )
+        global_array[j] = vismodule::Vector3f( gx[j], gy[j], gz[j] );
+#else
+
     #pragma ivdep
     for( int j = 0; j < loop_cnt; j++ )
     {
@@ -708,6 +733,7 @@ inline void CellBase<T>::transformLocalToGlobalArray( const int loop_cnt, const 
         for ( std::size_t i = 0; i < nnodes; i++ ) Z += m_interpolation_functions_array[i][j] * m_vertices_array[i][j].z(); 
         global_array[j] = vismodule::Vector3f( X, Y, Z );
     }
+#endif
 }
 /*===========================================================================*/
 /**
