@@ -456,6 +456,12 @@ inline void HexahedralCell<T>::computeScaledInvJacobianArray( const int loop_cnt
                      + ( BaseClass::m_differential_functions_array[22][i] * BaseClass::m_vertices_array[6][i].z() )
                      + ( BaseClass::m_differential_functions_array[23][i] * BaseClass::m_vertices_array[7][i].z() );
 
+        // Candidate C1: scale_factor is a pure numerical-conditioning factor that
+        // cancels exactly in G = J^-1 * g (gradFromScaledInvJacobianArray). In double it
+        // is unnecessary for realistic meshes, and its per-particle min-scan + SVML
+        // log10/pow throttled this SIMD loop (speedup 2.71x vs 5.03x sibling). Kept but
+        // DISABLED by default; build -DPBVR_ENABLE_SCALE_FACTOR to restore old behaviour.
+#ifdef PBVR_ENABLE_SCALE_FACTOR
         // calc scale factor
         double minValue = (std::numeric_limits<double>::max)();
 #define VISMODULE_HEX_INVJ_MIN_ABS( value ) \
@@ -479,6 +485,9 @@ inline void HexahedralCell<T>::computeScaledInvJacobianArray( const int loop_cnt
         dXdx *= sf; dXdy *= sf; dXdz *= sf;
         dYdx *= sf; dYdy *= sf; dYdz *= sf;
         dZdx *= sf; dZdy *= sf; dZdz *= sf;
+#else
+        const double sf = 1.0;
+#endif
 
         cof[0][i] = dYdy * dZdz - dZdy * dYdz;
         cof[1][i] = dXdy * dZdz - dZdy * dXdz;
