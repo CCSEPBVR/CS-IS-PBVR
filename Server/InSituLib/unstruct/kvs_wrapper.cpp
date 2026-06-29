@@ -19,6 +19,7 @@
 #include <vismodule/PointExporter>
 #include <vismodule/RGBColor>
 #include <vismodule/MersenneTwister>
+#include <cstdint>
 #include <vismodule/CellBase>
 #include <vismodule/TetrahedralCell>
 #include <vismodule/HexahedralCell>
@@ -1944,6 +1945,53 @@ static inline void store_uniform_block(
 #endif
 }
 
+// Philox-4x32-10 counter-based RNG (clean-room from Salmon et al. 2011). Stateless: each
+// output is a pure function of (key, counter), so a batch of particles vectorizes. Only the
+// integer core is used (no __uint128_t / intrinsics) -> portable to gcc and icpc.
+// Enabled by PBVR_PHILOX_RNG; default keeps MersenneTwister. Key = mpi_rank (thread-independent
+// -> reproducible even at OMP>1), counter = (cell_id, within-cell index).
+#define PBVR_PHILOX_ROUND \
+        const uint64_t p0 = (uint64_t)0xD2511F53u * c0; \
+        const uint64_t p1 = (uint64_t)0xCD9E8D57u * c2; \
+        const uint32_t a0 = (uint32_t)( p1 >> 32 ) ^ c1 ^ kk0; \
+        const uint32_t a1 = (uint32_t)p1; \
+        const uint32_t a2 = (uint32_t)( p0 >> 32 ) ^ c3 ^ kk1; \
+        const uint32_t a3 = (uint32_t)p0; \
+        c0 = a0; c1 = a1; c2 = a2; c3 = a3; \
+        kk0 += 0x9E3779B9u; kk1 += 0xBB67AE85u
+static inline void philox_coords( const int n, vismodule::Vector3f* out,
+        const uint32_t k0, const uint32_t k1, const uint32_t cell_id, const uint32_t base_j )
+{
+    const float INV24 = 1.0f / 16777216.0f;
+    #pragma omp simd
+    for ( int t = 0; t < n; t++ )
+    {
+        uint32_t c0 = cell_id, c1 = base_j + (uint32_t)t, c2 = 0u, c3 = 0u;
+        uint32_t kk0 = k0, kk1 = k1;
+        for ( int r = 0; r < 10; r++ ) { PBVR_PHILOX_ROUND; }
+        out[t] = vismodule::Vector3f( (float)( c0 >> 8 ) * INV24,
+                                      (float)( c1 >> 8 ) * INV24,
+                                      (float)( c2 >> 8 ) * INV24 );
+    }
+}
+static inline float philox_count_rand( const uint32_t k0, const uint32_t k1, const uint32_t cell_id )
+{
+    uint32_t c0 = cell_id, c1 = 0xFFFFFFFFu, c2 = 0u, c3 = 0u;
+    uint32_t kk0 = k0, kk1 = k1;
+    for ( int r = 0; r < 10; r++ ) { PBVR_PHILOX_ROUND; }
+    return (float)( c0 >> 8 ) * ( 1.0f / 16777216.0f );
+}
+static inline size_t CalculateNumberOfParticlesV35_philox(
+        const float density, const float volume_of_cell, const float repetition,
+        const uint32_t k0, const uint32_t k1, const uint32_t cell_id )
+{
+    const float n_particles = density * volume_of_cell * repetition;
+    const float random = philox_count_rand( k0, k1, cell_id );
+    size_t n = static_cast<size_t>( n_particles );
+    if ( n_particles - n > random ) ++n;
+    return n;
+}
+
 bool ensemble_generate_particles(
     int time_step,
     const int num_ensemble,
@@ -2313,6 +2361,8 @@ bool ensemble_generate_particles(
         std::vector<vismodule::Real32> th_sq_scalars;
         std::vector<vismodule::Real32> th_tmp_term;
         vismodule::MersenneTwister mt( thid + mpi_rank * nthreads );
+        const uint32_t philox_key0 = static_cast<uint32_t>( mpi_rank );
+        const uint32_t philox_key1 = 0xD2B79A53u;
 #ifdef ENABLE_ENSEMBLE_TIMER
         setup_timer.stop();
         th_uniform_setup_time += setup_timer.sec();
@@ -2378,10 +2428,16 @@ bool ensemble_generate_particles(
 #endif
             for ( int cell_BLK = 0; cell_BLK < remain; cell_BLK++ )
             {
+#ifdef PBVR_PHILOX_RNG
+                nparticles_array[cell_BLK] = static_cast<int>(
+                    CalculateNumberOfParticlesV35_philox( max_density, volume_array[cell_BLK], repetitions,
+                        philox_key0, philox_key1, static_cast<uint32_t>( index + cell_BLK ) ) );
+#else
                 nparticles_array[cell_BLK] = static_cast<int>(
                     CalculateNumberOfParticlesV35( max_density, volume_array[cell_BLK], repetitions, &mt )
 //                    5
                 );
+#endif
             }
 #ifdef ENABLE_ENSEMBLE_TIMER
             particle_count_timer.stop();
@@ -2405,12 +2461,22 @@ bool ensemble_generate_particles(
                         vismodule::Timer local_coord_timer;
                         local_coord_timer.start();
 #endif
-                        for ( int j = 0; j < remain_BLK; j++ )
+                        int j = 0;
+                        while ( j < remain_BLK )
                         {
-                            cell_index[p_id] = static_cast<vismodule::UInt32>( index + cell_BLK );
-                            local_coord_array[p_id] = cell[thid][0]->randomSampling_MT( &mt );
-//                            local_coord_array[p_id] = vismodule::Vector3f (0,0,0);
-                            p_id++;
+                            const int take = ( remain_BLK - j < SIMD_BLK_SIZE - p_id )
+                                             ? ( remain_BLK - j ) : ( SIMD_BLK_SIZE - p_id );
+                            for ( int t = 0; t < take; t++ )
+                                cell_index[p_id + t] = static_cast<vismodule::UInt32>( index + cell_BLK );
+#ifdef PBVR_PHILOX_RNG
+                            philox_coords( take, &local_coord_array[p_id], philox_key0, philox_key1,
+                                           static_cast<uint32_t>( index + cell_BLK ), static_cast<uint32_t>( j ) );
+#else
+                            for ( int t = 0; t < take; t++ )
+                                local_coord_array[p_id + t] = cell[thid][0]->randomSampling_MT( &mt );
+#endif
+                            p_id += take;
+                            j += take;
                             if ( p_id == SIMD_BLK_SIZE )
                             {
 #ifdef ENABLE_ENSEMBLE_TIMER
