@@ -335,6 +335,7 @@ void EnsembleTransferFunctionEditor::initializeTransferFunctionWidgets()
 void EnsembleTransferFunctionEditor::setRepeatLevel( size_t repeatLevel )
 {
     m_repeat_level = repeatLevel;
+    emit repeatLevelChanged( repeatLevel );
 }
 
 void EnsembleTransferFunctionEditor::onReceiveEnsembleStatisticsParameter( const QJsonObject& payload )
@@ -346,20 +347,77 @@ void EnsembleTransferFunctionEditor::onReceiveEnsembleStatisticsParameter( const
         return;
     }
 
+    const QString repeatLevelKey = QString::fromUtf8( Protocol::Key::RepeatLevel );
+    if( payload.value( repeatLevelKey ).isDouble() )
+    {
+        setRepeatLevel( static_cast<size_t>( payload.value( repeatLevelKey ).toInt() ) );
+    }
+
     auto updateBlock = [&]( const QString& displayName,
+                            ColorMap* colorMapWidget,
+                            OpacityMap* opacityMapWidget,
+                            QRadioButton* userRadioButton,
+                            QRadioButton* serverRadioButton,
+                            QDoubleSpinBox* userMinSpinBox,
+                            QDoubleSpinBox* userMaxSpinBox,
                             QDoubleSpinBox* serverMinSpinBox,
                             QDoubleSpinBox* serverMaxSpinBox,
                             Histogram* histogramWidget,
                             const QJsonObject& patch )
     {
-        const QString minKey = QString::fromUtf8( Protocol::Key::OpacityServerRangeMin );
-        const QString maxKey = QString::fromUtf8( Protocol::Key::OpacityServerRangeMax );
+        const QString colorRangeModeKey = QString::fromUtf8( Protocol::Key::ColorRangeMode );
+        const QString opacityRangeModeKey = QString::fromUtf8( Protocol::Key::OpacityRangeMode );
+        const QString userMinKey = QString::fromUtf8( Protocol::Key::ColorUserRangeMin );
+        const QString userMaxKey = QString::fromUtf8( Protocol::Key::ColorUserRangeMax );
+        const QString opacityUserMinKey = QString::fromUtf8( Protocol::Key::OpacityUserRangeMin );
+        const QString opacityUserMaxKey = QString::fromUtf8( Protocol::Key::OpacityUserRangeMax );
+        const QString minKey = QString::fromUtf8( Protocol::Key::ColorServerRangeMin );
+        const QString maxKey = QString::fromUtf8( Protocol::Key::ColorServerRangeMax );
+        const QString opacityMinKey = QString::fromUtf8( Protocol::Key::OpacityServerRangeMin );
+        const QString opacityMaxKey = QString::fromUtf8( Protocol::Key::OpacityServerRangeMax );
+        const QString colorMapKey = QString::fromUtf8( Protocol::Key::ColorMap );
+        const QString opacityMapKey = QString::fromUtf8( Protocol::Key::OpacityMap );
         const QString histogramKey = QString::fromUtf8( Protocol::Key::OpacityHistogram );
+
+        if( patch.contains( colorRangeModeKey ) )
+        {
+            const int colorRangeMode = patch.value( colorRangeModeKey ).toInt();
+            const int opacityRangeMode = patch.value( opacityRangeModeKey ).toInt( colorRangeMode );
+            if( colorRangeMode != opacityRangeMode )
+            {
+                qDebug() << "[Client][EnsembleTFE] color/opacity range mode mismatch for"
+                         << displayName << "use color range mode";
+            }
+            userRadioButton->setChecked( colorRangeMode == UserRangeMode );
+            serverRadioButton->setChecked( colorRangeMode == ServerRangeMode );
+        }
+
+        if( patch.value( userMinKey ).isDouble() && patch.value( userMaxKey ).isDouble() )
+        {
+            const double userMin = patch.value( userMinKey ).toDouble();
+            const double userMax = patch.value( userMaxKey ).toDouble();
+            const double opacityUserMin = patch.value( opacityUserMinKey ).toDouble( userMin );
+            const double opacityUserMax = patch.value( opacityUserMaxKey ).toDouble( userMax );
+            if( userMin != opacityUserMin || userMax != opacityUserMax )
+            {
+                qDebug() << "[Client][EnsembleTFE] color/opacity user range mismatch for"
+                         << displayName << "use color range";
+            }
+            userMinSpinBox->setValue( userMin );
+            userMaxSpinBox->setValue( userMax );
+        }
 
         if( patch.value( minKey ).isDouble() && patch.value( maxKey ).isDouble() )
         {
             const double opacityMin = patch.value( minKey ).toDouble();
             const double opacityMax = patch.value( maxKey ).toDouble();
+            const double opacityServerMin = patch.value( opacityMinKey ).toDouble( opacityMin );
+            const double opacityServerMax = patch.value( opacityMaxKey ).toDouble( opacityMax );
+            if( opacityMin != opacityServerMin || opacityMax != opacityServerMax )
+            {
+                qDebug() << "[Client][EnsembleTFE] color/opacity server range mismatch for"
+                         << displayName << "use color range";
+            }
             if( !std::isfinite( opacityMin ) || !std::isfinite( opacityMax ) )
             {
                 qDebug() << "[Client][EnsembleTFE] ignore invalid server range for" << displayName
@@ -383,7 +441,39 @@ void EnsembleTransferFunctionEditor::onReceiveEnsembleStatisticsParameter( const
         else
         {
             qDebug() << "[Client][EnsembleTFE] keep server range for" << displayName
-                     << "reason = missing opacity range keys";
+                     << "reason = missing color range keys";
+        }
+
+        if( patch.contains( colorMapKey ) )
+        {
+            bool colorMapOk = false;
+            const QVector<QColor> colors = ReadColorMap( patch.value( colorMapKey ), &colorMapOk );
+            if( colorMapOk )
+            {
+                colorMapWidget->setColors( colors );
+                colorMapWidget->update();
+            }
+            else
+            {
+                qDebug() << "[Client][EnsembleTFE] keep color map for" << displayName
+                         << "reason = ColorMap is invalid";
+            }
+        }
+
+        if( patch.contains( opacityMapKey ) )
+        {
+            bool opacityMapOk = false;
+            const QVector<float> opacities = ReadOpacityMap( patch.value( opacityMapKey ), &opacityMapOk );
+            if( opacityMapOk )
+            {
+                opacityMapWidget->setOpacities( opacities );
+                opacityMapWidget->update();
+            }
+            else
+            {
+                qDebug() << "[Client][EnsembleTFE] keep opacity map for" << displayName
+                         << "reason = OpacityMap is invalid";
+            }
         }
 
         if( patch.contains( histogramKey ) )
@@ -428,6 +518,17 @@ void EnsembleTransferFunctionEditor::onReceiveEnsembleStatisticsParameter( const
             continue;
         }
 
+        const QString colorVariable = patch.value( QString::fromUtf8( Protocol::Key::ColorVariable ) ).toString();
+        const QString opacityVariable = patch.value( QString::fromUtf8( Protocol::Key::OpacityVariable ) ).toString();
+        if( !colorVariable.isEmpty() )
+        {
+            ui->m_statistics_synthesizer_line_edit->setText( colorVariable );
+        }
+        else if( !opacityVariable.isEmpty() )
+        {
+            ui->m_statistics_synthesizer_line_edit->setText( opacityVariable );
+        }
+
         const QString statistic = NormalizeStatisticName(
             patch.value( QString::fromUtf8( Protocol::Key::Statistic ) ).toString() );
         qDebug() << "[Client][EnsembleTFE] receive statistic patch"
@@ -437,6 +538,12 @@ void EnsembleTransferFunctionEditor::onReceiveEnsembleStatisticsParameter( const
         if( statistic == QStringLiteral( "average" ) )
         {
             updateBlock( QStringLiteral( "Average" ),
+                         ui->m_average_color_map,
+                         ui->m_average_opacity_map,
+                         ui->m_average_user_min_max_radio_button,
+                         ui->m_average_server_min_max_radio_button,
+                         ui->m_average_user_min_double_spin_box,
+                         ui->m_average_user_max_double_spin_box,
                          ui->m_average_server_min_double_spin_box,
                          ui->m_average_server_max_double_spin_box,
                          ui->m_average_histogram,
@@ -445,6 +552,12 @@ void EnsembleTransferFunctionEditor::onReceiveEnsembleStatisticsParameter( const
         else if( statistic == QStringLiteral( "variance" ) )
         {
             updateBlock( QStringLiteral( "Variance" ),
+                         ui->m_variance_color_map,
+                         ui->m_variance_opacity_map,
+                         ui->m_variance_user_min_max_radio_button,
+                         ui->m_variance_server_min_max_radio_button,
+                         ui->m_variance_user_min_double_spin_box,
+                         ui->m_variance_user_max_double_spin_box,
                          ui->m_variance_server_min_double_spin_box,
                          ui->m_variance_server_max_double_spin_box,
                          ui->m_variance_histogram,
@@ -453,6 +566,12 @@ void EnsembleTransferFunctionEditor::onReceiveEnsembleStatisticsParameter( const
         else if( statistic == QStringLiteral( "cv" ) )
         {
             updateBlock( QStringLiteral( "Coefficient of Variation" ),
+                         ui->m_coefficient_variation_color_map,
+                         ui->m_coefficient_variation_opacity_map,
+                         ui->m_coefficient_variation_user_min_max_radio_button,
+                         ui->m_coefficient_variation_server_min_max_radio_button,
+                         ui->m_coefficient_variation_user_min_double_spin_box,
+                         ui->m_coefficient_variation_user_max_double_spin_box,
                          ui->m_coefficient_variation_server_min_double_spin_box,
                          ui->m_coefficient_variation_server_max_double_spin_box,
                          ui->m_coefficient_variation_histogram,

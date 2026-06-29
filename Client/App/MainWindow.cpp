@@ -592,6 +592,7 @@ void MainWindow::initializeRepetitionLevelControl()
 
         connect( m_repetition_level_control, &RepetitionLevelControl::shading, m_shading_control, &ShadingControl::onShading );
         connect( m_repetition_level_control, &RepetitionLevelControl::repetitionLevelApplied, m_ensemble_transfer_function_editor, &EnsembleTransferFunctionEditor::setRepeatLevel );
+        connect( m_ensemble_transfer_function_editor, &EnsembleTransferFunctionEditor::repeatLevelChanged, m_repetition_level_control, &RepetitionLevelControl::onReceiveRepetitionLevel );
 
         emit updateInitialRepetitionLevel();
     }

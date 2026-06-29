@@ -78,6 +78,67 @@ int HistogramSum( const vismodule::UInt64* histogram )
     return sum;
 }
 
+int RangeModeValue( const NamedTransferFunction::ServerRangeMode mode )
+{
+    return static_cast<int>( mode );
+}
+
+void LogRangeModeMismatch(
+    const NamedTransferFunction& tf,
+    const std::string& statistic )
+{
+    if ( tf.m_server_color_range_mode == tf.m_server_opacity_range_mode ) return;
+
+    std::cout << "[Server][EnsembleStatisticsParameter] statistic=" << statistic
+              << " color/opacity range mode mismatch. Use color range mode."
+              << " color=" << RangeModeValue( tf.m_server_color_range_mode )
+              << " opacity=" << RangeModeValue( tf.m_server_opacity_range_mode )
+              << std::endl;
+}
+
+void LogRangeMismatch(
+    const std::string& statistic,
+    const char* range_name,
+    const double color_min,
+    const double color_max,
+    const double opacity_min,
+    const double opacity_max )
+{
+    if ( color_min == opacity_min && color_max == opacity_max ) return;
+
+    std::cout << "[Server][EnsembleStatisticsParameter] statistic=" << statistic
+              << " color/opacity " << range_name << " range mismatch. Use color range."
+              << " color=[" << color_min << ", " << color_max << "]"
+              << " opacity=[" << opacity_min << ", " << opacity_max << "]"
+              << std::endl;
+}
+
+nlohmann::json ColorMapJson( const vismodule::ColorMap& color_map )
+{
+    nlohmann::json map = nlohmann::json::array();
+    const auto& table = color_map.table();
+    for ( size_t i = 0; i + 2 < table.size(); i += 3 )
+    {
+        nlohmann::json rgb = nlohmann::json::array();
+        rgb.push_back( static_cast<int>( table[i] ) );
+        rgb.push_back( static_cast<int>( table[i + 1] ) );
+        rgb.push_back( static_cast<int>( table[i + 2] ) );
+        map.push_back( std::move( rgb ) );
+    }
+    return map;
+}
+
+nlohmann::json OpacityMapJson( const vismodule::OpacityMap& opacity_map )
+{
+    nlohmann::json map = nlohmann::json::array();
+    const auto& table = opacity_map.table();
+    for ( size_t i = 0; i < table.size(); ++i )
+    {
+        map.push_back( static_cast<float>( table[i] ) );
+    }
+    return map;
+}
+
 void DebugStatisticTransferFunctionArray(
     const std::string& statistic,
     const std::vector<NamedTransferFunction>& transfer_functions )
@@ -124,6 +185,10 @@ void AppendStatisticTransferFunctionPatches(
         const double opacity_max = tf.serverOpacityMaxValue();
         double color_min = tf.serverColorMinValue();
         double color_max = tf.serverColorMaxValue();
+        const double user_color_min = tf.userColorMinValue();
+        const double user_color_max = tf.userColorMaxValue();
+        const double user_opacity_min = tf.userOpacityMinValue();
+        const double user_opacity_max = tf.userOpacityMaxValue();
 
         if ( !std::isfinite( opacity_min ) || !std::isfinite( opacity_max ) )
         {
@@ -139,37 +204,58 @@ void AppendStatisticTransferFunctionPatches(
         }
         if ( !tf.m_has_opacity_histogram )
         {
-            std::cout << "[Server][EnsembleStatisticsParameter] skip statistic=" << statistic
+            std::cout << "[Server][EnsembleStatisticsParameter] statistic=" << statistic
                       << ", index=" << i << ", reason=missing opacity histogram" << std::endl;
-            continue;
         }
         if ( !std::isfinite( color_min ) || !std::isfinite( color_max ) || color_min > color_max )
         {
+            std::cout << "[Server][EnsembleStatisticsParameter] statistic=" << statistic
+                      << ", index=" << i << ", reason=invalid color range. Use opacity range."
+                      << std::endl;
             color_min = opacity_min;
             color_max = opacity_max;
         }
+        LogRangeModeMismatch( tf, statistic );
+        LogRangeMismatch( statistic, "server", color_min, color_max, opacity_min, opacity_max );
+        LogRangeMismatch( statistic, "user", user_color_min, user_color_max, user_opacity_min, user_opacity_max );
 
         nlohmann::json patch;
         patch[Protocol::Key::Statistic] = statistic;
         patch[Protocol::Key::Index] = static_cast<int>( i );
-        patch[Protocol::Key::OpacityServerRangeMin] = opacity_min;
-        patch[Protocol::Key::OpacityServerRangeMax] = opacity_max;
+        patch[Protocol::Key::ColorVariable] = tf.m_color_variable;
+        patch[Protocol::Key::ColorRangeMode] = RangeModeValue( tf.m_server_color_range_mode );
+        patch[Protocol::Key::ColorUserRangeMin] = user_color_min;
+        patch[Protocol::Key::ColorUserRangeMax] = user_color_max;
         patch[Protocol::Key::ColorServerRangeMin] = color_min;
         patch[Protocol::Key::ColorServerRangeMax] = color_max;
+        patch[Protocol::Key::ColorMap] = ColorMapJson( tf.colorMap() );
+        patch[Protocol::Key::OpacityVariable] = tf.m_opacity_variable;
+        patch[Protocol::Key::OpacityRangeMode] = RangeModeValue( tf.m_server_color_range_mode );
+        patch[Protocol::Key::OpacityUserRangeMin] = user_color_min;
+        patch[Protocol::Key::OpacityUserRangeMax] = user_color_max;
+        patch[Protocol::Key::OpacityServerRangeMin] = color_min;
+        patch[Protocol::Key::OpacityServerRangeMax] = color_max;
+        patch[Protocol::Key::OpacityMap] = OpacityMapJson( tf.opacityMap() );
 
         nlohmann::json opacity_histogram = nlohmann::json::array();
-        const vismodule::UInt64* opacity_hist = tf.opacityHistogram();
-        for ( int j = 0; j < DEFAULT_NBINS; ++j )
+        if ( tf.m_has_opacity_histogram )
         {
-            opacity_histogram.push_back( static_cast<int>( opacity_hist[j] ) );
+            const vismodule::UInt64* opacity_hist = tf.opacityHistogram();
+            for ( int j = 0; j < DEFAULT_NBINS; ++j )
+            {
+                opacity_histogram.push_back( static_cast<int>( opacity_hist[j] ) );
+            }
         }
         patch[Protocol::Key::OpacityHistogram] = std::move( opacity_histogram );
 
         nlohmann::json color_histogram = nlohmann::json::array();
-        const vismodule::UInt64* color_hist = tf.colorHistogram();
-        for ( int j = 0; j < DEFAULT_NBINS; ++j )
+        if ( tf.m_has_color_histogram )
         {
-            color_histogram.push_back( static_cast<int>( color_hist[j] ) );
+            const vismodule::UInt64* color_hist = tf.colorHistogram();
+            for ( int j = 0; j < DEFAULT_NBINS; ++j )
+            {
+                color_histogram.push_back( static_cast<int>( color_hist[j] ) );
+            }
         }
         patch[Protocol::Key::ColorHistogram] = std::move( color_histogram );
 
@@ -204,6 +290,10 @@ nlohmann::json BuildEnsembleStatisticsParameter( const ParticleProperty& particl
 
     nlohmann::json msg;
     msg[Protocol::Key::Event] = Protocol::Events::EnsembleStatisticsParameter;
+    msg[Protocol::Key::RepeatLevel] = particle_property.m_repeat_level;
+    msg["TFNumber"] = 1;
+    msg[Protocol::Key::ColorSynthesizer] = particle_property.m_color_transfer_function_synthesis;
+    msg[Protocol::Key::OpacitySynthesizer] = particle_property.m_opacity_transfer_function_synthesis;
     msg[Protocol::Key::Data] = std::move( data );
     return msg;
 }

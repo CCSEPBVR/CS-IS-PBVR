@@ -26,6 +26,7 @@ public:
 
 signals:
     void statisticChanged( const QString& statistic );
+    void repeatLevelChanged( size_t repeatLevel );
 
 public slots:
     void setRepeatLevel( size_t repeatLevel );

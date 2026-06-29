@@ -22,6 +22,13 @@ void RepetitionLevelControl::onUpdateCurrentRepetitionLevel()
     ui->dispCurrentRepetitionLevel->setText( QString::number( currentRepetitionLevel ) );
 }
 
+void RepetitionLevelControl::onReceiveRepetitionLevel( size_t repetitionLevel )
+{
+    m_compositor->setRepetitionLevel( repetitionLevel );
+    ui->spinBoxNewRepetitionLevel->setValue( static_cast<int>( repetitionLevel ) );
+    onUpdateCurrentRepetitionLevel();
+}
+
 void RepetitionLevelControl::onLoadParameter( const QString& filePath )
 {
     qDebug() << __FILE__ << ":" << __func__ << ":" << filePath;

@@ -27,6 +27,7 @@ signals:
 
 public slots:
     void onUpdateCurrentRepetitionLevel();
+    void onReceiveRepetitionLevel( size_t repetitionLevel );
     void onLoadParameter( const QString& filePath ); // KPI
     void onSaveParameter( const QString& filePath ); // KPI
 
