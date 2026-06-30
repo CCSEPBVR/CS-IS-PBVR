@@ -1,5 +1,6 @@
 #include "ParameterFileReader.h"
 #include <exception>
+#include <cstdlib>
 #include <stdexcept>
 #define DEFAULT_TF_NUMBER 5
 #define BEFORE_READ_TF_NUMBER 99
@@ -853,236 +854,147 @@ void ParameterFileReader::readParticleParameterFile( const char* fname )
 // ISのdefault.json/default_old.jsonファイルを読み込む
 bool ParameterFileReader::readTransferFunctionFromJson( const char* fname, ParticleProperty& particle_property )
 {
+    std::string json_name;
     try
     {
         std::cout << "------------------------------------Import json ------------------------------------------" << std::endl;
-       nlohmann::json tf = TransferFunctionJsonWriter::LoadTfJson( fname );
 
-       const nlohmann::json params = TransferFunctionParameters( tf );
-
-       const std::string size_sampling_method                  = params.value( "SAMPLING_METHOD", std::string( "" ) );
-       particle_property.m_particle_limit                      = params.value( "PARTICLE_LIMIT", 0 );
-       // particle_property.m_extra_opacity_factor                = m_name_list_file.getValue<float>( "EXTRA_OPACITY_FACTOR" ); // 一時的にコメントアウト
-       particle_property.m_extra_opacity_factor                = 1; // 一時的にハードコーティング
-       particle_property.m_repeat_level                        = params.value("REPEAT_LEVEL",1.f); // 一時的にハードコーティング
-       particle_property.m_particle_data_size_limit            = params.value( "PARTICLE_DATA_SIZE_LIMIT", 0.0f );
-       const std::string particle_data_size_limit_unit          = params.value( "PARTICLE_DATA_SIZE_LIMIT_UNIT", std::string( "MB" ) );
-       particle_property.m_color_transfer_function_synthesis   = params.value( "COLOR_SYNTH", std::string( "" ) );
-       particle_property.m_opacity_transfer_function_synthesis = params.value( "OPACITY_SYNTH", std::string( "" ) );
-       if ( particle_data_size_limit_unit != "MB" )
-       {
-           std::cout << "WARN:particle_data_size_limit_unit is '" << particle_data_size_limit_unit
-                     << "', but ParticleProperty stores this value as MB." << std::endl;
-       }
-       if ( size_sampling_method == "Uniform" )
-       {
-           particle_property.m_sampling_method = 'u';
-       }
-       else if ( size_sampling_method == "Metropolis" )
-       {
-           particle_property.m_sampling_method = 'm';
-       }
-       else if ( size_sampling_method == "Rejection" )
-       {
-           particle_property.m_sampling_method = 'r';
-       }
-       else
-       {
-           std::cout << "ERROR:particle sampling method is not selected." << std::endl;
-           return false;
-       }
-
-       const size_t width               = params.value( "RESOLUTION_WIDTH", 0 );
-       const size_t height              = params.value( "RESOLUTION_HEIGHT", 0 );
-       particle_property.m_camera->setWindowSize( width, height );
-
-       const size_t resolution          = params.value( "TF_RESOLUTION", 0 );
-       const int tf_number              = params.value( "TF_NUMBER", 0 );
-       if ( resolution == 0 || tf_number <= 0 )
-       {
-           std::cout << "ERROR:Transfer function resolution or count is invalid." << std::endl;
-           return false;
-       }
-
-       std::cout << "PBVR JSON import summary" << std::endl;
-       std::cout << "  file                         : " << fname << std::endl;
-       std::cout << "  sampling.method              : " << size_sampling_method << std::endl;
-       std::cout << "  sampling.particle_limit      : " << particle_property.m_particle_limit << std::endl;
-       std::cout << "  sampling.data_size_limit     : " << particle_property.m_particle_data_size_limit
-                 << " " << particle_data_size_limit_unit << std::endl;
-       std::cout << "  image.width                  : " << width << std::endl;
-       std::cout << "  image.height                 : " << height << std::endl;
-       std::cout << "  transfer_function.count      : " << tf_number << std::endl;
-       std::cout << "  transfer_function.resolution : " << resolution << std::endl;
-       std::cout << "  transfer_function.color_syn  : " << particle_property.m_color_transfer_function_synthesis << std::endl;
-       std::cout << "  transfer_function.opacity_syn: " << particle_property.m_opacity_transfer_function_synthesis << std::endl;
-
-       if ( !SetTransferFunctionArrayFromParameters(
-                params,
-                resolution,
-                "transfer_functions",
-                particle_property.m_transfunc_array ) )
-       {
-            std::stringstream ss;
-            ss << "TF_NAME" << n + 1 << "_";
-
-            std::stringstream s_name;
-            std::stringstream f_name;
-            s_name << "t" << n + 1;
-            f_name << "_F" << n + 1 << "_VAR_";
-
-            const std::string tag_base = ss.str();
-            particle_property.m_transfunc_array[n].m_resolution = resolution;
-            particle_property.m_transfunc_array[n].m_name = s_name.str();
-
-            const std::string color_variable         = params.value( tag_base + "VAR_C", std::string( "" ) );                                                              
-            const std::string opacity_varible        = params.value( tag_base + "VAR_O", std::string( "" ) );
-            const std::string color_range_mode       = params.value( tag_base + "RANGE_MODE_C", std::string( "" ) );
-            const std::string opacity_range_mode     = params.value( tag_base + "RANGE_MODE_O", std::string( "" ) );
-            const float user_color_min               = params.value( tag_base + "USER_MIN_C", 0.0f );
-            const float user_color_max               = params.value( tag_base + "USER_MAX_C", 0.0f );
-            const float user_opacity_min             = params.value( tag_base + "USER_MIN_O", 0.0f );
-            const float user_opacity_max             = params.value( tag_base + "USER_MAX_O", 0.0f );
-            const std::vector<int> color_values      = JsonIntTable( params, tag_base + "TABLE_C" );
-            const std::vector<float> opacity_values  = JsonFloatTable( params, tag_base + "TABLE_O" );
-            const int tf_id                          = params.value( tag_base + "ID", static_cast<int>( n + 1 ) );
-            const std::string tf_label               = params.value( tag_base + "LABEL", std::string( "" ) );
-
-            if ( color_values.size() != resolution * 3 )
+        if ( fname != nullptr && *fname != '\0' )
+        {
+            json_name = fname;
+        }
+        else
+        {
+            const char* env_buf = std::getenv( "VIS_PARAM_DIR" );
+            json_name = ( env_buf == nullptr ) ? "./" : env_buf;
+            if ( !json_name.empty() && json_name.back() != '/' )
             {
-                std::cout << "ERROR:" << tag_base << "TABLE_C size is " << color_values.size()
-                        << ", but expected " << resolution * 3 << "." << std::endl;
-                return false;
-            }
-            if ( opacity_values.size() != resolution )
-            {
-                std::cout << "ERROR:" << tag_base << "TABLE_O size is " << opacity_values.size()
-                        << ", but expected " << resolution << "." << std::endl;
-                return false;
+                json_name += "/";
             }
 
-            std::cout << "  transfer_functions[" << n << "] id=" << tf_id;
-            if ( !tf_label.empty() ) std::cout << " label=" << tf_label;
-            std::cout << " color.variable=" << color_variable
-                    << " opacity.variable=" << opacity_varible
-                    << " color.range.mode=" << color_range_mode
-                    << " opacity.range.mode=" << opacity_range_mode
-                    << " color.map.values=" << color_values.size()
-                    << " opacity.map.values=" << opacity_values.size()
-                    << std::endl;
+            env_buf = std::getenv( "TF_NAME" );
+            json_name += ( env_buf == nullptr ) ? "default" : env_buf;
+            json_name += ".json";
+        }
 
-            if ( color_range_mode == "ServerSide" )
-            {
-                particle_property.m_transfunc_array[n].m_server_color_range_mode = NamedTransferFunction::ServerRangeMode::ServerSide;
-            }
-            else if ( color_range_mode == "UserRange" )
-            {
-                particle_property.m_transfunc_array[n].m_server_color_range_mode = NamedTransferFunction::ServerRangeMode::UserRange;
-            }
-            else
-            {
-                std::cout << "ERROR:Color Range Mode is unknown" << std::endl;
-            }
+        const nlohmann::json tf = TransferFunctionJsonWriter::LoadTfJson( json_name );
+        const nlohmann::json params = TransferFunctionParameters( tf );
 
-            if ( opacity_range_mode == "ServerSide" )
-            {
-                particle_property.m_transfunc_array[n].m_server_opacity_range_mode = NamedTransferFunction::ServerRangeMode::ServerSide;
-            }
-            else if ( opacity_range_mode == "UserRange" )
-            {
-                particle_property.m_transfunc_array[n].m_server_opacity_range_mode = NamedTransferFunction::ServerRangeMode::UserRange;
-            }
-            else
-            {
-                std::cout << "ERROR:Opacity Range Mode is unknown" << std::endl;
-            }
+        const std::string size_sampling_method =
+            params.value( "SAMPLING_METHOD", std::string( "" ) );
+        particle_property.m_particle_limit =
+            params.value( "PARTICLE_LIMIT", 0 );
+        particle_property.m_extra_opacity_factor = 1;
+        particle_property.m_repeat_level =
+            params.value( "REPEAT_LEVEL", 1.0f );
+        particle_property.m_particle_data_size_limit =
+            params.value( "PARTICLE_DATA_SIZE_LIMIT", 0.0f );
+        const std::string particle_data_size_limit_unit =
+            params.value( "PARTICLE_DATA_SIZE_LIMIT_UNIT", std::string( "MB" ) );
+        particle_property.m_color_transfer_function_synthesis =
+            params.value( "COLOR_SYNTH", std::string( "" ) );
+        particle_property.m_opacity_transfer_function_synthesis =
+            params.value( "OPACITY_SYNTH", std::string( "" ) );
 
-            particle_property.m_transfunc_array[n].m_color_variable              = color_variable;
-            particle_property.m_transfunc_array[n].m_opacity_variable            = opacity_varible;
-            particle_property.m_transfunc_array[n].m_user_color_variable_min     = user_color_min;
-            particle_property.m_transfunc_array[n].m_user_color_variable_max     = user_color_max;
-            particle_property.m_transfunc_array[n].m_user_opacity_variable_min   = user_opacity_min;
-            particle_property.m_transfunc_array[n].m_user_opacity_variable_max   = user_opacity_max;
+        if ( particle_data_size_limit_unit != "MB" )
+        {
+            std::cout << "WARN:particle_data_size_limit_unit is '" << particle_data_size_limit_unit
+                      << "', but ParticleProperty stores this value as MB." << std::endl;
+        }
 
-            vismodule::ColorMap::Table color_table( resolution * 3 );
-            vismodule::OpacityMap::Table opacity_table( resolution );
+        if ( size_sampling_method == "Uniform" )
+        {
+            particle_property.m_sampling_method = 'u';
+        }
+        else if ( size_sampling_method == "Metropolis" )
+        {
+            particle_property.m_sampling_method = 'm';
+        }
+        else if ( size_sampling_method == "Rejection" )
+        {
+            particle_property.m_sampling_method = 'r';
+        }
+        else
+        {
+            std::cout << "ERROR:particle sampling method is not selected." << std::endl;
+            return false;
+        }
 
-            for ( size_t i = 0; i < resolution; i++ )
-            {
-                for ( size_t c = 0; c < 3; c++ )
-                {
-                    color_table.at( i * 3 + c ) = color_values.at( i * 3 + c );
-                }
-            }
+        const size_t width = params.value( "RESOLUTION_WIDTH", 0 );
+        const size_t height = params.value( "RESOLUTION_HEIGHT", 0 );
+        particle_property.m_camera->setWindowSize( width, height );
 
-            for ( size_t i = 0; i < resolution; i++ )
-            {
-                opacity_table.at( i ) = opacity_values.at( i );
-            }
+        const size_t resolution = params.value( "TF_RESOLUTION", 0 );
+        const int tf_number = params.value( "TF_NUMBER", 0 );
+        if ( resolution == 0 || tf_number <= 0 )
+        {
+            std::cout << "ERROR:Transfer function resolution or count is invalid." << std::endl;
+            return false;
+        }
 
-            vismodule::ColorMap color_map( color_table );
-            vismodule::OpacityMap opacity_map( opacity_table );
+        std::cout << "PBVR JSON import summary" << std::endl;
+        std::cout << "  file                         : " << json_name << std::endl;
+        std::cout << "  sampling.method              : " << size_sampling_method << std::endl;
+        std::cout << "  sampling.particle_limit      : " << particle_property.m_particle_limit << std::endl;
+        std::cout << "  sampling.data_size_limit     : " << particle_property.m_particle_data_size_limit
+                  << " " << particle_data_size_limit_unit << std::endl;
+        std::cout << "  image.width                  : " << width << std::endl;
+        std::cout << "  image.height                 : " << height << std::endl;
+        std::cout << "  transfer_function.count      : " << tf_number << std::endl;
+        std::cout << "  transfer_function.resolution : " << resolution << std::endl;
+        std::cout << "  transfer_function.color_syn  : "
+                  << particle_property.m_color_transfer_function_synthesis << std::endl;
+        std::cout << "  transfer_function.opacity_syn: "
+                  << particle_property.m_opacity_transfer_function_synthesis << std::endl;
 
-            particle_property.m_transfunc_array[n].setColorMap( color_map );
-            particle_property.m_transfunc_array[n].setOpacityMap( opacity_map );
+        if ( !SetTransferFunctionArrayFromParameters(
+                 params,
+                 resolution,
+                 "transfer_functions",
+                 particle_property.m_transfunc_array ) )
+        {
+            return false;
+        }
 
-            if ( particle_property.m_transfunc_array[n].m_server_color_range_mode == NamedTransferFunction::ServerRangeMode::UserRange )
-            {
-                particle_property.m_transfunc_array[n].setColorRange( user_color_min, user_color_max );
-            }
-            else if ( particle_property.m_transfunc_array[n].m_server_color_range_mode != NamedTransferFunction::ServerRangeMode::ServerSide )
-            {
-                std::cout << "ERROR:Color Range Mode is unknown" << std::endl;
-            }
+        const nlohmann::json mean_params =
+            TransferFunctionSectionParameters( tf, "mean_transfer_functions" );
+        const nlohmann::json variance_params =
+            TransferFunctionSectionParameters( tf, "variance_transfer_functions" );
+        const nlohmann::json coefficient_params =
+            TransferFunctionSectionParameters( tf, "coefficient_of_variation_transfer_functions" );
 
-            if ( particle_property.m_transfunc_array[n].m_server_opacity_range_mode == NamedTransferFunction::ServerRangeMode::UserRange )
-            {
-                particle_property.m_transfunc_array[n].setOpacityRange( user_opacity_min, user_opacity_max );
-            }
-            else if ( particle_property.m_transfunc_array[n].m_server_opacity_range_mode != NamedTransferFunction::ServerRangeMode::ServerSide )
-            {
-                std::cout << "ERROR:Opacity Range Mode is unknown" << std::endl;
-            }
-       }
+        if ( !SetTransferFunctionArrayFromParameters(
+                 mean_params,
+                 resolution,
+                 "mean_transfer_functions",
+                 particle_property.m_mean_transfer_function_array ) )
+        {
+            return false;
+        }
+        if ( !SetTransferFunctionArrayFromParameters(
+                 variance_params,
+                 resolution,
+                 "variance_transfer_functions",
+                 particle_property.m_variance_transfer_function_array ) )
+        {
+            return false;
+        }
+        if ( !SetTransferFunctionArrayFromParameters(
+                 coefficient_params,
+                 resolution,
+                 "coefficient_of_variation_transfer_functions",
+                 particle_property.m_coefficient_of_variation_transfer_function_array ) )
+        {
+            return false;
+        }
 
-       const nlohmann::json mean_params =
-           TransferFunctionSectionParameters( tf, "mean_transfer_functions" );
-       const nlohmann::json variance_params =
-           TransferFunctionSectionParameters( tf, "variance_transfer_functions" );
-       const nlohmann::json coefficient_params =
-           TransferFunctionSectionParameters( tf, "coefficient_of_variation_transfer_functions" );
+        std::cout << "  mean_transfer_functions.count: "
+                  << particle_property.m_mean_transfer_function_array.size() << std::endl;
+        std::cout << "  variance_transfer_functions.count: "
+                  << particle_property.m_variance_transfer_function_array.size() << std::endl;
+        std::cout << "  coefficient_of_variation_transfer_functions.count: "
+                  << particle_property.m_coefficient_of_variation_transfer_function_array.size() << std::endl;
 
-       if ( !SetTransferFunctionArrayFromParameters(
-                mean_params,
-                resolution,
-                "mean_transfer_functions",
-                particle_property.m_mean_transfer_function_array ) )
-       {
-           return;
-       }
-       if ( !SetTransferFunctionArrayFromParameters(
-                variance_params,
-                resolution,
-                "variance_transfer_functions",
-                particle_property.m_variance_transfer_function_array ) )
-       {
-           return;
-       }
-       if ( !SetTransferFunctionArrayFromParameters(
-                coefficient_params,
-                resolution,
-                "coefficient_of_variation_transfer_functions",
-                particle_property.m_coefficient_of_variation_transfer_function_array ) )
-       {
-           return;
-       }
-
-       std::cout << "  mean_transfer_functions.count: "
-                 << particle_property.m_mean_transfer_function_array.size() << std::endl;
-       std::cout << "  variance_transfer_functions.count: "
-                 << particle_property.m_variance_transfer_function_array.size() << std::endl;
-       std::cout << "  coefficient_of_variation_transfer_functions.count: "
-                 << particle_property.m_coefficient_of_variation_transfer_function_array.size() << std::endl;
         std::string equation;
         EquationToken eq;
 
@@ -1097,8 +1009,7 @@ bool ParameterFileReader::readTransferFunctionFromJson( const char* fname, Parti
         particle_property.m_transfunc_synthesizer->setOpacityFunction( eq );
 
         std::vector<EquationToken> var;
-
-        for ( size_t i = 0; i < tf_number; i++ )
+        for ( size_t i = 0; i < static_cast<size_t>( tf_number ); ++i )
         {
             std::stringstream tss;
             tss << "TF_NAME" << i + 1 << "_";
@@ -1109,43 +1020,36 @@ bool ParameterFileReader::readTransferFunctionFromJson( const char* fname, Parti
             std::replace( equation.begin(), equation.end(), 'Y', 'y' );
             std::replace( equation.begin(), equation.end(), 'Z', 'z' );
             eq = particle_property.m_transfunc_synthesizer->convert_token( equation );
-
             var.push_back( eq );
         }
-
         particle_property.m_transfunc_synthesizer->setColorVariable( var );
-        var.clear();
 
-        for ( size_t i = 0; i < tf_number; i++ )
+        var.clear();
+        for ( size_t i = 0; i < static_cast<size_t>( tf_number ); ++i )
         {
             std::stringstream tss;
             tss << "TF_NAME" << i + 1 << "_";
             const std::string tag_base = tss.str();
 
             equation = params.value( tag_base + "VAR_O", std::string( "" ) );
-            std::cout << "equation =  " << equation  << std::endl;
             std::replace( equation.begin(), equation.end(), 'X', 'x' );
             std::replace( equation.begin(), equation.end(), 'Y', 'y' );
             std::replace( equation.begin(), equation.end(), 'Z', 'z' );
             eq = particle_property.m_transfunc_synthesizer->convert_token( equation );
-
             var.push_back( eq );
         }
         particle_property.m_transfunc_synthesizer->setOpacityVariable( var );
-        var.clear();
 
         return true;
     }
     catch ( const std::exception& e )
     {
         std::cerr << "ERROR:Failed to read transfer function json: "
-                  << fname << std::endl;
+                  << ( json_name.empty() ? "<unknown>" : json_name ) << std::endl;
         std::cerr << "ERROR:" << e.what() << std::endl;
         return false;
     }
-}
-
-void ParameterFileReader::readGlyphParameterFile( const char* fname, GlyphProperty& glyph_property )
+}\nvoid ParameterFileReader::readGlyphParameterFile( const char* fname, GlyphProperty& glyph_property )
 {
     try
     {

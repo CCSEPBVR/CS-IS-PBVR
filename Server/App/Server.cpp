@@ -968,29 +968,6 @@ void Server::initialize(uWS::WebSocket<false, true, PerSocket>* ws, const nlohma
         ParticleMonitor particleMonitor;
         particleMonitor.check();
 
-        std::string tfJsonPath_old;
-        std::string visParamDir;
-        std::string tfFilename;
-        const char *envBuf = NULL;
-        envBuf = std::getenv( "VIS_PARAM_DIR" );
-        if (envBuf == NULL) {
-            visParamDir = "./";
-        }
-        else {
-            visParamDir = envBuf;
-            if (visParamDir[visParamDir.size() - 1] != '/') {
-                visParamDir += "/";
-            }
-        }
-        envBuf = std::getenv( "TF_NAME" );
-        if (envBuf == NULL) {
-            tfFilename = "default";
-        }
-        else {
-            tfFilename = envBuf;
-        }
-        tfJsonPath_old = visParamDir + tfFilename + "_old.json";
-
         int counter = 0;
 
         // InSituでオブジェクト生成が開始されるまで待機
@@ -2021,7 +1998,7 @@ void Server::receiveObjectInfoParameter(uWS::WebSocket<false, true, PerSocket>* 
     }
     else // m_server_mode == ServerMode::IS
     {
-        // パラメータファイルに粒子パラメータを書き込む
+        // パラメータJSONに粒子パラメータを書き込む
         ParameterFileWriter ppw;
         ppw.writeTF2Json(*m_particle_property);
     }
@@ -2394,7 +2371,7 @@ void Server::receiveTransferFunctionParameter(uWS::WebSocket<false, true, PerSoc
     }
     else // m_server_mode == ServerMode::IS
     {
-        // パラメータファイルに粒子パラメータファイルを書き込む
+        // パラメータJSONに粒子パラメータを書き込む
         ParameterFileWriter ppw;
         ppw.writeTF2Json(*m_particle_property);
     }

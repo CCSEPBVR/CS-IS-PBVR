@@ -713,33 +713,17 @@ bool SetDefaultParticleParameterIS(
     MultiVolumePropertyList& mvpl
 )
 {
-    const char *envBuf = NULL;
-    std::string visParamDir;
-    std::string tfJsonPath_old;
-
-    envBuf = std::getenv( "VIS_PARAM_DIR" );
-
-    if (envBuf == NULL) {
-        visParamDir = "./";
-    }
-    else {
-        visParamDir = envBuf;
-        if (visParamDir[visParamDir.size() - 1] != '/') {
-            visParamDir += "/";
-        }
+    const char* env_buf = std::getenv( "VIS_PARAM_DIR" );
+    std::string parameter_dir = ( env_buf == nullptr ) ? "./" : env_buf;
+    if ( !parameter_dir.empty() && parameter_dir.back() != '/' )
+    {
+        parameter_dir += "/";
     }
 
-    tfJsonPath_old = visParamDir;
-
-    envBuf = std::getenv( "TF_NAME" );
-
-    if (envBuf == NULL) {
-        tfJsonPath_old += "default_old.json";
-    }
-    else {
-        tfJsonPath_old += envBuf;
-        tfJsonPath_old += "_old.json";
-    }
+    env_buf = std::getenv( "TF_NAME" );
+    const std::string tf_name = ( env_buf == nullptr ) ? "default" : env_buf;
+    const std::string json_path = parameter_dir + tf_name + ".json";
+    const std::string json_old_path = parameter_dir + tf_name + "_old.json";
 
     MultiVolumeProperty mvp;
 
@@ -762,6 +746,7 @@ bool SetDefaultParticleParameterIS(
         pm.setTimeStep_particle(0);
         std::cout << "WARN:particle status file does not exist" << std::endl;
     }
+    pm.readParticleFile();
     pm.readParticleHistoryFile();                
 
     // store particle monitor in mvpl
@@ -792,12 +777,16 @@ bool SetDefaultParticleParameterIS(
     particle_property.m_extra_opacity_factor = 1;
 
     ParameterFileReader ppr;
-    const bool loaded = ppr.readTransferFunctionFromJson( tfJsonPath_old.c_str(), particle_property );
+    bool loaded = ppr.readTransferFunctionFromJson( json_path.c_str(), particle_property );
+    if ( !loaded )
+    {
+        loaded = ppr.readTransferFunctionFromJson( json_old_path.c_str(), particle_property );
+    }
     if ( !loaded )
     {
         std::cout << "================================================================" << std::endl;
         std::cout << "[WARN] Failed to load transfer function json." << std::endl;
-        std::cout << "[WARN] File: " << tfJsonPath_old << std::endl;
+        std::cout << "[WARN] Files: " << json_path << " and " << json_old_path << std::endl;
         std::cout << "[INFO] VIS_PARAM_DIR = " << EnvValueOrUnsetIS( "VIS_PARAM_DIR" ) << std::endl;
         std::cout << "[INFO] PARTICLE_DIR  = " << EnvValueOrUnsetIS( "PARTICLE_DIR" ) << std::endl;
         std::cout << "[INFO] Set default particle parameters." << std::endl;
@@ -809,7 +798,6 @@ bool SetDefaultParticleParameterIS(
             pm.particleHistoryFile().nVariables()
         );
     }
-
     return true;
 }
 
