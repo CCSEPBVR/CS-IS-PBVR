@@ -3180,6 +3180,12 @@ bool ensemble_generate_particles(
     vismodule::Timer rejection_timer;
     rejection_timer.start();
 #endif
+#ifndef PBVR_SERIAL_MERGE
+    std::vector<size_t> rej_avg_off( max_threads + 1, 0 );
+    std::vector<size_t> rej_var_off( max_threads + 1, 0 );
+    std::vector<size_t> rej_coef_off( max_threads + 1, 0 );
+    size_t rej_avg_base = 0, rej_var_base = 0, rej_coef_base = 0;
+#endif
 #pragma omp parallel
     {
 #if _OPENMP
@@ -3260,6 +3266,7 @@ bool ensemble_generate_particles(
         vismodule::Timer merge_timer;
         merge_timer.start();
 #endif
+#ifdef PBVR_SERIAL_MERGE
 #pragma omp critical
         {
             average_coords.insert( average_coords.end(), th_average_coords.begin(), th_average_coords.end() );
@@ -3272,6 +3279,48 @@ bool ensemble_generate_particles(
             coefficient_colors.insert( coefficient_colors.end(), th_coefficient_colors.begin(), th_coefficient_colors.end() );
             coefficient_normals.insert( coefficient_normals.end(), th_coefficient_normals.begin(), th_coefficient_normals.end() );
         }
+#else
+        // Prefix-sum parallel merge per statistic type (average/variance/coefficient have
+        // independent accepted counts; within a type coords/colors/normals share the count).
+        rej_avg_off[thid + 1]  = th_average_coords.size();
+        rej_var_off[thid + 1]  = th_variance_coords.size();
+        rej_coef_off[thid + 1] = th_coefficient_coords.size();
+        #pragma omp barrier
+        #pragma omp single
+        {
+            rej_avg_base  = average_coords.size();
+            rej_var_base  = variance_coords.size();
+            rej_coef_base = coefficient_coords.size();
+            for ( int t = 0; t < max_threads; ++t ) {
+                rej_avg_off[t + 1]  += rej_avg_off[t];
+                rej_var_off[t + 1]  += rej_var_off[t];
+                rej_coef_off[t + 1] += rej_coef_off[t];
+            }
+            average_coords.resize( rej_avg_base + rej_avg_off[max_threads] );
+            average_colors.resize( rej_avg_base + rej_avg_off[max_threads] );
+            average_normals.resize( rej_avg_base + rej_avg_off[max_threads] );
+            variance_coords.resize( rej_var_base + rej_var_off[max_threads] );
+            variance_colors.resize( rej_var_base + rej_var_off[max_threads] );
+            variance_normals.resize( rej_var_base + rej_var_off[max_threads] );
+            coefficient_coords.resize( rej_coef_base + rej_coef_off[max_threads] );
+            coefficient_colors.resize( rej_coef_base + rej_coef_off[max_threads] );
+            coefficient_normals.resize( rej_coef_base + rej_coef_off[max_threads] );
+        }
+        {
+            const size_t ao = rej_avg_base  + rej_avg_off[thid];
+            const size_t vo = rej_var_base  + rej_var_off[thid];
+            const size_t co = rej_coef_base + rej_coef_off[thid];
+            std::copy( th_average_coords.begin(),  th_average_coords.end(),  average_coords.begin()  + ao );
+            std::copy( th_average_colors.begin(),  th_average_colors.end(),  average_colors.begin()  + ao );
+            std::copy( th_average_normals.begin(), th_average_normals.end(), average_normals.begin() + ao );
+            std::copy( th_variance_coords.begin(),  th_variance_coords.end(),  variance_coords.begin()  + vo );
+            std::copy( th_variance_colors.begin(),  th_variance_colors.end(),  variance_colors.begin()  + vo );
+            std::copy( th_variance_normals.begin(), th_variance_normals.end(), variance_normals.begin() + vo );
+            std::copy( th_coefficient_coords.begin(),  th_coefficient_coords.end(),  coefficient_coords.begin()  + co );
+            std::copy( th_coefficient_colors.begin(),  th_coefficient_colors.end(),  coefficient_colors.begin()  + co );
+            std::copy( th_coefficient_normals.begin(), th_coefficient_normals.end(), coefficient_normals.begin() + co );
+        }
+#endif
 #ifdef ENABLE_ENSEMBLE_TIMER
         merge_timer.stop();
         th_rejection_merge_time += merge_timer.sec();
