@@ -2307,6 +2307,10 @@ bool ensemble_generate_particles(
     vismodule::Timer uniform_timer;
     uniform_timer.start();
 #endif
+#ifndef PBVR_SERIAL_MERGE
+    std::vector<size_t> merge_off( max_threads + 1, 0 );
+    size_t merge_base_s = 0, merge_base_v = 0;
+#endif
 #pragma omp parallel
     {
 #if _OPENMP
@@ -2659,6 +2663,7 @@ bool ensemble_generate_particles(
         vismodule::Timer merge_timer;
         merge_timer.start();
 #endif
+#ifdef PBVR_SERIAL_MERGE
 #pragma omp critical
         {
             vertex_coords.reserve( vertex_coords.size() + th_vertex_coords.size() );
@@ -2674,6 +2679,38 @@ bool ensemble_generate_particles(
             sq_scalars.insert( sq_scalars.end(), th_sq_scalars.begin(), th_sq_scalars.end() );
             tmp_term.insert( tmp_term.end(), th_tmp_term.begin(), th_tmp_term.end() );
         }
+#else
+        // Prefix-sum parallel merge: each thread records its particle count, one thread
+        // computes the offsets and resizes the global arrays once, then every thread copies
+        // its buffer to its own disjoint offset in parallel (no omp critical -> no
+        // serialization). Particle order becomes thread-id order (was non-deterministic
+        // critical order); invariants are preserved. PBVR_SERIAL_MERGE restores the old path.
+        merge_off[thid + 1] = th_vertex_scalars.size();
+        #pragma omp barrier
+        #pragma omp single
+        {
+            merge_base_s = vertex_scalars.size();
+            merge_base_v = vertex_coords.size();
+            for ( int t = 0; t < max_threads; ++t ) merge_off[t + 1] += merge_off[t];
+            const size_t total = merge_off[max_threads];
+            vertex_scalars.resize( merge_base_s + total );
+            vertex_cellids.resize( merge_base_s + total );
+            sq_scalars.resize( merge_base_s + total );
+            vertex_coords.resize( merge_base_v + 3 * total );
+            vertex_normals.resize( merge_base_v + 3 * total );
+            tmp_term.resize( merge_base_v + 3 * total );
+        }
+        {
+            const size_t so = merge_base_s + merge_off[thid];
+            const size_t vo = merge_base_v + 3 * merge_off[thid];
+            std::copy( th_vertex_scalars.begin(), th_vertex_scalars.end(), vertex_scalars.begin() + so );
+            std::copy( th_vertex_cellids.begin(), th_vertex_cellids.end(), vertex_cellids.begin() + so );
+            std::copy( th_sq_scalars.begin(), th_sq_scalars.end(), sq_scalars.begin() + so );
+            std::copy( th_vertex_coords.begin(), th_vertex_coords.end(), vertex_coords.begin() + vo );
+            std::copy( th_vertex_normals.begin(), th_vertex_normals.end(), vertex_normals.begin() + vo );
+            std::copy( th_tmp_term.begin(), th_tmp_term.end(), tmp_term.begin() + vo );
+        }
+#endif
 #ifdef ENABLE_ENSEMBLE_TIMER
         merge_timer.stop();
         th_uniform_merge_time += merge_timer.sec();
