@@ -10,6 +10,8 @@
 #include <vismodule/TransferFunction>
 #include <vismodule/Type>
 
+struct EquationToken;
+
 class EnsembleTransferFunction : public vismodule::TransferFunction
 {
 public:
@@ -69,6 +71,8 @@ public:
 
     const vismodule::UInt64* colorHistogram() const { return m_color_histogram; }
     const vismodule::UInt64* opacityHistogram() const { return m_opacity_histogram; }
+
+    static EquationToken convert_token( const std::string expression );
 
     int32_t byteSize() const
     {

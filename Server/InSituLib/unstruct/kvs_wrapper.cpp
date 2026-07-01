@@ -762,13 +762,11 @@ struct ChainRuleEvalContext
         std::fill( variable_values, variable_values + 128, 0.0f );
     }
 
-    void initialize( TransferFunctionSynthesizer* tfs, const int nvariables )
+    void initialize( const EquationToken equation_token, const int nvariables )
     {
         valid = false;
-        const std::vector<EquationToken> opa_vars = tfs->opacityVariable();
-        if ( opa_vars.empty() ) return;
-
-        expr = opa_vars[0]; // 現状の統計粒子生成は TF 数 1 個想定
+        expr = equation_token;
+        // 現状の統計粒子生成は TF 数 1 個想定
         rpn.setExpToken( &( expr.exp_token[0] ) );
         rpn.setVariableName( &( expr.var_name[0] ) );
         rpn.setNumber( &( expr.val_array[0] ) );
@@ -2192,6 +2190,10 @@ bool ensemble_generate_particles(
         }
     }
 
+    // アンサンブル用伝達関数のEquationTokenを取得 
+    std::string expression = particle_property.m_mean_transfer_function_array[0].m_variable;
+    const EquationToken equation_token = EnsembleTransferFunction::convert_token( expression );
+
 //    std::cout << "particle_property.mean_max = " << particle_property.m_mean_transfer_function_array[0].colorMap().maxValue() << std::endl;
 //    std::cout << "particle_property.var_max = " << particle_property.m_variance_transfer_function_array[0].colorMap().maxValue() << std::endl;
 //    std::cout << "particle_property.cov_max = " << particle_property.m_coefficient_of_variation_transfer_function_array[0].colorMap().maxValue() << std::endl;
@@ -2370,8 +2372,7 @@ bool ensemble_generate_particles(
         std::vector<float> o_scalars_array[SIMD_BLK_SIZE];
         for ( int i = 0; i < SIMD_BLK_SIZE; i++ ) o_scalars_array[i].resize( tf_number );
         ChainRuleEvalContext chain_context;
-        chain_context.initialize( th_tfs[thid], nvariables );
-
+        chain_context.initialize( equation_token, nvariables );
         std::vector<vismodule::Real32> th_vertex_coords;
         std::vector<vismodule::Real32> th_vertex_scalars;
         std::vector<vismodule::Real32> th_vertex_normals;
@@ -3007,7 +3008,7 @@ bool ensemble_generate_particles(
             float grad_array_z[SIMD_BLK_SIZE];
             for ( int i = 0; i < SIMD_BLK_SIZE; i++ ) o_scalars_array[i].resize( tf_number );
             ChainRuleEvalContext chain_context;
-            chain_context.initialize( th_tfs[thid], nvariables );
+            chain_context.initialize( equation_token, nvariables );
 
 //#pragma omp for schedule( dynamic )
 #pragma omp for 

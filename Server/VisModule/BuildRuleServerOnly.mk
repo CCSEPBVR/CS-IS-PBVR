@@ -194,6 +194,7 @@ $(OUTDIR)/./Visualization/Mapper/CellByCellRejectionSampling.o \
 $(OUTDIR)/./Visualization/Mapper/CellByCellUniformSampling.o \
 $(OUTDIR)/./Visualization/Mapper/ColorMap.o \
 $(OUTDIR)/./Visualization/Mapper/CropRegion.o \
+$(OUTDIR)/./Visualization/Mapper/EnsembleTransferFunction.o \
 $(OUTDIR)/./Visualization/Mapper/ExtractEdges.o \
 $(OUTDIR)/./Visualization/Mapper/ExtractVertices.o \
 $(OUTDIR)/./Visualization/Mapper/ExtendedTransferFunction.o \
