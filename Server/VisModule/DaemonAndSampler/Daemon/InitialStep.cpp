@@ -22,7 +22,7 @@ void ApplyStatisticHistoryToTransferFunctions(
     const std::vector<std::vector<int>>& color_histograms,
     const std::vector<std::vector<int>>& opacity_histograms,
     VariableRange& variable_range,
-    std::vector<NamedTransferFunction>& transfer_functions,
+    std::vector<EnsembleTransferFunction>& transfer_functions,
     const char* statistic_name )
 {
     const int tf_number = static_cast<int>( opacity_histograms.size() );
@@ -38,7 +38,6 @@ void ApplyStatisticHistoryToTransferFunctions(
         std::fill_n( transfer_functions[i].m_opacity_histogram, DEFAULT_NBINS, 0 );
         const std::vector<int>& opacity_histogram = opacity_histograms[i];
         const int opacity_bins = static_cast<int>( opacity_histogram.size() );
-        transfer_functions[i].m_has_opacity_histogram = opacity_bins > 0;
         for ( int b = 0; b < DEFAULT_NBINS && b < opacity_bins; ++b )
         {
             transfer_functions[i].m_opacity_histogram[b] =
@@ -46,12 +45,10 @@ void ApplyStatisticHistoryToTransferFunctions(
         }
 
         std::fill_n( transfer_functions[i].m_color_histogram, DEFAULT_NBINS, 0 );
-        transfer_functions[i].m_has_color_histogram = false;
         if ( i < static_cast<int>( color_histograms.size() ) )
         {
             const std::vector<int>& color_histogram = color_histograms[i];
             const int color_bins = static_cast<int>( color_histogram.size() );
-            transfer_functions[i].m_has_color_histogram = color_bins > 0;
             for ( int b = 0; b < DEFAULT_NBINS && b < color_bins; ++b )
             {
                 transfer_functions[i].m_color_histogram[b] =
@@ -59,22 +56,13 @@ void ApplyStatisticHistoryToTransferFunctions(
             }
         }
 
-        if ( !transfer_functions[i].m_has_opacity_histogram )
-        {
-            continue;
-        }
-
         std::stringstream ss;
         ss << ( i + 1 );
         const std::string idxbuf = ss.str();
-        transfer_functions[i].m_server_color_variable_min =
+        transfer_functions[i].m_server_variable_min =
             variable_range.min( "t" + idxbuf + "_var_c" );
-        transfer_functions[i].m_server_color_variable_max =
+        transfer_functions[i].m_server_variable_max =
             variable_range.max( "t" + idxbuf + "_var_c" );
-        transfer_functions[i].m_server_opacity_variable_min =
-            variable_range.min( "t" + idxbuf + "_var_o" );
-        transfer_functions[i].m_server_opacity_variable_max =
-            variable_range.max( "t" + idxbuf + "_var_o" );
     }
 
     std::cout << "[InitialStepIS] applied ensemble statistic history statistic="

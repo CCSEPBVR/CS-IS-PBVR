@@ -6,6 +6,7 @@
 #include <string>
 #include <vismodule/TransferFunctionSynthesizer>
 #include <vismodule/ExtendedTransferFunction>
+#include <vismodule/EnsembleTransferFunction>
 #include <vismodule/Serializer>
 
 struct ParticleProperty
@@ -24,9 +25,9 @@ struct ParticleProperty
     vismodule::Camera* m_camera;
     TransferFunctionSynthesizer* m_transfunc_synthesizer; // pack unpackしない
     std::vector<NamedTransferFunction> m_transfunc_array;
-    std::vector<NamedTransferFunction> m_mean_transfer_function_array;
-    std::vector<NamedTransferFunction> m_variance_transfer_function_array;
-    std::vector<NamedTransferFunction> m_coefficient_of_variation_transfer_function_array;
+    std::vector<EnsembleTransferFunction> m_mean_transfer_function_array;
+    std::vector<EnsembleTransferFunction> m_variance_transfer_function_array;
+    std::vector<EnsembleTransferFunction> m_coefficient_of_variation_transfer_function_array;
     std::string m_color_transfer_function_synthesis;
     std::string m_opacity_transfer_function_synthesis;
     std::string m_x_synthesis;
@@ -110,47 +111,17 @@ struct ParticleProperty
         size += vismodule::Serializer::byteSize( m_mean_transfer_function_array.size() );
         for ( size_t i = 0; i < m_mean_transfer_function_array.size(); i++ )
         {
-            size += vismodule::Serializer::byteSize( m_mean_transfer_function_array[i].m_resolution );
-            size += vismodule::Serializer::byteSize( m_mean_transfer_function_array[i].m_name );
-            size += vismodule::Serializer::byteSize( m_mean_transfer_function_array[i].m_server_color_range_mode );
-            size += vismodule::Serializer::byteSize( m_mean_transfer_function_array[i].m_server_opacity_range_mode );
-            size += vismodule::Serializer::byteSize( m_mean_transfer_function_array[i].m_color_variable );
-            size += vismodule::Serializer::byteSize( m_mean_transfer_function_array[i].m_opacity_variable );
-            size += vismodule::Serializer::byteSize( m_mean_transfer_function_array[i].m_user_color_variable_min );
-            size += vismodule::Serializer::byteSize( m_mean_transfer_function_array[i].m_user_color_variable_max );
-            size += vismodule::Serializer::byteSize( m_mean_transfer_function_array[i].m_user_opacity_variable_min );
-            size += vismodule::Serializer::byteSize( m_mean_transfer_function_array[i].m_user_opacity_variable_max );
-            size += vismodule::Serializer::byteSize<vismodule::TransferFunction>( m_mean_transfer_function_array[i] );
+            size += m_mean_transfer_function_array[i].byteSize();
         }
         size += vismodule::Serializer::byteSize( m_variance_transfer_function_array.size() );
         for ( size_t i = 0; i < m_variance_transfer_function_array.size(); i++ )
         {
-            size += vismodule::Serializer::byteSize( m_variance_transfer_function_array[i].m_resolution );
-            size += vismodule::Serializer::byteSize( m_variance_transfer_function_array[i].m_name );
-            size += vismodule::Serializer::byteSize( m_variance_transfer_function_array[i].m_server_color_range_mode );
-            size += vismodule::Serializer::byteSize( m_variance_transfer_function_array[i].m_server_opacity_range_mode );
-            size += vismodule::Serializer::byteSize( m_variance_transfer_function_array[i].m_color_variable );
-            size += vismodule::Serializer::byteSize( m_variance_transfer_function_array[i].m_opacity_variable );
-            size += vismodule::Serializer::byteSize( m_variance_transfer_function_array[i].m_user_color_variable_min );
-            size += vismodule::Serializer::byteSize( m_variance_transfer_function_array[i].m_user_color_variable_max );
-            size += vismodule::Serializer::byteSize( m_variance_transfer_function_array[i].m_user_opacity_variable_min );
-            size += vismodule::Serializer::byteSize( m_variance_transfer_function_array[i].m_user_opacity_variable_max );
-            size += vismodule::Serializer::byteSize<vismodule::TransferFunction>( m_variance_transfer_function_array[i] );
+            size += m_variance_transfer_function_array[i].byteSize();
         }
         size += vismodule::Serializer::byteSize( m_coefficient_of_variation_transfer_function_array.size() );
         for ( size_t i = 0; i < m_coefficient_of_variation_transfer_function_array.size(); i++ )
         {
-            size += vismodule::Serializer::byteSize( m_coefficient_of_variation_transfer_function_array[i].m_resolution );
-            size += vismodule::Serializer::byteSize( m_coefficient_of_variation_transfer_function_array[i].m_name );
-            size += vismodule::Serializer::byteSize( m_coefficient_of_variation_transfer_function_array[i].m_server_color_range_mode );
-            size += vismodule::Serializer::byteSize( m_coefficient_of_variation_transfer_function_array[i].m_server_opacity_range_mode );
-            size += vismodule::Serializer::byteSize( m_coefficient_of_variation_transfer_function_array[i].m_color_variable );
-            size += vismodule::Serializer::byteSize( m_coefficient_of_variation_transfer_function_array[i].m_opacity_variable );
-            size += vismodule::Serializer::byteSize( m_coefficient_of_variation_transfer_function_array[i].m_user_color_variable_min );
-            size += vismodule::Serializer::byteSize( m_coefficient_of_variation_transfer_function_array[i].m_user_color_variable_max );
-            size += vismodule::Serializer::byteSize( m_coefficient_of_variation_transfer_function_array[i].m_user_opacity_variable_min );
-            size += vismodule::Serializer::byteSize( m_coefficient_of_variation_transfer_function_array[i].m_user_opacity_variable_max );
-            size += vismodule::Serializer::byteSize<vismodule::TransferFunction>( m_coefficient_of_variation_transfer_function_array[i] );
+            size += m_coefficient_of_variation_transfer_function_array[i].byteSize();
         }
         size += sizeof( m_color_transfer_function_synthesis );
         size += sizeof( m_opacity_transfer_function_synthesis );
@@ -197,28 +168,21 @@ struct ParticleProperty
             index += vismodule::Serializer::write( buf + index, m_transfunc_array[i].m_user_opacity_variable_max );
             index += vismodule::Serializer::pack<vismodule::TransferFunction>( buf + index, m_transfunc_array[i] );
         }
-        const auto pack_transfer_function_array =
-            [&buf, &index]( const std::vector<NamedTransferFunction>& transfer_functions )
+        index += vismodule::Serializer::write( buf + index, m_mean_transfer_function_array.size() );
+        for ( size_t i = 0; i < m_mean_transfer_function_array.size(); i++ )
         {
-            index += vismodule::Serializer::write( buf + index, transfer_functions.size() );
-            for ( size_t i = 0; i < transfer_functions.size(); i++ )
-            {
-                index += vismodule::Serializer::write( buf + index, transfer_functions[i].m_resolution );
-                index += vismodule::Serializer::write( buf + index, transfer_functions[i].m_name );
-                index += vismodule::Serializer::write( buf + index, transfer_functions[i].m_server_color_range_mode );
-                index += vismodule::Serializer::write( buf + index, transfer_functions[i].m_server_opacity_range_mode );
-                index += vismodule::Serializer::write( buf + index, transfer_functions[i].m_color_variable );
-                index += vismodule::Serializer::write( buf + index, transfer_functions[i].m_opacity_variable );
-                index += vismodule::Serializer::write( buf + index, transfer_functions[i].m_user_color_variable_min );
-                index += vismodule::Serializer::write( buf + index, transfer_functions[i].m_user_color_variable_max );
-                index += vismodule::Serializer::write( buf + index, transfer_functions[i].m_user_opacity_variable_min );
-                index += vismodule::Serializer::write( buf + index, transfer_functions[i].m_user_opacity_variable_max );
-                index += vismodule::Serializer::pack<vismodule::TransferFunction>( buf + index, transfer_functions[i] );
-            }
-        };
-        pack_transfer_function_array( m_mean_transfer_function_array );
-        pack_transfer_function_array( m_variance_transfer_function_array );
-        pack_transfer_function_array( m_coefficient_of_variation_transfer_function_array );
+            index += m_mean_transfer_function_array[i].pack( buf + index );
+        }
+        index += vismodule::Serializer::write( buf + index, m_variance_transfer_function_array.size() );
+        for ( size_t i = 0; i < m_variance_transfer_function_array.size(); i++ )
+        {
+            index += m_variance_transfer_function_array[i].pack( buf + index );
+        }
+        index += vismodule::Serializer::write( buf + index, m_coefficient_of_variation_transfer_function_array.size() );
+        for ( size_t i = 0; i < m_coefficient_of_variation_transfer_function_array.size(); i++ )
+        {
+            index += m_coefficient_of_variation_transfer_function_array[i].pack( buf + index );
+        }
 
         index += vismodule::Serializer::write( buf + index, m_color_transfer_function_synthesis );
         index += vismodule::Serializer::write( buf + index, m_opacity_transfer_function_synthesis );
@@ -287,33 +251,28 @@ struct ParticleProperty
                 m_transfunc_array[i].setOpacityRange( user_opacity_min, user_opacity_max );
             }
         }
-        const auto unpack_transfer_function_array =
-            [buf, &index]( std::vector<NamedTransferFunction>& transfer_functions )
+        size_t ensemble_transfer_function_number;
+        index += vismodule::Serializer::read( buf + index, &ensemble_transfer_function_number );
+        m_mean_transfer_function_array.clear();
+        m_mean_transfer_function_array.resize( ensemble_transfer_function_number );
+        for ( size_t i = 0; i < ensemble_transfer_function_number; i++ )
         {
-            size_t transfer_function_number;
-            index += vismodule::Serializer::read( buf + index, &transfer_function_number );
-
-            transfer_functions.clear();
-            transfer_functions.resize( transfer_function_number );
-
-            for ( size_t i = 0; i < transfer_function_number; i++ )
-            {
-                index += vismodule::Serializer::read( buf + index, &transfer_functions[i].m_resolution );
-                index += vismodule::Serializer::read( buf + index, &transfer_functions[i].m_name );
-                index += vismodule::Serializer::read( buf + index, &transfer_functions[i].m_server_color_range_mode );
-                index += vismodule::Serializer::read( buf + index, &transfer_functions[i].m_server_opacity_range_mode );
-                index += vismodule::Serializer::read( buf + index, &transfer_functions[i].m_color_variable );
-                index += vismodule::Serializer::read( buf + index, &transfer_functions[i].m_opacity_variable );
-                index += vismodule::Serializer::read( buf + index, &transfer_functions[i].m_user_color_variable_min );
-                index += vismodule::Serializer::read( buf + index, &transfer_functions[i].m_user_color_variable_max );
-                index += vismodule::Serializer::read( buf + index, &transfer_functions[i].m_user_opacity_variable_min );
-                index += vismodule::Serializer::read( buf + index, &transfer_functions[i].m_user_opacity_variable_max );
-                index += vismodule::Serializer::unpack<vismodule::TransferFunction>( buf + index, &transfer_functions[i] );
-            }
-        };
-        unpack_transfer_function_array( m_mean_transfer_function_array );
-        unpack_transfer_function_array( m_variance_transfer_function_array );
-        unpack_transfer_function_array( m_coefficient_of_variation_transfer_function_array );
+            index += m_mean_transfer_function_array[i].unpack( buf + index );
+        }
+        index += vismodule::Serializer::read( buf + index, &ensemble_transfer_function_number );
+        m_variance_transfer_function_array.clear();
+        m_variance_transfer_function_array.resize( ensemble_transfer_function_number );
+        for ( size_t i = 0; i < ensemble_transfer_function_number; i++ )
+        {
+            index += m_variance_transfer_function_array[i].unpack( buf + index );
+        }
+        index += vismodule::Serializer::read( buf + index, &ensemble_transfer_function_number );
+        m_coefficient_of_variation_transfer_function_array.clear();
+        m_coefficient_of_variation_transfer_function_array.resize( ensemble_transfer_function_number );
+        for ( size_t i = 0; i < ensemble_transfer_function_number; i++ )
+        {
+            index += m_coefficient_of_variation_transfer_function_array[i].unpack( buf + index );
+        }
 
         index += vismodule::Serializer::read( buf + index, &m_color_transfer_function_synthesis );
         index += vismodule::Serializer::read( buf + index, &m_opacity_transfer_function_synthesis );

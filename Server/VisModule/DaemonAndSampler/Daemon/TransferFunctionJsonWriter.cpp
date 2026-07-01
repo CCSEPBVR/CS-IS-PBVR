@@ -107,6 +107,19 @@ std::string RangeModeName( const NamedTransferFunction::ServerRangeMode range_mo
     }
 }
 
+std::string RangeModeName( const EnsembleTransferFunction::ServerRangeMode range_mode )
+{
+    switch ( range_mode )
+    {
+    case EnsembleTransferFunction::ServerRangeMode::UserRange:
+        return "UserRange";
+    case EnsembleTransferFunction::ServerRangeMode::ServerSide:
+        return "ServerSide";
+    default:
+        return "Unknown";
+    }
+}
+
 void AddParameter( nlohmann::json& root, const std::string& key, const nlohmann::json& value )
 {
     root["order"].push_back( key );
@@ -197,7 +210,34 @@ nlohmann::json ColorTableToJson( const NamedTransferFunction& transfer_function 
     return color_map;
 }
 
+nlohmann::json ColorTableToJson( const EnsembleTransferFunction& transfer_function )
+{
+    nlohmann::json color_map = nlohmann::json::array();
+    const vismodule::ColorMap::Table color_table = transfer_function.colorMap().table();
+    const unsigned char* table = color_table.pointer();
+
+    for ( size_t i = 0; i < color_table.size(); ++i )
+    {
+        color_map.push_back( static_cast<int>( table[i] ) );
+    }
+
+    return color_map;
+}
+
 nlohmann::json OpacityTableToJson( const NamedTransferFunction& transfer_function )
+{
+    nlohmann::json opacity_map = nlohmann::json::array();
+    const vismodule::OpacityMap::Table opacity_table = transfer_function.opacityMap().table();
+
+    for ( size_t i = 0; i < opacity_table.size(); ++i )
+    {
+        opacity_map.push_back( opacity_table.at( i ) );
+    }
+
+    return opacity_map;
+}
+
+nlohmann::json OpacityTableToJson( const EnsembleTransferFunction& transfer_function )
 {
     nlohmann::json opacity_map = nlohmann::json::array();
     const vismodule::OpacityMap::Table opacity_table = transfer_function.opacityMap().table();
@@ -295,6 +335,51 @@ nlohmann::json TransferFunctionArrayToJson( const std::vector<NamedTransferFunct
             opacity_mode,
             source.m_user_opacity_variable_min,
             source.m_user_opacity_variable_max );
+        tf["opacity"]["map"] = TableDescription(
+            "opacity map",
+            "float values from 0 to 1",
+            opacity_table.size(),
+            opacity_table );
+
+        array.push_back( tf );
+    }
+
+    return array;
+}
+
+nlohmann::json TransferFunctionArrayToJson( const std::vector<EnsembleTransferFunction>& transfer_functions )
+{
+    nlohmann::json array = nlohmann::json::array();
+    for ( size_t i = 0; i < transfer_functions.size(); ++i )
+    {
+        const EnsembleTransferFunction& source = transfer_functions[i];
+        const std::string mode = RangeModeName( source.m_server_range_mode );
+        const nlohmann::json color_table = ColorTableToJson( source );
+        const nlohmann::json opacity_table = OpacityTableToJson( source );
+
+        nlohmann::json tf;
+        tf["id"] = source.m_id > 0 ? source.m_id : static_cast<int>( i + 1 );
+        tf["label"] = source.m_label.empty() ? "TF" + std::to_string( i + 1 ) : source.m_label;
+        tf["color"]["variable"] = source.m_variable;
+        tf["color"]["range"] = RangeDescription(
+            mode,
+            source.m_server_variable_min,
+            source.m_server_variable_max,
+            source.m_user_variable_min,
+            source.m_user_variable_max );
+        tf["color"]["map"] = TableDescription(
+            "color map",
+            "flat RGB uint8 triplets",
+            color_table.size(),
+            color_table );
+
+        tf["opacity"]["variable"] = source.m_variable;
+        tf["opacity"]["range"] = RangeDescription(
+            mode,
+            source.m_server_variable_min,
+            source.m_server_variable_max,
+            source.m_user_variable_min,
+            source.m_user_variable_max );
         tf["opacity"]["map"] = TableDescription(
             "opacity map",
             "float values from 0 to 1",

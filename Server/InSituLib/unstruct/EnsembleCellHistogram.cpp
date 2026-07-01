@@ -460,19 +460,29 @@ void StoreRangeToTransferFunctions(
     }
 }
 
-void EnsureStatisticTransferFunctionArrays( ParticleProperty& particle_property )
+void StoreRangeToTransferFunctions(
+    const pbvr::EnsembleStatisticRange& range,
+    std::vector<EnsembleTransferFunction>& transfer_functions )
 {
-    if ( particle_property.m_mean_transfer_function_array.empty() )
+    const int tf_number = static_cast<int>( transfer_functions.size() );
+    if ( tf_number <= 0 ) return;
+    if ( range.min_values.size() < static_cast<std::size_t>( tf_number * 2 ) ||
+         range.max_values.size() < static_cast<std::size_t>( tf_number * 2 ) ||
+         range.o_bins.size() < static_cast<std::size_t>( tf_number * DEFAULT_NBINS ) ||
+         range.c_bins.size() < static_cast<std::size_t>( tf_number * DEFAULT_NBINS ) ) return;
+
+    for ( int i = 0; i < tf_number; ++i )
     {
-        particle_property.m_mean_transfer_function_array = particle_property.m_transfunc_array;
-    }
-    if ( particle_property.m_variance_transfer_function_array.empty() )
-    {
-        particle_property.m_variance_transfer_function_array = particle_property.m_transfunc_array;
-    }
-    if ( particle_property.m_coefficient_of_variation_transfer_function_array.empty() )
-    {
-        particle_property.m_coefficient_of_variation_transfer_function_array = particle_property.m_transfunc_array;
+        transfer_functions[i].m_server_variable_min = range.min_values[2 * i + 1];
+        transfer_functions[i].m_server_variable_max = range.max_values[2 * i + 1];
+        std::copy(
+            range.o_bins.begin() + static_cast<std::ptrdiff_t>( i * DEFAULT_NBINS ),
+            range.o_bins.begin() + static_cast<std::ptrdiff_t>( ( i + 1 ) * DEFAULT_NBINS ),
+            transfer_functions[i].m_opacity_histogram );
+        std::copy(
+            range.c_bins.begin() + static_cast<std::ptrdiff_t>( i * DEFAULT_NBINS ),
+            range.c_bins.begin() + static_cast<std::ptrdiff_t>( ( i + 1 ) * DEFAULT_NBINS ),
+            transfer_functions[i].m_color_histogram );
     }
 }
 
@@ -975,7 +985,6 @@ bool ComputeAndStoreEnsembleCellHistogram(
 
     if ( mpi_rank != 0 ) return true;
 
-    EnsureStatisticTransferFunctionArrays( particle_property );
     StoreRangeToTransferFunctions( average_range, particle_property.m_transfunc_array );
     StoreRangeToTransferFunctions( average_range, particle_property.m_mean_transfer_function_array );
     StoreRangeToTransferFunctions( variance_range, particle_property.m_variance_transfer_function_array );

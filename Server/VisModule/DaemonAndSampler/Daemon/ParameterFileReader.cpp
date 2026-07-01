@@ -704,6 +704,164 @@ bool SetTransferFunctionArrayFromParameters(
 
     return true;
 }
+
+bool EnsembleRangeModeFromString(
+    const std::string& range_mode,
+    EnsembleTransferFunction::ServerRangeMode& mode )
+{
+    if ( range_mode == "ServerSide" )
+    {
+        mode = EnsembleTransferFunction::ServerRangeMode::ServerSide;
+        return true;
+    }
+    if ( range_mode == "UserRange" )
+    {
+        mode = EnsembleTransferFunction::ServerRangeMode::UserRange;
+        return true;
+    }
+    return false;
+}
+
+bool SetEnsembleTransferFunctionArrayFromParameters(
+    const nlohmann::json& params,
+    const size_t resolution,
+    const std::string& section_name,
+    std::vector<EnsembleTransferFunction>& transfer_function_array )
+{
+    const int tf_number = params.value( "TF_NUMBER", 0 );
+    if ( tf_number < 0 )
+    {
+        std::cout << "ERROR:" << section_name << " TF_NUMBER is negative." << std::endl;
+        return false;
+    }
+
+    transfer_function_array.clear();
+    transfer_function_array.resize( tf_number );
+
+    for ( size_t n = 0; n < static_cast<size_t>( tf_number ); n++ )
+    {
+        std::stringstream ss;
+        ss << "TF_NAME" << n + 1 << "_";
+        const std::string tag_base = ss.str();
+
+        EnsembleTransferFunction& transfer_function = transfer_function_array[n];
+        transfer_function.m_resolution = static_cast<int32_t>( resolution );
+        transfer_function.m_id = params.value( tag_base + "ID", static_cast<int>( n + 1 ) );
+        transfer_function.m_label = params.value( tag_base + "LABEL", std::string( "" ) );
+
+        const std::string color_variable         = params.value( tag_base + "VAR_C", std::string( "" ) );
+        const std::string opacity_variable       = params.value( tag_base + "VAR_O", std::string( "" ) );
+        const std::string color_range_mode       = params.value( tag_base + "RANGE_MODE_C", std::string( "" ) );
+        const std::string opacity_range_mode     = params.value( tag_base + "RANGE_MODE_O", std::string( "" ) );
+        const float server_color_min             = params.value( tag_base + "SERVER_MIN_C", 0.0f );
+        const float server_color_max             = params.value( tag_base + "SERVER_MAX_C", 0.0f );
+        const float user_color_min               = params.value( tag_base + "USER_MIN_C", 0.0f );
+        const float user_color_max               = params.value( tag_base + "USER_MAX_C", 0.0f );
+        const float server_opacity_min           = params.value( tag_base + "SERVER_MIN_O", 0.0f );
+        const float server_opacity_max           = params.value( tag_base + "SERVER_MAX_O", 0.0f );
+        const float user_opacity_min             = params.value( tag_base + "USER_MIN_O", 0.0f );
+        const float user_opacity_max             = params.value( tag_base + "USER_MAX_O", 0.0f );
+        const std::vector<int> color_values      = JsonIntTable( params, tag_base + "TABLE_C" );
+        const std::vector<float> opacity_values  = JsonFloatTable( params, tag_base + "TABLE_O" );
+
+        if ( color_values.size() != resolution * 3 )
+        {
+            std::cout << "ERROR:" << section_name << "." << tag_base << "TABLE_C size is "
+                      << color_values.size() << ", but expected " << resolution * 3 << "." << std::endl;
+            return false;
+        }
+        if ( opacity_values.size() != resolution )
+        {
+            std::cout << "ERROR:" << section_name << "." << tag_base << "TABLE_O size is "
+                      << opacity_values.size() << ", but expected " << resolution << "." << std::endl;
+            return false;
+        }
+
+        EnsembleTransferFunction::ServerRangeMode mode = EnsembleTransferFunction::ServerRangeMode::Unknown;
+        if ( !EnsembleRangeModeFromString( color_range_mode, mode ) )
+        {
+            std::cout << "ERROR:" << section_name << " Color Range Mode is unknown" << std::endl;
+            return false;
+        }
+        EnsembleTransferFunction::ServerRangeMode opacity_mode = EnsembleTransferFunction::ServerRangeMode::Unknown;
+        if ( !EnsembleRangeModeFromString( opacity_range_mode, opacity_mode ) )
+        {
+            std::cout << "ERROR:" << section_name << " Opacity Range Mode is unknown" << std::endl;
+            return false;
+        }
+
+        if ( color_variable != opacity_variable )
+        {
+            std::cout << "WARN:" << section_name << "[" << n << "] color.variable and opacity.variable differ. "
+                      << "Use color.variable. color=" << color_variable
+                      << " opacity=" << opacity_variable << std::endl;
+        }
+        if ( color_range_mode != opacity_range_mode )
+        {
+            std::cout << "WARN:" << section_name << "[" << n << "] color/opacity range modes differ. "
+                      << "Use color range mode. color=" << color_range_mode
+                      << " opacity=" << opacity_range_mode << std::endl;
+        }
+        if ( server_color_min != server_opacity_min || server_color_max != server_opacity_max )
+        {
+            std::cout << "WARN:" << section_name << "[" << n << "] color/opacity server ranges differ. "
+                      << "Use color range. color=[" << server_color_min << ", " << server_color_max
+                      << "] opacity=[" << server_opacity_min << ", " << server_opacity_max << "]" << std::endl;
+        }
+        if ( user_color_min != user_opacity_min || user_color_max != user_opacity_max )
+        {
+            std::cout << "WARN:" << section_name << "[" << n << "] color/opacity user ranges differ. "
+                      << "Use color range. color=[" << user_color_min << ", " << user_color_max
+                      << "] opacity=[" << user_opacity_min << ", " << user_opacity_max << "]" << std::endl;
+        }
+
+        std::cout << "  " << section_name << "[" << n << "] id=" << transfer_function.m_id;
+        if ( !transfer_function.m_label.empty() ) std::cout << " label=" << transfer_function.m_label;
+        std::cout << " variable=" << color_variable
+                  << " range.mode=" << color_range_mode
+                  << " color.map.values=" << color_values.size()
+                  << " opacity.map.values=" << opacity_values.size()
+                  << std::endl;
+
+        transfer_function.m_variable = color_variable;
+        transfer_function.m_server_range_mode = mode;
+        transfer_function.m_server_variable_min = server_color_min;
+        transfer_function.m_server_variable_max = server_color_max;
+        transfer_function.m_user_variable_min = user_color_min;
+        transfer_function.m_user_variable_max = user_color_max;
+
+        vismodule::ColorMap::Table color_table( resolution * 3 );
+        vismodule::OpacityMap::Table opacity_table( resolution );
+
+        for ( size_t i = 0; i < resolution; i++ )
+        {
+            for ( size_t c = 0; c < 3; c++ )
+            {
+                color_table.at( i * 3 + c ) = color_values.at( i * 3 + c );
+            }
+            opacity_table.at( i ) = opacity_values.at( i );
+        }
+
+        vismodule::ColorMap color_map( color_table );
+        vismodule::OpacityMap opacity_map( opacity_table );
+
+        if ( transfer_function.m_server_range_mode == EnsembleTransferFunction::ServerRangeMode::ServerSide )
+        {
+            color_map.setRange( server_color_min, server_color_max );
+            opacity_map.setRange( server_color_min, server_color_max );
+        }
+        else
+        {
+            color_map.setRange( user_color_min, user_color_max );
+            opacity_map.setRange( user_color_min, user_color_max );
+        }
+
+        transfer_function.setColorMap( color_map );
+        transfer_function.setOpacityMap( opacity_map );
+    }
+
+    return true;
+}
 }
 
 // CSのConnect時に指定した.tfファイルを読み込む
@@ -963,7 +1121,7 @@ bool ParameterFileReader::readTransferFunctionFromJson( const char* fname, Parti
         const nlohmann::json coefficient_params =
             TransferFunctionSectionParameters( tf, "coefficient_of_variation_transfer_functions" );
 
-        if ( !SetTransferFunctionArrayFromParameters(
+        if ( !SetEnsembleTransferFunctionArrayFromParameters(
                  mean_params,
                  resolution,
                  "mean_transfer_functions",
@@ -971,7 +1129,7 @@ bool ParameterFileReader::readTransferFunctionFromJson( const char* fname, Parti
         {
             return false;
         }
-        if ( !SetTransferFunctionArrayFromParameters(
+        if ( !SetEnsembleTransferFunctionArrayFromParameters(
                  variance_params,
                  resolution,
                  "variance_transfer_functions",
@@ -979,7 +1137,7 @@ bool ParameterFileReader::readTransferFunctionFromJson( const char* fname, Parti
         {
             return false;
         }
-        if ( !SetTransferFunctionArrayFromParameters(
+        if ( !SetEnsembleTransferFunctionArrayFromParameters(
                  coefficient_params,
                  resolution,
                  "coefficient_of_variation_transfer_functions",
@@ -1049,7 +1207,9 @@ bool ParameterFileReader::readTransferFunctionFromJson( const char* fname, Parti
         std::cerr << "ERROR:" << e.what() << std::endl;
         return false;
     }
-}\nvoid ParameterFileReader::readGlyphParameterFile( const char* fname, GlyphProperty& glyph_property )
+}
+
+void ParameterFileReader::readGlyphParameterFile( const char* fname, GlyphProperty& glyph_property )
 {
     try
     {

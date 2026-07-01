@@ -840,7 +840,7 @@ bool EnsembleHistogramBin(
 EnsembleStatisticRange MakeEnsembleStatisticRange(
     const std::vector<float>& values,
     const int tf_number,
-    const std::vector<NamedTransferFunction>& transfunc_array
+    const std::vector<EnsembleTransferFunction>& transfunc_array
 )
 {
     EnsembleStatisticRange range;
@@ -1024,6 +1024,33 @@ void StoreStatisticRangeToTransferFunctions(
     }
 }
 
+void StoreStatisticRangeToTransferFunctions(
+    const EnsembleStatisticRange& range,
+    std::vector<EnsembleTransferFunction>& transfer_functions,
+    const int tf_number
+)
+{
+    if ( static_cast<int>( transfer_functions.size() ) < tf_number ) return;
+    if ( range.min_values.size() < static_cast<size_t>( tf_number * 2 ) ||
+         range.max_values.size() < static_cast<size_t>( tf_number * 2 ) ||
+         range.o_bins.size() < static_cast<size_t>( tf_number * DEFAULT_NBINS ) ||
+         range.c_bins.size() < static_cast<size_t>( tf_number * DEFAULT_NBINS ) ) return;
+
+    for ( int i = 0; i < tf_number; i++ )
+    {
+        transfer_functions[i].m_server_variable_min = range.min_values[2 * i + 1];
+        transfer_functions[i].m_server_variable_max = range.max_values[2 * i + 1];
+        std::copy(
+            range.o_bins.begin() + i * DEFAULT_NBINS,
+            range.o_bins.begin() + ( i + 1 ) * DEFAULT_NBINS,
+            transfer_functions[i].m_opacity_histogram );
+        std::copy(
+            range.c_bins.begin() + i * DEFAULT_NBINS,
+            range.c_bins.begin() + ( i + 1 ) * DEFAULT_NBINS,
+            transfer_functions[i].m_color_histogram );
+    }
+}
+
 void OutputEnsembleStatisticHistory(
     ParticleProperty& particle_property,
     const int tf_number,
@@ -1063,19 +1090,6 @@ void OutputEnsembleStatisticHistory(
     ofs << "PARTICLE_LIMIT=" << particle_property.m_particle_limit << std::endl;
     ofs << "END_HISTORY_FILE=SUCCESS" << std::endl;
     ofs.close();
-
-    if ( particle_property.m_mean_transfer_function_array.empty() )
-    {
-        particle_property.m_mean_transfer_function_array = particle_property.m_transfunc_array;
-    }
-    if ( particle_property.m_variance_transfer_function_array.empty() )
-    {
-        particle_property.m_variance_transfer_function_array = particle_property.m_transfunc_array;
-    }
-    if ( particle_property.m_coefficient_of_variation_transfer_function_array.empty() )
-    {
-        particle_property.m_coefficient_of_variation_transfer_function_array = particle_property.m_transfunc_array;
-    }
 
     StoreStatisticRangeToTransferFunctions( average_range, particle_property.m_transfunc_array, tf_number );
     StoreStatisticRangeToTransferFunctions( average_range, particle_property.m_mean_transfer_function_array, tf_number );

@@ -56,7 +56,7 @@ std::string StatisticFromRequest( const nlohmann::json& received )
     return "";
 }
 
-std::vector<NamedTransferFunction>* StatisticTransferFunctionArray(
+std::vector<EnsembleTransferFunction>* StatisticTransferFunctionArray(
     ParticleProperty& particle_property,
     const std::string& statistic )
 {
@@ -76,6 +76,11 @@ int HistogramSum( const vismodule::UInt64* histogram )
         sum += static_cast<int>( histogram[i] );
     }
     return sum;
+}
+
+int RangeModeValue( const EnsembleTransferFunction::ServerRangeMode mode )
+{
+    return static_cast<int>( mode );
 }
 
 int RangeModeValue( const NamedTransferFunction::ServerRangeMode mode )
@@ -141,7 +146,7 @@ nlohmann::json OpacityMapJson( const vismodule::OpacityMap& opacity_map )
 
 void DebugStatisticTransferFunctionArray(
     const std::string& statistic,
-    const std::vector<NamedTransferFunction>& transfer_functions )
+    const std::vector<EnsembleTransferFunction>& transfer_functions )
 {
     std::cout << "[Server][EnsembleStatisticsParameter][debug] statistic=" << statistic
               << ", transfer_functions.size=" << transfer_functions.size() << std::endl;
@@ -154,14 +159,14 @@ void DebugStatisticTransferFunctionArray(
 
     for ( size_t i = 0; i < transfer_functions.size(); ++i )
     {
-        const NamedTransferFunction& tf = transfer_functions[i];
+        const EnsembleTransferFunction& tf = transfer_functions[i];
         std::cout << "[Server][EnsembleStatisticsParameter][debug]"
                   << " statistic=" << statistic
                   << " index=" << i
-                  << " bins=" << ( tf.m_has_opacity_histogram ? DEFAULT_NBINS : 0 )
+                  << " bins=" << DEFAULT_NBINS
                   << " sum=" << HistogramSum( tf.opacityHistogram() )
-                  << " opacityRange=[" << tf.serverOpacityMinValue()
-                  << ", " << tf.serverOpacityMaxValue() << "]"
+                  << " range=[" << tf.serverMinValue()
+                  << ", " << tf.serverMaxValue() << "]"
                   << std::endl;
     }
 }
@@ -169,7 +174,7 @@ void DebugStatisticTransferFunctionArray(
 void AppendStatisticTransferFunctionPatches(
     nlohmann::json& data,
     const std::string& statistic,
-    const std::vector<NamedTransferFunction>& transfer_functions )
+    const std::vector<EnsembleTransferFunction>& transfer_functions )
 {
     for ( size_t i = 0; i < transfer_functions.size(); ++i )
     {
@@ -180,82 +185,56 @@ void AppendStatisticTransferFunctionPatches(
             continue;
         }
 
-        const NamedTransferFunction& tf = transfer_functions[i];
-        const double opacity_min = tf.serverOpacityMinValue();
-        const double opacity_max = tf.serverOpacityMaxValue();
-        double color_min = tf.serverColorMinValue();
-        double color_max = tf.serverColorMaxValue();
-        const double user_color_min = tf.userColorMinValue();
-        const double user_color_max = tf.userColorMaxValue();
-        const double user_opacity_min = tf.userOpacityMinValue();
-        const double user_opacity_max = tf.userOpacityMaxValue();
+        const EnsembleTransferFunction& tf = transfer_functions[i];
+        const double server_min = tf.serverMinValue();
+        const double server_max = tf.serverMaxValue();
+        const double user_min = tf.userMinValue();
+        const double user_max = tf.userMaxValue();
 
-        if ( !std::isfinite( opacity_min ) || !std::isfinite( opacity_max ) )
+        if ( !std::isfinite( server_min ) || !std::isfinite( server_max ) )
         {
             std::cout << "[Server][EnsembleStatisticsParameter] skip statistic=" << statistic
                       << ", index=" << i << ", reason=non-finite range" << std::endl;
             continue;
         }
-        if ( opacity_min > opacity_max )
+        if ( server_min > server_max )
         {
             std::cout << "[Server][EnsembleStatisticsParameter] skip statistic=" << statistic
                       << ", index=" << i << ", reason=min > max" << std::endl;
             continue;
         }
-        if ( !tf.m_has_opacity_histogram )
-        {
-            std::cout << "[Server][EnsembleStatisticsParameter] statistic=" << statistic
-                      << ", index=" << i << ", reason=missing opacity histogram" << std::endl;
-        }
-        if ( !std::isfinite( color_min ) || !std::isfinite( color_max ) || color_min > color_max )
-        {
-            std::cout << "[Server][EnsembleStatisticsParameter] statistic=" << statistic
-                      << ", index=" << i << ", reason=invalid color range. Use opacity range."
-                      << std::endl;
-            color_min = opacity_min;
-            color_max = opacity_max;
-        }
-        LogRangeModeMismatch( tf, statistic );
-        LogRangeMismatch( statistic, "server", color_min, color_max, opacity_min, opacity_max );
-        LogRangeMismatch( statistic, "user", user_color_min, user_color_max, user_opacity_min, user_opacity_max );
 
         nlohmann::json patch;
         patch[Protocol::Key::Statistic] = statistic;
         patch[Protocol::Key::Index] = static_cast<int>( i );
-        patch[Protocol::Key::ColorVariable] = tf.m_color_variable;
-        patch[Protocol::Key::ColorRangeMode] = RangeModeValue( tf.m_server_color_range_mode );
-        patch[Protocol::Key::ColorUserRangeMin] = user_color_min;
-        patch[Protocol::Key::ColorUserRangeMax] = user_color_max;
-        patch[Protocol::Key::ColorServerRangeMin] = color_min;
-        patch[Protocol::Key::ColorServerRangeMax] = color_max;
+        patch[Protocol::Key::ColorVariable] = tf.m_variable;
+        patch[Protocol::Key::ColorRangeMode] = RangeModeValue( tf.m_server_range_mode );
+        patch[Protocol::Key::ColorUserRangeMin] = user_min;
+        patch[Protocol::Key::ColorUserRangeMax] = user_max;
+        patch[Protocol::Key::ColorServerRangeMin] = server_min;
+        patch[Protocol::Key::ColorServerRangeMax] = server_max;
         patch[Protocol::Key::ColorMap] = ColorMapJson( tf.colorMap() );
-        patch[Protocol::Key::OpacityVariable] = tf.m_opacity_variable;
-        patch[Protocol::Key::OpacityRangeMode] = RangeModeValue( tf.m_server_color_range_mode );
-        patch[Protocol::Key::OpacityUserRangeMin] = user_color_min;
-        patch[Protocol::Key::OpacityUserRangeMax] = user_color_max;
-        patch[Protocol::Key::OpacityServerRangeMin] = color_min;
-        patch[Protocol::Key::OpacityServerRangeMax] = color_max;
+        patch[Protocol::Key::OpacityVariable] = tf.m_variable;
+        patch[Protocol::Key::OpacityRangeMode] = RangeModeValue( tf.m_server_range_mode );
+        patch[Protocol::Key::OpacityUserRangeMin] = user_min;
+        patch[Protocol::Key::OpacityUserRangeMax] = user_max;
+        patch[Protocol::Key::OpacityServerRangeMin] = server_min;
+        patch[Protocol::Key::OpacityServerRangeMax] = server_max;
         patch[Protocol::Key::OpacityMap] = OpacityMapJson( tf.opacityMap() );
 
         nlohmann::json opacity_histogram = nlohmann::json::array();
-        if ( tf.m_has_opacity_histogram )
+        const vismodule::UInt64* opacity_hist = tf.opacityHistogram();
+        for ( int j = 0; j < DEFAULT_NBINS; ++j )
         {
-            const vismodule::UInt64* opacity_hist = tf.opacityHistogram();
-            for ( int j = 0; j < DEFAULT_NBINS; ++j )
-            {
-                opacity_histogram.push_back( static_cast<int>( opacity_hist[j] ) );
-            }
+            opacity_histogram.push_back( static_cast<int>( opacity_hist[j] ) );
         }
         patch[Protocol::Key::OpacityHistogram] = std::move( opacity_histogram );
 
         nlohmann::json color_histogram = nlohmann::json::array();
-        if ( tf.m_has_color_histogram )
+        const vismodule::UInt64* color_hist = tf.colorHistogram();
+        for ( int j = 0; j < DEFAULT_NBINS; ++j )
         {
-            const vismodule::UInt64* color_hist = tf.colorHistogram();
-            for ( int j = 0; j < DEFAULT_NBINS; ++j )
-            {
-                color_histogram.push_back( static_cast<int>( color_hist[j] ) );
-            }
+            color_histogram.push_back( static_cast<int>( color_hist[j] ) );
         }
         patch[Protocol::Key::ColorHistogram] = std::move( color_histogram );
 
@@ -298,42 +277,95 @@ nlohmann::json BuildEnsembleStatisticsParameter( const ParticleProperty& particl
     return msg;
 }
 
-void ApplyTransferFunctionPatch( NamedTransferFunction& tf, const nlohmann::json& patch )
+void ApplyTransferFunctionPatch( EnsembleTransferFunction& tf, const nlohmann::json& patch )
 {
-    bool color_range_changed = false;
-    bool opacity_range_changed = false;
+    bool range_changed = false;
     bool color_map_changed = false;
     bool opacity_map_changed = false;
 
     if ( patch.contains( Protocol::Key::ColorVariable ) )
     {
-        tf.m_color_variable = patch[Protocol::Key::ColorVariable].get<std::string>();
+        tf.m_variable = patch[Protocol::Key::ColorVariable].get<std::string>();
+    }
+    if ( patch.contains( Protocol::Key::OpacityVariable ) )
+    {
+        const std::string opacity_variable = patch[Protocol::Key::OpacityVariable].get<std::string>();
+        if ( !tf.m_variable.empty() && tf.m_variable != opacity_variable )
+        {
+            std::cout << "[Server][EnsembleStatisticsParameter] color/opacity variable mismatch. Use color variable."
+                      << " color=" << tf.m_variable
+                      << " opacity=" << opacity_variable << std::endl;
+        }
+        else if ( tf.m_variable.empty() )
+        {
+            tf.m_variable = opacity_variable;
+        }
     }
     if ( patch.contains( Protocol::Key::ColorRangeMode ) )
     {
-        tf.m_server_color_range_mode =
-            static_cast<NamedTransferFunction::ServerRangeMode>( patch[Protocol::Key::ColorRangeMode].get<int>() );
-        color_range_changed = true;
+        tf.m_server_range_mode =
+            static_cast<EnsembleTransferFunction::ServerRangeMode>( patch[Protocol::Key::ColorRangeMode].get<int>() );
+        range_changed = true;
+    }
+    if ( patch.contains( Protocol::Key::OpacityRangeMode ) )
+    {
+        const EnsembleTransferFunction::ServerRangeMode opacity_mode =
+            static_cast<EnsembleTransferFunction::ServerRangeMode>( patch[Protocol::Key::OpacityRangeMode].get<int>() );
+        if ( !patch.contains( Protocol::Key::ColorRangeMode ) )
+        {
+            tf.m_server_range_mode = opacity_mode;
+            range_changed = true;
+        }
+        else if ( tf.m_server_range_mode != opacity_mode )
+        {
+            std::cout << "[Server][EnsembleStatisticsParameter] color/opacity range mode mismatch. Use color range mode."
+                      << " color=" << RangeModeValue( tf.m_server_range_mode )
+                      << " opacity=" << RangeModeValue( opacity_mode ) << std::endl;
+        }
     }
     if ( patch.contains( Protocol::Key::ColorUserRangeMin ) )
     {
-        tf.m_user_color_variable_min = patch[Protocol::Key::ColorUserRangeMin].get<double>();
-        color_range_changed = true;
+        tf.m_user_variable_min = patch[Protocol::Key::ColorUserRangeMin].get<double>();
+        range_changed = true;
     }
     if ( patch.contains( Protocol::Key::ColorUserRangeMax ) )
     {
-        tf.m_user_color_variable_max = patch[Protocol::Key::ColorUserRangeMax].get<double>();
-        color_range_changed = true;
+        tf.m_user_variable_max = patch[Protocol::Key::ColorUserRangeMax].get<double>();
+        range_changed = true;
     }
     if ( patch.contains( Protocol::Key::ColorServerRangeMin ) )
     {
-        tf.m_server_color_variable_min = patch[Protocol::Key::ColorServerRangeMin].get<double>();
-        color_range_changed = true;
+        tf.m_server_variable_min = patch[Protocol::Key::ColorServerRangeMin].get<double>();
+        range_changed = true;
     }
     if ( patch.contains( Protocol::Key::ColorServerRangeMax ) )
     {
-        tf.m_server_color_variable_max = patch[Protocol::Key::ColorServerRangeMax].get<double>();
-        color_range_changed = true;
+        tf.m_server_variable_max = patch[Protocol::Key::ColorServerRangeMax].get<double>();
+        range_changed = true;
+    }
+    if ( !patch.contains( Protocol::Key::ColorUserRangeMin ) &&
+         patch.contains( Protocol::Key::OpacityUserRangeMin ) )
+    {
+        tf.m_user_variable_min = patch[Protocol::Key::OpacityUserRangeMin].get<double>();
+        range_changed = true;
+    }
+    if ( !patch.contains( Protocol::Key::ColorUserRangeMax ) &&
+         patch.contains( Protocol::Key::OpacityUserRangeMax ) )
+    {
+        tf.m_user_variable_max = patch[Protocol::Key::OpacityUserRangeMax].get<double>();
+        range_changed = true;
+    }
+    if ( !patch.contains( Protocol::Key::ColorServerRangeMin ) &&
+         patch.contains( Protocol::Key::OpacityServerRangeMin ) )
+    {
+        tf.m_server_variable_min = patch[Protocol::Key::OpacityServerRangeMin].get<double>();
+        range_changed = true;
+    }
+    if ( !patch.contains( Protocol::Key::ColorServerRangeMax ) &&
+         patch.contains( Protocol::Key::OpacityServerRangeMax ) )
+    {
+        tf.m_server_variable_max = patch[Protocol::Key::OpacityServerRangeMax].get<double>();
+        range_changed = true;
     }
     if ( patch.contains( Protocol::Key::ColorMap ) && patch[Protocol::Key::ColorMap].is_array() )
     {
@@ -350,61 +382,31 @@ void ApplyTransferFunctionPatch( NamedTransferFunction& tf, const nlohmann::json
         }
         vismodule::ValueArray<vismodule::UInt8> cc_table( c_table );
         vismodule::ColorMap color_map( cc_table );
-        if ( tf.m_server_color_range_mode == NamedTransferFunction::ServerRangeMode::UserRange )
+        if ( tf.m_server_range_mode == EnsembleTransferFunction::ServerRangeMode::UserRange )
         {
-            color_map.setRange( tf.m_user_color_variable_min, tf.m_user_color_variable_max );
+            color_map.setRange( tf.m_user_variable_min, tf.m_user_variable_max );
         }
-        else if ( tf.m_server_color_range_mode == NamedTransferFunction::ServerRangeMode::ServerSide )
+        else if ( tf.m_server_range_mode == EnsembleTransferFunction::ServerRangeMode::ServerSide )
         {
-            color_map.setRange( tf.m_server_color_variable_min, tf.m_server_color_variable_max );
+            color_map.setRange( tf.m_server_variable_min, tf.m_server_variable_max );
         }
         tf.setColorMap( color_map );
         color_map_changed = true;
     }
-    if ( color_range_changed && !color_map_changed )
+    if ( range_changed && !color_map_changed )
     {
         auto color_map = tf.colorMap();
-        if ( tf.m_server_color_range_mode == NamedTransferFunction::ServerRangeMode::UserRange )
+        if ( tf.m_server_range_mode == EnsembleTransferFunction::ServerRangeMode::UserRange )
         {
-            color_map.setRange( tf.m_user_color_variable_min, tf.m_user_color_variable_max );
+            color_map.setRange( tf.m_user_variable_min, tf.m_user_variable_max );
         }
-        else if ( tf.m_server_color_range_mode == NamedTransferFunction::ServerRangeMode::ServerSide )
+        else if ( tf.m_server_range_mode == EnsembleTransferFunction::ServerRangeMode::ServerSide )
         {
-            color_map.setRange( tf.m_server_color_variable_min, tf.m_server_color_variable_max );
+            color_map.setRange( tf.m_server_variable_min, tf.m_server_variable_max );
         }
         tf.setColorMap( color_map );
     }
 
-    if ( patch.contains( Protocol::Key::OpacityVariable ) )
-    {
-        tf.m_opacity_variable = patch[Protocol::Key::OpacityVariable].get<std::string>();
-    }
-    if ( patch.contains( Protocol::Key::OpacityRangeMode ) )
-    {
-        tf.m_server_opacity_range_mode =
-            static_cast<NamedTransferFunction::ServerRangeMode>( patch[Protocol::Key::OpacityRangeMode].get<int>() );
-        opacity_range_changed = true;
-    }
-    if ( patch.contains( Protocol::Key::OpacityUserRangeMin ) )
-    {
-        tf.m_user_opacity_variable_min = patch[Protocol::Key::OpacityUserRangeMin].get<double>();
-        opacity_range_changed = true;
-    }
-    if ( patch.contains( Protocol::Key::OpacityUserRangeMax ) )
-    {
-        tf.m_user_opacity_variable_max = patch[Protocol::Key::OpacityUserRangeMax].get<double>();
-        opacity_range_changed = true;
-    }
-    if ( patch.contains( Protocol::Key::OpacityServerRangeMin ) )
-    {
-        tf.m_server_opacity_variable_min = patch[Protocol::Key::OpacityServerRangeMin].get<double>();
-        opacity_range_changed = true;
-    }
-    if ( patch.contains( Protocol::Key::OpacityServerRangeMax ) )
-    {
-        tf.m_server_opacity_variable_max = patch[Protocol::Key::OpacityServerRangeMax].get<double>();
-        opacity_range_changed = true;
-    }
     if ( patch.contains( Protocol::Key::OpacityMap ) && patch[Protocol::Key::OpacityMap].is_array() )
     {
         std::vector<float> o_table;
@@ -412,27 +414,27 @@ void ApplyTransferFunctionPatch( NamedTransferFunction& tf, const nlohmann::json
         for ( const auto& v : patch[Protocol::Key::OpacityMap] ) o_table.push_back( v.get<float>() );
         vismodule::ValueArray<float> oo_table( o_table );
         vismodule::OpacityMap opacity_map( oo_table );
-        if ( tf.m_server_opacity_range_mode == NamedTransferFunction::ServerRangeMode::UserRange )
+        if ( tf.m_server_range_mode == EnsembleTransferFunction::ServerRangeMode::UserRange )
         {
-            opacity_map.setRange( tf.m_user_opacity_variable_min, tf.m_user_opacity_variable_max );
+            opacity_map.setRange( tf.m_user_variable_min, tf.m_user_variable_max );
         }
-        else if ( tf.m_server_opacity_range_mode == NamedTransferFunction::ServerRangeMode::ServerSide )
+        else if ( tf.m_server_range_mode == EnsembleTransferFunction::ServerRangeMode::ServerSide )
         {
-            opacity_map.setRange( tf.m_server_opacity_variable_min, tf.m_server_opacity_variable_max );
+            opacity_map.setRange( tf.m_server_variable_min, tf.m_server_variable_max );
         }
         tf.setOpacityMap( opacity_map );
         opacity_map_changed = true;
     }
-    if ( opacity_range_changed && !opacity_map_changed )
+    if ( range_changed && !opacity_map_changed )
     {
         auto opacity_map = tf.opacityMap();
-        if ( tf.m_server_opacity_range_mode == NamedTransferFunction::ServerRangeMode::UserRange )
+        if ( tf.m_server_range_mode == EnsembleTransferFunction::ServerRangeMode::UserRange )
         {
-            opacity_map.setRange( tf.m_user_opacity_variable_min, tf.m_user_opacity_variable_max );
+            opacity_map.setRange( tf.m_user_variable_min, tf.m_user_variable_max );
         }
-        else if ( tf.m_server_opacity_range_mode == NamedTransferFunction::ServerRangeMode::ServerSide )
+        else if ( tf.m_server_range_mode == EnsembleTransferFunction::ServerRangeMode::ServerSide )
         {
-            opacity_map.setRange( tf.m_server_opacity_variable_min, tf.m_server_opacity_variable_max );
+            opacity_map.setRange( tf.m_server_variable_min, tf.m_server_variable_max );
         }
         tf.setOpacityMap( opacity_map );
 }
