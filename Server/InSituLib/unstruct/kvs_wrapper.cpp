@@ -2445,6 +2445,12 @@ bool ensemble_generate_particles(
         std::vector<int> th_vertex_cellids;
         std::vector<vismodule::Real32> th_sq_scalars;
         std::vector<vismodule::Real32> th_tmp_term;
+#ifdef PBVR_UNIFORM_FISSION2
+        // Geometry buffers for the deferred formula pass (generation writes here;
+        // the post-loop pass reads them back to evaluate scalar + chain-rule normal).
+        std::vector<vismodule::Vector3f> th_geo_local;
+        std::vector<vismodule::UInt32>   th_geo_cellid;
+#endif
         vismodule::MersenneTwister mt( thid + mpi_rank * nthreads );
         const uint32_t philox_key0 = static_cast<uint32_t>( mpi_rank );
         const uint32_t philox_key1 = 0xD2B79A53u;
@@ -2534,6 +2540,7 @@ bool ensemble_generate_particles(
             vismodule::Timer sampling_loop_timer;
             sampling_loop_timer.start();
 #endif
+#ifndef PBVR_UNIFORM_FISSION2
             for ( int cell_BLK = 0; cell_BLK < remain + 1; cell_BLK++ )
             {
                 const int nparticles_in_cell = cell_BLK < remain ? nparticles_array[cell_BLK] : 1;
@@ -2734,11 +2741,83 @@ bool ensemble_generate_particles(
                     }
                 }
             }
+#else
+            // PBVR_UNIFORM_FISSION2: no packing. Append n local coords + cellid per cell.
+            // bind / setLocal / transform / formula all move to the dense pass below
+            // (single bind, no global buffer). mt draw order = cell order = fused order.
+            for ( int cell_BLK = 0; cell_BLK < remain; cell_BLK++ )
+            {
+                const int npc = nparticles_array[cell_BLK];
+                if ( npc <= 0 ) continue;
+                const size_t g0 = th_geo_cellid.size();
+                th_geo_cellid.resize( g0 + static_cast<size_t>( npc ) );
+                th_geo_local.resize(  g0 + static_cast<size_t>( npc ) );
+                const vismodule::UInt32 cid = static_cast<vismodule::UInt32>( index + cell_BLK );
+                for ( int t = 0; t < npc; t++ )
+                {
+                    th_geo_local[g0 + t]  = cell[thid][0]->randomSampling_MT( &mt );
+                    th_geo_cellid[g0 + t] = cid;
+                }
+            }
+#endif
 #ifdef ENABLE_ENSEMBLE_TIMER
             sampling_loop_timer.stop();
             th_uniform_sampling_loop_time += sampling_loop_timer.sec();
 #endif
         }
+#ifdef PBVR_UNIFORM_FISSION2
+        // Dense formula pass (loop fission) over all generated particles: re-bind per BLK,
+        // transform to global, evaluate scalar + chain-rule normal, and store. Single bind,
+        // no global buffer. Invariant-preserving (formula consumes no RNG; bit-identical at
+        // 1 thread/rank).
+        {
+#ifdef ENABLE_ENSEMBLE_TIMER
+            vismodule::Timer fission_timer;
+            double th_fission_scalar = 0.0, th_fission_store = 0.0;
+#endif
+            const size_t P = th_geo_cellid.size();
+            for ( size_t fp = 0; fp < P; fp += SIMD_BLK_SIZE )
+            {
+                const int m = ( P - fp > SIMD_BLK_SIZE ) ? SIMD_BLK_SIZE : static_cast<int>( P - fp );
+                vismodule::Vector3f* fl = &th_geo_local[fp];
+                vismodule::Vector3f* fg = global_coord_array;
+                const vismodule::UInt32*   fc = &th_geo_cellid[fp];
+#ifdef ENABLE_ENSEMBLE_TIMER
+                fission_timer.start();
+#endif
+                bind_variables_scalars_opt( cell[thid], nvariables, m, fc );
+                cell[thid][0]->setLocalPointArray( m, fl );
+                cell[thid][0]->transformLocalToGlobalArray( m, fl, fg );
+                calculate_scalar_and_chain_rule_grad( m, nvariables, chain_context, cell[thid],
+                    fl, fg, fc, scalar_array, grad_array_x, grad_array_y, grad_array_z, 0 );
+#ifdef ENABLE_ENSEMBLE_TIMER
+                fission_timer.stop();  th_fission_scalar += fission_timer.sec();  fission_timer.start();
+#endif
+                ReserveAdditionalUniformParticles( static_cast<size_t>( m ),
+                    th_vertex_coords, th_vertex_scalars, th_vertex_normals,
+                    th_vertex_cellids, th_sq_scalars, th_tmp_term );
+                const size_t scalar_offset = th_vertex_scalars.size();
+                const size_t vector_offset = th_vertex_coords.size();
+                th_vertex_scalars.resize( scalar_offset + static_cast<size_t>( m ) );
+                th_vertex_cellids.resize( scalar_offset + static_cast<size_t>( m ) );
+                th_sq_scalars.resize( scalar_offset + static_cast<size_t>( m ) );
+                th_vertex_coords.resize( vector_offset + 3 * static_cast<size_t>( m ) );
+                th_vertex_normals.resize( vector_offset + 3 * static_cast<size_t>( m ) );
+                th_tmp_term.resize( vector_offset + 3 * static_cast<size_t>( m ) );
+                store_uniform_block( m, scalar_offset, vector_offset,
+                    th_vertex_scalars, th_vertex_coords, th_vertex_normals,
+                    th_vertex_cellids, th_sq_scalars, th_tmp_term,
+                    scalar_array, fl, grad_array_x, grad_array_y, grad_array_z, fc );
+#ifdef ENABLE_ENSEMBLE_TIMER
+                fission_timer.stop();  th_fission_store += fission_timer.sec();
+#endif
+            }
+#ifdef ENABLE_ENSEMBLE_TIMER
+            th_uniform_scalar_time += th_fission_scalar;
+            th_uniform_store_time  += th_fission_store;
+#endif
+        }
+#endif
 
 #ifdef ENABLE_ENSEMBLE_TIMER
         vismodule::Timer merge_timer;
