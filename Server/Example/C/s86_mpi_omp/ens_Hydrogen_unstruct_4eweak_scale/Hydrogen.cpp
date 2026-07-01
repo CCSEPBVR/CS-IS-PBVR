@@ -176,8 +176,10 @@ Hydrogen::Hydrogen( void )
     //resolution = vismodule::Vector3ui( 64, 64, 128 );
 //    resolution = vismodule::Vector3ui( 4, 4, 4 );
 //    resolution = vismodule::Vector3ui( 128, 128, 128 );
-    resolution = vismodule::Vector3ui( 128, 256, 128 );
-//    resolution = vismodule::Vector3ui( 256, 256, 256 );
+//    resolution = vismodule::Vector3ui( 128, 256, 128 );
+    // per-rank grid aligned to sweep/correctness/strong unit (256^3) for cross-phase
+    // comparability of per-rank compute and shift cost. cell_length auto-follows below.
+    resolution = vismodule::Vector3ui( 256, 256, 256 );
 
     //cell_length = 1.0;
     cell_length = 127.f/(resolution.x()-1);
