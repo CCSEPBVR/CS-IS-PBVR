@@ -27,7 +27,12 @@
 // (one contiguous aligned block per array), but the compiler cannot infer this
 // from the pointer-of-pointer layout, so we assert it explicitly.
 #ifndef PBVR_ASSUME_ALIGNED64
-#  if defined(__INTEL_COMPILER) || defined(__INTEL_LLVM_COMPILER)
+#  if defined(__CUDACC__)
+     // nvcc/EDG front-end mimics the host compiler macros (e.g. __INTEL_COMPILER via
+     // -ccbin icpc) but does not implement __assume_aligned. This is a hint only, so a
+     // no-op under any nvcc pass is semantically identical.
+#    define PBVR_ASSUME_ALIGNED64(p) ((void)0)
+#  elif defined(__INTEL_COMPILER) || defined(__INTEL_LLVM_COMPILER)
 #    define PBVR_ASSUME_ALIGNED64(p) __assume_aligned((p), 64)
 #  elif defined(__GNUC__)
 #    define PBVR_ASSUME_ALIGNED64(p) ((p) = static_cast<decltype(p)>(__builtin_assume_aligned((p), 64)))
