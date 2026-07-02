@@ -1,5 +1,6 @@
 #include "ObjectEditor.h"
 #include "ui_ObjectEditor.h"
+#include "EnsembleTransferFunctionEditor.h"
 
 #include <QDebug>
 
@@ -162,6 +163,11 @@ void ObjectEditor::reset()
     setWidgetsVisible( m_group_common_server_point_object_widgets, false );
     setWidgetsVisible( m_group_client_server_point_object_widgets, false );
     setWidgetsVisible( m_group_nontexture_polygon_object_widgets,  false );
+}
+
+void ObjectEditor::setEnsembleTransferFunctionEditor( EnsembleTransferFunctionEditor* editor )
+{
+    m_ensemble_transfer_function_editor = editor;
 }
 
 void ObjectEditor::onOperatorStateUpdate( const bool operatorState )
@@ -1073,11 +1079,6 @@ void ObjectEditor::onRequestDataAt( int requestTimeStep )
     }
 }
 
-void ObjectEditor::setRequestedStatistic( const QString& statistic )
-{
-    m_requested_statistic = statistic;
-}
-
 void ObjectEditor::onLoadParameter( const QString& filePath )
 {
     qDebug() << __FILE__ << ":" << __func__ << ":" << filePath;
@@ -1589,13 +1590,17 @@ void ObjectEditor::requestServerDataAt( const int requestTimeStep )
     request[QString::fromUtf8( Protocol::Key::TimeStep )] = requestTimeStep;
     request[QString::fromUtf8( Protocol::Key::ResultMinObjectCoords )] = resultMinObjectCoords;
     request[QString::fromUtf8( Protocol::Key::ResultMaxObjectCoords )] = resultMaxObjectCoords;
-    if ( !m_requested_statistic.isEmpty() )
+    QString statistic;
+    if( *m_viz_mode == Viz::Mode::RemoteInSitu )
     {
-        request[QString::fromUtf8( Protocol::Key::Statistics )] = m_requested_statistic;
+        statistic = m_ensemble_transfer_function_editor ?
+            m_ensemble_transfer_function_editor->selectedStatistic() :
+            QStringLiteral( "average" );
+        request[QString::fromUtf8( Protocol::Key::Statistic )] = statistic;
     }
 
     qDebug() << "[Client][ObjectEditor] send RequestDataAt timestep =" << requestTimeStep
-             << "statistics =" << ( m_requested_statistic.isEmpty() ? QStringLiteral( "<none>" ) : m_requested_statistic )
+             << "statistics =" << ( statistic.isEmpty() ? QStringLiteral( "<none>" ) : statistic )
              << "text connected =" << m_web_sockets->text()->isValid()
              << "binary connected =" << m_web_sockets->binary()->isValid();
     m_web_sockets->text()->sendTextMessage( QJsonDocument( request ).toJson( QJsonDocument::Compact ) );

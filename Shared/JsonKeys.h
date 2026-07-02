@@ -105,8 +105,20 @@ inline constexpr std::string_view OpacityServerRangeMin     = "OpacityServerRang
 inline constexpr std::string_view OpacityServerRangeMax     = "OpacityServerRangeMax";
 inline constexpr std::string_view OpacityMap                = "OpacityMap";
 inline constexpr std::string_view OpacityHistogram          = "OpacityHistogram";
+
+// EnsembleTransferFunctionEditor
 inline constexpr std::string_view Statistic                 = "Statistic";
-inline constexpr std::string_view Statistics                = "Statistics";
+inline constexpr std::string_view EnsembleVariable          = "EnsembleVariable";
+inline constexpr std::string_view EnsembleUserRangeMode     = "EnsembleUserRangeMode";
+inline constexpr std::string_view EnsembleUserRangeMin      = "EnsembleUserRangeMin";
+inline constexpr std::string_view EnsembleUserRangeMax      = "EnsembleUserRangeMax";
+inline constexpr std::string_view EnsembleServerRangeMin    = "EnsembleServerRangeMin";
+inline constexpr std::string_view EnsembleServerRangeMax    = "EnsembleServerRangeMax";
+inline constexpr std::string_view EnsembleColorMap          = "EnsembleColorMap";
+inline constexpr std::string_view EnsembleOpacityMap        = "EnsembleOpacityMap";
+inline constexpr std::string_view EnsembleHistogram         = "EnsembleHistogram";
+
+// Repetition Level Control
 inline constexpr std::string_view RepeatLevel               = "RepeatLevel";
 
 // GlyphEditor

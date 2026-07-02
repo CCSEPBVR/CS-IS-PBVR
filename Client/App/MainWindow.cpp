@@ -614,8 +614,10 @@ void MainWindow::initializeEnsembleTransferFunctionEditor()
     {
         m_ensemble_transfer_function_editor->adjustSize();
         m_ensemble_transfer_function_editor->close();
-        connect( m_ensemble_transfer_function_editor, &EnsembleTransferFunctionEditor::statisticChanged, m_object_editor, &ObjectEditor::setRequestedStatistic );
-        m_object_editor->setRequestedStatistic( QStringLiteral( "average" ) );
+        if( m_object_editor )
+        {
+            m_object_editor->setEnsembleTransferFunctionEditor( m_ensemble_transfer_function_editor );
+        }
     }
 }
 

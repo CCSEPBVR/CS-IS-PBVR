@@ -40,15 +40,6 @@ std::string NormalizeStatisticName( std::string statistic )
 
 std::string StatisticFromRequest( const nlohmann::json& received )
 {
-    if ( received.contains( Protocol::Key::Statistics ) )
-    {
-        const auto& statistics = received.at( Protocol::Key::Statistics );
-        if ( statistics.is_string() ) return NormalizeStatisticName( statistics.get<std::string>() );
-        if ( statistics.is_array() && !statistics.empty() && statistics.at( 0 ).is_string() )
-        {
-            return NormalizeStatisticName( statistics.at( 0 ).get<std::string>() );
-        }
-    }
     if ( received.contains( Protocol::Key::Statistic ) && received.at( Protocol::Key::Statistic ).is_string() )
     {
         return NormalizeStatisticName( received.at( Protocol::Key::Statistic ).get<std::string>() );
@@ -206,21 +197,14 @@ void AppendStatisticTransferFunctionPatches(
 
         nlohmann::json patch;
         patch[Protocol::Key::Statistic] = statistic;
-        patch[Protocol::Key::Index] = static_cast<int>( i );
-        patch[Protocol::Key::ColorVariable] = tf.m_variable;
-        patch[Protocol::Key::ColorRangeMode] = RangeModeValue( tf.m_server_range_mode );
-        patch[Protocol::Key::ColorUserRangeMin] = user_min;
-        patch[Protocol::Key::ColorUserRangeMax] = user_max;
-        patch[Protocol::Key::ColorServerRangeMin] = server_min;
-        patch[Protocol::Key::ColorServerRangeMax] = server_max;
-        patch[Protocol::Key::ColorMap] = ColorMapJson( tf.colorMap() );
-        patch[Protocol::Key::OpacityVariable] = tf.m_variable;
-        patch[Protocol::Key::OpacityRangeMode] = RangeModeValue( tf.m_server_range_mode );
-        patch[Protocol::Key::OpacityUserRangeMin] = user_min;
-        patch[Protocol::Key::OpacityUserRangeMax] = user_max;
-        patch[Protocol::Key::OpacityServerRangeMin] = server_min;
-        patch[Protocol::Key::OpacityServerRangeMax] = server_max;
-        patch[Protocol::Key::OpacityMap] = OpacityMapJson( tf.opacityMap() );
+        patch[Protocol::Key::EnsembleVariable] = tf.m_variable;
+        patch[Protocol::Key::EnsembleUserRangeMode] = RangeModeValue( tf.m_server_range_mode );
+        patch[Protocol::Key::EnsembleUserRangeMin] = user_min;
+        patch[Protocol::Key::EnsembleUserRangeMax] = user_max;
+        patch[Protocol::Key::EnsembleServerRangeMin] = server_min;
+        patch[Protocol::Key::EnsembleServerRangeMax] = server_max;
+        patch[Protocol::Key::EnsembleColorMap] = ColorMapJson( tf.colorMap() );
+        patch[Protocol::Key::EnsembleOpacityMap] = OpacityMapJson( tf.opacityMap() );
 
         nlohmann::json opacity_histogram = nlohmann::json::array();
         const vismodule::UInt64* opacity_hist = tf.opacityHistogram();
@@ -228,15 +212,7 @@ void AppendStatisticTransferFunctionPatches(
         {
             opacity_histogram.push_back( static_cast<int>( opacity_hist[j] ) );
         }
-        patch[Protocol::Key::OpacityHistogram] = std::move( opacity_histogram );
-
-        nlohmann::json color_histogram = nlohmann::json::array();
-        const vismodule::UInt64* color_hist = tf.colorHistogram();
-        for ( int j = 0; j < DEFAULT_NBINS; ++j )
-        {
-            color_histogram.push_back( static_cast<int>( color_hist[j] ) );
-        }
-        patch[Protocol::Key::ColorHistogram] = std::move( color_histogram );
+        patch[Protocol::Key::EnsembleHistogram] = std::move( opacity_histogram );
 
         data.push_back( std::move( patch ) );
     }
@@ -269,10 +245,6 @@ nlohmann::json BuildEnsembleStatisticsParameter( const ParticleProperty& particl
 
     nlohmann::json msg;
     msg[Protocol::Key::Event] = Protocol::Events::EnsembleStatisticsParameter;
-    msg[Protocol::Key::RepeatLevel] = particle_property.m_repeat_level;
-    msg["TFNumber"] = 1;
-    msg[Protocol::Key::ColorSynthesizer] = particle_property.m_color_transfer_function_synthesis;
-    msg[Protocol::Key::OpacitySynthesizer] = particle_property.m_opacity_transfer_function_synthesis;
     msg[Protocol::Key::Data] = std::move( data );
     return msg;
 }
@@ -283,95 +255,42 @@ void ApplyTransferFunctionPatch( EnsembleTransferFunction& tf, const nlohmann::j
     bool color_map_changed = false;
     bool opacity_map_changed = false;
 
-    if ( patch.contains( Protocol::Key::ColorVariable ) )
+    if ( patch.contains( Protocol::Key::EnsembleVariable ) )
     {
-        tf.m_variable = patch[Protocol::Key::ColorVariable].get<std::string>();
+        tf.m_variable = patch[Protocol::Key::EnsembleVariable].get<std::string>();
     }
-    if ( patch.contains( Protocol::Key::OpacityVariable ) )
-    {
-        const std::string opacity_variable = patch[Protocol::Key::OpacityVariable].get<std::string>();
-        if ( !tf.m_variable.empty() && tf.m_variable != opacity_variable )
-        {
-            std::cout << "[Server][EnsembleStatisticsParameter] color/opacity variable mismatch. Use color variable."
-                      << " color=" << tf.m_variable
-                      << " opacity=" << opacity_variable << std::endl;
-        }
-        else if ( tf.m_variable.empty() )
-        {
-            tf.m_variable = opacity_variable;
-        }
-    }
-    if ( patch.contains( Protocol::Key::ColorRangeMode ) )
+    if ( patch.contains( Protocol::Key::EnsembleUserRangeMode ) )
     {
         tf.m_server_range_mode =
-            static_cast<EnsembleTransferFunction::ServerRangeMode>( patch[Protocol::Key::ColorRangeMode].get<int>() );
+            static_cast<EnsembleTransferFunction::ServerRangeMode>(
+                patch[Protocol::Key::EnsembleUserRangeMode].get<int>() );
         range_changed = true;
     }
-    if ( patch.contains( Protocol::Key::OpacityRangeMode ) )
+    if ( patch.contains( Protocol::Key::EnsembleUserRangeMin ) )
     {
-        const EnsembleTransferFunction::ServerRangeMode opacity_mode =
-            static_cast<EnsembleTransferFunction::ServerRangeMode>( patch[Protocol::Key::OpacityRangeMode].get<int>() );
-        if ( !patch.contains( Protocol::Key::ColorRangeMode ) )
-        {
-            tf.m_server_range_mode = opacity_mode;
-            range_changed = true;
-        }
-        else if ( tf.m_server_range_mode != opacity_mode )
-        {
-            std::cout << "[Server][EnsembleStatisticsParameter] color/opacity range mode mismatch. Use color range mode."
-                      << " color=" << RangeModeValue( tf.m_server_range_mode )
-                      << " opacity=" << RangeModeValue( opacity_mode ) << std::endl;
-        }
-    }
-    if ( patch.contains( Protocol::Key::ColorUserRangeMin ) )
-    {
-        tf.m_user_variable_min = patch[Protocol::Key::ColorUserRangeMin].get<double>();
+        tf.m_user_variable_min = patch[Protocol::Key::EnsembleUserRangeMin].get<double>();
         range_changed = true;
     }
-    if ( patch.contains( Protocol::Key::ColorUserRangeMax ) )
+    if ( patch.contains( Protocol::Key::EnsembleUserRangeMax ) )
     {
-        tf.m_user_variable_max = patch[Protocol::Key::ColorUserRangeMax].get<double>();
+        tf.m_user_variable_max = patch[Protocol::Key::EnsembleUserRangeMax].get<double>();
         range_changed = true;
     }
-    if ( patch.contains( Protocol::Key::ColorServerRangeMin ) )
+    if ( patch.contains( Protocol::Key::EnsembleServerRangeMin ) )
     {
-        tf.m_server_variable_min = patch[Protocol::Key::ColorServerRangeMin].get<double>();
+        tf.m_server_variable_min = patch[Protocol::Key::EnsembleServerRangeMin].get<double>();
         range_changed = true;
     }
-    if ( patch.contains( Protocol::Key::ColorServerRangeMax ) )
+    if ( patch.contains( Protocol::Key::EnsembleServerRangeMax ) )
     {
-        tf.m_server_variable_max = patch[Protocol::Key::ColorServerRangeMax].get<double>();
+        tf.m_server_variable_max = patch[Protocol::Key::EnsembleServerRangeMax].get<double>();
         range_changed = true;
     }
-    if ( !patch.contains( Protocol::Key::ColorUserRangeMin ) &&
-         patch.contains( Protocol::Key::OpacityUserRangeMin ) )
-    {
-        tf.m_user_variable_min = patch[Protocol::Key::OpacityUserRangeMin].get<double>();
-        range_changed = true;
-    }
-    if ( !patch.contains( Protocol::Key::ColorUserRangeMax ) &&
-         patch.contains( Protocol::Key::OpacityUserRangeMax ) )
-    {
-        tf.m_user_variable_max = patch[Protocol::Key::OpacityUserRangeMax].get<double>();
-        range_changed = true;
-    }
-    if ( !patch.contains( Protocol::Key::ColorServerRangeMin ) &&
-         patch.contains( Protocol::Key::OpacityServerRangeMin ) )
-    {
-        tf.m_server_variable_min = patch[Protocol::Key::OpacityServerRangeMin].get<double>();
-        range_changed = true;
-    }
-    if ( !patch.contains( Protocol::Key::ColorServerRangeMax ) &&
-         patch.contains( Protocol::Key::OpacityServerRangeMax ) )
-    {
-        tf.m_server_variable_max = patch[Protocol::Key::OpacityServerRangeMax].get<double>();
-        range_changed = true;
-    }
-    if ( patch.contains( Protocol::Key::ColorMap ) && patch[Protocol::Key::ColorMap].is_array() )
+    if ( patch.contains( Protocol::Key::EnsembleColorMap ) && patch[Protocol::Key::EnsembleColorMap].is_array() )
     {
         std::vector<vismodule::UInt8> c_table;
         c_table.reserve( 256 * 3 );
-        for ( const auto& rgbArr : patch[Protocol::Key::ColorMap] )
+        for ( const auto& rgbArr : patch[Protocol::Key::EnsembleColorMap] )
         {
             if ( rgbArr.is_array() && rgbArr.size() == 3 )
             {
@@ -407,11 +326,11 @@ void ApplyTransferFunctionPatch( EnsembleTransferFunction& tf, const nlohmann::j
         tf.setColorMap( color_map );
     }
 
-    if ( patch.contains( Protocol::Key::OpacityMap ) && patch[Protocol::Key::OpacityMap].is_array() )
+    if ( patch.contains( Protocol::Key::EnsembleOpacityMap ) && patch[Protocol::Key::EnsembleOpacityMap].is_array() )
     {
         std::vector<float> o_table;
         o_table.reserve( 256 );
-        for ( const auto& v : patch[Protocol::Key::OpacityMap] ) o_table.push_back( v.get<float>() );
+        for ( const auto& v : patch[Protocol::Key::EnsembleOpacityMap] ) o_table.push_back( v.get<float>() );
         vismodule::ValueArray<float> oo_table( o_table );
         vismodule::OpacityMap opacity_map( oo_table );
         if ( tf.m_server_range_mode == EnsembleTransferFunction::ServerRangeMode::UserRange )
@@ -2390,58 +2309,24 @@ void Server::receiveEnsembleStatisticsParameter(uWS::WebSocket<false, true, PerS
         return;
     }
 
-    if ( received.contains( Protocol::Key::RepeatLevel ) )
-    {
-        m_particle_property->m_repeat_level = received.at( Protocol::Key::RepeatLevel ).get<size_t>();
-    }
-
-    if ( received.contains( "TFNumber" ) )
-    {
-        const int n = received.at( "TFNumber" ).get<int>();
-        if ( n >= 0 )
-        {
-            if ( m_particle_property->m_transfunc_array.size() < static_cast<size_t>( n ) )
-            {
-                m_particle_property->m_transfunc_array.resize( n );
-            }
-            m_particle_property->m_mean_transfer_function_array.resize( n );
-            m_particle_property->m_variance_transfer_function_array.resize( n );
-            m_particle_property->m_coefficient_of_variation_transfer_function_array.resize( n );
-        }
-    }
-
-    if ( received.contains( Protocol::Key::ColorSynthesizer ) )
-    {
-        m_particle_property->m_color_transfer_function_synthesis =
-            received.value( Protocol::Key::ColorSynthesizer, "C1" );
-    }
-    if ( received.contains( Protocol::Key::OpacitySynthesizer ) )
-    {
-        m_particle_property->m_opacity_transfer_function_synthesis =
-            received.value( Protocol::Key::OpacitySynthesizer, "O1" );
-    }
-
     if ( received.contains( Protocol::Key::Data ) && received.at( Protocol::Key::Data ).is_array() )
     {
         for ( const auto& patch : received.at( Protocol::Key::Data ) )
         {
             if ( !patch.is_object() ) continue;
             if ( !patch.contains( Protocol::Key::Statistic ) || !patch.at( Protocol::Key::Statistic ).is_string() ) continue;
-            if ( !patch.contains( Protocol::Key::Index ) ) continue;
 
             auto* transfer_functions = StatisticTransferFunctionArray(
                 *m_particle_property,
                 patch.at( Protocol::Key::Statistic ).get<std::string>() );
             if ( transfer_functions == nullptr ) continue;
 
-            const int idx = patch.at( Protocol::Key::Index ).get<int>();
-            if ( idx < 0 ) continue;
-            if ( idx >= static_cast<int>( transfer_functions->size() ) )
+            if ( transfer_functions->empty() )
             {
-                transfer_functions->resize( idx + 1 );
+                transfer_functions->resize( 1 );
             }
 
-            ApplyTransferFunctionPatch( transfer_functions->at( idx ), patch );
+            ApplyTransferFunctionPatch( transfer_functions->at( 0 ), patch );
         }
     }
 

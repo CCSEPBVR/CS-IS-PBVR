@@ -23,9 +23,9 @@ class EnsembleTransferFunctionEditor : public QDialog
 public:
     explicit EnsembleTransferFunctionEditor( WebSocketPair* websockets, QWidget* parent = nullptr );
     ~EnsembleTransferFunctionEditor();
+    QString selectedStatistic() const;
 
 signals:
-    void statisticChanged( const QString& statistic );
     void repeatLevelChanged( size_t repeatLevel );
 
 public slots:
@@ -47,7 +47,6 @@ private:
 
     void initializeButtonGroups();
     void initializeTransferFunctionWidgets();
-    QString selectedStatistic() const;
     bool validateForApply() const;
     bool validateForExport() const;
 

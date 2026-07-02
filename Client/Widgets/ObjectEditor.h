@@ -29,6 +29,8 @@ namespace Ui
 class ObjectEditor;
 }
 
+class EnsembleTransferFunctionEditor;
+
 class ObjectEditor : public QDockWidget
 {
     Q_OBJECT
@@ -37,6 +39,7 @@ public:
     explicit ObjectEditor( kvs::qt::jaea::Screen* screen, WebSocketPair* websockets, Viz::Mode* vizMode, QWidget *parent = nullptr );
     ~ObjectEditor();
     void reset();
+    void setEnsembleTransferFunctionEditor( EnsembleTransferFunctionEditor* editor );
 
 signals:
     void updateStatusBarMessage( const QString& message );
@@ -65,7 +68,6 @@ public slots:
     void onTransferFunctionUpdate();
 
     void onRequestDataAt( int requestTimeStep );
-    void setRequestedStatistic( const QString& statistic );
 
     void onLoadParameter( const QString& filePath ); // KPI
     void onSaveParameter( const QString& filePath ); // KPI
@@ -77,9 +79,9 @@ private:
 
     WebSocketPair* m_web_sockets    = nullptr;
     Viz::Mode* m_viz_mode           = nullptr;
+    EnsembleTransferFunctionEditor* m_ensemble_transfer_function_editor = nullptr;
 
     bool m_is_operator              = true;
-    QString m_requested_statistic;
 
     QStandardItemModel *m_model     = nullptr;
 
