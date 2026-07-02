@@ -1,0 +1,55 @@
+﻿section,level,parent_section,category,content,check_point
+ensemble_generate_particles_total,0,root,total,粒子生成全体,全体時間。
+set_parameter_path,1,ensemble_generate_particles_total,initialization,パラメータパス設定,不自然に大きい場合はファイル/パス処理を確認。
+read_parameter_file,1,ensemble_generate_particles_total,initialization / I/O,パラメータ読み込み,rank間偏りやI/O待ち。
+init_transfer_functions,1,ensemble_generate_particles_total,initialization,TF初期化,初期化コスト。
+create_cells,1,ensemble_generate_particles_total,data_conversion,Cell作成,CellBase生成・bind前処理。
+sampling_prepare,1,ensemble_generate_particles_total,particle_generation,sampling前処理,本来小さい想定。大きい場合は範囲を再確認。
+omp_uniform_sampling,1,ensemble_generate_particles_total,OpenMP_parallel_region,uniform粒子生成のOpenMP領域,計算律速の主区間。thread max/avgを見る。
+uniform_thread_setup,2,omp_uniform_sampling,thread_local_setup,thread-localバッファ確保,スレッド数依存の初期化コスト。
+uniform_cell_index_setup,2,omp_uniform_sampling,sampling,担当セル範囲の割当,thread間負荷分散の前段。
+uniform_bind_cell_array,2,omp_uniform_sampling,interpolation,Cell array bind,bind連続メモリ化済(98ce97b0)。重複bind解消済。
+uniform_volume_calculation,2,omp_uniform_sampling,local_compute,セル体積計算,"SIMD配列版で解決済(a22fd52f, -91%)。四面体分割をomp simd化。"
+uniform_particle_count_calculation,2,omp_uniform_sampling,sampling,セルごとの粒子数計算,負荷分散に影響。
+uniform_particle_sampling_loop,2,omp_uniform_sampling,sampling,粒子生成ループ本体,乱数・補間・TF・storeを含む。
+uniform_local_coord_generation,3,uniform_particle_sampling_loop,sampling,セル内ローカル座標の乱数生成,"MT乱数。Philox版は不採用(遅い, b303943cで無効化)。"
+uniform_flush_prepare,3,uniform_particle_sampling_loop,sampling,バッチflush前処理,bufferサイズ調整。
+uniform_calculate_scalars_array,3,uniform_particle_sampling_loop,interpolation,scalar補間(配列版),chain-ruleと重複がないか確認。
+uniform_calc_scalar_grad,4,uniform_calculate_scalars_array,local_compute,scalar + gradient helper全体,細分化timerで内訳を見る。
+uniform_q_values_grad_q_setup,4,uniform_calculate_scalars_array,interpolation,q値とgrad_qの準備,変数数依存。
+uniform_tf_scalar_eval,4,uniform_calculate_scalars_array,visualization_kernel,TF評価,Function parser評価コスト。数式処理SIMD化済(08a8c2a0)。
+uniform_chain_rule_dfdq,4,uniform_calculate_scalars_array,visualization_kernel,dF/dq計算,uniform_chain_rule_grad(L3)と同値を加算→section集計で二重計上注意。
+uniform_normal_normalize,4,uniform_calculate_scalars_array,local_compute,法線正規化,NaN/zero処理含む。
+uniform_store_particle_data,3,uniform_particle_sampling_loop,sampling,粒子データの格納,格納処理を統一(104836aa)。
+thread_particle_merge,2,omp_uniform_sampling,synchronization,thread-local粒子bufferのmerge,prefix-sum並列マージで解決済(4e2eac66)。旧critical直列化を撤廃(-87%/merge、OMP数に比例)。PBVR_SERIAL_MERGEで旧経路。
+mpi_shift_exchange,1,ensemble_generate_particles_total,halo_exchange / MPI,ensemble shift通信,L1名はshift全体。中身は大半が子omp_shift_interpolation(計算)。実通信は2-5%。
+mpi_shift_size_exchange,2,mpi_shift_exchange,MPI,shiftサイズ交換,max/avgが高い場合は待ち。
+mpi_shift_alloc_recv_buffer,2,mpi_shift_exchange,MPI / memory,受信buffer確保,サイズ依存の確保コスト。
+mpi_shift_payload_all,2,mpi_shift_exchange,MPI,payload通信全体,payload別の合計に対応。
+mpi_shift_payload_cellids,2,mpi_shift_exchange,MPI / pack / unpack,cellids payload通信,payload別内訳。
+mpi_shift_payload_scalars,2,mpi_shift_exchange,MPI / pack / unpack,scalars payload通信,payload別内訳。
+mpi_shift_payload_coords,2,mpi_shift_exchange,MPI / pack / unpack,coords payload通信,payload別内訳。
+mpi_shift_payload_normals,2,mpi_shift_exchange,MPI / pack / unpack,normals payload通信,payload別内訳。
+mpi_shift_payload_sq,2,mpi_shift_exchange,MPI / pack / unpack,sq payload通信,payload別内訳。
+mpi_shift_payload_tmp,2,mpi_shift_exchange,MPI / pack / unpack,tmp payload通信,payload別内訳。
+omp_shift_interpolation,2,mpi_shift_exchange,OpenMP_parallel_region,shift後補間,支配区間(全体の53-92%)。MPI数増で膨張。最優先削減対象。
+shift_calculate_scalars_array,3,omp_shift_interpolation,interpolation,shift粒子scalar計算(配列版),uniform側との比較。
+shift_calc_scalar_grad,4,shift_calculate_scalars_array,local_compute,scalar+gradient helper,uniform側と同構造。
+shift_q_values_grad_q_setup,4,shift_calculate_scalars_array,interpolation,q値とgrad_q準備,変数数依存。
+shift_tf_scalar_eval,4,shift_calculate_scalars_array,visualization_kernel,TF評価,数式処理SIMD化の効果大(shift側 約3.2x)。
+shift_chain_rule_dfdq,4,shift_calculate_scalars_array,visualization_kernel,dF/dq計算,shift_chain_rule_gradと同値加算に注意。
+shift_normal_normalize,4,shift_calculate_scalars_array,local_compute,法線正規化,NaN/zero処理含む。
+stat_average_variance,1,ensemble_generate_particles_total,local_compute,統計量計算,ensemble統計の局所計算。
+stat_histogram,1,ensemble_generate_particles_total,local_compute / MPI,histogram作成/集約,bins数・変数数・MPI_Reduce。
+omp_rejection,1,ensemble_generate_particles_total,OpenMP_parallel_region,rejection処理,thread max/avg。
+rejection_thread_merge,2,omp_rejection,synchronization,rejection後merge,prefix-sum並列マージで解決済(273fd3f8)。avg/var/coef別offsetでcritical撤廃。
+cleanup_tfs,1,ensemble_generate_particles_total,finalization,TFクリーンアップ,解放コスト。
+output_coord_minmax,1,ensemble_generate_particles_total,I/O,座標min/max出力,bbox出力。
+output_particles_ave,1,ensemble_generate_particles_total,I/O,平均粒子出力,I/O込み/除外で比較。
+output_particles_var,1,ensemble_generate_particles_total,I/O,分散粒子出力,I/O込み/除外で比較。
+output_particles_cov,1,ensemble_generate_particles_total,I/O,共分散粒子出力,I/O込み/除外で比較。
+output_history,1,ensemble_generate_particles_total,I/O,history出力,rank 0集中の可能性。
+cleanup_cells,1,ensemble_generate_particles_total,finalization,Cellクリーンアップ,解放コスト。
+write_tf_file,1,ensemble_generate_particles_total,I/O,TFファイル出力,I/O。
+async_io_wait,1,ensemble_generate_particles_total,I/O / synchronization,非同期I/O待ち,I/Oボトルネック候補。
+final_barrier_state,1,ensemble_generate_particles_total,synchronization,最終同期,直前の不均衡が現れる。

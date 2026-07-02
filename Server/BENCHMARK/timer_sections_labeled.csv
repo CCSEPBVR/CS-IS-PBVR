@@ -1,0 +1,49 @@
+﻿大分類,項目名,処理内容,階層,内部区間名
+全体,アンサンブル粒子生成 全体,全処理の総時間,L0,ensemble_generate_particles_total
+初期化,パラメータパス設定,入力パス設定,L1,set_parameter_path
+初期化,パラメータファイル読込,パラメータ読込,L1,read_parameter_file
+初期化,伝達関数(TF)初期化,TF構築,L1,init_transfer_functions
+初期化,セル生成,CellBase構築,L1,create_cells
+初期化,サンプリング前処理,生成準備,L1,sampling_prepare
+一様サンプリング,一様粒子生成(OpenMP並列),rank内の全セルから粒子生成,L1,omp_uniform_sampling
+一様サンプリング,スレッド領域確保,thread-localバッファ確保,L2,uniform_thread_setup
+一様サンプリング,担当セル割当,thread毎のセル範囲決定,L2,uniform_cell_index_setup
+一様サンプリング,セルデータ束縛(bind),頂点座標・スカラーの取得(gather),L2,uniform_bind_cell_array
+一様サンプリング,セル体積計算,四面体分割による体積,L2,uniform_volume_calculation
+一様サンプリング,セル内粒子数決定,密度×体積→粒子数(乱数で確率丸め),L2,uniform_particle_count_calculation
+一様サンプリング,粒子生成ループ本体,座標生成〜格納の反復,L2,uniform_particle_sampling_loop
+一様サンプリング,セル内座標のランダム生成,MT乱数でローカル座標生成,L3,uniform_local_coord_generation
+一様サンプリング,ローカル→グローバル座標変換,bind＋局所点設定＋座標変換,L3,uniform_flush_prepare
+一様サンプリング,スカラー補間＋法線計算,変数補間とchain-rule法線,L3,uniform_calculate_scalars_array
+一様サンプリング,└ スカラー・勾配算出,逆ヤコビアン計算含む,L4,uniform_calc_scalar_grad
+一様サンプリング,└ 変数値・勾配の準備,q値・grad_q準備,L4,uniform_q_values_grad_q_setup
+一様サンプリング,└ 伝達関数(TF)評価,FunctionParserによるTF評価,L4,uniform_tf_scalar_eval
+一様サンプリング,└ 感度dF/dq計算(＝法線計算),伝達関数の微分(旧L3 chain_rule_gradと同値・統合),L4,uniform_chain_rule_dfdq
+一様サンプリング,└ 法線正規化,法線ベクトル正規化,L4,uniform_normal_normalize
+一様サンプリング,粒子データ格納,出力配列へ書込み,L3,uniform_store_particle_data
+一様サンプリング,スレッド粒子統合,thread結果をrank配列へマージ,L2,thread_particle_merge
+アンサンブル通信,シフト通信 全体,アンサンブル員間の粒子shift,L1,mpi_shift_exchange
+アンサンブル通信,通信サイズ交換,送受信サイズ交換,L2,mpi_shift_size_exchange
+アンサンブル通信,受信バッファ確保,受信領域確保,L2,mpi_shift_alloc_recv_buffer
+アンサンブル通信,データ本体通信,セルID/スカラー/座標/法線等の送受信,L2,mpi_shift_payload_*
+アンサンブル通信,シフト粒子の再補間(OpenMP),shift粒子のスカラー再補間(支配区間),L2,omp_shift_interpolation
+アンサンブル通信,シフト粒子 スカラー補間＋法線計算,変数補間とchain-rule法線,L3,shift_calculate_scalars_array
+アンサンブル通信,└ シフト粒子 スカラー・勾配算出,逆ヤコビアン計算含む,L4,shift_calc_scalar_grad
+アンサンブル通信,└ シフト粒子 変数値・勾配の準備,q値・grad_q準備,L4,shift_q_values_grad_q_setup
+アンサンブル通信,└ シフト粒子 伝達関数(TF)評価,FunctionParserによるTF評価,L4,shift_tf_scalar_eval
+アンサンブル通信,└ シフト粒子 感度dF/dq計算(＝法線計算),伝達関数の微分(旧L3 shift_chain_rule_gradと同値・統合),L4,shift_chain_rule_dfdq
+アンサンブル通信,└ シフト粒子 法線正規化,法線ベクトル正規化,L4,shift_normal_normalize
+統計,アンサンブル統計(平均・分散),統計量の局所計算,L1,stat_average_variance
+統計,ヒストグラム作成・集約,bins集計＋MPI集約,L1,stat_histogram
+棄却サンプリング,棄却サンプリング(OpenMP),統計から最終粒子を棄却抽出,L1,omp_rejection
+棄却サンプリング,棄却後スレッド統合,thread結果をマージ,L2,rejection_thread_merge
+出力・後処理,座標範囲(bbox)出力,座標min/max出力,L1,output_coord_minmax
+出力・後処理,粒子出力(平均),平均粒子データ書出し,L1,output_particles_ave
+出力・後処理,粒子出力(分散),分散粒子データ書出し,L1,output_particles_var
+出力・後処理,粒子出力(共分散),共分散粒子データ書出し,L1,output_particles_cov
+出力・後処理,履歴出力,history書出し,L1,output_history
+出力・後処理,伝達関数ファイル出力,TFファイル書出し,L1,write_tf_file
+出力・後処理,伝達関数解放,メモリ解放,L1,cleanup_tfs
+出力・後処理,セル解放,メモリ解放,L1,cleanup_cells
+出力・後処理,非同期I/O待ち,書込み完了待ち,L1,async_io_wait
+出力・後処理,最終同期(バリア),rank間同期,L1,final_barrier_state
