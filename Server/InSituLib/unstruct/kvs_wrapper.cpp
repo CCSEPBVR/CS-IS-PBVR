@@ -216,6 +216,9 @@ enum EnsembleTimerSection
     EnsembleTimerShiftTfScalarEval,
     EnsembleTimerShiftChainRuleDfdq,
     EnsembleTimerShiftNormalNormalize,
+    EnsembleTimerShiftRecoverRecv,
+    EnsembleTimerShiftFlushPrepare,
+    EnsembleTimerShiftStoreAccumulate,
     EnsembleTimerStatAverageVariance,
     EnsembleTimerStatHistogram,
     EnsembleTimerOmpRejection,
@@ -282,6 +285,9 @@ const EnsembleTimerSectionDef EnsembleTimerSections[EnsembleTimerSectionCount] =
     { "shift_calculate_scalars_array", "shift_tf_scalar_eval", 4 },
     { "shift_calculate_scalars_array", "shift_chain_rule_dfdq", 4 },
     { "shift_calculate_scalars_array", "shift_normal_normalize", 4 },
+    { "omp_shift_interpolation", "shift_recover_recv", 3 },
+    { "omp_shift_interpolation", "shift_flush_prepare", 3 },
+    { "omp_shift_interpolation", "shift_store_accumulate", 3 },
     { "ensemble_generate_particles_total", "stat_average_variance", 1 },
     { "ensemble_generate_particles_total", "stat_histogram", 1 },
     { "ensemble_generate_particles_total", "omp_rejection", 1 },
@@ -2943,6 +2949,9 @@ bool ensemble_generate_particles(
     std::vector<double> shift_tf_scalar_eval_times( max_threads, 0.0 );
     std::vector<double> shift_chain_rule_dfdq_times( max_threads, 0.0 );
     std::vector<double> shift_normal_normalize_times( max_threads, 0.0 );
+    std::vector<double> shift_recover_times( max_threads, 0.0 );
+    std::vector<double> shift_flush_prepare_times( max_threads, 0.0 );
+    std::vector<double> shift_store_times( max_threads, 0.0 );
     vismodule::Timer mpi_shift_timer;
     mpi_shift_timer.start();
 #endif
@@ -3129,6 +3138,9 @@ bool ensemble_generate_particles(
             double th_shift_tf_scalar_eval_time = 0.0;
             double th_shift_chain_rule_dfdq_time = 0.0;
             double th_shift_normal_normalize_time = 0.0;
+            double th_shift_recover_time = 0.0;
+            double th_shift_flush_prepare_time = 0.0;
+            double th_shift_store_time = 0.0;
 #endif
             vismodule::UInt32 cell_index[SIMD_BLK_SIZE];
             vismodule::Vector3f local_coord_array[SIMD_BLK_SIZE];
@@ -3148,6 +3160,10 @@ bool ensemble_generate_particles(
             for ( int i = 0; i < recv_size; i += SIMD_BLK_SIZE )
             {
                 const int remain_BLK = ( recv_size - i > SIMD_BLK_SIZE ) ? SIMD_BLK_SIZE : recv_size - i;
+#ifdef ENABLE_ENSEMBLE_TIMER
+                vismodule::Timer shift_recover_timer;
+                shift_recover_timer.start();
+#endif
                 for ( int j = 0; j < remain_BLK; j++ )
                 {
                     cell_index[j] = static_cast<vismodule::UInt32>( recv_cellids[i + j] );
@@ -3157,10 +3173,18 @@ bool ensemble_generate_particles(
                         recv_coords[3 * ( i + j ) + 2]
                     );
                 }
+#ifdef ENABLE_ENSEMBLE_TIMER
+                shift_recover_timer.stop();
+                th_shift_recover_time += shift_recover_timer.sec();
+                vismodule::Timer shift_flush_timer;
+                shift_flush_timer.start();
+#endif
                 bind_variables_scalars_opt( cell[thid], nvariables, remain_BLK, cell_index );
                 cell[thid][0]->setLocalPointArray( remain_BLK, local_coord_array );
                 cell[thid][0]->transformLocalToGlobalArray( remain_BLK, local_coord_array, global_coord_array );
 #ifdef ENABLE_ENSEMBLE_TIMER
+                shift_flush_timer.stop();
+                th_shift_flush_prepare_time += shift_flush_timer.sec();
                 vismodule::Timer scalar_timer;
                 scalar_timer.start();
                 ChainRuleTimingBreakdown chain_rule_timing;
@@ -3195,6 +3219,10 @@ bool ensemble_generate_particles(
 //                calculation_glad(remain_BLK, nvariables, th_tfs[thid], transfer_functions[thid], cell[thid], local_coord_array, cell_index, grad_array_x, grad_array_y, grad_array_z);
 
 
+#ifdef ENABLE_ENSEMBLE_TIMER
+                vismodule::Timer shift_store_timer;
+                shift_store_timer.start();
+#endif
                 for ( int j = 0; j < remain_BLK; j++ )
                 {
                     const float scalar = scalar_array[j];
@@ -3207,6 +3235,10 @@ bool ensemble_generate_particles(
                     recv_tmp_term[3 * ( i + j ) + 1] += scalar * grad_array_y[j];
                     recv_tmp_term[3 * ( i + j ) + 2] += scalar * grad_array_z[j];
                 }
+#ifdef ENABLE_ENSEMBLE_TIMER
+                shift_store_timer.stop();
+                th_shift_store_time += shift_store_timer.sec();
+#endif
             }
 #ifdef ENABLE_ENSEMBLE_TIMER
             thread_timer.stop();
@@ -3217,6 +3249,9 @@ bool ensemble_generate_particles(
             shift_tf_scalar_eval_times[thid] += th_shift_tf_scalar_eval_time;
             shift_chain_rule_dfdq_times[thid] += th_shift_chain_rule_dfdq_time;
             shift_normal_normalize_times[thid] += th_shift_normal_normalize_time;
+            shift_recover_times[thid] += th_shift_recover_time;
+            shift_flush_prepare_times[thid] += th_shift_flush_prepare_time;
+            shift_store_times[thid] += th_shift_store_time;
 #endif
         }
 #ifdef ENABLE_ENSEMBLE_TIMER
@@ -3244,6 +3279,9 @@ bool ensemble_generate_particles(
         ensemble_timer.addThread( EnsembleTimerShiftTfScalarEval, t, shift_tf_scalar_eval_times[t] );
         ensemble_timer.addThread( EnsembleTimerShiftChainRuleDfdq, t, shift_chain_rule_dfdq_times[t] );
         ensemble_timer.addThread( EnsembleTimerShiftNormalNormalize, t, shift_normal_normalize_times[t] );
+        ensemble_timer.addThread( EnsembleTimerShiftRecoverRecv, t, shift_recover_times[t] );
+        ensemble_timer.addThread( EnsembleTimerShiftFlushPrepare, t, shift_flush_prepare_times[t] );
+        ensemble_timer.addThread( EnsembleTimerShiftStoreAccumulate, t, shift_store_times[t] );
     }
 #endif
 
