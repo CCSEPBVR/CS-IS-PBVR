@@ -6,6 +6,7 @@
 #include "../ExtendedQT/Histogram.h"
 
 #include <QButtonGroup>
+#include <QComboBox>
 #include <QDebug>
 #include <QDoubleSpinBox>
 #include <QEvent>
@@ -263,7 +264,12 @@ EnsembleTransferFunctionEditor::EnsembleTransferFunctionEditor( WebSocketPair* w
     ui->setupUi( this );
     initializeButtonGroups();
     initializeTransferFunctionWidgets();
+    initializeStatisticStates();
 
+    connect( ui->m_statistics_combo_box,
+             QOverload<int>::of( &QComboBox::currentIndexChanged ),
+             this,
+             &EnsembleTransferFunctionEditor::onStatisticSelectionChanged );
     connect( ui->m_apply_push_button, &QPushButton::clicked, this, &EnsembleTransferFunctionEditor::onApply );
     connect( ui->m_export_push_button, &QPushButton::clicked, this, &EnsembleTransferFunctionEditor::onExport );
     connect( ui->m_import_push_button, &QPushButton::clicked, this, &EnsembleTransferFunctionEditor::onImport );
@@ -276,30 +282,11 @@ EnsembleTransferFunctionEditor::~EnsembleTransferFunctionEditor()
 
 void EnsembleTransferFunctionEditor::initializeButtonGroups()
 {
-    m_statistics_group = new QButtonGroup( this );
-    m_statistics_group->setObjectName( QStringLiteral( "StatisticsGroup" ) );
-    m_statistics_group->addButton( ui->m_average_radio_button );
-    m_statistics_group->addButton( ui->m_variance_radio_button );
-    m_statistics_group->addButton( ui->m_coefficient_variation_radio_button );
-    m_statistics_group->setExclusive( true );
-
-    m_average_min_max_group = new QButtonGroup( this );
-    m_average_min_max_group->setObjectName( QStringLiteral( "AverageMinMaxGroup" ) );
-    m_average_min_max_group->addButton( ui->m_average_server_min_max_radio_button );
-    m_average_min_max_group->addButton( ui->m_average_user_min_max_radio_button );
-    m_average_min_max_group->setExclusive( true );
-
-    m_variance_min_max_group = new QButtonGroup( this );
-    m_variance_min_max_group->setObjectName( QStringLiteral( "VarianceMinMaxGroup" ) );
-    m_variance_min_max_group->addButton( ui->m_variance_server_min_max_radio_button );
-    m_variance_min_max_group->addButton( ui->m_variance_user_min_max_radio_button );
-    m_variance_min_max_group->setExclusive( true );
-
-    m_coefficient_variation_min_max_group = new QButtonGroup( this );
-    m_coefficient_variation_min_max_group->setObjectName( QStringLiteral( "CoefficientVariationMinMaxGroup" ) );
-    m_coefficient_variation_min_max_group->addButton( ui->m_coefficient_variation_server_min_max_radio_button );
-    m_coefficient_variation_min_max_group->addButton( ui->m_coefficient_variation_user_min_max_radio_button );
-    m_coefficient_variation_min_max_group->setExclusive( true );
+    m_min_max_group = new QButtonGroup( this );
+    m_min_max_group->setObjectName( QStringLiteral( "MinMaxGroup" ) );
+    m_min_max_group->addButton( ui->m_server_min_max_radio_button );
+    m_min_max_group->addButton( ui->m_user_min_max_radio_button );
+    m_min_max_group->setExclusive( true );
 }
 
 void EnsembleTransferFunctionEditor::initializeTransferFunctionWidgets()
@@ -312,12 +299,81 @@ void EnsembleTransferFunctionEditor::initializeTransferFunctionWidgets()
     ui->m_apply_push_button->setAutoDefault( false );
     ui->m_apply_push_button->setDefault( false );
 
-    ui->m_average_color_map->installEventFilter( this );
-    ui->m_variance_color_map->installEventFilter( this );
-    ui->m_coefficient_variation_color_map->installEventFilter( this );
-    ui->m_average_opacity_map->installEventFilter( this );
-    ui->m_variance_opacity_map->installEventFilter( this );
-    ui->m_coefficient_variation_opacity_map->installEventFilter( this );
+    ui->m_color_map->installEventFilter( this );
+    ui->m_opacity_map->installEventFilter( this );
+}
+
+void EnsembleTransferFunctionEditor::initializeStatisticStates()
+{
+    m_statistics[AverageStatistic].displayName = QStringLiteral( "Average" );
+    m_statistics[AverageStatistic].statisticName = QStringLiteral( "average" );
+    m_statistics[VarianceStatistic].displayName = QStringLiteral( "Variance" );
+    m_statistics[VarianceStatistic].statisticName = QStringLiteral( "variance" );
+    m_statistics[CoefficientVariationStatistic].displayName = QStringLiteral( "Coefficient of Variation" );
+    m_statistics[CoefficientVariationStatistic].statisticName = QStringLiteral( "cv" );
+
+    const QVector<QColor> colors = ui->m_color_map->getColors();
+    const QVector<float> opacities = ui->m_opacity_map->getOpacities();
+    const std::vector<int> histogram = ui->m_histogram->getDatas();
+    for( auto& statistic : m_statistics )
+    {
+        statistic.colorMap = colors;
+        statistic.opacityMap = opacities;
+        statistic.useUserMinMax = ui->m_user_min_max_radio_button->isChecked();
+        statistic.userMin = ui->m_user_min_double_spin_box->value();
+        statistic.userMax = ui->m_user_max_double_spin_box->value();
+        statistic.serverMin = ui->m_server_min_double_spin_box->value();
+        statistic.serverMax = ui->m_server_max_double_spin_box->value();
+        statistic.histogram = histogram;
+    }
+
+    m_current_statistic = AverageStatistic;
+    loadStatisticState( m_current_statistic );
+}
+
+void EnsembleTransferFunctionEditor::saveCurrentStatisticState()
+{
+    StatisticUiState& statistic = m_statistics[m_current_statistic];
+    statistic.colorMap = ui->m_color_map->getColors();
+    statistic.opacityMap = ui->m_opacity_map->getOpacities();
+    statistic.useUserMinMax = ui->m_user_min_max_radio_button->isChecked();
+    statistic.userMin = ui->m_user_min_double_spin_box->value();
+    statistic.userMax = ui->m_user_max_double_spin_box->value();
+    statistic.serverMin = ui->m_server_min_double_spin_box->value();
+    statistic.serverMax = ui->m_server_max_double_spin_box->value();
+    statistic.histogram = ui->m_histogram->getDatas();
+}
+
+void EnsembleTransferFunctionEditor::loadStatisticState( StatisticIndex statistic )
+{
+    const StatisticUiState& state = m_statistics[statistic];
+    ui->m_user_min_max_radio_button->setChecked( state.useUserMinMax );
+    ui->m_server_min_max_radio_button->setChecked( !state.useUserMinMax );
+    ui->m_user_min_double_spin_box->setValue( state.userMin );
+    ui->m_user_max_double_spin_box->setValue( state.userMax );
+    ui->m_server_min_double_spin_box->setValue( state.serverMin );
+    ui->m_server_max_double_spin_box->setValue( state.serverMax );
+    ui->m_color_map->setColors( state.colorMap );
+    ui->m_opacity_map->setOpacities( state.opacityMap );
+    ui->m_histogram->setDatas( state.histogram );
+    ui->m_color_map->update();
+    ui->m_opacity_map->update();
+    ui->m_histogram->update();
+}
+
+EnsembleTransferFunctionEditor::StatisticIndex EnsembleTransferFunctionEditor::selectedStatisticIndex() const
+{
+    const int index = ui->m_statistics_combo_box->currentIndex();
+    if( index == VarianceStatistic ) return VarianceStatistic;
+    if( index == CoefficientVariationStatistic ) return CoefficientVariationStatistic;
+    return AverageStatistic;
+}
+
+void EnsembleTransferFunctionEditor::onStatisticSelectionChanged( int )
+{
+    saveCurrentStatisticState();
+    m_current_statistic = selectedStatisticIndex();
+    loadStatisticState( m_current_statistic );
 }
 
 void EnsembleTransferFunctionEditor::onReceiveEnsembleStatisticsParameter( const QJsonObject& payload )
@@ -329,18 +385,10 @@ void EnsembleTransferFunctionEditor::onReceiveEnsembleStatisticsParameter( const
         return;
     }
 
-    auto updateBlock = [&]( const QString& displayName,
-                            ColorMap* colorMapWidget,
-                            OpacityMap* opacityMapWidget,
-                            QRadioButton* userRadioButton,
-                            QRadioButton* serverRadioButton,
-                            QDoubleSpinBox* userMinSpinBox,
-                            QDoubleSpinBox* userMaxSpinBox,
-                            QDoubleSpinBox* serverMinSpinBox,
-                            QDoubleSpinBox* serverMaxSpinBox,
-                            Histogram* histogramWidget,
-                            const QJsonObject& patch )
+    auto updateBlock = [&]( StatisticIndex index, const QJsonObject& patch )
     {
+        StatisticUiState& state = m_statistics[index];
+        const QString& displayName = state.displayName;
         const QString rangeModeKey = QString::fromUtf8( Protocol::Key::EnsembleUserRangeMode );
         const QString userMinKey = QString::fromUtf8( Protocol::Key::EnsembleUserRangeMin );
         const QString userMaxKey = QString::fromUtf8( Protocol::Key::EnsembleUserRangeMax );
@@ -353,16 +401,13 @@ void EnsembleTransferFunctionEditor::onReceiveEnsembleStatisticsParameter( const
         if( patch.contains( rangeModeKey ) )
         {
             const int rangeMode = patch.value( rangeModeKey ).toInt();
-            userRadioButton->setChecked( rangeMode == UserRangeMode );
-            serverRadioButton->setChecked( rangeMode == ServerRangeMode );
+            state.useUserMinMax = rangeMode != ServerRangeMode;
         }
 
         if( patch.value( userMinKey ).isDouble() && patch.value( userMaxKey ).isDouble() )
         {
-            const double userMin = patch.value( userMinKey ).toDouble();
-            const double userMax = patch.value( userMaxKey ).toDouble();
-            userMinSpinBox->setValue( userMin );
-            userMaxSpinBox->setValue( userMax );
+            state.userMin = patch.value( userMinKey ).toDouble();
+            state.userMax = patch.value( userMaxKey ).toDouble();
         }
 
         if( patch.value( minKey ).isDouble() && patch.value( maxKey ).isDouble() )
@@ -383,8 +428,8 @@ void EnsembleTransferFunctionEditor::onReceiveEnsembleStatisticsParameter( const
             }
             else
             {
-                serverMinSpinBox->setValue( serverMin );
-                serverMaxSpinBox->setValue( serverMax );
+                state.serverMin = serverMin;
+                state.serverMax = serverMax;
                 qDebug() << "[Client][EnsembleTFE] update server range for" << displayName
                          << "min =" << serverMin << "max =" << serverMax;
             }
@@ -401,8 +446,7 @@ void EnsembleTransferFunctionEditor::onReceiveEnsembleStatisticsParameter( const
             const QVector<QColor> colors = ReadColorMap( patch.value( colorMapKey ), &colorMapOk );
             if( colorMapOk )
             {
-                colorMapWidget->setColors( colors );
-                colorMapWidget->update();
+                state.colorMap = colors;
             }
             else
             {
@@ -417,8 +461,7 @@ void EnsembleTransferFunctionEditor::onReceiveEnsembleStatisticsParameter( const
             const QVector<float> opacities = ReadOpacityMap( patch.value( opacityMapKey ), &opacityMapOk );
             if( opacityMapOk )
             {
-                opacityMapWidget->setOpacities( opacities );
-                opacityMapWidget->update();
+                state.opacityMap = opacities;
             }
             else
             {
@@ -434,8 +477,7 @@ void EnsembleTransferFunctionEditor::onReceiveEnsembleStatisticsParameter( const
             if( histogramOk )
             {
                 // Empty histograms are treated as an explicit request to clear the display.
-                histogramWidget->setDatas( histogram );
-                histogramWidget->update();
+                state.histogram = histogram;
                 qDebug() << "[Client][EnsembleTFE] update histogram for" << displayName
                          << "bins =" << histogram.size();
             }
@@ -450,6 +492,8 @@ void EnsembleTransferFunctionEditor::onReceiveEnsembleStatisticsParameter( const
             qDebug() << "[Client][EnsembleTFE] keep histogram for" << displayName
                      << "reason = missing EnsembleHistogram";
         }
+
+        if( index == m_current_statistic ) loadStatisticState( index );
     };
 
     const QJsonArray data = payload.value( dataKey ).toArray();
@@ -477,45 +521,15 @@ void EnsembleTransferFunctionEditor::onReceiveEnsembleStatisticsParameter( const
 
         if( statistic == QStringLiteral( "average" ) )
         {
-            updateBlock( QStringLiteral( "Average" ),
-                         ui->m_average_color_map,
-                         ui->m_average_opacity_map,
-                         ui->m_average_user_min_max_radio_button,
-                         ui->m_average_server_min_max_radio_button,
-                         ui->m_average_user_min_double_spin_box,
-                         ui->m_average_user_max_double_spin_box,
-                         ui->m_average_server_min_double_spin_box,
-                         ui->m_average_server_max_double_spin_box,
-                         ui->m_average_histogram,
-                         patch );
+            updateBlock( AverageStatistic, patch );
         }
         else if( statistic == QStringLiteral( "variance" ) )
         {
-            updateBlock( QStringLiteral( "Variance" ),
-                         ui->m_variance_color_map,
-                         ui->m_variance_opacity_map,
-                         ui->m_variance_user_min_max_radio_button,
-                         ui->m_variance_server_min_max_radio_button,
-                         ui->m_variance_user_min_double_spin_box,
-                         ui->m_variance_user_max_double_spin_box,
-                         ui->m_variance_server_min_double_spin_box,
-                         ui->m_variance_server_max_double_spin_box,
-                         ui->m_variance_histogram,
-                         patch );
+            updateBlock( VarianceStatistic, patch );
         }
         else if( statistic == QStringLiteral( "cv" ) )
         {
-            updateBlock( QStringLiteral( "Coefficient of Variation" ),
-                         ui->m_coefficient_variation_color_map,
-                         ui->m_coefficient_variation_opacity_map,
-                         ui->m_coefficient_variation_user_min_max_radio_button,
-                         ui->m_coefficient_variation_server_min_max_radio_button,
-                         ui->m_coefficient_variation_user_min_double_spin_box,
-                         ui->m_coefficient_variation_user_max_double_spin_box,
-                         ui->m_coefficient_variation_server_min_double_spin_box,
-                         ui->m_coefficient_variation_server_max_double_spin_box,
-                         ui->m_coefficient_variation_histogram,
-                         patch );
+            updateBlock( CoefficientVariationStatistic, patch );
         }
         else
         {
@@ -526,9 +540,7 @@ void EnsembleTransferFunctionEditor::onReceiveEnsembleStatisticsParameter( const
 
 QString EnsembleTransferFunctionEditor::selectedStatistic() const
 {
-    if( ui->m_variance_radio_button->isChecked() ) return QStringLiteral( "variance" );
-    if( ui->m_coefficient_variation_radio_button->isChecked() ) return QStringLiteral( "cv" );
-    return QStringLiteral( "average" );
+    return m_statistics[selectedStatisticIndex()].statisticName;
 }
 
 bool EnsembleTransferFunctionEditor::eventFilter( QObject* watched, QEvent* event )
@@ -541,8 +553,7 @@ bool EnsembleTransferFunctionEditor::eventFilter( QObject* watched, QEvent* even
     auto* mouseEvent = static_cast<QMouseEvent*>( event );
     if( mouseEvent->button() != Qt::LeftButton ) return QDialog::eventFilter( watched, event );
 
-    if( watched == ui->m_average_color_map || watched == ui->m_variance_color_map ||
-        watched == ui->m_coefficient_variation_color_map )
+    if( watched == ui->m_color_map )
     {
         auto* colorMap = qobject_cast<ColorMap*>( watched );
         if( !colorMap ) return QDialog::eventFilter( watched, event );
@@ -556,8 +567,7 @@ bool EnsembleTransferFunctionEditor::eventFilter( QObject* watched, QEvent* even
         return true;
     }
 
-    if( watched == ui->m_average_opacity_map || watched == ui->m_variance_opacity_map ||
-        watched == ui->m_coefficient_variation_opacity_map )
+    if( watched == ui->m_opacity_map )
     {
         auto* opacityMap = qobject_cast<OpacityMap*>( watched );
         if( !opacityMap ) return QDialog::eventFilter( watched, event );
@@ -613,30 +623,21 @@ bool EnsembleTransferFunctionEditor::validateForApply() const
         return true;
     };
 
-    return validateStatistic( QStringLiteral( "Average" ),
-                              ui->m_average_user_min_max_radio_button->isChecked(),
-                              ui->m_average_user_min_double_spin_box->value(),
-                              ui->m_average_user_max_double_spin_box->value(),
-                              ui->m_average_server_min_double_spin_box->value(),
-                              ui->m_average_server_max_double_spin_box->value(),
-                              ui->m_average_color_map->getColors().size(),
-                              ui->m_average_opacity_map->getOpacities().size() ) &&
-           validateStatistic( QStringLiteral( "Variance" ),
-                              ui->m_variance_user_min_max_radio_button->isChecked(),
-                              ui->m_variance_user_min_double_spin_box->value(),
-                              ui->m_variance_user_max_double_spin_box->value(),
-                              ui->m_variance_server_min_double_spin_box->value(),
-                              ui->m_variance_server_max_double_spin_box->value(),
-                              ui->m_variance_color_map->getColors().size(),
-                              ui->m_variance_opacity_map->getOpacities().size() ) &&
-           validateStatistic( QStringLiteral( "Coefficient of Variation" ),
-                              ui->m_coefficient_variation_user_min_max_radio_button->isChecked(),
-                              ui->m_coefficient_variation_user_min_double_spin_box->value(),
-                              ui->m_coefficient_variation_user_max_double_spin_box->value(),
-                              ui->m_coefficient_variation_server_min_double_spin_box->value(),
-                              ui->m_coefficient_variation_server_max_double_spin_box->value(),
-                              ui->m_coefficient_variation_color_map->getColors().size(),
-                              ui->m_coefficient_variation_opacity_map->getOpacities().size() );
+    for( const auto& statistic : m_statistics )
+    {
+        if( !validateStatistic( statistic.displayName,
+                                statistic.useUserMinMax,
+                                statistic.userMin,
+                                statistic.userMax,
+                                statistic.serverMin,
+                                statistic.serverMax,
+                                statistic.colorMap.size(),
+                                statistic.opacityMap.size() ) )
+        {
+            return false;
+        }
+    }
+    return true;
 }
 
 bool EnsembleTransferFunctionEditor::validateForExport() const
@@ -668,25 +669,23 @@ bool EnsembleTransferFunctionEditor::validateForExport() const
         return true;
     };
 
-    return validateUserRange( QStringLiteral( "Average" ),
-                              ui->m_average_user_min_double_spin_box->value(),
-                              ui->m_average_user_max_double_spin_box->value(),
-                              ui->m_average_color_map->getColors().size(),
-                              ui->m_average_opacity_map->getOpacities().size() ) &&
-           validateUserRange( QStringLiteral( "Variance" ),
-                              ui->m_variance_user_min_double_spin_box->value(),
-                              ui->m_variance_user_max_double_spin_box->value(),
-                              ui->m_variance_color_map->getColors().size(),
-                              ui->m_variance_opacity_map->getOpacities().size() ) &&
-           validateUserRange( QStringLiteral( "Coefficient of Variation" ),
-                              ui->m_coefficient_variation_user_min_double_spin_box->value(),
-                              ui->m_coefficient_variation_user_max_double_spin_box->value(),
-                              ui->m_coefficient_variation_color_map->getColors().size(),
-                              ui->m_coefficient_variation_opacity_map->getOpacities().size() );
+    for( const auto& statistic : m_statistics )
+    {
+        if( !validateUserRange( statistic.displayName,
+                                statistic.userMin,
+                                statistic.userMax,
+                                statistic.colorMap.size(),
+                                statistic.opacityMap.size() ) )
+        {
+            return false;
+        }
+    }
+    return true;
 }
 
 void EnsembleTransferFunctionEditor::onApply()
 {
+    saveCurrentStatisticState();
     if( !validateForApply() ) return;
     if( !m_web_sockets || !m_web_sockets->isConnected() )
     {
@@ -721,33 +720,18 @@ void EnsembleTransferFunctionEditor::onApply()
     };
 
     QJsonArray data;
-    appendStatisticPatch( data,
-                          QStringLiteral( "average" ),
-                          ui->m_average_user_min_max_radio_button->isChecked(),
-                          ui->m_average_user_min_double_spin_box->value(),
-                          ui->m_average_user_max_double_spin_box->value(),
-                          ui->m_average_server_min_double_spin_box->value(),
-                          ui->m_average_server_max_double_spin_box->value(),
-                          ui->m_average_color_map->getColors(),
-                          ui->m_average_opacity_map->getOpacities() );
-    appendStatisticPatch( data,
-                          QStringLiteral( "variance" ),
-                          ui->m_variance_user_min_max_radio_button->isChecked(),
-                          ui->m_variance_user_min_double_spin_box->value(),
-                          ui->m_variance_user_max_double_spin_box->value(),
-                          ui->m_variance_server_min_double_spin_box->value(),
-                          ui->m_variance_server_max_double_spin_box->value(),
-                          ui->m_variance_color_map->getColors(),
-                          ui->m_variance_opacity_map->getOpacities() );
-    appendStatisticPatch( data,
-                          QStringLiteral( "cv" ),
-                          ui->m_coefficient_variation_user_min_max_radio_button->isChecked(),
-                          ui->m_coefficient_variation_user_min_double_spin_box->value(),
-                          ui->m_coefficient_variation_user_max_double_spin_box->value(),
-                          ui->m_coefficient_variation_server_min_double_spin_box->value(),
-                          ui->m_coefficient_variation_server_max_double_spin_box->value(),
-                          ui->m_coefficient_variation_color_map->getColors(),
-                          ui->m_coefficient_variation_opacity_map->getOpacities() );
+    for( const auto& statistic : m_statistics )
+    {
+        appendStatisticPatch( data,
+                              statistic.statisticName,
+                              statistic.useUserMinMax,
+                              statistic.userMin,
+                              statistic.userMax,
+                              statistic.serverMin,
+                              statistic.serverMax,
+                              statistic.colorMap,
+                              statistic.opacityMap );
+    }
 
     QJsonObject root;
     root[QString::fromUtf8( Protocol::Key::Event )] = QString::fromUtf8( Protocol::Events::EnsembleStatisticsParameter );
@@ -758,6 +742,7 @@ void EnsembleTransferFunctionEditor::onApply()
 
 void EnsembleTransferFunctionEditor::onExport()
 {
+    saveCurrentStatisticState();
     if( !validateForExport() ) return;
 
     const QString fileName = QFileDialog::getSaveFileName(
@@ -768,45 +753,27 @@ void EnsembleTransferFunctionEditor::onExport()
     if( fileName.isEmpty() ) return;
 
     const QString variableExpression = ui->m_statistics_synthesizer_line_edit->text().trimmed();
-    const EnsembleTFSetting average = {
-        QStringLiteral( "Average" ),
-        QStringLiteral( "average" ),
-        variableExpression,
-        ui->m_average_color_map->getColors(),
-        ui->m_average_opacity_map->getOpacities(),
-        true,
-        ui->m_average_user_min_double_spin_box->value(),
-        ui->m_average_user_max_double_spin_box->value(),
-        ui->m_average_user_min_double_spin_box->value(),
-        ui->m_average_user_max_double_spin_box->value(),
-        ui->m_average_histogram->getDatas()
+    auto exportSetting = [&]( StatisticIndex index )
+    {
+        const StatisticUiState& state = m_statistics[index];
+        return EnsembleTFSetting {
+            state.displayName,
+            state.statisticName,
+            variableExpression,
+            state.colorMap,
+            state.opacityMap,
+            true,
+            state.userMin,
+            state.userMax,
+            state.userMin,
+            state.userMax,
+            state.histogram
+        };
     };
-    const EnsembleTFSetting variance = {
-        QStringLiteral( "Variance" ),
-        QStringLiteral( "variance" ),
-        variableExpression,
-        ui->m_variance_color_map->getColors(),
-        ui->m_variance_opacity_map->getOpacities(),
-        true,
-        ui->m_variance_user_min_double_spin_box->value(),
-        ui->m_variance_user_max_double_spin_box->value(),
-        ui->m_variance_user_min_double_spin_box->value(),
-        ui->m_variance_user_max_double_spin_box->value(),
-        ui->m_variance_histogram->getDatas()
-    };
-    const EnsembleTFSetting coefficientVariation = {
-        QStringLiteral( "Coefficient of Variation" ),
-        QStringLiteral( "cv" ),
-        variableExpression,
-        ui->m_coefficient_variation_color_map->getColors(),
-        ui->m_coefficient_variation_opacity_map->getOpacities(),
-        true,
-        ui->m_coefficient_variation_user_min_double_spin_box->value(),
-        ui->m_coefficient_variation_user_max_double_spin_box->value(),
-        ui->m_coefficient_variation_user_min_double_spin_box->value(),
-        ui->m_coefficient_variation_user_max_double_spin_box->value(),
-        ui->m_coefficient_variation_histogram->getDatas()
-    };
+
+    const EnsembleTFSetting average = exportSetting( AverageStatistic );
+    const EnsembleTFSetting variance = exportSetting( VarianceStatistic );
+    const EnsembleTFSetting coefficientVariation = exportSetting( CoefficientVariationStatistic );
 
     QJsonObject transferFunctionSettings;
     transferFunctionSettings["transfer_function_count"] = 1;
@@ -872,20 +839,14 @@ void EnsembleTransferFunctionEditor::onImport()
     }
 
     const QJsonObject root = document.object();
+    saveCurrentStatisticState();
 
     bool hadMissingKeys = false;
     QString importedExpression;
 
-    auto importStatistic = [&]( const QString& sectionName,
-                                ColorMap* colorMapWidget,
-                                OpacityMap* opacityMapWidget,
-                                QRadioButton* userRadioButton,
-                                QRadioButton* serverRadioButton,
-                                QDoubleSpinBox* userMinSpinBox,
-                                QDoubleSpinBox* userMaxSpinBox,
-                                QDoubleSpinBox* serverMinSpinBox,
-                                QDoubleSpinBox* serverMaxSpinBox )
+    auto importStatistic = [&]( const QString& sectionName, StatisticIndex index )
     {
+        StatisticUiState& state = m_statistics[index];
         QJsonArray section = root.value( sectionName ).toArray();
         if( section.isEmpty() && sectionName == QStringLiteral( "mean_transfer_functions" ) )
         {
@@ -910,67 +871,37 @@ void EnsembleTransferFunctionEditor::onImport()
         if( !colorVariable.isEmpty() && importedExpression.isEmpty() ) importedExpression = colorVariable;
 
         bool useUser = true;
-        double userMin = userMinSpinBox->value();
-        double userMax = userMaxSpinBox->value();
-        double serverMin = serverMinSpinBox->value();
-        double serverMax = serverMaxSpinBox->value();
+        double userMin = state.userMin;
+        double userMax = state.userMax;
+        double serverMin = state.serverMin;
+        double serverMax = state.serverMax;
         if( !ReadRange( color, &useUser, &userMin, &userMax, &serverMin, &serverMax ) ) hadMissingKeys = true;
 
-        userMinSpinBox->setValue( userMin );
-        userMaxSpinBox->setValue( userMax );
-        serverMinSpinBox->setValue( serverMin );
-        serverMaxSpinBox->setValue( serverMax );
-        userRadioButton->setChecked( useUser );
-        serverRadioButton->setChecked( !useUser );
+        state.userMin = userMin;
+        state.userMax = userMax;
+        state.serverMin = serverMin;
+        state.serverMax = serverMax;
+        state.useUserMinMax = useUser;
 
         bool colorMapOk = false;
         const QVector<QColor> colors = ReadColorMap( color.value( "map" ), &colorMapOk );
-        if( colorMapOk ) colorMapWidget->setColors( colors );
+        if( colorMapOk ) state.colorMap = colors;
         else hadMissingKeys = true;
 
         bool opacityMapOk = false;
         const QVector<float> opacities = ReadOpacityMap( opacity.value( "map" ), &opacityMapOk );
-        if( opacityMapOk ) opacityMapWidget->setOpacities( opacities );
+        if( opacityMapOk ) state.opacityMap = opacities;
         else hadMissingKeys = true;
     };
 
     // Missing optional/default.json fields keep the current GUI values so a partial file can still be useful.
-    importStatistic( QStringLiteral( "mean_transfer_functions" ),
-                     ui->m_average_color_map,
-                     ui->m_average_opacity_map,
-                     ui->m_average_user_min_max_radio_button,
-                     ui->m_average_server_min_max_radio_button,
-                     ui->m_average_user_min_double_spin_box,
-                     ui->m_average_user_max_double_spin_box,
-                     ui->m_average_server_min_double_spin_box,
-                     ui->m_average_server_max_double_spin_box );
-    importStatistic( QStringLiteral( "variance_transfer_functions" ),
-                     ui->m_variance_color_map,
-                     ui->m_variance_opacity_map,
-                     ui->m_variance_user_min_max_radio_button,
-                     ui->m_variance_server_min_max_radio_button,
-                     ui->m_variance_user_min_double_spin_box,
-                     ui->m_variance_user_max_double_spin_box,
-                     ui->m_variance_server_min_double_spin_box,
-                     ui->m_variance_server_max_double_spin_box );
-    importStatistic( QStringLiteral( "coefficient_of_variation_transfer_functions" ),
-                     ui->m_coefficient_variation_color_map,
-                     ui->m_coefficient_variation_opacity_map,
-                     ui->m_coefficient_variation_user_min_max_radio_button,
-                     ui->m_coefficient_variation_server_min_max_radio_button,
-                     ui->m_coefficient_variation_user_min_double_spin_box,
-                     ui->m_coefficient_variation_user_max_double_spin_box,
-                     ui->m_coefficient_variation_server_min_double_spin_box,
-                     ui->m_coefficient_variation_server_max_double_spin_box );
+    importStatistic( QStringLiteral( "mean_transfer_functions" ), AverageStatistic );
+    importStatistic( QStringLiteral( "variance_transfer_functions" ), VarianceStatistic );
+    importStatistic( QStringLiteral( "coefficient_of_variation_transfer_functions" ), CoefficientVariationStatistic );
 
     if( !importedExpression.isEmpty() ) ui->m_statistics_synthesizer_line_edit->setText( importedExpression );
 
-    ui->m_average_color_map->update();
-    ui->m_average_opacity_map->update();
-    ui->m_variance_color_map->update();
-    ui->m_variance_opacity_map->update();
-    ui->m_coefficient_variation_color_map->update();
-    ui->m_coefficient_variation_opacity_map->update();
+    loadStatisticState( m_current_statistic );
 
     if( hadMissingKeys )
     {
