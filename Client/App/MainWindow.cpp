@@ -31,7 +31,7 @@ MainWindow::MainWindow( kvs::qt::Application& app, QWidget *parent )
     , m_plot_over_time_editor          ( new PlotOverTimeEditor( m_screen, m_web_sockets, this ) )
     , m_point_size_control             ( new PointSizeControl( m_screen, this ) )
     , m_preference                     ( new Preference( this ) )
-    , m_repetition_level_control       ( new RepetitionLevelControl( m_screen, m_compositor, this ) )
+    , m_repetition_level_control       ( new RepetitionLevelControl( m_screen, m_compositor, m_web_sockets, m_viz_mode, this ) )
     , m_shading_control                ( new ShadingControl( m_screen, this ) )
     , m_ensemble_transfer_function_editor( new EnsembleTransferFunctionEditor( m_web_sockets, this ) )
     , m_transfer_function_editor       ( new TransferFunctionEditor( m_web_sockets, this ) )
@@ -481,6 +481,7 @@ void MainWindow::initializeCommunication()
         connect( m_communication, &Communication::updateOperatorState, m_plot_over_line_editor     , &PlotOverLineEditor    ::onOperatorStateUpdate );
         connect( m_communication, &Communication::updateOperatorState, m_plot_over_time_editor     , &PlotOverTimeEditor    ::onOperatorStateUpdate );
         connect( m_communication, &Communication::updateOperatorState, m_transfer_function_editor  , &TransferFunctionEditor::onOperatorStateUpdate );
+        connect( m_communication, &Communication::updateOperatorState, m_repetition_level_control  , &RepetitionLevelControl::onOperatorStateUpdate );
 
         // NOTE:バイナリソケット用
         connect( m_communication, &Communication::unpack, m_object_editor, &ObjectEditor::onUnpack );
@@ -493,6 +494,7 @@ void MainWindow::initializeCommunication()
         connect( m_communication, &Communication::receivePlotOverTimeParameter    , m_plot_over_time_editor     , &PlotOverTimeEditor    ::onReceivePlotOverTimeParameter );
         connect( m_communication, &Communication::receiveTransferFunctionParameter, m_transfer_function_editor  , &TransferFunctionEditor::onReceiveTransferFunctionParameter );
         connect( m_communication, &Communication::receiveEnsembleStatisticsParameter, m_ensemble_transfer_function_editor, &EnsembleTransferFunctionEditor::onReceiveEnsembleStatisticsParameter );
+        connect( m_communication, &Communication::receiveRepetitionLevelParameter , m_repetition_level_control  , &RepetitionLevelControl::onReceiveRepetitionLevelParameter );
 
         connect( m_communication, &Communication::receiveRequestDataAtTransferFunctionParameter, m_transfer_function_editor, &TransferFunctionEditor::onReceiveRequestDataAtTransferFunctionParameter );
 
@@ -591,8 +593,6 @@ void MainWindow::initializeRepetitionLevelControl()
         addDockWidget( Qt::LeftDockWidgetArea, m_repetition_level_control );
 
         connect( m_repetition_level_control, &RepetitionLevelControl::shading, m_shading_control, &ShadingControl::onShading );
-        connect( m_repetition_level_control, &RepetitionLevelControl::repetitionLevelApplied, m_ensemble_transfer_function_editor, &EnsembleTransferFunctionEditor::setRepeatLevel );
-        connect( m_ensemble_transfer_function_editor, &EnsembleTransferFunctionEditor::repeatLevelChanged, m_repetition_level_control, &RepetitionLevelControl::onReceiveRepetitionLevel );
 
         emit updateInitialRepetitionLevel();
     }

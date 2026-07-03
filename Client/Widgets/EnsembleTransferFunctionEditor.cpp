@@ -320,12 +320,6 @@ void EnsembleTransferFunctionEditor::initializeTransferFunctionWidgets()
     ui->m_coefficient_variation_opacity_map->installEventFilter( this );
 }
 
-void EnsembleTransferFunctionEditor::setRepeatLevel( size_t repeatLevel )
-{
-    m_repeat_level = repeatLevel;
-    emit repeatLevelChanged( repeatLevel );
-}
-
 void EnsembleTransferFunctionEditor::onReceiveEnsembleStatisticsParameter( const QJsonObject& payload )
 {
     const QString dataKey = QString::fromUtf8( Protocol::Key::Data );
@@ -333,12 +327,6 @@ void EnsembleTransferFunctionEditor::onReceiveEnsembleStatisticsParameter( const
     {
         qDebug() << "[Client][EnsembleTFE] EnsembleStatisticsParameter has no Data array";
         return;
-    }
-
-    const QString repeatLevelKey = QString::fromUtf8( Protocol::Key::RepeatLevel );
-    if( payload.value( repeatLevelKey ).isDouble() )
-    {
-        setRepeatLevel( static_cast<size_t>( payload.value( repeatLevelKey ).toInt() ) );
     }
 
     auto updateBlock = [&]( const QString& displayName,
@@ -826,11 +814,7 @@ void EnsembleTransferFunctionEditor::onExport()
     transferFunctionSettings["color_synthesis"] = QStringLiteral( "C1" );
     transferFunctionSettings["opacity_synthesis"] = QStringLiteral( "O1" );
 
-    QJsonObject samplingSettings;
-    samplingSettings["m_repeat_level"] = static_cast<double>( m_repeat_level );
-
     QJsonObject settings;
-    settings["sampling"] = samplingSettings;
     settings["transfer_function"] = transferFunctionSettings;
 
     QJsonArray normalTransferFunctions;
@@ -888,18 +872,6 @@ void EnsembleTransferFunctionEditor::onImport()
     }
 
     const QJsonObject root = document.object();
-    if( root.value( "settings" ).isObject() )
-    {
-        const QJsonObject settings = root.value( "settings" ).toObject();
-        if( settings.value( "sampling" ).isObject() )
-        {
-            const QJsonObject sampling = settings.value( "sampling" ).toObject();
-            if( sampling.value( "m_repeat_level" ).isDouble() )
-            {
-                m_repeat_level = static_cast<size_t>( sampling.value( "m_repeat_level" ).toDouble() );
-            }
-        }
-    }
 
     bool hadMissingKeys = false;
     QString importedExpression;

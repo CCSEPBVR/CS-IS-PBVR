@@ -106,6 +106,7 @@ private:
     void receivePlotOverTimeParameter(uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received);
     void receiveTransferFunctionParameter(uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received);
     void receiveEnsembleStatisticsParameter(uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received);
+    void receiveRepetitionLevelParameter(uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received);
     void fileList(uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received);
     void selectedFile(uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received);
     void receiveObjectDelete(uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received);

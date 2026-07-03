@@ -203,6 +203,7 @@ inline constexpr std::string_view ObjectInfoParameter           = "ObjectInfoPar
 inline constexpr std::string_view ServerSideSameTimeStepReplace = "ServerSideSameTimeStepReplace";
 inline constexpr std::string_view TransferFunctionParameter     = "TransferFunctionParameter";
 inline constexpr std::string_view EnsembleStatisticsParameter   = "EnsembleStatisticsParameter";
+inline constexpr std::string_view RepetitionLevelParameter      = "RepetitionLevelParameter";
 inline constexpr std::string_view GlyphParameter                = "GlyphParameter";
 inline constexpr std::string_view PlotOverLineParameter         = "PlotOverLineParameter";
 inline constexpr std::string_view PlotOverTimeParameter         = "PlotOverTimeParameter";

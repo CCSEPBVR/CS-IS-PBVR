@@ -581,6 +581,7 @@ void Server::onMessage(uWS::WebSocket<false, true, PerSocket>* ws, std::string_v
         else if (event == Protocol::Events::PlotOverTimeParameter)         receivePlotOverTimeParameter(ws, received);
         else if (event == Protocol::Events::TransferFunctionParameter)     receiveTransferFunctionParameter(ws, received);
         else if (event == Protocol::Events::EnsembleStatisticsParameter)   receiveEnsembleStatisticsParameter(ws, received);
+        else if (event == Protocol::Events::RepetitionLevelParameter)      receiveRepetitionLevelParameter(ws, received);
         else if (event == "fileList")                                      fileList(ws, received);
         else if (event == Protocol::Events::SelectedFile)                  selectedFile(ws, received);
         else if (event == Protocol::Events::ObjectDelete)                  receiveObjectDelete(ws, received);        
@@ -1322,6 +1323,11 @@ void Server::initialize(uWS::WebSocket<false, true, PerSocket>* ws, const nlohma
     plotOverTimeParameter[Protocol::Key::Enable] = m_pot_property->m_plot_flag;
     plotOverTimeParameter[Protocol::Key::Coords] = m_pot_property->m_target_point;
     msg[Protocol::Key::PlotOverTimeParameter] = std::move(plotOverTimeParameter);
+
+    if (m_server_mode == ServerMode::IS)
+    {
+        msg[Protocol::Key::RepeatLevel] = static_cast<int>(m_particle_property->m_repeat_level);
+    }
 
     m_u_web_sockets.publish(k_text_topic, msg.dump(), uWS::OpCode::TEXT);
 
@@ -2334,6 +2340,50 @@ void Server::receiveEnsembleStatisticsParameter(uWS::WebSocket<false, true, PerS
     ppw.writeTF2Json( *m_particle_property );
 
     ws->publish( k_text_topic, received.dump(), uWS::OpCode::TEXT );
+}
+
+void Server::receiveRepetitionLevelParameter(uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received)
+{
+    if ( m_server_mode != ServerMode::IS )
+    {
+        std::cout << "[Server] RepetitionLevelParameter is ignored because server mode is not IS." << std::endl;
+        return;
+    }
+
+    if ( !received.contains( Protocol::Key::RepeatLevel ) ||
+         !received.at( Protocol::Key::RepeatLevel ).is_number_integer() )
+    {
+        std::cout << "[Server] RepetitionLevelParameter has no RepeatLevel." << std::endl;
+        return;
+    }
+
+    const int raw_repeat_level = received.at( Protocol::Key::RepeatLevel ).get<int>();
+    m_particle_property->m_repeat_level = static_cast<size_t>( std::clamp( raw_repeat_level, 1, 1024 ) );
+
+    const char* env_buf = std::getenv( "VIS_PARAM_DIR" );
+    std::string tfJsonPath = ( env_buf == nullptr ) ? "./" : env_buf;
+    if ( !tfJsonPath.empty() && tfJsonPath[tfJsonPath.size() - 1] != '/' )
+    {
+        tfJsonPath += "/";
+    }
+
+    env_buf = std::getenv( "TF_NAME" );
+    if ( env_buf == nullptr )
+    {
+        tfJsonPath += "default.json";
+    }
+    else
+    {
+        tfJsonPath += env_buf;
+        tfJsonPath += ".json";
+    }
+
+    ParameterFileWriter ppw;
+    ppw.writeTF2Json( *m_particle_property, tfJsonPath );
+
+    nlohmann::json repetitionLevelParameter = received;
+    repetitionLevelParameter[Protocol::Key::RepeatLevel] = static_cast<int>(m_particle_property->m_repeat_level);
+    ws->publish( k_text_topic, repetitionLevelParameter.dump(), uWS::OpCode::TEXT );
 }
 
 void Server::fileList(uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received)

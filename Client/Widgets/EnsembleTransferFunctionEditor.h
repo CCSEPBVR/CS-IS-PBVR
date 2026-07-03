@@ -1,7 +1,6 @@
 #ifndef ENSEMBLETRANSFERFUNCTIONEDITOR_H
 #define ENSEMBLETRANSFERFUNCTIONEDITOR_H
 
-#include <cstddef>
 #include <QDialog>
 
 #include "ColorMapEditor.h"
@@ -25,18 +24,13 @@ public:
     ~EnsembleTransferFunctionEditor();
     QString selectedStatistic() const;
 
-signals:
-    void repeatLevelChanged( size_t repeatLevel );
-
 public slots:
-    void setRepeatLevel( size_t repeatLevel );
     void onReceiveEnsembleStatisticsParameter( const QJsonObject& payload );
 
 private:
     Ui::EnsembleTransferFunctionEditor* ui;
 
     WebSocketPair* m_web_sockets = nullptr;
-    size_t m_repeat_level = 4;
     ColorMapEditor m_color_map_editor;
     OpacityMapEditor m_opacity_map_editor;
 
