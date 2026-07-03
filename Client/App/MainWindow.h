@@ -158,6 +158,7 @@ private slots:
     void onEnsembleTransferFunctionEditor() { m_ensemble_transfer_function_editor->show(); }
     void onTransferFunctionEditor() { m_transfer_function_editor->show(); }
     void onVolumeTransform()        { m_volume_transform->show();         }
+    void onUpdateIsEnsemble( bool isEnsemble );
 
     void onLoad(); // KPI
     void onSave(); // KPI

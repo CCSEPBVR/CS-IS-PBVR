@@ -58,6 +58,7 @@ inline constexpr std::string_view TmpIsFocus                = "TmpIsFocus";
 inline constexpr std::string_view IsFocus                   = "IsFocus";
 inline constexpr std::string_view TmpParticleLimit          = "TmpParticleLimit";
 inline constexpr std::string_view ParticleLimit             = "ParticleLimit";
+inline constexpr std::string_view IsEnsemble                = "IsEnsemble";
 // inline constexpr std::string_view TmpExtraOpacityFactor     = "TmpExtraOpacityFactor";
 // inline constexpr std::string_view ExtraOpacityFactor        = "ExtraOpacityFactor";
 inline constexpr std::string_view TmpCoordinateX            = "TmpCoordinateX";

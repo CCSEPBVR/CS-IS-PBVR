@@ -885,6 +885,7 @@ void ObjectEditor::onReceiveSelectedFile( const QJsonObject& payload )
     // サーバポイントオブジェクト(ClientServer/In-Situ共通)
     objectInfo.tmpParticleLimit      = payload[QString::fromUtf8( Protocol::Key::TmpParticleLimit )].toInt();
     objectInfo.particleLimit         = payload[QString::fromUtf8( Protocol::Key::ParticleLimit )].toInt();
+    objectInfo.isEnsemble            = payload.value( QString::fromUtf8( Protocol::Key::IsEnsemble ) ).toBool( false );
     // NOTE:(extraOpacityFactor)は一時的に無効にしています。必要になったら下記のコードの削除とextraOpacityFactorに関係するコードのコメント文を元に戻せば使えるはずです。
     // objectInfo.tmpExtraOpacityFactor = static_cast<float>( payload[QString::fromUtf8( Protocol::Key::TmpExtraOpacityFactor )].toDouble() );
     // objectInfo.extraOpacityFactor    = static_cast<float>( payload[QString::fromUtf8( Protocol::Key::ExtraOpacityFactor )].toDouble() );
@@ -917,6 +918,7 @@ void ObjectEditor::onReceiveSelectedFile( const QJsonObject& payload )
     // FIXME:ここで成分数のアップデートを行っていますが、適切な場所なのか不明です
     const bool isServerPointObject = ( objectInfo.format == ObjectInfoExtractor::ClientServerPointObject ) || ( objectInfo.format == ObjectInfoExtractor::InsituServerPointObject );
     if( isServerPointObject ) emit updateNumberOfVector( objectInfo.numberOfVector );
+    if( objectInfo.format == ObjectInfoExtractor::InsituServerPointObject ) emit updateIsEnsemble( objectInfo.isEnsemble );
 }
 
 void ObjectEditor::onReceiveObjectDelete( const QJsonObject& payload )

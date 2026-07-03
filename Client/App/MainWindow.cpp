@@ -250,6 +250,11 @@ void MainWindow::onUpdateServerState( bool serverState )
         m_plot_over_time_editor_action->setEnabled( serverState );
         m_plot_over_time_editor->reset();
     }
+    if ( m_ensemble_transfer_function_editor )
+    {
+        m_ensemble_transfer_function_editor_action->setEnabled( serverState );
+        m_ensemble_transfer_function_editor->reset();
+    }
     if ( m_transfer_function_editor )
     {
         m_transfer_function_editor_action->setEnabled( serverState );
@@ -266,6 +271,7 @@ void MainWindow::onUpdateServerState( bool serverState )
     }
     if( m_plot_over_line_editor )    { m_plot_over_line_editor->close(); }
     if( m_plot_over_time_editor )    { m_plot_over_time_editor->close(); }
+    if( m_ensemble_transfer_function_editor ) { m_ensemble_transfer_function_editor->close(); }
     if( m_transfer_function_editor ) { m_transfer_function_editor->close(); }
 }
 
@@ -296,6 +302,17 @@ void MainWindow::onUpdateNumberOfVector( const int numberOfVector )
     }
 }
 
+void MainWindow::onUpdateIsEnsemble( bool isEnsemble )
+{
+    if( m_ensemble_transfer_function_editor_action )
+    {
+        m_ensemble_transfer_function_editor_action->setEnabled( isEnsemble );
+    }
+    if( m_transfer_function_editor_action )
+    {
+        m_transfer_function_editor_action->setEnabled( !isEnsemble );
+    }
+}
 
 void MainWindow::initializeToolBar()
 {
@@ -404,6 +421,7 @@ void MainWindow::initializeMenuBar()
     if( m_ensemble_transfer_function_editor )
     {
         m_ensemble_transfer_function_editor_action = new QAction( tr( "Ensemble Transfer Function Editor" ), this );
+        m_ensemble_transfer_function_editor_action->setEnabled( false );
         connect( m_ensemble_transfer_function_editor_action, &QAction::triggered, this, &MainWindow::onEnsembleTransferFunctionEditor );
     }
     if( m_transfer_function_editor )
@@ -523,6 +541,7 @@ void MainWindow::initializeObjectEditor()
         connect( m_object_editor, &ObjectEditor::updateStatusBarMessage, this, &MainWindow::onUpdateStatusBarMessage );
 
         connect( m_object_editor, &ObjectEditor::updateNumberOfVector, this, &MainWindow::onUpdateNumberOfVector );
+        connect( m_object_editor, &ObjectEditor::updateIsEnsemble, this, &MainWindow::onUpdateIsEnsemble );
 
         connect( m_object_editor, &ObjectEditor::updateTotalTimeStepRange, m_time_step_control_tool_bar, &TimeStepControlToolBar::onUpdateTotalTimeStepRange );
 

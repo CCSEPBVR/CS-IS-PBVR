@@ -987,6 +987,7 @@ void Server::initialize(uWS::WebSocket<false, true, PerSocket>* ws, const nlohma
         // サーバポイントオブジェクト(ClientServer/In-Situ共通)
         objectInfo.tmpParticleLimit = m_particle_property->m_particle_limit;
         objectInfo.particleLimit    = m_particle_property->m_particle_limit;
+        objectInfo.isEnsemble       = ( m_server_mode == ServerMode::IS ) ? m_particle_property->m_is_ensemble : false;
         objectInfo.tmpExtraOpacityFactor = 1.0;
         objectInfo.extraOpacityFactor    = 1.0;
 
@@ -1038,6 +1039,7 @@ void Server::initialize(uWS::WebSocket<false, true, PerSocket>* ws, const nlohma
         // サーバポイントオブジェクト(ClientServer/In-Situ共通)
         msg[Protocol::Key::TmpParticleLimit] = objectInfo.tmpParticleLimit;
         msg[Protocol::Key::ParticleLimit] = objectInfo.particleLimit;
+        msg[Protocol::Key::IsEnsemble] = objectInfo.isEnsemble;
         // msg[Protocol::Key::TmpExtraOpacityFactor] = objectInfo.tmpExtraOpacityFactor;
         // msg[Protocol::Key::ExtraOpacityFactor]    = objectInfo.extraOpacityFactor;
 

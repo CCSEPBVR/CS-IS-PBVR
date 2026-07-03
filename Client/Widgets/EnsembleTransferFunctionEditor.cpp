@@ -304,13 +304,13 @@ void EnsembleTransferFunctionEditor::initialize()
     m_statistics[CoefficientVariationStatistic].displayName = QStringLiteral( "Coefficient of Variation" );
     m_statistics[CoefficientVariationStatistic].statisticName = QStringLiteral( "cv" );
 
-    const QVector<QColor> colors = ui->m_color_map->getColors();
-    const QVector<float> opacities = ui->m_opacity_map->getOpacities();
+    m_default_color_map = ui->m_color_map->getColors();
+    m_default_opacity_map = ui->m_opacity_map->getOpacities();
     const std::vector<int> histogram = ui->m_histogram->getDatas();
     for( auto& statistic : m_statistics )
     {
-        statistic.colorMap = colors;
-        statistic.opacityMap = opacities;
+        statistic.colorMap = m_default_color_map;
+        statistic.opacityMap = m_default_opacity_map;
         statistic.useUserMinMax = ui->m_user_min_max_radio_button->isChecked();
         statistic.userMin = ui->m_user_min_double_spin_box->value();
         statistic.userMax = ui->m_user_max_double_spin_box->value();
@@ -320,6 +320,28 @@ void EnsembleTransferFunctionEditor::initialize()
     }
 
     m_current_statistic = AverageStatistic;
+    loadStatisticState( m_current_statistic );
+}
+
+void EnsembleTransferFunctionEditor::reset()
+{
+    ui->m_statistics_synthesizer_line_edit->setText( QStringLiteral( "q1" ) );
+    for( auto& statistic : m_statistics )
+    {
+        statistic.colorMap = m_default_color_map;
+        statistic.opacityMap = m_default_opacity_map;
+        statistic.useUserMinMax = true;
+        statistic.userMin = 0.0;
+        statistic.userMax = 1.0;
+        statistic.serverMin = 0.0;
+        statistic.serverMax = 1.0;
+        statistic.histogram.clear();
+    }
+
+    m_current_statistic = AverageStatistic;
+    const bool wasBlocked = ui->m_statistics_combo_box->blockSignals( true );
+    ui->m_statistics_combo_box->setCurrentIndex( AverageStatistic );
+    ui->m_statistics_combo_box->blockSignals( wasBlocked );
     loadStatisticState( m_current_statistic );
 }
 

@@ -44,6 +44,7 @@ public:
 signals:
     void updateStatusBarMessage( const QString& message );
     void updateNumberOfVector( const int numberOfVector );
+    void updateIsEnsemble( bool isEnsemble );
     void updateTotalTimeStepRange( int min, int max, const bool isSingleObject );
     void updateFocus( kvs::Vec3 resultMinObjectCoords, kvs::Vec3 resultMaxObjectCoords );
     void updateTranslation();

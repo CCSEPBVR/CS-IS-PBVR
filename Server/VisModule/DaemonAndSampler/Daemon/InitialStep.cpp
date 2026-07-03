@@ -754,6 +754,7 @@ bool SetDefaultParticleParameterIS(
     mvpl.m_total_max_value          = 0;
 
     // store particle monitor in param
+    particle_property.m_is_ensemble = pm.particleHistoryFile().isEnsemble();
     // sampling step is not used in IS mode
     particle_property.m_subpixel_level       = pm.getSubpixelLevel();
     // particle limit and particle density will be overwritten later

@@ -905,6 +905,7 @@ void OutputParticleHistory(
         history_json << "    \"tf_number\": " << tf_number << ",\n";
         history_json << "    \"nvariables\": " << nvariables << ",\n";
         history_json << "    \"particle_limit\": " << particle_property.m_particle_limit << ",\n";
+        history_json << "    \"is_ensemble\": false,\n";
         history_json << "    \"transfer_functions\": {\n";
 
         for( std::size_t i = 0; i < tf_number; i++ )

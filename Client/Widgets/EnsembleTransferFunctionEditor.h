@@ -28,6 +28,7 @@ class EnsembleTransferFunctionEditor : public QDialog
 public:
     explicit EnsembleTransferFunctionEditor( WebSocketPair* websockets, QWidget* parent = nullptr );
     ~EnsembleTransferFunctionEditor();
+    void reset();
     QString selectedStatistic() const;
 
 public slots:
@@ -64,6 +65,8 @@ private:
 
     QButtonGroup* m_min_max_group = nullptr;
     std::array<StatisticUiState, StatisticCount> m_statistics;
+    QVector<QColor> m_default_color_map;
+    QVector<float> m_default_opacity_map;
     StatisticIndex m_current_statistic = AverageStatistic;
 
     void initialize();

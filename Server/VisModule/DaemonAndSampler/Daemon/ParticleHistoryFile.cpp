@@ -8,6 +8,7 @@ ParticleHistoryFile::ParticleHistoryFile()
 {
     this->set_name();
     m_has_ensemble_statistic_histogram = false;
+    m_is_ensemble          = false;
     m_nvariables           = 0;
     m_particle_limit       = 0;
     m_extra_opacity_factor = 0;
@@ -18,6 +19,7 @@ ParticleHistoryFile::ParticleHistoryFile( const std::string& file ):
 {
     this->set_name();
     m_has_ensemble_statistic_histogram = false;
+    m_is_ensemble          = false;
     m_nvariables           = 0;
     m_particle_limit       = 0;
     m_extra_opacity_factor = 0;
@@ -65,6 +67,7 @@ void ParticleHistoryFile::set_name()
 #endif
 
     m_name.push_back( "TF_NUMBER" );
+    m_name.push_back( "IS_ENSEMBLE" );
     for (int i = 0; i < 99; i++) {
         std::stringstream ss;
         ss << i + 1;
@@ -160,6 +163,7 @@ void ParticleHistoryFile::assign_name_list( const NameListFile& name_list_file )
     else {
         cur_tf_number = 0;
     }
+    m_is_ensemble          = nml.getValue<std::string>( "IS_ENSEMBLE" ) == "TRUE";
     m_nvariables           = nml.getValue<int>( "N_VARIABLES" );
     m_particle_limit       = nml.getValue<int>( "PARTICLE_LIMIT" );
     // m_extra_opacity_factor = nml.getValue<float>( "EXTRA_OPACITY_FACTOR" ); // 一時的にコメントアウト
@@ -282,6 +286,23 @@ void ParticleHistoryFile::assign_name_list( const NameListFile& name_list_file )
 
 void ParticleHistoryFile::read_name_list_file()
 {
+    m_variable_range.clear();
+    m_color_histogram_array.clear();
+    m_opacity_histogram_array.clear();
+    m_average_variable_range.clear();
+    m_variance_variable_range.clear();
+    m_coefficient_of_variation_variable_range.clear();
+    m_average_color_histogram_array.clear();
+    m_average_opacity_histogram_array.clear();
+    m_variance_color_histogram_array.clear();
+    m_variance_opacity_histogram_array.clear();
+    m_coefficient_of_variation_color_histogram_array.clear();
+    m_coefficient_of_variation_opacity_histogram_array.clear();
+    m_has_ensemble_statistic_histogram = false;
+    m_is_ensemble = false;
+    m_nvariables = 0;
+    m_particle_limit = 0;
+
     std::ifstream input( m_file_name.c_str() );
     if ( !input )
     {
@@ -293,64 +314,110 @@ void ParticleHistoryFile::read_name_list_file()
         nlohmann::json root;
         input >> root;
 
-        m_variable_range.clear();
-        m_color_histogram_array.clear();
-        m_opacity_histogram_array.clear();
-
         const int tf_number = root.at( "tf_number" ).get<int>();
         m_nvariables = root.at( "nvariables" ).get<int>();
         m_particle_limit = root.at( "particle_limit" ).get<int>();
+        m_is_ensemble = root.value( "is_ensemble", false );
 
-        const nlohmann::json& transfer_functions = root.at( "transfer_functions" );
-        for ( int i = 1; i <= tf_number; i++ )
+        auto read_transfer_functions = [&](
+            const nlohmann::json& transfer_functions,
+            VariableRange& variable_range,
+            HistogramArray& color_histogram_array,
+            HistogramArray& opacity_histogram_array )
         {
-            std::stringstream ss;
-            ss << i;
-            const std::string idxbuf = ss.str();
+            variable_range.clear();
+            color_histogram_array.clear();
+            opacity_histogram_array.clear();
+            color_histogram_array.reserve( tf_number );
+            opacity_histogram_array.reserve( tf_number );
 
-            std::stringstream opacity_key;
-            opacity_key << "O" << i;
-            const nlohmann::json& opacity = transfer_functions.at( opacity_key.str() );
-
-            std::stringstream color_key;
-            color_key << "C" << i;
-            const nlohmann::json& color = transfer_functions.at( color_key.str() );
-
-            m_variable_range.setValue(
-                "t" + idxbuf + "_var_o",
-                opacity.at( "min" ).get<vismodule::Real32>() );
-            m_variable_range.setValue(
-                "t" + idxbuf + "_var_o",
-                opacity.at( "max" ).get<vismodule::Real32>() );
-            m_variable_range.setValue(
-                "t" + idxbuf + "_var_c",
-                color.at( "min" ).get<vismodule::Real32>() );
-            m_variable_range.setValue(
-                "t" + idxbuf + "_var_c",
-                color.at( "max" ).get<vismodule::Real32>() );
-
-            const int opacity_resolution = opacity.at( "resolution" ).get<int>();
-            const std::vector<int> opacity_histogram = opacity.at( "histogram" ).get<std::vector<int> >();
-            if ( static_cast<int>( opacity_histogram.size() ) != opacity_resolution )
+            for ( int i = 1; i <= tf_number; i++ )
             {
-                std::stringstream message;
-                message << "Invalid history json: histogram size is " << opacity_histogram.size()
-                        << " but resolution is " << opacity_resolution;
-                throw std::runtime_error( message.str() );
-            }
+                std::stringstream ss;
+                ss << i;
+                const std::string idxbuf = ss.str();
 
-            const int color_resolution = color.at( "resolution" ).get<int>();
-            const std::vector<int> color_histogram = color.at( "histogram" ).get<std::vector<int> >();
-            if ( static_cast<int>( color_histogram.size() ) != color_resolution )
-            {
-                std::stringstream message;
-                message << "Invalid history json: histogram size is " << color_histogram.size()
-                        << " but resolution is " << color_resolution;
-                throw std::runtime_error( message.str() );
-            }
+                std::stringstream opacity_key;
+                opacity_key << "O" << i;
+                const nlohmann::json& opacity = transfer_functions.at( opacity_key.str() );
 
-            m_opacity_histogram_array.push_back( opacity_histogram );
-            m_color_histogram_array.push_back( color_histogram );
+                std::stringstream color_key;
+                color_key << "C" << i;
+                const nlohmann::json& color = transfer_functions.at( color_key.str() );
+
+                variable_range.setValue(
+                    "t" + idxbuf + "_var_o",
+                    opacity.at( "min" ).get<vismodule::Real32>() );
+                variable_range.setValue(
+                    "t" + idxbuf + "_var_o",
+                    opacity.at( "max" ).get<vismodule::Real32>() );
+                variable_range.setValue(
+                    "t" + idxbuf + "_var_c",
+                    color.at( "min" ).get<vismodule::Real32>() );
+                variable_range.setValue(
+                    "t" + idxbuf + "_var_c",
+                    color.at( "max" ).get<vismodule::Real32>() );
+
+                const int opacity_resolution = opacity.at( "resolution" ).get<int>();
+                const std::vector<int> opacity_histogram = opacity.at( "histogram" ).get<std::vector<int> >();
+                if ( static_cast<int>( opacity_histogram.size() ) != opacity_resolution )
+                {
+                    std::stringstream message;
+                    message << "Invalid history json: histogram size is " << opacity_histogram.size()
+                            << " but resolution is " << opacity_resolution;
+                    throw std::runtime_error( message.str() );
+                }
+
+                const int color_resolution = color.at( "resolution" ).get<int>();
+                const std::vector<int> color_histogram = color.at( "histogram" ).get<std::vector<int> >();
+                if ( static_cast<int>( color_histogram.size() ) != color_resolution )
+                {
+                    std::stringstream message;
+                    message << "Invalid history json: histogram size is " << color_histogram.size()
+                            << " but resolution is " << color_resolution;
+                    throw std::runtime_error( message.str() );
+                }
+
+                opacity_histogram_array.push_back( opacity_histogram );
+                color_histogram_array.push_back( color_histogram );
+            }
+        };
+
+        if ( !m_is_ensemble )
+        {
+            read_transfer_functions(
+                root.at( "transfer_functions" ),
+                m_variable_range,
+                m_color_histogram_array,
+                m_opacity_histogram_array );
+        }
+        else
+        {
+            const nlohmann::json& statistics = root.at( "statistics" );
+            const nlohmann::json& average = statistics.at( "average" );
+
+            read_transfer_functions(
+                average,
+                m_variable_range,
+                m_color_histogram_array,
+                m_opacity_histogram_array );
+            read_transfer_functions(
+                average,
+                m_average_variable_range,
+                m_average_color_histogram_array,
+                m_average_opacity_histogram_array );
+            read_transfer_functions(
+                statistics.at( "variance" ),
+                m_variance_variable_range,
+                m_variance_color_histogram_array,
+                m_variance_opacity_histogram_array );
+            read_transfer_functions(
+                statistics.at( "coefficient_of_variation" ),
+                m_coefficient_of_variation_variable_range,
+                m_coefficient_of_variation_color_histogram_array,
+                m_coefficient_of_variation_opacity_histogram_array );
+
+            m_has_ensemble_statistic_histogram = true;
         }
     }
     catch ( const std::exception& )
@@ -358,6 +425,17 @@ void ParticleHistoryFile::read_name_list_file()
         m_variable_range.clear();
         m_color_histogram_array.clear();
         m_opacity_histogram_array.clear();
+        m_average_variable_range.clear();
+        m_variance_variable_range.clear();
+        m_coefficient_of_variation_variable_range.clear();
+        m_average_color_histogram_array.clear();
+        m_average_opacity_histogram_array.clear();
+        m_variance_color_histogram_array.clear();
+        m_variance_opacity_histogram_array.clear();
+        m_coefficient_of_variation_color_histogram_array.clear();
+        m_coefficient_of_variation_opacity_histogram_array.clear();
+        m_has_ensemble_statistic_histogram = false;
+        m_is_ensemble = false;
         m_nvariables = 0;
         m_particle_limit = 0;
     }

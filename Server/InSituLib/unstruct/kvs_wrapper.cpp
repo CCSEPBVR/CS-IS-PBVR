@@ -6,6 +6,8 @@
 #include <cstring>
 #include <fstream>
 #include <iomanip>
+#include <sstream>
+#include <stdexcept>
 #include <algorithm>
 #include <vector>
 #include <memory>
@@ -993,6 +995,47 @@ void WriteStatisticHistory(
     }
 }
 
+void WriteEnsembleStatisticJson(
+    std::ostringstream& history_json,
+    const std::string& statistic_name,
+    const EnsembleStatisticRange& range,
+    const int tf_number
+)
+{
+    history_json << "        \"" << statistic_name << "\": {\n";
+    for ( int i = 0; i < tf_number; i++ )
+    {
+        history_json << "            \"O" << ( i + 1 ) << "\": {\n";
+        history_json << "                \"min\": " << range.min_values[2 * i] << ",\n";
+        history_json << "                \"max\": " << range.max_values[2 * i] << ",\n";
+        history_json << "                \"resolution\": " << DEFAULT_NBINS << ",\n";
+        history_json << "                \"histogram\": [";
+        for ( std::size_t j = 0; j < DEFAULT_NBINS; j++ )
+        {
+            if ( j > 0 ) history_json << ", ";
+            history_json << range.o_bins[j + i * DEFAULT_NBINS];
+        }
+        history_json << "]\n";
+        history_json << "            },\n";
+
+        history_json << "            \"C" << ( i + 1 ) << "\": {\n";
+        history_json << "                \"min\": " << range.min_values[2 * i + 1] << ",\n";
+        history_json << "                \"max\": " << range.max_values[2 * i + 1] << ",\n";
+        history_json << "                \"resolution\": " << DEFAULT_NBINS << ",\n";
+        history_json << "                \"histogram\": [";
+        for ( std::size_t j = 0; j < DEFAULT_NBINS; j++ )
+        {
+            if ( j > 0 ) history_json << ", ";
+            history_json << range.c_bins[j + i * DEFAULT_NBINS];
+        }
+        history_json << "]\n";
+        history_json << "            }";
+        if ( i + 1 < tf_number ) history_json << ",";
+        history_json << "\n";
+    }
+    history_json << "        }";
+}
+
 void StoreStatisticRangeToTransferFunctions(
     const EnsembleStatisticRange& range,
     std::vector<NamedTransferFunction>& transfer_functions,
@@ -1077,17 +1120,40 @@ void OutputEnsembleStatisticHistory(
 
     if ( mpi_rank != 0 ) return;
 
-    std::ofstream ofs( historyFilePath.c_str(), std::ios::out );
-    ofs << "TF_NUMBER=" << tf_number << std::endl;
-    ofs << "RESOLUTION=" << DEFAULT_NBINS << std::endl;
-    WriteStatisticHistory( ofs, average_range, tf_number );
-    WritePrefixedStatisticHistory( ofs, "AVE", average_range, tf_number );
-    WritePrefixedStatisticHistory( ofs, "VAR", variance_range, tf_number );
-    WritePrefixedStatisticHistory( ofs, "COV", co_variation_range, tf_number );
-    ofs << "N_VARIABLES=" << nvariables << std::endl;
-    ofs << "PARTICLE_LIMIT=" << particle_property.m_particle_limit << std::endl;
-    ofs << "END_HISTORY_FILE=SUCCESS" << std::endl;
+    std::ostringstream history_json;
+    history_json << "{\n";
+    history_json << "    \"tf_number\": " << tf_number << ",\n";
+    history_json << "    \"nvariables\": " << nvariables << ",\n";
+    history_json << "    \"particle_limit\": " << particle_property.m_particle_limit << ",\n";
+    history_json << "    \"is_ensemble\": true,\n";
+    history_json << "    \"statistics\": {\n";
+    WriteEnsembleStatisticJson( history_json, "average", average_range, tf_number );
+    history_json << ",\n";
+    WriteEnsembleStatisticJson( history_json, "variance", variance_range, tf_number );
+    history_json << ",\n";
+    WriteEnsembleStatisticJson( history_json, "coefficient_of_variation", co_variation_range, tf_number );
+    history_json << "\n    }\n";
+    history_json << "}\n";
+
+    const std::string tmp_history_file_path = historyFilePath + ".tmp";
+    std::ofstream ofs( tmp_history_file_path.c_str(), std::ios::out );
+    if ( !ofs )
+    {
+        throw std::runtime_error( "Cannot open temporary ensemble history json file for writing: " + tmp_history_file_path );
+    }
+
+    ofs << history_json.str();
     ofs.close();
+    if ( !ofs )
+    {
+        throw std::runtime_error( "Cannot write temporary ensemble history json file: " + tmp_history_file_path );
+    }
+
+    if ( std::rename( tmp_history_file_path.c_str(), historyFilePath.c_str() ) != 0 )
+    {
+        throw std::runtime_error(
+            "Cannot rename temporary ensemble history json file: " + tmp_history_file_path + " -> " + historyFilePath );
+    }
 
     StoreStatisticRangeToTransferFunctions( average_range, particle_property.m_transfunc_array, tf_number );
     StoreStatisticRangeToTransferFunctions( average_range, particle_property.m_mean_transfer_function_array, tf_number );
