@@ -262,9 +262,7 @@ EnsembleTransferFunctionEditor::EnsembleTransferFunctionEditor( WebSocketPair* w
     , m_opacity_map_editor( this )
 {
     ui->setupUi( this );
-    initializeButtonGroups();
-    initializeTransferFunctionWidgets();
-    initializeStatisticStates();
+    initialize();
 
     connect( ui->m_statistics_combo_box,
              QOverload<int>::of( &QComboBox::currentIndexChanged ),
@@ -280,17 +278,14 @@ EnsembleTransferFunctionEditor::~EnsembleTransferFunctionEditor()
     delete ui;
 }
 
-void EnsembleTransferFunctionEditor::initializeButtonGroups()
+void EnsembleTransferFunctionEditor::initialize()
 {
     m_min_max_group = new QButtonGroup( this );
     m_min_max_group->setObjectName( QStringLiteral( "MinMaxGroup" ) );
     m_min_max_group->addButton( ui->m_server_min_max_radio_button );
     m_min_max_group->addButton( ui->m_user_min_max_radio_button );
     m_min_max_group->setExclusive( true );
-}
 
-void EnsembleTransferFunctionEditor::initializeTransferFunctionWidgets()
-{
     ui->m_statistics_synthesizer_line_edit->setText( QStringLiteral( "q1" ) );
     ui->m_export_push_button->setAutoDefault( false );
     ui->m_export_push_button->setDefault( false );
@@ -301,10 +296,7 @@ void EnsembleTransferFunctionEditor::initializeTransferFunctionWidgets()
 
     ui->m_color_map->installEventFilter( this );
     ui->m_opacity_map->installEventFilter( this );
-}
 
-void EnsembleTransferFunctionEditor::initializeStatisticStates()
-{
     m_statistics[AverageStatistic].displayName = QStringLiteral( "Average" );
     m_statistics[AverageStatistic].statisticName = QStringLiteral( "average" );
     m_statistics[VarianceStatistic].displayName = QStringLiteral( "Variance" );

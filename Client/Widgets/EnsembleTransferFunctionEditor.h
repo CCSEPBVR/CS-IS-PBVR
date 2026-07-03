@@ -66,9 +66,7 @@ private:
     std::array<StatisticUiState, StatisticCount> m_statistics;
     StatisticIndex m_current_statistic = AverageStatistic;
 
-    void initializeButtonGroups();
-    void initializeTransferFunctionWidgets();
-    void initializeStatisticStates();
+    void initialize();
     void saveCurrentStatisticState();
     void loadStatisticState( StatisticIndex statistic );
     StatisticIndex selectedStatisticIndex() const;
