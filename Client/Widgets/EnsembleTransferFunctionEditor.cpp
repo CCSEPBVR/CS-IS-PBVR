@@ -392,6 +392,28 @@ void EnsembleTransferFunctionEditor::onStatisticSelectionChanged( int )
 
 void EnsembleTransferFunctionEditor::onReceiveEnsembleStatisticsParameter( const QJsonObject& payload )
 {
+    const QString rootStatistic = NormalizeStatisticName(
+        payload.value( QString::fromUtf8( Protocol::Key::Statistic ) ).toString() );
+    if( !rootStatistic.isEmpty() )
+    {
+        StatisticIndex receivedStatistic = AverageStatistic;
+        if( rootStatistic == QStringLiteral( "variance" ) )
+        {
+            receivedStatistic = VarianceStatistic;
+        }
+        else if( rootStatistic == QStringLiteral( "cv" ) )
+        {
+            receivedStatistic = CoefficientVariationStatistic;
+        }
+
+        saveCurrentStatisticState();
+        m_current_statistic = receivedStatistic;
+        const bool wasBlocked = ui->m_statistics_combo_box->blockSignals( true );
+        ui->m_statistics_combo_box->setCurrentIndex( receivedStatistic );
+        ui->m_statistics_combo_box->blockSignals( wasBlocked );
+        loadStatisticState( m_current_statistic );
+    }
+
     const QString dataKey = QString::fromUtf8( Protocol::Key::Data );
     if( !payload.value( dataKey ).isArray() )
     {
@@ -749,6 +771,7 @@ void EnsembleTransferFunctionEditor::onApply()
 
     QJsonObject root;
     root[QString::fromUtf8( Protocol::Key::Event )] = QString::fromUtf8( Protocol::Events::EnsembleStatisticsParameter );
+    root[QString::fromUtf8( Protocol::Key::Statistic )] = selectedStatistic();
     root[QString::fromUtf8( Protocol::Key::Data )] = data;
 
     m_web_sockets->text()->sendTextMessage( QJsonDocument( root ).toJson( QJsonDocument::Compact ) );

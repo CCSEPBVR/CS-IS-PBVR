@@ -1592,17 +1592,8 @@ void ObjectEditor::requestServerDataAt( const int requestTimeStep )
     request[QString::fromUtf8( Protocol::Key::TimeStep )] = requestTimeStep;
     request[QString::fromUtf8( Protocol::Key::ResultMinObjectCoords )] = resultMinObjectCoords;
     request[QString::fromUtf8( Protocol::Key::ResultMaxObjectCoords )] = resultMaxObjectCoords;
-    QString statistic;
-    if( *m_viz_mode == Viz::Mode::RemoteInSitu )
-    {
-        statistic = m_ensemble_transfer_function_editor ?
-            m_ensemble_transfer_function_editor->selectedStatistic() :
-            QStringLiteral( "average" );
-        request[QString::fromUtf8( Protocol::Key::Statistic )] = statistic;
-    }
 
     qDebug() << "[Client][ObjectEditor] send RequestDataAt timestep =" << requestTimeStep
-             << "statistics =" << ( statistic.isEmpty() ? QStringLiteral( "<none>" ) : statistic )
              << "text connected =" << m_web_sockets->text()->isValid()
              << "binary connected =" << m_web_sockets->binary()->isValid();
     m_web_sockets->text()->sendTextMessage( QJsonDocument( request ).toJson( QJsonDocument::Compact ) );

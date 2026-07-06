@@ -32,7 +32,7 @@ public:
         kvs::Vec3 resultMinObjectCoords, kvs::Vec3 resultMaxObjectCoords,
         const ServerMode server_mode, ParticleProperty* particle_property, GlyphProperty* glyph_property,
         PlotOverLineProperty* pol_property, MultiVolumePropertyList* multi_volume_property_list,
-        const std::string& statistic = ""
+        const std::string& statistic = "normal"
         )
         : m_request_time_step( requestTimeStep ) , m_objects( objects )
         , m_result_min_object_coords( resultMinObjectCoords )
@@ -185,7 +185,7 @@ private:
 
         case ObjectInfoExtractor::InsituServerPointObject:
             pointObject = std::make_unique<kvs::PointObject>();
-            if ( m_statistic.empty() )
+            if ( m_statistic == "normal" )
             {
                 GenerateParticleIS( requestTimeStep, *m_particle_property, *m_multi_volume_property_list, pointObject );
             }
@@ -305,6 +305,7 @@ private:
         return particlePath;
     }
 
+    // FIXME:実装する場所に不適
     static bool GenerateStatisticParticleIS(
         const int timeStep,
         const std::string& statistic,

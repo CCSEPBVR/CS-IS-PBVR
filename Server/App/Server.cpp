@@ -38,15 +38,6 @@ std::string NormalizeStatisticName( std::string statistic )
     return statistic;
 }
 
-std::string StatisticFromRequest( const nlohmann::json& received )
-{
-    if ( received.contains( Protocol::Key::Statistic ) && received.at( Protocol::Key::Statistic ).is_string() )
-    {
-        return NormalizeStatisticName( received.at( Protocol::Key::Statistic ).get<std::string>() );
-    }
-    return "";
-}
-
 std::vector<EnsembleTransferFunction>* StatisticTransferFunctionArray(
     ParticleProperty& particle_property,
     const std::string& statistic )
@@ -218,7 +209,9 @@ void AppendStatisticTransferFunctionPatches(
     }
 }
 
-nlohmann::json BuildEnsembleStatisticsParameter( const ParticleProperty& particle_property )
+nlohmann::json BuildEnsembleStatisticsParameter(
+    const ParticleProperty& particle_property,
+    const std::string& statistic )
 {
     nlohmann::json data = nlohmann::json::array();
     DebugStatisticTransferFunctionArray(
@@ -243,8 +236,20 @@ nlohmann::json BuildEnsembleStatisticsParameter( const ParticleProperty& particl
         "cv",
         particle_property.m_coefficient_of_variation_transfer_function_array );
 
+    const std::string normalized_statistic = NormalizeStatisticName( statistic );
+    std::string client_statistic = "average";
+    if ( normalized_statistic == "variance" )
+    {
+        client_statistic = "variance";
+    }
+    else if ( normalized_statistic == "cv" )
+    {
+        client_statistic = "cv";
+    }
+
     nlohmann::json msg;
     msg[Protocol::Key::Event] = Protocol::Events::EnsembleStatisticsParameter;
+    msg[Protocol::Key::Statistic] = client_statistic;
     msg[Protocol::Key::Data] = std::move( data );
     return msg;
 }
@@ -1335,7 +1340,8 @@ void Server::initialize(uWS::WebSocket<false, true, PerSocket>* ws, const nlohma
 
     if ( m_server_mode == ServerMode::IS )
     {
-        nlohmann::json ensembleStatisticsParameter = BuildEnsembleStatisticsParameter( *m_particle_property );
+        nlohmann::json ensembleStatisticsParameter =
+            BuildEnsembleStatisticsParameter( *m_particle_property, m_current_ensemble_statistic );
         size_t data_size = 0;
         if ( ensembleStatisticsParameter.contains( Protocol::Key::Data ) &&
              ensembleStatisticsParameter.at( Protocol::Key::Data ).is_array() )
@@ -1381,12 +1387,12 @@ void Server::requestDataAt(uWS::WebSocket<false, true, PerSocket>* ws, const nlo
     const auto& maxJson = received.at(Protocol::Key::ResultMaxObjectCoords);
     kvs::Vec3 minObjectCoords(minJson[0].get<float>(), minJson[1].get<float>(), minJson[2].get<float>());
     kvs::Vec3 maxObjectCoords(maxJson[0].get<float>(), maxJson[1].get<float>(), maxJson[2].get<float>());
-    const std::string statistic = ( m_server_mode == ServerMode::IS ) ? StatisticFromRequest( received ) : "";
-//    const std::string statistic = "mean"; //stab
-//    const std::string statistic = "variance"; //stab
-//    const std::string statistic = "cv"; //stab
+    const std::string statistic =
+        ( m_server_mode == ServerMode::IS && m_particle_property && m_particle_property->m_is_ensemble ) ?
+            m_current_ensemble_statistic :
+            "normal";
     std::cout << "[Server][RequestDataAt] received timestep=" << timeStep
-              << ", statistic=" << ( statistic.empty() ? "<none>" : statistic )
+              << ", statistic=" << statistic
               << ", mode=" << ( m_server_mode == ServerMode::IS ? "IS" : "CS" )
               << ", objects=" << ( m_objects ? m_objects->size() : 0 )
               << std::endl;
@@ -1664,7 +1670,8 @@ void Server::requestDataAt(uWS::WebSocket<false, true, PerSocket>* ws, const nlo
 
         if ( m_server_mode == ServerMode::IS )
         {
-            nlohmann::json ensembleStatisticsParameter = BuildEnsembleStatisticsParameter( *m_particle_property );
+            nlohmann::json ensembleStatisticsParameter =
+                BuildEnsembleStatisticsParameter( *m_particle_property, m_current_ensemble_statistic );
             size_t data_size = 0;
             if ( ensembleStatisticsParameter.contains( Protocol::Key::Data ) &&
                  ensembleStatisticsParameter.at( Protocol::Key::Data ).is_array() )
@@ -2317,6 +2324,21 @@ void Server::receiveEnsembleStatisticsParameter(uWS::WebSocket<false, true, PerS
         return;
     }
 
+    if ( received.contains( Protocol::Key::Statistic ) && received.at( Protocol::Key::Statistic ).is_string() )
+    {
+        const std::string statistic =
+            NormalizeStatisticName( received.at( Protocol::Key::Statistic ).get<std::string>() );
+        if ( statistic == "mean" || statistic == "variance" || statistic == "cv" )
+        {
+            m_current_ensemble_statistic = statistic;
+        }
+        else
+        {
+            std::cout << "[Server][EnsembleStatisticsParameter] keep current statistic. unknown statistic="
+                      << statistic << std::endl;
+        }
+    }
+
     if ( received.contains( Protocol::Key::Data ) && received.at( Protocol::Key::Data ).is_array() )
     {
         for ( const auto& patch : received.at( Protocol::Key::Data ) )
@@ -2341,7 +2363,11 @@ void Server::receiveEnsembleStatisticsParameter(uWS::WebSocket<false, true, PerS
     ParameterFileWriter ppw;
     ppw.writeTF2Json( *m_particle_property );
 
-    ws->publish( k_text_topic, received.dump(), uWS::OpCode::TEXT );
+    nlohmann::json published = received;
+    if ( m_current_ensemble_statistic == "variance" ) published[Protocol::Key::Statistic] = "variance";
+    else if ( m_current_ensemble_statistic == "cv" ) published[Protocol::Key::Statistic] = "cv";
+    else published[Protocol::Key::Statistic] = "average";
+    ws->publish( k_text_topic, published.dump(), uWS::OpCode::TEXT );
 }
 
 void Server::receiveRepetitionLevelParameter(uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received)

@@ -5,6 +5,7 @@
 #include <codecvt>
 #include <thread>
 #include <atomic>
+#include <string>
 
 #ifdef _WIN32
 #include <uwebsockets/App.h>
@@ -80,6 +81,7 @@ private:
     PlotOverLineProperty* m_pol_property;
     PlotOverTimeProperty* m_pot_property;
     std::vector<ObjectInfoExtractor::ObjectInfo>* m_objects;
+    std::string m_current_ensemble_statistic = "mean";
 
     std::atomic<bool> m_last_step_monitor_is_running;     // LAST_STEPを監視するスレッドに終了信号を送る変数
     std::thread m_last_step_monitor_thread;               // state.txtのLAST_STEPを監視するスレッド
