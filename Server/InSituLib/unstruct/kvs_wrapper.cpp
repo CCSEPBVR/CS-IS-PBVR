@@ -164,14 +164,6 @@ namespace
 
 using pbvr::EnsembleStatisticRange;
 
-bool UseStableEnsembleCommunication()
-{
-    const char* value = std::getenv( "PBVR_ENSEMBLE_STABLE_COMM" );
-    if ( value == NULL ) return false;
-    return std::strcmp( value, "0" ) != 0 &&
-           std::strcmp( value, "false" ) != 0 &&
-           std::strcmp( value, "FALSE" ) != 0;
-}
 
 #ifdef ENABLE_ENSEMBLE_TIMER
 enum EnsembleTimerSection
@@ -1583,19 +1575,6 @@ inline void chainRuleBlock(
 #endif
 
     for ( int p = 0; p < n; ++p ) { grad_array_x[p] = 0.0f; grad_array_y[p] = 0.0f; grad_array_z[p] = 0.0f; }
-#ifdef PBVR_SKIP_CHAINRULE
-    // Optional (OFF by default): skip the finite-difference chain rule that produces
-    // the statistic-particle normal, and assign a fixed placeholder gradient. The
-    // per-variable gradient (grad_ary / grad_q) is still computed in the caller, so
-    // TF expressions that reference gradient variables (dq*) remain correct, as does
-    // the particle scalar F (evaluated above). Requires PBVR_SIMD_CHAINRULE.
-    // NOTE: with this on, the mean/variance/cv particle normals and the
-    // tmp_term = scalar*normal statistic are no longer meaningful.
-    // Measured saving (chain rule only): compute ~6% (correctness 2x1),
-    // ~9% compute / ~7% total (strong_4x1).
-    for ( int p = 0; p < n; ++p ) { grad_array_x[p] = 1.0f; grad_array_y[p] = 0.0f; grad_array_z[p] = 0.0f; }
-    return;
-#endif
 
 #ifdef ENABLE_ENSEMBLE_TIMER
     vismodule::Timer t_cr; t_cr.start();
@@ -1656,8 +1635,7 @@ void calculate_scalar_and_chain_rule_grad(
     vismodule::Timer calc_scalar_grad_timer;
     calc_scalar_grad_timer.start();
 #endif
-    static const bool s_jac_reuse_disabled = ( getenv( "PBVR_NO_JACREUSE" ) != 0 );
-    if ( nvariables > 1 && interp[0]->supportsJacobianReuse() && !s_jac_reuse_disabled )
+    if ( nvariables > 1 && interp[0]->supportsJacobianReuse() )
     {
         // Candidate A: the inverse Jacobian is geometry-only (vertices + shape-fn
         // derivatives) and identical across variables sharing coordinates/connections.
@@ -1947,14 +1925,13 @@ void calculation_glad(const int nparticles_count, const int nvariables,
 // across variables; when the Jacobian-reuse path is active (Hex, nvariables>1) the
 // variables k>0 never read their own m_vertices_array (geometry goes through cell[*][0]).
 // So bind full scalars+vertices for variable 0 and scalars only for the rest, skipping
-// the redundant vertex gather. PBVR_FULL_BIND forces the old full bind for every variable.
+// the redundant vertex gather.
 static inline void bind_variables_scalars_opt(
     std::vector< vismodule::CellBase<Type>* >& cells,
     const int nvariables, const int n, const vismodule::UInt32* cell_index )
 {
-    static const bool full_bind = ( getenv( "PBVR_FULL_BIND" ) != 0 );
     cells[0]->bindCellArray( n, cell_index );
-    const bool scalars_only = ( !full_bind && cells[0]->supportsJacobianReuse() );
+    const bool scalars_only = cells[0]->supportsJacobianReuse();
     for ( int k = 1; k < nvariables; ++k )
     {
         if ( scalars_only ) cells[k]->bindScalarsArray( n, cell_index );
@@ -2488,12 +2465,12 @@ bool ensemble_generate_particles(
             vismodule::Timer volume_timer;
             volume_timer.start();
 #endif
-#if defined( ENABLE_HEX_TET_VOLUME ) && !defined( PBVR_SCALAR_VOLUME )
+#if defined( ENABLE_HEX_TET_VOLUME )
             // Candidate 1: the cells were already loaded by bindCellArray() above, so
             // reuse m_vertices_array and compute every volume with one vectorizable call
             // instead of a per-cell virtual bindCell() (which blocked vectorization,
             // #15333) plus a redundant gather. Bit-identical (same 6-tet decomposition
-            // and vertex order). Build -DPBVR_SCALAR_VOLUME to restore the old loop.
+            // and vertex order).
             static_cast<vismodule::HexahedralCell<Type>*>( cell[thid][0] )
                 ->volumeArrayByTetraDecomposition( remain, volume_array );
 #else
@@ -2934,13 +2911,6 @@ bool ensemble_generate_particles(
 
     int cur = 0;
     int nxt = 1;
-    const bool use_stable_ensemble_comm = UseStableEnsembleCommunication();
-#ifndef CPU_VER
-    if ( mpi_rank == 0 && use_stable_ensemble_comm )
-    {
-        std::cout << "PBVR_ENSEMBLE_STABLE_COMM=1: use MPI_Sendrecv for ensemble exchange." << std::endl;
-    }
-#endif
 #ifdef ENABLE_ENSEMBLE_TIMER
     std::vector<double> shift_interp_thread_times( max_threads, 0.0 );
     std::vector<double> shift_scalar_thread_times( max_threads, 0.0 );
@@ -2984,15 +2954,6 @@ bool ensemble_generate_particles(
         vismodule::Timer mpi_size_timer;
         mpi_size_timer.start();
 #endif
-        if ( use_stable_ensemble_comm )
-        {
-            MPI_Sendrecv(
-                &send_size, 1, MPI_INT, send_to, 0,
-                &recv_size, 1, MPI_INT, recv_from, 0,
-                MPI_COMM_WORLD, MPI_STATUS_IGNORE
-            );
-        }
-        else
         {
             MPI_Request reqs[2];
             MPI_Isend( &send_size, 1, MPI_INT, send_to, 0, MPI_COMM_WORLD, &reqs[0] );
@@ -3024,73 +2985,6 @@ bool ensemble_generate_particles(
         alloc_timer.stop();
         ensemble_timer.add( EnsembleTimerMpiShiftAllocRecvBuffer, alloc_timer.sec() );
 #endif
-        if ( use_stable_ensemble_comm )
-        {
-#ifdef ENABLE_ENSEMBLE_TIMER
-            vismodule::Timer payload_timer;
-            payload_timer.start();
-#endif
-            MPI_Sendrecv(
-                v_cellids[cur].data(), send_size, MPI_INT, send_to, 12,
-                recv_cellids.data(), recv_size, MPI_INT, recv_from, 12,
-                MPI_COMM_WORLD, MPI_STATUS_IGNORE
-            );
-#ifdef ENABLE_ENSEMBLE_TIMER
-            payload_timer.stop();
-            ensemble_timer.add( EnsembleTimerMpiShiftPayloadCellids, payload_timer.sec() );
-            payload_timer.start();
-#endif
-            MPI_Sendrecv(
-                v_scalars[cur].data(), send_size, MPI_FLOAT, send_to, 10,
-                recv_scalars.data(), recv_size, MPI_FLOAT, recv_from, 10,
-                MPI_COMM_WORLD, MPI_STATUS_IGNORE
-            );
-#ifdef ENABLE_ENSEMBLE_TIMER
-            payload_timer.stop();
-            ensemble_timer.add( EnsembleTimerMpiShiftPayloadScalars, payload_timer.sec() );
-            payload_timer.start();
-#endif
-            MPI_Sendrecv(
-                v_coords[cur].data(), 3 * send_size, MPI_FLOAT, send_to, 11,
-                recv_coords.data(), 3 * recv_size, MPI_FLOAT, recv_from, 11,
-                MPI_COMM_WORLD, MPI_STATUS_IGNORE
-            );
-#ifdef ENABLE_ENSEMBLE_TIMER
-            payload_timer.stop();
-            ensemble_timer.add( EnsembleTimerMpiShiftPayloadCoords, payload_timer.sec() );
-            payload_timer.start();
-#endif
-            MPI_Sendrecv(
-                v_normals[cur].data(), 3 * send_size, MPI_FLOAT, send_to, 13,
-                recv_normals.data(), 3 * recv_size, MPI_FLOAT, recv_from, 13,
-                MPI_COMM_WORLD, MPI_STATUS_IGNORE
-            );
-#ifdef ENABLE_ENSEMBLE_TIMER
-            payload_timer.stop();
-            ensemble_timer.add( EnsembleTimerMpiShiftPayloadNormals, payload_timer.sec() );
-            payload_timer.start();
-#endif
-            MPI_Sendrecv(
-                v_sq[cur].data(), send_size, MPI_FLOAT, send_to, 14,
-                recv_sq_scalars.data(), recv_size, MPI_FLOAT, recv_from, 14,
-                MPI_COMM_WORLD, MPI_STATUS_IGNORE
-            );
-#ifdef ENABLE_ENSEMBLE_TIMER
-            payload_timer.stop();
-            ensemble_timer.add( EnsembleTimerMpiShiftPayloadSq, payload_timer.sec() );
-            payload_timer.start();
-#endif
-            MPI_Sendrecv(
-                v_tmp[cur].data(), 3 * send_size, MPI_FLOAT, send_to, 15,
-                recv_tmp_term.data(), 3 * recv_size, MPI_FLOAT, recv_from, 15,
-                MPI_COMM_WORLD, MPI_STATUS_IGNORE
-            );
-#ifdef ENABLE_ENSEMBLE_TIMER
-            payload_timer.stop();
-            ensemble_timer.add( EnsembleTimerMpiShiftPayloadTmp, payload_timer.sec() );
-#endif
-        }
-        else
         {
 #ifdef ENABLE_ENSEMBLE_TIMER
             vismodule::Timer payload_all_timer;
