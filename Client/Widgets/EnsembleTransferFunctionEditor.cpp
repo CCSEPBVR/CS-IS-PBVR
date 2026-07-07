@@ -278,6 +278,13 @@ EnsembleTransferFunctionEditor::~EnsembleTransferFunctionEditor()
     delete ui;
 }
 
+void EnsembleTransferFunctionEditor::emitLegendTransferFunctionUpdate()
+{
+    saveCurrentStatisticState();
+    m_legend_transfer_function = createLegendTransferFunction();
+    emit updateLegendTransferFunction( &m_legend_transfer_function, static_cast<int>( selectedStatisticIndex() ) );
+}
+
 void EnsembleTransferFunctionEditor::initialize()
 {
     m_min_max_group = new QButtonGroup( this );
@@ -381,6 +388,51 @@ EnsembleTransferFunctionEditor::StatisticIndex EnsembleTransferFunctionEditor::s
     if( index == VarianceStatistic ) return VarianceStatistic;
     if( index == CoefficientVariationStatistic ) return CoefficientVariationStatistic;
     return AverageStatistic;
+}
+
+TransferFunction EnsembleTransferFunctionEditor::createLegendTransferFunction() const
+{
+    return createLegendTransferFunction( m_statistics );
+}
+
+TransferFunction EnsembleTransferFunctionEditor::createLegendTransferFunction( const std::array<StatisticUiState, StatisticCount>& statistics ) const
+{
+    TransferFunction transferFunction;
+    const QString variableExpression = ui->m_statistics_synthesizer_line_edit->text().trimmed();
+    transferFunction.setColorSynthesizer( variableExpression.toUtf8().constData() );
+    transferFunction.setOpacitySynthesizer( variableExpression.toUtf8().constData() );
+
+    for( const auto& statistic : statistics )
+    {
+        TransferFunction::Item item;
+        item.color.variable = variableExpression.toUtf8().constData();
+        item.color.rangeMode = statistic.useUserMinMax ? TransferFunction::UserRange : TransferFunction::ServerSide;
+        item.color.userDefinedMinMax = { statistic.userMin, statistic.userMax };
+        item.color.serverSideMinMax = { statistic.serverMin, statistic.serverMax };
+        item.color.histogram = statistic.histogram;
+        item.color.map.reserve( static_cast<size_t>( statistic.colorMap.size() ) );
+        for( const QColor& color : statistic.colorMap )
+        {
+            item.color.map.emplace_back(
+                static_cast<unsigned char>( color.red() ),
+                static_cast<unsigned char>( color.green() ),
+                static_cast<unsigned char>( color.blue() ) );
+        }
+
+        item.opacity.variable = variableExpression.toUtf8().constData();
+        item.opacity.rangeMode = item.color.rangeMode;
+        item.opacity.userDefinedMinMax = item.color.userDefinedMinMax;
+        item.opacity.serverSideMinMax = item.color.serverSideMinMax;
+        item.opacity.map.reserve( static_cast<size_t>( statistic.opacityMap.size() ) );
+        for( const float opacity : statistic.opacityMap )
+        {
+            item.opacity.map.push_back( opacity );
+        }
+
+        transferFunction.addTransferFunction( item );
+    }
+
+    return transferFunction;
 }
 
 void EnsembleTransferFunctionEditor::onStatisticSelectionChanged( int )
@@ -572,6 +624,170 @@ void EnsembleTransferFunctionEditor::onReceiveEnsembleStatisticsParameter( const
             qDebug() << "[Client][EnsembleTFE] skip unknown statistic patch";
         }
     }
+
+    emitLegendTransferFunctionUpdate();
+}
+
+void EnsembleTransferFunctionEditor::onReceiveRequestDataAtEnsembleStatisticsParameter( const QJsonObject& payload )
+{
+    saveCurrentStatisticState();
+
+    const QString dataKey = QString::fromUtf8( Protocol::Key::Data );
+    if( !payload.value( dataKey ).isArray() )
+    {
+        qDebug() << "[Client][EnsembleTFE] RequestDataAt EnsembleStatisticsParameter has no Data array";
+        return;
+    }
+
+    std::array<StatisticUiState, StatisticCount> legendStatistics = m_statistics;
+
+    auto updateBlock = [&]( StatisticIndex index, const QJsonObject& patch )
+    {
+        StatisticUiState& state = m_statistics[index];
+        StatisticUiState& legendState = legendStatistics[index];
+        const QString& displayName = state.displayName;
+        const QString rangeModeKey = QString::fromUtf8( Protocol::Key::EnsembleUserRangeMode );
+        const QString userMinKey = QString::fromUtf8( Protocol::Key::EnsembleUserRangeMin );
+        const QString userMaxKey = QString::fromUtf8( Protocol::Key::EnsembleUserRangeMax );
+        const QString minKey = QString::fromUtf8( Protocol::Key::EnsembleServerRangeMin );
+        const QString maxKey = QString::fromUtf8( Protocol::Key::EnsembleServerRangeMax );
+        const QString colorMapKey = QString::fromUtf8( Protocol::Key::EnsembleColorMap );
+        const QString opacityMapKey = QString::fromUtf8( Protocol::Key::EnsembleOpacityMap );
+        const QString histogramKey = QString::fromUtf8( Protocol::Key::EnsembleHistogram );
+
+        if( patch.contains( rangeModeKey ) )
+        {
+            const int rangeMode = patch.value( rangeModeKey ).toInt();
+            legendState.useUserMinMax = rangeMode != ServerRangeMode;
+        }
+
+        if( patch.value( userMinKey ).isDouble() && patch.value( userMaxKey ).isDouble() )
+        {
+            legendState.userMin = patch.value( userMinKey ).toDouble();
+            legendState.userMax = patch.value( userMaxKey ).toDouble();
+        }
+
+        if( patch.value( minKey ).isDouble() && patch.value( maxKey ).isDouble() )
+        {
+            const double serverMin = patch.value( minKey ).toDouble();
+            const double serverMax = patch.value( maxKey ).toDouble();
+            if( !std::isfinite( serverMin ) || !std::isfinite( serverMax ) )
+            {
+                qDebug() << "[Client][EnsembleTFE] ignore invalid RequestDataAt server range for" << displayName
+                         << "min =" << serverMin << "max =" << serverMax
+                         << "reason = non-finite";
+            }
+            else if( serverMin > serverMax )
+            {
+                qDebug() << "[Client][EnsembleTFE] ignore invalid RequestDataAt server range for" << displayName
+                         << "min =" << serverMin << "max =" << serverMax
+                         << "reason = min > max";
+            }
+            else
+            {
+                state.serverMin = serverMin;
+                state.serverMax = serverMax;
+                legendState.serverMin = serverMin;
+                legendState.serverMax = serverMax;
+                qDebug() << "[Client][EnsembleTFE] update RequestDataAt server range for" << displayName
+                         << "min =" << serverMin << "max =" << serverMax;
+            }
+        }
+        else
+        {
+            qDebug() << "[Client][EnsembleTFE] keep RequestDataAt server range for" << displayName
+                     << "reason = missing ensemble range keys";
+        }
+
+        if( patch.contains( colorMapKey ) )
+        {
+            bool colorMapOk = false;
+            const QVector<QColor> colors = ReadColorMap( patch.value( colorMapKey ), &colorMapOk );
+            if( colorMapOk )
+            {
+                legendState.colorMap = colors;
+            }
+            else
+            {
+                qDebug() << "[Client][EnsembleTFE] keep RequestDataAt color map for" << displayName
+                         << "reason = EnsembleColorMap is invalid";
+            }
+        }
+
+        if( patch.contains( opacityMapKey ) )
+        {
+            bool opacityMapOk = false;
+            const QVector<float> opacities = ReadOpacityMap( patch.value( opacityMapKey ), &opacityMapOk );
+            if( opacityMapOk )
+            {
+                legendState.opacityMap = opacities;
+            }
+            else
+            {
+                qDebug() << "[Client][EnsembleTFE] keep RequestDataAt opacity map for" << displayName
+                         << "reason = EnsembleOpacityMap is invalid";
+            }
+        }
+
+        if( patch.contains( histogramKey ) )
+        {
+            bool histogramOk = false;
+            const std::vector<int> histogram = ReadHistogram( patch.value( histogramKey ), &histogramOk );
+            if( histogramOk )
+            {
+                state.histogram = histogram;
+                legendState.histogram = histogram;
+                qDebug() << "[Client][EnsembleTFE] update RequestDataAt histogram for" << displayName
+                         << "bins =" << histogram.size();
+            }
+            else
+            {
+                qDebug() << "[Client][EnsembleTFE] keep RequestDataAt histogram for" << displayName
+                         << "reason = EnsembleHistogram is not an array";
+            }
+        }
+        else
+        {
+            qDebug() << "[Client][EnsembleTFE] keep RequestDataAt histogram for" << displayName
+                     << "reason = missing EnsembleHistogram";
+        }
+
+        if( index == m_current_statistic ) loadStatisticState( index );
+    };
+
+    const QJsonArray data = payload.value( dataKey ).toArray();
+    for( const auto& value : data )
+    {
+        if( !value.isObject() )
+        {
+            qDebug() << "[Client][EnsembleTFE] skip non-object RequestDataAt statistics patch";
+            continue;
+        }
+
+        const QJsonObject patch = value.toObject();
+        const QString statistic = NormalizeStatisticName(
+            patch.value( QString::fromUtf8( Protocol::Key::Statistic ) ).toString() );
+
+        if( statistic == QStringLiteral( "average" ) )
+        {
+            updateBlock( AverageStatistic, patch );
+        }
+        else if( statistic == QStringLiteral( "variance" ) )
+        {
+            updateBlock( VarianceStatistic, patch );
+        }
+        else if( statistic == QStringLiteral( "cv" ) )
+        {
+            updateBlock( CoefficientVariationStatistic, patch );
+        }
+        else
+        {
+            qDebug() << "[Client][EnsembleTFE] skip unknown RequestDataAt statistic patch";
+        }
+    }
+
+    m_legend_transfer_function = createLegendTransferFunction( legendStatistics );
+    emit updateLegendTransferFunction( &m_legend_transfer_function, static_cast<int>( selectedStatisticIndex() ) );
 }
 
 QString EnsembleTransferFunctionEditor::selectedStatistic() const

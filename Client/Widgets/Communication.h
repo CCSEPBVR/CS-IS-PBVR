@@ -56,6 +56,7 @@ signals:
 
     // NOTE:時系列更新用
     void receiveRequestDataAtTransferFunctionParameter( const QJsonObject& payload );
+    void receiveRequestDataAtEnsembleStatisticsParameter( const QJsonObject& payload );
 
     void receiveSelectedFile( const QJsonObject& payload );
     void receiveObjectDelete( const QJsonObject& payload );

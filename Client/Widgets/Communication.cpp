@@ -903,6 +903,7 @@ void Communication::onTextWebSocketMessageReceived( const QString& receivedMessa
         const QString kPlotOverLineParameter     = QString::fromUtf8( Protocol::Key::PlotOverLineParameter );
         const QString kPlotOverTimeParameter     = QString::fromUtf8( Protocol::Key::PlotOverTimeParameter );
         const QString kTransferFunctionParameter = QString::fromUtf8( Protocol::Key::TransferFunctionParameter );
+        const QString kEnsembleTransferFunctionParameter = QString::fromUtf8( Protocol::Key::EnsembleTransferFunctionParameter );
         if( obj.contains( kPlotOverLineParameter ) && obj.value( kPlotOverLineParameter ).isObject() )
         {
             const QJsonObject plotOverLineParameter = obj.value( kPlotOverLineParameter ).toObject();
@@ -917,6 +918,11 @@ void Communication::onTextWebSocketMessageReceived( const QString& receivedMessa
         {
             const QJsonObject transferFunctionParameter = obj.value( kTransferFunctionParameter ).toObject();
             emit receiveRequestDataAtTransferFunctionParameter( transferFunctionParameter );
+        }
+        if( obj.contains( kEnsembleTransferFunctionParameter ) && obj.value( kEnsembleTransferFunctionParameter ).isObject() )
+        {
+            const QJsonObject ensembleStatisticsParameter = obj.value( kEnsembleTransferFunctionParameter ).toObject();
+            emit receiveRequestDataAtEnsembleStatisticsParameter( ensembleStatisticsParameter );
         }
     }
     else if( event == QString::fromUtf8( Protocol::Events::TimeStepControlParameter ) )  emit receiveTimeStepControlParameter( obj );

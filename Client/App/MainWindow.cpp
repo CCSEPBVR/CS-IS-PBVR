@@ -312,6 +312,27 @@ void MainWindow::onUpdateIsEnsemble( bool isEnsemble )
     {
         m_transfer_function_editor_action->setEnabled( !isEnsemble );
     }
+    if( m_color_map_bar_selector_tool_bar )
+    {
+        m_color_map_bar_selector_tool_bar->setMode(
+            isEnsemble
+                ? ColorMapSelectorToolBar::Mode::EnsembleTransferFunction
+                : ColorMapSelectorToolBar::Mode::TransferFunction );
+    }
+    if( isEnsemble )
+    {
+        if( m_ensemble_transfer_function_editor )
+        {
+            m_ensemble_transfer_function_editor->emitLegendTransferFunctionUpdate();
+        }
+    }
+    else
+    {
+        if( m_transfer_function_editor )
+        {
+            m_transfer_function_editor->emitLegendTransferFunctionUpdate();
+        }
+    }
 }
 
 void MainWindow::initializeToolBar()
@@ -515,6 +536,7 @@ void MainWindow::initializeCommunication()
         connect( m_communication, &Communication::receiveRepetitionLevelParameter , m_repetition_level_control  , &RepetitionLevelControl::onReceiveRepetitionLevelParameter );
 
         connect( m_communication, &Communication::receiveRequestDataAtTransferFunctionParameter, m_transfer_function_editor, &TransferFunctionEditor::onReceiveRequestDataAtTransferFunctionParameter );
+        connect( m_communication, &Communication::receiveRequestDataAtEnsembleStatisticsParameter, m_ensemble_transfer_function_editor, &EnsembleTransferFunctionEditor::onReceiveRequestDataAtEnsembleStatisticsParameter );
 
         connect( m_communication, &Communication::receiveSelectedFile, m_object_editor, &ObjectEditor::onReceiveSelectedFile );
         connect( m_communication, &Communication::receiveObjectDelete, m_object_editor, &ObjectEditor::onReceiveObjectDelete );
@@ -637,6 +659,11 @@ void MainWindow::initializeEnsembleTransferFunctionEditor()
         {
             m_object_editor->setEnsembleTransferFunctionEditor( m_ensemble_transfer_function_editor );
         }
+        connect(
+            m_ensemble_transfer_function_editor,
+            &EnsembleTransferFunctionEditor::updateLegendTransferFunction,
+            m_color_map_bar_selector_tool_bar,
+            &ColorMapSelectorToolBar::onEnsembleTransferFunctionUpdate );
     }
 }
 

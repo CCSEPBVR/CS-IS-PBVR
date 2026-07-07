@@ -24,6 +24,7 @@ inline constexpr std::string_view TransferFunctionFilePath  = "TransferFunctionF
 
 // Initialize Parameter
 inline constexpr std::string_view TransferFunctionParameter = "TransferFunctionParameter";
+inline constexpr std::string_view EnsembleTransferFunctionParameter = "EnsembleTransferFunctionParameter";
 inline constexpr std::string_view GlyphParameter            = "GlyphParameter";
 inline constexpr std::string_view PlotOverLineParameter     = "PlotOverLineParameter";
 inline constexpr std::string_view PlotOverTimeParameter     = "PlotOverTimeParameter";

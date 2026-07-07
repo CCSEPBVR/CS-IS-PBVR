@@ -17,6 +17,12 @@ class ColorMapSelectorToolBar : public QToolBar
     Q_OBJECT
 
 public:
+    enum class Mode
+    {
+        TransferFunction,
+        EnsembleTransferFunction
+    };
+
     explicit ColorMapSelectorToolBar( kvs::qt::jaea::Screen* screen, QWidget *parent = nullptr );
     ~ColorMapSelectorToolBar();
 
@@ -27,7 +33,9 @@ public:
 signals:
 
 public slots:
+    void setMode( Mode mode );
     void onTransferFunctionUpdate( TransferFunction* lastSentTransferFunction );
+    void onEnsembleTransferFunctionUpdate( TransferFunction* ensembleTransferFunction, int selectedIndex );
 
     void onLoadParameter( const QString& filePath ); // KPI
     void onSaveParameter( const QString& filePath ); // KPI
@@ -39,9 +47,14 @@ private:
     kvs::qt::jaea::Screen* m_screen   = nullptr;
     kvs::ColorMapBar* m_color_map_bar = nullptr;
 
+    Mode m_mode = Mode::TransferFunction;
     TransferFunction m_transfer_function_storage;
-    TransferFunction* m_transfer_function = nullptr;
+    TransferFunction m_ensemble_transfer_function_storage;
+    TransferFunction* m_transfer_function = &m_transfer_function_storage;
+    TransferFunction* m_ensemble_transfer_function = &m_ensemble_transfer_function_storage;
 
+    void rebuildComboBox( int preferredIndex );
+    TransferFunction* currentTransferFunction();
     void updateColorMapByIndex( int index );
     void updateCurrentIndex();
 

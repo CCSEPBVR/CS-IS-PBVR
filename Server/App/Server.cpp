@@ -1659,6 +1659,15 @@ void Server::requestDataAt(uWS::WebSocket<false, true, PerSocket>* ws, const nlo
         transferFunctionParameter[Protocol::Key::Data] = transferFunctions;
         msg[Protocol::Key::TransferFunctionParameter] = std::move(transferFunctionParameter);
 
+        if ( m_server_mode == ServerMode::IS && m_particle_property && m_particle_property->m_is_ensemble )
+        {
+            nlohmann::json ensembleStatisticsParameter =
+                BuildEnsembleStatisticsParameter( *m_particle_property, m_current_ensemble_statistic );
+            ensembleStatisticsParameter.erase( std::string( Protocol::Key::Event ) );
+            ensembleStatisticsParameter.erase( std::string( Protocol::Key::Statistic ) );
+            msg[Protocol::Key::EnsembleTransferFunctionParameter] = std::move( ensembleStatisticsParameter );
+        }
+
         if (m_server_mode == ServerMode::IS)
         {
             delete tmpParticleProperty->m_camera;
@@ -1667,20 +1676,6 @@ void Server::requestDataAt(uWS::WebSocket<false, true, PerSocket>* ws, const nlo
         }
 
         m_u_web_sockets.publish(k_text_topic, msg.dump(), uWS::OpCode::TEXT);
-
-        if ( m_server_mode == ServerMode::IS )
-        {
-            nlohmann::json ensembleStatisticsParameter =
-                BuildEnsembleStatisticsParameter( *m_particle_property, m_current_ensemble_statistic );
-            size_t data_size = 0;
-            if ( ensembleStatisticsParameter.contains( Protocol::Key::Data ) &&
-                 ensembleStatisticsParameter.at( Protocol::Key::Data ).is_array() )
-            {
-                data_size = ensembleStatisticsParameter.at( Protocol::Key::Data ).size();
-            }
-            std::cout << "[Server][EnsembleStatisticsParameter] publish patches=" << data_size << std::endl;
-            m_u_web_sockets.publish( k_text_topic, ensembleStatisticsParameter.dump(), uWS::OpCode::TEXT );
-        }
     });
     worker.process();
     std::cout << "[Server][RequestDataAt] worker.process finished timestep=" << timeStep << std::endl;

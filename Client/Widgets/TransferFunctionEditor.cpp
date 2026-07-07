@@ -53,11 +53,18 @@ TransferFunctionEditor::~TransferFunctionEditor()
     delete ui;
 }
 
+void TransferFunctionEditor::emitLegendTransferFunctionUpdate()
+{
+    if( !m_has_legend_transfer_function ) { return; }
+    emit updateLastSentTransferFunction( &m_legend_transfer_function );
+}
+
 void TransferFunctionEditor::reset()
 {
     ui->numberOfTransferFunctionSpinBox->setValue( 0 );
     ui->colorSynthesizerLineEdit  ->clear();
     ui->opacitySynthesizerLineEdit->clear();
+    m_has_legend_transfer_function = false;
 }
 
 void TransferFunctionEditor::onOperatorStateUpdate( const bool operatorState )
@@ -283,10 +290,13 @@ void TransferFunctionEditor::onReceiveTransferFunctionParameter( const QJsonObje
 
     m_last_sent_tf  = *m_transfer_function;
     m_has_last_sent = true;
+    m_legend_transfer_function = *m_transfer_function;
+    m_has_legend_transfer_function = true;
 
     // NOTE:初回導通なので両UIを更新
     updateUIFromUserInput( UpdateTarget::Both );
     updateUIFromServer( UpdateTarget::Both );
+    emitLegendTransferFunctionUpdate();
 }
 
 void TransferFunctionEditor::onReceiveRequestDataAtTransferFunctionParameter( const QJsonObject& payload )
@@ -465,7 +475,9 @@ void TransferFunctionEditor::onReceiveRequestDataAtTransferFunctionParameter( co
         }
     }
     updateUIFromServer( UpdateTarget::Both );
-    updateLastSentTransferFunction( &legendBar );
+    m_legend_transfer_function = legendBar;
+    m_has_legend_transfer_function = true;
+    emitLegendTransferFunctionUpdate();
 }
 
 void TransferFunctionEditor::onLoadParameter( const QString& filePath )

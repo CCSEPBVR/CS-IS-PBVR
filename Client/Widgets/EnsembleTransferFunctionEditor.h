@@ -12,6 +12,7 @@
 #include "ColorMapEditor.h"
 #include "OpacityMapEditor.h"
 #include "WebSocketPair.h"
+#include "../../Shared/TransferFunction.h"
 
 class QButtonGroup;
 class QJsonObject;
@@ -30,9 +31,14 @@ public:
     ~EnsembleTransferFunctionEditor();
     void reset();
     QString selectedStatistic() const;
+    void emitLegendTransferFunctionUpdate();
+
+signals:
+    void updateLegendTransferFunction( TransferFunction* transferFunction, int selectedIndex );
 
 public slots:
     void onReceiveEnsembleStatisticsParameter( const QJsonObject& payload );
+    void onReceiveRequestDataAtEnsembleStatisticsParameter( const QJsonObject& payload );
 
 private:
     Ui::EnsembleTransferFunctionEditor* ui;
@@ -68,11 +74,14 @@ private:
     QVector<QColor> m_default_color_map;
     QVector<float> m_default_opacity_map;
     StatisticIndex m_current_statistic = AverageStatistic;
+    TransferFunction m_legend_transfer_function;
 
     void initialize();
     void saveCurrentStatisticState();
     void loadStatisticState( StatisticIndex statistic );
     StatisticIndex selectedStatisticIndex() const;
+    TransferFunction createLegendTransferFunction() const;
+    TransferFunction createLegendTransferFunction( const std::array<StatisticUiState, StatisticCount>& statistics ) const;
     bool validateForApply() const;
     bool validateForExport() const;
 
