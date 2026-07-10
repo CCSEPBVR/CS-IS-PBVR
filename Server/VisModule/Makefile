@@ -74,10 +74,12 @@ build:: $(TARGET_LIB)
 #=============================================================================
 clean::
 	$(RMDIR) `find $(OUTDIR) -name "*.o"`
+	$(RM) $(TARGET_LIB)
 	# $(RM) $(TARGET_EXE)
 
 all_clean::
 	$(RMDIR) $(OUTDIR)
+	$(RM) $(TARGET_LIB)
 	# $(RM) $(TARGET_EXE)
 
 #=============================================================================

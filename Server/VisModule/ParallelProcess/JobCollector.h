@@ -35,6 +35,7 @@ public:
     ~JobCollector();
 
     void jobCollect( vismodule::PointObject* object, VariableRange* vr, bool* invalid, int* wid = NULL );
+    void jobCollect_done( bool* invalid, int* wid = NULL );
     void jobCollect_glyph( vismodule::KVSMLObjectGlyph* object, bool* invalid, int* wid = NULL );
     void jobCollect_pol( std::vector<float>& axis, std::vector<int>& mask, std::vector<float>& values, bool* invalid, int* wid = NULL );
 };

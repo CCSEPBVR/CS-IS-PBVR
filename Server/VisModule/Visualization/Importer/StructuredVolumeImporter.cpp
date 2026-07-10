@@ -333,6 +333,23 @@ void StructuredVolumeImporter::import(
     }
     SuperClass::updateMinMaxCoords();
 
+    // updateMinMaxCoords() recalculates object coords from resolution for
+    // uniform structured volumes. Reapply explicit KVSML coords so distributed
+    // subvolumes keep their global positions.
+    if ( kvsml->objectTag().hasObjectCoord() )
+    {
+        const vismodule::Vector3f min_coord( kvsml->objectTag().minObjectCoord() );
+        const vismodule::Vector3f max_coord( kvsml->objectTag().maxObjectCoord() );
+        SuperClass::setMinMaxObjectCoords( min_coord, max_coord );
+    }
+
+    if ( kvsml->objectTag().hasExternalCoord() )
+    {
+        const vismodule::Vector3f min_coord( kvsml->objectTag().minExternalCoord() );
+        const vismodule::Vector3f max_coord( kvsml->objectTag().maxExternalCoord() );
+        SuperClass::setMinMaxExternalCoords( min_coord, max_coord );
+    }
+
     if ( kvsml->hasMinValue() && kvsml->hasMaxValue() )
     {
         const double min_value = kvsml->minValue();

@@ -1,3 +1,5 @@
+#include <algorithm>
+
 #include <vismodule/JobDispatcher>
 #include <vismodule/GenerateParticle>
 #include <vismodule/Calculate>
@@ -75,6 +77,11 @@ void GenerateParticleCS(
     while ( jd.dispatchNext( wid, &st, &vl ) )
     {
         // calculate min max
+        float* job_max = new float[tf_number * 2];
+        float* job_min = new float[tf_number * 2];
+        std::fill_n( job_max, tf_number * 2, FLT_MIN );
+        std::fill_n( job_min, tf_number * 2, FLT_MAX );
+
         if ( ( rank > 0 ) || ( mpi_size == 1 ) )
         {
             int xvl, fidx;
@@ -190,8 +197,24 @@ void GenerateParticleCS(
             }
             // generate point object end
 
-            MakeParticleMinMax( particle_property.m_transfunc_synthesizer, tf_number, tmp_max, tmp_min );
+            MakeParticleMinMax( particle_property.m_transfunc_synthesizer, tf_number, job_max, job_min );
+
+            for ( int i = 0; i < tf_number * 2; ++i )
+            {
+                tmp_max[i] = std::max( tmp_max[i], job_max[i] );
+                tmp_min[i] = std::min( tmp_min[i], job_min[i] );
+            }
         } // make point object and histgram and range
+
+#ifndef CPU_VER
+        if ( mpi_size > 1 )
+        {
+            jc.jobCollect_done( &nan_error, &wid );
+        }
+#endif
+
+        delete[] job_max;
+        delete[] job_min;
     } // end of while(DispatchNext)
 
 #ifndef CPU_VER
@@ -250,6 +273,10 @@ void GenerateParticleCS(
     {
         vismodule::PointObject* recv_obj = new vismodule::PointObject;
         vismodule::PointObject* send_obj = nullptr;
+        vismodule::UInt64* job_c_bins = new vismodule::UInt64[DEFAULT_NBINS * tf_number];
+        vismodule::UInt64* job_o_bins = new vismodule::UInt64[DEFAULT_NBINS * tf_number];
+        std::fill_n( job_c_bins, DEFAULT_NBINS * tf_number, 0 );
+        std::fill_n( job_o_bins, DEFAULT_NBINS * tf_number, 0 );
 
         // make point object and histgram and range
         if ( ( rank > 0 ) || ( mpi_size == 1 ) )
@@ -364,8 +391,13 @@ void GenerateParticleCS(
                 nan_error = true;
             }
             // generate point object end
-            
-            MakeHistgram( send_obj, tf_number, tmp_c_bins, tmp_o_bins );
+
+            MakeHistgram( send_obj, tf_number, job_c_bins, job_o_bins );
+            for ( int i = 0; i < DEFAULT_NBINS * tf_number; ++i )
+            {
+                tmp_c_bins[i] += job_c_bins[i];
+                tmp_o_bins[i] += job_o_bins[i];
+            }
         } // make point object and histgram and range
 
 #ifndef CPU_VER
@@ -460,6 +492,8 @@ void GenerateParticleCS(
 
         delete send_obj;
         delete recv_obj;
+        delete[] job_c_bins;
+        delete[] job_o_bins;
     } // end of while(DispatchNext)
 
 #ifndef CPU_VER

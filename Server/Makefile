@@ -178,7 +178,8 @@ endif
 
 all: $(BUILD_TARGETS)
 
-server: third $(TARGET)
+server: third
+	$(MAKE) $(TARGET)
 
 third:
 	for i in $(SERVER_THIRD_DIRS); do \

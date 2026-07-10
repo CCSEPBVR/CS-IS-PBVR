@@ -187,6 +187,36 @@ void JobCollector::jobCollect( vismodule::PointObject* object, VariableRange* vr
     }
 }
 
+void JobCollector::jobCollect_done( bool* invalid, int* wid )
+{
+    int rank;
+    MPI_Comm_rank( MPI_COMM_WORLD, &rank );
+
+    if ( rank == 0 )
+    {
+        MPI_Status stat;
+        double send_time;
+        MPI_Recv( &send_time, 1, MPI_DOUBLE_PRECISION, MPI_ANY_SOURCE, 1, MPI_COMM_WORLD, &stat );
+
+        const double recv_time = GetTime();
+        if ( ( recv_time - send_time ) > 0.0 ) m_jd->setLatency( recv_time - send_time );
+        else                                   m_jd->setLatency( 0.0 );
+
+        const int src = stat.MPI_SOURCE;
+        if ( wid ) *wid = src - 1;
+
+        bool sub_invalid;
+        MPI_Recv( &sub_invalid, sizeof( bool ), MPI_BYTE, src, 1, MPI_COMM_WORLD, &stat );
+        *invalid |= sub_invalid;
+    }
+    else if ( m_jd->getCollectSendState() )
+    {
+        double send_time = GetTime();
+        MPI_Send( &send_time, 1, MPI_DOUBLE_PRECISION, 0, 1, MPI_COMM_WORLD );
+        MPI_Send( invalid, sizeof( bool ), MPI_BYTE, 0, 1, MPI_COMM_WORLD );
+    }
+}
+
 void JobCollector::jobCollect_glyph( vismodule::KVSMLObjectGlyph* object, bool* invalid, int* wid )
 {
     int size;
