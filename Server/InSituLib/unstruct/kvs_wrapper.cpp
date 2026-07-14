@@ -1926,6 +1926,26 @@ void calculation_glad(const int nparticles_count, const int nvariables,
 // variables k>0 never read their own m_vertices_array (geometry goes through cell[*][0]).
 // So bind full scalars+vertices for variable 0 and scalars only for the rest, skipping
 // the redundant vertex gather.
+#ifdef PBVR_SHIFT_ALLOC_MEM
+// Option C: persistent grow-only MPI_Alloc_mem buffer for the ensemble shift exchange.
+// MPI_Alloc_mem returns MPT-registered memory, so large messages take the correct (fast,
+// non-corrupting) RDMA path instead of the pageable-host path that CUDA-aware MPT garbles.
+// CUDA-independent. Grow-only + reused across iterations -> pinning cost amortized, and the
+// per-iteration std::vector alloc/free is removed.
+struct ShiftPinnedBuf {
+    void*  ptr = nullptr;
+    size_t cap = 0;
+    void* get( size_t bytes ) {
+        if ( bytes > cap ) {
+            if ( ptr ) MPI_Free_mem( ptr );
+            cap = bytes + bytes / 4;   // 25% headroom -> rare re-registration
+            MPI_Alloc_mem( (MPI_Aint)cap, MPI_INFO_NULL, &ptr );
+        }
+        return ptr;
+    }
+};
+#endif
+
 static inline void bind_variables_scalars_opt(
     std::vector< vismodule::CellBase<Type>* >& cells,
     const int nvariables, const int n, const vismodule::UInt32* cell_index )
@@ -2990,6 +3010,7 @@ bool ensemble_generate_particles(
             vismodule::Timer payload_all_timer;
             payload_all_timer.start();
 #endif
+#ifndef PBVR_SHIFT_ALLOC_MEM
             MPI_Request req_recv[6];
             MPI_Request req_send[6];
             MPI_Irecv( recv_cellids.data(), recv_size, MPI_INT, recv_from, 12, MPI_COMM_WORLD, &req_recv[0] );
@@ -3006,6 +3027,47 @@ bool ensemble_generate_particles(
             MPI_Isend( v_tmp[cur].data(), 3 * send_size, MPI_FLOAT, send_to, 15, MPI_COMM_WORLD, &req_send[5] );
             MPI_Waitall( 6, req_recv, MPI_STATUSES_IGNORE );
             MPI_Waitall( 6, req_send, MPI_STATUSES_IGNORE );
+#else  // ---- Option C: MPI_Alloc_mem (registered) staging path; existing path kept above ----
+            static ShiftPinnedBuf sp[12];   // 0..5 = send cellids/scalars/coords/normals/sq/tmp, 6..11 = recv
+            int*   ps_cell = (int*)   sp[0].get( sizeof(int)   *     (size_t)send_size );
+            float* ps_scal = (float*) sp[1].get( sizeof(float) *     (size_t)send_size );
+            float* ps_coor = (float*) sp[2].get( sizeof(float) * 3 * (size_t)send_size );
+            float* ps_norm = (float*) sp[3].get( sizeof(float) * 3 * (size_t)send_size );
+            float* ps_sq   = (float*) sp[4].get( sizeof(float) *     (size_t)send_size );
+            float* ps_tmp  = (float*) sp[5].get( sizeof(float) * 3 * (size_t)send_size );
+            std::memcpy( ps_cell, v_cellids[cur].data(), sizeof(int)   *     (size_t)send_size );
+            std::memcpy( ps_scal, v_scalars[cur].data(), sizeof(float) *     (size_t)send_size );
+            std::memcpy( ps_coor, v_coords[cur].data(),  sizeof(float) * 3 * (size_t)send_size );
+            std::memcpy( ps_norm, v_normals[cur].data(), sizeof(float) * 3 * (size_t)send_size );
+            std::memcpy( ps_sq,   v_sq[cur].data(),      sizeof(float) *     (size_t)send_size );
+            std::memcpy( ps_tmp,  v_tmp[cur].data(),     sizeof(float) * 3 * (size_t)send_size );
+            int*   pr_cell = (int*)   sp[6].get(  sizeof(int)   *     (size_t)recv_size );
+            float* pr_scal = (float*) sp[7].get(  sizeof(float) *     (size_t)recv_size );
+            float* pr_coor = (float*) sp[8].get(  sizeof(float) * 3 * (size_t)recv_size );
+            float* pr_norm = (float*) sp[9].get(  sizeof(float) * 3 * (size_t)recv_size );
+            float* pr_sq   = (float*) sp[10].get( sizeof(float) *     (size_t)recv_size );
+            float* pr_tmp  = (float*) sp[11].get( sizeof(float) * 3 * (size_t)recv_size );
+            MPI_Request rq[12];
+            MPI_Irecv( pr_cell, recv_size,     MPI_INT,   recv_from, 12, MPI_COMM_WORLD, &rq[0] );
+            MPI_Irecv( pr_scal, recv_size,     MPI_FLOAT, recv_from, 10, MPI_COMM_WORLD, &rq[1] );
+            MPI_Irecv( pr_coor, 3 * recv_size, MPI_FLOAT, recv_from, 11, MPI_COMM_WORLD, &rq[2] );
+            MPI_Irecv( pr_norm, 3 * recv_size, MPI_FLOAT, recv_from, 13, MPI_COMM_WORLD, &rq[3] );
+            MPI_Irecv( pr_sq,   recv_size,     MPI_FLOAT, recv_from, 14, MPI_COMM_WORLD, &rq[4] );
+            MPI_Irecv( pr_tmp,  3 * recv_size, MPI_FLOAT, recv_from, 15, MPI_COMM_WORLD, &rq[5] );
+            MPI_Isend( ps_cell, send_size,     MPI_INT,   send_to, 12, MPI_COMM_WORLD, &rq[6] );
+            MPI_Isend( ps_scal, send_size,     MPI_FLOAT, send_to, 10, MPI_COMM_WORLD, &rq[7] );
+            MPI_Isend( ps_coor, 3 * send_size, MPI_FLOAT, send_to, 11, MPI_COMM_WORLD, &rq[8] );
+            MPI_Isend( ps_norm, 3 * send_size, MPI_FLOAT, send_to, 13, MPI_COMM_WORLD, &rq[9] );
+            MPI_Isend( ps_sq,   send_size,     MPI_FLOAT, send_to, 14, MPI_COMM_WORLD, &rq[10] );
+            MPI_Isend( ps_tmp,  3 * send_size, MPI_FLOAT, send_to, 15, MPI_COMM_WORLD, &rq[11] );
+            MPI_Waitall( 12, rq, MPI_STATUSES_IGNORE );
+            std::memcpy( recv_cellids.data(),    pr_cell, sizeof(int)   *     (size_t)recv_size );
+            std::memcpy( recv_scalars.data(),    pr_scal, sizeof(float) *     (size_t)recv_size );
+            std::memcpy( recv_coords.data(),     pr_coor, sizeof(float) * 3 * (size_t)recv_size );
+            std::memcpy( recv_normals.data(),    pr_norm, sizeof(float) * 3 * (size_t)recv_size );
+            std::memcpy( recv_sq_scalars.data(), pr_sq,   sizeof(float) *     (size_t)recv_size );
+            std::memcpy( recv_tmp_term.data(),   pr_tmp,  sizeof(float) * 3 * (size_t)recv_size );
+#endif
 #ifdef ENABLE_ENSEMBLE_TIMER
             payload_all_timer.stop();
             ensemble_timer.add( EnsembleTimerMpiShiftPayloadAll, payload_all_timer.sec() );
