@@ -15,7 +15,11 @@
 #define VIS_MODULE__CELL_BASE_H_INCLUDE
 
 #include <limits>
+#ifdef _MSC_VER
+#include <malloc.h>  // _aligned_malloc, _aligned_free
+#else
 #include <cstdlib>  // posix_memalign, free
+#endif
 #include <cstring>  // memset
 
 #include <vismodule/DebugNew>
@@ -37,6 +41,31 @@
 
 namespace vismodule
 {
+
+namespace detail
+{
+
+inline bool AllocateCellBaseAlignedMemory( void** memory, const std::size_t size )
+{
+#ifdef _MSC_VER
+    *memory = _aligned_malloc( size, 64 );
+    return ( *memory != nullptr );
+#else
+    return ( posix_memalign( memory, 64, size ) == 0 );
+#endif
+}
+
+inline void FreeCellBaseAlignedMemory( void* memory )
+{
+#ifdef _MSC_VER
+    _aligned_free( memory );
+#else
+    free( memory );
+#endif
+}
+
+} // namespace detail
+
 /*===========================================================================*/
 /**
  *  @brief  CellBase class.
@@ -244,18 +273,22 @@ inline void CellBase<T>::allocate()
         // values as before; removes per-row heap scatter and the unaligned-access penalty
         // in scalar_ary/grad_ary. Vector3f rows are zero-initialized to match the original
         // element ctor (Vector3f()->zero()); float rows stay uninitialized as before.
-        if ( posix_memalign( reinterpret_cast<void**>( &m_vertices_block ), 64,
-                             sizeof( vismodule::Vector3f ) * nnodes * SIMD_BLK_SIZE ) != 0 )
+        if ( !detail::AllocateCellBaseAlignedMemory(
+                 reinterpret_cast<void**>( &m_vertices_block ),
+                 sizeof( vismodule::Vector3f ) * nnodes * SIMD_BLK_SIZE ) )
             throw "Cannot allocate aligned memory for 'm_vertices_array'";
         memset( m_vertices_block, 0, sizeof( vismodule::Vector3f ) * nnodes * SIMD_BLK_SIZE );
-        if ( posix_memalign( reinterpret_cast<void**>( &m_scalars_block ), 64,
-                             sizeof( T ) * nnodes * SIMD_BLK_SIZE ) != 0 )
+        if ( !detail::AllocateCellBaseAlignedMemory(
+                 reinterpret_cast<void**>( &m_scalars_block ),
+                 sizeof( T ) * nnodes * SIMD_BLK_SIZE ) )
             throw "Cannot allocate aligned memory for 'm_scalars_array'";
-        if ( posix_memalign( reinterpret_cast<void**>( &m_interpolation_block ), 64,
-                             sizeof( vismodule::Real32 ) * nnodes * SIMD_BLK_SIZE ) != 0 )
+        if ( !detail::AllocateCellBaseAlignedMemory(
+                 reinterpret_cast<void**>( &m_interpolation_block ),
+                 sizeof( vismodule::Real32 ) * nnodes * SIMD_BLK_SIZE ) )
             throw "Cannot allocate aligned memory for 'm_interpolation_functions_array'";
-        if ( posix_memalign( reinterpret_cast<void**>( &m_differential_block ), 64,
-                             sizeof( vismodule::Real32 ) * nnodes * dimension * SIMD_BLK_SIZE ) != 0 )
+        if ( !detail::AllocateCellBaseAlignedMemory(
+                 reinterpret_cast<void**>( &m_differential_block ),
+                 sizeof( vismodule::Real32 ) * nnodes * dimension * SIMD_BLK_SIZE ) )
             throw "Cannot allocate aligned memory for 'm_differential_functions_array'";
         for (int i = 0; i<nnodes; i++ )
         {
@@ -291,16 +324,16 @@ inline void CellBase<T>::deallocate()
 
 //    //add by shimomura 2024/0603
     // Free the single aligned blocks (rows point into these), then the row-pointer arrays.
-    if ( m_vertices_block ) free( m_vertices_block );
+    if ( m_vertices_block ) detail::FreeCellBaseAlignedMemory( m_vertices_block );
     if ( m_vertices_array ) delete [] m_vertices_array;
 
-    if ( m_scalars_block ) free( m_scalars_block );
+    if ( m_scalars_block ) detail::FreeCellBaseAlignedMemory( m_scalars_block );
     if ( m_scalars_array ) delete [] m_scalars_array;
 
-    if ( m_interpolation_block ) free( m_interpolation_block );
+    if ( m_interpolation_block ) detail::FreeCellBaseAlignedMemory( m_interpolation_block );
     if ( m_interpolation_functions_array ) delete [] m_interpolation_functions_array;
 
-    if ( m_differential_block ) free( m_differential_block );
+    if ( m_differential_block ) detail::FreeCellBaseAlignedMemory( m_differential_block );
     if ( m_differential_functions_array ) delete [] m_differential_functions_array;
 }
 
@@ -403,18 +436,22 @@ inline CellBase<T>::CellBase(
         // values as before; removes per-row heap scatter and the unaligned-access penalty
         // in scalar_ary/grad_ary. Vector3f rows are zero-initialized to match the original
         // element ctor (Vector3f()->zero()); float rows stay uninitialized as before.
-        if ( posix_memalign( reinterpret_cast<void**>( &m_vertices_block ), 64,
-                             sizeof( vismodule::Vector3f ) * nnodes * SIMD_BLK_SIZE ) != 0 )
+        if ( !detail::AllocateCellBaseAlignedMemory(
+                 reinterpret_cast<void**>( &m_vertices_block ),
+                 sizeof( vismodule::Vector3f ) * nnodes * SIMD_BLK_SIZE ) )
             throw "Cannot allocate aligned memory for 'm_vertices_array'";
         memset( m_vertices_block, 0, sizeof( vismodule::Vector3f ) * nnodes * SIMD_BLK_SIZE );
-        if ( posix_memalign( reinterpret_cast<void**>( &m_scalars_block ), 64,
-                             sizeof( T ) * nnodes * SIMD_BLK_SIZE ) != 0 )
+        if ( !detail::AllocateCellBaseAlignedMemory(
+                 reinterpret_cast<void**>( &m_scalars_block ),
+                 sizeof( T ) * nnodes * SIMD_BLK_SIZE ) )
             throw "Cannot allocate aligned memory for 'm_scalars_array'";
-        if ( posix_memalign( reinterpret_cast<void**>( &m_interpolation_block ), 64,
-                             sizeof( vismodule::Real32 ) * nnodes * SIMD_BLK_SIZE ) != 0 )
+        if ( !detail::AllocateCellBaseAlignedMemory(
+                 reinterpret_cast<void**>( &m_interpolation_block ),
+                 sizeof( vismodule::Real32 ) * nnodes * SIMD_BLK_SIZE ) )
             throw "Cannot allocate aligned memory for 'm_interpolation_functions_array'";
-        if ( posix_memalign( reinterpret_cast<void**>( &m_differential_block ), 64,
-                             sizeof( vismodule::Real32 ) * nnodes * dimension * SIMD_BLK_SIZE ) != 0 )
+        if ( !detail::AllocateCellBaseAlignedMemory(
+                 reinterpret_cast<void**>( &m_differential_block ),
+                 sizeof( vismodule::Real32 ) * nnodes * dimension * SIMD_BLK_SIZE ) )
             throw "Cannot allocate aligned memory for 'm_differential_functions_array'";
         for (int i = 0; i<nnodes; i++ )
         {

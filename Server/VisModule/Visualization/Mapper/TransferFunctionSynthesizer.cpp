@@ -1,6 +1,7 @@
 #include <vismodule/TransferFunctionSynthesizer>
 #include <fstream>
 #include <limits>
+#include <vector>
 #include "Token.h"
 
 #if (defined(VIS_MODULE_PLATFORM_LINUX) || defined(VIS_MODULE_PLATFORM_MACOSX))                                                                                                                   
@@ -2329,23 +2330,30 @@ void TransferFunctionSynthesizer::CalculateScalarsArray(
 {
 //        std::stringstream debug;
 
-    //配列を追加
-    float scalar_array[interp.size()][loop_cnt];
+    if ( loop_cnt <= 0 ) return;
 
-    float grad_array_x[interp.size()][loop_cnt];
-    float grad_array_y[interp.size()][loop_cnt];
-    float grad_array_z[interp.size()][loop_cnt];
+    //配列を追加
+    const std::size_t nvar = interp.size();
+    const std::size_t sample_count = static_cast<std::size_t>( loop_cnt );
+    std::vector< std::vector<float> > scalar_array(
+        nvar, std::vector<float>( sample_count ) );
+
+    std::vector< std::vector<float> > grad_array_x(
+        nvar, std::vector<float>( sample_count ) );
+    std::vector< std::vector<float> > grad_array_y(
+        nvar, std::vector<float>( sample_count ) );
+    std::vector< std::vector<float> > grad_array_z(
+        nvar, std::vector<float>( sample_count ) );
 
     //float local_coord_x[loop_cnt];
     //float local_coord_y[loop_cnt];
     //float local_coord_z[loop_cnt];
 
-    float global_coord_x[loop_cnt];
-    float global_coord_y[loop_cnt];
-    float global_coord_z[loop_cnt];
+    std::vector<float> global_coord_x( sample_count );
+    std::vector<float> global_coord_y( sample_count );
+    std::vector<float> global_coord_z( sample_count );
 
-    float eval_result[loop_cnt];
-    float opacity_map_array[m_opa_var.size()][loop_cnt];
+    std::vector<float> eval_result( sample_count );
 
     for (int i = 0; i < loop_cnt; i++)
     {
@@ -2357,23 +2365,21 @@ void TransferFunctionSynthesizer::CalculateScalarsArray(
         global_coord_z[i] = global_coord[i].z();
     }
 
-    size_t nvar = interp.size();
-
     //bindCell, setLocalPoint, gradient, scalar をまとめてこの関数内部でSIMD化
-    for( size_t j= 0; j < nvar; j++ )
+    for( std::size_t j = 0; j < nvar; j++ )
     {
         interp[j]->setLocalPointArray( loop_cnt,
                                        local_coord );
         interp[j]->CalcScalarGrad( loop_cnt,
-                                   scalar_array[j],
-                                   grad_array_x[j],
-                                   grad_array_y[j],
-                                   grad_array_z[j] );
+                                   scalar_array[j].data(),
+                                   grad_array_x[j].data(),
+                                   grad_array_y[j].data(),
+                                   grad_array_z[j].data() );
     }
 
-    m_var_value_array[X] = global_coord_x;
-    m_var_value_array[Y] = global_coord_y;
-    m_var_value_array[Z] = global_coord_z;
+    m_var_value_array[X] = global_coord_x.data();
+    m_var_value_array[Y] = global_coord_y.data();
+    m_var_value_array[Z] = global_coord_z.data();
 
     //std::cout <<"m_opa_var.size() =" <<m_opa_var.size() <<std::endl;
     for( size_t i = 0; i < m_opa_var.size(); i++ )
@@ -2383,21 +2389,19 @@ void TransferFunctionSynthesizer::CalculateScalarsArray(
         m_rpn.setVariableName( &(m_opa_var[i].var_name[0]) );
         m_rpn.setNumber( &(m_opa_var[i].val_array[0]) );
 
-        size_t nvar = interp.size();
-
         //id of Q1=4, Q2=8,,,,, Qn=4*n
-        for( size_t j= 0; j < nvar; j++ )
+        for( std::size_t j = 0; j < nvar; j++ )
         {
-            m_var_value_array[4*(j+1)  ] = &scalar_array[j][0];
-            m_var_value_array[4*(j+1)+1] = &grad_array_x[j][0];
-            m_var_value_array[4*(j+1)+2] = &grad_array_y[j][0];
-            m_var_value_array[4*(j+1)+3] = &grad_array_z[j][0];
+            m_var_value_array[4*(j+1)  ] = scalar_array[j].data();
+            m_var_value_array[4*(j+1)+1] = grad_array_x[j].data();
+            m_var_value_array[4*(j+1)+2] = grad_array_y[j].data();
+            m_var_value_array[4*(j+1)+3] = grad_array_z[j].data();
         }
 
         m_rpn.setVariableValueArray( m_var_value_array );
 
         //calc. m_opa_var
-        m_rpn.evalArray(eval_result, loop_cnt);
+        m_rpn.evalArray( eval_result.data(), loop_cnt );
 
         //set opacity A1,A2,,,Ai. start 116 in VarName(Token.h)
         //m_var_value[ VAR_OFFSET_A+i ] = tf[i].opacityMap().at( m_scalars[i] );
@@ -2406,7 +2410,7 @@ void TransferFunctionSynthesizer::CalculateScalarsArray(
 ///            opacity_map_array[i][jx] = tf[i].opacityMap().at( eval_result[jx] );
 ///        }
 //        m_var_value_array[ VAR_OFFSET_A+i ] = &opacity_map_array[i][0];
-        m_var_value_array[ VAR_OFFSET_A+i ] = &eval_result[0];
+        m_var_value_array[ VAR_OFFSET_A+i ] = eval_result.data();
     }
 
     for( int jx=0; jx<loop_cnt; jx++ )

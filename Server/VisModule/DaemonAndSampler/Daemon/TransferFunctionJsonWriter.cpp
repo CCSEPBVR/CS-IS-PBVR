@@ -280,37 +280,7 @@ nlohmann::json TransferFunctionArrayToJson( const std::vector<NamedTransferFunct
     nlohmann::json array = nlohmann::json::array();
     for ( size_t i = 0; i < transfer_functions.size(); ++i )
     {
-        "The settings section contains global settings shared across the visualization.",
-        "Each transfer_functions entry defines the mapping between a physical quantity computed by a synthesis expression and its corresponding color and opacity.",
-        "The range.active_range field specifies the min/max source used for histogram generation. When set to user, user.min and user.max are used. When set to server, server-side values are supplied from the timestep history file.",
-        "The color.map.values field contains a flat uint8 RGB array with three components (R, G, B) per control point.",
-        "The opacity.map.values field contains a one-dimensional array of floating-point values in the range [0, 1].",
-        "color_synthesis and opacity_synthesis specify the synthesis expressions defined in the Transfer Function Editor.",
-    }
-
-    view["settings"]["sampling"]["method"] = SamplingMethodName( particle_property.m_sampling_method );
-    view["settings"]["sampling"]["particle_limit"] = particle_property.m_particle_limit;
-    view["settings"]["sampling"]["particle_data_size_limit"] = particle_property.m_particle_data_size_limit;
-    view["settings"]["sampling"]["particle_data_size_limit_unit"] = "MB";
-
-    if ( particle_property.m_camera != 0 )
-    {
-        view["settings"]["image"]["width"] = particle_property.m_camera->windowWidth();
-        view["settings"]["image"]["height"] = particle_property.m_camera->windowHeight();
-    }
-
-    view["settings"]["transfer_function"]["transfer_function_count"] = particle_property.m_transfunc_array.size();
-    if ( !particle_property.m_transfunc_array.empty() )
-    {
-        view["settings"]["transfer_function"]["transfer_function_resolution"] = particle_property.m_transfunc_array[0].m_resolution;
-    }
-    view["settings"]["transfer_function"]["color_synthesis"] = particle_property.m_color_transfer_function_synthesis;
-    view["settings"]["transfer_function"]["opacity_synthesis"] = particle_property.m_opacity_transfer_function_synthesis;
-
-    view["transfer_functions"] = nlohmann::json::array();
-    for ( size_t i = 0; i < particle_property.m_transfunc_array.size(); ++i )
-    {
-        const NamedTransferFunction& source = particle_property.m_transfunc_array[i];
+        const NamedTransferFunction& source = transfer_functions[i];
         const std::string color_mode = RangeModeName( source.m_server_color_range_mode );
         const std::string opacity_mode = RangeModeName( source.m_server_opacity_range_mode );
         const nlohmann::json color_table = ColorTableToJson( source );
@@ -363,8 +333,6 @@ nlohmann::json TransferFunctionArrayToJson( const std::vector<EnsembleTransferFu
         tf["color"]["variable"] = source.m_variable;
         tf["color"]["range"] = RangeDescription(
             mode,
-            source.m_server_variable_min,
-            source.m_server_variable_max,
             source.m_user_variable_min,
             source.m_user_variable_max );
         tf["color"]["map"] = TableDescription(
@@ -376,8 +344,6 @@ nlohmann::json TransferFunctionArrayToJson( const std::vector<EnsembleTransferFu
         tf["opacity"]["variable"] = source.m_variable;
         tf["opacity"]["range"] = RangeDescription(
             mode,
-            source.m_server_variable_min,
-            source.m_server_variable_max,
             source.m_user_variable_min,
             source.m_user_variable_max );
         tf["opacity"]["map"] = TableDescription(

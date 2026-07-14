@@ -354,6 +354,8 @@ void ApplyPlotOverTimeParameterJson( const nlohmann::json& root, PlotOverTimePro
 {
     pot_property.m_plot_flag = root.at( "enabled" ).get<bool>();
     ReadFloat3( root, "target_point", pot_property.m_target_point, "plot over time" );
+}
+
 void ValidateReadableTransferFunctionJson( const nlohmann::json& root )
 {
     const nlohmann::json& settings = JsonRequiredObject( root, "settings" );

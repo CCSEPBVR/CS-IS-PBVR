@@ -364,6 +364,8 @@ void ApplyTransferFunctionPatch( EnsembleTransferFunction& tf, const nlohmann::j
 }
 }
 
+} // namespace
+
 Server::Server(int port)
     : m_port(port)
     , m_glyph_property(new GlyphProperty())
@@ -1533,8 +1535,8 @@ void Server::requestDataAt(uWS::WebSocket<false, true, PerSocket>* ws, const nlo
                 tfJsonPath     += step.str() + ".json";
             }
 
-            std::cout << "[Server][RequestDataAt][TF] read path=" << tfFilePath
-                      << ", exists=" << std::filesystem::exists( tfFilePath )
+            std::cout << "[Server][RequestDataAt][TF] read path=" << tfJsonPath
+                      << ", exists=" << std::filesystem::exists( tfJsonPath )
                       << std::endl;
 
             ParameterFileReader ppr;
@@ -2383,26 +2385,8 @@ void Server::receiveRepetitionLevelParameter(uWS::WebSocket<false, true, PerSock
     const int raw_repeat_level = received.at( Protocol::Key::RepeatLevel ).get<int>();
     m_particle_property->m_repeat_level = static_cast<size_t>( std::clamp( raw_repeat_level, 1, 1024 ) );
 
-    const char* env_buf = std::getenv( "VIS_PARAM_DIR" );
-    std::string tfJsonPath = ( env_buf == nullptr ) ? "./" : env_buf;
-    if ( !tfJsonPath.empty() && tfJsonPath[tfJsonPath.size() - 1] != '/' )
-    {
-        tfJsonPath += "/";
-    }
-
-    env_buf = std::getenv( "TF_NAME" );
-    if ( env_buf == nullptr )
-    {
-        tfJsonPath += "default.json";
-    }
-    else
-    {
-        tfJsonPath += env_buf;
-        tfJsonPath += ".json";
-    }
-
     ParameterFileWriter ppw;
-    ppw.writeTF2Json( *m_particle_property, tfJsonPath );
+    ppw.writeTF2Json( *m_particle_property );
 
     nlohmann::json repetitionLevelParameter = received;
     repetitionLevelParameter[Protocol::Key::RepeatLevel] = static_cast<int>(m_particle_property->m_repeat_level);

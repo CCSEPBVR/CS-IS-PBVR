@@ -10,7 +10,11 @@
 #include <sys/time.h>
 #endif
 #include "Token.h"
+#ifdef _MSC_VER
+#include <malloc.h>  // _aligned_malloc, _aligned_free
+#else
 #include <cstdlib>  // posix_memalign, free
+#endif
 
 #define MAXVAL 128
 #define NUMVAR 128 //変数の数と一致すること
@@ -63,7 +67,11 @@ public:
             //delete[] m_variable_value;
             //delete[] m_number;XVAL
             delete[] m_stack;
+#ifdef _MSC_VER
+            if ( m_simd_stack ) _aligned_free( m_simd_stack );
+#else
             if ( m_simd_stack ) free( m_simd_stack );
+#endif
         }
 
 public:
@@ -732,10 +740,16 @@ public:
         const int MAX_DEPTH = MAXVAL; // stack depth bound
         if ( m_simd_stack == 0 )
         {
+#ifdef _MSC_VER
+            m_simd_stack = static_cast<float*>( _aligned_malloc( sizeof( float ) * MAX_DEPTH * BLK, 64 ) );
+            if ( m_simd_stack == 0 )
+            { std::cout << "error: evalArraySIMD aligned alloc failed" << std::endl; return; }
+#else
             void* p = 0;
             if ( posix_memalign( &p, 64, sizeof( float ) * MAX_DEPTH * BLK ) != 0 )
             { std::cout << "error: evalArraySIMD aligned alloc failed" << std::endl; return; }
             m_simd_stack = static_cast<float*>( p );
+#endif
         }
         int sp = 0;
         int*   expr   = m_exp_token;
