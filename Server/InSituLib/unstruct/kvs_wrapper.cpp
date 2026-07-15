@@ -2002,6 +2002,49 @@ struct ShiftPinnedBuf {
 };
 #endif
 
+#ifdef PBVR_SHIFT_ALLOC_MEM_DIRECT
+// Direct ring slot for the ensemble shift exchange (opt-in A/B variant, NOT the default).
+// grow-only reuse across hops (no per-hop malloc/free, no staging copy); MPI transfers directly
+// on these buffers. Enable with PBVR_SHIFT_ALLOC_MEM_DIRECT; add PBVR_SHIFT_PLAIN for plain
+// malloc + static-persistent slots (no registered memory), else MPI_Alloc_mem (registered) +
+// function-local per-timestep. The default churn-free fix is PBVR_SHIFT_STATIC_VEC (all-static
+// std::vector + zero-copy swap), which is faster at low MPI; these paths are kept for comparison.
+struct ShiftSlot {
+    int*   cellids = nullptr; float* scalars = nullptr; float* coords = nullptr;
+    float* normals = nullptr; float* sq      = nullptr; float* tmp    = nullptr;
+    int    count = 0;  size_t cap = 0;
+    static void* am( size_t b ) {
+#ifdef PBVR_SHIFT_PLAIN
+        return malloc( b );                          // plain(非ピン・登録なし): churn仮説の検証用
+#else
+        void* p = nullptr; MPI_Alloc_mem( (MPI_Aint)b, MPI_INFO_NULL, &p ); return p;
+#endif
+    }
+    void free_all() {
+        if ( !cellids ) return;
+#ifdef PBVR_SHIFT_PLAIN
+        free(cellids); free(scalars); free(coords); free(normals); free(sq); free(tmp);
+#else
+        MPI_Free_mem(cellids); MPI_Free_mem(scalars); MPI_Free_mem(coords);
+        MPI_Free_mem(normals); MPI_Free_mem(sq);      MPI_Free_mem(tmp);
+#endif
+        cellids=nullptr; scalars=nullptr; coords=nullptr; normals=nullptr; sq=nullptr; tmp=nullptr; cap=0; count=0;
+    }
+    void ensure( int need ) {
+        if ( (size_t)need <= cap ) return;
+        free_all();
+        cap = (size_t)need + need / 4;
+        cellids = (int*)   am( cap * sizeof(int) );   scalars = (float*) am( cap * sizeof(float) );
+        coords  = (float*) am( 3*cap*sizeof(float) ); normals = (float*) am( 3*cap*sizeof(float) );
+        sq      = (float*) am( cap * sizeof(float) ); tmp     = (float*) am( 3*cap*sizeof(float) );
+    }
+    ShiftSlot() = default;
+    ~ShiftSlot() { free_all(); }
+    ShiftSlot( const ShiftSlot& ) = delete;
+    ShiftSlot& operator=( const ShiftSlot& ) = delete;
+};
+#endif
+
 static inline void bind_variables_scalars_opt(
     std::vector< vismodule::CellBase<Type>* >& cells,
     const int nvariables, const int n, const vismodule::UInt32* cell_index )
@@ -2413,12 +2456,25 @@ bool ensemble_generate_particles(
         } 
         repetitions /= static_cast<float>( ens_number );
     }
+#ifdef PBVR_SHIFT_STATIC_VEC   // サンプリング出力(vertex_*)も static 永続化し、MPIが触る全バッファを churn-free に
+    static std::vector<vismodule::Real32> vertex_coords;
+    static std::vector<vismodule::Real32> vertex_scalars;
+    static std::vector<vismodule::Real32> vertex_normals;
+    static std::vector<int> vertex_cellids;
+    static std::vector<vismodule::Real32> sq_scalars;
+    static std::vector<vismodule::Real32> tmp_term;
+    // static ゆえ前 timestep のデータが残る。merge は size() 起点で追記するため毎回空へリセット
+    // (clear は capacity を保持 = realloc 無 = grow-only)。
+    vertex_coords.clear(); vertex_scalars.clear(); vertex_normals.clear();
+    vertex_cellids.clear(); sq_scalars.clear(); tmp_term.clear();
+#else
     std::vector<vismodule::Real32> vertex_coords;
     std::vector<vismodule::Real32> vertex_scalars;
     std::vector<vismodule::Real32> vertex_normals;
     std::vector<int> vertex_cellids;
     std::vector<vismodule::Real32> sq_scalars;
     std::vector<vismodule::Real32> tmp_term;
+#endif
 
 
 
@@ -2972,12 +3028,37 @@ bool ensemble_generate_particles(
         static_cast<unsigned long long>( vertex_coords.size() / 3 ) );
 #endif
 
+#ifdef PBVR_SHIFT_ALLOC_MEM_DIRECT
+#ifdef PBVR_SHIFT_PLAIN
+    static ShiftSlot slot0, slot1;   // static永続=churn完全撤廃(plainなのでleak可・MPI非依存)
+#else
+    ShiftSlot slot0, slot1;
+#endif
+    ShiftSlot* cur = &slot0;
+    ShiftSlot* nxt = &slot1;
+    { const int n = (int)vertex_scalars.size(); cur->ensure( n ); cur->count = n;
+      std::memcpy( cur->cellids, vertex_cellids.data(), sizeof(int)   * n );
+      std::memcpy( cur->scalars, vertex_scalars.data(), sizeof(float) * n );
+      std::memcpy( cur->coords,  vertex_coords.data(),  sizeof(float) * 3 * n );
+      std::memcpy( cur->normals, vertex_normals.data(), sizeof(float) * 3 * n );
+      std::memcpy( cur->sq,      sq_scalars.data(),     sizeof(float) * n );
+      std::memcpy( cur->tmp,     tmp_term.data(),       sizeof(float) * 3 * n ); }
+#else
+#ifdef PBVR_SHIFT_STATIC_VEC   // shift ring バッファ(v_*/recv_*)を static 永続+grow-only 化: swap 回転そのまま=コピー無/churn無
+    static std::vector<std::vector<float> > v_scalars( 2 );
+    static std::vector<std::vector<float> > v_coords( 2 );
+    static std::vector<std::vector<float> > v_normals( 2 );
+    static std::vector<std::vector<int> > v_cellids( 2 );
+    static std::vector<std::vector<float> > v_sq( 2 );
+    static std::vector<std::vector<float> > v_tmp( 2 );
+#else
     std::vector<std::vector<float> > v_scalars( 2 );
     std::vector<std::vector<float> > v_coords( 2 );
     std::vector<std::vector<float> > v_normals( 2 );
     std::vector<std::vector<int> > v_cellids( 2 );
     std::vector<std::vector<float> > v_sq( 2 );
     std::vector<std::vector<float> > v_tmp( 2 );
+#endif
     v_scalars[0].swap( vertex_scalars );
     v_coords[0].swap( vertex_coords );
     v_normals[0].swap( vertex_normals );
@@ -2987,6 +3068,7 @@ bool ensemble_generate_particles(
 
     int cur = 0;
     int nxt = 1;
+#endif
 #ifdef ENABLE_ENSEMBLE_TIMER
     std::vector<double> shift_interp_thread_times( max_threads, 0.0 );
     std::vector<double> shift_scalar_thread_times( max_threads, 0.0 );
@@ -3005,6 +3087,9 @@ bool ensemble_generate_particles(
     {
         const int send_to = ( mpi_rank + MPIprocess_per_ensemble ) % mpi_size;
         const int recv_from = ( mpi_rank - MPIprocess_per_ensemble + mpi_size ) % mpi_size;
+#ifdef PBVR_SHIFT_ALLOC_MEM_DIRECT
+        const int send_size = cur->count;
+#else
         const size_t send_count = v_scalars[cur].size();
         if ( send_count > static_cast<size_t>( INT_MAX ) ||
              send_count > static_cast<size_t>( INT_MAX / 3 ) ||
@@ -3025,6 +3110,7 @@ bool ensemble_generate_particles(
             return false;
         }
         const int send_size = static_cast<int>( send_count );
+#endif
         int recv_size = 0;
 #ifdef ENABLE_ENSEMBLE_TIMER
         vismodule::Timer mpi_size_timer;
@@ -3051,12 +3137,25 @@ bool ensemble_generate_particles(
         vismodule::Timer alloc_timer;
         alloc_timer.start();
 #endif
+#ifdef PBVR_SHIFT_ALLOC_MEM_DIRECT
+        nxt->ensure( recv_size ); nxt->count = recv_size;
+#else
+#ifdef PBVR_SHIFT_STATIC_VEC   // 永続+grow-only: 毎hopの確保/解放を撤廃(resize は capacity 以下なら realloc 無)
+        static std::vector<float> recv_scalars;    recv_scalars.resize( recv_size );
+        static std::vector<float> recv_coords;     recv_coords.resize( 3 * recv_size );
+        static std::vector<float> recv_normals;    recv_normals.resize( 3 * recv_size );
+        static std::vector<int>   recv_cellids;    recv_cellids.resize( recv_size );
+        static std::vector<float> recv_sq_scalars; recv_sq_scalars.resize( recv_size );
+        static std::vector<float> recv_tmp_term;   recv_tmp_term.resize( 3 * recv_size );
+#else
         std::vector<float> recv_scalars( recv_size );
         std::vector<float> recv_coords( 3 * recv_size );
         std::vector<float> recv_normals( 3 * recv_size );
         std::vector<int> recv_cellids( recv_size );
         std::vector<float> recv_sq_scalars( recv_size );
         std::vector<float> recv_tmp_term( 3 * recv_size );
+#endif
+#endif
 #ifdef ENABLE_ENSEMBLE_TIMER
         alloc_timer.stop();
         ensemble_timer.add( EnsembleTimerMpiShiftAllocRecvBuffer, alloc_timer.sec() );
@@ -3124,6 +3223,7 @@ bool ensemble_generate_particles(
             std::memcpy( recv_sq_scalars.data(), pr_sq,   sizeof(float) *     (size_t)recv_size );
             std::memcpy( recv_tmp_term.data(),   pr_tmp,  sizeof(float) * 3 * (size_t)recv_size );
 #endif
+#endif
 #ifdef ENABLE_ENSEMBLE_TIMER
             payload_all_timer.stop();
             ensemble_timer.add( EnsembleTimerMpiShiftPayloadAll, payload_all_timer.sec() );
@@ -3133,6 +3233,15 @@ bool ensemble_generate_particles(
 #ifdef ENABLE_ENSEMBLE_TIMER
         vismodule::Timer shift_interp_timer;
         shift_interp_timer.start();
+#endif
+#ifdef PBVR_SHIFT_ALLOC_MEM_DIRECT
+        const int rn = nxt->count;
+        int* R_cell = nxt->cellids; float* R_coor = nxt->coords; float* R_scal = nxt->scalars;
+        float* R_norm = nxt->normals; float* R_sq = nxt->sq; float* R_tmp = nxt->tmp;
+#else
+        const int rn = recv_size;
+        int* R_cell = recv_cellids.data(); float* R_coor = recv_coords.data(); float* R_scal = recv_scalars.data();
+        float* R_norm = recv_normals.data(); float* R_sq = recv_sq_scalars.data(); float* R_tmp = recv_tmp_term.data();
 #endif
 #pragma omp parallel
         {
@@ -3169,20 +3278,20 @@ bool ensemble_generate_particles(
 
 //#pragma omp for schedule( dynamic )
 #pragma omp for 
-            for ( int i = 0; i < recv_size; i += SIMD_BLK_SIZE )
+            for ( int i = 0; i < rn; i += SIMD_BLK_SIZE )
             {
-                const int remain_BLK = ( recv_size - i > SIMD_BLK_SIZE ) ? SIMD_BLK_SIZE : recv_size - i;
+                const int remain_BLK = ( rn - i > SIMD_BLK_SIZE ) ? SIMD_BLK_SIZE : rn - i;
 #ifdef ENABLE_ENSEMBLE_TIMER
                 vismodule::Timer shift_recover_timer;
                 shift_recover_timer.start();
 #endif
                 for ( int j = 0; j < remain_BLK; j++ )
                 {
-                    cell_index[j] = static_cast<vismodule::UInt32>( recv_cellids[i + j] );
+                    cell_index[j] = static_cast<vismodule::UInt32>( R_cell[i + j] );
                     local_coord_array[j] = vismodule::Vector3f(
-                        recv_coords[3 * ( i + j )],
-                        recv_coords[3 * ( i + j ) + 1],
-                        recv_coords[3 * ( i + j ) + 2]
+                        R_coor[3 * ( i + j )],
+                        R_coor[3 * ( i + j ) + 1],
+                        R_coor[3 * ( i + j ) + 2]
                     );
                 }
 #ifdef ENABLE_ENSEMBLE_TIMER
@@ -3238,14 +3347,14 @@ bool ensemble_generate_particles(
                 for ( int j = 0; j < remain_BLK; j++ )
                 {
                     const float scalar = scalar_array[j];
-                    recv_scalars[i + j] += scalar;
-                    recv_normals[3 * ( i + j )]     += -grad_array_x[j];
-                    recv_normals[3 * ( i + j ) + 1] += -grad_array_y[j];
-                    recv_normals[3 * ( i + j ) + 2] += -grad_array_z[j];
-                    recv_sq_scalars[i + j] += scalar * scalar;
-                    recv_tmp_term[3 * ( i + j )] += scalar * grad_array_x[j];
-                    recv_tmp_term[3 * ( i + j ) + 1] += scalar * grad_array_y[j];
-                    recv_tmp_term[3 * ( i + j ) + 2] += scalar * grad_array_z[j];
+                    R_scal[i + j] += scalar;
+                    R_norm[3 * ( i + j )]     += -grad_array_x[j];
+                    R_norm[3 * ( i + j ) + 1] += -grad_array_y[j];
+                    R_norm[3 * ( i + j ) + 2] += -grad_array_z[j];
+                    R_sq[i + j] += scalar * scalar;
+                    R_tmp[3 * ( i + j )] += scalar * grad_array_x[j];
+                    R_tmp[3 * ( i + j ) + 1] += scalar * grad_array_y[j];
+                    R_tmp[3 * ( i + j ) + 2] += scalar * grad_array_z[j];
                 }
 #ifdef ENABLE_ENSEMBLE_TIMER
                 shift_store_timer.stop();
@@ -3271,6 +3380,9 @@ bool ensemble_generate_particles(
         ensemble_timer.add( EnsembleTimerOmpShiftInterpolation, shift_interp_timer.sec() );
 #endif
 
+#ifdef PBVR_SHIFT_ALLOC_MEM_DIRECT
+        { ShiftSlot* t = cur; cur = nxt; nxt = t; }
+#else
         v_scalars[nxt].swap( recv_scalars );
         v_coords[nxt].swap( recv_coords );
         v_normals[nxt].swap( recv_normals );
@@ -3278,6 +3390,7 @@ bool ensemble_generate_particles(
         v_sq[nxt].swap( recv_sq_scalars );
         v_tmp[nxt].swap( recv_tmp_term );
         std::swap( cur, nxt );
+#endif
     }
 #ifdef ENABLE_ENSEMBLE_TIMER
     mpi_shift_timer.stop();
@@ -3297,12 +3410,24 @@ bool ensemble_generate_particles(
     }
 #endif
 
+#ifdef PBVR_SHIFT_ALLOC_MEM_DIRECT
+    { const int n = cur->count;
+      vertex_cellids.resize(n); vertex_scalars.resize(n); sq_scalars.resize(n);
+      vertex_coords.resize(3*n); vertex_normals.resize(3*n); tmp_term.resize(3*n);
+      std::memcpy(vertex_cellids.data(), cur->cellids, sizeof(int)   * n);
+      std::memcpy(vertex_scalars.data(), cur->scalars, sizeof(float) * n);
+      std::memcpy(vertex_coords.data(),  cur->coords,  sizeof(float) * 3 * n);
+      std::memcpy(vertex_normals.data(), cur->normals, sizeof(float) * 3 * n);
+      std::memcpy(sq_scalars.data(),     cur->sq,      sizeof(float) * n);
+      std::memcpy(tmp_term.data(),       cur->tmp,     sizeof(float) * 3 * n); }
+#else
     vertex_scalars.swap( v_scalars[cur] );
     vertex_coords.swap( v_coords[cur] );
     vertex_normals.swap( v_normals[cur] );
     vertex_cellids.swap( v_cellids[cur] );
     sq_scalars.swap( v_sq[cur] );
     tmp_term.swap( v_tmp[cur] );
+#endif
 
     std::vector<float> tmp_varience( vertex_scalars.size() );
     std::vector<float> tmp_varience_normals( 3 * vertex_scalars.size() );

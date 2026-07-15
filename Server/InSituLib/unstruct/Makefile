@@ -34,7 +34,7 @@ CXXFLAGS += -DENABLE_ENSEMBLE_TIMER
 CXXFLAGS += -DENABLE_HEX_TET_VOLUME
 CXXFLAGS += -DPBVR_SIMD_CHAINRULE
 CXXFLAGS += -DPBVR_UNIFORM_FISSION2
-CXXFLAGS += -DPBVR_SHIFT_ALLOC_MEM   # ensemble shift を MPI_Alloc_mem(登録メモリ)経由に(CUDA-aware MPI大メッセージ破損回避)
+CXXFLAGS += -DPBVR_SHIFT_STATIC_VEC              # shift全バッファ(v_*/recv_*/vertex_*)を static 永続+grow-only化: churn撤廃で転送破損回避・zero-copy swap維持
 
 ifneq ($(wildcard $(PBVR_KVS_INSTALL_DIR)/kvs.conf),)
 include $(PBVR_KVS_INSTALL_DIR)/kvs.conf
