@@ -1,3 +1,15 @@
+PBVR_DIR = ../../..
+
+include $(PBVR_DIR)/pbvr.conf
+include $(PBVR_DIR)/arch/$(PBVR_MACHINE)
+
+MPICXX ?= mpic++
+MPICXXFLAGS ?= $(CXXFLAGS)
+MPILD ?= $(MPICXX)
+MPILDFLAGS ?= $(LDFLAGS)
+
+export MPICXX MPICXXFLAGS MPILD MPILDFLAGS
+
 .PHONY: all
 
 SUBDIRS += Hydrogen_struct
@@ -8,6 +20,7 @@ SUBDIRS += Hydrogen_unstruct_pyramid
 SUBDIRS += Hydrogen_unstruct_quadtetra
 SUBDIRS += Hydrogen_unstruct_quadhexa
 # SUBDIRS += Hydrogen_AMR
+SUBDIRS += ens_Hydrogen_unstruct
 
 all:
 	for i in $(SUBDIRS); do \

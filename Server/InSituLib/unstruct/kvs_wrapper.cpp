@@ -1926,7 +1926,7 @@ void calculation_glad(const int nparticles_count, const int nvariables,
 // variables k>0 never read their own m_vertices_array (geometry goes through cell[*][0]).
 // So bind full scalars+vertices for variable 0 and scalars only for the rest, skipping
 // the redundant vertex gather.
-#ifdef PBVR_SHIFT_ALLOC_MEM
+#if defined(PBVR_SHIFT_ALLOC_MEM) && !defined(CPU_VER)
 // Option C: persistent grow-only MPI_Alloc_mem buffer for the ensemble shift exchange.
 // MPI_Alloc_mem returns MPT-registered memory, so large messages take the correct (fast,
 // non-corrupting) RDMA path instead of the pageable-host path that CUDA-aware MPT garbles.
@@ -3010,7 +3010,7 @@ bool ensemble_generate_particles(
             vismodule::Timer payload_all_timer;
             payload_all_timer.start();
 #endif
-#ifndef PBVR_SHIFT_ALLOC_MEM
+#if !defined(PBVR_SHIFT_ALLOC_MEM) || defined(CPU_VER)
             MPI_Request req_recv[6];
             MPI_Request req_send[6];
             MPI_Irecv( recv_cellids.data(), recv_size, MPI_INT, recv_from, 12, MPI_COMM_WORLD, &req_recv[0] );
@@ -3904,6 +3904,7 @@ bool generate_particles_vtk( int time_step, vtkUnstructuredGrid* ucd )
     particle_property.m_camera                = new vismodule::Camera();
 
     bool object_generation_enabled = false;
+    int nvariables = 0;
     SetParticleParameter(
         dom, tfJsonPath, tfJsonPath_old, particle_property, mvpl,
         nvariables, object_generation_enabled
@@ -3958,8 +3959,6 @@ bool generate_particles_vtk( int time_step, vtkUnstructuredGrid* ucd )
     // plot over time paraemters
     std::vector<float> value_on_time;
     bool pot_mask = false;
-
-    int nvariables = 0;
 
     // 先にセルタイプを持っておく
     kvs::ExtendedFileFormat::VtkXmlUnstructuredGrid input_vtu( ucd );

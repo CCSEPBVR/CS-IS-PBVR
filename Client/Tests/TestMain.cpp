@@ -93,6 +93,10 @@
 #include "ServerTest.h"
 #endif
 
+#ifdef PBVR_ENABLE_TEST_INSITU_MODE
+#include "InSituModeTest.h"
+#endif
+
 #ifdef PBVR_ENABLE_TEST_VOLUMETRANSFORM
 #include "VolumeTransformTest.h"
 #endif
@@ -327,6 +331,14 @@ int runEnabledTests( int argc, char** argv )
     }
 #endif
 
+#ifdef PBVR_ENABLE_TEST_INSITU_MODE
+    {
+        has_enabled_test = true;
+        ClientTests::InSituModeTest test;
+        result |= qExecWithCleanup( &test, argc, argv );
+    }
+#endif
+
 #ifdef PBVR_ENABLE_TEST_VOLUMETRANSFORM
     {
         has_enabled_test = true;
@@ -435,6 +447,7 @@ int runEnabledTests( int argc, char** argv )
                    "TEST_ENABLE_POINTSIZECONTROL, or "
                    "TEST_ENABLE_REPETITIONLEVELCONTROL, or "
                    "TEST_ENABLE_SHADINGCONTROL, or "
+                   "TEST_ENABLE_INSITU_MODE, or "
                    "TEST_ENABLE_VOLUMETRANSFORM, or "
                    "TEST_ENABLE_TRANSFERFUNCTIONEDITOR_IMPORTEXPORT, or "
                    "TEST_ENABLE_TRANSFERFUNCTIONEDITOR_CHANGE_TRANSFER_FUNCTION_NUMBER, or "

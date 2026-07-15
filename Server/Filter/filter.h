@@ -86,7 +86,7 @@ typedef enum {
 //                                      4,1,0,2,
 //                                      2,4,5,0}; // prism分割用インデックス
 //
-static const std::size_t hexdiv[5][4] = {
+static const size_t hexdiv[5][4] = {
     {1, 3, 0, 4},
     {4, 6, 5, 1},
     {4, 7, 6, 3},

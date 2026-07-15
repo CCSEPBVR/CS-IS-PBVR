@@ -7,7 +7,7 @@
 #pragma once
 #include <kvs/Texture>
 #include <kvs/Deprecated>
-#include <stddef.h>
+#include <cstddef>
 
 #ifndef GL_TEXTURE_RECTANGLE
 #define GL_TEXTURE_RECTANGLE 0x84F5

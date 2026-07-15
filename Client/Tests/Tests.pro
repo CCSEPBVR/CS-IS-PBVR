@@ -137,6 +137,12 @@ equals(TEST_ENABLE_SERVER, 1) {
     SOURCES += ServerTest.cpp
 }
 
+equals(TEST_ENABLE_INSITU_MODE, 1) {
+    DEFINES += PBVR_ENABLE_TEST_INSITU_MODE
+    HEADERS += InSituModeTest.h
+    SOURCES += InSituModeTest.cpp
+}
+
 equals(TEST_ENABLE_VOLUMETRANSFORM, 1) {
     DEFINES += PBVR_ENABLE_TEST_VOLUMETRANSFORM
     HEADERS += VolumeTransformTest.h

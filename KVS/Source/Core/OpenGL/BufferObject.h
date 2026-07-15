@@ -7,7 +7,7 @@
 #pragma once
 #include <kvs/GL>
 #include <kvs/Deprecated>
-#include <stddef.h>
+#include <cstddef>
 
 
 namespace kvs

@@ -1359,9 +1359,9 @@ int search_node_id(int node_id,
 	int m_nnodes,
 	int** m_ids) {
 #if 0
-    std::size_t left;
-    std::size_t right;
-    std::size_t mid;
+    size_t left;
+    size_t right;
+    size_t mid;
 
     left = 0;
     right = m_nnodes;
@@ -1378,7 +1378,7 @@ int search_node_id(int node_id,
     filter_log(FILTER_ERR, "error not found node id %d\n", node_id);
     return -1;
 #else
-    std::size_t i;
+    size_t i;
     for (i = 0; i < m_nnodes; i++) {
 	if (node_id == (*m_ids)[i]) {
 	    return (int) i;

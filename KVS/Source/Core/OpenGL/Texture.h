@@ -7,7 +7,7 @@
 #pragma once
 #include <cctype>
 #include <cstdlib>
-#include <stddef.h>
+#include <cstddef>
 #include <cstdint>
 #include <kvs/GL>
 #include <kvs/Deprecated>

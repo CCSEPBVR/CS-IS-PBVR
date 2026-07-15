@@ -5,7 +5,7 @@
  */
 /*****************************************************************************/
 #pragma once
-#include <stddef.h>
+#include <cstddef>
 #include <kvs/VertexBufferObject>
 #include <kvs/IndexBufferObject>
 #include <kvs/AnyValueArray>
