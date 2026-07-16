@@ -393,7 +393,8 @@ nlohmann::json BuildHumanReadableView( const ParticleProperty& particle_property
     view["settings"]["transfer_function"]["color_synthesis"] = particle_property.m_color_transfer_function_synthesis;
     view["settings"]["transfer_function"]["opacity_synthesis"] = particle_property.m_opacity_transfer_function_synthesis;
 
-    view["transfer_functions"] = TransferFunctionArrayToJson( particle_property.m_transfunc_array );
+    //view["transfer_functions"] = TransferFunctionArrayToJson( particle_property.m_transfunc_array );
+    view["transfer_functions"] = TransferFunctionArrayToJson( particle_property.m_mean_transfer_function_array );
     view["mean_transfer_functions"] = TransferFunctionArrayToJson( particle_property.m_mean_transfer_function_array );
     view["variance_transfer_functions"] = TransferFunctionArrayToJson( particle_property.m_variance_transfer_function_array );
     view["coefficient_of_variation_transfer_functions"] =
