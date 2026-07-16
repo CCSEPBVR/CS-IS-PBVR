@@ -70,6 +70,12 @@ int RangeModeValue( const NamedTransferFunction::ServerRangeMode mode )
     return static_cast<int>( mode );
 }
 
+double RoundToEightDecimalPlaces( const double value )
+{
+    constexpr double scale = 100000000.0;
+    return std::round( value * scale ) / scale;
+}
+
 void LogRangeModeMismatch(
     const NamedTransferFunction& tf,
     const std::string& statistic )
@@ -192,8 +198,8 @@ void AppendStatisticTransferFunctionPatches(
         patch[Protocol::Key::EnsembleUserRangeMode] = RangeModeValue( tf.m_server_range_mode );
         patch[Protocol::Key::EnsembleUserRangeMin] = user_min;
         patch[Protocol::Key::EnsembleUserRangeMax] = user_max;
-        patch[Protocol::Key::EnsembleServerRangeMin] = server_min;
-        patch[Protocol::Key::EnsembleServerRangeMax] = server_max;
+        patch[Protocol::Key::EnsembleServerRangeMin] = RoundToEightDecimalPlaces( server_min );
+        patch[Protocol::Key::EnsembleServerRangeMax] = RoundToEightDecimalPlaces( server_max );
         patch[Protocol::Key::EnsembleColorMap] = ColorMapJson( tf.colorMap() );
         patch[Protocol::Key::EnsembleOpacityMap] = OpacityMapJson( tf.opacityMap() );
 

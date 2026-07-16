@@ -40,8 +40,6 @@ struct EnsembleTFSetting
     bool useUserMinMax = true;
     double userMin = 0.0;
     double userMax = 1.0;
-    double serverMin = 0.0;
-    double serverMax = 1.0;
     std::vector<int> histogram;
 };
 
@@ -103,14 +101,9 @@ QJsonObject RangeToDefaultJson( double min, double max )
     user["min"] = min;
     user["max"] = max;
 
-    QJsonObject server;
-    server["min"] = min;
-    server["max"] = max;
-
     QJsonObject range;
     range["active_range"] = QStringLiteral( "user" );
     range["user"] = user;
-    range["server"] = server;
     return range;
 }
 
@@ -144,9 +137,7 @@ bool ReadDoubleMember( const QJsonObject& object, const QString& key, double* va
 bool ReadRange( const QJsonObject& parent,
                 bool* useUserMinMax,
                 double* userMin,
-                double* userMax,
-                double* serverMin,
-                double* serverMax )
+                double* userMax )
 {
     if( !parent.value( "range" ).isObject() ) return false;
 
@@ -154,20 +145,13 @@ bool ReadRange( const QJsonObject& parent,
     const QString activeRange = range.value( "active_range" ).toString();
     if( !activeRange.isEmpty() ) *useUserMinMax = activeRange != QStringLiteral( "server" );
 
+    // Server MinMax is runtime state supplied by the server and is intentionally not imported.
     bool ok = true;
     if( range.value( "user" ).isObject() )
     {
         const QJsonObject user = range.value( "user" ).toObject();
         ok = ReadDoubleMember( user, "min", userMin ) && ok;
         ok = ReadDoubleMember( user, "max", userMax ) && ok;
-    }
-    else ok = false;
-
-    if( range.value( "server" ).isObject() )
-    {
-        const QJsonObject server = range.value( "server" ).toObject();
-        ok = ReadDoubleMember( server, "min", serverMin ) && ok;
-        ok = ReadDoubleMember( server, "max", serverMax ) && ok;
     }
     else ok = false;
 
@@ -1018,8 +1002,6 @@ void EnsembleTransferFunctionEditor::onExport()
             true,
             state.userMin,
             state.userMax,
-            state.userMin,
-            state.userMax,
             state.histogram
         };
     };
@@ -1126,14 +1108,10 @@ void EnsembleTransferFunctionEditor::onImport()
         bool useUser = true;
         double userMin = state.userMin;
         double userMax = state.userMax;
-        double serverMin = state.serverMin;
-        double serverMax = state.serverMax;
-        if( !ReadRange( color, &useUser, &userMin, &userMax, &serverMin, &serverMax ) ) hadMissingKeys = true;
+        if( !ReadRange( color, &useUser, &userMin, &userMax ) ) hadMissingKeys = true;
 
         state.userMin = userMin;
         state.userMax = userMax;
-        state.serverMin = serverMin;
-        state.serverMax = serverMax;
         state.useUserMinMax = useUser;
 
         bool colorMapOk = false;
