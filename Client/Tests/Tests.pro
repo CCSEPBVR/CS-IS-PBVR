@@ -143,6 +143,12 @@ equals(TEST_ENABLE_INSITU_MODE, 1) {
     SOURCES += InSituModeTest.cpp
 }
 
+equals(TEST_ENABLE_ENSEMBLE_TRANSFER_FUNCTION, 1) {
+    DEFINES += PBVR_ENABLE_TEST_ENSEMBLE_TRANSFER_FUNCTION
+    HEADERS += EnsembleTransferFunctionTest.h
+    SOURCES += EnsembleTransferFunctionTest.cpp
+}
+
 equals(TEST_ENABLE_VOLUMETRANSFORM, 1) {
     DEFINES += PBVR_ENABLE_TEST_VOLUMETRANSFORM
     HEADERS += VolumeTransformTest.h
