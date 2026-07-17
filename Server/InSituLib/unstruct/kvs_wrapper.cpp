@@ -3460,7 +3460,7 @@ bool ensemble_generate_particles(
     const float eps = 1.0e-5f;
     for ( size_t i = 0; i < vertex_scalars.size(); i++ )
     {
-        co_varietion[i] = vertex_scalars[i] > eps ? std::sqrt( tmp_varience[i] ) / vertex_scalars[i] : delta;
+        co_varietion[i] = std::fabs(vertex_scalars[i]) > eps ? std::sqrt( tmp_varience[i] ) /std::fabs( vertex_scalars[i]) : delta;
     }
     }
 
