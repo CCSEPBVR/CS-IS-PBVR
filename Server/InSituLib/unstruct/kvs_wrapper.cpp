@@ -831,10 +831,9 @@ bool EnsembleHistogramBin(
     return true;
 }
 
-EnsembleStatisticRange MakeEnsembleStatisticRange(
+EnsembleStatisticRange MakeEnsembleStatisticMinMax(
     const std::vector<float>& values,
-    const int tf_number,
-    const std::vector<EnsembleTransferFunction>& transfunc_array
+    const int tf_number
 )
 {
     EnsembleStatisticRange range;
@@ -860,6 +859,65 @@ EnsembleStatisticRange MakeEnsembleStatisticRange(
         range.min_values[2 * i + 1] = min_value;
         range.max_values[2 * i + 1] = max_value;
     }
+
+    return range;
+}
+
+void AggregateEnsembleStatisticMinMax(
+    EnsembleStatisticRange& range,
+    const int tf_number,
+    MPI_Comm comm = MPI_COMM_WORLD
+)
+{
+#ifndef CPU_VER
+    MPI_Allreduce( MPI_IN_PLACE, range.min_values.data(), tf_number * 2, MPI_FLOAT, MPI_MIN, comm );
+    MPI_Allreduce( MPI_IN_PLACE, range.max_values.data(), tf_number * 2, MPI_FLOAT, MPI_MAX, comm );
+#else
+    (void)comm;
+#endif
+
+    for ( int i = 0; i < tf_number * 2; i++ )
+    {
+        if ( range.min_values[i] == FLT_MAX || range.max_values[i] == -FLT_MAX )
+        {
+            range.min_values[i] = 0.0f;
+            range.max_values[i] = 0.0f;
+        }
+    }
+}
+
+void ApplyEnsembleStatisticMinMax(
+    const EnsembleStatisticRange& range,
+    std::vector<EnsembleTransferFunction>& transfunc_array,
+    const int tf_number
+)
+{
+    for ( int i = 0; i < tf_number; i++ )
+    {
+        const float min_value = range.min_values[2 * i + 1];
+        const float max_value = range.max_values[2 * i + 1];
+        transfunc_array[i].m_server_variable_min = min_value;
+        transfunc_array[i].m_server_variable_max = max_value;
+
+        if ( transfunc_array[i].m_server_range_mode == EnsembleTransferFunction::ServerRangeMode::ServerSide )
+        {
+            transfunc_array[i].setColorRange( min_value, max_value );
+            transfunc_array[i].setOpacityRange( min_value, max_value );
+        }
+    }
+}
+
+void CalculateEnsembleStatisticHistogram(
+    EnsembleStatisticRange& range,
+    const std::vector<float>& values,
+    const int tf_number,
+    const std::vector<EnsembleTransferFunction>& transfunc_array
+)
+{
+    range.o_bins.assign( tf_number * DEFAULT_NBINS, 0 );
+    range.c_bins.assign( tf_number * DEFAULT_NBINS, 0 );
+
+    if ( values.empty() ) return;
 
     const size_t max_histogram_samples = 100000;
     const size_t stride = std::max<size_t>( 1, ( values.size() + max_histogram_samples - 1 ) / max_histogram_samples );
@@ -888,8 +946,6 @@ EnsembleStatisticRange MakeEnsembleStatisticRange(
             }
         }
     }
-
-    return range;
 }
 
 void ReduceEnsembleStatisticRange(
@@ -3290,15 +3346,49 @@ bool ensemble_generate_particles(
 #ifdef ENABLE_ENSEMBLE_TIMER
         EnsembleTimerScope timer_scope( &ensemble_timer, EnsembleTimerStatHistogram );
 #endif
-        average_range = MakeEnsembleStatisticRange(
-            vertex_scalars, tf_number, particle_property.m_mean_transfer_function_array
-        );
-        variance_range = MakeEnsembleStatisticRange(
-            tmp_varience, tf_number, particle_property.m_variance_transfer_function_array
-        );
-        co_variation_range = MakeEnsembleStatisticRange(
-            co_varietion, tf_number, particle_property.m_coefficient_of_variation_transfer_function_array
-        );
+        average_range = MakeEnsembleStatisticMinMax( vertex_scalars, tf_number );
+        variance_range = MakeEnsembleStatisticMinMax( tmp_varience, tf_number );
+        co_variation_range = MakeEnsembleStatisticMinMax( co_varietion, tf_number );
+
+        AggregateEnsembleStatisticMinMax( average_range, tf_number, MPI_COMM_WORLD );
+        AggregateEnsembleStatisticMinMax( variance_range, tf_number, MPI_COMM_WORLD );
+        AggregateEnsembleStatisticMinMax( co_variation_range, tf_number, MPI_COMM_WORLD );
+
+        ApplyEnsembleStatisticMinMax(
+            average_range, particle_property.m_mean_transfer_function_array, tf_number );
+        ApplyEnsembleStatisticMinMax(
+            variance_range, particle_property.m_variance_transfer_function_array, tf_number );
+        ApplyEnsembleStatisticMinMax(
+            co_variation_range,
+            particle_property.m_coefficient_of_variation_transfer_function_array,
+            tf_number );
+
+        for ( int thread = 0; thread < max_threads; thread++ )
+        {
+            for ( int i = 0; i < tf_number; i++ )
+            {
+                mean_transfer_functions[thread][i] = particle_property.m_mean_transfer_function_array[i];
+                variance_transfer_functions[thread][i] = particle_property.m_variance_transfer_function_array[i];
+                coef_variation_transfer_functions[thread][i] =
+                    particle_property.m_coefficient_of_variation_transfer_function_array[i];
+            }
+        }
+
+        CalculateEnsembleStatisticHistogram(
+            average_range,
+            vertex_scalars,
+            tf_number,
+            particle_property.m_mean_transfer_function_array );
+        CalculateEnsembleStatisticHistogram(
+            variance_range,
+            tmp_varience,
+            tf_number,
+            particle_property.m_variance_transfer_function_array );
+        CalculateEnsembleStatisticHistogram(
+            co_variation_range,
+            co_varietion,
+            tf_number,
+            particle_property.m_coefficient_of_variation_transfer_function_array );
 
         particle_property.m_transfunc_synthesizer->m_o_min.resize( tf_number );
         particle_property.m_transfunc_synthesizer->m_o_max.resize( tf_number );
