@@ -36,7 +36,7 @@ void PrintMissingParameterFileWarning(
 
 void SetDefaultPOTParameter( PlotOverTimeProperty& pot_property )
 {
-    pot_property.m_plot_flag = true;
+    pot_property.m_plot_flag = false;
     pot_property.m_target_point[0] = 0;
     pot_property.m_target_point[1] = 0;
     pot_property.m_target_point[2] = 0;

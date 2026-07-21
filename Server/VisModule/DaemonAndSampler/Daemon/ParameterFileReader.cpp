@@ -315,7 +315,7 @@ void ApplyPlotOverLineDefault( PlotOverLineProperty& pol_property )
 
 void ApplyPlotOverTimeDefault( PlotOverTimeProperty& pot_property )
 {
-    pot_property.m_plot_flag = true;
+    pot_property.m_plot_flag = false;
     for ( std::size_t i = 0; i < 3; i++ )
     {
         pot_property.m_target_point[i] = 0.0f;
