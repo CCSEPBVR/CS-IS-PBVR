@@ -1407,26 +1407,6 @@ void Server::requestDataAt(uWS::WebSocket<false, true, PerSocket>* ws, const nlo
     const bool is_ensemble_request =
         m_server_mode == ServerMode::IS && m_particle_property && m_particle_property->m_is_ensemble;
     const std::string statistic = is_ensemble_request ? m_current_ensemble_statistic : "normal";
-    bool ensemble_history_available = true;
-    if ( m_server_mode == ServerMode::IS && m_particle_property )
-    {
-        const ParticleHistoryUpdateResult history_result =
-            UpdateParticlePropertyFromHistoryIS( timeStep, *m_particle_property );
-        ensemble_history_available = history_result.ensemble_statistics_available;
-        if ( !history_result.succeeded ||
-             ( is_ensemble_request && !ensemble_history_available ) )
-        {
-            std::cerr << "[Server][ParticleHistory][WARN]"
-                      << " timestep=" << timeStep
-                      << " path=" << history_result.file_path
-                      << " reason=" << history_result.error_message;
-            if ( is_ensemble_request )
-            {
-                std::cerr << "; particles will be sent without Server Side MinMax and histogram";
-            }
-            std::cerr << std::endl;
-        }
-    }
     std::cout << "[Server][RequestDataAt] received timestep=" << timeStep
               << ", statistic=" << statistic
               << ", mode=" << ( m_server_mode == ServerMode::IS ? "IS" : "CS" )
@@ -1434,7 +1414,7 @@ void Server::requestDataAt(uWS::WebSocket<false, true, PerSocket>* ws, const nlo
               << std::endl;
 
     Worker worker(timeStep, m_objects, minObjectCoords, maxObjectCoords, m_server_mode, m_particle_property, m_glyph_property, m_pol_property, m_multi_volume_property_list, statistic);
-    worker.setDoneCallBack([this, ws, timeStep, ensemble_history_available]() {
+    worker.setDoneCallBack([this, ws, timeStep, is_ensemble_request]() {
         std::vector<char> buffer = pack(timeStep);
         std::cout << "[Server][RequestDataAt] packed bytes=" << buffer.size()
                   << ", timestep=" << timeStep << std::endl;
@@ -1526,6 +1506,10 @@ void Server::requestDataAt(uWS::WebSocket<false, true, PerSocket>* ws, const nlo
 
         // Transfer Function
         ParticleProperty* tmpParticleProperty = nullptr;
+        bool step_transfer_function_available = true;
+        bool step_ensemble_transfer_function_available = true;
+        bool transfer_function_history_available = true;
+        bool ensemble_history_available = true;
 
         if (m_server_mode == ServerMode::CS)
         {
@@ -1574,11 +1558,21 @@ void Server::requestDataAt(uWS::WebSocket<false, true, PerSocket>* ws, const nlo
                       << std::endl;
 
             ParameterFileReader ppr;
-            if ( !ppr.readTransferFunctionFromJson(tfJsonPath.c_str(), *tmpParticleProperty) )
+            step_transfer_function_available =
+                ppr.readTransferFunctionFromJson(tfJsonPath.c_str(), *tmpParticleProperty);
+            step_ensemble_transfer_function_available =
+                step_transfer_function_available &&
+                !tmpParticleProperty->m_mean_transfer_function_array.empty() &&
+                !tmpParticleProperty->m_variance_transfer_function_array.empty() &&
+                !tmpParticleProperty->m_coefficient_of_variation_transfer_function_array.empty();
+            if ( !step_transfer_function_available )
             {
                 std::cout << "================================================================" << std::endl;
-                std::cout << "[WARN] Failed to load step transfer function json." << std::endl;
-                std::cout << "[WARN] File: " << tfJsonPath << std::endl;
+                std::cout << "[WARN] Failed to load step transfer function json."
+                          << " timestep=" << timeStep
+                          << " path=" << tfJsonPath
+                          << " reason=read failed; particles will be sent without Ensemble Transfer Function"
+                          << std::endl;
                 std::cout << "[INFO] VIS_PARAM_DIR = " << EnvValueOrUnset( "VIS_PARAM_DIR" ) << std::endl;
                 std::cout << "[INFO] PARTICLE_DIR  = " << EnvValueOrUnset( "PARTICLE_DIR" ) << std::endl;
                 std::cout << "[INFO] Set default particle parameters." << std::endl;
@@ -1590,40 +1584,32 @@ void Server::requestDataAt(uWS::WebSocket<false, true, PerSocket>* ws, const nlo
                     static_cast<int>( m_particle_property->m_transfunc_array.size() )
                 );
             }
-
-            const int tfNumber = tmpParticleProperty->m_transfunc_array.size();
-
-            for (size_t i = 0; i < tfNumber; ++i)
+            else if ( is_ensemble_request && !step_ensemble_transfer_function_available )
             {
-                const auto& source = m_particle_property->m_transfunc_array[i];
-                auto& destination = tmpParticleProperty->m_transfunc_array[i];
+                std::cerr << "[Server][RequestDataAt][EnsembleTF][WARN]"
+                          << " timestep=" << timeStep
+                          << " path=" << tfJsonPath
+                          << " reason=ensemble transfer-function sections are missing or empty;"
+                          << " particles will be sent without Ensemble Transfer Function"
+                          << std::endl;
+            }
 
-                // m_particle_propertyの履歴由来情報をtmpParticlePropertyにコピーする
-                const vismodule::UInt64* fromColorPointer   = source.m_color_histogram;
-                vismodule::UInt64* toColorPointer           = destination.m_color_histogram;
-                const vismodule::UInt64* fromOpacityPointer = source.m_opacity_histogram;
-                vismodule::UInt64* toOpacityPointer         = destination.m_opacity_histogram;
-                std::copy( fromColorPointer, fromColorPointer + DEFAULT_NBINS, toColorPointer );
-                std::copy( fromOpacityPointer, fromOpacityPointer + DEFAULT_NBINS, toOpacityPointer );
-
-                destination.m_server_color_variable_min   = source.m_server_color_variable_min;
-                destination.m_server_color_variable_max   = source.m_server_color_variable_max;
-                destination.m_server_opacity_variable_min = source.m_server_opacity_variable_min;
-                destination.m_server_opacity_variable_max = source.m_server_opacity_variable_max;
-
-                if (destination.m_server_color_range_mode == NamedTransferFunction::ServerRangeMode::ServerSide)
+            const ParticleHistoryUpdateResult history_result =
+                UpdateParticlePropertyFromHistoryIS( timeStep, *tmpParticleProperty );
+            transfer_function_history_available = history_result.succeeded;
+            ensemble_history_available = history_result.ensemble_statistics_available;
+            if ( !history_result.succeeded ||
+                 ( is_ensemble_request && !ensemble_history_available ) )
+            {
+                std::cerr << "[Server][ParticleHistory][WARN]"
+                          << " timestep=" << timeStep
+                          << " path=" << history_result.file_path
+                          << " reason=" << history_result.error_message;
+                if ( is_ensemble_request )
                 {
-                    auto colorMap = destination.colorMap();
-                    colorMap.setRange(destination.m_server_color_variable_min, destination.m_server_color_variable_max);
-                    destination.setColorMap(colorMap);
+                    std::cerr << "; particles will be sent without Server Side MinMax and histogram";
                 }
-
-                if (destination.m_server_opacity_range_mode == NamedTransferFunction::ServerRangeMode::ServerSide)
-                {
-                    auto opacityMap = destination.opacityMap();
-                    opacityMap.setRange(destination.m_server_opacity_variable_min, destination.m_server_opacity_variable_max);
-                    destination.setOpacityMap(opacityMap);
-                }
+                std::cerr << std::endl;
             }
         }
 
@@ -1639,8 +1625,11 @@ void Server::requestDataAt(uWS::WebSocket<false, true, PerSocket>* ws, const nlo
             tf[Protocol::Key::ColorRangeMode] = static_cast<std::uint8_t>(tmpParticleProperty->m_transfunc_array[i].m_server_color_range_mode);
             tf[Protocol::Key::ColorUserRangeMin] = tmpParticleProperty->m_transfunc_array[i].userColorMinValue();
             tf[Protocol::Key::ColorUserRangeMax] = tmpParticleProperty->m_transfunc_array[i].userColorMaxValue();
-            tf[Protocol::Key::ColorServerRangeMin] = tmpParticleProperty->m_transfunc_array[i].serverColorMinValue();
-            tf[Protocol::Key::ColorServerRangeMax] = tmpParticleProperty->m_transfunc_array[i].serverColorMaxValue();
+            if ( transfer_function_history_available )
+            {
+                tf[Protocol::Key::ColorServerRangeMin] = tmpParticleProperty->m_transfunc_array[i].serverColorMinValue();
+                tf[Protocol::Key::ColorServerRangeMax] = tmpParticleProperty->m_transfunc_array[i].serverColorMaxValue();
+            }
 
             {
                 nlohmann::json color_map_json = nlohmann::json::array();
@@ -1659,6 +1648,7 @@ void Server::requestDataAt(uWS::WebSocket<false, true, PerSocket>* ws, const nlo
                 tf[Protocol::Key::ColorMap] = color_map_json;
             }
 
+            if ( transfer_function_history_available )
             {
                 nlohmann::json colorHistogramJson = nlohmann::json::array();
                 const vismodule::UInt64* hist = tmpParticleProperty->m_transfunc_array[i].colorHistogram();
@@ -1674,9 +1664,13 @@ void Server::requestDataAt(uWS::WebSocket<false, true, PerSocket>* ws, const nlo
             tf[Protocol::Key::OpacityRangeMode] = static_cast<std::uint8_t>(tmpParticleProperty->m_transfunc_array[i].m_server_opacity_range_mode);
             tf[Protocol::Key::OpacityUserRangeMin] = tmpParticleProperty->m_transfunc_array[i].userOpacityMinValue();
             tf[Protocol::Key::OpacityUserRangeMax] = tmpParticleProperty->m_transfunc_array[i].userOpacityMaxValue();
-            tf[Protocol::Key::OpacityServerRangeMin] = tmpParticleProperty->m_transfunc_array[i].serverOpacityMinValue();
-            tf[Protocol::Key::OpacityServerRangeMax] = tmpParticleProperty->m_transfunc_array[i].serverOpacityMaxValue();
+            if ( transfer_function_history_available )
+            {
+                tf[Protocol::Key::OpacityServerRangeMin] = tmpParticleProperty->m_transfunc_array[i].serverOpacityMinValue();
+                tf[Protocol::Key::OpacityServerRangeMax] = tmpParticleProperty->m_transfunc_array[i].serverOpacityMaxValue();
+            }
 
+            if ( transfer_function_history_available )
             {
                 nlohmann::json opacityHistogramJson = nlohmann::json::array();
                 const vismodule::UInt64* hist = tmpParticleProperty->m_transfunc_array[i].opacityHistogram();
@@ -1695,11 +1689,13 @@ void Server::requestDataAt(uWS::WebSocket<false, true, PerSocket>* ws, const nlo
         transferFunctionParameter[Protocol::Key::Data] = transferFunctions;
         msg[Protocol::Key::TransferFunctionParameter] = std::move(transferFunctionParameter);
 
-        if ( m_server_mode == ServerMode::IS && m_particle_property && m_particle_property->m_is_ensemble )
+        if ( m_server_mode == ServerMode::IS &&
+             is_ensemble_request &&
+             step_ensemble_transfer_function_available )
         {
             nlohmann::json ensembleStatisticsParameter =
                 BuildEnsembleStatisticsParameter(
-                    *m_particle_property,
+                    *tmpParticleProperty,
                     m_current_ensemble_statistic,
                     ensemble_history_available );
             ensembleStatisticsParameter.erase( std::string( Protocol::Key::Event ) );
