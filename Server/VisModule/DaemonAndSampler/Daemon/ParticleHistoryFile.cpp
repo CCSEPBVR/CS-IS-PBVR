@@ -286,6 +286,7 @@ void ParticleHistoryFile::assign_name_list( const NameListFile& name_list_file )
 
 void ParticleHistoryFile::read_name_list_file()
 {
+    m_error_message.clear();
     m_variable_range.clear();
     m_color_histogram_array.clear();
     m_opacity_histogram_array.clear();
@@ -306,6 +307,7 @@ void ParticleHistoryFile::read_name_list_file()
     std::ifstream input( m_file_name.c_str() );
     if ( !input )
     {
+        m_error_message = "cannot open file";
         return;
     }
 
@@ -420,8 +422,9 @@ void ParticleHistoryFile::read_name_list_file()
             m_has_ensemble_statistic_histogram = true;
         }
     }
-    catch ( const std::exception& )
+    catch ( const std::exception& error )
     {
+        m_error_message = error.what();
         m_variable_range.clear();
         m_color_histogram_array.clear();
         m_opacity_histogram_array.clear();

@@ -935,8 +935,6 @@ void EnsembleTransferFunctionEditor::onApply()
                                      bool useUserRange,
                                      double userMin,
                                      double userMax,
-                                     double serverMin,
-                                     double serverMax,
                                      const QVector<QColor>& colors,
                                      const QVector<float>& opacities )
     {
@@ -948,8 +946,6 @@ void EnsembleTransferFunctionEditor::onApply()
         patch[QString::fromUtf8( Protocol::Key::EnsembleUserRangeMode )] = rangeMode;
         patch[QString::fromUtf8( Protocol::Key::EnsembleUserRangeMin )] = userMin;
         patch[QString::fromUtf8( Protocol::Key::EnsembleUserRangeMax )] = userMax;
-        patch[QString::fromUtf8( Protocol::Key::EnsembleServerRangeMin )] = serverMin;
-        patch[QString::fromUtf8( Protocol::Key::EnsembleServerRangeMax )] = serverMax;
         patch[QString::fromUtf8( Protocol::Key::EnsembleColorMap )] = ColorMapToPatchJson( colors );
         patch[QString::fromUtf8( Protocol::Key::EnsembleOpacityMap )] = OpacityMapToPatchJson( opacities );
         data.append( patch );
@@ -963,8 +959,6 @@ void EnsembleTransferFunctionEditor::onApply()
                               statistic.useUserMinMax,
                               statistic.userMin,
                               statistic.userMax,
-                              statistic.serverMin,
-                              statistic.serverMax,
                               statistic.colorMap,
                               statistic.opacityMap );
     }

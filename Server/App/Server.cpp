@@ -11,6 +11,7 @@
 
 #include <vismodule/KVSMLObjectPlotOverLine>
 #include <vismodule/InitialStep>
+#include <vismodule/GenerateParticle>
 #include <vismodule/GeneratePOL>
 #include <vismodule/GeneratePOT>
 #include <vismodule/ParticleMonitor>
@@ -162,7 +163,8 @@ void DebugStatisticTransferFunctionArray(
 void AppendStatisticTransferFunctionPatches(
     nlohmann::json& data,
     const std::string& statistic,
-    const std::vector<EnsembleTransferFunction>& transfer_functions )
+    const std::vector<EnsembleTransferFunction>& transfer_functions,
+    const bool include_history )
 {
     for ( size_t i = 0; i < transfer_functions.size(); ++i )
     {
@@ -179,13 +181,13 @@ void AppendStatisticTransferFunctionPatches(
         const double user_min = tf.userMinValue();
         const double user_max = tf.userMaxValue();
 
-        if ( !std::isfinite( server_min ) || !std::isfinite( server_max ) )
+        if ( include_history && ( !std::isfinite( server_min ) || !std::isfinite( server_max ) ) )
         {
             std::cout << "[Server][EnsembleStatisticsParameter] skip statistic=" << statistic
                       << ", index=" << i << ", reason=non-finite range" << std::endl;
             continue;
         }
-        if ( server_min > server_max )
+        if ( include_history && server_min > server_max )
         {
             std::cout << "[Server][EnsembleStatisticsParameter] skip statistic=" << statistic
                       << ", index=" << i << ", reason=min > max" << std::endl;
@@ -198,18 +200,22 @@ void AppendStatisticTransferFunctionPatches(
         patch[Protocol::Key::EnsembleUserRangeMode] = RangeModeValue( tf.m_server_range_mode );
         patch[Protocol::Key::EnsembleUserRangeMin] = user_min;
         patch[Protocol::Key::EnsembleUserRangeMax] = user_max;
-        patch[Protocol::Key::EnsembleServerRangeMin] = RoundToEightDecimalPlaces( server_min );
-        patch[Protocol::Key::EnsembleServerRangeMax] = RoundToEightDecimalPlaces( server_max );
         patch[Protocol::Key::EnsembleColorMap] = ColorMapJson( tf.colorMap() );
         patch[Protocol::Key::EnsembleOpacityMap] = OpacityMapJson( tf.opacityMap() );
 
-        nlohmann::json opacity_histogram = nlohmann::json::array();
-        const vismodule::UInt64* opacity_hist = tf.opacityHistogram();
-        for ( int j = 0; j < DEFAULT_NBINS; ++j )
+        if ( include_history )
         {
-            opacity_histogram.push_back( static_cast<int>( opacity_hist[j] ) );
+            patch[Protocol::Key::EnsembleServerRangeMin] = RoundToEightDecimalPlaces( server_min );
+            patch[Protocol::Key::EnsembleServerRangeMax] = RoundToEightDecimalPlaces( server_max );
+
+            nlohmann::json opacity_histogram = nlohmann::json::array();
+            const vismodule::UInt64* opacity_hist = tf.opacityHistogram();
+            for ( int j = 0; j < DEFAULT_NBINS; ++j )
+            {
+                opacity_histogram.push_back( static_cast<int>( opacity_hist[j] ) );
+            }
+            patch[Protocol::Key::EnsembleHistogram] = std::move( opacity_histogram );
         }
-        patch[Protocol::Key::EnsembleHistogram] = std::move( opacity_histogram );
 
         data.push_back( std::move( patch ) );
     }
@@ -217,30 +223,43 @@ void AppendStatisticTransferFunctionPatches(
 
 nlohmann::json BuildEnsembleStatisticsParameter(
     const ParticleProperty& particle_property,
-    const std::string& statistic )
+    const std::string& statistic,
+    const bool include_history = true )
 {
     nlohmann::json data = nlohmann::json::array();
-    DebugStatisticTransferFunctionArray(
-        "average",
-        particle_property.m_mean_transfer_function_array );
+    if ( include_history )
+    {
+        DebugStatisticTransferFunctionArray(
+            "average",
+            particle_property.m_mean_transfer_function_array );
+    }
     AppendStatisticTransferFunctionPatches(
         data,
         "average",
-        particle_property.m_mean_transfer_function_array );
-    DebugStatisticTransferFunctionArray(
-        "variance",
-        particle_property.m_variance_transfer_function_array );
+        particle_property.m_mean_transfer_function_array,
+        include_history );
+    if ( include_history )
+    {
+        DebugStatisticTransferFunctionArray(
+            "variance",
+            particle_property.m_variance_transfer_function_array );
+    }
     AppendStatisticTransferFunctionPatches(
         data,
         "variance",
-        particle_property.m_variance_transfer_function_array );
-    DebugStatisticTransferFunctionArray(
-        "cv",
-        particle_property.m_coefficient_of_variation_transfer_function_array );
+        particle_property.m_variance_transfer_function_array,
+        include_history );
+    if ( include_history )
+    {
+        DebugStatisticTransferFunctionArray(
+            "cv",
+            particle_property.m_coefficient_of_variation_transfer_function_array );
+    }
     AppendStatisticTransferFunctionPatches(
         data,
         "cv",
-        particle_property.m_coefficient_of_variation_transfer_function_array );
+        particle_property.m_coefficient_of_variation_transfer_function_array,
+        include_history );
 
     const std::string normalized_statistic = NormalizeStatisticName( statistic );
     std::string client_statistic = "average";
@@ -285,16 +304,6 @@ void ApplyTransferFunctionPatch( EnsembleTransferFunction& tf, const nlohmann::j
     if ( patch.contains( Protocol::Key::EnsembleUserRangeMax ) )
     {
         tf.m_user_variable_max = patch[Protocol::Key::EnsembleUserRangeMax].get<double>();
-        range_changed = true;
-    }
-    if ( patch.contains( Protocol::Key::EnsembleServerRangeMin ) )
-    {
-        tf.m_server_variable_min = patch[Protocol::Key::EnsembleServerRangeMin].get<double>();
-        range_changed = true;
-    }
-    if ( patch.contains( Protocol::Key::EnsembleServerRangeMax ) )
-    {
-        tf.m_server_variable_max = patch[Protocol::Key::EnsembleServerRangeMax].get<double>();
         range_changed = true;
     }
     if ( patch.contains( Protocol::Key::EnsembleColorMap ) && patch[Protocol::Key::EnsembleColorMap].is_array() )
@@ -1395,10 +1404,29 @@ void Server::requestDataAt(uWS::WebSocket<false, true, PerSocket>* ws, const nlo
     const auto& maxJson = received.at(Protocol::Key::ResultMaxObjectCoords);
     kvs::Vec3 minObjectCoords(minJson[0].get<float>(), minJson[1].get<float>(), minJson[2].get<float>());
     kvs::Vec3 maxObjectCoords(maxJson[0].get<float>(), maxJson[1].get<float>(), maxJson[2].get<float>());
-    const std::string statistic =
-        ( m_server_mode == ServerMode::IS && m_particle_property && m_particle_property->m_is_ensemble ) ?
-            m_current_ensemble_statistic :
-            "normal";
+    const bool is_ensemble_request =
+        m_server_mode == ServerMode::IS && m_particle_property && m_particle_property->m_is_ensemble;
+    const std::string statistic = is_ensemble_request ? m_current_ensemble_statistic : "normal";
+    bool ensemble_history_available = true;
+    if ( m_server_mode == ServerMode::IS && m_particle_property )
+    {
+        const ParticleHistoryUpdateResult history_result =
+            UpdateParticlePropertyFromHistoryIS( timeStep, *m_particle_property );
+        ensemble_history_available = history_result.ensemble_statistics_available;
+        if ( !history_result.succeeded ||
+             ( is_ensemble_request && !ensemble_history_available ) )
+        {
+            std::cerr << "[Server][ParticleHistory][WARN]"
+                      << " timestep=" << timeStep
+                      << " path=" << history_result.file_path
+                      << " reason=" << history_result.error_message;
+            if ( is_ensemble_request )
+            {
+                std::cerr << "; particles will be sent without Server Side MinMax and histogram";
+            }
+            std::cerr << std::endl;
+        }
+    }
     std::cout << "[Server][RequestDataAt] received timestep=" << timeStep
               << ", statistic=" << statistic
               << ", mode=" << ( m_server_mode == ServerMode::IS ? "IS" : "CS" )
@@ -1406,7 +1434,7 @@ void Server::requestDataAt(uWS::WebSocket<false, true, PerSocket>* ws, const nlo
               << std::endl;
 
     Worker worker(timeStep, m_objects, minObjectCoords, maxObjectCoords, m_server_mode, m_particle_property, m_glyph_property, m_pol_property, m_multi_volume_property_list, statistic);
-    worker.setDoneCallBack([this, ws, timeStep]() {
+    worker.setDoneCallBack([this, ws, timeStep, ensemble_history_available]() {
         std::vector<char> buffer = pack(timeStep);
         std::cout << "[Server][RequestDataAt] packed bytes=" << buffer.size()
                   << ", timestep=" << timeStep << std::endl;
@@ -1670,7 +1698,10 @@ void Server::requestDataAt(uWS::WebSocket<false, true, PerSocket>* ws, const nlo
         if ( m_server_mode == ServerMode::IS && m_particle_property && m_particle_property->m_is_ensemble )
         {
             nlohmann::json ensembleStatisticsParameter =
-                BuildEnsembleStatisticsParameter( *m_particle_property, m_current_ensemble_statistic );
+                BuildEnsembleStatisticsParameter(
+                    *m_particle_property,
+                    m_current_ensemble_statistic,
+                    ensemble_history_available );
             ensembleStatisticsParameter.erase( std::string( Protocol::Key::Event ) );
             ensembleStatisticsParameter.erase( std::string( Protocol::Key::Statistic ) );
             msg[Protocol::Key::EnsembleTransferFunctionParameter] = std::move( ensembleStatisticsParameter );

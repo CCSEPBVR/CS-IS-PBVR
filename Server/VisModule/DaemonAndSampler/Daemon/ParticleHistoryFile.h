@@ -33,6 +33,7 @@ private:
     int               m_nvariables;
     int               m_particle_limit;
     float             m_extra_opacity_factor;
+    std::string       m_error_message;
 
 private:
 
@@ -54,6 +55,8 @@ public:
     ParticleHistoryFile( const std::string& file );
     void setFileName( const std::string& file );
     void read();
+    const std::string& fileName() const { return m_file_name; };
+    const std::string& errorMessage() const { return m_error_message; };
     VariableRange& variableRange();
     HistogramArray& colorHistogramArray();
     HistogramArray& opacityHistogramArray();

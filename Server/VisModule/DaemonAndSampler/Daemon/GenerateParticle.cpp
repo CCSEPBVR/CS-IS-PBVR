@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <cmath>
 
 #include <vismodule/JobDispatcher>
 #include <vismodule/GenerateParticle>
@@ -16,6 +17,97 @@
 
 namespace
 {
+bool ValidateHistoryTransferFunctions(
+    const std::vector<std::vector<int>>& color_histograms,
+    const std::vector<std::vector<int>>& opacity_histograms,
+    const VariableRange& variable_range,
+    const bool validate_opacity_range,
+    std::string& error_message )
+{
+    const int tf_number = static_cast<int>( opacity_histograms.size() );
+    if ( tf_number <= 0 )
+    {
+        error_message = "histogram is empty";
+        return false;
+    }
+    if ( static_cast<int>( color_histograms.size() ) != tf_number )
+    {
+        error_message = "color and opacity histogram counts do not match";
+        return false;
+    }
+
+    for ( int i = 0; i < tf_number; ++i )
+    {
+        if ( color_histograms[i].size() != DEFAULT_NBINS ||
+             opacity_histograms[i].size() != DEFAULT_NBINS )
+        {
+            error_message = "histogram resolution is not DEFAULT_NBINS";
+            return false;
+        }
+
+        std::stringstream ss;
+        ss << ( i + 1 );
+        const std::string index = ss.str();
+        const double color_min = variable_range.min( "t" + index + "_var_c" );
+        const double color_max = variable_range.max( "t" + index + "_var_c" );
+        if ( !std::isfinite( color_min ) || !std::isfinite( color_max ) || color_min > color_max )
+        {
+            error_message = "color range is invalid";
+            return false;
+        }
+
+        if ( validate_opacity_range )
+        {
+            const double opacity_min = variable_range.min( "t" + index + "_var_o" );
+            const double opacity_max = variable_range.max( "t" + index + "_var_o" );
+            if ( !std::isfinite( opacity_min ) || !std::isfinite( opacity_max ) || opacity_min > opacity_max )
+            {
+                error_message = "opacity range is invalid";
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+void ApplyHistoryToTransferFunctions(
+    const std::vector<std::vector<int>>& color_histograms,
+    const std::vector<std::vector<int>>& opacity_histograms,
+    VariableRange& variable_range,
+    std::vector<NamedTransferFunction>& transfer_functions )
+{
+    const int tf_number = static_cast<int>( opacity_histograms.size() );
+    if ( transfer_functions.size() < static_cast<size_t>( tf_number ) )
+    {
+        transfer_functions.resize( tf_number );
+    }
+
+    for ( int i = 0; i < tf_number; ++i )
+    {
+        // histogram
+        std::copy(
+            color_histograms[i].begin(),
+            color_histograms[i].end(),
+            transfer_functions[i].m_color_histogram );
+        std::copy(
+            opacity_histograms[i].begin(),
+            opacity_histograms[i].end(),
+            transfer_functions[i].m_opacity_histogram );
+
+        std::stringstream ss;
+        ss << ( i + 1 );
+        const std::string index = ss.str();
+        // minmax
+        transfer_functions[i].m_server_color_variable_min = variable_range.min( "t" + index + "_var_c" );
+        transfer_functions[i].m_server_color_variable_max = variable_range.max( "t" + index + "_var_c" );
+        transfer_functions[i].m_server_opacity_variable_min = variable_range.min( "t" + index + "_var_o" );
+        transfer_functions[i].m_server_opacity_variable_max = variable_range.max( "t" + index + "_var_o" );
+    }
+
+    std::cout << "[ParticleHistory] applied transfer function history tf_number="
+              << tf_number << std::endl;
+}
+
 void ApplyStatisticHistoryToTransferFunctions(
     const std::vector<std::vector<int>>& color_histograms,
     const std::vector<std::vector<int>>& opacity_histograms,
@@ -61,11 +153,125 @@ void ApplyStatisticHistoryToTransferFunctions(
             variable_range.min( "t" + idxbuf + "_var_c" );
         transfer_functions[i].m_server_variable_max =
             variable_range.max( "t" + idxbuf + "_var_c" );
+
+        if ( transfer_functions[i].m_server_range_mode == EnsembleTransferFunction::ServerRangeMode::ServerSide )
+        {
+            auto color_map = transfer_functions[i].colorMap();
+            color_map.setRange(
+                transfer_functions[i].m_server_variable_min,
+                transfer_functions[i].m_server_variable_max );
+            transfer_functions[i].setColorMap( color_map );
+
+            auto opacity_map = transfer_functions[i].opacityMap();
+            opacity_map.setRange(
+                transfer_functions[i].m_server_variable_min,
+                transfer_functions[i].m_server_variable_max );
+            transfer_functions[i].setOpacityMap( opacity_map );
+        }
     }
 
-    std::cout << "[GenerateParticleIS] applied ensemble statistic history statistic="
+    std::cout << "[ParticleHistory] applied ensemble statistic history statistic="
               << statistic_name << ", tf_number=" << tf_number << std::endl;
 }
+}
+
+ParticleHistoryUpdateResult UpdateParticlePropertyFromHistoryIS(
+    const int time_step,
+    ParticleProperty& particle_property )
+{
+    ParticleHistoryUpdateResult result;
+    ParticleMonitor pm;
+    pm.setTimeStep_particle( time_step );
+    pm.readParticleHistoryFile();
+
+    ParticleHistoryFile& history = pm.particleHistoryFile();
+    result.file_path = history.fileName();
+    if ( !history.errorMessage().empty() )
+    {
+        result.error_message = history.errorMessage();
+        return result;
+    }
+    if ( !ValidateHistoryTransferFunctions(
+            history.colorHistogramArray(),
+            history.opacityHistogramArray(),
+            history.variableRange(),
+            true,
+            result.error_message ) )
+    {
+        return result;
+    }
+
+    ApplyHistoryToTransferFunctions(
+        history.colorHistogramArray(),
+        history.opacityHistogramArray(),
+        history.variableRange(),
+        particle_property.m_transfunc_array );
+    particle_property.m_is_ensemble = history.isEnsemble();
+    result.succeeded = true;
+
+    if ( !history.isEnsemble() )
+    {
+        return result;
+    }
+    if ( !history.hasEnsembleStatisticHistogram() )
+    {
+        result.error_message = "ensemble statistics are missing";
+        return result;
+    }
+
+    std::string statistic_error;
+    if ( !ValidateHistoryTransferFunctions(
+            history.averageColorHistogramArray(),
+            history.averageOpacityHistogramArray(),
+            history.averageVariableRange(),
+            false,
+            statistic_error ) )
+    {
+        result.error_message = "average: " + statistic_error;
+        return result;
+    }
+    if ( !ValidateHistoryTransferFunctions(
+            history.varianceColorHistogramArray(),
+            history.varianceOpacityHistogramArray(),
+            history.varianceVariableRange(),
+            false,
+            statistic_error ) )
+    {
+        result.error_message = "variance: " + statistic_error;
+        return result;
+    }
+    if ( !ValidateHistoryTransferFunctions(
+            history.coefficientOfVariationColorHistogramArray(),
+            history.coefficientOfVariationOpacityHistogramArray(),
+            history.coefficientOfVariationVariableRange(),
+            false,
+            statistic_error ) )
+    {
+        result.error_message = "coefficient_of_variation: " + statistic_error;
+        return result;
+    }
+
+    ApplyStatisticHistoryToTransferFunctions(
+        history.averageColorHistogramArray(),
+        history.averageOpacityHistogramArray(),
+        history.averageVariableRange(),
+        particle_property.m_mean_transfer_function_array,
+        "average" );
+    ApplyStatisticHistoryToTransferFunctions(
+        history.varianceColorHistogramArray(),
+        history.varianceOpacityHistogramArray(),
+        history.varianceVariableRange(),
+        particle_property.m_variance_transfer_function_array,
+        "variance" );
+    ApplyStatisticHistoryToTransferFunctions(
+        history.coefficientOfVariationColorHistogramArray(),
+        history.coefficientOfVariationOpacityHistogramArray(),
+        history.coefficientOfVariationVariableRange(),
+        particle_property.m_coefficient_of_variation_transfer_function_array,
+        "cv" );
+
+    result.ensemble_statistics_available = true;
+    return result;
 }
 
 void GenerateParticleCS(
@@ -578,14 +784,12 @@ void GenerateParticleCS(
 
 void GenerateParticleIS(
     const int time_step,
-    ParticleProperty& particle_property,
-    MultiVolumePropertyList& mvpl,
+    ParticleProperty&,
+    MultiVolumePropertyList&,
     std::unique_ptr<kvs::PointObject>& point_object
 )
 {
-    int tf_number;
     ParticleMonitor pm;
-    VariableRange vr;
 
     std::cout << "time_step:" << time_step << std::endl;
 
@@ -605,28 +809,6 @@ void GenerateParticleIS(
         // pm.setTimeStep_particle( pm.particleStatusFile().getLatestTimeStep() );
         pm.setTimeStep_particle( time_step );
     }
-    pm.readParticleHistoryFile();
-
-    tf_number = pm.particleHistoryFile().colorHistogramArray().size();
-    if( particle_property.m_transfunc_array.size() < static_cast<size_t>( tf_number ) )
-    {
-        particle_property.m_transfunc_array.resize( tf_number );
-    }
-
-    std::cout << "[GenerateParticleIS] history tf_number=" << tf_number
-              << ", opacity histogram count="
-              << pm.particleHistoryFile().opacityHistogramArray().size()
-              << ", transfunc count="
-              << particle_property.m_transfunc_array.size()
-              << std::endl;
-
-
-    vismodule::UInt64* tmp_c_bins;
-    vismodule::UInt64* tmp_o_bins;
-    tmp_c_bins = new vismodule::UInt64[DEFAULT_NBINS * tf_number];
-    tmp_o_bins = new vismodule::UInt64[DEFAULT_NBINS * tf_number];
-    std::fill_n( tmp_c_bins, DEFAULT_NBINS * tf_number, 0 );
-    std::fill_n( tmp_o_bins, DEFAULT_NBINS * tf_number, 0 );
 
     vismodule::PointObject* vismodule_point_object = new vismodule::PointObject;
 
@@ -664,76 +846,11 @@ void GenerateParticleIS(
               << std::endl;
 
     // get histgram start
-    int c_count = 0;
-    for ( int tf = 0; tf < tf_number; tf++ )
-    {
-        for ( int res = 0; res < DEFAULT_NBINS; res++ )
-        {
-            tmp_c_bins[c_count] = pm.particleHistoryFile().colorHistogramArray()[tf][res];
-            c_count++;
-        }
-    }
-    
-    int o_count = 0;
-    for ( int tf = 0; tf < tf_number; tf++ )
-    {
-        for ( int res = 0; res < DEFAULT_NBINS; res++ )
-        {
-            tmp_o_bins[o_count] = pm.particleHistoryFile().opacityHistogramArray()[tf][res];
-            o_count++;
-        }
-    }
+    // History histogram and min/max values are updated once before particle loading.
     // get histgram end
-    
-    vr = pm.particleHistoryFile().variableRange();
-    vr.show();
-
     // histogram, minmaxの格納
-    for( int i = 0; i < tf_number; i++ )
-    {
-        // histogram
-        std::copy( tmp_c_bins + ( DEFAULT_NBINS * i ), tmp_c_bins + ( DEFAULT_NBINS * ( i + 1 ) ), particle_property.m_transfunc_array[i].m_color_histogram );
-        std::copy( tmp_o_bins + ( DEFAULT_NBINS * i ), tmp_o_bins + ( DEFAULT_NBINS * ( i + 1 ) ), particle_property.m_transfunc_array[i].m_opacity_histogram );
-
-        // minmax
-        std::stringstream ss; 
-        ss << (i + 1); 
-        const std::string idxbuf = ss.str();
-        particle_property.m_transfunc_array[i].m_server_color_variable_min   = vr.min( "t" + idxbuf + "_var_c" );
-        particle_property.m_transfunc_array[i].m_server_color_variable_max   = vr.max( "t" + idxbuf + "_var_c" );
-        particle_property.m_transfunc_array[i].m_server_opacity_variable_min = vr.min( "t" + idxbuf + "_var_o" );
-        particle_property.m_transfunc_array[i].m_server_opacity_variable_max = vr.max( "t" + idxbuf + "_var_o" );
-    }
-
-    if ( pm.particleHistoryFile().hasEnsembleStatisticHistogram() )
-    {
-        ApplyStatisticHistoryToTransferFunctions(
-            pm.particleHistoryFile().averageColorHistogramArray(),
-            pm.particleHistoryFile().averageOpacityHistogramArray(),
-            pm.particleHistoryFile().averageVariableRange(),
-            particle_property.m_mean_transfer_function_array,
-            "average" );
-        ApplyStatisticHistoryToTransferFunctions(
-            pm.particleHistoryFile().varianceColorHistogramArray(),
-            pm.particleHistoryFile().varianceOpacityHistogramArray(),
-            pm.particleHistoryFile().varianceVariableRange(),
-            particle_property.m_variance_transfer_function_array,
-            "variance" );
-        ApplyStatisticHistoryToTransferFunctions(
-            pm.particleHistoryFile().coefficientOfVariationColorHistogramArray(),
-            pm.particleHistoryFile().coefficientOfVariationOpacityHistogramArray(),
-            pm.particleHistoryFile().coefficientOfVariationVariableRange(),
-            particle_property.m_coefficient_of_variation_transfer_function_array,
-            "cv" );
-    }
-    else
-    {
-        std::cout << "[GenerateParticleIS] ensemble statistic history is not available." << std::endl;
-    }
 
     delete vismodule_point_object;
-    delete[] tmp_c_bins;
-    delete[] tmp_o_bins;
 }
 
 void generate_volume(
