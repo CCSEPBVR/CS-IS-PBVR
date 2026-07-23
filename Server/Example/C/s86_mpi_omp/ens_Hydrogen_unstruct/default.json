@@ -15,7 +15,7 @@
                         "min": 0.0
                     }
                 },
-                "variable": "q1"
+                "variable": "sqrt(q1*q2)"
             },
             "id": 1,
             "label": "TF1",
@@ -33,7 +33,7 @@
                         "min": 0.0
                     }
                 },
-                "variable": "q1"
+                "variable": "sqrt(q1*q2)"
             }
         }
     ],
@@ -68,7 +68,7 @@
                         "min": 0.0
                     }
                 },
-                "variable": "q1"
+                "variable": "sqrt(q1*q2)"
             },
             "id": 1,
             "label": "TF1",
@@ -86,7 +86,7 @@
                         "min": 0.0
                     }
                 },
-                "variable": "q1"
+                "variable": "sqrt(q1*q2)"
             }
         }
     ],
@@ -164,7 +164,7 @@
                         "min": 0.0
                     }
                 },
-                "variable": "q1"
+                "variable": "sqrt(q1*q2)"
             },
             "id": 1,
             "label": "TF1",
@@ -182,7 +182,7 @@
                         "min": 0.0
                     }
                 },
-                "variable": "q1"
+                "variable": "sqrt(q1*q2)"
             }
         }
     ]

@@ -19,7 +19,7 @@
                         "min": 0.0
                     }
                 },
-                "variable": "q1"
+                "variable": "sqrt(q1*q2)"
             },
             "id": 1,
             "label": "TF1",
@@ -41,7 +41,7 @@
                         "min": 0.0
                     }
                 },
-                "variable": "q1"
+                "variable": "sqrt(q1*q2)"
             }
         }
     ],
@@ -80,7 +80,7 @@
                         "min": 0.0
                     }
                 },
-                "variable": "q1"
+                "variable": "sqrt(q1*q2)"
             },
             "id": 1,
             "label": "TF1",
@@ -102,7 +102,7 @@
                         "min": 0.0
                     }
                 },
-                "variable": "q1"
+                "variable": "sqrt(q1*q2)"
             }
         }
     ],
@@ -117,7 +117,7 @@
             "particle_data_size_limit": 20.0,
             "particle_data_size_limit_unit": "MB",
             "particle_limit": 10000000,
-            "repeat_level": 16
+            "repeat_level": 4
         },
         "transfer_function": {
             "color_synthesis": "C1",
@@ -192,7 +192,7 @@
                         "min": 0.0
                     }
                 },
-                "variable": "q1"
+                "variable": "sqrt(q1*q2)"
             },
             "id": 1,
             "label": "TF1",
@@ -214,7 +214,7 @@
                         "min": 0.0
                     }
                 },
-                "variable": "q1"
+                "variable": "sqrt(q1*q2)"
             }
         }
     ]
