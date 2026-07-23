@@ -32,7 +32,7 @@
      // -ccbin icpc) but does not implement __assume_aligned. This is a hint only, so a
      // no-op under any nvcc pass is semantically identical.
 #    define PBVR_ASSUME_ALIGNED64(p) ((void)0)
-#  elif defined(__INTEL_COMPILER) || defined(__INTEL_LLVM_COMPILER)
+#  elif defined(__INTEL_COMPILER) && !defined(__INTEL_LLVM_COMPILER)
 #    define PBVR_ASSUME_ALIGNED64(p) __assume_aligned((p), 64)
 #  elif defined(__GNUC__)
 #    define PBVR_ASSUME_ALIGNED64(p) ((p) = static_cast<decltype(p)>(__builtin_assume_aligned((p), 64)))
