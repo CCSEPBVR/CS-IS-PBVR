@@ -3223,7 +3223,6 @@ bool ensemble_generate_particles(
             std::memcpy( recv_sq_scalars.data(), pr_sq,   sizeof(float) *     (size_t)recv_size );
             std::memcpy( recv_tmp_term.data(),   pr_tmp,  sizeof(float) * 3 * (size_t)recv_size );
 #endif
-#endif
 #ifdef ENABLE_ENSEMBLE_TIMER
             payload_all_timer.stop();
             ensemble_timer.add( EnsembleTimerMpiShiftPayloadAll, payload_all_timer.sec() );
