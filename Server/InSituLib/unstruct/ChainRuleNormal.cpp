@@ -303,4 +303,208 @@ bool RunChainRuleNormalSelfTest()
     return true;
 }
 
+// ---------------------------------------------------------------------------
+// 変動係数(CoV)勾配の単体テスト
+// ---------------------------------------------------------------------------
+
+// 単位ベクトル化した内積で「方向のみ」を比較する。
+static bool SameDirection(
+    const vismodule::Vector3f& lhs,
+    const vismodule::Vector3f& rhs,
+    const float tolerance )
+{
+    const double llen = lhs.length();
+    const double rlen = rhs.length();
+    if ( !( llen > 0.0 ) || !( rlen > 0.0 ) ) return false;
+
+    const vismodule::Vector3f a = lhs / static_cast<float>( llen );
+    const vismodule::Vector3f b = rhs / static_cast<float>( rlen );
+    return a.dot( b ) >= 1.0f - tolerance;
+}
+
+// CoV = sqrt(Var)/|mu| の場を直接数値微分し、解析式の導出そのものを検算する。
+// mu, Var は各軸方向に線形に変化する場として与える。
+static vismodule::Vector3f NumericalCoVGradient(
+    const double mu0,
+    const vismodule::Vector3f& grad_mu,
+    const double var0,
+    const vismodule::Vector3f& grad_var,
+    const double h )
+{
+    const double dmu[3]  = { grad_mu.x(),  grad_mu.y(),  grad_mu.z()  };
+    const double dvar[3] = { grad_var.x(), grad_var.y(), grad_var.z() };
+
+    float out[3];
+    for ( int axis = 0; axis < 3; ++axis )
+    {
+        const double cov_p = std::sqrt( var0 + dvar[axis] * h ) / std::fabs( mu0 + dmu[axis] * h );
+        const double cov_m = std::sqrt( var0 - dvar[axis] * h ) / std::fabs( mu0 - dmu[axis] * h );
+        out[axis] = static_cast<float>( ( cov_p - cov_m ) / ( 2.0 * h ) );
+    }
+    return vismodule::Vector3f( out[0], out[1], out[2] );
+}
+
+bool RunCoVNormalSelfTest()
+{
+    const vismodule::Vector3f ex( 1.0f, 0.0f, 0.0f );
+    const vismodule::Vector3f ey( 0.0f, 1.0f, 0.0f );
+    const vismodule::Vector3f zero( 0.0f, 0.0f, 0.0f );
+    const float tol = 1.0e-6f;
+    bool ok = true;
+
+    // T1: Var 一定、mu = 1 + x (grad mu = ex)。 grad CoV ∝ -(2*Var/mu)*ex
+    {
+        const float mu = 1.0f, var = 3.0f;
+        const vismodule::Vector3f got = ComputeCoVNormalDirection( mu, ex, var, zero );
+        const vismodule::Vector3f expected = ex * ( -2.0f * var / mu );
+        if ( !SameDirection( got, expected, tol ) )
+        {
+            std::cerr << "CoVNormal self-test failed: T1 got=" << got
+                      << ", expected=" << expected << std::endl;
+            ok = false;
+        }
+    }
+
+    // T2: mu 一定 = 2、Var = 1 + y (grad Var = ey)。 grad CoV ∝ ey
+    {
+        const float mu = 2.0f, var = 1.0f;
+        const vismodule::Vector3f got = ComputeCoVNormalDirection( mu, zero, var, ey );
+        if ( !SameDirection( got, ey, tol ) )
+        {
+            std::cerr << "CoVNormal self-test failed: T2 got=" << got
+                      << ", expected=" << ey << std::endl;
+            ok = false;
+        }
+    }
+
+    // T3: mu = 1 + x、Var = 1 + y を (x,y)=(0.5,0.25) で評価。
+    //     grad CoV ∝ ey - (2*Var/mu)*ex
+    {
+        const float mu = 1.5f, var = 1.25f;
+        const vismodule::Vector3f got = ComputeCoVNormalDirection( mu, ex, var, ey );
+        const vismodule::Vector3f expected = ey - ex * ( 2.0f * var / mu );
+        if ( !SameDirection( got, expected, tol ) )
+        {
+            std::cerr << "CoVNormal self-test failed: T3 got=" << got
+                      << ", expected=" << expected << std::endl;
+            ok = false;
+        }
+
+        // 検算: CoV 場の中央差分と方向が一致すること(解析式の導出そのものの確認)。
+        const vismodule::Vector3f numeric = NumericalCoVGradient( mu, ex, var, ey, 1.0e-3 );
+        if ( !SameDirection( got, numeric, 1.0e-5f ) )
+        {
+            std::cerr << "CoVNormal self-test failed: T3(numeric) got=" << got
+                      << ", numeric=" << numeric << std::endl;
+            ok = false;
+        }
+    }
+
+    // T4: mu < 0 (符号の確認)。 mu=-2, Var=1 -> ey - (2*1/-2)*ex = ey + ex
+    {
+        const float mu = -2.0f, var = 1.0f;
+        const vismodule::Vector3f got = ComputeCoVNormalDirection( mu, ex, var, ey );
+        const vismodule::Vector3f expected = ey - ex * ( 2.0f * var / mu );
+        if ( !SameDirection( got, expected, tol ) )
+        {
+            std::cerr << "CoVNormal self-test failed: T4 got=" << got
+                      << ", expected=" << expected << std::endl;
+            ok = false;
+        }
+
+        const vismodule::Vector3f numeric = NumericalCoVGradient( mu, ex, var, ey, 1.0e-3 );
+        if ( !SameDirection( got, numeric, 1.0e-5f ) )
+        {
+            std::cerr << "CoVNormal self-test failed: T4(numeric) got=" << got
+                      << ", numeric=" << numeric << std::endl;
+            ok = false;
+        }
+    }
+
+    // T5: |mu| <= 1e-5 はフォールバック(variance_grad をそのまま返す)。
+    {
+        const float mu = 1.0e-6f, var = 1.0f;
+        const vismodule::Vector3f got = ComputeCoVNormalDirection( mu, ex, var, ey );
+        if ( !( got.x() == ey.x() && got.y() == ey.y() && got.z() == ey.z() ) )
+        {
+            std::cerr << "CoVNormal self-test failed: T5 got=" << got
+                      << ", expected(fallback)=" << ey << std::endl;
+            ok = false;
+        }
+    }
+
+    // T6: kvs_wrapper.cpp 本体と同じ積算・スケーリング・符号規約を再現し、
+    //     tmp_varience_normals が -grad Var に、呼び出し側の渡し方が -grad CoV に
+    //     なることを検算する(呼び出し側の符号規約そのものの試験)。
+    {
+        const int n = 3;
+        const float g[3] = { 1.0f, 2.0f, 4.0f };
+        const vismodule::Vector3f gg[3] = {
+            vismodule::Vector3f(  0.5f, -0.25f,  0.125f ),
+            vismodule::Vector3f( -1.0f,  0.75f,  0.5f   ),
+            vismodule::Vector3f(  0.25f, 1.5f,  -0.75f  )
+        };
+
+        // --- store_uniform_block / リング積算と同じ符号で貯める ---
+        float scal = 0.0f, sq = 0.0f;
+        vismodule::Vector3f norm_acc( 0.0f, 0.0f, 0.0f ); // -grad g を積算
+        vismodule::Vector3f tmp_acc( 0.0f, 0.0f, 0.0f );  // +g*grad g を積算
+        for ( int m = 0; m < n; ++m )
+        {
+            scal += g[m];
+            sq   += g[m] * g[m];
+            norm_acc = norm_acc - gg[m];
+            tmp_acc  = tmp_acc + gg[m] * g[m];
+        }
+
+        // --- 統計ブロックと同じスケーリング ---
+        const float inv = 1.0f / static_cast<float>( n );
+        const float mu  = scal * inv;
+        const vismodule::Vector3f tmp_term = tmp_acc * ( -2.0f * inv ); // = -2 E[g grad g]
+        const vismodule::Vector3f vnorm    = norm_acc * ( -inv );       // = +grad mu
+        float var = sq * inv - mu * mu;
+        if ( var < 0.0f ) var = 0.0f;
+        const vismodule::Vector3f n_var = tmp_term - vnorm * ( -2.0f * mu ); // = -grad Var
+
+        // --- 真値 ---
+        vismodule::Vector3f grad_mu( 0.0f, 0.0f, 0.0f );
+        vismodule::Vector3f e_g_grad_g( 0.0f, 0.0f, 0.0f );
+        for ( int m = 0; m < n; ++m )
+        {
+            grad_mu    = grad_mu + gg[m] * inv;
+            e_g_grad_g = e_g_grad_g + gg[m] * ( g[m] * inv );
+        }
+        const vismodule::Vector3f grad_var = ( e_g_grad_g - grad_mu * mu ) * 2.0f;
+
+        if ( !SameDirection( n_var, grad_var * -1.0f, 1.0e-5f ) )
+        {
+            std::cerr << "CoVNormal self-test failed: T6(-grad Var) n_var=" << n_var
+                      << ", expected=" << ( grad_var * -1.0f ) << std::endl;
+            ok = false;
+        }
+
+        // 呼び出し側と同じ渡し方: grad mu 側の符号を反転して渡す。
+        const vismodule::Vector3f cov_n = ComputeCoVNormalDirection( mu, vnorm * -1.0f, var, n_var );
+        const vismodule::Vector3f grad_cov = grad_var - grad_mu * ( 2.0f * var / mu );
+        if ( !SameDirection( cov_n, grad_cov * -1.0f, 1.0e-5f ) )
+        {
+            std::cerr << "CoVNormal self-test failed: T6(-grad CoV) got=" << cov_n
+                      << ", expected=" << ( grad_cov * -1.0f ) << std::endl;
+            ok = false;
+        }
+
+        // 誤って符号を揃えずに渡した場合は方向が一致しないこと(試験自体の感度確認)。
+        const vismodule::Vector3f cov_wrong = ComputeCoVNormalDirection( mu, vnorm, var, n_var );
+        if ( SameDirection( cov_wrong, grad_cov * -1.0f, 1.0e-5f ) )
+        {
+            std::cerr << "CoVNormal self-test failed: T6(sensitivity) "
+                         "wrong-sign variant unexpectedly matched" << std::endl;
+            ok = false;
+        }
+    }
+
+    if ( ok ) std::cout << "CoVNormal self-test: all cases passed (T1-T6)" << std::endl;
+    return ok;
+}
+
 } // namespace pbvr

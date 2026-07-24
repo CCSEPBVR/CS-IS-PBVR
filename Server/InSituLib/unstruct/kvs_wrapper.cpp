@@ -3431,6 +3431,8 @@ bool ensemble_generate_particles(
     std::vector<float> tmp_varience( vertex_scalars.size() );
     std::vector<float> tmp_varience_normals( 3 * vertex_scalars.size() );
     std::vector<float> co_varietion( vertex_scalars.size() );
+    std::vector<float> co_varietion_normals( 3 * vertex_scalars.size() );
+    size_t co_varietion_normal_fallback_count = 0;
     {
 #ifdef ENABLE_ENSEMBLE_TIMER
         EnsembleTimerScope timer_scope( &ensemble_timer, EnsembleTimerStatAverageVariance );
@@ -3461,7 +3463,48 @@ bool ensemble_generate_particles(
     {
         co_varietion[i] = std::fabs(vertex_scalars[i]) > eps ? std::sqrt( tmp_varience[i] ) /std::fabs( vertex_scalars[i]) : delta;
     }
+
+    // 法線の構成は co_varietion の計算ループとは別ループにする。
+    // 同一ループへ追記するとベクトル化/FP縮約の判断が変わり co_varietion が最下位ビットで
+    // 変動しうる(実測: 色マップの量子化境界で 1 粒子の色が 1 階調ずれた)。分離すれば
+    // co_varietion の生成コードが元のままとなり、粒子の色は完全に一致する。
+    for ( size_t i = 0; i < vertex_scalars.size(); i++ )
+    {
+        // 変動係数の勾配は分散の勾配と平行ではない(正規化に用いる平均 mu 自身が勾配を持つ場のため)。
+        //     grad CoV ∝ grad Var - (2*Var/mu) * grad mu
+        //
+        // 本ファイルの符号規約(実測):
+        //     vertex_normals       = +grad mu    ... -grad g をリング積算し上の :vertex_normals *= -invert_num で符号が戻る
+        //     tmp_varience_normals = -grad Var   ... 直上の組み立て結果
+        // 両者は規約が逆であるため、tmp_varience_normals と同じ規約(-grad)で -grad CoV を得るには
+        // grad mu 側の符号を反転して渡す。ComputeCoVNormalDirection は両勾配について線形。
+        const vismodule::Vector3f mean_grad(
+            -vertex_normals[3 * i],
+            -vertex_normals[3 * i + 1],
+            -vertex_normals[3 * i + 2]
+        );
+        const vismodule::Vector3f variance_grad(
+            tmp_varience_normals[3 * i],
+            tmp_varience_normals[3 * i + 1],
+            tmp_varience_normals[3 * i + 2]
+        );
+
+        const vismodule::Vector3f cov_grad = pbvr::ComputeCoVNormalDirection(
+            vertex_scalars[i], mean_grad, tmp_varience[i], variance_grad, eps );
+
+        co_varietion_normals[3 * i]     = cov_grad.x();
+        co_varietion_normals[3 * i + 1] = cov_grad.y();
+        co_varietion_normals[3 * i + 2] = cov_grad.z();
+
+        // |mu| <= eps では CoV 値が定義されないため分散法線を流用する(従来動作へのフォールバック)。
+        if ( !( std::fabs( vertex_scalars[i] ) > eps ) ) co_varietion_normal_fallback_count++;
     }
+    }
+
+    fprintf( stdout, "[cov_normal] rank=%d fallback=%llu / particles=%llu\n",
+             mpi_rank,
+             static_cast<unsigned long long>( co_varietion_normal_fallback_count ),
+             static_cast<unsigned long long>( vertex_scalars.size() ) );
 
     EnsembleStatisticRange average_range;
     EnsembleStatisticRange variance_range;
@@ -3595,6 +3638,11 @@ bool ensemble_generate_particles(
                     tmp_varience_normals[3 * idx + 1],
                     tmp_varience_normals[3 * idx + 2]
                 );
+                const vismodule::Vector3f coefficient_normal(
+                    co_varietion_normals[3 * idx],
+                    co_varietion_normals[3 * idx + 1],
+                    co_varietion_normals[3 * idx + 2]
+                );
 
 //                std::cout << "tmp_varience_normals = " << variance_normal <<std::endl;
                 AppendRejectedStatisticParticle(
@@ -3608,7 +3656,7 @@ bool ensemble_generate_particles(
                     th_variance_coords, th_variance_colors, th_variance_normals
                 );
                 AppendRejectedStatisticParticle(
-                    co_varietion[idx], global_coord_array[j], variance_normal, coef_variation_transfer_functions[thid][0],
+                    co_varietion[idx], global_coord_array[j], coefficient_normal, coef_variation_transfer_functions[thid][0],
                     sampling_volume_inverse, max_opacity, max_density, &mt,
                     th_coefficient_coords, th_coefficient_colors, th_coefficient_normals
                 );
