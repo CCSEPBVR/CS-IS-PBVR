@@ -3468,36 +3468,33 @@ bool ensemble_generate_particles(
     // 同一ループへ追記するとベクトル化/FP縮約の判断が変わり co_varietion が最下位ビットで
     // 変動しうる(実測: 色マップの量子化境界で 1 粒子の色が 1 階調ずれた)。分離すれば
     // co_varietion の生成コードが元のままとなり、粒子の色は完全に一致する。
-    for ( size_t i = 0; i < vertex_scalars.size(); i++ )
+    // 符号規約(実測): vertex_normals=+grad mu / tmp_varience_normals=-grad Var（両者は規約が逆）。
+    // 展開: co_varietion_normals[j] = tmp_varience_normals[j] + vertex_normals[j] * s_i
+    //   s_i = 2*Var/mu = 2*co_varietion[i]^2*mu_i （|mu|>eps。co_varietion=sqrt(Var)/|mu| より除算を乗算化=A-1）
+    //       = 0 （|mu|<=eps: CoV 未定義 → 分散法線を流用する従来動作。s_i=0 で varn+vn*0=varn と厳密一致）
+    // フォールバックは s_i=0 でブランチレス化(A-2)。法線は正規化され方向のみ有意のため OpenMP+SIMD/FMA で
+    // 構成する(A-3/B-1)。co_varietion の"値"は本ループでは読むだけで不変(別ループ)ゆえ色・座標は従来と一致。
+    // ComputeCoVNormalDirection(ChainRuleNormal.h)と代数的に等価: 2*co_varietion^2*mu = 2*Var/mu。
     {
-        // 変動係数の勾配は分散の勾配と平行ではない(正規化に用いる平均 mu 自身が勾配を持つ場のため)。
-        //     grad CoV ∝ grad Var - (2*Var/mu) * grad mu
-        //
-        // 本ファイルの符号規約(実測):
-        //     vertex_normals       = +grad mu    ... -grad g をリング積算し上の :vertex_normals *= -invert_num で符号が戻る
-        //     tmp_varience_normals = -grad Var   ... 直上の組み立て結果
-        // 両者は規約が逆であるため、tmp_varience_normals と同じ規約(-grad)で -grad CoV を得るには
-        // grad mu 側の符号を反転して渡す。ComputeCoVNormalDirection は両勾配について線形。
-        const vismodule::Vector3f mean_grad(
-            -vertex_normals[3 * i],
-            -vertex_normals[3 * i + 1],
-            -vertex_normals[3 * i + 2]
-        );
-        const vismodule::Vector3f variance_grad(
-            tmp_varience_normals[3 * i],
-            tmp_varience_normals[3 * i + 1],
-            tmp_varience_normals[3 * i + 2]
-        );
-
-        const vismodule::Vector3f cov_grad = pbvr::ComputeCoVNormalDirection(
-            vertex_scalars[i], mean_grad, tmp_varience[i], variance_grad, eps );
-
-        co_varietion_normals[3 * i]     = cov_grad.x();
-        co_varietion_normals[3 * i + 1] = cov_grad.y();
-        co_varietion_normals[3 * i + 2] = cov_grad.z();
-
-        // |mu| <= eps では CoV 値が定義されないため分散法線を流用する(従来動作へのフォールバック)。
-        if ( !( std::fabs( vertex_scalars[i] ) > eps ) ) co_varietion_normal_fallback_count++;
+        const size_t            nvert = vertex_scalars.size();
+        const float* __restrict mu    = vertex_scalars.data();       // 平均 mu
+        const float* __restrict cov   = co_varietion.data();         // 算出済み CoV 値(直前ループ)
+        const float* __restrict vn    = vertex_normals.data();       // +grad mu
+        const float* __restrict varn  = tmp_varience_normals.data(); // -grad Var
+        float*       __restrict covn  = co_varietion_normals.data();
+        size_t fb = 0;
+        #pragma omp parallel for simd reduction(+:fb) schedule(static)
+        for ( size_t i = 0; i < nvert; i++ )
+        {
+            const bool   ok = std::fabs( mu[i] ) > eps;              // NaN も偽=フォールバック
+            const float  si = ok ? ( 2.0f * cov[i] * cov[i] * mu[i] ) : 0.0f;
+            const size_t b  = 3 * i;
+            covn[b    ] = varn[b    ] + vn[b    ] * si;
+            covn[b + 1] = varn[b + 1] + vn[b + 1] * si;
+            covn[b + 2] = varn[b + 2] + vn[b + 2] * si;
+            fb += ok ? 0u : 1u;
+        }
+        co_varietion_normal_fallback_count = fb;
     }
     }
 
