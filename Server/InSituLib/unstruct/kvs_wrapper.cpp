@@ -3626,9 +3626,9 @@ bool ensemble_generate_particles(
             {
                 const size_t idx = i + j;
                 const vismodule::Vector3f average_normal(
-                    vertex_normals[3 * idx],
-                    vertex_normals[3 * idx + 1],
-                    vertex_normals[3 * idx + 2]
+                    -vertex_normals[3 * idx],
+                    -vertex_normals[3 * idx + 1],
+                    -vertex_normals[3 * idx + 2]
                 );
                 const vismodule::Vector3f variance_normal(
                     tmp_varience_normals[3 * idx],
