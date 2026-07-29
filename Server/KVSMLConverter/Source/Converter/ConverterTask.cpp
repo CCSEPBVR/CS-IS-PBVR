@@ -1,5 +1,7 @@
 #include "Converter/ConverterTask.h"
 
+#include <memory>
+
 #include "kvs/PolygonExporter"
 #include "kvs/PolygonObject"
 
@@ -10,6 +12,7 @@
 #include "FileFormat/AVS/AvsUcd.h"
 #include "FileFormat/CGNS/Cgns.h"
 #include "FileFormat/KVSML/KvsmlUnstructuredVolumeObject.h"
+#include "FileFormat/NetCDF/Netcdf.h"
 #include "FileFormat/PLOT3D/Plot3d.h"
 #include "FileFormat/STL/Stl.h"
 #include "FileFormat/VTK/VtkStructuredGrid.h"
@@ -592,7 +595,7 @@ std::optional<cvt::ConverterTaskOutput> OutputConvertProfile(
     std::optional<cvt::ConverterTaskOutput>&& output, const std::string& destination_directory,
     const std::string& destination_prefix, int output_profile )
 {
-    if ( output_profile > 0 )
+    if ( output && output_profile > 0 )
     {
         cvt::filesystem::path dst( destination_directory );
         dst /= destination_prefix + "_" + std::to_string( output->time_step ) + ".xml";
@@ -792,6 +795,186 @@ std::optional<cvt::ConverterTaskOutput> Stl2Kvsml( const std::string& directory,
     // Return empty
     return cvt::ConverterTaskOutput( target_index, time_step );
 }
+
+std::optional<cvt::ConverterTaskOutput> Netcdf2Kvsml(
+    const std::string& directory, const std::string& base, const std::vector<std::string>& src,
+    int target_index, int time_step, int last_time_step, int has_mesh_deformation )
+{
+    if ( src.empty() )
+    {
+        return std::nullopt;
+    }
+
+    auto import = []( cvt::Netcdf& input ) -> std::unique_ptr<kvs::VolumeObjectBase> {
+        if ( auto* format = dynamic_cast<cvt::VtkXmlImageData*>( input.format().get() ) )
+        {
+            auto importer =
+                std::make_unique<cvt::VtkImporter<cvt::VtkXmlImageData>>( format );
+            if ( importer->isFailure() )
+            {
+                return nullptr;
+            }
+            return importer;
+        }
+        if ( auto* format =
+                 dynamic_cast<cvt::VtkXmlRectilinearGrid*>( input.format().get() ) )
+        {
+            auto importer =
+                std::make_unique<cvt::VtkImporter<cvt::VtkXmlRectilinearGrid>>( format );
+            if ( importer->isFailure() )
+            {
+                return nullptr;
+            }
+            return importer;
+        }
+        if ( auto* format =
+                 dynamic_cast<cvt::VtkXmlStructuredGrid*>( input.format().get() ) )
+        {
+            auto importer =
+                std::make_unique<cvt::VtkImporter<cvt::VtkXmlStructuredGrid>>( format );
+            if ( importer->isFailure() )
+            {
+                return nullptr;
+            }
+            return importer;
+        }
+        if ( auto* format =
+                 dynamic_cast<cvt::VtkXmlUnstructuredGrid*>( input.format().get() ) )
+        {
+            auto importer =
+                std::make_unique<cvt::VtkImporter<cvt::VtkXmlUnstructuredGrid>>( format );
+            if ( importer->isFailure() )
+            {
+                return nullptr;
+            }
+            return importer;
+        }
+        return nullptr;
+    };
+
+    cvt::Netcdf first_input( src.front() );
+    if ( first_input.isFailure() )
+    {
+        return std::nullopt;
+    }
+    auto first_volume = import( first_input );
+    if ( !first_volume )
+    {
+        return std::nullopt;
+    }
+
+    const auto expected_volume_type = first_volume->volumeType();
+    const int expected_veclen = static_cast<int>( first_volume->veclen() );
+    int expected_cell_type = -1;
+    int expected_grid_type = -1;
+    if ( auto* unstructured =
+             dynamic_cast<kvs::UnstructuredVolumeObject*>( first_volume.get() ) )
+    {
+        expected_cell_type = static_cast<int>( unstructured->cellType() );
+    }
+    else if ( auto* structured =
+                  dynamic_cast<kvs::StructuredVolumeObject*>( first_volume.get() ) )
+    {
+        expected_grid_type = static_cast<int>( structured->gridType() );
+    }
+    else
+    {
+        return std::nullopt;
+    }
+
+    const int sub_volume_count = static_cast<int>( src.size() );
+    const std::string local_base =
+        expected_volume_type == kvs::VolumeObjectBase::Unstructured
+            ? base + "_" + std::to_string( expected_cell_type )
+            : base;
+    std::unordered_map<std::string, int> sub_volume_counts = {
+        { local_base, sub_volume_count }
+    };
+    cvt::ConverterTaskOutput output( target_index, time_step, last_time_step,
+                                     has_mesh_deformation, sub_volume_counts, 0 );
+
+    auto write = [&]( kvs::VolumeObjectBase* volume, const std::string& path,
+                      int sub_volume_id ) {
+        if ( volume->volumeType() != expected_volume_type ||
+             static_cast<int>( volume->veclen() ) != expected_veclen )
+        {
+            kvsMessageError(
+                ( std::string( "NetCDF volume structure differs for " ) + path ).c_str() );
+            return false;
+        }
+
+        if ( auto* unstructured =
+                 dynamic_cast<kvs::UnstructuredVolumeObject*>( volume ) )
+        {
+            if ( static_cast<int>( unstructured->cellType() ) != expected_cell_type )
+            {
+                kvsMessageError(
+                    ( std::string( "NetCDF cell type differs for " ) + path ).c_str() );
+                return false;
+            }
+            cvt::UnstructuredVolumeObjectExporter exporter( unstructured );
+            exporter.setWritingDataTypeToExternalBinary();
+            if ( !exporter.write( directory, local_base, time_step, sub_volume_id,
+                                  sub_volume_count, has_mesh_deformation == 0 ) )
+            {
+                return false;
+            }
+            output.registerObject( &exporter, local_base, sub_volume_id );
+            return true;
+        }
+
+        if ( auto* structured = dynamic_cast<kvs::StructuredVolumeObject*>( volume ) )
+        {
+            if ( static_cast<int>( structured->gridType() ) != expected_grid_type )
+            {
+                kvsMessageError(
+                    ( std::string( "NetCDF grid type differs for " ) + path ).c_str() );
+                return false;
+            }
+            structured->updateMinMaxCoords();
+            structured->setMinMaxExternalCoords( structured->minObjectCoord(),
+                                                 structured->maxObjectCoord() );
+            cvt::StructuredVolumeObjectExporter exporter( structured );
+            exporter.setWritingDataTypeToExternalBinary();
+            if ( !exporter.write( directory, local_base, time_step, sub_volume_id,
+                                  sub_volume_count, has_mesh_deformation == 0 ) )
+            {
+                return false;
+            }
+            output.registerObject( &exporter, local_base, sub_volume_id );
+            return true;
+        }
+        return false;
+    };
+
+    int sub_volume_id = 1;
+    if ( !write( first_volume.get(), src.front(), sub_volume_id++ ) )
+    {
+        return std::nullopt;
+    }
+
+    for ( std::size_t i = 1; i < src.size(); ++i )
+    {
+        const auto& path = src[i];
+        cvt::Netcdf input( path );
+        if ( input.isFailure() || input.formatName() != first_input.formatName() ||
+             input.gridType() != first_input.gridType() )
+        {
+            return std::nullopt;
+        }
+        auto volume = import( input );
+        if ( !volume || !write( volume.get(), path, sub_volume_id ) )
+        {
+            kvsMessageError( ( std::string( "Failed to write NetCDF conversion output for " ) +
+                               path )
+                                 .c_str() );
+            return std::nullopt;
+        }
+        ++sub_volume_id;
+    }
+
+    return output;
+}
 } // namespace
 
 std::optional<cvt::ConverterTaskOutput> cvt::Convert( cvt::ConverterTaskInput input )
@@ -844,6 +1027,14 @@ std::optional<cvt::ConverterTaskOutput> cvt::Convert( cvt::ConverterTaskInput in
                     input.destination_directory, input.destination_prefix, input.source_file_paths,
                     input.target_index, input.time_step, input.last_time_step,
                     input.has_mesh_deformation ),
+                input.destination_directory, input.destination_prefix, input.output_profile );
+        }
+        else if ( extension == ".nc" )
+        {
+            return ::OutputConvertProfile(
+                ::Netcdf2Kvsml( input.destination_directory, input.destination_prefix,
+                                input.source_file_paths, input.target_index, input.time_step,
+                                input.last_time_step, input.has_mesh_deformation ),
                 input.destination_directory, input.destination_prefix, input.output_profile );
         }
         else if ( extension == ".vti" )

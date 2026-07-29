@@ -204,6 +204,7 @@ VTK_LINK_LIBRARY := \
 -lvtkFiltersParallel-$(VTK_VERSION) \
 -lvtkFiltersCore-$(VTK_VERSION) \
 -lvtkIOGeometry-$(VTK_VERSION) \
+-lvtkIONetCDF-$(VTK_VERSION) \
 -lvtkIOCGNSReader-$(VTK_VERSION) \
 -lvtkIOEnSight-$(VTK_VERSION) \
 -lvtkIOParallel-$(VTK_VERSION) \
@@ -224,6 +225,19 @@ VTK_LINK_LIBRARY := \
 -lvtkCommonMisc-$(VTK_VERSION) \
 -lvtkCommonMath-$(VTK_VERSION) \
 -lvtkCommonExecutionModel-$(VTK_VERSION) \
+-lvtkcgns-$(VTK_VERSION) \
+-lvtkdoubleconversion-$(VTK_VERSION) \
+-lvtklz4-$(VTK_VERSION) \
+-lvtklzma-$(VTK_VERSION) \
+-lvtkkissfft-$(VTK_VERSION) \
+-lvtkpugixml-$(VTK_VERSION) \
+-lvtknetcdf-$(VTK_VERSION) \
+-lvtkhdf5_hl-$(VTK_VERSION) \
+-lvtkhdf5-$(VTK_VERSION) \
+-lvtkzlib-$(VTK_VERSION) \
+-lvtklibproj-$(VTK_VERSION) \
+-lvtksqlite-$(VTK_VERSION) \
+-lvtkexpat-$(VTK_VERSION) \
 -lpthread \
 -ldl
 

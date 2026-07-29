@@ -35,6 +35,7 @@ else()
 endif()
 
 set(CVT_SOURCE
+    ${CMAKE_CURRENT_SOURCE_DIR}/Source/FileFormat/NetCDF/Netcdf.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/Importer/VtkImport.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/Converter/ConverterTask.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/Converter/ConverterInputs.cpp
@@ -55,9 +56,9 @@ target_include_directories(
                          ${CMAKE_CURRENT_SOURCE_DIR}/Source)
 if(MSVC)
   target_link_libraries(${TARGET_NAME} PRIVATE ${KVS_DIR}/lib/kvsCore.lib
-                                               ${VTK_LIBRARIES})
+                                               ${VTK_LIBRARIES} VTK::IONetCDF)
 else()
-  target_link_libraries(${TARGET_NAME} PRIVATE ${VTK_LIBRARIES} kvsCore
+  target_link_libraries(${TARGET_NAME} PRIVATE ${VTK_LIBRARIES} VTK::IONetCDF kvsCore
                                                stdc++fs)
 endif()
 
@@ -82,9 +83,9 @@ if(CVT_MPI)
                                ${CMAKE_CURRENT_SOURCE_DIR}/Source)
   if(MSVC)
     target_link_libraries(${MPI_TARGET_NAME} PRIVATE ${KVS_DIR}/lib/kvsCore.lib
-                                                     ${VTK_LIBRARIES})
+                                                     ${VTK_LIBRARIES} VTK::IONetCDF)
   else()
-    target_link_libraries(${MPI_TARGET_NAME} PRIVATE ${VTK_LIBRARIES} kvsCore
+    target_link_libraries(${MPI_TARGET_NAME} PRIVATE ${VTK_LIBRARIES} VTK::IONetCDF kvsCore
                                                      stdc++fs)
   endif()
 endif()
@@ -99,6 +100,7 @@ if(CVT_EXAMPLE)
       ${CMAKE_CURRENT_SOURCE_DIR}/Example/VtrExample.cpp
       ${CMAKE_CURRENT_SOURCE_DIR}/Example/VtsExample.cpp
       ${CMAKE_CURRENT_SOURCE_DIR}/Example/AvsExample.cpp
+      ${CMAKE_CURRENT_SOURCE_DIR}/Example/NetcdfExample.cpp
       ${CMAKE_CURRENT_SOURCE_DIR}/Example/VtuExample.cpp
       ${CMAKE_CURRENT_SOURCE_DIR}/Example/Plot3dExample.cpp
       ${CMAKE_CURRENT_SOURCE_DIR}/Example/VtmExample.cpp
@@ -114,9 +116,9 @@ if(CVT_EXAMPLE)
                             ${CMAKE_CURRENT_SOURCE_DIR}/Source)
   if(MSVC)
     target_link_libraries(${EXAMPLE_NAME} PRIVATE ${KVS_DIR}/lib/kvsCore.lib
-                                                  ${VTK_LIBRARIES})
+                                                  ${VTK_LIBRARIES} VTK::IONetCDF)
   else()
-    target_link_libraries(${EXAMPLE_NAME} PRIVATE ${VTK_LIBRARIES} kvsCore
+    target_link_libraries(${EXAMPLE_NAME} PRIVATE ${VTK_LIBRARIES} VTK::IONetCDF kvsCore
                                                   stdc++fs)
   endif()
   vtk_module_autoinit(TARGETS ${EXAMPLE_NAME} MODULES ${VTK_LIBRARIES})

@@ -52,6 +52,7 @@ $(OUTDIR)/PBVRFileInformation/UnstructuredPfi.o \
 $(OUTDIR)/Exporter/UnstructuredVolumeObjectExporter.o \
 $(OUTDIR)/Exporter/StructuredVolumeObjectExporter.o \
 $(OUTDIR)/FileFormat/VtkCompositeDataSetFileFormat.o \
+$(OUTDIR)/FileFormat/NetCDF/Netcdf.o \
 $(OUTDIR)/Importer/VtkImport.o
 
 
@@ -68,7 +69,11 @@ $(OUTDIR)/Exporter/%.o: ./Exporter/%.cpp ./Exporter/%.h
 	$(CPP) -c $(CPPFLAGS) $(DEFINITIONS) $(INCLUDE_PATH) -o $@ $<
 
 $(OUTDIR)/FileFormat/%.o: ./FileFormat/%.cpp ./FileFormat/%.h
-	$(MKDIR) $(OUTDIR)/FileFormat
+	$(MKDIR) $(@D)
+	$(CPP) -c $(CPPFLAGS) $(DEFINITIONS) $(INCLUDE_PATH) -o $@ $<
+
+$(OUTDIR)/FileFormat/NetCDF/%.o: ./FileFormat/NetCDF/%.cpp ./FileFormat/NetCDF/%.h
+	$(MKDIR) $(OUTDIR)/FileFormat/NetCDF
 	$(CPP) -c $(CPPFLAGS) $(DEFINITIONS) $(INCLUDE_PATH) -o $@ $<
 
 $(OUTDIR)/Importer/%.o: ./Importer/%.cpp ./Importer/%.h
@@ -106,6 +111,8 @@ install::
 	$(INSTALL) ./FileFormat/CGNS/*.h $(INSTALL_DIR)/include/FileFormat/CGNS
 	$(MKDIR) $(INSTALL_DIR)/include/FileFormat/KVSML
 	$(INSTALL) ./FileFormat/KVSML/*.h $(INSTALL_DIR)/include/FileFormat/KVSML
+	$(MKDIR) $(INSTALL_DIR)/include/FileFormat/NetCDF
+	$(INSTALL) ./FileFormat/NetCDF/*.h $(INSTALL_DIR)/include/FileFormat/NetCDF
 	$(MKDIR) $(INSTALL_DIR)/include/FileFormat/PLOT3D
 	$(INSTALL) ./FileFormat/PLOT3D/*.h $(INSTALL_DIR)/include/FileFormat/PLOT3D
 	$(MKDIR) $(INSTALL_DIR)/include/FileFormat/STL

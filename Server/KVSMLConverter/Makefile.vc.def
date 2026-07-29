@@ -168,7 +168,11 @@ vtkIOEnSight-$(VTK_VERSION)d.lib \
 vtkIOLegacy-$(VTK_VERSION)d.lib \
 vtkIOParallel-$(VTK_VERSION)d.lib \
 vtkIOXML-$(VTK_VERSION)d.lib \
-vtkIOXMLParser-$(VTK_VERSION)d.lib
+vtkIOXMLParser-$(VTK_VERSION)d.lib \
+vtkIONetCDF-$(VTK_VERSION)d.lib \
+vtknetcdf-$(VTK_VERSION)d.lib \
+vtkhdf5_hl-$(VTK_VERSION)d.lib \
+vtkhdf5-$(VTK_VERSION)d.lib
 
 !IFDEF CVT_ENABLE_MPI
 VTK_LINK_LIBRARY = $(VTK_LINK_LIBRARY) \
@@ -193,7 +197,11 @@ vtkIOEnSight-$(VTK_VERSION).lib \
 vtkIOLegacy-$(VTK_VERSION).lib \
 vtkIOParallel-$(VTK_VERSION).lib \
 vtkIOXML-$(VTK_VERSION).lib \
-vtkIOXMLParser-$(VTK_VERSION).lib
+vtkIOXMLParser-$(VTK_VERSION).lib \
+vtkIONetCDF-$(VTK_VERSION).lib \
+vtknetcdf-$(VTK_VERSION).lib \
+vtkhdf5_hl-$(VTK_VERSION).lib \
+vtkhdf5-$(VTK_VERSION).lib
 
 !IFDEF CVT_ENABLE_MPI
 VTK_LINK_LIBRARY = $(VTK_LINK_LIBRARY) \

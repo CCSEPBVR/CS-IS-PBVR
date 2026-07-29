@@ -52,6 +52,9 @@ void MergeBlockAsPolygon( const std::string& dst_vtk, const std::string& dst_kvs
                           const std::string& config_path );
 void Case2Kvsml( const std::string& directory, const std::string& base, const std::string& src );
 void Cgns2Kvsml( const std::string& directory, const std::string& base, const std::string& src );
+void Netcdf2Kvsml( const std::string& directory, const std::string& base, const std::string& src );
+void SeriesNetcdf2Kvsml( const std::string& directory, const std::string& base, const std::string& src );
+std::string NetcdfTimeSeriesBase( const cvt::filesystem::path& pattern );
 
 int main( int argc, char** argv )
 {
@@ -59,10 +62,10 @@ int main( int argc, char** argv )
 
     if ( argc != 3 )
     {
-        std::cout << "kvsml-example [input_file] [output_directory]" << std::endl;
+        std::cout << "kvsml-converter [input_file] [output_directory]" << std::endl;
         std::cout << "If input_file is time-series files, use a wildcard." << std::endl;
         std::cout << "On MacOS or Linux, filename containing a wildcard should be enclosed in single quotation." << std::endl;
-        std::cout << "EXAMPLE:kvsml-example 'input_folder/input_subfolder/example_*.vtu' output_folder/output_subfolder" << std::endl;
+        std::cout << "EXAMPLE:kvsml-converter 'input_folder/input_subfolder/example_*.vtu' output_folder/output_subfolder" << std::endl;
         return -1;
     }
 
@@ -146,6 +149,18 @@ int main( int argc, char** argv )
     else if ( input_file_extension == ".inp" )
     {
         AvsUcd2Kvsml( output_directory_path.string(), input_filename_without_extension.string(), input_file_path.string() );
+    }
+    else if ( input_file_extension == ".nc" )
+    {
+        if ( contains_wildcard( input_file_path.string() ) )
+        {
+            const std::string output_base = NetcdfTimeSeriesBase( input_file_path );
+            SeriesNetcdf2Kvsml( output_directory_path.string(), output_base, input_file_path.generic_string() );
+        }
+        else
+        {
+            Netcdf2Kvsml( output_directory_path.string(), input_filename_without_extension.string(), input_file_path.string() );
+        }
     }
     else if ( input_file_extension == ".vtu" )
     {

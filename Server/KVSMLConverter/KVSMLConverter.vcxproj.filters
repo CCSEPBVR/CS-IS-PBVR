@@ -36,6 +36,9 @@
     <ClCompile Include="Source\FileFormat\VtkCompositeDataSetFileFormat.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
+    <ClCompile Include="Source\FileFormat\NetCDF\Netcdf.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
     <ClCompile Include="Source\Importer\VtkImport.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
@@ -70,6 +73,9 @@
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="Example\VtmExample.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Example\NetcdfExample.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="Example\VtpExample.cpp">
@@ -180,6 +186,9 @@
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="Source\Importer\VtkImporter.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\FileFormat\NetCDF\Netcdf.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="Source\Importer\VtkImport.h">

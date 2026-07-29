@@ -92,6 +92,7 @@ OBJECTS := \
 $(OUTDIR)/AvsExample.o \
 $(OUTDIR)/CgnsExample.o \
 $(OUTDIR)/EnSightExample.o \
+$(OUTDIR)/NetcdfExample.o \
 $(OUTDIR)/Plot3dExample.o \
 $(OUTDIR)/PvtsExample.o \
 $(OUTDIR)/PvtuExample.o \

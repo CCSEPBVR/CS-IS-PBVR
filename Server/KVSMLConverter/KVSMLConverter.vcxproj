@@ -116,7 +116,7 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(MSBuildThisFileDirectory)..\..\KVS\Install\lib;$(VTK_LIB_PATH)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>kvsCore.lib;vtksys-$(VTK_VERSION).lib;vtkCommonCore-$(VTK_VERSION).lib;vtkCommonExecutionModel-$(VTK_VERSION).lib;vtkCommonDataModel-$(VTK_VERSION).lib;vtkFiltersCore-$(VTK_VERSION).lib;vtkFiltersExtraction-$(VTK_VERSION).lib;vtkFiltersGeneral-$(VTK_VERSION).lib;vtkFiltersGeometry-$(VTK_VERSION).lib;vtkFiltersParallel-$(VTK_VERSION).lib;vtkIOCore-$(VTK_VERSION).lib;vtkIOGeometry-$(VTK_VERSION).lib;vtkIOCGNSReader-$(VTK_VERSION).lib;vtkIOEnSight-$(VTK_VERSION).lib;vtkIOLegacy-$(VTK_VERSION).lib;vtkIOParallel-$(VTK_VERSION).lib;vtkIOXML-$(VTK_VERSION).lib;vtkIOXMLParser-$(VTK_VERSION).lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>kvsCore.lib;vtksys-$(VTK_VERSION).lib;vtkCommonCore-$(VTK_VERSION).lib;vtkCommonExecutionModel-$(VTK_VERSION).lib;vtkCommonDataModel-$(VTK_VERSION).lib;vtkFiltersCore-$(VTK_VERSION).lib;vtkFiltersExtraction-$(VTK_VERSION).lib;vtkFiltersGeneral-$(VTK_VERSION).lib;vtkFiltersGeometry-$(VTK_VERSION).lib;vtkFiltersParallel-$(VTK_VERSION).lib;vtkIOCore-$(VTK_VERSION).lib;vtkIOGeometry-$(VTK_VERSION).lib;vtkIOCGNSReader-$(VTK_VERSION).lib;vtkIOEnSight-$(VTK_VERSION).lib;vtkIOLegacy-$(VTK_VERSION).lib;vtkIOParallel-$(VTK_VERSION).lib;vtkIOXML-$(VTK_VERSION).lib;vtkIOXMLParser-$(VTK_VERSION).lib;vtkIONetCDF-$(VTK_VERSION).lib;vtknetcdf-$(VTK_VERSION).lib;vtkhdf5_hl-$(VTK_VERSION).lib;vtkhdf5-$(VTK_VERSION).lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -139,7 +139,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(MSBuildThisFileDirectory)..\..\KVS\Install\lib;$(VTK_LIB_PATH)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>kvsCore.lib;vtksys-$(VTK_VERSION).lib;vtkCommonCore-$(VTK_VERSION).lib;vtkCommonExecutionModel-$(VTK_VERSION).lib;vtkCommonDataModel-$(VTK_VERSION).lib;vtkFiltersCore-$(VTK_VERSION).lib;vtkFiltersExtraction-$(VTK_VERSION).lib;vtkFiltersGeneral-$(VTK_VERSION).lib;vtkFiltersGeometry-$(VTK_VERSION).lib;vtkFiltersParallel-$(VTK_VERSION).lib;vtkIOCore-$(VTK_VERSION).lib;vtkIOGeometry-$(VTK_VERSION).lib;vtkIOCGNSReader-$(VTK_VERSION).lib;vtkIOEnSight-$(VTK_VERSION).lib;vtkIOLegacy-$(VTK_VERSION).lib;vtkIOParallel-$(VTK_VERSION).lib;vtkIOXML-$(VTK_VERSION).lib;vtkIOXMLParser-$(VTK_VERSION).lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>kvsCore.lib;vtksys-$(VTK_VERSION).lib;vtkCommonCore-$(VTK_VERSION).lib;vtkCommonExecutionModel-$(VTK_VERSION).lib;vtkCommonDataModel-$(VTK_VERSION).lib;vtkFiltersCore-$(VTK_VERSION).lib;vtkFiltersExtraction-$(VTK_VERSION).lib;vtkFiltersGeneral-$(VTK_VERSION).lib;vtkFiltersGeometry-$(VTK_VERSION).lib;vtkFiltersParallel-$(VTK_VERSION).lib;vtkIOCore-$(VTK_VERSION).lib;vtkIOGeometry-$(VTK_VERSION).lib;vtkIOCGNSReader-$(VTK_VERSION).lib;vtkIOEnSight-$(VTK_VERSION).lib;vtkIOLegacy-$(VTK_VERSION).lib;vtkIOParallel-$(VTK_VERSION).lib;vtkIOXML-$(VTK_VERSION).lib;vtkIOXMLParser-$(VTK_VERSION).lib;vtkIONetCDF-$(VTK_VERSION).lib;vtknetcdf-$(VTK_VERSION).lib;vtkhdf5_hl-$(VTK_VERSION).lib;vtkhdf5-$(VTK_VERSION).lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -147,6 +147,7 @@
     <ClCompile Include="Example\CgnsExample.cpp" />
     <ClCompile Include="Example\EnSightExample.cpp" />
     <ClCompile Include="Example\example.cpp" />
+    <ClCompile Include="Example\NetcdfExample.cpp" />
     <ClCompile Include="Example\Plot3dExample.cpp" />
     <ClCompile Include="Example\PvtsExample.cpp" />
     <ClCompile Include="Example\PvtuExample.cpp" />
@@ -164,6 +165,7 @@
     <ClCompile Include="Source\Exporter\StructuredVolumeObjectExporter.cpp" />
     <ClCompile Include="Source\Exporter\UnstructuredVolumeObjectExporter.cpp" />
     <ClCompile Include="Source\FileFormat\VtkCompositeDataSetFileFormat.cpp" />
+    <ClCompile Include="Source\FileFormat\NetCDF\Netcdf.cpp" />
     <ClCompile Include="Source\Importer\VtkImport.cpp" />
     <ClCompile Include="Source\PBVRFileInformation\UnstructuredPfi.cpp" />
   </ItemGroup>
@@ -201,6 +203,7 @@
     <ClInclude Include="Source\FileFormat\VTK\VtkXmlStructuredGrid.h" />
     <ClInclude Include="Source\FileFormat\VTK\VtkXmlUnstructuredGrid.h" />
     <ClInclude Include="Source\Filesystem.h" />
+    <ClInclude Include="Source\FileFormat\NetCDF\Netcdf.h" />
     <ClInclude Include="Source\Importer\VtkImport.h" />
     <ClInclude Include="Source\Importer\VtkImporter.h" />
     <ClInclude Include="Source\PBVRFileInformation\Pfl.h" />
