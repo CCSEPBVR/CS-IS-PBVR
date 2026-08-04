@@ -3489,9 +3489,12 @@ bool ensemble_generate_particles(
             const bool   ok = std::fabs( mu[i] ) > eps;              // NaN も偽=フォールバック
             const float  si = ok ? ( 2.0f * cov[i] * cov[i] * mu[i] ) : 0.0f;
             const size_t b  = 3 * i;
-            covn[b    ] = varn[b    ] + vn[b    ] * si;
-            covn[b + 1] = varn[b + 1] + vn[b + 1] * si;
-            covn[b + 2] = varn[b + 2] + vn[b + 2] * si;
+//            covn[b    ] = varn[b    ] + vn[b    ] * si;
+//            covn[b + 1] = varn[b + 1] + vn[b + 1] * si;
+//            covn[b + 2] = varn[b + 2] + vn[b + 2] * si;
+            covn[b    ] = varn[b    ] - vn[b    ] * si;
+            covn[b + 1] = varn[b + 1] - vn[b + 1] * si;
+            covn[b + 2] = varn[b + 2] - vn[b + 2] * si;
             fb += ok ? 0u : 1u;
         }
         co_varietion_normal_fallback_count = fb;
