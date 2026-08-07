@@ -65,11 +65,12 @@
 #include <kvs/extendedfileformat/VtkImporter>
 #endif
 
-#include "ChainRuleNormal.h"
-#include "EnsembleCellHistogram.h"
+#include <vismodule/ChainRuleNormal>
+#include <vismodule/EnsembleCellHistogram>
 #include "EnsembleStatisticOutput.h"
 
 using namespace pbvr;
+using namespace vismodule;
 
 namespace
 {

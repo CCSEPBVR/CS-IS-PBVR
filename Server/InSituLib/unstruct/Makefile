@@ -6,9 +6,6 @@ FUNCTION_PARSER_DIR        = ../../FunctionParser
 
 OBJS  = \
 ../shared/kvs_wrapper_common.o \
-ChainRuleNormal.o \
-EnsembleCellHistogram.o \
-EnsembleParticleGenerator.o \
 EnsembleStatisticOutput.o \
 kvs_wrapper.o
 

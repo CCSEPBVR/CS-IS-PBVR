@@ -4,11 +4,11 @@
 #include <cmath>
 #include <iostream>
 
-#include "../../VisModule/Visualization/Mapper/TransferFunctionSynthesizer.h"
-#include "../../FunctionParser/ExpressionConverter.h"
-#include "../../FunctionParser/ExpressionTokenizer.h"
-#include "../../FunctionParser/ReversePolishNotation.h"
-#include "../../FunctionParser/Token.h"
+#include <vismodule/TransferFunctionSynthesizer>
+#include <ExpressionConverter.h>
+#include <ExpressionTokenizer.h>
+#include <ReversePolishNotation.h>
+#include <Token.h>
 
 namespace
 {
@@ -43,7 +43,7 @@ bool NearlyEqual( const vismodule::Vector3f& lhs, const vismodule::Vector3f& rhs
 
 } // namespace
 
-namespace pbvr
+namespace vismodule
 {
 
 ChainRuleNormalWorkspace::ChainRuleNormalWorkspace():
@@ -53,7 +53,7 @@ ChainRuleNormalWorkspace::ChainRuleNormalWorkspace():
     std::fill( m_owned_variable_values, m_owned_variable_values + 128, 0.0f );
 }
 
-void ChainRuleNormalWorkspace::setExpression( const EquationToken& expr, std::size_t nvariables )
+void ChainRuleNormalWorkspace::setExpression( const ::EquationToken& expr, std::size_t nvariables )
 {
     m_expr = &expr;
     m_active_variables.clear();
@@ -93,7 +93,7 @@ void ChainRuleNormalWorkspace::setVariableValue( std::size_t variable_name, floa
 }
 
 bool ChainRuleNormalWorkspace::computeGradient(
-    const EquationToken& expr,
+    const ::EquationToken& expr,
     const std::vector<float>& q_values,
     const std::vector<vismodule::Vector3f>& grad_q,
     vismodule::Vector3f* grad_F )
@@ -153,7 +153,7 @@ bool ChainRuleNormalWorkspace::computeGradient(
 }
 
 bool ChainRuleNormalWorkspace::computeGradient(
-    const EquationToken& expr,
+    const ::EquationToken& expr,
     const float* q_values,
     const vismodule::Vector3f* grad_q,
     std::size_t nvariables,
@@ -170,7 +170,7 @@ bool ChainRuleNormalWorkspace::computeGradient(
 }
 
 bool ComputeChainRuleGradient(
-    const EquationToken& expr,
+    const ::EquationToken& expr,
     const std::vector<float>& q_values,
     const std::vector<vismodule::Vector3f>& grad_q,
     vismodule::Vector3f* grad_F )
@@ -182,7 +182,7 @@ bool ComputeChainRuleGradient(
 }
 
 bool ComputeChainRuleNormal(
-    const EquationToken& expr,
+    const ::EquationToken& expr,
     const std::vector<float>& q_values,
     const std::vector<vismodule::Vector3f>& grad_q,
     vismodule::Vector3f* normal )
@@ -196,7 +196,7 @@ bool ComputeChainRuleNormal(
 }
 
 bool CompareChainRuleNormalWithFiniteDifference(
-    const EquationToken& expr,
+    const ::EquationToken& expr,
     const std::vector<float>& q_values,
     const std::vector<vismodule::Vector3f>& grad_q,
     const vismodule::Vector3f& finite_difference_grad,
@@ -211,11 +211,11 @@ bool CompareChainRuleNormalWithFiniteDifference(
     return ok && std::isfinite( *normal_dot );
 }
 
-EquationToken MakeEquationTokenForChainRuleTest( const std::string& expression )
+::EquationToken MakeEquationTokenForChainRuleTest( const std::string& expression )
 {
     FuncParser::ExpressionTokenizer tokenizer;
     FuncParser::ExpressionConverter converter;
-    EquationToken token;
+    ::EquationToken token;
 
     tokenizer.tokenizeString( expression );
     converter.convertExpToken( tokenizer.m_exp_token );
@@ -507,4 +507,4 @@ bool RunCoVNormalSelfTest()
     return ok;
 }
 
-} // namespace pbvr
+} // namespace vismodule

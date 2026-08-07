@@ -2,7 +2,7 @@
 #define PBVR_ENSEMBLE_PARTICLE_GENERATOR_H
 
 // アンサンブルPBVR 粒子生成(計算)の分離ファイル。
-// ensemble_generate_particles() の計算本体を pbvr::GenerateEnsembleParticles に切り出す。
+// ensemble_generate_particles() の計算本体を vismodule::GenerateEnsembleParticles に切り出す。
 // タイマー機構(ENABLE_ENSEMBLE_TIMER)は wrapper と共有するため公開する(指示書 §3.4-a)。
 
 #include <string>
@@ -18,7 +18,7 @@
 #include <vismodule/VolumeObjectBase>
 #include <vismodule/ParticleProperty>
 
-#include "EnsembleCellHistogram.h"   // Type, pbvr::EnsembleStatisticRange, CPU_VER/MPI handling
+#include "EnsembleCellHistogram.h"   // Type, vismodule::EnsembleStatisticRange, CPU_VER/MPI handling
 
 #ifdef ENABLE_ENSEMBLE_TIMER
 #include <vismodule/Timer>
@@ -30,7 +30,7 @@
 
 typedef unsigned char Byte;
 
-namespace pbvr
+namespace vismodule
 {
 
 #ifdef ENABLE_ENSEMBLE_TIMER
@@ -416,6 +416,6 @@ bool GenerateEnsembleParticles(
 #endif
 );
 
-} // namespace pbvr
+} // namespace vismodule
 
 #endif // PBVR_ENSEMBLE_PARTICLE_GENERATOR_H

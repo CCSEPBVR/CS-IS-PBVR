@@ -8,11 +8,11 @@
 
 #include <cstdio>
 
-#include "ChainRuleNormal.h"
+#include <vismodule/ChainRuleNormal>
 
 int main()
 {
-    const bool ok = pbvr::RunCoVNormalSelfTest();
+    const bool ok = vismodule::RunCoVNormalSelfTest();
     std::printf( "CoVNormalSelfTest: %s\n", ok ? "PASS" : "FAIL" );
     return ok ? 0 : 1;
 }

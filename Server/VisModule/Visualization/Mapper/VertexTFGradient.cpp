@@ -14,9 +14,9 @@
 #include <vismodule/TetrahedralCell>
 
 #include "ChainRuleNormal.h"
-#include "../../FunctionParser/ReversePolishNotation.h"
-#include "../../FunctionParser/Token.h"
-#include "../../VisModule/Visualization/Mapper/TransferFunctionSynthesizer.h"
+#include <ReversePolishNotation.h>
+#include <Token.h>
+#include <vismodule/TransferFunctionSynthesizer>
 
 namespace
 {
@@ -35,7 +35,7 @@ bool IsQVariable( const int variable_name, std::size_t* variable_index )
     return true;
 }
 
-std::vector<std::size_t> ActiveQVariables( const EquationToken& expr, const int nvariables )
+std::vector<std::size_t> ActiveQVariables( const ::EquationToken& expr, const int nvariables )
 {
     std::vector<std::size_t> active_variables;
 
@@ -57,7 +57,7 @@ std::vector<std::size_t> ActiveQVariables( const EquationToken& expr, const int 
     return active_variables;
 }
 
-float EvalExpression( const EquationToken& expr, float variable_values[128] )
+float EvalExpression( const ::EquationToken& expr, float variable_values[128] )
 {
     FuncParser::ReversePolishNotation rpn;
     rpn.setExpToken( const_cast<int*>( &( expr.exp_token[0] ) ) );
@@ -107,7 +107,7 @@ bool IsFiniteVector( const vismodule::Vector3f& v )
 
 } // namespace
 
-namespace pbvr
+namespace vismodule
 {
 
 VertexTFGradientLog::VertexTFGradientLog() :
@@ -122,7 +122,7 @@ VertexTFGradientLog::VertexTFGradientLog() :
 }
 
 bool BuildVertexTFValues(
-    const EquationToken& expr,
+    const ::EquationToken& expr,
     Type** values,
     int nvariables,
     int ncoords,
@@ -234,7 +234,7 @@ bool ComputeNormalFromGradient( const vismodule::Vector3f& grad_F, vismodule::Ve
 }
 
 bool CompareVertexTFGradientWithChainRule(
-    const EquationToken& expr,
+    const ::EquationToken& expr,
     Type** values,
     int nvariables,
     float* coordinates,
@@ -336,7 +336,7 @@ bool RunVertexTFGradientSelfTest()
     Type q2[4] = { 0.0f, 0.0f, 1.0f, 0.0f };
     Type* values[2] = { q1, q2 };
 
-    const EquationToken expr_sum = MakeEquationTokenForChainRuleTest( "q1+q2" );
+    const ::EquationToken expr_sum = MakeEquationTokenForChainRuleTest( "q1+q2" );
     std::vector<float> tf_values;
     if ( !BuildVertexTFValues( expr_sum, values, 2, 4, tf_values, NULL ) ) return false;
 
@@ -345,7 +345,7 @@ bool RunVertexTFGradientSelfTest()
         if ( std::fabs( tf_values[i] - static_cast<float>( q1[i] + q2[i] ) ) > 1.0e-5f ) return false;
     }
 
-    const EquationToken expr_q1 = MakeEquationTokenForChainRuleTest( "q1" );
+    const ::EquationToken expr_q1 = MakeEquationTokenForChainRuleTest( "q1" );
     std::vector<float> tf_q1;
     if ( !BuildVertexTFValues( expr_q1, values, 2, 4, tf_q1, NULL ) ) return false;
 
@@ -387,4 +387,4 @@ bool RunVertexTFGradientSelfTest()
     return std::fabs( normal.z() + 1.0f ) <= 1.0e-5f;
 }
 
-} // namespace pbvr
+} // namespace vismodule

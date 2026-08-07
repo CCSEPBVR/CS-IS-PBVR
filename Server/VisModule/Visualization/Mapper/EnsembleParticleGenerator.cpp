@@ -1,5 +1,3 @@
-#include "kvs_wrapper_common.h"
-#include "kvs_wrapper.h"
 
 #include <cstdio>
 #include <cfloat>
@@ -23,6 +21,7 @@
 #include <vismodule/MersenneTwister>
 #include <cstdint>
 #include <vismodule/CellBase>
+#include <vismodule/FrequencyTable>
 #include <vismodule/TetrahedralCell>
 #include <vismodule/HexahedralCell>
 #include <vismodule/QuadraticTetrahedralCell>
@@ -69,25 +68,12 @@
 #include "EnsembleCellHistogram.h"
 #include "EnsembleParticleGenerator.h"
 
-using namespace pbvr;
+using namespace vismodule;
 namespace Generator = vismodule::CellByCellParticleGenerator;
 
 namespace
 {
 
-void AppendGeneratedParticles(
-    vismodule::PointObject* point_object,
-    std::vector<float>& coords,
-    std::vector<Byte>& colors,
-    std::vector<float>& normals
-)
-{
-    if ( point_object )
-    {
-        MakeParticle( point_object, coords, colors, normals );
-        delete point_object;
-    }
-}
 
 inline const size_t CalculateNumberOfParticlesV35(
     const float density,
@@ -141,7 +127,7 @@ struct ChainRuleEvalContext
         std::fill( variable_values, variable_values + 128, 0.0f );
     }
 
-    void initialize( const EquationToken equation_token, const int nvariables )
+    void initialize( const ::EquationToken equation_token, const int nvariables )
     {
         valid = false;
         expr = equation_token;
@@ -156,9 +142,9 @@ struct ChainRuleEvalContext
     }
 
     bool valid;
-    EquationToken expr;
+    ::EquationToken expr;
     FuncParser::ReversePolishNotation rpn;
-    pbvr::ChainRuleNormalWorkspace workspace;
+    vismodule::ChainRuleNormalWorkspace workspace;
     float variable_values[128];
 };
 
@@ -933,7 +919,7 @@ static inline size_t CalculateNumberOfParticlesV35_philox(
 
 } // anonymous namespace
 
-namespace pbvr
+namespace vismodule
 {
 
 bool GenerateEnsembleParticles(
@@ -1011,7 +997,7 @@ bool GenerateEnsembleParticles(
 
     // アンサンブル用伝達関数のEquationTokenを取得 
     std::string expression = particle_property.m_mean_transfer_function_array[0].m_variable;
-    const EquationToken equation_token = EnsembleTransferFunction::convert_token( expression );
+    const ::EquationToken equation_token = EnsembleTransferFunction::convert_token( expression );
 
 //    std::cout << "particle_property.mean_max = " << particle_property.m_mean_transfer_function_array[0].colorMap().maxValue() << std::endl;
 //    std::cout << "particle_property.var_max = " << particle_property.m_variance_transfer_function_array[0].colorMap().maxValue() << std::endl;
@@ -2431,4 +2417,4 @@ bool GenerateEnsembleParticles(
     return true;
 }
 
-} // namespace pbvr
+} // namespace vismodule

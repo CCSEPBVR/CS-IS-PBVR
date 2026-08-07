@@ -11,7 +11,7 @@
 
 struct EquationToken;
 
-namespace pbvr
+namespace vismodule
 {
 
 class ChainRuleNormalWorkspace
@@ -19,7 +19,7 @@ class ChainRuleNormalWorkspace
 public:
     ChainRuleNormalWorkspace();
 
-    void setExpression( const EquationToken& expr, std::size_t nvariables );
+    void setExpression( const ::EquationToken& expr, std::size_t nvariables );
     void setVariableValueBuffer( float* variable_values );
     void setVariableValue( std::size_t variable_name, float value );
     bool computeGradient(
@@ -28,13 +28,13 @@ public:
         std::size_t nvariables,
         vismodule::Vector3f* grad_F );
     bool computeGradient(
-        const EquationToken& expr,
+        const ::EquationToken& expr,
         const float* q_values,
         const vismodule::Vector3f* grad_q,
         std::size_t nvariables,
         vismodule::Vector3f* grad_F );
     bool computeGradient(
-        const EquationToken& expr,
+        const ::EquationToken& expr,
         const std::vector<float>& q_values,
         const std::vector<vismodule::Vector3f>& grad_q,
         vismodule::Vector3f* grad_F );
@@ -44,7 +44,7 @@ public:
 private:
     float evalExpression();
 
-    const EquationToken* m_expr;
+    const ::EquationToken* m_expr;
     std::vector<std::size_t> m_active_variables;
     float m_owned_variable_values[128];
     float* m_variable_values;
@@ -52,25 +52,25 @@ private:
 };
 
 bool ComputeChainRuleGradient(
-    const EquationToken& expr,
+    const ::EquationToken& expr,
     const std::vector<float>& q_values,
     const std::vector<vismodule::Vector3f>& grad_q,
     vismodule::Vector3f* grad_F );
 
 bool ComputeChainRuleNormal(
-    const EquationToken& expr,
+    const ::EquationToken& expr,
     const std::vector<float>& q_values,
     const std::vector<vismodule::Vector3f>& grad_q,
     vismodule::Vector3f* normal );
 
 bool CompareChainRuleNormalWithFiniteDifference(
-    const EquationToken& expr,
+    const ::EquationToken& expr,
     const std::vector<float>& q_values,
     const std::vector<vismodule::Vector3f>& grad_q,
     const vismodule::Vector3f& finite_difference_grad,
     float* normal_dot );
 
-EquationToken MakeEquationTokenForChainRuleTest( const std::string& expression );
+::EquationToken MakeEquationTokenForChainRuleTest( const std::string& expression );
 bool RunChainRuleNormalSelfTest();
 
 // 変動係数 CoV = sqrt(Var)/|mu| のスカラー勾配の「方向」を構成する。
@@ -101,6 +101,6 @@ inline vismodule::Vector3f ComputeCoVNormalDirection(
 
 bool RunCoVNormalSelfTest();
 
-} // namespace pbvr
+} // namespace vismodule
 
 #endif // PBVR_CHAIN_RULE_NORMAL_H

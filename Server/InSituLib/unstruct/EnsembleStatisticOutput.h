@@ -10,7 +10,7 @@
 #include <vismodule/ParticleProperty>
 #include <vismodule/MultiVolumeProperty>
 
-#include "EnsembleParticleGenerator.h"   // EnsembleStatisticRange, Byte, CPU_VER/MPI handling
+#include <vismodule/EnsembleParticleGenerator>   // EnsembleStatisticRange, Byte, CPU_VER/MPI handling
 
 namespace pbvr
 {
@@ -33,9 +33,9 @@ void OutputEnsembleStatisticHistory(
     const int tf_number,
     const int nvariables,
     const std::string& historyFilePath,
-    EnsembleStatisticRange average_range,
-    EnsembleStatisticRange variance_range,
-    EnsembleStatisticRange co_variation_range,
+    vismodule::EnsembleStatisticRange average_range,
+    vismodule::EnsembleStatisticRange variance_range,
+    vismodule::EnsembleStatisticRange co_variation_range,
     MPI_Comm ensemble_comm = MPI_COMM_WORLD );
 
 } // namespace pbvr

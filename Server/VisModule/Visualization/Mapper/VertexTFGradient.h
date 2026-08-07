@@ -14,7 +14,7 @@ typedef float Type;
 
 struct EquationToken;
 
-namespace pbvr
+namespace vismodule
 {
 
 struct VertexTFGradientLog
@@ -31,7 +31,7 @@ struct VertexTFGradientLog
 };
 
 bool BuildVertexTFValues(
-    const EquationToken& expr,
+    const ::EquationToken& expr,
     Type** values,
     int nvariables,
     int ncoords,
@@ -55,7 +55,7 @@ bool ComputeNormalFromGradient(
     vismodule::Vector3f* normal );
 
 bool CompareVertexTFGradientWithChainRule(
-    const EquationToken& expr,
+    const ::EquationToken& expr,
     Type** values,
     int nvariables,
     float* coordinates,
@@ -74,6 +74,6 @@ void PrintVertexTFGradientLog(
 
 bool RunVertexTFGradientSelfTest();
 
-} // namespace pbvr
+} // namespace vismodule
 
 #endif // PBVR_VERTEX_TF_GRADIENT_H

@@ -23,7 +23,7 @@ typedef int MPI_Comm;
 #endif
 #endif
 
-namespace pbvr
+namespace vismodule
 {
 
 struct EnsembleCellHistogramLog
@@ -160,6 +160,6 @@ void PrintEnsembleCellHistogramLog(
 
 bool RunEnsembleCellHistogramSelfTest();
 
-} // namespace pbvr
+} // namespace vismodule
 
 #endif // PBVR_ENSEMBLE_CELL_HISTOGRAM_H

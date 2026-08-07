@@ -65,13 +65,14 @@
 #include <kvs/extendedfileformat/VtkImporter>
 #endif
 
-#include "ChainRuleNormal.h"
-#include "EnsembleCellHistogram.h"
-#include "EnsembleParticleGenerator.h"
+#include <vismodule/ChainRuleNormal>
+#include <vismodule/EnsembleCellHistogram>
+#include <vismodule/EnsembleParticleGenerator>
 #include "EnsembleStatisticOutput.h"
 
 // タイマー機構(pbvr::EnsembleTimer*)等を無修飾で使うため(指示書 §3.4-a で pbvr へ移設)
 using namespace pbvr;
+using namespace vismodule;
 
 namespace Generator = vismodule::CellByCellParticleGenerator;
 
@@ -623,14 +624,14 @@ bool ensemble_generate_particles(
         EnsembleStatisticRange average_range;
         EnsembleStatisticRange variance_range;
         EnsembleStatisticRange co_variation_range;
-        pbvr::EnsembleCellHistogramLog histogram_log;
+        vismodule::EnsembleCellHistogramLog histogram_log;
 
         bool ok = false;
         {
 #ifdef ENABLE_ENSEMBLE_TIMER
             EnsembleTimerScope timer_scope( &ensemble_timer, EnsembleTimerStatHistogram );
 #endif
-            ok = pbvr::ComputeAndStoreEnsembleCellHistogram(
+            ok = vismodule::ComputeAndStoreEnsembleCellHistogram(
                     values,
                     nvariables,
                     coordinates,
@@ -670,7 +671,7 @@ bool ensemble_generate_particles(
     {
     EnsembleParticleArrays average, variance, coefficient;
     EnsembleStatisticRange average_range, variance_range, co_variation_range;
-    bool ok = pbvr::GenerateEnsembleParticles(
+    bool ok = vismodule::GenerateEnsembleParticles(
         num_ensemble, particle_property, values, nvariables,
         coordinates, ncoords, connections, ncells, celltype,
         average, variance, coefficient,

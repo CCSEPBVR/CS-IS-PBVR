@@ -395,7 +395,7 @@ bool FillStatisticRange(
     int nvariables,
     int tf_number,
     int nbins,
-    pbvr::EnsembleStatisticRange& range )
+    vismodule::EnsembleStatisticRange& range )
 {
     if ( nbins != DEFAULT_NBINS ) return false;
     if ( tf_number <= 0 || nvariables <= 0 ) return false;
@@ -433,7 +433,7 @@ bool FillStatisticRange(
 }
 
 void StoreRangeToTransferFunctions(
-    const pbvr::EnsembleStatisticRange& range,
+    const vismodule::EnsembleStatisticRange& range,
     std::vector<NamedTransferFunction>& transfer_functions )
 {
     const int tf_number = static_cast<int>( transfer_functions.size() );
@@ -461,7 +461,7 @@ void StoreRangeToTransferFunctions(
 }
 
 void StoreRangeToTransferFunctions(
-    const pbvr::EnsembleStatisticRange& range,
+    const vismodule::EnsembleStatisticRange& range,
     std::vector<EnsembleTransferFunction>& transfer_functions )
 {
     const int tf_number = static_cast<int>( transfer_functions.size() );
@@ -488,7 +488,7 @@ void StoreRangeToTransferFunctions(
 
 } // namespace
 
-namespace pbvr
+namespace vismodule
 {
 
 EnsembleCellHistogramLog::EnsembleCellHistogramLog() :
@@ -1118,4 +1118,4 @@ bool RunEnsembleCellHistogramSelfTest()
            particle_property.m_coefficient_of_variation_transfer_function_array[1].m_color_histogram[0] == 1;
 }
 
-} // namespace pbvr
+} // namespace vismodule
