@@ -69,7 +69,22 @@ SUBDIRS = Source Example
 #=============================================================================
 #  build.
 #=============================================================================
-build:
+check_kvs_install_dir:
+	@IF NOT EXIST "$(PBVR_KVS_INSTALL_DIR)\kvs.conf" ( \
+	echo. & \
+	echo ============================================================ & \
+	echo [KVSMLConverter Build Error / KVSMLConverterビルドエラー] & \
+	echo KVS is not installed in $(PBVR_KVS_INSTALL_DIR). & \
+	echo KVS\Install\kvs.conf が見つかりません。KVSをビルドしてインストールしてください。 & \
+	echo. & \
+	echo Build instructions / ビルド手順: & \
+	echo   日本語: https://github.com/CCSEPBVR/CS-IS-PBVR/wiki/BuildWindows_JP & \
+	echo   English: https://github.com/CCSEPBVR/CS-IS-PBVR/wiki/BuildWindows_EN & \
+	echo ============================================================ & \
+	exit /b 1 \
+	)
+
+build: check_kvs_install_dir
 	FOR %%i IN ( $(SUBDIRS) ) DO \
 	CD %%i && $(MAKE) /f $(MAKEFILE) /$(MAKEFLAGS) build && CD ..
 

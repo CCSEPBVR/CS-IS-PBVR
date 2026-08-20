@@ -48,7 +48,18 @@
 #=============================================================================
 #  Include.
 #=============================================================================
+PBVR_KVS_INSTALL_DIR ?= $(abspath ../../KVS/Install)
 include Makefile.def
+
+UNAME_S := $(shell uname -s)
+
+ifeq ($(UNAME_S),Darwin)
+KVS_BUILD_GUIDE_JP := https://github.com/CCSEPBVR/CS-IS-PBVR/wiki/BuildMac_JP
+KVS_BUILD_GUIDE_EN := https://github.com/CCSEPBVR/CS-IS-PBVR/wiki/BuildMac_EN
+else ifeq ($(UNAME_S),Linux)
+KVS_BUILD_GUIDE_JP := https://github.com/CCSEPBVR/CS-IS-PBVR/wiki/BuildLinux_JP
+KVS_BUILD_GUIDE_EN := https://github.com/CCSEPBVR/CS-IS-PBVR/wiki/BuildLinux_EN
+endif
 
 
 #=============================================================================
@@ -69,7 +80,26 @@ SUBDIRS := Source Example
 #=============================================================================
 #  build.
 #=============================================================================
-build:
+.PHONY: check_kvs_install_dir
+
+define report_kvs_install_error
+$(info )
+$(info ============================================================)
+$(info [KVSMLConverter Build Error / KVSMLConverterビルドエラー])
+$(info KVS is not installed in $(PBVR_KVS_INSTALL_DIR).)
+$(info $(PBVR_KVS_INSTALL_DIR)/kvs.conf が見つかりません。KVSをビルドしてインストールしてください。)
+$(info )
+$(info Build instructions / ビルド手順:)
+$(info   日本語: $(KVS_BUILD_GUIDE_JP))
+$(info   English: $(KVS_BUILD_GUIDE_EN))
+$(info ============================================================)
+$(error KVSMLConverter build stopped because KVS is not installed)
+endef
+
+check_kvs_install_dir:
+	$(if $(wildcard $(PBVR_KVS_INSTALL_DIR)/kvs.conf),,$(report_kvs_install_error))
+
+build: check_kvs_install_dir
 	for i in $(SUBDIRS); do \
 	$(MAKE) -C $$i $(MFLAGS) $(MAKEOVERRIDES) build; done
 

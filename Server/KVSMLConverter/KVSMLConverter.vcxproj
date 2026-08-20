@@ -214,6 +214,18 @@
     <ClInclude Include="Source\TimeSeriesFiles\NumeralSequenceFiles.h" />
     <ClInclude Include="Source\TimeSeriesFiles\SeriesFileResolver.h" />
   </ItemGroup>
+  <Target Name="ValidateKvsInstallDir" BeforeTargets="PrepareForBuild" Condition="'$(DesignTimeBuild)' != 'true' and !Exists('$(MSBuildThisFileDirectory)..\..\KVS\Install\kvs.conf')">
+    <Message Importance="High" Text="============================================================" />
+    <Message Importance="High" Text="[KVSMLConverter Build Error / KVSMLConverterビルドエラー]" />
+    <Message Importance="High" Text="KVS is not installed in $(MSBuildThisFileDirectory)..\..\KVS\Install." />
+    <Message Importance="High" Text="KVS\Install\kvs.conf が見つかりません。KVSをビルドしてインストールしてください。" />
+    <Message Importance="High" Text="" />
+    <Message Importance="High" Text="Build instructions / ビルド手順:" />
+    <Message Importance="High" Text="  日本語: https://github.com/CCSEPBVR/CS-IS-PBVR/wiki/BuildWindows_JP" />
+    <Message Importance="High" Text="  English: https://github.com/CCSEPBVR/CS-IS-PBVR/wiki/BuildWindows_EN" />
+    <Message Importance="High" Text="============================================================" />
+    <Error Text="[KVSMLConverter Build Error] KVS is not installed in KVS\Install. Build and install KVS before building KVSMLConverter. Japanese guide: https://github.com/CCSEPBVR/CS-IS-PBVR/wiki/BuildWindows_JP English guide: https://github.com/CCSEPBVR/CS-IS-PBVR/wiki/BuildWindows_EN" />
+  </Target>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

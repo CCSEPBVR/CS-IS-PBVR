@@ -16,6 +16,9 @@ KVS_UWS_BUILD_GUIDE_JP := https://github.com/CCSEPBVR/CS-IS-PBVR/wiki/BuildLinux
 KVS_UWS_BUILD_GUIDE_EN := https://github.com/CCSEPBVR/CS-IS-PBVR/wiki/BuildLinux_EN
 endif
 
+KVS_BUILD_GUIDE_JP := $(KVS_UWS_BUILD_GUIDE_JP)
+KVS_BUILD_GUIDE_EN := $(KVS_UWS_BUILD_GUIDE_EN)
+
 #=============================================================================
 #  Command macro.
 #=============================================================================
@@ -196,20 +199,41 @@ BUILD_TARGETS += kvsml_converter
 CLEAN_DIRS += KVSMLConverter
 endif
 
-.PHONY: all server third filter kvsml_converter clean check_kvs_uws_dir
+.PHONY: all server third filter kvsml_converter clean check_kvs_install_dir check_kvs_uws_dir
 
-check_kvs_uws_dir:
-	$(if $(strip $(KVS_UWS_DIR)),,$(info ))
-	$(if $(strip $(KVS_UWS_DIR)),,$(info ============================================================))
-	$(if $(strip $(KVS_UWS_DIR)),,$(info [PBVR Server Build Error / PBVRサーバービルドエラー]))
-	$(if $(strip $(KVS_UWS_DIR)),,$(info KVS_UWS_DIR is not set.))
-	$(if $(strip $(KVS_UWS_DIR)),,$(info 環境変数 KVS_UWS_DIR が設定されていません。))
-	$(if $(strip $(KVS_UWS_DIR)),,$(info ))
-	$(if $(strip $(KVS_UWS_DIR)),,$(info Build instructions / ビルド手順:))
-	$(if $(strip $(KVS_UWS_DIR)),,$(info   日本語: $(KVS_UWS_BUILD_GUIDE_JP)))
-	$(if $(strip $(KVS_UWS_DIR)),,$(info   English: $(KVS_UWS_BUILD_GUIDE_EN)))
-	$(if $(strip $(KVS_UWS_DIR)),,$(info ============================================================))
-	$(if $(strip $(KVS_UWS_DIR)),,$(error Server build stopped because KVS_UWS_DIR is not set))
+define report_kvs_install_error
+$(info )
+$(info ============================================================)
+$(info [PBVR Server Build Error / PBVRサーバービルドエラー])
+$(info KVS is not installed in $(PBVR_KVS_INSTALL_DIR).)
+$(info $(PBVR_KVS_INSTALL_DIR)/kvs.conf が見つかりません。KVSをビルドしてインストールしてください。)
+$(info )
+$(info Build instructions / ビルド手順:)
+$(info   日本語: $(KVS_BUILD_GUIDE_JP))
+$(info   English: $(KVS_BUILD_GUIDE_EN))
+$(info ============================================================)
+$(error Server build stopped because KVS is not installed)
+endef
+
+define report_kvs_uws_dir_error
+$(info )
+$(info ============================================================)
+$(info [PBVR Server Build Error / PBVRサーバービルドエラー])
+$(info KVS_UWS_DIR is not set.)
+$(info 環境変数 KVS_UWS_DIR が設定されていません。)
+$(info )
+$(info Build instructions / ビルド手順:)
+$(info   日本語: $(KVS_UWS_BUILD_GUIDE_JP))
+$(info   English: $(KVS_UWS_BUILD_GUIDE_EN))
+$(info ============================================================)
+$(error Server build stopped because KVS_UWS_DIR is not set)
+endef
+
+check_kvs_install_dir:
+	$(if $(wildcard $(PBVR_KVS_INSTALL_DIR)/kvs.conf),,$(report_kvs_install_error))
+
+check_kvs_uws_dir: check_kvs_install_dir
+	$(if $(strip $(KVS_UWS_DIR)),,$(report_kvs_uws_dir_error))
 
 all: $(BUILD_TARGETS)
 

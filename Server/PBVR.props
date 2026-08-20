@@ -3,6 +3,7 @@
   <ImportGroup Label="PropertySheets" />
   <PropertyGroup>
     <KVS_UWS_DIR Condition="'$(KVS_UWS_DIR)' == '' and '$(VCPKG_ROOT)' != ''">$(VCPKG_ROOT)\installed\x64-windows-static</KVS_UWS_DIR>
+    <PBVR_KVS_INSTALL_DIR>$(MSBuildThisFileDirectory)..\KVS\Install</PBVR_KVS_INSTALL_DIR>
   </PropertyGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup />
@@ -19,7 +20,19 @@
       <AdditionalDependencies>VisModule.lib;FunctionParser.lib;kvsCore.lib;uSockets.lib;libuv.lib;zlib.lib;opengl32.lib;glu32.lib;glew32.lib;iphlpapi.lib;userenv.lib;shlwapi.lib;Dbghelp.lib;%(AdditionalDependencies);$(CoreLibraryDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
-  <Target Name="ValidateKvsUwsDir" BeforeTargets="PrepareForBuild" Condition="'$(DesignTimeBuild)' != 'true' and '$(KVS_UWS_DIR)' == ''">
+  <Target Name="ValidateKvsInstallDir" BeforeTargets="PrepareForBuild" Condition="'$(DesignTimeBuild)' != 'true' and !Exists('$(PBVR_KVS_INSTALL_DIR)\kvs.conf')">
+    <Message Importance="High" Text="============================================================" />
+    <Message Importance="High" Text="[PBVR Server Build Error / PBVRサーバービルドエラー]" />
+    <Message Importance="High" Text="KVS is not installed in $(PBVR_KVS_INSTALL_DIR)." />
+    <Message Importance="High" Text="$(PBVR_KVS_INSTALL_DIR)\kvs.conf が見つかりません。KVSをビルドしてインストールしてください。" />
+    <Message Importance="High" Text="" />
+    <Message Importance="High" Text="Build instructions / ビルド手順:" />
+    <Message Importance="High" Text="  日本語: https://github.com/CCSEPBVR/CS-IS-PBVR/wiki/BuildWindows_JP" />
+    <Message Importance="High" Text="  English: https://github.com/CCSEPBVR/CS-IS-PBVR/wiki/BuildWindows_EN" />
+    <Message Importance="High" Text="============================================================" />
+    <Error Text="[PBVR Server Build Error] KVS is not installed in $(PBVR_KVS_INSTALL_DIR). Build and install KVS before building PBVR Server. Japanese guide: https://github.com/CCSEPBVR/CS-IS-PBVR/wiki/BuildWindows_JP English guide: https://github.com/CCSEPBVR/CS-IS-PBVR/wiki/BuildWindows_EN" />
+  </Target>
+  <Target Name="ValidateKvsUwsDir" BeforeTargets="PrepareForBuild" DependsOnTargets="ValidateKvsInstallDir" Condition="'$(DesignTimeBuild)' != 'true' and '$(KVS_UWS_DIR)' == ''">
     <Message Importance="High" Text="============================================================" />
     <Message Importance="High" Text="[PBVR Server Build Error / PBVRサーバービルドエラー]" />
     <Message Importance="High" Text="KVS_UWS_DIR could not be resolved." />
