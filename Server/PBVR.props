@@ -1,20 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ImportGroup Label="PropertySheets" />
+  <PropertyGroup>
+    <KVS_UWS_DIR Condition="'$(KVS_UWS_DIR)' == '' and '$(VCPKG_ROOT)' != ''">$(VCPKG_ROOT)\installed\x64-windows-static</KVS_UWS_DIR>
+  </PropertyGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup />
   <ItemDefinitionGroup>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(SolutionDir)App;$(SolutionDir)Utils;$(SolutionDir)FunctionParser;$(SolutionDir)VisModule;$(SolutionDir)..\Shared;$(MSBuildThisFileDirectory)..\KVS\Install\include;$(KVS_GLUT_DIR)\include\GL;$(VCPKG_ROOT)\installed\x64-windows-static\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)App;$(SolutionDir)Utils;$(SolutionDir)FunctionParser;$(SolutionDir)VisModule;$(SolutionDir)..\Shared;$(MSBuildThisFileDirectory)..\KVS\Install\include;$(KVS_GLUT_DIR)\include\GL;$(KVS_UWS_DIR)\include</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <DisableSpecificWarnings>4996;4305;4267;4101;4244</DisableSpecificWarnings>
       <PreprocessorDefinitions>CPU_VER;NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>$(SolutionDir)$(Platform)\$(Configuration);$(MSBuildThisFileDirectory)..\KVS\Install\lib;$(KVS_GLUT_DIR)\lib;$(VCPKG_ROOT)\installed\x64-windows-static\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)$(Platform)\$(Configuration);$(MSBuildThisFileDirectory)..\KVS\Install\lib;$(KVS_GLUT_DIR)\lib;$(KVS_UWS_DIR)\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>VisModule.lib;FunctionParser.lib;kvsCore.lib;uSockets.lib;libuv.lib;zlib.lib;opengl32.lib;glu32.lib;glew32.lib;iphlpapi.lib;userenv.lib;shlwapi.lib;Dbghelp.lib;%(AdditionalDependencies);$(CoreLibraryDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
+  <Target Name="ValidateKvsUwsDir" BeforeTargets="PrepareForBuild" Condition="'$(DesignTimeBuild)' != 'true' and '$(KVS_UWS_DIR)' == ''">
+    <Message Importance="High" Text="============================================================" />
+    <Message Importance="High" Text="[PBVR Server Build Error / PBVRサーバービルドエラー]" />
+    <Message Importance="High" Text="KVS_UWS_DIR could not be resolved." />
+    <Message Importance="High" Text="KVS_UWS_DIR または VCPKG_ROOT を設定してください。" />
+    <Message Importance="High" Text="" />
+    <Message Importance="High" Text="Build instructions / ビルド手順:" />
+    <Message Importance="High" Text="  日本語: https://github.com/CCSEPBVR/CS-IS-PBVR/wiki/BuildWindows_JP" />
+    <Message Importance="High" Text="  English: https://github.com/CCSEPBVR/CS-IS-PBVR/wiki/BuildWindows_EN" />
+    <Message Importance="High" Text="============================================================" />
+    <Error Text="[PBVR Server Build Error] KVS_UWS_DIR could not be resolved. Set KVS_UWS_DIR or VCPKG_ROOT. Japanese guide: https://github.com/CCSEPBVR/CS-IS-PBVR/wiki/BuildWindows_JP English guide: https://github.com/CCSEPBVR/CS-IS-PBVR/wiki/BuildWindows_EN" />
+  </Target>
   <ItemGroup />
 </Project>

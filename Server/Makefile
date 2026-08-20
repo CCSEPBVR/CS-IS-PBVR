@@ -4,6 +4,18 @@
 include pbvr.conf
 include arch/$(PBVR_MACHINE)
 
+.DEFAULT_GOAL := all
+
+UNAME_S := $(shell uname -s)
+
+ifeq ($(UNAME_S),Darwin)
+KVS_UWS_BUILD_GUIDE_JP := https://github.com/CCSEPBVR/CS-IS-PBVR/wiki/BuildMac_JP
+KVS_UWS_BUILD_GUIDE_EN := https://github.com/CCSEPBVR/CS-IS-PBVR/wiki/BuildMac_EN
+else ifeq ($(UNAME_S),Linux)
+KVS_UWS_BUILD_GUIDE_JP := https://github.com/CCSEPBVR/CS-IS-PBVR/wiki/BuildLinux_JP
+KVS_UWS_BUILD_GUIDE_EN := https://github.com/CCSEPBVR/CS-IS-PBVR/wiki/BuildLinux_EN
+endif
+
 #=============================================================================
 #  Command macro.
 #=============================================================================
@@ -184,11 +196,25 @@ BUILD_TARGETS += kvsml_converter
 CLEAN_DIRS += KVSMLConverter
 endif
 
-.PHONY: all server third filter kvsml_converter clean
+.PHONY: all server third filter kvsml_converter clean check_kvs_uws_dir
+
+check_kvs_uws_dir:
+	$(if $(strip $(KVS_UWS_DIR)),,$(info ))
+	$(if $(strip $(KVS_UWS_DIR)),,$(info ============================================================))
+	$(if $(strip $(KVS_UWS_DIR)),,$(info [PBVR Server Build Error / PBVRサーバービルドエラー]))
+	$(if $(strip $(KVS_UWS_DIR)),,$(info KVS_UWS_DIR is not set.))
+	$(if $(strip $(KVS_UWS_DIR)),,$(info 環境変数 KVS_UWS_DIR が設定されていません。))
+	$(if $(strip $(KVS_UWS_DIR)),,$(info ))
+	$(if $(strip $(KVS_UWS_DIR)),,$(info Build instructions / ビルド手順:))
+	$(if $(strip $(KVS_UWS_DIR)),,$(info   日本語: $(KVS_UWS_BUILD_GUIDE_JP)))
+	$(if $(strip $(KVS_UWS_DIR)),,$(info   English: $(KVS_UWS_BUILD_GUIDE_EN)))
+	$(if $(strip $(KVS_UWS_DIR)),,$(info ============================================================))
+	$(if $(strip $(KVS_UWS_DIR)),,$(error Server build stopped because KVS_UWS_DIR is not set))
 
 all: $(BUILD_TARGETS)
 
-server: third
+server: check_kvs_uws_dir
+	$(MAKE) third
 	$(MAKE) $(TARGET)
 
 third:
@@ -202,10 +228,10 @@ filter:
 kvsml_converter:
 	$(MAKE) -C KVSMLConverter
 
-$(TARGET): $(OBJS)
+$(TARGET): $(OBJS) | check_kvs_uws_dir
 	$(LD) $^ $(LDFLAGS) $(DEFINITIONS) $(LIBRARY_PATH) $(LINK_LIBRARY) -o $@
 
-$(OUTDIR)/%.o: %.cpp
+$(OUTDIR)/%.o: %.cpp | check_kvs_uws_dir
 	$(MKDIR) $(OUTDIR)
 	$(CPP) $(CPPFLAGS) $(DEFINITIONS) $(INCLUDE_PATH) -c $< -o $@
 
