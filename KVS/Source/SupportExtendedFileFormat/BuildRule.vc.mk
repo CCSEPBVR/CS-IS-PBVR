@@ -57,6 +57,7 @@
 OBJECTS = \
 $(OUTDIR)/Exporter/UnstructuredVolumeObjectExporter.obj \
 $(OUTDIR)/Exporter/StructuredVolumeObjectExporter.obj \
+$(OUTDIR)/FileFormat/NetCDF/Netcdf.obj \
 $(OUTDIR)/FileFormat/VtkCompositeDataSetFileFormat.obj \
 $(OUTDIR)/Importer/VtkImport.obj
 
@@ -73,6 +74,12 @@ $(OUTDIR)/Importer/VtkImport.obj
 {.\Exporter\}.cpp{$(OUTDIR)\Exporter\}.obj::
 	IF NOT EXIST $(OUTDIR)\Exporter $(MKDIR) $(OUTDIR)\Exporter
 	$(CPP) /c $(CPPFLAGS) $(DEFINITIONS) $(INCLUDE_PATH) /Fo$(OUTDIR)\Exporter\ @<<
+$<
+<<
+
+{.\FileFormat\NetCDF\}.cpp{$(OUTDIR)\FileFormat\NetCDF\}.obj::
+	IF NOT EXIST $(OUTDIR)\FileFormat\NetCDF $(MKDIR) $(OUTDIR)\FileFormat\NetCDF
+	$(CPP) /c $(CPPFLAGS) $(DEFINITIONS) $(INCLUDE_PATH) /Fo$(OUTDIR)\FileFormat\NetCDF\ @<<
 $<
 <<
 
@@ -128,6 +135,8 @@ install::
 	$(INSTALL) .\FileFormat\CGNS\*.h $(INSTALL_DIR)\include\SupportExtendedFileFormat\FileFormat\CGNS
 	IF NOT EXIST $(INSTALL_DIR)\include\SupportExtendedFileFormat\FileFormat\KVSML $(MKDIR) $(INSTALL_DIR)\include\SupportExtendedFileFormat\FileFormat\KVSML
 	$(INSTALL) .\FileFormat\KVSML\*.h $(INSTALL_DIR)\include\SupportExtendedFileFormat\FileFormat\KVSML
+	IF NOT EXIST $(INSTALL_DIR)\include\SupportExtendedFileFormat\FileFormat\NetCDF $(MKDIR) $(INSTALL_DIR)\include\SupportExtendedFileFormat\FileFormat\NetCDF
+	$(INSTALL) .\FileFormat\NetCDF\*.h $(INSTALL_DIR)\include\SupportExtendedFileFormat\FileFormat\NetCDF
 	IF NOT EXIST $(INSTALL_DIR)\include\SupportExtendedFileFormat\FileFormat\PLOT3D $(MKDIR) $(INSTALL_DIR)\include\SupportExtendedFileFormat\FileFormat\PLOT3D
 	$(INSTALL) .\FileFormat\PLOT3D\*.h $(INSTALL_DIR)\include\SupportExtendedFileFormat\FileFormat\PLOT3D
 	IF NOT EXIST $(INSTALL_DIR)\include\SupportExtendedFileFormat\FileFormat\STL $(MKDIR) $(INSTALL_DIR)\include\SupportExtendedFileFormat\FileFormat\STL

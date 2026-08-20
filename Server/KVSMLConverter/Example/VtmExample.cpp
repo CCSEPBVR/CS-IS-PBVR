@@ -9,6 +9,7 @@
  * work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
  */
 #include <iostream>
+#include <vector>
 
 #include <vtkXMLPolyDataWriter.h>
 #include <vtkXMLUnstructuredGridWriter.h>
@@ -221,15 +222,20 @@ void Vtm2Kvsml( const std::string& directory, const std::string& base,
 }
 
 void SeriesVtm2Kvsml( const std::string& directory, const std::string& base,
-                      const std::string& src )
+                      const std::vector<std::string>& file_paths )
 {
-    std::cout << "Reading " << src << " ..." << std::endl;
+    std::cout << "Reading resolved VTM time series ..." << std::endl;
 
     std::unordered_map<int, cvt::UnstructuredPfi> pfi_map;
     bool is_unstructured = false;
     bool is_structured = false;
 
-    cvt::NumeralSequenceFiles<cvt::VtkXmlMultiBlock> time_series( src );
+    cvt::NumeralSequenceFiles<cvt::VtkXmlMultiBlock> time_series( file_paths );
+    if ( time_series.isFailure() )
+    {
+        std::cerr << time_series.errorMessage() << std::endl;
+        return;
+    }
     int last_time_step = time_series.numberOfFiles() - 1;
     int time_step = 0;
     std::unordered_map<int, int> sub_volume_counts;

@@ -200,31 +200,30 @@ StructuredVolumeImporter::StructuredVolumeImporter( const std::string& filename 
 #ifdef EXTEND_FILE_FORMAT 
 StructuredVolumeImporter::StructuredVolumeImporter( const std::string& filename, const int st, const int vl )
 {
-    std::string edit_filename = filename; // ファイル名編集用の文字列
-    std::string time_step_str = std::to_string( st ); // タイムステップを文字列に変換
-    std::size_t found_asterisk = edit_filename.find( '*' ); // ファイル名に時系列ファイルのアスタリスクが含まれているか確認
+    if ( filename.find( '*' ) != std::string::npos )
+    {
+        BaseClass::m_is_success = false;
+        visModuleMessageError(
+            "Wildcard path was not resolved to a time-step file: '%s'.",
+            filename.c_str() );
+        return;
+    }
 
     // ファイルの拡張子を確認
-    std::size_t found_vtm = edit_filename.find( ".vtm" );
-    std::size_t found_vti = edit_filename.find( ".vti" );
+    std::size_t found_vtm = filename.find( ".vtm" );
+    std::size_t found_vti = filename.find( ".vti" );
 
-    // 時系列ファイルの場合、アスタリスクをタイムステップに置換
-    if ( found_asterisk != std::string::npos )
-    {
-        edit_filename.replace( found_asterisk, 1, time_step_str );
-    }
-    
-    std::cout << "edit_filename:" << edit_filename << std::endl;
+    std::cout << "filename:" << filename << std::endl;
 
     if ( found_vtm != std::string::npos )
     {
-        kvs::ExtendedFileFormat::VtkXmlMultiBlock* file_format = new kvs::ExtendedFileFormat::VtkXmlMultiBlock( edit_filename );
+        kvs::ExtendedFileFormat::VtkXmlMultiBlock* file_format = new kvs::ExtendedFileFormat::VtkXmlMultiBlock( filename );
         this->import( *file_format, vl );
         delete file_format;
     }
     else if ( found_vti != std::string::npos )
     {
-        kvs::ExtendedFileFormat::VtkXmlImageData* file_format = new kvs::ExtendedFileFormat::VtkXmlImageData( edit_filename );
+        kvs::ExtendedFileFormat::VtkXmlImageData* file_format = new kvs::ExtendedFileFormat::VtkXmlImageData( filename );
         this->import( *file_format, vl );
         delete file_format;
     }

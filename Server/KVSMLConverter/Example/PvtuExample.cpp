@@ -10,6 +10,7 @@
  */
 #include <iostream>
 #include <string>
+#include <vector>
 
 #include "kvs/UnstructuredVolumeObject"
 
@@ -81,10 +82,15 @@ void Pvtu2Kvsml( const std::string& directory, const std::string& base, const st
 }
 
 void SeriesPvtu2Kvsml( const std::string& directory, const std::string& base,
-                       const std::string& src )
+                       const std::vector<std::string>& file_paths )
 {
-    std::cout << "Reading " << src << " ..." << std::endl;
-    cvt::NumeralSequenceFiles<cvt::VtkXmlPUnstructuredGrid> time_series( src.c_str() );
+    std::cout << "Reading resolved PVTU time series ..." << std::endl;
+    cvt::NumeralSequenceFiles<cvt::VtkXmlPUnstructuredGrid> time_series( file_paths );
+    if ( time_series.isFailure() )
+    {
+        std::cerr << time_series.errorMessage() << std::endl;
+        return;
+    }
     int last_time_step = time_series.numberOfFiles() - 1;
     int time_step = 0;
     std::unordered_map<int, int> sub_volume_counts;
@@ -177,10 +183,15 @@ void SeriesPvtu2Kvsml( const std::string& directory, const std::string& base,
 }
 
 void SeriesPvtu2KvsmlWhole( const std::string& directory, const std::string& base,
-                            const std::string& src )
+                            const std::vector<std::string>& file_paths )
 {
-    std::cout << "Reading " << src << " ..." << std::endl;
-    cvt::NumeralSequenceFiles<cvt::VtkXmlPUnstructuredGrid> time_series( src );
+    std::cout << "Reading resolved PVTU time series ..." << std::endl;
+    cvt::NumeralSequenceFiles<cvt::VtkXmlPUnstructuredGrid> time_series( file_paths );
+    if ( time_series.isFailure() )
+    {
+        std::cerr << time_series.errorMessage() << std::endl;
+        return;
+    }
     int last_time_step = time_series.numberOfFiles() - 1;
     int time_step = 0;
 

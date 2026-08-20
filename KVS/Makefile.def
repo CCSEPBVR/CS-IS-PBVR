@@ -571,12 +571,16 @@ VTK_LINK_LIBRARY := \
 -lvtkFiltersParallel-$(VTK_VERSION) \
 -lvtkIOCore-$(VTK_VERSION) \
 -lvtkIOGeometry-$(VTK_VERSION) \
+-lvtkIONetCDF-$(VTK_VERSION) \
 -lvtkIOCGNSReader-$(VTK_VERSION) \
 -lvtkIOEnSight-$(VTK_VERSION) \
 -lvtkIOParallel-$(VTK_VERSION) \
 -lvtkIOLegacy-$(VTK_VERSION) \
 -lvtkIOXML-$(VTK_VERSION) \
--lvtkIOXMLParser-$(VTK_VERSION)
+-lvtkIOXMLParser-$(VTK_VERSION) \
+-lvtknetcdf-$(VTK_VERSION) \
+-lvtkhdf5_hl-$(VTK_VERSION) \
+-lvtkhdf5-$(VTK_VERSION)
 endif
 
 #=============================================================================

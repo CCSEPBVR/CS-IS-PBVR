@@ -17,11 +17,14 @@
 #ifndef EXTENDED_FILE_FORMAT__VTK_TIME_SERIES_FILE_FORMAT_H_INCLUDE
 #define EXTENDED_FILE_FORMAT__VTK_TIME_SERIES_FILE_FORMAT_H_INCLUDE
 
-#include <vtkGlobFileNames.h>
-#include <vtkNew.h>
+#include <cstddef>
+#include <string>
+#include <vector>
+
 #include <vtkSmartPointer.h>
-#include <vtkSortFileNames.h>
 #include <vtkStringArray.h>
+
+#include "NumericFileSequence.h"
 
 namespace kvs
 {
@@ -171,20 +174,11 @@ public:
      */
     NumeralSequenceFiles( const std::string& pattern )
     {
-        vtkNew<vtkGlobFileNames> glob;
-        glob->RecurseOff();
-        glob->AddFileNames( pattern.c_str() );
-
-        auto f = glob->GetFileNames();
-
-        vtkNew<vtkSortFileNames> sorter;
-        sorter->GroupingOff();
-        sorter->NumericSortOn();
-        sorter->IgnoreCaseOff();
-        sorter->SkipDirectoriesOn();
-        sorter->SetInputFileNames( f );
-
-        filenames = sorter->GetFileNames();
+        const NumericFileSequence sequence( pattern );
+        m_error = sequence.errorMessage();
+        m_file_paths = sequence.filePaths();
+        filenames = vtkSmartPointer<vtkStringArray>::New();
+        for ( const auto& path : m_file_paths ) filenames->InsertNextValue( path );
     }
 
 public:
@@ -200,6 +194,10 @@ public:
      * \return A count of files.
      */
     int numberOfFiles() const { return filenames->GetNumberOfValues(); }
+    bool isSuccess() const { return m_error.empty(); }
+    bool isFailure() const { return !this->isSuccess(); }
+    const std::string& errorMessage() const { return m_error; }
+    const std::vector<std::string>& filePaths() const { return m_file_paths; }
     /**
      * Get an interface to iterate time series files.
      *
@@ -221,6 +219,8 @@ public:
 
 private:
     vtkSmartPointer<vtkStringArray> filenames;
+    std::vector<std::string> m_file_paths;
+    std::string m_error;
 };
 } // namespace ExtendedFileFormat
 } // namespace kvs

@@ -296,12 +296,16 @@ vtkFiltersGeometry-$(VTK_VERSION)d.lib \
 vtkFiltersParallel-$(VTK_VERSION)d.lib \
 vtkIOCore-$(VTK_VERSION)d.lib \
 vtkIOGeometry-$(VTK_VERSION)d.lib \
+vtkIONetCDF-$(VTK_VERSION)d.lib \
 vtkIOCGNSReader-$(VTK_VERSION)d.lib \
 vtkIOEnSight-$(VTK_VERSION)d.lib \
 vtkIOLegacy-$(VTK_VERSION)d.lib \
 vtkIOParallel-$(VTK_VERSION)d.lib \
 vtkIOXML-$(VTK_VERSION)d.lib \
-vtkIOXMLParser-$(VTK_VERSION)d.lib
+vtkIOXMLParser-$(VTK_VERSION)d.lib \
+vtknetcdf-$(VTK_VERSION)d.lib \
+vtkhdf5_hl-$(VTK_VERSION)d.lib \
+vtkhdf5-$(VTK_VERSION)d.lib
 !ELSE
 VTK_LINK_LIBRARY = \
 vtksys-$(VTK_VERSION).lib \
@@ -315,12 +319,16 @@ vtkFiltersGeometry-$(VTK_VERSION).lib \
 vtkFiltersParallel-$(VTK_VERSION).lib \
 vtkIOCore-$(VTK_VERSION).lib \
 vtkIOGeometry-$(VTK_VERSION).lib \
+vtkIONetCDF-$(VTK_VERSION).lib \
 vtkIOCGNSReader-$(VTK_VERSION).lib \
 vtkIOEnSight-$(VTK_VERSION).lib \
 vtkIOLegacy-$(VTK_VERSION).lib \
 vtkIOParallel-$(VTK_VERSION).lib \
 vtkIOXML-$(VTK_VERSION).lib \
-vtkIOXMLParser-$(VTK_VERSION).lib
+vtkIOXMLParser-$(VTK_VERSION).lib \
+vtknetcdf-$(VTK_VERSION).lib \
+vtkhdf5_hl-$(VTK_VERSION).lib \
+vtkhdf5-$(VTK_VERSION).lib
 !ENDIF
 !ENDIF
 

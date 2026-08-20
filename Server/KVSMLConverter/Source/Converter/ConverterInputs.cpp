@@ -16,6 +16,7 @@
 
 #include "Converter/XmlTag.h"
 #include "Filesystem.h"
+#include "TimeSeriesFiles/SeriesFileResolver.h"
 
 namespace
 {
@@ -242,15 +243,6 @@ bool AddInputFiles( std::list<cvt::ConverterTaskInput>& sub, int target_index,
             {
                 file_pattern = m->GetCharacterData();
                 cvt::Trim( file_pattern );
-
-                if ( prefix == "" )
-                {
-                    auto pos = file_pattern.find_first_of( '*' );
-                    if ( pos != std::string::npos )
-                    {
-                        prefix = file_pattern.substr( 0, pos );
-                    }
-                }
             }
 
             // Update a file pattern
@@ -264,51 +256,31 @@ bool AddInputFiles( std::list<cvt::ConverterTaskInput>& sub, int target_index,
             auto p = pattern.u8string();
             std::replace( p.begin(), p.end(), '\\', '/' );
 
-            vtkNew<vtkGlobFileNames> glob;
-            glob->RecurseOff();
-            glob->AddFileNames( p.c_str() );
-
-            // Search files
-            auto f = glob->GetFileNames();
-
-            vtkNew<vtkSortFileNames> sorter;
-            sorter->GroupingOff();
-            sorter->NumericSortOn();
-            sorter->IgnoreCaseOff();
-            sorter->SkipDirectoriesOn();
-            sorter->SetInputFileNames( f );
-
-            auto target_files = sorter->GetFileNames();
-
-            if ( target_files->GetNumberOfValues() > 0 )
+            cvt::ResolvedSeries series;
+            std::string series_error;
+            if ( !cvt::ResolveSeries( p, series, series_error ) )
             {
-                for ( int t = 0; t < target_files->GetNumberOfValues(); ++t )
+                kvsMessageError( "%s", series_error.c_str() );
+            }
+            else
+            {
+                if ( prefix.empty() ) prefix = series.output_base;
+                const auto& target_files = series.file_paths;
+                for ( std::size_t t = 0; t < target_files.size(); ++t )
                 {
                     cvt::ConverterTaskInput file;
 
                     file.target_index = target_index;
-                    file.source_file_paths.reserve( target_files->GetNumberOfValues() );
-                    file.source_file_paths.push_back( target_files->GetValue( t ) );
-                    file.q.resize( target_files->GetNumberOfValues() );
-                    file.f.resize( target_files->GetNumberOfValues() );
+                    file.source_file_paths.reserve( 1 );
+                    file.source_file_paths.push_back( target_files[t] );
+                    file.q.resize( 1 );
+                    file.f.resize( 1 );
                     ::GetPlot3dAttributes( file, n );
                     file.source_grid_type = grid_type;
                     file.destination_directory = src_dir.string();
-                    if ( prefix == "" )
-                    {
-                        cvt::filesystem::path p = std::string( target_files->GetValue( 0 ) );
-                        file.destination_prefix = p.stem().string();
-                        kvsMessageWarning( ( std::string( "The output prefix is set to " ) +
-                                             file.destination_prefix +
-                                             ". Sometimes, this will generate unexpected files." )
-                                               .c_str() );
-                    }
-                    else
-                    {
-                        file.destination_prefix = prefix;
-                    }
-                    file.time_step = t;
-                    file.last_time_step = target_files->GetNumberOfValues() - 1;
+                    file.destination_prefix = prefix;
+                    file.time_step = static_cast<int>( t );
+                    file.last_time_step = static_cast<int>( target_files.size() ) - 1;
                     file.has_mesh_deformation = has_mesh_deformation;
                     file.is_binary = is_binary;
 

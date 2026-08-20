@@ -8,13 +8,13 @@
  * You should have received a copy of the CC0 legal code along with this
  * work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
  */
-#include <algorithm>
-#include <cctype>
 #include <iostream>
 #include <string>
+#include <vector>
 
 #include "Filesystem.h"
 #include "FileFormat/VTK/VtkXmlUnstructuredGrid.h"
+#include "TimeSeriesFiles/SeriesFileResolver.h"
 
 bool contains_wildcard( const std::string& path );
 void Stl2Stl( const std::string& dst, const std::string& src );
@@ -27,25 +27,25 @@ void StructuredPoints2Kvsml( const std::string& directory, const std::string& ba
                              const std::string& src );
 void Vti2Kvsml( const std::string& directory, const std::string& base, const std::string& src );
 void SeriesVti2Kvsml( const std::string& directory, const std::string& base,
-                      const std::string& src );
+                      const std::vector<std::string>& file_paths );
 void Vts2Kvsml( const std::string& directory, const std::string& base, const std::string& src );
 void Pvts2Kvsml( const std::string& directory, const std::string& base, const std::string& src );
 void AvsUcd2Kvsml( const std::string& directory, const std::string& base, const std::string& src );
 void Vtu2Kvsml( const std::string& directory, const std::string& base, const std::string& src );
 void SeriesVtu2Kvsml( const std::string& directory, const std::string& base,
-                      const std::string& src );
+                      const std::vector<std::string>& file_paths );
 void PointVtu2Kvsml( const std::string& dst, const std::string& src );
 void LineVtu2Kvsml( const std::string& dst, const std::string& src );
 void TriangleVtu2Kvsml( const std::string& dst, const std::string& src );
 void Pvtu2Kvsml( const std::string& directory, const std::string& base, const std::string& src );
 void SeriesPvtu2Kvsml( const std::string& directory, const std::string& base,
-                       const std::string& src );
+                       const std::vector<std::string>& file_paths );
 void SeriesPvtu2KvsmlWhole( const std::string& directory, const std::string& base,
-                            const std::string& src );
+                            const std::vector<std::string>& file_paths );
 void AccessToVtm( const std::string& src );
 void Vtm2Kvsml( const std::string& directory, const std::string& base, const std::string& src );
 void SeriesVtm2Kvsml( const std::string& directory, const std::string& base,
-                      const std::string& src );
+                      const std::vector<std::string>& file_paths );
 void MergeBlock( const std::string& dst, const std::string& src, const std::string& config_path );
 void MergeBlockAsPolygon( const std::string& dst_vtk, const std::string& dst_kvsml,
                           const std::string& dst_stl, const std::string& src,
@@ -53,8 +53,8 @@ void MergeBlockAsPolygon( const std::string& dst_vtk, const std::string& dst_kvs
 void Case2Kvsml( const std::string& directory, const std::string& base, const std::string& src );
 void Cgns2Kvsml( const std::string& directory, const std::string& base, const std::string& src );
 void Netcdf2Kvsml( const std::string& directory, const std::string& base, const std::string& src );
-void SeriesNetcdf2Kvsml( const std::string& directory, const std::string& base, const std::string& src );
-std::string NetcdfTimeSeriesBase( const cvt::filesystem::path& pattern );
+void SeriesNetcdf2Kvsml( const std::string& directory, const std::string& base,
+                         const std::vector<std::string>& file_paths );
 
 int main( int argc, char** argv )
 {
@@ -88,10 +88,44 @@ int main( int argc, char** argv )
         }
         return true;
     };
-    if ( !mkdir( output_directory ) )
+    if ( contains_wildcard( input_file ) )
     {
-        return -1;
+        cvt::ResolvedSeries series;
+        std::string error;
+        if ( !cvt::ResolveSeries( input_file_path.generic_string(), series, error ) )
+        {
+            std::cerr << error << std::endl;
+            return -1;
+        }
+        if ( !mkdir( output_directory_path ) ) return -1;
+
+        switch ( series.format )
+        {
+        case cvt::SeriesFormat::Vti:
+            SeriesVti2Kvsml( output_directory_path.string(), series.output_base,
+                             series.file_paths );
+            break;
+        case cvt::SeriesFormat::Vtu:
+            SeriesVtu2Kvsml( output_directory_path.string(), series.output_base,
+                             series.file_paths );
+            break;
+        case cvt::SeriesFormat::Vtm:
+            SeriesVtm2Kvsml( output_directory_path.string(), series.output_base,
+                             series.file_paths );
+            break;
+        case cvt::SeriesFormat::Pvtu:
+            SeriesPvtu2Kvsml( output_directory_path.string(), series.output_base,
+                              series.file_paths );
+            break;
+        case cvt::SeriesFormat::Netcdf:
+            SeriesNetcdf2Kvsml( output_directory_path.string(), series.output_base,
+                                series.file_paths );
+            break;
+        }
+        return 0;
     }
+
+    if ( !mkdir( output_directory_path ) ) return -1;
 
     fs::path input_file_extension = input_file_path.extension();
     fs::path input_filename_without_extension = input_file_path.filename().stem();
@@ -127,15 +161,7 @@ int main( int argc, char** argv )
     }
     else if ( input_file_extension == ".vti" )
     {
-        if ( contains_wildcard( input_file_path.string() ) )
-        {
-            std::string input_filename_removed_wildcard = input_filename_without_extension.string().substr(0, input_filename_without_extension.string().length() - 2);
-            SeriesVti2Kvsml( output_directory_path.string(), input_filename_removed_wildcard, input_file_path.generic_string() );
-        }
-        else
-        {
-            Vti2Kvsml( output_directory_path.string(), input_filename_without_extension.string(), input_file_path.string() );
-        }
+        Vti2Kvsml( output_directory_path.string(), input_filename_without_extension.string(), input_file_path.string() );
     }
     else if ( input_file_extension == ".vts" )
     {
@@ -152,75 +178,42 @@ int main( int argc, char** argv )
     }
     else if ( input_file_extension == ".nc" )
     {
-        if ( contains_wildcard( input_file_path.string() ) )
-        {
-            const std::string output_base = NetcdfTimeSeriesBase( input_file_path );
-            SeriesNetcdf2Kvsml( output_directory_path.string(), output_base, input_file_path.generic_string() );
-        }
-        else
-        {
-            Netcdf2Kvsml( output_directory_path.string(), input_filename_without_extension.string(), input_file_path.string() );
-        }
+        Netcdf2Kvsml( output_directory_path.string(), input_filename_without_extension.string(), input_file_path.string() );
     }
     else if ( input_file_extension == ".vtu" )
     {
-        if ( contains_wildcard( input_file_path.string() ) )
+        cvt::VtkXmlUnstructuredGrid input_vtu( input_file_path.string() );
+
+        if ( input_vtu.isPointObjectConvertible() )
         {
-            std::string input_filename_removed_wildcard = input_filename_without_extension.string().substr(0, input_filename_without_extension.string().length() - 2);
-            SeriesVtu2Kvsml( output_directory_path.string(), input_filename_removed_wildcard, input_file_path.generic_string() );
+            std::string separator(1, fs::path::preferred_separator);
+            std::string output_file_path = output_directory_path.string() + separator + input_filename_without_extension.string() + ".kvsml";
+            PointVtu2Kvsml( output_file_path, input_file_path.string() );
+        }
+        else if ( input_vtu.isLineObjectConvertible() )
+        {
+            std::string separator(1, fs::path::preferred_separator);
+            std::string output_file_path = output_directory_path.string() + separator + input_filename_without_extension.string() + ".kvsml";
+            LineVtu2Kvsml( output_file_path, input_file_path.string() );
+        }
+        else if ( input_vtu.isPolygonObjectConvertible() )
+        {
+            std::string separator(1, fs::path::preferred_separator);
+            std::string output_file_path = output_directory_path.string() + separator + input_filename_without_extension.string() + ".kvsml";
+            TriangleVtu2Kvsml( output_file_path, input_file_path.string() );
         }
         else
         {
-            cvt::VtkXmlUnstructuredGrid input_vtu( input_file_path.string() );
-
-            if ( input_vtu.isPointObjectConvertible() )
-            {
-                std::string separator(1, fs::path::preferred_separator);
-                std::string output_file_path = output_directory_path.string() + separator + input_filename_without_extension.string() + ".kvsml";
-                PointVtu2Kvsml( output_file_path, input_file_path.string() );
-            }
-            else if ( input_vtu.isLineObjectConvertible() )
-            {
-                std::string separator(1, fs::path::preferred_separator);
-                std::string output_file_path = output_directory_path.string() + separator + input_filename_without_extension.string() + ".kvsml";
-                LineVtu2Kvsml( output_file_path, input_file_path.string() );
-            }
-            else if ( input_vtu.isPolygonObjectConvertible() )
-            {
-                std::string separator(1, fs::path::preferred_separator);
-                std::string output_file_path = output_directory_path.string() + separator + input_filename_without_extension.string() + ".kvsml";
-                TriangleVtu2Kvsml( output_file_path, input_file_path.string() );
-            }
-            else
-            {
-                Vtu2Kvsml( output_directory_path.string(), input_filename_without_extension.string(), input_file_path.string() );
-            }
+            Vtu2Kvsml( output_directory_path.string(), input_filename_without_extension.string(), input_file_path.string() );
         }
     }
     else if ( input_file_extension == ".pvtu" )
     {
-        if ( contains_wildcard( input_file_path.string() ) )
-        {
-            std::string input_filename_removed_wildcard = input_filename_without_extension.string().substr(0, input_filename_without_extension.string().length() - 2);
-            SeriesPvtu2Kvsml( output_directory_path.string(), input_filename_removed_wildcard, input_file_path.generic_string() );
-            // SeriesPvtu2KvsmlWhole( output_directory_path.string(), input_filename_removed_wildcard, input_file_path.generic_string() );
-        }
-        else
-        {
-            Pvtu2Kvsml( output_directory_path.string(), input_filename_without_extension.string(), input_file_path.string() );
-        }
+        Pvtu2Kvsml( output_directory_path.string(), input_filename_without_extension.string(), input_file_path.string() );
     }
     else if ( input_file_extension == ".vtm" )
     {
-        if ( contains_wildcard( input_file_path.string() ) )
-        {
-            std::string input_filename_removed_wildcard = input_filename_without_extension.string().substr(0, input_filename_without_extension.string().length() - 2);
-            SeriesVtm2Kvsml( output_directory_path.string(), input_filename_removed_wildcard, input_file_path.generic_string() );
-        }
-        else
-        {
-            Vtm2Kvsml( output_directory_path.string(), input_filename_without_extension.string(), input_file_path.string() );
-        }
+        Vtm2Kvsml( output_directory_path.string(), input_filename_without_extension.string(), input_file_path.string() );
     }
     else if ( input_file_extension == ".case" )
     {

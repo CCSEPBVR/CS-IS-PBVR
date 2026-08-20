@@ -14,16 +14,18 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
-#ifndef CVT_NETCDF_H_INCLUDE
-#define CVT_NETCDF_H_INCLUDE
+#ifndef EXTENDED_FILE_FORMAT_NETCDF_H_INCLUDE
+#define EXTENDED_FILE_FORMAT_NETCDF_H_INCLUDE
 
 #include <map>
 #include <memory>
 #include <string>
 
-#include "kvs/FileFormatBase"
+#include <kvs/FileFormatBase>
 
-namespace cvt
+namespace kvs
+{
+namespace ExtendedFileFormat
 {
 
 enum class NetcdfGridType
@@ -138,6 +140,7 @@ private:
     std::string m_format_name;
     NetcdfGridType m_grid_type = NetcdfGridType::Unknown;
 };
-} // namespace cvt
+} // namespace ExtendedFileFormat
+} // namespace kvs
 
-#endif // CVT_NETCDF_H_INCLUDE
+#endif // EXTENDED_FILE_FORMAT_NETCDF_H_INCLUDE

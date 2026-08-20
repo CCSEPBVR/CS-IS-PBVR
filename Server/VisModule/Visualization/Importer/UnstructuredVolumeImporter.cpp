@@ -23,6 +23,7 @@
 
 #ifdef EXTEND_FILE_FORMAT 
 #include <kvs/extendedfileformat/VtkImporter>
+#include <kvs/extendedfileformat/Netcdf>
 #endif
 
 namespace
@@ -310,52 +311,73 @@ UnstructuredVolumeImporter::UnstructuredVolumeImporter( const std::string& filen
 #ifdef EXTEND_FILE_FORMAT 
 UnstructuredVolumeImporter::UnstructuredVolumeImporter( const std::string& filename, const int fileType, const int targetCellType, const int st, const int vl )
 {
-    std::string edit_filename = filename; // ファイル名編集用の文字列
-    std::string time_step_str = std::to_string( st ); // タイムステップを文字列に変換
-    std::size_t found_asterisk = edit_filename.find( '*' ); // ファイル名に時系列ファイルのアスタリスクが含まれているか確認
+    if ( filename.find( '*' ) != std::string::npos )
+    {
+        BaseClass::m_is_success = false;
+        visModuleMessageError(
+            "Wildcard path was not resolved to a time-step file: '%s'.",
+            filename.c_str() );
+        return;
+    }
 
     // ファイルの拡張子を確認
-    std::size_t found_vtm  = edit_filename.find( ".vtm" );
-    std::size_t found_vtu  = edit_filename.find( ".vtu" );
-    std::size_t found_inp  = edit_filename.find( ".inp" );
-    std::size_t found_pvtu = edit_filename.find( ".pvtu" );
-    std::size_t found_case = edit_filename.find( ".case" );
-
-    // 時系列ファイルの場合、アスタリスクをタイムステップに置換
-    if ( found_asterisk != std::string::npos )
-    {
-        edit_filename.replace( found_asterisk, 1, time_step_str );
-    }
+    std::size_t found_vtm  = filename.find( ".vtm" );
+    std::size_t found_vtu  = filename.find( ".vtu" );
+    std::size_t found_inp  = filename.find( ".inp" );
+    std::size_t found_pvtu = filename.find( ".pvtu" );
+    std::size_t found_case = filename.find( ".case" );
+    std::size_t found_nc   = filename.find( ".nc" );
 
     if ( found_vtm != std::string::npos )
     {
-        kvs::ExtendedFileFormat::VtkXmlMultiBlock* file_format = new kvs::ExtendedFileFormat::VtkXmlMultiBlock( edit_filename );
+        kvs::ExtendedFileFormat::VtkXmlMultiBlock* file_format = new kvs::ExtendedFileFormat::VtkXmlMultiBlock( filename );
         this->import( *file_format, targetCellType, vl );
         delete file_format;
     }
     else if ( found_vtu != std::string::npos )
     {
-        kvs::ExtendedFileFormat::VtkXmlUnstructuredGrid* file_format = new kvs::ExtendedFileFormat::VtkXmlUnstructuredGrid( edit_filename );
+        kvs::ExtendedFileFormat::VtkXmlUnstructuredGrid* file_format = new kvs::ExtendedFileFormat::VtkXmlUnstructuredGrid( filename );
         this->import( *file_format, targetCellType );
         delete file_format;
     }
     else if ( found_inp != std::string::npos )
     {
-        kvs::ExtendedFileFormat::AvsUcd* file_format = new kvs::ExtendedFileFormat::AvsUcd( edit_filename );
+        kvs::ExtendedFileFormat::AvsUcd* file_format = new kvs::ExtendedFileFormat::AvsUcd( filename );
         this->import( *file_format, targetCellType );
         delete file_format;
     }
     else if ( found_pvtu != std::string::npos )
     {
-        kvs::ExtendedFileFormat::VtkXmlPUnstructuredGrid* file_format = new kvs::ExtendedFileFormat::VtkXmlPUnstructuredGrid( edit_filename );
+        kvs::ExtendedFileFormat::VtkXmlPUnstructuredGrid* file_format = new kvs::ExtendedFileFormat::VtkXmlPUnstructuredGrid( filename );
         this->import( *file_format, targetCellType, vl );
         delete file_format;
     }
     else if ( found_case != std::string::npos )
     {
-        kvs::ExtendedFileFormat::EnSightGoldBinary* file_format = new kvs::ExtendedFileFormat::EnSightGoldBinary( edit_filename );
+        kvs::ExtendedFileFormat::EnSightGoldBinary* file_format = new kvs::ExtendedFileFormat::EnSightGoldBinary( filename );
         this->import( *file_format, st, vl );
         delete file_format;
+    }
+    else if ( found_nc != std::string::npos )
+    {
+        kvs::ExtendedFileFormat::Netcdf file_format( filename );
+        if ( file_format.isFailure() )
+        {
+            BaseClass::m_is_success = false;
+            visModuleMessageError( "Cannot read NetCDF file '%s'.", filename.c_str() );
+            return;
+        }
+
+        auto* input_vtu = dynamic_cast<kvs::ExtendedFileFormat::VtkXmlUnstructuredGrid*>( file_format.format().get() );
+        if ( !input_vtu )
+        {
+            BaseClass::m_is_success = false;
+            visModuleMessageError(
+                "NetCDF file '%s' did not produce an unstructured grid.",
+                filename.c_str() );
+            return;
+        }
+        this->import( *input_vtu, targetCellType );
     }
 }
 #endif

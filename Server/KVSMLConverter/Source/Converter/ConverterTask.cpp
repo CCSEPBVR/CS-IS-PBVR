@@ -1,5 +1,7 @@
 #include "Converter/ConverterTask.h"
 
+#include <algorithm>
+#include <cctype>
 #include <memory>
 
 #include "kvs/PolygonExporter"
@@ -30,6 +32,7 @@
 #include "PBVRFileInformation/UnstructuredPfi.h"
 #include "TimeSeriesFiles/EnSight/EnSightGold.h"
 #include "TimeSeriesFiles/EnSight/EnSightGoldBinary.h"
+#include "TimeSeriesFiles/SeriesFileResolver.h"
 
 namespace
 {
@@ -983,6 +986,35 @@ std::optional<cvt::ConverterTaskOutput> cvt::Convert( cvt::ConverterTaskInput in
     {
         cvt::filesystem::path path( input.source_file_paths[0] );
 
+        // 拡張子の大文字・小文字にかかわらず、後続の形式判定を行えるようにする。
+        std::string extension = path.extension();
+        std::transform( extension.begin(), extension.end(), extension.begin(),
+                        []( const unsigned char c ) {
+                            return static_cast<char>( std::tolower( c ) );
+                        } );
+
+        // 従来から拡張子によって変換処理を選択できる形式は、内容の検査を行わずに
+        // そのまま後続の変換処理へ渡す。
+        const std::vector<std::string> known_extensions = {
+            ".vtu", ".pvtu", ".inp", ".nc",   ".vti", ".vtr", ".vts", ".pvts",
+            ".vtk", ".case", ".cgns", ".vtm", ".xyz", ".stl"
+        };
+
+        // 拡張子がない、または独自の拡張子を持つ時系列ファイルの場合は、先頭の
+        // 入力ファイルの内容から形式を検出し、既存の変換分岐で扱える拡張子へ正規化する。
+        if ( std::find( known_extensions.begin(), known_extensions.end(), extension ) ==
+             known_extensions.end() )
+        {
+            cvt::SeriesFormat detected_format;
+            std::string error;
+            if ( !cvt::DetectSeriesFileFormat( path.string(), detected_format, error ) )
+            {
+                std::cerr << error << std::endl;
+                return std::nullopt;
+            }
+            extension = cvt::CanonicalSeriesExtension( detected_format );
+        }
+
         // Create a destination directory
         cvt::filesystem::path directory( input.destination_directory );
 
@@ -1000,8 +1032,6 @@ std::optional<cvt::ConverterTaskOutput> cvt::Convert( cvt::ConverterTaskInput in
         {
             return std::nullopt;
         }
-
-        auto extension = path.extension();
 
         if ( extension == ".vtu" )
         {

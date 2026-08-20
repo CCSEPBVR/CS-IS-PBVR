@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
-#include "FileFormat/NetCDF/Netcdf.h"
+#include "Netcdf.h"
 
 #include <limits>
 #include <sstream>
@@ -22,12 +22,12 @@
 #include <string>
 #include <vector>
 
-#include "FileFormat/VTK/VtkXmlImageData.h"
-#include "FileFormat/VTK/VtkXmlRectilinearGrid.h"
-#include "FileFormat/VTK/VtkXmlStructuredGrid.h"
-#include "FileFormat/VTK/VtkXmlUnstructuredGrid.h"
-#include "kvs/Message"
-#include "kvs/Type"
+#include <kvs/Message>
+#include <kvs/Type>
+#include <kvs/extendedfileformat/VtkXmlImageData>
+#include <kvs/extendedfileformat/VtkXmlRectilinearGrid>
+#include <kvs/extendedfileformat/VtkXmlStructuredGrid>
+#include <kvs/extendedfileformat/VtkXmlUnstructuredGrid>
 #include <vtkCallbackCommand.h>
 #include <vtkCellType.h>
 #include <vtkCommand.h>
@@ -42,7 +42,9 @@
 #include <vtkStringArray.h>
 #include <vtkUnstructuredGrid.h>
 
-namespace cvt
+namespace kvs
+{
+namespace ExtendedFileFormat
 {
 namespace detail
 {
@@ -198,7 +200,8 @@ vtkDataArray* GetRequiredNetcdfArray( vtkDataSet* data_set, const char* name,
     auto* array = data_set->GetPointData()->GetArray( name );
     if ( !array )
     {
-        diagnostics.errors.push_back( phase + ": point-data array " + name + " was not loaded" );
+        diagnostics.errors.push_back( phase + ": point-data array " + name +
+                                      " was not loaded" );
     }
     return array;
 }
@@ -250,23 +253,20 @@ void ThrowNetcdfDiagnostics( const NetcdfDiagnostics& diagnostics )
     }
 }
 
-class GearnNetcdfFormatAdapter : public cvt::NetcdfFormatAdapter
+class GearnNetcdfFormatAdapter : public NetcdfFormatAdapter
 {
 public:
     /// 対応形式名を返す。
     const char* name() const override { return "GEARN"; }
     /// GEARNデータの変換先格子種別を返す。
-    cvt::NetcdfGridType gridType() const override
-    {
-        return cvt::NetcdfGridType::UnstructuredGrid;
-    }
+    NetcdfGridType gridType() const override { return NetcdfGridType::UnstructuredGrid; }
 
     /**
      * @brief メタデータがGEARN形式に必要な変数構成を持つかを判定する。
      * @param metadata 判定対象の変数メタデータ。
      * @return GEARN形式の条件を満たす場合はtrue、それ以外はfalse。
      */
-    bool matches( const cvt::NetcdfMetadata& metadata ) const override
+    bool matches( const NetcdfMetadata& metadata ) const override
     {
         return metadata.hasVariable( "XDIS", "(NCX)" ) &&
                metadata.hasVariable( "YDIS", "(NCY)" ) &&
@@ -441,7 +441,7 @@ public:
         normalized->GetPointData()->AddArray( w );
         normalized->GetPointData()->AddArray( cs137 );
 
-        return std::make_shared<cvt::VtkXmlUnstructuredGrid>( normalized.GetPointer() );
+        return std::make_shared<VtkXmlUnstructuredGrid>( normalized.GetPointer() );
     }
 
 };
@@ -450,9 +450,9 @@ public:
  * @brief 利用可能なNetCDF形式アダプターの一覧を返す。
  * @return 登録済みアダプターの一覧。
  */
-const std::vector<std::shared_ptr<cvt::NetcdfFormatAdapter>>& RegisteredNetcdfAdapters()
+const std::vector<std::shared_ptr<NetcdfFormatAdapter>>& RegisteredNetcdfAdapters()
 {
-    static const std::vector<std::shared_ptr<cvt::NetcdfFormatAdapter>> adapters = {
+    static const std::vector<std::shared_ptr<NetcdfFormatAdapter>> adapters = {
         std::make_shared<GearnNetcdfFormatAdapter>()
     };
     return adapters;
@@ -465,31 +465,29 @@ const std::vector<std::shared_ptr<cvt::NetcdfFormatAdapter>>& RegisteredNetcdfAd
  * @return 型が一致する場合はtrue、それ以外はfalse。
  */
 bool MatchesNetcdfGridType( const std::shared_ptr<kvs::FileFormatBase>& format,
-                            cvt::NetcdfGridType grid_type )
+                            NetcdfGridType grid_type )
 {
     switch ( grid_type )
     {
-    case cvt::NetcdfGridType::ImageData:
-        return dynamic_cast<cvt::VtkXmlImageData*>( format.get() ) != nullptr;
-    case cvt::NetcdfGridType::RectilinearGrid:
-        return dynamic_cast<cvt::VtkXmlRectilinearGrid*>( format.get() ) != nullptr;
-    case cvt::NetcdfGridType::StructuredGrid:
-        return dynamic_cast<cvt::VtkXmlStructuredGrid*>( format.get() ) != nullptr;
-    case cvt::NetcdfGridType::UnstructuredGrid:
-        return dynamic_cast<cvt::VtkXmlUnstructuredGrid*>( format.get() ) != nullptr;
-    case cvt::NetcdfGridType::Unknown:
+    case NetcdfGridType::ImageData:
+        return dynamic_cast<VtkXmlImageData*>( format.get() ) != nullptr;
+    case NetcdfGridType::RectilinearGrid:
+        return dynamic_cast<VtkXmlRectilinearGrid*>( format.get() ) != nullptr;
+    case NetcdfGridType::StructuredGrid:
+        return dynamic_cast<VtkXmlStructuredGrid*>( format.get() ) != nullptr;
+    case NetcdfGridType::UnstructuredGrid:
+        return dynamic_cast<VtkXmlUnstructuredGrid*>( format.get() ) != nullptr;
+    case NetcdfGridType::Unknown:
     default:
         return false;
     }
 }
 } // namespace detail
-} // namespace cvt
 
 /**
  * @brief 指定した名前と次元を持つ変数がメタデータに存在するかを判定する。
  */
-bool cvt::NetcdfMetadata::hasVariable( const std::string& name,
-                                       const std::string& dimensions ) const
+bool NetcdfMetadata::hasVariable( const std::string& name, const std::string& dimensions ) const
 {
     const auto found = m_variable_dimensions.find( name );
     return found != m_variable_dimensions.end() && found->second == dimensions;
@@ -501,23 +499,23 @@ bool cvt::NetcdfMetadata::hasVariable( const std::string& name,
  * @param metadata 読み込んだメタデータの格納先。
  * @return 読み込みに成功した場合はtrue、それ以外はfalse。
  */
-bool cvt::Netcdf::ReadMetadata( const std::string& filename, cvt::NetcdfMetadata& metadata )
+bool Netcdf::ReadMetadata( const std::string& filename, NetcdfMetadata& metadata )
 {
     try
     {
-        cvt::detail::NetcdfDiagnostics diagnostics;
+        detail::NetcdfDiagnostics diagnostics;
         diagnostics.phase = "NetCDF format detection";
         vtkNew<vtkNetCDFCFReader> reader;
         vtkNew<vtkCallbackCommand> callback;
-        cvt::detail::ObserveNetcdfReader( reader, callback, diagnostics );
+        detail::ObserveNetcdfReader( reader, callback, diagnostics );
         reader->SetFileName( filename.c_str() );
         if ( reader->UpdateMetaData() == 0 )
         {
             diagnostics.errors.push_back(
                 diagnostics.phase + ": failed to read NetCDF metadata from " + filename );
         }
-        cvt::detail::CheckNetcdfReaderError( reader, diagnostics.phase, diagnostics );
-        cvt::detail::ThrowNetcdfDiagnostics( diagnostics );
+        detail::CheckNetcdfReaderError( reader, diagnostics.phase, diagnostics );
+        detail::ThrowNetcdfDiagnostics( diagnostics );
 
         // 形式判別で再利用できるよう、全変数の名前と次元を保存する。
         vtkStringArray* dimensions = reader->GetVariableDimensions();
@@ -541,11 +539,10 @@ bool cvt::Netcdf::ReadMetadata( const std::string& filename, cvt::NetcdfMetadata
  * @param metadata 判定対象の変数メタデータ。
  * @return 一意に選択できたアダプター。未対応または曖昧な場合はnullptr。
  */
-const cvt::NetcdfFormatAdapter* cvt::Netcdf::SelectAdapter(
-    const cvt::NetcdfMetadata& metadata )
+const NetcdfFormatAdapter* Netcdf::SelectAdapter( const NetcdfMetadata& metadata )
 {
-    std::vector<const cvt::NetcdfFormatAdapter*> matches;
-    for ( const auto& adapter : cvt::detail::RegisteredNetcdfAdapters() )
+    std::vector<const NetcdfFormatAdapter*> matches;
+    for ( const auto& adapter : detail::RegisteredNetcdfAdapters() )
     {
         if ( adapter->matches( metadata ) )
         {
@@ -582,24 +579,24 @@ const cvt::NetcdfFormatAdapter* cvt::Netcdf::SelectAdapter(
  * @brief 指定したNetCDFファイルを読み込んでオブジェクトを初期化する。
  * @param filename 入力ファイル名。
  */
-cvt::Netcdf::Netcdf( const std::string& filename ) { this->read( filename ); }
+Netcdf::Netcdf( const std::string& filename ) { this->read( filename ); }
 
 /**
  * @brief NetCDFファイルの形式を判別し、対応する格子データへ変換する。
  * @param filename 入力ファイル名。
  * @return 読み込みと変換に成功した場合はtrue、それ以外はfalse。
  */
-bool cvt::Netcdf::read( const std::string& filename )
+bool Netcdf::read( const std::string& filename )
 {
     // 前回の読み込み結果を破棄し、失敗状態から処理を開始する。
     this->setFilename( filename );
     this->setSuccess( false );
     m_format.reset();
     m_format_name.clear();
-    m_grid_type = cvt::NetcdfGridType::Unknown;
+    m_grid_type = NetcdfGridType::Unknown;
 
     // メタデータに基づいて入力形式を判別する。
-    cvt::NetcdfMetadata metadata;
+    NetcdfMetadata metadata;
     if ( !ReadMetadata( filename, metadata ) )
     {
         return false;
@@ -615,8 +612,7 @@ bool cvt::Netcdf::read( const std::string& filename )
     try
     {
         m_format = adapter->read( filename );
-        if ( !m_format ||
-             !cvt::detail::MatchesNetcdfGridType( m_format, adapter->gridType() ) )
+        if ( !m_format || !detail::MatchesNetcdfGridType( m_format, adapter->gridType() ) )
         {
             kvsMessageError( ( std::string( adapter->name() ) +
                                " NetCDF adapter returned an invalid VTK grid type for " +
@@ -649,7 +645,7 @@ bool cvt::Netcdf::read( const std::string& filename )
  * @param filename 出力ファイル名。
  * @return 常にfalse。
  */
-bool cvt::Netcdf::write( const std::string& filename )
+bool Netcdf::write( const std::string& filename )
 {
     this->setFilename( filename );
     this->setSuccess( false );
@@ -663,9 +659,9 @@ bool cvt::Netcdf::write( const std::string& filename )
  * @param info 判別結果の格納先。
  * @return 判別に成功した場合はtrue、それ以外はfalse。
  */
-bool cvt::Netcdf::Probe( const std::string& filename, cvt::NetcdfFileInfo& info )
+bool Netcdf::Probe( const std::string& filename, NetcdfFileInfo& info )
 {
-    cvt::NetcdfMetadata metadata;
+    NetcdfMetadata metadata;
     if ( !ReadMetadata( filename, metadata ) )
     {
         return false;
@@ -682,3 +678,5 @@ bool cvt::Netcdf::Probe( const std::string& filename, cvt::NetcdfFileInfo& info 
     info.grid_type = adapter->gridType();
     return true;
 }
+} // namespace ExtendedFileFormat
+} // namespace kvs

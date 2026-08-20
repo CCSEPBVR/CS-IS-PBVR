@@ -41,6 +41,7 @@ public:
     float   m_min_value;
     float   m_max_value;
     std::string m_file_path;
+    std::vector<std::string> m_time_step_file_paths;
     bool is_binary;
     std::vector<IngredientsStep> m_ingredient_step;
     
@@ -48,7 +49,7 @@ public:
 
 public:
     int loadPFI( const std::string& filename );
-    void setFilePath( std::string& filename, const int st, const int xvl );
+    void setFilePath( std::string& filename, const int st, const int xvl ) const;
 };
 
 
@@ -70,6 +71,8 @@ public:
     int loadPvtu( const std::string& filename );
     int loadSeriesPvtu( const std::string& filename );
     int loadEnsightGold( const std::string& filename );
+    int loadNetcdf( const std::string& filename );
+    int loadSeriesNetcdf( const std::string& filename );
 #endif
     int getFileIndex( const int vl, int* xvl ) const;
     void cropTimeStep( const int s, const int e );

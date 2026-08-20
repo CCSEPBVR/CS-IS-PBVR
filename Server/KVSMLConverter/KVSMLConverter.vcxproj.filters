@@ -203,6 +203,12 @@
     <ClInclude Include="Source\TimeSeriesFiles\NumeralSequenceFiles.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
+    <ClInclude Include="Source\TimeSeriesFiles\NumericFileSequence.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\TimeSeriesFiles\SeriesFileResolver.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
     <ClInclude Include="Source\TimeSeriesFiles\EnSight\EnSightGold.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>

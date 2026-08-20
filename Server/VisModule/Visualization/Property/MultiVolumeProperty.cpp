@@ -9,6 +9,7 @@
 
 #ifdef EXTEND_FILE_FORMAT 
 #include <kvs/extendedfileformat/VtkXmlMultiBlock>
+#include <kvs/extendedfileformat/NumericFileSequence>
 #include <kvs/extendedfileformat/NumeralSequenceFiles>
 #include <kvs/extendedfileformat/VtkXmlUnstructuredGrid>
 #include <kvs/extendedfileformat/VtkImporter>
@@ -16,6 +17,7 @@
 #include <kvs/extendedfileformat/AvsUcd>
 #include <kvs/extendedfileformat/VtkXmlPUnstructuredGrid>
 #include <kvs/extendedfileformat/EnSightGoldBinary>
+#include <kvs/extendedfileformat/Netcdf>
 #endif
 
 //--------------------------------------------------------------------------
@@ -267,7 +269,7 @@ int MultiVolumeProperty::loadPFI( const std::string& filename )
 }
 
 
-void MultiVolumeProperty::setFilePath(std::string& filename ,const int st , const int xvl)
+void MultiVolumeProperty::setFilePath(std::string& filename ,const int st , const int xvl) const
 {
     
     std::size_t found_pfi  = m_file_path.find(".pfi");
@@ -277,6 +279,7 @@ void MultiVolumeProperty::setFilePath(std::string& filename ,const int st , cons
     std::size_t found_inp  = m_file_path.find(".inp");
     std::size_t found_pvtu = m_file_path.find(".pvtu");
     std::size_t found_case = m_file_path.find(".case");
+    std::size_t found_nc   = m_file_path.find(".nc");
 
     if ( found_pfi != std::string::npos )
     {
@@ -290,12 +293,26 @@ void MultiVolumeProperty::setFilePath(std::string& filename ,const int st , cons
             + ifpx.baseName() + suffix.str() + ".kvsml";
     }
 #ifdef EXTEND_FILE_FORMAT 
+    else if ( !m_time_step_file_paths.empty() )
+    {
+        const int time_step_index = st - m_start_step;
+        if ( time_step_index < 0 ||
+             time_step_index >= static_cast<int>( m_time_step_file_paths.size() ) )
+        {
+            filename.clear();
+            visModuleMessageError( "Time step '%d' is out of range for '%s'.", st,
+                                   m_file_path.c_str() );
+            return;
+        }
+        filename = m_time_step_file_paths[time_step_index];
+    }
     else if ( found_vtm  != std::string::npos ||
             found_vtu  != std::string::npos ||
             found_vti  != std::string::npos ||
             found_inp  != std::string::npos ||
             found_pvtu != std::string::npos || 
-            found_case != std::string::npos 
+            found_case != std::string::npos ||
+            found_nc   != std::string::npos
             )
     {
         //param.m_input_data = mvp.m_file_path;
@@ -764,6 +781,15 @@ int MultiVolumePropertyList::loadSeriesVtm( const std::string& filename )
 {
     std::string filepath = ConvertToUnixPath(filename);
     kvs::ExtendedFileFormat::NumeralSequenceFiles<kvs::ExtendedFileFormat::VtkXmlMultiBlock> time_series( filepath );
+    if ( time_series.isFailure() )
+    {
+        m_list.clear();
+        m_total_min_subvolume_coord.clear();
+        m_total_max_subvolume_coord.clear();
+        visModuleMessageError( "%s", time_series.errorMessage().c_str() );
+        return -1;
+    }
+    const auto& time_step_file_paths = time_series.filePaths();
     int last_time_step = time_series.numberOfFiles() - 1;
     int time_step = 0;
     std::unordered_map<int, int> sub_volume_ids;
@@ -999,6 +1025,7 @@ int MultiVolumePropertyList::loadSeriesVtm( const std::string& filename )
         mvp.m_min_subvolume_coord.resize(mvp.m_number_subvolumes);
         mvp.m_max_subvolume_coord.resize(mvp.m_number_subvolumes);
         mvp.m_file_path = filename;
+        mvp.m_time_step_file_paths = time_step_file_paths;
         mvp.m_min_value = min_values[cell_type];
         mvp.m_max_value = max_values[cell_type];
 
@@ -1256,6 +1283,15 @@ int MultiVolumePropertyList::loadSeriesVtu( const std::string& filename )
 {
     std::string filepath = ConvertToUnixPath(filename);
     kvs::ExtendedFileFormat::NumeralSequenceFiles<kvs::ExtendedFileFormat::VtkXmlUnstructuredGrid> time_series( filepath );
+    if ( time_series.isFailure() )
+    {
+        m_list.clear();
+        m_total_min_subvolume_coord.clear();
+        m_total_max_subvolume_coord.clear();
+        visModuleMessageError( "%s", time_series.errorMessage().c_str() );
+        return -1;
+    }
+    const auto& time_step_file_paths = time_series.filePaths();
     int last_time_step = time_series.numberOfFiles() - 1;
     int time_step = 0;
     int sub_volume_id = 0;
@@ -1352,6 +1388,7 @@ int MultiVolumePropertyList::loadSeriesVtu( const std::string& filename )
         mvp.m_min_subvolume_coord.resize(mvp.m_number_subvolumes);
         mvp.m_max_subvolume_coord.resize(mvp.m_number_subvolumes);
         mvp.m_file_path = filename;
+        mvp.m_time_step_file_paths = time_step_file_paths;
         mvp.m_min_value = min_values[cell_type];
         mvp.m_max_value = max_values[cell_type];
         float sub_x_min, sub_y_min, sub_z_min;
@@ -1515,6 +1552,15 @@ int MultiVolumePropertyList::loadSeriesVti( const std::string& filename )
 {
     std::string filepath = ConvertToUnixPath(filename);
     kvs::ExtendedFileFormat::NumeralSequenceFiles<kvs::ExtendedFileFormat::VtkXmlImageData> time_series( filepath );
+    if ( time_series.isFailure() )
+    {
+        m_list.clear();
+        m_total_min_subvolume_coord.clear();
+        m_total_max_subvolume_coord.clear();
+        visModuleMessageError( "%s", time_series.errorMessage().c_str() );
+        return -1;
+    }
+    const auto& time_step_file_paths = time_series.filePaths();
     int last_time_step = time_series.numberOfFiles() - 1;
     int time_step = 0;
     int sub_volume_id = 0;
@@ -1606,6 +1652,7 @@ int MultiVolumePropertyList::loadSeriesVti( const std::string& filename )
     mvp.m_min_subvolume_coord.resize(mvp.m_number_subvolumes);
     mvp.m_max_subvolume_coord.resize(mvp.m_number_subvolumes);
     mvp.m_file_path = filename;
+    mvp.m_time_step_file_paths = time_step_file_paths;
     mvp.m_min_value = min_values;
     mvp.m_max_value = max_values;
     sub_x_min = min_object_coords[0];
@@ -2056,6 +2103,15 @@ int MultiVolumePropertyList::loadSeriesPvtu( const std::string& filename )
 {
     std::string filepath = ConvertToUnixPath(filename);
     kvs::ExtendedFileFormat::NumeralSequenceFiles<kvs::ExtendedFileFormat::VtkXmlPUnstructuredGrid> time_series( filepath );
+    if ( time_series.isFailure() )
+    {
+        m_list.clear();
+        m_total_min_subvolume_coord.clear();
+        m_total_max_subvolume_coord.clear();
+        visModuleMessageError( "%s", time_series.errorMessage().c_str() );
+        return -1;
+    }
+    const auto& time_step_file_paths = time_series.filePaths();
     int last_time_step = time_series.numberOfFiles() - 1;
     int time_step = 0;
     std::unordered_map<int, int> sub_volume_ids;
@@ -2197,6 +2253,7 @@ int MultiVolumePropertyList::loadSeriesPvtu( const std::string& filename )
         mvp.m_min_subvolume_coord.resize(mvp.m_number_subvolumes);
         mvp.m_max_subvolume_coord.resize(mvp.m_number_subvolumes);
         mvp.m_file_path = filename;
+        mvp.m_time_step_file_paths = time_step_file_paths;
         mvp.m_min_value = min_values[cell_type];
         mvp.m_max_value = max_values[cell_type];
 
@@ -2522,6 +2579,353 @@ int MultiVolumePropertyList::loadEnsightGold( const std::string& filename )
 
     return m_list.size();
 }
+
+int MultiVolumePropertyList::loadNetcdf( const std::string& filename )
+{
+    using kvs::ExtendedFileFormat::Netcdf;
+    using kvs::ExtendedFileFormat::NetcdfFileInfo;
+    using kvs::ExtendedFileFormat::NetcdfGridType;
+    using kvs::ExtendedFileFormat::VtkImporter;
+    using kvs::ExtendedFileFormat::VtkXmlUnstructuredGrid;
+
+    m_list.clear();
+    m_total_min_subvolume_coord.clear();
+    m_total_max_subvolume_coord.clear();
+
+    if ( filename.find( '*' ) != std::string::npos )
+    {
+        visModuleMessageError(
+            "NetCDF wildcard path must be loaded with loadSeriesNetcdf(): '%s'.",
+            filename.c_str() );
+        return -1;
+    }
+
+    NetcdfFileInfo file_info;
+    if ( !Netcdf::Probe( filename, file_info ) )
+    {
+        return -1;
+    }
+
+    if ( file_info.grid_type != NetcdfGridType::UnstructuredGrid )
+    {
+        visModuleMessageError( "Unsupported NetCDF grid type in '%s'.",
+                               file_info.path.c_str() );
+        return -1;
+    }
+
+    Netcdf input( file_info.path );
+    if ( input.isFailure() )
+    {
+        visModuleMessageError( "Cannot read NetCDF file '%s'.", file_info.path.c_str() );
+        return -1;
+    }
+
+    auto* input_vtu = dynamic_cast<VtkXmlUnstructuredGrid*>( input.format().get() );
+    if ( !input_vtu )
+    {
+        visModuleMessageError( "NetCDF file '%s' did not produce an unstructured grid.",
+                               file_info.path.c_str() );
+        return -1;
+    }
+
+    int imported_cell_types = 0;
+    MultiVolumeProperty mvp;
+    for ( auto vtu : input_vtu->eachCellType() )
+    {
+        VtkImporter<VtkXmlUnstructuredGrid> importer( &vtu );
+        if ( importer.isFailure() )
+        {
+            visModuleMessageError( "Cannot import NetCDF file '%s'.",
+                                   file_info.path.c_str() );
+            return -1;
+        }
+
+        kvs::UnstructuredVolumeObject* object = &importer;
+        ++imported_cell_types;
+        if ( imported_cell_types > 1 )
+        {
+            visModuleMessageError(
+                "NetCDF file '%s' contains more than one cell type.",
+                file_info.path.c_str() );
+            return -1;
+        }
+
+        mvp.m_number_nodes = static_cast<int>( object->nnodes() );
+        mvp.m_number_elements = static_cast<int>( object->ncells() );
+        mvp.m_elem_type = static_cast<int>( object->cellType() );
+        mvp.m_number_ingredients = static_cast<int>( object->veclen() );
+        mvp.m_min_object_coord.set(
+            object->minExternalCoord()[0],
+            object->minExternalCoord()[1],
+            object->minExternalCoord()[2] );
+        mvp.m_max_object_coord.set(
+            object->maxExternalCoord()[0],
+            object->maxExternalCoord()[1],
+            object->maxExternalCoord()[2] );
+        mvp.m_min_subvolume_coord.resize( 1 );
+        mvp.m_max_subvolume_coord.resize( 1 );
+        mvp.m_min_subvolume_coord[0].set(
+            object->minObjectCoord()[0],
+            object->minObjectCoord()[1],
+            object->minObjectCoord()[2] );
+        mvp.m_max_subvolume_coord[0].set(
+            object->maxObjectCoord()[0],
+            object->maxObjectCoord()[1],
+            object->maxObjectCoord()[2] );
+        mvp.m_min_value = static_cast<float>( object->minValue() );
+        mvp.m_max_value = static_cast<float>( object->maxValue() );
+    }
+
+    if ( imported_cell_types == 0 )
+    {
+        visModuleMessageError( "NetCDF file '%s' contains no supported cells.",
+                               file_info.path.c_str() );
+        return -1;
+    }
+
+    mvp.m_file_type = 4;
+    mvp.m_number_files = 1;
+    mvp.m_start_step = 0;
+    mvp.m_end_steps = 0;
+    mvp.m_number_steps = 1;
+    mvp.m_number_subvolumes = 1;
+    mvp.m_file_path = filename;
+    mvp.m_time_step_file_paths.push_back( file_info.path );
+
+    m_total_number_nodes = mvp.m_number_nodes;
+    m_total_number_elements = mvp.m_number_elements;
+    m_total_number_files = mvp.m_number_files;
+    m_total_start_steps = mvp.m_start_step;
+    m_total_last_step = mvp.m_end_steps;
+    m_total_number_steps = mvp.m_number_steps;
+    m_total_number_subvolumes = mvp.m_number_subvolumes;
+    m_total_min_object_coord = mvp.m_min_object_coord;
+    m_total_max_object_coord = mvp.m_max_object_coord;
+    m_total_min_subvolume_coord = mvp.m_min_subvolume_coord;
+    m_total_max_subvolume_coord = mvp.m_max_subvolume_coord;
+    m_total_min_value = mvp.m_min_value;
+    m_total_max_value = mvp.m_max_value;
+    m_total_number_ingredients = mvp.m_number_ingredients;
+    m_total_ingredient.resize( m_total_number_ingredients );
+    m_list.push_back( mvp );
+
+    return static_cast<int>( m_list.size() );
+}
+
+int MultiVolumePropertyList::loadSeriesNetcdf( const std::string& filename )
+{
+    using kvs::ExtendedFileFormat::Netcdf;
+    using kvs::ExtendedFileFormat::NetcdfFileInfo;
+    using kvs::ExtendedFileFormat::NetcdfGridType;
+    using kvs::ExtendedFileFormat::VtkImporter;
+    using kvs::ExtendedFileFormat::VtkXmlUnstructuredGrid;
+
+    m_list.clear();
+    m_total_min_subvolume_coord.clear();
+    m_total_max_subvolume_coord.clear();
+
+    const kvs::ExtendedFileFormat::NumericFileSequence sequence(
+        ConvertToUnixPath( filename ) );
+    if ( sequence.isFailure() )
+    {
+        visModuleMessageError( "%s", sequence.errorMessage().c_str() );
+        return -1;
+    }
+
+    std::vector<NetcdfFileInfo> file_infos;
+    file_infos.reserve( sequence.filePaths().size() );
+    std::string series_format;
+    NetcdfGridType series_grid_type = NetcdfGridType::Unknown;
+    for ( const auto& path : sequence.filePaths() )
+    {
+        NetcdfFileInfo file_info;
+        if ( !Netcdf::Probe( path, file_info ) ) return -1;
+        if ( file_infos.empty() )
+        {
+            series_format = file_info.format_name;
+            series_grid_type = file_info.grid_type;
+        }
+        else if ( file_info.format_name != series_format ||
+                  file_info.grid_type != series_grid_type )
+        {
+            visModuleMessageError(
+                "NetCDF time series mixes formats or VTK grid types at '%s'.",
+                file_info.path.c_str() );
+            return -1;
+        }
+        file_infos.push_back( file_info );
+    }
+
+    int number_of_nodes = 0;
+    int number_of_elements = 0;
+    int number_of_ingredients = 0;
+    int cell_type = 0;
+    kvs::Vec3 min_external_coord;
+    kvs::Vec3 max_external_coord;
+    kvs::Vec3 min_object_coord;
+    kvs::Vec3 max_object_coord;
+    float min_value = FLT_MAX;
+    float max_value = -FLT_MAX;
+    bool first_step = true;
+    std::string expected_format;
+
+    for ( const auto& file_info : file_infos )
+    {
+        if ( file_info.grid_type != NetcdfGridType::UnstructuredGrid )
+        {
+            visModuleMessageError( "Unsupported NetCDF grid type in '%s'.",
+                                   file_info.path.c_str() );
+            m_list.clear();
+            return -1;
+        }
+
+        Netcdf input( file_info.path );
+        if ( input.isFailure() )
+        {
+            visModuleMessageError( "Cannot read NetCDF file '%s'.", file_info.path.c_str() );
+            m_list.clear();
+            return -1;
+        }
+
+        auto* input_vtu = dynamic_cast<VtkXmlUnstructuredGrid*>( input.format().get() );
+        if ( !input_vtu )
+        {
+            visModuleMessageError( "NetCDF file '%s' did not produce an unstructured grid.",
+                                   file_info.path.c_str() );
+            m_list.clear();
+            return -1;
+        }
+
+        int imported_cell_types = 0;
+        for ( auto vtu : input_vtu->eachCellType() )
+        {
+            VtkImporter<VtkXmlUnstructuredGrid> importer( &vtu );
+            if ( importer.isFailure() )
+            {
+                visModuleMessageError( "Cannot import NetCDF file '%s'.",
+                                       file_info.path.c_str() );
+                m_list.clear();
+                return -1;
+            }
+
+            kvs::UnstructuredVolumeObject* object = &importer;
+            ++imported_cell_types;
+            if ( imported_cell_types > 1 )
+            {
+                visModuleMessageError(
+                    "NetCDF file '%s' contains more than one cell type.",
+                    file_info.path.c_str() );
+                m_list.clear();
+                return -1;
+            }
+
+            if ( first_step )
+            {
+                expected_format = input.formatName();
+                number_of_nodes = static_cast<int>( object->nnodes() );
+                number_of_elements = static_cast<int>( object->ncells() );
+                number_of_ingredients = static_cast<int>( object->veclen() );
+                cell_type = static_cast<int>( object->cellType() );
+                min_external_coord = object->minExternalCoord();
+                max_external_coord = object->maxExternalCoord();
+                min_object_coord = object->minObjectCoord();
+                max_object_coord = object->maxObjectCoord();
+            }
+            else
+            {
+                if ( input.formatName() != expected_format ||
+                     static_cast<int>( object->cellType() ) != cell_type ||
+                     static_cast<int>( object->veclen() ) != number_of_ingredients ||
+                     static_cast<int>( object->nnodes() ) != number_of_nodes ||
+                     static_cast<int>( object->ncells() ) != number_of_elements )
+                {
+                    visModuleMessageError(
+                        "NetCDF time-series structure differs at '%s'.",
+                        file_info.path.c_str() );
+                    m_list.clear();
+                    return -1;
+                }
+
+                for ( int i = 0; i < 3; ++i )
+                {
+                    min_external_coord[i] =
+                        std::min( min_external_coord[i], object->minExternalCoord()[i] );
+                    max_external_coord[i] =
+                        std::max( max_external_coord[i], object->maxExternalCoord()[i] );
+                    min_object_coord[i] =
+                        std::min( min_object_coord[i], object->minObjectCoord()[i] );
+                    max_object_coord[i] =
+                        std::max( max_object_coord[i], object->maxObjectCoord()[i] );
+                }
+            }
+
+            min_value = std::min( min_value, static_cast<float>( object->minValue() ) );
+            max_value = std::max( max_value, static_cast<float>( object->maxValue() ) );
+            first_step = false;
+        }
+
+        if ( imported_cell_types == 0 )
+        {
+            visModuleMessageError( "NetCDF file '%s' contains no supported cells.",
+                                   file_info.path.c_str() );
+            m_list.clear();
+            return -1;
+        }
+    }
+
+    if ( first_step )
+    {
+        return -1;
+    }
+
+    MultiVolumeProperty mvp;
+    mvp.m_number_nodes = number_of_nodes;
+    mvp.m_number_elements = number_of_elements;
+    mvp.m_elem_type = cell_type;
+    mvp.m_file_type = 4;
+    mvp.m_number_files = static_cast<int>( file_infos.size() );
+    mvp.m_number_ingredients = number_of_ingredients;
+    mvp.m_start_step = 0;
+    mvp.m_end_steps = static_cast<int>( file_infos.size() ) - 1;
+    mvp.m_number_steps = static_cast<int>( file_infos.size() );
+    mvp.m_number_subvolumes = 1;
+    mvp.m_min_object_coord.set(
+        min_external_coord[0], min_external_coord[1], min_external_coord[2] );
+    mvp.m_max_object_coord.set(
+        max_external_coord[0], max_external_coord[1], max_external_coord[2] );
+    mvp.m_min_subvolume_coord.resize( 1 );
+    mvp.m_max_subvolume_coord.resize( 1 );
+    mvp.m_min_subvolume_coord[0].set(
+        min_object_coord[0], min_object_coord[1], min_object_coord[2] );
+    mvp.m_max_subvolume_coord[0].set(
+        max_object_coord[0], max_object_coord[1], max_object_coord[2] );
+    mvp.m_min_value = min_value;
+    mvp.m_max_value = max_value;
+    mvp.m_file_path = filename;
+    for ( const auto& file_info : file_infos )
+    {
+        mvp.m_time_step_file_paths.push_back( file_info.path );
+    }
+
+    m_total_number_nodes = mvp.m_number_nodes;
+    m_total_number_elements = mvp.m_number_elements;
+    m_total_number_files = mvp.m_number_files;
+    m_total_start_steps = mvp.m_start_step;
+    m_total_last_step = mvp.m_end_steps;
+    m_total_number_steps = mvp.m_number_steps;
+    m_total_number_subvolumes = mvp.m_number_subvolumes;
+    m_total_min_object_coord = mvp.m_min_object_coord;
+    m_total_max_object_coord = mvp.m_max_object_coord;
+    m_total_min_subvolume_coord = mvp.m_min_subvolume_coord;
+    m_total_max_subvolume_coord = mvp.m_max_subvolume_coord;
+    m_total_min_value = mvp.m_min_value;
+    m_total_max_value = mvp.m_max_value;
+    m_total_number_ingredients = mvp.m_number_ingredients;
+    m_total_ingredient.resize( m_total_number_ingredients );
+    m_list.push_back( mvp );
+
+    return static_cast<int>( m_list.size() );
+}
 #endif
 
 void MultiVolumePropertyList::calculate_ingredient_min_max( const MultiVolumeProperty &mvp, 
@@ -2582,6 +2986,7 @@ void MultiVolumePropertyList::loadVolumeDataFile( const std::string& filename )
                     std::size_t found_inp  = filename.find(".inp");
                     std::size_t found_pvtu = filename.find(".pvtu");
                     std::size_t found_case = filename.find(".case");
+                    std::size_t found_nc   = filename.find(".nc");
 
                     if ( found_pfl != std::string::npos )
                     {
@@ -2730,6 +3135,26 @@ void MultiVolumePropertyList::loadVolumeDataFile( const std::string& filename )
                         else
                         {
                             std::cout << ".caseファイルは連番ファイルに対応していません" << std::endl;
+                        }
+                    }
+                    else if ( found_nc != std::string::npos )
+                    {
+                        std::string netcdf_file = filename;
+                        std::cout << ".ncファイルが選択されました" << std::endl;
+                        std::size_t found_asterisk = netcdf_file.find( '*' );
+#ifdef _WIN32
+                        std::replace(netcdf_file.begin(), netcdf_file.end(), '\\', '/');
+#endif
+
+                        // 単一ファイルの場合
+                        if ( found_asterisk == std::string::npos )
+                        {
+                            this->loadNetcdf( netcdf_file );
+                        }
+                        // 連番ファイルの場合
+                        else
+                        {
+                            this->loadSeriesNetcdf( netcdf_file );
                         }
                     }
 #endif

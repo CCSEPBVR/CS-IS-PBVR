@@ -8,6 +8,7 @@
 #include <SupportExtendedFileFormat/FileFormat/CGNS/Cgns.h>
 #include <SupportExtendedFileFormat/FileFormat/KVSML/KvsmlStructuredVolumeObject.h>
 #include <SupportExtendedFileFormat/FileFormat/KVSML/KvsmlUnstructuredVolumeObject.h>
+#include <SupportExtendedFileFormat/FileFormat/NetCDF/Netcdf.h>
 #include <SupportExtendedFileFormat/FileFormat/PLOT3D/Plot3d.h>
 #include <SupportExtendedFileFormat/FileFormat/STL/Stl.h>
 #include <SupportExtendedFileFormat/FileFormat/VTK/VtkPolyData.h>
@@ -25,6 +26,7 @@
 #include <SupportExtendedFileFormat/FileFormat/VTK/VtkXmlStructuredGrid.h>
 #include <SupportExtendedFileFormat/FileFormat/VTK/VtkXmlUnstructuredGrid.h>
 #include <SupportExtendedFileFormat/Importer/VtkImport.h>
+#include <SupportExtendedFileFormat/TimeSeriesFiles/NumericFileSequence.h>
 #include <SupportExtendedFileFormat/TimeSeriesFiles/NumeralSequenceFiles.h>
 #include <SupportExtendedFileFormat/TimeSeriesFiles/EnSight/EnSightGold.h>
 #include <SupportExtendedFileFormat/TimeSeriesFiles/EnSight/EnSightGoldBinary.h>

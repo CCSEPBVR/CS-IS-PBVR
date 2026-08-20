@@ -210,7 +210,9 @@
     <ClInclude Include="Source\PBVRFileInformation\UnstructuredPfi.h" />
     <ClInclude Include="Source\TimeSeriesFiles\EnSight\EnSightGold.h" />
     <ClInclude Include="Source\TimeSeriesFiles\EnSight\EnSightGoldBinary.h" />
+    <ClInclude Include="Source\TimeSeriesFiles\NumericFileSequence.h" />
     <ClInclude Include="Source\TimeSeriesFiles\NumeralSequenceFiles.h" />
+    <ClInclude Include="Source\TimeSeriesFiles\SeriesFileResolver.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -8,16 +8,11 @@
  * You should have received a copy of the CC0 legal code along with this
  * work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
  */
-#include <algorithm>
 #include <iostream>
 #include <memory>
 #include <string>
 #include <utility>
 #include <vector>
-
-#include <vtkGlobFileNames.h>
-#include <vtkNew.h>
-#include <vtkStringArray.h>
 
 #include "Exporter/StructuredVolumeObjectExporter.h"
 #include "Exporter/UnstructuredVolumeObjectExporter.h"
@@ -34,16 +29,28 @@
 #include "kvs/UnstructuredVolumeObject"
 #include "kvs/VolumeObjectBase"
 
-struct TimestampedNetcdfFile
+/**
+ * @brief 時系列変換の事前検証で取得したNetCDFファイルの情報。
+ */
+struct SequencedNetcdfFile
 {
-    std::string time_key;
-    std::string path;
-    std::string format_name;
-    cvt::NetcdfGridType grid_type = cvt::NetcdfGridType::Unknown;
+    std::string path; ///< 入力ファイルのパス。
+    std::string format_name; ///< NetCDFアダプターが判定した形式名。
+    cvt::NetcdfGridType grid_type = cvt::NetcdfGridType::Unknown; ///< VTK格子形式。
 };
 
+/**
+ * @brief NetCDFアダプターの出力をKVSボリュームオブジェクトへ変換する。
+ *
+ * NetCDFアダプターが内部で生成したVTKデータの実際の型に対応する
+ * インポーターを選択し、構造格子または非構造格子のボリュームを生成する。
+ *
+ * @param input 読み込み済みのNetCDFデータ。
+ * @return 変換後のKVSボリューム。未対応形式または変換失敗時はnullptr。
+ */
 std::unique_ptr<kvs::VolumeObjectBase> ImportNetcdfVolume( cvt::Netcdf& input )
 {
+    // アダプターが生成したVTK格子形式ごとに対応するインポーターを選択する。
     if ( auto* format = dynamic_cast<cvt::VtkXmlImageData*>( input.format().get() ) )
     {
         auto importer = std::make_unique<cvt::VtkImporter<cvt::VtkXmlImageData>>( format );
@@ -89,6 +96,22 @@ std::unique_ptr<kvs::VolumeObjectBase> ImportNetcdfVolume( cvt::Netcdf& input )
     return nullptr;
 }
 
+/**
+ * @brief 1タイムステップ分のボリュームをKVSMLへ出力し、PFIへ登録する。
+ *
+ * ボリュームの種類に応じたエクスポーターを選び、配列データを外部バイナリ
+ * 形式で書き出す。構造格子の場合は、出力前に座標範囲も更新する。
+ *
+ * @param directory 出力先ディレクトリ。
+ * @param local_base KVSMLおよび外部データに使用するベース名。
+ * @param source エラー表示に使用する入力ファイル名。
+ * @param time_step 出力対象のタイムステップ番号。
+ * @param sub_volume_id サブボリューム番号。
+ * @param sub_volume_count サブボリューム総数。
+ * @param volume 出力対象のKVSボリューム。
+ * @param pfi 出力情報の登録先となるPFIオブジェクト。
+ * @return KVSMLの出力とPFIへの登録に成功した場合はtrue。
+ */
 bool WriteNetcdfVolume( const std::string& directory, const std::string& local_base,
                         const std::string& source, int time_step, int sub_volume_id,
                         int sub_volume_count, kvs::VolumeObjectBase* volume,
@@ -97,6 +120,7 @@ bool WriteNetcdfVolume( const std::string& directory, const std::string& local_b
     volume->print( std::cout, kvs::Indent( 4 ) );
     std::cout << "  Writing to " << directory << " ..." << std::endl;
 
+    // 非構造格子はセルタイプを維持したままKVSMLへ出力する。
     if ( auto* unstructured = dynamic_cast<kvs::UnstructuredVolumeObject*>( volume ) )
     {
         std::cout << "  cell type: " << unstructured->cellType() << std::endl;
@@ -113,6 +137,7 @@ bool WriteNetcdfVolume( const std::string& directory, const std::string& local_b
         return true;
     }
 
+    // 構造格子はオブジェクト座標を外部座標として設定してから出力する。
     if ( auto* structured = dynamic_cast<kvs::StructuredVolumeObject*>( volume ) )
     {
         structured->updateMinMaxCoords();
@@ -136,6 +161,13 @@ bool WriteNetcdfVolume( const std::string& directory, const std::string& local_b
     return false;
 }
 
+/**
+ * @brief 単一のNetCDFファイルをKVSML、PFI、PFLへ変換する。
+ *
+ * @param directory 出力先ディレクトリ。
+ * @param base 出力ファイルに使用するベース名。
+ * @param src 入力NetCDFファイルのパス。
+ */
 void Netcdf2Kvsml( const std::string& directory, const std::string& base,
                    const std::string& src )
 {
@@ -155,17 +187,21 @@ void Netcdf2Kvsml( const std::string& directory, const std::string& base,
         return;
     }
 
+    // 単一ファイルをタイムステップ0、サブボリューム1個として扱う。
     constexpr int time_step = 0;
     constexpr int last_time_step = 0;
     constexpr int sub_volume_id = 1;
     constexpr int sub_volume_count = 1;
     std::string local_base = base;
+
+    // 非構造格子ではセルタイプごとに出力名が重複しないよう識別子を付ける。
     if ( auto* unstructured =
              dynamic_cast<kvs::UnstructuredVolumeObject*>( volume.get() ) )
     {
         local_base += "_" + std::to_string( unstructured->cellType() );
     }
 
+    // PFIにKVSMLの構成情報を記録する。
     cvt::UnstructuredPfi pfi( volume->veclen(), last_time_step, sub_volume_count );
     if ( !WriteNetcdfVolume( directory, local_base, src, time_step, sub_volume_id,
                              sub_volume_count, volume.get(), pfi ) )
@@ -178,6 +214,7 @@ void Netcdf2Kvsml( const std::string& directory, const std::string& base,
         return;
     }
 
+    // PFLに作成したPFIへの参照を記録する。
     cvt::Pfl pfl;
     pfl.registerPfi( directory, local_base );
     if ( !pfl.write( directory, base ) )
@@ -186,32 +223,37 @@ void Netcdf2Kvsml( const std::string& directory, const std::string& base,
     }
 }
 
-bool ListNetcdfTimeSeriesFiles( const std::string& pattern,
-                                std::vector<TimestampedNetcdfFile>& timestamped_files )
+/**
+ * @brief ワイルドカードに一致するNetCDF時系列ファイルを列挙して検証する。
+ *
+ * ファイルを数値順に列挙し、全ファイルのNetCDF形式とVTK格子形式が
+ * 先頭ファイルと一致することを、実データを変換する前に確認する。
+ *
+ * @param file_paths 解決済みで数値順に整列された入力ファイル一覧。
+ * @param sequenced_files 検証済みファイル情報の格納先。
+ * @return 列挙と検証に成功した場合はtrue。
+ */
+bool ListNetcdfTimeSeriesFiles( const std::vector<std::string>& file_paths,
+                                std::vector<SequencedNetcdfFile>& sequenced_files )
 {
-    vtkNew<vtkGlobFileNames> glob;
-    glob->RecurseOff();
-    glob->AddFileNames( pattern.c_str() );
-
-    auto filenames = glob->GetFileNames();
-    if ( filenames->GetNumberOfValues() == 0 )
+    if ( file_paths.empty() )
     {
-        std::cerr << "No NetCDF files matched: " << pattern << std::endl;
+        std::cerr << "The resolved NetCDF time series is empty." << std::endl;
         return false;
     }
 
-    timestamped_files.reserve( filenames->GetNumberOfValues() );
+    sequenced_files.reserve( file_paths.size() );
     std::string expected_format;
     cvt::NetcdfGridType expected_grid_type = cvt::NetcdfGridType::Unknown;
-    for ( int i = 0; i < filenames->GetNumberOfValues(); ++i )
+    for ( const auto& path : file_paths )
     {
-        const std::string path = filenames->GetValue( i );
+        // 軽量な事前調査で形式を判定し、時系列全体の形式を統一する。
         cvt::NetcdfFileInfo info;
-        if ( !cvt::Netcdf::Probe( path, info, true ) )
+        if ( !cvt::Netcdf::Probe( path, info ) )
         {
             return false;
         }
-        if ( i == 0 )
+        if ( sequenced_files.empty() )
         {
             expected_format = info.format_name;
             expected_grid_type = info.grid_type;
@@ -225,50 +267,24 @@ bool ListNetcdfTimeSeriesFiles( const std::string& pattern,
             return false;
         }
 
-        timestamped_files.push_back(
-            { info.time_key, path, info.format_name, info.grid_type } );
+        sequenced_files.push_back( { path, info.format_name, info.grid_type } );
     }
-
-    std::sort(
-        timestamped_files.begin(), timestamped_files.end(),
-        []( const auto& lhs, const auto& rhs ) {
-            return lhs.time_key != rhs.time_key ? lhs.time_key < rhs.time_key
-                                                 : lhs.path < rhs.path;
-        } );
-
-    for ( std::size_t i = 1; i < timestamped_files.size(); ++i )
-    {
-        if ( timestamped_files[i - 1].time_key == timestamped_files[i].time_key )
-        {
-            std::cerr << "Duplicate NetCDF time key "
-                      << timestamped_files[i].time_key << ": "
-                      << timestamped_files[i - 1].path << " and "
-                      << timestamped_files[i].path << std::endl;
-            return false;
-        }
-    }
-
     return true;
 }
 
-std::string NetcdfTimeSeriesBase( const cvt::filesystem::path& pattern )
-{
-    std::string base = pattern.filename().stem().string();
-    const auto wildcard = base.find( '*' );
-    if ( wildcard != std::string::npos )
-    {
-        base.erase( wildcard );
-    }
-    while ( !base.empty() &&
-            ( base.back() == '_' || base.back() == '-' || base.back() == '.' ) )
-    {
-        base.pop_back();
-    }
-    return base;
-}
-
+/**
+ * @brief NetCDF時系列ファイルを一連のKVSML、PFI、PFLへ変換する。
+ *
+ * 各ファイルを数値順のタイムステップとして読み込み、先頭ステップで決定した
+ * ボリューム形式、セル形式、格子形式および成分数が後続ステップでも一致する
+ * ことを確認しながら出力する。
+ *
+ * @param directory 出力先ディレクトリ。
+ * @param base 時系列全体で共通する出力ベース名。
+ * @param file_paths 解決済みで数値順に整列された入力ファイル一覧。
+ */
 void SeriesNetcdf2Kvsml( const std::string& directory, const std::string& base,
-                         const std::string& src )
+                         const std::vector<std::string>& file_paths )
 {
     if ( base.empty() )
     {
@@ -277,13 +293,14 @@ void SeriesNetcdf2Kvsml( const std::string& directory, const std::string& base,
         return;
     }
 
-    std::vector<TimestampedNetcdfFile> timestamped_files;
-    if ( !ListNetcdfTimeSeriesFiles( src, timestamped_files ) )
+    // 全ファイルを先に列挙し、形式が混在していないことを確認する。
+    std::vector<SequencedNetcdfFile> sequenced_files;
+    if ( !ListNetcdfTimeSeriesFiles( file_paths, sequenced_files ) )
     {
         return;
     }
 
-    const int last_time_step = static_cast<int>( timestamped_files.size() ) - 1;
+    const int last_time_step = static_cast<int>( sequenced_files.size() ) - 1;
     constexpr int sub_volume_id = 1;
     constexpr int sub_volume_count = 1;
     int expected_cell_type = -1;
@@ -294,13 +311,14 @@ void SeriesNetcdf2Kvsml( const std::string& directory, const std::string& base,
     std::string local_base;
     std::unique_ptr<cvt::UnstructuredPfi> pfi;
 
-    for ( std::size_t i = 0; i < timestamped_files.size(); ++i )
+    // 数値順に並んだ各ファイルを連続するタイムステップとして変換する。
+    for ( std::size_t i = 0; i < sequenced_files.size(); ++i )
     {
         const int time_step = static_cast<int>( i );
-        const auto& file = timestamped_files[i];
+        const auto& file = sequenced_files[i];
 
-        std::cout << "Reading " << file.path << " as time step " << time_step
-                  << " (" << file.time_key << ") ..." << std::endl;
+        std::cout << "Reading " << file.path << " as time step " << time_step << " ..."
+                  << std::endl;
         cvt::Netcdf input( file.path );
         if ( input.isFailure() || input.formatName() != file.format_name ||
              input.gridType() != file.grid_type )
@@ -331,6 +349,7 @@ void SeriesNetcdf2Kvsml( const std::string& directory, const std::string& base,
             grid_type = static_cast<int>( structured->gridType() );
         }
 
+        // 先頭ステップの構造を基準として、出力名とPFIを初期化する。
         if ( time_step == 0 )
         {
             expected_volume_type = volume->volumeType();
@@ -344,6 +363,7 @@ void SeriesNetcdf2Kvsml( const std::string& directory, const std::string& base,
             pfi = std::make_unique<cvt::UnstructuredPfi>(
                 expected_veclen, last_time_step, sub_volume_count );
         }
+        // 後続ステップのボリューム構造が先頭ステップと一致することを保証する。
         else if ( volume->volumeType() != expected_volume_type ||
                   cell_type != expected_cell_type ||
                   grid_type != expected_grid_type ||
@@ -366,6 +386,7 @@ void SeriesNetcdf2Kvsml( const std::string& directory, const std::string& base,
         }
     }
 
+    // 全タイムステップの出力後に、時系列全体のPFIとPFLを書き出す。
     if ( !pfi->write( directory, local_base ) )
     {
         std::cerr << "Failed to write the NetCDF time-series PFI file." << std::endl;

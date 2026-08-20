@@ -35,7 +35,9 @@ inline vismodule::VolumeObjectBase* CreateVolumeData
     // structured
     else if ( mvp.m_file_type == 3 )
     {
-        vismodule::VolumeObjectBase* volume = new vismodule::StructuredVolumeImporter( mvp.m_file_path, steps, subvols );
+        std::string input_file = mvp.m_file_path;
+        mvp.setFilePath( input_file, steps, subvols );
+        vismodule::VolumeObjectBase* volume = new vismodule::StructuredVolumeImporter( input_file, steps, subvols );
         volume->setMinMaxValues( mvp.m_min_value, mvp.m_max_value );
         volume->setMinMaxObjectCoords( mvp.m_min_object_coord, mvp.m_max_object_coord );
         volume->setMinMaxExternalCoords( mvp.m_min_object_coord, mvp.m_max_object_coord );
@@ -44,7 +46,9 @@ inline vismodule::VolumeObjectBase* CreateVolumeData
     // unstructured
     else if ( mvp.m_file_type == 4 )
     {
-        vismodule::VolumeObjectBase* volume = new vismodule::UnstructuredVolumeImporter( mvp.m_file_path, mvp.m_file_type, mvp.m_elem_type, steps, subvols );
+        std::string input_file = mvp.m_file_path;
+        mvp.setFilePath( input_file, steps, subvols );
+        vismodule::VolumeObjectBase* volume = new vismodule::UnstructuredVolumeImporter( input_file, mvp.m_file_type, mvp.m_elem_type, steps, subvols );
         volume->setMinMaxValues( mvp.m_min_value, mvp.m_max_value );
         volume->setMinMaxObjectCoords( mvp.m_min_object_coord, mvp.m_max_object_coord );
         volume->setMinMaxExternalCoords( mvp.m_min_object_coord, mvp.m_max_object_coord );
