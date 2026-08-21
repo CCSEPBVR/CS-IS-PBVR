@@ -6,7 +6,7 @@ FUNCTION_PARSER_DIR        = ../../FunctionParser
 
 OBJS  = \
 ../shared/kvs_wrapper_common.o \
-EnsembleStatisticOutput.o \
+../shared/EnsembleStatisticOutput.o \
 kvs_wrapper.o
 
 PROG = libInSituPBVR.a

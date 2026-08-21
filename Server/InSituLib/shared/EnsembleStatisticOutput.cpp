@@ -1,5 +1,4 @@
 #include "kvs_wrapper_common.h"
-#include "kvs_wrapper.h"
 
 #include <cstdio>
 #include <cfloat>
