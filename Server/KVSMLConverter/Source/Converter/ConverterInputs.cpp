@@ -14,6 +14,7 @@
 
 #include <kvs/Message>
 
+#include "Converter/SingleFileFormat.h"
 #include "Converter/XmlTag.h"
 #include "Filesystem.h"
 #include "TimeSeriesFiles/SeriesFileResolver.h"
@@ -92,6 +93,29 @@ bool AddInputFiles( std::list<cvt::ConverterTaskInput>& sub, int target_index,
 
             if ( cvt::filesystem::exists( path ) )
             {
+                // XMLのsingle入力でも、通常の拡張子と連番サフィックス付きの形式マーカーを
+                // 共通の規則で判定する。
+                cvt::SingleFileFormatInfo single_file_format;
+                std::string format_error;
+                const auto format_resolution = cvt::ResolveSingleFileFormat( path.u8string(), single_file_format, format_error );
+
+                // 候補が複数あるなど、ファイル名から形式を一意に決められない入力は登録しない。
+                if ( format_resolution == cvt::SingleFileFormatResolution::Invalid )
+                {
+                    kvsMessageError( "%s", format_error.c_str() );
+                    continue;
+                }
+
+                // 共通判定の対象でも、XMLのsingle入力に変換分岐がない形式は登録しない。
+                if ( format_resolution == cvt::SingleFileFormatResolution::Success &&
+                     !cvt::IsXmlSingleInputFormat( single_file_format.format ) )
+                {
+                    kvsMessageError( "The XML single input does not support '%s': %s",
+                                     single_file_format.canonical_extension.c_str(),
+                                     path.u8string().c_str() );
+                    continue;
+                }
+
                 cvt::ConverterTaskInput file;
 
                 file.target_index = target_index;
@@ -102,7 +126,12 @@ bool AddInputFiles( std::list<cvt::ConverterTaskInput>& sub, int target_index,
                 ::GetPlot3dAttributes( file, n );
                 file.source_grid_type = ::GetGridType( n );
                 file.destination_directory = path.parent_path().string();
-                file.destination_prefix = path.stem().string();
+                // 形式を解決できた場合は、"foo.vtu.10" の連番部分を除いた "foo" を
+                // 既定の出力プレフィックスとして使用する。未検出時は従来のstemを維持する。
+                file.destination_prefix =
+                    format_resolution == cvt::SingleFileFormatResolution::Success
+                        ? single_file_format.output_base
+                        : path.stem().string();
                 ::GetStepIds( file, n );
                 file.has_mesh_deformation = has_mesh_deformation;
                 file.is_binary = is_binary;

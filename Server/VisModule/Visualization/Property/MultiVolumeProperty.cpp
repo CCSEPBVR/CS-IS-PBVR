@@ -290,7 +290,7 @@ void MultiVolumeProperty::setFilePath(std::string& filename ,const int st , cons
         vismodule::File ifpx( m_file_path );
         //param.m_input_data = ifpx.pathName() + ifpx.Separator()
         filename = ifpx.pathName() + ifpx.Separator()
-            + ifpx.baseName() + suffix.str() + ".kvsml";
+            + ifpx.stem() + suffix.str() + ".kvsml";
     }
 #ifdef EXTEND_FILE_FORMAT 
     else if ( !m_time_step_file_paths.empty() )
@@ -3165,4 +3165,3 @@ void MultiVolumePropertyList::loadVolumeDataFile( const std::string& filename )
                     
 
 }
-

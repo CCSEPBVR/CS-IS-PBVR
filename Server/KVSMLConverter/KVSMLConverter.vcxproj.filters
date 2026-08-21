@@ -95,6 +95,9 @@
     <ClInclude Include="Source\Converter\ConverterInputs.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Converter\SingleFileFormat.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
     <ClInclude Include="Source\Converter\ConverterTask.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>

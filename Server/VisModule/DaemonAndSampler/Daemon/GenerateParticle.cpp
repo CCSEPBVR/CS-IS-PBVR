@@ -884,6 +884,7 @@ void generate_volume(
     else 
     {
         visModuleMessageError("%s is not volume data.", file_path.c_str());
+        return;
     }
 
     std::cout << *volume << std::endl;
@@ -915,7 +916,7 @@ void generate_volume(
         volume = new vismodule::UnstructuredVolumeImporter( file_path );
     
         vismodule::File ifpx( mvp.m_file_path );
-        std::string path_base = ifpx.pathName() + ifpx.Separator() + ifpx.baseName();
+        std::string path_base = ifpx.pathName() + ifpx.Separator() + ifpx.stem();
     
         volume = new vismodule::UnstructuredVolumeImporter( path_base, mvp.m_file_type, time_step, sub_volume_id );
     }

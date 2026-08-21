@@ -12,6 +12,7 @@
 #include <string>
 #include <vector>
 
+#include "Converter/SingleFileFormat.h"
 #include "Filesystem.h"
 #include "FileFormat/VTK/VtkXmlUnstructuredGrid.h"
 #include "TimeSeriesFiles/SeriesFileResolver.h"
@@ -125,10 +126,44 @@ int main( int argc, char** argv )
         return 0;
     }
 
+    // 単一ファイル入力では、形式判定や出力先の作成より先に入力の存在を確認する。
+    if ( !fs::exists( input_file_path ) )
+    {
+        std::cerr << "The input file does not exist: " << input_file_path.string() << std::endl;
+        return -1;
+    }
+
+    // 通常の拡張子に加え、"foo.vtu.10" や "foo.vtus10" のような
+    // 連番サフィックス付きファイル名からも変換形式と出力基底名を取得する。
+    cvt::SingleFileFormatInfo single_file_format;
+    std::string format_error;
+    const auto format_resolution = cvt::ResolveSingleFileFormat( input_file_path.string(), single_file_format, format_error );
+
+    // Example CLIは内容による形式推測を行わず、ファイル名から特定できない場合は失敗とする。
+    if ( format_resolution != cvt::SingleFileFormatResolution::Success )
+    {
+        if ( format_error.empty() )
+        {
+            format_error = "This file extension is not yet supported: " + input_file_path.string();
+        }
+
+        std::cerr << format_error << std::endl;
+        return -1;
+    }
+
+    // 共通判定の対象でも、Example CLIに変換分岐がない形式は受け付けない。
+    if ( !cvt::IsExampleCliInputFormat( single_file_format.format ) )
+    {
+        std::cerr << "This input format is not supported by the Example CLI: "
+                  << single_file_format.canonical_extension << std::endl;
+        return -1;
+    }
+
     if ( !mkdir( output_directory_path ) ) return -1;
 
-    fs::path input_file_extension = input_file_path.extension();
-    fs::path input_filename_without_extension = input_file_path.filename().stem();
+    // 正規化した拡張子で既存の変換分岐を選び、連番部分を除いた名前を出力に使用する。
+    fs::path input_file_extension = single_file_format.canonical_extension;
+    fs::path input_filename_without_extension = single_file_format.output_base;
 
     if ( input_file_extension == ".stl" )
     {
@@ -220,6 +255,7 @@ int main( int argc, char** argv )
         if ( contains_wildcard( input_file_path.string() ) )
         {
             std::cout << ".case does not yet support a wildcard." << std::endl;
+            return -1;
         }
         else
         {
@@ -228,7 +264,8 @@ int main( int argc, char** argv )
     }
     else
     {
-        std::cout << "This file extension is not yet supported" << std::endl;
+        std::cerr << "This file extension is not yet supported" << std::endl;
+        return -1;
     }
     
     return 0;

@@ -22,7 +22,7 @@ inline vismodule::VolumeObjectBase* CreateVolumeData
     if ( mvp.m_file_type == 1 || mvp.m_file_type == 2 )
     {
         vismodule::File ifpx( mvp.m_file_path );
-        std::string path_base = ifpx.pathName() + ifpx.Separator() + ifpx.baseName();
+        std::string path_base = ifpx.pathName() + ifpx.Separator() + ifpx.stem();
         //vismodule::UnstructuredVolumeObject* volume = new vismodule::UnstructuredVolumeImporter( path_base,
         vismodule::VolumeObjectBase* volume = new vismodule::UnstructuredVolumeImporter( path_base, mvp.m_file_type, steps, subvols );
         volume->setMinMaxValues( mvp.m_min_value, mvp.m_max_value );
@@ -64,7 +64,7 @@ inline vismodule::VolumeObjectBase* CreateVolumeData
 
         vismodule::File ifpx( mvp.m_file_path );
         std::string m_input_data = ifpx.pathName() + ifpx.Separator()
-                                   + ifpx.baseName() + suffix.str() + ".kvsml";
+                                   + ifpx.stem() + suffix.str() + ".kvsml";
         //vismodule::UnstructuredVolumeObject* volume = new vismodule::UnstructuredVolumeImporter( m_input_data );
 
         vismodule::VolumeObjectBase* volume = nullptr;
@@ -82,12 +82,12 @@ inline vismodule::VolumeObjectBase* CreateVolumeData
         else 
         {
             visModuleMessageError("%s is not volume data.", m_input_data.c_str());
-            //return false;
+            return nullptr;
         }
 
-            volume->setMinMaxValues( mvp.m_min_value, mvp.m_max_value );
-            volume->setMinMaxObjectCoords( mvp.m_min_object_coord, mvp.m_max_object_coord );
-            volume->setMinMaxExternalCoords( mvp.m_min_object_coord, mvp.m_max_object_coord );
+        volume->setMinMaxValues( mvp.m_min_value, mvp.m_max_value );
+        volume->setMinMaxObjectCoords( mvp.m_min_object_coord, mvp.m_max_object_coord );
+        volume->setMinMaxExternalCoords( mvp.m_min_object_coord, mvp.m_max_object_coord );
         return volume;
     }
 }
@@ -113,6 +113,7 @@ inline std::size_t CalculateSubpixelLevel( const ParticleProperty& param,
     double density_lev1 = 0.0;//kawamura2: particle density for subpixel_level=1
     int steps = mvpl.m_total_start_steps;
     int subvols = 0;
+    int volume_load_failed = 0;
 
     //Total Volume Calculation
 #ifndef CPU_VER
@@ -136,6 +137,11 @@ inline std::size_t CalculateSubpixelLevel( const ParticleProperty& param,
             VIS_MODULE_TIMER_STA( 16 );
             volume = CreateVolumeData( mvp, steps, xvl );
             VIS_MODULE_TIMER_END( 16 );
+            if ( !volume )
+            {
+                volume_load_failed = 1;
+                continue;
+            }
 
             VIS_MODULE_TIMER_STA( 17 );
             double local_volume = Generator::CalculateTotalVolume( *volume );
@@ -152,10 +158,17 @@ inline std::size_t CalculateSubpixelLevel( const ParticleProperty& param,
     }
 
 #ifndef CPU_VER
+    int global_volume_load_failed = 0;
+    MPI_Allreduce( &volume_load_failed, &global_volume_load_failed, 1, MPI_INT, MPI_MAX,
+                   MPI_COMM_WORLD );
+    if ( global_volume_load_failed ) return 1;
+
     VIS_MODULE_TIMER_STA( 19 );
     MPI_Allreduce( MPI_IN_PLACE, &density_lev1, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD );
     MPI_Allreduce( MPI_IN_PLACE, &total_volume, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD );
     VIS_MODULE_TIMER_END( 19 );
+#else
+    if ( volume_load_failed ) return 1;
 #endif
 
     density_lev1 /= total_volume;
@@ -284,6 +297,7 @@ inline void Calculate_minmax_glyph
     double density_lev1 = 0.0; // kawamura2: particle density for subpixel_level=1
     int steps = time_step;
     int subvols = 0;
+    int volume_load_failed = 0;
 
     vismodule::Real64 tmp_min, tmp_max;
     std::vector<float> min_vec, max_vec;
@@ -346,6 +360,11 @@ inline void Calculate_minmax_glyph
             if ( subvols % nprocs == rank )
             {
                 volume = CreateVolumeData( fi, steps, xvl );
+                if ( !volume )
+                {
+                    volume_load_failed = 1;
+                    continue;
+                }
                 int nnodes = volume->nnodes();
 
                 // color
@@ -400,10 +419,17 @@ inline void Calculate_minmax_glyph
         // }
 
 #ifndef CPU_VER
+        int global_volume_load_failed = 0;
+        MPI_Allreduce( &volume_load_failed, &global_volume_load_failed, 1, MPI_INT, MPI_MAX,
+                       MPI_COMM_WORLD );
+        if ( global_volume_load_failed ) return;
+
         VIS_MODULE_TIMER_STA( 19 );
         MPI_Allreduce( MPI_IN_PLACE, min_vec.data(), nvariablep2, MPI_FLOAT, MPI_MIN, MPI_COMM_WORLD );
         MPI_Allreduce( MPI_IN_PLACE, max_vec.data(), nvariablep2, MPI_FLOAT, MPI_MAX, MPI_COMM_WORLD );
         VIS_MODULE_TIMER_END( 19 );
+#else
+        if ( volume_load_failed ) return;
 #endif
     } // glyph_property.m_color_data_sampling_method is VariableArray 
 
@@ -433,9 +459,10 @@ inline float CalculateDensityFactor( const ParticleProperty& param,
     //vismodule::UnstructuredVolumeObject* volume;
     vismodule::VolumeObjectBase* volume;
     double total_volume = 0.0;
-    float great_density;
+    float great_density = 0.0f;
     int steps = mvp.m_start_step;
     int subvols = 0;
+    int volume_load_failed = 0;
 #ifndef CPU_VER
     int rank;
     int nprocs;
@@ -451,15 +478,22 @@ inline float CalculateDensityFactor( const ParticleProperty& param,
         VIS_MODULE_TIMER_STA( 16 );
         volume = CreateVolumeData( mvp, steps, subvols );
         VIS_MODULE_TIMER_END( 16 );
-        VIS_MODULE_TIMER_STA( 17 );
-        total_volume += Generator::CalculateTotalVolume( *volume );
-        VIS_MODULE_TIMER_END( 17 );
-        VIS_MODULE_TIMER_STA( 18 );
-        great_density = Generator::CalculateGreatDensity( camera, *volume, param.m_subpixel_level,
-                                                          param.m_sampling_step );
-        VIS_MODULE_TIMER_END( 18 );
+        if ( !volume )
+        {
+            volume_load_failed = 1;
+        }
+        else
+        {
+            VIS_MODULE_TIMER_STA( 17 );
+            total_volume += Generator::CalculateTotalVolume( *volume );
+            VIS_MODULE_TIMER_END( 17 );
+            VIS_MODULE_TIMER_STA( 18 );
+            great_density = Generator::CalculateGreatDensity(
+                camera, *volume, param.m_subpixel_level, param.m_sampling_step );
+            VIS_MODULE_TIMER_END( 18 );
 
-        delete volume;
+            delete volume;
+        }
     }
 #ifndef CPU_VER
     VIS_MODULE_TIMER_STA( 19 );
@@ -475,6 +509,11 @@ inline float CalculateDensityFactor( const ParticleProperty& param,
             VIS_MODULE_TIMER_STA( 16 );
             volume = CreateVolumeData( mvp, steps, subvols );
             VIS_MODULE_TIMER_END( 16 );
+            if ( !volume )
+            {
+                volume_load_failed = 1;
+                continue;
+            }
             VIS_MODULE_TIMER_STA( 17 );
             total_volume += Generator::CalculateTotalVolume( *volume );
             VIS_MODULE_TIMER_END( 17 );
@@ -483,9 +522,16 @@ inline float CalculateDensityFactor( const ParticleProperty& param,
         }
     }
 #ifndef CPU_VER
+    int global_volume_load_failed = 0;
+    MPI_Allreduce( &volume_load_failed, &global_volume_load_failed, 1, MPI_INT, MPI_MAX,
+                   MPI_COMM_WORLD );
+    if ( global_volume_load_failed ) return 0.0f;
+
     VIS_MODULE_TIMER_STA( 19 );
     MPI_Allreduce( MPI_IN_PLACE, &total_volume, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD );
     VIS_MODULE_TIMER_END( 19 );
+#else
+    if ( volume_load_failed ) return 0.0f;
 #endif
 
     float total_nparticles = great_density * static_cast<float>( total_volume );

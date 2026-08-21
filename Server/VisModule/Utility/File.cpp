@@ -191,6 +191,20 @@ const std::string File::baseName( void ) const
 
 /*==========================================================================*/
 /**
+ *  Get the file name without the last extension.
+ *  Unlike baseName(), dots before the last extension are preserved.
+ *  @return file stem
+ */
+/*==========================================================================*/
+const std::string File::stem( void ) const
+{
+    const std::string::size_type last_dot_pos = m_file_name.find_last_of( '.' );
+    if ( last_dot_pos == std::string::npos || last_dot_pos == 0 ) return( m_file_name );
+    return( m_file_name.substr( 0, last_dot_pos ) );
+}
+
+/*==========================================================================*/
+/**
  *  Get extension.
  *  @param complete [in] flag for determing whether extension is complete
  *  @return extension

@@ -171,6 +171,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Converter\ConverterInputs.h" />
+    <ClInclude Include="Source\Converter\SingleFileFormat.h" />
     <ClInclude Include="Source\Converter\ConverterTask.h" />
     <ClInclude Include="Source\Converter\ConverterTaskInput.h" />
     <ClInclude Include="Source\Converter\ConverterTaskOutput.h" />

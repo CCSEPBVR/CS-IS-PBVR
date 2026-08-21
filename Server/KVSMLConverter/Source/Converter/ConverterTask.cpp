@@ -1,12 +1,12 @@
 #include "Converter/ConverterTask.h"
 
 #include <algorithm>
-#include <cctype>
 #include <memory>
 
 #include "kvs/PolygonExporter"
 #include "kvs/PolygonObject"
 
+#include "Converter/SingleFileFormat.h"
 #include "Converter/ConverterTaskInput.h"
 #include "Converter/ConverterTaskOutput.h"
 #include "Exporter/StructuredVolumeObjectExporter.h"
@@ -986,25 +986,37 @@ std::optional<cvt::ConverterTaskOutput> cvt::Convert( cvt::ConverterTaskInput in
     {
         cvt::filesystem::path path( input.source_file_paths[0] );
 
-        // 拡張子の大文字・小文字にかかわらず、後続の形式判定を行えるようにする。
-        std::string extension = path.extension();
-        std::transform( extension.begin(), extension.end(), extension.begin(),
-                        []( const unsigned char c ) {
-                            return static_cast<char>( std::tolower( c ) );
-                        } );
+        // 正規拡張子に加え、"foo.vtu.10" や "foo.vtus10" のように形式マーカーの
+        // 後ろへ連番サフィックスを持つ単一ファイル名も既存の変換処理へ正規化する。
+        cvt::SingleFileFormatInfo single_file_format;
+        std::string format_error;
+        const auto format_resolution = cvt::ResolveSingleFileFormat( path.string(), single_file_format, format_error );
 
-        // 従来から拡張子によって変換処理を選択できる形式は、内容の検査を行わずに
-        // そのまま後続の変換処理へ渡す。
-        const std::vector<std::string> known_extensions = {
-            ".vtu", ".pvtu", ".inp", ".nc",   ".vti", ".vtr", ".vts", ".pvts",
-            ".vtk", ".case", ".cgns", ".vtm", ".xyz", ".stl"
-        };
-
-        // 拡張子がない、または独自の拡張子を持つ時系列ファイルの場合は、先頭の
-        // 入力ファイルの内容から形式を検出し、既存の変換分岐で扱える拡張子へ正規化する。
-        if ( std::find( known_extensions.begin(), known_extensions.end(), extension ) ==
-             known_extensions.end() )
+        std::string extension;
+        // 候補が複数あるなど、形式を一意に決定できない場合は変換を開始しない。
+        if ( format_resolution == cvt::SingleFileFormatResolution::Invalid )
         {
+            std::cerr << format_error << std::endl;
+            return std::nullopt;
+        }
+
+        // ファイル名から判定できた場合は、XMLのsingle入力で許可された形式か確認し、
+        // 正規化した拡張子を既存の変換分岐へ渡す。
+        if ( format_resolution == cvt::SingleFileFormatResolution::Success )
+        {
+            if ( !cvt::IsXmlSingleInputFormat( single_file_format.format ) )
+            {
+                std::cerr << "The XML single input does not support '"
+                          << single_file_format.canonical_extension << "': " << path.string()
+                          << std::endl;
+                return std::nullopt;
+            }
+            extension = single_file_format.canonical_extension;
+        }
+        else
+        {
+            // 拡張子がない、または独自の拡張子を持つVTK XML／NetCDFファイルは、
+            // 後方互換性のため内容から形式を検出する。
             cvt::SeriesFormat detected_format;
             std::string error;
             if ( !cvt::DetectSeriesFileFormat( path.string(), detected_format, error ) )

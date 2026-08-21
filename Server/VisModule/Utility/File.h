@@ -67,6 +67,8 @@ public:
 
     const std::string baseName( void ) const;
 
+    const std::string stem( void ) const;
+
     const std::string extension( bool complete = false ) const;
 
     const std::size_t byteSize( void ) const;
