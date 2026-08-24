@@ -84,6 +84,13 @@ int main( int argc, char** argv )
     {
         if(mpi_rank==0) hydro.show();
 
+        // v2 分散確認: 各メンバの全格子値を 0.1*mpi_rank で上書き(メンバ間で異なる場 -> 分散有意)
+        {
+            const size_t nn = (size_t)hydro.resolution.x() * hydro.resolution.y() * hydro.resolution.z();
+            for ( int v = 0; v < hydro.nvariables; v++ )
+                for ( size_t idx = 0; idx < nn; idx++ )
+                    hydro.values[v][idx] = 0.1f * (float)mpi_rank;
+        }
         ensemble_generate_particles( time_step, ens_num, dom, hydro.values, hydro.nvariables );
         time_step++;
     }

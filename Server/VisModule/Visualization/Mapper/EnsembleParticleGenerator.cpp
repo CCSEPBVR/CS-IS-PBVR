@@ -2816,6 +2816,107 @@ bool GenerateEnsembleParticlesStruct(
         }
     }
 
+    // === v2: リング交換で全メンバ統計を集約(非構造版リングの struct 版) ===
+    // 自分の候補点を v_*[0] に移し、shift ループで隣へ順送り。受信した候補点(格子座標)で
+    // 自分のメンバの値を TrilinearInterpolator で再補間し統計に累積する。cell_id は不要。
+    {
+        std::vector< std::vector<vismodule::Real32> > v_scalars(2), v_coords(2), v_normals(2), v_sq(2), v_tmp(2);
+        v_scalars[0].swap( vertex_scalars );
+        v_coords[0].swap( vertex_coords );
+        v_normals[0].swap( vertex_normals );
+        v_sq[0].swap( sq_scalars );
+        v_tmp[0].swap( tmp_term );
+        int cur = 0, nxt = 1;
+        for ( int shift = 1; shift < ens_number; shift++ )
+        {
+            const int send_to = ( mpi_rank + MPIprocess_per_ensemble ) % mpi_size;
+            const int recv_from = ( mpi_rank - MPIprocess_per_ensemble + mpi_size ) % mpi_size;
+            int send_size = static_cast<int>( v_scalars[cur].size() );
+            int recv_size = 0;
+            MPI_Sendrecv( &send_size, 1, MPI_INT, send_to, 0,
+                          &recv_size, 1, MPI_INT, recv_from, 0,
+                          MPI_COMM_WORLD, MPI_STATUS_IGNORE );
+            std::vector<vismodule::Real32> recv_scalars( recv_size ), recv_coords( 3 * recv_size ),
+                recv_normals( 3 * recv_size ), recv_sq_scalars( recv_size ), recv_tmp_term( 3 * recv_size );
+            MPI_Request req[10];
+            MPI_Irecv( recv_scalars.data(),    recv_size,     MPI_FLOAT, recv_from, 10, MPI_COMM_WORLD, &req[0] );
+            MPI_Irecv( recv_coords.data(),     3 * recv_size, MPI_FLOAT, recv_from, 11, MPI_COMM_WORLD, &req[1] );
+            MPI_Irecv( recv_normals.data(),    3 * recv_size, MPI_FLOAT, recv_from, 13, MPI_COMM_WORLD, &req[2] );
+            MPI_Irecv( recv_sq_scalars.data(), recv_size,     MPI_FLOAT, recv_from, 14, MPI_COMM_WORLD, &req[3] );
+            MPI_Irecv( recv_tmp_term.data(),   3 * recv_size, MPI_FLOAT, recv_from, 15, MPI_COMM_WORLD, &req[4] );
+            MPI_Isend( v_scalars[cur].data(),  send_size,     MPI_FLOAT, send_to, 10, MPI_COMM_WORLD, &req[5] );
+            MPI_Isend( v_coords[cur].data(),   3 * send_size, MPI_FLOAT, send_to, 11, MPI_COMM_WORLD, &req[6] );
+            MPI_Isend( v_normals[cur].data(),  3 * send_size, MPI_FLOAT, send_to, 13, MPI_COMM_WORLD, &req[7] );
+            MPI_Isend( v_sq[cur].data(),       send_size,     MPI_FLOAT, send_to, 14, MPI_COMM_WORLD, &req[8] );
+            MPI_Isend( v_tmp[cur].data(),      3 * send_size, MPI_FLOAT, send_to, 15, MPI_COMM_WORLD, &req[9] );
+            MPI_Waitall( 10, req, MPI_STATUSES_IGNORE );
+            const int rn = recv_size;
+            float* R_scal = recv_scalars.data();
+            float* R_norm = recv_normals.data();
+            float* R_sq = recv_sq_scalars.data();
+            float* R_tmp = recv_tmp_term.data();
+            const float* R_coor = recv_coords.data();
+#pragma omp parallel
+            {
+#if _OPENMP
+                const int thid = omp_get_thread_num();
+#else
+                const int thid = 0;
+#endif
+                ChainRuleEvalContext chain_context;
+                chain_context.initialize( equation_token, nvariables );
+                ChainRuleTimingBreakdown chain_rule_timing;
+                vismodule::Vector3f local_coord_array[SIMD_BLK_SIZE];
+                vismodule::Vector3f global_coord_array[SIMD_BLK_SIZE];
+                float scalar_array[SIMD_BLK_SIZE];
+                float grad_array_x[SIMD_BLK_SIZE];
+                float grad_array_y[SIMD_BLK_SIZE];
+                float grad_array_z[SIMD_BLK_SIZE];
+#pragma omp for
+                for ( int i = 0; i < rn; i += SIMD_BLK_SIZE )
+                {
+                    const int remain_BLK = ( rn - i > SIMD_BLK_SIZE ) ? SIMD_BLK_SIZE : rn - i;
+                    for ( int j = 0; j < remain_BLK; j++ )
+                    {
+                        const vismodule::Vector3f lc( R_coor[3*(i+j)], R_coor[3*(i+j)+1], R_coor[3*(i+j)+2] );
+                        local_coord_array[j] = lc;
+                        global_coord_array[j] = vismodule::Vector3f(
+                            lc.x() * cell_length_f + min_vec.x(),
+                            lc.y() * cell_length_f + min_vec.y(),
+                            lc.z() * cell_length_f + min_vec.z() );
+                    }
+                    calculate_scalar_and_chain_rule_grad_struct(
+                        remain_BLK, nvariables, chain_context, cell[thid],
+                        local_coord_array, global_coord_array,
+                        scalar_array, grad_array_x, grad_array_y, grad_array_z, &chain_rule_timing );
+                    for ( int j = 0; j < remain_BLK; j++ )
+                    {
+                        const float scalar = scalar_array[j];
+                        R_scal[i + j] += scalar;
+                        R_norm[3*(i+j)]     += -grad_array_x[j];
+                        R_norm[3*(i+j) + 1] += -grad_array_y[j];
+                        R_norm[3*(i+j) + 2] += -grad_array_z[j];
+                        R_sq[i + j] += scalar * scalar;
+                        R_tmp[3*(i+j)]     += scalar * grad_array_x[j];
+                        R_tmp[3*(i+j) + 1] += scalar * grad_array_y[j];
+                        R_tmp[3*(i+j) + 2] += scalar * grad_array_z[j];
+                    }
+                }
+            }
+            v_scalars[nxt].swap( recv_scalars );
+            v_coords[nxt].swap( recv_coords );
+            v_normals[nxt].swap( recv_normals );
+            v_sq[nxt].swap( recv_sq_scalars );
+            v_tmp[nxt].swap( recv_tmp_term );
+            std::swap( cur, nxt );
+        }
+        vertex_scalars.swap( v_scalars[cur] );
+        vertex_coords.swap( v_coords[cur] );
+        vertex_normals.swap( v_normals[cur] );
+        sq_scalars.swap( v_sq[cur] );
+        tmp_term.swap( v_tmp[cur] );
+    }
+
     // 統計計算用の中間バッファ(関数スコープ: 統計ブロック後の histogram/棄却でも使うため)
     std::vector<vismodule::Real32> tmp_varience( vertex_scalars.size() );
     std::vector<vismodule::Real32> tmp_varience_normals( vertex_normals.size() );
