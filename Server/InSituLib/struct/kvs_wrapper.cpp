@@ -562,6 +562,15 @@ bool ensemble_generate_particles(
         particle_property, tf_number, nvariables, historyFilePath,
         average_range, variance_range, co_variation_range );
 
+    // 更新した default_old.json を timestep 別 JSON(default_XXXXX.json) に保存
+    // (通常 generate_particles / 非構造版 ensemble_generate_particles と同じ処理)
+    if ( object_generation_enabled && mpi_rank == 0 )
+    {
+        std::ifstream src( tfJsonPath_old.c_str(), std::ios::binary );
+        std::ofstream dst( tfJsonPath_step.c_str(), std::ios::binary );
+        dst << src.rdbuf();
+    }
+
     delete particle_property.m_transfunc_synthesizer;
     delete particle_property.m_camera;
     return true;
