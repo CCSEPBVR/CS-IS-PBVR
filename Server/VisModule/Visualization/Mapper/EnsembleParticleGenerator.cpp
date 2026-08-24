@@ -2417,4 +2417,35 @@ bool GenerateEnsembleParticles(
     return true;
 }
 
+// ===== 構造格子版アンサンブル粒子生成 (Phase1: 骨組み) =====
+// Phase2 実装予定: 一様サンプリング → リング集約(統計量) → 棄却(ave/var/cov)。
+//   補間 = TrilinearInterpolator(大域座標→値・勾配), 乱数 = MersenneTwister(通常struct と同一)。
+//   非構造版 GenerateEnsembleParticles と算法は同一、格子固有部(補間/座標)のみ差し替える。
+bool GenerateEnsembleParticlesStruct(
+    const int num_ensemble,
+    ParticleProperty& particle_property,
+    const domain_parameters_struct& dom,
+    Type** values,
+    int nvariables,
+    EnsembleParticleArrays& average,
+    EnsembleParticleArrays& variance,
+    EnsembleParticleArrays& coefficient,
+    EnsembleStatisticRange& average_range,
+    EnsembleStatisticRange& variance_range,
+    EnsembleStatisticRange& co_variation_range
+#ifdef ENABLE_ENSEMBLE_TIMER
+    , EnsembleTimerCollector* timer
+#endif
+)
+{
+    (void)num_ensemble; (void)particle_property; (void)dom;
+    (void)values; (void)nvariables;
+    (void)average; (void)variance; (void)coefficient;
+    (void)average_range; (void)variance_range; (void)co_variation_range;
+#ifdef ENABLE_ENSEMBLE_TIMER
+    (void)timer;
+#endif
+    return false; // Phase2 で本体を実装
+}
+
 } // namespace vismodule

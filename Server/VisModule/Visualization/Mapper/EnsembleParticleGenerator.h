@@ -19,6 +19,7 @@
 #include <vismodule/ParticleProperty>
 
 #include "EnsembleCellHistogram.h"   // Type, vismodule::EnsembleStatisticRange, CPU_VER/MPI handling
+#include "CellByCellParticleGenerator.h" // domain_parameters_struct (構造格子版 GenerateEnsembleParticlesStruct 用)
 
 #ifdef ENABLE_ENSEMBLE_TIMER
 #include <vismodule/Timer>
@@ -405,6 +406,27 @@ bool GenerateEnsembleParticles(
     unsigned int* connections,
     int ncells,
     const vismodule::VolumeObjectBase::CellType& celltype,
+    EnsembleParticleArrays& average,
+    EnsembleParticleArrays& variance,
+    EnsembleParticleArrays& coefficient,
+    EnsembleStatisticRange& average_range,
+    EnsembleStatisticRange& variance_range,
+    EnsembleStatisticRange& co_variation_range
+#ifdef ENABLE_ENSEMBLE_TIMER
+    , EnsembleTimerCollector* timer
+#endif
+);
+
+// 構造格子版アンサンブル粒子生成:
+//   非構造版の coordinates/connections/celltype の代わりに規則格子(dom: resolution/cell_length/
+//   global_min)を受け取り、三次元線形補間で値・勾配を取得する。算法は非構造版と同一。
+// (Phase1: 宣言 + 骨組み。本体(補間/リング集約/棄却)は Phase2 で実装)
+bool GenerateEnsembleParticlesStruct(
+    const int num_ensemble,
+    ParticleProperty& particle_property,
+    const domain_parameters_struct& dom,
+    Type** values,
+    int nvariables,
     EnsembleParticleArrays& average,
     EnsembleParticleArrays& variance,
     EnsembleParticleArrays& coefficient,

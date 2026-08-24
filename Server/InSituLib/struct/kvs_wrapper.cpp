@@ -26,6 +26,8 @@
 #include <vismodule/GenerateGlyph>
 #include <vismodule/GeneratePOL>
 
+#include <vismodule/EnsembleParticleGenerator> // GenerateEnsembleParticlesStruct, EnsembleParticleArrays, EnsembleStatisticRange
+
 namespace Generator = vismodule::CellByCellParticleGenerator;
 
 static bool is_initial_step = true;
@@ -433,7 +435,106 @@ void generate_particles(
 
 }
 
-bool SetParticleParameter( 
+// 構造格子データのアンサンブルPBVR粒子生成ラッパー。
+// 通常 generate_particles と同じ準備(パス設定/TF設定)を行い、計算本体を
+// vismodule::GenerateEnsembleParticlesStruct に委譲する(非構造版 ensemble_generate_particles と対称)。
+bool ensemble_generate_particles(
+    int time_step,
+    const int num_ensemble,
+    domain_parameters_struct dom,
+    Type** values,
+    int nvariables
+)
+{
+    int mpi_rank;
+    int mpi_size;
+#ifndef CPU_VER
+    MPI_Comm_rank( MPI_COMM_WORLD, &mpi_rank );
+    MPI_Comm_size( MPI_COMM_WORLD, &mpi_size );
+#else
+    mpi_rank = 0;
+    mpi_size = 1;
+#endif
+
+    if ( is_initial_step == true )
+    {
+        is_initial_step = false;
+        start_time_step = time_step;
+    }
+
+    std::string historyFilePath;
+    std::string stateFilePath;
+    std::string coordMinMaxFilePath;
+    std::string particleFilePrefix;
+    std::string glyphFilePrefix;
+    std::string plotOverLineFilePrefix;
+    std::string plotOverTimeFilePrefix;
+    std::string tfJsonPath;
+    std::string tfJsonPath_old;
+    std::string tfJsonPath_step;
+    std::string glyphParameterPath;
+    std::string glyphParameterPath_old;
+    std::string plotOverLineParameterPath;
+    std::string plotOverLineParameterPath_old;
+    std::string plotOverTimeParameterPath;
+    std::string plotOverTimeParameterPath_old;
+    SetParameterFilePath(
+        time_step,
+        historyFilePath, stateFilePath, coordMinMaxFilePath,
+        particleFilePrefix, glyphFilePrefix, plotOverLineFilePrefix, plotOverTimeFilePrefix,
+        tfJsonPath, tfJsonPath_old, tfJsonPath_step,
+        glyphParameterPath, glyphParameterPath_old,
+        plotOverLineParameterPath, plotOverLineParameterPath_old,
+        plotOverTimeParameterPath, plotOverTimeParameterPath_old
+    );
+
+    ParticleProperty particle_property;
+    MultiVolumePropertyList mvpl;
+    particle_property.m_transfunc_synthesizer = new TransferFunctionSynthesizer();
+    particle_property.m_camera                = new vismodule::Camera();
+
+    bool object_generation_enabled = false;
+    SetParticleParameter(
+        dom, tfJsonPath, tfJsonPath_old, particle_property, mvpl,
+        nvariables, object_generation_enabled
+    );
+
+    // アンサンブル統計量粒子(ave/var/cov)の格納先と統計レンジ
+    vismodule::EnsembleParticleArrays average;
+    vismodule::EnsembleParticleArrays variance;
+    vismodule::EnsembleParticleArrays coefficient;
+    vismodule::EnsembleStatisticRange average_range;
+    vismodule::EnsembleStatisticRange variance_range;
+    vismodule::EnsembleStatisticRange co_variation_range;
+
+    // 構造格子版の計算本体(Phase1 は骨組みで false を返す。Phase2 で実装)
+    bool ok = vismodule::GenerateEnsembleParticlesStruct(
+        num_ensemble,
+        particle_property,
+        dom,
+        values,
+        nvariables,
+        average, variance, coefficient,
+        average_range, variance_range, co_variation_range
+#ifdef ENABLE_ENSEMBLE_TIMER
+        , NULL   // Phase1: timer 未配線(Phase2 で EnsembleTimerCollector を渡す)
+#endif
+    );
+
+    (void)mpi_rank;
+    (void)mpi_size;
+
+    delete particle_property.m_transfunc_synthesizer;
+    delete particle_property.m_camera;
+
+    if ( !ok ) return false;
+
+    // TODO(Phase2): OutputEnsembleStatisticHistory / OutputEnsembleStatisticParticles で
+    //               ave/var/cov 粒子と統計履歴を出力する(shared/EnsembleStatisticOutput を配線)。
+    return true;
+}
+
+bool SetParticleParameter(
     const domain_parameters_struct& dom,
     const std::string& tfJsonPath,
     const std::string& tfJsonPath_old,

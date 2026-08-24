@@ -31,6 +31,14 @@ void generate_particles(
     int nvariables
 );
 
+bool ensemble_generate_particles(
+    int time_step,
+    const int num_ensemble,
+    domain_parameters_struct dom,
+    Type** volume_data,
+    int nvariables
+);
+
 bool SetParticleParameter( 
     const domain_parameters_struct& dom,
     const std::string& tfJsonPath,
