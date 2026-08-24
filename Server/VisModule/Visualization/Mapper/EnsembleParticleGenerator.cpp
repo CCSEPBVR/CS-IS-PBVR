@@ -32,6 +32,7 @@
 #include <vismodule/TransferFunctionSynthesizer>
 #include <vismodule/StructuredVolumeObject>
 #include <vismodule/UnstructuredVolumeObject>
+#include <vismodule/TrilinearInterpolator>  // 構造格子版アンサンブルの補間器
 #ifdef ENABLE_ENSEMBLE_TIMER
 #include <vismodule/Timer>
 #endif
@@ -587,6 +588,143 @@ void calculate_scalar_and_chain_rule_grad(
         normal_timer.stop();
         if ( timing ) timing->normal_normalize += normal_timer.sec();
 #endif
+    }
+}
+
+// 構造格子版の値・勾配取得 + chain rule 法線。
+// 非構造版 calculate_scalar_and_chain_rule_grad との違いは前半のみ:
+//   CellBase(setLocalPointArray+CalcScalarGrad) を TrilinearInterpolator(attachPoint+scalar/gradient)
+//   に置換(局所=格子単位座標)。後半(chain rule)は完全に同一ロジック。
+void calculate_scalar_and_chain_rule_grad_struct(
+    const int nparticles_count,
+    const int nvariables,
+    ChainRuleEvalContext& chain_context,
+    const std::vector< vismodule::TrilinearInterpolator* >& interp,
+    const vismodule::Vector3f* local_coord_array,
+    const vismodule::Vector3f* global_coord_array,
+    float* scalar_result,
+    float* grad_array_x,
+    float* grad_array_y,
+    float* grad_array_z,
+    ChainRuleTimingBreakdown* timing )
+{
+    float scalar_array[nvariables][SIMD_BLK_SIZE];
+    float grad_qx[nvariables][SIMD_BLK_SIZE];
+    float grad_qy[nvariables][SIMD_BLK_SIZE];
+    float grad_qz[nvariables][SIMD_BLK_SIZE];
+
+#ifdef ENABLE_ENSEMBLE_TIMER
+    vismodule::Timer calc_scalar_grad_timer;
+    calc_scalar_grad_timer.start();
+#endif
+    // 格子単位座標(local)を SIMD 配列へ展開し、末尾を最後の有効要素でパディング(通常struct と同じ)
+    float px[SIMD_BLK_SIZE];
+    float py[SIMD_BLK_SIZE];
+    float pz[SIMD_BLK_SIZE];
+    const int last = nparticles_count > 0 ? nparticles_count - 1 : 0;
+    for ( int p = 0; p < SIMD_BLK_SIZE; ++p )
+    {
+        const int s = p < nparticles_count ? p : last;
+        px[p] = local_coord_array[s].x();
+        py[p] = local_coord_array[s].y();
+        pz[p] = local_coord_array[s].z();
+    }
+    // 各変数を三次元線形補間(格子単位座標→値・勾配)
+    for ( int j = 0; j < nvariables; ++j )
+    {
+        interp[j]->attachPoint( px, py, pz );
+        interp[j]->scalar( scalar_array[j] );
+        interp[j]->gradient( grad_qx[j], grad_qy[j], grad_qz[j] );
+    }
+#ifdef ENABLE_ENSEMBLE_TIMER
+    calc_scalar_grad_timer.stop();
+    if ( timing ) timing->calc_scalar_grad += calc_scalar_grad_timer.sec();
+#endif
+
+    // --- 以下 chain rule は非構造版 calculate_scalar_and_chain_rule_grad と同一 ---
+    if ( !chain_context.valid )
+    {
+        for ( int p = 0; p < nparticles_count; ++p )
+        {
+            scalar_result[p] = 0.0f;
+            grad_array_x[p] = 0.0f;
+            grad_array_y[p] = 0.0f;
+            grad_array_z[p] = 0.0f;
+        }
+        return;
+    }
+
+#ifdef PBVR_SIMD_CHAINRULE
+    chainRuleBlock( chain_context, nparticles_count, nvariables,
+                    scalar_array, grad_qx, grad_qy, grad_qz,
+                    global_coord_array,
+                    scalar_result, grad_array_x, grad_array_y, grad_array_z,
+                    timing );
+    return;
+#endif
+
+    float q_values[128];
+    vismodule::Vector3f grad_q[128];
+    for ( int p = 0; p < nparticles_count; ++p )
+    {
+        chain_context.variable_values[X] = global_coord_array[p].x();
+        chain_context.variable_values[Y] = global_coord_array[p].y();
+        chain_context.variable_values[Z] = global_coord_array[p].z();
+        for ( int v = 0; v < nvariables; ++v )
+        {
+            const std::size_t q = static_cast<std::size_t>( 4 * ( v + 1 ) );
+            q_values[v] = scalar_array[v][p];
+            chain_context.variable_values[q] = scalar_array[v][p];
+            chain_context.variable_values[q + 1] = grad_qx[v][p];
+            chain_context.variable_values[q + 2] = grad_qy[v][p];
+            chain_context.variable_values[q + 3] = grad_qz[v][p];
+            grad_q[v] = vismodule::Vector3f( grad_qx[v][p], grad_qy[v][p], grad_qz[v][p] );
+        }
+        scalar_result[p] = chain_context.rpn.eval();
+        vismodule::Vector3f grad_F;
+        const bool ok = chain_context.workspace.computeGradient( q_values, grad_q, nvariables, &grad_F );
+        if ( !ok )
+        {
+            grad_array_x[p] = 0.0f;
+            grad_array_y[p] = 0.0f;
+            grad_array_z[p] = 0.0f;
+            continue;
+        }
+        grad_array_x[p] = grad_F.x();
+        grad_array_y[p] = grad_F.y();
+        grad_array_z[p] = grad_F.z();
+    }
+}
+
+// store_uniform_block の構造格子版: cell_id(vi) を持たない
+// (struct は格子座標 vc だけで再補間できるため cell 番号は不要)。他は非構造版と同一。
+static inline void store_uniform_block_struct(
+    const int n, const size_t scalar_offset, const size_t vector_offset,
+    std::vector<vismodule::Real32>& vs, std::vector<vismodule::Real32>& vc,
+    std::vector<vismodule::Real32>& vn, std::vector<vismodule::Real32>& vsq,
+    std::vector<vismodule::Real32>& vt,
+    const float* scalar_array, const vismodule::Vector3f* local_coord_array,
+    const float* grad_array_x, const float* grad_array_y, const float* grad_array_z )
+{
+    vismodule::Real32* __restrict os = vs.data()  + scalar_offset;
+    vismodule::Real32* __restrict oq = vsq.data() + scalar_offset;
+    vismodule::Real32* __restrict oc = vc.data()  + vector_offset;
+    vismodule::Real32* __restrict on = vn.data()  + vector_offset;
+    vismodule::Real32* __restrict ot = vt.data()  + vector_offset;
+    #pragma omp simd
+    for ( int k = 0; k < n; k++ )
+    {
+        os[k] = scalar_array[k];
+        oq[k] = scalar_array[k] * scalar_array[k];
+        oc[3*k]     = local_coord_array[k].x();
+        oc[3*k + 1] = local_coord_array[k].y();
+        oc[3*k + 2] = local_coord_array[k].z();
+        on[3*k]     = -grad_array_x[k];
+        on[3*k + 1] = -grad_array_y[k];
+        on[3*k + 2] = -grad_array_z[k];
+        ot[3*k]     = scalar_array[k] * grad_array_x[k];
+        ot[3*k + 1] = scalar_array[k] * grad_array_y[k];
+        ot[3*k + 2] = scalar_array[k] * grad_array_z[k];
     }
 }
 
@@ -2417,10 +2555,8 @@ bool GenerateEnsembleParticles(
     return true;
 }
 
-// ===== 構造格子版アンサンブル粒子生成 (Phase1: 骨組み) =====
-// Phase2 実装予定: 一様サンプリング → リング集約(統計量) → 棄却(ave/var/cov)。
-//   補間 = TrilinearInterpolator(大域座標→値・勾配), 乱数 = MersenneTwister(通常struct と同一)。
-//   非構造版 GenerateEnsembleParticles と算法は同一、格子固有部(補間/座標)のみ差し替える。
+
+// ===== 構造格子版(v1: 非構造版複製ベース。格子固有箇所を順次置換) =====
 bool GenerateEnsembleParticlesStruct(
     const int num_ensemble,
     ParticleProperty& particle_property,
@@ -2438,14 +2574,604 @@ bool GenerateEnsembleParticlesStruct(
 #endif
 )
 {
-    (void)num_ensemble; (void)particle_property; (void)dom;
-    (void)values; (void)nvariables;
-    (void)average; (void)variance; (void)coefficient;
-    (void)average_range; (void)variance_range; (void)co_variation_range;
-#ifdef ENABLE_ENSEMBLE_TIMER
-    (void)timer;
+#if _OPENMP
+    int max_threads = omp_get_max_threads();
+#else
+    int max_threads = 1;
 #endif
-    return false; // Phase2 で本体を実装
+    int mpi_rank;
+    int mpi_size;
+#ifndef CPU_VER
+    MPI_Comm_rank( MPI_COMM_WORLD, &mpi_rank );
+    MPI_Comm_size( MPI_COMM_WORLD, &mpi_size );
+#else
+    mpi_rank = 0;
+    mpi_size = 1;
+#endif
+    int tf_number = particle_property.m_transfunc_array.size();
+#ifdef ENABLE_ENSEMBLE_TIMER
+    EnsembleTimerCollector& ensemble_timer = *timer;
+#endif
+
+    TransferFunctionSynthesizer** th_tfs = new TransferFunctionSynthesizer*[max_threads];
+//    std::vector< std::vector<vismodule::TransferFunction> > th_tf;
+
+    //std::vector<vismodule::TransferFunction> transfer_functions( tf_number );
+    std::vector<std::vector<vismodule::TransferFunction>> transfer_functions( max_threads );
+    std::vector<std::vector<vismodule::TransferFunction>>           mean_transfer_functions( max_threads );
+    std::vector<std::vector<vismodule::TransferFunction>>       variance_transfer_functions( max_threads );
+    std::vector<std::vector<vismodule::TransferFunction>> coef_variation_transfer_functions( max_threads );
+    {
+#ifdef ENABLE_ENSEMBLE_TIMER
+        EnsembleTimerScope timer_scope( &ensemble_timer, EnsembleTimerInitTransferFunctions );
+#endif
+        for ( int n = 0; n < max_threads; n++ )
+        {
+            th_tfs[n] = new TransferFunctionSynthesizer( *particle_property.m_transfunc_synthesizer );
+        }
+
+        for ( int i = 0; i < max_threads; i++ )
+        {
+            transfer_functions[ i ].resize( tf_number );
+                      mean_transfer_functions[ i ].resize( tf_number );
+                  variance_transfer_functions[ i ].resize( tf_number );
+            coef_variation_transfer_functions[ i ].resize( tf_number );
+            for ( int j = 0; j < tf_number; j++ )
+            {
+                transfer_functions[i][j] = particle_property.m_transfunc_array[j];
+                          mean_transfer_functions[i][j] = particle_property.m_mean_transfer_function_array[j];
+                      variance_transfer_functions[i][j] = particle_property.m_variance_transfer_function_array[j];
+                coef_variation_transfer_functions[i][j] = particle_property.m_coefficient_of_variation_transfer_function_array[j];
+            }
+        }
+    }
+
+    // アンサンブル用伝達関数のEquationTokenを取得 
+    std::string expression = particle_property.m_mean_transfer_function_array[0].m_variable;
+    const ::EquationToken equation_token = EnsembleTransferFunction::convert_token( expression );
+
+//    std::cout << "particle_property.mean_max = " << particle_property.m_mean_transfer_function_array[0].colorMap().maxValue() << std::endl;
+//    std::cout << "particle_property.var_max = " << particle_property.m_variance_transfer_function_array[0].colorMap().maxValue() << std::endl;
+//    std::cout << "particle_property.cov_max = " << particle_property.m_coefficient_of_variation_transfer_function_array[0].colorMap().maxValue() << std::endl;
+
+
+
+    std::vector<float> average_coords;
+    std::vector<Byte> average_colors;
+    std::vector<float> average_normals;
+    std::vector<float> variance_coords;
+    std::vector<Byte> variance_colors;
+    std::vector<float> variance_normals;
+    std::vector<float> coefficient_coords;
+    std::vector<Byte> coefficient_colors;
+    std::vector<float> coefficient_normals;
+
+    std::vector<vismodule::UInt64> tmp_c_bins( DEFAULT_NBINS * tf_number, 0 );
+    std::vector<vismodule::UInt64> tmp_o_bins( DEFAULT_NBINS * tf_number, 0 );
+    std::vector<float> tmp_max( tf_number * 2, FLT_MIN );
+    std::vector<float> tmp_min( tf_number * 2, FLT_MAX );
+
+#ifndef CPU_VER
+    if ( mpi_size <= 1 )
+    {
+        std::cout << "ensemble_generate_particles requires MPI ensemble ranks." << std::endl;
+        return false;
+    }
+
+    // 構造格子: TrilinearInterpolator を各スレッド・各変数に構築(非構造版 cell 構築の置換)。
+    // 格子単位座標で補間するため setCellLength(1)。物理座標は global=local*cell_length+min で別途算出。
+    const vismodule::Vector3ui resolution(
+        static_cast<unsigned int>( dom.resolution[0] ),
+        static_cast<unsigned int>( dom.resolution[1] ),
+        static_cast<unsigned int>( dom.resolution[2] ) );
+    std::vector<std::vector<vismodule::TrilinearInterpolator*> > cell( max_threads );
+    {
+#ifdef ENABLE_ENSEMBLE_TIMER
+        EnsembleTimerScope timer_scope( &ensemble_timer, EnsembleTimerCreateCells );
+#endif
+        for ( int thread = 0; thread < max_threads; thread++ )
+        {
+            cell[thread].resize( nvariables, nullptr );
+            for ( int variable = 0; variable < nvariables; variable++ )
+            {
+                cell[thread][variable] = new vismodule::TrilinearInterpolator( values[variable], resolution );
+                cell[thread][variable]->setCellLength( 1 );
+            }
+        }
+    }
+
+    float sampling_volume_inverse = 0.0f;
+    float max_opacity = 0.0f;
+    float max_density = 0.0f;
+    float repetitions = particle_property.m_repeat_level;  //
+    const float particle_density = 1.0f;
+    const int MPIprocess_per_ensemble = mpi_size/num_ensemble;
+    const int ens_number = num_ensemble;
+    {  // 区間計測用の{}
+#ifdef ENABLE_ENSEMBLE_TIMER
+        EnsembleTimerScope timer_scope( &ensemble_timer, EnsembleTimerSamplingPrepare );
+#endif
+        sampling_volume_inverse = particle_property.m_transfunc_synthesizer->getSamplingVolumeInverse();
+        max_opacity = particle_property.m_transfunc_synthesizer->getMaxOpacity();
+        max_density = particle_property.m_transfunc_synthesizer->getMaxDensity();
+        if ( mpi_size % MPIprocess_per_ensemble != 0 )
+        {
+            std::cerr << "error !! need  ens_number % MPIprocess_per_ensemble = 0!!  " << std::endl;
+            return false;
+        } 
+        repetitions /= static_cast<float>( ens_number );
+    }
+    // === 構造格子 サンプリング出力バッファ(cell_id は持たない) ===
+    std::vector<vismodule::Real32> vertex_coords;
+    std::vector<vismodule::Real32> vertex_scalars;
+    std::vector<vismodule::Real32> vertex_normals;
+    std::vector<vismodule::Real32> sq_scalars;
+    std::vector<vismodule::Real32> tmp_term;
+
+    // === 構造格子 一様サンプリング(非構造版 cellループ+リングの置換。v1: リングなし=各メンバ単独) ===
+    // 各格子セルで max_density*cell_volume*repetitions 個の候補点を生成し、
+    // TrilinearInterpolator で値・勾配を補間、chain rule 法線を求めて統計初期値(g, g^2, -grad, g*grad)を格納。
+    const int nx_1 = static_cast<int>( dom.resolution[0] ) - 1;
+    const int ny_1 = static_cast<int>( dom.resolution[1] ) - 1;
+    const int nz_1 = static_cast<int>( dom.resolution[2] ) - 1;
+    const long nxy_1 = static_cast<long>( nx_1 ) * ny_1;
+    const size_t ncells_struct = static_cast<size_t>( nx_1 ) * ny_1 * nz_1;
+    const float cell_length_f = dom.cell_length;
+    const float cell_volume = cell_length_f * cell_length_f * cell_length_f;
+    const vismodule::Vector3f min_vec( dom.x_global_min, dom.y_global_min, dom.z_global_min );
+#pragma omp parallel
+    {
+#if _OPENMP
+        const int thid = omp_get_thread_num();
+        const int nthreads = omp_get_num_threads();
+#else
+        const int thid = 0;
+        const int nthreads = 1;
+#endif
+        ChainRuleEvalContext chain_context;
+        chain_context.initialize( equation_token, nvariables );
+        ChainRuleTimingBreakdown chain_rule_timing;
+        vismodule::MersenneTwister mt( thid + mpi_rank * nthreads );
+
+        std::vector<vismodule::Real32> th_vertex_coords;
+        std::vector<vismodule::Real32> th_vertex_scalars;
+        std::vector<vismodule::Real32> th_vertex_normals;
+        std::vector<vismodule::Real32> th_sq_scalars;
+        std::vector<vismodule::Real32> th_tmp_term;
+
+        vismodule::Vector3f local_coord_array[SIMD_BLK_SIZE];
+        vismodule::Vector3f global_coord_array[SIMD_BLK_SIZE];
+        float scalar_array[SIMD_BLK_SIZE];
+        float grad_array_x[SIMD_BLK_SIZE];
+        float grad_array_y[SIMD_BLK_SIZE];
+        float grad_array_z[SIMD_BLK_SIZE];
+        int nparticles_array[SIMD_BLK_SIZE];
+
+#pragma omp for schedule( dynamic ) nowait
+        for ( size_t index = 0; index < ncells_struct; index += SIMD_BLK_SIZE )
+        {
+            const int remain = ( ncells_struct - index > SIMD_BLK_SIZE ) ? SIMD_BLK_SIZE : static_cast<int>( ncells_struct - index );
+            for ( int cb = 0; cb < remain; cb++ )
+            {
+                nparticles_array[cb] = static_cast<int>(
+                    CalculateNumberOfParticlesV35( max_density, cell_volume, repetitions, &mt ) );
+            }
+            int p_id = 0;
+            for ( int cb = 0; cb < remain; cb++ )
+            {
+                const size_t cid = index + cb;
+                const int k = static_cast<int>( cid / nxy_1 );
+                const int j = static_cast<int>( ( cid - static_cast<size_t>( k ) * nxy_1 ) / nx_1 );
+                const int i = static_cast<int>( cid - static_cast<size_t>( k ) * nxy_1 - static_cast<size_t>( j ) * nx_1 );
+                for ( int p = 0; p < nparticles_array[cb]; p++ )
+                {
+                    const float rx = static_cast<float>( mt.rand() );
+                    const float ry = static_cast<float>( mt.rand() );
+                    const float rz = static_cast<float>( mt.rand() );
+                    local_coord_array[p_id] = vismodule::Vector3f( i + rx, j + ry, k + rz );
+                    global_coord_array[p_id] = vismodule::Vector3f(
+                        ( i + rx ) * cell_length_f + min_vec.x(),
+                        ( j + ry ) * cell_length_f + min_vec.y(),
+                        ( k + rz ) * cell_length_f + min_vec.z() );
+                    p_id++;
+                    if ( p_id == SIMD_BLK_SIZE )
+                    {
+                        calculate_scalar_and_chain_rule_grad_struct(
+                            p_id, nvariables, chain_context, cell[thid],
+                            local_coord_array, global_coord_array,
+                            scalar_array, grad_array_x, grad_array_y, grad_array_z, &chain_rule_timing );
+                        const size_t so = th_vertex_scalars.size();
+                        const size_t vo = th_vertex_coords.size();
+                        th_vertex_scalars.resize( so + p_id );  th_sq_scalars.resize( so + p_id );
+                        th_vertex_coords.resize( vo + 3 * p_id );  th_vertex_normals.resize( vo + 3 * p_id );  th_tmp_term.resize( vo + 3 * p_id );
+                        store_uniform_block_struct( p_id, so, vo,
+                            th_vertex_scalars, th_vertex_coords, th_vertex_normals, th_sq_scalars, th_tmp_term,
+                            scalar_array, local_coord_array, grad_array_x, grad_array_y, grad_array_z );
+                        p_id = 0;
+                    }
+                }
+            }
+            if ( p_id > 0 )
+            {
+                calculate_scalar_and_chain_rule_grad_struct(
+                    p_id, nvariables, chain_context, cell[thid],
+                    local_coord_array, global_coord_array,
+                    scalar_array, grad_array_x, grad_array_y, grad_array_z, &chain_rule_timing );
+                const size_t so = th_vertex_scalars.size();
+                const size_t vo = th_vertex_coords.size();
+                th_vertex_scalars.resize( so + p_id );  th_sq_scalars.resize( so + p_id );
+                th_vertex_coords.resize( vo + 3 * p_id );  th_vertex_normals.resize( vo + 3 * p_id );  th_tmp_term.resize( vo + 3 * p_id );
+                store_uniform_block_struct( p_id, so, vo,
+                    th_vertex_scalars, th_vertex_coords, th_vertex_normals, th_sq_scalars, th_tmp_term,
+                    scalar_array, local_coord_array, grad_array_x, grad_array_y, grad_array_z );
+            }
+        }
+#pragma omp critical
+        {
+            vertex_scalars.insert( vertex_scalars.end(), th_vertex_scalars.begin(), th_vertex_scalars.end() );
+            sq_scalars.insert( sq_scalars.end(), th_sq_scalars.begin(), th_sq_scalars.end() );
+            vertex_coords.insert( vertex_coords.end(), th_vertex_coords.begin(), th_vertex_coords.end() );
+            vertex_normals.insert( vertex_normals.end(), th_vertex_normals.begin(), th_vertex_normals.end() );
+            tmp_term.insert( tmp_term.end(), th_tmp_term.begin(), th_tmp_term.end() );
+        }
+    }
+
+    // 統計計算用の中間バッファ(関数スコープ: 統計ブロック後の histogram/棄却でも使うため)
+    std::vector<vismodule::Real32> tmp_varience( vertex_scalars.size() );
+    std::vector<vismodule::Real32> tmp_varience_normals( vertex_normals.size() );
+    std::vector<vismodule::Real32> co_varietion( vertex_scalars.size() );
+    std::vector<vismodule::Real32> co_varietion_normals( vertex_normals.size() );
+    size_t co_varietion_normal_fallback_count = 0;
+    {
+#ifdef ENABLE_ENSEMBLE_TIMER
+        EnsembleTimerScope timer_scope( &ensemble_timer, EnsembleTimerStatAverageVariance );
+#endif
+    const float invert_num = 1.0f / static_cast<float>( ens_number );
+    for ( size_t i = 0; i < vertex_scalars.size(); i++ )
+    {
+        vertex_scalars[i] *= invert_num;
+        sq_scalars[i] *= invert_num;
+    }
+    for ( size_t i = 0; i < tmp_term.size(); i++ )
+    {
+        tmp_term[i] = -2.0f * invert_num * tmp_term[i];
+        vertex_normals[i] *= -invert_num;
+    }
+    for ( size_t i = 0; i < vertex_scalars.size(); i++ )
+    {
+        tmp_varience[i] = sq_scalars[i] - vertex_scalars[i] * vertex_scalars[i];
+        if ( tmp_varience[i] < 0.0f ) tmp_varience[i] = 0.0f;
+        tmp_varience_normals[3 * i] = tmp_term[3 * i] - ( -2.0f  * vertex_scalars[i] * vertex_normals[3 * i] );
+        tmp_varience_normals[3 * i + 1] = tmp_term[3 * i + 1] - ( -2.0f * vertex_scalars[i] * vertex_normals[3 * i + 1] );
+        tmp_varience_normals[3 * i + 2] = tmp_term[3 * i + 2] - ( -2.0f * vertex_scalars[i] * vertex_normals[3 * i + 2] );
+    }
+
+    const float delta = 1.0e-30f;
+    const float eps = 1.0e-5f;
+    for ( size_t i = 0; i < vertex_scalars.size(); i++ )
+    {
+        co_varietion[i] = std::fabs(vertex_scalars[i]) > eps ? std::sqrt( tmp_varience[i] ) /std::fabs( vertex_scalars[i]) : delta;
+    }
+
+    // 法線の構成は co_varietion の計算ループとは別ループにする。
+    // 同一ループへ追記するとベクトル化/FP縮約の判断が変わり co_varietion が最下位ビットで
+    // 変動しうる(実測: 色マップの量子化境界で 1 粒子の色が 1 階調ずれた)。分離すれば
+    // co_varietion の生成コードが元のままとなり、粒子の色は完全に一致する。
+    // 符号規約(実測): vertex_normals=+grad mu / tmp_varience_normals=-grad Var（両者は規約が逆）。
+    // 展開: co_varietion_normals[j] = tmp_varience_normals[j] + vertex_normals[j] * s_i
+    //   s_i = 2*Var/mu = 2*co_varietion[i]^2*mu_i （|mu|>eps。co_varietion=sqrt(Var)/|mu| より除算を乗算化=A-1）
+    //       = 0 （|mu|<=eps: CoV 未定義 → 分散法線を流用する従来動作。s_i=0 で varn+vn*0=varn と厳密一致）
+    // フォールバックは s_i=0 でブランチレス化(A-2)。法線は正規化され方向のみ有意のため OpenMP+SIMD/FMA で
+    // 構成する(A-3/B-1)。co_varietion の"値"は本ループでは読むだけで不変(別ループ)ゆえ色・座標は従来と一致。
+    // ComputeCoVNormalDirection(ChainRuleNormal.h)と代数的に等価: 2*co_varietion^2*mu = 2*Var/mu。
+    {
+        const size_t            nvert = vertex_scalars.size();
+        const float* __restrict mu    = vertex_scalars.data();       // 平均 mu
+        const float* __restrict cov   = co_varietion.data();         // 算出済み CoV 値(直前ループ)
+        const float* __restrict vn    = vertex_normals.data();       // +grad mu
+        const float* __restrict varn  = tmp_varience_normals.data(); // -grad Var
+        float*       __restrict covn  = co_varietion_normals.data();
+        size_t fb = 0;
+        #pragma omp parallel for simd reduction(+:fb) schedule(static)
+        for ( size_t i = 0; i < nvert; i++ )
+        {
+            const bool   ok = std::fabs( mu[i] ) > eps;              // NaN も偽=フォールバック
+            const float  si = ok ? ( 2.0f * cov[i] * cov[i] * mu[i] ) : 0.0f;
+            const size_t b  = 3 * i;
+//            covn[b    ] = varn[b    ] + vn[b    ] * si;
+//            covn[b + 1] = varn[b + 1] + vn[b + 1] * si;
+//            covn[b + 2] = varn[b + 2] + vn[b + 2] * si;
+            covn[b    ] = varn[b    ] - vn[b    ] * si;
+            covn[b + 1] = varn[b + 1] - vn[b + 1] * si;
+            covn[b + 2] = varn[b + 2] - vn[b + 2] * si;
+            fb += ok ? 0u : 1u;
+        }
+        co_varietion_normal_fallback_count = fb;
+    }
+    }
+
+    fprintf( stdout, "[cov_normal] rank=%d fallback=%llu / particles=%llu\n",
+             mpi_rank,
+             static_cast<unsigned long long>( co_varietion_normal_fallback_count ),
+             static_cast<unsigned long long>( vertex_scalars.size() ) );
+
+    {
+#ifdef ENABLE_ENSEMBLE_TIMER
+        EnsembleTimerScope timer_scope( &ensemble_timer, EnsembleTimerStatHistogram );
+#endif
+        average_range = MakeEnsembleStatisticMinMax( vertex_scalars, tf_number );
+        variance_range = MakeEnsembleStatisticMinMax( tmp_varience, tf_number );
+        co_variation_range = MakeEnsembleStatisticMinMax( co_varietion, tf_number );
+
+        AggregateEnsembleStatisticMinMax( average_range, tf_number, MPI_COMM_WORLD );
+        AggregateEnsembleStatisticMinMax( variance_range, tf_number, MPI_COMM_WORLD );
+        AggregateEnsembleStatisticMinMax( co_variation_range, tf_number, MPI_COMM_WORLD );
+
+        ApplyEnsembleStatisticMinMax(
+            average_range, particle_property.m_mean_transfer_function_array, tf_number );
+        ApplyEnsembleStatisticMinMax(
+            variance_range, particle_property.m_variance_transfer_function_array, tf_number );
+        ApplyEnsembleStatisticMinMax(
+            co_variation_range,
+            particle_property.m_coefficient_of_variation_transfer_function_array,
+            tf_number );
+
+        for ( int thread = 0; thread < max_threads; thread++ )
+        {
+            for ( int i = 0; i < tf_number; i++ )
+            {
+                mean_transfer_functions[thread][i] = particle_property.m_mean_transfer_function_array[i];
+                variance_transfer_functions[thread][i] = particle_property.m_variance_transfer_function_array[i];
+                coef_variation_transfer_functions[thread][i] =
+                    particle_property.m_coefficient_of_variation_transfer_function_array[i];
+            }
+        }
+
+        CalculateEnsembleStatisticHistogram(
+            average_range,
+            vertex_scalars,
+            tf_number,
+            particle_property.m_mean_transfer_function_array );
+        CalculateEnsembleStatisticHistogram(
+            variance_range,
+            tmp_varience,
+            tf_number,
+            particle_property.m_variance_transfer_function_array );
+        CalculateEnsembleStatisticHistogram(
+            co_variation_range,
+            co_varietion,
+            tf_number,
+            particle_property.m_coefficient_of_variation_transfer_function_array );
+
+        particle_property.m_transfunc_synthesizer->m_o_min.resize( tf_number );
+        particle_property.m_transfunc_synthesizer->m_o_max.resize( tf_number );
+        particle_property.m_transfunc_synthesizer->m_c_min.resize( tf_number );
+        particle_property.m_transfunc_synthesizer->m_c_max.resize( tf_number );
+        for ( int i = 0; i < tf_number; i++ )
+        {
+            particle_property.m_transfunc_synthesizer->m_o_min[i] = average_range.min_values[2 * i    ];
+            particle_property.m_transfunc_synthesizer->m_o_max[i] = average_range.max_values[2 * i    ];
+            particle_property.m_transfunc_synthesizer->m_c_min[i] = average_range.min_values[2 * i + 1];
+            particle_property.m_transfunc_synthesizer->m_c_max[i] = average_range.max_values[2 * i + 1];
+        }
+    }
+
+#ifdef ENABLE_ENSEMBLE_TIMER
+    std::vector<double> rejection_thread_times( max_threads, 0.0 );
+    std::vector<double> rejection_merge_times( max_threads, 0.0 );
+    vismodule::Timer rejection_timer;
+    rejection_timer.start();
+#endif
+#ifndef PBVR_SERIAL_MERGE
+    std::vector<size_t> rej_avg_off( max_threads + 1, 0 );
+    std::vector<size_t> rej_var_off( max_threads + 1, 0 );
+    std::vector<size_t> rej_coef_off( max_threads + 1, 0 );
+    size_t rej_avg_base = 0, rej_var_base = 0, rej_coef_base = 0;
+#endif
+#pragma omp parallel
+    {
+#if _OPENMP
+        const int thid = omp_get_thread_num();
+#else
+        const int thid = 0;
+#endif
+#ifdef ENABLE_ENSEMBLE_TIMER
+        vismodule::Timer thread_timer;
+        thread_timer.start();
+        double th_rejection_merge_time = 0.0;
+#endif
+        std::vector<float> th_average_coords;
+        std::vector<Byte> th_average_colors;
+        std::vector<float> th_average_normals;
+        std::vector<float> th_variance_coords;
+        std::vector<Byte> th_variance_colors;
+        std::vector<float> th_variance_normals;
+        std::vector<float> th_coefficient_coords;
+        std::vector<Byte> th_coefficient_colors;
+        std::vector<float> th_coefficient_normals;
+        vismodule::MersenneTwister mt( 10 + mpi_rank + thid );
+        vismodule::UInt32 cell_index[SIMD_BLK_SIZE];
+        vismodule::Vector3f local_coord_array[SIMD_BLK_SIZE];
+        vismodule::Vector3f global_coord_array[SIMD_BLK_SIZE];
+
+#pragma omp for schedule( dynamic )
+        for ( size_t i = 0; i < vertex_scalars.size(); i += SIMD_BLK_SIZE )
+        {
+            const int remain_BLK = ( vertex_scalars.size() - i > SIMD_BLK_SIZE ) ? SIMD_BLK_SIZE : vertex_scalars.size() - i;
+            for ( int j = 0; j < remain_BLK; j++ )
+            {
+                const vismodule::Vector3f lc(
+                    vertex_coords[3 * ( i + j )],
+                    vertex_coords[3 * ( i + j ) + 1],
+                    vertex_coords[3 * ( i + j ) + 2] );
+                local_coord_array[j] = lc;
+                // 構造格子: 大域座標 = 格子座標 * cell_length + 原点(transformLocalToGlobal の置換)
+                global_coord_array[j] = vismodule::Vector3f(
+                    lc.x() * cell_length_f + min_vec.x(),
+                    lc.y() * cell_length_f + min_vec.y(),
+                    lc.z() * cell_length_f + min_vec.z() );
+            }
+
+            for ( int j = 0; j < remain_BLK; j++ )
+            {
+                const size_t idx = i + j;
+                const vismodule::Vector3f average_normal(
+                    -vertex_normals[3 * idx],
+                    -vertex_normals[3 * idx + 1],
+                    -vertex_normals[3 * idx + 2]
+                );
+                const vismodule::Vector3f variance_normal(
+                    tmp_varience_normals[3 * idx],
+                    tmp_varience_normals[3 * idx + 1],
+                    tmp_varience_normals[3 * idx + 2]
+                );
+                const vismodule::Vector3f coefficient_normal(
+                    co_varietion_normals[3 * idx],
+                    co_varietion_normals[3 * idx + 1],
+                    co_varietion_normals[3 * idx + 2]
+                );
+
+//                std::cout << "tmp_varience_normals = " << variance_normal <<std::endl;
+                AppendRejectedStatisticParticle(
+                    vertex_scalars[idx], global_coord_array[j], average_normal, mean_transfer_functions[thid][0],
+                    sampling_volume_inverse, max_opacity, max_density, &mt,
+                    th_average_coords, th_average_colors, th_average_normals
+                );
+                AppendRejectedStatisticParticle(
+                    tmp_varience[idx], global_coord_array[j], variance_normal, variance_transfer_functions[thid][0],
+                    sampling_volume_inverse, max_opacity, max_density, &mt,
+                    th_variance_coords, th_variance_colors, th_variance_normals
+                );
+                AppendRejectedStatisticParticle(
+                    co_varietion[idx], global_coord_array[j], coefficient_normal, coef_variation_transfer_functions[thid][0],
+                    sampling_volume_inverse, max_opacity, max_density, &mt,
+                    th_coefficient_coords, th_coefficient_colors, th_coefficient_normals
+                );
+            }
+        }
+
+#ifdef ENABLE_ENSEMBLE_TIMER
+        vismodule::Timer merge_timer;
+        merge_timer.start();
+#endif
+#ifdef PBVR_SERIAL_MERGE
+#pragma omp critical
+        {
+            average_coords.insert( average_coords.end(), th_average_coords.begin(), th_average_coords.end() );
+            average_colors.insert( average_colors.end(), th_average_colors.begin(), th_average_colors.end() );
+            average_normals.insert( average_normals.end(), th_average_normals.begin(), th_average_normals.end() );
+            variance_coords.insert( variance_coords.end(), th_variance_coords.begin(), th_variance_coords.end() );
+            variance_colors.insert( variance_colors.end(), th_variance_colors.begin(), th_variance_colors.end() );
+            variance_normals.insert( variance_normals.end(), th_variance_normals.begin(), th_variance_normals.end() );
+            coefficient_coords.insert( coefficient_coords.end(), th_coefficient_coords.begin(), th_coefficient_coords.end() );
+            coefficient_colors.insert( coefficient_colors.end(), th_coefficient_colors.begin(), th_coefficient_colors.end() );
+            coefficient_normals.insert( coefficient_normals.end(), th_coefficient_normals.begin(), th_coefficient_normals.end() );
+        }
+#else
+        // Prefix-sum parallel merge per statistic type (average/variance/coefficient have
+        // independent accepted counts; within a type coords/colors/normals share the count).
+        rej_avg_off[thid + 1]  = th_average_coords.size();
+        rej_var_off[thid + 1]  = th_variance_coords.size();
+        rej_coef_off[thid + 1] = th_coefficient_coords.size();
+        #pragma omp barrier
+        #pragma omp single
+        {
+            rej_avg_base  = average_coords.size();
+            rej_var_base  = variance_coords.size();
+            rej_coef_base = coefficient_coords.size();
+            for ( int t = 0; t < max_threads; ++t ) {
+                rej_avg_off[t + 1]  += rej_avg_off[t];
+                rej_var_off[t + 1]  += rej_var_off[t];
+                rej_coef_off[t + 1] += rej_coef_off[t];
+            }
+            average_coords.resize( rej_avg_base + rej_avg_off[max_threads] );
+            average_colors.resize( rej_avg_base + rej_avg_off[max_threads] );
+            average_normals.resize( rej_avg_base + rej_avg_off[max_threads] );
+            variance_coords.resize( rej_var_base + rej_var_off[max_threads] );
+            variance_colors.resize( rej_var_base + rej_var_off[max_threads] );
+            variance_normals.resize( rej_var_base + rej_var_off[max_threads] );
+            coefficient_coords.resize( rej_coef_base + rej_coef_off[max_threads] );
+            coefficient_colors.resize( rej_coef_base + rej_coef_off[max_threads] );
+            coefficient_normals.resize( rej_coef_base + rej_coef_off[max_threads] );
+        }
+        {
+            const size_t ao = rej_avg_base  + rej_avg_off[thid];
+            const size_t vo = rej_var_base  + rej_var_off[thid];
+            const size_t co = rej_coef_base + rej_coef_off[thid];
+            std::copy( th_average_coords.begin(),  th_average_coords.end(),  average_coords.begin()  + ao );
+            std::copy( th_average_colors.begin(),  th_average_colors.end(),  average_colors.begin()  + ao );
+            std::copy( th_average_normals.begin(), th_average_normals.end(), average_normals.begin() + ao );
+            std::copy( th_variance_coords.begin(),  th_variance_coords.end(),  variance_coords.begin()  + vo );
+            std::copy( th_variance_colors.begin(),  th_variance_colors.end(),  variance_colors.begin()  + vo );
+            std::copy( th_variance_normals.begin(), th_variance_normals.end(), variance_normals.begin() + vo );
+            std::copy( th_coefficient_coords.begin(),  th_coefficient_coords.end(),  coefficient_coords.begin()  + co );
+            std::copy( th_coefficient_colors.begin(),  th_coefficient_colors.end(),  coefficient_colors.begin()  + co );
+            std::copy( th_coefficient_normals.begin(), th_coefficient_normals.end(), coefficient_normals.begin() + co );
+        }
+#endif
+#ifdef ENABLE_ENSEMBLE_TIMER
+        merge_timer.stop();
+        th_rejection_merge_time += merge_timer.sec();
+        thread_timer.stop();
+        rejection_thread_times[thid] += thread_timer.sec();
+        rejection_merge_times[thid] += th_rejection_merge_time;
+#endif
+    }
+#ifdef ENABLE_ENSEMBLE_TIMER
+    rejection_timer.stop();
+    ensemble_timer.add( EnsembleTimerOmpRejection, rejection_timer.sec() );
+    for ( int t = 0; t < max_threads; t++ )
+    {
+        ensemble_timer.addThread( EnsembleTimerOmpRejection, t, rejection_thread_times[t] );
+        ensemble_timer.addThread( EnsembleTimerRejectionThreadMerge, t, rejection_merge_times[t] );
+    }
+    ensemble_timer.setStatisticParticleCounts(
+        static_cast<unsigned long long>( average_coords.size() / 3 ),
+        static_cast<unsigned long long>( variance_coords.size() / 3 ),
+        static_cast<unsigned long long>( coefficient_coords.size() / 3 ) );
+#endif
+#else
+    std::cout << "ensemble_generate_particles requires MPI; CPU_VER path is disabled." << std::endl;
+    return false;
+#endif
+
+
+    {
+#ifdef ENABLE_ENSEMBLE_TIMER
+        EnsembleTimerScope timer_scope( &ensemble_timer, EnsembleTimerCleanupTfs );
+#endif
+    for(int i=0; i<max_threads; i++)
+    {
+        delete th_tfs[i];
+    }
+    delete[] th_tfs;
+    }
+
+#ifndef CPU_VER
+    {
+#ifdef ENABLE_ENSEMBLE_TIMER
+        EnsembleTimerScope timer_scope( &ensemble_timer, EnsembleTimerCleanupCells );
+#endif
+    for ( int thread = 0; thread < max_threads; thread++ )
+    {
+        for ( int variable = 0; variable < nvariables; variable++ )
+        {
+            delete cell[thread][variable];
+        }
+    }
+    }
+    average.coords.swap( average_coords );
+    average.colors.swap( average_colors );
+    average.normals.swap( average_normals );
+    variance.coords.swap( variance_coords );
+    variance.colors.swap( variance_colors );
+    variance.normals.swap( variance_normals );
+    coefficient.coords.swap( coefficient_coords );
+    coefficient.colors.swap( coefficient_colors );
+    coefficient.normals.swap( coefficient_normals );
+#endif
+    return true;
 }
+
 
 } // namespace vismodule

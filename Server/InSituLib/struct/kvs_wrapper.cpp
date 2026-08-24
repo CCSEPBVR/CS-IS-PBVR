@@ -27,6 +27,7 @@
 #include <vismodule/GeneratePOL>
 
 #include <vismodule/EnsembleParticleGenerator> // GenerateEnsembleParticlesStruct, EnsembleParticleArrays, EnsembleStatisticRange
+#include "EnsembleStatisticOutput.h"           // OutputEnsembleStatisticParticles/History, EnsembleParticleFilePrefix (shared)
 
 namespace Generator = vismodule::CellByCellParticleGenerator;
 
@@ -507,7 +508,17 @@ bool ensemble_generate_particles(
     vismodule::EnsembleStatisticRange variance_range;
     vismodule::EnsembleStatisticRange co_variation_range;
 
-    // 構造格子版の計算本体(Phase1 は骨組みで false を返す。Phase2 で実装)
+    // アンサンブルタイマー。GenerateEnsembleParticlesStruct 内の EnsembleTimerScope は
+    // *timer を逆参照するため NULL 不可。非構造版と同様に有効な collector を渡す。
+#ifdef ENABLE_ENSEMBLE_TIMER
+#if _OPENMP
+    const int timer_max_threads = omp_get_max_threads();
+#else
+    const int timer_max_threads = 1;
+#endif
+    vismodule::EnsembleTimerCollector ensemble_timer( time_step, timer_max_threads );
+#endif
+    // 構造格子版の計算本体
     bool ok = vismodule::GenerateEnsembleParticlesStruct(
         num_ensemble,
         particle_property,
@@ -517,20 +528,42 @@ bool ensemble_generate_particles(
         average, variance, coefficient,
         average_range, variance_range, co_variation_range
 #ifdef ENABLE_ENSEMBLE_TIMER
-        , NULL   // Phase1: timer 未配線(Phase2 で EnsembleTimerCollector を渡す)
+        , &ensemble_timer
 #endif
     );
 
     (void)mpi_rank;
     (void)mpi_size;
 
+    if ( !ok )
+    {
+        delete particle_property.m_transfunc_synthesizer;
+        delete particle_property.m_camera;
+        return false;
+    }
+
+    // アンサンブル統計量粒子(ave/var/cov)と統計履歴を出力(非構造版 ensemble_generate_particles と同じ配線)
+    const int tf_number = particle_property.m_transfunc_array.size();
+    const std::string averageFilePrefix     = pbvr::EnsembleParticleFilePrefix( particleFilePrefix, "ave_" );
+    const std::string varianceFilePrefix    = pbvr::EnsembleParticleFilePrefix( particleFilePrefix, "var_" );
+    const std::string coefficientFilePrefix = pbvr::EnsembleParticleFilePrefix( particleFilePrefix, "cov_" );
+
+    OutputCoordMinMaxFile( dom, coordMinMaxFilePath );
+    pbvr::OutputEnsembleStatisticParticles(
+        particle_property, mvpl, time_step, averageFilePrefix,
+        average.coords, average.colors, average.normals );
+    pbvr::OutputEnsembleStatisticParticles(
+        particle_property, mvpl, time_step, varianceFilePrefix,
+        variance.coords, variance.colors, variance.normals );
+    pbvr::OutputEnsembleStatisticParticles(
+        particle_property, mvpl, time_step, coefficientFilePrefix,
+        coefficient.coords, coefficient.colors, coefficient.normals );
+    pbvr::OutputEnsembleStatisticHistory(
+        particle_property, tf_number, nvariables, historyFilePath,
+        average_range, variance_range, co_variation_range );
+
     delete particle_property.m_transfunc_synthesizer;
     delete particle_property.m_camera;
-
-    if ( !ok ) return false;
-
-    // TODO(Phase2): OutputEnsembleStatisticHistory / OutputEnsembleStatisticParticles で
-    //               ave/var/cov 粒子と統計履歴を出力する(shared/EnsembleStatisticOutput を配線)。
     return true;
 }
 
