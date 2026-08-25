@@ -571,6 +571,23 @@ bool ensemble_generate_particles(
         dst << src.rdbuf();
     }
 
+    // 全プロセスの書き込み完了を待ち、処理済みステップを state.txt に記録
+    // (通常 generate_particles / 非構造版 ensemble_generate_particles と同じ処理)
+#ifndef CPU_VER
+    MPI_Barrier( MPI_COMM_WORLD );
+#endif
+    std::cout << "All processes have finished." << std::endl;
+
+    if ( mpi_rank == 0 )
+    {
+        std::ofstream ofs( stateFilePath.c_str(), std::ios::out );
+        if ( !ofs.is_open() ) std::cout << "Cannot open state.txt" << std::endl;
+
+        ofs << "START_STEP  = " << start_time_step << std::endl;
+        ofs << "LATEST_STEP = " << time_step       << std::endl;
+        ofs.close();
+    }
+
     delete particle_property.m_transfunc_synthesizer;
     delete particle_property.m_camera;
     return true;
