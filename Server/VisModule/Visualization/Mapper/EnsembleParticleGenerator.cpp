@@ -635,6 +635,15 @@ void calculate_scalar_and_chain_rule_grad_struct(
         interp[j]->attachPoint( px, py, pz );
         interp[j]->scalar( scalar_array[j] );
         interp[j]->gradient( grad_qx[j], grad_qy[j], grad_qz[j] );
+        // TrilinearInterpolator::gradient() は -∇q(負の勾配)を返すが、非構造版 CellBase::grad_ary は
+        // +∇q(正の勾配)。法線符号を非構造版に揃えるため反転する。分散/変動係数の"値"はスカラー g,g²
+        // (R_sq,R_scal)のみに依存し不変で、反転は R_norm/R_tmp 経由の法線の符号のみを是正する。
+        for ( int p = 0; p < SIMD_BLK_SIZE; ++p )
+        {
+            grad_qx[j][p] = -grad_qx[j][p];
+            grad_qy[j][p] = -grad_qy[j][p];
+            grad_qz[j][p] = -grad_qz[j][p];
+        }
     }
 #ifdef ENABLE_ENSEMBLE_TIMER
     calc_scalar_grad_timer.stop();
