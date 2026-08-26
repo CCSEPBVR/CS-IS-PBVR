@@ -31,7 +31,10 @@ int Hydrogen::generate_volume( void )
 
     const vismodule::Real64 dim= 128.0;
     const vismodule::Real64 kr = 32.0 / dim;
-    const vismodule::Real64 kd = 6.0;
+    // アンサンブルメンバ(mpi_rank)ごとに波動関数の分布を変える(非構造版 ens_Hydrogen_unstruct と同じ)
+    int ens_id = mpi_rank;
+    const vismodule::Real64 kd = 1.0 + (float)(ens_id);
+    const vismodule::Real64 kr3 = 32.0 / dim * 0.1667 * kd;
 
     values = new float*[ nvariables ];
 
@@ -56,7 +59,7 @@ int Hydrogen::generate_volume( void )
 
                 const vismodule::Real64 dx = kr * ( x - ( dim / 2.0 ) );
                 const vismodule::Real64 dy = kr * ( y - ( dim / 2.0 ) );
-                const vismodule::Real64 dz = kr * ( z - ( dim / 2.0 ) );
+                const vismodule::Real64 dz = kr3 * ( z - ( dim / 2.0 ) );
 
 
                 const vismodule::Real64 r = std::sqrt( dx * dx + dy * dy + dz * dz ) + 0.01;
