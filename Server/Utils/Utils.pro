@@ -18,6 +18,7 @@ TARGET = Utils
 #  Header.
 #=============================================================================
 HEADERS += \
+    ObjectInfoUtils.h \
     ServerUtils.h \
     Worker.h
 

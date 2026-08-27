@@ -1,6 +1,7 @@
 #include "Server.h"
 
 #include "../../Shared/TransferFunction.h"
+#include "../Utils/ObjectInfoUtils.h"
 #include <filesystem>
 #include <chrono>
 #include <cstdlib>
@@ -480,11 +481,18 @@ Server::~Server()
     {
         m_plot_over_time_sender_thread.join();
     }
+
+    reset();
 }
 
 void Server::reset()
 {
     if( !m_objects ) { return; }
+
+    for( auto& info : *m_objects )
+    {
+        ServerObjectUtils::DestroyObject( info );
+    }
 
     m_objects->clear();
     m_objects->shrink_to_fit();
@@ -492,7 +500,7 @@ void Server::reset()
     // FIXME:以下In-Situモードのみ
     // FIXME:"Waiting for simulation object generation "でている間にresetが機能しない。
     // FIXME:LastStepMonitorLoopを止める必要がある
-    std::cout << "[Server] reset(): cleared all objects" << std::endl;
+    std::cout << "[Server] reset(): destroyed and cleared all objects" << std::endl;
 }
 
 void Server::onUpgrade(uWS::HttpResponse<SSL>* res, uWS::HttpRequest* req, struct us_socket_context_t* context, SocketType socketType)
@@ -2567,6 +2575,7 @@ void Server::receiveObjectDelete(uWS::WebSocket<false, true, PerSocket>* ws, con
 
     if (it == m_objects->end()) return;
 
+    ServerObjectUtils::DestroyObject( *it );
     m_objects->erase(it);
 
     nlohmann::json msg;

@@ -8,6 +8,7 @@
 
 #include "../../Shared/ObjectInfoExtractor.h"
 
+#include "ObjectInfoUtils.h"
 #include "ServerMode.h"
 #include "TaskSignalTransferProtocol.h"
 
@@ -114,48 +115,9 @@ private:
     std::string m_statistic;
 
 private:
-    // format に応じて正しい型で delete する（基底 dtor が virtual でない問題を回避）
-    static void deleteObjectByFormat( ObjectInfoExtractor::ObjectInfo& info )
-    {
-        if( !info.object ) return;
-
-        switch( info.format )
-        {
-        case ObjectInfoExtractor::ClientServerPointObject:
-        case ObjectInfoExtractor::InsituServerPointObject:
-        case ObjectInfoExtractor::PointObjectKVSML:
-        case ObjectInfoExtractor::PointObjectLAS:
-        case ObjectInfoExtractor::PointObjectPTS:
-            delete static_cast<kvs::PointObject*>( info.object );
-            break;
-
-        case ObjectInfoExtractor::ServerGlyphObject:
-        case ObjectInfoExtractor::PolygonObjectKVSML:
-        case ObjectInfoExtractor::PolygonObjectSTL:
-            delete static_cast<kvs::PolygonObject*>( info.object );
-            break;
-
-#ifdef ASSIMP
-        case ObjectInfoExtractor::PolygonObject3DS:
-        case ObjectInfoExtractor::PolygonObjectFBX:
-            delete static_cast<kvs::TexturedPolygonObject*>( info.object );
-            break;
-#endif
-
-        case ObjectInfoExtractor::LineObjectKVSML:
-            delete static_cast<kvs::LineObject*>( info.object );
-            break;
-
-        default:
-            break;
-        }
-
-        info.object = nullptr;
-    }
-
     void resetObject( ObjectInfoExtractor::ObjectInfo& info )
     {
-        deleteObjectByFormat( info );
+        ServerObjectUtils::DestroyObject( info );
     }
 
     void importObject( ObjectInfoExtractor::ObjectInfo& info, const int& requestTimeStep )
