@@ -21,6 +21,7 @@
 #include "FileFormat/VTK/VtkUnstructuredGrid.h"
 #include "FileFormat/VTK/VtkXmlImageData.h"
 #include "FileFormat/VTK/VtkXmlMultiBlock.h"
+#include "FileFormat/VTK/VtkXmlPolyData.h"
 #include "FileFormat/VTK/VtkXmlPStructuredGrid.h"
 #include "FileFormat/VTK/VtkXmlPUnstructuredGrid.h"
 #include "FileFormat/VTK/VtkXmlRectilinearGrid.h"
@@ -860,6 +861,29 @@ std::optional<cvt::ConverterTaskOutput> Netcdf2Kvsml(
     {
         return std::nullopt;
     }
+
+    // 2次元NetCDF格子はボリューム用PFIへ登録せず、Polygon KVSMLとして出力する。
+    if ( dynamic_cast<cvt::VtkXmlPolyData*>( first_input.format().get() ) )
+    {
+        int sub = 1;
+        for ( const auto& path : src )
+        {
+            cvt::Netcdf input( path );
+            auto* format = dynamic_cast<cvt::VtkXmlPolyData*>( input.format().get() );
+            if ( input.isFailure() || !format ) return std::nullopt;
+            cvt::VtkImporter<cvt::VtkXmlPolyData> importer( format );
+            if ( importer.isFailure() ) return std::nullopt;
+            kvs::PolygonExporter<kvs::KVSMLPolygonObject> exporter( &importer );
+            exporter.setWritingDataTypeToExternalBinary();
+            const std::string suffix = src.size() == 1 ? "" : "_" + std::to_string( sub );
+            cvt::filesystem::path destination = directory;
+            destination /= base + suffix + ".kvsml";
+            if ( !exporter.write( destination.string() ) ) return std::nullopt;
+            ++sub;
+        }
+        return cvt::ConverterTaskOutput( target_index, time_step );
+    }
+
     auto first_volume = import( first_input );
     if ( !first_volume )
     {

@@ -18,6 +18,7 @@
 #include "Exporter/UnstructuredVolumeObjectExporter.h"
 #include "FileFormat/NetCDF/Netcdf.h"
 #include "FileFormat/VTK/VtkXmlImageData.h"
+#include "FileFormat/VTK/VtkXmlPolyData.h"
 #include "FileFormat/VTK/VtkXmlRectilinearGrid.h"
 #include "FileFormat/VTK/VtkXmlStructuredGrid.h"
 #include "FileFormat/VTK/VtkXmlUnstructuredGrid.h"
@@ -28,6 +29,8 @@
 #include "kvs/StructuredVolumeObject"
 #include "kvs/UnstructuredVolumeObject"
 #include "kvs/VolumeObjectBase"
+#include "kvs/KVSMLPolygonObject"
+#include "kvs/PolygonExporter"
 
 /**
  * @brief 時系列変換の事前検証で取得したNetCDFファイルの情報。
@@ -176,6 +179,28 @@ void Netcdf2Kvsml( const std::string& directory, const std::string& base,
     if ( input.isFailure() )
     {
         std::cerr << "Failed to read the NetCDF file: " << src << std::endl;
+        return;
+    }
+
+    // UGRIDなどの2次元非構造格子は、面トポロジを保ったPolygon KVSMLへ出力する。
+    if ( auto* format = dynamic_cast<cvt::VtkXmlPolyData*>( input.format().get() ) )
+    {
+        cvt::VtkImporter<cvt::VtkXmlPolyData> importer( format );
+        if ( importer.isFailure() )
+        {
+            std::cerr << "Failed to import the polygon NetCDF file: " << src << std::endl;
+            return;
+        }
+        kvs::PolygonExporter<kvs::KVSMLPolygonObject> exporter( &importer );
+        exporter.setWritingDataTypeToExternalBinary();
+        const std::string destination =
+            directory + std::string( 1, cvt::filesystem::path::preferred_separator ) + base +
+            ".kvsml";
+        if ( !exporter.write( destination ) )
+        {
+            std::cerr << "Failed to write the polygon NetCDF file: " << destination
+                      << std::endl;
+        }
         return;
     }
 

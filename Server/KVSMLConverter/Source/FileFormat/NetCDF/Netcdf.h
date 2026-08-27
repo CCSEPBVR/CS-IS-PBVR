@@ -20,6 +20,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "kvs/FileFormatBase"
 
@@ -32,7 +33,8 @@ enum class NetcdfGridType
     ImageData,
     RectilinearGrid,
     StructuredGrid,
-    UnstructuredGrid
+    UnstructuredGrid,
+    PolyData
 };
 
 /**
@@ -49,6 +51,19 @@ public:
      */
     bool hasVariable( const std::string& name, const std::string& dimensions ) const;
 
+    /// 指定した名前の変数が存在するかを返す。
+    bool hasVariable( const std::string& name ) const;
+
+    /// 指定した名前の次元が存在するかを返す。
+    bool hasDimension( const std::string& name ) const;
+
+    /// 変数が持つ文字列属性を返す。存在しない場合は空文字列を返す。
+    std::string variableAttribute( const std::string& variable,
+                                   const std::string& attribute ) const;
+
+    /// グローバル文字列属性を返す。存在しない場合は空文字列を返す。
+    std::string globalAttribute( const std::string& attribute ) const;
+
     /**
      * @brief 変数名と次元文字列の対応表を返す。
      * @return 変数メタデータの連想配列。
@@ -60,6 +75,9 @@ public:
 
 private:
     std::map<std::string, std::string> m_variable_dimensions;
+    std::map<std::string, std::size_t> m_dimensions;
+    std::map<std::string, std::string> m_global_attributes;
+    std::map<std::string, std::map<std::string, std::string>> m_variable_attributes;
 
     friend class Netcdf;
 };
@@ -72,6 +90,15 @@ struct NetcdfFileInfo
     std::string path;
     std::string format_name;
     NetcdfGridType grid_type = NetcdfGridType::Unknown;
+};
+
+/**
+ * @brief SLACメッシュに対応する1時刻分のフィールドファイル情報。
+ */
+struct SlacTimeStepFile
+{
+    std::string path;
+    double time = 0.0;
 };
 
 /**
@@ -127,9 +154,21 @@ public:
      */
     static bool Probe( const std::string& filename, NetcdfFileInfo& info );
 
-private:
-    /// NetCDFファイルから変数メタデータを読み込む。
+    /// NetCDFファイルから形式判定用メタデータを読み込む。
     static bool ReadMetadata( const std::string& filename, NetcdfMetadata& metadata );
+
+    /**
+     * @brief .ncdfメッシュと同じディレクトリの.mod時系列を検証して時刻順に返す。
+     * @param mesh_filename 選択されたSLACメッシュ（.ncdf）。
+     * @param time_steps 検証済みの.modファイルと物理時刻。
+     * @param error 失敗理由。
+     * @return SLACの時系列入力として利用できる場合はtrue。
+     */
+    static bool ResolveSlacTimeSeries( const std::string& mesh_filename,
+                                       std::vector<SlacTimeStepFile>& time_steps,
+                                       std::string& error );
+
+private:
     /// メタデータに適合する形式アダプターを選択する。
     static const NetcdfFormatAdapter* SelectAdapter( const NetcdfMetadata& metadata );
 

@@ -82,7 +82,7 @@ inline bool SeriesFormatFromExtension( const std::string& extension, SeriesForma
     else if ( lower == ".vtu" ) format = SeriesFormat::Vtu;
     else if ( lower == ".vtm" ) format = SeriesFormat::Vtm;
     else if ( lower == ".pvtu" ) format = SeriesFormat::Pvtu;
-    else if ( lower == ".nc" ) format = SeriesFormat::Netcdf;
+    else if ( lower == ".nc" || lower == ".ncdf" ) format = SeriesFormat::Netcdf;
     else return false;
     return true;
 }
@@ -304,8 +304,7 @@ inline bool ExtractSeriesOutputBase( const std::string& pattern,
  * @brief 数値を含む時系列パターンを解決し、ファイル構成を検証する。
  *
  * パターンに一致するファイルを時系列順に整列し、すべてのファイル形式が
- * 一致することを確認する。NetCDF の場合は、データ形式と格子種別の一致も
- * 検証する。
+ * 一致することを確認する。各形式固有の内容検証は変換処理側で行う。
  *
  * @param[in] pattern 解決対象の時系列ファイルパターン。
  * @param[out] resolved 解決した時系列ファイル情報。
@@ -329,11 +328,8 @@ inline bool ResolveSeries( const std::string& pattern, ResolvedSeries& resolved,
     }
 
     // 先頭ファイルの形式を、以降のファイルと比較する基準として保持する。
-    // NetCDF の場合は、ファイル形式名と格子種別も比較対象として保持する。
     SeriesFormat expected_format = SeriesFormat::Vti;
     bool has_expected_format = false;
-    std::string expected_netcdf_format;
-    NetcdfGridType expected_netcdf_grid = NetcdfGridType::Unknown;
 
     // 時系列を構成する全ファイルを調べ、同じ形式のデータで統一されていることを
     // 確認する。
@@ -355,32 +351,6 @@ inline bool ResolveSeries( const std::string& pattern, ResolvedSeries& resolved,
                     std::string( SeriesFormatName( expected_format ) ) + ", but " + path +
                     " was detected as " + SeriesFormatName( actual_format );
             return false;
-        }
-
-        // NetCDF は同じ拡張子でも内部のデータ形式や格子種別が異なる可能性が
-        // あるため、ファイルの詳細情報も検証する。
-        if ( actual_format == SeriesFormat::Netcdf )
-        {
-            NetcdfFileInfo info;
-            if ( !Netcdf::Probe( path, info ) )
-            {
-                error = "The NetCDF file is not a supported data format: " + path;
-                return false;
-            }
-
-            // 最初の NetCDF ファイルから、以降の比較に使用する詳細情報を取得する。
-            if ( expected_netcdf_format.empty() )
-            {
-                expected_netcdf_format = info.format_name;
-                expected_netcdf_grid = info.grid_type;
-            }
-            // 2番目以降はデータ形式と格子種別が先頭ファイルと一致することを確認する。
-            else if ( info.format_name != expected_netcdf_format ||
-                      info.grid_type != expected_netcdf_grid )
-            {
-                error = "NetCDF time series mixes supported data formats or grid types: " + path;
-                return false;
-            }
         }
     }
 

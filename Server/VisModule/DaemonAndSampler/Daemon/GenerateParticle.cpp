@@ -652,6 +652,16 @@ void GenerateParticleCS(
             }
             // generate point object end
 
+            if ( !send_obj )
+            {
+                nan_error = true;
+                std::cerr << "Failed to generate a point object for '" << file_path << "'." << std::endl;
+                delete recv_obj;
+                delete[] job_c_bins;
+                delete[] job_o_bins;
+                continue;
+            }
+
             MakeHistgram( send_obj, tf_number, job_c_bins, job_o_bins );
             for ( int i = 0; i < DEFAULT_NBINS * tf_number; ++i )
             {
@@ -876,7 +886,14 @@ void generate_volume(
     else if ( vismoduleview::FileChecker::ImportableUnstructuredVolume( file_path))
     {
         std::cout << "Unstructured !" <<std::endl;
-        volume = new vismodule::UnstructuredVolumeImporter( file_path );  
+        auto* importer = new vismodule::UnstructuredVolumeImporter( file_path );
+        if ( importer->isFailure() || importer->values().size() == 0 || importer->values().typeInfo() == nullptr )
+        {
+            delete importer;
+            volume = nullptr;
+            throw std::runtime_error( "Failed to import unstructured volume values from '" + file_path + "'." );
+        }
+        volume = importer;
         volume->updateMinMaxValues();
         volume->setMinMaxObjectCoords( mvp.m_min_object_coord, mvp.m_max_object_coord );
         volume->setMinMaxExternalCoords( mvp.m_min_object_coord, mvp.m_max_object_coord );

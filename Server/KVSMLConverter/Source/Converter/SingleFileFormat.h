@@ -76,9 +76,9 @@ struct SingleFileFormatSpec
  *
  * @return 単一ファイル形式の定義一覧。
  */
-inline const std::array<SingleFileFormatSpec, 15>& SingleFileFormatSpecs()
+inline const std::array<SingleFileFormatSpec, 16>& SingleFileFormatSpecs()
 {
-    static const std::array<SingleFileFormatSpec, 15> specs = { {
+    static const std::array<SingleFileFormatSpec, 16> specs = { {
         { ConverterInputFormat::Pvtu, ".pvtu", true, true },
         { ConverterInputFormat::Pvts, ".pvts", true, true },
         { ConverterInputFormat::Cgns, ".cgns", false, true },
@@ -94,6 +94,7 @@ inline const std::array<SingleFileFormatSpec, 15>& SingleFileFormatSpecs()
         { ConverterInputFormat::Inp, ".inp", true, true },
         { ConverterInputFormat::Xyz, ".xyz", false, true },
         { ConverterInputFormat::Netcdf, ".nc", true, true },
+        { ConverterInputFormat::Netcdf, ".ncdf", true, true },
     } };
     return specs;
 }

@@ -345,6 +345,10 @@ int cvt::detail::GetKvsCellTypeId( const std::string& cell_type_expr )
     {
         return 6;
     }
+    else if ( cell_type_expr == "point" )
+    {
+        return 1;
+    }
     else
     {
         throw std::runtime_error( "Not supported cell type." );
