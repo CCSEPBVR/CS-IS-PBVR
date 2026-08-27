@@ -917,8 +917,11 @@ void ObjectEditor::onReceiveSelectedFile( const QJsonObject& payload )
 
     // FIXME:ここで成分数のアップデートを行っていますが、適切な場所なのか不明です
     const bool isServerPointObject = ( objectInfo.format == ObjectInfoExtractor::ClientServerPointObject ) || ( objectInfo.format == ObjectInfoExtractor::InsituServerPointObject );
-    if( isServerPointObject ) emit updateNumberOfVector( objectInfo.numberOfVector );
-    if( objectInfo.format == ObjectInfoExtractor::InsituServerPointObject ) emit updateIsEnsemble( objectInfo.isEnsemble );
+    if( isServerPointObject )
+    {
+        emit updateNumberOfVector( objectInfo.numberOfVector );
+        emit updateIsEnsemble( objectInfo.isEnsemble );
+    }
 }
 
 void ObjectEditor::onReceiveObjectDelete( const QJsonObject& payload )
