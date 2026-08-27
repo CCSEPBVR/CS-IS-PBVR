@@ -188,10 +188,6 @@ $(OUTDIR)/./Visualization/Importer/TableImporter.o \
 $(OUTDIR)/./Visualization/Importer/UnstructuredVolumeImporter.o \
 $(OUTDIR)/./Visualization/Mapper/CellAdjacencyGraph.o \
 $(OUTDIR)/./Visualization/Mapper/CellByCellHistogram.o \
-$(OUTDIR)/./Visualization/Mapper/EnsembleParticleGenerator.o \
-$(OUTDIR)/./Visualization/Mapper/VertexTFGradient.o \
-$(OUTDIR)/./Visualization/Mapper/EnsembleCellHistogram.o \
-$(OUTDIR)/./Visualization/Mapper/ChainRuleNormal.o \
 $(OUTDIR)/./Visualization/Mapper/CellByCellMinMax.o \
 $(OUTDIR)/./Visualization/Mapper/CellByCellMetropolisSampling.o \
 $(OUTDIR)/./Visualization/Mapper/CellByCellRejectionSampling.o \

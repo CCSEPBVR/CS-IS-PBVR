@@ -8,7 +8,7 @@
 
 #include <cstdio>
 
-#include <vismodule/ChainRuleNormal>
+#include "../shared/ChainRuleNormal.h"
 
 int main()
 {

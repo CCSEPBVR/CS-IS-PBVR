@@ -10,7 +10,7 @@
 #include <vismodule/ParticleProperty>
 #include <vismodule/MultiVolumeProperty>
 
-#include <vismodule/EnsembleParticleGenerator>   // EnsembleStatisticRange, Byte, CPU_VER/MPI handling
+#include "EnsembleParticleGenerator.h"   // EnsembleStatisticRange, Byte, CPU_VER/MPI handling
 
 namespace pbvr
 {

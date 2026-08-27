@@ -7,6 +7,10 @@ FUNCTION_PARSER_DIR        = ../../FunctionParser
 OBJS  = \
 ../shared/kvs_wrapper_common.o \
 ../shared/EnsembleStatisticOutput.o \
+../shared/EnsembleParticleGenerator.o \
+../shared/ChainRuleNormal.o \
+../shared/VertexTFGradient.o \
+../shared/EnsembleCellHistogram.o \
 kvs_wrapper.o
 
 PROG = libInSituPBVR.a

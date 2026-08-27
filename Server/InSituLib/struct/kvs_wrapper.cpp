@@ -26,7 +26,7 @@
 #include <vismodule/GenerateGlyph>
 #include <vismodule/GeneratePOL>
 
-#include <vismodule/EnsembleParticleGenerator> // GenerateEnsembleParticlesStruct, EnsembleParticleArrays, EnsembleStatisticRange
+#include "../shared/EnsembleParticleGenerator.h" // GenerateEnsembleParticlesStruct, EnsembleParticleArrays, EnsembleStatisticRange
 #include "EnsembleStatisticOutput.h"           // OutputEnsembleStatisticParticles/History, EnsembleParticleFilePrefix (shared)
 
 namespace Generator = vismodule::CellByCellParticleGenerator;

@@ -7,6 +7,10 @@ FUNCTION_PARSER_DIR  = ../../FunctionParser
 OBJS  = \
 ../shared/kvs_wrapper_common.o \
 ../shared/EnsembleStatisticOutput.o \
+../shared/EnsembleParticleGenerator.o \
+../shared/ChainRuleNormal.o \
+../shared/VertexTFGradient.o \
+../shared/EnsembleCellHistogram.o \
 kvs_wrapper.o
 
 PROG = libInSituPBVR.a
@@ -30,6 +34,9 @@ PBVR_KVS_INSTALL_DIR ?= $(abspath ../../../KVS/Install)
 CXXFLAGS += -I$(PBVR_KVS_INSTALL_DIR)/include
 CXXFLAGS += -w -DNO_CLIENT
 CXXFLAGS += -DENABLE_ENSEMBLE_TIMER
+CXXFLAGS += -DENABLE_HEX_TET_VOLUME
+CXXFLAGS += -DPBVR_SIMD_CHAINRULE
+CXXFLAGS += -DPBVR_UNIFORM_FISSION2
 
 all : ${PROG}
 

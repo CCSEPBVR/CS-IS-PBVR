@@ -64,8 +64,8 @@
 #include <kvs/extendedfileformat/VtkImporter>
 #endif
 
-#include <vismodule/ChainRuleNormal>
-#include <vismodule/EnsembleCellHistogram>
+#include "ChainRuleNormal.h"
+#include "EnsembleCellHistogram.h"
 #include "EnsembleStatisticOutput.h"
 
 using namespace pbvr;

@@ -65,9 +65,9 @@
 #include <kvs/extendedfileformat/VtkImporter>
 #endif
 
-#include <vismodule/ChainRuleNormal>
-#include <vismodule/EnsembleCellHistogram>
-#include <vismodule/EnsembleParticleGenerator>
+#include "../shared/ChainRuleNormal.h"
+#include "../shared/EnsembleCellHistogram.h"
+#include "../shared/EnsembleParticleGenerator.h"
 #include "EnsembleStatisticOutput.h"
 
 // タイマー機構(pbvr::EnsembleTimer*)等を無修飾で使うため(指示書 §3.4-a で pbvr へ移設)

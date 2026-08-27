@@ -19,7 +19,7 @@
 #include <vismodule/ParticleProperty>
 
 #include "EnsembleCellHistogram.h"   // Type, vismodule::EnsembleStatisticRange, CPU_VER/MPI handling
-#include "CellByCellParticleGenerator.h" // domain_parameters_struct (構造格子版 GenerateEnsembleParticlesStruct 用)
+#include <vismodule/CellByCellParticleGenerator> // domain_parameters_struct (構造格子版 GenerateEnsembleParticlesStruct 用)
 
 #ifdef ENABLE_ENSEMBLE_TIMER
 #include <vismodule/Timer>
