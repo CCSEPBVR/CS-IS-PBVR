@@ -37,6 +37,20 @@ enum class NetcdfGridType
     PolyData
 };
 
+enum class NetcdfInputRole
+{
+    Standard,
+    CamPoints,
+    CamConnectivity
+};
+
+struct NetcdfReadOptions
+{
+    std::string cam_connectivity_filename;
+    bool has_requested_time = false;
+    double requested_time = 0.0;
+};
+
 /**
  * @brief NetCDFファイルから取得した変数メタデータを保持するクラス。
  */
@@ -90,6 +104,7 @@ struct NetcdfFileInfo
     std::string path;
     std::string format_name;
     NetcdfGridType grid_type = NetcdfGridType::Unknown;
+    NetcdfInputRole input_role = NetcdfInputRole::Standard;
 };
 
 /**
@@ -117,6 +132,18 @@ public:
     virtual bool matches( const NetcdfMetadata& metadata ) const = 0;
     /// NetCDFファイルを読み込み、対応するKVSファイル形式オブジェクトを返す。
     virtual std::shared_ptr<kvs::FileFormatBase> read( const std::string& filename ) const = 0;
+    virtual std::shared_ptr<kvs::FileFormatBase> read(
+        const std::string& filename, const NetcdfReadOptions& options ) const
+    {
+        (void)options;
+        return this->read( filename );
+    }
+    virtual bool timeSteps( const std::string&, const NetcdfReadOptions&,
+                            std::vector<double>&, std::string& error ) const
+    {
+        error = "This NetCDF format does not expose internal time steps";
+        return false;
+    }
 };
 
 /**
@@ -132,10 +159,12 @@ public:
      * @param filename 入力ファイル名。
      */
     explicit Netcdf( const std::string& filename );
+    Netcdf( const std::string& filename, const NetcdfReadOptions& options );
 
 public:
     /// NetCDFファイルを読み込む。
     bool read( const std::string& filename ) override;
+    bool read( const std::string& filename, const NetcdfReadOptions& options );
     /// NetCDFファイルへ書き出す（未実装）。
     bool write( const std::string& filename ) override;
 
@@ -156,6 +185,9 @@ public:
 
     /// NetCDFファイルから形式判定用メタデータを読み込む。
     static bool ReadMetadata( const std::string& filename, NetcdfMetadata& metadata );
+
+    static bool TimeSteps( const std::string& filename, const NetcdfReadOptions& options,
+                           std::vector<double>& time_steps, std::string& error );
 
     /**
      * @brief .ncdfメッシュと同じディレクトリの.mod時系列を検証して時刻順に返す。

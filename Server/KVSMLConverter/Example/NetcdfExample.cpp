@@ -9,7 +9,9 @@
  * work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
  */
 #include <iostream>
+#include <iomanip>
 #include <memory>
+#include <sstream>
 #include <string>
 #include <utility>
 #include <vector>
@@ -31,6 +33,9 @@
 #include "kvs/VolumeObjectBase"
 #include "kvs/KVSMLPolygonObject"
 #include "kvs/PolygonExporter"
+#include <vtkDataArray.h>
+#include <vtkDataSet.h>
+#include <vtkPointData.h>
 
 /**
  * @brief 時系列変換の事前検証で取得したNetCDFファイルの情報。
@@ -41,6 +46,75 @@ struct SequencedNetcdfFile
     std::string format_name; ///< NetCDFアダプターが判定した形式名。
     cvt::NetcdfGridType grid_type = cvt::NetcdfGridType::Unknown; ///< VTK格子形式。
 };
+
+struct NetcdfDataSignature
+{
+    vtkIdType number_of_points = 0;
+    vtkIdType number_of_cells = 0;
+    int cell_type = -1;
+    int component_count = 0;
+    cvt::NetcdfGridType grid_type = cvt::NetcdfGridType::Unknown;
+};
+
+vtkDataSet* GetNetcdfDataSet( cvt::Netcdf& input )
+{
+    if ( auto* format = dynamic_cast<cvt::VtkXmlUnstructuredGrid*>( input.format().get() ) )
+        return format->get();
+    if ( auto* format = dynamic_cast<cvt::VtkXmlPolyData*>( input.format().get() ) )
+        return format->get();
+    return nullptr;
+}
+
+bool InspectNetcdfData( cvt::Netcdf& input, NetcdfDataSignature& signature,
+                        std::string& error )
+{
+    vtkDataSet* data = GetNetcdfDataSet( input );
+    if ( !data || data->GetNumberOfPoints() <= 0 || data->GetNumberOfCells() <= 0 )
+    {
+        error = "The NetCDF adapter returned an empty CAM data set";
+        return false;
+    }
+
+    signature.number_of_points = data->GetNumberOfPoints();
+    signature.number_of_cells = data->GetNumberOfCells();
+    signature.cell_type = data->GetCellType( 0 );
+    signature.component_count = 0;
+    signature.grid_type = input.gridType();
+    for ( vtkIdType i = 0; i < data->GetNumberOfCells(); ++i )
+    {
+        if ( data->GetCellType( i ) != signature.cell_type )
+        {
+            error = "The CAM output contains mixed cell types";
+            return false;
+        }
+    }
+    for ( int i = 0; i < data->GetPointData()->GetNumberOfArrays(); ++i )
+    {
+        vtkDataArray* array = data->GetPointData()->GetArray( i );
+        if ( !array || array->GetNumberOfTuples() != signature.number_of_points )
+        {
+            error = "A CAM value array does not contain one tuple per point";
+            return false;
+        }
+        signature.component_count += array->GetNumberOfComponents();
+    }
+    if ( signature.component_count <= 0 )
+    {
+        error = "The CAM output contains no physical value component";
+        return false;
+    }
+    return true;
+}
+
+bool SameNetcdfDataSignature( const NetcdfDataSignature& lhs,
+                              const NetcdfDataSignature& rhs )
+{
+    return lhs.number_of_points == rhs.number_of_points &&
+           lhs.number_of_cells == rhs.number_of_cells &&
+           lhs.cell_type == rhs.cell_type &&
+           lhs.component_count == rhs.component_count &&
+           lhs.grid_type == rhs.grid_type;
+}
 
 /**
  * @brief NetCDFアダプターの出力をKVSボリュームオブジェクトへ変換する。
@@ -174,6 +248,171 @@ bool WriteNetcdfVolume( const std::string& directory, const std::string& local_b
 void Netcdf2Kvsml( const std::string& directory, const std::string& base,
                    const std::string& src )
 {
+    cvt::NetcdfFileInfo info;
+    if ( !cvt::Netcdf::Probe( src, info ) )
+    {
+        std::cerr << "Failed to identify the NetCDF input: " << src << std::endl;
+        return;
+    }
+    if ( info.input_role == cvt::NetcdfInputRole::CamConnectivity )
+    {
+        std::cerr << "CAM connectivity cannot be used as the primary input. "
+                     "Specify the CAM points file instead."
+                  << std::endl;
+        return;
+    }
+    if ( info.input_role == cvt::NetcdfInputRole::CamPoints )
+    {
+        std::cout << "Enter the CAM connectivity file path:" << std::endl;
+        std::string connectivity_file;
+        if ( !std::getline( std::cin, connectivity_file ) ||
+             connectivity_file.find_first_not_of( " \t\r\n" ) == std::string::npos )
+        {
+            std::cerr << "The CAM connectivity file path is empty." << std::endl;
+            return;
+        }
+
+        cvt::NetcdfReadOptions options;
+        options.cam_connectivity_filename = connectivity_file;
+
+        std::vector<double> physical_times;
+        std::string error;
+        if ( !cvt::Netcdf::TimeSteps( src, options, physical_times, error ) )
+        {
+            std::cerr << error << std::endl;
+            return;
+        }
+
+        constexpr int sub_volume_id = 1;
+        constexpr int sub_volume_count = 1;
+        const int last_time_step = static_cast<int>( physical_times.size() ) - 1;
+        NetcdfDataSignature expected;
+        bool writes_volume = false;
+        std::string local_base;
+        std::unique_ptr<cvt::UnstructuredPfi> pfi;
+
+        for ( std::size_t i = 0; i < physical_times.size(); ++i )
+        {
+            const int time_step = static_cast<int>( i );
+            options.has_requested_time = true;
+            options.requested_time = physical_times[i];
+            std::cout << "Reading " << src << " at physical time "
+                      << physical_times[i] << " as PBVR step " << time_step << " ..."
+                      << std::endl;
+
+            cvt::Netcdf input( src, options );
+            if ( input.isFailure() || input.formatName() != "VTK CAM" )
+            {
+                std::cerr << "Failed to read CAM time step " << time_step << std::endl;
+                return;
+            }
+
+            NetcdfDataSignature current;
+            if ( !InspectNetcdfData( input, current, error ) )
+            {
+                std::cerr << error << " at PBVR step " << time_step << std::endl;
+                return;
+            }
+            if ( time_step == 0 )
+            {
+                expected = current;
+                writes_volume = current.grid_type == cvt::NetcdfGridType::UnstructuredGrid;
+                if ( !writes_volume && current.grid_type != cvt::NetcdfGridType::PolyData )
+                {
+                    std::cerr << "The CAM adapter returned an unsupported grid type."
+                              << std::endl;
+                    return;
+                }
+                if ( writes_volume )
+                {
+                    auto volume = ImportNetcdfVolume( input );
+                    if ( !volume )
+                    {
+                        std::cerr << "Failed to import CAM time step 0." << std::endl;
+                        return;
+                    }
+                    auto* unstructured =
+                        dynamic_cast<kvs::UnstructuredVolumeObject*>( volume.get() );
+                    if ( !unstructured )
+                    {
+                        std::cerr << "The CAM hexahedral grid did not produce an unstructured "
+                                     "volume."
+                                  << std::endl;
+                        return;
+                    }
+                    local_base = base + "_" + std::to_string( unstructured->cellType() );
+                    pfi = std::make_unique<cvt::UnstructuredPfi>(
+                        expected.component_count, last_time_step, sub_volume_count );
+                    if ( !WriteNetcdfVolume( directory, local_base, src, time_step,
+                                             sub_volume_id, sub_volume_count, volume.get(),
+                                             *pfi ) )
+                    {
+                        return;
+                    }
+                    continue;
+                }
+            }
+            else if ( !SameNetcdfDataSignature( current, expected ) )
+            {
+                std::cerr << "CAM topology or value components differ at PBVR step "
+                          << time_step << std::endl;
+                return;
+            }
+
+            if ( writes_volume )
+            {
+                auto volume = ImportNetcdfVolume( input );
+                if ( !volume ||
+                     !WriteNetcdfVolume( directory, local_base, src, time_step,
+                                         sub_volume_id, sub_volume_count, volume.get(), *pfi ) )
+                {
+                    std::cerr << "Failed to write CAM volume time step " << time_step
+                              << std::endl;
+                    return;
+                }
+            }
+            else
+            {
+                auto* format = dynamic_cast<cvt::VtkXmlPolyData*>( input.format().get() );
+                cvt::VtkImporter<cvt::VtkXmlPolyData> importer( format );
+                if ( importer.isFailure() )
+                {
+                    std::cerr << "Failed to import CAM polygon time step " << time_step
+                              << std::endl;
+                    return;
+                }
+                kvs::PolygonExporter<kvs::KVSMLPolygonObject> exporter( &importer );
+                exporter.setWritingDataTypeToExternalBinary();
+                std::ostringstream filename;
+                filename << base << "_" << std::setfill( '0' ) << std::setw( 5 ) << time_step
+                         << ".kvsml";
+                const std::string destination =
+                    directory + std::string( 1, cvt::filesystem::path::preferred_separator ) +
+                    filename.str();
+                if ( !exporter.write( destination ) )
+                {
+                    std::cerr << "Failed to write CAM polygon time step " << time_step
+                              << ": " << destination << std::endl;
+                    return;
+                }
+            }
+        }
+
+        if ( !writes_volume ) return;
+        if ( !pfi->write( directory, local_base ) )
+        {
+            std::cerr << "Failed to write the CAM PFI file." << std::endl;
+            return;
+        }
+        cvt::Pfl pfl;
+        pfl.registerPfi( directory, local_base );
+        if ( !pfl.write( directory, base ) )
+        {
+            std::cerr << "Failed to write the CAM PFL file." << std::endl;
+        }
+        return;
+    }
+
     std::cout << "Reading " << src << " ..." << std::endl;
     cvt::Netcdf input( src );
     if ( input.isFailure() )

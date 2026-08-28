@@ -479,13 +479,219 @@ bool IsUnsupportedSlacParticle( const cvt::NetcdfMetadata& metadata )
 
 bool IsCamPoints( const cvt::NetcdfMetadata& metadata )
 {
-    return metadata.hasDimension( "ncol" ) && metadata.hasVariable( "lon" ) &&
-           metadata.hasVariable( "lat" ) && metadata.hasDimension( "time" );
+    return metadata.hasDimension( "ncol" ) && metadata.hasDimension( "time" ) &&
+           metadata.hasVariable( "lon", "(ncol)" ) &&
+           metadata.hasVariable( "lat", "(ncol)" ) &&
+           metadata.hasVariable( "time", "(time)" );
 }
 
 bool IsCamConnectivity( const cvt::NetcdfMetadata& metadata )
 {
     return metadata.hasVariable( "element_corners" );
+}
+
+enum class CamVerticalMode
+{
+    Midpoint,
+    Interface,
+    Single
+};
+
+struct CamConfiguration
+{
+    CamVerticalMode vertical_mode = CamVerticalMode::Single;
+    std::size_t vertical_plane_count = 1;
+    std::vector<std::string> physical_variables;
+};
+
+bool IsCamCoordinateVariable( const std::string& name )
+{
+    return name == "time" || name == "lon" || name == "lat" || name == "lev" ||
+           name == "ilev";
+}
+
+std::vector<std::string> CamVariablesWithDimensions(
+    const cvt::NetcdfMetadata& metadata, const std::string& dimensions )
+{
+    std::vector<std::string> variables;
+    for ( const auto& variable : metadata.variableDimensions() )
+    {
+        if ( !IsCamCoordinateVariable( variable.first ) && variable.second == dimensions )
+        {
+            variables.push_back( variable.first );
+        }
+    }
+    return variables;
+}
+
+bool ValidateCamConnectivityIndices( const std::string& filename, std::size_t ncol,
+                                     std::string& error )
+{
+    int file = -1;
+    int status = nc_open( filename.c_str(), NC_NOWRITE, &file );
+    if ( status != NC_NOERR )
+    {
+        error = std::string( "Failed to open the CAM connectivity file: " ) +
+                nc_strerror( status ) + ": " + filename;
+        return false;
+    }
+    auto close_file = [&]() {
+        if ( file >= 0 ) nc_close( file );
+        file = -1;
+    };
+
+    int variable = -1;
+    status = nc_inq_varid( file, "element_corners", &variable );
+    if ( status != NC_NOERR )
+    {
+        error = "The CAM connectivity file has no element_corners variable: " + filename;
+        close_file();
+        return false;
+    }
+
+    int rank = 0;
+    int dimension_ids[NC_MAX_VAR_DIMS] = {};
+    status = nc_inq_var( file, variable, nullptr, nullptr, &rank, dimension_ids, nullptr );
+    if ( status != NC_NOERR || rank <= 0 )
+    {
+        error = "Failed to inspect CAM element_corners: " + filename;
+        close_file();
+        return false;
+    }
+
+    std::size_t value_count = 1;
+    for ( int i = 0; i < rank; ++i )
+    {
+        std::size_t length = 0;
+        if ( nc_inq_dimlen( file, dimension_ids[i], &length ) != NC_NOERR || length == 0 ||
+             value_count > std::numeric_limits<std::size_t>::max() / length )
+        {
+            error = "Invalid CAM element_corners dimensions: " + filename;
+            close_file();
+            return false;
+        }
+        value_count *= length;
+    }
+
+    std::vector<long long> indices( value_count );
+    status = nc_get_var_longlong( file, variable, indices.data() );
+    close_file();
+    if ( status != NC_NOERR )
+    {
+        error = std::string( "Failed to read CAM element_corners: " ) +
+                nc_strerror( status ) + ": " + filename;
+        return false;
+    }
+    for ( const long long index : indices )
+    {
+        if ( index < 1 || static_cast<unsigned long long>( index ) > ncol )
+        {
+            error = "CAM element_corners contains a node number outside the 1..ncol range: " +
+                    filename;
+            return false;
+        }
+    }
+    return true;
+}
+
+bool ResolveCamConfiguration( const std::string& points_file,
+                              const std::string& connectivity_file,
+                              CamConfiguration& configuration, std::string& error )
+{
+    configuration = CamConfiguration{};
+    error.clear();
+    if ( connectivity_file.empty() )
+    {
+        error = "The CAM connectivity file path is empty";
+        return false;
+    }
+
+    cvt::NetcdfMetadata points_metadata;
+    if ( !cvt::Netcdf::ReadMetadata( points_file, points_metadata ) ||
+         !IsCamPoints( points_metadata ) )
+    {
+        error = "The CAM points file requires ncol, lon(ncol), lat(ncol), and time(time): " +
+                points_file;
+        return false;
+    }
+    cvt::NetcdfMetadata connectivity_metadata;
+    if ( !cvt::Netcdf::ReadMetadata( connectivity_file, connectivity_metadata ) ||
+         !IsCamConnectivity( connectivity_metadata ) )
+    {
+        error = "The CAM connectivity file requires element_corners: " + connectivity_file;
+        return false;
+    }
+
+    std::size_t ncol = 0;
+    if ( !ReadNetcdfDimensionLength( points_file, "ncol", ncol ) || ncol == 0 )
+    {
+        error = "Failed to read a positive CAM ncol dimension: " + points_file;
+        return false;
+    }
+    if ( !ValidateCamConnectivityIndices( connectivity_file, ncol, error ) ) return false;
+
+    configuration.physical_variables =
+        CamVariablesWithDimensions( points_metadata, "(time, lev, ncol)" );
+    if ( !configuration.physical_variables.empty() )
+    {
+        configuration.vertical_mode = CamVerticalMode::Midpoint;
+        if ( !ReadNetcdfDimensionLength(
+                 points_file, "lev", configuration.vertical_plane_count ) ||
+             configuration.vertical_plane_count == 0 )
+        {
+            error = "Failed to read a positive CAM lev dimension: " + points_file;
+            return false;
+        }
+        return true;
+    }
+    configuration.physical_variables =
+        CamVariablesWithDimensions( points_metadata, "(time, ilev, ncol)" );
+    if ( !configuration.physical_variables.empty() )
+    {
+        configuration.vertical_mode = CamVerticalMode::Interface;
+        if ( !ReadNetcdfDimensionLength(
+                 points_file, "ilev", configuration.vertical_plane_count ) ||
+             configuration.vertical_plane_count == 0 )
+        {
+            error = "Failed to read a positive CAM ilev dimension: " + points_file;
+            return false;
+        }
+        return true;
+    }
+    configuration.physical_variables =
+        CamVariablesWithDimensions( points_metadata, "(time, ncol)" );
+    if ( !configuration.physical_variables.empty() )
+    {
+        configuration.vertical_mode = CamVerticalMode::Single;
+        return true;
+    }
+
+    error = "The CAM points file has no physical variable with dimensions "
+            "(time, lev, ncol), (time, ilev, ncol), or (time, ncol): " + points_file;
+    return false;
+}
+
+void ConfigureCamReader( vtkNetCDFCAMReader* reader, const std::string& points_file,
+                         const std::string& connectivity_file,
+                         const CamConfiguration& configuration )
+{
+    reader->SetFileName( points_file.c_str() );
+    reader->SetConnectivityFileName( connectivity_file.c_str() );
+    switch ( configuration.vertical_mode )
+    {
+    case CamVerticalMode::Midpoint:
+        reader->SetVerticalDimension(
+            vtkNetCDFCAMReader::VERTICAL_DIMENSION_MIDPOINT_LAYERS );
+        break;
+    case CamVerticalMode::Interface:
+        reader->SetVerticalDimension(
+            vtkNetCDFCAMReader::VERTICAL_DIMENSION_INTERFACE_LAYERS );
+        break;
+    case CamVerticalMode::Single:
+        reader->SetVerticalDimension(
+            vtkNetCDFCAMReader::VERTICAL_DIMENSION_SINGLE_LAYER );
+        break;
+    }
 }
 
 class GearnNetcdfFormatAdapter : public cvt::NetcdfFormatAdapter
@@ -784,69 +990,170 @@ class CamNetcdfFormatAdapter : public cvt::NetcdfFormatAdapter
 {
 public:
     const char* name() const override { return "VTK CAM"; }
-    cvt::NetcdfGridType gridType() const override
-    {
-        return cvt::NetcdfGridType::UnstructuredGrid;
-    }
+    cvt::NetcdfGridType gridType() const override { return cvt::NetcdfGridType::Unknown; }
     bool matches( const cvt::NetcdfMetadata& metadata ) const override
     {
         return IsCamPoints( metadata ) || IsCamConnectivity( metadata );
     }
     std::shared_ptr<kvs::FileFormatBase> read( const std::string& filename ) const override
     {
-        cvt::NetcdfMetadata input_metadata;
-        if ( !cvt::Netcdf::ReadMetadata( filename, input_metadata ) )
+        return this->read( filename, cvt::NetcdfReadOptions{} );
+    }
+    std::shared_ptr<kvs::FileFormatBase> read(
+        const std::string& filename, const cvt::NetcdfReadOptions& options ) const override
+    {
+        cvt::NetcdfMetadata metadata;
+        if ( !cvt::Netcdf::ReadMetadata( filename, metadata ) )
         {
             throw std::runtime_error( "failed to inspect the CAM input" );
         }
-        std::string points_file;
-        std::string connectivity_file;
-        if ( IsCamPoints( input_metadata ) ) points_file = filename;
-        if ( IsCamConnectivity( input_metadata ) ) connectivity_file = filename;
-
-        if ( points_file.empty() )
+        if ( IsCamConnectivity( metadata ) && !IsCamPoints( metadata ) )
         {
-            const auto files = FindSiblingNetcdfFiles( filename, IsCamPoints );
-            if ( files.size() != 1 )
-            {
-                throw std::runtime_error(
-                    "CAM connectivity input requires exactly one companion points file" );
-            }
-            points_file = files.front();
+            throw std::runtime_error(
+                "CAM connectivity cannot be used as the primary input; specify the points file" );
         }
-        if ( connectivity_file.empty() )
+        if ( !IsCamPoints( metadata ) )
         {
-            const auto files = FindSiblingNetcdfFiles( filename, IsCamConnectivity );
-            if ( files.size() != 1 )
-            {
-                throw std::runtime_error(
-                    "CAM points input requires exactly one companion connectivity file" );
-            }
-            connectivity_file = files.front();
+            throw std::runtime_error( "the primary CAM input is not a points file" );
         }
 
-        cvt::NetcdfMetadata points_metadata;
-        cvt::Netcdf::ReadMetadata( points_file, points_metadata );
+        CamConfiguration configuration;
+        std::string error;
+        if ( !ResolveCamConfiguration( filename, options.cam_connectivity_filename,
+                                       configuration, error ) )
+        {
+            throw std::runtime_error( error );
+        }
+
         vtkNew<vtkNetCDFCAMReader> reader;
-        reader->SetFileName( points_file.c_str() );
-        reader->SetConnectivityFileName( connectivity_file.c_str() );
-        if ( points_metadata.hasDimension( "lev" ) )
+        ConfigureCamReader( reader, filename, options.cam_connectivity_filename,
+                            configuration );
+        reader->UpdateInformation();
+        if ( options.has_requested_time )
         {
-            reader->SetVerticalDimension(
-                vtkNetCDFCAMReader::VERTICAL_DIMENSION_MIDPOINT_LAYERS );
-        }
-        else if ( points_metadata.hasDimension( "ilev" ) )
-        {
-            reader->SetVerticalDimension(
-                vtkNetCDFCAMReader::VERTICAL_DIMENSION_INTERFACE_LAYERS );
-        }
-        else
-        {
-            reader->SetVerticalDimension(
-                vtkNetCDFCAMReader::VERTICAL_DIMENSION_SINGLE_LAYER );
+            reader->GetOutputInformation( 0 )->Set(
+                vtkStreamingDemandDrivenPipeline::UPDATE_TIME_STEP(),
+                options.requested_time );
         }
         reader->Update();
-        return WrapDataSet( vtkDataSet::SafeDownCast( reader->GetOutputDataObject( 0 ) ) );
+
+        auto* output = vtkUnstructuredGrid::SafeDownCast( reader->GetOutputDataObject( 0 ) );
+        if ( !output || output->GetNumberOfPoints() == 0 ||
+             output->GetNumberOfCells() == 0 )
+        {
+            throw std::runtime_error( "vtkNetCDFCAMReader returned an empty grid" );
+        }
+
+        const int cell_type = output->GetCellType( 0 );
+        if ( cell_type != VTK_HEXAHEDRON && cell_type != VTK_QUAD )
+        {
+            throw std::runtime_error(
+                "vtkNetCDFCAMReader returned a cell type other than hexahedron or quad" );
+        }
+        const int expected_cell_type = configuration.vertical_plane_count >= 2
+                                           ? VTK_HEXAHEDRON
+                                           : VTK_QUAD;
+        if ( cell_type != expected_cell_type )
+        {
+            throw std::runtime_error(
+                "vtkNetCDFCAMReader cell type does not match the selected vertical mode" );
+        }
+        for ( vtkIdType i = 1; i < output->GetNumberOfCells(); ++i )
+        {
+            if ( output->GetCellType( i ) != cell_type )
+            {
+                throw std::runtime_error( "vtkNetCDFCAMReader returned mixed cell types" );
+            }
+        }
+
+        std::vector<vtkSmartPointer<vtkDataArray>> physical_arrays;
+        physical_arrays.reserve( configuration.physical_variables.size() );
+        for ( const auto& name : configuration.physical_variables )
+        {
+            vtkDataArray* array = output->GetPointData()->GetArray( name.c_str() );
+            if ( !array )
+            {
+                throw std::runtime_error( "vtkNetCDFCAMReader did not return physical array " +
+                                          name );
+            }
+            if ( array->GetNumberOfComponents() != 1 ||
+                 array->GetNumberOfTuples() != output->GetNumberOfPoints() )
+            {
+                throw std::runtime_error(
+                    "CAM physical array must have one tuple per point and one component: " +
+                    name );
+            }
+            physical_arrays.push_back( array );
+        }
+
+        vtkNew<vtkUnstructuredGrid> normalized;
+        normalized->ShallowCopy( output );
+        normalized->GetPointData()->Initialize();
+        for ( const auto& array : physical_arrays )
+            normalized->GetPointData()->AddArray( array );
+
+        if ( cell_type == VTK_HEXAHEDRON )
+        {
+            return std::make_shared<cvt::VtkXmlUnstructuredGrid>( normalized.GetPointer() );
+        }
+
+        vtkNew<vtkDataSetSurfaceFilter> surface;
+        surface->SetInputData( normalized );
+        vtkNew<vtkTriangleFilter> triangles;
+        triangles->SetInputConnection( surface->GetOutputPort() );
+        triangles->Update();
+        vtkPolyData* polygon = triangles->GetOutput();
+        if ( !polygon || polygon->GetNumberOfPoints() == 0 ||
+             polygon->GetNumberOfPolys() == 0 )
+        {
+            throw std::runtime_error( "failed to triangulate the CAM quad surface" );
+        }
+        return std::make_shared<cvt::VtkXmlPolyData>( polygon );
+    }
+
+    bool timeSteps( const std::string& filename, const cvt::NetcdfReadOptions& options,
+                    std::vector<double>& time_steps, std::string& error ) const override
+    {
+        time_steps.clear();
+        CamConfiguration configuration;
+        if ( !ResolveCamConfiguration( filename, options.cam_connectivity_filename,
+                                       configuration, error ) )
+        {
+            return false;
+        }
+
+        vtkNew<vtkNetCDFCAMReader> reader;
+        ConfigureCamReader( reader, filename, options.cam_connectivity_filename,
+                            configuration );
+        reader->UpdateInformation();
+        vtkInformation* information = reader->GetOutputInformation( 0 );
+        auto* key = vtkStreamingDemandDrivenPipeline::TIME_STEPS();
+        if ( !information || !information->Has( key ) )
+        {
+            error = "vtkNetCDFCAMReader did not publish TIME_STEPS";
+            return false;
+        }
+        const int count = information->Length( key );
+        if ( count <= 0 )
+        {
+            error = "vtkNetCDFCAMReader published an empty TIME_STEPS list";
+            return false;
+        }
+        time_steps.reserve( static_cast<std::size_t>( count ) );
+        for ( int i = 0; i < count; ++i )
+        {
+            const double time = information->Get( key, i );
+            if ( !std::isfinite( time ) ||
+                 std::find( time_steps.begin(), time_steps.end(), time ) != time_steps.end() )
+            {
+                error = "vtkNetCDFCAMReader published a non-finite or duplicate time step";
+                time_steps.clear();
+                return false;
+            }
+            time_steps.push_back( time );
+        }
+        std::sort( time_steps.begin(), time_steps.end() );
+        return true;
     }
 };
 
@@ -1233,9 +1540,30 @@ bool MatchesNetcdfGridType( const std::shared_ptr<kvs::FileFormatBase>& format,
     case cvt::NetcdfGridType::PolyData:
         return dynamic_cast<cvt::VtkXmlPolyData*>( format.get() ) != nullptr;
     case cvt::NetcdfGridType::Unknown:
+        return dynamic_cast<cvt::VtkXmlImageData*>( format.get() ) != nullptr ||
+               dynamic_cast<cvt::VtkXmlRectilinearGrid*>( format.get() ) != nullptr ||
+               dynamic_cast<cvt::VtkXmlStructuredGrid*>( format.get() ) != nullptr ||
+               dynamic_cast<cvt::VtkXmlUnstructuredGrid*>( format.get() ) != nullptr ||
+               dynamic_cast<cvt::VtkXmlPolyData*>( format.get() ) != nullptr;
     default:
         return false;
     }
+}
+
+cvt::NetcdfGridType ActualNetcdfGridType(
+    const std::shared_ptr<kvs::FileFormatBase>& format )
+{
+    if ( dynamic_cast<cvt::VtkXmlImageData*>( format.get() ) )
+        return cvt::NetcdfGridType::ImageData;
+    if ( dynamic_cast<cvt::VtkXmlRectilinearGrid*>( format.get() ) )
+        return cvt::NetcdfGridType::RectilinearGrid;
+    if ( dynamic_cast<cvt::VtkXmlStructuredGrid*>( format.get() ) )
+        return cvt::NetcdfGridType::StructuredGrid;
+    if ( dynamic_cast<cvt::VtkXmlUnstructuredGrid*>( format.get() ) )
+        return cvt::NetcdfGridType::UnstructuredGrid;
+    if ( dynamic_cast<cvt::VtkXmlPolyData*>( format.get() ) )
+        return cvt::NetcdfGridType::PolyData;
+    return cvt::NetcdfGridType::Unknown;
 }
 } // namespace detail
 } // namespace cvt
@@ -1533,12 +1861,23 @@ const cvt::NetcdfFormatAdapter* cvt::Netcdf::SelectAdapter(
  */
 cvt::Netcdf::Netcdf( const std::string& filename ) { this->read( filename ); }
 
+cvt::Netcdf::Netcdf( const std::string& filename, const cvt::NetcdfReadOptions& options )
+{
+    this->read( filename, options );
+}
+
 /**
  * @brief NetCDFファイルの形式を判別し、対応する格子データへ変換する。
  * @param filename 入力ファイル名。
  * @return 読み込みと変換に成功した場合はtrue、それ以外はfalse。
  */
 bool cvt::Netcdf::read( const std::string& filename )
+{
+    return this->read( filename, cvt::NetcdfReadOptions{} );
+}
+
+bool cvt::Netcdf::read( const std::string& filename,
+                        const cvt::NetcdfReadOptions& options )
 {
     // 前回の読み込み結果を破棄し、失敗状態から処理を開始する。
     this->setFilename( filename );
@@ -1563,7 +1902,7 @@ bool cvt::Netcdf::read( const std::string& filename )
     // 選択したアダプターで実データを読み込み、戻り値の格子型も検証する。
     try
     {
-        m_format = adapter->read( filename );
+        m_format = adapter->read( filename, options );
         if ( !m_format ||
              !cvt::detail::MatchesNetcdfGridType( m_format, adapter->gridType() ) )
         {
@@ -1575,7 +1914,7 @@ bool cvt::Netcdf::read( const std::string& filename )
             return false;
         }
         m_format_name = adapter->name();
-        m_grid_type = adapter->gridType();
+        m_grid_type = cvt::detail::ActualNetcdfGridType( m_format );
         this->setSuccess( true );
         return true;
     }
@@ -1629,5 +1968,38 @@ bool cvt::Netcdf::Probe( const std::string& filename, cvt::NetcdfFileInfo& info 
     info.path = filename;
     info.format_name = adapter->name();
     info.grid_type = adapter->gridType();
+    if ( cvt::detail::IsCamPoints( metadata ) )
+    {
+        info.input_role = cvt::NetcdfInputRole::CamPoints;
+    }
+    else if ( cvt::detail::IsCamConnectivity( metadata ) )
+    {
+        info.input_role = cvt::NetcdfInputRole::CamConnectivity;
+    }
+    else
+    {
+        info.input_role = cvt::NetcdfInputRole::Standard;
+    }
     return true;
+}
+
+bool cvt::Netcdf::TimeSteps( const std::string& filename,
+                             const cvt::NetcdfReadOptions& options,
+                             std::vector<double>& time_steps, std::string& error )
+{
+    time_steps.clear();
+    error.clear();
+    cvt::NetcdfMetadata metadata;
+    if ( !ReadMetadata( filename, metadata ) )
+    {
+        error = "Failed to inspect the NetCDF file: " + filename;
+        return false;
+    }
+    const auto* adapter = SelectAdapter( metadata );
+    if ( !adapter )
+    {
+        error = "Unsupported NetCDF data format: " + filename;
+        return false;
+    }
+    return adapter->timeSteps( filename, options, time_steps, error );
 }
