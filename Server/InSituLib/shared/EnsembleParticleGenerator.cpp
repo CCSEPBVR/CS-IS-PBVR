@@ -201,6 +201,17 @@ bool EnsembleHistogramBin(
     return true;
 }
 
+// 統計量(平均・分散)の値を常用対数化する。変動係数は対象外(呼び出し前に算出済み)。
+// 非正値は下限クランプ log10(max(値, delta)) で NaN(log10(負))/-Inf(log10(0)) を回避。
+void ApplyLog10ToMeanVariance( std::vector<float>& mean, std::vector<float>& variance )
+{
+    const float floor_value = 1.0e-30f;
+    for ( size_t i = 0; i < mean.size(); ++i )
+        mean[i] = std::log10( std::max( mean[i], floor_value ) );
+    for ( size_t i = 0; i < variance.size(); ++i )
+        variance[i] = std::log10( std::max( variance[i], floor_value ) );
+}
+
 EnsembleStatisticRange MakeEnsembleStatisticMinMax(
     const std::vector<float>& values,
     const int tf_number
@@ -2287,6 +2298,11 @@ bool GenerateEnsembleParticles(
              static_cast<unsigned long long>( co_varietion_normal_fallback_count ),
              static_cast<unsigned long long>( vertex_scalars.size() ) );
 
+    // 統計量の対数化: フラグ ON なら 平均(vertex_scalars)・分散(tmp_varience)を log10。
+    // 変動係数(co_varietion)・変動係数法線は上で算出済み＝対数化前。法線/最適化ループは不変。
+    if ( particle_property.m_log_scale_statistics )
+        ApplyLog10ToMeanVariance( vertex_scalars, tmp_varience );
+
     {
 #ifdef ENABLE_ENSEMBLE_TIMER
         EnsembleTimerScope timer_scope( &ensemble_timer, EnsembleTimerStatHistogram );
@@ -3004,6 +3020,11 @@ bool GenerateEnsembleParticlesStruct(
              mpi_rank,
              static_cast<unsigned long long>( co_varietion_normal_fallback_count ),
              static_cast<unsigned long long>( vertex_scalars.size() ) );
+
+    // 統計量の対数化: フラグ ON なら 平均(vertex_scalars)・分散(tmp_varience)を log10。
+    // 変動係数(co_varietion)・変動係数法線は上で算出済み＝対数化前。法線/最適化ループは不変。
+    if ( particle_property.m_log_scale_statistics )
+        ApplyLog10ToMeanVariance( vertex_scalars, tmp_varience );
 
     {
 #ifdef ENABLE_ENSEMBLE_TIMER

@@ -23,6 +23,7 @@ struct ParticleProperty
     float m_extra_opacity_factor;
     float m_particle_data_size_limit;
     bool m_is_ensemble = false;
+    bool m_log_scale_statistics = false; // 統計量(平均・分散)の常用対数化 ON/OFF（デフォルトOFF）
     vismodule::Camera* m_camera;
     TransferFunctionSynthesizer* m_transfunc_synthesizer; // pack unpackしない
     std::vector<NamedTransferFunction> m_transfunc_array;
@@ -94,6 +95,7 @@ struct ParticleProperty
         size += sizeof( m_extra_opacity_factor );
         size += sizeof( m_particle_data_size_limit );
         size += sizeof( m_is_ensemble );
+        size += sizeof( m_log_scale_statistics );
         size += vismodule::Serializer::byteSize<vismodule::Camera>( *m_camera );
         size += vismodule::Serializer::byteSize( m_transfunc_array.size() );
         for ( std::size_t i = 0; i < m_transfunc_array.size(); i++ )
@@ -154,6 +156,7 @@ struct ParticleProperty
         index += vismodule::Serializer::write( buf + index, m_extra_opacity_factor );
         index += vismodule::Serializer::write( buf + index, m_particle_data_size_limit );
         index += vismodule::Serializer::write( buf + index, m_is_ensemble );
+        index += vismodule::Serializer::write( buf + index, m_log_scale_statistics );
         index += vismodule::Serializer::pack( buf + index, *m_camera );
 
         index += vismodule::Serializer::write( buf + index, m_transfunc_array.size() );
@@ -218,6 +221,7 @@ struct ParticleProperty
         index += vismodule::Serializer::read( buf + index, &m_extra_opacity_factor );
         index += vismodule::Serializer::read( buf + index, &m_particle_data_size_limit );
         index += vismodule::Serializer::read( buf + index, &m_is_ensemble );
+        index += vismodule::Serializer::read( buf + index, &m_log_scale_statistics );
         index += vismodule::Serializer::unpack( buf + index, m_camera );
 
         std::size_t tf_number;
@@ -336,6 +340,7 @@ struct ParticleProperty
         std::cout << "extra_opacity_factor                : " << m_extra_opacity_factor                << std::endl;
         std::cout << "particle_data_size_limit            : " << m_particle_data_size_limit            << std::endl;
         std::cout << "is_ensemble                         : " << m_is_ensemble                         << std::endl;
+        std::cout << "log_scale_statistics                : " << m_log_scale_statistics << std::endl;
         std::cout << "color_transfer_function_synthesis   : " << m_color_transfer_function_synthesis   << std::endl;
         std::cout << "opacity_transfer_function_synthesis : " << m_opacity_transfer_function_synthesis << std::endl;
         std::cout << "transfer_function_count             : " << m_transfunc_array.size()              << std::endl;
