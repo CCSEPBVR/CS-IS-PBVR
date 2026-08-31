@@ -1245,26 +1245,25 @@ bool GenerateEnsembleParticles(
             vismodule::Timer volume_timer;
             volume_timer.start();
 #endif
-#if defined( ENABLE_HEX_TET_VOLUME )
-            // Candidate 1: the cells were already loaded by bindCellArray() above, so
-            // reuse m_vertices_array and compute every volume with one vectorizable call
-            // instead of a per-cell virtual bindCell() (which blocked vectorization,
-            // #15333) plus a redundant gather. Bit-identical (same 6-tet decomposition
-            // and vertex order).
-            static_cast<vismodule::HexahedralCell<Type>*>( cell[thid][0] )
-                ->volumeArrayByTetraDecomposition( remain, volume_array );
-#else
-            for ( int cell_BLK = 0; cell_BLK < remain; cell_BLK++ )
+            // 一様サンプリング用のセル体積を計算する。Hex は m_vertices_array を使う
+            // 1回のベクトル化呼び出し(volumeArrayByTetraDecomposition, 6-tet分割)で
+            // 全セル分を一括算出する(per-cell 仮想 bindCell を避けベクトル化, #15333)。
+            if ( celltype == vismodule::VolumeObjectBase::Hexahedra )
             {
-                cell[thid][0]->bindCell( cell_index[cell_BLK] );
-#if defined( ENABLE_HEX_TET_VOLUME )
-                    volume_array[cell_BLK] =
-                        static_cast<vismodule::HexahedralCell<Type>*>( cell[thid][0] )->volumeByTetraDecomposition();
-#else
-                volume_array[cell_BLK] = cell[thid][0]->volume();
-#endif
+                // 8頂点固定読み(m_vertices_array[0..7])のHex専用高速パス。Hexのみ適用。
+                static_cast<vismodule::HexahedralCell<Type>*>( cell[thid][0] )
+                    ->volumeArrayByTetraDecomposition( remain, volume_array );
             }
-#endif
+            else
+            {
+                // Tet/Prism/Pyramid/Quadratic系: per-cell の多態 volume() で計算
+                // (全CellBase派生で正しい)。
+                for ( int cell_BLK = 0; cell_BLK < remain; cell_BLK++ )
+                {
+                    cell[thid][0]->bindCell( cell_index[cell_BLK] );
+                    volume_array[cell_BLK] = cell[thid][0]->volume();
+                }
+            }
 #ifdef ENABLE_ENSEMBLE_TIMER
             volume_timer.stop();
             th_uniform_volume_time += volume_timer.sec();

@@ -272,7 +272,6 @@ endif
 #=============================================================================
 DEFINITIONS :=
 DEFINITIONS += -DENABLE_ENSEMBLE_TIMER
-DEFINITIONS += -DENABLE_HEX_TET_VOLUME
 DEFINITIONS += -DPBVR_SIMD_CHAINRULE
 DEFINITIONS += -DPBVR_UNIFORM_FISSION2
 
