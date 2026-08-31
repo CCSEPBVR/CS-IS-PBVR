@@ -118,3 +118,32 @@ build/
 # ===============================
 KVS/Source/SupportOpenXR/BuildRule.vc.mk
 KVS/Source/SupportQt/BuildRule.vc.mk
+
+# ===============================
+# PBVR: 実行時に生成される出力データ
+# ===============================
+# 粒子データ(kvsml + 座標/色などの .dat)
+particle_out/
+*.kvsml
+*_coord.dat
+*_color.dat
+*_normal.dat
+*_value.dat
+
+# タイムステップ付きで生成される JSON (default_00000.json / history_00000.json 等)
+# ※ 入力用の default.json / default_old.json は対象外
+default_[0-9]*.json
+history_[0-9]*.json
+
+# 実行時に生成されるログ・状態・計測ファイル
+state.txt
+timer.out.*
+ensemble_timer_summary.csv
+
+# PBS ジョブの標準出力/エラー (*.o<jobid> / *.e<jobid>)
+*.o[0-9]*
+*.e[0-9]*
+
+# 検証・計測用の作業ディレクトリ
+*_verify/
+*_perf/
