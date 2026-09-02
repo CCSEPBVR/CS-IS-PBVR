@@ -20,6 +20,8 @@
 #include <algorithm>
 #include <cctype>
 #include <cmath>
+#include <cstdint>
+#include <iomanip>
 #include <map>
 #include <sstream>
 #include <stdexcept>
@@ -37,19 +39,20 @@
 #include <vtkAppendFilter.h>
 #include <vtkCallbackCommand.h>
 #include <vtkCellDataToPointData.h>
+#include <vtkCellData.h>
 #include <vtkCellType.h>
 #include <vtkCommand.h>
 #include <vtkCompositeDataIterator.h>
 #include <vtkCompositeDataSet.h>
 #include <vtkDataArray.h>
+#include <vtkDataSetAttributes.h>
 #include <vtkDataSetSurfaceFilter.h>
 #include <vtkDataSet.h>
+#include <vtkDoubleArray.h>
 #include <vtkErrorCode.h>
 #include <vtkFloatArray.h>
-#include <vtkGlobFileNames.h>
 #include <vtkImageData.h>
 #include <vtkInformation.h>
-#include <vtkMPASReader.h>
 #include <vtkMultiBlockDataSet.h>
 #include <vtkNetCDFCAMReader.h>
 #include <vtkNetCDFCFReader.h>
@@ -61,6 +64,7 @@
 #include <vtkPoints.h>
 #include <vtkPolyData.h>
 #include <vtkRectilinearGrid.h>
+#include <vtkResampleToImage.h>
 #include <vtkSLACReader.h>
 #include <vtkStringArray.h>
 #include <vtkStreamingDemandDrivenPipeline.h>
@@ -285,63 +289,12 @@ std::string Lowercase( std::string value )
     return value;
 }
 
-/** ファイル名の拡張子を小文字で返す。 */
-std::string FilenameExtension( const std::string& filename )
-{
-    const auto separator = filename.find_last_of( "/\\" );
-    const auto dot = filename.find_last_of( '.' );
-    if ( dot == std::string::npos ||
-         ( separator != std::string::npos && dot < separator ) ) return "";
-    return Lowercase( filename.substr( dot ) );
-}
-
-/** 入力と同じディレクトリにある全エントリを列挙する。 */
-std::vector<std::string> SiblingFiles( const std::string& filename )
-{
-    const auto separator = filename.find_last_of( "/\\" );
-    const std::string directory =
-        separator == std::string::npos ? "." : filename.substr( 0, separator );
-    vtkNew<vtkGlobFileNames> glob;
-    glob->RecurseOff();
-    glob->AddFileNames( ( directory + "/*" ).c_str() );
-
-    std::vector<std::string> files;
-    vtkStringArray* names = glob->GetFileNames();
-    files.reserve( static_cast<std::size_t>( names->GetNumberOfValues() ) );
-    for ( vtkIdType i = 0; i < names->GetNumberOfValues(); ++i )
-    {
-        files.push_back( names->GetValue( i ) );
-    }
-    std::sort( files.begin(), files.end() );
-    return files;
-}
-
 /** 次元表記に含まれる次元数を返す。 */
 std::size_t DimensionRank( const std::string& dimensions )
 {
     if ( dimensions.size() < 2 ) return 0;
     return 1 + static_cast<std::size_t>(
                    std::count( dimensions.begin(), dimensions.end(), ',' ) );
-}
-
-/** 指定ファイルがNetCDFとして開けるかを静かに確認する。 */
-bool IsReadableNetcdfFile( const std::string& filename )
-{
-    int file = -1;
-    if ( nc_open( filename.c_str(), NC_NOWRITE, &file ) != NC_NOERR ) return false;
-    nc_close( file );
-    return true;
-}
-
-/** 入力と同じディレクトリにあるNetCDFファイルを列挙する。 */
-std::vector<std::string> SiblingNetcdfFiles( const std::string& filename )
-{
-    std::vector<std::string> files;
-    for ( const auto& candidate : SiblingFiles( filename ) )
-    {
-        if ( IsReadableNetcdfFile( candidate ) ) files.push_back( candidate );
-    }
-    return files;
 }
 
 /** NetCDFの指定した次元長を取得する。 */
@@ -377,22 +330,6 @@ bool ReadSlacModeValue( const std::string& filename, double& value )
     }
     nc_close( file );
     return success;
-}
-
-template <typename Predicate>
-std::vector<std::string> FindSiblingNetcdfFiles( const std::string& filename,
-                                                 Predicate predicate )
-{
-    std::vector<std::string> matches;
-    for ( const auto& candidate : SiblingNetcdfFiles( filename ) )
-    {
-        cvt::NetcdfMetadata metadata;
-        if ( cvt::Netcdf::ReadMetadata( candidate, metadata ) && predicate( metadata ) )
-        {
-            matches.push_back( candidate );
-        }
-    }
-    return matches;
 }
 
 /** VTKデータセットのセルデータを点データへ変換する。 */
@@ -439,34 +376,51 @@ std::shared_ptr<kvs::FileFormatBase> WrapDataSet( vtkDataSet* input )
                               data->GetClassName() );
 }
 
-/** コンポジット出力から最初の非空データセットを取得する。 */
-vtkDataSet* FirstDataSet( vtkCompositeDataSet* composite )
+bool IsNumericNetcdfType( int type )
 {
-    if ( !composite ) return nullptr;
-    vtkSmartPointer<vtkCompositeDataIterator> iterator;
-    iterator.TakeReference( composite->NewIterator() );
-    iterator->SkipEmptyNodesOn();
-    for ( iterator->InitTraversal(); !iterator->IsDoneWithTraversal();
-          iterator->GoToNextItem() )
+    switch ( type )
     {
-        auto* data = vtkDataSet::SafeDownCast( iterator->GetCurrentDataObject() );
-        if ( data && data->GetNumberOfPoints() > 0 ) return data;
+    case NC_BYTE:
+    case NC_SHORT:
+    case NC_INT:
+    case NC_FLOAT:
+    case NC_DOUBLE:
+    case NC_UBYTE:
+    case NC_USHORT:
+    case NC_UINT:
+    case NC_INT64:
+    case NC_UINT64: return true;
+    default: return false;
     }
-    return nullptr;
 }
 
 bool IsSlacMesh( const cvt::NetcdfMetadata& metadata )
 {
-    return metadata.hasVariable( "coords" ) &&
-           metadata.hasVariable( "tetrahedron_interior" ) &&
-           metadata.hasVariable( "tetrahedron_exterior" );
+    const auto& coords = metadata.variableShape( "coords" );
+    const auto& tetrahedra = metadata.variableShape( "tetrahedron_interior" );
+    const int coords_type = metadata.variableType( "coords" );
+    const int tetrahedra_type = metadata.variableType( "tetrahedron_interior" );
+    const bool numeric_coords = IsNumericNetcdfType( coords_type );
+    const bool integer_tetrahedra =
+        tetrahedra_type == NC_BYTE || tetrahedra_type == NC_SHORT ||
+        tetrahedra_type == NC_INT || tetrahedra_type == NC_UBYTE ||
+        tetrahedra_type == NC_USHORT || tetrahedra_type == NC_UINT ||
+        tetrahedra_type == NC_INT64 || tetrahedra_type == NC_UINT64;
+    return coords.size() == 2 && coords[1] == 3 && numeric_coords &&
+           tetrahedra.size() == 2 && tetrahedra[1] == 5 && integer_tetrahedra;
 }
 
 bool IsSlacMode( const cvt::NetcdfMetadata& metadata )
 {
-    return metadata.hasVariable( "coords" ) &&
-           ( metadata.hasVariable( "frequency" ) ||
-             metadata.hasVariable( "frequencyreal" ) ) &&
+    const auto& coords = metadata.variableShape( "coords" );
+    const char* frequency_name = metadata.hasVariable( "frequency" )
+                                     ? "frequency"
+                                     : "frequencyreal";
+    const auto& frequency = metadata.variableShape( frequency_name );
+    const int frequency_type = metadata.variableType( frequency_name );
+    const bool numeric_frequency = IsNumericNetcdfType( frequency_type );
+    return coords.size() == 2 && coords[1] == 3 &&
+           metadata.hasVariable( frequency_name ) && frequency.empty() && numeric_frequency &&
            !metadata.hasVariable( "tetrahedron_interior" );
 }
 
@@ -892,11 +846,315 @@ public:
 
 class SlacNetcdfFormatAdapter : public cvt::NetcdfFormatAdapter
 {
+    enum class ModeKind { TimeStep, Frequency };
+
+    struct VariableSignature
+    {
+        int type = NC_NAT;
+        int rank = 0;
+        std::size_t components = 0;
+    };
+
+    struct Configuration
+    {
+        ModeKind kind = ModeKind::TimeStep;
+        std::vector<cvt::SlacTimeStepFile> modes;
+    };
+
+    static bool ModeVariables( const cvt::NetcdfMetadata& metadata,
+                               std::size_t coordinate_count,
+                               std::map<std::string, VariableSignature>& variables )
+    {
+        variables.clear();
+        for ( const auto& entry : metadata.variableDimensions() )
+        {
+            const std::string& name = entry.first;
+            const auto& shape = metadata.variableShape( name );
+            if ( name == "coords" || name == "frequency" || name == "frequencyreal" ||
+                 shape.empty() || shape.front() != coordinate_count ) continue;
+            std::size_t components = 1;
+            for ( std::size_t i = 1; i < shape.size(); ++i )
+            {
+                if ( shape[i] == 0 || components >
+                     std::numeric_limits<std::size_t>::max() / shape[i] ) return false;
+                components *= shape[i];
+            }
+            variables.emplace( name, VariableSignature{ metadata.variableType( name ),
+                                                        static_cast<int>( shape.size() ),
+                                                        components } );
+        }
+        return !variables.empty();
+    }
+
+    static bool CompatibleVariables(
+        const std::map<std::string, VariableSignature>& lhs,
+        const std::map<std::string, VariableSignature>& rhs )
+    {
+        if ( lhs.size() != rhs.size() ) return false;
+        for ( const auto& entry : lhs )
+        {
+            const auto found = rhs.find( entry.first );
+            if ( found == rhs.end() ) return false;
+            const auto& a = entry.second;
+            const auto& b = found->second;
+            if ( a.type != b.type || a.rank != b.rank || a.components != b.components )
+                return false;
+        }
+        return true;
+    }
+
+    static bool ResolveConfiguration( const std::string& mesh_filename,
+                                      const cvt::NetcdfReadOptions& options,
+                                      Configuration& configuration, std::string& error )
+    {
+        configuration = Configuration{};
+        std::size_t sample_points = 1;
+        for ( int dimension : options.slac_sampling_dimensions )
+        {
+            if ( dimension < 2 ||
+                 sample_points > std::numeric_limits<std::size_t>::max() /
+                                     static_cast<std::size_t>( dimension ) )
+            {
+                error = "Invalid or overflowing SLAC sampling dimensions";
+                return false;
+            }
+            sample_points *= static_cast<std::size_t>( dimension );
+        }
+        cvt::NetcdfMetadata mesh;
+        if ( !cvt::Netcdf::ReadMetadata( mesh_filename, mesh ) || !IsSlacMesh( mesh ) )
+        {
+            error = "The primary input is not a SLAC internal-volume mesh: " + mesh_filename;
+            return false;
+        }
+        if ( options.slac_mode_filenames.empty() )
+        {
+            error = "At least one explicit SLAC mode file is required";
+            return false;
+        }
+        const std::size_t coordinate_count = mesh.variableShape( "coords" ).front();
+        std::map<std::string, VariableSignature> expected_variables;
+        bool first = true;
+        bool frequency_modes = false;
+        for ( const auto& filename : options.slac_mode_filenames )
+        {
+            cvt::NetcdfMetadata mode;
+            if ( !cvt::Netcdf::ReadMetadata( filename, mode ) || !IsSlacMode( mode ) )
+            {
+                error = "Invalid SLAC mode file: " + filename;
+                return false;
+            }
+            if ( mode.variableShape( "coords" ).front() != coordinate_count )
+            {
+                error = "SLAC mesh/mode coords tuple counts differ: " + filename;
+                return false;
+            }
+            double value = 0.0;
+            if ( !ReadSlacModeValue( filename, value ) || !std::isfinite( value ) )
+            {
+                error = "SLAC mode requires a finite scalar frequency or frequencyreal: " +
+                        filename;
+                return false;
+            }
+            const bool current_frequency = value >= 100.0;
+            std::map<std::string, VariableSignature> variables;
+            if ( !ModeVariables( mode, coordinate_count, variables ) )
+            {
+                error = "SLAC mode has no compatible physical point-data arrays: " + filename;
+                return false;
+            }
+            if ( first )
+            {
+                frequency_modes = current_frequency;
+                expected_variables = variables;
+                first = false;
+            }
+            else
+            {
+                if ( frequency_modes != current_frequency )
+                {
+                    error = "SLAC time-step and frequency modes cannot be mixed";
+                    return false;
+                }
+                if ( frequency_modes )
+                {
+                    error = "Multiple SLAC frequency modes are not supported";
+                    return false;
+                }
+                if ( !CompatibleVariables( expected_variables, variables ) )
+                {
+                    error = "SLAC time-step modes have incompatible physical arrays";
+                    return false;
+                }
+            }
+            configuration.modes.push_back( { filename, value } );
+        }
+        std::sort( configuration.modes.begin(), configuration.modes.end(),
+                   []( const cvt::SlacTimeStepFile& a, const cvt::SlacTimeStepFile& b ) {
+                       return a.time < b.time;
+                   } );
+        for ( std::size_t i = 1; i < configuration.modes.size(); ++i )
+        {
+            if ( configuration.modes[i - 1].time == configuration.modes[i].time )
+            {
+                error = "SLAC modes contain a duplicate mode value: " +
+                        std::to_string( configuration.modes[i].time );
+                return false;
+            }
+        }
+        configuration.kind = frequency_modes ? ModeKind::Frequency : ModeKind::TimeStep;
+        std::cout << "SLAC mesh/mode coords tuples: " << coordinate_count << std::endl;
+        for ( const auto& mode : configuration.modes )
+        {
+            std::cout << "SLAC mode value: " << std::setprecision( 17 ) << mode.time
+                      << " (" << mode.path << ")" << std::endl;
+        }
+        return true;
+    }
+
+    static vtkPointData* SharedPointData( vtkDataObject* object )
+    {
+        if ( auto* data = vtkDataSet::SafeDownCast( object ) ) return data->GetPointData();
+        auto* composite = vtkCompositeDataSet::SafeDownCast( object );
+        if ( !composite ) return nullptr;
+        vtkSmartPointer<vtkCompositeDataIterator> iterator;
+        iterator.TakeReference( composite->NewIterator() );
+        iterator->SkipEmptyNodesOn();
+        for ( iterator->InitTraversal(); !iterator->IsDoneWithTraversal();
+              iterator->GoToNextItem() )
+        {
+            auto* data = vtkDataSet::SafeDownCast( iterator->GetCurrentDataObject() );
+            if ( data && data->GetPointData() ) return data->GetPointData();
+        }
+        return nullptr;
+    }
+
+    static void LogMemoryEstimate( vtkDataObject* volume, const std::array<int, 3>& dims )
+    {
+        vtkPointData* point_data = SharedPointData( volume );
+        std::uint64_t components = 0;
+        std::uint64_t vtk_bytes_per_point = 0;
+        if ( point_data )
+        {
+            for ( int i = 0; i < point_data->GetNumberOfArrays(); ++i )
+            {
+                vtkDataArray* array = point_data->GetArray( i );
+                if ( !array ) continue;
+                components += static_cast<std::uint64_t>( array->GetNumberOfComponents() );
+                vtk_bytes_per_point +=
+                    static_cast<std::uint64_t>( array->GetNumberOfComponents() ) *
+                    static_cast<std::uint64_t>( array->GetDataTypeSize() );
+            }
+        }
+        const std::uint64_t points = static_cast<std::uint64_t>( dims[0] ) * dims[1] * dims[2];
+        const std::uint64_t cells = static_cast<std::uint64_t>( dims[0] - 1 ) *
+                                    ( dims[1] - 1 ) * ( dims[2] - 1 );
+        const std::uint64_t vtk_values = points * vtk_bytes_per_point;
+        const std::uint64_t kvs_values = points * components * sizeof( float );
+        const std::uint64_t auxiliaries = points * 2 + cells;
+        std::cout << "SLAC resample memory estimate:" << std::endl
+                  << "  point count: " << points << std::endl
+                  << "  value components: " << components << std::endl
+                  << "  VTK value arrays: " << vtk_values << " bytes" << std::endl
+                  << "  KVS float values: " << kvs_values << " bytes" << std::endl
+                  << "  mask/point ghost/cell ghost: " << auxiliaries << " bytes" << std::endl
+                  << "  simultaneous estimated total: "
+                  << vtk_values + kvs_values + auxiliaries << " bytes" << std::endl;
+    }
+
+    static void ValidateAndLogImage( vtkImageData* image, const char* mask_name,
+                                     const std::array<int, 3>& expected_dimensions )
+    {
+        if ( !image || image->GetNumberOfPoints() <= 0 || image->GetNumberOfCells() <= 0 )
+            throw std::runtime_error( "vtkResampleToImage returned an empty image" );
+        int dimensions[3] = {};
+        image->GetDimensions( dimensions );
+        for ( int axis = 0; axis < 3; ++axis )
+            if ( dimensions[axis] != expected_dimensions[axis] )
+                throw std::runtime_error( "vtkResampleToImage dimensions do not match the request" );
+        const double* bounds = image->GetBounds();
+        const double* spacing = image->GetSpacing();
+        for ( int i = 0; i < 6; ++i )
+            if ( !std::isfinite( bounds[i] ) )
+                throw std::runtime_error( "vtkResampleToImage returned non-finite bounds" );
+        for ( int i = 0; i < 3; ++i )
+            if ( !std::isfinite( spacing[i] ) )
+                throw std::runtime_error( "vtkResampleToImage returned non-finite spacing" );
+        std::cout << "SLAC resample dimensions: " << dimensions[0] << " " << dimensions[1]
+                  << " " << dimensions[2] << std::endl
+                  << "SLAC resample bounds: " << bounds[0] << " " << bounds[1] << " "
+                  << bounds[2] << " " << bounds[3] << " " << bounds[4] << " "
+                  << bounds[5] << std::endl
+                  << "SLAC resample spacing: " << spacing[0] << " " << spacing[1] << " "
+                  << spacing[2] << std::endl;
+
+        vtkPointData* point_data = image->GetPointData();
+        vtkDataArray* mask = point_data->GetArray( mask_name );
+        if ( !mask ) throw std::runtime_error( "vtkResampleToImage returned no valid-point mask" );
+        vtkIdType valid_count = 0;
+        for ( vtkIdType i = 0; i < image->GetNumberOfPoints(); ++i )
+            if ( mask->GetComponent( i, 0 ) != 0.0 ) ++valid_count;
+        if ( valid_count == 0 )
+            throw std::runtime_error( "vtkResampleToImage found no valid SLAC volume points" );
+
+        int physical_arrays = 0;
+        int component_offset = 0;
+        bool any_finite = false;
+        bool all_zero = true;
+        for ( int i = 0; i < point_data->GetNumberOfArrays(); ++i )
+        {
+            vtkDataArray* array = point_data->GetArray( i );
+            if ( !array ) continue;
+            const std::string name = array->GetName() ? array->GetName() : "(unnamed)";
+            if ( name == mask_name || name == vtkDataSetAttributes::GhostArrayName() ) continue;
+            if ( array->GetNumberOfTuples() != image->GetNumberOfPoints() )
+                throw std::runtime_error( "A resampled SLAC array has an invalid tuple count" );
+            ++physical_arrays;
+            const int components = array->GetNumberOfComponents();
+            std::cout << "Array order " << physical_arrays - 1 << ": " << name << std::endl
+                      << "  Components: " << components << std::endl
+                      << "  KVS component range: " << component_offset << "-"
+                      << component_offset + components - 1 << std::endl;
+            for ( int component = 0; component < components; ++component )
+            {
+                double all_range[2] = {};
+                array->GetRange( all_range, component );
+                double valid_min = std::numeric_limits<double>::infinity();
+                double valid_max = -std::numeric_limits<double>::infinity();
+                for ( vtkIdType tuple = 0; tuple < array->GetNumberOfTuples(); ++tuple )
+                {
+                    const double value = array->GetComponent( tuple, component );
+                    if ( std::isfinite( value ) )
+                    {
+                        any_finite = true;
+                        if ( value != 0.0 ) all_zero = false;
+                    }
+                    if ( mask->GetComponent( tuple, 0 ) != 0.0 && std::isfinite( value ) )
+                    {
+                        valid_min = std::min( valid_min, value );
+                        valid_max = std::max( valid_max, value );
+                    }
+                }
+                std::cout << "  Component " << component << " all-point min/max: "
+                          << all_range[0] << " " << all_range[1] << std::endl
+                          << "  Component " << component << " valid-point min/max: "
+                          << valid_min << " " << valid_max << std::endl;
+            }
+            component_offset += components;
+        }
+        if ( physical_arrays == 0 )
+            throw std::runtime_error( "Resampled SLAC volume has no physical point data" );
+        if ( !any_finite )
+            throw std::runtime_error( "All resampled SLAC physical values are non-finite" );
+        if ( all_zero ) kvsMessageWarning( "All resampled SLAC physical values are zero" );
+        std::cout << "SLAC valid resample points: " << valid_count << "/"
+                  << image->GetNumberOfPoints() << std::endl;
+    }
+
 public:
     const char* name() const override { return "VTK SLAC"; }
     cvt::NetcdfGridType gridType() const override
     {
-        return cvt::NetcdfGridType::UnstructuredGrid;
+        return cvt::NetcdfGridType::ImageData;
     }
     bool matches( const cvt::NetcdfMetadata& metadata ) const override
     {
@@ -904,85 +1162,75 @@ public:
     }
     std::shared_ptr<kvs::FileFormatBase> read( const std::string& filename ) const override
     {
-        cvt::NetcdfMetadata input_metadata;
-        if ( !cvt::Netcdf::ReadMetadata( filename, input_metadata ) )
-        {
-            throw std::runtime_error( "failed to inspect the SLAC input" );
-        }
+        return this->read( filename, cvt::NetcdfReadOptions{} );
+    }
 
-        std::string mesh_file;
-        if ( IsSlacMesh( input_metadata ) )
-        {
-            if ( FilenameExtension( filename ) != ".ncdf" )
-            {
-                throw std::runtime_error( "SLAC mesh input must use the .ncdf extension" );
-            }
-            mesh_file = filename;
-        }
-        else
-        {
-            std::size_t mode_coordinate_count = 0;
-            if ( !ReadNetcdfDimensionLength( filename, "ncoord", mode_coordinate_count ) )
-            {
-                throw std::runtime_error( "failed to read the SLAC mode coordinate count" );
-            }
-            auto meshes = FindSiblingNetcdfFiles( filename, IsSlacMesh );
-            meshes.erase(
-                std::remove_if(
-                    meshes.begin(), meshes.end(), [&]( const std::string& candidate ) {
-                        std::size_t mesh_coordinate_count = 0;
-                        return !ReadNetcdfDimensionLength(
-                                   candidate, "ncoord", mesh_coordinate_count ) ||
-                               mesh_coordinate_count != mode_coordinate_count;
-                    } ),
-                meshes.end() );
-            if ( meshes.size() != 1 )
-            {
-                throw std::runtime_error(
-                    "SLAC mode input requires exactly one coordinate-compatible companion "
-                    "mesh file" );
-            }
-            mesh_file = meshes.front();
-        }
-
-        std::vector<cvt::SlacTimeStepFile> time_steps;
-        std::string resolve_error;
-        if ( !cvt::Netcdf::ResolveSlacTimeSeries( mesh_file, time_steps, resolve_error ) )
-        {
-            throw std::runtime_error( resolve_error );
-        }
-        std::vector<std::string> mode_files;
-        mode_files.reserve( time_steps.size() );
-        for ( const auto& step : time_steps ) mode_files.push_back( step.path );
-
-        double requested_time = time_steps.front().time;
-        if ( IsSlacMode( input_metadata ) && !ReadSlacModeValue( filename, requested_time ) )
-        {
-            throw std::runtime_error( "failed to read the requested SLAC time value" );
-        }
+    std::shared_ptr<kvs::FileFormatBase> read(
+        const std::string& filename, const cvt::NetcdfReadOptions& options ) const override
+    {
+        Configuration configuration;
+        std::string error;
+        if ( !ResolveConfiguration( filename, options, configuration, error ) )
+            throw std::runtime_error( error );
 
         vtkNew<vtkSLACReader> reader;
-        reader->SetMeshFileName( mesh_file.c_str() );
-        for ( const auto& mode_file : mode_files )
-        {
-            reader->AddModeFileName( mode_file.c_str() );
-        }
+        reader->SetMeshFileName( filename.c_str() );
+        for ( const auto& mode : configuration.modes ) reader->AddModeFileName( mode.path.c_str() );
         reader->ReadExternalSurfaceOff();
         reader->ReadInternalVolumeOn();
         reader->ReadMidpointsOff();
         reader->UpdateInformation();
+        const double update_time = configuration.kind == ModeKind::Frequency
+                                       ? 0.0
+                                       : ( options.has_requested_time
+                                               ? options.requested_time
+                                               : configuration.modes.front().time );
+        std::cout << "SLAC UPDATE_TIME_STEP: " << update_time << std::endl;
         reader->GetOutputInformation( vtkSLACReader::VOLUME_OUTPUT )
-            ->Set( vtkStreamingDemandDrivenPipeline::UPDATE_TIME_STEP(), requested_time );
+            ->Set( vtkStreamingDemandDrivenPipeline::UPDATE_TIME_STEP(), update_time );
         reader->Update( vtkSLACReader::VOLUME_OUTPUT );
 
-        auto* blocks = vtkMultiBlockDataSet::SafeDownCast(
-            reader->GetOutputDataObject( vtkSLACReader::VOLUME_OUTPUT ) );
-        vtkDataSet* volume = FirstDataSet( blocks );
-        if ( !volume )
-        {
+        vtkDataObject* volume = reader->GetOutputDataObject( vtkSLACReader::VOLUME_OUTPUT );
+        if ( !vtkCompositeDataSet::SafeDownCast( volume ) && !vtkDataSet::SafeDownCast( volume ) )
+            throw std::runtime_error( "vtkSLACReader returned an unsupported volume type" );
+        if ( !SharedPointData( volume ) )
             throw std::runtime_error( "vtkSLACReader returned no internal volume" );
+        LogMemoryEstimate( volume, options.slac_sampling_dimensions );
+
+        vtkNew<vtkResampleToImage> resampler;
+        resampler->SetInputDataObject( volume );
+        resampler->UseInputBoundsOn();
+        resampler->SetSamplingDimensions( options.slac_sampling_dimensions[0],
+                                          options.slac_sampling_dimensions[1],
+                                          options.slac_sampling_dimensions[2] );
+        resampler->Update();
+        vtkImageData* image = resampler->GetOutput();
+        ValidateAndLogImage( image, resampler->GetMaskArrayName(),
+                             options.slac_sampling_dimensions );
+        image->GetPointData()->RemoveArray( resampler->GetMaskArrayName() );
+        image->GetPointData()->RemoveArray( vtkDataSetAttributes::GhostArrayName() );
+        image->GetCellData()->RemoveArray( vtkDataSetAttributes::GhostArrayName() );
+        if ( image->GetPointData()->HasArray( resampler->GetMaskArrayName() ) ||
+             image->GetPointData()->HasArray( vtkDataSetAttributes::GhostArrayName() ) )
+            throw std::runtime_error( "SLAC resample auxiliary arrays could not be removed" );
+        return std::make_shared<cvt::VtkXmlImageData>( image );
+    }
+
+    bool timeSteps( const std::string& filename, const cvt::NetcdfReadOptions& options,
+                    std::vector<double>& time_steps, std::string& error ) const override
+    {
+        Configuration configuration;
+        if ( !ResolveConfiguration( filename, options, configuration, error ) ) return false;
+        time_steps.clear();
+        if ( configuration.kind == ModeKind::Frequency )
+        {
+            time_steps.push_back( 0.0 );
         }
-        return WrapDataSet( volume );
+        else
+        {
+            for ( const auto& mode : configuration.modes ) time_steps.push_back( mode.time );
+        }
+        return true;
     }
 };
 
@@ -1159,6 +1407,518 @@ public:
 
 class MpasNetcdfFormatAdapter : public cvt::NetcdfFormatAdapter
 {
+private:
+    enum class Centering
+    {
+        Cell,
+        Point
+    };
+
+    struct PhysicalVariable
+    {
+        std::string name;
+        Centering centering = Centering::Cell;
+        bool time_dependent = false;
+    };
+
+    struct Configuration
+    {
+        std::size_t time_count = 0;
+        std::size_t cell_count = 0;
+        std::size_t vertex_count = 0;
+        std::size_t level_count = 0;
+        std::size_t vertex_degree = 0;
+        std::vector<PhysicalVariable> physical_variables;
+    };
+
+    static bool IsStructuralVariable( const std::string& name )
+    {
+        static const std::vector<std::string> names = {
+            "xCell",          "yCell",          "zCell",
+            "latCell",        "lonCell",        "indexToCellID",
+            "xVertex",        "yVertex",        "zVertex",
+            "latVertex",      "lonVertex",      "indexToVertexID",
+            "xEdge",          "yEdge",          "zEdge",
+            "latEdge",        "lonEdge",        "indexToEdgeID",
+            "cellsOnVertex",  "verticesOnCell", "cellsOnCell",
+            "edgesOnCell",    "nEdgesOnCell",   "cellsOnEdge",
+            "verticesOnEdge", "edgesOnVertex",  "edgeSignOnCell",
+            "edgeSignOnVertex", "kiteAreasOnVertex", "weightsOnEdge",
+            "areaCell",       "areaTriangle",   "dvEdge",
+            "dcEdge",         "angleEdge",      "meshDensity",
+            "refBottomDepth", "refLayerThickness", "refZMid",
+            "maxLevelCell",   "zgrid"
+        };
+        return std::find( names.begin(), names.end(), name ) != names.end();
+    }
+
+    class File
+    {
+    private:
+        int m_id = -1;
+
+    public:
+        explicit File( const std::string& filename )
+        {
+            const int status = nc_open( filename.c_str(), NC_NOWRITE, &m_id );
+            if ( status != NC_NOERR )
+            {
+                throw std::runtime_error( std::string( "failed to open MPAS input: " ) +
+                                          nc_strerror( status ) + ": " + filename );
+            }
+        }
+        ~File()
+        {
+            if ( m_id >= 0 ) nc_close( m_id );
+        }
+        File( const File& ) = delete;
+        File& operator=( const File& ) = delete;
+        int id() const { return m_id; }
+    };
+
+    static std::string TrimAttribute( std::string value )
+    {
+        const auto is_padding = []( unsigned char c ) {
+            return c == '\0' || std::isspace( c ) != 0;
+        };
+        while ( !value.empty() && is_padding( value.front() ) ) value.erase( value.begin() );
+        while ( !value.empty() && is_padding( value.back() ) ) value.pop_back();
+        return value;
+    }
+
+    static std::size_t CheckedProduct( std::size_t lhs, std::size_t rhs,
+                                       const std::string& description )
+    {
+        if ( lhs != 0 && rhs > std::numeric_limits<std::size_t>::max() / lhs )
+            throw std::runtime_error( "MPAS " + description + " overflows size_t" );
+        const std::size_t result = lhs * rhs;
+        if ( result > static_cast<std::size_t>( std::numeric_limits<vtkIdType>::max() ) )
+            throw std::runtime_error( "MPAS " + description + " exceeds vtkIdType" );
+        return result;
+    }
+
+    static double LayerThickness() { return 100000.0; }
+
+    static void CheckStatus( int status, const std::string& operation )
+    {
+        if ( status != NC_NOERR )
+            throw std::runtime_error( "MPAS " + operation + ": " + nc_strerror( status ) );
+    }
+
+    static int VariableId( int file, const std::string& name )
+    {
+        int variable = -1;
+        CheckStatus( nc_inq_varid( file, name.c_str(), &variable ),
+                     "failed to locate variable " + name );
+        return variable;
+    }
+
+    static std::vector<double> NumericAttribute( int file, int variable,
+                                                 const char* name,
+                                                 const std::string& variable_name )
+    {
+        nc_type type = NC_NAT;
+        std::size_t length = 0;
+        const int inquiry = nc_inq_att( file, variable, name, &type, &length );
+        if ( inquiry == NC_ENOTATT ) return {};
+        CheckStatus( inquiry, "failed to inspect " + variable_name + ":" + name );
+        if ( !IsNumericNetcdfType( static_cast<int>( type ) ) )
+            throw std::runtime_error( "MPAS " + variable_name + ":" + name +
+                                      " must be numeric" );
+        std::vector<double> values( length );
+        if ( length > 0 )
+            CheckStatus( nc_get_att_double( file, variable, name, values.data() ),
+                         "failed to read " + variable_name + ":" + name );
+        return values;
+    }
+
+    static void ValidateNumericValues( int file, int variable,
+                                       const std::string& variable_name,
+                                       const std::vector<double>& values )
+    {
+        const auto fill = NumericAttribute( file, variable, "_FillValue", variable_name );
+        const auto missing =
+            NumericAttribute( file, variable, "missing_value", variable_name );
+        for ( std::size_t i = 0; i < values.size(); ++i )
+        {
+            const double value = values[i];
+            if ( !std::isfinite( value ) )
+                throw std::runtime_error( "MPAS variable " + variable_name +
+                                          " contains NaN or Inf at value " +
+                                          std::to_string( i ) );
+            if ( std::find( fill.begin(), fill.end(), value ) != fill.end() ||
+                 std::find( missing.begin(), missing.end(), value ) != missing.end() )
+                throw std::runtime_error( "MPAS variable " + variable_name +
+                                          " contains a fill or missing value at value " +
+                                          std::to_string( i ) );
+        }
+    }
+
+    static std::vector<double> ReadDoubleVariable( int file, const std::string& name,
+                                                   std::size_t count )
+    {
+        const int variable = VariableId( file, name );
+        std::vector<double> values( count );
+        if ( count > 0 )
+            CheckStatus( nc_get_var_double( file, variable, values.data() ),
+                         "failed to read variable " + name );
+        ValidateNumericValues( file, variable, name, values );
+        return values;
+    }
+
+    static std::vector<double> ReadPhysicalVariable( int file,
+                                                     const PhysicalVariable& variable,
+                                                     const Configuration& configuration,
+                                                     std::size_t time_index )
+    {
+        const std::size_t horizontal_count =
+            variable.centering == Centering::Cell ? configuration.vertex_count
+                                                  : configuration.cell_count;
+        const std::size_t value_count =
+            CheckedProduct( horizontal_count, configuration.level_count,
+                            "physical value count" );
+        const int variable_id = VariableId( file, variable.name );
+        std::vector<double> values( value_count );
+        if ( variable.time_dependent )
+        {
+            const std::size_t start[] = { time_index, 0, 0 };
+            const std::size_t count[] = { 1, horizontal_count,
+                                          configuration.level_count };
+            CheckStatus( nc_get_vara_double( file, variable_id, start, count, values.data() ),
+                         "failed to read Time record from " + variable.name );
+        }
+        else
+        {
+            CheckStatus( nc_get_var_double( file, variable_id, values.data() ),
+                         "failed to read variable " + variable.name );
+        }
+        ValidateNumericValues( file, variable_id, variable.name, values );
+        return values;
+    }
+
+    static bool ResolveConfiguration( const std::string& filename,
+                                      Configuration& configuration, std::string& error )
+    {
+        configuration = Configuration{};
+        error.clear();
+        try
+        {
+            cvt::NetcdfMetadata metadata;
+            if ( !cvt::Netcdf::ReadMetadata( filename, metadata ) )
+                throw std::runtime_error( "failed to inspect the MPAS input" );
+
+            const std::string sphere =
+                Lowercase( TrimAttribute( metadata.globalAttribute( "on_a_sphere" ) ) );
+            if ( sphere != "no" )
+                throw std::runtime_error(
+                    "only planar MPAS input with on_a_sphere=\"NO\" is supported" );
+
+            if ( !ReadNetcdfDimensionLength( filename, "Time", configuration.time_count ) ||
+                 configuration.time_count == 0 )
+                throw std::runtime_error( "MPAS requires Time > 0" );
+            if ( !ReadNetcdfDimensionLength( filename, "nCells", configuration.cell_count ) ||
+                 configuration.cell_count == 0 )
+                throw std::runtime_error( "MPAS requires nCells > 0" );
+            if ( !ReadNetcdfDimensionLength(
+                     filename, "nVertices", configuration.vertex_count ) ||
+                 configuration.vertex_count == 0 )
+                throw std::runtime_error( "MPAS requires nVertices > 0" );
+            if ( !ReadNetcdfDimensionLength(
+                     filename, "nVertLevels", configuration.level_count ) ||
+                 configuration.level_count == 0 )
+                throw std::runtime_error( "MPAS requires nVertLevels > 0" );
+            if ( !ReadNetcdfDimensionLength(
+                     filename, "vertexDegree", configuration.vertex_degree ) ||
+                 ( configuration.vertex_degree != 3 && configuration.vertex_degree != 4 ) )
+                throw std::runtime_error( "MPAS vertexDegree must be 3 or 4" );
+
+            const auto require_variable = [&]( const char* name, const char* dimensions,
+                                               bool integer ) {
+                if ( !metadata.hasVariable( name, dimensions ) )
+                    throw std::runtime_error( std::string( "MPAS requires " ) + name +
+                                              dimensions );
+                const int type = metadata.variableType( name );
+                if ( integer )
+                {
+                    if ( type != NC_BYTE && type != NC_SHORT && type != NC_INT &&
+                         type != NC_UBYTE && type != NC_USHORT && type != NC_UINT &&
+                         type != NC_INT64 && type != NC_UINT64 )
+                        throw std::runtime_error( std::string( "MPAS variable " ) + name +
+                                                  " must have an integer type" );
+                }
+                else if ( !IsNumericNetcdfType( type ) )
+                {
+                    throw std::runtime_error( std::string( "MPAS variable " ) + name +
+                                              " must have a numeric type" );
+                }
+            };
+            require_variable( "xCell", "(nCells)", false );
+            require_variable( "yCell", "(nCells)", false );
+            require_variable( "zCell", "(nCells)", false );
+            require_variable( "cellsOnVertex", "(nVertices, vertexDegree)", true );
+
+            for ( const auto& entry : metadata.variableDimensions() )
+            {
+                if ( IsStructuralVariable( entry.first ) ) continue;
+                if ( !IsNumericNetcdfType( metadata.variableType( entry.first ) ) ) continue;
+                PhysicalVariable variable;
+                variable.name = entry.first;
+                if ( entry.second == "(Time, nVertices, nVertLevels)" )
+                {
+                    variable.centering = Centering::Cell;
+                    variable.time_dependent = true;
+                }
+                else if ( entry.second == "(nVertices, nVertLevels)" )
+                {
+                    variable.centering = Centering::Cell;
+                }
+                else if ( entry.second == "(Time, nCells, nVertLevels)" )
+                {
+                    variable.centering = Centering::Point;
+                    variable.time_dependent = true;
+                }
+                else if ( entry.second == "(nCells, nVertLevels)" )
+                {
+                    variable.centering = Centering::Point;
+                }
+                else
+                {
+                    continue;
+                }
+                configuration.physical_variables.push_back( variable );
+            }
+            if ( configuration.physical_variables.empty() )
+                throw std::runtime_error(
+                    "MPAS has no compatible numeric physical variables" );
+            std::sort( configuration.physical_variables.begin(),
+                       configuration.physical_variables.end(),
+                       []( const PhysicalVariable& lhs, const PhysicalVariable& rhs ) {
+                           return lhs.name < rhs.name;
+                       } );
+
+            if ( configuration.level_count == std::numeric_limits<std::size_t>::max() )
+                throw std::runtime_error( "MPAS nVertLevels is too large" );
+            CheckedProduct( configuration.cell_count, configuration.level_count + 1,
+                            "point count" );
+            CheckedProduct( configuration.vertex_count, configuration.level_count,
+                            "cell count" );
+            return true;
+        }
+        catch ( const std::exception& exception )
+        {
+            error = exception.what();
+            return false;
+        }
+    }
+
+    static std::size_t ResolveTimeIndex( const cvt::NetcdfReadOptions& options,
+                                         const Configuration& configuration )
+    {
+        const double requested = options.has_requested_time ? options.requested_time : 0.0;
+        if ( !std::isfinite( requested ) || requested < 0.0 || std::floor( requested ) != requested ||
+             requested > static_cast<double>( std::numeric_limits<std::size_t>::max() ) )
+            throw std::runtime_error(
+                "MPAS requested_time must be a finite, non-negative integer record index" );
+        const std::size_t index = static_cast<std::size_t>( requested );
+        if ( index >= configuration.time_count )
+            throw std::runtime_error( "MPAS requested_time is outside the Time dimension" );
+        return index;
+    }
+
+    static vtkSmartPointer<vtkUnstructuredGrid> BuildGrid(
+        const std::string& filename, const Configuration& configuration,
+        std::size_t time_index )
+    {
+        File file( filename );
+        const auto x = ReadDoubleVariable( file.id(), "xCell", configuration.cell_count );
+        const auto y = ReadDoubleVariable( file.id(), "yCell", configuration.cell_count );
+        const auto z = ReadDoubleVariable( file.id(), "zCell", configuration.cell_count );
+        (void)z;
+
+        const std::size_t connection_count =
+            CheckedProduct( configuration.vertex_count, configuration.vertex_degree,
+                            "connection count" );
+        const int connection_variable = VariableId( file.id(), "cellsOnVertex" );
+        std::vector<long long> one_based_connections( connection_count );
+        CheckStatus( nc_get_var_longlong( file.id(), connection_variable,
+                                          one_based_connections.data() ),
+                     "failed to read cellsOnVertex" );
+        const auto connection_fill =
+            NumericAttribute( file.id(), connection_variable, "_FillValue", "cellsOnVertex" );
+        const auto connection_missing = NumericAttribute(
+            file.id(), connection_variable, "missing_value", "cellsOnVertex" );
+
+        std::vector<vtkIdType> connections( connection_count );
+        std::vector<bool> used( configuration.cell_count, false );
+        for ( std::size_t vertex = 0; vertex < configuration.vertex_count; ++vertex )
+        {
+            for ( std::size_t corner = 0; corner < configuration.vertex_degree; ++corner )
+            {
+                const std::size_t offset = vertex * configuration.vertex_degree + corner;
+                const long long one_based = one_based_connections[offset];
+                const double numeric_connection = static_cast<double>( one_based );
+                if ( std::find( connection_fill.begin(), connection_fill.end(),
+                                numeric_connection ) != connection_fill.end() ||
+                     std::find( connection_missing.begin(), connection_missing.end(),
+                                numeric_connection ) != connection_missing.end() )
+                    throw std::runtime_error(
+                        "MPAS cellsOnVertex contains a fill or missing value" );
+                if ( one_based < 1 ||
+                     static_cast<unsigned long long>( one_based ) > configuration.cell_count )
+                    throw std::runtime_error(
+                        "MPAS cellsOnVertex contains an index outside 1..nCells" );
+                const vtkIdType index = static_cast<vtkIdType>( one_based - 1 );
+                for ( std::size_t previous = 0; previous < corner; ++previous )
+                    if ( connections[vertex * configuration.vertex_degree + previous] == index )
+                        throw std::runtime_error(
+                            "MPAS cellsOnVertex contains a repeated node in one cell" );
+                connections[offset] = index;
+                used[static_cast<std::size_t>( index )] = true;
+            }
+
+            double twice_area = 0.0;
+            double scale = 1.0;
+            const auto origin = static_cast<std::size_t>(
+                connections[vertex * configuration.vertex_degree] );
+            for ( std::size_t corner = 0; corner < configuration.vertex_degree; ++corner )
+            {
+                const auto a = static_cast<std::size_t>(
+                    connections[vertex * configuration.vertex_degree + corner] );
+                const auto b = static_cast<std::size_t>( connections[
+                    vertex * configuration.vertex_degree +
+                    ( corner + 1 ) % configuration.vertex_degree] );
+                const double ax = x[a] - x[origin];
+                const double ay = y[a] - y[origin];
+                const double bx = x[b] - x[origin];
+                const double by = y[b] - y[origin];
+                twice_area += ax * by - bx * ay;
+                scale = std::max( scale, std::max( std::abs( ax ), std::abs( ay ) ) );
+            }
+            const double tolerance = std::numeric_limits<double>::epsilon() * scale * scale *
+                                     static_cast<double>( configuration.vertex_degree ) * 16.0;
+            if ( !std::isfinite( twice_area ) || std::abs( twice_area ) <= tolerance )
+                throw std::runtime_error( "MPAS cellsOnVertex defines a degenerate cell" );
+        }
+        if ( std::find( used.begin(), used.end(), false ) != used.end() )
+            throw std::runtime_error( "MPAS cellsOnVertex leaves one or more points unused" );
+
+        const std::size_t point_count =
+            CheckedProduct( configuration.cell_count, configuration.level_count + 1,
+                            "point count" );
+        vtkNew<vtkPoints> points;
+        points->SetDataTypeToDouble();
+        points->SetNumberOfPoints( static_cast<vtkIdType>( point_count ) );
+        for ( std::size_t horizontal = 0; horizontal < configuration.cell_count; ++horizontal )
+        {
+            for ( std::size_t level = 0; level <= configuration.level_count; ++level )
+            {
+                const vtkIdType id = static_cast<vtkIdType>(
+                    horizontal * ( configuration.level_count + 1 ) + level );
+                points->SetPoint( id, x[horizontal], y[horizontal],
+                                  -LayerThickness() * static_cast<double>( level ) );
+            }
+        }
+
+        vtkNew<vtkUnstructuredGrid> grid;
+        grid->SetPoints( points );
+        const std::size_t generated_cell_count =
+            CheckedProduct( configuration.vertex_count, configuration.level_count,
+                            "cell count" );
+        grid->Allocate( static_cast<vtkIdType>( generated_cell_count ) );
+        for ( std::size_t vertex = 0; vertex < configuration.vertex_count; ++vertex )
+        {
+            for ( std::size_t level = 0; level < configuration.level_count; ++level )
+            {
+                vtkIdType ids[8] = {};
+                for ( std::size_t corner = 0; corner < configuration.vertex_degree; ++corner )
+                {
+                    const vtkIdType horizontal =
+                        connections[vertex * configuration.vertex_degree + corner];
+                    ids[corner] = horizontal *
+                                      static_cast<vtkIdType>( configuration.level_count + 1 ) +
+                                  static_cast<vtkIdType>( level );
+                    ids[corner + configuration.vertex_degree] = ids[corner] + 1;
+                }
+                grid->InsertNextCell( configuration.vertex_degree == 3 ? VTK_WEDGE
+                                                                       : VTK_HEXAHEDRON,
+                                      static_cast<vtkIdType>( configuration.vertex_degree * 2 ),
+                                      ids );
+            }
+        }
+
+        for ( const auto& variable : configuration.physical_variables )
+        {
+            const auto values =
+                ReadPhysicalVariable( file.id(), variable, configuration, time_index );
+            vtkNew<vtkDoubleArray> array;
+            array->SetName( variable.name.c_str() );
+            array->SetNumberOfComponents( 1 );
+            if ( variable.centering == Centering::Cell )
+            {
+                array->SetNumberOfTuples( static_cast<vtkIdType>( generated_cell_count ) );
+                for ( std::size_t vertex = 0; vertex < configuration.vertex_count; ++vertex )
+                    for ( std::size_t level = 0; level < configuration.level_count; ++level )
+                        array->SetValue(
+                            static_cast<vtkIdType>( vertex * configuration.level_count + level ),
+                            values[vertex * configuration.level_count + level] );
+                grid->GetCellData()->AddArray( array );
+            }
+            else
+            {
+                array->SetNumberOfTuples( static_cast<vtkIdType>( point_count ) );
+                for ( std::size_t horizontal = 0; horizontal < configuration.cell_count;
+                      ++horizontal )
+                    for ( std::size_t level = 0; level <= configuration.level_count; ++level )
+                    {
+                        const std::size_t source_level =
+                            std::min( level, configuration.level_count - 1 );
+                        array->SetValue(
+                            static_cast<vtkIdType>(
+                                horizontal * ( configuration.level_count + 1 ) + level ),
+                            values[horizontal * configuration.level_count + source_level] );
+                    }
+                grid->GetPointData()->AddArray( array );
+            }
+        }
+
+        vtkNew<vtkCellDataToPointData> cell_to_point;
+        cell_to_point->SetInputData( grid );
+        cell_to_point->PassCellDataOff();
+        cell_to_point->Update();
+        auto* centered = vtkUnstructuredGrid::SafeDownCast( cell_to_point->GetOutput() );
+        if ( !centered )
+            throw std::runtime_error( "MPAS cell-to-point conversion returned no grid" );
+
+        vtkNew<vtkUnstructuredGrid> normalized;
+        normalized->ShallowCopy( centered );
+        normalized->GetPointData()->Initialize();
+        normalized->GetCellData()->Initialize();
+        for ( const auto& variable : configuration.physical_variables )
+        {
+            vtkDataArray* array = centered->GetPointData()->GetArray( variable.name.c_str() );
+            if ( !array || array->GetNumberOfComponents() != 1 ||
+                 array->GetNumberOfTuples() != static_cast<vtkIdType>( point_count ) )
+                throw std::runtime_error( "MPAS point-centered array is inconsistent: " +
+                                          variable.name );
+            for ( vtkIdType tuple = 0; tuple < array->GetNumberOfTuples(); ++tuple )
+                if ( !std::isfinite( array->GetComponent( tuple, 0 ) ) )
+                    throw std::runtime_error( "MPAS point-centered array contains NaN or Inf: " +
+                                              variable.name );
+            normalized->GetPointData()->AddArray( array );
+        }
+
+        if ( normalized->GetNumberOfPoints() != static_cast<vtkIdType>( point_count ) ||
+             normalized->GetNumberOfCells() !=
+                 static_cast<vtkIdType>( generated_cell_count ) )
+            throw std::runtime_error( "MPAS generated grid has inconsistent point/cell counts" );
+        const int expected_cell_type =
+            configuration.vertex_degree == 3 ? VTK_WEDGE : VTK_HEXAHEDRON;
+        for ( vtkIdType cell = 0; cell < normalized->GetNumberOfCells(); ++cell )
+            if ( normalized->GetCellType( cell ) != expected_cell_type )
+                throw std::runtime_error( "MPAS generated grid has an unexpected cell type" );
+        return normalized.GetPointer();
+    }
+
 public:
     const char* name() const override { return "VTK MPAS"; }
     cvt::NetcdfGridType gridType() const override
@@ -1172,12 +1932,28 @@ public:
     }
     std::shared_ptr<kvs::FileFormatBase> read( const std::string& filename ) const override
     {
-        vtkNew<vtkMPASReader> reader;
-        reader->SetFileName( filename.c_str() );
-        // 2D表面ではなくPBVRが扱える体積セルを生成し、全垂直層を保持する。
-        reader->SetShowMultilayerView( true );
-        reader->Update();
-        return WrapDataSet( vtkDataSet::SafeDownCast( reader->GetOutputDataObject( 0 ) ) );
+        return this->read( filename, cvt::NetcdfReadOptions{} );
+    }
+    std::shared_ptr<kvs::FileFormatBase> read(
+        const std::string& filename, const cvt::NetcdfReadOptions& options ) const override
+    {
+        Configuration configuration;
+        std::string error;
+        if ( !ResolveConfiguration( filename, configuration, error ) )
+            throw std::runtime_error( error );
+        const std::size_t time_index = ResolveTimeIndex( options, configuration );
+        auto grid = BuildGrid( filename, configuration, time_index );
+        return std::make_shared<cvt::VtkXmlUnstructuredGrid>( grid.GetPointer() );
+    }
+    bool timeSteps( const std::string& filename, const cvt::NetcdfReadOptions&,
+                    std::vector<double>& time_steps, std::string& error ) const override
+    {
+        Configuration configuration;
+        if ( !ResolveConfiguration( filename, configuration, error ) ) return false;
+        time_steps.resize( configuration.time_count );
+        for ( std::size_t i = 0; i < configuration.time_count; ++i )
+            time_steps[i] = static_cast<double>( i );
+        return true;
     }
 };
 
@@ -1568,100 +2344,6 @@ cvt::NetcdfGridType ActualNetcdfGridType(
 } // namespace detail
 } // namespace cvt
 
-bool cvt::Netcdf::ResolveSlacTimeSeries(
-    const std::string& mesh_filename, std::vector<cvt::SlacTimeStepFile>& time_steps,
-    std::string& error )
-{
-    time_steps.clear();
-    error.clear();
-    if ( cvt::detail::FilenameExtension( mesh_filename ) != ".ncdf" )
-    {
-        error = "SLAC mesh input must use the .ncdf extension: " + mesh_filename;
-        return false;
-    }
-
-    std::vector<std::string> mesh_candidates;
-    std::vector<std::string> mode_candidates;
-    for ( const auto& candidate : cvt::detail::SiblingFiles( mesh_filename ) )
-    {
-        const auto extension = cvt::detail::FilenameExtension( candidate );
-        if ( extension == ".ncdf" ) mesh_candidates.push_back( candidate );
-        else if ( extension == ".mod" ) mode_candidates.push_back( candidate );
-    }
-    if ( mesh_candidates.size() != 1 )
-    {
-        error = "A SLAC input directory must contain exactly one .ncdf mesh file";
-        return false;
-    }
-
-    cvt::NetcdfMetadata mesh_metadata;
-    if ( !ReadMetadata( mesh_filename, mesh_metadata ) ||
-         !cvt::detail::IsSlacMesh( mesh_metadata ) )
-    {
-        error = "The selected .ncdf file is not a SLAC mesh: " + mesh_filename;
-        return false;
-    }
-    std::size_t mesh_coordinate_count = 0;
-    if ( !cvt::detail::ReadNetcdfDimensionLength(
-             mesh_filename, "ncoord", mesh_coordinate_count ) )
-    {
-        error = "Failed to read the SLAC mesh coordinate count: " + mesh_filename;
-        return false;
-    }
-    if ( mode_candidates.empty() )
-    {
-        error = "The SLAC mesh has no companion .mod field files";
-        return false;
-    }
-
-    for ( const auto& candidate : mode_candidates )
-    {
-        cvt::NetcdfMetadata metadata;
-        if ( !ReadMetadata( candidate, metadata ) || !cvt::detail::IsSlacMode( metadata ) )
-        {
-            error = "Invalid SLAC .mod field file: " + candidate;
-            return false;
-        }
-        std::size_t mode_coordinate_count = 0;
-        if ( !cvt::detail::ReadNetcdfDimensionLength(
-                 candidate, "ncoord", mode_coordinate_count ) ||
-             mode_coordinate_count != mesh_coordinate_count )
-        {
-            error = "SLAC .mod ncoord does not match the .ncdf mesh: " + candidate;
-            return false;
-        }
-        double time = 0.0;
-        if ( !cvt::detail::ReadSlacModeValue( candidate, time ) || !std::isfinite( time ) )
-        {
-            error = "SLAC .mod requires a finite scalar frequency or frequencyreal: " +
-                    candidate;
-            return false;
-        }
-        if ( time >= 100.0 )
-        {
-            error = "SLAC frequency synthesis modes (frequency >= 100) are not supported: " +
-                    candidate;
-            return false;
-        }
-        time_steps.push_back( { candidate, time } );
-    }
-
-    std::sort( time_steps.begin(), time_steps.end(),
-               []( const cvt::SlacTimeStepFile& lhs,
-                   const cvt::SlacTimeStepFile& rhs ) { return lhs.time < rhs.time; } );
-    for ( std::size_t i = 1; i < time_steps.size(); ++i )
-    {
-        if ( time_steps[i - 1].time == time_steps[i].time )
-        {
-            error = "SLAC .mod files contain a duplicate time value: " +
-                    std::to_string( time_steps[i].time );
-            time_steps.clear();
-            return false;
-        }
-    }
-    return true;
-}
-
 /**
  * @brief 指定した名前と次元を持つ変数がメタデータに存在するかを判定する。
  */
@@ -1680,6 +2362,20 @@ bool cvt::NetcdfMetadata::hasVariable( const std::string& name ) const
 bool cvt::NetcdfMetadata::hasDimension( const std::string& name ) const
 {
     return m_dimensions.find( name ) != m_dimensions.end();
+}
+
+int cvt::NetcdfMetadata::variableType( const std::string& name ) const
+{
+    const auto found = m_variable_types.find( name );
+    return found == m_variable_types.end() ? NC_NAT : found->second;
+}
+
+const std::vector<std::size_t>&
+cvt::NetcdfMetadata::variableShape( const std::string& name ) const
+{
+    static const std::vector<std::size_t> empty;
+    const auto found = m_variable_shapes.find( name );
+    return found == m_variable_shapes.end() ? empty : found->second;
 }
 
 std::string cvt::NetcdfMetadata::variableAttribute( const std::string& variable,
@@ -1755,6 +2451,8 @@ bool cvt::Netcdf::ReadMetadata( const std::string& filename, cvt::NetcdfMetadata
     };
 
     metadata.m_variable_dimensions.clear();
+    metadata.m_variable_types.clear();
+    metadata.m_variable_shapes.clear();
     metadata.m_dimensions.clear();
     metadata.m_global_attributes.clear();
     metadata.m_variable_attributes.clear();
@@ -1808,6 +2506,16 @@ bool cvt::Netcdf::ReadMetadata( const std::string& filename, cvt::NetcdfMetadata
         }
         dimensions << ")";
         metadata.m_variable_dimensions.emplace( name, dimensions.str() );
+        metadata.m_variable_types.emplace( name, static_cast<int>( type ) );
+        auto& shape = metadata.m_variable_shapes[name];
+        shape.reserve( static_cast<std::size_t>( rank ) );
+        for ( int j = 0; j < rank; ++j )
+        {
+            std::size_t length = 0;
+            error = nc_inq_dimlen( file, dimension_ids[j], &length );
+            if ( error != NC_NOERR ) return fail( "variable dimension length", error );
+            shape.push_back( length );
+        }
 
         auto& attributes = metadata.m_variable_attributes[name];
         for ( int j = 0; j < attribute_count; ++j )
@@ -1968,7 +2676,15 @@ bool cvt::Netcdf::Probe( const std::string& filename, cvt::NetcdfFileInfo& info 
     info.path = filename;
     info.format_name = adapter->name();
     info.grid_type = adapter->gridType();
-    if ( cvt::detail::IsCamPoints( metadata ) )
+    if ( cvt::detail::IsSlacMesh( metadata ) )
+    {
+        info.input_role = cvt::NetcdfInputRole::SlacMesh;
+    }
+    else if ( cvt::detail::IsSlacMode( metadata ) )
+    {
+        info.input_role = cvt::NetcdfInputRole::SlacMode;
+    }
+    else if ( cvt::detail::IsCamPoints( metadata ) )
     {
         info.input_role = cvt::NetcdfInputRole::CamPoints;
     }

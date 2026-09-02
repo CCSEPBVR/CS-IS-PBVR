@@ -8,9 +8,16 @@
  * You should have received a copy of the CC0 legal code along with this
  * work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
  */
+#include <algorithm>
 #include <iostream>
 #include <iomanip>
+#include <array>
+#include <cerrno>
+#include <climits>
+#include <cstdlib>
+#include <limits>
 #include <memory>
+#include <set>
 #include <sstream>
 #include <string>
 #include <utility>
@@ -35,7 +42,11 @@
 #include "kvs/PolygonExporter"
 #include <vtkDataArray.h>
 #include <vtkDataSet.h>
+#include <vtkGlobFileNames.h>
 #include <vtkPointData.h>
+#include <vtkStringArray.h>
+
+#include <sys/stat.h>
 
 /**
  * @brief 時系列変換の事前検証で取得したNetCDFファイルの情報。
@@ -55,6 +66,100 @@ struct NetcdfDataSignature
     int component_count = 0;
     cvt::NetcdfGridType grid_type = cvt::NetcdfGridType::Unknown;
 };
+
+bool ExpandSlacModeInput( const std::string& input, std::vector<std::string>& paths,
+                          std::string& error )
+{
+    paths.clear();
+    const auto first = input.find_first_not_of( " \t\r\n" );
+    const auto last = input.find_last_not_of( " \t\r\n" );
+    const std::string pattern = first == std::string::npos
+                                    ? std::string()
+                                    : input.substr( first, last - first + 1 );
+    std::vector<std::string> candidates;
+    if ( pattern.find( '*' ) == std::string::npos )
+    {
+        candidates.push_back( pattern );
+    }
+    else
+    {
+        vtkNew<vtkGlobFileNames> glob;
+        glob->RecurseOff();
+        glob->AddFileNames( pattern.c_str() );
+        vtkStringArray* names = glob->GetFileNames();
+        for ( vtkIdType i = 0; i < names->GetNumberOfValues(); ++i )
+            candidates.push_back( names->GetValue( i ) );
+    }
+
+    std::set<std::pair<dev_t, ino_t>> identities;
+    for ( const auto& candidate : candidates )
+    {
+        struct stat status = {};
+        if ( ::stat( candidate.c_str(), &status ) != 0 || !S_ISREG( status.st_mode ) ) continue;
+        if ( !identities.emplace( status.st_dev, status.st_ino ).second )
+        {
+            error = "The SLAC mode input contains duplicate paths to the same file: " +
+                    candidate;
+            paths.clear();
+            return false;
+        }
+        paths.push_back( candidate );
+    }
+    std::sort( paths.begin(), paths.end() );
+    if ( paths.empty() )
+    {
+        error = "The SLAC mode path or wildcard matched no regular files: " + pattern;
+        return false;
+    }
+    return true;
+}
+
+bool ParseSlacSamplingDimensions( const std::string& line, std::array<int, 3>& dimensions,
+                                  std::string& error )
+{
+    if ( line.find_first_not_of( " \t\r\n" ) == std::string::npos )
+    {
+        dimensions = { 128, 128, 128 };
+        return true;
+    }
+    std::istringstream stream( line );
+    std::array<std::string, 3> tokens;
+    std::string extra;
+    if ( !( stream >> tokens[0] >> tokens[1] >> tokens[2] ) || stream >> extra )
+    {
+        error = "SLAC sampling dimensions require exactly three integers";
+        return false;
+    }
+    std::size_t point_count = 1;
+    for ( int axis = 0; axis < 3; ++axis )
+    {
+        std::size_t consumed = 0;
+        long long value = 0;
+        try
+        {
+            value = std::stoll( tokens[axis], &consumed, 10 );
+        }
+        catch ( const std::exception& )
+        {
+            error = "SLAC sampling dimensions must be integers";
+            return false;
+        }
+        if ( consumed != tokens[axis].size() || value < 2 || value > INT_MAX )
+        {
+            error = "Each SLAC sampling dimension must be in the range 2..INT_MAX";
+            return false;
+        }
+        dimensions[axis] = static_cast<int>( value );
+        if ( point_count > std::numeric_limits<std::size_t>::max() /
+                               static_cast<std::size_t>( dimensions[axis] ) )
+        {
+            error = "SLAC sampling dimension multiplication overflows size_t";
+            return false;
+        }
+        point_count *= static_cast<std::size_t>( dimensions[axis] );
+    }
+    return true;
+}
 
 vtkDataSet* GetNetcdfDataSet( cvt::Netcdf& input )
 {
@@ -192,7 +297,8 @@ std::unique_ptr<kvs::VolumeObjectBase> ImportNetcdfVolume( cvt::Netcdf& input )
 bool WriteNetcdfVolume( const std::string& directory, const std::string& local_base,
                         const std::string& source, int time_step, int sub_volume_id,
                         int sub_volume_count, kvs::VolumeObjectBase* volume,
-                        cvt::UnstructuredPfi& pfi )
+                        cvt::UnstructuredPfi& pfi,
+                        bool preserve_structured_external_coords = false )
 {
     volume->print( std::cout, kvs::Indent( 4 ) );
     std::cout << "  Writing to " << directory << " ..." << std::endl;
@@ -217,9 +323,12 @@ bool WriteNetcdfVolume( const std::string& directory, const std::string& local_b
     // 構造格子はオブジェクト座標を外部座標として設定してから出力する。
     if ( auto* structured = dynamic_cast<kvs::StructuredVolumeObject*>( volume ) )
     {
-        structured->updateMinMaxCoords();
-        structured->setMinMaxExternalCoords( structured->minObjectCoord(),
-                                             structured->maxObjectCoord() );
+        if ( !preserve_structured_external_coords )
+        {
+            structured->updateMinMaxCoords();
+            structured->setMinMaxExternalCoords( structured->minObjectCoord(),
+                                                 structured->maxObjectCoord() );
+        }
         cvt::StructuredVolumeObjectExporter exporter( structured );
         exporter.setWritingDataTypeToExternalBinary();
         if ( !exporter.write( directory, local_base, time_step, sub_volume_id,
@@ -248,6 +357,7 @@ bool WriteNetcdfVolume( const std::string& directory, const std::string& local_b
 void Netcdf2Kvsml( const std::string& directory, const std::string& base,
                    const std::string& src )
 {
+    // NetCDF固有の内容判定と入力ロールの切り替えは、変換処理側で行う。
     cvt::NetcdfFileInfo info;
     if ( !cvt::Netcdf::Probe( src, info ) )
     {
@@ -259,6 +369,122 @@ void Netcdf2Kvsml( const std::string& directory, const std::string& base,
         std::cerr << "CAM connectivity cannot be used as the primary input. "
                      "Specify the CAM points file instead."
                   << std::endl;
+        return;
+    }
+    if ( info.input_role == cvt::NetcdfInputRole::SlacMode )
+    {
+        std::cerr << "A SLAC mode cannot be the primary input. Specify the SLAC mesh "
+                     "as the first argument, then enter the mode path when prompted."
+                  << std::endl;
+        return;
+    }
+    if ( info.input_role == cvt::NetcdfInputRole::SlacMesh )
+    {
+        cvt::NetcdfReadOptions options;
+        std::cout << "Enter the SLAC mode file path or wildcard:" << std::endl;
+        std::string mode_input;
+        if ( !std::getline( std::cin, mode_input ) ||
+             mode_input.find_first_not_of( " \t\r\n" ) == std::string::npos )
+        {
+            std::cerr << "The SLAC mode file path or wildcard is empty." << std::endl;
+            return;
+        }
+        std::string error;
+        if ( !ExpandSlacModeInput( mode_input, options.slac_mode_filenames, error ) )
+        {
+            std::cerr << error << std::endl;
+            return;
+        }
+
+        std::cout << "Enter the SLAC sampling dimensions (nx ny nz) "
+                     "[default: 128 128 128]:"
+                  << std::endl;
+        std::string dimensions_input;
+        if ( !std::getline( std::cin, dimensions_input ) ) dimensions_input.clear();
+        if ( !ParseSlacSamplingDimensions( dimensions_input,
+                                           options.slac_sampling_dimensions, error ) )
+        {
+            std::cerr << error << std::endl;
+            return;
+        }
+        std::cout << "SLAC sampling dimensions: " << options.slac_sampling_dimensions[0]
+                  << " " << options.slac_sampling_dimensions[1] << " "
+                  << options.slac_sampling_dimensions[2] << std::endl;
+
+        std::vector<double> physical_times;
+        if ( !cvt::Netcdf::TimeSteps( src, options, physical_times, error ) ||
+             physical_times.empty() )
+        {
+            std::cerr << ( error.empty() ? "No SLAC output steps were resolved" : error )
+                      << std::endl;
+            return;
+        }
+        constexpr int sub_volume_id = 1;
+        constexpr int sub_volume_count = 1;
+        const int last_time_step = static_cast<int>( physical_times.size() ) - 1;
+        std::unique_ptr<cvt::UnstructuredPfi> pfi;
+        std::size_t expected_veclen = 0;
+        kvs::Vector3ui expected_resolution;
+        for ( std::size_t i = 0; i < physical_times.size(); ++i )
+        {
+            const int time_step = static_cast<int>( i );
+            options.has_requested_time = true;
+            options.requested_time = physical_times[i];
+            std::cout << "Reading SLAC physical time " << physical_times[i]
+                      << " as PBVR step " << time_step << " ..." << std::endl;
+            cvt::Netcdf input( src, options );
+            if ( input.isFailure() || input.gridType() != cvt::NetcdfGridType::ImageData )
+            {
+                std::cerr << "Failed to read the resampled SLAC volume at PBVR step "
+                          << time_step << std::endl;
+                return;
+            }
+            auto volume = ImportNetcdfVolume( input );
+            auto* structured =
+                volume ? dynamic_cast<kvs::StructuredVolumeObject*>( volume.get() ) : nullptr;
+            if ( !structured ||
+                 structured->gridType() != kvs::StructuredVolumeObject::Uniform )
+            {
+                std::cerr << "The SLAC adapter did not produce a uniform structured volume."
+                          << std::endl;
+                return;
+            }
+            if ( time_step == 0 )
+            {
+                expected_veclen = structured->veclen();
+                expected_resolution = structured->resolution();
+                pfi = std::make_unique<cvt::UnstructuredPfi>(
+                    expected_veclen, last_time_step, sub_volume_count );
+            }
+            else if ( structured->veclen() != expected_veclen ||
+                      structured->resolution() != expected_resolution )
+            {
+                std::cerr << "SLAC resampled volume structure differs at PBVR step "
+                          << time_step << std::endl;
+                return;
+            }
+
+            const kvs::Vector3f physical_min = structured->minObjectCoord();
+            const kvs::Vector3f physical_max = structured->maxObjectCoord();
+            structured->setMinMaxExternalCoords( physical_min, physical_max );
+            structured->setMinMaxObjectCoords(
+                kvs::Vector3f( 0.0f, 0.0f, 0.0f ),
+                kvs::Vector3f( static_cast<float>( structured->resolution().x() - 1 ),
+                               static_cast<float>( structured->resolution().y() - 1 ),
+                               static_cast<float>( structured->resolution().z() - 1 ) ) );
+            if ( !WriteNetcdfVolume( directory, base, src, time_step, sub_volume_id,
+                                     sub_volume_count, volume.get(), *pfi, true ) )
+                return;
+        }
+        if ( !pfi->write( directory, base ) )
+        {
+            std::cerr << "Failed to write the SLAC PFI file." << std::endl;
+            return;
+        }
+        cvt::Pfl pfl;
+        pfl.registerPfi( directory, base );
+        if ( !pfl.write( directory, base ) )
+            std::cerr << "Failed to write the SLAC PFL file." << std::endl;
         return;
     }
     if ( info.input_role == cvt::NetcdfInputRole::CamPoints )

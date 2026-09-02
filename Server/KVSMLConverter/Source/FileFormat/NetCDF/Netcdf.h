@@ -17,6 +17,7 @@
 #ifndef CVT_NETCDF_H_INCLUDE
 #define CVT_NETCDF_H_INCLUDE
 
+#include <array>
 #include <map>
 #include <memory>
 #include <string>
@@ -41,12 +42,18 @@ enum class NetcdfInputRole
 {
     Standard,
     CamPoints,
-    CamConnectivity
+    CamConnectivity,
+    SlacMesh,
+    SlacMode
 };
 
 struct NetcdfReadOptions
 {
     std::string cam_connectivity_filename;
+
+    std::vector<std::string> slac_mode_filenames;
+    std::array<int, 3> slac_sampling_dimensions = { 128, 128, 128 };
+
     bool has_requested_time = false;
     double requested_time = 0.0;
 };
@@ -87,8 +94,13 @@ public:
         return m_variable_dimensions;
     }
 
+    int variableType( const std::string& name ) const;
+    const std::vector<std::size_t>& variableShape( const std::string& name ) const;
+
 private:
     std::map<std::string, std::string> m_variable_dimensions;
+    std::map<std::string, int> m_variable_types;
+    std::map<std::string, std::vector<std::size_t>> m_variable_shapes;
     std::map<std::string, std::size_t> m_dimensions;
     std::map<std::string, std::string> m_global_attributes;
     std::map<std::string, std::map<std::string, std::string>> m_variable_attributes;
@@ -188,17 +200,6 @@ public:
 
     static bool TimeSteps( const std::string& filename, const NetcdfReadOptions& options,
                            std::vector<double>& time_steps, std::string& error );
-
-    /**
-     * @brief .ncdfメッシュと同じディレクトリの.mod時系列を検証して時刻順に返す。
-     * @param mesh_filename 選択されたSLACメッシュ（.ncdf）。
-     * @param time_steps 検証済みの.modファイルと物理時刻。
-     * @param error 失敗理由。
-     * @return SLACの時系列入力として利用できる場合はtrue。
-     */
-    static bool ResolveSlacTimeSeries( const std::string& mesh_filename,
-                                       std::vector<SlacTimeStepFile>& time_steps,
-                                       std::string& error );
 
 private:
     /// メタデータに適合する形式アダプターを選択する。
