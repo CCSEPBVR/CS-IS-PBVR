@@ -17,7 +17,6 @@
 #ifndef CVT_NETCDF_H_INCLUDE
 #define CVT_NETCDF_H_INCLUDE
 
-#include <array>
 #include <map>
 #include <memory>
 #include <string>
@@ -52,7 +51,6 @@ struct NetcdfReadOptions
     std::string cam_connectivity_filename;
 
     std::vector<std::string> slac_mode_filenames;
-    std::array<int, 3> slac_sampling_dimensions = { 128, 128, 128 };
 
     bool has_requested_time = false;
     double requested_time = 0.0;

@@ -20,7 +20,6 @@
 #include <algorithm>
 #include <cctype>
 #include <cmath>
-#include <cstdint>
 #include <iomanip>
 #include <map>
 #include <sstream>
@@ -64,7 +63,7 @@
 #include <vtkPoints.h>
 #include <vtkPolyData.h>
 #include <vtkRectilinearGrid.h>
-#include <vtkResampleToImage.h>
+#include <vtkRemoveGhosts.h>
 #include <vtkSLACReader.h>
 #include <vtkStringArray.h>
 #include <vtkStreamingDemandDrivenPipeline.h>
@@ -861,6 +860,14 @@ class SlacNetcdfFormatAdapter : public cvt::NetcdfFormatAdapter
         std::vector<cvt::SlacTimeStepFile> modes;
     };
 
+    struct PointArraySignature
+    {
+        int type = VTK_VOID;
+        int components = 0;
+    };
+
+    using PointArraySchema = std::map<std::string, PointArraySignature>;
+
     static bool ModeVariables( const cvt::NetcdfMetadata& metadata,
                                std::size_t coordinate_count,
                                std::map<std::string, VariableSignature>& variables )
@@ -908,18 +915,6 @@ class SlacNetcdfFormatAdapter : public cvt::NetcdfFormatAdapter
                                       Configuration& configuration, std::string& error )
     {
         configuration = Configuration{};
-        std::size_t sample_points = 1;
-        for ( int dimension : options.slac_sampling_dimensions )
-        {
-            if ( dimension < 2 ||
-                 sample_points > std::numeric_limits<std::size_t>::max() /
-                                     static_cast<std::size_t>( dimension ) )
-            {
-                error = "Invalid or overflowing SLAC sampling dimensions";
-                return false;
-            }
-            sample_points *= static_cast<std::size_t>( dimension );
-        }
         cvt::NetcdfMetadata mesh;
         if ( !cvt::Netcdf::ReadMetadata( mesh_filename, mesh ) || !IsSlacMesh( mesh ) )
         {
@@ -1011,150 +1006,172 @@ class SlacNetcdfFormatAdapter : public cvt::NetcdfFormatAdapter
         return true;
     }
 
-    static vtkPointData* SharedPointData( vtkDataObject* object )
+    static bool SamePointArraySchema( const PointArraySchema& lhs,
+                                      const PointArraySchema& rhs )
     {
-        if ( auto* data = vtkDataSet::SafeDownCast( object ) ) return data->GetPointData();
-        auto* composite = vtkCompositeDataSet::SafeDownCast( object );
-        if ( !composite ) return nullptr;
-        vtkSmartPointer<vtkCompositeDataIterator> iterator;
-        iterator.TakeReference( composite->NewIterator() );
-        iterator->SkipEmptyNodesOn();
-        for ( iterator->InitTraversal(); !iterator->IsDoneWithTraversal();
-              iterator->GoToNextItem() )
+        if ( lhs.size() != rhs.size() ) return false;
+        for ( const auto& entry : lhs )
         {
-            auto* data = vtkDataSet::SafeDownCast( iterator->GetCurrentDataObject() );
-            if ( data && data->GetPointData() ) return data->GetPointData();
+            const auto found = rhs.find( entry.first );
+            if ( found == rhs.end() || entry.second.type != found->second.type ||
+                 entry.second.components != found->second.components ) return false;
         }
-        return nullptr;
+        return true;
     }
 
-    static void LogMemoryEstimate( vtkDataObject* volume, const std::array<int, 3>& dims )
+    static PointArraySchema ValidateUnstructuredGrid( vtkUnstructuredGrid* grid,
+                                                      const std::string& phase )
     {
-        vtkPointData* point_data = SharedPointData( volume );
-        std::uint64_t components = 0;
-        std::uint64_t vtk_bytes_per_point = 0;
-        if ( point_data )
+        if ( !grid || grid->GetNumberOfPoints() <= 0 || grid->GetNumberOfCells() <= 0 )
+            throw std::runtime_error( phase + " is empty" );
+        if ( static_cast<unsigned long long>( grid->GetNumberOfPoints() - 1 ) >
+             std::numeric_limits<kvs::UInt32>::max() )
+            throw std::runtime_error( phase + " exceeds the KVS UInt32 node-ID limit" );
+
+        for ( vtkIdType cell = 0; cell < grid->GetNumberOfCells(); ++cell )
         {
-            for ( int i = 0; i < point_data->GetNumberOfArrays(); ++i )
-            {
-                vtkDataArray* array = point_data->GetArray( i );
-                if ( !array ) continue;
-                components += static_cast<std::uint64_t>( array->GetNumberOfComponents() );
-                vtk_bytes_per_point +=
-                    static_cast<std::uint64_t>( array->GetNumberOfComponents() ) *
-                    static_cast<std::uint64_t>( array->GetDataTypeSize() );
-            }
+            if ( grid->GetCellType( cell ) != VTK_TETRA )
+                throw std::runtime_error( phase + " contains a non-tetrahedral cell" );
         }
-        const std::uint64_t points = static_cast<std::uint64_t>( dims[0] ) * dims[1] * dims[2];
-        const std::uint64_t cells = static_cast<std::uint64_t>( dims[0] - 1 ) *
-                                    ( dims[1] - 1 ) * ( dims[2] - 1 );
-        const std::uint64_t vtk_values = points * vtk_bytes_per_point;
-        const std::uint64_t kvs_values = points * components * sizeof( float );
-        const std::uint64_t auxiliaries = points * 2 + cells;
-        std::cout << "SLAC resample memory estimate:" << std::endl
-                  << "  point count: " << points << std::endl
-                  << "  value components: " << components << std::endl
-                  << "  VTK value arrays: " << vtk_values << " bytes" << std::endl
-                  << "  KVS float values: " << kvs_values << " bytes" << std::endl
-                  << "  mask/point ghost/cell ghost: " << auxiliaries << " bytes" << std::endl
-                  << "  simultaneous estimated total: "
-                  << vtk_values + kvs_values + auxiliaries << " bytes" << std::endl;
-    }
 
-    static void ValidateAndLogImage( vtkImageData* image, const char* mask_name,
-                                     const std::array<int, 3>& expected_dimensions )
-    {
-        if ( !image || image->GetNumberOfPoints() <= 0 || image->GetNumberOfCells() <= 0 )
-            throw std::runtime_error( "vtkResampleToImage returned an empty image" );
-        int dimensions[3] = {};
-        image->GetDimensions( dimensions );
-        for ( int axis = 0; axis < 3; ++axis )
-            if ( dimensions[axis] != expected_dimensions[axis] )
-                throw std::runtime_error( "vtkResampleToImage dimensions do not match the request" );
-        const double* bounds = image->GetBounds();
-        const double* spacing = image->GetSpacing();
-        for ( int i = 0; i < 6; ++i )
-            if ( !std::isfinite( bounds[i] ) )
-                throw std::runtime_error( "vtkResampleToImage returned non-finite bounds" );
-        for ( int i = 0; i < 3; ++i )
-            if ( !std::isfinite( spacing[i] ) )
-                throw std::runtime_error( "vtkResampleToImage returned non-finite spacing" );
-        std::cout << "SLAC resample dimensions: " << dimensions[0] << " " << dimensions[1]
-                  << " " << dimensions[2] << std::endl
-                  << "SLAC resample bounds: " << bounds[0] << " " << bounds[1] << " "
-                  << bounds[2] << " " << bounds[3] << " " << bounds[4] << " "
-                  << bounds[5] << std::endl
-                  << "SLAC resample spacing: " << spacing[0] << " " << spacing[1] << " "
-                  << spacing[2] << std::endl;
+        vtkPointData* point_data = grid->GetPointData();
+        if ( !point_data || point_data->GetNumberOfArrays() <= 0 )
+            throw std::runtime_error( phase + " has no physical point data" );
+        if ( point_data->HasArray( vtkDataSetAttributes::GhostArrayName() ) ||
+             grid->GetCellData()->HasArray( vtkDataSetAttributes::GhostArrayName() ) )
+            throw std::runtime_error( phase + " still contains a ghost array" );
 
-        vtkPointData* point_data = image->GetPointData();
-        vtkDataArray* mask = point_data->GetArray( mask_name );
-        if ( !mask ) throw std::runtime_error( "vtkResampleToImage returned no valid-point mask" );
-        vtkIdType valid_count = 0;
-        for ( vtkIdType i = 0; i < image->GetNumberOfPoints(); ++i )
-            if ( mask->GetComponent( i, 0 ) != 0.0 ) ++valid_count;
-        if ( valid_count == 0 )
-            throw std::runtime_error( "vtkResampleToImage found no valid SLAC volume points" );
-
-        int physical_arrays = 0;
-        int component_offset = 0;
-        bool any_finite = false;
-        bool all_zero = true;
+        PointArraySchema schema;
         for ( int i = 0; i < point_data->GetNumberOfArrays(); ++i )
         {
             vtkDataArray* array = point_data->GetArray( i );
-            if ( !array ) continue;
-            const std::string name = array->GetName() ? array->GetName() : "(unnamed)";
-            if ( name == mask_name || name == vtkDataSetAttributes::GhostArrayName() ) continue;
-            if ( array->GetNumberOfTuples() != image->GetNumberOfPoints() )
-                throw std::runtime_error( "A resampled SLAC array has an invalid tuple count" );
-            ++physical_arrays;
+            if ( !array )
+                throw std::runtime_error( phase + " contains a non-numeric point-data array" );
+            const char* array_name = array->GetName();
+            if ( !array_name || array_name[0] == '\0' )
+                throw std::runtime_error( phase + " contains an unnamed point-data array" );
+            const std::string name( array_name );
+            if ( array->GetNumberOfTuples() != grid->GetNumberOfPoints() )
+                throw std::runtime_error( phase + " point-data array " + name +
+                                          " does not contain one tuple per point" );
             const int components = array->GetNumberOfComponents();
-            std::cout << "Array order " << physical_arrays - 1 << ": " << name << std::endl
-                      << "  Components: " << components << std::endl
-                      << "  KVS component range: " << component_offset << "-"
-                      << component_offset + components - 1 << std::endl;
+            if ( components <= 0 )
+                throw std::runtime_error( phase + " point-data array " + name +
+                                          " has no components" );
+            if ( !schema.emplace( name, PointArraySignature{ array->GetDataType(), components } )
+                      .second )
+                throw std::runtime_error( phase + " has duplicate point-data array name " +
+                                          name );
             for ( int component = 0; component < components; ++component )
             {
-                double all_range[2] = {};
-                array->GetRange( all_range, component );
-                double valid_min = std::numeric_limits<double>::infinity();
-                double valid_max = -std::numeric_limits<double>::infinity();
                 for ( vtkIdType tuple = 0; tuple < array->GetNumberOfTuples(); ++tuple )
                 {
                     const double value = array->GetComponent( tuple, component );
-                    if ( std::isfinite( value ) )
-                    {
-                        any_finite = true;
-                        if ( value != 0.0 ) all_zero = false;
-                    }
-                    if ( mask->GetComponent( tuple, 0 ) != 0.0 && std::isfinite( value ) )
-                    {
-                        valid_min = std::min( valid_min, value );
-                        valid_max = std::max( valid_max, value );
-                    }
+                    if ( !std::isfinite( value ) )
+                        throw std::runtime_error( phase + " point-data array " + name +
+                                                  " contains NaN or Inf" );
                 }
-                std::cout << "  Component " << component << " all-point min/max: "
-                          << all_range[0] << " " << all_range[1] << std::endl
-                          << "  Component " << component << " valid-point min/max: "
-                          << valid_min << " " << valid_max << std::endl;
             }
-            component_offset += components;
         }
-        if ( physical_arrays == 0 )
-            throw std::runtime_error( "Resampled SLAC volume has no physical point data" );
-        if ( !any_finite )
-            throw std::runtime_error( "All resampled SLAC physical values are non-finite" );
-        if ( all_zero ) kvsMessageWarning( "All resampled SLAC physical values are zero" );
-        std::cout << "SLAC valid resample points: " << valid_count << "/"
-                  << image->GetNumberOfPoints() << std::endl;
+        return schema;
+    }
+
+    static vtkSmartPointer<vtkUnstructuredGrid> RemoveGhostCells(
+        vtkUnstructuredGrid* input )
+    {
+        vtkNew<vtkRemoveGhosts> remover;
+        remover->SetInputData( input );
+        remover->Update();
+        auto* output = vtkUnstructuredGrid::SafeDownCast( remover->GetOutput() );
+        if ( !output )
+            throw std::runtime_error( "vtkRemoveGhosts did not return an unstructured grid" );
+        vtkSmartPointer<vtkUnstructuredGrid> normalized =
+            vtkSmartPointer<vtkUnstructuredGrid>::New();
+        normalized->ShallowCopy( output );
+        normalized->GetPointData()->RemoveArray( vtkDataSetAttributes::GhostArrayName() );
+        normalized->GetPointData()->SetGlobalIds( nullptr );
+        normalized->GetCellData()->RemoveArray( vtkDataSetAttributes::GhostArrayName() );
+        return normalized;
+    }
+
+    static vtkSmartPointer<vtkUnstructuredGrid> MergeInternalVolume( vtkDataObject* volume )
+    {
+        if ( !volume ) throw std::runtime_error( "vtkSLACReader returned no volume output" );
+
+        std::vector<vtkSmartPointer<vtkUnstructuredGrid>> leaves;
+        if ( auto* grid = vtkUnstructuredGrid::SafeDownCast( volume ) )
+        {
+            leaves.push_back( RemoveGhostCells( grid ) );
+        }
+        else if ( auto* composite = vtkCompositeDataSet::SafeDownCast( volume ) )
+        {
+            vtkSmartPointer<vtkCompositeDataIterator> iterator;
+            iterator.TakeReference( composite->NewIterator() );
+            iterator->SkipEmptyNodesOn();
+            for ( iterator->InitTraversal(); !iterator->IsDoneWithTraversal();
+                  iterator->GoToNextItem() )
+            {
+                vtkDataObject* object = iterator->GetCurrentDataObject();
+                auto* grid = vtkUnstructuredGrid::SafeDownCast( object );
+                if ( !grid )
+                    throw std::runtime_error(
+                        "SLAC internal-volume composite contains a non-unstructured leaf" );
+                auto normalized = RemoveGhostCells( grid );
+                if ( normalized->GetNumberOfPoints() > 0 &&
+                     normalized->GetNumberOfCells() > 0 ) leaves.push_back( normalized );
+            }
+        }
+        else
+        {
+            throw std::runtime_error( "vtkSLACReader returned an unsupported volume type" );
+        }
+        if ( leaves.empty() )
+            throw std::runtime_error( "vtkSLACReader returned no valid internal-volume leaf" );
+
+        PointArraySchema expected_schema;
+        vtkNew<vtkAppendFilter> append;
+        append->MergePointsOn();
+        append->SetTolerance( 0.0 );
+        append->ToleranceIsAbsoluteOn();
+        for ( std::size_t i = 0; i < leaves.size(); ++i )
+        {
+            const PointArraySchema schema = ValidateUnstructuredGrid(
+                leaves[i], "SLAC internal-volume leaf " + std::to_string( i ) );
+            if ( i == 0 )
+            {
+                expected_schema = schema;
+            }
+            else if ( !SamePointArraySchema( schema, expected_schema ) )
+            {
+                throw std::runtime_error(
+                    "SLAC internal-volume leaves have incompatible point-data arrays" );
+            }
+            append->AddInputData( leaves[i] );
+        }
+        append->Update();
+
+        vtkSmartPointer<vtkUnstructuredGrid> merged =
+            vtkSmartPointer<vtkUnstructuredGrid>::New();
+        merged->DeepCopy( append->GetOutput() );
+        merged->GetPointData()->RemoveArray( vtkDataSetAttributes::GhostArrayName() );
+        merged->GetCellData()->Initialize();
+        const PointArraySchema merged_schema =
+            ValidateUnstructuredGrid( merged, "Merged SLAC internal volume" );
+        if ( !SamePointArraySchema( merged_schema, expected_schema ) )
+            throw std::runtime_error(
+                "SLAC point-data arrays were lost while merging material regions" );
+
+        std::cout << "SLAC merged internal volume: " << leaves.size() << " leaf(s), "
+                  << merged->GetNumberOfPoints() << " points, "
+                  << merged->GetNumberOfCells() << " tetrahedra" << std::endl;
+        return merged;
     }
 
 public:
     const char* name() const override { return "VTK SLAC"; }
     cvt::NetcdfGridType gridType() const override
     {
-        return cvt::NetcdfGridType::ImageData;
+        return cvt::NetcdfGridType::UnstructuredGrid;
     }
     bool matches( const cvt::NetcdfMetadata& metadata ) const override
     {
@@ -1191,29 +1208,8 @@ public:
         reader->Update( vtkSLACReader::VOLUME_OUTPUT );
 
         vtkDataObject* volume = reader->GetOutputDataObject( vtkSLACReader::VOLUME_OUTPUT );
-        if ( !vtkCompositeDataSet::SafeDownCast( volume ) && !vtkDataSet::SafeDownCast( volume ) )
-            throw std::runtime_error( "vtkSLACReader returned an unsupported volume type" );
-        if ( !SharedPointData( volume ) )
-            throw std::runtime_error( "vtkSLACReader returned no internal volume" );
-        LogMemoryEstimate( volume, options.slac_sampling_dimensions );
-
-        vtkNew<vtkResampleToImage> resampler;
-        resampler->SetInputDataObject( volume );
-        resampler->UseInputBoundsOn();
-        resampler->SetSamplingDimensions( options.slac_sampling_dimensions[0],
-                                          options.slac_sampling_dimensions[1],
-                                          options.slac_sampling_dimensions[2] );
-        resampler->Update();
-        vtkImageData* image = resampler->GetOutput();
-        ValidateAndLogImage( image, resampler->GetMaskArrayName(),
-                             options.slac_sampling_dimensions );
-        image->GetPointData()->RemoveArray( resampler->GetMaskArrayName() );
-        image->GetPointData()->RemoveArray( vtkDataSetAttributes::GhostArrayName() );
-        image->GetCellData()->RemoveArray( vtkDataSetAttributes::GhostArrayName() );
-        if ( image->GetPointData()->HasArray( resampler->GetMaskArrayName() ) ||
-             image->GetPointData()->HasArray( vtkDataSetAttributes::GhostArrayName() ) )
-            throw std::runtime_error( "SLAC resample auxiliary arrays could not be removed" );
-        return std::make_shared<cvt::VtkXmlImageData>( image );
+        auto merged = MergeInternalVolume( volume );
+        return std::make_shared<cvt::VtkXmlUnstructuredGrid>( merged );
     }
 
     bool timeSteps( const std::string& filename, const cvt::NetcdfReadOptions& options,
