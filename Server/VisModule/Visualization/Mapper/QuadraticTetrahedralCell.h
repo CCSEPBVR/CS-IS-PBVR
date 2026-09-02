@@ -70,6 +70,12 @@ public:
 
     const vismodule::Real32 volume() const;
 
+    // volume() のブロック一括版。既存の volume() は残したまま追加している
+    // (CS-PBVR 側の経路を変えないため)。
+    void volumeArray( const int loop_cnt,
+                      const vismodule::UInt32* cell_index,
+                      vismodule::Real32* volumes );
+
     void setLocalGravityPoint() const;
 };
 
@@ -731,6 +737,92 @@ inline const vismodule::Real32 QuadraticTetrahedralCell<T>::volume() const
     }
 
     return sum_metric / ( 6.0f * 8.0f );
+}
+
+/*===========================================================================*/
+/**
+ *  @brief  Returns volumes for cells already loaded by bindCellArray().
+ *  @param  loop_cnt [in]  number of bound cells
+ *  @param  volumes  [out] volume array
+ *
+ *  volume() のブロック一括版(既存の volume() は無変更)。
+ *  求積点は全セル共通の定数なので、形状関数の微分は求積点ごとに1回だけ評価し、
+ *  内側でセル方向にベクトル化する。頂点は bindCellArray() が既に集めた
+ *  m_vertices_array を読むため、bindCell による再 gather が起きない。
+ *  各セルについて求積点を volume() と同じ順序で加算し、行列式も
+ *  Matrix33f::determinant() と同一の式・順序で展開しているので結果はビット一致。
+ */
+/*===========================================================================*/
+template <typename T>
+inline void QuadraticTetrahedralCell<T>::volumeArray(
+    const int loop_cnt,
+    const vismodule::UInt32*,
+    vismodule::Real32* volumes )
+{
+    if ( volumes == NULL ) return;
+
+    // 求積点は volume() と同一のコードで生成する(同じリテラル・同じ演算・同じ順序)
+    const vismodule::Vector3f v0(   0,  0,  0 );
+    const vismodule::Vector3f v1(   1,  0,  0 );
+    const vismodule::Vector3f v2(   0,  0,  1 );
+    const vismodule::Vector3f v3(   0,  1,  0 );
+    const vismodule::Vector3f v4( 0.5,  0,  0 );
+    const vismodule::Vector3f v5(   0,  0, 0.5 );
+    const vismodule::Vector3f v6(   0, 0.5,  0 );
+    const vismodule::Vector3f v7( 0.5,  0, 0.5 );
+    const vismodule::Vector3f v8(   0, 0.5, 0.5 );
+    const vismodule::Vector3f v9( 0.5, 0.5,  0 );
+
+    const vismodule::Vector3f c[8] =
+    {
+        ( v0 + v4 + v5 + v6 ) * 0.25,
+        ( v4 + v1 + v7 + v9 ) * 0.25,
+        ( v5 + v7 + v2 + v8 ) * 0.25,
+        ( v6 + v9 + v8 + v3 ) * 0.25,
+        ( v4 + v7 + v5 + v6 ) * 0.25,
+        ( v4 + v9 + v7 + v6 ) * 0.25,
+        ( v8 + v6 + v5 + v7 ) * 0.25,
+        ( v8 + v7 + v9 + v6 ) * 0.25
+    };
+
+    // __restrict で volumes が m_vertices_array と別領域であることを示す
+    vismodule::Real32* __restrict vol = volumes;
+    for ( int ci = 0; ci < loop_cnt; ++ci ) vol[ci] = 0.0f;
+
+    for ( std::size_t i = 0 ; i < 8 ; i++ )
+    {
+        // 求積点はセルに依存しないので、微分はここで1回だけ評価する
+        this->differentialFunctions( c[i] );
+        const float* const dNdx = BaseClass::m_differential_functions;
+        const float* const dNdy = dNdx + NumberOfNodes;
+        const float* const dNdz = dNdy + NumberOfNodes;
+
+        #pragma omp simd
+        for ( int ci = 0; ci < loop_cnt; ++ci )
+        {
+            // JacobiMatrix() と同じ節点順・同じ加算順で J を組む
+            float dXdx = 0, dYdx = 0, dZdx = 0;
+            float dXdy = 0, dYdy = 0, dZdy = 0;
+            float dXdz = 0, dYdz = 0, dZdz = 0;
+            for ( int nd = 0; nd < NumberOfNodes; ++nd )
+            {
+                const vismodule::Vector3f& v = BaseClass::m_vertices_array[nd][ci];
+                dXdx += dNdx[nd] * v.x();  dYdx += dNdx[nd] * v.y();  dZdx += dNdx[nd] * v.z();
+                dXdy += dNdy[nd] * v.x();  dYdy += dNdy[nd] * v.y();  dZdy += dNdy[nd] * v.z();
+                dXdz += dNdz[nd] * v.x();  dYdz += dNdz[nd] * v.y();  dZdz += dNdz[nd] * v.z();
+            }
+
+            // Matrix33f::determinant() と同一の式・順序
+            const float d0 = dYdy * dZdz - dZdy * dYdz;
+            const float d1 = dXdy * dZdz - dZdy * dXdz;
+            const float d2 = dXdy * dYdz - dYdy * dXdz;
+            const float det = dXdx * d0 - dYdx * d1 + dZdx * d2;
+
+            vol[ci] += vismodule::Math::Abs<float>( det );
+        }
+    }
+
+    for ( int ci = 0; ci < loop_cnt; ++ci ) vol[ci] = vol[ci] / ( 6.0f * 8.0f );
 }
 
 /*===========================================================================*/

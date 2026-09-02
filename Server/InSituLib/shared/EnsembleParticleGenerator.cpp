@@ -1245,25 +1245,12 @@ bool GenerateEnsembleParticles(
             vismodule::Timer volume_timer;
             volume_timer.start();
 #endif
-            // 一様サンプリング用のセル体積を計算する。Hex は m_vertices_array を使う
-            // 1回のベクトル化呼び出し(volumeArrayByTetraDecomposition, 6-tet分割)で
-            // 全セル分を一括算出する(per-cell 仮想 bindCell を避けベクトル化, #15333)。
-            if ( celltype == vismodule::VolumeObjectBase::Hexahedra )
-            {
-                // 8頂点固定読み(m_vertices_array[0..7])のHex専用高速パス。Hexのみ適用。
-                static_cast<vismodule::HexahedralCell<Type>*>( cell[thid][0] )
-                    ->volumeArrayByTetraDecomposition( remain, volume_array );
-            }
-            else
-            {
-                // Tet/Prism/Pyramid/Quadratic系: per-cell の多態 volume() で計算
-                // (全CellBase派生で正しい)。
-                for ( int cell_BLK = 0; cell_BLK < remain; cell_BLK++ )
-                {
-                    cell[thid][0]->bindCell( cell_index[cell_BLK] );
-                    volume_array[cell_BLK] = cell[thid][0]->volume();
-                }
-            }
+            // 一様サンプリング用のセル体積を計算する。セル種ごとの最速経路は
+            // volumeArray() の override が持つ: Hex/Tet は bindCellArray() 済みの
+            // m_vertices_array を読む一括版(再 gather なし・ベクトル化, #15333)、
+            // それ以外は CellBase の既定実装(per-cell の bindCell+volume())。
+            // ここでは celltype で分岐しない。
+            cell[thid][0]->volumeArray( remain, cell_index, volume_array );
 #ifdef ENABLE_ENSEMBLE_TIMER
             volume_timer.stop();
             th_uniform_volume_time += volume_timer.sec();

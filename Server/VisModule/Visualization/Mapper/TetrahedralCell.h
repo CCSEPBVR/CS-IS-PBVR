@@ -85,6 +85,10 @@ public:
 
     const vismodule::Real32 volume() const;
 
+    void volumeArray( const int loop_cnt,
+                      const vismodule::UInt32* cell_index,
+                      vismodule::Real32* volumes );
+
     const vismodule::Vector3f transformGlobalToLocal( const vismodule::Vector3f& point ) const;
 
     const vismodule::Vector3f transformLocalToGlobal( const vismodule::Vector3f& point ) const;
@@ -623,6 +627,38 @@ inline const vismodule::Real32 TetrahedralCell<T>::volume() const
     const vismodule::Vector3f v03( BaseClass::m_vertices[3] - BaseClass::m_vertices[0] );
 
     return vismodule::Math::Abs( ( v01.cross( v02 ) ).dot( v03 ) ) * 0.166666f;
+}
+
+/*===========================================================================*/
+/**
+ *  @brief  Returns volumes for cells already loaded by bindCellArray().
+ *  @param  loop_cnt [in]  number of bound cells
+ *  @param  volumes  [out] volume array
+ */
+/*===========================================================================*/
+template <typename T>
+inline void TetrahedralCell<T>::volumeArray(
+    const int loop_cnt,
+    const vismodule::UInt32*,
+    vismodule::Real32* volumes )
+{
+    if ( volumes == NULL ) return;
+
+    // bindCellArray() が既に集めた 4 頂点をそのまま読み、再 gather しない。
+    // __restrict で volumes が m_vertices_array と別領域であることを示し、
+    // 仮定された依存(#15346)を解いてベクトル化させる。
+    // 式・定数(0.166666f)・評価順は volume() と同一なので結果はビット一致。
+    vismodule::Real32* __restrict vol = volumes;
+    #pragma omp simd
+    for ( int i = 0; i < loop_cnt; ++i )
+    {
+        const vismodule::Vector3f& v0 = BaseClass::m_vertices_array[0][i];
+        const vismodule::Vector3f v01( BaseClass::m_vertices_array[1][i] - v0 );
+        const vismodule::Vector3f v02( BaseClass::m_vertices_array[2][i] - v0 );
+        const vismodule::Vector3f v03( BaseClass::m_vertices_array[3][i] - v0 );
+
+        vol[i] = vismodule::Math::Abs( ( v01.cross( v02 ) ).dot( v03 ) ) * 0.166666f;
+    }
 }
 
 /*===========================================================================*/

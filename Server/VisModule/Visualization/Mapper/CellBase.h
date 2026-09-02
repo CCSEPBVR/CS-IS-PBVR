@@ -196,6 +196,15 @@ public:
 
     virtual const vismodule::Real32 volume() const;
 
+    // セルブロックの体積を一括算出する。既定実装は per-cell の bindCell+volume()
+    // で、bindCell/volume とも virtual なので全 CellBase 派生で正しい。
+    // 頂点だけで閉形式に書けるセル種は override し、bindCellArray() が既に集めた
+    // m_vertices_array を読んで再 gather を避ける(Hexahedra/Tetrahedra)。
+    // cell_index は既定実装だけが使う。
+    virtual void volumeArray( const int loop_cnt,
+                              const vismodule::UInt32* cell_index,
+                              vismodule::Real32* volumes );
+
     virtual const vismodule::Real32 averagedScalar() const;
 
     virtual const vismodule::Real32 scalar() const;
@@ -812,6 +821,32 @@ inline const vismodule::Real32 CellBase<T>::volume() const
 {
     visModuleMessageError( "'volume' is not implemented." );
     return vismodule::Real32( 0.0f );
+}
+
+/*===========================================================================*/
+/**
+ *  @brief  Returns volumes for a block of cells.
+ *  @param  loop_cnt   [in]  number of cells
+ *  @param  cell_index [in]  cell indices (this default implementation only)
+ *  @param  volumes    [out] volume array
+ */
+/*===========================================================================*/
+template <typename T>
+inline void CellBase<T>::volumeArray(
+    const int loop_cnt,
+    const vismodule::UInt32* cell_index,
+    vismodule::Real32* volumes )
+{
+    if ( volumes == NULL || cell_index == NULL ) return;
+
+    // 既定実装: 1セルずつ bindCell して多態の volume() を呼ぶ。従来 EPG 側に
+    // 置かれていたフォールバックと同じ処理で、Pyramid のように bindCell 内で
+    // 体積用の量を作る派生でも正しい(bindCell も volume も virtual)。
+    for ( int i = 0; i < loop_cnt; ++i )
+    {
+        this->bindCell( cell_index[i] );
+        volumes[i] = this->volume();
+    }
 }
 
 /*===========================================================================*/

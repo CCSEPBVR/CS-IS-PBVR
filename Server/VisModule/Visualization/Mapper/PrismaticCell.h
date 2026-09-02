@@ -57,6 +57,11 @@ public:
     const vismodule::Vector3f randomSampling() const;
     const vismodule::Vector3f randomSampling_MT(vismodule::MersenneTwister* MT) const;
     const vismodule::Real32 volume() const;
+    // volume() のブロック一括版。既存の volume() は残したまま追加している
+    // (CS-PBVR 側の経路を変えないため)。
+    void volumeArray( const int loop_cnt,
+                      const vismodule::UInt32* cell_index,
+                      vismodule::Real32* volumes );
     void setLocalGravityPoint() const;
 };
 
@@ -566,6 +571,86 @@ const vismodule::Real32 PrismaticCell<T>::volume() const
     }
 
     return S / N;
+}
+
+/*===========================================================================*/
+/**
+ *  @brief  Returns volumes for cells already loaded by bindCellArray().
+ *  @param  loop_cnt [in]  number of bound cells
+ *  @param  volumes  [out] volume array
+ *
+ *  volume() のブロック一括版(既存の volume() は無変更)。
+ *  求積点は全セル共通の定数なので、形状関数の微分は求積点ごとに1回だけ評価し、
+ *  内側でセル方向にベクトル化する。頂点は bindCellArray() が既に集めた
+ *  m_vertices_array を読むため、bindCell による再 gather が起きない。
+ *  各セルについて求積点を volume() と同じ順序で加算し、行列式も
+ *  Matrix33f::determinant() と同一の式・順序で展開しているので結果はビット一致。
+ */
+/*===========================================================================*/
+template <typename T>
+inline void PrismaticCell<T>::volumeArray(
+    const int loop_cnt,
+    const vismodule::UInt32*,
+    vismodule::Real32* volumes )
+{
+    if ( volumes == NULL ) return;
+
+    // volume() と同一の求積点(同じ順序・同じリテラル)
+    const std::size_t N = 9;
+    const vismodule::Vector3f P[ N ] =
+    {
+        vismodule::Vector3f( 0.3f, 0.3f, 0.2f ),
+        vismodule::Vector3f( 0.6f, 0.3f, 0.2f ),
+        vismodule::Vector3f( 0.3f, 0.6f, 0.2f ),
+        vismodule::Vector3f( 0.3f, 0.3f, 0.5f ),
+        vismodule::Vector3f( 0.6f, 0.3f, 0.5f ),
+        vismodule::Vector3f( 0.3f, 0.6f, 0.5f ),
+        vismodule::Vector3f( 0.3f, 0.3f, 0.8f ),
+        vismodule::Vector3f( 0.6f, 0.3f, 0.8f ),
+        vismodule::Vector3f( 0.3f, 0.6f, 0.8f )
+    };
+
+    // __restrict で volumes が m_vertices_array と別領域であることを示し、
+    // 仮定された依存(#15346)を解いてベクトル化させる。
+    vismodule::Real32* __restrict vol = volumes;
+    for ( int i = 0; i < loop_cnt; ++i ) vol[i] = 0.0f;
+
+    for ( std::size_t k = 0; k < N; k++ )
+    {
+        // 求積点はセルに依存しないので、微分はここで1回だけ評価する。
+        // volume() は setLocalPoint() 経由で内挿関数も計算していたが、
+        // JacobiMatrix() は微分しか読まないため結果は変わらない。
+        this->differentialFunctions( P[k] );
+        const float* const dNdx = BaseClass::m_differential_functions;
+        const float* const dNdy = dNdx + NumberOfNodes;
+        const float* const dNdz = dNdy + NumberOfNodes;
+
+        #pragma omp simd
+        for ( int i = 0; i < loop_cnt; ++i )
+        {
+            // JacobiMatrix() と同じ節点順・同じ加算順で J を組む
+            float dXdx = 0, dYdx = 0, dZdx = 0;
+            float dXdy = 0, dYdy = 0, dZdy = 0;
+            float dXdz = 0, dYdz = 0, dZdz = 0;
+            for ( int n = 0; n < NumberOfNodes; ++n )
+            {
+                const vismodule::Vector3f& v = BaseClass::m_vertices_array[n][i];
+                dXdx += dNdx[n] * v.x();  dYdx += dNdx[n] * v.y();  dZdx += dNdx[n] * v.z();
+                dXdy += dNdy[n] * v.x();  dYdy += dNdy[n] * v.y();  dZdy += dNdy[n] * v.z();
+                dXdz += dNdz[n] * v.x();  dYdz += dNdz[n] * v.y();  dZdz += dNdz[n] * v.z();
+            }
+
+            // Matrix33f::determinant() と同一の式・順序
+            const float d0 = dYdy * dZdz - dZdy * dYdz;
+            const float d1 = dXdy * dZdz - dZdy * dXdz;
+            const float d2 = dXdy * dYdz - dYdy * dXdz;
+            const float det = dXdx * d0 - dYdx * d1 + dZdx * d2;
+
+            vol[i] += vismodule::Math::Abs<float>( 0.5f * det );
+        }
+    }
+
+    for ( int i = 0; i < loop_cnt; ++i ) vol[i] = vol[i] / N;
 }
 
 /*===========================================================================*/

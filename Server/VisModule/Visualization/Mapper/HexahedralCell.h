@@ -100,6 +100,9 @@ public:
     const vismodule::Real32 volume() const;
     const vismodule::Real32 volumeByTetraDecomposition() const;
     void volumeArrayByTetraDecomposition( const int loop_cnt, vismodule::Real32* volumes ) const;
+    void volumeArray( const int loop_cnt,
+                      const vismodule::UInt32* cell_index,
+                      vismodule::Real32* volumes );
 
     void setLocalGravityPoint() const;
 };
@@ -961,6 +964,23 @@ inline void HexahedralCell<T>::volumeArrayByTetraDecomposition(
             HexahedralCellDetail::TetraVolume( v4, v0, v1, v2 ) +
             HexahedralCellDetail::TetraVolume( v4, v1, v5, v2 );
     }
+}
+
+/*===========================================================================*/
+/**
+ *  @brief  Returns volumes for cells already loaded by bindCellArray().
+ *  @param  loop_cnt [in]  number of bound cells
+ *  @param  volumes  [out] volume array
+ */
+/*===========================================================================*/
+template <typename T>
+inline void HexahedralCell<T>::volumeArray(
+    const int loop_cnt,
+    const vismodule::UInt32*,
+    vismodule::Real32* volumes )
+{
+    // 6-tet分割の一括版に委譲する(従来 EPG が static_cast で直接呼んでいた経路)。
+    this->volumeArrayByTetraDecomposition( loop_cnt, volumes );
 }
 
 /*===========================================================================*/
