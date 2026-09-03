@@ -354,6 +354,43 @@ struct ChainRuleTimingBreakdown
 // far fewer eval() calls (per-block instead of per-particle).
 /*===========================================================================*/
 /**
+ *  @brief  法線(∇F)の計算方式。
+ *
+ *  ChainRule            : 変数ごとに ∂F/∂q を求めて合算する（現行）。
+ *                         数式が微分量(dq)だけで構成されると活性変数が空になり
+ *                         ∇F=0 になる制約がある。
+ *  CoordinateDifference : 局所座標で ±ε ずらして F を直接差分する（方式A、段2）。
+ *  NodeFField           : 節点で F を評価して場を作り、その勾配を取る（方式C、段4）。
+ */
+/*===========================================================================*/
+enum class NormalMethod
+{
+    ChainRule,
+    CoordinateDifference,
+    NodeFField
+};
+
+/*===========================================================================*/
+/**
+ *  @brief  環境変数 PBVR_NORMAL_METHOD から方式を決める。既定は現行方式。
+ *      chainrule (既定) / coorddiff / nodefield
+ */
+/*===========================================================================*/
+inline NormalMethod resolve_normal_method()
+{
+    const char* e = std::getenv( "PBVR_NORMAL_METHOD" );
+    if ( e == NULL || e[0] == '\0' ) return NormalMethod::ChainRule;
+    if ( std::strcmp( e, "chainrule" ) == 0 ) return NormalMethod::ChainRule;
+    if ( std::strcmp( e, "coorddiff" ) == 0 ) return NormalMethod::CoordinateDifference;
+    if ( std::strcmp( e, "nodefield" ) == 0 ) return NormalMethod::NodeFField;
+    std::cerr << "PBVR_NORMAL_METHOD: unknown value '" << e
+              << "' (expected chainrule|coorddiff|nodefield). Using chainrule."
+              << std::endl;
+    return NormalMethod::ChainRule;
+}
+
+/*===========================================================================*/
+/**
  *  @brief  変数値の並び(varr)を組み立てて、数式 F の値をブロック一括で求める。
  *
  *  chainRuleBlock() の前半を切り出したもの。方式A(座標差分法)は局所座標を
@@ -660,6 +697,58 @@ void calculate_scalar_and_chain_rule_grad(
 }
 
 // 構造格子版の値・勾配取得 + chain rule 法線。
+/*===========================================================================*/
+/**
+ *  @brief  法線計算の振り分け。方式によらず「F の値」と「∇F」を返す。
+ *
+ *  @param  method   [in] 計算方式
+ *  @param  interp_F [in] 節点F場の補間器。方式C でのみ使用し、他方式では未使用。
+ */
+/*===========================================================================*/
+void calculate_scalar_and_normal(
+    const NormalMethod method,
+    const int nparticles_count,
+    const int nvariables,
+    ChainRuleEvalContext& chain_context,
+    const std::vector< vismodule::CellBase<Type>* >& interp,
+    const vismodule::Vector3f* local_coord_array,
+    const vismodule::Vector3f* global_coord_array,
+    const vismodule::UInt32* cell_index,
+    vismodule::CellBase<Type>* interp_F,
+    float* scalar_result,
+    float* grad_array_x,
+    float* grad_array_y,
+    float* grad_array_z,
+    ChainRuleTimingBreakdown* timing )
+{
+    switch ( method )
+    {
+    case NormalMethod::CoordinateDifference:
+    case NormalMethod::NodeFField:
+    {
+        // 段2/段4 で実装する。未実装の間は現行方式へフォールバックし、
+        // 取り違えに気付けるよう一度だけ警告する。
+        static bool warned = false;
+        if ( !warned )
+        {
+            warned = true;
+            std::cerr << "PBVR_NORMAL_METHOD: requested method is not implemented yet."
+                      << " Falling back to chainrule." << std::endl;
+        }
+        break;
+    }
+    case NormalMethod::ChainRule:
+    default:
+        break;
+    }
+
+    ( void )interp_F;
+    calculate_scalar_and_chain_rule_grad(
+        nparticles_count, nvariables, chain_context, interp,
+        local_coord_array, global_coord_array, cell_index,
+        scalar_result, grad_array_x, grad_array_y, grad_array_z, timing );
+}
+
 // 非構造版 calculate_scalar_and_chain_rule_grad との違いは前半のみ:
 //   CellBase(setLocalPointArray+CalcScalarGrad) を TrilinearInterpolator(attachPoint+scalar/gradient)
 //   に置換(局所=格子単位座標)。後半(chain rule)は完全に同一ロジック。
@@ -1115,6 +1204,9 @@ bool GenerateEnsembleParticles(
         return false;
     }
 
+    // 法線計算の方式。粒子生成の全体で1回だけ決め、以降のブロックで切り替えない。
+    const NormalMethod normal_method = resolve_normal_method();
+
     std::vector<std::vector<vismodule::CellBase<Type>*> > cell( max_threads );
     {
 #ifdef ENABLE_ENSEMBLE_TIMER
@@ -1378,7 +1470,8 @@ bool GenerateEnsembleParticles(
                                 scalar_timer.start();
                                 ChainRuleTimingBreakdown chain_rule_timing;
 #endif
-	                                calculate_scalar_and_chain_rule_grad(
+	                                calculate_scalar_and_normal(
+	                                    normal_method,
 	                                    p_id,
 	                                    nvariables,
 	                                    chain_context,
@@ -1386,6 +1479,7 @@ bool GenerateEnsembleParticles(
 	                                    local_coord_array,
 	                                    global_coord_array,
 	                                    cell_index,
+	                                    nullptr,   // interp_F: 方式C で使用
 	                                    scalar_array,
 	                                    grad_array_x,
 	                                    grad_array_y,
@@ -1465,7 +1559,8 @@ bool GenerateEnsembleParticles(
                         scalar_timer.start();
                         ChainRuleTimingBreakdown chain_rule_timing;
 #endif
-	                        calculate_scalar_and_chain_rule_grad(
+	                        calculate_scalar_and_normal(
+	                            normal_method,
 	                            p_id,
 	                            nvariables,
 	                            chain_context,
@@ -1473,6 +1568,7 @@ bool GenerateEnsembleParticles(
 	                            local_coord_array,
 	                            global_coord_array,
 	                            cell_index,
+	                            nullptr,   // interp_F: 方式C で使用
 	                            scalar_array,
 	                            grad_array_x,
 	                            grad_array_y,
@@ -1575,8 +1671,8 @@ bool GenerateEnsembleParticles(
                 bind_variables_scalars_opt( cell[thid], nvariables, m, fc );
                 cell[thid][0]->setLocalPointArray( m, fl );
                 cell[thid][0]->transformLocalToGlobalArray( m, fl, fg );
-                calculate_scalar_and_chain_rule_grad( m, nvariables, chain_context, cell[thid],
-                    fl, fg, fc, scalar_array, grad_array_x, grad_array_y, grad_array_z, 0 );
+                calculate_scalar_and_normal( normal_method, m, nvariables, chain_context, cell[thid],
+                    fl, fg, fc, nullptr, scalar_array, grad_array_x, grad_array_y, grad_array_z, 0 );
 #ifdef ENABLE_ENSEMBLE_TIMER
                 fission_timer.stop();  th_fission_scalar += fission_timer.sec();  fission_timer.start();
 #endif
@@ -1880,7 +1976,8 @@ bool GenerateEnsembleParticles(
                 scalar_timer.start();
                 ChainRuleTimingBreakdown chain_rule_timing;
 #endif
-	                calculate_scalar_and_chain_rule_grad(
+	                calculate_scalar_and_normal(
+	                    normal_method,
 	                    remain_BLK,
 	                    nvariables,
 	                    chain_context,
@@ -1888,6 +1985,7 @@ bool GenerateEnsembleParticles(
 	                    local_coord_array,
 	                    global_coord_array,
 	                    cell_index,
+	                    nullptr,   // interp_F: 方式C で使用
 	                    scalar_array,
 	                    grad_array_x,
 	                    grad_array_y,
