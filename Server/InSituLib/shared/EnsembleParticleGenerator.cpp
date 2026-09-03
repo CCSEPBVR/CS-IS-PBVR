@@ -352,7 +352,20 @@ struct ChainRuleTimingBreakdown
 // whole particle block via ReversePolishNotation::evalArraySIMD. Bit-identical to
 // the scalar path (same math / order); just vectorized across particles and with
 // far fewer eval() calls (per-block instead of per-particle).
-inline void chainRuleBlock(
+/*===========================================================================*/
+/**
+ *  @brief  変数値の並び(varr)を組み立てて、数式 F の値をブロック一括で求める。
+ *
+ *  chainRuleBlock() の前半を切り出したもの。方式A(座標差分法)は局所座標を
+ *  ずらしながらこの関数を繰り返し呼ぶ。
+ *
+ *  @param  xa,ya,za [in,out] global座標のスクラッチ。**呼び出し側で確保すること**。
+ *      varr[X..Z] としてポインタが ctx.rpn に登録され、
+ *      チェーンルールの再評価(evalArraySIMD)でも読み続けられるため、
+ *      この関数のローカル変数にすると関数を抜けた時点で宙に浮く。
+ */
+/*===========================================================================*/
+inline void eval_F_block(
     ChainRuleEvalContext& ctx,
     const int n,
     const int nvariables,
@@ -361,14 +374,12 @@ inline void chainRuleBlock(
     float (*grad_qy)[SIMD_BLK_SIZE],
     float (*grad_qz)[SIMD_BLK_SIZE],
     const vismodule::Vector3f* coord,
-    float* scalar_out,
-    float* grad_array_x,
-    float* grad_array_y,
-    float* grad_array_z,
+    float* xa,
+    float* ya,
+    float* za,
+    float* F_out,
     ChainRuleTimingBreakdown* timing )
 {
-    const float FD = 1.0e-5f;   // == ChainRuleNormal FiniteDifferenceScale
-    alignas(64) float xa[SIMD_BLK_SIZE], ya[SIMD_BLK_SIZE], za[SIMD_BLK_SIZE];
     for ( int p = 0; p < n; ++p ) { xa[p] = coord[p].x(); ya[p] = coord[p].y(); za[p] = coord[p].z(); }
 
     float* varr[NUMVAR];
@@ -386,10 +397,33 @@ inline void chainRuleBlock(
 #ifdef ENABLE_ENSEMBLE_TIMER
     vismodule::Timer t_eval; t_eval.start();
 #endif
-    ctx.rpn.evalArraySIMD( scalar_out, n );          // F (unperturbed)
+    ctx.rpn.evalArraySIMD( F_out, n );
 #ifdef ENABLE_ENSEMBLE_TIMER
     t_eval.stop(); if ( timing ) timing->tf_scalar_eval += t_eval.sec();
 #endif
+}
+
+inline void chainRuleBlock(
+    ChainRuleEvalContext& ctx,
+    const int n,
+    const int nvariables,
+    float (*scalar_array)[SIMD_BLK_SIZE],
+    float (*grad_qx)[SIMD_BLK_SIZE],
+    float (*grad_qy)[SIMD_BLK_SIZE],
+    float (*grad_qz)[SIMD_BLK_SIZE],
+    const vismodule::Vector3f* coord,
+    float* scalar_out,
+    float* grad_array_x,
+    float* grad_array_y,
+    float* grad_array_z,
+    ChainRuleTimingBreakdown* timing )
+{
+    const float FD = 1.0e-5f;   // == ChainRuleNormal FiniteDifferenceScale
+    // xa/ya/za は varr 経由で ctx.rpn に登録され、以降のチェーンルール再評価でも
+    // 参照される。したがってこの関数のスコープで保持し、eval_F_block へ渡す。
+    alignas(64) float xa[SIMD_BLK_SIZE], ya[SIMD_BLK_SIZE], za[SIMD_BLK_SIZE];
+    eval_F_block( ctx, n, nvariables, scalar_array, grad_qx, grad_qy, grad_qz,
+                  coord, xa, ya, za, scalar_out, timing );   // F (unperturbed)
 
     for ( int p = 0; p < n; ++p ) { grad_array_x[p] = 0.0f; grad_array_y[p] = 0.0f; grad_array_z[p] = 0.0f; }
 
@@ -429,25 +463,25 @@ inline void chainRuleBlock(
 #endif
 }
 
-void calculate_scalar_and_chain_rule_grad(
+/*===========================================================================*/
+/**
+ *  @brief  指定した局所座標で、各変数の値 q と勾配 ∇q をブロック一括で求める。
+ *
+ *  calculate_scalar_and_chain_rule_grad() の前半を切り出したもの。
+ *  方式A(座標差分法)は局所座標をずらしながらこの関数を繰り返し呼ぶ。
+ */
+/*===========================================================================*/
+static void gather_variable_values(
     const int nparticles_count,
     const int nvariables,
-    ChainRuleEvalContext& chain_context,
     const std::vector< vismodule::CellBase<Type>* >& interp,
     const vismodule::Vector3f* local_coord_array,
-    const vismodule::Vector3f* global_coord_array,
-    const vismodule::UInt32* cell_index,
-    float* scalar_result,
-    float* grad_array_x,
-    float* grad_array_y,
-    float* grad_array_z,
+    float (*scalar_array)[SIMD_BLK_SIZE],
+    float (*grad_qx)[SIMD_BLK_SIZE],
+    float (*grad_qy)[SIMD_BLK_SIZE],
+    float (*grad_qz)[SIMD_BLK_SIZE],
     ChainRuleTimingBreakdown* timing )
 {
-    float scalar_array[nvariables][SIMD_BLK_SIZE];
-    float grad_qx[nvariables][SIMD_BLK_SIZE];
-    float grad_qy[nvariables][SIMD_BLK_SIZE];
-    float grad_qz[nvariables][SIMD_BLK_SIZE];
-
 #ifdef ENABLE_ENSEMBLE_TIMER
     vismodule::Timer calc_scalar_grad_timer;
     calc_scalar_grad_timer.start();
@@ -490,6 +524,29 @@ void calculate_scalar_and_chain_rule_grad(
     calc_scalar_grad_timer.stop();
     if ( timing ) timing->calc_scalar_grad += calc_scalar_grad_timer.sec();
 #endif
+}
+
+void calculate_scalar_and_chain_rule_grad(
+    const int nparticles_count,
+    const int nvariables,
+    ChainRuleEvalContext& chain_context,
+    const std::vector< vismodule::CellBase<Type>* >& interp,
+    const vismodule::Vector3f* local_coord_array,
+    const vismodule::Vector3f* global_coord_array,
+    const vismodule::UInt32* cell_index,
+    float* scalar_result,
+    float* grad_array_x,
+    float* grad_array_y,
+    float* grad_array_z,
+    ChainRuleTimingBreakdown* timing )
+{
+    float scalar_array[nvariables][SIMD_BLK_SIZE];
+    float grad_qx[nvariables][SIMD_BLK_SIZE];
+    float grad_qy[nvariables][SIMD_BLK_SIZE];
+    float grad_qz[nvariables][SIMD_BLK_SIZE];
+
+    gather_variable_values( nparticles_count, nvariables, interp, local_coord_array,
+                            scalar_array, grad_qx, grad_qy, grad_qz, timing );
 
     if ( !chain_context.valid )
     {
