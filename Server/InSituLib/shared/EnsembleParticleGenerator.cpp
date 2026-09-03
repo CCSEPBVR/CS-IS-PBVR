@@ -699,6 +699,140 @@ void calculate_scalar_and_chain_rule_grad(
 // 構造格子版の値・勾配取得 + chain rule 法線。
 /*===========================================================================*/
 /**
+ *  @brief  方式A（座標差分法）: 局所座標で ±ε ずらして数式 F を直接差分する。
+ *
+ *  チェーンルールを使わないので、数式が微分量(dq)だけで構成されていても動作する。
+ *  現行方式が破綻する「活性変数が空になる」段階がそもそも存在しない。
+ *
+ *  ε はセルの外へ出てもよい。形状関数は局所座標の多項式なので、はみ出しても
+ *  同じ多項式を外挿するだけであり、「そのセルの補間関数を微分する」という目的に
+ *  対しては正しい値が得られる。したがって隣接セルの探索は不要である。
+ *
+ *  勾配は局所座標の刻みで割ったままとし、J^-T による物理座標への変換は行わない
+ *  （軸ごとの符号だけは補正する。理由は後述）。
+ *  等方な直方体セルでは J = diag(h,h,h) なので grad_x F = (1/h) grad_xi F となり、
+ *  法線 n = -gradF/|gradF| の正規化で 1/h が相殺する。
+ *  向きが歪むのは dx != dy != dz の異方セルや、六面体でないセルの場合である。
+ *
+ *  [局所座標軸の向きの補正]
+ *  局所座標の軸が物理座標の軸と逆を向くことがある。局所座標での節点の並びは
+ *  形状関数の規約で決まる一方、入力メッシュがどの順で節点を並べるかは
+ *  シミュレーション側の都合で決まるため、両者が一致する保証がないからである。
+ *  実例として HexahedralCell は節点0〜3を zeta=1(上面) と定義しているが、
+ *  ens_Hydrogen_unstruct と CityLBM はどちらも節点0〜3に下面を割り当てている
+ *  （ens_Hydrogen_unstruct_quadhexa は逆に上面を先に並べており整合している）。
+ *  この並びでは J = diag(h,h,-h) となり、補正しないと法線の z 成分が反転する。
+ *  チェーンルール方式は J^-T を通すため、この違いの影響を受けない。
+ *
+ *  補正は ±eps 点の物理座標の差の符号から求める。この座標は数式が X,Y,Z を
+ *  参照する場合に備えて既に算出しているので、追加コストは1粒子あたり数演算で済む。
+ *  節点の並びを決め打ちしないため、上記どちらの並びでも正しく動く。
+ *  ただしこれは軸の「反転」だけを直すものであり、局所軸が別の物理軸へ
+ *  入れ替わるような並びや、異方・非直交セルの歪みには対応しない。
+ *  厳密を期す場合は J^-T を通すこと（computeScaledInvJacobianArray が使える）。
+ *
+ *  制約: 一次四面体では微分量がセル内で定数のため、微分量だけの数式に対して
+ *  差分が厳密にゼロになる。セル種による分岐は行わない（通常PBVR と同じ扱い）。
+ */
+/*===========================================================================*/
+void calculate_scalar_and_grad_coorddiff(
+    const int nparticles_count,
+    const int nvariables,
+    ChainRuleEvalContext& chain_context,
+    const std::vector< vismodule::CellBase<Type>* >& interp,
+    const vismodule::Vector3f* local_coord_array,
+    const vismodule::Vector3f* global_coord_array,
+    float* scalar_result,
+    float* grad_array_x,
+    float* grad_array_y,
+    float* grad_array_z,
+    ChainRuleTimingBreakdown* timing )
+{
+    float scalar_array[nvariables][SIMD_BLK_SIZE];
+    float grad_qx[nvariables][SIMD_BLK_SIZE];
+    float grad_qy[nvariables][SIMD_BLK_SIZE];
+    float grad_qz[nvariables][SIMD_BLK_SIZE];
+    // xa/ya/za は eval_F_block が varr[X..Z] として ctx.rpn に登録する。
+    // この関数のスコープで保持する(理由は eval_F_block のコメント参照)。
+    alignas(64) float xa[SIMD_BLK_SIZE], ya[SIMD_BLK_SIZE], za[SIMD_BLK_SIZE];
+
+    // --- 中心点: 描画に使う F の値を求める ---
+    gather_variable_values( nparticles_count, nvariables, interp, local_coord_array,
+                            scalar_array, grad_qx, grad_qy, grad_qz, timing );
+
+    if ( !chain_context.valid )
+    {
+        for ( int p = 0; p < nparticles_count; ++p )
+        {
+            scalar_result[p] = 0.0f;
+            grad_array_x[p] = 0.0f;
+            grad_array_y[p] = 0.0f;
+            grad_array_z[p] = 0.0f;
+        }
+        return;
+    }
+
+    eval_F_block( chain_context, nparticles_count, nvariables,
+                  scalar_array, grad_qx, grad_qy, grad_qz,
+                  global_coord_array, xa, ya, za, scalar_result, timing );
+
+    // --- 3方向 x +- の6点で中央差分 ---
+    const float EPS = 0.1f;                      // 局所座標。通常PBVR と同一
+    const float INV = 1.0f / ( 2.0f * EPS );
+    vismodule::Vector3f off[SIMD_BLK_SIZE];
+    vismodule::Vector3f goff[SIMD_BLK_SIZE];
+    alignas(64) float Fp[SIMD_BLK_SIZE], Fm[SIMD_BLK_SIZE];
+    alignas(64) float gp[SIMD_BLK_SIZE];   // +eps 点の物理座標(第k成分)。軸の向き判定用
+    float* out[3] = { grad_array_x, grad_array_y, grad_array_z };
+
+    for ( int k = 0; k < 3; ++k )
+    {
+        for ( int s = 0; s < 2; ++s )
+        {
+            const float d = ( s == 0 ) ? EPS : -EPS;
+            for ( int p = 0; p < nparticles_count; ++p )
+            {
+                off[p] = local_coord_array[p];
+                off[p][k] += d;
+            }
+            gather_variable_values( nparticles_count, nvariables, interp, off,
+                                    scalar_array, grad_qx, grad_qy, grad_qz, timing );
+            // 差分点の global 座標。数式が X,Y,Z を参照する場合に備えて毎回求める。
+            // transformLocalToGlobalArray は setLocalPointArray が設定した内挿関数を
+            // 使うため、gather_variable_values の後に呼ぶ必要がある。
+            interp[0]->transformLocalToGlobalArray( nparticles_count, off, goff );
+            if ( s == 0 )
+            {
+                // 軸の向き判定用に +eps 側だけ控える。goff は -eps 側で上書きされる。
+                for ( int p = 0; p < nparticles_count; ++p ) { gp[p] = goff[p][k]; }
+            }
+            eval_F_block( chain_context, nparticles_count, nvariables,
+                          scalar_array, grad_qx, grad_qy, grad_qz,
+                          goff, xa, ya, za, ( s == 0 ) ? Fp : Fm, timing );
+        }
+        // goff は -eps 点のもの。+eps 点との物理変位の符号が局所軸 k の向きを表す。
+        for ( int p = 0; p < nparticles_count; ++p )
+        {
+            const float sgn = ( gp[p] >= goff[p][k] ) ? 1.0f : -1.0f;
+            out[k][p] = ( Fp[p] - Fm[p] ) * INV * sgn;
+        }
+    }
+
+    for ( int p = 0; p < nparticles_count; ++p )
+    {
+        if ( !( std::isfinite( grad_array_x[p] ) &&
+                std::isfinite( grad_array_y[p] ) &&
+                std::isfinite( grad_array_z[p] ) ) )
+        {
+            grad_array_x[p] = 0.0f;
+            grad_array_y[p] = 0.0f;
+            grad_array_z[p] = 0.0f;
+        }
+    }
+}
+
+/*===========================================================================*/
+/**
  *  @brief  法線計算の振り分け。方式によらず「F の値」と「∇F」を返す。
  *
  *  @param  method   [in] 計算方式
@@ -724,15 +858,23 @@ void calculate_scalar_and_normal(
     switch ( method )
     {
     case NormalMethod::CoordinateDifference:
+        ( void )interp_F;
+        ( void )cell_index;
+        calculate_scalar_and_grad_coorddiff(
+            nparticles_count, nvariables, chain_context, interp,
+            local_coord_array, global_coord_array,
+            scalar_result, grad_array_x, grad_array_y, grad_array_z, timing );
+        return;
+
     case NormalMethod::NodeFField:
     {
-        // 段2/段4 で実装する。未実装の間は現行方式へフォールバックし、
+        // 段4 で実装する。未実装の間は現行方式へフォールバックし、
         // 取り違えに気付けるよう一度だけ警告する。
         static bool warned = false;
         if ( !warned )
         {
             warned = true;
-            std::cerr << "PBVR_NORMAL_METHOD: requested method is not implemented yet."
+            std::cerr << "PBVR_NORMAL_METHOD=nodefield is not implemented yet."
                       << " Falling back to chainrule." << std::endl;
         }
         break;
