@@ -519,6 +519,7 @@ bool ensemble_generate_particles(
     vismodule::EnsembleTimerCollector ensemble_timer( time_step, timer_max_threads );
 #endif
     // 構造格子版の計算本体
+//    particle_property.m_log_scale_statistics = true; // スタブデータ(検証用。default.json連携時に有効化 or 削除)
     bool ok = vismodule::GenerateEnsembleParticlesStruct(
         num_ensemble,
         particle_property,

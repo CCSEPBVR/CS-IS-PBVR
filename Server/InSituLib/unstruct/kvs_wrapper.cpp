@@ -671,6 +671,7 @@ bool ensemble_generate_particles(
     {
     EnsembleParticleArrays average, variance, coefficient;
     EnsembleStatisticRange average_range, variance_range, co_variation_range;
+//    particle_property.m_log_scale_statistics = true; // スタブデータ(検証用。default.json連携時に有効化 or 削除)
     bool ok = vismodule::GenerateEnsembleParticles(
         num_ensemble, particle_property, values, nvariables,
         coordinates, ncoords, connections, ncells, celltype,
