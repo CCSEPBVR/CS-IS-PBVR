@@ -875,11 +875,206 @@ static vismodule::CellBase<Type>* create_cell_for_celltype(
 
 /*===========================================================================*/
 /**
+ *  @brief  節点の局所座標表(CellBase::localNodeCoord)の自己検査。
+ *
+ *  節点 i の局所座標で局所→物理変換をすると、その節点の座標そのものが出るはずである
+ *  （形状関数が N_i(xi_j) = delta_ij を満たすため）。表の写し間違いはここで捕まる。
+ *  代表としてセル0で全節点を確認する。許容誤差はセルの代表長に対する相対で見る。
+ */
+/*===========================================================================*/
+static bool verify_local_node_coords(
+    vismodule::CellBase<Type>* cell,
+    const float* coordinates,
+    const unsigned int* connections,
+    const int nnodes )
+{
+    if ( cell == NULL || coordinates == NULL || connections == NULL ) return false;
+    if ( nnodes <= 0 || nnodes > SIMD_BLK_SIZE ) return false;
+
+    vismodule::UInt32 cid[SIMD_BLK_SIZE];
+    vismodule::Vector3f lc[SIMD_BLK_SIZE];
+    vismodule::Vector3f gc[SIMD_BLK_SIZE];
+    for ( int i = 0; i < nnodes; ++i )
+    {
+        cid[i] = 0;
+        if ( !cell->localNodeCoord( i, &lc[i] ) )
+        {
+            std::cerr << "localNodeCoord: セル種が節点局所座標を提供していない (node "
+                      << i << ")" << std::endl;
+            return false;
+        }
+    }
+    cell->bindCellArray( nnodes, cid );
+    cell->setLocalPointArray( nnodes, lc );
+    cell->transformLocalToGlobalArray( nnodes, lc, gc );
+
+    // セルの代表長（節点0からの最大距離）。許容誤差の基準にする。
+    float extent = 0.0f;
+    const unsigned int n0 = connections[0];
+    for ( int i = 1; i < nnodes; ++i )
+    {
+        const unsigned int ni = connections[i];
+        const float dx = coordinates[3 * ni]     - coordinates[3 * n0];
+        const float dy = coordinates[3 * ni + 1] - coordinates[3 * n0 + 1];
+        const float dz = coordinates[3 * ni + 2] - coordinates[3 * n0 + 2];
+        const float d = std::sqrt( dx * dx + dy * dy + dz * dz );
+        if ( d > extent ) extent = d;
+    }
+    if ( extent <= 0.0f ) extent = 1.0f;
+    const float tol = 1.0e-4f * extent;
+
+    bool ok = true;
+    for ( int i = 0; i < nnodes; ++i )
+    {
+        const unsigned int ni = connections[i];
+        const float ex = coordinates[3 * ni];
+        const float ey = coordinates[3 * ni + 1];
+        const float ez = coordinates[3 * ni + 2];
+        const float dx = gc[i].x() - ex;
+        const float dy = gc[i].y() - ey;
+        const float dz = gc[i].z() - ez;
+        const float err = std::sqrt( dx * dx + dy * dy + dz * dz );
+        if ( !( err <= tol ) )
+        {
+            ok = false;
+            std::cerr << "localNodeCoord 自己検査 NG: node " << i
+                      << " local(" << lc[i].x() << "," << lc[i].y() << "," << lc[i].z() << ")"
+                      << " -> global(" << gc[i].x() << "," << gc[i].y() << "," << gc[i].z() << ")"
+                      << " expected(" << ex << "," << ey << "," << ez << ")"
+                      << " err=" << err << " tol=" << tol << std::endl;
+        }
+    }
+    return ok;
+}
+
+/*===========================================================================*/
+/**
+ *  @brief  節点の微分量 grad q を復元する（方式C の前段、毎ステップ1回）。
+ *
+ *  各セルの各節点位置で grad q を評価し、セル体積を重みとして節点に散布して平均する
+ *  （面積重み付き平均、いわゆる AGS）。節点は複数のセルに共有されるため、
+ *  そこでの微分量は本来「多価」であり、この平均で一意な代表値を決める。
+ *
+ *  節点の局所座標は CellBase::localNodeCoord() から取る。使う前に
+ *  verify_local_node_coords() で表を検査する。
+ *
+ *  コストはセル数 x 節点数 x 変数の数の勾配評価。粒子数には依らないので、
+ *  粒子数がセル数より十分多い場合に方式C が有利になる。
+ *
+ *  制約: MPI 領域境界の節点は自ランクのセルからの寄与しか集まらないため、
+ *  そこだけ片側平均になる。境界の合算は未実装（法線＝陰影付け用途のため許容する）。
+ *
+ *  @param  node_dq [out] 添字は (v*3+c)*ncoords + node。c は 0=x,1=y,2=z。
+ */
+/*===========================================================================*/
+// 定義は後方にあるので前方宣言する。
+static inline void bind_variables_scalars_opt(
+    std::vector< vismodule::CellBase<Type>* >& cells,
+    const int nvariables, const int n, const vismodule::UInt32* cell_index );
+
+static bool build_node_dq_field(
+    std::vector< std::vector<vismodule::CellBase<Type>*> >& cell,
+    const int nvariables,
+    const float* coordinates, const int ncoords,
+    const unsigned int* connections, const int ncells,
+    std::vector<float>& node_dq )
+{
+    if ( cell.empty() || cell[0].empty() || nvariables <= 0 ) return false;
+    if ( coordinates == NULL || connections == NULL || ncoords <= 0 || ncells <= 0 ) return false;
+
+    const int nnodes = static_cast<int>( cell[0][0]->numberOfNodes() );
+    if ( !verify_local_node_coords( cell[0][0], coordinates, connections, nnodes ) ) return false;
+
+    vismodule::Vector3f node_local[SIMD_BLK_SIZE];
+    for ( int k = 0; k < nnodes; ++k )
+    {
+        if ( !cell[0][0]->localNodeCoord( k, &node_local[k] ) ) return false;
+    }
+
+    node_dq.assign( static_cast<size_t>( nvariables ) * 3 * ncoords, 0.0f );
+    std::vector<float> weight( static_cast<size_t>( ncoords ), 0.0f );
+
+#pragma omp parallel
+    {
+#if _OPENMP
+        const int thid = omp_get_thread_num();
+#else
+        const int thid = 0;
+#endif
+        float sa[nvariables][SIMD_BLK_SIZE];
+        float gx[nvariables][SIMD_BLK_SIZE];
+        float gy[nvariables][SIMD_BLK_SIZE];
+        float gz[nvariables][SIMD_BLK_SIZE];
+        vismodule::UInt32 cid[SIMD_BLK_SIZE];
+        vismodule::Vector3f lc[SIMD_BLK_SIZE];
+        vismodule::Real32 vol[SIMD_BLK_SIZE];
+
+#pragma omp for schedule( static )
+        for ( int base = 0; base < ncells; base += SIMD_BLK_SIZE )
+        {
+            const int m = ( ncells - base > SIMD_BLK_SIZE ) ? SIMD_BLK_SIZE : ncells - base;
+            for ( int p = 0; p < m; ++p ) cid[p] = static_cast<vismodule::UInt32>( base + p );
+
+            bind_variables_scalars_opt( cell[thid], nvariables, m, cid );
+            cell[thid][0]->volumeArray( m, cid, vol );
+
+            for ( int k = 0; k < nnodes; ++k )
+            {
+                for ( int p = 0; p < m; ++p ) lc[p] = node_local[k];
+                gather_variable_values( m, nvariables, cell[thid], lc, sa, gx, gy, gz, 0 );
+
+                for ( int p = 0; p < m; ++p )
+                {
+                    const size_t node =
+                        connections[ static_cast<size_t>( nnodes ) * ( base + p ) + k ];
+                    const float w = ( vol[p] > 0.0f && std::isfinite( vol[p] ) ) ? vol[p] : 0.0f;
+                    if ( w <= 0.0f ) continue;
+#pragma omp atomic
+                    weight[node] += w;
+                    for ( int v = 0; v < nvariables; ++v )
+                    {
+                        const size_t bx = ( static_cast<size_t>( v ) * 3 + 0 ) * ncoords + node;
+                        const size_t by = ( static_cast<size_t>( v ) * 3 + 1 ) * ncoords + node;
+                        const size_t bz = ( static_cast<size_t>( v ) * 3 + 2 ) * ncoords + node;
+                        const float ax = std::isfinite( gx[v][p] ) ? gx[v][p] : 0.0f;
+                        const float ay = std::isfinite( gy[v][p] ) ? gy[v][p] : 0.0f;
+                        const float az = std::isfinite( gz[v][p] ) ? gz[v][p] : 0.0f;
+#pragma omp atomic
+                        node_dq[bx] += w * ax;
+#pragma omp atomic
+                        node_dq[by] += w * ay;
+#pragma omp atomic
+                        node_dq[bz] += w * az;
+                    }
+                }
+            }
+        }
+    }
+
+    // 重みで割って平均にする。どのセルからも寄与が無かった節点は 0 のまま。
+#pragma omp parallel for schedule( static )
+    for ( int n = 0; n < ncoords; ++n )
+    {
+        const float w = weight[n];
+        if ( w <= 0.0f ) continue;
+        const float inv = 1.0f / w;
+        for ( int v = 0; v < nvariables; ++v )
+        {
+            node_dq[ ( static_cast<size_t>( v ) * 3 + 0 ) * ncoords + n ] *= inv;
+            node_dq[ ( static_cast<size_t>( v ) * 3 + 1 ) * ncoords + n ] *= inv;
+            node_dq[ ( static_cast<size_t>( v ) * 3 + 2 ) * ncoords + n ] *= inv;
+        }
+    }
+    return true;
+}
+
+/*===========================================================================*/
+/**
  *  @brief  節点で数式 F を評価して節点F場を作る（方式C の前段、毎ステップ1回）。
  *
  *  節点の q はデータそのものなので補間は要らない。X,Y,Z は節点座標を渡す。
- *  微分量(dq)は 0 のままにするため、dq を含む数式には使えない
- *  （呼び出す前に expression_uses_dq() で弾くこと）。dq の節点復元は段5 で扱う。
+ *  微分量(dq)は node_dq から取る。NULL を渡すと 0 として扱うので、
+ *  dq を含まない数式では復元を省略できる（その方が安い）。
  *
  *  評価は粒子側と同じ eval_F_block() を使うので、同じ q に対して同じ F が出る。
  *  節点は互いに独立なのでスレッドで分割できる。
@@ -892,6 +1087,7 @@ static bool build_node_f_field(
     const ::EquationToken& equation_token,
     Type** values, const int nvariables,
     const float* coordinates, const int ncoords,
+    const std::vector<float>* node_dq,
     std::vector<Type>& node_F )
 {
     if ( values == NULL || coordinates == NULL || nvariables <= 0 || ncoords <= 0 ) return false;
@@ -918,7 +1114,7 @@ static bool build_node_f_field(
             {
                 for ( int p = 0; p < SIMD_BLK_SIZE; ++p )
                 {
-                    gx[v][p] = 0.0f; gy[v][p] = 0.0f; gz[v][p] = 0.0f;   // dq は 0 固定
+                    gx[v][p] = 0.0f; gy[v][p] = 0.0f; gz[v][p] = 0.0f;   // node_dq が無い場合
                 }
             }
             vismodule::Vector3f coord[SIMD_BLK_SIZE];
@@ -939,6 +1135,15 @@ static bool build_node_f_field(
                     for ( int v = 0; v < nvariables; ++v )
                     {
                         sa[v][p] = static_cast<float>( values[v][n] );
+                    }
+                    if ( node_dq != NULL )
+                    {
+                        for ( int v = 0; v < nvariables; ++v )
+                        {
+                            gx[v][p] = ( *node_dq )[ ( static_cast<size_t>( v ) * 3 + 0 ) * ncoords + n ];
+                            gy[v][p] = ( *node_dq )[ ( static_cast<size_t>( v ) * 3 + 1 ) * ncoords + n ];
+                            gz[v][p] = ( *node_dq )[ ( static_cast<size_t>( v ) * 3 + 2 ) * ncoords + n ];
+                        }
                     }
                 }
                 eval_F_block( ctx, m, nvariables, sa, gx, gy, gz, coord, xa, ya, za, Fb, 0 );
@@ -1554,17 +1759,29 @@ bool GenerateEnsembleParticles(
     std::vector<vismodule::CellBase<Type>*> cell_F( max_threads, NULL );
     if ( normal_method == NormalMethod::NodeFField )
     {
-        if ( expression_uses_dq( equation_token ) )
+        // dq を含む数式のときだけ節点微分量を復元する（復元はセル数に比例して重い）。
+        const bool need_dq = expression_uses_dq( equation_token );
+        std::vector<float> node_dq;
+        bool built = true;
+        if ( need_dq && !build_node_dq_field( cell, nvariables, coordinates, ncoords,
+                                              connections, ncells, node_dq ) )
         {
-            std::cerr << "PBVR_NORMAL_METHOD=nodefield: 数式が微分量(dq)を含むため"
-                      << "この版では扱えない。chainrule へ退避する。" << std::endl;
-            normal_method = NormalMethod::ChainRule;
+            std::cerr << "PBVR_NORMAL_METHOD=nodefield: 節点微分量の復元に失敗した。"
+                      << "chainrule へ退避する。" << std::endl;
+            built = false;
         }
-        else if ( !build_node_f_field( equation_token, values, nvariables,
-                                       coordinates, ncoords, node_F ) )
+        if ( built && !build_node_f_field( equation_token, values, nvariables,
+                                           coordinates, ncoords,
+                                           need_dq ? &node_dq : NULL, node_F ) )
         {
             std::cerr << "PBVR_NORMAL_METHOD=nodefield: 節点F場の構築に失敗した。"
                       << "chainrule へ退避する。" << std::endl;
+            built = false;
+        }
+        // 節点F場が出来た時点で微分量は不要。ピークメモリを抑えるため解放する。
+        std::vector<float>().swap( node_dq );
+        if ( !built )
+        {
             normal_method = NormalMethod::ChainRule;
         }
         else

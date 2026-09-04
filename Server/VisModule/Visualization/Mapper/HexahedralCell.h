@@ -105,6 +105,27 @@ public:
                       vismodule::Real32* volumes );
 
     void setLocalGravityPoint() const;
+
+    /*  節点 i の局所座標（新規追加）。interpolationFunctions() から導いた。
+     *  節点0-3が zeta=1(上面)、4-7が zeta=0(下面)
+     */
+    bool localNodeCoord( const int i, vismodule::Vector3f* coord ) const
+    {
+        static const float table[8][3] =
+        {
+            { 0, 0, 1 },
+            { 1, 0, 1 },
+            { 1, 1, 1 },
+            { 0, 1, 1 },
+            { 0, 0, 0 },
+            { 1, 0, 0 },
+            { 1, 1, 0 },
+            { 0, 1, 0 }
+        };
+        if ( i < 0 || i >= 8 || coord == NULL ) return false;
+        *coord = vismodule::Vector3f( table[i][0], table[i][1], table[i][2] );
+        return true;
+    }
 };
 
 /*===========================================================================*/

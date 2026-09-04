@@ -163,6 +163,12 @@ public:
 
     virtual void setLocalGravityPoint() const = 0;
 
+    // 節点 i の局所座標を返す（新規追加。既存関数は変更していない）。
+    // 形状関数が N_i(xi_j) = delta_ij を満たす点であり、各セルクラスの
+    // interpolationFunctions() から一意に決まる。節点で微分量を評価する用途に使う。
+    // 3次元セルだけが override する。提供しないセル種は false を返す。
+    virtual bool localNodeCoord( const int, vismodule::Vector3f* ) const { return false; }
+
     virtual void bindCellArray( const int loop_cnt, const vismodule::UInt32 *cell_index );
     void bindScalarsArray( const int loop_cnt, const vismodule::UInt32 *cell_index );
     virtual void setLocalPointArray( const int loop_cnt, const vismodule::Vector3f *local_array );

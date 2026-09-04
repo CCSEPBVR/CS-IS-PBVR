@@ -94,6 +94,23 @@ public:
     const vismodule::Vector3f transformLocalToGlobal( const vismodule::Vector3f& point ) const;
 
     void setLocalGravityPoint() const;
+
+    /*  節点 i の局所座標（新規追加）。interpolationFunctions() から導いた。
+     *  N = x, y, z, 1-x-y-z
+     */
+    bool localNodeCoord( const int i, vismodule::Vector3f* coord ) const
+    {
+        static const float table[4][3] =
+        {
+            { 1, 0, 0 },
+            { 0, 1, 0 },
+            { 0, 0, 1 },
+            { 0, 0, 0 }
+        };
+        if ( i < 0 || i >= 4 || coord == NULL ) return false;
+        *coord = vismodule::Vector3f( table[i][0], table[i][1], table[i][2] );
+        return true;
+    }
 };
 
 /*===========================================================================*/
