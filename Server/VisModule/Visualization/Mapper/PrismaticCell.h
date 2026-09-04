@@ -387,6 +387,10 @@ void PrismaticCell<T>::interpolationFunctions_array( const vismodule::Vector3f* 
 /**
  *  @brief  Calculates the differential functions in the local coordinate.
  *  @return point [in] point in the local coordinate
+ *
+ *  出力はスカラー版 differentialFunctions() と同じ [dNdx | dNdy | dNdz] の並びで、
+ *  添字は 0..5 が dNdx、6..11 が dNdy、12..17 が dNdz である
+ *  (m_differential_functions_array は nnodes*dimension = 18 本確保されている)。
  */
 /*==========================================================================*/
 template <typename T>
@@ -428,26 +432,29 @@ void PrismaticCell<T>::differentialFunctions_array(const vismodule::Vector3f* lo
 //    BaseClass::m_differential_functions_array[i][4] = -x;
 //    BaseClass::m_differential_functions_array[i][5] = -y;
 
-    BaseClass::m_differential_functions_array[0][i] = -z;
-    BaseClass::m_differential_functions_array[1][i] =  z;
-    BaseClass::m_differential_functions_array[2][i] =  0;
-    BaseClass::m_differential_functions_array[3][i] = -( 1 - z );
-    BaseClass::m_differential_functions_array[4][i] =  ( 1 - z );
-    BaseClass::m_differential_functions_array[5][i] =  0;
+    // dNdx
+    BaseClass::m_differential_functions_array[ 0][i] = -z;
+    BaseClass::m_differential_functions_array[ 1][i] =  z;
+    BaseClass::m_differential_functions_array[ 2][i] =  0;
+    BaseClass::m_differential_functions_array[ 3][i] = -( 1 - z );
+    BaseClass::m_differential_functions_array[ 4][i] =  ( 1 - z );
+    BaseClass::m_differential_functions_array[ 5][i] =  0;
                                                    
-    BaseClass::m_differential_functions_array[0][i] = -z;
-    BaseClass::m_differential_functions_array[1][i] =  0;
-    BaseClass::m_differential_functions_array[2][i] =  z;
-    BaseClass::m_differential_functions_array[3][i] = -( 1 - z );
-    BaseClass::m_differential_functions_array[4][i] =  0;
-    BaseClass::m_differential_functions_array[5][i] =  ( 1 - z );
+    // dNdy
+    BaseClass::m_differential_functions_array[ 6][i] = -z;
+    BaseClass::m_differential_functions_array[ 7][i] =  0;
+    BaseClass::m_differential_functions_array[ 8][i] =  z;
+    BaseClass::m_differential_functions_array[ 9][i] = -( 1 - z );
+    BaseClass::m_differential_functions_array[10][i] =  0;
+    BaseClass::m_differential_functions_array[11][i] =  ( 1 - z );
                                                    
-    BaseClass::m_differential_functions_array[0][i] =  ( 1 - x - y );
-    BaseClass::m_differential_functions_array[1][i] =  x;
-    BaseClass::m_differential_functions_array[2][i] =  y;
-    BaseClass::m_differential_functions_array[3][i] = -( 1 - x - y );
-    BaseClass::m_differential_functions_array[4][i] = -x;
-    BaseClass::m_differential_functions_array[5][i] = -y;
+    // dNdz
+    BaseClass::m_differential_functions_array[12][i] =  ( 1 - x - y );
+    BaseClass::m_differential_functions_array[13][i] =  x;
+    BaseClass::m_differential_functions_array[14][i] =  y;
+    BaseClass::m_differential_functions_array[15][i] = -( 1 - x - y );
+    BaseClass::m_differential_functions_array[16][i] = -x;
+    BaseClass::m_differential_functions_array[17][i] = -y;
     }
 
 //    return BaseClass::m_differential_functions_array;
