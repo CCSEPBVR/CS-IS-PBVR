@@ -233,6 +233,10 @@ public:
 
     const vismodule::Matrix33d JacobiMatrix_d() const;
 
+    // 局所座標での勾配を物理座標系へ変換する（新規追加。既存関数は変更していない）
+    void applyInvJacobianToGradArray( const int loop_cnt,
+            float* grad_array_x, float* grad_array_y, float* grad_array_z ) const;
+
     const vismodule::Real32 randomNumber() const;
 
     const double* output_time();
@@ -1110,6 +1114,113 @@ inline const vismodule::Matrix33d CellBase<T>::JacobiMatrix_d() const
         dZdz += dNdz[i] * V[i].z();
     }
     return vismodule::Matrix33d( dXdx, dYdx, dZdx, dXdy, dYdy, dZdy, dXdz, dYdz, dZdz );
+}
+
+/*===========================================================================*/
+/**
+ *  @brief  局所座標での勾配を物理座標系へ変換する（ブロック一括版）。
+ *
+ *  grad_ary() が内部で行っている J^-1 の適用だけを切り出したもの。grad_ary() は
+ *  「節点値から局所勾配を作る」ところまで含むが、こちらは局所勾配を引数で受け取る
+ *  ので、座標差分など別の方法で求めた勾配にも使える。
+ *  節点数に依らない一般形で書いてあり、全セル種で動く。
+ *
+ *  数値の扱い（double 化・scale_factor による条件数改善・det≈0 のゼロ化・
+ *  余因子展開の順序）は grad_ary() に揃えてあるので、同じ局所勾配を渡せば
+ *  チェーンルール経路と同じ結果になる。scale_factor は J に掛けた分が J^-1 で
+ *  相殺するだけの条件数調整であり、値そのものは変えない。
+ *
+ *  前提: bindCellArray() で m_vertices_array が、setLocalPointArray() で
+ *        m_differential_functions_array が、対象の局所座標に対して設定済みであること。
+ *
+ *  @param  loop_cnt     [in]     粒子数
+ *  @param  grad_array_x [in,out] 入力は d/dxi、出力は d/dX（y,z も同様）
+ */
+/*===========================================================================*/
+template <typename T>
+inline void CellBase<T>::applyInvJacobianToGradArray(
+    const int loop_cnt,
+    float* grad_array_x,
+    float* grad_array_y,
+    float* grad_array_z ) const
+{
+    const int nnodes = static_cast<int>( m_nnodes );
+
+    for ( int i = 0; i < loop_cnt; i++ )
+    {
+        const double dsdx = static_cast<double>( grad_array_x[i] );
+        const double dsdy = static_cast<double>( grad_array_y[i] );
+        const double dsdz = static_cast<double>( grad_array_z[i] );
+
+        ///////////////////////// JacobiMatrix /////////////////////////
+
+        double dXdx = 0.0, dYdx = 0.0, dZdx = 0.0;
+        double dXdy = 0.0, dYdy = 0.0, dZdy = 0.0;
+        double dXdz = 0.0, dYdz = 0.0, dZdz = 0.0;
+        for ( int n = 0; n < nnodes; n++ )
+        {
+            const vismodule::Vector3f& V = m_vertices_array[n][i];
+            const double ax = m_differential_functions_array[n][i];
+            const double ay = m_differential_functions_array[nnodes + n][i];
+            const double az = m_differential_functions_array[2 * nnodes + n][i];
+            dXdx += ax * V.x();  dYdx += ax * V.y();  dZdx += ax * V.z();
+            dXdy += ay * V.x();  dYdy += ay * V.y();  dZdy += ay * V.z();
+            dXdz += az * V.x();  dYdz += az * V.y();  dZdz += az * V.z();
+        }
+
+        // calc scale factor (grad_ary() と同じ分岐なしの式)
+        double minValue = (std::numeric_limits<double>::max)();
+#define VISMODULE_CB_UPDATE_MIN_ABS( value ) \
+        do { \
+            const double abs_value = vismodule::Math::Abs( value ); \
+            if ( abs_value != 0 && abs_value < minValue ) minValue = abs_value; \
+        } while ( false )
+        VISMODULE_CB_UPDATE_MIN_ABS( dXdx );
+        VISMODULE_CB_UPDATE_MIN_ABS( dYdx );
+        VISMODULE_CB_UPDATE_MIN_ABS( dZdx );
+        VISMODULE_CB_UPDATE_MIN_ABS( dXdy );
+        VISMODULE_CB_UPDATE_MIN_ABS( dYdy );
+        VISMODULE_CB_UPDATE_MIN_ABS( dZdy );
+        VISMODULE_CB_UPDATE_MIN_ABS( dXdz );
+        VISMODULE_CB_UPDATE_MIN_ABS( dYdz );
+        VISMODULE_CB_UPDATE_MIN_ABS( dZdz );
+#undef VISMODULE_CB_UPDATE_MIN_ABS
+
+        const int order = -static_cast<int>( std::floor( std::log10( minValue ) ) );
+        const double scale_factor = std::pow( 10.0, order );
+        dXdx *= scale_factor;  dXdy *= scale_factor;  dXdz *= scale_factor;
+        dYdx *= scale_factor;  dYdy *= scale_factor;  dYdz *= scale_factor;
+        dZdx *= scale_factor;  dZdy *= scale_factor;  dZdz *= scale_factor;
+
+        /////////////////////////   inverse   /////////////////////////
+
+        const double det22[9] = {
+        dYdy * dZdz - dZdy * dYdz,
+        dXdy * dZdz - dZdy * dXdz,
+        dXdy * dYdz - dYdy * dXdz,
+        dYdx * dZdz - dZdx * dYdz,
+        dXdx * dZdz - dZdx * dXdz,
+        dXdx * dYdz - dYdx * dXdz,
+        dYdx * dZdy - dZdx * dYdy,
+        dXdx * dZdy - dZdx * dXdy,
+        dXdx * dYdy - dYdx * dXdy, };
+
+        const double det33 =
+            dXdx * (dYdy * dZdz - dZdy * dYdz)
+          - dYdx * (dXdy * dZdz - dZdy * dXdz)
+          + dZdx * (dXdy * dYdz - dYdy * dXdz);
+
+        const double determinant = det33;
+        const double det_inverse = 1.0 / det33;
+
+        const double Gx = (  det22[0] * dsdx - det22[3] * dsdy + det22[6] * dsdz ) * det_inverse * scale_factor;
+        const double Gy = ( -det22[1] * dsdx + det22[4] * dsdy - det22[7] * dsdz ) * det_inverse * scale_factor;
+        const double Gz = (  det22[2] * dsdx - det22[5] * dsdy + det22[8] * dsdz ) * det_inverse * scale_factor;
+
+        grad_array_x[i] = vismodule::Math::IsZero( determinant ) ? 0.0f : static_cast<float>( Gx );
+        grad_array_y[i] = vismodule::Math::IsZero( determinant ) ? 0.0f : static_cast<float>( Gy );
+        grad_array_z[i] = vismodule::Math::IsZero( determinant ) ? 0.0f : static_cast<float>( Gz );
+    }
 }
 
 /*===========================================================================*/
