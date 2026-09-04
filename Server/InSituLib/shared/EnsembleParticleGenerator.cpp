@@ -822,6 +822,166 @@ void calculate_scalar_and_grad_coorddiff(
 
 /*===========================================================================*/
 /**
+ *  @brief  数式が微分量(dq)を参照しているかを調べる。
+ *
+ *  トークン配置は Q1=4, DQ1X=5, DQ1Y=6, DQ1Z=7, Q2=8, ... なので、
+ *  Q1 からの差が 4 の倍数でないものが微分量である。
+ *  方式C の q のみ版はこれを扱えないため、判定して退避に使う。
+ */
+/*===========================================================================*/
+static bool expression_uses_dq( const ::EquationToken& expr )
+{
+    for ( int i = 0; i < 128 && expr.exp_token[i] != END; ++i )
+    {
+        if ( expr.exp_token[i] != VARIABLE ) continue;
+        const int name = expr.var_name[i];
+        if ( name < Q1 || name > Q23 ) continue;
+        if ( ( name - Q1 ) % 4 != 0 ) return true;
+    }
+    return false;
+}
+
+/*===========================================================================*/
+/**
+ *  @brief  セル種に応じた補間器を1つ生成する。
+ *
+ *  節点F場用の補間器を作るために追加した。既存のセル生成 switch は変更していない
+ *  （そちらは変数ごとに nvariables 個作るので、まとめ方が違う）。
+ */
+/*===========================================================================*/
+static vismodule::CellBase<Type>* create_cell_for_celltype(
+    const vismodule::VolumeObjectBase::CellType& celltype,
+    Type* values, float* coordinates, const int ncoords,
+    unsigned int* connections, const int ncells )
+{
+    switch ( celltype )
+    {
+    case vismodule::VolumeObjectBase::Tetrahedra:
+        return new vismodule::TetrahedralCell<Type>( values, coordinates, ncoords, connections, ncells );
+    case vismodule::VolumeObjectBase::Hexahedra:
+        return new vismodule::HexahedralCell<Type>( values, coordinates, ncoords, connections, ncells );
+    case vismodule::VolumeObjectBase::QuadraticTetrahedra:
+        return new vismodule::QuadraticTetrahedralCell<Type>( values, coordinates, ncoords, connections, ncells );
+    case vismodule::VolumeObjectBase::QuadraticHexahedra:
+        return new vismodule::QuadraticHexahedralCell<Type>( values, coordinates, ncoords, connections, ncells );
+    case vismodule::VolumeObjectBase::Prism:
+        return new vismodule::PrismaticCell<Type>( values, coordinates, ncoords, connections, ncells );
+    case vismodule::VolumeObjectBase::Pyramid:
+        return new vismodule::PyramidalCell<Type>( values, coordinates, ncoords, connections, ncells );
+    default:
+        return NULL;
+    }
+}
+
+/*===========================================================================*/
+/**
+ *  @brief  節点で数式 F を評価して節点F場を作る（方式C の前段、毎ステップ1回）。
+ *
+ *  節点の q はデータそのものなので補間は要らない。X,Y,Z は節点座標を渡す。
+ *  微分量(dq)は 0 のままにするため、dq を含む数式には使えない
+ *  （呼び出す前に expression_uses_dq() で弾くこと）。dq の節点復元は段5 で扱う。
+ *
+ *  評価は粒子側と同じ eval_F_block() を使うので、同じ q に対して同じ F が出る。
+ *  節点は互いに独立なのでスレッドで分割できる。
+ *
+ *  @param  node_F [out] 節点F場（長さ ncoords）。補間器がこの配列を参照し続けるので、
+ *      呼び出し側は補間器より長く生存させること。
+ */
+/*===========================================================================*/
+static bool build_node_f_field(
+    const ::EquationToken& equation_token,
+    Type** values, const int nvariables,
+    const float* coordinates, const int ncoords,
+    std::vector<Type>& node_F )
+{
+    if ( values == NULL || coordinates == NULL || nvariables <= 0 || ncoords <= 0 ) return false;
+
+    node_F.assign( static_cast<size_t>( ncoords ), static_cast<Type>( 0 ) );
+    bool ok = true;
+
+#pragma omp parallel
+    {
+        ChainRuleEvalContext ctx;
+        ctx.initialize( equation_token, nvariables );
+        if ( !ctx.valid )
+        {
+#pragma omp critical(node_f_field)
+            ok = false;
+        }
+        else
+        {
+            float sa[nvariables][SIMD_BLK_SIZE];
+            float gx[nvariables][SIMD_BLK_SIZE];
+            float gy[nvariables][SIMD_BLK_SIZE];
+            float gz[nvariables][SIMD_BLK_SIZE];
+            for ( int v = 0; v < nvariables; ++v )
+            {
+                for ( int p = 0; p < SIMD_BLK_SIZE; ++p )
+                {
+                    gx[v][p] = 0.0f; gy[v][p] = 0.0f; gz[v][p] = 0.0f;   // dq は 0 固定
+                }
+            }
+            vismodule::Vector3f coord[SIMD_BLK_SIZE];
+            // xa/ya/za は varr[X..Z] として ctx.rpn に登録されるので、
+            // eval_F_block を抜けた後も生きている必要がある(eval_F_block のコメント参照)。
+            alignas(64) float xa[SIMD_BLK_SIZE], ya[SIMD_BLK_SIZE], za[SIMD_BLK_SIZE];
+            alignas(64) float Fb[SIMD_BLK_SIZE];
+
+#pragma omp for schedule( static )
+            for ( int base = 0; base < ncoords; base += SIMD_BLK_SIZE )
+            {
+                const int m = ( ncoords - base > SIMD_BLK_SIZE ) ? SIMD_BLK_SIZE : ncoords - base;
+                for ( int p = 0; p < m; ++p )
+                {
+                    const int n = base + p;
+                    coord[p] = vismodule::Vector3f(
+                        coordinates[3 * n], coordinates[3 * n + 1], coordinates[3 * n + 2] );
+                    for ( int v = 0; v < nvariables; ++v )
+                    {
+                        sa[v][p] = static_cast<float>( values[v][n] );
+                    }
+                }
+                eval_F_block( ctx, m, nvariables, sa, gx, gy, gz, coord, xa, ya, za, Fb, 0 );
+                for ( int p = 0; p < m; ++p )
+                {
+                    node_F[base + p] = static_cast<Type>( std::isfinite( Fb[p] ) ? Fb[p] : 0.0f );
+                }
+            }
+        }
+    }
+    return ok;
+}
+
+/*===========================================================================*/
+/**
+ *  @brief  方式C（節点F場法）: 節点F場を1回だけ補間して F と grad F を得る。
+ *
+ *  数式の評価も変数ごとの補間もチェーンルールも要らない。粒子1個あたりの仕事は
+ *  「補間1回 + 勾配1回」で、変数の数にも数式の複雑さにも依らない。
+ *  grad_ary() が J^-1 を適用するので、勾配は物理座標系で返る。
+ *
+ *  ただし節点で一度 F にしてから補間するため、セル内部では F を節点値の
+ *  形状関数補間で近似することになる。数式が非線形なほど元の F からずれる。
+ */
+/*===========================================================================*/
+void calculate_scalar_and_grad_nodefield(
+    const int nparticles_count,
+    vismodule::CellBase<Type>* interp_F,
+    const vismodule::Vector3f* local_coord_array,
+    const vismodule::UInt32* cell_index,
+    float* scalar_result,
+    float* grad_array_x,
+    float* grad_array_y,
+    float* grad_array_z )
+{
+    interp_F->bindCellArray( nparticles_count, cell_index );
+    interp_F->setLocalPointArray( nparticles_count, local_coord_array );
+    interp_F->scalar_ary( scalar_result, nparticles_count );
+    interp_F->grad_ary( grad_array_x, grad_array_y, grad_array_z, nparticles_count );
+}
+
+/*===========================================================================*/
+/**
  *  @brief  法線計算の振り分け。方式によらず「F の値」と「∇F」を返す。
  *
  *  @param  method   [in] 計算方式
@@ -856,18 +1016,25 @@ void calculate_scalar_and_normal(
         return;
 
     case NormalMethod::NodeFField:
-    {
-        // 段4 で実装する。未実装の間は現行方式へフォールバックし、
-        // 取り違えに気付けるよう一度だけ警告する。
-        static bool warned = false;
-        if ( !warned )
+        if ( interp_F != NULL )
         {
-            warned = true;
-            std::cerr << "PBVR_NORMAL_METHOD=nodefield is not implemented yet."
-                      << " Falling back to chainrule." << std::endl;
+            ( void )global_coord_array;
+            calculate_scalar_and_grad_nodefield(
+                nparticles_count, interp_F, local_coord_array, cell_index,
+                scalar_result, grad_array_x, grad_array_y, grad_array_z );
+            return;
+        }
+        {
+            // 節点F場の構築に失敗した場合はここに来る。現行方式へ退避する。
+            static bool warned = false;
+            if ( !warned )
+            {
+                warned = true;
+                std::cerr << "PBVR_NORMAL_METHOD=nodefield: node F field is unavailable."
+                          << " Falling back to chainrule." << std::endl;
+            }
         }
         break;
-    }
     case NormalMethod::ChainRule:
     default:
         break;
@@ -1336,7 +1503,8 @@ bool GenerateEnsembleParticles(
     }
 
     // 法線計算の方式。粒子生成の全体で1回だけ決め、以降のブロックで切り替えない。
-    const NormalMethod normal_method = resolve_normal_method();
+    // 方式C は節点F場を作れなかった場合にここで現行方式へ落とすため const にしない。
+    NormalMethod normal_method = resolve_normal_method();
 
     std::vector<std::vector<vismodule::CellBase<Type>*> > cell( max_threads );
     {
@@ -1376,6 +1544,35 @@ bool GenerateEnsembleParticles(
                     }
                     return false;
                 }
+            }
+        }
+    }
+
+    // 方式C: 節点F場を1回だけ作り、スレッドごとに補間器を用意する。
+    // node_F は補間器が参照し続けるので、補間器より長く生きるスコープに置く。
+    std::vector<Type> node_F;
+    std::vector<vismodule::CellBase<Type>*> cell_F( max_threads, NULL );
+    if ( normal_method == NormalMethod::NodeFField )
+    {
+        if ( expression_uses_dq( equation_token ) )
+        {
+            std::cerr << "PBVR_NORMAL_METHOD=nodefield: 数式が微分量(dq)を含むため"
+                      << "この版では扱えない。chainrule へ退避する。" << std::endl;
+            normal_method = NormalMethod::ChainRule;
+        }
+        else if ( !build_node_f_field( equation_token, values, nvariables,
+                                       coordinates, ncoords, node_F ) )
+        {
+            std::cerr << "PBVR_NORMAL_METHOD=nodefield: 節点F場の構築に失敗した。"
+                      << "chainrule へ退避する。" << std::endl;
+            normal_method = NormalMethod::ChainRule;
+        }
+        else
+        {
+            for ( int thread = 0; thread < max_threads; thread++ )
+            {
+                cell_F[thread] = create_cell_for_celltype(
+                    celltype, &node_F[0], coordinates, ncoords, connections, ncells );
             }
         }
     }
@@ -1610,7 +1807,7 @@ bool GenerateEnsembleParticles(
 	                                    local_coord_array,
 	                                    global_coord_array,
 	                                    cell_index,
-	                                    nullptr,   // interp_F: 方式C で使用
+	                                    cell_F[thid],   // interp_F: 方式C
 	                                    scalar_array,
 	                                    grad_array_x,
 	                                    grad_array_y,
@@ -1699,7 +1896,7 @@ bool GenerateEnsembleParticles(
 	                            local_coord_array,
 	                            global_coord_array,
 	                            cell_index,
-	                            nullptr,   // interp_F: 方式C で使用
+	                            cell_F[thid],   // interp_F: 方式C
 	                            scalar_array,
 	                            grad_array_x,
 	                            grad_array_y,
@@ -1803,7 +2000,7 @@ bool GenerateEnsembleParticles(
                 cell[thid][0]->setLocalPointArray( m, fl );
                 cell[thid][0]->transformLocalToGlobalArray( m, fl, fg );
                 calculate_scalar_and_normal( normal_method, m, nvariables, chain_context, cell[thid],
-                    fl, fg, fc, nullptr, scalar_array, grad_array_x, grad_array_y, grad_array_z, 0 );
+                    fl, fg, fc, cell_F[thid], scalar_array, grad_array_x, grad_array_y, grad_array_z, 0 );
 #ifdef ENABLE_ENSEMBLE_TIMER
                 fission_timer.stop();  th_fission_scalar += fission_timer.sec();  fission_timer.start();
 #endif
@@ -2116,7 +2313,7 @@ bool GenerateEnsembleParticles(
 	                    local_coord_array,
 	                    global_coord_array,
 	                    cell_index,
-	                    nullptr,   // interp_F: 方式C で使用
+	                    cell_F[thid],   // interp_F: 方式C
 	                    scalar_array,
 	                    grad_array_x,
 	                    grad_array_y,
@@ -2540,6 +2737,8 @@ bool GenerateEnsembleParticles(
         {
             delete cell[thread][variable];
         }
+        // 方式C の節点F場用補間器。使わなかった場合は NULL のまま。
+        if ( cell_F[thread] ) { delete cell_F[thread]; cell_F[thread] = NULL; }
     }
     }
     average.coords.swap( average_coords );
