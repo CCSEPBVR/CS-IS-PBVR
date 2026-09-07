@@ -687,7 +687,10 @@ inline void PrismaticCell<T>::volumeArray(
 template <typename T>
 inline void PrismaticCell<T>::setLocalGravityPoint() const
 {
-    this->setLocalPoint( vismodule::Vector3f( 1 / 3, 1 / 3, 0.5 ) );
+    // 三角形断面の重心は重心座標で (1/3, 1/3)、z は中央の 0.5。
+    // 以前は 1 / 3 と書かれており整数除算で 0 になっていたため、重心が
+    // (0, 0, 0.5) すなわち底面三角形の頂点の1つにずれていた。
+    this->setLocalPoint( vismodule::Vector3f( 1.0f / 3.0f, 1.0f / 3.0f, 0.5f ) );
 }
 
 } // end of namespace vismodule
