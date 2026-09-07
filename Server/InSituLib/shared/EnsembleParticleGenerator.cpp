@@ -952,6 +952,55 @@ static vismodule::CellBase<Type>* create_cell_for_celltype(
 
 /*===========================================================================*/
 /**
+ *  @brief  局所座標が全粒子共通のときの gather_variable_values()。
+ *
+ *  形状関数の再評価を1点ぶんに減らす以外は gather_variable_values() と同じで、
+ *  返る値も同一である。節点微分量の復元のように、ブロック内の全セルを同じ局所座標で
+ *  評価する場面で使う。既存の gather_variable_values() は変更していない
+ *  （方式A などの経路は局所座標が粒子ごとに異なるため、そちらでは使えない）。
+ */
+/*===========================================================================*/
+static void gather_variable_values_uniform(
+    const int nparticles_count,
+    const int nvariables,
+    const std::vector< vismodule::CellBase<Type>* >& interp,
+    const vismodule::Vector3f& local_coord,
+    float (*scalar_array)[SIMD_BLK_SIZE],
+    float (*grad_qx)[SIMD_BLK_SIZE],
+    float (*grad_qy)[SIMD_BLK_SIZE],
+    float (*grad_qz)[SIMD_BLK_SIZE] )
+{
+    if ( nvariables > 1 && interp[0]->supportsJacobianReuse() )
+    {
+        double cof[9][SIMD_BLK_SIZE];
+        double det_inverse[SIMD_BLK_SIZE];
+        double scale_factor[SIMD_BLK_SIZE];
+        double determinant[SIMD_BLK_SIZE];
+        interp[0]->setLocalPointUniformArray( nparticles_count, local_coord );
+        interp[0]->computeScaledInvJacobianArray(
+            nparticles_count, cof, det_inverse, scale_factor, determinant );
+        for ( int j = 0; j < nvariables; ++j )
+        {
+            if ( j != 0 ) interp[j]->setLocalPointUniformArray( nparticles_count, local_coord );
+            interp[j]->scalar_ary( scalar_array[j], nparticles_count );
+            interp[j]->gradFromScaledInvJacobianArray(
+                nparticles_count, cof, det_inverse, scale_factor, determinant,
+                grad_qx[j], grad_qy[j], grad_qz[j] );
+        }
+    }
+    else
+    {
+        for ( int j = 0; j < nvariables; ++j )
+        {
+            interp[j]->setLocalPointUniformArray( nparticles_count, local_coord );
+            interp[j]->CalcScalarGrad( nparticles_count, scalar_array[j],
+                                       grad_qx[j], grad_qy[j], grad_qz[j] );
+        }
+    }
+}
+
+/*===========================================================================*/
+/**
  *  @brief  節点の局所座標表(CellBase::localNodeCoord)の自己検査。
  *
  *  節点 i の局所座標で局所→物理変換をすると、その節点の座標そのものが出るはずである
@@ -1048,6 +1097,11 @@ static bool verify_local_node_coords(
  *  コストはセル数 x 節点数 x 変数の数の勾配評価。粒子数には依らないので、
  *  粒子数がセル数より十分多い場合に方式C が有利になる。
  *
+ *  節点への加算は複数のスレッドが同じ節点を叩くため排他制御が要る。実測ではこれが
+ *  復元処理の 6 割を占めたので、スレッドごとに配列を持って加算し、最後に合算する
+ *  形にしてある。メモリはスレッド数に比例するので、上限を超える場合だけ従来どおり
+ *  排他制御に落とす（上限は環境変数 PBVR_NODE_DQ_TLS_MB、既定 4096 MB）。
+ *
  *  制約: MPI 領域境界の節点は自ランクのセルからの寄与しか集まらないため、
  *  そこだけ片側平均になる。境界の合算は未実装（法線＝陰影付け用途のため許容する）。
  *
@@ -1093,6 +1147,39 @@ static bool build_node_dq_field(
     node_dq.assign( static_cast<size_t>( usage.nslots ) * ncoords, 0.0f );
     std::vector<float> weight( static_cast<size_t>( ncoords ), 0.0f );
 
+#if _OPENMP
+    const int nthreads = omp_get_max_threads();
+#else
+    const int nthreads = 1;
+#endif
+    // スレッド別に配列を持てば排他制御が要らない。メモリはスレッド数に比例するので、
+    // 上限を超える場合は従来どおり共有配列＋排他制御に落とす。
+    const size_t tls_slab = static_cast<size_t>( usage.nslots ) * ncoords;
+    const size_t tls_bytes =
+        static_cast<size_t>( nthreads ) * ( tls_slab + ncoords ) * sizeof( float );
+    size_t tls_limit = static_cast<size_t>( 4096 ) * 1024 * 1024;
+    {
+        const char* e = std::getenv( "PBVR_NODE_DQ_TLS_MB" );
+        if ( e != NULL && e[0] != '\0' )
+        {
+            const double mb = std::atof( e );
+            tls_limit = ( mb > 0.0 ) ? static_cast<size_t>( mb * 1024.0 * 1024.0 ) : 0;
+        }
+    }
+    const bool use_tls = ( nthreads > 1 ) && ( tls_bytes <= tls_limit );
+    std::vector<float> tls_dq, tls_w;
+    if ( use_tls )
+    {
+        tls_dq.assign( static_cast<size_t>( nthreads ) * tls_slab, 0.0f );
+        tls_w.assign( static_cast<size_t>( nthreads ) * ncoords, 0.0f );
+    }
+    else if ( nthreads > 1 )
+    {
+        std::cerr << "節点微分量の復元: スレッド別配列に "
+                  << ( tls_bytes / ( 1024 * 1024 ) ) << " MB 必要で上限を超えるため、"
+                  << "排他制御による加算に切り替える。" << std::endl;
+    }
+
 #pragma omp parallel
     {
 #if _OPENMP
@@ -1109,7 +1196,10 @@ static bool build_node_dq_field(
         float gy[nused][SIMD_BLK_SIZE];
         float gz[nused][SIMD_BLK_SIZE];
         vismodule::UInt32 cid[SIMD_BLK_SIZE];
-        vismodule::Vector3f lc[SIMD_BLK_SIZE];
+
+        // 自スレッドの加算先。NULL なら共有配列＋排他制御。
+        float* const acc_dq = use_tls ? &tls_dq[ static_cast<size_t>( thid ) * tls_slab ] : NULL;
+        float* const acc_w  = use_tls ? &tls_w [ static_cast<size_t>( thid ) * ncoords ]  : NULL;
 
 #pragma omp for schedule( static )
         for ( int base = 0; base < ncells; base += SIMD_BLK_SIZE )
@@ -1125,40 +1215,77 @@ static bool build_node_dq_field(
             {
                 const vismodule::Vector3f& ec =
                     ( mode == NodeDqMode::CellCenter ) ? center_local : node_local[e];
-                for ( int p = 0; p < m; ++p ) lc[p] = ec;
-                gather_variable_values( m, nused, uc, lc, sa, gx, gy, gz, 0 );
+                // ブロック内の全セルを同じ局所座標で評価するので、形状関数は1回で足りる。
+                gather_variable_values_uniform( m, nused, uc, ec, sa, gx, gy, gz );
 
                 const int k0 = ( mode == NodeDqMode::CellCenter ) ? 0      : e;
                 const int k1 = ( mode == NodeDqMode::CellCenter ) ? nnodes : e + 1;
                 for ( int k = k0; k < k1; ++k )
                 {
-                    for ( int p = 0; p < m; ++p )
+                    if ( acc_dq != NULL )
                     {
-                        const size_t node =
-                            connections[ static_cast<size_t>( nnodes ) * ( base + p ) + k ];
-#ifndef PBVR_NO_ATOMIC_PROBE
-#pragma omp atomic
-#endif
-                        weight[node] += 1.0f;   // 寄与したセルの数を数える
-                        for ( int j = 0; j < nused; ++j )
+                        // スレッド別配列。他スレッドと衝突しないので排他制御は要らない。
+                        for ( int p = 0; p < m; ++p )
                         {
-                            const int v = usage.var_index[j];
-                            const float* const a[3] = { gx[j], gy[j], gz[j] };
-                            for ( int c = 0; c < 3; ++c )
+                            const size_t node =
+                                connections[ static_cast<size_t>( nnodes ) * ( base + p ) + k ];
+                            acc_w[node] += 1.0f;   // 寄与したセルの数を数える
+                            for ( int j = 0; j < nused; ++j )
                             {
-                                const int s = usage.slot[ static_cast<size_t>( v ) * 3 + c ];
-                                if ( s < 0 ) continue;      // 数式が参照していない成分
-                                const float av = std::isfinite( a[c][p] ) ? a[c][p] : 0.0f;
-#ifndef PBVR_NO_ATOMIC_PROBE
+                                const int v = usage.var_index[j];
+                                const float* const a[3] = { gx[j], gy[j], gz[j] };
+                                for ( int c = 0; c < 3; ++c )
+                                {
+                                    const int s = usage.slot[ static_cast<size_t>( v ) * 3 + c ];
+                                    if ( s < 0 ) continue;
+                                    const float av = std::isfinite( a[c][p] ) ? a[c][p] : 0.0f;
+                                    acc_dq[ static_cast<size_t>( s ) * ncoords + node ] += av;
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        for ( int p = 0; p < m; ++p )
+                        {
+                            const size_t node =
+                                connections[ static_cast<size_t>( nnodes ) * ( base + p ) + k ];
 #pragma omp atomic
-#endif
-                                node_dq[ static_cast<size_t>( s ) * ncoords + node ] += av;
+                            weight[node] += 1.0f;
+                            for ( int j = 0; j < nused; ++j )
+                            {
+                                const int v = usage.var_index[j];
+                                const float* const a[3] = { gx[j], gy[j], gz[j] };
+                                for ( int c = 0; c < 3; ++c )
+                                {
+                                    const int s = usage.slot[ static_cast<size_t>( v ) * 3 + c ];
+                                    if ( s < 0 ) continue;
+                                    const float av = std::isfinite( a[c][p] ) ? a[c][p] : 0.0f;
+#pragma omp atomic
+                                    node_dq[ static_cast<size_t>( s ) * ncoords + node ] += av;
+                                }
                             }
                         }
                     }
                 }
             }
         }
+    }
+
+    if ( use_tls )
+    {
+        // スレッド別の加算結果を合算する。スレッドを外側にすると連続アクセスになる。
+        for ( int t = 0; t < nthreads; ++t )
+        {
+            const float* const sdq = &tls_dq[ static_cast<size_t>( t ) * tls_slab ];
+            const float* const sw  = &tls_w [ static_cast<size_t>( t ) * ncoords ];
+#pragma omp parallel for schedule( static )
+            for ( long i = 0; i < static_cast<long>( tls_slab ); ++i ) node_dq[i] += sdq[i];
+#pragma omp parallel for schedule( static )
+            for ( int n = 0; n < ncoords; ++n ) weight[n] += sw[n];
+        }
+        std::vector<float>().swap( tls_dq );
+        std::vector<float>().swap( tls_w );
     }
 
     // 寄与したセルの数で割って平均にする。どのセルからも寄与が無かった節点は 0 のまま。

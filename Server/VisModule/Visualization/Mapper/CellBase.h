@@ -172,6 +172,9 @@ public:
     virtual void bindCellArray( const int loop_cnt, const vismodule::UInt32 *cell_index );
     void bindScalarsArray( const int loop_cnt, const vismodule::UInt32 *cell_index );
     virtual void setLocalPointArray( const int loop_cnt, const vismodule::Vector3f *local_array );
+
+    // 全粒子が同じ局所座標のときの setLocalPointArray（新規追加。既存関数は変更していない）
+    void setLocalPointUniformArray( const int loop_cnt, const vismodule::Vector3f& local );
     virtual void transformLocalToGlobalArray( const int loop_cnt, const vismodule::Vector3f *local_array, vismodule::Vector3f *global_array);
     virtual void CalcScalarGrad(
             const int loop_cnt,
@@ -683,6 +686,43 @@ inline void CellBase<T>::setLocalPointArray( const int loop_cnt, const vismodule
             this->interpolationFunctions_array( local_array, loop_cnt);
             this->differentialFunctions_array(  local_array, loop_cnt);
 }
+/*===========================================================================*/
+/**
+ *  @brief  全粒子が同じ局所座標のときの setLocalPointArray（ブロック一括版）。
+ *
+ *  形状関数とその微分は局所座標だけで決まるので、同じ点なら結果も同じである。
+ *  setLocalPointArray() は粒子ごとに多項式を評価し直すため、局所座標が共通の場合は
+ *  ブロック長ぶんの無駄になる。ここでは1点だけ評価して残りへ複製する。
+ *
+ *  節点微分量の復元では、ブロック内の全セルについて「節点 k の局所座標」という
+ *  同一の点で評価するので、この関数が効く。
+ *
+ *  結果は setLocalPointArray() に同じ点を並べて渡した場合と同一である。
+ */
+/*===========================================================================*/
+template <typename T>
+inline void CellBase<T>::setLocalPointUniformArray(
+    const int loop_cnt, const vismodule::Vector3f& local )
+{
+    if ( loop_cnt <= 0 ) return;
+
+    const vismodule::Vector3f one[1] = { local };
+    this->interpolationFunctions_array( one, 1 );
+    this->differentialFunctions_array( one, 1 );
+
+    const int nn = static_cast<int>( m_nnodes );
+    for ( int j = 0; j < nn; ++j )
+    {
+        const vismodule::Real32 v = m_interpolation_functions_array[j][0];
+        for ( int i = 1; i < loop_cnt; ++i ) m_interpolation_functions_array[j][i] = v;
+    }
+    for ( int j = 0; j < 3 * nn; ++j )
+    {
+        const vismodule::Real32 v = m_differential_functions_array[j][0];
+        for ( int i = 1; i < loop_cnt; ++i ) m_differential_functions_array[j][i] = v;
+    }
+}
+
 /*===========================================================================*/
 /**
  *  @brief  Transforms the global to the local coordinate.
