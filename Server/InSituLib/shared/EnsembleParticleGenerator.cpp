@@ -822,23 +822,100 @@ void calculate_scalar_and_grad_coorddiff(
 
 /*===========================================================================*/
 /**
- *  @brief  数式が微分量(dq)を参照しているかを調べる。
+ *  @brief  節点微分量を復元するときの grad q の評価点。
  *
- *  トークン配置は Q1=4, DQ1X=5, DQ1Y=6, DQ1Z=7, Q2=8, ... なので、
- *  Q1 からの差が 4 の倍数でないものが微分量である。
- *  方式C の q のみ版はこれを扱えないため、判定して退避に使う。
+ *  NodePosition : 各節点位置で評価する。セルあたり節点数だけ評価が要るが、
+ *                 節点での値をそのまま使うので素直。
+ *  CellCenter   : セル重心で1回だけ評価し、そのセルの全節点へ同じ値を散布する。
+ *                 評価点数が 1/節点数 になる（六面体なら 1/8）。
+ *                 grad q がセル内で一次式なら、節点を囲むセルの重心での値を平均すると
+ *                 対称性から内部節点では節点位置評価と一致する。境界節点では偏る。
  */
 /*===========================================================================*/
-static bool expression_uses_dq( const ::EquationToken& expr )
+enum class NodeDqMode
 {
+    NodePosition,
+    CellCenter
+};
+
+/*===========================================================================*/
+/**
+ *  @brief  環境変数 PBVR_NODE_DQ_MODE から評価点を決める。既定は各節点位置。
+ *      node (既定) / center
+ */
+/*===========================================================================*/
+inline NodeDqMode resolve_node_dq_mode()
+{
+    const char* e = std::getenv( "PBVR_NODE_DQ_MODE" );
+    if ( e == NULL || e[0] == '\0' ) return NodeDqMode::NodePosition;
+    if ( std::strcmp( e, "node" ) == 0 )   return NodeDqMode::NodePosition;
+    if ( std::strcmp( e, "center" ) == 0 ) return NodeDqMode::CellCenter;
+    std::cerr << "PBVR_NODE_DQ_MODE: unknown value '" << e
+              << "' (expected node|center). Using node." << std::endl;
+    return NodeDqMode::NodePosition;
+}
+
+/*===========================================================================*/
+/**
+ *  @brief  数式が参照している微分量(dq)の一覧。
+ *
+ *  slot は (変数, 成分) ごとの節点微分量の格納位置。参照されていなければ -1。
+ *  var_index は復元に必要な変数の番号を昇順に並べたもの。
+ *
+ *  成分単位で持つのは散布と格納を減らすため。grad_ary() は3成分を同時に作るので
+ *  計算そのものは成分単位では省けず、変数単位でしか飛ばせない。
+ */
+/*===========================================================================*/
+struct DqUsage
+{
+    std::vector<int> slot;        // [v*3+c] -> 格納位置。未参照は -1
+    std::vector<int> var_index;   // 復元が要る変数の番号（昇順）
+    int nslots;
+
+    DqUsage() : nslots( 0 ) {}
+    bool any() const { return nslots > 0; }
+};
+
+/*===========================================================================*/
+/**
+ *  @brief  数式のトークンを走査して、参照されている微分量を集める。
+ *
+ *  トークンは Q1=4, DQ1X=5, DQ1Y=6, DQ1Z=7, Q2=8, ... と並ぶので、
+ *  Q1 からの差を 4 で割れば変数番号、余りが 1/2/3 なら x/y/z 成分になる。
+ *  余り 0 は q 本体で、微分量ではない。
+ */
+/*===========================================================================*/
+static DqUsage collect_dq_usage( const ::EquationToken& expr, const int nvariables )
+{
+    DqUsage u;
+    u.slot.assign( static_cast<size_t>( nvariables ) * 3, -1 );
+
+    std::vector<bool> used( static_cast<size_t>( nvariables ) * 3, false );
     for ( int i = 0; i < 128 && expr.exp_token[i] != END; ++i )
     {
         if ( expr.exp_token[i] != VARIABLE ) continue;
         const int name = expr.var_name[i];
         if ( name < Q1 || name > Q23 ) continue;
-        if ( ( name - Q1 ) % 4 != 0 ) return true;
+        const int d = name - Q1;
+        const int c = d % 4;
+        if ( c == 0 ) continue;                  // q 本体
+        const int v = d / 4;
+        if ( v < 0 || v >= nvariables ) continue;
+        used[ static_cast<size_t>( v ) * 3 + ( c - 1 ) ] = true;
     }
-    return false;
+
+    for ( int v = 0; v < nvariables; ++v )
+    {
+        bool any_component = false;
+        for ( int c = 0; c < 3; ++c )
+        {
+            if ( !used[ static_cast<size_t>( v ) * 3 + c ] ) continue;
+            u.slot[ static_cast<size_t>( v ) * 3 + c ] = u.nslots++;
+            any_component = true;
+        }
+        if ( any_component ) u.var_index.push_back( v );
+    }
+    return u;
 }
 
 /*===========================================================================*/
@@ -951,12 +1028,22 @@ static bool verify_local_node_coords(
 /**
  *  @brief  節点の微分量 grad q を復元する（方式C の前段、毎ステップ1回）。
  *
- *  各セルの各節点位置で grad q を評価し、セル体積を重みとして節点に散布して平均する
- *  （面積重み付き平均、いわゆる AGS）。節点は複数のセルに共有されるため、
- *  そこでの微分量は本来「多価」であり、この平均で一意な代表値を決める。
+ *  各セルで grad q を評価し、節点に散布して平均する。評価点は mode で選ぶ
+ *  （各節点位置 / セル重心。NodeDqMode の説明を参照）。
+ *  節点は複数のセルに共有され、補間関数がセルごとに独立なので、そこでの微分量は
+ *  セルごとに違う値になる（本来「多価」）。この平均で一意な代表値を決める。
+ *
+ *  混ぜ方は単純平均にしてある。grad_ary() が J^-1 を適用した時点で勾配は
+ *  物理座標系の量になっており、セルの大小には依存しないので、体積は勾配そのものには
+ *  効かない。体積重みにする選択肢もあるが（節点まわりの体積平均という解釈になる）、
+ *  一様メッシュでは単純平均と一致し、非一様でも単純平均は同様に標準的な選び方である。
  *
  *  節点の局所座標は CellBase::localNodeCoord() から取る。使う前に
  *  verify_local_node_coords() で表を検査する。
+ *
+ *  復元するのは数式が実際に参照している (変数, 成分) だけである。参照の無い変数は
+ *  評価そのものを飛ばし、参照の無い成分は散布と格納を飛ばす。grad_ary() は3成分を
+ *  同時に作るので、計算は変数単位でしか省けない（未使用成分は副産物として出るが捨てる）。
  *
  *  コストはセル数 x 節点数 x 変数の数の勾配評価。粒子数には依らないので、
  *  粒子数がセル数より十分多い場合に方式C が有利になる。
@@ -975,11 +1062,14 @@ static inline void bind_variables_scalars_opt(
 static bool build_node_dq_field(
     std::vector< std::vector<vismodule::CellBase<Type>*> >& cell,
     const int nvariables,
+    const DqUsage& usage,
+    const NodeDqMode mode,
     const float* coordinates, const int ncoords,
     const unsigned int* connections, const int ncells,
     std::vector<float>& node_dq )
 {
     if ( cell.empty() || cell[0].empty() || nvariables <= 0 ) return false;
+    if ( !usage.any() ) return false;
     if ( coordinates == NULL || connections == NULL || ncoords <= 0 || ncells <= 0 ) return false;
 
     const int nnodes = static_cast<int>( cell[0][0]->numberOfNodes() );
@@ -991,7 +1081,16 @@ static bool build_node_dq_field(
         if ( !cell[0][0]->localNodeCoord( k, &node_local[k] ) ) return false;
     }
 
-    node_dq.assign( static_cast<size_t>( nvariables ) * 3 * ncoords, 0.0f );
+    // 重心は節点局所座標の平均として求める。6セル種すべてでセルクラスの
+    // setLocalGravityPoint() と同じ点になり、しかも定数を書き写さずに済む
+    // （PrismaticCell の同関数は Vector3f( 1 / 3, 1 / 3, 0.5 ) と整数除算になっており
+    //   重心が (0, 0, 0.5) にずれている。平均で求めればこれを踏まない）。
+    vismodule::Vector3f center_local( 0.0f, 0.0f, 0.0f );
+    for ( int k = 0; k < nnodes; ++k ) center_local += node_local[k];
+    center_local /= static_cast<float>( nnodes );
+
+    const int nused = static_cast<int>( usage.var_index.size() );
+    node_dq.assign( static_cast<size_t>( usage.nslots ) * ncoords, 0.0f );
     std::vector<float> weight( static_cast<size_t>( ncoords ), 0.0f );
 
 #pragma omp parallel
@@ -1001,13 +1100,16 @@ static bool build_node_dq_field(
 #else
         const int thid = 0;
 #endif
-        float sa[nvariables][SIMD_BLK_SIZE];
-        float gx[nvariables][SIMD_BLK_SIZE];
-        float gy[nvariables][SIMD_BLK_SIZE];
-        float gz[nvariables][SIMD_BLK_SIZE];
+        // 参照されている変数の補間器だけを集める。既存の bind/gather はそのまま使える。
+        std::vector<vismodule::CellBase<Type>*> uc( nused );
+        for ( int j = 0; j < nused; ++j ) uc[j] = cell[thid][ usage.var_index[j] ];
+
+        float sa[nused][SIMD_BLK_SIZE];
+        float gx[nused][SIMD_BLK_SIZE];
+        float gy[nused][SIMD_BLK_SIZE];
+        float gz[nused][SIMD_BLK_SIZE];
         vismodule::UInt32 cid[SIMD_BLK_SIZE];
         vismodule::Vector3f lc[SIMD_BLK_SIZE];
-        vismodule::Real32 vol[SIMD_BLK_SIZE];
 
 #pragma omp for schedule( static )
         for ( int base = 0; base < ncells; base += SIMD_BLK_SIZE )
@@ -1015,54 +1117,60 @@ static bool build_node_dq_field(
             const int m = ( ncells - base > SIMD_BLK_SIZE ) ? SIMD_BLK_SIZE : ncells - base;
             for ( int p = 0; p < m; ++p ) cid[p] = static_cast<vismodule::UInt32>( base + p );
 
-            bind_variables_scalars_opt( cell[thid], nvariables, m, cid );
-            cell[thid][0]->volumeArray( m, cid, vol );
+            bind_variables_scalars_opt( uc, nused, m, cid );
 
-            for ( int k = 0; k < nnodes; ++k )
+            // 重心評価なら 1回だけ評価して全節点へ散布する。節点評価なら節点ごとに評価する。
+            const int neval = ( mode == NodeDqMode::CellCenter ) ? 1 : nnodes;
+            for ( int e = 0; e < neval; ++e )
             {
-                for ( int p = 0; p < m; ++p ) lc[p] = node_local[k];
-                gather_variable_values( m, nvariables, cell[thid], lc, sa, gx, gy, gz, 0 );
+                const vismodule::Vector3f& ec =
+                    ( mode == NodeDqMode::CellCenter ) ? center_local : node_local[e];
+                for ( int p = 0; p < m; ++p ) lc[p] = ec;
+                gather_variable_values( m, nused, uc, lc, sa, gx, gy, gz, 0 );
 
-                for ( int p = 0; p < m; ++p )
+                const int k0 = ( mode == NodeDqMode::CellCenter ) ? 0      : e;
+                const int k1 = ( mode == NodeDqMode::CellCenter ) ? nnodes : e + 1;
+                for ( int k = k0; k < k1; ++k )
                 {
-                    const size_t node =
-                        connections[ static_cast<size_t>( nnodes ) * ( base + p ) + k ];
-                    const float w = ( vol[p] > 0.0f && std::isfinite( vol[p] ) ) ? vol[p] : 0.0f;
-                    if ( w <= 0.0f ) continue;
-#pragma omp atomic
-                    weight[node] += w;
-                    for ( int v = 0; v < nvariables; ++v )
+                    for ( int p = 0; p < m; ++p )
                     {
-                        const size_t bx = ( static_cast<size_t>( v ) * 3 + 0 ) * ncoords + node;
-                        const size_t by = ( static_cast<size_t>( v ) * 3 + 1 ) * ncoords + node;
-                        const size_t bz = ( static_cast<size_t>( v ) * 3 + 2 ) * ncoords + node;
-                        const float ax = std::isfinite( gx[v][p] ) ? gx[v][p] : 0.0f;
-                        const float ay = std::isfinite( gy[v][p] ) ? gy[v][p] : 0.0f;
-                        const float az = std::isfinite( gz[v][p] ) ? gz[v][p] : 0.0f;
+                        const size_t node =
+                            connections[ static_cast<size_t>( nnodes ) * ( base + p ) + k ];
+#ifndef PBVR_NO_ATOMIC_PROBE
 #pragma omp atomic
-                        node_dq[bx] += w * ax;
+#endif
+                        weight[node] += 1.0f;   // 寄与したセルの数を数える
+                        for ( int j = 0; j < nused; ++j )
+                        {
+                            const int v = usage.var_index[j];
+                            const float* const a[3] = { gx[j], gy[j], gz[j] };
+                            for ( int c = 0; c < 3; ++c )
+                            {
+                                const int s = usage.slot[ static_cast<size_t>( v ) * 3 + c ];
+                                if ( s < 0 ) continue;      // 数式が参照していない成分
+                                const float av = std::isfinite( a[c][p] ) ? a[c][p] : 0.0f;
+#ifndef PBVR_NO_ATOMIC_PROBE
 #pragma omp atomic
-                        node_dq[by] += w * ay;
-#pragma omp atomic
-                        node_dq[bz] += w * az;
+#endif
+                                node_dq[ static_cast<size_t>( s ) * ncoords + node ] += av;
+                            }
+                        }
                     }
                 }
             }
         }
     }
 
-    // 重みで割って平均にする。どのセルからも寄与が無かった節点は 0 のまま。
+    // 寄与したセルの数で割って平均にする。どのセルからも寄与が無かった節点は 0 のまま。
 #pragma omp parallel for schedule( static )
     for ( int n = 0; n < ncoords; ++n )
     {
         const float w = weight[n];
         if ( w <= 0.0f ) continue;
         const float inv = 1.0f / w;
-        for ( int v = 0; v < nvariables; ++v )
+        for ( int s = 0; s < usage.nslots; ++s )
         {
-            node_dq[ ( static_cast<size_t>( v ) * 3 + 0 ) * ncoords + n ] *= inv;
-            node_dq[ ( static_cast<size_t>( v ) * 3 + 1 ) * ncoords + n ] *= inv;
-            node_dq[ ( static_cast<size_t>( v ) * 3 + 2 ) * ncoords + n ] *= inv;
+            node_dq[ static_cast<size_t>( s ) * ncoords + n ] *= inv;
         }
     }
     return true;
@@ -1087,7 +1195,7 @@ static bool build_node_f_field(
     const ::EquationToken& equation_token,
     Type** values, const int nvariables,
     const float* coordinates, const int ncoords,
-    const std::vector<float>* node_dq,
+    const std::vector<float>* node_dq, const DqUsage& usage,
     std::vector<Type>& node_F )
 {
     if ( values == NULL || coordinates == NULL || nvariables <= 0 || ncoords <= 0 ) return false;
@@ -1140,9 +1248,13 @@ static bool build_node_f_field(
                     {
                         for ( int v = 0; v < nvariables; ++v )
                         {
-                            gx[v][p] = ( *node_dq )[ ( static_cast<size_t>( v ) * 3 + 0 ) * ncoords + n ];
-                            gy[v][p] = ( *node_dq )[ ( static_cast<size_t>( v ) * 3 + 1 ) * ncoords + n ];
-                            gz[v][p] = ( *node_dq )[ ( static_cast<size_t>( v ) * 3 + 2 ) * ncoords + n ];
+                            float* const a[3] = { &gx[v][p], &gy[v][p], &gz[v][p] };
+                            for ( int c = 0; c < 3; ++c )
+                            {
+                                const int s = usage.slot[ static_cast<size_t>( v ) * 3 + c ];
+                                if ( s < 0 ) continue;   // 参照されていない成分は 0 のまま
+                                *a[c] = ( *node_dq )[ static_cast<size_t>( s ) * ncoords + n ];
+                            }
                         }
                     }
                 }
@@ -1760,10 +1872,14 @@ bool GenerateEnsembleParticles(
     if ( normal_method == NormalMethod::NodeFField )
     {
         // dq を含む数式のときだけ節点微分量を復元する（復元はセル数に比例して重い）。
-        const bool need_dq = expression_uses_dq( equation_token );
+        // 参照されている (変数, 成分) だけに絞る。
+        const DqUsage dq_usage = collect_dq_usage( equation_token, nvariables );
+        const bool need_dq = dq_usage.any();
         std::vector<float> node_dq;
         bool built = true;
-        if ( need_dq && !build_node_dq_field( cell, nvariables, coordinates, ncoords,
+        const NodeDqMode node_dq_mode = resolve_node_dq_mode();
+        if ( need_dq && !build_node_dq_field( cell, nvariables, dq_usage, node_dq_mode,
+                                              coordinates, ncoords,
                                               connections, ncells, node_dq ) )
         {
             std::cerr << "PBVR_NORMAL_METHOD=nodefield: 節点微分量の復元に失敗した。"
@@ -1772,7 +1888,7 @@ bool GenerateEnsembleParticles(
         }
         if ( built && !build_node_f_field( equation_token, values, nvariables,
                                            coordinates, ncoords,
-                                           need_dq ? &node_dq : NULL, node_F ) )
+                                           need_dq ? &node_dq : NULL, dq_usage, node_F ) )
         {
             std::cerr << "PBVR_NORMAL_METHOD=nodefield: 節点F場の構築に失敗した。"
                       << "chainrule へ退避する。" << std::endl;
