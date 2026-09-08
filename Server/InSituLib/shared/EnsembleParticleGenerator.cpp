@@ -32,7 +32,8 @@
 #include <vismodule/TransferFunctionSynthesizer>
 #include <vismodule/StructuredVolumeObject>
 #include <vismodule/UnstructuredVolumeObject>
-#include <vismodule/TrilinearInterpolator>  // 構造格子版アンサンブルの補間器
+#include <vismodule/TrilinearInterpolator>  // 構造格子版アンサンブルの補間器(三線形。既定)
+#include <vismodule/CubicBSplineInterpolator>  // 同上(三次Bスプライン。PBVR_STRUCT_INTERP=bspline)
 #ifdef ENABLE_ENSEMBLE_TIMER
 #include <vismodule/Timer>
 #endif
@@ -1750,13 +1751,19 @@ void calculate_scalar_and_normal(
 }
 
 // 非構造版 calculate_scalar_and_chain_rule_grad との違いは前半のみ:
-//   CellBase(setLocalPointArray+CalcScalarGrad) を TrilinearInterpolator(attachPoint+scalar/gradient)
+//   CellBase(setLocalPointArray+CalcScalarGrad) を補間器(attachPoint+scalar/gradient)
 //   に置換(局所=格子単位座標)。後半(chain rule)は完全に同一ロジック。
+//
+// 補間器を型引数にとる。TrilinearInterpolator(既定・三線形) と
+// CubicBSplineInterpolator(三次Bスプライン) のどちらでも本体は同一。両者は
+// attachPoint/scalar/gradient と「gradient() は -∇q を返す」規約を共有する。
+// 既定の三線形は型引数の推論で従来と同じ実体になるため、生成される命令列は変わらない。
+template < typename Interpolator >
 void calculate_scalar_and_chain_rule_grad_struct(
     const int nparticles_count,
     const int nvariables,
     ChainRuleEvalContext& chain_context,
-    const std::vector< vismodule::TrilinearInterpolator* >& interp,
+    const std::vector< Interpolator* >& interp,
     const vismodule::Vector3f* local_coord_array,
     const vismodule::Vector3f* global_coord_array,
     float* scalar_result,
@@ -1792,7 +1799,7 @@ void calculate_scalar_and_chain_rule_grad_struct(
         interp[j]->attachPoint( px, py, pz );
         interp[j]->scalar( scalar_array[j] );
         interp[j]->gradient( grad_qx[j], grad_qy[j], grad_qz[j] );
-        // TrilinearInterpolator::gradient() は -∇q(負の勾配)を返すが、非構造版 CellBase::grad_ary は
+        // 補間器の gradient() は -∇q(負の勾配)を返すが、非構造版 CellBase::grad_ary は
         // +∇q(正の勾配)。法線符号を非構造版に揃えるため反転する。分散/変動係数の"値"はスカラー g,g²
         // (R_sq,R_scal)のみに依存し不変で、反転は R_norm/R_tmp 経由の法線の符号のみを是正する。
         for ( int p = 0; p < SIMD_BLK_SIZE; ++p )
@@ -1859,6 +1866,104 @@ void calculate_scalar_and_chain_rule_grad_struct(
         grad_array_x[p] = grad_F.x();
         grad_array_y[p] = grad_F.y();
         grad_array_z[p] = grad_F.z();
+    }
+}
+
+/*===========================================================================*/
+/**
+ *  @brief  構造格子の補間方式。
+ *
+ *  Trilinear は従来どおりの三線形補間。1軸あたり2節点で、セル境界で勾配が飛ぶ
+ *  (C0 連続)。値は節点値の内分なので節点値の範囲を出ない。
+ *
+ *  BSpline は三次Bスプライン補間。1軸あたり4節点で C2 連続。微分量を含む数式の
+ *  連鎖律に使える精度が出る(正弦波の場・1波長 15.9 セルの実測で、値の誤差
+ *  3.82e-2 -> 2.43e-4、勾配 5.55e-2 -> 4.75e-4)。ただし補間そのものの処理時間が
+ *  2.62 倍で、節点値から制御点を作る前処理が値の更新ごとに要る。
+ */
+/*===========================================================================*/
+enum StructInterpMethod
+{
+    StructInterpTrilinear = 0,   ///< 三線形(既定。従来と完全に同一)
+    StructInterpBSpline   = 1    ///< 三次Bスプライン
+};
+
+/*===========================================================================*/
+/**
+ *  @brief  環境変数 PBVR_STRUCT_INTERP から構造格子の補間方式を読む。
+ *      trilinear (既定) / bspline
+ *
+ *  bspline を選んだときは、使う前に補間器の自己検査を1回だけ走らせる。検査に
+ *  落ちたとき、および格子が小さすぎて1軸に4節点を取れないときは三線形へ退避する。
+ */
+/*===========================================================================*/
+inline StructInterpMethod resolve_struct_interp_method( const vismodule::Vector3ui& resolution )
+{
+    const char* e = std::getenv( "PBVR_STRUCT_INTERP" );
+    if ( e == NULL || e[0] == '\0' ) return StructInterpTrilinear;
+    if ( std::strcmp( e, "trilinear" ) == 0 ) return StructInterpTrilinear;
+    if ( std::strcmp( e, "bspline" ) != 0 )
+    {
+        std::cerr << "PBVR_STRUCT_INTERP: unknown value '" << e
+                  << "' (expected trilinear|bspline). Using trilinear." << std::endl;
+        return StructInterpTrilinear;
+    }
+
+    // 三次は i-1 から i+2 を参照するので、1軸あたり最低4節点が要る
+    if ( resolution.x() < 4 || resolution.y() < 4 || resolution.z() < 4 )
+    {
+        std::cerr << "PBVR_STRUCT_INTERP=bspline: 格子が小さすぎる ("
+                  << resolution.x() << "x" << resolution.y() << "x" << resolution.z()
+                  << ")。各軸 4 節点以上が要る。三線形を使う。" << std::endl;
+        return StructInterpTrilinear;
+    }
+
+    // 自己検査は1プロセスにつき1回だけ
+    static const bool passed = vismodule::CubicBSplineInterpolator::selfTest( true );
+    if ( !passed )
+    {
+        std::cerr << "PBVR_STRUCT_INTERP=bspline: 自己検査に失敗。三線形を使う。" << std::endl;
+        return StructInterpTrilinear;
+    }
+    return StructInterpBSpline;
+}
+
+/*===========================================================================*/
+/**
+ *  @brief  方式に応じて補間器を選び、値と法線を求める。
+ *
+ *  呼び出し側(一様サンプリングと shift の再補間、計3か所)の分岐をここにまとめる。
+ *  使わない側の補間器の配列は空でよい。
+ */
+/*===========================================================================*/
+static inline void calculate_scalar_and_normal_struct(
+    const StructInterpMethod method,
+    const int nparticles_count,
+    const int nvariables,
+    ChainRuleEvalContext& chain_context,
+    const std::vector< vismodule::TrilinearInterpolator* >& interp_tri,
+    const std::vector< vismodule::CubicBSplineInterpolator* >& interp_bs,
+    const vismodule::Vector3f* local_coord_array,
+    const vismodule::Vector3f* global_coord_array,
+    float* scalar_result,
+    float* grad_array_x,
+    float* grad_array_y,
+    float* grad_array_z,
+    ChainRuleTimingBreakdown* timing )
+{
+    if ( method == StructInterpBSpline )
+    {
+        calculate_scalar_and_chain_rule_grad_struct(
+            nparticles_count, nvariables, chain_context, interp_bs,
+            local_coord_array, global_coord_array,
+            scalar_result, grad_array_x, grad_array_y, grad_array_z, timing );
+    }
+    else
+    {
+        calculate_scalar_and_chain_rule_grad_struct(
+            nparticles_count, nvariables, chain_context, interp_tri,
+            local_coord_array, global_coord_array,
+            scalar_result, grad_array_x, grad_array_y, grad_array_z, timing );
     }
 }
 
@@ -3618,18 +3723,47 @@ bool GenerateEnsembleParticlesStruct(
         static_cast<unsigned int>( dom.resolution[0] ),
         static_cast<unsigned int>( dom.resolution[1] ),
         static_cast<unsigned int>( dom.resolution[2] ) );
+    const StructInterpMethod struct_interp = resolve_struct_interp_method( resolution );
+
     std::vector<std::vector<vismodule::TrilinearInterpolator*> > cell( max_threads );
+    // 三次Bスプライン用。既定(三線形)では作らない
+    std::vector<std::vector<vismodule::CubicBSplineInterpolator*> > cell_bs( max_threads );
+    std::vector< std::vector<float> > bs_coeff;   // 変数ごとの制御点。補間器はここを参照する
     {
 #ifdef ENABLE_ENSEMBLE_TIMER
         EnsembleTimerScope timer_scope( &ensemble_timer, EnsembleTimerCreateCells );
 #endif
-        for ( int thread = 0; thread < max_threads; thread++ )
+        if ( struct_interp == StructInterpBSpline )
         {
-            cell[thread].resize( nvariables, nullptr );
+            // 節点値そのものではなく制御点を補間するので、変数ごとに前処理する。
+            // 制御点は全スレッドで共有(読むだけ)。値が更新されるたびに作り直す。
+            bs_coeff.resize( nvariables );
             for ( int variable = 0; variable < nvariables; variable++ )
             {
-                cell[thread][variable] = new vismodule::TrilinearInterpolator( values[variable], resolution );
-                cell[thread][variable]->setCellLength( 1 );
+                vismodule::CubicBSplineInterpolator::buildControlPoints(
+                    values[variable], resolution, bs_coeff[variable] );
+            }
+            for ( int thread = 0; thread < max_threads; thread++ )
+            {
+                cell_bs[thread].resize( nvariables, nullptr );
+                for ( int variable = 0; variable < nvariables; variable++ )
+                {
+                    cell_bs[thread][variable] = new vismodule::CubicBSplineInterpolator(
+                        bs_coeff[variable].data(), resolution );
+                    cell_bs[thread][variable]->setCellLength( 1 );
+                }
+            }
+        }
+        else
+        {
+            for ( int thread = 0; thread < max_threads; thread++ )
+            {
+                cell[thread].resize( nvariables, nullptr );
+                for ( int variable = 0; variable < nvariables; variable++ )
+                {
+                    cell[thread][variable] = new vismodule::TrilinearInterpolator( values[variable], resolution );
+                    cell[thread][variable]->setCellLength( 1 );
+                }
             }
         }
     }
@@ -3730,8 +3864,8 @@ bool GenerateEnsembleParticlesStruct(
                     p_id++;
                     if ( p_id == SIMD_BLK_SIZE )
                     {
-                        calculate_scalar_and_chain_rule_grad_struct(
-                            p_id, nvariables, chain_context, cell[thid],
+                        calculate_scalar_and_normal_struct(
+                            struct_interp, p_id, nvariables, chain_context, cell[thid], cell_bs[thid],
                             local_coord_array, global_coord_array,
                             scalar_array, grad_array_x, grad_array_y, grad_array_z, &chain_rule_timing );
                         const size_t so = th_vertex_scalars.size();
@@ -3747,8 +3881,8 @@ bool GenerateEnsembleParticlesStruct(
             }
             if ( p_id > 0 )
             {
-                calculate_scalar_and_chain_rule_grad_struct(
-                    p_id, nvariables, chain_context, cell[thid],
+                calculate_scalar_and_normal_struct(
+                    struct_interp, p_id, nvariables, chain_context, cell[thid], cell_bs[thid],
                     local_coord_array, global_coord_array,
                     scalar_array, grad_array_x, grad_array_y, grad_array_z, &chain_rule_timing );
                 const size_t so = th_vertex_scalars.size();
@@ -3839,8 +3973,8 @@ bool GenerateEnsembleParticlesStruct(
                             lc.y() * cell_length_f + min_vec.y(),
                             lc.z() * cell_length_f + min_vec.z() );
                     }
-                    calculate_scalar_and_chain_rule_grad_struct(
-                        remain_BLK, nvariables, chain_context, cell[thid],
+                    calculate_scalar_and_normal_struct(
+                        struct_interp, remain_BLK, nvariables, chain_context, cell[thid], cell_bs[thid],
                         local_coord_array, global_coord_array,
                         scalar_array, grad_array_x, grad_array_y, grad_array_z, &chain_rule_timing );
                     for ( int j = 0; j < remain_BLK; j++ )
@@ -4197,9 +4331,14 @@ bool GenerateEnsembleParticlesStruct(
 #endif
     for ( int thread = 0; thread < max_threads; thread++ )
     {
-        for ( int variable = 0; variable < nvariables; variable++ )
+        // 選ばなかった方は空のまま。size() で回して空振りさせる
+        for ( size_t variable = 0; variable < cell[thread].size(); variable++ )
         {
             delete cell[thread][variable];
+        }
+        for ( size_t variable = 0; variable < cell_bs[thread].size(); variable++ )
+        {
+            delete cell_bs[thread][variable];
         }
     }
     }

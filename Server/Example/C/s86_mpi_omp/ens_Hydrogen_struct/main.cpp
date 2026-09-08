@@ -50,6 +50,17 @@ int main( int argc, char** argv )
     MPI_Init( &argc, &argv );
     MPI_Comm_rank( MPI_COMM_WORLD, &(mpi_rank) );
     MPI_Comm_size( MPI_COMM_WORLD, &ens_num );
+    // 検証用: アンサンブル数を環境変数 PBVR_ENS_NUM で上書きできるようにする。
+    // 既定は従来どおり mpi_size(=1ランク1メンバ、shift 交換なし)。mpi_size/ens_num が
+    // 2 以上になると shift 交換の経路を通るので、その経路も検証できる。
+    {
+        const char* e = std::getenv( "PBVR_ENS_NUM" );
+        if ( e != NULL && e[0] != 0 )
+        {
+            const int v = std::atoi( e );
+            if ( v > 0 && ens_num % v == 0 ) ens_num = v;
+        }
+    }
 #else
     mpi_rank = 0;
 #endif
