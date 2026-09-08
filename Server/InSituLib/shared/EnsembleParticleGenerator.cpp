@@ -372,25 +372,6 @@ enum class NormalMethod
 
 /*===========================================================================*/
 /**
- *  @brief  環境変数 PBVR_NORMAL_METHOD から方式を決める。既定は現行方式。
- *      chainrule (既定) / coorddiff / nodefield
- */
-/*===========================================================================*/
-inline NormalMethod resolve_normal_method()
-{
-    const char* e = std::getenv( "PBVR_NORMAL_METHOD" );
-    if ( e == NULL || e[0] == '\0' ) return NormalMethod::ChainRule;
-    if ( std::strcmp( e, "chainrule" ) == 0 ) return NormalMethod::ChainRule;
-    if ( std::strcmp( e, "coorddiff" ) == 0 ) return NormalMethod::CoordinateDifference;
-    if ( std::strcmp( e, "nodefield" ) == 0 ) return NormalMethod::NodeFField;
-    std::cerr << "PBVR_NORMAL_METHOD: unknown value '" << e
-              << "' (expected chainrule|coorddiff|nodefield). Using chainrule."
-              << std::endl;
-    return NormalMethod::ChainRule;
-}
-
-/*===========================================================================*/
-/**
  *  @brief  変数値の並び(varr)を組み立てて、数式 F の値をブロック一括で求める。
  *
  *  chainRuleBlock() の前半を切り出したもの。方式A(座標差分法)は局所座標を
@@ -818,6 +799,283 @@ void calculate_scalar_and_grad_coorddiff(
             grad_array_z[p] = 0.0f;
         }
     }
+}
+
+/*===========================================================================*/
+/**
+ *  @brief  利用者が要求した法線計算方式。auto は実行時に選ぶ。
+ */
+/*===========================================================================*/
+enum class NormalMethodRequest
+{
+    Auto,
+    ChainRule,
+    CoordinateDifference,
+    NodeFField
+};
+
+/*===========================================================================*/
+/**
+ *  @brief  環境変数 PBVR_NORMAL_METHOD から要求を読む。既定は現行方式。
+ *      chainrule (既定) / coorddiff / nodefield / auto
+ */
+/*===========================================================================*/
+inline NormalMethodRequest resolve_normal_method_request()
+{
+    const char* e = std::getenv( "PBVR_NORMAL_METHOD" );
+    if ( e == NULL || e[0] == '\0' ) return NormalMethodRequest::ChainRule;
+    if ( std::strcmp( e, "chainrule" ) == 0 ) return NormalMethodRequest::ChainRule;
+    if ( std::strcmp( e, "coorddiff" ) == 0 ) return NormalMethodRequest::CoordinateDifference;
+    if ( std::strcmp( e, "nodefield" ) == 0 ) return NormalMethodRequest::NodeFField;
+    if ( std::strcmp( e, "auto" ) == 0 )      return NormalMethodRequest::Auto;
+    std::cerr << "PBVR_NORMAL_METHOD: unknown value '" << e
+              << "' (expected chainrule|coorddiff|nodefield|auto). Using chainrule."
+              << std::endl;
+    return NormalMethodRequest::ChainRule;
+}
+
+/*===========================================================================*/
+/**
+ *  @brief  auto で方式A と方式C を分ける、粒子数/セル数の閾値。
+ *
+ *  方式C の前処理（節点微分量の復元）は「セル数 x 節点数 x 微分量を使う変数の数」に
+ *  比例する固定費で、粒子数には依らない。一方 方式A は1粒子につき ±eps の6点で
+ *  数式を評価するため粒子数に比例する。したがって粒子数が多いほど方式C が有利になり、
+ *  逆転点は節点数と変数の数に比例して上がる。
+ *
+ *  校正は実測1点のみ。六面体（節点8）・微分量を使う変数1個・4MPI×2OMP・256^3 格子で、
+ *  逆転点が「1ランクあたりの粒子数/セル数」= 約 0.39 だった。その1点を基準に、
+ *  固定費が何倍になるか（節点数の比 x 変数の数の比）で割り増しする。
+ *
+ *  注意: 節点数と変数の数に比例するという部分は実測していない。方式C の前処理が
+ *  「セル数 x 節点数 x 変数の数」の勾配評価であることからの推定で、六面体1条件からの
+ *  外挿である。四面体（節点4）や二次六面体（節点20）では確かめていない。
+ *
+ *  比はランクあたりで取ること。ensemble_timer_summary.csv の粒子数は MPI_SUM で
+ *  全ランクを合計した値なので、そのまま使うとランク数ぶん過大になる。
+ *
+ *  条件が合わない場合は環境変数 PBVR_NORMAL_AUTO_THRESHOLD で閾値そのものを
+ *  直接指定できる。
+ */
+/*===========================================================================*/
+inline double normal_auto_threshold( const int nnodes, const int ndq_variables )
+{
+    const char* e = std::getenv( "PBVR_NORMAL_AUTO_THRESHOLD" );
+    if ( e != NULL && e[0] != '\0' ) return std::atof( e );
+
+    // 校正点（実測した条件と、そのときの逆転点）
+    const double CALIB_RATIO  = 0.39;   // そのときの 粒子数/セル数
+    const int    CALIB_NNODES = 8;      // そのときのセルの節点数（六面体）
+    const int    CALIB_NDQVAR = 1;      // そのときの微分量を使う変数の数
+
+    const int v = ( ndq_variables > 0 ) ? ndq_variables : 1;
+    return CALIB_RATIO
+         * ( static_cast<double>( nnodes ) / static_cast<double>( CALIB_NNODES ) )
+         * ( static_cast<double>( v )      / static_cast<double>( CALIB_NDQVAR ) );
+}
+
+inline const char* celltype_name( const vismodule::VolumeObjectBase::CellType& c )
+{
+    switch ( c )
+    {
+    case vismodule::VolumeObjectBase::Tetrahedra:          return "四面体";
+    case vismodule::VolumeObjectBase::Hexahedra:           return "六面体";
+    case vismodule::VolumeObjectBase::QuadraticTetrahedra: return "二次四面体";
+    case vismodule::VolumeObjectBase::QuadraticHexahedra:  return "二次六面体";
+    case vismodule::VolumeObjectBase::Prism:               return "三角柱";
+    case vismodule::VolumeObjectBase::Pyramid:             return "四角錐";
+    default:                                               return "不明";
+    }
+}
+
+inline const char* normal_method_name( const NormalMethod m )
+{
+    switch ( m )
+    {
+    case NormalMethod::CoordinateDifference: return "座標差分法(coorddiff)";
+    case NormalMethod::NodeFField:           return "節点F場法(nodefield)";
+    default:                                 return "チェーンルール(chainrule)";
+    }
+}
+
+/*===========================================================================*/
+/**
+ *  @brief  全セルの体積の総和。auto での粒子数の見積もりに使う。
+ *
+ *  一様サンプリングの粒子数は CalculateNumberOfParticlesV35( max_density, セル体積,
+ *  repetitions, ... ) で決まり、密度は定数なので、期待値は
+ *      粒子数 = max_density * 総体積 * repetitions
+ *  で前もって求まる。ここは総体積を1回走査して求める（auto のときだけ呼ぶ）。
+ */
+/*===========================================================================*/
+static double total_cell_volume(
+    std::vector< std::vector<vismodule::CellBase<Type>*> >& cell, const int ncells )
+{
+    double total = 0.0;
+#pragma omp parallel reduction(+:total)
+    {
+#if _OPENMP
+        const int thid = omp_get_thread_num();
+#else
+        const int thid = 0;
+#endif
+        vismodule::UInt32 cid[SIMD_BLK_SIZE];
+        vismodule::Real32 vol[SIMD_BLK_SIZE];
+#pragma omp for schedule( static )
+        for ( int base = 0; base < ncells; base += SIMD_BLK_SIZE )
+        {
+            const int m = ( ncells - base > SIMD_BLK_SIZE ) ? SIMD_BLK_SIZE : ncells - base;
+            for ( int p = 0; p < m; ++p ) cid[p] = static_cast<vismodule::UInt32>( base + p );
+            cell[thid][0]->bindCellArray( m, cid );
+            cell[thid][0]->volumeArray( m, cid, vol );
+            for ( int p = 0; p < m; ++p )
+            {
+                if ( std::isfinite( vol[p] ) && vol[p] > 0.0f ) total += vol[p];
+            }
+        }
+    }
+    return total;
+}
+
+/*===========================================================================*/
+/**
+ *  @brief  法線計算方式を決める。
+ *
+ *  最初に「その方式では法線が出ない」組み合わせを潰す。ここは利用者の要求より
+ *  優先する。黙って法線がゼロの出力を出すより、方式を変えて警告する方がよい。
+ *
+ *    ・数式が微分量(dq)を含む + チェーンルール
+ *        合算対象を選ぶ判定が dq を弾くため、法線が全粒子ゼロになる。
+ *    ・数式が微分量を含む + 座標差分 + 一次四面体
+ *        一次四面体は grad q がセル内で定数なので、セル内で F を差分すると
+ *        厳密にゼロになる。節点F場法は節点ごとに違う微分量が入るので影響を受けない。
+ *    ・数式が微分量を含む + 座標差分 + 四角錐
+ *        PyramidalCell は局所座標を x=2x/(1-z) に潰してから形状関数を評価するため、
+ *        格納された局所座標をずらす座標差分とはパラメータ化が食い違い、向きが
+ *        約18度ずれる。法線は出るので警告のみとし、方式は変えない。
+ *
+ *  そのうえで auto なら速度で選ぶ。
+ */
+/*===========================================================================*/
+static NormalMethod select_normal_method(
+    const NormalMethodRequest request,
+    const bool uses_dq,
+    const int ndq_variables,
+    const vismodule::VolumeObjectBase::CellType& celltype,
+    const int nnodes,
+    const double np_over_ncell,
+    const bool np_known,
+    const int mpi_rank,
+    std::string* reason )
+{
+    const bool is_tetra   = ( celltype == vismodule::VolumeObjectBase::Tetrahedra );
+    const bool is_pyramid = ( celltype == vismodule::VolumeObjectBase::Pyramid );
+    std::ostringstream why;
+
+    NormalMethod m = NormalMethod::ChainRule;
+
+    if ( request == NormalMethodRequest::Auto )
+    {
+        if ( !uses_dq )
+        {
+            m = NormalMethod::ChainRule;
+            why << "数式が微分量を含まないため現行方式で足りる";
+        }
+        else if ( is_tetra )
+        {
+            m = NormalMethod::NodeFField;
+            why << "一次四面体では座標差分の法線が厳密にゼロになるため";
+        }
+//        else if ( is_pyramid )
+//        {
+//            m = NormalMethod::NodeFField;
+//            why << "四角錐は局所座標の潰しにより座標差分の向きがずれるため";
+//        }
+        else
+        {
+            const double th = normal_auto_threshold( nnodes, ndq_variables );
+            if ( !np_known )
+            {
+                m = NormalMethod::CoordinateDifference;
+                why << "粒子数を見積もれないため座標差分を選択";
+            }
+            else if ( np_over_ncell >= th )
+            {
+                m = NormalMethod::NodeFField;
+                why << "粒子数/セル数=" << np_over_ncell << " が閾値 " << th << " 以上";
+            }
+            else
+            {
+                m = NormalMethod::CoordinateDifference;
+                why << "粒子数/セル数=" << np_over_ncell << " が閾値 " << th << " 未満";
+            }
+        }
+    }
+    else
+    {
+        switch ( request )
+        {
+        case NormalMethodRequest::CoordinateDifference: m = NormalMethod::CoordinateDifference; break;
+        case NormalMethodRequest::NodeFField:           m = NormalMethod::NodeFField;           break;
+        default:                                        m = NormalMethod::ChainRule;            break;
+        }
+        why << "利用者の指定";
+
+        // --- 正しさの門番。要求を上書きする ---
+        if ( uses_dq && m == NormalMethod::ChainRule )
+        {
+            m = ( is_tetra || is_pyramid ) ? NormalMethod::NodeFField
+                                           : NormalMethod::CoordinateDifference;
+            why.str( "" );
+            why << "数式が微分量を含みチェーンルールでは法線が全粒子ゼロになるため切り替え";
+            if ( mpi_rank == 0 )
+            {
+                std::cerr << "[PBVR] 警告: 数式が微分量(dq)を含むため、チェーンルールでは"
+                          << "法線が全粒子ゼロになります。" << normal_method_name( m )
+                          << " に切り替えます。" << std::endl;
+            }
+        }
+        else if ( uses_dq && m == NormalMethod::CoordinateDifference && is_tetra )
+        {
+            m = NormalMethod::NodeFField;
+            why.str( "" );
+            why << "一次四面体では座標差分の法線が厳密にゼロになるため切り替え";
+            if ( mpi_rank == 0 )
+            {
+                std::cerr << "[PBVR] 警告: 一次四面体では座標差分の法線が厳密にゼロになります。"
+                          << "節点F場法に切り替えます。" << std::endl;
+            }
+        }
+        else if ( uses_dq && m == NormalMethod::CoordinateDifference && is_pyramid )
+        {
+            if ( mpi_rank == 0 )
+            {
+                std::cerr << "[PBVR] 警告: 四角錐は局所座標の潰しにより座標差分の法線の向きが"
+                          << "約18度ずれます。節点F場法を推奨します。" << std::endl;
+            }
+        }
+
+        // --- 速度の助言（方式は変えない） ---
+        if ( uses_dq && np_known && !is_tetra && !is_pyramid && mpi_rank == 0 )
+        {
+            const double th = normal_auto_threshold( nnodes, ndq_variables );
+            if ( m == NormalMethod::CoordinateDifference && np_over_ncell >= th )
+            {
+                std::cerr << "[PBVR] 助言: 粒子数/セル数=" << np_over_ncell
+                          << " は閾値 " << th << " 以上です。節点F場法の方が速い見込みです。"
+                          << std::endl;
+            }
+            else if ( m == NormalMethod::NodeFField && np_over_ncell < th )
+            {
+                std::cerr << "[PBVR] 助言: 粒子数/セル数=" << np_over_ncell
+                          << " は閾値 " << th << " 未満です。座標差分の方が速い見込みです。"
+                          << std::endl;
+            }
+        }
+    }
+
+    if ( reason != NULL ) *reason = why.str();
+    return m;
 }
 
 /*===========================================================================*/
@@ -1947,8 +2205,9 @@ bool GenerateEnsembleParticles(
     }
 
     // 法線計算の方式。粒子生成の全体で1回だけ決め、以降のブロックで切り替えない。
-    // 方式C は節点F場を作れなかった場合にここで現行方式へ落とすため const にしない。
-    NormalMethod normal_method = resolve_normal_method();
+    // 実際の決定はサンプリング準備の後（粒子数の見積もりが要るため）。
+    const NormalMethodRequest normal_method_request = resolve_normal_method_request();
+    NormalMethod normal_method = NormalMethod::ChainRule;
 
     std::vector<std::vector<vismodule::CellBase<Type>*> > cell( max_threads );
     {
@@ -1989,6 +2248,63 @@ bool GenerateEnsembleParticles(
                     return false;
                 }
             }
+        }
+    }
+
+    float sampling_volume_inverse = 0.0f;
+    float max_opacity = 0.0f;
+    float max_density = 0.0f;
+    float repetitions = particle_property.m_repeat_level;  //
+    const float particle_density = 1.0f;
+    const int MPIprocess_per_ensemble = mpi_size/num_ensemble;
+    const int ens_number = num_ensemble;
+    {  // 区間計測用の{}
+#ifdef ENABLE_ENSEMBLE_TIMER
+        EnsembleTimerScope timer_scope( &ensemble_timer, EnsembleTimerSamplingPrepare );
+#endif
+        sampling_volume_inverse = particle_property.m_transfunc_synthesizer->getSamplingVolumeInverse();
+        max_opacity = particle_property.m_transfunc_synthesizer->getMaxOpacity();
+        max_density = particle_property.m_transfunc_synthesizer->getMaxDensity();
+        if ( mpi_size % MPIprocess_per_ensemble != 0 )
+        {
+            std::cerr << "error !! need  ens_number % MPIprocess_per_ensemble = 0!!  " << std::endl;
+            return false;
+        } 
+        repetitions /= static_cast<float>( ens_number );
+    }
+
+    // --- 法線計算方式の決定 ---
+    // 粒子数の期待値は max_density * 総体積 * repetitions で前もって求まる。
+    // 総体積の走査は auto のときだけ行う（全セルを1回なめるので無料ではない）。
+    {
+        const DqUsage usage_for_select = collect_dq_usage( equation_token, nvariables );
+        const int nnodes_of_cell = static_cast<int>( cell[0][0]->numberOfNodes() );
+        double np_over_ncell = 0.0;
+        bool   np_known = false;
+        if ( normal_method_request == NormalMethodRequest::Auto || usage_for_select.any() )
+        {
+            const double v_total = total_cell_volume( cell, ncells );
+            if ( v_total > 0.0 && ncells > 0 )
+            {
+                const double np = static_cast<double>( max_density ) * v_total
+                                * static_cast<double>( repetitions );
+                np_over_ncell = np / static_cast<double>( ncells );
+                np_known = true;
+            }
+        }
+        std::string reason;
+        normal_method = select_normal_method(
+            normal_method_request, usage_for_select.any(),
+            static_cast<int>( usage_for_select.var_index.size() ),
+            celltype, nnodes_of_cell, np_over_ncell, np_known, mpi_rank, &reason );
+        if ( mpi_rank == 0 )
+        {
+            std::cerr << "[PBVR] 法線計算: " << normal_method_name( normal_method )
+                      << "  判断根拠: " << reason << std::endl
+                      << "[PBVR]   セル種=" << celltype_name( celltype )
+                      << "(節点" << nnodes_of_cell << ") セル数=" << ncells;
+            if ( np_known ) std::cerr << " 粒子数/セル数=" << np_over_ncell;
+            std::cerr << " 微分量を使う変数=" << usage_for_select.var_index.size() << std::endl;
         }
     }
 
@@ -2037,27 +2353,6 @@ bool GenerateEnsembleParticles(
         }
     }
 
-    float sampling_volume_inverse = 0.0f;
-    float max_opacity = 0.0f;
-    float max_density = 0.0f;
-    float repetitions = particle_property.m_repeat_level;  //
-    const float particle_density = 1.0f;
-    const int MPIprocess_per_ensemble = mpi_size/num_ensemble;
-    const int ens_number = num_ensemble;
-    {  // 区間計測用の{}
-#ifdef ENABLE_ENSEMBLE_TIMER
-        EnsembleTimerScope timer_scope( &ensemble_timer, EnsembleTimerSamplingPrepare );
-#endif
-        sampling_volume_inverse = particle_property.m_transfunc_synthesizer->getSamplingVolumeInverse();
-        max_opacity = particle_property.m_transfunc_synthesizer->getMaxOpacity();
-        max_density = particle_property.m_transfunc_synthesizer->getMaxDensity();
-        if ( mpi_size % MPIprocess_per_ensemble != 0 )
-        {
-            std::cerr << "error !! need  ens_number % MPIprocess_per_ensemble = 0!!  " << std::endl;
-            return false;
-        } 
-        repetitions /= static_cast<float>( ens_number );
-    }
     std::vector<vismodule::Real32> vertex_coords;
     std::vector<vismodule::Real32> vertex_scalars;
     std::vector<vismodule::Real32> vertex_normals;
