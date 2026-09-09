@@ -98,6 +98,18 @@ public:
     void scalar( float* values ) const;
     void gradient( float* g_x, float* g_y, float* g_z ) const;
 
+    /*  2階微分（ヘッセ行列）。対称なので独立な6成分を返す。
+     *
+     *  【符号の規約】gradient() と同じく **-H** を返す。呼び出し側は gradient() と
+     *  まったく同じ扱い（符号を反転して使う）でよい。この class の微分は
+     *  すべて符号が反転している、と覚えること。
+     *
+     *  【単位】1/cell_length^2 が掛かる。setCellLength() に物理的な格子間隔を
+     *  渡してあれば物理座標系で返る。gradient() が 1/cell_length なのに対して
+     *  ここは二乗なので、格子単位のまま通すと誤差が二乗で効く。 */
+    void hessian( float* h_xx, float* h_yy, float* h_zz,
+                  float* h_xy, float* h_xz, float* h_yz ) const;
+
     /*  節点値から制御点を逆算する。x, y, z 軸に順に1回ずつ再帰フィルタを通す。
      *  境界は鏡像（q[-1] = q[1]）。単精度で計算する（速度優先。§資料 参照）。
      *  値が更新されるたびに呼ぶこと。
@@ -127,6 +139,17 @@ protected:
         d[1] = ( 9.0f * t2 - 12.0f * t ) * ( 1.0f / 6.0f );
         d[2] = ( -9.0f * t2 + 6.0f * t + 3.0f ) * ( 1.0f / 6.0f );
         d[3] = 0.5f * t2;
+    }
+
+    /*  上に 2階微分の重み e を足したもの。基底をもう1回 t で微分しただけ。
+     *      Sum e = (1-t) + (3t-2) + (-3t+1) + t = 0 が恒等的に成り立つ */
+    static inline void weights( const float t, float w[4], float d[4], float e[4] )
+    {
+        weights( t, w, d );
+        e[0] = 1.0f - t;
+        e[1] = 3.0f * t - 2.0f;
+        e[2] = -3.0f * t + 1.0f;
+        e[3] = t;
     }
 
     /*  点 I の格子添字と局所座標。三次は i-1 から i+2 を参照するので、
@@ -248,6 +271,80 @@ inline void CubicBSplineInterpolator::gradient( float* g_x, float* g_y, float* g
 
 /*===========================================================================*/
 /**
+ *  @brief  2階微分（ヘッセ行列）の独立6成分を求める。**gradient() と同じく -H を返す。**
+ *
+ *  重みの組み合わせを変えるだけで、参照する制御点は scalar()/gradient() と同じ 64 点。
+ *      対角成分   1軸だけ2階微分の重み e、他2軸は値の重み w
+ *      交差成分   2軸を1階微分の重み d、残り1軸は w
+ *
+ *  1点あたりの内側ループで x 方向の3種類の和（w, d, e）を作り、それを y, z で
+ *  組み合わせる。6成分をまとめて1パスで出す。
+ */
+/*===========================================================================*/
+inline void CubicBSplineInterpolator::hessian(
+    float* h_xx, float* h_yy, float* h_zz,
+    float* h_xy, float* h_xz, float* h_yz ) const
+{
+    const int rx = static_cast<int>( m_resolution.x() );
+    const int ry = static_cast<int>( m_resolution.y() );
+    const int rz = static_cast<int>( m_resolution.z() );
+    const float inv_h2 = 1.0f / ( m_cell_length * m_cell_length );
+
+    for ( int I = 0; I < SIMDW; I++ )
+    {
+        int i0, j0, k0; float tx, ty, tz;
+        locate( m_px[I], rx, i0, tx );
+        locate( m_py[I], ry, j0, ty );
+        locate( m_pz[I], rz, k0, tz );
+
+        float wx[4], wy[4], wz[4], dx[4], dy[4], dz[4], ex[4], ey[4], ez[4];
+        weights( tx, wx, dx, ex );
+        weights( ty, wy, dy, ey );
+        weights( tz, wz, dz, ez );
+
+        float sxx = 0.0f, syy = 0.0f, szz = 0.0f, sxy = 0.0f, sxz = 0.0f, syz = 0.0f;
+        for ( int c = 0; c < 4; ++c )
+        {
+            const int bk = ( k0 + c ) * m_slice_size;
+            // a=値, axx=x2階, ayy=y2階, axy=xy, ax=x1階, ay=y1階（z との組み合わせ用）
+            float a = 0.0f, axx = 0.0f, ayy = 0.0f, axy = 0.0f, ax = 0.0f, ay = 0.0f;
+            for ( int b = 0; b < 4; ++b )
+            {
+                const int bj = bk + ( j0 + b ) * m_line_size;
+                float v = 0.0f, vx = 0.0f, vxx = 0.0f;
+                for ( int m = 0; m < 4; ++m )
+                {
+                    const float q = m_coeff[ bj + i0 + m ];
+                    v   += wx[m] * q;
+                    vx  += dx[m] * q;
+                    vxx += ex[m] * q;
+                }
+                a   += wy[b] * v;
+                axx += wy[b] * vxx;
+                ayy += ey[b] * v;
+                axy += dy[b] * vx;
+                ax  += wy[b] * vx;
+                ay  += dy[b] * v;
+            }
+            sxx += wz[c] * axx;
+            syy += wz[c] * ayy;
+            szz += ez[c] * a;
+            sxy += wz[c] * axy;
+            sxz += dz[c] * ax;
+            syz += dz[c] * ay;
+        }
+        // gradient() と同じ規約で符号を反転して返す
+        h_xx[I] = -inv_h2 * sxx;
+        h_yy[I] = -inv_h2 * syy;
+        h_zz[I] = -inv_h2 * szz;
+        h_xy[I] = -inv_h2 * sxy;
+        h_xz[I] = -inv_h2 * sxz;
+        h_yz[I] = -inv_h2 * syz;
+    }
+}
+
+/*===========================================================================*/
+/**
  *  @brief  1軸ぶんの再帰フィルタ。境界は鏡像（q[-1] = q[1]）。
  *
  *  節点 i での補間値が q[i] になるよう制御点を逆算する。関係式は
@@ -320,10 +417,11 @@ inline void CubicBSplineInterpolator::buildControlPoints(
 /**
  *  @brief  自己検査。前処理と重みの正しさを確かめる。
  *
- *   1. 重みの総和が 1、1階微分の重みの総和が 0
+ *   1. 重みの総和が 1、1階微分の重みの総和が 0、**2階微分の重みの総和が 0**
  *   2. 節点で評価すると節点値に戻る（添字 [1, N-2] の全節点）  ← 前処理の正しさ。決定的
  *   3. 定数場を補間すると同じ定数、勾配は 0
- *   4. 内部で三次までの多項式を厳密に再現する（値・勾配とも）
+ *   4. 内部で三次までの多項式を厳密に再現する（値・勾配・**2階微分**とも）
+ *      あわせて **2階微分の符号**を q = x² で確認する（-H を返す規約）
  *   5. 境界の影響が端から 1 セルにつき |z| 倍ずつ減衰する（鏡像の閉じ方の確認）
  *
  *  【誤差の測り方】
@@ -342,7 +440,7 @@ inline void CubicBSplineInterpolator::buildControlPoints(
 inline bool CubicBSplineInterpolator::selfTest( bool verbose )
 {
     bool ok = true;
-    const int N = 32;
+    const int N = 64;   // 2階微分の検査に端から 12 セルの余裕が要る（§17.9）
     const vismodule::Vector3ui res( N, N, N );
     const size_t sz = static_cast<size_t>( N ) * N * N;
 
@@ -352,14 +450,17 @@ inline bool CubicBSplineInterpolator::selfTest( bool verbose )
     for ( int s = 0; s <= 10; ++s )
     {
         const float t = 0.1f * s;
-        float w[4], d[4];
-        weights( t, w, d );
+        float w[4], d[4], e[4];
+        weights( t, w, d, e );
         const float sw = w[0] + w[1] + w[2] + w[3];
         const float sd = d[0] + d[1] + d[2] + d[3];
+        const float se = e[0] + e[1] + e[2] + e[3];
         if ( std::fabs( sw - 1.0f ) > 1.0e-5f ) { ok = false;
             std::printf( "CubicBSpline selfTest NG: 重みの総和 t=%.1f sum=%.7f (1 のはず)\n", t, sw ); }
         if ( std::fabs( sd ) > 1.0e-5f ) { ok = false;
             std::printf( "CubicBSpline selfTest NG: 微分の重みの総和 t=%.1f sum=%.7f (0 のはず)\n", t, sd ); }
+        if ( std::fabs( se ) > 1.0e-5f ) { ok = false;
+            std::printf( "CubicBSpline selfTest NG: 2階微分の重みの総和 t=%.1f sum=%.7f (0 のはず)\n", t, se ); }
     }
 
     // 一次の場。検査 2 と 5 で使う
@@ -459,6 +560,13 @@ inline bool CubicBSplineInterpolator::selfTest( bool verbose )
         #define BS_FX(u,v,w) ( ( 0.8 + 2.4*(u) + 0.4*(v) + 0.5*(w) + 3.3*(u)*(u) + 0.35*(v)*(w) ) * S )
         #define BS_FY(u,v,w) ( ( -0.5 - 1.8*(v) + 0.4*(u) - 0.3*(w) - 1.8*(v)*(v) + 0.35*(u)*(w) ) * S )
         #define BS_FZ(u,v,w) ( ( 0.6 + 1.4*(w) - 0.3*(v) + 0.5*(u) + 2.7*(w)*(w) + 0.35*(u)*(v) ) * S )
+        // 2階微分。座標の正規化が二乗で効くので S*S が掛かる
+        #define BS_FXX(u,v,w) ( (  2.4 + 6.6*(u) ) * S * S )
+        #define BS_FYY(u,v,w) ( ( -1.8 - 3.6*(v) ) * S * S )
+        #define BS_FZZ(u,v,w) ( (  1.4 + 5.4*(w) ) * S * S )
+        #define BS_FXY(u,v,w) ( (  0.4 + 0.35*(w) ) * S * S )
+        #define BS_FXZ(u,v,w) ( (  0.5 + 0.35*(v) ) * S * S )
+        #define BS_FYZ(u,v,w) ( ( -0.3 + 0.35*(u) ) * S * S )
         const float amp3 = 8.0f;
 
         std::vector<float> q3( sz ), c3;
@@ -471,18 +579,32 @@ inline bool CubicBSplineInterpolator::selfTest( bool verbose )
         CubicBSplineInterpolator ip3( c3.data(), res );
         ip3.setCellLength( 1.0f );
 
-        // 端から 8 セル以上離れた内部だけを見る（境界の鏡像の影響を避ける）
+        // 端から 12 セル以上離れた内部だけを見る（境界の鏡像の影響を避ける）。
+        // 2階微分は値・勾配より境界に敏感で、端から 4 セルでは 8 % ずれる（§17.9）
+        const int MARGIN = 12;
         int n = 0;
-        for ( int k = 8; k <= N-9 && n < SIMDW; ++k )
-            for ( int j = 8; j <= N-9 && n < SIMDW; ++j )
-                for ( int i = 8; i <= N-9 && n < SIMDW; ++i )
+        for ( int k = MARGIN; k <= N-1-MARGIN && n < SIMDW; ++k )
+            for ( int j = MARGIN; j <= N-1-MARGIN && n < SIMDW; ++j )
+                for ( int i = MARGIN; i <= N-1-MARGIN && n < SIMDW; ++i )
                 { px[n]=i+0.37f; py[n]=j+0.61f; pz[n]=k+0.13f; ++n; }
         for ( int m = n; m < SIMDW; ++m ) { px[m]=px[0]; py[m]=py[0]; pz[m]=pz[0]; }
+        float hxx[SIMDW], hyy[SIMDW], hzz[SIMDW], hxy[SIMDW], hxz[SIMDW], hyz[SIMDW];
         ip3.attachPoint( px, py, pz );
         ip3.scalar( vv );
         ip3.gradient( gx, gy, gz );
+        ip3.hessian( hxx, hyy, hzz, hxy, hxz, hyz );
 
-        float wv = 0.0f, wg = 0.0f;
+        // 2階微分の真値の大きさ。絶対誤差をこれで割って判定する
+        // (成分ごとに 1e-3 〜 1e-4 と小さいので、絶対値のままでは尺度が合わない)
+        const float amp_h = 6.6f * (float)( S * S );
+        // 2階微分の許容値だけ緩い理由: この場では制御点が ~8、2階微分が ~6e-4 で、
+        // 打ち消しが約 1.4 万倍ある。単精度の丸め (eps 6e-8) がそのまま
+        // 相対誤差 ~1e-3 の床になる。端からの距離を 12 -> 20 セルに広げても
+        // 下がらないことを実測で確認済み(§17.9)。重みや組み立ての誤りなら
+        // 相対誤差は O(1) になるので、5e-3 でも十分に捕まえられる。
+        const float tol_h = 5.0e-3f;
+
+        float wv = 0.0f, wg = 0.0f, wh = 0.0f;
         for ( int m = 0; m < n; ++m )
         {
             const double u = px[m]*S, v = py[m]*S, w = pz[m]*S;
@@ -490,18 +612,56 @@ inline bool CubicBSplineInterpolator::selfTest( bool verbose )
             wg = std::max( wg, (float)std::fabs( -gx[m] - (float)BS_FX( u, v, w ) ) );
             wg = std::max( wg, (float)std::fabs( -gy[m] - (float)BS_FY( u, v, w ) ) );
             wg = std::max( wg, (float)std::fabs( -gz[m] - (float)BS_FZ( u, v, w ) ) );
+            // hessian() は -H を返す規約
+            wh = std::max( wh, (float)std::fabs( -hxx[m] - (float)BS_FXX( u, v, w ) ) / amp_h );
+            wh = std::max( wh, (float)std::fabs( -hyy[m] - (float)BS_FYY( u, v, w ) ) / amp_h );
+            wh = std::max( wh, (float)std::fabs( -hzz[m] - (float)BS_FZZ( u, v, w ) ) / amp_h );
+            wh = std::max( wh, (float)std::fabs( -hxy[m] - (float)BS_FXY( u, v, w ) ) / amp_h );
+            wh = std::max( wh, (float)std::fabs( -hxz[m] - (float)BS_FXZ( u, v, w ) ) / amp_h );
+            wh = std::max( wh, (float)std::fabs( -hyz[m] - (float)BS_FYZ( u, v, w ) ) / amp_h );
         }
         if ( wv > 1.0e-5f ) { ok = false;
             std::printf( "CubicBSpline selfTest NG: 三次多項式の再現 誤差/振幅 %.3e\n", wv ); }
         if ( wg > 1.0e-4f ) { ok = false;
             std::printf( "CubicBSpline selfTest NG: 三次多項式の勾配 最大絶対誤差 %.3e\n", wg ); }
+        if ( wh > tol_h ) { ok = false;
+            std::printf( "CubicBSpline selfTest NG: 三次多項式の2階微分 誤差/大きさ %.3e (許容 %.1e)\n",
+                         wh, tol_h ); }
         else if ( verbose )
-            std::printf( "CubicBSpline selfTest OK: 三次多項式 値 %.3e 勾配 %.3e (内部 %d 点)\n", wv, wg, n );
+            std::printf( "CubicBSpline selfTest OK: 三次多項式 値 %.3e 勾配 %.3e 2階微分 %.3e (内部 %d 点)\n",
+                         wv, wg, wh, n );
+
+        // 2階微分の符号。凸な場 q = x^2 では d2q/dx2 > 0 なので hessian() は負を返すはず
+        {
+            std::vector<float> q4( sz ), c4;
+            for ( int k = 0; k < N; ++k )
+                for ( int j = 0; j < N; ++j )
+                    for ( int i = 0; i < N; ++i )
+                        q4[ (size_t)k*N*N + (size_t)j*N + i ] = (float)( i * i ) * (float)( S * S );
+            buildControlPoints( q4.data(), res, c4 );
+            CubicBSplineInterpolator ip4( c4.data(), res );
+            ip4.setCellLength( 1.0f );
+            for ( int m = 0; m < SIMDW; ++m ) { px[m]=N*0.5f+0.4f; py[m]=N*0.5f+0.2f; pz[m]=N*0.5f+0.7f; }
+            ip4.attachPoint( px, py, pz );
+            ip4.hessian( hxx, hyy, hzz, hxy, hxz, hyz );
+            const float want = -2.0f * (float)( S * S );        // -H なので負
+            if ( std::fabs( hxx[0] - want ) > 1.0e-3f * std::fabs( want ) )
+            { ok = false; std::printf( "CubicBSpline selfTest NG: 2階微分の符号か大きさ %.6e (%.6e のはず)\n",
+                                       hxx[0], want ); }
+            else if ( verbose )
+                std::printf( "CubicBSpline selfTest OK: 2階微分の符号 q=x^2 で -H = %.6e\n", hxx[0] );
+        }
 
         #undef BS_F
         #undef BS_FX
         #undef BS_FY
         #undef BS_FZ
+        #undef BS_FXX
+        #undef BS_FYY
+        #undef BS_FZZ
+        #undef BS_FXY
+        #undef BS_FXZ
+        #undef BS_FYZ
     }
 
     if ( verbose && ok ) std::printf( "CubicBSpline selfTest: 全項目 OK\n" );
