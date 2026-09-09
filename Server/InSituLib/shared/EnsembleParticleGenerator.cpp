@@ -422,6 +422,38 @@ inline void eval_F_block(
 #endif
 }
 
+/*===========================================================================*/
+/**
+ *  @brief  変数ごとの 2階微分（ヘッセ行列）のブロック。chainRuleBlock へ渡す。
+ *
+ *  微分量 dq を含む数式の連鎖律には、dq の位置微分 = q の 2階微分が要る（§17.2）。
+ *
+ *      dF/dx = Σ (dF/dq)·(dq/dx)                      … 第1項（従来から計算している）
+ *            + Σ (dF/ddq_x)·Hxx + (dF/ddq_y)·Hxy + (dF/ddq_z)·Hxz   … 第2項（ここ）
+ *
+ *  【符号】**+H を入れること。** 補間器の hessian() は -H を返すので、
+ *  取得直後に反転する（gradient() を +∇q へ直しているのと同じ扱い）。
+ *
+ *  【単位】物理座標系（1/cell_length^2 が掛かった値）。§17.8 の決定に従う。
+ *
+ *  dq_slot は DqUsage::slot をそのまま渡す。[v*3+c] >= 0 の (変数, 成分) だけを
+ *  摂動する。数式が参照していない成分に手を触れないことで無駄な数式評価を省く。
+ */
+/*===========================================================================*/
+struct HessianBlock
+{
+    float (*xx)[SIMD_BLK_SIZE];
+    float (*yy)[SIMD_BLK_SIZE];
+    float (*zz)[SIMD_BLK_SIZE];
+    float (*xy)[SIMD_BLK_SIZE];
+    float (*xz)[SIMD_BLK_SIZE];
+    float (*yz)[SIMD_BLK_SIZE];
+    const int* dq_slot;          ///< [v*3+c] >= 0 なら数式が参照している
+
+    HessianBlock(): xx(0), yy(0), zz(0), xy(0), xz(0), yz(0), dq_slot(0) {}
+    bool valid() const { return xx && yy && zz && xy && xz && yz && dq_slot; }
+};
+
 inline void chainRuleBlock(
     ChainRuleEvalContext& ctx,
     const int n,
@@ -435,7 +467,8 @@ inline void chainRuleBlock(
     float* grad_array_x,
     float* grad_array_y,
     float* grad_array_z,
-    ChainRuleTimingBreakdown* timing )
+    ChainRuleTimingBreakdown* timing,
+    const HessianBlock* hess = NULL )   ///< NULL なら従来どおり第1項のみ
 {
     const float FD = 1.0e-5f;   // == ChainRuleNormal FiniteDifferenceScale
     // xa/ya/za は varr 経由で ctx.rpn に登録され、以降のチェーンルール再評価でも
@@ -472,6 +505,54 @@ inline void chainRuleBlock(
             }
         }
     }
+
+    // --- 第2項: 微分量 dq を含む数式の寄与（§17.2）---
+    // dq の枠を摂動して dF/ddq_vc を取り、ヘッセ行列の行と組み合わせる。
+    // hess == NULL のとき（非構造格子側、三線形、方式C）は何もしないので従来と同一。
+    if ( hess != NULL && hess->valid() )
+    {
+        alignas(64) float dfd[3][SIMD_BLK_SIZE];
+        for ( int v = 0; v < nvariables; ++v )
+        {
+            bool any = false;
+            for ( int c = 0; c < 3; ++c )
+                if ( hess->dq_slot[ v * 3 + c ] >= 0 ) any = true;
+            if ( !any ) continue;                       // この変数の dq は使われていない
+
+            float* const dq[3] = { grad_qx[v], grad_qy[v], grad_qz[v] };
+            for ( int c = 0; c < 3; ++c )
+            {
+                for ( int p = 0; p < n; ++p ) dfd[c][p] = 0.0f;
+                if ( hess->dq_slot[ v * 3 + c ] < 0 ) continue;
+                float* di = dq[c];                      // varr[Q1+4v+1+c] がこれを指している
+                for ( int p = 0; p < n; ++p )
+                { qs[p] = di[p]; eps[p] = FD * std::max( 1.0f, std::fabs( di[p] ) ); }
+                for ( int p = 0; p < n; ++p ) di[p] = qs[p] + eps[p];
+                ctx.rpn.evalArraySIMD( Fp, n );
+                for ( int p = 0; p < n; ++p ) di[p] = qs[p] - eps[p];
+                ctx.rpn.evalArraySIMD( Fm, n );
+                for ( int p = 0; p < n; ++p ) di[p] = qs[p];        // 必ず戻す
+                for ( int p = 0; p < n; ++p )
+                {
+                    const float d = ( Fp[p] - Fm[p] ) / ( 2.0f * eps[p] );
+                    dfd[c][p] = std::isfinite( d ) ? d : 0.0f;
+                }
+            }
+            const float* const Hxx = hess->xx[v];
+            const float* const Hyy = hess->yy[v];
+            const float* const Hzz = hess->zz[v];
+            const float* const Hxy = hess->xy[v];
+            const float* const Hxz = hess->xz[v];
+            const float* const Hyz = hess->yz[v];
+            for ( int p = 0; p < n; ++p )
+            {
+                grad_array_x[p] += dfd[0][p] * Hxx[p] + dfd[1][p] * Hxy[p] + dfd[2][p] * Hxz[p];
+                grad_array_y[p] += dfd[0][p] * Hxy[p] + dfd[1][p] * Hyy[p] + dfd[2][p] * Hyz[p];
+                grad_array_z[p] += dfd[0][p] * Hxz[p] + dfd[1][p] * Hyz[p] + dfd[2][p] * Hzz[p];
+            }
+        }
+    }
+
     for ( int p = 0; p < n; ++p )
     {
         if ( !( std::isfinite( grad_array_x[p] ) && std::isfinite( grad_array_y[p] ) && std::isfinite( grad_array_z[p] ) ) )
@@ -1750,6 +1831,30 @@ void calculate_scalar_and_normal(
         scalar_result, grad_array_x, grad_array_y, grad_array_z, timing );
 }
 
+/*===========================================================================*/
+/**
+ *  @brief  補間器からヘッセ行列を取れるかどうかで振り分ける。
+ *
+ *  三線形は 2階微分の対角成分が恒等的に 0 で、交差成分もセル境界で飛ぶため
+ *  使えない（§17.4）。呼ばれても何もせず false を返す。
+ *  戻り値の符号は補間器の規約どおり **-H** なので、呼び出し側で反転すること。
+ */
+/*===========================================================================*/
+static inline bool fetch_hessian(
+    const vismodule::TrilinearInterpolator*,
+    float*, float*, float*, float*, float*, float* )
+{
+    return false;
+}
+
+static inline bool fetch_hessian(
+    const vismodule::CubicBSplineInterpolator* ip,
+    float* xx, float* yy, float* zz, float* xy, float* xz, float* yz )
+{
+    ip->hessian( xx, yy, zz, xy, xz, yz );
+    return true;
+}
+
 // 非構造版 calculate_scalar_and_chain_rule_grad との違いは前半のみ:
 //   CellBase(setLocalPointArray+CalcScalarGrad) を補間器(attachPoint+scalar/gradient)
 //   に置換(局所=格子単位座標)。後半(chain rule)は完全に同一ロジック。
@@ -1770,12 +1875,22 @@ void calculate_scalar_and_chain_rule_grad_struct(
     float* grad_array_x,
     float* grad_array_y,
     float* grad_array_z,
-    ChainRuleTimingBreakdown* timing )
+    ChainRuleTimingBreakdown* timing,
+    const int* dq_slot = NULL )   ///< DqUsage::slot。NULL なら 2階微分を使わない
 {
     float scalar_array[nvariables][SIMD_BLK_SIZE];
     float grad_qx[nvariables][SIMD_BLK_SIZE];
     float grad_qy[nvariables][SIMD_BLK_SIZE];
     float grad_qz[nvariables][SIMD_BLK_SIZE];
+    // ヘッセ行列。dq を含む数式でだけ確保する(1変数ぶんで 3KB なので既定では持たない)
+    const int nvh = ( dq_slot != NULL ) ? nvariables : 1;
+    float hxx[nvh][SIMD_BLK_SIZE];
+    float hyy[nvh][SIMD_BLK_SIZE];
+    float hzz[nvh][SIMD_BLK_SIZE];
+    float hxy[nvh][SIMD_BLK_SIZE];
+    float hxz[nvh][SIMD_BLK_SIZE];
+    float hyz[nvh][SIMD_BLK_SIZE];
+    bool  have_hess = false;
 
 #ifdef ENABLE_ENSEMBLE_TIMER
     vismodule::Timer calc_scalar_grad_timer;
@@ -1808,6 +1923,20 @@ void calculate_scalar_and_chain_rule_grad_struct(
             grad_qy[j][p] = -grad_qy[j][p];
             grad_qz[j][p] = -grad_qz[j][p];
         }
+        // 2階微分。dq を含む数式で、かつ補間器が出せるときだけ
+        if ( dq_slot != NULL )
+        {
+            if ( fetch_hessian( interp[j], hxx[j], hyy[j], hzz[j], hxy[j], hxz[j], hyz[j] ) )
+            {
+                have_hess = true;
+                // hessian() も -H を返すので、勾配と同じく反転して +H にする
+                for ( int p = 0; p < SIMD_BLK_SIZE; ++p )
+                {
+                    hxx[j][p] = -hxx[j][p]; hyy[j][p] = -hyy[j][p]; hzz[j][p] = -hzz[j][p];
+                    hxy[j][p] = -hxy[j][p]; hxz[j][p] = -hxz[j][p]; hyz[j][p] = -hyz[j][p];
+                }
+            }
+        }
     }
 #ifdef ENABLE_ENSEMBLE_TIMER
     calc_scalar_grad_timer.stop();
@@ -1828,11 +1957,18 @@ void calculate_scalar_and_chain_rule_grad_struct(
     }
 
 #ifdef PBVR_SIMD_CHAINRULE
+    HessianBlock hb;
+    if ( have_hess )
+    {
+        hb.xx = hxx; hb.yy = hyy; hb.zz = hzz;
+        hb.xy = hxy; hb.xz = hxz; hb.yz = hyz;
+        hb.dq_slot = dq_slot;
+    }
     chainRuleBlock( chain_context, nparticles_count, nvariables,
                     scalar_array, grad_qx, grad_qy, grad_qz,
                     global_coord_array,
                     scalar_result, grad_array_x, grad_array_y, grad_array_z,
-                    timing );
+                    timing, have_hess ? &hb : NULL );
     return;
 #endif
 
@@ -1920,10 +2056,10 @@ enum StructInterpMethod
  *
  *  領域端は片側差分にする。これで**袖領域の交換なしに完結する**。
  *
- *  【単位】格子単位で返す（節点1つぶんを1とする）。物理座標系ではない。
- *  既存の構造格子経路が TrilinearInterpolator に setCellLength(1) を渡していて、
- *  数式へ入る dq が格子単位になっているため、それに合わせている。
- *  方式C と現行方式を同じ土俵で比べるにはこちらを揃える必要がある。
+ *  【単位】物理座標系で返す（S3 で統一。§17.8）。
+ *  数式を書く人が dq に期待しているのは物理的な勾配であり、非構造格子版も
+ *  grad_ary() が J^-1 を適用して物理座標系で返している。構造格子側もこれに揃えた。
+ *  cell_length = 1 の構成では従来（格子単位）と一致するため、既存の検証は有効。
  *
  *  @param  usage   参照されている微分量だけを作る。使わない成分は計算しない
  *  @param  node_dq [out] 添字は s*ncoords + node。s は usage.slot が決める格納位置
@@ -1932,6 +2068,7 @@ enum StructInterpMethod
 static void build_node_dq_field_struct(
     Type** values, const int nvariables,
     const int nx, const int ny, const int nz,
+    const float cell_length,
     const DqUsage& usage,
     std::vector<float>& node_dq )
 {
@@ -1941,6 +2078,10 @@ static void build_node_dq_field_struct(
 
     const size_t line  = static_cast<size_t>( nx );
     const size_t slice = static_cast<size_t>( nx ) * ny;
+    // 物理座標系で返す。中心差分は 2h、片側差分は h で割る（h = cell_length）。
+    // h は標本点間の実距離であって精度のためのパラメータではない(§17.8)
+    const float inv_h  = ( cell_length != 0.0f ) ? ( 1.0f / cell_length ) : 1.0f;
+    const float inv_2h = 0.5f * inv_h;
 
 #pragma omp parallel for schedule( static )
     for ( int k = 0; k < nz; ++k )
@@ -1964,9 +2105,9 @@ static void build_node_dq_field_struct(
                         if ( s < 0 ) continue;             // 参照されていない成分は作らない
                         float d;
                         if ( len[c] < 2 )               d = 0.0f;
-                        else if ( idx[c] == 0 )         d = static_cast<float>( q[n + step[c]] - q[n] );
-                        else if ( idx[c] == len[c] - 1 ) d = static_cast<float>( q[n] - q[n - step[c]] );
-                        else d = 0.5f * static_cast<float>( q[n + step[c]] - q[n - step[c]] );
+                        else if ( idx[c] == 0 )         d = inv_h  * static_cast<float>( q[n + step[c]] - q[n] );
+                        else if ( idx[c] == len[c] - 1 ) d = inv_h  * static_cast<float>( q[n] - q[n - step[c]] );
+                        else d = inv_2h * static_cast<float>( q[n + step[c]] - q[n - step[c]] );
                         node_dq[ static_cast<size_t>( s ) * ncoords + n ] = d;
                     }
                 }
@@ -2133,6 +2274,8 @@ inline StructInterpMethod resolve_struct_interp_method( const vismodule::Vector3
  *  使わない側の補間器の配列は空でよい。
  *
  *  @param  interp_F  方式C の節点F場の補間器。他の方式では NULL でよい
+ *  @param  dq_slot   DqUsage::slot。Bスプライン経路で 2階微分を使うときだけ渡す。
+ *      NULL なら従来どおり連鎖律の第1項のみ（§17.2）
  */
 /*===========================================================================*/
 static inline void calculate_scalar_and_normal_struct(
@@ -2143,6 +2286,7 @@ static inline void calculate_scalar_and_normal_struct(
     const std::vector< vismodule::TrilinearInterpolator* >& interp_tri,
     const std::vector< vismodule::CubicBSplineInterpolator* >& interp_bs,
     vismodule::TrilinearInterpolator* interp_F,
+    const int* dq_slot,
     const vismodule::Vector3f* local_coord_array,
     const vismodule::Vector3f* global_coord_array,
     float* scalar_result,
@@ -2202,10 +2346,11 @@ static inline void calculate_scalar_and_normal_struct(
         calculate_scalar_and_chain_rule_grad_struct(
             nparticles_count, nvariables, chain_context, interp_bs,
             local_coord_array, global_coord_array,
-            scalar_result, grad_array_x, grad_array_y, grad_array_z, timing );
+            scalar_result, grad_array_x, grad_array_y, grad_array_z, timing, dq_slot );
     }
     else
     {
+        // 三線形は 2階微分を出せないので dq_slot は渡さない（§17.4）
         calculate_scalar_and_chain_rule_grad_struct(
             nparticles_count, nvariables, chain_context, interp_tri,
             local_coord_array, global_coord_array,
@@ -3964,7 +4109,8 @@ bool GenerateEnsembleParticlesStruct(
     }
 
     // 構造格子: TrilinearInterpolator を各スレッド・各変数に構築(非構造版 cell 構築の置換)。
-    // 格子単位座標で補間するため setCellLength(1)。物理座標は global=local*cell_length+min で別途算出。
+    // 局所座標は格子単位、微分は物理座標系(setCellLength(cell_length))。
+    // 物理座標は global=local*cell_length+min で別途算出する。
     const vismodule::Vector3ui resolution(
         static_cast<unsigned int>( dom.resolution[0] ),
         static_cast<unsigned int>( dom.resolution[1] ),
@@ -3979,6 +4125,19 @@ bool GenerateEnsembleParticlesStruct(
     std::vector<vismodule::TrilinearInterpolator*> cell_F( max_threads, NULL );
     std::vector<Type>  node_F;      // 補間器より長く生存させること
     std::vector<float> node_dq;
+
+    // 数式が参照している微分量。方式C では節点微分量の復元に、
+    // Bスプラインでは連鎖律の第2項（2階微分の寄与、§17.2）に使う。
+    const DqUsage dq_usage = collect_dq_usage( equation_token, nvariables );
+    // 三線形は 2階微分を出せないので渡さない（§17.4）。
+    // 方式C は節点F場の中で dq を消費済みなので、粒子側では不要。
+    const int* const dq_slot =
+        ( struct_interp == StructInterpBSpline && dq_usage.any() ) ? dq_usage.slot.data() : NULL;
+    if ( dq_slot != NULL )
+    {
+        std::cout << "PBVR_STRUCT_INTERP=bspline: 数式が微分量を参照しているため、"
+                  << "連鎖律に 2階微分の寄与を加える (" << dq_usage.nslots << " 成分)" << std::endl;
+    }
     {
 #ifdef ENABLE_ENSEMBLE_TIMER
         EnsembleTimerScope timer_scope( &ensemble_timer, EnsembleTimerCreateCells );
@@ -3987,14 +4146,15 @@ bool GenerateEnsembleParticlesStruct(
         {
             // 数式が参照する微分量だけを中心差分で作り、節点で F を評価する。
             // dq を含まない数式なら復元そのものを飛ばせる(その方が安い)。
-            const DqUsage usage = collect_dq_usage( equation_token, nvariables );
+            const DqUsage& usage = dq_usage;
             const std::vector<float>* dq_ptr = NULL;
             if ( usage.any() )
             {
                 build_node_dq_field_struct( values, nvariables,
                     static_cast<int>( dom.resolution[0] ),
                     static_cast<int>( dom.resolution[1] ),
-                    static_cast<int>( dom.resolution[2] ), usage, node_dq );
+                    static_cast<int>( dom.resolution[2] ),
+                    dom.cell_length, usage, node_dq );
                 dq_ptr = &node_dq;
             }
             const vismodule::Vector3f nf_min(
@@ -4013,9 +4173,10 @@ bool GenerateEnsembleParticlesStruct(
             {
                 for ( int thread = 0; thread < max_threads; thread++ )
                 {
-                    // 節点F場は格子単位で補間する(既存経路と同じ setCellLength(1))
+                    // 微分は物理座標系で返す(S3 で統一。§17.8)。局所座標は格子単位のままで、
+                    // cell_length は微分の出力にしか効かないので値の補間は変わらない
                     cell_F[thread] = new vismodule::TrilinearInterpolator( node_F.data(), resolution );
-                    cell_F[thread]->setCellLength( 1 );
+                    cell_F[thread]->setCellLength( dom.cell_length );
                 }
             }
         }
@@ -4036,7 +4197,7 @@ bool GenerateEnsembleParticlesStruct(
                 {
                     cell_bs[thread][variable] = new vismodule::CubicBSplineInterpolator(
                         bs_coeff[variable].data(), resolution );
-                    cell_bs[thread][variable]->setCellLength( 1 );
+                    cell_bs[thread][variable]->setCellLength( dom.cell_length );
                 }
             }
         }
@@ -4048,7 +4209,7 @@ bool GenerateEnsembleParticlesStruct(
                 for ( int variable = 0; variable < nvariables; variable++ )
                 {
                     cell[thread][variable] = new vismodule::TrilinearInterpolator( values[variable], resolution );
-                    cell[thread][variable]->setCellLength( 1 );
+                    cell[thread][variable]->setCellLength( dom.cell_length );
                 }
             }
         }
@@ -4152,7 +4313,7 @@ bool GenerateEnsembleParticlesStruct(
                     {
                         calculate_scalar_and_normal_struct(
                             struct_interp, p_id, nvariables, chain_context, cell[thid], cell_bs[thid],
-                            cell_F[thid], local_coord_array, global_coord_array,
+                            cell_F[thid], dq_slot, local_coord_array, global_coord_array,
                             scalar_array, grad_array_x, grad_array_y, grad_array_z, &chain_rule_timing );
                         const size_t so = th_vertex_scalars.size();
                         const size_t vo = th_vertex_coords.size();
@@ -4169,7 +4330,7 @@ bool GenerateEnsembleParticlesStruct(
             {
                 calculate_scalar_and_normal_struct(
                     struct_interp, p_id, nvariables, chain_context, cell[thid], cell_bs[thid],
-                    cell_F[thid], local_coord_array, global_coord_array,
+                    cell_F[thid], dq_slot, local_coord_array, global_coord_array,
                     scalar_array, grad_array_x, grad_array_y, grad_array_z, &chain_rule_timing );
                 const size_t so = th_vertex_scalars.size();
                 const size_t vo = th_vertex_coords.size();
@@ -4261,7 +4422,7 @@ bool GenerateEnsembleParticlesStruct(
                     }
                     calculate_scalar_and_normal_struct(
                         struct_interp, remain_BLK, nvariables, chain_context, cell[thid], cell_bs[thid],
-                        cell_F[thid], local_coord_array, global_coord_array,
+                        cell_F[thid], dq_slot, local_coord_array, global_coord_array,
                         scalar_array, grad_array_x, grad_array_y, grad_array_z, &chain_rule_timing );
                     for ( int j = 0; j < remain_BLK; j++ )
                     {
