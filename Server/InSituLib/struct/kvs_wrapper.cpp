@@ -517,6 +517,8 @@ bool ensemble_generate_particles(
     const int timer_max_threads = 1;
 #endif
     vismodule::EnsembleTimerCollector ensemble_timer( time_step, timer_max_threads );
+    vismodule::Timer ensemble_total_timer;
+    ensemble_total_timer.start();
 #endif
     // 構造格子版の計算本体
 //    particle_property.m_log_scale_statistics = true; // スタブデータ(検証用。default.json連携時に有効化 or 削除)
@@ -588,6 +590,16 @@ bool ensemble_generate_particles(
         ofs << "LATEST_STEP = " << time_step       << std::endl;
         ofs.close();
     }
+
+#ifdef ENABLE_ENSEMBLE_TIMER
+    // 集計 CSV の出力。非構造版 kvs_wrapper.cpp と同じ扱いで、構造格子版にも入れた。
+    // これで BENCHMARK/parse_timing.py -> summarize_results.py が構造格子でも使える。
+    // 注意: ensemble_timer_summary.csv は std::ios::app で開かれるため、再実行すると
+    // 旧行が蓄積する。集計前に消すこと（BENCHMARK/generate_pbs_jobs.py のリセット処理）。
+    ensemble_total_timer.stop();
+    ensemble_timer.add( vismodule::EnsembleTimerTotal, ensemble_total_timer.sec() );
+    ensemble_timer.printCsv( mpi_rank, mpi_size );
+#endif
 
     delete particle_property.m_transfunc_synthesizer;
     delete particle_property.m_camera;

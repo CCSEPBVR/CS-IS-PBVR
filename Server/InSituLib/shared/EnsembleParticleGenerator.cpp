@@ -4257,6 +4257,17 @@ bool GenerateEnsembleParticlesStruct(
     std::vector<vismodule::Real32> sq_scalars;
     std::vector<vismodule::Real32> tmp_term;
 
+#ifdef ENABLE_ENSEMBLE_TIMER
+    // 一様サンプリングと shift 交換は非構造版では計測済みだが、構造格子版には
+    // 入っていなかった。BENCHMARK の集計系（parse_timing.py / summarize_results.py）を
+    // 構造格子でも使えるようにするため、同じ区間名で計測する。
+    vismodule::Timer uniform_timer;
+    std::vector<double> uniform_thread_times( max_threads, 0.0 );
+    uniform_timer.start();
+#endif
+    // スレッドごとの粒子数と、全体配列へ書き込む先頭位置（並列前置和の併合で使う）
+    std::vector<size_t> merge_off( max_threads + 1, 0 );
+    size_t merge_base_s = 0, merge_base_v = 0;
     // === 構造格子 一様サンプリング(非構造版 cellループ+リングの置換。v1: リングなし=各メンバ単独) ===
     // 各格子セルで max_density*cell_volume*repetitions 個の候補点を生成し、
     // TrilinearInterpolator で値・勾配を補間、chain rule 法線を求めて統計初期値(g, g^2, -grad, g*grad)を格納。
@@ -4276,6 +4287,10 @@ bool GenerateEnsembleParticlesStruct(
 #else
         const int thid = 0;
         const int nthreads = 1;
+#endif
+#ifdef ENABLE_ENSEMBLE_TIMER
+        vismodule::Timer uniform_thread_timer;
+        uniform_thread_timer.start();
 #endif
         ChainRuleEvalContext chain_context;
         chain_context.initialize( equation_token, nvariables );
@@ -4355,20 +4370,59 @@ bool GenerateEnsembleParticlesStruct(
                     scalar_array, local_coord_array, grad_array_x, grad_array_y, grad_array_z );
             }
         }
-#pragma omp critical
+        // 並列前置和による併合（非構造版 GenerateEnsembleParticles と同じ方式）。
+        // 各スレッドが自分の粒子数を記録し、1スレッドが先頭位置を求めて全体配列を
+        // 1回だけ確保し、その後は各スレッドが互いに重ならない位置へ並列にコピーする。
+        // omp critical だと 5 配列 44 B/粒子 のコピーが直列化し、実測で一様サンプリングの
+        // 74〜82 % を占めていた。粒子の並びは critical の非決定順から
+        // スレッド番号順になるが、統計量は順序に依らないので不変量は保たれる。
+        merge_off[thid + 1] = th_vertex_scalars.size();
+        #pragma omp barrier
+        #pragma omp single
         {
-            vertex_scalars.insert( vertex_scalars.end(), th_vertex_scalars.begin(), th_vertex_scalars.end() );
-            sq_scalars.insert( sq_scalars.end(), th_sq_scalars.begin(), th_sq_scalars.end() );
-            vertex_coords.insert( vertex_coords.end(), th_vertex_coords.begin(), th_vertex_coords.end() );
-            vertex_normals.insert( vertex_normals.end(), th_vertex_normals.begin(), th_vertex_normals.end() );
-            tmp_term.insert( tmp_term.end(), th_tmp_term.begin(), th_tmp_term.end() );
+            merge_base_s = vertex_scalars.size();
+            merge_base_v = vertex_coords.size();
+            for ( int t = 0; t < max_threads; ++t ) merge_off[t + 1] += merge_off[t];
+            const size_t total = merge_off[max_threads];
+            vertex_scalars.resize( merge_base_s + total );
+            sq_scalars.resize( merge_base_s + total );
+            vertex_coords.resize( merge_base_v + 3 * total );
+            vertex_normals.resize( merge_base_v + 3 * total );
+            tmp_term.resize( merge_base_v + 3 * total );
         }
+        {
+            const size_t so = merge_base_s + merge_off[thid];
+            const size_t vo = merge_base_v + 3 * merge_off[thid];
+            std::copy( th_vertex_scalars.begin(), th_vertex_scalars.end(), vertex_scalars.begin() + so );
+            std::copy( th_sq_scalars.begin(),     th_sq_scalars.end(),     sq_scalars.begin()     + so );
+            std::copy( th_vertex_coords.begin(),  th_vertex_coords.end(),  vertex_coords.begin()  + vo );
+            std::copy( th_vertex_normals.begin(), th_vertex_normals.end(), vertex_normals.begin() + vo );
+            std::copy( th_tmp_term.begin(),       th_tmp_term.end(),       tmp_term.begin()       + vo );
+        }
+#ifdef ENABLE_ENSEMBLE_TIMER
+        uniform_thread_timer.stop();
+        uniform_thread_times[thid] += uniform_thread_timer.sec();
+#endif
     }
+#ifdef ENABLE_ENSEMBLE_TIMER
+    uniform_timer.stop();
+    ensemble_timer.add( EnsembleTimerOmpUniformSampling, uniform_timer.sec() );
+    for ( int t = 0; t < max_threads; t++ )
+        ensemble_timer.addThread( EnsembleTimerOmpUniformSampling, t, uniform_thread_times[t] );
+#endif
 
     // === v2: リング交換で全メンバ統計を集約(非構造版リングの struct 版) ===
     // 自分の候補点を v_*[0] に移し、shift ループで隣へ順送り。受信した候補点(格子座標)で
     // 自分のメンバの値を TrilinearInterpolator で再補間し統計に累積する。cell_id は不要。
     {
+#ifdef ENABLE_ENSEMBLE_TIMER
+        vismodule::Timer mpi_shift_timer;
+        vismodule::Timer shift_interp_timer;
+        std::vector<double> shift_interp_thread_times( max_threads, 0.0 );
+        double payload_all_sec = 0.0;
+        double shift_interp_sec = 0.0;
+        mpi_shift_timer.start();
+#endif
         std::vector< std::vector<vismodule::Real32> > v_scalars(2), v_coords(2), v_normals(2), v_sq(2), v_tmp(2);
         v_scalars[0].swap( vertex_scalars );
         v_coords[0].swap( vertex_coords );
@@ -4398,7 +4452,14 @@ bool GenerateEnsembleParticlesStruct(
             MPI_Isend( v_normals[cur].data(),  3 * send_size, MPI_FLOAT, send_to, 13, MPI_COMM_WORLD, &req[7] );
             MPI_Isend( v_sq[cur].data(),       send_size,     MPI_FLOAT, send_to, 14, MPI_COMM_WORLD, &req[8] );
             MPI_Isend( v_tmp[cur].data(),      3 * send_size, MPI_FLOAT, send_to, 15, MPI_COMM_WORLD, &req[9] );
+#ifdef ENABLE_ENSEMBLE_TIMER
+            vismodule::Timer payload_timer; payload_timer.start();
+#endif
             MPI_Waitall( 10, req, MPI_STATUSES_IGNORE );
+#ifdef ENABLE_ENSEMBLE_TIMER
+            payload_timer.stop(); payload_all_sec += payload_timer.sec();
+            shift_interp_timer.start();
+#endif
             const int rn = recv_size;
             float* R_scal = recv_scalars.data();
             float* R_norm = recv_normals.data();
@@ -4411,6 +4472,10 @@ bool GenerateEnsembleParticlesStruct(
                 const int thid = omp_get_thread_num();
 #else
                 const int thid = 0;
+#endif
+#ifdef ENABLE_ENSEMBLE_TIMER
+                vismodule::Timer shift_thread_timer;
+                shift_thread_timer.start();
 #endif
                 ChainRuleEvalContext chain_context;
                 chain_context.initialize( equation_token, nvariables );
@@ -4451,7 +4516,14 @@ bool GenerateEnsembleParticlesStruct(
                         R_tmp[3*(i+j) + 2] += scalar * grad_array_z[j];
                     }
                 }
+#ifdef ENABLE_ENSEMBLE_TIMER
+                shift_thread_timer.stop();
+                shift_interp_thread_times[thid] += shift_thread_timer.sec();
+#endif
             }
+#ifdef ENABLE_ENSEMBLE_TIMER
+            shift_interp_timer.stop(); shift_interp_sec += shift_interp_timer.sec();
+#endif
             v_scalars[nxt].swap( recv_scalars );
             v_coords[nxt].swap( recv_coords );
             v_normals[nxt].swap( recv_normals );
@@ -4459,6 +4531,14 @@ bool GenerateEnsembleParticlesStruct(
             v_tmp[nxt].swap( recv_tmp_term );
             std::swap( cur, nxt );
         }
+#ifdef ENABLE_ENSEMBLE_TIMER
+        mpi_shift_timer.stop();
+        ensemble_timer.add( EnsembleTimerMpiShiftExchange, mpi_shift_timer.sec() );
+        ensemble_timer.add( EnsembleTimerMpiShiftPayloadAll, payload_all_sec );
+        ensemble_timer.add( EnsembleTimerOmpShiftInterpolation, shift_interp_sec );
+        for ( int t = 0; t < max_threads; t++ )
+            ensemble_timer.addThread( EnsembleTimerOmpShiftInterpolation, t, shift_interp_thread_times[t] );
+#endif
         vertex_scalars.swap( v_scalars[cur] );
         vertex_coords.swap( v_coords[cur] );
         vertex_normals.swap( v_normals[cur] );
