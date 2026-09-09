@@ -1885,16 +1885,212 @@ void calculate_scalar_and_chain_rule_grad_struct(
 enum StructInterpMethod
 {
     StructInterpTrilinear = 0,   ///< 三線形(既定。従来と完全に同一)
-    StructInterpBSpline   = 1    ///< 三次Bスプライン
+    StructInterpBSpline   = 1,   ///< 三次Bスプライン
+    StructInterpNodeField = 2    ///< 方式C(節点F場法)
 };
 
 /*===========================================================================*/
 /**
+ *  @brief  方式C(節点F場法)の構造格子版。
+ *
+ *  節点で数式 F を1回だけ評価して節点F場を作り、粒子側はその場を補間するだけにする。
+ *  粒子1個あたりの仕事が「補間1回 + 勾配1回」になり、変数の数にも数式の複雑さにも
+ *  依らなくなる。非構造格子版(段4/段5)と同じ考え方で、構造格子では前段が大幅に安い。
+ *
+ *  | 処理 | 非構造格子版 | 構造格子版(ここ) |
+ *  |---|---|---|
+ *  | 節点微分量の復元 | 全セル走査+体積重み+排他制御 | 中心差分1パス。走査も排他制御も不要 |
+ *  | 節点の局所座標   | localNodeCoord() が要る      | 不要 |
+ *  | 節点F場の構築    | eval_F_block()               | 同じものを流用 |
+ *
+ *  **袖交換は要らない**。領域端を片側差分にすれば通信なしで完結する。
+ *
+ *  【近似の性質】節点で一度 F にしてから補間するので、セル内部では F を節点値の
+ *  三線形補間で近似することになる。数式が非線形なほど元の F からずれる。
+ */
+/*===========================================================================*/
+
+/*===========================================================================*/
+/**
+ *  @brief  節点の微分量を中心差分で作る(方式C の前段。毎ステップ1回)。
+ *
+ *  非構造格子版 build_node_dq_field() の置換。あちらは全セルを走査して隣接セルの
+ *  勾配を節点へ平均する必要があるが、構造格子では隣が添字で分かるので1パスで済む。
+ *  排他制御も要らない(節点ごとに書き込み先が決まる)。
+ *
+ *  領域端は片側差分にする。これで**袖領域の交換なしに完結する**。
+ *
+ *  【単位】格子単位で返す（節点1つぶんを1とする）。物理座標系ではない。
+ *  既存の構造格子経路が TrilinearInterpolator に setCellLength(1) を渡していて、
+ *  数式へ入る dq が格子単位になっているため、それに合わせている。
+ *  方式C と現行方式を同じ土俵で比べるにはこちらを揃える必要がある。
+ *
+ *  @param  usage   参照されている微分量だけを作る。使わない成分は計算しない
+ *  @param  node_dq [out] 添字は s*ncoords + node。s は usage.slot が決める格納位置
+ */
+/*===========================================================================*/
+static void build_node_dq_field_struct(
+    Type** values, const int nvariables,
+    const int nx, const int ny, const int nz,
+    const DqUsage& usage,
+    std::vector<float>& node_dq )
+{
+    const size_t ncoords = static_cast<size_t>( nx ) * ny * nz;
+    node_dq.assign( static_cast<size_t>( usage.nslots ) * ncoords, 0.0f );
+    if ( !usage.any() || values == NULL || nvariables <= 0 ) return;
+
+    const size_t line  = static_cast<size_t>( nx );
+    const size_t slice = static_cast<size_t>( nx ) * ny;
+
+#pragma omp parallel for schedule( static )
+    for ( int k = 0; k < nz; ++k )
+    {
+        for ( int j = 0; j < ny; ++j )
+        {
+            for ( int i = 0; i < nx; ++i )
+            {
+                const size_t n = static_cast<size_t>( k ) * slice + static_cast<size_t>( j ) * line + i;
+                const int    idx[3]  = { i, j, k };
+                const int    len[3]  = { nx, ny, nz };
+                const size_t step[3] = { 1, line, slice };
+
+                for ( size_t vi = 0; vi < usage.var_index.size(); ++vi )
+                {
+                    const int v = usage.var_index[vi];
+                    const Type* const q = values[v];
+                    for ( int c = 0; c < 3; ++c )
+                    {
+                        const int s = usage.slot[ static_cast<size_t>( v ) * 3 + c ];
+                        if ( s < 0 ) continue;             // 参照されていない成分は作らない
+                        float d;
+                        if ( len[c] < 2 )               d = 0.0f;
+                        else if ( idx[c] == 0 )         d = static_cast<float>( q[n + step[c]] - q[n] );
+                        else if ( idx[c] == len[c] - 1 ) d = static_cast<float>( q[n] - q[n - step[c]] );
+                        else d = 0.5f * static_cast<float>( q[n + step[c]] - q[n - step[c]] );
+                        node_dq[ static_cast<size_t>( s ) * ncoords + n ] = d;
+                    }
+                }
+            }
+        }
+    }
+}
+
+/*===========================================================================*/
+/**
+ *  @brief  節点で数式 F を評価して節点F場を作る(方式C の前段。毎ステップ1回)。
+ *
+ *  非構造格子版 build_node_f_field() の置換。違いは節点座標の出どころだけで、
+ *  あちらは coordinates 配列から読むが、構造格子では添字から算出する
+ *  (座標配列を持たずに済む。256^3 なら 3*16.7M*4B = 201MB の節約)。
+ *
+ *  評価は粒子側と同じ eval_F_block() を使うので、同じ q に対して同じ F が出る。
+ *
+ *  @param  node_F [out] 節点F場(長さ nx*ny*nz)。補間器がこの配列を参照し続けるので、
+ *      呼び出し側は補間器より長く生存させること。
+ */
+/*===========================================================================*/
+static bool build_node_f_field_struct(
+    const ::EquationToken& equation_token,
+    Type** values, const int nvariables,
+    const int nx, const int ny, const int nz,
+    const float cell_length, const vismodule::Vector3f& min_vec,
+    const std::vector<float>* node_dq, const DqUsage& usage,
+    std::vector<Type>& node_F )
+{
+    if ( values == NULL || nvariables <= 0 || nx <= 0 || ny <= 0 || nz <= 0 ) return false;
+
+    const size_t ncoords = static_cast<size_t>( nx ) * ny * nz;
+    const size_t line    = static_cast<size_t>( nx );
+    const size_t slice   = static_cast<size_t>( nx ) * ny;
+    node_F.assign( ncoords, static_cast<Type>( 0 ) );
+    bool ok = true;
+
+#pragma omp parallel
+    {
+        ChainRuleEvalContext ctx;
+        ctx.initialize( equation_token, nvariables );
+        if ( !ctx.valid )
+        {
+#pragma omp critical(node_f_field_struct)
+            ok = false;
+        }
+        else
+        {
+            float sa[nvariables][SIMD_BLK_SIZE];
+            float gx[nvariables][SIMD_BLK_SIZE];
+            float gy[nvariables][SIMD_BLK_SIZE];
+            float gz[nvariables][SIMD_BLK_SIZE];
+            for ( int v = 0; v < nvariables; ++v )
+            {
+                for ( int p = 0; p < SIMD_BLK_SIZE; ++p )
+                {
+                    gx[v][p] = 0.0f; gy[v][p] = 0.0f; gz[v][p] = 0.0f;   // node_dq が無い場合
+                }
+            }
+            vismodule::Vector3f coord[SIMD_BLK_SIZE];
+            // xa/ya/za は varr[X..Z] として ctx.rpn に登録されるので、
+            // eval_F_block を抜けた後も生きている必要がある(eval_F_block のコメント参照)。
+            alignas(64) float xa[SIMD_BLK_SIZE], ya[SIMD_BLK_SIZE], za[SIMD_BLK_SIZE];
+            alignas(64) float Fb[SIMD_BLK_SIZE];
+
+#pragma omp for schedule( static )
+            for ( long long base = 0; base < static_cast<long long>( ncoords ); base += SIMD_BLK_SIZE )
+            {
+                const long long rest = static_cast<long long>( ncoords ) - base;
+                const int m = ( rest > SIMD_BLK_SIZE ) ? SIMD_BLK_SIZE : static_cast<int>( rest );
+                for ( int p = 0; p < m; ++p )
+                {
+                    const size_t n = static_cast<size_t>( base ) + p;
+                    const int k = static_cast<int>( n / slice );
+                    const int j = static_cast<int>( ( n - static_cast<size_t>( k ) * slice ) / line );
+                    const int i = static_cast<int>( n - static_cast<size_t>( k ) * slice
+                                                      - static_cast<size_t>( j ) * line );
+                    coord[p] = vismodule::Vector3f(
+                        i * cell_length + min_vec.x(),
+                        j * cell_length + min_vec.y(),
+                        k * cell_length + min_vec.z() );
+                    for ( int v = 0; v < nvariables; ++v )
+                    {
+                        sa[v][p] = static_cast<float>( values[v][n] );
+                    }
+                    if ( node_dq != NULL )
+                    {
+                        for ( int v = 0; v < nvariables; ++v )
+                        {
+                            float* const a[3] = { &gx[v][p], &gy[v][p], &gz[v][p] };
+                            for ( int c = 0; c < 3; ++c )
+                            {
+                                const int s = usage.slot[ static_cast<size_t>( v ) * 3 + c ];
+                                if ( s < 0 ) continue;   // 参照されていない成分は 0 のまま
+                                *a[c] = ( *node_dq )[ static_cast<size_t>( s ) * ncoords + n ];
+                            }
+                        }
+                    }
+                }
+                eval_F_block( ctx, m, nvariables, sa, gx, gy, gz, coord, xa, ya, za, Fb, 0 );
+                for ( int p = 0; p < m; ++p )
+                {
+                    node_F[ static_cast<size_t>( base ) + p ] =
+                        static_cast<Type>( std::isfinite( Fb[p] ) ? Fb[p] : 0.0f );
+                }
+            }
+        }
+    }
+    return ok;
+}
+
+/*===========================================================================*/
+/**
  *  @brief  環境変数 PBVR_STRUCT_INTERP から構造格子の補間方式を読む。
- *      trilinear (既定) / bspline
+ *      trilinear (既定) / bspline / nodefield
  *
  *  bspline を選んだときは、使う前に補間器の自己検査を1回だけ走らせる。検査に
  *  落ちたとき、および格子が小さすぎて1軸に4節点を取れないときは三線形へ退避する。
+ *
+ *  【資料との差】実装方針 §4.3 では PBVR_NORMAL_METHOD を chainrule|bspline|nodefield
+ *  へ拡張する案だったが、PBVR_NORMAL_METHOD は非構造格子側が coorddiff / auto を
+ *  含む別の意味で既に使っている。同じ変数が経路ごとに違う意味を持つのを避けるため、
+ *  構造格子側は PBVR_STRUCT_INTERP に3値を持たせる形にした。意味は資料と同じ。
  */
 /*===========================================================================*/
 inline StructInterpMethod resolve_struct_interp_method( const vismodule::Vector3ui& resolution )
@@ -1902,10 +2098,11 @@ inline StructInterpMethod resolve_struct_interp_method( const vismodule::Vector3
     const char* e = std::getenv( "PBVR_STRUCT_INTERP" );
     if ( e == NULL || e[0] == '\0' ) return StructInterpTrilinear;
     if ( std::strcmp( e, "trilinear" ) == 0 ) return StructInterpTrilinear;
+    if ( std::strcmp( e, "nodefield" ) == 0 ) return StructInterpNodeField;
     if ( std::strcmp( e, "bspline" ) != 0 )
     {
         std::cerr << "PBVR_STRUCT_INTERP: unknown value '" << e
-                  << "' (expected trilinear|bspline). Using trilinear." << std::endl;
+                  << "' (expected trilinear|bspline|nodefield). Using trilinear." << std::endl;
         return StructInterpTrilinear;
     }
 
@@ -1934,6 +2131,8 @@ inline StructInterpMethod resolve_struct_interp_method( const vismodule::Vector3
  *
  *  呼び出し側(一様サンプリングと shift の再補間、計3か所)の分岐をここにまとめる。
  *  使わない側の補間器の配列は空でよい。
+ *
+ *  @param  interp_F  方式C の節点F場の補間器。他の方式では NULL でよい
  */
 /*===========================================================================*/
 static inline void calculate_scalar_and_normal_struct(
@@ -1943,6 +2142,7 @@ static inline void calculate_scalar_and_normal_struct(
     ChainRuleEvalContext& chain_context,
     const std::vector< vismodule::TrilinearInterpolator* >& interp_tri,
     const std::vector< vismodule::CubicBSplineInterpolator* >& interp_bs,
+    vismodule::TrilinearInterpolator* interp_F,
     const vismodule::Vector3f* local_coord_array,
     const vismodule::Vector3f* global_coord_array,
     float* scalar_result,
@@ -1951,6 +2151,52 @@ static inline void calculate_scalar_and_normal_struct(
     float* grad_array_z,
     ChainRuleTimingBreakdown* timing )
 {
+    if ( method == StructInterpNodeField )
+    {
+        // 方式C: 数式の評価も変数ごとの補間もチェーンルールも要らない。
+        // 節点F場を1回補間するだけで F と grad F が出る。
+        if ( interp_F == NULL )
+        {
+            for ( int p = 0; p < nparticles_count; ++p )
+            {
+                scalar_result[p] = 0.0f;
+                grad_array_x[p] = 0.0f; grad_array_y[p] = 0.0f; grad_array_z[p] = 0.0f;
+            }
+            return;
+        }
+        // 格子単位座標を SIMD 配列へ展開し、末尾を最後の有効要素で埋める
+        // (calculate_scalar_and_chain_rule_grad_struct の前半と同じ扱い)
+        float px[SIMD_BLK_SIZE], py[SIMD_BLK_SIZE], pz[SIMD_BLK_SIZE];
+        const int last = nparticles_count > 0 ? nparticles_count - 1 : 0;
+        for ( int p = 0; p < SIMD_BLK_SIZE; ++p )
+        {
+            const int s = p < nparticles_count ? p : last;
+            px[p] = local_coord_array[s].x();
+            py[p] = local_coord_array[s].y();
+            pz[p] = local_coord_array[s].z();
+        }
+#ifdef ENABLE_ENSEMBLE_TIMER
+        vismodule::Timer t_nf; t_nf.start();
+#endif
+        interp_F->attachPoint( px, py, pz );
+        interp_F->scalar( scalar_result );
+        interp_F->gradient( grad_array_x, grad_array_y, grad_array_z );
+        // gradient() は -grad F を返す。呼び出し側は +grad F を期待するので反転する
+        // (三線形・Bスプライン経路が -grad q を +grad q へ直しているのと同じ理由)
+        for ( int p = 0; p < nparticles_count; ++p )
+        {
+            grad_array_x[p] = -grad_array_x[p];
+            grad_array_y[p] = -grad_array_y[p];
+            grad_array_z[p] = -grad_array_z[p];
+        }
+#ifdef ENABLE_ENSEMBLE_TIMER
+        t_nf.stop();
+        if ( timing ) timing->calc_scalar_grad += t_nf.sec();
+#endif
+        ( void )nvariables; ( void )chain_context; ( void )global_coord_array;
+        return;
+    }
+
     if ( method == StructInterpBSpline )
     {
         calculate_scalar_and_chain_rule_grad_struct(
@@ -3729,11 +3975,51 @@ bool GenerateEnsembleParticlesStruct(
     // 三次Bスプライン用。既定(三線形)では作らない
     std::vector<std::vector<vismodule::CubicBSplineInterpolator*> > cell_bs( max_threads );
     std::vector< std::vector<float> > bs_coeff;   // 変数ごとの制御点。補間器はここを参照する
+    // 方式C 用。節点F場とその補間器。既定では作らない
+    std::vector<vismodule::TrilinearInterpolator*> cell_F( max_threads, NULL );
+    std::vector<Type>  node_F;      // 補間器より長く生存させること
+    std::vector<float> node_dq;
     {
 #ifdef ENABLE_ENSEMBLE_TIMER
         EnsembleTimerScope timer_scope( &ensemble_timer, EnsembleTimerCreateCells );
 #endif
-        if ( struct_interp == StructInterpBSpline )
+        if ( struct_interp == StructInterpNodeField )
+        {
+            // 数式が参照する微分量だけを中心差分で作り、節点で F を評価する。
+            // dq を含まない数式なら復元そのものを飛ばせる(その方が安い)。
+            const DqUsage usage = collect_dq_usage( equation_token, nvariables );
+            const std::vector<float>* dq_ptr = NULL;
+            if ( usage.any() )
+            {
+                build_node_dq_field_struct( values, nvariables,
+                    static_cast<int>( dom.resolution[0] ),
+                    static_cast<int>( dom.resolution[1] ),
+                    static_cast<int>( dom.resolution[2] ), usage, node_dq );
+                dq_ptr = &node_dq;
+            }
+            const vismodule::Vector3f nf_min(
+                dom.x_global_min, dom.y_global_min, dom.z_global_min );
+            const bool nf_ok = build_node_f_field_struct( equation_token, values, nvariables,
+                static_cast<int>( dom.resolution[0] ),
+                static_cast<int>( dom.resolution[1] ),
+                static_cast<int>( dom.resolution[2] ),
+                dom.cell_length, nf_min, dq_ptr, usage, node_F );
+            if ( !nf_ok )
+            {
+                std::cerr << "PBVR_STRUCT_INTERP=nodefield: 節点F場の構築に失敗した。"
+                          << "法線は 0 になる。" << std::endl;
+            }
+            else
+            {
+                for ( int thread = 0; thread < max_threads; thread++ )
+                {
+                    // 節点F場は格子単位で補間する(既存経路と同じ setCellLength(1))
+                    cell_F[thread] = new vismodule::TrilinearInterpolator( node_F.data(), resolution );
+                    cell_F[thread]->setCellLength( 1 );
+                }
+            }
+        }
+        else if ( struct_interp == StructInterpBSpline )
         {
             // 節点値そのものではなく制御点を補間するので、変数ごとに前処理する。
             // 制御点は全スレッドで共有(読むだけ)。値が更新されるたびに作り直す。
@@ -3866,7 +4152,7 @@ bool GenerateEnsembleParticlesStruct(
                     {
                         calculate_scalar_and_normal_struct(
                             struct_interp, p_id, nvariables, chain_context, cell[thid], cell_bs[thid],
-                            local_coord_array, global_coord_array,
+                            cell_F[thid], local_coord_array, global_coord_array,
                             scalar_array, grad_array_x, grad_array_y, grad_array_z, &chain_rule_timing );
                         const size_t so = th_vertex_scalars.size();
                         const size_t vo = th_vertex_coords.size();
@@ -3883,7 +4169,7 @@ bool GenerateEnsembleParticlesStruct(
             {
                 calculate_scalar_and_normal_struct(
                     struct_interp, p_id, nvariables, chain_context, cell[thid], cell_bs[thid],
-                    local_coord_array, global_coord_array,
+                    cell_F[thid], local_coord_array, global_coord_array,
                     scalar_array, grad_array_x, grad_array_y, grad_array_z, &chain_rule_timing );
                 const size_t so = th_vertex_scalars.size();
                 const size_t vo = th_vertex_coords.size();
@@ -3975,7 +4261,7 @@ bool GenerateEnsembleParticlesStruct(
                     }
                     calculate_scalar_and_normal_struct(
                         struct_interp, remain_BLK, nvariables, chain_context, cell[thid], cell_bs[thid],
-                        local_coord_array, global_coord_array,
+                        cell_F[thid], local_coord_array, global_coord_array,
                         scalar_array, grad_array_x, grad_array_y, grad_array_z, &chain_rule_timing );
                     for ( int j = 0; j < remain_BLK; j++ )
                     {
@@ -4340,6 +4626,7 @@ bool GenerateEnsembleParticlesStruct(
         {
             delete cell_bs[thread][variable];
         }
+        if ( cell_F[thread] ) { delete cell_F[thread]; cell_F[thread] = NULL; }
     }
     }
     average.coords.swap( average_coords );
