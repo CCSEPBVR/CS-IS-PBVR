@@ -479,6 +479,21 @@ bool ensemble_generate_particles(
     std::string plotOverLineParameterPath_old;
     std::string plotOverTimeParameterPath;
     std::string plotOverTimeParameterPath_old;
+
+    // アンサンブルタイマー。関数の先頭から計り、パス構築・パラメータ読み込み・
+    // 粒子出力まで含めて内訳が取れるようにする（従来は生成本体の直前から）。
+#ifdef ENABLE_ENSEMBLE_TIMER
+#if _OPENMP
+    const int timer_max_threads = omp_get_max_threads();
+#else
+    const int timer_max_threads = 1;
+#endif
+    vismodule::EnsembleTimerCollector ensemble_timer( time_step, timer_max_threads );
+    vismodule::Timer ensemble_total_timer;
+    ensemble_total_timer.start();
+    {
+    vismodule::EnsembleTimerScope timer_scope( &ensemble_timer, vismodule::EnsembleTimerSetParameterPath );
+#endif
     SetParameterFilePath(
         time_step,
         historyFilePath, stateFilePath, coordMinMaxFilePath,
@@ -488,6 +503,9 @@ bool ensemble_generate_particles(
         plotOverLineParameterPath, plotOverLineParameterPath_old,
         plotOverTimeParameterPath, plotOverTimeParameterPath_old
     );
+#ifdef ENABLE_ENSEMBLE_TIMER
+    }
+#endif
 
     ParticleProperty particle_property;
     MultiVolumePropertyList mvpl;
@@ -495,6 +513,9 @@ bool ensemble_generate_particles(
     particle_property.m_camera                = new vismodule::Camera();
 
     bool object_generation_enabled = false;
+#ifdef ENABLE_ENSEMBLE_TIMER
+    vismodule::Timer setparam_timer; setparam_timer.start();
+#endif
     SetParticleParameter(
         dom, tfJsonPath, tfJsonPath_old, particle_property, mvpl,
         nvariables, object_generation_enabled
@@ -508,17 +529,9 @@ bool ensemble_generate_particles(
     vismodule::EnsembleStatisticRange variance_range;
     vismodule::EnsembleStatisticRange co_variation_range;
 
-    // アンサンブルタイマー。GenerateEnsembleParticlesStruct 内の EnsembleTimerScope は
-    // *timer を逆参照するため NULL 不可。非構造版と同様に有効な collector を渡す。
 #ifdef ENABLE_ENSEMBLE_TIMER
-#if _OPENMP
-    const int timer_max_threads = omp_get_max_threads();
-#else
-    const int timer_max_threads = 1;
-#endif
-    vismodule::EnsembleTimerCollector ensemble_timer( time_step, timer_max_threads );
-    vismodule::Timer ensemble_total_timer;
-    ensemble_total_timer.start();
+    setparam_timer.stop();
+    ensemble_timer.add( vismodule::EnsembleTimerReadParameterFile, setparam_timer.sec() );
 #endif
     // 構造格子版の計算本体
 //    particle_property.m_log_scale_statistics = true; // スタブデータ(検証用。default.json連携時に有効化 or 削除)
@@ -551,20 +564,46 @@ bool ensemble_generate_particles(
     const std::string varianceFilePrefix    = pbvr::EnsembleParticleFilePrefix( particleFilePrefix, "var_" );
     const std::string coefficientFilePrefix = pbvr::EnsembleParticleFilePrefix( particleFilePrefix, "cov_" );
 
+    // 粒子出力の内訳。生成処理の外側が全体の半分を占めていたため区間を入れた。
+#ifdef ENABLE_ENSEMBLE_TIMER
+    { vismodule::EnsembleTimerScope sc( &ensemble_timer, vismodule::EnsembleTimerOutputCoordMinmax );
+#endif
     OutputCoordMinMaxFile( dom, coordMinMaxFilePath );
+#ifdef ENABLE_ENSEMBLE_TIMER
+    }
+    { vismodule::EnsembleTimerScope sc( &ensemble_timer, vismodule::EnsembleTimerOutputParticlesAve );
+#endif
     pbvr::OutputEnsembleStatisticParticles(
         particle_property, mvpl, time_step, averageFilePrefix,
         average.coords, average.colors, average.normals );
+#ifdef ENABLE_ENSEMBLE_TIMER
+    }
+    { vismodule::EnsembleTimerScope sc( &ensemble_timer, vismodule::EnsembleTimerOutputParticlesVar );
+#endif
     pbvr::OutputEnsembleStatisticParticles(
         particle_property, mvpl, time_step, varianceFilePrefix,
         variance.coords, variance.colors, variance.normals );
+#ifdef ENABLE_ENSEMBLE_TIMER
+    }
+    { vismodule::EnsembleTimerScope sc( &ensemble_timer, vismodule::EnsembleTimerOutputParticlesCov );
+#endif
     pbvr::OutputEnsembleStatisticParticles(
         particle_property, mvpl, time_step, coefficientFilePrefix,
         coefficient.coords, coefficient.colors, coefficient.normals );
+#ifdef ENABLE_ENSEMBLE_TIMER
+    }
+    { vismodule::EnsembleTimerScope sc( &ensemble_timer, vismodule::EnsembleTimerOutputHistory );
+#endif
     pbvr::OutputEnsembleStatisticHistory(
         particle_property, tf_number, nvariables, historyFilePath,
         average_range, variance_range, co_variation_range );
+#ifdef ENABLE_ENSEMBLE_TIMER
+    }
+#endif
 
+#ifdef ENABLE_ENSEMBLE_TIMER
+    vismodule::Timer tail_timer; tail_timer.start();
+#endif
     // 更新した default_old.json を timestep 別 JSON(default_XXXXX.json) に保存
     // (通常 generate_particles / 非構造版 ensemble_generate_particles と同じ処理)
     if ( object_generation_enabled && mpi_rank == 0 )
@@ -592,6 +631,8 @@ bool ensemble_generate_particles(
     }
 
 #ifdef ENABLE_ENSEMBLE_TIMER
+    tail_timer.stop();
+    ensemble_timer.add( vismodule::EnsembleTimerFinalBarrierState, tail_timer.sec() );
     // 集計 CSV の出力。非構造版 kvs_wrapper.cpp と同じ扱いで、構造格子版にも入れた。
     // これで BENCHMARK/parse_timing.py -> summarize_results.py が構造格子でも使える。
     // 注意: ensemble_timer_summary.csv は std::ios::app で開かれるため、再実行すると
