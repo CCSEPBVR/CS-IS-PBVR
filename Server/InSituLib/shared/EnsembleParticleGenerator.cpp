@@ -2020,9 +2020,9 @@ void calculate_scalar_and_chain_rule_grad_struct(
 /*===========================================================================*/
 enum StructInterpMethod
 {
-    StructInterpTrilinear = 0,   ///< 三線形(既定。従来と完全に同一)
+    StructInterpTrilinear = 0,   ///< 三線形(従来の挙動)
     StructInterpBSpline   = 1,   ///< 三次Bスプライン
-    StructInterpNodeField = 2    ///< 方式C(節点F場法)
+    StructInterpNodeField = 2    ///< 方式C(節点F場法)。**既定**
 };
 
 /*===========================================================================*/
@@ -2223,7 +2223,21 @@ static bool build_node_f_field_struct(
 /*===========================================================================*/
 /**
  *  @brief  環境変数 PBVR_STRUCT_INTERP から構造格子の補間方式を読む。
- *      trilinear (既定) / bspline / nodefield
+ *      nodefield (**既定**) / trilinear / bspline
+ *
+ *  【既定を方式C にした理由】(資料 方式Cとスプラインの比較_判断材料.md)
+ *    ・粒子数を 1〜16 倍まで振っても**全域で最速**。1粒子あたりの費用が三線形の 1.5 倍、
+ *      Bスプラインの 5.9 倍速く、固定費も最小
+ *    ・法線の向きの精度は三線形と同等。微分量を含まない数式で、解析解との角度差が
+ *      15.07 度 対 15.16 度。**精度を落とさずに**微分量を含む数式へ対応できる
+ *    ・三線形では微分量のみの数式で法線が全粒子ゼロになる。ただし原因は
+ *      chainRuleBlock() が dq の枠を摂動せず連鎖律の第2項を落としていることで、
+ *      補間方式そのものの限界ではない(三線形の 2階微分は対角成分だけが恒等的に 0 で、
+ *      交差成分は残る)
+ *    ・袖領域の交換が要らない(領域端は片側差分で完結する)
+ *  精度を上げたい場合は bspline を指定する。微分量のみの数式で角度差が
+ *  13.86 度 -> 0.72 度になる(いずれも粒子分布で重み付けした値)。ただし 5.9 倍遅く、
+ *  最外殻 1 セルの袖交換が未実装なので、その 1 セルは使えない。
  *
  *  bspline を選んだときは、使う前に補間器の自己検査を1回だけ走らせる。検査に
  *  落ちたとき、および格子が小さすぎて1軸に4節点を取れないときは三線形へ退避する。
@@ -2237,7 +2251,7 @@ static bool build_node_f_field_struct(
 inline StructInterpMethod resolve_struct_interp_method( const vismodule::Vector3ui& resolution )
 {
     const char* e = std::getenv( "PBVR_STRUCT_INTERP" );
-    if ( e == NULL || e[0] == '\0' ) return StructInterpTrilinear;
+    if ( e == NULL || e[0] == '\0' ) return StructInterpNodeField;   // 既定 = 方式C
     if ( std::strcmp( e, "trilinear" ) == 0 ) return StructInterpTrilinear;
     if ( std::strcmp( e, "nodefield" ) == 0 ) return StructInterpNodeField;
     if ( std::strcmp( e, "bspline" ) != 0 )
