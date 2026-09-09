@@ -4265,9 +4265,6 @@ bool GenerateEnsembleParticlesStruct(
     std::vector<double> uniform_thread_times( max_threads, 0.0 );
     uniform_timer.start();
 #endif
-    // スレッドごとの粒子数と、全体配列へ書き込む先頭位置（並列前置和の併合で使う）
-    std::vector<size_t> merge_off( max_threads + 1, 0 );
-    size_t merge_base_s = 0, merge_base_v = 0;
     // === 構造格子 一様サンプリング(非構造版 cellループ+リングの置換。v1: リングなし=各メンバ単独) ===
     // 各格子セルで max_density*cell_volume*repetitions 個の候補点を生成し、
     // TrilinearInterpolator で値・勾配を補間、chain rule 法線を求めて統計初期値(g, g^2, -grad, g*grad)を格納。
@@ -4279,6 +4276,31 @@ bool GenerateEnsembleParticlesStruct(
     const float cell_length_f = dom.cell_length;
     const float cell_volume = cell_length_f * cell_length_f * cell_length_f;
     const vismodule::Vector3f min_vec( dom.x_global_min, dom.y_global_min, dom.z_global_min );
+    // 粒子を全体配列へ直接書く。スレッド局所バッファ(th_*)とその併合コピーを無くすため、
+    // 全体配列を粒子数の上界で先に確保し、128 粒子ごとに原子操作で書き込み位置を予約する。
+    //
+    // 上界は厳密に決まる。1セルあたりの粒子数は CalculateNumberOfParticlesV35 が
+    // floor(n) + ベルヌーイ(小数部) で決めるので ceil(n) が上界。
+    // 実測(rl=16, 128^3/ランク)で上界は実際の粒子数の +3 % に収まる。
+    //
+    // 以前は th_* に貯めてから前置和で併合していたが、44 B/粒子 x 4,382 万 = 1.8 GB の
+    // コピーが生成処理の 13.1 %、128 粒子ごとの resize が 5.8 % を占めていた。
+    const double uni_n_per_cell = static_cast<double>( max_density )
+                                * static_cast<double>( cell_volume )
+                                * static_cast<double>( repetitions );
+    const size_t uni_capacity = static_cast<size_t>( std::ceil( uni_n_per_cell ) )
+                              * ncells_struct + SIMD_BLK_SIZE;
+    size_t uni_written = 0;              // 書き込み済みの粒子数（原子操作で進める）
+    size_t uni_overflow = 0;             // 上界を超えた場合の破棄数（本来 0）
+    {
+        const size_t base_s = vertex_scalars.size();
+        const size_t base_v = vertex_coords.size();
+        vertex_scalars.resize( base_s + uni_capacity );
+        sq_scalars.resize(     base_s + uni_capacity );
+        vertex_coords.resize(  base_v + 3 * uni_capacity );
+        vertex_normals.resize( base_v + 3 * uni_capacity );
+        tmp_term.resize(       base_v + 3 * uni_capacity );
+    }
 #pragma omp parallel
     {
 #if _OPENMP
@@ -4297,11 +4319,6 @@ bool GenerateEnsembleParticlesStruct(
         ChainRuleTimingBreakdown chain_rule_timing;
         vismodule::MersenneTwister mt( thid + mpi_rank * nthreads );
 
-        std::vector<vismodule::Real32> th_vertex_coords;
-        std::vector<vismodule::Real32> th_vertex_scalars;
-        std::vector<vismodule::Real32> th_vertex_normals;
-        std::vector<vismodule::Real32> th_sq_scalars;
-        std::vector<vismodule::Real32> th_tmp_term;
 
         vismodule::Vector3f local_coord_array[SIMD_BLK_SIZE];
         vismodule::Vector3f global_coord_array[SIMD_BLK_SIZE];
@@ -4344,13 +4361,20 @@ bool GenerateEnsembleParticlesStruct(
                             struct_interp, p_id, nvariables, chain_context, cell[thid], cell_bs[thid],
                             cell_F[thid], dq_slot, local_coord_array, global_coord_array,
                             scalar_array, grad_array_x, grad_array_y, grad_array_z, &chain_rule_timing );
-                        const size_t so = th_vertex_scalars.size();
-                        const size_t vo = th_vertex_coords.size();
-                        th_vertex_scalars.resize( so + p_id );  th_sq_scalars.resize( so + p_id );
-                        th_vertex_coords.resize( vo + 3 * p_id );  th_vertex_normals.resize( vo + 3 * p_id );  th_tmp_term.resize( vo + 3 * p_id );
-                        store_uniform_block_struct( p_id, so, vo,
-                            th_vertex_scalars, th_vertex_coords, th_vertex_normals, th_sq_scalars, th_tmp_term,
-                            scalar_array, local_coord_array, grad_array_x, grad_array_y, grad_array_z );
+                        size_t so;
+                        #pragma omp atomic capture
+                        { so = uni_written; uni_written += p_id; }
+                        if ( so + p_id <= uni_capacity )
+                        {
+                            store_uniform_block_struct( p_id, so, 3 * so,
+                                vertex_scalars, vertex_coords, vertex_normals, sq_scalars, tmp_term,
+                                scalar_array, local_coord_array, grad_array_x, grad_array_y, grad_array_z );
+                        }
+                        else
+                        {
+                            #pragma omp atomic
+                            uni_overflow += p_id;   // 上界の見積もりが外れた場合の保険
+                        }
                         p_id = 0;
                     }
                 }
@@ -4361,48 +4385,37 @@ bool GenerateEnsembleParticlesStruct(
                     struct_interp, p_id, nvariables, chain_context, cell[thid], cell_bs[thid],
                     cell_F[thid], dq_slot, local_coord_array, global_coord_array,
                     scalar_array, grad_array_x, grad_array_y, grad_array_z, &chain_rule_timing );
-                const size_t so = th_vertex_scalars.size();
-                const size_t vo = th_vertex_coords.size();
-                th_vertex_scalars.resize( so + p_id );  th_sq_scalars.resize( so + p_id );
-                th_vertex_coords.resize( vo + 3 * p_id );  th_vertex_normals.resize( vo + 3 * p_id );  th_tmp_term.resize( vo + 3 * p_id );
-                store_uniform_block_struct( p_id, so, vo,
-                    th_vertex_scalars, th_vertex_coords, th_vertex_normals, th_sq_scalars, th_tmp_term,
-                    scalar_array, local_coord_array, grad_array_x, grad_array_y, grad_array_z );
+                size_t so;
+                #pragma omp atomic capture
+                { so = uni_written; uni_written += p_id; }
+                if ( so + p_id <= uni_capacity )
+                {
+                    store_uniform_block_struct( p_id, so, 3 * so,
+                        vertex_scalars, vertex_coords, vertex_normals, sq_scalars, tmp_term,
+                        scalar_array, local_coord_array, grad_array_x, grad_array_y, grad_array_z );
+                }
+                else
+                {
+                    #pragma omp atomic
+                    uni_overflow += p_id;
+                }
             }
-        }
-        // 並列前置和による併合（非構造版 GenerateEnsembleParticles と同じ方式）。
-        // 各スレッドが自分の粒子数を記録し、1スレッドが先頭位置を求めて全体配列を
-        // 1回だけ確保し、その後は各スレッドが互いに重ならない位置へ並列にコピーする。
-        // omp critical だと 5 配列 44 B/粒子 のコピーが直列化し、実測で一様サンプリングの
-        // 74〜82 % を占めていた。粒子の並びは critical の非決定順から
-        // スレッド番号順になるが、統計量は順序に依らないので不変量は保たれる。
-        merge_off[thid + 1] = th_vertex_scalars.size();
-        #pragma omp barrier
-        #pragma omp single
-        {
-            merge_base_s = vertex_scalars.size();
-            merge_base_v = vertex_coords.size();
-            for ( int t = 0; t < max_threads; ++t ) merge_off[t + 1] += merge_off[t];
-            const size_t total = merge_off[max_threads];
-            vertex_scalars.resize( merge_base_s + total );
-            sq_scalars.resize( merge_base_s + total );
-            vertex_coords.resize( merge_base_v + 3 * total );
-            vertex_normals.resize( merge_base_v + 3 * total );
-            tmp_term.resize( merge_base_v + 3 * total );
-        }
-        {
-            const size_t so = merge_base_s + merge_off[thid];
-            const size_t vo = merge_base_v + 3 * merge_off[thid];
-            std::copy( th_vertex_scalars.begin(), th_vertex_scalars.end(), vertex_scalars.begin() + so );
-            std::copy( th_sq_scalars.begin(),     th_sq_scalars.end(),     sq_scalars.begin()     + so );
-            std::copy( th_vertex_coords.begin(),  th_vertex_coords.end(),  vertex_coords.begin()  + vo );
-            std::copy( th_vertex_normals.begin(), th_vertex_normals.end(), vertex_normals.begin() + vo );
-            std::copy( th_tmp_term.begin(),       th_tmp_term.end(),       tmp_term.begin()       + vo );
         }
 #ifdef ENABLE_ENSEMBLE_TIMER
         uniform_thread_timer.stop();
         uniform_thread_times[thid] += uniform_thread_timer.sec();
 #endif
+    }
+    // 実際に書いた粒子数へ縮める（上界で確保していたぶんを切り詰める）
+    vertex_scalars.resize( uni_written );
+    sq_scalars.resize(     uni_written );
+    vertex_coords.resize(  3 * uni_written );
+    vertex_normals.resize( 3 * uni_written );
+    tmp_term.resize(       3 * uni_written );
+    if ( uni_overflow > 0 && mpi_rank == 0 )
+    {
+        std::cerr << "一様サンプリング: 粒子数が上界 " << uni_capacity << " を超えたため "
+                  << uni_overflow << " 個を破棄した（上界の見積もりを見直すこと）" << std::endl;
     }
 #ifdef ENABLE_ENSEMBLE_TIMER
     uniform_timer.stop();
@@ -4421,6 +4434,8 @@ bool GenerateEnsembleParticlesStruct(
         std::vector<double> shift_interp_thread_times( max_threads, 0.0 );
         double payload_all_sec = 0.0;
         double shift_interp_sec = 0.0;
+        double size_exchange_sec = 0.0;
+        double alloc_recv_sec = 0.0;
         mpi_shift_timer.start();
 #endif
         std::vector< std::vector<vismodule::Real32> > v_scalars(2), v_coords(2), v_normals(2), v_sq(2), v_tmp(2);
@@ -4436,11 +4451,23 @@ bool GenerateEnsembleParticlesStruct(
             const int recv_from = ( mpi_rank - MPIprocess_per_ensemble + mpi_size ) % mpi_size;
             int send_size = static_cast<int>( v_scalars[cur].size() );
             int recv_size = 0;
+#ifdef ENABLE_ENSEMBLE_TIMER
+            vismodule::Timer size_timer; size_timer.start();
+#endif
             MPI_Sendrecv( &send_size, 1, MPI_INT, send_to, 0,
                           &recv_size, 1, MPI_INT, recv_from, 0,
                           MPI_COMM_WORLD, MPI_STATUS_IGNORE );
+#ifdef ENABLE_ENSEMBLE_TIMER
+            size_timer.stop(); size_exchange_sec += size_timer.sec();
+#endif
+#ifdef ENABLE_ENSEMBLE_TIMER
+            vismodule::Timer alloc_timer; alloc_timer.start();
+#endif
             std::vector<vismodule::Real32> recv_scalars( recv_size ), recv_coords( 3 * recv_size ),
                 recv_normals( 3 * recv_size ), recv_sq_scalars( recv_size ), recv_tmp_term( 3 * recv_size );
+#ifdef ENABLE_ENSEMBLE_TIMER
+            alloc_timer.stop(); alloc_recv_sec += alloc_timer.sec();
+#endif
             MPI_Request req[10];
             MPI_Irecv( recv_scalars.data(),    recv_size,     MPI_FLOAT, recv_from, 10, MPI_COMM_WORLD, &req[0] );
             MPI_Irecv( recv_coords.data(),     3 * recv_size, MPI_FLOAT, recv_from, 11, MPI_COMM_WORLD, &req[1] );
@@ -4534,6 +4561,8 @@ bool GenerateEnsembleParticlesStruct(
 #ifdef ENABLE_ENSEMBLE_TIMER
         mpi_shift_timer.stop();
         ensemble_timer.add( EnsembleTimerMpiShiftExchange, mpi_shift_timer.sec() );
+        ensemble_timer.add( EnsembleTimerMpiShiftSizeExchange, size_exchange_sec );
+        ensemble_timer.add( EnsembleTimerMpiShiftAllocRecvBuffer, alloc_recv_sec );
         ensemble_timer.add( EnsembleTimerMpiShiftPayloadAll, payload_all_sec );
         ensemble_timer.add( EnsembleTimerOmpShiftInterpolation, shift_interp_sec );
         for ( int t = 0; t < max_threads; t++ )
