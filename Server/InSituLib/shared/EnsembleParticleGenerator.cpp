@@ -3375,6 +3375,59 @@ bool GenerateEnsembleParticles(
         ensemble_timer.addThread( EnsembleTimerUniformStoreParticleData, t, uniform_store_times[t] );
         ensemble_timer.addThread( EnsembleTimerThreadParticleMerge, t, uniform_merge_times[t] );
     }
+    {   // addThread だけでは区間の集計値が 0 のままになる。
+        // 内訳は全スレッドの合計をスレッド数で割り、区間の実時間に近い形で記録する。
+        const double inv_th = ( max_threads > 0 ) ? 1.0 / max_threads : 1.0;
+        double sum_tmp = 0.0;
+        sum_tmp = 0.0;
+        for ( int t = 0; t < max_threads; t++ ) sum_tmp += uniform_setup_times[t];
+        ensemble_timer.add( EnsembleTimerUniformThreadSetup, sum_tmp * inv_th );
+        sum_tmp = 0.0;
+        for ( int t = 0; t < max_threads; t++ ) sum_tmp += uniform_cell_index_times[t];
+        ensemble_timer.add( EnsembleTimerUniformCellIndexSetup, sum_tmp * inv_th );
+        sum_tmp = 0.0;
+        for ( int t = 0; t < max_threads; t++ ) sum_tmp += uniform_bind_times[t];
+        ensemble_timer.add( EnsembleTimerUniformBindCellArray, sum_tmp * inv_th );
+        sum_tmp = 0.0;
+        for ( int t = 0; t < max_threads; t++ ) sum_tmp += uniform_volume_times[t];
+        ensemble_timer.add( EnsembleTimerUniformVolumeCalculation, sum_tmp * inv_th );
+        sum_tmp = 0.0;
+        for ( int t = 0; t < max_threads; t++ ) sum_tmp += uniform_particle_count_times[t];
+        ensemble_timer.add( EnsembleTimerUniformParticleCountCalculation, sum_tmp * inv_th );
+        sum_tmp = 0.0;
+        for ( int t = 0; t < max_threads; t++ ) sum_tmp += uniform_sampling_loop_times[t];
+        ensemble_timer.add( EnsembleTimerUniformParticleSamplingLoop, sum_tmp * inv_th );
+        sum_tmp = 0.0;
+        for ( int t = 0; t < max_threads; t++ ) sum_tmp += uniform_local_coord_times[t];
+        ensemble_timer.add( EnsembleTimerUniformLocalCoordGeneration, sum_tmp * inv_th );
+        sum_tmp = 0.0;
+        for ( int t = 0; t < max_threads; t++ ) sum_tmp += uniform_flush_prepare_times[t];
+        ensemble_timer.add( EnsembleTimerUniformFlushPrepare, sum_tmp * inv_th );
+        sum_tmp = 0.0;
+        for ( int t = 0; t < max_threads; t++ ) sum_tmp += uniform_scalar_times[t];
+        ensemble_timer.add( EnsembleTimerUniformCalculateScalars, sum_tmp * inv_th );
+        sum_tmp = 0.0;
+        for ( int t = 0; t < max_threads; t++ ) sum_tmp += uniform_calc_scalar_grad_times[t];
+        ensemble_timer.add( EnsembleTimerUniformCalcScalarGrad, sum_tmp * inv_th );
+        sum_tmp = 0.0;
+        for ( int t = 0; t < max_threads; t++ ) sum_tmp += uniform_q_grad_setup_times[t];
+        ensemble_timer.add( EnsembleTimerUniformQGradSetup, sum_tmp * inv_th );
+        sum_tmp = 0.0;
+        for ( int t = 0; t < max_threads; t++ ) sum_tmp += uniform_tf_scalar_eval_times[t];
+        ensemble_timer.add( EnsembleTimerUniformTfScalarEval, sum_tmp * inv_th );
+        sum_tmp = 0.0;
+        for ( int t = 0; t < max_threads; t++ ) sum_tmp += uniform_chain_rule_dfdq_times[t];
+        ensemble_timer.add( EnsembleTimerUniformChainRuleDfdq, sum_tmp * inv_th );
+        sum_tmp = 0.0;
+        for ( int t = 0; t < max_threads; t++ ) sum_tmp += uniform_normal_normalize_times[t];
+        ensemble_timer.add( EnsembleTimerUniformNormalNormalize, sum_tmp * inv_th );
+        sum_tmp = 0.0;
+        for ( int t = 0; t < max_threads; t++ ) sum_tmp += uniform_store_times[t];
+        ensemble_timer.add( EnsembleTimerUniformStoreParticleData, sum_tmp * inv_th );
+        sum_tmp = 0.0;
+        for ( int t = 0; t < max_threads; t++ ) sum_tmp += uniform_merge_times[t];
+        ensemble_timer.add( EnsembleTimerThreadParticleMerge, sum_tmp * inv_th );
+    }
     ensemble_timer.setUniformParticleCount(
         static_cast<unsigned long long>( vertex_coords.size() / 3 ) );
 #endif
@@ -3664,6 +3717,38 @@ bool GenerateEnsembleParticles(
         ensemble_timer.addThread( EnsembleTimerShiftRecoverRecv, t, shift_recover_times[t] );
         ensemble_timer.addThread( EnsembleTimerShiftFlushPrepare, t, shift_flush_prepare_times[t] );
         ensemble_timer.addThread( EnsembleTimerShiftStoreAccumulate, t, shift_store_times[t] );
+    }
+    {   // addThread だけでは区間の集計値が 0 のままになる。
+        // 内訳は全スレッドの合計をスレッド数で割り、区間の実時間に近い形で記録する。
+        const double inv_th = ( max_threads > 0 ) ? 1.0 / max_threads : 1.0;
+        double sum_tmp = 0.0;
+        sum_tmp = 0.0;
+        for ( int t = 0; t < max_threads; t++ ) sum_tmp += shift_scalar_thread_times[t];
+        ensemble_timer.add( EnsembleTimerShiftCalculateScalars, sum_tmp * inv_th );
+        sum_tmp = 0.0;
+        for ( int t = 0; t < max_threads; t++ ) sum_tmp += shift_calc_scalar_grad_times[t];
+        ensemble_timer.add( EnsembleTimerShiftCalcScalarGrad, sum_tmp * inv_th );
+        sum_tmp = 0.0;
+        for ( int t = 0; t < max_threads; t++ ) sum_tmp += shift_q_grad_setup_times[t];
+        ensemble_timer.add( EnsembleTimerShiftQGradSetup, sum_tmp * inv_th );
+        sum_tmp = 0.0;
+        for ( int t = 0; t < max_threads; t++ ) sum_tmp += shift_tf_scalar_eval_times[t];
+        ensemble_timer.add( EnsembleTimerShiftTfScalarEval, sum_tmp * inv_th );
+        sum_tmp = 0.0;
+        for ( int t = 0; t < max_threads; t++ ) sum_tmp += shift_chain_rule_dfdq_times[t];
+        ensemble_timer.add( EnsembleTimerShiftChainRuleDfdq, sum_tmp * inv_th );
+        sum_tmp = 0.0;
+        for ( int t = 0; t < max_threads; t++ ) sum_tmp += shift_normal_normalize_times[t];
+        ensemble_timer.add( EnsembleTimerShiftNormalNormalize, sum_tmp * inv_th );
+        sum_tmp = 0.0;
+        for ( int t = 0; t < max_threads; t++ ) sum_tmp += shift_recover_times[t];
+        ensemble_timer.add( EnsembleTimerShiftRecoverRecv, sum_tmp * inv_th );
+        sum_tmp = 0.0;
+        for ( int t = 0; t < max_threads; t++ ) sum_tmp += shift_flush_prepare_times[t];
+        ensemble_timer.add( EnsembleTimerShiftFlushPrepare, sum_tmp * inv_th );
+        sum_tmp = 0.0;
+        for ( int t = 0; t < max_threads; t++ ) sum_tmp += shift_store_times[t];
+        ensemble_timer.add( EnsembleTimerShiftStoreAccumulate, sum_tmp * inv_th );
     }
 #endif
 
@@ -3968,6 +4053,14 @@ bool GenerateEnsembleParticles(
     {
         ensemble_timer.addThread( EnsembleTimerOmpRejection, t, rejection_thread_times[t] );
         ensemble_timer.addThread( EnsembleTimerRejectionThreadMerge, t, rejection_merge_times[t] );
+    }
+    {   // addThread だけでは区間の集計値が 0 のままになる。
+        // 内訳は全スレッドの合計をスレッド数で割り、区間の実時間に近い形で記録する。
+        const double inv_th = ( max_threads > 0 ) ? 1.0 / max_threads : 1.0;
+        double sum_tmp = 0.0;
+        sum_tmp = 0.0;
+        for ( int t = 0; t < max_threads; t++ ) sum_tmp += rejection_merge_times[t];
+        ensemble_timer.add( EnsembleTimerRejectionThreadMerge, sum_tmp * inv_th );
     }
     ensemble_timer.setStatisticParticleCounts(
         static_cast<unsigned long long>( average_coords.size() / 3 ),
@@ -4279,19 +4372,31 @@ bool GenerateEnsembleParticlesStruct(
     // 粒子を全体配列へ直接書く。スレッド局所バッファ(th_*)とその併合コピーを無くすため、
     // 全体配列を粒子数の上界で先に確保し、128 粒子ごとに原子操作で書き込み位置を予約する。
     //
-    // 上界は厳密に決まる。1セルあたりの粒子数は CalculateNumberOfParticlesV35 が
-    // floor(n) + ベルヌーイ(小数部) で決めるので ceil(n) が上界。
-    // 実測(rl=16, 128^3/ランク)で上界は実際の粒子数の +3 % に収まる。
+    // 確保量の見積もり。1セルあたりの粒子数は CalculateNumberOfParticlesV35 が
+    // floor(n) + ベルヌーイ(小数部) で決めるので、合計は期待値 n*セル数 のまわりに
+    // 集中する（分散はベルヌーイの和なので標準偏差 <= sqrt(セル数)/2）。
+    //
+    // 【ceil(n) x セル数 を使わない理由】n < 1 のとき ceil(n) = 1 になり、確保量が
+    // セル数そのものになる。粒子数÷セル数 はシミュレーションと可視化設定で決まり、
+    // 大規模データでは 1 を大きく下回るのが普通で（0.05 程度もありうる）、
+    // その場合 20 倍の過大確保になる。512^3 格子なら 5.9 GB/ランクに達する。
+    //
+    // そこで期待値に十分な余裕（標準偏差の 8 倍相当）を足したものを確保量とする。
+    // 超える確率は事実上ゼロだが、**超えた場合もスレッド局所の予備バッファへ
+    // 逃がして最後に併合する**ので、見積もりが外れても粒子は失われない。
     //
     // 以前は th_* に貯めてから前置和で併合していたが、44 B/粒子 x 4,382 万 = 1.8 GB の
     // コピーが生成処理の 13.1 %、128 粒子ごとの resize が 5.8 % を占めていた。
     const double uni_n_per_cell = static_cast<double>( max_density )
                                 * static_cast<double>( cell_volume )
                                 * static_cast<double>( repetitions );
-    const size_t uni_capacity = static_cast<size_t>( std::ceil( uni_n_per_cell ) )
-                              * ncells_struct + SIMD_BLK_SIZE;
-    size_t uni_written = 0;              // 書き込み済みの粒子数（原子操作で進める）
-    size_t uni_overflow = 0;             // 上界を超えた場合の破棄数（本来 0）
+    const double uni_expected = uni_n_per_cell * static_cast<double>( ncells_struct );
+    const size_t uni_capacity = static_cast<size_t>(
+        uni_expected + 4.0 * std::sqrt( static_cast<double>( ncells_struct ) ) ) + SIMD_BLK_SIZE;
+    size_t uni_written = 0;              // 直接書き込んだ粒子数（原子操作で進める）
+    // 確保量を超えた分の受け皿。通常は空のまま
+    std::vector< std::vector<vismodule::Real32> > ov_scalars( max_threads ), ov_coords( max_threads ),
+        ov_normals( max_threads ), ov_sq( max_threads ), ov_tmp( max_threads );
     {
         const size_t base_s = vertex_scalars.size();
         const size_t base_v = vertex_coords.size();
@@ -4372,8 +4477,16 @@ bool GenerateEnsembleParticlesStruct(
                         }
                         else
                         {
+                            // 確保量を超えた分はスレッド局所の予備へ。最後に併合する
                             #pragma omp atomic
-                            uni_overflow += p_id;   // 上界の見積もりが外れた場合の保険
+                            uni_written -= p_id;                 // 予約を取り消す
+                            const size_t oso = ov_scalars[thid].size();
+                            const size_t ovo = ov_coords[thid].size();
+                            ov_scalars[thid].resize( oso + p_id );  ov_sq[thid].resize( oso + p_id );
+                            ov_coords[thid].resize( ovo + 3 * p_id );  ov_normals[thid].resize( ovo + 3 * p_id );  ov_tmp[thid].resize( ovo + 3 * p_id );
+                            store_uniform_block_struct( p_id, oso, ovo,
+                                ov_scalars[thid], ov_coords[thid], ov_normals[thid], ov_sq[thid], ov_tmp[thid],
+                                scalar_array, local_coord_array, grad_array_x, grad_array_y, grad_array_z );
                         }
                         p_id = 0;
                     }
@@ -4396,8 +4509,16 @@ bool GenerateEnsembleParticlesStruct(
                 }
                 else
                 {
+                    // 確保量を超えた分はスレッド局所の予備へ。最後に併合する
                     #pragma omp atomic
-                    uni_overflow += p_id;
+                    uni_written -= p_id;                 // 予約を取り消す
+                    const size_t oso = ov_scalars[thid].size();
+                    const size_t ovo = ov_coords[thid].size();
+                    ov_scalars[thid].resize( oso + p_id );  ov_sq[thid].resize( oso + p_id );
+                    ov_coords[thid].resize( ovo + 3 * p_id );  ov_normals[thid].resize( ovo + 3 * p_id );  ov_tmp[thid].resize( ovo + 3 * p_id );
+                    store_uniform_block_struct( p_id, oso, ovo,
+                        ov_scalars[thid], ov_coords[thid], ov_normals[thid], ov_sq[thid], ov_tmp[thid],
+                        scalar_array, local_coord_array, grad_array_x, grad_array_y, grad_array_z );
                 }
             }
         }
@@ -4406,16 +4527,33 @@ bool GenerateEnsembleParticlesStruct(
         uniform_thread_times[thid] += uniform_thread_timer.sec();
 #endif
     }
-    // 実際に書いた粒子数へ縮める（上界で確保していたぶんを切り詰める）
+    // 直接書いた分へ縮め、あふれた分（通常は無い）を後ろに足す
     vertex_scalars.resize( uni_written );
     sq_scalars.resize(     uni_written );
     vertex_coords.resize(  3 * uni_written );
     vertex_normals.resize( 3 * uni_written );
     tmp_term.resize(       3 * uni_written );
-    if ( uni_overflow > 0 && mpi_rank == 0 )
     {
-        std::cerr << "一様サンプリング: 粒子数が上界 " << uni_capacity << " を超えたため "
-                  << uni_overflow << " 個を破棄した（上界の見積もりを見直すこと）" << std::endl;
+        size_t ov_total = 0;
+        for ( int t = 0; t < max_threads; ++t ) ov_total += ov_scalars[t].size();
+        if ( ov_total > 0 )
+        {
+            if ( mpi_rank == 0 )
+            {
+                std::cout << "一様サンプリング: 確保量 " << uni_capacity << " を "
+                          << ov_total << " 個超えたため予備バッファから併合した"
+                          << "（粒子は失われない。見積もりの余裕を見直すとよい）" << std::endl;
+            }
+            for ( int t = 0; t < max_threads; ++t )
+            {
+                if ( ov_scalars[t].empty() ) continue;
+                vertex_scalars.insert( vertex_scalars.end(), ov_scalars[t].begin(), ov_scalars[t].end() );
+                sq_scalars.insert(     sq_scalars.end(),     ov_sq[t].begin(),      ov_sq[t].end() );
+                vertex_coords.insert(  vertex_coords.end(),  ov_coords[t].begin(),  ov_coords[t].end() );
+                vertex_normals.insert( vertex_normals.end(), ov_normals[t].begin(), ov_normals[t].end() );
+                tmp_term.insert(       tmp_term.end(),       ov_tmp[t].begin(),     ov_tmp[t].end() );
+            }
+        }
     }
 #ifdef ENABLE_ENSEMBLE_TIMER
     uniform_timer.stop();
