@@ -799,7 +799,8 @@ bool SetParticleParameter(
                               * ( dom.y_global_max - dom.y_global_min )
                               * ( dom.z_global_max - dom.z_global_min );
 
-    const float max_opacity           = 0.98;
+    //const float max_opacity           = 0.98;
+    const float max_opacity           = 0.9;  //アンサンブル用調整（非構造版 unstruct/kvs_wrapper.cpp に合わせる）
     const int particle_limit          = particle_property.m_particle_limit;
     const float extra_opacity_factor  = particle_property.m_extra_opacity_factor;
     particle_property.m_sampling_step = ( max - min ) / 1E1 / extra_opacity_factor;
