@@ -3768,18 +3768,31 @@ bool GenerateEnsembleParticles(
 #ifdef ENABLE_ENSEMBLE_TIMER
         EnsembleTimerScope timer_scope( &ensemble_timer, EnsembleTimerStatAverageVariance );
 #endif
+    // 以下4本は要素ごとに独立なので並列化する。周囲(一様サンプリング・shift再補間・
+    // 棄却)は並列化済みだが、ここだけ逐次のまま残っていた。構造格子版と同一の形。
+    //
+    // **simd 句は意図的に付けていない。** 下のコメントにあるとおり、このあたりの
+    // ループはベクトル化と FP 縮約の判断が変わると co_varietion が最下位ビットで
+    // 動き、色マップの量子化境界で粒子の色が 1 階調ずれた実績がある。
+    // 並列化だけなら要素ごとの式は変わらないので、値は一致する
+    // （OMP=1 でのビット一致で確認すること）。
     const float invert_num = 1.0f / static_cast<float>( ens_number );
-    for ( size_t i = 0; i < vertex_scalars.size(); i++ )
+    const size_t nvertices = vertex_scalars.size();
+    const size_t nterms    = tmp_term.size();
+    #pragma omp parallel for schedule( static )
+    for ( size_t i = 0; i < nvertices; i++ )
     {
         vertex_scalars[i] *= invert_num;
         sq_scalars[i] *= invert_num;
     }
-    for ( size_t i = 0; i < tmp_term.size(); i++ )
+    #pragma omp parallel for schedule( static )
+    for ( size_t i = 0; i < nterms; i++ )
     {
         tmp_term[i] = -2.0f * invert_num * tmp_term[i];
         vertex_normals[i] *= -invert_num;
     }
-    for ( size_t i = 0; i < vertex_scalars.size(); i++ )
+    #pragma omp parallel for schedule( static )
+    for ( size_t i = 0; i < nvertices; i++ )
     {
         tmp_varience[i] = sq_scalars[i] - vertex_scalars[i] * vertex_scalars[i];
         if ( tmp_varience[i] < 0.0f ) tmp_varience[i] = 0.0f;
@@ -3790,7 +3803,8 @@ bool GenerateEnsembleParticles(
 
     const float delta = 1.0e-30f;
     const float eps = 1.0e-5f;
-    for ( size_t i = 0; i < vertex_scalars.size(); i++ )
+    #pragma omp parallel for schedule( static )
+    for ( size_t i = 0; i < nvertices; i++ )
     {
         co_varietion[i] = std::fabs(vertex_scalars[i]) > eps ? std::sqrt( tmp_varience[i] ) /std::fabs( vertex_scalars[i]) : delta;
     }
@@ -4732,22 +4746,22 @@ bool GenerateEnsembleParticlesStruct(
     // 並列化だけなら要素ごとの式は変わらないので、値は一致する
     // （OMP=1 でのビット一致で確認すること）。
     const float invert_num = 1.0f / static_cast<float>( ens_number );
-    const long long nvert_ll = static_cast<long long>( vertex_scalars.size() );
-    const long long nterm_ll = static_cast<long long>( tmp_term.size() );
+    const size_t nvertices = vertex_scalars.size();
+    const size_t nterms    = tmp_term.size();
     #pragma omp parallel for schedule( static )
-    for ( long long i = 0; i < nvert_ll; i++ )
+    for ( size_t i = 0; i < nvertices; i++ )
     {
         vertex_scalars[i] *= invert_num;
         sq_scalars[i] *= invert_num;
     }
     #pragma omp parallel for schedule( static )
-    for ( long long i = 0; i < nterm_ll; i++ )
+    for ( size_t i = 0; i < nterms; i++ )
     {
         tmp_term[i] = -2.0f * invert_num * tmp_term[i];
         vertex_normals[i] *= -invert_num;
     }
     #pragma omp parallel for schedule( static )
-    for ( long long i = 0; i < nvert_ll; i++ )
+    for ( size_t i = 0; i < nvertices; i++ )
     {
         tmp_varience[i] = sq_scalars[i] - vertex_scalars[i] * vertex_scalars[i];
         if ( tmp_varience[i] < 0.0f ) tmp_varience[i] = 0.0f;
@@ -4759,7 +4773,7 @@ bool GenerateEnsembleParticlesStruct(
     const float delta = 1.0e-30f;
     const float eps = 1.0e-5f;
     #pragma omp parallel for schedule( static )
-    for ( long long i = 0; i < nvert_ll; i++ )
+    for ( size_t i = 0; i < nvertices; i++ )
     {
         co_varietion[i] = std::fabs(vertex_scalars[i]) > eps ? std::sqrt( tmp_varience[i] ) /std::fabs( vertex_scalars[i]) : delta;
     }
