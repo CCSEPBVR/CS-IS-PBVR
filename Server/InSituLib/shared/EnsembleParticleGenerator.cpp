@@ -923,13 +923,23 @@ inline NormalMethodRequest resolve_normal_method_request()
  *  方式C の前処理（節点微分量の復元）は「セル数 x 節点数 x 微分量を使う変数の数」に
  *  比例する固定費で、粒子数には依らない。一方 方式A は1粒子につき ±eps の6点で
  *  数式を評価するため粒子数に比例する。したがって粒子数が多いほど方式C が有利になり、
- *  逆転点は節点数と変数の数に比例して上がる。
+ *  逆転点は節点数に比例して上がる。
  *
- *  校正は実測1点のみ。六面体（節点8）・微分量を使う変数1個・4MPI×2OMP・256^3 格子で、
- *  逆転点が「1ランクあたりの粒子数/セル数」= 約 0.39 だった。その1点を基準に、
- *  固定費が何倍になるか（節点数の比 x 変数の数の比）で割り増しする。
+ *  校正は実測1点のみ。六面体（節点8）・4MPI×2OMP・256^3 格子で、逆転点が
+ *  「1ランクあたりの粒子数/セル数」= 約 0.39 だった。その1点を基準に、節点数の比で
+ *  割り増しする。
  *
- *  注意: 節点数と変数の数に比例するという部分は実測していない。方式C の前処理が
+ *  微分量を使う変数の数による補正は入れていない（2026-09-14 に意図して外した）。
+ *  方式C の固定費はその数に比例して増えるが、方式A の側も gather_variable_values() が
+ *  DqUsage を見ずに「全変数」の勾配を1粒子につき7回（中心+差分6点）求めるため、
+ *  粒子あたりの費用が全変数の数に比例する。逆転点は両者の比なので正しくは
+ *  「節点数 x 微分量を使う変数の数 / 全変数の数」に比例するが、校正点が全変数2個
+ *  ・微分量を使う変数1個の1条件しかなく、分母を含めた形を裏付ける実測がない。
+ *  片側だけ補正すると全変数が2個以外の条件で最大2倍ずれて方式選択を誤るため、
+ *  補正自体を省いて節点数のみとする。適正な補正式は追って考案する。
+ *  ndq_variables 引数はその際に使うため残してある。
+ *
+ *  注意: 節点数に比例するという部分は実測していない。方式C の前処理が
  *  「セル数 x 節点数 x 変数の数」の勾配評価であることからの推定で、六面体1条件からの
  *  外挿である。四面体（節点4）や二次六面体（節点20）では確かめていない。
  *
@@ -940,7 +950,7 @@ inline NormalMethodRequest resolve_normal_method_request()
  *  直接指定できる。
  */
 /*===========================================================================*/
-inline double normal_auto_threshold( const int nnodes, const int ndq_variables )
+inline double normal_auto_threshold( const int nnodes, const int /* ndq_variables */ )
 {
     const char* e = std::getenv( "PBVR_NORMAL_AUTO_THRESHOLD" );
     if ( e != NULL && e[0] != '\0' ) return std::atof( e );
@@ -948,12 +958,9 @@ inline double normal_auto_threshold( const int nnodes, const int ndq_variables )
     // 校正点（実測した条件と、そのときの逆転点）
     const double CALIB_RATIO  = 0.39;   // そのときの 粒子数/セル数
     const int    CALIB_NNODES = 8;      // そのときのセルの節点数（六面体）
-    const int    CALIB_NDQVAR = 1;      // そのときの微分量を使う変数の数
 
-    const int v = ( ndq_variables > 0 ) ? ndq_variables : 1;
     return CALIB_RATIO
-         * ( static_cast<double>( nnodes ) / static_cast<double>( CALIB_NNODES ) )
-         * ( static_cast<double>( v )      / static_cast<double>( CALIB_NDQVAR ) );
+         * ( static_cast<double>( nnodes ) / static_cast<double>( CALIB_NNODES ) );
 }
 
 inline const char* celltype_name( const vismodule::VolumeObjectBase::CellType& c )
