@@ -1,15 +1,13 @@
 /*****************************************************************************/
 /**
  *  @file   Hydrogen.h
- *  @author Naohisa Sakamoto
- */
-/*----------------------------------------------------------------------------
+ *  @brief  Strong-scaling variant: single executable, fixed global problem (N).
  *
- *  Copyright (c) Visualization Laboratory, Kyoto University.
- *  All rights reserved.
- *  See http://www.viz.media.kyoto-u.ac.jp/kvs/copyright/ for details.
- *
- *  $Id: Hydrogen.h 602 2010-08-19 02:43:34Z naohisa.sakamoto $
+ *  The global grid (GX x GY nodes, GZ_CELLS cells in z) and the number of
+ *  ensembles are FIXED. Only the number of ranks that split one ensemble
+ *  (mpi_per_ens = mpi_size / num_ensembles) varies at runtime, so the union
+ *  of all ranks always reconstructs the same N. This makes the cases a valid
+ *  strong-scaling series (N fixed, p increases).
  */
 /*****************************************************************************/
 #ifndef __HYDROGEN_H__
@@ -21,7 +19,7 @@
 
 /*===========================================================================*/
 /**
- *  @brief  Hydrogen volume generator class.
+ *  @brief  Hydrogen volume generator class (strong-scaling variant).
  */
 /*===========================================================================*/
 class Hydrogen
@@ -29,20 +27,21 @@ class Hydrogen
 public:
 
     kvs::Vector3ui resolution;
-    kvs::Vector2f  global_region[4];
+    kvs::Vector3f  global_region[8];   // kept for legacy calc_* (unused by generate_volume)
+    kvs::Vector3f  m_origin;           // this rank's slab origin in the global domain
     kvs::Vector3f  global_min_coord;
     kvs::Vector3f  global_max_coord;
     float          cell_length;
-     int            mpi_rank;
-     int            mpi_per_ens = 1;
+    int            mpi_rank;
+    int            mpi_size;
+    int            num_ensembles;      // = mpi_size / mpi_per_ens (grows; weak scaling)
+    int            mpi_per_ens = 4;    // FIXED ranks splitting one ensemble (z-slab x4; weak)
 
     float**        values;//[nvariables][nnodes]
     unsigned int*  connections;
     float*         coords;
     int            ncells;
     int            nnodes;
-    //long            ncells;
-    //long            nnodes;
     int            nvariables;
 
 public:
@@ -52,9 +51,9 @@ public:
     ~Hydrogen( void );
 
     int generate_volume( void );
-    
+
     void calc_average( int mpi_size);
-    
+
     void calc_each_ens( int mpi_size);
 
     void show( void );

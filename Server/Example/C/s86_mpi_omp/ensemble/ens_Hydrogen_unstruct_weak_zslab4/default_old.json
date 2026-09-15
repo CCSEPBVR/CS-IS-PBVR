@@ -101,7 +101,7 @@
             "particle_data_size_limit": 20.0,
             "particle_data_size_limit_unit": "MB",
             "particle_limit": 10000000,
-            "repeat_level": 4
+            "repeat_level": 16
         },
         "transfer_function": {
             "color_synthesis": "C1",

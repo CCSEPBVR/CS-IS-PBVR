@@ -147,3 +147,13 @@ ensemble_timer_summary.csv
 # 検証・計測用の作業ディレクトリ
 *_verify/
 *_perf/
+
+# ローカル限定のアンサンブルサンプル（git 管理から外した）
+/Server/Example/C/s86_mpi_omp/ensemble/ens_Hydrogen_unstruct_mpi2/
+/Server/Example/C/s86_mpi_omp/ensemble/ens_Hydrogen_unstruct_mpi4/
+/Server/Example/C/s86_mpi_omp/ensemble/ens_Hydrogen_unstruct_mpi8/
+/Server/Example/C/s86_mpi_omp/ensemble/ens_Hydrogen_unstruct_mpi16/
+/Server/Example/C/s86_mpi_omp/ensemble/ens_Hydrogen_unstruct_sine/
+/Server/Example/C/s86_mpi_omp/ensemble/ens_Hydrogen_struct_sine/
+/Server/Example/C/s86_mpi_omp/ensemble/ens_Hydrogen_unstruct_4eweak_scale/
+/Server/Example/C/s86_mpi_omp/ensemble/ens_Hydrogen_unstruct_analytic/

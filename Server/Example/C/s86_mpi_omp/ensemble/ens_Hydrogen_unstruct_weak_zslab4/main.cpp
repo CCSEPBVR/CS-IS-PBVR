@@ -12,30 +12,18 @@
 
 /*===========================================================================*/
 /**
- *  @brief  Main function.
- *  @param  argc [i] argument counter
- *  @param  argv [i] argument values
+ *  @brief  Main function (strong-scaling driver).
  */
 /*===========================================================================*/
 int main( int argc, char** argv )
 {
-     MPI_Init( &argc, &argv );
+    MPI_Init( &argc, &argv );
     int mpi_rank;
     MPI_Comm_rank( MPI_COMM_WORLD, &(mpi_rank) );
 
-    // Generate hydrogen volume.
+    // Generate hydrogen volume (fixed global problem, runtime z-slab split).
     Hydrogen hydro;
 
-//    //全体の座標
-//    domain_parameters dom = {
-//        hydro.global_min_coord.x(),
-//        hydro.global_min_coord.y(),
-//        hydro.global_min_coord.z(),
-//        hydro.global_max_coord.x(),
-//        hydro.global_max_coord.y(),
-//        hydro.global_max_coord.z()
-//    };
-   
     domain_parameters_unstruct dom = {
         hydro.global_min_coord.x(),
         hydro.global_min_coord.y(),
@@ -45,18 +33,24 @@ int main( int argc, char** argv )
         hydro.global_max_coord.z()
     };
 
-
     int time_step = 0;
     bool result = false;
-    int ens_num = 1;
-    MPI_Comm_size( MPI_COMM_WORLD, &ens_num );
-    ens_num /= 4;
 
-    std::cout << "ens_num =  " << ens_num << std::endl;  
+    // Number of ensembles = mpi_size / mpi_per_ens (fixed, from the class).
+    int mpi_size = 1;
+    MPI_Comm_size( MPI_COMM_WORLD, &mpi_size );
+    int ens_num = mpi_size / hydro.mpi_per_ens;
+    if ( ens_num < 1 ) ens_num = 1;
+
+    if ( mpi_rank == 0 )
+        std::cout << "ens_num =  " << ens_num << std::endl;
 
     begin_wrapper_async_io();
-    for(int i =0;i<1;i ++ )
-    //for(;;)
+    // 複数タイムステップ対応: 既定 1(従来通り)。env PBVR_NUM_TIMESTEPS>0 で回数指定。
+    int num_timesteps = 1;
+    { const char* e = std::getenv( "PBVR_NUM_TIMESTEPS" ); if ( e && std::atoi( e ) > 0 ) num_timesteps = std::atoi( e ); }
+    if ( mpi_rank == 0 ) std::cout << "num_timesteps = " << num_timesteps << std::endl;
+    for(int i =0;i<num_timesteps;i ++ )
     {
         if(mpi_rank==RANK) hydro.show();
 
