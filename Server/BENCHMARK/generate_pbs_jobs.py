@@ -19,7 +19,7 @@ def shell_quote_arg(value):
     return value.replace("'", "'\\''")
 
 
-DEFAULT_EXECUTABLE = "Example/C/s86_mpi_omp/ens_Hydrogen_unstruct/run"
+DEFAULT_EXECUTABLE = "Example/C/s86_mpi_omp/ensemble/ens_Hydrogen_unstruct/run"
 
 
 def render(row):

@@ -66,16 +66,15 @@ QUEUE=sc16
 PROJECT=job
 WALLTIME=00:30:00
 NCPUS_PER_NODE=40
-PBVR_WEAK_BASE_ENS=4
 MODULE_CUDA=cuda/11.4
 MODULE_GNU=gnu/cur
 MODULE_INTEL=intel/2023.2.1
 MODULE_MPI=mpt/2.23-ga
 MPI_RUNNER=mpirun
 PLACEMENT_CMD=omplace
-EXECUTABLE=Example/C/s86_mpi_omp/ens_Hydrogen_unstruct/run
-WEAK_EXECUTABLE=Example/C/s86_mpi_omp/ens_Hydrogen_unstruct_4eweak_scale/run
-STRONG_EXECUTABLES="Example/C/s86_mpi_omp/ens_Hydrogen_unstruct/run Example/C/s86_mpi_omp/ens_Hydrogen_unstruct_mpi2/run Example/C/s86_mpi_omp/ens_Hydrogen_unstruct_mpi4/run Example/C/s86_mpi_omp/ens_Hydrogen_unstruct_mpi8/run Example/C/s86_mpi_omp/ens_Hydrogen_unstruct_mpi16/run"
+EXECUTABLE=Example/C/s86_mpi_omp/ensemble/ens_Hydrogen_unstruct/run
+WEAK_EXECUTABLE=Example/C/s86_mpi_omp/ensemble/ens_Hydrogen_unstruct_weak_zslab4/run
+STRONG_EXECUTABLES="Example/C/s86_mpi_omp/ensemble/ens_Hydrogen_unstruct/run Example/C/s86_mpi_omp/ensemble/ens_Hydrogen_unstruct_mpi2/run Example/C/s86_mpi_omp/ensemble/ens_Hydrogen_unstruct_mpi4/run Example/C/s86_mpi_omp/ensemble/ens_Hydrogen_unstruct_mpi8/run Example/C/s86_mpi_omp/ensemble/ens_Hydrogen_unstruct_mpi16/run"
 INPUT_ARGS=''
 OUTPUT_ROOT=benchmark_results
 JOB_ROOT=pbs_jobs
@@ -86,9 +85,9 @@ JOB_ROOT=pbs_jobs
 例:
 
 ```sh
-export EXECUTABLE=Example/C/s86_mpi_omp/ens_Hydrogen_unstruct/run
-export WEAK_EXECUTABLE=Example/C/s86_mpi_omp/ens_Hydrogen_unstruct_4eweak_scale/run
-export STRONG_EXECUTABLES="Example/C/s86_mpi_omp/ens_Hydrogen_unstruct/run Example/C/s86_mpi_omp/ens_Hydrogen_unstruct_mpi2/run Example/C/s86_mpi_omp/ens_Hydrogen_unstruct_mpi4/run Example/C/s86_mpi_omp/ens_Hydrogen_unstruct_mpi8/run Example/C/s86_mpi_omp/ens_Hydrogen_unstruct_mpi16/run"
+export EXECUTABLE=Example/C/s86_mpi_omp/ensemble/ens_Hydrogen_unstruct/run
+export WEAK_EXECUTABLE=Example/C/s86_mpi_omp/ensemble/ens_Hydrogen_unstruct_weak_zslab4/run
+export STRONG_EXECUTABLES="Example/C/s86_mpi_omp/ensemble/ens_Hydrogen_unstruct/run Example/C/s86_mpi_omp/ensemble/ens_Hydrogen_unstruct_mpi2/run Example/C/s86_mpi_omp/ensemble/ens_Hydrogen_unstruct_mpi4/run Example/C/s86_mpi_omp/ensemble/ens_Hydrogen_unstruct_mpi8/run Example/C/s86_mpi_omp/ensemble/ens_Hydrogen_unstruct_mpi16/run"
 export INPUT_ARGS="default.json"
 ```
 
@@ -119,7 +118,7 @@ export INPUT_ARGS="default.json"
 - `strong_32x1`: `ens_Hydrogen_unstruct_mpi8`
 - `strong_64x1`: `ens_Hydrogen_unstruct_mpi16`
 
-弱スケーリングケースは総MPIプロセス数が `10,20,40,80` になるように生成します。1ノード40コア想定では、`weak_80` は `select=2:ncpus=40:mpiprocs=40:ompthreads=1` になり、`mpirun -n 80` で実行します。`PBVR_WEAK_BASE_ENS=4` の場合、10 MPIだけは4の倍数ではないため分布パターンの繰り返しが完全周期になりません。完全周期で比較したい場合は `PBVR_WEAK_BASE_ENS=5` など、10を割り切れる値にしてください。MPI x OpenMP構成探索では、`NCPUS_PER_NODE` の範囲内で `mpiprocs >= 2` の組み合わせだけを生成します。1ノード40コア想定では以下です。
+弱スケーリングケースは総MPIプロセス数が `10,20,40,80` になるように生成します。1ノード40コア想定では、`weak_80` は `select=2:ncpus=40:mpiprocs=40:ompthreads=1` になり、`mpirun -n 80` で実行します。`ens_Hydrogen_unstruct_weak_zslab4` は `PBVR_WEAK_MPI_PER_ENS`（既定4）で1アンサンブルあたりのMPI数を決め、アンサンブル数を `総MPI数 / PBVR_WEAK_MPI_PER_ENS` とします。10 MPI は4で割り切れないため端数が出ます。割り切れる構成で比較したい場合は 総MPI数を4の倍数にするか、`PBVR_WEAK_MPI_PER_ENS=5` のように10を割り切れる値にしてください。MPI x OpenMP構成探索では、`NCPUS_PER_NODE` の範囲内で `mpiprocs >= 2` の組み合わせだけを生成します。1ノード40コア想定では以下です。
 
 - `sweep_40x1`
 - `sweep_20x2`
@@ -132,21 +131,58 @@ export INPUT_ARGS="default.json"
 
 ## 弱スケーリング用Hydrogenサンプル
 
-強スケーリング、正しさ確認、MPI x OpenMP構成探索では従来の `ens_Hydrogen_unstruct` を使います。弱スケーリング評価だけ、MPI数を増やしても物理値分布が大きく変化しないように、以下の新規Exampleを使います。
+強スケーリング、正しさ確認、MPI x OpenMP構成探索では `ens_Hydrogen_unstruct` を使います。
+弱スケーリング評価だけ、以下のExampleを使います。
 
 ```text
-Example/C/s86_mpi_omp/ens_Hydrogen_unstruct_4eweak_scale/run
+Example/C/s86_mpi_omp/ensemble/ens_Hydrogen_unstruct_weak_zslab4/run
 ```
 
-このパスは `WEAK_EXECUTABLE` で変更できます。通常の `EXECUTABLE` は正しさ確認とMPI x OpenMP構成探索に使い、強スケーリングは `generate_benchmark_cases.py` 内のMPI数別マッピングを優先します。
+このパスは `WEAK_EXECUTABLE` で変更できます。
 
-このサンプルでは `effective_ens_id = mpi_rank % PBVR_WEAK_BASE_ENS` を使い、`kd = 1.0 + effective_ens_id` とします。デフォルトの `PBVR_WEAK_BASE_ENS` は4です。MPI数を4の倍数にすると、同じensemble patternが繰り返されます。
+このサンプルは、1アンサンブルあたりのMPI数 `mpi_per_ens` を固定（既定4、環境変数
+`PBVR_WEAK_MPI_PER_ENS` で変更可）し、アンサンブル数を `num_ensembles = 総MPI数 / mpi_per_ens`
+として増やします。1アンサンブルの z 方向を `mpi_per_ens` 個の連続スラブに分割するため、
+**1ランクあたりの格子は総MPI数によらず一定**になります（実測: 総MPI 4 でも 40 でも
+`resolution=256 256 65`、`ncells=4161600`）。
 
-分布確認ログは通常rank 0のみ出力します。全rankで確認したい場合は以下を指定します。
+### この測定で何が固定され、何が増えるか
 
-```sh
-export PBVR_WEAK_DEBUG=1
+**重要**: このケースは「1ランクあたりの格子」と「出力される総粒子数」を固定し、
+**アンサンブル数だけを増やす**測定です。教科書的な弱スケーリング（1ランクあたりの
+仕事量を固定して全体サイズを比例させる）とは異なります。
+
+理由は粒子生成側の仕様です。`EnsembleParticleGenerator.cpp` に
+
+```c
+repetitions /= static_cast<float>( ens_number );
 ```
+
+があり、**粒子数がアンサンブル数で割られます**。アンサンブル各メンバは同じ物理領域を
+担当し、最終出力は統計量（平均・分散・変動係数）の粒子集合1セットなので、アンサンブル数が
+増えても出力粒子数が増えないようにするための除算です。動作としては正しいものです。
+
+結果として、総MPI数を増やすと次のようになります（実測、1ノード40コア・1スレッド）。
+
+| 総MPI | アンサンブル数 | ランクあたりセル数 | 一様粒子 総計 | ランクあたり粒子数 | 生成[秒] |
+|---:|---:|---:|---:|---:|---:|
+| 4  | 1  | 4,161,600 | 51,184,487 | 12,796,121 | 4.64 |
+| 8  | 2  | 4,161,600 | 51,184,793 | 6,398,099 | 3.15 |
+| 20 | 5  | 4,161,600 | 51,181,632 | 2,559,081 | 2.70 |
+| 40 | 10 | 4,161,600 | 51,190,004 | 1,279,750 | 2.62 |
+
+**総粒子数は一定**で、ランクあたりの粒子数は `1/アンサンブル数` に減ります。
+したがってランクあたりの仕事量も減り、総時間は横ばいになりません。
+
+### 読み方の注意
+
+- **「総時間が横ばいなら効率100%」という読み方はできません。** 上表のとおり総時間は減ります。
+- この測定で分かるのは、**出力粒子数を一定に保ったまま統計サンプル数（アンサンブル数）を
+  増やしたときの費用**です。アンサンブル間のデータ交換がアンサンブル数に対してどう増えるかを
+  見るのに適しています。
+- 1ランクあたりの仕事量を固定した本来の弱スケーリングを測りたい場合は、
+  `repeat_level` をアンサンブル数倍にして上記の除算を相殺するか、アンサンブル数を固定して
+  MPI数の増加を領域の拡大に充てる別サンプルが必要です。いずれも未実施です。
 
 ## PBSジョブの形式
 
@@ -288,7 +324,7 @@ python3 parse_timing.py --input benchmark_results
 既存の `ensemble_timer_summary.csv` がある場合もパースできます。
 
 ```sh
-python3 parse_timing.py --input Example/C/s86_mpi_omp/ens_Hydrogen_unstruct/ensemble_timer_summary.csv
+python3 parse_timing.py --input Example/C/s86_mpi_omp/ensemble/ens_Hydrogen_unstruct/ensemble_timer_summary.csv
 ```
 
 出力先はデフォルトで `benchmark_analysis/` です。

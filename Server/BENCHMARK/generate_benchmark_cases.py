@@ -15,13 +15,13 @@ def env(name, default):
     return os.environ.get(name, default)
 
 
-DEFAULT_EXECUTABLE = "Example/C/s86_mpi_omp/ens_Hydrogen_unstruct/run"
-DEFAULT_WEAK_EXECUTABLE = "Example/C/s86_mpi_omp/ens_Hydrogen_unstruct_4eweak_scale/run"
+DEFAULT_EXECUTABLE = "Example/C/s86_mpi_omp/ensemble/ens_Hydrogen_unstruct/run"
+DEFAULT_WEAK_EXECUTABLE = "Example/C/s86_mpi_omp/ensemble/ens_Hydrogen_unstruct_weak_zslab4/run"
 # Strong scaling now uses a SINGLE executable that keeps the global problem
 # size N fixed and only changes how many ranks split one ensemble at runtime
 # (mpi_per_ens = mpi_size / num_ensembles). This makes the strong_* series a
 # valid strong-scaling experiment (N fixed, p increases).
-DEFAULT_STRONG_EXECUTABLE = "Example/C/s86_mpi_omp/ens_Hydrogen_unstruct_strong/run"
+DEFAULT_STRONG_EXECUTABLE = "Example/C/s86_mpi_omp/ensemble/ens_Hydrogen_unstruct_strong/run"
 DEFAULT_STRONG_EXECUTABLES = {
     4: DEFAULT_STRONG_EXECUTABLE,
     8: DEFAULT_STRONG_EXECUTABLE,
@@ -70,7 +70,6 @@ def split_total_mpi(total_mpi, ompthreads, ncpus_per_node):
 
 def build_cases(executable_arg=None, input_args_arg=None, weak_executable_arg=None):
     ncpus_per_node = int(env("NCPUS_PER_NODE", "40"))
-    weak_base_ens = max(2, int(env("PBVR_WEAK_BASE_ENS", "4")))
     output_root = env("OUTPUT_ROOT", "benchmark_results")
     executable = executable_arg or env("EXECUTABLE", DEFAULT_EXECUTABLE)
     weak_executable = weak_executable_arg or env("WEAK_EXECUTABLE", DEFAULT_WEAK_EXECUTABLE)

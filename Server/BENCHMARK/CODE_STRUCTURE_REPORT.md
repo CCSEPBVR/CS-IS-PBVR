@@ -56,7 +56,7 @@ make PBVR_MACHINE=Makefile_machine_s86_mpi_omp -j ${MAKE_JOBS}
 ## デフォルト実行バイナリ
 
 ```text
-Example/C/s86_mpi_omp/ens_Hydrogen_unstruct/run
+Example/C/s86_mpi_omp/ensemble/ens_Hydrogen_unstruct/run
 ```
 
 `config.sh` の `EXECUTABLE`、環境変数 `EXECUTABLE`、または `generate_benchmark_cases.py --executable` で変更できる。
@@ -65,8 +65,8 @@ Example/C/s86_mpi_omp/ens_Hydrogen_unstruct/run
 
 | 種類 | 場所 | 内容 |
 | --- | --- | --- |
-| Example JSON | `Example/C/s86_mpi_omp/ens_Hydrogen_unstruct/default.json` | 可視化設定。 |
-| ensemble statistics JSON | `Example/C/s86_mpi_omp/ens_Hydrogen_unstruct/default_ensemble_statistics.json` | 統計量TF設定。存在しない場合は対象Example側を確認する。 |
+| Example JSON | `Example/C/s86_mpi_omp/ensemble/ens_Hydrogen_unstruct/default.json` | 可視化設定。 |
+| ensemble statistics JSON | `Example/C/s86_mpi_omp/ensemble/ens_Hydrogen_unstruct/default_ensemble_statistics.json` | 統計量TF設定。存在しない場合は対象Example側を確認する。 |
 | Hydrogen生成データ | `Example/C/s86_mpi_omp/*/Hydrogen.cpp` | 多くのExampleはコード内でデータ生成する。 |
 | 外部入力 | 実行時指定 | `INPUT_ARGS` または `cases.csv` の `input_args` で指定する。 |
 
@@ -85,8 +85,8 @@ Example/C/s86_mpi_omp/ens_Hydrogen_unstruct/run
 | --- | --- | --- |
 | Function parser test | `FunctionParser/test.cpp` | 数式parser確認。 |
 | Hydrogen unstruct | `Example/C/s86_mpi_omp/Hydrogen_unstruct/` | 非構造格子Hydrogen例。 |
-| Ensemble Hydrogen | `Example/C/s86_mpi_omp/ens_Hydrogen_unstruct/` | 今回のデフォルトベンチマーク対象。 |
-| Ensemble Hydrogen mpi4 | `Example/C/s86_mpi_omp/ens_Hydrogen_unstruct_mpi4/` | サンプルtimer CSVが残っている場合の参照先。 |
+| Ensemble Hydrogen | `Example/C/s86_mpi_omp/ensemble/ens_Hydrogen_unstruct/` | 今回のデフォルトベンチマーク対象。 |
+| Ensemble Hydrogen mpi4 | `Example/C/s86_mpi_omp/ensemble/ens_Hydrogen_unstruct_mpi4/` | サンプルtimer CSVが残っている場合の参照先。 |
 | AMR Hydrogen | `Example/C/s86_mpi_omp/Hydrogen_AMR/` | AMRパス確認。 |
 
 ## 主要ファイル
