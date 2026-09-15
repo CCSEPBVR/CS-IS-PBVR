@@ -1,4 +1,4 @@
-PBVR_DIR = ../../../..
+PBVR_DIR = ../../../../..
 
 include ${PBVR_DIR}/pbvr.conf
 include ${PBVR_DIR}/arch/${PBVR_MACHINE}
@@ -20,7 +20,7 @@ else
 	CXXFLAGS += -DCPU_VER
 endif
 
-PBVR_KVS_INSTALL_DIR ?= $(abspath ../../../../../KVS/Install)
+PBVR_KVS_INSTALL_DIR ?= $(abspath ../../../../../../KVS/Install)
 ifneq ($(wildcard $(PBVR_KVS_INSTALL_DIR)/kvs.conf),)
 include $(PBVR_KVS_INSTALL_DIR)/kvs.conf
 ifeq "$(KVS_SUPPORT_EXTENDED_FILE_FORMAT)" "1"
@@ -29,8 +29,8 @@ endif
 endif
 
 CXXFLAGS += -I./ \
-            -I../../../../Utils \
-            -I../../../../App \
+            -I../../../../../Utils \
+            -I../../../../../App \
             -I${INSITU_DIR} \
             -I${INSITU_COMMON_DIR} \
             -I${VISMODULE_SOURCE_DIR} \

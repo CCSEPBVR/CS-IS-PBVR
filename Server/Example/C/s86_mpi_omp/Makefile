@@ -20,7 +20,7 @@ SUBDIRS += Hydrogen_unstruct_pyramid
 SUBDIRS += Hydrogen_unstruct_quadtetra
 SUBDIRS += Hydrogen_unstruct_quadhexa
 # SUBDIRS += Hydrogen_AMR
-SUBDIRS += ens_Hydrogen_unstruct
+# アンサンブル用は ensemble/ にまとめた。make -C ensemble で建てる。
 
 all:
 	for i in $(SUBDIRS); do \

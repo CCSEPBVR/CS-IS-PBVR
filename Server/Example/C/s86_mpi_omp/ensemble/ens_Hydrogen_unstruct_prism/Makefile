@@ -1,4 +1,4 @@
-PBVR_DIR = ../../../..
+PBVR_DIR = ../../../../..
 
 include ${PBVR_DIR}/pbvr.conf
 include ${PBVR_DIR}/arch/${PBVR_MACHINE}
@@ -28,8 +28,8 @@ endif
 endif
 
 CXXFLAGS += -I./ \
-            -I../../../../Utils \
-            -I../../../../App \
+            -I../../../../../Utils \
+            -I../../../../../App \
             -I${INSITU_DIR} \
             -I${INSITU_COMMON_DIR} \
             -I${VISMODULE_SOURCE_DIR} \

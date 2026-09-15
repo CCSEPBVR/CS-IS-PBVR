@@ -9,7 +9,7 @@ echo "end setting module & export"
 
 CURRENT=$(cd $(dirname $0);pwd)
 #cd ../
-cd ../../../../InSituLib/struct
+cd ../../../../../InSituLib/struct
 
 #file="citylbm"
 #if [ -e $file ]; then
