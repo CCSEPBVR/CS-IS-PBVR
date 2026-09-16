@@ -1842,16 +1842,21 @@ void calculate_scalar_and_normal(
 /**
  *  @brief  補間器からヘッセ行列を取れるかどうかで振り分ける。
  *
- *  三線形は 2階微分の対角成分が恒等的に 0 で、交差成分もセル境界で飛ぶため
- *  使えない（§17.4）。呼ばれても何もせず false を返す。
  *  戻り値の符号は補間器の規約どおり **-H** なので、呼び出し側で反転すること。
+ *
+ *  三線形は 2026-09-16 に対応した。形状関数そのものの 2階微分は対角が恒等的に 0 で
+ *  交差成分もセル境界で飛ぶため使えないが、TrilinearInterpolator::hessian() は
+ *  「場の 2階微分を節点で差分し、その節点場を三線形補間する」方式をとっており、
+ *  対角も出てセル境界でも連続になる（検証: 精度2次、F=|grad q| の法線の向きのずれ
+ *  平均 0.2〜0.3 度。形状関数の 2階微分では 34.6 度）。
  */
 /*===========================================================================*/
 static inline bool fetch_hessian(
-    const vismodule::TrilinearInterpolator*,
-    float*, float*, float*, float*, float*, float* )
+    const vismodule::TrilinearInterpolator* ip,
+    float* xx, float* yy, float* zz, float* xy, float* xz, float* yz )
 {
-    return false;
+    ip->hessian( xx, yy, zz, xy, xz, yz );
+    return true;
 }
 
 static inline bool fetch_hessian(
@@ -1930,8 +1935,21 @@ void calculate_scalar_and_chain_rule_grad_struct(
             grad_qy[j][p] = -grad_qy[j][p];
             grad_qz[j][p] = -grad_qz[j][p];
         }
-        // 2階微分。dq を含む数式で、かつ補間器が出せるときだけ
+        // 2階微分。dq を含む数式で、かつ補間器が出せるときだけ。
+        // さらに「この変数の dq が数式に現れているか」も見る。現れていない変数の
+        // 2階微分は第2項の側(dq_slot を見て continue する箇所)で捨てられるので、
+        // 計算するだけ無駄になる。物理量が複数あって一部しか dq を参照しない場合、
+        // ここを飛ばすだけで 2階微分の費用が「参照する変数の数/全変数の数」倍になる。
+        // 実測（256^3, 4MPI x 1スレッド, 物理量2個のうち q1 の dq のみ参照）:
+        // 粒子生成一式 37.02 -> 13.71 秒（2.70 倍）。法線はビット一致する
+        // （捨てられる値を計算しなくなるだけなので値は変わらない）。
+        bool dq_used_j = false;
         if ( dq_slot != NULL )
+        {
+            for ( int c = 0; c < 3; ++c )
+                if ( dq_slot[ j * 3 + c ] >= 0 ) dq_used_j = true;
+        }
+        if ( dq_used_j )
         {
             if ( fetch_hessian( interp[j], hxx[j], hyy[j], hzz[j], hxy[j], hxz[j], hyz[j] ) )
             {
@@ -2371,11 +2389,10 @@ static inline void calculate_scalar_and_normal_struct(
     }
     else
     {
-        // 三線形は 2階微分を出せないので dq_slot は渡さない（§17.4）
         calculate_scalar_and_chain_rule_grad_struct(
             nparticles_count, nvariables, chain_context, interp_tri,
             local_coord_array, global_coord_array,
-            scalar_result, grad_array_x, grad_array_y, grad_array_z, timing );
+            scalar_result, grad_array_x, grad_array_y, grad_array_z, timing, dq_slot );
     }
 }
 
@@ -4257,13 +4274,14 @@ bool GenerateEnsembleParticlesStruct(
     // 数式が参照している微分量。方式C では節点微分量の復元に、
     // Bスプラインでは連鎖律の第2項（2階微分の寄与、§17.2）に使う。
     const DqUsage dq_usage = collect_dq_usage( equation_token, nvariables );
-    // 三線形は 2階微分を出せないので渡さない（§17.4）。
+    // 三線形も 2026-09-16 から 2階微分を出せるので渡す。
     // 方式C は節点F場の中で dq を消費済みなので、粒子側では不要。
     const int* const dq_slot =
-        ( struct_interp == StructInterpBSpline && dq_usage.any() ) ? dq_usage.slot.data() : NULL;
+        ( ( struct_interp == StructInterpBSpline || struct_interp == StructInterpTrilinear )
+          && dq_usage.any() ) ? dq_usage.slot.data() : NULL;
     if ( dq_slot != NULL )
     {
-        std::cout << "PBVR_STRUCT_INTERP=bspline: 数式が微分量を参照しているため、"
+        std::cout << "数式が微分量を参照しているため、"
                   << "連鎖律に 2階微分の寄与を加える (" << dq_usage.nslots << " 成分)" << std::endl;
     }
     {
