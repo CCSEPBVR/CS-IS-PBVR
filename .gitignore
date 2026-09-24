@@ -157,3 +157,6 @@ ensemble_timer_summary.csv
 /Server/Example/C/s86_mpi_omp/ensemble/ens_Hydrogen_struct_sine/
 /Server/Example/C/s86_mpi_omp/ensemble/ens_Hydrogen_unstruct_4eweak_scale/
 /Server/Example/C/s86_mpi_omp/ensemble/ens_Hydrogen_unstruct_analytic/
+
+# ベンチマーク自動化一式（一般公開では不要。手元のみで使う）
+/Server/BENCHMARK/
