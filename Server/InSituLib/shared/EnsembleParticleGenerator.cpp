@@ -1499,12 +1499,16 @@ static bool build_node_dq_field(
 #else
     const int nthreads = 1;
 #endif
-    // スレッド別に配列を持てば排他制御が要らない。メモリはスレッド数に比例するので、
-    // 上限を超える場合は従来どおり共有配列＋排他制御に落とす。
+    // スレッド別に配列を持てば排他制御が要らない。ただし実測では割に合わなかった。
+    // SGI8600・4MPI x 10OMP で 5 セル種すべて、共有配列＋排他制御の方が速い
+    // (前処理の実時間で 1.08〜3.59 倍)。スレッド別配列は散布を 2.4〜4.8 倍速くするが、
+    // 毎ステップのゼロ埋め(assign は単一スレッド。実測 0.31 秒/GB で、量はスレッド数に
+    // 比例する)と合算パスがその利得を上回る。
+    // そのため既定は 0 = 無効。他機で有利なら PBVR_NODE_DQ_TLS_MB で有効にできる。
     const size_t tls_slab = static_cast<size_t>( usage.nslots ) * ncoords;
     const size_t tls_bytes =
         static_cast<size_t>( nthreads ) * ( tls_slab + ncoords ) * sizeof( float );
-    size_t tls_limit = static_cast<size_t>( 4096 ) * 1024 * 1024;
+    size_t tls_limit = 0;
     {
         const char* e = std::getenv( "PBVR_NODE_DQ_TLS_MB" );
         if ( e != NULL && e[0] != '\0' )
@@ -1520,7 +1524,7 @@ static bool build_node_dq_field(
         tls_dq.assign( static_cast<size_t>( nthreads ) * tls_slab, 0.0f );
         tls_w.assign( static_cast<size_t>( nthreads ) * ncoords, 0.0f );
     }
-    else if ( nthreads > 1 )
+    else if ( nthreads > 1 && tls_limit > 0 )
     {
         std::cerr << "節点微分量の復元: スレッド別配列に "
                   << ( tls_bytes / ( 1024 * 1024 ) ) << " MB 必要で上限を超えるため、"
