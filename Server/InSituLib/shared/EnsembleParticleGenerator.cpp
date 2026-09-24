@@ -922,45 +922,67 @@ inline NormalMethodRequest resolve_normal_method_request()
  *
  *  方式C の前処理（節点微分量の復元）は「セル数 x 節点数 x 微分量を使う変数の数」に
  *  比例する固定費で、粒子数には依らない。一方 方式A は1粒子につき ±eps の6点で
- *  数式を評価するため粒子数に比例する。したがって粒子数が多いほど方式C が有利になり、
- *  逆転点は節点数に比例して上がる。
+ *  数式を評価するため粒子数に比例する。したがって粒子数が多いほど方式C が有利になる。
  *
- *  校正は実測1点のみ。六面体（節点8）・4MPI×2OMP・256^3 格子で、逆転点が
- *  「1ランクあたりの粒子数/セル数」= 約 0.39 だった。その1点を基準に、節点数の比で
- *  割り増しする。
+ *  【校正表】扱える5セル種すべてで逆転点を実測した。旧実装は「節点数に比例する」と
+ *  していたが、実測はそうならない。節点数 5→20 で逆転点は 0.136→0.552 の 4.1 倍
+ *  にしかならず、しかも単調でない（節点8の六面体 0.481 が節点10の二次四面体 0.414
+ *  より高い）。前処理も粒子あたりの費用もどちらも節点数に比例するため、その比である
+ *  逆転点には節点数がほぼ残らない。残るのは前処理の単価 c_grad のばらつきで、
+ *  これは節点数からは決まらない。そのためセル種ごとの実測値を表で持つ。
  *
- *  微分量を使う変数の数による補正は入れていない（2026-09-14 に意図して外した）。
- *  方式C の固定費はその数に比例して増えるが、方式A の側も gather_variable_values() が
- *  DqUsage を見ずに「全変数」の勾配を1粒子につき7回（中心+差分6点）求めるため、
- *  粒子あたりの費用が全変数の数に比例する。逆転点は両者の比なので正しくは
- *  「節点数 x 微分量を使う変数の数 / 全変数の数」に比例するが、校正点が全変数2個
- *  ・微分量を使う変数1個の1条件しかなく、分母を含めた形を裏付ける実測がない。
- *  片側だけ補正すると全変数が2個以外の条件で最大2倍ずれて方式選択を誤るため、
- *  補正自体を省いて節点数のみとする。適正な補正式は追って考案する。
- *  ndq_variables 引数はその際に使うため残してある。
+ *  【アンサンブル数】前処理（節点場の構築）は自メンバの場に対して1ランク1回だけで、
+ *  他メンバから受け取った粒子も自分の場で補間するのでアンサンブル数に依らない。
+ *  一方、1ランクが補間する回数は 自粒子 + 他メンバ分 = アンサンブル数 x 自粒子。
+ *  よって粒子あたりの費用だけがアンサンブル数倍になり、逆転点は反比例する。
+ *  校正表はアンサンブル4 での値なので、4/ens_number を掛けて引き直す。
  *
- *  注意: 節点数に比例するという部分は実測していない。方式C の前処理が
- *  「セル数 x 節点数 x 変数の数」の勾配評価であることからの推定で、六面体1条件からの
- *  外挿である。四面体（節点4）や二次六面体（節点20）では確かめていない。
+ *  【校正条件】SGI8600 1ノード、4MPI x 10OMP、アンサンブル4、
+ *  数式 sqrt(dq1x^2+dq1y^2+dq1z^2)（全変数2個・微分量を使う変数1個）、
+ *  格子は六面体 256^3 / 他 128^3、繰り返し数 2〜32 の5水準、決定係数 R^2 >= 0.9972。
+ *  節点微分量の復元はスレッド別配列なし（tls_limit の既定 0）。
+ *
+ *  注意: 他の計算機・他のスレッド数では再校正が要る。スレッド数を変えると値が動く
+ *  （OMP=1 では 0.215/0.276/0.507/0.369/0.522 で、方向もばらばらにずれる）。
+ *  微分量を使う変数の数や全変数の数による補正は入れていない。校正が1条件のため。
  *
  *  比はランクあたりで取ること。ensemble_timer_summary.csv の粒子数は MPI_SUM で
  *  全ランクを合計した値なので、そのまま使うとランク数ぶん過大になる。
+ *
+ *  導出と測定の記録: docs/方式選択の閾値_導出と実測検証.md §17（校正表）、
+ *  §18（積み上げによる検証）。
  *
  *  条件が合わない場合は環境変数 PBVR_NORMAL_AUTO_THRESHOLD で閾値そのものを
  *  直接指定できる。
  */
 /*===========================================================================*/
-inline double normal_auto_threshold( const int nnodes, const int /* ndq_variables */ )
+inline double normal_auto_threshold(
+    const vismodule::VolumeObjectBase::CellType& celltype,
+    const int ens_number,
+    const int /* ndq_variables */ )
 {
     const char* e = std::getenv( "PBVR_NORMAL_AUTO_THRESHOLD" );
     if ( e != NULL && e[0] != '\0' ) return std::atof( e );
 
-    // 校正点（実測した条件と、そのときの逆転点）
-    const double CALIB_RATIO  = 0.39;   // そのときの 粒子数/セル数
-    const int    CALIB_NNODES = 8;      // そのときのセルの節点数（六面体）
+    // 校正表。アンサンブル4 での実測の逆転点（粒子数/セル数、1ランクあたり）。
+    const int CALIB_ENS_NUMBER = 4;
+    double ratio;
+    switch ( celltype )
+    {
+    case vismodule::VolumeObjectBase::Pyramid:              ratio = 0.136; break;
+    case vismodule::VolumeObjectBase::Prism:                ratio = 0.324; break;
+    case vismodule::VolumeObjectBase::Hexahedra:            ratio = 0.481; break;
+    case vismodule::VolumeObjectBase::QuadraticTetrahedra:  ratio = 0.414; break;
+    case vismodule::VolumeObjectBase::QuadraticHexahedra:   ratio = 0.552; break;
+    // 一次四面体は微分量を含む数式で方式C へ強制切り替えされるので、ここへは来ない。
+    // 未測定のセル種は実測5種の中央値を使う。
+    default:                                                ratio = 0.40;  break;
+    }
 
-    return CALIB_RATIO
-         * ( static_cast<double>( nnodes ) / static_cast<double>( CALIB_NNODES ) );
+    // 前処理は1ランク1回でアンサンブル数に依らないが、粒子あたりの費用は
+    // アンサンブル数倍かかる。よって逆転点はアンサンブル数に反比例する。
+    const int ens = ( ens_number > 0 ) ? ens_number : CALIB_ENS_NUMBER;
+    return ratio * static_cast<double>( CALIB_ENS_NUMBER ) / static_cast<double>( ens );
 }
 
 inline const char* celltype_name( const vismodule::VolumeObjectBase::CellType& c )
@@ -1051,7 +1073,8 @@ static NormalMethod select_normal_method(
     const bool uses_dq,
     const int ndq_variables,
     const vismodule::VolumeObjectBase::CellType& celltype,
-    const int nnodes,
+    const int /* nnodes */,   // 閾値がセル種の表に変わったので使わなくなった
+    const int ens_number,
     const double np_over_ncell,
     const bool np_known,
     const int mpi_rank,
@@ -1082,7 +1105,7 @@ static NormalMethod select_normal_method(
 //        }
         else
         {
-            const double th = normal_auto_threshold( nnodes, ndq_variables );
+            const double th = normal_auto_threshold( celltype, ens_number, ndq_variables );
             if ( !np_known )
             {
                 m = NormalMethod::CoordinateDifference;
@@ -1147,7 +1170,7 @@ static NormalMethod select_normal_method(
         // --- 速度の助言（方式は変えない） ---
         if ( uses_dq && np_known && !is_tetra && !is_pyramid && mpi_rank == 0 )
         {
-            const double th = normal_auto_threshold( nnodes, ndq_variables );
+            const double th = normal_auto_threshold( celltype, ens_number, ndq_variables );
             if ( m == NormalMethod::CoordinateDifference && np_over_ncell >= th )
             {
                 std::cerr << "[PBVR] 助言: 粒子数/セル数=" << np_over_ncell
@@ -2834,7 +2857,7 @@ bool GenerateEnsembleParticles(
         normal_method = select_normal_method(
             normal_method_request, usage_for_select.any(),
             static_cast<int>( usage_for_select.var_index.size() ),
-            celltype, nnodes_of_cell, np_over_ncell, np_known, mpi_rank, &reason );
+            celltype, nnodes_of_cell, ens_number, np_over_ncell, np_known, mpi_rank, &reason );
         if ( mpi_rank == 0 )
         {
             std::cerr << "[PBVR] 法線計算: " << normal_method_name( normal_method )
