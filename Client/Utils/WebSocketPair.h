@@ -1,56 +1,82 @@
 #ifndef WEBSOCKETPAIR_H
 #define WEBSOCKETPAIR_H
 
-#include <QWebSocket>
+#include <QObject>
+#include <QByteArray>
+#include <QMetaType>
+#include <QThread>
+#include <QUrl>
+#include <QString>
 
-class WebSocketPair
+class WebSocketWorker;
+
+class WebSocketPair : public QObject
 {
+    Q_OBJECT
+
 public:
-    // デフォルトコンストラクタで new して初期化
-    WebSocketPair()
+    enum class State
     {
-        m_binary_socket = new QWebSocket();
-        m_text_socket   = new QWebSocket();
-    }
+        Disconnected,
+        Connecting,
+        Connected,
+        Closing
+    };
+    Q_ENUM( State )
 
-    ~WebSocketPair()
-    {
-        delete m_binary_socket;
-        delete m_text_socket;
-    }
+    explicit WebSocketPair( QObject* parent = nullptr );
+    ~WebSocketPair() override;
 
-    QWebSocket* binary() const { return m_binary_socket; }
-    QWebSocket* text() const { return m_text_socket; }
+    void open( const QUrl& binaryUrl, const QUrl& textUrl );
+    void close();
+    void sendTextMessage( const QString& message );
+    void sendTextMessage( const QByteArray& utf8Message );
+    void sendBinaryMessage( const QByteArray& data );
 
-    bool isValid() const
-    {
-        return m_binary_socket && m_text_socket;
-    }
+    State state() const { return m_state; }
+    bool isConnected() const { return m_state == State::Connected; }
+    quint64 generation() const { return m_activeGeneration; }
 
-/**
-* @brief バイナリとテキストの両ソケットが接続済みか確認する
-* @return true  両方のソケットが接続中または接続済み
-* @return false どちらかが未接続
-*/
-    bool isConnected() const
-    {
-        auto isSocketConnected = []( const QWebSocket* socket )
-        {
-            return socket && socket->state() == QAbstractSocket::ConnectedState;
-        };
+signals:
+    void stateChanged( WebSocketPair::State state );
+    void connected( quint64 generation );
+    void disconnected( quint64 generation, const QString& reason );
+    void textMessageReceived( const QString& message );
+    void binaryMessageReceived( const QByteArray& data );
+    void errorOccurred( const QString& message );
 
-        return isSocketConnected( m_binary_socket ) && isSocketConnected( m_text_socket );
-    }
+    // These internal signals are always connected to the worker with QueuedConnection.
+    void requestOpen( quint64 generation, const QString& uuid,
+                      const QUrl& binaryUrl, const QUrl& textUrl,
+                      qint64 deadlineMonotonicMs );
+    void requestClose( quint64 generation, const QString& reason );
+    void requestTextSend( quint64 generation, const QString& message );
+    void requestBinarySend( quint64 generation, const QByteArray& data );
+    void requestReceiveAcknowledge( quint64 generation, int kind, qint64 bytes );
 
-    void closeAll()
-    {
-        if( m_binary_socket ) m_binary_socket->close();
-        if( m_text_socket ) m_text_socket->close();
-    }
+private slots:
+    void onWorkerStateChanged( quint64 generation, int state, const QString& detail );
+    void onWorkerEnded( quint64 generation, const QString& reason );
+    void onWorkerError( quint64 generation, const QString& message );
+    void onWorkerTextMessage( quint64 generation, const QString& message, qint64 accountedBytes );
+    void onWorkerBinaryMessage( quint64 generation, const QByteArray& data, qint64 accountedBytes );
 
 private:
-    QWebSocket* m_binary_socket = nullptr;
-    QWebSocket* m_text_socket = nullptr;
+    void setState( State state );
+    void logRejected( const QString& operation, const QString& reason ) const;
+
+    QThread* m_thread = nullptr;
+    WebSocketWorker* m_worker = nullptr;
+    State m_state = State::Disconnected;
+    quint64 m_generationCounter = 0;
+    quint64 m_activeGeneration = 0;
+    QString m_activeUuid;
+    quint64 m_connectedGeneration = 0;
+    quint64 m_endedGeneration = 0;
+    bool m_acceptingRequests = true;
+    bool m_endNotificationPending = false;
 };
+
+Q_DECLARE_METATYPE( WebSocketPair::State )
 
 #endif // WEBSOCKETPAIR_H

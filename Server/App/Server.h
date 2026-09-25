@@ -90,7 +90,7 @@ private:
     void onUpgrade(uWS::HttpResponse<SSL>* res, uWS::HttpRequest* req, struct us_socket_context_t* context, SocketType type);
     void onOpen(uWS::WebSocket<false, true, PerSocket>* ws, SocketType socketType);
     void onMessage(uWS::WebSocket<false, true, PerSocket>* ws, std::string_view msg, uWS::OpCode);
-    void onClose(uWS::WebSocket<false, true, PerSocket>* ws, int /*code*/, std::string_view /*msg*/);
+    void onClose(uWS::WebSocket<false, true, PerSocket>* ws, int code, std::string_view msg);
 
     void transferOperator(uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received);
     void chat(uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received);

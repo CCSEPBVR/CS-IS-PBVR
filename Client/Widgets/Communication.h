@@ -83,6 +83,7 @@ private:
     QString m_user_uuid;
     int m_user_id                   = -1;
     bool m_is_operator              = true;
+    bool m_settings_enabled         = true;
 
     kvs::PolygonObject* m_share_polygon_object = nullptr;
 
@@ -96,6 +97,7 @@ private:
     void webSocketDisconnected();
 
     void updateVizMode();
+    void updateConnectionButtons();
     void setSettingsEnabled( bool enabled );
     void sendPendingInitialize();
     void showNetcdfAuxiliaryDialog( NetcdfAuxiliaryFileDialog::Kind kind,
@@ -126,11 +128,7 @@ private slots:
     void onItemDoubleClicked( const QModelIndex& index );
     void onShareView();
 
-    void onBinaryWebSocketConnected();
-    void onBinaryWebSocketDisconnected();
     void onBinaryWebSocketMessageReceived( const QByteArray& binary );
-    void onTextWebSocketConnected();
-    void onTextWebSocketDisconnected();
     void onTextWebSocketMessageReceived( const QString& receivedMessage );
 };
 

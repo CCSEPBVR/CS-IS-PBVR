@@ -1280,7 +1280,7 @@ void ObjectEditor::sendNeedSameTimeStepReplacePatches( const std::function<bool(
     msg[ QString::fromUtf8( Protocol::Key::Event ) ]   = QString::fromUtf8( Protocol::Events::ServerSideSameTimeStepReplace );
     msg[ QString::fromUtf8( Protocol::Key::Objects ) ] = patchArray;
 
-    m_web_sockets->text()->sendTextMessage( QJsonDocument( msg ).toJson( QJsonDocument::Compact ) );
+    m_web_sockets->sendTextMessage( QJsonDocument( msg ).toJson( QJsonDocument::Compact ) );
 }
 
 void ObjectEditor::updateVisibility( int requestTimeStep )
@@ -1539,7 +1539,7 @@ void ObjectEditor::requestServerDataAt( const int requestTimeStep )
     resultMaxObjectCoords.append( m_result_max_object_coords.y() );
     resultMaxObjectCoords.append( m_result_max_object_coords.z() );
 
-    m_web_sockets->text()->sendTextMessage( QJsonDocument( {
+    m_web_sockets->sendTextMessage( QJsonDocument( {
                                                           { QString::fromUtf8( Protocol::Key::Event )                , QString::fromUtf8( Protocol::Events::RequestDataAt ) },
                                                           { QString::fromUtf8( Protocol::Key::TimeStep )             , requestTimeStep },
                                                           { QString::fromUtf8( Protocol::Key::ResultMinObjectCoords ), resultMinObjectCoords },
@@ -1818,7 +1818,7 @@ void ObjectEditor::onBrowse()
         if( dlg.exec() == QDialog::Accepted )
         {
             QString uuid = QUuid::createUuid().toString( QUuid::WithoutBraces );
-            m_web_sockets->text()->sendTextMessage(
+            m_web_sockets->sendTextMessage(
                 QJsonDocument( QJsonObject{
                                   { QString::fromUtf8( Protocol::Key::Event ), QString::fromUtf8( Protocol::Events::SelectedFile ) },
                                   { QString::fromUtf8( Protocol::Key::File ) , dlg.selectedFile() },
@@ -1924,7 +1924,7 @@ void ObjectEditor::onDelete()
         QJsonObject msg;
         msg[QString::fromUtf8( Protocol::Key::Event )] = QString::fromUtf8( Protocol::Events::ObjectDelete );
         msg[QString::fromUtf8( Protocol::Key::UUID )]  = QString::fromUtf8( info.uuid );
-        m_web_sockets->text()->sendTextMessage( QJsonDocument( msg ).toJson( QJsonDocument::Compact ) );
+        m_web_sockets->sendTextMessage( QJsonDocument( msg ).toJson( QJsonDocument::Compact ) );
     }
 }
 
@@ -2111,6 +2111,6 @@ void ObjectEditor::onApply()
 
         if( !patchArray.isEmpty() ) objectInfoParameter[QString::fromUtf8( Protocol::Key::Objects )] = patchArray;
 
-        m_web_sockets->text()->sendTextMessage( QJsonDocument( objectInfoParameter ).toJson( QJsonDocument::Compact ) );
+        m_web_sockets->sendTextMessage( QJsonDocument( objectInfoParameter ).toJson( QJsonDocument::Compact ) );
     }
 }

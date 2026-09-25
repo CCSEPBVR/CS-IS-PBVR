@@ -1156,7 +1156,7 @@ void TransferFunctionEditor::onApply()
 
     transferFunctionParameter[QString::fromUtf8( Protocol::Key::Data )] = patches;
 
-    m_web_sockets->text()->sendTextMessage(
+    m_web_sockets->sendTextMessage(
         QJsonDocument( transferFunctionParameter ).toJson( QJsonDocument::Compact ) );
 
     // NOTE:最終送信内容の更新

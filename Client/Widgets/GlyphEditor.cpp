@@ -601,7 +601,7 @@ void GlyphEditor::onApply()
     for( auto it = diff.begin(); it != diff.end(); ++it )
         glyphParameter.insert( it.key(), it.value() );
 
-    m_web_sockets->text()->sendTextMessage( QJsonDocument( glyphParameter ).toJson( QJsonDocument::Compact ) );
+    m_web_sockets->sendTextMessage( QJsonDocument( glyphParameter ).toJson( QJsonDocument::Compact ) );
     emit glyphParameterUpdate();
 
     m_last_snap_shot     = now;

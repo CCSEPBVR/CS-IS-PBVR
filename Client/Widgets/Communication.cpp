@@ -30,7 +30,6 @@ Communication::Communication( kvs::qt::jaea::Screen* screen, WebSocketPair* webS
 #endif
 
     ui->uniformRadioButton->setChecked( true );    // NOTE:起動時デフォルトはUniformサンプリング
-    ui->disconnectPushButton->setEnabled( false ); // NOTE:起動時デフォルトは未接続のため無効
     ui->addressLineEdit->setText( "ws://127.0.0.1:60000" );
 
     connect( ui->connectPushButton                 ,&QPushButton::clicked             , this, &Communication::onConnectClicked );
@@ -47,12 +46,22 @@ Communication::Communication( kvs::qt::jaea::Screen* screen, WebSocketPair* webS
     connect( ui->chatLineEdit                      ,&QLineEdit::returnPressed         , this, &Communication::onSendChatMessage );
     connect( ui->shareViewPushButton               ,&QPushButton::clicked             , this, &Communication::onShareView );
 
-    connect( m_web_sockets->binary()               ,&QWebSocket::connected            , this, &Communication::onBinaryWebSocketConnected );       // 接続成功(バイナリ)
-    connect( m_web_sockets->binary()               ,&QWebSocket::disconnected         , this, &Communication::onBinaryWebSocketDisconnected );    // 接続切断(バイナリ)
-    connect( m_web_sockets->binary()               ,&QWebSocket::binaryMessageReceived, this, &Communication::onBinaryWebSocketMessageReceived ); // メッセージ受信(バイナリ)
-    connect( m_web_sockets->text()                 ,&QWebSocket::connected            , this, &Communication::onTextWebSocketConnected );         // 接続成功(テキスト)
-    connect( m_web_sockets->text()                 ,&QWebSocket::disconnected         , this, &Communication::onTextWebSocketDisconnected );      // 接続切断(テキスト)
-    connect( m_web_sockets->text()                 ,&QWebSocket::textMessageReceived  , this, &Communication::onTextWebSocketMessageReceived );   // メッセージ受信(テキスト)
+    connect( m_web_sockets, &WebSocketPair::stateChanged, this,
+             [this]( WebSocketPair::State ) { updateConnectionButtons(); } );
+    connect( m_web_sockets, &WebSocketPair::connected, this,
+             [this]( quint64 ) { webSocketConnected(); } );
+    connect( m_web_sockets, &WebSocketPair::disconnected, this,
+             [this]( quint64, const QString& reason ) {
+        webSocketDisconnected();
+        if ( !reason.isEmpty() ) emit updateStatusBarMessage( tr( "WebSocket ended: %1" ).arg( reason ) );
+    } );
+    connect( m_web_sockets, &WebSocketPair::binaryMessageReceived,
+             this, &Communication::onBinaryWebSocketMessageReceived );
+    connect( m_web_sockets, &WebSocketPair::textMessageReceived,
+             this, &Communication::onTextWebSocketMessageReceived );
+    connect( m_web_sockets, &WebSocketPair::errorOccurred, this,
+             [this]( const QString& error ) { emit updateStatusBarMessage( error ); } );
+    updateConnectionButtons();
 
     m_share_polygon_object = createDummyPolygonObject( "sharePolygonObject" );
     auto* renderer = new kvs::StochasticPolygonRenderer();
@@ -100,7 +109,7 @@ void Communication::onToggleShowHideSharePoint()
     const bool toggle = !m_share_polygon_object->isVisible();
     m_share_polygon_object->setVisible( toggle );
 
-    m_web_sockets->text()->sendTextMessage( QJsonDocument( {
+    m_web_sockets->sendTextMessage( QJsonDocument( {
                                                           { QString::fromUtf8( Protocol::Key::Event ) , QString::fromUtf8( Protocol::Events::SharePoint ) },
                                                           { QString::fromUtf8( Protocol::Key::Enable ),  toggle },
                                                           }
@@ -195,7 +204,7 @@ void Communication::onDrawVRSharePoint( kvs::Real32 CoordArray[ 2 * 3 ], kvs::Re
         m_share_polygon_object = sharePolygonObject;
     }
 
-    m_web_sockets->text()->sendTextMessage( QJsonDocument( {
+    m_web_sockets->sendTextMessage( QJsonDocument( {
                                                              { QString::fromUtf8( Protocol::Key::Event ), QString::fromUtf8( Protocol::Events::SharePoint ) },
                                                              { QString::fromUtf8( Protocol::Key::X )    ,  x },
                                                              { QString::fromUtf8( Protocol::Key::Y )    ,  y },
@@ -219,50 +228,42 @@ void Communication::onSaveParameter( const QString& filePath )
 
 void Communication::webSocketConnected()
 {
-    if( !m_web_sockets->isConnected() )
-    {
-        m_is_operator = true;
-        emit updateOperatorState( m_is_operator );
-
-        ui->connectPushButton                 ->setEnabled( false );
-        ui->disconnectPushButton              ->setEnabled( true );
-    }
+    m_is_operator = true;
+    emit updateOperatorState( m_is_operator );
+    updateConnectionButtons();
 }
 
 void Communication::webSocketDisconnected()
 {
-    if( !m_web_sockets->isConnected() )
-    {
-        if ( m_netcdf_auxiliary_dialog ) m_netcdf_auxiliary_dialog->close();
-        m_pending_initialize = QJsonObject{};
-        *m_viz_mode = Viz::Mode::Local;
-        m_user_id = -1;
-        m_is_operator = true;
+    if ( m_netcdf_auxiliary_dialog ) m_netcdf_auxiliary_dialog->close();
+    m_pending_initialize = QJsonObject{};
+    m_user_uuid.clear();
+    *m_viz_mode = Viz::Mode::Local;
+    m_user_id = -1;
+    m_is_operator = true;
+    m_settings_enabled = true;
 
-        emit updateServerState( false );
-        emit updateOperatorState( m_is_operator );
+    emit updateServerState( false );
+    emit updateOperatorState( m_is_operator );
 
-        ui->localVizRadioButton               ->setEnabled( true );
-        ui->remoteVizClientServerRadioButton  ->setEnabled( true );
-        ui->remoteVizInsituRadioButton        ->setEnabled( true );
+    ui->localVizRadioButton               ->setEnabled( true );
+    ui->remoteVizClientServerRadioButton  ->setEnabled( true );
+    ui->remoteVizInsituRadioButton        ->setEnabled( true );
 
-        ui->uniformRadioButton                ->setEnabled( true );
-        ui->metropolisRadioButton             ->setEnabled( true );
-        ui->rejectionRadioButton              ->setEnabled( true );
+    ui->uniformRadioButton                ->setEnabled( true );
+    ui->metropolisRadioButton             ->setEnabled( true );
+    ui->rejectionRadioButton              ->setEnabled( true );
 
-        ui->volumeDataFilePathLineEdit        ->setEnabled( true );
-        ui->volumeDataFilePathPushButton      ->setEnabled( true );
-        ui->transferFunctionFilePathLineEdit  ->setEnabled( true );
-        ui->transferFunctionFilePathPushButton->setEnabled( true );
+    ui->volumeDataFilePathLineEdit        ->setEnabled( true );
+    ui->volumeDataFilePathPushButton      ->setEnabled( true );
+    ui->transferFunctionFilePathLineEdit  ->setEnabled( true );
+    ui->transferFunctionFilePathPushButton->setEnabled( true );
+    ui->addressLineEdit                   ->setEnabled( true );
+    updateConnectionButtons();
 
-        ui->addressLineEdit                   ->setEnabled( true );
-        ui->connectPushButton                 ->setEnabled( true );
-        ui->disconnectPushButton              ->setEnabled( false );
-
-        ui->IDLineEdit->clear();
-        ui->isOperatorLineEdit->clear();
-        ui->textBrowser->clear();
-    }
+    ui->IDLineEdit->clear();
+    ui->isOperatorLineEdit->clear();
+    ui->textBrowser->clear();
 }
 
 void Communication::receiveJoin( const QJsonObject& payload )
@@ -564,33 +565,36 @@ void Communication::updateVizMode()
 
 void Communication::onConnectClicked()
 {
-    if( m_web_sockets->isConnected() )
+    if( m_web_sockets->state() != WebSocketPair::State::Disconnected )
     {
-        emit updateStatusBarMessage( "Already connected." );
+        emit updateStatusBarMessage( "A WebSocket connection is already active or changing state." );
         return;
     }
 
     m_user_uuid = QUuid::createUuid().toString( QUuid::WithoutBraces );
-    const QString address       = ui->addressLineEdit->text().toUtf8().constData(); // FIXME:wssで接続できません。SSL対応が必要かもしれません
+    const QString address       = ui->addressLineEdit->text(); // FIXME:wssで接続できません。SSL対応が必要かもしれません
     const QString binaryAddress = address + "/binary?uuid=" + m_user_uuid;
     const QString textAddress   = address + "/text?uuid=" + m_user_uuid;
 
     emit updateStatusBarMessage( "Connecting to " + address );
-    if( m_web_sockets->binary() ) m_web_sockets->binary()->open( QUrl( binaryAddress ) );
-    if( m_web_sockets->text() )   m_web_sockets->text()  ->open( QUrl( textAddress ) );
+    m_web_sockets->open( QUrl( binaryAddress ), QUrl( textAddress ) );
 }
 
 void Communication::onDisconnectClicked()
 {
-    if( !m_web_sockets->isConnected() )
+    const auto state = m_web_sockets->state();
+    if( state == WebSocketPair::State::Disconnected )
     {
         emit updateStatusBarMessage( k_not_connected_text );
         return;
     }
+    if( state == WebSocketPair::State::Closing ) return;
 
     m_user_uuid.clear();
-    emit updateStatusBarMessage( "Disconnect." );
-    m_web_sockets->closeAll();
+    emit updateStatusBarMessage( state == WebSocketPair::State::Connecting
+                                     ? "Cancel connection."
+                                     : "Disconnect." );
+    m_web_sockets->close();
 }
 
 void Communication::onModeClicked()
@@ -693,12 +697,13 @@ void Communication::sendPendingInitialize()
     if ( m_pending_initialize.isEmpty() || !m_web_sockets->isConnected() ) return;
     const QString message = QString::fromUtf8(
         QJsonDocument( m_pending_initialize ).toJson( QJsonDocument::Compact ) );
-    m_web_sockets->text()->sendTextMessage( message );
+    m_web_sockets->sendTextMessage( message );
     emit textMessageSent( message );
 }
 
 void Communication::setSettingsEnabled( bool enabled )
 {
+    m_settings_enabled = enabled;
     ui->localVizRadioButton->setEnabled( enabled );
     ui->remoteVizClientServerRadioButton->setEnabled( enabled );
     ui->remoteVizInsituRadioButton->setEnabled( enabled );
@@ -710,8 +715,15 @@ void Communication::setSettingsEnabled( bool enabled )
     ui->transferFunctionFilePathLineEdit->setEnabled( enabled );
     ui->transferFunctionFilePathPushButton->setEnabled( enabled );
     ui->addressLineEdit->setEnabled( enabled );
-    ui->connectPushButton->setEnabled( enabled && !m_web_sockets->isConnected() );
-    ui->disconnectPushButton->setEnabled( m_web_sockets->isConnected() );
+    updateConnectionButtons();
+}
+
+void Communication::updateConnectionButtons()
+{
+    const auto state = m_web_sockets->state();
+    ui->connectPushButton->setEnabled( m_settings_enabled && state == WebSocketPair::State::Disconnected );
+    ui->disconnectPushButton->setEnabled( state == WebSocketPair::State::Connecting ||
+                                          state == WebSocketPair::State::Connected );
 }
 
 void Communication::showNetcdfAuxiliaryDialog(
@@ -743,29 +755,9 @@ void Communication::showNetcdfAuxiliaryDialog(
     m_netcdf_auxiliary_dialog->activateWindow();
 }
 
-void Communication::onBinaryWebSocketConnected()
-{
-    webSocketConnected();
-}
-
-void Communication::onBinaryWebSocketDisconnected()
-{
-    webSocketDisconnected();
-}
-
 void Communication::onBinaryWebSocketMessageReceived( const QByteArray& binary )
 {
     emit unpack( binary );
-}
-
-void Communication::onTextWebSocketConnected()
-{
-    webSocketConnected();
-}
-
-void Communication::onTextWebSocketDisconnected()
-{
-    webSocketDisconnected();
 }
 
 void Communication::onTransferOperator()
@@ -796,7 +788,7 @@ void Communication::onTransferOperator()
         emit updateStatusBarMessage( "You cannot transfer yourself." );
     }
 
-    m_web_sockets->text()->sendTextMessage( QJsonDocument( {
+    m_web_sockets->sendTextMessage( QJsonDocument( {
                                                           { QString::fromUtf8( Protocol::Key::Event )   , QString::fromUtf8( Protocol::Events::TransferOperator )},
                                                           { QString::fromUtf8( Protocol::Key::TargetID ), targetID },
                                                           } ).toJson( QJsonDocument::Compact ) );
@@ -813,7 +805,7 @@ void Communication::onSendChatMessage()
     QString text = ui->chatLineEdit->text().trimmed();
     if( text.isEmpty() ) return;
 
-    m_web_sockets->text()->sendTextMessage( QJsonDocument( {
+    m_web_sockets->sendTextMessage( QJsonDocument( {
                                                           { QString::fromUtf8( Protocol::Key::Event ), QString::fromUtf8( Protocol::Events::Chat ) },
                                                           { QString::fromUtf8( Protocol::Key::Text ) , text },
                                                           } ).toJson( QJsonDocument::Compact ) );
@@ -858,7 +850,7 @@ void Communication::onShareView()
         matrixArray.append( rowArray );
     }
 
-    m_web_sockets->text()->sendTextMessage( QJsonDocument( {
+    m_web_sockets->sendTextMessage( QJsonDocument( {
                                                           { QString::fromUtf8( Protocol::Key::Event ) , QString::fromUtf8( Protocol::Events::ShareView ) },
                                                           { QString::fromUtf8( Protocol::Key::Matrix ), matrixArray },
                                                           } ).toJson( QJsonDocument::Compact ) );
@@ -956,8 +948,7 @@ void Communication::onTextWebSocketMessageReceived( const QString& receivedMessa
         ui->transferFunctionFilePathPushButton->setEnabled( false );
 
         ui->addressLineEdit                   ->setEnabled( false );
-        ui->connectPushButton                 ->setEnabled( false );
-        ui->disconnectPushButton              ->setEnabled( true );
+        updateConnectionButtons();
 
         const QString kGlyphParameter            = QString::fromUtf8( Protocol::Key::GlyphParameter );
         const QString kPlotOverLineParameter     = QString::fromUtf8( Protocol::Key::PlotOverLineParameter );

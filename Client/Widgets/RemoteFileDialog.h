@@ -5,7 +5,6 @@
 #include <QVBoxLayout>
 #include <QPushButton>
 #include <QHBoxLayout>
-#include <QWebSocket>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonArray>
@@ -66,7 +65,7 @@ public:
         setLayout( layout );
 
         connect( m_treeView, &QTreeView::doubleClicked, this, &RemoteFileDialog::onDoubleClicked );
-        connect( m_web_sockets->text(), &QWebSocket::textMessageReceived, this, &RemoteFileDialog::onMessageReceived );
+        connect( m_web_sockets, &WebSocketPair::textMessageReceived, this, &RemoteFileDialog::onMessageReceived );
 
         connect( m_prevButton, &QPushButton::clicked, this, [this]()
                 {
@@ -93,7 +92,6 @@ public:
     QString selectedFile() const { return m_selectedFile; }
 
 private:
-    // QWebSocket* m_socket;
     WebSocketPair* m_web_sockets = nullptr;
     QTreeView* m_treeView;
     QStandardItemModel* m_model;
@@ -112,7 +110,7 @@ private:
         msg["path"] = path;
         msg["page"] = page;
         msg["per_page"] = 20;
-        m_web_sockets->text()->sendTextMessage( QJsonDocument( msg ).toJson( QJsonDocument::Compact ) );
+        m_web_sockets->sendTextMessage( QJsonDocument( msg ).toJson( QJsonDocument::Compact ) );
     }
 
 private slots:

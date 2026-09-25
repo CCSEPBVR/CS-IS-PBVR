@@ -749,7 +749,7 @@ void PlotOverLineEditor::onApply()
     for( auto it = diff.begin(); it != diff.end(); ++it )
         plotOverLineParameter.insert( it.key(), it.value() );
 
-    m_web_sockets->text()->sendTextMessage( QJsonDocument( plotOverLineParameter ).toJson( QJsonDocument::Compact ) );
+    m_web_sockets->sendTextMessage( QJsonDocument( plotOverLineParameter ).toJson( QJsonDocument::Compact ) );
     emit plotOverLineParameterUpdate();
 
     m_last_snap_shot = now;

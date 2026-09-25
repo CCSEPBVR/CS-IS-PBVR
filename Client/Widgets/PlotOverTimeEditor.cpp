@@ -607,7 +607,7 @@ void PlotOverTimeEditor::onApply()
     for( auto it = diff.begin(); it != diff.end(); ++it )
         plotOverTimeParameter.insert( it.key(), it.value() );
 
-    m_web_sockets->text()->sendTextMessage(
+    m_web_sockets->sendTextMessage(
         QJsonDocument( plotOverTimeParameter ).toJson( QJsonDocument::Compact ) );
 
     emit plotOverTimeParameterUpdate();

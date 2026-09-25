@@ -4,10 +4,13 @@
 #include <filesystem>
 #include <chrono>
 #include <cstdlib>
+#include <ctime>
 #include <fstream>
+#include <iomanip>
 #include <iostream>
 #include <algorithm>
 #include <regex>
+#include <sstream>
 
 #ifndef CPU_VER
 #include "mpi.h"
@@ -27,6 +30,41 @@
 
 namespace
 {
+std::string diagnosticTimestamp()
+{
+    const auto now = std::chrono::system_clock::now();
+    const auto secondsSinceEpoch = std::chrono::floor<std::chrono::seconds>( now.time_since_epoch() );
+    const auto milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(
+        now.time_since_epoch() - secondsSinceEpoch ).count();
+    const auto time = std::chrono::system_clock::to_time_t(
+        std::chrono::system_clock::time_point( secondsSinceEpoch ) );
+
+    std::tm utcTime{};
+#ifdef _WIN32
+    gmtime_s( &utcTime, &time );
+#else
+    gmtime_r( &time, &utcTime );
+#endif
+
+    std::ostringstream timestamp;
+    timestamp << std::put_time( &utcTime, "%Y-%m-%dT%H:%M:%S" )
+              << '.' << std::setw( 3 ) << std::setfill( '0' ) << milliseconds << 'Z';
+    return timestamp.str();
+}
+
+std::string diagnosticUUID( uWS::WebSocket<false, true, PerSocket>* ws )
+{
+    const auto* socketData = ws ? ws->getUserData() : nullptr;
+    return socketData && socketData->state ? socketData->state->userUUID : "unknown";
+}
+
+void logControlFrame( const char* kind, const char* frame,
+                      uWS::WebSocket<false, true, PerSocket>* ws )
+{
+    std::cout << "[" << diagnosticTimestamp() << "] [Server-" << kind << "] "
+              << frame << " received; UUID=" << diagnosticUUID( ws ) << std::endl;
+}
+
 std::string EnvValueOrUnset( const char* name )
 {
     const char* value = std::getenv( name );
@@ -111,11 +149,10 @@ Server::Server(int port)
             },
             .dropped = [](uWS::WebSocket<false, true, PerSocket>* ws, std::string_view, uWS::OpCode) { std::cout << "[Server-binary] dropped" << std::endl; },
             .drain = [](uWS::WebSocket<false, true, PerSocket>* ws) { std::cout << "[Server-binary] drain" << std::endl; },
-            .ping = [](uWS::WebSocket<false, true, PerSocket>* ws, std::string_view) { std::cout << "[Server-binary] ping" << std::endl; },
-            .pong = [](uWS::WebSocket<false, true, PerSocket>* ws, std::string_view) { std::cout << "[Server-binary] pong" << std::endl; },
+            .ping = [](uWS::WebSocket<false, true, PerSocket>* ws, std::string_view) { logControlFrame( "binary", "ping received", ws ); },
+            .pong = [](uWS::WebSocket<false, true, PerSocket>* ws, std::string_view) { logControlFrame( "binary", "pong received", ws ); },
             .close = [this](uWS::WebSocket<false, true, PerSocket>* ws, int code, std::string_view message)
             {
-                std::cout << "[Server-binary] close" << std::endl;
                 onClose(ws, code, message);
             }
         });
@@ -137,11 +174,10 @@ Server::Server(int port)
             },
             .dropped = [](uWS::WebSocket<false, true, PerSocket>* ws, std::string_view, uWS::OpCode) { std::cout << "[Server-text] dropped" << std::endl; },
             .drain = [](uWS::WebSocket<false, true, PerSocket>* ws) { std::cout << "[Server-text] drain" << std::endl; },
-            .ping = [](uWS::WebSocket<false, true, PerSocket>* ws, std::string_view) { std::cout << "[Server-text] ping" << std::endl; },
-            .pong = [](uWS::WebSocket<false, true, PerSocket>* ws, std::string_view) { std::cout << "[Server-text] pong" << std::endl; },
+            .ping = [](uWS::WebSocket<false, true, PerSocket>* ws, std::string_view) { logControlFrame( "text", "ping received", ws ); },
+            .pong = [](uWS::WebSocket<false, true, PerSocket>* ws, std::string_view) { logControlFrame( "text", "pong received", ws ); },
             .close = [this](uWS::WebSocket<false, true, PerSocket>* ws, int code, std::string_view message)
             {
-                std::cout << "[Server-text] close" << std::endl;
                 onClose(ws, code, message);
             }
         });
@@ -237,12 +273,14 @@ void Server::onOpen(uWS::WebSocket<false, true, PerSocket>* ws, SocketType socke
 {
     if (socketType == SocketType::Binary)
     {
-        std::cout << "[Server-binary] open" << std::endl;
+        std::cout << "[" << diagnosticTimestamp() << "] [Server-binary] open; UUID="
+                  << diagnosticUUID( ws ) << std::endl;
         ws->subscribe(k_binary_topic);
     }
     else if (socketType == SocketType::Text)
     {
-        std::cout << "[Server-text] open" << std::endl;
+        std::cout << "[" << diagnosticTimestamp() << "] [Server-text] open; UUID="
+                  << diagnosticUUID( ws ) << std::endl;
         ws->subscribe(k_text_topic);
     }
 
@@ -299,14 +337,26 @@ void Server::onMessage(uWS::WebSocket<false, true, PerSocket>* ws, std::string_v
     }
 }
 
-void Server::onClose(uWS::WebSocket<false, true, PerSocket>* ws, int /*code*/, std::string_view /*msg*/)
+void Server::onClose(uWS::WebSocket<false, true, PerSocket>* ws, int code, std::string_view msg)
 {
     auto* ps = ws->getUserData();
-    if (!ps || !ps->state) return;
+    if (!ps || !ps->state)
+    {
+        const std::string closeReason = msg.empty() ? std::string() : std::string( msg.data(), msg.size() );
+        std::cout << "[" << diagnosticTimestamp() << "] [Server-unknown] close; UUID=unknown; closeCode="
+                  << code << "; closeReason=" << closeReason << std::endl;
+        return;
+    }
 
     auto uuid = ps->state->userUUID;
     auto userID = ps->state->userID;
     auto isOperator = ps->state->isOperator;
+    const char* socketKind = ps->state->binary_ws == ws ? "binary" :
+                             ps->state->text_ws == ws ? "text" : "unknown";
+    const std::string closeReason = msg.empty() ? std::string() : std::string( msg.data(), msg.size() );
+    std::cout << "[" << diagnosticTimestamp() << "] [Server-" << socketKind
+              << "] close; UUID=" << uuid << "; closeCode=" << code
+              << "; closeReason=" << closeReason << std::endl;
 
     if (ps->state->binary_ws == ws) { ps->state->binary_ws = nullptr; }
     if (ps->state->text_ws == ws) { ps->state->text_ws = nullptr; }
