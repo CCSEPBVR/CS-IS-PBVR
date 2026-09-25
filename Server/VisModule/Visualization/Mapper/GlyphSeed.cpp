@@ -887,6 +887,46 @@ void GlyphSeed::DistributionSampling_unstruct( const vismodule::VolumeObjectBase
             }
        }
 
+    // ---- [A4] 補間が必要な変数だけを対象化（全 m_nvariable 評価を回避）----
+    //   interp[.][0] は randomSampling / transformLocalToGlobal 等の幾何演算に必須のため常に含める。
+    //   無効インデックス(-1等)は除外（既存の添字読み出し挙動は不変）。
+    std::vector<char> var_needed( m_nvariable, 0 );
+    var_needed[0] = 1;
+    for( int d = 0; d < 3; d++ )
+    {
+        const int idx = m_direction_variables[d];
+        if( idx >= 0 && idx < m_nvariable ) var_needed[idx] = 1;
+    }
+    if( m_size_sampling_method == DataDefines::VariableArray )
+        for( size_t s = 0; s < m_size_variables.size(); s++ )
+        {
+            const int idx = m_size_variables[s];
+            if( idx >= 0 && idx < m_nvariable ) var_needed[idx] = 1;
+        }
+    if( m_color_sampling_method == DataDefines::VariableArray )
+        for( size_t c = 0; c < m_color_data_variables.size(); c++ )
+        {
+            const int idx = m_color_data_variables[c];
+            if( idx >= 0 && idx < m_nvariable ) var_needed[idx] = 1;
+        }
+    std::vector<int> needed_vars;
+    for( int v = 0; v < m_nvariable; v++ ) if( var_needed[v] ) needed_vars.push_back( v );
+    const int n_needed = static_cast<int>( needed_vars.size() );
+
+    // ---- [A3] セル体積を1回だけ算出してキャッシュ（従来はスレッド数×で冗長 + セル毎に二重計算）----
+    //   体積計算・総和は元コードと同じ「逐次・セル順・float加算」に固定し density をビット一致させる。
+    //   （volume() は27点求積の仮想呼び出しでループがSIMD総和化されないため丸め順が元と一致）
+    //   ※ 並列化(A8)は volume() のスレッドスケールが効かず（false-sharing等）無効だったため見送り。
+    std::vector<float> cell_volumes( m_ncells );
+    float TotalVolume = 0;
+    for( int c = 0; c < m_ncells; c++ )
+    {
+        interp[0][0]->bindCell( c );
+        cell_volumes[c] = interp[0][0]->volume();
+        TotalVolume += cell_volumes[c];
+    }
+    const float density = m_number_of_sample_points / TotalVolume;
+
     #pragma omp parallel
     {
 #if _OPENMP
@@ -901,24 +941,22 @@ void GlyphSeed::DistributionSampling_unstruct( const vismodule::VolumeObjectBase
         //nglyphs /= nthreads;
         vismodule::MersenneTwister MT( seed*mpi_size*nthreads + (mpi_rank+1)*thid );
 
-    float TotalVolume = 0;
-    float density = 0;
         // 動的な粒子データ配列
         std::vector<float> th_glyph_coords;
         std::vector<float> th_glyph_colors_data;
         std::vector<float> th_glyph_vectors;
         std::vector<float> th_glyph_sizes;
 
-       
-//#pragma omp for schedule( dynamic ) nowait
-#pragma omp parallel for
-        for( int cell_base = 0; cell_base < m_ncells; cell_base ++ )
-        {
-                interp[thid][0]->bindCell( cell_base );
-                TotalVolume += interp[thid][0]->volume();
-        }
+        // [A1] 粒子ごとの std::vector 確保を避けるためのスレッドローカル作業バッファ。
+        //      サイズは変数数で固定（interp[thid].size() == m_nvariable）。
+        std::vector<float> scalar_array( m_nvariable );
 
-        density = m_number_of_sample_points/TotalVolume;
+        // [A5] push_back の再確保抑制のため概算容量を予約（このスレッドの生成数 ≈ m_number_of_sample_points）
+        const size_t reserve_n = static_cast<size_t>( m_number_of_sample_points ) + 16;
+        th_glyph_coords.reserve( reserve_n * 3 );
+        th_glyph_vectors.reserve( reserve_n * 3 );
+        th_glyph_sizes.reserve( reserve_n );
+        th_glyph_colors_data.reserve( reserve_n );
 
         //粒子生成ループ開始
 //#pragma omp for schedule( dynamic ) nowait
@@ -926,34 +964,39 @@ void GlyphSeed::DistributionSampling_unstruct( const vismodule::VolumeObjectBase
         for( int cell_base = 0; cell_base < m_ncells; cell_base ++ )
         {
 
-            vismodule::Vector3f coord = interp[thid][0]->localGravityPoint();
-            interp[thid][0]->bindCell( cell_base);
-            interp[thid][0]->setLocalPoint( coord );
+            // [A7] グリフ数を先に決定 (density×体積＋乱数1回のみ, 補間器バインド不要)。
+            //   MT 呼び出し順は不変なのでビット互換。0個のセルは以降を丸ごとスキップし、
+            //   全セルに対する localGravityPoint/bindCell/setLocalPoint を回避する。
+            const int nglyphs = calculate_number_of_particles( density, cell_volumes[cell_base], &MT );
+            if( nglyphs == 0 ) continue;
 
-            //生成glyph数を計算
-            int  nglyphs = calculate_number_of_particles( density, interp[thid][0]->volume(), &MT ) ;
+            // 生成があるセルのみ: 幾何点取得＋必要変数をセル単位で1回バインド
+            vismodule::Vector3f coord = interp[thid][0]->localGravityPoint();
+            // [A2][A4] 必要変数のみ、セル単位で1回だけバインド
+            for( int n = 0; n < n_needed; n++ )
+            {
+                interp[thid][ needed_vars[n] ]->bindCell( cell_base );
+            }
+            interp[thid][0]->setLocalPoint( coord );
                 
             for( int i = 0; i < nglyphs; i++ )
             {
                 vismodule::Vector3f local_coord = interp[thid][0] -> randomSampling_MT( &MT );
 
-                //補間器にセルを一括でバインド
-                for( int k = 0; k < m_nvariable; k++ )
+                // [A2][A4] 必要変数のみサンプル点設定
+                for( int n = 0; n < n_needed; n++ )
                 {
-                    interp[thid][k]->bindCell( cell_base );
-                    interp[thid][k]->setLocalPoint( local_coord );
+                    interp[thid][ needed_vars[n] ]->setLocalPoint( local_coord );
                 }
 
                 vismodule::Vector3f global_coord = interp[thid][0]->transformLocalToGlobal( local_coord );
 
                 // glyph_vectorの計算
-                // float scalar_array[interp[thid].size()];
-                std::vector<float> scalar_array(interp[thid].size());
-                float eval_result =0;
-
-                for( size_t j= 0; j < m_nvariable; j++ )
+                // [A1][A4] 事前確保 scalar_array を再利用し、必要変数のみ評価
+                for( int n = 0; n < n_needed; n++ )
                 {
-                    scalar_array[j] = interp[thid][j]->scalar();
+                    const int idx = needed_vars[n];
+                    scalar_array[idx] = interp[thid][idx]->scalar();
                 }
 
 
@@ -961,10 +1004,9 @@ void GlyphSeed::DistributionSampling_unstruct( const vismodule::VolumeObjectBase
                 float size = 0;
                 if ( m_size_sampling_method == DataDefines::VariableArray )
                 { 
-                    // float scalar_array[interp[thid].size()];
                     float eval_result =0;
 
-                    std::vector<int> size_var = m_size_variables;
+                    const std::vector<int>& size_var = m_size_variables; // [A1] コピー廃止（参照化）
                     int n_size_data=size_var.size();
                     for( size_t j= 0; j < n_size_data; j++ ) 
                     {
@@ -981,7 +1023,7 @@ void GlyphSeed::DistributionSampling_unstruct( const vismodule::VolumeObjectBase
                 { 
                     float eval_result =0;
 
-                    std::vector<int> color_var = m_color_data_variables;
+                    const std::vector<int>& color_var = m_color_data_variables; // [A1] コピー廃止（参照化）
                     int n_color_data=color_var.size();
                     for( size_t j= 0; j < n_color_data; j++ )
                     {
