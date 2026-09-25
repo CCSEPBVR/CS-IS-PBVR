@@ -919,10 +919,14 @@ void GlyphSeed::DistributionSampling_unstruct( const vismodule::VolumeObjectBase
     //   ※ 並列化(A8)は volume() のスレッドスケールが効かず（false-sharing等）無効だったため見送り。
     std::vector<float> cell_volumes( m_ncells );
     float TotalVolume = 0;
+    // [A9] 六面体は 6四面体分割の厳密体積（27点求積を置換, 大幅に軽量）。他セル種は従来 volume()。
+    const bool use_tetra = ( celltype == vismodule::VolumeObjectBase::Hexahedra );
     for( int c = 0; c < m_ncells; c++ )
     {
         interp[0][0]->bindCell( c );
-        cell_volumes[c] = interp[0][0]->volume();
+        cell_volumes[c] = use_tetra
+            ? static_cast< vismodule::HexahedralCell<Type>* >( interp[0][0] )->volumeByTetraDecomposition()
+            : interp[0][0]->volume();
         TotalVolume += cell_volumes[c];
     }
     const float density = m_number_of_sample_points / TotalVolume;

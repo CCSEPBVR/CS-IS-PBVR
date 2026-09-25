@@ -72,6 +72,7 @@ public:
     //void  randomSampling_SFMT( sfmt_t *sfmt, vismodule::Vector3f *local_array, const int loop_cnt, std::vector<double> track);
 
     const vismodule::Real32 volume() const;
+    const vismodule::Real32 volumeByTetraDecomposition() const; // [A9] 6四面体分割の厳密体積
 
     void setLocalGravityPoint() const;
 };
@@ -660,6 +661,42 @@ inline const vismodule::Real32 HexahedralCell<T>::volume() const
 
     const float resolution3 = resolution * resolution * resolution;
     return sum_metric / resolution3;
+}
+
+/*===========================================================================*/
+/**
+ *  @brief  [A9] Exact hex volume via 6-tetrahedron decomposition
+ *          （流用元: IntegPBVRv360_ensenblePBVR_refactoring 版 HexahedralCell.h）。
+ *  節点順序: z=0面 4-5-6-7 / z=1面 0-1-2-3。対角 4->2 共有の6四面体で分割（単位立方体で 6*(1/6)=1.0）。
+ */
+/*===========================================================================*/
+namespace HexahedralCellDetail
+{
+inline vismodule::Real32 TetraVolume(
+    const vismodule::Vector3f& a, const vismodule::Vector3f& b,
+    const vismodule::Vector3f& c, const vismodule::Vector3f& d )
+{
+    const float bax = b.x()-a.x(); const float bay = b.y()-a.y(); const float baz = b.z()-a.z();
+    const float cax = c.x()-a.x(); const float cay = c.y()-a.y(); const float caz = c.z()-a.z();
+    const float dax = d.x()-a.x(); const float day = d.y()-a.y(); const float daz = d.z()-a.z();
+    const float cx = cay*daz - caz*day;
+    const float cy = caz*dax - cax*daz;
+    const float cz = cax*day - cay*dax;
+    const float det = bax*cx + bay*cy + baz*cz;
+    return vismodule::Math::Abs<float>( det ) * 0.16666666666666666f;
+}
+} // namespace HexahedralCellDetail
+
+template <typename T>
+inline const vismodule::Real32 HexahedralCell<T>::volumeByTetraDecomposition() const
+{
+    const vismodule::Vector3f* V = BaseClass::m_vertices;
+    return HexahedralCellDetail::TetraVolume( V[4], V[5], V[6], V[2] )
+         + HexahedralCellDetail::TetraVolume( V[4], V[6], V[7], V[2] )
+         + HexahedralCellDetail::TetraVolume( V[4], V[7], V[3], V[2] )
+         + HexahedralCellDetail::TetraVolume( V[4], V[3], V[0], V[2] )
+         + HexahedralCellDetail::TetraVolume( V[4], V[0], V[1], V[2] )
+         + HexahedralCellDetail::TetraVolume( V[4], V[1], V[5], V[2] );
 }
 
 /*===========================================================================*/
