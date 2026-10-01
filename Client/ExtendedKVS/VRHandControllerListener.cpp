@@ -66,46 +66,21 @@ void VRHandControllerListener::onEvent( kvs::EventBase* event )
 
 void VRHandControllerListener::handleLongPress( kvs::UInt32 button, const kvs::Controller::ControllerStatus& cs, kvs::UInt32 side )
 {
-    auto* scene = m_screen->scene();
-
-    const kvs::Vec3 sT        = m_screen->openxrInteractor()->startInitialTranslation();
-    const kvs::Vec3 eT        = m_screen->openxrInteractor()->endInitialTranslation();
-    const kvs::ObjectBase* sP = m_screen->openxrInteractor()->startPoint();
-    const kvs::ObjectBase* eP = m_screen->openxrInteractor()->endPoint();
-
-    const kvs::Vec3 s = calculateCoord( scene, sT, sP );
-    const kvs::Vec3 e = calculateCoord( scene, eT, eP );
-
-    kvs::Real32 coordArray[6] = {
-        kvs::Real32( s.x() ), kvs::Real32( s.y() ), kvs::Real32( s.z() ),
-        kvs::Real32( e.x() ), kvs::Real32( e.y() ), kvs::Real32( e.z() )
-    };
-
+    Q_UNUSED( cs );
     if( button == kvs::Controller::Button::B )      emit toggleShowHideVRPlotOverLine();
     else if( button == kvs::Controller::Button::Y ) emit toggleShowHideVRPlotOverTime();
-    else if( button == kvs::Controller::Button::X )
+    else if( button == kvs::Controller::Button::X && side == kvs::Side::Left )
     {
-        const kvs::Xform walkthrough = m_screen->openxrInteractor()->screen()->walkthrough();
-
-        const kvs::Vec3 directionLeft = controllerForward( walkthrough, cs.xform[kvs::Side::Left] );
-        const kvs::Vec3 directionRight = controllerForward( walkthrough, cs.xform[kvs::Side::Right] );
-
-        kvs::Real32 directionArray[6] = {
-            kvs::Real32( directionLeft.x()  ),
-            kvs::Real32( directionLeft.y()  ),
-            kvs::Real32( directionLeft.z()  ),
-
-            kvs::Real32( directionRight.x() ),
-            kvs::Real32( directionRight.y() ),
-            kvs::Real32( directionRight.z() )
-        };
-
-        emit toggleShowHideSharePoint( coordArray, directionArray );
+        m_screen->resetView();
     }
 }
 
 void VRHandControllerListener::handleShortRelease( kvs::UInt32 button, const kvs::Controller::ControllerStatus& cs, kvs::UInt32 side )
 {
+    Q_UNUSED( cs );
+    Q_UNUSED( side );
+    // X short press no longer updates or shares a point.
+    if( button == kvs::Controller::Button::X ) { return; }
     auto* scene = m_screen->scene();
 
     const kvs::Vec3 sT        = m_screen->openxrInteractor()->startInitialTranslation();
@@ -128,25 +103,6 @@ void VRHandControllerListener::handleShortRelease( kvs::UInt32 button, const kvs
     else if( button == kvs::Controller::Button::Y )
     {
         emit drawVRPlotOverTime( coordArray );
-    }
-    else if( button == kvs::Controller::Button::X )
-    {
-        const kvs::Xform walkthrough = m_screen->openxrInteractor()->screen()->walkthrough();
-
-        const kvs::Vec3 directionLeft = controllerForward( walkthrough, cs.xform[kvs::Side::Left] );
-        const kvs::Vec3 directionRight = controllerForward( walkthrough, cs.xform[kvs::Side::Right] );
-
-        kvs::Real32 directionArray[6] = {
-            kvs::Real32( directionLeft.x()  ),
-            kvs::Real32( directionLeft.y()  ),
-            kvs::Real32( directionLeft.z()  ),
-
-            kvs::Real32( directionRight.x() ),
-            kvs::Real32( directionRight.y() ),
-            kvs::Real32( directionRight.z() )
-        };
-
-        emit drawVRSharePoint( coordArray, directionArray );
     }
 }
 

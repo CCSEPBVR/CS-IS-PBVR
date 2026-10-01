@@ -9,6 +9,7 @@
 #include <kvs/LineObject>
 #include <kvs/TexturedPolygonObject>
 #include <vector>
+#include "VRControllerVisualSettings.h"
 #include "OpenXRScreen.h"
 #include <SupportOpenXR/RemoteDesktop/RemoteDesktop.h>
 #include <kvs/PointObject>
@@ -39,7 +40,12 @@ private:
     kvs::LineObject* m_pointer = nullptr;
     // Scene owns these registered objects, including the hidden coordinate points.
     kvs::TexturedPolygonObject* m_controller_model[kvs::Side::Max] = { nullptr };
-    std::vector<kvs::ObjectBase*> m_controller_annotations[kvs::Side::Max];
+    struct ControllerAnnotation
+    {
+        kvs::ObjectBase* object;
+        controller_visual::LabelVisibility visibility;
+    };
+    std::vector<ControllerAnnotation> m_controller_annotations[kvs::Side::Max];
     kvs::Timer m_elapsed_timer = {};
 
     kvs::PointObject* m_start_point = nullptr;

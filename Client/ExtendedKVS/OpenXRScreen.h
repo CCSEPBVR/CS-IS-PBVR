@@ -70,6 +70,7 @@ public:
     void setWalkthrough( const kvs::Xform& walkthrough ) { m_walkthrough_xform = walkthrough; }
     bool opsHand() const { return m_ops_hand; }
     void setOpsHand( kvs::UInt32 ops_hand ) { m_ops_hand = ops_hand; }
+    float rightGripValue() const { return m_openxr_device ? m_openxr_device->rightGripValue() : 0.0f; }
 
     void setTitle( const std::string& title );
     void setPosition( const int x, const int y );

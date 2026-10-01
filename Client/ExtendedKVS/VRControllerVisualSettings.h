@@ -51,11 +51,14 @@ struct Settings
     // Text faces upwards and follows the controller, never a billboard.
     kvs::Vec3 label_rotation_degrees = kvs::Vec3( -90.0f, 180.0f, 0.0f );
     float leader_width_pixels = 2.0f;
+    float grip_press_threshold = 0.5f;
 
     kvs::Vec3 pointer_origin = kvs::Vec3( 0.0f, 0.0f, -0.035f );
     float pointer_length = 0.12f;
     float pointer_width_pixels = 2.0f;
 };
+
+enum class LabelVisibility { Always, GripPressed, GripReleased };
 
 struct Label
 {
@@ -63,6 +66,7 @@ struct Label
     kvs::Vec3 centre;
     kvs::Vec3 leader_start;
     kvs::Vec3 button;
+    LabelVisibility visibility = LabelVisibility::GripPressed;
 };
 
 inline const Settings settings;
@@ -81,14 +85,21 @@ inline const Label right_labels[] = {
     { u8"サムスティック 右・左\n視点左右回転",
       { -0.19f, 0.015f, 0.095f }, { -0.055f, 0.015f, 0.095f }, { -0.006998f, -0.002463f, 0.007780f } },
     { u8"Meta/Oculusボタン\nVirtual Desktopモード ON/OFF",
-      { -0.19f, 0.015f, 0.02f }, { -0.055f, 0.015f, 0.02f }, { -0.013280f, 0.001855f, -0.011046f } },
+      { -0.19f, 0.015f, 0.02f }, { -0.055f, 0.015f, 0.02f }, { -0.013280f, 0.001855f, -0.011046f }, LabelVisibility::Always },
     { u8"左右トリガーを同時押し\nオブジェクトの拡大・縮小",
-      { 0.19f, 0.015f, 0.02f }, { 0.055f, 0.015f, 0.02f }, { 0.011774f, -0.003923f, 0.028344f } }
+      { 0.19f, 0.015f, 0.02f }, { 0.055f, 0.015f, 0.02f }, { 0.011774f, -0.003923f, 0.028344f } },
+    // New row keeps the verified existing label positions unchanged.
+    // Grip anchor is approximate and can be tuned after on-device inspection.
+    { u8"右グリップボタン\n押している間、操作説明を表示",
+      { 0.19f, 0.015f, -0.055f }, { 0.055f, 0.015f, -0.055f }, { 0.025f, -0.03f, -0.025f }, LabelVisibility::GripReleased }
 };
 
 inline const Label left_labels[] = {
     { u8"左右トリガーを同時押し\nオブジェクトの拡大・縮小",
-      { 0.19f, 0.015f, 0.02f }, { 0.055f, 0.015f, 0.02f }, { -0.011770f, -0.003920f, 0.028340f } }
+      { 0.19f, 0.015f, 0.02f }, { 0.055f, 0.015f, 0.02f }, { -0.011770f, -0.003920f, 0.028340f } },
+    // X anchor is approximate; the label uses the vacant outer row.
+    { u8"Xボタン（長押し）\n視点リセット",
+      { 0.19f, 0.015f, 0.095f }, { 0.055f, 0.015f, 0.095f }, { -0.013f, 0.006f, 0.018f } }
 };
 
 } } }

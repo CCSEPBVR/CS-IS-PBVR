@@ -38,9 +38,7 @@ void kvs::qt::jaea::Screen::keyPressEvent( kvs::KeyEvent* event )
         setControlTarget( kvs::qt::jaea::Screen::ControlTarget::TargetObject );
         break;
     case kvs::Key::Home:
-        this->reset();
-        this->update();
-        emit updateTranslation();
+        this->resetView();
         break;
     case kvs::Key::x:
         emit addKeyFrameAdd( this->scene()->objectManager()->xform() );
@@ -51,4 +49,11 @@ void kvs::qt::jaea::Screen::keyPressEvent( kvs::KeyEvent* event )
     default:
         break;
     }
+}
+
+void kvs::qt::jaea::Screen::resetView()
+{
+    this->reset();
+    this->update();
+    emit updateTranslation();
 }

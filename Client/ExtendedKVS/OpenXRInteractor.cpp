@@ -321,18 +321,29 @@ void OpenXRInteractor::initializeEvent()
         const size_t count = i == kvs::Side::Left ?
             sizeof( visual::left_labels ) / sizeof( visual::left_labels[0] ) :
             sizeof( visual::right_labels ) / sizeof( visual::right_labels[0] );
-        auto label_object = ControllerLabels( labels, count );
-        auto leader_object = ControllerLeaders( labels, count );
-        VisualBounds( label_object.get(), min, max );
-        VisualBounds( leader_object.get(), min, max );
-        auto label_renderer = std::make_unique<kvs::StochasticTexturedPolygonRenderer>();
-        label_renderer->disableShading(); // Keep text white and background black.
-        label_renderer->setBilinearInterpolation();
-        s->registerObject( label_object.get(), label_renderer.get() );
-        label_renderer.release();
-        m_controller_annotations[i].push_back( label_object.release() );
-        s->registerObject( leader_object.get(), new kvs::StochasticLineRenderer() );
-        m_controller_annotations[i].push_back( leader_object.release() );
+        for ( const auto visibility : { visual::LabelVisibility::Always,
+                                       visual::LabelVisibility::GripPressed,
+                                       visual::LabelVisibility::GripReleased } )
+        {
+            std::vector<visual::Label> group;
+            for ( size_t j = 0; j < count; ++j )
+            {
+                if ( labels[j].visibility == visibility ) { group.push_back( labels[j] ); }
+            }
+            if ( group.empty() ) { continue; }
+            auto label_object = ControllerLabels( group.data(), group.size() );
+            auto leader_object = ControllerLeaders( group.data(), group.size() );
+            VisualBounds( label_object.get(), min, max );
+            VisualBounds( leader_object.get(), min, max );
+            auto label_renderer = std::make_unique<kvs::StochasticTexturedPolygonRenderer>();
+            label_renderer->disableShading(); // Keep text white and background black.
+            label_renderer->setBilinearInterpolation();
+            s->registerObject( label_object.get(), label_renderer.get() );
+            label_renderer.release();
+            m_controller_annotations[i].push_back( { label_object.release(), visibility } );
+            s->registerObject( leader_object.get(), new kvs::StochasticLineRenderer() );
+            m_controller_annotations[i].push_back( { leader_object.release(), visibility } );
+        }
     }
 
     const auto& pointer_origin = visual::settings.pointer_origin;
@@ -361,7 +372,7 @@ void OpenXRInteractor::setControllerVisualBounds( const kvs::Vec3& min, const kv
     for ( kvs::UInt32 i = 0; i < kvs::Side::Max; ++i )
     {
         if ( m_controller_model[i] ) { VisualBounds( m_controller_model[i], min, max ); }
-        for ( auto* object : m_controller_annotations[i] ) { VisualBounds( object, min, max ); }
+        for ( const auto& annotation : m_controller_annotations[i] ) { VisualBounds( annotation.object, min, max ); }
     }
     if ( m_pointer ) { VisualBounds( m_pointer, min, max ); }
 }
@@ -583,10 +594,15 @@ void OpenXRInteractor::controllerMoveEvent( kvs::ControllerEvent* e )
                 m_controller_model[i]->setXform( visual_xform * kvs::Xform::Scaling(
                     kvs::Vec3::Constant( visual::settings.source_unit_to_metres ) ) );
             }
-            for ( auto* object : m_controller_annotations[i] )
+            const bool grip_pressed = cs.is_active[kvs::Side::Right] &&
+                m_openxr_screen->rightGripValue() >= visual::settings.grip_press_threshold;
+            for ( const auto& annotation : m_controller_annotations[i] )
             {
-                object->setVisible( cs.is_active[i] );
-                object->setXform( visual_xform );
+                const bool show = annotation.visibility == visual::LabelVisibility::Always ||
+                    ( annotation.visibility == visual::LabelVisibility::GripPressed && grip_pressed ) ||
+                    ( annotation.visibility == visual::LabelVisibility::GripReleased && !grip_pressed );
+                annotation.object->setVisible( cs.is_active[i] && show );
+                annotation.object->setXform( visual_xform );
             }
             if ( i == kvs::Side::Right && m_pointer )
             {

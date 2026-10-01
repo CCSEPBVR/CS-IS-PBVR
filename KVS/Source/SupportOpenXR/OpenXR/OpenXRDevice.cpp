@@ -317,6 +317,16 @@ bool OpenXRDevice::initialize()
         ret = xrCreateAction( m_action_set, &actionInfo, &m_action[ControllerActionClick_Y] ); KVS_ASSERT( XR_SUCCEEDED( ret ) );
     }
 
+    {
+        XrActionCreateInfo actionInfo{ XR_TYPE_ACTION_CREATE_INFO };
+        actionInfo.countSubactionPaths = 1;
+        actionInfo.subactionPaths = &m_hand_subaction_path[kvs::Side::Right];
+        strcpy_s( actionInfo.actionName, "right_grip_value" );
+        strcpy_s( actionInfo.localizedActionName, "Right Grip Value" );
+        actionInfo.actionType = XR_ACTION_TYPE_FLOAT_INPUT;
+        ret = xrCreateAction( m_action_set, &actionInfo, &m_action[ControllerActionRightGrip] ); KVS_ASSERT( XR_SUCCEEDED( ret ) );
+    }
+
     for ( kvs::UInt32 i = 0; i < HmdTypeMax; ++i )
     {
         XrPath interactionProfilePath;
@@ -338,6 +348,13 @@ bool OpenXRDevice::initialize()
         ret = xrStringToPath( m_instance, "/user/hand/right/input/trigger/value", &triggerPath[kvs::Side::Right] );	KVS_ASSERT( XR_SUCCEEDED( ret ) );
         bindings.push_back( { m_action[ControllerActionTrigger], triggerPath[kvs::Side::Left] } );
         bindings.push_back( { m_action[ControllerActionTrigger], triggerPath[kvs::Side::Right] } );
+
+        if ( i == HmdTypeMetaQuest )
+        {
+            XrPath rightGripPath;
+            ret = xrStringToPath( m_instance, "/user/hand/right/input/squeeze/value", &rightGripPath ); KVS_ASSERT( XR_SUCCEEDED( ret ) );
+            bindings.push_back( { m_action[ControllerActionRightGrip], rightGripPath } );
+        }
 
         if ( i == HmdTypeMetaQuest || i == HmdTypeViveFocus3 || i == HmdTypePico4 )
         {
@@ -775,6 +792,8 @@ bool OpenXRDevice::beginFrame()
         }
 
         const XrActiveActionSet activeActionSet{ m_action_set, XR_NULL_PATH };
+        // Clear every frame: failed/inactive input must not leave help visible.
+        m_right_grip_value = 0.0f;
         XrActionsSyncInfo syncInfo{ XR_TYPE_ACTIONS_SYNC_INFO };
         syncInfo.countActiveActionSets = 1;
         syncInfo.activeActionSets = &activeActionSet;
@@ -782,6 +801,18 @@ bool OpenXRDevice::beginFrame()
         if ( XR_FAILED( ret ) )
         {
             kvsMessageError( "OpenXRDevice::beginFrame() Faild to xrSyncActions. xrResult:%s", xrResultString( ret ).c_str() );
+        }
+        else if ( m_action[ControllerActionRightGrip] != XR_NULL_HANDLE )
+        {
+            XrActionStateGetInfo gripInfo{ XR_TYPE_ACTION_STATE_GET_INFO };
+            gripInfo.action = m_action[ControllerActionRightGrip];
+            gripInfo.subactionPath = m_hand_subaction_path[kvs::Side::Right];
+            XrActionStateFloat gripState{ XR_TYPE_ACTION_STATE_FLOAT };
+            const XrResult gripResult = xrGetActionStateFloat( m_session, &gripInfo, &gripState );
+            if ( XR_SUCCEEDED( gripResult ) && gripState.isActive )
+            {
+                m_right_grip_value = gripState.currentState;
+            }
         }
 
         for ( kvs::UInt32 i = 0; i < kvs::Side::Max; ++i )

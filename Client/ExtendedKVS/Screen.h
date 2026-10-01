@@ -30,6 +30,8 @@ public:
     virtual void mouseReleaseEvent( kvs::MouseEvent* event )  override { Q_UNUSED( event ); }
     virtual void wheelEvent( kvs::WheelEvent* event ) override { Q_UNUSED( event ); }
     virtual void keyPressEvent( kvs::KeyEvent* event ) override;
+    // Shared by Home and the VR controller's view-reset operation.
+    void resetView();
 
 signals:
     void updateTranslation();

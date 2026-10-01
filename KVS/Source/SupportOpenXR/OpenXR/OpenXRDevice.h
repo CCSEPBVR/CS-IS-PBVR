@@ -57,6 +57,7 @@ public:
 		ControllerActionClick_B,
 		ControllerActionClick_X,
 		ControllerActionClick_Y,
+		ControllerActionRightGrip,
 		ControllerActionMax,
 	};
 
@@ -95,6 +96,7 @@ private:
 	kvs::Xform m_camera_xform[kvs::Side::Max] = { kvs::Xform() };
 	kvs::Xform m_head_xform = kvs::Xform();
 	kvs::Controller::ControllerStatus m_controller_status = kvs::Controller::ControllerStatus();
+	float m_right_grip_value = 0.0f;
 	kvs::UInt32 m_require_image[kvs::Side::Max] = { 0 };
 
 public:
@@ -120,6 +122,7 @@ public:
 	const kvs::Xform& cameraXform( kvs::UInt32 side ) const { return m_camera_xform[side]; }
 	const kvs::Xform& headXform() const { return m_head_xform; }
 	const kvs::Controller::ControllerStatus& controllerStatus() const { return m_controller_status; }
+	float rightGripValue() const { return m_right_grip_value; }
 
 private:
 	kvs::Mat4 toProjectionMatrix( const XrFovf& fov );
