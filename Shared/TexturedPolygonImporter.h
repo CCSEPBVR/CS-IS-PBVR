@@ -23,8 +23,10 @@ class TexturedPolygonImporter : public kvs::ImporterBase, public kvs::TexturedPo
 
 public:
     TexturedPolygonImporter();
-    TexturedPolygonImporter( const std::string& filename )
+    TexturedPolygonImporter( const std::string& filename, const bool model_relative_textures = false,
+                             const std::string& fallback_diffuse_texture = std::string() )
     {
+        BaseClass::setSuccess( false );
         std::filesystem::path filepath( filename );
         std::string ext = filepath.extension().string();
 #ifdef ASSIMP
@@ -32,7 +34,7 @@ public:
         {
             if( kvs::FBX::CheckExtension( filename ) )
             {
-                kvs::FBX* file_format = new kvs::FBX( filename );
+                kvs::FBX* file_format = new kvs::FBX( filename, model_relative_textures, fallback_diffuse_texture );
                 if( !file_format )
                 {
                     BaseClass::setSuccess( false );
@@ -168,6 +170,7 @@ private:
         {
             this->addColorArray( id, color_arrays[id], image_widths[id], image_heights[id] );
         }
+        BaseClass::setSuccess( true );
     }
 
     void import( const kvs::ThreeDS* threeDS )
@@ -199,6 +202,7 @@ private:
         {
             this->addColorArray(id, color_arrays[id], image_widths[id], image_heights[id]);
         }
+        BaseClass::setSuccess( true );
     }
 #endif
 };

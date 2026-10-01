@@ -7,9 +7,145 @@
 #include "OpenXRInteractor.h"
 #include <kvs/Assert>
 #include <kvs/ObjectManager>
-#include <kvs/StochasticPolygonRenderer>
+#include <kvs/StochasticTexturedPolygonRenderer>
 #include <kvs/StochasticLineRenderer>
 #include "EventTimer.h"
+#include "VRControllerVisualSettings.h"
+#include <QCoreApplication>
+#include <QDir>
+#include <QFileInfo>
+#include <QDebug>
+#include <QImage>
+#include <QPainter>
+#include <QFont>
+#include <algorithm>
+#include <memory>
+#include <stdexcept>
+#include <cmath>
+#ifdef ASSIMP
+#include "../../Shared/TexturedPolygonImporter.h"
+#endif
+
+namespace
+{
+namespace visual = kvs::openxr::controller_visual;
+
+kvs::Mat3 VisualRotation( const kvs::Vec3& degrees )
+{
+    return kvs::Mat3::RotationZ( degrees.z() ) *
+           kvs::Mat3::RotationY( degrees.y() ) * kvs::Mat3::RotationX( degrees.x() );
+}
+
+kvs::Xform CalibratedControllerXform( const kvs::Xform& grip, const kvs::UInt32 side )
+{
+    // Rotate locally without changing the tracked position or ControllerStatus.
+    // Art-specific scale/translation/rotation must not affect fly-through.
+    return grip * kvs::Xform::Rotation(
+        VisualRotation( visual::settings.pose[side].rotation_degrees ) );
+}
+
+kvs::Xform VisualCorrection( const kvs::UInt32 side )
+{
+    const auto& correction = visual::settings.model[side];
+    return kvs::Xform( correction.translation, correction.scale,
+                       VisualRotation( correction.rotation_degrees ) );
+}
+
+void VisualBounds( kvs::ObjectBase* object, const kvs::Vec3& min, const kvs::Vec3& max )
+{
+    // These are normalization metadata, not the mesh's physical size. Rendering
+    // uses its raw vertices and the controller xform, as the existing points do.
+    object->setMinMaxObjectCoords( min, max );
+    object->setMinMaxExternalCoords( min, max );
+}
+
+std::unique_ptr<kvs::TexturedPolygonObject> ControllerLabels(
+    const visual::Label* labels, const size_t count )
+{
+    auto object = std::make_unique<kvs::TexturedPolygonObject>();
+    object->setPolygonTypeToTriangle();
+    object->setColorTypeToVertex();
+    object->setNormalTypeToVertex();
+    std::vector<kvs::Real32> coords, normals, uvs;
+    std::vector<kvs::UInt32> ids, connections;
+    const auto& settings = visual::settings;
+    const kvs::Mat3 rotation = VisualRotation( settings.label_rotation_degrees );
+    const kvs::Vec3 normal = rotation * kvs::Vec3( 0.0f, 0.0f, 1.0f );
+    const float half_width = settings.label_size.x() * 0.5f;
+    const float half_height = settings.label_size.y() * 0.5f;
+    const kvs::Vec3 corners[] = {
+        { -half_width, -half_height, 0.0f }, { half_width, -half_height, 0.0f },
+        { half_width, half_height, 0.0f }, { -half_width, half_height, 0.0f }
+    };
+    const kvs::Vec2 texcoords[] = { { 0, 0 }, { 1, 0 }, { 1, 1 }, { 0, 1 } };
+    const int triangles[] = { 0, 1, 2, 0, 2, 3 };
+    for ( size_t i = 0; i < count; ++i )
+    {
+        QImage image( settings.texture_width, settings.texture_height, QImage::Format_RGBA8888 );
+        if ( image.isNull() ) { throw std::runtime_error( "Cannot allocate controller label image" ); }
+        image.fill( Qt::black );
+        {
+            QPainter painter( &image );
+            painter.setRenderHint( QPainter::TextAntialiasing );
+            QFont font( QString::fromUtf8( settings.font_family ) );
+            font.setPixelSize( settings.font_pixels );
+            painter.setFont( font );
+            painter.setPen( Qt::white );
+            const int margin = settings.text_margin_pixels;
+            painter.drawText( image.rect().adjusted( margin, margin, -margin, -margin ),
+                              Qt::AlignCenter, QString::fromUtf8( labels[i].text ) );
+        }
+        kvs::ValueArray<kvs::UInt8> pixels( size_t( image.width() ) * image.height() * 4 );
+        for ( int y = 0; y < image.height(); ++y )
+        {
+            std::copy_n( image.constScanLine( y ), size_t( image.width() ) * 4,
+                         pixels.data() + size_t( y ) * image.width() * 4 );
+        }
+        object->addColorArray( static_cast<kvs::UInt32>( i ), pixels, image.width(), image.height() );
+        for ( const int corner : triangles )
+        {
+            const kvs::Vec3 p = labels[i].centre + rotation * corners[corner];
+            coords.insert( coords.end(), { p.x(), p.y(), p.z() } );
+            normals.insert( normals.end(), { normal.x(), normal.y(), normal.z() } );
+            uvs.insert( uvs.end(), { texcoords[corner].x(), texcoords[corner].y() } );
+            ids.push_back( static_cast<kvs::UInt32>( i ) );
+            // KVS's textured renderer expands triangles through connections.
+            connections.push_back( static_cast<kvs::UInt32>( connections.size() ) );
+        }
+    }
+    object->setCoords( kvs::ValueArray<kvs::Real32>( coords ) );
+    object->setNormals( kvs::ValueArray<kvs::Real32>( normals ) );
+    object->setTexture2DCoords( kvs::ValueArray<kvs::Real32>( uvs ) );
+    object->setTextureIds( kvs::ValueArray<kvs::UInt32>( ids ) );
+    object->setConnections( kvs::ValueArray<kvs::UInt32>( connections ) );
+    object->hide();
+    return object;
+}
+
+std::unique_ptr<kvs::LineObject> ControllerLeaders( const visual::Label* labels, const size_t count )
+{
+    std::vector<kvs::Real32> coords;
+    std::vector<kvs::UInt32> connections;
+    for ( size_t i = 0; i < count; ++i )
+    {
+        for ( const auto& p : { labels[i].leader_start, labels[i].button } )
+        {
+            coords.insert( coords.end(), { p.x(), p.y(), p.z() } );
+        }
+        connections.push_back( static_cast<kvs::UInt32>( i * 2 ) );
+        connections.push_back( static_cast<kvs::UInt32>( i * 2 + 1 ) );
+    }
+    auto object = std::make_unique<kvs::LineObject>();
+    object->setLineTypeToSegment();
+    object->setColorTypeToLine();
+    object->setColor( kvs::RGBColor::White() );
+    object->setSize( visual::settings.leader_width_pixels );
+    object->setCoords( kvs::ValueArray<kvs::Real32>( coords ) );
+    object->setConnections( kvs::ValueArray<kvs::UInt32>( connections ) );
+    object->hide();
+    return object;
+}
+}
 
 namespace kvs
 {
@@ -103,23 +239,107 @@ void OpenXRInteractor::initializeEvent()
     }
 #endif
 
-#if 0 // OpenXRプロットオーバーライン用に一時的に削除, おそらく、ポリゴンオブジェクトに対して、フォーカス対象のmin max objectをsetMinMaxObjectCoord()する必要があるかもしれません。
+    // Use the same normalization bounds as the coordinate points. Copying these
+    // before registration prevents controller art/labels from resizing the data.
+    kvs::Vec3 min = s->objectManager()->minObjectCoord();
+    kvs::Vec3 max = s->objectManager()->maxObjectCoord();
+    if ( min.x() > max.x() || min.y() > max.y() || min.z() > max.z() )
+    {
+        min = s->objectManager()->minExternalCoord();
+        max = s->objectManager()->maxExternalCoord();
+    }
     for ( kvs::UInt32 i = 0; i < kvs::Side::Max; ++i )
     {
-        std::string path = i == kvs::Side::Left ?
-                               std::string( "Models/left_hand.ply" ) : std::string( "Models/right_hand.ply" );
-        m_controller_model[i] = new kvs::PolygonImporter( path );
-        kvs::StochasticPolygonRenderer* renderer = new kvs::StochasticPolygonRenderer();
-        renderer->setShader( kvs::Shader::Phong() );
-        s->registerObject( m_controller_model[i], renderer );
-    }
+        const QString path = QDir( QCoreApplication::applicationDirPath() ).absoluteFilePath(
+            QString::fromUtf8( visual::settings.model_path[i] ) );
+        const char* side = i == kvs::Side::Left ? "left" : "right";
+#ifdef ASSIMP
+        try
+        {
+            if ( !QFileInfo( path ).isFile() )
+            {
+                qWarning().noquote() << "Touch Pro" << side << "FBX missing; using PointObject:" << path;
+            }
+            else
+            {
+                // Reuse Shared's FBX -> Assimp -> TexturedPolygonImporter route.
+                // Relative textures are anchored to this FBX, independent of cwd.
+                auto model = std::make_unique<kvs::TexturedPolygonImporter>(
+                    path.toUtf8().toStdString(), true, visual::settings.base_color_texture[i] );
+                if ( model->isFailure() || model->coords().empty() || model->connections().empty() )
+                {
+                    qWarning().noquote() << "Touch Pro" << side << "FBX load failed; using PointObject:" << path;
+                }
+                else
+                {
+                    // The textured renderer draws by texture ID; reject unusable geometry.
+                    bool valid = model->coords().size() % 3 == 0 &&
+                        model->connections().size() % 3 == 0 &&
+                        model->normals().size() == model->coords().size() &&
+                        model->textureIds().size() == model->coords().size() / 3 &&
+                        model->texture2DCoords().size() == model->coords().size() / 3 * 2;
+                    for ( const auto index : model->connections() )
+                    {
+                        if ( index >= model->coords().size() / 3 ) { valid = false; break; }
+                    }
+                    for ( const auto id : model->textureIds() )
+                    {
+                        if ( model->mapIdToColorArray().count( id ) == 0 ) { valid = false; break; }
+                    }
+                    for ( const auto value : model->coords() )
+                    {
+                        if ( !std::isfinite( value ) ) { valid = false; break; }
+                    }
+                    if ( !valid )
+                    {
+                        qWarning() << "Touch Pro" << side << "FBX geometry/textures invalid; using PointObject";
+                    }
+                    else
+                    {
+                        model->setColorTypeToVertex();
+                        model->setName( i == kvs::Side::Left ? "TouchProLeft" : "TouchProRight" );
+                        model->hide();
+                        VisualBounds( model.get(), min, max );
+                        auto renderer = std::make_unique<kvs::StochasticTexturedPolygonRenderer>();
+                        renderer->setShader( kvs::Shader::Phong() );
+                        s->registerObject( model.get(), renderer.get() );
+                        renderer.release();
+                        m_controller_model[i] = model.release();
+                    }
+                }
+            }
+        }
+        catch ( const std::exception& error )
+        {
+            qWarning() << "Touch Pro" << side << "FBX load failed; using PointObject:" << error.what();
+        }
+#else
+        qWarning().noquote() << "Touch Pro" << side << "requires ASSIMP; using PointObject:" << path;
 #endif
+        // Instructions are useful with either the model or the point fallback.
+        const auto* labels = i == kvs::Side::Left ? visual::left_labels : visual::right_labels;
+        const size_t count = i == kvs::Side::Left ?
+            sizeof( visual::left_labels ) / sizeof( visual::left_labels[0] ) :
+            sizeof( visual::right_labels ) / sizeof( visual::right_labels[0] );
+        auto label_object = ControllerLabels( labels, count );
+        auto leader_object = ControllerLeaders( labels, count );
+        VisualBounds( label_object.get(), min, max );
+        VisualBounds( leader_object.get(), min, max );
+        auto label_renderer = std::make_unique<kvs::StochasticTexturedPolygonRenderer>();
+        label_renderer->disableShading(); // Keep text white and background black.
+        label_renderer->setBilinearInterpolation();
+        s->registerObject( label_object.get(), label_renderer.get() );
+        label_renderer.release();
+        m_controller_annotations[i].push_back( label_object.release() );
+        s->registerObject( leader_object.get(), new kvs::StochasticLineRenderer() );
+        m_controller_annotations[i].push_back( leader_object.release() );
+    }
 
-#if 0 // OpenXRプロットオーバーライン用に削除予定、リモートデスクトップ機能を排除した現在、必要のないオブジェクトです。
+    const auto& pointer_origin = visual::settings.pointer_origin;
     kvs::ValueArray<kvs::Real32> pointer_coords =
         {
-            0.0f, 0.0f, 0.0f,
-            0.0f, 0.0f, -1.0f,
+            pointer_origin.x(), pointer_origin.y(), pointer_origin.z(),
+            pointer_origin.x(), pointer_origin.y(), pointer_origin.z() - visual::settings.pointer_length,
         };
 
     m_pointer = new kvs::LineObject();
@@ -127,12 +347,23 @@ void OpenXRInteractor::initializeEvent()
     m_pointer->setCoords( pointer_coords );
     m_pointer->setColorTypeToLine();
     m_pointer->setColor( kvs::RGBColor::Green() );
-    m_pointer->setSize( 2.0f );
+    m_pointer->setSize( visual::settings.pointer_width_pixels );
+    VisualBounds( m_pointer, min, max );
+    m_pointer->hide();
     s->registerObject( m_pointer, new kvs::StochasticLineRenderer() );
-#endif
 
     BaseClass::setEventTimer( new kvs::qt::EventTimer( this ) );
     BaseClass::eventTimer()->start( BaseClass::timerInterval() );
+}
+
+void OpenXRInteractor::setControllerVisualBounds( const kvs::Vec3& min, const kvs::Vec3& max )
+{
+    for ( kvs::UInt32 i = 0; i < kvs::Side::Max; ++i )
+    {
+        if ( m_controller_model[i] ) { VisualBounds( m_controller_model[i], min, max ); }
+        for ( auto* object : m_controller_annotations[i] ) { VisualBounds( object, min, max ); }
+    }
+    if ( m_pointer ) { VisualBounds( m_pointer, min, max ); }
 }
 
 /*===========================================================================*/
@@ -340,33 +571,35 @@ void OpenXRInteractor::controllerMoveEvent( kvs::ControllerEvent* e )
             s->objectManager()->translate( translation );
             s->objectManager()->rotate( rot_mat );
         }
-        m_pointer_scale = kvs::Vec3::Ones();
-
         for ( kvs::UInt32 i = 0; i < kvs::Side::Max; ++i )
         {
             kvs::Xform xform = walkthrough_xform * cs.xform[i];
+            const kvs::Xform controller_xform = CalibratedControllerXform( cs.xform[i], i );
+            const kvs::Xform calibrated_xform = walkthrough_xform * controller_xform;
+            const kvs::Xform visual_xform = calibrated_xform * VisualCorrection( i );
             if ( m_controller_model[i] )
             {
                 m_controller_model[i]->setVisible(cs.is_active[i]);
-                m_controller_model[i]->setXform(xform);
+                m_controller_model[i]->setXform( visual_xform * kvs::Xform::Scaling(
+                    kvs::Vec3::Constant( visual::settings.source_unit_to_metres ) ) );
             }
-
-#if 0 // OpenXRプロットオーバーライン用に削除予定、リモートデスクトップ機能を排除した現在、必要のないオブジェクトです。
-            if( m_pointer != nullptr )
+            for ( auto* object : m_controller_annotations[i] )
             {
-                if ( i == ops_controller_index && m_pointer )
-                {
-                    m_pointer->setVisible( cs.is_active[i] );
-                    kvs::Xform pointer_xform = kvs::Xform( xform.translation(), m_pointer_scale, xform.rotation() );
-                    m_pointer->setXform( pointer_xform );
-                }
+                object->setVisible( cs.is_active[i] );
+                object->setXform( visual_xform );
             }
-#endif
+            if ( i == kvs::Side::Right && m_pointer )
+            {
+                m_pointer->setVisible( cs.is_active[i] );
+                // The same calibrated -Z as fly-through, before art correction.
+                m_pointer->setXform( calibrated_xform );
+            }
             if( i == 0 )
             {
                 if( m_start_point != nullptr )
                 {
                     m_start_point->setXform( xform );
+                    m_start_point->setVisible( cs.is_active[i] && !m_controller_model[i] );
                 }
             }
             else
@@ -374,6 +607,7 @@ void OpenXRInteractor::controllerMoveEvent( kvs::ControllerEvent* e )
                 if( m_end_point != nullptr )
                 {
                     m_end_point->setXform( xform );
+                    m_end_point->setVisible( cs.is_active[i] && !m_controller_model[i] );
                 }
             }
         }
@@ -406,7 +640,9 @@ void OpenXRInteractor::controllerAxisEvent( kvs::ControllerEvent* e )
             if ( ( kvs::Math::Abs( axis.x() ) > 0 || kvs::Math::Abs( axis.y() ) > 0 ) && elapsedTime > 0.0f )
             {
                 kvs::Xform walkthrough_xform = m_openxr_screen->walkthrough();
-                kvs::Mat4 m = cs.xform[i].toMatrix();
+                // Use the same calibrated controller frame as the pointer.
+                // Keep the vertical component so pitching the hand changes travel direction.
+                kvs::Mat4 m = CalibratedControllerXform( cs.xform[i], i ).toMatrix();
                 kvs::Vec3 dir = -kvs::Vec3( m[0][2], m[1][2], m[2][2] );
                 dir.normalize();
 

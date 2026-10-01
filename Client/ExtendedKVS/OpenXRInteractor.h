@@ -7,7 +7,8 @@
 #define OPENXRINTERACTOR_H
 #include <kvs/InteractorBase>
 #include <kvs/LineObject>
-#include <kvs/PolygonImporter>
+#include <kvs/TexturedPolygonObject>
+#include <vector>
 #include "OpenXRScreen.h"
 #include <SupportOpenXR/RemoteDesktop/RemoteDesktop.h>
 #include <kvs/PointObject>
@@ -36,8 +37,9 @@ private:
     kvs::LineObject* m_axis_y = nullptr;
     kvs::LineObject* m_axis_z = nullptr;
     kvs::LineObject* m_pointer = nullptr;
-    kvs::Vec3 m_pointer_scale = kvs::Vec3::Ones();
-    kvs::PolygonObject* m_controller_model[kvs::Side::Max] = { nullptr };
+    // Scene owns these registered objects, including the hidden coordinate points.
+    kvs::TexturedPolygonObject* m_controller_model[kvs::Side::Max] = { nullptr };
+    std::vector<kvs::ObjectBase*> m_controller_annotations[kvs::Side::Max];
     kvs::Timer m_elapsed_timer = {};
 
     kvs::PointObject* m_start_point = nullptr;
@@ -61,6 +63,9 @@ public:
     void setEndInitialTranslation( kvs::Vec3 endInitialTranslation ) { m_end_initial_translation = endInitialTranslation; }
     kvs::Vec3 startInitialTranslation() const { return m_start_initial_translation; }
     kvs::Vec3 endInitialTranslation() const { return m_end_initial_translation; }
+
+    // Match the existing point bounds so visuals do not change data normalization.
+    void setControllerVisualBounds( const kvs::Vec3& min, const kvs::Vec3& max );
 
 protected:
     virtual void mousePressEvent( kvs::MouseEvent* e ) {}

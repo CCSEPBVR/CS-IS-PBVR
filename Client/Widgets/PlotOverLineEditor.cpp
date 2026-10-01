@@ -152,6 +152,9 @@ void PlotOverLineEditor::onUpdateFocus( kvs::Vec3 resultMinObjectCoords, kvs::Ve
 
         m_plot_over_line_object->setMinMaxObjectCoords( resultMinObjectCoords, resultMaxObjectCoords );
         m_plot_over_line_object->setMinMaxExternalCoords( resultMinObjectCoords, resultMaxObjectCoords );
+#ifdef OPENXR_SCREEN
+        m_screen->openxrInteractor()->setControllerVisualBounds( resultMinObjectCoords, resultMaxObjectCoords );
+#endif
     }
 }
 

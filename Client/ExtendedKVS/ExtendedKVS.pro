@@ -24,6 +24,7 @@ contains( DEFINES, OPENXR_SCREEN ){
 HEADERS += \
     EventTimer.h \
     OpenXRInteractor.h \
+    VRControllerVisualSettings.h \
     OpenXRScreen.h \
     VRHandControllerListener.h
 }

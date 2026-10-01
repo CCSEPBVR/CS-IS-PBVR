@@ -6,10 +6,15 @@
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
+#include <assimp/material.h>
 #include <kvs/File>
 #include <cassert>
 #include <map>
 #include <filesystem>
+#include <algorithm>
+#include <functional>
+#include <vector>
+#include <cstring>
 
 #include <iostream>
 #include <string>
@@ -56,10 +61,11 @@ public:
     {
     }
 
-    FBX( const std::string& filename )
+    FBX( const std::string& filename, const bool model_relative_textures = false,
+         const std::string& fallback_diffuse_texture = std::string() )
         : m_file_type( FBX::Binary )
     {
-        this->read( filename );
+        this->read( filename, model_relative_textures, fallback_diffuse_texture );
     }
 
     virtual ~FBX()
@@ -96,18 +102,28 @@ public:
 
     bool read( const std::string& filename )
     {
+        return this->read( filename, false, std::string() );
+    }
+
+    // Opt-in for controller art: resolve relative paths from the FBX, never cwd.
+    // Existing callers retain their original recorded-path-first search order.
+    bool read( const std::string& filename, const bool model_relative_textures,
+               const std::string& fallback_diffuse_texture )
+    {
         setFilename( filename );
+        setSuccess( false );
 
         std::filesystem::path file_path( filename );
         std::filesystem::path base_dir = file_path.parent_path();
 
         Assimp::Importer importer;
-        const unsigned int flags = aiProcess_Triangulate | aiProcess_GenNormals | aiProcess_JoinIdenticalVertices;
+        unsigned int flags = aiProcess_Triangulate | aiProcess_GenNormals | aiProcess_JoinIdenticalVertices;
+        if ( model_relative_textures ) { flags |= aiProcess_ValidateDataStructure; }
         const aiScene* scene = importer.ReadFile( filename.c_str(), flags );
-        if( !scene )
+        if( !scene || !scene->mRootNode || !scene->HasMeshes() )
         {
             setSuccess( false );
-            std::cerr << "Failed to load model: " << filename << std::endl;
+            std::cerr << "Failed to load model: " << filename << ": " << importer.GetErrorString() << std::endl;
             return false;
         }
 
@@ -128,14 +144,40 @@ public:
         for( unsigned int m = 0; m < scene->mNumMeshes; ++m )
         {
             const aiMesh* mesh = scene->mMeshes[m];
+            if ( !mesh || mesh->mMaterialIndex >= scene->mNumMaterials ) { return false; }
             const aiMaterial* mat = scene->mMaterials[mesh->mMaterialIndex];
 
             aiString tex_path;
             kvs::UInt32 tid = 0;
-            if( mat->GetTextureCount(aiTextureType_DIFFUSE) > 0 &&
-                mat->GetTexture(aiTextureType_DIFFUSE, 0, &tex_path) == AI_SUCCESS )
+            bool has_texture = mat->GetTextureCount(aiTextureType_DIFFUSE) > 0 &&
+                mat->GetTexture(aiTextureType_DIFFUSE, 0, &tex_path) == AI_SUCCESS;
+            // Some Assimp versions expose Maya/Stingray textures as UNKNOWN.
+            // Only select BaseColor here; normal/ORM maps are not colour images.
+            if ( !has_texture && !fallback_diffuse_texture.empty() )
             {
-                std::string rel = tex_path.C_Str();
+                for ( unsigned int t = 0; t < mat->GetTextureCount( aiTextureType_UNKNOWN ); ++t )
+                {
+                    aiString candidate;
+                    if ( mat->GetTexture( aiTextureType_UNKNOWN, t, &candidate ) == AI_SUCCESS &&
+                         std::string( candidate.C_Str() ).find( "_BaseColor" ) != std::string::npos )
+                    {
+                        tex_path = candidate;
+                        has_texture = true;
+                        break;
+                    }
+                }
+                if ( !has_texture )
+                {
+                    tex_path = aiString( fallback_diffuse_texture.c_str() );
+                    has_texture = true;
+                }
+            }
+            // A separate white texture slot for an untextured material prevents
+            // it from accidentally inheriting another material's texture ID 0.
+            if ( has_texture || model_relative_textures )
+            {
+                std::string rel = has_texture ? tex_path.C_Str() : "";
+                std::replace( rel.begin(), rel.end(), '\\', '/' );
                 auto it = texture_map.find( rel );
                 if( it == texture_map.end() )
                 {
@@ -195,7 +237,7 @@ public:
                 for( unsigned int f = 0; f < mesh->mNumFaces; ++f )
                 {
                     const aiFace& face = mesh->mFaces[f];
-                    assert( face.mNumIndices == 3 );
+                    if ( face.mNumIndices != 3 ) { continue; }
                     for( int k = 0; k < 3; ++k )
                     {
                         unsigned int idx = face.mIndices[k];
@@ -210,6 +252,7 @@ public:
             }
         };
         traverse( scene->mRootNode, aiMatrix4x4() );
+        if ( coords.empty() || connections.empty() ) { return false; }
 
         m_coords = kvs::ValueArray<kvs::Real32>( coords );
         m_normals = kvs::ValueArray<kvs::Real32>( normals );
@@ -225,34 +268,43 @@ public:
         for( const auto& rel_path : texture_files )
         {
             int w=0,h=0,n=0;
-            stbi_uc* data = stbi_load( rel_path.string().c_str(), &w, &h, &n, 0 );
-            if( !data )
+            stbi_uc* data = nullptr;
+            if ( !rel_path.empty() && ( !model_relative_textures || rel_path.is_absolute() ) )
             {
-                auto full = ( base_dir / rel_path ).string();
-                data = stbi_load( full.c_str(), &w, &h, &n, 0 );
+                data = stbi_load( rel_path.string().c_str(), &w, &h, &n, STBI_rgb_alpha );
             }
             if( !data )
             {
-                std::cerr << "Failed to load texture: " << rel_path.string() << std::endl;
+                if ( !rel_path.empty() )
+                {
+                    auto full = ( base_dir / rel_path ).string();
+                    data = stbi_load( full.c_str(), &w, &h, &n, STBI_rgb_alpha );
+                }
+            }
+            if ( !data && !rel_path.empty() )
+            {
+                auto full = ( base_dir / ".." / "textures" / rel_path.filename() ).lexically_normal().string();
+                data = stbi_load( full.c_str(), &w, &h, &n, STBI_rgb_alpha );
+            }
+            if( !data )
+            {
+                if ( !rel_path.empty() )
+                {
+                    std::cerr << "Warning: Failed to load texture: " << rel_path.string()
+                              << " (FBX: " << filename << ")"
+                              << ( model_relative_textures ? "; using white material" : "" ) << std::endl;
+                }
+                if ( !model_relative_textures ) { continue; }
+                // Keep slots aligned with textureIds even when an image is missing.
+                color_arrays.emplace_back( kvs::ValueArray<kvs::UInt8>{ 255, 255, 255, 255 } );
+                image_widths.push_back( 1 );
+                image_heights.push_back( 1 );
                 continue;
             }
 
             size_t pix_cnt = static_cast<size_t>( w ) * h;
             kvs::ValueArray<kvs::UInt8> pixels( pix_cnt * 4 );
-            if( n == 4 )
-            {
-                memcpy( pixels.data(), data, pix_cnt * 4 );
-            }
-            else if( n == 3 )
-            {
-                for( size_t i = 0; i < pix_cnt; ++i )
-                {
-                    pixels[i*4+0] = data[i*3+0];
-                    pixels[i*4+1] = data[i*3+1];
-                    pixels[i*4+2] = data[i*3+2];
-                    pixels[i*4+3] = 255;
-                }
-            }
+            memcpy( pixels.data(), data, pix_cnt * 4 );
             stbi_image_free( data );
 
             color_arrays.push_back( pixels );
