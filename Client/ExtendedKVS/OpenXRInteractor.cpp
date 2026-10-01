@@ -145,6 +145,38 @@ std::unique_ptr<kvs::LineObject> ControllerLeaders( const visual::Label* labels,
     object->hide();
     return object;
 }
+
+std::unique_ptr<kvs::TexturedPolygonObject> OverviewSlide( const QImage& source )
+{
+    const QImage image = source.convertToFormat( QImage::Format_RGBA8888 );
+    if ( image.isNull() ) { throw std::runtime_error( "Cannot convert overview slide image" ); }
+    const float half_width = visual::settings.overview_slide_width * 0.5f;
+    const float half_height = half_width * static_cast<float>( image.height() ) / image.width();
+    auto object = std::make_unique<kvs::TexturedPolygonObject>();
+    object->setName( "VRControllerOverviewSlide" );
+    object->setPolygonTypeToTriangle();
+    object->setColorTypeToVertex();
+    object->setNormalTypeToVertex();
+    object->setCoords( kvs::ValueArray<kvs::Real32>{
+        -half_width, -half_height, 0.0f, half_width, -half_height, 0.0f,
+        half_width, half_height, 0.0f, -half_width, half_height, 0.0f } );
+    object->setNormals( kvs::ValueArray<kvs::Real32>{
+        0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+        0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f } );
+    // addColorArray flips QImage's top-first rows for OpenGL; use ordinary UVs.
+    object->setTexture2DCoords( kvs::ValueArray<kvs::Real32>{ 0, 0, 1, 0, 1, 1, 0, 1 } );
+    object->setTextureIds( kvs::ValueArray<kvs::UInt32>{ 0, 0, 0, 0 } );
+    object->setConnections( kvs::ValueArray<kvs::UInt32>{ 0, 1, 2, 0, 2, 3 } );
+    kvs::ValueArray<kvs::UInt8> pixels( size_t( image.width() ) * image.height() * 4 );
+    for ( int y = 0; y < image.height(); ++y )
+    {
+        std::copy_n( image.constScanLine( y ), size_t( image.width() ) * 4,
+                     pixels.data() + size_t( y ) * image.width() * 4 );
+    }
+    object->addColorArray( 0, pixels, image.width(), image.height() );
+    object->hide();
+    return object;
+}
 }
 
 namespace kvs
@@ -323,7 +355,9 @@ void OpenXRInteractor::initializeEvent()
             sizeof( visual::right_labels ) / sizeof( visual::right_labels[0] );
         for ( const auto visibility : { visual::LabelVisibility::Always,
                                        visual::LabelVisibility::GripPressed,
-                                       visual::LabelVisibility::GripReleased } )
+                                       visual::LabelVisibility::GripReleased,
+                                       visual::LabelVisibility::OverviewAvailable,
+                                       visual::LabelVisibility::OverviewOpen } )
         {
             std::vector<visual::Label> group;
             for ( size_t j = 0; j < count; ++j )
@@ -375,6 +409,62 @@ void OpenXRInteractor::setControllerVisualBounds( const kvs::Vec3& min, const kv
         for ( const auto& annotation : m_controller_annotations[i] ) { VisualBounds( annotation.object, min, max ); }
     }
     if ( m_pointer ) { VisualBounds( m_pointer, min, max ); }
+    if ( m_overview_slide ) { VisualBounds( m_overview_slide, min, max ); }
+}
+
+void OpenXRInteractor::toggleOverviewSlide()
+{
+    if ( !m_overview_slide_visible )
+    {
+        if ( !m_overview_slide )
+        {
+            const QString path = QDir( QCoreApplication::applicationDirPath() ).absoluteFilePath(
+                QString::fromUtf8( visual::settings.overview_slide_path ) );
+            const QImage image( path );
+            if ( image.isNull() )
+            {
+                qWarning().noquote() << "Cannot read VR overview slide; keeping normal controls:" << path;
+                return;
+            }
+            if ( !std::isfinite( visual::settings.overview_slide_width ) ||
+                 !std::isfinite( visual::settings.overview_slide_distance ) ||
+                 visual::settings.overview_slide_width <= 0.0f ||
+                 visual::settings.overview_slide_distance <= 0.0f )
+            {
+                qWarning() << "VR overview slide width/distance must be positive and finite";
+                return;
+            }
+            try
+            {
+                auto* s = BaseClass::scene();
+                auto slide = OverviewSlide( image );
+                // Match the current coordinate points without changing normalization.
+                const auto* bounds = m_start_point ? static_cast<const kvs::ObjectBase*>( m_start_point ) :
+                    static_cast<const kvs::ObjectBase*>( s->objectManager() );
+                VisualBounds( slide.get(), bounds->minObjectCoord(), bounds->maxObjectCoord() );
+                auto renderer = std::make_unique<kvs::StochasticTexturedPolygonRenderer>();
+                renderer->disableShading();
+                renderer->setBilinearInterpolation();
+                s->registerObject( slide.get(), renderer.get() );
+                renderer.release();
+                m_overview_slide = slide.release();
+            }
+            catch ( const std::exception& error )
+            {
+                qWarning() << "Cannot create VR overview slide; keeping normal controls:" << error.what();
+                return;
+            }
+        }
+        // Capture this pose once. Subsequent head/controller movement does not update it.
+        m_overview_slide->setXform( m_openxr_screen->walkthrough() * m_openxr_screen->headXform() *
+            kvs::Xform::Translation( kvs::Vec3( 0.0f, 0.0f, -visual::settings.overview_slide_distance ) ) );
+    }
+    m_overview_slide_visible = !m_overview_slide_visible;
+    m_overview_slide->setVisible( m_overview_slide_visible );
+    // Require release/neutral after a transition; never replay held modal inputs.
+    m_wait_for_trigger_release = true;
+    for ( kvs::UInt32 i = 0; i < kvs::Side::Max; ++i ) { m_wait_for_axis_neutral[i] = true; }
+    m_elapsed_timer.start();
 }
 
 /*===========================================================================*/
@@ -538,7 +628,18 @@ void OpenXRInteractor::controllerMoveEvent( kvs::ControllerEvent* e )
         bool pressing = cs.button_status[ops_controller_index][kvs::Controller::Button::Trigger].pressing;
         bool released = cs.button_status[ops_controller_index][kvs::Controller::Button::Trigger].released;
 
-        if ( cs.button_status[kvs::Side::Left][kvs::Controller::Button::Trigger].pressing &&
+        if ( m_wait_for_trigger_release )
+        {
+            bool trigger_held = false;
+            for ( kvs::UInt32 i = 0; i < kvs::Side::Max; ++i )
+            {
+                const auto& trigger = cs.button_status[i][kvs::Controller::Button::Trigger];
+                trigger_held = trigger_held || ( cs.is_active[i] && ( trigger.pressed || trigger.pressing ) );
+            }
+            if ( !trigger_held ) { m_wait_for_trigger_release = false; }
+        }
+        if ( !m_overview_slide_visible && !m_wait_for_trigger_release &&
+            cs.button_status[kvs::Side::Left][kvs::Controller::Button::Trigger].pressing &&
             cs.button_status[kvs::Side::Right][kvs::Controller::Button::Trigger].pressing )
         {
             kvs::Xform left_c = walkthrough_xform * cs.xform[kvs::Side::Left];
@@ -599,8 +700,11 @@ void OpenXRInteractor::controllerMoveEvent( kvs::ControllerEvent* e )
             for ( const auto& annotation : m_controller_annotations[i] )
             {
                 const bool show = annotation.visibility == visual::LabelVisibility::Always ||
-                    ( annotation.visibility == visual::LabelVisibility::GripPressed && grip_pressed ) ||
-                    ( annotation.visibility == visual::LabelVisibility::GripReleased && !grip_pressed );
+                    ( annotation.visibility == visual::LabelVisibility::OverviewOpen && m_overview_slide_visible ) ||
+                    ( !m_overview_slide_visible && (
+                        ( annotation.visibility == visual::LabelVisibility::GripPressed && grip_pressed ) ||
+                        ( annotation.visibility == visual::LabelVisibility::GripReleased && !grip_pressed ) ||
+                        ( annotation.visibility == visual::LabelVisibility::OverviewAvailable && grip_pressed ) ) );
                 annotation.object->setVisible( cs.is_active[i] && show );
                 annotation.object->setXform( visual_xform );
             }
@@ -653,6 +757,15 @@ void OpenXRInteractor::controllerAxisEvent( kvs::ControllerEvent* e )
         for ( kvs::UInt32 i = 0; i < kvs::Side::Max; ++i )
         {
             kvs::Vec2 axis = cs.axis_value[i];
+            if ( m_wait_for_axis_neutral[i] )
+            {
+                if ( !cs.is_active[i] || ( axis.x() == 0.0f && axis.y() == 0.0f ) )
+                {
+                    m_wait_for_axis_neutral[i] = false;
+                }
+                else { continue; }
+            }
+            if ( m_overview_slide_visible ) { continue; }
             if ( ( kvs::Math::Abs( axis.x() ) > 0 || kvs::Math::Abs( axis.y() ) > 0 ) && elapsedTime > 0.0f )
             {
                 kvs::Xform walkthrough_xform = m_openxr_screen->walkthrough();

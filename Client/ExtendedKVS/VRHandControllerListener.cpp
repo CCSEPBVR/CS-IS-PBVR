@@ -16,6 +16,8 @@ void VRHandControllerListener::onEvent( kvs::EventBase* event )
 
     const int type = e->type();
     const auto& cs = e->controllerStatus();
+    auto* interactor = m_screen->openxrInteractor();
+    if ( !interactor ) { return; }
 
     const kvs::UInt32 targets[] = {
         kvs::Controller::Button::B,
@@ -29,6 +31,14 @@ void VRHandControllerListener::onEvent( kvs::EventBase* event )
         for( kvs::UInt32 k = 0; k < 4; ++k )
         {
             const kvs::UInt32 button = targets[k];
+            const bool overview_button = side == kvs::Side::Left && button == kvs::Controller::Button::Y;
+            if ( !cs.is_active[side] || ( interactor->overviewSlideVisible() && !overview_button ) )
+            {
+                // Discard suppressed holds, including their eventual release/long press.
+                m_down[side][button] = false;
+                m_long_fired[side][button] = false;
+                continue;
+            }
 
             const bool pressed_edge  = cs.button_status[side][button].pressed;
             const bool released_edge = cs.button_status[side][button].released;
@@ -56,7 +66,15 @@ void VRHandControllerListener::onEvent( kvs::EventBase* event )
             {
                 if( !m_long_fired[side][button] )
                 {
+                    const bool overview_was_visible = interactor->overviewSlideVisible();
                     handleShortRelease( button, cs, side );
+                    if ( overview_was_visible != interactor->overviewSlideVisible() )
+                    {
+                        // Do not carry any pending button operation across open/close.
+                        m_down = {};
+                        m_long_fired = {};
+                        return;
+                    }
                 }
                 m_down[side][button] = false;
             }
@@ -67,8 +85,9 @@ void VRHandControllerListener::onEvent( kvs::EventBase* event )
 void VRHandControllerListener::handleLongPress( kvs::UInt32 button, const kvs::Controller::ControllerStatus& cs, kvs::UInt32 side )
 {
     Q_UNUSED( cs );
+    // Y long press is disabled, and only left Y short press can close the slide.
+    if ( button == kvs::Controller::Button::Y || m_screen->openxrInteractor()->overviewSlideVisible() ) { return; }
     if( button == kvs::Controller::Button::B )      emit toggleShowHideVRPlotOverLine();
-    else if( button == kvs::Controller::Button::Y ) emit toggleShowHideVRPlotOverTime();
     else if( button == kvs::Controller::Button::X && side == kvs::Side::Left )
     {
         m_screen->resetView();
@@ -78,7 +97,12 @@ void VRHandControllerListener::handleLongPress( kvs::UInt32 button, const kvs::C
 void VRHandControllerListener::handleShortRelease( kvs::UInt32 button, const kvs::Controller::ControllerStatus& cs, kvs::UInt32 side )
 {
     Q_UNUSED( cs );
-    Q_UNUSED( side );
+    if ( button == kvs::Controller::Button::Y )
+    {
+        if ( side == kvs::Side::Left ) { m_screen->openxrInteractor()->toggleOverviewSlide(); }
+        return;
+    }
+    if ( m_screen->openxrInteractor()->overviewSlideVisible() ) { return; }
     // X short press no longer updates or shares a point.
     if( button == kvs::Controller::Button::X ) { return; }
     auto* scene = m_screen->scene();
@@ -99,10 +123,6 @@ void VRHandControllerListener::handleShortRelease( kvs::UInt32 button, const kvs
     if( button == kvs::Controller::Button::B )
     {
         emit drawVRPlotOverLine( coordArray );
-    }
-    else if( button == kvs::Controller::Button::Y )
-    {
-        emit drawVRPlotOverTime( coordArray );
     }
 }
 

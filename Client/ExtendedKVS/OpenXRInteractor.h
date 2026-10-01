@@ -38,6 +38,10 @@ private:
     kvs::LineObject* m_axis_y = nullptr;
     kvs::LineObject* m_axis_z = nullptr;
     kvs::LineObject* m_pointer = nullptr;
+    kvs::TexturedPolygonObject* m_overview_slide = nullptr; // Owned by the scene.
+    bool m_overview_slide_visible = false;
+    bool m_wait_for_trigger_release = false;
+    bool m_wait_for_axis_neutral[kvs::Side::Max] = { false };
     // Scene owns these registered objects, including the hidden coordinate points.
     kvs::TexturedPolygonObject* m_controller_model[kvs::Side::Max] = { nullptr };
     struct ControllerAnnotation
@@ -72,6 +76,9 @@ public:
 
     // Match the existing point bounds so visuals do not change data normalization.
     void setControllerVisualBounds( const kvs::Vec3& min, const kvs::Vec3& max );
+
+    bool overviewSlideVisible() const { return m_overview_slide_visible; }
+    void toggleOverviewSlide();
 
 protected:
     virtual void mousePressEvent( kvs::MouseEvent* e ) {}

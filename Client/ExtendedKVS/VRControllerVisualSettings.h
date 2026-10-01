@@ -53,12 +53,18 @@ struct Settings
     float leader_width_pixels = 2.0f;
     float grip_press_threshold = 0.5f;
 
+    // Overview slide: executable-relative path and physical dimensions.
+    // Its pose is captured once from the HMD when opened (local -Z forward).
+    const char* overview_slide_path = "VRControllerOverviewSlide.png";
+    float overview_slide_distance = 1.0f;
+    float overview_slide_width = 1.0f;
+
     kvs::Vec3 pointer_origin = kvs::Vec3( 0.0f, 0.0f, -0.035f );
     float pointer_length = 0.12f;
     float pointer_width_pixels = 2.0f;
 };
 
-enum class LabelVisibility { Always, GripPressed, GripReleased };
+enum class LabelVisibility { Always, GripPressed, GripReleased, OverviewAvailable, OverviewOpen };
 
 struct Label
 {
@@ -99,7 +105,12 @@ inline const Label left_labels[] = {
       { 0.19f, 0.015f, 0.02f }, { 0.055f, 0.015f, 0.02f }, { -0.011770f, -0.003920f, 0.028340f } },
     // X anchor is approximate; the label uses the vacant outer row.
     { u8"Xボタン（長押し）\n視点リセット",
-      { 0.19f, 0.015f, 0.095f }, { 0.055f, 0.015f, 0.095f }, { -0.013f, 0.006f, 0.018f } }
+      { 0.19f, 0.015f, 0.095f }, { 0.055f, 0.015f, 0.095f }, { -0.013f, 0.006f, 0.018f } },
+    // Y anchor is approximate. Open/close labels occupy the same vacant row.
+    { u8"Yボタン（短押し）\nVR操作方法を表示",
+      { 0.19f, 0.015f, 0.17f }, { 0.055f, 0.015f, 0.17f }, { -0.013f, 0.006f, 0.003f }, LabelVisibility::OverviewAvailable },
+    { u8"Yボタン\n閉じる",
+      { 0.19f, 0.015f, 0.17f }, { 0.055f, 0.015f, 0.17f }, { -0.013f, 0.006f, 0.003f }, LabelVisibility::OverviewOpen }
 };
 
 } } }
