@@ -1423,25 +1423,31 @@ float TransferFunctionSynthesizer::CalculateOpacity(
 
     m_scalars.clear();
 
+    // [重複除去] 変数の補間は local_coord だけに依存するのに、以前は伝達関数
+    // ごとに同じ値を計算し直していた（本関数は粒子1個ごとに呼ばれ、運用点では
+    // 伝達関数 4 本 x 変数 5 個 = 20 回。gradient() はヤコビアンを倍精度で
+    // 組み直すため重い）。伝達関数ループの外に出して 1 変数 1 回にする。
+    // 伝達関数ループ本体は interp[] の状態を変えず、eval() は変数配列を読むだけ
+    // なので、計算する値は従来と同一。
+    size_t nvar = interp.size();
+
+    //id of Q1=4, Q2=8,,,,, Qn=4*n
+    for( size_t j= 0; j < nvar; j++ )
+    {
+        interp[j]->setLocalPoint( local_coord );
+        const vismodule::Vector3f grad = interp[j]->gradient();
+        m_var_value[4*(j+1)  ] = interp[j]->scalar();
+        m_var_value[4*(j+1)+1] = grad.x();
+        m_var_value[4*(j+1)+2] = grad.y();
+        m_var_value[4*(j+1)+3] = grad.z();
+    }
+
     for( size_t i = 0; i < m_opa_var.size(); i++ )
     {
         //set variable eq. ex) Q1+Q2/Q3
         m_rpn.setExpToken( &(m_opa_var[i].exp_token[0]) );
         m_rpn.setVariableName( &(m_opa_var[i].var_name[0]) );
         m_rpn.setNumber( &(m_opa_var[i].val_array[0]) );
-
-        size_t nvar = interp.size();
-
-        //id of Q1=4, Q2=8,,,,, Qn=4*n
-        for( size_t j= 0; j < nvar; j++ )
-        {
-            interp[j]->setLocalPoint( local_coord );
-            const vismodule::Vector3f grad = interp[j]->gradient();
-            m_var_value[4*(j+1)  ] = interp[j]->scalar();
-            m_var_value[4*(j+1)+1] = grad.x();
-            m_var_value[4*(j+1)+2] = grad.y();
-            m_var_value[4*(j+1)+3] = grad.z();
-        }
 
         m_rpn.setVariableValue( &m_var_value[0] );
 
@@ -2405,29 +2411,57 @@ void TransferFunctionSynthesizer::CalculateColorArray(
 
     //float eval_result[loop_cnt];
 
-    float** scalar_array = new float* [interp.size()];
-    for (int i = 0; i < interp.size(); ++i)
+    // [スクラッチ化] 以前は呼び出しごとに new[] し、末尾で delete[] していた。
+    // 本関数は粒子ブロックごとに呼ばれるため確保と解放の回数が莫大になる
+    // （1回の呼び出しで 41 回。変数5・伝達関数4本の場合）。
+    // thread_local にしてスレッドごとに使い回す。伸ばすだけで縮めない。
+    // ヘッダを変えないのは、クラスのレイアウト変更が他の翻訳単位との不整合を
+    // 招くのを避けるため。CalculateOpacityArray と同じ対応。
+    static thread_local std::vector< std::vector<float> > sc_col_var;   // [4*nvar][n]
+    static thread_local std::vector< std::vector<float> > sc_col_map;   // [nmap][n] color_array
+    static thread_local std::vector< std::vector<vismodule::RGBColor> > sc_col_rgb; // [nmap][n]
+    static thread_local std::vector<float>  sc_col_1d;                  // [7*n]
+    static thread_local std::vector<float*> sc_col_pvar;
+    static thread_local std::vector<float*> sc_col_pmap;
+    static thread_local std::vector<vismodule::RGBColor*> sc_col_prgb;
+
+    const std::size_t nvar_scr = interp.size();
+    const std::size_t nmap_scr = m_col_var.size();
+    const std::size_t un_scr   = static_cast<std::size_t>( loop_cnt );
+    const std::size_t nv_scr   = 4 * nvar_scr;   // scalar, grad_x, grad_y, grad_z
+
+    if ( sc_col_var.size() < nv_scr )
     {
-        scalar_array[i] = new float[loop_cnt];
+        sc_col_var.resize( nv_scr );
+        sc_col_pvar.resize( nv_scr );
+    }
+    for ( std::size_t i = 0; i < nv_scr; i++ )
+    {
+        if ( sc_col_var[i].size() < un_scr ) sc_col_var[i].resize( un_scr );
+        sc_col_pvar[i] = sc_col_var[i].data();
     }
 
-    float** grad_array_x = new float* [interp.size()];
-    for (int i = 0; i < interp.size(); ++i)
+    if ( sc_col_map.size() < nmap_scr )
     {
-        grad_array_x[i] = new float[loop_cnt];
+        sc_col_map.resize( nmap_scr );
+        sc_col_rgb.resize( nmap_scr );
+        sc_col_pmap.resize( nmap_scr );
+        sc_col_prgb.resize( nmap_scr );
+    }
+    for ( std::size_t i = 0; i < nmap_scr; i++ )
+    {
+        if ( sc_col_map[i].size() < un_scr ) sc_col_map[i].resize( un_scr );
+        if ( sc_col_rgb[i].size() < un_scr ) sc_col_rgb[i].resize( un_scr );
+        sc_col_pmap[i] = sc_col_map[i].data();
+        sc_col_prgb[i] = sc_col_rgb[i].data();
     }
 
-    float** grad_array_y = new float* [interp.size()];
-    for (int i = 0; i < interp.size(); ++i)
-    {
-        grad_array_y[i] = new float[loop_cnt];
-    }
+    if ( sc_col_1d.size() < 7 * un_scr ) sc_col_1d.resize( 7 * un_scr );
 
-    float** grad_array_z = new float* [interp.size()];
-    for (int i = 0; i < interp.size(); ++i)
-    {
-        grad_array_z[i] = new float[loop_cnt];
-    }
+    float** scalar_array = sc_col_pvar.data();
+    float** grad_array_x = sc_col_pvar.data() + nvar_scr;
+    float** grad_array_y = sc_col_pvar.data() + 2 * nvar_scr;
+    float** grad_array_z = sc_col_pvar.data() + 3 * nvar_scr;
 
 //    float* local_coord_x;
 //    local_coord_x = new float[loop_cnt];
@@ -2438,17 +2472,10 @@ void TransferFunctionSynthesizer::CalculateColorArray(
 //    float* local_coord_z;
 //    local_coord_z = new float[loop_cnt];
 
-    float* global_coord_x;
-    global_coord_x = new float[loop_cnt];
-
-    float* global_coord_y;
-    global_coord_y = new float[loop_cnt];
-
-    float* global_coord_z;
-    global_coord_z = new float[loop_cnt];
-
-    float* eval_result;
-    eval_result = new float[loop_cnt];
+    float*  global_coord_x = sc_col_1d.data();
+    float*  global_coord_y = sc_col_1d.data() + un_scr;
+    float*  global_coord_z = sc_col_1d.data() + 2 * un_scr;
+    float*  eval_result    = sc_col_1d.data() + 3 * un_scr;
 
     for (int jx = 0; jx < loop_cnt; jx++)
     {
@@ -2462,23 +2489,112 @@ void TransferFunctionSynthesizer::CalculateColorArray(
 
     size_t nvar = interp.size();
 
-    for( size_t j= 0; j < nvar; j++ )
+    // [参照判定] 色の数式が参照しない変数は補間も勾配も要らない。
+    // CalcScalarGrad は scalar_ary + grad_ary なので、勾配が不要なら前者だけで済む。
+    // 変数 ID の符号化は FunctionParser/Token.h のとおり
+    // （Q<n>=4n / DQ<n>X,Y,Z=4n+1,+2,+3 / C<i>=VAR_OFFSET_C+(i-1)）で、
+    // m_var_value_array[4*(j+1)+k] の添字と一致する。
+    // トークン列が変わったら作り直す（伝達関数の数の変化も拾う）。
+    static thread_local std::vector<bool> sc_col_use_scalar;
+    static thread_local std::vector<bool> sc_col_use_grad;
+    static thread_local std::vector<bool> sc_col_use_tf;
+    static thread_local std::vector<int>  sc_col_sig;
+
     {
-        interp[j]->setLocalPointArray( loop_cnt,
-                                       local_coord );
-        interp[j]->CalcScalarGrad( loop_cnt,
-                                   scalar_array[j],
-                                   grad_array_x[j],
-                                   grad_array_y[j],
-                                   grad_array_z[j] );
+        std::vector<int> sig;
+        sig.push_back( static_cast<int>( nvar_scr ) );
+        for ( int t = 0; t < 128 && m_col_func.exp_token[t] != END; t++ )
+        {
+            sig.push_back( m_col_func.exp_token[t] );
+            sig.push_back( m_col_func.var_name[t] );
+        }
+        for ( std::size_t i = 0; i < nmap_scr; i++ )
+        {
+            sig.push_back( -1 );
+            for ( int t = 0; t < 128 && m_col_var[i].exp_token[t] != END; t++ )
+            {
+                sig.push_back( m_col_var[i].exp_token[t] );
+                sig.push_back( m_col_var[i].var_name[t] );
+            }
+        }
+        if ( sig != sc_col_sig )
+        {
+            sc_col_sig = sig;
+            sc_col_use_scalar.assign( nvar_scr, false );
+            sc_col_use_grad.assign( nvar_scr, false );
+            sc_col_use_tf.assign( nmap_scr, false );
+
+            // 合成式が参照する伝達関数 C<i> を集める
+            {
+                const int* expr = &( m_col_func.exp_token[0] );
+                const int* name = &( m_col_func.var_name[0] );
+                while ( *expr != END )
+                {
+                    if ( *expr == VARIABLE )
+                    {
+                        const int v = *name;
+                        if ( v >= VAR_OFFSET_C && v < VAR_OFFSET_A )
+                        {
+                            const std::size_t i = static_cast<std::size_t>( v - VAR_OFFSET_C );
+                            if ( i < sc_col_use_tf.size() ) sc_col_use_tf[i] = true;
+                        }
+                        name++;
+                    }
+                    expr++;
+                }
+            }
+            // 使う伝達関数が参照する Q<n> / DQ<n>* を集める
+            for ( std::size_t i = 0; i < nmap_scr; i++ )
+            {
+                if ( !sc_col_use_tf[i] ) continue;
+                const int* expr = &( m_col_var[i].exp_token[0] );
+                const int* name = &( m_col_var[i].var_name[0] );
+                while ( *expr != END )
+                {
+                    if ( *expr == VARIABLE )
+                    {
+                        const int v = *name;
+                        if ( v >= Q1 && v < VAR_OFFSET_C )
+                        {
+                            const std::size_t j = static_cast<std::size_t>( v / 4 ) - 1;
+                            if ( j < nvar_scr )
+                            {
+                                if ( v % 4 == 0 ) sc_col_use_scalar[j] = true;
+                                else               sc_col_use_grad[j]   = true;
+                            }
+                        }
+                        name++;
+                    }
+                    expr++;
+                }
+            }
+        }
     }
 
-    //vismodule::RGBColor colors[10][loop_cnt]; //result of t_func.colorMap().at( m_scalars[i] );
-    vismodule::RGBColor** colors = new vismodule::RGBColor* [m_col_var.size()];
-    for( size_t i = 0; i < m_col_var.size(); i++ )
+    for( size_t j= 0; j < nvar; j++ )
     {
-        colors[i] = new vismodule::RGBColor[loop_cnt];
+        const bool need_s = sc_col_use_scalar[j];
+        const bool need_g = sc_col_use_grad[j];
+        if ( !need_s && !need_g ) continue;
+
+        interp[j]->setLocalPointArray( loop_cnt,
+                                       local_coord );
+        if ( need_g )
+        {
+            interp[j]->CalcScalarGrad( loop_cnt,
+                                       scalar_array[j],
+                                       grad_array_x[j],
+                                       grad_array_y[j],
+                                       grad_array_z[j] );
+        }
+        else
+        {
+            interp[j]->scalar_ary( scalar_array[j], loop_cnt );
+        }
     }
+
+    //result of t_func.colorMap().at( m_scalars[i] )
+    vismodule::RGBColor** colors = sc_col_prgb.data();
 
     m_var_value_array[X] = global_coord_x;
     m_var_value_array[Y] = global_coord_y;
@@ -2486,6 +2602,10 @@ void TransferFunctionSynthesizer::CalculateColorArray(
 
     for( size_t i = 0; i < m_col_var.size(); i++ )
     {
+        // [参照判定] 合成式が参照しない伝達関数は評価しても捨てられる。
+        // 対応する C<i> は合成式が読まないので、下の RED/GREEN/BLUE でポインタ
+        // だけ入れておけばよい（スクラッチなので中身は前回の値が残るだけ）。
+        if ( !sc_col_use_tf[i] ) continue;
         //set variable eq. ex) Q1+Q2/Q3
         m_rpn.setExpToken( &(m_col_var[i].exp_token[0]) );
         m_rpn.setVariableName( &(m_col_var[i].var_name[0]) );
@@ -2518,26 +2638,19 @@ void TransferFunctionSynthesizer::CalculateColorArray(
     //float green_array[loop_cnt];
     //float blue_array[loop_cnt];
 
-    float** color_array = new float* [m_col_var.size()];
-    for (int i = 0; i < m_col_var.size(); ++i)
-    {
-        color_array[i] = new float[loop_cnt];
-    }
-
-    float* red_array;
-    red_array = new float[loop_cnt];
-
-    float* green_array;
-    green_array = new float[loop_cnt];
-
-    float* blue_array;
-    blue_array = new float[loop_cnt];
+    float** color_array = sc_col_pmap.data();
+    float*  red_array   = sc_col_1d.data() + 4 * un_scr;
+    float*  green_array = sc_col_1d.data() + 5 * un_scr;
+    float*  blue_array  = sc_col_1d.data() + 6 * un_scr;
 
     //RED
     for( size_t i = 0; i < m_col_var.size(); i++ )
     {
-        for( int jx=0; jx<loop_cnt; jx++ ){
-            color_array[i][jx] = (float)colors[i][jx].r() / 255.0;
+        if ( sc_col_use_tf[i] )
+        {
+            for( int jx=0; jx<loop_cnt; jx++ ){
+                color_array[i][jx] = (float)colors[i][jx].r() / 255.0;
+            }
         }
         m_var_value_array[ VAR_OFFSET_C+i ] = &color_array[i][0];
     }
@@ -2552,8 +2665,11 @@ void TransferFunctionSynthesizer::CalculateColorArray(
     //GREEN
     for( size_t i = 0; i < m_col_var.size(); i++ )
     {
-        for( int jx=0; jx<loop_cnt; jx++ ){
-            color_array[i][jx] = (float)colors[i][jx].g() / 255.0;
+        if ( sc_col_use_tf[i] )
+        {
+            for( int jx=0; jx<loop_cnt; jx++ ){
+                color_array[i][jx] = (float)colors[i][jx].g() / 255.0;
+            }
         }
         m_var_value_array[ VAR_OFFSET_C+i ] = &color_array[i][0];
     }
@@ -2568,8 +2684,11 @@ void TransferFunctionSynthesizer::CalculateColorArray(
     //BLUE
     for( size_t i = 0; i < m_col_var.size(); i++ )
     {
-        for( int jx=0; jx<loop_cnt; jx++ ){
-            color_array[i][jx] = (float)colors[i][jx].b() / 255.0;
+        if ( sc_col_use_tf[i] )
+        {
+            for( int jx=0; jx<loop_cnt; jx++ ){
+                color_array[i][jx] = (float)colors[i][jx].b() / 255.0;
+            }
         }
         m_var_value_array[ VAR_OFFSET_C+i ] = &color_array[i][0];
     }
@@ -2589,58 +2708,7 @@ void TransferFunctionSynthesizer::CalculateColorArray(
             (vismodule::UInt8)(blue_array[jx] * 255) );
     }
 
-    //配列を削除
-    for (int i = 0; i < interp.size(); ++i)
-    {
-        delete[] scalar_array[i];
-    }
-    delete[] scalar_array;
-    scalar_array = nullptr;
-
-    for (int i = 0; i < interp.size(); ++i)
-    {
-        delete[] grad_array_x[i];
-    }
-    delete[] grad_array_x;
-    grad_array_x = nullptr;
-
-    for (int i = 0; i < interp.size(); ++i)
-    {
-        delete[] grad_array_y[i];
-    }
-    delete[] grad_array_y;
-    grad_array_y = nullptr;
-
-    for (int i = 0; i < interp.size(); ++i)
-    {
-        delete[] grad_array_z[i];
-    }
-    delete[] grad_array_z;
-    grad_array_z = nullptr;
-
-    delete[] global_coord_x;
-    delete[] global_coord_y;
-    delete[] global_coord_z;
-
-    delete[] eval_result;
-
-    for (int i = 0; i < m_col_var.size(); ++i)
-    {
-        delete[] colors[i];
-    }
-    delete[] colors;
-    colors = nullptr;
-
-    for (int i = 0; i < m_col_var.size(); ++i)
-    {
-        delete[] color_array[i];
-    }
-    delete[] color_array;
-    color_array = nullptr;
-
-    delete[] red_array;
-    delete[] green_array;
-    delete[] blue_array;
+    // [スクラッチ化] 解放は不要（thread_local の配列を使い回す）。
 }
 
 void TransferFunctionSynthesizer::AssertValid( const float& v, const char* file, const int line )
