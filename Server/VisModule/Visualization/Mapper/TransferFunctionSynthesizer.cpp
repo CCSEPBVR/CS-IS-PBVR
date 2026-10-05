@@ -1992,47 +1992,57 @@ void TransferFunctionSynthesizer::CalculateOpacityArray(
 
     //float opacity_map_array[m_opa_var.size()][loop_cnt];
 
-    float** scalar_array = new float* [interp.size()];
-    for (int i = 0; i < interp.size(); ++i)
+    // [スクラッチ化] 以前は呼び出しごとに new[] し、末尾で delete[] していた。
+    // 本関数は粒子ブロックごとに呼ばれるため確保と解放の回数が莫大になる
+    // （実測: 呼び出し180万回 x 各29回 = 延べ約1億回。関数内時間の19%）。
+    // thread_local にしてスレッドごとに使い回す。伸ばすだけで縮めない。
+    // ヘッダを変えないのは、VisModule の Makefile がヘッダ依存を追跡しない
+    // （.d を作らない）ため、クラスのレイアウト変更が他の翻訳単位との
+    // 不整合を招くのを避けるため。
+    static thread_local std::vector< std::vector<float> > sc_opa_var;   // [4*nvar][n]
+    static thread_local std::vector< std::vector<float> > sc_opa_map;   // [nmap][n]
+    static thread_local std::vector<float>  sc_opa_1d;                  // [4*n]
+    static thread_local std::vector<float*> sc_opa_pvar;
+    static thread_local std::vector<float*> sc_opa_pmap;
+
+    const std::size_t nvar_scr = interp.size();
+    const std::size_t nmap_scr = m_opa_var.size();
+    const std::size_t un_scr   = static_cast<std::size_t>( loop_cnt );
+    const std::size_t nv_scr   = 4 * nvar_scr;   // scalar, grad_x, grad_y, grad_z
+
+    if ( sc_opa_var.size() < nv_scr )
     {
-        scalar_array[i] = new float[loop_cnt];
+        sc_opa_var.resize( nv_scr );
+        sc_opa_pvar.resize( nv_scr );
+    }
+    for ( std::size_t i = 0; i < nv_scr; i++ )
+    {
+        if ( sc_opa_var[i].size() < un_scr ) sc_opa_var[i].resize( un_scr );
+        sc_opa_pvar[i] = sc_opa_var[i].data();
     }
 
-    float** grad_array_x = new float* [interp.size()];
-    for (int i = 0; i < interp.size(); ++i)
+    if ( sc_opa_map.size() < nmap_scr )
     {
-        grad_array_x[i] = new float[loop_cnt];
+        sc_opa_map.resize( nmap_scr );
+        sc_opa_pmap.resize( nmap_scr );
+    }
+    for ( std::size_t i = 0; i < nmap_scr; i++ )
+    {
+        if ( sc_opa_map[i].size() < un_scr ) sc_opa_map[i].resize( un_scr );
+        sc_opa_pmap[i] = sc_opa_map[i].data();
     }
 
-    float** grad_array_y = new float* [interp.size()];
-    for (int i = 0; i < interp.size(); ++i)
-    {
-        grad_array_y[i] = new float[loop_cnt];
-    }
+    if ( sc_opa_1d.size() < 4 * un_scr ) sc_opa_1d.resize( 4 * un_scr );
 
-    float** grad_array_z = new float* [interp.size()];
-    for (int i = 0; i < interp.size(); ++i)
-    {
-        grad_array_z[i] = new float[loop_cnt];
-    }
-
-    float* global_coord_x;
-    global_coord_x = new float[loop_cnt];
-
-    float* global_coord_y;
-    global_coord_y = new float[loop_cnt];
-
-    float* global_coord_z;
-    global_coord_z = new float[loop_cnt];
-
-    float* eval_result;
-    eval_result = new float[loop_cnt];
-
-    float** opacity_map_array = new float* [m_opa_var.size()];
-    for (int i = 0; i < m_opa_var.size(); ++i)
-    {
-        opacity_map_array[i] = new float[loop_cnt];
-    }
+    float** scalar_array = sc_opa_pvar.data();
+    float** grad_array_x = sc_opa_pvar.data() + nvar_scr;
+    float** grad_array_y = sc_opa_pvar.data() + 2 * nvar_scr;
+    float** grad_array_z = sc_opa_pvar.data() + 3 * nvar_scr;
+    float*  global_coord_x = sc_opa_1d.data();
+    float*  global_coord_y = sc_opa_1d.data() + un_scr;
+    float*  global_coord_z = sc_opa_1d.data() + 2 * un_scr;
+    float*  eval_result    = sc_opa_1d.data() + 3 * un_scr;
+    float** opacity_map_array = sc_opa_pmap.data();
 
     for (int i = 0; i < loop_cnt; i++)
     {
@@ -2046,16 +2056,111 @@ void TransferFunctionSynthesizer::CalculateOpacityArray(
 
     size_t nvar = interp.size();
 
+    // [参照判定] 数式が参照しない変数は補間も勾配も要らない。
+    // CalcScalarGrad は grad_ary でヤコビアンを組むため重く、実測では全変数ぶんの
+    // この呼び出しが関数内時間の67%を占めていた。既定の設定では合成式が O1
+    // (= A1 のみ)で TF1 が参照するのは q1 だけなので、大半が捨てられていた。
+    // 変数 ID の符号化は FunctionParser/Token.h のとおり
+    // （X=1,Y=2,Z=3 / Q<n>=4n / DQ<n>X,Y,Z=4n+1,+2,+3 / A<i>=VAR_OFFSET_A+(i-1)）で、
+    // m_var_value_array[4*(j+1)+k] の添字と一致する。
+    // トークン列が変わったら作り直す（伝達関数の数の変化も拾う）。
+    static thread_local std::vector<bool> sc_opa_use_scalar;
+    static thread_local std::vector<bool> sc_opa_use_grad;
+    static thread_local std::vector<bool> sc_opa_use_tf;
+    static thread_local std::vector<int>  sc_opa_sig;
+
+    {
+        std::vector<int> sig;
+        sig.push_back( static_cast<int>( nvar_scr ) );
+        for ( int t = 0; t < 128 && m_opa_func.exp_token[t] != END; t++ )
+        {
+            sig.push_back( m_opa_func.exp_token[t] );
+            sig.push_back( m_opa_func.var_name[t] );
+        }
+        for ( std::size_t i = 0; i < nmap_scr; i++ )
+        {
+            sig.push_back( -1 );
+            for ( int t = 0; t < 128 && m_opa_var[i].exp_token[t] != END; t++ )
+            {
+                sig.push_back( m_opa_var[i].exp_token[t] );
+                sig.push_back( m_opa_var[i].var_name[t] );
+            }
+        }
+        if ( sig != sc_opa_sig )
+        {
+            sc_opa_sig = sig;
+            sc_opa_use_scalar.assign( nvar_scr, false );
+            sc_opa_use_grad.assign( nvar_scr, false );
+            sc_opa_use_tf.assign( nmap_scr, false );
+
+            // 合成式が参照する伝達関数 A<i> を集める
+            {
+                const int* expr = &( m_opa_func.exp_token[0] );
+                const int* name = &( m_opa_func.var_name[0] );
+                while ( *expr != END )
+                {
+                    if ( *expr == VARIABLE )
+                    {
+                        const int v = *name;
+                        if ( v >= VAR_OFFSET_A )
+                        {
+                            const std::size_t i = static_cast<std::size_t>( v - VAR_OFFSET_A );
+                            if ( i < sc_opa_use_tf.size() ) sc_opa_use_tf[i] = true;
+                        }
+                        name++;
+                    }
+                    expr++;
+                }
+            }
+            // 使う伝達関数が参照する Q<n> / DQ<n>* を集める
+            for ( std::size_t i = 0; i < nmap_scr; i++ )
+            {
+                if ( !sc_opa_use_tf[i] ) continue;
+                const int* expr = &( m_opa_var[i].exp_token[0] );
+                const int* name = &( m_opa_var[i].var_name[0] );
+                while ( *expr != END )
+                {
+                    if ( *expr == VARIABLE )
+                    {
+                        const int v = *name;
+                        if ( v >= Q1 && v < VAR_OFFSET_A )
+                        {
+                            const std::size_t j = static_cast<std::size_t>( v / 4 ) - 1;
+                            if ( j < nvar_scr )
+                            {
+                                if ( v % 4 == 0 ) sc_opa_use_scalar[j] = true;
+                                else               sc_opa_use_grad[j]   = true;
+                            }
+                        }
+                        name++;
+                    }
+                    expr++;
+                }
+            }
+        }
+    }
+
     //bindCell, setLocalPoint, gradient, scalar をまとめてこの関数内部でSIMD化
     for( size_t j= 0; j < nvar; j++ )
     {
+        const bool need_s = sc_opa_use_scalar[j];
+        const bool need_g = sc_opa_use_grad[j];
+        if ( !need_s && !need_g ) continue;
+
         interp[j]->setLocalPointArray( loop_cnt,
                                        local_coord );
-        interp[j]->CalcScalarGrad( loop_cnt,
-                                   scalar_array[j],
-                                   grad_array_x[j],
-                                   grad_array_y[j],
-                                   grad_array_z[j] );
+        if ( need_g )
+        {
+            interp[j]->CalcScalarGrad( loop_cnt,
+                                       scalar_array[j],
+                                       grad_array_x[j],
+                                       grad_array_y[j],
+                                       grad_array_z[j] );
+        }
+        else
+        {
+            interp[j]->scalar_ary( scalar_array[j], loop_cnt );
+        }
     }
 
     m_var_value_array[X] = global_coord_x;
@@ -2064,6 +2169,13 @@ void TransferFunctionSynthesizer::CalculateOpacityArray(
 
     for( size_t i = 0; i < m_opa_var.size(); i++ )
     {
+        // [参照判定] 合成式が参照しない伝達関数は評価しても捨てられる。
+        // 飛ばす場合もポインタはスクラッチへ向けておく（古い値を残さない）。
+        if ( !sc_opa_use_tf[i] )
+        {
+            m_var_value_array[ VAR_OFFSET_A+i ] = &opacity_map_array[i][0];
+            continue;
+        }
         //set variable eq. ex) Q1+Q2/Q3
         m_rpn.setExpToken( &(m_opa_var[i].exp_token[0]) );
         m_rpn.setVariableName( &(m_opa_var[i].var_name[0]) );
@@ -2121,47 +2233,7 @@ void TransferFunctionSynthesizer::CalculateOpacityArray(
     {
         opacity_array[jx] = vismodule::Math::Clamp<float>( eval_result[jx], 0.0, 1.0 );
     }
-    //配列の削除
-    for (int i = 0; i < interp.size(); ++i)
-    {
-        delete[] scalar_array[i];
-    }
-    delete[] scalar_array;
-    scalar_array = nullptr; 
-
-    for (int i = 0; i < interp.size(); ++i)
-    {
-        delete[] grad_array_x[i];
-    }
-    delete[] grad_array_x;
-    grad_array_x = nullptr; 
-
-    for (int i = 0; i < interp.size(); ++i)
-    {
-        delete[] grad_array_y[i];
-    }
-    delete[] grad_array_y;
-    grad_array_y = nullptr; 
-
-    for (int i = 0; i < interp.size(); ++i)
-    {
-        delete[] grad_array_z[i];
-    }
-    delete[] grad_array_z;
-    grad_array_z = nullptr; 
-
-    delete[] global_coord_x;
-    delete[] global_coord_y;
-    delete[] global_coord_z;
-
-    delete[] eval_result;
-
-    for (int i = 0; i < m_opa_var.size(); ++i)
-    {
-        delete[] opacity_map_array[i];
-    }
-    delete[] opacity_map_array;
-    opacity_map_array = nullptr; 
+    // [スクラッチ化] 解放は不要（thread_local の配列を使い回す）。
 }
 
 ////kawamura
