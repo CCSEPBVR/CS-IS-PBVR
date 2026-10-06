@@ -1155,6 +1155,12 @@ void CellByCellUniformSampling::generate_particles_unstruct(
     // 方式C は節点で不透明度を評価して場を作り、粒子では補間1回＋勾配1回で済ませる。
     // node_F は補間器が参照し続けるので、補間器より長生きするスコープに置く。
     vismodule::NormalMethod normal_method = vismodule::ResolveNormalMethod();
+    if ( mpi_rank == 0 && normal_method != vismodule::NormalMethodNodeField )
+    {
+        // 既定は方式C なので、座標差分法になったときは理由が分かるように出す。
+        std::cout << "[PBVR] 法線計算: " << vismodule::NormalMethodName( normal_method )
+                  << "（PBVR_NORMAL_METHOD の指定による）" << std::endl;
+    }
     double t_prep_dq = 0.0, t_prep_F = 0.0;   // 前処理の内訳（毎ステップ1回なので常時計測）
     std::vector<Type> node_F;
     std::vector<vismodule::CellBase<Type>*> cell_F( max_threads, NULL );
@@ -1193,8 +1199,9 @@ void CellByCellUniformSampling::generate_particles_unstruct(
         }
         const double t2 = GetTime();
         // GetTime() はミリ秒を返す（timer_simple.h）ので秒に直す。
-        t_prep_dq = ( t1 - t0 ) * 1.0e-3;   // 節点微分量の復元（セル数に比例）
-        t_prep_F  = ( t2 - t1 ) * 1.0e-3;   // 節点F場の構築（節点数に比例）
+        // 復元を飛ばした場合は同一時刻の差になり丸めで負になるのでクランプする。
+        t_prep_dq = ( t1 > t0 ) ? ( t1 - t0 ) * 1.0e-3 : 0.0;   // 復元（セル数に比例）
+        t_prep_F  = ( t2 > t1 ) ? ( t2 - t1 ) * 1.0e-3 : 0.0;   // 節点F場（節点数に比例）
         // 節点F場が出来た時点で微分量は不要。ピークメモリを抑えるため解放する。
         std::vector<float>().swap( node_dq );
 

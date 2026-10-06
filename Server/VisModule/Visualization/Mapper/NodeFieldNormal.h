@@ -41,12 +41,14 @@ namespace vismodule
 enum NormalMethod
 {
     NormalMethodCoordDiff = 0,
-    NormalMethodNodeField = 1
+    NormalMethodNodeField = 1   // 既定
 };
 
-/*  環境変数 PBVR_NORMAL_METHOD から方式を読む。既定は現行方式。
- *      coorddiff (既定) / nodefield
- */
+/*  環境変数 PBVR_NORMAL_METHOD から方式を読む。既定は方式C。
+ *      nodefield (既定) / coorddiff
+ *
+ *  方式C が使えない場合（対応外のセル種・節点局所座標表の検査失敗・節点場の構築失敗）は
+ *  呼び出し側が coorddiff へ退避する。 */
 NormalMethod ResolveNormalMethod();
 const char*  NormalMethodName( const NormalMethod method );
 

@@ -205,12 +205,12 @@ namespace vismodule
 NormalMethod ResolveNormalMethod()
 {
     const char* e = std::getenv( "PBVR_NORMAL_METHOD" );
-    if ( e == NULL || e[0] == '\0' )              return NormalMethodCoordDiff;
+    if ( e == NULL || e[0] == '\0' )              return NormalMethodNodeField;
     if ( std::strcmp( e, "coorddiff" ) == 0 )     return NormalMethodCoordDiff;
     if ( std::strcmp( e, "nodefield" ) == 0 )     return NormalMethodNodeField;
     std::cerr << "PBVR_NORMAL_METHOD: unknown value '" << e
-              << "' (expected coorddiff|nodefield). Using coorddiff." << std::endl;
-    return NormalMethodCoordDiff;
+              << "' (expected coorddiff|nodefield). Using nodefield." << std::endl;
+    return NormalMethodNodeField;
 }
 
 const char* NormalMethodName( const NormalMethod method )
