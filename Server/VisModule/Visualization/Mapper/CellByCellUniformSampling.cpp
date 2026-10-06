@@ -53,6 +53,9 @@
 #define SIMDW 128
 #endif
 
+#include <cmath>
+#include "NodeFieldNormal.h"   // 方式C（節点F場法）
+
 #ifdef _OPENMP
 #  include <omp.h>
 #endif // _OPENMP
@@ -1147,6 +1150,77 @@ void CellByCellUniformSampling::generate_particles_unstruct(
 
     int particles_process_limit = static_cast<int>((particle_data_size_limit * 10E6) / (sizeof( float ) + sizeof( Byte ) + sizeof( float )));
 
+    // [方式C] 節点F場を1回だけ作り、スレッドごとに補間器を用意する。
+    // 法線は -grad(不透明度)。現行方式は粒子ごとに ±eps で 7 点評価して差分を取るが、
+    // 方式C は節点で不透明度を評価して場を作り、粒子では補間1回＋勾配1回で済ませる。
+    // node_F は補間器が参照し続けるので、補間器より長生きするスコープに置く。
+    vismodule::NormalMethod normal_method = vismodule::ResolveNormalMethod();
+    double t_prep_dq = 0.0, t_prep_F = 0.0;   // 前処理の内訳（毎ステップ1回なので常時計測）
+    std::vector<Type> node_F;
+    std::vector<vismodule::CellBase<Type>*> cell_F( max_threads, NULL );
+    if ( normal_method == vismodule::NormalMethodNodeField )
+    {
+        bool built = true;
+        // 節点局所座標の表を実行時に検査する。対応外のセル種や写し間違いはここで落ちる。
+        if ( !vismodule::VerifyNodeLocalCoords( cellType, interp[0][0], coordinates, connections ) )
+        {
+            std::cerr << "[方式C] 節点局所座標の検査に失敗した。座標差分法へ退避する。" << std::endl;
+            built = false;
+        }
+
+        // 微分量(dq)を含む数式のときだけ節点微分量を復元する（セル数に比例して重い）。
+        const vismodule::NodeDqUsage dq_usage = vismodule::CollectNodeDqUsage(
+            m_transfer_function_synthesizer->opacityVariable(), nvariables );
+        std::vector<float> node_dq;
+        const double t0 = GetTime();
+        if ( built && dq_usage.any() &&
+             !vismodule::BuildNodeDqField( cellType, interp[0], nvariables, dq_usage,
+                                           coordinates, ncoords, connections, ncells, node_dq ) )
+        {
+            std::cerr << "[方式C] 節点微分量の復元に失敗した。座標差分法へ退避する。" << std::endl;
+            built = false;
+        }
+        const double t1 = GetTime();
+        if ( built &&
+             !vismodule::BuildNodeOpacityField( m_transfer_function_synthesizer,
+                                                m_transfer_function_array,
+                                                values, nvariables, coordinates, ncoords,
+                                                dq_usage.any() ? &node_dq : NULL, dq_usage,
+                                                node_F ) )
+        {
+            std::cerr << "[方式C] 節点F場の構築に失敗した。座標差分法へ退避する。" << std::endl;
+            built = false;
+        }
+        const double t2 = GetTime();
+        // GetTime() はミリ秒を返す（timer_simple.h）ので秒に直す。
+        t_prep_dq = ( t1 - t0 ) * 1.0e-3;   // 節点微分量の復元（セル数に比例）
+        t_prep_F  = ( t2 - t1 ) * 1.0e-3;   // 節点F場の構築（節点数に比例）
+        // 節点F場が出来た時点で微分量は不要。ピークメモリを抑えるため解放する。
+        std::vector<float>().swap( node_dq );
+
+        if ( !built )
+        {
+            normal_method = vismodule::NormalMethodCoordDiff;
+        }
+        else
+        {
+            for ( int t = 0; t < max_threads; t++ )
+            {
+                cell_F[t] = vismodule::CreateCellForCelltype(
+                    cellType, &node_F[0], coordinates, ncoords, connections, ncells );
+                if ( cell_F[t] == NULL ) normal_method = vismodule::NormalMethodCoordDiff;
+            }
+        }
+        if ( mpi_rank == 0 )
+        {
+            std::cout << "[PBVR] 法線計算: " << vismodule::NormalMethodName( normal_method )
+                      << "  微分量を使う変数=" << dq_usage.var_index.size()
+                      << "  セル数=" << ncells << " 節点数=" << ncoords << std::endl;
+            std::cout << "[PBVR]   前処理: 節点微分量の復元=" << t_prep_dq
+                      << "秒 節点F場の構築=" << t_prep_F << "秒" << std::endl;
+        }
+    }
+
     CoordSynthesizerStrings css;
     if ( m_coord_synthesizer_strings ) 
     {
@@ -1405,6 +1479,19 @@ void CellByCellUniformSampling::generate_particles_unstruct(
                         interp[thid][j]->bindCellArray( nparticles_count, cell_index );
                     }
 
+                    if ( normal_method == vismodule::NormalMethodNodeField )
+                    {
+                        // [方式C] 節点F場を1回補間して勾配を取る。grad_ary() が J^-1 を
+                        // 適用するので、ここで得る勾配は物理座標系の量である
+                        // （座標差分法の側は局所座標の差分なので、下で J^-1 を掛けている）。
+                        vismodule::CalculateScalarAndGradNodeField(
+                            nparticles_count, cell_F[thid],
+                            local_coord_array, cell_index,
+                            S_plus_opacity,                      // F の値（ここでは使わない）
+                            dsdx_array, dsdy_array, dsdz_array );
+                    }
+                    else
+                    {
                     // dsdx ----------------------------------------
                     for( int j = 0; j < nparticles_count; j++ )
                     {
@@ -1532,7 +1619,23 @@ void CellByCellUniformSampling::generate_particles_unstruct(
                         dsdz_array[j] = ( S_plus_opacity[j] - S_minus_opacity[j] ) * 5.0;
                     }
 
+                    } // end of 座標差分法
+
                     // grad_arrayの算出
+                    if ( normal_method == vismodule::NormalMethodNodeField )
+                    {
+                        // [方式C] 既に物理座標系の勾配なので符号を返すだけ。
+                        for( int j = 0; j < nparticles_count; j++ )
+                        {
+                            const bool finite = std::isfinite( dsdx_array[j] )
+                                             && std::isfinite( dsdy_array[j] )
+                                             && std::isfinite( dsdz_array[j] );
+                            grad_array[j] = finite
+                                ? vismodule::Vector3f( -dsdx_array[j], -dsdy_array[j], -dsdz_array[j] )
+                                : vismodule::Vector3f( 0.0f, 0.0f, 0.0f );
+                        }
+                    }
+                    else
                     for( int j = 0; j < nparticles_count; j++ )
                     {
                         // JacobiMatrixでメンバ変数を使用しているので再度バインド
@@ -1673,6 +1776,12 @@ void CellByCellUniformSampling::generate_particles_unstruct(
         {
              if (interp[i][j] != NULL) delete interp[i][j];
         }
+    }
+
+    // [方式C] 節点F場の補間器を解放する。node_F はこの後スコープを抜けて解放される。
+    for ( int i = 0; i < max_threads; i++ )
+    {
+        if ( cell_F[i] != NULL ) { delete cell_F[i]; cell_F[i] = NULL; }
     }
 
     //TIMER_END( 290 );

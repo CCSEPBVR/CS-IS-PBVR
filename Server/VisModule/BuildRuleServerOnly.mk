@@ -229,6 +229,7 @@ $(OUTDIR)/./Visualization/Mapper/StreamlineBase.o \
 $(OUTDIR)/./Visualization/Mapper/SquareCell.o \
 $(OUTDIR)/./Visualization/Mapper/TetrahedralCell.o \
 $(OUTDIR)/./Visualization/Mapper/TransferFunction.o \
+$(OUTDIR)/./Visualization/Mapper/NodeFieldNormal.o \
 $(OUTDIR)/./Visualization/Mapper/TransferFunctionSynthesizer.o \
 $(OUTDIR)/./Visualization/Mapper/TriangleCell.o \
 $(OUTDIR)/./Visualization/Object/AxisObject.o \
