@@ -132,6 +132,16 @@ inline constexpr std::string_view XAxis                     = "XAxis";
 inline constexpr std::string_view Mask                      = "Mask";
 
 // PlotOverTimeEditor
+// Optional CS metadata; legacy IS Samples remain supported.
+inline constexpr std::string_view AppliedObservation        = "AppliedObservation";
+inline constexpr std::string_view Observation               = "Observation";
+inline constexpr std::string_view DatasetId                 = "DatasetId";
+inline constexpr std::string_view CalculationState          = "CalculationState";
+inline constexpr std::string_view SampleState               = "SampleState";
+inline constexpr std::string_view Snapshot                  = "Snapshot";
+inline constexpr std::string_view ApplyId                   = "ApplyId";
+inline constexpr std::string_view RangeStart                = "RangeStart";
+inline constexpr std::string_view RangeEnd                  = "RangeEnd";
 inline constexpr std::string_view Coords                    = "Coords";
 inline constexpr std::string_view ValueOnTime               = "ValueOnTime";
 inline constexpr std::string_view Samples                   = "Samples";

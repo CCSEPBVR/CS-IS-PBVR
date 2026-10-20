@@ -481,7 +481,13 @@ void MainWindow::initializeCommunication()
         connect( m_communication, &Communication::receiveGlyphParameter           , m_glyph_editor              , &GlyphEditor           ::onReceiveGlyphParameter );
         connect( m_communication, &Communication::receiveObjectInfoParameter      , m_object_editor             , &ObjectEditor          ::onReceiveObjectInfoParameter );
         connect( m_communication, &Communication::receivePlotOverLineParameter    , m_plot_over_line_editor     , &PlotOverLineEditor    ::onReceivePlotOverLineParameter );
-        connect( m_communication, &Communication::receivePlotOverTimeParameter    , m_plot_over_time_editor     , &PlotOverTimeEditor    ::onReceivePlotOverTimeParameter );
+        connect( m_communication, &Communication::receivePlotOverTimeParameter, this,
+            [this](const QJsonObject& payload) {
+                // A reconnect can restore POT before a new Initialize event.
+                if (payload.contains(QString::fromUtf8(Protocol::Key::AppliedObservation)))
+                    m_plot_over_time_editor_action->setEnabled(true);
+                m_plot_over_time_editor->onReceivePlotOverTimeParameter(payload);
+            });
         connect( m_communication, &Communication::receiveTransferFunctionParameter, m_transfer_function_editor  , &TransferFunctionEditor::onReceiveTransferFunctionParameter );
 
         connect( m_communication, &Communication::receiveRequestDataAtTransferFunctionParameter, m_transfer_function_editor, &TransferFunctionEditor::onReceiveRequestDataAtTransferFunctionParameter );

@@ -1,5 +1,10 @@
 #include "PlotOverTimeEditor.h"
 #include "ui_PlotOverTimeEditor.h"
+#include <algorithm>
+#include <cmath>
+#include <limits>
+#include <QUuid>
+#include <QSignalBlocker>
 
 PlotOverTimeEditor::PlotOverTimeEditor( kvs::qt::jaea::Screen* screen, WebSocketPair* websockets, QWidget *parent )
     : QDockWidget( parent )
@@ -11,6 +16,9 @@ PlotOverTimeEditor::PlotOverTimeEditor( kvs::qt::jaea::Screen* screen, WebSocket
 {
     ui->setupUi( this );
     ui->customPlotArea->addWidget( m_q_custom_plot );
+    m_calculation_status = new QLabel( tr("POT: Idle"), this );
+    m_calculation_status->setWordWrap( true );
+    ui->gridLayout_4->addWidget( m_calculation_status, 4, 0 );
 
     if( m_q_custom_plot->graphCount() == 0 )
     {
@@ -68,7 +76,7 @@ PlotOverTimeEditor::PlotOverTimeEditor( kvs::qt::jaea::Screen* screen, WebSocket
                      this, [&]( QMouseEvent* )
                      {
                          m_user_interacting = true;
-                         m_follow_right_edge = false;
+                         m_auto_fit = false;
                      } );
 
     connect( m_q_custom_plot, &QCustomPlot::mouseRelease,
@@ -80,13 +88,13 @@ PlotOverTimeEditor::PlotOverTimeEditor( kvs::qt::jaea::Screen* screen, WebSocket
     connect( m_q_custom_plot, &QCustomPlot::mouseWheel,
                      this, [&]( QWheelEvent* )
                      {
-                         m_follow_right_edge = false;
+                         m_auto_fit = false;
                      } );
 
     connect( m_q_custom_plot, &QCustomPlot::mouseDoubleClick,
                      this, [&]( QMouseEvent* )
                      {
-                         m_follow_right_edge = true;
+                         m_auto_fit = true;
                      } );
 
     if( m_combo_connection ) disconnect( m_combo_connection );
@@ -104,7 +112,6 @@ PlotOverTimeEditor::PlotOverTimeEditor( kvs::qt::jaea::Screen* screen, WebSocket
     connect( ui->applyPushButton        , &QPushButton::clicked, this, &PlotOverTimeEditor::onApply );
 
     m_plot_inited = true;
-    m_need_rebuild = true;
 }
 
 PlotOverTimeEditor::~PlotOverTimeEditor()
@@ -114,7 +121,13 @@ PlotOverTimeEditor::~PlotOverTimeEditor()
 
 void PlotOverTimeEditor::reset()
 {
-    m_has_last_snap_shot = false;
+    m_applied_observation = QJsonObject();
+    m_applied_point = QJsonArray();
+    m_pending_apply.clear();
+    m_calculation_state = "idle";
+    clearPlot();
+    m_auto_fit = true;
+    updateCalculationStatus();
 
     ui->plotOverTimeCheckBox->setEnabled( false );
 
@@ -180,14 +193,9 @@ void PlotOverTimeEditor::onUpdateNumberOfVector( const int numberOfVector )
     ui->displayGraphComboBox->setCurrentIndex( 0 );
     ui->displayGraphComboBox->blockSignals( false );
 
-    m_value_buffers.resize( numberOfVector );
-    for( int i = 0; i < m_value_buffers.size(); ++i )
-    {
-        m_value_buffers[i].clear();
-    }
-    m_time_buffer.clear();
+    // Metadata may arrive after the reconnect snapshot; retain received samples.
+    if ( !m_samples.isEmpty() ) redrawPlotFromBuffers( 0 );
 
-    m_need_rebuild = true;
 }
 
 // NOTE:フォーカス対象のオブジェクトが変更された場合に呼び出される。
@@ -252,136 +260,127 @@ void PlotOverTimeEditor::onUpdateTranslation()
 
 void PlotOverTimeEditor::onReceivePlotOverTimeParameter( const QJsonObject& payload )
 {
-    const auto kEnable      = QString::fromUtf8( Protocol::Key::Enable );
-    const auto kCoords      = QString::fromUtf8( Protocol::Key::Coords );
+    const auto key = []( std::string_view value ) { return QString::fromUtf8(value); };
+    const auto kCoords = key(Protocol::Key::Coords);
+    const auto kApplied = key(Protocol::Key::AppliedObservation);
+    const auto kObservation = key(Protocol::Key::Observation);
+    const auto kSamples = key(Protocol::Key::Samples);
+    const bool ownAcknowledgement = !m_pending_apply.isEmpty() &&
+        payload.value(key(Protocol::Key::ApplyId)).toString() == m_pending_apply;
 
-    const auto kTimeStep    = QString::fromUtf8( Protocol::Key::TimeStep );
-    const auto kValueOnTime = QString::fromUtf8( Protocol::Key::ValueOnTime );
-    const auto kSamples     = QString::fromUtf8( Protocol::Key::Samples );
-
-    const bool uiParameterUpdated = payload.contains( kEnable );
-
-    if( payload.contains( kEnable ) )
+    if ( payload.contains(kApplied) )
     {
-        ui->plotOverTimeCheckBox->setChecked( payload.value( kEnable ).toBool() );
+        const auto applied = payload.value(kApplied).toObject();
+        const auto datasetKey = key(Protocol::Key::DatasetId);
+        const bool newDataset = applied.value(datasetKey) != m_applied_observation.value(datasetKey);
+        // Earlier Apply acknowledgements must not undo a more recent local Apply.
+        if ( !m_pending_apply.isEmpty() && !ownAcknowledgement && !newDataset ) return;
+        if ( applied != m_applied_observation ) clearPlot();
+        m_applied_observation = applied;
+        m_applied_point = applied.value(kCoords).toArray();
+        if ( ownAcknowledgement || newDataset ) m_pending_apply.clear();
+    }
+    else if ( payload.contains(kCoords) )
+    {
+        m_calculation_state = "idle";
+        // Legacy IS settings have no CS observation metadata.
+        const auto point = payload.value(kCoords).toArray();
+        if ( point != m_applied_point ) clearPlot();
+        m_applied_observation = QJsonObject();
+        m_applied_point = point;
+        m_pending_apply.clear();
     }
 
-    if( payload.contains( kCoords ) )
+    // An acknowledgement updates applied state, without overwriting draft edits
+    // made while it was in flight. Remote settings still update the marker.
+    if ( !ownAcknowledgement )
     {
-        const QJsonArray coords = payload.value( kCoords ).toArray();
-        if( coords.size() == 3 )
+        if ( payload.contains(key(Protocol::Key::Enable)) )
+            ui->plotOverTimeCheckBox->setChecked( payload.value(key(Protocol::Key::Enable)).toBool() );
+        if ( payload.contains(kCoords) )
         {
-            m_x_coord = coords.at( 0 ).toDouble();
-            m_y_coord = coords.at( 1 ).toDouble();
-            m_z_coord = coords.at( 2 ).toDouble();
-        }
-    }
-
-    bool plotUpdated  = false;
-    double tLatest    = 0.0;
-    bool forceRebuild = false;
-
-    int addedCount = 0;
-
-    auto safeVal = []( const QJsonValue& v ) -> double
-    {
-        const double x = v.isDouble() ? v.toDouble() : 0.0;
-        return std::isfinite( x ) ? x : 0.0;
-    };
-
-    auto applyOneSample = [&]( int step, const QJsonArray& arr )
-    {
-        const int n = arr.size();
-        if( n <= 0 ) return;
-
-        if( m_value_buffers.size() != n )
-        {
-            m_value_buffers.resize( n );
-            for( auto& buf : m_value_buffers ) buf.clear();
-            m_time_buffer.clear();
-            m_need_rebuild = true;
-            forceRebuild   = true;
-        }
-
-        const double t = static_cast<double>( step );
-
-        if( !m_time_buffer.isEmpty() && static_cast<int>( m_time_buffer.back() ) == step )
-        {
-            for( int i = 0; i < n; ++i )
+            const auto coords = payload.value(kCoords).toArray();
+            if ( coords.size() == 3 )
             {
-                if( !m_value_buffers[i].isEmpty() )
-                    m_value_buffers[i].back() = safeVal( arr[i] );
+                m_x_coord = coords[0].toDouble();
+                m_y_coord = coords[1].toDouble();
+                m_z_coord = coords[2].toDouble();
+                onUpdateTranslation();
             }
         }
-        else
-        {
-            if( !m_time_buffer.isEmpty() )
-            {
-                const int lastStep = static_cast<int>( m_time_buffer.back() );
-                if( step > lastStep + 1 )
-                {
-                    for( int s = lastStep + 1; s < step; ++s )
-                    {
-                        m_time_buffer.push_back( static_cast<double>( s ) );
-                        for( int i = 0; i < n; ++i ) m_value_buffers[i].push_back( 0.0 );
-                    }
-                    m_need_rebuild = true;
-                    forceRebuild   = true;
-                }
-            }
-
-            m_time_buffer.push_back( t );
-            for( int i = 0; i < n; ++i )
-                m_value_buffers[i].push_back( safeVal( arr[i] ) );
-
-            ++addedCount;
-        }
-
-        const int len = m_time_buffer.size();
-        for( int i = 0; i < m_value_buffers.size(); ++i )
-        {
-            while( m_value_buffers[i].size() < len ) m_value_buffers[i].push_back( 0.0 );
-            while( m_value_buffers[i].size() > len ) m_value_buffers[i].removeLast();
-        }
-
-        plotUpdated = true;
-        tLatest     = t;
-    };
-
-    if( payload.contains( kSamples ) && payload.value( kSamples ).isArray() )
-    {
-        const QJsonArray samples = payload.value( kSamples ).toArray();
-
-        for( const QJsonValue& v : samples )
-        {
-            if( !v.isObject() ) continue;
-
-            const QJsonObject one = v.toObject();
-            if( !one.contains( kTimeStep ) || !one.contains( kValueOnTime ) ) continue;
-
-            const QJsonValue stepVal  = one.value( kTimeStep );
-            const QJsonValue valueVal = one.value( kValueOnTime );
-
-            if( !stepVal.isDouble() ) continue;
-            if( !valueVal.isArray() ) continue;
-
-            applyOneSample( stepVal.toInt(), valueVal.toArray() );
-        }
     }
 
-    if( addedCount >= 2 ) forceRebuild = true;
-
-    if( plotUpdated )
+    if ( payload.contains(kObservation) )
     {
-        int idx = ui->displayGraphComboBox ? ui->displayGraphComboBox->currentIndex() : 0;
-        redrawPlotFromBuffers( idx, tLatest, /*forceRebuild=*/(forceRebuild || m_need_rebuild) );
+        // Use the actual calculation condition, never the current marker position.
+        if ( payload.value(kObservation).toObject() != m_applied_observation ) return;
     }
+    else if ( !m_applied_observation.isEmpty() && payload.contains(kSamples) ) return;
 
-    if( uiParameterUpdated )
+    if ( payload.value(key(Protocol::Key::Snapshot)).toBool() ) clearPlot();
+    if ( payload.contains(key(Protocol::Key::CalculationState)) )
+        m_calculation_state = payload.value(key(Protocol::Key::CalculationState)).toString();
+
+    if ( m_applied_observation.isEmpty() && !payload.value(kSamples).toArray().isEmpty() )
+        m_calculation_state = "receiving";
+    const double missing = std::numeric_limits<double>::quiet_NaN();
+    for ( const auto& value : payload.value(kSamples).toArray() )
     {
-        m_last_snap_shot     = captureUiSnapshot();
-        m_has_last_snap_shot = true;
+        if ( !value.isObject() ) continue;
+        const auto sample = value.toObject();
+        const auto stepValue = sample.value(key(Protocol::Key::TimeStep));
+        const auto values = sample.value(key(Protocol::Key::ValueOnTime));
+        if ( !stepValue.isDouble() || !values.isArray() ) continue;
+        const double stepNumber = stepValue.toDouble();
+        if ( !std::isfinite(stepNumber) || std::floor(stepNumber) != stepNumber ||
+             stepNumber < std::numeric_limits<int>::min() || stepNumber > std::numeric_limits<int>::max() ) continue;
+        const int step = static_cast<int>(stepNumber);
+        const QString state = sample.value(key(Protocol::Key::SampleState)).toString();
+        const bool valid = sample.value(key(Protocol::Key::Mask)).toBool(true) &&
+            (state.isEmpty() || state == "valid");
+        QVector<double> row;
+        for ( const auto& item : values.toArray() )
+        {
+            const double v = item.isDouble() ? item.toDouble() : missing;
+            row.push_back( valid && std::isfinite(v) ? v : missing );
+        }
+        m_samples[step] = row; // Sorted replacement also handles retries/reconnects.
+        m_sample_states[step] = state;
     }
+    if ( !m_samples.isEmpty() )
+        redrawPlotFromBuffers( ui->displayGraphComboBox->currentIndex() );
+    updateCalculationStatus();
+}
+
+void PlotOverTimeEditor::clearPlot()
+{
+    m_samples.clear();
+    m_sample_states.clear();
+    m_time_buffer.clear();
+    m_value_buffers.clear();
+    // Replacing samples must preserve a manually chosen view.
+    for ( int i = 0; i < m_q_custom_plot->graphCount(); ++i )
+        m_q_custom_plot->graph(i)->data()->clear();
+    m_q_custom_plot->replot( QCustomPlot::rpQueuedReplot );
+}
+
+void PlotOverTimeEditor::updateCalculationStatus()
+{
+    int outside = 0, failed = 0;
+    for ( const auto& state : m_sample_states )
+    {
+        if ( state == "outside_domain" ) ++outside;
+        if ( state == "failed" ) ++failed;
+    }
+    QString state;
+    if ( m_calculation_state == "computing" ) state = tr("Computing");
+    else if ( m_calculation_state == "complete" ) state = tr("Complete");
+    else if ( m_calculation_state == "failed" ) state = tr("Failed (retry on next update)");
+    else if ( m_calculation_state == "pending" ) state = tr("Waiting for next time step");
+    else if ( m_calculation_state == "receiving" ) state = tr("Receiving IS samples");
+    else state = tr("Idle");
+    m_calculation_status->setText( tr("POT: %1 | %2 steps | Outside: %3 | Failed: %4")
+        .arg(state).arg(m_samples.size()).arg(outside).arg(failed) );
 }
 
 void PlotOverTimeEditor::onDrawVRPlotOverTime( kvs::Real32 coordArray[ 2 * 3 ] )
@@ -457,91 +456,77 @@ void PlotOverTimeEditor::onSaveParameter( const QString& filePath )
     qDebug() << __FILE__ << ":" << __func__ << ":" << filePath;
 }
 
-bool PlotOverTimeEditor::fuzzyEqual( double a, double b )
+void PlotOverTimeEditor::redrawPlotFromBuffers( int index, bool resetView )
 {
-    const double diff  = qAbs( a - b );
-    const double scale = qMax( 1.0, qMax( qAbs( a ), qAbs( b ) ) );
-    return diff <= 1e-12 * scale;
-}
-
-bool PlotOverTimeEditor::sameVec3( const double a[3], const double b[3] )
-{
-    return fuzzyEqual( a[0], b[0] ) && fuzzyEqual( a[1], b[1] ) && fuzzyEqual( a[2], b[2] );
-}
-
-PlotOverTimeEditor::PlotOverTimeUiSnapshot PlotOverTimeEditor::captureUiSnapshot() const
-{
-    PlotOverTimeUiSnapshot s;
-    s.enable     = ui->plotOverTimeCheckBox->isChecked();
-    return s;
-}
-
-void PlotOverTimeEditor::redrawPlotFromBuffers( int index, double tLatest, bool forceRebuild )
-{
-    if( !m_q_custom_plot ) return;
-    if( m_q_custom_plot->graphCount() < 2 ) return;
-    if( m_time_buffer.isEmpty() ) return;
-    if( m_value_buffers.isEmpty() ) return;
-
-    const int n = m_value_buffers.size();
-    if( n <= 0 ) return;
-
-    if( index < 0 ) index = 0;
-    if( index >= n ) index = n - 1;
-
-    const QVector<double>& yBuf = m_value_buffers[index];
-
-    auto gWindow  = m_q_custom_plot->graph(0);
-    auto gHistory = m_q_custom_plot->graph(1);
-
-    constexpr double windowSteps = 10.0;
-
-    const bool rebuild = forceRebuild || m_need_rebuild;
-
-    if( rebuild )
+    if ( !m_q_custom_plot || m_q_custom_plot->graphCount() < 2 || m_samples.isEmpty() ) return;
+    int nvariables = 0;
+    for ( const auto& row : m_samples ) nvariables = std::max(nvariables, static_cast<int>(row.size()));
+    if ( nvariables <= 0 ) return;
+    if ( ui->displayGraphComboBox->count() != nvariables )
     {
-        gWindow->data()->clear();
-        gHistory->data()->clear();
-
-        gHistory->setData( m_time_buffer, yBuf );
-
-        double viewWidth = m_q_custom_plot->xAxis->range().size();
-        if( !( viewWidth > 0.0 ) ) viewWidth = windowSteps;
-
-        const double tMin = tLatest - viewWidth;
-
-        QVector<double> tWin;
-        QVector<double> yWin;
-        tWin.reserve( m_time_buffer.size() );
-        yWin.reserve( m_time_buffer.size() );
-
-        for( int i = 0; i < m_time_buffer.size(); ++i )
+        const QSignalBlocker blocker(ui->displayGraphComboBox);
+        ui->displayGraphComboBox->clear();
+        for ( int i = 0; i < nvariables; ++i ) ui->displayGraphComboBox->addItem(QString("q%1").arg(i + 1));
+        ui->displayGraphComboBox->setCurrentIndex(std::max(0, std::min(index, nvariables - 1)));
+    }
+    index = std::max(0, std::min(index, nvariables - 1));
+    const double missing = std::numeric_limits<double>::quiet_NaN();
+    m_time_buffer.clear();
+    m_value_buffers = QVector<QVector<double>>(nvariables);
+    for ( auto it = m_samples.cbegin(); it != m_samples.cend(); ++it )
+    {
+        // Break the line across unsent steps; never invent zero measurements.
+        if ( !m_time_buffer.isEmpty() && double(it.key()) > m_time_buffer.back() + 1.0 )
         {
-            if( m_time_buffer[i] >= tMin )
+            m_time_buffer.push_back(m_time_buffer.back() + 1.0);
+            for ( auto& buffer : m_value_buffers ) buffer.push_back(missing);
+        }
+        m_time_buffer.push_back(it.key());
+        for ( int v = 0; v < nvariables; ++v )
+            m_value_buffers[v].push_back(v < it.value().size() ? it.value()[v] : missing);
+    }
+    constexpr double windowSteps = 10.0;
+    const double latest = m_time_buffer.back();
+    const auto& values = m_value_buffers[index];
+    auto* gWindow = m_q_custom_plot->graph(0);
+    auto* gHistory = m_q_custom_plot->graph(1);
+    // CS results carry an applied observation; legacy IS results do not.
+    if ( m_applied_observation.isEmpty() )
+    {
+        gHistory->setData(m_time_buffer, values, true);
+        QVector<double> recentTimes;
+        QVector<double> recentValues;
+        for ( int i = 0; i < m_time_buffer.size(); ++i )
+        {
+            if ( m_time_buffer[i] >= latest - windowSteps )
             {
-                tWin.push_back( m_time_buffer[i] );
-                yWin.push_back( yBuf[i] );
+                recentTimes.push_back(m_time_buffer[i]);
+                recentValues.push_back(values[i]);
             }
         }
-
-        gWindow->setData( tWin, yWin );
-
-        m_need_rebuild = false;
+        gWindow->setData(recentTimes, recentValues, true);
     }
     else
     {
-        const double yLatest = yBuf.back();
-        gHistory->addData( tLatest, yLatest );
-        gWindow->addData( tLatest, yLatest );
-        gWindow->data()->removeBefore( tLatest - windowSteps );
+        // Keep all CS results in the normal line for manual navigation.
+        gHistory->data()->clear();
+        gWindow->setData(m_time_buffer, values, true);
     }
-
-    if( m_follow_right_edge && !m_user_interacting )
+    if ( resetView || (m_auto_fit && !m_user_interacting) )
     {
-        m_q_custom_plot->xAxis->setRange( tLatest, windowSteps, Qt::AlignRight );
+        m_q_custom_plot->xAxis->setRange(latest, windowSteps, Qt::AlignRight);
+        // Fit the selected variable over all received steps, including history.
+        double low = std::numeric_limits<double>::infinity();
+        double high = -low;
+        for ( double value : m_value_buffers[index] )
+            if ( std::isfinite(value) ) { low = std::min(low, value); high = std::max(high, value); }
+        if ( std::isfinite(low) )
+        {
+            const double margin = high > low ? (high - low) * 0.05 : std::max(1.0, std::abs(low) * 0.05);
+            m_q_custom_plot->yAxis->setRange(low - margin, high + margin);
+        }
     }
-
-    m_q_custom_plot->replot( QCustomPlot::rpQueuedReplot );
+    m_q_custom_plot->replot(QCustomPlot::rpQueuedReplot);
 }
 
 void PlotOverTimeEditor::calculateInitialTranslation()
@@ -554,15 +539,13 @@ void PlotOverTimeEditor::onDisplayGraphComboBoxChanged( int index )
 {
     if( m_time_buffer.isEmpty() ) return;
 
-    const double tLatest = m_time_buffer.back();
-    redrawPlotFromBuffers( index, tLatest, /*forceRebuild=*/true );
+    redrawPlotFromBuffers( index );
 }
 
 void PlotOverTimeEditor::onResetPlotView()
 {
-    m_q_custom_plot->xAxis->setRange( m_x_min, m_x_max ); // x 軸の範囲
-    m_q_custom_plot->yAxis->setRange( m_y_min, m_y_max ); // y 軸の範囲
-    m_q_custom_plot->replot();
+    // One-shot fit: leave automatic following enabled/disabled as it was.
+    redrawPlotFromBuffers(ui->displayGraphComboBox->currentIndex(), true);
 }
 
 void PlotOverTimeEditor::onPlotOverTimeCheckBox()
@@ -575,45 +558,30 @@ void PlotOverTimeEditor::onPlotOverTimeCheckBox()
 
 void PlotOverTimeEditor::onApply()
 {
-    if( !m_web_sockets->isConnected() ) return;
-
-    if( !m_has_last_snap_shot )
-    {
-        m_last_snap_shot     = captureUiSnapshot();
-        m_has_last_snap_shot = true;
-        return;
-    }
-
-    const auto kEvent      = QString::fromUtf8( Protocol::Key::Event );
-    const auto kEnable     = QString::fromUtf8( Protocol::Key::Enable );
-    const auto kCoords     = QString::fromUtf8( Protocol::Key::Coords );
-
-    const PlotOverTimeUiSnapshot now = captureUiSnapshot();
-    QJsonObject diff;
-
-    // Enable
-    if( now.enable != m_last_snap_shot.enable )
-        diff.insert( kEnable, now.enable );
-
-    QJsonObject plotOverTimeParameter;
-    plotOverTimeParameter.insert( kEvent, QString::fromUtf8( Protocol::Events::PlotOverTimeParameter ) );
-
+    if ( !m_web_sockets->isConnected() ) return;
+    const auto kCoords = QString::fromUtf8(Protocol::Key::Coords);
+    // The interpolator uses float coordinates. Compare/send that exact condition.
     QJsonArray coords;
-    coords.append( m_x_coord );
-    coords.append( m_y_coord );
-    coords.append( m_z_coord );
-    plotOverTimeParameter.insert( kCoords, coords );
-
-    for( auto it = diff.begin(); it != diff.end(); ++it )
-        plotOverTimeParameter.insert( it.key(), it.value() );
-
-    m_web_sockets->text()->sendTextMessage(
-        QJsonDocument( plotOverTimeParameter ).toJson( QJsonDocument::Compact ) );
-
-    emit plotOverTimeParameterUpdate();
-
-    m_last_snap_shot     = now;
-    m_has_last_snap_shot = true;
-
-    // qDebug().noquote() << "[PlotOverTimeEditor::onApply] payload(pretty):\n" << QJsonDocument( plotOverTimeParameter ).toJson( QJsonDocument::Indented );
+    coords.append(static_cast<double>(static_cast<float>(m_x_coord)));
+    coords.append(static_cast<double>(static_cast<float>(m_y_coord)));
+    coords.append(static_cast<double>(static_cast<float>(m_z_coord)));
+    if ( coords != m_applied_point )
+    {
+        clearPlot();
+        m_calculation_state = ui->plotOverTimeCheckBox->isChecked() ? "pending" : "idle";
+    }
+    m_applied_point = coords;
+    QJsonObject message;
+    message.insert(QString::fromUtf8(Protocol::Key::Event), QString::fromUtf8(Protocol::Events::PlotOverTimeParameter));
+    message.insert(QString::fromUtf8(Protocol::Key::Enable), ui->plotOverTimeCheckBox->isChecked());
+    message.insert(kCoords, coords);
+    if ( !m_applied_observation.isEmpty() )
+    {
+        m_applied_observation.insert(kCoords, coords);
+        m_pending_apply = QUuid::createUuid().toString(QUuid::WithoutBraces);
+        message.insert(QString::fromUtf8(Protocol::Key::ApplyId), m_pending_apply);
+    }
+    m_web_sockets->text()->sendTextMessage(QJsonDocument(message).toJson(QJsonDocument::Compact));
+    updateCalculationStatus();
+    // Apply only transfers settings; it never requests a time-step update.
 }

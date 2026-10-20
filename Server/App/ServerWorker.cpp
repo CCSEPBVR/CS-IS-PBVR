@@ -19,6 +19,7 @@
 #include <vismodule/GenerateParticle>
 #include <vismodule/GenerateGlyph>
 #include <vismodule/GeneratePOL>
+#include <vismodule/GeneratePOT>
 
 #include <kvs/PointObject>
 
@@ -29,6 +30,7 @@ void ServerWorker::Run()
     ParticleProperty particle_property;
     GlyphProperty glyph_property;
     PlotOverLineProperty pol_property;
+    PlotOverTimeProperty pot_property = {};
 
     particle_property.m_camera = new vismodule::Camera();
     particle_property.m_camera->setWindowSize(620, 620); // FIXME:クライアント側から送信されるようになったら削除
@@ -100,6 +102,12 @@ void ServerWorker::Run()
             ReceiveGenerateObjectSignal( buf, volume_data_file_path, time_step );
             kvsml_object_pol = GeneratePOLCS( volume_data_file_path, time_step, pol_property, mvpl );
             break;
+        case TaskSignal::GENERATE_PLOT_OVER_TIME:
+        {
+            ReceiveGenerateObjectSignal( buf, volume_data_file_path, time_step );
+            GeneratePOTCS( volume_data_file_path, time_step, pot_property, mvpl );
+            break;
+        }
         case TaskSignal::UPDATE_PARTICLE_PROPERTY:
         {
             particle_property.unpack( buf );
@@ -112,6 +120,9 @@ void ServerWorker::Run()
         }
         case TaskSignal::UPDATE_GLYPH_PROPERTY:
             glyph_property.unpack( buf );
+            break;
+        case TaskSignal::UPDATE_PLOT_OVER_TIME_PROPERTY:
+            pot_property.unpack( buf );
             break;
         case TaskSignal::UPDATE_PLOT_OVER_LINE_PROPERTY:
             pol_property.unpack( buf );
