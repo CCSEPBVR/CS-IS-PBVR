@@ -51,7 +51,12 @@ struct Settings
     // Text faces upwards and follows the controller, never a billboard.
     kvs::Vec3 label_rotation_degrees = kvs::Vec3( -90.0f, 180.0f, 0.0f );
     float leader_width_pixels = 2.0f;
-    float grip_press_threshold = 0.5f;
+
+    // Compact, opaque button badges: two 64px cells per controller.
+    int button_texture_pixels = 64;
+    int button_font_pixels = 48;
+    float button_letter_size = 0.008f;
+    float button_surface_offset = 0.0015f;
 
     // Overview slide: executable-relative path and physical dimensions.
     // Its pose is captured once from the HMD when opened (local -Z forward).
@@ -64,7 +69,7 @@ struct Settings
     float pointer_width_pixels = 2.0f;
 };
 
-enum class LabelVisibility { Always, GripPressed, GripReleased, OverviewAvailable, OverviewOpen };
+enum class LabelVisibility { OverviewClosed, OverviewOpen, Always };
 
 struct Label
 {
@@ -72,43 +77,42 @@ struct Label
     kvs::Vec3 centre;
     kvs::Vec3 leader_start;
     kvs::Vec3 button;
-    LabelVisibility visibility = LabelVisibility::GripPressed;
+    LabelVisibility visibility = LabelVisibility::OverviewOpen;
 };
 
 inline const Settings settings;
+struct ButtonLetter
+{
+    const char* text;
+    kvs::Vec3 centre;
+};
+
+// Hardware Art v1.8 b_button_* anchors, converted from cm to metres.
+inline const ButtonLetter left_button_letters[] = {
+    { "X", { -0.003030f, 0.004263f, -0.009743f } },
+    { "Y", { -0.013320f, 0.006368f, 0.003020f } }
+};
+inline const ButtonLetter right_button_letters[] = {
+    { "A", { 0.003176f, 0.004118f, -0.009095f } },
+    { "B", { 0.013317f, 0.006368f, 0.003020f } }
+};
 // Button anchors were read from b_button_b/b_button_oculus/b_thumbstick/
 // b_trigger_front in the actual v1.8 FBX, converted from cm to metres.
 // Label centres and leader starts share a Y height; rows run along Z so that
 // all three rows are visible from above. +X appears on the viewer's left after
 // the default model correction, so the left controller's outer label uses +X.
 inline const Label right_labels[] = {
-    { u8"Bボタン（長押し）\nPlot Over Lineモード ON/OFF",
-      { 0.19f, 0.015f, 0.17f }, { 0.055f, 0.015f, 0.17f }, { 0.013317f, 0.006368f, 0.003020f } },
-    { u8"Bボタン（短押し）\nPlot Over Lineの場所指定",
-      { 0.19f, 0.015f, 0.095f }, { 0.055f, 0.015f, 0.095f }, { 0.013317f, 0.006368f, 0.003020f } },
-    { u8"サムスティック 上・下\nフライスルー",
-      { -0.19f, 0.015f, 0.17f }, { -0.055f, 0.015f, 0.17f }, { -0.006998f, -0.002463f, 0.007780f } },
-    { u8"サムスティック 右・左\n視点左右回転",
-      { -0.19f, 0.015f, 0.095f }, { -0.055f, 0.015f, 0.095f }, { -0.006998f, -0.002463f, 0.007780f } },
     { u8"Meta/Oculusボタン\nVirtual Desktopモード ON/OFF",
       { -0.19f, 0.015f, 0.02f }, { -0.055f, 0.015f, 0.02f }, { -0.013280f, 0.001855f, -0.011046f }, LabelVisibility::Always },
-    { u8"左右トリガーを同時押し\nオブジェクトの拡大・縮小",
-      { 0.19f, 0.015f, 0.02f }, { 0.055f, 0.015f, 0.02f }, { 0.011774f, -0.003923f, 0.028344f } },
-    // New row keeps the verified existing label positions unchanged.
-    // Grip anchor is approximate and can be tuned after on-device inspection.
-    { u8"右グリップボタン\n押している間、操作説明を表示",
-      { 0.19f, 0.015f, -0.055f }, { 0.055f, 0.015f, -0.055f }, { 0.025f, -0.03f, -0.025f }, LabelVisibility::GripReleased }
 };
 
 inline const Label left_labels[] = {
-    { u8"左右トリガーを同時押し\nオブジェクトの拡大・縮小",
-      { 0.19f, 0.015f, 0.02f }, { 0.055f, 0.015f, 0.02f }, { -0.011770f, -0.003920f, 0.028340f } },
-    // X anchor is approximate; the label uses the vacant outer row.
+    // X anchor is b_button_x in the v1.8 left FBX, converted from cm to metres.
     { u8"Xボタン（長押し）\n視点リセット",
-      { 0.19f, 0.015f, 0.095f }, { 0.055f, 0.015f, 0.095f }, { -0.013f, 0.006f, 0.018f } },
+      { 0.19f, 0.015f, 0.095f }, { 0.055f, 0.015f, 0.095f }, { -0.003030f, 0.004263f, -0.009743f }, LabelVisibility::OverviewClosed },
     // Y anchor is approximate. Open/close labels occupy the same vacant row.
-    { u8"Yボタン（短押し）\nVR操作方法を表示",
-      { 0.19f, 0.015f, 0.17f }, { 0.055f, 0.015f, 0.17f }, { -0.013f, 0.006f, 0.003f }, LabelVisibility::OverviewAvailable },
+    { u8"Yボタン\nフライスルー説明",
+      { 0.19f, 0.015f, 0.17f }, { 0.055f, 0.015f, 0.17f }, { -0.013f, 0.006f, 0.003f }, LabelVisibility::OverviewClosed },
     { u8"Yボタン\n閉じる",
       { 0.19f, 0.015f, 0.17f }, { 0.055f, 0.015f, 0.17f }, { -0.013f, 0.006f, 0.003f }, LabelVisibility::OverviewOpen }
 };

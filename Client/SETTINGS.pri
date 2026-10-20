@@ -133,7 +133,7 @@ else {
                 INCLUDEPATH += $$KVS_OPENXR_DIR/include
                 INCLUDEPATH += $$KVS_IMGUI_DIR/include
                 DEFINES += KVS_SUPPORT_OPENXR
-                # DEFINES += OPENXR_SCREEN # オプション
+                DEFINES += OPENXR_SCREEN # オプション
             }
         }
     }

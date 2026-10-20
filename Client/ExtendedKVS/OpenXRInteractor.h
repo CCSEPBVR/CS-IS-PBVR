@@ -39,7 +39,7 @@ private:
     kvs::LineObject* m_axis_z = nullptr;
     kvs::LineObject* m_pointer = nullptr;
     kvs::TexturedPolygonObject* m_overview_slide = nullptr; // Owned by the scene.
-    bool m_overview_slide_visible = false;
+    bool m_overview_slide_visible = false; // Instructions are open, even if the slide image is unavailable.
     bool m_wait_for_trigger_release = false;
     bool m_wait_for_axis_neutral[kvs::Side::Max] = { false };
     // Scene owns these registered objects, including the hidden coordinate points.

@@ -122,6 +122,75 @@ std::unique_ptr<kvs::TexturedPolygonObject> ControllerLabels(
     return object;
 }
 
+std::unique_ptr<kvs::TexturedPolygonObject> ControllerButtonLetters(
+    const visual::ButtonLetter* letters, const size_t count )
+{
+    const auto& settings = visual::settings;
+    const int cell = settings.button_texture_pixels;
+    // Generate once during initialization; one atlas and draw object per hand.
+    QImage image( cell * static_cast<int>( count ), cell, QImage::Format_RGBA8888 );
+    if ( image.isNull() ) { throw std::runtime_error( "Cannot allocate controller button image" ); }
+    image.fill( Qt::black );
+    {
+        QPainter painter( &image );
+        painter.setRenderHint( QPainter::TextAntialiasing );
+        QFont font( QString::fromUtf8( settings.font_family ) );
+        font.setPixelSize( settings.button_font_pixels );
+        font.setBold( true );
+        painter.setFont( font );
+        painter.setPen( Qt::white );
+        for ( size_t i = 0; i < count; ++i )
+        {
+            painter.drawText( QRect( static_cast<int>( i ) * cell, 0, cell, cell ),
+                              Qt::AlignCenter, QString::fromUtf8( letters[i].text ) );
+        }
+    }
+    auto object = std::make_unique<kvs::TexturedPolygonObject>();
+    object->setName( "VRControllerButtonLetters" );
+    object->setPolygonTypeToTriangle();
+    object->setColorTypeToVertex();
+    object->setNormalTypeToVertex();
+    kvs::ValueArray<kvs::UInt8> pixels( size_t( image.width() ) * image.height() * 4 );
+    for ( int y = 0; y < image.height(); ++y )
+    {
+        std::copy_n( image.constScanLine( y ), size_t( image.width() ) * 4,
+                     pixels.data() + size_t( y ) * image.width() * 4 );
+    }
+    object->addColorArray( 0, pixels, image.width(), image.height() );
+    const kvs::Mat3 rotation = VisualRotation( settings.label_rotation_degrees );
+    const kvs::Vec3 normal = rotation * kvs::Vec3( 0.0f, 0.0f, 1.0f );
+    const float half = settings.button_letter_size * 0.5f;
+    const kvs::Vec3 corners[] = {
+        { -half, -half, 0 }, { half, -half, 0 }, { half, half, 0 }, { -half, half, 0 }
+    };
+    const int triangles[] = { 0, 1, 2, 0, 2, 3 };
+    std::vector<kvs::Real32> coords, normals, uvs;
+    std::vector<kvs::UInt32> ids, connections;
+    for ( size_t i = 0; i < count; ++i )
+    {
+        const float u0 = static_cast<float>( i ) / count;
+        const float u1 = static_cast<float>( i + 1 ) / count;
+        const kvs::Vec2 texcoords[] = { { u0, 0 }, { u1, 0 }, { u1, 1 }, { u0, 1 } };
+        for ( const int corner : triangles )
+        {
+            const kvs::Vec3 p = letters[i].centre + normal * settings.button_surface_offset +
+                                rotation * corners[corner];
+            coords.insert( coords.end(), { p.x(), p.y(), p.z() } );
+            normals.insert( normals.end(), { normal.x(), normal.y(), normal.z() } );
+            uvs.insert( uvs.end(), { texcoords[corner].x(), texcoords[corner].y() } );
+            ids.push_back( 0 );
+            connections.push_back( static_cast<kvs::UInt32>( connections.size() ) );
+        }
+    }
+    object->setCoords( kvs::ValueArray<kvs::Real32>( coords ) );
+    object->setNormals( kvs::ValueArray<kvs::Real32>( normals ) );
+    object->setTexture2DCoords( kvs::ValueArray<kvs::Real32>( uvs ) );
+    object->setTextureIds( kvs::ValueArray<kvs::UInt32>( ids ) );
+    object->setConnections( kvs::ValueArray<kvs::UInt32>( connections ) );
+    object->hide();
+    return object;
+}
+
 std::unique_ptr<kvs::LineObject> ControllerLeaders( const visual::Label* labels, const size_t count )
 {
     std::vector<kvs::Real32> coords;
@@ -348,16 +417,39 @@ void OpenXRInteractor::initializeEvent()
 #else
         qWarning().noquote() << "Touch Pro" << side << "requires ASSIMP; using PointObject:" << path;
 #endif
+        // Face letters belong to the model, not the instruction toggle.
+        if ( m_controller_model[i] )
+        {
+            try
+            {
+                const auto* letters = i == kvs::Side::Left ?
+                    visual::left_button_letters : visual::right_button_letters;
+                const size_t letter_count = i == kvs::Side::Left ?
+                    sizeof( visual::left_button_letters ) / sizeof( visual::left_button_letters[0] ) :
+                    sizeof( visual::right_button_letters ) / sizeof( visual::right_button_letters[0] );
+                auto object = ControllerButtonLetters( letters, letter_count );
+                VisualBounds( object.get(), min, max );
+                auto renderer = std::make_unique<kvs::StochasticTexturedPolygonRenderer>();
+                renderer->disableShading();
+                renderer->setBilinearInterpolation();
+                s->registerObject( object.get(), renderer.get() );
+                renderer.release();
+                m_controller_annotations[i].push_back(
+                    { object.release(), visual::LabelVisibility::Always } );
+            }
+            catch ( const std::exception& error )
+            {
+                qWarning() << "Cannot create controller button letters:" << error.what();
+            }
+        }
         // Instructions are useful with either the model or the point fallback.
         const auto* labels = i == kvs::Side::Left ? visual::left_labels : visual::right_labels;
         const size_t count = i == kvs::Side::Left ?
             sizeof( visual::left_labels ) / sizeof( visual::left_labels[0] ) :
             sizeof( visual::right_labels ) / sizeof( visual::right_labels[0] );
-        for ( const auto visibility : { visual::LabelVisibility::Always,
-                                       visual::LabelVisibility::GripPressed,
-                                       visual::LabelVisibility::GripReleased,
-                                       visual::LabelVisibility::OverviewAvailable,
-                                       visual::LabelVisibility::OverviewOpen } )
+        for ( const auto visibility : { visual::LabelVisibility::OverviewClosed,
+                                       visual::LabelVisibility::OverviewOpen,
+                                       visual::LabelVisibility::Always } )
         {
             std::vector<visual::Label> group;
             for ( size_t j = 0; j < count; ++j )
@@ -367,6 +459,11 @@ void OpenXRInteractor::initializeEvent()
             if ( group.empty() ) { continue; }
             auto label_object = ControllerLabels( group.data(), group.size() );
             auto leader_object = ControllerLeaders( group.data(), group.size() );
+            const bool show = visibility == visual::LabelVisibility::Always ||
+                visibility == ( m_overview_slide_visible ?
+                    visual::LabelVisibility::OverviewOpen : visual::LabelVisibility::OverviewClosed );
+            label_object->setVisible( show );
+            leader_object->setVisible( show );
             VisualBounds( label_object.get(), min, max );
             VisualBounds( leader_object.get(), min, max );
             auto label_renderer = std::make_unique<kvs::StochasticTexturedPolygonRenderer>();
@@ -391,7 +488,7 @@ void OpenXRInteractor::initializeEvent()
     m_pointer->setLineTypeToStrip();
     m_pointer->setCoords( pointer_coords );
     m_pointer->setColorTypeToLine();
-    m_pointer->setColor( kvs::RGBColor::Green() );
+    m_pointer->setColor( kvs::RGBColor( 255, 255, 0 ) );
     m_pointer->setSize( visual::settings.pointer_width_pixels );
     VisualBounds( m_pointer, min, max );
     m_pointer->hide();
@@ -423,44 +520,47 @@ void OpenXRInteractor::toggleOverviewSlide()
             const QImage image( path );
             if ( image.isNull() )
             {
-                qWarning().noquote() << "Cannot read VR overview slide; keeping normal controls:" << path;
-                return;
+                qWarning().noquote() << "Cannot read VR overview slide; showing controller labels only:" << path;
             }
-            if ( !std::isfinite( visual::settings.overview_slide_width ) ||
+            else if ( !std::isfinite( visual::settings.overview_slide_width ) ||
                  !std::isfinite( visual::settings.overview_slide_distance ) ||
                  visual::settings.overview_slide_width <= 0.0f ||
                  visual::settings.overview_slide_distance <= 0.0f )
             {
-                qWarning() << "VR overview slide width/distance must be positive and finite";
-                return;
+                qWarning() << "VR overview slide width/distance must be positive and finite; showing controller labels only";
             }
-            try
+            else
             {
-                auto* s = BaseClass::scene();
-                auto slide = OverviewSlide( image );
-                // Match the current coordinate points without changing normalization.
-                const auto* bounds = m_start_point ? static_cast<const kvs::ObjectBase*>( m_start_point ) :
-                    static_cast<const kvs::ObjectBase*>( s->objectManager() );
-                VisualBounds( slide.get(), bounds->minObjectCoord(), bounds->maxObjectCoord() );
-                auto renderer = std::make_unique<kvs::StochasticTexturedPolygonRenderer>();
-                renderer->disableShading();
-                renderer->setBilinearInterpolation();
-                s->registerObject( slide.get(), renderer.get() );
-                renderer.release();
-                m_overview_slide = slide.release();
-            }
-            catch ( const std::exception& error )
-            {
-                qWarning() << "Cannot create VR overview slide; keeping normal controls:" << error.what();
-                return;
+                try
+                {
+                    auto* s = BaseClass::scene();
+                    auto slide = OverviewSlide( image );
+                    // Match the current coordinate points without changing normalization.
+                    const auto* bounds = m_start_point ? static_cast<const kvs::ObjectBase*>( m_start_point ) :
+                        static_cast<const kvs::ObjectBase*>( s->objectManager() );
+                    VisualBounds( slide.get(), bounds->minObjectCoord(), bounds->maxObjectCoord() );
+                    auto renderer = std::make_unique<kvs::StochasticTexturedPolygonRenderer>();
+                    renderer->disableShading();
+                    renderer->setBilinearInterpolation();
+                    s->registerObject( slide.get(), renderer.get() );
+                    renderer.release();
+                    m_overview_slide = slide.release();
+                }
+                catch ( const std::exception& error )
+                {
+                    qWarning() << "Cannot create VR overview slide; showing controller labels only:" << error.what();
+                }
             }
         }
         // Capture this pose once. Subsequent head/controller movement does not update it.
-        m_overview_slide->setXform( m_openxr_screen->walkthrough() * m_openxr_screen->headXform() *
-            kvs::Xform::Translation( kvs::Vec3( 0.0f, 0.0f, -visual::settings.overview_slide_distance ) ) );
+        if ( m_overview_slide )
+        {
+            m_overview_slide->setXform( m_openxr_screen->walkthrough() * m_openxr_screen->headXform() *
+                kvs::Xform::Translation( kvs::Vec3( 0.0f, 0.0f, -visual::settings.overview_slide_distance ) ) );
+        }
     }
     m_overview_slide_visible = !m_overview_slide_visible;
-    m_overview_slide->setVisible( m_overview_slide_visible );
+    if ( m_overview_slide ) { m_overview_slide->setVisible( m_overview_slide_visible ); }
     // Require release/neutral after a transition; never replay held modal inputs.
     m_wait_for_trigger_release = true;
     for ( kvs::UInt32 i = 0; i < kvs::Side::Max; ++i ) { m_wait_for_axis_neutral[i] = true; }
@@ -695,16 +795,11 @@ void OpenXRInteractor::controllerMoveEvent( kvs::ControllerEvent* e )
                 m_controller_model[i]->setXform( visual_xform * kvs::Xform::Scaling(
                     kvs::Vec3::Constant( visual::settings.source_unit_to_metres ) ) );
             }
-            const bool grip_pressed = cs.is_active[kvs::Side::Right] &&
-                m_openxr_screen->rightGripValue() >= visual::settings.grip_press_threshold;
             for ( const auto& annotation : m_controller_annotations[i] )
             {
                 const bool show = annotation.visibility == visual::LabelVisibility::Always ||
-                    ( annotation.visibility == visual::LabelVisibility::OverviewOpen && m_overview_slide_visible ) ||
-                    ( !m_overview_slide_visible && (
-                        ( annotation.visibility == visual::LabelVisibility::GripPressed && grip_pressed ) ||
-                        ( annotation.visibility == visual::LabelVisibility::GripReleased && !grip_pressed ) ||
-                        ( annotation.visibility == visual::LabelVisibility::OverviewAvailable && grip_pressed ) ) );
+                    annotation.visibility == ( m_overview_slide_visible ?
+                    visual::LabelVisibility::OverviewOpen : visual::LabelVisibility::OverviewClosed );
                 annotation.object->setVisible( cs.is_active[i] && show );
                 annotation.object->setXform( visual_xform );
             }
