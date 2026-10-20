@@ -32,8 +32,11 @@ public:
     virtual void keyPressEvent( kvs::KeyEvent* event ) override;
     // Shared by Home and the VR controller's view-reset operation.
     void resetView();
+    void requestRenderCompletion( quint64 measurementId );
+    void paintEvent() override;
 
 signals:
+    void renderCompleted( quint64 measurementId );
     void updateTranslation();
     void addKeyFrameAdd( kvs::Xform xform ); // x
     void removeLastKeyFrame();               // d
@@ -41,6 +44,8 @@ signals:
     void playKeyFrame();                     // M
     void loadKeyFrameFile();                 // L
     void saveKeyFrameFile();                 // S
+private:
+    quint64 m_render_measurement_id = 0;
 };
 
 } // end of namespace jaea

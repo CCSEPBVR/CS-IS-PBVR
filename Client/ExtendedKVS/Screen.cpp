@@ -1,4 +1,5 @@
 #include "Screen.h"
+#include <kvs/OpenGL>
 
 kvs::qt::jaea::Screen::Screen( kvs::qt::Application* application, QWidget* parent ):
 #ifdef OPENXR_SCREEN
@@ -9,6 +10,29 @@ kvs::qt::jaea::Screen::Screen( kvs::qt::Application* application, QWidget* paren
 #endif
 {
     // setFocusPolicy( Qt::NoFocus );
+}
+
+void kvs::qt::jaea::Screen::requestRenderCompletion( quint64 measurementId )
+{
+    m_render_measurement_id = measurementId;
+    if( measurementId != 0 ) this->update();
+}
+
+void kvs::qt::jaea::Screen::paintEvent()
+{
+    const quint64 measurementId = m_render_measurement_id;
+#ifdef OPENXR_SCREEN
+    kvs::openxr::OpenXRScreen::paintEvent();
+#else
+    kvs::qt::Screen::paintEvent();
+#endif
+    if( measurementId != 0 && measurementId == m_render_measurement_id )
+    {
+        // Synchronize only the measured frame, including all rendering repetitions.
+        kvs::OpenGL::Finish();
+        m_render_measurement_id = 0;
+        emit renderCompleted( measurementId );
+    }
 }
 
 void kvs::qt::jaea::Screen::keyPressEvent( kvs::KeyEvent* event )

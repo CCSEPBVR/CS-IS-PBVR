@@ -1,4 +1,6 @@
 #include "PlayBackControlToolBar.h"
+#include <QMessageBox>
+#include <QTimer>
 
 PlayBackControlToolBar::PlayBackControlToolBar( WebSocketPair* websockets, QWidget* parent )
     : QToolBar( parent )
@@ -74,16 +76,51 @@ PlayBackControlToolBar::~PlayBackControlToolBar() {}
 
 void PlayBackControlToolBar::reset()
 {
+    m_next_update_timer.invalidate();
+    m_waiting_for_render = false;
+    ++m_next_measurement_id;
+    emit renderCompletionRequested( 0 );
 }
 
 void PlayBackControlToolBar::onDataRequestCompleted()
 {
+    if( m_next_update_timer.isValid() )
+    {
+        if( !m_waiting_for_render )
+        {
+            m_waiting_for_render = true;
+            emit renderCompletionRequested( m_next_measurement_id );
+        }
+        return;
+    }
     if( m_is_operator || m_web_sockets->isConnected() == false ) enableButtons();
+}
+
+void PlayBackControlToolBar::onRenderCompleted( quint64 measurementId )
+{
+    if( !m_next_update_timer.isValid() || !m_waiting_for_render ||
+        measurementId != m_next_measurement_id ) return;
+
+    const double elapsedMilliseconds = m_next_update_timer.nsecsElapsed() / 1000000.0;
+    m_next_update_timer.invalidate();
+    m_waiting_for_render = false;
+    if( m_is_operator || !m_web_sockets->isConnected() ) enableButtons();
+
+    // Leave the OpenGL paint callback before opening a modal dialog.
+    QTimer::singleShot( 0, this, [this, measurementId, elapsedMilliseconds]()
+    {
+        if( measurementId != m_next_measurement_id ) return;
+        QMessageBox::information( this, tr( "Time step update time" ),
+            tr( "Time step update including rendering: %1 s (%2 ms)" )
+                .arg( elapsedMilliseconds / 1000.0, 0, 'f', 3 )
+                .arg( elapsedMilliseconds, 0, 'f', 3 ) );
+    } );
 }
 
 void PlayBackControlToolBar::onOperatorStateUpdate( bool operatorState )
 {
     m_is_operator = operatorState;
+    if( !operatorState ) reset();
 
     m_first_push_button    ->setEnabled( m_is_operator );
     m_previous_push_button ->setEnabled( m_is_operator );
@@ -94,6 +131,7 @@ void PlayBackControlToolBar::onOperatorStateUpdate( bool operatorState )
     m_keep_last_push_button->setEnabled( m_is_operator );
     m_jump_push_button     ->setEnabled( m_is_operator );
     m_loop_push_button     ->setEnabled( m_is_operator );
+    if( m_next_update_timer.isValid() ) disableButtons();
 }
 
 QPushButton* PlayBackControlToolBar::createPushButton( const QString& iconPath, const QSize& iconSize, const QSize& buttonSize, QWidget* parent )
@@ -136,6 +174,7 @@ void PlayBackControlToolBar::disableButtons()
 
 void PlayBackControlToolBar::enableButtons()
 {
+    if( m_next_update_timer.isValid() ) return;
     const bool anyChecked =
         m_reverse_push_button  ->isChecked() ||
         m_play_push_button     ->isChecked() ||
@@ -196,6 +235,10 @@ void PlayBackControlToolBar::onPlay()
 
 void PlayBackControlToolBar::onNext()
 {
+    if( m_next_update_timer.isValid() ) return;
+    m_next_update_timer.start();
+    ++m_next_measurement_id;
+    m_waiting_for_render = false;
     disableButtons();
     emit next();
 }

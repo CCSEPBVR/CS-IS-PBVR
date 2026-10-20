@@ -323,6 +323,10 @@ void MainWindow::initializeToolBar()
 
     if( m_play_back_control_tool_bar )
     {
+        connect( m_play_back_control_tool_bar, &PlayBackControlToolBar::renderCompletionRequested,
+                 m_screen, &kvs::qt::jaea::Screen::requestRenderCompletion );
+        connect( m_screen, &kvs::qt::jaea::Screen::renderCompleted,
+                 m_play_back_control_tool_bar, &PlayBackControlToolBar::onRenderCompleted );
         this->addToolBar( Qt::TopToolBarArea, m_play_back_control_tool_bar );
     }
     if( m_time_step_control_tool_bar )
