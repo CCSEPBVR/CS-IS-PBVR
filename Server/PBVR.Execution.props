@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!-- Shared by pbvr_server and VisModule, Release|x64 only.
+       Set this default to false to build the serial version in Visual Studio.
+       Change it here rather than in just one project's properties. -->
+  <PropertyGroup Label="UserMacros">
+    <PBVR_USE_MPI Condition="'$(PBVR_USE_MPI)' == ''">true</PBVR_USE_MPI>
+    <PBVR_MSMPI_SDK_DIR Condition="'$(PBVR_MSMPI_SDK_DIR)' == ''">$(MSBuildProgramFiles32)\Microsoft SDKs\MPI</PBVR_MSMPI_SDK_DIR>
+  </PropertyGroup>
+  <PropertyGroup>
+    <PBVR_CPU_DEFINITION Condition="'$(PBVR_USE_MPI)' == 'true'"></PBVR_CPU_DEFINITION>
+    <PBVR_EXECUTION_MODE Condition="'$(PBVR_USE_MPI)' == 'true'">MPI</PBVR_EXECUTION_MODE>
+    <PBVR_EXECUTION_MODE Condition="'$(PBVR_USE_MPI)' != 'true'">CPU</PBVR_EXECUTION_MODE>
+    <PBVR_MODE_OUTPUT_DIR>$(MSBuildThisFileDirectory)$(Platform)\$(Configuration)\$(PBVR_EXECUTION_MODE)\</PBVR_MODE_OUTPUT_DIR>
+    <OutDir>$(PBVR_MODE_OUTPUT_DIR)</OutDir>
+    <IntDir>$(PBVR_MODE_OUTPUT_DIR)obj\$(MSBuildProjectName)\</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(PBVR_USE_MPI)' == 'true'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>$(PBVR_MSMPI_SDK_DIR)\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <AdditionalLibraryDirectories>$(PBVR_MSMPI_SDK_DIR)\Lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>msmpi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <Target Name="ValidatePbvrExecutionMode" BeforeTargets="PrepareForBuild" Condition="'$(DesignTimeBuild)' != 'true'">
+    <Error Condition="'$(PBVR_USE_MPI)' != 'true' and '$(PBVR_USE_MPI)' != 'false'" Text="PBVR_USE_MPI must be true (MPI) or false (serial). Set it in Server\PBVR.Execution.props for both pbvr_server and VisModule." />
+    <Error Condition="'$(PBVR_USE_MPI)' == 'true' and !Exists('$(PBVR_MSMPI_SDK_DIR)\Include\mpi.h')" Text="MS-MPI SDK header not found: $(PBVR_MSMPI_SDK_DIR)\Include\mpi.h. Install the MS-MPI SDK or set PBVR_MSMPI_SDK_DIR." />
+    <Error Condition="'$(PBVR_USE_MPI)' == 'true' and !Exists('$(PBVR_MSMPI_SDK_DIR)\Lib\x64\msmpi.lib')" Text="MS-MPI SDK library not found: $(PBVR_MSMPI_SDK_DIR)\Lib\x64\msmpi.lib. Install the MS-MPI SDK or set PBVR_MSMPI_SDK_DIR." />
+  </Target>
+</Project>

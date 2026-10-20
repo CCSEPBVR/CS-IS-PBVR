@@ -1,13 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ImportGroup Label="PropertySheets" />
+  <PropertyGroup>
+    <PBVR_CPU_DEFINITION>CPU_VER</PBVR_CPU_DEFINITION>
+  </PropertyGroup>
+  <Import Project="$(MSBuildThisFileDirectory)..\PBVR.Execution.props" Condition="'$(MSBuildProjectName)' == 'VisModule' and '$(Configuration)|$(Platform)' == 'Release|x64'" />
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup />
   <ItemDefinitionGroup>
     <ClCompile>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)..\..\KVS\Install\include;$(SolutionDir)FunctionParser;$(SolutionDir)VisModule;$(SolutionDir)App;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>CPU_VER;NDEBUG;WIN32;NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>$(PBVR_CPU_DEFINITION);NDEBUG;WIN32;NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <DisableSpecificWarnings>4996</DisableSpecificWarnings>
     </ClCompile>

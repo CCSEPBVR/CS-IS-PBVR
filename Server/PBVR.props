@@ -2,22 +2,26 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ImportGroup Label="PropertySheets" />
   <PropertyGroup>
-    <KVS_UWS_DIR Condition="'$(KVS_UWS_DIR)' == '' and '$(VCPKG_ROOT)' != ''">$(VCPKG_ROOT)\installed\x64-windows-static</KVS_UWS_DIR>
+    <PBVR_CPU_DEFINITION>CPU_VER</PBVR_CPU_DEFINITION>
+  </PropertyGroup>
+  <Import Project="$(MSBuildThisFileDirectory)PBVR.Execution.props" Condition="'$(MSBuildProjectName)' == 'pbvr_server' and '$(Configuration)|$(Platform)' == 'Release|x64'" />
+  <PropertyGroup>
+    <KVS_UWS_DIR Condition="'$(KVS_UWS_DIR)' == '' and '$(VCPKG_ROOT)' != ''">$(VCPKG_ROOT)</KVS_UWS_DIR>
     <PBVR_KVS_INSTALL_DIR>$(MSBuildThisFileDirectory)..\KVS\Install</PBVR_KVS_INSTALL_DIR>
   </PropertyGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup />
   <ItemDefinitionGroup>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(SolutionDir)App;$(SolutionDir)Utils;$(SolutionDir)FunctionParser;$(SolutionDir)VisModule;$(SolutionDir)..\Shared;$(MSBuildThisFileDirectory)..\KVS\Install\include;$(KVS_GLUT_DIR)\include\GL;$(KVS_UWS_DIR)\installed\x64-windows-static\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)App;$(SolutionDir)Utils;$(SolutionDir)FunctionParser;$(SolutionDir)VisModule;$(SolutionDir)..\Shared;$(MSBuildThisFileDirectory)..\KVS\Install\include;$(KVS_GLUT_DIR)\include\GL;$(KVS_UWS_DIR)\installed\x64-windows-static\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <DisableSpecificWarnings>4996;4305;4267;4101;4244</DisableSpecificWarnings>
-      <PreprocessorDefinitions>CPU_VER;NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>$(PBVR_CPU_DEFINITION);NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>$(SolutionDir)$(Platform)\$(Configuration);$(MSBuildThisFileDirectory)..\KVS\Install\lib;$(KVS_GLUT_DIR)\lib;$(KVS_UWS_DIR)\installed\x64-windows-static\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>FunctionParser.lib;kvsCore.lib;uSockets.lib;libuv.lib;zlib.lib;opengl32.lib;glu32.lib;glew32.lib;iphlpapi.lib;userenv.lib;shlwapi.lib;Dbghelp.lib;%(AdditionalDependencies);$(CoreLibraryDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>FunctionParser.lib;kvsCore.lib;uSockets.lib;libuv.lib;zs.lib;opengl32.lib;glu32.lib;glew32.lib;iphlpapi.lib;userenv.lib;shlwapi.lib;Dbghelp.lib;%(AdditionalDependencies);$(CoreLibraryDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <Target Name="ValidateKvsInstallDir" BeforeTargets="PrepareForBuild" Condition="'$(DesignTimeBuild)' != 'true' and !Exists('$(PBVR_KVS_INSTALL_DIR)\kvs.conf')">

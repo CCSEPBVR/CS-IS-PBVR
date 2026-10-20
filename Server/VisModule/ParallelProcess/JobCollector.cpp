@@ -7,6 +7,7 @@
 #endif // CPU_VER
 #include <vismodule/timer_simple>
 #include <stdlib.h>
+#include <vector>
 #include <vismodule/timer_simple>
 
 #ifndef CPU_VER
@@ -405,17 +406,17 @@ void JobCollector::jobCollect_pol( std::vector<float>& axis, std::vector<int>& m
                 VIS_MODULE_TIMER_END( 65 );
                 VIS_MODULE_TIMER_STA( 66 );
 
-                float         axis_array  [m_pack_size];
-                float         values_array[m_pack_size];
-                int           mask_array  [m_pack_size];
+                std::vector<float> axis_array( m_pack_size );
+                std::vector<float> values_array( m_pack_size );
+                std::vector<int> mask_array( m_pack_size );
 //                m_pack_coords  = ( float* )realloc( m_pack_coords , sizeof( float ) * m_pack_size );
 //                m_pack_colors  = ( unsigned char* )realloc( m_pack_colors , sizeof( unsigned char ) * m_pack_size );
 //                m_pack_directions = ( float* )realloc( m_pack_directions, sizeof( float ) * m_pack_size );
                 VIS_MODULE_TIMER_END( 66 );
                 VIS_MODULE_TIMER_STA( 67 );
-                MPI_Recv( axis_array   , m_pack_size, MPI_FLOAT, src, 1, MPI_COMM_WORLD, &stat );
-                MPI_Recv( values_array , m_pack_size, MPI_FLOAT, src, 1, MPI_COMM_WORLD, &stat );
-                MPI_Recv( mask_array  , m_pack_size, MPI_INT  , src, 1, MPI_COMM_WORLD, &stat );
+                MPI_Recv( axis_array.data()   , m_pack_size, MPI_FLOAT, src, 1, MPI_COMM_WORLD, &stat );
+                MPI_Recv( values_array.data() , m_pack_size, MPI_FLOAT, src, 1, MPI_COMM_WORLD, &stat );
+                MPI_Recv( mask_array.data()  , m_pack_size, MPI_INT  , src, 1, MPI_COMM_WORLD, &stat );
                 VIS_MODULE_TIMER_END( 67 );
                 m_pack_count = 0;
                 m_pack_head  = 0;

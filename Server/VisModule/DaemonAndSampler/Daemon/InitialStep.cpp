@@ -542,8 +542,8 @@ void InitialStepCS(
 #ifndef CPU_VER
     if ( mpi_size > 1 )
     {
-        MPI_Allreduce( MPI_IN_PLACE, tmp_c_bins, ( DEFAULT_NBINS * tf_number ), MPI_UNSIGNED_LONG, MPI_SUM , MPI_COMM_WORLD );
-        MPI_Allreduce( MPI_IN_PLACE, tmp_o_bins, ( DEFAULT_NBINS * tf_number ), MPI_UNSIGNED_LONG, MPI_SUM , MPI_COMM_WORLD );
+        MPI_Allreduce( MPI_IN_PLACE, tmp_c_bins, ( DEFAULT_NBINS * tf_number ), MPI_UINT64_T, MPI_SUM , MPI_COMM_WORLD );
+        MPI_Allreduce( MPI_IN_PLACE, tmp_o_bins, ( DEFAULT_NBINS * tf_number ), MPI_UINT64_T, MPI_SUM , MPI_COMM_WORLD );
     }
 #endif
 
