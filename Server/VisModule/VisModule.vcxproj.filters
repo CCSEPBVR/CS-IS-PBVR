@@ -57,6 +57,9 @@
     <ClCompile Include="Visualization\Mapper\CellByCellUniformSampling.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
+    <ClCompile Include="Visualization\Mapper\NodeFieldNormal.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
     <ClCompile Include="Visualization\Mapper\FrequencyTable.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
@@ -450,6 +453,9 @@
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="Visualization\Mapper\CellByCellUniformSampling.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Visualization\Mapper\NodeFieldNormal.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="Visualization\Property\ParticleProperty.h">
