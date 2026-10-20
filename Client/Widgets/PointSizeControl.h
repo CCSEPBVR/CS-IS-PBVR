@@ -22,6 +22,9 @@ class PointSizeControl : public QDockWidget
 public:
     explicit PointSizeControl( kvs::qt::jaea::Screen* screen, QWidget *parent = nullptr );
     ~PointSizeControl();
+    void setPointSize( double size );
+    void resetPointSize();
+    void applyToRenderer( kvs::RendererBase* renderer );
 
 public slots:
     void onLoadParameter( const QString& filePath ); // KPI

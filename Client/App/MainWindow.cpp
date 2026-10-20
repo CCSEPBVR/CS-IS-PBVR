@@ -35,6 +35,9 @@ MainWindow::MainWindow( kvs::qt::Application& app, QWidget *parent )
     , m_shading_control                ( new ShadingControl( m_screen, this ) )
     , m_transfer_function_editor       ( new TransferFunctionEditor( m_web_sockets, this ) )
     , m_volume_transform               ( new VolumeTransform( m_screen, this ) )
+    , m_simple_setting_widget          ( new SimpleSettingWidget( m_communication, m_transfer_function_editor, m_web_sockets, m_object_editor,
+                                                               m_glyph_editor, m_point_size_control, m_repetition_level_control,
+                                                               m_plot_over_line_editor, this ) )
 {
     ui->setupUi( this );
     setWindowTitle( QString( "pbvr_client - %1" ).arg( GIT_BRANCH_NAME ) );
@@ -137,6 +140,7 @@ MainWindow::MainWindow( kvs::qt::Application& app, QWidget *parent )
     initializeRepetitionLevelControl();
     initializeShadingControl();
     initializeTransferFunctionEditor();
+    initializeSimpleSettingWidget();
     initializeVolumeTransform();
 
     this->show();
@@ -270,9 +274,9 @@ void MainWindow::onUpdateNumberOfVector( const int numberOfVector )
     if( m_glyph_editor )
     {
         // NOTE:GlyphEditorは成分数3以上でないといけない
+        m_glyph_editor->onUpdateNumberOfVector( numberOfVector );
         if( numberOfVector >= 3 )
         {
-            m_glyph_editor->onUpdateNumberOfVector( numberOfVector );
             m_glyph_editor_action->setEnabled( true );
         }
         else
@@ -462,6 +466,7 @@ void MainWindow::initializeCommunication()
     {
         m_communication->adjustSize();
         addDockWidget( Qt::RightDockWidgetArea, m_communication );
+        m_communication->hide();
 
         connect( m_communication, &Communication::updateStatusBarMessage, this, &MainWindow::onUpdateStatusBarMessage );
 
@@ -509,6 +514,7 @@ void MainWindow::initializeObjectEditor()
     {
         m_object_editor->adjustSize();
         addDockWidget( Qt::LeftDockWidgetArea, m_object_editor );
+        m_object_editor->hide();
 
         connect( m_object_editor, &ObjectEditor::updateStatusBarMessage, this, &MainWindow::onUpdateStatusBarMessage );
 
@@ -535,8 +541,8 @@ void MainWindow::initializePlotOverLineEditor()
     if( m_plot_over_line_editor )
     {
         m_plot_over_line_editor->adjustSize();
-        m_plot_over_line_editor->close();
         addDockWidget( Qt::LeftDockWidgetArea, m_plot_over_line_editor );
+        m_plot_over_line_editor->show();
     }
 }
 
@@ -552,6 +558,8 @@ void MainWindow::initializePlotOverTimeEditor()
 
 void MainWindow::initializePointSizeControl()
 {
+    connect( m_object_editor, &ObjectEditor::shading, m_point_size_control, &PointSizeControl::applyToRenderer );
+    connect( m_repetition_level_control, &RepetitionLevelControl::shading, m_point_size_control, &PointSizeControl::applyToRenderer );
     if( m_point_size_control )
     {
         m_point_size_control->adjustSize();
@@ -608,6 +616,33 @@ void MainWindow::initializeTransferFunctionEditor()
         connect( m_transfer_function_editor, &TransferFunctionEditor::transferFunctionUpdate, m_object_editor, &ObjectEditor::onTransferFunctionUpdate );
         connect( m_transfer_function_editor, &TransferFunctionEditor::updateLastSentTransferFunction, m_color_map_bar_selector_tool_bar, &ColorMapSelectorToolBar::onTransferFunctionUpdate );
     }
+}
+
+void MainWindow::initializeSimpleSettingWidget()
+{
+    addDockWidget( Qt::RightDockWidgetArea, m_simple_setting_widget );
+    m_simple_setting_widget->show();
+    ui->menuTools->addAction( m_simple_setting_widget->toggleViewAction() );
+    connect( m_simple_setting_widget, &SimpleSettingWidget::updateStatusBarMessage,
+             this, &MainWindow::onUpdateStatusBarMessage );
+    connect( m_simple_setting_widget, &SimpleSettingWidget::selectColorFunction,
+             m_color_map_bar_selector_tool_bar, &ColorMapSelectorToolBar::selectColorFunction );
+    connect( m_simple_setting_widget, &SimpleSettingWidget::targetLoadCompleted,
+             this, &MainWindow::onPlotOverLineEditor );
+    connect( m_simple_setting_widget, &SimpleSettingWidget::automaticJumpRequested, this, [this]() {
+        if ( !m_web_sockets->isConnected() || !m_communication->isOperator() )
+        {
+            m_simple_setting_widget->onAutomaticJumpFailed();
+            return;
+        }
+        if ( m_time_step_control_tool_bar->isDataRequestInProgress() ) return;
+        m_simple_setting_widget->onAutomaticJumpStarted();
+        if ( !m_play_back_control_tool_bar->requestJump() )
+            m_simple_setting_widget->onAutomaticJumpFailed();
+    } );
+    // Playback's completion handler is connected earlier and restores button state first.
+    connect( m_time_step_control_tool_bar, &TimeStepControlToolBar::dataRequestCompleted,
+             m_simple_setting_widget, &SimpleSettingWidget::onDataRequestCompleted );
 }
 
 void MainWindow::initializeVolumeTransform()

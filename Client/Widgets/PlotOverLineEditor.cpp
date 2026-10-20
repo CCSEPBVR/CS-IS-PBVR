@@ -691,15 +691,36 @@ void PlotOverLineEditor::onCreateLine()
 
 void PlotOverLineEditor::onApply()
 {
-    if( !m_web_sockets->isConnected() ) return;
+    applySettings();
+}
+
+bool PlotOverLineEditor::configureCoordsAndApply( const kvs::Vec3& start, const kvs::Vec3& end )
+{
+    if( !m_web_sockets->isConnected() || !m_is_operator || ui->targetComboBox->currentIndex() < 0 )
+        return false;
+
+    // setChecked also invokes the same visibility update as a manual checkbox change.
+    ui->plotOverLineGroupBox->setChecked( true );
+    ui->startCoordsXDoubleSpinBox->setValue( start.x() );
+    ui->startCoordsYDoubleSpinBox->setValue( start.y() );
+    ui->startCoordsZDoubleSpinBox->setValue( start.z() );
+    ui->endCoordsXDoubleSpinBox->setValue( end.x() );
+    ui->endCoordsYDoubleSpinBox->setValue( end.y() );
+    ui->endCoordsZDoubleSpinBox->setValue( end.z() );
+    return applySettings( true );
+}
+
+bool PlotOverLineEditor::applySettings( bool forceCoords )
+{
+    if( !m_web_sockets->isConnected() || !m_is_operator ) return false;
 
     onCreateLine();
 
-    if( !m_has_last_snap_shot )
+    if( !m_has_last_snap_shot && !forceCoords )
     {
         m_last_snap_shot     = captureUiSnapshot();
         m_has_last_snap_shot = true;
-        return;
+        return true;
     }
 
     const auto kEvent       = QString::fromUtf8( Protocol::Key::Event );
@@ -713,19 +734,19 @@ void PlotOverLineEditor::onApply()
     QJsonObject diff;
 
     // Enable
-    if( now.enable != m_last_snap_shot.enable )
+    if( forceCoords || now.enable != m_last_snap_shot.enable )
         diff.insert( kEnable, now.enable );
 
     // Resolution
-    if( now.resolution != m_last_snap_shot.resolution )
+    if( m_has_last_snap_shot && now.resolution != m_last_snap_shot.resolution )
         diff.insert( kResolution, now.resolution );
 
     // Target
-    if( now.target != m_last_snap_shot.target )
+    if( m_has_last_snap_shot && now.target != m_last_snap_shot.target )
         diff.insert( kTarget, now.target );
 
     // Start Coords
-    if( !sameVec3( now.start, m_last_snap_shot.start ) )
+    if( forceCoords || !sameVec3( now.start, m_last_snap_shot.start ) )
     {
         QJsonArray a;
         a.append( now.start[0] );
@@ -735,7 +756,7 @@ void PlotOverLineEditor::onApply()
     }
 
     // End Coords
-    if( !sameVec3( now.end, m_last_snap_shot.end ) )
+    if( forceCoords || !sameVec3( now.end, m_last_snap_shot.end ) )
     {
         QJsonArray a;
         a.append( now.end[0] );
@@ -744,7 +765,7 @@ void PlotOverLineEditor::onApply()
         diff.insert( kEndCoords, a );
     }
 
-    if( diff.isEmpty() ) return;
+    if( diff.isEmpty() ) return true;
 
     QJsonObject plotOverLineParameter;
     plotOverLineParameter.insert( kEvent, QString::fromUtf8( Protocol::Events::PlotOverLineParameter ) );
@@ -759,4 +780,5 @@ void PlotOverLineEditor::onApply()
     m_has_last_snap_shot = true;
 
     // qDebug().noquote() << "[PlotOverLineEditor::onApply] diff(pretty):\n" << QJsonDocument( plotOverLineParameter ).toJson( QJsonDocument::Indented );
+    return true;
 }

@@ -25,10 +25,14 @@ public:
     explicit GlyphEditor( WebSocketPair* websockets, QWidget *parent = nullptr );
     ~GlyphEditor();
     void reset();
+    bool hasInitialSettings() const;
+    bool applySimpleSettings( bool cityLBM, double scaleFactor );
+    bool applySettings();
 
 signals:
     void updateStatusBarMessage( const QString& message );
     void glyphParameterUpdate();
+    void settingsReady();
 
 public slots:
     void onOperatorStateUpdate( const bool operatorState ); // true: 権限有り, false: 権限無し
@@ -77,6 +81,10 @@ private:
 
     GlyphUiSnapshot m_last_snap_shot;
     bool m_has_last_snap_shot = false;
+    bool m_has_initial_settings = false;
+    bool m_has_variable_list = false;
+    quint64 m_initial_generation = 0;
+    QVector<QColor> m_default_color_map;
 
     GlyphUiSnapshot captureUiSnapshot() const;
     static QVector<int> captureVariableIndicesFromGrid( const QGridLayout* grid, int count );

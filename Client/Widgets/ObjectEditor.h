@@ -37,6 +37,11 @@ public:
     explicit ObjectEditor( kvs::qt::jaea::Screen* screen, WebSocketPair* websockets, Viz::Mode* vizMode, QWidget *parent = nullptr );
     ~ObjectEditor();
     void reset();
+    bool hasServerVolumeObject() const;
+    bool configureParticleLimitAndApply( int limit );
+    bool addFile( const QString& filePath, const QString& uuid );
+    bool configureTerrainAndApply( const QString& uuid );
+    bool applySettings();
 
 signals:
     void updateStatusBarMessage( const QString& message );
@@ -46,6 +51,7 @@ signals:
     void updateTranslation();
     void shading( kvs::RendererBase* );
     void dataRequestCompleted( const int requestTimeStep );
+    void objectAdded( const QString& uuid );
 
 public slots:
     void onOperatorStateUpdate( const bool operatorState ); // true: 権限有り, false: 権限無し

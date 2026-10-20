@@ -29,6 +29,7 @@ public:
     explicit PlotOverLineEditor( kvs::qt::jaea::Screen* screen, WebSocketPair* websockets, QWidget *parent = nullptr );
     ~PlotOverLineEditor();
     void reset();
+    bool configureCoordsAndApply( const kvs::Vec3& start, const kvs::Vec3& end );
 
 signals:
     void updateStatusBarMessage( const QString& message );
@@ -111,6 +112,7 @@ private:
     bool m_has_last_snap_shot = false;
 
     PlotOverLineUiSnapshot captureUiSnapshot() const;
+    bool applySettings( bool forceCoords = false );
     static bool fuzzyEqual( double a, double b );
     static bool sameVec3( const double a[3], const double b[3] );
 

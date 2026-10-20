@@ -16,6 +16,7 @@ public:
     PlayBackControlToolBar( WebSocketPair* websockets, QWidget *parent = nullptr );
     ~PlayBackControlToolBar();
     void reset();
+    bool requestJump();
     QPushButton* jumpButton() const { return m_jump_push_button; }
 
 signals:

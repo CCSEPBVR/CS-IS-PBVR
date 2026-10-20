@@ -55,9 +55,67 @@ TransferFunctionEditor::~TransferFunctionEditor()
 
 void TransferFunctionEditor::reset()
 {
+    m_has_last_sent = false;
+    m_last_sent_tf = TransferFunction{};
     ui->numberOfTransferFunctionSpinBox->setValue( 0 );
     ui->colorSynthesizerLineEdit  ->clear();
     ui->opacitySynthesizerLineEdit->clear();
+    emit colorMapsChanged();
+}
+
+bool TransferFunctionEditor::hasColorFunction( int number ) const
+{
+    return m_has_last_sent && m_transfer_function && number > 0 &&
+           static_cast<size_t>( number ) <= m_transfer_function->count() &&
+           static_cast<size_t>( number ) <= m_last_sent_tf.count();
+}
+
+QVector<QColor> TransferFunctionEditor::colorMap( int number ) const
+{
+    if ( !hasColorFunction( number ) ) return {};
+    return toQVectorColors( m_transfer_function->at( number - 1 ).color.map );
+}
+
+bool TransferFunctionEditor::applyColorMap( int number, const QVector<QColor>& colors )
+{
+    if ( !m_web_sockets->isConnected() || !m_is_operator || !m_has_last_sent ||
+         !hasColorFunction( number ) || colors.isEmpty() ||
+         static_cast<size_t>( number ) > m_last_sent_tf.count() ) return false;
+
+    // Send only this map; keep other unsent editor changes as drafts.
+    QJsonArray colorArray;
+    for ( const auto& color : colors )
+        colorArray.append( QJsonArray{ color.red(), color.green(), color.blue() } );
+    const QJsonObject item{
+        { "Index", number - 1 },
+        { QString::fromUtf8( Protocol::Key::ColorMap ), colorArray }
+    };
+    const QJsonObject patch{
+        { QString::fromUtf8( Protocol::Key::Event ), QString::fromUtf8( Protocol::Events::TransferFunctionParameter ) },
+        { QString::fromUtf8( Protocol::Key::Data ), QJsonArray{ item } }
+    };
+    m_transfer_function->at( number - 1 ).color.map = toStdVectorColors( colors );
+    TransferFunction sent = m_last_sent_tf;
+    sent.at( number - 1 ).color.map = m_transfer_function->at( number - 1 ).color.map;
+    updateUIFromUserInput( UpdateTarget::Color );
+    sendTransferFunctionPatch( patch, sent );
+    return true;
+}
+
+void TransferFunctionEditor::sendTransferFunctionPatch( const QJsonObject& patch, const TransferFunction& sent )
+{
+    m_web_sockets->sendTextMessage( QJsonDocument( patch ).toJson( QJsonDocument::Compact ) );
+    m_last_sent_tf = sent;
+    m_has_last_sent = true;
+    // Server range changes arrive independently of user edits and are used by the legend.
+    for ( size_t i = 0; i < m_last_sent_tf.count() && i < m_transfer_function->count(); ++i )
+    {
+        m_last_sent_tf.at( i ).color.serverSideMinMax = m_transfer_function->at( i ).color.serverSideMinMax;
+        m_last_sent_tf.at( i ).opacity.serverSideMinMax = m_transfer_function->at( i ).opacity.serverSideMinMax;
+    }
+    emit updateLastSentTransferFunction( &m_last_sent_tf );
+    emit colorMapsChanged();
+    emit transferFunctionUpdate();
 }
 
 void TransferFunctionEditor::onOperatorStateUpdate( const bool operatorState )
@@ -287,6 +345,8 @@ void TransferFunctionEditor::onReceiveTransferFunctionParameter( const QJsonObje
     // NOTE:初回導通なので両UIを更新
     updateUIFromUserInput( UpdateTarget::Both );
     updateUIFromServer( UpdateTarget::Both );
+    emit updateLastSentTransferFunction( &m_last_sent_tf );
+    emit colorMapsChanged();
 }
 
 void TransferFunctionEditor::onReceiveRequestDataAtTransferFunctionParameter( const QJsonObject& payload )
@@ -482,6 +542,7 @@ void TransferFunctionEditor::updateUIFromUserInput( UpdateTarget target )
 {
     // NOTE:ユーザの操作によってのみ更新されるUI
     if( !m_transfer_function ) return;
+    emit colorMapsChanged();
 
     const int tfCount = static_cast<int>( m_transfer_function->count() );
 
@@ -672,6 +733,8 @@ void TransferFunctionEditor::onNumberOfTransferFunctionValueChanged( const int n
 
     syncCombo( ui->colorFunctionComboBox,   "C" );
     syncCombo( ui->opacityFunctionComboBox, "O" );
+
+    emit colorMapsChanged();
 
     if( m_is_operator )
     {
@@ -1000,7 +1063,7 @@ void TransferFunctionEditor::onImport()
 
 void TransferFunctionEditor::onApply()
 {
-    if( !m_web_sockets->isConnected() ) { return; }
+    if( !m_web_sockets->isConnected() || !m_is_operator ) { return; }
     if( !m_transfer_function ) return;
 
     if( !m_has_last_sent )
@@ -1156,13 +1219,6 @@ void TransferFunctionEditor::onApply()
 
     transferFunctionParameter[QString::fromUtf8( Protocol::Key::Data )] = patches;
 
-    m_web_sockets->sendTextMessage(
-        QJsonDocument( transferFunctionParameter ).toJson( QJsonDocument::Compact ) );
-
-    // NOTE:最終送信内容の更新
-    m_last_sent_tf  = *m_transfer_function;
-    m_has_last_sent = true;
-
-    emit transferFunctionUpdate();
+    sendTransferFunctionPatch( transferFunctionParameter, *m_transfer_function );
     // qDebug().noquote() << "[TransferFunctionEditor::onApply] diff(pretty):\n" << QJsonDocument( transferFunctionParameter ).toJson( QJsonDocument::Indented );
 }

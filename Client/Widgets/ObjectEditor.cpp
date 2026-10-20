@@ -1214,6 +1214,7 @@ void ObjectEditor::addObjectInfoToModel( ObjectInfoExtractor::ObjectInfo& object
     calculateTotalMinMaxTimeStep();
 
     if( objectInfo.tmpIsFocus ) { onApply(); }
+    emit objectAdded( QString::fromUtf8( objectInfo.uuid.c_str() ) );
 }
 
 void ObjectEditor::calculateTotalMinMaxTimeStep()
@@ -1771,6 +1772,89 @@ void ObjectEditor::onOpacityDoubleSpinBoxValueChanged( double value )
                                       } );
 }
 
+bool ObjectEditor::hasServerVolumeObject() const
+{
+    for ( int row = 0; row < m_model->rowCount(); ++row )
+    {
+        const auto info = m_model->item( row, 0 )->data( Qt::UserRole ).value<ObjectInfoExtractor::ObjectInfo>();
+        if ( info.format == ObjectInfoExtractor::ClientServerPointObject ) return true;
+    }
+    return false;
+}
+
+bool ObjectEditor::configureParticleLimitAndApply( int limit )
+{
+    if ( !m_is_operator || !m_web_sockets->isConnected() ) return false;
+    bool found = false;
+    for ( int row = 0; row < m_model->rowCount(); ++row )
+    {
+        auto* item = m_model->item( row, 0 );
+        auto info = item->data( Qt::UserRole ).value<ObjectInfoExtractor::ObjectInfo>();
+        if ( info.format != ObjectInfoExtractor::ClientServerPointObject ) continue;
+        info.tmpParticleLimit = limit;
+        item->setData( QVariant::fromValue( info ), Qt::UserRole );
+        found = true;
+    }
+    if ( !found ) return false;
+    updateUI( ui->treeView->currentIndex() );
+    return applySettings();
+}
+
+bool ObjectEditor::addFile( const QString& filePath, const QString& uuid )
+{
+    if ( !m_is_operator || filePath.isEmpty() || uuid.isEmpty() ) return false;
+    switch ( *m_viz_mode )
+    {
+    case Viz::Mode::Local:
+    case Viz::Mode::LocalClientAndServer:
+    {
+        ObjectInfoExtractor oie( filePath.toUtf8().constData() );
+        if ( auto info = oie.extractFromLocalFile() )
+        {
+            info->uuid = uuid.toUtf8().constData();
+            addObjectInfoToModel( *info );
+            return true;
+        }
+        emit updateStatusBarMessage( tr( "Failed to load file: %1" ).arg( filePath ) );
+        return false;
+    }
+    case Viz::Mode::RemoteClientAndServer:
+    case Viz::Mode::RemoteInSitu:
+        if ( !m_web_sockets->isConnected() ) return false;
+        m_web_sockets->sendTextMessage( QJsonDocument( QJsonObject{
+            { QString::fromUtf8( Protocol::Key::Event ), QString::fromUtf8( Protocol::Events::SelectedFile ) },
+            { QString::fromUtf8( Protocol::Key::File ), filePath },
+            { QString::fromUtf8( Protocol::Key::UUID ), uuid }
+        } ).toJson( QJsonDocument::Compact ) );
+        return true;
+    default:
+        return false;
+    }
+}
+
+bool ObjectEditor::configureTerrainAndApply( const QString& uuid )
+{
+    if ( !m_is_operator || !m_web_sockets->isConnected() ) return false;
+    for ( int row = 0; row < m_model->rowCount(); ++row )
+    {
+        auto* item = m_model->item( row, 0 );
+        auto info = item->data( Qt::UserRole ).value<ObjectInfoExtractor::ObjectInfo>();
+        if ( QString::fromUtf8( info.uuid.c_str() ) != uuid ) continue;
+        if ( info.format != ObjectInfoExtractor::PolygonObjectKVSML &&
+             info.format != ObjectInfoExtractor::PolygonObjectSTL ) return false;
+        info.tmpPolygonOpacity = 1.0f;
+        info.tmpIsKeepInitial = true;
+        info.tmpIsKeepFinal = true;
+        item->setData( QVariant::fromValue( info ), Qt::UserRole );
+        m_model->item( row, 3 )->setCheckState( Qt::Checked );
+        m_model->item( row, 4 )->setCheckState( Qt::Checked );
+        ui->treeView->setCurrentIndex( m_model->indexFromItem( item ) );
+        updateUI( m_model->indexFromItem( item ) );
+        return applySettings();
+    }
+    return false;
+}
+
 void ObjectEditor::onBrowse()
 {
     // NOTE:
@@ -1798,16 +1882,7 @@ void ObjectEditor::onBrowse()
         for( const QString& filePath : filePaths )
         {
             QString uuid = QUuid::createUuid().toString( QUuid::WithoutBraces );
-            ObjectInfoExtractor oie( filePath.toUtf8().constData() );
-            if( auto objectInfoOpt = oie.extractFromLocalFile() )
-            {
-                objectInfoOpt->uuid = uuid.toUtf8();
-                addObjectInfoToModel( *objectInfoOpt );
-            }
-            else
-            {
-                emit updateStatusBarMessage( tr( "Failed to load file: %1" ).arg( filePath ) );
-            }
+            addFile( filePath, uuid );
         }
         break;
     }
@@ -1818,13 +1893,7 @@ void ObjectEditor::onBrowse()
         if( dlg.exec() == QDialog::Accepted )
         {
             QString uuid = QUuid::createUuid().toString( QUuid::WithoutBraces );
-            m_web_sockets->sendTextMessage(
-                QJsonDocument( QJsonObject{
-                                  { QString::fromUtf8( Protocol::Key::Event ), QString::fromUtf8( Protocol::Events::SelectedFile ) },
-                                  { QString::fromUtf8( Protocol::Key::File ) , dlg.selectedFile() },
-                                  { QString::fromUtf8( Protocol::Key::UUID ) , uuid }
-                              } ).toJson( QJsonDocument::Compact )
-                );
+            addFile( dlg.selectedFile(), uuid );
         }
         break;
     }
@@ -1930,6 +1999,14 @@ void ObjectEditor::onDelete()
 
 void ObjectEditor::onApply()
 {
+    applySettings();
+}
+
+bool ObjectEditor::applySettings()
+{
+    if ( !m_is_operator ||
+         ( ( *m_viz_mode == Viz::Mode::RemoteClientAndServer || *m_viz_mode == Viz::Mode::RemoteInSitu ) &&
+           !m_web_sockets->isConnected() ) ) return false;
     // NOTE:フォーカス対象の最小最大オブジェクト座標の計算結果格納用変数
     kvs::Vec3 resultMinObjectCoords(
         std::numeric_limits<float>::max(),
@@ -2113,4 +2190,5 @@ void ObjectEditor::onApply()
 
         m_web_sockets->sendTextMessage( QJsonDocument( objectInfoParameter ).toJson( QJsonDocument::Compact ) );
     }
+    return true;
 }

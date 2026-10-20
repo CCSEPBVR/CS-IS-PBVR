@@ -26,6 +26,7 @@ public:
     ~ColorMapEditor();
     void setDefaultColorMap( const QVector<QColor>& colors );
     QVector<QColor> getColorMap();
+    void setPresetOnly();
 
 private:
     Ui::ColorMapEditor *ui;
@@ -38,6 +39,7 @@ private:
 
 private:
     QVector<QColor> m_default_colors;
+    bool m_preset_only = false;
 
 
 private slots:

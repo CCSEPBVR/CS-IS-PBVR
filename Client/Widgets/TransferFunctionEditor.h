@@ -30,8 +30,12 @@ public:
     explicit TransferFunctionEditor( WebSocketPair* websockets, QWidget *parent = nullptr );
     ~TransferFunctionEditor();
     void reset();
+    bool hasColorFunction( int number ) const;
+    QVector<QColor> colorMap( int number ) const;
+    bool applyColorMap( int number, const QVector<QColor>& colors );
 
 signals:
+    void colorMapsChanged();
     void transferFunctionUpdate();
     void updateLastSentTransferFunction( TransferFunction* lastSentTransferFunction );
 
@@ -65,6 +69,7 @@ private:
 
     void updateUIFromUserInput( UpdateTarget target );
     void updateUIFromServer( UpdateTarget target );
+    void sendTransferFunctionPatch( const QJsonObject& patch, const TransferFunction& sent );
 
     template <class F>
     void updateSelectedColorTransferFunction( QComboBox* combo, F&& func )

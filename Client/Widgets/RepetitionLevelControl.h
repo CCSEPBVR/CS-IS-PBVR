@@ -20,6 +20,7 @@ class RepetitionLevelControl : public QDockWidget
 public:
     explicit RepetitionLevelControl( kvs::qt::jaea::Screen* screen, kvs::StochasticRenderingCompositor* compositor, QWidget *parent = nullptr );
     ~RepetitionLevelControl();
+    void setRepetitionLevel( int level );
 
 signals:
     void shading( kvs::RendererBase* rendererBase );

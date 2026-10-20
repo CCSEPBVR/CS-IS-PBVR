@@ -231,12 +231,13 @@ void Communication::webSocketConnected()
     m_is_operator = true;
     emit updateOperatorState( m_is_operator );
     updateConnectionButtons();
+    emit connectionReady( m_is_operator );
 }
 
 void Communication::webSocketDisconnected()
 {
-    if ( m_netcdf_auxiliary_dialog ) m_netcdf_auxiliary_dialog->close();
     m_pending_initialize = QJsonObject{};
+    if ( m_netcdf_auxiliary_dialog ) m_netcdf_auxiliary_dialog->close();
     m_user_uuid.clear();
     *m_viz_mode = Viz::Mode::Local;
     m_user_id = -1;
@@ -246,20 +247,7 @@ void Communication::webSocketDisconnected()
     emit updateServerState( false );
     emit updateOperatorState( m_is_operator );
 
-    ui->localVizRadioButton               ->setEnabled( true );
-    ui->remoteVizClientServerRadioButton  ->setEnabled( true );
-    ui->remoteVizInsituRadioButton        ->setEnabled( true );
-
-    ui->uniformRadioButton                ->setEnabled( true );
-    ui->metropolisRadioButton             ->setEnabled( true );
-    ui->rejectionRadioButton              ->setEnabled( true );
-
-    ui->volumeDataFilePathLineEdit        ->setEnabled( true );
-    ui->volumeDataFilePathPushButton      ->setEnabled( true );
-    ui->transferFunctionFilePathLineEdit  ->setEnabled( true );
-    ui->transferFunctionFilePathPushButton->setEnabled( true );
-    ui->addressLineEdit                   ->setEnabled( true );
-    updateConnectionButtons();
+    setSettingsEnabled( true );
 
     ui->IDLineEdit->clear();
     ui->isOperatorLineEdit->clear();
@@ -332,6 +320,7 @@ void Communication::receiveOperator( const QJsonObject& payload )
     ui->isOperatorLineEdit->setText( m_is_operator ? "true" : "false" );
     ui->textBrowser->append( m_is_operator ? "--- You have operator privilege"
                                            : "--- You are not operator" );
+    updateConnectionButtons();
 }
 
 void Communication::receiveTransferOperator( const QJsonObject& payload )
@@ -344,6 +333,7 @@ void Communication::receiveTransferOperator( const QJsonObject& payload )
 
     ui->isOperatorLineEdit->setText( m_is_operator ? "true" : "false" );
     ui->textBrowser->append( QString( "--- Operator change [%1] to [%2]" ).arg( oldOperatorID ).arg( newOperatorID ) );
+    updateConnectionButtons();
 }
 
 void Communication::receiveChat( const QJsonObject& payload )
@@ -565,6 +555,20 @@ void Communication::updateVizMode()
 
 void Communication::onConnectClicked()
 {
+    if ( m_external_operation ) return;
+    connectToServer();
+}
+
+void Communication::configureRemoteVisualization( const QString& volumePath, const QString& transferFunctionPath )
+{
+    ui->remoteVizClientServerRadioButton->setChecked( true );
+    onModeClicked();
+    ui->volumeDataFilePathLineEdit->setText( volumePath );
+    ui->transferFunctionFilePathLineEdit->setText( transferFunctionPath );
+}
+
+void Communication::connectToServer()
+{
     if( m_web_sockets->state() != WebSocketPair::State::Disconnected )
     {
         emit updateStatusBarMessage( "A WebSocket connection is already active or changing state." );
@@ -581,6 +585,12 @@ void Communication::onConnectClicked()
 }
 
 void Communication::onDisconnectClicked()
+{
+    if ( m_external_operation ) return;
+    disconnectFromServer();
+}
+
+void Communication::disconnectFromServer()
 {
     const auto state = m_web_sockets->state();
     if( state == WebSocketPair::State::Disconnected )
@@ -638,6 +648,13 @@ void Communication::onTransferFunctionFilePathClicked()
 
 void Communication::onSettingsApplyClicked()
 {
+    if ( m_external_operation ) return;
+    applySettings();
+}
+
+void Communication::applySettings()
+{
+    if ( !m_is_operator || !m_pending_initialize.isEmpty() ) return;
     if( m_web_sockets->isConnected() )
     {
         // NOTE:モードが選択されていない場合は警告
@@ -653,7 +670,7 @@ void Communication::onSettingsApplyClicked()
         else if( ui->remoteVizClientServerRadioButton->isChecked() ) *m_viz_mode = Viz::Mode::RemoteClientAndServer;
         else if( ui->remoteVizInsituRadioButton->isChecked() )       *m_viz_mode = Viz::Mode::RemoteInSitu;
 
-        SamplingType samplingType;
+        SamplingType samplingType = SamplingType::Uniform;
         if( ui->uniformRadioButton->isChecked() )         samplingType = SamplingType::Uniform;
         else if( ui->metropolisRadioButton->isChecked() ) samplingType = SamplingType::Metropolis;
         else if( ui->rejectionRadioButton->isChecked() )  samplingType = SamplingType::Rejection;
@@ -688,6 +705,8 @@ void Communication::onSettingsApplyClicked()
                            { QString::fromUtf8( Protocol::Key::Format )                  , formatArray },
                            { QString::fromUtf8( Protocol::Key::RequestId )               , QUuid::createUuid().toString( QUuid::WithoutBraces ) },
                            };
+        emit initializationStarted();
+        updateConnectionButtons();
         sendPendingInitialize();
     }
 }
@@ -704,6 +723,7 @@ void Communication::sendPendingInitialize()
 void Communication::setSettingsEnabled( bool enabled )
 {
     m_settings_enabled = enabled;
+    enabled = enabled && !m_external_operation;
     ui->localVizRadioButton->setEnabled( enabled );
     ui->remoteVizClientServerRadioButton->setEnabled( enabled );
     ui->remoteVizInsituRadioButton->setEnabled( enabled );
@@ -718,12 +738,20 @@ void Communication::setSettingsEnabled( bool enabled )
     updateConnectionButtons();
 }
 
+void Communication::setOperationInProgress( bool inProgress )
+{
+    m_external_operation = inProgress;
+    setSettingsEnabled( m_settings_enabled );
+}
+
 void Communication::updateConnectionButtons()
 {
     const auto state = m_web_sockets->state();
-    ui->connectPushButton->setEnabled( m_settings_enabled && state == WebSocketPair::State::Disconnected );
-    ui->disconnectPushButton->setEnabled( state == WebSocketPair::State::Connecting ||
-                                          state == WebSocketPair::State::Connected );
+    ui->connectPushButton->setEnabled( !m_external_operation && m_settings_enabled && state == WebSocketPair::State::Disconnected );
+    ui->disconnectPushButton->setEnabled( !m_external_operation &&
+        ( state == WebSocketPair::State::Connecting || state == WebSocketPair::State::Connected ) );
+    ui->settingApplyPushButton->setEnabled( !m_external_operation && m_is_operator &&
+        state == WebSocketPair::State::Connected && m_pending_initialize.isEmpty() );
 }
 
 void Communication::showNetcdfAuxiliaryDialog(
@@ -738,8 +766,10 @@ void Communication::showNetcdfAuxiliaryDialog(
             m_netcdf_auxiliary_dialog = nullptr;
         } );
         connect( m_netcdf_auxiliary_dialog, &QDialog::rejected, this, [this]() {
+            if ( m_pending_initialize.isEmpty() ) return;
             m_pending_initialize = QJsonObject{};
             setSettingsEnabled( true );
+            emit initializationFinished( false, tr( "Initialization cancelled." ) );
         } );
         m_netcdf_auxiliary_dialog->setSubmitHandler( [this, kind]( const QString& path ) {
             const auto key = kind == NetcdfAuxiliaryFileDialog::Kind::CamConnectivity
@@ -895,6 +925,10 @@ void Communication::onTextWebSocketMessageReceived( const QString& receivedMessa
     else if( event == QString::fromUtf8( Protocol::Events::SharePoint ) )       receiveSharePoint( obj );
     else if( event == QString::fromUtf8( Protocol::Events::Initialize ) )
     {
+        // Ignore replies to a superseded request, while retaining legacy replies without IDs.
+        const QString replyId = obj.value( QString::fromUtf8( Protocol::Key::RequestId ) ).toString();
+        const QString pendingId = m_pending_initialize.value( QString::fromUtf8( Protocol::Key::RequestId ) ).toString();
+        if ( !replyId.isEmpty() && !pendingId.isEmpty() && replyId != pendingId ) return;
         const QString status = obj.value(
             QString::fromUtf8( Protocol::Key::Status ) ).toString();
         const QString message = obj.value(
@@ -919,36 +953,24 @@ void Communication::onTextWebSocketMessageReceived( const QString& receivedMessa
                 m_pending_initialize = QJsonObject{};
                 setSettingsEnabled( true );
                 emit updateStatusBarMessage( message );
+                emit initializationFinished( false, message );
             }
             return;
         }
         if ( status == QStringLiteral( "SurfaceOnly" ) ||
              status == QStringLiteral( "Unsupported" ) )
         {
-            if ( m_netcdf_auxiliary_dialog ) m_netcdf_auxiliary_dialog->close();
             m_pending_initialize = QJsonObject{};
+            if ( m_netcdf_auxiliary_dialog ) m_netcdf_auxiliary_dialog->close();
             setSettingsEnabled( true );
             emit updateStatusBarMessage( message );
+            emit initializationFinished( false, message );
             return;
         }
         if ( !status.isEmpty() && status != QStringLiteral( "ReadyVolume" ) ) return;
-        if ( m_netcdf_auxiliary_dialog ) m_netcdf_auxiliary_dialog->close();
         m_pending_initialize = QJsonObject{};
-        ui->localVizRadioButton               ->setEnabled( false );
-        ui->remoteVizClientServerRadioButton  ->setEnabled( false );
-        ui->remoteVizInsituRadioButton        ->setEnabled( false );
-
-        ui->uniformRadioButton                ->setEnabled( false );
-        ui->metropolisRadioButton             ->setEnabled( false );
-        ui->rejectionRadioButton              ->setEnabled( false );
-
-        ui->volumeDataFilePathLineEdit        ->setEnabled( false );
-        ui->volumeDataFilePathPushButton      ->setEnabled( false );
-        ui->transferFunctionFilePathLineEdit  ->setEnabled( false );
-        ui->transferFunctionFilePathPushButton->setEnabled( false );
-
-        ui->addressLineEdit                   ->setEnabled( false );
-        updateConnectionButtons();
+        if ( m_netcdf_auxiliary_dialog ) m_netcdf_auxiliary_dialog->close();
+        setSettingsEnabled( false );
 
         const QString kGlyphParameter            = QString::fromUtf8( Protocol::Key::GlyphParameter );
         const QString kPlotOverLineParameter     = QString::fromUtf8( Protocol::Key::PlotOverLineParameter );
@@ -974,6 +996,7 @@ void Communication::onTextWebSocketMessageReceived( const QString& receivedMessa
             const QJsonObject transferFunctionParameter = obj.value( kTransferFunctionParameter ).toObject();
             emit receiveTransferFunctionParameter( transferFunctionParameter );
         }
+        emit initializationFinished( true, message );
     }
     else if( event == QString::fromUtf8( Protocol::Events::RequestDataAt ) )
     {

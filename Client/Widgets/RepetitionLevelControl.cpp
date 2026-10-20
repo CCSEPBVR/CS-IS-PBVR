@@ -34,6 +34,12 @@ void RepetitionLevelControl::onSaveParameter( const QString& filePath )
 
 void RepetitionLevelControl::onApply()
 {
+    setRepetitionLevel( ui->spinBoxNewRepetitionLevel->value() );
+}
+
+void RepetitionLevelControl::setRepetitionLevel( int level )
+{
+    ui->spinBoxNewRepetitionLevel->setValue( level );
     const size_t repetitionLevel = static_cast<size_t>( ui->spinBoxNewRepetitionLevel->value() );
 
     const int size = m_screen->scene()->IDManager()->size();

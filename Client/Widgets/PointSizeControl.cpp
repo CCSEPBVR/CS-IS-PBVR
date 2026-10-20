@@ -1,5 +1,6 @@
 #include "PointSizeControl.h"
 #include "ui_PointSizeControl.h"
+#include <QSignalBlocker>
 
 PointSizeControl::PointSizeControl( kvs::qt::jaea::Screen* screen, QWidget *parent )
     : QDockWidget( parent )
@@ -27,6 +28,24 @@ void PointSizeControl::onSaveParameter( const QString& filePath )
 
 void PointSizeControl::onPointSizeValueChanged()
 {
+    setPointSize( ui->pointSizeDoubleSpinBox->value() );
+}
+
+void PointSizeControl::resetPointSize()
+{
+    setPointSize( 0.5 );
+}
+
+void PointSizeControl::applyToRenderer( kvs::RendererBase* renderer )
+{
+    if ( auto* particle = dynamic_cast<kvs::glsl::ParticleBasedRenderer*>( renderer ) )
+        particle->setDisplayPointSize( ui->pointSizeDoubleSpinBox->value() );
+}
+
+void PointSizeControl::setPointSize( double pointSize )
+{
+    const QSignalBlocker blocker( ui->pointSizeDoubleSpinBox );
+    ui->pointSizeDoubleSpinBox->setValue( pointSize );
     // NOTE:この処理はPlot Over Line機能(VRを含む)で使用している始点,終点のポイントオブジェクトには影響しません
     // kvs::glsl::ParticleBasedRendererを使用して表示しているもののみ影響します
     const auto displayPointSize = ui->pointSizeDoubleSpinBox->value();

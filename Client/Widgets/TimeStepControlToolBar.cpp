@@ -83,7 +83,10 @@ TimeStepControlToolBar::~TimeStepControlToolBar() {}
 
 void TimeStepControlToolBar::reset()
 {
-
+    m_timer.stop();
+    m_is_reverse_mode = false;
+    m_is_last_mode = false;
+    m_is_merging = false;
 }
 
 void TimeStepControlToolBar::onOperatorStateUpdate( const bool operatorState )

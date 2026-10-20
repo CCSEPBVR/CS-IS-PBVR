@@ -25,6 +25,7 @@
 
 #include "AnimationControl.h"
 #include "Communication.h"
+#include "SimpleSettingWidget.h"
 #include "GlyphEditor.h"
 #include "ObjectEditor.h"
 #include "PlotOverLineEditor.h"
@@ -120,6 +121,7 @@ private:
     ShadingControl* m_shading_control                  = nullptr; // KPI
     TransferFunctionEditor* m_transfer_function_editor = nullptr; // KPI WebSocket Operator
     VolumeTransform* m_volume_transform                = nullptr; // KPI
+    SimpleSettingWidget* m_simple_setting_widget       = nullptr;
 
     // Initializer
     void initializeToolBar();
@@ -127,6 +129,7 @@ private:
 
     void initializeAnimationControl();
     void initializeCommunication();
+    void initializeSimpleSettingWidget();
     void initializeGlyphEditor();
     void initializeObjectEditor();
     void initializePlotOverLineEditor();

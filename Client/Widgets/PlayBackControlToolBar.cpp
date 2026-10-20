@@ -267,8 +267,16 @@ void PlayBackControlToolBar::onKeepLast()
 
 void PlayBackControlToolBar::onJump()
 {
+    requestJump();
+}
+
+bool PlayBackControlToolBar::requestJump()
+{
+    if( !m_jump_push_button->isEnabled() ||
+        ( m_web_sockets->isConnected() && !m_is_operator ) ) return false;
     disableButtons();
     emit jump();
+    return true;
 }
 
 void PlayBackControlToolBar::onLoop()

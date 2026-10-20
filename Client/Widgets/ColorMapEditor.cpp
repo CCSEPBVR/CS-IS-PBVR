@@ -19,11 +19,35 @@ void ColorMapEditor::setDefaultColorMap( const QVector<QColor>& colors )
 {
     m_default_colors = colors;
     ui->colorMapPalette->setColors( colors );
+    if ( m_preset_only )
+    {
+        ui->colorMapTableWidget->clearSelection();
+        ui->colorMapTableWidget->setCurrentCell( -1, -1 );
+    }
 }
 
 QVector<QColor> ColorMapEditor::getColorMap()
 {
     return ui->colorMapPalette->getColors();
+}
+
+void ColorMapEditor::setPresetOnly()
+{
+    if ( m_preset_only ) return;
+    m_preset_only = true;
+    setWindowTitle( tr( "Color Map選択" ) );
+    ui->tabWidget->setCurrentIndex( 0 );
+    for ( int i = ui->tabWidget->count() - 1; i > 0; --i )
+        ui->tabWidget->removeTab( i );
+    ui->colorMapPalette->setAttribute( Qt::WA_TransparentForMouseEvents );
+    ui->undoPushButton->hide();
+    ui->redoPushButton->hide();
+    ui->resetPushButton->hide();
+    ui->applyPushButton->setText( tr( "選択" ) );
+    connect( ui->colorMapTableWidget, &QTableWidget::currentCellChanged, this,
+             [this]( int row, int column, int, int ) { onPresetColorMapDoubleClicked( row, column ); } );
+    connect( ui->colorMapTableWidget, &QTableWidget::cellClicked,
+             this, &ColorMapEditor::onPresetColorMapDoubleClicked );
 }
 
 void ColorMapEditor::initialize()
@@ -213,6 +237,7 @@ void ColorMapEditor::onTabChanged( int index )
 
 void ColorMapEditor::onPresetColorMapDoubleClicked( int row, int column )
 {
+    if ( row < 0 || column < 0 ) return;
     // セル内のウィジェット（cellWidget）を取得
     QWidget* cellWidget = ui->colorMapTableWidget->cellWidget( row, column );
     if( !cellWidget ) return;

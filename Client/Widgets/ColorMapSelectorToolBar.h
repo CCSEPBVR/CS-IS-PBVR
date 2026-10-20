@@ -27,6 +27,7 @@ public:
 signals:
 
 public slots:
+    void selectColorFunction( int number ); // One-based C number.
     void onTransferFunctionUpdate( TransferFunction* lastSentTransferFunction );
 
     void onLoadParameter( const QString& filePath ); // KPI

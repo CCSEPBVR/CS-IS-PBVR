@@ -45,6 +45,10 @@ GlyphEditor::~GlyphEditor()
 void GlyphEditor::reset()
 {
     m_has_last_snap_shot = false;
+    m_has_initial_settings = false;
+    m_has_variable_list = false;
+    m_default_color_map.clear();
+    m_variable_list.clear();
 }
 
 void GlyphEditor::onOperatorStateUpdate( const bool operatorState )
@@ -105,7 +109,13 @@ void GlyphEditor::onOperatorStateUpdate( const bool operatorState )
 
 void GlyphEditor::onUpdateNumberOfVector( const int numberOfVector )
 {
-    if( numberOfVector < 3 ) { return; }
+    m_has_variable_list = true;
+    if( numberOfVector < 3 )
+    {
+        m_variable_list.clear();
+        emit settingsReady();
+        return;
+    }
 
     m_variable_list.clear();
     for( int i = 0; i < numberOfVector; ++i )
@@ -124,6 +134,7 @@ void GlyphEditor::onUpdateNumberOfVector( const int numberOfVector )
 
     ui->sizeNumberOfVariablesSpinBox      ->setMaximum( numberOfVector );
     ui->colorDataNumberOfVariablesSpinBox ->setMaximum( numberOfVector );
+    emit settingsReady();
 }
 
 void GlyphEditor::onReceiveGlyphParameter( const QJsonObject& payload )
@@ -295,6 +306,13 @@ void GlyphEditor::onReceiveGlyphParameter( const QJsonObject& payload )
 
     m_last_snap_shot     = captureUiSnapshot();
     m_has_last_snap_shot = true;
+    if ( !m_has_initial_settings || m_initial_generation != m_web_sockets->generation() )
+    {
+        m_default_color_map = ui->colorMap->getColors();
+        m_has_initial_settings = payload.value( kColorMap ).isArray() && m_default_color_map.size() >= 2;
+        m_initial_generation = m_web_sockets->generation();
+    }
+    emit settingsReady();
 }
 
 void GlyphEditor::onLoadParameter( const QString& filePath )
@@ -507,13 +525,66 @@ void GlyphEditor::onColorDataNumberOfVariableValueChanged()
 
 void GlyphEditor::onApply()
 {
-    if( !m_web_sockets->isConnected() ) return;
+    applySettings();
+}
+
+bool GlyphEditor::hasInitialSettings() const
+{
+    return m_has_initial_settings && m_has_variable_list && m_has_last_snap_shot &&
+           m_initial_generation == m_web_sockets->generation();
+}
+
+bool GlyphEditor::applySimpleSettings( bool cityLBM, double scaleFactor )
+{
+    if ( !hasInitialSettings() || !m_is_operator || !m_web_sockets->isConnected() ) return false;
+    const int q1 = m_variable_list.indexOf( QStringLiteral( "q1" ) );
+    const int q2 = m_variable_list.indexOf( QStringLiteral( "q2" ) );
+    const int q3 = m_variable_list.indexOf( QStringLiteral( "q3" ) );
+    if ( q1 < 0 || q2 < 0 || q3 < 0 || m_default_color_map.size() < 2 ) return false;
+    ui->typeComboBox->setCurrentIndex( GlyphParameter::Arrow );
+    ui->scaleFactorDoubleSpinBox->setValue( scaleFactor );
+    {
+        const QSignalBlocker b1( ui->direction1ComboBox );
+        const QSignalBlocker b2( ui->direction2ComboBox );
+        const QSignalBlocker b3( ui->direction3ComboBox );
+        ui->direction1ComboBox->setCurrentIndex( q1 );
+        ui->direction2ComboBox->setCurrentIndex( q2 );
+        ui->direction3ComboBox->setCurrentIndex( q3 );
+    }
+    ui->sizeConstantRadioButton->setChecked( cityLBM );
+    ui->sizeVariableArrayRadioButton->setChecked( !cityLBM );
+    ui->sizeNumberOfVariablesSpinBox->setValue( cityLBM ? 1 : 3 );
+    updateVariableGridLayout( ui->sizeNumberOfVariablesSpinBox, ui->sizeVariableGridLayout );
+    ui->colorDataVariableArrayRadioButton->setChecked( true );
+    ui->colorDataNumberOfVariablesSpinBox->setValue( 3 );
+    updateVariableGridLayout( ui->colorDataNumberOfVariablesSpinBox, ui->colorDataVariableGridLayout );
+    const int variables[] = { q1, q2, q3 };
+    for ( int i = 0; i < 3; ++i )
+    {
+        if ( auto* item = ui->colorDataVariableGridLayout->itemAtPosition( i, 1 ) )
+            if ( auto* combo = qobject_cast<QComboBox*>( item->widget() ) ) combo->setCurrentIndex( variables[i] );
+        if ( auto* item = ui->sizeVariableGridLayout->itemAtPosition( i, 1 ) )
+            if ( auto* combo = qobject_cast<QComboBox*>( item->widget() ) ) combo->setCurrentIndex( variables[i] );
+    }
+    onSizeUiState();
+    onColorDataUiState();
+    ui->uniformRadioButton->setChecked( true );
+    ui->numberOfSamplePointsSpinBox->setValue( cityLBM ? 500 : 1000 );
+    ui->seedSpinBox->setValue( 1 );
+    ui->strideSpinBox->setValue( 3 );
+    ui->colorMap->setColors( m_default_color_map );
+    return applySettings();
+}
+
+bool GlyphEditor::applySettings()
+{
+    if( !m_is_operator || !m_web_sockets->isConnected() ) return false;
 
     if( !m_has_last_snap_shot )
     {
         m_last_snap_shot     = captureUiSnapshot();
         m_has_last_snap_shot = true;
-        return;
+        return false;
     }
 
     const auto kEvent                = QString::fromUtf8( Protocol::Key::Event );
@@ -593,7 +664,7 @@ void GlyphEditor::onApply()
 
     if( now.colorDataVariables != m_last_snap_shot.colorDataVariables ) putIntArray( kColorDataVariables, now.colorDataVariables );
 
-    if( diff.isEmpty() ) return;
+    if( diff.isEmpty() ) return true;
 
     QJsonObject glyphParameter;
     glyphParameter.insert( kEvent, QString::fromUtf8( Protocol::Events::GlyphParameter ) );
@@ -607,4 +678,5 @@ void GlyphEditor::onApply()
     m_last_snap_shot     = now;
     m_has_last_snap_shot = true;
     qDebug().noquote() << "[GlyphEditor::onApply] diff(pretty):\n" << QJsonDocument( glyphParameter ).toJson( QJsonDocument::Indented );
+    return true;
 }

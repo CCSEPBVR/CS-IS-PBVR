@@ -34,6 +34,7 @@ HEADERS += \
     RemoteFileDialog.h \
     RepetitionLevelControl.h \
     ShadingControl.h \
+    SimpleSettingWidget.h \
     TimeStepControlToolBar.h \
     TotalParticlesToolBar.h \
     TransferFunctionEditor.h \
@@ -60,6 +61,7 @@ SOURCES += \
     Preference.cpp \
     RepetitionLevelControl.cpp \
     ShadingControl.cpp \
+    SimpleSettingWidget.cpp \
     TimeStepControlToolBar.cpp \
     TotalParticlesToolBar.cpp \
     TransferFunctionEditor.cpp \

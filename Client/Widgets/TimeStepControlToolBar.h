@@ -22,6 +22,7 @@ public:
     explicit TimeStepControlToolBar( WebSocketPair* websockets, QWidget *parent = nullptr );
     ~TimeStepControlToolBar();
     void reset();
+    bool isDataRequestInProgress() const { return m_is_merging; }
 
 signals:
     void requestDataAt( const int requestTimeStep );

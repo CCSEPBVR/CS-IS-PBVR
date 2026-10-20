@@ -21,6 +21,13 @@ ColorMapSelectorToolBar::ColorMapSelectorToolBar( kvs::qt::jaea::Screen* screen,
 
 ColorMapSelectorToolBar::~ColorMapSelectorToolBar() {}
 
+void ColorMapSelectorToolBar::selectColorFunction( int number )
+{
+    if ( number < 1 || number > m_color_function_combo_box->count() ) return;
+    m_color_function_combo_box->setCurrentIndex( number - 1 );
+    updateCurrentIndex();
+}
+
 void ColorMapSelectorToolBar::onTransferFunctionUpdate( TransferFunction* tf )
 {
     if( !tf ) { return; }

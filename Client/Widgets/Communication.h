@@ -36,7 +36,17 @@ public:
     explicit Communication( kvs::qt::jaea::Screen* screen, WebSocketPair* webSockets, Viz::Mode* vizMode, QWidget *parent = nullptr );
     ~Communication();
 
+    bool isOperator() const { return m_is_operator; }
+    void configureRemoteVisualization( const QString& volumePath, const QString& transferFunctionPath );
+    void connectToServer();
+    void disconnectFromServer();
+    void applySettings();
+    void setOperationInProgress( bool inProgress );
+
 signals:
+    void connectionReady( bool isOperator );
+    void initializationStarted();
+    void initializationFinished( bool success, const QString& reason );
     void updateStatusBarMessage( const QString& message );
     void updateServerState( const bool serverState );     // true: 接続中 , false: 未接続
     void updateOperatorState( const bool operatorState ); // true: 権限有り, false: 権限無し
@@ -84,6 +94,7 @@ private:
     int m_user_id                   = -1;
     bool m_is_operator              = true;
     bool m_settings_enabled         = true;
+    bool m_external_operation       = false;
 
     kvs::PolygonObject* m_share_polygon_object = nullptr;
 
