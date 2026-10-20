@@ -117,3 +117,6 @@ build/
 # ===============================
 KVS/Source/SupportOpenXR/BuildRule.vc.mk
 KVS/Source/SupportQt/BuildRule.vc.mk
+
+build-pbvr_client-Desktop_Qt_6_11_1_MSVC2022_64bit-Release
+KVS/Install

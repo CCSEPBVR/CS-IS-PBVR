@@ -57,7 +57,7 @@ win32 {
         }
     }
     !isEmpty( KVS_ASSIMP_DIR ) {
-        LIBS += -L$$KVS_ASSIMP_DIR/lib -lassimp-vc143-mt
+        LIBS += -L$$KVS_ASSIMP_DIR/lib/Release -lassimp-vc143-mt
     }
 }
 
