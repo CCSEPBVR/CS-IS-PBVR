@@ -98,6 +98,9 @@ private:
 
     void redrawPlotFromBuffers( int index, bool resetView = false );
     void calculateInitialTranslation();
+    void setPointCoords( double x, double y, double z );
+    void onPointTranslationValueChanged();
+    void onPointCoordsValueChanged();
 
 public slots:
      void onDisplayGraphComboBoxChanged( int index );

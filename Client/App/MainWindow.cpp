@@ -61,6 +61,7 @@ MainWindow::MainWindow( kvs::qt::Application& app, QWidget *parent )
         connect( m_screen, &kvs::qt::jaea::Screen::loadKeyFrameFile  , m_animation_control    , &AnimationControl::onLoadKeyFrameFile );
         connect( m_screen, &kvs::qt::jaea::Screen::saveKeyFrameFile  , m_animation_control    , &AnimationControl::onSaveKeyFrameFile );
         connect( m_screen, &kvs::qt::jaea::Screen::updateTranslation , m_plot_over_line_editor, &PlotOverLineEditor::onUpdateTranslation );
+        connect( m_screen, &kvs::qt::jaea::Screen::updateTranslation , m_plot_over_time_editor, &PlotOverTimeEditor::onUpdateTranslation );
     }
 
     // NOTE:MainWindowのシグナルスロット接続

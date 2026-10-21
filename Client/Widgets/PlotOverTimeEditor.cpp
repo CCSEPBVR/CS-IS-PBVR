@@ -18,7 +18,7 @@ PlotOverTimeEditor::PlotOverTimeEditor( kvs::qt::jaea::Screen* screen, WebSocket
     ui->customPlotArea->addWidget( m_q_custom_plot );
     m_calculation_status = new QLabel( tr("POT: Idle"), this );
     m_calculation_status->setWordWrap( true );
-    ui->gridLayout_4->addWidget( m_calculation_status, 4, 0 );
+    ui->gridLayout_4->addWidget( m_calculation_status, 5, 0 );
 
     if( m_q_custom_plot->graphCount() == 0 )
     {
@@ -60,7 +60,7 @@ PlotOverTimeEditor::PlotOverTimeEditor( kvs::qt::jaea::Screen* screen, WebSocket
         0, 0, 0, 1
         ) );
 
-    // NOTE:予め始点終点、線を登録しておく
+    // NOTE:観測点のマーカーを予め登録しておく
     m_point_object = new kvs::PointObject( kvs::ValueArray<kvs::Real32>{ 0.0f, 0.0f, 0.0f } );
     m_point_object->setXform( initializeXform );
     m_point_object->setColor( kvs::RGBColor::Yellow() );
@@ -111,6 +111,15 @@ PlotOverTimeEditor::PlotOverTimeEditor( kvs::qt::jaea::Screen* screen, WebSocket
     connect( ui->plotOverTimeCheckBox   , &QCheckBox::toggled  , this, &PlotOverTimeEditor::onPlotOverTimeCheckBox );
     connect( ui->applyPushButton        , &QPushButton::clicked, this, &PlotOverTimeEditor::onApply );
 
+    connect( ui->pointTranslationXDoubleSpinBox, &QDoubleSpinBox::valueChanged, this, &PlotOverTimeEditor::onPointTranslationValueChanged );
+    connect( ui->pointTranslationYDoubleSpinBox, &QDoubleSpinBox::valueChanged, this, &PlotOverTimeEditor::onPointTranslationValueChanged );
+    connect( ui->pointTranslationZDoubleSpinBox, &QDoubleSpinBox::valueChanged, this, &PlotOverTimeEditor::onPointTranslationValueChanged );
+    connect( ui->pointCoordsXDoubleSpinBox, &QDoubleSpinBox::valueChanged, this, &PlotOverTimeEditor::onPointCoordsValueChanged );
+    connect( ui->pointCoordsYDoubleSpinBox, &QDoubleSpinBox::valueChanged, this, &PlotOverTimeEditor::onPointCoordsValueChanged );
+    connect( ui->pointCoordsZDoubleSpinBox, &QDoubleSpinBox::valueChanged, this, &PlotOverTimeEditor::onPointCoordsValueChanged );
+
+    onOperatorStateUpdate( m_is_operator );
+    setPointCoords( 0.0, 0.0, 0.0 );
     m_plot_inited = true;
 }
 
@@ -129,46 +138,8 @@ void PlotOverTimeEditor::reset()
     m_auto_fit = true;
     updateCalculationStatus();
 
-    ui->plotOverTimeCheckBox->setEnabled( false );
-
-    if( m_point_object != nullptr )
-    {
-        kvs::Xform currentObjectManagerXform = m_screen->scene()->objectManager()->xform(); // NOTE:ObjectManagerのxformを取得
-        float scalingFactor = 1 / ( currentObjectManagerXform.inverse() * m_point_object->xform() ).scaling().x();
-        float finalX = ( 0.0 - m_point_object->externalCenter().x() ) +
-                       ( (
-                            ( ( currentObjectManagerXform.translation().x() * currentObjectManagerXform.inverse().scaling().x() ) * currentObjectManagerXform.rotation()[0][0] ) +
-                            ( ( currentObjectManagerXform.translation().y() * currentObjectManagerXform.inverse().scaling().y() ) * currentObjectManagerXform.rotation()[1][0] ) +
-                            ( ( currentObjectManagerXform.translation().z() * currentObjectManagerXform.inverse().scaling().z() ) * currentObjectManagerXform.rotation()[2][0] )
-                            ) * scalingFactor
-                        ) +
-                       ( m_point_initial_translation.x() * scalingFactor );
-
-        float finalY = ( 0.0 - m_point_object->externalCenter().y() ) +
-                       ( (
-                            ( ( currentObjectManagerXform.translation().x() * currentObjectManagerXform.inverse().scaling().x() ) * currentObjectManagerXform.rotation()[0][1] ) +
-                            ( ( currentObjectManagerXform.translation().y() * currentObjectManagerXform.inverse().scaling().y() ) * currentObjectManagerXform.rotation()[1][1] ) +
-                            ( ( currentObjectManagerXform.translation().z() * currentObjectManagerXform.inverse().scaling().z() ) * currentObjectManagerXform.rotation()[2][1] )
-                            ) * scalingFactor
-                        ) +
-                       ( m_point_initial_translation.y() * scalingFactor );
-
-        float finalZ = ( 0.0 - m_point_object->externalCenter().z() ) +
-                       ( (
-                            ( ( currentObjectManagerXform.translation().x() * currentObjectManagerXform.inverse().scaling().x() ) * currentObjectManagerXform.rotation()[0][2] ) +
-                            ( ( currentObjectManagerXform.translation().y() * currentObjectManagerXform.inverse().scaling().y() ) * currentObjectManagerXform.rotation()[1][2] ) +
-                            ( ( currentObjectManagerXform.translation().z() * currentObjectManagerXform.inverse().scaling().z() ) * currentObjectManagerXform.rotation()[2][2] )
-                            ) * scalingFactor
-                        ) +
-                       ( m_point_initial_translation.z() * scalingFactor );
-
-        kvs::Xform rotation    = kvs::Xform::Rotation( m_point_object->xform().rotation() );
-        kvs::Xform scaling     = kvs::Xform::Scaling( m_point_object->xform().scaling() );
-        kvs::Xform translation = kvs::Xform::Translation( kvs::Vec3( finalX, finalY, finalZ ) );
-
-        kvs::Xform newXform = rotation * scaling * translation;
-        m_point_object->setXform( newXform );
-    }
+    onOperatorStateUpdate( false );
+    setPointCoords( 0.0, 0.0, 0.0 );
 }
 
 void PlotOverTimeEditor::onOperatorStateUpdate( const bool operatorState )
@@ -176,6 +147,8 @@ void PlotOverTimeEditor::onOperatorStateUpdate( const bool operatorState )
     m_is_operator = operatorState;
 
     ui->plotOverTimeCheckBox->setEnabled( m_is_operator );
+    ui->pointGroupBox->setEnabled( m_is_operator );
+    ui->applyPushButton->setEnabled( m_is_operator );
 }
 
 void PlotOverTimeEditor::onUpdateNumberOfVector( const int numberOfVector )
@@ -205,6 +178,7 @@ void PlotOverTimeEditor::onUpdateFocus( kvs::Vec3 resultMinObjectCoords, kvs::Ve
     {
         m_point_object->setMinMaxObjectCoords( resultMinObjectCoords, resultMaxObjectCoords );
         m_point_object->setMinMaxExternalCoords( resultMinObjectCoords, resultMaxObjectCoords );
+        onUpdateTranslation();
     }
 }
 
@@ -254,8 +228,95 @@ void PlotOverTimeEditor::onUpdateTranslation()
         kvs::Vec3 translation1       = newXform.translation();
         kvs::Vec3 corrected_position = inv_rotation * translation1;
 
+        const QSignalBlocker blockX( ui->pointTranslationXDoubleSpinBox );
+        const QSignalBlocker blockY( ui->pointTranslationYDoubleSpinBox );
+        const QSignalBlocker blockZ( ui->pointTranslationZDoubleSpinBox );
+        ui->pointTranslationXDoubleSpinBox->setValue(
+            corrected_position.x() * currentObjectManagerXform.inverse().scaling().x()
+            + currentObjectManagerXform.inverse().translation().x() );
+        ui->pointTranslationYDoubleSpinBox->setValue(
+            corrected_position.y() * currentObjectManagerXform.inverse().scaling().y()
+            + currentObjectManagerXform.inverse().translation().y() );
+        ui->pointTranslationZDoubleSpinBox->setValue(
+            corrected_position.z() * currentObjectManagerXform.inverse().scaling().z()
+            + currentObjectManagerXform.inverse().translation().z() );
+
         m_screen->update();
     }
+}
+
+void PlotOverTimeEditor::setPointCoords( double x, double y, double z )
+{
+    if ( !std::isfinite(x) || !std::isfinite(y) || !std::isfinite(z) ) return;
+
+    // Preserve received/VR precision; spin boxes only round the displayed values.
+    m_x_coord = x;
+    m_y_coord = y;
+    m_z_coord = z;
+    const QSignalBlocker blockX( ui->pointCoordsXDoubleSpinBox );
+    const QSignalBlocker blockY( ui->pointCoordsYDoubleSpinBox );
+    const QSignalBlocker blockZ( ui->pointCoordsZDoubleSpinBox );
+    ui->pointCoordsXDoubleSpinBox->setValue( x );
+    ui->pointCoordsYDoubleSpinBox->setValue( y );
+    ui->pointCoordsZDoubleSpinBox->setValue( z );
+    onUpdateTranslation();
+}
+
+void PlotOverTimeEditor::onPointCoordsValueChanged()
+{
+    setPointCoords( ui->pointCoordsXDoubleSpinBox->value(),
+                    ui->pointCoordsYDoubleSpinBox->value(),
+                    ui->pointCoordsZDoubleSpinBox->value() );
+}
+
+void PlotOverTimeEditor::onPointTranslationValueChanged()
+{
+    if ( !m_point_object ) return;
+
+    // Use the same Translation-to-Coords conversion as Plot Over Line.
+    const kvs::Xform manager = m_screen->scene()->objectManager()->xform();
+    const kvs::Xform inverse = manager.inverse();
+    const float scalingFactor = 1 / ( inverse * m_point_object->xform() ).scaling().x();
+    const double translationValues[3] = {
+        ui->pointTranslationXDoubleSpinBox->value(),
+        ui->pointTranslationYDoubleSpinBox->value(),
+        ui->pointTranslationZDoubleSpinBox->value()
+    };
+    kvs::Vec3 position;
+    for ( int axis = 0; axis < 3; ++axis )
+    {
+        double offset = 0.0;
+        for ( int component = 0; component < 3; ++component )
+        {
+            offset += manager.translation()[component] * inverse.scaling()[component]
+                      * manager.rotation()[component][axis];
+        }
+        position[axis] = ( translationValues[axis] + offset ) * scalingFactor;
+    }
+
+    const kvs::Xform transform =
+        kvs::Xform::Rotation( m_point_object->xform().rotation() ) *
+        kvs::Xform::Scaling( m_point_object->xform().scaling() ) *
+        kvs::Xform::Translation( position );
+    const kvs::Vec3 relativeTranslation = ( inverse * transform ).translation();
+    double coords[3];
+    QDoubleSpinBox* coordInputs[3] = {
+        ui->pointCoordsXDoubleSpinBox,
+        ui->pointCoordsYDoubleSpinBox,
+        ui->pointCoordsZDoubleSpinBox
+    };
+    for ( int axis = 0; axis < 3; ++axis )
+    {
+        const double movement = m_point_initial_translation[axis] - relativeTranslation[axis]
+                                - manager.translation()[axis] * inverse.scaling()[axis];
+        const double coordinate = -movement * scalingFactor
+                                  - manager.translation()[axis] * scalingFactor * inverse.scaling()[axis]
+                                  + m_point_object->externalCenter()[axis];
+        // Match the Coords input range before moving the marker.
+        coords[axis] = std::max( coordInputs[axis]->minimum(),
+                               std::min( coordinate, coordInputs[axis]->maximum() ) );
+    }
+    setPointCoords( coords[0], coords[1], coords[2] );
 }
 
 void PlotOverTimeEditor::onReceivePlotOverTimeParameter( const QJsonObject& payload )
@@ -302,10 +363,7 @@ void PlotOverTimeEditor::onReceivePlotOverTimeParameter( const QJsonObject& payl
             const auto coords = payload.value(kCoords).toArray();
             if ( coords.size() == 3 )
             {
-                m_x_coord = coords[0].toDouble();
-                m_y_coord = coords[1].toDouble();
-                m_z_coord = coords[2].toDouble();
-                onUpdateTranslation();
+                setPointCoords( coords[0].toDouble(), coords[1].toDouble(), coords[2].toDouble() );
             }
         }
     }
@@ -387,54 +445,7 @@ void PlotOverTimeEditor::onDrawVRPlotOverTime( kvs::Real32 coordArray[ 2 * 3 ] )
 {
     if( !m_web_sockets->isConnected() ) return;
 
-    if( m_point_object != nullptr )
-    {
-        kvs::Xform currentObjectManagerXform = m_screen->scene()->objectManager()->xform(); // NOTE:ObjectManagerのxformを取得
-        float scalingFactor = 1 / ( currentObjectManagerXform.inverse() * m_point_object->xform() ).scaling().x();
-        float finalX = ( coordArray[0] - m_point_object->externalCenter().x() ) +
-                       ( (
-                            ( ( currentObjectManagerXform.translation().x() * currentObjectManagerXform.inverse().scaling().x() ) * currentObjectManagerXform.rotation()[0][0] ) +
-                            ( ( currentObjectManagerXform.translation().y() * currentObjectManagerXform.inverse().scaling().y() ) * currentObjectManagerXform.rotation()[1][0] ) +
-                            ( ( currentObjectManagerXform.translation().z() * currentObjectManagerXform.inverse().scaling().z() ) * currentObjectManagerXform.rotation()[2][0] )
-                            ) * scalingFactor
-                        ) +
-                       ( m_point_initial_translation.x() * scalingFactor );
-
-        float finalY = ( coordArray[1] - m_point_object->externalCenter().y() ) +
-                       ( (
-                            ( ( currentObjectManagerXform.translation().x() * currentObjectManagerXform.inverse().scaling().x() ) * currentObjectManagerXform.rotation()[0][1] ) +
-                            ( ( currentObjectManagerXform.translation().y() * currentObjectManagerXform.inverse().scaling().y() ) * currentObjectManagerXform.rotation()[1][1] ) +
-                            ( ( currentObjectManagerXform.translation().z() * currentObjectManagerXform.inverse().scaling().z() ) * currentObjectManagerXform.rotation()[2][1] )
-                            ) * scalingFactor
-                        ) +
-                       ( m_point_initial_translation.y() * scalingFactor );
-
-        float finalZ = ( coordArray[2] - m_point_object->externalCenter().z() ) +
-                       ( (
-                            ( ( currentObjectManagerXform.translation().x() * currentObjectManagerXform.inverse().scaling().x() ) * currentObjectManagerXform.rotation()[0][2] ) +
-                            ( ( currentObjectManagerXform.translation().y() * currentObjectManagerXform.inverse().scaling().y() ) * currentObjectManagerXform.rotation()[1][2] ) +
-                            ( ( currentObjectManagerXform.translation().z() * currentObjectManagerXform.inverse().scaling().z() ) * currentObjectManagerXform.rotation()[2][2] )
-                            ) * scalingFactor
-                        ) +
-                       ( m_point_initial_translation.z() * scalingFactor );
-
-        kvs::Xform rotation    = kvs::Xform::Rotation( m_point_object->xform().rotation() );
-        kvs::Xform scaling     = kvs::Xform::Scaling( m_point_object->xform().scaling() );
-        kvs::Xform translation = kvs::Xform::Translation( kvs::Vec3( finalX, finalY, finalZ ) );
-
-        kvs::Xform newXform = rotation * scaling * translation;
-        m_point_object->setXform( newXform );
-
-        kvs::Mat3 inv_rotation       = currentObjectManagerXform.rotation().transposed();
-        kvs::Vec3 translation1       = newXform.translation();
-        kvs::Vec3 corrected_position = inv_rotation * translation1;
-
-        m_x_coord = coordArray[0];
-        m_y_coord = coordArray[1];
-        m_z_coord = coordArray[2];
-
-        m_screen->update();
-    }
+    setPointCoords( coordArray[0], coordArray[1], coordArray[2] );
 
     onApply();
 }
