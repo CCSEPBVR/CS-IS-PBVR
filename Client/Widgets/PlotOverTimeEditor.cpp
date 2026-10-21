@@ -346,7 +346,7 @@ void PlotOverTimeEditor::onReceivePlotOverTimeParameter( const QJsonObject& payl
         m_calculation_state = "idle";
         // Legacy IS settings have no CS observation metadata.
         const auto point = payload.value(kCoords).toArray();
-        if ( point != m_applied_point ) clearPlot();
+        // Retain IS history across observation point changes.
         m_applied_observation = QJsonObject();
         m_applied_point = point;
         m_pending_apply.clear();
@@ -576,7 +576,8 @@ void PlotOverTimeEditor::onApply()
     coords.append(static_cast<double>(static_cast<float>(m_x_coord)));
     coords.append(static_cast<double>(static_cast<float>(m_y_coord)));
     coords.append(static_cast<double>(static_cast<float>(m_z_coord)));
-    if ( coords != m_applied_point )
+    // Only CS starts a new plot when the observation point changes.
+    if ( !m_applied_observation.isEmpty() && coords != m_applied_point )
     {
         clearPlot();
         m_calculation_state = ui->plotOverTimeCheckBox->isChecked() ? "pending" : "idle";
