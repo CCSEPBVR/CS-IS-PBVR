@@ -39,6 +39,7 @@
 #include "../Widgets/ObjectEditor.h"
 #include "../Widgets/PlayBackControlToolBar.h"
 #include "../Widgets/RepetitionLevelControl.h"
+#include "../Widgets/ShadingControl.h"
 #include "../Widgets/TimeStepControlToolBar.h"
 #include "../Widgets/VolumeTransform.h"
 #include "TestAppContext.h"
@@ -338,11 +339,12 @@ void PlotOverTimeEditorTest::performs_plot_over_time_editor_cs_scenario()
     auto* object = window.findChild<ObjectEditor*>();
     auto* glyph = window.findChild<GlyphEditor*>();
     auto* repetition = window.findChild<RepetitionLevelControl*>();
+    auto* shading = window.findChild<ShadingControl*>();
     auto* transform = window.findChild<VolumeTransform*>();
     auto* plot_editor = window.findChild<PlotOverTimeEditor*>();
     auto* playback = window.findChild<::PlayBackControlToolBar*>();
     auto* time_control = window.findChild<TimeStepControlToolBar*>();
-    QVERIFY( communication && object && glyph && repetition && transform && plot_editor && playback && time_control );
+    QVERIFY( communication && object && glyph && repetition && shading && transform && plot_editor && playback && time_control );
     auto* plot = plot_editor->findChild<QCustomPlot*>();
     QVERIFY( plot );
     auto* coords_x = plot_editor->findChild<QDoubleSpinBox*>( "pointCoordsXDoubleSpinBox" );
@@ -465,6 +467,13 @@ void PlotOverTimeEditorTest::performs_plot_over_time_editor_cs_scenario()
         QVERIFY( current );
         QCOMPARE( current->text().toInt(), 16 );
         repetition->close();
+    } );
+
+    run_step( QStringLiteral( "Shading Control: Type=Noneを選択して閉じる。" ), [&]()
+    {
+        QVERIFY( openTool( window, shading, "Shading Control" ) );
+        QVERIFY( selectRadio( shading, "noneRadioButton" ) );
+        shading->close();
     } );
 
     run_step( QStringLiteral( "Plot Over Time: 有効化し、Coords=(0,0,0.5)の黄色い球を撮影する。" ), [&]()
