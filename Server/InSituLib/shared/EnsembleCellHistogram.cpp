@@ -20,6 +20,7 @@
 #include <vismodule/QuadraticHexahedralCell>
 #include <vismodule/QuadraticTetrahedralCell>
 #include <vismodule/TetrahedralCell>
+#include <vismodule/TrilinearInterpolator>
 
 namespace
 {
@@ -195,6 +196,95 @@ bool EvaluateCellCenterValues(
                 {
                     cells[v]->bindCell( static_cast<vismodule::UInt32>( cell_id ) );
                     float value = static_cast<float>( cells[v]->localGravityPointValue() );
+                    // Ensemble moments require a fixed sample count. Invalid values are
+                    // converted to zero here instead of changing N per cell/variable.
+                    if ( !std::isfinite( value ) ) value = 0.0f;
+                    cell_values[CellValueIndex( v, cell_id, ncells )] = value;
+                }
+            }
+        }
+    }
+
+    return true;
+}
+
+/*===========================================================================*/
+/**
+ *  @brief  構造格子のセル重心値。非構造版 EvaluateCellCenterValues の対応物。
+ *
+ *  局所座標は格子単位なので、セル (i,j,k) の重心は (i+0.5, j+0.5, k+0.5) になる
+ *  （attachPoint_woSIMD() が static_cast<size_t>(point.x()) で格子を決め、
+ *    小数部を補間の重みにする）。
+ *  setCellLength() は微分の出力にしか効かず値の補間は変えないので設定しない。
+ *
+ *  単点ずつ評価するので woSIMD の組を使う。scalar_woSIMD() は
+ *  const float* value コンストラクタが設定する m_reference_value を読むので、
+ *  この補間器の作り方と整合する（scalar() の側は m_reference_volume を読むため使えない）。
+ *
+ *  注意: TrilinearInterpolator は const float* を取るため float の場に限る。
+ *  構造格子版の粒子生成（EnsembleParticleGenerator.cpp）も同じ前提である。
+ */
+/*===========================================================================*/
+bool EvaluateCellCenterValuesStruct(
+    Type** values,
+    int nvariables,
+    int nx,
+    int ny,
+    int nz,
+    std::vector<float>& cell_values )
+{
+    if ( values == NULL || nvariables <= 0 ) return false;
+    if ( nx < 2 || ny < 2 || nz < 2 ) return false;
+    for ( int v = 0; v < nvariables; ++v )
+    {
+        if ( values[v] == NULL ) return false;
+    }
+
+    const int cx = nx - 1;
+    const int cy = ny - 1;
+    const int cz = nz - 1;
+    const int ncells = cx * cy * cz;
+    if ( ncells <= 0 ) return false;
+
+    const vismodule::Vector3ui resolution(
+        static_cast<unsigned int>( nx ),
+        static_cast<unsigned int>( ny ),
+        static_cast<unsigned int>( nz ) );
+
+    const std::size_t value_count =
+        static_cast<std::size_t>( nvariables ) * static_cast<std::size_t>( ncells );
+    cell_values.assign( value_count, 0.0f );
+
+#ifdef _OPENMP
+#pragma omp parallel
+#endif
+    {
+        // 補間器はスレッドごとに持つ（attachPoint が内部状態を書くため共有できない）。
+        std::vector< std::unique_ptr< vismodule::TrilinearInterpolator > > ip;
+        for ( int v = 0; v < nvariables; ++v )
+        {
+            ip.push_back( std::unique_ptr< vismodule::TrilinearInterpolator >(
+                new vismodule::TrilinearInterpolator( values[v], resolution ) ) );
+        }
+
+        if ( ip.size() == static_cast<std::size_t>( nvariables ) )
+        {
+#ifdef _OPENMP
+#pragma omp for schedule(static)
+#endif
+            for ( int cell_id = 0; cell_id < ncells; ++cell_id )
+            {
+                const int i = cell_id % cx;
+                const int j = ( cell_id / cx ) % cy;
+                const int k = cell_id / ( cx * cy );
+                const vismodule::Vector3f center(
+                    static_cast<float>( i ) + 0.5f,
+                    static_cast<float>( j ) + 0.5f,
+                    static_cast<float>( k ) + 0.5f );
+                for ( int v = 0; v < nvariables; ++v )
+                {
+                    ip[v]->attachPoint_woSIMD( center );
+                    float value = ip[v]->scalar_woSIMD<float>();
                     // Ensemble moments require a fixed sample count. Invalid values are
                     // converted to zero here instead of changing N per cell/variable.
                     if ( !std::isfinite( value ) ) value = 0.0f;
@@ -851,88 +941,36 @@ bool StoreGlobalCellHistogramToParticleProperty(
     return true;
 }
 
-bool ComputeAndStoreEnsembleCellHistogram(
-    Type** values,
+/*===========================================================================*/
+/**
+ *  @brief  セル重心値から先の処理。格子の種類に依らない。
+ *
+ *  非構造格子と構造格子で違うのは第1段（セル重心値の評価）だけなので、
+ *  アンサンブル統計量の集約・ヒストグラム・伝達関数への格納はここに集約する。
+ *  cell_values は CellValueIndex() の並びで nvariables * ncells 個。
+ *
+ *  ヘッダには出さないので static にしてこのファイル内に閉じる。
+ */
+/*===========================================================================*/
+static bool ComputeAndStoreFromCellValues(
+    const std::vector<float>& cell_values,
     int nvariables,
-    float* coordinates,
-    int ncoords,
-    unsigned int* connections,
     int ncells,
-    const vismodule::VolumeObjectBase::CellType& celltype,
     MPI_Comm ensemble_comm,
     int nbins,
-    ParticleProperty& particle_property,
-    EnsembleCellHistogramLog* log )
-{
-    EnsembleStatisticRange average_range;
-    EnsembleStatisticRange variance_range;
-    EnsembleStatisticRange co_variation_range;
-    return ComputeAndStoreEnsembleCellHistogram(
-        values,
-        nvariables,
-        coordinates,
-        ncoords,
-        connections,
-        ncells,
-        celltype,
-        ensemble_comm,
-        nbins,
-        particle_property,
-        average_range,
-        variance_range,
-        co_variation_range,
-        log );
-}
-
-bool ComputeAndStoreEnsembleCellHistogram(
-    Type** values,
-    int nvariables,
-    float* coordinates,
-    int ncoords,
-    unsigned int* connections,
-    int ncells,
-    const vismodule::VolumeObjectBase::CellType& celltype,
-    MPI_Comm ensemble_comm,
-    int nbins,
+    int tf_number,
     ParticleProperty& particle_property,
     EnsembleStatisticRange& average_range,
     EnsembleStatisticRange& variance_range,
     EnsembleStatisticRange& co_variation_range,
     EnsembleCellHistogramLog* log )
 {
-    // Candidate integration point: call this from kvs_wrapper.cpp/kvs_ewrapper.cpp
-    // after ParticleProperty is initialized and before OutputEnsembleStatisticHistory().
-    // It computes cell-center ensemble statistics only; no particle sampling is done.
-    if ( nbins <= 0 ) nbins = DEFAULT_NBINS;
-    if ( nbins != DEFAULT_NBINS ) return false;
-    if ( !ValidInput( values, nvariables, coordinates, ncoords, connections, ncells ) ) return false;
-
     const int mpi_rank = CommRank( ensemble_comm );
     const int ensemble_size = CommSize( ensemble_comm );
-    //const int tf_number = static_cast<int>( particle_property.m_transfunc_array.size() );
-    const int tf_number = nvariables; // 各変数のヒストグラムを計算する
-    if ( tf_number <= 0 ) return false;
-
-    if ( log != NULL )
-    {
-        log->nvariables = nvariables;
-        log->ncells = ncells;
-        log->nbins = nbins;
-        log->comm_size = ensemble_size;
-        log->histogram_bytes =
-            static_cast<std::size_t>( 3 ) * static_cast<std::size_t>( nvariables ) *
-            static_cast<std::size_t>( nbins ) * sizeof( int );
-    }
-
-    std::vector<float> cell_values;
-    double start = SecondsNow();
-    if ( !EvaluateCellCenterValues(
-             values, nvariables, coordinates, ncoords, connections, ncells, celltype, cell_values ) ) return false;
-    if ( log != NULL ) log->cell_center_eval_seconds += SecondsNow() - start;
 
     std::vector<float> sum_values;
     std::vector<float> sumsq_values;
-    start = SecondsNow();
+    double start = SecondsNow();
     if ( !ReduceEnsembleMoments( cell_values, nvariables, ncells, ensemble_comm, sum_values, sumsq_values ) ) return false;
     if ( log != NULL ) log->ensemble_moments_mpi_seconds += SecondsNow() - start;
 
@@ -993,6 +1031,138 @@ bool ComputeAndStoreEnsembleCellHistogram(
         particle_property.m_coefficient_of_variation_transfer_function_array );
 
     return true;
+}
+
+bool ComputeAndStoreEnsembleCellHistogram(
+    Type** values,
+    int nvariables,
+    float* coordinates,
+    int ncoords,
+    unsigned int* connections,
+    int ncells,
+    const vismodule::VolumeObjectBase::CellType& celltype,
+    MPI_Comm ensemble_comm,
+    int nbins,
+    ParticleProperty& particle_property,
+    EnsembleCellHistogramLog* log )
+{
+    EnsembleStatisticRange average_range;
+    EnsembleStatisticRange variance_range;
+    EnsembleStatisticRange co_variation_range;
+    return ComputeAndStoreEnsembleCellHistogram(
+        values,
+        nvariables,
+        coordinates,
+        ncoords,
+        connections,
+        ncells,
+        celltype,
+        ensemble_comm,
+        nbins,
+        particle_property,
+        average_range,
+        variance_range,
+        co_variation_range,
+        log );
+}
+
+bool ComputeAndStoreEnsembleCellHistogram(
+    Type** values,
+    int nvariables,
+    float* coordinates,
+    int ncoords,
+    unsigned int* connections,
+    int ncells,
+    const vismodule::VolumeObjectBase::CellType& celltype,
+    MPI_Comm ensemble_comm,
+    int nbins,
+    ParticleProperty& particle_property,
+    EnsembleStatisticRange& average_range,
+    EnsembleStatisticRange& variance_range,
+    EnsembleStatisticRange& co_variation_range,
+    EnsembleCellHistogramLog* log )
+{
+    // Candidate integration point: call this from kvs_wrapper.cpp/kvs_ewrapper.cpp
+    // after ParticleProperty is initialized and before OutputEnsembleStatisticHistory().
+    // It computes cell-center ensemble statistics only; no particle sampling is done.
+    if ( nbins <= 0 ) nbins = DEFAULT_NBINS;
+    if ( nbins != DEFAULT_NBINS ) return false;
+    if ( !ValidInput( values, nvariables, coordinates, ncoords, connections, ncells ) ) return false;
+
+    const int ensemble_size = CommSize( ensemble_comm );
+    //const int tf_number = static_cast<int>( particle_property.m_transfunc_array.size() );
+    const int tf_number = nvariables; // 各変数のヒストグラムを計算する
+    if ( tf_number <= 0 ) return false;
+
+    if ( log != NULL )
+    {
+        log->nvariables = nvariables;
+        log->ncells = ncells;
+        log->nbins = nbins;
+        log->comm_size = ensemble_size;
+        log->histogram_bytes =
+            static_cast<std::size_t>( 3 ) * static_cast<std::size_t>( nvariables ) *
+            static_cast<std::size_t>( nbins ) * sizeof( int );
+    }
+
+    std::vector<float> cell_values;
+    double start = SecondsNow();
+    if ( !EvaluateCellCenterValues(
+             values, nvariables, coordinates, ncoords, connections, ncells, celltype, cell_values ) ) return false;
+    if ( log != NULL ) log->cell_center_eval_seconds += SecondsNow() - start;
+
+    return ComputeAndStoreFromCellValues(
+        cell_values, nvariables, ncells, ensemble_comm, nbins, tf_number,
+        particle_property, average_range, variance_range, co_variation_range, log );
+}
+
+bool ComputeAndStoreEnsembleCellHistogramStruct(
+    Type** values,
+    int nvariables,
+    int nx,
+    int ny,
+    int nz,
+    MPI_Comm ensemble_comm,
+    int nbins,
+    ParticleProperty& particle_property,
+    EnsembleStatisticRange& average_range,
+    EnsembleStatisticRange& variance_range,
+    EnsembleStatisticRange& co_variation_range,
+    EnsembleCellHistogramLog* log )
+{
+    // 非構造版との違いはセル重心値の作り方だけ。以降は共通経路を通る。
+    if ( nbins <= 0 ) nbins = DEFAULT_NBINS;
+    if ( nbins != DEFAULT_NBINS ) return false;
+    if ( values == NULL || nvariables <= 0 ) return false;
+    if ( nx < 2 || ny < 2 || nz < 2 ) return false;
+
+    const int ncells = ( nx - 1 ) * ( ny - 1 ) * ( nz - 1 );
+    if ( ncells <= 0 ) return false;
+
+    const int ensemble_size = CommSize( ensemble_comm );
+    const int tf_number = nvariables; // 各変数のヒストグラムを計算する
+    if ( tf_number <= 0 ) return false;
+
+    if ( log != NULL )
+    {
+        log->nvariables = nvariables;
+        log->ncells = ncells;
+        log->nbins = nbins;
+        log->comm_size = ensemble_size;
+        log->histogram_bytes =
+            static_cast<std::size_t>( 3 ) * static_cast<std::size_t>( nvariables ) *
+            static_cast<std::size_t>( nbins ) * sizeof( int );
+    }
+
+    std::vector<float> cell_values;
+    const double start = SecondsNow();
+    if ( !EvaluateCellCenterValuesStruct(
+             values, nvariables, nx, ny, nz, cell_values ) ) return false;
+    if ( log != NULL ) log->cell_center_eval_seconds += SecondsNow() - start;
+
+    return ComputeAndStoreFromCellValues(
+        cell_values, nvariables, ncells, ensemble_comm, nbins, tf_number,
+        particle_property, average_range, variance_range, co_variation_range, log );
 }
 
 void PrintEnsembleCellHistogramLog( const EnsembleCellHistogramLog& log, std::ostream& os )

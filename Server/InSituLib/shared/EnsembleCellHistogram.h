@@ -154,6 +154,27 @@ bool ComputeAndStoreEnsembleCellHistogram(
     EnsembleStatisticRange& co_variation_range,
     EnsembleCellHistogramLog* log = NULL );
 
+/*  構造格子版。connections が無いのでセル重心の値は三線形補間器で評価する。
+ *  非構造版 ComputeAndStoreEnsembleCellHistogram との違いは第1段(セル重心値の
+ *  評価)だけで、アンサンブル統計量・ヒストグラム・伝達関数への格納は同じ経路を通る。
+ *
+ *  nx/ny/nz は節点数(dom.resolution)。セル数は (nx-1)(ny-1)(nz-1) になる。
+ *  domain_parameters_struct を引数に取らないのは、このヘッダに
+ *  CellByCellParticleGenerator への依存を持ち込まないため。 */
+bool ComputeAndStoreEnsembleCellHistogramStruct(
+    Type** values,
+    int nvariables,
+    int nx,
+    int ny,
+    int nz,
+    MPI_Comm ensemble_comm,
+    int nbins,
+    ParticleProperty& particle_property,
+    EnsembleStatisticRange& average_range,
+    EnsembleStatisticRange& variance_range,
+    EnsembleStatisticRange& co_variation_range,
+    EnsembleCellHistogramLog* log = NULL );
+
 void PrintEnsembleCellHistogramLog(
     const EnsembleCellHistogramLog& log,
     std::ostream& os );

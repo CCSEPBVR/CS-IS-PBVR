@@ -26,6 +26,7 @@
 #include <vismodule/GenerateGlyph>
 #include <vismodule/GeneratePOL>
 
+#include "../shared/EnsembleCellHistogram.h"   // ComputeAndStoreEnsembleCellHistogramStruct (default.json が無いときの例外処理)
 #include "../shared/EnsembleParticleGenerator.h" // GenerateEnsembleParticlesStruct, EnsembleParticleArrays, EnsembleStatisticRange
 #include "EnsembleStatisticOutput.h"           // OutputEnsembleStatisticParticles/History, EnsembleParticleFilePrefix (shared)
 
@@ -521,6 +522,13 @@ bool ensemble_generate_particles(
         nvariables, object_generation_enabled
     );
 
+    // default.json が読めなかったときは粒子を作らず、変数の値域とヒストグラムだけを
+    // 履歴へ出す(非構造版 ensemble_generate_particles と同じ配線)。
+    // 既定の伝達関数(SetDefaultParticleParameter)はアンサンブル用の3配列
+    // (mean/variance/cov)を埋めないため、そのまま GenerateEnsembleParticlesStruct に
+    // 入れると空 vector の [0] を読んで落ちる(EnsembleParticleGenerator.cpp:4244)。
+    const bool gen_flag = object_generation_enabled;
+
     // アンサンブル統計量粒子(ave/var/cov)の格納先と統計レンジ
     vismodule::EnsembleParticleArrays average;
     vismodule::EnsembleParticleArrays variance;
@@ -533,6 +541,46 @@ bool ensemble_generate_particles(
     setparam_timer.stop();
     ensemble_timer.add( vismodule::EnsembleTimerReadParameterFile, setparam_timer.sec() );
 #endif
+    // 伝達関数の本数。粒子を作らない経路では各変数のヒストグラムを出すので nvariables。
+    const int tf_number = gen_flag
+                        ? static_cast<int>( particle_property.m_transfunc_array.size() )
+                        : nvariables;
+
+    if ( !gen_flag )
+    {
+        vismodule::EnsembleCellHistogramLog histogram_log;
+        bool hist_ok = false;
+        {
+#ifdef ENABLE_ENSEMBLE_TIMER
+            vismodule::EnsembleTimerScope sc( &ensemble_timer, vismodule::EnsembleTimerStatHistogram );
+#endif
+            hist_ok = vismodule::ComputeAndStoreEnsembleCellHistogramStruct(
+                values,
+                nvariables,
+                static_cast<int>( dom.resolution[0] ),
+                static_cast<int>( dom.resolution[1] ),
+                static_cast<int>( dom.resolution[2] ),
+                MPI_COMM_WORLD, // ensemble_comm があればそれを渡す
+                DEFAULT_NBINS,
+                particle_property,
+                average_range,
+                variance_range,
+                co_variation_range,
+                &histogram_log );
+        }
+
+        if ( hist_ok )
+        {
+#ifdef ENABLE_ENSEMBLE_TIMER
+            vismodule::EnsembleTimerScope sc( &ensemble_timer, vismodule::EnsembleTimerOutputHistory );
+#endif
+            pbvr::OutputEnsembleStatisticHistory(
+                particle_property, tf_number, nvariables, historyFilePath,
+                average_range, variance_range, co_variation_range );
+        }
+    }
+    else
+    {
     // 構造格子版の計算本体
 //    particle_property.m_log_scale_statistics = true; // スタブデータ(検証用。default.json連携時に有効化 or 削除)
     bool ok = vismodule::GenerateEnsembleParticlesStruct(
@@ -559,7 +607,6 @@ bool ensemble_generate_particles(
     }
 
     // アンサンブル統計量粒子(ave/var/cov)と統計履歴を出力(非構造版 ensemble_generate_particles と同じ配線)
-    const int tf_number = particle_property.m_transfunc_array.size();
     const std::string averageFilePrefix     = pbvr::EnsembleParticleFilePrefix( particleFilePrefix, "ave_" );
     const std::string varianceFilePrefix    = pbvr::EnsembleParticleFilePrefix( particleFilePrefix, "var_" );
     const std::string coefficientFilePrefix = pbvr::EnsembleParticleFilePrefix( particleFilePrefix, "cov_" );
@@ -600,6 +647,7 @@ bool ensemble_generate_particles(
 #ifdef ENABLE_ENSEMBLE_TIMER
     }
 #endif
+    } // if ( !gen_flag ) ... else
 
 #ifdef ENABLE_ENSEMBLE_TIMER
     vismodule::Timer tail_timer; tail_timer.start();
