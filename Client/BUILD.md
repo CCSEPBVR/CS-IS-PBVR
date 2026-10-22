@@ -84,6 +84,14 @@ KVS のランタイム用シェーダーとフォントリソースは、ビル�
 
 このコピー処理は `Client/KvsRuntimeResources.pri` にまとめて定義されており、`Client/App/App.pro` と `Client/Tests/Tests.pro` の両方から読み込まれます。
 
+## macOS のテストアプリ署名
+
+macOS では `Tests.pro` のリンク後処理が、KVS リソースのコピー後に `pbvr_client_qtest.app` を自動署名します。署名前に Font と Shader を `Contents/Resources` に移し、従来の `Contents/MacOS` 配下には参照用シンボリックリンクを置きます。有効な Apple Development 証明書を使用すると、再ビルド後も画面収録の許可を維持できます。利用できる証明書は、通常のターミナルで `security find-identity -v -p codesigning` を実行して確認できます。
+
+macOS の Preference 設定はユーザーの AppConfigLocation に保存します。旧 `Contents/MacOS/config.ini` があれば署名前に `Contents/Resources/config.ini` へ移し、ユーザー設定が未作成の場合は初回起動時に内容を引き継ぎます。
+
+有効な Apple Development 署名 ID が1つなら自動選択します。複数ある場合は、Qt Creator のビルド環境に `PBVR_TEST_CODESIGN_IDENTITY` を設定し、使用する署名 ID の40桁のハッシュを指定できます。署名 ID が0件または複数件で未指定の場合、指定した ID が無効な場合、Apple Development 署名・検証が失敗した場合は、`WARNING` を表示してアドホック署名を試します。アドホック署名・検証も失敗した場合は `WARNING` を表示してビルドを続行しますが、アプリを起動できない可能性があります。アドホック署名では、再ビルド後に画面収録の許可を再要求される場合があります。KVS リソースのコピー・移動など、署名以外のエラーはビルドエラーとして扱います。`.pro` を変更した後は qmake を再実行して Makefile を更新してください。このリンク後処理は qmake の Makefile ビルド向けです。
+
 ## 注意点
 
 - KVS ランタイムリソースのコピー方法を変更する場合は、各 `.pro` ファイルを個別に編集せず、`Client/KvsRuntimeResources.pri` を更新してください。

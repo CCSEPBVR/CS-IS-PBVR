@@ -346,3 +346,9 @@ unix:!macx {
 }
 
 include(../KvsRuntimeResources.pri)
+
+# Sign the completed macOS test bundle after KVS resources have been copied.
+macx {
+    PRE_TARGETDEPS += $$PWD/sign-test-app.sh
+    QMAKE_POST_LINK += && /bin/sh $$shell_quote($$PWD/sign-test-app.sh) $$shell_quote($$OUT_PWD/$${TARGET}.app)
+}
