@@ -3,8 +3,10 @@
 
 #include <QColor>
 #include <QByteArray>
+#include <QJsonObject>
 #include <QObject>
 #include <QString>
+#include <QStringList>
 #include <QVector>
 
 #include <array>
@@ -13,7 +15,9 @@
 
 class ColorMap;
 class Communication;
+class QAction;
 class EnsembleTransferFunctionEditor;
+class Histogram;
 class MainWindow;
 class ObjectEditor;
 class OpacityMap;
@@ -25,6 +29,8 @@ class QFileDialog;
 class QJsonObject;
 class QLabel;
 class QLineEdit;
+class QMenu;
+class QMessageBox;
 class QPushButton;
 class QRadioButton;
 class QSignalSpy;
@@ -122,6 +128,47 @@ private:
         QPushButton* volume_transform_apply_button = nullptr;
         ColorMap* color_map = nullptr;
         OpacityMap* opacity_map = nullptr;
+        Histogram* histogram = nullptr;
+        QComboBox* color_function_combo_box = nullptr;
+    };
+
+    // ---- チェックシート項目(C-ETF-xx / C-MB-15 / C-CMS-02)用 ----
+    struct ItemResult
+    {
+        QString id;
+        QString title;
+        QString status = QStringLiteral( "NOT RUN" ); // PASS / FAIL / SKIP / NOT RUN
+        QStringList messages;                        // 失敗理由・補足
+        QStringList images;                          // テスト用ファイル名
+    };
+
+    struct ManualImage
+    {
+        QString item_id;
+        int seq = 0;
+        QString test_file_name;   // img/ 直下のファイル名
+        QString manual_rel_path;  // img/manual/ からの相対パス
+        bool copied = false;
+        int time_step = -1;
+    };
+
+    struct ItemContext
+    {
+        ClientHandles client;
+        QSignalSpy* request_spy = nullptr;
+        QSignalSpy* completion_spy = nullptr;
+        QSignalSpy* parameter_spy = nullptr;
+        QSignalSpy* request_parameter_spy = nullptr;
+        QSignalSpy* selected_file_spy = nullptr; // Communication::receiveSelectedFile(Initialize の ObjectInfo、IsEnsemble を含む)
+        QString baseline_variable;
+        std::array<StatisticState, 3> baseline_states;
+    };
+
+    struct WarningCapture
+    {
+        bool shown = false;
+        QString text;
+        QString title;
     };
 
 private slots:
@@ -145,6 +192,7 @@ private:
         const ParticleUpdateResult& update_result );
     void writeMarkdownReport() const;
     void writeImportedSettings( QTextStream& stream ) const;
+    void writeCheckSheetSections( QTextStream& stream ) const;
     void markStepCompleted( const QString& description );
     ClientHandles resolveClientHandles( MainWindow& window ) const;
     void connectClient( const ClientHandles& client ) const;
@@ -178,6 +226,16 @@ private:
     bool responseMatchesExpectedSettings(
         const QJsonObject& payload,
         const std::array<StatisticState, 3>& expected,
+        const QString& expected_variable,
+        QString* why = nullptr ) const;
+    int notifiedMaxTimeStepAt( int index ) const;
+    int latestNotifiedMaxTimeStep() const;
+    void writeMismatchDiagnostics(
+        const QString& tag,
+        int time_step,
+        const QString& reason,
+        const QJsonObject& payload,
+        const std::array<StatisticState, 3>& expected,
         const QString& expected_variable ) const;
     bool waitForAppliedParticles(
         const ClientHandles& client,
@@ -208,10 +266,79 @@ private:
         const QString& expected_variable,
         const std::array<StatisticState, 3>& expected ) const;
 
+    // ---- チェックシート項目の共通ヘルパー ----
+    QString configuredValue( const char* name ) const;
+    QString configuredPathOrEmpty( const char* name ) const;
+    bool check( ItemResult& result, bool condition, const QString& message ) const;
+    void skipItem( ItemResult& result, const QString& reason );
+    void finishItem( ItemResult& result );
+    bool captureManual(
+        ItemResult& result,
+        QWidget* window,
+        int seq,
+        const QString& content,
+        const QString& manual_rel_path,
+        int time_step = -1 );
+    QMenu* findToolsMenu( MainWindow* window ) const;
+    QAction* findAction( MainWindow* window, const QString& text, bool exclude_ensemble ) const;
+    QMessageBox* findVisibleMessageBox() const;
+    WarningCapture expectWarning(
+        ItemResult& result,
+        const std::function<void()>& trigger,
+        const QString& expected_text,
+        int seq,
+        const QString& content,
+        const QString& manual_rel_path,
+        const std::function<void()>& inspect_while_open = std::function<void()>() );
+    bool verifyNoWarning( ItemResult& result, int wait_ms ) const;
+    bool applyAndWait(
+        ItemContext& ctx,
+        int statistic_index,
+        bool require_particle_change,
+        ParticleUpdateResult* update_result );
+    QJsonObject latestRequestPayload( const ItemContext& ctx ) const;
+    QJsonObject patchForStatistic( const QJsonObject& payload, const QString& statistic ) const;
+    bool waitForNoParameter( QSignalSpy& spy, int wait_ms ) const;
+    QJsonObject readJsonObject( const QString& path, bool* ok ) const;
+    bool writeJsonObject( const QString& path, const QJsonObject& root ) const;
+    QString latestHistoryJsonPath() const;
+    QString defaultJsonPath() const;
+    bool statesEqual( const StatisticState& a, const StatisticState& b, QString* why ) const;
+    void restoreBaseline( ItemContext& ctx ) const;
+    int totalParticles( const ClientHandles& client ) const;
+
+    // ---- チェックシート項目 ----
+    void runItemMenuBar15( ItemContext& ctx, MainWindow& window );
+    void runItemColorMapSelector02( ItemContext& ctx );
+    void runItemEditorOpened15_2( ItemContext& ctx );
+    void runItem01Variable( ItemContext& ctx );
+    void runItem02Statistic( ItemContext& ctx );
+    void runItem03ColorMap( ItemContext& ctx );
+    void runItem04OpacityMap( ItemContext& ctx );
+    void runItem05Histogram( ItemContext& ctx );
+    void runItem06And08RangeMode( ItemContext& ctx );
+    void runItem07UserMinMax( ItemContext& ctx );
+    void runItem09ServerMinMax( ItemContext& ctx );
+    void runItem10Apply( ItemContext& ctx );
+    void runItem11SecondClient( ItemContext& ctx );
+    void runItem12Export( ItemContext& ctx );
+    void runItem13Import( ItemContext& ctx );
+    void runItem14EmptyVariable( ItemContext& ctx );
+    void runItem15MinMaxInvalid( ItemContext& ctx );
+    void runItem17InvalidJson( ItemContext& ctx );
+    void runItem18MissingKeys( ItemContext& ctx );
+    void runItem19And16DisconnectReconnect( ItemContext& ctx, MainWindow& window );
+    void runCheckSheetItems( ItemContext& ctx, MainWindow& window );
+    // 基本シナリオ(3統計×6ケース、Export/Import)の各ケースを FAIL として記録し、QVERIFY で中断せずに続行する
+    void recordBaseCase( const QString& title, bool ok, const QString& failure_message );
+    void writeBaseCaseSection( QTextStream& stream ) const;
+
     QString m_output_dir_path;
     QString m_screenshot_dir_path;
+    QString m_manual_dir_path;
     QString m_report_path;
     QString m_export_path;
+    QString m_item_export_path;
     std::vector<ScreenshotPair> m_screenshot_pairs;
     std::vector<StepEntry> m_steps;
     QString m_import_variable;
@@ -223,6 +350,18 @@ private:
     bool m_test_succeeded = false;
     QObject* m_render_screen_object = nullptr;
     int m_render_paint_count = 0;
+
+    std::vector<ItemResult> m_item_results;
+    std::vector<ManualImage> m_manual_images;
+    std::vector<ItemResult> m_base_results;   // 基本シナリオのケース結果
+    QString m_last_wait_failure;               // waitForAppliedParticles が false を返した理由
+    QString m_current_case_name;               // 診断 JSON のファイル名に使うケース名
+    QSignalSpy* m_latest_step_spy = nullptr;   // Communication::updateObjectLatestTimeStep(LatestTimeStep: UpdateMaxTimeStep)
+    int m_last_post_apply_threshold = -1;      // 直近の Apply 後に判定対象としたしきい値ステップ(M' + マージン)
+    QJsonObject m_last_request_payload;
+    int m_last_request_time_step = -1;
+    QString m_vis_param_dir;
+    QString m_current_item_id;
 };
 }
 

@@ -101,12 +101,24 @@
 #include "EnsembleTransferFunctionTest.h"
 #endif
 
+#ifdef PBVR_ENABLE_TEST_REPETITIONLEVELCONTROL_INSITU
+#include "RepetitionLevelControlInSituTest.h"
+#endif
+
+#ifdef PBVR_ENABLE_TEST_ENSEMBLE_INSITU_MODE
+#include "EnsembleInSituModeTest.h"
+#endif
+
 #ifdef PBVR_ENABLE_TEST_VOLUMETRANSFORM
 #include "VolumeTransformTest.h"
 #endif
 
 #ifdef PBVR_ENABLE_TEST_TRANSFERFUNCTIONEDITOR_IMPORTEXPORT
 #include "TransferFunctionEditorImportExportTest.h"
+#endif
+
+#ifdef PBVR_ENABLE_TEST_TRANSFERFUNCTIONEDITOR_IMPORT_INVALID_FILE
+#include "TransferFunctionEditorImportInvalidFileTest.h"
 #endif
 
 #ifdef PBVR_ENABLE_TEST_TRANSFERFUNCTIONEDITOR_CHANGE_TRANSFER_FUNCTION_NUMBER
@@ -351,6 +363,22 @@ int runEnabledTests( int argc, char** argv )
     }
 #endif
 
+#ifdef PBVR_ENABLE_TEST_REPETITIONLEVELCONTROL_INSITU
+    {
+        has_enabled_test = true;
+        ClientTests::RepetitionLevelControlInSituTest test;
+        result |= qExecWithCleanup( &test, argc, argv );
+    }
+#endif
+
+#ifdef PBVR_ENABLE_TEST_ENSEMBLE_INSITU_MODE
+    {
+        has_enabled_test = true;
+        ClientTests::EnsembleInSituModeTest test;
+        result |= qExecWithCleanup( &test, argc, argv );
+    }
+#endif
+
 #ifdef PBVR_ENABLE_TEST_VOLUMETRANSFORM
     {
         has_enabled_test = true;
@@ -363,6 +391,14 @@ int runEnabledTests( int argc, char** argv )
     {
         has_enabled_test = true;
         TransferFunctionEditorTest::ImportExportTest test;
+        result |= qExecWithCleanup( &test, argc, argv );
+    }
+#endif
+
+#ifdef PBVR_ENABLE_TEST_TRANSFERFUNCTIONEDITOR_IMPORT_INVALID_FILE
+    {
+        has_enabled_test = true;
+        TransferFunctionEditorTest::ImportInvalidFileTest test;
         result |= qExecWithCleanup( &test, argc, argv );
     }
 #endif
