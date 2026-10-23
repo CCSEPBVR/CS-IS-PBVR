@@ -18,6 +18,11 @@ TARGET = Widgets
 #  Header.
 #=============================================================================
 HEADERS += \
+    MCPWidget.h \
+    ../MCP/MCPFileChannel.h \
+    ../MCP/MCPProtocol.h \
+    ../MCP/MCPState.h \
+    ../MCP/MCPWorker.h \
     AnimationControl.h \
     ColorMapEditor.h \
     ColorMapSelectorToolBar.h \
@@ -47,6 +52,11 @@ HEADERS += \
 #  Source.
 #=============================================================================
 SOURCES += \
+    MCPWidget.cpp \
+    ../MCP/MCPFileChannel.cpp \
+    ../MCP/MCPProtocol.cpp \
+    ../MCP/MCPState.cpp \
+    ../MCP/MCPWorker.cpp \
     AnimationControl.cpp \
     ColorMapEditor.cpp \
     ColorMapSelectorToolBar.cpp \
@@ -73,6 +83,7 @@ SOURCES += \
 #  Forms.
 #=============================================================================
 FORMS += \
+    MCPWidget.ui \
     AnimationControl.ui \
     ColorMapEditor.ui \
     Communication.ui \

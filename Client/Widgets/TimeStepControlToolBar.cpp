@@ -85,8 +85,9 @@ TimeStepControlToolBar::~TimeStepControlToolBar() {}
 
 void TimeStepControlToolBar::reset()
 {
+    onAllDataRemoved();
+
     // 切断された要求の完了通知は届かないため、待機状態もここで破棄する。
-    m_timer.stop();
     m_is_merging = false;
     m_is_reverse_mode = false;
     m_is_last_mode = false;
@@ -95,9 +96,22 @@ void TimeStepControlToolBar::reset()
     const QSignalBlocker next_blocker( m_next_time_step_spin_box );
     const QSignalBlocker min_blocker( m_min_limit_time_step_spin_box );
     const QSignalBlocker max_blocker( m_max_limit_time_step_spin_box );
-    m_current_time_step_line_edit->clear();
     m_next_time_step_spin_box->setWrapping( false );
     onUpdateTotalTimeStepRange( 0, 0, false );
+}
+
+void TimeStepControlToolBar::onAllDataRemoved()
+{
+    // Do not auto-load a subsequently registered dataset via a running timer.
+    // Keep the in-flight gate until ObjectEditor has drained the old request.
+    m_timer.stop();
+    m_applied_time_step = -1;
+    m_current_time_step_line_edit->clear();
+}
+
+void TimeStepControlToolBar::onDataRequestDiscarded()
+{
+    m_is_merging = false;
 }
 
 void TimeStepControlToolBar::onOperatorStateUpdate( const bool operatorState )
@@ -146,6 +160,7 @@ void TimeStepControlToolBar::onUpdateTotalTimeStepRange( int min, int max, const
 
 void TimeStepControlToolBar::onDataRequestCompleted( const int requestTimeStep )
 {
+    m_applied_time_step = requestTimeStep;
     m_current_time_step_line_edit->setText( QString::number( requestTimeStep ) );
     m_is_merging = false;
     emit dataRequestCompleted( requestTimeStep );

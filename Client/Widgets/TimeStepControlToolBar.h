@@ -22,6 +22,7 @@ public:
     explicit TimeStepControlToolBar( WebSocketPair* websockets, QWidget *parent = nullptr );
     ~TimeStepControlToolBar();
     void reset();
+    int appliedTimeStep() const { return m_applied_time_step; }
 
 signals:
     void requestDataAt( const int requestTimeStep );
@@ -35,6 +36,8 @@ public slots:
 
     void onUpdateTotalTimeStepRange( const int min, const int max, const bool isSingleObject );
     void onDataRequestCompleted( const int requestTimeStep );
+    void onAllDataRemoved();
+    void onDataRequestDiscarded();
 
     void onFirst();
     void onPrevious();
@@ -75,6 +78,7 @@ private:
     bool m_is_reverse_mode  = false;
     bool m_is_last_mode     = false;
     bool m_is_merging       = false;
+    int m_applied_time_step = -1; // last completed request, never the Next input
 
     void decrementTimeStep();
     void incrementTimeStep();

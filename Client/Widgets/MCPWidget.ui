@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MCPWidget</class>
+ <widget class="QDockWidget" name="MCPWidget">
+  <property name="windowTitle"><string>MCP</string></property>
+  <widget class="QWidget" name="dockWidgetContents">
+   <layout class="QVBoxLayout" name="verticalLayout">
+    <item><widget class="QListWidget" name="entries">
+     <property name="minimumSize"><size><width>420</width><height>180</height></size></property>
+     <property name="wordWrap"><bool>true</bool></property>
+     <property name="textElideMode"><enum>Qt::ElideNone</enum></property>
+    </widget></item>
+   </layout>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "pbvr": {
+      "command": "/home/your-user/path/to/CS-IS-PBVR/Client/MCP/.venv/bin/python",
+      "args": ["/home/your-user/path/to/CS-IS-PBVR/Client/MCP/server.py"],
+      "env": {
+        "PBVR_CTRL_DIR": "/home/your-user/path/to/CS-IS-PBVR/Client/MCP/ctrl",
+        "PBVR_MCP_TIMEOUT_SECONDS": "120"
+      }
+    }
+  }
+}
