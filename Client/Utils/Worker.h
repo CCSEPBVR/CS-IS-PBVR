@@ -2,6 +2,8 @@
 #define WORKER_H
 #include <QObject>
 #include <QStandardItem>
+#include <QVariantList>
+#include <QThread>
 
 #include "Screen.h"
 #include "../../Shared/ObjectInfoExtractor.h"
@@ -12,26 +14,33 @@ class Worker : public QObject
 public:
     explicit Worker( QStandardItemModel* model, kvs::qt::jaea::Screen* screen, int requestTimeStep, kvs::Vec3 resultMinObjectCoords, kvs::Vec3 resultMaxObjectCoords, bool skipServerManagedFormats = false, QObject* parent = nullptr )
         : QObject( parent )
-        , m_model( model )
-        , m_screen( screen )
         , m_request_time_step( requestTimeStep )
         , m_result_min_object_coords( resultMinObjectCoords )
         , m_result_max_object_coords( resultMaxObjectCoords )
         , m_skip_server_managed_formats( skipServerManagedFormats )
     {
+        Q_UNUSED( screen ); // Import operates only on value snapshots and new objects.
+        // Constructor runs on the GUI thread. The worker never touches the
+        // QStandardItemModel while importing (get_state may read it meanwhile).
+        Q_ASSERT( QThread::currentThread() == model->thread() );
+        for( int row = 0; row < model->rowCount(); ++row )
+        {
+            const auto* item = model->item( row, 0 );
+            if( !item ) continue;
+            const auto value = item->data( Qt::UserRole );
+            if( !value.canConvert<ObjectInfoExtractor::ObjectInfo>() ) continue;
+            auto info = value.value<ObjectInfoExtractor::ObjectInfo>();
+            info.object = nullptr; // Input snapshot never owns the live scene object.
+            m_objects.append( QVariant::fromValue( info ) );
+        }
     }
 
 public slots:
     void process()
     {
-        for( int row = 0; row < m_model->rowCount(); row++ )
+        QVariantList results;
+        for( const auto& var : m_objects )
         {
-            QStandardItem* item = m_model->item( row, 0 ); // UserRoleにObjectInfoが格納されている列
-            if( !item ) continue;
-
-            QVariant var = item->data( Qt::UserRole );
-            if( !var.canConvert<ObjectInfoExtractor::ObjectInfo>() ) continue;
-
             ObjectInfoExtractor::ObjectInfo info = var.value<ObjectInfoExtractor::ObjectInfo>();
 
             if( m_skip_server_managed_formats &&
@@ -91,14 +100,14 @@ public slots:
 
                     QVariant newVar;
                     newVar.setValue( info );
-                    item->setData( newVar, Qt::UserRole );
+                    results.append( newVar );
                 }
                 else
                 {
                     info.object = nullptr;
                     QVariant newVar;
                     newVar.setValue( info );
-                    item->setData( newVar, Qt::UserRole );
+                    results.append( newVar );
                 }
             }
             else
@@ -106,18 +115,19 @@ public slots:
                 info.object = nullptr;
                 QVariant newVar;
                 newVar.setValue( info );
-                item->setData( newVar, Qt::UserRole );
+                results.append( newVar );
             }
         }
+        emit objectsImported( results );
         emit done();
     }
 
 signals:
+    void objectsImported( const QVariantList& results );
     void done(); // 完了通知
 
 private:
-    QStandardItemModel* m_model;
-    kvs::qt::jaea::Screen* m_screen = nullptr;
+    QVariantList m_objects;
 
     int m_request_time_step;
     kvs::Vec3 m_result_min_object_coords;

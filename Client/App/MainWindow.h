@@ -35,6 +35,10 @@
 #include "ShadingControl.h"
 #include "TransferFunctionEditor.h"
 #include "VolumeTransform.h"
+#include "MCPWidget.h"
+
+class QThread;
+class MCPWorker;
 
 namespace Ui
 {
@@ -120,6 +124,9 @@ private:
     ShadingControl* m_shading_control                  = nullptr; // KPI
     TransferFunctionEditor* m_transfer_function_editor = nullptr; // KPI WebSocket Operator
     VolumeTransform* m_volume_transform                = nullptr; // KPI
+    MCPWidget* m_mcp_widget = nullptr;
+    QThread* m_mcp_thread = nullptr;
+    MCPWorker* m_mcp_worker = nullptr;
 
     // Initializer
     void initializeToolBar();
@@ -137,6 +144,8 @@ private:
     void initializeShadingControl();
     void initializeTransferFunctionEditor();
     void initializeVolumeTransform();
+    void initializeMCP();
+    void stopMCP();
 
     void initializeShaderAndFonts();
 

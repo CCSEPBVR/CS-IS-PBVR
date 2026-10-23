@@ -1,0 +1,2 @@
+# Same MCP SDK version as the Phase 4 handoff; no image dependencies.
+mcp==1.27.2

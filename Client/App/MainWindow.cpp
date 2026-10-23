@@ -1,6 +1,10 @@
 #include "MainWindow.h"
 #include "ui_MainWindow.h"
 #include <QPushButton>
+#include <QThread>
+#include <QCoreApplication>
+#include "../MCP/MCPWorker.h"
+#include "../MCP/MCPState.h"
 #include <kvs/EventTimer>
 #include <kvs/PointImporter>
 #include <kvs/PolygonImporter>
@@ -194,10 +198,12 @@ MainWindow::MainWindow( kvs::qt::Application& app, QWidget *parent )
     m_dummy_object->setNormalType( kvs::PolygonObject::VertexNormal );
     m_dummy_object->setOpacity( 128 );
     m_screen->registerObject( m_dummy_object, new kvs::StochasticPolygonRenderer() );
+    initializeMCP();
 }
 
 MainWindow::~MainWindow()
 {
+    stopMCP(); // Finish file work before deleting scene, mode or GUI objects.
     if ( m_compositor && m_compositor->eventTimer() )
     {
         m_compositor->eventTimer()->stop();
@@ -216,6 +222,51 @@ MainWindow::~MainWindow()
     delete m_compositor;
     delete m_screen;
     delete ui;
+}
+
+void MainWindow::initializeMCP()
+{
+    m_mcp_widget = new MCPWidget( this );
+    addDockWidget( Qt::LeftDockWidgetArea, m_mcp_widget );
+    m_mcp_widget->hide();
+    ui->menuTools->addAction( m_mcp_widget->toggleViewAction() );
+#ifdef OPENXR_SCREEN
+    m_mcp_widget->appendEntry( "error", "MCP currently supports the normal screen only" );
+#else
+    m_mcp_thread = new QThread( this );
+    m_mcp_worker = new MCPWorker;
+    m_mcp_worker->moveToThread( m_mcp_thread );
+    connect( m_mcp_thread, &QThread::started, m_mcp_worker, &MCPWorker::start );
+    connect( m_mcp_thread, &QThread::finished, m_mcp_worker, &QObject::deleteLater );
+    connect( m_mcp_worker, &MCPWorker::logEntry, m_mcp_widget,
+             &MCPWidget::appendEntry, Qt::QueuedConnection );
+    connect( m_mcp_worker, &MCPWorker::stateRequested, this,
+        [this]( const QString& requestId )
+        {
+            if( !m_mcp_worker ) return;
+            const auto state = MCPState::collect( m_screen, m_compositor, *m_viz_mode,
+                                                  m_object_editor, m_time_step_control_tool_bar );
+            // Only Qt value types cross threads. No scene/GUI pointers escape.
+            QMetaObject::invokeMethod( m_mcp_worker, "complete", Qt::QueuedConnection,
+                Q_ARG( QString, requestId ), Q_ARG( QVariantMap, state ) );
+        }, Qt::QueuedConnection );
+    connect( QCoreApplication::instance(), &QCoreApplication::aboutToQuit,
+             this, &MainWindow::stopMCP );
+    m_mcp_thread->start();
+#endif
+}
+
+void MainWindow::stopMCP()
+{
+    if( !m_mcp_thread || !m_mcp_worker ) return;
+    disconnect( m_mcp_worker, nullptr, this, nullptr );
+    if( m_mcp_thread->isRunning() )
+    {
+        QMetaObject::invokeMethod( m_mcp_worker, "stop", Qt::BlockingQueuedConnection );
+        m_mcp_thread->quit();
+        m_mcp_thread->wait();
+    }
+    m_mcp_worker = nullptr;
 }
 
 void MainWindow::onUpdateFocus( kvs::Vec3 resultMinObjectCoords, kvs::Vec3 resultMaxObjectCoords )
@@ -525,6 +576,9 @@ void MainWindow::initializeObjectEditor()
         connect( m_object_editor, &ObjectEditor::shading, m_shading_control, &ShadingControl::onShading );
 
         connect( m_object_editor, &ObjectEditor::dataRequestCompleted    , m_time_step_control_tool_bar, &TimeStepControlToolBar::onDataRequestCompleted );
+        connect( m_object_editor, &ObjectEditor::allDataRemoved, m_time_step_control_tool_bar, &TimeStepControlToolBar::onAllDataRemoved );
+        connect( m_object_editor, &ObjectEditor::dataRequestDiscarded, m_time_step_control_tool_bar, &TimeStepControlToolBar::onDataRequestDiscarded );
+        connect( m_object_editor, &ObjectEditor::dataRequestDiscarded, m_play_back_control_tool_bar, &PlayBackControlToolBar::onDataRequestCompleted );
     }
 }
 

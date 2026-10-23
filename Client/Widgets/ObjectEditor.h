@@ -4,6 +4,8 @@
 #include <unordered_set>
 
 #include <QDockWidget>
+#include <QHash>
+#include <QVariantList>
 #include <QColorDialog>
 #include <QFileDialog>
 
@@ -37,6 +39,9 @@ public:
     explicit ObjectEditor( kvs::qt::jaea::Screen* screen, WebSocketPair* websockets, Viz::Mode* vizMode, QWidget *parent = nullptr );
     ~ObjectEditor();
     void reset();
+    // Value-only snapshot of registered dataset metadata and live scene objects.
+    // Must be called on the GUI thread; never imports data or changes state.
+    QVariantList mcpObjects() const;
 
 signals:
     void updateStatusBarMessage( const QString& message );
@@ -46,6 +51,8 @@ signals:
     void updateTranslation();
     void shading( kvs::RendererBase* );
     void dataRequestCompleted( const int requestTimeStep );
+    void allDataRemoved();
+    void dataRequestDiscarded(); // Finished without applying a current dataset.
 
 public slots:
     void onOperatorStateUpdate( const bool operatorState ); // true: 権限有り, false: 権限無し
@@ -80,6 +87,7 @@ private:
     bool m_is_operator              = true;
 
     QStandardItemModel *m_model     = nullptr;
+    QHash<int, int> m_registered_time_steps; // copied at scene registration/replacement
 
     QList<QWidget*> m_group_common_object_widgets;              // 全オブジェクト共通で表示させるウィジェット群
     QList<QWidget*> m_group_common_server_point_object_widgets; // サーバポイントオブジェクト(ClientServer/In-Situ)で表示させるウィジェット群
@@ -91,6 +99,9 @@ private:
     kvs::Vec3 m_result_max_object_coords;
 
     int m_pending_request_time_step = -1;
+    quint64 m_data_generation = 0;    // GUI-only; invalidated on full removal/reset.
+    quint64 m_request_generation = 0; // Dataset generation of the in-flight request.
+    quint64 m_request_serial = 0;     // Distinguishes queued callbacks across reset.
     bool m_is_waiting_local_request = false;
     bool m_is_waiting_server_request = false;
 
@@ -112,7 +123,10 @@ private:
     void requestServerDataAt( const int requestTimeStep );
     void beginHybridDataRequest( const int requestTimeStep );
     void completeLocalDataRequest( const int requestTimeStep );
+    void applyImportedObjects( const QVariantList& results );
     void completeServerDataRequest( const int requestTimeStep );
+    void invalidateDataRequests();
+    void finishDataRequest();
     void dataRequestComplete(
         const int requestTimeStep,
         const bool notifyCompletion = true,

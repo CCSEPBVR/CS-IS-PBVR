@@ -1,5 +1,49 @@
 #include "ObjectEditor.h"
 #include "ui_ObjectEditor.h"
+#include "../MCP/MCPState.h"
+#include <QThread>
+
+QVariantList ObjectEditor::mcpObjects() const
+{
+    Q_ASSERT( QThread::currentThread() == thread() );
+    QVariantList result;
+    for( int row = 0; row < m_model->rowCount(); ++row )
+    {
+        const auto* item = m_model->item( row, 0 );
+        if( !item ) continue;
+        const auto value = item->data( Qt::UserRole );
+        if( !value.canConvert<ObjectInfoExtractor::ObjectInfo>() ) continue;
+        const auto info = value.value<ObjectInfoExtractor::ObjectInfo>();
+        // Read the registered scene object, not info.object (which can be pending
+        // replacement data). Dummy and overlays are not ObjectEditor datasets.
+        auto* object = info.objectID.first < 0 ? nullptr :
+            m_screen->scene()->objectManager()->object( info.objectID.first );
+        result.append( QVariantMap{
+            { "uuid", QString::fromStdString( info.uuid ) },
+            { "name", QString::fromStdString( info.name ) },
+            { "format", int( info.format ) },
+            { "format_name", QString::fromStdString( ObjectInfoExtractor::formatToString( info.format ) ) },
+            { "loaded", object != nullptr },
+            { "visible", object && object->isVisible() },
+            { "display_enabled", info.isDisplay },
+            { "object_id", object ? QVariant( info.objectID.first ) : QVariant() },
+            { "current_time_step", object && m_registered_time_steps.value( info.objectID.first, -1 ) >= 0 ?
+                  QVariant( m_registered_time_steps.value( info.objectID.first ) ) : QVariant() },
+            { "time_step_min", info.timeStep.first < 0 ? QVariant() : QVariant( info.timeStep.first ) },
+            { "time_step_max", info.timeStep.second < 0 ? QVariant() : QVariant( info.timeStep.second ) },
+            { "xform", object ? QVariant( MCPState::matrix( object->xform().toMatrix() ) ) : QVariant() },
+            { "min_object_coord", object && object->hasMinMaxObjectCoords() ?
+                  QVariant( MCPState::vector( object->minObjectCoord() ) ) : QVariant() },
+            { "max_object_coord", object && object->hasMinMaxObjectCoords() ?
+                  QVariant( MCPState::vector( object->maxObjectCoord() ) ) : QVariant() },
+            { "min_external_coord", object && object->hasMinMaxExternalCoords() ?
+                  QVariant( MCPState::vector( object->minExternalCoord() ) ) : QVariant() },
+            { "max_external_coord", object && object->hasMinMaxExternalCoords() ?
+                  QVariant( MCPState::vector( object->maxExternalCoord() ) ) : QVariant() }
+        } );
+    }
+    return result;
+}
 
 namespace
 {
@@ -44,6 +88,11 @@ ObjectEditor::ObjectEditor( kvs::qt::jaea::Screen* screen, WebSocketPair* websoc
 
     m_model->setHorizontalHeaderLabels( { "Name", "Format", "Display", "Keep Initial", "Keep Final" } );
     ui->treeView->setModel( m_model );
+    // Both local deletion and server deletion remove rows on the GUI thread.
+    connect( m_model, &QAbstractItemModel::rowsRemoved, this, [this]()
+    {
+        if( m_model->rowCount() == 0 ) invalidateDataRequests();
+    } );
 
     ui->exportPushButton->setCheckable( true );
     ui->colorClickableLabel->setAutoFillBackground( true );
@@ -126,8 +175,11 @@ void ObjectEditor::reset()
     if( !m_model ) { return; }
 
     m_pending_request_time_step = -1;
+    ++m_request_serial; // Reject queued callbacks from the previous connection.
+    invalidateDataRequests();
     m_is_waiting_local_request = false;
     m_is_waiting_server_request = false;
+    emit dataRequestDiscarded();
 
     if( m_screen && m_screen->scene() )
     {
@@ -189,6 +241,7 @@ void ObjectEditor::onOperatorStateUpdate( const bool operatorState )
 
 void ObjectEditor::onUnpack( const QByteArray& binary )
 {
+    if( binary.size() < static_cast<int>( sizeof(int) ) ) return;
     const char* dataPtr = binary.constData();
     size_t offset = 0;
 
@@ -196,6 +249,19 @@ void ObjectEditor::onUnpack( const QByteArray& binary )
     int timeStep = 0;
     std::memcpy( &timeStep, dataPtr + offset, sizeof(int) );
     offset += sizeof(int);
+
+    if( m_pending_request_time_step >= 0 )
+    {
+        if( !m_is_waiting_server_request || timeStep != m_pending_request_time_step ) return;
+        if( m_request_generation != m_data_generation )
+        {
+            // Drain the old server reply before accepting another request,
+            // including one for the same step. Do not unpack it into new rows.
+            completeServerDataRequest( timeStep );
+            return;
+        }
+    }
+    if( m_model->rowCount() == 0 ) return;
 
     // 送信されてきたUUIDを記録する
     std::unordered_set<std::string> receivedUUIDs;
@@ -215,6 +281,23 @@ void ObjectEditor::onUnpack( const QByteArray& binary )
         offset += uuidLen;
 
         receivedUUIDs.insert( uuid );
+
+        // A broadcast for a deleted dataset must not complete a newly registered
+        // dataset. Unknown UUID payloads cannot be decoded using its format.
+        bool knownUUID = false;
+        for( int row = 0; row < m_model->rowCount(); ++row )
+        {
+            const auto* item = m_model->item( row, 0 );
+            if( !item ) continue;
+            const auto value = item->data( Qt::UserRole );
+            if( value.canConvert<ObjectInfoExtractor::ObjectInfo>() &&
+                value.value<ObjectInfoExtractor::ObjectInfo>().uuid == uuid )
+            {
+                knownUUID = true;
+                break;
+            }
+        }
+        if( !knownUUID ) return;
 
         int currentImportedTimeStep;
         std::memcpy( &currentImportedTimeStep, dataPtr + offset, sizeof(int) );
@@ -646,7 +729,8 @@ void ObjectEditor::onUnpack( const QByteArray& binary )
         }
     }
 
-    completeServerDataRequest( timeStep );
+    if( m_pending_request_time_step >= 0 ) completeServerDataRequest( timeStep );
+    else if( !receivedUUIDs.empty() ) dataRequestComplete( timeStep, true, false, true );
 }
 
 void ObjectEditor::onReceiveObjectInfoParameter( const QJsonObject& payload )
@@ -999,6 +1083,26 @@ void ObjectEditor::onTransferFunctionUpdate()
 
 void ObjectEditor::onRequestDataAt( int requestTimeStep )
 {
+    // Keep an invalidated in-flight request until both halves have drained.
+    // The server binary protocol carries a step, not a request identifier.
+    if( m_pending_request_time_step >= 0 ) return;
+    if( m_model->rowCount() == 0 )
+    {
+        emit dataRequestDiscarded();
+        return;
+    }
+    m_pending_request_time_step = requestTimeStep;
+    m_request_generation = m_data_generation;
+    const auto requestSerial = ++m_request_serial;
+    m_is_waiting_local_request = *m_viz_mode == Viz::Mode::Local ||
+                                *m_viz_mode == Viz::Mode::LocalClientAndServer;
+    m_is_waiting_server_request = *m_viz_mode != Viz::Mode::Local && m_web_sockets->isConnected();
+    if( !m_is_waiting_local_request && !m_is_waiting_server_request )
+    {
+        m_pending_request_time_step = -1;
+        emit dataRequestDiscarded();
+        return;
+    }
     switch( *m_viz_mode )
     {
     case Viz::Mode::Local:
@@ -1012,7 +1116,18 @@ void ObjectEditor::onRequestDataAt( int requestTimeStep )
         connect( worker, &Worker::done     , thread, &QThread::quit );
         connect( worker, &Worker::done     , worker, &Worker::deleteLater );
         connect( thread, &QThread::finished, thread, &QThread::deleteLater );
-        connect( worker, &Worker::done     , this  , [this, requestTimeStep]() { completeLocalDataRequest( requestTimeStep ); } );
+        connect( worker, &Worker::objectsImported, this,
+            [this, requestTimeStep, requestSerial]( const QVariantList& results )
+            {
+                if( requestSerial != m_request_serial || m_request_generation != m_data_generation )
+                {
+                    for( const auto& value : results ) delete value.value<ObjectInfoExtractor::ObjectInfo>().object;
+                    if( requestSerial == m_request_serial ) completeLocalDataRequest( requestTimeStep );
+                    return;
+                }
+                applyImportedObjects( results );
+                completeLocalDataRequest( requestTimeStep );
+            }, Qt::QueuedConnection );
 
         thread->start();
         break;
@@ -1448,6 +1563,7 @@ void ObjectEditor::registerObject( ObjectInfoExtractor::ObjectInfo& info )
     default:
         return;
     }
+    m_registered_time_steps.insert( info.objectID.first, info.currentImportedTimeStep );
 }
 
 void ObjectEditor::replaceObject( ObjectInfoExtractor::ObjectInfo& info )
@@ -1490,6 +1606,7 @@ void ObjectEditor::replaceObject( ObjectInfoExtractor::ObjectInfo& info )
     default:
         return;
     }
+    m_registered_time_steps.insert( info.objectID.first, info.currentImportedTimeStep );
 }
 
 void ObjectEditor::exportPointObject( const ObjectInfoExtractor::ObjectInfo& info, int requestTimeStep )
@@ -1552,6 +1669,7 @@ void ObjectEditor::beginHybridDataRequest( const int requestTimeStep )
     m_pending_request_time_step = requestTimeStep;
     m_is_waiting_local_request = true;
     m_is_waiting_server_request = m_web_sockets->isConnected();
+    const auto requestSerial = m_request_serial;
 
     Worker* worker = new Worker( m_model, m_screen, requestTimeStep, m_result_min_object_coords, m_result_max_object_coords, true );
     QThread* thread = new QThread;
@@ -1562,7 +1680,18 @@ void ObjectEditor::beginHybridDataRequest( const int requestTimeStep )
     connect( worker, &Worker::done     , thread, &QThread::quit );
     connect( worker, &Worker::done     , worker, &Worker::deleteLater );
     connect( thread, &QThread::finished, thread, &QThread::deleteLater );
-    connect( worker, &Worker::done     , this  , [this, requestTimeStep]() { completeLocalDataRequest( requestTimeStep ); } );
+    connect( worker, &Worker::objectsImported, this,
+        [this, requestTimeStep, requestSerial]( const QVariantList& results )
+        {
+            if( requestSerial != m_request_serial || m_request_generation != m_data_generation )
+            {
+                for( const auto& value : results ) delete value.value<ObjectInfoExtractor::ObjectInfo>().object;
+                if( requestSerial == m_request_serial ) completeLocalDataRequest( requestTimeStep );
+                return;
+            }
+            applyImportedObjects( results );
+            completeLocalDataRequest( requestTimeStep );
+        }, Qt::QueuedConnection );
 
     thread->start();
     if( m_is_waiting_server_request )
@@ -1571,46 +1700,73 @@ void ObjectEditor::beginHybridDataRequest( const int requestTimeStep )
     }
 }
 
+void ObjectEditor::applyImportedObjects( const QVariantList& results )
+{
+    Q_ASSERT( QThread::currentThread() == thread() );
+    for( const auto& value : results )
+    {
+        const auto imported = value.value<ObjectInfoExtractor::ObjectInfo>();
+        bool found = false;
+        for( int row = 0; row < m_model->rowCount(); ++row )
+        {
+            auto* item = m_model->item( row, 0 );
+            if( !item ) continue;
+            const auto current = item->data( Qt::UserRole );
+            if( !current.canConvert<ObjectInfoExtractor::ObjectInfo>() ) continue;
+            auto info = current.value<ObjectInfoExtractor::ObjectInfo>();
+            if( info.uuid != imported.uuid ) continue;
+            // Keep GUI-side settings that changed during import; only the
+            // imported payload and its timestep belong to the worker result.
+            info.object = imported.object;
+            info.currentImportedTimeStep = imported.currentImportedTimeStep;
+            item->setData( QVariant::fromValue( info ), Qt::UserRole );
+            found = true;
+            break;
+        }
+        if( !found ) delete imported.object; // Dataset removed while importing.
+    }
+}
+
 void ObjectEditor::completeLocalDataRequest( const int requestTimeStep )
 {
-    const bool is_hybrid_request =
-        *m_viz_mode == Viz::Mode::LocalClientAndServer &&
-        m_pending_request_time_step == requestTimeStep;
-
-    dataRequestComplete( requestTimeStep, !is_hybrid_request, true, !is_hybrid_request );
-
-    if( is_hybrid_request )
+    if( m_pending_request_time_step != requestTimeStep || !m_is_waiting_local_request ) return;
+    if( m_request_generation == m_data_generation )
     {
-        m_is_waiting_local_request = false;
-        if( !m_is_waiting_server_request )
-        {
-            m_pending_request_time_step = -1;
-            m_is_waiting_local_request = false;
-            m_is_waiting_server_request = false;
-            emit dataRequestCompleted( requestTimeStep );
-        }
+        dataRequestComplete( requestTimeStep, false, true, *m_viz_mode == Viz::Mode::Local );
     }
+    m_is_waiting_local_request = false;
+    finishDataRequest();
 }
 
 void ObjectEditor::completeServerDataRequest( const int requestTimeStep )
 {
-    const bool is_hybrid_request =
-        *m_viz_mode == Viz::Mode::LocalClientAndServer &&
-        m_pending_request_time_step == requestTimeStep;
-
-    dataRequestComplete( requestTimeStep, !is_hybrid_request, false, true );
-
-    if( is_hybrid_request )
+    if( m_pending_request_time_step != requestTimeStep || !m_is_waiting_server_request ) return;
+    if( m_request_generation == m_data_generation )
     {
-        m_is_waiting_server_request = false;
-        if( !m_is_waiting_local_request )
-        {
-            m_pending_request_time_step = -1;
-            m_is_waiting_local_request = false;
-            m_is_waiting_server_request = false;
-            emit dataRequestCompleted( requestTimeStep );
-        }
+        dataRequestComplete( requestTimeStep, false, false, true );
     }
+    m_is_waiting_server_request = false;
+    finishDataRequest();
+}
+
+void ObjectEditor::invalidateDataRequests()
+{
+    ++m_data_generation;
+    m_registered_time_steps.clear();
+    // Do not clear pending flags: an old server reply has no request ID, so
+    // drain it before allowing a new request, even if its step is identical.
+    emit allDataRemoved();
+}
+
+void ObjectEditor::finishDataRequest()
+{
+    if( m_pending_request_time_step < 0 || m_is_waiting_local_request || m_is_waiting_server_request ) return;
+    const int step = m_pending_request_time_step;
+    m_pending_request_time_step = -1;
+    if( m_request_generation == m_data_generation && m_model->rowCount() > 0 )
+        emit dataRequestCompleted( step );
+    else
+        emit dataRequestDiscarded();
 }
 
 void ObjectEditor::dataRequestComplete(

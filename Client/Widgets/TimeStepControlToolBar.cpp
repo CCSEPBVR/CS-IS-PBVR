@@ -83,7 +83,22 @@ TimeStepControlToolBar::~TimeStepControlToolBar() {}
 
 void TimeStepControlToolBar::reset()
 {
+    onAllDataRemoved();
+    m_is_merging = false;
+}
 
+void TimeStepControlToolBar::onAllDataRemoved()
+{
+    // Do not auto-load a subsequently registered dataset via a running timer.
+    // Keep the in-flight gate until ObjectEditor has drained the old request.
+    m_timer.stop();
+    m_applied_time_step = -1;
+    m_current_time_step_line_edit->clear();
+}
+
+void TimeStepControlToolBar::onDataRequestDiscarded()
+{
+    m_is_merging = false;
 }
 
 void TimeStepControlToolBar::onOperatorStateUpdate( const bool operatorState )
@@ -132,6 +147,7 @@ void TimeStepControlToolBar::onUpdateTotalTimeStepRange( int min, int max, const
 
 void TimeStepControlToolBar::onDataRequestCompleted( const int requestTimeStep )
 {
+    m_applied_time_step = requestTimeStep;
     m_current_time_step_line_edit->setText( QString::number( requestTimeStep ) );
     m_is_merging = false;
     emit dataRequestCompleted( requestTimeStep );
