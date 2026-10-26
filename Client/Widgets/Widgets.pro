@@ -22,6 +22,7 @@ HEADERS += \
     ColorMapEditor.h \
     ColorMapSelectorToolBar.h \
     Communication.h \
+    NetcdfAuxiliaryFileDialog.h \
     GlyphEditor.h \
     ObjectEditor.h \
     OpacityMapEditor.h \

@@ -8,10 +8,12 @@
 
 class QCheckBox;
 class QComboBox;
+class QDoubleSpinBox;
 class QLineEdit;
 class QPushButton;
 class QRadioButton;
 class QSpinBox;
+class QTableWidget;
 class QTreeView;
 
 class ColorMapSelectorToolBar;
@@ -20,8 +22,10 @@ class MainWindow;
 class ObjectEditor;
 class PlayBackControlToolBar;
 class RepetitionLevelControl;
+class ShadingControl;
 class TimeStepControlToolBar;
 class TransferFunctionEditor;
+class VolumeTransform;
 
 namespace ClientTests
 {
@@ -91,6 +95,8 @@ private:
         ColorMapSelectorToolBar* color_map_selector_tool_bar = nullptr;
         TransferFunctionEditor* transfer_function_editor = nullptr;
         RepetitionLevelControl* repetition_level_control = nullptr;
+        VolumeTransform* volume_transform = nullptr;
+        ShadingControl* shading_control = nullptr;
 
         QPushButton* connect_button = nullptr;
         QPushButton* disconnect_button = nullptr;
@@ -113,10 +119,19 @@ private:
         QSpinBox* next_time_step_spin_box = nullptr;
         QComboBox* selector_color_function_combo_box = nullptr;
 
+        QComboBox* transfer_function_color_function_combo_box = nullptr;
+        QLineEdit* transfer_function_color_function_variable_line_edit = nullptr;
+        QPushButton* transfer_function_color_map_edit_button = nullptr;
         QSpinBox* number_of_transfer_function_spin_box = nullptr;
         QLineEdit* color_synthesizer_line_edit = nullptr;
         QLineEdit* opacity_synthesizer_line_edit = nullptr;
         QPushButton* transfer_function_apply_button = nullptr;
+
+        QDoubleSpinBox* rotation_x_axis_spin_box = nullptr;
+        QDoubleSpinBox* rotation_y_axis_spin_box = nullptr;
+        QDoubleSpinBox* rotation_z_axis_spin_box = nullptr;
+        QPushButton* volume_transform_apply_button = nullptr;
+        QRadioButton* shading_none_radio_button = nullptr;
 
         QSpinBox* new_repetition_level_spin_box = nullptr;
         QPushButton* repetition_apply_button = nullptr;
@@ -128,31 +143,42 @@ private slots:
     void performs_server_scenario();
 
 private:
-    QString envOrDefault( const char* name, const QString& fallback ) const;
-    QString repoRootPath() const;
-    bool waitForCondition( const std::function<bool()>& condition, int timeout_ms, int interval_ms = 50 ) const;
     bool configuredPathExists( const QString& path ) const;
     Dataset dataset( const QString& key ) const;
     void verifyDatasets() const;
-    void bringWindowToFront( MainWindow* window ) const;
+    void tabifyControlDocksWithObjectEditor( const ClientHandles& client ) const;
+    void bringObjectEditorToFront( ObjectEditor* object_editor ) const;
     void bringTransferFunctionEditorToFront( TransferFunctionEditor* editor ) const;
     void bringRepetitionLevelControlToFront( RepetitionLevelControl* control ) const;
-    void setLineEditText( QLineEdit* line_edit, const QString& text ) const;
+    void bringVolumeTransformToFront( VolumeTransform* control ) const;
     void setSpinBoxValue( QSpinBox* spin_box, int value, const char* widget_name ) const;
+    void setDoubleSpinBoxValue( QDoubleSpinBox* spin_box, double value, const char* widget_name ) const;
     void selectRadioButton( QRadioButton* radio_button, const char* object_name ) const;
     void selectComboBoxIndex( QComboBox* combo_box, int index, const char* widget_name ) const;
+    void applyVolumeRotation( const ClientHandles& client ) const;
+    void disableShading( const ClientHandles& client ) const;
+    bool findPresetCell( QTableWidget* table, const QString& preset_name, int* row, int* column ) const;
+    void applyPresetColorMap( const ClientHandles& client, const QString& preset_name ) const;
+    void configureNetcdfView( const ClientHandles& client, int time_step ) const;
     void saveScreenshot( const QString& case_id, const QString& file_name, const QString& caption );
     void writeMarkdownReport() const;
     ClientHandles resolveClientHandles( MainWindow& window ) const;
     void ensureDisconnected( const ClientHandles& client ) const;
     void ensureConnected( const ClientHandles& client ) const;
     void selectSamplingMode( const ClientHandles& client, SamplingMode sampling_mode ) const;
+    bool completeNetcdfAuxiliaryFileDialog(
+        const ClientHandles& client,
+        const QString& dialog_title,
+        const QString& auxiliary_path ) const;
     void loadDataset(
         const ClientHandles& client,
         const Dataset& data,
         SamplingMode sampling_mode,
         const QString& transfer_function_path = QString() );
-    void waitForObjectAndApply( const ClientHandles& client, bool hide_glyph = false );
+    void waitForObjectAndApply(
+        const ClientHandles& client,
+        bool hide_glyph = false,
+        const QString& context = QString() );
     void clickJumpAndWaitForCompletion( const ClientHandles& client ) const;
     void applyRepetitionLevel( const ClientHandles& client, int repetition_level ) const;
     void setTimeStepAndJump( const ClientHandles& client, int time_step ) const;

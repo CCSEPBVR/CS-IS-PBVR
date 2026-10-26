@@ -7,7 +7,6 @@
 #include <QDialog>
 #include <QDir>
 #include <QDoubleSpinBox>
-#include <QElapsedTimer>
 #include <QFile>
 #include <QFileInfo>
 #include <QGuiApplication>
@@ -33,6 +32,7 @@
 #include "../Widgets/PlayBackControlToolBar.h"
 #include "../Widgets/TransferFunctionEditor.h"
 #include "TestAppContext.h"
+#include "TestCommon.h"
 #include "TestOutputPaths.h"
 
 namespace
@@ -49,83 +49,10 @@ constexpr int k_after_jump_wait_ms = 3000;
 constexpr int k_capture_settle_ms = 300;
 kvs::qt::Application* g_test_app = nullptr;
 
-void logStep( const QString& message )
-{
-    qInfo().noquote() << message;
-}
-
-QString findRepoRootFrom( const QString& start_path )
-{
-    QDir dir( start_path );
-    while ( dir.exists() )
-    {
-        if ( dir.exists( QStringLiteral( ".git" ) ) &&
-             dir.exists( QStringLiteral( "Client" ) ) &&
-             dir.exists( QStringLiteral( "Server" ) ) )
-        {
-            return dir.absolutePath();
-        }
-
-        if ( !dir.cdUp() ) { break; }
-    }
-
-    return QString();
-}
 }
 
 namespace ClientTests
 {
-
-QString ColorMapSelectorToolBarTest::envOrDefault( const char* name, const QString& fallback ) const
-{
-    const QString value = qEnvironmentVariable( name );
-    return value.isEmpty() ? ClientTests::configuredPath( name, repoRootPath(), fallback ) : value;
-}
-
-QString ColorMapSelectorToolBarTest::repoRootPath() const
-{
-    const QString app_root = findRepoRootFrom( QCoreApplication::applicationDirPath() );
-    if ( !app_root.isEmpty() ) { return app_root; }
-
-    const QString cwd_root = findRepoRootFrom( QDir::currentPath() );
-    if ( !cwd_root.isEmpty() ) { return cwd_root; }
-
-    const QString source_root = findRepoRootFrom( QFileInfo( QString::fromUtf8( __FILE__ ) ).absolutePath() );
-    if ( !source_root.isEmpty() ) { return source_root; }
-
-    return QDir::currentPath();
-}
-
-QString ColorMapSelectorToolBarTest::sourceTreePath( const QString& relative_path_from_repo_root ) const
-{
-    return QDir::cleanPath( QDir( repoRootPath() ).absoluteFilePath( relative_path_from_repo_root ) );
-}
-
-bool ColorMapSelectorToolBarTest::waitForCondition(
-    const std::function<bool()>& condition,
-    int timeout_ms,
-    int interval_ms ) const
-{
-    QElapsedTimer timer;
-    timer.start();
-
-    while ( timer.elapsed() < timeout_ms )
-    {
-        if ( condition() ) { return true; }
-        QTest::qWait( interval_ms );
-    }
-
-    return condition();
-}
-
-void ColorMapSelectorToolBarTest::bringWindowToFront( MainWindow* window ) const
-{
-    QVERIFY2( window != nullptr, "MainWindow is null" );
-    window->show();
-    window->raise();
-    window->activateWindow();
-    QTest::qWait( k_window_settle_ms );
-}
 
 void ColorMapSelectorToolBarTest::bringTransferFunctionEditorToFront( TransferFunctionEditor* editor ) const
 {
@@ -144,15 +71,6 @@ void ColorMapSelectorToolBarTest::bringDialogToFront( QDialog* dialog ) const
     dialog->raise();
     dialog->activateWindow();
     QTest::qWait( k_window_settle_ms );
-}
-
-void ColorMapSelectorToolBarTest::setLineEditText( QLineEdit* line_edit, const QString& text ) const
-{
-    QVERIFY2( line_edit != nullptr, "Target line edit was not found" );
-    line_edit->setFocus();
-    line_edit->clear();
-    QTest::keyClicks( line_edit, QDir::toNativeSeparators( text ) );
-    QCOMPARE( line_edit->text(), QDir::toNativeSeparators( text ) );
 }
 
 void ColorMapSelectorToolBarTest::setDoubleSpinBoxValue(
@@ -225,7 +143,7 @@ void ColorMapSelectorToolBarTest::writeMarkdownReport() const
 void ColorMapSelectorToolBarTest::markStepCompleted( const QString& description )
 {
     m_steps.push_back( { description, true } );
-    logStep( description );
+    ClientTests::logStep( description );
 }
 
 ColorMapSelectorToolBarTest::ClientHandles ColorMapSelectorToolBarTest::resolveClientHandles( MainWindow& window ) const
@@ -299,16 +217,16 @@ ColorMapSelectorToolBarTest::ClientHandles ColorMapSelectorToolBarTest::resolveC
 
 void ColorMapSelectorToolBarTest::connectClient( const ClientHandles& client ) const
 {
-    bringWindowToFront( client.main_window );
+    ClientTests::bringWindowToFront( client.main_window );
     QVERIFY2(
-        waitForCondition( [client]() { return client.connect_button->isEnabled(); }, k_connect_timeout_ms, 100 ),
+        ClientTests::waitForCondition( [client]() { return client.connect_button->isEnabled(); }, k_connect_timeout_ms, 100 ),
         "connectPushButton did not become enabled within the timeout" );
 
     QTest::mouseClick( client.connect_button, Qt::LeftButton );
     QTest::qWait( k_short_wait_ms );
 
     QVERIFY2(
-        waitForCondition(
+        ClientTests::waitForCondition(
             [client]()
             {
                 return client.disconnect_button->isEnabled() &&
@@ -322,7 +240,7 @@ void ColorMapSelectorToolBarTest::connectClient( const ClientHandles& client ) c
 
 void ColorMapSelectorToolBarTest::configureRemoteVisualization( const ClientHandles& client ) const
 {
-    bringWindowToFront( client.main_window );
+    ClientTests::bringWindowToFront( client.main_window );
     if ( !client.remote_viz_client_server_radio->isChecked() )
     {
         QTest::mouseClick( client.remote_viz_client_server_radio, Qt::LeftButton );
@@ -330,7 +248,7 @@ void ColorMapSelectorToolBarTest::configureRemoteVisualization( const ClientHand
     QVERIFY2( client.remote_viz_client_server_radio->isChecked(), "remoteVizClientServerRadioButton was not checked" );
     QTest::qWait( k_short_wait_ms );
 
-    setLineEditText( client.volume_data_path_line_edit, m_volume_data_path );
+    ClientTests::setLineEditText( client.volume_data_path_line_edit, m_volume_data_path );
     QTest::mouseClick( client.setting_apply_button, Qt::LeftButton );
     QTest::qWait( k_short_wait_ms );
 }
@@ -338,7 +256,7 @@ void ColorMapSelectorToolBarTest::configureRemoteVisualization( const ClientHand
 void ColorMapSelectorToolBarTest::waitForObjectAndApply( const ClientHandles& client ) const
 {
     QVERIFY2(
-        waitForCondition(
+        ClientTests::waitForCondition(
             [client]()
             {
                 return client.object_apply_button->isEnabled() &&
@@ -355,14 +273,14 @@ void ColorMapSelectorToolBarTest::waitForObjectAndApply( const ClientHandles& cl
 void ColorMapSelectorToolBarTest::clickJumpAndWaitForCompletion( const ClientHandles& client ) const
 {
     QVERIFY2(
-        waitForCondition( [client]() { return client.jump_button->isEnabled(); }, k_jump_button_enable_timeout_ms, 200 ),
+        ClientTests::waitForCondition( [client]() { return client.jump_button->isEnabled(); }, k_jump_button_enable_timeout_ms, 200 ),
         "m_jump_push_button did not become enabled within the timeout" );
 
     QTest::mouseClick( client.jump_button, Qt::LeftButton );
     QTest::qWait( k_short_wait_ms );
 
     QVERIFY2(
-        waitForCondition( [client]() { return client.jump_button->isEnabled(); }, k_jump_button_enable_timeout_ms, 200 ),
+        ClientTests::waitForCondition( [client]() { return client.jump_button->isEnabled(); }, k_jump_button_enable_timeout_ms, 200 ),
         "m_jump_push_button did not become enabled again within the timeout" );
 
     QTest::qWait( k_after_jump_wait_ms );
@@ -386,7 +304,7 @@ void ColorMapSelectorToolBarTest::selectComboBoxIndex(
     combo_box->setFocus();
     combo_box->setCurrentIndex( index );
     QVERIFY2(
-        waitForCondition( [combo_box, index]() { return combo_box->currentIndex() == index; }, 3000, 50 ),
+        ClientTests::waitForCondition( [combo_box, index]() { return combo_box->currentIndex() == index; }, 3000, 50 ),
         qPrintable( QStringLiteral( "Failed to select index %1 on %2" ).arg( index ).arg( widget_name ) ) );
     QTest::qWait( k_short_wait_ms );
 }
@@ -394,7 +312,7 @@ void ColorMapSelectorToolBarTest::selectComboBoxIndex(
 QDialog* ColorMapSelectorToolBarTest::waitForColorMapEditor() const
 {
     QDialog* dialog = nullptr;
-    const bool found = waitForCondition(
+    const bool found = ClientTests::waitForCondition(
         [&dialog]()
         {
             for ( QWidget* widget : QApplication::topLevelWidgets() )
@@ -482,22 +400,22 @@ void ColorMapSelectorToolBarTest::applyPresetColorMapFromEditor(
 void ColorMapSelectorToolBarTest::initTestCase()
 {
     const QString date_stamp = QDate::currentDate().toString( QStringLiteral( "yyyyMMdd" ) );
-    m_client_executable = envOrDefault(
+    m_client_executable = ClientTests::envOrDefault(
         "PBVR_CLIENT_EXECUTABLE",
-        ClientTests::configuredPath( "PBVR_CLIENT_EXECUTABLE", repoRootPath() ) );
-    m_server_executable = envOrDefault(
+        ClientTests::configuredPath( "PBVR_CLIENT_EXECUTABLE", ClientTests::repoRootPath() ) );
+    m_server_executable = ClientTests::envOrDefault(
         "PBVR_SERVER_EXECUTABLE",
-        ClientTests::configuredPath( "PBVR_SERVER_EXECUTABLE", repoRootPath() ) );
-    m_server_target_wrapper_executable = envOrDefault(
+        ClientTests::configuredPath( "PBVR_SERVER_EXECUTABLE", ClientTests::repoRootPath() ) );
+    m_server_target_wrapper_executable = ClientTests::envOrDefault(
         "PBVR_SERVER_TARGET_WRAPPER_EXECUTABLE",
-        ClientTests::configuredPath( "PBVR_SERVER_TARGET_WRAPPER_EXECUTABLE", repoRootPath() ) );
-    m_volume_data_path = envOrDefault(
+        ClientTests::configuredPath( "PBVR_SERVER_TARGET_WRAPPER_EXECUTABLE", ClientTests::repoRootPath() ) );
+    m_volume_data_path = ClientTests::envOrDefault(
         "PBVR_VOLUME_DATA",
-        ClientTests::configuredPath( "SPX_VOLUME_DATA", repoRootPath() ) );
-    m_output_dir_path = envOrDefault(
+        ClientTests::configuredPath( "SPX_VOLUME_DATA", ClientTests::repoRootPath() ) );
+    m_output_dir_path = ClientTests::envOrDefault(
         "PBVR_TEST_OUTPUT_DIR",
-        ClientTests::datedTestOutputDir( repoRootPath(), date_stamp, QStringLiteral( "ColorMapSelectorToolBarTest" ) ) );
-    m_screenshot_dir_path = envOrDefault(
+        ClientTests::datedTestOutputDir( ClientTests::repoRootPath(), date_stamp, QStringLiteral( "ColorMapSelectorToolBarTest" ) ) );
+    m_screenshot_dir_path = ClientTests::envOrDefault(
         "PBVR_SCREENSHOT_DIR",
         QDir( m_output_dir_path ).absoluteFilePath( QStringLiteral( "img" ) ) );
     m_report_path = QDir( m_output_dir_path ).absoluteFilePath( QStringLiteral( "TestResult.md" ) );
@@ -552,7 +470,7 @@ void ColorMapSelectorToolBarTest::performs_color_map_selector_toolbar_scenario()
 
     clickJumpAndWaitForCompletion( client );
     markStepCompleted( QStringLiteral( "PlayBackControlToolBar.cpp: m_jump_push_buttonを押し、有効化を待機しました。" ) );
-    bringWindowToFront( client.main_window );
+    ClientTests::bringWindowToFront( client.main_window );
     saveScreenshot(
         QStringLiteral( "00_color_map_selector_before_change.png" ),
         QStringLiteral( "変更前の色伝達関数のカラーマップと最大最小値" ) );
@@ -578,7 +496,7 @@ void ColorMapSelectorToolBarTest::performs_color_map_selector_toolbar_scenario()
 
     clickJumpAndWaitForCompletion( client );
     markStepCompleted( QStringLiteral( "PlayBackControlToolBar.cpp: m_jump_push_buttonを押し、有効化を待機しました。" ) );
-    bringWindowToFront( client.main_window );
+    ClientTests::bringWindowToFront( client.main_window );
     saveScreenshot(
         QStringLiteral( "03_color_map_selector_user_defined_min_max.png" ),
         QStringLiteral( "Color MapをServer Side Min MaxからUser Defined Min Maxに変更した色伝達関数のカラーマップと最大最小値" ) );
@@ -602,7 +520,7 @@ void ColorMapSelectorToolBarTest::performs_color_map_selector_toolbar_scenario()
 
     clickJumpAndWaitForCompletion( client );
     markStepCompleted( QStringLiteral( "PlayBackControlToolBar.cpp: m_jump_push_buttonを押し、有効化を待機しました。" ) );
-    bringWindowToFront( client.main_window );
+    ClientTests::bringWindowToFront( client.main_window );
     saveScreenshot(
         QStringLiteral( "05_color_map_selector_user_defined_0_5_0_6_warm_step.png" ),
         QStringLiteral( "Color MapのUser Defined Min Maxを0.5~0.6に設定しColor MapをWarm Stepに設定した色伝達関数のカラーマップと最大最小値" ) );
@@ -611,7 +529,7 @@ void ColorMapSelectorToolBarTest::performs_color_map_selector_toolbar_scenario()
     bringTransferFunctionEditorToFront( client.transfer_function_editor );
     client.number_of_transfer_function_spin_box->setValue( 2 );
     QVERIFY2(
-        waitForCondition( [client]() { return client.tf_color_function_combo_box->count() >= 2; }, 3000, 50 ),
+        ClientTests::waitForCondition( [client]() { return client.tf_color_function_combo_box->count() >= 2; }, 3000, 50 ),
         "colorFunctionComboBox did not get a second item" );
     selectComboBoxIndex( client.tf_color_function_combo_box, 1, "colorFunctionComboBox" );
     QTest::mouseClick( client.color_user_defined_min_max_radio, Qt::LeftButton );
@@ -635,7 +553,7 @@ void ColorMapSelectorToolBarTest::performs_color_map_selector_toolbar_scenario()
     markStepCompleted( QStringLiteral( "PlayBackControlToolBar.cpp: m_jump_push_buttonを押し、有効化を待機しました。" ) );
 
     QVERIFY2(
-        waitForCondition(
+        ClientTests::waitForCondition(
             [client]()
             {
                 return client.selector_color_function_combo_box->isEnabled() &&
@@ -645,7 +563,7 @@ void ColorMapSelectorToolBarTest::performs_color_map_selector_toolbar_scenario()
             100 ),
         "m_color_function_combo_box did not become ready within the timeout" );
     selectComboBoxIndex( client.selector_color_function_combo_box, 1, "m_color_function_combo_box" );
-    bringWindowToFront( client.main_window );
+    ClientTests::bringWindowToFront( client.main_window );
     saveScreenshot(
         QStringLiteral( "07_color_map_selector_c2_traffic_lights_step.png" ),
         QStringLiteral( "C1からC2に変更し色伝達関数を設定した色伝達関数のカラーマップと最大最小値" ) );

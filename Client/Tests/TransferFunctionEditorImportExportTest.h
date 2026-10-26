@@ -4,7 +4,6 @@
 #include <QObject>
 #include <QProcess>
 #include <QString>
-#include <functional>
 #include <vector>
 
 #include "../Widgets/TransferFunctionEditor.h"
@@ -69,14 +68,8 @@ private slots:
     void performs_import_export_scenario();
 
 private:
-    QString envOrDefault( const char* name, const QString& fallback ) const;
-    QString repoRootPath() const;
-    QString sourceTreePath( const QString& relative_path_from_repo_root ) const;
-    bool waitForCondition( const std::function<bool()>& condition, int timeout_ms, int interval_ms = 50 ) const;
-    void bringWindowToFront( MainWindow* window ) const;
     void bringTransferFunctionEditorToFront( TransferFunctionEditor* editor ) const;
     void closeTransferFunctionEditor( TransferFunctionEditor* editor ) const;
-    void setLineEditText( QLineEdit* line_edit, const QString& text ) const;
     void saveScreenshot( const QString& file_name, const QString& caption );
     void writeMarkdownReport() const;
     void markStepCompleted( const QString& description );

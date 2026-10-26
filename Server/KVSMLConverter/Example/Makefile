@@ -109,8 +109,8 @@ $(OUTDIR)/example.o
 #=============================================================================
 #  Build rule.
 #=============================================================================
-$(TARGET_EXE): $(OBJECTS)
-	$(LD) $(LDFLAGS) $(LIBRARY_PATH) -o $@ $^ $(LINK_LIBRARY)
+$(TARGET_EXE): $(OBJECTS) ../Source/$(OUTDIR)/$(LIB_KVSML_CONVERTER)
+	$(LD) $(LDFLAGS) $(LIBRARY_PATH) -o $@ $(OBJECTS) $(LINK_LIBRARY)
 
 $(OUTDIR)/%.o: %.cpp %.h
 	$(MKDIR) $(OUTDIR)

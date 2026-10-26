@@ -4,7 +4,6 @@
 #include <QObject>
 #include <QProcess>
 #include <QString>
-#include <functional>
 
 class QFileDialog;
 class QComboBox;
@@ -60,16 +59,10 @@ private slots:
     void performs_animation_control_scenario();
 
 private:
-    QString envOrDefault( const char* name, const QString& fallback ) const;
-    QString repoRootPath() const;
-    QString sourceTreePath( const QString& relative_path_from_repo_root ) const;
-    bool waitForCondition( const std::function<bool()>& condition, int timeout_ms, int interval_ms = 50 ) const;
     QFileDialog* waitForFileDialog( int timeout_ms ) const;
     void selectFileFromDialog( const QString& file_path, bool require_existing_file ) const;
     void startVideoRecording( QWidget* target_window );
     void stopVideoRecording();
-    void bringWindowToFront( MainWindow* window ) const;
-    void setLineEditText( QLineEdit* line_edit, const QString& text ) const;
     ClientHandles resolveClientHandles( MainWindow& window ) const;
     void ensureConnected( const ClientHandles& client ) const;
     void waitForObjectAndApply( const ClientHandles& client ) const;

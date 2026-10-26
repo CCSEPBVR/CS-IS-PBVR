@@ -10,7 +10,6 @@
 #include <QDate>
 #include <QDebug>
 #include <QDir>
-#include <QElapsedTimer>
 #include <QEventLoop>
 #include <QFile>
 #include <QFileDialog>
@@ -43,6 +42,7 @@
 #include "../Widgets/PlayBackControlToolBar.h"
 #include "../Widgets/TimeStepControlToolBar.h"
 #include "TestAppContext.h"
+#include "TestCommon.h"
 #include "TestOutputPaths.h"
 
 namespace
@@ -155,72 +155,15 @@ QRect physicalWindowGeometryForRecording( QWidget* target_window, QScreen* fallb
 }
 #endif
 
-QString findRepoRootFrom( const QString& start_path )
-{
-    QDir dir( start_path );
-    while ( dir.exists() )
-    {
-        if ( dir.exists( QStringLiteral( ".git" ) ) &&
-             dir.exists( QStringLiteral( "Client" ) ) &&
-             dir.exists( QStringLiteral( "Server" ) ) )
-        {
-            return dir.absolutePath();
-        }
-
-        if ( !dir.cdUp() ) { break; }
-    }
-
-    return QString();
-}
 }
 
 namespace ClientTests
 {
 
-QString PlayBackControlToolBarTest::envOrDefault( const char* name, const QString& fallback ) const
-{
-    const QString value = qEnvironmentVariable( name );
-    return value.isEmpty() ? ClientTests::configuredPath( name, repoRootPath(), fallback ) : value;
-}
-
-QString PlayBackControlToolBarTest::repoRootPath() const
-{
-    const QString app_root = findRepoRootFrom( QCoreApplication::applicationDirPath() );
-    if ( !app_root.isEmpty() ) { return app_root; }
-
-    const QString cwd_root = findRepoRootFrom( QDir::currentPath() );
-    if ( !cwd_root.isEmpty() ) { return cwd_root; }
-
-    const QString source_root =
-        findRepoRootFrom( QFileInfo( QString::fromUtf8( __FILE__ ) ).absolutePath() );
-    if ( !source_root.isEmpty() ) { return source_root; }
-
-    return QDir::currentPath();
-}
-
-QString PlayBackControlToolBarTest::sourceTreePath( const QString& relative_path_from_repo_root ) const
-{
-    return QDir::cleanPath( QDir( repoRootPath() ).absoluteFilePath( relative_path_from_repo_root ) );
-}
-
-bool PlayBackControlToolBarTest::waitForCondition( const std::function<bool()>& condition, int timeout_ms, int interval_ms ) const
-{
-    QElapsedTimer timer;
-    timer.start();
-
-    while ( timer.elapsed() < timeout_ms )
-    {
-        if ( condition() ) { return true; }
-        QTest::qWait( interval_ms );
-    }
-
-    return condition();
-}
-
 QFileDialog* PlayBackControlToolBarTest::waitForFileDialog( int timeout_ms ) const
 {
     QFileDialog* dialog = nullptr;
-    const bool dialog_found = waitForCondition(
+    const bool dialog_found = ClientTests::waitForCondition(
         [&dialog]()
         {
             const auto widgets = QApplication::topLevelWidgets();
@@ -295,7 +238,7 @@ void PlayBackControlToolBarTest::clickButtonAndWait( QPushButton* button, int wa
 {
     QVERIFY2( button != nullptr, "Target button was not found" );
     QVERIFY2(
-        waitForCondition(
+        ClientTests::waitForCondition(
             [button]()
             {
                 return button->isEnabled();
@@ -332,7 +275,7 @@ void PlayBackControlToolBarTest::startVideoRecording( QWidget* target_window )
         QCoreApplication::processEvents( QEventLoop::AllEvents, 200 );
     }
 
-    const QString ffmpeg_path = envOrDefault(
+    const QString ffmpeg_path = ClientTests::envOrDefault(
         "PBVR_FFMPEG_EXECUTABLE",
         QStandardPaths::findExecutable( QStringLiteral( "ffmpeg" ) ) );
     if ( ffmpeg_path.isEmpty() )
@@ -547,15 +490,15 @@ void PlayBackControlToolBarTest::stopVideoRecording()
 void PlayBackControlToolBarTest::initTestCase()
 {
     const QString date_stamp = QDate::currentDate().toString( QStringLiteral( "yyyyMMdd" ) );
-    m_client_executable = envOrDefault(
+    m_client_executable = ClientTests::envOrDefault(
         "PBVR_CLIENT_EXECUTABLE",
-        ClientTests::configuredPath( "PBVR_CLIENT_EXECUTABLE", repoRootPath() ) );
-    m_object_file_path = envOrDefault(
+        ClientTests::configuredPath( "PBVR_CLIENT_EXECUTABLE", ClientTests::repoRootPath() ) );
+    m_object_file_path = ClientTests::envOrDefault(
         "CLOCK_POLYGON_DATA",
-        ClientTests::configuredPath( "CLOCK_POLYGON_DATA", repoRootPath() ) );
-    m_output_dir_path = envOrDefault(
+        ClientTests::configuredPath( "CLOCK_POLYGON_DATA", ClientTests::repoRootPath() ) );
+    m_output_dir_path = ClientTests::envOrDefault(
         "PBVR_TEST_OUTPUT_DIR",
-        ClientTests::datedTestOutputDir( repoRootPath(), date_stamp ) );
+        ClientTests::datedTestOutputDir( ClientTests::repoRootPath(), date_stamp ) );
     m_video_file_path = QDir( m_output_dir_path ).absoluteFilePath( QStringLiteral( "PlayBackControlToolBarTest.mp4" ) );
 
     QVERIFY2(
@@ -623,7 +566,7 @@ void PlayBackControlToolBarTest::performs_playback_control_toolbar_scenario()
         } );
     QTest::mouseClick( browse_button, Qt::LeftButton );
 
-    const bool name_loaded = waitForCondition(
+    const bool name_loaded = ClientTests::waitForCondition(
         [name_line_edit]()
         {
             return !name_line_edit->text().trimmed().isEmpty();
@@ -655,7 +598,7 @@ void PlayBackControlToolBarTest::performs_playback_control_toolbar_scenario()
     QVERIFY2( loop_button != nullptr, "m_loop_push_button not found" );
     QVERIFY2( next_time_step_spin_box != nullptr, "m_next_time_step_spin_box not found" );
 
-    const bool jump_enabled = waitForCondition(
+    const bool jump_enabled = ClientTests::waitForCondition(
         [jump_button]()
         {
             return jump_button->isEnabled();
@@ -679,7 +622,7 @@ void PlayBackControlToolBarTest::performs_playback_control_toolbar_scenario()
     clickButtonAndWait( reverse_button, k_action_wait_ms );
 
     QVERIFY2(
-        waitForCondition(
+        ClientTests::waitForCondition(
             [next_time_step_spin_box]()
             {
                 return next_time_step_spin_box->isEnabled() && next_time_step_spin_box->maximum() >= 5;
@@ -700,7 +643,7 @@ void PlayBackControlToolBarTest::performs_playback_control_toolbar_scenario()
     stopVideoRecording();
 
     QVERIFY2(
-        waitForCondition(
+        ClientTests::waitForCondition(
             [jump_button]()
             {
                 return jump_button->isEnabled();

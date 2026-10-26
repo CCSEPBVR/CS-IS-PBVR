@@ -14,10 +14,12 @@ INCLUDEPATH += $$PWD/../App
 HEADERS += \
     ../App/MainWindow.h \
     TestAppContext.h \
+    TestCommon.h \
     TestOutputPaths.h
 
 SOURCES += \
     TestMain.cpp \
+    TestCommon.cpp \
     TestOutputPaths.cpp \
     ../App/MainWindow.cpp
 

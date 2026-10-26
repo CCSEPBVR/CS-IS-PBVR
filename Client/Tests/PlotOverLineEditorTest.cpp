@@ -6,7 +6,6 @@
 #include <QDate>
 #include <QDir>
 #include <QDoubleSpinBox>
-#include <QElapsedTimer>
 #include <QFile>
 #include <QFileInfo>
 #include <QGuiApplication>
@@ -34,6 +33,7 @@
 #include "../Widgets/PlotOverLineEditor.h"
 #include "../Widgets/VolumeTransform.h"
 #include "TestAppContext.h"
+#include "TestCommon.h"
 #include "TestOutputPaths.h"
 
 namespace
@@ -54,11 +54,6 @@ constexpr int k_button_retry_count = 3;
 constexpr int k_button_retry_wait_ms = 500;
 kvs::qt::Application* g_test_app = nullptr;
 
-void logStep( const QString& message )
-{
-    qInfo().noquote() << message;
-}
-
 QString connectionStateSummary(
     QPushButton* connect_button,
     QPushButton* disconnect_button,
@@ -70,53 +65,10 @@ QString connectionStateSummary(
         .arg( id_line_edit != nullptr ? id_line_edit->text().trimmed() : QStringLiteral( "<null>" ) );
 }
 
-QString findRepoRootFrom( const QString& start_path )
-{
-    QDir dir( start_path );
-    while ( dir.exists() )
-    {
-        if ( dir.exists( QStringLiteral( ".git" ) ) &&
-             dir.exists( QStringLiteral( "Client" ) ) &&
-             dir.exists( QStringLiteral( "Server" ) ) )
-        {
-            return dir.absolutePath();
-        }
-
-        if ( !dir.cdUp() ) { break; }
-    }
-
-    return QString();
-}
 }
 
 namespace ClientTests
 {
-
-QString PlotOverLineEditorTest::envOrDefault( const char* name, const QString& fallback ) const
-{
-    const QString value = qEnvironmentVariable( name );
-    return value.isEmpty() ? ClientTests::configuredPath( name, repoRootPath(), fallback ) : value;
-}
-
-QString PlotOverLineEditorTest::repoRootPath() const
-{
-    const QString app_root = findRepoRootFrom( QCoreApplication::applicationDirPath() );
-    if ( !app_root.isEmpty() ) { return app_root; }
-
-    const QString cwd_root = findRepoRootFrom( QDir::currentPath() );
-    if ( !cwd_root.isEmpty() ) { return cwd_root; }
-
-    const QString source_root =
-        findRepoRootFrom( QFileInfo( QString::fromUtf8( __FILE__ ) ).absolutePath() );
-    if ( !source_root.isEmpty() ) { return source_root; }
-
-    return QDir::currentPath();
-}
-
-QString PlotOverLineEditorTest::sourceTreePath( const QString& relative_path_from_repo_root ) const
-{
-    return QDir::cleanPath( QDir( repoRootPath() ).absoluteFilePath( relative_path_from_repo_root ) );
-}
 
 QString PlotOverLineEditorTest::serverProcessSummary() const
 {
@@ -133,29 +85,6 @@ QString PlotOverLineEditorTest::serverProcessSummary() const
         .arg( static_cast<int>( m_server_process.exitStatus() ) )
         .arg( stdout_text )
         .arg( stderr_text );
-}
-
-bool PlotOverLineEditorTest::waitForCondition( const std::function<bool()>& condition, int timeout_ms, int interval_ms ) const
-{
-    QElapsedTimer timer;
-    timer.start();
-
-    while ( timer.elapsed() < timeout_ms )
-    {
-        if ( condition() ) { return true; }
-        QTest::qWait( interval_ms );
-    }
-
-    return condition();
-}
-
-void PlotOverLineEditorTest::bringWindowToFront( MainWindow* window ) const
-{
-    QVERIFY2( window != nullptr, "MainWindow is null" );
-    window->show();
-    window->raise();
-    window->activateWindow();
-    QTest::qWait( k_window_settle_ms );
 }
 
 void PlotOverLineEditorTest::bringGlyphEditorToFront( GlyphEditor* editor ) const
@@ -185,18 +114,6 @@ void PlotOverLineEditorTest::bringVolumeTransformToFront( VolumeTransform* edito
     QTest::qWait( k_window_settle_ms );
 }
 
-void PlotOverLineEditorTest::setLineEditText( QLineEdit* line_edit, const QString& text ) const
-{
-    QVERIFY2( line_edit != nullptr, "Target line edit was not found" );
-    line_edit->setFocus();
-    line_edit->clear();
-    if ( !text.isEmpty() )
-    {
-        QTest::keyClicks( line_edit, QDir::toNativeSeparators( text ) );
-    }
-    QCOMPARE( line_edit->text(), QDir::toNativeSeparators( text ) );
-}
-
 void PlotOverLineEditorTest::setDoubleSpinBoxValue( QDoubleSpinBox* spin_box, double value ) const
 {
     QVERIFY2( spin_box != nullptr, "Target double spin box was not found" );
@@ -217,7 +134,7 @@ void PlotOverLineEditorTest::setGroupBoxChecked( QGroupBox* group_box, bool chec
 {
     QVERIFY2( group_box != nullptr, "Target group box was not found" );
     QVERIFY2(
-        waitForCondition(
+        ClientTests::waitForCondition(
             [group_box]()
             {
                 return group_box->isEnabled() && group_box->isVisible();
@@ -240,7 +157,7 @@ void PlotOverLineEditorTest::selectRadioButton( QRadioButton* radio_button, cons
     if ( radio_button->isChecked() ) { return; }
 
     QVERIFY2(
-        waitForCondition(
+        ClientTests::waitForCondition(
             [radio_button]()
             {
                 return radio_button->isEnabled() && radio_button->isVisible();
@@ -271,7 +188,7 @@ void PlotOverLineEditorTest::selectComboBoxItem( QComboBox* combo_box, int index
     combo_box->showPopup();
 
     QVERIFY2(
-        waitForCondition(
+        ClientTests::waitForCondition(
             [combo_box]()
             {
                 auto* view = combo_box->view();
@@ -512,8 +429,8 @@ PlotOverLineEditorTest::ClientHandles PlotOverLineEditorTest::resolveClientHandl
 
 void PlotOverLineEditorTest::ensureConnected( const ClientHandles& client ) const
 {
-    logStep( QStringLiteral( "ensureConnected: begin" ) );
-    bringWindowToFront( client.main_window );
+    ClientTests::logStep( QStringLiteral( "ensureConnected: begin" ) );
+    ClientTests::bringWindowToFront( client.main_window );
 
     const auto is_connected = [client]()
     {
@@ -524,30 +441,30 @@ void PlotOverLineEditorTest::ensureConnected( const ClientHandles& client ) cons
 
     if ( is_connected() )
     {
-        logStep(
+        ClientTests::logStep(
             QStringLiteral( "ensureConnected: already connected %1" )
                 .arg( connectionStateSummary( client.connect_button, client.disconnect_button, client.id_line_edit ) ) );
         return;
     }
 
-    logStep(
+    ClientTests::logStep(
         QStringLiteral( "ensureConnected: initial %1 isOperator='%2' address='%3'" )
             .arg( connectionStateSummary( client.connect_button, client.disconnect_button, client.id_line_edit ) )
             .arg( client.is_operator_line_edit != nullptr ? client.is_operator_line_edit->text() : QStringLiteral( "<null>" ) )
             .arg( client.communication->findChild<QLineEdit*>( "addressLineEdit" ) != nullptr ?
                       client.communication->findChild<QLineEdit*>( "addressLineEdit" )->text() :
                       QStringLiteral( "<null>" ) ) );
-    logStep( QStringLiteral( "ensureConnected: server %1" ).arg( serverProcessSummary() ) );
+    ClientTests::logStep( QStringLiteral( "ensureConnected: server %1" ).arg( serverProcessSummary() ) );
 
     for ( int attempt = 0; attempt < k_button_retry_count; ++attempt )
     {
-        logStep(
+        ClientTests::logStep(
             QStringLiteral( "ensureConnected: attempt %1 waiting %2" )
                 .arg( attempt + 1 )
                 .arg( connectionStateSummary( client.connect_button, client.disconnect_button, client.id_line_edit ) ) );
 
         QVERIFY2(
-            waitForCondition(
+            ClientTests::waitForCondition(
                 [client]()
                 {
                     return client.connect_button->isEnabled();
@@ -556,34 +473,34 @@ void PlotOverLineEditorTest::ensureConnected( const ClientHandles& client ) cons
                 100 ),
             "connectPushButton did not become enabled within the timeout" );
 
-        bringWindowToFront( client.main_window );
+        ClientTests::bringWindowToFront( client.main_window );
         QTest::mouseClick( client.connect_button, Qt::LeftButton );
 
-        logStep(
+        ClientTests::logStep(
             QStringLiteral( "ensureConnected: attempt %1 clicked %2" )
                 .arg( attempt + 1 )
                 .arg( connectionStateSummary( client.connect_button, client.disconnect_button, client.id_line_edit ) ) );
-        logStep(
+        ClientTests::logStep(
             QStringLiteral( "ensureConnected: attempt %1 server-after-click %2" )
                 .arg( attempt + 1 )
                 .arg( serverProcessSummary() ) );
 
-        if ( waitForCondition( is_connected, k_connect_timeout_ms, 100 ) )
+        if ( ClientTests::waitForCondition( is_connected, k_connect_timeout_ms, 100 ) )
         {
             QTest::qWait( k_short_wait_ms );
-            logStep(
+            ClientTests::logStep(
                 QStringLiteral( "ensureConnected: completed %1 isOperator='%2'" )
                     .arg( connectionStateSummary( client.connect_button, client.disconnect_button, client.id_line_edit ) )
                     .arg( client.is_operator_line_edit->text() ) );
             return;
         }
 
-        logStep(
+        ClientTests::logStep(
             QStringLiteral( "ensureConnected: attempt %1 timed out %2 isOperator='%3'" )
                 .arg( attempt + 1 )
                 .arg( connectionStateSummary( client.connect_button, client.disconnect_button, client.id_line_edit ) )
                 .arg( client.is_operator_line_edit->text() ) );
-        logStep(
+        ClientTests::logStep(
             QStringLiteral( "ensureConnected: attempt %1 server-after-timeout %2" )
                 .arg( attempt + 1 )
                 .arg( serverProcessSummary() ) );
@@ -591,18 +508,18 @@ void PlotOverLineEditorTest::ensureConnected( const ClientHandles& client ) cons
         QTest::qWait( k_button_retry_wait_ms );
     }
 
-    logStep(
+    ClientTests::logStep(
         QStringLiteral( "ensureConnected: failed %1 isOperator='%2'" )
             .arg( connectionStateSummary( client.connect_button, client.disconnect_button, client.id_line_edit ) )
             .arg( client.is_operator_line_edit->text() ) );
-    logStep( QStringLiteral( "ensureConnected: failed server %1" ).arg( serverProcessSummary() ) );
+    ClientTests::logStep( QStringLiteral( "ensureConnected: failed server %1" ).arg( serverProcessSummary() ) );
     QFAIL( "Client did not enter the connected state after clicking connectPushButton" );
 }
 
 void PlotOverLineEditorTest::ensureDisconnected( const ClientHandles& client ) const
 {
-    logStep( QStringLiteral( "ensureDisconnected: begin" ) );
-    bringWindowToFront( client.main_window );
+    ClientTests::logStep( QStringLiteral( "ensureDisconnected: begin" ) );
+    ClientTests::bringWindowToFront( client.main_window );
 
     const auto is_disconnected = [client]()
     {
@@ -613,14 +530,14 @@ void PlotOverLineEditorTest::ensureDisconnected( const ClientHandles& client ) c
 
     if ( is_disconnected() )
     {
-        logStep( QStringLiteral( "ensureDisconnected: already disconnected" ) );
+        ClientTests::logStep( QStringLiteral( "ensureDisconnected: already disconnected" ) );
         return;
     }
 
     for ( int attempt = 0; attempt < k_button_retry_count; ++attempt )
     {
         QVERIFY2(
-            waitForCondition(
+            ClientTests::waitForCondition(
                 [client]()
                 {
                     return client.disconnect_button->isEnabled();
@@ -629,13 +546,13 @@ void PlotOverLineEditorTest::ensureDisconnected( const ClientHandles& client ) c
                 100 ),
             "disconnectPushButton did not become enabled within the timeout" );
 
-        bringWindowToFront( client.main_window );
+        ClientTests::bringWindowToFront( client.main_window );
         QTest::mouseClick( client.disconnect_button, Qt::LeftButton );
 
-        if ( waitForCondition( is_disconnected, k_disconnect_timeout_ms, 100 ) )
+        if ( ClientTests::waitForCondition( is_disconnected, k_disconnect_timeout_ms, 100 ) )
         {
             QTest::qWait( k_short_wait_ms );
-            logStep( QStringLiteral( "ensureDisconnected: completed" ) );
+            ClientTests::logStep( QStringLiteral( "ensureDisconnected: completed" ) );
             return;
         }
 
@@ -647,7 +564,7 @@ void PlotOverLineEditorTest::ensureDisconnected( const ClientHandles& client ) c
 
 void PlotOverLineEditorTest::waitForOperatorPrivileges( const ClientHandles& client ) const
 {
-    const bool ready = waitForCondition(
+    const bool ready = ClientTests::waitForCondition(
         [client]()
         {
             return client.object_apply_button->isEnabled() &&
@@ -679,14 +596,14 @@ void PlotOverLineEditorTest::configureRemoteVisualization(
     ensureConnected( client );
     waitForOperatorPrivileges( client );
 
-    bringWindowToFront( client.main_window );
+    ClientTests::bringWindowToFront( client.main_window );
     selectRadioButton( client.remote_viz_client_server_radio, "remoteVizClientServerRadioButton" );
     QTest::qWait( k_short_wait_ms );
 
-    setLineEditText( client.volume_data_path_line_edit, volume_path );
+    ClientTests::setLineEditText( client.volume_data_path_line_edit, volume_path );
     QTest::qWait( k_short_wait_ms );
 
-    setLineEditText( client.transfer_function_path_line_edit, transfer_function_path );
+    ClientTests::setLineEditText( client.transfer_function_path_line_edit, transfer_function_path );
     QTest::qWait( k_short_wait_ms );
 
     client.object_name_line_edit->clear();
@@ -698,7 +615,7 @@ void PlotOverLineEditorTest::configureRemoteVisualization(
 
 QStandardItemModel* PlotOverLineEditorTest::waitForObjectModel( const ClientHandles& client ) const
 {
-    if ( !waitForCondition(
+    if ( !ClientTests::waitForCondition(
              [client]()
              {
                  return client.object_apply_button->isEnabled() &&
@@ -751,7 +668,7 @@ void PlotOverLineEditorTest::setObjectDisplayItemChecked(
 
 void PlotOverLineEditorTest::waitForObjectAndApply( const ClientHandles& client ) const
 {
-    logStep( QStringLiteral( "waitForObjectAndApply: waiting for ObjectEditor nameLineEdit" ) );
+    ClientTests::logStep( QStringLiteral( "waitForObjectAndApply: waiting for ObjectEditor nameLineEdit" ) );
     QStandardItemModel* model = waitForObjectModel( client );
     QVERIFY2( model != nullptr, "Failed to resolve ObjectEditor model" );
 
@@ -763,7 +680,7 @@ void PlotOverLineEditorTest::waitForObjectAndApply( const ClientHandles& client 
 void PlotOverLineEditorTest::clickJumpAndWaitForCompletion( const ClientHandles& client ) const
 {
     QVERIFY2(
-        waitForCondition(
+        ClientTests::waitForCondition(
             [client]()
             {
                 return client.jump_button->isEnabled();
@@ -776,7 +693,7 @@ void PlotOverLineEditorTest::clickJumpAndWaitForCompletion( const ClientHandles&
     QTest::qWait( k_short_wait_ms );
 
     QVERIFY2(
-        waitForCondition(
+        ClientTests::waitForCondition(
             [client]()
             {
                 return client.jump_button->isEnabled();
@@ -815,7 +732,7 @@ QComboBox* PlotOverLineEditorTest::comboBoxAtGridRow( QGridLayout* grid_layout, 
 
 void PlotOverLineEditorTest::waitForGlyphEditorReady( const ClientHandles& client ) const
 {
-    const bool ready = waitForCondition(
+    const bool ready = ClientTests::waitForCondition(
         [client]()
         {
             return client.glyph_editor_action->isEnabled() &&
@@ -845,11 +762,11 @@ void PlotOverLineEditorTest::openGlyphEditor( const ClientHandles& client ) cons
 {
     waitForGlyphEditorReady( client );
 
-    bringWindowToFront( client.main_window );
+    ClientTests::bringWindowToFront( client.main_window );
     client.glyph_editor_action->trigger();
 
     QVERIFY2(
-        waitForCondition(
+        ClientTests::waitForCondition(
             [client]()
             {
                 return client.glyph_editor->isVisible();
@@ -901,11 +818,11 @@ void PlotOverLineEditorTest::openVolumeTransform( const ClientHandles& client ) 
 {
     QVERIFY2( client.volume_transform_action != nullptr, "Volume Transform action is null" );
 
-    bringWindowToFront( client.main_window );
+    ClientTests::bringWindowToFront( client.main_window );
     client.volume_transform_action->trigger();
 
     QVERIFY2(
-        waitForCondition(
+        ClientTests::waitForCondition(
             [client]()
             {
                 return client.volume_transform->isVisible();
@@ -930,7 +847,7 @@ void PlotOverLineEditorTest::configureVolumeTransform( const ClientHandles& clie
 
 void PlotOverLineEditorTest::waitForPlotOverLineEditorReady( const ClientHandles& client, int minimum_target_count ) const
 {
-    const bool ready = waitForCondition(
+    const bool ready = ClientTests::waitForCondition(
         [client, minimum_target_count]()
         {
             return client.plot_over_line_editor_action->isEnabled() &&
@@ -960,11 +877,11 @@ void PlotOverLineEditorTest::openPlotOverLineEditor( const ClientHandles& client
     waitForOperatorPrivileges( client );
     waitForPlotOverLineEditorReady( client, minimum_target_count );
 
-    bringWindowToFront( client.main_window );
+    ClientTests::bringWindowToFront( client.main_window );
     client.plot_over_line_editor_action->trigger();
 
     QVERIFY2(
-        waitForCondition(
+        ClientTests::waitForCondition(
             [client]()
             {
                 return client.plot_over_line_editor->isVisible();
@@ -1028,7 +945,7 @@ void PlotOverLineEditorTest::prepareSecondDatasetConnection( const ClientHandles
     ensureDisconnected( client );
     ensureConnected( client );
 
-    if ( waitForCondition(
+    if ( ClientTests::waitForCondition(
              [client]()
              {
                  return client.object_apply_button->isEnabled() &&
@@ -1040,7 +957,7 @@ void PlotOverLineEditorTest::prepareSecondDatasetConnection( const ClientHandles
         return;
     }
 
-    logStep( QStringLiteral( "prepareSecondDatasetConnection: reconnecting the client to restore operator state" ) );
+    ClientTests::logStep( QStringLiteral( "prepareSecondDatasetConnection: reconnecting the client to restore operator state" ) );
     ensureDisconnected( client );
     ensureConnected( client );
     waitForOperatorPrivileges( client );
@@ -1050,28 +967,28 @@ void PlotOverLineEditorTest::initTestCase()
 {
     const QString date_stamp = QDate::currentDate().toString( QStringLiteral( "yyyyMMdd" ) );
     const QString default_client_executable =
-        ClientTests::configuredPath( "PBVR_CLIENT_EXECUTABLE", repoRootPath() );
+        ClientTests::configuredPath( "PBVR_CLIENT_EXECUTABLE", ClientTests::repoRootPath() );
 
-    m_client_executable = envOrDefault( "PBVR_CLIENT_EXECUTABLE", default_client_executable );
-    m_server_executable = envOrDefault(
+    m_client_executable = ClientTests::envOrDefault( "PBVR_CLIENT_EXECUTABLE", default_client_executable );
+    m_server_executable = ClientTests::envOrDefault(
         "PBVR_SERVER_EXECUTABLE",
-        ClientTests::configuredPath( "PBVR_SERVER_EXECUTABLE", repoRootPath() ) );
-    m_server_target_wrapper_executable = envOrDefault(
+        ClientTests::configuredPath( "PBVR_SERVER_EXECUTABLE", ClientTests::repoRootPath() ) );
+    m_server_target_wrapper_executable = ClientTests::envOrDefault(
         "PBVR_SERVER_TARGET_WRAPPER_EXECUTABLE",
-        ClientTests::configuredPath( "PBVR_SERVER_TARGET_WRAPPER_EXECUTABLE", repoRootPath() ) );
-    m_structured_volume_data_path = envOrDefault(
+        ClientTests::configuredPath( "PBVR_SERVER_TARGET_WRAPPER_EXECUTABLE", ClientTests::repoRootPath() ) );
+    m_structured_volume_data_path = ClientTests::envOrDefault(
         "SPX_VOLUME_DATA",
-        ClientTests::configuredPath( "SPX_VOLUME_DATA", repoRootPath() ) );
-    m_unstructured_volume_data_path = envOrDefault(
+        ClientTests::configuredPath( "SPX_VOLUME_DATA", ClientTests::repoRootPath() ) );
+    m_unstructured_volume_data_path = ClientTests::envOrDefault(
         "MEJ_VOLUME_DATA",
-        ClientTests::configuredPath( "MEJ_VOLUME_DATA", repoRootPath() ) );
-    m_transfer_function_path = envOrDefault(
+        ClientTests::configuredPath( "MEJ_VOLUME_DATA", ClientTests::repoRootPath() ) );
+    m_transfer_function_path = ClientTests::envOrDefault(
         "MEJ_TRANSFER_FUNCTION",
-        ClientTests::configuredPath( "MEJ_TRANSFER_FUNCTION", repoRootPath() ) );
-    m_output_dir_path = envOrDefault(
+        ClientTests::configuredPath( "MEJ_TRANSFER_FUNCTION", ClientTests::repoRootPath() ) );
+    m_output_dir_path = ClientTests::envOrDefault(
         "PBVR_TEST_OUTPUT_DIR",
-        ClientTests::datedTestOutputDir( repoRootPath(), date_stamp, QStringLiteral( "PlotOverLineEditorTest" ) ) );
-    m_screenshot_dir_path = envOrDefault(
+        ClientTests::datedTestOutputDir( ClientTests::repoRootPath(), date_stamp, QStringLiteral( "PlotOverLineEditorTest" ) ) );
+    m_screenshot_dir_path = ClientTests::envOrDefault(
         "PBVR_SCREENSHOT_DIR",
         QDir( m_output_dir_path ).absoluteFilePath( QStringLiteral( "img" ) ) );
     m_report_path = QDir( m_output_dir_path ).absoluteFilePath( QStringLiteral( "TestResult.md" ) );
@@ -1108,7 +1025,7 @@ void PlotOverLineEditorTest::cleanupTestCase()
 
 void PlotOverLineEditorTest::performs_plot_over_line_editor_scenario()
 {
-    logStep( QStringLiteral( "scenario: start" ) );
+    ClientTests::logStep( QStringLiteral( "scenario: start" ) );
     if ( g_test_app == nullptr )
     {
         g_test_app = pbvrTestApplication();
@@ -1133,7 +1050,7 @@ void PlotOverLineEditorTest::performs_plot_over_line_editor_scenario()
         }
 
         addStep( description );
-        logStep( QStringLiteral( "scenario: %1" ).arg( description ) );
+        ClientTests::logStep( QStringLiteral( "scenario: %1" ).arg( description ) );
         body();
         if ( QTest::currentTestFailed() )
         {
@@ -1220,7 +1137,7 @@ void PlotOverLineEditorTest::performs_plot_over_line_editor_scenario()
         [&]()
         {
             client.object_editor->show();
-            bringWindowToFront( client.main_window );
+            ClientTests::bringWindowToFront( client.main_window );
             QTest::qWait( k_short_wait_ms );
             QStandardItemModel* model = waitForObjectModel( client );
             QVERIFY2( model != nullptr, "Failed to resolve ObjectEditor model" );
@@ -1291,8 +1208,8 @@ void PlotOverLineEditorTest::performs_plot_over_line_editor_scenario()
                 QStringLiteral( "Target を q4 に設定した Plot Over Line グラフ。" ) );
         } );
 
-    bringWindowToFront( client.main_window );
-    logStep( QStringLiteral( "scenario: completed" ) );
+    ClientTests::bringWindowToFront( client.main_window );
+    ClientTests::logStep( QStringLiteral( "scenario: completed" ) );
     m_test_succeeded = !scenario_aborted && !QTest::currentTestFailed();
 }
 

@@ -4,7 +4,6 @@
 #include <QDate>
 #include <QDir>
 #include <QDoubleSpinBox>
-#include <QElapsedTimer>
 #include <QFile>
 #include <QFileInfo>
 #include <QGuiApplication>
@@ -24,6 +23,7 @@
 #include "../Widgets/PlayBackControlToolBar.h"
 #include "../Widgets/VolumeTransform.h"
 #include "TestAppContext.h"
+#include "TestCommon.h"
 #include "TestOutputPaths.h"
 
 namespace
@@ -38,81 +38,10 @@ constexpr int k_after_jump_wait_ms = 3000;
 constexpr int k_capture_settle_ms = 300;
 kvs::qt::Application* g_test_app = nullptr;
 
-void logStep( const QString& message )
-{
-    qInfo().noquote() << message;
-}
-
-QString findRepoRootFrom( const QString& start_path )
-{
-    QDir dir( start_path );
-    while ( dir.exists() )
-    {
-        if ( dir.exists( QStringLiteral( ".git" ) ) &&
-             dir.exists( QStringLiteral( "Client" ) ) &&
-             dir.exists( QStringLiteral( "Server" ) ) )
-        {
-            return dir.absolutePath();
-        }
-
-        if ( !dir.cdUp() ) { break; }
-    }
-
-    return QString();
-}
 }
 
 namespace ClientTests
 {
-
-QString VolumeTransformTest::envOrDefault( const char* name, const QString& fallback ) const
-{
-    const QString value = qEnvironmentVariable( name );
-    return value.isEmpty() ? ClientTests::configuredPath( name, repoRootPath(), fallback ) : value;
-}
-
-QString VolumeTransformTest::repoRootPath() const
-{
-    const QString app_root = findRepoRootFrom( QCoreApplication::applicationDirPath() );
-    if ( !app_root.isEmpty() ) { return app_root; }
-
-    const QString cwd_root = findRepoRootFrom( QDir::currentPath() );
-    if ( !cwd_root.isEmpty() ) { return cwd_root; }
-
-    const QString source_root =
-        findRepoRootFrom( QFileInfo( QString::fromUtf8( __FILE__ ) ).absolutePath() );
-    if ( !source_root.isEmpty() ) { return source_root; }
-
-    return QDir::currentPath();
-}
-
-QString VolumeTransformTest::sourceTreePath( const QString& relative_path_from_repo_root ) const
-{
-    return QDir::cleanPath( QDir( repoRootPath() ).absoluteFilePath( relative_path_from_repo_root ) );
-}
-
-bool VolumeTransformTest::waitForCondition( const std::function<bool()>& condition, int timeout_ms, int interval_ms ) const
-{
-    QElapsedTimer timer;
-    timer.start();
-
-    while ( timer.elapsed() < timeout_ms )
-    {
-        if ( condition() ) { return true; }
-        QTest::qWait( interval_ms );
-    }
-
-    return condition();
-}
-
-void VolumeTransformTest::bringWindowToFront( MainWindow* window ) const
-{
-    QVERIFY2( window != nullptr, "MainWindow is null" );
-    window->show();
-    window->raise();
-    window->activateWindow();
-    QTest::qWait( k_window_settle_ms );
-}
 
 void VolumeTransformTest::bringVolumeTransformToFront( VolumeTransform* control ) const
 {
@@ -122,15 +51,6 @@ void VolumeTransformTest::bringVolumeTransformToFront( VolumeTransform* control 
     control->activateWindow();
     QVERIFY2( control->isVisible(), "VolumeTransform did not become visible" );
     QTest::qWait( k_window_settle_ms );
-}
-
-void VolumeTransformTest::setLineEditText( QLineEdit* line_edit, const QString& text ) const
-{
-    QVERIFY2( line_edit != nullptr, "Target line edit was not found" );
-    line_edit->setFocus();
-    line_edit->clear();
-    QTest::keyClicks( line_edit, QDir::toNativeSeparators( text ) );
-    QCOMPARE( line_edit->text(), QDir::toNativeSeparators( text ) );
 }
 
 void VolumeTransformTest::setSpinBoxValue( QDoubleSpinBox* spin_box, double value ) const
@@ -219,7 +139,7 @@ void VolumeTransformTest::writeMarkdownReport() const
 void VolumeTransformTest::markStepCompleted( const QString& description )
 {
     m_steps.push_back( { description, true } );
-    logStep( description );
+    ClientTests::logStep( description );
 }
 
 VolumeTransformTest::ClientHandles VolumeTransformTest::resolveClientHandles( MainWindow& window ) const
@@ -284,9 +204,9 @@ VolumeTransformTest::ClientHandles VolumeTransformTest::resolveClientHandles( Ma
 
 void VolumeTransformTest::connectClient( const ClientHandles& client ) const
 {
-    bringWindowToFront( client.main_window );
+    ClientTests::bringWindowToFront( client.main_window );
     QVERIFY2(
-        waitForCondition(
+        ClientTests::waitForCondition(
             [client]()
             {
                 return client.connect_button->isEnabled();
@@ -299,7 +219,7 @@ void VolumeTransformTest::connectClient( const ClientHandles& client ) const
     QTest::qWait( k_short_wait_ms );
 
     QVERIFY2(
-        waitForCondition(
+        ClientTests::waitForCondition(
             [client]()
             {
                 return client.disconnect_button->isEnabled() &&
@@ -313,7 +233,7 @@ void VolumeTransformTest::connectClient( const ClientHandles& client ) const
 
 void VolumeTransformTest::configureRemoteVisualization( const ClientHandles& client ) const
 {
-    bringWindowToFront( client.main_window );
+    ClientTests::bringWindowToFront( client.main_window );
     if ( !client.remote_viz_client_server_radio->isChecked() )
     {
         QTest::mouseClick( client.remote_viz_client_server_radio, Qt::LeftButton );
@@ -321,7 +241,7 @@ void VolumeTransformTest::configureRemoteVisualization( const ClientHandles& cli
     QVERIFY2( client.remote_viz_client_server_radio->isChecked(), "remoteVizClientServerRadioButton was not checked" );
     QTest::qWait( k_short_wait_ms );
 
-    setLineEditText( client.volume_data_path_line_edit, m_volume_data_path );
+    ClientTests::setLineEditText( client.volume_data_path_line_edit, m_volume_data_path );
     QTest::qWait( k_short_wait_ms );
     QTest::mouseClick( client.setting_apply_button, Qt::LeftButton );
     QTest::qWait( k_short_wait_ms );
@@ -330,7 +250,7 @@ void VolumeTransformTest::configureRemoteVisualization( const ClientHandles& cli
 void VolumeTransformTest::waitForObjectAndApply( const ClientHandles& client ) const
 {
     QVERIFY2(
-        waitForCondition(
+        ClientTests::waitForCondition(
             [client]()
             {
                 return client.object_apply_button->isEnabled() &&
@@ -348,7 +268,7 @@ void VolumeTransformTest::waitForObjectAndApply( const ClientHandles& client ) c
 void VolumeTransformTest::clickJumpAndWaitForCompletion( const ClientHandles& client ) const
 {
     QVERIFY2(
-        waitForCondition(
+        ClientTests::waitForCondition(
             [client]()
             {
                 return client.jump_button->isEnabled();
@@ -361,7 +281,7 @@ void VolumeTransformTest::clickJumpAndWaitForCompletion( const ClientHandles& cl
     QTest::qWait( k_short_wait_ms );
 
     QVERIFY2(
-        waitForCondition(
+        ClientTests::waitForCondition(
             [client]()
             {
                 return client.jump_button->isEnabled();
@@ -390,22 +310,22 @@ void VolumeTransformTest::captureVolumeTransformState( const QString& file_name,
 void VolumeTransformTest::initTestCase()
 {
     const QString date_stamp = QDate::currentDate().toString( QStringLiteral( "yyyyMMdd" ) );
-    m_client_executable = envOrDefault(
+    m_client_executable = ClientTests::envOrDefault(
         "PBVR_CLIENT_EXECUTABLE",
-        ClientTests::configuredPath( "PBVR_CLIENT_EXECUTABLE", repoRootPath() ) );
-    m_server_executable = envOrDefault(
+        ClientTests::configuredPath( "PBVR_CLIENT_EXECUTABLE", ClientTests::repoRootPath() ) );
+    m_server_executable = ClientTests::envOrDefault(
         "PBVR_SERVER_EXECUTABLE",
-        ClientTests::configuredPath( "PBVR_SERVER_EXECUTABLE", repoRootPath() ) );
-    m_server_target_wrapper_executable = envOrDefault(
+        ClientTests::configuredPath( "PBVR_SERVER_EXECUTABLE", ClientTests::repoRootPath() ) );
+    m_server_target_wrapper_executable = ClientTests::envOrDefault(
         "PBVR_SERVER_TARGET_WRAPPER_EXECUTABLE",
-        ClientTests::configuredPath( "PBVR_SERVER_TARGET_WRAPPER_EXECUTABLE", repoRootPath() ) );
-    m_volume_data_path = envOrDefault(
+        ClientTests::configuredPath( "PBVR_SERVER_TARGET_WRAPPER_EXECUTABLE", ClientTests::repoRootPath() ) );
+    m_volume_data_path = ClientTests::envOrDefault(
         "PBVR_VOLUME_DATA",
-        ClientTests::configuredPath( "SPX_VOLUME_DATA", repoRootPath() ) );
-    m_output_dir_path = envOrDefault(
+        ClientTests::configuredPath( "SPX_VOLUME_DATA", ClientTests::repoRootPath() ) );
+    m_output_dir_path = ClientTests::envOrDefault(
         "PBVR_TEST_OUTPUT_DIR",
-        ClientTests::datedTestOutputDir( repoRootPath(), date_stamp, QStringLiteral( "VolumeTransformTest" ) ) );
-    m_screenshot_dir_path = envOrDefault(
+        ClientTests::datedTestOutputDir( ClientTests::repoRootPath(), date_stamp, QStringLiteral( "VolumeTransformTest" ) ) );
+    m_screenshot_dir_path = ClientTests::envOrDefault(
         "PBVR_SCREENSHOT_DIR",
         QDir( m_output_dir_path ).absoluteFilePath( QStringLiteral( "img" ) ) );
     m_report_path = QDir( m_output_dir_path ).absoluteFilePath( QStringLiteral( "TestResult.md" ) );

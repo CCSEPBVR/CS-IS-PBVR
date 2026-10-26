@@ -9,7 +9,6 @@
 #include <QDate>
 #include <QDir>
 #include <QDoubleSpinBox>
-#include <QElapsedTimer>
 #include <QFile>
 #include <QFileDialog>
 #include <QFileInfo>
@@ -46,6 +45,7 @@
 #include "../Widgets/TotalParticlesToolBar.h"
 #include "../Widgets/VolumeTransform.h"
 #include "TestAppContext.h"
+#include "TestCommon.h"
 #include "TestOutputPaths.h"
 
 #include <cmath>
@@ -69,29 +69,6 @@ constexpr int k_post_jump_wait_ms = 3000;
 constexpr int k_button_retry_count = 3;
 constexpr int k_button_retry_wait_ms = 500;
 kvs::qt::Application* g_test_app = nullptr;
-
-void logStep( const QString& message )
-{
-    qInfo().noquote() << message;
-}
-
-QString findRepoRootFrom( const QString& start_path )
-{
-    QDir dir( start_path );
-    while ( dir.exists() )
-    {
-        if ( dir.exists( QStringLiteral( ".git" ) ) &&
-             dir.exists( QStringLiteral( "Client" ) ) &&
-             dir.exists( QStringLiteral( "Server" ) ) )
-        {
-            return dir.absolutePath();
-        }
-
-        if ( !dir.cdUp() ) { break; }
-    }
-
-    return QString();
-}
 
 bool matricesNearlyEqual( const kvs::Matrix44f& lhs, const kvs::Matrix44f& rhs )
 {
@@ -217,46 +194,6 @@ CommunicationTest::CommunicationTest( QObject* parent )
     qputenv( "QTEST_FUNCTION_TIMEOUT", QByteArrayLiteral( "1800000" ) );
 }
 
-QString CommunicationTest::envOrDefault( const char* name, const QString& fallback ) const
-{
-    const QString value = qEnvironmentVariable( name );
-    return value.isEmpty() ? ClientTests::configuredPath( name, repoRootPath(), fallback ) : value;
-}
-
-QString CommunicationTest::repoRootPath() const
-{
-    const QString app_root = findRepoRootFrom( QCoreApplication::applicationDirPath() );
-    if ( !app_root.isEmpty() ) { return app_root; }
-
-    const QString cwd_root = findRepoRootFrom( QDir::currentPath() );
-    if ( !cwd_root.isEmpty() ) { return cwd_root; }
-
-    const QString source_root =
-        findRepoRootFrom( QFileInfo( QString::fromUtf8( __FILE__ ) ).absolutePath() );
-    if ( !source_root.isEmpty() ) { return source_root; }
-
-    return QDir::currentPath();
-}
-
-QString CommunicationTest::sourceTreePath( const QString& relative_path_from_repo_root ) const
-{
-    return QDir::cleanPath( QDir( repoRootPath() ).absoluteFilePath( relative_path_from_repo_root ) );
-}
-
-bool CommunicationTest::waitForCondition( const std::function<bool()>& condition, int timeout_ms, int interval_ms ) const
-{
-    QElapsedTimer timer;
-    timer.start();
-
-    while ( timer.elapsed() < timeout_ms )
-    {
-        if ( condition() ) { return true; }
-        QTest::qWait( interval_ms );
-    }
-
-    return condition();
-}
-
 void CommunicationTest::startVideoRecording()
 {
 #ifdef Q_OS_WIN
@@ -320,24 +257,6 @@ void CommunicationTest::stopVideoRecording()
 #endif
 }
 
-void CommunicationTest::bringWindowToFront( MainWindow* window ) const
-{
-    QVERIFY2( window != nullptr, "MainWindow is null" );
-    window->show();
-    window->raise();
-    window->activateWindow();
-    QTest::qWait( k_window_settle_ms );
-}
-
-void CommunicationTest::setLineEditText( QLineEdit* line_edit, const QString& text ) const
-{
-    QVERIFY2( line_edit != nullptr, "Target line edit was not found" );
-    line_edit->setFocus();
-    line_edit->clear();
-    QTest::keyClicks( line_edit, QDir::toNativeSeparators( text ) );
-    QCOMPARE( line_edit->text(), QDir::toNativeSeparators( text ) );
-}
-
 void CommunicationTest::saveScreenshot( const QString& file_name, const QString& caption )
 {
     if ( !ClientTests::screenshotsEnabled() ) { return; }
@@ -388,7 +307,7 @@ void CommunicationTest::writeMarkdownReport() const
 void CommunicationTest::markStepCompleted( const QString& description )
 {
     m_steps.push_back( { description, true } );
-    logStep( description );
+    ClientTests::logStep( description );
 }
 
 CommunicationTest::ClientHandles CommunicationTest::resolveClientHandles( MainWindow& window ) const
@@ -511,7 +430,7 @@ CommunicationTest::ClientHandles CommunicationTest::resolveClientHandles( MainWi
 
 void CommunicationTest::ensureConnected( const ClientHandles& client ) const
 {
-    bringWindowToFront( client.main_window );
+    ClientTests::bringWindowToFront( client.main_window );
 
     const auto is_connected = [client]()
     {
@@ -525,11 +444,11 @@ void CommunicationTest::ensureConnected( const ClientHandles& client ) const
     for ( int attempt = 0; attempt < k_button_retry_count; ++attempt )
     {
         QVERIFY2(
-            waitForCondition( [client]() { return client.connect_button->isEnabled(); }, k_connect_timeout_ms, 100 ),
+            ClientTests::waitForCondition( [client]() { return client.connect_button->isEnabled(); }, k_connect_timeout_ms, 100 ),
             "connectPushButton did not become enabled within the timeout" );
 
         client.connect_button->click();
-        if ( waitForCondition( is_connected, k_connect_timeout_ms, 100 ) )
+        if ( ClientTests::waitForCondition( is_connected, k_connect_timeout_ms, 100 ) )
         {
             QTest::qWait( k_short_wait_ms );
             return;
@@ -543,7 +462,7 @@ void CommunicationTest::ensureConnected( const ClientHandles& client ) const
 
 void CommunicationTest::ensureDisconnected( const ClientHandles& client ) const
 {
-    bringWindowToFront( client.main_window );
+    ClientTests::bringWindowToFront( client.main_window );
 
     const auto is_disconnected = [client]()
     {
@@ -557,11 +476,11 @@ void CommunicationTest::ensureDisconnected( const ClientHandles& client ) const
     for ( int attempt = 0; attempt < k_button_retry_count; ++attempt )
     {
         QVERIFY2(
-            waitForCondition( [client]() { return client.disconnect_button->isEnabled(); }, k_disconnect_timeout_ms, 100 ),
+            ClientTests::waitForCondition( [client]() { return client.disconnect_button->isEnabled(); }, k_disconnect_timeout_ms, 100 ),
             "disconnectPushButton did not become enabled within the timeout" );
 
         client.disconnect_button->click();
-        if ( waitForCondition( is_disconnected, k_disconnect_timeout_ms, 100 ) )
+        if ( ClientTests::waitForCondition( is_disconnected, k_disconnect_timeout_ms, 100 ) )
         {
             QTest::qWait( k_short_wait_ms );
             return;
@@ -584,7 +503,7 @@ void CommunicationTest::selectRadioButton( QRadioButton* radio_button, const cha
     if ( radio_button->isChecked() ) { return; }
 
     QVERIFY2(
-        waitForCondition(
+        ClientTests::waitForCondition(
             [radio_button]() { return radio_button->isEnabled() && radio_button->isVisible(); },
             k_connect_timeout_ms,
             100 ),
@@ -613,14 +532,14 @@ void CommunicationTest::configureVisualization(
     const QString& transfer_function_path,
     QRadioButton* sampling_radio ) const
 {
-    bringWindowToFront( client.main_window );
+    ClientTests::bringWindowToFront( client.main_window );
     selectRadioButton( visualization_radio, "visualization radio button" );
     if ( sampling_radio != nullptr )
     {
         selectRadioButton( sampling_radio, "sampling radio button" );
     }
-    setLineEditText( client.volume_data_path_line_edit, volume_path );
-    setLineEditText( client.transfer_function_path_line_edit, transfer_function_path );
+    ClientTests::setLineEditText( client.volume_data_path_line_edit, volume_path );
+    ClientTests::setLineEditText( client.transfer_function_path_line_edit, transfer_function_path );
     client.setting_apply_button->click();
     QTest::qWait( k_short_wait_ms );
 }
@@ -628,7 +547,7 @@ void CommunicationTest::configureVisualization(
 void CommunicationTest::waitForObjectAndApply( const ClientHandles& client ) const
 {
     QVERIFY2(
-        waitForCondition(
+        ClientTests::waitForCondition(
             [client]()
             {
                 return client.object_apply_button->isEnabled() &&
@@ -669,14 +588,14 @@ void CommunicationTest::waitForObjectAndApply( const ClientHandles& client ) con
 void CommunicationTest::clickJumpAndWaitForCompletion( const ClientHandles& client ) const
 {
     QVERIFY2(
-        waitForCondition( [client]() { return client.jump_button->isEnabled(); }, k_jump_button_enable_timeout_ms, 200 ),
+        ClientTests::waitForCondition( [client]() { return client.jump_button->isEnabled(); }, k_jump_button_enable_timeout_ms, 200 ),
         "m_jump_push_button did not become enabled within the timeout" );
 
     QTest::mouseClick( client.jump_button, Qt::LeftButton );
     QTest::qWait( k_short_wait_ms );
 
     QVERIFY2(
-        waitForCondition( [client]() { return client.jump_button->isEnabled(); }, k_jump_button_enable_timeout_ms, 200 ),
+        ClientTests::waitForCondition( [client]() { return client.jump_button->isEnabled(); }, k_jump_button_enable_timeout_ms, 200 ),
         "m_jump_push_button did not become enabled again within the timeout" );
 
     QTest::qWait( k_post_jump_wait_ms );
@@ -705,7 +624,7 @@ void CommunicationTest::openToolsMenuAndCapture(
     QCOMPARE( client.plot_over_time_editor_action->isEnabled(), expected_enabled );
     QCOMPARE( client.transfer_function_editor_action->isEnabled(), expected_enabled );
 
-    bringWindowToFront( client.main_window );
+    ClientTests::bringWindowToFront( client.main_window );
     QMenuBar* menu_bar = client.main_window->menuBar();
     QVERIFY2( menu_bar != nullptr, "Menu bar not found" );
     const QRect action_rect = menu_bar->actionGeometry( client.tools_menu->menuAction() );
@@ -718,7 +637,7 @@ void CommunicationTest::openToolsMenuAndCapture(
         client.tools_menu->popup( client.main_window->mapToGlobal( QPoint( 140, 36 ) ) );
     }
     QVERIFY2(
-        waitForCondition( [client]() { return client.tools_menu->isVisible(); }, 5000, 50 ),
+        ClientTests::waitForCondition( [client]() { return client.tools_menu->isVisible(); }, 5000, 50 ),
         "menuTools did not open" );
     saveScreenshot( file_name, caption );
     client.tools_menu->hide();
@@ -727,7 +646,7 @@ void CommunicationTest::openToolsMenuAndCapture(
 QFileDialog* CommunicationTest::waitForFileDialog( int timeout_ms ) const
 {
     QFileDialog* dialog = nullptr;
-    const bool dialog_found = waitForCondition(
+    const bool dialog_found = ClientTests::waitForCondition(
         [&dialog]()
         {
             const auto widgets = QApplication::topLevelWidgets();
@@ -755,7 +674,7 @@ void CommunicationTest::selectFileFromBrowseDialog(
     const QString& screenshot_file_name,
     const QString& caption )
 {
-    bringWindowToFront( client.main_window );
+    ClientTests::bringWindowToFront( client.main_window );
     auto selection_finished = std::make_shared<bool>( false );
     QTimer::singleShot(
         0,
@@ -795,7 +714,7 @@ void CommunicationTest::selectFileFromBrowseDialog(
 
     browse_button->click();
     QVERIFY2(
-        waitForCondition( [selection_finished]() { return *selection_finished; }, k_dialog_timeout_ms, 50 ),
+        ClientTests::waitForCondition( [selection_finished]() { return *selection_finished; }, k_dialog_timeout_ms, 50 ),
         "File dialog selection did not finish within the timeout" );
     QTest::qWait( k_short_wait_ms );
 }
@@ -814,10 +733,10 @@ void CommunicationTest::uncheckSecondObjectDisplay( const ClientHandles& client 
 
 void CommunicationTest::openVolumeTransformAndApplyRotationX( const ClientHandles& client, double value ) const
 {
-    bringWindowToFront( client.main_window );
+    ClientTests::bringWindowToFront( client.main_window );
     client.volume_transform_action->trigger();
     QVERIFY2(
-        waitForCondition( [client]() { return client.volume_transform->isVisible(); }, 5000, 50 ),
+        ClientTests::waitForCondition( [client]() { return client.volume_transform->isVisible(); }, 5000, 50 ),
         "VolumeTransform did not become visible" );
     client.volume_transform->raise();
     client.volume_transform->activateWindow();
@@ -889,14 +808,14 @@ void CommunicationTest::initTestCase()
 {
     const QString date_stamp = QDate::currentDate().toString( QStringLiteral( "yyyyMMdd" ) );
     const QString default_client_executable =
-        ClientTests::configuredPath( "PBVR_CLIENT_EXECUTABLE", repoRootPath() );
+        ClientTests::configuredPath( "PBVR_CLIENT_EXECUTABLE", ClientTests::repoRootPath() );
 
-    m_operator_client_executable = envOrDefault( "PBVR_OPERATOR_CLIENT_EXECUTABLE", default_client_executable );
-    m_guest_client_executable = envOrDefault( "PBVR_GUEST_CLIENT_EXECUTABLE", default_client_executable );
-    m_output_dir_path = envOrDefault(
+    m_operator_client_executable = ClientTests::envOrDefault( "PBVR_OPERATOR_CLIENT_EXECUTABLE", default_client_executable );
+    m_guest_client_executable = ClientTests::envOrDefault( "PBVR_GUEST_CLIENT_EXECUTABLE", default_client_executable );
+    m_output_dir_path = ClientTests::envOrDefault(
         "PBVR_TEST_OUTPUT_DIR",
-        ClientTests::datedTestOutputDir( repoRootPath(), date_stamp, QStringLiteral( "CommunicationTest" ) ) );
-    m_screenshot_dir_path = envOrDefault(
+        ClientTests::datedTestOutputDir( ClientTests::repoRootPath(), date_stamp, QStringLiteral( "CommunicationTest" ) ) );
+    m_screenshot_dir_path = ClientTests::envOrDefault(
         "PBVR_SCREENSHOT_DIR",
         QDir( m_output_dir_path ).absoluteFilePath( QStringLiteral( "img" ) ) );
     m_report_path = QDir( m_output_dir_path ).absoluteFilePath( QStringLiteral( "TestResult.md" ) );
@@ -950,15 +869,15 @@ void CommunicationTest::performs_communication_scenario()
     guest_client.object_editor->show();
 
     const QString piece_example =
-        ClientTests::configuredPath( "MEJ_VOLUME_DATA", repoRootPath() );
-    const QString mej_v2 = ClientTests::configuredPath( "MEJ_TRANSFER_FUNCTION", repoRootPath() );
-    const QString spx = ClientTests::configuredPath( "SPX_VOLUME_DATA", repoRootPath() );
-    const QString gt5d = ClientTests::configuredPath( "GT5D_VOLUME_DATA", repoRootPath() );
-    const QString gt5d_tfe = ClientTests::configuredPath( "GT5D_TRANSFER_FUNCTION", repoRootPath() );
-    const QString mej = ClientTests::configuredPath( "MEJ_VOLUME_DATA", repoRootPath() );
-    const QString mej_tfe = ClientTests::configuredPath( "MEJ_TRANSFER_FUNCTION", repoRootPath() );
-    const QString hydrogen = ClientTests::configuredPath( "HYDROGEN_VOLUME_DATA", repoRootPath() );
-    const QString tornado = ClientTests::configuredPath( "TORNADO_VOLUME_DATA", repoRootPath() );
+        ClientTests::configuredPath( "MEJ_VOLUME_DATA", ClientTests::repoRootPath() );
+    const QString mej_v2 = ClientTests::configuredPath( "MEJ_TRANSFER_FUNCTION", ClientTests::repoRootPath() );
+    const QString spx = ClientTests::configuredPath( "SPX_VOLUME_DATA", ClientTests::repoRootPath() );
+    const QString gt5d = ClientTests::configuredPath( "GT5D_VOLUME_DATA", ClientTests::repoRootPath() );
+    const QString gt5d_tfe = ClientTests::configuredPath( "GT5D_TRANSFER_FUNCTION", ClientTests::repoRootPath() );
+    const QString mej = ClientTests::configuredPath( "MEJ_VOLUME_DATA", ClientTests::repoRootPath() );
+    const QString mej_tfe = ClientTests::configuredPath( "MEJ_TRANSFER_FUNCTION", ClientTests::repoRootPath() );
+    const QString hydrogen = ClientTests::configuredPath( "HYDROGEN_VOLUME_DATA", ClientTests::repoRootPath() );
+    const QString tornado = ClientTests::configuredPath( "TORNADO_VOLUME_DATA", ClientTests::repoRootPath() );
 
     for ( const QString& file_path : { piece_example, mej_v2, spx, gt5d, gt5d_tfe, mej, mej_tfe, hydrogen, tornado } )
     {
@@ -980,7 +899,7 @@ void CommunicationTest::performs_communication_scenario()
         QStringLiteral( "04_operator_tools_enabled.png" ),
         QStringLiteral( "ToolsメニューでGlyph Editor, Plot Over Line Editor, Plot Over Time Editor, Transfer Function Editorが有効な状態" ),
         true );
-    bringWindowToFront( guest_client.main_window );
+    ClientTests::bringWindowToFront( guest_client.main_window );
     saveScreenshot( QStringLiteral( "05_guest_piece_object.png" ), QStringLiteral( "Guest用画面にオブジェクトが表示された状態" ) );
     markStepCompleted( QStringLiteral( "Operator用 localVizRadioButtonでPieceデータを読み込み、Operator/Guestの表示とTools有効状態を確認しました。" ) );
 
@@ -1110,7 +1029,7 @@ void CommunicationTest::performs_communication_scenario()
 
     ensureDisconnected( operator_client );
     ensureConnected( operator_client );
-    bringWindowToFront( operator_client.main_window );
+    ClientTests::bringWindowToFront( operator_client.main_window );
     saveScreenshot( QStringLiteral( "20_operator_user_id.png" ), QStringLiteral( "OperatorにユーザIDが割り当てられた状態" ) );
 
     ensureDisconnected( guest_client );
@@ -1118,53 +1037,53 @@ void CommunicationTest::performs_communication_scenario()
     const QString guest_id = guest_client.id_line_edit->text().trimmed();
     QVERIFY2( !guest_id.isEmpty(), "Guest ID is empty" );
     QVERIFY2( guest_id != operator_client.id_line_edit->text().trimmed(), "Operator and Guest IDs are not distinct" );
-    bringWindowToFront( guest_client.main_window );
+    ClientTests::bringWindowToFront( guest_client.main_window );
     saveScreenshot( QStringLiteral( "21_guest_user_id.png" ), QStringLiteral( "GuestにOperatorとは異なるユーザIDが割り当てられた状態" ) );
 
-    bringWindowToFront( operator_client.main_window );
+    ClientTests::bringWindowToFront( operator_client.main_window );
     configureVisualization( operator_client, operator_client.remote_viz_client_server_radio, spx, QString(), operator_client.uniform_radio );
     QVERIFY2(
-        waitForCondition( [operator_client]() { return !operator_client.object_name_line_edit->text().trimmed().isEmpty(); }, k_object_load_timeout_ms, 100 ),
+        ClientTests::waitForCondition( [operator_client]() { return !operator_client.object_name_line_edit->text().trimmed().isEmpty(); }, k_object_load_timeout_ms, 100 ),
         "ObjectEditor nameLineEdit did not receive text within the timeout" );
     QVERIFY2(
-        waitForCondition( [operator_client]() { return operator_client.is_operator_line_edit->text().trimmed() == QStringLiteral( "true" ); }, k_connect_timeout_ms, 100 ),
+        ClientTests::waitForCondition( [operator_client]() { return operator_client.is_operator_line_edit->text().trimmed() == QStringLiteral( "true" ); }, k_connect_timeout_ms, 100 ),
         "Operator did not have operator privilege within the timeout" );
-    bringWindowToFront( operator_client.main_window );
+    ClientTests::bringWindowToFront( operator_client.main_window );
     saveScreenshot( QStringLiteral( "22_operator_has_privilege.png" ), QStringLiteral( "Operator用画面に操作権限がある状態" ) );
     QVERIFY2(
-        waitForCondition( [guest_client]() { return guest_client.is_operator_line_edit->text().trimmed() == QStringLiteral( "false" ); }, k_connect_timeout_ms, 100 ),
+        ClientTests::waitForCondition( [guest_client]() { return guest_client.is_operator_line_edit->text().trimmed() == QStringLiteral( "false" ); }, k_connect_timeout_ms, 100 ),
         "Guest did not show no-operator privilege within the timeout" );
-    bringWindowToFront( guest_client.main_window );
+    ClientTests::bringWindowToFront( guest_client.main_window );
     saveScreenshot( QStringLiteral( "23_guest_no_privilege.png" ), QStringLiteral( "Guest用画面に操作権限がない状態" ) );
 
-    bringWindowToFront( operator_client.main_window );
-    setLineEditText( operator_client.transfer_operator_id_line_edit, guest_id );
+    ClientTests::bringWindowToFront( operator_client.main_window );
+    ClientTests::setLineEditText( operator_client.transfer_operator_id_line_edit, guest_id );
     operator_client.transfer_operator_apply_button->click();
     QTest::qWait( k_short_wait_ms );
     saveScreenshot( QStringLiteral( "24_operator_transfer_operator.png" ), QStringLiteral( "Operator用画面が操作権限をGuest用画面に移譲した状態" ) );
     QVERIFY2(
-        waitForCondition( [guest_client]() { return guest_client.is_operator_line_edit->text().trimmed() == QStringLiteral( "true" ); }, k_connect_timeout_ms, 100 ),
+        ClientTests::waitForCondition( [guest_client]() { return guest_client.is_operator_line_edit->text().trimmed() == QStringLiteral( "true" ); }, k_connect_timeout_ms, 100 ),
         "Guest did not become operator within the timeout" );
-    bringWindowToFront( guest_client.main_window );
+    ClientTests::bringWindowToFront( guest_client.main_window );
     saveScreenshot( QStringLiteral( "25_guest_received_operator.png" ), QStringLiteral( "Guest用画面が操作権限をOperator用画面から受け取った状態" ) );
 
-    setLineEditText( operator_client.chat_line_edit, QStringLiteral( "test1" ) );
+    ClientTests::setLineEditText( operator_client.chat_line_edit, QStringLiteral( "test1" ) );
     QTest::keyClick( operator_client.chat_line_edit, Qt::Key_Return );
     QVERIFY2(
-        waitForCondition( [guest_client]() { return guest_client.text_browser->toPlainText().contains( QStringLiteral( "test1" ) ); }, k_connect_timeout_ms, 100 ),
+        ClientTests::waitForCondition( [guest_client]() { return guest_client.text_browser->toPlainText().contains( QStringLiteral( "test1" ) ); }, k_connect_timeout_ms, 100 ),
         "Guest chat view did not receive test1" );
     saveScreenshot( QStringLiteral( "26_guest_received_chat_test1.png" ), QStringLiteral( "Guest用画面がOperator用画面からチャットtest1を受け取った状態" ) );
 
-    bringWindowToFront( operator_client.main_window );
-    setLineEditText( guest_client.chat_line_edit, QStringLiteral( "test2" ) );
+    ClientTests::bringWindowToFront( operator_client.main_window );
+    ClientTests::setLineEditText( guest_client.chat_line_edit, QStringLiteral( "test2" ) );
     QTest::keyClick( guest_client.chat_line_edit, Qt::Key_Return );
     QVERIFY2(
-        waitForCondition( [operator_client]() { return operator_client.text_browser->toPlainText().contains( QStringLiteral( "test2" ) ); }, k_connect_timeout_ms, 100 ),
+        ClientTests::waitForCondition( [operator_client]() { return operator_client.text_browser->toPlainText().contains( QStringLiteral( "test2" ) ); }, k_connect_timeout_ms, 100 ),
         "Operator chat view did not receive test2" );
     saveScreenshot( QStringLiteral( "27_operator_received_chat_test2.png" ), QStringLiteral( "Operator用画面がGuest用画面からチャットtest2を受け取った状態" ) );
     markStepCompleted( QStringLiteral( "ユーザID、操作権限移譲、双方向チャットを確認しました。" ) );
 
-    bringWindowToFront( guest_client.main_window );
+    ClientTests::bringWindowToFront( guest_client.main_window );
     qInfo().noquote() << QStringLiteral( "Guest用 ObjectEditor.ui: nameLineEditを待機し、applyPushButtonを押します。" );
     waitForObjectAndApply( guest_client );
     qInfo().noquote() << QStringLiteral( "Guest用 PlayBackControlToolBar.cpp: m_jump_push_buttonを押します。" );
@@ -1182,10 +1101,10 @@ void CommunicationTest::performs_communication_scenario()
     QTest::qWait( k_short_wait_ms );
     saveScreenshot( QStringLiteral( "28_guest_share_view_sender.png" ), QStringLiteral( "Guest用画面で視点共有者の視点を送信した状態" ) );
 
-    bringWindowToFront( operator_client.main_window );
+    ClientTests::bringWindowToFront( operator_client.main_window );
     selectShareViewTab( operator_client );
     QVERIFY2(
-        waitForCondition(
+        ClientTests::waitForCondition(
             [operator_client]()
             {
                 return operator_client.share_list_view->model() != nullptr &&
@@ -1213,7 +1132,7 @@ void CommunicationTest::performs_communication_scenario()
         Qt::LeftButton,
         Qt::NoModifier,
         first_item_rect.center() );
-    if ( !waitForCondition(
+    if ( !ClientTests::waitForCondition(
              [long_operator_screen, long_guest_shared_xform]()
              {
                  return xformsNearlyEqual(
@@ -1231,7 +1150,7 @@ void CommunicationTest::performs_communication_scenario()
         QVERIFY2( invoked, "Failed to invoke Communication::onItemDoubleClicked for Operator shareListView first item" );
     }
     QVERIFY2(
-        waitForCondition(
+        ClientTests::waitForCondition(
             [long_operator_screen, long_guest_shared_xform]()
             {
                 return xformsNearlyEqual(

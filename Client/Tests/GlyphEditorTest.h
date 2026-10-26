@@ -4,7 +4,6 @@
 #include <QObject>
 #include <QProcess>
 #include <QString>
-#include <functional>
 #include <vector>
 
 class QAction;
@@ -106,16 +105,10 @@ private slots:
     void performs_glyph_editor_scenario();
 
 private:
-    QString envOrDefault( const char* name, const QString& fallback ) const;
-    QString repoRootPath() const;
-    QString sourceTreePath( const QString& relative_path_from_repo_root ) const;
-    bool waitForCondition( const std::function<bool()>& condition, int timeout_ms, int interval_ms = 50 ) const;
     void startVideoRecording();
     void stopVideoRecording();
-    void bringWindowToFront( MainWindow* window ) const;
     void bringGlyphEditorToFront( GlyphEditor* glyph_editor ) const;
     void bringVolumeTransformToFront( VolumeTransform* volume_transform ) const;
-    void setLineEditText( QLineEdit* line_edit, const QString& text ) const;
     void setSpinBoxValue( QSpinBox* spin_box, int value ) const;
     void setDoubleSpinBoxValue( QDoubleSpinBox* spin_box, double value ) const;
     void selectRadioButton( QRadioButton* radio_button, const char* object_name ) const;

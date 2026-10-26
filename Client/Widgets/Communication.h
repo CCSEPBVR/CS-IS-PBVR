@@ -11,6 +11,7 @@
 #include "WebSocketPair.h"
 
 #include "ClientUtils.h"
+#include "NetcdfAuxiliaryFileDialog.h"
 
 #include "../../Shared/JsonKeys.h"
 #include "../../Shared/ObjectInfoExtractor.h"
@@ -91,11 +92,17 @@ private:
     std::map<int, bool> m_shared_users;
 
     QStandardItemModel* m_share_view_list_model = nullptr;
+    QJsonObject m_pending_initialize;
+    NetcdfAuxiliaryFileDialog* m_netcdf_auxiliary_dialog = nullptr;
 
     void webSocketConnected();
     void webSocketDisconnected();
 
     void updateVizMode();
+    void setSettingsEnabled( bool enabled );
+    void sendPendingInitialize();
+    void showNetcdfAuxiliaryDialog( NetcdfAuxiliaryFileDialog::Kind kind,
+                                    const QString& error = QString() );
 
     // NOTE:テキストソケット用
     // NOTE:メッセージ受信時Communicationクラスが処理を担当する部分

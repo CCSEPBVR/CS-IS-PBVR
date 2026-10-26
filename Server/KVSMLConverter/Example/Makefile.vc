@@ -85,6 +85,7 @@ $(OUTDIR)/VtpExample.obj \
 $(OUTDIR)/VtrExample.obj \
 $(OUTDIR)/VtsExample.obj \
 $(OUTDIR)/VtuExample.obj \
+$(OUTDIR)/NetCDFExample.obj \
 $(OUTDIR)/example.obj
 
 

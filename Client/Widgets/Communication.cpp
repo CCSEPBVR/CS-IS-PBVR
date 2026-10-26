@@ -234,6 +234,8 @@ void Communication::webSocketDisconnected()
 {
     if( !m_web_sockets->isConnected() )
     {
+        if ( m_netcdf_auxiliary_dialog ) m_netcdf_auxiliary_dialog->close();
+        m_pending_initialize = QJsonObject{};
         *m_viz_mode = Viz::Mode::Local;
         m_user_id = -1;
         m_is_operator = true;
@@ -673,8 +675,7 @@ void Communication::onSettingsApplyClicked()
         formatArray.append( pointObjectFormat );
         formatArray.append( glyphObjectFormat );
 
-        const QString message = QString::fromUtf8(
-            QJsonDocument( {
+        m_pending_initialize = QJsonObject{
                            { QString::fromUtf8( Protocol::Key::Event)                    , QString::fromUtf8(Protocol::Events::Initialize) },
                            { "VizMode"                                                   , static_cast<int>( *m_viz_mode ) },
                            { "SamplingType"                                              , static_cast<int>( samplingType ) },
@@ -682,10 +683,65 @@ void Communication::onSettingsApplyClicked()
                            { QString::fromUtf8( Protocol::Key::TransferFunctionFilePath ), ui->transferFunctionFilePathLineEdit->text() },
                            { QString::fromUtf8( Protocol::Key::UUID )                    , uuidArray },
                            { QString::fromUtf8( Protocol::Key::Format )                  , formatArray },
-                           } ).toJson( QJsonDocument::Compact ) );
-        m_web_sockets->text()->sendTextMessage( message );
-        emit textMessageSent( message );
+                           { QString::fromUtf8( Protocol::Key::RequestId )               , QUuid::createUuid().toString( QUuid::WithoutBraces ) },
+                           };
+        sendPendingInitialize();
     }
+}
+
+void Communication::sendPendingInitialize()
+{
+    if ( m_pending_initialize.isEmpty() || !m_web_sockets->isConnected() ) return;
+    const QString message = QString::fromUtf8(
+        QJsonDocument( m_pending_initialize ).toJson( QJsonDocument::Compact ) );
+    m_web_sockets->text()->sendTextMessage( message );
+    emit textMessageSent( message );
+}
+
+void Communication::setSettingsEnabled( bool enabled )
+{
+    ui->localVizRadioButton->setEnabled( enabled );
+    ui->remoteVizClientServerRadioButton->setEnabled( enabled );
+    ui->remoteVizInsituRadioButton->setEnabled( enabled );
+    ui->uniformRadioButton->setEnabled( enabled );
+    ui->metropolisRadioButton->setEnabled( enabled );
+    ui->rejectionRadioButton->setEnabled( enabled );
+    ui->volumeDataFilePathLineEdit->setEnabled( enabled );
+    ui->volumeDataFilePathPushButton->setEnabled( enabled );
+    ui->transferFunctionFilePathLineEdit->setEnabled( enabled );
+    ui->transferFunctionFilePathPushButton->setEnabled( enabled );
+    ui->addressLineEdit->setEnabled( enabled );
+    ui->connectPushButton->setEnabled( enabled && !m_web_sockets->isConnected() );
+    ui->disconnectPushButton->setEnabled( m_web_sockets->isConnected() );
+}
+
+void Communication::showNetcdfAuxiliaryDialog(
+    NetcdfAuxiliaryFileDialog::Kind kind, const QString& error )
+{
+    if ( !m_netcdf_auxiliary_dialog )
+    {
+        m_netcdf_auxiliary_dialog =
+            new NetcdfAuxiliaryFileDialog( kind, *m_viz_mode, m_web_sockets, this );
+        m_netcdf_auxiliary_dialog->setAttribute( Qt::WA_DeleteOnClose );
+        connect( m_netcdf_auxiliary_dialog, &QObject::destroyed, this, [this]() {
+            m_netcdf_auxiliary_dialog = nullptr;
+        } );
+        connect( m_netcdf_auxiliary_dialog, &QDialog::rejected, this, [this]() {
+            m_pending_initialize = QJsonObject{};
+            setSettingsEnabled( true );
+        } );
+        m_netcdf_auxiliary_dialog->setSubmitHandler( [this, kind]( const QString& path ) {
+            const auto key = kind == NetcdfAuxiliaryFileDialog::Kind::CamConnectivity
+                                 ? Protocol::Key::CamConnectivityFilePath
+                                 : Protocol::Key::SlacModeFilePattern;
+            m_pending_initialize[QString::fromUtf8( key )] = path;
+            sendPendingInitialize();
+        } );
+        m_netcdf_auxiliary_dialog->show();
+    }
+    if ( !error.isEmpty() ) m_netcdf_auxiliary_dialog->setError( error );
+    m_netcdf_auxiliary_dialog->raise();
+    m_netcdf_auxiliary_dialog->activateWindow();
 }
 
 void Communication::onBinaryWebSocketConnected()
@@ -849,6 +905,45 @@ void Communication::onTextWebSocketMessageReceived( const QString& receivedMessa
     else if( event == QString::fromUtf8( Protocol::Events::SharePoint ) )       receiveSharePoint( obj );
     else if( event == QString::fromUtf8( Protocol::Events::Initialize ) )
     {
+        const QString status = obj.value(
+            QString::fromUtf8( Protocol::Key::Status ) ).toString();
+        const QString message = obj.value(
+            QString::fromUtf8( Protocol::Key::Message ) ).toString();
+        if ( status == QStringLiteral( "NeedsCamConnectivity" ) )
+        {
+            showNetcdfAuxiliaryDialog(
+                NetcdfAuxiliaryFileDialog::Kind::CamConnectivity, message );
+            return;
+        }
+        if ( status == QStringLiteral( "NeedsSlacModes" ) )
+        {
+            showNetcdfAuxiliaryDialog(
+                NetcdfAuxiliaryFileDialog::Kind::SlacModes, message );
+            return;
+        }
+        if ( status == QStringLiteral( "Error" ) )
+        {
+            if ( m_netcdf_auxiliary_dialog ) m_netcdf_auxiliary_dialog->setError( message );
+            else
+            {
+                m_pending_initialize = QJsonObject{};
+                setSettingsEnabled( true );
+                emit updateStatusBarMessage( message );
+            }
+            return;
+        }
+        if ( status == QStringLiteral( "SurfaceOnly" ) ||
+             status == QStringLiteral( "Unsupported" ) )
+        {
+            if ( m_netcdf_auxiliary_dialog ) m_netcdf_auxiliary_dialog->close();
+            m_pending_initialize = QJsonObject{};
+            setSettingsEnabled( true );
+            emit updateStatusBarMessage( message );
+            return;
+        }
+        if ( !status.isEmpty() && status != QStringLiteral( "ReadyVolume" ) ) return;
+        if ( m_netcdf_auxiliary_dialog ) m_netcdf_auxiliary_dialog->close();
+        m_pending_initialize = QJsonObject{};
         ui->localVizRadioButton               ->setEnabled( false );
         ui->remoteVizClientServerRadioButton  ->setEnabled( false );
         ui->remoteVizInsituRadioButton        ->setEnabled( false );

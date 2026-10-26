@@ -19,11 +19,15 @@ class RemoteFileDialog : public QDialog
 {
     Q_OBJECT
 public:
-    explicit RemoteFileDialog( WebSocketPair* websockets, QWidget* parent = nullptr )
+    explicit RemoteFileDialog( WebSocketPair* websockets, QWidget* parent = nullptr,
+                               const QString& title = QStringLiteral( "Select 3D data files" ),
+                               const QString& initialDirectory = QStringLiteral( "/" ) )
         : QDialog( parent )
         , m_web_sockets( websockets )
+        , m_currentPath( initialDirectory.isEmpty() ? QStringLiteral( "/" )
+                                                    : initialDirectory )
     {
-        setWindowTitle( "Select 3D data files" );
+        setWindowTitle( title );
         resize( 600, 500 );
 
         // UI構成
@@ -83,7 +87,7 @@ public:
         connect( okButton, &QPushButton::clicked, this, &RemoteFileDialog::onOk );
         connect( cancelButton, &QPushButton::clicked, this, &RemoteFileDialog::reject );
 
-        requestDir( "/", 1 );
+        requestDir( m_currentPath, 1 );
     }
 
     QString selectedFile() const { return m_selectedFile; }

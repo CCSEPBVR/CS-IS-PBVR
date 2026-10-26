@@ -4,7 +4,6 @@
 #include <QObject>
 #include <QProcess>
 #include <QString>
-#include <functional>
 
 class QFileDialog;
 class QMainWindow;
@@ -25,10 +24,6 @@ private slots:
     void performs_playback_control_toolbar_scenario();
 
 private:
-    QString envOrDefault( const char* name, const QString& fallback ) const;
-    QString repoRootPath() const;
-    QString sourceTreePath( const QString& relative_path_from_repo_root ) const;
-    bool waitForCondition( const std::function<bool()>& condition, int timeout_ms, int interval_ms = 50 ) const;
     QFileDialog* waitForFileDialog( int timeout_ms ) const;
     void selectFileFromDialog( const QString& file_path ) const;
     void clickButtonAndWait( QPushButton* button, int wait_ms ) const;

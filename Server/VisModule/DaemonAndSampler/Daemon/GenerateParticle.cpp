@@ -958,7 +958,17 @@ void generate_volume(
               found_nc   != std::string::npos
             )
     {
-        volume = new vismodule::UnstructuredVolumeImporter( file_path, mvp.m_file_type, mvp.m_elem_type, time_step, sub_volume_id );
+        std::vector<std::string> slac_modes = mvp.m_slac_mode_file_paths;
+        const NetcdfStepSource source = mvp.netcdfStepSource( time_step );
+        if ( !source.slac_mode_path.empty() ) slac_modes = { source.slac_mode_path };
+        volume = new vismodule::UnstructuredVolumeImporter(
+            file_path,
+            mvp.m_file_type,
+            mvp.m_elem_type,
+            time_step,
+            sub_volume_id,
+            mvp.m_cam_connectivity_file_path,
+            slac_modes );
     }
     else if ( found_vti != std::string::npos )
     {

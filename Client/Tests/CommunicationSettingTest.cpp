@@ -5,7 +5,6 @@
 #include <QEventLoop>
 #include <QDate>
 #include <QDir>
-#include <QElapsedTimer>
 #include <QFile>
 #include <QFileInfo>
 #include <QLineEdit>
@@ -20,6 +19,7 @@
 #include "../Widgets/ObjectEditor.h"
 #include "../Widgets/PlayBackControlToolBar.h"
 #include "TestAppContext.h"
+#include "TestCommon.h"
 #include "TestOutputPaths.h"
 
 #include <csignal>
@@ -40,72 +40,10 @@ constexpr int k_button_retry_wait_ms = 500;
 constexpr int k_radio_retry_count = 3;
 kvs::qt::Application* g_test_app = nullptr;
 
-void logStep( const QString& message )
-{
-    qInfo().noquote() << message;
-}
-
-QString findRepoRootFrom( const QString& start_path )
-{
-    QDir dir( start_path );
-    while ( dir.exists() )
-    {
-        if ( dir.exists( QStringLiteral( ".git" ) ) &&
-             dir.exists( QStringLiteral( "Client" ) ) &&
-             dir.exists( QStringLiteral( "Server" ) ) )
-        {
-            return dir.absolutePath();
-        }
-
-        if ( !dir.cdUp() ) { break; }
-    }
-
-    return QString();
-}
 }
 
 namespace ClientTests
 {
-
-QString CommunicationSettingTest::envOrDefault( const char* name, const QString& fallback ) const
-{
-    const QString value = qEnvironmentVariable( name );
-    return value.isEmpty() ? ClientTests::configuredPath( name, repoRootPath(), fallback ) : value;
-}
-
-QString CommunicationSettingTest::repoRootPath() const
-{
-    const QString app_root = findRepoRootFrom( QCoreApplication::applicationDirPath() );
-    if ( !app_root.isEmpty() ) { return app_root; }
-
-    const QString cwd_root = findRepoRootFrom( QDir::currentPath() );
-    if ( !cwd_root.isEmpty() ) { return cwd_root; }
-
-    const QString source_root =
-        findRepoRootFrom( QFileInfo( QString::fromUtf8( __FILE__ ) ).absolutePath() );
-    if ( !source_root.isEmpty() ) { return source_root; }
-
-    return QDir::currentPath();
-}
-
-QString CommunicationSettingTest::sourceTreePath( const QString& relative_path_from_repo_root ) const
-{
-    return QDir::cleanPath( QDir( repoRootPath() ).absoluteFilePath( relative_path_from_repo_root ) );
-}
-
-bool CommunicationSettingTest::waitForCondition( const std::function<bool()>& condition, int timeout_ms, int interval_ms ) const
-{
-    QElapsedTimer timer;
-    timer.start();
-
-    while ( timer.elapsed() < timeout_ms )
-    {
-        if ( condition() ) { return true; }
-        QTest::qWait( interval_ms );
-    }
-
-    return condition();
-}
 
 void CommunicationSettingTest::startVideoRecording()
 {
@@ -177,24 +115,6 @@ void CommunicationSettingTest::stopVideoRecording()
 #endif
 }
 
-void CommunicationSettingTest::bringWindowToFront( MainWindow* window ) const
-{
-    QVERIFY2( window != nullptr, "MainWindow is null" );
-    window->show();
-    window->raise();
-    window->activateWindow();
-    QTest::qWait( k_window_settle_ms );
-}
-
-void CommunicationSettingTest::setLineEditText( QLineEdit* line_edit, const QString& text ) const
-{
-    QVERIFY2( line_edit != nullptr, "Target line edit was not found" );
-    line_edit->setFocus();
-    line_edit->clear();
-    QTest::keyClicks( line_edit, QDir::toNativeSeparators( text ) );
-    QCOMPARE( line_edit->text(), QDir::toNativeSeparators( text ) );
-}
-
 CommunicationSettingTest::ClientHandles CommunicationSettingTest::resolveClientHandles( MainWindow& window ) const
 {
     ClientHandles handles;
@@ -247,8 +167,8 @@ CommunicationSettingTest::ClientHandles CommunicationSettingTest::resolveClientH
 
 void CommunicationSettingTest::ensureConnected( const ClientHandles& client ) const
 {
-    logStep( QStringLiteral( "ensureConnected: begin" ) );
-    bringWindowToFront( client.main_window );
+    ClientTests::logStep( QStringLiteral( "ensureConnected: begin" ) );
+    ClientTests::bringWindowToFront( client.main_window );
 
     const auto is_connected = [client]()
     {
@@ -259,14 +179,14 @@ void CommunicationSettingTest::ensureConnected( const ClientHandles& client ) co
 
     if ( is_connected() )
     {
-        logStep( QStringLiteral( "ensureConnected: already connected" ) );
+        ClientTests::logStep( QStringLiteral( "ensureConnected: already connected" ) );
         return;
     }
 
     for ( int attempt = 0; attempt < k_button_retry_count; ++attempt )
     {
         QVERIFY2(
-            waitForCondition(
+            ClientTests::waitForCondition(
                 [client]()
                 {
                     return client.connect_button->isEnabled();
@@ -275,13 +195,13 @@ void CommunicationSettingTest::ensureConnected( const ClientHandles& client ) co
                 100 ),
             "connectPushButton did not become enabled within the timeout" );
 
-        bringWindowToFront( client.main_window );
+        ClientTests::bringWindowToFront( client.main_window );
         QTest::mouseClick( client.connect_button, Qt::LeftButton );
 
-        if ( waitForCondition( is_connected, k_connect_timeout_ms, 100 ) )
+        if ( ClientTests::waitForCondition( is_connected, k_connect_timeout_ms, 100 ) )
         {
             QTest::qWait( k_short_wait_ms );
-            logStep( QStringLiteral( "ensureConnected: completed" ) );
+            ClientTests::logStep( QStringLiteral( "ensureConnected: completed" ) );
             return;
         }
 
@@ -293,8 +213,8 @@ void CommunicationSettingTest::ensureConnected( const ClientHandles& client ) co
 
 void CommunicationSettingTest::ensureDisconnected( const ClientHandles& client ) const
 {
-    logStep( QStringLiteral( "ensureDisconnected: begin" ) );
-    bringWindowToFront( client.main_window );
+    ClientTests::logStep( QStringLiteral( "ensureDisconnected: begin" ) );
+    ClientTests::bringWindowToFront( client.main_window );
 
     const auto is_disconnected = [client]()
     {
@@ -305,14 +225,14 @@ void CommunicationSettingTest::ensureDisconnected( const ClientHandles& client )
 
     if ( is_disconnected() )
     {
-        logStep( QStringLiteral( "ensureDisconnected: already disconnected" ) );
+        ClientTests::logStep( QStringLiteral( "ensureDisconnected: already disconnected" ) );
         return;
     }
 
     for ( int attempt = 0; attempt < k_button_retry_count; ++attempt )
     {
         QVERIFY2(
-            waitForCondition(
+            ClientTests::waitForCondition(
                 [client]()
                 {
                     return client.disconnect_button->isEnabled();
@@ -321,13 +241,13 @@ void CommunicationSettingTest::ensureDisconnected( const ClientHandles& client )
                 100 ),
             "disconnectPushButton did not become enabled within the timeout" );
 
-        bringWindowToFront( client.main_window );
+        ClientTests::bringWindowToFront( client.main_window );
         QTest::mouseClick( client.disconnect_button, Qt::LeftButton );
 
-        if ( waitForCondition( is_disconnected, k_disconnect_timeout_ms, 100 ) )
+        if ( ClientTests::waitForCondition( is_disconnected, k_disconnect_timeout_ms, 100 ) )
         {
             QTest::qWait( k_short_wait_ms );
-            logStep( QStringLiteral( "ensureDisconnected: completed" ) );
+            ClientTests::logStep( QStringLiteral( "ensureDisconnected: completed" ) );
             return;
         }
 
@@ -344,7 +264,7 @@ void CommunicationSettingTest::selectRadioButton( QRadioButton* radio_button, co
     if ( radio_button->isChecked() ) { return; }
 
     QVERIFY2(
-        waitForCondition(
+        ClientTests::waitForCondition(
             [radio_button]()
             {
                 return radio_button->isEnabled() && radio_button->isVisible();
@@ -373,13 +293,13 @@ void CommunicationSettingTest::configureLocalSampling( const ClientHandles& clie
 
     ensureConnected( client );
 
-    bringWindowToFront( client.main_window );
+    ClientTests::bringWindowToFront( client.main_window );
     selectRadioButton( client.local_viz_radio, "localVizRadioButton" );
     QTest::qWait( k_short_wait_ms );
 
-    setLineEditText( client.volume_data_path_line_edit, m_volume_data_path );
+    ClientTests::setLineEditText( client.volume_data_path_line_edit, m_volume_data_path );
     QTest::qWait( k_short_wait_ms );
-    setLineEditText( client.transfer_function_path_line_edit, m_transfer_function_path );
+    ClientTests::setLineEditText( client.transfer_function_path_line_edit, m_transfer_function_path );
     QTest::qWait( k_short_wait_ms );
 
     selectRadioButton( sampling_radio, sampling_radio->objectName().toUtf8().constData() );
@@ -391,9 +311,9 @@ void CommunicationSettingTest::configureLocalSampling( const ClientHandles& clie
 
 void CommunicationSettingTest::waitForObjectAndApply( const ClientHandles& client ) const
 {
-    logStep( QStringLiteral( "waitForObjectAndApply: waiting for ObjectEditor nameLineEdit" ) );
+    ClientTests::logStep( QStringLiteral( "waitForObjectAndApply: waiting for ObjectEditor nameLineEdit" ) );
     QVERIFY2(
-        waitForCondition(
+        ClientTests::waitForCondition(
             [client]()
             {
                 return !client.object_name_line_edit->text().trimmed().isEmpty();
@@ -409,7 +329,7 @@ void CommunicationSettingTest::waitForObjectAndApply( const ClientHandles& clien
 void CommunicationSettingTest::clickJumpAndWaitForCompletion( const ClientHandles& client ) const
 {
     QVERIFY2(
-        waitForCondition(
+        ClientTests::waitForCondition(
             [client]()
             {
                 return client.jump_button->isEnabled();
@@ -422,7 +342,7 @@ void CommunicationSettingTest::clickJumpAndWaitForCompletion( const ClientHandle
     QTest::qWait( k_short_wait_ms );
 
     QVERIFY2(
-        waitForCondition(
+        ClientTests::waitForCondition(
             [client]()
             {
                 return client.jump_button->isEnabled();
@@ -455,18 +375,18 @@ void CommunicationSettingTest::writeSummaryReport() const
 void CommunicationSettingTest::initTestCase()
 {
     const QString date_stamp = QDate::currentDate().toString( QStringLiteral( "yyyyMMdd" ) );
-    m_client_executable = envOrDefault(
+    m_client_executable = ClientTests::envOrDefault(
         "PBVR_CLIENT_EXECUTABLE",
-        ClientTests::configuredPath( "PBVR_CLIENT_EXECUTABLE", repoRootPath() ) );
-    m_volume_data_path = envOrDefault(
+        ClientTests::configuredPath( "PBVR_CLIENT_EXECUTABLE", ClientTests::repoRootPath() ) );
+    m_volume_data_path = ClientTests::envOrDefault(
         "PBVR_VOLUME_DATA",
-        ClientTests::configuredPath( "MEJ_VOLUME_DATA", repoRootPath() ) );
-    m_transfer_function_path = envOrDefault(
+        ClientTests::configuredPath( "MEJ_VOLUME_DATA", ClientTests::repoRootPath() ) );
+    m_transfer_function_path = ClientTests::envOrDefault(
         "MEJ_TRANSFER_FUNCTION",
-        ClientTests::configuredPath( "MEJ_TRANSFER_FUNCTION", repoRootPath() ) );
-    m_output_dir_path = envOrDefault(
+        ClientTests::configuredPath( "MEJ_TRANSFER_FUNCTION", ClientTests::repoRootPath() ) );
+    m_output_dir_path = ClientTests::envOrDefault(
         "PBVR_TEST_OUTPUT_DIR",
-        ClientTests::datedTestOutputDir( repoRootPath(), date_stamp ) );
+        ClientTests::datedTestOutputDir( ClientTests::repoRootPath(), date_stamp ) );
     m_video_file_path = QDir( m_output_dir_path ).absoluteFilePath( QStringLiteral( "CommunicationSettingTest.mov" ) );
     m_summary_file_path = QDir( m_output_dir_path ).absoluteFilePath( QStringLiteral( "CommunicationSettingTest.md" ) );
     m_test_succeeded = false;
@@ -495,7 +415,7 @@ void CommunicationSettingTest::cleanupTestCase()
 
 void CommunicationSettingTest::performs_communication_setting_scenario()
 {
-    logStep( QStringLiteral( "scenario: start" ) );
+    ClientTests::logStep( QStringLiteral( "scenario: start" ) );
     if ( g_test_app == nullptr )
     {
         g_test_app = pbvrTestApplication();
@@ -511,20 +431,20 @@ void CommunicationSettingTest::performs_communication_setting_scenario()
     ClientHandles client = resolveClientHandles( client_window );
     client.object_editor->show();
 
-    logStep( QStringLiteral( "scenario: uniform begin" ) );
+    ClientTests::logStep( QStringLiteral( "scenario: uniform begin" ) );
     configureLocalSampling( client, client.uniform_radio );
     waitForObjectAndApply( client );
     clickJumpAndWaitForCompletion( client );
     QTest::qWait( k_short_wait_ms );
 
-    logStep( QStringLiteral( "scenario: metropolis begin" ) );
+    ClientTests::logStep( QStringLiteral( "scenario: metropolis begin" ) );
     ensureDisconnected( client );
     configureLocalSampling( client, client.metropolis_radio );
     waitForObjectAndApply( client );
     clickJumpAndWaitForCompletion( client );
     QTest::qWait( k_short_wait_ms );
 
-    logStep( QStringLiteral( "scenario: rejection begin" ) );
+    ClientTests::logStep( QStringLiteral( "scenario: rejection begin" ) );
     ensureDisconnected( client );
     configureLocalSampling( client, client.rejection_radio );
     waitForObjectAndApply( client );
@@ -537,7 +457,7 @@ void CommunicationSettingTest::performs_communication_setting_scenario()
     QCoreApplication::processEvents( QEventLoop::AllEvents, k_window_settle_ms );
     QCoreApplication::sendPostedEvents( nullptr, QEvent::DeferredDelete );
     m_test_succeeded = true;
-    logStep( QStringLiteral( "scenario: completed" ) );
+    ClientTests::logStep( QStringLiteral( "scenario: completed" ) );
 }
 
 } // namespace ClientTests

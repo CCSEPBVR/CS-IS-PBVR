@@ -6,9 +6,17 @@
 #include <chrono>
 #include <cstdlib>
 #include <fstream>
+#include <iostream>
 #include <algorithm>
-#include <cctype>
-#include <cmath>
+#include <regex>
+
+#ifndef CPU_VER
+#include "mpi.h"
+#endif
+
+#ifdef EXTEND_FILE_FORMAT
+#include <kvs/extendedfileformat/Netcdf>
+#endif
 
 #include <vismodule/KVSMLObjectPlotOverLine>
 #include <vismodule/InitialStep>
@@ -27,17 +35,42 @@ std::string EnvValueOrUnset( const char* name )
     return value ? std::string( value ) : std::string( "(unset)" );
 }
 
-std::string NormalizeStatisticName( std::string statistic )
+std::vector<std::string> ExpandNumericWildcard( const std::string& wildcard,
+                                                std::string& error )
 {
-    std::transform( statistic.begin(), statistic.end(), statistic.begin(),
-        []( unsigned char c ) { return static_cast<char>( std::tolower( c ) ); } );
-    if ( statistic == "average" || statistic == "avg" ) return "mean";
-    if ( statistic == "cov" || statistic == "coefficient_variation" ||
-         statistic == "coefficient_of_variation" || statistic == "coefficient-of-variation" )
+    error.clear();
+    const std::filesystem::path path( wildcard );
+    const auto directory = path.has_parent_path() ? path.parent_path()
+                                                   : std::filesystem::path( "." );
+    if ( !std::filesystem::is_directory( directory ) )
     {
-        return "cv";
+        error = "Directory does not exist: " + directory.string();
+        return {};
     }
-    return statistic;
+
+    std::string expression;
+    for ( const char c : path.filename().string() )
+    {
+        if ( c == '*' ) expression += "[0-9]+";
+        else
+        {
+            if ( std::string( R"(\.^$|()[]{}+?)" ).find( c ) != std::string::npos )
+                expression += '\\';
+            expression += c;
+        }
+    }
+    const std::regex pattern( expression );
+    std::vector<std::string> files;
+    for ( const auto& entry : std::filesystem::directory_iterator( directory ) )
+    {
+        if ( entry.is_regular_file() &&
+             std::regex_match( entry.path().filename().string(), pattern ) )
+            files.push_back( entry.path().string() );
+    }
+    std::sort( files.begin(), files.end() );
+    if ( files.empty() ) error = "No regular file matches: " + wildcard;
+    return files;
+}
 }
 
 std::vector<EnsembleTransferFunction>* StatisticTransferFunctionArray(
@@ -745,17 +778,23 @@ void Server::initialize(uWS::WebSocket<false, true, PerSocket>* ws, const nlohma
     // std::cout << "[Server] initialize" << std::endl;
 
     int VizMode = received["VizMode"];    
-    // NOTE:最初にInitializeイベントを発行したユーザに操作権を付与
-    ws->getUserData()->state->isOperator = true;
-    std::cout << "[Server] User[" << ws->getUserData()->state->userID << "] operator :" << ws->getUserData()->state->isOperator << std::endl;
-    nlohmann::json operatorMsg;
-    operatorMsg[Protocol::Key::Event]      = Protocol::Events::Operator;
-    operatorMsg["VizMode"]                 = VizMode;
-    operatorMsg[Protocol::Key::UserID]     = ws->getUserData()->state->userID;
-    operatorMsg[Protocol::Key::IsOperator] = ws->getUserData()->state->isOperator;
-    m_u_web_sockets.publish( k_text_topic, operatorMsg.dump(), uWS::OpCode::TEXT );
-
     SamplingType samplingType = static_cast<SamplingType>( received.at( "SamplingType" ).get<int>() );
+
+    const std::string request_id =
+        received.value( std::string( Protocol::Key::RequestId ), std::string() );
+    const auto send_initialize_status = [&]( const char* status,
+                                             const std::string& message,
+                                             const char* required_file_type = "" )
+    {
+        nlohmann::json response;
+        response[Protocol::Key::Event] = Protocol::Events::Initialize;
+        response[Protocol::Key::RequestId] = request_id;
+        response[Protocol::Key::Status] = status;
+        response[Protocol::Key::Message] = message;
+        if ( required_file_type[0] != '\0' )
+            response[Protocol::Key::RequiredFileType] = required_file_type;
+        ws->send( response.dump(), uWS::OpCode::TEXT );
+    };
 
     std::string volumeDataFilePath = received[Protocol::Key::VolumeDataFilePath];
     std::string transferFunctionFilePath = received[Protocol::Key::TransferFunctionFilePath];
@@ -777,6 +816,148 @@ void Server::initialize(uWS::WebSocket<false, true, PerSocket>* ws, const nlohma
     std::filesystem::path fileSystemPath(volumeDataNativeFilePath);
     std::string volumeDataFileName = fileSystemPath.stem().string();
     std::string volumeDataFileExtension = fileSystemPath.extension().string();
+    std::string camConnectivityNativeFilePath;
+    std::vector<std::string> slacModeNativeFilePaths;
+
+#ifdef EXTEND_FILE_FORMAT
+    if ( volumeDataFileExtension == ".nc" || volumeDataFileExtension == ".ncdf" )
+    {
+        using kvs::ExtendedFileFormat::Netcdf;
+        using kvs::ExtendedFileFormat::NetcdfFileInfo;
+        using kvs::ExtendedFileFormat::NetcdfInputRole;
+
+        std::string primary_probe_path = volumeDataNativeFilePath;
+        std::vector<std::string> primary_paths = { primary_probe_path };
+        if ( primary_probe_path.find( '*' ) != std::string::npos )
+        {
+            std::string error;
+            const auto paths = ExpandNumericWildcard( primary_probe_path, error );
+            if ( paths.empty() )
+            {
+                send_initialize_status( "Error", error );
+                return;
+            }
+            primary_probe_path = paths.front();
+            primary_paths = paths;
+        }
+
+        NetcdfFileInfo file_info;
+        if ( !Netcdf::Probe( primary_probe_path, file_info ) )
+        {
+            send_initialize_status( "Unsupported", "Unsupported NetCDF input." );
+            return;
+        }
+        if ( file_info.input_role == NetcdfInputRole::CamPoints )
+        {
+            const std::string path = received.value(
+                std::string( Protocol::Key::CamConnectivityFilePath ), std::string() );
+            if ( path.empty() )
+            {
+                send_initialize_status(
+                    "NeedsCamConnectivity", "CAM connectivity file is required.", "CAM" );
+                return;
+            }
+            camConnectivityNativeFilePath = Worker::toNativePath( path );
+            if ( !std::filesystem::is_regular_file( camConnectivityNativeFilePath ) )
+            {
+                send_initialize_status(
+                    "Error", "CAM connectivity file does not exist or is not a regular file.",
+                    "CAM" );
+                return;
+            }
+            kvs::ExtendedFileFormat::NetcdfReadOptions options;
+            options.cam_connectivity_filename = camConnectivityNativeFilePath;
+            for ( const auto& primary_path : primary_paths )
+            {
+                Netcdf candidate( primary_path, options );
+                if ( candidate.isFailure() )
+                {
+                    send_initialize_status(
+                        "Error", "CAM connectivity is incompatible with the points file.",
+                        "CAM" );
+                    return;
+                }
+                if ( candidate.gridType() ==
+                     kvs::ExtendedFileFormat::NetcdfGridType::PolyData )
+                {
+                    send_initialize_status(
+                        "SurfaceOnly", "The CAM input contains a single-layer surface dataset." );
+                    return;
+                }
+            }
+        }
+        else if ( file_info.input_role == NetcdfInputRole::CamConnectivity )
+        {
+            send_initialize_status(
+                "Unsupported", "CAM connectivity cannot be used as the primary input." );
+            return;
+        }
+        else if ( file_info.input_role == NetcdfInputRole::SlacMesh )
+        {
+            const std::string pattern = received.value(
+                std::string( Protocol::Key::SlacModeFilePattern ), std::string() );
+            if ( pattern.empty() )
+            {
+                send_initialize_status(
+                    "NeedsSlacModes", "SLAC mode file or wildcard is required.", "SLAC" );
+                return;
+            }
+            const std::string native_pattern = Worker::toNativePath( pattern );
+            if ( native_pattern.find( '*' ) == std::string::npos )
+            {
+                if ( std::filesystem::is_regular_file( native_pattern ) )
+                    slacModeNativeFilePaths.push_back( native_pattern );
+            }
+            else
+            {
+                std::string error;
+                slacModeNativeFilePaths = ExpandNumericWildcard( native_pattern, error );
+            }
+            if ( slacModeNativeFilePaths.empty() )
+            {
+                send_initialize_status(
+                    "Error", "No regular SLAC mode file matches the specified path.", "SLAC" );
+                return;
+            }
+
+            std::vector<kvs::ExtendedFileFormat::SlacTimeStepFile> modes;
+            std::string error;
+            if ( !Netcdf::ResolveSlacModes(
+                     primary_probe_path, slacModeNativeFilePaths, modes, error ) )
+            {
+                send_initialize_status( "Error", error, "SLAC" );
+                return;
+            }
+            slacModeNativeFilePaths.clear();
+            for ( const auto& mode : modes ) slacModeNativeFilePaths.push_back( mode.path );
+        }
+        else if ( file_info.input_role == NetcdfInputRole::SlacMode )
+        {
+            send_initialize_status(
+                "Unsupported", "A SLAC mode cannot be used as the primary input." );
+            return;
+        }
+
+        if ( file_info.input_role != NetcdfInputRole::SlacMesh )
+        {
+            kvs::ExtendedFileFormat::NetcdfReadOptions options;
+            options.cam_connectivity_filename = camConnectivityNativeFilePath;
+            for ( const auto& path : primary_paths )
+            {
+                std::vector<double> internal_times;
+                std::string error;
+                if ( Netcdf::TimeSteps( path, options, internal_times, error ) &&
+                     internal_times.size() > 1 )
+                {
+                    std::cerr << "WARNING: NetCDF file contains multiple internal time steps."
+                              << std::endl;
+                    std::cerr << "WARNING: Only the first internal time step will be used: "
+                              << path << std::endl;
+                }
+            }
+        }
+    }
+#endif
 
     if (pointObjectFormat == ObjectInfoExtractor::Format::ClientServerPointObject)
     {
@@ -792,9 +973,8 @@ void Server::initialize(uWS::WebSocket<false, true, PerSocket>* ws, const nlohma
             return;
         }
 #endif
-        m_server_mode = ServerMode::CS;
-
         bool isFileLoadSuccess = true;
+        MultiVolumePropertyList candidate_multi_volume_property_list;
 
         // ファイルパスにワイルドカードが含まれている場合
         if (volumeDataNativeFilePath.find('*') != std::string::npos)
@@ -856,9 +1036,15 @@ void Server::initialize(uWS::WebSocket<false, true, PerSocket>* ws, const nlohma
             isFileLoadSuccess = false;
         }
 
-        if (isFileLoadSuccess) m_multi_volume_property_list->loadVolumeDataFile(volumeDataNativeFilePath);
+        if ( isFileLoadSuccess )
+        {
+            candidate_multi_volume_property_list.loadVolumeDataFile(
+                volumeDataNativeFilePath,
+                camConnectivityNativeFilePath,
+                slacModeNativeFilePaths );
+        }
 
-        if (m_multi_volume_property_list->m_list.size() <= 0)
+        if (candidate_multi_volume_property_list.m_list.size() <= 0)
         {
             std::cerr << "ERROR: Failed to load the volume object file.(rank:" << m_mpi_rank << ")" << std::endl;
             std::cerr << "INFO: volume object file: " << volumeDataNativeFilePath << "(rank:" << m_mpi_rank << ")" << std::endl;
@@ -867,51 +1053,94 @@ void Server::initialize(uWS::WebSocket<false, true, PerSocket>* ws, const nlohma
 
         if (!isFileLoadSuccess)
         {
-            // FIXME:ファイルを読み込むことが出来なかったことをクライアントに伝える
+            send_initialize_status( "Error", "Failed to load the volume input." );
             return;
         }
 
-        // Workerが動いている場合, 初回導通信号をWorkerに送信する
+        ParticleProperty candidate_particle_property = *m_particle_property;
+        GlyphProperty candidate_glyph_property = *m_glyph_property;
+        PlotOverLineProperty candidate_pol_property = *m_pol_property;
+
+        // InitialStepCS内のcollective通信へ全rankが同時に入れるよう先に通知する。
+        if ( m_mpi_size > 1 )
+        {
+            SendInitialStepSignal( volumeDataNativeFilePath, transferFunctionNativeFilePath,
+                                   camConnectivityNativeFilePath,
+                                   slacModeNativeFilePaths,
+                                   candidate_multi_volume_property_list.m_list.front()
+                                       .m_time_step_file_paths );
+#ifndef CPU_VER
+            int master_load_success = 1;
+            int all_ranks_loaded = 0;
+            MPI_Allreduce( &master_load_success, &all_ranks_loaded, 1, MPI_INT, MPI_MIN,
+                           MPI_COMM_WORLD );
+            if ( !all_ranks_loaded )
+            {
+                send_initialize_status(
+                    "Error", "A worker rank failed to load the resolved dataset." );
+                return;
+            }
+#endif
+        }
+
+        bool master_initialize_success = true;
+        std::string master_initialize_error;
+        try
+        {
+            SetDefaultParticleParameterCS(
+                transferFunctionNativeFilePath,
+                candidate_multi_volume_property_list,
+                candidate_particle_property );
+            switch( samplingType )
+            {
+            case SamplingType::Uniform: candidate_particle_property.m_sampling_method = 'u'; break;
+            case SamplingType::Metropolis: candidate_particle_property.m_sampling_method = 'm'; break;
+            case SamplingType::Rejection: candidate_particle_property.m_sampling_method = 'r'; break;
+            default: break;
+            }
+            InitialStepCS(
+                volumeDataNativeFilePath,
+                candidate_multi_volume_property_list.m_total_start_steps,
+                candidate_particle_property,
+                candidate_multi_volume_property_list );
+            candidate_glyph_property.m_glyph_flag =
+                candidate_multi_volume_property_list.m_total_number_ingredients >= 3;
+            SetDefaultGlyphParameterCS( candidate_glyph_property );
+            SetDefaultPOLParameterCS( candidate_pol_property );
+        }
+        catch ( const std::exception& error )
+        {
+            master_initialize_success = false;
+            master_initialize_error = error.what();
+        }
+
+        // Workerの一時状態構築が全rankで完了してからcommitする。
         if (m_mpi_size > 1)
         {
-            SendInitialStepSignal(volumeDataNativeFilePath, transferFunctionNativeFilePath);
+#ifndef CPU_VER
+            int master_success = master_initialize_success ? 1 : 0;
+            int all_ranks_success = 0;
+            MPI_Allreduce( &master_success, &all_ranks_success, 1, MPI_INT, MPI_MIN,
+                           MPI_COMM_WORLD );
+            if ( !all_ranks_success )
+            {
+                send_initialize_status(
+                    "Error", "A worker rank failed to initialize the resolved dataset." );
+                return;
+            }
+#endif
         }
-
-        SetDefaultParticleParameterCS(
-            transferFunctionNativeFilePath,
-            *m_multi_volume_property_list,
-            *m_particle_property
-        );
-
-        switch( samplingType )
+        if ( !master_initialize_success )
         {
-        case SamplingType::Uniform:
-            m_particle_property->m_sampling_method = 'u';
-            break;
-        case SamplingType::Metropolis:
-            m_particle_property->m_sampling_method = 'm';
-            break;
-        case SamplingType::Rejection:
-            m_particle_property->m_sampling_method = 'r';
-            break;
-        default:
-            break;
+            send_initialize_status( "Error", master_initialize_error );
+            return;
         }
 
-        InitialStepCS(
-            volumeDataNativeFilePath,
-            m_multi_volume_property_list->m_total_start_steps,
-            *m_particle_property,
-            *m_multi_volume_property_list
-        );
-
-        // NOTE:成分数3以上の場合グリフのデフォルトパラメータを設定
-        bool isGlyphEnabled = m_multi_volume_property_list->m_total_number_ingredients >= 3;
-        m_glyph_property->m_glyph_flag = isGlyphEnabled;
-        SetDefaultGlyphParameterCS(*m_glyph_property);
-
-        // NOTE:プロットオーバーラインのデフォルトパラメータを設定
-        SetDefaultPOLParameterCS(*m_pol_property);
+        std::swap( *m_multi_volume_property_list, candidate_multi_volume_property_list );
+        *m_particle_property = candidate_particle_property;
+        *m_glyph_property = candidate_glyph_property;
+        *m_pol_property = candidate_pol_property;
+        m_server_mode = ServerMode::CS;
     }
     else if (pointObjectFormat == ObjectInfoExtractor::Format::InsituServerPointObject)
     {
@@ -976,6 +1205,17 @@ void Server::initialize(uWS::WebSocket<false, true, PerSocket>* ws, const nlohma
         // プロットオーバータイムのデフォルトパラメータを設定
         SetDefaultPOTParameterIS(*m_pot_property);
     }
+
+    // 初期化に必要な読込が完了してから操作権とServer状態を確定する。
+    ws->getUserData()->state->isOperator = true;
+    std::cout << "[Server] User[" << ws->getUserData()->state->userID
+              << "] operator :" << ws->getUserData()->state->isOperator << std::endl;
+    nlohmann::json operatorMsg;
+    operatorMsg[Protocol::Key::Event] = Protocol::Events::Operator;
+    operatorMsg["VizMode"] = VizMode;
+    operatorMsg[Protocol::Key::UserID] = ws->getUserData()->state->userID;
+    operatorMsg[Protocol::Key::IsOperator] = ws->getUserData()->state->isOperator;
+    m_u_web_sockets.publish( k_text_topic, operatorMsg.dump(), uWS::OpCode::TEXT );
 
     // NOTE:以降共通処理
     float min_x = m_multi_volume_property_list->m_total_min_object_coord[0];
@@ -1211,6 +1451,9 @@ void Server::initialize(uWS::WebSocket<false, true, PerSocket>* ws, const nlohma
     }
     nlohmann::json msg;
     msg[Protocol::Key::Event] = Protocol::Events::Initialize;
+    msg[Protocol::Key::RequestId] = request_id;
+    msg[Protocol::Key::Status] = "ReadyVolume";
+    msg[Protocol::Key::Message] = "Initialization completed.";
 
     // Transfer Function
     nlohmann::json transferFunctions = nlohmann::json::array();

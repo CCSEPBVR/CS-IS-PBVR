@@ -851,6 +851,14 @@ void CellByCellUniformSampling::generate_particles_struct(
         th_vertex_coords.clear();
         th_vertex_colors.clear();
         th_vertex_normals.clear();
+
+        for( int i = 0; i < tf_number; ++i )
+        {
+            delete[] o_scalars[i];
+            delete[] c_scalars[i];
+        }
+        delete[] o_scalars;
+        delete[] c_scalars;
     } // end of omp parallel
 
     // if ( mpi->rank == 0 ) std::cout << "total_nparticles = " << total_nparticles << std::endl;

@@ -40,6 +40,7 @@
 #include "../Widgets/PlayBackControlToolBar.h"
 #include "../Widgets/TimeStepControlToolBar.h"
 #include "TestAppContext.h"
+#include "TestCommon.h"
 #include "TestOutputPaths.h"
 
 namespace
@@ -55,11 +56,6 @@ constexpr int k_dialog_timeout_ms = 15000;
 constexpr int k_button_retry_count = 3;
 constexpr int k_button_retry_wait_ms = 500;
 kvs::qt::Application* g_test_app = nullptr;
-
-void logStep( const QString& message )
-{
-    qInfo().noquote() << message;
-}
 
 QString connectionStateSummary(
     QPushButton* connect_button,
@@ -79,88 +75,10 @@ bool isWindowsDrivePathPart( const QString& part )
 }
 #endif
 
-QString findRepoRootFrom( const QString& start_path )
-{
-    QDir dir( start_path );
-    while ( dir.exists() )
-    {
-        if ( dir.exists( QStringLiteral( ".git" ) ) &&
-             dir.exists( QStringLiteral( "Client" ) ) &&
-             dir.exists( QStringLiteral( "Server" ) ) )
-        {
-            return dir.absolutePath();
-        }
-
-        if ( !dir.cdUp() ) { break; }
-    }
-
-    return QString();
-}
 }
 
 namespace ClientTests
 {
-
-QString ObjectEditorTest::envOrDefault( const char* name, const QString& fallback ) const
-{
-    const QString value = qEnvironmentVariable( name );
-    return value.isEmpty() ? ClientTests::configuredPath( name, repoRootPath(), fallback ) : value;
-}
-
-QString ObjectEditorTest::repoRootPath() const
-{
-    const QString app_root = findRepoRootFrom( QCoreApplication::applicationDirPath() );
-    if ( !app_root.isEmpty() ) { return app_root; }
-
-    const QString cwd_root = findRepoRootFrom( QDir::currentPath() );
-    if ( !cwd_root.isEmpty() ) { return cwd_root; }
-
-    const QString source_root =
-        findRepoRootFrom( QFileInfo( QString::fromUtf8( __FILE__ ) ).absolutePath() );
-    if ( !source_root.isEmpty() ) { return source_root; }
-
-    return QDir::currentPath();
-}
-
-QString ObjectEditorTest::sourceTreePath( const QString& relative_path_from_repo_root ) const
-{
-    return QDir::cleanPath( QDir( repoRootPath() ).absoluteFilePath( relative_path_from_repo_root ) );
-}
-
-bool ObjectEditorTest::waitForCondition( const std::function<bool()>& condition, int timeout_ms, int interval_ms ) const
-{
-    QElapsedTimer timer;
-    timer.start();
-
-    while ( timer.elapsed() < timeout_ms )
-    {
-        if ( condition() ) { return true; }
-        QTest::qWait( interval_ms );
-    }
-
-    return condition();
-}
-
-void ObjectEditorTest::bringWindowToFront( MainWindow* window ) const
-{
-    QVERIFY2( window != nullptr, "MainWindow is null" );
-    window->show();
-    window->raise();
-    window->activateWindow();
-    QTest::qWait( k_window_settle_ms );
-}
-
-void ObjectEditorTest::setLineEditText( QLineEdit* line_edit, const QString& text ) const
-{
-    QVERIFY2( line_edit != nullptr, "Target line edit was not found" );
-    line_edit->setFocus();
-    line_edit->clear();
-    if ( !text.isEmpty() )
-    {
-        QTest::keyClicks( line_edit, QDir::toNativeSeparators( text ) );
-    }
-    QCOMPARE( line_edit->text(), QDir::toNativeSeparators( text ) );
-}
 
 void ObjectEditorTest::saveScreenshot( const QString& file_name, const QString& caption )
 {
@@ -370,8 +288,8 @@ ObjectEditorTest::ClientHandles ObjectEditorTest::resolveClientHandles( MainWind
 
 void ObjectEditorTest::ensureConnected( const ClientHandles& client )
 {
-    logStep( QStringLiteral( "ensureConnected: begin" ) );
-    bringWindowToFront( client.main_window );
+    ClientTests::logStep( QStringLiteral( "ensureConnected: begin" ) );
+    ClientTests::bringWindowToFront( client.main_window );
 
     const auto is_connected = [client]()
     {
@@ -382,26 +300,26 @@ void ObjectEditorTest::ensureConnected( const ClientHandles& client )
 
     if ( is_connected() )
     {
-        logStep(
+        ClientTests::logStep(
             QStringLiteral( "ensureConnected: already connected %1" )
                 .arg( connectionStateSummary( client.connect_button, client.disconnect_button, client.id_line_edit ) ) );
         return;
     }
 
-    logStep(
+    ClientTests::logStep(
         QStringLiteral( "ensureConnected: initial %1" )
             .arg( connectionStateSummary( client.connect_button, client.disconnect_button, client.id_line_edit ) ) );
-    logStep( QStringLiteral( "ensureConnected: server %1" ).arg( serverProcessSummary() ) );
+    ClientTests::logStep( QStringLiteral( "ensureConnected: server %1" ).arg( serverProcessSummary() ) );
 
     for ( int attempt = 0; attempt < k_button_retry_count; ++attempt )
     {
-        logStep(
+        ClientTests::logStep(
             QStringLiteral( "ensureConnected: attempt %1 waiting %2" )
                 .arg( attempt + 1 )
                 .arg( connectionStateSummary( client.connect_button, client.disconnect_button, client.id_line_edit ) ) );
 
         QVERIFY2(
-            waitForCondition(
+            ClientTests::waitForCondition(
                 [client]()
                 {
                     return client.connect_button->isEnabled();
@@ -410,31 +328,31 @@ void ObjectEditorTest::ensureConnected( const ClientHandles& client )
                 100 ),
             "connectPushButton did not become enabled within the timeout" );
 
-        bringWindowToFront( client.main_window );
+        ClientTests::bringWindowToFront( client.main_window );
         QTest::mouseClick( client.connect_button, Qt::LeftButton );
-        logStep(
+        ClientTests::logStep(
             QStringLiteral( "ensureConnected: attempt %1 clicked %2" )
                 .arg( attempt + 1 )
                 .arg( connectionStateSummary( client.connect_button, client.disconnect_button, client.id_line_edit ) ) );
-        logStep(
+        ClientTests::logStep(
             QStringLiteral( "ensureConnected: attempt %1 server-after-click %2" )
                 .arg( attempt + 1 )
                 .arg( serverProcessSummary() ) );
 
-        if ( waitForCondition( is_connected, k_connect_timeout_ms, 100 ) )
+        if ( ClientTests::waitForCondition( is_connected, k_connect_timeout_ms, 100 ) )
         {
             QTest::qWait( k_short_wait_ms );
-            logStep(
+            ClientTests::logStep(
                 QStringLiteral( "ensureConnected: completed %1" )
                     .arg( connectionStateSummary( client.connect_button, client.disconnect_button, client.id_line_edit ) ) );
             return;
         }
 
-        logStep(
+        ClientTests::logStep(
             QStringLiteral( "ensureConnected: attempt %1 timed out %2" )
                 .arg( attempt + 1 )
                 .arg( connectionStateSummary( client.connect_button, client.disconnect_button, client.id_line_edit ) ) );
-        logStep(
+        ClientTests::logStep(
             QStringLiteral( "ensureConnected: attempt %1 server-after-timeout %2" )
                 .arg( attempt + 1 )
                 .arg( serverProcessSummary() ) );
@@ -442,16 +360,16 @@ void ObjectEditorTest::ensureConnected( const ClientHandles& client )
         QTest::qWait( k_button_retry_wait_ms );
     }
 
-    logStep(
+    ClientTests::logStep(
         QStringLiteral( "ensureConnected: failed %1" )
             .arg( connectionStateSummary( client.connect_button, client.disconnect_button, client.id_line_edit ) ) );
-    logStep( QStringLiteral( "ensureConnected: failed server %1" ).arg( serverProcessSummary() ) );
+    ClientTests::logStep( QStringLiteral( "ensureConnected: failed server %1" ).arg( serverProcessSummary() ) );
     QFAIL( "Client did not enter the connected state after clicking connectPushButton" );
 }
 
 void ObjectEditorTest::ensureDisconnected( const ClientHandles& client ) const
 {
-    bringWindowToFront( client.main_window );
+    ClientTests::bringWindowToFront( client.main_window );
     if ( client.connect_button->isEnabled() && !client.disconnect_button->isEnabled() )
     {
         return;
@@ -460,7 +378,7 @@ void ObjectEditorTest::ensureDisconnected( const ClientHandles& client ) const
     QVERIFY2( client.disconnect_button->isEnabled(), "disconnectPushButton is not enabled" );
     QTest::mouseClick( client.disconnect_button, Qt::LeftButton );
     QVERIFY2(
-        waitForCondition(
+        ClientTests::waitForCondition(
             [client]()
             {
                 return client.connect_button->isEnabled() && !client.disconnect_button->isEnabled();
@@ -473,7 +391,7 @@ void ObjectEditorTest::ensureDisconnected( const ClientHandles& client ) const
 
 void ObjectEditorTest::configureRemoteVisualization( const ClientHandles& client ) const
 {
-    bringWindowToFront( client.main_window );
+    ClientTests::bringWindowToFront( client.main_window );
     if ( !client.remote_viz_client_server_radio->isChecked() )
     {
         QTest::mouseClick( client.remote_viz_client_server_radio, Qt::LeftButton );
@@ -483,14 +401,14 @@ void ObjectEditorTest::configureRemoteVisualization( const ClientHandles& client
     }
     QTest::qWait( k_short_wait_ms );
 
-    setLineEditText( client.volume_data_path_line_edit, m_volume_data_path );
+    ClientTests::setLineEditText( client.volume_data_path_line_edit, m_volume_data_path );
     QTest::qWait( k_short_wait_ms );
     QTest::mouseClick( client.setting_apply_button, Qt::LeftButton );
 }
 
 void ObjectEditorTest::configureRemoteVisualizationWithoutVolume( const ClientHandles& client ) const
 {
-    bringWindowToFront( client.main_window );
+    ClientTests::bringWindowToFront( client.main_window );
     if ( !client.remote_viz_client_server_radio->isChecked() )
     {
         QTest::mouseClick( client.remote_viz_client_server_radio, Qt::LeftButton );
@@ -499,7 +417,7 @@ void ObjectEditorTest::configureRemoteVisualizationWithoutVolume( const ClientHa
             "remoteVizClientServerRadioButton was not checked" );
     }
     QTest::qWait( k_short_wait_ms );
-    setLineEditText( client.volume_data_path_line_edit, QString() );
+    ClientTests::setLineEditText( client.volume_data_path_line_edit, QString() );
     QTest::mouseClick( client.setting_apply_button, Qt::LeftButton );
     QTest::qWait( k_short_wait_ms );
 }
@@ -513,7 +431,7 @@ void ObjectEditorTest::applyObjectEditor( const ClientHandles& client ) const
 
 QStandardItemModel* ObjectEditorTest::waitForObjectModel( const ClientHandles& client ) const
 {
-    if ( !waitForCondition(
+    if ( !ClientTests::waitForCondition(
              [client]()
              {
                  return client.object_apply_button->isEnabled() &&
@@ -550,7 +468,7 @@ QStandardItemModel* ObjectEditorTest::waitForObjectModel( const ClientHandles& c
 
 void ObjectEditorTest::waitForObjectAndApply( const ClientHandles& client ) const
 {
-    logStep( QStringLiteral( "waitForObjectAndApply: waiting for ObjectEditor nameLineEdit" ) );
+    ClientTests::logStep( QStringLiteral( "waitForObjectAndApply: waiting for ObjectEditor nameLineEdit" ) );
     QStandardItemModel* model = waitForObjectModel( client );
     QVERIFY2( model != nullptr, "Failed to resolve ObjectEditor model" );
 
@@ -567,7 +485,7 @@ void ObjectEditorTest::waitForObjectAndApply( const ClientHandles& client ) cons
 void ObjectEditorTest::clickJumpAndWaitForCompletion( const ClientHandles& client ) const
 {
     QVERIFY2(
-        waitForCondition(
+        ClientTests::waitForCondition(
             [client]()
             {
                 return client.jump_button->isEnabled();
@@ -580,7 +498,7 @@ void ObjectEditorTest::clickJumpAndWaitForCompletion( const ClientHandles& clien
     QTest::qWait( k_short_wait_ms );
 
     QVERIFY2(
-        waitForCondition(
+        ClientTests::waitForCondition(
             [client]()
             {
                 return client.jump_button->isEnabled();
@@ -595,7 +513,7 @@ void ObjectEditorTest::clickJumpAndWaitForCompletion( const ClientHandles& clien
 void ObjectEditorTest::clickNextAndWaitForCompletion( const ClientHandles& client ) const
 {
     QVERIFY2(
-        waitForCondition(
+        ClientTests::waitForCondition(
             [client]()
             {
                 return client.next_button->isEnabled();
@@ -608,7 +526,7 @@ void ObjectEditorTest::clickNextAndWaitForCompletion( const ClientHandles& clien
     QTest::qWait( k_short_wait_ms );
 
     QVERIFY2(
-        waitForCondition(
+        ClientTests::waitForCondition(
             [client]()
             {
                 return client.next_button->isEnabled();
@@ -698,7 +616,7 @@ void ObjectEditorTest::setCheckBoxState( QCheckBox* check_box, bool checked, con
 QFileDialog* ObjectEditorTest::waitForFileDialog( int timeout_ms ) const
 {
     QFileDialog* dialog = nullptr;
-    const bool dialog_found = waitForCondition(
+    const bool dialog_found = ClientTests::waitForCondition(
         [&dialog]()
         {
             const auto widgets = QApplication::topLevelWidgets();
@@ -722,7 +640,7 @@ QFileDialog* ObjectEditorTest::waitForFileDialog( int timeout_ms ) const
 QDialog* ObjectEditorTest::waitFor3dDataDialog( int timeout_ms ) const
 {
     QDialog* dialog = nullptr;
-    const bool dialog_found = waitForCondition(
+    const bool dialog_found = ClientTests::waitForCondition(
         [&dialog]()
         {
             const auto widgets = QApplication::topLevelWidgets();
@@ -857,7 +775,7 @@ void ObjectEditorTest::selectFileFromRemoteDialog( QDialog* dialog, const QStrin
     if ( !path_parts.isEmpty() && isWindowsDrivePathPart( path_parts.first() ) )
     {
         const QString target_drive = path_parts.first().toUpper();
-        logStep( QStringLiteral( "remote dialog: skipping local drive '%1'" ).arg( target_drive ) );
+        ClientTests::logStep( QStringLiteral( "remote dialog: skipping local drive '%1'" ).arg( target_drive ) );
         path_parts.removeFirst();
     }
 #endif
@@ -868,12 +786,12 @@ void ObjectEditorTest::selectFileFromRemoteDialog( QDialog* dialog, const QStrin
         const bool is_last = ( part_index == path_parts.size() - 1 );
         const QString& part = path_parts.at( part_index );
         bool found = false;
-        logStep( QStringLiteral( "remote dialog: seeking '%1'" ).arg( part ) );
+        ClientTests::logStep( QStringLiteral( "remote dialog: seeking '%1'" ).arg( part ) );
 
         for ( int page = 0; page < 50 && !found; ++page )
         {
             QVERIFY2(
-                waitForCondition(
+                ClientTests::waitForCondition(
                     [tree_view]()
                     {
                         return tree_view->model() != nullptr && tree_view->model()->rowCount( tree_view->rootIndex() ) > 0;
@@ -898,14 +816,14 @@ void ObjectEditorTest::selectFileFromRemoteDialog( QDialog* dialog, const QStrin
 
                 if ( is_last )
                 {
-                    logStep( QStringLiteral( "remote dialog: selecting file '%1'" ).arg( part ) );
+                    ClientTests::logStep( QStringLiteral( "remote dialog: selecting file '%1'" ).arg( part ) );
                     const bool invoked = QMetaObject::invokeMethod( dialog, "onOk", Qt::DirectConnection );
                     if ( !invoked )
                     {
                         QTest::mouseClick( ok_button, Qt::LeftButton );
                     }
                     QVERIFY2(
-                        waitForCondition(
+                        ClientTests::waitForCondition(
                             [dialog]()
                             {
                                 return !dialog->isVisible();
@@ -916,7 +834,7 @@ void ObjectEditorTest::selectFileFromRemoteDialog( QDialog* dialog, const QStrin
                 }
                 else
                 {
-                    logStep( QStringLiteral( "remote dialog: entering directory '%1'" ).arg( part ) );
+                    ClientTests::logStep( QStringLiteral( "remote dialog: entering directory '%1'" ).arg( part ) );
                     const QString previous_path = current_path;
                     const int previous_rows = rows;
                     QMetaObject::invokeMethod(
@@ -929,7 +847,7 @@ void ObjectEditorTest::selectFileFromRemoteDialog( QDialog* dialog, const QStrin
                         : QStringLiteral( "%1/%2" ).arg( current_path, part );
                     const QString expected_label = QStringLiteral( "Path: %1" ).arg( current_path );
                     QVERIFY2(
-                        waitForCondition(
+                        ClientTests::waitForCondition(
                             [dialog, tree_view, expected_label, previous_path, previous_rows]()
                             {
                                 const auto labels = dialog->findChildren<QLabel*>();
@@ -988,7 +906,7 @@ void ObjectEditorTest::chooseColorFromDialog( const QColor& color ) const
 
 void ObjectEditorTest::browseAndLoadObject( const ClientHandles& client, const QString& file_path, int expected_row_count ) const
 {
-    bringWindowToFront( client.main_window );
+    ClientTests::bringWindowToFront( client.main_window );
     auto selection_finished = std::make_shared<bool>( false );
     QTimer::singleShot(
         300,
@@ -1012,7 +930,7 @@ void ObjectEditorTest::browseAndLoadObject( const ClientHandles& client, const Q
 
     QTest::mouseClick( client.browse_button, Qt::LeftButton );
     QVERIFY2(
-        waitForCondition(
+        ClientTests::waitForCondition(
             [selection_finished]()
             {
                 return *selection_finished;
@@ -1022,7 +940,7 @@ void ObjectEditorTest::browseAndLoadObject( const ClientHandles& client, const Q
         "3D data selection did not complete" );
     QTest::qWait( k_short_wait_ms );
     QVERIFY2(
-        waitForCondition(
+        ClientTests::waitForCondition(
             [client, expected_row_count]()
             {
                 return client.object_tree_view->model() != nullptr &&
@@ -1058,28 +976,28 @@ void ObjectEditorTest::advanceTimeSteps( const ClientHandles& client, int repeat
 void ObjectEditorTest::initTestCase()
 {
     const QString date_stamp = QDate::currentDate().toString( QStringLiteral( "yyyyMMdd" ) );
-    m_client_executable = envOrDefault(
+    m_client_executable = ClientTests::envOrDefault(
         "PBVR_CLIENT_EXECUTABLE",
-        ClientTests::configuredPath( "PBVR_CLIENT_EXECUTABLE", repoRootPath() ) );
-    m_server_executable = envOrDefault(
+        ClientTests::configuredPath( "PBVR_CLIENT_EXECUTABLE", ClientTests::repoRootPath() ) );
+    m_server_executable = ClientTests::envOrDefault(
         "PBVR_SERVER_EXECUTABLE",
-        ClientTests::configuredPath( "PBVR_SERVER_EXECUTABLE", repoRootPath() ) );
-    m_server_target_wrapper_executable = envOrDefault(
+        ClientTests::configuredPath( "PBVR_SERVER_EXECUTABLE", ClientTests::repoRootPath() ) );
+    m_server_target_wrapper_executable = ClientTests::envOrDefault(
         "PBVR_SERVER_TARGET_WRAPPER_EXECUTABLE",
-        ClientTests::configuredPath( "PBVR_SERVER_TARGET_WRAPPER_EXECUTABLE", repoRootPath() ) );
-    m_volume_data_path = envOrDefault(
+        ClientTests::configuredPath( "PBVR_SERVER_TARGET_WRAPPER_EXECUTABLE", ClientTests::repoRootPath() ) );
+    m_volume_data_path = ClientTests::envOrDefault(
         "PBVR_VOLUME_DATA",
-        ClientTests::configuredPath( "SPX_VOLUME_DATA", repoRootPath() ) );
-    m_point_data_path = envOrDefault(
+        ClientTests::configuredPath( "SPX_VOLUME_DATA", ClientTests::repoRootPath() ) );
+    m_point_data_path = ClientTests::envOrDefault(
         "SPX_POINT_DATA",
-        ClientTests::configuredPath( "SPX_POINT_DATA", repoRootPath() ) );
-    m_object_data_path = envOrDefault(
+        ClientTests::configuredPath( "SPX_POINT_DATA", ClientTests::repoRootPath() ) );
+    m_object_data_path = ClientTests::envOrDefault(
         "CLOCK_POLYGON_DATA",
-        ClientTests::configuredPath( "CLOCK_POLYGON_DATA", repoRootPath() ) );
-    m_output_dir_path = envOrDefault(
+        ClientTests::configuredPath( "CLOCK_POLYGON_DATA", ClientTests::repoRootPath() ) );
+    m_output_dir_path = ClientTests::envOrDefault(
         "PBVR_TEST_OUTPUT_DIR",
-        ClientTests::datedTestOutputDir( repoRootPath(), date_stamp, QStringLiteral( "ObjectEditorTest" ) ) );
-    m_screenshot_dir_path = envOrDefault(
+        ClientTests::datedTestOutputDir( ClientTests::repoRootPath(), date_stamp, QStringLiteral( "ObjectEditorTest" ) ) );
+    m_screenshot_dir_path = ClientTests::envOrDefault(
         "PBVR_SCREENSHOT_DIR",
         QDir( m_output_dir_path ).absoluteFilePath( QStringLiteral( "img" ) ) );
     m_report_path = QDir( m_output_dir_path ).absoluteFilePath( QStringLiteral( "TestResult.md" ) );
@@ -1101,7 +1019,7 @@ void ObjectEditorTest::initTestCase()
         qPrintable( QStringLiteral( "Failed to create screenshot directory: %1" ).arg( m_screenshot_dir_path ) ) );
 
     QTest::qWait( 500 );
-    logStep( QStringLiteral( "initTestCase: server %1" ).arg( serverProcessSummary() ) );
+    ClientTests::logStep( QStringLiteral( "initTestCase: server %1" ).arg( serverProcessSummary() ) );
 }
 
 void ObjectEditorTest::cleanupTestCase()
@@ -1117,7 +1035,7 @@ void ObjectEditorTest::cleanupTestCase()
 
 void ObjectEditorTest::performs_object_editor_scenario()
 {
-    logStep( QStringLiteral( "scenario: start" ) );
+    ClientTests::logStep( QStringLiteral( "scenario: start" ) );
     if ( g_test_app == nullptr )
     {
         g_test_app = pbvrTestApplication();
@@ -1142,7 +1060,7 @@ void ObjectEditorTest::performs_object_editor_scenario()
         }
 
         addStep( description );
-        logStep( QStringLiteral( "scenario: %1" ).arg( description ) );
+        ClientTests::logStep( QStringLiteral( "scenario: %1" ).arg( description ) );
         body();
         if ( QTest::currentTestFailed() )
         {
@@ -1181,7 +1099,7 @@ void ObjectEditorTest::performs_object_editor_scenario()
         {
             browseAndLoadObject( client, m_point_data_path, 2 );
             QVERIFY2(
-                waitForCondition(
+                ClientTests::waitForCondition(
                     [client]()
                     {
                         return client.object_name_line_edit->text().contains( QStringLiteral( "spx" ), Qt::CaseInsensitive );
@@ -1270,7 +1188,7 @@ void ObjectEditorTest::performs_object_editor_scenario()
                 } );
             QMetaObject::invokeMethod( client.color_clickable_label, "doubleClicked", Qt::DirectConnection );
             QVERIFY2(
-                waitForCondition(
+                ClientTests::waitForCondition(
                     [color_selected]()
                     {
                         return *color_selected;
@@ -1392,7 +1310,7 @@ void ObjectEditorTest::performs_object_editor_scenario()
             setSpinBoxValue( client.particle_limit_spin_box, 10000000, "particleLimitSpinBox not found" );
             applyObjectEditor( client );
             clickJumpAndWaitForCompletion( client );
-            setLineEditText( client.coordinate_x_line_edit, QStringLiteral( "X*2" ) );
+            ClientTests::setLineEditText( client.coordinate_x_line_edit, QStringLiteral( "X*2" ) );
             applyObjectEditor( client );
             clickJumpAndWaitForCompletion( client );
             saveScreenshot(
@@ -1404,8 +1322,8 @@ void ObjectEditorTest::performs_object_editor_scenario()
         QStringLiteral( "Coordinate の Y に Y*2 を設定して撮影する。" ),
         [&]()
         {
-            setLineEditText( client.coordinate_x_line_edit, QStringLiteral( "" ) );
-            setLineEditText( client.coordinate_y_line_edit, QStringLiteral( "Y*2" ) );
+            ClientTests::setLineEditText( client.coordinate_x_line_edit, QStringLiteral( "" ) );
+            ClientTests::setLineEditText( client.coordinate_y_line_edit, QStringLiteral( "Y*2" ) );
             applyObjectEditor( client );
             clickJumpAndWaitForCompletion( client );
             saveScreenshot(
@@ -1417,8 +1335,8 @@ void ObjectEditorTest::performs_object_editor_scenario()
         QStringLiteral( "Coordinate の Z に Z*2 を設定して撮影する。" ),
         [&]()
         {
-            setLineEditText( client.coordinate_y_line_edit, QStringLiteral( "" ) );
-            setLineEditText( client.coordinate_z_line_edit, QStringLiteral( "Z*2" ) );
+            ClientTests::setLineEditText( client.coordinate_y_line_edit, QStringLiteral( "" ) );
+            ClientTests::setLineEditText( client.coordinate_z_line_edit, QStringLiteral( "Z*2" ) );
             applyObjectEditor( client );
             clickJumpAndWaitForCompletion( client );
             saveScreenshot(
@@ -1447,7 +1365,7 @@ void ObjectEditorTest::performs_object_editor_scenario()
                 } );
             QTest::mouseClick( client.browse_button, Qt::LeftButton );
             QVERIFY2(
-                waitForCondition(
+                ClientTests::waitForCondition(
                     [dialog_handled]()
                     {
                         return *dialog_handled;
@@ -1487,7 +1405,7 @@ void ObjectEditorTest::performs_object_editor_scenario()
                 } );
             QTest::mouseClick( client.browse_button, Qt::LeftButton );
             QVERIFY2(
-                waitForCondition(
+                ClientTests::waitForCondition(
                     [dialog_handled]()
                     {
                         return *dialog_handled;
@@ -1496,7 +1414,7 @@ void ObjectEditorTest::performs_object_editor_scenario()
                     50 ),
                 "Online file dialog was not captured and selected" );
             QVERIFY2(
-                waitForCondition(
+                ClientTests::waitForCondition(
                     [client]()
                     {
                         return client.object_tree_view->model() != nullptr &&
@@ -1550,7 +1468,7 @@ void ObjectEditorTest::performs_object_editor_scenario()
                 QStringLiteral( "オフラインで Delete ボタンを押した後の状態。" ) );
         } );
 
-    logStep( QStringLiteral( "scenario: completed" ) );
+    ClientTests::logStep( QStringLiteral( "scenario: completed" ) );
     m_test_succeeded = !scenario_aborted && !QTest::currentTestFailed();
 }
 

@@ -10,7 +10,6 @@
 #include <QDate>
 #include <QDebug>
 #include <QDir>
-#include <QElapsedTimer>
 #include <QEventLoop>
 #include <QFile>
 #include <QFileDialog>
@@ -40,6 +39,7 @@
 #include "../Widgets/PlayBackControlToolBar.h"
 #include "../Widgets/TotalParticlesToolBar.h"
 #include "TestAppContext.h"
+#include "TestCommon.h"
 #include "TestOutputPaths.h"
 
 #include <csignal>
@@ -154,77 +154,15 @@ QRect physicalWindowGeometryForRecording( QWidget* target_window, QScreen* fallb
 }
 #endif
 
-void logStep( const QString& message )
-{
-    qInfo().noquote() << message;
-}
-
-QString findRepoRootFrom( const QString& start_path )
-{
-    QDir dir( start_path );
-    while ( dir.exists() )
-    {
-        if ( dir.exists( QStringLiteral( ".git" ) ) &&
-             dir.exists( QStringLiteral( "Client" ) ) &&
-             dir.exists( QStringLiteral( "Server" ) ) )
-        {
-            return dir.absolutePath();
-        }
-
-        if ( !dir.cdUp() ) { break; }
-    }
-
-    return QString();
-}
 }
 
 namespace ClientTests
 {
 
-QString AnimationControlTest::envOrDefault( const char* name, const QString& fallback ) const
-{
-    const QString value = qEnvironmentVariable( name );
-    return value.isEmpty() ? ClientTests::configuredPath( name, repoRootPath(), fallback ) : value;
-}
-
-QString AnimationControlTest::repoRootPath() const
-{
-    const QString app_root = findRepoRootFrom( QCoreApplication::applicationDirPath() );
-    if ( !app_root.isEmpty() ) { return app_root; }
-
-    const QString cwd_root = findRepoRootFrom( QDir::currentPath() );
-    if ( !cwd_root.isEmpty() ) { return cwd_root; }
-
-    const QString source_root =
-        findRepoRootFrom( QFileInfo( QString::fromUtf8( __FILE__ ) ).absolutePath() );
-    if ( !source_root.isEmpty() ) { return source_root; }
-
-    return QDir::currentPath();
-}
-
-QString AnimationControlTest::sourceTreePath( const QString& relative_path_from_repo_root ) const
-{
-    return QDir::cleanPath( QDir( repoRootPath() ).absoluteFilePath( relative_path_from_repo_root ) );
-}
-
-bool AnimationControlTest::waitForCondition( const std::function<bool()>& condition, int timeout_ms, int interval_ms ) const
-{
-    QElapsedTimer timer;
-    timer.start();
-
-    while ( timer.elapsed() < timeout_ms )
-    {
-        if ( condition() ) { return true; }
-        QTest::qWait( interval_ms );
-    }
-
-    return condition();
-}
-
 QFileDialog* AnimationControlTest::waitForFileDialog( int timeout_ms ) const
 {
     QFileDialog* dialog = nullptr;
-    const bool dialog_found = waitForCondition(
+    const bool dialog_found = ClientTests::waitForCondition(
         [&dialog]()
         {
             const auto widgets = QApplication::topLevelWidgets();
@@ -307,7 +245,7 @@ void AnimationControlTest::startVideoRecording( QWidget* target_window )
         QCoreApplication::processEvents( QEventLoop::AllEvents, 200 );
     }
 
-    const QString ffmpeg_path = envOrDefault(
+    const QString ffmpeg_path = ClientTests::envOrDefault(
         "PBVR_FFMPEG_EXECUTABLE",
         QStandardPaths::findExecutable( QStringLiteral( "ffmpeg" ) ) );
     if ( ffmpeg_path.isEmpty() )
@@ -519,24 +457,6 @@ void AnimationControlTest::stopVideoRecording()
         qPrintable( QStringLiteral( "Recorded video was not created: %1" ).arg( m_video_file_path ) ) );
 }
 
-void AnimationControlTest::bringWindowToFront( MainWindow* window ) const
-{
-    QVERIFY2( window != nullptr, "MainWindow is null" );
-    window->show();
-    window->raise();
-    window->activateWindow();
-    QTest::qWait( k_window_settle_ms );
-}
-
-void AnimationControlTest::setLineEditText( QLineEdit* line_edit, const QString& text ) const
-{
-    QVERIFY2( line_edit != nullptr, "Target line edit was not found" );
-    line_edit->setFocus();
-    line_edit->clear();
-    QTest::keyClicks( line_edit, QDir::toNativeSeparators( text ) );
-    QCOMPARE( line_edit->text(), QDir::toNativeSeparators( text ) );
-}
-
 AnimationControlTest::ClientHandles AnimationControlTest::resolveClientHandles( MainWindow& window ) const
 {
     ClientHandles handles;
@@ -605,8 +525,8 @@ AnimationControlTest::ClientHandles AnimationControlTest::resolveClientHandles( 
 
 void AnimationControlTest::ensureConnected( const ClientHandles& client ) const
 {
-    logStep( QStringLiteral( "ensureConnected: begin" ) );
-    bringWindowToFront( client.main_window );
+    ClientTests::logStep( QStringLiteral( "ensureConnected: begin" ) );
+    ClientTests::bringWindowToFront( client.main_window );
 
     const auto is_connected = [client]()
     {
@@ -617,14 +537,14 @@ void AnimationControlTest::ensureConnected( const ClientHandles& client ) const
 
     if ( is_connected() )
     {
-        logStep( QStringLiteral( "ensureConnected: already connected" ) );
+        ClientTests::logStep( QStringLiteral( "ensureConnected: already connected" ) );
         return;
     }
 
     for ( int attempt = 0; attempt < k_button_retry_count; ++attempt )
     {
         QVERIFY2(
-            waitForCondition(
+            ClientTests::waitForCondition(
                 [client]()
                 {
                     return client.connect_button->isEnabled();
@@ -633,13 +553,13 @@ void AnimationControlTest::ensureConnected( const ClientHandles& client ) const
                 100 ),
             "connectPushButton did not become enabled within the timeout" );
 
-        bringWindowToFront( client.main_window );
+        ClientTests::bringWindowToFront( client.main_window );
         QTest::mouseClick( client.connect_button, Qt::LeftButton );
 
-        if ( waitForCondition( is_connected, k_connect_timeout_ms, 100 ) )
+        if ( ClientTests::waitForCondition( is_connected, k_connect_timeout_ms, 100 ) )
         {
             QTest::qWait( k_short_wait_ms );
-            logStep( QStringLiteral( "ensureConnected: completed" ) );
+            ClientTests::logStep( QStringLiteral( "ensureConnected: completed" ) );
             return;
         }
 
@@ -651,9 +571,9 @@ void AnimationControlTest::ensureConnected( const ClientHandles& client ) const
 
 void AnimationControlTest::waitForObjectAndApply( const ClientHandles& client ) const
 {
-    logStep( QStringLiteral( "waitForObjectAndApply: waiting for ObjectEditor nameLineEdit" ) );
+    ClientTests::logStep( QStringLiteral( "waitForObjectAndApply: waiting for ObjectEditor nameLineEdit" ) );
     QVERIFY2(
-        waitForCondition(
+        ClientTests::waitForCondition(
             [client]()
             {
                 return !client.object_name_line_edit->text().trimmed().isEmpty();
@@ -670,7 +590,7 @@ void AnimationControlTest::waitForObjectAndApply( const ClientHandles& client ) 
 void AnimationControlTest::clickJumpAndWaitForCompletion( const ClientHandles& client ) const
 {
     QVERIFY2(
-        waitForCondition(
+        ClientTests::waitForCondition(
             [client]()
             {
                 return client.jump_button->isEnabled();
@@ -683,7 +603,7 @@ void AnimationControlTest::clickJumpAndWaitForCompletion( const ClientHandles& c
     QTest::qWait( k_short_wait_ms );
 
     QVERIFY2(
-        waitForCondition(
+        ClientTests::waitForCondition(
             [client]()
             {
                 return client.jump_button->isEnabled();
@@ -697,9 +617,9 @@ void AnimationControlTest::clickJumpAndWaitForCompletion( const ClientHandles& c
 
 void AnimationControlTest::waitForVisibleObject( const ClientHandles& client ) const
 {
-    logStep( QStringLiteral( "waitForVisibleObject: waiting for total particles > 0" ) );
+    ClientTests::logStep( QStringLiteral( "waitForVisibleObject: waiting for total particles > 0" ) );
     QVERIFY2(
-        waitForCondition(
+        ClientTests::waitForCondition(
             [client]()
             {
                 bool ok = false;
@@ -804,18 +724,18 @@ void AnimationControlTest::removeExistingScreenshots() const
 void AnimationControlTest::initTestCase()
 {
     const QString date_stamp = QDate::currentDate().toString( QStringLiteral( "yyyyMMdd" ) );
-    m_client_executable = envOrDefault(
+    m_client_executable = ClientTests::envOrDefault(
         "PBVR_CLIENT_EXECUTABLE",
-        ClientTests::configuredPath( "PBVR_CLIENT_EXECUTABLE", repoRootPath() ) );
-    m_server_executable = envOrDefault(
+        ClientTests::configuredPath( "PBVR_CLIENT_EXECUTABLE", ClientTests::repoRootPath() ) );
+    m_server_executable = ClientTests::envOrDefault(
         "PBVR_SERVER_EXECUTABLE",
-        ClientTests::configuredPath( "PBVR_SERVER_EXECUTABLE", repoRootPath() ) );
-    m_volume_data_path = envOrDefault(
+        ClientTests::configuredPath( "PBVR_SERVER_EXECUTABLE", ClientTests::repoRootPath() ) );
+    m_volume_data_path = ClientTests::envOrDefault(
         "PBVR_VOLUME_DATA",
-        ClientTests::configuredPath( "SPX_VOLUME_DATA", repoRootPath() ) );
-    m_output_dir_path = envOrDefault(
+        ClientTests::configuredPath( "SPX_VOLUME_DATA", ClientTests::repoRootPath() ) );
+    m_output_dir_path = ClientTests::envOrDefault(
         "PBVR_TEST_OUTPUT_DIR",
-        ClientTests::datedTestOutputDir( repoRootPath(), date_stamp ) );
+        ClientTests::datedTestOutputDir( ClientTests::repoRootPath(), date_stamp ) );
     m_video_file_path = QDir( m_output_dir_path ).absoluteFilePath(
 #ifdef Q_OS_WIN
         QStringLiteral( "AnimationControlTest.mp4" )
@@ -870,7 +790,7 @@ void AnimationControlTest::cleanupTestCase()
 
 void AnimationControlTest::performs_animation_control_scenario()
 {
-    logStep( QStringLiteral( "scenario: start" ) );
+    ClientTests::logStep( QStringLiteral( "scenario: start" ) );
     if ( g_test_app == nullptr )
     {
         g_test_app = pbvrTestApplication();
@@ -882,7 +802,7 @@ void AnimationControlTest::performs_animation_control_scenario()
     QVERIFY( QTest::qWaitForWindowExposed( &main_window ) );
 
     startVideoRecording( &main_window );
-    logStep( QStringLiteral( "scenario: recording started" ) );
+    ClientTests::logStep( QStringLiteral( "scenario: recording started" ) );
 
     ClientHandles client = resolveClientHandles( main_window );
     client.communication->show();
@@ -891,7 +811,7 @@ void AnimationControlTest::performs_animation_control_scenario()
 
     ensureConnected( client );
 
-    bringWindowToFront( client.main_window );
+    ClientTests::bringWindowToFront( client.main_window );
     if ( !client.remote_viz_client_server_radio->isChecked() )
     {
         QTest::mouseClick( client.remote_viz_client_server_radio, Qt::LeftButton );
@@ -901,7 +821,7 @@ void AnimationControlTest::performs_animation_control_scenario()
     }
     QTest::qWait( k_short_wait_ms );
 
-    setLineEditText( client.volume_data_path_line_edit, m_volume_data_path );
+    ClientTests::setLineEditText( client.volume_data_path_line_edit, m_volume_data_path );
     QTest::qWait( k_short_wait_ms );
     QTest::mouseClick( client.setting_apply_button, Qt::LeftButton );
 
@@ -913,7 +833,7 @@ void AnimationControlTest::performs_animation_control_scenario()
     QCOMPARE( client.capture_combo_box->currentIndex(), 0 );
     QTest::qWait( k_short_wait_ms );
 
-    setLineEditText( client.image_file_line_edit, m_capture_base_name );
+    ClientTests::setLineEditText( client.image_file_line_edit, m_capture_base_name );
     QTest::qWait( k_short_wait_ms );
 
     pressScreenKey( client.screen_widget, Qt::Key_X );
@@ -948,14 +868,14 @@ void AnimationControlTest::performs_animation_control_scenario()
     QTest::qWait( k_three_second_wait_ms );
     QCOMPARE( client.total_key_frames_display_label->text(), QStringLiteral( "3" ) );
 
-    logStep( QStringLiteral( "scenario: play animation" ) );
+    ClientTests::logStep( QStringLiteral( "scenario: play animation" ) );
     QVERIFY2(
         QMetaObject::invokeMethod( client.animation_control, "onPlayKeyFrame", Qt::DirectConnection ),
         "Failed to invoke AnimationControl::onPlayKeyFrame" );
     QTest::qWait( k_three_second_wait_ms );
     QVERIFY2( screenshotCount() > 0, "No bitmap screenshots were created after playback" );
 
-    logStep( QStringLiteral( "scenario: save animation file" ) );
+    ClientTests::logStep( QStringLiteral( "scenario: save animation file" ) );
     QTimer::singleShot(
         300,
         client.main_window,
@@ -971,14 +891,14 @@ void AnimationControlTest::performs_animation_control_scenario()
         QFileInfo::exists( m_anim_file_path ),
         qPrintable( QStringLiteral( "Animation file was not created: %1" ).arg( m_anim_file_path ) ) );
 
-    logStep( QStringLiteral( "scenario: clear animation keyframes" ) );
+    ClientTests::logStep( QStringLiteral( "scenario: clear animation keyframes" ) );
     QVERIFY2(
         QMetaObject::invokeMethod( client.animation_control, "onClearKeyFrame", Qt::DirectConnection ),
         "Failed to invoke AnimationControl::onClearKeyFrame" );
     QTest::qWait( k_three_second_wait_ms );
     QCOMPARE( client.total_key_frames_display_label->text(), QStringLiteral( "0" ) );
 
-    logStep( QStringLiteral( "scenario: load animation file" ) );
+    ClientTests::logStep( QStringLiteral( "scenario: load animation file" ) );
     QTimer::singleShot(
         300,
         client.main_window,
@@ -992,7 +912,7 @@ void AnimationControlTest::performs_animation_control_scenario()
     QTest::qWait( k_three_second_wait_ms );
     QCOMPARE( client.total_key_frames_display_label->text(), QStringLiteral( "3" ) );
 
-    logStep( QStringLiteral( "scenario: replay animation" ) );
+    ClientTests::logStep( QStringLiteral( "scenario: replay animation" ) );
     QVERIFY2(
         QMetaObject::invokeMethod( client.animation_control, "onPlayKeyFrame", Qt::DirectConnection ),
         "Failed to invoke AnimationControl::onPlayKeyFrame" );
@@ -1006,7 +926,7 @@ void AnimationControlTest::performs_animation_control_scenario()
     QTest::qWait( k_three_second_wait_ms );
 
     QVERIFY2(
-        waitForCondition(
+        ClientTests::waitForCondition(
             [this]()
             {
                 return screenshotCount() > 0;

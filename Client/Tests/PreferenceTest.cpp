@@ -9,9 +9,7 @@
 #include <QDate>
 #include <QDialogButtonBox>
 #include <QDir>
-#include <QElapsedTimer>
 #include <QFile>
-#include <QFileInfo>
 #include <QGuiApplication>
 #include <QGroupBox>
 #include <QLineEdit>
@@ -30,6 +28,7 @@
 #include "../ExtendedQT/ClickableLabel.h"
 #include "../Widgets/Preference.h"
 #include "TestAppContext.h"
+#include "TestCommon.h"
 #include "TestOutputPaths.h"
 
 namespace
@@ -41,72 +40,10 @@ constexpr int k_combo_popup_timeout_ms = 5000;
 constexpr int k_capture_settle_ms = 300;
 kvs::qt::Application* g_test_app = nullptr;
 
-void logStep( const QString& message )
-{
-    qInfo().noquote() << message;
-}
-
-QString findRepoRootFrom( const QString& start_path )
-{
-    QDir dir( start_path );
-    while ( dir.exists() )
-    {
-        if ( dir.exists( QStringLiteral( ".git" ) ) &&
-             dir.exists( QStringLiteral( "Client" ) ) &&
-             dir.exists( QStringLiteral( "Server" ) ) )
-        {
-            return dir.absolutePath();
-        }
-
-        if ( !dir.cdUp() ) { break; }
-    }
-
-    return QString();
-}
 }
 
 namespace ClientTests
 {
-
-QString PreferenceTest::envOrDefault( const char* name, const QString& fallback ) const
-{
-    const QString value = qEnvironmentVariable( name );
-    return value.isEmpty() ? ClientTests::configuredPath( name, repoRootPath(), fallback ) : value;
-}
-
-QString PreferenceTest::repoRootPath() const
-{
-    const QString app_root = findRepoRootFrom( QCoreApplication::applicationDirPath() );
-    if ( !app_root.isEmpty() ) { return app_root; }
-
-    const QString cwd_root = findRepoRootFrom( QDir::currentPath() );
-    if ( !cwd_root.isEmpty() ) { return cwd_root; }
-
-    const QString source_root =
-        findRepoRootFrom( QFileInfo( QString::fromUtf8( __FILE__ ) ).absolutePath() );
-    if ( !source_root.isEmpty() ) { return source_root; }
-
-    return QDir::currentPath();
-}
-
-QString PreferenceTest::sourceTreePath( const QString& relative_path_from_repo_root ) const
-{
-    return QDir::cleanPath( QDir( repoRootPath() ).absoluteFilePath( relative_path_from_repo_root ) );
-}
-
-bool PreferenceTest::waitForCondition( const std::function<bool()>& condition, int timeout_ms, int interval_ms ) const
-{
-    QElapsedTimer timer;
-    timer.start();
-
-    while ( timer.elapsed() < timeout_ms )
-    {
-        if ( condition() ) { return true; }
-    QTest::qWait( interval_ms );
-    }
-
-    return condition();
-}
 
 void PreferenceTest::clickButtonAndWait( QPushButton* button, int wait_ms ) const
 {
@@ -114,15 +51,6 @@ void PreferenceTest::clickButtonAndWait( QPushButton* button, int wait_ms ) cons
     QVERIFY2( button->isEnabled(), qPrintable( QStringLiteral( "Button is disabled: %1" ).arg( button->objectName() ) ) );
     QTest::mouseClick( button, Qt::LeftButton );
     QTest::qWait( wait_ms );
-}
-
-void PreferenceTest::setLineEditText( QLineEdit* line_edit, const QString& text ) const
-{
-    QVERIFY2( line_edit != nullptr, "Target line edit was not found" );
-    line_edit->setFocus();
-    line_edit->clear();
-    line_edit->setText( text );
-    QCOMPARE( line_edit->text(), text );
 }
 
 void PreferenceTest::setSpinBoxValue( QSpinBox* spin_box, int value ) const
@@ -149,7 +77,7 @@ void PreferenceTest::selectComboBoxItem( QComboBox* combo_box, int index ) const
     combo_box->showPopup();
 
     QVERIFY2(
-        waitForCondition(
+        ClientTests::waitForCondition(
             [combo_box]()
             {
                 auto* view = combo_box->view();
@@ -176,7 +104,7 @@ void PreferenceTest::selectComboBoxItem( QComboBox* combo_box, int index ) const
 QColorDialog* PreferenceTest::waitForColorDialog( int timeout_ms ) const
 {
     QColorDialog* dialog = nullptr;
-    const bool dialog_found = waitForCondition(
+    const bool dialog_found = ClientTests::waitForCondition(
         [&dialog]()
         {
             const auto widgets = QApplication::topLevelWidgets();
@@ -308,7 +236,7 @@ void PreferenceTest::writeMarkdownReport() const
 void PreferenceTest::markStepCompleted( const QString& description )
 {
     m_steps.push_back( { description, true } );
-    logStep( description );
+    ClientTests::logStep( description );
 }
 
 void PreferenceTest::recordCheck( const QString& description, bool passed )
@@ -320,13 +248,13 @@ void PreferenceTest::recordCheck( const QString& description, bool passed )
 void PreferenceTest::initTestCase()
 {
     const QString date_stamp = QDate::currentDate().toString( QStringLiteral( "yyyyMMdd" ) );
-    m_client_executable = envOrDefault(
+    m_client_executable = ClientTests::envOrDefault(
         "PBVR_CLIENT_EXECUTABLE",
-        ClientTests::configuredPath( "PBVR_CLIENT_EXECUTABLE", repoRootPath() ) );
-    m_output_dir_path = envOrDefault(
+        ClientTests::configuredPath( "PBVR_CLIENT_EXECUTABLE", ClientTests::repoRootPath() ) );
+    m_output_dir_path = ClientTests::envOrDefault(
         "PBVR_TEST_OUTPUT_DIR",
-        ClientTests::datedTestOutputDir( repoRootPath(), date_stamp, QStringLiteral( "PreferenceTest" ) ) );
-    m_screenshot_dir_path = envOrDefault(
+        ClientTests::datedTestOutputDir( ClientTests::repoRootPath(), date_stamp, QStringLiteral( "PreferenceTest" ) ) );
+    m_screenshot_dir_path = ClientTests::envOrDefault(
         "PBVR_SCREENSHOT_DIR",
         QDir( m_output_dir_path ).absoluteFilePath( QStringLiteral( "img" ) ) );
     m_report_path = QDir( m_output_dir_path ).absoluteFilePath( QStringLiteral( "TestResult.md" ) );
@@ -426,7 +354,7 @@ void PreferenceTest::performs_preference_scenario()
     recordCheck( QStringLiteral( "colorMapBarGroupBoxをチェックできる。" ), color_map_bar_group_box->isChecked() );
     markStepCompleted( QStringLiteral( "colorMapBarGroupBoxをチェックしてapplyPushButtonを押した。" ) );
 
-    setLineEditText( caption_line_edit, QStringLiteral( "test" ) );
+    ClientTests::setLineEditText( caption_line_edit, QStringLiteral( "test" ) );
     clickButtonAndWait( apply_button, k_long_wait_ms );
     recordCheck( QStringLiteral( "captionLineEditにtestを入力できる。" ), caption_line_edit->text() == QStringLiteral( "test" ) );
     markStepCompleted( QStringLiteral( "captionLineEditにtestを書き込み、applyPushButtonを押した。" ) );
@@ -518,7 +446,7 @@ void PreferenceTest::performs_preference_scenario()
     markStepCompleted( QStringLiteral( "defaultPushButtonとapplyPushButtonを押してデフォルト設定に戻した。" ) );
     saveScreenshot( QStringLiteral( "14_default_restored.png" ), QStringLiteral( "デフォルトの設定に戻ることを表す。" ) );
 
-    setLineEditText( caption_line_edit, QStringLiteral( "test" ) );
+    ClientTests::setLineEditText( caption_line_edit, QStringLiteral( "test" ) );
     recordCheck( QStringLiteral( "cancel前にcaptionLineEditへtestを入力できる。" ), caption_line_edit->text() == QStringLiteral( "test" ) );
     markStepCompleted( QStringLiteral( "captionLineEditにtestを書き込んだ。" ) );
     saveScreenshot( QStringLiteral( "15_caption_entered_before_cancel.png" ), QStringLiteral( "ColorMapBarのCaptionにtestと書き込んだことを表す。" ) );
@@ -535,7 +463,7 @@ void PreferenceTest::performs_preference_scenario()
     QTest::qWait( k_window_settle_ms );
     markStepCompleted( QStringLiteral( "Preference.uiを再度開いた。" ) );
 
-    setLineEditText( caption_line_edit, QStringLiteral( "test" ) );
+    ClientTests::setLineEditText( caption_line_edit, QStringLiteral( "test" ) );
     recordCheck( QStringLiteral( "ok前にcaptionLineEditへtestを入力できる。" ), caption_line_edit->text() == QStringLiteral( "test" ) );
     markStepCompleted( QStringLiteral( "captionLineEditにtestを書き込んだ。" ) );
     saveScreenshot( QStringLiteral( "17_caption_entered_before_ok.png" ), QStringLiteral( "ColorMapBarのCaptionにtestと書き込んだことを表す。" ) );

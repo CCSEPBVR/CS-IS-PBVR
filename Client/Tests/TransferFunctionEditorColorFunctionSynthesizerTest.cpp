@@ -6,7 +6,6 @@
 #include <QDate>
 #include <QDialog>
 #include <QDir>
-#include <QElapsedTimer>
 #include <QFile>
 #include <QFileInfo>
 #include <QGuiApplication>
@@ -32,6 +31,7 @@
 #include "../Widgets/PlayBackControlToolBar.h"
 #include "../Widgets/TransferFunctionEditor.h"
 #include "TestAppContext.h"
+#include "TestCommon.h"
 #include "TestOutputPaths.h"
 
 namespace
@@ -47,84 +47,10 @@ constexpr int k_after_jump_wait_ms = 3000;
 constexpr int k_capture_settle_ms = 300;
 kvs::qt::Application* g_test_app = nullptr;
 
-void logStep( const QString& message )
-{
-    qInfo().noquote() << message;
-}
-
-QString findRepoRootFrom( const QString& start_path )
-{
-    QDir dir( start_path );
-    while ( dir.exists() )
-    {
-        if ( dir.exists( QStringLiteral( ".git" ) ) &&
-             dir.exists( QStringLiteral( "Client" ) ) &&
-             dir.exists( QStringLiteral( "Server" ) ) )
-        {
-            return dir.absolutePath();
-        }
-
-        if ( !dir.cdUp() ) { break; }
-    }
-
-    return QString();
-}
 }
 
 namespace TransferFunctionEditorTest
 {
-
-QString ColorFunctionSynthesizerTest::envOrDefault( const char* name, const QString& fallback ) const
-{
-    const QString value = qEnvironmentVariable( name );
-    return value.isEmpty() ? ClientTests::configuredPath( name, repoRootPath(), fallback ) : value;
-}
-
-QString ColorFunctionSynthesizerTest::repoRootPath() const
-{
-    const QString app_root = findRepoRootFrom( QCoreApplication::applicationDirPath() );
-    if ( !app_root.isEmpty() ) { return app_root; }
-
-    const QString cwd_root = findRepoRootFrom( QDir::currentPath() );
-    if ( !cwd_root.isEmpty() ) { return cwd_root; }
-
-    const QString source_root =
-        findRepoRootFrom( QFileInfo( QString::fromUtf8( __FILE__ ) ).absolutePath() );
-    if ( !source_root.isEmpty() ) { return source_root; }
-
-    return QDir::currentPath();
-}
-
-QString ColorFunctionSynthesizerTest::sourceTreePath( const QString& relative_path_from_repo_root ) const
-{
-    return QDir::cleanPath( QDir( repoRootPath() ).absoluteFilePath( relative_path_from_repo_root ) );
-}
-
-bool ColorFunctionSynthesizerTest::waitForCondition(
-    const std::function<bool()>& condition,
-    int timeout_ms,
-    int interval_ms ) const
-{
-    QElapsedTimer timer;
-    timer.start();
-
-    while ( timer.elapsed() < timeout_ms )
-    {
-        if ( condition() ) { return true; }
-        QTest::qWait( interval_ms );
-    }
-
-    return condition();
-}
-
-void ColorFunctionSynthesizerTest::bringWindowToFront( MainWindow* window ) const
-{
-    QVERIFY2( window != nullptr, "MainWindow is null" );
-    window->show();
-    window->raise();
-    window->activateWindow();
-    QTest::qWait( k_window_settle_ms );
-}
 
 void ColorFunctionSynthesizerTest::bringTransferFunctionEditorToFront( TransferFunctionEditor* editor ) const
 {
@@ -134,15 +60,6 @@ void ColorFunctionSynthesizerTest::bringTransferFunctionEditorToFront( TransferF
     editor->activateWindow();
     QVERIFY2( editor->isVisible(), "TransferFunctionEditor did not become visible" );
     QTest::qWait( k_window_settle_ms );
-}
-
-void ColorFunctionSynthesizerTest::setLineEditText( QLineEdit* line_edit, const QString& text ) const
-{
-    QVERIFY2( line_edit != nullptr, "Target line edit was not found" );
-    line_edit->setFocus();
-    line_edit->clear();
-    QTest::keyClicks( line_edit, QDir::toNativeSeparators( text ) );
-    QCOMPARE( line_edit->text(), QDir::toNativeSeparators( text ) );
 }
 
 void ColorFunctionSynthesizerTest::closeUnexpectedDialogs( TransferFunctionEditor* editor ) const
@@ -253,7 +170,7 @@ void ColorFunctionSynthesizerTest::writeMarkdownReport() const
 void ColorFunctionSynthesizerTest::markStepCompleted( const QString& description )
 {
     m_steps.push_back( { description, true } );
-    logStep( description );
+    ClientTests::logStep( description );
 }
 
 ColorFunctionSynthesizerTest::ClientHandles
@@ -316,16 +233,16 @@ ColorFunctionSynthesizerTest::resolveClientHandles( MainWindow& window ) const
 
 void ColorFunctionSynthesizerTest::connectClient( const ClientHandles& client ) const
 {
-    bringWindowToFront( client.main_window );
+    ClientTests::bringWindowToFront( client.main_window );
     QVERIFY2(
-        waitForCondition( [client]() { return client.connect_button->isEnabled(); }, k_connect_timeout_ms, 100 ),
+        ClientTests::waitForCondition( [client]() { return client.connect_button->isEnabled(); }, k_connect_timeout_ms, 100 ),
         "connectPushButton did not become enabled within the timeout" );
 
     QTest::mouseClick( client.connect_button, Qt::LeftButton );
     QTest::qWait( k_short_wait_ms );
 
     QVERIFY2(
-        waitForCondition(
+        ClientTests::waitForCondition(
             [client]()
             {
                 return client.disconnect_button->isEnabled() &&
@@ -339,7 +256,7 @@ void ColorFunctionSynthesizerTest::connectClient( const ClientHandles& client ) 
 
 void ColorFunctionSynthesizerTest::configureRemoteVisualization( const ClientHandles& client ) const
 {
-    bringWindowToFront( client.main_window );
+    ClientTests::bringWindowToFront( client.main_window );
     if ( !client.remote_viz_client_server_radio->isChecked() )
     {
         QTest::mouseClick( client.remote_viz_client_server_radio, Qt::LeftButton );
@@ -347,7 +264,7 @@ void ColorFunctionSynthesizerTest::configureRemoteVisualization( const ClientHan
     QVERIFY2( client.remote_viz_client_server_radio->isChecked(), "remoteVizClientServerRadioButton was not checked" );
     QTest::qWait( k_short_wait_ms );
 
-    setLineEditText( client.volume_data_path_line_edit, m_volume_data_path );
+    ClientTests::setLineEditText( client.volume_data_path_line_edit, m_volume_data_path );
     QTest::mouseClick( client.setting_apply_button, Qt::LeftButton );
     QTest::qWait( k_short_wait_ms );
 }
@@ -355,7 +272,7 @@ void ColorFunctionSynthesizerTest::configureRemoteVisualization( const ClientHan
 void ColorFunctionSynthesizerTest::waitForObjectAndApply( const ClientHandles& client ) const
 {
     QVERIFY2(
-        waitForCondition(
+        ClientTests::waitForCondition(
             [client]()
             {
                 return client.object_apply_button->isEnabled() &&
@@ -372,14 +289,14 @@ void ColorFunctionSynthesizerTest::waitForObjectAndApply( const ClientHandles& c
 void ColorFunctionSynthesizerTest::clickJumpAndWaitForCompletion( const ClientHandles& client ) const
 {
     QVERIFY2(
-        waitForCondition( [client]() { return client.jump_button->isEnabled(); }, k_jump_button_enable_timeout_ms, 200 ),
+        ClientTests::waitForCondition( [client]() { return client.jump_button->isEnabled(); }, k_jump_button_enable_timeout_ms, 200 ),
         "m_jump_push_button did not become enabled within the timeout" );
 
     QTest::mouseClick( client.jump_button, Qt::LeftButton );
     QTest::qWait( k_short_wait_ms );
 
     QVERIFY2(
-        waitForCondition( [client]() { return client.jump_button->isEnabled(); }, k_jump_button_enable_timeout_ms, 200 ),
+        ClientTests::waitForCondition( [client]() { return client.jump_button->isEnabled(); }, k_jump_button_enable_timeout_ms, 200 ),
         "m_jump_push_button did not become enabled again within the timeout" );
 
     QTest::qWait( k_after_jump_wait_ms );
@@ -398,7 +315,7 @@ void ColorFunctionSynthesizerTest::applyControlPointColorMap(
         {
             QDialog* dialog = nullptr;
             QVERIFY2(
-                waitForCondition(
+                ClientTests::waitForCondition(
                     [&dialog]()
                     {
                         for ( QWidget* widget : QApplication::topLevelWidgets() )
@@ -470,22 +387,22 @@ void ColorFunctionSynthesizerTest::applyControlPointColorMap(
 void ColorFunctionSynthesizerTest::initTestCase()
 {
     const QString date_stamp = QDate::currentDate().toString( QStringLiteral( "yyyyMMdd" ) );
-    m_client_executable = envOrDefault(
+    m_client_executable = ClientTests::envOrDefault(
         "PBVR_CLIENT_EXECUTABLE",
-        ClientTests::configuredPath( "PBVR_CLIENT_EXECUTABLE", repoRootPath() ) );
-    m_server_executable = envOrDefault(
+        ClientTests::configuredPath( "PBVR_CLIENT_EXECUTABLE", ClientTests::repoRootPath() ) );
+    m_server_executable = ClientTests::envOrDefault(
         "PBVR_SERVER_EXECUTABLE",
-        ClientTests::configuredPath( "PBVR_SERVER_EXECUTABLE", repoRootPath() ) );
-    m_server_target_wrapper_executable = envOrDefault(
+        ClientTests::configuredPath( "PBVR_SERVER_EXECUTABLE", ClientTests::repoRootPath() ) );
+    m_server_target_wrapper_executable = ClientTests::envOrDefault(
         "PBVR_SERVER_TARGET_WRAPPER_EXECUTABLE",
-        ClientTests::configuredPath( "PBVR_SERVER_TARGET_WRAPPER_EXECUTABLE", repoRootPath() ) );
-    m_volume_data_path = envOrDefault(
+        ClientTests::configuredPath( "PBVR_SERVER_TARGET_WRAPPER_EXECUTABLE", ClientTests::repoRootPath() ) );
+    m_volume_data_path = ClientTests::envOrDefault(
         "PBVR_VOLUME_DATA",
-        ClientTests::configuredPath( "SPX_VOLUME_DATA", repoRootPath() ) );
-    m_output_dir_path = envOrDefault(
+        ClientTests::configuredPath( "SPX_VOLUME_DATA", ClientTests::repoRootPath() ) );
+    m_output_dir_path = ClientTests::envOrDefault(
         "PBVR_TEST_OUTPUT_DIR",
-        ClientTests::datedTestOutputDir( repoRootPath(), date_stamp, QStringLiteral( "TransferFunctionEditorTest/ColorFunctionSynthesizerTest" ) ) );
-    m_screenshot_dir_path = envOrDefault(
+        ClientTests::datedTestOutputDir( ClientTests::repoRootPath(), date_stamp, QStringLiteral( "TransferFunctionEditorTest/ColorFunctionSynthesizerTest" ) ) );
+    m_screenshot_dir_path = ClientTests::envOrDefault(
         "PBVR_SCREENSHOT_DIR",
         QDir( m_output_dir_path ).absoluteFilePath( QStringLiteral( "img" ) ) );
     m_report_path = QDir( m_output_dir_path ).absoluteFilePath( QStringLiteral( "TestResult.md" ) );
@@ -534,7 +451,7 @@ void ColorFunctionSynthesizerTest::synthesize_color_functions()
     clickJumpAndWaitForCompletion( client );
     markStepCompleted( QStringLiteral( "PlayBackControlToolBar.cpp: m_jump_push_buttonを押し、有効化を待機しました。" ) );
 
-    bringWindowToFront( client.main_window );
+    ClientTests::bringWindowToFront( client.main_window );
     saveScreenshot(
         QStringLiteral( "00_object_before_color_function_synthesis.png" ),
         QStringLiteral( "伝達関数のカラーマップを合成する前に表示したオブジェクトの状態" ) );
@@ -542,7 +459,7 @@ void ColorFunctionSynthesizerTest::synthesize_color_functions()
 
     bringTransferFunctionEditorToFront( client.transfer_function_editor );
     setTransferFunctionCount( client, 2 );
-    setLineEditText( client.color_synthesizer_line_edit, QStringLiteral( "C1+C2" ) );
+    ClientTests::setLineEditText( client.color_synthesizer_line_edit, QStringLiteral( "C1+C2" ) );
     markStepCompleted( QStringLiteral( "TransferFunctionEditor.uiを開き、numberOfTransferFunctionSpinBoxに2を入力し、colorSynthesizerLineEditにC1+C2を入力しました。" ) );
 
     setComboBoxIndex( client.color_function_combo_box, 0, "colorFunctionComboBox" );
@@ -585,7 +502,7 @@ void ColorFunctionSynthesizerTest::synthesize_color_functions()
     clickJumpAndWaitForCompletion( client );
     markStepCompleted( QStringLiteral( "PlayBackControlToolBar.cpp: m_jump_push_buttonを押し、有効化を待機しました。" ) );
 
-    bringWindowToFront( client.main_window );
+    ClientTests::bringWindowToFront( client.main_window );
     saveScreenshot(
         QStringLiteral( "03_object_after_color_function_synthesis.png" ),
         QStringLiteral( "伝達関数のカラーマップを合成して表示したオブジェクトの状態" ) );

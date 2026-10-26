@@ -11,7 +11,6 @@
 #include <QDialog>
 #include <QDir>
 #include <QDoubleSpinBox>
-#include <QElapsedTimer>
 #include <QFile>
 #include <QFileInfo>
 #include <QGuiApplication>
@@ -39,6 +38,7 @@
 #include "../Widgets/TotalParticlesToolBar.h"
 #include "../Widgets/VolumeTransform.h"
 #include "TestAppContext.h"
+#include "TestCommon.h"
 #include "TestOutputPaths.h"
 
 #include <csignal>
@@ -61,28 +61,6 @@ constexpr int k_button_retry_count = 3;
 constexpr int k_button_retry_wait_ms = 500;
 kvs::qt::Application* g_test_app = nullptr;
 
-void logStep( const QString& message )
-{
-    qInfo().noquote() << message;
-}
-
-QString findRepoRootFrom( const QString& start_path )
-{
-    QDir dir( start_path );
-    while ( dir.exists() )
-    {
-        if ( dir.exists( QStringLiteral( ".git" ) ) &&
-             dir.exists( QStringLiteral( "Client" ) ) &&
-             dir.exists( QStringLiteral( "Server" ) ) )
-        {
-            return dir.absolutePath();
-        }
-
-        if ( !dir.cdUp() ) { break; }
-    }
-
-    return QString();
-}
 }
 
 namespace ClientTests
@@ -92,46 +70,6 @@ GlyphEditorTest::GlyphEditorTest( QObject* parent )
     : QObject( parent )
 {
     qputenv( "QTEST_FUNCTION_TIMEOUT", QByteArray( "1200000" ) );
-}
-
-QString GlyphEditorTest::envOrDefault( const char* name, const QString& fallback ) const
-{
-    const QString value = qEnvironmentVariable( name );
-    return value.isEmpty() ? ClientTests::configuredPath( name, repoRootPath(), fallback ) : value;
-}
-
-QString GlyphEditorTest::repoRootPath() const
-{
-    const QString app_root = findRepoRootFrom( QCoreApplication::applicationDirPath() );
-    if ( !app_root.isEmpty() ) { return app_root; }
-
-    const QString cwd_root = findRepoRootFrom( QDir::currentPath() );
-    if ( !cwd_root.isEmpty() ) { return cwd_root; }
-
-    const QString source_root =
-        findRepoRootFrom( QFileInfo( QString::fromUtf8( __FILE__ ) ).absolutePath() );
-    if ( !source_root.isEmpty() ) { return source_root; }
-
-    return QDir::currentPath();
-}
-
-QString GlyphEditorTest::sourceTreePath( const QString& relative_path_from_repo_root ) const
-{
-    return QDir::cleanPath( QDir( repoRootPath() ).absoluteFilePath( relative_path_from_repo_root ) );
-}
-
-bool GlyphEditorTest::waitForCondition( const std::function<bool()>& condition, int timeout_ms, int interval_ms ) const
-{
-    QElapsedTimer timer;
-    timer.start();
-
-    while ( timer.elapsed() < timeout_ms )
-    {
-        if ( condition() ) { return true; }
-        QTest::qWait( interval_ms );
-    }
-
-    return condition();
 }
 
 void GlyphEditorTest::startVideoRecording()
@@ -204,15 +142,6 @@ void GlyphEditorTest::stopVideoRecording()
 #endif
 }
 
-void GlyphEditorTest::bringWindowToFront( MainWindow* window ) const
-{
-    QVERIFY2( window != nullptr, "MainWindow is null" );
-    window->show();
-    window->raise();
-    window->activateWindow();
-    QTest::qWait( k_window_settle_ms );
-}
-
 void GlyphEditorTest::bringGlyphEditorToFront( GlyphEditor* glyph_editor ) const
 {
     QVERIFY2( glyph_editor != nullptr, "GlyphEditor is null" );
@@ -230,15 +159,6 @@ void GlyphEditorTest::bringVolumeTransformToFront( VolumeTransform* volume_trans
     volume_transform->activateWindow();
     QVERIFY2( volume_transform->isVisible(), "VolumeTransform did not become visible" );
     QTest::qWait( k_window_settle_ms );
-}
-
-void GlyphEditorTest::setLineEditText( QLineEdit* line_edit, const QString& text ) const
-{
-    QVERIFY2( line_edit != nullptr, "Target line edit was not found" );
-    line_edit->setFocus();
-    line_edit->clear();
-    QTest::keyClicks( line_edit, QDir::toNativeSeparators( text ) );
-    QCOMPARE( line_edit->text(), QDir::toNativeSeparators( text ) );
 }
 
 void GlyphEditorTest::setSpinBoxValue( QSpinBox* spin_box, int value ) const
@@ -264,7 +184,7 @@ void GlyphEditorTest::selectRadioButton( QRadioButton* radio_button, const char*
     if ( radio_button->isChecked() ) { return; }
 
     QVERIFY2(
-        waitForCondition(
+        ClientTests::waitForCondition(
             [radio_button]()
             {
                 return radio_button->isEnabled() && radio_button->isVisible();
@@ -295,7 +215,7 @@ void GlyphEditorTest::selectComboBoxItem( QComboBox* combo_box, int index ) cons
     combo_box->showPopup();
 
     QVERIFY2(
-        waitForCondition(
+        ClientTests::waitForCondition(
             [combo_box]()
             {
                 auto* view = combo_box->view();
@@ -386,7 +306,7 @@ void GlyphEditorTest::writeMarkdownReport() const
 void GlyphEditorTest::markStepCompleted( const QString& description )
 {
     m_steps.push_back( { description, true } );
-    logStep( description );
+    ClientTests::logStep( description );
 }
 
 GlyphEditorTest::ClientHandles GlyphEditorTest::resolveClientHandles( MainWindow& window ) const
@@ -516,8 +436,8 @@ GlyphEditorTest::ClientHandles GlyphEditorTest::resolveClientHandles( MainWindow
 
 void GlyphEditorTest::ensureConnected( const ClientHandles& client ) const
 {
-    logStep( QStringLiteral( "ensureConnected: begin" ) );
-    bringWindowToFront( client.main_window );
+    ClientTests::logStep( QStringLiteral( "ensureConnected: begin" ) );
+    ClientTests::bringWindowToFront( client.main_window );
 
     const auto is_connected = [client]()
     {
@@ -528,14 +448,14 @@ void GlyphEditorTest::ensureConnected( const ClientHandles& client ) const
 
     if ( is_connected() )
     {
-        logStep( QStringLiteral( "ensureConnected: already connected" ) );
+        ClientTests::logStep( QStringLiteral( "ensureConnected: already connected" ) );
         return;
     }
 
     for ( int attempt = 0; attempt < k_button_retry_count; ++attempt )
     {
         QVERIFY2(
-            waitForCondition(
+            ClientTests::waitForCondition(
                 [client]()
                 {
                     return client.connect_button->isEnabled();
@@ -544,13 +464,13 @@ void GlyphEditorTest::ensureConnected( const ClientHandles& client ) const
                 100 ),
             "connectPushButton did not become enabled within the timeout" );
 
-        bringWindowToFront( client.main_window );
+        ClientTests::bringWindowToFront( client.main_window );
         QTest::mouseClick( client.connect_button, Qt::LeftButton );
 
-        if ( waitForCondition( is_connected, k_connect_timeout_ms, 100 ) )
+        if ( ClientTests::waitForCondition( is_connected, k_connect_timeout_ms, 100 ) )
         {
             QTest::qWait( k_short_wait_ms );
-            logStep( QStringLiteral( "ensureConnected: completed" ) );
+            ClientTests::logStep( QStringLiteral( "ensureConnected: completed" ) );
             return;
         }
 
@@ -562,8 +482,8 @@ void GlyphEditorTest::ensureConnected( const ClientHandles& client ) const
 
 void GlyphEditorTest::ensureDisconnected( const ClientHandles& client ) const
 {
-    logStep( QStringLiteral( "ensureDisconnected: begin" ) );
-    bringWindowToFront( client.main_window );
+    ClientTests::logStep( QStringLiteral( "ensureDisconnected: begin" ) );
+    ClientTests::bringWindowToFront( client.main_window );
 
     const auto is_disconnected = [client]()
     {
@@ -574,14 +494,14 @@ void GlyphEditorTest::ensureDisconnected( const ClientHandles& client ) const
 
     if ( is_disconnected() )
     {
-        logStep( QStringLiteral( "ensureDisconnected: already disconnected" ) );
+        ClientTests::logStep( QStringLiteral( "ensureDisconnected: already disconnected" ) );
         return;
     }
 
     for ( int attempt = 0; attempt < k_button_retry_count; ++attempt )
     {
         QVERIFY2(
-            waitForCondition(
+            ClientTests::waitForCondition(
                 [client]()
                 {
                     return client.disconnect_button->isEnabled();
@@ -590,13 +510,13 @@ void GlyphEditorTest::ensureDisconnected( const ClientHandles& client ) const
                 100 ),
             "disconnectPushButton did not become enabled within the timeout" );
 
-        bringWindowToFront( client.main_window );
+        ClientTests::bringWindowToFront( client.main_window );
         QTest::mouseClick( client.disconnect_button, Qt::LeftButton );
 
-        if ( waitForCondition( is_disconnected, k_disconnect_timeout_ms, 100 ) )
+        if ( ClientTests::waitForCondition( is_disconnected, k_disconnect_timeout_ms, 100 ) )
         {
             QTest::qWait( k_short_wait_ms );
-            logStep( QStringLiteral( "ensureDisconnected: completed" ) );
+            ClientTests::logStep( QStringLiteral( "ensureDisconnected: completed" ) );
             return;
         }
 
@@ -611,11 +531,11 @@ void GlyphEditorTest::configureRemoteVisualization( const ClientHandles& client,
     ensureConnected( client );
     waitForOperatorPrivileges( client );
 
-    bringWindowToFront( client.main_window );
+    ClientTests::bringWindowToFront( client.main_window );
     selectRadioButton( client.remote_viz_client_server_radio, "remoteVizClientServerRadioButton" );
     QTest::qWait( k_short_wait_ms );
 
-    setLineEditText( client.volume_data_path_line_edit, volume_path );
+    ClientTests::setLineEditText( client.volume_data_path_line_edit, volume_path );
     QTest::qWait( k_short_wait_ms );
 
     if ( transfer_function_path.isEmpty() )
@@ -625,7 +545,7 @@ void GlyphEditorTest::configureRemoteVisualization( const ClientHandles& client,
     }
     else
     {
-        setLineEditText( client.transfer_function_path_line_edit, transfer_function_path );
+        ClientTests::setLineEditText( client.transfer_function_path_line_edit, transfer_function_path );
     }
     QTest::qWait( k_short_wait_ms );
 
@@ -639,7 +559,7 @@ void GlyphEditorTest::configureRemoteVisualization( const ClientHandles& client,
 void GlyphEditorTest::waitForOperatorPrivileges( const ClientHandles& client ) const
 {
     QVERIFY2(
-        waitForCondition(
+        ClientTests::waitForCondition(
             [client]()
             {
                 return client.object_apply_button->isEnabled() &&
@@ -656,9 +576,9 @@ void GlyphEditorTest::waitForOperatorPrivileges( const ClientHandles& client ) c
 
 void GlyphEditorTest::waitForObjectAndApply( const ClientHandles& client ) const
 {
-    logStep( QStringLiteral( "waitForObjectAndApply: waiting for ObjectEditor rows and nameLineEdit" ) );
+    ClientTests::logStep( QStringLiteral( "waitForObjectAndApply: waiting for ObjectEditor rows and nameLineEdit" ) );
     QVERIFY2(
-        waitForCondition(
+        ClientTests::waitForCondition(
             [client]()
             {
                 return client.object_apply_button->isEnabled() &&
@@ -693,7 +613,7 @@ void GlyphEditorTest::waitForObjectAndApply( const ClientHandles& client ) const
         client.focus_check_box->setChecked( true );
     }
 
-    logStep(
+    ClientTests::logStep(
         QStringLiteral( "waitForObjectAndApply: objectName='%1' displayChecked=%2 focusChecked=%3" )
             .arg( client.object_name_line_edit->text() )
             .arg( display_item->checkState() == Qt::Checked ? QStringLiteral( "true" ) : QStringLiteral( "false" ) )
@@ -707,7 +627,7 @@ void GlyphEditorTest::waitForObjectAndApply( const ClientHandles& client ) const
 void GlyphEditorTest::clickJumpAndWaitForCompletion( const ClientHandles& client ) const
 {
     QVERIFY2(
-        waitForCondition(
+        ClientTests::waitForCondition(
             [client]()
             {
                 return client.jump_button->isEnabled();
@@ -720,7 +640,7 @@ void GlyphEditorTest::clickJumpAndWaitForCompletion( const ClientHandles& client
     QTest::qWait( k_short_wait_ms );
 
     QVERIFY2(
-        waitForCondition(
+        ClientTests::waitForCondition(
             [client]()
             {
                 return client.jump_button->isEnabled();
@@ -734,8 +654,8 @@ void GlyphEditorTest::clickJumpAndWaitForCompletion( const ClientHandles& client
 
 void GlyphEditorTest::waitForVisiblePointObject( const ClientHandles& client ) const
 {
-    logStep( QStringLiteral( "waitForVisiblePointObject: waiting for total particles > 0" ) );
-    const bool visible = waitForCondition(
+    ClientTests::logStep( QStringLiteral( "waitForVisiblePointObject: waiting for total particles > 0" ) );
+    const bool visible = ClientTests::waitForCondition(
         [client]()
         {
             bool ok = false;
@@ -774,7 +694,7 @@ void GlyphEditorTest::waitForVisiblePointObject( const ClientHandles& client ) c
 
 void GlyphEditorTest::waitForGlyphEditorReady( const ClientHandles& client ) const
 {
-    const bool ready = waitForCondition(
+    const bool ready = ClientTests::waitForCondition(
         [client]()
         {
             return client.glyph_editor_action->isEnabled() &&
@@ -805,11 +725,11 @@ void GlyphEditorTest::openGlyphEditor( const ClientHandles& client ) const
     waitForGlyphEditorReady( client );
     QVERIFY2( client.glyph_editor_action != nullptr, "Glyph Editor action is null" );
 
-    bringWindowToFront( client.main_window );
+    ClientTests::bringWindowToFront( client.main_window );
     client.glyph_editor_action->trigger();
 
     QVERIFY2(
-        waitForCondition(
+        ClientTests::waitForCondition(
             [client]()
             {
                 return client.glyph_editor->isVisible();
@@ -882,7 +802,7 @@ void GlyphEditorTest::applyPresetColorMap( const ClientHandles& client, const QS
         {
             QDialog* dialog = nullptr;
             QVERIFY2(
-                waitForCondition(
+                ClientTests::waitForCondition(
                     [&dialog]()
                     {
                         for ( QWidget* widget : QApplication::topLevelWidgets() )
@@ -951,7 +871,7 @@ void GlyphEditorTest::applyPresetColorMap( const ClientHandles& client, const QS
             QTest::qWait( k_short_wait_ms );
 
             QVERIFY2(
-                waitForCondition(
+                ClientTests::waitForCondition(
                     [dialog]()
                     {
                         auto* apply_button = dialog->findChild<QPushButton*>( "applyPushButton" );
@@ -975,7 +895,7 @@ void GlyphEditorTest::applyPresetColorMap( const ClientHandles& client, const QS
 
 void GlyphEditorTest::captureGlyphState( const ClientHandles& client, const QString& file_name, const QString& caption )
 {
-    bringWindowToFront( client.main_window );
+    ClientTests::bringWindowToFront( client.main_window );
     if ( client.glyph_editor->isVisible() )
     {
         client.glyph_editor->raise();
@@ -1003,25 +923,25 @@ void GlyphEditorTest::initTestCase()
     qputenv( "QTEST_FUNCTION_TIMEOUT", QByteArray( "1200000" ) );
 
     const QString date_stamp = QDate::currentDate().toString( QStringLiteral( "yyyyMMdd" ) );
-    m_client_executable = envOrDefault(
+    m_client_executable = ClientTests::envOrDefault(
         "PBVR_CLIENT_EXECUTABLE",
-        ClientTests::configuredPath( "PBVR_CLIENT_EXECUTABLE", repoRootPath() ) );
-    m_server_executable = envOrDefault(
+        ClientTests::configuredPath( "PBVR_CLIENT_EXECUTABLE", ClientTests::repoRootPath() ) );
+    m_server_executable = ClientTests::envOrDefault(
         "PBVR_SERVER_EXECUTABLE",
-        ClientTests::configuredPath( "PBVR_SERVER_EXECUTABLE", repoRootPath() ) );
-    m_structured_volume_data_path = envOrDefault(
+        ClientTests::configuredPath( "PBVR_SERVER_EXECUTABLE", ClientTests::repoRootPath() ) );
+    m_structured_volume_data_path = ClientTests::envOrDefault(
         "TORNADO_VOLUME_DATA",
-        ClientTests::configuredPath( "TORNADO_VOLUME_DATA", repoRootPath() ) );
-    m_unstructured_volume_data_path = envOrDefault(
+        ClientTests::configuredPath( "TORNADO_VOLUME_DATA", ClientTests::repoRootPath() ) );
+    m_unstructured_volume_data_path = ClientTests::envOrDefault(
         "MEJ_VOLUME_DATA",
-        ClientTests::configuredPath( "MEJ_VOLUME_DATA", repoRootPath() ) );
-    m_transfer_function_path = envOrDefault(
+        ClientTests::configuredPath( "MEJ_VOLUME_DATA", ClientTests::repoRootPath() ) );
+    m_transfer_function_path = ClientTests::envOrDefault(
         "MEJ_TRANSFER_FUNCTION",
-        ClientTests::configuredPath( "MEJ_TRANSFER_FUNCTION", repoRootPath() ) );
-    m_output_dir_path = envOrDefault(
+        ClientTests::configuredPath( "MEJ_TRANSFER_FUNCTION", ClientTests::repoRootPath() ) );
+    m_output_dir_path = ClientTests::envOrDefault(
         "PBVR_TEST_OUTPUT_DIR",
-        ClientTests::datedTestOutputDir( repoRootPath(), date_stamp, QStringLiteral( "GlyphEditorTest" ) ) );
-    m_screenshot_dir_path = envOrDefault(
+        ClientTests::datedTestOutputDir( ClientTests::repoRootPath(), date_stamp, QStringLiteral( "GlyphEditorTest" ) ) );
+    m_screenshot_dir_path = ClientTests::envOrDefault(
         "PBVR_SCREENSHOT_DIR",
         QDir( m_output_dir_path ).absoluteFilePath( QStringLiteral( "img" ) ) );
     m_report_path = QDir( m_output_dir_path ).absoluteFilePath( QStringLiteral( "TestResult.md" ) );
@@ -1064,7 +984,7 @@ void GlyphEditorTest::cleanupTestCase()
 
 void GlyphEditorTest::performs_glyph_editor_scenario()
 {
-    logStep( QStringLiteral( "scenario: start" ) );
+    ClientTests::logStep( QStringLiteral( "scenario: start" ) );
     if ( g_test_app == nullptr )
     {
         g_test_app = pbvrTestApplication();
@@ -1072,7 +992,7 @@ void GlyphEditorTest::performs_glyph_editor_scenario()
     QVERIFY2( g_test_app != nullptr, "Test application is not initialized" );
 
     startVideoRecording();
-    logStep( QStringLiteral( "scenario: recording started" ) );
+    ClientTests::logStep( QStringLiteral( "scenario: recording started" ) );
 
     MainWindow main_window( *g_test_app );
     showTestWindowCentered( &main_window );
@@ -1082,7 +1002,7 @@ void GlyphEditorTest::performs_glyph_editor_scenario()
     client.communication->show();
     client.object_editor->show();
 
-    logStep( QStringLiteral( "scenario: MEJ dataset begin" ) );
+    ClientTests::logStep( QStringLiteral( "scenario: MEJ dataset begin" ) );
     ensureConnected( client );
     markStepCompleted( QStringLiteral( "Communication.ui: connectPushButtonを押しました。" ) );
     configureRemoteVisualization( client, m_unstructured_volume_data_path, m_transfer_function_path );
@@ -1230,7 +1150,7 @@ void GlyphEditorTest::performs_glyph_editor_scenario()
     markStepCompleted( QStringLiteral( "PlayBackControlToolBar.cpp: m_jump_push_buttonを押し、有効化を待機しました。" ) );
     captureGlyphState( client, QStringLiteral( "15_size_q1_q2_q3_q4.png" ), QStringLiteral( "Sizeをq1,q2,q3,q4に指定していること" ) );
 
-    logStep( QStringLiteral( "scenario: TORNADO dataset begin" ) );
+    ClientTests::logStep( QStringLiteral( "scenario: TORNADO dataset begin" ) );
     ensureDisconnected( client );
     markStepCompleted( QStringLiteral( "Communication.ui: disconnectPushButtonを押しました。" ) );
     ensureConnected( client );
@@ -1336,7 +1256,7 @@ void GlyphEditorTest::performs_glyph_editor_scenario()
 
     m_test_succeeded = true;
     stopVideoRecording();
-    logStep( QStringLiteral( "scenario: completed" ) );
+    ClientTests::logStep( QStringLiteral( "scenario: completed" ) );
 }
 
 } // namespace ClientTests

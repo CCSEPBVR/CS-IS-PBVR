@@ -8,6 +8,24 @@
 #include <float.h>
 #include <vismodule/ParticleProperty>
 
+#ifdef EXTEND_FILE_FORMAT
+#include <kvs/extendedfileformat/Netcdf>
+
+struct NetcdfStepSource
+{
+    std::string primary_path;
+    std::string slac_mode_path;
+};
+
+struct NetcdfResolvedDataset
+{
+    kvs::ExtendedFileFormat::NetcdfFileInfo file;
+    std::string cam_connectivity_path;
+    std::vector<std::string> slac_mode_paths;
+    std::vector<NetcdfStepSource> steps;
+};
+#endif
+
 class MultiVolumeProperty
 {
 public:
@@ -42,6 +60,11 @@ public:
     float   m_max_value;
     std::string m_file_path;
     std::vector<std::string> m_time_step_file_paths;
+    std::string m_cam_connectivity_file_path;
+    std::vector<std::string> m_slac_mode_file_paths;
+#ifdef EXTEND_FILE_FORMAT
+    NetcdfResolvedDataset m_netcdf_dataset;
+#endif
     bool is_binary;
     std::vector<IngredientsStep> m_ingredient_step;
     
@@ -50,6 +73,9 @@ public:
 public:
     int loadPFI( const std::string& filename );
     void setFilePath( std::string& filename, const int st, const int xvl ) const;
+#ifdef EXTEND_FILE_FORMAT
+    NetcdfStepSource netcdfStepSource( const int st ) const;
+#endif
 };
 
 
@@ -71,8 +97,14 @@ public:
     int loadPvtu( const std::string& filename );
     int loadSeriesPvtu( const std::string& filename );
     int loadEnsightGold( const std::string& filename );
-    int loadNetcdf( const std::string& filename );
-    int loadSeriesNetcdf( const std::string& filename );
+    int loadNetcdf(
+        const std::string& filename,
+        const std::string& cam_connectivity_file_path = std::string(),
+        const std::vector<std::string>& slac_mode_file_paths =
+            std::vector<std::string>() );
+    int loadSeriesNetcdf(
+        const std::string& filename,
+        const std::string& cam_connectivity_file_path = std::string() );
 #endif
     int getFileIndex( const int vl, int* xvl ) const;
     void cropTimeStep( const int s, const int e );
@@ -102,9 +134,12 @@ public:
     int32_t m_total_number_ingredients;
     std::vector<MultiVolumeProperty::IngredientsMinMax> m_total_ingredient;
 
-    void loadVolumeDataFile( const std::string& filename );
+    void loadVolumeDataFile(
+        const std::string& filename,
+        const std::string& cam_connectivity_file_path = std::string(),
+        const std::vector<std::string>& slac_mode_file_paths =
+            std::vector<std::string>() );
 
 };
 
 #endif // VIS_MODULE__FILTER_INFO_H_INCLDE
-

@@ -6,7 +6,6 @@
 #include <QCoreApplication>
 #include <QDate>
 #include <QDir>
-#include <QElapsedTimer>
 #include <QFile>
 #include <QFileInfo>
 #include <QGuiApplication>
@@ -39,6 +38,7 @@
 #include "../Widgets/TransferFunctionEditor.h"
 #include "../Widgets/VolumeTransform.h"
 #include "TestAppContext.h"
+#include "TestCommon.h"
 #include "TestOutputPaths.h"
 
 namespace
@@ -60,63 +60,6 @@ constexpr int k_button_retry_count = 3;
 constexpr int k_button_retry_wait_ms = 500;
 kvs::qt::Application* g_test_app = nullptr;
 
-QString findRepoRootFrom( const QString& start_path )
-{
-    QDir dir( start_path );
-    while ( dir.exists() )
-    {
-        if ( dir.exists( QStringLiteral( ".git" ) ) &&
-             dir.exists( QStringLiteral( "Client" ) ) &&
-             dir.exists( QStringLiteral( "Server" ) ) )
-        {
-            return dir.absolutePath();
-        }
-
-        if ( !dir.cdUp() ) { break; }
-    }
-
-    return QString();
-}
-}
-
-QString MenuBarTest::envOrDefault( const char* name, const QString& fallback ) const
-{
-    const QString value = qEnvironmentVariable( name );
-    return value.isEmpty() ? ClientTests::configuredPath( name, repoRootPath(), fallback ) : value;
-}
-
-QString MenuBarTest::repoRootPath() const
-{
-    const QString app_root = findRepoRootFrom( QCoreApplication::applicationDirPath() );
-    if ( !app_root.isEmpty() ) { return app_root; }
-
-    const QString cwd_root = findRepoRootFrom( QDir::currentPath() );
-    if ( !cwd_root.isEmpty() ) { return cwd_root; }
-
-    const QString source_root =
-        findRepoRootFrom( QFileInfo( QString::fromUtf8( __FILE__ ) ).absolutePath() );
-    if ( !source_root.isEmpty() ) { return source_root; }
-
-    return QDir::currentPath();
-}
-
-QString MenuBarTest::sourceTreePath( const QString& relative_path_from_repo_root ) const
-{
-    return QDir::cleanPath( QDir( repoRootPath() ).absoluteFilePath( relative_path_from_repo_root ) );
-}
-
-bool MenuBarTest::waitForCondition( const std::function<bool()>& condition, int timeout_ms, int interval_ms ) const
-{
-    QElapsedTimer timer;
-    timer.start();
-
-    while ( timer.elapsed() < timeout_ms )
-    {
-        if ( condition() ) { return true; }
-        QTest::qWait( interval_ms );
-    }
-
-    return condition();
 }
 
 QAction* MenuBarTest::findActionByText( QWidget* root, const QString& text ) const
@@ -156,7 +99,7 @@ void MenuBarTest::openMenu( QMainWindow& window, QMenu* menu ) const
         menu->popup( popup_pos );
     }
 
-    const bool opened = waitForCondition(
+    const bool opened = ClientTests::waitForCondition(
         [menu]()
         {
             return menu->isVisible();
@@ -241,28 +184,28 @@ void MenuBarTest::writeMarkdownReport() const
 void MenuBarTest::initTestCase()
 {
     const QString date_stamp = QDate::currentDate().toString( QStringLiteral( "yyyyMMdd" ) );
-    m_client_executable = envOrDefault(
+    m_client_executable = ClientTests::envOrDefault(
         "PBVR_CLIENT_EXECUTABLE",
-        ClientTests::configuredPath( "PBVR_CLIENT_EXECUTABLE", repoRootPath() ) );
-    m_server_executable = envOrDefault(
+        ClientTests::configuredPath( "PBVR_CLIENT_EXECUTABLE", ClientTests::repoRootPath() ) );
+    m_server_executable = ClientTests::envOrDefault(
         "PBVR_SERVER_EXECUTABLE",
-        ClientTests::configuredPath( "PBVR_SERVER_EXECUTABLE", repoRootPath() ) );
-    m_server_target_wrapper_executable = envOrDefault(
+        ClientTests::configuredPath( "PBVR_SERVER_EXECUTABLE", ClientTests::repoRootPath() ) );
+    m_server_target_wrapper_executable = ClientTests::envOrDefault(
         "PBVR_SERVER_TARGET_WRAPPER_EXECUTABLE",
-        ClientTests::configuredPath( "PBVR_SERVER_TARGET_WRAPPER_EXECUTABLE", repoRootPath() ) );
-    m_volume_data_path = envOrDefault(
+        ClientTests::configuredPath( "PBVR_SERVER_TARGET_WRAPPER_EXECUTABLE", ClientTests::repoRootPath() ) );
+    m_volume_data_path = ClientTests::envOrDefault(
         "PBVR_VOLUME_DATA",
-        ClientTests::configuredPath( "MEJ_VOLUME_DATA", repoRootPath() ) );
-    m_transfer_function_path = envOrDefault(
+        ClientTests::configuredPath( "MEJ_VOLUME_DATA", ClientTests::repoRootPath() ) );
+    m_transfer_function_path = ClientTests::envOrDefault(
         "MEJ_TRANSFER_FUNCTION",
-        ClientTests::configuredPath( "MEJ_TRANSFER_FUNCTION", repoRootPath() ) );
-    m_report_dir_path = envOrDefault(
+        ClientTests::configuredPath( "MEJ_TRANSFER_FUNCTION", ClientTests::repoRootPath() ) );
+    m_report_dir_path = ClientTests::envOrDefault(
         "PBVR_TEST_REPORT_DIR",
         ClientTests::datedTestOutputDir(
-            repoRootPath(),
+            ClientTests::repoRootPath(),
             date_stamp,
             QStringLiteral( "MenuBarTest" ) ) );
-    m_screenshot_dir_path = envOrDefault(
+    m_screenshot_dir_path = ClientTests::envOrDefault(
         "PBVR_SCREENSHOT_DIR",
         QDir( m_report_dir_path ).absoluteFilePath( QStringLiteral( "img" ) ) );
     m_report_path = QDir( m_report_dir_path ).absoluteFilePath( QStringLiteral( "TestResult.md" ) );
@@ -345,7 +288,7 @@ void MenuBarTest::performs_menu_bar_scenario()
     for ( int attempt = 0; attempt < k_button_retry_count && !connected(); ++attempt )
     {
         QVERIFY2(
-            waitForCondition(
+            ClientTests::waitForCondition(
                 [connect_button]()
                 {
                     return connect_button->isEnabled();
@@ -359,7 +302,7 @@ void MenuBarTest::performs_menu_bar_scenario()
         QTest::qWait( k_window_settle_ms );
         QTest::mouseClick( connect_button, Qt::LeftButton );
 
-        if ( connected() || waitForCondition( connected, k_connect_timeout_ms, 100 ) )
+        if ( connected() || ClientTests::waitForCondition( connected, k_connect_timeout_ms, 100 ) )
         {
             break;
         }
@@ -394,7 +337,7 @@ void MenuBarTest::performs_menu_bar_scenario()
     QVERIFY2( name_line_edit != nullptr, "ObjectEditor nameLineEdit not found" );
     QVERIFY2( apply_button != nullptr, "ObjectEditor applyPushButton not found" );
 
-    const bool name_loaded = waitForCondition(
+    const bool name_loaded = ClientTests::waitForCondition(
         [name_line_edit]()
         {
             return !name_line_edit->text().trimmed().isEmpty();
@@ -408,7 +351,7 @@ void MenuBarTest::performs_menu_bar_scenario()
     auto* jump_button = playback_tool_bar->findChild<QPushButton*>( "m_jump_push_button" );
     QVERIFY2( jump_button != nullptr, "m_jump_push_button not found" );
 
-    const bool jump_enabled = waitForCondition(
+    const bool jump_enabled = ClientTests::waitForCondition(
         [jump_button]()
         {
             return jump_button->isEnabled();
@@ -440,7 +383,7 @@ void MenuBarTest::performs_menu_bar_scenario()
     auto* preference = main_window.findChild<Preference*>();
     QVERIFY2( preference != nullptr, "Preference dialog not found" );
     QVERIFY2(
-        waitForCondition(
+        ClientTests::waitForCondition(
             [preference]()
             {
                 return preference->isVisible();
@@ -455,7 +398,7 @@ void MenuBarTest::performs_menu_bar_scenario()
 
     preference->close();
     QVERIFY2(
-        waitForCondition(
+        ClientTests::waitForCondition(
             [preference]()
             {
                 return !preference->isVisible();
@@ -474,7 +417,7 @@ void MenuBarTest::performs_menu_bar_scenario()
     triggerAction( communication_action, k_dialog_settle_ms );
 
     QVERIFY2(
-        waitForCondition(
+        ClientTests::waitForCondition(
             [communication]()
             {
                 return communication->isVisible();
@@ -489,7 +432,7 @@ void MenuBarTest::performs_menu_bar_scenario()
 
     communication->close();
     QVERIFY2(
-        waitForCondition(
+        ClientTests::waitForCondition(
             [communication]()
             {
                 return !communication->isVisible();
@@ -523,7 +466,7 @@ void MenuBarTest::performs_menu_bar_scenario()
     {
         QAction* action = findActionByText( &main_window, QString::fromUtf8( scenario.text ) );
         QVERIFY2(
-            waitForCondition(
+            ClientTests::waitForCondition(
                 [action]()
                 {
                     return action != nullptr && action->isEnabled();
@@ -537,7 +480,7 @@ void MenuBarTest::performs_menu_bar_scenario()
         QWidget* opened_widget = scenario.widget_lookup();
         QVERIFY2( opened_widget != nullptr, qPrintable( QStringLiteral( "Widget not found for action: %1" ).arg( QString::fromUtf8( scenario.text ) ) ) );
         QVERIFY2(
-            waitForCondition(
+            ClientTests::waitForCondition(
                 [opened_widget]()
                 {
                     return opened_widget->isVisible();
@@ -552,7 +495,7 @@ void MenuBarTest::performs_menu_bar_scenario()
 
         opened_widget->close();
         QVERIFY2(
-            waitForCondition(
+            ClientTests::waitForCondition(
                 [opened_widget]()
                 {
                     return !opened_widget->isVisible();

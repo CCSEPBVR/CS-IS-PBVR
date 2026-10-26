@@ -14,6 +14,8 @@
 #ifndef VIS_MODULE__UNSTRUCTURED_VOLUME_IMPORTER_H_INCLUDE
 #define VIS_MODULE__UNSTRUCTURED_VOLUME_IMPORTER_H_INCLUDE
 
+#include <vector>
+
 #include <vismodule/ImporterBase>
 #include <vismodule/ClassName>
 #include <vismodule/Module>
@@ -63,7 +65,15 @@ public:
     UnstructuredVolumeImporter( const std::string& filename, const int fileType, const int st, const int vl );
 
 #ifdef EXTEND_FILE_FORMAT 
-    UnstructuredVolumeImporter( const std::string& filename, const int fileType, const int targetCellType, const int st, const int vl );
+    UnstructuredVolumeImporter(
+        const std::string& filename,
+        const int fileType,
+        const int targetCellType,
+        const int st,
+        const int vl,
+        const std::string& cam_connectivity_file_path = std::string(),
+        const std::vector<std::string>& slac_mode_file_paths =
+            std::vector<std::string>() );
     void import( const kvs::ExtendedFileFormat::VtkXmlUnstructuredGrid& vtu , const int targetCellType ); // use InSitu OpenFOAM
 #endif
 

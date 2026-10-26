@@ -5,7 +5,6 @@
 #include <QEventLoop>
 #include <QDate>
 #include <QDir>
-#include <QElapsedTimer>
 #include <QFile>
 #include <QFileInfo>
 #include <QLineEdit>
@@ -20,6 +19,7 @@
 #include "../Widgets/ObjectEditor.h"
 #include "../Widgets/PlayBackControlToolBar.h"
 #include "TestAppContext.h"
+#include "TestCommon.h"
 #include "TestOutputPaths.h"
 
 #include <csignal>
@@ -38,72 +38,10 @@ constexpr int k_button_retry_count = 3;
 constexpr int k_button_retry_wait_ms = 500;
 kvs::qt::Application* g_test_app = nullptr;
 
-void logStep( const QString& message )
-{
-    qInfo().noquote() << message;
-}
-
-QString findRepoRootFrom( const QString& start_path )
-{
-    QDir dir( start_path );
-    while ( dir.exists() )
-    {
-        if ( dir.exists( QStringLiteral( ".git" ) ) &&
-             dir.exists( QStringLiteral( "Client" ) ) &&
-             dir.exists( QStringLiteral( "Server" ) ) )
-        {
-            return dir.absolutePath();
-        }
-
-        if ( !dir.cdUp() ) { break; }
-    }
-
-    return QString();
-}
 }
 
 namespace ClientTests
 {
-
-QString CommunicationUserInfoTest::envOrDefault( const char* name, const QString& fallback ) const
-{
-    const QString value = qEnvironmentVariable( name );
-    return value.isEmpty() ? ClientTests::configuredPath( name, repoRootPath(), fallback ) : value;
-}
-
-QString CommunicationUserInfoTest::repoRootPath() const
-{
-    const QString app_root = findRepoRootFrom( QCoreApplication::applicationDirPath() );
-    if ( !app_root.isEmpty() ) { return app_root; }
-
-    const QString cwd_root = findRepoRootFrom( QDir::currentPath() );
-    if ( !cwd_root.isEmpty() ) { return cwd_root; }
-
-    const QString source_root =
-        findRepoRootFrom( QFileInfo( QString::fromUtf8( __FILE__ ) ).absolutePath() );
-    if ( !source_root.isEmpty() ) { return source_root; }
-
-    return QDir::currentPath();
-}
-
-QString CommunicationUserInfoTest::sourceTreePath( const QString& relative_path_from_repo_root ) const
-{
-    return QDir::cleanPath( QDir( repoRootPath() ).absoluteFilePath( relative_path_from_repo_root ) );
-}
-
-bool CommunicationUserInfoTest::waitForCondition( const std::function<bool()>& condition, int timeout_ms, int interval_ms ) const
-{
-    QElapsedTimer timer;
-    timer.start();
-
-    while ( timer.elapsed() < timeout_ms )
-    {
-        if ( condition() ) { return true; }
-        QTest::qWait( interval_ms );
-    }
-
-    return condition();
-}
 
 void CommunicationUserInfoTest::startVideoRecording()
 {
@@ -175,24 +113,6 @@ void CommunicationUserInfoTest::stopVideoRecording()
 #endif
 }
 
-void CommunicationUserInfoTest::bringWindowToFront( MainWindow* window ) const
-{
-    QVERIFY2( window != nullptr, "MainWindow is null" );
-    window->show();
-    window->raise();
-    window->activateWindow();
-    QTest::qWait( k_window_settle_ms );
-}
-
-void CommunicationUserInfoTest::setLineEditText( QLineEdit* line_edit, const QString& text ) const
-{
-    QVERIFY2( line_edit != nullptr, "Target line edit was not found" );
-    line_edit->setFocus();
-    line_edit->clear();
-    QTest::keyClicks( line_edit, QDir::toNativeSeparators( text ) );
-    QCOMPARE( line_edit->text(), QDir::toNativeSeparators( text ) );
-}
-
 CommunicationUserInfoTest::ClientHandles CommunicationUserInfoTest::resolveClientHandles( MainWindow& window ) const
 {
     ClientHandles handles;
@@ -245,8 +165,8 @@ CommunicationUserInfoTest::ClientHandles CommunicationUserInfoTest::resolveClien
 
 void CommunicationUserInfoTest::ensureConnected( const ClientHandles& client ) const
 {
-    logStep( QStringLiteral( "ensureConnected: begin" ) );
-    bringWindowToFront( client.main_window );
+    ClientTests::logStep( QStringLiteral( "ensureConnected: begin" ) );
+    ClientTests::bringWindowToFront( client.main_window );
 
     const auto is_connected = [client]()
     {
@@ -257,14 +177,14 @@ void CommunicationUserInfoTest::ensureConnected( const ClientHandles& client ) c
 
     if ( is_connected() )
     {
-        logStep( QStringLiteral( "ensureConnected: already connected" ) );
+        ClientTests::logStep( QStringLiteral( "ensureConnected: already connected" ) );
         return;
     }
 
     for ( int attempt = 0; attempt < k_button_retry_count; ++attempt )
     {
         QVERIFY2(
-            waitForCondition(
+            ClientTests::waitForCondition(
                 [client]()
                 {
                     return client.connect_button->isEnabled();
@@ -273,13 +193,13 @@ void CommunicationUserInfoTest::ensureConnected( const ClientHandles& client ) c
                 100 ),
             "connectPushButton did not become enabled within the timeout" );
 
-        bringWindowToFront( client.main_window );
+        ClientTests::bringWindowToFront( client.main_window );
         QTest::mouseClick( client.connect_button, Qt::LeftButton );
 
-        if ( waitForCondition( is_connected, k_connect_timeout_ms, 100 ) )
+        if ( ClientTests::waitForCondition( is_connected, k_connect_timeout_ms, 100 ) )
         {
             QTest::qWait( k_short_wait_ms );
-            logStep( QStringLiteral( "ensureConnected: completed" ) );
+            ClientTests::logStep( QStringLiteral( "ensureConnected: completed" ) );
             return;
         }
 
@@ -291,9 +211,9 @@ void CommunicationUserInfoTest::ensureConnected( const ClientHandles& client ) c
 
 void CommunicationUserInfoTest::waitForObjectAndApply( const ClientHandles& client ) const
 {
-    logStep( QStringLiteral( "waitForObjectAndApply: waiting for ObjectEditor nameLineEdit" ) );
+    ClientTests::logStep( QStringLiteral( "waitForObjectAndApply: waiting for ObjectEditor nameLineEdit" ) );
     QVERIFY2(
-        waitForCondition(
+        ClientTests::waitForCondition(
             [client]()
             {
                 return !client.object_name_line_edit->text().trimmed().isEmpty();
@@ -310,7 +230,7 @@ void CommunicationUserInfoTest::waitForObjectAndApply( const ClientHandles& clie
 void CommunicationUserInfoTest::clickJumpAndWaitForCompletion( const ClientHandles& client ) const
 {
     QVERIFY2(
-        waitForCondition(
+        ClientTests::waitForCondition(
             [client]()
             {
                 return client.jump_button->isEnabled();
@@ -323,7 +243,7 @@ void CommunicationUserInfoTest::clickJumpAndWaitForCompletion( const ClientHandl
     QTest::qWait( k_short_wait_ms );
 
     QVERIFY2(
-        waitForCondition(
+        ClientTests::waitForCondition(
             [client]()
             {
                 return client.jump_button->isEnabled();
@@ -339,19 +259,19 @@ void CommunicationUserInfoTest::initTestCase()
 {
     const QString date_stamp = QDate::currentDate().toString( QStringLiteral( "yyyyMMdd" ) );
     const QString default_client_executable =
-        ClientTests::configuredPath( "PBVR_CLIENT_EXECUTABLE", repoRootPath() );
+        ClientTests::configuredPath( "PBVR_CLIENT_EXECUTABLE", ClientTests::repoRootPath() );
 
-    m_operator_client_executable = envOrDefault( "PBVR_OPERATOR_CLIENT_EXECUTABLE", default_client_executable );
-    m_guest_client_executable = envOrDefault( "PBVR_GUEST_CLIENT_EXECUTABLE", default_client_executable );
-    m_server_executable = envOrDefault(
+    m_operator_client_executable = ClientTests::envOrDefault( "PBVR_OPERATOR_CLIENT_EXECUTABLE", default_client_executable );
+    m_guest_client_executable = ClientTests::envOrDefault( "PBVR_GUEST_CLIENT_EXECUTABLE", default_client_executable );
+    m_server_executable = ClientTests::envOrDefault(
         "PBVR_SERVER_EXECUTABLE",
-        ClientTests::configuredPath( "PBVR_SERVER_EXECUTABLE", repoRootPath() ) );
-    m_volume_data_path = envOrDefault(
+        ClientTests::configuredPath( "PBVR_SERVER_EXECUTABLE", ClientTests::repoRootPath() ) );
+    m_volume_data_path = ClientTests::envOrDefault(
         "PBVR_VOLUME_DATA",
-        ClientTests::configuredPath( "SPX_VOLUME_DATA", repoRootPath() ) );
-    m_output_dir_path = envOrDefault(
+        ClientTests::configuredPath( "SPX_VOLUME_DATA", ClientTests::repoRootPath() ) );
+    m_output_dir_path = ClientTests::envOrDefault(
         "PBVR_TEST_OUTPUT_DIR",
-        ClientTests::datedTestOutputDir( repoRootPath(), date_stamp ) );
+        ClientTests::datedTestOutputDir( ClientTests::repoRootPath(), date_stamp ) );
     m_video_file_path = QDir( m_output_dir_path ).absoluteFilePath( QStringLiteral( "CommunicationUserInfoTest.mov" ) );
 
     QVERIFY2(
@@ -379,7 +299,7 @@ void CommunicationUserInfoTest::cleanupTestCase()
 
 void CommunicationUserInfoTest::performs_communication_user_info_scenario()
 {
-    logStep( QStringLiteral( "scenario: start" ) );
+    ClientTests::logStep( QStringLiteral( "scenario: start" ) );
     if ( g_test_app == nullptr )
     {
         g_test_app = pbvrTestApplication();
@@ -404,19 +324,19 @@ void CommunicationUserInfoTest::performs_communication_user_info_scenario()
     guest_client.object_editor->show();
 
     startVideoRecording();
-    logStep( QStringLiteral( "scenario: recording started" ) );
+    ClientTests::logStep( QStringLiteral( "scenario: recording started" ) );
 
-    bringWindowToFront( operator_client.main_window );
+    ClientTests::bringWindowToFront( operator_client.main_window );
     QTest::mouseClick( operator_client.connect_button, Qt::LeftButton );
     QTest::qWait( k_short_wait_ms );
     ensureConnected( operator_client );
 
-    bringWindowToFront( guest_client.main_window );
+    ClientTests::bringWindowToFront( guest_client.main_window );
     QTest::mouseClick( guest_client.connect_button, Qt::LeftButton );
     QTest::qWait( k_short_wait_ms );
     ensureConnected( guest_client );
 
-    bringWindowToFront( operator_client.main_window );
+    ClientTests::bringWindowToFront( operator_client.main_window );
     if ( !operator_client.remote_viz_client_server_radio->isChecked() )
     {
         QTest::mouseClick( operator_client.remote_viz_client_server_radio, Qt::LeftButton );
@@ -426,7 +346,7 @@ void CommunicationUserInfoTest::performs_communication_user_info_scenario()
     }
     QTest::qWait( k_short_wait_ms );
 
-    setLineEditText( operator_client.volume_data_path_line_edit, m_volume_data_path );
+    ClientTests::setLineEditText( operator_client.volume_data_path_line_edit, m_volume_data_path );
     QTest::qWait( k_short_wait_ms );
     QTest::mouseClick( operator_client.setting_apply_button, Qt::LeftButton );
 
@@ -434,7 +354,7 @@ void CommunicationUserInfoTest::performs_communication_user_info_scenario()
     clickJumpAndWaitForCompletion( operator_client );
 
     QVERIFY2(
-        waitForCondition(
+        ClientTests::waitForCondition(
             [operator_client, guest_client]()
             {
                 return !operator_client.id_line_edit->text().trimmed().isEmpty() &&
@@ -445,16 +365,16 @@ void CommunicationUserInfoTest::performs_communication_user_info_scenario()
             100 ),
         "Operator/guest IDs were not populated within the timeout" );
 
-    setLineEditText( operator_client.transfer_operator_id_line_edit, guest_client.id_line_edit->text().trimmed() );
+    ClientTests::setLineEditText( operator_client.transfer_operator_id_line_edit, guest_client.id_line_edit->text().trimmed() );
     QTest::mouseClick( operator_client.transfer_operator_apply_button, Qt::LeftButton );
     QTest::qWait( k_short_wait_ms );
 
-    setLineEditText( operator_client.chat_line_edit, QStringLiteral( "test" ) );
+    ClientTests::setLineEditText( operator_client.chat_line_edit, QStringLiteral( "test" ) );
     QTest::keyClick( operator_client.chat_line_edit, Qt::Key_Return );
     QTest::qWait( k_short_wait_ms );
 
     QVERIFY2(
-        waitForCondition(
+        ClientTests::waitForCondition(
             [guest_client]()
             {
                 return guest_client.text_browser->toPlainText().contains( QStringLiteral( "test" ) );
@@ -463,14 +383,14 @@ void CommunicationUserInfoTest::performs_communication_user_info_scenario()
             100 ),
         "Guest chat view did not receive the 'test' message within the timeout" );
 
-    bringWindowToFront( guest_client.main_window );
+    ClientTests::bringWindowToFront( guest_client.main_window );
     stopVideoRecording();
     operator_client.main_window->close();
     guest_client.main_window->close();
     QCoreApplication::sendPostedEvents( nullptr, 0 );
     QCoreApplication::processEvents( QEventLoop::AllEvents, k_window_settle_ms );
     QCoreApplication::sendPostedEvents( nullptr, QEvent::DeferredDelete );
-    logStep( QStringLiteral( "scenario: completed" ) );
+    ClientTests::logStep( QStringLiteral( "scenario: completed" ) );
 }
 
 } // namespace ClientTests

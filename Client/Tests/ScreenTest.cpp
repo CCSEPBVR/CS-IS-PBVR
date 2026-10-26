@@ -5,7 +5,6 @@
 #include <QCoreApplication>
 #include <QDate>
 #include <QDir>
-#include <QElapsedTimer>
 #include <QFile>
 #include <QFileInfo>
 #include <QLineEdit>
@@ -25,6 +24,7 @@
 #include "../Widgets/ObjectEditor.h"
 #include "../Widgets/PlayBackControlToolBar.h"
 #include "TestAppContext.h"
+#include "TestCommon.h"
 #include "TestOutputPaths.h"
 
 namespace
@@ -39,63 +39,6 @@ constexpr int k_post_connect_settle_ms = 1000;
 constexpr int k_screen_settle_ms = 3000;
 kvs::qt::Application* g_test_app = nullptr;
 
-QString findRepoRootFrom( const QString& start_path )
-{
-    QDir dir( start_path );
-    while ( dir.exists() )
-    {
-        if ( dir.exists( QStringLiteral( ".git" ) ) &&
-             dir.exists( QStringLiteral( "Client" ) ) &&
-             dir.exists( QStringLiteral( "Server" ) ) )
-        {
-            return dir.absolutePath();
-        }
-
-        if ( !dir.cdUp() ) { break; }
-    }
-
-    return QString();
-}
-}
-
-QString ScreenTest::envOrDefault( const char* name, const QString& fallback ) const
-{
-    const QString value = qEnvironmentVariable( name );
-    return value.isEmpty() ? ClientTests::configuredPath( name, repoRootPath(), fallback ) : value;
-}
-
-QString ScreenTest::repoRootPath() const
-{
-    const QString app_root = findRepoRootFrom( QCoreApplication::applicationDirPath() );
-    if ( !app_root.isEmpty() ) { return app_root; }
-
-    const QString cwd_root = findRepoRootFrom( QDir::currentPath() );
-    if ( !cwd_root.isEmpty() ) { return cwd_root; }
-
-    const QString source_root =
-        findRepoRootFrom( QFileInfo( QString::fromUtf8( __FILE__ ) ).absolutePath() );
-    if ( !source_root.isEmpty() ) { return source_root; }
-
-    return QDir::currentPath();
-}
-
-QString ScreenTest::sourceTreePath( const QString& relative_path_from_repo_root ) const
-{
-    return QDir::cleanPath( QDir( repoRootPath() ).absoluteFilePath( relative_path_from_repo_root ) );
-}
-
-bool ScreenTest::waitForCondition( const std::function<bool()>& condition, int timeout_ms, int interval_ms ) const
-{
-    QElapsedTimer timer;
-    timer.start();
-
-    while ( timer.elapsed() < timeout_ms )
-    {
-        if ( condition() ) { return true; }
-        QTest::qWait( interval_ms );
-    }
-
-    return condition();
 }
 
 void ScreenTest::dragMouse(
@@ -217,22 +160,22 @@ void ScreenTest::writeMarkdownReport() const
 void ScreenTest::initTestCase()
 {
     const QString date_stamp = QDate::currentDate().toString( QStringLiteral( "yyyyMMdd" ) );
-    m_client_executable = envOrDefault(
+    m_client_executable = ClientTests::envOrDefault(
         "PBVR_CLIENT_EXECUTABLE",
-        ClientTests::configuredPath( "PBVR_CLIENT_EXECUTABLE", repoRootPath() ) );
-    m_server_executable = envOrDefault(
+        ClientTests::configuredPath( "PBVR_CLIENT_EXECUTABLE", ClientTests::repoRootPath() ) );
+    m_server_executable = ClientTests::envOrDefault(
         "PBVR_SERVER_EXECUTABLE",
-        ClientTests::configuredPath( "PBVR_SERVER_EXECUTABLE", repoRootPath() ) );
-    m_server_target_wrapper_executable = envOrDefault(
+        ClientTests::configuredPath( "PBVR_SERVER_EXECUTABLE", ClientTests::repoRootPath() ) );
+    m_server_target_wrapper_executable = ClientTests::envOrDefault(
         "PBVR_SERVER_TARGET_WRAPPER_EXECUTABLE",
-        ClientTests::configuredPath( "PBVR_SERVER_TARGET_WRAPPER_EXECUTABLE", repoRootPath() ) );
-    m_volume_data_path = envOrDefault(
+        ClientTests::configuredPath( "PBVR_SERVER_TARGET_WRAPPER_EXECUTABLE", ClientTests::repoRootPath() ) );
+    m_volume_data_path = ClientTests::envOrDefault(
         "PBVR_VOLUME_DATA",
-        ClientTests::configuredPath( "SPX_VOLUME_DATA", repoRootPath() ) );
-    m_output_dir_path = envOrDefault(
+        ClientTests::configuredPath( "SPX_VOLUME_DATA", ClientTests::repoRootPath() ) );
+    m_output_dir_path = ClientTests::envOrDefault(
         "PBVR_TEST_OUTPUT_DIR",
-        ClientTests::datedTestOutputDir( repoRootPath(), date_stamp, QStringLiteral( "ScreenTest" ) ) );
-    m_screenshot_dir_path = envOrDefault(
+        ClientTests::datedTestOutputDir( ClientTests::repoRootPath(), date_stamp, QStringLiteral( "ScreenTest" ) ) );
+    m_screenshot_dir_path = ClientTests::envOrDefault(
         "PBVR_SCREENSHOT_DIR",
         QDir( m_output_dir_path ).absoluteFilePath( QStringLiteral( "img" ) ) );
     m_report_path = QDir( m_output_dir_path ).absoluteFilePath( QStringLiteral( "TestResult.md" ) );
@@ -313,7 +256,7 @@ void ScreenTest::performs_screen_interaction_scenario()
     for ( int attempt = 0; attempt < k_button_retry_count && !connected; ++attempt )
     {
         QVERIFY2(
-            waitForCondition(
+            ClientTests::waitForCondition(
                 [connect_button]()
                 {
                     return connect_button->isEnabled();
@@ -323,7 +266,7 @@ void ScreenTest::performs_screen_interaction_scenario()
             "connectPushButton did not become enabled within the timeout" );
 
         connect_button->click();
-        connected = waitForCondition(
+        connected = ClientTests::waitForCondition(
             is_connected,
             k_connect_timeout_ms,
             100 );
@@ -334,7 +277,7 @@ void ScreenTest::performs_screen_interaction_scenario()
     QVERIFY2( connected, "Client did not enter the connected state" );
     QTest::qWait( k_post_connect_settle_ms );
 
-    const bool user_id_received = waitForCondition(
+    const bool user_id_received = ClientTests::waitForCondition(
         [id_line_edit]()
         {
             return !id_line_edit->text().trimmed().isEmpty();
@@ -365,7 +308,7 @@ void ScreenTest::performs_screen_interaction_scenario()
     QVERIFY2( apply_button != nullptr, "ObjectEditor applyPushButton not found" );
     QVERIFY2( tree_view->model() != nullptr, "ObjectEditor model not found" );
 
-    const bool has_objects = waitForCondition(
+    const bool has_objects = ClientTests::waitForCondition(
         [tree_view]()
         {
             return tree_view->model() != nullptr && tree_view->model()->rowCount() > 0;
@@ -385,7 +328,7 @@ void ScreenTest::performs_screen_interaction_scenario()
         Qt::NoModifier,
         tree_view->visualRect( first_row ).center() );
 
-    const bool name_loaded = waitForCondition(
+    const bool name_loaded = ClientTests::waitForCondition(
         [name_line_edit]()
         {
             return !name_line_edit->text().trimmed().isEmpty();
@@ -400,7 +343,7 @@ void ScreenTest::performs_screen_interaction_scenario()
     QVERIFY2( jump_button != nullptr, "m_jump_push_button not found" );
     QTest::mouseClick( jump_button, Qt::LeftButton );
 
-    const bool jump_enabled = waitForCondition(
+    const bool jump_enabled = ClientTests::waitForCondition(
         [jump_button]()
         {
             return jump_button->isEnabled();

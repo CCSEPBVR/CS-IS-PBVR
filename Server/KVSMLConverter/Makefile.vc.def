@@ -154,6 +154,7 @@ VTK_LIBRARY_OPTION = /LIBPATH:"$(VTK_LIB_PATH)"
 VTK_LINK_LIBRARY = \
 vtksys-$(VTK_VERSION)d.lib \
 vtkCommonCore-$(VTK_VERSION)d.lib \
+vtkCommonMisc-$(VTK_VERSION)d.lib \
 vtkCommonExecutionModel-$(VTK_VERSION)d.lib \
 vtkCommonDataModel-$(VTK_VERSION)d.lib \
 vtkFiltersCore-$(VTK_VERSION)d.lib \
@@ -183,6 +184,7 @@ vtkParallelMPI-$(VTK_VERSION)d.lib
 VTK_LINK_LIBRARY = \
 vtksys-$(VTK_VERSION).lib \
 vtkCommonCore-$(VTK_VERSION).lib \
+vtkCommonMisc-$(VTK_VERSION).lib \
 vtkCommonExecutionModel-$(VTK_VERSION).lib \
 vtkCommonDataModel-$(VTK_VERSION).lib \
 vtkFiltersCore-$(VTK_VERSION).lib \

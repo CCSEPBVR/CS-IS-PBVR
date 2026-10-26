@@ -48,7 +48,17 @@ inline vismodule::VolumeObjectBase* CreateVolumeData
     {
         std::string input_file = mvp.m_file_path;
         mvp.setFilePath( input_file, steps, subvols );
-        vismodule::VolumeObjectBase* volume = new vismodule::UnstructuredVolumeImporter( input_file, mvp.m_file_type, mvp.m_elem_type, steps, subvols );
+        std::vector<std::string> slac_modes = mvp.m_slac_mode_file_paths;
+        const NetcdfStepSource source = mvp.netcdfStepSource( steps );
+        if ( !source.slac_mode_path.empty() ) slac_modes = { source.slac_mode_path };
+        vismodule::VolumeObjectBase* volume = new vismodule::UnstructuredVolumeImporter(
+            input_file,
+            mvp.m_file_type,
+            mvp.m_elem_type,
+            steps,
+            subvols,
+            mvp.m_cam_connectivity_file_path,
+            slac_modes );
         volume->setMinMaxValues( mvp.m_min_value, mvp.m_max_value );
         volume->setMinMaxObjectCoords( mvp.m_min_object_coord, mvp.m_max_object_coord );
         volume->setMinMaxExternalCoords( mvp.m_min_object_coord, mvp.m_max_object_coord );

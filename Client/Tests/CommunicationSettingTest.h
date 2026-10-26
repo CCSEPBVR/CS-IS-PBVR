@@ -4,7 +4,6 @@
 #include <QObject>
 #include <QProcess>
 #include <QString>
-#include <functional>
 
 class QLineEdit;
 class QPushButton;
@@ -49,14 +48,8 @@ private slots:
     void performs_communication_setting_scenario();
 
 private:
-    QString envOrDefault( const char* name, const QString& fallback ) const;
-    QString repoRootPath() const;
-    QString sourceTreePath( const QString& relative_path_from_repo_root ) const;
-    bool waitForCondition( const std::function<bool()>& condition, int timeout_ms, int interval_ms = 50 ) const;
     void startVideoRecording();
     void stopVideoRecording();
-    void bringWindowToFront( MainWindow* window ) const;
-    void setLineEditText( QLineEdit* line_edit, const QString& text ) const;
     ClientHandles resolveClientHandles( MainWindow& window ) const;
     void ensureConnected( const ClientHandles& client ) const;
     void ensureDisconnected( const ClientHandles& client ) const;

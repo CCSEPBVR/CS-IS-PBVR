@@ -5,7 +5,6 @@
 #include <QProcess>
 #include <QString>
 #include <QVector>
-#include <functional>
 
 class QAction;
 class QComboBox;
@@ -98,16 +97,10 @@ private slots:
     void performs_plot_over_line_editor_scenario();
 
 private:
-    QString envOrDefault( const char* name, const QString& fallback ) const;
-    QString repoRootPath() const;
-    QString sourceTreePath( const QString& relative_path_from_repo_root ) const;
     QString serverProcessSummary() const;
-    bool waitForCondition( const std::function<bool()>& condition, int timeout_ms, int interval_ms = 50 ) const;
-    void bringWindowToFront( MainWindow* window ) const;
     void bringGlyphEditorToFront( GlyphEditor* editor ) const;
     void bringPlotOverLineEditorToFront( PlotOverLineEditor* editor ) const;
     void bringVolumeTransformToFront( VolumeTransform* editor ) const;
-    void setLineEditText( QLineEdit* line_edit, const QString& text ) const;
     void setDoubleSpinBoxValue( QDoubleSpinBox* spin_box, double value ) const;
     void setSpinBoxValue( QSpinBox* spin_box, int value ) const;
     void setGroupBoxChecked( QGroupBox* group_box, bool checked, const char* object_name ) const;

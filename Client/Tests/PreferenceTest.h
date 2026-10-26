@@ -3,7 +3,6 @@
 
 #include <QObject>
 #include <QString>
-#include <functional>
 #include <vector>
 
 class QComboBox;
@@ -27,12 +26,7 @@ private slots:
     void performs_preference_scenario();
 
 private:
-    QString envOrDefault( const char* name, const QString& fallback ) const;
-    QString repoRootPath() const;
-    QString sourceTreePath( const QString& relative_path_from_repo_root ) const;
-    bool waitForCondition( const std::function<bool()>& condition, int timeout_ms, int interval_ms = 50 ) const;
     void clickButtonAndWait( QPushButton* button, int wait_ms ) const;
-    void setLineEditText( QLineEdit* line_edit, const QString& text ) const;
     void setSpinBoxValue( QSpinBox* spin_box, int value ) const;
     void setGroupBoxChecked( QGroupBox* group_box, bool checked ) const;
     void selectComboBoxItem( QComboBox* combo_box, int index ) const;

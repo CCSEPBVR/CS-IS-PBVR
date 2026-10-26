@@ -21,6 +21,12 @@ inline constexpr std::string_view VolumeDataFilePath        = "VolumeDataFilePat
 
 // Transfer Function File Path
 inline constexpr std::string_view TransferFunctionFilePath  = "TransferFunctionFilePath";
+inline constexpr std::string_view CamConnectivityFilePath   = "CamConnectivityFilePath";
+inline constexpr std::string_view SlacModeFilePattern       = "SlacModeFilePattern";
+inline constexpr std::string_view RequestId                 = "RequestId";
+inline constexpr std::string_view Status                    = "Status";
+inline constexpr std::string_view Message                   = "Message";
+inline constexpr std::string_view RequiredFileType          = "RequiredFileType";
 
 // Initialize Parameter
 inline constexpr std::string_view TransferFunctionParameter = "TransferFunctionParameter";
@@ -212,6 +218,16 @@ inline constexpr std::string_view PlotOverTimeParameter         = "PlotOverTimeP
 inline constexpr std::string_view RequestDataAt                 = "RequestDataAt";
 inline constexpr std::string_view TimeStepControlParameter      = "TimeStepControlParameter";
 inline constexpr std::string_view LatestTimeStep                = "LatestTimeStep";
+}
+
+namespace NetcdfStatus
+{
+inline constexpr std::string_view NeedsCamConnectivity = "NeedsCamConnectivity";
+inline constexpr std::string_view NeedsSlacModes       = "NeedsSlacModes";
+inline constexpr std::string_view ReadyVolume          = "ReadyVolume";
+inline constexpr std::string_view SurfaceOnly          = "SurfaceOnly";
+inline constexpr std::string_view Unsupported          = "Unsupported";
+inline constexpr std::string_view Error                = "Error";
 }
 }
 #endif // JSONKEYS_H

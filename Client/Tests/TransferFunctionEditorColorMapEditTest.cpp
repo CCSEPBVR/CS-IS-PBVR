@@ -6,7 +6,6 @@
 #include <QDate>
 #include <QDialog>
 #include <QDir>
-#include <QElapsedTimer>
 #include <QFile>
 #include <QFileInfo>
 #include <QGuiApplication>
@@ -34,6 +33,7 @@
 #include "../Widgets/PlayBackControlToolBar.h"
 #include "../Widgets/TransferFunctionEditor.h"
 #include "TestAppContext.h"
+#include "TestCommon.h"
 #include "TestOutputPaths.h"
 
 namespace
@@ -49,76 +49,10 @@ constexpr int k_after_jump_wait_ms = 3000;
 constexpr int k_capture_settle_ms = 300;
 kvs::qt::Application* g_test_app = nullptr;
 
-void logStep( const QString& message )
-{
-    qInfo().noquote() << message;
-}
-
-QString findRepoRootFrom( const QString& start_path )
-{
-    QDir dir( start_path );
-    while ( dir.exists() )
-    {
-        if ( dir.exists( QStringLiteral( ".git" ) ) &&
-             dir.exists( QStringLiteral( "Client" ) ) &&
-             dir.exists( QStringLiteral( "Server" ) ) )
-        {
-            return dir.absolutePath();
-        }
-        if ( !dir.cdUp() ) { break; }
-    }
-    return QString();
-}
 }
 
 namespace TransferFunctionEditorTest
 {
-
-QString ColorMapEditTest::envOrDefault( const char* name, const QString& fallback ) const
-{
-    const QString value = qEnvironmentVariable( name );
-    return value.isEmpty() ? ClientTests::configuredPath( name, repoRootPath(), fallback ) : value;
-}
-
-QString ColorMapEditTest::repoRootPath() const
-{
-    const QString app_root = findRepoRootFrom( QCoreApplication::applicationDirPath() );
-    if ( !app_root.isEmpty() ) { return app_root; }
-    const QString cwd_root = findRepoRootFrom( QDir::currentPath() );
-    if ( !cwd_root.isEmpty() ) { return cwd_root; }
-    const QString source_root = findRepoRootFrom( QFileInfo( QString::fromUtf8( __FILE__ ) ).absolutePath() );
-    if ( !source_root.isEmpty() ) { return source_root; }
-    return QDir::currentPath();
-}
-
-QString ColorMapEditTest::sourceTreePath( const QString& relative_path_from_repo_root ) const
-{
-    return QDir::cleanPath( QDir( repoRootPath() ).absoluteFilePath( relative_path_from_repo_root ) );
-}
-
-bool ColorMapEditTest::waitForCondition(
-    const std::function<bool()>& condition,
-    int timeout_ms,
-    int interval_ms ) const
-{
-    QElapsedTimer timer;
-    timer.start();
-    while ( timer.elapsed() < timeout_ms )
-    {
-        if ( condition() ) { return true; }
-        QTest::qWait( interval_ms );
-    }
-    return condition();
-}
-
-void ColorMapEditTest::bringWindowToFront( MainWindow* window ) const
-{
-    QVERIFY2( window != nullptr, "MainWindow is null" );
-    window->show();
-    window->raise();
-    window->activateWindow();
-    QTest::qWait( k_window_settle_ms );
-}
 
 void ColorMapEditTest::bringTransferFunctionEditorToFront( TransferFunctionEditor* editor ) const
 {
@@ -137,15 +71,6 @@ void ColorMapEditTest::bringDialogToFront( QDialog* dialog ) const
     dialog->raise();
     dialog->activateWindow();
     QTest::qWait( k_window_settle_ms );
-}
-
-void ColorMapEditTest::setLineEditText( QLineEdit* line_edit, const QString& text ) const
-{
-    QVERIFY2( line_edit != nullptr, "Target line edit was not found" );
-    line_edit->setFocus();
-    line_edit->clear();
-    QTest::keyClicks( line_edit, text );
-    QCOMPARE( line_edit->text(), text );
 }
 
 void ColorMapEditTest::saveScreenshot( const QString& file_name, const QString& caption )
@@ -198,7 +123,7 @@ void ColorMapEditTest::writeMarkdownReport() const
 void ColorMapEditTest::markStepCompleted( const QString& description )
 {
     m_steps.push_back( { description, true } );
-    logStep( description );
+    ClientTests::logStep( description );
 }
 
 ColorMapEditTest::ClientHandles ColorMapEditTest::resolveClientHandles( MainWindow& window ) const
@@ -250,13 +175,13 @@ ColorMapEditTest::ClientHandles ColorMapEditTest::resolveClientHandles( MainWind
 
 void ColorMapEditTest::connectClient( const ClientHandles& client ) const
 {
-    bringWindowToFront( client.main_window );
-    QVERIFY2( waitForCondition( [client]() { return client.connect_button->isEnabled(); }, k_connect_timeout_ms, 100 ),
+    ClientTests::bringWindowToFront( client.main_window );
+    QVERIFY2( ClientTests::waitForCondition( [client]() { return client.connect_button->isEnabled(); }, k_connect_timeout_ms, 100 ),
               "connectPushButton did not become enabled within the timeout" );
     QTest::mouseClick( client.connect_button, Qt::LeftButton );
     QTest::qWait( k_short_wait_ms );
     QVERIFY2(
-        waitForCondition(
+        ClientTests::waitForCondition(
             [client]()
             {
                 return client.disconnect_button->isEnabled() &&
@@ -270,7 +195,7 @@ void ColorMapEditTest::connectClient( const ClientHandles& client ) const
 
 void ColorMapEditTest::configureRemoteVisualization( const ClientHandles& client ) const
 {
-    bringWindowToFront( client.main_window );
+    ClientTests::bringWindowToFront( client.main_window );
     if ( !client.remote_viz_client_server_radio->isChecked() )
     {
         QTest::mouseClick( client.remote_viz_client_server_radio, Qt::LeftButton );
@@ -278,7 +203,7 @@ void ColorMapEditTest::configureRemoteVisualization( const ClientHandles& client
     QVERIFY2( client.remote_viz_client_server_radio->isChecked(), "remoteVizClientServerRadioButton was not checked" );
     QTest::qWait( k_short_wait_ms );
 
-    setLineEditText( client.volume_data_path_line_edit, QDir::toNativeSeparators( m_volume_data_path ) );
+    ClientTests::setLineEditText( client.volume_data_path_line_edit, QDir::toNativeSeparators( m_volume_data_path ) );
     QTest::mouseClick( client.setting_apply_button, Qt::LeftButton );
     QTest::qWait( k_short_wait_ms );
 }
@@ -286,7 +211,7 @@ void ColorMapEditTest::configureRemoteVisualization( const ClientHandles& client
 void ColorMapEditTest::waitForObjectAndApply( const ClientHandles& client ) const
 {
     QVERIFY2(
-        waitForCondition(
+        ClientTests::waitForCondition(
             [client]()
             {
                 return client.object_apply_button->isEnabled() &&
@@ -301,11 +226,11 @@ void ColorMapEditTest::waitForObjectAndApply( const ClientHandles& client ) cons
 
 void ColorMapEditTest::clickJumpAndWaitForCompletion( const ClientHandles& client ) const
 {
-    QVERIFY2( waitForCondition( [client]() { return client.jump_button->isEnabled(); }, k_jump_button_enable_timeout_ms, 200 ),
+    QVERIFY2( ClientTests::waitForCondition( [client]() { return client.jump_button->isEnabled(); }, k_jump_button_enable_timeout_ms, 200 ),
               "m_jump_push_button did not become enabled within the timeout" );
     QTest::mouseClick( client.jump_button, Qt::LeftButton );
     QTest::qWait( k_short_wait_ms );
-    QVERIFY2( waitForCondition( [client]() { return client.jump_button->isEnabled(); }, k_jump_button_enable_timeout_ms, 200 ),
+    QVERIFY2( ClientTests::waitForCondition( [client]() { return client.jump_button->isEnabled(); }, k_jump_button_enable_timeout_ms, 200 ),
               "m_jump_push_button did not become enabled again within the timeout" );
     QTest::qWait( k_after_jump_wait_ms );
 }
@@ -313,7 +238,7 @@ void ColorMapEditTest::clickJumpAndWaitForCompletion( const ClientHandles& clien
 QDialog* ColorMapEditTest::waitForColorMapEditor() const
 {
     QDialog* dialog = nullptr;
-    const bool found = waitForCondition(
+    const bool found = ClientTests::waitForCondition(
         [&dialog]()
         {
             for ( QWidget* widget : QApplication::topLevelWidgets() )
@@ -421,7 +346,7 @@ void ColorMapEditTest::selectDrawingColor( QDialog* dialog, const QColor& color 
         {
             QColorDialog* color_dialog = nullptr;
             QVERIFY2(
-                waitForCondition(
+                ClientTests::waitForCondition(
                     [&color_dialog]()
                     {
                         for ( QWidget* widget : QApplication::topLevelWidgets() )
@@ -573,11 +498,11 @@ void ColorMapEditTest::runColorMapEditorScenario( const ClientHandles& client )
             auto* red_line_edit = dialog->findChild<QLineEdit*>( "redLineEdit" );
             auto* green_line_edit = dialog->findChild<QLineEdit*>( "greenLineEdit" );
             auto* blue_line_edit = dialog->findChild<QLineEdit*>( "blueLineEdit" );
-            setLineEditText( red_line_edit, QStringLiteral( "sin(x)" ) );
+            ClientTests::setLineEditText( red_line_edit, QStringLiteral( "sin(x)" ) );
             saveScreenshot( QStringLiteral( "15_expression_red_sin.png" ), QStringLiteral( "Redの数式にsin(x)を入力した状態" ) );
-            setLineEditText( green_line_edit, QStringLiteral( "cos(x)" ) );
+            ClientTests::setLineEditText( green_line_edit, QStringLiteral( "cos(x)" ) );
             saveScreenshot( QStringLiteral( "16_expression_green_cos.png" ), QStringLiteral( "Greenの数式にcos(x)を入力した状態" ) );
-            setLineEditText( blue_line_edit, QStringLiteral( "tan(x)" ) );
+            ClientTests::setLineEditText( blue_line_edit, QStringLiteral( "tan(x)" ) );
             saveScreenshot( QStringLiteral( "17_expression_blue_tan.png" ), QStringLiteral( "Blueの数式にtan(x)を入力した状態" ) );
             markStepCompleted( QStringLiteral( "ColorMapEditor.ui: expressionページでRed/Green/Blueの数式を編集しました。" ) );
 
@@ -619,16 +544,16 @@ void ColorMapEditTest::runColorMapEditorScenario( const ClientHandles& client )
 void ColorMapEditTest::initTestCase()
 {
     const QString date_stamp = QDate::currentDate().toString( QStringLiteral( "yyyyMMdd" ) );
-    m_client_executable = envOrDefault(
+    m_client_executable = ClientTests::envOrDefault(
         "PBVR_CLIENT_EXECUTABLE",
-        ClientTests::configuredPath( "PBVR_CLIENT_EXECUTABLE", repoRootPath() ) );
-    m_server_executable = envOrDefault( "PBVR_SERVER_EXECUTABLE", ClientTests::configuredPath( "PBVR_SERVER_EXECUTABLE", repoRootPath() ) );
-    m_server_target_wrapper_executable = envOrDefault( "PBVR_SERVER_TARGET_WRAPPER_EXECUTABLE", ClientTests::configuredPath( "PBVR_SERVER_TARGET_WRAPPER_EXECUTABLE", repoRootPath() ) );
-    m_volume_data_path = envOrDefault( "PBVR_VOLUME_DATA", ClientTests::configuredPath( "SPX_VOLUME_DATA", repoRootPath() ) );
-    m_output_dir_path = envOrDefault(
+        ClientTests::configuredPath( "PBVR_CLIENT_EXECUTABLE", ClientTests::repoRootPath() ) );
+    m_server_executable = ClientTests::envOrDefault( "PBVR_SERVER_EXECUTABLE", ClientTests::configuredPath( "PBVR_SERVER_EXECUTABLE", ClientTests::repoRootPath() ) );
+    m_server_target_wrapper_executable = ClientTests::envOrDefault( "PBVR_SERVER_TARGET_WRAPPER_EXECUTABLE", ClientTests::configuredPath( "PBVR_SERVER_TARGET_WRAPPER_EXECUTABLE", ClientTests::repoRootPath() ) );
+    m_volume_data_path = ClientTests::envOrDefault( "PBVR_VOLUME_DATA", ClientTests::configuredPath( "SPX_VOLUME_DATA", ClientTests::repoRootPath() ) );
+    m_output_dir_path = ClientTests::envOrDefault(
         "PBVR_TEST_OUTPUT_DIR",
-        ClientTests::datedTestOutputDir( repoRootPath(), date_stamp, QStringLiteral( "TransferFunctionEditorTest/ColorMapEditTest" ) ) );
-    m_screenshot_dir_path = envOrDefault( "PBVR_SCREENSHOT_DIR", QDir( m_output_dir_path ).absoluteFilePath( QStringLiteral( "img" ) ) );
+        ClientTests::datedTestOutputDir( ClientTests::repoRootPath(), date_stamp, QStringLiteral( "TransferFunctionEditorTest/ColorMapEditTest" ) ) );
+    m_screenshot_dir_path = ClientTests::envOrDefault( "PBVR_SCREENSHOT_DIR", QDir( m_output_dir_path ).absoluteFilePath( QStringLiteral( "img" ) ) );
     m_report_path = QDir( m_output_dir_path ).absoluteFilePath( QStringLiteral( "TestResult.md" ) );
     m_test_succeeded = false;
     m_palette_drag_verified = false;

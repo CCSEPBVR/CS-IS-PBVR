@@ -20,6 +20,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <vector>
 
 #include <kvs/FileFormatBase>
 
@@ -28,13 +29,75 @@ namespace kvs
 namespace ExtendedFileFormat
 {
 
+/**
+ * @brief KVSが識別できるNetCDFデータ形式。
+ */
+enum class NetcdfFormatType
+{
+    Unknown,
+    Gearn,
+    Generic,
+    Cf,
+    Pop,
+    Ugrid,
+    Cam,
+    Mpas,
+    Slac
+};
+
 enum class NetcdfGridType
 {
     Unknown,
     ImageData,
     RectilinearGrid,
     StructuredGrid,
-    UnstructuredGrid
+    UnstructuredGrid,
+    PolyData
+};
+
+/**
+ * @brief NetCDFファイルがデータセット内で担う役割。
+ */
+enum class NetcdfInputRole
+{
+    Standard,
+    CamPoints,
+    CamConnectivity,
+    SlacMesh,
+    SlacMode
+};
+
+/**
+ * @brief NetCDFデータの読み込み条件。
+ */
+struct NetcdfReadOptions
+{
+    std::string cam_connectivity_filename;
+    std::vector<std::string> slac_mode_filenames;
+
+    bool has_requested_time = false;
+    double requested_time = 0.0;
+};
+
+/**
+ * @brief NetCDFの検査または読み込みで報告される診断の重大度。
+ */
+enum class NetcdfDiagnosticSeverity
+{
+    Info,
+    Warning,
+    Error
+};
+
+/**
+ * @brief NetCDFの検査または読み込みで得られた診断情報。
+ */
+struct NetcdfDiagnostic
+{
+    NetcdfDiagnosticSeverity severity = NetcdfDiagnosticSeverity::Error;
+    std::string code;
+    std::string message;
+    std::string path;
 };
 
 /**
@@ -51,6 +114,25 @@ public:
      */
     bool hasVariable( const std::string& name, const std::string& dimensions ) const;
 
+    /// 指定した名前の変数が存在するかを返す。
+    bool hasVariable( const std::string& name ) const;
+
+    /// 指定した名前の次元が存在するかを返す。
+    bool hasDimension( const std::string& name ) const;
+
+    /// 変数のNetCDF型を返す。存在しない場合はNC_NAT相当の値を返す。
+    int variableType( const std::string& name ) const;
+
+    /// 変数の各次元長を宣言順に返す。存在しない場合は空配列を返す。
+    const std::vector<std::size_t>& variableShape( const std::string& name ) const;
+
+    /// 変数が持つ文字列属性を返す。存在しない場合は空文字列を返す。
+    std::string variableAttribute( const std::string& variable,
+                                   const std::string& attribute ) const;
+
+    /// グローバル文字列属性を返す。存在しない場合は空文字列を返す。
+    std::string globalAttribute( const std::string& attribute ) const;
+
     /**
      * @brief 変数名と次元文字列の対応表を返す。
      * @return 変数メタデータの連想配列。
@@ -62,6 +144,11 @@ public:
 
 private:
     std::map<std::string, std::string> m_variable_dimensions;
+    std::map<std::string, int> m_variable_types;
+    std::map<std::string, std::vector<std::size_t>> m_variable_shapes;
+    std::map<std::string, std::size_t> m_dimensions;
+    std::map<std::string, std::string> m_global_attributes;
+    std::map<std::string, std::map<std::string, std::string>> m_variable_attributes;
 
     friend class Netcdf;
 };
@@ -73,7 +160,18 @@ struct NetcdfFileInfo
 {
     std::string path;
     std::string format_name;
+    NetcdfFormatType format_type = NetcdfFormatType::Unknown;
     NetcdfGridType grid_type = NetcdfGridType::Unknown;
+    NetcdfInputRole input_role = NetcdfInputRole::Standard;
+};
+
+/**
+ * @brief SLACメッシュに対応する1時刻分のmodeファイル情報。
+ */
+struct SlacTimeStepFile
+{
+    std::string path;
+    double time = 0.0;
 };
 
 /**
@@ -86,12 +184,27 @@ public:
 
     /// 対応するデータ形式名を返す。
     virtual const char* name() const = 0;
+    /// 対応するデータ形式種別を返す。
+    virtual NetcdfFormatType formatType() const = 0;
     /// 読み込み後に生成される格子種別を返す。
     virtual NetcdfGridType gridType() const = 0;
     /// メタデータが対応形式の条件を満たすかを判定する。
     virtual bool matches( const NetcdfMetadata& metadata ) const = 0;
     /// NetCDFファイルを読み込み、対応するKVSファイル形式オブジェクトを返す。
     virtual std::shared_ptr<kvs::FileFormatBase> read( const std::string& filename ) const = 0;
+    /// 読み込み条件を指定してNetCDFファイルを読み込む。
+    virtual std::shared_ptr<kvs::FileFormatBase> read( const std::string& filename, const NetcdfReadOptions& options ) const
+    {
+        (void)options;
+        return this->read( filename );
+    }
+    /// 形式が公開する内部時刻を取得する。
+    virtual bool timeSteps( const std::string&, const NetcdfReadOptions&,
+                            std::vector<double>&, std::string& error ) const
+    {
+        error = "This NetCDF format does not expose internal time steps";
+        return false;
+    }
 };
 
 /**
@@ -107,10 +220,13 @@ public:
      * @param filename 入力ファイル名。
      */
     explicit Netcdf( const std::string& filename );
+    Netcdf( const std::string& filename, const NetcdfReadOptions& options );
 
 public:
     /// NetCDFファイルを読み込む。
     bool read( const std::string& filename ) override;
+    /// 読み込み条件を指定してNetCDFファイルを読み込む。
+    bool read( const std::string& filename, const NetcdfReadOptions& options );
     /// NetCDFファイルへ書き出す（未実装）。
     bool write( const std::string& filename ) override;
 
@@ -118,6 +234,8 @@ public:
     const std::shared_ptr<kvs::FileFormatBase>& format() const { return m_format; }
     /// 判別されたデータ形式名を返す。
     const std::string& formatName() const { return m_format_name; }
+    /// 判別されたデータ形式種別を返す。
+    NetcdfFormatType formatType() const { return m_format_type; }
     /// 判別された格子種別を返す。
     NetcdfGridType gridType() const { return m_grid_type; }
 
@@ -129,15 +247,36 @@ public:
      */
     static bool Probe( const std::string& filename, NetcdfFileInfo& info );
 
-private:
-    /// NetCDFファイルから変数メタデータを読み込む。
+    /// NetCDFファイルから形式判定用メタデータを読み込む。
     static bool ReadMetadata( const std::string& filename, NetcdfMetadata& metadata );
+
+    /**
+     * @brief NetCDF形式が公開する内部時刻を取得する。
+     * @param filename 入力ファイル名。
+     * @param options 補助ファイルなどの読み込み条件。
+     * @param time_steps 取得した物理時刻の格納先。
+     * @param error 失敗理由の格納先。
+     * @return 内部時刻の取得に成功した場合はtrue、それ以外はfalse。
+     */
+    static bool TimeSteps( const std::string& filename, const NetcdfReadOptions& options,
+                           std::vector<double>& time_steps, std::string& error );
+
+    /**
+     * @brief SLAC mode群を検証し、物理mode値の昇順に解決する。
+     */
+    static bool ResolveSlacModes( const std::string& mesh_filename,
+                                  const std::vector<std::string>& mode_filenames,
+                                  std::vector<SlacTimeStepFile>& modes,
+                                  std::string& error );
+
+private:
     /// メタデータに適合する形式アダプターを選択する。
     static const NetcdfFormatAdapter* SelectAdapter( const NetcdfMetadata& metadata );
 
 private:
     std::shared_ptr<kvs::FileFormatBase> m_format;
     std::string m_format_name;
+    NetcdfFormatType m_format_type = NetcdfFormatType::Unknown;
     NetcdfGridType m_grid_type = NetcdfGridType::Unknown;
 };
 } // namespace ExtendedFileFormat

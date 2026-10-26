@@ -103,7 +103,6 @@ LINK_LIBRARY += -lkvsSupportExtendedFileFormat \
 -lvtkFiltersExtraction-$(VTK_VERSION) \
 -lvtkFiltersGeometry-$(VTK_VERSION) \
 -lvtkFiltersParallel-$(VTK_VERSION) \
--lvtkCommonExecutionModel-$(VTK_VERSION) \
 -lvtkFiltersCore-$(VTK_VERSION) \
 -lvtkIOCore-$(VTK_VERSION) \
 -lvtkIOGeometry-$(VTK_VERSION) \
@@ -114,6 +113,7 @@ LINK_LIBRARY += -lkvsSupportExtendedFileFormat \
 -lvtkIOParallel-$(VTK_VERSION) \
 -lvtkIOLegacy-$(VTK_VERSION) \
 -lvtkIOXML-$(VTK_VERSION) \
+-lvtkCommonExecutionModel-$(VTK_VERSION) \
 -lvtkCommonDataModel-$(VTK_VERSION) \
 -lvtkIOXMLParser-$(VTK_VERSION) \
 -lvtkCommonTransforms-$(VTK_VERSION) \

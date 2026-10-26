@@ -20,6 +20,12 @@
 #include <utility>
 #include <vector>
 
+#ifdef _WIN32
+#include <filesystem>
+#else
+#include <sys/stat.h>
+#endif
+
 #include "Exporter/StructuredVolumeObjectExporter.h"
 #include "Exporter/UnstructuredVolumeObjectExporter.h"
 #include "FileFormat/NetCDF/Netcdf.h"
@@ -43,8 +49,6 @@
 #include <vtkPointData.h>
 #include <vtkStringArray.h>
 
-#include <sys/stat.h>
-
 /**
  * @brief 時系列変換の事前検証で取得したNetCDFファイルの情報。
  */
@@ -53,6 +57,7 @@ struct SequencedNetcdfFile
     std::string path; ///< 入力ファイルのパス。
     std::string format_name; ///< NetCDFアダプターが判定した形式名。
     cvt::NetcdfGridType grid_type = cvt::NetcdfGridType::Unknown; ///< VTK格子形式。
+    cvt::NetcdfInputRole input_role = cvt::NetcdfInputRole::Standard; ///< 入力の役割。
 };
 
 struct NetcdfDataSignature
@@ -61,6 +66,7 @@ struct NetcdfDataSignature
     vtkIdType number_of_cells = 0;
     int cell_type = -1;
     int component_count = 0;
+    std::vector<std::pair<std::string, int>> point_arrays;
     cvt::NetcdfGridType grid_type = cvt::NetcdfGridType::Unknown;
 };
 
@@ -88,12 +94,36 @@ bool ExpandSlacModeInput( const std::string& input, std::vector<std::string>& pa
             candidates.push_back( names->GetValue( i ) );
     }
 
+#ifndef _WIN32
     std::set<std::pair<dev_t, ino_t>> identities;
+#endif
     for ( const auto& candidate : candidates )
     {
+#ifdef _WIN32
+        std::error_code filesystem_error;
+        if ( !std::filesystem::is_regular_file( candidate, filesystem_error ) ||
+             filesystem_error )
+        {
+            continue;
+        }
+
+        bool is_duplicate = false;
+        for ( const auto& path : paths )
+        {
+            filesystem_error.clear();
+            if ( std::filesystem::equivalent( candidate, path, filesystem_error ) &&
+                 !filesystem_error )
+            {
+                is_duplicate = true;
+                break;
+            }
+        }
+        if ( is_duplicate )
+#else
         struct stat status = {};
         if ( ::stat( candidate.c_str(), &status ) != 0 || !S_ISREG( status.st_mode ) ) continue;
         if ( !identities.emplace( status.st_dev, status.st_ino ).second )
+#endif
         {
             error = "The SLAC mode input contains duplicate paths to the same file: " +
                     candidate;
@@ -126,7 +156,7 @@ bool InspectNetcdfData( cvt::Netcdf& input, NetcdfDataSignature& signature,
     vtkDataSet* data = GetNetcdfDataSet( input );
     if ( !data || data->GetNumberOfPoints() <= 0 || data->GetNumberOfCells() <= 0 )
     {
-        error = "The NetCDF adapter returned an empty CAM data set";
+        error = "The NetCDF adapter returned an empty data set";
         return false;
     }
 
@@ -134,12 +164,13 @@ bool InspectNetcdfData( cvt::Netcdf& input, NetcdfDataSignature& signature,
     signature.number_of_cells = data->GetNumberOfCells();
     signature.cell_type = data->GetCellType( 0 );
     signature.component_count = 0;
+    signature.point_arrays.clear();
     signature.grid_type = input.gridType();
     for ( vtkIdType i = 0; i < data->GetNumberOfCells(); ++i )
     {
         if ( data->GetCellType( i ) != signature.cell_type )
         {
-            error = "The CAM output contains mixed cell types";
+            error = "The NetCDF adapter output contains mixed cell types";
             return false;
         }
     }
@@ -148,14 +179,17 @@ bool InspectNetcdfData( cvt::Netcdf& input, NetcdfDataSignature& signature,
         vtkDataArray* array = data->GetPointData()->GetArray( i );
         if ( !array || array->GetNumberOfTuples() != signature.number_of_points )
         {
-            error = "A CAM value array does not contain one tuple per point";
+            error = "A NetCDF value array does not contain one tuple per point";
             return false;
         }
+        signature.point_arrays.emplace_back(
+            array->GetName() ? array->GetName() : std::string(),
+            array->GetNumberOfComponents() );
         signature.component_count += array->GetNumberOfComponents();
     }
     if ( signature.component_count <= 0 )
     {
-        error = "The CAM output contains no physical value component";
+        error = "The NetCDF adapter output contains no physical value component";
         return false;
     }
     return true;
@@ -168,7 +202,25 @@ bool SameNetcdfDataSignature( const NetcdfDataSignature& lhs,
            lhs.number_of_cells == rhs.number_of_cells &&
            lhs.cell_type == rhs.cell_type &&
            lhs.component_count == rhs.component_count &&
+           lhs.point_arrays == rhs.point_arrays &&
            lhs.grid_type == rhs.grid_type;
+}
+
+bool PrepareCamReadOptions( const std::string& points_file,
+                            cvt::NetcdfReadOptions& options,
+                            std::vector<double>& physical_times,
+                            std::string& error )
+{
+    std::cout << "Enter the CAM connectivity file path:" << std::endl;
+    if ( !std::getline( std::cin, options.cam_connectivity_filename ) ||
+         options.cam_connectivity_filename.find_first_not_of( " \t\r\n" ) ==
+             std::string::npos )
+    {
+        error = "The CAM connectivity file path is empty.";
+        return false;
+    }
+
+    return cvt::Netcdf::TimeSteps( points_file, options, physical_times, error );
 }
 
 /**
@@ -423,21 +475,10 @@ void Netcdf2Kvsml( const std::string& directory, const std::string& base,
     }
     if ( info.input_role == cvt::NetcdfInputRole::CamPoints )
     {
-        std::cout << "Enter the CAM connectivity file path:" << std::endl;
-        std::string connectivity_file;
-        if ( !std::getline( std::cin, connectivity_file ) ||
-             connectivity_file.find_first_not_of( " \t\r\n" ) == std::string::npos )
-        {
-            std::cerr << "The CAM connectivity file path is empty." << std::endl;
-            return;
-        }
-
         cvt::NetcdfReadOptions options;
-        options.cam_connectivity_filename = connectivity_file;
-
         std::vector<double> physical_times;
         std::string error;
-        if ( !cvt::Netcdf::TimeSteps( src, options, physical_times, error ) )
+        if ( !PrepareCamReadOptions( src, options, physical_times, error ) )
         {
             std::cerr << error << std::endl;
             return;
@@ -669,6 +710,7 @@ bool ListNetcdfTimeSeriesFiles( const std::vector<std::string>& file_paths,
     sequenced_files.reserve( file_paths.size() );
     std::string expected_format;
     cvt::NetcdfGridType expected_grid_type = cvt::NetcdfGridType::Unknown;
+    cvt::NetcdfInputRole expected_input_role = cvt::NetcdfInputRole::Standard;
     for ( const auto& path : file_paths )
     {
         // 軽量な事前調査で形式を判定し、時系列全体の形式を統一する。
@@ -681,9 +723,11 @@ bool ListNetcdfTimeSeriesFiles( const std::vector<std::string>& file_paths,
         {
             expected_format = info.format_name;
             expected_grid_type = info.grid_type;
+            expected_input_role = info.input_role;
         }
         else if ( info.format_name != expected_format ||
-                  info.grid_type != expected_grid_type )
+                  info.grid_type != expected_grid_type ||
+                  info.input_role != expected_input_role )
         {
             std::cerr << "NetCDF time series mixes formats or VTK grid types: expected "
                       << expected_format << ", but " << path << " was detected as "
@@ -691,7 +735,88 @@ bool ListNetcdfTimeSeriesFiles( const std::vector<std::string>& file_paths,
             return false;
         }
 
-        sequenced_files.push_back( { path, info.format_name, info.grid_type } );
+        sequenced_files.push_back(
+            { path, info.format_name, info.grid_type, info.input_role } );
+    }
+    return true;
+}
+
+/**
+ * @brief NetCDF時系列のPolygonを、連続するタイムステップ名でKVSMLへ出力する。
+ *
+ * 先頭ステップの格子型、点・セル数、セル型および物理値配列を基準として、
+ * 後続ステップの構造が一致することを確認する。Polygonはvolumeではないため
+ * PFI/PFLには登録しない。
+ */
+bool WriteNetcdfPolygonSeries(
+    const std::string& directory, const std::string& base,
+    const std::vector<SequencedNetcdfFile>& sequenced_files )
+{
+    NetcdfDataSignature expected;
+    std::string error;
+    for ( std::size_t i = 0; i < sequenced_files.size(); ++i )
+    {
+        const int time_step = static_cast<int>( i );
+        const auto& file = sequenced_files[i];
+        std::cout << "Reading " << file.path << " as time step " << time_step << " ..."
+                  << std::endl;
+
+        cvt::Netcdf input( file.path );
+        if ( input.isFailure() || input.formatName() != file.format_name ||
+             input.gridType() != cvt::NetcdfGridType::PolyData )
+        {
+            std::cerr << "Failed to read the preflighted polygon NetCDF time step "
+                      << time_step << ": " << file.path << std::endl;
+            return false;
+        }
+
+        NetcdfDataSignature current;
+        if ( !InspectNetcdfData( input, current, error ) )
+        {
+            std::cerr << error << " at time step " << time_step << ": " << file.path
+                      << std::endl;
+            return false;
+        }
+        if ( time_step == 0 )
+        {
+            expected = current;
+        }
+        else if ( !SameNetcdfDataSignature( current, expected ) )
+        {
+            std::cerr << "Polygon NetCDF topology or physical value components differ at "
+                      << "time step " << time_step << ": " << file.path << std::endl;
+            return false;
+        }
+
+        auto* format = dynamic_cast<cvt::VtkXmlPolyData*>( input.format().get() );
+        if ( !format )
+        {
+            std::cerr << "The polygon NetCDF adapter did not return vtkPolyData at time "
+                      << "step " << time_step << ": " << file.path << std::endl;
+            return false;
+        }
+        cvt::VtkImporter<cvt::VtkXmlPolyData> importer( format );
+        if ( importer.isFailure() )
+        {
+            std::cerr << "Failed to import polygon NetCDF time step " << time_step
+                      << ": " << file.path << std::endl;
+            return false;
+        }
+
+        kvs::PolygonExporter<kvs::KVSMLPolygonObject> exporter( &importer );
+        exporter.setWritingDataTypeToExternalBinary();
+        std::ostringstream filename;
+        filename << base << "_" << std::setfill( '0' ) << std::setw( 5 ) << time_step
+                 << ".kvsml";
+        const std::string destination =
+            directory + std::string( 1, cvt::filesystem::path::preferred_separator ) +
+            filename.str();
+        if ( !exporter.write( destination ) )
+        {
+            std::cerr << "Failed to write polygon NetCDF time step " << time_step
+                      << ": " << destination << std::endl;
+            return false;
+        }
     }
     return true;
 }
@@ -724,6 +849,36 @@ void SeriesNetcdf2Kvsml( const std::string& directory, const std::string& base,
         return;
     }
 
+    const bool is_cam_series =
+        sequenced_files.front().input_role == cvt::NetcdfInputRole::CamPoints;
+    if ( sequenced_files.front().input_role == cvt::NetcdfInputRole::CamConnectivity )
+    {
+        std::cerr << "CAM connectivity cannot be used as the primary input. "
+                     "Specify the CAM points files instead."
+                  << std::endl;
+        return;
+    }
+
+    // UGRIDなどのPolyData時系列はPolygonとして出力し、volume用PFI/PFLは作らない。
+    if ( sequenced_files.front().grid_type == cvt::NetcdfGridType::PolyData )
+    {
+        WriteNetcdfPolygonSeries( directory, base, sequenced_files );
+        return;
+    }
+
+    cvt::NetcdfReadOptions read_options;
+    if ( is_cam_series )
+    {
+        std::vector<double> physical_times;
+        std::string error;
+        if ( !PrepareCamReadOptions( sequenced_files.front().path, read_options,
+                                     physical_times, error ) )
+        {
+            std::cerr << error << std::endl;
+            return;
+        }
+    }
+
     const int last_time_step = static_cast<int>( sequenced_files.size() ) - 1;
     constexpr int sub_volume_id = 1;
     constexpr int sub_volume_count = 1;
@@ -734,6 +889,7 @@ void SeriesNetcdf2Kvsml( const std::string& directory, const std::string& base,
         kvs::VolumeObjectBase::UnknownVolumeType;
     std::string local_base;
     std::unique_ptr<cvt::UnstructuredPfi> pfi;
+    NetcdfDataSignature expected_cam_signature;
 
     // 数値順に並んだ各ファイルを連続するタイムステップとして変換する。
     for ( std::size_t i = 0; i < sequenced_files.size(); ++i )
@@ -743,13 +899,69 @@ void SeriesNetcdf2Kvsml( const std::string& directory, const std::string& base,
 
         std::cout << "Reading " << file.path << " as time step " << time_step << " ..."
                   << std::endl;
-        cvt::Netcdf input( file.path );
+        cvt::Netcdf input( file.path, read_options );
         if ( input.isFailure() || input.formatName() != file.format_name ||
-             input.gridType() != file.grid_type )
+             ( file.grid_type != cvt::NetcdfGridType::Unknown &&
+               input.gridType() != file.grid_type ) )
         {
             std::cerr << "Failed to read the preflighted NetCDF time step "
                       << time_step << ": " << file.path << std::endl;
             return;
+        }
+
+        if ( is_cam_series )
+        {
+            NetcdfDataSignature current;
+            std::string error;
+            if ( !InspectNetcdfData( input, current, error ) )
+            {
+                std::cerr << error << " at PBVR step " << time_step << std::endl;
+                return;
+            }
+            if ( time_step == 0 )
+            {
+                expected_cam_signature = current;
+            }
+            else if ( !SameNetcdfDataSignature( current, expected_cam_signature ) )
+            {
+                std::cerr << "CAM topology or value components differ at PBVR step "
+                          << time_step << std::endl;
+                return;
+            }
+
+            if ( current.grid_type == cvt::NetcdfGridType::PolyData )
+            {
+                auto* format = dynamic_cast<cvt::VtkXmlPolyData*>( input.format().get() );
+                cvt::VtkImporter<cvt::VtkXmlPolyData> importer( format );
+                if ( importer.isFailure() )
+                {
+                    std::cerr << "Failed to import CAM polygon time step " << time_step
+                              << std::endl;
+                    return;
+                }
+                kvs::PolygonExporter<kvs::KVSMLPolygonObject> exporter( &importer );
+                exporter.setWritingDataTypeToExternalBinary();
+                std::ostringstream filename;
+                filename << base << "_" << std::setfill( '0' ) << std::setw( 5 )
+                         << time_step << ".kvsml";
+                const std::string destination =
+                    directory +
+                    std::string( 1, cvt::filesystem::path::preferred_separator ) +
+                    filename.str();
+                if ( !exporter.write( destination ) )
+                {
+                    std::cerr << "Failed to write CAM polygon time step " << time_step
+                              << ": " << destination << std::endl;
+                    return;
+                }
+                continue;
+            }
+            if ( current.grid_type != cvt::NetcdfGridType::UnstructuredGrid )
+            {
+                std::cerr << "The CAM adapter returned an unsupported grid type."
+                          << std::endl;
+                return;
+            }
         }
 
         auto volume = ImportNetcdfVolume( input );
@@ -808,6 +1020,12 @@ void SeriesNetcdf2Kvsml( const std::string& directory, const std::string& base,
         {
             return;
         }
+    }
+
+    if ( is_cam_series &&
+         expected_cam_signature.grid_type == cvt::NetcdfGridType::PolyData )
+    {
+        return;
     }
 
     // 全タイムステップの出力後に、時系列全体のPFIとPFLを書き出す。

@@ -309,7 +309,14 @@ UnstructuredVolumeImporter::UnstructuredVolumeImporter( const std::string& filen
 }
 
 #ifdef EXTEND_FILE_FORMAT 
-UnstructuredVolumeImporter::UnstructuredVolumeImporter( const std::string& filename, const int fileType, const int targetCellType, const int st, const int vl )
+UnstructuredVolumeImporter::UnstructuredVolumeImporter(
+    const std::string& filename,
+    const int fileType,
+    const int targetCellType,
+    const int st,
+    const int vl,
+    const std::string& cam_connectivity_file_path,
+    const std::vector<std::string>& slac_mode_file_paths )
 {
     if ( filename.find( '*' ) != std::string::npos )
     {
@@ -360,7 +367,10 @@ UnstructuredVolumeImporter::UnstructuredVolumeImporter( const std::string& filen
     }
     else if ( found_nc != std::string::npos )
     {
-        kvs::ExtendedFileFormat::Netcdf file_format( filename );
+        kvs::ExtendedFileFormat::NetcdfReadOptions options;
+        options.cam_connectivity_filename = cam_connectivity_file_path;
+        options.slac_mode_filenames = slac_mode_file_paths;
+        kvs::ExtendedFileFormat::Netcdf file_format( filename, options );
         if ( file_format.isFailure() )
         {
             BaseClass::m_is_success = false;

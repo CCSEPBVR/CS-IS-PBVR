@@ -2,6 +2,8 @@
 #include <QEvent>
 #include <QEventLoop>
 #include <QDebug>
+#include <QDir>
+#include <QFileInfo>
 #include <QApplication>
 #include <QGuiApplication>
 #include <QWindow>
@@ -161,6 +163,17 @@ namespace
 {
 static kvs::qt::Application* g_pbvr_test_application = nullptr;
 
+/**
+ * @brief 保留中のQtイベントを処理し、遅延削除対象を解放します。
+ */
+void processPendingEvents()
+{
+    QCoreApplication::sendPostedEvents( nullptr, 0 );
+    QCoreApplication::processEvents( QEventLoop::AllEvents, 200 );
+    QCoreApplication::sendPostedEvents( nullptr, QEvent::DeferredDelete );
+    QCoreApplication::processEvents( QEventLoop::AllEvents, 200 );
+}
+
 void cleanupBetweenTests()
 {
     for ( QWidget* widget : QApplication::topLevelWidgets() )
@@ -171,15 +184,9 @@ void cleanupBetweenTests()
         }
     }
 
-    QCoreApplication::sendPostedEvents( nullptr, 0 );
-    QCoreApplication::processEvents( QEventLoop::AllEvents, 200 );
-    QCoreApplication::sendPostedEvents( nullptr, QEvent::DeferredDelete );
-    QCoreApplication::processEvents( QEventLoop::AllEvents, 200 );
-
-    QCoreApplication::sendPostedEvents( nullptr, 0 );
-    QCoreApplication::processEvents( QEventLoop::AllEvents, 200 );
-    QCoreApplication::sendPostedEvents( nullptr, QEvent::DeferredDelete );
-    QCoreApplication::processEvents( QEventLoop::AllEvents, 200 );
+    // ウィンドウのclose後に発生するイベントを2回処理し、子ウィンドウも確実に破棄します。
+    processPendingEvents();
+    processPendingEvents();
 }
 
 int qExecWithCleanup( QObject* test, int argc, char** argv )
@@ -189,6 +196,22 @@ int qExecWithCleanup( QObject* test, int argc, char** argv )
     return result;
 }
 
+/**
+ * @brief 有効化されたテストを生成して実行し、共通の後処理を行います。
+ * @tparam Test 実行するQTestテストクラス。
+ * @param result これまでに実行したテストの結果を格納する変数。
+ * @param has_enabled_test 有効なテストが存在するかを示す変数。
+ * @param argc コマンドライン引数の数。
+ * @param argv コマンドライン引数。
+ */
+template <typename Test>
+void runEnabledTest( int& result, bool& has_enabled_test, int argc, char** argv )
+{
+    has_enabled_test = true;
+    Test test;
+    result |= qExecWithCleanup( &test, argc, argv );
+}
+
 int runEnabledTests( int argc, char** argv )
 {
     int result = 0;
@@ -196,155 +219,79 @@ int runEnabledTests( int argc, char** argv )
     cleanupBetweenTests();
 
 #ifdef PBVR_ENABLE_TEST_MENUBAR
-    {
-        has_enabled_test = true;
-        MenuBarTest test;
-        result |= qExecWithCleanup( &test, argc, argv );
-    }
+    runEnabledTest<MenuBarTest>( result, has_enabled_test, argc, argv );
 #endif
 
 #ifdef PBVR_ENABLE_TEST_SCREEN
-    {
-        has_enabled_test = true;
-        ScreenTest test;
-        result |= qExecWithCleanup( &test, argc, argv );
-    }
+    runEnabledTest<ScreenTest>( result, has_enabled_test, argc, argv );
 #endif
 
 #ifdef PBVR_ENABLE_TEST_PLAYBACKCONTROLTOOLBAR
-    {
-        has_enabled_test = true;
-        ClientTests::PlayBackControlToolBarTest test;
-        result |= qExecWithCleanup( &test, argc, argv );
-    }
+    runEnabledTest<ClientTests::PlayBackControlToolBarTest>( result, has_enabled_test, argc, argv );
 #endif
 
 #ifdef PBVR_ENABLE_TEST_TIMESTEPCONTROLTOOLBAR
-    {
-        has_enabled_test = true;
-        ClientTests::TimeStepControlToolBarTest test;
-        result |= qExecWithCleanup( &test, argc, argv );
-    }
+    runEnabledTest<ClientTests::TimeStepControlToolBarTest>( result, has_enabled_test, argc, argv );
 #endif
 
 #ifdef PBVR_ENABLE_TEST_COLORMAPSELECTORTOOLBAR
-    {
-        has_enabled_test = true;
-        ClientTests::ColorMapSelectorToolBarTest test;
-        result |= qExecWithCleanup( &test, argc, argv );
-    }
+    runEnabledTest<ClientTests::ColorMapSelectorToolBarTest>( result, has_enabled_test, argc, argv );
 #endif
 
 #ifdef PBVR_ENABLE_TEST_TOTALPARTICLESTOOLBAR
-    {
-        has_enabled_test = true;
-        ClientTests::TotalParticlesToolBarTest test;
-        result |= qExecWithCleanup( &test, argc, argv );
-    }
+    runEnabledTest<ClientTests::TotalParticlesToolBarTest>( result, has_enabled_test, argc, argv );
 #endif
 
 #ifdef PBVR_ENABLE_TEST_PREFERENCE
-    {
-        has_enabled_test = true;
-        ClientTests::PreferenceTest test;
-        result |= qExecWithCleanup( &test, argc, argv );
-    }
+    runEnabledTest<ClientTests::PreferenceTest>( result, has_enabled_test, argc, argv );
 #endif
 
 #ifdef PBVR_ENABLE_TEST_COMMUNICATION
-    {
-        has_enabled_test = true;
-        ClientTests::CommunicationTest test;
-        result |= qExecWithCleanup( &test, argc, argv );
-    }
+    runEnabledTest<ClientTests::CommunicationTest>( result, has_enabled_test, argc, argv );
 #endif
 
 #ifdef PBVR_ENABLE_TEST_COMMUNICATION_USER_INFO
-    {
-        has_enabled_test = true;
-        ClientTests::CommunicationUserInfoTest test;
-        result |= qExecWithCleanup( &test, argc, argv );
-    }
+    runEnabledTest<ClientTests::CommunicationUserInfoTest>( result, has_enabled_test, argc, argv );
 #endif
 
 #ifdef PBVR_ENABLE_TEST_COMMUNICATION_SETTING
-    {
-        has_enabled_test = true;
-        ClientTests::CommunicationSettingTest test;
-        result |= qExecWithCleanup( &test, argc, argv );
-    }
+    runEnabledTest<ClientTests::CommunicationSettingTest>( result, has_enabled_test, argc, argv );
 #endif
 
 #ifdef PBVR_ENABLE_TEST_COMMUNICATION_SHARE_VIEW
-    {
-        has_enabled_test = true;
-        ClientTests::CommunicationShareViewTest test;
-        result |= qExecWithCleanup( &test, argc, argv );
-    }
+    runEnabledTest<ClientTests::CommunicationShareViewTest>( result, has_enabled_test, argc, argv );
 #endif
 
 #ifdef PBVR_ENABLE_TEST_ANIMATIONCONTROL
-    {
-        has_enabled_test = true;
-        ClientTests::AnimationControlTest test;
-        result |= qExecWithCleanup( &test, argc, argv );
-    }
+    runEnabledTest<ClientTests::AnimationControlTest>( result, has_enabled_test, argc, argv );
 #endif
 
 #ifdef PBVR_ENABLE_TEST_GLYPHEDITOR
-    {
-        has_enabled_test = true;
-        ClientTests::GlyphEditorTest test;
-        result |= qExecWithCleanup( &test, argc, argv );
-    }
+    runEnabledTest<ClientTests::GlyphEditorTest>( result, has_enabled_test, argc, argv );
 #endif
 
 #ifdef PBVR_ENABLE_TEST_OBJECTEDITOR
-    {
-        has_enabled_test = true;
-        ClientTests::ObjectEditorTest test;
-        result |= qExecWithCleanup( &test, argc, argv );
-    }
+    runEnabledTest<ClientTests::ObjectEditorTest>( result, has_enabled_test, argc, argv );
 #endif
 
 #ifdef PBVR_ENABLE_TEST_PLOTOVERLINEEDITOR
-    {
-        has_enabled_test = true;
-        ClientTests::PlotOverLineEditorTest test;
-        result |= qExecWithCleanup( &test, argc, argv );
-    }
+    runEnabledTest<ClientTests::PlotOverLineEditorTest>( result, has_enabled_test, argc, argv );
 #endif
 
 #ifdef PBVR_ENABLE_TEST_POINTSIZECONTROL
-    {
-        has_enabled_test = true;
-        ClientTests::PointSizeControlTest test;
-        result |= qExecWithCleanup( &test, argc, argv );
-    }
+    runEnabledTest<ClientTests::PointSizeControlTest>( result, has_enabled_test, argc, argv );
 #endif
 
 #ifdef PBVR_ENABLE_TEST_REPETITIONLEVELCONTROL
-    {
-        has_enabled_test = true;
-        ClientTests::RepetitionLevelControlTest test;
-        result |= qExecWithCleanup( &test, argc, argv );
-    }
+    runEnabledTest<ClientTests::RepetitionLevelControlTest>( result, has_enabled_test, argc, argv );
 #endif
 
 #ifdef PBVR_ENABLE_TEST_SHADINGCONTROL
-    {
-        has_enabled_test = true;
-        ClientTests::ShadingControlTest test;
-        result |= qExecWithCleanup( &test, argc, argv );
-    }
+    runEnabledTest<ClientTests::ShadingControlTest>( result, has_enabled_test, argc, argv );
 #endif
 
 #ifdef PBVR_ENABLE_TEST_SERVER
-    {
-        has_enabled_test = true;
-        ClientTests::ServerTest test;
-        result |= qExecWithCleanup( &test, argc, argv );
-    }
+    runEnabledTest<ClientTests::ServerTest>( result, has_enabled_test, argc, argv );
 #endif
 
 #ifdef PBVR_ENABLE_TEST_INSITU_MODE
@@ -380,19 +327,11 @@ int runEnabledTests( int argc, char** argv )
 #endif
 
 #ifdef PBVR_ENABLE_TEST_VOLUMETRANSFORM
-    {
-        has_enabled_test = true;
-        ClientTests::VolumeTransformTest test;
-        result |= qExecWithCleanup( &test, argc, argv );
-    }
+    runEnabledTest<ClientTests::VolumeTransformTest>( result, has_enabled_test, argc, argv );
 #endif
 
 #ifdef PBVR_ENABLE_TEST_TRANSFERFUNCTIONEDITOR_IMPORTEXPORT
-    {
-        has_enabled_test = true;
-        TransferFunctionEditorTest::ImportExportTest test;
-        result |= qExecWithCleanup( &test, argc, argv );
-    }
+    runEnabledTest<TransferFunctionEditorTest::ImportExportTest>( result, has_enabled_test, argc, argv );
 #endif
 
 #ifdef PBVR_ENABLE_TEST_TRANSFERFUNCTIONEDITOR_IMPORT_INVALID_FILE
@@ -404,75 +343,39 @@ int runEnabledTests( int argc, char** argv )
 #endif
 
 #ifdef PBVR_ENABLE_TEST_TRANSFERFUNCTIONEDITOR_CHANGE_TRANSFER_FUNCTION_NUMBER
-    {
-        has_enabled_test = true;
-        TransferFunctionEditorTest::ChangeTransferFunctionNumberTest test;
-        result |= qExecWithCleanup( &test, argc, argv );
-    }
+    runEnabledTest<TransferFunctionEditorTest::ChangeTransferFunctionNumberTest>( result, has_enabled_test, argc, argv );
 #endif
 
 #ifdef PBVR_ENABLE_TEST_TRANSFERFUNCTIONEDITOR_COLOR_FUNCTION_SYNTHESIZER
-    {
-        has_enabled_test = true;
-        TransferFunctionEditorTest::ColorFunctionSynthesizerTest test;
-        result |= qExecWithCleanup( &test, argc, argv );
-    }
+    runEnabledTest<TransferFunctionEditorTest::ColorFunctionSynthesizerTest>( result, has_enabled_test, argc, argv );
 #endif
 
 #ifdef PBVR_ENABLE_TEST_TRANSFERFUNCTIONEDITOR_OPACITY_FUNCTION_SYNTHESIZER
-    {
-        has_enabled_test = true;
-        TransferFunctionEditorTest::OpacityFunctionSynthesizerTest test;
-        result |= qExecWithCleanup( &test, argc, argv );
-    }
+    runEnabledTest<TransferFunctionEditorTest::OpacityFunctionSynthesizerTest>( result, has_enabled_test, argc, argv );
 #endif
 
 #ifdef PBVR_ENABLE_TEST_TRANSFERFUNCTIONEDITOR_OPACITY_FUNCTION_VARIABLE
-    {
-        has_enabled_test = true;
-        TransferFunctionEditorTest::OpacityFunctionVariableTest test;
-        result |= qExecWithCleanup( &test, argc, argv );
-    }
+    runEnabledTest<TransferFunctionEditorTest::OpacityFunctionVariableTest>( result, has_enabled_test, argc, argv );
 #endif
 
 #ifdef PBVR_ENABLE_TEST_TRANSFERFUNCTIONEDITOR_COLOR_FUNCTION_VARIABLE
-    {
-        has_enabled_test = true;
-        TransferFunctionEditorTest::ColorFunctionVariableTest test;
-        result |= qExecWithCleanup( &test, argc, argv );
-    }
+    runEnabledTest<TransferFunctionEditorTest::ColorFunctionVariableTest>( result, has_enabled_test, argc, argv );
 #endif
 
 #ifdef PBVR_ENABLE_TEST_TRANSFERFUNCTIONEDITOR_COLOR_MIN_MAX
-    {
-        has_enabled_test = true;
-        TransferFunctionEditorTest::ColorMinMaxTest test;
-        result |= qExecWithCleanup( &test, argc, argv );
-    }
+    runEnabledTest<TransferFunctionEditorTest::ColorMinMaxTest>( result, has_enabled_test, argc, argv );
 #endif
 
 #ifdef PBVR_ENABLE_TEST_TRANSFERFUNCTIONEDITOR_OPACITY_MIN_MAX
-    {
-        has_enabled_test = true;
-        TransferFunctionEditorTest::OpacityMinMaxTest test;
-        result |= qExecWithCleanup( &test, argc, argv );
-    }
+    runEnabledTest<TransferFunctionEditorTest::OpacityMinMaxTest>( result, has_enabled_test, argc, argv );
 #endif
 
 #ifdef PBVR_ENABLE_TEST_TRANSFERFUNCTIONEDITOR_COLOR_MAP_EDIT
-    {
-        has_enabled_test = true;
-        TransferFunctionEditorTest::ColorMapEditTest test;
-        result |= qExecWithCleanup( &test, argc, argv );
-    }
+    runEnabledTest<TransferFunctionEditorTest::ColorMapEditTest>( result, has_enabled_test, argc, argv );
 #endif
 
 #ifdef PBVR_ENABLE_TEST_TRANSFERFUNCTIONEDITOR_OPACITY_MAP_EDIT
-    {
-        has_enabled_test = true;
-        TransferFunctionEditorTest::OpacityMapEditTest test;
-        result |= qExecWithCleanup( &test, argc, argv );
-    }
+    runEnabledTest<TransferFunctionEditorTest::OpacityMapEditTest>( result, has_enabled_test, argc, argv );
 #endif
 
     if ( !has_enabled_test )

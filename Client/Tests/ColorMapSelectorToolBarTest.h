@@ -4,7 +4,6 @@
 #include <QObject>
 #include <QProcess>
 #include <QString>
-#include <functional>
 #include <vector>
 
 class QDialog;
@@ -73,14 +72,8 @@ private:
         QComboBox* selector_color_function_combo_box = nullptr;
     };
 
-    QString envOrDefault( const char* name, const QString& fallback ) const;
-    QString repoRootPath() const;
-    QString sourceTreePath( const QString& relative_path_from_repo_root ) const;
-    bool waitForCondition( const std::function<bool()>& condition, int timeout_ms, int interval_ms = 50 ) const;
-    void bringWindowToFront( MainWindow* window ) const;
     void bringTransferFunctionEditorToFront( TransferFunctionEditor* editor ) const;
     void bringDialogToFront( QDialog* dialog ) const;
-    void setLineEditText( QLineEdit* line_edit, const QString& text ) const;
     void setDoubleSpinBoxValue( QDoubleSpinBox* spin_box, double value, const char* widget_name ) const;
     void saveScreenshot( const QString& file_name, const QString& caption );
     void writeMarkdownReport() const;

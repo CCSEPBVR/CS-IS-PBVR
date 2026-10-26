@@ -326,6 +326,18 @@ void MultiVolumeProperty::setFilePath(std::string& filename ,const int st , cons
 
 }
 
+#ifdef EXTEND_FILE_FORMAT
+NetcdfStepSource MultiVolumeProperty::netcdfStepSource( const int st ) const
+{
+    const int index = st - m_start_step;
+    if ( index < 0 || index >= static_cast<int>( m_netcdf_dataset.steps.size() ) )
+    {
+        return NetcdfStepSource{};
+    }
+    return m_netcdf_dataset.steps[static_cast<std::size_t>( index )];
+}
+#endif
+
 //--------------------------------------------------------------------------
 
 MultiVolumePropertyList::MultiVolumePropertyList():
@@ -2580,11 +2592,16 @@ int MultiVolumePropertyList::loadEnsightGold( const std::string& filename )
     return m_list.size();
 }
 
-int MultiVolumePropertyList::loadNetcdf( const std::string& filename )
+int MultiVolumePropertyList::loadNetcdf(
+    const std::string& filename,
+    const std::string& cam_connectivity_file_path,
+    const std::vector<std::string>& slac_mode_file_paths )
 {
     using kvs::ExtendedFileFormat::Netcdf;
     using kvs::ExtendedFileFormat::NetcdfFileInfo;
     using kvs::ExtendedFileFormat::NetcdfGridType;
+    using kvs::ExtendedFileFormat::NetcdfInputRole;
+    using kvs::ExtendedFileFormat::NetcdfReadOptions;
     using kvs::ExtendedFileFormat::VtkImporter;
     using kvs::ExtendedFileFormat::VtkXmlUnstructuredGrid;
 
@@ -2606,17 +2623,58 @@ int MultiVolumePropertyList::loadNetcdf( const std::string& filename )
         return -1;
     }
 
-    if ( file_info.grid_type != NetcdfGridType::UnstructuredGrid )
+    if ( file_info.input_role == NetcdfInputRole::CamConnectivity )
+    {
+        visModuleMessageError(
+            "CAM connectivity cannot be used as the primary input: '%s'.",
+            file_info.path.c_str() );
+        return -1;
+    }
+    if ( file_info.input_role == NetcdfInputRole::SlacMode )
+    {
+        visModuleMessageError(
+            "A SLAC mode cannot be used as the primary input: '%s'.",
+            file_info.path.c_str() );
+        return -1;
+    }
+
+    const bool is_cam_points = file_info.input_role == NetcdfInputRole::CamPoints;
+    if ( !is_cam_points && file_info.grid_type != NetcdfGridType::UnstructuredGrid )
     {
         visModuleMessageError( "Unsupported NetCDF grid type in '%s'.",
                                file_info.path.c_str() );
         return -1;
     }
 
-    Netcdf input( file_info.path );
+    std::vector<kvs::ExtendedFileFormat::SlacTimeStepFile> resolved_slac_modes;
+    if ( file_info.input_role == NetcdfInputRole::SlacMesh )
+    {
+        std::string error;
+        if ( !Netcdf::ResolveSlacModes(
+                 file_info.path, slac_mode_file_paths, resolved_slac_modes, error ) )
+        {
+            visModuleMessageError( "%s", error.c_str() );
+            return -1;
+        }
+    }
+
+    NetcdfReadOptions options;
+    options.cam_connectivity_filename = cam_connectivity_file_path;
+    options.slac_mode_filenames = resolved_slac_modes.empty()
+                                      ? slac_mode_file_paths
+                                      : std::vector<std::string>{
+                                            resolved_slac_modes.front().path };
+    Netcdf input( file_info.path, options );
     if ( input.isFailure() )
     {
         visModuleMessageError( "Cannot read NetCDF file '%s'.", file_info.path.c_str() );
+        return -1;
+    }
+
+    if ( input.gridType() != NetcdfGridType::UnstructuredGrid )
+    {
+        visModuleMessageError(
+            "NetCDF file '%s' is not a volume dataset.", file_info.path.c_str() );
         return -1;
     }
 
@@ -2683,14 +2741,73 @@ int MultiVolumePropertyList::loadNetcdf( const std::string& filename )
         return -1;
     }
 
+    if ( file_info.input_role == NetcdfInputRole::SlacMesh )
+    {
+        // 各PBVR stepはmodeを1個だけ指定して実読込し、初期化前に構造と値域を検証する。
+        for ( std::size_t i = 1; i < resolved_slac_modes.size(); ++i )
+        {
+            NetcdfReadOptions step_options;
+            step_options.slac_mode_filenames = { resolved_slac_modes[i].path };
+            Netcdf step_input( file_info.path, step_options );
+            auto* step_vtu = dynamic_cast<VtkXmlUnstructuredGrid*>( step_input.format().get() );
+            if ( step_input.isFailure() || !step_vtu )
+            {
+                visModuleMessageError( "Cannot read SLAC mode '%s'.",
+                                       resolved_slac_modes[i].path.c_str() );
+                return -1;
+            }
+            int step_cell_types = 0;
+            for ( auto vtu : step_vtu->eachCellType() )
+            {
+                VtkImporter<VtkXmlUnstructuredGrid> importer( &vtu );
+                kvs::UnstructuredVolumeObject* object = &importer;
+                ++step_cell_types;
+                if ( importer.isFailure() || step_cell_types > 1 ||
+                     static_cast<int>( object->nnodes() ) != mvp.m_number_nodes ||
+                     static_cast<int>( object->ncells() ) != mvp.m_number_elements ||
+                     static_cast<int>( object->cellType() ) != mvp.m_elem_type ||
+                     static_cast<int>( object->veclen() ) != mvp.m_number_ingredients )
+                {
+                    visModuleMessageError( "SLAC mode structure differs at '%s'.",
+                                           resolved_slac_modes[i].path.c_str() );
+                    return -1;
+                }
+                mvp.m_min_value = std::min(
+                    mvp.m_min_value, static_cast<float>( object->minValue() ) );
+                mvp.m_max_value = std::max(
+                    mvp.m_max_value, static_cast<float>( object->maxValue() ) );
+            }
+            if ( step_cell_types == 0 ) return -1;
+        }
+    }
+
     mvp.m_file_type = 4;
-    mvp.m_number_files = 1;
+    mvp.m_number_files = resolved_slac_modes.empty()
+                             ? 1
+                             : static_cast<int>( resolved_slac_modes.size() );
     mvp.m_start_step = 0;
-    mvp.m_end_steps = 0;
-    mvp.m_number_steps = 1;
+    mvp.m_end_steps = resolved_slac_modes.empty()
+                          ? 0
+                          : static_cast<int>( resolved_slac_modes.size() ) - 1;
+    mvp.m_number_steps = mvp.m_end_steps + 1;
     mvp.m_number_subvolumes = 1;
     mvp.m_file_path = filename;
-    mvp.m_time_step_file_paths.push_back( file_info.path );
+    for ( int i = 0; i < mvp.m_number_steps; ++i )
+    {
+        mvp.m_time_step_file_paths.push_back( file_info.path );
+        NetcdfStepSource source;
+        source.primary_path = file_info.path;
+        if ( !resolved_slac_modes.empty() )
+        {
+            source.slac_mode_path = resolved_slac_modes[static_cast<std::size_t>( i )].path;
+            mvp.m_slac_mode_file_paths.push_back( source.slac_mode_path );
+        }
+        mvp.m_netcdf_dataset.steps.push_back( source );
+    }
+    mvp.m_cam_connectivity_file_path = cam_connectivity_file_path;
+    mvp.m_netcdf_dataset.file = file_info;
+    mvp.m_netcdf_dataset.cam_connectivity_path = cam_connectivity_file_path;
+    mvp.m_netcdf_dataset.slac_mode_paths = mvp.m_slac_mode_file_paths;
 
     m_total_number_nodes = mvp.m_number_nodes;
     m_total_number_elements = mvp.m_number_elements;
@@ -2712,11 +2829,15 @@ int MultiVolumePropertyList::loadNetcdf( const std::string& filename )
     return static_cast<int>( m_list.size() );
 }
 
-int MultiVolumePropertyList::loadSeriesNetcdf( const std::string& filename )
+int MultiVolumePropertyList::loadSeriesNetcdf(
+    const std::string& filename,
+    const std::string& cam_connectivity_file_path )
 {
     using kvs::ExtendedFileFormat::Netcdf;
     using kvs::ExtendedFileFormat::NetcdfFileInfo;
     using kvs::ExtendedFileFormat::NetcdfGridType;
+    using kvs::ExtendedFileFormat::NetcdfInputRole;
+    using kvs::ExtendedFileFormat::NetcdfReadOptions;
     using kvs::ExtendedFileFormat::VtkImporter;
     using kvs::ExtendedFileFormat::VtkXmlUnstructuredGrid;
 
@@ -2771,7 +2892,8 @@ int MultiVolumePropertyList::loadSeriesNetcdf( const std::string& filename )
 
     for ( const auto& file_info : file_infos )
     {
-        if ( file_info.grid_type != NetcdfGridType::UnstructuredGrid )
+        if ( file_info.input_role != NetcdfInputRole::CamPoints &&
+             file_info.grid_type != NetcdfGridType::UnstructuredGrid )
         {
             visModuleMessageError( "Unsupported NetCDF grid type in '%s'.",
                                    file_info.path.c_str() );
@@ -2779,7 +2901,9 @@ int MultiVolumePropertyList::loadSeriesNetcdf( const std::string& filename )
             return -1;
         }
 
-        Netcdf input( file_info.path );
+        NetcdfReadOptions options;
+        options.cam_connectivity_filename = cam_connectivity_file_path;
+        Netcdf input( file_info.path, options );
         if ( input.isFailure() )
         {
             visModuleMessageError( "Cannot read NetCDF file '%s'.", file_info.path.c_str() );
@@ -2905,7 +3029,11 @@ int MultiVolumePropertyList::loadSeriesNetcdf( const std::string& filename )
     for ( const auto& file_info : file_infos )
     {
         mvp.m_time_step_file_paths.push_back( file_info.path );
+        mvp.m_netcdf_dataset.steps.push_back( NetcdfStepSource{ file_info.path, {} } );
     }
+    mvp.m_cam_connectivity_file_path = cam_connectivity_file_path;
+    mvp.m_netcdf_dataset.file = file_infos.front();
+    mvp.m_netcdf_dataset.cam_connectivity_path = cam_connectivity_file_path;
 
     m_total_number_nodes = mvp.m_number_nodes;
     m_total_number_elements = mvp.m_number_elements;
@@ -2976,7 +3104,10 @@ void MultiVolumePropertyList::cropTimeStep( const int s, const int e )
     m_total_number_steps = m_total_last_step - m_total_start_steps + 1;
 }
 
-void MultiVolumePropertyList::loadVolumeDataFile( const std::string& filename )
+void MultiVolumePropertyList::loadVolumeDataFile(
+    const std::string& filename,
+    const std::string& cam_connectivity_file_path,
+    const std::vector<std::string>& slac_mode_file_paths )
 {
                     std::size_t found_pfl  = filename.find(".pfl");
                     std::size_t found_pfi  = filename.find(".pfi");
@@ -3149,12 +3280,15 @@ void MultiVolumePropertyList::loadVolumeDataFile( const std::string& filename )
                         // 単一ファイルの場合
                         if ( found_asterisk == std::string::npos )
                         {
-                            this->loadNetcdf( netcdf_file );
+                            this->loadNetcdf(
+                                netcdf_file,
+                                cam_connectivity_file_path,
+                                slac_mode_file_paths );
                         }
                         // 連番ファイルの場合
                         else
                         {
-                            this->loadSeriesNetcdf( netcdf_file );
+                            this->loadSeriesNetcdf( netcdf_file, cam_connectivity_file_path );
                         }
                     }
 #endif

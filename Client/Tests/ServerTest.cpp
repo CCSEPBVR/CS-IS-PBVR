@@ -5,13 +5,17 @@
 #include <QComboBox>
 #include <QCoreApplication>
 #include <QDate>
+#include <QDialog>
 #include <QDir>
-#include <QElapsedTimer>
+#include <QDoubleSpinBox>
 #include <QFile>
 #include <QFileInfo>
 #include <QGuiApplication>
 #include <QItemSelectionModel>
+#include <QLabel>
 #include <QLineEdit>
+#include <QMetaObject>
+#include <QPointer>
 #include <QPixmap>
 #include <QPushButton>
 #include <QRadioButton>
@@ -19,8 +23,11 @@
 #include <QSettings>
 #include <QSpinBox>
 #include <QStandardItemModel>
+#include <QTabWidget>
+#include <QTableWidget>
 #include <QTextStream>
 #include <QTest>
+#include <QTimer>
 #include <QTreeView>
 #include <QVariant>
 
@@ -32,9 +39,12 @@
 #include "../Widgets/ObjectEditor.h"
 #include "../Widgets/PlayBackControlToolBar.h"
 #include "../Widgets/RepetitionLevelControl.h"
+#include "../Widgets/ShadingControl.h"
 #include "../Widgets/TimeStepControlToolBar.h"
 #include "../Widgets/TransferFunctionEditor.h"
+#include "../Widgets/VolumeTransform.h"
 #include "TestAppContext.h"
+#include "TestCommon.h"
 #include "TestOutputPaths.h"
 
 namespace
@@ -45,6 +55,8 @@ constexpr int k_object_load_timeout_ms = 120000;
 constexpr int k_jump_button_enable_timeout_ms = 120000;
 constexpr int k_time_step_ready_timeout_ms = 120000;
 constexpr int k_transfer_function_ready_timeout_ms = 30000;
+constexpr int k_netcdf_auxiliary_dialog_timeout_ms = 120000;
+constexpr int k_netcdf_auxiliary_submit_timeout_ms = 120000;
 constexpr int k_window_settle_ms = 500;
 constexpr int k_short_wait_ms = 1000;
 constexpr int k_after_jump_wait_ms = 3000;
@@ -52,29 +64,6 @@ constexpr int k_after_repetition_apply_wait_ms = 3000;
 constexpr int k_capture_settle_ms = 300;
 constexpr int k_ensight_test_particle_limit = 500000;
 kvs::qt::Application* g_test_app = nullptr;
-
-void logStep( const QString& message )
-{
-    qInfo().noquote() << message;
-}
-
-QString findRepoRootFrom( const QString& start_path )
-{
-    QDir dir( start_path );
-    while ( dir.exists() )
-    {
-        if ( dir.exists( QStringLiteral( ".git" ) ) &&
-             dir.exists( QStringLiteral( "Client" ) ) &&
-             dir.exists( QStringLiteral( "Server" ) ) )
-        {
-            return dir.absolutePath();
-        }
-
-        if ( !dir.cdUp() ) { break; }
-    }
-
-    return QString();
-}
 
 bool containsWildcard( const QString& path )
 {
@@ -125,48 +114,13 @@ ServerTest::ServerTest( QObject* parent )
     qputenv( "QTEST_FUNCTION_TIMEOUT", QByteArray( "2700000" ) );
 }
 
-QString ServerTest::envOrDefault( const char* name, const QString& fallback ) const
-{
-    const QString value = qEnvironmentVariable( name );
-    return value.isEmpty() ? ClientTests::configuredPath( name, repoRootPath(), fallback ) : value;
-}
-
-QString ServerTest::repoRootPath() const
-{
-    const QString app_root = findRepoRootFrom( QCoreApplication::applicationDirPath() );
-    if ( !app_root.isEmpty() ) { return app_root; }
-
-    const QString cwd_root = findRepoRootFrom( QDir::currentPath() );
-    if ( !cwd_root.isEmpty() ) { return cwd_root; }
-
-    const QString source_root =
-        findRepoRootFrom( QFileInfo( QString::fromUtf8( __FILE__ ) ).absolutePath() );
-    if ( !source_root.isEmpty() ) { return source_root; }
-
-    return QDir::currentPath();
-}
-
-bool ServerTest::waitForCondition( const std::function<bool()>& condition, int timeout_ms, int interval_ms ) const
-{
-    QElapsedTimer timer;
-    timer.start();
-
-    while ( timer.elapsed() < timeout_ms )
-    {
-        if ( condition() ) { return true; }
-        QTest::qWait( interval_ms );
-    }
-
-    return condition();
-}
-
 bool ServerTest::configuredPathExists( const QString& path ) const
 {
     if ( path.trimmed().isEmpty() ) { return false; }
 
     if ( !containsWildcard( path ) )
     {
-        return QFileInfo::exists( path );
+        return QFileInfo( path ).isFile();
     }
 
     const QFileInfo file_info( path );
@@ -180,7 +134,7 @@ bool ServerTest::configuredPathExists( const QString& path ) const
 
 ServerTest::Dataset ServerTest::dataset( const QString& key ) const
 {
-    return { key, ClientTests::configuredPath( key.toUtf8().constData(), repoRootPath() ) };
+    return { key, ClientTests::configuredPath( key.toUtf8().constData(), ClientTests::repoRootPath() ) };
 }
 
 void ServerTest::verifyDatasets() const
@@ -200,13 +154,37 @@ void ServerTest::verifyDatasets() const
     }
 }
 
-void ServerTest::bringWindowToFront( MainWindow* window ) const
+void ServerTest::tabifyControlDocksWithObjectEditor( const ClientHandles& client ) const
 {
-    QVERIFY2( window != nullptr, "MainWindow is null" );
-    window->show();
-    window->raise();
-    window->activateWindow();
-    QTest::qWait( k_window_settle_ms );
+    QVERIFY2( client.main_window != nullptr, "MainWindow is null" );
+    QVERIFY2( client.object_editor != nullptr, "ObjectEditor is null" );
+    QVERIFY2( client.volume_transform != nullptr, "VolumeTransform is null" );
+    QVERIFY2( client.shading_control != nullptr, "ShadingControl is null" );
+    QVERIFY2( client.repetition_level_control != nullptr, "RepetitionLevelControl is null" );
+
+    client.main_window->tabifyDockWidget( client.object_editor, client.volume_transform );
+    client.main_window->tabifyDockWidget( client.object_editor, client.shading_control );
+    client.main_window->tabifyDockWidget( client.object_editor, client.repetition_level_control );
+
+    const auto tabified_docks = client.main_window->tabifiedDockWidgets( client.object_editor );
+    QVERIFY2(
+        tabified_docks.contains( client.volume_transform ),
+        "VolumeTransform is not tabified with ObjectEditor" );
+    QVERIFY2(
+        tabified_docks.contains( client.shading_control ),
+        "ShadingControl is not tabified with ObjectEditor" );
+    QVERIFY2(
+        tabified_docks.contains( client.repetition_level_control ),
+        "RepetitionLevelControl is not tabified with ObjectEditor" );
+}
+
+void ServerTest::bringObjectEditorToFront( ObjectEditor* object_editor ) const
+{
+    QVERIFY2( object_editor != nullptr, "ObjectEditor is null" );
+    object_editor->show();
+    object_editor->raise();
+    QVERIFY2( object_editor->isVisible(), "ObjectEditor did not become visible" );
+    QTest::qWait( k_capture_settle_ms );
 }
 
 void ServerTest::bringTransferFunctionEditorToFront( TransferFunctionEditor* editor ) const
@@ -229,16 +207,36 @@ void ServerTest::bringRepetitionLevelControlToFront( RepetitionLevelControl* con
     QTest::qWait( k_window_settle_ms );
 }
 
-void ServerTest::setLineEditText( QLineEdit* line_edit, const QString& text ) const
+void ServerTest::bringVolumeTransformToFront( VolumeTransform* control ) const
 {
-    QVERIFY2( line_edit != nullptr, "Target line edit was not found" );
-    line_edit->setFocus();
-    line_edit->clear();
-    QTest::keyClicks( line_edit, text );
-    QCOMPARE( line_edit->text(), text );
+    QVERIFY2( control != nullptr, "VolumeTransform is null" );
+    control->show();
+    control->raise();
+    control->activateWindow();
+    QVERIFY2( control->isVisible(), "VolumeTransform did not become visible" );
+    QTest::qWait( k_window_settle_ms );
 }
 
 void ServerTest::setSpinBoxValue( QSpinBox* spin_box, int value, const char* widget_name ) const
+{
+    QVERIFY2( spin_box != nullptr, widget_name );
+    QVERIFY2( spin_box->isEnabled(), qPrintable( QStringLiteral( "%1 is disabled" ).arg( widget_name ) ) );
+    QVERIFY2(
+        value >= spin_box->minimum() && value <= spin_box->maximum(),
+        qPrintable(
+            QStringLiteral( "%1 value %2 is out of range [%3, %4]" )
+                .arg( widget_name )
+                .arg( value )
+                .arg( spin_box->minimum() )
+                .arg( spin_box->maximum() ) ) );
+
+    spin_box->setFocus();
+    spin_box->setValue( value );
+    QCOMPARE( spin_box->value(), value );
+    QTest::qWait( k_short_wait_ms );
+}
+
+void ServerTest::setDoubleSpinBoxValue( QDoubleSpinBox* spin_box, double value, const char* widget_name ) const
 {
     QVERIFY2( spin_box != nullptr, widget_name );
     QVERIFY2( spin_box->isEnabled(), qPrintable( QStringLiteral( "%1 is disabled" ).arg( widget_name ) ) );
@@ -264,7 +262,7 @@ void ServerTest::selectRadioButton( QRadioButton* radio_button, const char* obje
     if ( radio_button->isChecked() ) { return; }
 
     QVERIFY2(
-        waitForCondition(
+        ClientTests::waitForCondition(
             [radio_button]()
             {
                 return radio_button->isEnabled() && radio_button->isVisible();
@@ -302,6 +300,241 @@ void ServerTest::selectComboBoxIndex( QComboBox* combo_box, int index, const cha
     combo_box->setCurrentIndex( index );
     QCOMPARE( combo_box->currentIndex(), index );
     QTest::qWait( k_short_wait_ms );
+}
+
+void ServerTest::applyVolumeRotation( const ClientHandles& client ) const
+{
+    bringVolumeTransformToFront( client.volume_transform );
+    setDoubleSpinBoxValue( client.rotation_x_axis_spin_box, 45.0, "rotationXAxisDoubleSpinBox" );
+    setDoubleSpinBoxValue( client.rotation_y_axis_spin_box, -35.26, "rotationYAxisDoubleSpinBox" );
+    setDoubleSpinBoxValue( client.rotation_z_axis_spin_box, -30.0, "rotationZAxisDoubleSpinBox" );
+
+    QVERIFY2( client.volume_transform_apply_button->isEnabled(), "VolumeTransform applyPushButton is disabled" );
+    QTest::mouseClick( client.volume_transform_apply_button, Qt::LeftButton );
+    QTest::qWait( k_short_wait_ms );
+
+    QCOMPARE( client.rotation_x_axis_spin_box->value(), 45.0 );
+    QCOMPARE( client.rotation_y_axis_spin_box->value(), -35.26 );
+    QCOMPARE( client.rotation_z_axis_spin_box->value(), -30.0 );
+}
+
+void ServerTest::disableShading( const ClientHandles& client ) const
+{
+    QVERIFY2( client.shading_control != nullptr, "ShadingControl is null" );
+    client.shading_control->show();
+    client.shading_control->raise();
+    client.shading_control->activateWindow();
+    QVERIFY2( client.shading_control->isVisible(), "ShadingControl did not become visible" );
+    QTest::qWait( k_window_settle_ms );
+
+    QVERIFY2( client.shading_none_radio_button->isEnabled(), "noneRadioButton is disabled" );
+    selectRadioButton( client.shading_none_radio_button, "noneRadioButton" );
+    QVERIFY2( client.shading_none_radio_button->isChecked(), "noneRadioButton was not checked" );
+}
+
+bool ServerTest::findPresetCell( QTableWidget* table, const QString& preset_name, int* row, int* column ) const
+{
+    if ( table == nullptr || row == nullptr || column == nullptr ) { return false; }
+
+    for ( int r = 0; r < table->rowCount(); ++r )
+    {
+        for ( int c = 0; c < table->columnCount(); ++c )
+        {
+            QWidget* cell = table->cellWidget( r, c );
+            if ( cell == nullptr ) { continue; }
+
+            const auto labels = cell->findChildren<QLabel*>();
+            for ( QLabel* label : labels )
+            {
+                if ( label != nullptr && label->text() == preset_name )
+                {
+                    *row = r;
+                    *column = c;
+                    return true;
+                }
+            }
+        }
+    }
+
+    return false;
+}
+
+void ServerTest::applyPresetColorMap( const ClientHandles& client, const QString& preset_name ) const
+{
+    bringTransferFunctionEditorToFront( client.transfer_function_editor );
+    QVERIFY2(
+        ClientTests::waitForCondition(
+            [client]()
+            {
+                return client.transfer_function_color_function_combo_box->isEnabled() &&
+                       client.transfer_function_color_function_combo_box->count() > 0;
+            },
+            k_transfer_function_ready_timeout_ms,
+            100 ),
+        "TransferFunctionEditor colorFunctionComboBox did not become ready" );
+
+    const int color_function_index =
+        client.transfer_function_color_function_combo_box->findText( QStringLiteral( "C1" ), Qt::MatchExactly );
+    QVERIFY2( color_function_index >= 0, "TransferFunctionEditor colorFunctionComboBox did not contain C1" );
+    selectComboBoxIndex(
+        client.transfer_function_color_function_combo_box,
+        color_function_index,
+        "colorFunctionComboBox" );
+    QCOMPARE( client.transfer_function_color_function_combo_box->currentText(), QStringLiteral( "C1" ) );
+    QVERIFY2(
+        ClientTests::waitForCondition(
+            [client]()
+            {
+                return client.transfer_function_color_function_variable_line_edit->text().trimmed() ==
+                       QStringLiteral( "q1" );
+            },
+            k_transfer_function_ready_timeout_ms,
+            100 ),
+        "TransferFunctionEditor C1 variable did not become q1" );
+    QCOMPARE( client.transfer_function_color_function_variable_line_edit->text().trimmed(), QStringLiteral( "q1" ) );
+
+    QTimer::singleShot(
+        0,
+        [this, preset_name, client]()
+        {
+            QDialog* dialog = nullptr;
+            const auto reject_dialog = [&dialog, client]()
+            {
+                if ( dialog != nullptr )
+                {
+                    dialog->reject();
+                    return;
+                }
+
+                if ( client.transfer_function_editor != nullptr )
+                {
+                    auto* owned_dialog =
+                        client.transfer_function_editor->findChild<QDialog*>( "ColorMapEditor" );
+                    if ( owned_dialog != nullptr )
+                    {
+                        owned_dialog->reject();
+                        return;
+                    }
+                }
+
+                auto* active_dialog = qobject_cast<QDialog*>( QApplication::activeModalWidget() );
+                if ( active_dialog != nullptr ) { active_dialog->reject(); }
+            };
+            const auto require = [&reject_dialog]( bool condition, const char* message )
+            {
+                if ( condition ) { return true; }
+                QTest::qFail( message, __FILE__, __LINE__ );
+                reject_dialog();
+                return false;
+            };
+
+            if ( !require(
+                     ClientTests::waitForCondition(
+                         [&dialog]()
+                         {
+                             for ( QWidget* widget : QApplication::topLevelWidgets() )
+                             {
+                                 auto* candidate = qobject_cast<QDialog*>( widget );
+                                 if ( candidate == nullptr ) { continue; }
+                                 if ( candidate->objectName() != QStringLiteral( "ColorMapEditor" ) ) { continue; }
+                                 if ( !candidate->isVisible() ) { continue; }
+                                 dialog = candidate;
+                                 return true;
+                             }
+                             return false;
+                         },
+                         k_netcdf_auxiliary_dialog_timeout_ms,
+                         50 ),
+                     "ColorMapEditor did not become visible" ) )
+            {
+                return;
+            }
+
+            auto* tab_widget = dialog->findChild<QTabWidget*>( "tabWidget" );
+            if ( !require( tab_widget != nullptr, "ColorMapEditor tabWidget not found" ) ) { return; }
+
+            int preset_tab_index = -1;
+            for ( int index = 0; index < tab_widget->count(); ++index )
+            {
+                if ( tab_widget->tabText( index ) == QStringLiteral( "Preset" ) )
+                {
+                    preset_tab_index = index;
+                    break;
+                }
+            }
+            if ( !require( preset_tab_index >= 0, "ColorMapEditor Preset tab was not found" ) ) { return; }
+            tab_widget->setCurrentIndex( preset_tab_index );
+            if ( !require(
+                     tab_widget->currentIndex() == preset_tab_index,
+                     "ColorMapEditor Preset tab could not be selected" ) )
+            {
+                return;
+            }
+            QTest::qWait( k_short_wait_ms );
+
+            auto* table = dialog->findChild<QTableWidget*>( "colorMapTableWidget" );
+            if ( !require( table != nullptr, "colorMapTableWidget not found" ) ) { return; }
+
+            int preset_row = -1;
+            int preset_column = -1;
+            const QString preset_error =
+                QStringLiteral( "Color map preset was not found: %1" ).arg( preset_name );
+            if ( !require(
+                     findPresetCell( table, preset_name, &preset_row, &preset_column ),
+                     qPrintable( preset_error ) ) )
+            {
+                return;
+            }
+
+            table->setCurrentCell( preset_row, preset_column );
+            const QModelIndex preset_index = table->model()->index( preset_row, preset_column );
+            if ( !require( preset_index.isValid(), "ColorMapEditor preset table index is invalid" ) ) { return; }
+            table->scrollTo( preset_index );
+            QTest::mouseDClick(
+                table->viewport(),
+                Qt::LeftButton,
+                Qt::NoModifier,
+                table->visualRect( preset_index ).center() );
+
+            const bool invoked = QMetaObject::invokeMethod(
+                dialog,
+                "onPresetColorMapDoubleClicked",
+                Qt::DirectConnection,
+                Q_ARG( int, preset_row ),
+                Q_ARG( int, preset_column ) );
+            if ( !require( invoked, "Failed to invoke ColorMapEditor::onPresetColorMapDoubleClicked" ) ) { return; }
+            QTest::qWait( k_short_wait_ms );
+
+            auto* apply_button = dialog->findChild<QPushButton*>( "applyPushButton" );
+            if ( !require( apply_button != nullptr, "ColorMapEditor applyPushButton not found" ) ) { return; }
+            if ( !require( apply_button->isVisible(), "ColorMapEditor applyPushButton is not visible" ) ) { return; }
+            if ( !require( apply_button->isEnabled(), "ColorMapEditor applyPushButton is disabled" ) ) { return; }
+            QTest::mouseClick( apply_button, Qt::LeftButton );
+            require(
+                ClientTests::waitForCondition(
+                    [dialog]() { return !dialog->isVisible(); },
+                    k_short_wait_ms,
+                    50 ),
+                "ColorMapEditor did not close after applying the preset" );
+        } );
+
+    QVERIFY2( client.transfer_function_color_map_edit_button->isEnabled(), "Edit Color Map button is disabled" );
+    QTest::mouseClick( client.transfer_function_color_map_edit_button, Qt::LeftButton );
+    QTest::qWait( k_short_wait_ms );
+
+    QVERIFY2( client.transfer_function_apply_button->isEnabled(), "TransferFunctionEditor applyPushButton is disabled" );
+    QTest::mouseClick( client.transfer_function_apply_button, Qt::LeftButton );
+    QTest::qWait( k_short_wait_ms );
+    client.transfer_function_editor->hide();
+}
+
+void ServerTest::configureNetcdfView( const ClientHandles& client, int time_step ) const
+{
+    setTimeStepAndJump( client, time_step );
+    selectColorFunction( client, 1 );
+    applyVolumeRotation( client );
+    disableShading( client );
+    applyRepetitionLevel( client, 32 );
 }
 
 void ServerTest::saveScreenshot( const QString& case_id, const QString& file_name, const QString& caption )
@@ -364,6 +597,7 @@ void ServerTest::writeMarkdownReport() const
         stream << "- " << ( m_test_succeeded ? "PASS" : "FAIL" ) << ": TestPathConfig.ini の Server Test 用パスが存在すること。ワイルドカード付きパスは1件以上一致すること。\n";
     }
     stream << "- " << ( m_test_succeeded ? "PASS" : "FAIL" ) << ": 各ケースで m_jump_push_button を押し、再度有効になるまで待機できること。\n";
+    stream << "- " << ( m_test_succeeded ? "PASS" : "FAIL" ) << ": NetCDF 8ケースでC1/q1、Cool to Warm、Rotation (45, -35.26, -30)、Shading OFF、Repetition Level 32を設定すること。\n";
     stream << "- " << ( m_test_succeeded ? "PASS" : "FAIL" ) << ": Markdown レポートとスクリーンショットを出力できること。\n";
     stream << "- 注意: 3D表示の見た目、粒子密度、描画差分の妥当性は目視確認する。\n\n";
 
@@ -397,6 +631,8 @@ ServerTest::ClientHandles ServerTest::resolveClientHandles( MainWindow& window )
     handles.color_map_selector_tool_bar = window.findChild<ColorMapSelectorToolBar*>();
     handles.transfer_function_editor = window.findChild<TransferFunctionEditor*>();
     handles.repetition_level_control = window.findChild<RepetitionLevelControl*>();
+    handles.volume_transform = window.findChild<VolumeTransform*>();
+    handles.shading_control = window.findChild<ShadingControl*>();
 
     if ( !require( handles.communication != nullptr, "Communication dock not found" ) ) { return handles; }
     if ( !require( handles.object_editor != nullptr, "ObjectEditor dock not found" ) ) { return handles; }
@@ -405,6 +641,8 @@ ServerTest::ClientHandles ServerTest::resolveClientHandles( MainWindow& window )
     if ( !require( handles.color_map_selector_tool_bar != nullptr, "ColorMapSelectorToolBar not found" ) ) { return handles; }
     if ( !require( handles.transfer_function_editor != nullptr, "TransferFunctionEditor not found" ) ) { return handles; }
     if ( !require( handles.repetition_level_control != nullptr, "RepetitionLevelControl dock not found" ) ) { return handles; }
+    if ( !require( handles.volume_transform != nullptr, "VolumeTransform dock not found" ) ) { return handles; }
+    if ( !require( handles.shading_control != nullptr, "ShadingControl dock not found" ) ) { return handles; }
 
     handles.connect_button = handles.communication->findChild<QPushButton*>( "connectPushButton" );
     handles.disconnect_button = handles.communication->findChild<QPushButton*>( "disconnectPushButton" );
@@ -431,6 +669,12 @@ ServerTest::ClientHandles ServerTest::resolveClientHandles( MainWindow& window )
     handles.selector_color_function_combo_box =
         handles.color_map_selector_tool_bar->findChild<QComboBox*>();
 
+    handles.transfer_function_color_function_combo_box =
+        handles.transfer_function_editor->findChild<QComboBox*>( "colorFunctionComboBox" );
+    handles.transfer_function_color_function_variable_line_edit =
+        handles.transfer_function_editor->findChild<QLineEdit*>( "colorFunctionVariableLineEdit" );
+    handles.transfer_function_color_map_edit_button =
+        handles.transfer_function_editor->findChild<QPushButton*>( "colorMapEditPushButton" );
     handles.number_of_transfer_function_spin_box =
         handles.transfer_function_editor->findChild<QSpinBox*>( "numberOfTransferFunctionSpinBox" );
     handles.color_synthesizer_line_edit =
@@ -444,6 +688,17 @@ ServerTest::ClientHandles ServerTest::resolveClientHandles( MainWindow& window )
         handles.repetition_level_control->findChild<QSpinBox*>( "spinBoxNewRepetitionLevel" );
     handles.repetition_apply_button =
         handles.repetition_level_control->findChild<QPushButton*>( "applyPushButton" );
+
+    handles.rotation_x_axis_spin_box =
+        handles.volume_transform->findChild<QDoubleSpinBox*>( "rotationXAxisDoubleSpinBox" );
+    handles.rotation_y_axis_spin_box =
+        handles.volume_transform->findChild<QDoubleSpinBox*>( "rotationYAxisDoubleSpinBox" );
+    handles.rotation_z_axis_spin_box =
+        handles.volume_transform->findChild<QDoubleSpinBox*>( "rotationZAxisDoubleSpinBox" );
+    handles.volume_transform_apply_button =
+        handles.volume_transform->findChild<QPushButton*>( "applyPushButton" );
+    handles.shading_none_radio_button =
+        handles.shading_control->findChild<QRadioButton*>( "noneRadioButton" );
 
     if ( !require( handles.connect_button != nullptr, "connectPushButton not found" ) ) { return handles; }
     if ( !require( handles.disconnect_button != nullptr, "disconnectPushButton not found" ) ) { return handles; }
@@ -463,19 +718,27 @@ ServerTest::ClientHandles ServerTest::resolveClientHandles( MainWindow& window )
     if ( !require( handles.jump_button != nullptr, "m_jump_push_button not found" ) ) { return handles; }
     if ( !require( handles.next_time_step_spin_box != nullptr, "m_next_time_step_spin_box not found" ) ) { return handles; }
     if ( !require( handles.selector_color_function_combo_box != nullptr, "m_color_function_combo_box not found" ) ) { return handles; }
+    if ( !require( handles.transfer_function_color_function_combo_box != nullptr, "colorFunctionComboBox not found" ) ) { return handles; }
+    if ( !require( handles.transfer_function_color_function_variable_line_edit != nullptr, "colorFunctionVariableLineEdit not found" ) ) { return handles; }
+    if ( !require( handles.transfer_function_color_map_edit_button != nullptr, "colorMapEditPushButton not found" ) ) { return handles; }
     if ( !require( handles.number_of_transfer_function_spin_box != nullptr, "numberOfTransferFunctionSpinBox not found" ) ) { return handles; }
     if ( !require( handles.color_synthesizer_line_edit != nullptr, "colorSynthesizerLineEdit not found" ) ) { return handles; }
     if ( !require( handles.opacity_synthesizer_line_edit != nullptr, "opacitySynthesizerLineEdit not found" ) ) { return handles; }
     if ( !require( handles.transfer_function_apply_button != nullptr, "TransferFunctionEditor applyPushButton not found" ) ) { return handles; }
     if ( !require( handles.new_repetition_level_spin_box != nullptr, "spinBoxNewRepetitionLevel not found" ) ) { return handles; }
     if ( !require( handles.repetition_apply_button != nullptr, "RepetitionLevelControl applyPushButton not found" ) ) { return handles; }
+    if ( !require( handles.rotation_x_axis_spin_box != nullptr, "rotationXAxisDoubleSpinBox not found" ) ) { return handles; }
+    if ( !require( handles.rotation_y_axis_spin_box != nullptr, "rotationYAxisDoubleSpinBox not found" ) ) { return handles; }
+    if ( !require( handles.rotation_z_axis_spin_box != nullptr, "rotationZAxisDoubleSpinBox not found" ) ) { return handles; }
+    if ( !require( handles.volume_transform_apply_button != nullptr, "VolumeTransform applyPushButton not found" ) ) { return handles; }
+    if ( !require( handles.shading_none_radio_button != nullptr, "noneRadioButton not found" ) ) { return handles; }
 
     return handles;
 }
 
 void ServerTest::ensureDisconnected( const ClientHandles& client ) const
 {
-    bringWindowToFront( client.main_window );
+    ClientTests::bringWindowToFront( client.main_window );
 
     const auto is_disconnected = [client]()
     {
@@ -487,19 +750,19 @@ void ServerTest::ensureDisconnected( const ClientHandles& client ) const
     if ( is_disconnected() ) { return; }
 
     QVERIFY2(
-        waitForCondition( [client]() { return client.disconnect_button->isEnabled(); }, k_disconnect_timeout_ms, 100 ),
+        ClientTests::waitForCondition( [client]() { return client.disconnect_button->isEnabled(); }, k_disconnect_timeout_ms, 100 ),
         "disconnectPushButton did not become enabled within the timeout" );
     QTest::mouseClick( client.disconnect_button, Qt::LeftButton );
 
     QVERIFY2(
-        waitForCondition( is_disconnected, k_disconnect_timeout_ms, 100 ),
+        ClientTests::waitForCondition( is_disconnected, k_disconnect_timeout_ms, 100 ),
         "Client did not enter the disconnected state" );
     QTest::qWait( k_short_wait_ms );
 }
 
 void ServerTest::ensureConnected( const ClientHandles& client ) const
 {
-    bringWindowToFront( client.main_window );
+    ClientTests::bringWindowToFront( client.main_window );
 
     const auto is_connected = [client]()
     {
@@ -511,12 +774,12 @@ void ServerTest::ensureConnected( const ClientHandles& client ) const
     if ( is_connected() ) { return; }
 
     QVERIFY2(
-        waitForCondition( [client]() { return client.connect_button->isEnabled(); }, k_connect_timeout_ms, 100 ),
+        ClientTests::waitForCondition( [client]() { return client.connect_button->isEnabled(); }, k_connect_timeout_ms, 100 ),
         "connectPushButton did not become enabled within the timeout" );
     QTest::mouseClick( client.connect_button, Qt::LeftButton );
 
     QVERIFY2(
-        waitForCondition( is_connected, k_connect_timeout_ms, 100 ),
+        ClientTests::waitForCondition( is_connected, k_connect_timeout_ms, 100 ),
         "Client did not enter the connected state" );
     QTest::qWait( k_short_wait_ms );
 }
@@ -550,10 +813,10 @@ void ServerTest::loadDataset(
     ensureConnected( client );
     m_has_connected_once = true;
 
-    bringWindowToFront( client.main_window );
+    ClientTests::bringWindowToFront( client.main_window );
     selectRadioButton( client.remote_viz_client_server_radio, "remoteVizClientServerRadioButton" );
     selectSamplingMode( client, sampling_mode );
-    setLineEditText( client.volume_data_path_line_edit, data.path );
+    ClientTests::setLineEditText( client.volume_data_path_line_edit, data.path );
     if ( transfer_function_path.isEmpty() )
     {
         client.transfer_function_path_line_edit->clear();
@@ -561,7 +824,7 @@ void ServerTest::loadDataset(
     }
     else
     {
-        setLineEditText( client.transfer_function_path_line_edit, transfer_function_path );
+        ClientTests::setLineEditText( client.transfer_function_path_line_edit, transfer_function_path );
     }
 
     client.object_name_line_edit->clear();
@@ -570,15 +833,196 @@ void ServerTest::loadDataset(
     QTest::mouseClick( client.setting_apply_button, Qt::LeftButton );
     QTest::qWait( k_short_wait_ms );
 
-    logStep(
+    ClientTests::logStep(
         QStringLiteral( "Dataset loaded: key=%1 sampling=%2 path=%3" )
             .arg( data.key, samplingModeName( sampling_mode ), data.path ) );
 }
 
-void ServerTest::waitForObjectAndApply( const ClientHandles& client, bool hide_glyph )
+bool ServerTest::completeNetcdfAuxiliaryFileDialog(
+    const ClientHandles& client,
+    const QString& dialog_title,
+    const QString& auxiliary_path ) const
+{
+    if ( client.communication == nullptr )
+    {
+        QTest::qFail( "Communication dock is required for the NetCDF auxiliary dialog", __FILE__, __LINE__ );
+        return false;
+    }
+
+    QPointer<QDialog> dialog;
+    const auto find_dialog = [&]()
+    {
+        for ( QWidget* widget : QApplication::topLevelWidgets() )
+        {
+            auto* candidate = qobject_cast<QDialog*>( widget );
+            if ( candidate != nullptr && candidate->isVisible() &&
+                 candidate->windowTitle() == dialog_title )
+            {
+                dialog = candidate;
+                return true;
+            }
+        }
+
+        if ( client.communication != nullptr )
+        {
+            for ( QDialog* candidate : client.communication->findChildren<QDialog*>() )
+            {
+                if ( candidate->isVisible() && candidate->windowTitle() == dialog_title )
+                {
+                    dialog = candidate;
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    };
+
+    if ( !ClientTests::waitForCondition(
+             find_dialog, k_netcdf_auxiliary_dialog_timeout_ms, 100 ) )
+    {
+        QTest::qFail(
+            qPrintable(
+                QStringLiteral( "NetCDF auxiliary dialog was not shown within the timeout: %1" )
+                    .arg( dialog_title ) ),
+            __FILE__,
+            __LINE__ );
+        return false;
+    }
+
+    if ( dialog.isNull() )
+    {
+        QTest::qFail(
+            qPrintable( QStringLiteral( "NetCDF auxiliary dialog became unavailable: %1" ).arg( dialog_title ) ),
+            __FILE__,
+            __LINE__ );
+        return false;
+    }
+
+    QPointer<QLineEdit> path_line_edit;
+    for ( QLineEdit* candidate : dialog->findChildren<QLineEdit*>() )
+    {
+        if ( candidate->isVisible() && candidate->isEnabled() )
+        {
+            path_line_edit = candidate;
+            break;
+        }
+    }
+    if ( path_line_edit.isNull() )
+    {
+        QTest::qFail(
+            qPrintable(
+                QStringLiteral( "NetCDF auxiliary dialog input field was not found: %1" )
+                    .arg( dialog_title ) ),
+            __FILE__,
+            __LINE__ );
+        return false;
+    }
+
+    QPointer<QPushButton> ok_button;
+    for ( QPushButton* candidate : dialog->findChildren<QPushButton*>() )
+    {
+        if ( candidate->text().trimmed().compare( QStringLiteral( "OK" ), Qt::CaseInsensitive ) == 0 )
+        {
+            ok_button = candidate;
+            break;
+        }
+    }
+    if ( ok_button.isNull() || !ok_button->isVisible() || !ok_button->isEnabled() )
+    {
+        QTest::qFail(
+            qPrintable(
+                QStringLiteral( "NetCDF auxiliary dialog OK button was not operable: %1" )
+                    .arg( dialog_title ) ),
+            __FILE__,
+            __LINE__ );
+        return false;
+    }
+
+    ClientTests::setLineEditText( path_line_edit.data(), auxiliary_path );
+    const QString expected_path = auxiliary_path;
+    if ( path_line_edit->text() != expected_path )
+    {
+        QTest::qFail(
+            qPrintable(
+                QStringLiteral( "NetCDF auxiliary path was not entered. dialog=%1 expected=%2 actual=%3" )
+                    .arg( dialog_title, expected_path, path_line_edit->text() ) ),
+            __FILE__,
+            __LINE__ );
+        return false;
+    }
+
+    QPointer<QLabel> error_label;
+    for ( QLabel* candidate : dialog->findChildren<QLabel*>() )
+    {
+        if ( candidate->styleSheet().contains( QStringLiteral( "b00020" ) ) )
+        {
+            error_label = candidate;
+            break;
+        }
+    }
+    if ( !error_label.isNull() ) { error_label->clear(); }
+
+    QString server_status_message;
+    const QMetaObject::Connection status_connection = QObject::connect(
+        client.communication,
+        &Communication::updateStatusBarMessage,
+        [&server_status_message]( const QString& message ) { server_status_message = message; } );
+
+    QTest::mouseClick( ok_button.data(), Qt::LeftButton );
+    const bool response_finished = ClientTests::waitForCondition(
+        [&]()
+        {
+            return dialog.isNull() || !dialog->isVisible() ||
+                   ( !error_label.isNull() && !error_label->text().trimmed().isEmpty() );
+        },
+        k_netcdf_auxiliary_submit_timeout_ms,
+        100 );
+    QObject::disconnect( status_connection );
+
+    if ( !response_finished )
+    {
+        QTest::qFail(
+            qPrintable(
+                QStringLiteral( "Server did not accept the NetCDF auxiliary path in dialog %1 within the timeout: %2" )
+                    .arg( dialog_title, auxiliary_path ) ),
+            __FILE__,
+            __LINE__ );
+        return false;
+    }
+
+    if ( !error_label.isNull() && !error_label->text().trimmed().isEmpty() )
+    {
+        QTest::qFail(
+            qPrintable(
+                QStringLiteral( "Server rejected the NetCDF auxiliary path in dialog %1: %2" )
+                    .arg( dialog_title, error_label->text().trimmed() ) ),
+            __FILE__,
+            __LINE__ );
+        return false;
+    }
+
+    if ( !server_status_message.trimmed().isEmpty() )
+    {
+        QTest::qFail(
+            qPrintable(
+                QStringLiteral( "Server rejected the NetCDF dataset after dialog %1: %2" )
+                    .arg( dialog_title, server_status_message.trimmed() ) ),
+            __FILE__,
+            __LINE__ );
+        return false;
+    }
+
+    return true;
+}
+
+void ServerTest::waitForObjectAndApply(
+    const ClientHandles& client,
+    bool hide_glyph,
+    const QString& context )
 {
     QVERIFY2(
-        waitForCondition(
+        ClientTests::waitForCondition(
             [client]()
             {
                 return client.object_apply_button->isEnabled() &&
@@ -588,7 +1032,11 @@ void ServerTest::waitForObjectAndApply( const ClientHandles& client, bool hide_g
             },
             k_object_load_timeout_ms,
             100 ),
-        "ObjectEditor rows/nameLineEdit were not populated within the timeout" );
+        qPrintable(
+            context.isEmpty()
+                ? QStringLiteral( "ObjectEditor rows/nameLineEdit were not populated within the timeout" )
+                : QStringLiteral( "ObjectEditor rows/nameLineEdit were not populated for dataset: %1" )
+                      .arg( context ) ) );
 
     auto* model = qobject_cast<QStandardItemModel*>( client.object_tree_view->model() );
     QVERIFY2( model != nullptr, "ObjectEditor model is not a QStandardItemModel" );
@@ -608,7 +1056,7 @@ void ServerTest::waitForObjectAndApply( const ClientHandles& client, bool hide_g
     if ( hide_glyph )
     {
         QVERIFY2(
-            waitForCondition(
+            ClientTests::waitForCondition(
                 [model, is_glyph_row]()
                 {
                     for ( int row = 0; row < model->rowCount(); ++row )
@@ -661,14 +1109,14 @@ void ServerTest::waitForObjectAndApply( const ClientHandles& client, bool hide_g
 void ServerTest::clickJumpAndWaitForCompletion( const ClientHandles& client ) const
 {
     QVERIFY2(
-        waitForCondition( [client]() { return client.jump_button->isEnabled(); }, k_jump_button_enable_timeout_ms, 200 ),
+        ClientTests::waitForCondition( [client]() { return client.jump_button->isEnabled(); }, k_jump_button_enable_timeout_ms, 200 ),
         "m_jump_push_button did not become enabled within the timeout" );
 
     QTest::mouseClick( client.jump_button, Qt::LeftButton );
     QTest::qWait( k_short_wait_ms );
 
     QVERIFY2(
-        waitForCondition( [client]() { return client.jump_button->isEnabled(); }, k_jump_button_enable_timeout_ms, 200 ),
+        ClientTests::waitForCondition( [client]() { return client.jump_button->isEnabled(); }, k_jump_button_enable_timeout_ms, 200 ),
         "m_jump_push_button did not become enabled again within the timeout" );
 
     QTest::qWait( k_after_jump_wait_ms );
@@ -686,7 +1134,7 @@ void ServerTest::applyRepetitionLevel( const ClientHandles& client, int repetiti
 void ServerTest::setTimeStepAndJump( const ClientHandles& client, int time_step ) const
 {
     QVERIFY2(
-        waitForCondition(
+        ClientTests::waitForCondition(
             [client, time_step]()
             {
                 return client.next_time_step_spin_box->isEnabled() &&
@@ -711,7 +1159,7 @@ void ServerTest::applyTransferFunctionSynthesizer(
 {
     bringTransferFunctionEditorToFront( client.transfer_function_editor );
     QVERIFY2(
-        waitForCondition(
+        ClientTests::waitForCondition(
             [client, required_transfer_function_count]()
             {
                 return client.number_of_transfer_function_spin_box->isEnabled() &&
@@ -725,8 +1173,8 @@ void ServerTest::applyTransferFunctionSynthesizer(
                 .arg( client.number_of_transfer_function_spin_box->value() )
                 .arg( required_transfer_function_count ) ) );
 
-    setLineEditText( client.color_synthesizer_line_edit, color_synthesizer );
-    setLineEditText( client.opacity_synthesizer_line_edit, opacity_synthesizer );
+    ClientTests::setLineEditText( client.color_synthesizer_line_edit, color_synthesizer );
+    ClientTests::setLineEditText( client.opacity_synthesizer_line_edit, opacity_synthesizer );
     QVERIFY2( client.transfer_function_apply_button->isEnabled(), "TransferFunctionEditor applyPushButton is disabled" );
     QTest::mouseClick( client.transfer_function_apply_button, Qt::LeftButton );
     QTest::qWait( k_short_wait_ms );
@@ -735,10 +1183,18 @@ void ServerTest::applyTransferFunctionSynthesizer(
 
 void ServerTest::selectColorFunction( const ClientHandles& client, int one_based_index ) const
 {
+    QVERIFY2( one_based_index > 0, "Color Function index must be one-based" );
+    const QString expected_label = QStringLiteral( "C%1" ).arg( one_based_index );
+    const int color_function_index =
+        client.selector_color_function_combo_box->findText( expected_label, Qt::MatchExactly );
+    QVERIFY2(
+        color_function_index >= 0,
+        qPrintable( QStringLiteral( "Toolbar Color Function was not found: %1" ).arg( expected_label ) ) );
     selectComboBoxIndex(
         client.selector_color_function_combo_box,
-        one_based_index - 1,
+        color_function_index,
         "m_color_function_combo_box" );
+    QCOMPARE( client.selector_color_function_combo_box->currentText(), expected_label );
 }
 
 void ServerTest::setParticleLimitAndApply( const ClientHandles& client, int particle_limit ) const
@@ -759,7 +1215,7 @@ void ServerTest::runCase(
     m_cases.push_back( { case_id, description, data_key, data_path, QStringLiteral( "未実行" ) } );
     CaseEntry& entry = m_cases.back();
 
-    logStep( QStringLiteral( "%1: %2" ).arg( case_id, description ) );
+    ClientTests::logStep( QStringLiteral( "%1: %2" ).arg( case_id, description ) );
     body();
 
     entry.status = QStringLiteral( "PASS" );
@@ -779,7 +1235,8 @@ void ServerTest::captureCase(
 
     if ( client != nullptr )
     {
-        bringWindowToFront( client->main_window );
+        ClientTests::bringWindowToFront( client->main_window );
+        bringObjectEditorToFront( client->object_editor );
     }
 
     const QString file_name = QStringLiteral( "%1.png" ).arg( case_id );
@@ -789,14 +1246,15 @@ void ServerTest::captureCase(
 void ServerTest::initTestCase()
 {
     const QString date_stamp = QDate::currentDate().toString( QStringLiteral( "yyyyMMdd" ) );
-    m_output_dir_path = QDir( repoRootPath() ).absoluteFilePath(
+    m_output_dir_path = QDir( ClientTests::repoRootPath() ).absoluteFilePath(
         QStringLiteral( "Client/output-tests/%1/ServerTest" ).arg( date_stamp ) );
     m_screenshot_dir_path = QDir( m_output_dir_path ).absoluteFilePath( QStringLiteral( "img" ) );
     m_report_path = QDir( m_output_dir_path ).absoluteFilePath( QStringLiteral( "TestResult.md" ) );
     m_test_succeeded = false;
     m_has_connected_once = false;
-    m_uses_remote_data_paths = serverTestUsesRemoteDataPaths( repoRootPath() );
-    m_mej_transfer_function_path = envOrDefault( "MEJ_TRANSFER_FUNCTION", QString() );
+    m_uses_remote_data_paths = serverTestUsesRemoteDataPaths( ClientTests::repoRootPath() );
+    m_mej_transfer_function_path.clear();
+    m_mej_transfer_function_path = ClientTests::envOrDefault( "MEJ_TRANSFER_FUNCTION", QString() );
 
     m_datasets = {
         dataset( QStringLiteral( "ASCII_PFI_STRUCTURED_VOLUME_DATA" ) ),
@@ -813,6 +1271,12 @@ void ServerTest::initTestCase()
         dataset( QStringLiteral( "LARGE_HEXA_VOLUME_DATA" ) ),
         dataset( QStringLiteral( "LARGE_PRISM_VOLUME_DATA" ) ),
         dataset( QStringLiteral( "LARGE_PYRAMID_VOLUME_DATA" ) ),
+        dataset( QStringLiteral( "NETCDF_CF_VOLUME_DATA" ) ),
+        dataset( QStringLiteral( "NETCDF_CAM_POINT_DATA" ) ),
+        dataset( QStringLiteral( "NETCDF_CAM_CONNECT_DATA" ) ),
+        dataset( QStringLiteral( "NETCDF_MPAS_VOLUME_DATA" ) ),
+        dataset( QStringLiteral( "NETCDF_SLAC_MESH_DATA" ) ),
+        dataset( QStringLiteral( "NETCDF_SLAC_MODE_DATA" ) ),
     };
     verifyDatasets();
     QVERIFY2(
@@ -853,6 +1317,7 @@ void ServerTest::performs_server_scenario()
     QVERIFY( QTest::qWaitForWindowExposed( &main_window ) );
 
     ClientHandles client = resolveClientHandles( main_window );
+    tabifyControlDocksWithObjectEditor( client );
     client.communication->show();
     client.object_editor->show();
 
@@ -872,6 +1337,12 @@ void ServerTest::performs_server_scenario()
     const Dataset large_hexa = dataset( QStringLiteral( "LARGE_HEXA_VOLUME_DATA" ) );
     const Dataset large_prism = dataset( QStringLiteral( "LARGE_PRISM_VOLUME_DATA" ) );
     const Dataset large_pyramid = dataset( QStringLiteral( "LARGE_PYRAMID_VOLUME_DATA" ) );
+    const Dataset netcdf_cf = dataset( QStringLiteral( "NETCDF_CF_VOLUME_DATA" ) );
+    const Dataset netcdf_cam_point = dataset( QStringLiteral( "NETCDF_CAM_POINT_DATA" ) );
+    const Dataset netcdf_cam_connect = dataset( QStringLiteral( "NETCDF_CAM_CONNECT_DATA" ) );
+    const Dataset netcdf_mpas = dataset( QStringLiteral( "NETCDF_MPAS_VOLUME_DATA" ) );
+    const Dataset netcdf_slac_mesh = dataset( QStringLiteral( "NETCDF_SLAC_MESH_DATA" ) );
+    const Dataset netcdf_slac_mode = dataset( QStringLiteral( "NETCDF_SLAC_MODE_DATA" ) );
 
     auto load_apply_jump_capture =
         [this, &client](
@@ -886,6 +1357,31 @@ void ServerTest::performs_server_scenario()
             clickJumpAndWaitForCompletion( client );
             captureCase( case_id, caption, options.repetition_level, &client );
         };
+
+    auto load_netcdf_dataset =
+        [this, &client](
+            const Dataset& primary,
+            const QString& auxiliary_dialog_title,
+            const QString& auxiliary_path )
+        {
+            loadDataset( client, primary, SamplingMode::Uniform );
+            if ( !auxiliary_dialog_title.isEmpty() &&
+                 !completeNetcdfAuxiliaryFileDialog(
+                     client, auxiliary_dialog_title, auxiliary_path ) )
+            {
+                return false;
+            }
+            waitForObjectAndApply( client, false, primary.path );
+            return client.object_apply_button->isEnabled() &&
+                   client.object_tree_view->model() != nullptr &&
+                   client.object_tree_view->model()->rowCount() > 0 &&
+                   !client.object_name_line_edit->text().trimmed().isEmpty();
+        };
+
+    bool netcdf_cf_ready = false;
+    bool netcdf_cam_ready = false;
+    bool netcdf_mpas_ready = false;
+    bool netcdf_slac_ready = false;
 
     runCase(
         QStringLiteral( "01_ascii_pfi_structured" ),
@@ -1222,8 +1718,155 @@ void ServerTest::performs_server_scenario()
             setTimeStepAndJump( client, 7 );
             captureCase( QStringLiteral( "34_large_pyramid_t7_q1_rl32" ), QStringLiteral( "Large/LargePyramid/large_pyramid.*.vtm, time step:7, q1, Repetition Level:32" ), 32, &client );
         } );
+    runCase(
+        QStringLiteral( "35_netcdf_cf_t0_q1_rl32" ),
+        QStringLiteral( "NetCDF CF形式のtime step 0をC1/q1、Cool to Warm、Rotation (45, -35.26, -30)、Shading OFF、Repetition Level 32で表示する。" ),
+        netcdf_cf.key,
+        netcdf_cf.path,
+        [&]()
+        {
+            netcdf_cf_ready = load_netcdf_dataset( netcdf_cf, QString(), QString() );
+            if ( !netcdf_cf_ready ) { return; }
+            applyPresetColorMap( client, QStringLiteral( "Cool to Warm" ) );
+            configureNetcdfView( client, 0 );
+            captureCase(
+                QStringLiteral( "35_netcdf_cf_t0_q1_rl32" ),
+                QStringLiteral( "vtkNetCDFCFReader_*.nc, time step:0, C1/q1, Cool to Warm, Rotation (45, -35.26, -30), Shading OFF, Repetition Level:32" ),
+                -1,
+                &client );
+        } );
 
-    m_test_succeeded = true;
+    runCase(
+        QStringLiteral( "36_netcdf_cf_t2_q1_rl32" ),
+        QStringLiteral( "NetCDF CF形式のtime step 2をC1/q1、Cool to Warm、Rotation (45, -35.26, -30)、Shading OFF、Repetition Level 32で表示する。" ),
+        netcdf_cf.key,
+        netcdf_cf.path,
+        [&]()
+        {
+            if ( !netcdf_cf_ready ) { return; }
+            configureNetcdfView( client, 2 );
+            captureCase(
+                QStringLiteral( "36_netcdf_cf_t2_q1_rl32" ),
+                QStringLiteral( "vtkNetCDFCFReader_*.nc, time step:2, C1/q1, Cool to Warm, Rotation (45, -35.26, -30), Shading OFF, Repetition Level:32" ),
+                -1,
+                &client );
+        } );
+
+    runCase(
+        QStringLiteral( "37_netcdf_cam_t0_q1_rl32" ),
+        QStringLiteral( "NetCDF CAM形式のtime step 0をC1/q1、Cool to Warm、Rotation (45, -35.26, -30)、Shading OFF、Repetition Level 32で表示する。" ),
+        netcdf_cam_point.key,
+        netcdf_cam_point.path,
+        [&]()
+        {
+            netcdf_cam_ready = load_netcdf_dataset(
+                netcdf_cam_point,
+                QStringLiteral( "CAM connectivity" ),
+                netcdf_cam_connect.path );
+            if ( !netcdf_cam_ready )
+            {
+                return;
+            }
+            applyPresetColorMap( client, QStringLiteral( "Cool to Warm" ) );
+            configureNetcdfView( client, 0 );
+            captureCase(
+                QStringLiteral( "37_netcdf_cam_t0_q1_rl32" ),
+                QStringLiteral( "vtkNetCDFCAMReader_point_*.nc + vtkNetCDFCAMReader_connectivity.nc, time step:0, C1/q1, Cool to Warm, Rotation (45, -35.26, -30), Shading OFF, Repetition Level:32" ),
+                -1,
+                &client );
+        } );
+
+    runCase(
+        QStringLiteral( "38_netcdf_cam_t2_q1_rl32" ),
+        QStringLiteral( "NetCDF CAM形式のtime step 2をC1/q1、Cool to Warm、Rotation (45, -35.26, -30)、Shading OFF、Repetition Level 32で表示する。" ),
+        netcdf_cam_point.key,
+        netcdf_cam_point.path,
+        [&]()
+        {
+            if ( !netcdf_cam_ready ) { return; }
+            configureNetcdfView( client, 2 );
+            captureCase(
+                QStringLiteral( "38_netcdf_cam_t2_q1_rl32" ),
+                QStringLiteral( "vtkNetCDFCAMReader_point_*.nc + vtkNetCDFCAMReader_connectivity.nc, time step:2, C1/q1, Cool to Warm, Rotation (45, -35.26, -30), Shading OFF, Repetition Level:32" ),
+                -1,
+                &client );
+        } );
+
+    runCase(
+        QStringLiteral( "39_netcdf_mpas_t0_q1_rl32" ),
+        QStringLiteral( "NetCDF MPAS形式のtime step 0をC1/q1、Cool to Warm、Rotation (45, -35.26, -30)、Shading OFF、Repetition Level 32で表示する。" ),
+        netcdf_mpas.key,
+        netcdf_mpas.path,
+        [&]()
+        {
+            netcdf_mpas_ready = load_netcdf_dataset( netcdf_mpas, QString(), QString() );
+            if ( !netcdf_mpas_ready ) { return; }
+            applyPresetColorMap( client, QStringLiteral( "Cool to Warm" ) );
+            configureNetcdfView( client, 0 );
+            captureCase(
+                QStringLiteral( "39_netcdf_mpas_t0_q1_rl32" ),
+                QStringLiteral( "vtkMPASReader_*.nc, time step:0, C1/q1, Cool to Warm, Rotation (45, -35.26, -30), Shading OFF, Repetition Level:32" ),
+                -1,
+                &client );
+        } );
+
+    runCase(
+        QStringLiteral( "40_netcdf_mpas_t2_q1_rl32" ),
+        QStringLiteral( "NetCDF MPAS形式のtime step 2をC1/q1、Cool to Warm、Rotation (45, -35.26, -30)、Shading OFF、Repetition Level 32で表示する。" ),
+        netcdf_mpas.key,
+        netcdf_mpas.path,
+        [&]()
+        {
+            if ( !netcdf_mpas_ready ) { return; }
+            configureNetcdfView( client, 2 );
+            captureCase(
+                QStringLiteral( "40_netcdf_mpas_t2_q1_rl32" ),
+                QStringLiteral( "vtkMPASReader_*.nc, time step:2, C1/q1, Cool to Warm, Rotation (45, -35.26, -30), Shading OFF, Repetition Level:32" ),
+                -1,
+                &client );
+        } );
+
+    runCase(
+        QStringLiteral( "41_netcdf_slac_t0_q1_rl32" ),
+        QStringLiteral( "NetCDF SLAC形式のtime step 0をC1/q1、Cool to Warm、Rotation (45, -35.26, -30)、Shading OFF、Repetition Level 32で表示する。" ),
+        netcdf_slac_mesh.key,
+        netcdf_slac_mesh.path,
+        [&]()
+        {
+            netcdf_slac_ready = load_netcdf_dataset(
+                netcdf_slac_mesh,
+                QStringLiteral( "SLAC mode" ),
+                netcdf_slac_mode.path );
+            if ( !netcdf_slac_ready )
+            {
+                return;
+            }
+            applyPresetColorMap( client, QStringLiteral( "Cool to Warm" ) );
+            configureNetcdfView( client, 0 );
+            captureCase(
+                QStringLiteral( "41_netcdf_slac_t0_q1_rl32" ),
+                QStringLiteral( "vtkSLACReader_volume.ncdf + vtkSLACReader_mode_*.ncdf, time step:0, C1/q1, Cool to Warm, Rotation (45, -35.26, -30), Shading OFF, Repetition Level:32" ),
+                -1,
+                &client );
+        } );
+
+    runCase(
+        QStringLiteral( "42_netcdf_slac_t2_q1_rl32" ),
+        QStringLiteral( "NetCDF SLAC形式のtime step 2をC1/q1、Cool to Warm、Rotation (45, -35.26, -30)、Shading OFF、Repetition Level 32で表示する。" ),
+        netcdf_slac_mesh.key,
+        netcdf_slac_mesh.path,
+        [&]()
+        {
+            if ( !netcdf_slac_ready ) { return; }
+            configureNetcdfView( client, 2 );
+            captureCase(
+                QStringLiteral( "42_netcdf_slac_t2_q1_rl32" ),
+                QStringLiteral( "vtkSLACReader_volume.ncdf + vtkSLACReader_mode_*.ncdf, time step:2, C1/q1, Cool to Warm, Rotation (45, -35.26, -30), Shading OFF, Repetition Level:32" ),
+                -1,
+                &client );
+        } );
+
+    m_test_succeeded = netcdf_cf_ready && netcdf_cam_ready && netcdf_mpas_ready && netcdf_slac_ready;
 }
 
 } // namespace ClientTests
