@@ -4,6 +4,7 @@
 #include "../Utils/ObjectInfoUtils.h"
 #include <filesystem>
 #include <chrono>
+#include <cctype>
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
@@ -71,6 +72,28 @@ std::vector<std::string> ExpandNumericWildcard( const std::string& wildcard,
     if ( files.empty() ) error = "No regular file matches: " + wildcard;
     return files;
 }
+
+std::string NormalizeStatisticName( const std::string& statistic )
+{
+    const auto first = std::find_if_not( statistic.begin(), statistic.end(),
+        []( unsigned char c ) { return std::isspace( c ) != 0; } );
+    const auto last = std::find_if_not( statistic.rbegin(), statistic.rend(),
+        []( unsigned char c ) { return std::isspace( c ) != 0; } ).base();
+    if ( first >= last ) return {};
+
+    std::string normalized( first, last );
+    std::transform( normalized.begin(), normalized.end(), normalized.begin(),
+        []( unsigned char c ) { return static_cast<char>( std::tolower( c ) ); } );
+
+    if ( normalized == "average" || normalized == "avg" || normalized == "mean" )
+        return "mean";
+    if ( normalized == "variance" ) return "variance";
+    if ( normalized == "cv" || normalized == "cov" ||
+         normalized == "coefficient_variation" ||
+         normalized == "coefficient of variation" ||
+         normalized == "coefficient-of-variation" )
+        return "cv";
+    return {};
 }
 
 std::vector<EnsembleTransferFunction>* StatisticTransferFunctionArray(
