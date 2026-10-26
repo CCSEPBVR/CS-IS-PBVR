@@ -1,5 +1,8 @@
 #include "ObjectEditor.h"
 #include "ui_ObjectEditor.h"
+#include "EnsembleTransferFunctionEditor.h"
+
+#include <QDebug>
 
 namespace
 {
@@ -162,6 +165,11 @@ void ObjectEditor::reset()
     setWidgetsVisible( m_group_nontexture_polygon_object_widgets,  false );
 }
 
+void ObjectEditor::setEnsembleTransferFunctionEditor( EnsembleTransferFunctionEditor* editor )
+{
+    m_ensemble_transfer_function_editor = editor;
+}
+
 void ObjectEditor::onOperatorStateUpdate( const bool operatorState )
 {
     m_is_operator = operatorState;
@@ -189,16 +197,27 @@ void ObjectEditor::onOperatorStateUpdate( const bool operatorState )
 
 void ObjectEditor::onUnpack( const QByteArray& binary )
 {
+    qDebug() << "[Client][ObjectEditor] onUnpack bytes =" << binary.size();
+    if( binary.size() < static_cast<int>( sizeof(int) ) )
+    {
+        qDebug() << "[Client][ObjectEditor] binary too small for timestep.";
+        return;
+    }
+
     const char* dataPtr = binary.constData();
-    size_t offset = 0;
+    std::size_t offset = 0;
 
     // Time Step
     int timeStep = 0;
     std::memcpy( &timeStep, dataPtr + offset, sizeof(int) );
     offset += sizeof(int);
+    qDebug() << "[Client][ObjectEditor] unpack timestep =" << timeStep
+             << "model rows =" << m_model->rowCount();
 
     // 送信されてきたUUIDを記録する
     std::unordered_set<std::string> receivedUUIDs;
+    int receivedObjects = 0;
+    int matchedObjects = 0;
 
     while( offset < static_cast<size_t>( binary.size() ) )
     {
@@ -213,6 +232,10 @@ void ObjectEditor::onUnpack( const QByteArray& binary )
         std::string uuid( uuidLen, '\0' );
         std::memcpy( uuid.data(), dataPtr + offset, uuidLen );
         offset += uuidLen;
+        ++receivedObjects;
+        qDebug() << "[Client][ObjectEditor] object payload uuid =" << QString::fromStdString( uuid )
+                 << "uuidLen =" << uuidLen
+                 << "offset =" << static_cast<qulonglong>( offset );
 
         receivedUUIDs.insert( uuid );
 
@@ -221,6 +244,7 @@ void ObjectEditor::onUnpack( const QByteArray& binary )
         offset += sizeof(int);
 
         // NOTE:モデル内のUUIDと一致する場合objectを更新する。
+        bool matched = false;
         for( int row = 0; row < m_model->rowCount(); ++row )
         {
             QStandardItem* nameItem = m_model->item( row, 0 );
@@ -230,6 +254,8 @@ void ObjectEditor::onUnpack( const QByteArray& binary )
             ObjectInfoExtractor::ObjectInfo info = var.value<ObjectInfoExtractor::ObjectInfo>();
 
             if( info.uuid != uuid ) continue;
+            matched = true;
+            ++matchedObjects;
 
             // NOTE:UUIDが一致したのでobjectを更新
 
@@ -241,9 +267,12 @@ void ObjectEditor::onUnpack( const QByteArray& binary )
             case ObjectInfoExtractor::InsituServerPointObject:
             case ObjectInfoExtractor::PointObjectKVSML:
             {
-                size_t numberOfVertices = 0;
+                std::size_t numberOfVertices = 0;
                 std::memcpy( &numberOfVertices, dataPtr + offset, sizeof(size_t) );
                 offset += sizeof(size_t);
+                qDebug() << "[Client][ObjectEditor] point object matched row =" << row
+                         << "vertices =" << static_cast<qulonglong>( numberOfVertices )
+                         << "currentImportedTimeStep =" << currentImportedTimeStep;
 
                 kvs::ValueArray<kvs::Real32> coords( numberOfVertices * 3 );
                 std::memcpy( coords.data(), dataPtr + offset, sizeof(kvs::Real32) * 3 * numberOfVertices );
@@ -278,9 +307,12 @@ void ObjectEditor::onUnpack( const QByteArray& binary )
             case ObjectInfoExtractor::PointObjectLAS:
             case ObjectInfoExtractor::PointObjectPTS:
             {
-                size_t numberOfVertices = 0;
+                std::size_t numberOfVertices = 0;
                 std::memcpy( &numberOfVertices, dataPtr + offset, sizeof(size_t) );
                 offset += sizeof(size_t);
+                qDebug() << "[Client][ObjectEditor] point object LAS/PTS matched row =" << row
+                         << "vertices =" << static_cast<qulonglong>( numberOfVertices )
+                         << "currentImportedTimeStep =" << currentImportedTimeStep;
 
                 kvs::ValueArray<kvs::Real32> coords( numberOfVertices * 3 );
                 std::memcpy( coords.data(), dataPtr + offset, sizeof(kvs::Real32) * 3 * numberOfVertices );
@@ -323,15 +355,18 @@ void ObjectEditor::onUnpack( const QByteArray& binary )
                 std::memcpy( &normalType, dataPtr + offset, sizeof(kvs::PolygonObject::NormalType) );
                 offset += sizeof(kvs::PolygonObject::NormalType);
 
-                size_t nCoords;
+                std::size_t nCoords;
                 std::memcpy( &nCoords, dataPtr + offset, sizeof(size_t) );
                 offset += sizeof(size_t);
+                qDebug() << "[Client][ObjectEditor] polygon/glyph matched row =" << row
+                         << "coords count =" << static_cast<qulonglong>( nCoords )
+                         << "currentImportedTimeStep =" << currentImportedTimeStep;
 
                 kvs::ValueArray<kvs::Real32> coords( nCoords );
                 std::memcpy( coords.data(), dataPtr + offset, sizeof(kvs::Real32) * nCoords );
                 offset += sizeof(kvs::Real32) * nCoords;
 
-                size_t nColors;
+                std::size_t nColors;
                 std::memcpy( &nColors, dataPtr + offset, sizeof(size_t) );
                 offset += sizeof(size_t);
 
@@ -339,7 +374,7 @@ void ObjectEditor::onUnpack( const QByteArray& binary )
                 std::memcpy( colors.data(), dataPtr + offset, sizeof(kvs::UInt8) * nColors );
                 offset += sizeof(kvs::UInt8) * nColors;
 
-                size_t nNormals;
+                std::size_t nNormals;
                 std::memcpy( &nNormals, dataPtr + offset, sizeof(size_t) );
                 offset += sizeof(size_t);
 
@@ -347,7 +382,7 @@ void ObjectEditor::onUnpack( const QByteArray& binary )
                 std::memcpy( normals.data(), dataPtr + offset, sizeof(kvs::Real32) * nNormals );
                 offset += sizeof(kvs::Real32) * nNormals;
 
-                size_t nConnections;
+                std::size_t nConnections;
                 std::memcpy( &nConnections, dataPtr + offset, sizeof(size_t) );
                 offset += sizeof(size_t);
 
@@ -355,7 +390,7 @@ void ObjectEditor::onUnpack( const QByteArray& binary )
                 std::memcpy( connections.data(), dataPtr + offset, sizeof(kvs::UInt32) * nConnections );
                 offset += sizeof(kvs::UInt32) * nConnections;
 
-                size_t nOpacities;
+                std::size_t nOpacities;
                 std::memcpy( &nOpacities, dataPtr + offset, sizeof(size_t) );
                 offset += sizeof(size_t);
 
@@ -402,7 +437,7 @@ void ObjectEditor::onUnpack( const QByteArray& binary )
                 std::memcpy( &normalType, dataPtr + offset, sizeof(kvs::TexturedPolygonObject::NormalType) );
                 offset += sizeof(kvs::TexturedPolygonObject::NormalType);
 
-                size_t nCoords;
+                std::size_t nCoords;
                 std::memcpy( &nCoords, dataPtr + offset, sizeof(size_t) );
                 offset += sizeof(size_t);
 
@@ -410,7 +445,7 @@ void ObjectEditor::onUnpack( const QByteArray& binary )
                 std::memcpy( coords.data(), dataPtr + offset, sizeof(kvs::Real32) * nCoords );
                 offset += sizeof(kvs::Real32) * nCoords;
 
-                size_t nColors;
+                std::size_t nColors;
                 std::memcpy( &nColors, dataPtr + offset, sizeof(size_t) );
                 offset += sizeof(size_t);
 
@@ -418,7 +453,7 @@ void ObjectEditor::onUnpack( const QByteArray& binary )
                 std::memcpy( colors.data(), dataPtr + offset, sizeof(kvs::UInt8) * nColors );
                 offset += sizeof(kvs::UInt8) * nColors;
 
-                size_t nNormals;
+                std::size_t nNormals;
                 std::memcpy( &nNormals, dataPtr + offset, sizeof(size_t) );
                 offset += sizeof(size_t);
 
@@ -426,7 +461,7 @@ void ObjectEditor::onUnpack( const QByteArray& binary )
                 std::memcpy( normals.data(), dataPtr + offset, sizeof(kvs::Real32) * nNormals );
                 offset += sizeof(kvs::Real32) * nNormals;
 
-                size_t nConnections;
+                std::size_t nConnections;
                 std::memcpy( &nConnections, dataPtr + offset, sizeof(size_t) );
                 offset += sizeof(size_t);
 
@@ -434,7 +469,7 @@ void ObjectEditor::onUnpack( const QByteArray& binary )
                 std::memcpy( connections.data(), dataPtr + offset, sizeof(kvs::UInt32) * nConnections );
                 offset += sizeof(kvs::UInt32) * nConnections;
 
-                size_t nOpacities;
+                std::size_t nOpacities;
                 std::memcpy( &nOpacities, dataPtr + offset, sizeof(size_t) );
                 offset += sizeof(size_t);
 
@@ -442,7 +477,7 @@ void ObjectEditor::onUnpack( const QByteArray& binary )
                 std::memcpy( opacities.data(), dataPtr + offset, sizeof(kvs::UInt8) * nOpacities );
                 offset += sizeof(kvs::UInt8) * nOpacities;
 
-                size_t nTexture2DCoords;
+                std::size_t nTexture2DCoords;
                 std::memcpy( &nTexture2DCoords, dataPtr + offset, sizeof(size_t) );
                 offset += sizeof(size_t);
 
@@ -450,7 +485,7 @@ void ObjectEditor::onUnpack( const QByteArray& binary )
                 std::memcpy( texture2DCoords.data(), dataPtr + offset, sizeof(kvs::Real32) * nTexture2DCoords );
                 offset += sizeof(kvs::Real32) * nTexture2DCoords;
 
-                size_t nTextureIds;
+                std::size_t nTextureIds;
                 std::memcpy( &nTextureIds, dataPtr + offset, sizeof(size_t) );
                 offset += sizeof(size_t);
 
@@ -459,19 +494,19 @@ void ObjectEditor::onUnpack( const QByteArray& binary )
                 offset += sizeof(kvs::UInt32) * nTextureIds;
 
                 // --- mapIdToColorArray ---
-                size_t mapColorSize;
+                std::size_t mapColorSize;
                 memcpy( &mapColorSize, dataPtr + offset, sizeof(size_t) );
                 offset += sizeof(size_t);
 
                 std::map<kvs::UInt32, kvs::ValueArray<kvs::UInt8>> mapColor;
 
-                for( size_t i = 0; i < mapColorSize; i++ )
+                for( std::size_t i = 0; i < mapColorSize; i++ )
                 {
                     kvs::UInt32 id;
                     memcpy( &id, dataPtr + offset, sizeof(kvs::UInt32) );
                     offset += sizeof(kvs::UInt32);
 
-                    size_t arrSize;
+                    std::size_t arrSize;
                     memcpy( &arrSize, dataPtr + offset, sizeof(size_t) );
                     offset += sizeof(size_t);
 
@@ -483,13 +518,13 @@ void ObjectEditor::onUnpack( const QByteArray& binary )
                 }
 
                 // --- width ---
-                size_t mapWSize;
+                std::size_t mapWSize;
                 memcpy( &mapWSize, dataPtr + offset, sizeof(size_t) );
                 offset += sizeof(size_t);
 
                 std::map<kvs::UInt32, kvs::UInt32> mapW;
 
-                for( size_t i = 0; i < mapWSize; i++ )
+                for( std::size_t i = 0; i < mapWSize; i++ )
                 {
                     kvs::UInt32 id, w;
                     memcpy( &id, dataPtr + offset, sizeof(kvs::UInt32) );
@@ -500,13 +535,13 @@ void ObjectEditor::onUnpack( const QByteArray& binary )
                 }
 
                 // --- height ---
-                size_t mapHSize;
+                std::size_t mapHSize;
                 memcpy( &mapHSize, dataPtr + offset, sizeof(size_t) );
                 offset += sizeof(size_t);
 
                 std::map<kvs::UInt32, kvs::UInt32> mapH;
 
-                for( size_t i = 0; i < mapHSize; i++ )
+                for( std::size_t i = 0; i < mapHSize; i++ )
                 {
                     kvs::UInt32 id, h;
                     memcpy( &id, dataPtr + offset, sizeof(kvs::UInt32) );
@@ -559,7 +594,7 @@ void ObjectEditor::onUnpack( const QByteArray& binary )
                 // std::memcpy( &normalType, dataPtr + offset, sizeof(kvs::LineObject::NormalType) );
                 // offset += sizeof(kvs::LineObject::NormalType);
 
-                size_t nCoords;
+                std::size_t nCoords;
                 std::memcpy( &nCoords, dataPtr + offset, sizeof(size_t) );
                 offset += sizeof(size_t);
 
@@ -567,7 +602,7 @@ void ObjectEditor::onUnpack( const QByteArray& binary )
                 std::memcpy( coords.data(), dataPtr + offset, sizeof(kvs::Real32) * nCoords );
                 offset += sizeof(kvs::Real32) * nCoords;
 
-                size_t nColors;
+                std::size_t nColors;
                 std::memcpy( &nColors, dataPtr + offset, sizeof(size_t) );
                 offset += sizeof(size_t);
 
@@ -575,7 +610,7 @@ void ObjectEditor::onUnpack( const QByteArray& binary )
                 std::memcpy( colors.data(), dataPtr + offset, sizeof(kvs::UInt8) * nColors );
                 offset += sizeof(kvs::UInt8) * nColors;
 
-                size_t nNormals;
+                std::size_t nNormals;
                 std::memcpy( &nNormals, dataPtr + offset, sizeof(size_t) );
                 offset += sizeof(size_t);
 
@@ -583,7 +618,7 @@ void ObjectEditor::onUnpack( const QByteArray& binary )
                 std::memcpy( normals.data(), dataPtr + offset, sizeof(kvs::Real32) * nNormals );
                 offset += sizeof(kvs::Real32) * nNormals;
 
-                size_t nConnections;
+                std::size_t nConnections;
                 std::memcpy( &nConnections, dataPtr + offset, sizeof(size_t) );
                 offset += sizeof(size_t);
 
@@ -591,7 +626,7 @@ void ObjectEditor::onUnpack( const QByteArray& binary )
                 std::memcpy( connections.data(), dataPtr + offset, sizeof(kvs::UInt32) * nConnections );
                 offset += sizeof(kvs::UInt32) * nConnections;
 
-                size_t nSizes;
+                std::size_t nSizes;
                 std::memcpy( &nSizes, dataPtr + offset, sizeof(size_t) );
                 offset += sizeof(size_t);
 
@@ -628,7 +663,18 @@ void ObjectEditor::onUnpack( const QByteArray& binary )
             nameItem->setData( QVariant::fromValue( info ), Qt::UserRole );
             break;
         }
+        if( !matched )
+        {
+            qDebug() << "[Client][ObjectEditor] WARNING: received uuid is not in model. uuid ="
+                     << QString::fromStdString( uuid )
+                     << "offset =" << static_cast<qulonglong>( offset );
+        }
     }
+
+    qDebug() << "[Client][ObjectEditor] unpack loop done receivedObjects =" << receivedObjects
+             << "matchedObjects =" << matchedObjects
+             << "final offset =" << static_cast<qulonglong>( offset )
+             << "binary size =" << binary.size();
 
     // NOTE:受信していないUUIDのobjectをnullptrに更新する
     for( int row = 0; row < m_model->rowCount(); ++row )
@@ -839,6 +885,7 @@ void ObjectEditor::onReceiveSelectedFile( const QJsonObject& payload )
     // サーバポイントオブジェクト(ClientServer/In-Situ共通)
     objectInfo.tmpParticleLimit      = payload[QString::fromUtf8( Protocol::Key::TmpParticleLimit )].toInt();
     objectInfo.particleLimit         = payload[QString::fromUtf8( Protocol::Key::ParticleLimit )].toInt();
+    objectInfo.isEnsemble            = payload.value( QString::fromUtf8( Protocol::Key::IsEnsemble ) ).toBool( false );
     // NOTE:(extraOpacityFactor)は一時的に無効にしています。必要になったら下記のコードの削除とextraOpacityFactorに関係するコードのコメント文を元に戻せば使えるはずです。
     // objectInfo.tmpExtraOpacityFactor = static_cast<float>( payload[QString::fromUtf8( Protocol::Key::TmpExtraOpacityFactor )].toDouble() );
     // objectInfo.extraOpacityFactor    = static_cast<float>( payload[QString::fromUtf8( Protocol::Key::ExtraOpacityFactor )].toDouble() );
@@ -870,7 +917,11 @@ void ObjectEditor::onReceiveSelectedFile( const QJsonObject& payload )
 
     // FIXME:ここで成分数のアップデートを行っていますが、適切な場所なのか不明です
     const bool isServerPointObject = ( objectInfo.format == ObjectInfoExtractor::ClientServerPointObject ) || ( objectInfo.format == ObjectInfoExtractor::InsituServerPointObject );
-    if( isServerPointObject ) emit updateNumberOfVector( objectInfo.numberOfVector );
+    if( isServerPointObject )
+    {
+        emit updateNumberOfVector( objectInfo.numberOfVector );
+        emit updateIsEnsemble( objectInfo.isEnsemble );
+    }
 }
 
 void ObjectEditor::onReceiveObjectDelete( const QJsonObject& payload )
@@ -1539,12 +1590,16 @@ void ObjectEditor::requestServerDataAt( const int requestTimeStep )
     resultMaxObjectCoords.append( m_result_max_object_coords.y() );
     resultMaxObjectCoords.append( m_result_max_object_coords.z() );
 
-    m_web_sockets->text()->sendTextMessage( QJsonDocument( {
-                                                          { QString::fromUtf8( Protocol::Key::Event )                , QString::fromUtf8( Protocol::Events::RequestDataAt ) },
-                                                          { QString::fromUtf8( Protocol::Key::TimeStep )             , requestTimeStep },
-                                                          { QString::fromUtf8( Protocol::Key::ResultMinObjectCoords ), resultMinObjectCoords },
-                                                          { QString::fromUtf8( Protocol::Key::ResultMaxObjectCoords ), resultMaxObjectCoords },
-                                                          } ).toJson( QJsonDocument::Compact ) );
+    QJsonObject request;
+    request[QString::fromUtf8( Protocol::Key::Event )] = QString::fromUtf8( Protocol::Events::RequestDataAt );
+    request[QString::fromUtf8( Protocol::Key::TimeStep )] = requestTimeStep;
+    request[QString::fromUtf8( Protocol::Key::ResultMinObjectCoords )] = resultMinObjectCoords;
+    request[QString::fromUtf8( Protocol::Key::ResultMaxObjectCoords )] = resultMaxObjectCoords;
+
+    qDebug() << "[Client][ObjectEditor] send RequestDataAt timestep =" << requestTimeStep
+             << "text connected =" << m_web_sockets->text()->isValid()
+             << "binary connected =" << m_web_sockets->binary()->isValid();
+    m_web_sockets->text()->sendTextMessage( QJsonDocument( request ).toJson( QJsonDocument::Compact ) );
 }
 
 void ObjectEditor::beginHybridDataRequest( const int requestTimeStep )

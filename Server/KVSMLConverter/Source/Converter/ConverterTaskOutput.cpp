@@ -176,7 +176,7 @@ void cvt::ConverterTaskOutput::deserialize( const std::string& expression )
                 return std::stoi( value );
             };
 
-            auto get_int_vec = [&]( const char* name, int* vec3, std::size_t n ) {
+            auto get_int_vec = [&]( const char* name, int* vec3, std::size_t  n ) {
                 auto o = nested->FindNestedElementWithName( name );
                 value = o->GetCharacterData();
                 cvt::Trim( value );
@@ -191,7 +191,7 @@ void cvt::ConverterTaskOutput::deserialize( const std::string& expression )
                 }
             };
 
-            auto get_vec = [&]( const char* name, auto vec3, std::size_t n = 3 ) {
+            auto get_vec = [&]( const char* name, auto vec3, std::size_t  n = 3 ) {
                 auto o = nested->FindNestedElementWithName( name );
                 value = o->GetCharacterData();
                 cvt::Trim( value );

@@ -44,7 +44,7 @@ public:
     {
     }
 
-    void setResolution( const size_t resolution )
+    void setResolution( const std::size_t resolution )
     {
         m_resolution = resolution;
 
@@ -54,13 +54,13 @@ public:
         const vismodule::ColorMap::Table color_table = this->colorMap().table();
         const vismodule::OpacityMap::Table opacity_table = this->opacityMap().table();
 
-        const size_t n_color   = color_table.size() / 3;
-        const size_t n_opacity = opacity_table.size();
+        const std::size_t n_color   = color_table.size() / 3;
+        const std::size_t n_opacity = opacity_table.size();
 
         const float color_stride = 1.0 / ( n_color - 1 );
         const float opacity_stride = 1.0 / ( n_opacity - 1 );
 
-        for ( size_t n = 0; n < n_color; n++ )
+        for ( std::size_t n = 0; n < n_color; n++ )
         {
             const float x = color_stride * n;
             const vismodule::UInt8 r = color_table.at( 3 * n + 0 );
@@ -70,7 +70,7 @@ public:
             color_map.addPoint( x, color );
         }
 
-        for ( size_t n = 0; n < n_opacity; n++ )
+        for ( std::size_t n = 0; n < n_opacity; n++ )
         {
             const float x = opacity_stride * n;
             const float opacity = opacity_table.at( n );

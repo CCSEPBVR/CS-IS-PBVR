@@ -22,7 +22,7 @@ LineTag::LineTag():
 void LineTag::print( std::ostream& os, const kvs::Indent& indent ) const
 {
     os << indent << "Number of xyz sequences: " << m_xyzSequences.size() << std::endl;
-    for ( size_t i = 0; i < m_xyzSequences.size(); i++ )
+    for ( std::size_t i = 0; i < m_xyzSequences.size(); i++ )
     {
         os << indent << "XYZ sequence[" << i << "]:" << std::endl;
         m_xyzSequences[i].print( os, indent.nextIndent() );

@@ -48,18 +48,18 @@ protected:
 public:
 
     ParticleBufferAccumulator(
-        const size_t width,
-        const size_t height,
-        const size_t subpixel_level );
+        const std::size_t width,
+        const std::size_t height,
+        const std::size_t subpixel_level );
 
     virtual ~ParticleBufferAccumulator( void );
 
 public:
 
     bool create(
-        const size_t width,
-        const size_t height,
-        const size_t subpixel_level );
+        const std::size_t width,
+        const std::size_t height,
+        const std::size_t subpixel_level );
 
     void clean( void );
 
@@ -67,9 +67,9 @@ public:
 
 public:
 
-    void accumulate( const size_t id, const vismodule::ParticleBuffer* buffer );
+    void accumulate( const std::size_t id, const vismodule::ParticleBuffer* buffer );
 
-    void add( const size_t bindex, const size_t id, const vismodule::Real32 depth, const vismodule::UInt32 vindex );
+    void add( const std::size_t bindex, const std::size_t id, const vismodule::Real32 depth, const vismodule::UInt32 vindex );
 
     void createImage(
         ObjectList&                   object_list,

@@ -30,7 +30,7 @@ private:
     std::deque<kvs::TransferFunction> m_undo_stack; ///< undo stack
     std::deque<kvs::TransferFunction> m_redo_stack; ///< redo stack
     StackEvent* m_stack_event; ///< stack event
-    size_t m_max_stack_size; ///< max. stack size
+    std::size_t m_max_stack_size; ///< max. stack size
 
 private:
     kvs::ScreenBase* m_parent = nullptr; ///< pointer to screen
@@ -62,13 +62,13 @@ public:
     const kvs::ColorMap colorMap() const { return m_color_map_palette->colorMap(); }
     const kvs::OpacityMap opacityMap() const { return m_opacity_map_palette->opacityMap(); }
     const kvs::TransferFunction transferFunction() const;
-    size_t undoStackSize() const { return m_undo_stack.size(); }
-    size_t redoStackSize() const { return m_redo_stack.size(); }
-    size_t maxStackSize() const { return m_max_stack_size; }
+    std::size_t undoStackSize() const { return m_undo_stack.size(); }
+    std::size_t redoStackSize() const { return m_redo_stack.size(); }
+    std::size_t maxStackSize() const { return m_max_stack_size; }
 
     void setTransferFunction( const kvs::TransferFunction& transfer_function );
     void setVolumeObject( const kvs::VolumeObjectBase* object );
-    void setMaxStackSize( const size_t stack_size ) { m_max_stack_size = stack_size; }
+    void setMaxStackSize( const std::size_t stack_size ) { m_max_stack_size = stack_size; }
 
     void apply( ApplyFunc func ) { m_apply_func = func; }
 

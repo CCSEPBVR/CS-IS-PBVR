@@ -62,7 +62,7 @@ const bool CellTag::hasNCells( void ) const
  *  @return number of cells
  */
 /*===========================================================================*/
-const size_t CellTag::ncells( void ) const
+const std::size_t CellTag::ncells( void ) const
 {
     return( m_ncells );
 }
@@ -73,7 +73,7 @@ const size_t CellTag::ncells( void ) const
  *  @param  ncells [in] number of cells
  */
 /*===========================================================================*/
-void CellTag::setNCells( const size_t ncells )
+void CellTag::setNCells( const std::size_t ncells )
 {
     m_has_ncells = true;
     m_ncells = ncells;

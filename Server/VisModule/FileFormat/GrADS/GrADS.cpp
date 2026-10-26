@@ -212,7 +212,7 @@ const GrADS::GriddedBinaryDataFileList& GrADS::dataList( void ) const
  *  @return gridded binary data
  */
 /*===========================================================================*/
-const GrADS::GriddedBinaryDataFile& GrADS::data( const size_t index ) const
+const GrADS::GriddedBinaryDataFile& GrADS::data( const std::size_t index ) const
 {
     return( m_data_list[index] );
 }
@@ -264,7 +264,7 @@ const bool GrADS::read( const std::string& filename )
         if ( template_data_filename[0] == '^' ) { template_data_filename.erase( 0, 1 ); }
     }
 
-    size_t counter = 0;
+    std::size_t counter = 0;
     vismodule::Directory directory( data_pathname );
     vismodule::grads::TDef tdef = m_data_descriptor.tdef();
     vismodule::FileList::const_iterator file = directory.fileList().begin();

@@ -34,8 +34,8 @@ public:
 private:
 
     Pbm::Header m_header; ///< header information
-    size_t m_width; ///< width
-    size_t m_height; ///< height
+    std::size_t m_width; ///< width
+    std::size_t m_height; ///< height
     kvs::BitArray m_pixels; ///< bit pixel data
 
 public:
@@ -45,12 +45,12 @@ public:
 public:
 
     Pbm();
-    Pbm( const size_t width, const size_t height, const kvs::BitArray& data );
+    Pbm( const std::size_t width, const std::size_t height, const kvs::BitArray& data );
     Pbm( const std::string& filename );
 
     const Pbm::Header& header() const;
-    size_t width() const;
-    size_t height() const;
+    std::size_t width() const;
+    std::size_t height() const;
     const kvs::BitArray& pixels() const;
 
     void print( std::ostream& os, const kvs::Indent& indent = kvs::Indent(0) ) const;

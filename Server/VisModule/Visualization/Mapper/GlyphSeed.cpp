@@ -138,7 +138,7 @@ bool GlyphSeed::InputParameter( const GlyphProperty& glyph_property, const int n
 
     int table_size = glyph_property.m_glyph_color_map_table.size();    
     vismodule::ValueArray<vismodule::UInt8> u_table( table_size );
-    for( size_t j = 0; j < table_size; j++ ) u_table[j] = (vismodule::UInt8)glyph_property.m_glyph_color_map_table[j];
+    for( std::size_t j = 0; j < table_size; j++ ) u_table[j] = (vismodule::UInt8)glyph_property.m_glyph_color_map_table[j];
     vismodule::ColorMap color_map( u_table, glyph_min, glyph_max );
     m_color_map = color_map;
 
@@ -194,17 +194,17 @@ bool GlyphSeed::InputParameter( const GlyphProperty& glyph_property, const int n
     std::cout << "m_number_of_sample_points = " << m_number_of_sample_points    << std::endl;
     std::cout << "m_color_sampling_method   = " << color_sampling_method_string << std::endl; 
 
-    for ( size_t i = 0; i < m_direction_variables.size(); i++ )
+    for ( std::size_t i = 0; i < m_direction_variables.size(); i++ )
     {
         std::cout << "m_direction_variables[" << i << "]  = " << m_direction_variables[i] << std::endl;
     }
 
-    for ( size_t i = 0; i < m_size_variables.size(); i++ )
+    for ( std::size_t i = 0; i < m_size_variables.size(); i++ )
     {
         std::cout << "m_size_variables[" << i << "]       = " << m_size_variables[i] << std::endl;
     }
 
-    for ( size_t i = 0; i < m_color_data_variables.size(); i++ )
+    for ( std::size_t i = 0; i < m_color_data_variables.size(); i++ )
     {
         std::cout << "m_color_data_variables[" << i << "]       = " << m_color_data_variables[i] << std::endl;
     }
@@ -290,7 +290,7 @@ bool GlyphSeed::InputParameter( const GlyphProperty& glyph_property, const int n
 //    std::vector<int> i_table;
 //    i_table = glyph_property.getTableInt( "GLYPH_COLOR_MAP_TABLE" );
 //    vismodule::ValueArray<vismodule::UInt8> u_table( i_table.size() );
-//    for( size_t j = 0; j<i_table.size(); j++ ) u_table[j] = (vismodule::UInt8)i_table[j];
+//    for( std::size_t j = 0; j<i_table.size(); j++ ) u_table[j] = (vismodule::UInt8)i_table[j];
 //    vismodule::ColorMap color_map( u_table, glyph_min, glyph_max);
 //
 //    m_color_map = color_map;
@@ -951,7 +951,7 @@ void GlyphSeed::DistributionSampling_unstruct( const vismodule::VolumeObjectBase
                 std::vector<float> scalar_array(interp[thid].size());
                 float eval_result =0;
 
-                for( size_t j= 0; j < m_nvariable; j++ )
+                for( std::size_t j= 0; j < m_nvariable; j++ )
                 {
                     scalar_array[j] = interp[thid][j]->scalar();
                 }
@@ -966,7 +966,7 @@ void GlyphSeed::DistributionSampling_unstruct( const vismodule::VolumeObjectBase
 
                     std::vector<int> size_var = m_size_variables;
                     int n_size_data=size_var.size();
-                    for( size_t j= 0; j < n_size_data; j++ ) 
+                    for( std::size_t j= 0; j < n_size_data; j++ ) 
                     {
                         eval_result += scalar_array[size_var[j]] * scalar_array[size_var[j]] ; 
                     }
@@ -983,7 +983,7 @@ void GlyphSeed::DistributionSampling_unstruct( const vismodule::VolumeObjectBase
 
                     std::vector<int> color_var = m_color_data_variables;
                     int n_color_data=color_var.size();
-                    for( size_t j= 0; j < n_color_data; j++ )
+                    for( std::size_t j= 0; j < n_color_data; j++ )
                     {
                         eval_result += scalar_array[color_var[j]] * scalar_array[color_var[j]] ; 
                     }
@@ -1285,7 +1285,7 @@ void GlyphSeed::DistributionSampling_struct(domain_parameters_struct dom, Type**
                     const vismodule::Vector3f coord = v + d;
 
                     std::vector<float> scalar_array(interp[thid].size());
-                    for( size_t j= 0; j < m_nvariable; j++ )
+                    for( std::size_t j= 0; j < m_nvariable; j++ )
                     {
                         interp[thid][j]->attachPoint_woSIMD( coord );
                         scalar_array[j] = interp[thid][j]->scalar_woSIMD<float>();
@@ -1298,7 +1298,7 @@ void GlyphSeed::DistributionSampling_struct(domain_parameters_struct dom, Type**
 
                         std::vector<int> size_var = m_size_variables;
                         int n_size_data=size_var.size();
-                        for( size_t j= 0; j < n_size_data; j++ ) 
+                        for( std::size_t j= 0; j < n_size_data; j++ ) 
                         {
                             eval_result += scalar_array[size_var[j]] * scalar_array[size_var[j]] ; 
                         }
@@ -1315,7 +1315,7 @@ void GlyphSeed::DistributionSampling_struct(domain_parameters_struct dom, Type**
                         float eval_result =0;
                         std::vector<int> color_var = m_color_data_variables;
                         int n_color_data=color_var.size();
-                        for( size_t j= 0; j < n_color_data; j++ )
+                        for( std::size_t j= 0; j < n_color_data; j++ )
                         {
                             eval_result += scalar_array[color_var[j]] * scalar_array[color_var[j]] ; 
                         }
@@ -1515,7 +1515,7 @@ void GlyphSeed::DistributionSampling_struct(domain_parameters_struct dom, Type**
 #endif
 }
 
-const size_t GlyphSeed::calculate_number_of_particles(
+const std::size_t GlyphSeed::calculate_number_of_particles(
     const float density,
     const float volume_of_cell,
     vismodule::MersenneTwister* MT )
@@ -1523,7 +1523,7 @@ const size_t GlyphSeed::calculate_number_of_particles(
     const float N = density * volume_of_cell;
     const float R = MT->rand();
 
-    size_t n = static_cast<size_t>( N );
+    std::size_t n = static_cast<size_t>( N );
     if ( N - n > R )
     {
         ++n;

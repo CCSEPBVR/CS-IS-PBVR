@@ -151,8 +151,8 @@ void ScreenBase::draw()
 
 kvs::ColorImage ScreenBase::capture() const
 {
-    const size_t width = BaseClass::width();
-    const size_t height = BaseClass::height();
+    const std::size_t width = BaseClass::width();
+    const std::size_t height = BaseClass::height();
     kvs::ValueArray<kvs::UInt8> buffer( width * height * 3 );
 
     kvs::OpenGL::SetReadBuffer( GL_FRONT );

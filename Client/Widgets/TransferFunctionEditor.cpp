@@ -53,11 +53,18 @@ TransferFunctionEditor::~TransferFunctionEditor()
     delete ui;
 }
 
+void TransferFunctionEditor::emitLegendTransferFunctionUpdate()
+{
+    if( !m_has_legend_transfer_function ) { return; }
+    emit updateLastSentTransferFunction( &m_legend_transfer_function );
+}
+
 void TransferFunctionEditor::reset()
 {
     ui->numberOfTransferFunctionSpinBox->setValue( 0 );
     ui->colorSynthesizerLineEdit  ->clear();
     ui->opacitySynthesizerLineEdit->clear();
+    m_has_legend_transfer_function = false;
 }
 
 void TransferFunctionEditor::onOperatorStateUpdate( const bool operatorState )
@@ -283,10 +290,13 @@ void TransferFunctionEditor::onReceiveTransferFunctionParameter( const QJsonObje
 
     m_last_sent_tf  = *m_transfer_function;
     m_has_last_sent = true;
+    m_legend_transfer_function = *m_transfer_function;
+    m_has_legend_transfer_function = true;
 
     // NOTE:初回導通なので両UIを更新
     updateUIFromUserInput( UpdateTarget::Both );
     updateUIFromServer( UpdateTarget::Both );
+    emitLegendTransferFunctionUpdate();
 }
 
 void TransferFunctionEditor::onReceiveRequestDataAtTransferFunctionParameter( const QJsonObject& payload )
@@ -465,7 +475,9 @@ void TransferFunctionEditor::onReceiveRequestDataAtTransferFunctionParameter( co
         }
     }
     updateUIFromServer( UpdateTarget::Both );
-    updateLastSentTransferFunction( &legendBar );
+    m_legend_transfer_function = legendBar;
+    m_has_legend_transfer_function = true;
+    emitLegendTransferFunctionUpdate();
 }
 
 void TransferFunctionEditor::onLoadParameter( const QString& filePath )
@@ -1020,7 +1032,7 @@ void TransferFunctionEditor::onApply()
     auto sameColorMap = []( const std::vector<kvs::RGBColor>& a, const std::vector<kvs::RGBColor>& b ) -> bool
     {
         if( a.size() != b.size() ) return false;
-        for( size_t i = 0; i < a.size(); ++i )
+        for( std::size_t i = 0; i < a.size(); ++i )
         {
             if( a[i].red()   != b[i].red() )   return false;
             if( a[i].green() != b[i].green() ) return false;
@@ -1033,7 +1045,7 @@ void TransferFunctionEditor::onApply()
                              const std::vector<float>& b ) -> bool
     {
         if( a.size() != b.size() ) return false;
-        for( size_t i = 0; i < a.size(); ++i )
+        for( std::size_t i = 0; i < a.size(); ++i )
         {
             if( std::abs( (double)a[i] - (double)b[i] ) > 1e-7 ) return false;
         }

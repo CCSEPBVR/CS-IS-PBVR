@@ -39,9 +39,9 @@ public:
 protected:
 
     std::string                  m_cell_type;     ///< cell type
-    size_t                       m_vector_length; ///< vector length
-    size_t                       m_nnodes;        ///< number of nodes
-    size_t                       m_ncells;        ///< number of cells
+    std::size_t                       m_vector_length; ///< vector length
+    std::size_t                       m_nnodes;        ///< number of nodes
+    std::size_t                       m_ncells;        ///< number of cells
     vismodule::AnyValueArray           m_values;        ///< field value array
     vismodule::ValueArray<vismodule::Real32> m_coords;        ///< coordinate value array
     vismodule::ValueArray<vismodule::UInt32> m_connections;   ///< connection id array
@@ -58,11 +58,11 @@ public:
 
     const std::string cellType() const;
 
-    const size_t veclen() const;
+    const std::size_t veclen() const;
 
-    const size_t nnodes() const;
+    const std::size_t nnodes() const;
 
-    const size_t ncells() const;
+    const std::size_t ncells() const;
 
     const vismodule::AnyValueArray& values() const;
 
@@ -74,11 +74,11 @@ public:
 
     void setCellType( const std::string& cellType );
 
-    void setVeclen( const size_t veclen );
+    void setVeclen( const std::size_t veclen );
 
-    void setNNodes( const size_t nnodes );
+    void setNNodes( const std::size_t nnodes );
 
-    void setNCells( const size_t ncells );
+    void setNCells( const std::size_t ncells );
 
     void setValues( const vismodule::AnyValueArray& values );
 

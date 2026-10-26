@@ -91,7 +91,7 @@ namespace RGBFormulae
  *  @return colormap
  */
 /*===========================================================================*/
-vismodule::ColorMap Create( const int index0, const int index1, const int index2, const size_t resolution )
+vismodule::ColorMap Create( const int index0, const int index1, const int index2, const std::size_t resolution )
 {
     int rindex = index0;
     int gindex = index1;
@@ -110,7 +110,7 @@ vismodule::ColorMap Create( const int index0, const int index1, const int index2
 
     vismodule::ColorMap::Table table( 3 * resolution );
     vismodule::UInt8* color = table.pointer();
-    for ( size_t i = 0; i < resolution; ++i )
+    for ( std::size_t i = 0; i < resolution; ++i )
     {
         const double x = static_cast<double>(i) / ( resolution - 1 );
         const double rx = rnegative ? 1.0 - x : x;

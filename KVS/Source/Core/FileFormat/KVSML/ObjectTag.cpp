@@ -193,7 +193,7 @@ bool ObjectTag::read( const kvs::XMLNode::SuperClass* parent )
         kvs::Tokenizer t( external_coord, delim );
 
         float values[6];
-        for ( size_t i = 0; i < 6; i++ )
+        for ( std::size_t i = 0; i < 6; i++ )
         {
             if ( t.isLast() )
             {
@@ -217,7 +217,7 @@ bool ObjectTag::read( const kvs::XMLNode::SuperClass* parent )
         kvs::Tokenizer t( object_coord, delim );
 
         float values[6];
-        for ( size_t i = 0; i < 6; i++ )
+        for ( std::size_t i = 0; i < 6; i++ )
         {
             if ( t.isLast() )
             {

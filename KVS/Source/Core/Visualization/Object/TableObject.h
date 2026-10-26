@@ -36,8 +36,8 @@ public:
     using InsideRangeFlags = std::vector<kvs::UInt8>;
 
 private:
-    size_t m_nrows = 0; ///< number of rows
-    size_t m_ncolumns = 0; ///< number of columns
+    std::size_t m_nrows = 0; ///< number of rows
+    std::size_t m_ncolumns = 0; ///< number of columns
     kvs::AnyValueTable m_table{}; ///< table data
     Labels m_labels{}; ///< label list
     Values m_min_values{}; ///< min. values for each column
@@ -59,20 +59,20 @@ public:
     void addColumn( const kvs::AnyValueArray& array, const std::string& label = "" );
     void addColumn( const kvs::AnyValueArray& array, const kvs::Real64 min_value, const kvs::Real64 max_value, const std::string& label = "" );
     void setTable( const kvs::AnyValueTable& table, const Labels& lanels = Labels() );
-    void setMinValue( const size_t column_index, const kvs::Real64 value );
-    void setMaxValue( const size_t column_index, const kvs::Real64 value );
-    void setMinMaxValues( const size_t column_index, const kvs::Real64 min_value, const kvs::Real64 max_value );
-    void setMinRange( const size_t column_index, const kvs::Real64 range );
-    void setMaxRange( const size_t column_index, const kvs::Real64 range );
-    void setRange( const size_t column_index, const kvs::Real64 min_range, const kvs::Real64 max_range );
-    void moveMinRange( const size_t column_index, const kvs::Real64 drange );
-    void moveMaxRange( const size_t column_index, const kvs::Real64 drange );
-    void moveRange( const size_t column_index, const kvs::Real64 drange );
-    void resetRange( const size_t column_index );
+    void setMinValue( const std::size_t column_index, const kvs::Real64 value );
+    void setMaxValue( const std::size_t column_index, const kvs::Real64 value );
+    void setMinMaxValues( const std::size_t column_index, const kvs::Real64 min_value, const kvs::Real64 max_value );
+    void setMinRange( const std::size_t column_index, const kvs::Real64 range );
+    void setMaxRange( const std::size_t column_index, const kvs::Real64 range );
+    void setRange( const std::size_t column_index, const kvs::Real64 min_range, const kvs::Real64 max_range );
+    void moveMinRange( const std::size_t column_index, const kvs::Real64 drange );
+    void moveMaxRange( const std::size_t column_index, const kvs::Real64 drange );
+    void moveRange( const std::size_t column_index, const kvs::Real64 drange );
+    void resetRange( const std::size_t column_index );
     void resetRange();
 
-    size_t numberOfColumns() const { return m_ncolumns; }
-    size_t numberOfRows() const { return m_nrows; }
+    std::size_t numberOfColumns() const { return m_ncolumns; }
+    std::size_t numberOfRows() const { return m_nrows; }
     const kvs::AnyValueTable& table() const { return m_table; }
     const Labels& labels() const { return m_labels; }
     const Columns& columns() const { return m_table.columns(); }
@@ -81,18 +81,18 @@ public:
     const Values& minRanges() const { return m_min_ranges; }
     const Values& maxRanges() const { return m_max_ranges; }
     const InsideRangeFlags& insideRangeFlags() const { return m_inside_range_flags; }
-    const std::string& label( const size_t index ) const { return m_labels[index];  }
-    const kvs::AnyValueArray& column( const size_t index ) const { return m_table.column(index); }
-    kvs::Real64 minValue( const size_t index ) const { return m_min_values[index]; }
-    kvs::Real64 maxValue( const size_t index ) const { return m_max_values[index]; }
-    kvs::Real64 minRange( const size_t column_index ) const { return m_min_ranges[column_index]; }
-    kvs::Real64 maxRange( const size_t column_index ) const { return m_max_ranges[column_index]; }
-    bool insideRange( const size_t row_index ) const { return m_inside_range_flags[row_index] == 1; }
-    template <typename T> T at( const size_t row, const size_t col ) const { return m_table.column(col).at<T>(row); }
+    const std::string& label( const std::size_t index ) const { return m_labels[index];  }
+    const kvs::AnyValueArray& column( const std::size_t index ) const { return m_table.column(index); }
+    kvs::Real64 minValue( const std::size_t index ) const { return m_min_values[index]; }
+    kvs::Real64 maxValue( const std::size_t index ) const { return m_max_values[index]; }
+    kvs::Real64 minRange( const std::size_t column_index ) const { return m_min_ranges[column_index]; }
+    kvs::Real64 maxRange( const std::size_t column_index ) const { return m_max_ranges[column_index]; }
+    bool insideRange( const std::size_t row_index ) const { return m_inside_range_flags[row_index] == 1; }
+    template <typename T> T at( const std::size_t row, const std::size_t col ) const { return m_table.column(col).at<T>(row); }
 
 protected:
-    void setNumberOfRows( const size_t nrows ) { m_nrows = nrows; }
-    void setNumberOfColumns( const size_t ncolumns ) { m_ncolumns = ncolumns; }
+    void setNumberOfRows( const std::size_t nrows ) { m_nrows = nrows; }
+    void setNumberOfColumns( const std::size_t ncolumns ) { m_ncolumns = ncolumns; }
     void setLabels( const Labels& labels ) { m_labels = labels; }
     void setMinValues( const Values& min_values ) { m_min_values = min_values; }
     void setMaxValues( const Values& max_values ) { m_max_values = max_values; }
@@ -105,8 +105,8 @@ public:
     typedef KVS_DEPRECATED( std::vector<kvs::AnyValueArray> ColumnList );
     typedef KVS_DEPRECATED( std::vector<kvs::Real64> ValueList );
     typedef KVS_DEPRECATED( std::vector<kvs::UInt8> RangeList );
-    KVS_DEPRECATED( size_t ncolumns() const ) { return this->numberOfColumns(); }
-    KVS_DEPRECATED( size_t nrows() const ) { return this->numberOfRows(); }
+    KVS_DEPRECATED( std::size_t ncolumns() const ) { return this->numberOfColumns(); }
+    KVS_DEPRECATED( std::size_t nrows() const ) { return this->numberOfRows(); }
     KVS_DEPRECATED( const Labels labelList() const ) { return this->labels(); }
     KVS_DEPRECATED( const Columns columnList() const ) { return this->table().columns(); }
     KVS_DEPRECATED( const Values minValueList() const ) { return this->minValues(); }

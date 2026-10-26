@@ -41,7 +41,7 @@ IDManager::~IDManager()
     clear();
 }
 
-const IDPair IDManager::operator [] ( const size_t index ) const
+const IDPair IDManager::operator [] ( const std::size_t index ) const
 {
     const int id = m_flip_table[index];
 
@@ -55,7 +55,7 @@ const IDPair IDManager::operator [] ( const size_t index ) const
     return *p;
 }
 
-const size_t IDManager::size() const
+const std::size_t IDManager::size() const
 {
     return IDs::size();
 }

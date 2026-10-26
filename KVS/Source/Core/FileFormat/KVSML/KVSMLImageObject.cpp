@@ -186,11 +186,11 @@ bool KVSMLImageObject::read( const std::string& filename )
         m_pixel_type = pixel_tag.type();
 
         // <DataArray>
-        const size_t nchannels =
+        const std::size_t nchannels =
             ( m_pixel_type == "gray" ) ? 1 :
             ( m_pixel_type == "color" ) ? 3 : 0;
-        const size_t npixels = m_width * m_height;
-        const size_t nelements = npixels * nchannels;
+        const std::size_t npixels = m_width * m_height;
+        const std::size_t nelements = npixels * nchannels;
         kvs::kvsml::DataArrayTag data_tag;
         if ( !data_tag.read( pixel_tag.node(), nelements, &m_pixels ) )
         {

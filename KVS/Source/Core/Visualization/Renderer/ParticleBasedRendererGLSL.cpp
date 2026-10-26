@@ -38,11 +38,11 @@ kvs::ValueArray<T> ShuffleArray( const kvs::ValueArray<T>& values, kvs::UInt32 s
     else { ret = values.clone(); }
 
     T* p = ret.data();
-    size_t size = ret.size() / Dim;
+    std::size_t size = ret.size() / Dim;
 
-    for ( size_t i = 0; i < size; ++i )
+    for ( std::size_t i = 0; i < size; ++i )
     {
-        size_t j = rng.randInteger() % ( i + 1 );
+        std::size_t j = rng.randInteger() % ( i + 1 );
         for ( int k = 0; k < Dim; ++k )
         {
             std::swap( p[ i * Dim + k ], p[ j * Dim + k ] );
@@ -232,7 +232,7 @@ void ParticleBasedRenderer::setTranslationOffset( kvs::Vec3 translate_offset )
 
 void ParticleBasedRenderer::Engine::BufferObject::create(
     const kvs::ObjectBase* object,
-    const size_t nmanagers )
+    const std::size_t nmanagers )
 {
     const auto* point = kvs::PointObject::DownCast( object );
     KVS_ASSERT( point->coords().size() == point->colors().size() );
@@ -253,13 +253,13 @@ void ParticleBasedRenderer::Engine::BufferObject::create(
     m_nmanagers = nmanagers;
     m_managers = new Manager [ m_nmanagers ];
 
-    const size_t nvertices = point->numberOfVertices();
-    const size_t rem = nvertices % m_nmanagers;
-    const size_t quo = nvertices / m_nmanagers;
-    for ( size_t i = 0; i < m_nmanagers; i++ )
+    const std::size_t nvertices = point->numberOfVertices();
+    const std::size_t rem = nvertices % m_nmanagers;
+    const std::size_t quo = nvertices / m_nmanagers;
+    for ( std::size_t i = 0; i < m_nmanagers; i++ )
     {
-        const size_t count = quo + ( i < rem ? 1 : 0 );
-        const size_t first = quo * i + kvs::Math::Min( i, rem );
+        const std::size_t count = quo + ( i < rem ? 1 : 0 );
+        const std::size_t first = quo * i + kvs::Math::Min( i, rem );
 
         Manager::VertexBuffer vertex_array;
         vertex_array.type = GL_FLOAT;
@@ -291,15 +291,15 @@ void ParticleBasedRenderer::Engine::BufferObject::create(
 
 void ParticleBasedRenderer::Engine::BufferObject::draw(
     const kvs::ObjectBase* object,
-    const size_t index )
+    const std::size_t index )
 {
     KVS_ASSERT( index < m_nmanagers );
 
     const auto* point = kvs::PointObject::DownCast( object );
-    const size_t nvertices = point->numberOfVertices();
-    const size_t rem = nvertices % m_nmanagers;
-    const size_t quo = nvertices / m_nmanagers;
-    const size_t count = quo + ( index < rem ? 1 : 0 );
+    const std::size_t nvertices = point->numberOfVertices();
+    const std::size_t rem = nvertices % m_nmanagers;
+    const std::size_t quo = nvertices / m_nmanagers;
+    const std::size_t count = quo + ( index < rem ? 1 : 0 );
 
     auto& manager = m_managers[index];
     kvs::VertexBufferObjectManager::Binder bind( manager );
@@ -407,7 +407,7 @@ void ParticleBasedRenderer::Engine::RenderPass::setup(
 
 void ParticleBasedRenderer::Engine::RenderPass::draw(
     const kvs::ObjectBase* object,
-    const size_t index )
+    const std::size_t index )
 {
     kvs::ProgramObject::Binder po( m_shader_program );
     kvs::Texture::Binder tex( m_parent->randomTexture() );

@@ -16,7 +16,7 @@
 
 namespace
 {
-const size_t MaxLineLength = 256;
+const std::size_t MaxLineLength = 256;
 } // end of namespace
 
 
@@ -89,7 +89,7 @@ std::streampos Header::offset( void ) const
     return( m_offset );
 }
 
-void Header::set( const std::string& magic, const size_t width, const size_t height )
+void Header::set( const std::string& magic, const std::size_t width, const std::size_t height )
 {
     m_magic  = magic;
     m_width  = width;

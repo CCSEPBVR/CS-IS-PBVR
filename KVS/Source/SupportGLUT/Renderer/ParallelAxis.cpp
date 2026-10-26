@@ -187,7 +187,7 @@ const kvs::RGBColor& ParallelAxis::labelColor() const
  *  @param  top_margin [in] margin
  */
 /*===========================================================================*/
-void ParallelAxis::setTopMargin( const size_t top_margin )
+void ParallelAxis::setTopMargin( const std::size_t top_margin )
 {
     m_top_margin = top_margin;
 }
@@ -198,7 +198,7 @@ void ParallelAxis::setTopMargin( const size_t top_margin )
  *  @param  bottom_margin [in] margin
  */
 /*===========================================================================*/
-void ParallelAxis::setBottomMargin( const size_t bottom_margin )
+void ParallelAxis::setBottomMargin( const std::size_t bottom_margin )
 {
     m_bottom_margin = bottom_margin;
 }
@@ -209,7 +209,7 @@ void ParallelAxis::setBottomMargin( const size_t bottom_margin )
  *  @param  left_margin [in] margin
  */
 /*===========================================================================*/
-void ParallelAxis::setLeftMargin( const size_t left_margin )
+void ParallelAxis::setLeftMargin( const std::size_t left_margin )
 {
     m_left_margin = left_margin;
 }
@@ -220,7 +220,7 @@ void ParallelAxis::setLeftMargin( const size_t left_margin )
  *  @param  right_margin [in] margin
  */
 /*===========================================================================*/
-void ParallelAxis::setRightMargin( const size_t right_margin )
+void ParallelAxis::setRightMargin( const std::size_t right_margin )
 {
     m_right_margin = right_margin;
 }
@@ -286,7 +286,7 @@ void ParallelAxis::exec( kvs::ObjectBase* object, kvs::Camera* camera, kvs::Ligh
     ::BeginDraw();
 
     bool has_label = false;
-    for ( size_t i = 0; i < table->labels().size(); i++ )
+    for ( std::size_t i = 0; i < table->labels().size(); i++ )
     {
         if ( table->labels().at(i).size() > 0 ) { has_label = true; break; }
     }
@@ -299,9 +299,9 @@ void ParallelAxis::exec( kvs::ObjectBase* object, kvs::Camera* camera, kvs::Ligh
     // Draw axes.
     glLineWidth( m_axis_width );
     glBegin( GL_LINES );
-    const size_t naxes = table->numberOfColumns();
+    const std::size_t naxes = table->numberOfColumns();
     const float stride = float( x1 - x0 ) / ( naxes - 1 );
-    for ( size_t i = 0; i < naxes; i++ )
+    for ( std::size_t i = 0; i < naxes; i++ )
     {
         const float x = m_left_margin + stride * i;
         glColor4ub( m_axis_color.r(), m_axis_color.g(), m_axis_color.b(), 255 );
@@ -311,7 +311,7 @@ void ParallelAxis::exec( kvs::ObjectBase* object, kvs::Camera* camera, kvs::Ligh
     glEnd();
 
     // Draw min/max values and label.
-    for ( size_t i = 0; i < naxes; i++ )
+    for ( std::size_t i = 0; i < naxes; i++ )
     {
         std::string max_value;
         std::string min_value;
@@ -326,9 +326,9 @@ void ParallelAxis::exec( kvs::ObjectBase* object, kvs::Camera* camera, kvs::Ligh
             min_value = kvs::String::From( table->minValue(i) );
         }
 
-        const size_t max_width = max_value.size() * ::CharacterWidth;
-        const size_t min_width = min_value.size() * ::CharacterWidth;
-        const size_t height = ::CharacterHeight;
+        const std::size_t max_width = max_value.size() * ::CharacterWidth;
+        const std::size_t min_width = min_value.size() * ::CharacterWidth;
+        const std::size_t height = ::CharacterHeight;
 
         const float max_x = ( m_left_margin + stride * i ) - max_width * 0.5f;
         const float max_y = y0 - 5.0f;
@@ -341,7 +341,7 @@ void ParallelAxis::exec( kvs::ObjectBase* object, kvs::Camera* camera, kvs::Ligh
         if ( has_label )
         {
             const std::string label( table->label(i) );
-            const size_t label_width = label.size() * ::CharacterWidth;
+            const std::size_t label_width = label.size() * ::CharacterWidth;
             const float label_x = ( m_left_margin + stride * i ) - label_width * 0.5f;
             const float label_y = min_y + height;
             ::DrawString( label, kvs::Math::Max( 0.0f, label_x ), label_y, m_label_color );

@@ -36,12 +36,12 @@ DataSet::DataSet( void )
 /*===========================================================================*/
 std::ostream& operator << ( std::ostream& os, const DataSet& d )
 {
-    for ( size_t i = 0; i < d.m_comment_list.size(); i++ )
+    for ( std::size_t i = 0; i < d.m_comment_list.size(); i++ )
     {
         os << "comment[" << i << "]: " << d.m_comment_list[i] << std::endl;
     }
 
-    for ( size_t i = 0; i < d.m_data_list.size(); i++ )
+    for ( std::size_t i = 0; i < d.m_data_list.size(); i++ )
     {
         os << "data[" << i << "]:" << std::endl;
         os << d.m_data_list[i];
@@ -69,7 +69,7 @@ const std::vector<std::string>& DataSet::commentList( void ) const
  *  @return comment
  */
 /*===========================================================================*/
-const std::string& DataSet::comment( const size_t index ) const
+const std::string& DataSet::comment( const std::size_t index ) const
 {
     return( m_comment_list.at( index ) );
 }
@@ -92,7 +92,7 @@ const std::vector<vismodule::gf::Data>& DataSet::dataList( void ) const
  *  @return data
  */
 /*===========================================================================*/
-const vismodule::gf::Data& DataSet::data( const size_t index ) const
+const vismodule::gf::Data& DataSet::data( const std::size_t index ) const
 {
     return( m_data_list.at( index ) );
 }
@@ -130,7 +130,7 @@ void DataSet::deallocate( void )
 /*===========================================================================*/
 const bool DataSet::readAscii( FILE* fp )
 {
-    const size_t line_size = 256;
+    const std::size_t line_size = 256;
     char line[line_size];
     memset( line, 0, line_size );
 
@@ -140,7 +140,7 @@ const bool DataSet::readAscii( FILE* fp )
     sscanf( line, "%d", &ncomments );
 
     // Read commnets.
-    for ( size_t i = 0; i < size_t( ncomments ); i++ )
+    for ( std::size_t i = 0; i < size_t( ncomments ); i++ )
     {
         fgets( line, line_size, fp );
         if ( line[ strlen(line) - 1 ] == '\n' ) line[ strlen(line) - 1 ] = '\0';
@@ -183,8 +183,8 @@ const bool DataSet::readBinary( FILE* fp, const bool swap )
 
     // Read commnets.
     char comment[60];
-    char initialize[60]; for ( size_t i = 0; i < 60; i++ ) initialize[i] = '\0';
-    for ( size_t i = 0; i < size_t( ncomments ); i++ )
+    char initialize[60]; for ( std::size_t i = 0; i < 60; i++ ) initialize[i] = '\0';
+    for ( std::size_t i = 0; i < size_t( ncomments ); i++ )
     {
         memcpy( comment, initialize, 60 );
         fseek( fp, 4, SEEK_CUR );

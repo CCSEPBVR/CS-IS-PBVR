@@ -46,7 +46,7 @@ VolumeObjectBase::VolumeObjectBase():
  */
 /*==========================================================================*/
 VolumeObjectBase::VolumeObjectBase(
-    const size_t     veclen,
+    const std::size_t     veclen,
     const Coords&    coords,
     const Values&    values ):
     vismodule::ObjectBase(),
@@ -154,7 +154,7 @@ void VolumeObjectBase::setLabel( const std::string& label )
  *  Sets the vector length.
  */
 /*==========================================================================*/
-void VolumeObjectBase::setVeclen( const size_t veclen )
+void VolumeObjectBase::setVeclen( const std::size_t veclen )
 {
     m_veclen = veclen;
 }
@@ -244,7 +244,7 @@ const std::string& VolumeObjectBase::label() const
  *  Returns the vector length.
  */
 /*==========================================================================*/
-const size_t VolumeObjectBase::veclen() const
+const std::size_t VolumeObjectBase::veclen() const
 {
     return m_veclen;
 }
@@ -393,7 +393,7 @@ void VolumeObjectBase::deepCopy( const VolumeObjectBase& object )
     //2023 shimomura
     this->setCoordSynthesizerTokens( *object.getCoordSynthesizerTokens() );
 
-    const size_t size = object.values().size();
+    const std::size_t size = object.values().size();
     const std::type_info& type = object.values().typeInfo()->type();
     if (      type == typeid( vismodule::Int8 ) )
     {

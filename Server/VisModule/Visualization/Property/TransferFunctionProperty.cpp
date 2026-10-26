@@ -111,7 +111,7 @@ bool TransferFunctionProperty::LoadIN( const std::string& filename )
 
     while ( std::getline( fin, line ) )
     {
-        size_t pos;
+        std::size_t pos;
         while ( ( pos = line.find_first_of( " 　\t\r\n" ) ) != std::string::npos )
         {
             line.erase( pos, 1 );

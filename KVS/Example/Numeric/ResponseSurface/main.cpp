@@ -26,8 +26,8 @@
 /*===========================================================================*/
 int main( void )
 {
-    const size_t npoints = 12; // number of data points
-    const size_t nvariables = 2; // number of independent variables
+    const std::size_t npoints = 12; // number of data points
+    const std::size_t nvariables = 2; // number of independent variables
 
     kvs::Matrix<double> X( npoints, nvariables ); // independent variables
     kvs::Vector<double> Y( npoints ); // dependent variables (responses)

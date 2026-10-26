@@ -41,8 +41,8 @@ private:
 
     static constexpr double k_long_press_sec = 0.5;
 
-    static constexpr size_t k_side_max   = kvs::Side::Max;
-    static constexpr size_t k_button_max = kvs::Controller::Button::Max;
+    static constexpr std::size_t k_side_max   = kvs::Side::Max;
+    static constexpr std::size_t k_button_max = kvs::Controller::Button::Max;
 
     std::array<std::array<bool, k_button_max>, k_side_max> m_down{};
     std::array<std::array<bool, k_button_max>, k_side_max> m_long_fired{};

@@ -39,8 +39,8 @@ protected:
     bool        m_is_downloaded; ///< if true, the texture is downloaded
     GLenum      m_wrap_s;        ///< wrap method for s-axis
     GLenum      m_wrap_t;        ///< wrap method for t-axis
-    size_t      m_width;         ///< texture width
-    size_t      m_height;        ///< texture height
+    std::size_t      m_width;         ///< texture width
+    std::size_t      m_height;        ///< texture height
     const void* m_pixels;        ///< pointer to the texture data (not allocated)
 
 public:
@@ -57,9 +57,9 @@ public:
 
     const GLenum wrapT( void ) const;
 
-    const size_t width( void ) const;
+    const std::size_t width( void ) const;
 
-    const size_t height( void ) const;
+    const std::size_t height( void ) const;
 
     const bool isDownloaded( void ) const;
 
@@ -71,14 +71,14 @@ public:
 
 public:
 
-    void create( const size_t width, const size_t height );
+    void create( const std::size_t width, const std::size_t height );
 
     void download(
-        const size_t width,
-        const size_t height,
+        const std::size_t width,
+        const std::size_t height,
         const void*  pixels,
-        const size_t xoffset = 0,
-        const size_t yoffset = 0 );
+        const std::size_t xoffset = 0,
+        const std::size_t yoffset = 0 );
 
     void bind( void );
 

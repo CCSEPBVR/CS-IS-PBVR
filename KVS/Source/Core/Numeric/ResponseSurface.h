@@ -32,9 +32,9 @@ class ResponseSurface : public kvs::Vector<T>
 {
 private:
 
-    size_t m_npoints; ///< number of data points
-    size_t m_nvariables; ///< number of independent variables (ex. x,y -> 2 )
-    size_t m_nterms; ///< number of terms (ex. x,y -> 6 = {1, x, y, x^2, y^2, xy})
+    std::size_t m_npoints; ///< number of data points
+    std::size_t m_nvariables; ///< number of independent variables (ex. x,y -> 2 )
+    std::size_t m_nterms; ///< number of terms (ex. x,y -> 6 = {1, x, y, x^2, y^2, xy})
     kvs::BitArray m_mask; ///< mask table for the active coefficients
     kvs::Matrix<T> m_coefficient_matrix; ///< coeffiecinet matrix (matrix of independent variable)
     kvs::Vector<T> m_responses; ///< response values (vector of dependent variable)
@@ -51,8 +51,8 @@ public:
     const kvs::Vector<T>& solve( const kvs::Matrix<T>& variables, const kvs::Vector<T>& responses );
     const kvs::Vector<T>& improve( const T threshold = T( 2.45 ) );
 
-    size_t numberOfPoints() const;
-    size_t numberOfVariables() const;
+    std::size_t numberOfPoints() const;
+    std::size_t numberOfVariables() const;
     T Rsquare() const;
     T adjustedRsquare() const;
     const kvs::Vector<T>& Tvalues() const;
@@ -65,8 +65,8 @@ private:
 
 #if 1 // KVS_ENABLE_DEPRECATED
 public:
-    size_t npoints() const { return this->numberOfPoints(); }
-    size_t nvariables() const { return this->numberOfVariables(); }
+    std::size_t npoints() const { return this->numberOfPoints(); }
+    std::size_t nvariables() const { return this->numberOfVariables(); }
 #endif
 };
 

@@ -151,7 +151,7 @@ void TransferFunctionEditorBase::setup( kvs::ScreenBase* screen )
     screen->setSize( width, height );
     screen->create();
 
-    const size_t resolution = 256;
+    const std::size_t resolution = 256;
     m_initial_transfer_function.create( resolution );
 
     m_undo_stack.push_front( m_initial_transfer_function );
@@ -214,8 +214,8 @@ void TransferFunctionEditorBase::setup( kvs::ScreenBase* screen )
 
 void TransferFunctionEditorBase::layout()
 {
-    const size_t button_margin = 5;
-    const size_t button_width = ( m_width - 2 * m_margin - button_margin ) / 2;
+    const std::size_t button_margin = 5;
+    const std::size_t button_width = ( m_width - 2 * m_margin - button_margin ) / 2;
 
     m_color_palette->setY( -7 );
     m_color_palette->setHeight( 170 );

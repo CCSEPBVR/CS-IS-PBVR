@@ -32,18 +32,18 @@ public:
     template <typename T>
     kvs::ValueArray<T> pdf( const kvs::ValueArray<T>& x ) const
     {
-        const size_t n = x.size();
+        const std::size_t n = x.size();
         kvs::ValueArray<T> values( n );
-        for ( size_t i = 0; i < n; i++ ) { values[i] = this->pdf( x[i] ); }
+        for ( std::size_t i = 0; i < n; i++ ) { values[i] = this->pdf( x[i] ); }
         return values;
     }
 
     template <typename T>
     kvs::ValueArray<T> cdf( const kvs::ValueArray<T>& x ) const
     {
-        const size_t n = x.size();
+        const std::size_t n = x.size();
         kvs::ValueArray<T> values( n );
-        for ( size_t i = 0; i < n; i++ ) { values[i] = this->cdf( x[i] ); }
+        for ( std::size_t i = 0; i < n; i++ ) { values[i] = this->cdf( x[i] ); }
         return values;
     }
 };

@@ -126,7 +126,7 @@ CellByCellRejectionSampling::~CellByCellRejectionSampling()
  *  @return sub-pixel level
  */
 /*===========================================================================*/
-const size_t CellByCellRejectionSampling::subpixelLevel() const
+const std::size_t CellByCellRejectionSampling::subpixelLevel() const
 {
     return m_subpixel_level;
 }
@@ -170,7 +170,7 @@ void CellByCellRejectionSampling::attachCamera( const vismodule::Camera& camera 
  *  @param  m_subpixel_level [in] sub-pixel level
  */
 /*===========================================================================*/
-void CellByCellRejectionSampling::setSubpixelLevel( const size_t subpixel_level )
+void CellByCellRejectionSampling::setSubpixelLevel( const std::size_t subpixel_level )
 {
     m_subpixel_level = subpixel_level;
 }
@@ -264,7 +264,7 @@ void CellByCellRejectionSampling::generate_particles_struct(
     m_o_histogram.fill(0x00);
     m_c_histogram.fill(0x00);
 
-    for( size_t i = 0; i < tf_number; i++ )
+    for( std::size_t i = 0; i < tf_number; i++ )
     {
         o_min[i] = m_transfer_function_array[i].opacityMap().minValue();
         o_max[i] = m_transfer_function_array[i].opacityMap().maxValue();
@@ -451,7 +451,7 @@ void CellByCellRejectionSampling::generate_particles_struct(
                 std::vector<bool> o_zero_flag(tf_number);
                 std::vector<bool> c_zero_flag(tf_number);
 
-                for( size_t i = 0; i < tf_number; i++ )
+                for( std::size_t i = 0; i < tf_number; i++ )
                 {
                     o_zero_flag[i] = false;
                     c_zero_flag[i] = false;
@@ -884,7 +884,7 @@ void CellByCellRejectionSampling::generate_particles_unstruct
 )
 {
     double start = GetTime();
-    size_t resolution = DEFAULT_NBINS;
+    std::size_t resolution = DEFAULT_NBINS;
 
     int tf_number                  = m_transfer_function_array.size();
     float sampling_volume_inverse  = m_transfer_function_synthesizer->getSamplingVolumeInverse();
@@ -1068,7 +1068,7 @@ void CellByCellRejectionSampling::generate_particles_unstruct
     m_o_histogram.fill(0x00);
     m_c_histogram.fill(0x00);
 
-    for( size_t i = 0; i < tf_number; i++ )
+    for( std::size_t i = 0; i < tf_number; i++ )
     {
         o_min[i] = m_transfer_function_array[i].opacityMap().minValue();
         o_max[i] = m_transfer_function_array[i].opacityMap().maxValue();
@@ -1224,7 +1224,7 @@ void CellByCellRejectionSampling::generate_particles_unstruct
             std::vector<bool> o_zero_flag(tf_number);
             std::vector<bool> c_zero_flag(tf_number);
 
-            for( size_t i = 0; i < tf_number; i++ )
+            for( std::size_t i = 0; i < tf_number; i++ )
             {
                 o_zero_flag[i] = false;
                 c_zero_flag[i] = false;
@@ -1249,7 +1249,7 @@ void CellByCellRejectionSampling::generate_particles_unstruct
 
             for( int cell_BLK = 0; cell_BLK < remain; cell_BLK++ )
             {
-                for( size_t i = 0; i < tf_number; i++ )
+                for( std::size_t i = 0; i < tf_number; i++ )
                 {
                     if ( !o_zero_flag[i] )
                     {
@@ -1322,7 +1322,7 @@ void CellByCellRejectionSampling::generate_particles_unstruct
                             local_coord_array[j] = interp[thid][0]->randomSampling_MT( &MT );
 
                             // 補間器にセルを一括でバインド
-                            for( size_t k = 0; k < nvariables; k++ )
+                            for( std::size_t k = 0; k < nvariables; k++ )
                             {
                                 interp[thid][k]->bindCell( cell_index[j] );
                             }
@@ -1626,7 +1626,7 @@ void CellByCellRejectionSampling::generate_particles_unstruct
     return;
 }
 
-const size_t CellByCellRejectionSampling::calculate_number_of_particles(
+const std::size_t CellByCellRejectionSampling::calculate_number_of_particles(
     const float density,
     const float volume_of_cell,
     vismodule::MersenneTwister* MT ) 
@@ -1635,7 +1635,7 @@ const size_t CellByCellRejectionSampling::calculate_number_of_particles(
     const float R = MT->rand();
     //const float R = 0.5;
 
-    size_t n = static_cast<size_t>( N ); 
+    std::size_t n = static_cast<size_t>( N ); 
     if ( N - n > R )
     {    
         ++n; 
@@ -1652,14 +1652,14 @@ const size_t CellByCellRejectionSampling::calculate_number_of_particles(
  *  @return number of particles
  */
 /*===========================================================================*/
-const size_t CellByCellRejectionSampling::calculate_number_of_particles(
+const std::size_t CellByCellRejectionSampling::calculate_number_of_particles(
     const float density,
     const float volume_of_cell )
 {
     const float N = density * volume_of_cell;
     const float R = Generator::GetRandomNumber();
 
-    size_t n = static_cast<size_t>( N );
+    std::size_t n = static_cast<size_t>( N );
     if ( N - n > R )
     {
         ++n;

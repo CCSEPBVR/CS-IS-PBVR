@@ -91,12 +91,12 @@ kvs::Range GetMinMaxValues( const kvs::VolumeObjectBase* volume )
         kvs::Real64 min_value = kvs::Value<kvs::Real64>::Max();
         kvs::Real64 max_value = kvs::Value<kvs::Real64>::Min();
 
-        const size_t veclen = volume->veclen();
+        const std::size_t veclen = volume->veclen();
 
         while ( value < end )
         {
             kvs::Real64 magnitude = 0.0;
-            for ( size_t i = 0; i < veclen; ++i )
+            for ( std::size_t i = 0; i < veclen; ++i )
             {
                 magnitude += static_cast<kvs::Real64>( ( *value ) * ( *value ) );
                 ++value;

@@ -54,7 +54,7 @@ struct SliceRange
         return ( stop - start ) / step;
     }
 
-    void adjust( const size_t array_size ) const
+    void adjust( const std::size_t array_size ) const
     {
         const auto size = static_cast<long>( array_size );
 

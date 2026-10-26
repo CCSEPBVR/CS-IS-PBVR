@@ -23,7 +23,7 @@ template <typename T>
 class LinearRegression
 {
 private:
-    size_t m_dof; ///< degree of freedom
+    std::size_t m_dof; ///< degree of freedom
     kvs::Vector<T> m_coef; ///< coefficients (m_eof[0]: intersect)
     kvs::Real64 m_r2; ///< R square
     kvs::Real64 m_adjusted_r2; ///< adjusted R square

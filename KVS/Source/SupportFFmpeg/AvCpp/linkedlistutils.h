@@ -238,7 +238,7 @@ public:
     /**
      Log(N) complexity!
      */
-    size_t count() const
+    std::size_t count() const
     {
         return std::distance(begin(), end());
     }
@@ -250,7 +250,7 @@ public:
      */
     element_wrapper_type at(size_t idx) const
     {
-        size_t size = count();
+        std::size_t size = count();
         if (idx >= size)
             return element_wrapper_type();
 

@@ -27,10 +27,10 @@ private:
     kvs::Matrix<T> m_u; ///< U matrix
     kvs::Matrix<T> m_lu; ///< LU matrix (marged L and U matrix by Crout's method)
     kvs::Vector<int> m_pivots; ///< pivot vector
-    static size_t m_max_iterations; ///< maximum number of iterations
+    static std::size_t m_max_iterations; ///< maximum number of iterations
 
 public:
-    static void SetMaxIterations( const size_t max_iterations );
+    static void SetMaxIterations( const std::size_t max_iterations );
 
 public:
     LUDecomposition();

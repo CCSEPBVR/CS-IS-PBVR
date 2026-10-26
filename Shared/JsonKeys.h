@@ -30,6 +30,7 @@ inline constexpr std::string_view RequiredFileType          = "RequiredFileType"
 
 // Initialize Parameter
 inline constexpr std::string_view TransferFunctionParameter = "TransferFunctionParameter";
+inline constexpr std::string_view EnsembleTransferFunctionParameter = "EnsembleTransferFunctionParameter";
 inline constexpr std::string_view GlyphParameter            = "GlyphParameter";
 inline constexpr std::string_view PlotOverLineParameter     = "PlotOverLineParameter";
 inline constexpr std::string_view PlotOverTimeParameter     = "PlotOverTimeParameter";
@@ -64,6 +65,7 @@ inline constexpr std::string_view TmpIsFocus                = "TmpIsFocus";
 inline constexpr std::string_view IsFocus                   = "IsFocus";
 inline constexpr std::string_view TmpParticleLimit          = "TmpParticleLimit";
 inline constexpr std::string_view ParticleLimit             = "ParticleLimit";
+inline constexpr std::string_view IsEnsemble                = "IsEnsemble";
 // inline constexpr std::string_view TmpExtraOpacityFactor     = "TmpExtraOpacityFactor";
 // inline constexpr std::string_view ExtraOpacityFactor        = "ExtraOpacityFactor";
 inline constexpr std::string_view TmpCoordinateX            = "TmpCoordinateX";
@@ -111,6 +113,21 @@ inline constexpr std::string_view OpacityServerRangeMin     = "OpacityServerRang
 inline constexpr std::string_view OpacityServerRangeMax     = "OpacityServerRangeMax";
 inline constexpr std::string_view OpacityMap                = "OpacityMap";
 inline constexpr std::string_view OpacityHistogram          = "OpacityHistogram";
+
+// EnsembleTransferFunctionEditor
+inline constexpr std::string_view Statistic                 = "Statistic";
+inline constexpr std::string_view EnsembleVariable          = "EnsembleVariable";
+inline constexpr std::string_view EnsembleUserRangeMode     = "EnsembleUserRangeMode";
+inline constexpr std::string_view EnsembleUserRangeMin      = "EnsembleUserRangeMin";
+inline constexpr std::string_view EnsembleUserRangeMax      = "EnsembleUserRangeMax";
+inline constexpr std::string_view EnsembleServerRangeMin    = "EnsembleServerRangeMin";
+inline constexpr std::string_view EnsembleServerRangeMax    = "EnsembleServerRangeMax";
+inline constexpr std::string_view EnsembleColorMap          = "EnsembleColorMap";
+inline constexpr std::string_view EnsembleOpacityMap        = "EnsembleOpacityMap";
+inline constexpr std::string_view EnsembleHistogram         = "EnsembleHistogram";
+
+// Repetition Level Control
+inline constexpr std::string_view RepeatLevel               = "RepeatLevel";
 
 // GlyphEditor
 inline constexpr std::string_view Type                      = "Type"; // FIXME:リモートファイルダイアログと重複している。
@@ -193,6 +210,8 @@ inline constexpr std::string_view ObjectDelete                  = "ObjectDelete"
 inline constexpr std::string_view ObjectInfoParameter           = "ObjectInfoParameter";
 inline constexpr std::string_view ServerSideSameTimeStepReplace = "ServerSideSameTimeStepReplace";
 inline constexpr std::string_view TransferFunctionParameter     = "TransferFunctionParameter";
+inline constexpr std::string_view EnsembleStatisticsParameter   = "EnsembleStatisticsParameter";
+inline constexpr std::string_view RepetitionLevelParameter      = "RepetitionLevelParameter";
 inline constexpr std::string_view GlyphParameter                = "GlyphParameter";
 inline constexpr std::string_view PlotOverLineParameter         = "PlotOverLineParameter";
 inline constexpr std::string_view PlotOverTimeParameter         = "PlotOverTimeParameter";

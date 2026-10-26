@@ -150,7 +150,7 @@ void Data::deallocate( void )
 /*===========================================================================*/
 const bool Data::readAscii( FILE* fp, const std::string tag )
 {
-    const size_t line_size = 256;
+    const std::size_t line_size = 256;
     char line[line_size];
     memset( line, 0, line_size );
 
@@ -178,11 +178,11 @@ const bool Data::readAscii( FILE* fp, const std::string tag )
     // Read 2D array.
     if ( m_array_type_header == "#FLT_ARY" )
     {
-        const size_t size = m_num * m_num2;
+        const std::size_t size = m_num * m_num2;
         vismodule::Real32* data = m_flt_array.allocate( size );
 
         const char* delim = " ,\t\n\r";
-        size_t counter = 0;
+        std::size_t counter = 0;
         while ( counter < size )
         {
             fgets( line, line_size, fp );
@@ -199,11 +199,11 @@ const bool Data::readAscii( FILE* fp, const std::string tag )
     }
     else if ( m_array_type_header == "#INT_ARY" )
     {
-        const size_t size = m_num * m_num2;
+        const std::size_t size = m_num * m_num2;
         vismodule::Int32* data = m_int_array.allocate( size );
 
         const char* delim = " ,\t\n\r";
-        size_t counter = 0;
+        std::size_t counter = 0;
         while ( counter < size )
         {
             fgets( line, line_size, fp );
@@ -255,7 +255,7 @@ const bool Data::readBinary( FILE* fp, const bool swap )
 
     // Read a commnet (data name).
     char comment[30];
-    for ( size_t i = 0; i < 30; i++ ) comment[i] = '\0';
+    for ( std::size_t i = 0; i < 30; i++ ) comment[i] = '\0';
     fseek( fp, 4, SEEK_CUR );
     fread( comment, 1, 30, fp );
     fseek( fp, 4, SEEK_CUR );
@@ -272,7 +272,7 @@ const bool Data::readBinary( FILE* fp, const bool swap )
     // Read 2D array.
     if ( m_array_type_header == "#FLT_ARY" )
     {
-        const size_t size = m_num * m_num2;
+        const std::size_t size = m_num * m_num2;
         vismodule::Real32* pointer = m_flt_array.allocate( size );
         fseek( fp, 4, SEEK_CUR );
         fread( pointer, sizeof(vismodule::Real32), size, fp );
@@ -281,7 +281,7 @@ const bool Data::readBinary( FILE* fp, const bool swap )
     }
     else if ( m_array_type_header == "#INT_ARY" )
     {
-        const size_t size = m_num * m_num2;
+        const std::size_t size = m_num * m_num2;
         vismodule::Int32* pointer = m_int_array.allocate( size );
         fseek( fp, 4, SEEK_CUR );
         fread( pointer, sizeof(vismodule::Int32), size, fp );

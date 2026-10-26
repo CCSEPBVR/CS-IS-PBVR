@@ -183,7 +183,7 @@ void ParallelCoordinatesRenderer::setColorMap( const vismodule::ColorMap& color_
  *  @param  index [in] index of axis
  */
 /*===========================================================================*/
-void ParallelCoordinatesRenderer::selectAxis( const size_t index )
+void ParallelCoordinatesRenderer::selectAxis( const std::size_t index )
 {
     m_active_axis = index;
 }
@@ -318,10 +318,10 @@ void ParallelCoordinatesRenderer::exec( vismodule::ObjectBase* object, vismodule
     const int y0 = m_top_margin;
     const int y1 = camera->windowHeight() - m_bottom_margin;
 
-    const size_t nrows = table->column(0).size();
-    const size_t naxes = table->ncolumns();
+    const std::size_t nrows = table->column(0).size();
+    const std::size_t naxes = table->ncolumns();
     const float stride = float( x1 - x0 ) / ( naxes - 1 );
-    for ( size_t i = 0; i < nrows; i++ )
+    for ( std::size_t i = 0; i < nrows; i++ )
     {
         if ( !table->insideRange( i ) ) continue;
 
@@ -332,7 +332,7 @@ void ParallelCoordinatesRenderer::exec( vismodule::ObjectBase* object, vismodule
         const vismodule::RGBColor color = m_color_map.at( color_value );
         glColor4ub( color.r(), color.g(), color.b(), m_line_opacity );
 
-        for ( size_t j = 0; j < naxes; j++ )
+        for ( std::size_t j = 0; j < naxes; j++ )
         {
             const vismodule::Real64 min_value = table->minValue(j);
             const vismodule::Real64 max_value = table->maxValue(j);

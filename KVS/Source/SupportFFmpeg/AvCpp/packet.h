@@ -43,14 +43,14 @@ public:
     Packet(Packet &&packet);
     explicit Packet(const AVPacket *packet, OptionalErrorCode ec = throws());
     explicit Packet(const std::vector<uint8_t> &data);
-    Packet(const uint8_t *data, size_t size, bool doAllign = true);
+    Packet(const uint8_t *data, std::size_t size, bool doAllign = true);
     // data must be allocated with av_malloc() family
-    Packet(uint8_t *data, size_t size, wrap_data, OptionalErrorCode ec = throws());
-    Packet(uint8_t *data, size_t size, wrap_data_static, OptionalErrorCode ec = throws());
+    Packet(uint8_t *data, std::size_t size, wrap_data, OptionalErrorCode ec = throws());
+    Packet(uint8_t *data, std::size_t size, wrap_data_static, OptionalErrorCode ec = throws());
     ~Packet();
 
     bool setData(const std::vector<uint8_t> &newData, OptionalErrorCode ec = throws());
-    bool setData(const uint8_t *newData, size_t size, OptionalErrorCode ec = throws());
+    bool setData(const uint8_t *newData, std::size_t size, OptionalErrorCode ec = throws());
 
     const uint8_t* data() const;
     uint8_t*       data();
@@ -58,7 +58,7 @@ public:
     Timestamp pts() const;
     Timestamp dts() const;
     Timestamp ts() const;
-    size_t size() const;
+    std::size_t size() const;
 
     /**
      * Set packet PTS field.

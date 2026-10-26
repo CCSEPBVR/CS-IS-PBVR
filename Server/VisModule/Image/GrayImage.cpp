@@ -40,17 +40,17 @@ void GrayImage::MeanValue::operator () (
     const vismodule::ColorImage& image,
     vismodule::ValueArray<vismodule::UInt8>& data )
 {
-    const size_t width = image.width();
-    const size_t height = image.height();
+    const std::size_t width = image.width();
+    const std::size_t height = image.height();
     const vismodule::UInt8* image_data = image.data().pointer();
-    for( size_t j = 0; j < height; j++ )
+    for( std::size_t j = 0; j < height; j++ )
     {
-        const size_t col_line_index = j * image.bytesPerLine();
-        const size_t gry_line_index = j * image.width();
-        for( size_t i = 0; i < width; i++ )
+        const std::size_t col_line_index = j * image.bytesPerLine();
+        const std::size_t gry_line_index = j * image.width();
+        for( std::size_t i = 0; i < width; i++ )
         {
-            const size_t col_pixel_index = col_line_index + 3 * i;
-            const size_t gry_pixel_index = gry_line_index + i;
+            const std::size_t col_pixel_index = col_line_index + 3 * i;
+            const std::size_t gry_pixel_index = gry_line_index + i;
 
             unsigned int value = 0;
             value += image_data[ col_pixel_index + 0 ];
@@ -73,17 +73,17 @@ void GrayImage::MiddleValue::operator () (
     const vismodule::ColorImage& image,
     vismodule::ValueArray<vismodule::UInt8>& data )
 {
-    const size_t width = image.width();
-    const size_t height = image.height();
+    const std::size_t width = image.width();
+    const std::size_t height = image.height();
     const vismodule::UInt8* image_data = image.data().pointer();
-    for( size_t j = 0; j < height; j++ )
+    for( std::size_t j = 0; j < height; j++ )
     {
-        const size_t col_line_index = j * image.bytesPerLine();
-        const size_t gry_line_index = j * image.width();
-        for( size_t i = 0; i < width; i++ )
+        const std::size_t col_line_index = j * image.bytesPerLine();
+        const std::size_t gry_line_index = j * image.width();
+        for( std::size_t i = 0; i < width; i++ )
         {
-            const size_t col_pixel_index = col_line_index + 3 * i;
-            const size_t gry_pixel_index = gry_line_index + i;
+            const std::size_t col_pixel_index = col_line_index + 3 * i;
+            const std::size_t gry_pixel_index = gry_line_index + i;
 
             const unsigned int r = image_data[ col_pixel_index + 0 ];
             const unsigned int g = image_data[ col_pixel_index + 1 ];
@@ -108,17 +108,17 @@ void GrayImage::MedianValue::operator () (
     const vismodule::ColorImage& image,
     vismodule::ValueArray<vismodule::UInt8>& data )
 {
-    const size_t width = image.width();
-    const size_t height = image.height();
+    const std::size_t width = image.width();
+    const std::size_t height = image.height();
     const vismodule::UInt8* image_data = image.data().pointer();
-    for( size_t j = 0; j < height; j++ )
+    for( std::size_t j = 0; j < height; j++ )
     {
-        const size_t col_line_index = j * image.bytesPerLine();
-        const size_t gry_line_index = j * image.width();
-        for( size_t i = 0; i < width; i ++ )
+        const std::size_t col_line_index = j * image.bytesPerLine();
+        const std::size_t gry_line_index = j * image.width();
+        for( std::size_t i = 0; i < width; i ++ )
         {
-            const size_t col_pixel_index = col_line_index + 3 * i;
-            const size_t gry_pixel_index = gry_line_index + i;
+            const std::size_t col_pixel_index = col_line_index + 3 * i;
+            const std::size_t gry_pixel_index = gry_line_index + i;
 
             unsigned int pixel[3];
             pixel[0] = image_data[ col_pixel_index + 0 ];
@@ -142,17 +142,17 @@ void GrayImage::NTSCWeightedMeanValue::operator () (
     const vismodule::ColorImage& image,
     vismodule::ValueArray<vismodule::UInt8>& data )
 {
-    const size_t width = image.width();
-    const size_t height = image.height();
+    const std::size_t width = image.width();
+    const std::size_t height = image.height();
     const vismodule::UInt8* image_data = image.data().pointer();
-    for( size_t j = 0; j < height; j++ )
+    for( std::size_t j = 0; j < height; j++ )
     {
-        const size_t col_line_index = j * image.bytesPerLine();
-        const size_t gry_line_index = j * image.width();
-        for( size_t i = 0; i < width; i++ )
+        const std::size_t col_line_index = j * image.bytesPerLine();
+        const std::size_t gry_line_index = j * image.width();
+        for( std::size_t i = 0; i < width; i++ )
         {
-            const size_t col_pixel_index = col_line_index + 3 * i;
-            const size_t gry_pixel_index = gry_line_index + i;
+            const std::size_t col_pixel_index = col_line_index + 3 * i;
+            const std::size_t gry_pixel_index = gry_line_index + i;
 
             const unsigned int r = image_data[ col_pixel_index + 0 ];
             const unsigned int g = image_data[ col_pixel_index + 1 ];
@@ -180,17 +180,17 @@ void GrayImage::HDTVWeightedMeanValue::operator () (
     vismodule::ValueArray<vismodule::UInt8>& data )
 {
     const double gamma_value = 2.2;
-    const size_t width = image.width();
-    const size_t height = image.height();
+    const std::size_t width = image.width();
+    const std::size_t height = image.height();
     const vismodule::UInt8* image_data = image.data().pointer();
-    for( size_t j = 0; j < height; j++ )
+    for( std::size_t j = 0; j < height; j++ )
     {
-        const size_t col_line_index = j * image.bytesPerLine();
-        const size_t gry_line_index = j * image.width();
-        for( size_t i = 0; i < width; i++ )
+        const std::size_t col_line_index = j * image.bytesPerLine();
+        const std::size_t gry_line_index = j * image.width();
+        for( std::size_t i = 0; i < width; i++ )
         {
-            const size_t col_pixel_index = col_line_index + 3 * i;
-            const size_t gry_pixel_index = gry_line_index + i;
+            const std::size_t col_pixel_index = col_line_index + 3 * i;
+            const std::size_t gry_pixel_index = gry_line_index + i;
 
             const unsigned int r = image_data[ col_pixel_index + 0 ];
             const unsigned int g = image_data[ col_pixel_index + 1 ];
@@ -228,7 +228,7 @@ GrayImage::GrayImage( void )
  *  @param height [in] image height
  */
 /*==========================================================================*/
-GrayImage::GrayImage( const size_t width, const size_t height ):
+GrayImage::GrayImage( const std::size_t width, const std::size_t height ):
     vismodule::ImageBase( width, height, vismodule::ImageBase::Gray )
 {
 }
@@ -242,8 +242,8 @@ GrayImage::GrayImage( const size_t width, const size_t height ):
  */
 /*==========================================================================*/
 GrayImage::GrayImage(
-    const size_t width,
-    const size_t height,
+    const std::size_t width,
+    const std::size_t height,
     const vismodule::UInt8* data ):
     vismodule::ImageBase( width, height, vismodule::ImageBase::Gray, data )
 {
@@ -258,8 +258,8 @@ GrayImage::GrayImage(
  */
 /*==========================================================================*/
 GrayImage::GrayImage(
-    const size_t width,
-    const size_t height,
+    const std::size_t width,
+    const std::size_t height,
     const vismodule::ValueArray<vismodule::UInt8>& data ):
     vismodule::ImageBase( width, height, vismodule::ImageBase::Gray, data )
 {
@@ -339,7 +339,7 @@ vismodule::GrayImage& GrayImage::operator = ( const vismodule::GrayImage& image 
  *  @return pixel value
  */
 /*==========================================================================*/
-const vismodule::UInt8 GrayImage::pixel( const size_t index ) const
+const vismodule::UInt8 GrayImage::pixel( const std::size_t index ) const
 {
     return( m_data[ index ] );
 }
@@ -352,7 +352,7 @@ const vismodule::UInt8 GrayImage::pixel( const size_t index ) const
  *  @return pixel value
  */
 /*==========================================================================*/
-const vismodule::UInt8 GrayImage::pixel( const size_t i, const size_t j ) const
+const vismodule::UInt8 GrayImage::pixel( const std::size_t i, const std::size_t j ) const
 {
     return( m_data[ m_width * j + i ] );
 }
@@ -364,7 +364,7 @@ const vismodule::UInt8 GrayImage::pixel( const size_t i, const size_t j ) const
  *  @param pixel [in] pixel value
  */
 /*==========================================================================*/
-void GrayImage::set( const size_t index, const vismodule::UInt8 pixel )
+void GrayImage::set( const std::size_t index, const vismodule::UInt8 pixel )
 {
     m_data[ index ] = pixel;
 }
@@ -377,7 +377,7 @@ void GrayImage::set( const size_t index, const vismodule::UInt8 pixel )
  *  @param pixel [in] pixel value
  */
 /*==========================================================================*/
-void GrayImage::set( const size_t i, const size_t j, const vismodule::UInt8 pixel )
+void GrayImage::set( const std::size_t i, const std::size_t j, const vismodule::UInt8 pixel )
 {
     m_data[ m_width * j + i ] = pixel;
 }
@@ -390,8 +390,8 @@ void GrayImage::set( const size_t i, const size_t j, const vismodule::UInt8 pixe
 /*===========================================================================*/
 void GrayImage::scale( const double ratio )
 {
-    const size_t width = static_cast<size_t>( this->width() * ratio );
-    const size_t height = static_cast<size_t>( this->height() * ratio );
+    const std::size_t width = static_cast<size_t>( this->width() * ratio );
+    const std::size_t height = static_cast<size_t>( this->height() * ratio );
     BaseClass::resize<GrayImage,GrayImage::Bilinear>( width, height, this );
 }
 
@@ -407,8 +407,8 @@ void GrayImage::scale( const double ratio, InterpolationMethod method )
 {
     vismodule::IgnoreUnusedVariable( method );
 
-    const size_t width = static_cast<size_t>( this->width() * ratio );
-    const size_t height = static_cast<size_t>( this->height() * ratio );
+    const std::size_t width = static_cast<size_t>( this->width() * ratio );
+    const std::size_t height = static_cast<size_t>( this->height() * ratio );
     BaseClass::resize<GrayImage,InterpolationMethod>( width, height, this );
 }
 
@@ -426,7 +426,7 @@ void GrayImage::scale( const double ratio, GrayImage::Bilinear method );
  *  @param  height [in] resized height
  */
 /*===========================================================================*/
-void GrayImage::resize( const size_t width, const size_t height )
+void GrayImage::resize( const std::size_t width, const std::size_t height )
 {
     BaseClass::resize<GrayImage,GrayImage::Bilinear>( width, height, this );
 }
@@ -440,7 +440,7 @@ void GrayImage::resize( const size_t width, const size_t height )
  */
 /*===========================================================================*/
 template <typename InterpolationMethod>
-void GrayImage::resize( const size_t width, const size_t height, InterpolationMethod method )
+void GrayImage::resize( const std::size_t width, const std::size_t height, InterpolationMethod method )
 {
     vismodule::IgnoreUnusedVariable( method );
 
@@ -449,10 +449,10 @@ void GrayImage::resize( const size_t width, const size_t height, InterpolationMe
 
 // Specialization.
 template
-void GrayImage::resize( const size_t width, const size_t height, GrayImage::NearestNeighbor method );
+void GrayImage::resize( const std::size_t width, const std::size_t height, GrayImage::NearestNeighbor method );
 
 template
-void GrayImage::resize( const size_t width, const size_t height, GrayImage::Bilinear method );
+void GrayImage::resize( const std::size_t width, const std::size_t height, GrayImage::Bilinear method );
 
 /*==========================================================================*/
 /**
@@ -614,12 +614,12 @@ const bool GrayImage::read_image( const vismodule::BitImage& image )
         return( false );
     }
 
-    const size_t width = image.width();
-    const size_t height = image.height();
-    size_t index = 0;
-    for ( size_t j = 0; j < height; j++ )
+    const std::size_t width = image.width();
+    const std::size_t height = image.height();
+    std::size_t index = 0;
+    for ( std::size_t j = 0; j < height; j++ )
     {
-        for ( size_t i = 0; i < width; i++, index++ )
+        for ( std::size_t i = 0; i < width; i++, index++ )
         {
             const vismodule::UInt8 pixel = image.pixel( i, j ) ? 255 : 0;
             m_data[ index ] = pixel;

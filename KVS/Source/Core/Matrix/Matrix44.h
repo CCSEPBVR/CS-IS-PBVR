@@ -96,7 +96,7 @@ public:
     T determinant() const;
     const Matrix44 transposed() const;
     const Matrix44 inverted( T* determinant = 0 ) const;
-    size_t rank() const;
+    std::size_t rank() const;
     bool isSymmetric() const;
     bool isDiagonal() const;
 
@@ -132,8 +132,8 @@ public:
         const kvs::Indent& indent = kvs::Indent(0) ) const;
 
 public:
-    const Vector4<T>& operator []( const size_t index ) const;
-    Vector4<T>& operator []( const size_t index );
+    const Vector4<T>& operator []( const std::size_t index ) const;
+    Vector4<T>& operator []( const std::size_t index );
     Matrix44& operator +=( const Matrix44& rhs );
     Matrix44& operator -=( const Matrix44& rhs );
     Matrix44& operator *=( const Matrix44& rhs );
@@ -682,18 +682,18 @@ inline const Matrix44<T> Matrix44<T>::inverted( T* determinant ) const
  */
 /*===========================================================================*/
 template<typename T>
-inline size_t Matrix44<T>::rank() const
+inline std::size_t Matrix44<T>::rank() const
 {
-    const size_t nrows = 4;
-    const size_t ncols = 4;
+    const std::size_t nrows = 4;
+    const std::size_t ncols = 4;
 
     kvs::Matrix44<T> tmp = *this;
     kvs::BitArray flags( nrows, false );
 
-    size_t r = 0;
-    for ( size_t i = 0; i < ncols; ++i )
+    std::size_t r = 0;
+    for ( std::size_t i = 0; i < ncols; ++i )
     {
-        size_t j = 0;
+        std::size_t j = 0;
         for ( j = 0; j < nrows; ++j )
         {
             if ( !flags[j] && !kvs::Math::IsZero( tmp[j][i] ) ) { break; }
@@ -703,15 +703,15 @@ inline size_t Matrix44<T>::rank() const
         {
             ++r;
             flags.set(j);
-            for ( size_t s = i + 1; s < ncols; ++s )
+            for ( std::size_t s = i + 1; s < ncols; ++s )
             {
                 tmp[j][s] /= tmp[j][i];
             }
-            for ( size_t s = 0; s < nrows; ++s )
+            for ( std::size_t s = 0; s < nrows; ++s )
             {
                 if ( s != j && !kvs::Math::IsZero( tmp[s][i] ) )
                 {
-                    for ( size_t t = i + 1; t < ncols; ++t )
+                    for ( std::size_t t = i + 1; t < ncols; ++t )
                     {
                         tmp[s][t] -= tmp[j][t] * tmp[s][i];
                     }
@@ -753,14 +753,14 @@ inline bool Matrix44<T>::isDiagonal() const
 }
 
 template<typename T>
-inline const Vector4<T>& Matrix44<T>::operator []( const size_t index ) const
+inline const Vector4<T>& Matrix44<T>::operator []( const std::size_t index ) const
 {
     KVS_ASSERT( index < 4 );
     return m_data[ index ];
 }
 
 template<typename T>
-inline Vector4<T>& Matrix44<T>::operator []( const size_t index )
+inline Vector4<T>& Matrix44<T>::operator []( const std::size_t index )
 {
     KVS_ASSERT( index < 4 );
     return m_data[ index ];

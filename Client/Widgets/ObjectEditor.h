@@ -29,6 +29,8 @@ namespace Ui
 class ObjectEditor;
 }
 
+class EnsembleTransferFunctionEditor;
+
 class ObjectEditor : public QDockWidget
 {
     Q_OBJECT
@@ -37,10 +39,12 @@ public:
     explicit ObjectEditor( kvs::qt::jaea::Screen* screen, WebSocketPair* websockets, Viz::Mode* vizMode, QWidget *parent = nullptr );
     ~ObjectEditor();
     void reset();
+    void setEnsembleTransferFunctionEditor( EnsembleTransferFunctionEditor* editor );
 
 signals:
     void updateStatusBarMessage( const QString& message );
     void updateNumberOfVector( const int numberOfVector );
+    void updateIsEnsemble( bool isEnsemble );
     void updateTotalTimeStepRange( int min, int max, const bool isSingleObject );
     void updateFocus( kvs::Vec3 resultMinObjectCoords, kvs::Vec3 resultMaxObjectCoords );
     void updateTranslation();
@@ -76,6 +80,7 @@ private:
 
     WebSocketPair* m_web_sockets    = nullptr;
     Viz::Mode* m_viz_mode           = nullptr;
+    EnsembleTransferFunctionEditor* m_ensemble_transfer_function_editor = nullptr;
 
     bool m_is_operator              = true;
 

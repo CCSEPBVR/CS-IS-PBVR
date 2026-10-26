@@ -512,7 +512,7 @@ void PlotOverLineEditor::setPlotData( std::vector<float> xAxis, std::vector<bool
     m_y_max = std::numeric_limits<double>::lowest();
 
     QVector<double> x( xAxis.size() ), y(values.size() );
-    for( size_t i = 0; i < x.size(); i++ )
+    for( std::size_t i = 0; i < x.size(); i++ )
     {
         x[i] = xAxis[i];
         if( mask[i] )
@@ -527,7 +527,7 @@ void PlotOverLineEditor::setPlotData( std::vector<float> xAxis, std::vector<bool
             }
         }
     }
-    for( size_t i = 0; i < x.size(); i++ )
+    for( std::size_t i = 0; i < x.size(); i++ )
     {
         if( mask[i] )
         {

@@ -73,7 +73,7 @@ kvs::Vector3f RandomSamplingInCube( const kvs::Vector3f vertex, kvs::MersenneTwi
     return vertex + d;
 }
 
-inline size_t CalculateSubpixelLevel( const int particle_limit,
+inline std::size_t CalculateSubpixelLevel( const int particle_limit,
                                       const kvs::Camera& camera,
                                       const float sampling_step,
                                       const double total_volume,
@@ -202,7 +202,7 @@ void readTFfromParamInfo( ParamInfo* param,
     tf_number = param->getInt( "TF_NUMBER" );
 
 #if 0
-    for ( size_t i = 0; i < tf_number; i++ )
+    for ( std::size_t i = 0; i < tf_number; i++ )
     {
         std::stringstream tss;
         tss << "TF_NAME" << i + 1 << "_";
@@ -223,7 +223,7 @@ void readTFfromParamInfo( ParamInfo* param,
     tfs->setOpacityVariable( var );
 
     var.clear();
-    for ( size_t i = 0; i < tf_number; i++ )
+    for ( std::size_t i = 0; i < tf_number; i++ )
     {
         std::stringstream tss;
         tss << "TF_NAME" << i + 1 << "_";
@@ -249,7 +249,7 @@ void readTFfromParamInfo( ParamInfo* param,
 
     tf.clear();
 
-    for ( size_t i = 0; i < tf_number; i++ )
+    for ( std::size_t i = 0; i < tf_number; i++ )
     {
         std::stringstream tss;
         tss << "TF_NAME" << i + 1 << "_";
@@ -259,7 +259,7 @@ void readTFfromParamInfo( ParamInfo* param,
         max = param->getFloat( tag_base +"MAX_C" );
         i_table = param->getTableInt( tag_base + "TABLE_C" );
         kvs::ValueArray<kvs::UInt8> u_table( i_table.size() );
-        for( size_t j = 0; j<i_table.size(); j++ ) u_table[j] = (kvs::UInt8)i_table[j];
+        for( std::size_t j = 0; j<i_table.size(); j++ ) u_table[j] = (kvs::UInt8)i_table[j];
         kvs::ColorMap color_map( u_table, min, max );
 
         min = param->getFloat( tag_base +"MIN_O" );
@@ -289,7 +289,7 @@ void readTFfromParamInfo( ParamInfo* param,
     eq = tfs->convert_token(equation);
     tfs->setColorFunction( eq );
 
-    for ( size_t i = 0; i < tf_number; i++ )
+    for ( std::size_t i = 0; i < tf_number; i++ )
     {
         std::stringstream tss;
         tss << "TF_NAME" << i + 1 << "_";
@@ -303,7 +303,7 @@ void readTFfromParamInfo( ParamInfo* param,
     tfs->setOpacityVariable( var );
 
     var.clear();
-    for ( size_t i = 0; i < tf_number; i++ )
+    for ( std::size_t i = 0; i < tf_number; i++ )
     {
         std::stringstream tss;
         tss << "TF_NAME" << i + 1 << "_";
@@ -468,7 +468,7 @@ void calculate_histogram( kvs::ValueArray<int>&   th_o_histogram,
     }
 }
 
-const size_t calculate_number_of_particles(
+const std::size_t calculate_number_of_particles(
     const float density,
     const float volume_of_cell,
     kvs::MersenneTwister* MT )
@@ -477,7 +477,7 @@ const size_t calculate_number_of_particles(
 
     const float R = (float)MT->rand();
 
-    size_t n = static_cast<size_t>( N );
+    std::size_t n = static_cast<size_t>( N );
     if ( N - n > R )
     {
         ++n;
@@ -743,7 +743,7 @@ void generate_particles( const int time_step,
         c_histogram.fill(0x00);
     }
 
-    for( size_t i = 0; i < tf_number; i++ )
+    for( std::size_t i = 0; i < tf_number; i++ )
     {
         o_min[i] = tf[i].opacityMap().minValue();
         o_max[i] = tf[i].opacityMap().maxValue();
@@ -759,7 +759,7 @@ void generate_particles( const int time_step,
 
     if( parameter_file_opened )
     {
-        for ( size_t i = 0; i < tf_number; i++ ) //初期化
+        for ( std::size_t i = 0; i < tf_number; i++ ) //初期化
         {
             O_min[ i ] =  FLT_MAX;
             O_max[ i ] = -FLT_MAX;

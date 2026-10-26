@@ -112,7 +112,7 @@ void Device::update()
     /* In this case, the function 'cuMemGetInfo' is defined to 'cuMemGetInfo_v2'
      * as "#define cuMemGetInfo cuMemGetInfo_v2". And then, the function
      * 'cuMemGetInfo_v2' is defined as follows:
-     * CUresult cuMemGetInfo_v2( size_t * free, size_t * total )
+     * CUresult cuMemGetInfo_v2( std::size_t * free, std::size_t * total )
      */
     KVS_CU_CALL( cuMemGetInfo( &m_free_memory, &m_total_memory ) );
 #else

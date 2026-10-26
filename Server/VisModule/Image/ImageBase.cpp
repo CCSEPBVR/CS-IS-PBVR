@@ -82,7 +82,7 @@ const vismodule::RGBColor BilinearInterpolate(
  *  @return converted byte value from bit value
  */
 /*==========================================================================*/
-inline size_t BitToByte( size_t value )
+inline std::size_t BitToByte( std::size_t value )
 {
     return( value >> 3 );
 }
@@ -94,7 +94,7 @@ inline size_t BitToByte( size_t value )
  *  @return converted bit value from byte value
  */
 /*==========================================================================*/
-inline size_t ByteToBit( size_t value )
+inline std::size_t ByteToBit( std::size_t value )
 {
     return( value << 3 );
 }
@@ -129,7 +129,7 @@ ImageBase::ImageBase( void ):
  *  @param type [in] pixel type
  */
 /*==========================================================================*/
-ImageBase::ImageBase( const size_t width, const size_t height, const ImageType type )
+ImageBase::ImageBase( const std::size_t width, const std::size_t height, const ImageType type )
 {
     this->create( width, height, type );
 }
@@ -144,8 +144,8 @@ ImageBase::ImageBase( const size_t width, const size_t height, const ImageType t
  */
 /*==========================================================================*/
 ImageBase::ImageBase(
-    const size_t width,
-    const size_t height,
+    const std::size_t width,
+    const std::size_t height,
     const ImageType type,
     const vismodule::UInt8* data )
 {
@@ -162,8 +162,8 @@ ImageBase::ImageBase(
  */
 /*==========================================================================*/
 ImageBase::ImageBase(
-    const size_t width,
-    const size_t height,
+    const std::size_t width,
+    const std::size_t height,
     const ImageType type,
     const vismodule::ValueArray<vismodule::UInt8>& data )
 {
@@ -224,7 +224,7 @@ void ImageBase::copy( const ImageBase& image )
  *  @return true, if the create process is done successfully
  */
 /*==========================================================================*/
-const bool ImageBase::create( const size_t width, const size_t height, const ImageType type )
+const bool ImageBase::create( const std::size_t width, const std::size_t height, const ImageType type )
 {
     m_width   = width;
     m_height  = height;
@@ -238,7 +238,7 @@ const bool ImageBase::create( const size_t width, const size_t height, const Ima
     }
     else
     {
-        const size_t ncomponents = static_cast<size_t>( type );
+        const std::size_t ncomponents = static_cast<size_t>( type );
         m_padding = 0;
         m_bpp     = ::ByteToBit( sizeof(vismodule::UInt8) ) * ncomponents;
         m_bpl     = width * ::BitToByte( m_bpp );
@@ -262,8 +262,8 @@ const bool ImageBase::create( const size_t width, const size_t height, const Ima
  */
 /*==========================================================================*/
 const bool ImageBase::create(
-    const size_t width,
-    const size_t height,
+    const std::size_t width,
+    const std::size_t height,
     const ImageType type,
     const vismodule::UInt8* data )
 {
@@ -279,7 +279,7 @@ const bool ImageBase::create(
     }
     else
     {
-        const size_t ncomponents = static_cast<size_t>( type );
+        const std::size_t ncomponents = static_cast<size_t>( type );
         m_padding = 0;
         m_bpp     = ::ByteToBit( sizeof(vismodule::UInt8) ) * ncomponents;
         m_bpl     = width * ::BitToByte( m_bpp );
@@ -304,8 +304,8 @@ const bool ImageBase::create(
  */
 /*==========================================================================*/
 const bool ImageBase::create(
-    const size_t width,
-    const size_t height,
+    const std::size_t width,
+    const std::size_t height,
     const ImageType type,
     const vismodule::ValueArray<vismodule::UInt8>& data )
 {
@@ -321,7 +321,7 @@ const bool ImageBase::create(
     }
     else
     {
-        const size_t ncomponents = static_cast<size_t>( type );
+        const std::size_t ncomponents = static_cast<size_t>( type );
         m_padding = 0;
         m_bpp     = ::ByteToBit( sizeof(vismodule::UInt8) ) * ncomponents;
         m_bpl     = width * ::BitToByte( m_bpp );
@@ -340,7 +340,7 @@ const bool ImageBase::create(
  *  Get the image width.
  */
 /*==========================================================================*/
-const size_t ImageBase::width( void ) const
+const std::size_t ImageBase::width( void ) const
 {
     return( m_width );
 }
@@ -350,7 +350,7 @@ const size_t ImageBase::width( void ) const
  *  Get the image height.
  */
 /*==========================================================================*/
-const size_t ImageBase::height( void ) const
+const std::size_t ImageBase::height( void ) const
 {
     return( m_height );
 }
@@ -360,7 +360,7 @@ const size_t ImageBase::height( void ) const
  *  Get the number of bytes per line.
  */
 /*==========================================================================*/
-const size_t ImageBase::bytesPerLine( void ) const
+const std::size_t ImageBase::bytesPerLine( void ) const
 {
     return( m_bpl );
 }
@@ -370,7 +370,7 @@ const size_t ImageBase::bytesPerLine( void ) const
  *  Get the number of bits per pixel.
  */
 /*==========================================================================*/
-const size_t ImageBase::bitsPerPixel( void ) const
+const std::size_t ImageBase::bitsPerPixel( void ) const
 {
     return( m_bpp );
 }
@@ -380,7 +380,7 @@ const size_t ImageBase::bitsPerPixel( void ) const
  *  Get the number of pixels.
  */
 /*==========================================================================*/
-const size_t ImageBase::npixels( void ) const
+const std::size_t ImageBase::npixels( void ) const
 {
     return( m_npixels );
 }
@@ -390,7 +390,7 @@ const size_t ImageBase::npixels( void ) const
  *  Get the number of padding bits.
  */
 /*==========================================================================*/
-const size_t ImageBase::padding( void ) const
+const std::size_t ImageBase::padding( void ) const
 {
     return( m_padding );
 }
@@ -400,7 +400,7 @@ const size_t ImageBase::padding( void ) const
  *  Get data size [byte].
  */
 /*==========================================================================*/
-const size_t ImageBase::size( void ) const
+const std::size_t ImageBase::size( void ) const
 {
     return( m_size );
 }
@@ -432,15 +432,15 @@ vismodule::ValueArray<vismodule::UInt8>& ImageBase::data( void )
 /*===========================================================================*/
 void ImageBase::flip( void )
 {
-    const size_t stride = m_width * ::BitToByte( m_bpp );
+    const std::size_t stride = m_width * ::BitToByte( m_bpp );
 
     vismodule::UInt8* pdata = m_data.pointer();
-    const size_t end_line = m_height / 2;
-    for ( size_t i = 0; i < end_line; i++ )
+    const std::size_t end_line = m_height / 2;
+    for ( std::size_t i = 0; i < end_line; i++ )
     {
         vismodule::UInt8* src = pdata + ( i * stride );
         vismodule::UInt8* dst = pdata + ( ( m_height - i - 1 ) * stride );
-        for ( size_t j = 0; j < stride; j++ )
+        for ( std::size_t j = 0; j < stride; j++ )
         {
             vismodule::UInt8 tmp = *src;
             *src = *dst;
@@ -452,7 +452,7 @@ void ImageBase::flip( void )
 }
 
 template <typename ImageDataType, typename Interpolator>
-void ImageBase::resize( const size_t width, const size_t height, ImageDataType* image )
+void ImageBase::resize( const std::size_t width, const std::size_t height, ImageDataType* image )
 {
     // Resized image.
     ImageDataType resized_image( width, height );
@@ -463,12 +463,12 @@ void ImageBase::resize( const size_t width, const size_t height, ImageDataType* 
 
     const double ratio_width  = m_width / static_cast<double>( width );
     const double ratio_height = m_height / static_cast<double>( height );
-    for( size_t j = 0; j < height; j++ )
+    for( std::size_t j = 0; j < height; j++ )
     {
         const double v = j * ratio_height;
         interpolator.setV( v );
 
-        for( size_t i = 0; i < width; i++ )
+        for( std::size_t i = 0; i < width; i++ )
         {
             const double u = i * ratio_width;
             interpolator.setU( u );
@@ -484,26 +484,26 @@ void ImageBase::resize( const size_t width, const size_t height, ImageDataType* 
 // Specialization.
 template
 void ImageBase::resize<vismodule::GrayImage,ImageBase::NearestNeighborInterpolatorGray>(
-    const size_t width,
-    const size_t height,
+    const std::size_t width,
+    const std::size_t height,
     vismodule::GrayImage* image );
 
 template
 void ImageBase::resize<vismodule::ColorImage,ImageBase::NearestNeighborInterpolatorColor>(
-    const size_t  width,
-    const size_t  height,
+    const std::size_t  width,
+    const std::size_t  height,
     vismodule::ColorImage* image );
 
 template
 void ImageBase::resize<vismodule::GrayImage,ImageBase::BilinearInterpolatorGray>(
-    const size_t width,
-    const size_t height,
+    const std::size_t width,
+    const std::size_t height,
     vismodule::GrayImage* image );
 
 template
 void ImageBase::resize<vismodule::ColorImage,ImageBase::BilinearInterpolatorColor>(
-    const size_t width,
-    const size_t height,
+    const std::size_t width,
+    const std::size_t height,
     vismodule::ColorImage* image );
 
 template <typename ImageDataType>
@@ -528,8 +528,8 @@ template <typename ImageDataType>
 const typename ImageDataType::PixelType
 ImageBase::NearestNeighborInterpolator<ImageDataType>::operator () ( void ) const
 {
-    const size_t x = static_cast<size_t>( m_p.x() );
-    const size_t y = static_cast<size_t>( m_p.y() );
+    const std::size_t x = static_cast<size_t>( m_p.x() );
+    const std::size_t y = static_cast<size_t>( m_p.y() );
     return( m_reference_image->pixel( x, y ) );
 }
 
@@ -568,10 +568,10 @@ template <typename ImageDataType>
 const typename ImageDataType::PixelType
 ImageBase::BilinearInterpolator<ImageDataType>::operator () ( void ) const
 {
-    const size_t pmin_x = static_cast<size_t>( m_pmin.x() );
-    const size_t pmin_y = static_cast<size_t>( m_pmin.y() );
-    const size_t pmax_x = static_cast<size_t>( m_pmax.x() );
-    const size_t pmax_y = static_cast<size_t>( m_pmax.y() );
+    const std::size_t pmin_x = static_cast<size_t>( m_pmin.x() );
+    const std::size_t pmin_y = static_cast<size_t>( m_pmin.y() );
+    const std::size_t pmax_x = static_cast<size_t>( m_pmax.x() );
+    const std::size_t pmax_y = static_cast<size_t>( m_pmax.y() );
 
     typename ImageDataType::PixelType p1 = m_reference_image->pixel( pmin_x, pmin_y );
     typename ImageDataType::PixelType p2 = m_reference_image->pixel( pmin_x, pmax_y );

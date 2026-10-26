@@ -20,7 +20,7 @@
 namespace vismodule
 {
 
-template <typename T> size_t LUDecomposer<T>::m_max_iterations = 30;
+template <typename T> std::size_t LUDecomposer<T>::m_max_iterations = 30;
 
 /*===========================================================================*/
 /**
@@ -149,9 +149,9 @@ void LUDecomposer<T>::setMatrix( const vismodule::Matrix33<T>& m )
     m_u.setSize( 3, 3 );
     m_pivots.setSize( 3 );
     m_lu.setSize( 3, 3 );
-    for ( size_t i = 0; i < 3; i++ )
+    for ( std::size_t i = 0; i < 3; i++ )
     {
-        for ( size_t j = 0; j < 3; j++ )
+        for ( std::size_t j = 0; j < 3; j++ )
         {
             m_lu[i][j] = m[i][j];
         }
@@ -171,9 +171,9 @@ void LUDecomposer<T>::setMatrix( const vismodule::Matrix44<T>& m )
     m_u.setSize( 4, 4 );
     m_pivots.setSize( 4 );
     m_lu.setSize( 4, 4 );
-    for ( size_t i = 0; i < 4; i++ )
+    for ( std::size_t i = 0; i < 4; i++ )
     {
-        for ( size_t j = 0; j < 4; j++ )
+        for ( std::size_t j = 0; j < 4; j++ )
         {
             m_lu[i][j] = m[i][j];
         }
@@ -297,7 +297,7 @@ void LUDecomposer<T>::decompose( void )
 }
 
 template <typename T>
-void LUDecomposer<T>::SetMaxIterations( const size_t max_iterations )
+void LUDecomposer<T>::SetMaxIterations( const std::size_t max_iterations )
 {
     m_max_iterations = max_iterations;
 }

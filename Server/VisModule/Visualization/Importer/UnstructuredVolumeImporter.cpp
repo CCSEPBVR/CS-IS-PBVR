@@ -535,21 +535,21 @@ void UnstructuredVolumeImporter::import( const vismodule::AVSField& field )
         return;
     }
 
-    const size_t line_size  = field.dim().x();
-    const size_t slice_size = field.dim().y();
+    const std::size_t line_size  = field.dim().x();
+    const std::size_t slice_size = field.dim().y();
     const vismodule::Vector3ui ncells( field.dim() - vismodule::Vector3ui( 1, 1, 1 ) );
     SuperClass::Connections connections( ncells.x() * ncells.y() * ncells.z() * 8 );
 
-    size_t vertex_index = 0;
-    size_t connection_index = 0;
+    std::size_t vertex_index = 0;
+    std::size_t connection_index = 0;
 
-    for ( size_t z = 0; z < ncells.z(); ++z )
+    for ( std::size_t z = 0; z < ncells.z(); ++z )
     {
-        for ( size_t y = 0; y < ncells.y(); ++y )
+        for ( std::size_t y = 0; y < ncells.y(); ++y )
         {
-            for ( size_t x = 0; x < ncells.x(); ++x )
+            for ( std::size_t x = 0; x < ncells.x(); ++x )
             {
-                const size_t local_vertex_index[8] =
+                const std::size_t local_vertex_index[8] =
                 {
                     vertex_index,
                     vertex_index + 1,

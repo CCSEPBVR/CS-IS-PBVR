@@ -121,7 +121,7 @@ int CheckBox::adjustedWidth()
 {
     BaseClass::painter().begin( BaseClass::screen() );
     const kvs::FontMetrics metrics = BaseClass::painter().fontMetrics();
-    const size_t text_width = metrics.width( m_caption );
+    const std::size_t text_width = metrics.width( m_caption );
     BaseClass::painter().end();
 
     return ::BoxWidth + text_width + ::TextMargin + BaseClass::margin() * 2;

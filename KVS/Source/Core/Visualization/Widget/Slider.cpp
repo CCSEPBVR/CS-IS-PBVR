@@ -19,12 +19,12 @@ namespace { namespace Default
 const float         Value = 0.5f;
 const float         MinValue = 0.0f;
 const float         MaxValue = 1.0f;
-const size_t        SliderMargin = 10;
-const size_t        SliderWidth = 150;
-const size_t        SliderHeight = 30;
+const std::size_t        SliderMargin = 10;
+const std::size_t        SliderWidth = 150;
+const std::size_t        SliderHeight = 30;
 const kvs::RGBColor SliderColor = kvs::RGBColor( 200, 200, 200 );
-const size_t        CursorWidth = 15;
-const size_t        CursorHeight = 15;
+const std::size_t        CursorWidth = 15;
+const std::size_t        CursorHeight = 15;
 const kvs::RGBColor CursorColor = kvs::RGBColor::White();
 } }
 
@@ -308,8 +308,8 @@ int Slider::adjustedWidth()
 {
     BaseClass::painter().begin( BaseClass::screen() );
     const kvs::FontMetrics metrics = BaseClass::painter().fontMetrics();
-    const size_t text_width = metrics.width( m_caption );
-    const size_t width = text_width + BaseClass::margin() * 2;
+    const std::size_t text_width = metrics.width( m_caption );
+    const std::size_t width = text_width + BaseClass::margin() * 2;
     BaseClass::painter().end();
 
     return kvs::Math::Max( width, ::Default::SliderWidth );
@@ -325,7 +325,7 @@ int Slider::adjustedHeight()
 {
     BaseClass::painter().begin( BaseClass::screen() );
     const kvs::FontMetrics metrics = BaseClass::painter().fontMetrics();
-    const size_t text_height = metrics.height();
+    const std::size_t text_height = metrics.height();
     BaseClass::painter().end();
 
     return ::Default::SliderHeight + ( text_height + BaseClass::margin() ) * 2;
@@ -379,7 +379,7 @@ void Slider::paintEvent()
 
         {
             const std::string max_value = kvs::String::From( m_max_value );
-            const size_t text_width = BaseClass::painter().fontMetrics().width( max_value );
+            const std::size_t text_width = BaseClass::painter().fontMetrics().width( max_value );
             const int x = BaseClass::x1() - BaseClass::margin() - text_width;
             const int y = BaseClass::y0() + BaseClass::margin() + height + ::Default::SliderHeight;
             const kvs::Vec2 p( x, y + height );

@@ -35,10 +35,10 @@ class FlowData
 {
 protected:
 
-    size_t m_dimensions; ///< dimensions (2 or 3)
-    size_t m_nnodes; ///< number of nodes
-    size_t m_nelements; ///< number of elements
-    size_t m_nsteps; ///< number of time steps
+    std::size_t m_dimensions; ///< dimensions (2 or 3)
+    std::size_t m_nnodes; ///< number of nodes
+    std::size_t m_nelements; ///< number of elements
+    std::size_t m_nsteps; ///< number of time steps
     vismodule::Real32* m_times; ///< time values
     vismodule::Int32* m_steps; ///< step values
     vismodule::ValueArray<vismodule::Real32>* m_velocities; ///< velocity values
@@ -54,21 +54,21 @@ public:
 
 public:
 
-    const size_t dimensions( void ) const;
+    const std::size_t dimensions( void ) const;
 
-    const size_t nnodes( void ) const;
+    const std::size_t nnodes( void ) const;
 
-    const size_t nelements( void ) const;
+    const std::size_t nelements( void ) const;
 
-    const size_t nsteps( void ) const;
+    const std::size_t nsteps( void ) const;
 
-    const vismodule::Real32 time( const size_t index ) const;
+    const vismodule::Real32 time( const std::size_t index ) const;
 
-    const vismodule::Int32 step( const size_t index ) const;
+    const vismodule::Int32 step( const std::size_t index ) const;
 
-    const vismodule::ValueArray<vismodule::Real32>& velocities( const size_t index ) const;
+    const vismodule::ValueArray<vismodule::Real32>& velocities( const std::size_t index ) const;
 
-    const vismodule::ValueArray<vismodule::Real32>& pressures( const size_t index ) const;
+    const vismodule::ValueArray<vismodule::Real32>& pressures( const std::size_t index ) const;
 
 public:
 

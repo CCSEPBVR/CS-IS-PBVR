@@ -33,7 +33,7 @@ void DataTag::print( std::ostream& os, const kvs::Indent& indent ) const
     }
 
     os << indent << "Number of components: " << m_components.size() << std::endl;
-    for ( size_t i = 0; i < m_components.size(); i++ )
+    for ( std::size_t i = 0; i < m_components.size(); i++ )
     {
         os << indent << "Component[" << i << "]:" << std::endl;
         m_components[i].print( os, indent.nextIndent() );

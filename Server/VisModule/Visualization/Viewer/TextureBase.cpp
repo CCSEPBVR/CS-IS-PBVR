@@ -171,7 +171,7 @@ void TextureBase::setPixelFormat(
  *  @param bytes_per_channel [in] bytes per channel (1, 2 or 4)
  */
 /*==========================================================================*/
-void TextureBase::setPixelFormat( const size_t nchannels, const size_t bytes_per_channel )
+void TextureBase::setPixelFormat( const std::size_t nchannels, const std::size_t bytes_per_channel )
 {
     this->estimate_pixel_format( nchannels, bytes_per_channel );
 }
@@ -182,9 +182,9 @@ void TextureBase::setPixelFormat( const size_t nchannels, const size_t bytes_per
  *  @param external_format [in] external pixel format
  */
 /*==========================================================================*/
-const size_t TextureBase::get_nchannels( const GLenum external_format ) const
+const std::size_t TextureBase::get_nchannels( const GLenum external_format ) const
 {
-    size_t nchannels = 0;
+    std::size_t nchannels = 0;
 
     switch( external_format )
     {
@@ -230,9 +230,9 @@ const size_t TextureBase::get_nchannels( const GLenum external_format ) const
  *  @param external_type [in] external_pixel data type
  */
 /*==========================================================================*/
-const size_t TextureBase::get_channel_size( const GLenum external_type ) const
+const std::size_t TextureBase::get_channel_size( const GLenum external_type ) const
 {
-    size_t channel_size = 0;
+    std::size_t channel_size = 0;
 
     switch( external_type )
     {
@@ -266,7 +266,7 @@ const size_t TextureBase::get_channel_size( const GLenum external_type ) const
  *  @param bytes_per_channel [in] bytes per channel
  */
 /*==========================================================================*/
-void TextureBase::estimate_pixel_format( const size_t nchannels, const size_t bytes_per_channel )
+void TextureBase::estimate_pixel_format( const std::size_t nchannels, const std::size_t bytes_per_channel )
 {
     // Initialize.
     this->setPixelFormat( 0, 0, 0 );
@@ -289,7 +289,7 @@ void TextureBase::estimate_pixel_format( const size_t nchannels, const size_t by
  *  @param bytes_per_channel [in] bytes per channel
  */
 /*==========================================================================*/
-void TextureBase::determine_pixel_format_for_1_channel( const size_t bytes_per_channel )
+void TextureBase::determine_pixel_format_for_1_channel( const std::size_t bytes_per_channel )
 {
     switch( bytes_per_channel )
     {
@@ -308,7 +308,7 @@ void TextureBase::determine_pixel_format_for_1_channel( const size_t bytes_per_c
  *  @param bytes_per_channel [in] bytes per channel
  */
 /*==========================================================================*/
-void TextureBase::determine_pixel_format_for_2_channel( const size_t bytes_per_channel )
+void TextureBase::determine_pixel_format_for_2_channel( const std::size_t bytes_per_channel )
 {
     switch( bytes_per_channel )
     {
@@ -327,7 +327,7 @@ void TextureBase::determine_pixel_format_for_2_channel( const size_t bytes_per_c
  *  @param bytes_per_channel [in] bytes per channel
  */
 /*==========================================================================*/
-void TextureBase::determine_pixel_format_for_3_channel( const size_t bytes_per_channel )
+void TextureBase::determine_pixel_format_for_3_channel( const std::size_t bytes_per_channel )
 {
     switch( bytes_per_channel )
     {
@@ -346,7 +346,7 @@ void TextureBase::determine_pixel_format_for_3_channel( const size_t bytes_per_c
  *  @param bytes_per_channel [in] bytes per channel
  */
 /*==========================================================================*/
-void TextureBase::determine_pixel_format_for_4_channel( const size_t bytes_per_channel )
+void TextureBase::determine_pixel_format_for_4_channel( const std::size_t bytes_per_channel )
 {
     switch( bytes_per_channel )
     {

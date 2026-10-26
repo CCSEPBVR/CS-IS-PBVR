@@ -251,6 +251,14 @@ public:
         std::vector<vismodule::TransferFunction>& tf,
         vismodule::RGBColor *color_seq);
 
+    void CalculateScalarsArray(
+        std::vector< vismodule::CellBase<Type>* > interp ,
+        const int loop_cnt,
+        const vismodule::Vector3f *local_coord,
+        const vismodule::Vector3f *global_coord,
+        std::vector<vismodule::TransferFunction>& tf,
+        float *scalars_array);
+
     void SynthesizedOpacityScalarsArray(
         std::vector< vismodule::CellBase<Type>* > interp ,
         const int loop_cnt,
@@ -283,4 +291,3 @@ public:
 };
 
 #endif // __TRANSFER_FUNCTION_SYNTHESIZER_H__
-

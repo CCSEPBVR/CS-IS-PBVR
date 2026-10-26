@@ -38,8 +38,8 @@ public:
 private:
     kvs::kvsml::KVSMLTag m_kvsml_tag; ///< KVSML tag information
     kvs::kvsml::ObjectTag m_object_tag; ///< Object tag information
-    size_t m_width; ///< image width
-    size_t m_height; ///< image height
+    std::size_t m_width; ///< image width
+    std::size_t m_height; ///< image height
     std::string m_pixel_type; ///< pixel type
     WritingDataType m_writing_type; ///< writing data type
     kvs::ValueArray<kvs::UInt8> m_pixels; ///< color(r,g,b) array
@@ -54,13 +54,13 @@ public:
 
     const kvs::kvsml::KVSMLTag& KVSMLTag() const { return m_kvsml_tag; }
     const kvs::kvsml::ObjectTag& objectTag() const { return m_object_tag; }
-    size_t width() const { return m_width; }
-    size_t height() const { return m_height; }
+    std::size_t width() const { return m_width; }
+    std::size_t height() const { return m_height; }
     const std::string& pixelType() const { return m_pixel_type; }
     const kvs::ValueArray<kvs::UInt8>& pixels() const { return m_pixels; }
 
-    void setWidth( const size_t width ) { m_width = width; }
-    void setHeight( const size_t height ) { m_height = height; }
+    void setWidth( const std::size_t width ) { m_width = width; }
+    void setHeight( const std::size_t height ) { m_height = height; }
     void setPixelType( const std::string& type ) { m_pixel_type = type; }
     void setWritingDataType( const WritingDataType type ) { m_writing_type = type; }
     void setPixels( const kvs::ValueArray<kvs::UInt8>& pixels ) { m_pixels = pixels; }

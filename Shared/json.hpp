@@ -3165,13 +3165,13 @@ namespace detail
 struct position_t
 {
     /// the total number of characters read
-    std::size_t chars_read_total = 0;
+    std::size_t  chars_read_total = 0;
     /// the number of characters read in the current line
-    std::size_t chars_read_current_line = 0;
+    std::size_t  chars_read_current_line = 0;
     /// the number of lines read
-    std::size_t lines_read = 0;
+    std::size_t  lines_read = 0;
 
-    /// conversion to size_t to preserve SAX interface
+    /// conversion to std::size_t to preserve SAX interface
     constexpr operator size_t() const
     {
         return chars_read_total;
@@ -3252,7 +3252,7 @@ template <typename T, T... Ints>
 struct integer_sequence
 {
     using value_type = T;
-    static constexpr std::size_t size() noexcept
+    static constexpr std::size_t  size() noexcept
     {
         return sizeof...(Ints);
     }
@@ -3269,17 +3269,17 @@ using index_sequence = integer_sequence<size_t, Ints...>;
 namespace utility_internal
 {
 
-template <typename Seq, size_t SeqSize, size_t Rem>
+template <typename Seq, std::size_t SeqSize, std::size_t Rem>
 struct Extend;
 
 // Note that SeqSize == sizeof...(Ints). It's passed explicitly for efficiency.
-template <typename T, T... Ints, size_t SeqSize>
+template <typename T, T... Ints, std::size_t SeqSize>
 struct Extend<integer_sequence<T, Ints...>, SeqSize, 0>
 {
     using type = integer_sequence < T, Ints..., (Ints + SeqSize)... >;
 };
 
-template <typename T, T... Ints, size_t SeqSize>
+template <typename T, T... Ints, std::size_t SeqSize>
 struct Extend<integer_sequence<T, Ints...>, SeqSize, 1>
 {
     using type = integer_sequence < T, Ints..., (Ints + SeqSize)..., 2 * SeqSize >;
@@ -3287,7 +3287,7 @@ struct Extend<integer_sequence<T, Ints...>, SeqSize, 1>
 
 // Recursion helper for 'make_integer_sequence<T, N>'.
 // 'Gen<T, N>::type' is an alias for 'integer_sequence<T, 0, 1, ... N-1>'.
-template <typename T, size_t N>
+template <typename T, std::size_t N>
 struct Gen
 {
     using type =
@@ -4387,32 +4387,32 @@ NLOHMANN_JSON_NAMESPACE_BEGIN
 namespace detail
 {
 
-inline std::size_t concat_length()
+inline std::size_t  concat_length()
 {
     return 0;
 }
 
 template<typename... Args>
-inline std::size_t concat_length(const char* cstr, const Args& ... rest);
+inline std::size_t  concat_length(const char* cstr, const Args& ... rest);
 
 template<typename StringType, typename... Args>
-inline std::size_t concat_length(const StringType& str, const Args& ... rest);
+inline std::size_t  concat_length(const StringType& str, const Args& ... rest);
 
 template<typename... Args>
-inline std::size_t concat_length(const char /*c*/, const Args& ... rest)
+inline std::size_t  concat_length(const char /*c*/, const Args& ... rest)
 {
     return 1 + concat_length(rest...);
 }
 
 template<typename... Args>
-inline std::size_t concat_length(const char* cstr, const Args& ... rest)
+inline std::size_t  concat_length(const char* cstr, const Args& ... rest)
 {
     // cppcheck-suppress ignoredReturnValue
     return ::strlen(cstr) + concat_length(rest...);
 }
 
 template<typename StringType, typename... Args>
-inline std::size_t concat_length(const StringType& str, const Args& ... rest)
+inline std::size_t  concat_length(const StringType& str, const Args& ... rest)
 {
     return str.size() + concat_length(rest...);
 }
@@ -4573,7 +4573,7 @@ class exception : public std::exception
             {
                 case value_t::array:
                 {
-                    for (std::size_t i = 0; i < current->m_parent->m_data.m_value.array->size(); ++i)
+                    for (std::size_t  i = 0; i < current->m_parent->m_data.m_value.array->size(); ++i)
                     {
                         if (&current->m_parent->m_data.m_value.array->operator[](i) == current)
                         {
@@ -4673,7 +4673,7 @@ class parse_error : public exception
     }
 
     template<typename BasicJsonContext, enable_if_t<is_basic_json_context<BasicJsonContext>::value, int> = 0>
-    static parse_error create(int id_, std::size_t byte_, const std::string& what_arg, BasicJsonContext context)
+    static parse_error create(int id_, std::size_t  byte_, const std::string& what_arg, BasicJsonContext context)
     {
         const std::string w = concat(exception::name("parse_error", id_), "parse error",
                                      (byte_ != 0 ? (concat(" at byte ", std::to_string(byte_))) : ""),
@@ -4690,10 +4690,10 @@ class parse_error : public exception
           n+1 is the index of the terminating null byte or the end of file.
           This also holds true when reading a byte vector (CBOR or MessagePack).
     */
-    const std::size_t byte;
+    const std::size_t  byte;
 
   private:
-    parse_error(int id_, std::size_t byte_, const char* what_arg)
+    parse_error(int id_, std::size_t  byte_, const char* what_arg)
         : exception(id_, what_arg), byte(byte_) {}
 
     static std::string position_string(const position_t& pos)
@@ -5021,38 +5021,38 @@ inline void from_json(const BasicJsonType& j, std::valarray<T>& l)
     });
 }
 
-template<typename BasicJsonType, typename T, std::size_t N>
+template<typename BasicJsonType, typename T, std::size_t  N>
 auto from_json(const BasicJsonType& j, T (&arr)[N])  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 -> decltype(j.template get<T>(), void())
 {
-    for (std::size_t i = 0; i < N; ++i)
+    for (std::size_t  i = 0; i < N; ++i)
     {
         arr[i] = j.at(i).template get<T>();
     }
 }
 
-template<typename BasicJsonType, typename T, std::size_t N1, std::size_t N2>
+template<typename BasicJsonType, typename T, std::size_t  N1, std::size_t  N2>
 auto from_json(const BasicJsonType& j, T (&arr)[N1][N2])  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 -> decltype(j.template get<T>(), void())
 {
-    for (std::size_t i1 = 0; i1 < N1; ++i1)
+    for (std::size_t  i1 = 0; i1 < N1; ++i1)
     {
-        for (std::size_t i2 = 0; i2 < N2; ++i2)
+        for (std::size_t  i2 = 0; i2 < N2; ++i2)
         {
             arr[i1][i2] = j.at(i1).at(i2).template get<T>();
         }
     }
 }
 
-template<typename BasicJsonType, typename T, std::size_t N1, std::size_t N2, std::size_t N3>
+template<typename BasicJsonType, typename T, std::size_t  N1, std::size_t  N2, std::size_t  N3>
 auto from_json(const BasicJsonType& j, T (&arr)[N1][N2][N3])  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 -> decltype(j.template get<T>(), void())
 {
-    for (std::size_t i1 = 0; i1 < N1; ++i1)
+    for (std::size_t  i1 = 0; i1 < N1; ++i1)
     {
-        for (std::size_t i2 = 0; i2 < N2; ++i2)
+        for (std::size_t  i2 = 0; i2 < N2; ++i2)
         {
-            for (std::size_t i3 = 0; i3 < N3; ++i3)
+            for (std::size_t  i3 = 0; i3 < N3; ++i3)
             {
                 arr[i1][i2][i3] = j.at(i1).at(i2).at(i3).template get<T>();
             }
@@ -5060,17 +5060,17 @@ auto from_json(const BasicJsonType& j, T (&arr)[N1][N2][N3])  // NOLINT(cppcoreg
     }
 }
 
-template<typename BasicJsonType, typename T, std::size_t N1, std::size_t N2, std::size_t N3, std::size_t N4>
+template<typename BasicJsonType, typename T, std::size_t  N1, std::size_t  N2, std::size_t  N3, std::size_t  N4>
 auto from_json(const BasicJsonType& j, T (&arr)[N1][N2][N3][N4])  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 -> decltype(j.template get<T>(), void())
 {
-    for (std::size_t i1 = 0; i1 < N1; ++i1)
+    for (std::size_t  i1 = 0; i1 < N1; ++i1)
     {
-        for (std::size_t i2 = 0; i2 < N2; ++i2)
+        for (std::size_t  i2 = 0; i2 < N2; ++i2)
         {
-            for (std::size_t i3 = 0; i3 < N3; ++i3)
+            for (std::size_t  i3 = 0; i3 < N3; ++i3)
             {
-                for (std::size_t i4 = 0; i4 < N4; ++i4)
+                for (std::size_t  i4 = 0; i4 < N4; ++i4)
                 {
                     arr[i1][i2][i3][i4] = j.at(i1).at(i2).at(i3).at(i4).template get<T>();
                 }
@@ -5085,12 +5085,12 @@ inline void from_json_array_impl(const BasicJsonType& j, typename BasicJsonType:
     arr = *j.template get_ptr<const typename BasicJsonType::array_t*>();
 }
 
-template<typename BasicJsonType, typename T, std::size_t N>
+template<typename BasicJsonType, typename T, std::size_t  N>
 auto from_json_array_impl(const BasicJsonType& j, std::array<T, N>& arr,
                           priority_tag<2> /*unused*/)
 -> decltype(j.template get<T>(), void())
 {
-    for (std::size_t i = 0; i < N; ++i)
+    for (std::size_t  i = 0; i < N; ++i)
     {
         arr[i] = j.at(i).template get<T>();
     }
@@ -5162,14 +5162,14 @@ void())
     from_json_array_impl(j, arr, priority_tag<3> {});
 }
 
-template < typename BasicJsonType, typename T, std::size_t... Idx >
+template < typename BasicJsonType, typename T, std::size_t ... Idx >
 std::array<T, sizeof...(Idx)> from_json_inplace_array_impl(BasicJsonType&& j,
                      identity_tag<std::array<T, sizeof...(Idx)>> /*unused*/, index_sequence<Idx...> /*unused*/)
 {
     return { { std::forward<BasicJsonType>(j).at(Idx).template get<T>()... } };
 }
 
-template < typename BasicJsonType, typename T, std::size_t N >
+template < typename BasicJsonType, typename T, std::size_t  N >
 auto from_json(BasicJsonType&& j, identity_tag<std::array<T, N>> tag)
 -> decltype(from_json_inplace_array_impl(std::forward<BasicJsonType>(j), tag, make_index_sequence<N> {}))
 {
@@ -5262,7 +5262,7 @@ inline void from_json(const BasicJsonType& j, ArithmeticType& val)
     }
 }
 
-template<typename BasicJsonType, typename... Args, std::size_t... Idx>
+template<typename BasicJsonType, typename... Args, std::size_t ... Idx>
 std::tuple<Args...> from_json_tuple_impl_base(BasicJsonType&& j, index_sequence<Idx...> /*unused*/)
 {
     return std::make_tuple(std::forward<BasicJsonType>(j).at(Idx).template get<Args>()...);
@@ -5472,7 +5472,7 @@ namespace detail
 {
 
 template<typename StringType>
-void int_to_string(StringType& target, std::size_t value)
+void int_to_string(StringType& target, std::size_t  value)
 {
     // For ADL
     using std::to_string;
@@ -5480,7 +5480,7 @@ void int_to_string(StringType& target, std::size_t value)
 }
 
 template<typename StringType>
-StringType to_string(std::size_t value)
+StringType to_string(std::size_t  value)
 {
     StringType result;
     int_to_string(result, value);
@@ -5511,9 +5511,9 @@ template<typename IteratorType> class iteration_proxy_value
     /// the iterator
     IteratorType anchor{};
     /// an index for arrays (used to create key names)
-    std::size_t array_index = 0;
+    std::size_t  array_index = 0;
     /// last stringified array index
-    mutable std::size_t array_index_last = 0;
+    mutable std::size_t  array_index_last = 0;
     /// a string representation of the array index
     mutable string_type array_index_str = "0";
     /// an empty string (to return a reference for primitive values)
@@ -5521,7 +5521,7 @@ template<typename IteratorType> class iteration_proxy_value
 
   public:
     explicit iteration_proxy_value() = default;
-    explicit iteration_proxy_value(IteratorType it, std::size_t array_index_ = 0)
+    explicit iteration_proxy_value(IteratorType it, std::size_t  array_index_ = 0)
     noexcept(std::is_nothrow_move_constructible<IteratorType>::value
              && std::is_nothrow_default_constructible<string_type>::value)
         : anchor(std::move(it))
@@ -5653,7 +5653,7 @@ template<typename IteratorType> class iteration_proxy
 // Structured Bindings Support
 // For further reference see https://blog.tartanllama.xyz/structured-bindings/
 // And see https://github.com/nlohmann/json/pull/1391
-template<std::size_t N, typename IteratorType, enable_if_t<N == 0, int> = 0>
+template<std::size_t  N, typename IteratorType, enable_if_t<N == 0, int> = 0>
 auto get(const nlohmann::detail::iteration_proxy_value<IteratorType>& i) -> decltype(i.key())
 {
     return i.key();
@@ -5661,7 +5661,7 @@ auto get(const nlohmann::detail::iteration_proxy_value<IteratorType>& i) -> decl
 // Structured Bindings Support
 // For further reference see https://blog.tartanllama.xyz/structured-bindings/
 // And see https://github.com/nlohmann/json/pull/1391
-template<std::size_t N, typename IteratorType, enable_if_t<N == 1, int> = 0>
+template<std::size_t  N, typename IteratorType, enable_if_t<N == 1, int> = 0>
 auto get(const nlohmann::detail::iteration_proxy_value<IteratorType>& i) -> decltype(i.value())
 {
     return i.value();
@@ -5684,9 +5684,9 @@ namespace std
 #endif
 template<typename IteratorType>
 class tuple_size<::nlohmann::detail::iteration_proxy_value<IteratorType>> // NOLINT(cert-dcl58-cpp)
-    : public std::integral_constant<std::size_t, 2> {};
+    : public std::integral_constant<std::size_t , 2> {};
 
-template<std::size_t N, typename IteratorType>
+template<std::size_t  N, typename IteratorType>
 class tuple_element<N, ::nlohmann::detail::iteration_proxy_value<IteratorType >> // NOLINT(cert-dcl58-cpp)
 {
   public:
@@ -6083,7 +6083,7 @@ inline void to_json(BasicJsonType& j, typename BasicJsonType::object_t&& obj)
 }
 
 template <
-    typename BasicJsonType, typename T, std::size_t N,
+    typename BasicJsonType, typename T, std::size_t  N,
     enable_if_t < !std::is_constructible<typename BasicJsonType::string_t,
                   const T(&)[N]>::value, // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
                   int > = 0 >
@@ -6106,7 +6106,7 @@ inline void to_json(BasicJsonType& j, const T& b)
     j = { {b.key(), b.value()} };
 }
 
-template<typename BasicJsonType, typename Tuple, std::size_t... Idx>
+template<typename BasicJsonType, typename Tuple, std::size_t ... Idx>
 inline void to_json_tuple_impl(BasicJsonType& j, const Tuple& t, index_sequence<Idx...> /*unused*/)
 {
     j = { std::get<Idx>(t)... };
@@ -6349,7 +6349,7 @@ namespace detail
 {
 
 // boost::hash_combine
-inline std::size_t combine(std::size_t seed, std::size_t h) noexcept
+inline std::size_t  combine(std::size_t  seed, std::size_t  h) noexcept
 {
     seed ^= h + 0x9e3779b9 + (seed << 6U) + (seed >> 2U);
     return seed;
@@ -6367,7 +6367,7 @@ null, 0, 0U, and false, etc.
 @return hash value of j
 */
 template<typename BasicJsonType>
-std::size_t hash(const BasicJsonType& j)
+std::size_t  hash(const BasicJsonType& j)
 {
     using string_t = typename BasicJsonType::string_t;
     using number_integer_t = typename BasicJsonType::number_integer_t;
@@ -6564,7 +6564,7 @@ class file_input_adapter
 
     // returns the number of characters successfully read
     template<class T>
-    std::size_t get_elements(T* dest, std::size_t count = 1)
+    std::size_t  get_elements(T* dest, std::size_t  count = 1)
     {
         return fread(dest, 1, sizeof(T) * count, m_file);
     }
@@ -6629,7 +6629,7 @@ class input_stream_adapter
     }
 
     template<class T>
-    std::size_t get_elements(T* dest, std::size_t count = 1)
+    std::size_t  get_elements(T* dest, std::size_t  count = 1)
     {
         auto res = static_cast<std::size_t>(sb->sgetn(reinterpret_cast<char*>(dest), static_cast<std::streamsize>(count * sizeof(T))));
         if (JSON_HEDLEY_UNLIKELY(res < count * sizeof(T)))
@@ -6672,10 +6672,10 @@ class iterator_input_adapter
 
     // for general iterators, we cannot really do something better than falling back to processing the range one-by-one
     template<class T>
-    std::size_t get_elements(T* dest, std::size_t count = 1)
+    std::size_t  get_elements(T* dest, std::size_t  count = 1)
     {
         auto* ptr = reinterpret_cast<char*>(dest);
-        for (std::size_t read_index = 0; read_index < count * sizeof(T); ++read_index)
+        for (std::size_t  read_index = 0; read_index < count * sizeof(T); ++read_index)
         {
             if (JSON_HEDLEY_LIKELY(current != end))
             {
@@ -6694,7 +6694,7 @@ class iterator_input_adapter
     IteratorType current;
     IteratorType end;
 
-    template<typename BaseInputAdapter, size_t T>
+    template<typename BaseInputAdapter, std::size_t T>
     friend struct wide_string_input_helper;
 
     bool empty() const
@@ -6703,7 +6703,7 @@ class iterator_input_adapter
     }
 };
 
-template<typename BaseInputAdapter, size_t T>
+template<typename BaseInputAdapter, std::size_t T>
 struct wide_string_input_helper;
 
 template<typename BaseInputAdapter>
@@ -6855,7 +6855,7 @@ class wide_string_input_adapter
 
     // parsing binary with wchar doesn't make sense, but since the parsing mode can be runtime, we need something here
     template<class T>
-    std::size_t get_elements(T* /*dest*/, std::size_t /*count*/ = 1)
+    std::size_t  get_elements(T* /*dest*/, std::size_t  /*count*/ = 1)
     {
         JSON_THROW(parse_error::create(112, 1, "wide string type cannot be interpreted as binary data", nullptr));
     }
@@ -6873,9 +6873,9 @@ class wide_string_input_adapter
     std::array<std::char_traits<char>::int_type, 4> utf8_bytes = {{0, 0, 0, 0}};
 
     /// index to the utf8_codes array for the next valid byte
-    std::size_t utf8_bytes_index = 0;
+    std::size_t  utf8_bytes_index = 0;
     /// number of valid bytes in the utf8_codes array
-    std::size_t utf8_bytes_filled = 0;
+    std::size_t  utf8_bytes_filled = 0;
 };
 
 template<typename IteratorType, typename Enable = void>
@@ -7002,7 +7002,7 @@ contiguous_bytes_input_adapter input_adapter(CharT b)
     return input_adapter(ptr, ptr + length); // cppcheck-suppress[nullPointerArithmeticRedundantCheck]
 }
 
-template<typename T, std::size_t N>
+template<typename T, std::size_t  N>
 auto input_adapter(T (&array)[N]) -> decltype(input_adapter(array, array + N)) // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 {
     return input_adapter(array, array + N);
@@ -7020,7 +7020,7 @@ class span_input_adapter
                    std::is_integral<typename std::remove_pointer<CharT>::type>::value&&
                    sizeof(typename std::remove_pointer<CharT>::type) == 1,
                    int >::type = 0 >
-    span_input_adapter(CharT b, std::size_t l)
+    span_input_adapter(CharT b, std::size_t  l)
         : ia(reinterpret_cast<const char*>(b), reinterpret_cast<const char*>(b) + l) {}
 
     template<class IteratorType,
@@ -8368,11 +8368,11 @@ scan_number_done:
     @param[in] return_type   the token type to return on success
     */
     JSON_HEDLEY_NON_NULL(2)
-    token_type scan_literal(const char_type* literal_text, const std::size_t length,
+    token_type scan_literal(const char_type* literal_text, const std::size_t  length,
                             token_type return_type)
     {
         JSON_ASSERT(char_traits<char_type>::to_char_type(current) == literal_text[0]);
-        for (std::size_t i = 1; i < length; ++i)
+        for (std::size_t  i = 1; i < length; ++i)
         {
             if (JSON_HEDLEY_UNLIKELY(char_traits<char_type>::to_char_type(get()) != literal_text[i]))
             {
@@ -8704,7 +8704,7 @@ scan_number_done:
     /// the decimal point
     const char_int_type decimal_point_char = '.';
     /// the position of the decimal point in the input
-    std::size_t decimal_point_position = std::string::npos;
+    std::size_t  decimal_point_position = std::string::npos;
 };
 
 }  // namespace detail
@@ -8790,7 +8790,7 @@ struct json_sax
     @return whether parsing should proceed
     @note binary formats may report the number of elements
     */
-    virtual bool start_object(std::size_t elements) = 0;
+    virtual bool start_object(std::size_t  elements) = 0;
 
     /*!
     @brief an object key was read
@@ -8812,7 +8812,7 @@ struct json_sax
     @return whether parsing should proceed
     @note binary formats may report the number of elements
     */
-    virtual bool start_array(std::size_t elements) = 0;
+    virtual bool start_array(std::size_t  elements) = 0;
 
     /*!
     @brief the end of an array was read
@@ -8827,7 +8827,7 @@ struct json_sax
     @param[in] ex          an exception object describing the error
     @return whether parsing should proceed (must return false)
     */
-    virtual bool parse_error(std::size_t position,
+    virtual bool parse_error(std::size_t  position,
                              const std::string& last_token,
                              const detail::exception& ex) = 0;
 
@@ -8841,7 +8841,7 @@ struct json_sax
 
 namespace detail
 {
-constexpr std::size_t unknown_size()
+constexpr std::size_t  unknown_size()
 {
     return (std::numeric_limits<std::size_t>::max)();
 }
@@ -8928,7 +8928,7 @@ class json_sax_dom_parser
         return true;
     }
 
-    bool start_object(std::size_t len)
+    bool start_object(std::size_t  len)
     {
         ref_stack.push_back(handle_value(BasicJsonType::value_t::object));
 
@@ -8979,7 +8979,7 @@ class json_sax_dom_parser
         return true;
     }
 
-    bool start_array(std::size_t len)
+    bool start_array(std::size_t  len)
     {
         ref_stack.push_back(handle_value(BasicJsonType::value_t::array));
 
@@ -9019,7 +9019,7 @@ class json_sax_dom_parser
     }
 
     template<class Exception>
-    bool parse_error(std::size_t /*unused*/, const std::string& /*unused*/,
+    bool parse_error(std::size_t  /*unused*/, const std::string& /*unused*/,
                      const Exception& ex)
     {
         errored = true;
@@ -9236,7 +9236,7 @@ class json_sax_dom_callback_parser
         return true;
     }
 
-    bool start_object(std::size_t len)
+    bool start_object(std::size_t  len)
     {
         // check callback for object start
         const bool keep = callback(static_cast<int>(ref_stack.size()), parse_event_t::object_start, discarded);
@@ -9335,7 +9335,7 @@ class json_sax_dom_callback_parser
         return true;
     }
 
-    bool start_array(std::size_t len)
+    bool start_array(std::size_t  len)
     {
         const bool keep = callback(static_cast<int>(ref_stack.size()), parse_event_t::array_start, discarded);
         keep_stack.push_back(keep);
@@ -9414,7 +9414,7 @@ class json_sax_dom_callback_parser
     }
 
     template<class Exception>
-    bool parse_error(std::size_t /*unused*/, const std::string& /*unused*/,
+    bool parse_error(std::size_t  /*unused*/, const std::string& /*unused*/,
                      const Exception& ex)
     {
         errored = true;
@@ -9647,7 +9647,7 @@ class json_sax_acceptor
         return true;
     }
 
-    bool start_object(std::size_t /*unused*/ = detail::unknown_size())
+    bool start_object(std::size_t  /*unused*/ = detail::unknown_size())
     {
         return true;
     }
@@ -9662,7 +9662,7 @@ class json_sax_acceptor
         return true;
     }
 
-    bool start_array(std::size_t /*unused*/ = detail::unknown_size())
+    bool start_array(std::size_t  /*unused*/ = detail::unknown_size())
     {
         return true;
     }
@@ -9672,7 +9672,7 @@ class json_sax_acceptor
         return true;
     }
 
-    bool parse_error(std::size_t /*unused*/, const std::string& /*unused*/, const detail::exception& /*unused*/)
+    bool parse_error(std::size_t  /*unused*/, const std::string& /*unused*/, const detail::exception& /*unused*/)
     {
         return false;
     }
@@ -9831,18 +9831,18 @@ struct is_sax_static_asserts
         is_detected_exact<bool, binary_function_t, SAX, binary_t>::value,
         "Missing/invalid function: bool binary(binary_t&)");
     static_assert(is_detected_exact<bool, start_object_function_t, SAX>::value,
-                  "Missing/invalid function: bool start_object(std::size_t)");
+                  "Missing/invalid function: bool start_object(std::size_t )");
     static_assert(is_detected_exact<bool, key_function_t, SAX, string_t>::value,
                   "Missing/invalid function: bool key(string_t&)");
     static_assert(is_detected_exact<bool, end_object_function_t, SAX>::value,
                   "Missing/invalid function: bool end_object()");
     static_assert(is_detected_exact<bool, start_array_function_t, SAX>::value,
-                  "Missing/invalid function: bool start_array(std::size_t)");
+                  "Missing/invalid function: bool start_array(std::size_t )");
     static_assert(is_detected_exact<bool, end_array_function_t, SAX>::value,
                   "Missing/invalid function: bool end_array()");
     static_assert(
         is_detected_exact<bool, parse_error_function_t, SAX, exception_t>::value,
-        "Missing/invalid function: bool parse_error(std::size_t, const "
+        "Missing/invalid function: bool parse_error(std::size_t , const "
         "std::string&, const exception&)");
 };
 
@@ -10094,7 +10094,7 @@ class binary_reader
     @return whether a valid BSON-object/array was passed to the SAX parser
     */
     bool parse_bson_element_internal(const char_int_type element_type,
-                                     const std::size_t element_type_parse_position)
+                                     const std::size_t  element_type_parse_position)
     {
         switch (element_type)
         {
@@ -10190,7 +10190,7 @@ class binary_reader
                 return false;
             }
 
-            const std::size_t element_type_parse_position = chars_read;
+            const std::size_t  element_type_parse_position = chars_read;
             if (JSON_HEDLEY_UNLIKELY(!get_bson_cstr(key)))
             {
                 return false;
@@ -10929,7 +10929,7 @@ class binary_reader
     @param[in] tag_handler how CBOR tags should be treated
     @return whether array creation completed
     */
-    bool get_cbor_array(const std::size_t len,
+    bool get_cbor_array(const std::size_t  len,
                         const cbor_tag_handler_t tag_handler)
     {
         if (JSON_HEDLEY_UNLIKELY(!sax->start_array(len)))
@@ -10939,7 +10939,7 @@ class binary_reader
 
         if (len != detail::unknown_size())
         {
-            for (std::size_t i = 0; i < len; ++i)
+            for (std::size_t  i = 0; i < len; ++i)
             {
                 if (JSON_HEDLEY_UNLIKELY(!parse_cbor_internal(true, tag_handler)))
                 {
@@ -10967,7 +10967,7 @@ class binary_reader
     @param[in] tag_handler how CBOR tags should be treated
     @return whether object creation completed
     */
-    bool get_cbor_object(const std::size_t len,
+    bool get_cbor_object(const std::size_t  len,
                          const cbor_tag_handler_t tag_handler)
     {
         if (JSON_HEDLEY_UNLIKELY(!sax->start_object(len)))
@@ -10980,7 +10980,7 @@ class binary_reader
             string_t key;
             if (len != detail::unknown_size())
             {
-                for (std::size_t i = 0; i < len; ++i)
+                for (std::size_t  i = 0; i < len; ++i)
                 {
                     get();
                     if (JSON_HEDLEY_UNLIKELY(!get_cbor_string(key) || !sax->key(key)))
@@ -11598,14 +11598,14 @@ class binary_reader
     @param[in] len  the length of the array
     @return whether array creation completed
     */
-    bool get_msgpack_array(const std::size_t len)
+    bool get_msgpack_array(const std::size_t  len)
     {
         if (JSON_HEDLEY_UNLIKELY(!sax->start_array(len)))
         {
             return false;
         }
 
-        for (std::size_t i = 0; i < len; ++i)
+        for (std::size_t  i = 0; i < len; ++i)
         {
             if (JSON_HEDLEY_UNLIKELY(!parse_msgpack_internal()))
             {
@@ -11620,7 +11620,7 @@ class binary_reader
     @param[in] len  the length of the object
     @return whether object creation completed
     */
-    bool get_msgpack_object(const std::size_t len)
+    bool get_msgpack_object(const std::size_t  len)
     {
         if (JSON_HEDLEY_UNLIKELY(!sax->start_object(len)))
         {
@@ -11628,7 +11628,7 @@ class binary_reader
         }
 
         string_t key;
-        for (std::size_t i = 0; i < len; ++i)
+        for (std::size_t  i = 0; i < len; ++i)
         {
             get();
             if (JSON_HEDLEY_UNLIKELY(!get_msgpack_string(key) || !sax->key(key)))
@@ -11773,8 +11773,8 @@ class binary_reader
     */
     bool get_ubjson_ndarray_size(std::vector<size_t>& dim)
     {
-        std::pair<std::size_t, char_int_type> size_and_type;
-        size_t dimlen = 0;
+        std::pair<std::size_t , char_int_type> size_and_type;
+        std::size_t dimlen = 0;
         bool no_ndarray = true;
 
         if (JSON_HEDLEY_UNLIKELY(!get_ubjson_size_type(size_and_type, no_ndarray)))
@@ -11788,7 +11788,7 @@ class binary_reader
             {
                 if (size_and_type.second != 'N')
                 {
-                    for (std::size_t i = 0; i < size_and_type.first; ++i)
+                    for (std::size_t  i = 0; i < size_and_type.first; ++i)
                     {
                         if (JSON_HEDLEY_UNLIKELY(!get_ubjson_size_value(dimlen, no_ndarray, size_and_type.second)))
                         {
@@ -11800,7 +11800,7 @@ class binary_reader
             }
             else
             {
-                for (std::size_t i = 0; i < size_and_type.first; ++i)
+                for (std::size_t  i = 0; i < size_and_type.first; ++i)
                 {
                     if (JSON_HEDLEY_UNLIKELY(!get_ubjson_size_value(dimlen, no_ndarray)))
                     {
@@ -11836,7 +11836,7 @@ class binary_reader
 
     @return whether size determination completed
     */
-    bool get_ubjson_size_value(std::size_t& result, bool& is_ndarray, char_int_type prefix = 0)
+    bool get_ubjson_size_value(std::size_t & result, bool& is_ndarray, char_int_type prefix = 0)
     {
         if (prefix == 0)
         {
@@ -12067,7 +12067,7 @@ class binary_reader
 
     @return whether pair creation completed
     */
-    bool get_ubjson_size_type(std::pair<std::size_t, char_int_type>& result, bool inside_ndarray = false)
+    bool get_ubjson_size_type(std::pair<std::size_t , char_int_type>& result, bool inside_ndarray = false)
     {
         result.first = npos; // size
         result.second = 0; // type
@@ -12329,7 +12329,7 @@ class binary_reader
     */
     bool get_ubjson_array()
     {
-        std::pair<std::size_t, char_int_type> size_and_type;
+        std::pair<std::size_t , char_int_type> size_and_type;
         if (JSON_HEDLEY_UNLIKELY(!get_ubjson_size_type(size_and_type)))
         {
             return false;
@@ -12370,7 +12370,7 @@ class binary_reader
                 return false;
             }
 
-            for (std::size_t i = 0; i < size_and_type.first; ++i)
+            for (std::size_t  i = 0; i < size_and_type.first; ++i)
             {
                 if (JSON_HEDLEY_UNLIKELY(!get_ubjson_value(size_and_type.second)))
                 {
@@ -12399,7 +12399,7 @@ class binary_reader
             {
                 if (size_and_type.second != 'N')
                 {
-                    for (std::size_t i = 0; i < size_and_type.first; ++i)
+                    for (std::size_t  i = 0; i < size_and_type.first; ++i)
                     {
                         if (JSON_HEDLEY_UNLIKELY(!get_ubjson_value(size_and_type.second)))
                         {
@@ -12410,7 +12410,7 @@ class binary_reader
             }
             else
             {
-                for (std::size_t i = 0; i < size_and_type.first; ++i)
+                for (std::size_t  i = 0; i < size_and_type.first; ++i)
                 {
                     if (JSON_HEDLEY_UNLIKELY(!parse_ubjson_internal()))
                     {
@@ -12444,7 +12444,7 @@ class binary_reader
     */
     bool get_ubjson_object()
     {
-        std::pair<std::size_t, char_int_type> size_and_type;
+        std::pair<std::size_t , char_int_type> size_and_type;
         if (JSON_HEDLEY_UNLIKELY(!get_ubjson_size_type(size_and_type)))
         {
             return false;
@@ -12468,7 +12468,7 @@ class binary_reader
 
             if (size_and_type.second != 0)
             {
-                for (std::size_t i = 0; i < size_and_type.first; ++i)
+                for (std::size_t  i = 0; i < size_and_type.first; ++i)
                 {
                     if (JSON_HEDLEY_UNLIKELY(!get_ubjson_string(key) || !sax->key(key)))
                     {
@@ -12483,7 +12483,7 @@ class binary_reader
             }
             else
             {
-                for (std::size_t i = 0; i < size_and_type.first; ++i)
+                for (std::size_t  i = 0; i < size_and_type.first; ++i)
                 {
                     if (JSON_HEDLEY_UNLIKELY(!get_ubjson_string(key) || !sax->key(key)))
                     {
@@ -12528,7 +12528,7 @@ class binary_reader
     bool get_ubjson_high_precision_number()
     {
         // get the size of the following number string
-        std::size_t size{};
+        std::size_t  size{};
         bool no_ndarray = true;
         auto res = get_ubjson_size_value(size, no_ndarray);
         if (JSON_HEDLEY_UNLIKELY(!res))
@@ -12538,7 +12538,7 @@ class binary_reader
 
         // get number string
         std::vector<char> number_vector;
-        for (std::size_t i = 0; i < size; ++i)
+        for (std::size_t  i = 0; i < size; ++i)
         {
             get();
             if (JSON_HEDLEY_UNLIKELY(!unexpect_eof(input_format, "number")))
@@ -12650,7 +12650,7 @@ class binary_reader
     template<class NumberType>
     static void byte_swap(NumberType& number)
     {
-        constexpr std::size_t sz = sizeof(number);
+        constexpr std::size_t  sz = sizeof(number);
 #ifdef __cpp_lib_byteswap
         if constexpr (sz == 1)
         {
@@ -12665,7 +12665,7 @@ class binary_reader
         {
 #endif
             auto* ptr = reinterpret_cast<std::uint8_t*>(&number);
-            for (std::size_t i = 0; i < sz / 2; ++i)
+            for (std::size_t  i = 0; i < sz / 2; ++i)
             {
                 std::swap(ptr[i], ptr[sz - i - 1]);
             }
@@ -12840,7 +12840,7 @@ class binary_reader
     }
 
   private:
-    static JSON_INLINE_VARIABLE constexpr std::size_t npos = detail::unknown_size();
+    static JSON_INLINE_VARIABLE constexpr std::size_t  npos = detail::unknown_size();
 
     /// input adapter
     InputAdapterType ia;
@@ -12849,7 +12849,7 @@ class binary_reader
     char_int_type current = char_traits<char_type>::eof();
 
     /// the number of characters read
-    std::size_t chars_read = 0;
+    std::size_t  chars_read = 0;
 
     /// whether we can assume little endianness
     const bool is_little_endian = little_endianness();
@@ -12896,7 +12896,7 @@ class binary_reader
 
 #ifndef JSON_HAS_CPP_17
     template<typename BasicJsonType, typename InputAdapterType, typename SAX>
-    constexpr std::size_t binary_reader<BasicJsonType, InputAdapterType, SAX>::npos;
+    constexpr std::size_t  binary_reader<BasicJsonType, InputAdapterType, SAX>::npos;
 #endif
 
 }  // namespace detail
@@ -14693,7 +14693,7 @@ class json_pointer
 
     /// @brief append an array index at the end of this JSON pointer
     /// @sa https://json.nlohmann.me/api/json_pointer/operator_slasheq/
-    json_pointer& operator/=(std::size_t array_idx)
+    json_pointer& operator/=(std::size_t  array_idx)
     {
         return *this /= std::to_string(array_idx);
     }
@@ -14715,7 +14715,7 @@ class json_pointer
 
     /// @brief create a new JSON pointer by appending the array-index-token at the end of the JSON pointer
     /// @sa https://json.nlohmann.me/api/json_pointer/operator_slash/
-    friend json_pointer operator/(const json_pointer& lhs, std::size_t array_idx)
+    friend json_pointer operator/(const json_pointer& lhs, std::size_t  array_idx)
     {
         return json_pointer(lhs) /= array_idx;
     }
@@ -15192,7 +15192,7 @@ class json_pointer
                             // the first char should be between '1' and '9'
                             return false;
                         }
-                        for (std::size_t i = 1; i < reference_token.size(); i++)
+                        for (std::size_t  i = 1; i < reference_token.size(); i++)
                         {
                             if (JSON_HEDLEY_UNLIKELY(!('0' <= reference_token[i] && reference_token[i] <= '9')))
                             {
@@ -15264,7 +15264,7 @@ class json_pointer
         // - start: position after the previous slash
         for (
             // search for the first slash after the first character
-            std::size_t slash = reference_string.find_first_of('/', 1),
+            std::size_t  slash = reference_string.find_first_of('/', 1),
             // set the beginning of the first reference token
             start = 1;
             // we can stop if start == 0 (if slash == string_t::npos)
@@ -15280,7 +15280,7 @@ class json_pointer
             auto reference_token = reference_string.substr(start, slash - start);
 
             // check reference tokens are properly escaped
-            for (std::size_t pos = reference_token.find_first_of('~');
+            for (std::size_t  pos = reference_token.find_first_of('~');
                     pos != string_t::npos;
                     pos = reference_token.find_first_of('~', pos + 1))
             {
@@ -15328,7 +15328,7 @@ class json_pointer
                 else
                 {
                     // iterate array and use index as a reference string
-                    for (std::size_t i = 0; i < value.m_data.m_value.array->size(); ++i)
+                    for (std::size_t  i = 0; i < value.m_data.m_value.array->size(); ++i)
                     {
                         flatten(detail::concat<string_t>(reference_string, '/', std::to_string(i)),
                                 value.m_data.m_value.array->operator[](i), result);
@@ -15721,7 +15721,7 @@ namespace detail
 template<typename CharType> struct output_adapter_protocol
 {
     virtual void write_character(CharType c) = 0;
-    virtual void write_characters(const CharType* s, std::size_t length) = 0;
+    virtual void write_characters(const CharType* s, std::size_t  length) = 0;
     virtual ~output_adapter_protocol() = default;
 
     output_adapter_protocol() = default;
@@ -15750,7 +15750,7 @@ class output_vector_adapter : public output_adapter_protocol<CharType>
     }
 
     JSON_HEDLEY_NON_NULL(2)
-    void write_characters(const CharType* s, std::size_t length) override
+    void write_characters(const CharType* s, std::size_t  length) override
     {
         v.insert(v.end(), s, s + length);
     }
@@ -15775,7 +15775,7 @@ class output_stream_adapter : public output_adapter_protocol<CharType>
     }
 
     JSON_HEDLEY_NON_NULL(2)
-    void write_characters(const CharType* s, std::size_t length) override
+    void write_characters(const CharType* s, std::size_t  length) override
     {
         stream.write(s, static_cast<std::streamsize>(length));
     }
@@ -15800,7 +15800,7 @@ class output_string_adapter : public output_adapter_protocol<CharType>
     }
 
     JSON_HEDLEY_NON_NULL(2)
-    void write_characters(const CharType* s, std::size_t length) override
+    void write_characters(const CharType* s, std::size_t  length) override
     {
         str.append(s, length);
     }
@@ -16783,7 +16783,7 @@ class binary_writer
     @return The size of a BSON document entry header, including the id marker
             and the entry name size (and its null-terminator).
     */
-    static std::size_t calc_bson_entry_header_size(const string_t& name, const BasicJsonType& j)
+    static std::size_t  calc_bson_entry_header_size(const string_t& name, const BasicJsonType& j)
     {
         const auto it = name.find(static_cast<typename string_t::value_type>(0));
         if (JSON_HEDLEY_UNLIKELY(it != BasicJsonType::string_t::npos))
@@ -16830,7 +16830,7 @@ class binary_writer
     /*!
     @return The size of the BSON-encoded string in @a value
     */
-    static std::size_t calc_bson_string_size(const string_t& value)
+    static std::size_t  calc_bson_string_size(const string_t& value)
     {
         return sizeof(std::int32_t) + value.size() + 1ul;
     }
@@ -16860,7 +16860,7 @@ class binary_writer
     /*!
     @return The size of the BSON-encoded integer @a value
     */
-    static std::size_t calc_bson_integer_size(const std::int64_t value)
+    static std::size_t  calc_bson_integer_size(const std::int64_t value)
     {
         return (std::numeric_limits<std::int32_t>::min)() <= value && value <= (std::numeric_limits<std::int32_t>::max)()
                ? sizeof(std::int32_t)
@@ -16888,7 +16888,7 @@ class binary_writer
     /*!
     @return The size of the BSON-encoded unsigned integer in @a j
     */
-    static constexpr std::size_t calc_bson_unsigned_size(const std::uint64_t value) noexcept
+    static constexpr std::size_t  calc_bson_unsigned_size(const std::uint64_t value) noexcept
     {
         return (value <= static_cast<std::uint64_t>((std::numeric_limits<std::int32_t>::max)()))
                ? sizeof(std::int32_t)
@@ -16931,11 +16931,11 @@ class binary_writer
     /*!
     @return The size of the BSON-encoded array @a value
     */
-    static std::size_t calc_bson_array_size(const typename BasicJsonType::array_t& value)
+    static std::size_t  calc_bson_array_size(const typename BasicJsonType::array_t& value)
     {
-        std::size_t array_index = 0ul;
+        std::size_t  array_index = 0ul;
 
-        const std::size_t embedded_document_size = std::accumulate(std::begin(value), std::end(value), static_cast<std::size_t>(0), [&array_index](std::size_t result, const typename BasicJsonType::array_t::value_type & el)
+        const std::size_t  embedded_document_size = std::accumulate(std::begin(value), std::end(value), static_cast<std::size_t>(0), [&array_index](std::size_t  result, const typename BasicJsonType::array_t::value_type & el)
         {
             return result + calc_bson_element_size(std::to_string(array_index++), el);
         });
@@ -16946,7 +16946,7 @@ class binary_writer
     /*!
     @return The size of the BSON-encoded binary array @a value
     */
-    static std::size_t calc_bson_binary_size(const typename BasicJsonType::binary_t& value)
+    static std::size_t  calc_bson_binary_size(const typename BasicJsonType::binary_t& value)
     {
         return sizeof(std::int32_t) + value.size() + 1ul;
     }
@@ -16960,7 +16960,7 @@ class binary_writer
         write_bson_entry_header(name, 0x04); // array
         write_number<std::int32_t>(static_cast<std::int32_t>(calc_bson_array_size(value)), true);
 
-        std::size_t array_index = 0ul;
+        std::size_t  array_index = 0ul;
 
         for (const auto& el : value)
         {
@@ -16988,7 +16988,7 @@ class binary_writer
     @brief Calculates the size necessary to serialize the JSON value @a j with its @a name
     @return The calculated size for the BSON document entry for @a j with the given @a name.
     */
-    static std::size_t calc_bson_element_size(const string_t& name,
+    static std::size_t  calc_bson_element_size(const string_t& name,
             const BasicJsonType& j)
     {
         const auto header_size = calc_bson_entry_header_size(name, j);
@@ -17083,9 +17083,9 @@ class binary_writer
     @param[in] value  JSON value to serialize
     @pre       value.type() == value_t::object
     */
-    static std::size_t calc_bson_object_size(const typename BasicJsonType::object_t& value)
+    static std::size_t  calc_bson_object_size(const typename BasicJsonType::object_t& value)
     {
-        const std::size_t document_size = std::accumulate(value.begin(), value.end(), static_cast<std::size_t>(0),
+        const std::size_t  document_size = std::accumulate(value.begin(), value.end(), static_cast<std::size_t>(0),
                                           [](size_t result, const typename BasicJsonType::object_t::value_type & el)
         {
             return result += calc_bson_element_size(el.first, el.second);
@@ -17236,7 +17236,7 @@ class binary_writer
 
             const auto number = BasicJsonType(n).dump();
             write_number_with_ubjson_prefix(number.size(), true, use_bjdata);
-            for (std::size_t i = 0; i < number.size(); ++i)
+            for (std::size_t  i = 0; i < number.size(); ++i)
             {
                 oa->write_character(to_char_type(static_cast<std::uint8_t>(number[i])));
             }
@@ -17317,7 +17317,7 @@ class binary_writer
 
             const auto number = BasicJsonType(n).dump();
             write_number_with_ubjson_prefix(number.size(), true, use_bjdata);
-            for (std::size_t i = 0; i < number.size(); ++i)
+            for (std::size_t  i = 0; i < number.size(); ++i)
             {
                 oa->write_character(to_char_type(static_cast<std::uint8_t>(number[i])));
             }
@@ -17458,7 +17458,7 @@ class binary_writer
         CharType dtype = it->second;
 
         key = "_ArraySize_";
-        std::size_t len = (value.at(key).empty() ? 0 : 1);
+        std::size_t  len = (value.at(key).empty() ? 0 : 1);
         for (const auto& el : value.at(key))
         {
             len *= static_cast<std::size_t>(el.m_data.m_value.number_unsigned);
@@ -18943,7 +18943,7 @@ class serializer
 
                     // first n-1 elements
                     auto i = val.m_data.m_value.object->cbegin();
-                    for (std::size_t cnt = 0; cnt < val.m_data.m_value.object->size() - 1; ++cnt, ++i)
+                    for (std::size_t  cnt = 0; cnt < val.m_data.m_value.object->size() - 1; ++cnt, ++i)
                     {
                         o->write_characters(indent_string.c_str(), new_indent);
                         o->write_character('\"');
@@ -18972,7 +18972,7 @@ class serializer
 
                     // first n-1 elements
                     auto i = val.m_data.m_value.object->cbegin();
-                    for (std::size_t cnt = 0; cnt < val.m_data.m_value.object->size() - 1; ++cnt, ++i)
+                    for (std::size_t  cnt = 0; cnt < val.m_data.m_value.object->size() - 1; ++cnt, ++i)
                     {
                         o->write_character('\"');
                         dump_escaped(i->first, ensure_ascii);
@@ -19202,13 +19202,13 @@ class serializer
     {
         std::uint32_t codepoint{};
         std::uint8_t state = UTF8_ACCEPT;
-        std::size_t bytes = 0;  // number of bytes written to string_buffer
+        std::size_t  bytes = 0;  // number of bytes written to string_buffer
 
         // number of bytes written at the point of the last valid byte
-        std::size_t bytes_after_last_accept = 0;
-        std::size_t undumped_chars = 0;
+        std::size_t  bytes_after_last_accept = 0;
+        std::size_t  undumped_chars = 0;
 
-        for (std::size_t i = 0; i < s.size(); ++i)
+        for (std::size_t  i = 0; i < s.size(); ++i)
         {
             const auto byte = static_cast<std::uint8_t>(s[i]);
 
@@ -19736,7 +19736,7 @@ class serializer
                 ? (byte & 0x3fu) | (codep << 6u)
                 : (0xFFu >> type) & (byte);
 
-        const std::size_t index = 256u + (static_cast<size_t>(state) * 16u) + static_cast<size_t>(type);
+        const std::size_t  index = 256u + (static_cast<size_t>(state) * 16u) + static_cast<size_t>(type);
         JSON_ASSERT(index < utf8d.size());
         state = utf8d[index];
         return state;
@@ -20321,7 +20321,7 @@ class basic_json // NOLINT(cppcoreguidelines-special-member-functions,hicpp-spec
     /// a type to represent differences between iterators
     using difference_type = std::ptrdiff_t;
     /// a type to represent container sizes
-    using size_type = std::size_t;
+    using size_type = std::size_t ;
 
     /// the allocator type
     using allocator_type = AllocatorType<basic_json>;
@@ -20857,7 +20857,7 @@ class basic_json // NOLINT(cppcoreguidelines-special-member-functions,hicpp-spec
         return it;
     }
 
-    reference set_parent(reference j, std::size_t old_capacity = detail::unknown_size())
+    reference set_parent(reference j, std::size_t  old_capacity = detail::unknown_size())
     {
 #if JSON_DIAGNOSTICS
         if (old_capacity != detail::unknown_size())
@@ -21946,7 +21946,7 @@ class basic_json // NOLINT(cppcoreguidelines-special-member-functions,hicpp-spec
     }
 
     template <
-        typename T, std::size_t N,
+        typename T, std::size_t  N,
         typename Array = T (&)[N], // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
         detail::enable_if_t <
             detail::has_from_json<basic_json_t, Array>::value, int > = 0 >
@@ -24370,16 +24370,16 @@ class basic_json // NOLINT(cppcoreguidelines-special-member-functions,hicpp-spec
 
 #if JSON_DIAGNOSTIC_POSITIONS
     /// the start position of the value
-    std::size_t start_position = std::string::npos;
+    std::size_t  start_position = std::string::npos;
     /// the end position of the value
-    std::size_t end_position = std::string::npos;
+    std::size_t  end_position = std::string::npos;
   public:
-    constexpr std::size_t start_pos() const noexcept
+    constexpr std::size_t  start_pos() const noexcept
     {
         return start_position;
     }
 
-    constexpr std::size_t end_pos() const noexcept
+    constexpr std::size_t  end_pos() const noexcept
     {
         return end_position;
     }
@@ -24554,7 +24554,7 @@ class basic_json // NOLINT(cppcoreguidelines-special-member-functions,hicpp-spec
     template<typename T>
     JSON_HEDLEY_WARN_UNUSED_RESULT
     JSON_HEDLEY_DEPRECATED_FOR(3.8.0, from_cbor(ptr, ptr + len))
-    static basic_json from_cbor(const T* ptr, std::size_t len,
+    static basic_json from_cbor(const T* ptr, std::size_t  len,
                                 const bool strict = true,
                                 const bool allow_exceptions = true,
                                 const cbor_tag_handler_t tag_handler = cbor_tag_handler_t::error)
@@ -24610,7 +24610,7 @@ class basic_json // NOLINT(cppcoreguidelines-special-member-functions,hicpp-spec
     template<typename T>
     JSON_HEDLEY_WARN_UNUSED_RESULT
     JSON_HEDLEY_DEPRECATED_FOR(3.8.0, from_msgpack(ptr, ptr + len))
-    static basic_json from_msgpack(const T* ptr, std::size_t len,
+    static basic_json from_msgpack(const T* ptr, std::size_t  len,
                                    const bool strict = true,
                                    const bool allow_exceptions = true)
     {
@@ -24664,7 +24664,7 @@ class basic_json // NOLINT(cppcoreguidelines-special-member-functions,hicpp-spec
     template<typename T>
     JSON_HEDLEY_WARN_UNUSED_RESULT
     JSON_HEDLEY_DEPRECATED_FOR(3.8.0, from_ubjson(ptr, ptr + len))
-    static basic_json from_ubjson(const T* ptr, std::size_t len,
+    static basic_json from_ubjson(const T* ptr, std::size_t  len,
                                   const bool strict = true,
                                   const bool allow_exceptions = true)
     {
@@ -24748,7 +24748,7 @@ class basic_json // NOLINT(cppcoreguidelines-special-member-functions,hicpp-spec
     template<typename T>
     JSON_HEDLEY_WARN_UNUSED_RESULT
     JSON_HEDLEY_DEPRECATED_FOR(3.8.0, from_bson(ptr, ptr + len))
-    static basic_json from_bson(const T* ptr, std::size_t len,
+    static basic_json from_bson(const T* ptr, std::size_t  len,
                                 const bool strict = true,
                                 const bool allow_exceptions = true)
     {
@@ -25168,7 +25168,7 @@ class basic_json // NOLINT(cppcoreguidelines-special-member-functions,hicpp-spec
             case value_t::array:
             {
                 // first pass: traverse common elements
-                std::size_t i = 0;
+                std::size_t  i = 0;
                 while (i < source.size() && i < target.size())
                 {
                     // recursive call to compare array values at index i
@@ -25329,9 +25329,9 @@ inline namespace json_literals
 /// @sa https://json.nlohmann.me/api/basic_json/operator_literal_json/
 JSON_HEDLEY_NON_NULL(1)
 #if !defined(JSON_HEDLEY_GCC_VERSION) || JSON_HEDLEY_GCC_VERSION_CHECK(4,9,0)
-    inline nlohmann::json operator ""_json(const char* s, std::size_t n)
+    inline nlohmann::json operator ""_json(const char* s, std::size_t  n)
 #else
-    inline nlohmann::json operator "" _json(const char* s, std::size_t n)
+    inline nlohmann::json operator "" _json(const char* s, std::size_t  n)
 #endif
 {
     return nlohmann::json::parse(s, s + n);
@@ -25341,9 +25341,9 @@ JSON_HEDLEY_NON_NULL(1)
 /// @sa https://json.nlohmann.me/api/basic_json/operator_literal_json_pointer/
 JSON_HEDLEY_NON_NULL(1)
 #if !defined(JSON_HEDLEY_GCC_VERSION) || JSON_HEDLEY_GCC_VERSION_CHECK(4,9,0)
-    inline nlohmann::json::json_pointer operator ""_json_pointer(const char* s, std::size_t n)
+    inline nlohmann::json::json_pointer operator ""_json_pointer(const char* s, std::size_t  n)
 #else
-    inline nlohmann::json::json_pointer operator "" _json_pointer(const char* s, std::size_t n)
+    inline nlohmann::json::json_pointer operator "" _json_pointer(const char* s, std::size_t  n)
 #endif
 {
     return nlohmann::json::json_pointer(std::string(s, n));
@@ -25365,7 +25365,7 @@ namespace std // NOLINT(cert-dcl58-cpp)
 NLOHMANN_BASIC_JSON_TPL_DECLARATION
 struct hash<nlohmann::NLOHMANN_BASIC_JSON_TPL> // NOLINT(cert-dcl58-cpp)
 {
-    std::size_t operator()(const nlohmann::NLOHMANN_BASIC_JSON_TPL& j) const
+    std::size_t  operator()(const nlohmann::NLOHMANN_BASIC_JSON_TPL& j) const
     {
         return nlohmann::detail::hash(j);
     }

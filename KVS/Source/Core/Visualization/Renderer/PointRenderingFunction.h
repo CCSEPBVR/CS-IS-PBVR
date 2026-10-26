@@ -35,8 +35,8 @@ void Rendering_S_C_Ns( const kvs::PointObject* point, const float dpr )
     kvs::OpenGL::Color( point->color() );
     kvs::OpenGL::Begin( GL_POINTS );
     {
-        const size_t nvertices = point->numberOfVertices();
-        for ( size_t i = 0; i < nvertices; i++ )
+        const std::size_t nvertices = point->numberOfVertices();
+        for ( std::size_t i = 0; i < nvertices; i++ )
         {
             kvs::OpenGL::Normal3( point->normals().data() + 3 * i );
             kvs::OpenGL::Vertex3( point->coords().data() + 3 * i );
@@ -58,8 +58,8 @@ void Rendering_S_C( const kvs::PointObject* point, const float dpr )
     kvs::OpenGL::Color( point->color() );
     kvs::OpenGL::Begin( GL_POINTS );
     {
-        const size_t nvertices = point->numberOfVertices();
-        for ( size_t i = 0; i < nvertices; i++ )
+        const std::size_t nvertices = point->numberOfVertices();
+        for ( std::size_t i = 0; i < nvertices; i++ )
         {
             kvs::OpenGL::Vertex3( point->coords().data() + 3 * i );
         }
@@ -80,8 +80,8 @@ void Rendering_S_Cs_Ns( const kvs::PointObject* point, const float dpr )
     kvs::OpenGL::SetPointSize( point->size() * dpr );
     kvs::OpenGL::Begin( GL_POINTS );
     {
-        const size_t nvertices = point->numberOfVertices();
-        for( size_t i = 0; i < nvertices; i++ )
+        const std::size_t nvertices = point->numberOfVertices();
+        for( std::size_t i = 0; i < nvertices; i++ )
         {
             kvs::OpenGL::Normal3( point->normals().data() + 3 * i );
             kvs::OpenGL::Color3( point->colors().data() + 3 * i );
@@ -103,8 +103,8 @@ void Rendering_S_Cs( const kvs::PointObject* point, const float dpr )
     kvs::OpenGL::SetPointSize( point->size() * dpr );
     kvs::OpenGL::Begin( GL_POINTS );
     {
-        const size_t nvertices = point->numberOfVertices();
-        for ( size_t i = 0; i < nvertices; i++ )
+        const std::size_t nvertices = point->numberOfVertices();
+        for ( std::size_t i = 0; i < nvertices; i++ )
         {
             kvs::OpenGL::Color3( point->colors().data() + 3 * i );
             kvs::OpenGL::Vertex3( point->coords().data() + 3 * i );
@@ -125,8 +125,8 @@ void Rendering_S( const kvs::PointObject* point, const float dpr )
     kvs::OpenGL::SetPointSize( point->size() * dpr );
     kvs::OpenGL::Begin( GL_POINTS );
     {
-        const size_t nvertices = point->numberOfVertices();
-        for ( size_t i = 0; i < nvertices; i++ )
+        const std::size_t nvertices = point->numberOfVertices();
+        for ( std::size_t i = 0; i < nvertices; i++ )
         {
             kvs::OpenGL::Vertex3( point->coords().data() + 3 * i );
         }
@@ -145,8 +145,8 @@ void Rendering_Ss_C_Ns( const kvs::PointObject* point, const float dpr )
 {
     kvs::OpenGL::Enable( GL_NORMALIZE );
     kvs::OpenGL::Color( point->color() );
-    const size_t nvertices = point->numberOfVertices();
-    for ( size_t i = 0; i < nvertices; i++ )
+    const std::size_t nvertices = point->numberOfVertices();
+    for ( std::size_t i = 0; i < nvertices; i++ )
     {
         kvs::OpenGL::SetPointSize( point->size(i) * dpr );
         kvs::OpenGL::Begin( GL_POINTS );
@@ -166,8 +166,8 @@ void Rendering_Ss_C_Ns( const kvs::PointObject* point, const float dpr )
 void Rendering_Ss_C( const kvs::PointObject* point, const float dpr )
 {
     kvs::OpenGL::Color( point->color() );
-    const size_t nvertices = point->numberOfVertices();
-    for ( size_t i = 0; i < nvertices; i++ )
+    const std::size_t nvertices = point->numberOfVertices();
+    for ( std::size_t i = 0; i < nvertices; i++ )
     {
         kvs::OpenGL::SetPointSize( point->size(i) * dpr );
         kvs::OpenGL::Begin( GL_POINTS );
@@ -186,8 +186,8 @@ void Rendering_Ss_C( const kvs::PointObject* point, const float dpr )
 void Rendering_Ss_Cs_Ns( const kvs::PointObject* point, const float dpr )
 {
     kvs::OpenGL::Enable( GL_NORMALIZE );
-    const size_t nvertices = point->numberOfVertices();
-    for ( size_t i = 0; i < nvertices; i++ )
+    const std::size_t nvertices = point->numberOfVertices();
+    for ( std::size_t i = 0; i < nvertices; i++ )
     {
         kvs::OpenGL::SetPointSize( point->size(i) * dpr );
         kvs::OpenGL::Begin( GL_POINTS );
@@ -207,8 +207,8 @@ void Rendering_Ss_Cs_Ns( const kvs::PointObject* point, const float dpr )
 /*==========================================================================*/
 void Rendering_Ss_Cs( const kvs::PointObject* point, const float dpr )
 {
-    const size_t nvertices = point->numberOfVertices();
-    for ( size_t i = 0; i < nvertices; i++ )
+    const std::size_t nvertices = point->numberOfVertices();
+    for ( std::size_t i = 0; i < nvertices; i++ )
     {
         kvs::OpenGL::SetPointSize( point->size(i) * dpr );
         kvs::OpenGL::Begin( GL_POINTS );
@@ -227,8 +227,8 @@ void Rendering_Ss_Cs( const kvs::PointObject* point, const float dpr )
 /*==========================================================================*/
 void Rendering_Ss( const kvs::PointObject* point, const float dpr )
 {
-    const size_t nvertices = point->numberOfVertices();
-    for ( size_t i = 0; i < nvertices; i++ )
+    const std::size_t nvertices = point->numberOfVertices();
+    for ( std::size_t i = 0; i < nvertices; i++ )
     {
         kvs::OpenGL::SetPointSize( point->size(i) * dpr );
         kvs::OpenGL::Begin( GL_POINTS );
@@ -270,9 +270,9 @@ PointRenderingFunctionType Rendering[NumberOfRenderingTypes] =
 
 PointRenderingType GetPointRenderingType( const kvs::PointObject* point )
 {
-    const size_t nsizes = point->numberOfSizes();
-    const size_t ncolors = point->numberOfColors();
-    const size_t nnormals = point->numberOfNormals();
+    const std::size_t nsizes = point->numberOfSizes();
+    const std::size_t ncolors = point->numberOfColors();
+    const std::size_t nnormals = point->numberOfNormals();
     if ( nsizes == 1 )
     {
         if ( ncolors == 1 )

@@ -72,7 +72,7 @@ int PushButton::adjustedWidth()
 {
     BaseClass::painter().begin( BaseClass::screen() );
     const kvs::FontMetrics metrics = BaseClass::painter().fontMetrics();
-    const size_t text_width = metrics.width( m_caption );
+    const std::size_t text_width = metrics.width( m_caption );
     BaseClass::painter().end();
     return text_width + ( m_text_margin + BaseClass::margin() ) * 2;
 }
@@ -87,7 +87,7 @@ int PushButton::adjustedHeight()
 {
     BaseClass::painter().begin( BaseClass::screen() );
     const kvs::FontMetrics metrics = BaseClass::painter().fontMetrics();
-    const size_t character_height = metrics.height();
+    const std::size_t character_height = metrics.height();
     BaseClass::painter().end();
     return character_height + ( m_text_margin + BaseClass::margin() ) * 2;
 }
@@ -103,7 +103,7 @@ int PushButton::get_aligned_x()
     // Centering the caption along the x axis.
     const GLfloat x0 = static_cast<GLfloat>( BaseClass::x0() + BaseClass::margin() );
     const GLfloat x1 = static_cast<GLfloat>( BaseClass::x1() - BaseClass::margin() );
-    const size_t text_width = BaseClass::painter().fontMetrics().width( m_caption );
+    const std::size_t text_width = BaseClass::painter().fontMetrics().width( m_caption );
     return static_cast<int>( x0 + ( x1 - x0 - text_width ) * 0.5f + 0.5f );
 }
 
@@ -118,7 +118,7 @@ int PushButton::get_aligned_y()
     // Centering the caption along the y axis.
     const GLfloat y0 = static_cast<GLfloat>( BaseClass::y0() + BaseClass::margin() );
     const GLfloat y1 = static_cast<GLfloat>( BaseClass::y1() - BaseClass::margin() );
-    const size_t text_height = BaseClass::painter().fontMetrics().height();
+    const std::size_t text_height = BaseClass::painter().fontMetrics().height();
     return static_cast<int>( y0 + ( y1 - y0 - text_height ) * 0.5f + 0.5f );
 }
 
@@ -206,7 +206,7 @@ void PushButton::paintEvent()
 
     this->draw_button();
 
-    const size_t text_height = BaseClass::painter().fontMetrics().height();
+    const std::size_t text_height = BaseClass::painter().fontMetrics().height();
     const kvs::Vec2 p( this->get_aligned_x(), this->get_aligned_y() + text_height );
     const kvs::Font font = BaseClass::painter().font();
     BaseClass::painter().font().setColor( kvs::RGBColor::Black() );

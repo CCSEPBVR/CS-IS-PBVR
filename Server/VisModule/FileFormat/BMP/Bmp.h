@@ -47,16 +47,16 @@ protected:
     Bmp::FileHeader m_file_header; ///< bitmap file header
     Bmp::InfoHeader m_info_header; ///< bitmap information header
 
-    size_t                      m_width;  ///< width
-    size_t                      m_height; ///< height
-    size_t                      m_bpp;    ///< bits per pixel
+    std::size_t                      m_width;  ///< width
+    std::size_t                      m_height; ///< height
+    std::size_t                      m_bpp;    ///< bits per pixel
     vismodule::ValueArray<vismodule::UInt8> m_data;   ///< pixel data
 
 public:
 
     Bmp( void );
 
-    Bmp( const size_t width, const size_t height, const vismodule::ValueArray<vismodule::UInt8>& data );
+    Bmp( const std::size_t width, const std::size_t height, const vismodule::ValueArray<vismodule::UInt8>& data );
 
     Bmp( const std::string& filename );
 
@@ -68,11 +68,11 @@ public:
 
 public:
 
-    size_t width( void ) const;
+    std::size_t width( void ) const;
 
-    size_t height( void ) const;
+    std::size_t height( void ) const;
 
-    size_t bitsPerPixel( void ) const;
+    std::size_t bitsPerPixel( void ) const;
 
     vismodule::ValueArray<vismodule::UInt8> data( void ) const;
 

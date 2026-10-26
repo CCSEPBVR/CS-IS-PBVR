@@ -30,15 +30,15 @@ void OutputCoordMinMaxFile(
 
 bool SetParticleParameter( 
     const domain_parameters_unstruct& dom,
-    const std::string& tfFilePath,
-    const std::string& tfFilePath_old,
+    const std::string& tfJsonPath,
+    const std::string& tfJsonPath_old,
     ParticleProperty& particle_property,
     MultiVolumePropertyList& mvpl,
     const int nvariables,
     bool& object_generation_enabled
 );
 
-void generate_particles(
+bool generate_particles(
     int time_step,
     domain_parameters_unstruct dom,
     Type** values,
@@ -50,8 +50,21 @@ void generate_particles(
     const vismodule::VolumeObjectBase::CellType& celltypes
 );
 
+bool ensemble_generate_particles(
+    int time_step,
+    const int num_ensemble,
+    domain_parameters_unstruct dom,
+    Type** values,
+    int nvariables,
+    float* coordinates,
+    int ncoords,
+    unsigned int* connections,
+    int ncells,
+    const vismodule::VolumeObjectBase::CellType& celltypes
+);
+
 #ifdef EXTEND_FILE_FORMAT
-void generate_particles_vtk(
+bool generate_particles_vtk(
     int time_step,
     vtkUnstructuredGrid* ucd
 );

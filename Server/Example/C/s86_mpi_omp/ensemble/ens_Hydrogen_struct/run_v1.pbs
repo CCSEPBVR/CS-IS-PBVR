@@ -1,0 +1,20 @@
+#!/bin/bash
+#PBS -q sc16
+#PBS -l select=1:ncpus=40:mpiprocs=2:ompthreads=1
+#PBS -l walltime=00:10:00
+#PBS -N ens_struct_v1
+#PBS -P job
+cd $PBS_O_WORKDIR
+. /etc/profile.d/modules.sh
+module purge
+module load gnu/12.4.0 intel/cur mpt/cur
+export VIS_PARAM_DIR=$PBS_O_WORKDIR
+export PARTICLE_DIR=$PBS_O_WORKDIR/particle_out
+export MPI_NUM_MEMORY_REGIONS=0
+export OMP_NUM_THREADS=1
+mkdir -p particle_out
+rm -f particle_out/* history_0* 2>/dev/null
+echo "=== ens_Hydrogen_struct v1: mpi -n 2 (ens=2, リングなし) ==="
+mpirun -n 2 omplace ./run
+echo "=== exit=$? ==="
+ls -la particle_out/ | head

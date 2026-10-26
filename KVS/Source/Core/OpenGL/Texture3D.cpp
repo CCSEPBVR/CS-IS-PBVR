@@ -29,7 +29,7 @@ void Texture3D::Unbind()
  *  @brief  Create the texture.
  */
 /*==========================================================================*/
-void Texture3D::create( const size_t width, const size_t height, const size_t depth, const void* data )
+void Texture3D::create( const std::size_t width, const std::size_t height, const std::size_t depth, const void* data )
 {
     KVS_ASSERT( width > 0 );
     KVS_ASSERT( static_cast<GLint>( width ) <= kvs::OpenGL::MaxTextureSize() );
@@ -73,13 +73,13 @@ void Texture3D::release()
  */
 /*==========================================================================*/
 void Texture3D::load(
-    const size_t width,
-    const size_t height,
-    const size_t depth,
+    const std::size_t width,
+    const std::size_t height,
+    const std::size_t depth,
     const void*  data,
-    const size_t xoffset,
-    const size_t yoffset,
-    const size_t zoffset )
+    const std::size_t xoffset,
+    const std::size_t yoffset,
+    const std::size_t zoffset )
 {
     const GLint swap = kvs::OpenGL::Integer( GL_UNPACK_SWAP_BYTES );
     const GLint alignment = kvs::OpenGL::Integer( GL_UNPACK_ALIGNMENT );
@@ -116,12 +116,12 @@ void Texture3D::load(
 void Texture3D::loadFromFrameBuffer(
     const int x,
     const int y,
-    const size_t width,
-    const size_t height,
-    const size_t depth,
-    const size_t xoffset,
-    const size_t yoffset,
-    const size_t zoffset )
+    const std::size_t width,
+    const std::size_t height,
+    const std::size_t depth,
+    const std::size_t xoffset,
+    const std::size_t yoffset,
+    const std::size_t zoffset )
 {
     KVS_ASSERT( this->isLoaded() );
 //    const GLint swap = kvs::OpenGL::Integer( GL_UNPACK_SWAP_BYTES );

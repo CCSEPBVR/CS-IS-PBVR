@@ -124,7 +124,7 @@ void FrameBufferObject::checkStatus() const
 /*===========================================================================*/
 void FrameBufferObject::attachColorTexture(
     const kvs::Texture1D& texture,
-    const size_t color_buffer,
+    const std::size_t color_buffer,
     const int mip_level ) const
 {
     KVS_ASSERT( static_cast<GLint>( color_buffer ) < kvs::OpenGL::MaxColorAttachments() );
@@ -145,7 +145,7 @@ void FrameBufferObject::attachColorTexture(
 /*===========================================================================*/
 void FrameBufferObject::attachColorTexture(
     const kvs::Texture2D& texture,
-    const size_t color_buffer,
+    const std::size_t color_buffer,
     const int mip_level ) const
 {
     KVS_ASSERT( static_cast<GLint>( color_buffer ) < kvs::OpenGL::MaxColorAttachments() );
@@ -167,7 +167,7 @@ void FrameBufferObject::attachColorTexture(
 /*===========================================================================*/
 void FrameBufferObject::attachColorTexture(
     const kvs::Texture3D& texture,
-    const size_t color_buffer,
+    const std::size_t color_buffer,
     const int mip_level,
     const int zoffset ) const
 {
@@ -244,7 +244,7 @@ void FrameBufferObject::attachDepthTexture(
 /*===========================================================================*/
 void FrameBufferObject::attachColorRenderBuffer(
     const kvs::RenderBuffer& render_buffer,
-    const size_t color_buffer ) const
+    const std::size_t color_buffer ) const
 {
     KVS_ASSERT( static_cast<GLint>( color_buffer ) < kvs::OpenGL::MaxColorAttachments() );
     GuardedBinder binder( *this );
@@ -276,7 +276,7 @@ void FrameBufferObject::attachDepthRenderBuffer(
  */
 /*===========================================================================*/
 void FrameBufferObject::detachColorTexture(
-    const size_t color_buffer,
+    const std::size_t color_buffer,
     const int mip_level ) const
 {
     GuardedBinder binder( *this );
@@ -305,7 +305,7 @@ void FrameBufferObject::detachDepthTexture( const int mip_level ) const
  *  @param  color_buffer [in] attachment point (zero to GL_MAX_COLOR_ATTACHMENTS)
  */
 /*===========================================================================*/
-void FrameBufferObject::detachColorRenderBuffer( const size_t color_buffer ) const
+void FrameBufferObject::detachColorRenderBuffer( const std::size_t color_buffer ) const
 {
     GuardedBinder binder( *this );
     const GLenum attachment = GL_COLOR_ATTACHMENT0 + color_buffer;

@@ -75,23 +75,23 @@ public:
         const GLenum external_format,
         const GLenum external_type );
 
-    void setPixelFormat( const size_t nchannels, const size_t bytes_per_channel );
+    void setPixelFormat( const std::size_t nchannels, const std::size_t bytes_per_channel );
 
 protected:
 
-    const size_t get_nchannels( const GLenum external_format ) const;
+    const std::size_t get_nchannels( const GLenum external_format ) const;
 
-    const size_t get_channel_size( const GLenum external_type ) const;
+    const std::size_t get_channel_size( const GLenum external_type ) const;
 
-    void estimate_pixel_format( const size_t nchannels, const size_t bytes_per_channel );
+    void estimate_pixel_format( const std::size_t nchannels, const std::size_t bytes_per_channel );
 
-    void determine_pixel_format_for_1_channel( const size_t bytes_per_channel );
+    void determine_pixel_format_for_1_channel( const std::size_t bytes_per_channel );
 
-    void determine_pixel_format_for_2_channel( const size_t bytes_per_channel );
+    void determine_pixel_format_for_2_channel( const std::size_t bytes_per_channel );
 
-    void determine_pixel_format_for_3_channel( const size_t bytes_per_channel );
+    void determine_pixel_format_for_3_channel( const std::size_t bytes_per_channel );
 
-    void determine_pixel_format_for_4_channel( const size_t bytes_per_channel );
+    void determine_pixel_format_for_4_channel( const std::size_t bytes_per_channel );
 };
 
 } // end of namespace vismodule

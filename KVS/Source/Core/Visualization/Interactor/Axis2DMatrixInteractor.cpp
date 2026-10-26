@@ -70,10 +70,10 @@ void Axis2DMatrixInteractor::mousePressEvent( kvs::MouseEvent* e )
     const auto dx = float( cw - padding * ( ncols - 1 ) ) / ncols;
     const auto dy = float( ch - padding * ( ncols - 1 ) ) / ncols;
     float y_min = content.y0();
-    for ( size_t j = 0; j < ncols; ++j, y_min += dy + padding )
+    for ( std::size_t j = 0; j < ncols; ++j, y_min += dy + padding )
     {
         float x_min = content.x0();
-        for ( size_t i = 0; i < ncols; ++i, x_min += dx + padding )
+        for ( std::size_t i = 0; i < ncols; ++i, x_min += dx + padding )
         {
             const auto x_max = x_min + dx;
             const auto y_max = y_min + dy;
@@ -81,8 +81,8 @@ void Axis2DMatrixInteractor::mousePressEvent( kvs::MouseEvent* e )
             if ( m_p0.x() < x_min || x_max < m_p0.x() ||
                  m_p0.y() < y_min || y_max < m_p0.y() ) { continue; }
 
-            const size_t x_index = i;
-            const size_t y_index = j;
+            const std::size_t x_index = i;
+            const std::size_t y_index = j;
             m_indices.x() = x_index;
             m_indices.y() = y_index;
             //if ( x_index == y_index ) renderer->selectAxis( x_index );
@@ -249,10 +249,10 @@ void Axis2DMatrixInteractor::paintEvent()
         const auto dy = float( ch - padding * ( ncols - 1 ) ) / ncols;
 
         float y_min = content.y0();
-        for ( size_t j = 0; j < ncols; ++j, y_min += dy + padding )
+        for ( std::size_t j = 0; j < ncols; ++j, y_min += dy + padding )
         {
             float x_min = content.x0();
-            for ( size_t i = 0; i < ncols; ++i, x_min += dx + padding )
+            for ( std::size_t i = 0; i < ncols; ++i, x_min += dx + padding )
             {
                 const auto x_index = i;
                 const auto y_index = j;

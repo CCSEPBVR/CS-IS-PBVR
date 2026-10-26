@@ -26,7 +26,7 @@ inline kvs::Real32 GetEuclideanDistance(
     const kvs::ValueArray<kvs::Real32>& center )
 {
     kvs::Real32 distance = 0.0;
-    for ( size_t i = 0; i < table.columnSize(); i++ )
+    for ( std::size_t i = 0; i < table.columnSize(); i++ )
     {
         const kvs::Real32 x0 = center[i];
         const kvs::Real32 x1 = table.column(i).at<kvs::Real32>( row_index );
@@ -42,7 +42,7 @@ inline kvs::Real32 GetEuclideanDistance(
     const kvs::ValueArray<kvs::Real32>& center_new )
 {
     kvs::Real32 distance = 0.0;
-    for ( size_t i = 0; i < table.columnSize(); i++ )
+    for ( std::size_t i = 0; i < table.columnSize(); i++ )
     {
         const kvs::Real32 x0 = center_old[i];
         const kvs::Real32 x1 = center_new[i];
@@ -72,17 +72,17 @@ inline void CalculateCenter(
     const kvs::ValueArray<kvs::UInt32>& ids,
     kvs::ValueArray<kvs::Real32>* center )
 {
-    const size_t nrows = table.column(0).size();
-    const size_t ncolumns = table.columnSize();
+    const std::size_t nrows = table.column(0).size();
+    const std::size_t ncolumns = table.columnSize();
 
-    for ( size_t j = 0; j < ncolumns; j++ ) { center->at(j) = 0.0; }
+    for ( std::size_t j = 0; j < ncolumns; j++ ) { center->at(j) = 0.0; }
 
-    size_t counter = 0;
-    for ( size_t j = 0; j < nrows; j++ )
+    std::size_t counter = 0;
+    for ( std::size_t j = 0; j < nrows; j++ )
     {
         if ( ids[j] == cluster_id )
         {
-            for ( size_t k = 0; k < ncolumns; k++ )
+            for ( std::size_t k = 0; k < ncolumns; k++ )
             {
                 center->at(k) += table.column(k).at<kvs::Real32>(j);
             }
@@ -91,7 +91,7 @@ inline void CalculateCenter(
     }
     if ( counter != 0 )
     {
-        for ( size_t k = 0; k < ncolumns; k++ ) { center->at(k) /= counter; }
+        for ( std::size_t k = 0; k < ncolumns; k++ ) { center->at(k) /= counter; }
     }
 }
 
@@ -106,11 +106,11 @@ inline void CalculateCenter(
 /*===========================================================================*/
 inline void InitializeCentersWithRandomSeeding(
     const kvs::AnyValueTable& table,
-    const size_t nclusters,
+    const std::size_t nclusters,
     const kvs::ValueArray<kvs::UInt32>& ids,
     kvs::ValueArray<kvs::Real32>* centers )
 {
-    for ( size_t i = 0; i < nclusters; i++ )
+    for ( std::size_t i = 0; i < nclusters; i++ )
     {
         CalculateCenter( table, i, ids, &centers[i] );
     }
@@ -127,23 +127,23 @@ inline void InitializeCentersWithRandomSeeding(
 /*===========================================================================*/
 inline void InitializeCentersWithSmartSeeding(
     const kvs::AnyValueTable& table,
-    const size_t nclusters,
+    const std::size_t nclusters,
     const kvs::ValueArray<kvs::UInt32>& ids,
     kvs::ValueArray<kvs::Real32>* centers )
 {
-    const size_t nrows = table.column(0).size();
-    const size_t ncolumns = table.columnSize();
+    const std::size_t nrows = table.column(0).size();
+    const std::size_t ncolumns = table.columnSize();
 
     CalculateCenter( table, 0, ids, &(centers[0]) );
 
-    for ( size_t i = 1; i < nclusters; i++ )
+    for ( std::size_t i = 1; i < nclusters; i++ )
     {
         kvs::Real32 S = 0.0;
         kvs::Real32* D = new kvs::Real32 [ nrows ];
-        for ( size_t j = 0; j < nrows; j++ )
+        for ( std::size_t j = 0; j < nrows; j++ )
         {
             kvs::Real32 distance = kvs::Value<kvs::Real32>::Max();
-            for ( size_t k = 0; k < nclusters; k++ )
+            for ( std::size_t k = 0; k < nclusters; k++ )
             {
                 const kvs::Real32 d = ::GetEuclideanDistance( table, j, centers[k] );
                 if ( d < distance ) { distance = d; }
@@ -152,9 +152,9 @@ inline void InitializeCentersWithSmartSeeding(
             S += distance * distance;
         }
 
-        size_t index = 0;
+        std::size_t index = 0;
         kvs::Real32 P = 0.0;
-        for ( size_t j = 0; j < nrows; j++ )
+        for ( std::size_t j = 0; j < nrows; j++ )
         {
             const kvs::Real32 DD = D[j] * D[j];
             if ( P < kvs::Math::Max( P, DD / S ) )
@@ -164,7 +164,7 @@ inline void InitializeCentersWithSmartSeeding(
             }
         }
 
-        for ( size_t j = 0; j < ncolumns; j++ )
+        for ( std::size_t j = 0; j < ncolumns; j++ )
         {
             centers[i].at(j) = table.column(j).at<kvs::Real32>(index);
         }
@@ -191,9 +191,9 @@ void KMeans::run()
         return;
     }
 
-    const size_t ncolumns = m_input_table.columnSize();
-    const size_t nrows = m_input_table.column(0).size();
-    for ( size_t i = 1; i < m_input_table.columnSize(); i++ )
+    const std::size_t ncolumns = m_input_table.columnSize();
+    const std::size_t nrows = m_input_table.column(0).size();
+    for ( std::size_t i = 1; i < m_input_table.columnSize(); i++ )
     {
         if ( nrows != m_input_table.column(i).size() )
         {
@@ -204,11 +204,11 @@ void KMeans::run()
 
     // Allocate memory for the cluster center.
     m_cluster_centers = new kvs::ValueArray<kvs::Real32> [ m_nclusters ];
-    for ( size_t i = 0; i < m_nclusters; i++ ) { m_cluster_centers[i].allocate( ncolumns ); }
+    for ( std::size_t i = 0; i < m_nclusters; i++ ) { m_cluster_centers[i].allocate( ncolumns ); }
 
     // Assign initial cluster IDs to each row of the input table randomly.
     kvs::ValueArray<kvs::UInt32> IDs( nrows );
-    for ( size_t i = 0; i < nrows; i++ ) IDs[i] = kvs::UInt32( m_nclusters * m_random() );
+    for ( std::size_t i = 0; i < nrows; i++ ) IDs[i] = kvs::UInt32( m_nclusters * m_random() );
 
     // Calculate the center of cluster.
     switch ( m_seeding_method )
@@ -229,15 +229,15 @@ void KMeans::run()
 
     // Clustering.
     bool converged = false;
-    size_t counter = 0;
+    std::size_t counter = 0;
     while ( !converged )
     {
         // Calculate euclidean distance between the center of cluster and the point, and update the IDs.
-        for ( size_t i = 0; i < nrows; i++ )
+        for ( std::size_t i = 0; i < nrows; i++ )
         {
-            size_t id = 0;
+            std::size_t id = 0;
             kvs::Real32 distance = kvs::Value<kvs::Real32>::Max();
-            for ( size_t j = 0; j < m_nclusters; j++ )
+            for ( std::size_t j = 0; j < m_nclusters; j++ )
             {
                 const kvs::Real32 d = ::GetEuclideanDistance( m_input_table, i, m_cluster_centers[j] );
                 if ( d < distance ) { distance = d; id = j; }
@@ -247,7 +247,7 @@ void KMeans::run()
 
         // Convergence test.
         converged = true;
-        for ( size_t i = 0; i < m_nclusters; i++ )
+        for ( std::size_t i = 0; i < m_nclusters; i++ )
         {
             ::CalculateCenter( m_input_table, i, IDs, &center_new );
 
@@ -264,7 +264,7 @@ void KMeans::run()
         // Calculate the center of cluster.
         if ( !converged )
         {
-            for ( size_t i = 0; i < m_nclusters; i++ )
+            for ( std::size_t i = 0; i < m_nclusters; i++ )
             {
                 ::CalculateCenter( m_input_table, i, IDs, &(m_cluster_centers[i]) );
             }

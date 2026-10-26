@@ -105,13 +105,13 @@ public:
     void setGridlineColor( const kvs::RGBColor& color ) { m_gridline_color = color; }
     void setGridlineWidth( const float width ) { m_gridline_width = width; }
     void setNumberOfGridlines( const kvs::Vec2u& ngrids ) { m_ngridlines = ngrids; }
-    void setNumberOfXGridlines( const size_t ngrids ) { m_ngridlines[0] = ngrids; }
-    void setNumberOfYGridlines( const size_t ngrids ) { m_ngridlines[1] = ngrids; }
+    void setNumberOfXGridlines( const std::size_t ngrids ) { m_ngridlines[0] = ngrids; }
+    void setNumberOfYGridlines( const std::size_t ngrids ) { m_ngridlines[1] = ngrids; }
 
     // Axis
     template <typename Axis> void setXAxis( const Axis& axis ) { this->setAxis( axis, 0 ); }
     template <typename Axis> void setYAxis( const Axis& axis ) { this->setAxis( axis, 1 ); }
-    template <typename Axis> void setAxis( const Axis& axis, const size_t index )
+    template <typename Axis> void setAxis( const Axis& axis, const std::size_t index )
     {
         KVS_ASSERT( index < m_axes.size() );
         if ( m_axes[ index ] ) { delete m_axes[ index ]; }
@@ -129,8 +129,8 @@ public:
     bool isBorderVisible() const { return m_border_visible; }
     float borderWidth() const { return m_border_width; }
     const kvs::Vec2u& numberOfGridlines() const { return m_ngridlines; }
-    size_t numberOfXGridlines() const { return m_ngridlines[0]; }
-    size_t numberOfYGridlines() const { return m_ngridlines[1]; }
+    std::size_t numberOfXGridlines() const { return m_ngridlines[0]; }
+    std::size_t numberOfYGridlines() const { return m_ngridlines[1]; }
     GridlinePattern gridlinePattern() const { return m_gridline_pattern; }
     const kvs::RGBColor& gridlineColor() const { return m_gridline_color; }
     float gridlineWidth() const { return m_gridline_width; }
@@ -138,7 +138,7 @@ public:
 
     kvs::ValueAxis& xAxis() { return *m_axes[0]; }
     kvs::ValueAxis& yAxis() { return *m_axes[1]; }
-    kvs::ValueAxis& axis( const size_t index ) { return *m_axes[ index ]; }
+    kvs::ValueAxis& axis( const std::size_t index ) { return *m_axes[ index ]; }
 
     void exec( kvs::ObjectBase* object, kvs::Camera* camera, kvs::Light* light );
 

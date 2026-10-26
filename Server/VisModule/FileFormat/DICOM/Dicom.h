@@ -177,13 +177,13 @@ public:
 
     const vismodule::ValueArray<vismodule::UInt8> pixelData( void ) const;
 
-    const int rawValue( const size_t index ) const;
+    const int rawValue( const std::size_t index ) const;
 
-    const int rawValue( const size_t i, const size_t j ) const;
+    const int rawValue( const std::size_t i, const std::size_t j ) const;
 
-    const int value( const size_t index ) const;
+    const int value( const std::size_t index ) const;
 
-    const int value( const size_t x, const size_t y ) const;
+    const int value( const std::size_t x, const std::size_t y ) const;
 
 public:
 

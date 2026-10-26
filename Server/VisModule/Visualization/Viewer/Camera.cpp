@@ -217,7 +217,7 @@ void Camera::setTop( const float top )
  *  @param height [in] window height
  */
 /*==========================================================================*/
-void Camera::setWindowSize( const size_t width, const size_t height )
+void Camera::setWindowSize( const std::size_t width, const std::size_t height )
 {
     m_window_width  = width;
     m_window_height = height;
@@ -369,7 +369,7 @@ const float Camera::top( void ) const
  *  Get the window width.
  */
 /*==========================================================================*/
-const size_t Camera::windowWidth( void ) const
+const std::size_t Camera::windowWidth( void ) const
 {
     return( m_window_width );
 }
@@ -379,7 +379,7 @@ const size_t Camera::windowWidth( void ) const
  *  Get the window height.
  */
 /*==========================================================================*/
-const size_t Camera::windowHeight( void ) const
+const std::size_t Camera::windowHeight( void ) const
 {
     return( m_window_height );
 }

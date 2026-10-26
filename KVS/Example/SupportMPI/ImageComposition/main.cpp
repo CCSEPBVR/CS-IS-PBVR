@@ -33,10 +33,10 @@ inline kvs::StructuredVolumeObject* Div(
     const int ndiv,
     const kvs::StructuredVolumeObject* volume )
 {
-    const size_t slice_size = volume->resolution().x() * volume->resolution().y();
-    const size_t nslices = volume->resolution().z() / ndiv;
-    const size_t size = slice_size * nslices;
-    const size_t offset = id * slice_size * ( nslices - 1 );
+    const std::size_t slice_size = volume->resolution().x() * volume->resolution().y();
+    const std::size_t nslices = volume->resolution().z() / ndiv;
+    const std::size_t size = slice_size * nslices;
+    const std::size_t offset = id * slice_size * ( nslices - 1 );
     kvs::ValueArray<kvs::UInt8> values( volume->values().asValueArray<kvs::UInt8>().data() + offset, size );
 
     const auto dimx = volume->resolution().x();
@@ -104,7 +104,7 @@ int main( int argc, char** argv )
         object->multiplyXform( R );
 
         // Registration for each sub-volume.
-        const size_t nslices = volume->resolution().z() / size;
+        const std::size_t nslices = volume->resolution().z() / size;
         const kvs::Vec3 offset( 0.0f, 0.0f, rank * ( nslices - 1 ) ); // in object coordinate
         const kvs::Vec3 origin( 0, 0, 0 ); // in object coordinate
         const kvs::Vec3 Ta = kvs::ObjectCoordinate( origin, object ).toWorldCoordinate().position();

@@ -18,9 +18,9 @@ namespace
 {
 const double MinValue = 0.0f;
 const double MaxValue = 255.0f;
-const size_t ColorMapBarWidth = 200;
-const size_t ColorMapBarHeight = 20;
-const size_t ColorMapBarMargin = 10;
+const std::size_t ColorMapBarWidth = 200;
+const std::size_t ColorMapBarHeight = 20;
+const std::size_t ColorMapBarMargin = 10;
 }
 
 
@@ -208,7 +208,7 @@ int ColorMapBar::adjustedWidth()
     BaseClass::painter().begin( BaseClass::screen() );
     const kvs::FontMetrics metrics = BaseClass::painter().fontMetrics();
 
-    size_t width = 0;
+    std::size_t width = 0;
     switch ( m_orientation )
     {
     case ColorMapBar::Horizontal:
@@ -221,8 +221,8 @@ int ColorMapBar::adjustedWidth()
     {
         const std::string min_value = kvs::String::From( m_min_value );
         const std::string max_value = kvs::String::From( m_max_value );
-        const size_t min_text_width = metrics.width( min_value );
-        const size_t max_text_width = metrics.width( max_value );
+        const std::size_t min_text_width = metrics.width( min_value );
+        const std::size_t max_text_width = metrics.width( max_value );
         width = ( min_value.size() > max_value.size() ) ? min_text_width : max_text_width;
         width += BaseClass::margin() * 2;
         width = kvs::Math::Max( width, ::ColorMapBarHeight );
@@ -247,8 +247,8 @@ int ColorMapBar::adjustedHeight()
     BaseClass::painter().begin( BaseClass::screen() );
     const kvs::FontMetrics metrics = BaseClass::painter().fontMetrics();
 
-    size_t height = 0;
-    const size_t text_height = metrics.height();
+    std::size_t height = 0;
+    const std::size_t text_height = metrics.height();
     switch ( m_orientation )
     {
     case ColorMapBar::Horizontal:
@@ -272,9 +272,9 @@ int ColorMapBar::adjustedHeight()
 /*===========================================================================*/
 void ColorMapBar::create_texture()
 {
-    const size_t nchannels = 3;
-    const size_t width = m_colormap.resolution();
-    const size_t height = 1;
+    const std::size_t nchannels = 3;
+    const std::size_t width = m_colormap.resolution();
+    const std::size_t height = 1;
     const kvs::UInt8* data = m_colormap.table().data();
 
     m_texture.release();

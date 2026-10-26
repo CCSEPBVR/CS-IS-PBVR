@@ -105,11 +105,11 @@ void ThisClass::drawMap(
         const float dy = ( y1 - y0 ) / nrows;
 
         float x = x0;
-        for ( size_t i = 0; i < ncols; ++i, x += dx )
+        for ( std::size_t i = 0; i < ncols; ++i, x += dx )
         {
             float y = y0;
             const auto& column = table->column(i);
-            for ( size_t j = 0; j < nrows; ++j, y += dy )
+            for ( std::size_t j = 0; j < nrows; ++j, y += dy )
             {
                 const auto v = column[j].to<kvs::Real32>();
                 auto color = m_color_map.at( v );

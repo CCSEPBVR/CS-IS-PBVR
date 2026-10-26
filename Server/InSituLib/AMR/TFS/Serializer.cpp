@@ -16,8 +16,8 @@ namespace jpv
 template<>
 size_t Serializer::byteSize<std::string>( const std::string& object )
 {
-    size_t size = 0;
-    size += sizeof( size_t );
+    std::size_t size = 0;
+    size += sizeof( std::size_t );
     size += object.size() + 1;
     return size;
 }
@@ -25,7 +25,7 @@ size_t Serializer::byteSize<std::string>( const std::string& object )
 template<>
 size_t Serializer::write<std::string>( char* buf, const std::string& object )
 {
-    size_t index = 0;
+    std::size_t index = 0;
     index += write( buf + index, object.size() + 1 );
     index += writeArray( buf + index, object.c_str(), object.size() );
     index += write( buf + index, '\0' );
@@ -35,7 +35,7 @@ size_t Serializer::write<std::string>( char* buf, const std::string& object )
 template<>
 size_t Serializer::read<std::string>( const char* buf, std::string& object )
 {
-    size_t index = 0, size;
+    std::size_t index = 0, size;
     char* tmp;
     index += read( buf + index, size );
     tmp = new char[size];
@@ -48,7 +48,7 @@ size_t Serializer::read<std::string>( const char* buf, std::string& object )
 template<>
 size_t Serializer::byteSize<kvs::Camera>( const kvs::Camera& object )
 {
-    size_t size = 0;
+    std::size_t size = 0;
     size += sizeof( float ) * 9; // rotation
     size += sizeof( float ) * 3; // transition
     size += sizeof( float ) * 3; // scaling
@@ -63,8 +63,8 @@ size_t Serializer::byteSize<kvs::Camera>( const kvs::Camera& object )
     size += sizeof( float ); // left
     size += sizeof( float ); // bottom
     size += sizeof( float ); // top
-    size += sizeof( size_t ); // width
-    size += sizeof( size_t ); // hight
+    size += sizeof( std::size_t ); // width
+    size += sizeof( std::size_t ); // hight
     return size;
 }
 
@@ -86,7 +86,7 @@ size_t Serializer::pack<kvs::Camera>( char* buf, const kvs::Camera& object )
     {
         s[i] = object.scaling()[i];
     }
-    size_t index = 0;
+    std::size_t index = 0;
     index += writeArray( buf + index, r );
     index += writeArray( buf + index, t );
     index += writeArray( buf + index, s );
@@ -119,7 +119,7 @@ size_t Serializer::unpack<kvs::Camera>( const char* buf, kvs::Camera& object )
     float t[3];
     float s[3];
     float x, y, z, v;
-    size_t index = 0;
+    std::size_t index = 0;
     index += readArray( buf + index, r );
     index += readArray( buf + index, t );
     index += readArray( buf + index, s );
@@ -156,7 +156,7 @@ size_t Serializer::unpack<kvs::Camera>( const char* buf, kvs::Camera& object )
     object.setBottom( v );
     index += read( buf + index, v );
     object.setTop( v );
-    size_t w, h;
+    std::size_t w, h;
     index += read( buf + index, w );
     index += read( buf + index, h );
     object.setWindowSize( w, h );
@@ -166,7 +166,7 @@ size_t Serializer::unpack<kvs::Camera>( const char* buf, kvs::Camera& object )
 template<>
 size_t jpv::Serializer::byteSize<kvs::TransferFunction>( const kvs::TransferFunction& object )
 {
-    size_t size = 0;
+    std::size_t size = 0;
     size += sizeof( object.resolution() );
     size += sizeof( object.maxValue() );
     size += sizeof( object.minValue() );
@@ -180,20 +180,20 @@ size_t jpv::Serializer::byteSize<kvs::TransferFunction>( const kvs::TransferFunc
 template<>
 size_t jpv::Serializer::pack<kvs::TransferFunction>( char* buf, const kvs::TransferFunction& object )
 {
-    size_t index = 0;
-    const size_t resolution = object.resolution();
+    std::size_t index = 0;
+    const std::size_t resolution = object.resolution();
     index += write( buf + index, resolution );
     index += write( buf + index, object.maxValue() );
     index += write( buf + index, object.minValue() );
     const kvs::ColorMap::Table& colorTable = object.colorMap().table();
-    for ( size_t i = 0; i < resolution; ++i )
+    for ( std::size_t i = 0; i < resolution; ++i )
     {
         index += write( buf + index, colorTable[3 * i + 0] );
         index += write( buf + index, colorTable[3 * i + 1] );
         index += write( buf + index, colorTable[3 * i + 2] );
     }
     const kvs::OpacityMap::Table& opacityTable = object.opacityMap().table();
-    for ( size_t i = 0; i < resolution; ++i )
+    for ( std::size_t i = 0; i < resolution; ++i )
     {
         index += write( buf + index, opacityTable[i] );
     }
@@ -203,22 +203,22 @@ size_t jpv::Serializer::pack<kvs::TransferFunction>( char* buf, const kvs::Trans
 template<>
 size_t jpv::Serializer::unpack<kvs::TransferFunction>( const char* buf, kvs::TransferFunction& object )
 {
-    size_t index = 0;
-    size_t resolution;
+    std::size_t index = 0;
+    std::size_t resolution;
     float max_value, min_value;
     index += read( buf + index, resolution );
     index += read( buf + index, max_value );
     index += read( buf + index, min_value );
 
     kvs::ColorMap::Table colorTable( resolution * 3 );
-    for ( size_t i = 0; i < resolution; ++i )
+    for ( std::size_t i = 0; i < resolution; ++i )
     {
         index += read( buf + index, colorTable[3 * i + 0] );
         index += read( buf + index, colorTable[3 * i + 1] );
         index += read( buf + index, colorTable[3 * i + 2] );
     }
     kvs::OpacityMap::Table opacityTable( resolution );
-    for ( size_t i = 0; i < resolution; ++i )
+    for ( std::size_t i = 0; i < resolution; ++i )
     {
         index += read( buf + index, opacityTable[i] );
     }

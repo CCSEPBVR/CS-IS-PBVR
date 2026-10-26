@@ -34,8 +34,8 @@ namespace
 const kvs::RGBColor DefaultBackgroundColor( 212, 221, 229 );
 const kvs::RGBColor DefaultHistogramColor( 100, 100, 100 );
 const float DefaultBiasParameter( 0.5f );
-const size_t DefaultScreenWidth( 512 );
-const size_t DefaultScreenHeight( 150 );
+const std::size_t DefaultScreenWidth( 512 );
+const std::size_t DefaultScreenHeight( 150 );
 }
 
 namespace kvsview
@@ -95,9 +95,9 @@ struct Parameters
 
     void createHistogramTexture()
     {
-        const size_t nchannels = 4;
-        const size_t width = static_cast<size_t>( this->frequency_table.numberOfBins() );
-        const size_t height = width;
+        const std::size_t nchannels = 4;
+        const std::size_t width = static_cast<size_t>( this->frequency_table.numberOfBins() );
+        const std::size_t height = width;
 
         this->histogram_texture.setPixelFormat( nchannels, sizeof( kvs::UInt8 ) );
         this->histogram_texture.create( width, height );
@@ -112,26 +112,26 @@ struct Parameters
 
     const kvs::ValueArray<kvs::UInt8> histogramImage()
     {
-        const size_t nchannels = 4;
-        const size_t width = static_cast<size_t>( frequency_table.numberOfBins() );
-        const size_t height = width;
-        const size_t npixels = width * height;
+        const std::size_t nchannels = 4;
+        const std::size_t width = static_cast<size_t>( frequency_table.numberOfBins() );
+        const std::size_t height = width;
+        const std::size_t npixels = width * height;
 
         kvs::ValueArray<kvs::UInt8> data( npixels * nchannels );
         data.fill( 0 );
 
         const float g = bias_parameter; // bias parameter
         const kvs::Real32 normalized_factor = 1.0f / ( frequency_table.maxCount() );
-        for ( size_t i = 0; i < width; i++ )
+        for ( std::size_t i = 0; i < width; i++ )
         {
-            const size_t n = frequency_table.bin().at(i); // frequency count
+            const std::size_t n = frequency_table.bin().at(i); // frequency count
             const float  f = n * normalized_factor; // normalized frequency count in [0,1]
             const float  b = std::pow( f, static_cast<float>( std::log(g) / std::log(0.5) ) );
 
-            const size_t h = static_cast<size_t>( b * height + 0.5f );
-            for ( size_t j = 0; j < h; j++ )
+            const std::size_t h = static_cast<size_t>( b * height + 0.5f );
+            for ( std::size_t j = 0; j < h; j++ )
             {
-                const size_t index = i + j * width;
+                const std::size_t index = i + j * width;
                 data[ 4 * index + 0 ] = ::DefaultHistogramColor.r();
                 data[ 4 * index + 1 ] = ::DefaultHistogramColor.g();
                 data[ 4 * index + 2 ] = ::DefaultHistogramColor.b();

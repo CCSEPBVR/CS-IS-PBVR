@@ -108,7 +108,7 @@ bool CommandLine::parse()
     }
 
     // Check the required argument.
-    for ( size_t i = 0; i < m_options.size(); ++i )
+    for ( std::size_t i = 0; i < m_options.size(); ++i )
     {
         if ( m_options[i].isRequired() && !m_options[i].isGiven() )
         {
@@ -118,7 +118,7 @@ bool CommandLine::parse()
         }
     }
 
-    for ( size_t i = 0; i < m_values.size(); ++i )
+    for ( std::size_t i = 0; i < m_values.size(); ++i )
     {
         if ( m_values[i].isRequired() && !m_values[i].isGiven() )
         {
@@ -332,7 +332,7 @@ void CommandLine::addHelpOption( const std::string& help_option )
 void CommandLine::addOption(
     const std::string& name,
     const std::string& description,
-    size_t nvalues,
+    std::size_t nvalues,
     bool is_required )
 {
     m_max_length = name.length() + 1 > m_max_length ? name.length() + 1 : m_max_length;
@@ -438,7 +438,7 @@ bool CommandLine::read_option_values(
         return true;
     }
 
-    for ( size_t i = 0; i < option->numberOfValues(); ++i )
+    for ( std::size_t i = 0; i < option->numberOfValues(); ++i )
     {
         if ( argument == m_arguments.end() ) { return false; }
         if ( this->is_option( *argument ) ) { return false; }
@@ -462,7 +462,7 @@ void CommandLine::print_help_message( HelpMessageMode mode ) const
     {
         std::cerr << "Usage: " << m_command_name << " ";
         std::cerr << "[options] ";
-        for ( size_t i = 0; i < m_values.size(); ++i )
+        for ( std::size_t i = 0; i < m_values.size(); ++i )
         {
             std::cerr << "<" << m_values[i].description() << "> ";
         }

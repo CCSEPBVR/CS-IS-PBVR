@@ -55,9 +55,9 @@ void UpdateMinMaxValues( A& mins, A& maxes, const kvs::AnyValueArray& array, int
 }
 
 template <typename T, typename Array, typename FileDescriptor>
-void WriteN( Array& array, FileDescriptor f, std::size_t n, std::string name , std::size_t start = 0 )
+void WriteN( Array& array, FileDescriptor f, std::size_t  n, std::string name , std::size_t  start = 0 )
 {
-    for ( std::size_t i = start; i < start + n; ++i )
+    for ( std::size_t  i = start; i < start + n; ++i )
     {
         T m = array[i];
         //std::fwrite( &m, sizeof( T ), 1, f );
@@ -67,9 +67,9 @@ void WriteN( Array& array, FileDescriptor f, std::size_t n, std::string name , s
 }
 
 //template <typename T, typename Array, typename FileDescriptor>
-//void WriteN( Array& array, FileDescriptor f, std::size_t n, std::size_t start = 0 )
+//void WriteN( Array& array, FileDescriptor f, std::size_t  n, std::size_t  start = 0 )
 //{
-//    for ( std::size_t i = start; i < start + n; ++i )
+//    for ( std::size_t  i = start; i < start + n; ++i )
 //    {
 //        T m = array[i];
 //        std::fwrite( &m, sizeof( T ), 1, f );

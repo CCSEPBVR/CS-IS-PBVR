@@ -68,7 +68,7 @@ BoundaryData::BoundaryData( const std::string filename ):
  *  @return dimensions
  */
 /*===========================================================================*/
-const size_t BoundaryData::dimensions( void ) const
+const std::size_t BoundaryData::dimensions( void ) const
 {
     return( m_dimensions );
 }
@@ -79,7 +79,7 @@ const size_t BoundaryData::dimensions( void ) const
  *  @return number of inlet boundary nodes
  */
 /*===========================================================================*/
-const size_t BoundaryData::nnodesInlet( void ) const
+const std::size_t BoundaryData::nnodesInlet( void ) const
 {
     return( m_nnodes_inlet );
 }
@@ -90,7 +90,7 @@ const size_t BoundaryData::nnodesInlet( void ) const
  *  @return number of wall boundary nodes
  */
 /*===========================================================================*/
-const size_t BoundaryData::nnodesWall( void ) const
+const std::size_t BoundaryData::nnodesWall( void ) const
 {
     return( m_nnodes_wall );
 }
@@ -101,7 +101,7 @@ const size_t BoundaryData::nnodesWall( void ) const
  *  @return number of symetric boundary nodes
  */
 /*===========================================================================*/
-const size_t BoundaryData::nnodesSymetric( void ) const
+const std::size_t BoundaryData::nnodesSymetric( void ) const
 {
     return( m_nnodes_symetric );
 }
@@ -112,7 +112,7 @@ const size_t BoundaryData::nnodesSymetric( void ) const
  *  @return number of cyclic boundary nodes
  */
 /*===========================================================================*/
-const size_t BoundaryData::nnodesCyclic( void ) const
+const std::size_t BoundaryData::nnodesCyclic( void ) const
 {
     return( m_nnodes_cyclic );
 }
@@ -123,7 +123,7 @@ const size_t BoundaryData::nnodesCyclic( void ) const
  *  @return number of body surface boundary nodes
  */
 /*===========================================================================*/
-const size_t BoundaryData::nnodesBody( void ) const
+const std::size_t BoundaryData::nnodesBody( void ) const
 {
     return( m_nnodes_body );
 }
@@ -134,7 +134,7 @@ const size_t BoundaryData::nnodesBody( void ) const
  *  @return number of free boundary nodes
  */
 /*===========================================================================*/
-const size_t BoundaryData::nnodesFree( void ) const
+const std::size_t BoundaryData::nnodesFree( void ) const
 {
     return( m_nnodes_free );
 }
@@ -145,7 +145,7 @@ const size_t BoundaryData::nnodesFree( void ) const
  *  @return number of moving wall boundary nodes
  */
 /*===========================================================================*/
-const size_t BoundaryData::nnodesMovingWall( void ) const
+const std::size_t BoundaryData::nnodesMovingWall( void ) const
 {
     return( m_nnodes_moving_wall );
 }
@@ -156,7 +156,7 @@ const size_t BoundaryData::nnodesMovingWall( void ) const
  *  @return number of inter connect boundary nodes
  */
 /*===========================================================================*/
-const size_t BoundaryData::nnodesInterConnect( void ) const
+const std::size_t BoundaryData::nnodesInterConnect( void ) const
 {
     return( m_nnodes_inter_connect );
 }
@@ -167,7 +167,7 @@ const size_t BoundaryData::nnodesInterConnect( void ) const
  *  @return number of temperature boundary nodes
  */
 /*===========================================================================*/
-const size_t BoundaryData::nnodesTemp( void ) const
+const std::size_t BoundaryData::nnodesTemp( void ) const
 {
     return( m_nnodes_temp );
 }
@@ -349,7 +349,7 @@ const bool BoundaryData::read( const std::string filename )
     }
 
     const vismodule::gf::DataSet& data_set = file.dataSet(0);
-    for ( size_t i = 0; i < data_set.dataList().size(); i++ )
+    for ( std::size_t i = 0; i < data_set.dataList().size(); i++ )
     {
         const vismodule::gf::Data& data = data_set.data(i);
         const std::string& keyword = data.keyword();
@@ -362,9 +362,9 @@ const bool BoundaryData::read( const std::string filename )
             {
                 m_nnodes_inlet = data.num2();
                 const vismodule::Int32* src = data.intArray().pointer();
-                const size_t size = data.intArray().size();
+                const std::size_t size = data.intArray().size();
                 vismodule::UInt32* dst = m_connections_inlet.allocate( size );
-                for ( size_t i = 0; i < size; i++ ) dst[i] = static_cast<vismodule::UInt32>( src[i] - 1 );
+                for ( std::size_t i = 0; i < size; i++ ) dst[i] = static_cast<vismodule::UInt32>( src[i] - 1 );
             }
         }
 
@@ -375,9 +375,9 @@ const bool BoundaryData::read( const std::string filename )
             {
                 m_nnodes_wall = data.num2();
                 const vismodule::Int32* src = data.intArray().pointer();
-                const size_t size = data.intArray().size();
+                const std::size_t size = data.intArray().size();
                 vismodule::UInt32* dst = m_connections_wall.allocate( size );
-                for ( size_t i = 0; i < size; i++ ) dst[i] = static_cast<vismodule::UInt32>( src[i] - 1 );
+                for ( std::size_t i = 0; i < size; i++ ) dst[i] = static_cast<vismodule::UInt32>( src[i] - 1 );
             }
         }
 
@@ -388,9 +388,9 @@ const bool BoundaryData::read( const std::string filename )
             {
                 m_nnodes_symetric = data.num2();
                 const vismodule::Int32* src = data.intArray().pointer();
-                const size_t size = data.intArray().size();
+                const std::size_t size = data.intArray().size();
                 vismodule::UInt32* dst = m_connections_symetric.allocate( size );
-                for ( size_t i = 0; i < size; i++ ) dst[i] = static_cast<vismodule::UInt32>( src[i] - 1 );
+                for ( std::size_t i = 0; i < size; i++ ) dst[i] = static_cast<vismodule::UInt32>( src[i] - 1 );
             }
         }
 
@@ -401,9 +401,9 @@ const bool BoundaryData::read( const std::string filename )
             {
                 m_nnodes_cyclic = data.num2();
                 const vismodule::Int32* src = data.intArray().pointer();
-                const size_t size = data.intArray().size();
+                const std::size_t size = data.intArray().size();
                 vismodule::UInt32* dst = m_connections_cyclic.allocate( size );
-                for ( size_t i = 0; i < size; i++ ) dst[i] = static_cast<vismodule::UInt32>( src[i] - 1 );
+                for ( std::size_t i = 0; i < size; i++ ) dst[i] = static_cast<vismodule::UInt32>( src[i] - 1 );
             }
         }
 
@@ -414,9 +414,9 @@ const bool BoundaryData::read( const std::string filename )
             {
                 m_nnodes_body = data.num2();
                 const vismodule::Int32* src = data.intArray().pointer();
-                const size_t size = data.intArray().size();
+                const std::size_t size = data.intArray().size();
                 vismodule::UInt32* dst = m_connections_body.allocate( size );
-                for ( size_t i = 0; i < size; i++ ) dst[i] = static_cast<vismodule::UInt32>( src[i] - 1 );
+                for ( std::size_t i = 0; i < size; i++ ) dst[i] = static_cast<vismodule::UInt32>( src[i] - 1 );
             }
         }
 
@@ -427,9 +427,9 @@ const bool BoundaryData::read( const std::string filename )
             {
                 m_nnodes_free = data.num2();
                 const vismodule::Int32* src = data.intArray().pointer();
-                const size_t size = data.intArray().size();
+                const std::size_t size = data.intArray().size();
                 vismodule::UInt32* dst = m_connections_free.allocate( size );
-                for ( size_t i = 0; i < size; i++ ) dst[i] = static_cast<vismodule::UInt32>( src[i] - 1 );
+                for ( std::size_t i = 0; i < size; i++ ) dst[i] = static_cast<vismodule::UInt32>( src[i] - 1 );
             }
         }
 
@@ -440,9 +440,9 @@ const bool BoundaryData::read( const std::string filename )
             {
                 m_nnodes_moving_wall = data.num2();
                 const vismodule::Int32* src = data.intArray().pointer();
-                const size_t size = data.intArray().size();
+                const std::size_t size = data.intArray().size();
                 vismodule::UInt32* dst = m_connections_moving_wall.allocate( size );
-                for ( size_t i = 0; i < size; i++ ) dst[i] = static_cast<vismodule::UInt32>( src[i] - 1 );
+                for ( std::size_t i = 0; i < size; i++ ) dst[i] = static_cast<vismodule::UInt32>( src[i] - 1 );
             }
         }
 
@@ -453,9 +453,9 @@ const bool BoundaryData::read( const std::string filename )
             {
                 m_nnodes_temp = data.num2();
                 const vismodule::Int32* src = data.intArray().pointer();
-                const size_t size = data.intArray().size();
+                const std::size_t size = data.intArray().size();
                 vismodule::UInt32* dst = m_connections_temp.allocate( size );
-                for ( size_t i = 0; i < size; i++ ) dst[i] = static_cast<vismodule::UInt32>( src[i] - 1 );
+                for ( std::size_t i = 0; i < size; i++ ) dst[i] = static_cast<vismodule::UInt32>( src[i] - 1 );
             }
         }
 
@@ -466,9 +466,9 @@ const bool BoundaryData::read( const std::string filename )
             {
                 m_nnodes_temp = data.num2();
                 const vismodule::Int32* src = data.intArray().pointer();
-                const size_t size = data.intArray().size();
+                const std::size_t size = data.intArray().size();
                 vismodule::UInt32* dst = m_connections_heat.allocate( size );
-                for ( size_t i = 0; i < size; i++ ) dst[i] = static_cast<vismodule::UInt32>( src[i] - 1 );
+                for ( std::size_t i = 0; i < size; i++ ) dst[i] = static_cast<vismodule::UInt32>( src[i] - 1 );
             }
         }
 

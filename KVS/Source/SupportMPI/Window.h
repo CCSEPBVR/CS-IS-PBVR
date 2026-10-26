@@ -27,7 +27,7 @@ private:
     kvs::ValueArray<T> m_buffer; ///< buffer data to expose
 
 public:
-    Window( const kvs::mpi::Communicator& comm, const size_t size );
+    Window( const kvs::mpi::Communicator& comm, const std::size_t size );
     Window( const kvs::mpi::Communicator& comm, const kvs::ValueArray<T>& buffer );
     Window(): m_handler( MPI_WIN_NULL ) {}
     ~Window() { this->free(); }
@@ -36,15 +36,15 @@ public:
     const kvs::ValueArray<T>& buffer() const { return m_buffer; }
 
     void create( const kvs::mpi::Communicator& comm, const kvs::ValueArray<T>& buffer );
-    void allocate( const kvs::mpi::Communicator& comm, const size_t size );
+    void allocate( const kvs::mpi::Communicator& comm, const std::size_t size );
     void free();
 
-    void get( T& value, const int rank, const size_t offset = 0 );
-    void get( kvs::ValueArray<T>& values, const int rank, const size_t offset = 0 );
-    void put( const T value, const int rank, const size_t offset = 0 );
-    void put( const kvs::ValueArray<T>& values, const int rank, const size_t offset = 0 );
-    void accumulate( const T value, const MPI_Op op, const int rank, const size_t offset = 0 );
-    void accumulate( const kvs::ValueArray<T>& values, const MPI_Op op, const int rank, const size_t offset = 0 );
+    void get( T& value, const int rank, const std::size_t offset = 0 );
+    void get( kvs::ValueArray<T>& values, const int rank, const std::size_t offset = 0 );
+    void put( const T value, const int rank, const std::size_t offset = 0 );
+    void put( const kvs::ValueArray<T>& values, const int rank, const std::size_t offset = 0 );
+    void accumulate( const T value, const MPI_Op op, const int rank, const std::size_t offset = 0 );
+    void accumulate( const kvs::ValueArray<T>& values, const MPI_Op op, const int rank, const std::size_t offset = 0 );
 
     void fence( const int assert = 0 );
     void lock( const int lock_type, const int rank, const int assert = 0 );
@@ -60,7 +60,7 @@ public:
 };
 
 template <typename T>
-inline Window<T>::Window( const kvs::mpi::Communicator& comm, const size_t size ):
+inline Window<T>::Window( const kvs::mpi::Communicator& comm, const std::size_t size ):
     m_handler( MPI_WIN_NULL )
 {
     this->allocate( comm, size );
@@ -81,7 +81,7 @@ inline void Window<T>::create( const kvs::mpi::Communicator& comm, const kvs::Va
 }
 
 template <typename T>
-inline void Window<T>::allocate( const kvs::mpi::Communicator& comm, const size_t size )
+inline void Window<T>::allocate( const kvs::mpi::Communicator& comm, const std::size_t size )
 {
     T* values = NULL;
 #if MPI_VERSION >= 3
@@ -108,14 +108,14 @@ inline void Window<T>::free()
 }
 
 template <typename T>
-inline void Window<T>::get( T& value, const int rank, const size_t offset )
+inline void Window<T>::get( T& value, const int rank, const std::size_t offset )
 {
     const MPI_Datatype data_type = kvs::mpi::DataType<T>::Enum();
     KVS_MPI_CALL( MPI_Get( &value, 1, data_type, rank, offset, 1, data_type, this->m_handler ) );
 }
 
 template <typename T>
-inline void Window<T>::get( kvs::ValueArray<T>& values, const int rank, const size_t offset )
+inline void Window<T>::get( kvs::ValueArray<T>& values, const int rank, const std::size_t offset )
 {
     const MPI_Datatype data_type = kvs::mpi::DataType<T>::Enum();
     const int data_size = static_cast<int>( values.size() );
@@ -123,14 +123,14 @@ inline void Window<T>::get( kvs::ValueArray<T>& values, const int rank, const si
 }
 
 template <typename T>
-inline void Window<T>::put( const T value, const int rank, const size_t offset )
+inline void Window<T>::put( const T value, const int rank, const std::size_t offset )
 {
     const MPI_Datatype data_type = kvs::mpi::DataType<T>::Enum();
     KVS_MPI_CALL( MPI_Put( (void*)&value, 1, data_type, rank, offset, 1, data_type, this->m_handler ) );
 }
 
 template <typename T>
-inline void Window<T>::put( const kvs::ValueArray<T>& values, const int rank, const size_t offset )
+inline void Window<T>::put( const kvs::ValueArray<T>& values, const int rank, const std::size_t offset )
 {
     const MPI_Datatype data_type = kvs::mpi::DataType<T>::Enum();
     const int data_size = static_cast<int>( values.size() );
@@ -138,14 +138,14 @@ inline void Window<T>::put( const kvs::ValueArray<T>& values, const int rank, co
 }
 
 template <typename T>
-inline void Window<T>::accumulate( const T value, const MPI_Op op, const int rank, const size_t offset )
+inline void Window<T>::accumulate( const T value, const MPI_Op op, const int rank, const std::size_t offset )
 {
     const MPI_Datatype data_type = kvs::mpi::DataType<T>::Enum();
     KVS_MPI_CALL( MPI_Accumulate( (void*)&value, 1, data_type, rank, offset, 1, data_type, op, this->m_handler ) );
 }
 
 template <typename T>
-inline void Window<T>::accumulate( const kvs::ValueArray<T>& values, const MPI_Op op, const int rank, const size_t offset )
+inline void Window<T>::accumulate( const kvs::ValueArray<T>& values, const MPI_Op op, const int rank, const std::size_t offset )
 {
     const MPI_Datatype data_type = kvs::mpi::DataType<T>::Enum();
     const int data_size = static_cast<int>( values.size() );

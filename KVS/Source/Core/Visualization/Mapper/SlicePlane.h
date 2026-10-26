@@ -60,12 +60,12 @@ protected:
     template <typename T> void extract_hexahedra_plane( const kvs::UnstructuredVolumeObject* volume );
     template <typename T> void extract_pyramid_plane( const kvs::UnstructuredVolumeObject* volume );
     template <typename T> void extract_prism_plane( const kvs::UnstructuredVolumeObject* volume );
-    size_t calculate_table_index( const size_t x, const size_t y, const size_t z ) const;
-    size_t calculate_tetrahedra_table_index( const size_t* local_index ) const;
-    size_t calculate_hexahedra_table_index( const size_t* local_index ) const;
-    size_t calculate_pyramid_table_index( const size_t* local_index ) const;
-    size_t calculate_prism_table_index( const size_t* local_index ) const;
-    float substitute_plane_equation( const size_t x, const size_t y, const size_t z ) const;
+    std::size_t calculate_table_index( const std::size_t x, const std::size_t y, const std::size_t z ) const;
+    std::size_t calculate_tetrahedra_table_index( const size_t* local_index ) const;
+    std::size_t calculate_hexahedra_table_index( const size_t* local_index ) const;
+    std::size_t calculate_pyramid_table_index( const size_t* local_index ) const;
+    std::size_t calculate_prism_table_index( const size_t* local_index ) const;
+    float substitute_plane_equation( const std::size_t x, const std::size_t y, const std::size_t z ) const;
     float substitute_plane_equation( const kvs::Vec3& vertex ) const;
     const kvs::Vec3 interpolate_vertex( const kvs::Vec3& vertex0, const kvs::Vec3& vertex1 ) const;
     template <typename T> double interpolate_value(
@@ -74,8 +74,8 @@ protected:
         const kvs::Vec3& vertex1 ) const;
     template <typename T> double interpolate_value(
         const kvs::UnstructuredVolumeObject* volume,
-        const size_t index0,
-        const size_t index1 ) const;
+        const std::size_t index0,
+        const std::size_t index1 ) const;
 };
 
 } // end of namespace kvs

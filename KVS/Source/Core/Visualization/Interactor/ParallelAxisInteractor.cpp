@@ -78,7 +78,7 @@ void ParallelAxisInteractor::mousePressEvent( kvs::MouseEvent* e )
     const float ex = static_cast<float>( e->x() );
     const auto stride = cw / ( naxes - 1 );
     auto x = static_cast<float>( x_min );
-    for ( size_t i = 0; i < naxes; ++i, x += stride )
+    for ( std::size_t i = 0; i < naxes; ++i, x += stride )
     {
         if ( x - w2 < ex && ex < x + w2 )
         {
@@ -182,7 +182,7 @@ void ParallelAxisInteractor::mouseDoubleClickEvent( kvs::MouseEvent* e )
     const auto ex = static_cast<float>( e->x() );
     const auto stride = cw / ( naxes - 1 );
     auto x = static_cast<float>( x_min );
-    for ( size_t i = 0; i < naxes; i++, x += stride )
+    for ( std::size_t i = 0; i < naxes; i++, x += stride )
     {
         // Reset the range of the axis clicked.
         if ( x - w2 < ex && ex < x + w2 )
@@ -229,7 +229,7 @@ void ParallelAxisInteractor::paintEvent()
         const double stride = cw / ( naxes - 1 );
         const double w = m_range_width * 0.5f;
         auto x = static_cast<double>( content.x0() );
-        for ( size_t i = 0; i < naxes; ++i, x += stride )
+        for ( std::size_t i = 0; i < naxes; ++i, x += stride )
         {
             // Min/max values for the axis.
             const auto v_min = table->minValue(i);

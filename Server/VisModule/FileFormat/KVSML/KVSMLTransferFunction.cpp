@@ -82,7 +82,7 @@ const vismodule::kvsml::KVSMLTag& KVSMLTransferFunction::KVSMLTag( void ) const
  *  @return resolution
  */
 /*===========================================================================*/
-const size_t KVSMLTransferFunction::resolution( void ) const
+const std::size_t KVSMLTransferFunction::resolution( void ) const
 {
     return( m_resolution );
 }
@@ -183,7 +183,7 @@ void KVSMLTransferFunction::addColorPoint( const float value, const vismodule::R
  *  @param  resolution [in] resolution
  */
 /*===========================================================================*/
-void KVSMLTransferFunction::setResolution( const size_t resolution )
+void KVSMLTransferFunction::setResolution( const std::size_t resolution )
 {
     m_resolution = resolution;
 }
@@ -312,7 +312,7 @@ const bool KVSMLTransferFunction::read( const std::string& filename )
             // <DataArray> for <ColorMap>
             else
             {
-                const size_t colors_nelements = m_resolution * 3;
+                const std::size_t colors_nelements = m_resolution * 3;
                 vismodule::kvsml::DataArrayTag colors;
                 if ( !colors.read( color_map_tag.node(), colors_nelements, &m_colors ) )
                 {
@@ -349,7 +349,7 @@ const bool KVSMLTransferFunction::read( const std::string& filename )
             else
             {
                 // <DataArray> for <OpacityMap>
-                const size_t opacities_nelements = m_resolution;
+                const std::size_t opacities_nelements = m_resolution;
                 vismodule::kvsml::DataArrayTag opacities;
                 if ( !opacities.read( opacity_map_tag.node(), opacities_nelements, &m_opacities ) )
                 {
@@ -399,8 +399,8 @@ const bool KVSMLTransferFunction::read( const std::string& filename )
                 m_opacities.allocate( m_resolution );
                 m_colors.allocate( m_resolution * 3 );
 
-                const size_t nloops = m_resolution;
-                for ( size_t i = 0, i3 = 0; i < nloops; i++, i3 += 3 )
+                const std::size_t nloops = m_resolution;
+                for ( std::size_t i = 0, i3 = 0; i < nloops; i++, i3 += 3 )
                 {
                     m_opacities.at( i ) = static_cast<vismodule::Real32>( atof( t.token().c_str() ) );
                     m_colors.at( i3 ) = static_cast<vismodule::UInt8>( atoi( t.token().c_str() ) );
@@ -431,7 +431,7 @@ const bool KVSMLTransferFunction::read( const std::string& filename )
                 vismodule::UInt8 r = 0;
                 vismodule::UInt8 g = 0;
                 vismodule::UInt8 b = 0;
-                for ( size_t i = 0, i3 = 0; i < m_resolution; i++, i3 += 3 )
+                for ( std::size_t i = 0, i3 = 0; i < m_resolution; i++, i3 += 3 )
                 {
                     ifs >> a >> r >> g >> b;
                     m_opacities.at( i ) = a;

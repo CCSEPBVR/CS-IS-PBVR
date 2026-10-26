@@ -65,7 +65,7 @@ public:
 
     const vismodule::ValueArray<vismodule::Real32>& coords( void ) const;
 
-    const size_t ntriangles( void ) const;
+    const std::size_t ntriangles( void ) const;
 
 public:
 

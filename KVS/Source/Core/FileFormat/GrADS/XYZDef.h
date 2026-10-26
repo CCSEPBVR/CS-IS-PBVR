@@ -35,7 +35,7 @@ struct XYZDef
         GausR40
     };
 
-    size_t num = 0; ///< number of grid points
+    std::size_t num = 0; ///< number of grid points
     MappingMethod mapping = MappingMethod::Linear; ///< mapping method
     kvs::ValueArray<kvs::Real32> values{}; ///< values
 

@@ -18,7 +18,7 @@
 namespace
 {
 
-const size_t MaxMessageSize = 512;
+const std::size_t MaxMessageSize = 512;
 
 const std::string tag[vismodule::Message::NumberOfMessageTypes] =
 {

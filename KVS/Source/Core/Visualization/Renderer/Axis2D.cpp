@@ -220,7 +220,7 @@ void Axis2D::drawGridlines( const kvs::Rectangle& rect, const float dpr )
         // Vertical gridlines.
         float x = x0 * dpr;
         const float dx = ( ( x1 - x0 ) / ( m_ngridlines[0] - 1 ) ) * dpr;
-        for ( size_t i = 0; i < m_ngridlines[0]; ++i, x += dx )
+        for ( std::size_t i = 0; i < m_ngridlines[0]; ++i, x += dx )
         {
             kvs::OpenGL::Vertices( kvs::Vec2( x, y0 * dpr ), kvs::Vec2( x, y1 * dpr ) );
         }
@@ -228,7 +228,7 @@ void Axis2D::drawGridlines( const kvs::Rectangle& rect, const float dpr )
         // Horizontal gridlines.
         float y = y1 * dpr;
         const float dy = ( ( y1 - y0 ) / ( m_ngridlines[1] - 1 ) ) * dpr;
-        for ( size_t i = 0; i < m_ngridlines[1]; ++i, y -= dy )
+        for ( std::size_t i = 0; i < m_ngridlines[1]; ++i, y -= dy )
         {
             kvs::OpenGL::Vertices( kvs::Vec2( x0 * dpr, y ), kvs::Vec2( x1 * dpr, y ) );
         }
@@ -272,8 +272,8 @@ void Axis2D::drawAxes( const kvs::Rectangle& rect )
 /*===========================================================================*/
 void Axis2D::updateAxes( const kvs::TableObject* table )
 {
-    const size_t naxes = m_axes.size();
-    for ( size_t i = 0; i < naxes; ++i )
+    const std::size_t naxes = m_axes.size();
+    for ( std::size_t i = 0; i < naxes; ++i )
     {
         auto axis = m_axes[i];
         if ( axis->label().empty() ) { axis->setLabel( table->label(i) ); }

@@ -75,7 +75,7 @@ bool DicomList::CheckDirectory( const std::string& dirname, const bool extension
         return false;
     }
 
-    size_t counter = 0;
+    std::size_t counter = 0;
     kvs::FileList::const_iterator file = files.begin();
     kvs::FileList::const_iterator last = files.end();
     while ( file != last )
@@ -151,7 +151,7 @@ DicomList::~DicomList()
  *  @param  index [in] list index
  */
 /*===========================================================================*/
-const kvs::Dicom* DicomList::operator [] ( const size_t index ) const
+const kvs::Dicom* DicomList::operator [] ( const std::size_t index ) const
 {
     return m_list[index];
 }
@@ -162,7 +162,7 @@ const kvs::Dicom* DicomList::operator [] ( const size_t index ) const
  *  @param  index [in] list index
  */
 /*===========================================================================*/
-kvs::Dicom* DicomList::operator [] ( const size_t index )
+kvs::Dicom* DicomList::operator [] ( const std::size_t index )
 {
     return m_list[index];
 }
@@ -229,8 +229,8 @@ size_t DicomList::size() const
 /*===========================================================================*/
 void DicomList::clear()
 {
-    const size_t nslices = m_list.size();
-    for( size_t i = 0; i < nslices; i++ )
+    const std::size_t nslices = m_list.size();
+    for( std::size_t i = 0; i < nslices; i++ )
     {
         if ( m_list[i] ) delete m_list[i];
     }

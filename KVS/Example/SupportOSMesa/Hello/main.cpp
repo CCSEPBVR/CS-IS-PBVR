@@ -22,7 +22,7 @@ int main( int argc, char** argv )
     screen.registerObject( object, renderer );
 
     kvs::Timer timer( kvs::Timer::Start );
-    for ( size_t i = 0; i < 12; i++ )
+    for ( std::size_t i = 0; i < 12; i++ )
     {
         std::stringstream num; num << std::setw(3) << std::setfill('0') << i;
         std::string filename = "output_" + num.str() + ".bmp";

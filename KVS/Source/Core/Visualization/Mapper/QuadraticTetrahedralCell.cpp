@@ -68,7 +68,7 @@ void QuadraticTetrahedralCell::updateDifferentialFunctions( const kvs::Vec3& loc
     const float r = local.z();
     const float w = 1 - p - q - r;
 
-    const size_t nnodes = BaseClass::numberOfCellNodes();
+    const std::size_t nnodes = BaseClass::numberOfCellNodes();
     kvs::Real32* dN = BaseClass::differentialFunctions();
     kvs::Real32* dNdp = dN;
     kvs::Real32* dNdq = dNdp + nnodes;
@@ -193,7 +193,7 @@ kvs::Real32 QuadraticTetrahedralCell::volume() const
         ( v8 + v7 + v9 + v6 ) * 0.25 };
 
     float sum_metric = 0;
-    for( size_t i = 0 ; i < 8 ; i++ )
+    for( std::size_t i = 0 ; i < 8 ; i++ )
     {
         BaseClass::setLocalPoint( c[i] );
         const kvs::Mat3 J = BaseClass::JacobiMatrix();

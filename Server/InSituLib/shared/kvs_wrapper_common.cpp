@@ -3,12 +3,12 @@
 #include <cstdio>
 #include <fstream>
 #include <sstream>
+#include <stdexcept>
 #include <vector>
 #include <vismodule/KVSMLObjectPoint>
 #include <vismodule/KVSMLObjectPlotOverLine>
 #include <vismodule/KVSMLObjectPlotOverTime>
 #include <vismodule/ParameterFileReader>
-#include <vismodule/ParameterFileWriter>
 #include <vismodule/TransferFunction>
 #include <vismodule/TransferFunctionSynthesizer>
 
@@ -82,10 +82,99 @@ NameListFile DefaultPlotOverLineParameterNameListFile()
 NameListFile DefaultPlotOverTimeParameterNameListFile()
 {
     NameListFile nameListFile;
-    nameListFile.setLine( "PLOT_FLAG", "FALSE" );
+    nameListFile.setLine( "PLOT_FLAG", "TRUE" );
     nameListFile.setLine( "TARGET_POINT", "0,0,0," );
     nameListFile.setLine( "END_PARAMETER_FILE", "SUCCESS" );
     return nameListFile;
+}
+
+void SetDefaultGlyphParameter( GlyphProperty& glyph_property )
+{
+    std::vector<std::string> size_variables = { "q1" };
+    std::vector<std::string> color_data_variables = { "q1" };
+
+    glyph_property.m_glyph_flag                 = false;
+    glyph_property.m_glyph_type                 = GlyphType::Arrow;
+    glyph_property.m_scale_factor               = 1;
+    glyph_property.m_direction_variable[0]      = "q1";
+    glyph_property.m_direction_variable[1]      = "q2";
+    glyph_property.m_direction_variable[2]      = "q3";
+    glyph_property.m_size_sampling_method       = DataDefines::Constant;
+    glyph_property.m_size_variable              = size_variables;
+    glyph_property.m_distribution_mode          = GlyphMode::UniformDistribution;
+    glyph_property.m_number_of_sampling_point   = 1000;
+    glyph_property.m_seed                       = 1;
+    glyph_property.m_stride                     = 3;
+    glyph_property.m_color_data_sampling_method = DataDefines::Constant;
+    glyph_property.m_color_data_variable        = color_data_variables;
+    glyph_property.m_glyph_color_map_table      = DefaultGlyphColorMapTable();
+    glyph_property.m_glyph_color_min            = 0;
+    glyph_property.m_glyph_color_max            = 1;
+    glyph_property.m_glyph_size_min             = 0;
+    glyph_property.m_glyph_size_max             = 1;
+
+    vismodule::ValueArray<vismodule::UInt8> color_map_table( glyph_property.m_glyph_color_map_table.size() );
+    for ( size_t i = 0; i < glyph_property.m_glyph_color_map_table.size(); i++ )
+    {
+        color_map_table[i] = static_cast<vismodule::UInt8>( glyph_property.m_glyph_color_map_table[i] );
+    }
+    glyph_property.m_color_map = vismodule::ColorMap(
+        color_map_table,
+        glyph_property.m_glyph_color_min,
+        glyph_property.m_glyph_color_max
+    );
+}
+
+void SetDefaultPlotOverLineParameter( PlotOverLineProperty& pol_property )
+{
+    pol_property.m_plot_flag      = false;
+    pol_property.m_plot_variable  = "q1";
+    pol_property.m_sampling_size  = 256;
+    pol_property.m_start_point[0] = 0;
+    pol_property.m_start_point[1] = 0;
+    pol_property.m_start_point[2] = 0;
+    pol_property.m_end_point[0]   = 1;
+    pol_property.m_end_point[1]   = 1;
+    pol_property.m_end_point[2]   = 1;
+}
+
+void SetDefaultPlotOverTimeParameter( PlotOverTimeProperty& pot_property )
+{
+    pot_property.m_plot_flag = false;
+    pot_property.m_target_point[0] = 0;
+    pot_property.m_target_point[1] = 0;
+    pot_property.m_target_point[2] = 0;
+}
+
+template <typename Property>
+void BroadcastProperty( Property& property, const int mpi_rank )
+{
+    int size = 0;
+    char* buf = nullptr;
+
+    if ( mpi_rank == 0 )
+    {
+        size = property.byteSize();
+        if ( size > 0 )
+        {
+            buf = new char[size];
+            property.pack( buf );
+        }
+    }
+
+#ifndef CPU_VER
+    MPI_Bcast( &size, 1, MPI_INT, 0, MPI_COMM_WORLD );
+#endif
+
+    if ( size > 0 )
+    {
+        if ( mpi_rank > 0 ) buf = new char[size];
+#ifndef CPU_VER
+        MPI_Bcast( buf, size, MPI_CHARACTER, 0, MPI_COMM_WORLD );
+#endif
+        if ( mpi_rank > 0 ) property.unpack( buf );
+        delete[] buf;
+    }
 }
 
 void BroadcastNameListFile( NameListFile& nameListFile, const int mpi_rank )
@@ -269,9 +358,9 @@ void SetParameterFilePath(
     std::string& glyphFilePrefix,
     std::string& plotOverLineFilePrefix,
     std::string& plotOverTimeFilePrefix,
-    std::string& tfFilePath,
-    std::string& tfFilePath_old,
-    std::string& tfFilePath_step,
+    std::string& tfJsonPath,
+    std::string& tfJsonPath_old,
+    std::string& tfJsonPath_step,
     std::string& glyphParameterPath,
     std::string& glyphParameterPath_old,
     std::string& plotOverLineParameterPath,
@@ -304,7 +393,7 @@ void SetParameterFilePath(
 
     std::stringstream step;
     step << '_' << std::setw( 5 ) << std::setfill( '0' ) << time_step;
-    historyFilePath = visParamDir + "history" + step.str() + ".txt";
+    historyFilePath = visParamDir + "history" + step.str() + ".json";
     stateFilePath     = visParamDir + "state.txt";
     
     envBuf = std::getenv( "PARTICLE_DIR" );
@@ -337,23 +426,22 @@ void SetParameterFilePath(
         }
     }
 
-    tfFilePath                    = visParamDir + tfFilename + ".tf";
-    tfFilePath_old                = visParamDir + tfFilename + "_old.tf";
-    tfFilePath_step               = visParamDir + tfFilename + step.str() + ".tf";
-    glyphParameterPath            = visParamDir + "parameter.gly";
-    glyphParameterPath_old        = visParamDir + "parameter_old.gly";
-    plotOverLineParameterPath     = visParamDir + "parameter.pol";
-    plotOverLineParameterPath_old = visParamDir + "parameter_old.pol";
-    plotOverTimeParameterPath     = visParamDir + "parameter.pot";
-    plotOverTimeParameterPath_old = visParamDir + "parameter_old.pot";
+    tfJsonPath                    = visParamDir + tfFilename + ".json";
+    tfJsonPath_old                = visParamDir + tfFilename + "_old.json";
+    tfJsonPath_step               = visParamDir + tfFilename + step.str() + ".json";
+    glyphParameterPath            = visParamDir + "glyph_parameter.json";
+    glyphParameterPath_old        = visParamDir + "glyph_parameter_old.json";
+    plotOverLineParameterPath     = visParamDir + "plot_over_line_parameter.json";
+    plotOverLineParameterPath_old = visParamDir + "plot_over_line_parameter_old.json";
+    plotOverTimeParameterPath     = visParamDir + "plot_over_time_parameter.json";
+    plotOverTimeParameterPath_old = visParamDir + "plot_over_time_parameter_old.json";
 
 }
 
 bool SetGlyphParameter(
     const std::string& glyphParameterPath,
     const std::string& glyphParameterPath_old,
-    GlyphProperty& glyph_property,
-    NameListFile& nameListFile
+    GlyphProperty& glyph_property
 )
 {
     int mpi_rank;
@@ -372,14 +460,12 @@ bool SetGlyphParameter(
 
         if ( glyphParameterFile.good() )
         {
-            ppr.readGlyphParameterFile( glyphParameterPath.c_str() );
-            nameListFile = ppr.getNameListFile();
+            ppr.readGlyphParameterFile( glyphParameterPath.c_str(), glyph_property );
             std::rename( glyphParameterPath.c_str(), glyphParameterPath_old.c_str() );
         }
         else if ( glyphParameterFileOld.good() )
         {
-            ppr.readGlyphParameterFile( glyphParameterPath_old.c_str() );
-            nameListFile = ppr.getNameListFile();
+            ppr.readGlyphParameterFile( glyphParameterPath_old.c_str(), glyph_property );
         }
         else
         {
@@ -388,13 +474,11 @@ bool SetGlyphParameter(
                 glyphParameterPath_old,
                 "Set default glyph parameters."
             );
-            nameListFile = DefaultGlyphParameterNameListFile();
+            SetDefaultGlyphParameter( glyph_property );
         }
     }
 
-    BroadcastNameListFile( nameListFile, mpi_rank );
-    ppr.setNameListFile( nameListFile );
-    ppr.setGlyphParameter( glyph_property );
+    BroadcastProperty( glyph_property, mpi_rank );
 
     return true;
 }
@@ -402,8 +486,7 @@ bool SetGlyphParameter(
 bool SetPlotOverLineParameter(
     const std::string& plotOverLineParameterPath,
     const std::string& plotOverLineParameterPath_old,
-    PlotOverLineProperty& pol_property,
-    NameListFile& nameListFile
+    PlotOverLineProperty& pol_property
 )
 {
     int mpi_rank;
@@ -417,19 +500,17 @@ bool SetPlotOverLineParameter(
 
     if ( mpi_rank == 0 )
     {
-        std::ifstream plotOverLineParameterFile( plotOverLineParameterPath );
-        std::ifstream plotOverLineParameterFileOld( plotOverLineParameterPath_old );
+        std::ifstream parameterFile( plotOverLineParameterPath );
+        std::ifstream parameterFileOld( plotOverLineParameterPath_old );
 
-        if ( plotOverLineParameterFile.good() )
+        if ( parameterFile.good() )
         {
-            ppr.readPlotOverLineParameterFile( plotOverLineParameterPath.c_str() );
-            nameListFile = ppr.getNameListFile();
+            ppr.readPlotOverLineParameterFile( plotOverLineParameterPath.c_str(), pol_property );
             std::rename( plotOverLineParameterPath.c_str(), plotOverLineParameterPath_old.c_str() );
         }
-        else if ( plotOverLineParameterFileOld.good() )
+        else if ( parameterFileOld.good() )
         {
-            ppr.readPlotOverLineParameterFile( plotOverLineParameterPath_old.c_str() );
-            nameListFile = ppr.getNameListFile();
+            ppr.readPlotOverLineParameterFile( plotOverLineParameterPath_old.c_str(), pol_property );
         }
         else
         {
@@ -438,13 +519,11 @@ bool SetPlotOverLineParameter(
                 plotOverLineParameterPath_old,
                 "Set default plot over line parameters."
             );
-            nameListFile = DefaultPlotOverLineParameterNameListFile();
+            SetDefaultPlotOverLineParameter( pol_property );
         }
     }
 
-    BroadcastNameListFile( nameListFile, mpi_rank );
-    ppr.setNameListFile( nameListFile );
-    ppr.setPlotOverLineParameter( pol_property );
+    BroadcastProperty( pol_property, mpi_rank );
 
     return true;
 }
@@ -452,8 +531,7 @@ bool SetPlotOverLineParameter(
 bool SetPlotOverTimeParameter(
     const std::string& plotOverTimeParameterPath,
     const std::string& plotOverTimeParameterPath_old,
-    PlotOverTimeProperty& pot_property,
-    NameListFile& nameListFile
+    PlotOverTimeProperty& pot_property
 )
 {
     int mpi_rank;
@@ -467,19 +545,17 @@ bool SetPlotOverTimeParameter(
 
     if ( mpi_rank == 0 )
     {
-        std::ifstream plotOverTimeParameterFile( plotOverTimeParameterPath );
-        std::ifstream plotOverTimeParameterFileOld( plotOverTimeParameterPath_old );
+        std::ifstream parameterFile( plotOverTimeParameterPath );
+        std::ifstream parameterFileOld( plotOverTimeParameterPath_old );
 
-        if ( plotOverTimeParameterFile.good() )
+        if ( parameterFile.good() )
         {
-            ppr.readPlotOverTimeParameterFile( plotOverTimeParameterPath.c_str() );
-            nameListFile = ppr.getNameListFile();
+            ppr.readPlotOverTimeParameterFile( plotOverTimeParameterPath.c_str(), pot_property );
             std::rename( plotOverTimeParameterPath.c_str(), plotOverTimeParameterPath_old.c_str() );
         }
-        else if ( plotOverTimeParameterFileOld.good() )
+        else if ( parameterFileOld.good() )
         {
-            ppr.readPlotOverTimeParameterFile( plotOverTimeParameterPath_old.c_str() );
-            nameListFile = ppr.getNameListFile();
+            ppr.readPlotOverTimeParameterFile( plotOverTimeParameterPath_old.c_str(), pot_property );
         }
         else
         {
@@ -488,13 +564,11 @@ bool SetPlotOverTimeParameter(
                 plotOverTimeParameterPath_old,
                 "Set default plot over time parameters."
             );
-            nameListFile = DefaultPlotOverTimeParameterNameListFile();
+            SetDefaultPlotOverTimeParameter( pot_property );
         }
     }
 
-    BroadcastNameListFile( nameListFile, mpi_rank );
-    ppr.setNameListFile( nameListFile );
-    ppr.setPlotOverTimeParameter( pot_property );
+    BroadcastProperty( pot_property, mpi_rank );
 
     return true;
 }
@@ -506,7 +580,7 @@ void MakeParticle(
     std::vector<float>& normals
 )
 {
-    size_t nmemb = point_object->nvertices() * 3;
+    std::size_t nmemb = point_object->nvertices() * 3;
     vismodule::ValueArray<vismodule::Real32> coords_array ( point_object->coords().pointer() , nmemb );
     vismodule::ValueArray<vismodule::UInt8>  colors_array ( point_object->colors().pointer() , nmemb );
     vismodule::ValueArray<vismodule::Real32> normals_array( point_object->normals().pointer(), nmemb );
@@ -764,7 +838,6 @@ void OutputParticleHistory(
     const int tf_number,
     const int nvariables,
     const std::string& histryFilePath,
-    const bool update_parameter_file,
     const vismodule::UInt64* c_bins,
     const vismodule::UInt64* o_bins,
     const float* max_array,
@@ -784,7 +857,7 @@ void OutputParticleHistory(
     c_bins_recv = new vismodule::UInt64[tf_number * DEFAULT_NBINS];
     o_bins_recv = new vismodule::UInt64[tf_number * DEFAULT_NBINS];
 
-    for ( size_t i = 0; i < (tf_number * DEFAULT_NBINS); i++ )
+    for ( std::size_t i = 0; i < (tf_number * DEFAULT_NBINS); i++ )
     {
         c_bins_recv[i] = 0;
         o_bins_recv[i] = 0;
@@ -808,7 +881,7 @@ void OutputParticleHistory(
     max_array_recv = new float[tf_number * 2]; // color, opacity
     min_array_recv = new float[tf_number * 2]; // color, opacity
 
-    for ( size_t i = 0; i < (tf_number * 2); i++ )
+    for ( std::size_t i = 0; i < (tf_number * 2); i++ )
     {
         max_array_recv[i] = FLT_MIN;
         min_array_recv[i] = FLT_MAX;
@@ -818,7 +891,7 @@ void OutputParticleHistory(
     MPI_Reduce( max_array, max_array_recv, (tf_number * 2), MPI_FLOAT, MPI_MAX, 0, MPI_COMM_WORLD );
     MPI_Reduce( min_array, min_array_recv, (tf_number * 2), MPI_FLOAT, MPI_MIN, 0, MPI_COMM_WORLD );
 #else
-    for( size_t i = 0; i < (tf_number * 2); i++ )
+    for( std::size_t i = 0; i < (tf_number * 2); i++ )
     {
         max_array_recv[i] = max_array[i];
         min_array_recv[i] = min_array[i];
@@ -827,52 +900,66 @@ void OutputParticleHistory(
 
     if( mpi_rank == 0 )
     {
-        // historyファイルの出力
-        std::ofstream ofs2( histryFilePath.c_str(), std::ios::out);
-        ofs2 << "TF_NUMBER=" << tf_number << std::endl;
+        std::ostringstream history_json;
+        history_json << "{\n";
+        history_json << "    \"tf_number\": " << tf_number << ",\n";
+        history_json << "    \"nvariables\": " << nvariables << ",\n";
+        history_json << "    \"particle_limit\": " << particle_property.m_particle_limit << ",\n";
+        history_json << "    \"is_ensemble\": false,\n";
+        history_json << "    \"transfer_functions\": {\n";
 
-        for( size_t i = 0; i < tf_number; i++ )
+        for( std::size_t i = 0; i < tf_number; i++ )
         {
-            ofs2 << "MIN_O" << (i + 1) << "=" << min_array_recv[2 * i    ] << std::endl;
-            ofs2 << "MAX_O" << (i + 1) << "=" << max_array_recv[2 * i    ] << std::endl;
-            ofs2 << "MIN_C" << (i + 1) << "=" << min_array_recv[2 * i + 1] << std::endl;
-            ofs2 << "MAX_C" << (i + 1) << "=" << max_array_recv[2 * i + 1] << std::endl;
-            ofs2 << "RESOLUTION_O" << (i + 1) << "=" << DEFAULT_NBINS << std::endl;
-            ofs2 << "HISTOGRAM_O"  << (i + 1) << "=";
-            for ( size_t j = 0; j < DEFAULT_NBINS; j++ )
+            history_json << "        \"O" << ( i + 1 ) << "\": {\n";
+            history_json << "            \"min\": " << min_array_recv[2 * i] << ",\n";
+            history_json << "            \"max\": " << max_array_recv[2 * i] << ",\n";
+            history_json << "            \"resolution\": " << DEFAULT_NBINS << ",\n";
+            history_json << "            \"histogram\": [";
+            for( std::size_t j = 0; j < DEFAULT_NBINS; j++ )
             {
-                ofs2 << o_bins_recv[j + (i * DEFAULT_NBINS)] << ",";
+                if( j > 0 ) history_json << ", ";
+                history_json << o_bins_recv[j + ( i * DEFAULT_NBINS )];
             }
-            ofs2 << std::endl;
-            ofs2 << "RESOLUTION_C" << (i + 1) << "=" << DEFAULT_NBINS << std::endl;
-            ofs2 << "HISTOGRAM_C"  << (i + 1) << "=";
-            for ( size_t j = 0; j < DEFAULT_NBINS; j++ )
+            history_json << "]\n";
+            history_json << "        },\n";
+
+            history_json << "        \"C" << ( i + 1 ) << "\": {\n";
+            history_json << "            \"min\": " << min_array_recv[2 * i + 1] << ",\n";
+            history_json << "            \"max\": " << max_array_recv[2 * i + 1] << ",\n";
+            history_json << "            \"resolution\": " << DEFAULT_NBINS << ",\n";
+            history_json << "            \"histogram\": [";
+            for( std::size_t j = 0; j < DEFAULT_NBINS; j++ )
             {
-                ofs2 << c_bins_recv[j + (i * DEFAULT_NBINS)] << ",";
+                if( j > 0 ) history_json << ", ";
+                history_json << c_bins_recv[j + ( i * DEFAULT_NBINS )];
             }
-            ofs2 << std::endl;
+            history_json << "]\n";
+            history_json << "        }";
+            if( i + 1 < tf_number ) history_json << ",";
+            history_json << "\n";
         }
 
-        ofs2 << "N_VARIABLES="             << nvariables                               << std::endl;
-        // ofs2 << "EXTRA_OPACITY_FACTOR="    << particle_property.m_extra_opacity_factor << std::endl; // 一時的にコメントアウト
-        ofs2 << "PARTICLE_LIMIT="          << particle_property.m_particle_limit       << std::endl;
-        ofs2 << "END_HISTORY_FILE=SUCCESS" << std::endl;
+        history_json << "    }\n";
+        history_json << "}\n";
+
+        const std::string tmp_history_file_path = histryFilePath + ".tmp";
+        std::ofstream ofs2( tmp_history_file_path.c_str(), std::ios::out );
+        if( !ofs2 )
+        {
+            throw std::runtime_error( "Cannot open temporary history json file for writing: " + tmp_history_file_path );
+        }
+
+        ofs2 << history_json.str();
         ofs2.close();
-
-        // ServerSideMinMaxを更新してからdefault.tfファイルを出力
-        for( size_t i = 0; i < tf_number; i++ )
+        if( !ofs2 )
         {
-            particle_property.m_transfunc_array[i].m_server_color_variable_min   = min_array_recv[2 * i + 1];
-            particle_property.m_transfunc_array[i].m_server_color_variable_max   = max_array_recv[2 * i + 1];
-            particle_property.m_transfunc_array[i].m_server_opacity_variable_min = min_array_recv[2 * i    ];
-            particle_property.m_transfunc_array[i].m_server_opacity_variable_max = max_array_recv[2 * i    ];
+            throw std::runtime_error( "Cannot write temporary history json file: " + tmp_history_file_path );
         }
 
-        if ( update_parameter_file )
+        if( std::rename( tmp_history_file_path.c_str(), histryFilePath.c_str() ) != 0 )
         {
-            ParameterFileWriter ppw;
-            ppw.getParticleParameter( particle_property );
-            ppw.writeParticleParameterOldFile();
+            throw std::runtime_error(
+                "Cannot rename temporary history json file: " + tmp_history_file_path + " -> " + histryFilePath );
         }
     }
 
@@ -906,7 +993,7 @@ void OutputParticles(
         coords, colors, normals
     );
     OutputParticleHistory(
-        particle_property, tf_number, nvariables, histryFilePath, true,
+        particle_property, tf_number, nvariables, histryFilePath,
         c_bins, o_bins, max_array, min_array
     );
 }
@@ -973,7 +1060,7 @@ void OutputLine(
     ss << std::setfill('0') << std::setw(7) << mpi_rank+1;
     ss << "_";
     ss << std::setfill('0') << std::setw(7) << mpi_size;
-    ss << ".dat";
+    ss << ".json";
     std::string plotOverLineFilePath;
     plotOverLineFilePath = plotOverLineFilePrefix + ss.str();
 
@@ -984,9 +1071,9 @@ void OutputLine(
     // MPI does not support bool type so use int type
     // vismodule::KVSMLObjectPlotOverLine::m_mask is defined as bool type
     vismodule::ValueArray<bool> tmp_mask( mask.size() );
-    for ( size_t i = 0; i < mask.size(); i++ )
+    for ( std::size_t i = 0; i < mask.size(); i++ )
     {
-        if ( mask[i] != 0 ) tmp_mask[i] = true;
+        tmp_mask[i] = ( mask[i] != 0 );
     }
 
     vismodule::KVSMLObjectPlotOverLine pol_object( tmp_values_on_line, tmp_x_axis, tmp_mask );
@@ -1016,7 +1103,7 @@ void OutputPOT(
     ss << std::setfill('0') << std::setw(7) << ( mpi_rank + 1 );
     ss << "_";
     ss << std::setfill('0') << std::setw(7) << mpi_size;
-    ss << ".dat";
+    ss << ".json";
 
     std::string plotOverTimeFilePath;
     plotOverTimeFilePath = plotOverTimeFilePrefix + ss.str();

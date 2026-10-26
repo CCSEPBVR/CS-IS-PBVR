@@ -1,6 +1,870 @@
 #include "ParameterFileReader.h"
+#include <exception>
+#include <cstdlib>
+#include <stdexcept>
 #define DEFAULT_TF_NUMBER 5
 #define BEFORE_READ_TF_NUMBER 99
+
+namespace
+{
+
+std::string JsonPathForTransferFunction( const std::string& section_name, const size_t index, const std::string& field )
+{
+    std::stringstream stream;
+    stream << section_name << "[" << index << "]." << field;
+    return stream.str();
+}
+
+const nlohmann::json& JsonRequiredObject( const nlohmann::json& parent, const std::string& key )
+{
+    if ( !parent.contains( key ) || !parent.at( key ).is_object() )
+    {
+        throw std::runtime_error( "Invalid default.json: missing object '" + key + "'" );
+    }
+    return parent.at( key );
+}
+
+const nlohmann::json& JsonRequiredArray( const nlohmann::json& parent, const std::string& key )
+{
+    if ( !parent.contains( key ) || !parent.at( key ).is_array() )
+    {
+        throw std::runtime_error( "Invalid default.json: missing array '" + key + "'" );
+    }
+    return parent.at( key );
+}
+
+bool JsonContainsAny( const nlohmann::json& parent, const std::string& key, const std::string& alternate_key )
+{
+    return parent.contains( key ) || parent.contains( alternate_key );
+}
+
+template <typename T>
+T JsonValueWithAlternate(
+    const nlohmann::json& parent,
+    const std::string& key,
+    const std::string& alternate_key,
+    const T& fallback )
+{
+    if ( parent.contains( key ) ) return parent.at( key ).get<T>();
+    if ( !alternate_key.empty() && parent.contains( alternate_key ) ) return parent.at( alternate_key ).get<T>();
+    return fallback;
+}
+
+size_t JsonSizeValueWithAlternate(
+    const nlohmann::json& parent,
+    const std::string& key,
+    const std::string& alternate_key,
+    const size_t fallback )
+{
+    return JsonValueWithAlternate<size_t>( parent, key, alternate_key, fallback );
+}
+
+void ValidateMapSize(
+    const nlohmann::json& map,
+    const std::string& path,
+    const size_t expected_value_count )
+{
+    const nlohmann::json& values = JsonRequiredArray( map, "values" );
+    if ( map.contains( "length" ) )
+    {
+        const size_t length = map.at( "length" ).get<size_t>();
+        if ( length != values.size() )
+        {
+            std::stringstream message;
+            message << "Invalid default.json: " << path << ".length is " << length
+                    << " but " << path << ".values.size() is " << values.size();
+            throw std::runtime_error( message.str() );
+        }
+    }
+
+    if ( values.size() != expected_value_count )
+    {
+        std::stringstream message;
+        message << "Invalid default.json: " << path << ".values.size() is " << values.size()
+                << " but expected " << expected_value_count;
+        throw std::runtime_error( message.str() );
+    }
+}
+
+void ValidateTransferFunctionSection(
+    const nlohmann::json& root,
+    const std::string& section_name,
+    const size_t resolution,
+    const bool required )
+{
+    if ( !root.contains( section_name ) )
+    {
+        if ( required )
+        {
+            throw std::runtime_error( "Invalid default.json: missing array '" + section_name + "'" );
+        }
+        return;
+    }
+
+    const nlohmann::json& transfer_functions = JsonRequiredArray( root, section_name );
+    if ( section_name == "transfer_functions" )
+    {
+        const nlohmann::json& settings = JsonRequiredObject( root, "settings" );
+        const nlohmann::json& transfer_settings = JsonRequiredObject( settings, "transfer_function" );
+        const size_t tf_count = JsonSizeValueWithAlternate(
+            transfer_settings, "count", "transfer_function_count", transfer_functions.size() );
+
+        if ( tf_count != transfer_functions.size() )
+        {
+            std::stringstream message;
+            message << "Invalid default.json: settings.transfer_function.count is " << tf_count
+                    << " but transfer_functions.size() is " << transfer_functions.size();
+            throw std::runtime_error( message.str() );
+        }
+    }
+
+    for ( size_t i = 0; i < transfer_functions.size(); ++i )
+    {
+        const nlohmann::json& tf = transfer_functions.at( i );
+        const nlohmann::json& color = JsonRequiredObject( tf, "color" );
+        const nlohmann::json& opacity = JsonRequiredObject( tf, "opacity" );
+        const nlohmann::json& color_map = JsonRequiredObject( color, "map" );
+        const nlohmann::json& opacity_map = JsonRequiredObject( opacity, "map" );
+
+        ValidateMapSize(
+            color_map,
+            JsonPathForTransferFunction( section_name, i, "color.map" ),
+            resolution * 3 );
+        ValidateMapSize(
+            opacity_map,
+            JsonPathForTransferFunction( section_name, i, "opacity.map" ),
+            resolution );
+    }
+}
+
+const nlohmann::json& GlyphRequiredObject( const nlohmann::json& parent, const std::string& key )
+{
+    if ( !parent.contains( key ) || !parent.at( key ).is_object() )
+    {
+        throw std::runtime_error( "Invalid glyph parameter json: missing object '" + key + "'" );
+    }
+    return parent.at( key );
+}
+
+const nlohmann::json& GlyphRequiredArray( const nlohmann::json& parent, const std::string& key )
+{
+    if ( !parent.contains( key ) || !parent.at( key ).is_array() )
+    {
+        throw std::runtime_error( "Invalid glyph parameter json: missing array '" + key + "'" );
+    }
+    return parent.at( key );
+}
+
+std::vector<std::string> GlyphStringArray( const nlohmann::json& parent, const std::string& key )
+{
+    std::vector<std::string> values;
+    const nlohmann::json& array = GlyphRequiredArray( parent, key );
+    values.reserve( array.size() );
+    for ( size_t i = 0; i < array.size(); ++i )
+    {
+        values.push_back( array.at( i ).get<std::string>() );
+    }
+    return values;
+}
+
+std::vector<int32_t> GlyphInt32Array( const nlohmann::json& parent, const std::string& key )
+{
+    std::vector<int32_t> values;
+    const nlohmann::json& array = GlyphRequiredArray( parent, key );
+    values.reserve( array.size() );
+    for ( size_t i = 0; i < array.size(); ++i )
+    {
+        values.push_back( array.at( i ).get<int32_t>() );
+    }
+    return values;
+}
+
+GlyphType GlyphTypeFromString( const std::string& name )
+{
+    if ( name == "Arrow" ) return GlyphType::Arrow;
+    if ( name == "Diamond" ) return GlyphType::Diamond;
+    if ( name == "Sphere" ) return GlyphType::Sphere;
+    throw std::runtime_error( "Invalid glyph parameter json: unknown type '" + name + "'" );
+}
+
+GlyphMode GlyphModeFromString( const std::string& name )
+{
+    if ( name == "UniformDistribution" ) return GlyphMode::UniformDistribution;
+    if ( name == "AllPoints" ) return GlyphMode::AllPoints;
+    if ( name == "EveryNthPoints" ) return GlyphMode::EveryNthPoints;
+    throw std::runtime_error( "Invalid glyph parameter json: unknown distribution_mode '" + name + "'" );
+}
+
+DataDefines DataDefinesFromString( const std::string& name, const std::string& key )
+{
+    if ( name == "Constant" ) return DataDefines::Constant;
+    if ( name == "VariableArray" ) return DataDefines::VariableArray;
+    throw std::runtime_error( "Invalid glyph parameter json: unknown " + key + " '" + name + "'" );
+}
+
+
+void ApplyGlyphDefault( GlyphProperty& glyph_property )
+{
+    std::vector<std::string> size_variables = { "q1" };
+    std::vector<std::string> color_data_variables = { "q1" };
+
+    glyph_property.m_glyph_flag                 = false;
+    glyph_property.m_glyph_type                 = GlyphType::Arrow;
+    glyph_property.m_scale_factor               = 1;
+    glyph_property.m_direction_variable[0]      = "q1";
+    glyph_property.m_direction_variable[1]      = "q2";
+    glyph_property.m_direction_variable[2]      = "q3";
+    glyph_property.m_size_sampling_method       = DataDefines::Constant;
+    glyph_property.m_size_variable              = size_variables;
+    glyph_property.m_distribution_mode          = GlyphMode::UniformDistribution;
+    glyph_property.m_number_of_sampling_point   = 1000;
+    glyph_property.m_seed                       = 1;
+    glyph_property.m_stride                     = 3;
+    glyph_property.m_color_data_sampling_method = DataDefines::Constant;
+    glyph_property.m_color_data_variable        = color_data_variables;
+    glyph_property.m_glyph_color_min            = 0;
+    glyph_property.m_glyph_color_max            = 1;
+    glyph_property.m_glyph_size_min             = 0;
+    glyph_property.m_glyph_size_max             = 1;
+    glyph_property.m_glyph_color_map_table.clear();
+}
+
+void ApplyGlyphParameterJson( const nlohmann::json& root, GlyphProperty& glyph_property )
+{
+    glyph_property.m_glyph_flag = root.at( "enabled" ).get<bool>();
+    if ( !glyph_property.m_glyph_flag )
+    {
+        glyph_property.m_glyph_type = GlyphType::Arrow;
+        glyph_property.m_stride = 1;
+        glyph_property.m_seed = 0;
+        glyph_property.m_scale_factor = 1.0f;
+        glyph_property.m_number_of_sampling_point = 0.0f;
+        glyph_property.m_glyph_color_min = 0.0f;
+        glyph_property.m_glyph_color_max = 1.0f;
+        glyph_property.m_glyph_size_min = 0.0f;
+        glyph_property.m_glyph_size_max = 1.0f;
+        glyph_property.m_distribution_mode = GlyphMode::AllPoints;
+        glyph_property.m_size_sampling_method = DataDefines::Constant;
+        glyph_property.m_color_data_sampling_method = DataDefines::Constant;
+        glyph_property.m_glyph_color_map_table.clear();
+        glyph_property.m_size_variable.clear();
+        glyph_property.m_color_data_variable.clear();
+        return;
+    }
+
+    const nlohmann::json& size = GlyphRequiredObject( root, "size" );
+    const nlohmann::json& color_data = GlyphRequiredObject( root, "color_data" );
+    const nlohmann::json& color_range = GlyphRequiredObject( color_data, "range" );
+
+    glyph_property.m_glyph_type = GlyphTypeFromString( root.at( "type" ).get<std::string>() );
+    glyph_property.m_scale_factor = root.at( "scale_factor" ).get<float>();
+    glyph_property.m_distribution_mode = GlyphModeFromString( root.at( "distribution_mode" ).get<std::string>() );
+    glyph_property.m_stride = glyph_property.m_distribution_mode == GlyphMode::AllPoints
+        ? 1
+        : root.at( "stride" ).get<int>();
+    glyph_property.m_seed = root.at( "seed" ).get<int>();
+    glyph_property.m_number_of_sampling_point = root.at( "number_of_sampling_points" ).get<float>();
+
+    const std::vector<std::string> direction_variables = GlyphStringArray( root, "direction_variables" );
+    if ( direction_variables.size() < 3 )
+    {
+        throw std::runtime_error( "Invalid glyph parameter json: direction_variables must contain at least 3 values" );
+    }
+    for ( std::size_t i = 0; i < 3; i++ )
+    {
+        glyph_property.m_direction_variable[i] = direction_variables[i];
+    }
+
+    glyph_property.m_size_sampling_method = DataDefinesFromString(
+        size.at( "sampling_method" ).get<std::string>(), "size.sampling_method" );
+    glyph_property.m_size_variable = GlyphStringArray( size, "variables" );
+
+    glyph_property.m_color_data_sampling_method = DataDefinesFromString(
+        color_data.at( "sampling_method" ).get<std::string>(), "color_data.sampling_method" );
+    glyph_property.m_color_data_variable = GlyphStringArray( color_data, "variables" );
+    glyph_property.m_glyph_color_min = color_range.at( "min" ).get<float>();
+    glyph_property.m_glyph_color_max = color_range.at( "max" ).get<float>();
+    glyph_property.m_glyph_color_map_table = GlyphInt32Array( root, "color_map" );
+    glyph_property.updateColorMap();
+}
+
+const nlohmann::json& ParameterRequiredArray(
+    const nlohmann::json& parent,
+    const std::string& key,
+    const std::string& parameter_name )
+{
+    if ( !parent.contains( key ) || !parent.at( key ).is_array() )
+    {
+        throw std::runtime_error(
+            "Invalid " + parameter_name + " parameter json: missing array '" + key + "'" );
+    }
+    return parent.at( key );
+}
+
+void ApplyPlotOverLineDefault( PlotOverLineProperty& pol_property )
+{
+    pol_property.m_plot_flag = false;
+    pol_property.m_plot_variable = "q1";
+    pol_property.m_sampling_size = 256;
+    for ( std::size_t i = 0; i < 3; i++ )
+    {
+        pol_property.m_start_point[i] = 0.0f;
+        pol_property.m_end_point[i] = 1.0f;
+    }
+}
+
+void ApplyPlotOverTimeDefault( PlotOverTimeProperty& pot_property )
+{
+    pot_property.m_plot_flag = false;
+    for ( std::size_t i = 0; i < 3; i++ )
+    {
+        pot_property.m_target_point[i] = 0.0f;
+    }
+}
+
+void ReadFloat3(
+    const nlohmann::json& parent,
+    const std::string& key,
+    float values[3],
+    const std::string& parameter_name )
+{
+    const nlohmann::json& array = ParameterRequiredArray( parent, key, parameter_name );
+    if ( array.size() < 3 )
+    {
+        throw std::runtime_error(
+            "Invalid " + parameter_name + " parameter json: '" + key + "' must contain at least 3 values" );
+    }
+
+    for ( std::size_t i = 0; i < 3; i++ )
+    {
+        values[i] = array.at( i ).get<float>();
+    }
+}
+
+void ApplyPlotOverLineParameterJson( const nlohmann::json& root, PlotOverLineProperty& pol_property )
+{
+    pol_property.m_plot_flag = root.at( "enabled" ).get<bool>();
+    pol_property.m_plot_variable = root.at( "variable" ).get<std::string>();
+    pol_property.m_sampling_size = root.at( "sampling_size" ).get<int32_t>();
+    ReadFloat3( root, "start_point", pol_property.m_start_point, "plot over line" );
+    ReadFloat3( root, "end_point", pol_property.m_end_point, "plot over line" );
+}
+
+void ApplyPlotOverTimeParameterJson( const nlohmann::json& root, PlotOverTimeProperty& pot_property )
+{
+    pot_property.m_plot_flag = root.at( "enabled" ).get<bool>();
+    ReadFloat3( root, "target_point", pot_property.m_target_point, "plot over time" );
+}
+
+void ValidateReadableTransferFunctionJson( const nlohmann::json& root )
+{
+    const nlohmann::json& settings = JsonRequiredObject( root, "settings" );
+    JsonRequiredArray( root, "transfer_functions" );
+    const nlohmann::json& transfer_settings = JsonRequiredObject( settings, "transfer_function" );
+
+    if ( !JsonContainsAny( transfer_settings, "count", "transfer_function_count" ) )
+    {
+        throw std::runtime_error( "Invalid default.json: missing settings.transfer_function.count" );
+    }
+    if ( !JsonContainsAny( transfer_settings, "resolution", "transfer_function_resolution" ) )
+    {
+        throw std::runtime_error( "Invalid default.json: missing settings.transfer_function.resolution" );
+    }
+
+    const size_t resolution = JsonSizeValueWithAlternate(
+        transfer_settings, "resolution", "transfer_function_resolution", 0 );
+
+    ValidateTransferFunctionSection( root, "transfer_functions", resolution, true );
+    ValidateTransferFunctionSection( root, "mean_transfer_functions", resolution, false );
+    ValidateTransferFunctionSection( root, "variance_transfer_functions", resolution, false );
+    ValidateTransferFunctionSection( root, "coefficient_of_variation_transfer_functions", resolution, false );
+}
+
+std::vector<int> JsonIntTable( const nlohmann::json& params, const std::string& key )
+{
+    std::vector<int> values;
+    const nlohmann::json& value = params.at( key );
+
+    if ( value.is_array() )
+    {
+        for ( size_t i = 0; i < value.size(); ++i )
+        {
+            values.push_back( value.at( i ).get<int>() );
+        }
+    }
+    else
+    {
+        std::string table_string = value.get<std::string>();
+        std::replace( table_string.begin(), table_string.end(), ',', ' ' );
+        std::stringstream stream( table_string );
+        int table_value = 0;
+        while ( stream >> table_value )
+        {
+            values.push_back( table_value );
+        }
+    }
+
+    return values;
+}
+
+std::vector<float> JsonFloatTable( const nlohmann::json& params, const std::string& key )
+{
+    std::vector<float> values;
+    const nlohmann::json& value = params.at( key );
+
+    if ( value.is_array() )
+    {
+        for ( size_t i = 0; i < value.size(); ++i )
+        {
+            values.push_back( value.at( i ).get<float>() );
+        }
+    }
+    else
+    {
+        std::string table_string = value.get<std::string>();
+        std::replace( table_string.begin(), table_string.end(), ',', ' ' );
+        std::stringstream stream( table_string );
+        float table_value = 0.0f;
+        while ( stream >> table_value )
+        {
+            values.push_back( table_value );
+        }
+    }
+
+    return values;
+}
+
+float JsonRangeValue(
+    const nlohmann::json& range,
+    const std::string& range_name,
+    const std::string& bound_name,
+    const float fallback = 0.0f )
+{
+    if ( !range.contains( range_name ) ) return fallback;
+    const nlohmann::json& value = range.at( range_name );
+    if ( !value.is_object() || !value.contains( bound_name ) ) return fallback;
+    return value.at( bound_name ).get<float>();
+}
+
+std::string JsonRangeMode( const nlohmann::json& range )
+{
+    if ( range.contains( "mode" ) ) return range.at( "mode" ).get<std::string>();
+    const std::string active_range = range.value( "active_range", std::string( "user" ) );
+    if ( active_range == "server" ) return "ServerSide";
+    if ( active_range == "user" ) return "UserRange";
+    return "";
+}
+
+nlohmann::json BuildLegacyParametersFromReadableJson(
+    const nlohmann::json& root,
+    const std::string& section_name = "transfer_functions" )
+{
+    nlohmann::json params = root.value( "parameters", nlohmann::json::object() );
+    const nlohmann::json& settings = root.at( "settings" );
+    const nlohmann::json transfer_functions = root.value( section_name, nlohmann::json::array() );
+
+    const nlohmann::json sampling = settings.value( "sampling", nlohmann::json::object() );
+    const nlohmann::json image = settings.value( "image", nlohmann::json::object() );
+    const nlohmann::json transfer_settings = settings.value( "transfer_function", nlohmann::json::object() );
+
+    if ( sampling.contains( "method" ) ) params["SAMPLING_METHOD"] = sampling.at( "method" );
+    if ( sampling.contains( "particle_limit" ) ) params["PARTICLE_LIMIT"] = sampling.at( "particle_limit" );
+    if ( sampling.contains( "particle_data_size_limit" ) ) params["PARTICLE_DATA_SIZE_LIMIT"] = sampling.at( "particle_data_size_limit" );
+    if ( sampling.contains( "particle_data_size_limit_unit" ) ) params["PARTICLE_DATA_SIZE_LIMIT_UNIT"] = sampling.at( "particle_data_size_limit_unit" );
+    if ( sampling.contains( "repeat_level" ) ) params["REPEAT_LEVEL"] = sampling.at( "repeat_level" );
+    else if ( sampling.contains( "m_repeat_level" ) ) params["REPEAT_LEVEL"] = sampling.at( "m_repeat_level" );
+    if ( image.contains( "width" ) ) params["RESOLUTION_WIDTH"] = image.at( "width" );
+    if ( image.contains( "height" ) ) params["RESOLUTION_HEIGHT"] = image.at( "height" );
+    if ( transfer_settings.contains( "resolution" ) ) params["TF_RESOLUTION"] = transfer_settings.at( "resolution" );
+    else if ( transfer_settings.contains( "transfer_function_resolution" ) ) params["TF_RESOLUTION"] = transfer_settings.at( "transfer_function_resolution" );
+    if ( section_name == "transfer_functions" && transfer_settings.contains( "count" ) ) params["TF_NUMBER"] = transfer_settings.at( "count" );
+    else if ( section_name == "transfer_functions" && transfer_settings.contains( "transfer_function_count" ) ) params["TF_NUMBER"] = transfer_settings.at( "transfer_function_count" );
+    else params["TF_NUMBER"] = transfer_functions.size();
+    if ( transfer_settings.contains( "color_synthesis" ) ) params["COLOR_SYNTH"] = transfer_settings.at( "color_synthesis" );
+    if ( transfer_settings.contains( "opacity_synthesis" ) ) params["OPACITY_SYNTH"] = transfer_settings.at( "opacity_synthesis" );
+
+    for ( size_t i = 0; i < transfer_functions.size(); ++i )
+    {
+        const nlohmann::json& tf = transfer_functions.at( i );
+        std::stringstream ss;
+        ss << "TF_NAME" << i + 1 << "_";
+        const std::string tag_base = ss.str();
+
+        if ( tf.contains( "id" ) ) params[tag_base + "ID"] = tf.at( "id" );
+        if ( tf.contains( "label" ) ) params[tag_base + "LABEL"] = tf.at( "label" );
+
+        if ( tf.contains( "color" ) )
+        {
+            const nlohmann::json& color = tf.at( "color" );
+            if ( color.contains( "variable" ) ) params[tag_base + "VAR_C"] = color.at( "variable" );
+            if ( color.contains( "range" ) )
+            {
+                const nlohmann::json& range = color.at( "range" );
+                params[tag_base + "RANGE_MODE_C"] = JsonRangeMode( range );
+                params[tag_base + "USER_MIN_C"] = JsonRangeValue( range, "user", "min" );
+                params[tag_base + "USER_MAX_C"] = JsonRangeValue( range, "user", "max" );
+            }
+            if ( color.contains( "map" ) )
+            {
+                const nlohmann::json& map = color.at( "map" );
+                if ( map.contains( "values" ) ) params[tag_base + "TABLE_C"] = map.at( "values" );
+            }
+        }
+
+        if ( tf.contains( "opacity" ) )
+        {
+            const nlohmann::json& opacity = tf.at( "opacity" );
+            if ( opacity.contains( "variable" ) ) params[tag_base + "VAR_O"] = opacity.at( "variable" );
+            if ( opacity.contains( "range" ) )
+            {
+                const nlohmann::json& range = opacity.at( "range" );
+                params[tag_base + "RANGE_MODE_O"] = JsonRangeMode( range );
+                params[tag_base + "USER_MIN_O"] = JsonRangeValue( range, "user", "min" );
+                params[tag_base + "USER_MAX_O"] = JsonRangeValue( range, "user", "max" );
+            }
+            if ( opacity.contains( "map" ) )
+            {
+                const nlohmann::json& map = opacity.at( "map" );
+                if ( map.contains( "values" ) ) params[tag_base + "TABLE_O"] = map.at( "values" );
+            }
+        }
+    }
+
+    if ( !params.contains( "END_PARAMETER_FILE" ) ) params["END_PARAMETER_FILE"] = "SUCCESS";
+    return params;
+}
+
+nlohmann::json TransferFunctionParameters( const nlohmann::json& root )
+{
+    if ( root.contains( "settings" ) && root.contains( "transfer_functions" ) )
+    {
+        ValidateReadableTransferFunctionJson( root );
+        return BuildLegacyParametersFromReadableJson( root );
+    }
+
+    return root.at( "parameters" );
+}
+
+nlohmann::json TransferFunctionSectionParameters( const nlohmann::json& root, const std::string& section_name )
+{
+    if ( root.contains( "settings" ) && root.contains( "transfer_functions" ) )
+    {
+        ValidateReadableTransferFunctionJson( root );
+        return BuildLegacyParametersFromReadableJson( root, section_name );
+    }
+
+    return nlohmann::json::object();
+}
+
+bool SetTransferFunctionArrayFromParameters(
+    const nlohmann::json& params,
+    const size_t resolution,
+    const std::string& section_name,
+    std::vector<NamedTransferFunction>& transfer_function_array )
+{
+    const int tf_number = params.value( "TF_NUMBER", 0 );
+    if ( tf_number < 0 )
+    {
+        std::cout << "ERROR:" << section_name << " TF_NUMBER is negative." << std::endl;
+        return false;
+    }
+
+    transfer_function_array.clear();
+    transfer_function_array.resize( tf_number );
+
+    for ( size_t n = 0; n < static_cast<size_t>( tf_number ); n++ )
+    {
+        std::stringstream ss;
+        ss << "TF_NAME" << n + 1 << "_";
+
+        std::stringstream s_name;
+        s_name << "t" << n + 1;
+
+        const std::string tag_base = ss.str();
+        transfer_function_array[n].m_resolution = resolution;
+        transfer_function_array[n].m_name = s_name.str();
+
+        const std::string color_variable         = params.value( tag_base + "VAR_C", std::string( "" ) );
+        const std::string opacity_variable       = params.value( tag_base + "VAR_O", std::string( "" ) );
+        const std::string color_range_mode       = params.value( tag_base + "RANGE_MODE_C", std::string( "" ) );
+        const std::string opacity_range_mode     = params.value( tag_base + "RANGE_MODE_O", std::string( "" ) );
+        const float server_color_min             = params.value( tag_base + "SERVER_MIN_C", 0.0f );
+        const float server_color_max             = params.value( tag_base + "SERVER_MAX_C", 0.0f );
+        const float user_color_min               = params.value( tag_base + "USER_MIN_C", 0.0f );
+        const float user_color_max               = params.value( tag_base + "USER_MAX_C", 0.0f );
+        const float server_opacity_min           = params.value( tag_base + "SERVER_MIN_O", 0.0f );
+        const float server_opacity_max           = params.value( tag_base + "SERVER_MAX_O", 0.0f );
+        const float user_opacity_min             = params.value( tag_base + "USER_MIN_O", 0.0f );
+        const float user_opacity_max             = params.value( tag_base + "USER_MAX_O", 0.0f );
+        const std::vector<int> color_values      = JsonIntTable( params, tag_base + "TABLE_C" );
+        const std::vector<float> opacity_values  = JsonFloatTable( params, tag_base + "TABLE_O" );
+        const int tf_id                          = params.value( tag_base + "ID", static_cast<int>( n + 1 ) );
+        const std::string tf_label               = params.value( tag_base + "LABEL", std::string( "" ) );
+
+        if ( color_values.size() != resolution * 3 )
+        {
+            std::cout << "ERROR:" << section_name << "." << tag_base << "TABLE_C size is "
+                      << color_values.size() << ", but expected " << resolution * 3 << "." << std::endl;
+            return false;
+        }
+        if ( opacity_values.size() != resolution )
+        {
+            std::cout << "ERROR:" << section_name << "." << tag_base << "TABLE_O size is "
+                      << opacity_values.size() << ", but expected " << resolution << "." << std::endl;
+            return false;
+        }
+
+        std::cout << "  " << section_name << "[" << n << "] id=" << tf_id;
+        if ( !tf_label.empty() ) std::cout << " label=" << tf_label;
+        std::cout << " color.variable=" << color_variable
+                  << " opacity.variable=" << opacity_variable
+                  << " color.range.mode=" << color_range_mode
+                  << " opacity.range.mode=" << opacity_range_mode
+                  << " color.map.values=" << color_values.size()
+                  << " opacity.map.values=" << opacity_values.size()
+                  << std::endl;
+
+        if ( color_range_mode == "ServerSide" )
+        {
+            transfer_function_array[n].m_server_color_range_mode = NamedTransferFunction::ServerRangeMode::ServerSide;
+        }
+        else if ( color_range_mode == "UserRange" )
+        {
+            transfer_function_array[n].m_server_color_range_mode = NamedTransferFunction::ServerRangeMode::UserRange;
+        }
+        else
+        {
+            std::cout << "ERROR:" << section_name << " Color Range Mode is unknown" << std::endl;
+            return false;
+        }
+
+        if ( opacity_range_mode == "ServerSide" )
+        {
+            transfer_function_array[n].m_server_opacity_range_mode = NamedTransferFunction::ServerRangeMode::ServerSide;
+        }
+        else if ( opacity_range_mode == "UserRange" )
+        {
+            transfer_function_array[n].m_server_opacity_range_mode = NamedTransferFunction::ServerRangeMode::UserRange;
+        }
+        else
+        {
+            std::cout << "ERROR:" << section_name << " Opacity Range Mode is unknown" << std::endl;
+            return false;
+        }
+
+        transfer_function_array[n].m_color_variable              = color_variable;
+        transfer_function_array[n].m_opacity_variable            = opacity_variable;
+        transfer_function_array[n].m_server_color_variable_min   = server_color_min;
+        transfer_function_array[n].m_server_color_variable_max   = server_color_max;
+        transfer_function_array[n].m_server_opacity_variable_min = server_opacity_min;
+        transfer_function_array[n].m_server_opacity_variable_max = server_opacity_max;
+        transfer_function_array[n].m_user_color_variable_min     = user_color_min;
+        transfer_function_array[n].m_user_color_variable_max     = user_color_max;
+        transfer_function_array[n].m_user_opacity_variable_min   = user_opacity_min;
+        transfer_function_array[n].m_user_opacity_variable_max   = user_opacity_max;
+
+        vismodule::ColorMap::Table color_table( resolution * 3 );
+        vismodule::OpacityMap::Table opacity_table( resolution );
+
+        for ( size_t i = 0; i < resolution; i++ )
+        {
+            for ( size_t c = 0; c < 3; c++ )
+            {
+                color_table.at( i * 3 + c ) = color_values.at( i * 3 + c );
+            }
+        }
+
+        for ( size_t i = 0; i < resolution; i++ )
+        {
+            opacity_table.at( i ) = opacity_values.at( i );
+        }
+
+        vismodule::ColorMap color_map( color_table );
+        vismodule::OpacityMap opacity_map( opacity_table );
+
+        transfer_function_array[n].setColorMap( color_map );
+        transfer_function_array[n].setOpacityMap( opacity_map );
+
+        if ( transfer_function_array[n].m_server_color_range_mode == NamedTransferFunction::ServerRangeMode::ServerSide )
+        {
+            transfer_function_array[n].setColorRange( server_color_min, server_color_max );
+        }
+        else
+        {
+            transfer_function_array[n].setColorRange( user_color_min, user_color_max );
+        }
+
+        if ( transfer_function_array[n].m_server_opacity_range_mode == NamedTransferFunction::ServerRangeMode::ServerSide )
+        {
+            transfer_function_array[n].setOpacityRange( server_opacity_min, server_opacity_max );
+        }
+        else
+        {
+            transfer_function_array[n].setOpacityRange( user_opacity_min, user_opacity_max );
+        }
+    }
+
+    return true;
+}
+
+bool EnsembleRangeModeFromString(
+    const std::string& range_mode,
+    EnsembleTransferFunction::ServerRangeMode& mode )
+{
+    if ( range_mode == "ServerSide" )
+    {
+        mode = EnsembleTransferFunction::ServerRangeMode::ServerSide;
+        return true;
+    }
+    if ( range_mode == "UserRange" )
+    {
+        mode = EnsembleTransferFunction::ServerRangeMode::UserRange;
+        return true;
+    }
+    return false;
+}
+
+bool SetEnsembleTransferFunctionArrayFromParameters(
+    const nlohmann::json& params,
+    const size_t resolution,
+    const std::string& section_name,
+    std::vector<EnsembleTransferFunction>& transfer_function_array )
+{
+    const int tf_number = params.value( "TF_NUMBER", 0 );
+    if ( tf_number < 0 )
+    {
+        std::cout << "ERROR:" << section_name << " TF_NUMBER is negative." << std::endl;
+        return false;
+    }
+
+    transfer_function_array.clear();
+    transfer_function_array.resize( tf_number );
+
+    for ( size_t n = 0; n < static_cast<size_t>( tf_number ); n++ )
+    {
+        std::stringstream ss;
+        ss << "TF_NAME" << n + 1 << "_";
+        const std::string tag_base = ss.str();
+
+        EnsembleTransferFunction& transfer_function = transfer_function_array[n];
+        transfer_function.m_resolution = static_cast<int32_t>( resolution );
+        transfer_function.m_id = params.value( tag_base + "ID", static_cast<int>( n + 1 ) );
+        transfer_function.m_label = params.value( tag_base + "LABEL", std::string( "" ) );
+
+        const std::string color_variable         = params.value( tag_base + "VAR_C", std::string( "" ) );
+        const std::string opacity_variable       = params.value( tag_base + "VAR_O", std::string( "" ) );
+        const std::string color_range_mode       = params.value( tag_base + "RANGE_MODE_C", std::string( "" ) );
+        const std::string opacity_range_mode     = params.value( tag_base + "RANGE_MODE_O", std::string( "" ) );
+        const float server_color_min             = params.value( tag_base + "SERVER_MIN_C", 0.0f );
+        const float server_color_max             = params.value( tag_base + "SERVER_MAX_C", 0.0f );
+        const float user_color_min               = params.value( tag_base + "USER_MIN_C", 0.0f );
+        const float user_color_max               = params.value( tag_base + "USER_MAX_C", 0.0f );
+        const float server_opacity_min           = params.value( tag_base + "SERVER_MIN_O", 0.0f );
+        const float server_opacity_max           = params.value( tag_base + "SERVER_MAX_O", 0.0f );
+        const float user_opacity_min             = params.value( tag_base + "USER_MIN_O", 0.0f );
+        const float user_opacity_max             = params.value( tag_base + "USER_MAX_O", 0.0f );
+        const std::vector<int> color_values      = JsonIntTable( params, tag_base + "TABLE_C" );
+        const std::vector<float> opacity_values  = JsonFloatTable( params, tag_base + "TABLE_O" );
+
+        if ( color_values.size() != resolution * 3 )
+        {
+            std::cout << "ERROR:" << section_name << "." << tag_base << "TABLE_C size is "
+                      << color_values.size() << ", but expected " << resolution * 3 << "." << std::endl;
+            return false;
+        }
+        if ( opacity_values.size() != resolution )
+        {
+            std::cout << "ERROR:" << section_name << "." << tag_base << "TABLE_O size is "
+                      << opacity_values.size() << ", but expected " << resolution << "." << std::endl;
+            return false;
+        }
+
+        EnsembleTransferFunction::ServerRangeMode mode = EnsembleTransferFunction::ServerRangeMode::Unknown;
+        if ( !EnsembleRangeModeFromString( color_range_mode, mode ) )
+        {
+            std::cout << "ERROR:" << section_name << " Color Range Mode is unknown" << std::endl;
+            return false;
+        }
+        EnsembleTransferFunction::ServerRangeMode opacity_mode = EnsembleTransferFunction::ServerRangeMode::Unknown;
+        if ( !EnsembleRangeModeFromString( opacity_range_mode, opacity_mode ) )
+        {
+            std::cout << "ERROR:" << section_name << " Opacity Range Mode is unknown" << std::endl;
+            return false;
+        }
+
+        if ( color_variable != opacity_variable )
+        {
+            std::cout << "WARN:" << section_name << "[" << n << "] color.variable and opacity.variable differ. "
+                      << "Use color.variable. color=" << color_variable
+                      << " opacity=" << opacity_variable << std::endl;
+        }
+        if ( color_range_mode != opacity_range_mode )
+        {
+            std::cout << "WARN:" << section_name << "[" << n << "] color/opacity range modes differ. "
+                      << "Use color range mode. color=" << color_range_mode
+                      << " opacity=" << opacity_range_mode << std::endl;
+        }
+        if ( server_color_min != server_opacity_min || server_color_max != server_opacity_max )
+        {
+            std::cout << "WARN:" << section_name << "[" << n << "] color/opacity server ranges differ. "
+                      << "Use color range. color=[" << server_color_min << ", " << server_color_max
+                      << "] opacity=[" << server_opacity_min << ", " << server_opacity_max << "]" << std::endl;
+        }
+        if ( user_color_min != user_opacity_min || user_color_max != user_opacity_max )
+        {
+            std::cout << "WARN:" << section_name << "[" << n << "] color/opacity user ranges differ. "
+                      << "Use color range. color=[" << user_color_min << ", " << user_color_max
+                      << "] opacity=[" << user_opacity_min << ", " << user_opacity_max << "]" << std::endl;
+        }
+
+        std::cout << "  " << section_name << "[" << n << "] id=" << transfer_function.m_id;
+        if ( !transfer_function.m_label.empty() ) std::cout << " label=" << transfer_function.m_label;
+        std::cout << " variable=" << color_variable
+                  << " range.mode=" << color_range_mode
+                  << " color.map.values=" << color_values.size()
+                  << " opacity.map.values=" << opacity_values.size()
+                  << std::endl;
+
+        transfer_function.m_variable = color_variable;
+        transfer_function.m_server_range_mode = mode;
+        transfer_function.m_server_variable_min = server_color_min;
+        transfer_function.m_server_variable_max = server_color_max;
+        transfer_function.m_user_variable_min = user_color_min;
+        transfer_function.m_user_variable_max = user_color_max;
+
+        vismodule::ColorMap::Table color_table( resolution * 3 );
+        vismodule::OpacityMap::Table opacity_table( resolution );
+
+        for ( size_t i = 0; i < resolution; i++ )
+        {
+            for ( size_t c = 0; c < 3; c++ )
+            {
+                color_table.at( i * 3 + c ) = color_values.at( i * 3 + c );
+            }
+            opacity_table.at( i ) = opacity_values.at( i );
+        }
+
+        vismodule::ColorMap color_map( color_table );
+        vismodule::OpacityMap opacity_map( opacity_table );
+
+        if ( transfer_function.m_server_range_mode == EnsembleTransferFunction::ServerRangeMode::ServerSide )
+        {
+            color_map.setRange( server_color_min, server_color_max );
+            opacity_map.setRange( server_color_min, server_color_max );
+        }
+        else
+        {
+            color_map.setRange( user_color_min, user_color_max );
+            opacity_map.setRange( user_color_min, user_color_max );
+        }
+
+        transfer_function.setColorMap( color_map );
+        transfer_function.setOpacityMap( opacity_map );
+    }
+
+    return true;
+}
+}
 
 // CSのConnect時に指定した.tfファイルを読み込む
 void ParameterFileReader::readTransferFunctionFile( const char* fname )
@@ -10,7 +874,7 @@ void ParameterFileReader::readTransferFunctionFile( const char* fname )
     m_name_list_file.setName( "TF_SYNTH_C" );
     m_name_list_file.setName( "TF_SYNTH_O" );
 
-    for ( size_t i = 0; i < BEFORE_READ_TF_NUMBER; i++ )
+    for ( std::size_t i = 0; i < BEFORE_READ_TF_NUMBER; i++ )
     {
         std::stringstream ss;
         ss << "TF_NAME" << i + 1 << "_";
@@ -40,7 +904,7 @@ void ParameterFileReader::readTransferFunctionFile( const char* fname )
     const int tf_number = m_name_list_file.getValue<int>( "TF_NUMBER" );
     if ( tf_number < BEFORE_READ_TF_NUMBER )
     {
-        for ( size_t i = tf_number; i < BEFORE_READ_TF_NUMBER; i++ )
+        for ( std::size_t i = tf_number; i < BEFORE_READ_TF_NUMBER; i++ )
         {
             std::stringstream ss;
             ss << "TF_NAME" << i + 1 << "_";
@@ -60,7 +924,7 @@ void ParameterFileReader::readTransferFunctionFile( const char* fname )
     }
 }
 
-// ISのdefault.tfファイルを読み込む
+// ISの旧形式default.tfファイルを読み込む
 void ParameterFileReader::readParticleParameterFile( const char* fname )
 {
     m_name_list_file.setName( "SAMPLING_METHOD" );
@@ -74,7 +938,7 @@ void ParameterFileReader::readParticleParameterFile( const char* fname )
     m_name_list_file.setName( "OPACITY_SYNTH" );
     m_name_list_file.setName( "TF_NUMBER" );
 
-    for ( size_t n = 0; n < BEFORE_READ_TF_NUMBER; n++ )
+    for ( std::size_t n = 0; n < BEFORE_READ_TF_NUMBER; n++ )
     {
         std::stringstream ss;
         ss << "TF_NAME" << n + 1 << "_";
@@ -147,106 +1011,273 @@ void ParameterFileReader::readParticleParameterFile( const char* fname )
     return;
 }
 
-void ParameterFileReader::readGlyphParameterFile( const char* fname )
+// ISのdefault.json/default_old.jsonファイルを読み込む
+bool ParameterFileReader::readTransferFunctionFromJson( const char* fname, ParticleProperty& particle_property )
 {
-    m_name_list_file.setName( "GLYPH_FLAG" );
-    m_name_list_file.setName( "GLYPH_TYPE" );
-    m_name_list_file.setName( "SCALE_FACTOR" );
-    m_name_list_file.setName( "STRIDE" );
-    m_name_list_file.setName( "SEED" );
-    m_name_list_file.setName( "NUMBER_OF_SMAPLING_POINT" );
-    m_name_list_file.setName( "GLYPH_COLOR_MAX" );
-    m_name_list_file.setName( "GLYPH_COLOR_MIN" );
-    m_name_list_file.setName( "SIZE_VARIABLES" );
-    m_name_list_file.setName( "COLOR_VARIABLES" );
-    m_name_list_file.setName( "DIRECTION_VARIABLES" );
-    m_name_list_file.setName( "DISTRIBUTION_MODE" );
-    m_name_list_file.setName( "SIZE_SAMPLING_METHOD" );
-    m_name_list_file.setName( "COLOR_DATA_SAMPLING_METHOD" );
-    m_name_list_file.setName( "GLYPH_COLOR_MAP_TABLE" );
-    m_name_list_file.setName( "END_PARAMETER_FILE" );
-
-    m_name_list_file.setFileName( std::string( fname ) );
-
-    bool is_read_finished = false;
-
-    while( !is_read_finished )
+    std::string json_name;
+    try
     {
-        if( !m_name_list_file.read() )
+        std::cout << "------------------------------------Import json ------------------------------------------" << std::endl;
+
+        if ( fname != nullptr && *fname != '\0' )
         {
-            break;
-        }
-
-        std::string result = m_name_list_file.getValue<std::string>( "END_PARAMETER_FILE" );
-
-        if( result == "SUCCESS" )
-        {
-            is_read_finished = true;
-        }
-    }
-
-    return;
-}
-
-void ParameterFileReader::readPlotOverLineParameterFile( const char* fname )
-{
-    m_name_list_file.setName( "PLOT_FLAG" );
-    m_name_list_file.setName( "PLOT_VARIABLE" );
-    m_name_list_file.setName( "SAMPLING_SIZE" );
-    m_name_list_file.setName( "START_POINT" );
-    m_name_list_file.setName( "END_POINT" );
-    m_name_list_file.setName( "END_PARAMETER_FILE" );
-
-    m_name_list_file.setFileName( std::string( fname ) );
-
-    bool is_read_finished = false;
-
-    while( !is_read_finished )
-    {
-        if( !m_name_list_file.read() )
-        {
-            break;
-        }
-
-        std::string result = m_name_list_file.getValue<std::string>( "END_PARAMETER_FILE" );
-
-        if( result == "SUCCESS" )
-        {
-            is_read_finished = true;
-        }
-    }
-
-    return;
-}
-
-void ParameterFileReader::readPlotOverTimeParameterFile( const char* fname )
-{
-    m_name_list_file.setName( "PLOT_FLAG" );
-    m_name_list_file.setName( "TARGET_POINT" );
-    m_name_list_file.setName( "END_PARAMETER_FILE" );
-
-    m_name_list_file.setFileName( std::string( fname ) );
-
-    bool is_read_finished = false;
-
-    while ( !is_read_finished )
-    {
-        if ( !m_name_list_file.read() )
-        {
-            break;
+            json_name = fname;
         }
         else
         {
-            std::string result = m_name_list_file.getValue<std::string>( "END_PARAMETER_FILE" );
-
-            if( result == "SUCCESS" )
+            const char* env_buf = std::getenv( "VIS_PARAM_DIR" );
+            json_name = ( env_buf == nullptr ) ? "./" : env_buf;
+            if ( !json_name.empty() && json_name.back() != '/' )
             {
-                is_read_finished = true;
+                json_name += "/";
             }
-        }
-    }
 
-    return;
+            env_buf = std::getenv( "TF_NAME" );
+            json_name += ( env_buf == nullptr ) ? "default" : env_buf;
+            json_name += ".json";
+        }
+
+        const nlohmann::json tf = TransferFunctionJsonWriter::LoadTfJson( json_name );
+        const nlohmann::json params = TransferFunctionParameters( tf );
+
+        const std::string size_sampling_method =
+            params.value( "SAMPLING_METHOD", std::string( "" ) );
+        particle_property.m_particle_limit =
+            params.value( "PARTICLE_LIMIT", 0 );
+        particle_property.m_extra_opacity_factor = 1;
+        particle_property.m_repeat_level =
+            params.value( "REPEAT_LEVEL", 1.0f );
+        particle_property.m_particle_data_size_limit =
+            params.value( "PARTICLE_DATA_SIZE_LIMIT", 0.0f );
+        const std::string particle_data_size_limit_unit =
+            params.value( "PARTICLE_DATA_SIZE_LIMIT_UNIT", std::string( "MB" ) );
+        particle_property.m_color_transfer_function_synthesis =
+            params.value( "COLOR_SYNTH", std::string( "" ) );
+        particle_property.m_opacity_transfer_function_synthesis =
+            params.value( "OPACITY_SYNTH", std::string( "" ) );
+
+        if ( particle_data_size_limit_unit != "MB" )
+        {
+            std::cout << "WARN:particle_data_size_limit_unit is '" << particle_data_size_limit_unit
+                      << "', but ParticleProperty stores this value as MB." << std::endl;
+        }
+
+        if ( size_sampling_method == "Uniform" )
+        {
+            particle_property.m_sampling_method = 'u';
+        }
+        else if ( size_sampling_method == "Metropolis" )
+        {
+            particle_property.m_sampling_method = 'm';
+        }
+        else if ( size_sampling_method == "Rejection" )
+        {
+            particle_property.m_sampling_method = 'r';
+        }
+        else
+        {
+            std::cout << "ERROR:particle sampling method is not selected." << std::endl;
+            return false;
+        }
+
+        const size_t width = params.value( "RESOLUTION_WIDTH", 0 );
+        const size_t height = params.value( "RESOLUTION_HEIGHT", 0 );
+        particle_property.m_camera->setWindowSize( width, height );
+
+        const size_t resolution = params.value( "TF_RESOLUTION", 0 );
+        const int tf_number = params.value( "TF_NUMBER", 0 );
+        if ( resolution == 0 || tf_number <= 0 )
+        {
+            std::cout << "ERROR:Transfer function resolution or count is invalid." << std::endl;
+            return false;
+        }
+
+        std::cout << "PBVR JSON import summary" << std::endl;
+        std::cout << "  file                         : " << json_name << std::endl;
+        std::cout << "  sampling.method              : " << size_sampling_method << std::endl;
+        std::cout << "  sampling.particle_limit      : " << particle_property.m_particle_limit << std::endl;
+        std::cout << "  sampling.data_size_limit     : " << particle_property.m_particle_data_size_limit
+                  << " " << particle_data_size_limit_unit << std::endl;
+        std::cout << "  image.width                  : " << width << std::endl;
+        std::cout << "  image.height                 : " << height << std::endl;
+        std::cout << "  transfer_function.count      : " << tf_number << std::endl;
+        std::cout << "  transfer_function.resolution : " << resolution << std::endl;
+        std::cout << "  transfer_function.color_syn  : "
+                  << particle_property.m_color_transfer_function_synthesis << std::endl;
+        std::cout << "  transfer_function.opacity_syn: "
+                  << particle_property.m_opacity_transfer_function_synthesis << std::endl;
+
+        if ( !SetTransferFunctionArrayFromParameters(
+                 params,
+                 resolution,
+                 "transfer_functions",
+                 particle_property.m_transfunc_array ) )
+        {
+            return false;
+        }
+
+        const nlohmann::json mean_params =
+            TransferFunctionSectionParameters( tf, "mean_transfer_functions" );
+        const nlohmann::json variance_params =
+            TransferFunctionSectionParameters( tf, "variance_transfer_functions" );
+        const nlohmann::json coefficient_params =
+            TransferFunctionSectionParameters( tf, "coefficient_of_variation_transfer_functions" );
+
+        if ( !SetEnsembleTransferFunctionArrayFromParameters(
+                 mean_params,
+                 resolution,
+                 "mean_transfer_functions",
+                 particle_property.m_mean_transfer_function_array ) )
+        {
+            return false;
+        }
+        if ( !SetEnsembleTransferFunctionArrayFromParameters(
+                 variance_params,
+                 resolution,
+                 "variance_transfer_functions",
+                 particle_property.m_variance_transfer_function_array ) )
+        {
+            return false;
+        }
+        if ( !SetEnsembleTransferFunctionArrayFromParameters(
+                 coefficient_params,
+                 resolution,
+                 "coefficient_of_variation_transfer_functions",
+                 particle_property.m_coefficient_of_variation_transfer_function_array ) )
+        {
+            return false;
+        }
+
+        std::cout << "  mean_transfer_functions.count: "
+                  << particle_property.m_mean_transfer_function_array.size() << std::endl;
+        std::cout << "  variance_transfer_functions.count: "
+                  << particle_property.m_variance_transfer_function_array.size() << std::endl;
+        std::cout << "  coefficient_of_variation_transfer_functions.count: "
+                  << particle_property.m_coefficient_of_variation_transfer_function_array.size() << std::endl;
+
+        std::string equation;
+        EquationToken eq;
+
+        equation = params.value( "COLOR_SYNTH", std::string( "" ) );
+        std::replace( equation.begin(), equation.end(), 'C', 'c' );
+        eq = particle_property.m_transfunc_synthesizer->convert_token( equation );
+        particle_property.m_transfunc_synthesizer->setColorFunction( eq );
+
+        equation = params.value( "OPACITY_SYNTH", std::string( "" ) );
+        std::replace( equation.begin(), equation.end(), 'O', 'a' );
+        eq = particle_property.m_transfunc_synthesizer->convert_token( equation );
+        particle_property.m_transfunc_synthesizer->setOpacityFunction( eq );
+
+        std::vector<EquationToken> var;
+        for ( size_t i = 0; i < static_cast<size_t>( tf_number ); ++i )
+        {
+            std::stringstream tss;
+            tss << "TF_NAME" << i + 1 << "_";
+            const std::string tag_base = tss.str();
+
+            equation = params.value( tag_base + "VAR_C", std::string( "" ) );
+            std::replace( equation.begin(), equation.end(), 'X', 'x' );
+            std::replace( equation.begin(), equation.end(), 'Y', 'y' );
+            std::replace( equation.begin(), equation.end(), 'Z', 'z' );
+            eq = particle_property.m_transfunc_synthesizer->convert_token( equation );
+            var.push_back( eq );
+        }
+        particle_property.m_transfunc_synthesizer->setColorVariable( var );
+
+        var.clear();
+        for ( size_t i = 0; i < static_cast<size_t>( tf_number ); ++i )
+        {
+            std::stringstream tss;
+            tss << "TF_NAME" << i + 1 << "_";
+            const std::string tag_base = tss.str();
+
+            equation = params.value( tag_base + "VAR_O", std::string( "" ) );
+            std::replace( equation.begin(), equation.end(), 'X', 'x' );
+            std::replace( equation.begin(), equation.end(), 'Y', 'y' );
+            std::replace( equation.begin(), equation.end(), 'Z', 'z' );
+            eq = particle_property.m_transfunc_synthesizer->convert_token( equation );
+            var.push_back( eq );
+        }
+        particle_property.m_transfunc_synthesizer->setOpacityVariable( var );
+
+        return true;
+    }
+    catch ( const std::exception& e )
+    {
+        std::cerr << "ERROR:Failed to read transfer function json: "
+                  << ( json_name.empty() ? "<unknown>" : json_name ) << std::endl;
+        std::cerr << "ERROR:" << e.what() << std::endl;
+        return false;
+    }
+}
+
+void ParameterFileReader::readGlyphParameterFile( const char* fname, GlyphProperty& glyph_property )
+{
+    try
+    {
+        std::ifstream file( fname );
+        if ( !file )
+        {
+            throw std::runtime_error( "failed to open file" );
+        }
+
+        nlohmann::json root;
+        file >> root;
+        ApplyGlyphParameterJson( root, glyph_property );
+    }
+    catch ( const std::exception& e )
+    {
+        std::cerr << "ERROR:Failed to read glyph parameter json: "
+                  << fname << std::endl;
+        std::cerr << "ERROR:" << e.what() << std::endl;
+        ApplyGlyphDefault( glyph_property );
+    }
+}
+
+void ParameterFileReader::readPlotOverLineParameterFile( const char* fname, PlotOverLineProperty& pol_property )
+{
+    try
+    {
+        std::ifstream file( fname );
+        if ( !file )
+        {
+            throw std::runtime_error( "failed to open file" );
+        }
+
+        nlohmann::json root;
+        file >> root;
+        ApplyPlotOverLineParameterJson( root, pol_property );
+    }
+    catch ( const std::exception& e )
+    {
+        std::cerr << "ERROR:Failed to read plot over line parameter json: "
+                  << fname << std::endl;
+        std::cerr << "ERROR:" << e.what() << std::endl;
+        ApplyPlotOverLineDefault( pol_property );
+    }
+}
+
+void ParameterFileReader::readPlotOverTimeParameterFile( const char* fname, PlotOverTimeProperty& pot_property )
+{
+    try
+    {
+        std::ifstream file( fname );
+        if ( !file )
+        {
+            throw std::runtime_error( "failed to open file" );
+        }
+
+        nlohmann::json root;
+        file >> root;
+        ApplyPlotOverTimeParameterJson( root, pot_property );
+    }
+    catch ( const std::exception& e )
+    {
+        std::cerr << "ERROR:Failed to read plot over time parameter json: "
+                  << fname << std::endl;
+        std::cerr << "ERROR:" << e.what() << std::endl;
+        ApplyPlotOverTimeDefault( pot_property );
+    }
 }
 
 // CSのConnect時に指定した.tfファイルを読み込んだ値を設定する
@@ -260,7 +1291,7 @@ void ParameterFileReader::setTransferFunctionParameter( ParticleProperty& partic
     particle_property.m_transfunc_array.clear();
     particle_property.m_transfunc_array.resize( tf_number );
 
-    for ( size_t i = 0; i < tf_number; i++ )
+    for ( std::size_t i = 0; i < tf_number; i++ )
     {
         std::stringstream ss;
         ss << "TF_NAME" << i + 1 << "_";
@@ -299,9 +1330,9 @@ void ParameterFileReader::setTransferFunctionParameter( ParticleProperty& partic
         vismodule::ColorMap::Table color_table( tf_resolution * 3 );
         vismodule::OpacityMap::Table opacity_table( tf_resolution );
 
-        for ( size_t j = 0; j < tf_resolution; j++ )
+        for ( std::size_t j = 0; j < tf_resolution; j++ )
         {
-            for ( size_t c = 0; c < 3; c++ )
+            for ( std::size_t c = 0; c < 3; c++ )
             {
                 int color_e;
                 ss_color >> color_e;
@@ -309,7 +1340,7 @@ void ParameterFileReader::setTransferFunctionParameter( ParticleProperty& partic
             }
         }
 
-        for ( size_t j = 0; j < tf_resolution; j++ )
+        for ( std::size_t j = 0; j < tf_resolution; j++ )
         {
             float opacity;
             ss_opacity >> opacity;
@@ -340,7 +1371,7 @@ void ParameterFileReader::setTransferFunctionParameter( ParticleProperty& partic
 
     std::vector<EquationToken> var;
 
-    for ( size_t i = 0; i < tf_number; i++ )
+    for ( std::size_t i = 0; i < tf_number; i++ )
     {
         std::stringstream tss;
         tss << "TF_NAME" << i + 1 << "_";
@@ -358,7 +1389,7 @@ void ParameterFileReader::setTransferFunctionParameter( ParticleProperty& partic
     particle_property.m_transfunc_synthesizer->setColorVariable( var );
     var.clear();
 
-    for ( size_t i = 0; i < tf_number; i++ )
+    for ( std::size_t i = 0; i < tf_number; i++ )
     {
         std::stringstream tss;
         tss << "TF_NAME" << i + 1 << "_";
@@ -378,7 +1409,7 @@ void ParameterFileReader::setTransferFunctionParameter( ParticleProperty& partic
     return;
 }
 
-// ISのdefault.tfファイルを読み込んだ値を設定する
+// ISの旧形式default.tfファイルを読み込んだ値を設定する
 void ParameterFileReader::setParticleParameter( ParticleProperty& particle_property )
 {
     const std::string size_sampling_method                  = m_name_list_file.getValue<std::string>("SAMPLING_METHOD");
@@ -407,11 +1438,11 @@ void ParameterFileReader::setParticleParameter( ParticleProperty& particle_prope
         return;   
     }
 
-    const size_t width               = m_name_list_file.getValue<size_t>( "RESOLUTION_WIDTH" );
-    const size_t height              = m_name_list_file.getValue<size_t>( "RESOLUTION_HEIGHT" );
+    const std::size_t width               = m_name_list_file.getValue<size_t>( "RESOLUTION_WIDTH" );
+    const std::size_t height              = m_name_list_file.getValue<size_t>( "RESOLUTION_HEIGHT" );
     particle_property.m_camera->setWindowSize( width, height );
 
-    const size_t resolution          = m_name_list_file.getValue<int>( "TF_RESOLUTION" );
+    const std::size_t resolution          = m_name_list_file.getValue<int>( "TF_RESOLUTION" );
     const int tf_number              = m_name_list_file.getValue<int>( "TF_NUMBER" );
 
     particle_property.m_transfunc_array.clear();
@@ -419,7 +1450,7 @@ void ParameterFileReader::setParticleParameter( ParticleProperty& particle_prope
     // particle_property.m_voleqn.clear();
     // particle_property.m_voleqn.resize( tf_number );
     
-    for ( size_t n = 0; n < tf_number; n++ )
+    for ( std::size_t n = 0; n < tf_number; n++ )
     {
         std::stringstream ss;
         ss << "TF_NAME" << n + 1 << "_";
@@ -494,9 +1525,9 @@ void ParameterFileReader::setParticleParameter( ParticleProperty& particle_prope
         vismodule::ColorMap::Table color_table( resolution * 3 );
         vismodule::OpacityMap::Table opacity_table( resolution );
 
-        for ( size_t i = 0; i < resolution; i++ )
+        for ( std::size_t i = 0; i < resolution; i++ )
         {
-            for ( size_t c = 0; c < 3; c++ )
+            for ( std::size_t c = 0; c < 3; c++ )
             {
                 int color_e;
                 ss_color >> color_e;
@@ -504,7 +1535,7 @@ void ParameterFileReader::setParticleParameter( ParticleProperty& particle_prope
             }
         }
 
-        for ( size_t i = 0; i < resolution; i++ )
+        for ( std::size_t i = 0; i < resolution; i++ )
         {
             float opacity;
             ss_opacity >> opacity;
@@ -564,7 +1595,7 @@ void ParameterFileReader::setParticleParameter( ParticleProperty& particle_prope
 
     std::vector<EquationToken> var;
 
-    for ( size_t i = 0; i < tf_number; i++ )
+    for ( std::size_t i = 0; i < tf_number; i++ )
     {
         std::stringstream tss;
         tss << "TF_NAME" << i + 1 << "_";
@@ -582,7 +1613,7 @@ void ParameterFileReader::setParticleParameter( ParticleProperty& particle_prope
     particle_property.m_transfunc_synthesizer->setColorVariable( var );
     var.clear();
 
-    for ( size_t i = 0; i < tf_number; i++ )
+    for ( std::size_t i = 0; i < tf_number; i++ )
     {
         std::stringstream tss;
         tss << "TF_NAME" << i + 1 << "_";
@@ -600,250 +1631,6 @@ void ParameterFileReader::setParticleParameter( ParticleProperty& particle_prope
     var.clear();
 
     return;
-}
-
-void ParameterFileReader::setGlyphParameter( GlyphProperty& glyph_property )
-{
-    const std::string g_flag = m_name_list_file.getValue<std::string>( "GLYPH_FLAG" );
-    if ( strcmp( g_flag.c_str(), "TRUE" ) == 0 )
-    {
-        glyph_property.m_glyph_flag = true;
-    }
-    else
-    {
-        glyph_property.m_glyph_flag = false;
-    }
-
-    const std::string glyph_type_string = m_name_list_file.getValue<std::string>( "GLYPH_TYPE" );
-    if ( strcmp( glyph_type_string.c_str(), "Arrow" ) == 0 )
-    {
-        glyph_property.m_glyph_type = GlyphType::Arrow;
-    }
-    else if ( strcmp( glyph_type_string.c_str(), "Diamond" ) == 0 )
-    {
-        glyph_property.m_glyph_type = GlyphType::Diamond;
-    }
-    else if ( strcmp( glyph_type_string.c_str(), "Sphere" ) == 0 )
-    {
-        glyph_property.m_glyph_type = GlyphType::Sphere;
-    }
-    else
-    {
-        std::cout << "ERROR:unknown glyph type, so skip generate glyph." << std::endl;
-        glyph_property.m_glyph_flag = false;
-        return;
-    }
-
-    glyph_property.m_scale_factor = m_name_list_file.getValue<float>("SCALE_FACTOR");
-
-    const std::string size_sampling_method = m_name_list_file.getValue<std::string>("SIZE_SAMPLING_METHOD");
-    if ( size_sampling_method == "Constant" )
-    {
-        glyph_property.m_size_sampling_method = DataDefines::Constant;
-    }
-    else if ( size_sampling_method == "VariableArray" )
-    {
-        glyph_property.m_size_sampling_method = DataDefines::VariableArray;
-    }
-    else
-    {
-        std::cout << "ERROR:size sampling method is not selected, so skip generate glyph." << std::endl;
-        glyph_property.m_glyph_flag = false;
-        return;        
-    }
-
-    const std::string distribution_mode = m_name_list_file.getValue<std::string>("DISTRIBUTION_MODE");
-    if ( distribution_mode == "AllPoints" )
-    {
-        glyph_property.m_distribution_mode = GlyphMode::AllPoints;
-    }
-    else if ( distribution_mode == "EveryNthPoints" )
-    {
-        glyph_property.m_distribution_mode = GlyphMode::EveryNthPoints;
-    }
-    else if ( distribution_mode == "UniformDistribution" )
-    {
-        glyph_property.m_distribution_mode = GlyphMode::UniformDistribution; 
-    }
-    else
-    {
-        std::cout << "ERROR:distribution mode is not selected, so skip generate glyph." << std::endl;
-        glyph_property.m_glyph_flag = false;
-        return;   
-    }
-
-    if ( distribution_mode == "AllPoints" )
-    {
-        glyph_property.m_stride = 1;
-    }
-    else
-    {
-        glyph_property.m_stride = m_name_list_file.getValue<int>("STRIDE");
-    }
-
-    glyph_property.m_seed                                  = m_name_list_file.getValue<int>("SEED");
-    glyph_property.m_number_of_sampling_point              = m_name_list_file.getValue<int>("NUMBER_OF_SMAPLING_POINT");
-
-    const std::string color_sampling_method = m_name_list_file.getValue<std::string>("COLOR_DATA_SAMPLING_METHOD");
-    if (color_sampling_method == "Constant" )
-    {
-        glyph_property.m_color_data_sampling_method = DataDefines::Constant;
-    }
-    else if (color_sampling_method == "VariableArray" )
-    {
-        glyph_property.m_color_data_sampling_method = DataDefines::VariableArray;
-    }
-    else
-    {
-        std::cout << "ERROR:color data sampling method is not selected, so skip generate glyph." << std::endl;
-        glyph_property.m_glyph_flag = false;
-        return;        
-    }
-
-    const std::string size_variables_string       = m_name_list_file.getValue<std::string>( "SIZE_VARIABLES" );
-    const std::vector<std::string> size_variables_string_table       = getTableString( size_variables_string );
-
-    glyph_property.m_size_variable.resize( size_variables_string_table.size() );
-    for ( size_t i = 0; i < size_variables_string_table.size(); i++ )
-    {
-        glyph_property.m_size_variable[i] = size_variables_string_table[i];
-    }
-
-    const std::string color_data_variables_string = m_name_list_file.getValue<std::string>( "COLOR_VARIABLES" );    
-    const std::vector<std::string> color_data_variables_string_table = getTableString( color_data_variables_string );
-    
-    glyph_property.m_color_data_variable.resize( color_data_variables_string_table.size() );
-    for ( size_t i = 0; i < color_data_variables_string_table.size(); i++ )
-    {
-        glyph_property.m_color_data_variable[i] = color_data_variables_string_table[i];
-    }
-    
-    const std::string direction_variables_string  = m_name_list_file.getValue<std::string>( "DIRECTION_VARIABLES" );
-    const std::vector<std::string> direction_variables_string_table  = getTableString( direction_variables_string );
-    
-    if ( direction_variables_string_table.size() < 3 )
-    {
-        std::cout << "INFO:direction variables number is less 3, so skip generate glyph." << std::endl;
-        glyph_property.m_glyph_flag = false;
-        return;
-    }
-
-    for ( size_t i = 0; i < 3; i++ )
-    {
-        glyph_property.m_direction_variable[i] = direction_variables_string_table[i];
-    }
-
-    const float glyph_color_min = m_name_list_file.getValue<float>("GLYPH_COLOR_MIN");
-    const float glyph_color_max = m_name_list_file.getValue<float>("GLYPH_COLOR_MAX");
-    glyph_property.m_glyph_color_min     = glyph_color_min;
-    glyph_property.m_glyph_color_max     = glyph_color_max;
-
-    const std::string color_map_string   = m_name_list_file.getValue<std::string>( "GLYPH_COLOR_MAP_TABLE" );
-    const std::vector<int> color_map_int_table = getTableInt( color_map_string );
-    vismodule::ValueArray<vismodule::UInt8> color_map_uint_table( color_map_int_table.size() );
-    glyph_property.m_glyph_color_map_table.clear();
-    glyph_property.m_glyph_color_map_table.reserve( color_map_int_table.size() );
-    for ( size_t i = 0; i < color_map_int_table.size(); i++ )
-    {
-        glyph_property.m_glyph_color_map_table.push_back( static_cast<int32_t>( color_map_int_table[i] ) );
-        color_map_uint_table[i] = (vismodule::UInt8)color_map_int_table[i];
-    }
-    vismodule::ColorMap color_map( color_map_uint_table, glyph_color_min, glyph_color_max );
-    glyph_property.m_color_map = color_map;
-    glyph_property.m_glyph_size_min = 0;
-    glyph_property.m_glyph_size_max = 1;
-
-#if 1 // debug
-    std::cout << "glyph_property.m_direction_variable[0]      = " << glyph_property.m_direction_variable[0]    << std::endl;
-    std::cout << "glyph_property.m_direction_variable[1]      = " << glyph_property.m_direction_variable[1]    << std::endl;
-    std::cout << "glyph_property.m_direction_variable[2]      = " << glyph_property.m_direction_variable[2]    << std::endl;
-    std::cout << "glyph_property.m_size_sampling_method       = " << size_sampling_method                      << std::endl;
-    std::cout << "glyph_property.m_distribution_mode          = " << distribution_mode                         << std::endl;
-    std::cout << "glyph_property.m_scale_factor               = " << glyph_property.m_scale_factor             << std::endl;
-    std::cout << "glyph_property.m_stride                     = " << glyph_property.m_stride                   << std::endl;
-    std::cout << "glyph_property.m_seed                       = " << glyph_property.m_seed                     << std::endl;
-    std::cout << "glyph_property.m_number_of_sampling_point   = " << glyph_property.m_number_of_sampling_point << std::endl;
-    std::cout << "glyph_property.m_color_data_sampling_method = " << color_sampling_method                     << std::endl;
-
-    for( size_t i = 0; i < glyph_property.m_size_variable.size(); i++ )
-    {
-        std::cout << "glyph_property.m_size_variable[" << i << "]          = " << glyph_property.m_size_variable[i] << std::endl; 
-    }
-
-    for( size_t i = 0; i < glyph_property.m_color_data_variable.size(); i++ )
-    {
-        std::cout << "glyph_property.m_color_data_variable[" << i << "]     = " << glyph_property.m_color_data_variable[i] <<  std::endl; 
-    }
-
-    for ( size_t i = 0; i < 3; i++ )
-    {
-        std::cout << "glyph_property.m_direction_variable[" << i << "]     = " << glyph_property.m_direction_variable[i] <<  std::endl; 
-    }
-#endif
-}
-
-void ParameterFileReader::setPlotOverLineParameter( PlotOverLineProperty& pol_property )
-{
-    std::string p_flag = m_name_list_file.getValue<std::string>("PLOT_FLAG");
-
-    if ( strcmp( p_flag.c_str(), "TRUE" ) == 0 )
-    {
-        pol_property.m_plot_flag = true;
-    }
-    else
-    {
-        pol_property.m_plot_flag = false;
-    }
-
-    pol_property.m_sampling_size = m_name_list_file.getValue<int>("SAMPLING_SIZE");
-    pol_property.m_plot_variable = m_name_list_file.getValue<std::string>("PLOT_VARIABLE");
-
-    const std::string start_point_string = m_name_list_file.getValue<std::string>("START_POINT");
-    const std::vector<float> start_point_float_table = getTableFloat( start_point_string );
-
-    pol_property.m_start_point[0] = start_point_float_table[0];
-    pol_property.m_start_point[1] = start_point_float_table[1];
-    pol_property.m_start_point[2] = start_point_float_table[2];
-
-    const std::string end_point_string = m_name_list_file.getValue<std::string>("END_POINT");
-    const std::vector<float> end_point_float_table = getTableFloat( end_point_string );
-    pol_property.m_end_point[0] = end_point_float_table[0];
-    pol_property.m_end_point[1] = end_point_float_table[1];
-    pol_property.m_end_point[2] = end_point_float_table[2];
-
-    std::cout << "pol_property.m_sampling_size  = " << pol_property.m_sampling_size << std::endl;
-    std::cout << "pol_property.m_plot_variable  = " << pol_property.m_plot_variable << std::endl;
-    std::cout << "pol_property.m_start_point[0] = " << pol_property.m_start_point[0] << std::endl;
-    std::cout << "pol_property.m_start_point[1] = " << pol_property.m_start_point[1] << std::endl;
-    std::cout << "pol_property.m_start_point[2] = " << pol_property.m_start_point[2] << std::endl;
-    std::cout << "pol_property.m_end_point[0]   = " << pol_property.m_end_point[0] << std::endl; 
-    std::cout << "pol_property.m_end_point[1]   = " << pol_property.m_end_point[1] << std::endl; 
-    std::cout << "pol_property.m_end_point[2]   = " << pol_property.m_end_point[2] << std::endl; 
-}
-
-void ParameterFileReader::setPlotOverTimeParameter( PlotOverTimeProperty& pot_property )
-{
-    std::string p_flag = m_name_list_file.getValue<std::string>("PLOT_FLAG");
-
-    if ( strcmp( p_flag.c_str(), "TRUE" ) == 0 )
-    {
-        pot_property.m_plot_flag = true;
-    }
-    else
-    {
-        pot_property.m_plot_flag = false;
-    }
-
-    const std::string target_point_string = m_name_list_file.getValue<std::string>("TARGET_POINT");
-    const std::vector<float> target_point_float_table = getTableFloat( target_point_string );
-
-    pot_property.m_target_point[0] = target_point_float_table[0];
-    pot_property.m_target_point[1] = target_point_float_table[1];
-    pot_property.m_target_point[2] = target_point_float_table[2];
-
-    std::cout << "pot_property.m_target_point[0]:" << pot_property.m_target_point[0] << std::endl;
-    std::cout << "pot_property.m_target_point[1]:" << pot_property.m_target_point[1] << std::endl;
-    std::cout << "pot_property.m_target_point[2]:" << pot_property.m_target_point[2] << std::endl;
 }
 
 std::vector<int> ParameterFileReader::getTableInt( std::string table_string )
@@ -914,20 +1701,20 @@ void ParameterFileReader::set_default_parameter()
     
     std::stringstream tag_c, table_c;
     
-    for ( size_t i = 0; i < color_table.size(); i++ )
+    for ( std::size_t i = 0; i < color_table.size(); i++ )
     {
         table_c << static_cast<int>( color_table.at( i ) ) << ",";
     }
     
     std::stringstream tag_o, table_o;
     
-    for ( size_t i = 0; i < opacity_table.size(); i++ )
+    for ( std::size_t i = 0; i < opacity_table.size(); i++ )
     {
         table_o << opacity_table.at( i ) << ",";
     }
     
     int tf_size = DEFAULT_TF_NUMBER;
-    for ( size_t n = 0; n < tf_size ; n++ )
+    for ( std::size_t n = 0; n < tf_size ; n++ )
     {
         std::stringstream ss;
         ss << "TF_NAME" << n + 1 << "_";

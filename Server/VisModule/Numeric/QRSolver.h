@@ -63,7 +63,7 @@ public:
     QRSolver<T>& operator = ( const vismodule::Vector<T>& v )
     {
         this->setSize( v.size() );
-        for( size_t i = 0; i < this->size(); i++ ){ (*this)[i] = v[i]; }
+        for( std::size_t i = 0; i < this->size(); i++ ){ (*this)[i] = v[i]; }
 
         return( *this );
     };

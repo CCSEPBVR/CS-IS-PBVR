@@ -318,12 +318,12 @@ inline const kvs::ValueArray<float> CalculateDensityMap(
 
     const float sampling_volume_inverse = 1.0f / ( subpixel_length * subpixel_length * sampling_step );
 
-    const size_t resolution = opacity_map.resolution();
+    const std::size_t resolution = opacity_map.resolution();
 
     // Create the density map.
     kvs::ValueArray<float> density_map( resolution );
 
-    for ( size_t i = 0; i < resolution; ++i )
+    for ( std::size_t i = 0; i < resolution; ++i )
     {
         const float opacity = opacity_map[i];
 
@@ -342,9 +342,9 @@ inline const kvs::ValueArray<float> CalculateDensityMap(
 
 inline kvs::Real32 AveragedScalar( const kvs::CellBase* cell )
 {
-    const size_t nnodes = cell->numberOfCellNodes();;
+    const std::size_t nnodes = cell->numberOfCellNodes();;
     const kvs::Real32* S = cell->values();
-    kvs::Real32 Sa = 0; for ( size_t i = 0; i < nnodes; i++ ) { Sa += S[i]; }
+    kvs::Real32 Sa = 0; for ( std::size_t i = 0; i < nnodes; i++ ) { Sa += S[i]; }
     return Sa / nnodes;
 }
 

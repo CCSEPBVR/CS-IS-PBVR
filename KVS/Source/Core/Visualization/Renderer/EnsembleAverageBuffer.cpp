@@ -45,7 +45,7 @@ namespace kvs
  *  @param  height [in] framebuffer height
  */
 /*===========================================================================*/
-void EnsembleAverageBuffer::create( const size_t width, const size_t height )
+void EnsembleAverageBuffer::create( const std::size_t width, const std::size_t height )
 {
     m_count = 0;
     m_accum_framebuffer.create();

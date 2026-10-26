@@ -353,7 +353,7 @@ const bool KVSMLObjectPolygon::read( const std::string& filename )
         const vismodule::XMLNode::SuperClass* parent = vertex_tag.node();
 
         // <Coord>
-        const size_t ncoords = vertex_tag.nvertices();
+        const std::size_t ncoords = vertex_tag.nvertices();
         if ( !vismodule::kvsml::ReadCoordData( parent, ncoords, &m_coords ) ) return( false );
         if ( m_coords.size() == 0 )
         {
@@ -364,7 +364,7 @@ const bool KVSMLObjectPolygon::read( const std::string& filename )
         // <Color>
         if ( m_color_type == "vertex" )
         {
-            const size_t ncolors = vertex_tag.nvertices();
+            const std::size_t ncolors = vertex_tag.nvertices();
             if ( !vismodule::kvsml::ReadColorData( parent, ncolors, &m_colors ) ) return( false );
             if ( m_colors.size() == 0 )
             {
@@ -379,7 +379,7 @@ const bool KVSMLObjectPolygon::read( const std::string& filename )
         // <Opacity>
         if ( m_color_type == "vertex" )
         {
-            const size_t nopacities = vertex_tag.nvertices();
+            const std::size_t nopacities = vertex_tag.nvertices();
             if ( !vismodule::kvsml::ReadOpacityData( parent, nopacities, &m_opacities ) ) return( false );
             if ( m_opacities.size() == 0 )
             {
@@ -392,7 +392,7 @@ const bool KVSMLObjectPolygon::read( const std::string& filename )
         // <Normal>
         if ( m_normal_type == "vertex" )
         {
-            const size_t nnormals = vertex_tag.nvertices();
+            const std::size_t nnormals = vertex_tag.nvertices();
             if ( !vismodule::kvsml::ReadNormalData( parent, nnormals, &m_normals ) ) return( false );
         }
     }
@@ -410,11 +410,11 @@ const bool KVSMLObjectPolygon::read( const std::string& filename )
         {
             // Parent node.
             const vismodule::XMLNode::SuperClass* parent = polygon_tag.node();
-            const size_t nvertices = vertex_tag.nvertices();
-            const size_t npolygons = polygon_tag.npolygons();
+            const std::size_t nvertices = vertex_tag.nvertices();
+            const std::size_t npolygons = polygon_tag.npolygons();
 
             // <Connection>
-            const size_t nconnections =
+            const std::size_t nconnections =
                 ( m_polygon_type == "triangle"   ) ? npolygons * 3 :
                 ( m_polygon_type == "quadrangle" ) ? npolygons * 4 : 0;
             if ( !vismodule::kvsml::ReadConnectionData( parent, nconnections, &m_connections ) ) return( false );
@@ -422,7 +422,7 @@ const bool KVSMLObjectPolygon::read( const std::string& filename )
             // <Color>
             if ( m_color_type == "polygon" )
             {
-                const size_t ncolors = vertex_tag.nvertices();
+                const std::size_t ncolors = vertex_tag.nvertices();
                 if ( !vismodule::kvsml::ReadColorData( parent, ncolors, &m_colors ) ) return( false );
                 if ( m_colors.size() == 0 )
                 {
@@ -437,7 +437,7 @@ const bool KVSMLObjectPolygon::read( const std::string& filename )
             // <Opacity>
             if ( m_color_type == "polygon" )
             {
-                const size_t nopacities = npolygons;
+                const std::size_t nopacities = npolygons;
                 if ( !vismodule::kvsml::ReadOpacityData( parent, nopacities, &m_opacities ) ) return( false );
                 if ( m_opacities.size() == 0 )
                 {
@@ -450,9 +450,9 @@ const bool KVSMLObjectPolygon::read( const std::string& filename )
             // <Normal>
             if ( m_normal_type == "polygon" )
             {
-                const size_t nconnections = m_connections.size();
-                const size_t nvertices_per_polygon = m_polygon_type == "triangle" ? 3 : 4;
-                const size_t nnormals = ( nconnections > 0 ) ?
+                const std::size_t nconnections = m_connections.size();
+                const std::size_t nvertices_per_polygon = m_polygon_type == "triangle" ? 3 : 4;
+                const std::size_t nnormals = ( nconnections > 0 ) ?
                     nconnections / nvertices_per_polygon :
                     nvertices / nvertices_per_polygon;
                 if ( !vismodule::kvsml::ReadNormalData( parent, nnormals, &m_normals ) ) return( false );
@@ -506,8 +506,8 @@ const bool KVSMLObjectPolygon::write( const std::string& filename )
         return( false );
     }
 
-    const size_t dimension = 3;
-    const size_t nvertices = m_coords.size() / dimension;
+    const std::size_t dimension = 3;
+    const std::size_t nvertices = m_coords.size() / dimension;
 
     // <Vertex nvertices="xxx">
     vismodule::kvsml::VertexTag vertex_tag;
@@ -549,9 +549,9 @@ const bool KVSMLObjectPolygon::write( const std::string& filename )
     if ( m_color_type == "polygon" || m_normal_type == "polygon" ||
          m_opacities.size() > 0 || m_connections.size() > 0 )
     {
-        const size_t nconnections = m_connections.size();
-        const size_t nvertices_per_polygon = m_polygon_type == "triangle" ? 3 : 4;
-        const size_t npolygons = ( nconnections > 0 ) ?
+        const std::size_t nconnections = m_connections.size();
+        const std::size_t nvertices_per_polygon = m_polygon_type == "triangle" ? 3 : 4;
+        const std::size_t npolygons = ( nconnections > 0 ) ?
             nconnections / nvertices_per_polygon :
             nvertices / nvertices_per_polygon;
 

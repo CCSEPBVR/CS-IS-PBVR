@@ -50,7 +50,7 @@ vismodule::tiff::Tag TagDictionary::find( const vismodule::UInt16 tag_id ) const
 
 void TagDictionary::create_dictionary( void )
 {
-    for ( size_t i = 0; i < vismodule::tiff::TagTableSize; i++ )
+    for ( std::size_t i = 0; i < vismodule::tiff::TagTableSize; i++ )
     {
         vismodule::UInt16 key   = vismodule::tiff::TagTable[i].id();
         std::string value = vismodule::tiff::TagTable[i].name();

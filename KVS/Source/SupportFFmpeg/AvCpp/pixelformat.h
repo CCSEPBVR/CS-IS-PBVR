@@ -40,12 +40,12 @@ public:
 
     int bitsPerPixel(OptionalErrorCode ec = throws()) const;
 
-    size_t planesCount(OptionalErrorCode ec = throws()) const;
+    std::size_t planesCount(OptionalErrorCode ec = throws()) const;
 
     PixelFormat swapEndianness() const noexcept;
 
     // See FF_LOSS_xxx flags
-    size_t convertionLoss(PixelFormat dstFmt, bool srcHasAlpha = false) const noexcept;
+    std::size_t convertionLoss(PixelFormat dstFmt, bool srcHasAlpha = false) const noexcept;
 };
 
 } // namespace av

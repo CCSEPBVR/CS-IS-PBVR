@@ -56,7 +56,7 @@ MeshData::MeshData( const std::string filename ):
  *  @return dimensions
  */
 /*===========================================================================*/
-const size_t MeshData::dimensions( void ) const
+const std::size_t MeshData::dimensions( void ) const
 {
     return( m_dimensions );
 }
@@ -67,7 +67,7 @@ const size_t MeshData::dimensions( void ) const
  *  @return number of nodes per element
  */
 /*===========================================================================*/
-const size_t MeshData::nnodesPerElement( void ) const
+const std::size_t MeshData::nnodesPerElement( void ) const
 {
     return( m_nnodes_per_element );
 }
@@ -78,7 +78,7 @@ const size_t MeshData::nnodesPerElement( void ) const
  *  @return number of nodes
  */
 /*===========================================================================*/
-const size_t MeshData::nnodes( void ) const
+const std::size_t MeshData::nnodes( void ) const
 {
     return( m_nnodes );
 }
@@ -89,7 +89,7 @@ const size_t MeshData::nnodes( void ) const
  *  @return number of elements
  */
 /*===========================================================================*/
-const size_t MeshData::nelements( void ) const
+const std::size_t MeshData::nelements( void ) const
 {
     return( m_nelements );
 }
@@ -139,7 +139,7 @@ const bool MeshData::read( const std::string filename )
     }
 
     const vismodule::gf::DataSet& data_set = file.dataSet(0);
-    for ( size_t i = 0; i < data_set.dataList().size(); i++ )
+    for ( std::size_t i = 0; i < data_set.dataList().size(); i++ )
     {
         const vismodule::gf::Data& data = data_set.data(i);
         const std::string& keyword = data.keyword();
@@ -164,9 +164,9 @@ const bool MeshData::read( const std::string filename )
                 m_nnodes_per_element = data.num();
                 m_nelements = data.num2();
                 const vismodule::Int32* src = data.intArray().pointer();
-                const size_t size = data.intArray().size();
+                const std::size_t size = data.intArray().size();
                 vismodule::UInt32* dst = m_connections.allocate( size );
-                for ( size_t i = 0; i < size; i++ ) dst[i] = static_cast<vismodule::UInt32>( src[i] - 1 );
+                for ( std::size_t i = 0; i < size; i++ ) dst[i] = static_cast<vismodule::UInt32>( src[i] - 1 );
             }
         }
     }

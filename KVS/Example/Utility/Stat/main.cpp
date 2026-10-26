@@ -13,7 +13,7 @@
 
 int main( int argc, char** argv )
 {
-    const size_t n = 10;
+    const std::size_t n = 10;
     auto X = kvs::ValueArray<float>::Random( n );
     auto Y = kvs::ValueArray<float>::Random( n );
     std::cout << "X = " << X << std::endl;
@@ -44,7 +44,7 @@ int main( int argc, char** argv )
     std::cout << indent << "TwoPassCov(X,Y): " << kvs::Stat::TwoPassCov( X, Y ) << std::endl;
     std::cout << indent << "OnlineCov(X,Y): " << kvs::Stat::OnlineCov( X, Y ) << std::endl;
     kvs::Stat::IncrementalCoV cov;
-    for ( size_t i = 0; i < X.size(); ++i ) { cov.add( X[i], Y[i] ); }
+    for ( std::size_t i = 0; i < X.size(); ++i ) { cov.add( X[i], Y[i] ); }
     std::cout << indent << "IncrementalCoV(X): " << cov.value() << std::endl;
 
     std::cout << "StdDev(X): " << kvs::Stat::StdDev( X ) << std::endl;

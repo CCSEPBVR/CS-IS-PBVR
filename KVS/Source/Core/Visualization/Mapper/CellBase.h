@@ -30,8 +30,8 @@ namespace kvs
 class CellBase
 {
 private:
-    size_t m_nnodes; ///< number of nodes
-    size_t m_veclen; ///< vector length
+    std::size_t m_nnodes; ///< number of nodes
+    std::size_t m_veclen; ///< vector length
     kvs::Vec3* m_coords; ///< coordinates of the nodes
     kvs::Real32* m_values; ///< scalar values of the nodes
     kvs::Real32* m_interpolation_functions; ///< interpolation functions
@@ -58,14 +58,14 @@ public:
     virtual kvs::Vec3 localCenter() const;
 
     void setSeed( const kvs::UInt32 seed ) { m_rand.setSeed( seed ); }
-    size_t veclen() const { return m_veclen; }
-    size_t numberOfCellNodes() const { return m_nnodes; }
+    std::size_t veclen() const { return m_veclen; }
+    std::size_t numberOfCellNodes() const { return m_nnodes; }
     kvs::Real32* interpolationFunctions() const { return m_interpolation_functions; }
     kvs::Real32* differentialFunctions() const { return m_differential_functions; }
     const kvs::Vec3* coords() const { return m_coords; }
     const kvs::Real32* values() const { return m_values; }
-    const kvs::Vec3& coord( const size_t index ) const { return m_coords[ index ]; }
-    kvs::Real32 value( const size_t index ) const { return m_values[ index ]; }
+    const kvs::Vec3& coord( const std::size_t index ) const { return m_coords[ index ]; }
+    kvs::Real32 value( const std::size_t index ) const { return m_values[ index ]; }
     kvs::Vec3 localPoint() const { return m_local_point; }
     const kvs::UnstructuredVolumeObject* referenceVolume() const { return m_reference_volume; }
     kvs::Mat3 JacobiMatrix() const;
@@ -80,8 +80,8 @@ protected:
 
     kvs::Real32 randomNumber() const;
     bool containsInBounds( const kvs::Vec3& global ) const;
-    kvs::Real32 interpolateValue( const kvs::Real32* values, const kvs::Real32* weights, const size_t nnodes ) const;
-    kvs::Vec3 interpolateCoord( const kvs::Vec3* coords, const kvs::Real32* weights, const size_t nnodes ) const;
+    kvs::Real32 interpolateValue( const kvs::Real32* values, const kvs::Real32* weights, const std::size_t nnodes ) const;
+    kvs::Vec3 interpolateCoord( const kvs::Vec3* coords, const kvs::Real32* weights, const std::size_t nnodes ) const;
 
 public:
     KVS_DEPRECATED( const kvs::Vec3* vertices() const ) { return this->coords(); }
@@ -107,9 +107,9 @@ public:
     }
     KVS_DEPRECATED( kvs::Real32 averagedScalar() const )
     {
-        const size_t nnodes = this->numberOfCellNodes();;
+        const std::size_t nnodes = this->numberOfCellNodes();;
         const kvs::Real32* S = this->values();
-        kvs::Real32 Sa = 0; for ( size_t i = 0; i < nnodes; i++ ) { Sa += S[i]; }
+        kvs::Real32 Sa = 0; for ( std::size_t i = 0; i < nnodes; i++ ) { Sa += S[i]; }
         return Sa / nnodes;
     }
 };

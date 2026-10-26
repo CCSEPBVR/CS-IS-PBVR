@@ -37,7 +37,7 @@ public:
 private:
     std::string m_caption; ///< caption
     OrientationType m_orientation; ///< bar layout
-    size_t m_ndivisions; ///< number of divisions of the bar
+    std::size_t m_ndivisions; ///< number of divisions of the bar
     float m_division_line_width; ///< division line width
     kvs::RGBColor m_division_line_color; ///< division line color
     double m_min_value; ///< min. value
@@ -70,7 +70,7 @@ public:
     void setOrientation( const OrientationType orientation ) { m_orientation = orientation; }
     void setOrientationToHorizontal() { this->setOrientation( Horizontal ); }
     void setOrientationToVertical() { this->setOrientation( Vertical ); }
-    void setNumberOfDivisions( const size_t ndivisions ) { m_ndivisions = ndivisions; }
+    void setNumberOfDivisions( const std::size_t ndivisions ) { m_ndivisions = ndivisions; }
     void setDivisionLineWidth( const float width ) { m_division_line_width = width; }
     void setDivisionLineColor( const kvs::RGBColor& color ) { m_division_line_color = color; }
     void setRange( const double min_value, const double max_value ) { m_min_value = min_value; m_max_value = max_value; }

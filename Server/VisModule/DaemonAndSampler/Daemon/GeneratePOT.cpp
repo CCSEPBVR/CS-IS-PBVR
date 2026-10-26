@@ -62,22 +62,21 @@ void SetDefaultPOTParameterIS( PlotOverTimeProperty& pot_property )
     }
 
     plotOverTimeParameterPath_old =  visParamDir;
-    plotOverTimeParameterPath_old += "parameter_old.pot";
+    plotOverTimeParameterPath_old += "plot_over_time_parameter_old.json";
 
-    std::ifstream plotOverTimeParameterFileOld( plotOverTimeParameterPath_old );
-    if ( !plotOverTimeParameterFileOld.good() )
+    std::ifstream parameterFileOld( plotOverTimeParameterPath_old );
+    if ( !parameterFileOld.good() )
     {
         PrintMissingParameterFileWarning(
             "Plot over time parameter file",
-            "parameter_old.pot",
+            "plot_over_time_parameter_old.json",
             "Set default plot over time parameters."
         );
         SetDefaultPOTParameter( pot_property );
         return;
     }
 
-    ppr.readPlotOverTimeParameterFile( plotOverTimeParameterPath_old.c_str() );
-    ppr.setPlotOverTimeParameter( pot_property );
+    ppr.readPlotOverTimeParameterFile( plotOverTimeParameterPath_old.c_str(), pot_property );
 }
 
 bool GeneratePOTIS(

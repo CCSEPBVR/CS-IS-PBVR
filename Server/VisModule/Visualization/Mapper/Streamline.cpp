@@ -27,14 +27,14 @@ namespace
 {
 
 template <typename T>
-inline const vismodule::Vector3f GetInterpolatedVector( const size_t vertex_id[8], const float weight[8], const vismodule::VolumeObjectBase& volume )
+inline const vismodule::Vector3f GetInterpolatedVector( const std::size_t vertex_id[8], const float weight[8], const vismodule::VolumeObjectBase& volume )
 {
     const T* values = reinterpret_cast<const T*>( volume.values().pointer() );
 
     vismodule::Vector3f ret( 0.0f );
-    for ( size_t i = 0; i < 8; i++ )
+    for ( std::size_t i = 0; i < 8; i++ )
     {
-        const size_t index = 3 * vertex_id[i];
+        const std::size_t index = 3 * vertex_id[i];
         const float w = weight[i];
         ret.x() += static_cast<float>( values[ index     ] * w );
         ret.y() += static_cast<float>( values[ index + 1 ] * w );
@@ -161,7 +161,7 @@ const bool Streamline::check_for_acceptance( const std::vector<vismodule::Real32
 const bool Streamline::check_for_termination(
     const vismodule::Vector3f& current_vertex,
     const vismodule::Vector3f& direction,
-    const size_t         integration_times,
+    const std::size_t         integration_times,
     const vismodule::Vector3f& next_vertex )
 {
     vismodule::IgnoreUnusedVariable( current_vertex );
@@ -229,16 +229,16 @@ const vismodule::Vector3f Streamline::interpolate_vector(
 {
     vismodule::IgnoreUnusedVariable( previous_vector );
 
-    const size_t cell_x = static_cast<size_t>( vertex.x() );
-    const size_t cell_y = static_cast<size_t>( vertex.y() );
-    const size_t cell_z = static_cast<size_t>( vertex.z() );
+    const std::size_t cell_x = static_cast<size_t>( vertex.x() );
+    const std::size_t cell_y = static_cast<size_t>( vertex.y() );
+    const std::size_t cell_z = static_cast<size_t>( vertex.z() );
 
     const vismodule::StructuredVolumeObject* volume = vismodule::StructuredVolumeObject::DownCast( *BaseClass::volume() );
-    const size_t resolution_x = static_cast<size_t>( volume->resolution().x() );
-    const size_t resolution_y = static_cast<size_t>( volume->resolution().y() );
-//    const size_t resolution_z = static_cast<size_t>( volume->resolution().z() );
+    const std::size_t resolution_x = static_cast<size_t>( volume->resolution().x() );
+    const std::size_t resolution_y = static_cast<size_t>( volume->resolution().y() );
+//    const std::size_t resolution_z = static_cast<size_t>( volume->resolution().z() );
 
-    size_t vertex_id[8];
+    std::size_t vertex_id[8];
     vertex_id[0] = cell_z * resolution_x * resolution_y + cell_y * resolution_x + cell_x;
     vertex_id[1] = vertex_id[0] + 1;
     vertex_id[2] = vertex_id[1] + resolution_x;

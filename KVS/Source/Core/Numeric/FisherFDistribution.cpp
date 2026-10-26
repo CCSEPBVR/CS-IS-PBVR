@@ -23,7 +23,7 @@ namespace kvs
  *  @param  dof2 [in] degree of freedom 2
  */
 /*===========================================================================*/
-FisherFDistribution::FisherFDistribution( const size_t dof1, const size_t dof2 ):
+FisherFDistribution::FisherFDistribution( const std::size_t dof1, const std::size_t dof2 ):
     m_dof1( dof1 ),
     m_dof2( dof2 )
 {

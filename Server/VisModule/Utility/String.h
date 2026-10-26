@@ -37,7 +37,7 @@ class String
 private:
 
     char*  m_data; ///< string data
-    size_t m_size; ///< string size (not include '\0')
+    std::size_t m_size; ///< string size (not include '\0')
 
 public:
 
@@ -54,9 +54,9 @@ public:
 
 public:
 
-    char& operator []( size_t index );
+    char& operator []( std::size_t index );
 
-    const char operator []( size_t index ) const;
+    const char operator []( std::size_t index ) const;
 
     String& operator =( const std::string& str );
 
@@ -88,19 +88,19 @@ public:
 
     const char* data( void ) const;
 
-    const size_t size( void ) const;
+    const std::size_t size( void ) const;
 
-    char& at( size_t index );
+    char& at( std::size_t index );
 
-    const char at( size_t index ) const;
+    const char at( std::size_t index ) const;
 
     void upper( void );
 
-    void upper( size_t index );
+    void upper( std::size_t index );
 
     void lower( void );
 
-    void lower( size_t index );
+    void lower( std::size_t index );
 
     void format( const char* str, ... );
 

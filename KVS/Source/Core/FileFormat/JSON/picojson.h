@@ -169,7 +169,7 @@ public:
   explicit value(object &&o);
 #endif
   explicit value(const char *s);
-  value(const char *s, size_t len);
+  value(const char *s, std::size_t len);
   ~value();
   value(const value &x);
   value &operator=(const value &x);
@@ -186,12 +186,12 @@ public:
   template <typename T> void set(T &&);
 #endif
   bool evaluate_as_boolean() const;
-  const value &get(const size_t idx) const;
+  const value &get(const std::size_t idx) const;
   const value &get(const std::string &key) const;
-  value &get(const size_t idx);
+  value &get(const std::size_t idx);
   value &get(const std::string &key);
 
-  bool contains(const size_t idx) const;
+  bool contains(const std::size_t idx) const;
   bool contains(const std::string &key) const;
   std::string to_str() const;
   template <typename Iter> void serialize(Iter os, bool prettify = false) const;
@@ -286,7 +286,7 @@ inline value::value(const char *s) : type_(string_type), u_() {
   u_.string_ = new std::string(s);
 }
 
-inline value::value(const char *s, size_t len) : type_(string_type), u_() {
+inline value::value(const char *s, std::size_t len) : type_(string_type), u_() {
   u_.string_ = new std::string(s, len);
 }
 
@@ -439,13 +439,13 @@ inline bool value::evaluate_as_boolean() const {
   }
 }
 
-inline const value &value::get(const size_t idx) const {
+inline const value &value::get(const std::size_t idx) const {
   static value s_null;
   PICOJSON_ASSERT(is<array>());
   return idx < u_.array_->size() ? (*u_.array_)[idx] : s_null;
 }
 
-inline value &value::get(const size_t idx) {
+inline value &value::get(const std::size_t idx) {
   static value s_null;
   PICOJSON_ASSERT(is<array>());
   return idx < u_.array_->size() ? (*u_.array_)[idx] : s_null;
@@ -465,7 +465,7 @@ inline value &value::get(const std::string &key) {
   return i != u_.object_->end() ? i->second : s_null;
 }
 
-inline bool value::contains(const size_t idx) const {
+inline bool value::contains(const std::size_t idx) const {
   PICOJSON_ASSERT(is<array>());
   return idx < u_.array_->size();
 }
@@ -496,7 +496,7 @@ inline std::string value::to_str() const {
 #if PICOJSON_USE_LOCALE
     char *decimal_point = localeconv()->decimal_point;
     if (strcmp(decimal_point, ".") != 0) {
-      size_t decimal_point_len = strlen(decimal_point);
+      std::size_t decimal_point_len = strlen(decimal_point);
       for (char *p = buf; *p != '\0'; ++p) {
         if (strncmp(p, decimal_point, decimal_point_len) == 0) {
           return std::string(buf, p) + "." + (p + decimal_point_len);
@@ -820,7 +820,7 @@ template <typename Context, typename Iter> inline bool _parse_array(Context &ctx
   if (!ctx.parse_array_start()) {
     return false;
   }
-  size_t idx = 0;
+  std::size_t idx = 0;
   if (in.expect(']')) {
     return ctx.parse_array_stop(idx);
   }

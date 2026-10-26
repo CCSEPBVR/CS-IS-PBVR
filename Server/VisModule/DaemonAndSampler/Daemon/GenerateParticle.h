@@ -2,6 +2,7 @@
 #define VIS_MODULE_GENERATE_STEP_H_INCLDE
 
 #include <array>
+#include <string>
 
 #include <vismodule/ParticleProperty>
 #include <vismodule/MultiVolumeProperty>
@@ -12,6 +13,19 @@
 #include <vismodule/CellByCellParticleGenerator>
 
 #include <kvs/PointObject>
+
+struct ParticleHistoryUpdateResult
+{
+    bool succeeded = false;
+    bool ensemble_statistics_available = false;
+    std::string file_path;
+    std::string error_message;
+};
+
+ParticleHistoryUpdateResult UpdateParticlePropertyFromHistoryIS(
+    const int time_step,
+    ParticleProperty& particle_property
+);
 
 void GenerateParticleCS(
     std::string& file_path,

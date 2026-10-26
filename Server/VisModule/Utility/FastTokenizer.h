@@ -37,7 +37,7 @@ private:
 
 private:
 
-    size_t      m_ntokens;
+    std::size_t      m_ntokens;
     const char* m_tokens[BufferSize];
 
 public:
@@ -52,11 +52,11 @@ public:
 
     void set( char* const source, const char* const delimiter );
 
-    const char* const get( size_t index ) const;
+    const char* const get( std::size_t index ) const;
 
 public:
 
-    const size_t ntokens( void ) const;
+    const std::size_t ntokens( void ) const;
 
 public:
 
@@ -64,7 +64,7 @@ public:
 
 inline void FastTokenizer::set( char* const source, const char* const delimiter )
 {
-    size_t ntokens = 0;
+    std::size_t ntokens = 0;
 
     for ( const char* p = strtok( source, delimiter ); p != NULL; p = strtok( NULL, delimiter ) )
     {
@@ -77,14 +77,14 @@ inline void FastTokenizer::set( char* const source, const char* const delimiter 
     m_ntokens = ntokens;
 }
 
-inline const char* const FastTokenizer::get( size_t index ) const
+inline const char* const FastTokenizer::get( std::size_t index ) const
 {
     VIS_MODULE_ASSERT( index < m_ntokens );
 
     return( m_tokens[index] );
 }
 
-inline const size_t FastTokenizer::ntokens( void ) const
+inline const std::size_t FastTokenizer::ntokens( void ) const
 {
     return( m_ntokens );
 }

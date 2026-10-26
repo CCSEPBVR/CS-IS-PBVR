@@ -48,10 +48,10 @@ void Rendering_S_C_Ns( const vismodule::PointObject* point )
 
     glBegin( GL_POINTS );
     {
-        const size_t nvertices = point->nvertices();
-        for( size_t i = 0; i < nvertices; i++ )
+        const std::size_t nvertices = point->nvertices();
+        for( std::size_t i = 0; i < nvertices; i++ )
         {
-            const size_t i3 = i * 3;
+            const std::size_t i3 = i * 3;
             glNormal3f( normal[i3], normal[i3+1], normal[i3+2] );
             glVertex3f( vertex[i3], vertex[i3+1], vertex[i3+2] );
         }
@@ -76,10 +76,10 @@ void Rendering_S_C( const vismodule::PointObject* point )
     const float* vertex = point->coords().pointer();
     glBegin( GL_POINTS );
     {
-        const size_t nvertices = point->nvertices();
-        for( size_t i = 0; i < nvertices; i++ )
+        const std::size_t nvertices = point->nvertices();
+        for( std::size_t i = 0; i < nvertices; i++ )
         {
-            size_t i3 = i * 3;
+            std::size_t i3 = i * 3;
             glVertex3f( vertex[i3], vertex[i3+1], vertex[i3+2] );
         }
     }
@@ -104,10 +104,10 @@ void Rendering_S_Cs_Ns( const vismodule::PointObject* point )
     const unsigned char* color  = point->colors().pointer();
     glBegin( GL_POINTS );
     {
-        const size_t nvertices = point->nvertices();
-        for( size_t i = 0; i < nvertices; i++ )
+        const std::size_t nvertices = point->nvertices();
+        for( std::size_t i = 0; i < nvertices; i++ )
         {
-            size_t i3 = i * 3;
+            std::size_t i3 = i * 3;
             glNormal3f( normal[i3], normal[i3+1], normal[i3+2] );
             glColor3ub( color[i3],  color[i3+1],  color[i3+2]  );
             glVertex3f( vertex[i3], vertex[i3+1], vertex[i3+2] );
@@ -131,10 +131,10 @@ void Rendering_S_Cs( const vismodule::PointObject* point )
     const unsigned char* color = point->colors().pointer();
     glBegin( GL_POINTS );
     {
-        const size_t nvertices = point->nvertices();
-        for( size_t i = 0; i < nvertices; i++ )
+        const std::size_t nvertices = point->nvertices();
+        for( std::size_t i = 0; i < nvertices; i++ )
         {
-            const size_t i3 = i * 3;
+            const std::size_t i3 = i * 3;
             glColor3ub( color[i3],  color[i3+1],  color[i3+2]  );
             glVertex3f( vertex[i3], vertex[i3+1], vertex[i3+2] );
         }
@@ -156,10 +156,10 @@ void Rendering_S( const vismodule::PointObject* point )
     const float* vertex = point->coords().pointer();
     glBegin( GL_POINTS );
     {
-        const size_t nvertices = point->nvertices();
-        for( size_t i = 0; i < nvertices; i++ )
+        const std::size_t nvertices = point->nvertices();
+        for( std::size_t i = 0; i < nvertices; i++ )
         {
-            const size_t i3 = i * 3;
+            const std::size_t i3 = i * 3;
             glVertex3f( vertex[i3], vertex[i3+1], vertex[i3+2] );
         }
     }
@@ -183,10 +183,10 @@ void Rendering_Ss_C_Ns( const vismodule::PointObject* point )
     const float* vertex = point->coords().pointer();
     const float* normal = point->normals().pointer();
 
-    const size_t nvertices = point->nvertices();
-    for( size_t i = 0; i < nvertices; i++ )
+    const std::size_t nvertices = point->nvertices();
+    for( std::size_t i = 0; i < nvertices; i++ )
     {
-        const size_t i3 = i * 3;
+        const std::size_t i3 = i * 3;
         glPointSize( size[i] );
         glBegin( GL_POINTS );
         {
@@ -211,10 +211,10 @@ void Rendering_Ss_C( const vismodule::PointObject* point )
     const float* size   = point->sizes().pointer();
     const float* vertex = point->coords().pointer();
 
-    const size_t nvertices = point->nvertices();
-    for( size_t i = 0; i < nvertices; i++ )
+    const std::size_t nvertices = point->nvertices();
+    for( std::size_t i = 0; i < nvertices; i++ )
     {
-        const size_t i3 = i * 3;
+        const std::size_t i3 = i * 3;
         glPointSize( size[i] );
         glBegin( GL_POINTS );
         {
@@ -239,10 +239,10 @@ void Rendering_Ss_Cs_Ns( const vismodule::PointObject* point )
     const float*         normal = point->normals().pointer();
     const unsigned char* color  = point->colors().pointer();
 
-    const size_t nvertices = point->nvertices();
-    for( size_t i = 0; i < nvertices; i++ )
+    const std::size_t nvertices = point->nvertices();
+    for( std::size_t i = 0; i < nvertices; i++ )
     {
-        const size_t i3 = i * 3;
+        const std::size_t i3 = i * 3;
         glPointSize( size[i] );
         glBegin( GL_POINTS );
         {
@@ -266,10 +266,10 @@ void Rendering_Ss_Cs( const vismodule::PointObject* point )
     const float*         vertex = point->coords().pointer();
     const unsigned char* color  = point->colors().pointer();
 
-    const size_t nvertices = point->nvertices();
-    for( size_t i = 0; i < nvertices; i++ )
+    const std::size_t nvertices = point->nvertices();
+    for( std::size_t i = 0; i < nvertices; i++ )
     {
-        const size_t i3 = i * 3;
+        const std::size_t i3 = i * 3;
         glPointSize( size[i] );
         glBegin( GL_POINTS );
         {
@@ -291,10 +291,10 @@ void Rendering_Ss( const vismodule::PointObject* point )
     const float* size   = point->sizes().pointer();
     const float* vertex = point->coords().pointer();
 
-    const size_t nvertices = point->nvertices();
-    for( size_t i = 0; i < nvertices; i++ )
+    const std::size_t nvertices = point->nvertices();
+    for( std::size_t i = 0; i < nvertices; i++ )
     {
-        size_t i3 = i * 3;
+        std::size_t i3 = i * 3;
         glPointSize( size[i] );
         glBegin( GL_POINTS );
         {
@@ -337,9 +337,9 @@ PointRenderingFunctionType Rendering[NumberOfRenderingTypes] =
 
 PointRenderingType GetPointRenderingType( const vismodule::PointObject* point )
 {
-    const size_t nsizes    = point->nsizes();
-    const size_t ncolors   = point->ncolors();
-    const size_t nnormals  = point->nnormals();
+    const std::size_t nsizes    = point->nsizes();
+    const std::size_t ncolors   = point->ncolors();
+    const std::size_t nnormals  = point->nnormals();
 
     if( nsizes == 1 )
     {

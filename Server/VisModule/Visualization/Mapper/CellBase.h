@@ -15,6 +15,12 @@
 #define VIS_MODULE__CELL_BASE_H_INCLUDE
 
 #include <limits>
+#ifdef _MSC_VER
+#include <malloc.h>  // _aligned_malloc, _aligned_free
+#else
+#include <cstdlib>  // posix_memalign, free
+#endif
+#include <cstring>  // memset
 
 #include <vismodule/DebugNew>
 #include <vismodule/ClassName>
@@ -35,6 +41,31 @@
 
 namespace vismodule
 {
+
+namespace detail
+{
+
+inline bool AllocateCellBaseAlignedMemory( void** memory, const std::size_t size )
+{
+#ifdef _MSC_VER
+    *memory = _aligned_malloc( size, 64 );
+    return ( *memory != nullptr );
+#else
+    return ( posix_memalign( memory, 64, size ) == 0 );
+#endif
+}
+
+inline void FreeCellBaseAlignedMemory( void* memory )
+{
+#ifdef _MSC_VER
+    _aligned_free( memory );
+#else
+    free( memory );
+#endif
+}
+
+} // namespace detail
+
 /*===========================================================================*/
 /**
  *  @brief  CellBase class.
@@ -47,7 +78,7 @@ class CellBase
 
 protected:
 
-    size_t         m_nnodes; ///< number of nodes
+    std::size_t         m_nnodes; ///< number of nodes
     vismodule::Vector3f* m_vertices; ///< coordinates of the nodes
     T*             m_scalars; ///< scalar values of the nodes
     vismodule::Real32*   m_interpolation_functions; ///< interpolation functions
@@ -74,6 +105,11 @@ protected:
     vismodule::Vector3f** m_vertices_array;
     vismodule::Real32**   m_interpolation_functions_array;
     vismodule::Real32**   m_differential_functions_array;
+    // Base pointers of the single aligned blocks backing the *_array rows above.
+    T*                   m_scalars_block = nullptr;
+    vismodule::Vector3f* m_vertices_block = nullptr;
+    vismodule::Real32*   m_interpolation_block = nullptr;
+    vismodule::Real32*   m_differential_block = nullptr;
 
     void allocate();
     void deallocate();
@@ -81,7 +117,7 @@ protected:
 public:
 
     CellBase( const vismodule::UnstructuredVolumeObject& volume );
-    CellBase( const vismodule::UnstructuredVolumeObject& volume, const size_t cell_type );
+    CellBase( const vismodule::UnstructuredVolumeObject& volume, const std::size_t cell_type );
     CellBase( T* values,
               float* coords, int ncoords,
               unsigned int* connections, int ncells, int cell_type);
@@ -104,10 +140,22 @@ public:
     virtual void scalar_ary( float* scalar_array, const int loop_cnt ) const = 0;
     
     virtual void grad_ary( float* grad_array_x, float* grad_array_y, float* grad_array_z,  const int loop_cnt ) const = 0;
+
+    // Candidate A (geometry reuse): the inverse Jacobian depends only on cell
+    // geometry (vertices + shape-fn derivatives) and is identical across all
+    // variables sharing coordinates/connections. Compute it once on interp[0]
+    // (computeScaledInvJacobianArray) and reuse it per variable
+    // (gradFromScaledInvJacobianArray). Default off; HexahedralCell overrides.
+    virtual bool supportsJacobianReuse() const { return false; }
+    virtual void computeScaledInvJacobianArray( const int,
+            double (*)[SIMD_BLK_SIZE], double*, double*, double* ) const {}
+    virtual void gradFromScaledInvJacobianArray( const int,
+            const double (*)[SIMD_BLK_SIZE], const double*, const double*, const double*,
+            float*, float*, float* ) const {}
     
-    virtual void bindCell_wVolume( const vismodule::UInt32 index, const size_t n = 0 );
+    virtual void bindCell_wVolume( const vismodule::UInt32 index, const std::size_t n = 0 );
     
-    virtual void bindCell( const vismodule::UInt32 index ,const size_t n = 0);
+    virtual void bindCell( const vismodule::UInt32 index ,const std::size_t n = 0);
 
     virtual void setGlobalPoint( const vismodule::Vector3f& point ) const;
 
@@ -115,8 +163,18 @@ public:
 
     virtual void setLocalGravityPoint() const = 0;
 
+    // 節点 i の局所座標を返す（新規追加。既存関数は変更していない）。
+    // 形状関数が N_i(xi_j) = delta_ij を満たす点であり、各セルクラスの
+    // interpolationFunctions() から一意に決まる。節点で微分量を評価する用途に使う。
+    // 3次元セルだけが override する。提供しないセル種は false を返す。
+    virtual bool localNodeCoord( const int, vismodule::Vector3f* ) const { return false; }
+
     virtual void bindCellArray( const int loop_cnt, const vismodule::UInt32 *cell_index );
+    void bindScalarsArray( const int loop_cnt, const vismodule::UInt32 *cell_index );
     virtual void setLocalPointArray( const int loop_cnt, const vismodule::Vector3f *local_array );
+
+    // 全粒子が同じ局所座標のときの setLocalPointArray（新規追加。既存関数は変更していない）
+    void setLocalPointUniformArray( const int loop_cnt, const vismodule::Vector3f& local );
     virtual void transformLocalToGlobalArray( const int loop_cnt, const vismodule::Vector3f *local_array, vismodule::Vector3f *global_array);
     virtual void CalcScalarGrad(
             const int loop_cnt,
@@ -147,6 +205,15 @@ public:
 
     virtual const vismodule::Real32 volume() const;
 
+    // セルブロックの体積を一括算出する。既定実装は per-cell の bindCell+volume()
+    // で、bindCell/volume とも virtual なので全 CellBase 派生で正しい。
+    // 頂点だけで閉形式に書けるセル種は override し、bindCellArray() が既に集めた
+    // m_vertices_array を読んで再 gather を避ける(Hexahedra/Tetrahedra)。
+    // cell_index は既定実装だけが使う。
+    virtual void volumeArray( const int loop_cnt,
+                              const vismodule::UInt32* cell_index,
+                              vismodule::Real32* volumes );
+
     virtual const vismodule::Real32 averagedScalar() const;
 
     virtual const vismodule::Real32 scalar() const;
@@ -169,11 +236,15 @@ public:
 
     const vismodule::Vector3f localPoint() const;
 
-    const size_t numberOfNodes() const;
+    const std::size_t numberOfNodes() const;
 
     const vismodule::Matrix33f JacobiMatrix() const;
 
     const vismodule::Matrix33d JacobiMatrix_d() const;
+
+    // 局所座標での勾配を物理座標系へ変換する（新規追加。既存関数は変更していない）
+    void applyInvJacobianToGradArray( const int loop_cnt,
+            float* grad_array_x, float* grad_array_y, float* grad_array_z ) const;
 
     const vismodule::Real32 randomNumber() const;
 
@@ -189,8 +260,8 @@ public:
 template <typename T>
 inline void CellBase<T>::allocate()
 {
-    const size_t dimension = 3;
-    const size_t nnodes = m_nnodes;
+    const std::size_t dimension = 3;
+    const std::size_t nnodes = m_nnodes;
 
     try
     {
@@ -214,19 +285,42 @@ inline void CellBase<T>::allocate()
         if ( !m_vertices_vec ) throw "Cannot allocate memory for 'm_vertices_vec'";
         memset( m_vertices_vec, 0, sizeof( vismodule::Real32 ) * nnodes * dimension );
 
-        m_vertices_array  = new vismodule::Vector3f* [nnodes]; //[nnodes];
-        m_scalars_array   = new T* [nnodes]; //[nnodes];
-        m_interpolation_functions_array = new vismodule::Real32* [nnodes]; // [nnodes];
-        m_differential_functions_array  = new vismodule::Real32* [nnodes*dimension]; // [nnodes*3];
+        m_vertices_array  = new vismodule::Vector3f* [nnodes];
+        m_scalars_array   = new T* [nnodes];
+        m_interpolation_functions_array = new vismodule::Real32* [nnodes];
+        m_differential_functions_array  = new vismodule::Real32* [nnodes*dimension];
+
+        // Single contiguous, 64-byte-aligned block per array. Rows stay 64B-aligned
+        // because SIMD_BLK_SIZE*sizeof(elem) is a multiple of 64. Same [k][i] layout and
+        // values as before; removes per-row heap scatter and the unaligned-access penalty
+        // in scalar_ary/grad_ary. Vector3f rows are zero-initialized to match the original
+        // element ctor (Vector3f()->zero()); float rows stay uninitialized as before.
+        if ( !detail::AllocateCellBaseAlignedMemory(
+                 reinterpret_cast<void**>( &m_vertices_block ),
+                 sizeof( vismodule::Vector3f ) * nnodes * SIMD_BLK_SIZE ) )
+            throw "Cannot allocate aligned memory for 'm_vertices_array'";
+        memset( m_vertices_block, 0, sizeof( vismodule::Vector3f ) * nnodes * SIMD_BLK_SIZE );
+        if ( !detail::AllocateCellBaseAlignedMemory(
+                 reinterpret_cast<void**>( &m_scalars_block ),
+                 sizeof( T ) * nnodes * SIMD_BLK_SIZE ) )
+            throw "Cannot allocate aligned memory for 'm_scalars_array'";
+        if ( !detail::AllocateCellBaseAlignedMemory(
+                 reinterpret_cast<void**>( &m_interpolation_block ),
+                 sizeof( vismodule::Real32 ) * nnodes * SIMD_BLK_SIZE ) )
+            throw "Cannot allocate aligned memory for 'm_interpolation_functions_array'";
+        if ( !detail::AllocateCellBaseAlignedMemory(
+                 reinterpret_cast<void**>( &m_differential_block ),
+                 sizeof( vismodule::Real32 ) * nnodes * dimension * SIMD_BLK_SIZE ) )
+            throw "Cannot allocate aligned memory for 'm_differential_functions_array'";
         for (int i = 0; i<nnodes; i++ )
         {
-        m_vertices_array[i]  = new vismodule::Vector3f[SIMD_BLK_SIZE];
-        m_scalars_array[i]   = new T[SIMD_BLK_SIZE] ;  
-        m_interpolation_functions_array[i] = new vismodule::Real32[SIMD_BLK_SIZE] ;
-        m_differential_functions_array[3*i]  = new vismodule::Real32[SIMD_BLK_SIZE] ;
-        m_differential_functions_array[3*i+1]  = new vismodule::Real32[SIMD_BLK_SIZE] ;
-        m_differential_functions_array[3*i+2]  = new vismodule::Real32[SIMD_BLK_SIZE] ;
-        } 
+            m_vertices_array[i]  = m_vertices_block + i * SIMD_BLK_SIZE;
+            m_scalars_array[i]   = m_scalars_block + i * SIMD_BLK_SIZE;
+            m_interpolation_functions_array[i] = m_interpolation_block + i * SIMD_BLK_SIZE;
+            m_differential_functions_array[3*i]   = m_differential_block + ( 3*i )   * SIMD_BLK_SIZE;
+            m_differential_functions_array[3*i+1] = m_differential_block + ( 3*i+1 ) * SIMD_BLK_SIZE;
+            m_differential_functions_array[3*i+2] = m_differential_block + ( 3*i+2 ) * SIMD_BLK_SIZE;
+        }
     }
     catch ( char* error_message )
     {
@@ -251,29 +345,18 @@ inline void CellBase<T>::deallocate()
     if ( m_vertices_vec ) delete [] m_vertices_vec;
 
 //    //add by shimomura 2024/0603
-    if ( m_vertices_array)
-    { 
-        for (int i = 0; i<m_nnodes; i++ )  delete [] m_vertices_array[i];
-        delete [] m_vertices_array;
-    }
+    // Free the single aligned blocks (rows point into these), then the row-pointer arrays.
+    if ( m_vertices_block ) detail::FreeCellBaseAlignedMemory( m_vertices_block );
+    if ( m_vertices_array ) delete [] m_vertices_array;
 
-    if ( m_scalars_array)
-    { 
-        for (int i = 0; i<m_nnodes; i++ )  delete [] m_scalars_array[i];
-        delete [] m_scalars_array;
-    }
+    if ( m_scalars_block ) detail::FreeCellBaseAlignedMemory( m_scalars_block );
+    if ( m_scalars_array ) delete [] m_scalars_array;
 
-    if ( m_interpolation_functions_array )
-    {
-        for (int i = 0; i<m_nnodes; i++ )  delete [] m_interpolation_functions_array[i];
-        delete [] m_interpolation_functions_array;
-    }
+    if ( m_interpolation_block ) detail::FreeCellBaseAlignedMemory( m_interpolation_block );
+    if ( m_interpolation_functions_array ) delete [] m_interpolation_functions_array;
 
-    if ( m_differential_functions_array )
-    {
-        for (int i = 0; i<m_nnodes*dimension; i++ )  delete [] m_differential_functions_array[i];
-        delete [] m_differential_functions_array;
-    }
+    if ( m_differential_block ) detail::FreeCellBaseAlignedMemory( m_differential_block );
+    if ( m_differential_functions_array ) delete [] m_differential_functions_array;
 }
 
 /*===========================================================================*/
@@ -301,7 +384,7 @@ inline CellBase<T>::CellBase(
 /*===========================================================================*/
 template <typename T>
 inline CellBase<T>::CellBase(
-    const vismodule::UnstructuredVolumeObject& volume, const size_t cell_type ):
+    const vismodule::UnstructuredVolumeObject& volume, const std::size_t cell_type ):
     m_nnodes( cell_type ),
     m_global_point( 0, 0, 0 ),
     m_local_point( 0, 0, 0 ),
@@ -328,8 +411,8 @@ inline CellBase<T>::CellBase(
     m_global_point( 0, 0, 0 ),
     m_local_point( 0, 0, 0 )
 {
-    const size_t dimension = 3;
-    const size_t nnodes = m_nnodes;
+    const std::size_t dimension = 3;
+    const std::size_t nnodes = m_nnodes;
     try
     {
         m_vertices = new vismodule::Vector3f [nnodes];
@@ -365,20 +448,42 @@ inline CellBase<T>::CellBase(
 //        m_differential_functions_array[i]  = new vismodule::Real32[nnodes*dimension] ;
 //        } 
 
-        m_vertices_array  = new vismodule::Vector3f* [nnodes]; //[nnodes];
-        m_scalars_array   = new T* [nnodes]; //[nnodes];  
-        m_interpolation_functions_array = new vismodule::Real32* [nnodes]; // [nnodes];
-        m_differential_functions_array  = new vismodule::Real32* [nnodes*dimension]; // [nnodes*3];
-   
+        m_vertices_array  = new vismodule::Vector3f* [nnodes];
+        m_scalars_array   = new T* [nnodes];
+        m_interpolation_functions_array = new vismodule::Real32* [nnodes];
+        m_differential_functions_array  = new vismodule::Real32* [nnodes*dimension];
+
+        // Single contiguous, 64-byte-aligned block per array. Rows stay 64B-aligned
+        // because SIMD_BLK_SIZE*sizeof(elem) is a multiple of 64. Same [k][i] layout and
+        // values as before; removes per-row heap scatter and the unaligned-access penalty
+        // in scalar_ary/grad_ary. Vector3f rows are zero-initialized to match the original
+        // element ctor (Vector3f()->zero()); float rows stay uninitialized as before.
+        if ( !detail::AllocateCellBaseAlignedMemory(
+                 reinterpret_cast<void**>( &m_vertices_block ),
+                 sizeof( vismodule::Vector3f ) * nnodes * SIMD_BLK_SIZE ) )
+            throw "Cannot allocate aligned memory for 'm_vertices_array'";
+        memset( m_vertices_block, 0, sizeof( vismodule::Vector3f ) * nnodes * SIMD_BLK_SIZE );
+        if ( !detail::AllocateCellBaseAlignedMemory(
+                 reinterpret_cast<void**>( &m_scalars_block ),
+                 sizeof( T ) * nnodes * SIMD_BLK_SIZE ) )
+            throw "Cannot allocate aligned memory for 'm_scalars_array'";
+        if ( !detail::AllocateCellBaseAlignedMemory(
+                 reinterpret_cast<void**>( &m_interpolation_block ),
+                 sizeof( vismodule::Real32 ) * nnodes * SIMD_BLK_SIZE ) )
+            throw "Cannot allocate aligned memory for 'm_interpolation_functions_array'";
+        if ( !detail::AllocateCellBaseAlignedMemory(
+                 reinterpret_cast<void**>( &m_differential_block ),
+                 sizeof( vismodule::Real32 ) * nnodes * dimension * SIMD_BLK_SIZE ) )
+            throw "Cannot allocate aligned memory for 'm_differential_functions_array'";
         for (int i = 0; i<nnodes; i++ )
         {
-        m_vertices_array[i]  = new vismodule::Vector3f[SIMD_BLK_SIZE];
-        m_scalars_array[i]   = new T[SIMD_BLK_SIZE] ;  
-        m_interpolation_functions_array[i] = new vismodule::Real32[SIMD_BLK_SIZE] ;
-        m_differential_functions_array[3*i]  = new vismodule::Real32[SIMD_BLK_SIZE] ;
-        m_differential_functions_array[3*i+1]  = new vismodule::Real32[SIMD_BLK_SIZE] ;
-        m_differential_functions_array[3*i+2]  = new vismodule::Real32[SIMD_BLK_SIZE] ;
-        } 
+            m_vertices_array[i]  = m_vertices_block + i * SIMD_BLK_SIZE;
+            m_scalars_array[i]   = m_scalars_block + i * SIMD_BLK_SIZE;
+            m_interpolation_functions_array[i] = m_interpolation_block + i * SIMD_BLK_SIZE;
+            m_differential_functions_array[3*i]   = m_differential_block + ( 3*i )   * SIMD_BLK_SIZE;
+            m_differential_functions_array[3*i+1] = m_differential_block + ( 3*i+1 ) * SIMD_BLK_SIZE;
+            m_differential_functions_array[3*i+2] = m_differential_block + ( 3*i+2 ) * SIMD_BLK_SIZE;
+        }
 
     }
     catch( char* error_message )
@@ -413,20 +518,20 @@ inline CellBase<T>::~CellBase()
  */
 /*===========================================================================*/
 template <typename T>  /// using UnstructuredVolumeObject!!
-inline void CellBase<T>::bindCell_wVolume( const vismodule::UInt32 index, const size_t n )
+inline void CellBase<T>::bindCell_wVolume( const vismodule::UInt32 index, const std::size_t n )
 {
     // Aliases.
     const vismodule::UnstructuredVolumeObject* volume = m_reference_volume;
     const vismodule::UInt32* const connections = volume->connections().pointer();
     const vismodule::Real32* const coords = volume->coords().pointer();
     const T* const values = static_cast<const T*>( volume->values().pointer() );
-    const size_t vnodes = volume->nnodes();
+    const std::size_t vnodes = volume->nnodes();
 
 
-    const size_t nnodes = m_nnodes;
+    const std::size_t nnodes = m_nnodes;
 //    std::cout << "vnodes =" << vnodes << ", nnodes = " <<  nnodes  << std::endl;
     const vismodule::UInt32 connection_index = nnodes * index;
-    for ( size_t i = 0, j = 0; i < nnodes; i++, j+=3 )
+    for ( std::size_t i = 0, j = 0; i < nnodes; i++, j+=3 )
     {
         const vismodule::UInt32 node_index = connections[ connection_index + i ];
         m_scalars[i] = values[ vnodes * n + node_index ];
@@ -446,16 +551,16 @@ inline void CellBase<T>::bindCell_wVolume( const vismodule::UInt32 index, const 
 }
 
 template <typename T>
-inline void CellBase<T>::bindCell( const vismodule::UInt32 index, const size_t n )
+inline void CellBase<T>::bindCell( const vismodule::UInt32 index, const std::size_t n )
 {
     // Aliases.
     const vismodule::UInt32* const connections = m_connections;
     const vismodule::Real32* const coords = m_coords;
     const T* const values = m_values;
 
-    const size_t nnodes = m_nnodes;//num of polyhedra vertices
+    const std::size_t nnodes = m_nnodes;//num of polyhedra vertices
     const vismodule::UInt32 connection_index = nnodes * index;
-    for ( size_t i = 0, j=0 ;i < nnodes; i++, j += 3 )
+    for ( std::size_t i = 0, j=0 ;i < nnodes; i++, j += 3 )
     {
         const vismodule::UInt32 node_index = connections[ connection_index + i ];
         m_scalars[i] = values[ node_index ];
@@ -472,6 +577,27 @@ inline void CellBase<T>::bindCell( const vismodule::UInt32 index, const size_t n
     }
 }
 
+// bindScalarsArray: scalars-only counterpart of bindCellArray. The vertex gather is
+// identical across variables and unused for variables k>0 when the Jacobian-reuse path
+// is active, so this skips it. Also avoids the false scalar/vertex store dependence
+// (#15346) that prevented bindCellArray from vectorizing.
+template <typename T>
+inline void CellBase<T>::bindScalarsArray( const int loop_cnt, const vismodule::UInt32 *cell_index )
+{
+    const vismodule::UInt32* const connections = m_connections;
+    const T* const values = m_values;
+    const size_t nnodes = m_nnodes;
+
+    for ( size_t j = 0; j < nnodes; j++ )
+    {
+        for ( int i = 0; i < loop_cnt; i++ )
+        {
+            const vismodule::UInt32 connection_index = nnodes * cell_index[i];
+            m_scalars_array[j][i] = values[ connections[ connection_index + j ] ];
+        }
+    }
+}
+
 // Fj add
 template <typename T>
 inline void CellBase<T>::bindCellArray( const int loop_cnt, const vismodule::UInt32 *cell_index )
@@ -480,9 +606,9 @@ inline void CellBase<T>::bindCellArray( const int loop_cnt, const vismodule::UIn
     const vismodule::UInt32* const connections = m_connections;
     const vismodule::Real32* const coords = m_coords;
     const T* const values = m_values;
-    const size_t nnodes = m_nnodes;//num of polyhedra vertices
+    const std::size_t nnodes = m_nnodes;//num of polyhedra vertices
 
-    for ( size_t j = 0; j < nnodes; j++ )
+    for ( std::size_t j = 0; j < nnodes; j++ )
     {
         for (int i =0; i<  loop_cnt; i++ )
         { 
@@ -562,6 +688,43 @@ inline void CellBase<T>::setLocalPointArray( const int loop_cnt, const vismodule
 }
 /*===========================================================================*/
 /**
+ *  @brief  全粒子が同じ局所座標のときの setLocalPointArray（ブロック一括版）。
+ *
+ *  形状関数とその微分は局所座標だけで決まるので、同じ点なら結果も同じである。
+ *  setLocalPointArray() は粒子ごとに多項式を評価し直すため、局所座標が共通の場合は
+ *  ブロック長ぶんの無駄になる。ここでは1点だけ評価して残りへ複製する。
+ *
+ *  節点微分量の復元では、ブロック内の全セルについて「節点 k の局所座標」という
+ *  同一の点で評価するので、この関数が効く。
+ *
+ *  結果は setLocalPointArray() に同じ点を並べて渡した場合と同一である。
+ */
+/*===========================================================================*/
+template <typename T>
+inline void CellBase<T>::setLocalPointUniformArray(
+    const int loop_cnt, const vismodule::Vector3f& local )
+{
+    if ( loop_cnt <= 0 ) return;
+
+    const vismodule::Vector3f one[1] = { local };
+    this->interpolationFunctions_array( one, 1 );
+    this->differentialFunctions_array( one, 1 );
+
+    const int nn = static_cast<int>( m_nnodes );
+    for ( int j = 0; j < nn; ++j )
+    {
+        const vismodule::Real32 v = m_interpolation_functions_array[j][0];
+        for ( int i = 1; i < loop_cnt; ++i ) m_interpolation_functions_array[j][i] = v;
+    }
+    for ( int j = 0; j < 3 * nn; ++j )
+    {
+        const vismodule::Real32 v = m_differential_functions_array[j][0];
+        for ( int i = 1; i < loop_cnt; ++i ) m_differential_functions_array[j][i] = v;
+    }
+}
+
+/*===========================================================================*/
+/**
  *  @brief  Transforms the global to the local coordinate.
  *  @param  global [in] point in the global coodinate
  */
@@ -574,9 +737,9 @@ inline const vismodule::Vector3f CellBase<T>::transformGlobalToLocal( const vism
     // Calculate the coordinate of 'global' in the local coordinate
     // by using Newton-Raphson method.
     const float TinyValue = static_cast<float>( 1.e-6 );
-    const size_t MaxLoop = 100;
+    const std::size_t MaxLoop = 100;
     vismodule::Vector3f x0( 0.25f, 0.25f, 0.25f ); // Initial point in local coordinate.
-    for ( size_t i = 0; i < MaxLoop; i++ )
+    for ( std::size_t i = 0; i < MaxLoop; i++ )
     {
         this->setLocalPoint( x0 );
         const vismodule::Vector3f X0( this->transformLocalToGlobal( x0 ) );
@@ -605,16 +768,16 @@ inline const vismodule::Vector3f CellBase<T>::transformLocalToGlobal( const vism
 
     const float* N = m_interpolation_functions;
     const vismodule::Vector3f* V = m_vertices;
-    const size_t nnodes = m_nnodes;
+    const std::size_t nnodes = m_nnodes;
 
     float X = 0;
-    for ( size_t i = 0; i < nnodes; i++ ) X += N[i] * V[i].x();
+    for ( std::size_t i = 0; i < nnodes; i++ ) X += N[i] * V[i].x();
 
     float Y = 0;
-    for ( size_t i = 0; i < nnodes; i++ ) Y += N[i] * V[i].y();
+    for ( std::size_t i = 0; i < nnodes; i++ ) Y += N[i] * V[i].y();
 
     float Z = 0;
-    for ( size_t i = 0; i < nnodes; i++ ) Z += N[i] * V[i].z();
+    for ( std::size_t i = 0; i < nnodes; i++ ) Z += N[i] * V[i].z();
 
     return vismodule::Vector3f( X, Y, Z );
 }
@@ -623,6 +786,31 @@ template <typename T>
 inline void CellBase<T>::transformLocalToGlobalArray( const int loop_cnt, const vismodule::Vector3f *local_array, vismodule::Vector3f *global_array)
 {
 
+#ifndef PBVR_SCALAR_TRANSFORM
+    // Option 1: accumulate into a SoA temp (gx/gy/gz) so the per-particle loop vectorizes
+    // (the Vector3f AoS store was the #15346 dependence that blocked it), then do the cheap
+    // AoS transpose. Same i=0..nnodes accumulation order per axis -> bit-identical.
+    // Build -DPBVR_SCALAR_TRANSFORM to restore the old scalar loop.
+    (void)local_array;
+    float gx[SIMD_BLK_SIZE], gy[SIMD_BLK_SIZE], gz[SIMD_BLK_SIZE];
+    const size_t nnodes = m_nnodes;
+    #pragma omp simd
+    for ( int j = 0; j < loop_cnt; j++ )
+    {
+        float X = 0, Y = 0, Z = 0;
+        for ( size_t i = 0; i < nnodes; i++ )
+        {
+            const float N = m_interpolation_functions_array[i][j];
+            X += N * m_vertices_array[i][j].x();
+            Y += N * m_vertices_array[i][j].y();
+            Z += N * m_vertices_array[i][j].z();
+        }
+        gx[j] = X; gy[j] = Y; gz[j] = Z;
+    }
+    for ( int j = 0; j < loop_cnt; j++ )
+        global_array[j] = vismodule::Vector3f( gx[j], gy[j], gz[j] );
+#else
+
     #pragma ivdep
     for( int j = 0; j < loop_cnt; j++ )
     {
@@ -630,17 +818,18 @@ inline void CellBase<T>::transformLocalToGlobalArray( const int loop_cnt, const 
 //    const float* N = m_interpolation_functions_array[j];
 //    const vismodule::Vector3f* V = m_vertices_array[j];
     //const vismodule::Vector3f* V = m_vertices;
-    const size_t nnodes = m_nnodes;
+    const std::size_t nnodes = m_nnodes;
 
 
         float X = 0;
-        for ( size_t i = 0; i < nnodes; i++ ) X += m_interpolation_functions_array[i][j] * m_vertices_array[i][j].x(); 
+        for ( std::size_t i = 0; i < nnodes; i++ ) X += m_interpolation_functions_array[i][j] * m_vertices_array[i][j].x(); 
         float Y = 0;
-        for ( size_t i = 0; i < nnodes; i++ ) Y += m_interpolation_functions_array[i][j] * m_vertices_array[i][j].y(); 
+        for ( std::size_t i = 0; i < nnodes; i++ ) Y += m_interpolation_functions_array[i][j] * m_vertices_array[i][j].y(); 
         float Z = 0;
-        for ( size_t i = 0; i < nnodes; i++ ) Z += m_interpolation_functions_array[i][j] * m_vertices_array[i][j].z(); 
+        for ( std::size_t i = 0; i < nnodes; i++ ) Z += m_interpolation_functions_array[i][j] * m_vertices_array[i][j].z(); 
         global_array[j] = vismodule::Vector3f( X, Y, Z );
     }
+#endif
 }
 /*===========================================================================*/
 /**
@@ -686,6 +875,32 @@ inline const vismodule::Real32 CellBase<T>::volume() const
 
 /*===========================================================================*/
 /**
+ *  @brief  Returns volumes for a block of cells.
+ *  @param  loop_cnt   [in]  number of cells
+ *  @param  cell_index [in]  cell indices (this default implementation only)
+ *  @param  volumes    [out] volume array
+ */
+/*===========================================================================*/
+template <typename T>
+inline void CellBase<T>::volumeArray(
+    const int loop_cnt,
+    const vismodule::UInt32* cell_index,
+    vismodule::Real32* volumes )
+{
+    if ( volumes == NULL || cell_index == NULL ) return;
+
+    // 既定実装: 1セルずつ bindCell して多態の volume() を呼ぶ。従来 EPG 側に
+    // 置かれていたフォールバックと同じ処理で、Pyramid のように bindCell 内で
+    // 体積用の量を作る派生でも正しい(bindCell も volume も virtual)。
+    for ( int i = 0; i < loop_cnt; ++i )
+    {
+        this->bindCell( cell_index[i] );
+        volumes[i] = this->volume();
+    }
+}
+
+/*===========================================================================*/
+/**
  *  @brief  Returns the averaged scalar value.
  *  @return averaged scalar value
  */
@@ -693,11 +908,11 @@ inline const vismodule::Real32 CellBase<T>::volume() const
 template <typename T>
 inline const vismodule::Real32 CellBase<T>::averagedScalar() const
 {
-    const size_t nnodes = m_nnodes;
+    const std::size_t nnodes = m_nnodes;
     const vismodule::Real32 w = 1.0f / nnodes;
 
     vismodule::Real32 S = 0;
-    for ( size_t i = 0; i < nnodes; i++ )
+    for ( std::size_t i = 0; i < nnodes; i++ )
     {
         S += static_cast<vismodule::Real32>( m_scalars[i] );
     }
@@ -713,12 +928,12 @@ inline const vismodule::Real32 CellBase<T>::averagedScalar() const
 template <typename T>
 inline const vismodule::Real32 CellBase<T>::scalar() const
 {
-    const size_t nnodes = m_nnodes;
+    const std::size_t nnodes = m_nnodes;
     const float* N = m_interpolation_functions;
     const T* s = m_scalars;
 
     vismodule::Real32 S = 0;
-    for ( size_t i = 0; i < nnodes; i++ )
+    for ( std::size_t i = 0; i < nnodes; i++ )
     {
         S += static_cast<vismodule::Real32>( N[i] * s[i] );
     }
@@ -744,7 +959,7 @@ inline const vismodule::Vector3f CellBase<T>::gradient() const
     double dsdx = 0.0f;
     double dsdy = 0.0f;
     double dsdz = 0.0f;
-    for ( size_t i = 0; i < nnodes; i++ )
+    for ( std::size_t i = 0; i < nnodes; i++ )
     {
         dsdx += static_cast<double>( s[i] * dNdx[i] );
         dsdy += static_cast<double>( s[i] * dNdy[i] );
@@ -759,9 +974,9 @@ inline const vismodule::Vector3f CellBase<T>::gradient() const
     // calc scale factor
     double minValue = (std::numeric_limits<double>::max)();
 
-    for ( size_t i = 0; i < 3; i++ ) 
+    for ( std::size_t i = 0; i < 3; i++ ) 
     {
-        for( size_t k = 0; k < 3; k++ )
+        for( std::size_t k = 0; k < 3; k++ )
         {
             if ( J[i][k] != 0 && vismodule::Math::Abs(J[i][k]) < minValue )
             {
@@ -867,7 +1082,7 @@ inline const vismodule::Vector3f CellBase<T>::localPoint() const
  */
 /*===========================================================================*/
 template <typename T>
-inline const size_t CellBase<T>::numberOfNodes() const
+inline const std::size_t CellBase<T>::numberOfNodes() const
 {
     return m_nnodes;
 }
@@ -897,7 +1112,7 @@ inline const vismodule::Matrix33f CellBase<T>::JacobiMatrix() const
     float dXdz = 0;
     float dYdz = 0;
     float dZdz = 0;
-    for ( size_t i = 0, j = 0; i < nnodes; i++, j+=3 )
+    for ( std::size_t i = 0, j = 0; i < nnodes; i++, j+=3 )
     {
         dXdx += dNdx[i] * V[i].x();
         dYdx += dNdx[i] * V[i].y();
@@ -932,7 +1147,7 @@ inline const vismodule::Matrix33d CellBase<T>::JacobiMatrix_d() const
     double dYdz = 0;
     double dZdz = 0;
 
-    for ( size_t i = 0, j = 0; i < nnodes; i++, j+=3 )
+    for ( std::size_t i = 0, j = 0; i < nnodes; i++, j+=3 )
     {
         dXdx += dNdx[i] * V[i].x();
         dYdx += dNdx[i] * V[i].y();
@@ -945,6 +1160,113 @@ inline const vismodule::Matrix33d CellBase<T>::JacobiMatrix_d() const
         dZdz += dNdz[i] * V[i].z();
     }
     return vismodule::Matrix33d( dXdx, dYdx, dZdx, dXdy, dYdy, dZdy, dXdz, dYdz, dZdz );
+}
+
+/*===========================================================================*/
+/**
+ *  @brief  局所座標での勾配を物理座標系へ変換する（ブロック一括版）。
+ *
+ *  grad_ary() が内部で行っている J^-1 の適用だけを切り出したもの。grad_ary() は
+ *  「節点値から局所勾配を作る」ところまで含むが、こちらは局所勾配を引数で受け取る
+ *  ので、座標差分など別の方法で求めた勾配にも使える。
+ *  節点数に依らない一般形で書いてあり、全セル種で動く。
+ *
+ *  数値の扱い（double 化・scale_factor による条件数改善・det≈0 のゼロ化・
+ *  余因子展開の順序）は grad_ary() に揃えてあるので、同じ局所勾配を渡せば
+ *  チェーンルール経路と同じ結果になる。scale_factor は J に掛けた分が J^-1 で
+ *  相殺するだけの条件数調整であり、値そのものは変えない。
+ *
+ *  前提: bindCellArray() で m_vertices_array が、setLocalPointArray() で
+ *        m_differential_functions_array が、対象の局所座標に対して設定済みであること。
+ *
+ *  @param  loop_cnt     [in]     粒子数
+ *  @param  grad_array_x [in,out] 入力は d/dxi、出力は d/dX（y,z も同様）
+ */
+/*===========================================================================*/
+template <typename T>
+inline void CellBase<T>::applyInvJacobianToGradArray(
+    const int loop_cnt,
+    float* grad_array_x,
+    float* grad_array_y,
+    float* grad_array_z ) const
+{
+    const int nnodes = static_cast<int>( m_nnodes );
+
+    for ( int i = 0; i < loop_cnt; i++ )
+    {
+        const double dsdx = static_cast<double>( grad_array_x[i] );
+        const double dsdy = static_cast<double>( grad_array_y[i] );
+        const double dsdz = static_cast<double>( grad_array_z[i] );
+
+        ///////////////////////// JacobiMatrix /////////////////////////
+
+        double dXdx = 0.0, dYdx = 0.0, dZdx = 0.0;
+        double dXdy = 0.0, dYdy = 0.0, dZdy = 0.0;
+        double dXdz = 0.0, dYdz = 0.0, dZdz = 0.0;
+        for ( int n = 0; n < nnodes; n++ )
+        {
+            const vismodule::Vector3f& V = m_vertices_array[n][i];
+            const double ax = m_differential_functions_array[n][i];
+            const double ay = m_differential_functions_array[nnodes + n][i];
+            const double az = m_differential_functions_array[2 * nnodes + n][i];
+            dXdx += ax * V.x();  dYdx += ax * V.y();  dZdx += ax * V.z();
+            dXdy += ay * V.x();  dYdy += ay * V.y();  dZdy += ay * V.z();
+            dXdz += az * V.x();  dYdz += az * V.y();  dZdz += az * V.z();
+        }
+
+        // calc scale factor (grad_ary() と同じ分岐なしの式)
+        double minValue = (std::numeric_limits<double>::max)();
+#define VISMODULE_CB_UPDATE_MIN_ABS( value ) \
+        do { \
+            const double abs_value = vismodule::Math::Abs( value ); \
+            if ( abs_value != 0 && abs_value < minValue ) minValue = abs_value; \
+        } while ( false )
+        VISMODULE_CB_UPDATE_MIN_ABS( dXdx );
+        VISMODULE_CB_UPDATE_MIN_ABS( dYdx );
+        VISMODULE_CB_UPDATE_MIN_ABS( dZdx );
+        VISMODULE_CB_UPDATE_MIN_ABS( dXdy );
+        VISMODULE_CB_UPDATE_MIN_ABS( dYdy );
+        VISMODULE_CB_UPDATE_MIN_ABS( dZdy );
+        VISMODULE_CB_UPDATE_MIN_ABS( dXdz );
+        VISMODULE_CB_UPDATE_MIN_ABS( dYdz );
+        VISMODULE_CB_UPDATE_MIN_ABS( dZdz );
+#undef VISMODULE_CB_UPDATE_MIN_ABS
+
+        const int order = -static_cast<int>( std::floor( std::log10( minValue ) ) );
+        const double scale_factor = std::pow( 10.0, order );
+        dXdx *= scale_factor;  dXdy *= scale_factor;  dXdz *= scale_factor;
+        dYdx *= scale_factor;  dYdy *= scale_factor;  dYdz *= scale_factor;
+        dZdx *= scale_factor;  dZdy *= scale_factor;  dZdz *= scale_factor;
+
+        /////////////////////////   inverse   /////////////////////////
+
+        const double det22[9] = {
+        dYdy * dZdz - dZdy * dYdz,
+        dXdy * dZdz - dZdy * dXdz,
+        dXdy * dYdz - dYdy * dXdz,
+        dYdx * dZdz - dZdx * dYdz,
+        dXdx * dZdz - dZdx * dXdz,
+        dXdx * dYdz - dYdx * dXdz,
+        dYdx * dZdy - dZdx * dYdy,
+        dXdx * dZdy - dZdx * dXdy,
+        dXdx * dYdy - dYdx * dXdy, };
+
+        const double det33 =
+            dXdx * (dYdy * dZdz - dZdy * dYdz)
+          - dYdx * (dXdy * dZdz - dZdy * dXdz)
+          + dZdx * (dXdy * dYdz - dYdy * dXdz);
+
+        const double determinant = det33;
+        const double det_inverse = 1.0 / det33;
+
+        const double Gx = (  det22[0] * dsdx - det22[3] * dsdy + det22[6] * dsdz ) * det_inverse * scale_factor;
+        const double Gy = ( -det22[1] * dsdx + det22[4] * dsdy - det22[7] * dsdz ) * det_inverse * scale_factor;
+        const double Gz = (  det22[2] * dsdx - det22[5] * dsdy + det22[8] * dsdz ) * det_inverse * scale_factor;
+
+        grad_array_x[i] = vismodule::Math::IsZero( determinant ) ? 0.0f : static_cast<float>( Gx );
+        grad_array_y[i] = vismodule::Math::IsZero( determinant ) ? 0.0f : static_cast<float>( Gy );
+        grad_array_z[i] = vismodule::Math::IsZero( determinant ) ? 0.0f : static_cast<float>( Gz );
+    }
 }
 
 /*===========================================================================*/

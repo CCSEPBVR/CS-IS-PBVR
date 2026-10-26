@@ -132,9 +132,9 @@ void QRDecomposer<T>::setMatrix( const Matrix33<T>& m )
     m_qt.setSize( 3, 3 ); m_qt.identity();
     m_r.setSize( 3, 3 );
     m_m.setSize( 3, 3 );
-    for ( size_t i = 0; i < 3; i++ )
+    for ( std::size_t i = 0; i < 3; i++ )
     {
-        for ( size_t j = 0; j < 3; j++ )
+        for ( std::size_t j = 0; j < 3; j++ )
         {
             m_r[i][j] = m[i][j];
             m_m[i][j] = m[i][j];
@@ -154,9 +154,9 @@ void QRDecomposer<T>::setMatrix( const vismodule::Matrix44<T>& m )
     m_qt.setSize( 4, 4 ); m_qt.identity();
     m_r.setSize( 4, 4 );
     m_m.setSize( 4, 4 );
-    for ( size_t i = 0; i < 4; i++ )
+    for ( std::size_t i = 0; i < 4; i++ )
     {
-        for ( size_t j = 0; j < 4; j++ )
+        for ( std::size_t j = 0; j < 4; j++ )
         {
             m_r[i][j] = m[i][j];
             m_m[i][j] = m[i][j];

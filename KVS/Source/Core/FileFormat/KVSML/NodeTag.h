@@ -32,8 +32,8 @@ public:
     NodeTag();
 
     bool hasNNodes() const { return m_nnodes.hasValue(); }
-    size_t nnodes() const { return m_nnodes; }
-    void setNNodes( const size_t nnodes ) { m_nnodes = nnodes; }
+    std::size_t nnodes() const { return m_nnodes; }
+    void setNNodes( const std::size_t nnodes ) { m_nnodes = nnodes; }
 
     bool read( const kvs::XMLNode::SuperClass* parent );
     bool write( kvs::XMLNode::SuperClass* parent );

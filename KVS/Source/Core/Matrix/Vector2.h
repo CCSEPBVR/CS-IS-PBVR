@@ -103,8 +103,8 @@ public:
         const std::string bracket_r ) const;
 
 public:
-    const T& operator []( const size_t index ) const;
-    T& operator []( const size_t index );
+    const T& operator []( const std::size_t index ) const;
+    T& operator []( const std::size_t index );
     Vector2& operator +=( const Vector2& rhs );
     Vector2& operator -=( const Vector2& rhs );
     Vector2& operator *=( const Vector2& rhs );
@@ -443,14 +443,14 @@ inline std::string Vector2<T>::format(
 }
 
 template<typename T>
-inline const T& Vector2<T>::operator []( const size_t index ) const
+inline const T& Vector2<T>::operator []( const std::size_t index ) const
 {
     KVS_ASSERT( index < 2 );
     return m_data[ index ];
 }
 
 template<typename T>
-inline T& Vector2<T>::operator []( const size_t index )
+inline T& Vector2<T>::operator []( const std::size_t index )
 {
     KVS_ASSERT( index < 2 );
     return m_data[ index ];

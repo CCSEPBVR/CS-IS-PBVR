@@ -44,7 +44,7 @@ VolumeObjectBase::VolumeObjectBase( void )
  */
 /*==========================================================================*/
 VolumeObjectBase::VolumeObjectBase(
-    const size_t     veclen,
+    const std::size_t     veclen,
     const Coords&    coords,
     const Values&    values )
     : pbvr::ObjectBase()
@@ -143,7 +143,7 @@ void VolumeObjectBase::setLabel( const std::string& label )
  *  Sets the vector length.
  */
 /*==========================================================================*/
-void VolumeObjectBase::setVeclen( const size_t veclen )
+void VolumeObjectBase::setVeclen( const std::size_t veclen )
 {
     m_veclen = veclen;
 }
@@ -204,7 +204,7 @@ const std::string& VolumeObjectBase::label( void ) const
  *  Returns the vector length.
  */
 /*==========================================================================*/
-const size_t VolumeObjectBase::veclen( void ) const
+const std::size_t VolumeObjectBase::veclen( void ) const
 {
     return ( m_veclen );
 }
@@ -337,7 +337,7 @@ void VolumeObjectBase::deepCopy( const VolumeObjectBase& object )
     this->m_veclen = object.veclen();
     this->m_coords.deepCopy( object.coords() );
 
-    const size_t size = object.values().size();
+    const std::size_t size = object.values().size();
     const std::type_info& type = object.values().typeInfo()->type();
     if (      type == typeid( kvs::Int8 ) )
     {

@@ -17,7 +17,7 @@
 // Default parameters.
 namespace { namespace Default
 {
-const size_t AxisWindowSize = 80;
+const std::size_t AxisWindowSize = 80;
 } }
 
 namespace

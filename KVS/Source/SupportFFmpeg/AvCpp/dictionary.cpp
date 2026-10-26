@@ -400,7 +400,7 @@ DictionaryArray::DictionaryArray(std::initializer_list<Dictionary> dicts)
     }
 }
 
-DictionaryArray::DictionaryArray(AVDictionary ** dicts, size_t count, bool takeOwning)
+DictionaryArray::DictionaryArray(AVDictionary ** dicts, std::size_t count, bool takeOwning)
 {
     assign(dicts, count, takeOwning);
 }
@@ -424,7 +424,7 @@ DictionaryArray &DictionaryArray::operator=(const DictionaryArray &rhs)
     return *this;
 }
 
-void DictionaryArray::assign(AVDictionary **dicts, size_t count, bool takeOwning)
+void DictionaryArray::assign(AVDictionary **dicts, std::size_t count, bool takeOwning)
 {
     if (m_raws.data() != dicts)
     {

@@ -28,14 +28,14 @@ class Platform : public kvs::Program
         const std::string name = kvs::Platform::Name();
         const std::string cpu = kvs::Platform::CPUName();
         const std::string byte_order = kvs::Endian::IsBig() ? "Big endian" : "Little endian";
-        const size_t ncores = kvs::SystemInformation::NumberOfProcessors();
+        const std::size_t ncores = kvs::SystemInformation::NumberOfProcessors();
 
 #if defined( KVS_PLATFORM_CPU_64 )
-        const size_t nbits = 64;
+        const std::size_t nbits = 64;
 #elif defined( KVS_PLATFORM_CPU_32 )
-        const size_t nbits = 32;
+        const std::size_t nbits = 32;
 #else
-        const size_t nbits = 0;
+        const std::size_t nbits = 0;
 #endif
 
         std::cout << "Platform   : " << name << std::endl;

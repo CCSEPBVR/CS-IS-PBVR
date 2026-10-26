@@ -30,9 +30,9 @@ namespace
  *  @return number of nodes per element
  */
 /*===========================================================================*/
-inline const size_t GetNumberOfNodesPerElement( const std::string& cell_type )
+inline const std::size_t GetNumberOfNodesPerElement( const std::string& cell_type )
 {
-    size_t nnodes = 0;
+    std::size_t nnodes = 0;
     if ( cell_type == "tetrahedra" ) nnodes = 4;
     else if ( cell_type == "quadratic tetrahedra" ) nnodes = 10;
     else if ( cell_type == "hexahedra" ) nnodes = 8;
@@ -82,10 +82,10 @@ AggregateTypeSubvolume::AggregateTypeSubvolume( const std::string& filename,
     int32_t number_elements;
     int32_t startTimestep;
     int32_t elemNodes;
-    size_t  offsetSubvol;
-    size_t  offsetTimestep;
-    size_t  offsetHalf;
-    size_t  numTotalNodes;
+    std::size_t  offsetSubvol;
+    std::size_t  offsetTimestep;
+    std::size_t  offsetHalf;
+    std::size_t  numTotalNodes;
 
     //-------------------------------------------------------------------------------------------------
     // load pfi file
@@ -180,7 +180,7 @@ AggregateTypeSubvolume::AggregateTypeSubvolume( const std::string& filename,
     FILE* fp = NULL;
     char* fname = NULL;
     int32_t flen = filename.size() + 21;
-    vismodule::ValueArray<vismodule::Int32> range( ( size_t )2 );
+    vismodule::ValueArray<vismodule::Int32> range( ( std::size_t )2 );
 
     fname = ( char* )malloc( flen );
     if ( numFiles != number_subvolumes )
@@ -390,7 +390,7 @@ const std::string AggregateTypeSubvolume::cellType() const
  *  @return vector length
  */
 /*===========================================================================*/
-const size_t AggregateTypeSubvolume::veclen() const
+const std::size_t AggregateTypeSubvolume::veclen() const
 {
     return m_vector_length;
 }
@@ -401,7 +401,7 @@ const size_t AggregateTypeSubvolume::veclen() const
  *  @return number of nodes
  */
 /*===========================================================================*/
-const size_t AggregateTypeSubvolume::nnodes() const
+const std::size_t AggregateTypeSubvolume::nnodes() const
 {
     return m_nnodes;
 }
@@ -412,7 +412,7 @@ const size_t AggregateTypeSubvolume::nnodes() const
  *  @return number of cells
  */
 /*===========================================================================*/
-const size_t AggregateTypeSubvolume::ncells() const
+const std::size_t AggregateTypeSubvolume::ncells() const
 {
     return m_ncells;
 }
@@ -467,7 +467,7 @@ void AggregateTypeSubvolume::setCellType( const std::string& cell_type )
  *  @param  veclen [in] vector length
  */
 /*===========================================================================*/
-void AggregateTypeSubvolume::setVeclen( const size_t veclen )
+void AggregateTypeSubvolume::setVeclen( const std::size_t veclen )
 {
     m_vector_length = veclen;
 }
@@ -478,7 +478,7 @@ void AggregateTypeSubvolume::setVeclen( const size_t veclen )
  *  @param  nnodes [in] number of nodes
  */
 /*===========================================================================*/
-void AggregateTypeSubvolume::setNNodes( const size_t nnodes )
+void AggregateTypeSubvolume::setNNodes( const std::size_t nnodes )
 {
     m_nnodes = nnodes;
 }
@@ -489,7 +489,7 @@ void AggregateTypeSubvolume::setNNodes( const size_t nnodes )
  *  @param  ncells [in] number of cells
  */
 /*===========================================================================*/
-void AggregateTypeSubvolume::setNCells( const size_t ncells )
+void AggregateTypeSubvolume::setNCells( const std::size_t ncells )
 {
     m_ncells = ncells;
 }

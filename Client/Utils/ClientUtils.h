@@ -124,7 +124,7 @@ inline kvs::PolygonObject* createArrowGlyph(
         const kvs::ValueArray<kvs::Real32>& sizes,
         const kvs::ValueArray<kvs::UInt8>& colors )
 {
-    const size_t npoint = coords.size() / 3;
+    const std::size_t npoint = coords.size() / 3;
     const int slices = 20;
 
     std::vector<kvs::Vec3> all_vertices;
@@ -132,7 +132,7 @@ inline kvs::PolygonObject* createArrowGlyph(
     std::vector<kvs::UInt32> all_indices;
     std::vector<kvs::UInt8> all_colors;
 
-    for( size_t i = 0, index = 0; i < npoint; i++, index += 3 )
+    for( std::size_t i = 0, index = 0; i < npoint; i++, index += 3 )
     {
         kvs::Vec3 tip_position( coords.data() + index );   // 先端位置
         kvs::Vec3 direction( directions.data() + index );
@@ -222,12 +222,12 @@ inline kvs::PolygonObject* createArrowGlyph(
         for( auto& v : vertices ) v = rotation * v + tip_position;
         for( auto& n : normals ) n = rotation * n;
 
-        size_t offset = all_vertices.size();
+        std::size_t offset = all_vertices.size();
         all_vertices.insert( all_vertices.end(), vertices.begin(), vertices.end() );
         all_normals.insert( all_normals.end(), normals.begin(), normals.end() );
         for( auto idx : indices ) all_indices.push_back( idx + offset );
 
-        for( size_t c =0; c< vertices.size(); ++c )
+        for( std::size_t c =0; c< vertices.size(); ++c )
         {
             all_colors.push_back( color.r() );
             all_colors.push_back( color.g() );

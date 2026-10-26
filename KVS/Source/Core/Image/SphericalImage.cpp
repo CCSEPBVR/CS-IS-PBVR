@@ -22,10 +22,10 @@ inline kvs::RGBColor Interp(
     KVS_ASSERT( 0.0f <= x && x <= image.width() - 1.0f );
     KVS_ASSERT( 0.0f <= y && y <= image.height() - 1.0f );
 
-    const size_t x0 = kvs::Math::Floor(x);
-    const size_t y0 = kvs::Math::Floor(y);
-    const size_t x1 = x0 + ( image.width() - 1 > x0 ? 1 : 0 );
-    const size_t y1 = y0 + ( image.height() - 1 > y0 ? 1 : 0 );
+    const std::size_t x0 = kvs::Math::Floor(x);
+    const std::size_t y0 = kvs::Math::Floor(y);
+    const std::size_t x1 = x0 + ( image.width() - 1 > x0 ? 1 : 0 );
+    const std::size_t y1 = y0 + ( image.height() - 1 > y0 ? 1 : 0 );
     const float xratio = x - x0;
     const float yratio = y - y0;
 
@@ -52,16 +52,16 @@ SphericalImage::SphericalImage( const kvs::CubicImage& cubic_image )
 
 void SphericalImage::stitch( const kvs::CubicImage& cubic_image )
 {
-    const size_t w = cubic_image.frontImage().width();
-    const size_t h = cubic_image.frontImage().height();
+    const std::size_t w = cubic_image.frontImage().width();
+    const std::size_t h = cubic_image.frontImage().height();
 
     this->create( w * 4, h * 3 );
     KVS_OMP_PARALLEL_FOR( schedule(dynamic) )
-    for ( size_t j = 0; j < this->height(); j++ )
+    for ( std::size_t j = 0; j < this->height(); j++ )
     {
         const float v = 1.0f - (float)j / ( this->height() - 1 );
         const float theta = v * (float)kvs::Math::pi;
-        for ( size_t i = 0; i < this->width(); i++ )
+        for ( std::size_t i = 0; i < this->width(); i++ )
         {
             const float u = (float)i / ( this->width() - 1 );
             const float phi = u * 2.0f * (float)kvs::Math::pi;

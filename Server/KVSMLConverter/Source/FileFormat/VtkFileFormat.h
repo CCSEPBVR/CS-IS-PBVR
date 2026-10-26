@@ -270,7 +270,7 @@ namespace detail
 {
 
 inline bool CheckExtensionImpl( const std::string& filename, const char* const file_extensions[],
-                                std::size_t n )
+                                std::size_t  n )
 {
     const kvs::File file( filename );
     auto extension = file.extension();

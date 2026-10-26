@@ -113,7 +113,7 @@ inline const std::string GetDataType( const vismodule::AnyValueArray& data_array
 template <typename T>
 inline const bool ReadInternalData(
     vismodule::AnyValueArray* data_array,
-    const size_t nelements,
+    const std::size_t nelements,
     vismodule::Tokenizer& tokenizer )
 {
     T* data = static_cast<T*>( data_array->template allocate<T>( nelements ) );
@@ -123,8 +123,8 @@ inline const bool ReadInternalData(
         return false;
     }
 
-    const size_t nloops = data_array->size();
-    for ( size_t i = 0; i < nloops; i++ )
+    const std::size_t nloops = data_array->size();
+    for ( std::size_t i = 0; i < nloops; i++ )
     {
         data[i] = static_cast<T>( atof( tokenizer.token().c_str() ) );
     }
@@ -135,7 +135,7 @@ inline const bool ReadInternalData(
 template <>
 inline const bool ReadInternalData<vismodule::Int8>(
     vismodule::AnyValueArray* data_array,
-    const size_t nelements,
+    const std::size_t nelements,
     vismodule::Tokenizer& tokenizer )
 {
     vismodule::Int8* data = static_cast<vismodule::Int8*>( data_array->allocate<vismodule::Int8>( nelements ) );
@@ -145,8 +145,8 @@ inline const bool ReadInternalData<vismodule::Int8>(
         return false;
     }
 
-    const size_t nloops = data_array->size();
-    for ( size_t i = 0; i < nloops; i++ )
+    const std::size_t nloops = data_array->size();
+    for ( std::size_t i = 0; i < nloops; i++ )
     {
         data[i] = static_cast<vismodule::Int8>( atoi( tokenizer.token().c_str() ) );
     }
@@ -157,7 +157,7 @@ inline const bool ReadInternalData<vismodule::Int8>(
 template <>
 inline const bool ReadInternalData<vismodule::UInt8>(
     vismodule::AnyValueArray* data_array,
-    const size_t nelements,
+    const std::size_t nelements,
     vismodule::Tokenizer& tokenizer )
 {
     vismodule::UInt8* data = static_cast<vismodule::UInt8*>( data_array->allocate<vismodule::UInt8>( nelements ) );
@@ -167,8 +167,8 @@ inline const bool ReadInternalData<vismodule::UInt8>(
         return false;
     }
 
-    const size_t nloops = data_array->size();
-    for ( size_t i = 0; i < nloops; i++ )
+    const std::size_t nloops = data_array->size();
+    for ( std::size_t i = 0; i < nloops; i++ )
     {
         data[i] = static_cast<vismodule::UInt8>( atoi( tokenizer.token().c_str() ) );
     }
@@ -188,7 +188,7 @@ inline const bool ReadInternalData<vismodule::UInt8>(
 template <typename T>
 inline const bool ReadInternalData(
     vismodule::ValueArray<T>* data_array,
-    const size_t nelements,
+    const std::size_t nelements,
     vismodule::Tokenizer& tokenizer )
 {
     T* data = static_cast<T*>( data_array->allocate( nelements ) );
@@ -198,8 +198,8 @@ inline const bool ReadInternalData(
         return false;
     }
 
-    const size_t nloops = data_array->size();
-    for ( size_t i = 0; i < nloops; i++ )
+    const std::size_t nloops = data_array->size();
+    for ( std::size_t i = 0; i < nloops; i++ )
     {
         data[i] = static_cast<T>( atof( tokenizer.token().c_str() ) );
     }
@@ -210,7 +210,7 @@ inline const bool ReadInternalData(
 template <>
 inline const bool ReadInternalData<vismodule::Int8>(
     vismodule::ValueArray<vismodule::Int8>* data_array,
-    const size_t nelements,
+    const std::size_t nelements,
     vismodule::Tokenizer& tokenizer )
 {
     vismodule::Int8* data = static_cast<vismodule::Int8*>( data_array->allocate( nelements ) );
@@ -220,8 +220,8 @@ inline const bool ReadInternalData<vismodule::Int8>(
         return false;
     }
 
-    const size_t nloops = data_array->size();
-    for ( size_t i = 0; i < nloops; i++ )
+    const std::size_t nloops = data_array->size();
+    for ( std::size_t i = 0; i < nloops; i++ )
     {
         data[i] = static_cast<vismodule::Int8>( atoi( tokenizer.token().c_str() ) );
     }
@@ -232,7 +232,7 @@ inline const bool ReadInternalData<vismodule::Int8>(
 template <>
 inline const bool ReadInternalData<vismodule::UInt8>(
     vismodule::ValueArray<vismodule::UInt8>* data_array,
-    const size_t nelements,
+    const std::size_t nelements,
     vismodule::Tokenizer& tokenizer )
 {
     vismodule::UInt8* data = static_cast<vismodule::UInt8*>( data_array->allocate( nelements ) );
@@ -242,8 +242,8 @@ inline const bool ReadInternalData<vismodule::UInt8>(
         return false;
     }
 
-    const size_t nloops = data_array->size();
-    for ( size_t i = 0; i < nloops; i++ )
+    const std::size_t nloops = data_array->size();
+    for ( std::size_t i = 0; i < nloops; i++ )
     {
         data[i] = static_cast<vismodule::UInt8>( atoi( tokenizer.token().c_str() ) );
     }
@@ -264,7 +264,7 @@ inline const bool ReadInternalData<vismodule::UInt8>(
 template <typename T>
 inline const bool ReadExternalData(
     vismodule::AnyValueArray* data_array,
-    const size_t nelements,
+    const std::size_t nelements,
     const std::string& filename,
     const std::string& format )
 {
@@ -283,7 +283,7 @@ inline const bool ReadExternalData(
             return false;
         }
 
-        const size_t data_size = data_array->size();
+        const std::size_t data_size = data_array->size();
         if ( fread( data_array->pointer(), sizeof( T ), data_size, ifs ) != data_size )
         {
             visModuleMessageError( "Cannot read '%s'.", filename.c_str() );
@@ -306,7 +306,7 @@ inline const bool ReadExternalData(
         }
 
         fseek( ifs, 0, SEEK_END );
-        const size_t size = ftell( ifs );
+        const std::size_t size = ftell( ifs );
 
         char* buffer = static_cast<char*>( malloc( sizeof( char ) * size ) );
         if ( !buffer )
@@ -327,7 +327,7 @@ inline const bool ReadExternalData(
 
         const char* delim = " ,\t\n";
         char* value = strtok( buffer, delim );
-        for ( size_t i = 0; i < nelements; i++ )
+        for ( std::size_t i = 0; i < nelements; i++ )
         {
             if ( value )
             {
@@ -362,7 +362,7 @@ inline const bool ReadExternalData(
 template <typename T1, typename T2>
 inline const bool ReadExternalData(
     vismodule::ValueArray<T1>* data_array,
-    const size_t nelements,
+    const std::size_t nelements,
     const std::string& filename,
     const std::string& format )
 {
@@ -383,7 +383,7 @@ inline const bool ReadExternalData(
 
         if ( typeid( T1 ) == typeid( T2 ) )
         {
-            const size_t data_size = data_array->size();
+            const std::size_t data_size = data_array->size();
             if ( fread( data_array->pointer(), sizeof( T1 ), data_size, ifs ) != data_size )
             {
                 visModuleMessageError( "Cannot read '%s'.", filename.c_str() );
@@ -393,8 +393,8 @@ inline const bool ReadExternalData(
         }
         else
         {
-            const size_t nloops = data_array->size();
-            for ( size_t i = 0; i < nloops; i++ )
+            const std::size_t nloops = data_array->size();
+            for ( std::size_t i = 0; i < nloops; i++ )
             {
                 T2 data = T2( 0 );
                 if ( fread( &data, sizeof( T2 ), 1, ifs ) != 1 )
@@ -421,7 +421,7 @@ inline const bool ReadExternalData(
         }
 
         fseek( ifs, 0, SEEK_END );
-        const size_t size = ftell( ifs );
+        const std::size_t size = ftell( ifs );
 
         char* buffer = static_cast<char*>( malloc( sizeof( char ) * size ) );
         if ( !buffer )
@@ -442,7 +442,7 @@ inline const bool ReadExternalData(
 
         const char* delim = " ,\t\n";
         char* value = strtok( buffer, delim );
-        for ( size_t i = 0; i < nelements; i++ )
+        for ( std::size_t i = 0; i < nelements; i++ )
         {
             if ( value )
             {
@@ -489,46 +489,46 @@ inline const bool WriteExternalData(
 
         const std::string delim( ", " );
         const std::type_info& data_type = data_array.typeInfo()->type();
-        const size_t data_size = data_array.size();
+        const std::size_t data_size = data_array.size();
         if ( data_type == typeid( vismodule::Int8 ) )
         {
             const vismodule::Int8* values = data_array.pointer<vismodule::Int8>();
-            for ( size_t i = 0; i < data_size; i++ ) ofs << vismodule::Int16( values[i] ) << delim;
+            for ( std::size_t i = 0; i < data_size; i++ ) ofs << vismodule::Int16( values[i] ) << delim;
         }
         else if ( data_type == typeid( vismodule::UInt8 ) )
         {
             const vismodule::UInt8* values = data_array.pointer<vismodule::UInt8>();
-            for ( size_t i = 0; i < data_size; i++ ) ofs << vismodule::UInt16( values[i] ) << delim;
+            for ( std::size_t i = 0; i < data_size; i++ ) ofs << vismodule::UInt16( values[i] ) << delim;
         }
         else if ( data_type == typeid( vismodule::Int16 ) )
         {
             const vismodule::Int16* values = data_array.pointer<vismodule::Int16>();
-            for ( size_t i = 0; i < data_size; i++ ) ofs << values[i] << delim;
+            for ( std::size_t i = 0; i < data_size; i++ ) ofs << values[i] << delim;
         }
         else if ( data_type == typeid( vismodule::UInt16 ) )
         {
             const vismodule::UInt16* values = data_array.pointer<vismodule::UInt16>();
-            for ( size_t i = 0; i < data_size; i++ ) ofs << values[i] << delim;
+            for ( std::size_t i = 0; i < data_size; i++ ) ofs << values[i] << delim;
         }
         else if ( data_type == typeid( vismodule::Int32 ) )
         {
             const vismodule::Int32* values = data_array.pointer<vismodule::Int32>();
-            for ( size_t i = 0; i < data_size; i++ ) ofs << values[i] << delim;
+            for ( std::size_t i = 0; i < data_size; i++ ) ofs << values[i] << delim;
         }
         else if ( data_type == typeid( vismodule::UInt32 ) )
         {
             const vismodule::UInt32* values = data_array.pointer<vismodule::UInt32>();
-            for ( size_t i = 0; i < data_size; i++ ) ofs << values[i] << delim;
+            for ( std::size_t i = 0; i < data_size; i++ ) ofs << values[i] << delim;
         }
         else if ( data_type == typeid( vismodule::Real32 ) )
         {
             const vismodule::Real32* values = data_array.pointer<vismodule::Real32>();
-            for ( size_t i = 0; i < data_size; i++ ) ofs << values[i] << delim;
+            for ( std::size_t i = 0; i < data_size; i++ ) ofs << values[i] << delim;
         }
         else if ( data_type == typeid( vismodule::Real64 ) )
         {
             const vismodule::Real64* values = data_array.pointer<vismodule::Real64>();
-            for ( size_t i = 0; i < data_size; i++ ) ofs << values[i] << delim;
+            for ( std::size_t i = 0; i < data_size; i++ ) ofs << values[i] << delim;
         }
 
         ofs.close();
@@ -542,7 +542,7 @@ inline const bool WriteExternalData(
             return false;
         }
         const void* data_pointer = data_array.pointer();
-        const size_t data_byte_size = data_array.byteSize();
+        const std::size_t data_byte_size = data_array.byteSize();
         ofs.write( static_cast<const char*>( data_pointer ), data_byte_size );
         ofs.close();
     }
@@ -580,14 +580,14 @@ inline const bool WriteExternalData(
         }
 
         const std::string delim( ", " );
-        const size_t data_size = data_array.size();
+        const std::size_t data_size = data_array.size();
         if ( typeid( T ) == typeid( vismodule::Int8 ) || typeid( T ) == typeid( vismodule::UInt8 ) )
         {
-            for ( size_t i = 0; i < data_size; i++ ) ofs << int( data_array.at( i ) ) << delim;
+            for ( std::size_t i = 0; i < data_size; i++ ) ofs << int( data_array.at( i ) ) << delim;
         }
         else
         {
-            for ( size_t i = 0; i < data_size; i++ ) ofs << data_array.at( i ) << delim;
+            for ( std::size_t i = 0; i < data_size; i++ ) ofs << data_array.at( i ) << delim;
         }
 
         ofs.close();
@@ -601,7 +601,7 @@ inline const bool WriteExternalData(
             return false;
         }
         const char* data_pointer = reinterpret_cast<const char*>( data_array.pointer() );
-        const size_t data_byte_size = data_array.byteSize();
+        const std::size_t data_byte_size = data_array.byteSize();
         ofs.write( data_pointer, data_byte_size );
         ofs.close();
     }

@@ -178,7 +178,7 @@ kvs::AVSUcd* UnstructuredVolumeExporter<kvs::AVSUcd>::exec(
     std::vector<std::string> component_names; component_names.push_back( "value" );
     std::vector<std::string> component_units; component_units.push_back( "unit" );
     kvs::ValueArray<kvs::Real32> values( volume->values().size() );
-    for ( size_t i = 0; i < values.size(); i++ )
+    for ( std::size_t i = 0; i < values.size(); i++ )
     {
         values[i] = volume->values()[i].to<kvs::Real32>();
     }

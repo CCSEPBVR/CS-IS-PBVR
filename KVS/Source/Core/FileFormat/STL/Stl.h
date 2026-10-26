@@ -56,7 +56,7 @@ public:
     FileType fileType() const { return m_file_type; }
     const kvs::ValueArray<kvs::Real32>& normals() const { return m_normals; }
     const kvs::ValueArray<kvs::Real32>& coords() const { return m_coords; }
-    size_t numberOfTriangles() const { return m_normals.size() / 3; }
+    std::size_t numberOfTriangles() const { return m_normals.size() / 3; }
 
     void setFileType( const FileType file_type ) { m_file_type = file_type; }
     void setNormals( const kvs::ValueArray<kvs::Real32>& normals ) { m_normals = normals; }
@@ -75,7 +75,7 @@ private:
     bool write_binary( FILE* ifs );
 
 public:
-    KVS_DEPRECATED( size_t ntriangles() const ) { return this->numberOfTriangles(); }
+    KVS_DEPRECATED( std::size_t ntriangles() const ) { return this->numberOfTriangles(); }
 };
 
 } // end of namespace kvs

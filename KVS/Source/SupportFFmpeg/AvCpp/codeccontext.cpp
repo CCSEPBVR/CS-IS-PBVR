@@ -183,12 +183,12 @@ VideoFrame VideoDecoderContext::decode(const Packet &packet, OptionalErrorCode e
     return decodeVideo(ec, packet, 0, nullptr, autoAllocateFrame);
 }
 
-VideoFrame VideoDecoderContext::decode(const Packet &packet, size_t offset, size_t &decodedBytes, OptionalErrorCode ec, bool autoAllocateFrame)
+VideoFrame VideoDecoderContext::decode(const Packet &packet, std::size_t offset, std::size_t &decodedBytes, OptionalErrorCode ec, bool autoAllocateFrame)
 {
     return decodeVideo(ec, packet, offset, &decodedBytes, autoAllocateFrame);
 }
 
-VideoFrame VideoDecoderContext::decodeVideo(OptionalErrorCode ec, const Packet &packet, size_t offset, size_t *decodedBytes, bool autoAllocateFrame)
+VideoFrame VideoDecoderContext::decodeVideo(OptionalErrorCode ec, const Packet &packet, std::size_t offset, std::size_t *decodedBytes, bool autoAllocateFrame)
 {
     clear_if(ec);
 
@@ -756,7 +756,7 @@ void CodecContext2::open(const Codec &codec, AVDictionary **options, OptionalErr
         throws_if(ec, stat, ffmpeg_category());
 }
 
-std::pair<int, const error_category *> CodecContext2::decodeCommon(AVFrame *outFrame, const Packet &inPacket, size_t offset, int &frameFinished, int (*decodeProc)(AVCodecContext *, AVFrame *, int *, const AVPacket *)) noexcept
+std::pair<int, const error_category *> CodecContext2::decodeCommon(AVFrame *outFrame, const Packet &inPacket, std::size_t offset, int &frameFinished, int (*decodeProc)(AVCodecContext *, AVFrame *, int *, const AVPacket *)) noexcept
 {
     if (!isValid())
         return make_error_pair(Errors::CodecInvalid);
@@ -819,7 +819,7 @@ AudioSamples AudioDecoderContext::decode(const Packet &inPacket, OptionalErrorCo
     return decode(inPacket, 0u, ec);
 }
 
-AudioSamples AudioDecoderContext::decode(const Packet &inPacket, size_t offset, OptionalErrorCode ec)
+AudioSamples AudioDecoderContext::decode(const Packet &inPacket, std::size_t offset, OptionalErrorCode ec)
 {
     clear_if(ec);
 
@@ -887,7 +887,7 @@ template<typename T>
 std::pair<int, const std::error_category*>
 CodecContext2::decodeCommon(T &outFrame,
              const Packet &inPacket,
-             size_t offset,
+             std::size_t offset,
              int &frameFinished,
              int (*decodeProc)(AVCodecContext *, AVFrame *, int *, const AVPacket *))
 {

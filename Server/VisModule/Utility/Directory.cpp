@@ -280,7 +280,7 @@ const bool Directory::parse( const std::string& directory_path )
 
     const std::string absolute_directory_path =
         ::GetAbsolutePath( directory_path );
-    const size_t last_sep_pos =
+    const std::size_t last_sep_pos =
         absolute_directory_path.find_last_of( Directory::Separator() );
 
     m_directory_name = absolute_directory_path.substr( last_sep_pos + 1 );

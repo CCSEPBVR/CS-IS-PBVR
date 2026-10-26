@@ -128,14 +128,14 @@ class Support : public kvs::Program
         }
 #endif
 
-        size_t length = libraries[0].size();
-        const size_t nlibraries = libraries.size();
-        for ( size_t i = 0; i < nlibraries; i++ )
+        std::size_t length = libraries[0].size();
+        const std::size_t nlibraries = libraries.size();
+        for ( std::size_t i = 0; i < nlibraries; i++ )
         {
             length = kvs::Math::Max( length, libraries[i].size() );
         }
 
-        for ( size_t i = 0; i < nlibraries; i++ )
+        for ( std::size_t i = 0; i < nlibraries; i++ )
         {
             std::cout
                 << std::left << std::setw( length + 1 )

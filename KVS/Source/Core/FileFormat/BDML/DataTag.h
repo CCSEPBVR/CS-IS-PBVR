@@ -40,7 +40,7 @@ public:
     const ScaleUnitTag& scaleUnit() const { return m_scale_unit; }
     const FeatureTag& feature() const { return m_feature; }
     const std::vector<ComponentTag>& components() const { return m_components; }
-    const ComponentTag& component( const size_t index ) const { return m_components[index]; }
+    const ComponentTag& component( const std::size_t index ) const { return m_components[index]; }
 
     void print( std::ostream& os, const kvs::Indent& indent = kvs::Indent(0) ) const;
     bool read( const Node* parent );

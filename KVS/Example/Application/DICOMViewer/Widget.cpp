@@ -61,7 +61,7 @@ void CounterLabel::screenUpdated()
 void CounterLabel::screenResized()
 {
     // Anchor at the top-right on the screen.
-    const size_t width = static_cast<kvs::Screen*>(screen())->scene()->camera()->windowWidth();
+    const std::size_t width = static_cast<kvs::Screen*>(screen())->scene()->camera()->windowWidth();
     setX( width - 100 );
     setY( 10 );
 }
@@ -168,8 +168,8 @@ void ImageInfoLabel::screenUpdated()
 void ImageInfoLabel::screenResized()
 {
     // Anchor at the bottom-left on the screen.
-    const size_t character_height = 12;
-    const size_t height = static_cast<kvs::Screen*>(screen())->scene()->camera()->windowHeight();
+    const std::size_t character_height = 12;
+    const std::size_t height = static_cast<kvs::Screen*>(screen())->scene()->camera()->windowHeight();
     setX( 10 );
     setY( height - 19 * character_height - 10 );
 }

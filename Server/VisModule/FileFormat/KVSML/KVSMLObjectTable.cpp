@@ -90,7 +90,7 @@ const vismodule::kvsml::ObjectTag& KVSMLObjectTable::objectTag( void ) const
  *  @return number of rows
  */
 /*===========================================================================*/
-const size_t KVSMLObjectTable::nrows( void ) const
+const std::size_t KVSMLObjectTable::nrows( void ) const
 {
     return( m_nrows );
 }
@@ -101,7 +101,7 @@ const size_t KVSMLObjectTable::nrows( void ) const
  *  @return number of columns
  */
 /*===========================================================================*/
-const size_t KVSMLObjectTable::ncolumns( void ) const
+const std::size_t KVSMLObjectTable::ncolumns( void ) const
 {
     return( m_ncolumns );
 }
@@ -196,7 +196,7 @@ void KVSMLObjectTable::setFilename( const std::string& filename )
  *  @param  value [in] min. value
  */
 /*===========================================================================*/
-void KVSMLObjectTable::setMinValue( const size_t column_index, const double value )
+void KVSMLObjectTable::setMinValue( const std::size_t column_index, const double value )
 {
     m_has_min_values[column_index] = true;
     m_min_values[column_index] = value;
@@ -208,7 +208,7 @@ void KVSMLObjectTable::setMinValue( const size_t column_index, const double valu
  *  @param  value [in] max. value
  */
 /*===========================================================================*/
-void KVSMLObjectTable::setMaxValue( const size_t column_index, const double value )
+void KVSMLObjectTable::setMaxValue( const std::size_t column_index, const double value )
 {
     m_has_max_values[column_index] = true;
     m_max_values[column_index] = value;
@@ -220,7 +220,7 @@ void KVSMLObjectTable::setMaxValue( const size_t column_index, const double valu
  *  @param  value [in] min. range
  */
 /*===========================================================================*/
-void KVSMLObjectTable::setMinRange( const size_t column_index, const double range )
+void KVSMLObjectTable::setMinRange( const std::size_t column_index, const double range )
 {
     m_has_min_ranges[column_index] = true;
     m_min_ranges[column_index] = range;
@@ -232,7 +232,7 @@ void KVSMLObjectTable::setMinRange( const size_t column_index, const double rang
  *  @param  value [in] max. range
  */
 /*===========================================================================*/
-void KVSMLObjectTable::setMaxRange( const size_t column_index, const double range )
+void KVSMLObjectTable::setMaxRange( const std::size_t column_index, const double range )
 {
     m_has_max_ranges[column_index] = true;
     m_max_ranges[column_index] = range;
@@ -301,7 +301,7 @@ const bool KVSMLObjectTable::read( const std::string& filename )
     // <Column>
     vismodule::kvsml::ColumnTag column_tag;
     vismodule::XMLNode::SuperClass* node = vismodule::XMLNode::FindChildNode( table_object_tag.node(), column_tag.name() );
-    size_t counter = 0;
+    std::size_t counter = 0;
     while ( node )
     {
         column_tag.read( vismodule::XMLNode::ToElement( node ) );
@@ -377,7 +377,7 @@ const bool KVSMLObjectTable::write( const std::string& filename )
         return( false );
     }
 
-    for ( size_t i = 0; i < m_ncolumns; i++ )
+    for ( std::size_t i = 0; i < m_ncolumns; i++ )
     {
         // <Column label="xxx" min_value="xxx" max_value="xxx" min_range="xxx" max_range="xxx">
         vismodule::kvsml::ColumnTag column_tag;
@@ -481,7 +481,7 @@ std::ostream& operator <<( std::ostream& os, const KVSMLObjectTable& rhs )
     os << "Num. of rows: " << rhs.m_nrows << std::endl;
     os << "Num. of columns: " << rhs.m_ncolumns << std::endl;
 
-    for ( size_t i = 0; i < rhs.m_ncolumns; i++ )
+    for ( std::size_t i = 0; i < rhs.m_ncolumns; i++ )
     {
         os << "Column[" << i << "] label: " << rhs.m_labels.at(i);
         if ( i < rhs.m_ncolumns - 1 ) os << std::endl;

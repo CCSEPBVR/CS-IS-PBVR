@@ -79,9 +79,9 @@ UnstructuredVolumeObject::UnstructuredVolumeObject():
 /*==========================================================================*/
 UnstructuredVolumeObject::UnstructuredVolumeObject(
     const CellType     cell_type,
-    const size_t       nnodes,
-    const size_t       ncells,
-    const size_t       veclen,
+    const std::size_t       nnodes,
+    const std::size_t       ncells,
+    const std::size_t       veclen,
     const Coords&      coords,
     const Connections& connections,
     const Values&      values ):
@@ -211,7 +211,7 @@ void UnstructuredVolumeObject::setCellType( const CellType& cell_type )
  *  @param nnodes [in] number of nodes
  */
 /*==========================================================================*/
-void UnstructuredVolumeObject::setNNodes( const size_t nnodes )
+void UnstructuredVolumeObject::setNNodes( const std::size_t nnodes )
 {
     m_nnodes = nnodes;
 }
@@ -222,7 +222,7 @@ void UnstructuredVolumeObject::setNNodes( const size_t nnodes )
  *  @param ncells [in] number of cells
  */
 /*==========================================================================*/
-void UnstructuredVolumeObject::setNCells( const size_t ncells )
+void UnstructuredVolumeObject::setNCells( const std::size_t ncells )
 {
     m_ncells = ncells;
 }
@@ -274,7 +274,7 @@ const UnstructuredVolumeObject::CellType UnstructuredVolumeObject::cellType() co
  *  @return number of nodes
  */
 /*==========================================================================*/
-const size_t UnstructuredVolumeObject::nnodes() const
+const std::size_t UnstructuredVolumeObject::nnodes() const
 {
     return m_nnodes;
 }
@@ -285,7 +285,7 @@ const size_t UnstructuredVolumeObject::nnodes() const
  *  @return number of cells
  */
 /*==========================================================================*/
-const size_t UnstructuredVolumeObject::ncells() const
+const std::size_t UnstructuredVolumeObject::ncells() const
 {
     return m_ncells;
 }

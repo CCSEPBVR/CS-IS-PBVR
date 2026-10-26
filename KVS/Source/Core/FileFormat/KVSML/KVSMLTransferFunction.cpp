@@ -224,7 +224,7 @@ bool KVSMLTransferFunction::read( const std::string& filename )
             // <DataArray> for <ColorMap>
             else
             {
-                const size_t colors_nelements = m_resolution * 3;
+                const std::size_t colors_nelements = m_resolution * 3;
                 kvs::kvsml::DataArrayTag colors;
                 if ( !colors.read( color_map_tag.node(), colors_nelements, &m_colors ) )
                 {
@@ -262,7 +262,7 @@ bool KVSMLTransferFunction::read( const std::string& filename )
             else
             {
                 // <DataArray> for <OpacityMap>
-                const size_t opacities_nelements = m_resolution;
+                const std::size_t opacities_nelements = m_resolution;
                 kvs::kvsml::DataArrayTag opacities;
                 if ( !opacities.read( opacity_map_tag.node(), opacities_nelements, &m_opacities ) )
                 {
@@ -316,8 +316,8 @@ bool KVSMLTransferFunction::read( const std::string& filename )
                 m_opacities.allocate( m_resolution );
                 m_colors.allocate( m_resolution * 3 );
 
-                const size_t nloops = m_resolution;
-                for ( size_t i = 0, i3 = 0; i < nloops; i++, i3 += 3 )
+                const std::size_t nloops = m_resolution;
+                for ( std::size_t i = 0, i3 = 0; i < nloops; i++, i3 += 3 )
                 {
                     m_opacities[ i ] = static_cast<kvs::Real32>( atof( t.token().c_str() ) );
                     m_colors[ i3 ] = static_cast<kvs::UInt8>( atoi( t.token().c_str() ) );
@@ -349,7 +349,7 @@ bool KVSMLTransferFunction::read( const std::string& filename )
                 kvs::UInt8 r = 0;
                 kvs::UInt8 g = 0;
                 kvs::UInt8 b = 0;
-                for ( size_t i = 0, i3 = 0; i < m_resolution; i++, i3 += 3 )
+                for ( std::size_t i = 0, i3 = 0; i < m_resolution; i++, i3 += 3 )
                 {
                     ifs >> a >> r >> g >> b;
                     m_opacities[ i ] = a;

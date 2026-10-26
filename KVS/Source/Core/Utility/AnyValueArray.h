@@ -116,11 +116,11 @@ public:
 
 private:
     char* m_ptr = nullptr;
-    size_t m_size_of_value = 0;
+    std::size_t m_size_of_value = 0;
     kvs::Type::TypeID m_id = kvs::Type::UnknownType;
 
 public:
-    AnyValueArrayIterator( void* ptr, size_t size_of_value, kvs::Type::TypeID id )
+    AnyValueArrayIterator( void* ptr, std::size_t size_of_value, kvs::Type::TypeID id )
     {
         m_ptr = static_cast<char*>( ptr );
         m_size_of_value = size_of_value;
@@ -246,8 +246,8 @@ public:
 
 private:
     kvs::SharedPointer<void> m_values{}; ///< value array
-    size_t m_size_of_value = 0; ///< byte size of a value
-    size_t m_size = 0; ///< number of values
+    std::size_t m_size_of_value = 0; ///< byte size of a value
+    std::size_t m_size = 0; ///< number of values
     kvs::Type::TypeID m_type_id = kvs::Type::UnknownType;
     TypeInfo m_type_info{};
 
@@ -282,12 +282,12 @@ public:
     }
 
 public:
-    size_t size() const
+    std::size_t size() const
     {
         return m_size;
     }
 
-    size_t byteSize() const
+    std::size_t byteSize() const
     {
         return this->size() * m_size_of_value;
     }
@@ -325,14 +325,14 @@ public:
 
     bool unique() const;
 
-    const value_type operator []( size_t index ) const
+    const value_type operator []( std::size_t index ) const
     {
         const void* ptr = static_cast<const char*>( this->data() ) + m_size_of_value * index;
         return value_type( ptr, this->typeID() );
     }
 
     template<typename T>
-    T at( const size_t index ) const
+    T at( const std::size_t index ) const
     {
         KVS_STATIC_ASSERT( is_supported<T>::value, "not supported" );
         return ( *this )[ index ].to<T>();
@@ -343,7 +343,7 @@ public:
     const TypeInfo* typeInfo() const { return &m_type_info; }
 
     template<typename T>
-    void allocate( const size_t size )
+    void allocate( const std::size_t size )
     {
         *this = AnyValueArray( kvs::ValueArray<T>( size ) );
     }

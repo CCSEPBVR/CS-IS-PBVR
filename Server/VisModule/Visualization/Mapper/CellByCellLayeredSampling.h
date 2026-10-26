@@ -47,14 +47,14 @@ protected:
 
     struct SelectedParticles
     {
-        size_t nparticles; ///< number of selected particles
+        std::size_t nparticles; ///< number of selected particles
         vismodule::ValueArray<vismodule::UInt32> indices; ///< index array of the selected particles
     };
 
 private:
 
     const vismodule::Camera*     m_camera;         ///< camera (reference)
-    size_t                 m_subpixel_level; ///< subpixel level
+    std::size_t                 m_subpixel_level; ///< subpixel level
     float                  m_sampling_step;  ///< sampling step in the object coordinate
     float                  m_object_depth;   ///< object depth
     vismodule::ValueArray<float> m_density_map;    ///< density map
@@ -70,7 +70,7 @@ public:
 
     CellByCellLayeredSampling(
         const vismodule::VolumeObjectBase& volume,
-        const size_t                 subpixel_level,
+        const std::size_t                 subpixel_level,
         const float                  sampling_step,
         const vismodule::TransferFunction& transfer_function,
         const float                  object_depth = 0.0f );
@@ -78,7 +78,7 @@ public:
     CellByCellLayeredSampling(
         const vismodule::Camera*           camera,
         const vismodule::VolumeObjectBase& volume,
-        const size_t                 subpixel_level,
+        const std::size_t                 subpixel_level,
         const float                  sampling_step,
         const vismodule::TransferFunction& transfer_function,
         const float                  object_depth = 0.0f );
@@ -91,7 +91,7 @@ public:
 
 public:
 
-    const size_t subpixelLevel( void ) const;
+    const std::size_t subpixelLevel( void ) const;
 
     const float samplingStep( void ) const;
 
@@ -99,7 +99,7 @@ public:
 
     void attachCamera( const vismodule::Camera* camera );
 
-    void setSubpixelLevel( const size_t subpixel_level );
+    void setSubpixelLevel( const std::size_t subpixel_level );
 
     void setSamplingStep( const float sampling_step );
 
@@ -112,13 +112,13 @@ private:
     template <typename T>
     void generate_particles( const vismodule::UnstructuredVolumeObject& volume );
 
-    void pregenerate_particles( const size_t nparticles );
+    void pregenerate_particles( const std::size_t nparticles );
 
     template <typename T>
     void uniform_sampling(
         const vismodule::TetrahedralCell<T>* cell,
         const vismodule::TransferFunction& tfunc,
-        const size_t nparticles,
+        const std::size_t nparticles,
         std::vector<vismodule::Real32>* coords,
         std::vector<vismodule::UInt8>*  colors,
         std::vector<vismodule::Real32>* normals );
@@ -127,7 +127,7 @@ private:
     void rejection_sampling(
         const vismodule::TetrahedralCell<T>* cell,
         const vismodule::TransferFunction& tfunc,
-        const size_t nparticles,
+        const std::size_t nparticles,
         std::vector<vismodule::Real32>* coords,
         std::vector<vismodule::UInt8>*  colors,
         std::vector<vismodule::Real32>* normals );
@@ -136,7 +136,7 @@ private:
     void roulette_selection(
         const vismodule::TetrahedralCell<T>* cell,
         const vismodule::TransferFunction& tfunc,
-        const size_t nparticles,
+        const std::size_t nparticles,
         std::vector<vismodule::Real32>* coords,
         std::vector<vismodule::UInt8>*  colors,
         std::vector<vismodule::Real32>* normals );
@@ -146,9 +146,9 @@ private:
     const float calculate_maximum_density( const float scalar0, const float scalar1 );
 
     template <typename T>
-    const size_t calculate_number_of_particles( const float density, const vismodule::TetrahedralCell<T>* cell );
+    const std::size_t calculate_number_of_particles( const float density, const vismodule::TetrahedralCell<T>* cell );
 
-    const size_t calculate_number_of_particles( const size_t nparticles_in_cell );
+    const std::size_t calculate_number_of_particles( const std::size_t nparticles_in_cell );
 
     template <typename T>
     void calculate_particles_in_cell(

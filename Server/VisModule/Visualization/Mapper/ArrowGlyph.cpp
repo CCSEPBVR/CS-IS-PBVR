@@ -35,14 +35,14 @@ const vismodule::UInt32 LineConnections[6] =
 const vismodule::Vector3f ConeTranslation = vismodule::Vector3f( 0.0f, 0.0f, 0.7f );
 const vismodule::Real32 ConeHeight = 0.3f;
 const vismodule::Real32 ConeRadius = 0.15f;
-const size_t ConeSlices = 20;
-const size_t ConeStacks = 5;
+const std::size_t ConeSlices = 20;
+const std::size_t ConeStacks = 5;
 
 const vismodule::Vector3f CylinderTranslation = vismodule::Vector3f( 0.0f, 0.0f, 0.0f );
 const vismodule::Real32 CylinderHeight = 0.7f;
 const vismodule::Real32 CylinderRadius = 0.07f;
-const size_t CylinderSlices = 20;
-const size_t CylinderStacks = 2;
+const std::size_t CylinderSlices = 20;
+const std::size_t CylinderStacks = 2;
 
 }; // end of namespace
 
@@ -261,11 +261,11 @@ void ArrowGlyph::draw( void )
 /*===========================================================================*/
 void ArrowGlyph::draw_lines( void )
 {
-    const size_t npoints = BaseClass::coords().size() / 3;
+    const std::size_t npoints = BaseClass::coords().size() / 3;
 
     if ( BaseClass::directions().size() == 0 )
     {
-        for ( size_t i = 0, index = 0; i < npoints; i++, index += 3 )
+        for ( std::size_t i = 0, index = 0; i < npoints; i++, index += 3 )
         {
             const vismodule::Vector3f position( BaseClass::coords().pointer() + index );
             const vismodule::Real32 size = BaseClass::sizes().at(i);
@@ -281,7 +281,7 @@ void ArrowGlyph::draw_lines( void )
     }
     else
     {
-        for( size_t i = 0, index = 0; i < npoints; i++, index += 3 )
+        for( std::size_t i = 0, index = 0; i < npoints; i++, index += 3 )
         {
             const vismodule::Vector3f position( BaseClass::m_coords.pointer() + index );
             const vismodule::Vector3f direction( BaseClass::m_directions.pointer() + index );
@@ -305,11 +305,11 @@ void ArrowGlyph::draw_lines( void )
 /*===========================================================================*/
 void ArrowGlyph::draw_tubes( void )
 {
-    const size_t npoints = BaseClass::coords().size() / 3;
+    const std::size_t npoints = BaseClass::coords().size() / 3;
 
     if ( BaseClass::directions().size() == 0 )
     {
-        for ( size_t i = 0, index = 0; i < npoints; i++, index += 3 )
+        for ( std::size_t i = 0, index = 0; i < npoints; i++, index += 3 )
         {
             const vismodule::Vector3f position( BaseClass::coords().pointer() + index );
             const vismodule::Real32 size = BaseClass::sizes().at(i);
@@ -325,7 +325,7 @@ void ArrowGlyph::draw_tubes( void )
     }
     else
     {
-        for( size_t i = 0, index = 0; i < npoints; i++, index += 3 )
+        for( std::size_t i = 0, index = 0; i < npoints; i++, index += 3 )
         {
             const vismodule::Vector3f position( BaseClass::m_coords.pointer() + index );
             const vismodule::Vector3f direction( BaseClass::m_directions.pointer() + index );
@@ -354,7 +354,7 @@ void ArrowGlyph::draw_line_element( const vismodule::RGBColor& color, const vism
     glColor4ub( color.r(), color.g(), color.b(), opacity );
 
     glBegin( GL_LINES );
-    for ( size_t i = 0; i < 6; i++ )
+    for ( std::size_t i = 0; i < 6; i++ )
     {
         const vismodule::Real32* vertex = ::LineVertices + ::LineConnections[i] * 3;
         glVertex3fv( vertex );

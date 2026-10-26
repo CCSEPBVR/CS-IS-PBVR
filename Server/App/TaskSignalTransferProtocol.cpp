@@ -30,7 +30,7 @@ void SendInitialStepSignal( const std::string& volume_data_file_path,
     MPI_Bcast( &size, 1, MPI_INT, 0, MPI_COMM_WORLD );
 #endif
 
-    size_t index = 0;
+    std::size_t index = 0;
     char* buf;
     buf = new char[size];
     
@@ -92,7 +92,7 @@ void SendGenerateObjectSignal( const TaskSignal task_signal, const std::string& 
     MPI_Bcast( &size, 1, MPI_INT, 0, MPI_COMM_WORLD );
 #endif
 
-    size_t index = 0;
+    std::size_t index = 0;
     char* buf;
     buf = new char[size];
     
@@ -170,7 +170,7 @@ void ReceiveInitialStepSignal( const char* buf, std::string& volume_data_file_pa
                                std::vector<std::string>& slac_mode_file_paths,
                                std::vector<std::string>& primary_step_file_paths )
 {
-    size_t index = 0;
+    std::size_t index = 0;
     int64_t tmp_char_size;
     char* tmp_char = NULL;
     TaskSignal tmp_task_signal;
@@ -222,7 +222,7 @@ void ReceiveInitialStepSignal( const char* buf, std::string& volume_data_file_pa
 
 void ReceiveGenerateObjectSignal( const char* buf, std::string& volume_data_file_path, int& time_step )
 {
-    size_t index = 0;
+    std::size_t index = 0;
     int64_t tmp_char_size;
     char* tmp_char = NULL;
     TaskSignal task_signal;

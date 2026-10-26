@@ -43,7 +43,7 @@ protected:
 
 protected:
 
-    static size_t m_max_iterations; ///< maximum number of iterations
+    static std::size_t m_max_iterations; ///< maximum number of iterations
 
 public:
 
@@ -87,7 +87,7 @@ public:
 
 public:
 
-    static void SetMaxIterations( const size_t max_iterations );
+    static void SetMaxIterations( const std::size_t max_iterations );
 
 private:
 

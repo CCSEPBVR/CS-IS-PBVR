@@ -219,11 +219,11 @@ void DiamondGlyph::draw( void )
     this->initialize();
     BaseClass::applyMaterial();
 
-    const size_t npoints = BaseClass::m_coords.size() / 3;
+    const std::size_t npoints = BaseClass::m_coords.size() / 3;
 
     if ( BaseClass::m_directions.size() == 0 )
     {
-        for ( size_t i = 0, index = 0; i < npoints; i++, index += 3 )
+        for ( std::size_t i = 0, index = 0; i < npoints; i++, index += 3 )
         {
             const vismodule::Vector3f position( BaseClass::m_coords.pointer() + index );
             const vismodule::Real32 size = BaseClass::m_sizes[i];
@@ -239,7 +239,7 @@ void DiamondGlyph::draw( void )
     }
     else
     {
-        for( size_t i = 0, index = 0; i < npoints; i++, index += 3 )
+        for( std::size_t i = 0, index = 0; i < npoints; i++, index += 3 )
         {
             const vismodule::Vector3f position( BaseClass::m_coords.pointer() + index );
             const vismodule::Vector3f direction( BaseClass::m_directions.pointer() + index );
@@ -269,7 +269,7 @@ void DiamondGlyph::draw_element( const vismodule::RGBColor& color, const vismodu
 
     glBegin( GL_TRIANGLES );
     {
-        for( size_t i = 0, index = 0; i < 8; i++, index += 3 )
+        for( std::size_t i = 0, index = 0; i < 8; i++, index += 3 )
         {
             const vismodule::UInt32 offset0 = ::Connections[index] * 3;
             const vismodule::UInt32 offset1 = ::Connections[index+1] * 3;

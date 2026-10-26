@@ -31,8 +31,9 @@ MainWindow::MainWindow( kvs::qt::Application& app, QWidget *parent )
     , m_plot_over_time_editor          ( new PlotOverTimeEditor( m_screen, m_web_sockets, this ) )
     , m_point_size_control             ( new PointSizeControl( m_screen, this ) )
     , m_preference                     ( new Preference( this ) )
-    , m_repetition_level_control       ( new RepetitionLevelControl( m_screen, m_compositor, this ) )
+    , m_repetition_level_control       ( new RepetitionLevelControl( m_screen, m_compositor, m_web_sockets, m_viz_mode, this ) )
     , m_shading_control                ( new ShadingControl( m_screen, this ) )
+    , m_ensemble_transfer_function_editor( new EnsembleTransferFunctionEditor( m_web_sockets, this ) )
     , m_transfer_function_editor       ( new TransferFunctionEditor( m_web_sockets, this ) )
     , m_volume_transform               ( new VolumeTransform( m_screen, this ) )
 {
@@ -136,6 +137,7 @@ MainWindow::MainWindow( kvs::qt::Application& app, QWidget *parent )
     initializePreference();
     initializeRepetitionLevelControl();
     initializeShadingControl();
+    initializeEnsembleTransferFunctionEditor();
     initializeTransferFunctionEditor();
     initializeVolumeTransform();
 
@@ -248,6 +250,11 @@ void MainWindow::onUpdateServerState( bool serverState )
         m_plot_over_time_editor_action->setEnabled( serverState );
         m_plot_over_time_editor->reset();
     }
+    if ( m_ensemble_transfer_function_editor )
+    {
+        m_ensemble_transfer_function_editor_action->setEnabled( serverState );
+        m_ensemble_transfer_function_editor->reset();
+    }
     if ( m_transfer_function_editor )
     {
         m_transfer_function_editor_action->setEnabled( serverState );
@@ -264,6 +271,7 @@ void MainWindow::onUpdateServerState( bool serverState )
     }
     if( m_plot_over_line_editor )    { m_plot_over_line_editor->close(); }
     if( m_plot_over_time_editor )    { m_plot_over_time_editor->close(); }
+    if( m_ensemble_transfer_function_editor ) { m_ensemble_transfer_function_editor->close(); }
     if( m_transfer_function_editor ) { m_transfer_function_editor->close(); }
 }
 
@@ -294,6 +302,38 @@ void MainWindow::onUpdateNumberOfVector( const int numberOfVector )
     }
 }
 
+void MainWindow::onUpdateIsEnsemble( bool isEnsemble )
+{
+    if( m_ensemble_transfer_function_editor_action )
+    {
+        m_ensemble_transfer_function_editor_action->setEnabled( isEnsemble );
+    }
+    if( m_transfer_function_editor_action )
+    {
+        m_transfer_function_editor_action->setEnabled( !isEnsemble );
+    }
+    if( m_color_map_bar_selector_tool_bar )
+    {
+        m_color_map_bar_selector_tool_bar->setMode(
+            isEnsemble
+                ? ColorMapSelectorToolBar::Mode::EnsembleTransferFunction
+                : ColorMapSelectorToolBar::Mode::TransferFunction );
+    }
+    if( isEnsemble )
+    {
+        if( m_ensemble_transfer_function_editor )
+        {
+            m_ensemble_transfer_function_editor->emitLegendTransferFunctionUpdate();
+        }
+    }
+    else
+    {
+        if( m_transfer_function_editor )
+        {
+            m_transfer_function_editor->emitLegendTransferFunctionUpdate();
+        }
+    }
+}
 
 void MainWindow::initializeToolBar()
 {
@@ -399,6 +439,12 @@ void MainWindow::initializeMenuBar()
         m_shading_control_action = new QAction( tr( "Shading Control" ), this );
         connect( m_shading_control_action, &QAction::triggered, this, &MainWindow::onShadingControl );
     }
+    if( m_ensemble_transfer_function_editor )
+    {
+        m_ensemble_transfer_function_editor_action = new QAction( tr( "Ensemble Transfer Function Editor" ), this );
+        m_ensemble_transfer_function_editor_action->setEnabled( false );
+        connect( m_ensemble_transfer_function_editor_action, &QAction::triggered, this, &MainWindow::onEnsembleTransferFunctionEditor );
+    }
     if( m_transfer_function_editor )
     {
         m_transfer_function_editor_action = new QAction( tr( "Transfer Function Editor" ), this );
@@ -426,6 +472,7 @@ void MainWindow::initializeMenuBar()
             m_point_size_control_action       ||
             m_repetition_level_control_action ||
             m_shading_control_action          ||
+            m_ensemble_transfer_function_editor_action ||
             m_transfer_function_editor_action ||
             m_volume_transform_action ) )
     {
@@ -439,6 +486,7 @@ void MainWindow::initializeMenuBar()
     add( ui->menuTools, m_point_size_control_action );
     add( ui->menuTools, m_repetition_level_control_action );
     add( ui->menuTools, m_shading_control_action );
+    add( ui->menuTools, m_ensemble_transfer_function_editor_action );
     add( ui->menuTools, m_transfer_function_editor_action );
     add( ui->menuTools, m_volume_transform_action );
 }
@@ -472,6 +520,7 @@ void MainWindow::initializeCommunication()
         connect( m_communication, &Communication::updateOperatorState, m_plot_over_line_editor     , &PlotOverLineEditor    ::onOperatorStateUpdate );
         connect( m_communication, &Communication::updateOperatorState, m_plot_over_time_editor     , &PlotOverTimeEditor    ::onOperatorStateUpdate );
         connect( m_communication, &Communication::updateOperatorState, m_transfer_function_editor  , &TransferFunctionEditor::onOperatorStateUpdate );
+        connect( m_communication, &Communication::updateOperatorState, m_repetition_level_control  , &RepetitionLevelControl::onOperatorStateUpdate );
 
         // NOTE:バイナリソケット用
         connect( m_communication, &Communication::unpack, m_object_editor, &ObjectEditor::onUnpack );
@@ -483,8 +532,11 @@ void MainWindow::initializeCommunication()
         connect( m_communication, &Communication::receivePlotOverLineParameter    , m_plot_over_line_editor     , &PlotOverLineEditor    ::onReceivePlotOverLineParameter );
         connect( m_communication, &Communication::receivePlotOverTimeParameter    , m_plot_over_time_editor     , &PlotOverTimeEditor    ::onReceivePlotOverTimeParameter );
         connect( m_communication, &Communication::receiveTransferFunctionParameter, m_transfer_function_editor  , &TransferFunctionEditor::onReceiveTransferFunctionParameter );
+        connect( m_communication, &Communication::receiveEnsembleStatisticsParameter, m_ensemble_transfer_function_editor, &EnsembleTransferFunctionEditor::onReceiveEnsembleStatisticsParameter );
+        connect( m_communication, &Communication::receiveRepetitionLevelParameter , m_repetition_level_control  , &RepetitionLevelControl::onReceiveRepetitionLevelParameter );
 
         connect( m_communication, &Communication::receiveRequestDataAtTransferFunctionParameter, m_transfer_function_editor, &TransferFunctionEditor::onReceiveRequestDataAtTransferFunctionParameter );
+        connect( m_communication, &Communication::receiveRequestDataAtEnsembleStatisticsParameter, m_ensemble_transfer_function_editor, &EnsembleTransferFunctionEditor::onReceiveRequestDataAtEnsembleStatisticsParameter );
 
         connect( m_communication, &Communication::receiveSelectedFile, m_object_editor, &ObjectEditor::onReceiveSelectedFile );
         connect( m_communication, &Communication::receiveObjectDelete, m_object_editor, &ObjectEditor::onReceiveObjectDelete );
@@ -511,6 +563,7 @@ void MainWindow::initializeObjectEditor()
         connect( m_object_editor, &ObjectEditor::updateStatusBarMessage, this, &MainWindow::onUpdateStatusBarMessage );
 
         connect( m_object_editor, &ObjectEditor::updateNumberOfVector, this, &MainWindow::onUpdateNumberOfVector );
+        connect( m_object_editor, &ObjectEditor::updateIsEnsemble, this, &MainWindow::onUpdateIsEnsemble );
 
         connect( m_object_editor, &ObjectEditor::updateTotalTimeStepRange, m_time_step_control_tool_bar, &TimeStepControlToolBar::onUpdateTotalTimeStepRange );
 
@@ -593,6 +646,24 @@ void MainWindow::initializeShadingControl()
         m_shading_control->adjustSize();
         m_shading_control->close();
         addDockWidget( Qt::LeftDockWidgetArea, m_shading_control );
+    }
+}
+
+void MainWindow::initializeEnsembleTransferFunctionEditor()
+{
+    if( m_ensemble_transfer_function_editor )
+    {
+        m_ensemble_transfer_function_editor->adjustSize();
+        m_ensemble_transfer_function_editor->close();
+        if( m_object_editor )
+        {
+            m_object_editor->setEnsembleTransferFunctionEditor( m_ensemble_transfer_function_editor );
+        }
+        connect(
+            m_ensemble_transfer_function_editor,
+            &EnsembleTransferFunctionEditor::updateLegendTransferFunction,
+            m_color_map_bar_selector_tool_bar,
+            &ColorMapSelectorToolBar::onEnsembleTransferFunctionUpdate );
     }
 }
 

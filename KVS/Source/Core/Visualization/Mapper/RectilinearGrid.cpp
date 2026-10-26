@@ -10,7 +10,7 @@
 namespace
 {
 
-int BinarySearch( const float v, const float* array, const size_t size )
+int BinarySearch( const float v, const float* array, const std::size_t size )
 {
     int low = 0;
     int middle = 0;
@@ -57,9 +57,9 @@ int RectilinearGrid::findGrid( const kvs::Vec3& global ) const
     if ( global.y() < min_obj.y() || global.y() >= max_obj.y() ) { return -1; }
     if ( global.z() < min_obj.z() || global.z() >= max_obj.z() ) { return -1; }
 
-    const size_t dimx = BaseClass::referenceVolume()->resolution().x();
-    const size_t dimy = BaseClass::referenceVolume()->resolution().y();
-    const size_t dimz = BaseClass::referenceVolume()->resolution().z();
+    const std::size_t dimx = BaseClass::referenceVolume()->resolution().x();
+    const std::size_t dimy = BaseClass::referenceVolume()->resolution().y();
+    const std::size_t dimz = BaseClass::referenceVolume()->resolution().z();
     const float* xcoords = BaseClass::referenceVolume()->coords().data();
     const float* ycoords = BaseClass::referenceVolume()->coords().data() + dimx;
     const float* zcoords = BaseClass::referenceVolume()->coords().data() + dimx + dimy;
@@ -74,8 +74,8 @@ kvs::Vec3 RectilinearGrid::globalToLocal( const kvs::Vec3& global ) const
 {
     KVS_ASSERT( this->findGrid( global ) >= 0 );
 
-    const size_t dimx = BaseClass::referenceVolume()->resolution().x();
-    const size_t dimy = BaseClass::referenceVolume()->resolution().y();
+    const std::size_t dimx = BaseClass::referenceVolume()->resolution().x();
+    const std::size_t dimy = BaseClass::referenceVolume()->resolution().y();
     const float* xcoords = BaseClass::referenceVolume()->coords().data();
     const float* ycoords = BaseClass::referenceVolume()->coords().data() + dimx;
     const float* zcoords = BaseClass::referenceVolume()->coords().data() + dimx + dimy;

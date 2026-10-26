@@ -47,40 +47,40 @@ protected:
     static kvs::RGBColor ColorBilinear( double u, double v, const ColorImage& image );
 
 private:
-    size_t m_width = 0; ///< image width [pix]
-    size_t m_height = 0; ///< image height [pix]
-    size_t m_npixels = 0; ///< number of pixels
-    size_t m_padding = 0; ///< padding bit for bit-image
-    size_t m_bpp = 0; ///< bits per pixel [bit]
-    size_t m_bpl = 0; ///< bytes per line [byte]
-    size_t m_size = 0; ///< data size [byte]
+    std::size_t m_width = 0; ///< image width [pix]
+    std::size_t m_height = 0; ///< image height [pix]
+    std::size_t m_npixels = 0; ///< number of pixels
+    std::size_t m_padding = 0; ///< padding bit for bit-image
+    std::size_t m_bpp = 0; ///< bits per pixel [bit]
+    std::size_t m_bpl = 0; ///< bytes per line [byte]
+    std::size_t m_size = 0; ///< data size [byte]
     PixelData m_pixels{}; ///< pixel data array
 
 public:
     ImageBase() = default;
     virtual ~ImageBase() = default;
 
-    size_t width() const { return m_width; }
-    size_t height() const { return m_height; }
-    size_t bytesPerLine() const { return m_bpl; }
-    size_t bitsPerPixel() const { return m_bpp; }
-    size_t numberOfPixels() const { return m_npixels; }
-    size_t padding() const { return m_padding; }
-    size_t size() const { return m_size; }
+    std::size_t width() const { return m_width; }
+    std::size_t height() const { return m_height; }
+    std::size_t bytesPerLine() const { return m_bpl; }
+    std::size_t bitsPerPixel() const { return m_bpp; }
+    std::size_t numberOfPixels() const { return m_npixels; }
+    std::size_t padding() const { return m_padding; }
+    std::size_t size() const { return m_size; }
     const PixelData& pixels() const { return m_pixels; }
 
     void flip();
     void copy( const kvs::ImageBase& image );
-    bool create( const size_t width, const size_t height, const ImageType type );
-    bool create( const size_t width, const size_t height, const ImageType type, const PixelData& pixels );
+    bool create( const std::size_t width, const std::size_t height, const ImageType type );
+    bool create( const std::size_t width, const std::size_t height, const ImageType type, const PixelData& pixels );
 
 protected:
     PixelData& pixelData() { return m_pixels; }
 
     template <typename Image, typename Interpolator>
     void resizeImage(
-        const size_t width,
-        const size_t height,
+        const std::size_t width,
+        const std::size_t height,
         Image* image,
         Interpolator interpolator );
 

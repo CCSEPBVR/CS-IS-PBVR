@@ -41,7 +41,7 @@ MetropolisSampling::MetropolisSampling( void ):
 /*==========================================================================*/
 MetropolisSampling::MetropolisSampling(
     const vismodule::VolumeObjectBase& volume,
-    const size_t                 nparticles ):
+    const std::size_t                 nparticles ):
     vismodule::MapperBase(),
     vismodule::PointObject(),
     m_nparticles( nparticles )
@@ -59,7 +59,7 @@ MetropolisSampling::MetropolisSampling(
 /*==========================================================================*/
 MetropolisSampling::MetropolisSampling(
     const vismodule::VolumeObjectBase& volume,
-    const size_t                 nparticles,
+    const std::size_t                 nparticles,
     const vismodule::TransferFunction& transfer_function ):
     vismodule::MapperBase( transfer_function ),
     vismodule::PointObject(),
@@ -82,7 +82,7 @@ MetropolisSampling::~MetropolisSampling( void )
  *  @brief  Returns the number of generated particles.
  */
 /*==========================================================================*/
-const size_t MetropolisSampling::nparticles( void ) const
+const std::size_t MetropolisSampling::nparticles( void ) const
 {
     return( m_nparticles );
 }
@@ -93,7 +93,7 @@ const size_t MetropolisSampling::nparticles( void ) const
  *  @param  npoints [in] number of points
  */
 /*==========================================================================*/
-void MetropolisSampling::setNParticles( const size_t nparticles )
+void MetropolisSampling::setNParticles( const std::size_t nparticles )
 {
     m_nparticles = nparticles;
 }
@@ -204,12 +204,12 @@ void MetropolisSampling::generate_particles( const vismodule::StructuredVolumeOb
 
     // Attach the initial particle to the interpolator and get a rho value.
     interpolator.attachPoint( particle );
-    size_t scalar = static_cast<size_t>( interpolator.template scalar<T>() );
+    std::size_t scalar = static_cast<size_t>( interpolator.template scalar<T>() );
     float  rho    = BaseClass::opacityMap()[ scalar ];
     float  trial_rho( 0.0f );
 
     // Point sampling process.
-    size_t counter = 0;
+    std::size_t counter = 0;
     while( counter < m_nparticles )
     {
         trial_particle.set( static_cast<float>(R() * r.x()),
@@ -282,12 +282,12 @@ void MetropolisSampling::generate_particles<vismodule::UInt16>( const vismodule:
  */
 /*==========================================================================*/
 void MetropolisSampling::adopt_particle(
-    const size_t         index,
+    const std::size_t         index,
     const vismodule::Vector3f& coord,
-    const size_t         scalar,
+    const std::size_t         scalar,
     const vismodule::Vector3f& gradient )
 {
-    const size_t index3 = index * 3;
+    const std::size_t index3 = index * 3;
     m_coords[ index3 + 0 ]  = coord.x();
     m_coords[ index3 + 1 ]  = coord.y();
     m_coords[ index3 + 2 ]  = coord.z();

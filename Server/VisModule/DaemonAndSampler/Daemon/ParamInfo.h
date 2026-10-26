@@ -29,9 +29,9 @@ public:
 
 public:
     bool   LoadIN( const std::string& filename );
-    size_t byteSize() const;
-    size_t pack( char* buf ) const;
-    size_t unpack( const char* buf );
+    std::size_t byteSize() const;
+    std::size_t pack( char* buf ) const;
+    std::size_t unpack( const char* buf );
 };
 
 #endif // __PARAM_INFO_H__

@@ -36,7 +36,7 @@ namespace kvsml
 /*===========================================================================*/
 bool ReadCoordData(
     const kvs::XMLNode::SuperClass* parent,
-    const size_t ncoords,
+    const std::size_t ncoords,
     kvs::ValueArray<kvs::Real32>* coords )
 {
     // <Coord>
@@ -50,8 +50,8 @@ bool ReadCoordData(
         }
 
         // <DataArray>
-        const size_t dimension = 3;
-        const size_t nelements = ncoords * dimension;
+        const std::size_t dimension = 3;
+        const std::size_t nelements = ncoords * dimension;
         kvs::kvsml::DataArrayTag data_tag;
         if ( !data_tag.read( coord_tag.node(), nelements, coords ) )
         {
@@ -76,7 +76,7 @@ bool ReadCoordData(
 /*===========================================================================*/
 bool ReadColorData(
     const kvs::XMLNode::SuperClass* parent,
-    const size_t ncolors,
+    const std::size_t ncolors,
     kvs::ValueArray<kvs::UInt8>* colors )
 {
     // <Color>
@@ -93,8 +93,8 @@ bool ReadColorData(
         if ( kvs::XMLNode::FindChildNode( color_tag.node(), "DataValue" ) )
         {
             // In this case, 'ncolors' is equal to 1.
-            const size_t nchannels = 3; // RGB
-            const size_t nelements = nchannels; // = 1 * nchannels
+            const std::size_t nchannels = 3; // RGB
+            const std::size_t nelements = nchannels; // = 1 * nchannels
             kvs::kvsml::DataValueTag data_tag;
             if ( !data_tag.read( color_tag.node(), nelements, colors ) )
             {
@@ -107,8 +107,8 @@ bool ReadColorData(
         // <DataArray>
         else
         {
-            const size_t nchannels = 3; // RGB
-            const size_t nelements = ncolors * nchannels;
+            const std::size_t nchannels = 3; // RGB
+            const std::size_t nelements = ncolors * nchannels;
             kvs::kvsml::DataArrayTag data_tag;
             if ( !data_tag.read( color_tag.node(), nelements, colors ) )
             {
@@ -134,7 +134,7 @@ bool ReadColorData(
 /*===========================================================================*/
 bool ReadNormalData(
     const kvs::XMLNode::SuperClass* parent,
-    const size_t nnormals,
+    const std::size_t nnormals,
     kvs::ValueArray<kvs::Real32>* normals )
 {
     // <Normal>
@@ -151,8 +151,8 @@ bool ReadNormalData(
         if ( kvs::XMLNode::FindChildNode( normal_tag.node(), "DataValue" ) )
         {
             // In this case, 'nnormals' is equal to 1.
-            const size_t dimension = 3;
-            const size_t nelements = dimension; // = 1 * dimension
+            const std::size_t dimension = 3;
+            const std::size_t nelements = dimension; // = 1 * dimension
             kvs::kvsml::DataValueTag data_tag;
             if ( !data_tag.read( normal_tag.node(), nelements, normals ) )
             {
@@ -166,8 +166,8 @@ bool ReadNormalData(
         // <DataArray>
         else
         {
-            const size_t dimension = 3;
-            const size_t nelements = nnormals * dimension;
+            const std::size_t dimension = 3;
+            const std::size_t nelements = nnormals * dimension;
             kvs::kvsml::DataArrayTag data_tag;
             if ( !data_tag.read( normal_tag.node(), nelements, normals ) )
             {
@@ -193,7 +193,7 @@ bool ReadNormalData(
 /*===========================================================================*/
 bool ReadSizeData(
     const kvs::XMLNode::SuperClass* parent,
-    const size_t nsizes,
+    const std::size_t nsizes,
     kvs::ValueArray<kvs::Real32>* sizes )
 {
     // <Size>
@@ -209,7 +209,7 @@ bool ReadSizeData(
         // <DataValue>
         if ( kvs::XMLNode::FindChildNode( size_tag.node(), "DataValue" ) )
         {
-            const size_t nelements = 1;
+            const std::size_t nelements = 1;
             kvs::kvsml::DataValueTag data_tag;
             if ( !data_tag.read( size_tag.node(), nelements, sizes ) )
             {
@@ -222,7 +222,7 @@ bool ReadSizeData(
         // <DataArray>
         else
         {
-            const size_t nelements = nsizes;
+            const std::size_t nelements = nsizes;
             kvs::kvsml::DataArrayTag data_tag;
             if ( !data_tag.read( size_tag.node(), nelements, sizes ) )
             {
@@ -248,7 +248,7 @@ bool ReadSizeData(
 /*===========================================================================*/
 bool ReadConnectionData(
     const kvs::XMLNode::SuperClass* parent,
-    const size_t nconnections,
+    const std::size_t nconnections,
     kvs::ValueArray<kvs::UInt32>* connections )
 {
     // <Connection>
@@ -262,7 +262,7 @@ bool ReadConnectionData(
         }
 
         // <DataArray>
-        const size_t nelements = nconnections;
+        const std::size_t nelements = nconnections;
         kvs::kvsml::DataArrayTag data_tag;
         if ( !data_tag.read( connection_tag.node(), nelements, connections ) )
         {
@@ -287,7 +287,7 @@ bool ReadConnectionData(
 /*===========================================================================*/
 bool ReadOpacityData(
     const kvs::XMLNode::SuperClass* parent,
-    const size_t nopacities,
+    const std::size_t nopacities,
     kvs::ValueArray<kvs::UInt8>* opacities )
 {
     // <Opacity>
@@ -303,7 +303,7 @@ bool ReadOpacityData(
         // <DataValue>
         if ( kvs::XMLNode::FindChildNode( opacity_tag.node(), "DataValue" ) )
         {
-            const size_t nelements = 1;
+            const std::size_t nelements = 1;
             kvs::kvsml::DataValueTag data_tag;
             if ( !data_tag.read( opacity_tag.node(), nelements, opacities ) )
             {
@@ -316,7 +316,7 @@ bool ReadOpacityData(
         // <DataArray>
         else
         {
-            const size_t nelements = nopacities;
+            const std::size_t nelements = nopacities;
             kvs::kvsml::DataArrayTag data_tag;
             if ( !data_tag.read( opacity_tag.node(), nelements, opacities ) )
             {

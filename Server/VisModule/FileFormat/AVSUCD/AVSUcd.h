@@ -78,22 +78,22 @@ public:
 
 private:
 
-    size_t      m_nsteps;       ///< Number of steps.
+    std::size_t      m_nsteps;       ///< Number of steps.
     CycleType   m_cycle_type;   ///< Cycle type.
     ElementType m_element_type; ///< Element type.
 
-    size_t      m_step_id;      ///< Step ID.
+    std::size_t      m_step_id;      ///< Step ID.
     std::string m_step_comment; ///< Comment of step.
 
-    size_t                   m_nnodes;               ///< Number of nodes.
-    size_t                   m_nelements;            ///< Number of elements.
-    size_t                   m_nvalues_per_node;     ///< Number of values per node.
-    size_t                   m_ncomponents_per_node; ///< Number of components per node.
+    std::size_t                   m_nnodes;               ///< Number of nodes.
+    std::size_t                   m_nelements;            ///< Number of elements.
+    std::size_t                   m_nvalues_per_node;     ///< Number of values per node.
+    std::size_t                   m_ncomponents_per_node; ///< Number of components per node.
     std::vector<size_t>      m_veclens;              ///< Veclens of each component.
     std::vector<std::string> m_component_names;      ///< Names of each component.
     std::vector<std::string> m_component_units;      ///< Units of each component.
 
-    size_t m_component_id; ///< Component ID.
+    std::size_t m_component_id; ///< Component ID.
 
     Coords      m_coords;
     Connections m_connections;
@@ -105,30 +105,30 @@ public:
 
     explicit AVSUcd(
         const std::string& filename,
-        const size_t       step_id      = 0,
-        const size_t       component_id = 0 );
+        const std::size_t       step_id      = 0,
+        const std::size_t       component_id = 0 );
 
     virtual ~AVSUcd( void );
 
 public:
 
-    const size_t nsteps( void ) const;
+    const std::size_t nsteps( void ) const;
 
     const CycleType cycleType( void ) const;
 
     const ElementType elementType( void ) const;
 
-    const size_t stepID( void ) const;
+    const std::size_t stepID( void ) const;
 
     const std::string& stepComment( void ) const;
 
-    const size_t nnodes( void ) const;
+    const std::size_t nnodes( void ) const;
 
-    const size_t nelements( void ) const;
+    const std::size_t nelements( void ) const;
 
-    const size_t nvaluesPerNode( void ) const;
+    const std::size_t nvaluesPerNode( void ) const;
 
-    const size_t ncomponentsPerNode( void ) const;
+    const std::size_t ncomponentsPerNode( void ) const;
 
     const std::vector<size_t>& veclens( void ) const;
 
@@ -136,7 +136,7 @@ public:
 
     const std::vector<std::string>& componentUnits( void ) const;
 
-    const size_t componentID( void ) const;
+    const std::size_t componentID( void ) const;
 
     const std::string& componentName( void ) const;
 
@@ -150,23 +150,23 @@ public:
 
 public:
 
-    void setNSteps( const size_t nsteps );
+    void setNSteps( const std::size_t nsteps );
 
     void setCycleType( const CycleType cycle_type );
 
     void setElementType( const ElementType element_type );
 
-    void setStepID( const size_t step_id );
+    void setStepID( const std::size_t step_id );
 
     void setStepComment( const std::string& step_comment );
 
-    void setNNodes( const size_t nnodes );
+    void setNNodes( const std::size_t nnodes );
 
-    void setNElements( const size_t nelements );
+    void setNElements( const std::size_t nelements );
 
-    void setNValuesPerNode( const size_t nvalues_per_node );
+    void setNValuesPerNode( const std::size_t nvalues_per_node );
 
-    void setNComponentsPerNode( const size_t ncomponents_per_node );
+    void setNComponentsPerNode( const std::size_t ncomponents_per_node );
 
     void setVeclens( const std::vector<size_t>& veclens );
 
@@ -174,7 +174,7 @@ public:
 
     void setComponentUnits( const std::vector<std::string>& component_units );
 
-    void setComponentID( const size_t component_id );
+    void setComponentID( const std::size_t component_id );
 
     void setCoords( const Coords& coords );
 

@@ -24,7 +24,7 @@ namespace vismodule
 namespace RGBFormulae
 {
 
-vismodule::ColorMap Create( const int index0, const int index1, const int index2, const size_t resolution );
+vismodule::ColorMap Create( const int index0, const int index1, const int index2, const std::size_t resolution );
 
 /*===========================================================================*/
 /**
@@ -33,7 +33,7 @@ vismodule::ColorMap Create( const int index0, const int index1, const int index2
  *  @return colormap
  */
 /*===========================================================================*/
-inline vismodule::ColorMap PM3D( const size_t resolution )
+inline vismodule::ColorMap PM3D( const std::size_t resolution )
 {
     return( Create( 7, 5, 15, resolution ) );
 }
@@ -45,7 +45,7 @@ inline vismodule::ColorMap PM3D( const size_t resolution )
  *  @return colormap
  */
 /*===========================================================================*/
-inline vismodule::ColorMap GreenRedViolet( const size_t resolution )
+inline vismodule::ColorMap GreenRedViolet( const std::size_t resolution )
 {
     return( Create( 3, 11, 6, resolution ) );
 }
@@ -57,7 +57,7 @@ inline vismodule::ColorMap GreenRedViolet( const size_t resolution )
  *  @return colormap
  */
 /*===========================================================================*/
-inline vismodule::ColorMap Ocean( const size_t resolution )
+inline vismodule::ColorMap Ocean( const std::size_t resolution )
 {
     return( Create( 23, 28, 3, resolution ) );
 }
@@ -69,7 +69,7 @@ inline vismodule::ColorMap Ocean( const size_t resolution )
  *  @return colormap
  */
 /*===========================================================================*/
-inline vismodule::ColorMap Hot( const size_t resolution )
+inline vismodule::ColorMap Hot( const std::size_t resolution )
 {
     return( Create( 21, 22, 23, resolution ) );
 }
@@ -81,7 +81,7 @@ inline vismodule::ColorMap Hot( const size_t resolution )
  *  @return colormap
  */
 /*===========================================================================*/
-inline vismodule::ColorMap ColorPrintable( const size_t resolution )
+inline vismodule::ColorMap ColorPrintable( const std::size_t resolution )
 {
     return( Create( 30, 31, 32, resolution ) );
 }
@@ -93,7 +93,7 @@ inline vismodule::ColorMap ColorPrintable( const size_t resolution )
  *  @return colormap
  */
 /*===========================================================================*/
-inline vismodule::ColorMap Rainbow( const size_t resolution )
+inline vismodule::ColorMap Rainbow( const std::size_t resolution )
 {
     return( Create( 33, 13, 10, resolution ) );
 }
@@ -105,7 +105,7 @@ inline vismodule::ColorMap Rainbow( const size_t resolution )
  *  @return colormap
  */
 /*===========================================================================*/
-inline vismodule::ColorMap AFMHot( const size_t resolution )
+inline vismodule::ColorMap AFMHot( const std::size_t resolution )
 {
     return( Create( 34, 35, 36, resolution ) );
 }
@@ -117,7 +117,7 @@ inline vismodule::ColorMap AFMHot( const size_t resolution )
  *  @return colormap
  */
 /*===========================================================================*/
-inline vismodule::ColorMap Jet( const size_t resolution )
+inline vismodule::ColorMap Jet( const std::size_t resolution )
 {
     return( Create( 37, 38, 39, resolution ) );
 }
@@ -129,7 +129,7 @@ inline vismodule::ColorMap Jet( const size_t resolution )
  *  @return colormap
  */
 /*===========================================================================*/
-inline vismodule::ColorMap Bone( const size_t resolution )
+inline vismodule::ColorMap Bone( const std::size_t resolution )
 {
     return( Create( 40, 41, 42, resolution ) );
 }

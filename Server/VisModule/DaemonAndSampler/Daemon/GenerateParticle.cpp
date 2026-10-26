@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <cmath>
 
 #include <vismodule/JobDispatcher>
 #include <vismodule/GenerateParticle>
@@ -13,6 +14,265 @@
 #ifndef CPU_VER
     #include <vismodule/JobCollector>
 #endif
+
+namespace
+{
+bool ValidateHistoryTransferFunctions(
+    const std::vector<std::vector<int>>& color_histograms,
+    const std::vector<std::vector<int>>& opacity_histograms,
+    const VariableRange& variable_range,
+    const bool validate_opacity_range,
+    std::string& error_message )
+{
+    const int tf_number = static_cast<int>( opacity_histograms.size() );
+    if ( tf_number <= 0 )
+    {
+        error_message = "histogram is empty";
+        return false;
+    }
+    if ( static_cast<int>( color_histograms.size() ) != tf_number )
+    {
+        error_message = "color and opacity histogram counts do not match";
+        return false;
+    }
+
+    for ( int i = 0; i < tf_number; ++i )
+    {
+        if ( color_histograms[i].size() != DEFAULT_NBINS ||
+             opacity_histograms[i].size() != DEFAULT_NBINS )
+        {
+            error_message = "histogram resolution is not DEFAULT_NBINS";
+            return false;
+        }
+
+        std::stringstream ss;
+        ss << ( i + 1 );
+        const std::string index = ss.str();
+        const double color_min = variable_range.min( "t" + index + "_var_c" );
+        const double color_max = variable_range.max( "t" + index + "_var_c" );
+        if ( !std::isfinite( color_min ) || !std::isfinite( color_max ) || color_min > color_max )
+        {
+            error_message = "color range is invalid";
+            return false;
+        }
+
+        if ( validate_opacity_range )
+        {
+            const double opacity_min = variable_range.min( "t" + index + "_var_o" );
+            const double opacity_max = variable_range.max( "t" + index + "_var_o" );
+            if ( !std::isfinite( opacity_min ) || !std::isfinite( opacity_max ) || opacity_min > opacity_max )
+            {
+                error_message = "opacity range is invalid";
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+void ApplyHistoryToTransferFunctions(
+    const std::vector<std::vector<int>>& color_histograms,
+    const std::vector<std::vector<int>>& opacity_histograms,
+    VariableRange& variable_range,
+    std::vector<NamedTransferFunction>& transfer_functions )
+{
+    const int tf_number = static_cast<int>( opacity_histograms.size() );
+    if ( transfer_functions.size() < static_cast<size_t>( tf_number ) )
+    {
+        transfer_functions.resize( tf_number );
+    }
+
+    for ( int i = 0; i < tf_number; ++i )
+    {
+        // histogram
+        std::copy(
+            color_histograms[i].begin(),
+            color_histograms[i].end(),
+            transfer_functions[i].m_color_histogram );
+        std::copy(
+            opacity_histograms[i].begin(),
+            opacity_histograms[i].end(),
+            transfer_functions[i].m_opacity_histogram );
+
+        std::stringstream ss;
+        ss << ( i + 1 );
+        const std::string index = ss.str();
+        // minmax
+        transfer_functions[i].m_server_color_variable_min = variable_range.min( "t" + index + "_var_c" );
+        transfer_functions[i].m_server_color_variable_max = variable_range.max( "t" + index + "_var_c" );
+        transfer_functions[i].m_server_opacity_variable_min = variable_range.min( "t" + index + "_var_o" );
+        transfer_functions[i].m_server_opacity_variable_max = variable_range.max( "t" + index + "_var_o" );
+    }
+
+    std::cout << "[ParticleHistory] applied transfer function history tf_number="
+              << tf_number << std::endl;
+}
+
+void ApplyStatisticHistoryToTransferFunctions(
+    const std::vector<std::vector<int>>& color_histograms,
+    const std::vector<std::vector<int>>& opacity_histograms,
+    VariableRange& variable_range,
+    std::vector<EnsembleTransferFunction>& transfer_functions,
+    const char* statistic_name )
+{
+    const int tf_number = static_cast<int>( opacity_histograms.size() );
+    if ( tf_number <= 0 ) return;
+
+    if ( transfer_functions.size() < static_cast<size_t>( tf_number ) )
+    {
+        transfer_functions.resize( tf_number );
+    }
+
+    for ( int i = 0; i < tf_number; ++i )
+    {
+        std::fill_n( transfer_functions[i].m_opacity_histogram, DEFAULT_NBINS, 0 );
+        const std::vector<int>& opacity_histogram = opacity_histograms[i];
+        const int opacity_bins = static_cast<int>( opacity_histogram.size() );
+        for ( int b = 0; b < DEFAULT_NBINS && b < opacity_bins; ++b )
+        {
+            transfer_functions[i].m_opacity_histogram[b] =
+                static_cast<vismodule::UInt64>( opacity_histogram[b] );
+        }
+
+        std::fill_n( transfer_functions[i].m_color_histogram, DEFAULT_NBINS, 0 );
+        if ( i < static_cast<int>( color_histograms.size() ) )
+        {
+            const std::vector<int>& color_histogram = color_histograms[i];
+            const int color_bins = static_cast<int>( color_histogram.size() );
+            for ( int b = 0; b < DEFAULT_NBINS && b < color_bins; ++b )
+            {
+                transfer_functions[i].m_color_histogram[b] =
+                    static_cast<vismodule::UInt64>( color_histogram[b] );
+            }
+        }
+
+        std::stringstream ss;
+        ss << ( i + 1 );
+        const std::string idxbuf = ss.str();
+        transfer_functions[i].m_server_variable_min =
+            variable_range.min( "t" + idxbuf + "_var_c" );
+        transfer_functions[i].m_server_variable_max =
+            variable_range.max( "t" + idxbuf + "_var_c" );
+
+        if ( transfer_functions[i].m_server_range_mode == EnsembleTransferFunction::ServerRangeMode::ServerSide )
+        {
+            auto color_map = transfer_functions[i].colorMap();
+            color_map.setRange(
+                transfer_functions[i].m_server_variable_min,
+                transfer_functions[i].m_server_variable_max );
+            transfer_functions[i].setColorMap( color_map );
+
+            auto opacity_map = transfer_functions[i].opacityMap();
+            opacity_map.setRange(
+                transfer_functions[i].m_server_variable_min,
+                transfer_functions[i].m_server_variable_max );
+            transfer_functions[i].setOpacityMap( opacity_map );
+        }
+    }
+
+    std::cout << "[ParticleHistory] applied ensemble statistic history statistic="
+              << statistic_name << ", tf_number=" << tf_number << std::endl;
+}
+}
+
+ParticleHistoryUpdateResult UpdateParticlePropertyFromHistoryIS(
+    const int time_step,
+    ParticleProperty& particle_property )
+{
+    ParticleHistoryUpdateResult result;
+    ParticleMonitor pm;
+    pm.setTimeStep_particle( time_step );
+    pm.readParticleHistoryFile();
+
+    ParticleHistoryFile& history = pm.particleHistoryFile();
+    result.file_path = history.fileName();
+    if ( !history.errorMessage().empty() )
+    {
+        result.error_message = history.errorMessage();
+        return result;
+    }
+    if ( !ValidateHistoryTransferFunctions(
+            history.colorHistogramArray(),
+            history.opacityHistogramArray(),
+            history.variableRange(),
+            true,
+            result.error_message ) )
+    {
+        return result;
+    }
+
+    ApplyHistoryToTransferFunctions(
+        history.colorHistogramArray(),
+        history.opacityHistogramArray(),
+        history.variableRange(),
+        particle_property.m_transfunc_array );
+    particle_property.m_is_ensemble = history.isEnsemble();
+    result.succeeded = true;
+
+    if ( !history.isEnsemble() )
+    {
+        return result;
+    }
+    if ( !history.hasEnsembleStatisticHistogram() )
+    {
+        result.error_message = "ensemble statistics are missing";
+        return result;
+    }
+
+    std::string statistic_error;
+    if ( !ValidateHistoryTransferFunctions(
+            history.averageColorHistogramArray(),
+            history.averageOpacityHistogramArray(),
+            history.averageVariableRange(),
+            false,
+            statistic_error ) )
+    {
+        result.error_message = "average: " + statistic_error;
+        return result;
+    }
+    if ( !ValidateHistoryTransferFunctions(
+            history.varianceColorHistogramArray(),
+            history.varianceOpacityHistogramArray(),
+            history.varianceVariableRange(),
+            false,
+            statistic_error ) )
+    {
+        result.error_message = "variance: " + statistic_error;
+        return result;
+    }
+    if ( !ValidateHistoryTransferFunctions(
+            history.coefficientOfVariationColorHistogramArray(),
+            history.coefficientOfVariationOpacityHistogramArray(),
+            history.coefficientOfVariationVariableRange(),
+            false,
+            statistic_error ) )
+    {
+        result.error_message = "coefficient_of_variation: " + statistic_error;
+        return result;
+    }
+
+    ApplyStatisticHistoryToTransferFunctions(
+        history.averageColorHistogramArray(),
+        history.averageOpacityHistogramArray(),
+        history.averageVariableRange(),
+        particle_property.m_mean_transfer_function_array,
+        "average" );
+    ApplyStatisticHistoryToTransferFunctions(
+        history.varianceColorHistogramArray(),
+        history.varianceOpacityHistogramArray(),
+        history.varianceVariableRange(),
+        particle_property.m_variance_transfer_function_array,
+        "variance" );
+    ApplyStatisticHistoryToTransferFunctions(
+        history.coefficientOfVariationColorHistogramArray(),
+        history.coefficientOfVariationOpacityHistogramArray(),
+        history.coefficientOfVariationVariableRange(),
+        particle_property.m_coefficient_of_variation_transfer_function_array,
+        "cv" );
+
+    result.ensemble_statistics_available = true;
+    return result;
+}
 
 void GenerateParticleCS(
     std::string& file_path,
@@ -159,7 +419,7 @@ void GenerateParticleCS(
                     store_volume_in_variables_array_unstruct( volume, dom, values, nvariables, coordinates, ncoords, connections, ncells, celltype );
 
                     std::vector<Type*> raw_pointers_vector( nvariables );
-                    for ( size_t i = 0; i < nvariables; ++i )
+                    for ( std::size_t i = 0; i < nvariables; ++i )
                     {
                         raw_pointers_vector[i] = values.get()[i].get();
                     }
@@ -175,7 +435,7 @@ void GenerateParticleCS(
                     store_volume_in_variables_array_struct( volume, dom, resolution, values, nvariables, ncoords );
 
                     std::vector<Type*> raw_pointers_vector( nvariables );
-                    for ( size_t i = 0; i < nvariables; ++i )
+                    for ( std::size_t i = 0; i < nvariables; ++i )
                     {
                         raw_pointers_vector[i] = values.get()[i].get();
                     }                        
@@ -229,7 +489,7 @@ void GenerateParticleCS(
     vr = setVariablerange2( tmp_max, tmp_min, tf_number );
     vr.show();
 
-    for( size_t i = 0; i < tf_number; i++ )
+    for( std::size_t i = 0; i < tf_number; i++ )
     {
         std::stringstream ss; 
         ss << (i + 1); 
@@ -355,7 +615,7 @@ void GenerateParticleCS(
                     store_volume_in_variables_array_unstruct( volume, dom, values, nvariables, coordinates, ncoords, connections, ncells, celltype );
 
                     std::vector<Type*> raw_pointers_vector( nvariables );
-                    for ( size_t i = 0; i < nvariables; ++i )
+                    for ( std::size_t i = 0; i < nvariables; ++i )
                     {
                         raw_pointers_vector[i] = values.get()[i].get();
                     }
@@ -371,7 +631,7 @@ void GenerateParticleCS(
                     store_volume_in_variables_array_struct( volume, dom, resolution, values, nvariables, ncoords );
 
                     std::vector<Type*> raw_pointers_vector( nvariables );
-                    for ( size_t i = 0; i < nvariables; ++i )
+                    for ( std::size_t i = 0; i < nvariables; ++i )
                     {
                         raw_pointers_vector[i] = values.get()[i].get();
                     }                        
@@ -434,7 +694,7 @@ void GenerateParticleCS(
             recv_obj->setNormals( vismodule_normals );
         }
 #else
-        size_t nmemb = send_obj->nvertices() * 3;
+        std::size_t nmemb = send_obj->nvertices() * 3;
         vismodule::ValueArray<vismodule::Real32> vismodule_coords ( send_obj->coords().pointer() , nmemb );
         vismodule::ValueArray<vismodule::UInt8>  vismodule_colors ( send_obj->colors().pointer() , nmemb );
         vismodule::ValueArray<vismodule::Real32> vismodule_normals( send_obj->normals().pointer(), nmemb );
@@ -453,9 +713,9 @@ void GenerateParticleCS(
 
             if ( point_object->coords().size() > 0 )
             {
-                const size_t ncoords  = point_object->coords().size() + recv_obj->coords().size();
-                const size_t ncolors  = point_object->colors().size() + recv_obj->colors().size();
-                const size_t nnormals = point_object->normals().size() + recv_obj->normals().size();
+                const std::size_t ncoords  = point_object->coords().size() + recv_obj->coords().size();
+                const std::size_t ncolors  = point_object->colors().size() + recv_obj->colors().size();
+                const std::size_t nnormals = point_object->normals().size() + recv_obj->normals().size();
 
                 kvs_coords.allocate( ncoords );
                 kvs_colors.allocate( ncolors );
@@ -478,9 +738,9 @@ void GenerateParticleCS(
             }
             else
             {
-                const size_t ncoords = recv_obj->coords().size();
-                const size_t ncolors  = recv_obj->colors().size();
-                const size_t nnormals = recv_obj->normals().size();
+                const std::size_t ncoords = recv_obj->coords().size();
+                const std::size_t ncolors  = recv_obj->colors().size();
+                const std::size_t nnormals = recv_obj->normals().size();
 
                 kvs_coords.allocate( ncoords );
                 kvs_colors.allocate( ncolors );
@@ -534,38 +794,31 @@ void GenerateParticleCS(
 
 void GenerateParticleIS(
     const int time_step,
-    ParticleProperty& particle_property,
-    MultiVolumePropertyList& mvpl,
+    ParticleProperty&,
+    MultiVolumePropertyList&,
     std::unique_ptr<kvs::PointObject>& point_object
 )
 {
-    int tf_number;
     ParticleMonitor pm;
-    VariableRange vr;
 
     std::cout << "time_step:" << time_step << std::endl;
 
     pm.check();
+
+    if( !pm.stepExisted() )
+    {
+        std::cout << "[GenerateParticleIS] particle step does not exist. Send empty point object." << std::endl;
+        point_object->setCoords( kvs::ValueArray<kvs::Real32>() );
+        point_object->setColors( kvs::ValueArray<kvs::UInt8>() );
+        point_object->setNormals( kvs::ValueArray<kvs::Real32>() );
+        return;
+    }
 
     if( pm.stepExisted() )
     {
         // pm.setTimeStep_particle( pm.particleStatusFile().getLatestTimeStep() );
         pm.setTimeStep_particle( time_step );
     }
-    else
-    {
-        pm.setTimeStep_particle(0);
-    }
-    pm.readParticleHistoryFile();
-
-    tf_number = pm.particleHistoryFile().colorHistogramArray().size();
-
-    vismodule::UInt64* tmp_c_bins;
-    vismodule::UInt64* tmp_o_bins;
-    tmp_c_bins = new vismodule::UInt64[DEFAULT_NBINS * tf_number];
-    tmp_o_bins = new vismodule::UInt64[DEFAULT_NBINS * tf_number];
-    std::fill_n( tmp_c_bins, DEFAULT_NBINS * tf_number, 0 );
-    std::fill_n( tmp_o_bins, DEFAULT_NBINS * tf_number, 0 );
 
     vismodule::PointObject* vismodule_point_object = new vismodule::PointObject;
 
@@ -577,9 +830,9 @@ void GenerateParticleIS(
     kvs::ValueArray<kvs::UInt8>  kvs_colors;
     kvs::ValueArray<kvs::Real32> kvs_normals;
 
-    const size_t ncoords  = vismodule_point_object->coords().size();
-    const size_t ncolors  = vismodule_point_object->colors().size();
-    const size_t nnormals = vismodule_point_object->normals().size();
+    const std::size_t ncoords  = vismodule_point_object->coords().size();
+    const std::size_t ncolors  = vismodule_point_object->colors().size();
+    const std::size_t nnormals = vismodule_point_object->normals().size();
 
     kvs_coords.allocate( ncoords );
     kvs_colors.allocate( ncolors );
@@ -596,52 +849,18 @@ void GenerateParticleIS(
     point_object->setCoords( kvs_coords );
     point_object->setColors( kvs_colors );
     point_object->setNormals( kvs_normals );
+    std::cout << "[GenerateParticleIS] loaded vertices=" << point_object->numberOfVertices()
+              << ", coords=" << point_object->coords().size()
+              << ", colors=" << point_object->colors().size()
+              << ", normals=" << point_object->normals().size()
+              << std::endl;
 
     // get histgram start
-    int c_count = 0;
-    for ( int tf = 0; tf < tf_number; tf++ )
-    {
-        for ( int res = 0; res < DEFAULT_NBINS; res++ )
-        {
-            tmp_c_bins[c_count] = pm.particleHistoryFile().colorHistogramArray()[tf][res];
-            c_count++;
-        }
-    }
-    
-    int o_count = 0;
-    for ( int tf = 0; tf < tf_number; tf++ )
-    {
-        for ( int res = 0; res < DEFAULT_NBINS; res++ )
-        {
-            tmp_o_bins[o_count] = pm.particleHistoryFile().opacityHistogramArray()[tf][res];
-            o_count++;
-        }
-    }
+    // History histogram and min/max values are updated once before particle loading.
     // get histgram end
-    
-    vr = pm.particleHistoryFile().variableRange();
-    vr.show();
-
     // histogram, minmaxの格納
-    for( int i = 0; i < tf_number; i++ )
-    {
-        // histogram
-        std::copy( tmp_c_bins + ( DEFAULT_NBINS * i ), tmp_c_bins + ( DEFAULT_NBINS * ( i + 1 ) ), particle_property.m_transfunc_array[i].m_color_histogram );
-        std::copy( tmp_o_bins + ( DEFAULT_NBINS * i ), tmp_o_bins + ( DEFAULT_NBINS * ( i + 1 ) ), particle_property.m_transfunc_array[i].m_opacity_histogram );
-
-        // minmax
-        std::stringstream ss; 
-        ss << (i + 1); 
-        const std::string idxbuf = ss.str();
-        particle_property.m_transfunc_array[i].m_server_color_variable_min   = vr.min( "t" + idxbuf + "_var_c" );
-        particle_property.m_transfunc_array[i].m_server_color_variable_max   = vr.max( "t" + idxbuf + "_var_c" );
-        particle_property.m_transfunc_array[i].m_server_opacity_variable_min = vr.min( "t" + idxbuf + "_var_o" );
-        particle_property.m_transfunc_array[i].m_server_opacity_variable_max = vr.max( "t" + idxbuf + "_var_o" );
-    }
 
     delete vismodule_point_object;
-    delete[] tmp_c_bins;
-    delete[] tmp_o_bins;
 }
 
 void generate_volume(

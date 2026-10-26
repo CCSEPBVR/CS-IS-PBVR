@@ -78,7 +78,7 @@ FlowData::~FlowData( void )
  *  @return dimensions
  */
 /*===========================================================================*/
-const size_t FlowData::dimensions( void ) const
+const std::size_t FlowData::dimensions( void ) const
 {
     return( m_dimensions );
 }
@@ -89,7 +89,7 @@ const size_t FlowData::dimensions( void ) const
  *  @return number of nodes
  */
 /*===========================================================================*/
-const size_t FlowData::nnodes( void ) const
+const std::size_t FlowData::nnodes( void ) const
 {
     return( m_nnodes );
 }
@@ -100,7 +100,7 @@ const size_t FlowData::nnodes( void ) const
  *  @return number of elements
  */
 /*===========================================================================*/
-const size_t FlowData::nelements( void ) const
+const std::size_t FlowData::nelements( void ) const
 {
     return( m_nelements );
 }
@@ -111,7 +111,7 @@ const size_t FlowData::nelements( void ) const
  *  @return number of time steps
  */
 /*===========================================================================*/
-const size_t FlowData::nsteps( void ) const
+const std::size_t FlowData::nsteps( void ) const
 {
     return( m_nsteps );
 }
@@ -123,7 +123,7 @@ const size_t FlowData::nsteps( void ) const
  *  @return time value
  */
 /*===========================================================================*/
-const vismodule::Real32 FlowData::time( const size_t index ) const
+const vismodule::Real32 FlowData::time( const std::size_t index ) const
 {
     VIS_MODULE_ASSERT( index < m_nsteps );
     return( m_times[ index ] );
@@ -136,7 +136,7 @@ const vismodule::Real32 FlowData::time( const size_t index ) const
  *  @return step value
  */
 /*===========================================================================*/
-const vismodule::Int32 FlowData::step( const size_t index ) const
+const vismodule::Int32 FlowData::step( const std::size_t index ) const
 {
     VIS_MODULE_ASSERT( index < m_nsteps );
     return( m_steps[ index ] );
@@ -149,7 +149,7 @@ const vismodule::Int32 FlowData::step( const size_t index ) const
  *  @return velocity value array
  */
 /*===========================================================================*/
-const vismodule::ValueArray<vismodule::Real32>& FlowData::velocities( const size_t index ) const
+const vismodule::ValueArray<vismodule::Real32>& FlowData::velocities( const std::size_t index ) const
 {
     VIS_MODULE_ASSERT( index < m_nsteps );
     return( m_velocities[ index ] );
@@ -162,7 +162,7 @@ const vismodule::ValueArray<vismodule::Real32>& FlowData::velocities( const size
  *  @return pressure value array
  */
 /*===========================================================================*/
-const vismodule::ValueArray<vismodule::Real32>& FlowData::pressures( const size_t index ) const
+const vismodule::ValueArray<vismodule::Real32>& FlowData::pressures( const std::size_t index ) const
 {
     VIS_MODULE_ASSERT( index < m_nsteps );
     return( m_pressures[ index ] );
@@ -195,10 +195,10 @@ const bool FlowData::read( const std::string filename )
     m_velocities = new vismodule::ValueArray<vismodule::Real32> [ m_nsteps ];
     m_pressures = new vismodule::ValueArray<vismodule::Real32> [ m_nsteps ];
 
-    for ( size_t i = 0; i < m_nsteps; i++ )
+    for ( std::size_t i = 0; i < m_nsteps; i++ )
     {
         const vismodule::gf::DataSet& data_set = file.dataSet(i);
-        for ( size_t j = 0; j < data_set.dataList().size(); j++ )
+        for ( std::size_t j = 0; j < data_set.dataList().size(); j++ )
         {
             const vismodule::gf::Data& data = data_set.data(j);
             const std::string& keyword = data.keyword();

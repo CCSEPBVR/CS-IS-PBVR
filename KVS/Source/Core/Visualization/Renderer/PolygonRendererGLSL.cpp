@@ -47,7 +47,7 @@ size_t NumberOfVertices( const kvs::PolygonObject* polygon )
          ( polygon->normalType() == kvs::PolygonObject::PolygonNormal ||
            polygon->colorType() == kvs::PolygonObject::PolygonColor ) )
     {
-        const size_t nfaces = polygon->numberOfConnections();
+        const std::size_t nfaces = polygon->numberOfConnections();
         return nfaces * 3;
     }
 
@@ -66,12 +66,12 @@ kvs::ValueArray<kvs::Real32> VertexCoords( const kvs::PolygonObject* polygon )
          ( polygon->normalType() == kvs::PolygonObject::PolygonNormal ||
            polygon->colorType() == kvs::PolygonObject::PolygonColor ) )
     {
-        const size_t nfaces = polygon->numberOfConnections();
+        const std::size_t nfaces = polygon->numberOfConnections();
         const kvs::Real32* polygon_coords = polygon->coords().data();
         const kvs::UInt32* polygon_connections = polygon->connections().data();
 
         kvs::ValueArray<kvs::Real32> coords( nfaces * 9 );
-        for ( size_t i = 0; i < nfaces; i++ )
+        for ( std::size_t i = 0; i < nfaces; i++ )
         {
             const kvs::UInt32 id0 = polygon_connections[ i * 3 + 0 ];
             const kvs::UInt32 id1 = polygon_connections[ i * 3 + 1 ];
@@ -117,11 +117,11 @@ kvs::ValueArray<kvs::Real32> VertexNormals( const kvs::PolygonObject* polygon )
         if ( polygon->connections().size() > 0 &&
              polygon->colorType() == kvs::PolygonObject::PolygonColor )
         {
-            const size_t nfaces = polygon->numberOfConnections();
+            const std::size_t nfaces = polygon->numberOfConnections();
             const kvs::Real32* polygon_normals = polygon->normals().data();
             const kvs::UInt32* polygon_connections = polygon->connections().data();
             normals.allocate( nfaces * 9 );
-            for ( size_t i = 0; i < nfaces; i++ )
+            for ( std::size_t i = 0; i < nfaces; i++ )
             {
                 const kvs::UInt32 id0 = polygon_connections[ i * 3 + 0 ];
                 const kvs::UInt32 id1 = polygon_connections[ i * 3 + 1 ];
@@ -148,10 +148,10 @@ kvs::ValueArray<kvs::Real32> VertexNormals( const kvs::PolygonObject* polygon )
     }
     case kvs::PolygonObject::PolygonNormal:
     {
-        const size_t nfaces = NumberOfVertices( polygon ) / 3;
+        const std::size_t nfaces = NumberOfVertices( polygon ) / 3;
         const kvs::Real32* polygon_normals = polygon->normals().data();
         normals.allocate( nfaces * 9 );
-        for ( size_t i = 0; i < nfaces; i++ )
+        for ( std::size_t i = 0; i < nfaces; i++ )
         {
             const kvs::Real32 nx = polygon_normals[ i * 3 + 0 ];
             const kvs::Real32 ny = polygon_normals[ i * 3 + 1 ];
@@ -201,39 +201,39 @@ kvs::ValueArray<kvs::UInt8> VertexColors( const kvs::PolygonObject* polygon )
         if ( polygon->connections().size() > 0 &&
              polygon->normalType() == kvs::PolygonObject::PolygonNormal )
         {
-            const size_t nfaces = polygon->numberOfConnections();
+            const std::size_t nfaces = polygon->numberOfConnections();
             const kvs::UInt8* polygon_colors = polygon->colors().data();
             const kvs::UInt8* polygon_alphas = polygon->opacities().data();
             const kvs::UInt32* polygon_connections = polygon->connections().data();
             colors.allocate( nfaces * 12 );
-            for ( size_t i = 0; i < nfaces; i++ )
+            for ( std::size_t i = 0; i < nfaces; i++ )
             {
                 const kvs::UInt32 id0 = polygon_connections[ i * 3 + 0 ];
                 const kvs::UInt32 id1 = polygon_connections[ i * 3 + 1 ];
                 const kvs::UInt32 id2 = polygon_connections[ i * 3 + 2 ];
 
-                const size_t idr0 = ( is_single_color ) ? 0 : id0 * 3 + 0;
-                const size_t idg0 = ( is_single_color ) ? 1 : id0 * 3 + 1;
-                const size_t idb0 = ( is_single_color ) ? 2 : id0 * 3 + 2;
-                const size_t ida0 = ( is_single_alpha ) ? 0 : id0;
+                const std::size_t idr0 = ( is_single_color ) ? 0 : id0 * 3 + 0;
+                const std::size_t idg0 = ( is_single_color ) ? 1 : id0 * 3 + 1;
+                const std::size_t idb0 = ( is_single_color ) ? 2 : id0 * 3 + 2;
+                const std::size_t ida0 = ( is_single_alpha ) ? 0 : id0;
                 colors[ i * 12 +  0 ] = polygon_colors[ idr0 ];
                 colors[ i * 12 +  1 ] = polygon_colors[ idg0 ];
                 colors[ i * 12 +  2 ] = polygon_colors[ idb0 ];
                 colors[ i * 12 +  3 ] = polygon_alphas[ ida0 ];
 
-                const size_t idr1 = ( is_single_color ) ? 0 : id1 * 3 + 0;
-                const size_t idg1 = ( is_single_color ) ? 1 : id1 * 3 + 1;
-                const size_t idb1 = ( is_single_color ) ? 2 : id1 * 3 + 2;
-                const size_t ida1 = ( is_single_alpha ) ? 0 : id1;
+                const std::size_t idr1 = ( is_single_color ) ? 0 : id1 * 3 + 0;
+                const std::size_t idg1 = ( is_single_color ) ? 1 : id1 * 3 + 1;
+                const std::size_t idb1 = ( is_single_color ) ? 2 : id1 * 3 + 2;
+                const std::size_t ida1 = ( is_single_alpha ) ? 0 : id1;
                 colors[ i * 12 +  4 ] = polygon_colors[ idr1 ];
                 colors[ i * 12 +  5 ] = polygon_colors[ idg1 ];
                 colors[ i * 12 +  6 ] = polygon_colors[ idb1 ];
                 colors[ i * 12 +  7 ] = polygon_alphas[ ida1 ];
 
-                const size_t idr2 = ( is_single_color ) ? 0 : id2 * 3 + 0;
-                const size_t idg2 = ( is_single_color ) ? 1 : id2 * 3 + 1;
-                const size_t idb2 = ( is_single_color ) ? 2 : id2 * 3 + 2;
-                const size_t ida2 = ( is_single_alpha ) ? 0 : id2;
+                const std::size_t idr2 = ( is_single_color ) ? 0 : id2 * 3 + 0;
+                const std::size_t idg2 = ( is_single_color ) ? 1 : id2 * 3 + 1;
+                const std::size_t idb2 = ( is_single_color ) ? 2 : id2 * 3 + 2;
+                const std::size_t ida2 = ( is_single_alpha ) ? 0 : id2;
                 colors[ i * 12 +  8 ] = polygon_colors[ idr2 ];
                 colors[ i * 12 +  9 ] = polygon_colors[ idg2 ];
                 colors[ i * 12 + 10 ] = polygon_colors[ idb2 ];
@@ -242,7 +242,7 @@ kvs::ValueArray<kvs::UInt8> VertexColors( const kvs::PolygonObject* polygon )
         }
         else
         {
-            const size_t nverts = polygon->numberOfVertices();
+            const std::size_t nverts = polygon->numberOfVertices();
             colors.allocate( nverts * 4 );
             if ( is_single_color )
             {
@@ -250,7 +250,7 @@ kvs::ValueArray<kvs::UInt8> VertexColors( const kvs::PolygonObject* polygon )
                 if ( is_single_alpha )
                 {
                     const kvs::UInt8 polygon_alpha = polygon->opacity();
-                    for ( size_t i = 0; i < nverts; i++ )
+                    for ( std::size_t i = 0; i < nverts; i++ )
                     {
                         colors[ 4 * i + 0 ] = polygon_color.r();
                         colors[ 4 * i + 1 ] = polygon_color.g();
@@ -261,7 +261,7 @@ kvs::ValueArray<kvs::UInt8> VertexColors( const kvs::PolygonObject* polygon )
                 else
                 {
                     const kvs::UInt8* polygon_alphas = polygon->opacities().data();
-                    for ( size_t i = 0; i < nverts; i++ )
+                    for ( std::size_t i = 0; i < nverts; i++ )
                     {
                         colors[ 4 * i + 0 ] = polygon_color.r();
                         colors[ 4 * i + 1 ] = polygon_color.g();
@@ -276,7 +276,7 @@ kvs::ValueArray<kvs::UInt8> VertexColors( const kvs::PolygonObject* polygon )
                 if ( is_single_alpha )
                 {
                     const kvs::UInt8 polygon_alpha = polygon->opacity();
-                    for ( size_t i = 0; i < nverts; i++ )
+                    for ( std::size_t i = 0; i < nverts; i++ )
                     {
                         colors[ 4 * i + 0 ] = polygon_colors[ 3 * i + 0 ];
                         colors[ 4 * i + 1 ] = polygon_colors[ 3 * i + 1 ];
@@ -287,7 +287,7 @@ kvs::ValueArray<kvs::UInt8> VertexColors( const kvs::PolygonObject* polygon )
                 else
                 {
                     const kvs::UInt8* polygon_alphas = polygon->opacities().data();
-                    for ( size_t i = 0; i < nverts; i++ )
+                    for ( std::size_t i = 0; i < nverts; i++ )
                     {
                         colors[ 4 * i + 0 ] = polygon_colors[ 3 * i + 0 ];
                         colors[ 4 * i + 1 ] = polygon_colors[ 3 * i + 1 ];
@@ -301,11 +301,11 @@ kvs::ValueArray<kvs::UInt8> VertexColors( const kvs::PolygonObject* polygon )
     }
     case kvs::PolygonObject::PolygonColor:
     {
-        const size_t nfaces = NumberOfVertices( polygon ) / 3;
+        const std::size_t nfaces = NumberOfVertices( polygon ) / 3;
         const kvs::UInt8* polygon_colors = polygon->colors().data();
         const kvs::UInt8* polygon_alphas = polygon->opacities().data();
         colors.allocate( nfaces * 12 );
-        for ( size_t i = 0; i < nfaces; i++ )
+        for ( std::size_t i = 0; i < nfaces; i++ )
         {
             const kvs::UInt8 r = ( is_single_color ) ? polygon_colors[0] : polygon_colors[ i * 3 + 0 ];
             const kvs::UInt8 g = ( is_single_color ) ? polygon_colors[1] : polygon_colors[ i * 3 + 1 ];
@@ -383,9 +383,9 @@ void PolygonRenderer::BufferObject::create( const kvs::ObjectBase* object )
 void PolygonRenderer::BufferObject::draw( const kvs::ObjectBase* object )
 {
     const auto* polygon = kvs::PolygonObject::DownCast( object );
-    const size_t nconnections = polygon->numberOfConnections();
-    const size_t nvertices = ::NumberOfVertices( polygon );
-    const size_t npolygons = nconnections == 0 ? nvertices / 3 : nconnections;
+    const std::size_t nconnections = polygon->numberOfConnections();
+    const std::size_t nvertices = ::NumberOfVertices( polygon );
+    const std::size_t npolygons = nconnections == 0 ? nvertices / 3 : nconnections;
     const bool has_connection = m_manager.indexBufferObject().size() > 0;
 
     // Draw triangles.
@@ -530,8 +530,8 @@ void PolygonRenderer::exec( kvs::ObjectBase* object, kvs::Camera* camera, kvs::L
     const bool has_normal = polygon->normals().size() > 0;
     BaseClass::setShadingEnabled( has_normal );
 
-    const size_t width = camera->windowWidth();
-    const size_t height = camera->windowHeight();
+    const std::size_t width = camera->windowWidth();
+    const std::size_t height = camera->windowHeight();
     const auto shading_enabled = BaseClass::isShadingEnabled();
     auto& shading_model = *m_shading_model;
 

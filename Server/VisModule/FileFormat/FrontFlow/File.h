@@ -55,11 +55,11 @@ public:
 
     const std::vector<std::string>& commentList( void ) const;
 
-    const std::string& comment( const size_t index ) const;
+    const std::string& comment( const std::size_t index ) const;
 
     const std::vector<vismodule::gf::DataSet>& dataSetList( void ) const;
 
-    const vismodule::gf::DataSet& dataSet( const size_t index ) const;
+    const vismodule::gf::DataSet& dataSet( const std::size_t index ) const;
 
     void deallocate( void );
 

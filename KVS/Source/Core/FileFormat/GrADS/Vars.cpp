@@ -53,10 +53,10 @@ bool Vars::read( std::string line, std::ifstream& ifs )
 
     // varnum
     if ( t.isLast() ) return false;
-    const size_t varnum = static_cast<size_t>( atoi( t.token().c_str() ) );
+    const std::size_t varnum = static_cast<size_t>( atoi( t.token().c_str() ) );
 
     this->values.clear();
-    for ( size_t i = 0; i < varnum; i++ )
+    for ( std::size_t i = 0; i < varnum; i++ )
     {
         std::getline( ifs, line );
         t = kvs::Tokenizer( line, " \t" );

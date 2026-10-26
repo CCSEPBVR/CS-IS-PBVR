@@ -55,7 +55,7 @@ const bool TableObjectTag::hasNRows( void ) const
  *  @return number of rows
  */
 /*===========================================================================*/
-const size_t TableObjectTag::nrows( void ) const
+const std::size_t TableObjectTag::nrows( void ) const
 {
     return( m_nrows );
 }
@@ -77,7 +77,7 @@ const bool TableObjectTag::hasNColumns( void ) const
  *  @return number of columns
  */
 /*===========================================================================*/
-const size_t TableObjectTag::ncolumns( void ) const
+const std::size_t TableObjectTag::ncolumns( void ) const
 {
     return( m_ncolumns );
 }
@@ -88,7 +88,7 @@ const size_t TableObjectTag::ncolumns( void ) const
  *  @param  nrows [in] number of rows
  */
 /*===========================================================================*/
-void TableObjectTag::setNRows( const size_t nrows )
+void TableObjectTag::setNRows( const std::size_t nrows )
 {
     m_has_nrows = true;
     m_nrows = nrows;
@@ -100,7 +100,7 @@ void TableObjectTag::setNRows( const size_t nrows )
  *  @param  nrows [in] number of columns
  */
 /*===========================================================================*/
-void TableObjectTag::setNColumns( const size_t ncolumns )
+void TableObjectTag::setNColumns( const std::size_t ncolumns )
 {
     m_has_ncolumns = true;
     m_ncolumns = ncolumns;

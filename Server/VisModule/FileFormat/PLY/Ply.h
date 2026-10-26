@@ -53,8 +53,8 @@ public:
 protected:
 
     FileType           m_file_type; ///< file type
-    size_t             m_nverts; ///< number of vertices
-    size_t             m_nfaces; ///< number of faces
+    std::size_t             m_nverts; ///< number of vertices
+    std::size_t             m_nfaces; ///< number of faces
     vismodule::ValueArray<vismodule::Real32> m_coords; ///< coordinate value array
     vismodule::ValueArray<vismodule::UInt8>  m_colors; ///< color value array
     vismodule::ValueArray<vismodule::Real32> m_normals; ///< normal value array
@@ -93,9 +93,9 @@ public:
 
     const FileType fileType( void ) const;
 
-    const size_t numberOfVertices( void ) const;
+    const std::size_t numberOfVertices( void ) const;
 
-    const size_t numberOfFaces( void ) const;
+    const std::size_t numberOfFaces( void ) const;
 
     const bool hasConnections( void ) const;
 

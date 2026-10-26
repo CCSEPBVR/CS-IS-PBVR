@@ -15,9 +15,9 @@
 // Default parameters.
 namespace { namespace Default
 {
-const size_t Margin = 10;
-const size_t Width = 350;
-const size_t Height = 50;
+const std::size_t Margin = 10;
+const std::size_t Width = 350;
+const std::size_t Height = 50;
 const kvs::RGBColor RectColor = kvs::RGBColor( 255, 255, 255 );
 const kvs::RGBColor RectEdgeColor = kvs::RGBColor( 230, 230, 230 );
 } }
@@ -149,7 +149,7 @@ void OpacityMapPalette::mousePressEvent( kvs::MouseEvent* event )
             pdata[0] = opacity;
 
             // Download to GPU.
-            const size_t width = m_opacity_map.resolution();
+            const std::size_t width = m_opacity_map.resolution();
             m_texture.bind();
             m_texture.load( width, data );
             m_texture.unbind();
@@ -198,7 +198,7 @@ void OpacityMapPalette::mouseReleaseEvent( kvs::MouseEvent* event )
 
 int OpacityMapPalette::adjustedWidth()
 {
-    const size_t width = m_caption.size() * BaseClass::characterWidth() + BaseClass::margin() * 2;
+    const std::size_t width = m_caption.size() * BaseClass::characterWidth() + BaseClass::margin() * 2;
     return kvs::Math::Max( width, ::Default::Width );
 }
 
@@ -209,7 +209,7 @@ int OpacityMapPalette::adjustedHeight()
 
 void OpacityMapPalette::initialize_texture( const kvs::OpacityMap& opacity_map )
 {
-    const size_t width = opacity_map.resolution();
+    const std::size_t width = opacity_map.resolution();
     const kvs::Real32* data = opacity_map.table().data();
 
     m_texture.release();
@@ -221,7 +221,7 @@ void OpacityMapPalette::initialize_texture( const kvs::OpacityMap& opacity_map )
 
 void OpacityMapPalette::initialize_checkerboard()
 {
-    const size_t nchannels = 3;
+    const std::size_t nchannels = 3;
     const int width = 32;
     const int height = 32;
 
@@ -366,7 +366,7 @@ void OpacityMapPalette::draw_free_hand_line( kvs::MouseEvent* event )
     }
 
     // Download to GPU.
-    const size_t width = m_opacity_map.resolution();
+    const std::size_t width = m_opacity_map.resolution();
     m_texture.bind();
     m_texture.load( width, data );
     m_texture.unbind();
@@ -454,7 +454,7 @@ void OpacityMapPalette::draw_straight_line( kvs::MouseEvent* event )
     }
 
     // Download to GPU.
-    const size_t width = m_opacity_map.resolution();
+    const std::size_t width = m_opacity_map.resolution();
     m_texture.bind();
     m_texture.load( width, data );
     m_texture.unbind();

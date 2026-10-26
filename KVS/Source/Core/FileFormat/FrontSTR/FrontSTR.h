@@ -34,8 +34,8 @@ public:
 
 private:
 
-    size_t m_nmeshes; ///< number of mesh data
-    size_t m_nresults; ///< number of result data
+    std::size_t m_nmeshes; ///< number of mesh data
+    std::size_t m_nresults; ///< number of result data
     kvs::fstr::MeshData* m_mesh_data; ///< mesh data
     kvs::fstr::ResultData* m_result_data; ///< result data
 
@@ -51,10 +51,10 @@ public:
     FrontSTR( const std::vector<std::string>& msh_filenames, const std::vector<std::string>& res_filenames );
     virtual ~FrontSTR();
 
-    size_t numberOfMeshData() const;
-    size_t numberOfResultData() const;
-    const kvs::fstr::MeshData& meshData( const size_t index = 0 ) const;
-    const kvs::fstr::ResultData& resultData( const size_t index = 0 ) const;
+    std::size_t numberOfMeshData() const;
+    std::size_t numberOfResultData() const;
+    const kvs::fstr::MeshData& meshData( const std::size_t index = 0 ) const;
+    const kvs::fstr::ResultData& resultData( const std::size_t index = 0 ) const;
 
     void print( std::ostream& os, const kvs::Indent& indent = kvs::Indent(0) ) const;
     bool read( const std::string& filenames );

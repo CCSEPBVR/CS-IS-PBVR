@@ -36,7 +36,7 @@ const kvs::ColorImage MovieObject::currentImage() const
  *  @return true on success
  */
 /*===========================================================================*/
-bool MovieObject::jumpToFrame( const size_t index )
+bool MovieObject::jumpToFrame( const std::size_t index )
 {
     if ( this->currentFrameIndex() == kvs::Int64(index) ) { return true; }
     this->seekToFrame( index );

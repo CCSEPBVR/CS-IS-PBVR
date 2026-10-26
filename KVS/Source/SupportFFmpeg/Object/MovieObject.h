@@ -41,17 +41,17 @@ public:
     MovieObject( const std::string& filename ) { this->read( filename ); }
 
     double frameRate() const { return m_demuxer.stream().frameRate().getDouble(); }
-    size_t numberOfFrames() const { return static_cast<size_t>( m_demuxer.numberOfFrames() ); }
-    size_t width() const { return static_cast<size_t>( m_demuxer.decoder().width() ); }
-    size_t height() const { return static_cast<size_t>( m_demuxer.decoder().height() ); }
+    std::size_t numberOfFrames() const { return static_cast<size_t>( m_demuxer.numberOfFrames() ); }
+    std::size_t width() const { return static_cast<size_t>( m_demuxer.decoder().width() ); }
+    std::size_t height() const { return static_cast<size_t>( m_demuxer.decoder().height() ); }
     bool isLastFrame() const { return m_demuxer.isLastFrame(); }
     kvs::Int64 currentFrameIndex() const { return m_demuxer.currentFrameIndex(); }
     const Buffer& currentBuffer() const { return m_buffer; }
     const kvs::ColorImage currentImage() const;
 
-    bool jumpToFrame( const size_t index );
+    bool jumpToFrame( const std::size_t index );
     bool jumpToNextFrame() { return this->grabFrame(); }
-    void seekToFrame( const size_t index ) { m_demuxer.seek( index ); }
+    void seekToFrame( const std::size_t index ) { m_demuxer.seek( index ); }
     bool grabFrame();
     bool read( const std::string& filename );
 };

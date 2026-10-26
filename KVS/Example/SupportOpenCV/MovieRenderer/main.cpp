@@ -25,8 +25,8 @@ int main( int argc, char** argv )
     renderer->enableLoopPlay();
     renderer->disableReversePlay();
 
-    const size_t width = object->width();
-    const size_t height = object->height();
+    const std::size_t width = object->width();
+    const std::size_t height = object->height();
     kvs::glut::Screen screen( &app );
     screen.setTitle( "kvs::opencv::MovieRenderer" );
     screen.setSize( width, height );

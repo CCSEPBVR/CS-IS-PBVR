@@ -22,7 +22,7 @@ void ExtendedTransferFunctionMessage::ExTransFuncParaSet()
     m_extend_transfer_function_resolution = 256;
     m_transfer_function_number=m_nprtf;
 
-    for ( size_t i = 0; i < m_color_transfer_function.size(); i++ )
+    for ( std::size_t i = 0; i < m_color_transfer_function.size(); i++ )
     {
         std::stringstream ss;
         ss << "C" << i + 1;
@@ -31,7 +31,7 @@ void ExtendedTransferFunctionMessage::ExTransFuncParaSet()
         m_color_transfer_function[i].m_color_variable        = "q1";
         m_color_transfer_function[i].m_range_initialized = false;
     }
-    for ( size_t i = 0; i < m_opacity_transfer_function.size(); i++ )
+    for ( std::size_t i = 0; i < m_opacity_transfer_function.size(); i++ )
     {
         std::stringstream ss;
         ss << "O" << i + 1;
@@ -54,7 +54,7 @@ void ExtendedTransferFunctionMessage::ExTransFuncParaDump()
     std::cout << "m_color_transfer_function_synthesis " << m_color_transfer_function_synthesis << std::endl;
     std::cout << "m_opacity_transfer_function_synthesis " << m_opacity_transfer_function_synthesis << std::endl;
 
-    for ( size_t i = 0; i < m_color_transfer_function.size(); i++ )
+    for ( std::size_t i = 0; i < m_color_transfer_function.size(); i++ )
     {
         std::cout << "m_color_transfer_function[" << i << "].m_name          " << m_color_transfer_function[i].m_name << std::endl;
         std::cout << "m_color_transfer_function[" << i << "].m_color_variable      " << m_color_transfer_function[i].m_color_variable  << std::endl;
@@ -66,7 +66,7 @@ void ExtendedTransferFunctionMessage::ExTransFuncParaDump()
         std::cout << "m_color_transfer_function[" << i << "].m_equationA     " << m_color_transfer_function[i].m_equation_opacity << std::endl;
     }
 
-    for ( size_t i = 0; i < m_opacity_transfer_function.size(); i++ )
+    for ( std::size_t i = 0; i < m_opacity_transfer_function.size(); i++ )
     {
         std::cout << "m_opacity_transfer_function[" << i << "].m_name          " << m_opacity_transfer_function[i].m_name << std::endl;
         std::cout << "m_opacity_transfer_function[" << i << "].m_opacity_variable    " << m_opacity_transfer_function[i].m_opacity_variable  << std::endl;
@@ -85,19 +85,19 @@ bool ExtendedTransferFunctionMessage::operator==( const ExtendedTransferFunction
     v0 &= ( this->m_extend_volume_synthesis == s.m_extend_volume_synthesis );
 
     // 色関数
-    const size_t n_color_func = this->m_color_transfer_function.size();
+    const std::size_t n_color_func = this->m_color_transfer_function.size();
     v0 &= ( n_color_func == s.m_color_transfer_function.size() );
     if ( v0 ) {
-        for ( size_t n = 0; n < n_color_func; n++ ) {
+        for ( std::size_t n = 0; n < n_color_func; n++ ) {
             v0 &= ( this->m_color_transfer_function[n].operator == ( s.m_color_transfer_function[n] ) );
         }
     }
 
     // 不透明度関数
-    const size_t n_opacity_func = this->m_opacity_transfer_function.size();
+    const std::size_t n_opacity_func = this->m_opacity_transfer_function.size();
     v0 &= ( n_opacity_func == s.m_opacity_transfer_function.size() );
     if ( v0 ) {
-        for ( size_t n = 0; n < n_opacity_func; n++ ) {
+        for ( std::size_t n = 0; n < n_opacity_func; n++ ) {
             v0 &= ( this->m_opacity_transfer_function[n].operator == ( s.m_opacity_transfer_function[n] ) );
         }
     }
@@ -168,7 +168,7 @@ void ExtendedTransferFunctionMessage::applyToClientMessage( jpv::ParticleTransfe
 
 #if 0
     // 色関数リスト
-    for ( size_t i = 0; i < this->m_color_transfer_function.size(); i++ )
+    for ( std::size_t i = 0; i < this->m_color_transfer_function.size(); i++ )
     {
         NamedTransferFunctionParameter etf;
         jpv::ParticleTransferClientMessage::VolumeEquation veq;
@@ -189,7 +189,7 @@ void ExtendedTransferFunctionMessage::applyToClientMessage( jpv::ParticleTransfe
     }
 
     // 不透明度関数リスト
-    for ( size_t i = 0; i < this->m_opacity_transfer_function.size(); i++ )
+    for ( std::size_t i = 0; i < this->m_opacity_transfer_function.size(); i++ )
     {
         NamedTransferFunctionParameter etf;
         jpv::ParticleTransferClientMessage::VolumeEquation veq;
@@ -209,7 +209,7 @@ void ExtendedTransferFunctionMessage::applyToClientMessage( jpv::ParticleTransfe
         message->opacity_var.push_back( this->convertToken( this->m_opacity_transfer_function[i].m_opacity_variable ) );
     }
 #else
-    for ( size_t i = 0; i < this->m_color_transfer_function.size(); i++ )
+    for ( std::size_t i = 0; i < this->m_color_transfer_function.size(); i++ )
     {
         NamedTransferFunctionParameter etf;
         jpv::ParticleTransferClientMessage::VolumeEquation veq_c, veq_o;
@@ -541,7 +541,7 @@ void ExtendedTransferFunctionMessage::importFromServerMessage( const jpv::Partic
     // set tf_number
     this->m_transfer_function_number = message.m_transfer_function.size();
 
-    for ( size_t i = 0, j = 0; i < message.m_transfer_function.size(); i++, j+=2 )
+    for ( std::size_t i = 0, j = 0; i < message.m_transfer_function.size(); i++, j+=2 )
     {
         NamedTransferFunctionParameter etf;
         jpv::ParticleTransferClientMessage::VolumeEquation veq_c, veq_o;

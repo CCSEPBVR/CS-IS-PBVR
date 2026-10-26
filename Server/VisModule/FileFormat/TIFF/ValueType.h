@@ -58,7 +58,7 @@ const std::string ValueTypeName[ vismodule::tiff::NumberOfValueTypes ] =
     "Double"
 };
 
-const size_t ValueTypeSize[ vismodule::tiff::NumberOfValueTypes ] =
+const std::size_t ValueTypeSize[ vismodule::tiff::NumberOfValueTypes ] =
 {
     0,
     1,

@@ -79,8 +79,8 @@ ImageCompositor::~ImageCompositor()
  */
 /*===========================================================================*/
 bool ImageCompositor::initialize(
-    const size_t width,
-    const size_t height,
+    const std::size_t width,
+    const std::size_t height,
     const bool enable_depth_testing )
 {
     if ( m_width != width || m_height != height ) { this->destroy(); }
@@ -162,7 +162,7 @@ bool ImageCompositor::run(
     auto rank_list = depth_list.argsort( ascending );
 
     // Iterator (i) to element, which includes my_rank, in rank_list
-    const size_t my_rank = static_cast<size_t>( comm.rank() );
+    const std::size_t my_rank = static_cast<size_t>( comm.rank() );
     auto i = std::find( rank_list.begin(), rank_list.end(), my_rank );
 
     // Sort color_buffer in back-to-front order

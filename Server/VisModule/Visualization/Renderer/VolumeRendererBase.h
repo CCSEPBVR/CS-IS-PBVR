@@ -37,8 +37,8 @@ class VolumeRendererBase : public vismodule::RendererBase
 
 protected:
 
-    size_t                       m_width;          ///< width of rendering image
-    size_t                       m_height;         ///< height of rendering image
+    std::size_t                       m_width;          ///< width of rendering image
+    std::size_t                       m_height;         ///< height of rendering image
     vismodule::FrameBuffer             m_depth_buffer;   ///< depth buffer
     vismodule::ValueArray<vismodule::Real32> m_depth_data;     ///< depth data as float type
     vismodule::FrameBuffer             m_color_buffer;   ///< color (RGBA) buffer

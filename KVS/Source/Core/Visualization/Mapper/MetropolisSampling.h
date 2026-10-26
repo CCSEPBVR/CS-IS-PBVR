@@ -31,20 +31,20 @@ class MetropolisSampling : public MapperBase, public PointObject
 
 protected:
 
-    size_t m_nparticles; ///< number of generated particles
+    std::size_t m_nparticles; ///< number of generated particles
 
 public:
 
     MetropolisSampling();
-    MetropolisSampling( const kvs::VolumeObjectBase* volume, const size_t nparticles );
+    MetropolisSampling( const kvs::VolumeObjectBase* volume, const std::size_t nparticles );
     MetropolisSampling(
         const kvs::VolumeObjectBase* volume,
-        const size_t nparticles,
+        const std::size_t nparticles,
         const kvs::TransferFunction& transfer_function );
     virtual ~MetropolisSampling();
 
-    size_t nparticles() const;
-    void setNParticles( const size_t nparticles );
+    std::size_t nparticles() const;
+    void setNParticles( const std::size_t nparticles );
 
     SuperClass* exec( const kvs::ObjectBase* object );
 
@@ -55,9 +55,9 @@ private:
     template <typename T> void generate_particles( const kvs::StructuredVolumeObject* volume );
 /*
     void adopt_particle(
-        const size_t index,
+        const std::size_t index,
         const kvs::Vector3f& coord,
-        const size_t scalar,
+        const std::size_t scalar,
         const kvs::Vector3f& gradient );
 */
 };

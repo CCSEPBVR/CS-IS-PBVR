@@ -43,24 +43,24 @@ public:
     template <typename T>
     AnyValueTable( const kvs::ValueTable<T>& table )
     {
-        for ( size_t i = 0; i < table.columnSize(); i++ )
+        for ( std::size_t i = 0; i < table.columnSize(); i++ )
         {
             m_columns.push_back( Column( table.column(i) ) );
         }
     }
 
-    explicit AnyValueTable( const size_t ncolumns )
+    explicit AnyValueTable( const std::size_t ncolumns )
     {
         m_columns.resize( ncolumns );
     }
 
-    column_reference operator []( const size_t column_index )
+    column_reference operator []( const std::size_t column_index )
     {
         KVS_ASSERT( column_index < m_columns.size() );
         return m_columns[ column_index ];
     }
 
-    const_column_reference operator []( const size_t column_index ) const
+    const_column_reference operator []( const std::size_t column_index ) const
     {
         KVS_ASSERT( column_index < m_columns.size() );
         return m_columns[ column_index ];
@@ -147,27 +147,27 @@ public:
         m_columns.pop_back();
     }
 
-    size_t columnSize() const
+    std::size_t columnSize() const
     {
         return m_columns.size();
     }
 
-    column_reference column( const size_t index )
+    column_reference column( const std::size_t index )
     {
         return ( *this )[ index ];
     }
 
-    const_column_reference column( const size_t index ) const
+    const_column_reference column( const std::size_t index ) const
     {
         return ( *this )[ index ];
     }
 
     template <typename T>
-    const kvs::ValueArray<T> rowAsValueArray( const size_t index ) const
+    const kvs::ValueArray<T> rowAsValueArray( const std::size_t index ) const
     {
-        size_t ncolumns = this->columnSize();
+        std::size_t ncolumns = this->columnSize();
         kvs::ValueArray<T> row( ncolumns );
-        for ( size_t i = 0; i < ncolumns; i++ )
+        for ( std::size_t i = 0; i < ncolumns; i++ )
         {
             row[i] = this->column(i).at<T>( index );
         }
@@ -179,7 +179,7 @@ public:
     kvs::ValueTable<T> asValueTable() const
     {
         kvs::ValueTable<T> table;
-        for ( size_t i = 0; i < this->columnSize(); ++i )
+        for ( std::size_t i = 0; i < this->columnSize(); ++i )
         {
             table.pushBackColumn( this->column(i).asValueArray<T>() );
         }
@@ -187,7 +187,7 @@ public:
     }
 
     template <typename T>
-    T at( const size_t row_index, const size_t column_index ) const
+    T at( const std::size_t row_index, const std::size_t column_index ) const
     {
         return ( *this )[ column_index ].at<T>( row_index );
     }
@@ -197,10 +197,10 @@ public:
         return m_columns;
     }
 
-    size_t size() const
+    std::size_t size() const
     {
-        size_t ncells = 0;
-        for ( size_t i = 0; i < m_columns.size(); i++ )
+        std::size_t ncells = 0;
+        for ( std::size_t i = 0; i < m_columns.size(); i++ )
         {
             ncells += m_columns[i].size();
         }

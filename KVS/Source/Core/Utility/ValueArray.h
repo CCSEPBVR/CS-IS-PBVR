@@ -40,17 +40,17 @@ public:
     using const_iterator = const T*;
     using reference = T&;
     using const_reference = const T&;
-    using size_type = std::size_t;
+    using size_type = std::size_t ;
     using difference_type = std::ptrdiff_t;
     using reverse_iterator = std::reverse_iterator<iterator>;
     using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
 private:
     kvs::SharedPointer<value_type> m_values; ///< values
-    size_t m_size; ///< number of values.
+    std::size_t m_size; ///< number of values.
 
 public:
-    static ValueArray Random( const size_t size, const unsigned int seed = 0 )
+    static ValueArray Random( const std::size_t size, const unsigned int seed = 0 )
     {
         if ( size == 0 ) { return ValueArray(); }
         if ( seed == 0 ) { static bool flag = true; if ( flag ) { kvs::Value<T>::SetRandomSeed(); flag = false; } }
@@ -61,7 +61,7 @@ public:
         return v;
     }
 
-    static ValueArray Random( const size_t size, const T min, const T max, const unsigned int seed = 0 )
+    static ValueArray Random( const std::size_t size, const T min, const T max, const unsigned int seed = 0 )
     {
         if ( size == 0 ) { return ValueArray(); }
         if ( seed == 0 ) { static bool flag = true; if ( flag ) { kvs::Value<T>::SetRandomSeed(); flag = false; } }
@@ -72,7 +72,7 @@ public:
         return v;
     }
 
-    static ValueArray Linear( const size_t size, const T start = T(0), const T step = T(1) )
+    static ValueArray Linear( const std::size_t size, const T start = T(0), const T step = T(1) )
     {
         if ( size == 0 ) { return ValueArray(); }
         this_type v( size );
@@ -88,12 +88,12 @@ public:
         m_size = 0;
     }
 
-    explicit ValueArray( const size_t size )
+    explicit ValueArray( const std::size_t size )
     {
         this->allocate( size );
     }
 
-    ValueArray( const value_type* values, const size_t size )
+    ValueArray( const value_type* values, const std::size_t size )
     {
         this->allocate( size );
         std::copy( values, values + size, this->begin() );
@@ -118,14 +118,14 @@ public:
         std::copy( list.begin(), list.end(), this->begin() );
     }
 
-    ValueArray( const kvs::SharedPointer<T>& sp, size_t size ):
+    ValueArray( const kvs::SharedPointer<T>& sp, std::size_t size ):
         m_values( sp )
     {
         m_size = size;
     }
 
 public:
-    void assign( const value_type* values, const size_t size )
+    void assign( const value_type* values, const std::size_t size )
     {
         *this = ValueArray( values, size );
     }
@@ -208,13 +208,13 @@ public:
     }
 
 public:
-    reference operator []( const size_t index )
+    reference operator []( const std::size_t index )
     {
         KVS_ASSERT( index < this->size() );
         return this->data()[ index ];
     }
 
-    const_reference operator []( const size_t index ) const
+    const_reference operator []( const std::size_t index ) const
     {
         KVS_ASSERT( index < this->size() );
         return this->data()[ index ];
@@ -352,12 +352,12 @@ public:
         return ret;
     }
 
-    reference at( const size_t index )
+    reference at( const std::size_t index )
     {
         return ( *this )[ index ];
     }
 
-    const_reference at( const size_t index ) const
+    const_reference at( const std::size_t index ) const
     {
         return ( *this )[ index ];
     }
@@ -378,7 +378,7 @@ public:
     }
 
 public:
-    void allocate( const size_t size )
+    void allocate( const std::size_t size )
     {
 //        m_values.reset( new value_type[ size ], kvs::temporal::ArrayDeleter<value_type>() );
         m_values.reset( new value_type[ size ], kvs::Deleter<value_type[]>() );
@@ -416,12 +416,12 @@ public:
         return std::accumulate( this->begin(), this->end(), T(0) );
     }
 
-    size_t argmin() const
+    std::size_t argmin() const
     {
         return std::distance( this->begin(), std::min_element( this->begin(), this->end() ) );
     }
 
-    size_t argmax() const
+    std::size_t argmax() const
     {
         return std::distance( this->begin(), std::max_element( this->begin(), this->end() ) );
     }
@@ -446,7 +446,7 @@ public:
         kvs::Value<size_t>::SetRandomSeed();
         for ( difference_type i = n - 1; i > 0; --i )
         {
-            const size_t j = kvs::Value<size_t>::Random( 0, i );
+            const std::size_t j = kvs::Value<size_t>::Random( 0, i );
             std::swap( first[i], first[j] );
         }
     }
@@ -458,7 +458,7 @@ public:
         //     // in case of ascending order
         //     this_type& array = *this;
         //     std::sort( indices.begin(), indices.end(),
-        //                [&array]( size_t i, size_t j ) { return array[i] < array[j]; } );
+        //                [&array]( std::size_t i, std::size_t j ) { return array[i] < array[j]; } );
         // }
         ValueArray<size_t> indices = ValueArray<size_t>::Linear( this->size() );
         if ( ascending )
@@ -476,13 +476,13 @@ private:
     struct argsort_less
     {
         const_iterator m_begin; argsort_less( const_iterator begin ): m_begin( begin ) {}
-        bool operator () ( size_t i, size_t j ) const { return m_begin[i] < m_begin[j]; }
+        bool operator () ( std::size_t i, std::size_t j ) const { return m_begin[i] < m_begin[j]; }
     };
 
     struct argsort_greater
     {
         const_iterator m_begin; argsort_greater( const_iterator begin ): m_begin( begin ) {}
-        bool operator () ( size_t i, size_t j ) const { return m_begin[i] > m_begin[j]; }
+        bool operator () ( std::size_t i, std::size_t j ) const { return m_begin[i] > m_begin[j]; }
     };
 };
 

@@ -244,7 +244,7 @@ void FormatContext::seek(const Timestamp &timestamp, OptionalErrorCode ec)
     seek(timestamp.timestamp(AV_TIME_BASE_Q_CPP), -1, 0, ec);
 }
 
-void FormatContext::seek(const Timestamp& timestamp, size_t streamIndex, OptionalErrorCode ec)
+void FormatContext::seek(const Timestamp& timestamp, std::size_t streamIndex, OptionalErrorCode ec)
 {
     auto st = stream(streamIndex, ec);
     if (st.isValid())
@@ -256,7 +256,7 @@ void FormatContext::seek(const Timestamp& timestamp, bool anyFrame, OptionalErro
     seek(timestamp.timestamp(AV_TIME_BASE_Q_CPP), -1, anyFrame ? AVSEEK_FLAG_ANY : 0, ec);
 }
 
-void FormatContext::seek(const Timestamp &timestamp, size_t streamIndex, bool anyFrame, OptionalErrorCode ec)
+void FormatContext::seek(const Timestamp &timestamp, std::size_t streamIndex, bool anyFrame, OptionalErrorCode ec)
 {
     auto st = stream(streamIndex);
     if (st.isValid())
@@ -389,7 +389,7 @@ void FormatContext::openInput(const std::string &uri, InputFormat format, AVDict
 void FormatContext::openInput(CustomIO       *io,
                               InputFormat     format,
                               OptionalErrorCode ec,
-                              size_t           internalBufferSize)
+                              std::size_t           internalBufferSize)
 {
     openCustomIOInput(io, internalBufferSize, ec);
     if (!is_error(ec))
@@ -400,7 +400,7 @@ void FormatContext::openInput(CustomIO        *io,
                               Dictionary      &formatOptions,
                               InputFormat      format,
                               OptionalErrorCode ec,
-                              size_t           internalBufferSize)
+                              std::size_t           internalBufferSize)
 {
     openCustomIOInput(io, internalBufferSize, ec);
     if (!is_error(ec))
@@ -411,7 +411,7 @@ void FormatContext::openInput(CustomIO         *io,
                               Dictionary      &&formatOptions,
                               InputFormat       format,
                               OptionalErrorCode ec,
-                              size_t            internalBufferSize)
+                              std::size_t            internalBufferSize)
 {
     openInput(io, formatOptions, format, ec, internalBufferSize);
 }
@@ -615,7 +615,7 @@ void FormatContext::openOutput(const string &uri, OutputFormat format, AVDiction
     m_isOpened = true;
 }
 
-void FormatContext::openOutput(CustomIO *io, OptionalErrorCode ec, size_t internalBufferSize)
+void FormatContext::openOutput(CustomIO *io, OptionalErrorCode ec, std::size_t internalBufferSize)
 {
     openCustomIOOutput(io, internalBufferSize, ec);
     if (!is_error(ec))
@@ -730,22 +730,22 @@ bool FormatContext::checkUncodedFrameWriting(size_t streamIndex) noexcept
     return checkUncodedFrameWriting(streamIndex, ec);
 }
 
-void FormatContext::writeUncodedFrame(VideoFrame &frame, size_t streamIndex, OptionalErrorCode ec)
+void FormatContext::writeUncodedFrame(VideoFrame &frame, std::size_t streamIndex, OptionalErrorCode ec)
 {
     writeFrame(frame.raw(), streamIndex, ec, av_interleaved_write_uncoded_frame);
 }
 
-void FormatContext::writeUncodedFrameDirect(VideoFrame &frame, size_t streamIndex, OptionalErrorCode ec)
+void FormatContext::writeUncodedFrameDirect(VideoFrame &frame, std::size_t streamIndex, OptionalErrorCode ec)
 {
     writeFrame(frame.raw(), streamIndex, ec, av_write_uncoded_frame);
 }
 
-void FormatContext::writeUncodedFrame(AudioSamples &frame, size_t streamIndex, OptionalErrorCode ec)
+void FormatContext::writeUncodedFrame(AudioSamples &frame, std::size_t streamIndex, OptionalErrorCode ec)
 {
     writeFrame(frame.raw(), streamIndex, ec, av_interleaved_write_uncoded_frame);
 }
 
-void FormatContext::writeUncodedFrameDirect(AudioSamples &frame, size_t streamIndex, OptionalErrorCode ec)
+void FormatContext::writeUncodedFrameDirect(AudioSamples &frame, std::size_t streamIndex, OptionalErrorCode ec)
 {
     writeFrame(frame.raw(), streamIndex, ec, av_write_uncoded_frame);
 }
@@ -893,7 +893,7 @@ void FormatContext::resetSocketAccess()
     m_lastSocketAccess = std::chrono::system_clock::now();
 }
 
-void FormatContext::findStreamInfo(AVDictionary **options, size_t optionsCount, OptionalErrorCode ec)
+void FormatContext::findStreamInfo(AVDictionary **options, std::size_t optionsCount, OptionalErrorCode ec)
 {
     clear_if(ec);
 
@@ -943,7 +943,7 @@ int FormatContext::checkPbError(int stat)
     return stat;
 }
 
-void FormatContext::openCustomIO(CustomIO *io, size_t internalBufferSize, bool isWritable, OptionalErrorCode ec)
+void FormatContext::openCustomIO(CustomIO *io, std::size_t internalBufferSize, bool isWritable, OptionalErrorCode ec)
 {
     clear_if(ec);
 
@@ -986,7 +986,7 @@ void FormatContext::openCustomIO(CustomIO *io, size_t internalBufferSize, bool i
     m_raw->pb = ctx;
 }
 
-void FormatContext::openCustomIOInput(CustomIO *io, size_t internalBufferSize, OptionalErrorCode ec)
+void FormatContext::openCustomIOInput(CustomIO *io, std::size_t internalBufferSize, OptionalErrorCode ec)
 {
     if (isOpened())
     {
@@ -996,7 +996,7 @@ void FormatContext::openCustomIOInput(CustomIO *io, size_t internalBufferSize, O
     openCustomIO(io, internalBufferSize, false, ec);
 }
 
-void FormatContext::openCustomIOOutput(CustomIO *io, size_t internalBufferSize, OptionalErrorCode ec)
+void FormatContext::openCustomIOOutput(CustomIO *io, std::size_t internalBufferSize, OptionalErrorCode ec)
 {
     if (isOpened())
     {

@@ -21,7 +21,7 @@ namespace kvs
 class EnsembleAverageBuffer
 {
 private:
-    size_t m_count; ///< number of ensembles (repetitions)
+    std::size_t m_count; ///< number of ensembles (repetitions)
     kvs::Texture2D m_current_color_texture; ///< current color buffer
     kvs::Texture2D m_current_depth_texture; ///< current depth buffer
     kvs::FrameBufferObject m_current_framebuffer; ///< current framebuffer
@@ -35,7 +35,7 @@ public:
     const kvs::Texture2D& currentDepthTexture() const { return m_current_depth_texture; }
     const kvs::FrameBufferObject& currentFrameBufferObject() const { return m_current_framebuffer; }
 
-    void create( const size_t width, const size_t height );
+    void create( const std::size_t width, const std::size_t height );
     void release();
     void clear();
     void bind();

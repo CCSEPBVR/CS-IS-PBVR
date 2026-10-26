@@ -36,9 +36,9 @@ public:
 
     const std::string& fileTypeHeader() const { return m_file_type_header; }
     const std::vector<std::string>& commentList() const { return m_comment_list; }
-    const std::string& comment( const size_t index ) const { return m_comment_list[index]; }
+    const std::string& comment( const std::size_t index ) const { return m_comment_list[index]; }
     const std::vector<kvs::gf::DataSet>& dataSetList() const { return m_data_set_list; }
-    const kvs::gf::DataSet& dataSet( const size_t index ) const { return m_data_set_list[index]; }
+    const kvs::gf::DataSet& dataSet( const std::size_t index ) const { return m_data_set_list[index]; }
     void deallocate();
 
     bool read( const std::string filename );

@@ -13,7 +13,7 @@ namespace
 {
 
 template <typename T>
-kvs::AnyValueArray MakeClone( const void* data, size_t size )
+kvs::AnyValueArray MakeClone( const void* data, std::size_t size )
 {
     kvs::ValueArray<T> ret( static_cast<const T*>( data ), size );
     return kvs::AnyValueArray( ret );
@@ -100,7 +100,7 @@ void AnyValueArray::swap( AnyValueArray& other )
 AnyValueArray AnyValueArray::clone() const
 {
     const void* data = this->data();
-    size_t size = this->size();
+    std::size_t size = this->size();
     switch ( this->typeID() )
     {
     case kvs::Type::TypeInt8:   return ::MakeClone<kvs::Int8  >( data, size );
@@ -144,15 +144,15 @@ template AnyValueArray::AnyValueArray( const kvs::ValueArray<kvs::UInt64>& value
 template AnyValueArray::AnyValueArray( const kvs::ValueArray<kvs::Real32>& values );
 template AnyValueArray::AnyValueArray( const kvs::ValueArray<kvs::Real64>& values );
 
-template void AnyValueArray::allocate<kvs::Int8>( const size_t nvalues );
-template void AnyValueArray::allocate<kvs::UInt8>( const size_t nvalues );
-template void AnyValueArray::allocate<kvs::Int16>( const size_t nvalues );
-template void AnyValueArray::allocate<kvs::UInt16>( const size_t nvalues );
-template void AnyValueArray::allocate<kvs::Int32>( const size_t nvalues );
-template void AnyValueArray::allocate<kvs::UInt32>( const size_t nvalues );
-template void AnyValueArray::allocate<kvs::Int64>( const size_t nvalues );
-template void AnyValueArray::allocate<kvs::UInt64>( const size_t nvalues );
-template void AnyValueArray::allocate<kvs::Real32>( const size_t nvalues );
-template void AnyValueArray::allocate<kvs::Real64>( const size_t nvalues );
+template void AnyValueArray::allocate<kvs::Int8>( const std::size_t nvalues );
+template void AnyValueArray::allocate<kvs::UInt8>( const std::size_t nvalues );
+template void AnyValueArray::allocate<kvs::Int16>( const std::size_t nvalues );
+template void AnyValueArray::allocate<kvs::UInt16>( const std::size_t nvalues );
+template void AnyValueArray::allocate<kvs::Int32>( const std::size_t nvalues );
+template void AnyValueArray::allocate<kvs::UInt32>( const std::size_t nvalues );
+template void AnyValueArray::allocate<kvs::Int64>( const std::size_t nvalues );
+template void AnyValueArray::allocate<kvs::UInt64>( const std::size_t nvalues );
+template void AnyValueArray::allocate<kvs::Real32>( const std::size_t nvalues );
+template void AnyValueArray::allocate<kvs::Real64>( const std::size_t nvalues );
 
 } // end of namespace kvs

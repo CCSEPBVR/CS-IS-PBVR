@@ -66,7 +66,7 @@ public:
 
 private:
 
-    void* allocate_values( const size_t nvalues, const size_t value_type );
+    void* allocate_values( const std::size_t nvalues, const std::size_t value_type );
 };
 
 } // end of namespace tiff

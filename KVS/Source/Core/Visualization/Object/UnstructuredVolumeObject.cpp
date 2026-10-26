@@ -92,7 +92,7 @@ kvs::Range GetMinMaxValues( const kvs::UnstructuredVolumeObject* volume )
         {
             T min_value = *values;
             T max_value = *values;
-            for ( size_t i = 0; i < nnodes; ++i )
+            for ( std::size_t i = 0; i < nnodes; ++i )
             {
                 const T value = *values++;
                 min_value = kvs::Math::Min( value, min_value );
@@ -104,11 +104,11 @@ kvs::Range GetMinMaxValues( const kvs::UnstructuredVolumeObject* volume )
         {
             kvs::Real64 min_value = kvs::Value<kvs::Real64>::Max();
             kvs::Real64 max_value = kvs::Value<kvs::Real64>::Min();
-            for ( size_t i = 0; i < nnodes; ++i )
+            for ( std::size_t i = 0; i < nnodes; ++i )
             {
                 const T* value = values + veclen * i;
                 kvs::Real64 magnitude = 0.0;
-                for ( size_t j = 0; j < veclen; ++j )
+                for ( std::size_t j = 0; j < veclen; ++j )
                 {
                     magnitude += static_cast<kvs::Real64>( ( *value ) * ( *value ) );
                     ++value;
@@ -129,9 +129,9 @@ kvs::Range GetMinMaxValues( const kvs::UnstructuredVolumeObject* volume )
         {
             T min_value = *values;
             T max_value = *values;
-            for ( size_t i = 0; i < ncells; ++i )
+            for ( std::size_t i = 0; i < ncells; ++i )
             {
-                for ( size_t j = 0; j < cell_nnodes; ++j )
+                for ( std::size_t j = 0; j < cell_nnodes; ++j )
                 {
                     const auto index = *connections++;
                     const T value = values[ index ];
@@ -145,14 +145,14 @@ kvs::Range GetMinMaxValues( const kvs::UnstructuredVolumeObject* volume )
         {
             kvs::Real64 min_value = kvs::Value<kvs::Real64>::Max();
             kvs::Real64 max_value = kvs::Value<kvs::Real64>::Min();
-            for ( size_t i = 0; i < ncells; ++i )
+            for ( std::size_t i = 0; i < ncells; ++i )
             {
-                for ( size_t j = 0; j < cell_nnodes; ++j )
+                for ( std::size_t j = 0; j < cell_nnodes; ++j )
                 {
                     const auto index = *connections++;
                     const T* value = values + veclen * index;
                     kvs::Real64 magnitude = 0.0;
-                    for ( size_t k = 0; k < veclen; ++k )
+                    for ( std::size_t k = 0; k < veclen; ++k )
                     {
                         magnitude += static_cast<kvs::Real64>( ( *value ) * ( *value ) );
                         ++value;
@@ -436,11 +436,11 @@ void UnstructuredVolumeObject::updateMinMaxCoords()
         min_coord = kvs::Vec3( x, y, z );
         max_coord = kvs::Vec3( x, y, z );
 
-        const size_t ncells = this->numberOfCells();
-        const size_t cell_nnodes = this->numberOfCellNodes();
-        for ( size_t i = 0; i < ncells; ++i )
+        const std::size_t ncells = this->numberOfCells();
+        const std::size_t cell_nnodes = this->numberOfCellNodes();
+        for ( std::size_t i = 0; i < ncells; ++i )
         {
-            for ( size_t j = 0; j < cell_nnodes; ++j )
+            for ( std::size_t j = 0; j < cell_nnodes; ++j )
             {
                 const auto c = *connections++;
                 x = coords[ 3 * c ];

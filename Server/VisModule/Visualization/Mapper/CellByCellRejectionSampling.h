@@ -54,7 +54,7 @@ class CellByCellRejectionSampling : public vismodule::MapperBase, public vismodu
 private:
 
     const vismodule::Camera*     m_camera;         ///< camera (reference)
-    size_t                 m_subpixel_level; ///< subpixel level
+    std::size_t                 m_subpixel_level; ///< subpixel level
     float                  m_sampling_step;  ///< sampling step in the object coordinate
     float                  m_object_depth;   ///< object depth
     vismodule::ValueArray<float> m_density_map;    ///< density map
@@ -96,7 +96,7 @@ public:
             unsigned int* connections, int ncells, const  vismodule::VolumeObjectBase::CellType& celltype, //ISPBVR
             std::vector<vismodule::TransferFunction>& transfer_function_array,
             TransferFunctionSynthesizer* transfunc_synthesizer,
-            const size_t                 subpixel_level,
+            const std::size_t                 subpixel_level,
             const float                  density_factor );
 
 
@@ -108,7 +108,7 @@ public:
 
 public:
 
-    const size_t subpixelLevel() const;
+    const std::size_t subpixelLevel() const;
 
     const float samplingStep() const;
 
@@ -116,7 +116,7 @@ public:
 
     void attachCamera( const vismodule::Camera& camera );
 
-    void setSubpixelLevel( const size_t subpixel_level );
+    void setSubpixelLevel( const std::size_t subpixel_level );
 
     void setSamplingStep( const float sampling_step );
 
@@ -132,7 +132,7 @@ private:
         unsigned int* connections, int ncells,
         const  vismodule::VolumeObjectBase::CellType& celltype) ;
  
-    const size_t calculate_number_of_particles( const float density, const float volume_of_cell );
+    const std::size_t calculate_number_of_particles( const float density, const float volume_of_cell );
 
     void calculate_histogram( vismodule::ValueArray<int>&   th_o_histogram,
                           vismodule::ValueArray<int>&   th_c_histogram,
@@ -155,7 +155,7 @@ private:
 
 
     //add by shimomura  2022/12/19
-    const size_t calculate_number_of_particles(
+    const std::size_t calculate_number_of_particles(
     const float density,
     const float volume_of_cell,
     vismodule::MersenneTwister* MT ); 

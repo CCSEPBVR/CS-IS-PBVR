@@ -113,7 +113,7 @@ DicomList::~DicomList( void )
  *  @param  index [in] list index
  */
 /*===========================================================================*/
-const vismodule::Dicom* DicomList::operator [] ( const size_t index ) const
+const vismodule::Dicom* DicomList::operator [] ( const std::size_t index ) const
 {
     return( m_list[index] );
 }
@@ -124,7 +124,7 @@ const vismodule::Dicom* DicomList::operator [] ( const size_t index ) const
  *  @param  index [in] list index
  */
 /*===========================================================================*/
-vismodule::Dicom* DicomList::operator [] ( const size_t index )
+vismodule::Dicom* DicomList::operator [] ( const std::size_t index )
 {
     return( m_list[index] );
 }
@@ -179,7 +179,7 @@ void DicomList::push_back( vismodule::Dicom* dicom )
  *  @return size of list
  */
 /*===========================================================================*/
-const size_t DicomList::size( void ) const
+const std::size_t DicomList::size( void ) const
 {
     return( m_list.size() );
 }
@@ -191,8 +191,8 @@ const size_t DicomList::size( void ) const
 /*===========================================================================*/
 void DicomList::clear( void )
 {
-    const size_t nslices = m_list.size();
-    for( size_t i = 0; i < nslices; i++ )
+    const std::size_t nslices = m_list.size();
+    for( std::size_t i = 0; i < nslices; i++ )
     {
         if( m_list[i] ) delete m_list[i];
     }
@@ -205,7 +205,7 @@ void DicomList::clear( void )
  *  @brief  Return the row size of the DICOM image.
  */
 /*===========================================================================*/
-const size_t DicomList::row( void ) const
+const std::size_t DicomList::row( void ) const
 {
     return( m_row );
 }
@@ -215,7 +215,7 @@ const size_t DicomList::row( void ) const
  *  @brief  Return the column size of the DICOM image.
  */
 /*===========================================================================*/
-const size_t DicomList::column( void ) const
+const std::size_t DicomList::column( void ) const
 {
     return( m_column );
 }
@@ -225,7 +225,7 @@ const size_t DicomList::column( void ) const
  *  @brief  Get number of slices.
  */
 /*===========================================================================*/
-const size_t DicomList::nslices( void ) const
+const std::size_t DicomList::nslices( void ) const
 {
     return( m_list.size() );
 }
@@ -235,7 +235,7 @@ const size_t DicomList::nslices( void ) const
  *  @brief  Return the DICOM image width.
  */
 /*===========================================================================*/
-const size_t DicomList::width( void ) const
+const std::size_t DicomList::width( void ) const
 {
     return( m_column );
 }
@@ -245,7 +245,7 @@ const size_t DicomList::width( void ) const
  *  @brief  Return the DICOM image height.
  */
 /*===========================================================================*/
-const size_t DicomList::height( void ) const
+const std::size_t DicomList::height( void ) const
 {
     return( m_row );
 }
@@ -431,7 +431,7 @@ const bool DicomList::CheckDirectory( const std::string& dirname, const bool ext
         return( false );
     }
 
-    size_t counter = 0;
+    std::size_t counter = 0;
     vismodule::FileList::const_iterator file = dir.fileList().begin();
     vismodule::FileList::const_iterator last = dir.fileList().end();
     while ( file != last )

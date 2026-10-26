@@ -65,13 +65,13 @@ inline void Thresholding(
     const vismodule::GrayImage& image,
     vismodule::ValueArray<vismodule::UInt8>& data )
 {
-    const size_t width = image.width();
-    const size_t height = image.height();
-    const size_t bpl = ( width + 7 ) >> 3;
+    const std::size_t width = image.width();
+    const std::size_t height = image.height();
+    const std::size_t bpl = ( width + 7 ) >> 3;
 
-    for ( size_t j = 0; j < height; j++ )
+    for ( std::size_t j = 0; j < height; j++ )
     {
-        for ( size_t i = 0; i < width; i++ )
+        for ( std::size_t i = 0; i < width; i++ )
         {
             const vismodule::UInt8 value = image.pixel( i, j );
             if ( value < threshold )
@@ -96,15 +96,15 @@ inline void Dithering(
     const vismodule::GrayImage& image,
     vismodule::ValueArray<vismodule::UInt8>& data )
 {
-    const size_t width = image.width();
-    const size_t height = image.height();
-    const size_t bpl = ( width + 7 ) >> 3;
+    const std::size_t width = image.width();
+    const std::size_t height = image.height();
+    const std::size_t bpl = ( width + 7 ) >> 3;
     const double r = 1.0 / 15.0;
     const vismodule::Matrix44d dmask = ( mask - vismodule::Matrix44d( 8.0 ) ) * r;
 
-    for ( size_t j = 0; j < width; j++ )
+    for ( std::size_t j = 0; j < width; j++ )
     {
-        for ( size_t i = 0; i < height; i++ )
+        for ( std::size_t i = 0; i < height; i++ )
         {
             const double p = image.pixel( i, j ) / 255.0;
             if ( vismodule::Math::Floor( p + dmask[i%4][j%4] + 0.5 ) == 1 )
@@ -128,14 +128,14 @@ inline void Dithering(
 /*===========================================================================*/
 inline vismodule::ValueArray<vismodule::UInt32> Histogram( const vismodule::GrayImage& image )
 {
-    const size_t npixels = image.npixels();
+    const std::size_t npixels = image.npixels();
     const vismodule::UInt8* data = image.data().pointer();
 
     vismodule::ValueArray<vismodule::UInt32> count( 256 );
     count.fill( 0x00 );
-    for ( size_t index = 0; index < npixels; index++ )
+    for ( std::size_t index = 0; index < npixels; index++ )
     {
-        const size_t value = data[index];
+        const std::size_t value = data[index];
         count[ value ] += 1;
     }
 
@@ -159,22 +159,22 @@ void BitImage::PTile::operator () (
     const vismodule::GrayImage& image,
     vismodule::ValueArray<vismodule::UInt8>& data )
 {
-    const size_t width = image.width();
-    const size_t height= image.height();
+    const std::size_t width = image.width();
+    const std::size_t height= image.height();
     const double ratio = 1.0 / static_cast<double>( width * height );
     const vismodule::ValueArray<vismodule::UInt32> histogram = ::Histogram( image );
 
     // Create the cumulative frequency.
     vismodule::ValueArray<double> cum( 256 );
     cum[0] = histogram[0];
-    for ( size_t i = 1; i < 256; i++ ) cum[i] = cum[i-1] + static_cast<double>(histogram[i]);
-    for ( size_t i = 0; i < 256; i++ ) cum[i] = cum[i] * ratio;
+    for ( std::size_t i = 1; i < 256; i++ ) cum[i] = cum[i-1] + static_cast<double>(histogram[i]);
+    for ( std::size_t i = 0; i < 256; i++ ) cum[i] = cum[i] * ratio;
 
     const double p = 0.4;
     double diff = 100.0;
     double temp = 0.0;
-    size_t threshold = 0;
-    for( size_t i = 0; i < 256; i++ )
+    std::size_t threshold = 0;
+    for( std::size_t i = 0; i < 256; i++ )
     {
         temp = vismodule::Math::Abs( p - cum[i] );
         if( temp < diff )
@@ -198,43 +198,43 @@ void BitImage::Distinction::operator () (
     const vismodule::GrayImage& image,
     vismodule::ValueArray<vismodule::UInt8>& data )
 {
-    const size_t width = image.width();
-    const size_t height= image.height();
+    const std::size_t width = image.width();
+    const std::size_t height= image.height();
     const double ratio = 1.0 / static_cast<double>( width * height );
     const vismodule::ValueArray<vismodule::UInt32> histogram = ::Histogram( image );
 
     // Create the probability distribution.
     vismodule::ValueArray<double> p( 256 );
-    for ( size_t i = 0; i < 256; i++ ) p[i] = static_cast<double>(histogram[i]) * ratio;
+    for ( std::size_t i = 0; i < 256; i++ ) p[i] = static_cast<double>(histogram[i]) * ratio;
 
     // Calculate the sum of the probability distribution for each class.
     vismodule::ValueArray<double> w1( 256 ); w1.fill( 0x00 );
     vismodule::ValueArray<double> w2( 256 ); w2.fill( 0x00 );
-    for ( size_t i = 0; i < 256; i++ )
+    for ( std::size_t i = 0; i < 256; i++ )
     {
-        for ( size_t j = 0; j <   i; j++ ) w1[i] += p[j];
-        for ( size_t k = i; k < 256; k++ ) w2[i] += p[k];
+        for ( std::size_t j = 0; j <   i; j++ ) w1[i] += p[j];
+        for ( std::size_t k = i; k < 256; k++ ) w2[i] += p[k];
     }
     // Calculate the mean for each class.
     vismodule::ValueArray<double> m1( 256 ); m1.fill( 0x00 );
     vismodule::ValueArray<double> m2( 256 ); m2.fill( 0x00 );
-    for ( size_t i = 0; i < 256; i++ )
+    for ( std::size_t i = 0; i < 256; i++ )
     {
-        for ( size_t j = 0; j <   i; j++ ) m1[i] += static_cast<double>(j) * p[j] / w1[i];
-        for ( size_t k = i; k < 256; k++ ) m2[i] += static_cast<double>(k) * p[k] / w2[i];
+        for ( std::size_t j = 0; j <   i; j++ ) m1[i] += static_cast<double>(j) * p[j] / w1[i];
+        for ( std::size_t k = i; k < 256; k++ ) m2[i] += static_cast<double>(k) * p[k] / w2[i];
     }
 
     // Calculate the variance for each class.
     vismodule::ValueArray<double> s2_1( 256 ); s2_1.fill( 0x00 );
     vismodule::ValueArray<double> s2_2( 256 ); s2_2.fill( 0x00 );
-    for ( size_t i = 0; i < 256; i++ )
+    for ( std::size_t i = 0; i < 256; i++ )
     {
         const double v = static_cast<double>(i);
-        for ( size_t j = 0; j < i; j++ )
+        for ( std::size_t j = 0; j < i; j++ )
         {
             s2_1[i] += p[j] * ( v - m1[i] ) * ( v - m1[i] ) / w1[i];
         }
-        for ( size_t k = 0; k < 256; k++ )
+        for ( std::size_t k = 0; k < 256; k++ )
         {
             s2_2[i] += p[k] * ( v - m2[i] ) * ( v - m2[i] ) / w2[i];
         }
@@ -245,8 +245,8 @@ void BitImage::Distinction::operator () (
     vismodule::ValueArray<double> s2_b( 256 ); s2_b.fill( 0x00 );
     vismodule::ValueArray<double> s2_w( 256 ); s2_w.fill( 0x00 );
     double max_ratio = 0.0;
-    size_t threshold = 0;
-    for ( size_t i = 0; i < 256; i++ )
+    std::size_t threshold = 0;
+    for ( std::size_t i = 0; i < 256; i++ )
     {
         // The variance between the classes.
         s2_b[i] = w1[i] * w2[i] * ( m1[i] - m2[i] ) * ( m1[i] - m2[i] );
@@ -401,7 +401,7 @@ BitImage::BitImage( void )
  *  @param bit [in] bit flag
  */
 /*==========================================================================*/
-BitImage::BitImage( const size_t width, const size_t height, const bool bit ):
+BitImage::BitImage( const std::size_t width, const std::size_t height, const bool bit ):
     vismodule::ImageBase( width, height, vismodule::ImageBase::Bit )
 {
     this->set( bit );
@@ -416,8 +416,8 @@ BitImage::BitImage( const size_t width, const size_t height, const bool bit ):
  */
 /*==========================================================================*/
 BitImage::BitImage(
-    const size_t width,
-    const size_t height,
+    const std::size_t width,
+    const std::size_t height,
     const vismodule::UInt8* data ):
     vismodule::ImageBase( width, height, vismodule::ImageBase::Bit, data )
 {
@@ -432,8 +432,8 @@ BitImage::BitImage(
  */
 /*==========================================================================*/
 BitImage::BitImage(
-    const size_t width,
-    const size_t height,
+    const std::size_t width,
+    const std::size_t height,
     const vismodule::ValueArray<vismodule::UInt8>& data ):
     vismodule::ImageBase( width, height, vismodule::ImageBase::Bit, data )
 {
@@ -502,10 +502,10 @@ vismodule::BitImage& BitImage::operator = ( const vismodule::BitImage& image )
  *  @return pixel value
  */
 /*==========================================================================*/
-const bool BitImage::pixel( const size_t index ) const
+const bool BitImage::pixel( const std::size_t index ) const
 {
-    const size_t i = index / m_width;
-    const size_t j = index % m_width;
+    const std::size_t i = index / m_width;
+    const std::size_t j = index % m_width;
     return( this->pixel( i, j ) );
 }
 
@@ -517,7 +517,7 @@ const bool BitImage::pixel( const size_t index ) const
  *  @return pixel value
  */
 /*==========================================================================*/
-const bool BitImage::pixel( const size_t i, const size_t j ) const
+const bool BitImage::pixel( const std::size_t i, const std::size_t j ) const
 {
     return( m_data[ j * m_bpl + ( i >> 3 ) ] & ::SetBitMask[ i & 7 ] ? true : false );
 }
@@ -529,10 +529,10 @@ const bool BitImage::pixel( const size_t i, const size_t j ) const
  *  @param pixel [in] pixel value
  */
 /*==========================================================================*/
-void BitImage::set( const size_t index, const bool pixel )
+void BitImage::set( const std::size_t index, const bool pixel )
 {
-    const size_t i = index / m_width;
-    const size_t j = index % m_width;
+    const std::size_t i = index / m_width;
+    const std::size_t j = index % m_width;
     if ( pixel ) this->set_bit( i, j );
     else this->reset_bit( i, j );
 }
@@ -545,7 +545,7 @@ void BitImage::set( const size_t index, const bool pixel )
  *  @param pixel [in] pixel value
  */
 /*==========================================================================*/
-void BitImage::set( const size_t i, const size_t j, const bool pixel )
+void BitImage::set( const std::size_t i, const std::size_t j, const bool pixel )
 {
     if ( pixel ) this->set_bit( i, j );
     else this->reset_bit( i, j );
@@ -557,10 +557,10 @@ void BitImage::set( const size_t i, const size_t j, const bool pixel )
  *  @param  index [in] pixel index
  */
 /*===========================================================================*/
-void BitImage::flip( const size_t index )
+void BitImage::flip( const std::size_t index )
 {
-    const size_t i = index / m_width;
-    const size_t j = index % m_width;
+    const std::size_t i = index / m_width;
+    const std::size_t j = index % m_width;
     this->flip( i, j );
 }
 
@@ -571,7 +571,7 @@ void BitImage::flip( const size_t index )
  *  @param  j [in] index along the horizontal axis
  */
 /*===========================================================================*/
-void BitImage::flip( const size_t i, const size_t j )
+void BitImage::flip( const std::size_t i, const std::size_t j )
 {
     m_data[ j * m_bpl + ( i >> 3 ) ] ^= ::SetBitMask[ i & 7 ];
 }
@@ -586,10 +586,10 @@ void BitImage::set( const bool bit )
 {
     const vismodule::UInt8 mask = ( bit ) ? ( ::SetBitMask[8] ) : ( ::ResetBitMask[8] );
 
-    for( size_t j = 0; j < m_height; j++ )
+    for( std::size_t j = 0; j < m_height; j++ )
     {
-        const size_t line_head = j * m_bpl;
-        for( size_t i = 0; i < m_bpl; i++ )
+        const std::size_t line_head = j * m_bpl;
+        for( std::size_t i = 0; i < m_bpl; i++ )
         {
             m_data[ line_head + i ] = mask;
         }
@@ -603,10 +603,10 @@ void BitImage::set( const bool bit )
 /*===========================================================================*/
 void BitImage::flip( void )
 {
-    for( size_t j = 0; j < m_height; j++ )
+    for( std::size_t j = 0; j < m_height; j++ )
     {
-        const size_t line_head = j * m_bpl;
-        for( size_t i = 0; i < m_bpl; i++ )
+        const std::size_t line_head = j * m_bpl;
+        for( std::size_t i = 0; i < m_bpl; i++ )
         {
             m_data[ line_head + i ] = ~m_data[ line_head + i ];
         }
@@ -619,25 +619,25 @@ void BitImage::flip( void )
  *  @return number of active pixels
  */
 /*===========================================================================*/
-const size_t BitImage::count( void ) const
+const std::size_t BitImage::count( void ) const
 {
-    size_t counter = 0;
+    std::size_t counter = 0;
 
-    for( size_t j = 0; j < m_height; j++ )
+    for( std::size_t j = 0; j < m_height; j++ )
     {
-        const size_t line_head = j * m_bpl;
-        for( size_t i = 0; i < m_bpl - 1; i++ )
+        const std::size_t line_head = j * m_bpl;
+        for( std::size_t i = 0; i < m_bpl - 1; i++ )
         {
-            const size_t data_head = line_head + i;
-            for( size_t b = 0; b < 8; b++ )
+            const std::size_t data_head = line_head + i;
+            for( std::size_t b = 0; b < 8; b++ )
             {
                 if( ( m_data[data_head] & ::SetBitMask[b] ) == 255 ) counter++;
             }
         }
 
         // Decrement padding bit.
-        const size_t data_head = line_head + ( m_bpl - 1 );
-        for( size_t b = 0; b < 8 - m_padding; b++ )
+        const std::size_t data_head = line_head + ( m_bpl - 1 );
+        for( std::size_t b = 0; b < 8 - m_padding; b++ )
         {
             if( ( m_data[data_head] & ::SetBitMask[b] ) == 255 ) counter++;
         }
@@ -719,7 +719,7 @@ const bool BitImage::write( const std::string& filename )
     // PBM image.
     if ( vismodule::Pbm::CheckFileExtension( filename ) )
     {
-        const size_t nvalues = m_width * m_height;
+        const std::size_t nvalues = m_width * m_height;
         const vismodule::UInt8* values = m_data.pointer();
         vismodule::Pbm pbm( m_width, m_height, vismodule::BitArray( values, nvalues) );
         return( pbm.write( filename ) );
@@ -738,7 +738,7 @@ const bool BitImage::write( const std::string& filename )
  *  @param  j [in] index along the horizontal axis
  */
 /*===========================================================================*/
-void BitImage::set_bit( const size_t i, const size_t j )
+void BitImage::set_bit( const std::size_t i, const std::size_t j )
 {
     m_data[ j * m_bpl +( i >> 3 ) ] |= ::SetBitMask[ i & 7 ];
 }
@@ -750,7 +750,7 @@ void BitImage::set_bit( const size_t i, const size_t j )
  *  @param  j [in] index along the horizontal axis
  */
 /*===========================================================================*/
-void BitImage::reset_bit( const size_t i, const size_t j )
+void BitImage::reset_bit( const std::size_t i, const std::size_t j )
 {
     m_data[ j * m_bpl + ( i >> 3 ) ] &= ::ResetBitMask[ i & 7 ];
 }

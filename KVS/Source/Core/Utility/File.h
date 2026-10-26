@@ -41,7 +41,7 @@ public:
     std::string baseName( bool complete = true ) const;
     std::string extension( bool complete = false ) const;
 
-    size_t byteSize() const;
+    std::size_t byteSize() const;
     bool isFile() const;
     bool exists() const;
     bool parse( const std::string& file_path );

@@ -77,8 +77,8 @@ public:
     };
 
 private:
-    size_t m_width = 0; ///< window width
-    size_t m_height = 0; ///< window height
+    std::size_t m_width = 0; ///< window width
+    std::size_t m_height = 0; ///< window height
     const kvs::ObjectBase* m_object = nullptr; ///< pointer to the rendering object
     kvs::Shader::ShadingModel* m_shading_model = nullptr; ///< shading method
     BufferObject m_buffer_object{}; ///< buffer object
@@ -119,9 +119,9 @@ protected:
     BufferObject& bufferObject() { return m_buffer_object; }
 
     bool isWindowCreated() { return m_width == 0 && m_height == 0; }
-    bool isWindowResized( size_t w, size_t h ) { return m_width != w || m_height != h; }
+    bool isWindowResized( std::size_t w, std::size_t h ) { return m_width != w || m_height != h; }
     bool isObjectChanged( const kvs::ObjectBase* o ) { return m_object != o; }
-    void setWindowSize( size_t w, size_t h ) { m_width = w; m_height = h; }
+    void setWindowSize( std::size_t w, std::size_t h ) { m_width = w; m_height = h; }
 
     void createBufferObject( const kvs::ObjectBase* object );
     void updateBufferObject( const kvs::ObjectBase* object );

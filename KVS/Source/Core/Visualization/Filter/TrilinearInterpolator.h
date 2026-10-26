@@ -71,17 +71,17 @@ inline void TrilinearInterpolator::attachPoint( const kvs::Vector3f& point )
     KVS_ASSERT( 0.0f <= point.z() && point.z() <= resolution.z() - 1.0f );
 
     // Temporary index.
-    const size_t ti = static_cast<size_t>( point.x() );
-    const size_t tj = static_cast<size_t>( point.y() );
-    const size_t tk = static_cast<size_t>( point.z() );
+    const std::size_t ti = static_cast<size_t>( point.x() );
+    const std::size_t tj = static_cast<size_t>( point.y() );
+    const std::size_t tk = static_cast<size_t>( point.z() );
 
     // Addjustment index for boundary.
-    const size_t i = ( ti >= resolution.x() - 1 ) ? resolution.x() - 2 : ti;
-    const size_t j = ( tj >= resolution.y() - 1 ) ? resolution.y() - 2 : tj;
-    const size_t k = ( tk >= resolution.z() - 1 ) ? resolution.z() - 2 : tk;
+    const std::size_t i = ( ti >= resolution.x() - 1 ) ? resolution.x() - 2 : ti;
+    const std::size_t j = ( tj >= resolution.y() - 1 ) ? resolution.y() - 2 : tj;
+    const std::size_t k = ( tk >= resolution.z() - 1 ) ? resolution.z() - 2 : tk;
 
-    const size_t line_size  = m_reference_volume->numberOfNodesPerLine();
-    const size_t slice_size = m_reference_volume->numberOfNodesPerSlice();
+    const std::size_t line_size  = m_reference_volume->numberOfNodesPerLine();
+    const std::size_t slice_size = m_reference_volume->numberOfNodesPerSlice();
 
     // Calculate index.
     m_grid_index.set( i, j, k );
@@ -165,12 +165,12 @@ inline kvs::Vec3 TrilinearInterpolator::gradient( void ) const
     const T* const data = reinterpret_cast<const T*>( m_reference_volume->values().data() );
 
     const kvs::Vector3ui resolution = m_reference_volume->resolution();
-    const size_t line_size  = m_reference_volume->numberOfNodesPerLine();
-    const size_t slice_size = m_reference_volume->numberOfNodesPerSlice();
+    const std::size_t line_size  = m_reference_volume->numberOfNodesPerLine();
+    const std::size_t slice_size = m_reference_volume->numberOfNodesPerSlice();
 
-    const size_t i = m_grid_index.x();
-    const size_t j = m_grid_index.y();
-    const size_t k = m_grid_index.z();
+    const std::size_t i = m_grid_index.x();
+    const std::size_t j = m_grid_index.y();
+    const std::size_t k = m_grid_index.z();
 
     if ( i == 0 )
     {

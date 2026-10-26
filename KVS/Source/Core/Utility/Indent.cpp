@@ -13,7 +13,7 @@ namespace kvs
 
 Indent Indent::nextIndent() const
 {
-    const size_t width = ( m_width == 0 ) ? 4 : m_width * 2;
+    const std::size_t width = ( m_width == 0 ) ? 4 : m_width * 2;
     return Indent( width );
 }
 

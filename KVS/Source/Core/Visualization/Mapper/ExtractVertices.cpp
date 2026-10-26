@@ -166,15 +166,15 @@ void ExtractVertices::calculate_uniform_coords()
         volume_size.y() / static_cast<float>( ngrids.y() ),
         volume_size.z() / static_cast<float>( ngrids.z() ) );
 
-    for ( size_t k = 0; k < resolution.z(); ++k )
+    for ( std::size_t k = 0; k < resolution.z(); ++k )
     {
         const float z =
             grid_size.z() * static_cast<float>( k );
-        for ( size_t j = 0; j < resolution.y(); ++j )
+        for ( std::size_t j = 0; j < resolution.y(); ++j )
         {
             const float y =
                 grid_size.y() * static_cast<float>( j );
-            for ( size_t i = 0; i < resolution.x(); ++i )
+            for ( std::size_t i = 0; i < resolution.x(); ++i )
             {
                 const float x =
                     grid_size.x() * static_cast<float>( i );
@@ -226,7 +226,7 @@ void ExtractVertices::calculate_colors()
     const kvs::Real64 normalize_factor =
         static_cast<kvs::Real64>( cmap.resolution() - 1 ) / ( max_value - min_value );
 
-    const size_t veclen = BaseClass::volume()->veclen();
+    const std::size_t veclen = BaseClass::volume()->veclen();
 
     if ( veclen == 1 )
     {
@@ -245,7 +245,7 @@ void ExtractVertices::calculate_colors()
         while( value < end )
         {
             kvs::Real64 magnitude = 0.0;
-            for ( size_t i = 0; i < veclen; ++i )
+            for ( std::size_t i = 0; i < veclen; ++i )
             {
                 magnitude += kvs::Math::Square( static_cast<kvs::Real64>( *value ) );
                 ++value;

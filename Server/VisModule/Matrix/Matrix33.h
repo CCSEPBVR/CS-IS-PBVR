@@ -107,8 +107,8 @@ public:
 
 public:
 
-    const Vector3<T>& operator []( const size_t index ) const;
-    Vector3<T>&       operator []( const size_t index );
+    const Vector3<T>& operator []( const std::size_t index ) const;
+    Vector3<T>&       operator []( const std::size_t index );
 
 public:
 
@@ -674,7 +674,7 @@ inline const T Matrix33<T>::determinant( void ) const
  */
 /*==========================================================================*/
 template<typename T>
-inline const Vector3<T>& Matrix33<T>::operator []( const size_t index ) const
+inline const Vector3<T>& Matrix33<T>::operator []( const std::size_t index ) const
 {
     VIS_MODULE_ASSERT( index < 3 );
 
@@ -691,7 +691,7 @@ inline const Vector3<T>& Matrix33<T>::operator []( const size_t index ) const
  */
 /*==========================================================================*/
 template<typename T>
-inline Vector3<T>& Matrix33<T>::operator []( const size_t index )
+inline Vector3<T>& Matrix33<T>::operator []( const std::size_t index )
 {
     VIS_MODULE_ASSERT( index < 3 );
 

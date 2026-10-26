@@ -21,13 +21,13 @@ namespace
 template <typename T>
 inline const bool IsSymmetricMatrix( const vismodule::Matrix<T>& m )
 {
-    const size_t nrows = m.nrows();
-    const size_t ncolumns = m.ncolumns();
+    const std::size_t nrows = m.nrows();
+    const std::size_t ncolumns = m.ncolumns();
     if ( nrows != ncolumns ) return( false );
 
-    for ( size_t i = 0; i < nrows; i++ )
+    for ( std::size_t i = 0; i < nrows; i++ )
     {
-        for( size_t j = 0; j < ncolumns; j++ )
+        for( std::size_t j = 0; j < ncolumns; j++ )
         {
             if ( !vismodule::Math::Equal( m[i][j], m[j][i] ) ) return( false );
         }
@@ -56,7 +56,7 @@ inline const T HouseholderTransform( vismodule::Vector<T>& vec )
         vec[0] += ret;
 
         const T t = T(1) / static_cast<T>( std::sqrt( static_cast<double>( vec[0] * ret ) ) );
-        for ( size_t i = 0; i < vec.size(); i++ )
+        for ( std::size_t i = 0; i < vec.size(); i++ )
         {
             vec[i] *= t;
         }
@@ -87,12 +87,12 @@ inline void Tridiagonalize( vismodule::Matrix<T>& m, vismodule::Vector<T>* d, vi
         // of the 'row_vec' vector.
         // vec1 = { row_vec[k+1], row_vec[k+2], ... , row_vec[dim-k-1] }
         vismodule::Vector<T> vec1( dim - k - 1 );
-        for ( size_t i = 0; i < vec1.size(); i++ ) vec1[i] = row_vec[ ( k + 1 ) + i ];
+        for ( std::size_t i = 0; i < vec1.size(); i++ ) vec1[i] = row_vec[ ( k + 1 ) + i ];
 
         // Householder reduction of the 'vec1' vector.
         (*e)[k] = HouseholderTransform<T>( vec1 );
-        for ( size_t i = 0; i < vec1.size(); i++ ) row_vec[ ( k + 1 ) + i ]   = vec1[i];
-        for ( size_t i = 0; i < vec1.size(); i++ ) m[k][ ( k + 1 ) + i ] = vec1[i];
+        for ( std::size_t i = 0; i < vec1.size(); i++ ) row_vec[ ( k + 1 ) + i ]   = vec1[i];
+        for ( std::size_t i = 0; i < vec1.size(); i++ ) m[k][ ( k + 1 ) + i ] = vec1[i];
         if ( vismodule::Math::IsZero( (*e)[k] ) ) continue;
 
         // Calculate the 'd' vector.
@@ -108,7 +108,7 @@ inline void Tridiagonalize( vismodule::Matrix<T>& m, vismodule::Vector<T>* d, vi
         // of the 'd' vector.
         // vec2 = { d[k+1], d[k+2], ... , d[dim-k-1] }
         vismodule::Vector<T> vec2( dim - k - 1 );
-        for ( size_t i = 0; i < vec2.size(); i++ ) vec2[i] = (*d)[ ( k + 1 ) + i ];
+        for ( std::size_t i = 0; i < vec2.size(); i++ ) vec2[i] = (*d)[ ( k + 1 ) + i ];
 
         // Update the matrix.
         T t = vec1.dot( vec2 ) / T(2);
@@ -145,7 +145,7 @@ inline void Tridiagonalize( vismodule::Matrix<T>& m, vismodule::Vector<T>* d, vi
         // of the 'row_vec1' vector.
         // vec1 = { row_vec1[k+1], row_vec1[k+2], ... , row_vec1[dim-k-1] }
         vismodule::Vector<T> vec1( dim - k - 1 );
-        for ( size_t l = 0; l < vec1.size(); l++ ) vec1[l] = row_vec1[ ( k + 1 ) + l ];
+        for ( std::size_t l = 0; l < vec1.size(); l++ ) vec1[l] = row_vec1[ ( k + 1 ) + l ];
 
         if ( k < dim - 2 )
         {
@@ -158,7 +158,7 @@ inline void Tridiagonalize( vismodule::Matrix<T>& m, vismodule::Vector<T>* d, vi
                 // of the 'row_vector2' vector.
                 // vec2 = { row_vec2[k+1], row_vec2[k+2], ... , row_vec2[dim-k-1] }
                 vismodule::Vector<T> vec2( dim - k - 1 );
-                for ( size_t l = 0; l < vec2.size(); l++ ) vec2[l] = row_vec2[ ( k + 1 ) + l ];
+                for ( std::size_t l = 0; l < vec2.size(); l++ ) vec2[l] = row_vec2[ ( k + 1 ) + l ];
 
                 const T t = vec1.dot( vec2 );
                 for ( int j = k + 1; j < dim; j++ ) m[i][j] -= t * row_vec1[j];
@@ -177,7 +177,7 @@ namespace vismodule
 {
 
 template <typename T> double EigenDecomposer<T>::m_max_tolerance = 1.0e-10; ///< tolerance
-template <typename T> size_t EigenDecomposer<T>::m_max_iterations = 1000; ///< maximum number of iterations
+template <typename T> std::size_t EigenDecomposer<T>::m_max_iterations = 1000; ///< maximum number of iterations
 
  /*===========================================================================*/
  /**
@@ -251,7 +251,7 @@ const vismodule::Matrix<T>& EigenDecomposer<T>::eigenVectors( void ) const
  */
 /*===========================================================================*/
 template <typename T>
-const vismodule::Vector<T>& EigenDecomposer<T>::eigenVector( const size_t index ) const
+const vismodule::Vector<T>& EigenDecomposer<T>::eigenVector( const std::size_t index ) const
 {
     return( m_eigen_vectors[index] );
 }
@@ -276,7 +276,7 @@ const vismodule::Vector<T>& EigenDecomposer<T>::eigenValues( void ) const
  */
 /*===========================================================================*/
 template <typename T>
-const T EigenDecomposer<T>::eigenValue( const size_t index ) const
+const T EigenDecomposer<T>::eigenValue( const std::size_t index ) const
 {
     return( m_eigen_values[index] );
 }
@@ -294,9 +294,9 @@ void EigenDecomposer<T>::setMatrix( const vismodule::Matrix33<T>& m, MatrixType 
     m_matrix_type = type;
     m_eigen_values.setSize( 3 );
     m_eigen_vectors.setSize( 3, 3 );
-    for ( size_t i = 0; i < 3; i++ )
+    for ( std::size_t i = 0; i < 3; i++ )
     {
-        for ( size_t j = 0; j < 3; j++ )
+        for ( std::size_t j = 0; j < 3; j++ )
         {
             m_eigen_vectors[i][j] = m[i][j];
         }
@@ -316,9 +316,9 @@ void EigenDecomposer<T>::setMatrix( const vismodule::Matrix44<T>& m, MatrixType 
     m_matrix_type = type;
     m_eigen_values.setSize( 4 );
     m_eigen_vectors.setSize( 4, 4 );
-    for ( size_t i = 0; i < 4; i++ )
+    for ( std::size_t i = 0; i < 4; i++ )
     {
-        for ( size_t j = 0; j < 4; j++ )
+        for ( std::size_t j = 0; j < 4; j++ )
         {
             m_eigen_vectors[i][j] = m[i][j];
         }
@@ -379,7 +379,7 @@ const bool EigenDecomposer<T>::calculate_by_power( void )
 {
     VIS_MODULE_ASSERT( m_eigen_vectors.nrows() == m_eigen_vectors.ncolumns() );
 
-    const size_t dim = m_eigen_vectors.nrows();
+    const std::size_t dim = m_eigen_vectors.nrows();
     vismodule::Matrix<T> eigen_vectors( dim, dim );
     vismodule::Matrix<T> m( m_eigen_vectors );
 
@@ -387,12 +387,12 @@ const bool EigenDecomposer<T>::calculate_by_power( void )
     vismodule::Vector<T> temp_vec0( dim );
     vismodule::Vector<T> temp_vec1( dim );
     vismodule::Vector<T> temp_vec2( dim );
-    for ( size_t i = 0; i < dim; i++ ) temp_vec0[i] = T(1);
+    for ( std::size_t i = 0; i < dim; i++ ) temp_vec0[i] = T(1);
 
     // temporary matrices
     vismodule::Matrix<T> temp_mat0( dim, dim );
     vismodule::Matrix<T> temp_mat1( dim, dim );
-    for ( size_t i = 0; i < dim; i++ ) temp_mat0[i][i] = T(1);
+    for ( std::size_t i = 0; i < dim; i++ ) temp_mat0[i][i] = T(1);
 
     // Calculate the eigen values and the eigen matrices.
     //
@@ -402,16 +402,16 @@ const bool EigenDecomposer<T>::calculate_by_power( void )
     // this, we can get the maximum eigen value and matrix fastly. In contrast,
     // 'number_of_eigen_values = dim' means that all eigen values and vectors
     // are calculated. Where 'dim' is a dimension of given matrix.
-    size_t number_of_calculated_eigen_values = 0;
-    const size_t number_of_eigen_values = dim;
-    for ( size_t k = 0; k < number_of_eigen_values; k++ )
+    std::size_t number_of_calculated_eigen_values = 0;
+    const std::size_t number_of_eigen_values = dim;
+    for ( std::size_t k = 0; k < number_of_eigen_values; k++ )
     {
         double length1 = temp_vec0.length();
         double length2 = 0.0;
 
         temp_vec1 = temp_vec0;
 
-        size_t iter = 0;
+        std::size_t iter = 0;
         while( iter < m_max_iterations )
         {
             // Modify the rounding error.
@@ -432,7 +432,7 @@ const bool EigenDecomposer<T>::calculate_by_power( void )
             if( std::fabs( ( length2 - length1 ) / length1 ) < m_max_tolerance )
             {
                 int k1 = -1;
-                for( size_t i = 0; i < dim && k1 < 0; i++ )
+                for( std::size_t i = 0; i < dim && k1 < 0; i++ )
                 {
                     if( std::fabs( static_cast<double>( temp_vec2[i] ) ) > 0.001 )
                     {
@@ -451,7 +451,7 @@ const bool EigenDecomposer<T>::calculate_by_power( void )
                 else
                 {
                     vismodule::Matrix<T> diag( dim, dim );
-                    for ( size_t i = 0; i < dim; i++ ) diag[i][i] = static_cast<T>( length2 );
+                    for ( std::size_t i = 0; i < dim; i++ ) diag[i][i] = static_cast<T>( length2 );
 
                     vismodule::Matrix<T> x( m_eigen_vectors - diag );
                     temp_mat1 = x * temp_mat0;
@@ -485,7 +485,7 @@ const bool EigenDecomposer<T>::calculate_by_qr( void )
     VIS_MODULE_ASSERT( ::IsSymmetricMatrix<T>( m_eigen_vectors ) );
     VIS_MODULE_ASSERT( m_eigen_vectors.nrows() >= 3 );
 
-    const size_t dim = m_eigen_vectors.nrows();
+    const std::size_t dim = m_eigen_vectors.nrows();
 
     // Tridiagonalize the matrix.
     vismodule::Vector<T> e( dim );
@@ -501,7 +501,7 @@ const bool EigenDecomposer<T>::calculate_by_qr( void )
         { j--; if ( j == 0 ) break; }
         if ( j == h ) continue;
 
-        size_t iter = 0;
+        std::size_t iter = 0;
         do
         {
             if( ++iter > m_max_iterations ) return( false );
@@ -536,7 +536,7 @@ const bool EigenDecomposer<T>::calculate_by_qr( void )
                 e[k+1] += s * ( c * w - T(2) * s * e[k+1] );
 
                 // Following 7-lines is required for solving the eigen vectors.
-                for ( size_t i = 0; i < dim; i++ )
+                for ( std::size_t i = 0; i < dim; i++ )
                 {
                     x = m_eigen_vectors[k][i];
                     y = m_eigen_vectors[k+1][i];
@@ -558,12 +558,12 @@ const bool EigenDecomposer<T>::calculate_by_qr( void )
     }
 
     // Sorting eigen values and vectors.
-    for ( size_t k = 0; k < dim - 1; k++ )
+    for ( std::size_t k = 0; k < dim - 1; k++ )
     {
         // Search maximum value and index.
-        size_t max_index = k;
+        std::size_t max_index = k;
         T max_value = m_eigen_values[ max_index ];
-        for ( size_t i = k + 1; i < dim; i++ )
+        for ( std::size_t i = k + 1; i < dim; i++ )
         {
             if( m_eigen_values[i] > max_value )
             {
@@ -577,7 +577,7 @@ const bool EigenDecomposer<T>::calculate_by_qr( void )
         {
             m_eigen_values[ max_index ] = m_eigen_values[k];
             m_eigen_values[k] = max_value;
-            for ( size_t j = 0; j < dim; j++ )
+            for ( std::size_t j = 0; j < dim; j++ )
             {
                 T temp = m_eigen_vectors[max_index][j];
                 m_eigen_vectors[max_index][j] = m_eigen_vectors[k][j];
@@ -596,7 +596,7 @@ void EigenDecomposer<T>::SetMaxTolerance( const double max_tolerance )
 }
 
 template <typename T>
-void EigenDecomposer<T>::SetMaxIterations( const size_t max_iterations )
+void EigenDecomposer<T>::SetMaxIterations( const std::size_t max_iterations )
 {
     m_max_iterations = max_iterations;
 }

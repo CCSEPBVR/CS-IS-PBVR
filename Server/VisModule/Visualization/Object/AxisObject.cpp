@@ -239,7 +239,7 @@ void AxisObject::create_principal_lines(
     connections->push_back( 4 ); connections->push_back( 7 );
     connections->push_back( 5 ); connections->push_back( 6 );
 
-    for( size_t i = 0; i < 12; i++ ) sizes->push_back( m_line_width );
+    for( std::size_t i = 0; i < 12; i++ ) sizes->push_back( m_line_width );
 }
 
 void AxisObject::create_sublines(
@@ -259,7 +259,7 @@ void AxisObject::create_sublines(
     const vismodule::Real32 z_interval = ( max_z - min_z ) / ( m_nsublines.z() + 1 );
 
     vismodule::Real32 x_p = min_x;
-    for( size_t i = 0; i < m_nsublines.x(); i++ )
+    for( std::size_t i = 0; i < m_nsublines.x(); i++ )
     {
         x_p += x_interval;
 
@@ -271,7 +271,7 @@ void AxisObject::create_sublines(
     }
 
     vismodule::Real32 y_p = min_y;
-    for( size_t i = 0; i < m_nsublines.y(); i++ )
+    for( std::size_t i = 0; i < m_nsublines.y(); i++ )
     {
         y_p += y_interval;
 
@@ -284,7 +284,7 @@ void AxisObject::create_sublines(
     }
 
     vismodule::Real32 z_p = min_z;
-    for( size_t i = 0; i < m_nsublines.z(); i++ )
+    for( std::size_t i = 0; i < m_nsublines.z(); i++ )
     {
         z_p += z_interval;
 
@@ -295,14 +295,14 @@ void AxisObject::create_sublines(
         coords->push_back( min_x ); coords->push_back( min_y ); coords->push_back( z_p );
     }
 
-    const size_t nvertices = coords->size() / 3;
-    for( size_t i = 8; i < nvertices; i++ )
+    const std::size_t nvertices = coords->size() / 3;
+    for( std::size_t i = 8; i < nvertices; i++ )
     {
         connections->push_back( i );
     }
 
-    const size_t nsublines = m_nsublines.x() * m_nsublines.y() * m_nsublines.z();
-    for( size_t i = 0; i < nsublines; i++ )
+    const std::size_t nsublines = m_nsublines.x() * m_nsublines.y() * m_nsublines.z();
+    for( std::size_t i = 0; i < nsublines; i++ )
     {
         sizes->push_back( m_subline_width );
     }

@@ -8,7 +8,7 @@
 PlotOverLine::PlotOverLine( void ){}
 
 PlotOverLine::PlotOverLine( const vismodule::StructuredVolumeObject* volume,
-                            const size_t sampling_size,
+                            const std::size_t sampling_size,
                             const vismodule::Vec3 P0, const vismodule::Vec3 P1 )
 {
     this->setVolume( volume );
@@ -19,7 +19,7 @@ PlotOverLine::PlotOverLine( const vismodule::StructuredVolumeObject* volume,
 }
 
 PlotOverLine::PlotOverLine( const vismodule::UnstructuredVolumeObject* volume,
-                            const size_t sampling_size,
+                            const std::size_t sampling_size,
                             const vismodule::Vec3 P0, const vismodule::Vec3 P1 )
 {
     
@@ -31,7 +31,7 @@ PlotOverLine::PlotOverLine( const vismodule::UnstructuredVolumeObject* volume,
 }
 //// CS用コンストラクター
 //PlotOverLine::PlotOverLine( const vismodule::UnstructuredVolumeObject* volume,
-//                            const size_t sampling_size,
+//                            const std::size_t sampling_size,
 //                            const vismodule::Vec3 P0, const vismodule::Vec3 P1, const int plot_variable ):
 //    m_plot_variable(plot_variable)
 //{
@@ -45,7 +45,7 @@ PlotOverLine::PlotOverLine( const vismodule::UnstructuredVolumeObject* volume,
 //
 //// CS用コンストラクター
 //PlotOverLine::PlotOverLine( const vismodule::StructuredVolumeObject* volume,
-//                            const size_t sampling_size,
+//                            const std::size_t sampling_size,
 //                            const vismodule::Vec3 P0, const vismodule::Vec3 P1, const int plot_variable ):
 //    m_plot_variable(plot_variable)
 //{
@@ -62,7 +62,7 @@ PlotOverLine::PlotOverLine( const vismodule::UnstructuredVolumeObject* volume,
 //        float* coordinates, int ncoords,
 //        unsigned int* connections, int ncells,
 //        const  vismodule::VolumeObjectBase::CellType& celltype, 
-//        const size_t sampling_size,
+//        const std::size_t sampling_size,
 //        const vismodule::Vec3 P0, const vismodule::Vec3 P1, const int plot_variable ):
 //    m_plot_variable(plot_variable),
 //    m_values( values ), m_nvariables(nvariables),  
@@ -75,7 +75,7 @@ PlotOverLine::PlotOverLine( const vismodule::UnstructuredVolumeObject* volume,
 //}
 //
 //PlotOverLine::PlotOverLine( domain_parameters_struct dom, float** values, int nvariables, 
-//        const size_t sampling_size,
+//        const std::size_t sampling_size,
 //        const vismodule::Vec3 P0, const vismodule::Vec3 P1, const int plot_variable ):
 //    m_plot_variable(plot_variable),
 //    m_values( values ),m_nvariables(nvariables)
@@ -135,7 +135,7 @@ m_nvariables(nvariables)
 
 //ポリへドロン用コンストラクター
 PlotOverLine::PlotOverLine( const POL::Polyhedron* volume,
-                            const size_t sampling_size,
+                            const std::size_t sampling_size,
                             const vismodule::Vec3 P0, const vismodule::Vec3 P1 )
 {
     this->setVolume( volume );
@@ -165,7 +165,7 @@ void PlotOverLine::setVolume( const POL::Polyhedron* volume )
     m_polyhedron = volume;
 }
 
-void PlotOverLine::setSamplingSize( const size_t sampling_size )
+void PlotOverLine::setSamplingSize( const std::size_t sampling_size )
 {
     m_sampling_size = sampling_size;
     m_values_on_line.allocate( sampling_size );
@@ -352,7 +352,7 @@ void PlotOverLine::extractPlotLinePoly( const vismodule::Vec3 P0, const vismodul
 
 void PlotOverLine::calculate_x_axis( const vismodule::Vec3 P0, const vismodule::Vec3 P1 )
 {
-    const size_t sampling_size = m_x_axis.size();
+    const std::size_t sampling_size = m_x_axis.size();
     const float line_length = (P1-P0).length();
     const float offset = line_length / (sampling_size-1);
     float sampling_length = 0.0;
@@ -366,15 +366,15 @@ void PlotOverLine::calculate_x_axis( const vismodule::Vec3 P0, const vismodule::
 
 void PlotOverLine::for_structured_mesh( const vismodule::Vec3 P0, const vismodule::Vec3 P1 )
 {
-    const size_t res_x = m_dom.resolution[0];
-    const size_t res_y = m_dom.resolution[1];
-    const size_t res_z = m_dom.resolution[2];
-    const size_t nx = res_x-1;
-    const size_t ny = res_y-1;
-    const size_t nz = res_z-1;
-    const size_t ncoord = res_x*res_y*res_z;
+    const std::size_t res_x = m_dom.resolution[0];
+    const std::size_t res_y = m_dom.resolution[1];
+    const std::size_t res_z = m_dom.resolution[2];
+    const std::size_t nx = res_x-1;
+    const std::size_t ny = res_y-1;
+    const std::size_t nz = res_z-1;
+    const std::size_t ncoord = res_x*res_y*res_z;
 
-    auto index = [res_x, res_y]( size_t I, size_t J, size_t K ){ return I + J*res_x + K*res_x*res_y; };
+    auto index = [res_x, res_y]( std::size_t I, std::size_t J, std::size_t K ){ return I + J*res_x + K*res_x*res_y; };
 
     const vismodule::UInt32 face_id[24] = {
         0, 1, 5, 4,
@@ -390,11 +390,11 @@ void PlotOverLine::for_structured_mesh( const vismodule::Vec3 P0, const vismodul
     const float z_min = m_dom.z_min;
     const float cell_length = 1;
 
-    for( size_t K = 0; K < nz; K++ )
+    for( std::size_t K = 0; K < nz; K++ )
     {
-        for( size_t J = 0; J < ny; J++ )
+        for( std::size_t J = 0; J < ny; J++ )
         {
-            for( size_t I = 0; I < nx; I++ )
+            for( std::size_t I = 0; I < nx; I++ )
             {
 
                 vismodule::Vec3 vertex[8];
@@ -416,7 +416,7 @@ void PlotOverLine::for_structured_mesh( const vismodule::Vec3 P0, const vismodul
                 }
 
                 vismodule::Vec3 face_center_vertex[6];
-                size_t fid = 0;
+                std::size_t fid = 0;
                 for( int i=0; i<6; i++, fid+=4 )
                 {
                     face_center_vertex[i] = (
@@ -480,14 +480,14 @@ void PlotOverLine::for_tetrahedral_mesh( const vismodule::Vec3 P0, const vismodu
 {
     const vismodule::Real32* coords = m_coordinates;
     const vismodule::UInt32* connec = m_connections;
-    const size_t ncells = m_ncells;
-    const size_t ncoord = m_nnodes;
+    const std::size_t ncells = m_ncells;
+    const std::size_t ncoord = m_nnodes;
 
-    size_t id = 0;
+    std::size_t id = 0;
 
     for( int cell = 0; cell < ncells; cell++, id+=4 )
     {
-        size_t local_id[4];
+        std::size_t local_id[4];
         local_id[0] = connec[ id   ];
         local_id[1] = connec[ id+1 ];
         local_id[2] = connec[ id+2 ];
@@ -514,8 +514,8 @@ void PlotOverLine::for_hexahedral_mesh( const vismodule::Vec3 P0, const vismodul
 
     const vismodule::Real32* coords = m_coordinates;
     const vismodule::UInt32* connec = m_connections;
-    const size_t ncells = m_ncells;
-    const size_t ncoord = m_nnodes;
+    const std::size_t ncells = m_ncells;
+    const std::size_t ncoord = m_nnodes;
 
     const vismodule::UInt32 face_id[24] = {
         0, 1, 5, 4,
@@ -525,7 +525,7 @@ void PlotOverLine::for_hexahedral_mesh( const vismodule::Vec3 P0, const vismodul
         4, 5, 6, 7,
         3, 2, 1, 0 };
 
-    size_t id = 0;
+    std::size_t id = 0;
 
     for( int cell = 0; cell < ncells; cell++, id+=8 )
     {
@@ -555,7 +555,7 @@ void PlotOverLine::for_hexahedral_mesh( const vismodule::Vec3 P0, const vismodul
         }
 
         vismodule::Vec3 face_center_vertex[6];
-        size_t fid = 0;
+        std::size_t fid = 0;
         for( int i=0; i<6; i++, fid+=4 )
         {
             face_center_vertex[i] = (
@@ -615,8 +615,8 @@ void PlotOverLine::for_pyramidal_mesh( const vismodule::Vec3 P0, const vismodule
 {
     const vismodule::Real32* coords = m_coordinates;
     const vismodule::UInt32* connec = m_connections;
-    const size_t ncells = m_ncells;
-    const size_t ncoord = m_nnodes;
+    const std::size_t ncells = m_ncells;
+    const std::size_t ncoord = m_nnodes;
 
     // for AVS
     const vismodule::UInt32 face_id[24] = { 1, 2, 3, 4 };
@@ -624,7 +624,7 @@ void PlotOverLine::for_pyramidal_mesh( const vismodule::Vec3 P0, const vismodule
     // for VTK
     //const vismodule::UInt32 face_id[24] = { 3, 2, 1, 0 };
 
-    size_t id = 0;
+    std::size_t id = 0;
 
     for( int cell = 0; cell < ncells; cell++, id+=5 )
     {
@@ -654,7 +654,7 @@ void PlotOverLine::for_pyramidal_mesh( const vismodule::Vec3 P0, const vismodule
         }
 
         vismodule::Vec3 face_center_vertex[1];
-        size_t fid = 0;
+        std::size_t fid = 0;
         for( int i=0; i<1; i++, fid+=4 )
         {
             face_center_vertex[i] = (
@@ -717,19 +717,19 @@ void PlotOverLine::for_prismic_mesh( const vismodule::Vec3 P0, const vismodule::
 {
     const vismodule::Real32* coords = m_coordinates;
     const vismodule::UInt32* connec = m_connections;
-    const size_t ncells = m_ncells;
-    const size_t ncoord = m_nnodes;
+    const std::size_t ncells = m_ncells;
+    const std::size_t ncoord = m_nnodes;
     //const vismodule::Real32* coords = m_volume->coords().pointer();
     //const vismodule::UInt32* connec = m_volume->connections().pointer();
-    //const size_t ncells = m_volume->ncells();
-    //const size_t ncoord = m_volume->nnodes();
+    //const std::size_t ncells = m_volume->ncells();
+    //const std::size_t ncoord = m_volume->nnodes();
 
     const vismodule::UInt32 face_id[12] = {
         0, 1, 4, 3,
         1, 2, 5, 4,
         2, 0, 3, 5 };
 
-    size_t id = 0;
+    std::size_t id = 0;
 
     for( int cell = 0; cell < ncells; cell++, id+=6 )
     {
@@ -760,7 +760,7 @@ void PlotOverLine::for_prismic_mesh( const vismodule::Vec3 P0, const vismodule::
 
         // Square to triangle
         vismodule::Vec3 face_center_vertex[3];
-        size_t fid = 0;
+        std::size_t fid = 0;
         for( int i=0; i<3; i++, fid+=4 )
         {
             face_center_vertex[i] = (
@@ -847,21 +847,21 @@ void PlotOverLine::for_polyhedral_mesh( const vismodule::Vec3 P0, const vismodul
     const vismodule::UInt32* faces  = m_polyhedron->faces.pointer();
     const vismodule::UInt32* facoff = m_polyhedron->face_offsets.pointer();
     const vismodule::Real32* scalar = m_polyhedron->scalars.pointer();
-    const size_t ncells = m_polyhedron->ncells;
+    const std::size_t ncells = m_polyhedron->ncells;
 
     for( int cell = 0; cell < ncells; cell++ )
     {
-        const size_t vid0 = cell==0 ? 0 : conoff[ cell -1 ];
-        const size_t vid1 = conoff[ cell ];
+        const std::size_t vid0 = cell==0 ? 0 : conoff[ cell -1 ];
+        const std::size_t vid1 = conoff[ cell ];
 
         // Bounding Box
-        const size_t id0 = connec[vid0]*3;
+        const std::size_t id0 = connec[vid0]*3;
         const vismodule::Vec3 vertex0( coords[id0],coords[id0+1],coords[id0+2] );
         vismodule::Vec3 MinCoord( vertex0 );
         vismodule::Vec3 MaxCoord( vertex0 );
         for( int i=vid0+1; i<vid1; i++ )
         {
-            const size_t id = connec[i]*3;
+            const std::size_t id = connec[i]*3;
             const vismodule::Vec3 vertex( coords[id], coords[id+1], coords[id+2] );
             MinCoord.x() = MinCoord.x() < vertex.x() ? MinCoord.x() : vertex.x();
             MinCoord.y() = MinCoord.y() < vertex.y() ? MinCoord.y() : vertex.y();
@@ -879,26 +879,26 @@ void PlotOverLine::for_polyhedral_mesh( const vismodule::Vec3 P0, const vismodul
         vismodule::Vec3 cell_center_vertex( vertex0 );
         for( int i=vid0+1; i<vid1; i++ )
         {
-            const size_t id = connec[i]*3;
+            const std::size_t id = connec[i]*3;
             cell_center_vertex += vismodule::Vec3( coords[id], coords[id+1], coords[id+2] );
         }
-        const size_t ncellvert = vid1 - vid0;
+        const std::size_t ncellvert = vid1 - vid0;
         cell_center_vertex /= (vismodule::Real32)ncellvert;
 
         // Cell center scalar
         vismodule::Real32 cell_center_scalar = 0.0f;
         for( int i=vid0; i<vid1; i++ )
         {
-            const size_t id = connec[i];
+            const std::size_t id = connec[i];
             cell_center_scalar += scalar[id];
         }
         cell_center_scalar /= (vismodule::Real32)ncellvert;
 
         // Access each face
-        const size_t fid0 = cell==0 ? 0 : facoff[ cell -1 ];
+        const std::size_t fid0 = cell==0 ? 0 : facoff[ cell -1 ];
 
         const vismodule::UInt32* pface_array = &faces[ fid0 ];
-        const size_t nfaces = *pface_array;
+        const std::size_t nfaces = *pface_array;
         pface_array++;
 
         for( int fcnt=0; fcnt<nfaces; fcnt++ )
@@ -906,7 +906,7 @@ void PlotOverLine::for_polyhedral_mesh( const vismodule::Vec3 P0, const vismodul
             // Calc. Face center
             vismodule::Vec3 face_center_vertex( 0.0f, 0.0f, 0.0f );
             vismodule::Real32 face_center_scalar = 0.0f;
-            const size_t nfacevert = *pface_array;
+            const std::size_t nfacevert = *pface_array;
             pface_array++;
 
             // keep a pointer for the start of face array
@@ -915,7 +915,7 @@ void PlotOverLine::for_polyhedral_mesh( const vismodule::Vec3 P0, const vismodul
 
             for( int vcnt=0; vcnt<nfacevert; vcnt++ )
             {
-                const size_t face_vert_id = *pface_array;
+                const std::size_t face_vert_id = *pface_array;
                 pface_array++;
                 const vismodule::Vec3 vertex( coords[face_vert_id*3  ],
                                         coords[face_vert_id*3+1],
@@ -932,8 +932,8 @@ void PlotOverLine::for_polyhedral_mesh( const vismodule::Vec3 P0, const vismodul
             vismodule::Vec4 s;
             for( int i=0; i<nfacevert; i++ )
             {
-                const size_t vid2 = *(pface + i);
-                const size_t vid3 = *(pface + (i+1)%nfacevert);
+                const std::size_t vid2 = *(pface + i);
+                const std::size_t vid3 = *(pface + (i+1)%nfacevert);
                 vert[0] = cell_center_vertex;
                 vert[1] = face_center_vertex;
                 vert[2] = vismodule::Vec3( coords[vid2*3], coords[vid2*3+1], coords[vid2*3+2] );

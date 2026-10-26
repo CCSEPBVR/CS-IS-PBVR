@@ -30,7 +30,7 @@ public:
     NormalizedDeviceCoordinate( const kvs::Vec3& position );
 
     const kvs::Vec3& position() const { return m_position; }
-    const WindowCoordinate toWindowCoordinate( const int x, const int y, const size_t width, const size_t height ) const;
+    const WindowCoordinate toWindowCoordinate( const int x, const int y, const std::size_t width, const std::size_t height ) const;
     const WindowCoordinate toWindowCoordinate( const kvs::Vec4i& viewport ) const;
     const CameraCoordinate toCameraCoordinate( const kvs::Camera* camera ) const;
 };

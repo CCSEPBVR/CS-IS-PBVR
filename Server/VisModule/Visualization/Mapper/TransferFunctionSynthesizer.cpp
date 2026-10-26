@@ -1,6 +1,7 @@
 #include <vismodule/TransferFunctionSynthesizer>
 #include <fstream>
 #include <limits>
+#include <vector>
 #include "Token.h"
 
 #if (defined(VIS_MODULE_PLATFORM_LINUX) || defined(VIS_MODULE_PLATFORM_MACOSX))                                                                                                                   
@@ -38,10 +39,16 @@ TransferFunctionSynthesizer::TransferFunctionSynthesizer():
     };
 
     EquationToken opa_var_2 = {
-        {VARIABLE, VARIABLE, PLUS, END}, //q1+q2 -> q1 q2 +
-        {Q1, Q1},
+        {VARIABLE, END}, //q1+q2 -> q1 q2 +
+        {Q1},
         {}
     };
+
+//    EquationToken opa_var_2 = {
+//        {VARIABLE, VARIABLE, PLUS, END}, //q1+q2 -> q1 q2 +
+//        {Q1, Q1},
+//        {}
+//    };
 
     m_opa_var.push_back( opa_var_2 );
 
@@ -51,9 +58,15 @@ TransferFunctionSynthesizer::TransferFunctionSynthesizer():
         {0,2,0,0,2}//,2,,2,
     };
 
+//    EquationToken col_var_2 = {
+//        {VARIABLE, VARIABLE, PLUS, END}, //q1+q2 -> q1 q2 +
+//        {Q1, Q1},
+//        {}
+//    };
+
     EquationToken col_var_2 = {
-        {VARIABLE, VARIABLE, PLUS, END}, //q1+q2 -> q1 q2 +
-        {Q1, Q1},
+        {VARIABLE, END}, //q1+q2 -> q1 q2 +
+        {Q1 },
         {}
     };
 
@@ -311,12 +324,12 @@ void TransferFunctionSynthesizer::SynthesizedOpacityScalars(
         m_var_value_struct[Z][I] = z_g[I];
     }
 
-    const size_t nvar = interp.size();
+    const std::size_t nvar = interp.size();
 
     //各変数のループ
     //id of Q1=4, Q2=8,,,,, Qn=4*n
     //id of dxQ1=5, dyQ1=6, dzQ1=7,
-    for( size_t j= 0; j < nvar; j++ )
+    for( std::size_t j= 0; j < nvar; j++ )
     {
         float scalar[SIMDW];
         float grad_x[SIMDW], grad_y[SIMDW], grad_z[SIMDW];
@@ -335,7 +348,7 @@ void TransferFunctionSynthesizer::SynthesizedOpacityScalars(
     }
 
     //ボリュームデータ合成式のループ
-    for( size_t i = 0; i < m_opa_var.size(); i++ )
+    for( std::size_t i = 0; i < m_opa_var.size(); i++ )
     {
         m_rpn.setExpToken( &(m_opa_var[i].exp_token[0]) );
         m_rpn.setVariableName( &(m_opa_var[i].var_name[0]) );
@@ -363,12 +376,12 @@ void TransferFunctionSynthesizer::SynthesizedColorScalars(
         m_var_value_struct[Z][I] = z_g[I];
     }
 
-    const size_t nvar = interp.size();
+    const std::size_t nvar = interp.size();
 
     //各変数のループ
     //id of Q1=4, Q2=8,,,,, Qn=4*n
     //id of dxQ1=5, dyQ1=6, dzQ1=7,
-    for( size_t j= 0; j < nvar; j++ )
+    for( std::size_t j= 0; j < nvar; j++ )
     {
         float scalar[SIMDW];
         float grad_x[SIMDW], grad_y[SIMDW], grad_z[SIMDW];
@@ -388,7 +401,7 @@ void TransferFunctionSynthesizer::SynthesizedColorScalars(
 
 
     //ボリュームデータ合成式のループ
-    for( size_t i = 0; i < m_col_var.size(); i++ )
+    for( std::size_t i = 0; i < m_col_var.size(); i++ )
     {
         m_rpn.setExpToken( &(m_col_var[i].exp_token[0]) );
         m_rpn.setVariableName( &(m_col_var[i].var_name[0]) );
@@ -415,11 +428,11 @@ void TransferFunctionSynthesizer::CalculateOpacity(
         m_var_value_struct[Z][I] = z_g[I];
     }
 
-    const size_t nvar = interp.size();
+    const std::size_t nvar = interp.size();
 
     //各変数のループ
     //id of Q1=4, Q2=8,,,,, Qn=4*n
-    for( size_t j= 0; j < nvar; j++ )
+    for( std::size_t j= 0; j < nvar; j++ )
     {
         float scalar[SIMDW];
         float grad_x[SIMDW], grad_y[SIMDW], grad_z[SIMDW];
@@ -438,7 +451,7 @@ void TransferFunctionSynthesizer::CalculateOpacity(
     }
 
     //ボリュームデータ合成式のループ
-    for( size_t i = 0; i < m_opa_var.size(); i++ )
+    for( std::size_t i = 0; i < m_opa_var.size(); i++ )
     {
         //set variable eq. ex) Q1+Q2/Q3
         m_rpn.setExpToken( &(m_opa_var[i].exp_token[0]) );
@@ -495,11 +508,11 @@ void TransferFunctionSynthesizer::CalculateColor(
         m_var_value_struct[Z][I] = z_g[I];
     }
 
-    const size_t nvar = interp.size();
+    const std::size_t nvar = interp.size();
 
     //各変数のループ
     //id of Q1=4, Q2=8,,,,, Qn=4*n
-    for( size_t j= 0; j < nvar; j++ )
+    for( std::size_t j= 0; j < nvar; j++ )
     {
         float scalar[SIMDW];
         float grad_x[SIMDW], grad_y[SIMDW], grad_z[SIMDW];
@@ -525,7 +538,7 @@ void TransferFunctionSynthesizer::CalculateColor(
     }
 
     //ボリュームデータ合成式のループ
-    for( size_t i = 0; i < m_col_var.size(); i++ )
+    for( std::size_t i = 0; i < m_col_var.size(); i++ )
     {
         //set variable eq. ex) Q1+Q2/Q3
         m_rpn.setExpToken( &(m_col_var[i].exp_token[0]) );
@@ -556,7 +569,7 @@ void TransferFunctionSynthesizer::CalculateColor(
     m_rpn.setNumber( &(m_col_func.val_array[0]) );
 
     //RED
-    for( size_t i = 0; i < m_col_var.size(); i++ )
+    for( std::size_t i = 0; i < m_col_var.size(); i++ )
     {
         for( int I=0; I<SIMDW; I++ )
         {
@@ -577,7 +590,7 @@ void TransferFunctionSynthesizer::CalculateColor(
     }
 
     //GREEN
-    for( size_t i = 0; i < m_col_var.size(); i++ )
+    for( std::size_t i = 0; i < m_col_var.size(); i++ )
     {
         for( int I=0; I<SIMDW; I++ )
         {
@@ -599,7 +612,7 @@ void TransferFunctionSynthesizer::CalculateColor(
 
 
     //BLUE
-    for( size_t i = 0; i < m_col_var.size(); i++ )
+    for( std::size_t i = 0; i < m_col_var.size(); i++ )
     {
         for( int I=0; I<SIMDW; I++ )
         {
@@ -757,10 +770,10 @@ void TransferFunctionSynthesizer::CalculateCoordArray(
         global_coord_z[i] = z_g[i];
     }
 
-    size_t nvar = interp.size();
+    std::size_t nvar = interp.size();
 
     //bindCell, setLocalPoint, gradient, scalar をまとめてこの関数内部でSIMD化
-    for( size_t j= 0; j < nvar; j++ )
+    for( std::size_t j= 0; j < nvar; j++ )
     {
         float scalar[SIMDW];
         float grad_x[SIMDW], grad_y[SIMDW], grad_z[SIMDW];
@@ -799,7 +812,7 @@ void TransferFunctionSynthesizer::CalculateCoordArray(
         m_rpn.setNumber      ( &(x_synthesis.val_array[0]) );
 
         //id of Q1=4, Q2=8,,,,, Qn=4*n
-        for( size_t j= 0; j < nvar; j++ )
+        for( std::size_t j= 0; j < nvar; j++ )
         {
             m_var_value_array[4*(j+1)  ] = &scalar_array[j][0];
             m_var_value_array[4*(j+1)+1] = &grad_array_x[j][0];
@@ -839,7 +852,7 @@ void TransferFunctionSynthesizer::CalculateCoordArray(
         m_rpn.setNumber      ( &(y_synthesis.val_array[0]) );
 
         //id of Q1=4, Q2=8,,,,, Qn=4*n
-        for( size_t j= 0; j < nvar; j++ )
+        for( std::size_t j= 0; j < nvar; j++ )
         {
             m_var_value_array[4*(j+1)  ] = &scalar_array[j][0];
             m_var_value_array[4*(j+1)+1] = &grad_array_x[j][0];
@@ -879,7 +892,7 @@ void TransferFunctionSynthesizer::CalculateCoordArray(
 
 
         //id of Q1=4, Q2=8,,,,, Qn=4*n
-        for( size_t j= 0; j < nvar; j++ )
+        for( std::size_t j= 0; j < nvar; j++ )
         {
             m_var_value_array[4*(j+1)  ] = &scalar_array[j][0];
             m_var_value_array[4*(j+1)+1] = &grad_array_x[j][0];
@@ -956,16 +969,16 @@ std::vector<float> TransferFunctionSynthesizer::SynthesizedOpacityScalars(
 
     m_scalars.clear();
 
-    for( size_t i = 0; i < m_opa_var.size(); i++ )
+    for( std::size_t i = 0; i < m_opa_var.size(); i++ )
     {
         m_rpn.setExpToken( &(m_opa_var[i].exp_token[0]) );
         m_rpn.setVariableName( &(m_opa_var[i].var_name[0]) );
         m_rpn.setNumber( &(m_opa_var[i].val_array[0]) );
 
-        size_t nvar = interp.size();
+        std::size_t nvar = interp.size();
 
         //id of Q1=4, Q2=8,,,,, Qn=4*n
-        for( size_t j= 0; j < nvar; j++ )
+        for( std::size_t j= 0; j < nvar; j++ )
         {
             interp[j]->setLocalPoint( local_coord );
             const vismodule::Vector3f grad = interp[j]->gradient();
@@ -998,12 +1011,12 @@ std::vector<float> TransferFunctionSynthesizer::SynthesizedOpacityScalars(
 //        m_var_value[Z][I] = z_g[I];
 //    }
 //
-//    const size_t nvar = interp.size();
+//    const std::size_t nvar = interp.size();
 //
 //    //各変数のループ
 //    //id of Q1=4, Q2=8,,,,, Qn=4*n
 //    //id of dxQ1=5, dyQ1=6, dzQ1=7,
-//    for( size_t j= 0; j < nvar; j++ )
+//    for( std::size_t j= 0; j < nvar; j++ )
 //    {
 //        float scalar[SIMDW];
 //        float grad_x[SIMDW], grad_y[SIMDW], grad_z[SIMDW];
@@ -1022,7 +1035,7 @@ std::vector<float> TransferFunctionSynthesizer::SynthesizedOpacityScalars(
 //    }
 //
 //    //ボリュームデータ合成式のループ
-//    for( size_t i = 0; i < m_opa_var.size(); i++ )
+//    for( std::size_t i = 0; i < m_opa_var.size(); i++ )
 //    {
 //        m_rpn.setExpToken( &(m_opa_var[i].exp_token[0]) );
 //        m_rpn.setVariableName( &(m_opa_var[i].var_name[0]) );
@@ -1109,7 +1122,7 @@ void TransferFunctionSynthesizer::SynthesizedOpacityScalarsArray(
         global_coord_z[i] = global_coord[i].z();
     }
 
-    size_t nvar = interp.size();
+    std::size_t nvar = interp.size();
 
     for (size_t j = 0; j < nvar; j++ )
     {
@@ -1126,14 +1139,14 @@ void TransferFunctionSynthesizer::SynthesizedOpacityScalarsArray(
     m_var_value_array[Y] = global_coord_y;
     m_var_value_array[Z] = global_coord_z;
     
-    for( size_t i = 0; i < m_opa_var.size(); i++ )
+    for( std::size_t i = 0; i < m_opa_var.size(); i++ )
     {
         m_rpn.setExpToken( &(m_opa_var[i].exp_token[0]) );
         m_rpn.setVariableName( &(m_opa_var[i].var_name[0]) );
         m_rpn.setNumber( &(m_opa_var[i].val_array[0]) );
 
         //id of Q1=4, Q2=8,,,,, Qn=4*n
-        for( size_t j= 0; j < nvar; j++ )
+        for( std::size_t j= 0; j < nvar; j++ )
         {
             m_var_value_array[4*(j+1)  ] = &scalar_array[j][0];
             m_var_value_array[4*(j+1)+1] = &grad_array_x[j][0];
@@ -1147,9 +1160,9 @@ void TransferFunctionSynthesizer::SynthesizedOpacityScalarsArray(
         m_rpn.evalArray(&eval_result[i][0], loop_cnt);
     }
 
-    for( size_t i=0; i<loop_cnt; i++)
+    for( std::size_t i=0; i<loop_cnt; i++)
     {
-        for( size_t j=0; j<m_opa_var.size(); j++)
+        for( std::size_t j=0; j<m_opa_var.size(); j++)
         {
             o_scalars_array[i][j] = eval_result[j][i];
         }
@@ -1211,12 +1224,12 @@ void TransferFunctionSynthesizer::SynthesizedOpacityScalarsArray(
 //        m_var_value[Z][I] = z_g[I];
 //    }
 //
-//    const size_t nvar = interp.size();
+//    const std::size_t nvar = interp.size();
 //
 //    //各変数のループ
 //    //id of Q1=4, Q2=8,,,,, Qn=4*n
 //    //id of dxQ1=5, dyQ1=6, dzQ1=7,
-//    for( size_t j= 0; j < nvar; j++ )
+//    for( std::size_t j= 0; j < nvar; j++ )
 //    {
 //        float scalar[SIMDW];
 //        float grad_x[SIMDW], grad_y[SIMDW], grad_z[SIMDW];
@@ -1236,7 +1249,7 @@ void TransferFunctionSynthesizer::SynthesizedOpacityScalarsArray(
 //
 //
 //    //ボリュームデータ合成式のループ
-//    for( size_t i = 0; i < m_col_var.size(); i++ )
+//    for( std::size_t i = 0; i < m_col_var.size(); i++ )
 //    {
 //        m_rpn.setExpToken( &(m_col_var[i].exp_token[0]) );
 //        m_rpn.setVariableName( &(m_col_var[i].var_name[0]) );
@@ -1324,7 +1337,7 @@ void TransferFunctionSynthesizer::SynthesizedColorScalarsArray(
         global_coord_z[i] = global_coord[i].z();
     }
 
-    size_t nvar = interp.size();
+    std::size_t nvar = interp.size();
 
     for (size_t j = 0; j < nvar; j++ )
     {
@@ -1342,7 +1355,7 @@ void TransferFunctionSynthesizer::SynthesizedColorScalarsArray(
     m_var_value_array[Y] = global_coord_y;
     m_var_value_array[Z] = global_coord_z;
 
-    for( size_t i = 0; i < m_col_var.size(); i++ )
+    for( std::size_t i = 0; i < m_col_var.size(); i++ )
     {
         m_rpn.setExpToken( &(m_col_var[i].exp_token[0]) );
         m_rpn.setVariableName( &(m_col_var[i].var_name[0]) );
@@ -1350,7 +1363,7 @@ void TransferFunctionSynthesizer::SynthesizedColorScalarsArray(
 
         //id of Q1=4, Q2=8,,,,, Qn=4*n
         //id of dxQ1=5, dyQ1=6, dzQ1=7,
-        for( size_t j= 0; j < nvar; j++ )
+        for( std::size_t j= 0; j < nvar; j++ )
         {
             m_var_value_array[4*(j+1)  ] = &scalar_array[j][0];
             m_var_value_array[4*(j+1)+1] = &grad_array_x[j][0];
@@ -1363,9 +1376,9 @@ void TransferFunctionSynthesizer::SynthesizedColorScalarsArray(
         m_rpn.evalArray(&eval_result[i][0], loop_cnt);
     }
 
-    for( size_t i=0; i<loop_cnt; i++)
+    for( std::size_t i=0; i<loop_cnt; i++)
     {
-        for( size_t j=0; j<m_col_var.size(); j++)
+        for( std::size_t j=0; j<m_col_var.size(); j++)
         {
             c_scalars_array[i][j] = eval_result[j][i];
         }
@@ -1423,17 +1436,17 @@ float TransferFunctionSynthesizer::CalculateOpacity(
 
     m_scalars.clear();
 
-    for( size_t i = 0; i < m_opa_var.size(); i++ )
+    for( std::size_t i = 0; i < m_opa_var.size(); i++ )
     {
         //set variable eq. ex) Q1+Q2/Q3
         m_rpn.setExpToken( &(m_opa_var[i].exp_token[0]) );
         m_rpn.setVariableName( &(m_opa_var[i].var_name[0]) );
         m_rpn.setNumber( &(m_opa_var[i].val_array[0]) );
 
-        size_t nvar = interp.size();
+        std::size_t nvar = interp.size();
 
         //id of Q1=4, Q2=8,,,,, Qn=4*n
-        for( size_t j= 0; j < nvar; j++ )
+        for( std::size_t j= 0; j < nvar; j++ )
         {
             interp[j]->setLocalPoint( local_coord );
             const vismodule::Vector3f grad = interp[j]->gradient();
@@ -1588,10 +1601,10 @@ void TransferFunctionSynthesizer::CalculateCoordArray(
         global_coord_z[i] = global_coord[i].z();
     }
 
-    size_t nvar = interp.size();
+    std::size_t nvar = interp.size();
 
     //bindCell, setLocalPoint, gradient, scalar をまとめてこの関数内部でSIMD化
-    for( size_t j= 0; j < nvar; j++ )
+    for( std::size_t j= 0; j < nvar; j++ )
     {
         interp[j]->setLocalPointArray( loop_cnt,
                                        local_coord );
@@ -1622,7 +1635,7 @@ void TransferFunctionSynthesizer::CalculateCoordArray(
         m_rpn.setNumber      ( &(x_synthesis.val_array[0]) );
 
         //id of Q1=4, Q2=8,,,,, Qn=4*n
-        for( size_t j= 0; j < nvar; j++ )
+        for( std::size_t j= 0; j < nvar; j++ )
         {
             m_var_value_array[4*(j+1)  ] = &scalar_array[j][0];
             m_var_value_array[4*(j+1)+1] = &grad_array_x[j][0];
@@ -1659,7 +1672,7 @@ void TransferFunctionSynthesizer::CalculateCoordArray(
         m_rpn.setNumber      ( &(y_synthesis.val_array[0]) );
 
         //id of Q1=4, Q2=8,,,,, Qn=4*n
-        for( size_t j= 0; j < nvar; j++ )
+        for( std::size_t j= 0; j < nvar; j++ )
         {
             m_var_value_array[4*(j+1)  ] = &scalar_array[j][0];
             m_var_value_array[4*(j+1)+1] = &grad_array_x[j][0];
@@ -1697,7 +1710,7 @@ void TransferFunctionSynthesizer::CalculateCoordArray(
 
 
         //id of Q1=4, Q2=8,,,,, Qn=4*n
-        for( size_t j= 0; j < nvar; j++ )
+        for( std::size_t j= 0; j < nvar; j++ )
         {
             m_var_value_array[4*(j+1)  ] = &scalar_array[j][0];
             m_var_value_array[4*(j+1)+1] = &grad_array_x[j][0];
@@ -1841,10 +1854,10 @@ void TransferFunctionSynthesizer::CalculateOpacityArrayAverage(
         global_coord_z[i] = global_coord[i].z();
     }
 
-    size_t nvar = interp.size();
+    std::size_t nvar = interp.size();
 
     //bindCell, setLocalPoint, gradient, scalar をまとめてこの関数内部でSIMD化
-    for( size_t j= 0; j < nvar; j++ )
+    for( std::size_t j= 0; j < nvar; j++ )
     {
         interp[j]->setLocalPointArray( loop_cnt,
                                        local_coord );
@@ -1859,17 +1872,17 @@ void TransferFunctionSynthesizer::CalculateOpacityArrayAverage(
     m_var_value_array[Y] = global_coord_y;
     m_var_value_array[Z] = global_coord_z;
 
-    for( size_t i = 0; i < m_opa_var.size(); i++ )
+    for( std::size_t i = 0; i < m_opa_var.size(); i++ )
     {
         //set variable eq. ex) Q1+Q2/Q3
         m_rpn.setExpToken( &(m_opa_var[i].exp_token[0]) );
         m_rpn.setVariableName( &(m_opa_var[i].var_name[0]) );
         m_rpn.setNumber( &(m_opa_var[i].val_array[0]) );
 
-        size_t nvar = interp.size();
+        std::size_t nvar = interp.size();
 
         //id of Q1=4, Q2=8,,,,, Qn=4*n
-        for( size_t j= 0; j < nvar; j++ )
+        for( std::size_t j= 0; j < nvar; j++ )
         {
             m_var_value_array[4*(j+1)  ] = &scalar_array[j][0];
             m_var_value_array[4*(j+1)+1] = &grad_array_x[j][0];
@@ -2044,10 +2057,10 @@ void TransferFunctionSynthesizer::CalculateOpacityArray(
         global_coord_z[i] = global_coord[i].z();
     }
 
-    size_t nvar = interp.size();
+    std::size_t nvar = interp.size();
 
     //bindCell, setLocalPoint, gradient, scalar をまとめてこの関数内部でSIMD化
-    for( size_t j= 0; j < nvar; j++ )
+    for( std::size_t j= 0; j < nvar; j++ )
     {
         interp[j]->setLocalPointArray( loop_cnt,
                                        local_coord );
@@ -2062,17 +2075,17 @@ void TransferFunctionSynthesizer::CalculateOpacityArray(
     m_var_value_array[Y] = global_coord_y;
     m_var_value_array[Z] = global_coord_z;
 
-    for( size_t i = 0; i < m_opa_var.size(); i++ )
+    for( std::size_t i = 0; i < m_opa_var.size(); i++ )
     {
         //set variable eq. ex) Q1+Q2/Q3
         m_rpn.setExpToken( &(m_opa_var[i].exp_token[0]) );
         m_rpn.setVariableName( &(m_opa_var[i].var_name[0]) );
         m_rpn.setNumber( &(m_opa_var[i].val_array[0]) );
 
-        size_t nvar = interp.size();
+        std::size_t nvar = interp.size();
 
         //id of Q1=4, Q2=8,,,,, Qn=4*n
-        for( size_t j= 0; j < nvar; j++ )
+        for( std::size_t j= 0; j < nvar; j++ )
         {
             m_var_value_array[4*(j+1)  ] = &scalar_array[j][0];
             m_var_value_array[4*(j+1)+1] = &grad_array_x[j][0];
@@ -2179,11 +2192,11 @@ void TransferFunctionSynthesizer::CalculateOpacityArray(
 //        m_var_value[Z][I] = z_g[I];
 //    }
 //
-//    const size_t nvar = interp.size();
+//    const std::size_t nvar = interp.size();
 //
 //    //各変数のループ
 //    //id of Q1=4, Q2=8,,,,, Qn=4*n
-//    for( size_t j= 0; j < nvar; j++ )
+//    for( std::size_t j= 0; j < nvar; j++ )
 //    {
 //        float scalar[SIMDW];
 //        float grad_x[SIMDW], grad_y[SIMDW], grad_z[SIMDW];
@@ -2204,7 +2217,7 @@ void TransferFunctionSynthesizer::CalculateOpacityArray(
 //    vismodule::RGBColor colors[m_col_var.size()][SIMDW]; //result of t_func.colorMap().at( m_scalars[i] );
 //
 //    //ボリュームデータ合成式のループ
-//    for( size_t i = 0; i < m_col_var.size(); i++ )
+//    for( std::size_t i = 0; i < m_col_var.size(); i++ )
 //    {
 //        //set variable eq. ex) Q1+Q2/Q3
 //        m_rpn.setExpToken( &(m_col_var[i].exp_token[0]) );
@@ -2235,7 +2248,7 @@ void TransferFunctionSynthesizer::CalculateOpacityArray(
 //    m_rpn.setNumber( &(m_col_func.val_array[0]) );
 //
 //    //RED
-//    for( size_t i = 0; i < m_col_var.size(); i++ )
+//    for( std::size_t i = 0; i < m_col_var.size(); i++ )
 //    {
 //        for( int I=0; I<SIMDW; I++ )
 //        {
@@ -2256,7 +2269,7 @@ void TransferFunctionSynthesizer::CalculateOpacityArray(
 //    }
 //
 //    //GREEN
-//    for( size_t i = 0; i < m_col_var.size(); i++ )
+//    for( std::size_t i = 0; i < m_col_var.size(); i++ )
 //    {
 //        for( int I=0; I<SIMDW; I++ )
 //        {
@@ -2278,7 +2291,7 @@ void TransferFunctionSynthesizer::CalculateOpacityArray(
 //
 //
 //    //BLUE
-//    for( size_t i = 0; i < m_col_var.size(); i++ )
+//    for( std::size_t i = 0; i < m_col_var.size(); i++ )
 //    {
 //        for( int I=0; I<SIMDW; I++ )
 //        {
@@ -2305,6 +2318,108 @@ void TransferFunctionSynthesizer::CalculateOpacityArray(
 //        Blue[I] = (vismodule::UInt8)(blue[I]*255);
 //    }
 //}
+
+
+void TransferFunctionSynthesizer::CalculateScalarsArray(
+    std::vector< vismodule::CellBase<Type>* > interp ,
+    const int loop_cnt,
+    const vismodule::Vector3f *local_coord,
+    const vismodule::Vector3f *global_coord,
+    std::vector<vismodule::TransferFunction>& tf,
+    float *result_array)
+{
+//        std::stringstream debug;
+
+    if ( loop_cnt <= 0 ) return;
+
+    //配列を追加
+    const std::size_t nvar = interp.size();
+    const std::size_t sample_count = static_cast<std::size_t>( loop_cnt );
+    std::vector< std::vector<float> > scalar_array(
+        nvar, std::vector<float>( sample_count ) );
+
+    std::vector< std::vector<float> > grad_array_x(
+        nvar, std::vector<float>( sample_count ) );
+    std::vector< std::vector<float> > grad_array_y(
+        nvar, std::vector<float>( sample_count ) );
+    std::vector< std::vector<float> > grad_array_z(
+        nvar, std::vector<float>( sample_count ) );
+
+    //float local_coord_x[loop_cnt];
+    //float local_coord_y[loop_cnt];
+    //float local_coord_z[loop_cnt];
+
+    std::vector<float> global_coord_x( sample_count );
+    std::vector<float> global_coord_y( sample_count );
+    std::vector<float> global_coord_z( sample_count );
+
+    std::vector<float> eval_result( sample_count );
+
+    for (int i = 0; i < loop_cnt; i++)
+    {
+        //local_coord_x[i] = local_coord[i].x();
+        //local_coord_y[i] = local_coord[i].y();
+        //local_coord_z[i] = local_coord[i].z();
+        global_coord_x[i] = global_coord[i].x();
+        global_coord_y[i] = global_coord[i].y();
+        global_coord_z[i] = global_coord[i].z();
+    }
+
+    //bindCell, setLocalPoint, gradient, scalar をまとめてこの関数内部でSIMD化
+    for( std::size_t j = 0; j < nvar; j++ )
+    {
+        interp[j]->setLocalPointArray( loop_cnt,
+                                       local_coord );
+        interp[j]->CalcScalarGrad( loop_cnt,
+                                   scalar_array[j].data(),
+                                   grad_array_x[j].data(),
+                                   grad_array_y[j].data(),
+                                   grad_array_z[j].data() );
+    }
+
+    m_var_value_array[X] = global_coord_x.data();
+    m_var_value_array[Y] = global_coord_y.data();
+    m_var_value_array[Z] = global_coord_z.data();
+
+    //std::cout <<"m_opa_var.size() =" <<m_opa_var.size() <<std::endl;
+    for( size_t i = 0; i < m_opa_var.size(); i++ )
+    {
+        //set variable eq. ex) Q1+Q2/Q3
+        m_rpn.setExpToken( &(m_opa_var[i].exp_token[0]) );
+        m_rpn.setVariableName( &(m_opa_var[i].var_name[0]) );
+        m_rpn.setNumber( &(m_opa_var[i].val_array[0]) );
+
+        //id of Q1=4, Q2=8,,,,, Qn=4*n
+        for( std::size_t j = 0; j < nvar; j++ )
+        {
+            m_var_value_array[4*(j+1)  ] = scalar_array[j].data();
+            m_var_value_array[4*(j+1)+1] = grad_array_x[j].data();
+            m_var_value_array[4*(j+1)+2] = grad_array_y[j].data();
+            m_var_value_array[4*(j+1)+3] = grad_array_z[j].data();
+        }
+
+        m_rpn.setVariableValueArray( m_var_value_array );
+
+        //calc. m_opa_var
+        m_rpn.evalArray( eval_result.data(), loop_cnt );
+
+        //set opacity A1,A2,,,Ai. start 116 in VarName(Token.h)
+        //m_var_value[ VAR_OFFSET_A+i ] = tf[i].opacityMap().at( m_scalars[i] );
+///        for( int jx=0; jx<loop_cnt; jx++ )
+///        {
+///            opacity_map_array[i][jx] = tf[i].opacityMap().at( eval_result[jx] );
+///        }
+//        m_var_value_array[ VAR_OFFSET_A+i ] = &opacity_map_array[i][0];
+        m_var_value_array[ VAR_OFFSET_A+i ] = eval_result.data();
+    }
+
+    for( int jx=0; jx<loop_cnt; jx++ )
+    {
+        result_array[jx] = eval_result[jx];
+    }
+
+}
+
 
 void TransferFunctionSynthesizer::CalculateColorArray(
 //    std::vector< vismodule::HexahedralCell<Type>* > interp,
@@ -2388,9 +2503,9 @@ void TransferFunctionSynthesizer::CalculateColorArray(
         global_coord_z[jx] = global_coord[jx].z();
     }
 
-    size_t nvar = interp.size();
+    std::size_t nvar = interp.size();
 
-    for( size_t j= 0; j < nvar; j++ )
+    for( std::size_t j= 0; j < nvar; j++ )
     {
         interp[j]->setLocalPointArray( loop_cnt,
                                        local_coord );
@@ -2403,7 +2518,7 @@ void TransferFunctionSynthesizer::CalculateColorArray(
 
     //vismodule::RGBColor colors[10][loop_cnt]; //result of t_func.colorMap().at( m_scalars[i] );
     vismodule::RGBColor** colors = new vismodule::RGBColor* [m_col_var.size()];
-    for( size_t i = 0; i < m_col_var.size(); i++ )
+    for( std::size_t i = 0; i < m_col_var.size(); i++ )
     {
         colors[i] = new vismodule::RGBColor[loop_cnt];
     }
@@ -2412,7 +2527,7 @@ void TransferFunctionSynthesizer::CalculateColorArray(
     m_var_value_array[Y] = global_coord_y;
     m_var_value_array[Z] = global_coord_z;
 
-    for( size_t i = 0; i < m_col_var.size(); i++ )
+    for( std::size_t i = 0; i < m_col_var.size(); i++ )
     {
         //set variable eq. ex) Q1+Q2/Q3
         m_rpn.setExpToken( &(m_col_var[i].exp_token[0]) );
@@ -2420,7 +2535,7 @@ void TransferFunctionSynthesizer::CalculateColorArray(
         m_rpn.setNumber( &(m_col_var[i].val_array[0]) );
 
         //id of Q1=4, Q2=8,,,,, Qn=4*n
-        for( size_t j= 0; j < nvar; j++ )
+        for( std::size_t j= 0; j < nvar; j++ )
         {
             m_var_value_array[4*(j+1)  ] = &scalar_array[j][0];
             m_var_value_array[4*(j+1)+1] = &grad_array_x[j][0];
@@ -2462,7 +2577,7 @@ void TransferFunctionSynthesizer::CalculateColorArray(
     blue_array = new float[loop_cnt];
 
     //RED
-    for( size_t i = 0; i < m_col_var.size(); i++ )
+    for( std::size_t i = 0; i < m_col_var.size(); i++ )
     {
         for( int jx=0; jx<loop_cnt; jx++ ){
             color_array[i][jx] = (float)colors[i][jx].r() / 255.0;
@@ -2478,7 +2593,7 @@ void TransferFunctionSynthesizer::CalculateColorArray(
     }
 
     //GREEN
-    for( size_t i = 0; i < m_col_var.size(); i++ )
+    for( std::size_t i = 0; i < m_col_var.size(); i++ )
     {
         for( int jx=0; jx<loop_cnt; jx++ ){
             color_array[i][jx] = (float)colors[i][jx].g() / 255.0;
@@ -2494,7 +2609,7 @@ void TransferFunctionSynthesizer::CalculateColorArray(
     }
 
     //BLUE
-    for( size_t i = 0; i < m_col_var.size(); i++ )
+    for( std::size_t i = 0; i < m_col_var.size(); i++ )
     {
         for( int jx=0; jx<loop_cnt; jx++ ){
             color_array[i][jx] = (float)colors[i][jx].b() / 255.0;

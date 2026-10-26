@@ -46,9 +46,9 @@ private:
 
     Tiff::Header m_header; ///< header information
     Tiff::IFD m_ifd; ///< 0-th IFD
-    size_t m_width; ///< width
-    size_t m_height; ///< height
-    size_t m_bits_per_sample; ///< bits per channel (sample)
+    std::size_t m_width; ///< width
+    std::size_t m_height; ///< height
+    std::size_t m_bits_per_sample; ///< bits per channel (sample)
     ColorMode m_color_mode; ///< color mode
     kvs::AnyValueArray m_raw_data; ///< raw data
 
@@ -64,9 +64,9 @@ public:
 
     const Tiff::Header& header() const { return m_header; }
     const Tiff::IFD& ifd() const { return m_ifd; }
-    size_t width() const { return m_width; }
-    size_t height() const { return m_height; }
-    size_t bitsPerSample() const { return m_bits_per_sample; }
+    std::size_t width() const { return m_width; }
+    std::size_t height() const { return m_height; }
+    std::size_t bitsPerSample() const { return m_bits_per_sample; }
     ColorMode colorMode() const { return m_color_mode; }
     const kvs::AnyValueArray& rawData() const { return m_raw_data; }
     bool isSupported() const;
@@ -77,13 +77,13 @@ public:
 private:
 
     bool write( const std::string& filename );
-    size_t get_width() const;
-    size_t get_height() const;
-    size_t get_bits_per_sample() const;
-    size_t get_samples_per_pixel() const;
-    size_t get_photometirc_interpretation() const;
-    size_t get_rows_per_strip() const;
-    size_t get_compression_mode() const;
+    std::size_t get_width() const;
+    std::size_t get_height() const;
+    std::size_t get_bits_per_sample() const;
+    std::size_t get_samples_per_pixel() const;
+    std::size_t get_photometirc_interpretation() const;
+    std::size_t get_rows_per_strip() const;
+    std::size_t get_compression_mode() const;
     kvs::AnyValueArray get_strip_offsets() const;
     kvs::AnyValueArray get_strip_bytes() const;
     ColorMode get_color_mode() const;

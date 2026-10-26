@@ -242,7 +242,7 @@ const bool KVSMLObjectPoint::read( const std::string& filename )
         const vismodule::XMLNode::SuperClass* parent = vertex_tag.node();
         
         // <Coord>
-        const size_t ncoords = vertex_tag.nvertices();
+        const std::size_t ncoords = vertex_tag.nvertices();
         
         if( vertex_tag.nvertices() == 0 ) return( true );
 
@@ -254,7 +254,7 @@ const bool KVSMLObjectPoint::read( const std::string& filename )
         }
 
         // <Color>
-        const size_t ncolors = vertex_tag.nvertices();
+        const std::size_t ncolors = vertex_tag.nvertices();
         if ( !vismodule::kvsml::ReadColorData( parent, ncolors, &m_colors ) ) return( false );
         if ( m_colors.size() == 0 )
         {
@@ -266,11 +266,11 @@ const bool KVSMLObjectPoint::read( const std::string& filename )
         }
 
         // <Normal>
-        const size_t nnormals = vertex_tag.nvertices();
+        const std::size_t nnormals = vertex_tag.nvertices();
         if ( !vismodule::kvsml::ReadNormalData( parent, nnormals, &m_normals ) ) return( false );
 
         // <Size>
-        const size_t nsizes = vertex_tag.nvertices();
+        const std::size_t nsizes = vertex_tag.nvertices();
         if ( !vismodule::kvsml::ReadSizeData( parent, nsizes, &m_sizes ) ) return( false );
     }
 
@@ -318,7 +318,7 @@ const bool KVSMLObjectPoint::write( const std::string& filename )
     }
 
     // <Vertex nvertices="xxx">
-    const size_t dimension = 3;
+    const std::size_t dimension = 3;
     vismodule::kvsml::VertexTag vertex_tag;
     vertex_tag.setNVertices( m_coords.size() / dimension );
     if ( !vertex_tag.write( point_tag.node() ) )

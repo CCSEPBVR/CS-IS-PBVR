@@ -113,8 +113,8 @@ public:
 
     friend std::ostream& operator << ( std::ostream& os, const RGBColor& rgb )
     {
-        const size_t width     = 8;
-        const size_t precision = 3;
+        const std::size_t width     = 8;
+        const std::size_t precision = 3;
 
         const std::ios_base::fmtflags original_flags( os.flags() );
 

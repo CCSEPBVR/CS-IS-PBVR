@@ -43,13 +43,13 @@ public:
     bool hasMaxValue() const { return m_max_value.hasValue(); }
     const std::string& label() const { return m_label; }
     const std::string& unit() const { return m_unit; }
-    size_t veclen() const { return m_veclen; }
+    std::size_t veclen() const { return m_veclen; }
     double minValue() const { return m_min_value; }
     double maxValue() const { return m_max_value; }
 
     void setLabel( const std::string& label ) { m_label = label; }
     void setUnit( const std::string& unit ) { m_unit = unit; }
-    void setVeclen( const size_t veclen ) { m_veclen = veclen; }
+    void setVeclen( const std::size_t veclen ) { m_veclen = veclen; }
     void setMinValue( const double value ) { m_min_value = value; }
     void setMaxValue( const double value ) { m_max_value = value; }
 

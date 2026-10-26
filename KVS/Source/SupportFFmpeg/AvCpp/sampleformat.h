@@ -42,16 +42,16 @@ public:
 
     bool isPlanar() const noexcept;
 
-    size_t bytesPerSample(OptionalErrorCode ec = throws()) const;
-    size_t bitsPerSample(OptionalErrorCode ec = throws()) const;
+    std::size_t bytesPerSample(OptionalErrorCode ec = throws()) const;
+    std::size_t bitsPerSample(OptionalErrorCode ec = throws()) const;
 
-    size_t requiredBufferSize(int nbChannels, int nbSamples, int align, OptionalErrorCode ec = throws()) const;
-    size_t requiredBufferSize(int nbChannels, int nbSamples, int align, int &lineSize, OptionalErrorCode ec = throws()) const;
+    std::size_t requiredBufferSize(int nbChannels, int nbSamples, int align, OptionalErrorCode ec = throws()) const;
+    std::size_t requiredBufferSize(int nbChannels, int nbSamples, int align, int &lineSize, OptionalErrorCode ec = throws()) const;
 
     // Static helper methods
 
-    static size_t requiredBufferSize(SampleFormat fmt, int nbChannels, int nbSamples, int align, OptionalErrorCode ec = throws());
-    static size_t requiredBufferSize(SampleFormat fmt, int nbChannels, int nbSamples, int align, int &lineSize, OptionalErrorCode ec = throws());
+    static std::size_t requiredBufferSize(SampleFormat fmt, int nbChannels, int nbSamples, int align, OptionalErrorCode ec = throws());
+    static std::size_t requiredBufferSize(SampleFormat fmt, int nbChannels, int nbSamples, int align, int &lineSize, OptionalErrorCode ec = throws());
 
     static void fillArrays(uint8_t **audioData,
                            int *linesize,

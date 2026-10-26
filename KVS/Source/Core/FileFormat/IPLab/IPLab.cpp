@@ -94,7 +94,7 @@ bool IPLab::read( const std::string& filename )
     for ( kvs::UInt16 i = 0; i < m_nframes; i++ )
     {
         kvs::ValueArray<kvs::UInt8> data( m_width * m_height );
-        for ( size_t j = 0; j < data.size(); j++ )
+        for ( std::size_t j = 0; j < data.size(); j++ )
         {
             kvs::UInt16 temp;
             ifs.read( (char*)&temp, 2 );

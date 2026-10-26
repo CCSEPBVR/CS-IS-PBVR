@@ -29,15 +29,15 @@ class Tubeline : public kvs::FilterBase, public kvs::PolygonObject
 
 protected:
 
-    size_t m_ndivisions; ///< number of divisions of circle
+    std::size_t m_ndivisions; ///< number of divisions of circle
 
 public:
 
     Tubeline( void );
-    Tubeline( const kvs::LineObject* object, const size_t ndivisions = 6 );
+    Tubeline( const kvs::LineObject* object, const std::size_t ndivisions = 6 );
     virtual ~Tubeline( void );
 
-    void setNumberOfDivisions( const size_t ndivisions );
+    void setNumberOfDivisions( const std::size_t ndivisions );
 
     SuperClass* exec( const kvs::ObjectBase* object );
 
@@ -58,7 +58,7 @@ protected:
         const kvs::ValueArray<kvs::Real32> line_vertices,
         const kvs::ValueArray<kvs::Real32> line_sizes,
         const kvs::ValueArray<kvs::UInt8> line_colors,
-        const size_t nvertices,
+        const std::size_t nvertices,
         const kvs::PolygonObject::ColorType color_type );
 
     void calculate_circles(
@@ -86,11 +86,11 @@ protected:
         std::vector<kvs::Real32>* normals,
         const std::vector<kvs::Vector3f>& start_circle,
         const std::vector<kvs::Vector3f>& end_circle,
-        const size_t vertex_number );
+        const std::size_t vertex_number );
 
 #if 1 // KVS_ENABLE_DEPRECATED
 public:
-    void setNDivisions( const size_t ndivisions ) { this->setNumberOfDivisions( ndivisions ); }
+    void setNDivisions( const std::size_t ndivisions ) { this->setNumberOfDivisions( ndivisions ); }
 #endif
 };
 

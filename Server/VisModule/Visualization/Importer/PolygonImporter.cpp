@@ -329,10 +329,10 @@ void PolygonImporter::set_min_max_coord( void )
 {
     vismodule::Vector3f min_coord( m_coords[0], m_coords[1], m_coords[2] );
     vismodule::Vector3f max_coord( min_coord );
-    const size_t  dimension = 3;
-    const size_t  nvertices = m_coords.size() / dimension;
-    size_t        index3    = 3;
-    for ( size_t i = 1; i < nvertices; i++, index3 += 3 )
+    const std::size_t  dimension = 3;
+    const std::size_t  nvertices = m_coords.size() / dimension;
+    std::size_t        index3    = 3;
+    for ( std::size_t i = 1; i < nvertices; i++, index3 += 3 )
     {
         min_coord.x() = vismodule::Math::Min( min_coord.x(), m_coords[index3] );
         min_coord.y() = vismodule::Math::Min( min_coord.y(), m_coords[index3 + 1] );

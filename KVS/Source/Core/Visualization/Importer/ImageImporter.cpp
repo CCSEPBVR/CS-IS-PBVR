@@ -371,7 +371,7 @@ void ImageImporter::import( const kvs::Tiff* tiff )
     }
 
     const kvs::UInt8* raw_data = static_cast<const kvs::UInt8*>( tiff->rawData().data() );
-    const size_t raw_size = tiff->rawData().byteSize();
+    const std::size_t raw_size = tiff->rawData().byteSize();
     kvs::ValueArray<kvs::UInt8> data( raw_data, raw_size ); // deep copy
     SuperClass::setSize( tiff->width(), tiff->height() );
     SuperClass::setPixels( data, pixel_type ); // shallow copy
@@ -409,10 +409,10 @@ void ImageImporter::import( const kvs::Pgm* pgm )
 /*==========================================================================*/
 void ImageImporter::import( const kvs::Pbm* pbm )
 {
-    const size_t npixels = pbm->width() * pbm->height();
+    const std::size_t npixels = pbm->width() * pbm->height();
     kvs::ValueArray<kvs::UInt8> data( npixels );
 
-    for ( size_t i = 0; i < npixels; i++ )
+    for ( std::size_t i = 0; i < npixels; i++ )
     {
         data[i] = pbm->pixels().test(i) ? 0 : 255;
     }
@@ -435,9 +435,9 @@ void ImageImporter::import( const kvs::Png* png )
     }
     else if ( png->bytesPerPixel() == 4 )
     {
-        const size_t npixels = png->width() * png->height();
+        const std::size_t npixels = png->width() * png->height();
         kvs::ValueArray<kvs::UInt8> pixels( npixels * 3 );
-        for ( size_t i = 0; i < npixels; ++i )
+        for ( std::size_t i = 0; i < npixels; ++i )
         {
             pixels[ 3 * i + 0 ] = png->pixels()[ 4 * i + 0 ];
             pixels[ 3 * i + 1 ] = png->pixels()[ 4 * i + 1 ];
@@ -466,9 +466,9 @@ void ImageImporter::import( const kvs::Jpg* jpg )
     }
     else if ( jpg->bytesPerPixel() == 4 )
     {
-        const size_t npixels = jpg->width() * jpg->height();
+        const std::size_t npixels = jpg->width() * jpg->height();
         kvs::ValueArray<kvs::UInt8> pixels( npixels * 3 );
-        for ( size_t i = 0; i < npixels; ++i )
+        for ( std::size_t i = 0; i < npixels; ++i )
         {
             pixels[ 3 * i + 0 ] = jpg->pixels()[ 4 * i + 0 ];
             pixels[ 3 * i + 1 ] = jpg->pixels()[ 4 * i + 1 ];
@@ -503,7 +503,7 @@ void ImageImporter::import( const kvs::Dicom* dicom )
 /*==========================================================================*/
 void ImageImporter::import( const kvs::IPLab* ipl )
 {
-    const size_t index = ipl->importingFrameIndex();
+    const std::size_t index = ipl->importingFrameIndex();
     SuperClass::setSize( ipl->width(), ipl->height() );
     SuperClass::setPixels( ipl->data( index ), kvs::ImageObject::Gray8 ); // shallow copy
 }

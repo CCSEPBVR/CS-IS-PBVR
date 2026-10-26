@@ -62,8 +62,8 @@ ImageObject::ImageObject( void )
  */
 /*==========================================================================*/
 ImageObject::ImageObject(
-    const size_t                       width,
-    const size_t                       height,
+    const std::size_t                       width,
+    const std::size_t                       height,
     const vismodule::ValueArray<vismodule::UInt8>& data,
     const ImageObject::PixelType       type ):
     m_type( type ),
@@ -185,7 +185,7 @@ const ImageObject::PixelType ImageObject::type( void ) const
  *  @return image width
  */
 /*==========================================================================*/
-const size_t ImageObject::width( void ) const
+const std::size_t ImageObject::width( void ) const
 {
     return( m_width );
 }
@@ -196,7 +196,7 @@ const size_t ImageObject::width( void ) const
  *  @return image height
  */
 /*==========================================================================*/
-const size_t ImageObject::height( void ) const
+const std::size_t ImageObject::height( void ) const
 {
     return( m_height );
 }
@@ -218,7 +218,7 @@ const vismodule::ValueArray<vismodule::UInt8>& ImageObject::data( void ) const
  *  @return number of bits per pixel
  */
 /*==========================================================================*/
-const size_t ImageObject::bitsPerPixel( void ) const
+const std::size_t ImageObject::bitsPerPixel( void ) const
 {
     return( m_type );
 }
@@ -229,7 +229,7 @@ const size_t ImageObject::bitsPerPixel( void ) const
  *  @return number of bytes per pixel
  */
 /*==========================================================================*/
-const size_t ImageObject::bytesPerPixel( void ) const
+const std::size_t ImageObject::bytesPerPixel( void ) const
 {
     return( m_type >> 3 );
 }
@@ -240,9 +240,9 @@ const size_t ImageObject::bytesPerPixel( void ) const
  *  @return number of color channels
  */
 /*==========================================================================*/
-const size_t ImageObject::nchannels( void ) const
+const std::size_t ImageObject::nchannels( void ) const
 {
-    size_t ret = 0;
+    std::size_t ret = 0;
     switch ( m_type )
     {
     case ImageObject::Gray8:   ret = 1; break;
@@ -261,7 +261,7 @@ const size_t ImageObject::nchannels( void ) const
  *  @return number of pixels
  */
 /*==========================================================================*/
-const size_t ImageObject::get_npixels( void ) const
+const std::size_t ImageObject::get_npixels( void ) const
 {
     return( ( m_type >> 3 ) * m_width * m_height );
 }

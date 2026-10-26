@@ -24,24 +24,24 @@ class MultiDimensionalScaling
 {
 public:
     using Distance = std::function<T(const kvs::ValueTable<T>&,const size_t, const size_t)>;
-    static T Euclidean( const kvs::ValueTable<T>& data, const size_t i, const size_t j );
-    static T Manhattan( const kvs::ValueTable<T>& data, const size_t i, const size_t j );
+    static T Euclidean( const kvs::ValueTable<T>& data, const std::size_t i, const std::size_t j );
+    static T Manhattan( const kvs::ValueTable<T>& data, const std::size_t i, const std::size_t j );
     static kvs::Matrix<T> DistanceMatrix( const kvs::ValueTable<T>& data, Distance distance = Euclidean );
 
 private:
     Distance m_distance = Euclidean; // distance function
-    size_t m_ncomponents = 0; /// number of components (if 0, dimension of the input data matrix)
+    std::size_t m_ncomponents = 0; /// number of components (if 0, dimension of the input data matrix)
     kvs::Matrix<T> m_embedded_points{};
 
 public:
-    MultiDimensionalScaling( const size_t ncomps = 0 ): m_ncomponents( ncomps ) {}
-    MultiDimensionalScaling( const kvs::ValueTable<T>& data, const size_t ncomponents = 0 );
-    MultiDimensionalScaling( const kvs::ValueTable<T>& data, Distance distance, const size_t ncomponents = 0 );
-    MultiDimensionalScaling( const kvs::Matrix<T>& matrix, const size_t ncomponents = 0 );
+    MultiDimensionalScaling( const std::size_t ncomps = 0 ): m_ncomponents( ncomps ) {}
+    MultiDimensionalScaling( const kvs::ValueTable<T>& data, const std::size_t ncomponents = 0 );
+    MultiDimensionalScaling( const kvs::ValueTable<T>& data, Distance distance, const std::size_t ncomponents = 0 );
+    MultiDimensionalScaling( const kvs::Matrix<T>& matrix, const std::size_t ncomponents = 0 );
 
-    void setNumberOfComponents( const size_t ncomponents ) { m_ncomponents = ncomponents; }
+    void setNumberOfComponents( const std::size_t ncomponents ) { m_ncomponents = ncomponents; }
     void setDistance( Distance distance ) { m_distance = distance; }
-    size_t numberOfComponents() const { return m_ncomponents; }
+    std::size_t numberOfComponents() const { return m_ncomponents; }
     const kvs::Matrix<T>& embeddedPoints() const { return m_embedded_points; }
 
     void fit( const kvs::ValueTable<T>& data );

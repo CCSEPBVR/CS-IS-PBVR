@@ -19,7 +19,7 @@
 namespace
 {
 
-const size_t Resolution = 256;
+const std::size_t Resolution = 256;
 
 struct Equal
 {
@@ -68,7 +68,7 @@ OpacityMap::OpacityMap( void ):
  *  @param  resolution [in] table resolution
  */
 /*===========================================================================*/
-OpacityMap::OpacityMap( const size_t resolution ):
+OpacityMap::OpacityMap( const std::size_t resolution ):
     m_resolution( resolution ),
     m_min_value( 0.0f ),
 //    m_max_value( resolution - 1.0f ),
@@ -102,7 +102,7 @@ OpacityMap::OpacityMap( const Table& table ):
  *  @param  max_value [in] max value
  */
 /*==========================================================================*/
-OpacityMap::OpacityMap( const size_t resolution, const float min_value, const float max_value ):
+OpacityMap::OpacityMap( const std::size_t resolution, const float min_value, const float max_value ):
     m_resolution( resolution ),
     m_min_value( min_value ),
     m_max_value( max_value ),
@@ -180,7 +180,7 @@ const float OpacityMap::maxValue( void ) const
  *  @return resolusion
  */
 /*==========================================================================*/
-const size_t OpacityMap::resolution( void ) const
+const std::size_t OpacityMap::resolution( void ) const
 {
     return( m_resolution );
 }
@@ -218,7 +218,7 @@ const bool OpacityMap::hasRange( void ) const
  *  @param  resolution [in] table resolution
  */
 /*===========================================================================*/
-void OpacityMap::setResolution( const size_t resolution )
+void OpacityMap::setResolution( const std::size_t resolution )
 {
     m_resolution = resolution;
 }
@@ -284,7 +284,7 @@ void OpacityMap::create( void )
     if ( m_points.size() == 0 )
     {
         const float scale = 1.0f / static_cast<float>( m_resolution - 1 );
-        for ( size_t i = 0; i < m_resolution; ++i )
+        for ( std::size_t i = 0; i < m_resolution; ++i )
         {
             m_table[i] = scale * static_cast<float>( i );
         }
@@ -298,7 +298,7 @@ void OpacityMap::create( void )
 
         const float stride = ( max_value - min_value ) / static_cast<float>( m_resolution - 1 );
         float f = min_value;
-        for ( size_t i = 0; i < m_resolution; ++i, f += stride )
+        for ( std::size_t i = 0; i < m_resolution; ++i, f += stride )
         {
             Points::iterator p = m_points.begin();
             Points::iterator last = m_points.end();
@@ -351,7 +351,7 @@ void OpacityMap::create( void )
  *  @return opacity value
  */
 /*==========================================================================*/
-const vismodule::Real32 OpacityMap::operator []( const size_t index ) const
+const vismodule::Real32 OpacityMap::operator []( const std::size_t index ) const
 {
     VIS_MODULE_ASSERT( index < this->resolution() );
 
@@ -372,8 +372,8 @@ const vismodule::Real32 OpacityMap::at( const float value ) const
 
     const float r = static_cast<float>( m_resolution - 1 );
     const float v = ( value - m_min_value ) / ( m_max_value - m_min_value ) * r;
-    const size_t s0 = static_cast<size_t>( v );
-    const size_t s1 = s0 + 1;
+    const std::size_t s0 = static_cast<size_t>( v );
+    const std::size_t s1 = s0 + 1;
 
     const vismodule::Real32 a0 = m_table[ s0 ];
     const vismodule::Real32 a1 = m_table[ s1 ];

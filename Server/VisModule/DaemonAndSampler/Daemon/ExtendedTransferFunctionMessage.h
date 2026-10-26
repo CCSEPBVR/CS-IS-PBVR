@@ -19,8 +19,8 @@ namespace visclient
 class ExtendedTransferFunctionMessage
 {
 private:
-    static const size_t m_nprtf = DEFAULT_TRANSFER_FUNCTION_NUMBER;
-    // static const size_t m_nrgba = 4;
+    static const std::size_t m_nprtf = DEFAULT_TRANSFER_FUNCTION_NUMBER;
+    // static const std::size_t m_nrgba = 4;
 
 public:
     int32_t m_extend_transfer_function_resolution;

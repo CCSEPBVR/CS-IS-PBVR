@@ -98,7 +98,7 @@ const vismodule::kvsml::ObjectTag& KVSMLObjectImage::objectTag( void ) const
  *  @return image width
  */
 /*===========================================================================*/
-const size_t KVSMLObjectImage::width( void ) const
+const std::size_t KVSMLObjectImage::width( void ) const
 {
     return( m_width );
 }
@@ -109,7 +109,7 @@ const size_t KVSMLObjectImage::width( void ) const
  *  @return image height
  */
 /*===========================================================================*/
-const size_t KVSMLObjectImage::height( void ) const
+const std::size_t KVSMLObjectImage::height( void ) const
 {
     return( m_height );
 }
@@ -142,7 +142,7 @@ const vismodule::ValueArray<vismodule::UInt8>& KVSMLObjectImage::data( void ) co
  *  @param  width [in] image width
  */
 /*===========================================================================*/
-void KVSMLObjectImage::setWidth( const size_t width )
+void KVSMLObjectImage::setWidth( const std::size_t width )
 {
     m_width = width;
 }
@@ -153,7 +153,7 @@ void KVSMLObjectImage::setWidth( const size_t width )
  *  @param  height [in] image height
  */
 /*===========================================================================*/
-void KVSMLObjectImage::setHeight( const size_t height )
+void KVSMLObjectImage::setHeight( const std::size_t height )
 {
     m_height = height;
 }
@@ -263,11 +263,11 @@ const bool KVSMLObjectImage::read( const std::string& filename )
         m_pixel_type = pixel_tag.type();
 
         // <DataArray>
-        const size_t nchannels =
+        const std::size_t nchannels =
             ( m_pixel_type == "gray" ) ? 1 :
             ( m_pixel_type == "color" ) ? 3 : 0;
-        const size_t npixels = m_width * m_height;
-        const size_t nelements = npixels * nchannels;
+        const std::size_t npixels = m_width * m_height;
+        const std::size_t nelements = npixels * nchannels;
         vismodule::kvsml::DataArrayTag data_tag;
         if ( !data_tag.read( pixel_tag.node(), nelements, &m_data ) )
         {

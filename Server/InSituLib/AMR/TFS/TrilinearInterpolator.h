@@ -128,14 +128,14 @@ inline void TrilinearInterpolator::attachPoint( const float* p_x, const float* p
     for( int I=0; I < SIMDW; I++ )
     {
         // Temporary index.
-        const size_t ti = static_cast<size_t>( p_x[I] );
-        const size_t tj = static_cast<size_t>( p_y[I] );
-        const size_t tk = static_cast<size_t>( p_z[I] );
+        const std::size_t ti = static_cast<size_t>( p_x[I] );
+        const std::size_t tj = static_cast<size_t>( p_y[I] );
+        const std::size_t tk = static_cast<size_t>( p_z[I] );
 
         // Addjustment index for boundary.
-        const size_t i = ( ti >= resolution.x() - 1 ) ? resolution.x() - 2 : ti;
-        const size_t j = ( tj >= resolution.y() - 1 ) ? resolution.y() - 2 : tj;
-        const size_t k = ( tk >= resolution.z() - 1 ) ? resolution.z() - 2 : tk;
+        const std::size_t i = ( ti >= resolution.x() - 1 ) ? resolution.x() - 2 : ti;
+        const std::size_t j = ( tj >= resolution.y() - 1 ) ? resolution.y() - 2 : tj;
+        const std::size_t k = ( tk >= resolution.z() - 1 ) ? resolution.z() - 2 : tk;
 
         // Calculate index.
         m_grid_index_i[I] = i;
@@ -244,7 +244,7 @@ inline void TrilinearInterpolator::gradient( float* g_x, float* g_y, float* g_z 
         float dsdy = 0.0f;
         float dsdz = 0.0f;
 
-        for ( size_t i = 0; i < nnodes; i++ )
+        for ( std::size_t i = 0; i < nnodes; i++ )
         {
             dsdx += data[ m_index[i][I] ] * m_dNdx[i][I];
             dsdy += data[ m_index[i][I] ] * m_dNdy[i][I];

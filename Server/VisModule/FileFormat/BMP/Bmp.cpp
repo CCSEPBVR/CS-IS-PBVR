@@ -40,7 +40,7 @@ Bmp::Bmp( void )
  *  @param data   [in] pixel data
  */
 /*==========================================================================*/
-Bmp::Bmp( const size_t width, const size_t height, const vismodule::ValueArray<vismodule::UInt8>& data ):
+Bmp::Bmp( const std::size_t width, const std::size_t height, const vismodule::ValueArray<vismodule::UInt8>& data ):
     m_width( width ),
     m_height( height ),
     m_bpp( 3 ),
@@ -184,23 +184,23 @@ const bool Bmp::read( const std::string& filename )
 
     this->skip_header_and_pallete( ifs );
 
-    const size_t nchannels = 3; // NOTE: color mode only supported now.
+    const std::size_t nchannels = 3; // NOTE: color mode only supported now.
     m_data.allocate( m_width * m_height * nchannels );
 
     vismodule::UInt8* data = m_data.pointer();
 
-    const size_t bpp = 3;
-    const size_t bpl = m_width * bpp;
-    const size_t padding = m_width % 4;
-    const size_t upper_left = ( m_height - 1 ) * bpl;
-    for ( size_t j = 0; j < m_height; j++ )
+    const std::size_t bpp = 3;
+    const std::size_t bpl = m_width * bpp;
+    const std::size_t padding = m_width % 4;
+    const std::size_t upper_left = ( m_height - 1 ) * bpl;
+    for ( std::size_t j = 0; j < m_height; j++ )
     {
         // The origin of BMP is a lower-left point.
-        const size_t line_index = upper_left - j * bpl;
-        for ( size_t i = 0; i < m_width; i++ )
+        const std::size_t line_index = upper_left - j * bpl;
+        for ( std::size_t i = 0; i < m_width; i++ )
         {
             // BGR -> RGB
-            const size_t index = line_index + 3 * i;
+            const std::size_t index = line_index + 3 * i;
             ifs.read( reinterpret_cast<char*>( data + index + 2 ), 1 );
             ifs.read( reinterpret_cast<char*>( data + index + 1 ), 1 );
             ifs.read( reinterpret_cast<char*>( data + index + 0 ), 1 );
@@ -242,25 +242,25 @@ const bool Bmp::write( const std::string& filename )
 
     vismodule::UInt8* data = m_data.pointer();
 
-    const size_t bpp = 3;
-    const size_t bpl = m_width * bpp;
-    const size_t padding = m_width % 4;
-    const size_t lower_left = ( m_height - 1 ) * bpl;
-    for ( size_t j = 0; j < m_height; j++ )
+    const std::size_t bpp = 3;
+    const std::size_t bpl = m_width * bpp;
+    const std::size_t padding = m_width % 4;
+    const std::size_t lower_left = ( m_height - 1 ) * bpl;
+    for ( std::size_t j = 0; j < m_height; j++ )
     {
         // The origin of BMP is a lower-left point.
-        const size_t line_index = lower_left - j * bpl;
-        for ( size_t i = 0; i < m_width; i++ )
+        const std::size_t line_index = lower_left - j * bpl;
+        for ( std::size_t i = 0; i < m_width; i++ )
         {
             // RGB -> BGR
-            const size_t index = line_index + 3 * i;
+            const std::size_t index = line_index + 3 * i;
             ofs.write( reinterpret_cast<char*>( data + index + 2 ), 1 );
             ofs.write( reinterpret_cast<char*>( data + index + 1 ), 1 );
             ofs.write( reinterpret_cast<char*>( data + index + 0 ), 1 );
         }
 
         // Padding.
-        for ( size_t i = 0; i < padding; i++ ) ofs.write( "0", 1 );
+        for ( std::size_t i = 0; i < padding; i++ ) ofs.write( "0", 1 );
     }
 
     ofs.close();

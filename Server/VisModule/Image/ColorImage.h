@@ -47,11 +47,11 @@ public:
 
     ColorImage( void );
 
-    ColorImage( const size_t width, const size_t height );
+    ColorImage( const std::size_t width, const std::size_t height );
 
-    ColorImage( const size_t width, const size_t height, const vismodule::UInt8* data );
+    ColorImage( const std::size_t width, const std::size_t height, const vismodule::UInt8* data );
 
-    ColorImage( const size_t width, const size_t height, const vismodule::ValueArray<vismodule::UInt8>& data );
+    ColorImage( const std::size_t width, const std::size_t height, const vismodule::ValueArray<vismodule::UInt8>& data );
 
     ColorImage( const vismodule::ColorImage& image );
 
@@ -69,27 +69,27 @@ public:
 
 public:
 
-    const vismodule::UInt8 r( const size_t index ) const;
+    const vismodule::UInt8 r( const std::size_t index ) const;
 
-    const vismodule::UInt8 r( const size_t i, const size_t j ) const;
+    const vismodule::UInt8 r( const std::size_t i, const std::size_t j ) const;
 
-    const vismodule::UInt8 g( const size_t index ) const;
+    const vismodule::UInt8 g( const std::size_t index ) const;
 
-    const vismodule::UInt8 g( const size_t i, const size_t j ) const;
+    const vismodule::UInt8 g( const std::size_t i, const std::size_t j ) const;
 
-    const vismodule::UInt8 b( const size_t index ) const;
+    const vismodule::UInt8 b( const std::size_t index ) const;
 
-    const vismodule::UInt8 b( const size_t i, const size_t j ) const;
+    const vismodule::UInt8 b( const std::size_t i, const std::size_t j ) const;
 
-    const vismodule::RGBColor pixel( const size_t index ) const;
+    const vismodule::RGBColor pixel( const std::size_t index ) const;
 
-    const vismodule::RGBColor pixel( const size_t i, const size_t j ) const;
+    const vismodule::RGBColor pixel( const std::size_t i, const std::size_t j ) const;
 
 public:
 
-    void set( const size_t index, const vismodule::RGBColor& pixel );
+    void set( const std::size_t index, const vismodule::RGBColor& pixel );
 
-    void set( const size_t i, const size_t j, const vismodule::RGBColor& pixel );
+    void set( const std::size_t i, const std::size_t j, const vismodule::RGBColor& pixel );
 
 public:
 
@@ -98,10 +98,10 @@ public:
     template <typename InterpolationMethod>
     void scale( const double ratio, InterpolationMethod method );
 
-    void resize( const size_t width, const size_t height );
+    void resize( const std::size_t width, const std::size_t height );
 
     template <typename InterpolationMethod>
-    void resize( const size_t width, const size_t height, InterpolationMethod method );
+    void resize( const std::size_t width, const std::size_t height, InterpolationMethod method );
 
 public:
 

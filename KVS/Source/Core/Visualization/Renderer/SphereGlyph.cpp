@@ -115,10 +115,10 @@ void SphereGlyph::exec( kvs::ObjectBase* object, kvs::Camera* camera, kvs::Light
 /*===========================================================================*/
 void SphereGlyph::draw()
 {
-    const size_t npoints = BaseClass::coords().size() / 3;
+    const std::size_t npoints = BaseClass::coords().size() / 3;
     if ( BaseClass::directions().size() == 0 )
     {
-        for ( size_t i = 0, index = 0; i < npoints; i++, index += 3 )
+        for ( std::size_t i = 0, index = 0; i < npoints; i++, index += 3 )
         {
             const kvs::Vector3f position( BaseClass::coords().data() + index );
             const kvs::Real32 size = BaseClass::sizes()[i];
@@ -132,7 +132,7 @@ void SphereGlyph::draw()
     }
     else
     {
-        for( size_t i = 0, index = 0; i < npoints; i++, index += 3 )
+        for( std::size_t i = 0, index = 0; i < npoints; i++, index += 3 )
         {
             const kvs::Vector3f position( BaseClass::coords().data() + index );
             const kvs::Vector3f direction( BaseClass::directions().data() + index );
@@ -157,7 +157,7 @@ void SphereGlyph::attach_point( const kvs::PointObject* point )
 {
     m_point = point;
 
-    const size_t nvertices = point->numberOfVertices();
+    const std::size_t nvertices = point->numberOfVertices();
 
     BaseClass::setCoords( point->coords() );
 
@@ -173,7 +173,7 @@ void SphereGlyph::attach_point( const kvs::PointObject* point )
     {
         const kvs::Real32 size = point->size();
         kvs::ValueArray<kvs::Real32> sizes( nvertices );
-        for ( size_t i = 0; i < nvertices; i++ ) sizes[i] = size;
+        for ( std::size_t i = 0; i < nvertices; i++ ) sizes[i] = size;
         BaseClass::setSizes( sizes );
     }
     else
@@ -185,7 +185,7 @@ void SphereGlyph::attach_point( const kvs::PointObject* point )
     {
         const kvs::RGBColor color = point->color();
         kvs::ValueArray<kvs::UInt8> colors( nvertices * 3 );
-        for ( size_t i = 0, j = 0; i < nvertices; i++, j += 3 )
+        for ( std::size_t i = 0, j = 0; i < nvertices; i++, j += 3 )
         {
             colors[j]   = color.r();
             colors[j+1] = color.g();
@@ -200,7 +200,7 @@ void SphereGlyph::attach_point( const kvs::PointObject* point )
 
     const kvs::UInt8 opacity = static_cast<kvs::UInt8>( 255 );
     kvs::ValueArray<kvs::UInt8> opacities( nvertices );
-    for ( size_t i = 0; i < nvertices; i++ ) opacities[i] = opacity;
+    for ( std::size_t i = 0; i < nvertices; i++ ) opacities[i] = opacity;
     BaseClass::setOpacities( opacities );
 }
 

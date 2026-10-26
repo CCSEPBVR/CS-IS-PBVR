@@ -151,7 +151,7 @@ void Background::setColor(
  *  @param index [in] color index (0-3)
  */
 /*==========================================================================*/
-const vismodule::RGBColor& Background::color( size_t index ) const
+const vismodule::RGBColor& Background::color( std::size_t index ) const
 {
     return( m_color[index] );
 }

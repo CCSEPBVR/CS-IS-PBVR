@@ -45,9 +45,9 @@ private:
 
     ClusteringMethod m_clustering_method; ///< clustering method
     SeedingMethod m_seeding_method; ///< seeding method
-    size_t m_seed; ///< seed point
-    size_t m_nclusters; ///< number of clusters
-    size_t m_max_iterations; ///< maximum number of interations
+    std::size_t m_seed; ///< seed point
+    std::size_t m_nclusters; ///< number of clusters
+    std::size_t m_max_iterations; ///< maximum number of interations
     float m_tolerance; ///< tolerance of distance
     kvs::ValueArray<kvs::Real32>* m_cluster_centers; ///< cluster centers
 
@@ -56,7 +56,7 @@ public:
     KMeansClustering();
     KMeansClustering( const kvs::TableObject* table );
     KMeansClustering( const kvs::TableObject* table,
-                      const size_t nclusters,
+                      const std::size_t nclusters,
                       const ClusteringMethod clustering_method = FastKMeans,
                       const SeedingMethod seeding_method = SmartSeeding );
     virtual ~KMeansClustering();
@@ -65,12 +65,12 @@ public:
 
     void setClusteringMethod( const ClusteringMethod method ) { m_clustering_method = method; }
     void setSeedingMethod( const SeedingMethod method ) { m_seeding_method = method; }
-    void setSeed( const size_t seed ) { m_seed = seed; }
-    void setNumberOfClusters( const size_t nclusters ) { m_nclusters = nclusters; }
-    void setMaxInterations( const size_t max_iterations ) { m_max_iterations = max_iterations; }
+    void setSeed( const std::size_t seed ) { m_seed = seed; }
+    void setNumberOfClusters( const std::size_t nclusters ) { m_nclusters = nclusters; }
+    void setMaxInterations( const std::size_t max_iterations ) { m_max_iterations = max_iterations; }
     void setTolerance( const float tolerance ) { m_tolerance = tolerance; }
 
-    const kvs::ValueArray<kvs::Real32>& clusterCenter( const size_t index ) { return m_cluster_centers[index]; }
+    const kvs::ValueArray<kvs::Real32>& clusterCenter( const std::size_t index ) { return m_cluster_centers[index]; }
 
 private:
 

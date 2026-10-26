@@ -23,7 +23,7 @@
  *  @param  nrows [in] number of rows
  */
 /*===========================================================================*/
-kvs::ValueTable<kvs::Real32> CreateValueTable( const size_t nrows )
+kvs::ValueTable<kvs::Real32> CreateValueTable( const std::size_t nrows )
 {
     kvs::Real32 xmin = 2.0f;
     kvs::Real32 xmax = 6.0f;
@@ -34,25 +34,25 @@ kvs::ValueTable<kvs::Real32> CreateValueTable( const size_t nrows )
     kvs::ValueArray<kvs::Real32> y( nrows );
 
     kvs::MersenneTwister R;
-    for ( size_t i = 0; i < nrows / 4; i++ )
+    for ( std::size_t i = 0; i < nrows / 4; i++ )
     {
         x[i] = -( R() * ( xmax - xmin ) + xmin );
         y[i] = +( R() * ( ymax - ymin ) + ymin );
     }
 
-    for ( size_t i = nrows / 4; i < nrows / 4 * 2; i++ )
+    for ( std::size_t i = nrows / 4; i < nrows / 4 * 2; i++ )
     {
         x[i] = -( R() * ( xmax - xmin ) + xmin );
         y[i] = -( R() * ( ymax - ymin ) + ymin );
     }
 
-    for ( size_t i = nrows / 4 * 2; i < nrows / 4 * 3; i++ )
+    for ( std::size_t i = nrows / 4 * 2; i < nrows / 4 * 3; i++ )
     {
         x[i] = +( R() * ( xmax - xmin ) + xmin );
         y[i] = -( R() * ( ymax - ymin ) + ymin );
     }
 
-    for ( size_t i = nrows / 4 * 3; i < nrows; i++ )
+    for ( std::size_t i = nrows / 4 * 3; i < nrows; i++ )
     {
         x[i] = +( R() * ( xmax - xmin ) + xmin );
         y[i] = +( R() * ( ymax - ymin ) + ymin );
@@ -159,7 +159,7 @@ int main( int argc, char** argv )
     screen.setSize( 600, 600 );
     screen.create();
 
-    const size_t nrows = 1000;
+    const std::size_t nrows = 1000;
     const float min_value = -7.0f;
     const float max_value =  7.0f;
     auto data = CreateValueTable( nrows );

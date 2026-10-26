@@ -115,7 +115,7 @@ contains
     integer*8 vertex_index
     integer*8 connection_index
 
-    ! size_t --> dim[0-3]がinteger*8型なのでinteger*8として扱う
+    ! std::size_t --> dim[0-3]がinteger*8型なのでinteger*8として扱う
     integer*8 ix,iy,iz
     integer*8 local_vertex_index(8)
     dim1 = resolution(1)
@@ -190,11 +190,11 @@ contains
     vertex_index = 0
     connection_index = 0
 
-!     for ( size_t z = 0; z < dim3-1; ++z )
+!     for ( std::size_t z = 0; z < dim3-1; ++z )
 !     {
-!         for ( size_t y = 0; y < dim2-1; ++y )
+!         for ( std::size_t y = 0; y < dim2-1; ++y )
 !         {
-!             for ( size_t x = 0; x < dim1-1; ++x )
+!             for ( std::size_t x = 0; x < dim1-1; ++x )
 !             {
     do iz=0,dim3-1 -1
        do iy=0,dim2-1 -1
@@ -477,11 +477,11 @@ end module Hydrogen
 !     kvs::UInt64 slice_size = static_cast<kvs::UInt32>( dim1 * dim2 );
 !     kvs::UInt64 vertex_index = 0;
 !     kvs::UInt64 connection_index = 0;
-!     for ( size_t z = 0; z < dim3-1; ++z )
+!     for ( std::size_t z = 0; z < dim3-1; ++z )
 !     {
-!         for ( size_t y = 0; y < dim2-1; ++y )
+!         for ( std::size_t y = 0; y < dim2-1; ++y )
 !         {
-!             for ( size_t x = 0; x < dim1-1; ++x )
+!             for ( std::size_t x = 0; x < dim1-1; ++x )
 !             {
 !                 // Same Connection order to Structured grid
 !                 const kvs::UInt64 local_vertex_index[8] =

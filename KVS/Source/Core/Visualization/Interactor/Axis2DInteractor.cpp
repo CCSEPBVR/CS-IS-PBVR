@@ -60,8 +60,8 @@ void Axis2DInteractor::mousePressEvent( kvs::MouseEvent* e )
     const auto ncols = table->numberOfColumns();
     if ( ncols < 2 ) { return; }
 
-    const size_t x_index = 0;
-    const size_t y_index = 1;
+    const std::size_t x_index = 0;
+    const std::size_t y_index = 1;
 
     const auto width = BaseClass::screen()->width();
     const auto height = BaseClass::screen()->height();
@@ -111,8 +111,8 @@ void Axis2DInteractor::mouseMoveEvent( kvs::MouseEvent* e )
     const auto ncols = table->numberOfColumns();
     if ( ncols < 2 ) { return; }
 
-    const size_t x_index = 0;
-    const size_t y_index = 1;
+    const std::size_t x_index = 0;
+    const std::size_t y_index = 1;
 
     const auto width = BaseClass::screen()->width();
     const auto height = BaseClass::screen()->height();
@@ -211,8 +211,8 @@ void Axis2DInteractor::paintEvent()
         kvs::OpenGL::Enable( GL_BLEND );
         kvs::OpenGL::SetBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
 
-        const size_t x_index = 0;
-        const size_t y_index = 1;
+        const std::size_t x_index = 0;
+        const std::size_t y_index = 1;
 
         const auto dpr = BaseClass::scene()->camera()->devicePixelRatio();
         const auto width = BaseClass::screen()->width();

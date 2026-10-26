@@ -5,6 +5,7 @@
 #include <QColor>
 #include <QPalette>
 #endif
+#include <QDebug>
 
 Communication::Communication( kvs::qt::jaea::Screen* screen, WebSocketPair* webSockets, Viz::Mode* vizMode, QWidget* parent )
     : QDockWidget( parent )
@@ -755,6 +756,7 @@ void Communication::onBinaryWebSocketDisconnected()
 
 void Communication::onBinaryWebSocketMessageReceived( const QByteArray& binary )
 {
+    qDebug() << "[Client][Binary] received bytes =" << binary.size();
     emit unpack( binary );
 }
 
@@ -963,6 +965,7 @@ void Communication::onTextWebSocketMessageReceived( const QString& receivedMessa
         const QString kPlotOverLineParameter     = QString::fromUtf8( Protocol::Key::PlotOverLineParameter );
         const QString kPlotOverTimeParameter     = QString::fromUtf8( Protocol::Key::PlotOverTimeParameter );
         const QString kTransferFunctionParameter = QString::fromUtf8( Protocol::Key::TransferFunctionParameter );
+        const QString kRepeatLevel               = QString::fromUtf8( Protocol::Key::RepeatLevel );
         if( obj.contains( kGlyphParameter ) && obj.value( kGlyphParameter ).isObject() )
         {
             const QJsonObject glyphParameter = obj.value( kGlyphParameter ).toObject();
@@ -983,12 +986,19 @@ void Communication::onTextWebSocketMessageReceived( const QString& receivedMessa
             const QJsonObject transferFunctionParameter = obj.value( kTransferFunctionParameter ).toObject();
             emit receiveTransferFunctionParameter( transferFunctionParameter );
         }
+        if( obj.contains( kRepeatLevel ) && obj.value( kRepeatLevel ).isDouble() )
+        {
+            QJsonObject repetitionLevelParameter;
+            repetitionLevelParameter.insert( kRepeatLevel, obj.value( kRepeatLevel ) );
+            emit receiveRepetitionLevelParameter( repetitionLevelParameter );
+        }
     }
     else if( event == QString::fromUtf8( Protocol::Events::RequestDataAt ) )
     {
         const QString kPlotOverLineParameter     = QString::fromUtf8( Protocol::Key::PlotOverLineParameter );
         const QString kPlotOverTimeParameter     = QString::fromUtf8( Protocol::Key::PlotOverTimeParameter );
         const QString kTransferFunctionParameter = QString::fromUtf8( Protocol::Key::TransferFunctionParameter );
+        const QString kEnsembleTransferFunctionParameter = QString::fromUtf8( Protocol::Key::EnsembleTransferFunctionParameter );
         if( obj.contains( kPlotOverLineParameter ) && obj.value( kPlotOverLineParameter ).isObject() )
         {
             const QJsonObject plotOverLineParameter = obj.value( kPlotOverLineParameter ).toObject();
@@ -1004,6 +1014,11 @@ void Communication::onTextWebSocketMessageReceived( const QString& receivedMessa
             const QJsonObject transferFunctionParameter = obj.value( kTransferFunctionParameter ).toObject();
             emit receiveRequestDataAtTransferFunctionParameter( transferFunctionParameter );
         }
+        if( obj.contains( kEnsembleTransferFunctionParameter ) && obj.value( kEnsembleTransferFunctionParameter ).isObject() )
+        {
+            const QJsonObject ensembleStatisticsParameter = obj.value( kEnsembleTransferFunctionParameter ).toObject();
+            emit receiveRequestDataAtEnsembleStatisticsParameter( ensembleStatisticsParameter );
+        }
     }
     else if( event == QString::fromUtf8( Protocol::Events::TimeStepControlParameter ) )  emit receiveTimeStepControlParameter( obj );
     else if( event == QString::fromUtf8( Protocol::Events::GlyphParameter ) )            emit receiveGlyphParameter( obj );
@@ -1011,6 +1026,8 @@ void Communication::onTextWebSocketMessageReceived( const QString& receivedMessa
     else if( event == QString::fromUtf8( Protocol::Events::PlotOverLineParameter ) )     emit receivePlotOverLineParameter( obj );
     else if( event == QString::fromUtf8( Protocol::Events::PlotOverTimeParameter ) )     emit receivePlotOverTimeParameter( obj );
     else if( event == QString::fromUtf8( Protocol::Events::TransferFunctionParameter ) ) emit receiveTransferFunctionParameter( obj );
+    else if( event == QString::fromUtf8( Protocol::Events::EnsembleStatisticsParameter ) ) emit receiveEnsembleStatisticsParameter( obj );
+    else if( event == QString::fromUtf8( Protocol::Events::RepetitionLevelParameter ) )  emit receiveRepetitionLevelParameter( obj );
     else if( event == QString::fromUtf8( Protocol::Events::SelectedFile ) )              emit receiveSelectedFile( obj );
     else if( event == QString::fromUtf8( Protocol::Events::ObjectDelete ) )              emit receiveObjectDelete( obj );
     else if( event == QString::fromUtf8( Protocol::Events::LatestTimeStep ) )            emit updateObjectLatestTimeStep( obj );

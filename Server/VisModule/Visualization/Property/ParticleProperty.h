@@ -6,13 +6,14 @@
 #include <string>
 #include <vismodule/TransferFunctionSynthesizer>
 #include <vismodule/ExtendedTransferFunction>
+#include <vismodule/EnsembleTransferFunction>
 #include <vismodule/Serializer>
 
 struct ParticleProperty
 {
     // property for visualization
-    size_t m_subpixel_level;
-    size_t m_repeat_level;
+    std::size_t m_subpixel_level;
+    std::size_t m_repeat_level = 1;
     int m_level_index;
     float m_sampling_step;
     char m_sampling_method;
@@ -21,9 +22,14 @@ struct ParticleProperty
     int m_particle_limit;
     float m_extra_opacity_factor;
     float m_particle_data_size_limit;
+    bool m_is_ensemble = false;
+    bool m_log_scale_statistics = false; // 統計量(平均・分散)の常用対数化 ON/OFF（デフォルトOFF）
     vismodule::Camera* m_camera;
     TransferFunctionSynthesizer* m_transfunc_synthesizer; // pack unpackしない
     std::vector<NamedTransferFunction> m_transfunc_array;
+    std::vector<EnsembleTransferFunction> m_mean_transfer_function_array;
+    std::vector<EnsembleTransferFunction> m_variance_transfer_function_array;
+    std::vector<EnsembleTransferFunction> m_coefficient_of_variation_transfer_function_array;
     std::string m_color_transfer_function_synthesis;
     std::string m_opacity_transfer_function_synthesis;
     std::string m_x_synthesis;
@@ -47,7 +53,7 @@ struct ParticleProperty
         std::vector<EquationToken> var_c;
         std::vector<EquationToken> var_o;
 
-        for( size_t i = 0; i < m_transfunc_array.size(); ++i )
+        for( std::size_t i = 0; i < m_transfunc_array.size(); ++i )
         {
             // Color variable token
             {
@@ -88,9 +94,11 @@ struct ParticleProperty
         size += sizeof( m_particle_limit );
         size += sizeof( m_extra_opacity_factor );
         size += sizeof( m_particle_data_size_limit );
+        size += sizeof( m_is_ensemble );
+        size += sizeof( m_log_scale_statistics );
         size += vismodule::Serializer::byteSize<vismodule::Camera>( *m_camera );
         size += vismodule::Serializer::byteSize( m_transfunc_array.size() );
-        for ( size_t i = 0; i < m_transfunc_array.size(); i++ )
+        for ( std::size_t i = 0; i < m_transfunc_array.size(); i++ )
         {
             size += vismodule::Serializer::byteSize( m_transfunc_array[i].m_resolution );
             size += vismodule::Serializer::byteSize( m_transfunc_array[i].m_name );
@@ -104,21 +112,36 @@ struct ParticleProperty
             size += vismodule::Serializer::byteSize( m_transfunc_array[i].m_user_opacity_variable_max );
             size += vismodule::Serializer::byteSize<vismodule::TransferFunction>( m_transfunc_array[i] );
         }
+        size += vismodule::Serializer::byteSize( m_mean_transfer_function_array.size() );
+        for ( size_t i = 0; i < m_mean_transfer_function_array.size(); i++ )
+        {
+            size += m_mean_transfer_function_array[i].byteSize();
+        }
+        size += vismodule::Serializer::byteSize( m_variance_transfer_function_array.size() );
+        for ( size_t i = 0; i < m_variance_transfer_function_array.size(); i++ )
+        {
+            size += m_variance_transfer_function_array[i].byteSize();
+        }
+        size += vismodule::Serializer::byteSize( m_coefficient_of_variation_transfer_function_array.size() );
+        for ( size_t i = 0; i < m_coefficient_of_variation_transfer_function_array.size(); i++ )
+        {
+            size += m_coefficient_of_variation_transfer_function_array[i].byteSize();
+        }
         size += sizeof( m_color_transfer_function_synthesis );
         size += sizeof( m_opacity_transfer_function_synthesis );
-        size += sizeof( size_t );
+        size += sizeof( std::size_t );
         size += sizeof( char ) * ( m_x_synthesis.size() + 1 );
-        size += sizeof( size_t );
+        size += sizeof( std::size_t );
         size += sizeof( char ) * ( m_y_synthesis.size() + 1 );
-        size += sizeof( size_t );
+        size += sizeof( std::size_t );
         size += sizeof( char ) * ( m_z_synthesis.size() + 1 );
 
         return size;
     }
 
-    size_t pack( char* buf ) const
+    std::size_t pack( char* buf ) const
     {
-        size_t index = 0;
+        std::size_t index = 0;
         TaskSignal task_signal = TaskSignal::UPDATE_PARTICLE_PROPERTY;
 
         index += vismodule::Serializer::write( buf + index, task_signal );
@@ -132,10 +155,12 @@ struct ParticleProperty
         index += vismodule::Serializer::write( buf + index, m_particle_limit );
         index += vismodule::Serializer::write( buf + index, m_extra_opacity_factor );
         index += vismodule::Serializer::write( buf + index, m_particle_data_size_limit );
+        index += vismodule::Serializer::write( buf + index, m_is_ensemble );
+        index += vismodule::Serializer::write( buf + index, m_log_scale_statistics );
         index += vismodule::Serializer::pack( buf + index, *m_camera );
 
         index += vismodule::Serializer::write( buf + index, m_transfunc_array.size() );
-        for ( size_t i = 0; i < m_transfunc_array.size(); i++ )
+        for ( std::size_t i = 0; i < m_transfunc_array.size(); i++ )
         {
             index += vismodule::Serializer::write( buf + index, m_transfunc_array[i].m_resolution );
             index += vismodule::Serializer::write( buf + index, m_transfunc_array[i].m_name );
@@ -148,6 +173,21 @@ struct ParticleProperty
             index += vismodule::Serializer::write( buf + index, m_transfunc_array[i].m_user_opacity_variable_min );
             index += vismodule::Serializer::write( buf + index, m_transfunc_array[i].m_user_opacity_variable_max );
             index += vismodule::Serializer::pack<vismodule::TransferFunction>( buf + index, m_transfunc_array[i] );
+        }
+        index += vismodule::Serializer::write( buf + index, m_mean_transfer_function_array.size() );
+        for ( size_t i = 0; i < m_mean_transfer_function_array.size(); i++ )
+        {
+            index += m_mean_transfer_function_array[i].pack( buf + index );
+        }
+        index += vismodule::Serializer::write( buf + index, m_variance_transfer_function_array.size() );
+        for ( size_t i = 0; i < m_variance_transfer_function_array.size(); i++ )
+        {
+            index += m_variance_transfer_function_array[i].pack( buf + index );
+        }
+        index += vismodule::Serializer::write( buf + index, m_coefficient_of_variation_transfer_function_array.size() );
+        for ( size_t i = 0; i < m_coefficient_of_variation_transfer_function_array.size(); i++ )
+        {
+            index += m_coefficient_of_variation_transfer_function_array[i].pack( buf + index );
         }
 
         index += vismodule::Serializer::write( buf + index, m_color_transfer_function_synthesis );
@@ -162,9 +202,9 @@ struct ParticleProperty
         return index;
     }
 
-    size_t unpack( const char* buf )
+    std::size_t unpack( const char* buf )
     {
-        size_t index = 0;
+        std::size_t index = 0;
         int64_t tmp_char_size;
         char* tmp_char = NULL;
         TaskSignal task_signal;
@@ -180,15 +220,17 @@ struct ParticleProperty
         index += vismodule::Serializer::read( buf + index, &m_particle_limit );
         index += vismodule::Serializer::read( buf + index, &m_extra_opacity_factor );
         index += vismodule::Serializer::read( buf + index, &m_particle_data_size_limit );
+        index += vismodule::Serializer::read( buf + index, &m_is_ensemble );
+        index += vismodule::Serializer::read( buf + index, &m_log_scale_statistics );
         index += vismodule::Serializer::unpack( buf + index, m_camera );
 
-        size_t tf_number;
+        std::size_t tf_number;
         index += vismodule::Serializer::read( buf + index, &tf_number );
         
         m_transfunc_array.clear();
         m_transfunc_array.resize( tf_number );
 
-        for ( size_t i = 0; i < tf_number; i++ )
+        for ( std::size_t i = 0; i < tf_number; i++ )
         {
             index += vismodule::Serializer::read( buf + index, &m_transfunc_array[i].m_resolution );
             index += vismodule::Serializer::read( buf + index, &m_transfunc_array[i].m_name );
@@ -201,6 +243,43 @@ struct ParticleProperty
             index += vismodule::Serializer::read( buf + index, &m_transfunc_array[i].m_user_opacity_variable_min );
             index += vismodule::Serializer::read( buf + index, &m_transfunc_array[i].m_user_opacity_variable_max );
             index += vismodule::Serializer::unpack<vismodule::TransferFunction>( buf + index, &m_transfunc_array[i] );
+
+            float user_color_min     = m_transfunc_array[i].m_user_color_variable_min;
+            float user_color_max     = m_transfunc_array[i].m_user_color_variable_max;
+            float user_opacity_min   = m_transfunc_array[i].m_user_opacity_variable_min;
+            float user_opacity_max   = m_transfunc_array[i].m_user_opacity_variable_max;
+
+            if ( m_transfunc_array[i].m_server_color_range_mode == NamedTransferFunction::ServerRangeMode::UserRange )
+            {
+                m_transfunc_array[i].setColorRange( user_color_min, user_color_max );
+            }
+
+            if ( m_transfunc_array[i].m_server_opacity_range_mode == NamedTransferFunction::ServerRangeMode::UserRange )
+            {
+                m_transfunc_array[i].setOpacityRange( user_opacity_min, user_opacity_max );
+            }
+        }
+        size_t ensemble_transfer_function_number;
+        index += vismodule::Serializer::read( buf + index, &ensemble_transfer_function_number );
+        m_mean_transfer_function_array.clear();
+        m_mean_transfer_function_array.resize( ensemble_transfer_function_number );
+        for ( size_t i = 0; i < ensemble_transfer_function_number; i++ )
+        {
+            index += m_mean_transfer_function_array[i].unpack( buf + index );
+        }
+        index += vismodule::Serializer::read( buf + index, &ensemble_transfer_function_number );
+        m_variance_transfer_function_array.clear();
+        m_variance_transfer_function_array.resize( ensemble_transfer_function_number );
+        for ( size_t i = 0; i < ensemble_transfer_function_number; i++ )
+        {
+            index += m_variance_transfer_function_array[i].unpack( buf + index );
+        }
+        index += vismodule::Serializer::read( buf + index, &ensemble_transfer_function_number );
+        m_coefficient_of_variation_transfer_function_array.clear();
+        m_coefficient_of_variation_transfer_function_array.resize( ensemble_transfer_function_number );
+        for ( size_t i = 0; i < ensemble_transfer_function_number; i++ )
+        {
+            index += m_coefficient_of_variation_transfer_function_array[i].unpack( buf + index );
         }
 
         index += vismodule::Serializer::read( buf + index, &m_color_transfer_function_synthesis );
@@ -260,8 +339,27 @@ struct ParticleProperty
         std::cout << "particle_limit                      : " << m_particle_limit                      << std::endl;
         std::cout << "extra_opacity_factor                : " << m_extra_opacity_factor                << std::endl;
         std::cout << "particle_data_size_limit            : " << m_particle_data_size_limit            << std::endl;
+        std::cout << "is_ensemble                         : " << m_is_ensemble                         << std::endl;
+        std::cout << "log_scale_statistics                : " << m_log_scale_statistics << std::endl;
         std::cout << "color_transfer_function_synthesis   : " << m_color_transfer_function_synthesis   << std::endl;
         std::cout << "opacity_transfer_function_synthesis : " << m_opacity_transfer_function_synthesis << std::endl;
+        std::cout << "transfer_function_count             : " << m_transfunc_array.size()              << std::endl;
+        for ( std::size_t i = 0; i < m_transfunc_array.size(); ++i )
+        {
+            const NamedTransferFunction& tf = m_transfunc_array[i];
+            std::cout << "transfer_function[" << i << "].name           : " << tf.m_name << std::endl;
+            std::cout << "transfer_function[" << i << "].resolution     : " << tf.m_resolution << std::endl;
+            std::cout << "transfer_function[" << i << "].color_variable : " << tf.m_color_variable << std::endl;
+            std::cout << "transfer_function[" << i << "].opacity_variable: " << tf.m_opacity_variable << std::endl;
+            std::cout << "transfer_function[" << i << "].color_range    : "
+                      << tf.m_user_color_variable_min << ", " << tf.m_user_color_variable_max << std::endl;
+            std::cout << "transfer_function[" << i << "].opacity_range  : "
+                      << tf.m_user_opacity_variable_min << ", " << tf.m_user_opacity_variable_max << std::endl;
+            std::cout << "transfer_function[" << i << "].color_map_size : "
+                      << tf.colorMap().table().size() << std::endl;
+            std::cout << "transfer_function[" << i << "].opacity_map_size: "
+                      << tf.opacityMap().table().size() << std::endl;
+        }
         std::cout << "x_synthesis                         : " << m_x_synthesis                         << std::endl;
         std::cout << "y_synthesis                         : " << m_y_synthesis                         << std::endl;
         std::cout << "z_synthesis                         : " << m_z_synthesis                         << std::endl;

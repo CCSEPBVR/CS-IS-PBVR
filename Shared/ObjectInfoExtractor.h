@@ -68,6 +68,7 @@ public:
         // Common Server Point Object Info
         int tmpParticleLimit                = 10000000;
         int particleLimit                   = 10000000;
+        bool isEnsemble                     = false;
         float tmpExtraOpacityFactor         = 1.0;
         float extraOpacityFactor            = 1.0;
 
@@ -116,7 +117,7 @@ public:
         std::string baseName = pathObject.stem().string(); // "prefix_XXXXX"
 
         ObjectInfo objectInfo;
-        size_t underscorePos = baseName.find( '_' );
+        std::size_t underscorePos = baseName.find( '_' );
         if( underscorePos != std::string::npos )
         {
             objectInfo.name = baseName.substr( 0, underscorePos );

@@ -52,9 +52,9 @@ public:
     void setSizes( const kvs::ValueArray<kvs::Real32>& sizes ) { m_sizes = sizes; }
     void setSize( const kvs::Real32 size );
 
-    size_t numberOfSizes() const { return m_sizes.size(); }
+    std::size_t numberOfSizes() const { return m_sizes.size(); }
 
-    kvs::Real32 size( const size_t index = 0 ) const { return m_sizes[index]; }
+    kvs::Real32 size( const std::size_t index = 0 ) const { return m_sizes[index]; }
     const kvs::ValueArray<kvs::Real32>& sizes() const { return m_sizes; }
 
 public:
@@ -180,7 +180,7 @@ public:
         return( *this );
     }
 
-    KVS_DEPRECATED( size_t nsizes() const ) { return this->numberOfSizes(); }
+    KVS_DEPRECATED( std::size_t nsizes() const ) { return this->numberOfSizes(); }
     KVS_DEPRECATED( friend std::ostream& operator << ( std::ostream& os, const PointObject& object ) );
 };
 

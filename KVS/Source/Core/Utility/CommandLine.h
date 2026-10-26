@@ -43,7 +43,7 @@ private:
     int m_argc = 0; ///< argument count
     char** m_argv = 0; ///< argument values
     std::string m_command_name = ""; ///< command name
-    size_t m_max_length = 0; ///< max length of the option name
+    std::size_t m_max_length = 0; ///< max length of the option name
     bool m_no_help = 0; ///< no help option
     std::string m_help_option = "h"; ///< help option character (ex: 'h')
     Arguments m_arguments{}; ///< argument values
@@ -71,21 +71,21 @@ public:
     void clear();
 
     template <class T>
-    T value( size_t index = 0 ) const;
+    T value( std::size_t index = 0 ) const;
     bool hasValues() const;
-    size_t numberOfValues() const;
+    std::size_t numberOfValues() const;
 
     template <class T>
-    T optionValue( const std::string& option_name, size_t index = 0 ) const;
+    T optionValue( const std::string& option_name, std::size_t index = 0 ) const;
     bool hasOption( const std::string& option_name ) const;
     bool hasOptionValue( const std::string& option_name ) const;
-    size_t numberOfOptions() const;
+    std::size_t numberOfOptions() const;
 
     void addHelpOption( const std::string& help_option = "h" );
     void addOption(
         const std::string& name,
         const std::string& description,
-        size_t nvalues = 0,
+        std::size_t nvalues = 0,
         bool is_required = false );
     void addValue( const std::string& description, bool is_required = true );
     void showHelpMessage( HelpMessageMode mode = UsageOnly ) const;
@@ -111,7 +111,7 @@ class CommandLine::Option
 private:
     std::string m_name = ""; ///< option name
     std::string m_description = ""; ///< option description
-    size_t m_nvalues = 0; ///< number of required values
+    std::size_t m_nvalues = 0; ///< number of required values
     bool m_is_required = false; ///< true, if the option is required
     bool m_is_given = false; ///< true, if the option is given
     std::vector<std::string> m_values{}; ///< option values
@@ -121,7 +121,7 @@ public:
     explicit Option(
         const std::string& name,
         const std::string& description = "",
-        size_t nvalues = 0,
+        std::size_t nvalues = 0,
         bool is_required = false ):
         m_name( name ),
         m_description( description ),
@@ -132,12 +132,12 @@ public:
     void given() { m_is_given = true; }
     const std::string& name() const { return m_name; }
     const std::string& description() const { return m_description; }
-    size_t numberOfValues() const { return m_nvalues; }
+    std::size_t numberOfValues() const { return m_nvalues; }
     bool isRequired() const { return m_is_required; }
     bool isGiven() const { return m_is_given; }
     const std::vector<std::string>& values() const { return m_values; }
 
-    template <typename T> T value( size_t index ) const;
+    template <typename T> T value( std::size_t index ) const;
     friend bool operator <( const Option& lhs, const Option& rhs ) { return lhs.m_name < rhs.m_name; }
     friend bool operator ==( const Option& lhs, const Option& rhs ) { return lhs.m_name == rhs.m_name; }
 };
@@ -150,7 +150,7 @@ public:
  */
 /*==========================================================================*/
 template <typename T>
-inline T CommandLine::Option::value( size_t index ) const
+inline T CommandLine::Option::value( std::size_t index ) const
 {
     if ( index >= m_nvalues )
     {
@@ -200,7 +200,7 @@ public:
  */
 /*==========================================================================*/
 template <class T>
-inline T CommandLine::value( size_t index ) const
+inline T CommandLine::value( std::size_t index ) const
 {
     return m_values[ index ].value<T>();
 }
@@ -214,7 +214,7 @@ inline T CommandLine::value( size_t index ) const
  */
 /*==========================================================================*/
 template <class T>
-inline T CommandLine::optionValue( const std::string& option_name, size_t index ) const
+inline T CommandLine::optionValue( const std::string& option_name, std::size_t index ) const
 {
     Option key( option_name );
     Options::const_iterator option =

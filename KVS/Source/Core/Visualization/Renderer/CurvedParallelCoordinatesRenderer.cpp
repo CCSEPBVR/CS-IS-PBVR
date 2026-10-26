@@ -60,7 +60,7 @@ void ThisClass::exec( kvs::ObjectBase* object, kvs::Camera* camera, kvs::Light* 
     BaseClass::updateColorMapRange( table );
     BaseClass::updateAntiAliasing();
 
-    const size_t naxes = table->numberOfColumns();
+    const std::size_t naxes = table->numberOfColumns();
     const float dx = float( x1 - x0 ) / ( naxes - 1 );
 
     auto y_normalize = [&] ( double v, double v_min, double v_max )
@@ -68,7 +68,7 @@ void ThisClass::exec( kvs::ObjectBase* object, kvs::Camera* camera, kvs::Light* 
         return y1 - ( y1 - y0 ) * ( v - v_min ) / ( v_max - v_min );
     };
 
-    auto y_value = [&] ( const size_t axis, const size_t row )
+    auto y_value = [&] ( const std::size_t axis, const std::size_t row )
     {
         const kvs::Real64 min_value = table->minValue( axis );
         const kvs::Real64 max_value = table->maxValue( axis );
@@ -80,8 +80,8 @@ void ThisClass::exec( kvs::ObjectBase* object, kvs::Camera* camera, kvs::Light* 
     render.begin();
     {
         const auto& color_axis_values = table->column( BaseClass::activeAxis() );
-        const size_t nrows = table->column(0).size();
-        for ( size_t i = 0; i < nrows; i++ )
+        const std::size_t nrows = table->column(0).size();
+        for ( std::size_t i = 0; i < nrows; i++ )
         {
             if ( !table->insideRange( i ) ) continue;
 
@@ -93,7 +93,7 @@ void ThisClass::exec( kvs::ObjectBase* object, kvs::Camera* camera, kvs::Light* 
                 kvs::OpenGL::Color( kvs::RGBAColor( color, BaseClass::lineOpacity() ) );
 
                 auto x = static_cast<kvs::Real64>( BaseClass::margins().left() );
-                for ( size_t j = 0; j < naxes - 1; j++, x += dx )
+                for ( std::size_t j = 0; j < naxes - 1; j++, x += dx )
                 {
                     const auto p0 = kvs::Vec2( x, y_value( j, i ) );
                     const auto p1 = kvs::Vec2( x + dx, y_value( j + 1, i ) );
@@ -102,7 +102,7 @@ void ThisClass::exec( kvs::ObjectBase* object, kvs::Camera* camera, kvs::Light* 
                     const auto c1 = kvs::Vec2( c0.x(), p1.y() );
 
                     const float step = 1.0f / m_nintervals;
-                    for ( size_t k = 0; k < m_nintervals; ++k )
+                    for ( std::size_t k = 0; k < m_nintervals; ++k )
                     {
                         kvs::OpenGL::Vertex( ::Curve( k * step, p0, c0, c1, p1 ) * dpr );
                     }

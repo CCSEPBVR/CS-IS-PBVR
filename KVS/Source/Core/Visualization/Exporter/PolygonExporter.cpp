@@ -107,11 +107,11 @@ kvs::Stl* PolygonExporter<kvs::Stl>::exec( const kvs::ObjectBase* object )
     }
     else
     {
-        const size_t npolygons = polygon->connections().size() / 3;
+        const std::size_t npolygons = polygon->connections().size() / 3;
         const kvs::UInt32* pconnections = polygon->connections().data();
         const kvs::Real32* pcoords = polygon->coords().data();
         kvs::ValueArray<kvs::Real32> coords( npolygons * 9 );
-        for ( size_t i = 0; i < npolygons; i++ )
+        for ( std::size_t i = 0; i < npolygons; i++ )
         {
             const kvs::UInt32 index0 = *(pconnections++);
             const kvs::UInt32 index1 = *(pconnections++);
@@ -139,11 +139,11 @@ kvs::Stl* PolygonExporter<kvs::Stl>::exec( const kvs::ObjectBase* object )
     if ( polygon->normalType() == kvs::PolygonObject::VertexNormal )
     {
         // Convert to kvs::PolygonObject::PolygonNormal type.
-        const size_t npolygons = polygon->connections().size() / 3;
+        const std::size_t npolygons = polygon->connections().size() / 3;
         const kvs::UInt32* pconnections = polygon->connections().data();
         const kvs::Real32* pnormals = polygon->normals().data();
         kvs::ValueArray<kvs::Real32> normals( npolygons * 3 );
-        for ( size_t i = 0; i < npolygons; i++ )
+        for ( std::size_t i = 0; i < npolygons; i++ )
         {
             const kvs::UInt32 index0 = *(pconnections++);
             const kvs::UInt32 index1 = *(pconnections++);
@@ -203,14 +203,14 @@ kvs::Ply* PolygonExporter<kvs::Ply>::exec( const kvs::ObjectBase* object )
 
     this->setCoords( polygon->coords() );
 
-    const size_t nvertices = polygon->coords().size() / 3;
+    const std::size_t nvertices = polygon->coords().size() / 3;
 
     if ( polygon->colors().size() == 3 )
     {
         kvs::ValueArray<kvs::UInt8> colors( nvertices * 3 );
 
         const kvs::RGBColor color = polygon->color();
-        for ( size_t i = 0; i < nvertices; i++ )
+        for ( std::size_t i = 0; i < nvertices; i++ )
         {
             colors[ 3 * i + 0 ] = color.r();
             colors[ 3 * i + 1 ] = color.g();
@@ -226,8 +226,8 @@ kvs::Ply* PolygonExporter<kvs::Ply>::exec( const kvs::ObjectBase* object )
             kvs::ValueArray<kvs::UInt32> counter( nvertices ); counter.fill( 0 );
             if ( polygon->numberOfConnections() == 0 )
             {
-                const size_t npolygons = polygon->coords().size() / 3;
-                for ( size_t i = 0; i < npolygons; i++ )
+                const std::size_t npolygons = polygon->coords().size() / 3;
+                for ( std::size_t i = 0; i < npolygons; i++ )
                 {
                     const kvs::UInt32 index0 = 3 * i + 0;
                     const kvs::UInt32 index1 = 3 * i + 1;
@@ -251,7 +251,7 @@ kvs::Ply* PolygonExporter<kvs::Ply>::exec( const kvs::ObjectBase* object )
                 }
 
                 kvs::ValueArray<kvs::UInt8> colors( nvertices * 3 );
-                for ( size_t i = 0; i < nvertices; i++ )
+                for ( std::size_t i = 0; i < nvertices; i++ )
                 {
                     if ( counter[i] == 0 ) continue;
                     colors[ 3 * i + 0 ] = kvs::UInt8( temp[ 3 * i + 0 ] / counter[i] );
@@ -263,9 +263,9 @@ kvs::Ply* PolygonExporter<kvs::Ply>::exec( const kvs::ObjectBase* object )
             }
             else // polygon->nconnections() > 0
             {
-                const size_t npolygons = polygon->connections().size() / 3;
+                const std::size_t npolygons = polygon->connections().size() / 3;
                 const kvs::UInt32* pconnections = polygon->connections().data();
-                for ( size_t i = 0; i < npolygons; i++ )
+                for ( std::size_t i = 0; i < npolygons; i++ )
                 {
                     const kvs::UInt32 index0 = *(pconnections++);
                     const kvs::UInt32 index1 = *(pconnections++);
@@ -289,7 +289,7 @@ kvs::Ply* PolygonExporter<kvs::Ply>::exec( const kvs::ObjectBase* object )
                 }
 
                 kvs::ValueArray<kvs::UInt8> colors( nvertices * 3 );
-                for ( size_t i = 0; i < nvertices; i++ )
+                for ( std::size_t i = 0; i < nvertices; i++ )
                 {
                     if ( counter[i] == 0 ) continue;
                     colors[ 3 * i + 0 ] = kvs::UInt8( temp[ 3 * i + 0 ] / counter[i] );
@@ -313,9 +313,9 @@ kvs::Ply* PolygonExporter<kvs::Ply>::exec( const kvs::ObjectBase* object )
             kvs::ValueArray<kvs::Real32> normals( nvertices * 3 ); normals.fill( 0 );
             kvs::ValueArray<kvs::UInt32> counter( nvertices ); counter.fill( 0 );
 
-            const size_t npolygons = polygon->connections().size() / 3;
+            const std::size_t npolygons = polygon->connections().size() / 3;
             const kvs::UInt32* pconnections = polygon->connections().data();
-            for ( size_t i = 0; i < npolygons; i++ )
+            for ( std::size_t i = 0; i < npolygons; i++ )
             {
                 const kvs::UInt32 index0 = *(pconnections++);
                 const kvs::UInt32 index1 = *(pconnections++);
@@ -338,7 +338,7 @@ kvs::Ply* PolygonExporter<kvs::Ply>::exec( const kvs::ObjectBase* object )
                 counter[ index2 ] += 1;
             }
 
-            for ( size_t i = 0; i < nvertices; i++ )
+            for ( std::size_t i = 0; i < nvertices; i++ )
             {
                 if ( counter[i] == 0 ) continue;
                 normals[ 3 * i + 0 ] /= static_cast<kvs::Real32>( counter[i] );

@@ -43,8 +43,8 @@ int main( int argc, char** argv )
     screen.addEvent( &paint_event );
 
     // Button width and margin.
-    const size_t width = 150;
-    const size_t margin = 10;
+    const std::size_t width = 150;
+    const std::size_t margin = 10;
 
     // Button for changing triangle color to red.
     kvs::PushButton red_button( &screen );

@@ -104,8 +104,8 @@ void ParticleBufferCompositor::initialize( void )
     object->setMinMaxObjectCoords( obj_min, obj_max );
     object->setMinMaxExternalCoords( ext_min, ext_max );
 
-    const size_t object_id   = m_object_manager->insert( object );
-    const size_t renderer_id = m_renderer_manager->insert( this );
+    const std::size_t object_id   = m_object_manager->insert( object );
+    const std::size_t renderer_id = m_renderer_manager->insert( this );
     m_id_manager->insert( object_id, renderer_id );
 }
 
@@ -144,7 +144,7 @@ void ParticleBufferCompositor::link(
  *  Return a number of projected particles.
  */
 /*==========================================================================*/
-const size_t ParticleBufferCompositor::numOfProjectedParticles( void ) const
+const std::size_t ParticleBufferCompositor::numOfProjectedParticles( void ) const
 {
     return( m_num_projected_particles );
 }
@@ -154,7 +154,7 @@ const size_t ParticleBufferCompositor::numOfProjectedParticles( void ) const
  *  Return a number of stored particles
  */
 /*==========================================================================*/
-const size_t ParticleBufferCompositor::numOfStoredParticles( void ) const
+const std::size_t ParticleBufferCompositor::numOfStoredParticles( void ) const
 {
     return( m_num_stored_particles );
 }
@@ -189,12 +189,12 @@ void ParticleBufferCompositor::clearList( void )
 /*==========================================================================*/
 bool ParticleBufferCompositor::create_accumulator( void )
 {
-    const size_t width  = BaseClass::m_width;
-    const size_t height = BaseClass::m_height;
-    const size_t level  = m_subpixel_level;
+    const std::size_t width  = BaseClass::m_width;
+    const std::size_t height = BaseClass::m_height;
+    const std::size_t level  = m_subpixel_level;
 
-    const size_t nrenderers = m_point_renderer_list.size();
-    for( size_t i = 0; i < nrenderers; i++ )
+    const std::size_t nrenderers = m_point_renderer_list.size();
+    for( std::size_t i = 0; i < nrenderers; i++ )
     {
         m_point_renderer_list[i]->create_particle_buffer( width, height, level );
     }
@@ -212,8 +212,8 @@ bool ParticleBufferCompositor::create_accumulator( void )
 void ParticleBufferCompositor::clean_accumulator( void )
 {
 #if TEST__RENDERING_ACTIVE_OBJECT_ONLY
-    const size_t nrenderers = m_point_renderer_list.size();
-    for( size_t i = 0; i < nrenderers; i++ )
+    const std::size_t nrenderers = m_point_renderer_list.size();
+    for( std::size_t i = 0; i < nrenderers; i++ )
     {
         vismodule::PointObject* object = m_point_object_list[i];
         if( m_object_manager->hasActiveObject() )
@@ -238,8 +238,8 @@ void ParticleBufferCompositor::delete_accumulator( void )
 {
     if( m_accumulator )
     {
-        const size_t nrenderers = m_point_renderer_list.size();
-        for( size_t i = 0; i < nrenderers; i++ )
+        const std::size_t nrenderers = m_point_renderer_list.size();
+        for( std::size_t i = 0; i < nrenderers; i++ )
         {
             m_point_renderer_list[i]->delete_particle_buffer();
         }
@@ -292,8 +292,8 @@ void ParticleBufferCompositor::accumulate( vismodule::Camera* camera, vismodule:
     m_accumulation_time = 0.0;
 #endif
 
-    const size_t nobjects = m_point_object_list.size();
-    for ( size_t id = 0; id < nobjects; id++ )
+    const std::size_t nobjects = m_point_object_list.size();
+    for ( std::size_t id = 0; id < nobjects; id++ )
     {
         vismodule::PointObject*            object   = m_point_object_list[id];
         vismodule::ParticleVolumeRenderer* renderer = m_point_renderer_list[id];

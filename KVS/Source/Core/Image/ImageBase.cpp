@@ -99,15 +99,15 @@ kvs::RGBColor ImageBase::ColorBilinear( double u, double v, const ColorImage& im
 /*===========================================================================*/
 void ImageBase::flip()
 {
-    const size_t stride = m_width * kvs::Math::BitToByte( m_bpp );
+    const std::size_t stride = m_width * kvs::Math::BitToByte( m_bpp );
 
     kvs::UInt8* pdata = m_pixels.data();
-    const size_t end_line = m_height / 2;
-    for ( size_t i = 0; i < end_line; i++ )
+    const std::size_t end_line = m_height / 2;
+    for ( std::size_t i = 0; i < end_line; i++ )
     {
         kvs::UInt8* src = pdata + ( i * stride );
         kvs::UInt8* dst = pdata + ( ( m_height - i - 1 ) * stride );
-        for ( size_t j = 0; j < stride; j++ )
+        for ( std::size_t j = 0; j < stride; j++ )
         {
             std::swap( *src, *dst );
             src++; dst++;
@@ -135,7 +135,7 @@ void ImageBase::copy( const ImageBase& image )
  *  @return true, if the create process is done successfully
  */
 /*==========================================================================*/
-bool ImageBase::create( const size_t width, const size_t height, const ImageType type )
+bool ImageBase::create( const std::size_t width, const std::size_t height, const ImageType type )
 {
     m_width = width;
     m_height = height;
@@ -149,7 +149,7 @@ bool ImageBase::create( const size_t width, const size_t height, const ImageType
     }
     else
     {
-        const size_t ncomponents = static_cast<size_t>( type );
+        const std::size_t ncomponents = static_cast<size_t>( type );
         m_padding = 0;
         m_bpp = kvs::Math::ByteToBit( sizeof( kvs::UInt8 ) ) * ncomponents;
         m_bpl = width * kvs::Math::BitToByte( m_bpp );
@@ -172,8 +172,8 @@ bool ImageBase::create( const size_t width, const size_t height, const ImageType
  */
 /*==========================================================================*/
 bool ImageBase::create(
-    const size_t width,
-    const size_t height,
+    const std::size_t width,
+    const std::size_t height,
     const ImageType type,
     const kvs::ValueArray<kvs::UInt8>& pixels )
 {
@@ -189,7 +189,7 @@ bool ImageBase::create(
     }
     else
     {
-        const size_t ncomponents = static_cast<size_t>( type );
+        const std::size_t ncomponents = static_cast<size_t>( type );
         m_padding = 0;
         m_bpp = kvs::Math::ByteToBit( sizeof( kvs::UInt8 ) ) * ncomponents;
         m_bpl = width * kvs::Math::BitToByte( m_bpp );
@@ -205,8 +205,8 @@ bool ImageBase::create(
 
 template <typename Image, typename Interpolator>
 void ImageBase::resizeImage(
-    const size_t width,
-    const size_t height,
+    const std::size_t width,
+    const std::size_t height,
     Image* image,
     Interpolator interpolator )
 {
@@ -214,10 +214,10 @@ void ImageBase::resizeImage(
 
     const double ratio_width  = m_width / static_cast<double>( width );
     const double ratio_height = m_height / static_cast<double>( height );
-    for ( size_t j = 0; j < height; j++ )
+    for ( std::size_t j = 0; j < height; j++ )
     {
         const double v = j * ratio_height;
-        for ( size_t i = 0; i < width; i++ )
+        for ( std::size_t i = 0; i < width; i++ )
         {
             const double u = i * ratio_width;
             const auto pixel = interpolator( u, v, *image );

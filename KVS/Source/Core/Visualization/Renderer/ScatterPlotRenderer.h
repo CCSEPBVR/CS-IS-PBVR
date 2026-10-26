@@ -99,8 +99,8 @@ public:
 protected:
     kvs::Painter& painter() { return m_painter; }
     void drawBackground( const kvs::Rectangle& rect, const float dpr );
-    void drawPolyline( const kvs::Rectangle& rect, kvs::TableObject* table, const size_t x_index, const size_t y_index );
-    void drawPoint( const kvs::Rectangle& rect, kvs::TableObject* table, const size_t x_index, const size_t y_index, const bool has_values );
+    void drawPolyline( const kvs::Rectangle& rect, kvs::TableObject* table, const std::size_t x_index, const std::size_t y_index );
+    void drawPoint( const kvs::Rectangle& rect, kvs::TableObject* table, const std::size_t x_index, const std::size_t y_index, const bool has_values );
 
 public:
     KVS_DEPRECATED( void setTopMargin( const int margin ) ) { m_margins.setTop( margin ); }

@@ -56,10 +56,10 @@ public:
 
     GridType gridType() const { return m_grid_type; }
     const kvs::Vec3ui& resolution() const { return m_resolution; }
-    size_t numberOfNodesPerLine() const;
-    size_t numberOfNodesPerSlice() const;
-    size_t numberOfNodes() const;
-    size_t numberOfCells() const;
+    std::size_t numberOfNodesPerLine() const;
+    std::size_t numberOfNodesPerSlice() const;
+    std::size_t numberOfNodes() const;
+    std::size_t numberOfCells() const;
 
     void updateMinMaxCoords();
     void updateMinMaxValues() const;
@@ -67,7 +67,7 @@ public:
 public:
     KVS_DEPRECATED( StructuredVolumeObject(
                         const kvs::Vector3ui& resolution,
-                        const size_t veclen,
+                        const std::size_t veclen,
                         const Values& values ) )
     {
         BaseClass::setVolumeType( Structured );
@@ -80,7 +80,7 @@ public:
     KVS_DEPRECATED( StructuredVolumeObject(
                         const GridType grid_type,
                         const kvs::Vector3ui& resolution,
-                        const size_t veclen,
+                        const std::size_t veclen,
                         const Coords& coords,
                         const Values& values ) )
     {
@@ -92,9 +92,9 @@ public:
         this->setResolution( resolution );
     }
 
-    KVS_DEPRECATED( size_t nnodesPerLine() const ) { return this->numberOfNodesPerLine(); }
-    KVS_DEPRECATED( size_t nnodesPerSlice() const ) { return this->numberOfNodesPerSlice(); }
-    KVS_DEPRECATED( size_t nnodes() const ) { return this->numberOfNodes(); }
+    KVS_DEPRECATED( std::size_t nnodesPerLine() const ) { return this->numberOfNodesPerLine(); }
+    KVS_DEPRECATED( std::size_t nnodesPerSlice() const ) { return this->numberOfNodesPerSlice(); }
+    KVS_DEPRECATED( std::size_t nnodes() const ) { return this->numberOfNodes(); }
     KVS_DEPRECATED( friend std::ostream& operator << ( std::ostream& os, const StructuredVolumeObject& object ) );
 };
 

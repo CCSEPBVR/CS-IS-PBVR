@@ -90,7 +90,7 @@ const bool TransferFunctionTag::hasResolution( void ) const
  *  @return resolution
  */
 /*===========================================================================*/
-const size_t TransferFunctionTag::resolution( void ) const
+const std::size_t TransferFunctionTag::resolution( void ) const
 {
     return( m_resolution );
 }
@@ -156,7 +156,7 @@ void TransferFunctionTag::setFile( const std::string& file )
  *  @param  resolution [in] resolution
  */
 /*===========================================================================*/
-void TransferFunctionTag::setResolution( const size_t resolution )
+void TransferFunctionTag::setResolution( const std::size_t resolution )
 {
     m_has_resolution = true;
     m_resolution = resolution;

@@ -26,8 +26,8 @@ public:
     using BaseClass = kvs::FileFormatBase;
 
 private:
-    size_t m_width = 0; ///< image width
-    size_t m_height = 0; ///< image height
+    std::size_t m_width = 0; ///< image width
+    std::size_t m_height = 0; ///< image height
     int m_bpp = 0; ///< bytes per pixel
     int m_compression_level = 8; ///< compression level
     kvs::ValueArray<kvs::UInt8> m_pixels{}; ///< pixel value array
@@ -37,11 +37,11 @@ public:
 
 public:
     Png() = default;
-    Png( const size_t width, const size_t height, const kvs::ValueArray<kvs::UInt8>& pixels );
+    Png( const std::size_t width, const std::size_t height, const kvs::ValueArray<kvs::UInt8>& pixels );
     Png( const std::string& filename );
 
-    size_t width() const { return m_width; }
-    size_t height() const { return m_height; }
+    std::size_t width() const { return m_width; }
+    std::size_t height() const { return m_height; }
     int bytesPerPixel() const { return m_bpp; }
     int compressionLevel() const { return m_compression_level; }
     const kvs::ValueArray<kvs::UInt8>& pixels() const { return m_pixels; }

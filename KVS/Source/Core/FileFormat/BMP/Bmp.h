@@ -39,9 +39,9 @@ private:
 
     Bmp::FileHeader m_file_header; ///< bitmap file header
     Bmp::InfoHeader m_info_header; ///< bitmap information header
-    size_t m_width; ///< width
-    size_t m_height; ///< height
-    size_t m_bpp; ///< bits per pixel
+    std::size_t m_width; ///< width
+    std::size_t m_height; ///< height
+    std::size_t m_bpp; ///< bits per pixel
     kvs::ValueArray<kvs::UInt8> m_pixels; ///< pixel data
 
 public:
@@ -51,14 +51,14 @@ public:
 public:
 
     Bmp() {}
-    Bmp( const size_t width, const size_t height, const kvs::ValueArray<kvs::UInt8>& pixels );
+    Bmp( const std::size_t width, const std::size_t height, const kvs::ValueArray<kvs::UInt8>& pixels );
     Bmp( const std::string& filename );
 
     const Bmp::FileHeader& fileHeader() const { return m_file_header; }
     const Bmp::InfoHeader& infoHeader() const { return m_info_header; }
-    size_t width() const { return m_width; }
-    size_t height() const { return m_height; }
-    size_t bitsPerPixel() const { return m_bpp; }
+    std::size_t width() const { return m_width; }
+    std::size_t height() const { return m_height; }
+    std::size_t bitsPerPixel() const { return m_bpp; }
     const kvs::ValueArray<kvs::UInt8>& pixels() const { return m_pixels; }
 
     void print( std::ostream& os, const kvs::Indent& indent = kvs::Indent(0) ) const;

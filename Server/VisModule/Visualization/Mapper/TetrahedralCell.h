@@ -85,11 +85,32 @@ public:
 
     const vismodule::Real32 volume() const;
 
+    void volumeArray( const int loop_cnt,
+                      const vismodule::UInt32* cell_index,
+                      vismodule::Real32* volumes );
+
     const vismodule::Vector3f transformGlobalToLocal( const vismodule::Vector3f& point ) const;
 
     const vismodule::Vector3f transformLocalToGlobal( const vismodule::Vector3f& point ) const;
 
     void setLocalGravityPoint() const;
+
+    /*  節点 i の局所座標（新規追加）。interpolationFunctions() から導いた。
+     *  N = x, y, z, 1-x-y-z
+     */
+    bool localNodeCoord( const int i, vismodule::Vector3f* coord ) const
+    {
+        static const float table[4][3] =
+        {
+            { 1, 0, 0 },
+            { 0, 1, 0 },
+            { 0, 0, 1 },
+            { 0, 0, 0 }
+        };
+        if ( i < 0 || i >= 4 || coord == NULL ) return false;
+        *coord = vismodule::Vector3f( table[i][0], table[i][1], table[i][2] );
+        return true;
+    }
 };
 
 /*===========================================================================*/
@@ -141,7 +162,7 @@ template <typename T>
 inline void TetrahedralCell<T>::scalar_ary(float*  scalar_array, const int loop_cnt) const 
 {
     #pragma ivdep
-    for ( size_t i = 0; i < loop_cnt ; i++ )
+    for ( std::size_t i = 0; i < loop_cnt ; i++ )
     {
         //scalar_array[i]= static_cast<vismodule::Real32>( m_interpolation_functions_array[0][j] * m_scalars_array[0][j] );
         scalar_array[i] =  BaseClass::m_interpolation_functions_array[0][i] * BaseClass::m_scalars_array[0][i] 
@@ -627,6 +648,38 @@ inline const vismodule::Real32 TetrahedralCell<T>::volume() const
 
 /*===========================================================================*/
 /**
+ *  @brief  Returns volumes for cells already loaded by bindCellArray().
+ *  @param  loop_cnt [in]  number of bound cells
+ *  @param  volumes  [out] volume array
+ */
+/*===========================================================================*/
+template <typename T>
+inline void TetrahedralCell<T>::volumeArray(
+    const int loop_cnt,
+    const vismodule::UInt32*,
+    vismodule::Real32* volumes )
+{
+    if ( volumes == NULL ) return;
+
+    // bindCellArray() が既に集めた 4 頂点をそのまま読み、再 gather しない。
+    // __restrict で volumes が m_vertices_array と別領域であることを示し、
+    // 仮定された依存(#15346)を解いてベクトル化させる。
+    // 式・定数(0.166666f)・評価順は volume() と同一なので結果はビット一致。
+    vismodule::Real32* __restrict vol = volumes;
+    #pragma omp simd
+    for ( int i = 0; i < loop_cnt; ++i )
+    {
+        const vismodule::Vector3f& v0 = BaseClass::m_vertices_array[0][i];
+        const vismodule::Vector3f v01( BaseClass::m_vertices_array[1][i] - v0 );
+        const vismodule::Vector3f v02( BaseClass::m_vertices_array[2][i] - v0 );
+        const vismodule::Vector3f v03( BaseClass::m_vertices_array[3][i] - v0 );
+
+        vol[i] = vismodule::Math::Abs( ( v01.cross( v02 ) ).dot( v03 ) ) * 0.166666f;
+    }
+}
+
+/*===========================================================================*/
+/**
  *  @brief  Transforms the global to the local coordinate.
  *  @param  point [in] point in the global coordinate
  */
@@ -715,7 +768,7 @@ public:
 
     const vismodule::Real32* differentialFunctions( const vismodule::Vector3f& point ) const;
 
-    void bindCell( const vismodule::UInt32 cell, const size_t n = 0 );
+    void bindCell( const vismodule::UInt32 cell, const std::size_t n = 0 );
 
     void setGlobalPoint( const vismodule::Vector3f& point ) const;
 
@@ -791,7 +844,7 @@ inline const vismodule::Real32* TetrahedralCell<T>::differentialFunctions( const
  */
 /*===========================================================================*/
 template <typename T>
-inline void TetrahedralCell<T>::bindCell( const vismodule::UInt32 index, const size_t n )
+inline void TetrahedralCell<T>::bindCell( const vismodule::UInt32 index, const std::size_t n )
 {
     BaseClass::bindCell( index, n );
 

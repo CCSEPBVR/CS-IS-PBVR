@@ -117,11 +117,11 @@ vismodule::Stl* PolygonExporter<vismodule::Stl>::exec( const vismodule::ObjectBa
     if ( polygon->normalType() == vismodule::PolygonObject::VertexNormal )
     {
         // Convert to vismodule::PolygonObject::PolygonNormal type.
-        const size_t npolygons = polygon->connections().size() / 3;
+        const std::size_t npolygons = polygon->connections().size() / 3;
         const vismodule::UInt32* pconnections = polygon->connections().pointer();
         const vismodule::Real32* pnormals = polygon->normals().pointer();
         vismodule::ValueArray<vismodule::Real32> normals( npolygons * 3 );
-        for ( size_t i = 0; i < npolygons; i++ )
+        for ( std::size_t i = 0; i < npolygons; i++ )
         {
             const vismodule::UInt32 index0 = *(pconnections++);
             const vismodule::UInt32 index1 = *(pconnections++);
@@ -177,14 +177,14 @@ vismodule::Ply* PolygonExporter<vismodule::Ply>::exec( const vismodule::ObjectBa
 
     this->setCoords( polygon->coords() );
 
-    const size_t nvertices = polygon->coords().size() / 3;
+    const std::size_t nvertices = polygon->coords().size() / 3;
 
     if ( polygon->colors().size() == 3 )
     {
         vismodule::ValueArray<vismodule::UInt8> colors( nvertices * 3 );
 
         const vismodule::RGBColor color = polygon->color();
-        for ( size_t i = 0; i < nvertices; i++ )
+        for ( std::size_t i = 0; i < nvertices; i++ )
         {
             colors[ 3 * i + 0 ] = color.r();
             colors[ 3 * i + 1 ] = color.g();
@@ -200,8 +200,8 @@ vismodule::Ply* PolygonExporter<vismodule::Ply>::exec( const vismodule::ObjectBa
             vismodule::ValueArray<vismodule::UInt32> counter( nvertices ); counter.fill( 0x00 );
             if ( polygon->nconnections() == 0 )
             {
-                const size_t npolygons = polygon->coords().size() / 3;
-                for ( size_t i = 0; i < npolygons; i++ )
+                const std::size_t npolygons = polygon->coords().size() / 3;
+                for ( std::size_t i = 0; i < npolygons; i++ )
                 {
                     const vismodule::UInt32 index0 = 3 * i + 0;
                     const vismodule::UInt32 index1 = 3 * i + 1;
@@ -225,7 +225,7 @@ vismodule::Ply* PolygonExporter<vismodule::Ply>::exec( const vismodule::ObjectBa
                 }
 
                 vismodule::ValueArray<vismodule::UInt8> colors( nvertices * 3 );
-                for ( size_t i = 0; i < nvertices; i++ )
+                for ( std::size_t i = 0; i < nvertices; i++ )
                 {
                     if ( counter[i] == 0 ) continue;
                     colors[ 3 * i + 0 ] = vismodule::UInt8( temp[ 3 * i + 0 ] / counter[i] );
@@ -237,9 +237,9 @@ vismodule::Ply* PolygonExporter<vismodule::Ply>::exec( const vismodule::ObjectBa
             }
             else // polygon->nconnections() > 0
             {
-                const size_t npolygons = polygon->connections().size() / 3;
+                const std::size_t npolygons = polygon->connections().size() / 3;
                 const vismodule::UInt32* pconnections = polygon->connections().pointer();
-                for ( size_t i = 0; i < npolygons; i++ )
+                for ( std::size_t i = 0; i < npolygons; i++ )
                 {
                     const vismodule::UInt32 index0 = *(pconnections++);
                     const vismodule::UInt32 index1 = *(pconnections++);
@@ -263,7 +263,7 @@ vismodule::Ply* PolygonExporter<vismodule::Ply>::exec( const vismodule::ObjectBa
                 }
 
                 vismodule::ValueArray<vismodule::UInt8> colors( nvertices * 3 );
-                for ( size_t i = 0; i < nvertices; i++ )
+                for ( std::size_t i = 0; i < nvertices; i++ )
                 {
                     if ( counter[i] == 0 ) continue;
                     colors[ 3 * i + 0 ] = vismodule::UInt8( temp[ 3 * i + 0 ] / counter[i] );
@@ -287,9 +287,9 @@ vismodule::Ply* PolygonExporter<vismodule::Ply>::exec( const vismodule::ObjectBa
             vismodule::ValueArray<vismodule::Real32> normals( nvertices * 3 ); normals.fill( 0x00 );
             vismodule::ValueArray<vismodule::UInt32> counter( nvertices ); counter.fill( 0x00 );
 
-            const size_t npolygons = polygon->connections().size() / 3;
+            const std::size_t npolygons = polygon->connections().size() / 3;
             const vismodule::UInt32* pconnections = m_connections.pointer();
-            for ( size_t i = 0; i < npolygons; i++ )
+            for ( std::size_t i = 0; i < npolygons; i++ )
             {
                 const vismodule::UInt32 index0 = *(pconnections++);
                 const vismodule::UInt32 index1 = *(pconnections++);
@@ -312,7 +312,7 @@ vismodule::Ply* PolygonExporter<vismodule::Ply>::exec( const vismodule::ObjectBa
                 counter[ index2 ] += 1;
             }
 
-            for ( size_t i = 0; i < nvertices; i++ )
+            for ( std::size_t i = 0; i < nvertices; i++ )
             {
                 if ( counter[i] == 0 ) continue;
                 normals[ 3 * i + 0 ] /= static_cast<vismodule::Real32>( counter[i] );

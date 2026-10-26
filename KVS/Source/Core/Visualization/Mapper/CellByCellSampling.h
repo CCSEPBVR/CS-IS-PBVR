@@ -40,10 +40,10 @@ namespace CellByCellSampling
 /*===========================================================================*/
 inline kvs::Real32 AveragedScalar( const kvs::CellBase* cell )
 {
-    const size_t nnodes = cell->numberOfCellNodes();;
+    const std::size_t nnodes = cell->numberOfCellNodes();;
     const kvs::Real32* S = cell->values();
     kvs::Real32 Sa = 0.0f;
-    for ( size_t i = 0; i < nnodes; i++ ) { Sa += S[i]; }
+    for ( std::size_t i = 0; i < nnodes; i++ ) { Sa += S[i]; }
     return Sa / nnodes;
 }
 
@@ -86,11 +86,11 @@ inline const kvs::Vec3 RandomSamplingInCube( const kvs::Vec3ui& base_index )
  *  @return number of particles
  */
 /*===========================================================================*/
-inline size_t NumberOfParticles( const kvs::Real32 density, const kvs::Real32 volume )
+inline std::size_t NumberOfParticles( const kvs::Real32 density, const kvs::Real32 volume )
 {
     const kvs::Real32 R = RandomNumber();
     const kvs::Real32 N = density * volume;
-    size_t n = static_cast<size_t>( N );
+    std::size_t n = static_cast<size_t>( N );
     if ( N - n > R ) { ++n; }
     return n;
 }
@@ -166,16 +166,16 @@ public:
     const kvs::ValueArray<kvs::Real32>& normals() const { return m_normals; }
     const kvs::ValueArray<kvs::Real32>& scalars() const { return m_scalars; }
 
-    void allocate( const size_t nparticles )
+    void allocate( const std::size_t nparticles )
     {
         m_coords.allocate( nparticles * 3 );
         m_normals.allocate( nparticles * 3 );
         m_scalars.allocate( nparticles );
     }
 
-    void push( const size_t index, const Particle& particle )
+    void push( const std::size_t index, const Particle& particle )
     {
-        const size_t index3 = index * 3;
+        const std::size_t index3 = index * 3;
         m_coords[ index3 + 0 ] = particle.coord.x();
         m_coords[ index3 + 1 ] = particle.coord.y();
         m_coords[ index3 + 2 ] = particle.coord.z();
@@ -205,17 +205,17 @@ public:
     const kvs::ValueArray<kvs::Real32>& normals() const { return m_normals; }
     const kvs::ValueArray<kvs::UInt8>& colors() const { return m_colors; }
 
-    void allocate( const size_t nparticles )
+    void allocate( const std::size_t nparticles )
     {
         m_coords.allocate( nparticles * 3 );
         m_normals.allocate( nparticles * 3 );
         m_colors.allocate( nparticles * 3 );
     }
 
-    void push( const size_t index, const Particle& particle )
+    void push( const std::size_t index, const Particle& particle )
     {
         const kvs::RGBColor color = m_color_map.at( particle.scalar );
-        const size_t index3 = index * 3;
+        const std::size_t index3 = index * 3;
         m_coords[ index3 + 0 ] = particle.coord.x();
         m_coords[ index3 + 1 ] = particle.coord.y();
         m_coords[ index3 + 2 ] = particle.coord.z();
@@ -239,7 +239,7 @@ public:
     typedef kvs::ValueArray<kvs::Real32> Table;
 
 private:
-    size_t m_resolution; ///< table resolution
+    std::size_t m_resolution; ///< table resolution
     kvs::Real32 m_min_value; ///< min. value
     kvs::Real32 m_max_value; ///< max. value
     Table m_table; ///< value table
@@ -251,7 +251,7 @@ public:
     void setSamplingStep( const kvs::Real32 step ) { m_sampling_step = step; }
     void attachCamera( const kvs::Camera* camera ) { m_camera = camera; }
     void attachObject( const kvs::ObjectBase* object ) { m_object = object; }
-    size_t resolution() const { return m_resolution; }
+    std::size_t resolution() const { return m_resolution; }
     kvs::Real32 minValue() const { return m_min_value; }
     kvs::Real32 maxValue() const { return m_max_value; }
     const Table& table() const { return m_table; }
@@ -287,7 +287,7 @@ inline kvs::Real32 ParticleDensityMap::maxValueInGrid(
     kvs::Real32 smin = static_cast<kvs::Real32>( values[ indices[0] ] );
     kvs::Real32 smax = static_cast<kvs::Real32>( values[ indices[0] ] );
 
-    for ( size_t i = 1; i < 8; i++ )
+    for ( std::size_t i = 1; i < 8; i++ )
     {
         const kvs::Real32 s = static_cast<kvs::Real32>( values[ indices[i] ] );
         smin = kvs::Math::Min( smin, s );
@@ -316,8 +316,8 @@ inline kvs::Real32 ParticleDensityMap::maxValueInCell(
     const kvs::Real32* s = cell->values();
     kvs::Real32 smin = s[0];
     kvs::Real32 smax = s[0];
-    const size_t nnodes = volume->numberOfCellNodes();
-    for ( size_t i = 1; i < nnodes; i++ )
+    const std::size_t nnodes = volume->numberOfCellNodes();
+    for ( std::size_t i = 1; i < nnodes; i++ )
     {
         smin = kvs::Math::Min( smin, s[i] );
         smax = kvs::Math::Max( smax, s[i] );
@@ -360,7 +360,7 @@ public:
         m_base_index = base_index;
     }
 
-    size_t numberOfParticles()
+    std::size_t numberOfParticles()
     {
         const kvs::Real32 x = m_base_index.x() + 0.5f;
         const kvs::Real32 y = m_base_index.y() + 0.5f;
@@ -382,7 +382,7 @@ public:
         return m_density_map->at( m_current.scalar );
     }
 
-    kvs::Real32 sample( const size_t max_loops )
+    kvs::Real32 sample( const std::size_t max_loops )
     {
         kvs::Real32 density = this->sample();
         if ( kvs::Math::IsZero( density ) )
@@ -390,7 +390,7 @@ public:
             KVS_OMP_PARALLEL()
             {
                 KVS_OMP_FOR( schedule(static) )
-                for ( size_t i = 0; i < max_loops; i++ )
+                for ( std::size_t i = 0; i < max_loops; i++ )
                 {
                     int density = this->sample();
                     if ( !kvs::Math::IsZero( density ) )
@@ -455,9 +455,9 @@ public:
         return m_density_map->maxValueInCell( m_cell, m_cell->referenceVolume() );
     }
 
-    void bind( const size_t index ) { m_cell->bindCell( index ); }
+    void bind( const std::size_t index ) { m_cell->bindCell( index ); }
 
-    size_t numberOfParticles()
+    std::size_t numberOfParticles()
     {
         const kvs::Real32 scalar = AveragedScalar( m_cell );
         const kvs::Real32 density = m_density_map->at( scalar );
@@ -481,7 +481,7 @@ public:
         return m_density_map->at( m_current.scalar );
     }
 
-    kvs::Real32 sample( const size_t max_loops )
+    kvs::Real32 sample( const std::size_t max_loops )
     {
         kvs::Real32 density = this->sample();
         if ( kvs::Math::IsZero( density ) )
@@ -489,7 +489,7 @@ public:
             KVS_OMP_PARALLEL()
             {
                 KVS_OMP_FOR(schedule(static))
-                for ( size_t i = 0; i < max_loops; i++ )
+                for ( std::size_t i = 0; i < max_loops; i++ )
                 {
                     density = this->sample();
                     if ( !kvs::Math::IsZero( density ) )

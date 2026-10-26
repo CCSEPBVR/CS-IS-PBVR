@@ -238,9 +238,9 @@ bool KVSMLStructuredVolumeObject::read( const std::string& filename )
 
     // <DataArray>
     const kvs::Vector3ui resolution = volume_tag.resolution();
-    const size_t nnodes = resolution.x() * resolution.y() * resolution.z();
-    const size_t veclen = value_tag.veclen();
-    const size_t nelements = nnodes * veclen;
+    const std::size_t nnodes = resolution.x() * resolution.y() * resolution.z();
+    const std::size_t veclen = value_tag.veclen();
+    const std::size_t nelements = nnodes * veclen;
     kvs::kvsml::DataArrayTag values;
     if ( !values.read( value_tag.node(), nelements, &m_values ) )
     {
@@ -262,9 +262,9 @@ bool KVSMLStructuredVolumeObject::read( const std::string& filename )
 
         // <DataArray>
         kvs::kvsml::DataArrayTag coords;
-        const size_t dimension = 3;
-        size_t coord_nelements = 0;
-        for ( size_t i = 0; i < dimension; i++ ) coord_nelements += resolution[i];
+        const std::size_t dimension = 3;
+        std::size_t coord_nelements = 0;
+        for ( std::size_t i = 0; i < dimension; i++ ) coord_nelements += resolution[i];
         if ( !coords.read( coord_tag.node(), coord_nelements, &m_coords ) )
         {
             kvsMessageError( "Cannot read <%s> for <%s>.",
@@ -284,8 +284,8 @@ bool KVSMLStructuredVolumeObject::read( const std::string& filename )
 
         // <DataArray>
         kvs::kvsml::DataArrayTag coords;
-        const size_t dimension = 3;
-        const size_t coord_nelements = nnodes * dimension;
+        const std::size_t dimension = 3;
+        const std::size_t coord_nelements = nnodes * dimension;
         if ( !coords.read( coord_tag.node(), coord_nelements, &m_coords ) )
         {
             kvsMessageError( "Cannot read <%s> for <%s>.",

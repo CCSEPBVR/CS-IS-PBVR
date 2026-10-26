@@ -93,7 +93,7 @@ void RayCastingRenderer::create_image(
         BaseClass::m_width  = camera->windowWidth();
         BaseClass::m_height = camera->windowHeight();
 
-        const size_t npixels = BaseClass::m_width * BaseClass::m_height;
+        const std::size_t npixels = BaseClass::m_width * BaseClass::m_height;
         BaseClass::m_color_data.allocate( npixels * 4 );
         BaseClass::m_depth_data.allocate( npixels );
 
@@ -162,12 +162,12 @@ void RayCastingRenderer::rasterize(
     vismodule::Real32* const depth_data = BaseClass::m_depth_data.pointer();
 
     // LOD control.
-    size_t ray_width = 1;
+    std::size_t ray_width = 1;
     if ( m_enable_lod )
     {
         float modelview_matrix[16];
         glGetFloatv( GL_MODELVIEW_MATRIX, modelview_matrix );
-        for ( size_t i = 0; i < 16; i++ )
+        for ( std::size_t i = 0; i < 16; i++ )
         {
             if ( m_modelview_matrix[i] != modelview_matrix[i] )
             {
@@ -185,8 +185,8 @@ void RayCastingRenderer::rasterize(
     vismodule::VolumeRayIntersector ray( volume );
 
     // Execute ray casting.
-    const size_t height = BaseClass::m_height;
-    const size_t width  = BaseClass::m_width;
+    const std::size_t height = BaseClass::m_height;
+    const std::size_t width  = BaseClass::m_width;
 
     const float step = m_step;
     const float opaque = m_opaque;
@@ -195,12 +195,12 @@ void RayCastingRenderer::rasterize(
     const vismodule::ColorMap&   cmap = BaseClass::transferFunction().colorMap();
     const vismodule::OpacityMap& omap = BaseClass::transferFunction().opacityMap();
 
-    size_t depth_index = 0;
-    size_t pixel_index = 0;
-    for ( size_t y = 0; y < height; y += ray_width )
+    std::size_t depth_index = 0;
+    std::size_t pixel_index = 0;
+    for ( std::size_t y = 0; y < height; y += ray_width )
     {
-        const size_t offset = y * width;
-        for ( size_t x = 0; x < width; x += ray_width, depth_index = offset + x, pixel_index = depth_index * 4 )
+        const std::size_t offset = y * width;
+        for ( std::size_t x = 0; x < width; x += ray_width, depth_index = offset + x, pixel_index = depth_index * 4 )
         {
             ray.setOrigin( x, y );
 
@@ -263,30 +263,30 @@ void RayCastingRenderer::rasterize(
     {
         pixel_index = 0;
         depth_index = 0;
-        for ( size_t y = 0; y < height; y += ray_width )
+        for ( std::size_t y = 0; y < height; y += ray_width )
         {
             // Shift the y position of the mask by -ray_width/2.
-            const size_t Y = vismodule::Math::Max( int( y - ray_width / 2 ), 0 );
+            const std::size_t Y = vismodule::Math::Max( int( y - ray_width / 2 ), 0 );
 
-            const size_t offset = y * width;
-            for ( size_t x = 0; x < width; x += ray_width, depth_index = offset + x, pixel_index = depth_index * 4 )
+            const std::size_t offset = y * width;
+            for ( std::size_t x = 0; x < width; x += ray_width, depth_index = offset + x, pixel_index = depth_index * 4 )
             {
                 // Shift the x position of the mask by -ray_width/2.
-                const size_t X = vismodule::Math::Max( int( x - ray_width / 2 ), 0 );
+                const std::size_t X = vismodule::Math::Max( int( x - ray_width / 2 ), 0 );
 
                 const vismodule::UInt8  r = pixel[ pixel_index ];
                 const vismodule::UInt8  g = pixel[ pixel_index + 1 ];
                 const vismodule::UInt8  b = pixel[ pixel_index + 2 ];
                 const vismodule::UInt8  a = pixel[ pixel_index + 3 ];
                 const vismodule::Real32 d = depth_data[ depth_index ];
-                for ( size_t j = 0; j < ray_width && Y + j < height; j++ )
+                for ( std::size_t j = 0; j < ray_width && Y + j < height; j++ )
                 {
-                    const size_t J = Y + j;
-                    for ( size_t i = 0; i < ray_width && X + i < width; i++ )
+                    const std::size_t J = Y + j;
+                    for ( std::size_t i = 0; i < ray_width && X + i < width; i++ )
                     {
-                        const size_t I = X + i;
-                        const size_t index = J * width + I;
-                        const size_t index4 = index * 4;
+                        const std::size_t I = X + i;
+                        const std::size_t index = J * width + I;
+                        const std::size_t index4 = index * 4;
                         pixel[ index4 ] = r;
                         pixel[ index4 + 1 ] = g;
                         pixel[ index4 + 2 ] = b;

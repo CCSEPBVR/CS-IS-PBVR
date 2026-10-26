@@ -112,7 +112,7 @@ const std::string& ValueTag::label( void ) const
  *  @return vector length
  */
 /*===========================================================================*/
-const size_t ValueTag::veclen( void ) const
+const std::size_t ValueTag::veclen( void ) const
 {
     return( m_veclen );
 }
@@ -157,7 +157,7 @@ void ValueTag::setLabel( const std::string& label )
  *  @param  veclen [in] vector length
  */
 /*===========================================================================*/
-void ValueTag::setVeclen( const size_t veclen )
+void ValueTag::setVeclen( const std::size_t veclen )
 {
     m_has_veclen = true;
     m_veclen = veclen;

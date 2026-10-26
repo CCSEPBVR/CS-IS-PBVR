@@ -90,7 +90,7 @@
              // ファイル名を返す
              filesystem::path filename() const
              {
-                 size_t pos = _path.find_last_of("/\\");
+                 std::size_t pos = _path.find_last_of("/\\");
                  if ( pos == std::string::npos )
                  {
                      return _path; // 区切りがなければ全体がファイル名
@@ -101,8 +101,8 @@
              // ファイルの拡張子を取得する
              std::string extension() const
              {
-                 size_t pos = _path.find_last_of("/\\");
-                 size_t dot = _path.find_last_of('.');
+                 std::size_t pos = _path.find_last_of("/\\");
+                 std::size_t dot = _path.find_last_of('.');
                  if (dot == std::string::npos || (pos != std::string::npos && dot < pos)) {
                      return ""; // 拡張子なし
                  }
@@ -112,7 +112,7 @@
              // 親ディレクトリのパスを返す
              filesystem::path parent_path() const
              {
-                 size_t pos = _path.find_last_of("/\\");
+                 std::size_t pos = _path.find_last_of("/\\");
                  if (pos == std::string::npos) return filesystem::path("");
                  return filesystem::path(_path.substr(0, pos));
              }
@@ -120,9 +120,9 @@
              // ファイル名から拡張子を除いたファイル名を出力する
              filesystem::path stem() const
              {
-                 size_t slash = _path.find_last_of("/\\");
-                 size_t dot = _path.find_last_of('.');
-                 size_t start = (slash == std::string::npos) ? 0 : slash + 1;
+                 std::size_t slash = _path.find_last_of("/\\");
+                 std::size_t dot = _path.find_last_of('.');
+                 std::size_t start = (slash == std::string::npos) ? 0 : slash + 1;
              
                  if (dot == std::string::npos || dot < start) {
                      // 拡張子なし
@@ -185,7 +185,7 @@
  
          static bool create_directories( const std::string& path )
          {
-             size_t pos = 0;
+             std::size_t pos = 0;
              std::string current;
  
              while ( ( pos = path.find_first_of( "/\\", pos ) ) != std::string::npos )

@@ -26,18 +26,18 @@ private:
     kvs::TCPSocket* m_handler; //< handler
     kvs::IPAddress m_ip; //< IP address
     int m_port; //< port number
-    size_t m_ntrials; //< number of trials
+    std::size_t m_ntrials; //< number of trials
 
 public:
 
     Connector();
     Connector( kvs::TCPSocket* handler );
-    Connector( const kvs::IPAddress& ip, const int port, const size_t ntrials );
+    Connector( const kvs::IPAddress& ip, const int port, const std::size_t ntrials );
     ~Connector();
 
     bool open();
     void close();
-    bool connect( const kvs::IPAddress& ip, const int port, const size_t ntrials );
+    bool connect( const kvs::IPAddress& ip, const int port, const std::size_t ntrials );
     bool reconnect();
     void send( const kvs::MessageBlock& block );
 

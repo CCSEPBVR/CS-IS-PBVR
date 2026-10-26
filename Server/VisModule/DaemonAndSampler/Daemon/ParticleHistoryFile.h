@@ -19,9 +19,21 @@ private:
     VariableRange     m_variable_range;
     HistogramArray    m_color_histogram_array;
     HistogramArray    m_opacity_histogram_array;
+    VariableRange     m_average_variable_range;
+    VariableRange     m_variance_variable_range;
+    VariableRange     m_coefficient_of_variation_variable_range;
+    HistogramArray    m_average_color_histogram_array;
+    HistogramArray    m_average_opacity_histogram_array;
+    HistogramArray    m_variance_color_histogram_array;
+    HistogramArray    m_variance_opacity_histogram_array;
+    HistogramArray    m_coefficient_of_variation_color_histogram_array;
+    HistogramArray    m_coefficient_of_variation_opacity_histogram_array;
+    bool              m_has_ensemble_statistic_histogram;
+    bool              m_is_ensemble;
     int               m_nvariables;
     int               m_particle_limit;
     float             m_extra_opacity_factor;
+    std::string       m_error_message;
 
 private:
 
@@ -43,9 +55,22 @@ public:
     ParticleHistoryFile( const std::string& file );
     void setFileName( const std::string& file );
     void read();
+    const std::string& fileName() const { return m_file_name; };
+    const std::string& errorMessage() const { return m_error_message; };
     VariableRange& variableRange();
     HistogramArray& colorHistogramArray();
     HistogramArray& opacityHistogramArray();
+    bool hasEnsembleStatisticHistogram() const { return m_has_ensemble_statistic_histogram; };
+    VariableRange& averageVariableRange();
+    VariableRange& varianceVariableRange();
+    VariableRange& coefficientOfVariationVariableRange();
+    HistogramArray& averageColorHistogramArray();
+    HistogramArray& averageOpacityHistogramArray();
+    HistogramArray& varianceColorHistogramArray();
+    HistogramArray& varianceOpacityHistogramArray();
+    HistogramArray& coefficientOfVariationColorHistogramArray();
+    HistogramArray& coefficientOfVariationOpacityHistogramArray();
+    bool isEnsemble() const { return m_is_ensemble; };
     int nVariables(){return m_nvariables; };
     int ParticleLimit(){return m_particle_limit; };
     float ExtraOpacityFactor(){return m_extra_opacity_factor; };
@@ -69,6 +94,7 @@ inline std::template vector<T> ParticleHistoryFile::split( const std::string& li
 
     while ( std::getline( ss_line, item, delim ) )
     {
+        if ( item.empty() ) continue;
         array.push_back( this->from_string<T>( item ) );
     }
 

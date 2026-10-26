@@ -23,7 +23,7 @@
 namespace
 {
 
-const size_t NumberOfNodes[15] =
+const std::size_t NumberOfNodes[15] =
 {
     0,  // unknown
     2,  // line (111)
@@ -112,7 +112,7 @@ const MeshData::ElementType MeshData::elementType( void ) const
  *  @return number of nodes
  */
 /*===========================================================================*/
-const size_t MeshData::numberOfNodes( void ) const
+const std::size_t MeshData::numberOfNodes( void ) const
 {
     return( m_nnodes );
 }
@@ -123,7 +123,7 @@ const size_t MeshData::numberOfNodes( void ) const
  *  @return number of cells
  */
 /*===========================================================================*/
-const size_t MeshData::numberOfCells( void ) const
+const std::size_t MeshData::numberOfCells( void ) const
 {
     return( m_ncells );
 }
@@ -243,8 +243,8 @@ const bool MeshData::readDividedData( const std::string& filename )
     std::getline( ifs, line ); // number?  (e.g. 0.0000000000000000E+00)
 
     // Reanding number of nodes.
-    size_t nnodes_unknown = 0;
-    size_t nnodes_inside = 0;
+    std::size_t nnodes_unknown = 0;
+    std::size_t nnodes_inside = 0;
     ifs >> m_nnodes;
     ifs >> nnodes_unknown;
     ifs >> nnodes_inside;
@@ -253,12 +253,12 @@ const bool MeshData::readDividedData( const std::string& filename )
     // Reading boundary information. (?)
     // NOTE: This part may be useful to connect those partially defined data
     // into a whole, now it's skipped, but it should be implemented afterwards.
-    const size_t nnodes = m_nnodes;
-    for ( size_t i = 0; i < nnodes; i++ ) std::getline( ifs, line );
+    const std::size_t nnodes = m_nnodes;
+    for ( std::size_t i = 0; i < nnodes; i++ ) std::getline( ifs, line );
 
     // Reading index table of global coordinate.
     vismodule::ValueArray<vismodule::UInt32> coords_table( nnodes );
-    for ( size_t i = 0; i < nnodes; i++ )
+    for ( std::size_t i = 0; i < nnodes; i++ )
     {
         vismodule::UInt32 temp = 0; ifs >> temp;
         coords_table[i] = temp - 1;
@@ -267,7 +267,7 @@ const bool MeshData::readDividedData( const std::string& filename )
 
     // Reading global coordinates data.
     vismodule::Real32* coords = m_coords.allocate( nnodes * 3 );
-    for ( size_t i = 0; i < nnodes; i++ )
+    for ( std::size_t i = 0; i < nnodes; i++ )
     {
         std::getline( ifs, line );
 
@@ -291,39 +291,39 @@ const bool MeshData::readDividedData( const std::string& filename )
     std::getline( ifs, line ); // number?  (e.g. 3)
 
     // Reading number of cells.
-    size_t ncells_unknown1 = 0;
-    size_t ncells_unknown2 = 0;
+    std::size_t ncells_unknown1 = 0;
+    std::size_t ncells_unknown2 = 0;
     ifs >> m_ncells;
     ifs >> ncells_unknown1;
     ifs >> ncells_unknown2;
     std::getline( ifs, line );
 
     // Reading local index table. (?)
-    for ( size_t i = 0; i < ncells_unknown2; i++ ) { float temp = 0.0f; ifs >> temp; }
+    for ( std::size_t i = 0; i < ncells_unknown2; i++ ) { float temp = 0.0f; ifs >> temp; }
     std::getline( ifs, line );
 
     // Skipping. (?)
-    const size_t ncells = m_ncells;
-    for ( size_t i = 0; i < ncells; i++ ) std::getline( ifs, line );
+    const std::size_t ncells = m_ncells;
+    for ( std::size_t i = 0; i < ncells; i++ ) std::getline( ifs, line );
 
     // Reading global index table. (?)
     vismodule::ValueArray<vismodule::UInt32> connections_table( ncells );
-    for ( size_t i = 0; i < ncells; i++ )
+    for ( std::size_t i = 0; i < ncells; i++ )
     {
         vismodule::UInt32 temp = 0; ifs >> temp;
         connections_table[i] = temp - 1;
     }
 
     // Skipping. (?)
-    for ( size_t i = 0; i < ncells; i++ ) { int temp = 0; ifs >> temp; } // Element type?
+    for ( std::size_t i = 0; i < ncells; i++ ) { int temp = 0; ifs >> temp; } // Element type?
     std::getline( ifs, line );
 
     // Skipping. (?)
     std::getline( ifs, line );
 
     // Reading. (?)
-    size_t start = 0;
-    size_t end = 0;
+    std::size_t start = 0;
+    std::size_t end = 0;
     ifs >> start;
     ifs >> end;
 
@@ -333,16 +333,16 @@ const bool MeshData::readDividedData( const std::string& filename )
     std::getline( ifs, line );
 
     // Reading. (?)
-    for ( size_t i = 0; i < end - start + 1; i++ ) { size_t temp = 0; ifs >> temp; }
+    for ( std::size_t i = 0; i < end - start + 1; i++ ) { std::size_t temp = 0; ifs >> temp; }
     std::getline( ifs, line );
 
     // Reading local connections.
-    const size_t nnodes_per_cell = ::NumberOfNodes[m_element_type];
+    const std::size_t nnodes_per_cell = ::NumberOfNodes[m_element_type];
     vismodule::UInt32* connections = m_connections.allocate( nnodes_per_cell * ncells );
-    for ( size_t i = 0; i < ncells; i++ )
+    for ( std::size_t i = 0; i < ncells; i++ )
     {
         vismodule::UInt32* c = connections;
-        for ( size_t j = 0; j < nnodes_per_cell; j++ )
+        for ( std::size_t j = 0; j < nnodes_per_cell; j++ )
         {
             vismodule::UInt32 value = 0; ifs >> value;
             *(connections++) = value - 1;
@@ -366,7 +366,7 @@ const bool MeshData::readDividedData( const std::string& filename )
 /*===========================================================================*/
 const bool MeshData::read_node( std::string& line, std::ifstream& ifs )
 {
-    size_t counter = 0;
+    std::size_t counter = 0;
     std::vector<vismodule::Real32> coords;
     while ( std::getline( ifs, line ) )
     {
@@ -428,9 +428,9 @@ const bool MeshData::read_element( std::string& line, std::ifstream& ifs )
         }
     }
 
-    size_t counter = 0;
+    std::size_t counter = 0;
     std::vector<vismodule::UInt32> connections;
-    const size_t nnodes_per_cell = ::NumberOfNodes[m_element_type];
+    const std::size_t nnodes_per_cell = ::NumberOfNodes[m_element_type];
     while ( std::getline( ifs, line ) )
     {
         if ( line.size() > 2 ) if ( line[0] == '!' && line[1] != '!' ) break;
@@ -442,7 +442,7 @@ const bool MeshData::read_element( std::string& line, std::ifstream& ifs )
         if ( !std::getline( line_stream, svalue, ',' ) ) return( false );
 
         // Reading connections.
-        for ( size_t i = 0; i < nnodes_per_cell; i++ )
+        for ( std::size_t i = 0; i < nnodes_per_cell; i++ )
         {
             std::getline( line_stream, svalue, ',' );
 

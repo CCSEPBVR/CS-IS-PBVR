@@ -44,7 +44,7 @@ struct XYZDef
         GausR40
     };
 
-    size_t num; ///< number of grid points
+    std::size_t num; ///< number of grid points
     MappingMethod mapping; ///< mapping method
     vismodule::ValueArray<vismodule::Real32> values; ///< values
 

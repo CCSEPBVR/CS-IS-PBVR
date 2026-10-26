@@ -21,8 +21,8 @@
 namespace
 {
 
-const size_t Resolution = 256;
-const size_t NumberOfChannels = 3;
+const std::size_t Resolution = 256;
+const std::size_t NumberOfChannels = 3;
 
 struct Equal
 {
@@ -70,7 +70,7 @@ ColorMap::ColorMap( void ):
  *  @param  resolution [in] resolution
  */
 /*==========================================================================*/
-ColorMap::ColorMap( const size_t resolution ):
+ColorMap::ColorMap( const std::size_t resolution ):
     m_resolution( resolution ),
     m_min_value( 0.0f ),
 //    m_max_value( resolution - 1.0f ),
@@ -104,7 +104,7 @@ ColorMap::ColorMap( const ColorMap::Table& table ):
  *  @param  max_value [in] max value
  */
 /*==========================================================================*/
-ColorMap::ColorMap( const size_t resolution, const float min_value, const float max_value ):
+ColorMap::ColorMap( const std::size_t resolution, const float min_value, const float max_value ):
     m_resolution( resolution ),
     m_min_value( min_value ),
     m_max_value( max_value ),
@@ -182,7 +182,7 @@ const float ColorMap::maxValue( void ) const
  *  @return resolusion
  */
 /*==========================================================================*/
-const size_t ColorMap::resolution( void ) const
+const std::size_t ColorMap::resolution( void ) const
 {
     return( m_resolution );
 }
@@ -220,7 +220,7 @@ const bool ColorMap::hasRange( void ) const
  *  @param  resolution [in] table resolution
  */
 /*===========================================================================*/
-void ColorMap::setResolution( const size_t resolution )
+void ColorMap::setResolution( const std::size_t resolution )
 {
     m_resolution = resolution;
 }
@@ -290,7 +290,7 @@ void ColorMap::create( void )
         const float increment = ( max_hue - min_hue ) / static_cast<float>( m_resolution - 1 );
 
         vismodule::UInt8* color = m_table.pointer();
-        for ( size_t i = 0; i < m_resolution; ++i )
+        for ( std::size_t i = 0; i < m_resolution; ++i )
         {
             // HSV to RGB
             const vismodule::HSVColor hsv(
@@ -316,7 +316,7 @@ void ColorMap::create( void )
 
         const float stride = ( max_value - min_value ) / static_cast<float>( m_resolution - 1 );
         float f = min_value;
-        for ( size_t i = 0; i < m_resolution; ++i, f += stride )
+        for ( std::size_t i = 0; i < m_resolution; ++i, f += stride )
         {
             Points::iterator p = m_points.begin();
             Points::iterator last = m_points.end();
@@ -377,11 +377,11 @@ void ColorMap::create( void )
  *  @retval RGB color value
  */
 /*==========================================================================*/
-const vismodule::RGBColor ColorMap::operator []( const size_t index ) const
+const vismodule::RGBColor ColorMap::operator []( const std::size_t index ) const
 {
     VIS_MODULE_ASSERT( index < this->resolution() );
 
-    const size_t offset = ::NumberOfChannels * index;
+    const std::size_t offset = ::NumberOfChannels * index;
     return( vismodule::RGBColor( m_table.pointer() + offset ) );
 }
 
@@ -407,8 +407,8 @@ const vismodule::RGBColor ColorMap::at( const float value ) const
 
     const float r = static_cast<float>( m_resolution - 1 );
     const float v = ( value - m_min_value ) / ( m_max_value - m_min_value ) * r;
-    const size_t s0 = static_cast<size_t>( v );
-    const size_t s1 = s0 + 1;
+    const std::size_t s0 = static_cast<size_t>( v );
+    const std::size_t s1 = s0 + 1;
 
     const vismodule::RGBColor c0( m_table.pointer() + ::NumberOfChannels * s0 );
     const vismodule::RGBColor c1( m_table.pointer() + ::NumberOfChannels * s1 );

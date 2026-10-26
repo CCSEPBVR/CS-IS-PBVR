@@ -25,8 +25,8 @@ inline void Bind(
     const kvs::Vec3ui& base_index,
     kvs::Real32* values )
 {
-    const size_t line_size = volume->numberOfNodesPerLine();
-    const size_t slice_size = volume->numberOfNodesPerSlice();
+    const std::size_t line_size = volume->numberOfNodesPerLine();
+    const std::size_t slice_size = volume->numberOfNodesPerSlice();
     kvs::UInt32 index[8];
     index[0] = base_index.x() + base_index.y() * line_size + base_index.z() * slice_size;
     index[1] = index[0] + 1;
@@ -37,10 +37,10 @@ inline void Bind(
     index[6] = index[2] + slice_size;
     index[7] = index[3] + slice_size;
 
-    const size_t nnodes = 8;
-    const size_t veclen = volume->veclen();
+    const std::size_t nnodes = 8;
+    const std::size_t veclen = volume->veclen();
     const ValueType* const S = volume->values().asValueArray<ValueType>().data();
-    for ( size_t i = 0; i < veclen; i++ )
+    for ( std::size_t i = 0; i < veclen; i++ )
     {
         values[ i * nnodes + 0 ] = kvs::Real32( S[ index[0] * veclen + i ] );
         values[ i * nnodes + 1 ] = kvs::Real32( S[ index[1] * veclen + i ] );
@@ -72,9 +72,9 @@ GridBase::GridBase( const kvs::StructuredVolumeObject* volume ):
     m_local_point( kvs::Vec3::Zero() ),
     m_reference_volume( volume )
 {
-    const size_t dimension = 3;
-    const size_t nnodes = m_nnodes;
-    const size_t veclen = m_veclen;
+    const std::size_t dimension = 3;
+    const std::size_t nnodes = m_nnodes;
+    const std::size_t veclen = m_veclen;
     try
     {
         m_values = new kvs::Real32 [nnodes * veclen];
@@ -178,7 +178,7 @@ void GridBase::updateDifferentialFunctions( const kvs::Vec3& local )
     const float qr = q * r;
     const float rp = r * p;
 
-    const size_t nnodes = m_nnodes;
+    const std::size_t nnodes = m_nnodes;
     kvs::Real32* dN = m_differential_functions;
     kvs::Real32* dNdp = dN;
     kvs::Real32* dNdq = dNdp + nnodes;
@@ -257,28 +257,28 @@ kvs::UInt32 GridBase::gridIndexOf( const kvs::Vec3ui& base_index ) const
 //    const kvs::UInt32 line_size = m_reference_volume->numberOfNodesPerLine();
 //    const kvs::UInt32 slice_size = m_reference_volume->numberOfNodesPerSlice();
 //    return base_index.x() + base_index.y() * line_size + base_index.z() * slice_size;
-    const size_t dimx = m_reference_volume->resolution().x() - 1;
-    const size_t dimy = m_reference_volume->resolution().y() - 1;
+    const std::size_t dimx = m_reference_volume->resolution().x() - 1;
+    const std::size_t dimy = m_reference_volume->resolution().y() - 1;
     return base_index.x() + base_index.y() * dimx + base_index.z() * dimx * dimy;
 }
 
 kvs::Vec3ui GridBase::baseIndexOf( const kvs::UInt32 grid_index ) const
 {
-//    const size_t dimx = m_reference_volume->resolution().x();
-//    const size_t dimy = m_reference_volume->resolution().y();
-    const size_t dimx = m_reference_volume->resolution().x() - 1;
-    const size_t dimy = m_reference_volume->resolution().y() - 1;
-    const size_t dimxy = dimx * dimy;
-    const size_t i = grid_index % dimxy % dimx;
-    const size_t j = grid_index % dimxy / dimx;
-    const size_t k = grid_index / dimxy;
+//    const std::size_t dimx = m_reference_volume->resolution().x();
+//    const std::size_t dimy = m_reference_volume->resolution().y();
+    const std::size_t dimx = m_reference_volume->resolution().x() - 1;
+    const std::size_t dimy = m_reference_volume->resolution().y() - 1;
+    const std::size_t dimxy = dimx * dimy;
+    const std::size_t i = grid_index % dimxy % dimx;
+    const std::size_t j = grid_index % dimxy / dimx;
+    const std::size_t k = grid_index / dimxy;
     return kvs::Vec3ui( i, j, k );
 }
 
 kvs::Real32 GridBase::interpolateValue( const kvs::Real32* values, const kvs::Real32* weights ) const
 {
     kvs::Real32 value = 0;
-    for ( size_t i = 0; i < m_nnodes; i++ ) { value += weights[i] * values[i]; }
+    for ( std::size_t i = 0; i < m_nnodes; i++ ) { value += weights[i] * values[i]; }
     return value;
 }
 

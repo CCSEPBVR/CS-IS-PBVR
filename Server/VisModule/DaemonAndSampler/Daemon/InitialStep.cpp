@@ -90,7 +90,7 @@ bool SetDefaultParticleParameterCS(
         eq = particle_property.m_transfunc_synthesizer->convert_token( "c1" );
         particle_property.m_transfunc_synthesizer->setColorFunction( eq );
 
-        for ( size_t i = 0; i < tf_number; i++ )
+        for ( std::size_t i = 0; i < tf_number; i++ )
         {
             std::stringstream cc, qq, tt, ff;
             cc << "C"  << i + 1;
@@ -283,7 +283,7 @@ void InitialStepCS(
                     store_volume_in_variables_array_unstruct( volume, dom, values, nvariables, coordinates, ncoords, connections, ncells, celltype );
 
                     std::vector<Type*> raw_pointers_vector( nvariables );
-                    for ( size_t i = 0; i < nvariables; ++i )
+                    for ( std::size_t i = 0; i < nvariables; ++i )
                     {
                         raw_pointers_vector[i] = values.get()[i].get();
                     }
@@ -300,7 +300,7 @@ void InitialStepCS(
 
 
                     std::vector<Type*> raw_pointers_vector( nvariables );
-                    for ( size_t i = 0; i < nvariables; ++i )
+                    for ( std::size_t i = 0; i < nvariables; ++i )
                     {
                         raw_pointers_vector[i] = values.get()[i].get();
                     }                        
@@ -354,7 +354,7 @@ void InitialStepCS(
     vr = setVariablerange2( tmp_max, tmp_min, tf_number );
     vr.show();
 
-    for( size_t i = 0; i < tf_number; i++ )
+    for( std::size_t i = 0; i < tf_number; i++ )
     {
         std::stringstream ss; 
         ss << (i + 1); 
@@ -479,7 +479,7 @@ void InitialStepCS(
                     store_volume_in_variables_array_unstruct( volume, dom, values, nvariables, coordinates, ncoords, connections, ncells, celltype );
 
                     std::vector<Type*> raw_pointers_vector( nvariables );
-                    for ( size_t i = 0; i < nvariables; ++i )
+                    for ( std::size_t i = 0; i < nvariables; ++i )
                     {
                         raw_pointers_vector[i] = values.get()[i].get();
                     }
@@ -495,7 +495,7 @@ void InitialStepCS(
                     store_volume_in_variables_array_struct( volume, dom, resolution, values, nvariables, ncoords );
 
                     std::vector<Type*> raw_pointers_vector( nvariables );
-                    for ( size_t i = 0; i < nvariables; ++i )
+                    for ( std::size_t i = 0; i < nvariables; ++i )
                     {
                         raw_pointers_vector[i] = values.get()[i].get();
                     }                        
@@ -642,43 +642,22 @@ void SetFallbackParticleParameterIS(
     particle_property.m_camera->setWindowSize( 620, 620 );
 }
 
-void SetDefaultParticleParameterIS(
+bool SetDefaultParticleParameterIS(
     ParticleProperty& particle_property,
     MultiVolumePropertyList& mvpl
 )
 {
-    const char *envBuf = NULL;
-    std::string visParamDir;
-    std::string tfFilePath;
-    std::string tfFilePath_old;
-
-    envBuf = std::getenv( "VIS_PARAM_DIR" );
-
-    if (envBuf == NULL) {
-        visParamDir = "./";
-    }
-    else {
-        visParamDir = envBuf;
-        if (visParamDir[visParamDir.size() - 1] != '/') {
-            visParamDir += "/";
-        }
+    const char* env_buf = std::getenv( "VIS_PARAM_DIR" );
+    std::string parameter_dir = ( env_buf == nullptr ) ? "./" : env_buf;
+    if ( !parameter_dir.empty() && parameter_dir.back() != '/' )
+    {
+        parameter_dir += "/";
     }
 
-    tfFilePath     = visParamDir;
-    tfFilePath_old = visParamDir;
-
-    envBuf = std::getenv( "TF_NAME" );
-
-    if (envBuf == NULL) {
-        tfFilePath     += "default.tf";
-        tfFilePath_old += "default_old.tf";
-    }
-    else {
-        tfFilePath     += envBuf;
-        tfFilePath     += ".tf";
-        tfFilePath_old += envBuf;
-        tfFilePath_old += "_old.tf";
-    }
+    env_buf = std::getenv( "TF_NAME" );
+    const std::string tf_name = ( env_buf == nullptr ) ? "default" : env_buf;
+    const std::string json_path = parameter_dir + tf_name + ".json";
+    const std::string json_old_path = parameter_dir + tf_name + "_old.json";
 
     MultiVolumeProperty mvp;
 
@@ -701,6 +680,7 @@ void SetDefaultParticleParameterIS(
         pm.setTimeStep_particle(0);
         std::cout << "WARN:particle status file does not exist" << std::endl;
     }
+    pm.readParticleFile();
     pm.readParticleHistoryFile();                
 
     // store particle monitor in mvpl
@@ -720,6 +700,7 @@ void SetDefaultParticleParameterIS(
     mvpl.m_total_max_value          = 0;
 
     // store particle monitor in param
+    particle_property.m_is_ensemble = pm.particleHistoryFile().isEnsemble();
     // sampling step is not used in IS mode
     particle_property.m_subpixel_level       = pm.getSubpixelLevel();
     // particle limit and particle density will be overwritten later
@@ -730,19 +711,17 @@ void SetDefaultParticleParameterIS(
     // particle_property.m_extra_opacity_factor = pm.particleHistoryFile().ExtraOpacityFactor();
     particle_property.m_extra_opacity_factor = 1;
 
-    std::ifstream tfFileOld( tfFilePath_old.c_str() );
-
-    if ( tfFileOld.good() )
+    ParameterFileReader ppr;
+    bool loaded = ppr.readTransferFunctionFromJson( json_path.c_str(), particle_property );
+    if ( !loaded )
     {
-        ParameterFileReader ppr;
-        ppr.readParticleParameterFile( tfFilePath_old.c_str() );
-        ppr.setParticleParameter( particle_property );
+        loaded = ppr.readTransferFunctionFromJson( json_old_path.c_str(), particle_property );
     }
-    else
+    if ( !loaded )
     {
         std::cout << "================================================================" << std::endl;
-        std::cout << "[WARN] Particle parameter file does not exist." << std::endl;
-        std::cout << "[WARN] File: " << tfFilePath_old << std::endl;
+        std::cout << "[WARN] Failed to load transfer function json." << std::endl;
+        std::cout << "[WARN] Files: " << json_path << " and " << json_old_path << std::endl;
         std::cout << "[INFO] VIS_PARAM_DIR = " << EnvValueOrUnsetIS( "VIS_PARAM_DIR" ) << std::endl;
         std::cout << "[INFO] PARTICLE_DIR  = " << EnvValueOrUnsetIS( "PARTICLE_DIR" ) << std::endl;
         std::cout << "[INFO] Set default particle parameters." << std::endl;
@@ -754,8 +733,7 @@ void SetDefaultParticleParameterIS(
             pm.particleHistoryFile().nVariables()
         );
     }
-
-    return;
+    return true;
 }
 
 void InitialStepIS(
@@ -764,9 +742,8 @@ void InitialStepIS(
     MultiVolumePropertyList& mvpl
 )
 {
-    int tf_number;
     ParticleMonitor pm;
-    VariableRange vr;
+    int history_time_step = time_step;
 
     std::cout << "time_step:" << time_step << std::endl;
 
@@ -779,61 +756,23 @@ void InitialStepIS(
     }
     else
     {
-        pm.setTimeStep_particle(0);
+        history_time_step = 0;
     }
-    pm.readParticleHistoryFile();
-
-    tf_number = pm.particleHistoryFile().colorHistogramArray().size();
-
-    vismodule::UInt64* tmp_c_bins;
-    vismodule::UInt64* tmp_o_bins;
-    tmp_c_bins = new vismodule::UInt64[DEFAULT_NBINS * tf_number];
-    tmp_o_bins = new vismodule::UInt64[DEFAULT_NBINS * tf_number];
-    std::fill_n( tmp_c_bins, DEFAULT_NBINS * tf_number, 0 );
-    std::fill_n( tmp_o_bins, DEFAULT_NBINS * tf_number, 0 );
 
     // get histgram start
-    int c_count = 0;
-    for ( int tf = 0; tf < tf_number; tf++ )
-    {
-        for ( int res = 0; res < DEFAULT_NBINS; res++ )
-        {
-            tmp_c_bins[c_count] = pm.particleHistoryFile().colorHistogramArray()[tf][res];
-            c_count++;
-        }
-    }
-    
-    int o_count = 0;
-    for ( int tf = 0; tf < tf_number; tf++ )
-    {
-        for ( int res = 0; res < DEFAULT_NBINS; res++ )
-        {
-            tmp_o_bins[o_count] = pm.particleHistoryFile().opacityHistogramArray()[tf][res];
-            o_count++;
-        }
-    }
+    const bool expected_ensemble = particle_property.m_is_ensemble;
+    const ParticleHistoryUpdateResult history_result =
+        UpdateParticlePropertyFromHistoryIS( history_time_step, particle_property );
     // get histgram end
-    
-    vr = pm.particleHistoryFile().variableRange();
-    vr.show();
 
     // histogram, minmaxの格納
-    for( int i = 0; i < tf_number; i++ )
+    if ( !history_result.succeeded ||
+         ( expected_ensemble && !history_result.ensemble_statistics_available ) )
     {
-        // histogram
-        std::copy( tmp_c_bins + ( DEFAULT_NBINS * i ), tmp_c_bins + ( DEFAULT_NBINS * ( i + 1 ) ), particle_property.m_transfunc_array[i].m_color_histogram );
-        std::copy( tmp_o_bins + ( DEFAULT_NBINS * i ), tmp_o_bins + ( DEFAULT_NBINS * ( i + 1 ) ), particle_property.m_transfunc_array[i].m_opacity_histogram );
-
-        // minmax
-        std::stringstream ss; 
-        ss << (i + 1); 
-        const std::string idxbuf = ss.str();
-        particle_property.m_transfunc_array[i].m_server_color_variable_min   = vr.min( "t" + idxbuf + "_var_c" );
-        particle_property.m_transfunc_array[i].m_server_color_variable_max   = vr.max( "t" + idxbuf + "_var_c" );
-        particle_property.m_transfunc_array[i].m_server_opacity_variable_min = vr.min( "t" + idxbuf + "_var_o" );
-        particle_property.m_transfunc_array[i].m_server_opacity_variable_max = vr.max( "t" + idxbuf + "_var_o" );
+        std::cerr << "[InitialStepIS][ParticleHistory][WARN]"
+                  << " timestep=" << history_time_step
+                  << " path=" << history_result.file_path
+                  << " reason=" << history_result.error_message
+                  << std::endl;
     }
-
-    delete[] tmp_c_bins;
-    delete[] tmp_o_bins;
 }

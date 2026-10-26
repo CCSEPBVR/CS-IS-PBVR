@@ -37,16 +37,16 @@ private:
 public:
 
     ParticleBufferAccumulator(
-        const size_t width,
-        const size_t height,
-        const size_t subpixel_level );
+        const std::size_t width,
+        const std::size_t height,
+        const std::size_t subpixel_level );
     virtual ~ParticleBufferAccumulator();
 
-    bool create( const size_t width, const size_t height, const size_t subpixel_level );
+    bool create( const std::size_t width, const std::size_t height, const std::size_t subpixel_level );
     void clean();
     void clear();
-    void accumulate( const size_t id, const kvs::ParticleBuffer* buffer );
-    void add( const size_t bindex, const size_t id, const kvs::Real32 depth, const kvs::UInt32 vindex );
+    void accumulate( const std::size_t id, const kvs::ParticleBuffer* buffer );
+    void add( const std::size_t bindex, const std::size_t id, const kvs::Real32 depth, const kvs::UInt32 vindex );
     void createImage(
         ObjectList& object_list,
         RendererList& renderer_list,

@@ -54,7 +54,7 @@ public:
     const kvs::gis::Area& area() const;
     const kvs::gis::Area& renderArea() const;
     const std::vector<kvs::gis::Mesh*>& meshes() const;
-    const kvs::gis::Mesh* mesh( const size_t index ) const;
+    const kvs::gis::Mesh* mesh( const std::size_t index ) const;
     kvs::RGBColor oceanColor() const;
 
     void setRenderArea( const kvs::gis::Area& render_area );

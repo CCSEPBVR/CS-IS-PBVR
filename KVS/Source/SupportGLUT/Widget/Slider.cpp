@@ -19,11 +19,11 @@ namespace { namespace Default
 const float         Value = 0.5f;
 const float         MinValue = 0.0f;
 const float         MaxValue = 1.0f;
-const size_t        SliderMargin = 10;
-const size_t        SliderWidth = 150;
-const size_t        SliderHeight = 30;
-const size_t        CursorWidth = 10;
-const size_t        CursorHeight = 15;
+const std::size_t        SliderMargin = 10;
+const std::size_t        SliderWidth = 150;
+const std::size_t        SliderHeight = 30;
+const std::size_t        CursorWidth = 10;
+const std::size_t        CursorHeight = 15;
 const kvs::RGBColor SliderColor = kvs::RGBColor( 200, 200, 200 );
 const kvs::RGBColor SliderEdgeColor = kvs::RGBColor( 230, 230, 230 );
 } }
@@ -263,7 +263,7 @@ float Slider::get_value( const int x )
 /*===========================================================================*/
 int Slider::adjustedWidth()
 {
-    const size_t width = m_caption.size() * BaseClass::characterWidth() + BaseClass::margin() * 2;
+    const std::size_t width = m_caption.size() * BaseClass::characterWidth() + BaseClass::margin() * 2;
     return kvs::Math::Max( width, ::Default::SliderWidth );
 }
 

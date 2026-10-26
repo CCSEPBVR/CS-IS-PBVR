@@ -35,24 +35,24 @@ protected:
     const kvs::PointObject* m_ref_point; ///< pointer to the point data
 
     bool m_enable_rendering; ///< rendering flag
-    size_t m_subpixel_level; ///< number of divisions in a pixel
+    std::size_t m_subpixel_level; ///< number of divisions in a pixel
     kvs::ParticleBuffer* m_buffer; ///< particle buffer
 
 public:
     ParticleBasedRenderer();
-    ParticleBasedRenderer( const kvs::PointObject* point, const size_t subpixel_level = 1 );
+    ParticleBasedRenderer( const kvs::PointObject* point, const std::size_t subpixel_level = 1 );
     virtual ~ParticleBasedRenderer();
 
     void exec( kvs::ObjectBase* object, kvs::Camera* camera, kvs::Light* light );
     void attachPointObject( const kvs::PointObject* point ) { m_ref_point = point; }
-    void setSubpixelLevel( const size_t subpixel_level ) { m_subpixel_level = subpixel_level; }
+    void setSubpixelLevel( const std::size_t subpixel_level ) { m_subpixel_level = subpixel_level; }
     const kvs::ParticleBuffer* particleBuffer() const { return m_buffer; }
-    size_t subpixelLevel() const { return m_subpixel_level; }
+    std::size_t subpixelLevel() const { return m_subpixel_level; }
     void enableRendering() { m_enable_rendering = true; }
     void disableRendering() { m_enable_rendering = false; }
 
 protected:
-    bool createParticleBuffer( const size_t width, const size_t height, const size_t subpixel_level );
+    bool createParticleBuffer( const std::size_t width, const std::size_t height, const std::size_t subpixel_level );
     void cleanParticleBuffer();
     void deleteParticleBuffer();
 

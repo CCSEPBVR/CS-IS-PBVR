@@ -2,16 +2,40 @@
 #include "kvs_wrapper.h"
 
 #include <cstdio>
+#include <cfloat>
+#include <cstring>
 #include <fstream>
+#include <iomanip>
+#include <sstream>
+#include <stdexcept>
+#include <algorithm>
 #include <vector>
 #include <memory>
+#include <cmath>
+#include <cstdlib>
+#include <climits>
 
 #include <vismodule/ValueArray>
 #include <vismodule/PointObject>
+#include <vismodule/KVSMLObjectPoint>
+#include <vismodule/PointExporter>
+#include <vismodule/RGBColor>
+#include <vismodule/MersenneTwister>
+#include <cstdint>
+#include <vismodule/CellBase>
+#include <vismodule/TetrahedralCell>
+#include <vismodule/HexahedralCell>
+#include <vismodule/QuadraticTetrahedralCell>
+#include <vismodule/QuadraticHexahedralCell>
+#include <vismodule/PrismaticCell>
+#include <vismodule/PyramidalCell>
 #include <vismodule/CellByCellParticleGenerator>
 #include <vismodule/TransferFunctionSynthesizer>
 #include <vismodule/StructuredVolumeObject>
 #include <vismodule/UnstructuredVolumeObject>
+#ifdef ENABLE_ENSEMBLE_TIMER
+#include <vismodule/Timer>
+#endif
 
 #ifndef CPU_VER
 #include <mpi.h>
@@ -20,6 +44,7 @@
 #include <vismodule/ParticleProperty>
 
 #include <vismodule/ParameterFileReader>
+#include <vismodule/ParameterFileWriter>
 
 // Generate
 #include <vismodule/GenerateParticle>
@@ -40,10 +65,19 @@
 #include <kvs/extendedfileformat/VtkImporter>
 #endif
 
+#include "../shared/ChainRuleNormal.h"
+#include "../shared/EnsembleCellHistogram.h"
+#include "../shared/EnsembleParticleGenerator.h"
+#include "EnsembleStatisticOutput.h"
+
+// タイマー機構(pbvr::EnsembleTimer*)等を無修飾で使うため(指示書 §3.4-a で pbvr へ移設)
+using namespace pbvr;
+using namespace vismodule;
+
 namespace Generator = vismodule::CellByCellParticleGenerator;
 
 static bool is_initial_step = true;
-static size_t start_time_step = 0;
+static std::size_t start_time_step = 0;
 
 static void CollectParticleMinMax(
     ParticleProperty& particle_property,
@@ -131,6 +165,7 @@ static void GenerateParticleObject(
     delete point_object;
 }
 
+
 void OutputCoordMinMaxFile(
     const domain_parameters_unstruct& dom,
     const std::string& coordMinMaxFilePath
@@ -162,7 +197,7 @@ void OutputCoordMinMaxFile(
 }
 
 // 変数配列用のソルバー関数
-void generate_particles(
+bool generate_particles(
     int time_step,
     domain_parameters_unstruct dom,
     Type** values,
@@ -183,7 +218,6 @@ void generate_particles(
     mpi_rank = 0;
     mpi_size = 1;
 #endif
-
     if ( is_initial_step == true )
     {
         is_initial_step = false;
@@ -197,9 +231,9 @@ void generate_particles(
     std::string glyphFilePrefix;
     std::string plotOverLineFilePrefix;
     std::string plotOverTimeFilePrefix;
-    std::string tfFilePath;
-    std::string tfFilePath_old;
-    std::string tfFilePath_step;
+    std::string tfJsonPath;
+    std::string tfJsonPath_old;
+    std::string tfJsonPath_step;
     std::string glyphParameterPath;
     std::string glyphParameterPath_old;
     std::string plotOverLineParameterPath;
@@ -216,9 +250,9 @@ void generate_particles(
         glyphFilePrefix,
         plotOverLineFilePrefix,
         plotOverTimeFilePrefix,
-        tfFilePath,
-        tfFilePath_old,
-        tfFilePath_step,
+        tfJsonPath,
+        tfJsonPath_old,
+        tfJsonPath_step,
         glyphParameterPath,
         glyphParameterPath_old,
         plotOverLineParameterPath,
@@ -235,22 +269,19 @@ void generate_particles(
     PlotOverLineProperty pol_property;
     PlotOverTimeProperty pot_property;
     MultiVolumePropertyList mvpl;
-    static NameListFile glyphNameListFile;
-    static NameListFile POLNameListFile;
-    static NameListFile POTNameListFile;
     particle_property.m_transfunc_synthesizer = new TransferFunctionSynthesizer();
     particle_property.m_camera                = new vismodule::Camera();
 
     bool object_generation_enabled = false;
     SetParticleParameter(
-        dom, tfFilePath, tfFilePath_old, particle_property, mvpl,
+        dom, tfJsonPath, tfJsonPath_old, particle_property, mvpl,
         nvariables, object_generation_enabled
     );
     if ( object_generation_enabled )
     {
-        SetGlyphParameter( glyphParameterPath, glyphParameterPath_old, glyph_property, glyphNameListFile );
-        SetPlotOverLineParameter( plotOverLineParameterPath, plotOverLineParameterPath_old, pol_property, POLNameListFile );
-        SetPlotOverTimeParameter( plotOverTimeParameterPath, plotOverTimeParameterPath_old, pot_property, POTNameListFile );
+        SetGlyphParameter( glyphParameterPath, glyphParameterPath_old, glyph_property );
+        SetPlotOverLineParameter( plotOverLineParameterPath, plotOverLineParameterPath_old, pol_property );
+        SetPlotOverTimeParameter( plotOverTimeParameterPath, plotOverTimeParameterPath_old, pot_property );
     }
 
     const int tf_number  = particle_property.m_transfunc_array.size();
@@ -270,7 +301,7 @@ void generate_particles(
     tmp_max = new float[tf_number * 2]; // color, opacity
     tmp_min = new float[tf_number * 2]; // color, opacity
 
-    for ( size_t i = 0; i < (DEFAULT_NBINS * tf_number); i++ )
+    for ( std::size_t i = 0; i < (DEFAULT_NBINS * tf_number); i++ )
     {
         tmp_c_bins[i] = 0;
         tmp_o_bins[i] = 0;
@@ -303,6 +334,37 @@ void generate_particles(
         particle_property, dom, values, nvariables, coordinates,
         ncoords, connections, ncells, celltype, tf_number, tmp_max, tmp_min
     );
+
+#ifndef CPU_VER
+    if ( mpi_size > 1 )
+    {
+        MPI_Allreduce( MPI_IN_PLACE, tmp_max, ( tf_number * 2 ), MPI_FLOAT, MPI_MAX, MPI_COMM_WORLD );
+        MPI_Allreduce( MPI_IN_PLACE, tmp_min, ( tf_number * 2 ), MPI_FLOAT, MPI_MIN, MPI_COMM_WORLD );
+    }
+#endif
+
+    for( std::size_t i = 0; i < tf_number; i++ )
+    {
+        const float color_variable_min   = tmp_min[2 * i + 1];
+        const float color_variable_max   = tmp_max[2 * i + 1];
+        const float opacity_variable_min = tmp_min[2 * i    ];
+        const float opacity_variable_max = tmp_max[2 * i    ];
+
+        particle_property.m_transfunc_array[i].m_server_color_variable_min   = color_variable_min;
+        particle_property.m_transfunc_array[i].m_server_color_variable_max   = color_variable_max;
+        particle_property.m_transfunc_array[i].m_server_opacity_variable_min = opacity_variable_min;
+        particle_property.m_transfunc_array[i].m_server_opacity_variable_max = opacity_variable_max;
+
+        if( particle_property.m_transfunc_array[i].m_server_color_range_mode == NamedTransferFunction::ServerRangeMode::ServerSide )
+        {
+            particle_property.m_transfunc_array[i].setColorRange( color_variable_min, color_variable_max );
+        }
+
+        if( particle_property.m_transfunc_array[i].m_server_opacity_range_mode == NamedTransferFunction::ServerRangeMode::ServerSide )
+        {
+            particle_property.m_transfunc_array[i].setOpacityRange( opacity_variable_min, opacity_variable_max );
+        }
+    }
 
     CollectParticleHistogram(
         particle_property, dom, values, nvariables, coordinates,
@@ -342,7 +404,7 @@ void generate_particles(
                 ncoords, connections, ncells, celltype, pol_object
             );
 
-            for( size_t i = 0; i < resolution; i++ )
+            for( std::size_t i = 0; i < resolution; i++ )
             {
                 x_axis[i] = pol_object->x_axis()[i];
                 if ( pol_object->mask()[i] )
@@ -378,7 +440,7 @@ void generate_particles(
 
     OutputParticleHistory(
         particle_property, tf_number, nvariables, historyFilePath,
-        object_generation_enabled, tmp_c_bins, tmp_o_bins, tmp_max, tmp_min
+        tmp_c_bins, tmp_o_bins, tmp_max, tmp_min
     );
 
     if ( object_generation_enabled && glyph_property.m_glyph_flag )
@@ -401,17 +463,14 @@ void generate_particles(
         OutputPOT( time_step, plotOverTimeFilePrefix, pot_mask, value_on_time );
     }
 
-    // OutputParticleで書き込んだdefault_old.tfファイルを読み込みdefault_xxx.tfに書き込む
+    // OutputParticlesで更新したdefault_old.jsonをtimestep別JSONに保存する
     if ( object_generation_enabled && mpi_rank == 0 )
     {
-        ParameterFileReader ppr;
-        NameListFile nameListFile;
-        ppr.readParticleParameterFile( tfFilePath_old.c_str() );
-        nameListFile = ppr.getNameListFile();
-        nameListFile.setFileName( tfFilePath_step );
-        nameListFile.write();
+        std::ifstream src( tfJsonPath_old.c_str(), std::ios::binary );
+        std::ofstream dst( tfJsonPath_step.c_str(), std::ios::binary );
+        dst << src.rdbuf();
     }
-   
+
     // 粒子ファイル書き込みスレッドが終了するまで待機
     // async_io_enabled, pwtはkvs_wrapper_common.cppに宣言
     if ( async_io_enabled )
@@ -453,18 +512,301 @@ void generate_particles(
     delete particle_property.m_transfunc_synthesizer;
     delete particle_property.m_camera;
 
+    return true;
+}
+
+
+bool ensemble_generate_particles(
+    int time_step,
+    const int num_ensemble,
+    domain_parameters_unstruct dom,
+    Type** values,
+    int nvariables,
+    float* coordinates,
+    int ncoords,
+    unsigned int* connections,
+    int ncells,
+    const vismodule::VolumeObjectBase::CellType& celltype
+)
+{
+#if _OPENMP
+    int max_threads = omp_get_max_threads();
+#else
+    int max_threads = 1;
+#endif
+
+
+    int mpi_rank;
+    int mpi_size;
+#ifndef CPU_VER
+    MPI_Comm_rank( MPI_COMM_WORLD, &mpi_rank );
+    MPI_Comm_size( MPI_COMM_WORLD, &mpi_size );
+#else
+    mpi_rank = 0;
+    mpi_size = 1;
+#endif
+#ifdef ENABLE_ENSEMBLE_TIMER
+    EnsembleTimerCollector ensemble_timer( time_step, max_threads );
+    vismodule::Timer ensemble_total_timer;
+    ensemble_total_timer.start();
+#endif
+
+    if ( is_initial_step == true )
+    {
+        is_initial_step = false;
+        start_time_step = time_step;
+    }
+
+    std::string historyFilePath;
+    std::string stateFilePath;
+    std::string coordMinMaxFilePath;
+    std::string particleFilePrefix;
+    std::string glyphFilePrefix;
+    std::string plotOverLineFilePrefix;
+    std::string plotOverTimeFilePrefix;
+    std::string tfJsonPath;
+    std::string tfJsonPath_old;
+    std::string tfJsonPath_step;
+    std::string glyphParameterPath;
+    std::string glyphParameterPath_old;
+    std::string plotOverLineParameterPath;
+    std::string plotOverLineParameterPath_old;
+    std::string plotOverTimeParameterPath;
+    std::string plotOverTimeParameterPath_old;
+
+    {
+#ifdef ENABLE_ENSEMBLE_TIMER
+        EnsembleTimerScope timer_scope( &ensemble_timer, EnsembleTimerSetParameterPath );
+#endif
+        SetParameterFilePath(
+            time_step,
+            historyFilePath,
+            stateFilePath,
+            coordMinMaxFilePath,
+            particleFilePrefix,
+            glyphFilePrefix,
+            plotOverLineFilePrefix,
+            plotOverTimeFilePrefix,
+            tfJsonPath,
+            tfJsonPath_old,
+            tfJsonPath_step,
+            glyphParameterPath,
+            glyphParameterPath_old,
+            plotOverLineParameterPath,
+            plotOverLineParameterPath_old,
+            plotOverTimeParameterPath,
+            plotOverTimeParameterPath_old
+        );
+    }
+
+    ParticleProperty particle_property;
+    MultiVolumePropertyList mvpl;
+    particle_property.m_transfunc_synthesizer = new TransferFunctionSynthesizer();
+    particle_property.m_camera = new vismodule::Camera();
+
+    bool object_generation_enabled = false;
+    {
+#ifdef ENABLE_ENSEMBLE_TIMER
+        EnsembleTimerScope timer_scope( &ensemble_timer, EnsembleTimerReadParameterFile );
+#endif
+        SetParticleParameter(
+            dom, tfJsonPath, tfJsonPath_old, particle_property, mvpl,
+            nvariables, object_generation_enabled
+        );
+    }
+    int tf_number = particle_property.m_transfunc_array.size();
+
+    const bool gen_flag = object_generation_enabled;
+    if ( !gen_flag )
+    {
+//        particle_property.m_repeat_level = 1.f; // スタブデータ
+        tf_number = nvariables;
+        EnsembleStatisticRange average_range;
+        EnsembleStatisticRange variance_range;
+        EnsembleStatisticRange co_variation_range;
+        vismodule::EnsembleCellHistogramLog histogram_log;
+
+        bool ok = false;
+        {
+#ifdef ENABLE_ENSEMBLE_TIMER
+            EnsembleTimerScope timer_scope( &ensemble_timer, EnsembleTimerStatHistogram );
+#endif
+            ok = vismodule::ComputeAndStoreEnsembleCellHistogram(
+                    values,
+                    nvariables,
+                    coordinates,
+                    ncoords,
+                    connections,
+                    ncells,
+                    celltype,
+                    MPI_COMM_WORLD, // ensemble_comm があればそれを渡す
+                    DEFAULT_NBINS,
+                    particle_property,
+                    average_range,
+                    variance_range,
+                    co_variation_range,
+                    &histogram_log );
+        }
+
+        if ( ok )
+        {
+            {
+#ifdef ENABLE_ENSEMBLE_TIMER
+                EnsembleTimerScope timer_scope( &ensemble_timer, EnsembleTimerOutputHistory );
+#endif
+                OutputEnsembleStatisticHistory(
+                        particle_property,
+                        tf_number,
+                        nvariables,
+                        historyFilePath,
+                        average_range,
+                        variance_range,
+                        co_variation_range,
+                        MPI_COMM_WORLD );  // 空間領域方向のcomm を指定
+            }
+        }
+
+    }
+    else
+    {
+    EnsembleParticleArrays average, variance, coefficient;
+    EnsembleStatisticRange average_range, variance_range, co_variation_range;
+//    particle_property.m_log_scale_statistics = true; // スタブデータ(検証用。default.json連携時に有効化 or 削除)
+    bool ok = vismodule::GenerateEnsembleParticles(
+        num_ensemble, particle_property, values, nvariables,
+        coordinates, ncoords, connections, ncells, celltype,
+        average, variance, coefficient,
+        average_range, variance_range, co_variation_range
+#ifdef ENABLE_ENSEMBLE_TIMER
+        , &ensemble_timer
+#endif
+    );
+    if ( !ok )
+    {
+        delete particle_property.m_transfunc_synthesizer;
+        delete particle_property.m_camera;
+        return false;
+    }
+#ifndef CPU_VER
+    const std::string averageFilePrefix = EnsembleParticleFilePrefix( particleFilePrefix, "ave_" );
+    const std::string varianceFilePrefix = EnsembleParticleFilePrefix( particleFilePrefix, "var_" );
+    const std::string coefficientFilePrefix = EnsembleParticleFilePrefix( particleFilePrefix, "cov_" );
+    {
+#ifdef ENABLE_ENSEMBLE_TIMER
+        EnsembleTimerScope timer_scope( &ensemble_timer, EnsembleTimerOutputCoordMinmax );
+#endif
+        OutputCoordMinMaxFile( dom, coordMinMaxFilePath );
+    }
+
+    {
+#ifdef ENABLE_ENSEMBLE_TIMER
+        EnsembleTimerScope timer_scope( &ensemble_timer, EnsembleTimerOutputParticlesAve );
+#endif
+        OutputEnsembleStatisticParticles(
+            particle_property, mvpl, time_step, averageFilePrefix,
+            average.coords, average.colors, average.normals
+        );
+    }
+
+    {
+#ifdef ENABLE_ENSEMBLE_TIMER
+        EnsembleTimerScope timer_scope( &ensemble_timer, EnsembleTimerOutputParticlesVar );
+#endif
+        OutputEnsembleStatisticParticles(
+            particle_property, mvpl, time_step, varianceFilePrefix,
+            variance.coords, variance.colors, variance.normals
+        );
+    }
+
+    {
+#ifdef ENABLE_ENSEMBLE_TIMER
+        EnsembleTimerScope timer_scope( &ensemble_timer, EnsembleTimerOutputParticlesCov );
+#endif
+        OutputEnsembleStatisticParticles(
+            particle_property, mvpl, time_step, coefficientFilePrefix,
+            coefficient.coords, coefficient.colors, coefficient.normals
+        );
+    }
+    {
+#ifdef ENABLE_ENSEMBLE_TIMER
+        EnsembleTimerScope timer_scope( &ensemble_timer, EnsembleTimerOutputHistory );
+#endif
+        OutputEnsembleStatisticHistory(
+            particle_property, tf_number, nvariables, historyFilePath,
+            average_range, variance_range, co_variation_range
+        );
+    }
+    if ( mpi_rank == 0 )
+    {
+#ifdef ENABLE_ENSEMBLE_TIMER
+        EnsembleTimerScope timer_scope( &ensemble_timer, EnsembleTimerWriteTfFile );
+#endif
+        std::ifstream src( tfJsonPath_old.c_str(), std::ios::binary );
+        std::ofstream dst( tfJsonPath_step.c_str(), std::ios::binary );
+        dst << src.rdbuf();
+    }
+#endif
+    } // end initial flag
+#ifndef CPU_VER
+    if ( async_io_enabled )
+    {
+#ifdef ENABLE_ENSEMBLE_TIMER
+        EnsembleTimerScope timer_scope( &ensemble_timer, EnsembleTimerAsyncIoWait );
+#endif
+        std::cout << "Particle write thread is active." << std::endl;
+        std::cout << "Waiting for particle write thread to finish." << std::endl;
+        pbvr::ParticleWriteThread* particle_write_thread = &pwt;
+        particle_write_thread->join( true );
+        std::cout << "Particle write thread is finished." << std::endl;
+    }
+    else
+    {
+        std::cout << "Particle write thread is not active." << std::endl;
+    }
+
+    std::cout << "Waiting for all processes to finish." << std::endl;
+    {
+#ifdef ENABLE_ENSEMBLE_TIMER
+        EnsembleTimerScope timer_scope( &ensemble_timer, EnsembleTimerFinalBarrierState );
+#endif
+#ifndef CPU_VER
+    MPI_Barrier( MPI_COMM_WORLD );
+#endif
+    std::cout << "All processes have finished." << std::endl;
+
+    if ( mpi_rank == 0 )
+    {
+        std::ofstream ofs( stateFilePath.c_str(), std::ios::out );
+        if ( !ofs.is_open() ) std::cout << "Cannot open state.txt" << std::endl;
+
+        ofs << "START_STEP  = " << start_time_step << std::endl;
+        ofs << "LATEST_STEP = " << time_step << std::endl;
+        ofs.close();
+    }
+    }
+#endif
+
+#ifdef ENABLE_ENSEMBLE_TIMER
+    ensemble_total_timer.stop();
+    ensemble_timer.add( EnsembleTimerTotal, ensemble_total_timer.sec() );
+    ensemble_timer.printCsv( mpi_rank, mpi_size );
+#endif
+        delete particle_property.m_transfunc_synthesizer;
+        delete particle_property.m_camera;
+    return true;
 }
 
 bool SetParticleParameter( 
     const domain_parameters_unstruct& dom,
-    const std::string& tfFilePath,
-    const std::string& tfFilePath_old,
+    const std::string& tfJsonPath,
+    const std::string& tfJsonPath_old,
     ParticleProperty& particle_property,
     MultiVolumePropertyList& mvpl,
     const int nvariables,
     bool& object_generation_enabled
 )
 {
+    bool result = true;
     int mpi_rank;
 #ifndef CPU_VER
     MPI_Comm_rank( MPI_COMM_WORLD, &mpi_rank );
@@ -473,51 +815,84 @@ bool SetParticleParameter(
 #endif
 
     ParameterFileReader ppr;
-    NameListFile nameListFile;
 
     int size = 0;
-    char* buf = NULL;
+    char* buf = nullptr;
     int object_generation_enabled_int = 0;
+    static bool hasCachedParticleProperty = false;
+    static std::vector<char> cachedParticlePropertyBuffer;
 
     if ( mpi_rank == 0 )
     {
-        std::ifstream tfFile( tfFilePath );
-        std::ifstream tfFileOld( tfFilePath_old );
+        std::ifstream tfJson( tfJsonPath );
+        std::ifstream tfJsonOld( tfJsonPath_old );
 
-        if ( tfFile.good() )
+        bool loaded = false;
+        if ( tfJson.good() )
         {
-            ppr.readParticleParameterFile( tfFilePath.c_str() );
-            nameListFile = ppr.getNameListFile();
-            std::rename( tfFilePath.c_str(), tfFilePath_old.c_str() );
+            loaded = ppr.readTransferFunctionFromJson( tfJsonPath.c_str(), particle_property );
+            if ( loaded )
+            {
+                std::rename( tfJsonPath.c_str(), tfJsonPath_old.c_str() );
+            }
+        }
+        if ( !loaded && !tfJson.good() && hasCachedParticleProperty )
+        {
+            size = static_cast<int>( cachedParticlePropertyBuffer.size() );
+            if ( size > 0 )
+            {
+                buf = new char[size];
+                for ( int i = 0; i < size; ++i )
+                {
+                    buf[i] = cachedParticlePropertyBuffer[i];
+                }
+                particle_property.unpack( buf );
+                delete[] buf;
+                buf = nullptr;
+            }
+            loaded = size > 0;
+        }
+        if ( !loaded && tfJsonOld.good() )
+        {
+            loaded = ppr.readTransferFunctionFromJson( tfJsonPath_old.c_str(), particle_property );
+        }
+
+        if ( loaded )
+        {
             object_generation_enabled_int = 1;
         }
-        else if ( tfFileOld.good() )
-        {
-            ppr.readParticleParameterFile( tfFilePath_old.c_str() );
-            nameListFile = ppr.getNameListFile();
-            object_generation_enabled_int = 1;
-        }
-        else
+        else if ( size == 0 )
         {
             std::cout << "================================================================" << std::endl;
-            std::cout << "[WARN] " << FileNameOnly( tfFilePath ) << " and "
-                      << FileNameOnly( tfFilePath_old ) << " do not exist." << std::endl;
+            std::cout << "[WARN] Failed to load transfer function json." << std::endl;
+            std::cout << "[WARN] Files: " << FileNameOnly( tfJsonPath ) << " and "
+                      << FileNameOnly( tfJsonPath_old ) << std::endl;
             std::cout << "[INFO] VIS_PARAM_DIR = " << EnvValueOrUnset( "VIS_PARAM_DIR" ) << std::endl;
             std::cout << "[INFO] PARTICLE_DIR  = " << EnvValueOrUnset( "PARTICLE_DIR" ) << std::endl;
             std::cout << "[INFO] Set default particle parameters and skip object generation." << std::endl;
             std::cout << "================================================================" << std::endl;
+
+            SetDefaultParticleParameter( particle_property, mvpl, nvariables );
+            object_generation_enabled_int = 0;
+        }
+        else
+        {
+            result = false;
         }
 
-        if ( object_generation_enabled_int )
-        {
-            size = nameListFile.byteSize();
+        size = particle_property.byteSize();
 
-            if ( size > 0 )
+        if ( size > 0 )
+        {
+            buf = new char[size];
+            particle_property.pack( buf );
+            if ( object_generation_enabled_int != 0 )
             {
-                buf = new char[size];
-                nameListFile.pack( buf );
+                cachedParticlePropertyBuffer.assign( buf, buf + size );
+                hasCachedParticleProperty = true;
             }
         }
+
     }
 
 #ifndef CPU_VER
@@ -532,18 +907,18 @@ bool SetParticleParameter(
 #ifndef CPU_VER
         MPI_Bcast( buf, size, MPI_CHARACTER, 0, MPI_COMM_WORLD );
 #endif
-        if( mpi_rank > 0 ) nameListFile.unpack( buf );
+        if( mpi_rank > 0 ) particle_property.unpack( buf );
+        if ( mpi_rank > 0 && object_generation_enabled )
+        {
+            cachedParticlePropertyBuffer.assign( buf, buf + size );
+            hasCachedParticleProperty = true;
+        }
+        particle_property.UpdateTransferFunctionSynthesizer();
         delete[] buf;
-    }
-
-    if ( object_generation_enabled )
-    {
-        if ( mpi_rank > 0 ) ppr.setNameListFile( nameListFile );
-        ppr.setParticleParameter( particle_property );
     }
     else
     {
-        SetDefaultParticleParameter( particle_property, mvpl, nvariables );
+        return false;
     }
 
     vismodule::Vector3f min_object_coords(
@@ -580,7 +955,8 @@ bool SetParticleParameter(
                               * ( dom.y_global_max - dom.y_global_min )
                               * ( dom.z_global_max - dom.z_global_min );
 
-    const float max_opacity           = 0.98;
+    //const float max_opacity           = 0.98;
+    const float max_opacity           = 0.9;  //アンサンブル用調整
     const int particle_limit          = particle_property.m_particle_limit;
     const float extra_opacity_factor  = particle_property.m_extra_opacity_factor;
     particle_property.m_sampling_step = ( max - min ) / 1E1 / extra_opacity_factor;
@@ -611,7 +987,7 @@ bool SetParticleParameter(
     particle_property.m_transfunc_synthesizer->setSamplingVolumeInverse( sampling_volume_inverse );
 
 
-    if( mpi_rank == 0 )
+    if( mpi_rank == 1 )
     {
         fprintf( stdout , "---------initialize Parameters--------------------------------------------\n" );
         fprintf( stdout , "particle_limit       = %20d\n"   , particle_limit                             );
@@ -629,12 +1005,12 @@ bool SetParticleParameter(
         fprintf( stdout , "--------------------------------------------------------------------------\n" );
     }
 
-    return true;
+    return result;
 }
 
 #ifdef EXTEND_FILE_FORMAT
 // vtk用のソルバー関数
-void generate_particles_vtk( int time_step, vtkUnstructuredGrid* ucd )
+bool generate_particles_vtk( int time_step, vtkUnstructuredGrid* ucd )
 {
     int mpi_rank;
     int mpi_size;
@@ -662,9 +1038,9 @@ void generate_particles_vtk( int time_step, vtkUnstructuredGrid* ucd )
     std::string glyphFilePrefix;
     std::string plotOverLineFilePrefix;
     std::string plotOverTimeFilePrefix;
-    std::string tfFilePath;
-    std::string tfFilePath_old;
-    std::string tfFilePath_step;
+    std::string tfJsonPath;
+    std::string tfJsonPath_old;
+    std::string tfJsonPath_step;
     std::string glyphParameterPath;
     std::string glyphParameterPath_old;
     std::string plotOverLineParameterPath;
@@ -681,9 +1057,9 @@ void generate_particles_vtk( int time_step, vtkUnstructuredGrid* ucd )
         glyphFilePrefix,
         plotOverLineFilePrefix,
         plotOverTimeFilePrefix,
-        tfFilePath,
-        tfFilePath_old,
-        tfFilePath_step,
+        tfJsonPath,
+        tfJsonPath_old,
+        tfJsonPath_step,
         glyphParameterPath,
         glyphParameterPath_old,
         plotOverLineParameterPath,
@@ -700,81 +1076,20 @@ void generate_particles_vtk( int time_step, vtkUnstructuredGrid* ucd )
     PlotOverLineProperty pol_property;
     PlotOverTimeProperty pot_property;
     MultiVolumePropertyList mvpl;
-    static NameListFile glyphNameListFile;
-    static NameListFile POLNameListFile;
-    static NameListFile POTNameListFile;
     particle_property.m_transfunc_synthesizer = new TransferFunctionSynthesizer();
     particle_property.m_camera                = new vismodule::Camera();
 
-    // 先にセルタイプを持っておく
-    kvs::ExtendedFileFormat::VtkXmlUnstructuredGrid input_vtu( ucd );
-    std::vector<kvs::UnstructuredVolumeObject::CellType> kvs_cell_type_vector;
-
-    for( auto vtu : input_vtu.eachCellType() )
-    {
-        kvs::ExtendedFileFormat::VtkImporter<kvs::ExtendedFileFormat::VtkXmlUnstructuredGrid> importer( &vtu );
-        kvs::UnstructuredVolumeObject* volume = &importer;
-        kvs_cell_type_vector.push_back( volume->cellType() );
-    }
-
-    if ( kvs_cell_type_vector.empty() )
-    {
-        std::cerr << "ERROR: No supported cell types were found in the input VTK unstructured grid." << std::endl;
-        std::cout << "time_step = " << time_step << std::endl;
-        delete particle_property.m_transfunc_synthesizer;
-        delete particle_property.m_camera;
-        return;
-    }
-
-    auto convert_cell_type = [&](
-        const kvs::UnstructuredVolumeObject::CellType kvs_cell_type_value,
-        std::unique_ptr<std::unique_ptr<Type[]>[]>& values,
-        int& nvariables,
-        std::unique_ptr<float[]>& coordinates,
-        int& ncoords,
-        std::unique_ptr<unsigned int[]>& connections,
-        int& ncells,
-        vismodule::VolumeObjectBase::CellType& celltype
-    )
-    {
-        vismodule::UnstructuredVolumeImporter importer;
-        int kvs_cell_type = static_cast<int>(kvs_cell_type_value);
-        importer.import( input_vtu, kvs_cell_type );
-        vismodule::UnstructuredVolumeObject* volume = &importer;
-
-        domain_parameters_unstruct tmp_dom; // not use
-        nvariables = 0;
-
-        // CS common
-        store_volume_in_variables_array_unstruct(
-            volume, tmp_dom, values, nvariables, coordinates,
-            ncoords, connections, ncells, celltype
-        );
-    };
-
-    std::unique_ptr<std::unique_ptr<Type[]>[]> first_values;
-    int first_nvariables = 0;
-    std::unique_ptr<float[]> first_coordinates;
-    int first_ncoords = 0;
-    std::unique_ptr<unsigned int[]> first_connections;
-    int first_ncells = 0;
-    vismodule::VolumeObjectBase::CellType first_celltype;
-
-    convert_cell_type(
-        kvs_cell_type_vector[0], first_values, first_nvariables, first_coordinates,
-        first_ncoords, first_connections, first_ncells, first_celltype
-    );
-
     bool object_generation_enabled = false;
+    int nvariables = 0;
     SetParticleParameter(
-        dom, tfFilePath, tfFilePath_old, particle_property, mvpl,
-        first_nvariables, object_generation_enabled
+        dom, tfJsonPath, tfJsonPath_old, particle_property, mvpl,
+        nvariables, object_generation_enabled
     );
     if ( object_generation_enabled )
     {
-        SetGlyphParameter( glyphParameterPath, glyphParameterPath_old, glyph_property, glyphNameListFile );
-        SetPlotOverLineParameter( plotOverLineParameterPath, plotOverLineParameterPath_old, pol_property, POLNameListFile );
-        SetPlotOverTimeParameter( plotOverTimeParameterPath, plotOverTimeParameterPath_old, pot_property, POTNameListFile );
+        SetGlyphParameter( glyphParameterPath, glyphParameterPath_old, glyph_property );
+        SetPlotOverLineParameter( plotOverLineParameterPath, plotOverLineParameterPath_old, pol_property );
+        SetPlotOverTimeParameter( plotOverTimeParameterPath, plotOverTimeParameterPath_old, pot_property );
     }
 
     const int tf_number  = particle_property.m_transfunc_array.size();
@@ -794,7 +1109,7 @@ void generate_particles_vtk( int time_step, vtkUnstructuredGrid* ucd )
     tmp_max = new float[tf_number * 2]; // color, opacity
     tmp_min = new float[tf_number * 2]; // color, opacity
 
-    for ( size_t i = 0; i < (DEFAULT_NBINS * tf_number); i++ )
+    for ( std::size_t i = 0; i < (DEFAULT_NBINS * tf_number); i++ )
     {
         tmp_c_bins[i] = 0;
         tmp_o_bins[i] = 0;
@@ -821,6 +1136,62 @@ void generate_particles_vtk( int time_step, vtkUnstructuredGrid* ucd )
     std::vector<float> value_on_time;
     bool pot_mask = false;
 
+    // 先にセルタイプを持っておく
+    kvs::ExtendedFileFormat::VtkXmlUnstructuredGrid input_vtu( ucd );
+    std::vector<kvs::UnstructuredVolumeObject::CellType> kvs_cell_type_vector;
+
+    for( auto vtu : input_vtu.eachCellType() )
+    {
+        kvs::ExtendedFileFormat::VtkImporter<kvs::ExtendedFileFormat::VtkXmlUnstructuredGrid> importer( &vtu );
+        kvs::UnstructuredVolumeObject* volume = &importer;
+        kvs_cell_type_vector.push_back( volume->cellType() );
+    }
+
+    auto convert_cell_type = [&](
+        kvs::UnstructuredVolumeObject::CellType kvs_cell_type,
+        std::unique_ptr<std::unique_ptr<Type[]>[]>& values,
+        int& nvariables,
+        std::unique_ptr<float[]>& coordinates,
+        int& ncoords,
+        std::unique_ptr<unsigned int[]>& connections,
+        int& ncells,
+        vismodule::VolumeObjectBase::CellType& celltype
+    )
+    {
+        vismodule::UnstructuredVolumeImporter importer;
+        importer.import( input_vtu, static_cast<int>(kvs_cell_type) );
+        vismodule::UnstructuredVolumeObject* volume = &importer;
+        domain_parameters_unstruct tmp_dom; // not use
+        nvariables = 0;
+
+        store_volume_in_variables_array_unstruct(
+            volume, tmp_dom, values, nvariables, coordinates,
+            ncoords, connections, ncells, celltype
+        );
+    };
+
+    auto collect_cell_type_min_max = [&](
+        std::unique_ptr<std::unique_ptr<Type[]>[]>& values,
+        const int nvariables,
+        std::unique_ptr<float[]>& coordinates,
+        const int ncoords,
+        std::unique_ptr<unsigned int[]>& connections,
+        const int ncells,
+        const vismodule::VolumeObjectBase::CellType& celltype
+    )
+    {
+        std::vector<Type*> raw_pointers_vector( nvariables );
+        for ( std::size_t j = 0; j < nvariables; ++j )
+        {
+            raw_pointers_vector[j] = values.get()[j].get();
+        }
+
+        CollectParticleMinMax(
+            particle_property, dom, raw_pointers_vector.data(), nvariables, coordinates.get(),
+            ncoords, connections.get(), ncells, celltype, tf_number, tmp_max, tmp_min
+        );
+    };
+
     auto process_cell_type = [&](
         std::unique_ptr<std::unique_ptr<Type[]>[]>& values,
         const int nvariables,
@@ -835,17 +1206,12 @@ void generate_particles_vtk( int time_step, vtkUnstructuredGrid* ucd )
         if ( value_on_time.size() != nvariables ) value_on_time.resize( nvariables ); // Plot Over Time
 
         std::vector<Type*> raw_pointers_vector( nvariables );
-        for ( size_t j = 0; j < nvariables; ++j )
+        for ( std::size_t j = 0; j < nvariables; ++j )
         {
             raw_pointers_vector[j] = values.get()[j].get();
         }
 
         ServerMode server_mode = ServerMode::IS;
-
-        CollectParticleMinMax(
-            particle_property, dom, raw_pointers_vector.data(), nvariables, coordinates.get(),
-            ncoords, connections.get(), ncells, celltype, tf_number, tmp_max, tmp_min
-        );
 
         CollectParticleHistogram(
             particle_property, dom, raw_pointers_vector.data(), nvariables, coordinates.get(),
@@ -884,7 +1250,7 @@ void generate_particles_vtk( int time_step, vtkUnstructuredGrid* ucd )
                     ncoords, connections.get(), ncells, celltype, pol_object
                 );
 
-                for( size_t j = 0; j < resolution; j++ )
+                for( std::size_t j = 0; j < resolution; j++ )
                 {
                     x_axis[j] = pol_object->x_axis()[j];
                     if ( pol_object->mask()[j] )
@@ -914,15 +1280,59 @@ void generate_particles_vtk( int time_step, vtkUnstructuredGrid* ucd )
         }
     };
 
-    process_cell_type(
-        first_values, first_nvariables, first_coordinates, first_ncoords,
-        first_connections, first_ncells, first_celltype
-    );
-
-    for ( size_t i = 1; i < kvs_cell_type_vector.size(); i++ )
+    for ( std::size_t i = 0; i < kvs_cell_type_vector.size(); i++ )
     {
         std::unique_ptr<std::unique_ptr<Type[]>[]> values;
-        int nvariables = 0;
+        nvariables = 0;
+        std::unique_ptr<float[]> coordinates;
+        int ncoords = 0;
+        std::unique_ptr<unsigned int[]> connections;
+        int ncells = 0;
+        vismodule::VolumeObjectBase::CellType celltype;
+
+        convert_cell_type(
+            kvs_cell_type_vector[i], values, nvariables, coordinates,
+            ncoords, connections, ncells, celltype
+        );
+
+        collect_cell_type_min_max( values, nvariables, coordinates, ncoords, connections, ncells, celltype );
+    } // for ( std::size_t i = 0; i < kvs_cell_type_vector.size(); i++ )
+
+#ifndef CPU_VER
+    if ( mpi_size > 1 )
+    {
+        MPI_Allreduce( MPI_IN_PLACE, tmp_max, ( tf_number * 2 ), MPI_FLOAT, MPI_MAX, MPI_COMM_WORLD );
+        MPI_Allreduce( MPI_IN_PLACE, tmp_min, ( tf_number * 2 ), MPI_FLOAT, MPI_MIN, MPI_COMM_WORLD );
+    }
+#endif
+
+    for( std::size_t i = 0; i < tf_number; i++ )
+    {
+        const float color_variable_min   = tmp_min[2 * i + 1];
+        const float color_variable_max   = tmp_max[2 * i + 1];
+        const float opacity_variable_min = tmp_min[2 * i    ];
+        const float opacity_variable_max = tmp_max[2 * i    ];
+
+        particle_property.m_transfunc_array[i].m_server_color_variable_min   = color_variable_min;
+        particle_property.m_transfunc_array[i].m_server_color_variable_max   = color_variable_max;
+        particle_property.m_transfunc_array[i].m_server_opacity_variable_min = opacity_variable_min;
+        particle_property.m_transfunc_array[i].m_server_opacity_variable_max = opacity_variable_max;
+
+        if( particle_property.m_transfunc_array[i].m_server_color_range_mode == NamedTransferFunction::ServerRangeMode::ServerSide )
+        {
+            particle_property.m_transfunc_array[i].setColorRange( color_variable_min, color_variable_max );
+        }
+
+        if( particle_property.m_transfunc_array[i].m_server_opacity_range_mode == NamedTransferFunction::ServerRangeMode::ServerSide )
+        {
+            particle_property.m_transfunc_array[i].setOpacityRange( opacity_variable_min, opacity_variable_max );
+        }
+    }
+
+    for ( std::size_t i = 0; i < kvs_cell_type_vector.size(); i++ )
+    {
+        std::unique_ptr<std::unique_ptr<Type[]>[]> values;
+        nvariables = 0;
         std::unique_ptr<float[]> coordinates;
         int ncoords = 0;
         std::unique_ptr<unsigned int[]> connections;
@@ -948,8 +1358,8 @@ void generate_particles_vtk( int time_step, vtkUnstructuredGrid* ucd )
     }
 
     OutputParticleHistory(
-        particle_property, tf_number, first_nvariables, historyFilePath,
-        object_generation_enabled, tmp_c_bins, tmp_o_bins, tmp_max, tmp_min
+        particle_property, tf_number, nvariables, historyFilePath,
+        tmp_c_bins, tmp_o_bins, tmp_max, tmp_min
     );
 
     if ( object_generation_enabled && glyph_property.m_glyph_flag )
@@ -971,15 +1381,12 @@ void generate_particles_vtk( int time_step, vtkUnstructuredGrid* ucd )
         OutputPOT( time_step, plotOverTimeFilePrefix, pot_mask, value_on_time );
     }
 
-    // OutputParticleで書き込んだdefault_old.tfファイルを読み込みdefault_xxx.tfに書き込む
+    // OutputParticlesで更新したdefault_old.jsonをtimestep別JSONに保存する
     if ( object_generation_enabled && mpi_rank == 0 )
     {
-        ParameterFileReader ppr;
-        NameListFile nameListFile;
-        ppr.readParticleParameterFile( tfFilePath_old.c_str() );
-        nameListFile = ppr.getNameListFile();
-        nameListFile.setFileName( tfFilePath_step );
-        nameListFile.write();
+        std::ifstream src( tfJsonPath_old.c_str(), std::ios::binary );
+        std::ofstream dst( tfJsonPath_step.c_str(), std::ios::binary );
+        dst << src.rdbuf();
     }
 
     // 粒子ファイル書き込みスレッドが終了するまで待機
@@ -1023,6 +1430,7 @@ void generate_particles_vtk( int time_step, vtkUnstructuredGrid* ucd )
     delete particle_property.m_transfunc_synthesizer;
     delete particle_property.m_camera;
 
+    return true;
 }
 
 void SetDomain( vtkUnstructuredGrid* ucd, domain_parameters_unstruct* dom )

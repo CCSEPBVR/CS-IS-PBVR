@@ -78,7 +78,7 @@ private:
         const vismodule::UnstructuredVolumeObject& volume );
 
     template <typename T>
-    const size_t calculate_table_index(
+    const std::size_t calculate_table_index(
         const size_t* local_index ) const;
 
     template <typename T>
@@ -90,8 +90,8 @@ private:
     const vismodule::RGBColor calculate_color( void );
 
     template <typename T>
-    const size_t calculate_special_table_index(
-        const size_t* local_index, const size_t index ) const;
+    const std::size_t calculate_special_table_index(
+        const size_t* local_index, const std::size_t index ) const;
 };
 
 } // end of namespace vismodule

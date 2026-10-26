@@ -81,7 +81,7 @@ protected:
     IntegrationDirection m_integration_direction; ///< integration direction
     float m_integration_interval; ///< integration interval in the object coordinate
     float m_vector_length_threshold; ///< threshold of the vector length
-    size_t m_integration_times_threshold; ///< threshold of the integration times
+    std::size_t m_integration_times_threshold; ///< threshold of the integration times
     bool m_enable_boundary_condition; ///< flag for the boundray condition
     bool m_enable_vector_length_condition; ///< flag for the vector length condition
     bool m_enable_integration_times_condition; ///< flag for the integration times
@@ -96,7 +96,7 @@ public:
     void setIntegrationDirection( const IntegrationDirection direction ) { m_integration_direction = direction; }
     void setIntegrationInterval( const float interval ) { m_integration_interval = interval; }
     void setVectorLengthThreshold( const float length ) { m_vector_length_threshold = length; }
-    void setIntegrationTimesThreshold( const size_t times ) { m_integration_times_threshold = times; }
+    void setIntegrationTimesThreshold( const std::size_t times ) { m_integration_times_threshold = times; }
     void setEnableBoundaryCondition( const bool enabled ) { m_enable_boundary_condition = enabled; }
     void setEnableVectorLengthCondition( const bool enabled ) { m_enable_vector_length_condition = enabled; }
     void setEnableIntegrationTimesCondition( const bool enabled ) { m_enable_integration_times_condition = enabled; }
@@ -112,7 +112,7 @@ protected:
     void mapping( Integrator* integrator );
     kvs::RGBColor interpolatedColor( const kvs::Vec3& value );
     bool isTerminatedByVectorLength( const kvs::Vec3& vector );
-    bool isTerminatedByIntegrationTimes( const size_t times );
+    bool isTerminatedByIntegrationTimes( const std::size_t times );
 };
 
 } // end of namespace kvs

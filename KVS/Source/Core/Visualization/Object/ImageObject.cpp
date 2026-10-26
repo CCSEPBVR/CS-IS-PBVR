@@ -91,8 +91,8 @@ namespace kvs
  */
 /*==========================================================================*/
 ImageObject::ImageObject(
-    const size_t width,
-    const size_t height,
+    const std::size_t width,
+    const std::size_t height,
     const kvs::ValueArray<kvs::UInt8>& pixels,
     const ImageObject::PixelType type ):
     m_type( type ),
@@ -200,7 +200,7 @@ bool ImageObject::write( const std::string& filename, const bool ascii, const bo
 /*==========================================================================*/
 size_t ImageObject::numberOfChannels() const
 {
-    size_t ret = 0;
+    std::size_t ret = 0;
     switch ( m_type )
     {
     case ImageObject::Gray8:   ret = 1; break;

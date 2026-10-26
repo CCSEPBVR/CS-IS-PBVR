@@ -52,7 +52,7 @@ protected:
 
     vismodule::kvsml::KVSMLTag         m_kvsml_tag;    ///< KVSML tag information
     WritingDataType              m_writing_type; ///< writing data type
-    size_t                       m_resolution;   ///< resolution
+    std::size_t                       m_resolution;   ///< resolution
     float                        m_min_value;    ///< min. scalar value
     float                        m_max_value;    ///< max. scalar value
     OpacityPointList             m_opacity_point_list; ///< opacity point list
@@ -74,7 +74,7 @@ public:
 
 public:
 
-    const size_t resolution( void ) const;
+    const std::size_t resolution( void ) const;
 
     const float minValue( void ) const;
 
@@ -94,7 +94,7 @@ public:
 
     void addColorPoint( const float value, const vismodule::RGBColor color );
 
-    void setResolution( const size_t resolution );
+    void setResolution( const std::size_t resolution );
 
     void setRange( const float min_value, const float max_value );
 

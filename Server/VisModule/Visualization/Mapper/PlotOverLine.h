@@ -23,8 +23,8 @@ namespace POL
 class Polyhedron
 {
 public:
-    size_t nvertices;
-    size_t ncells;
+    std::size_t nvertices;
+    std::size_t ncells;
     vismodule::ValueArray<vismodule::Real32> coords;
     vismodule::ValueArray<vismodule::Real32> scalars;
     vismodule::ValueArray<vismodule::UInt32> connections;
@@ -144,9 +144,9 @@ private:
     int m_ncells;
     vismodule::VolumeObjectBase::CellType m_cellType; 
 
-    size_t m_resolution_x;
-    size_t m_resolution_y;
-    size_t m_resolution_z;
+    std::size_t m_resolution_x;
+    std::size_t m_resolution_y;
+    std::size_t m_resolution_z;
 
     domain_parameters_struct m_dom;    
 
@@ -176,11 +176,11 @@ public:
 
     PlotOverLine( const vismodule::StructuredVolumeObject* volume,
 //    PlotOverLine( const pbvr::StructuredVolumeObject* volume,
-                            const size_t sampling_size,
+                            const std::size_t sampling_size,
                             const vismodule::Vec3 P0, const vismodule::Vec3 P1 );
                         
     PlotOverLine( const vismodule::UnstructuredVolumeObject* volume,
-                  const size_t sampling_size,
+                  const std::size_t sampling_size,
                   const vismodule::Vec3 P0, const vismodule::Vec3 P1 );
 
     //変数配列用コンストラクター
@@ -188,12 +188,12 @@ public:
         float* coordinates, int ncoords,
         unsigned int* connections, int ncells,
         const  vismodule::VolumeObjectBase::CellType& celltype, 
-        const size_t sampling_size,
+        const std::size_t sampling_size,
         const vismodule::Vec3 P0, const vismodule::Vec3 P1, const int plot_variable );
 
 
     PlotOverLine( domain_parameters_struct dom, float** values, int nvariables, 
-        const size_t sampling_size,
+        const std::size_t sampling_size,
         const vismodule::Vec3 P0, const vismodule::Vec3 P1, const int plot_variable );
 
     // unstruct
@@ -219,17 +219,17 @@ public:
 
     // CS用
     PlotOverLine( const vismodule::UnstructuredVolumeObject* volume,
-                  const size_t sampling_size,
+                  const std::size_t sampling_size,
                   const vismodule::Vec3 P0, const vismodule::Vec3 P1 , const int plot_variable);
 
     // CS用
     PlotOverLine( const vismodule::StructuredVolumeObject* volume,
-                  const size_t sampling_size,
+                  const std::size_t sampling_size,
                   const vismodule::Vec3 P0, const vismodule::Vec3 P1 , const int plot_variable);
 
 
     PlotOverLine( const POL::Polyhedron* volume,
-                  const size_t sampling_size,
+                  const std::size_t sampling_size,
                   const vismodule::Vec3 P0, const vismodule::Vec3 P1 );
 
     ~PlotOverLine();
@@ -243,7 +243,7 @@ public:
 
     void setVolume( const POL::Polyhedron* volume );
 
-    void setSamplingSize( const size_t sampling_size );
+    void setSamplingSize( const std::size_t sampling_size );
     void extractPlotLineStructured( const vismodule::Vec3 P0, const vismodule::Vec3 P1 );
     void extractPlotLine( const vismodule::StructuredVolumeObject* volume );
     void extractPlotLine( const vismodule::UnstructuredVolumeObject* volume );

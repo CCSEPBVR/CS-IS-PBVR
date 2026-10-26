@@ -79,7 +79,7 @@ public:
 private:
 
     std::string m_label; ///< data label
-    size_t m_veclen; ///< Vector length.
+    std::size_t m_veclen; ///< Vector length.
 
     Coords m_coords; ///< Coordinate array.
     Values m_values; ///< Value array.
@@ -93,7 +93,7 @@ public:
     VolumeObjectBase( void );
 
     VolumeObjectBase(
-        const size_t     veclen,
+        const std::size_t     veclen,
         const Coords&    coords,
         const Values&    values );
 
@@ -115,7 +115,7 @@ public:
 
     void setLabel( const std::string& label );
 
-    void setVeclen( const size_t veclen );
+    void setVeclen( const std::size_t veclen );
 
     void setCoords( const Coords& values );
 
@@ -129,7 +129,7 @@ public:
 
     const std::string& label( void ) const;
 
-    const size_t veclen( void ) const;
+    const std::size_t veclen( void ) const;
 
     const Coords& coords( void ) const;
 
@@ -151,7 +151,7 @@ public:
 
     virtual const CellType cellType( void ) const = 0;
 
-    virtual const size_t nnodes( void ) const = 0;
+    virtual const std::size_t nnodes( void ) const = 0;
 
     void updateMinMaxValues( void ) const;
 
@@ -194,12 +194,12 @@ void VolumeObjectBase::calculate_min_max_values( void ) const
         kvs::Real64 min_value = kvs::Value<kvs::Real64>::Max();
         kvs::Real64 max_value = kvs::Value<kvs::Real64>::Min();
 
-        const size_t veclen = m_veclen;
+        const std::size_t veclen = m_veclen;
 
         while ( value < end )
         {
             kvs::Real64 magnitude = 0.0;
-            for ( size_t i = 0; i < veclen; ++i )
+            for ( std::size_t i = 0; i < veclen; ++i )
             {
                 magnitude += static_cast<kvs::Real64>( ( *value ) * ( *value ) );
                 ++value;

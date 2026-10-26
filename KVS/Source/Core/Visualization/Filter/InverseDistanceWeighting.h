@@ -34,7 +34,7 @@ private:
 
 public:
 
-    InverseDistanceWeighting( const size_t nnodes ) { m_bucket.resize( nnodes ); }
+    InverseDistanceWeighting( const std::size_t nnodes ) { m_bucket.resize( nnodes ); }
 
     const Bucket& bucket() const { return m_bucket; }
 
@@ -57,25 +57,25 @@ template <>
 inline kvs::ValueArray<kvs::Real32> InverseDistanceWeighting<kvs::Real32>::serialize() const
 {
     typedef kvs::Real32 Scalar;
-    const size_t veclen = 1;
+    const std::size_t veclen = 1;
 
     // Inverse distance weighting.
-    const size_t nnodes = m_bucket.size();
+    const std::size_t nnodes = m_bucket.size();
     kvs::ValueArray<kvs::Real32> values( nnodes * veclen );
-    for ( size_t i = 0; i < nnodes; i++ )
+    for ( std::size_t i = 0; i < nnodes; i++ )
     {
-        const size_t n = m_bucket.at(i).size();
+        const std::size_t n = m_bucket.at(i).size();
         //if ( n == 0 ) { continue; }
 
         float w = 0.0f;
-        for ( size_t j = 0; j < n; j++ )
+        for ( std::size_t j = 0; j < n; j++ )
         {
             const float d = m_bucket.at(i).at(j).second;
             w += 1.0f / d;
         }
 
         Scalar value = 0.0f;
-        for ( size_t j = 0; j < n; j++ )
+        for ( std::size_t j = 0; j < n; j++ )
         {
             const Scalar s = m_bucket.at(i).at(j).first;
             const kvs::Real32 d = m_bucket.at(i).at(j).second;
@@ -92,25 +92,25 @@ template <>
 inline kvs::ValueArray<kvs::Real32> InverseDistanceWeighting<kvs::Vec3>::serialize() const
 {
     typedef kvs::Vec3 Vector;
-    const size_t veclen = 3;
+    const std::size_t veclen = 3;
 
     // Inverse distance weighting.
-    const size_t nnodes = m_bucket.size();
+    const std::size_t nnodes = m_bucket.size();
     kvs::ValueArray<kvs::Real32> values( nnodes * veclen );
-    for ( size_t i = 0; i < nnodes; i++ )
+    for ( std::size_t i = 0; i < nnodes; i++ )
     {
-        const size_t n = m_bucket.at(i).size();
+        const std::size_t n = m_bucket.at(i).size();
         //if ( n == 0 ) { continue; }
 
         float w = 0.0f;
-        for ( size_t j = 0; j < n; j++ )
+        for ( std::size_t j = 0; j < n; j++ )
         {
             const float d = m_bucket.at(i).at(j).second;
             w += 1.0f / d;
         }
 
         Vector value = Vector::Zero();
-        for ( size_t j = 0; j < n; j++ )
+        for ( std::size_t j = 0; j < n; j++ )
         {
             const Vector v = m_bucket.at(i).at(j).first;
             const kvs::Real32 d = m_bucket.at(i).at(j).second;
@@ -129,25 +129,25 @@ template <>
 inline kvs::ValueArray<kvs::Real32> InverseDistanceWeighting<kvs::Mat3>::serialize() const
 {
     typedef kvs::Mat3 Tensor;
-    const size_t veclen = 9;
+    const std::size_t veclen = 9;
 
     // Inverse distance weighting.
-    const size_t nnodes = m_bucket.size();
+    const std::size_t nnodes = m_bucket.size();
     kvs::ValueArray<kvs::Real32> values( nnodes * veclen );
-    for ( size_t i = 0; i < nnodes; i++ )
+    for ( std::size_t i = 0; i < nnodes; i++ )
     {
-        const size_t n = m_bucket.at(i).size();
+        const std::size_t n = m_bucket.at(i).size();
         //if ( n == 0 ) { continue; }
 
         float w = 0.0f;
-        for ( size_t j = 0; j < n; j++ )
+        for ( std::size_t j = 0; j < n; j++ )
         {
             const float d = m_bucket.at(i).at(j).second;
             w += 1.0f / d;
         }
 
         Tensor value = Tensor::Zero();
-        for ( size_t j = 0; j < n; j++ )
+        for ( std::size_t j = 0; j < n; j++ )
         {
             const Tensor t = m_bucket.at(i).at(j).first;
             const kvs::Real32 d = m_bucket.at(i).at(j).second;

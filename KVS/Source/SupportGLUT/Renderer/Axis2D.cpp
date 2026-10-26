@@ -325,7 +325,7 @@ void Axis2D::exec( kvs::ObjectBase* object, kvs::Camera* camera, kvs::Light* lig
     // Draw labels.
     const std::string x_label( table->label(0) );
     const std::string y_label( table->label(1) );
-    const size_t x_label_width = x_label.size() * ::CharacterWidth;
+    const std::size_t x_label_width = x_label.size() * ::CharacterWidth;
 
     const float x_label_position_x = x1 - x_label_width - 5;
     const float x_label_position_y = y1 - m_axis_width * 0.5f - 5;

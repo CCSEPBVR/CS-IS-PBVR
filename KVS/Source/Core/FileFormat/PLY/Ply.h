@@ -46,8 +46,8 @@ public:
 private:
 
     FileType m_file_type; ///< file type
-    size_t m_nverts; ///< number of vertices
-    size_t m_nfaces; ///< number of faces
+    std::size_t m_nverts; ///< number of vertices
+    std::size_t m_nfaces; ///< number of faces
     kvs::ValueArray<kvs::Real32> m_coords; ///< coordinate value array
     kvs::ValueArray<kvs::UInt8> m_colors; ///< color value array
     kvs::ValueArray<kvs::Real32> m_normals; ///< normal value array
@@ -69,8 +69,8 @@ public:
     virtual ~Ply();
 
     FileType fileType() const;
-    size_t numberOfVertices() const;
-    size_t numberOfFaces() const;
+    std::size_t numberOfVertices() const;
+    std::size_t numberOfFaces() const;
     bool hasConnections() const;
     bool hasColors() const;
     bool hasNormals() const;

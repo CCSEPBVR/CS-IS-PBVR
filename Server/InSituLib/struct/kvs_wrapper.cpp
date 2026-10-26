@@ -26,10 +26,14 @@
 #include <vismodule/GenerateGlyph>
 #include <vismodule/GeneratePOL>
 
+#include "../shared/EnsembleCellHistogram.h"   // ComputeAndStoreEnsembleCellHistogramStruct (default.json が無いときの例外処理)
+#include "../shared/EnsembleParticleGenerator.h" // GenerateEnsembleParticlesStruct, EnsembleParticleArrays, EnsembleStatisticRange
+#include "EnsembleStatisticOutput.h"           // OutputEnsembleStatisticParticles/History, EnsembleParticleFilePrefix (shared)
+
 namespace Generator = vismodule::CellByCellParticleGenerator;
 
 static bool is_initial_step = true;
-static size_t start_time_step = 0;
+static std::size_t start_time_step = 0;
 
 static void CollectParticleMinMax(
     ParticleProperty& particle_property,
@@ -159,9 +163,9 @@ void generate_particles(
     std::string glyphFilePrefix;
     std::string plotOverLineFilePrefix;
     std::string plotOverTimeFilePrefix;
-    std::string tfFilePath;
-    std::string tfFilePath_old;
-    std::string tfFilePath_step;
+    std::string tfJsonPath;
+    std::string tfJsonPath_old;
+    std::string tfJsonPath_step;
     std::string glyphParameterPath;
     std::string glyphParameterPath_old;
     std::string plotOverLineParameterPath;
@@ -178,9 +182,9 @@ void generate_particles(
         glyphFilePrefix,
         plotOverLineFilePrefix,
         plotOverTimeFilePrefix,
-        tfFilePath,
-        tfFilePath_old,
-        tfFilePath_step,
+        tfJsonPath,
+        tfJsonPath_old,
+        tfJsonPath_step,
         glyphParameterPath,
         glyphParameterPath_old,
         plotOverLineParameterPath,
@@ -197,22 +201,19 @@ void generate_particles(
     PlotOverLineProperty pol_property;
     PlotOverTimeProperty pot_property;
     MultiVolumePropertyList mvpl;
-    static NameListFile glyphNameListFile;
-    static NameListFile POLNameListFile;
-    static NameListFile POTNameListFile;
     particle_property.m_transfunc_synthesizer = new TransferFunctionSynthesizer();
     particle_property.m_camera                = new vismodule::Camera();
 
     bool object_generation_enabled = false;
     SetParticleParameter(
-        dom, tfFilePath, tfFilePath_old, particle_property, mvpl,
+        dom, tfJsonPath, tfJsonPath_old, particle_property, mvpl,
         nvariables, object_generation_enabled
     );
     if ( object_generation_enabled )
     {
-        SetGlyphParameter( glyphParameterPath, glyphParameterPath_old, glyph_property, glyphNameListFile );
-        SetPlotOverLineParameter( plotOverLineParameterPath, plotOverLineParameterPath_old, pol_property, POLNameListFile );
-        SetPlotOverTimeParameter( plotOverTimeParameterPath, plotOverTimeParameterPath_old, pot_property, POTNameListFile );
+        SetGlyphParameter( glyphParameterPath, glyphParameterPath_old, glyph_property );
+        SetPlotOverLineParameter( plotOverLineParameterPath, plotOverLineParameterPath_old, pol_property );
+        SetPlotOverTimeParameter( plotOverTimeParameterPath, plotOverTimeParameterPath_old, pot_property );
     }
 
     const int tf_number  = particle_property.m_transfunc_array.size();
@@ -232,7 +233,7 @@ void generate_particles(
     tmp_max = new float[tf_number * 2]; // color, opacity
     tmp_min = new float[tf_number * 2]; // color, opacity
 
-    for ( size_t i = 0; i < (DEFAULT_NBINS * tf_number); i++ )
+    for ( std::size_t i = 0; i < (DEFAULT_NBINS * tf_number); i++ )
     {
         tmp_c_bins[i] = 0;
         tmp_o_bins[i] = 0;
@@ -263,6 +264,37 @@ void generate_particles(
     CollectParticleMinMax(
         particle_property, dom, values, nvariables, tf_number, tmp_max, tmp_min
     );
+
+#ifndef CPU_VER
+    if ( mpi_size > 1 )
+    {
+        MPI_Allreduce( MPI_IN_PLACE, tmp_max, ( tf_number * 2 ), MPI_FLOAT, MPI_MAX, MPI_COMM_WORLD );
+        MPI_Allreduce( MPI_IN_PLACE, tmp_min, ( tf_number * 2 ), MPI_FLOAT, MPI_MIN, MPI_COMM_WORLD );
+    }
+#endif
+
+    for( std::size_t i = 0; i < tf_number; i++ )
+    {
+        const float color_variable_min   = tmp_min[2 * i + 1];
+        const float color_variable_max   = tmp_max[2 * i + 1];
+        const float opacity_variable_min = tmp_min[2 * i    ];
+        const float opacity_variable_max = tmp_max[2 * i    ];
+
+        particle_property.m_transfunc_array[i].m_server_color_variable_min   = color_variable_min;
+        particle_property.m_transfunc_array[i].m_server_color_variable_max   = color_variable_max;
+        particle_property.m_transfunc_array[i].m_server_opacity_variable_min = opacity_variable_min;
+        particle_property.m_transfunc_array[i].m_server_opacity_variable_max = opacity_variable_max;
+
+        if( particle_property.m_transfunc_array[i].m_server_color_range_mode == NamedTransferFunction::ServerRangeMode::ServerSide )
+        {
+            particle_property.m_transfunc_array[i].setColorRange( color_variable_min, color_variable_max );
+        }
+
+        if( particle_property.m_transfunc_array[i].m_server_opacity_range_mode == NamedTransferFunction::ServerRangeMode::ServerSide )
+        {
+            particle_property.m_transfunc_array[i].setOpacityRange( opacity_variable_min, opacity_variable_max );
+        }
+    }
 
     CollectParticleHistogram(
         particle_property, dom, values, nvariables, tf_number, tmp_c_bins, tmp_o_bins
@@ -299,7 +331,7 @@ void generate_particles(
                 pol_property, dom, values, nvariables, pol_object
             );
 
-            for( size_t i = 0; i < resolution; i++ )
+            for( std::size_t i = 0; i < resolution; i++ )
             {
                 x_axis[i] = pol_object->x_axis()[i];
                 if ( pol_object->mask()[i] )
@@ -331,7 +363,7 @@ void generate_particles(
 
     OutputParticleHistory(
         particle_property, tf_number, nvariables, historyFilePath,
-        object_generation_enabled, tmp_c_bins, tmp_o_bins, tmp_max, tmp_min
+        tmp_c_bins, tmp_o_bins, tmp_max, tmp_min
     );
 
     if ( object_generation_enabled && glyph_property.m_glyph_flag )
@@ -354,15 +386,12 @@ void generate_particles(
         OutputPOT( time_step, plotOverTimeFilePrefix, pot_mask, value_on_time );
     }
 
-    // OutputParticleで書き込んだdefault_old.tfファイルを読み込みdefault_xxx.tfに書き込む
+    // OutputParticlesで更新したdefault_old.jsonをtimestep別JSONに保存する
     if ( object_generation_enabled && mpi_rank == 0 )
     {
-        ParameterFileReader ppr;
-        NameListFile nameListFile;
-        ppr.readParticleParameterFile( tfFilePath_old.c_str() );
-        nameListFile = ppr.getNameListFile();
-        nameListFile.setFileName( tfFilePath_step );
-        nameListFile.write();
+        std::ifstream src( tfJsonPath_old.c_str(), std::ios::binary );
+        std::ofstream dst( tfJsonPath_step.c_str(), std::ios::binary );
+        dst << src.rdbuf();
     }
    
     // 粒子ファイル書き込みスレッドが終了するまで待機
@@ -408,10 +437,268 @@ void generate_particles(
 
 }
 
-bool SetParticleParameter( 
+// 構造格子データのアンサンブルPBVR粒子生成ラッパー。
+// 通常 generate_particles と同じ準備(パス設定/TF設定)を行い、計算本体を
+// vismodule::GenerateEnsembleParticlesStruct に委譲する(非構造版 ensemble_generate_particles と対称)。
+bool ensemble_generate_particles(
+    int time_step,
+    const int num_ensemble,
+    domain_parameters_struct dom,
+    Type** values,
+    int nvariables
+)
+{
+    int mpi_rank;
+    int mpi_size;
+#ifndef CPU_VER
+    MPI_Comm_rank( MPI_COMM_WORLD, &mpi_rank );
+    MPI_Comm_size( MPI_COMM_WORLD, &mpi_size );
+#else
+    mpi_rank = 0;
+    mpi_size = 1;
+#endif
+
+    if ( is_initial_step == true )
+    {
+        is_initial_step = false;
+        start_time_step = time_step;
+    }
+
+    std::string historyFilePath;
+    std::string stateFilePath;
+    std::string coordMinMaxFilePath;
+    std::string particleFilePrefix;
+    std::string glyphFilePrefix;
+    std::string plotOverLineFilePrefix;
+    std::string plotOverTimeFilePrefix;
+    std::string tfJsonPath;
+    std::string tfJsonPath_old;
+    std::string tfJsonPath_step;
+    std::string glyphParameterPath;
+    std::string glyphParameterPath_old;
+    std::string plotOverLineParameterPath;
+    std::string plotOverLineParameterPath_old;
+    std::string plotOverTimeParameterPath;
+    std::string plotOverTimeParameterPath_old;
+
+    // アンサンブルタイマー。関数の先頭から計り、パス構築・パラメータ読み込み・
+    // 粒子出力まで含めて内訳が取れるようにする（従来は生成本体の直前から）。
+#ifdef ENABLE_ENSEMBLE_TIMER
+#if _OPENMP
+    const int timer_max_threads = omp_get_max_threads();
+#else
+    const int timer_max_threads = 1;
+#endif
+    vismodule::EnsembleTimerCollector ensemble_timer( time_step, timer_max_threads );
+    vismodule::Timer ensemble_total_timer;
+    ensemble_total_timer.start();
+    {
+    vismodule::EnsembleTimerScope timer_scope( &ensemble_timer, vismodule::EnsembleTimerSetParameterPath );
+#endif
+    SetParameterFilePath(
+        time_step,
+        historyFilePath, stateFilePath, coordMinMaxFilePath,
+        particleFilePrefix, glyphFilePrefix, plotOverLineFilePrefix, plotOverTimeFilePrefix,
+        tfJsonPath, tfJsonPath_old, tfJsonPath_step,
+        glyphParameterPath, glyphParameterPath_old,
+        plotOverLineParameterPath, plotOverLineParameterPath_old,
+        plotOverTimeParameterPath, plotOverTimeParameterPath_old
+    );
+#ifdef ENABLE_ENSEMBLE_TIMER
+    }
+#endif
+
+    ParticleProperty particle_property;
+    MultiVolumePropertyList mvpl;
+    particle_property.m_transfunc_synthesizer = new TransferFunctionSynthesizer();
+    particle_property.m_camera                = new vismodule::Camera();
+
+    bool object_generation_enabled = false;
+#ifdef ENABLE_ENSEMBLE_TIMER
+    vismodule::Timer setparam_timer; setparam_timer.start();
+#endif
+    SetParticleParameter(
+        dom, tfJsonPath, tfJsonPath_old, particle_property, mvpl,
+        nvariables, object_generation_enabled
+    );
+
+    // default.json が読めなかったときは粒子を作らず、変数の値域とヒストグラムだけを
+    // 履歴へ出す(非構造版 ensemble_generate_particles と同じ配線)。
+    // 既定の伝達関数(SetDefaultParticleParameter)はアンサンブル用の3配列
+    // (mean/variance/cov)を埋めないため、そのまま GenerateEnsembleParticlesStruct に
+    // 入れると空 vector の [0] を読んで落ちる(EnsembleParticleGenerator.cpp:4244)。
+    const bool gen_flag = object_generation_enabled;
+
+    // アンサンブル統計量粒子(ave/var/cov)の格納先と統計レンジ
+    vismodule::EnsembleParticleArrays average;
+    vismodule::EnsembleParticleArrays variance;
+    vismodule::EnsembleParticleArrays coefficient;
+    vismodule::EnsembleStatisticRange average_range;
+    vismodule::EnsembleStatisticRange variance_range;
+    vismodule::EnsembleStatisticRange co_variation_range;
+
+#ifdef ENABLE_ENSEMBLE_TIMER
+    setparam_timer.stop();
+    ensemble_timer.add( vismodule::EnsembleTimerReadParameterFile, setparam_timer.sec() );
+#endif
+    // 伝達関数の本数。粒子を作らない経路では各変数のヒストグラムを出すので nvariables。
+    const int tf_number = gen_flag
+                        ? static_cast<int>( particle_property.m_transfunc_array.size() )
+                        : nvariables;
+
+    if ( !gen_flag )
+    {
+        vismodule::EnsembleCellHistogramLog histogram_log;
+        bool hist_ok = false;
+        {
+#ifdef ENABLE_ENSEMBLE_TIMER
+            vismodule::EnsembleTimerScope sc( &ensemble_timer, vismodule::EnsembleTimerStatHistogram );
+#endif
+            hist_ok = vismodule::ComputeAndStoreEnsembleCellHistogramStruct(
+                values,
+                nvariables,
+                static_cast<int>( dom.resolution[0] ),
+                static_cast<int>( dom.resolution[1] ),
+                static_cast<int>( dom.resolution[2] ),
+                MPI_COMM_WORLD, // ensemble_comm があればそれを渡す
+                DEFAULT_NBINS,
+                particle_property,
+                average_range,
+                variance_range,
+                co_variation_range,
+                &histogram_log );
+        }
+
+        if ( hist_ok )
+        {
+#ifdef ENABLE_ENSEMBLE_TIMER
+            vismodule::EnsembleTimerScope sc( &ensemble_timer, vismodule::EnsembleTimerOutputHistory );
+#endif
+            pbvr::OutputEnsembleStatisticHistory(
+                particle_property, tf_number, nvariables, historyFilePath,
+                average_range, variance_range, co_variation_range );
+        }
+    }
+    else
+    {
+    // 構造格子版の計算本体
+//    particle_property.m_log_scale_statistics = true; // スタブデータ(検証用。default.json連携時に有効化 or 削除)
+    bool ok = vismodule::GenerateEnsembleParticlesStruct(
+        num_ensemble,
+        particle_property,
+        dom,
+        values,
+        nvariables,
+        average, variance, coefficient,
+        average_range, variance_range, co_variation_range
+#ifdef ENABLE_ENSEMBLE_TIMER
+        , &ensemble_timer
+#endif
+    );
+
+    (void)mpi_rank;
+    (void)mpi_size;
+
+    if ( !ok )
+    {
+        delete particle_property.m_transfunc_synthesizer;
+        delete particle_property.m_camera;
+        return false;
+    }
+
+    // アンサンブル統計量粒子(ave/var/cov)と統計履歴を出力(非構造版 ensemble_generate_particles と同じ配線)
+    const std::string averageFilePrefix     = pbvr::EnsembleParticleFilePrefix( particleFilePrefix, "ave_" );
+    const std::string varianceFilePrefix    = pbvr::EnsembleParticleFilePrefix( particleFilePrefix, "var_" );
+    const std::string coefficientFilePrefix = pbvr::EnsembleParticleFilePrefix( particleFilePrefix, "cov_" );
+
+    // 粒子出力の内訳。生成処理の外側が全体の半分を占めていたため区間を入れた。
+#ifdef ENABLE_ENSEMBLE_TIMER
+    { vismodule::EnsembleTimerScope sc( &ensemble_timer, vismodule::EnsembleTimerOutputCoordMinmax );
+#endif
+    OutputCoordMinMaxFile( dom, coordMinMaxFilePath );
+#ifdef ENABLE_ENSEMBLE_TIMER
+    }
+    { vismodule::EnsembleTimerScope sc( &ensemble_timer, vismodule::EnsembleTimerOutputParticlesAve );
+#endif
+    pbvr::OutputEnsembleStatisticParticles(
+        particle_property, mvpl, time_step, averageFilePrefix,
+        average.coords, average.colors, average.normals );
+#ifdef ENABLE_ENSEMBLE_TIMER
+    }
+    { vismodule::EnsembleTimerScope sc( &ensemble_timer, vismodule::EnsembleTimerOutputParticlesVar );
+#endif
+    pbvr::OutputEnsembleStatisticParticles(
+        particle_property, mvpl, time_step, varianceFilePrefix,
+        variance.coords, variance.colors, variance.normals );
+#ifdef ENABLE_ENSEMBLE_TIMER
+    }
+    { vismodule::EnsembleTimerScope sc( &ensemble_timer, vismodule::EnsembleTimerOutputParticlesCov );
+#endif
+    pbvr::OutputEnsembleStatisticParticles(
+        particle_property, mvpl, time_step, coefficientFilePrefix,
+        coefficient.coords, coefficient.colors, coefficient.normals );
+#ifdef ENABLE_ENSEMBLE_TIMER
+    }
+    { vismodule::EnsembleTimerScope sc( &ensemble_timer, vismodule::EnsembleTimerOutputHistory );
+#endif
+    pbvr::OutputEnsembleStatisticHistory(
+        particle_property, tf_number, nvariables, historyFilePath,
+        average_range, variance_range, co_variation_range );
+#ifdef ENABLE_ENSEMBLE_TIMER
+    }
+#endif
+    } // if ( !gen_flag ) ... else
+
+#ifdef ENABLE_ENSEMBLE_TIMER
+    vismodule::Timer tail_timer; tail_timer.start();
+#endif
+    // 更新した default_old.json を timestep 別 JSON(default_XXXXX.json) に保存
+    // (通常 generate_particles / 非構造版 ensemble_generate_particles と同じ処理)
+    if ( object_generation_enabled && mpi_rank == 0 )
+    {
+        std::ifstream src( tfJsonPath_old.c_str(), std::ios::binary );
+        std::ofstream dst( tfJsonPath_step.c_str(), std::ios::binary );
+        dst << src.rdbuf();
+    }
+
+    // 全プロセスの書き込み完了を待ち、処理済みステップを state.txt に記録
+    // (通常 generate_particles / 非構造版 ensemble_generate_particles と同じ処理)
+#ifndef CPU_VER
+    MPI_Barrier( MPI_COMM_WORLD );
+#endif
+    std::cout << "All processes have finished." << std::endl;
+
+    if ( mpi_rank == 0 )
+    {
+        std::ofstream ofs( stateFilePath.c_str(), std::ios::out );
+        if ( !ofs.is_open() ) std::cout << "Cannot open state.txt" << std::endl;
+
+        ofs << "START_STEP  = " << start_time_step << std::endl;
+        ofs << "LATEST_STEP = " << time_step       << std::endl;
+        ofs.close();
+    }
+
+#ifdef ENABLE_ENSEMBLE_TIMER
+    tail_timer.stop();
+    ensemble_timer.add( vismodule::EnsembleTimerFinalBarrierState, tail_timer.sec() );
+    // 集計 CSV の出力。非構造版 kvs_wrapper.cpp と同じ扱いで、構造格子版にも入れた。
+    // これで BENCHMARK/parse_timing.py -> summarize_results.py が構造格子でも使える。
+    // 注意: ensemble_timer_summary.csv は std::ios::app で開かれるため、再実行すると
+    // 旧行が蓄積する。集計前に消すこと（BENCHMARK/generate_pbs_jobs.py のリセット処理）。
+    ensemble_total_timer.stop();
+    ensemble_timer.add( vismodule::EnsembleTimerTotal, ensemble_total_timer.sec() );
+    ensemble_timer.printCsv( mpi_rank, mpi_size );
+#endif
+
+    delete particle_property.m_transfunc_synthesizer;
+    delete particle_property.m_camera;
+    return true;
+}
+
+bool SetParticleParameter(
     const domain_parameters_struct& dom,
-    const std::string& tfFilePath,
-    const std::string& tfFilePath_old,
+    const std::string& tfJsonPath,
+    const std::string& tfJsonPath_old,
     ParticleProperty& particle_property,
     MultiVolumePropertyList& mvpl,
     const int nvariables,
@@ -426,49 +713,76 @@ bool SetParticleParameter(
 #endif
 
     ParameterFileReader ppr;
-    NameListFile nameListFile;
-
     int size = 0;
-    char* buf = NULL;
+    char* buf = nullptr;
     int object_generation_enabled_int = 0;
+    static bool hasCachedParticleProperty = false;
+    static std::vector<char> cachedParticlePropertyBuffer;
 
     if ( mpi_rank == 0 )
     {
-        std::ifstream tfFile( tfFilePath );
-        std::ifstream tfFileOld( tfFilePath_old );
+        std::ifstream tfJson( tfJsonPath );
+        std::ifstream tfJsonOld( tfJsonPath_old );
 
-        if ( tfFile.good() )
+        bool loaded = false;
+        if ( tfJson.good() )
         {
-            ppr.readParticleParameterFile( tfFilePath.c_str() );
-            nameListFile = ppr.getNameListFile();
-            std::rename( tfFilePath.c_str(), tfFilePath_old.c_str() );
+            loaded = ppr.readTransferFunctionFromJson( tfJsonPath.c_str(), particle_property );
+            if ( loaded )
+            {
+                std::rename( tfJsonPath.c_str(), tfJsonPath_old.c_str() );
+            }
+        }
+        if ( !loaded && !tfJson.good() && hasCachedParticleProperty )
+        {
+            size = static_cast<int>( cachedParticlePropertyBuffer.size() );
+            if ( size > 0 )
+            {
+                buf = new char[size];
+                for ( int i = 0; i < size; ++i )
+                {
+                    buf[i] = cachedParticlePropertyBuffer[i];
+                }
+                particle_property.unpack( buf );
+                delete[] buf;
+                buf = nullptr;
+            }
+            loaded = size > 0;
+        }
+        if ( !loaded && tfJsonOld.good() )
+        {
+            loaded = ppr.readTransferFunctionFromJson( tfJsonPath_old.c_str(), particle_property );
+        }
+
+        if ( loaded )
+        {
             object_generation_enabled_int = 1;
         }
-        else if ( tfFileOld.good() )
-        {
-            ppr.readParticleParameterFile( tfFilePath_old.c_str() );
-            nameListFile = ppr.getNameListFile();
-            object_generation_enabled_int = 1;
-        }
-        else
+        else if ( size == 0 )
         {
             std::cout << "================================================================" << std::endl;
-            std::cout << "[WARN] " << FileNameOnly( tfFilePath ) << " and "
-                      << FileNameOnly( tfFilePath_old ) << " do not exist." << std::endl;
+            std::cout << "[WARN] Failed to load transfer function json." << std::endl;
+            std::cout << "[WARN] Files: " << FileNameOnly( tfJsonPath ) << " and "
+                      << FileNameOnly( tfJsonPath_old ) << std::endl;
             std::cout << "[INFO] VIS_PARAM_DIR = " << EnvValueOrUnset( "VIS_PARAM_DIR" ) << std::endl;
             std::cout << "[INFO] PARTICLE_DIR  = " << EnvValueOrUnset( "PARTICLE_DIR" ) << std::endl;
             std::cout << "[INFO] Set default particle parameters and skip object generation." << std::endl;
             std::cout << "================================================================" << std::endl;
+
+            SetDefaultParticleParameter( particle_property, mvpl, nvariables );
+            object_generation_enabled_int = 0;
         }
 
-        if ( object_generation_enabled_int )
-        {
-            size = nameListFile.byteSize();
+        size = particle_property.byteSize();
 
-            if ( size > 0 )
+        if ( size > 0 )
+        {
+            buf = new char[size];
+            particle_property.pack( buf );
+            if ( object_generation_enabled_int != 0 )
             {
-                buf = new char[size];
-                nameListFile.pack( buf );
+                cachedParticlePropertyBuffer.assign( buf, buf + size );
+                hasCachedParticleProperty = true;
             }
         }
     }
@@ -485,18 +799,18 @@ bool SetParticleParameter(
 #ifndef CPU_VER
         MPI_Bcast( buf, size, MPI_CHARACTER, 0, MPI_COMM_WORLD );
 #endif
-        if( mpi_rank > 0 ) nameListFile.unpack( buf );
+        if( mpi_rank > 0 ) particle_property.unpack( buf );
+        if ( mpi_rank > 0 && object_generation_enabled )
+        {
+            cachedParticlePropertyBuffer.assign( buf, buf + size );
+            hasCachedParticleProperty = true;
+        }
+        particle_property.UpdateTransferFunctionSynthesizer();
         delete[] buf;
-    }
-
-    if ( object_generation_enabled )
-    {
-        if ( mpi_rank > 0 ) ppr.setNameListFile( nameListFile );
-        ppr.setParticleParameter( particle_property );
     }
     else
     {
-        SetDefaultParticleParameter( particle_property, mvpl, nvariables );
+        return false;
     }
 
     vismodule::Vector3f min_object_coords(
@@ -533,7 +847,8 @@ bool SetParticleParameter(
                               * ( dom.y_global_max - dom.y_global_min )
                               * ( dom.z_global_max - dom.z_global_min );
 
-    const float max_opacity           = 0.98;
+    //const float max_opacity           = 0.98;
+    const float max_opacity           = 0.9;  //アンサンブル用調整（非構造版 unstruct/kvs_wrapper.cpp に合わせる）
     const int particle_limit          = particle_property.m_particle_limit;
     const float extra_opacity_factor  = particle_property.m_extra_opacity_factor;
     particle_property.m_sampling_step = ( max - min ) / 1E1 / extra_opacity_factor;

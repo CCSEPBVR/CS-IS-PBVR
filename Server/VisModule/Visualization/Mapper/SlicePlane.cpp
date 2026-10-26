@@ -230,7 +230,7 @@ void SlicePlane::extract_plane(
     const vismodule::ColorMap& color_map( BaseClass::transferFunction().colorMap() );
 
     // Extract surfaces.
-    size_t index = 0;
+    std::size_t index = 0;
     for ( vismodule::UInt32 z = 0; z < ncells.z(); ++z )
     {
         for ( vismodule::UInt32 y = 0; y < ncells.y(); ++y )
@@ -238,12 +238,12 @@ void SlicePlane::extract_plane(
             for ( vismodule::UInt32 x = 0; x < ncells.x(); ++x )
             {
                 // Calculate the index of the reference table.
-                const size_t table_index = this->calculate_table_index( x, y, z );
+                const std::size_t table_index = this->calculate_table_index( x, y, z );
                 if ( table_index == 0 ) continue;
                 if ( table_index == 255 ) continue;
 
                 // Calculate the triangle polygons.
-                for ( size_t i = 0; MarchingCubesTable::TriangleID[ table_index ][i] != -1; i += 3 )
+                for ( std::size_t i = 0; MarchingCubesTable::TriangleID[ table_index ][i] != -1; i += 3 )
                 {
                     // Refer the edge IDs from the TriangleTable by using the table_index.
                     const int e0 = MarchingCubesTable::TriangleID[table_index][i];
@@ -400,13 +400,13 @@ void SlicePlane::extract_tetrahedra_plane(
     // Refer the parameters of the unstructured volume object.
     const vismodule::Real32* volume_coords      = volume.coords().pointer();
     const vismodule::UInt32* volume_connections = volume.connections().pointer();
-    const size_t       ncells             = volume.ncells();
+    const std::size_t       ncells             = volume.ncells();
 
     const vismodule::ColorMap& color_map( BaseClass::transferFunction().colorMap() );
 
     // Extract surfaces.
-    size_t index = 0;
-    size_t local_index[4];
+    std::size_t index = 0;
+    std::size_t local_index[4];
     for ( vismodule::UInt32 cell = 0; cell < ncells; ++cell, index += 4 )
     {
         // Calculate the indices of the target cell.
@@ -416,12 +416,12 @@ void SlicePlane::extract_tetrahedra_plane(
         local_index[3] = volume_connections[ index + 3 ];
 
         // Calculate the index of the reference table.
-        const size_t table_index = this->calculate_tetrahedra_table_index( local_index );
+        const std::size_t table_index = this->calculate_tetrahedra_table_index( local_index );
         if ( table_index == 0 ) continue;
         if ( table_index == 15 ) continue;
 
         // Calculate the triangle polygons.
-        for ( size_t i = 0; MarchingTetrahedraTable::TriangleID[ table_index ][i] != -1; i += 3 )
+        for ( std::size_t i = 0; MarchingTetrahedraTable::TriangleID[ table_index ][i] != -1; i += 3 )
         {
             // Refer the edge IDs from the TriangleTable using the table_index.
             const int e0 = MarchingTetrahedraTable::TriangleID[table_index][i];
@@ -429,12 +429,12 @@ void SlicePlane::extract_tetrahedra_plane(
             const int e2 = MarchingTetrahedraTable::TriangleID[table_index][i+2];
 
             // Refer indices of the coordinate array from the VertexTable using the edgeIDs.
-            const size_t c0 = local_index[ MarchingTetrahedraTable::VertexID[e0][0] ];
-            const size_t c1 = local_index[ MarchingTetrahedraTable::VertexID[e0][1] ];
-            const size_t c2 = local_index[ MarchingTetrahedraTable::VertexID[e1][0] ];
-            const size_t c3 = local_index[ MarchingTetrahedraTable::VertexID[e1][1] ];
-            const size_t c4 = local_index[ MarchingTetrahedraTable::VertexID[e2][0] ];
-            const size_t c5 = local_index[ MarchingTetrahedraTable::VertexID[e2][1] ];
+            const std::size_t c0 = local_index[ MarchingTetrahedraTable::VertexID[e0][0] ];
+            const std::size_t c1 = local_index[ MarchingTetrahedraTable::VertexID[e0][1] ];
+            const std::size_t c2 = local_index[ MarchingTetrahedraTable::VertexID[e1][0] ];
+            const std::size_t c3 = local_index[ MarchingTetrahedraTable::VertexID[e1][1] ];
+            const std::size_t c4 = local_index[ MarchingTetrahedraTable::VertexID[e2][0] ];
+            const std::size_t c5 = local_index[ MarchingTetrahedraTable::VertexID[e2][1] ];
 
             // Determine vertices for each edge.
             const vismodule::Vector3f v0( volume_coords + 3 * c0 );
@@ -531,13 +531,13 @@ void SlicePlane::extract_hexahedra_plane(
     // Refer the parameters of the unstructured volume object.
     const vismodule::Real32* volume_coords      = volume.coords().pointer();
     const vismodule::UInt32* volume_connections = volume.connections().pointer();
-    const size_t       ncells             = volume.ncells();
+    const std::size_t       ncells             = volume.ncells();
 
     const vismodule::ColorMap& color_map( BaseClass::transferFunction().colorMap() );
 
     // Extract surfaces.
-    size_t index = 0;
-    size_t local_index[8];
+    std::size_t index = 0;
+    std::size_t local_index[8];
     for ( vismodule::UInt32 cell = 0; cell < ncells; ++cell, index += 8 )
     {
         // Calculate the indices of the target cell.
@@ -551,12 +551,12 @@ void SlicePlane::extract_hexahedra_plane(
         local_index[3] = volume_connections[ index + 7 ];
 
         // Calculate the index of the reference table.
-        const size_t table_index = this->calculate_hexahedra_table_index( local_index );
+        const std::size_t table_index = this->calculate_hexahedra_table_index( local_index );
         if ( table_index == 0 ) continue;
         if ( table_index == 255 ) continue;
 
         // Calculate the triangle polygons.
-        for ( size_t i = 0; MarchingHexahedraTable::TriangleID[ table_index ][i] != -1; i += 3 )
+        for ( std::size_t i = 0; MarchingHexahedraTable::TriangleID[ table_index ][i] != -1; i += 3 )
         {
             // Refer the edge IDs from the TriangleTable using the table_index.
             const int e0 = MarchingHexahedraTable::TriangleID[table_index][i];
@@ -564,12 +564,12 @@ void SlicePlane::extract_hexahedra_plane(
             const int e2 = MarchingHexahedraTable::TriangleID[table_index][i+2];
 
             // Refer indices of the coordinate array from the VertexTable using the edgeIDs.
-            const size_t c0 = local_index[ MarchingHexahedraTable::VertexID[e0][0] ];
-            const size_t c1 = local_index[ MarchingHexahedraTable::VertexID[e0][1] ];
-            const size_t c2 = local_index[ MarchingHexahedraTable::VertexID[e1][0] ];
-            const size_t c3 = local_index[ MarchingHexahedraTable::VertexID[e1][1] ];
-            const size_t c4 = local_index[ MarchingHexahedraTable::VertexID[e2][0] ];
-            const size_t c5 = local_index[ MarchingHexahedraTable::VertexID[e2][1] ];
+            const std::size_t c0 = local_index[ MarchingHexahedraTable::VertexID[e0][0] ];
+            const std::size_t c1 = local_index[ MarchingHexahedraTable::VertexID[e0][1] ];
+            const std::size_t c2 = local_index[ MarchingHexahedraTable::VertexID[e1][0] ];
+            const std::size_t c3 = local_index[ MarchingHexahedraTable::VertexID[e1][1] ];
+            const std::size_t c4 = local_index[ MarchingHexahedraTable::VertexID[e2][0] ];
+            const std::size_t c5 = local_index[ MarchingHexahedraTable::VertexID[e2][1] ];
 
             // Determine vertices for each edge.
             const vismodule::Vector3f v0( volume_coords + 3 * c0 );
@@ -666,13 +666,13 @@ void SlicePlane::extract_pyramid_plane(
     // Refer the parameters of the unstructured volume object.
     const vismodule::Real32* volume_coords      = volume.coords().pointer();
     const vismodule::UInt32* volume_connections = volume.connections().pointer();
-    const size_t       ncells             = volume.ncells();
+    const std::size_t       ncells             = volume.ncells();
 
     const vismodule::ColorMap& color_map( BaseClass::transferFunction().colorMap() );
 
     // Extract surfaces.
-    size_t index = 0;
-    size_t local_index[5];
+    std::size_t index = 0;
+    std::size_t local_index[5];
     for ( vismodule::UInt32 cell = 0; cell < ncells; ++cell, index += 5 )
     {
         // Calculate the indices of the target cell.
@@ -683,12 +683,12 @@ void SlicePlane::extract_pyramid_plane(
         local_index[4] = volume_connections[ index + 4 ];
 
         // Calculate the index of the reference table.
-        const size_t table_index = this->calculate_pyramid_table_index( local_index );
+        const std::size_t table_index = this->calculate_pyramid_table_index( local_index );
         if ( table_index == 0 ) continue;
         if ( table_index == 31 ) continue;
 
         // Calculate the triangle polygons.
-        for ( size_t i = 0; MarchingPyramidTable::TriangleID[ table_index ][i] != -1; i += 3 )
+        for ( std::size_t i = 0; MarchingPyramidTable::TriangleID[ table_index ][i] != -1; i += 3 )
         {
             // Refer the edge IDs from the TriangleTable using the table_index.
             const int e0 = MarchingPyramidTable::TriangleID[table_index][i];
@@ -696,12 +696,12 @@ void SlicePlane::extract_pyramid_plane(
             const int e2 = MarchingPyramidTable::TriangleID[table_index][i+2];
 
             // Refer indices of the coordinate array from the VertexTable using the edgeIDs.
-            const size_t c0 = local_index[ MarchingPyramidTable::VertexID[e0][0] ];
-            const size_t c1 = local_index[ MarchingPyramidTable::VertexID[e0][1] ];
-            const size_t c2 = local_index[ MarchingPyramidTable::VertexID[e1][0] ];
-            const size_t c3 = local_index[ MarchingPyramidTable::VertexID[e1][1] ];
-            const size_t c4 = local_index[ MarchingPyramidTable::VertexID[e2][0] ];
-            const size_t c5 = local_index[ MarchingPyramidTable::VertexID[e2][1] ];
+            const std::size_t c0 = local_index[ MarchingPyramidTable::VertexID[e0][0] ];
+            const std::size_t c1 = local_index[ MarchingPyramidTable::VertexID[e0][1] ];
+            const std::size_t c2 = local_index[ MarchingPyramidTable::VertexID[e1][0] ];
+            const std::size_t c3 = local_index[ MarchingPyramidTable::VertexID[e1][1] ];
+            const std::size_t c4 = local_index[ MarchingPyramidTable::VertexID[e2][0] ];
+            const std::size_t c5 = local_index[ MarchingPyramidTable::VertexID[e2][1] ];
 
             // Determine vertices for each edge.
             const vismodule::Vector3f v0( volume_coords + 3 * c0 );
@@ -778,12 +778,12 @@ void SlicePlane::extract_pyramid_plane(
  *  @return table index
  */
 /*===========================================================================*/
-const size_t SlicePlane::calculate_table_index(
-    const size_t x,
-    const size_t y,
-    const size_t z ) const
+const std::size_t SlicePlane::calculate_table_index(
+    const std::size_t x,
+    const std::size_t y,
+    const std::size_t z ) const
 {
-    size_t table_index = 0;
+    std::size_t table_index = 0;
     if ( this->substitute_plane_equation( x  , y  , z   ) > 0.0f ) { table_index |=   1; }
     if ( this->substitute_plane_equation( x+1, y  , z   ) > 0.0f ) { table_index |=   2; }
     if ( this->substitute_plane_equation( x+1, y+1, z   ) > 0.0f ) { table_index |=   4; }
@@ -804,7 +804,7 @@ const size_t SlicePlane::calculate_table_index(
  *  @return table index
  */
 /*==========================================================================*/
-const size_t SlicePlane::calculate_tetrahedra_table_index(
+const std::size_t SlicePlane::calculate_tetrahedra_table_index(
     const size_t* local_index ) const
 {
     const vismodule::Real32* const coords = BaseClass::m_volume->coords().pointer();
@@ -814,7 +814,7 @@ const size_t SlicePlane::calculate_tetrahedra_table_index(
     const vismodule::Vector3f vertex2( coords + 3 * local_index[2] );
     const vismodule::Vector3f vertex3( coords + 3 * local_index[3] );
 
-    size_t table_index = 0;
+    std::size_t table_index = 0;
     if ( this->substitute_plane_equation( vertex0 ) > 0.0 ) { table_index |= 1; }
     if ( this->substitute_plane_equation( vertex1 ) > 0.0 ) { table_index |= 2; }
     if ( this->substitute_plane_equation( vertex2 ) > 0.0 ) { table_index |= 4; }
@@ -830,7 +830,7 @@ const size_t SlicePlane::calculate_tetrahedra_table_index(
  *  @return table index
  */
 /*==========================================================================*/
-const size_t SlicePlane::calculate_hexahedra_table_index(
+const std::size_t SlicePlane::calculate_hexahedra_table_index(
     const size_t* local_index ) const
 {
     const vismodule::Real32* const coords = BaseClass::m_volume->coords().pointer();
@@ -844,7 +844,7 @@ const size_t SlicePlane::calculate_hexahedra_table_index(
     const vismodule::Vector3f vertex6( coords + 3 * local_index[6] );
     const vismodule::Vector3f vertex7( coords + 3 * local_index[7] );
 
-    size_t table_index = 0;
+    std::size_t table_index = 0;
     if ( this->substitute_plane_equation( vertex0 ) > 0.0 ) { table_index |=   1; }
     if ( this->substitute_plane_equation( vertex1 ) > 0.0 ) { table_index |=   2; }
     if ( this->substitute_plane_equation( vertex2 ) > 0.0 ) { table_index |=   4; }
@@ -864,7 +864,7 @@ const size_t SlicePlane::calculate_hexahedra_table_index(
  *  @return table index
  */
 /*==========================================================================*/
-const size_t SlicePlane::calculate_pyramid_table_index(
+const std::size_t SlicePlane::calculate_pyramid_table_index(
     const size_t* local_index ) const
 {
     const vismodule::Real32* const coords = BaseClass::m_volume->coords().pointer();
@@ -875,7 +875,7 @@ const size_t SlicePlane::calculate_pyramid_table_index(
     const vismodule::Vector3f vertex3( coords + 3 * local_index[3] );
     const vismodule::Vector3f vertex4( coords + 3 * local_index[4] );
 
-    size_t table_index = 0;
+    std::size_t table_index = 0;
     if ( this->substitute_plane_equation( vertex0 ) > 0.0 ) { table_index |=  1; }
     if ( this->substitute_plane_equation( vertex1 ) > 0.0 ) { table_index |=  2; }
     if ( this->substitute_plane_equation( vertex2 ) > 0.0 ) { table_index |=  4; }
@@ -895,9 +895,9 @@ const size_t SlicePlane::calculate_pyramid_table_index(
  */
 /*==========================================================================*/
 const float SlicePlane::substitute_plane_equation(
-    const size_t x,
-    const size_t y,
-    const size_t z ) const
+    const std::size_t x,
+    const std::size_t y,
+    const std::size_t z ) const
 {
     return( m_coefficients.x() * x +
             m_coefficients.y() * y +
@@ -957,8 +957,8 @@ const double SlicePlane::interpolate_value(
 {
     const T* const values = static_cast<const T*>( volume.values().pointer() );
 
-    const size_t line_size  = volume.nnodesPerLine();
-    const size_t slice_size = volume.nnodesPerSlice();
+    const std::size_t line_size  = volume.nnodesPerLine();
+    const std::size_t slice_size = volume.nnodesPerSlice();
 
     const float value0 = this->substitute_plane_equation( vertex0 );
     const float value1 = this->substitute_plane_equation( vertex1 );
@@ -970,8 +970,8 @@ const double SlicePlane::interpolate_value(
     const double x1 = vertex1.x();
     const double y1 = vertex1.y();
     const double z1 = vertex1.z();
-    const size_t index0 = static_cast<size_t>( x0 + y0 * line_size + z0 * slice_size );
-    const size_t index1 = static_cast<size_t>( x1 + y1 * line_size + z1 * slice_size );
+    const std::size_t index0 = static_cast<size_t>( x0 + y0 * line_size + z0 * slice_size );
+    const std::size_t index1 = static_cast<size_t>( x1 + y1 * line_size + z1 * slice_size );
 
     return( values[ index0 ] + ratio * ( values[ index1 ] - values[ index0 ] ) );
 }
@@ -988,8 +988,8 @@ const double SlicePlane::interpolate_value(
 template <typename T>
 const double SlicePlane::interpolate_value(
     const vismodule::UnstructuredVolumeObject& volume,
-    const size_t                         index0,
-    const size_t                         index1 ) const
+    const std::size_t                         index0,
+    const std::size_t                         index1 ) const
 {
     const T* const values = static_cast<const T*>( volume.values().pointer() );
     const vismodule::Real32* const coords = volume.coords().pointer();
