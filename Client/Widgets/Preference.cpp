@@ -1,10 +1,37 @@
 #include "Preference.h"
 #include "ui_Preference.h"
 
+#include <QCoreApplication>
+#include <QDir>
+#include <QFile>
+#include <QStandardPaths>
+
+namespace
+{
+QString preferenceSettingsPath()
+{
+    const QDir app_dir( QCoreApplication::applicationDirPath() );
+    const QString legacy_path = app_dir.filePath( "config.ini" );
+#ifdef Q_OS_MACOS
+    const QString config_dir = QStandardPaths::writableLocation( QStandardPaths::AppConfigLocation );
+    const QString config_path = QDir( config_dir ).filePath( "config.ini" );
+    if ( !QFile::exists( config_path ) && QDir().mkpath( config_dir ) )
+    {
+        const QString bundled_legacy_path = app_dir.filePath( "../Resources/config.ini" );
+        const QString source_path = QFile::exists( legacy_path ) ? legacy_path : bundled_legacy_path;
+        if ( QFile::exists( source_path ) ) QFile::copy( source_path, config_path );
+    }
+    return config_path;
+#else
+    return legacy_path;
+#endif
+}
+}
+
 Preference::Preference( QWidget *parent )
     : QDialog( parent )
     , ui( new Ui::Preference )
-    , m_settings( QCoreApplication::applicationDirPath() + "/config.ini", QSettings::IniFormat )
+    , m_settings( preferenceSettingsPath(), QSettings::IniFormat )
 {
     ui->setupUi( this );
 

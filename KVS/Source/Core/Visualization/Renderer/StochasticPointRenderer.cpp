@@ -222,6 +222,11 @@ void StochasticPointRenderer::Engine::draw(
 {
     auto* point = kvs::PointObject::DownCast( object );
     auto dpr = camera->devicePixelRatio();
+    kvs::OpenGL::WithPushedAttrib p( GL_ENABLE_BIT );
+
+    // ParticleBasedRenderer enables shader-controlled point size. This shader
+    // uses glPointSize instead, so ignore the state left by earlier draws.
+    kvs::OpenGL::Disable( GL_VERTEX_PROGRAM_POINT_SIZE );
 
     // Depth offset
     if ( !kvs::Math::IsZero( m_depth_offset[0] ) )

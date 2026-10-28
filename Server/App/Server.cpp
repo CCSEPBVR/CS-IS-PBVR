@@ -10,6 +10,7 @@
 #include <iostream>
 #include <algorithm>
 #include <regex>
+#include <cmath>
 
 #ifndef CPU_VER
 #include "mpi.h"
@@ -503,7 +504,7 @@ Server::Server(int port)
                 onMessage(ws, message, opCode);
             },
             .dropped = [](uWS::WebSocket<false, true, PerSocket>* ws, std::string_view, uWS::OpCode) { std::cout << "[Server-text] dropped" << std::endl; },
-            .drain = [](uWS::WebSocket<false, true, PerSocket>* ws) { std::cout << "[Server-text] drain" << std::endl; },
+            .drain = [this](uWS::WebSocket<false, true, PerSocket>* ws) { flushPOTSnapshot(ws); },
             .ping = [](uWS::WebSocket<false, true, PerSocket>* ws, std::string_view) { std::cout << "[Server-text] ping" << std::endl; },
             .pong = [](uWS::WebSocket<false, true, PerSocket>* ws, std::string_view) { std::cout << "[Server-text] pong" << std::endl; },
             .close = [this](uWS::WebSocket<false, true, PerSocket>* ws, int code, std::string_view message)
@@ -624,7 +625,13 @@ void Server::onOpen(uWS::WebSocket<false, true, PerSocket>* ws, SocketType socke
     if (!ps || !ps->state) return;
 
     if (socketType == SocketType::Binary) { ps->state->binary_ws = ws; }
-    if (socketType == SocketType::Text) { ps->state->text_ws = ws; }
+    if (socketType == SocketType::Text)
+    {
+        ps->state->text_ws = ws;
+        if ( !m_pot_dataset_id.empty() &&
+             ws->send( potSnapshot().dump(), uWS::OpCode::TEXT ) == uWS::WebSocket<false, true, PerSocket>::DROPPED )
+            ps->state->pot_snapshot_pending = true;
+    }
 
     if (socketType == SocketType::Text)
     {
@@ -647,7 +654,18 @@ void Server::onOpen(uWS::WebSocket<false, true, PerSocket>* ws, SocketType socke
 void Server::onMessage(uWS::WebSocket<false, true, PerSocket>* ws, std::string_view msg, uWS::OpCode)
 {
     auto received = nlohmann::json::parse(msg);
+    auto state = ws->getUserData()->state;
+    // Dispatch incoming messages FIFO on this same loop thread, outside uWS's
+    // automatically corked receive callback. This lets long synchronous CS work
+    // send each POT sample immediately. No MPI thread or POT task queue is used.
+    m_u_web_sockets.getLoop()->defer([this, ws, state, received = std::move(received)]() {
+        if ( state && ( state->text_ws == ws || state->binary_ws == ws ) )
+            dispatchMessage( ws, received );
+    });
+}
 
+void Server::dispatchMessage(uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received)
+{
     if (received.contains(Protocol::Key::Event))
     {
         const std::string event = received[Protocol::Key::Event].get<std::string>();
@@ -1164,10 +1182,22 @@ void Server::initialize(uWS::WebSocket<false, true, PerSocket>* ws, const nlohma
         *m_glyph_property = candidate_glyph_property;
         *m_pol_property = candidate_pol_property;
         m_server_mode = ServerMode::CS;
+
+        SetDefaultPOTParameter(*m_pot_property);
+
+        // 同じパスでも、新しいデータセットとして観測状態を初期化する。
+        m_pot_dataset_id = pointObjectUUID;
+        m_pot_observation = nullptr;
+        m_pot_samples = nlohmann::json::array();
+        m_pot_state = "idle";
     }
     else if (pointObjectFormat == ObjectInfoExtractor::Format::InsituServerPointObject)
     {
         m_server_mode = ServerMode::IS;
+        m_pot_dataset_id.clear();
+        m_pot_observation = nullptr;
+        m_pot_samples = nlohmann::json::array();
+        m_pot_state = "idle";
 
         ParticleMonitor particleMonitor;
         particleMonitor.check();
@@ -1620,6 +1650,7 @@ void Server::initialize(uWS::WebSocket<false, true, PerSocket>* ws, const nlohma
     nlohmann::json plotOverTimeParameter;
     plotOverTimeParameter[Protocol::Key::Enable] = m_pot_property->m_plot_flag;
     plotOverTimeParameter[Protocol::Key::Coords] = m_pot_property->m_target_point;
+    if ( m_server_mode == ServerMode::CS ) plotOverTimeParameter = potSnapshot();
     msg[Protocol::Key::PlotOverTimeParameter] = std::move(plotOverTimeParameter);
 
     if (m_server_mode == ServerMode::IS)
@@ -1777,6 +1808,10 @@ void Server::requestDataAt(uWS::WebSocket<false, true, PerSocket>* ws, const nlo
                 msg[Protocol::Key::PlotOverLineParameter] = std::move(plotOverLineParameter);
             }
         }
+
+        // Always evaluate POT after the POL position, including when POL is off.
+        // This call runs the entire time range before another generation can start.
+        if ( m_server_mode == ServerMode::CS ) generatePOTCS();
 
         // Transfer Function
         ParticleProperty* tmpParticleProperty = nullptr;
@@ -2346,6 +2381,14 @@ void Server::receivePlotOverTimeParameter(uWS::WebSocket<false, true, PerSocket>
 {
     // std::cout << "[Server] plot over time parameter" << std::endl;
 
+    if ( m_server_mode == ServerMode::CS && received.contains(Protocol::Key::Coords) )
+    {
+        const auto& coords = received.at(Protocol::Key::Coords);
+        if ( !coords.is_array() || coords.size() != 3 ) return;
+        for ( const auto& value : coords )
+            if ( !value.is_number() || !std::isfinite(value.get<float>()) ) return;
+    }
+
     if (received.contains(Protocol::Key::Enable))
     {
         m_pot_property->m_plot_flag = received.at(Protocol::Key::Enable).get<bool>();
@@ -2376,7 +2419,16 @@ void Server::receivePlotOverTimeParameter(uWS::WebSocket<false, true, PerSocket>
         ppw.writePlotOverTimeParameterFile();
     }
 
-    ws->publish( k_text_topic, received.dump(), uWS::OpCode::TEXT );
+    if ( m_server_mode == ServerMode::CS )
+    {
+        // Apply only stores settings. Comparing with the actual cached observation
+        // (not the presence of Coords) decides reuse on the next time update.
+        auto snapshot = potSnapshot();
+        if ( received.contains(Protocol::Key::ApplyId) )
+            snapshot[Protocol::Key::ApplyId] = received.at(Protocol::Key::ApplyId);
+        sendPOTMessage( snapshot );
+    }
+    else ws->publish( k_text_topic, received.dump(), uWS::OpCode::TEXT );
 }
 
 void Server::receiveTransferFunctionParameter(uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received)
@@ -2841,6 +2893,16 @@ void Server::receiveObjectDelete(uWS::WebSocket<false, true, PerSocket>* ws, con
 
     if (it == m_objects->end()) return;
 
+    if ( it->format == ObjectInfoExtractor::Format::ClientServerPointObject && it->uuid == m_pot_dataset_id )
+    {
+        m_pot_dataset_id.clear();
+        m_pot_observation = nullptr;
+        m_pot_samples = nlohmann::json::array();
+        m_pot_state = "idle";
+        SetDefaultPOTParameter(*m_pot_property);
+        sendPOTMessage(potSnapshot());
+    }
+    
     ServerObjectUtils::DestroyObject( *it );
     m_objects->erase(it);
 
@@ -3550,6 +3612,8 @@ void Server::PlotOverTimeSenderLoop()
                 nlohmann::json one;
                 one[Protocol::Key::TimeStep]    = timeStep;
                 one[Protocol::Key::ValueOnTime] = std::move( valueArray );
+                one[Protocol::Key::Mask] = kvsmlObjectPOT->mask();
+                one[Protocol::Key::SampleState] = kvsmlObjectPOT->mask() ? "valid" : "outside_domain";
 
                 samples.push_back( std::move( one ) );
             }
@@ -3576,4 +3640,127 @@ void Server::PlotOverTimeSenderLoop()
     }
 
     std::cout << "[Server] PlotOverTimeSenderLoop() end" << std::endl;
+}
+
+nlohmann::json Server::appliedPOTObservation() const
+{
+    nlohmann::json observation;
+    observation[Protocol::Key::DatasetId] = m_pot_dataset_id;
+    observation[Protocol::Key::Coords] = m_pot_property->m_target_point;
+    observation[Protocol::Key::RangeStart] = m_multi_volume_property_list->m_total_start_steps;
+    observation[Protocol::Key::RangeEnd] = m_multi_volume_property_list->m_total_last_step;
+    return observation;
+}
+
+nlohmann::json Server::potSnapshot() const
+{
+    const auto applied = appliedPOTObservation();
+    nlohmann::json message;
+    message[Protocol::Key::Event] = Protocol::Events::PlotOverTimeParameter;
+    message[Protocol::Key::Enable] = m_pot_property->m_plot_flag;
+    message[Protocol::Key::Coords] = m_pot_property->m_target_point;
+    message[Protocol::Key::AppliedObservation] = applied;
+    message[Protocol::Key::Snapshot] = true;
+    // A retained result is only exposed as the result of its actual observation.
+    if ( m_pot_observation == applied )
+    {
+        message[Protocol::Key::Observation] = m_pot_observation;
+        message[Protocol::Key::Samples] = m_pot_samples;
+        message[Protocol::Key::CalculationState] = m_pot_state;
+    }
+    else
+    {
+        message[Protocol::Key::Observation] = applied;
+        message[Protocol::Key::Samples] = nlohmann::json::array();
+        message[Protocol::Key::CalculationState] = m_pot_property->m_plot_flag ? "pending" : "idle";
+    }
+    return message;
+}
+
+void Server::sendPOTMessage( const nlohmann::json& message )
+{
+    const std::string payload = message.dump();
+    // App::publish batches small messages until the next loop iteration. Direct
+    // sends outside the receive callback stream progress during the full sweep.
+    for ( const auto& entry : m_clients )
+    {
+        auto* socket = entry.second->text_ws;
+        if ( !socket ) continue;
+        auto& state = *entry.second;
+        if ( message.contains(Protocol::Key::ApplyId) )
+            state.pot_apply_id = message.at(Protocol::Key::ApplyId).get<std::string>();
+        socket->cork([socket, &payload, &state]() {
+            if ( socket->send( payload, uWS::OpCode::TEXT ) == uWS::WebSocket<false, true, PerSocket>::DROPPED )
+                state.pot_snapshot_pending = true;
+        });
+    }
+}
+
+void Server::flushPOTSnapshot( uWS::WebSocket<false, true, PerSocket>* ws )
+{
+    auto state = ws->getUserData()->state;
+    if ( !state || !state->pot_snapshot_pending || ws->getBufferedAmount() != 0 ) return;
+    state->pot_snapshot_pending = false;
+    if ( m_pot_dataset_id.empty() ) return;
+    // A slow peer recovers from the one retained result after its socket drains.
+    // No second computation or unbounded per-peer result queue is created.
+    auto message = potSnapshot();
+    if ( !state->pot_apply_id.empty() ) message[Protocol::Key::ApplyId] = state->pot_apply_id;
+    if ( ws->send(message.dump(), uWS::OpCode::TEXT) == uWS::WebSocket<false, true, PerSocket>::DROPPED )
+        state->pot_snapshot_pending = true;
+}
+
+void Server::generatePOTCS()
+{
+    if ( !m_pot_property->m_plot_flag || m_pot_dataset_id.empty() ) return;
+    const auto observation = appliedPOTObservation();
+    if ( m_pot_observation == observation && m_pot_state == "complete" ) return;
+
+    std::string path;
+    for ( const auto& info : *m_objects )
+        if ( info.format == ObjectInfoExtractor::Format::ClientServerPointObject && info.uuid == m_pot_dataset_id )
+        {
+            path = Worker::toNativePath( info.directory );
+            break;
+        }
+    const PlotOverTimeProperty property = *m_pot_property;
+    const int first = m_multi_volume_property_list->m_total_start_steps;
+    const int last = m_multi_volume_property_list->m_total_last_step;
+    m_pot_observation = observation;
+    m_pot_samples = nlohmann::json::array();
+    m_pot_state = "computing";
+    nlohmann::json message;
+    message[Protocol::Key::Event] = Protocol::Events::PlotOverTimeParameter;
+    message[Protocol::Key::Observation] = observation;
+    message[Protocol::Key::AppliedObservation] = observation;
+    message[Protocol::Key::CalculationState] = m_pot_state;
+    message[Protocol::Key::Snapshot] = true;
+    sendPOTMessage( message );
+    message.erase( Protocol::Key::Snapshot );
+    message.erase( Protocol::Key::AppliedObservation );
+
+    bool success = !path.empty() && first <= last;
+    if ( success )
+    {
+        SendPlotOverTimePropertySignal( property );
+        for ( int step = first; ; ++step )
+        {
+            SendGeneratePlotOverTimeSignal( path, step );
+            const auto sample = GeneratePOTCS( path, step, property, *m_multi_volume_property_list );
+            success = success && sample.success;
+            nlohmann::json one;
+            one[Protocol::Key::TimeStep] = step;
+            one[Protocol::Key::ValueOnTime] = sample.values; // NaN serializes to JSON null.
+            one[Protocol::Key::Mask] = sample.mask;
+            one[Protocol::Key::SampleState] = !sample.success ? "failed" : sample.mask ? "valid" : "outside_domain";
+            m_pot_samples.push_back( one );
+            message[Protocol::Key::Samples] = nlohmann::json::array({one});
+            sendPOTMessage( message );
+            if ( step == last ) break; // Also avoids overflowing INT_MAX.
+        }
+    }
+    m_pot_state = success ? "complete" : "failed";
+    message.erase( Protocol::Key::Samples );
+    message[Protocol::Key::CalculationState] = m_pot_state;
+    sendPOTMessage( message );
 }

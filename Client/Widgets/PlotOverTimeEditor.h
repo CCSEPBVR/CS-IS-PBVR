@@ -2,6 +2,10 @@
 #define PLOTOVERTIMEEDITOR_H
 
 #include <QDockWidget>
+#include <QLabel>
+#include <QMap>
+#include <QJsonArray>
+#include <QJsonObject>
 
 #include "Screen.h"
 #include <kvs/PointObject>
@@ -64,45 +68,39 @@ private:
     bool m_is_operator              = true;
 
     QStringList m_variable_list;
-    double m_x_min;
-    double m_x_max;
-    double m_y_min;
-    double m_y_max;
 
     kvs::Vec3 m_point_initial_translation;
 
     kvs::PointObject* m_point_object        = nullptr;
 
-    double m_x_coord;
-    double m_y_coord;
-    double m_z_coord;
+    double m_x_coord = 0.0;
+    double m_y_coord = 0.0;
+    double m_z_coord = 0.0;
 
     QVector<double> m_time_buffer;
     QVector<QVector<double>> m_value_buffers;
 
     bool m_plot_inited       = false;
-    bool m_follow_right_edge = true;
+    bool m_auto_fit          = true; // Controls both X following and Y fitting.
     bool m_user_interacting  = false;
-    bool m_need_rebuild      = true;
 
     QMetaObject::Connection m_combo_connection;
 
-    struct PlotOverTimeUiSnapshot
-    {
-        bool enable = false;
-        int resolution = 0;
-        int target = 0;
-    };
+    QMap<int, QVector<double>> m_samples;
+    QMap<int, QString> m_sample_states;
+    QJsonObject m_applied_observation;
+    QJsonArray m_applied_point;
+    QString m_pending_apply;
+    QString m_calculation_state = "idle";
+    QLabel* m_calculation_status = nullptr;
+    void clearPlot();
+    void updateCalculationStatus();
 
-    PlotOverTimeUiSnapshot m_last_snap_shot;
-    bool m_has_last_snap_shot = false;
-
-    PlotOverTimeUiSnapshot captureUiSnapshot() const;
-    static bool fuzzyEqual( double a, double b );
-    static bool sameVec3( const double a[3], const double b[3] );
-
-    void redrawPlotFromBuffers( int index, double tLatest, bool forceRebuild );
+    void redrawPlotFromBuffers( int index, bool resetView = false );
     void calculateInitialTranslation();
+    void setPointCoords( double x, double y, double z );
+    void onPointTranslationValueChanged();
+    void onPointCoordsValueChanged();
 
 public slots:
      void onDisplayGraphComboBoxChanged( int index );

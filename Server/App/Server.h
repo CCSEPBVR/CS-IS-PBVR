@@ -42,6 +42,8 @@ struct ClientState
     std::string userUUID;
     int userID = -1;
     bool isOperator = false;
+    bool pot_snapshot_pending = false;
+    std::string pot_apply_id;
     uWS::WebSocket<false, true, PerSocket>* binary_ws = nullptr;
     uWS::WebSocket<false, true, PerSocket>* text_ws = nullptr;
 };
@@ -87,6 +89,18 @@ private:
     std::thread m_last_step_monitor_thread;               // state.txtのLAST_STEPを監視するスレッド
     std::atomic<bool> m_plot_over_time_sender_is_running; // Plot Over Timeをクライアントに送信するスレッドに終了信号を送る変数
     std::thread m_plot_over_time_sender_thread;           // Plot Over Timeをクライアントに送信するスレッド
+
+    // Only one CS observation is retained. Applied settings live in m_pot_property.
+    std::string m_pot_dataset_id;
+    nlohmann::json m_pot_observation;
+    nlohmann::json m_pot_samples = nlohmann::json::array();
+    std::string m_pot_state = "idle";
+    nlohmann::json appliedPOTObservation() const;
+    nlohmann::json potSnapshot() const;
+    void generatePOTCS();
+    void sendPOTMessage( const nlohmann::json& message );
+    void flushPOTSnapshot( uWS::WebSocket<false, true, PerSocket>* ws );
+    void dispatchMessage( uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received );
 
     void reset();
     void onUpgrade(uWS::HttpResponse<SSL>* res, uWS::HttpRequest* req, struct us_socket_context_t* context, SocketType type);

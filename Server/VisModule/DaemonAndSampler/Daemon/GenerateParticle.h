@@ -45,7 +45,8 @@ void GenerateParticleIS(
 void generate_volume(
     const std::string& file_path,
     const MultiVolumeProperty& mvp,
-    vismodule::VolumeObjectBase*& volume
+    vismodule::VolumeObjectBase*& volume,
+    bool recover_read_error = false
 );
 
 void generate_volume(
@@ -53,7 +54,8 @@ void generate_volume(
     const MultiVolumeProperty& mvp,
     const int time_step,
     const int sub_volume_id,
-    vismodule::VolumeObjectBase*& volume
+    vismodule::VolumeObjectBase*& volume,
+    bool recover_read_error = false
 );
 
 void store_volume_in_variables_array_common(

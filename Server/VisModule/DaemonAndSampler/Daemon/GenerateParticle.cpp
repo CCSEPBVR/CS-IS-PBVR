@@ -1,5 +1,6 @@
 #include <algorithm>
 #include <cmath>
+#include <stdexcept>
 
 #include <vismodule/JobDispatcher>
 #include <vismodule/GenerateParticle>
@@ -866,13 +867,15 @@ void GenerateParticleIS(
 void generate_volume(
     const std::string& file_path,
     const MultiVolumeProperty& mvp,
-    vismodule::VolumeObjectBase*& volume
+    vismodule::VolumeObjectBase*& volume,
+    const bool recover_read_error
 )
 {
     struct stat s;
     if ( stat( file_path.c_str(), &s ) )
     {
         std::cout << "Error. read failed:" << file_path << std::endl;
+        if ( recover_read_error ) throw std::runtime_error( "Failed to read volume: " + file_path );
         exit( 1 );
     }
 
@@ -904,6 +907,12 @@ void generate_volume(
         return;
     }
 
+    if ( recover_read_error )
+    {
+        const auto* importer = dynamic_cast<const vismodule::ImporterBase*>( volume );
+        if ( !volume || ( importer && importer->isFailure() ) )
+            throw std::runtime_error( "Failed to import volume: " + file_path );
+    }
     std::cout << *volume << std::endl;
     std::cout << "min:" << volume->minObjectCoord()   << ", max:" << volume->maxObjectCoord() << std::endl;
     std::cout << "min:" << volume->minExternalCoord() << ", max:" << volume->maxExternalCoord() << std::endl;
@@ -916,7 +925,8 @@ void generate_volume(
     const MultiVolumeProperty& mvp,
     const int time_step,
     const int sub_volume_id,
-    vismodule::VolumeObjectBase*& volume
+    vismodule::VolumeObjectBase*& volume,
+    const bool recover_read_error
 )
 {
     std::size_t found_kvsml = file_path.find(".kvsml");
@@ -975,6 +985,13 @@ void generate_volume(
         volume = new vismodule::StructuredVolumeImporter( file_path, time_step, sub_volume_id );
     }
 #endif
+
+    if ( recover_read_error )
+    {
+        const auto* importer = dynamic_cast<const vismodule::ImporterBase*>( volume );
+        if ( !volume || ( importer && importer->isFailure() ) || volume->values().size() == 0 )
+            throw std::runtime_error( "Failed to import volume: " + file_path );
+    }
 
     // .vtm .pvtu .case file format
     if ( ( found_vtm != std::string::npos ) || ( found_pvtu != std::string::npos ) || ( found_case != std::string::npos ) )

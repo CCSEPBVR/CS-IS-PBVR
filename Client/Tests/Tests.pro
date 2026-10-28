@@ -115,6 +115,12 @@ equals(TEST_ENABLE_PLOTOVERLINEEDITOR, 1) {
     SOURCES += PlotOverLineEditorTest.cpp
 }
 
+equals(TEST_ENABLE_PLOTOVERTIMEEDITOR, 1) {
+    DEFINES += PBVR_ENABLE_TEST_PLOTOVERTIMEEDITOR
+    HEADERS += PlotOverTimeEditorTest.h
+    SOURCES += PlotOverTimeEditorTest.cpp
+}
+
 equals(TEST_ENABLE_POINTSIZECONTROL, 1) {
     DEFINES += PBVR_ENABLE_TEST_POINTSIZECONTROL
     HEADERS += PointSizeControlTest.h
@@ -372,3 +378,9 @@ unix:!macx {
 }
 
 include(../KvsRuntimeResources.pri)
+
+# Sign the completed macOS test bundle after KVS resources have been copied.
+macx {
+    PRE_TARGETDEPS += $$PWD/sign-test-app.sh
+    QMAKE_POST_LINK += && /bin/sh $$shell_quote($$PWD/sign-test-app.sh) $$shell_quote($$OUT_PWD/$${TARGET}.app)
+}

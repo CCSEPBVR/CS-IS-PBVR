@@ -79,6 +79,10 @@
 #include "PlotOverLineEditorTest.h"
 #endif
 
+#ifdef PBVR_ENABLE_TEST_PLOTOVERTIMEEDITOR
+#include "PlotOverTimeEditorTest.h"
+#endif
+
 #ifdef PBVR_ENABLE_TEST_POINTSIZECONTROL
 #include "PointSizeControlTest.h"
 #endif
@@ -278,6 +282,14 @@ int runEnabledTests( int argc, char** argv )
     runEnabledTest<ClientTests::PlotOverLineEditorTest>( result, has_enabled_test, argc, argv );
 #endif
 
+#ifdef PBVR_ENABLE_TEST_PLOTOVERTIMEEDITOR
+    {
+        has_enabled_test = true;
+        ClientTests::PlotOverTimeEditorTest test;
+        result |= qExecWithCleanup( &test, argc, argv );
+    }
+#endif
+
 #ifdef PBVR_ENABLE_TEST_POINTSIZECONTROL
     runEnabledTest<ClientTests::PointSizeControlTest>( result, has_enabled_test, argc, argv );
 #endif
@@ -394,7 +406,8 @@ int runEnabledTests( int argc, char** argv )
                    "TEST_ENABLE_ANIMATIONCONTROL, or "
                    "TEST_ENABLE_GLYPHEDITOR, or "
                    "TEST_ENABLE_OBJECTEDITOR, or "
-                   "TEST_ENABLE_PLOTOVERLINEEDITOR, or "
+                   "TEST_ENABLE_PLOTOVERLINEEDITOR, "
+                   "TEST_ENABLE_PLOTOVERTIMEEDITOR, or "
                    "TEST_ENABLE_POINTSIZECONTROL, or "
                    "TEST_ENABLE_REPETITIONLEVELCONTROL, or "
                    "TEST_ENABLE_SHADINGCONTROL, or "
