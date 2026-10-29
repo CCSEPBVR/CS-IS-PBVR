@@ -490,6 +490,9 @@ void OutputEnsembleStatisticHistory(
     history_json << "    \"nvariables\": " << nvariables << ",\n";
     history_json << "    \"particle_limit\": " << particle_property.m_particle_limit << ",\n";
     history_json << "    \"is_ensemble\": true,\n";
+    // 統計量(平均・分散)が常用対数化されているか。値域 min/max が log10 値かを判別するため。
+    history_json << "    \"log_scale_statistics\": "
+                 << ( particle_property.m_log_scale_statistics ? "true" : "false" ) << ",\n";
     history_json << "    \"statistics\": {\n";
     WriteEnsembleStatisticJson( history_json, "average", average_range, tf_number );
     history_json << ",\n";
