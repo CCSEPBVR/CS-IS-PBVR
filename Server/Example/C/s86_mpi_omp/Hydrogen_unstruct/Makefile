@@ -72,6 +72,7 @@ LDFLAGS += -L$(VTK_LIB_PATH) \
 -lvtkFiltersCore-$(VTK_VERSION) \
 -lvtkIOCore-$(VTK_VERSION) \
 -lvtkIOGeometry-$(VTK_VERSION) \
+-lvtkIONetCDF-$(VTK_VERSION) \
 -lvtkIOCGNSReader-$(VTK_VERSION) \
 -lvtkIOEnSight-$(VTK_VERSION) \
 -lvtkIOParallel-$(VTK_VERSION) \
@@ -90,6 +91,9 @@ LDFLAGS += -L$(VTK_LIB_PATH) \
 -lvtkdoubleconversion-$(VTK_VERSION) \
 -lvtklzma-$(VTK_VERSION) \
 -lvtklz4-$(VTK_VERSION) \
+-lvtknetcdf-$(VTK_VERSION) \
+-lvtkhdf5_hl-$(VTK_VERSION) \
+-lvtkhdf5-$(VTK_VERSION) \
 -lvtkCommonSystem-$(VTK_VERSION) \
 -lvtkCommonMisc-$(VTK_VERSION) \
 -lvtkpugixml-$(VTK_VERSION)

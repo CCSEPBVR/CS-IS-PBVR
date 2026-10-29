@@ -2,6 +2,8 @@
 #include <exception>
 #include <cstdlib>
 #include <stdexcept>
+#include <iterator>
+#include "../../../../Shared/TransferFunctionFile.h"
 #define DEFAULT_TF_NUMBER 5
 #define BEFORE_READ_TF_NUMBER 99
 
@@ -867,62 +869,7 @@ bool SetEnsembleTransferFunctionArrayFromParameters(
 }
 
 // CSのConnect時に指定した.tfファイルを読み込む
-void ParameterFileReader::readTransferFunctionFile( const char* fname )
-{
-    m_name_list_file.setName( "TF_RESOLUTION" );
-    m_name_list_file.setName( "TF_NUMBER" );
-    m_name_list_file.setName( "TF_SYNTH_C" );
-    m_name_list_file.setName( "TF_SYNTH_O" );
 
-    for ( std::size_t i = 0; i < BEFORE_READ_TF_NUMBER; i++ )
-    {
-        std::stringstream ss;
-        ss << "TF_NAME" << i + 1 << "_";
-
-        const std::string tag_base = ss.str();
-        m_name_list_file.setName( tag_base + "C" );
-        m_name_list_file.setName( tag_base + "VAR_C" );
-        m_name_list_file.setName( tag_base + "MIN_C" );
-        m_name_list_file.setName( tag_base + "MAX_C" );
-        m_name_list_file.setName( tag_base + "TABLE_C" );
-        m_name_list_file.setName( tag_base + "O" );
-        m_name_list_file.setName( tag_base + "VAR_O" );
-        m_name_list_file.setName( tag_base + "MIN_O" );
-        m_name_list_file.setName( tag_base + "MAX_O" );
-        m_name_list_file.setName( tag_base + "TABLE_O" );
-    }
-
-    m_name_list_file.setFileName( std::string( fname ) );
-
-    if( !m_name_list_file.read() )
-    {
-        std::cerr << "ERROR:Failed to read the transfer function file." << std::endl;
-        return;
-    }
-
-    // delete TF_NUMBER+1 ~ BEFORE_READ_TF_NUMBER
-    const int tf_number = m_name_list_file.getValue<int>( "TF_NUMBER" );
-    if ( tf_number < BEFORE_READ_TF_NUMBER )
-    {
-        for ( std::size_t i = tf_number; i < BEFORE_READ_TF_NUMBER; i++ )
-        {
-            std::stringstream ss;
-            ss << "TF_NAME" << i + 1 << "_";
-
-            const std::string tag_base = ss.str();
-            m_name_list_file.setName( tag_base + "C" );
-            m_name_list_file.setName( tag_base + "VAR_C" );
-            m_name_list_file.setName( tag_base + "MIN_C" );
-            m_name_list_file.setName( tag_base + "MAX_C" );
-            m_name_list_file.setName( tag_base + "TABLE_C" );
-            m_name_list_file.setName( tag_base + "O" );
-            m_name_list_file.setName( tag_base + "VAR_O" );
-            m_name_list_file.setName( tag_base + "MIN_O" );
-            m_name_list_file.setName( tag_base + "MAX_O" );
-            m_name_list_file.setName( tag_base + "TABLE_O" );
-        }
-    }
-}
 
 // ISの旧形式default.tfファイルを読み込む
 void ParameterFileReader::readParticleParameterFile( const char* fname )
@@ -1280,133 +1227,70 @@ void ParameterFileReader::readPlotOverTimeParameterFile( const char* fname, Plot
     }
 }
 
-// CSのConnect時に指定した.tfファイルを読み込んだ値を設定する
-void ParameterFileReader::setTransferFunctionParameter( ParticleProperty& particle_property )
+// CS JSON files contain transfer function settings only.
+void ParameterFileReader::readTransferFunctionJsonCS( const char* fname, ParticleProperty& particle_property )
 {
-    const int tf_resolution = m_name_list_file.getValue<int>( "TF_RESOLUTION" );
-    const int tf_number     = m_name_list_file.getValue<int>( "TF_NUMBER" );
-    particle_property.m_color_transfer_function_synthesis = m_name_list_file.getValue<std::string>( "TF_SYNTH_C" );
-    particle_property.m_opacity_transfer_function_synthesis = m_name_list_file.getValue<std::string>( "TF_SYNTH_O" );
+    if ( fname == nullptr || !TransferFunctionFile::IsJsonPath( fname ) )
+        throw std::runtime_error( "CS transfer function files must use the .json extension." );
+    std::ifstream file( fname, std::ios::binary );
+    if ( !file ) throw std::runtime_error( "Could not open transfer function JSON: " + std::string( fname ) );
+    const std::string contents( ( std::istreambuf_iterator<char>( file ) ), std::istreambuf_iterator<char>() );
+    if ( file.bad() ) throw std::runtime_error( "Could not read transfer function JSON: " + std::string( fname ) );
+    const auto document = TransferFunctionFile::FromJson( nlohmann::json::parse( contents ) );
 
-    particle_property.m_transfunc_array.clear();
-    particle_property.m_transfunc_array.resize( tf_number );
-
-    for ( std::size_t i = 0; i < tf_number; i++ )
+    std::vector<NamedTransferFunction> functions( document.items.size() );
+    std::vector<EquationToken> color_variables;
+    std::vector<EquationToken> opacity_variables;
+    auto variableToken = [&]( std::string expression )
     {
-        std::stringstream ss;
-        ss << "TF_NAME" << i + 1 << "_";
-
-        std::stringstream s_name;
-        s_name << "t" << i + 1;
-
-        const std::string tag_base = ss.str();
-        particle_property.m_transfunc_array[i].m_resolution = tf_resolution;
-        particle_property.m_transfunc_array[i].m_name = s_name.str();
-
-        const std::string color_variable  = m_name_list_file.getValue<std::string>( tag_base + "VAR_C" );
-        const std::string opacity_varible = m_name_list_file.getValue<std::string>( tag_base + "VAR_O" );
-        const float color_min             = m_name_list_file.getValue<float>( tag_base + "MIN_C" );
-        const float color_max             = m_name_list_file.getValue<float>( tag_base + "MAX_C" );
-        const float opacity_min           = m_name_list_file.getValue<float>( tag_base + "MIN_O" );
-        const float opacity_max           = m_name_list_file.getValue<float>( tag_base + "MAX_O" );
-        std::string s_color               = m_name_list_file.getValue<std::string>( tag_base + "TABLE_C" );
-        std::string s_opacity             = m_name_list_file.getValue<std::string>( tag_base + "TABLE_O" );
-
-        particle_property.m_transfunc_array[i].m_server_color_range_mode   = NamedTransferFunction::ServerRangeMode::UserRange;
-        particle_property.m_transfunc_array[i].m_server_opacity_range_mode = NamedTransferFunction::ServerRangeMode::UserRange;
-        particle_property.m_transfunc_array[i].m_color_variable            = color_variable;
-        particle_property.m_transfunc_array[i].m_opacity_variable          = opacity_varible;
-        particle_property.m_transfunc_array[i].m_user_color_variable_min   = color_min;
-        particle_property.m_transfunc_array[i].m_user_color_variable_max   = color_max;
-        particle_property.m_transfunc_array[i].m_user_opacity_variable_min = opacity_min;
-        particle_property.m_transfunc_array[i].m_user_opacity_variable_max = opacity_max;
-
-        std::replace( s_color.begin(), s_color.end(), ',', ' ' );
-        std::replace( s_opacity.begin(), s_opacity.end(), ',', ' ' );
-
-        std::stringstream ss_color( s_color );
-        std::stringstream ss_opacity( s_opacity );
-
-        vismodule::ColorMap::Table color_table( tf_resolution * 3 );
-        vismodule::OpacityMap::Table opacity_table( tf_resolution );
-
-        for ( std::size_t j = 0; j < tf_resolution; j++ )
-        {
-            for ( std::size_t c = 0; c < 3; c++ )
-            {
-                int color_e;
-                ss_color >> color_e;
-                color_table.at( j * 3 + c ) = color_e;
-            }
-        }
-
-        for ( std::size_t j = 0; j < tf_resolution; j++ )
-        {
-            float opacity;
-            ss_opacity >> opacity;
-            opacity_table.at( j ) = opacity;
-        }
-
-        vismodule::ColorMap color_map( color_table );
-        vismodule::OpacityMap opacity_map( opacity_table );
-
-        particle_property.m_transfunc_array[i].setColorMap( color_map );
-        particle_property.m_transfunc_array[i].setOpacityMap( opacity_map );
-        particle_property.m_transfunc_array[i].setColorRange( color_min, color_max );
-        particle_property.m_transfunc_array[i].setOpacityRange( opacity_min, opacity_max );        
+        std::replace( expression.begin(), expression.end(), 'X', 'x' );
+        std::replace( expression.begin(), expression.end(), 'Y', 'y' );
+        std::replace( expression.begin(), expression.end(), 'Z', 'z' );
+        return particle_property.m_transfunc_synthesizer->convert_token( expression );
+    };
+    for ( std::size_t i = 0; i < document.items.size(); ++i )
+    {
+        const auto& source = document.items[i];
+        auto& target = functions[i];
+        target.m_resolution = TransferFunctionFile::Resolution;
+        target.m_name = "t" + std::to_string( i + 1 );
+        target.m_color_variable = source.color.variable;
+        target.m_opacity_variable = source.opacity.variable;
+        target.m_server_color_range_mode = NamedTransferFunction::ServerRangeMode::UserRange;
+        target.m_server_opacity_range_mode = NamedTransferFunction::ServerRangeMode::UserRange;
+        target.m_user_color_variable_min = source.color.minimum;
+        target.m_user_color_variable_max = source.color.maximum;
+        target.m_user_opacity_variable_min = source.opacity.minimum;
+        target.m_user_opacity_variable_max = source.opacity.maximum;
+        vismodule::ColorMap::Table color_table( TransferFunctionFile::Resolution * 3 );
+        vismodule::OpacityMap::Table opacity_table( TransferFunctionFile::Resolution );
+        for ( std::size_t j = 0; j < source.color.values.size(); ++j )
+            color_table.at( j ) = static_cast<vismodule::UInt8>( source.color.values[j] );
+        for ( std::size_t j = 0; j < source.opacity.values.size(); ++j )
+            opacity_table.at( j ) = static_cast<float>( source.opacity.values[j] );
+        target.setColorMap( vismodule::ColorMap( color_table ) );
+        target.setOpacityMap( vismodule::OpacityMap( opacity_table ) );
+        target.setColorRange( source.color.minimum, source.color.maximum );
+        target.setOpacityRange( source.opacity.minimum, source.opacity.maximum );
+        color_variables.push_back( variableToken( source.color.variable ) );
+        opacity_variables.push_back( variableToken( source.opacity.variable ) );
     }
 
-    std::string equation;
-    EquationToken eq;
+    std::string color_expression = document.colorSynthesis;
+    std::replace( color_expression.begin(), color_expression.end(), 'C', 'c' );
+    const EquationToken color_function = particle_property.m_transfunc_synthesizer->convert_token( color_expression );
+    std::string opacity_expression = document.opacitySynthesis;
+    std::replace( opacity_expression.begin(), opacity_expression.end(), 'O', 'a' );
+    const EquationToken opacity_function = particle_property.m_transfunc_synthesizer->convert_token( opacity_expression );
 
-    equation = m_name_list_file.getValue<std::string>( "TF_SYNTH_C" );
-    std::replace( equation.begin(), equation.end(), 'C', 'c' );
-    eq = particle_property.m_transfunc_synthesizer->convert_token( equation );
-    particle_property.m_transfunc_synthesizer->setColorFunction( eq );
-
-    equation = m_name_list_file.getValue<std::string>( "TF_SYNTH_O" );
-    std::replace( equation.begin(), equation.end(), 'O', 'a' );
-    eq = particle_property.m_transfunc_synthesizer->convert_token( equation );
-    particle_property.m_transfunc_synthesizer->setOpacityFunction( eq );
-
-    std::vector<EquationToken> var;
-
-    for ( std::size_t i = 0; i < tf_number; i++ )
-    {
-        std::stringstream tss;
-        tss << "TF_NAME" << i + 1 << "_";
-        const std::string tag_base = tss.str();
-
-        equation = m_name_list_file.getValue<std::string>( tag_base + "VAR_C" );
-        std::replace( equation.begin(), equation.end(), 'X', 'x' );
-        std::replace( equation.begin(), equation.end(), 'Y', 'y' );
-        std::replace( equation.begin(), equation.end(), 'Z', 'z' );
-        eq = particle_property.m_transfunc_synthesizer->convert_token( equation );
-
-        var.push_back( eq );
-    }
-
-    particle_property.m_transfunc_synthesizer->setColorVariable( var );
-    var.clear();
-
-    for ( std::size_t i = 0; i < tf_number; i++ )
-    {
-        std::stringstream tss;
-        tss << "TF_NAME" << i + 1 << "_";
-        const std::string tag_base = tss.str();
-
-        equation = m_name_list_file.getValue<std::string>( tag_base + "VAR_O" );
-        std::replace( equation.begin(), equation.end(), 'X', 'x' );
-        std::replace( equation.begin(), equation.end(), 'Y', 'y' );
-        std::replace( equation.begin(), equation.end(), 'Z', 'z' );
-        eq = particle_property.m_transfunc_synthesizer->convert_token( equation );
-
-        var.push_back( eq );
-    }
-    particle_property.m_transfunc_synthesizer->setOpacityVariable( var );
-    var.clear();
-
-    return;
+    // Apply transfer function settings only; retain sampling and camera settings.
+    particle_property.m_color_transfer_function_synthesis = document.colorSynthesis;
+    particle_property.m_opacity_transfer_function_synthesis = document.opacitySynthesis;
+    particle_property.m_transfunc_array = std::move( functions );
+    particle_property.m_transfunc_synthesizer->setColorFunction( color_function );
+    particle_property.m_transfunc_synthesizer->setOpacityFunction( opacity_function );
+    particle_property.m_transfunc_synthesizer->setColorVariable( color_variables );
+    particle_property.m_transfunc_synthesizer->setOpacityVariable( opacity_variables );
 }
 
 // ISの旧形式default.tfファイルを読み込んだ値を設定する

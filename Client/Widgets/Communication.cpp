@@ -615,7 +615,7 @@ void Communication::onModeClicked()
     else
     {
         setupPathInput( ui->volumeDataFilePathLineEdit      , ui->volumeDataFilePathPushButton      , "e.g., path/to/sample.pfi (or .pfl) (required)", /*enabled=*/true, /*clear=*/false );
-        setupPathInput( ui->transferFunctionFilePathLineEdit, ui->transferFunctionFilePathPushButton, "e.g., path/to/sample.tf (or .tfe) (optional)" , /*enabled=*/true, /*clear=*/false );
+        setupPathInput( ui->transferFunctionFilePathLineEdit, ui->transferFunctionFilePathPushButton, "e.g., path/to/sample.json (optional)" , /*enabled=*/true, /*clear=*/false );
     }
 }
 
@@ -628,7 +628,7 @@ void Communication::onVolumeDataFilePathClicked()
 
 void Communication::onTransferFunctionFilePathClicked()
 {
-    const QString filePath = QFileDialog::getOpenFileName( this, tr( "Load Transfer Function File" ), QString(), tr( "Transfer Function File (*.tfe *.TFE *.tf *.TF);;All Files (*)" ) );
+    const QString filePath = QFileDialog::getOpenFileName( this, tr( "Load Transfer Function File" ), QString(), tr( "Transfer Function File (*.json *.JSON)" ) );
     if( filePath.isEmpty() ) { return; }
     ui->transferFunctionFilePathLineEdit->setText( filePath );
 }

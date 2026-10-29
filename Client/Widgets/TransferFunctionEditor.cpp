@@ -5,6 +5,11 @@
 #include <QJsonArray>
 #include <QDebug>
 #include <QtGlobal>
+#include <QFileInfo>
+#include <QMessageBox>
+#include <QSaveFile>
+#include <QSignalBlocker>
+#include "../../Shared/TransferFunctionFile.h"
 
 TransferFunctionEditor::TransferFunctionEditor( WebSocketPair* websockets, QWidget *parent )
     : QDialog( parent )
@@ -16,7 +21,7 @@ TransferFunctionEditor::TransferFunctionEditor( WebSocketPair* websockets, QWidg
     ui->setupUi(this);
 
     // FIXME:旧サーバ(WebSocket対応前)のサーバで伝達関数が17を以上になるとクラッシュする不具合があった記憶があります
-    ui->numberOfTransferFunctionSpinBox->setMaximum( 16 );
+    ui->numberOfTransferFunctionSpinBox->setMaximum( TransferFunctionFile::MaximumCount );
 
     ui->colorMap  ->setColors( toQVectorColors( std::vector<kvs::RGBColor>( 256, kvs::RGBColor( 0, 0, 0 ) ) ) );
     ui->opacityMap->setOpacities( toQVectorOpacities( std::vector<float>( 256, 0 ) ) );
@@ -867,147 +872,115 @@ void TransferFunctionEditor::onOpacityMapEditorClicked()
 
 void TransferFunctionEditor::onExport()
 {
-    QString fileName = QFileDialog::getSaveFileName( this, tr( "Export Transfer Function File" ), ".", tr( "Transfer Function Files (*.tfe *.TFE *.tf *.TF)" ) );
-
+    if( !m_transfer_function ) return;
+    QString fileName = QFileDialog::getSaveFileName(
+        this, tr( "Export Transfer Function File" ), "default.json", tr( "JSON Files (*.json *.JSON)" ) );
     if( fileName.isEmpty() ) return;
+    if( QFileInfo( fileName ).suffix().isEmpty() ) fileName += ".json";
 
-    QFile file( fileName );
-    if( !file.open( QIODevice::WriteOnly | QIODevice::Text ) ) return;
-
-    QTextStream out( &file );
-
-    // 基本情報
-    out << "TF_RESOLUTION=" << 256 << "\n";
-    out << "TF_NUMBER=" << m_transfer_function->count() << "\n";
-    out << "TF_SYNTH_C=" << ui->colorSynthesizerLineEdit->text() << "\n";
-    out << "TF_SYNTH_O=" << ui->opacitySynthesizerLineEdit->text() << "\n";
-
-    for( int i = 0; i < m_transfer_function->count(); ++i )
+    try
     {
-        const auto& tf = m_transfer_function->at( i );
-        int idx = i + 1;
-
-        // 色情報
-        out << "TF_NAME" << idx << "_C=" << idx << "\n";
-        out << "TF_NAME" << idx << "_VAR_C=" << QString::fromUtf8( tf.color.variable ) << "\n";
-        out << "TF_NAME" << idx << "_MIN_C=" << tf.color.userDefinedMinMax.first << "\n";
-        out << "TF_NAME" << idx << "_MAX_C=" << tf.color.userDefinedMinMax.second << "\n";
-
-        if( !tf.color.map.empty() )
+        if( !TransferFunctionFile::IsJsonPath( fileName.toStdString() ) )
+            throw std::runtime_error( "Transfer function files must use the .json extension." );
+        TransferFunctionFile::Document document;
+        document.colorSynthesis = m_transfer_function->colorSynthesizer();
+        document.opacitySynthesis = m_transfer_function->opacitySynthesizer();
+        for( std::size_t i = 0; i < m_transfer_function->count(); ++i )
         {
-            QStringList colorTable;
-            for( const auto& c : tf.color.map )
+            const auto& source = m_transfer_function->at( i );
+            TransferFunctionFile::Item item;
+            item.color.variable = source.color.variable;
+            item.color.minimum = source.color.userDefinedMinMax.first;
+            item.color.maximum = source.color.userDefinedMinMax.second;
+            for( const auto& color : source.color.map )
             {
-                colorTable << QString::number( c.red() )
-                << QString::number( c.green() )
-                << QString::number( c.blue() );
+                item.color.values.push_back( color.red() );
+                item.color.values.push_back( color.green() );
+                item.color.values.push_back( color.blue() );
             }
-            out << "TF_NAME" << idx << "_TABLE_C=" << colorTable.join( "," ) << "\n";
+            item.opacity.variable = source.opacity.variable;
+            item.opacity.minimum = source.opacity.userDefinedMinMax.first;
+            item.opacity.maximum = source.opacity.userDefinedMinMax.second;
+            item.opacity.values.assign( source.opacity.map.begin(), source.opacity.map.end() );
+            document.items.push_back( std::move( item ) );
         }
-
-        // 不透明度情報
-        out << "TF_NAME" << idx << "_O=" << idx << "\n";
-        out << "TF_NAME" << idx << "_VAR_O=" << QString::fromUtf8( tf.opacity.variable ) << "\n";
-        out << "TF_NAME" << idx << "_MIN_O=" << tf.opacity.userDefinedMinMax.first << "\n";
-        out << "TF_NAME" << idx << "_MAX_O=" << tf.opacity.userDefinedMinMax.second << "\n";
-
-        if( !tf.opacity.map.empty() )
-        {
-            QStringList opacityTable;
-            for( float v : tf.opacity.map )
-            {
-                opacityTable << QString::number( v, 'g', 8 );
-            }
-            out << "TF_NAME" << idx << "_TABLE_O=" << opacityTable.join( "," ) << "\n";
-        }
+        const std::string contents = TransferFunctionFile::Serialize( document );
+        QSaveFile file( fileName );
+        if( !file.open( QIODevice::WriteOnly ) ||
+            file.write( contents.data(), static_cast<qint64>( contents.size() ) ) != static_cast<qint64>( contents.size() ) ||
+            !file.commit() )
+            throw std::runtime_error( "Could not save transfer function JSON." );
     }
-
-    file.close();
+    catch( const std::exception& error )
+    {
+        QMessageBox::warning( this, tr( "Transfer Function Editor" ), QString::fromUtf8( error.what() ) );
+    }
 }
 
 void TransferFunctionEditor::onImport()
 {
-    QFileDialog fileDialog( this, tr( "Import Transfer Function File" ), ".", tr( "Transfer Function Files (*.tfe *.TFE *.tf *.TF)" ) );
-    fileDialog.setFileMode( QFileDialog::ExistingFile );
+    if( !m_transfer_function ) return;
+    const QString fileName = QFileDialog::getOpenFileName(
+        this, tr( "Import Transfer Function File" ), ".", tr( "JSON Files (*.json *.JSON)" ) );
+    if( fileName.isEmpty() ) return;
 
-    if( !fileDialog.exec() ) return;
-
-    QString selectedFile = fileDialog.selectedFiles().first();
-    QFile file( selectedFile );
-    if( !file.open( QIODevice::ReadOnly | QIODevice::Text ) ) return;
-
-    QTextStream in( &file );
-
-    QMap<QString, std::function<void( const QString& ) >> keyHandlers = {
-        { "TF_NUMBER", [this]( const QString& value ) {
-             int number = value.toInt();
-             ui->numberOfTransferFunctionSpinBox->setValue( number );
-         } },
-        { "TF_SYNTH_C", [this]( const QString& value ) {
-             ui->colorSynthesizerLineEdit->setText( value );
-         } },
-        { "TF_SYNTH_O", [this]( const QString& value ) {
-             ui->opacitySynthesizerLineEdit->setText( value );
-         } },
-    };
-
-    QRegularExpression tfRegex( R"(TF_NAME(\d+)_([A-Z]+)_([CO]))" );
-
-    while( !in.atEnd() )
+    try
     {
-        QString line = in.readLine().trimmed();
-        if( !line.contains( '=' ) ) continue;
-
-        QString key = line.section( '=', 0, 0 );
-        QString value = line.section( '=', 1 );
-
-        if( keyHandlers.contains( key ) )
+        if( !TransferFunctionFile::IsJsonPath( fileName.toStdString() ) )
+            throw std::runtime_error( "Transfer function files must use the .json extension." );
+        QFile file( fileName );
+        if( !file.open( QIODevice::ReadOnly ) )
+            throw std::runtime_error( "Could not open transfer function JSON." );
+        const QByteArray contents = file.readAll();
+        if( file.error() != QFileDevice::NoError )
+            throw std::runtime_error( "Could not read transfer function JSON." );
+        const auto document = TransferFunctionFile::FromJson(
+            nlohmann::json::parse( contents.constData(), contents.constData() + contents.size() ) );
+        TransferFunction imported;
+        imported.setColorSynthesizer( document.colorSynthesis );
+        imported.setOpacitySynthesizer( document.opacitySynthesis );
+        for( const auto& source : document.items )
         {
-            keyHandlers[key]( value );
-            continue;
+            TransferFunction::Item item{};
+            item.color.variable = source.color.variable;
+            item.color.rangeMode = TransferFunction::UserRange;
+            item.color.userDefinedMinMax = { source.color.minimum, source.color.maximum };
+            item.color.histogram.assign( TransferFunctionFile::Resolution, 0 );
+            for( std::size_t j = 0; j < source.color.values.size(); j += 3 )
+                item.color.map.emplace_back( static_cast<kvs::UInt8>( source.color.values[j] ),
+                                             static_cast<kvs::UInt8>( source.color.values[j + 1] ),
+                                             static_cast<kvs::UInt8>( source.color.values[j + 2] ) );
+            item.opacity.variable = source.opacity.variable;
+            item.opacity.rangeMode = TransferFunction::UserRange;
+            item.opacity.userDefinedMinMax = { source.opacity.minimum, source.opacity.maximum };
+            item.opacity.map.assign( source.opacity.values.begin(), source.opacity.values.end() );
+            item.opacity.histogram.assign( TransferFunctionFile::Resolution, 0 );
+            imported.addTransferFunction( item );
         }
 
-        QRegularExpressionMatch match = tfRegex.match( key );
-        if( !match.hasMatch() ) continue;
-
-        int index = match.captured( 1 ).toInt() - 1;
-        QString field = match.captured( 2 );
-        QString type = match.captured( 3 ); // C or O
-
-        if( type == "C" )
-        {
-            if( field == "VAR" )        m_transfer_function->at( index ).color.variable = value.toUtf8().constData();
-            else if( field == "MIN" )   m_transfer_function->at( index ).color.userDefinedMinMax.first = value.toDouble();
-            else if( field == "MAX" )   m_transfer_function->at( index ).color.userDefinedMinMax.second = value.toDouble();
-            else if( field == "TABLE" )
-            {
-                QStringList strValues = value.split( ',', Qt::SkipEmptyParts );
-                QVector<QColor> colors;
-                for( int j = 0; j + 2 < strValues.size(); j += 3 )
-                {
-                    colors.append( QColor( strValues[j].toInt(), strValues[j+1].toInt(), strValues[j+2].toInt() ) );
-                }
-                m_transfer_function->at( index ).color.map = toStdVectorColors( colors );
-            }
-        }
-        else if( type == "O" )
-        {
-            if( field == "VAR" )        m_transfer_function->at( index ).opacity.variable = value.toUtf8().constData();
-            else if( field == "MIN" )   m_transfer_function->at( index ).opacity.userDefinedMinMax.first = value.toDouble();
-            else if( field == "MAX" )   m_transfer_function->at( index ).opacity.userDefinedMinMax.second = value.toDouble();
-            else if( field == "TABLE" )
-            {
-                QStringList strValues = value.split( ',', Qt::SkipEmptyParts );
-                QVector<float> table;
-                for( const QString& s : strValues )
-                {
-                    table.append( s.toDouble() );
-                }
-                m_transfer_function->at( index ).opacity.map = toStdVectorOpacities( table );
-            }
-        }
+        // Commit only after validating and constructing the entire snapshot.
+        // UI refresh must not round the imported ranges through valueChanged.
+        const QSignalBlocker numberBlocker( ui->numberOfTransferFunctionSpinBox );
+        const QSignalBlocker colorComboBlocker( ui->colorFunctionComboBox );
+        const QSignalBlocker opacityComboBlocker( ui->opacityFunctionComboBox );
+        const QSignalBlocker colorVariableBlocker( ui->colorFunctionVariableLineEdit );
+        const QSignalBlocker opacityVariableBlocker( ui->opacityFunctionVariableLineEdit );
+        const QSignalBlocker colorMinBlocker( ui->colorUserDefinedMinDoubleSpinBox );
+        const QSignalBlocker colorMaxBlocker( ui->colorUserDefinedMaxDoubleSpinBox );
+        const QSignalBlocker opacityMinBlocker( ui->opacityUserDefinedMinDoubleSpinBox );
+        const QSignalBlocker opacityMaxBlocker( ui->opacityUserDefinedMaxDoubleSpinBox );
+        *m_transfer_function = std::move( imported );
+        ui->numberOfTransferFunctionSpinBox->setValue( static_cast<int>( document.items.size() ) );
+        onNumberOfTransferFunctionValueChanged( static_cast<int>( document.items.size() ) );
+        ui->colorSynthesizerLineEdit->setText( QString::fromStdString( document.colorSynthesis ) );
+        ui->opacitySynthesizerLineEdit->setText( QString::fromStdString( document.opacitySynthesis ) );
+        updateUIFromUserInput( UpdateTarget::Both );
+        updateUIFromServer( UpdateTarget::Both );
     }
-    updateUIFromUserInput( UpdateTarget::Both );
+    catch( const std::exception& error )
+    {
+        QMessageBox::warning( this, tr( "Transfer Function Editor" ), QString::fromUtf8( error.what() ) );
+    }
 }
 
 void TransferFunctionEditor::onApply()

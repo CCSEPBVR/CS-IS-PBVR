@@ -39,6 +39,7 @@
 #include "../Widgets/TransferFunctionEditor.h"
 #include "TestAppContext.h"
 #include "TestOutputPaths.h"
+#include "../../Shared/TransferFunctionFile.h"
 
 namespace
 {
@@ -50,7 +51,7 @@ constexpr int k_window_settle_ms = 500;
 constexpr int k_short_wait_ms = 1000;
 constexpr int k_after_jump_wait_ms = 3000;
 constexpr int k_capture_settle_ms = 300;
-constexpr int k_no_message_box_wait_ms = 3000;
+constexpr int k_message_box_wait_ms = 3000;
 constexpr int k_transfer_function_count = 2;
 const char* const k_item_57 = "C-TFE-57";
 const char* const k_item_58 = "C-TFE-58";
@@ -185,8 +186,14 @@ void TransferFunctionEditorTest::ImportInvalidFileTest::finishItem( ItemResult& 
     markStep( result.id, QStringLiteral( "%1: %2" ).arg( result.title, result.status ), result.status );
 }
 
-// 既存テスト(ImportExportTest)と同じ方法(プライマリスクリーン全体)で撮影し、
-// manual_rel_path が指定されていればマニュアル用のコピー(img/manual/ 以下)も出力する。
+/**
+ * @brief プライマリスクリーン全体を撮影し、保存・コピー結果に応じて記録する。
+ * @param result 結果と表示用の項目ID。
+ * @param seq スクリーンショットの連番。
+ * @param content ファイル名に使用する撮影内容。
+ * @param caption レポートに表示する説明。
+ * @param manual_rel_path マニュアル用コピー先の相対パス。空の場合はコピーしない。
+ */
 void TransferFunctionEditorTest::ImportInvalidFileTest::saveScreenshot(
     ItemResult& result,
     int seq,
@@ -197,7 +204,10 @@ void TransferFunctionEditorTest::ImportInvalidFileTest::saveScreenshot(
     ScreenshotEntry entry;
     entry.item_id = result.id;
     entry.seq = seq;
-    entry.file_name = QStringLiteral( "%1_%2_%3.png" ).arg( result.id ).arg( seq ).arg( content );
+    // 表示用IDを維持し、全OSでディレクトリ区切りになる文字をファイル名から除く。
+    QString file_item_id = result.id;
+    file_item_id.replace( QLatin1Char( '/' ), QLatin1Char( '_' ) );
+    entry.file_name = QStringLiteral( "%1_%2_%3.png" ).arg( file_item_id ).arg( seq ).arg( content );
     entry.caption = caption;
     entry.manual_rel_path = manual_rel_path;
 
@@ -234,7 +244,8 @@ void TransferFunctionEditorTest::ImportInvalidFileTest::saveScreenshot(
         check( result, entry.copied, QStringLiteral( "マニュアル用コピーに失敗: %1" ).arg( manual_rel_path ) );
     }
     m_screenshots.push_back( entry );
-    if ( manual_rel_path.isEmpty() )
+    if ( !entry.captured ) { return; }
+    if ( manual_rel_path.isEmpty() || !entry.copied )
     {
         markStep( result.id, QStringLiteral( "スクリーンショットを撮影: %1" ).arg( caption ) );
     }
@@ -283,10 +294,10 @@ void TransferFunctionEditorTest::ImportInvalidFileTest::writeMarkdownReport() co
     stream << "- クライアントプログラム: `" << m_client_executable << "`\n";
     stream << "- サーバプログラム: `" << m_server_executable << "`\n";
     stream << "- ボリュームデータ(SPX_VOLUME_DATA): `" << m_volume_data_path << "`\n";
-    stream << "- テスト用 .tfe(テスト内で Export から生成):\n";
-    stream << "    - base.tfe: `" << m_base_tfe_path << "`\n";
-    stream << "    - unreadable.tfe(chmod 000): `" << m_unreadable_tfe_path << "`\n";
-    stream << "    - no_tf_number.tfe(TF_NUMBER= 行を削除、TF_NAME1_MIN_C=0.2 / TF_NAME1_MAX_C=0.8): `" << m_no_tf_number_tfe_path << "`\n";
+    stream << "- テスト用 .json(テスト内で Export から生成):\n";
+    stream << "    - base.json: `" << m_base_json_path << "`\n";
+    stream << "    - unreadable.json(chmod 000): `" << m_unreadable_json_path << "`\n";
+    stream << "    - no_tf_number.json(transfer_function_count キーを削除、C1のuser.min=0.2 / user.max=0.8): `" << m_no_tf_number_json_path << "`\n";
     stream << "- 出力先: `" << m_output_dir_path << "`\n";
     stream << "- スクリーンショット出力先: `" << m_screenshot_dir_path << "`(マニュアル用コピー: `img/manual/`)\n\n";
 
@@ -306,9 +317,9 @@ void TransferFunctionEditorTest::ImportInvalidFileTest::writeMarkdownReport() co
     }
 
     stream << "\n## TransferFunctionEditor の状態\n\n";
-    if ( m_has_baseline ) { writeStateTable( stream, QStringLiteral( "Import 前(base.tfe を Export した時点)" ), m_baseline_state ); }
-    if ( m_has_state_57 ) { writeStateTable( stream, QStringLiteral( "C-TFE-57 unreadable.tfe Import 後(変化なしが期待値)" ), m_state_after_57 ); }
-    if ( m_has_state_58 ) { writeStateTable( stream, QStringLiteral( "C-TFE-58 no_tf_number.tfe Import 後(C1 のみ 0.2 / 0.8 が期待値)" ), m_state_after_58 ); }
+    if ( m_has_baseline ) { writeStateTable( stream, QStringLiteral( "Import 前(base.json を Export した時点)" ), m_baseline_state ); }
+    if ( m_has_state_57 ) { writeStateTable( stream, QStringLiteral( "C-TFE-57 unreadable.json Import 後(変化なしが期待値)" ), m_state_after_57 ); }
+    if ( m_has_state_58 ) { writeStateTable( stream, QStringLiteral( "C-TFE-58 no_tf_number.json Import 後(全設定の維持が期待値)" ), m_state_after_58 ); }
 
     stream << "## スクリーンショット\n\n";
     for ( const ScreenshotEntry& entry : m_screenshots )
@@ -334,13 +345,9 @@ void TransferFunctionEditorTest::ImportInvalidFileTest::writeMarkdownReport() co
                << "` | " << ( entry.copied ? "出力済み" : "未出力(SKIP)" ) << " |\n";
     }
 
-    stream << "\n## 備考(アンサンブル側 Import との違い)\n\n";
-    stream << "- TransferFunctionEditor::onImport は KEY=VALUE 行(.tfe)を順に処理し、開けないファイル・未知キー・欠損キーはいずれも無言で扱う(警告ダイアログなし)。"
-              "TF_NUMBER 行が無い場合は伝達関数数を変更せず、存在する TF_NAME<n>_* 行だけを現在の伝達関数に上書きする。\n";
-    stream << "- EnsembleTransferFunctionEditor::onImport は JSON を読み込み、不正な JSON では「Invalid JSON file.」、キー欠損では"
-              "「Some default.json keys were missing. Existing GUI values were kept for those fields.」、開けない場合は「Could not open import file.」の警告ダイアログを表示する(C-ETF-17 / 18 で確認)。"
-              "両者は実装が別であり、本テストは通常モード側の現状仕様(警告なし)を確認する。\n";
-    stream << "- 現在の伝達関数数を超える TF_NAME<n> を含むファイルでは TransferFunction::at() が std::out_of_range を投げて異常終了するため、本テストでは意図的にそのケースを含めない(修正候補として別途管理)。\n";
+    stream << "\n## JSON Import の仕様\n\n";
+    stream << "- 開けないファイルや必須キー欠損は警告を表示し、Import前の全設定を維持する。\n";
+    stream << "- 正常なJSONは全項目を検証した後に反映し、色・不透明度をUserRangeに設定する。\n";
 }
 
 TransferFunctionEditorTest::ImportInvalidFileTest::ClientHandles
@@ -611,6 +618,18 @@ void TransferFunctionEditorTest::ImportInvalidFileTest::importTransferFunctionWi
     bringTransferFunctionEditorToFront( client.transfer_function_editor );
     QVERIFY2( client.tf_import_button->isEnabled(), "importPushButton is disabled" );
 
+    m_last_import_warning.clear();
+    QTimer warningWatcher;
+    warningWatcher.setInterval( 25 );
+    connect( &warningWatcher, &QTimer::timeout, this, [this]()
+    {
+        if ( QMessageBox* box = findVisibleMessageBox() )
+        {
+            m_last_import_warning = box->text();
+            box->accept();
+        }
+    } );
+    warningWatcher.start();
     QTimer::singleShot( 0, [this, file_path]() { selectFileFromDialog( file_path, true ); } );
     QTest::mouseClick( client.tf_import_button, Qt::LeftButton );
     QTest::qWait( k_short_wait_ms );
@@ -626,30 +645,12 @@ QMessageBox* TransferFunctionEditorTest::ImportInvalidFileTest::findVisibleMessa
     return nullptr;
 }
 
-// wait_ms の間 QMessageBox が表示されないことを確認する(表示された場合は閉じて FAIL)
-bool TransferFunctionEditorTest::ImportInvalidFileTest::verifyNoMessageBox( ItemResult& result, int wait_ms )
+// The warning is captured and closed during the modal Import call.
+bool TransferFunctionEditorTest::ImportInvalidFileTest::verifyImportWarning( ItemResult& result, int wait_ms )
 {
-    bool shown = false;
-    QString text;
-    QElapsedTimer timer;
-    timer.start();
-    while ( timer.elapsed() < wait_ms )
-    {
-        if ( QMessageBox* box = findVisibleMessageBox() )
-        {
-            shown = true;
-            text = box->text();
-            box->accept();
-            break;
-        }
-        QTest::qWait( 50 );
-    }
-    if ( check( result, !shown, QStringLiteral( "QMessageBox が表示された(現状仕様では表示されない想定): %1" ).arg( text ) ) )
-    {
-        markStep( result.id, QStringLiteral( "%1 秒待機し、その間に QMessageBox が表示されないことを確認した" ).arg( wait_ms / 1000 ) );
-        return true;
-    }
-    return false;
+    Q_UNUSED( wait_ms );
+    return check( result, !m_last_import_warning.isEmpty(),
+                  QStringLiteral( "Import エラーの警告が表示されなかった" ) );
 }
 
 void TransferFunctionEditorTest::ImportInvalidFileTest::selectColorFunction( const ClientHandles& client, int index ) const
@@ -767,60 +768,46 @@ bool TransferFunctionEditorTest::ImportInvalidFileTest::statesEqual( const Edito
     return equal;
 }
 
-// base.tfe から unreadable.tfe(chmod 000)と no_tf_number.tfe を生成する
+// ExportしたJSONから、読めないファイルと必須キー欠損ファイルを作成する。
 bool TransferFunctionEditorTest::ImportInvalidFileTest::generateTestFiles( ItemResult& result )
 {
-    QFile base( m_base_tfe_path );
-    if ( !check( result, base.open( QIODevice::ReadOnly | QIODevice::Text ), QStringLiteral( "base.tfe を開けない: %1" ).arg( m_base_tfe_path ) ) )
+    QFile base( m_base_json_path );
+    if ( !check( result, base.open( QIODevice::ReadOnly ), QStringLiteral( "base.json を開けない" ) ) ) return false;
+    nlohmann::json root;
+    try
     {
+        root = nlohmann::json::parse( base.readAll().toStdString() );
+        const auto document = TransferFunctionFile::FromJson( root );
+        if ( !check( result, document.items.size() == k_transfer_function_count,
+                     QStringLiteral( "base.json の伝達関数数が不正" ) ) ) return false;
+    }
+    catch ( const std::exception& error )
+    {
+        check( result, false, QString::fromUtf8( error.what() ) );
         return false;
     }
-    const QStringList lines = QString::fromUtf8( base.readAll() ).split( QLatin1Char( '\n' ) );
     base.close();
-
-    bool has_number = false;
-    bool has_min_c1 = false;
-    bool has_max_c1 = false;
-    for ( const QString& line : lines )
+    if ( QFileInfo::exists( m_unreadable_json_path ) )
     {
-        if ( line.startsWith( QStringLiteral( "TF_NUMBER=" ) ) ) { has_number = line.trimmed() == QStringLiteral( "TF_NUMBER=%1" ).arg( k_transfer_function_count ); }
-        if ( line.startsWith( QStringLiteral( "TF_NAME1_MIN_C=" ) ) ) { has_min_c1 = true; }
-        if ( line.startsWith( QStringLiteral( "TF_NAME1_MAX_C=" ) ) ) { has_max_c1 = true; }
+        QFile::setPermissions( m_unreadable_json_path, QFileDevice::ReadOwner | QFileDevice::WriteOwner );
+        QFile::remove( m_unreadable_json_path );
     }
-    check( result, has_number, QStringLiteral( "base.tfe に TF_NUMBER=%1 の行が無い" ).arg( k_transfer_function_count ) );
-    check( result, has_min_c1 && has_max_c1, QStringLiteral( "base.tfe に TF_NAME1_MIN_C= / TF_NAME1_MAX_C= の行が無い" ) );
-
-    // unreadable.tfe
-    if ( QFileInfo::exists( m_unreadable_tfe_path ) )
-    {
-        QFile::setPermissions( m_unreadable_tfe_path, QFileDevice::ReadOwner | QFileDevice::WriteOwner );
-        QFile::remove( m_unreadable_tfe_path );
-    }
-    if ( !check( result, QFile::copy( m_base_tfe_path, m_unreadable_tfe_path ), QStringLiteral( "unreadable.tfe の作成に失敗: %1" ).arg( m_unreadable_tfe_path ) ) )
-    {
-        return false;
-    }
+    if ( !check( result, QFile::copy( m_base_json_path, m_unreadable_json_path ),
+                 QStringLiteral( "unreadable.json の作成に失敗" ) ) ) return false;
 #ifndef Q_OS_WIN
-    check( result, QFile::setPermissions( m_unreadable_tfe_path, QFileDevice::Permissions() ), QStringLiteral( "unreadable.tfe に chmod 000 を適用できない" ) );
+    check( result, QFile::setPermissions( m_unreadable_json_path, QFileDevice::Permissions() ),
+           QStringLiteral( "unreadable.json に chmod 000 を適用できない" ) );
 #endif
-
-    // no_tf_number.tfe
-    QStringList modified;
-    for ( const QString& line : lines )
-    {
-        if ( line.startsWith( QStringLiteral( "TF_NUMBER=" ) ) ) { continue; }
-        if ( line.startsWith( QStringLiteral( "TF_NAME1_MIN_C=" ) ) ) { modified << QStringLiteral( "TF_NAME1_MIN_C=0.2" ); continue; }
-        if ( line.startsWith( QStringLiteral( "TF_NAME1_MAX_C=" ) ) ) { modified << QStringLiteral( "TF_NAME1_MAX_C=0.8" ); continue; }
-        modified << line;
-    }
-    QFile no_number( m_no_tf_number_tfe_path );
-    if ( !check( result, no_number.open( QIODevice::WriteOnly | QIODevice::Text | QIODevice::Truncate ), QStringLiteral( "no_tf_number.tfe を作成できない: %1" ).arg( m_no_tf_number_tfe_path ) ) )
-    {
-        return false;
-    }
-    no_number.write( modified.join( QLatin1Char( '\n' ) ).toUtf8() );
-    no_number.close();
-    markStep( result.id, QStringLiteral( "base.tfe から unreadable.tfe(chmod 000)と no_tf_number.tfe(TF_NUMBER= 行削除、TF_NAME1_MIN_C=0.2、TF_NAME1_MAX_C=0.8)を生成した" ) );
+    root["settings"]["transfer_function"].erase( "transfer_function_count" );
+    root["transfer_functions"][0]["color"]["range"]["user"]["min"] = 0.2;
+    root["transfer_functions"][0]["color"]["range"]["user"]["max"] = 0.8;
+    QFile no_number( m_no_tf_number_json_path );
+    if ( !check( result, no_number.open( QIODevice::WriteOnly | QIODevice::Truncate ),
+                 QStringLiteral( "no_tf_number.json の作成に失敗" ) ) ) return false;
+    const std::string contents = root.dump( 2 );
+    if ( !check( result, no_number.write( contents.data(), static_cast<qint64>( contents.size() ) ) == static_cast<qint64>( contents.size() ),
+                 QStringLiteral( "no_tf_number.json の書き込みに失敗" ) ) ) return false;
+    markStep( result.id, QStringLiteral( "読めないJSONと、範囲変更・必須キー欠損を含むJSONを生成した" ) );
     return true;
 }
 
@@ -839,18 +826,18 @@ void TransferFunctionEditorTest::ImportInvalidFileTest::runItem57UnreadableFile(
     return;
 #else
     {
-        QFile probe( m_unreadable_tfe_path );
+        QFile probe( m_unreadable_json_path );
         if ( probe.open( QIODevice::ReadOnly ) )
         {
             probe.close();
-            skipItem( result, QStringLiteral( "chmod 000 を適用しても unreadable.tfe を読めてしまう(root 実行など)ため SKIP" ) );
+            skipItem( result, QStringLiteral( "chmod 000 を適用しても unreadable.json を読めてしまう(root 実行など)ため SKIP" ) );
             return;
         }
     }
 
-    importTransferFunctionWithoutApply( client, m_unreadable_tfe_path );
-    markStep( result.id, QStringLiteral( "TransferFunctionEditor.ui: importPushButton を押し、ファイルダイアログで unreadable.tfe を選択した" ) );
-    verifyNoMessageBox( result, k_no_message_box_wait_ms );
+    importTransferFunctionWithoutApply( client, m_unreadable_json_path );
+    markStep( result.id, QStringLiteral( "TransferFunctionEditor.ui: importPushButton を押し、ファイルダイアログで unreadable.json を選択した" ) );
+    verifyImportWarning( result, k_message_box_wait_ms );
     if ( check( result, client.main_window->isVisible(), QStringLiteral( "MainWindow が表示されていない(アプリケーションが終了した可能性)" ) ) )
     {
         markStep( result.id, QStringLiteral( "アプリケーションが終了していないこと(MainWindow が isVisible)を確認した" ) );
@@ -875,16 +862,16 @@ void TransferFunctionEditorTest::ImportInvalidFileTest::runItem57UnreadableFile(
 }
 
 // ===========================================================================
-// C-TFE-58 TF_NUMBER 行が無い伝達関数ファイルの Import
+// C-TFE-58 transfer_function_count キーが無い伝達関数ファイルの Import
 // ===========================================================================
 void TransferFunctionEditorTest::ImportInvalidFileTest::runItem58NoTfNumber(
     ItemResult& result,
     const ClientHandles& client,
     const EditorState& baseline )
 {
-    importTransferFunctionWithoutApply( client, m_no_tf_number_tfe_path );
-    markStep( result.id, QStringLiteral( "TransferFunctionEditor.ui: importPushButton を押し、ファイルダイアログで no_tf_number.tfe を選択した" ) );
-    verifyNoMessageBox( result, k_no_message_box_wait_ms );
+    importTransferFunctionWithoutApply( client, m_no_tf_number_json_path );
+    markStep( result.id, QStringLiteral( "TransferFunctionEditor.ui: importPushButton を押し、ファイルダイアログで no_tf_number.json を選択した" ) );
+    verifyImportWarning( result, k_message_box_wait_ms );
     if ( check( result, client.main_window->isVisible(), QStringLiteral( "MainWindow が表示されていない(アプリケーションが終了した可能性)" ) ) )
     {
         markStep( result.id, QStringLiteral( "アプリケーションが終了していないことを確認した" ) );
@@ -897,47 +884,16 @@ void TransferFunctionEditorTest::ImportInvalidFileTest::runItem58NoTfNumber(
         markStep( result.id, QStringLiteral( "numberOfTransferFunctionSpinBox の値が %1 のまま(Import 前と同一)であることを確認した" ).arg( k_transfer_function_count ) );
     }
 
-    // C1: 0.2 / 0.8
-    selectColorFunction( client, 0 );
-    const double c1_min = client.tf_color_user_min_spin_box->value();
-    const double c1_max = client.tf_color_user_max_spin_box->value();
-    if ( check( result, nearlyEqual( c1_min, 0.2 ) && nearlyEqual( c1_max, 0.8 ),
-                QStringLiteral( "C1 の User Min/Max が 0.2 / 0.8 ではない: %1 / %2" ).arg( c1_min ).arg( c1_max ) ) )
-    {
-        markStep( result.id, QStringLiteral( "colorFunctionComboBox で C1 を選択し、colorUserDefinedMinDoubleSpinBox が 0.2、colorUserDefinedMaxDoubleSpinBox が 0.8 であることを確認した" ) );
-    }
-
-    // C2: Import 前と同一(0.3 / 0.7)
-    selectColorFunction( client, 1 );
-    const double c2_min = client.tf_color_user_min_spin_box->value();
-    const double c2_max = client.tf_color_user_max_spin_box->value();
-    const RangeEntry& baseline_c2 = baseline.colors.size() > 1 ? baseline.colors.at( 1 ) : RangeEntry();
-    if ( check( result, nearlyEqual( c2_min, baseline_c2.min ) && nearlyEqual( c2_max, baseline_c2.max ) && nearlyEqual( c2_min, 0.3 ) && nearlyEqual( c2_max, 0.7 ),
-                QStringLiteral( "C2 の User Min/Max が 0.3 / 0.7(Import 前と同一)ではない: %1 / %2" ).arg( c2_min ).arg( c2_max ) ) )
-    {
-        markStep( result.id, QStringLiteral( "colorFunctionComboBox で C2 を選択し、User Min/Max が 0.3 / 0.7(Import 前と同一)であることを確認した" ) );
-    }
-
-    // その他(O1・O2、オパシティマップ、Synthesizer、カラーマップ)は Import 前と同一
     m_state_after_58 = captureEditorState( client );
     m_has_state_58 = true;
-    EditorState expected = baseline;
-    if ( expected.colors.size() > 0 )
-    {
-        expected.colors[0].min = 0.2;
-        expected.colors[0].max = 0.8;
-    }
     QStringList differences;
-    if ( check( result, statesEqual( expected, m_state_after_58, &differences ),
-                QStringLiteral( "C1 の Min/Max 以外に Import 前と異なる値がある: %1" ).arg( differences.join( QStringLiteral( ", " ) ) ) ) )
-    {
-        markStep( result.id, QStringLiteral( "O1・O2 の User Min/Max とオパシティマップ、Synthesizer、カラーマップが Import 前と同一であることを確認した" ) );
-    }
+    check( result, statesEqual( baseline, m_state_after_58, &differences ),
+           QStringLiteral( "不正JSONのImport後に設定が変化した: %1" ).arg( differences.join( QStringLiteral( ", " ) ) ) );
 
     selectColorFunction( client, 0 );
     bringTransferFunctionEditorToFront( client.transfer_function_editor );
     saveScreenshot( result, 1, QStringLiteral( "no_tf_number_c1" ),
-                    QStringLiteral( "C1: Min 0.2 / Max 0.8 が反映" ),
+                    QStringLiteral( "C1: 不正JSONを拒否し、Import前の値を維持" ),
                     QStringLiteral( "Client/TransferFunctionEditor/58_1.png" ) );
     selectColorFunction( client, 1 );
     bringTransferFunctionEditorToFront( client.transfer_function_editor );
@@ -969,9 +925,9 @@ void TransferFunctionEditorTest::ImportInvalidFileTest::initTestCase()
         QDir( m_output_dir_path ).absoluteFilePath( QStringLiteral( "img" ) ) );
     m_manual_dir_path = QDir( m_screenshot_dir_path ).absoluteFilePath( QStringLiteral( "manual" ) );
     m_report_path = QDir( m_output_dir_path ).absoluteFilePath( QStringLiteral( "TestResult.md" ) );
-    m_base_tfe_path = QDir( m_output_dir_path ).absoluteFilePath( QStringLiteral( "base.tfe" ) );
-    m_unreadable_tfe_path = QDir( m_output_dir_path ).absoluteFilePath( QStringLiteral( "unreadable.tfe" ) );
-    m_no_tf_number_tfe_path = QDir( m_output_dir_path ).absoluteFilePath( QStringLiteral( "no_tf_number.tfe" ) );
+    m_base_json_path = QDir( m_output_dir_path ).absoluteFilePath( QStringLiteral( "base.json" ) );
+    m_unreadable_json_path = QDir( m_output_dir_path ).absoluteFilePath( QStringLiteral( "unreadable.json" ) );
+    m_no_tf_number_json_path = QDir( m_output_dir_path ).absoluteFilePath( QStringLiteral( "no_tf_number.json" ) );
     m_test_succeeded = false;
 
     QVERIFY2( QDir().mkpath( m_output_dir_path ), qPrintable( QStringLiteral( "Failed to create output directory: %1" ).arg( m_output_dir_path ) ) );
@@ -994,9 +950,9 @@ void TransferFunctionEditorTest::ImportInvalidFileTest::cleanupTestCase()
     }
 
     // chmod 000 のままだと出力ディレクトリの削除・コピーに支障が出るため、権限を戻しておく
-    if ( !m_unreadable_tfe_path.isEmpty() && QFileInfo::exists( m_unreadable_tfe_path ) )
+    if ( !m_unreadable_json_path.isEmpty() && QFileInfo::exists( m_unreadable_json_path ) )
     {
-        QFile::setPermissions( m_unreadable_tfe_path, QFileDevice::ReadOwner | QFileDevice::WriteOwner );
+        QFile::setPermissions( m_unreadable_json_path, QFileDevice::ReadOwner | QFileDevice::WriteOwner );
     }
 
     writeMarkdownReport();
@@ -1069,9 +1025,9 @@ void TransferFunctionEditorTest::ImportInvalidFileTest::performs_import_invalid_
     QVERIFY2( nearlyEqual( client.tf_color_user_min_spin_box->value(), 0.3 ) && nearlyEqual( client.tf_color_user_max_spin_box->value(), 0.7 ), "C2 User Min/Max was not kept (0.3 / 0.7)" );
     selectColorFunction( client, 0 );
 
-    // ---- Export → base.tfe、派生ファイル生成 ----
-    exportTransferFunction( client, m_base_tfe_path );
-    markStep( setup.id, QStringLiteral( "TransferFunctionEditor.ui: exportPushButton を押し、ファイルダイアログで base.tfe として保存した" ) );
+    // ---- Export → base.json、派生ファイル生成 ----
+    exportTransferFunction( client, m_base_json_path );
+    markStep( setup.id, QStringLiteral( "TransferFunctionEditor.ui: exportPushButton を押し、ファイルダイアログで base.json として保存した" ) );
     const bool files_ok = generateTestFiles( setup );
 
     // ---- Import 前の状態を記録・撮影 ----
@@ -1096,7 +1052,7 @@ void TransferFunctionEditorTest::ImportInvalidFileTest::performs_import_invalid_
         // ---- C-TFE-58 ----
         ItemResult item58;
         item58.id = QString::fromLatin1( k_item_58 );
-        item58.title = QStringLiteral( "TF_NUMBER 行が無い伝達関数ファイルの Import" );
+        item58.title = QStringLiteral( "transfer_function_count キーが無い伝達関数ファイルの Import" );
         runItem58NoTfNumber( item58, client, m_baseline_state );
         finishItem( item58 );
     }
@@ -1105,12 +1061,12 @@ void TransferFunctionEditorTest::ImportInvalidFileTest::performs_import_invalid_
         ItemResult item57;
         item57.id = QString::fromLatin1( k_item_57 );
         item57.title = QStringLiteral( "開けない伝達関数ファイルの Import" );
-        skipItem( item57, QStringLiteral( "テスト用 .tfe の生成に失敗したため SKIP" ) );
+        skipItem( item57, QStringLiteral( "テスト用 .json の生成に失敗したため SKIP" ) );
         finishItem( item57 );
         ItemResult item58;
         item58.id = QString::fromLatin1( k_item_58 );
-        item58.title = QStringLiteral( "TF_NUMBER 行が無い伝達関数ファイルの Import" );
-        skipItem( item58, QStringLiteral( "テスト用 .tfe の生成に失敗したため SKIP" ) );
+        item58.title = QStringLiteral( "transfer_function_count キーが無い伝達関数ファイルの Import" );
+        skipItem( item58, QStringLiteral( "テスト用 .json の生成に失敗したため SKIP" ) );
         finishItem( item58 );
     }
 

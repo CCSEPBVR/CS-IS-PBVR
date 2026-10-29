@@ -51,10 +51,9 @@ bool SetDefaultParticleParameterCS(
     {
         std::cout << "user define parameter " << std::endl;
 
-        // 伝達関数ファイルから伝達関数を設定する処理の実装する, クライアントにサンプルがあるはず
+        // Invalid JSON propagates to the initialization error response.
         ParameterFileReader ppr;
-        ppr.readTransferFunctionFile( transfer_function_file_name.c_str() );
-        ppr.setTransferFunctionParameter( particle_property );
+        ppr.readTransferFunctionJsonCS( transfer_function_file_name.c_str(), particle_property );
     }
     // ユーザーが伝達関数を指定していない場合
     else

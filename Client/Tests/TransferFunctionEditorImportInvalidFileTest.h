@@ -153,7 +153,7 @@ private:
     void exportTransferFunction( const ClientHandles& client, const QString& file_path );
     void importTransferFunctionWithoutApply( const ClientHandles& client, const QString& file_path );
     QMessageBox* findVisibleMessageBox() const;
-    bool verifyNoMessageBox( ItemResult& result, int wait_ms );
+    bool verifyImportWarning( ItemResult& result, int wait_ms );
 
     void selectColorFunction( const ClientHandles& client, int index ) const;
     void selectOpacityFunction( const ClientHandles& client, int index ) const;
@@ -175,9 +175,10 @@ private:
     QString m_screenshot_dir_path;
     QString m_manual_dir_path;
     QString m_report_path;
-    QString m_base_tfe_path;
-    QString m_unreadable_tfe_path;
-    QString m_no_tf_number_tfe_path;
+    QString m_last_import_warning;
+    QString m_base_json_path;
+    QString m_unreadable_json_path;
+    QString m_no_tf_number_json_path;
     std::vector<StepEntry> m_steps;
     std::vector<ItemResult> m_item_results;
     std::vector<ScreenshotEntry> m_screenshots;

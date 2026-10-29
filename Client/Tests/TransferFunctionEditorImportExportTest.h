@@ -65,6 +65,7 @@ private:
 private slots:
     void initTestCase();
     void cleanupTestCase();
+    void validates_json_file_contract();
     void performs_import_export_scenario();
 
 private:
@@ -92,8 +93,8 @@ private:
     QString m_server_executable;
     QString m_server_target_wrapper_executable;
     QString m_volume_data_path;
-    QString m_import_tfe_path;
-    QString m_export_tfe_path;
+    QString m_import_json_path;
+    QString m_export_json_path;
     QString m_output_dir_path;
     QString m_screenshot_dir_path;
     QString m_report_path;
