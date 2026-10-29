@@ -28,5 +28,5 @@ EXE_LIBS = \
     -lvtkFiltersCore-${VTK_VERSION} -lvtkCommonExecutionModel-${VTK_VERSION} -lvtkzlib-${VTK_VERSION} \
     -lvtkCommonColor-${VTK_VERSION} -lvtkfmt-${VTK_VERSION} -lvtkCommonDataModel-${VTK_VERSION} -lvtkpugixml-${VTK_VERSION} \
     -lvtkCommonSystem-${VTK_VERSION} -lvtkCommonMisc-${VTK_VERSION} -lvtkCommonTransforms-${VTK_VERSION} -lvtkCommonMath-${VTK_VERSION} \
-    -lm -lvtkCommonCore-${VTK_VERSION} -lvtkloguru-${VTK_VERSION} -lvtksys-${VTK_VERSION}
+    -lm -lvtknetcdf-${VTK_VERSION} -lvtkIONetCDF-${VTK_VERSION} -lvtkCommonCore-${VTK_VERSION} -lvtkloguru-${VTK_VERSION} -lvtksys-${VTK_VERSION}
 
