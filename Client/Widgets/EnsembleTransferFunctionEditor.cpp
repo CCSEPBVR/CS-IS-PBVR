@@ -6,6 +6,7 @@
 #include "../ExtendedQT/Histogram.h"
 
 #include <QButtonGroup>
+#include <QCheckBox>
 #include <QComboBox>
 #include <QDebug>
 #include <QDoubleSpinBox>
@@ -15,6 +16,7 @@
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QJsonValue>
 #include <QLineEdit>
 #include <QMessageBox>
 #include <QMouseEvent>
@@ -236,6 +238,17 @@ std::vector<int> ReadHistogram( const QJsonValue& value, bool* ok )
     *ok = true;
     return histogram;
 }
+
+// 常用対数モードの注記。対数化の対象は平均・分散のみで、変動係数は対数化前の
+// 平均・分散から算出されるため対象外。MinMax 欄に表示される値のスケールを
+// 取り違えないよう、グループタイトルに [log10] を付けて示す。
+void UpdateMinMaxGroupTitle( Ui::EnsembleTransferFunctionEditor* ui, const bool logAppliesToCurrentStatistic )
+{
+    const bool logScale = ui->m_log_scale_statistics_check_box->isChecked();
+    ui->m_min_max_group_box->setTitle( ( logScale && logAppliesToCurrentStatistic )
+                                           ? QStringLiteral( "Ensemble MinMax [log10]" )
+                                           : QStringLiteral( "Ensemble MinMax" ) );
+}
 }
 
 EnsembleTransferFunctionEditor::EnsembleTransferFunctionEditor( WebSocketPair* websockets, QWidget* parent )
@@ -255,6 +268,13 @@ EnsembleTransferFunctionEditor::EnsembleTransferFunctionEditor( WebSocketPair* w
     connect( ui->m_apply_push_button, &QPushButton::clicked, this, &EnsembleTransferFunctionEditor::onApply );
     connect( ui->m_export_push_button, &QPushButton::clicked, this, &EnsembleTransferFunctionEditor::onExport );
     connect( ui->m_import_push_button, &QPushButton::clicked, this, &EnsembleTransferFunctionEditor::onImport );
+    connect( ui->m_log_scale_statistics_check_box, &QCheckBox::toggled, this,
+             [this]( const bool checked )
+             {
+                 qDebug() << "[Client][EnsembleTFE] log_scale_statistics checkbox:" << checked
+                          << "(sent to server on Apply)";
+                 UpdateMinMaxGroupTitle( ui, m_current_statistic != CoefficientVariationStatistic );
+             } );
 }
 
 EnsembleTransferFunctionEditor::~EnsembleTransferFunctionEditor()
@@ -317,6 +337,7 @@ void EnsembleTransferFunctionEditor::initialize()
 void EnsembleTransferFunctionEditor::reset()
 {
     ui->m_statistics_synthesizer_line_edit->setText( QStringLiteral( "q1" ) );
+    ui->m_log_scale_statistics_check_box->setChecked( false );
     for( auto& statistic : m_statistics )
     {
         statistic.colorMap = m_default_color_map;
@@ -364,6 +385,7 @@ void EnsembleTransferFunctionEditor::loadStatisticState( StatisticIndex statisti
     ui->m_color_map->update();
     ui->m_opacity_map->update();
     ui->m_histogram->update();
+    UpdateMinMaxGroupTitle( ui, statistic != CoefficientVariationStatistic );
 }
 
 EnsembleTransferFunctionEditor::StatisticIndex EnsembleTransferFunctionEditor::selectedStatisticIndex() const
@@ -448,6 +470,21 @@ void EnsembleTransferFunctionEditor::onReceiveEnsembleStatisticsParameter( const
         ui->m_statistics_combo_box->setCurrentIndex( receivedStatistic );
         ui->m_statistics_combo_box->blockSignals( wasBlocked );
         loadStatisticState( m_current_statistic );
+    }
+
+    // 常用対数モードの現在値（root レベル）。接続時の初期 publish と、
+    // 他クライアントの Apply をサーバが再 publish したものの両方がここに届く。
+    const QJsonValue receivedLogScale =
+        payload.value( QString::fromUtf8( Protocol::Key::LogScaleStatistics ) );
+    if( receivedLogScale.isBool() )
+    {
+        qDebug() << "[Client][EnsembleTFE] receive log_scale_statistics=" << receivedLogScale.toBool();
+        ui->m_log_scale_statistics_check_box->setChecked( receivedLogScale.toBool() );
+    }
+    else
+    {
+        qDebug() << "[Client][EnsembleTFE] EnsembleStatisticsParameter has no LogScaleStatistics key"
+                 << "(server does not include the feature?)";
     }
 
     const QString dataKey = QString::fromUtf8( Protocol::Key::Data );
@@ -966,7 +1003,17 @@ void EnsembleTransferFunctionEditor::onApply()
     QJsonObject root;
     root[QString::fromUtf8( Protocol::Key::Event )] = QString::fromUtf8( Protocol::Events::EnsembleStatisticsParameter );
     root[QString::fromUtf8( Protocol::Key::Statistic )] = selectedStatistic();
+    // 常用対数モードは平均・分散をまとめて1つの設定なので、統計量ごとの Data ではなく root レベルで送る
+    root[QString::fromUtf8( Protocol::Key::LogScaleStatistics )] =
+        ui->m_log_scale_statistics_check_box->isChecked();
     root[QString::fromUtf8( Protocol::Key::Data )] = data;
+
+    // 送信ペイロードの検証ログ。チェックボックスではなく root に実際に入った値を読み戻して出す。
+    qDebug() << "[Client][EnsembleTFE] send EnsembleStatisticsParameter:"
+             << "statistic=" << root.value( QString::fromUtf8( Protocol::Key::Statistic ) ).toString()
+             << "log_scale_statistics="
+             << root.value( QString::fromUtf8( Protocol::Key::LogScaleStatistics ) ).toBool()
+             << "patches=" << data.size();
 
     m_web_sockets->text()->sendTextMessage( QJsonDocument( root ).toJson( QJsonDocument::Compact ) );
 }
@@ -1012,6 +1059,10 @@ void EnsembleTransferFunctionEditor::onExport()
 
     QJsonObject settings;
     settings["transfer_function"] = transferFunctionSettings;
+
+    QJsonObject ensembleSettings;
+    ensembleSettings["log_scale_statistics"] = ui->m_log_scale_statistics_check_box->isChecked();
+    settings["ensemble"] = ensembleSettings;
 
     QJsonArray normalTransferFunctions;
     normalTransferFunctions.append( TransferFunctionToDefaultJson( average ) );
@@ -1123,6 +1174,16 @@ void EnsembleTransferFunctionEditor::onImport()
     importStatistic( QStringLiteral( "mean_transfer_functions" ), AverageStatistic );
     importStatistic( QStringLiteral( "variance_transfer_functions" ), VarianceStatistic );
     importStatistic( QStringLiteral( "coefficient_of_variation_transfer_functions" ), CoefficientVariationStatistic );
+
+    // settings.ensemble.log_scale_statistics は optional。無ければ現在の GUI 値を保つ
+    // （サーバ側 reader も欠損時は既定値扱い。既存ファイルに ensemble キーは無いため警告にしない）。
+    const QJsonValue importedLogScale = root.value( QStringLiteral( "settings" ) ).toObject()
+                                            .value( QStringLiteral( "ensemble" ) ).toObject()
+                                            .value( QStringLiteral( "log_scale_statistics" ) );
+    if( importedLogScale.isBool() )
+    {
+        ui->m_log_scale_statistics_check_box->setChecked( importedLogScale.toBool() );
+    }
 
     if( !importedExpression.isEmpty() ) ui->m_statistics_synthesizer_line_edit->setText( importedExpression );
 

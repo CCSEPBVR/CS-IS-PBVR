@@ -78,6 +78,16 @@
           </item>
          </layout>
         </item>
+        <item row="2" column="1">
+         <widget class="QCheckBox" name="m_log_scale_statistics_check_box">
+          <property name="toolTip">
+           <string>Apply log10 to the ensemble mean and variance. The coefficient of variation is not transformed (it is computed from the non-log mean and variance).</string>
+          </property>
+          <property name="text">
+           <string>Log10 Scale (Mean / Variance)</string>
+          </property>
+         </widget>
+        </item>
        </layout>
       </item>
       <item>

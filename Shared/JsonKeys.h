@@ -125,6 +125,7 @@ inline constexpr std::string_view EnsembleServerRangeMax    = "EnsembleServerRan
 inline constexpr std::string_view EnsembleColorMap          = "EnsembleColorMap";
 inline constexpr std::string_view EnsembleOpacityMap        = "EnsembleOpacityMap";
 inline constexpr std::string_view EnsembleHistogram         = "EnsembleHistogram";
+inline constexpr std::string_view LogScaleStatistics        = "LogScaleStatistics";
 
 // Repetition Level Control
 inline constexpr std::string_view RepeatLevel               = "RepeatLevel";

@@ -333,6 +333,9 @@ nlohmann::json BuildEnsembleStatisticsParameter(
     nlohmann::json msg;
     msg[Protocol::Key::Event] = Protocol::Events::EnsembleStatisticsParameter;
     msg[Protocol::Key::Statistic] = client_statistic;
+    // 常用対数モードの現在値。接続直後のクライアントがチェックボックスを復元できるよう
+    // root レベルで送る（クライアント→サーバの LogScaleStatistics と同じキー）。
+    msg[Protocol::Key::LogScaleStatistics] = particle_property.m_log_scale_statistics;
     msg[Protocol::Key::Data] = std::move( data );
     return msg;
 }
@@ -2693,6 +2696,19 @@ void Server::receiveEnsembleStatisticsParameter(uWS::WebSocket<false, true, PerS
             std::cout << "[Server][EnsembleStatisticsParameter] keep current statistic. unknown statistic="
                       << statistic << std::endl;
         }
+    }
+
+    // 常用対数モード。平均と分散をまとめて log10 にする実装(ApplyLog10ToMeanVariance)なので、
+    // 統計量ごとの Data ではなく root レベルで受ける。
+    // 設定した値は末尾の ParameterFileWriter が default.json の
+    // settings.ensemble.log_scale_statistics へ書き出し、次ステップで IS 側が読んで対数化する。
+    if ( received.contains( Protocol::Key::LogScaleStatistics ) &&
+         received.at( Protocol::Key::LogScaleStatistics ).is_boolean() )
+    {
+        m_particle_property->m_log_scale_statistics =
+            received.at( Protocol::Key::LogScaleStatistics ).get<bool>();
+        std::cout << "[Server][EnsembleStatisticsParameter] log_scale_statistics="
+                  << m_particle_property->m_log_scale_statistics << std::endl;
     }
 
     if ( received.contains( Protocol::Key::Data ) && received.at( Protocol::Key::Data ).is_array() )
