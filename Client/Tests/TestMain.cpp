@@ -195,6 +195,9 @@ void cleanupBetweenTests()
 
 int qExecWithCleanup( QObject* test, int argc, char** argv )
 {
+    // QtTestは初回のqExecでタイムアウト値を保持するため、各テストの
+    // コンストラクタによる設定後、共通の入口で45分を設定します。
+    qputenv( "QTEST_FUNCTION_TIMEOUT", QByteArrayLiteral( "2700000" ) );
     const int result = QTest::qExec( test, argc, argv );
     cleanupBetweenTests();
     return result;
