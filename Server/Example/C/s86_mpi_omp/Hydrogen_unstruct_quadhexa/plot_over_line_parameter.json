@@ -1,5 +1,5 @@
 {
-    "enabled": false,
+    "enabled": true,
     "variable": "q1",
     "sampling_size": 32,
     "start_point": [-1, 0, 0],
