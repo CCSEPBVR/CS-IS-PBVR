@@ -1,6 +1,8 @@
 #ifndef WORKER_H
 #define WORKER_H
 
+#include <sstream>
+#include <iomanip>
 #include <cstdlib>
 #include <cstring>
 #include <functional>
@@ -237,21 +239,48 @@ private:
         return fullPath.str();
     }
 
-    static std::string statisticPrefix( const std::string& statistic )
+    /*  統計量・メンバーごとの読み出しパスを決める。
+     *
+     *  統計量は PARTICLE_DIR 直下（サブディレクトリなし、接頭辞 ave/var/cov）。
+     *  メンバーは PARTICLE_DIR/ensNNNN/ の下で、接頭辞は通常版と同じ "t_"。
+     *  メンバーの区別をディレクトリ名で行うのは、1メンバー1ステップで4ファイル出るため
+     *  直下に並べるとファイル数が実用限界を超えること、および ParticleFile の名前解析が
+     *  接頭辞の長さに依存しており "t_" のままなら無改造で使えることによる。 */
+    static bool resolveParticlePath( const std::string& statistic,
+                                     std::string* subdir, std::string* prefix )
     {
-        if ( statistic == "mean" ) return "ave";
-        if ( statistic == "variance" ) return "var";
-        if ( statistic == "cv" ) return "cov";
-        return "";
+        if ( subdir == nullptr || prefix == nullptr ) return false;
+        if ( statistic == "mean" )     { *subdir = ""; *prefix = "ave"; return true; }
+        if ( statistic == "variance" ) { *subdir = ""; *prefix = "var"; return true; }
+        if ( statistic == "cv" )       { *subdir = ""; *prefix = "cov"; return true; }
+
+        // "member:3" -> subdir "ens0003" / prefix "t_"
+        static const char member_tag[] = "member:";
+        if ( statistic.rfind( member_tag, 0 ) == 0 )
+        {
+            const int id = std::atoi( statistic.c_str() + ( sizeof( member_tag ) - 1 ) );
+            if ( id < 0 ) return false;
+            std::ostringstream os;
+            os << "ens" << std::setfill( '0' ) << std::setw( 4 ) << id;
+            *subdir = os.str();
+            *prefix = "t_";
+            return true;
+        }
+
+        *subdir = "";
+        *prefix = "";
+        return false;
     }
 
-    static std::string particleDirectoryPrefix( const std::string& prefix )
+    static std::string particleDirectoryPrefix( const std::string& prefix,
+                                                const std::string& subdir = "" )
     {
         const char* envBuf = std::getenv( "PARTICLE_DIR" );
         std::string particlePath;
         if ( envBuf == nullptr )
         {
-            particlePath = "./" + prefix;
+            particlePath = subdir.empty() ? ( "./" + prefix )
+                                          : ( "./" + subdir + "/" + prefix );
         }
         else
         {
@@ -262,6 +291,11 @@ private:
             const char path_sep = '/';
 #endif
             if ( particlePath.empty() || particlePath[particlePath.size() - 1] != path_sep ) particlePath += path_sep;
+            if ( !subdir.empty() )
+            {
+                particlePath += subdir;
+                particlePath += path_sep;
+            }
             particlePath += prefix;
         }
         return particlePath;
@@ -273,8 +307,9 @@ private:
         const std::string& statistic,
         std::unique_ptr<kvs::PointObject>& pointObject )
     {
-        const std::string prefix = statisticPrefix( statistic );
-        if ( prefix.empty() )
+        std::string subdir;
+        std::string prefix;
+        if ( !resolveParticlePath( statistic, &subdir, &prefix ) || prefix.empty() )
         {
             std::cout << "[Worker][StatisticParticle] unknown statistic=" << statistic << std::endl;
             pointObject->setCoords( kvs::ValueArray<kvs::Real32>() );
@@ -284,7 +319,7 @@ private:
         }
 
         ParticleMonitor pm;
-        const std::string particlePrefix = particleDirectoryPrefix( prefix );
+        const std::string particlePrefix = particleDirectoryPrefix( prefix, subdir );
         std::cout << "[Worker][StatisticParticle] read statistic=" << statistic
                   << ", prefix=" << particlePrefix
                   << ", timestep=" << timeStep << std::endl;

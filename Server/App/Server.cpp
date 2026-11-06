@@ -2687,7 +2687,9 @@ void Server::receiveEnsembleStatisticsParameter(uWS::WebSocket<false, true, PerS
     {
         const std::string statistic =
             NormalizeStatisticName( received.at( Protocol::Key::Statistic ).get<std::string>() );
-        if ( statistic == "mean" || statistic == "variance" || statistic == "cv" )
+        // "member:N" は N 番目のアンサンブルメンバーの粒子を指す。
+        const bool is_member = ( statistic.rfind( "member:", 0 ) == 0 );
+        if ( statistic == "mean" || statistic == "variance" || statistic == "cv" || is_member )
         {
             m_current_ensemble_statistic = statistic;
         }

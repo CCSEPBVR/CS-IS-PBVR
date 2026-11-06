@@ -642,7 +642,45 @@ bool ensemble_generate_particles(
 #endif
     pbvr::OutputEnsembleStatisticHistory(
         particle_property, tf_number, nvariables, historyFilePath,
-        average_range, variance_range, co_variation_range );
+        average_range, variance_range, co_variation_range,
+        MPI_COMM_WORLD, num_ensemble );
+
+    /*  各アンサンブルメンバーの粒子を出力する。
+     *
+     *  全メンバーを出力するため、各プロセスは自分のメンバー分を1回出すだけでよい。
+     *  メンバーIDは mpi_rank / MPIprocess_per_ensemble で決まる
+     *  (統計量のリング交換が MPIprocess_per_ensemble 刻みでシフトするのと同じ構造)。
+     *
+     *  OutputEnsembleMemberParticles は集団通信を含むため全プロセスが呼ぶ必要があるが、
+     *  全員が自分の分を出す構造では自然に満たされる。
+     *
+     *  出力先は PARTICLE_DIR/ensNNNN/t_<時刻>_0000001_0000001.kvsml。
+     *  1メンバー1ステップで4ファイル出るため、メンバーごとにディレクトリを分ける。 */
+    {
+        const int mpi_process_per_ensemble = ( num_ensemble > 0 ) ? mpi_size / num_ensemble : mpi_size;
+        const int my_ens_id   = ( mpi_process_per_ensemble > 0 ) ? mpi_rank / mpi_process_per_ensemble : 0;
+        const int my_ens_rank = ( mpi_process_per_ensemble > 0 ) ? mpi_rank % mpi_process_per_ensemble : 0;
+
+        std::vector<float> member_coords;
+        std::vector<Byte>  member_colors;
+        std::vector<float> member_normals;
+
+        // 通常版 generate_particles_struct と同じ生成処理を、自分のメンバーの場に対して行う。
+        GenerateParticleObject(
+            particle_property, dom, values, nvariables,
+            member_coords, member_colors, member_normals
+        );
+
+        const std::string memberFilePrefix =
+            pbvr::PrepareEnsembleMemberDirectory( particleFilePrefix, my_ens_id, my_ens_rank );
+#ifndef CPU_VER
+        MPI_Barrier( MPI_COMM_WORLD );   // ディレクトリ作成を待ってから書く
+#endif
+        pbvr::OutputEnsembleMemberParticles(
+            particle_property, mvpl, time_step, memberFilePrefix, my_ens_id,
+            member_coords, member_colors, member_normals
+        );
+    }
 #ifdef ENABLE_ENSEMBLE_TIMER
     }
 #endif
