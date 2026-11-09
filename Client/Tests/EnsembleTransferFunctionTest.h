@@ -174,6 +174,7 @@ private:
 private slots:
     void initTestCase();
     void cleanupTestCase();
+    void resets_in_flight_keep_last_request();
     void performs_ensemble_transfer_function_scenario();
 
 private:

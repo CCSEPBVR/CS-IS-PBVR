@@ -29,6 +29,7 @@
 #include <QRadioButton>
 #include <QScreen>
 #include <QSignalSpy>
+#include <QSpinBox>
 #include <QTabWidget>
 #include <QTableWidget>
 #include <QTest>
@@ -239,7 +240,7 @@ void EnsembleTransferFunctionTest::writeMarkdownReport() const
     stream << "- 結果: " << ( m_test_succeeded ? "PASS" : "FAIL" ) << "\n";
     stream << "- 前提: サーバと In-Situ アンサンブル計算プログラムは起動済み\n";
     stream << "- Apply 後の粒子生成側反映待ち: 5秒\n";
-    stream << "- Keep Last: 初期 Jump 後からテスト終了まで ON\n";
+    stream << "- Keep Last: 初期 Jump 後に ON。切断時に OFF、再初期化・Jump 後に再度 ON\n";
     stream << "- Volume Transform: 初期粒子生成後にX軸回転を-30度へ設定\n";
     stream << "- Export JSON: `" << m_export_path << "`\n";
     stream << "- 画像ピクセルの自動比較: 実施しない（粒子配列のフィンガープリントで更新を確認）\n";
@@ -1560,6 +1561,55 @@ void EnsembleTransferFunctionTest::initTestCase()
 void EnsembleTransferFunctionTest::cleanupTestCase()
 {
     writeMarkdownReport();
+}
+
+void EnsembleTransferFunctionTest::resets_in_flight_keep_last_request()
+{
+    WebSocketPair sockets;
+    TimeStepControlToolBar time_step( &sockets );
+    PlayBackControlToolBar playback( &sockets );
+    connect( &playback, &PlayBackControlToolBar::keepLast, &time_step, &TimeStepControlToolBar::onKeepLast );
+    connect( &playback, &PlayBackControlToolBar::jump, &time_step, &TimeStepControlToolBar::onJump );
+    connect( &playback, &PlayBackControlToolBar::loop, &time_step, &TimeStepControlToolBar::onLoop );
+    playback.onOperatorStateUpdate( true );
+    time_step.onUpdateTotalTimeStepRange( 0, 9, true );
+
+    auto* keep_last = playback.findChild<QPushButton*>( QStringLiteral( "m_keep_last_push_button" ) );
+    auto* loop = playback.findChild<QPushButton*>( QStringLiteral( "m_loop_push_button" ) );
+    auto* next = time_step.findChild<QSpinBox*>( QStringLiteral( "m_next_time_step_spin_box" ) );
+    QVERIFY( keep_last != nullptr );
+    QVERIFY( loop != nullptr );
+    QVERIFY( next != nullptr );
+    QSignalSpy requests( &time_step, &TimeStepControlToolBar::requestDataAt );
+    QVERIFY( requests.isValid() );
+
+    loop->click();
+    keep_last->click();
+    QVERIFY( QMetaObject::invokeMethod( &time_step, "onUpdateTimeStep", Qt::DirectConnection ) );
+    QCOMPARE( requests.count(), 1 );
+    QCOMPARE( requests.last().at( 0 ).toInt(), 9 );
+
+    // 応答が失われた切断を再現する。dataRequestCompleted は通知しない。
+    playback.reset();
+    time_step.reset();
+    QVERIFY( !keep_last->isChecked() );
+    QVERIFY( !loop->isChecked() );
+    QVERIFY( !next->wrapping() );
+    QVERIFY( playback.jumpButton()->isEnabled() );
+    QTest::qWait( 250 );
+    QCOMPARE( requests.count(), 1 ); // 切断中にタイマーが要求を再開しない。
+
+    // IS 初期化後の範囲通知と Jump。古い要求の完了を待たずに再要求できる。
+    time_step.onUpdateTotalTimeStepRange( 0, 12, true );
+    playback.jumpButton()->click();
+    QCOMPARE( requests.count(), 2 );
+    time_step.onDataRequestCompleted( 0 );
+    playback.onDataRequestCompleted();
+    keep_last->click();
+    QVERIFY( keep_last->isChecked() );
+    QVERIFY( QMetaObject::invokeMethod( &time_step, "onUpdateTimeStep", Qt::DirectConnection ) );
+    QCOMPARE( requests.count(), 3 );
+    QCOMPARE( requests.last().at( 0 ).toInt(), 12 );
 }
 
 void EnsembleTransferFunctionTest::performs_ensemble_transfer_function_scenario()
@@ -3597,6 +3647,8 @@ void EnsembleTransferFunctionTest::runItem19And16DisconnectReconnect( ItemContex
     const bool disconnected = waitForCondition( [client]() { return client.connect_button->isEnabled() && !client.disconnect_button->isEnabled(); }, k_connect_timeout_ms, 100 );
     check( result19, disconnected, QStringLiteral( "Disconnect 後に未接続状態にならない" ) );
     QTest::qWait( k_short_wait_ms );
+    check( result19, !client.keep_last_button->isChecked(), QStringLiteral( "切断後も Keep Last が ON のまま" ) );
+    check( result19, client.jump_button->isEnabled(), QStringLiteral( "切断後も Jump が要求待ちで無効のまま" ) );
     check( result19, !client.ensemble_editor->isVisible(), QStringLiteral( "切断後もエディタが表示されたまま" ) );
     check( result19, ensemble_action == nullptr || !ensemble_action->isEnabled(), QStringLiteral( "切断後も「Ensemble Transfer Function Editor」が有効" ) );
 

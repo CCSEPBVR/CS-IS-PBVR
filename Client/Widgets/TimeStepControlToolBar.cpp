@@ -1,5 +1,7 @@
 #include "TimeStepControlToolBar.h"
 
+#include <QSignalBlocker>
+
 TimeStepControlToolBar::TimeStepControlToolBar( WebSocketPair* websockets, QWidget* parent )
     : QToolBar( parent )
     , m_web_sockets( websockets )
@@ -83,7 +85,19 @@ TimeStepControlToolBar::~TimeStepControlToolBar() {}
 
 void TimeStepControlToolBar::reset()
 {
+    // 切断された要求の完了通知は届かないため、待機状態もここで破棄する。
+    m_timer.stop();
+    m_is_merging = false;
+    m_is_reverse_mode = false;
+    m_is_last_mode = false;
 
+    // 再接続時にも呼ばれるので、リセット値をサーバへ送信しない。
+    const QSignalBlocker next_blocker( m_next_time_step_spin_box );
+    const QSignalBlocker min_blocker( m_min_limit_time_step_spin_box );
+    const QSignalBlocker max_blocker( m_max_limit_time_step_spin_box );
+    m_current_time_step_line_edit->clear();
+    m_next_time_step_spin_box->setWrapping( false );
+    onUpdateTotalTimeStepRange( 0, 0, false );
 }
 
 void TimeStepControlToolBar::onOperatorStateUpdate( const bool operatorState )
