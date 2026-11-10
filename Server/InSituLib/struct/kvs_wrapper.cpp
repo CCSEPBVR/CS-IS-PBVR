@@ -672,10 +672,19 @@ bool ensemble_generate_particles(
         std::vector<Byte>  member_colors;
         std::vector<float> member_normals;
 
-        /*  全メンバーを重ね描きする前提なので、各メンバーの粒子数を 1/N にして
-         *  合計を1メンバー分に抑える。判定は既存の m_is_ensemble を使う。 */
+        /*  各メンバーの粒子数を「統計量1メンバー分」と同じにする。
+         *
+         *  統計量側（EnsembleParticleGenerator）は
+         *      repetitions = m_repeat_level / ens_number
+         *  で1メンバー分を生成し、それを ens_number 個合成している。
+         *  メンバー個別出力でも同じ式を使うことで、全メンバーの合計が
+         *  統計量と同じ粒子数になる（= 重ね描きしても総量が増えない）。
+         *
+         *  通常版の粒子数は density * volume のみで m_repeat_level を含まないため、
+         *  ここで明示的に掛ける必要がある。 */
         const float member_repetition = particle_property.m_is_ensemble
-            ? 1.0f / static_cast<float>( num_ensemble )
+            ? static_cast<float>( particle_property.m_repeat_level )
+                  / static_cast<float>( num_ensemble )
             : 1.0f;
 
         // 通常版 generate_particles_struct と同じ生成処理を、自分のメンバーの場に対して行う。
