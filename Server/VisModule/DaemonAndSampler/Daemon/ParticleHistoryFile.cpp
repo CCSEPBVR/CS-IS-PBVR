@@ -9,6 +9,7 @@ ParticleHistoryFile::ParticleHistoryFile()
     this->set_name();
     m_has_ensemble_statistic_histogram = false;
     m_is_ensemble          = false;
+    m_num_ensemble         = 0;
     m_nvariables           = 0;
     m_particle_limit       = 0;
     m_extra_opacity_factor = 0;
@@ -20,6 +21,7 @@ ParticleHistoryFile::ParticleHistoryFile( const std::string& file ):
     this->set_name();
     m_has_ensemble_statistic_histogram = false;
     m_is_ensemble          = false;
+    m_num_ensemble         = 0;
     m_nvariables           = 0;
     m_particle_limit       = 0;
     m_extra_opacity_factor = 0;
@@ -301,6 +303,7 @@ void ParticleHistoryFile::read_name_list_file()
     m_coefficient_of_variation_opacity_histogram_array.clear();
     m_has_ensemble_statistic_histogram = false;
     m_is_ensemble = false;
+    m_num_ensemble = 0;
     m_nvariables = 0;
     m_particle_limit = 0;
 
@@ -320,6 +323,8 @@ void ParticleHistoryFile::read_name_list_file()
         m_nvariables = root.at( "nvariables" ).get<int>();
         m_particle_limit = root.at( "particle_limit" ).get<int>();
         m_is_ensemble = root.value( "is_ensemble", false );
+        // アンサンブルメンバー数。ソルバーが history json に出している。
+        m_num_ensemble = root.value( "num_ensemble", 0 );
 
         auto read_transfer_functions = [&](
             const nlohmann::json& transfer_functions,
@@ -439,6 +444,8 @@ void ParticleHistoryFile::read_name_list_file()
         m_coefficient_of_variation_opacity_histogram_array.clear();
         m_has_ensemble_statistic_histogram = false;
         m_is_ensemble = false;
+    m_num_ensemble = 0;
+        m_num_ensemble = 0;
         m_nvariables = 0;
         m_particle_limit = 0;
     }

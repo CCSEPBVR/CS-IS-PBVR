@@ -336,6 +336,8 @@ nlohmann::json BuildEnsembleStatisticsParameter(
     // 常用対数モードの現在値。接続直後のクライアントがチェックボックスを復元できるよう
     // root レベルで送る（クライアント→サーバの LogScaleStatistics と同じキー）。
     msg[Protocol::Key::LogScaleStatistics] = particle_property.m_log_scale_statistics;
+    // アンサンブルメンバー数。クライアントが Member 選択肢を作るのに使う。
+    msg[Protocol::Key::NumEnsemble] = particle_property.m_num_ensemble;
     msg[Protocol::Key::Data] = std::move( data );
     return msg;
 }

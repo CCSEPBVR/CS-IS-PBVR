@@ -208,6 +208,7 @@ ParticleHistoryUpdateResult UpdateParticlePropertyFromHistoryIS(
         history.variableRange(),
         particle_property.m_transfunc_array );
     particle_property.m_is_ensemble = history.isEnsemble();
+    particle_property.m_num_ensemble = history.numEnsemble();
     result.succeeded = true;
 
     if ( !history.isEnsemble() )

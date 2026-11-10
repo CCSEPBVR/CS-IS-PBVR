@@ -24,6 +24,7 @@ struct ParticleProperty
     float m_particle_data_size_limit;
     bool m_is_ensemble = false;
     bool m_log_scale_statistics = false; // 統計量(平均・分散)の常用対数化 ON/OFF（デフォルトOFF）
+    int m_num_ensemble = 0;              // アンサンブルメンバー数（0=非アンサンブル/未記録）
     vismodule::Camera* m_camera;
     TransferFunctionSynthesizer* m_transfunc_synthesizer; // pack unpackしない
     std::vector<NamedTransferFunction> m_transfunc_array;
