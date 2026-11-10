@@ -1,21 +1,32 @@
 include ../../../../pbvr.conf
+PBVR_KVS_INSTALL_DIR = $(abspath ../../../../../KVS/Install)
+
 EXE_INC = \
     -I$(LIB_SRC)/finiteVolume/lnInclude \
     -I$(LIB_SRC)/meshTools/lnInclude \
-    -DVTK \
+    -DEXTEND_FILE_FORMAT \
+    -I../../../../Utils \
+    -I../../../../App \
     -I../../../../InSituLib/unstruct \
-    -I../../../../KVS/Source \
-    -I${VTK_INC_PATH} 
+    -I../../../../VisModule \
+    -I$(PBVR_KVS_INSTALL_DIR)/include \
+    -I${VTK_INCLUDE_PATH}
 
 EXE_LIBS = \
     -lfiniteVolume \
     -lmeshTools \
     -L../../../../InSituLib/unstruct -lInSituPBVR \
-    -L../../../../KVS/Source/Core/Release  -lkvsCore \
+    -L../../../../VisModule/Release  -lvisModule \
     -L../../../../FunctionParser -lpbvrFunc \
+    -L$(PBVR_KVS_INSTALL_DIR)/lib -lkvsCore -lkvsSupportExtendedFileFormat \
     -L/lib64 \
-    -L${VTK_LIB_PATH} -lvtkFiltersExtraction-${VTK_VERSION} -lvtkIOXML-${VTK_VERSION} -lvtkIOXMLParser-${VTK_VERSION} -lvtkexpat-${VTK_VERSION} -lvtkParallelCore-${VTK_VERSION} -lvtkIOLegacy-${VTK_VERSION} -lvtkIOCore-${VTK_VERSION} \
-    -lvtkdoubleconversion-${VTK_VERSION} -lvtklz4-${VTK_VERSION} -lvtklzma-${VTK_VERSION} -lvtkFiltersStatistics-${VTK_VERSION} -lvtkFiltersGeneral-${VTK_VERSION} -lvtkFiltersGeometry-${VTK_VERSION} -lvtkFiltersParallel-${VTK_VERSION} -lvtkFiltersCore-${VTK_VERSION} -lvtkCommonExecutionModel-${VTK_VERSION}  \
-    -lvtkzlib-${VTK_VERSION} -lvtkCommonColor-${VTK_VERSION} -lvtkfmt-${VTK_VERSION} -lvtkCommonDataModel-${VTK_VERSION} -lvtkpugixml-${VTK_VERSION} -lvtkCommonSystem-${VTK_VERSION} -lvtkCommonMisc-${VTK_VERSION} -lvtkCommonTransforms-${VTK_VERSION} \
-    -lvtknetcdf-${VTK_VERSION} -lvtkIONetCDF-${VTK_VERSION} -lvtkCommonMath-${VTK_VERSION} -lm -lvtkCommonCore-${VTK_VERSION} -lvtkloguru-${VTK_VERSION} -lvtksys-${VTK_VERSION}
+    -L${VTK_LIB_PATH} -lvtkFiltersExtraction-${VTK_VERSION} -lvtkIOXML-${VTK_VERSION} \
+    -lvtkIOXMLParser-${VTK_VERSION} -lvtkexpat-${VTK_VERSION} -lvtkParallelCore-${VTK_VERSION} \
+    -lvtkIOLegacy-${VTK_VERSION} -lvtkIOCore-${VTK_VERSION} -lvtkIOGeometry-${VTK_VERSION} -lvtkIOEnSight-${VTK_VERSION} \
+    -lvtkdoubleconversion-${VTK_VERSION} -lvtklz4-${VTK_VERSION} -lvtklzma-${VTK_VERSION} -lvtkFiltersStatistics-${VTK_VERSION} \
+    -lvtkFiltersGeneral-${VTK_VERSION} -lvtkFiltersGeometry-${VTK_VERSION} -lvtkFiltersParallel-${VTK_VERSION} \
+    -lvtkFiltersCore-${VTK_VERSION} -lvtkCommonExecutionModel-${VTK_VERSION} -lvtkzlib-${VTK_VERSION} \
+    -lvtkCommonColor-${VTK_VERSION} -lvtkfmt-${VTK_VERSION} -lvtkCommonDataModel-${VTK_VERSION} -lvtkpugixml-${VTK_VERSION} \
+    -lvtkCommonSystem-${VTK_VERSION} -lvtkCommonMisc-${VTK_VERSION} -lvtkCommonTransforms-${VTK_VERSION} -lvtkCommonMath-${VTK_VERSION} \
+    -lm -lvtknetcdf-${VTK_VERSION} -lvtkIONetCDF-${VTK_VERSION} -lvtkCommonCore-${VTK_VERSION} -lvtkloguru-${VTK_VERSION} -lvtksys-${VTK_VERSION}
 
