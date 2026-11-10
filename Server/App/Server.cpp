@@ -74,6 +74,18 @@ std::vector<std::string> ExpandNumericWildcard( const std::string& wildcard,
     return files;
 }
 
+/*  "member:N"（N は 0 以上の整数）かどうか。
+ *  アンサンブルメンバーの粒子を指す statistic である。 */
+bool IsEnsembleMemberStatistic( const std::string& statistic )
+{
+    static const char tag[] = "member:";
+    if ( statistic.rfind( tag, 0 ) != 0 ) return false;
+    const std::string id = statistic.substr( sizeof( tag ) - 1 );
+    if ( id.empty() ) return false;
+    return std::all_of( id.begin(), id.end(),
+        []( unsigned char c ) { return std::isdigit( c ) != 0; } );
+}
+
 std::string NormalizeStatisticName( const std::string& statistic )
 {
     const auto first = std::find_if_not( statistic.begin(), statistic.end(),
@@ -85,6 +97,11 @@ std::string NormalizeStatisticName( const std::string& statistic )
     std::string normalized( first, last );
     std::transform( normalized.begin(), normalized.end(), normalized.begin(),
         []( unsigned char c ) { return static_cast<char>( std::tolower( c ) ); } );
+
+    /*  "member:N" は統計量名ではなくメンバー指定なので、正規化せず素通しする。
+     *  ここで潰すと受信側（EnsembleStatisticsParameter の処理）で
+     *  statistic が採用されず、メンバーを切り替えても表示が変わらない。 */
+    if ( IsEnsembleMemberStatistic( normalized ) ) return normalized;
 
     if ( normalized == "average" || normalized == "avg" || normalized == "mean" )
         return "mean";
@@ -102,6 +119,10 @@ std::vector<EnsembleTransferFunction>* StatisticTransferFunctionArray(
     const std::string& statistic )
 {
     const std::string normalized = NormalizeStatisticName( statistic );
+    /*  メンバー個別の伝達関数は持たないため、平均用の伝達関数で描く。
+     *  値域もメンバー間で大きく変わらない想定である。 */
+    if ( IsEnsembleMemberStatistic( normalized ) )
+        return &particle_property.m_mean_transfer_function_array;
     if ( normalized == "mean" ) return &particle_property.m_mean_transfer_function_array;
     if ( normalized == "variance" ) return &particle_property.m_variance_transfer_function_array;
     if ( normalized == "cv" ) return &particle_property.m_coefficient_of_variation_transfer_function_array;
@@ -321,7 +342,12 @@ nlohmann::json BuildEnsembleStatisticsParameter(
 
     const std::string normalized_statistic = NormalizeStatisticName( statistic );
     std::string client_statistic = "average";
-    if ( normalized_statistic == "variance" )
+    if ( IsEnsembleMemberStatistic( normalized_statistic ) )
+    {
+        /*  メンバー指定はそのまま返す。クライアントが選択状態を復元できるようにする。 */
+        client_statistic = normalized_statistic;
+    }
+    else if ( normalized_statistic == "variance" )
     {
         client_statistic = "variance";
     }
@@ -2690,7 +2716,7 @@ void Server::receiveEnsembleStatisticsParameter(uWS::WebSocket<false, true, PerS
         const std::string statistic =
             NormalizeStatisticName( received.at( Protocol::Key::Statistic ).get<std::string>() );
         // "member:N" は N 番目のアンサンブルメンバーの粒子を指す。
-        const bool is_member = ( statistic.rfind( "member:", 0 ) == 0 );
+        const bool is_member = IsEnsembleMemberStatistic( statistic );
         if ( statistic == "mean" || statistic == "variance" || statistic == "cv" || is_member )
         {
             m_current_ensemble_statistic = statistic;

@@ -242,10 +242,10 @@ private:
     /*  統計量・メンバーごとの読み出しパスを決める。
      *
      *  統計量は PARTICLE_DIR 直下（サブディレクトリなし、接頭辞 ave/var/cov）。
-     *  メンバーは PARTICLE_DIR/ensNNNN/ の下で、接頭辞は通常版と同じ "t_"。
+     *  メンバーは PARTICLE_DIR/ensNNNN/ の下で、接頭辞は通常版と同じ "t"。
      *  メンバーの区別をディレクトリ名で行うのは、1メンバー1ステップで4ファイル出るため
      *  直下に並べるとファイル数が実用限界を超えること、および ParticleFile の名前解析が
-     *  接頭辞の長さに依存しており "t_" のままなら無改造で使えることによる。 */
+     *  接頭辞の長さに依存しており "t" のままなら無改造で使えることによる。 */
     static bool resolveParticlePath( const std::string& statistic,
                                      std::string* subdir, std::string* prefix )
     {
@@ -254,7 +254,7 @@ private:
         if ( statistic == "variance" ) { *subdir = ""; *prefix = "var"; return true; }
         if ( statistic == "cv" )       { *subdir = ""; *prefix = "cov"; return true; }
 
-        // "member:3" -> subdir "ens0003" / prefix "t_"
+        // "member:3" -> subdir "ens0003" / prefix "t"
         static const char member_tag[] = "member:";
         if ( statistic.rfind( member_tag, 0 ) == 0 )
         {
@@ -263,7 +263,13 @@ private:
             std::ostringstream os;
             os << "ens" << std::setfill( '0' ) << std::setw( 4 ) << id;
             *subdir = os.str();
-            *prefix = "t_";
+            /*  接頭辞は "t"（アンダースコアを含まない）。
+             *  ParticleFile は file_length = 接頭辞長 + 1 + ... として
+             *  「接頭辞の直後にアンダースコア1つ」を前提にファイル名長を検査する
+             *  （ParticleFile.cpp:32）。通常版の既定も "t" である
+             *  （ParticleMonitor.cpp:32 の particlePath += "/t"）。
+             *  "t_" を渡すと長さ判定が外れ、ファイルが見つからない。 */
+            *prefix = "t";
             return true;
         }
 
