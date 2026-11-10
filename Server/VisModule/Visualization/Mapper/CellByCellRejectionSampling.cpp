@@ -80,13 +80,16 @@ CellByCellRejectionSampling::CellByCellRejectionSampling(
     const vismodule::TransferFunction& transfer_function,
     const std::vector<vismodule::TransferFunction>& transfer_function_array, 
     TransferFunctionSynthesizer* transfunc_synthesizer,
-    vismodule::CoordSynthesizerStrings* coord_synthesizer_strings):
+    vismodule::CoordSynthesizerStrings* coord_synthesizer_strings,
+    const float repetition):
     vismodule::MapperBase( transfer_function ),
     vismodule::PointObject(),
     m_transfer_function_array( transfer_function_array ),
     m_transfer_function_synthesizer( transfunc_synthesizer ),
     m_coord_synthesizer_strings(coord_synthesizer_strings)
 {
+    // コンストラクタ内で生成が走るため、生成前に倍率を設定する。
+    m_repetition = repetition;
     this->generate_particles_unstruct(dom, values, nvariables,
             coordinates, ncoords, connections, ncells, celltype);
 }
@@ -99,13 +102,16 @@ CellByCellRejectionSampling::CellByCellRejectionSampling(
         const vismodule::TransferFunction& transfer_function,
         const std::vector<vismodule::TransferFunction>& transfer_function_array,
         TransferFunctionSynthesizer* transfunc_synthesizer,
-        vismodule::CoordSynthesizerStrings* coord_synthesizer_strings):
+        vismodule::CoordSynthesizerStrings* coord_synthesizer_strings,
+    const float repetition):
     vismodule::MapperBase( transfer_function ),
     vismodule::PointObject(),
     m_transfer_function_array( transfer_function_array ),
     m_transfer_function_synthesizer( transfunc_synthesizer ),
     m_coord_synthesizer_strings(coord_synthesizer_strings)
 {
+    // コンストラクタ内で生成が走るため、生成前に倍率を設定する。
+    m_repetition = repetition;
     this->generate_particles_struct(dom, values, nvariables);
 }
 
@@ -1631,7 +1637,7 @@ const std::size_t CellByCellRejectionSampling::calculate_number_of_particles(
     const float volume_of_cell,
     vismodule::MersenneTwister* MT ) 
 {
-    const float N = density * volume_of_cell;
+    const float N = density * volume_of_cell * m_repetition;
     const float R = MT->rand();
     //const float R = 0.5;
 
@@ -1656,7 +1662,7 @@ const std::size_t CellByCellRejectionSampling::calculate_number_of_particles(
     const float density,
     const float volume_of_cell )
 {
-    const float N = density * volume_of_cell;
+    const float N = density * volume_of_cell * m_repetition;
     const float R = Generator::GetRandomNumber();
 
     std::size_t n = static_cast<size_t>( N );

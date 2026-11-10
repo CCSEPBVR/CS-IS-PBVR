@@ -84,7 +84,8 @@ CellByCellMetropolisSampling::CellByCellMetropolisSampling(
     const vismodule::TransferFunction& transfer_function,
     const std::vector<vismodule::TransferFunction>& transfer_function_array, 
     TransferFunctionSynthesizer* transfunc_synthesizer,
-    vismodule::CoordSynthesizerStrings* coord_synthesizer_strings):
+    vismodule::CoordSynthesizerStrings* coord_synthesizer_strings,
+    const float repetition):
     vismodule::MapperBase( transfer_function ),
     vismodule::PointObject(),
     m_transfer_function_array( transfer_function_array ),
@@ -94,6 +95,8 @@ CellByCellMetropolisSampling::CellByCellMetropolisSampling(
 {
 //    this->setSubpixelLevel( subpixel_level );
 //    this->setSamplingStep( sampling_step );
+    // コンストラクタ内で生成が走るため、生成前に倍率を設定する。
+    m_repetition = repetition;
     this->generate_particles_unstruct(dom, values, nvariables,
             coordinates, ncoords, connections, ncells, celltype);
 }
@@ -106,7 +109,8 @@ CellByCellMetropolisSampling::CellByCellMetropolisSampling(
         const vismodule::TransferFunction& transfer_function,
         const std::vector<vismodule::TransferFunction>& transfer_function_array,
         TransferFunctionSynthesizer* transfunc_synthesizer,
-        vismodule::CoordSynthesizerStrings* coord_synthesizer_strings):
+        vismodule::CoordSynthesizerStrings* coord_synthesizer_strings,
+    const float repetition):
     vismodule::MapperBase( transfer_function ),
     vismodule::PointObject(),
     m_transfer_function_array( transfer_function_array ),
@@ -117,6 +121,8 @@ CellByCellMetropolisSampling::CellByCellMetropolisSampling(
 //    this->setSubpixelLevel( subpixel_level );
 //    this->setSamplingStep( sampling_step );
     //this->exec( dom, values, nvariables);
+    // コンストラクタ内で生成が走るため、生成前に倍率を設定する。
+    m_repetition = repetition;
     this->generate_particles_struct(dom, values, nvariables);
 }
 
@@ -1796,7 +1802,7 @@ const std::size_t CellByCellMetropolisSampling::calculate_number_of_particles(
     const float volume_of_cell,
     vismodule::MersenneTwister* MT ) 
 {
-    const float N = density * volume_of_cell;
+    const float N = density * volume_of_cell * m_repetition;
     const float R = MT->rand();
 
     std::size_t n = static_cast<size_t>( N ); 

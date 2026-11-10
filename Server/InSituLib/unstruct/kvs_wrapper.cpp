@@ -151,13 +151,16 @@ static void GenerateParticleObject(
     const vismodule::VolumeObjectBase::CellType& celltype,
     std::vector<float>& particle_coords,
     std::vector<Byte>& particle_colors,
-    std::vector<float>& particle_normals
+    std::vector<float>& particle_normals,
+    /*  粒子数の倍率。既定 1.0f で通常版と同一。
+     *  アンサンブルメンバーの重ね描きでは 1/N を渡す。 */
+    const float repetition = 1.0f
 )
 {
     vismodule::PointObjectGenerator point_object_generator;
     vismodule::PointObject* point_object = point_object_generator.GenerateParticleUnstruct(
         particle_property, dom, values, nvariables, coordinates,
-        ncoords, connections, ncells, celltype, ServerMode::IS
+        ncoords, connections, ncells, celltype, ServerMode::IS, repetition
     );
 
     MakeParticle( point_object, particle_coords, particle_colors, particle_normals );
@@ -600,6 +603,10 @@ bool ensemble_generate_particles(
     }
 
     ParticleProperty particle_property;
+    /*  この関数はアンサンブル経路専用。粒子数 1/N の判定に使うため既存フラグを立てる。
+     *  （デーモン側では history json から設定されるが、ソルバー側では未設定） */
+    particle_property.m_is_ensemble = true;
+
     MultiVolumePropertyList mvpl;
     particle_property.m_transfunc_synthesizer = new TransferFunctionSynthesizer();
     particle_property.m_camera = new vismodule::Camera();
@@ -757,11 +764,17 @@ bool ensemble_generate_particles(
         std::vector<Byte>  member_colors;
         std::vector<float> member_normals;
 
+        /*  全メンバーを重ね描きする前提なので、各メンバーの粒子数を 1/N にして
+         *  合計を1メンバー分に抑える。判定は既存の m_is_ensemble を使う。 */
+        const float member_repetition = particle_property.m_is_ensemble
+            ? 1.0f / static_cast<float>( num_ensemble )
+            : 1.0f;
+
         // 通常版 generate_particles と同じ生成処理を、自分のメンバーの場に対して行う。
         GenerateParticleObject(
             particle_property, dom, values, nvariables, coordinates,
             ncoords, connections, ncells, celltype,
-            member_coords, member_colors, member_normals
+            member_coords, member_colors, member_normals, member_repetition
         );
 
         const std::string memberFilePrefix =
