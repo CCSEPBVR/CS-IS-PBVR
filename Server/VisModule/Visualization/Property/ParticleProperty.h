@@ -27,7 +27,12 @@ struct ParticleProperty
     int m_num_ensemble = 0;              // アンサンブルメンバー数（0=非アンサンブル/未記録）
     /*  各アンサンブルメンバーの粒子を出力するか。デフォルト false（出力しない）。
      *  100メンバー×130ステップで約6.4GB・6万ファイルになるため、既定では出さない。
-     *  default.json の settings.ensemble.member_output で有効化する。 */
+     *  default.json の settings.ensemble.member_output で有効化する。
+     *
+     *  注意: SetParticleParameter は mpi_rank==0 だけが json を読み、結果を
+     *  この pack/unpack 経由で MPI_Bcast で全ランクへ配る。ソルバーの全ランクが
+     *  このフラグで分岐するため、byteSize/write/read への追加は必須である
+     *  （入れないと rank 0 だけ true になり集団通信がデッドロックする）。 */
     bool m_member_output_enabled = false;
     vismodule::Camera* m_camera;
     TransferFunctionSynthesizer* m_transfunc_synthesizer; // pack unpackしない
@@ -101,6 +106,7 @@ struct ParticleProperty
         size += sizeof( m_particle_data_size_limit );
         size += sizeof( m_is_ensemble );
         size += sizeof( m_log_scale_statistics );
+        size += sizeof( m_member_output_enabled );
         size += vismodule::Serializer::byteSize<vismodule::Camera>( *m_camera );
         size += vismodule::Serializer::byteSize( m_transfunc_array.size() );
         for ( std::size_t i = 0; i < m_transfunc_array.size(); i++ )
@@ -162,6 +168,7 @@ struct ParticleProperty
         index += vismodule::Serializer::write( buf + index, m_particle_data_size_limit );
         index += vismodule::Serializer::write( buf + index, m_is_ensemble );
         index += vismodule::Serializer::write( buf + index, m_log_scale_statistics );
+        index += vismodule::Serializer::write( buf + index, m_member_output_enabled );
         index += vismodule::Serializer::pack( buf + index, *m_camera );
 
         index += vismodule::Serializer::write( buf + index, m_transfunc_array.size() );
@@ -227,6 +234,7 @@ struct ParticleProperty
         index += vismodule::Serializer::read( buf + index, &m_particle_data_size_limit );
         index += vismodule::Serializer::read( buf + index, &m_is_ensemble );
         index += vismodule::Serializer::read( buf + index, &m_log_scale_statistics );
+        index += vismodule::Serializer::read( buf + index, &m_member_output_enabled );
         index += vismodule::Serializer::unpack( buf + index, m_camera );
 
         std::size_t tf_number;
@@ -346,6 +354,7 @@ struct ParticleProperty
         std::cout << "particle_data_size_limit            : " << m_particle_data_size_limit            << std::endl;
         std::cout << "is_ensemble                         : " << m_is_ensemble                         << std::endl;
         std::cout << "log_scale_statistics                : " << m_log_scale_statistics << std::endl;
+        std::cout << "member_output_enabled              : " << m_member_output_enabled << std::endl;
         std::cout << "color_transfer_function_synthesis   : " << m_color_transfer_function_synthesis   << std::endl;
         std::cout << "opacity_transfer_function_synthesis : " << m_opacity_transfer_function_synthesis << std::endl;
         std::cout << "transfer_function_count             : " << m_transfunc_array.size()              << std::endl;
