@@ -30,6 +30,9 @@ private:
     HistogramArray    m_coefficient_of_variation_opacity_histogram_array;
     bool              m_has_ensemble_statistic_histogram;
     bool              m_is_ensemble;
+    /*  アンサンブルメンバー数。クライアントが表示対象メンバーの選択肢を作るのに使う。
+     *  0 はアンサンブルでない、または未記録を意味する。 */
+    int               m_num_ensemble;
     int               m_nvariables;
     int               m_particle_limit;
     float             m_extra_opacity_factor;
@@ -71,6 +74,7 @@ public:
     HistogramArray& coefficientOfVariationColorHistogramArray();
     HistogramArray& coefficientOfVariationOpacityHistogramArray();
     bool isEnsemble() const { return m_is_ensemble; };
+    int numEnsemble() const { return m_num_ensemble; };
     int nVariables(){return m_nvariables; };
     int ParticleLimit(){return m_particle_limit; };
     float ExtraOpacityFactor(){return m_extra_opacity_factor; };

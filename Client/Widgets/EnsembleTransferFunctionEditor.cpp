@@ -6,6 +6,7 @@
 #include "../ExtendedQT/Histogram.h"
 
 #include <QButtonGroup>
+#include <QCheckBox>
 #include <QComboBox>
 #include <QDebug>
 #include <QDoubleSpinBox>
@@ -15,11 +16,13 @@
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QJsonValue>
 #include <QLineEdit>
 #include <QMessageBox>
 #include <QMouseEvent>
 #include <QPushButton>
 #include <QRadioButton>
+#include <QVariant>
 
 #include <cmath>
 
@@ -223,6 +226,18 @@ QString NormalizeStatisticName( const QString& statistic )
     return QString();
 }
 
+// "member:N" 形式の statistic なら N を返し、そうでなければ -1 を返す。
+// 表示対象のアンサンブルメンバー指定（サーバー側 Server.cpp / Worker.h が受け付ける形式）。
+int ParseMemberStatistic( const QString& statistic )
+{
+    const QString normalized = statistic.trimmed().toLower();
+    const QString prefix = QStringLiteral( "member:" );
+    if( !normalized.startsWith( prefix ) ) return -1;
+    bool ok = false;
+    const int member = normalized.mid( prefix.size() ).toInt( &ok );
+    return ( ok && member >= 0 ) ? member : -1;
+}
+
 std::vector<int> ReadHistogram( const QJsonValue& value, bool* ok )
 {
     std::vector<int> histogram;
@@ -235,6 +250,17 @@ std::vector<int> ReadHistogram( const QJsonValue& value, bool* ok )
 
     *ok = true;
     return histogram;
+}
+
+// 常用対数モードの注記。対数化の対象は平均・分散のみで、変動係数は対数化前の
+// 平均・分散から算出されるため対象外。MinMax 欄に表示される値のスケールを
+// 取り違えないよう、グループタイトルに [log10] を付けて示す。
+void UpdateMinMaxGroupTitle( Ui::EnsembleTransferFunctionEditor* ui, const bool logAppliesToCurrentStatistic )
+{
+    const bool logScale = ui->m_log_scale_statistics_check_box->isChecked();
+    ui->m_min_max_group_box->setTitle( ( logScale && logAppliesToCurrentStatistic )
+                                           ? QStringLiteral( "Ensemble MinMax [log10]" )
+                                           : QStringLiteral( "Ensemble MinMax" ) );
 }
 }
 
@@ -255,6 +281,13 @@ EnsembleTransferFunctionEditor::EnsembleTransferFunctionEditor( WebSocketPair* w
     connect( ui->m_apply_push_button, &QPushButton::clicked, this, &EnsembleTransferFunctionEditor::onApply );
     connect( ui->m_export_push_button, &QPushButton::clicked, this, &EnsembleTransferFunctionEditor::onExport );
     connect( ui->m_import_push_button, &QPushButton::clicked, this, &EnsembleTransferFunctionEditor::onImport );
+    connect( ui->m_log_scale_statistics_check_box, &QCheckBox::toggled, this,
+             [this]( const bool checked )
+             {
+                 qDebug() << "[Client][EnsembleTFE] log_scale_statistics checkbox:" << checked
+                          << "(sent to server on Apply)";
+                 UpdateMinMaxGroupTitle( ui, m_current_statistic != CoefficientVariationStatistic );
+             } );
 }
 
 EnsembleTransferFunctionEditor::~EnsembleTransferFunctionEditor()
@@ -295,6 +328,13 @@ void EnsembleTransferFunctionEditor::initialize()
     m_statistics[CoefficientVariationStatistic].displayName = QStringLiteral( "Coefficient of Variation" );
     m_statistics[CoefficientVariationStatistic].statisticName = QStringLiteral( "cv" );
 
+    // コンボボックスの統計量3項目（.ui 定義）に itemData = -1 を入れる。
+    // メンバー項目は itemData = メンバーID（0以上）で追加し、種別は index でなく itemData で判定する。
+    for( int i = 0; i < StatisticCount; ++i )
+    {
+        ui->m_statistics_combo_box->setItemData( i, QVariant( -1 ) );
+    }
+
     m_default_color_map = ui->m_color_map->getColors();
     m_default_opacity_map = ui->m_opacity_map->getOpacities();
     const std::vector<int> histogram = ui->m_histogram->getDatas();
@@ -317,6 +357,7 @@ void EnsembleTransferFunctionEditor::initialize()
 void EnsembleTransferFunctionEditor::reset()
 {
     ui->m_statistics_synthesizer_line_edit->setText( QStringLiteral( "q1" ) );
+    ui->m_log_scale_statistics_check_box->setChecked( false );
     for( auto& statistic : m_statistics )
     {
         statistic.colorMap = m_default_color_map;
@@ -330,6 +371,10 @@ void EnsembleTransferFunctionEditor::reset()
     }
 
     m_current_statistic = AverageStatistic;
+    // 切断・再接続時はメンバー項目をいったん消す（接続後に NumEnsemble を受信して作り直す）
+    m_num_ensemble = 0;
+    m_current_member = -1;
+    rebuildMemberItems();
     const bool wasBlocked = ui->m_statistics_combo_box->blockSignals( true );
     ui->m_statistics_combo_box->setCurrentIndex( AverageStatistic );
     ui->m_statistics_combo_box->blockSignals( wasBlocked );
@@ -364,14 +409,67 @@ void EnsembleTransferFunctionEditor::loadStatisticState( StatisticIndex statisti
     ui->m_color_map->update();
     ui->m_opacity_map->update();
     ui->m_histogram->update();
+    UpdateMinMaxGroupTitle( ui, statistic != CoefficientVariationStatistic );
 }
 
 EnsembleTransferFunctionEditor::StatisticIndex EnsembleTransferFunctionEditor::selectedStatisticIndex() const
 {
+    // メンバー選択中は直前に選ばれていた統計量を返す（パネル・凡例はその状態を保持し続ける）
+    if( selectedMemberId() >= 0 ) return m_current_statistic;
     const int index = ui->m_statistics_combo_box->currentIndex();
     if( index == VarianceStatistic ) return VarianceStatistic;
     if( index == CoefficientVariationStatistic ) return CoefficientVariationStatistic;
     return AverageStatistic;
+}
+
+// コンボボックスで選択中のメンバーID。統計量項目が選ばれていれば -1。
+int EnsembleTransferFunctionEditor::selectedMemberId() const
+{
+    const QVariant data = ui->m_statistics_combo_box->currentData();
+    if( !data.isValid() ) return -1;  // itemData の無い項目（セパレータ等）
+    const int member = data.toInt();
+    return ( member >= 0 ) ? member : -1;
+}
+
+// コンボボックスのメンバー項目（統計量3項目より後ろ）を m_num_ensemble に合わせて作り直す。
+// 選択中のメンバーが作り直し後も存在すれば選択を維持し、無くなれば直前の統計量へ戻す。
+void EnsembleTransferFunctionEditor::rebuildMemberItems()
+{
+    QComboBox* combo = ui->m_statistics_combo_box;
+    const int previousMember = selectedMemberId();
+    const bool wasBlocked = combo->blockSignals( true );
+
+    while( combo->count() > StatisticCount )
+    {
+        combo->removeItem( combo->count() - 1 );
+    }
+    if( m_num_ensemble > 0 )
+    {
+        combo->insertSeparator( combo->count() );
+        for( int member = 0; member < m_num_ensemble; ++member )
+        {
+            combo->addItem( QStringLiteral( "Member %1" ).arg( member ), QVariant( member ) );
+        }
+    }
+
+    bool fallbackToStatistic = false;
+    if( previousMember >= 0 )
+    {
+        const int index = combo->findData( QVariant( previousMember ) );
+        if( index >= 0 )
+        {
+            combo->setCurrentIndex( index );
+        }
+        else
+        {
+            m_current_member = -1;
+            combo->setCurrentIndex( static_cast<int>( m_current_statistic ) );
+            fallbackToStatistic = true;
+        }
+    }
+
+    combo->blockSignals( wasBlocked );
+    if( fallbackToStatistic ) loadStatisticState( m_current_statistic );
 }
 
 TransferFunction EnsembleTransferFunctionEditor::createLegendTransferFunction() const
@@ -422,14 +520,68 @@ TransferFunction EnsembleTransferFunctionEditor::createLegendTransferFunction( c
 void EnsembleTransferFunctionEditor::onStatisticSelectionChanged( int )
 {
     saveCurrentStatisticState();
+    const int member = selectedMemberId();
+    if( member >= 0 )
+    {
+        // メンバー選択中はパネルを直前の統計量の状態のまま残す
+        // （メンバー粒子は生成済みデータの表示であり、伝達関数の編集対象ではないため）
+        m_current_member = member;
+        return;
+    }
+    m_current_member = -1;
     m_current_statistic = selectedStatisticIndex();
     loadStatisticState( m_current_statistic );
 }
 
 void EnsembleTransferFunctionEditor::onReceiveEnsembleStatisticsParameter( const QJsonObject& payload )
 {
-    const QString rootStatistic = NormalizeStatisticName(
-        payload.value( QString::fromUtf8( Protocol::Key::Statistic ) ).toString() );
+    // アンサンブルメンバー数（root レベル）。Member 選択肢を作る。
+    // 直後の root Statistic（member:N）の復元でコンボボックス項目を参照するため、先に処理する。
+    const QJsonValue receivedNumEnsemble =
+        payload.value( QString::fromUtf8( Protocol::Key::NumEnsemble ) );
+    if( receivedNumEnsemble.isDouble() )
+    {
+        const int numEnsemble = qMax( 0, receivedNumEnsemble.toInt() );
+        if( numEnsemble != m_num_ensemble )
+        {
+            qDebug() << "[Client][EnsembleTFE] receive num_ensemble=" << numEnsemble;
+            m_num_ensemble = numEnsemble;
+            rebuildMemberItems();
+        }
+    }
+    else
+    {
+        qDebug() << "[Client][EnsembleTFE] EnsembleStatisticsParameter has no NumEnsemble key"
+                 << "(server does not include the feature?)";
+    }
+
+    const QString rawRootStatistic =
+        payload.value( QString::fromUtf8( Protocol::Key::Statistic ) ).toString();
+    const int rootMember = ParseMemberStatistic( rawRootStatistic );
+    if( rootMember >= 0 )
+    {
+        // member:N の復元。接続直後の publish と、他クライアントの Apply の再 publish が届く。
+        const int index = ui->m_statistics_combo_box->findData( QVariant( rootMember ) );
+        if( index >= 0 )
+        {
+            saveCurrentStatisticState();
+            m_current_member = rootMember;
+            const bool wasBlocked = ui->m_statistics_combo_box->blockSignals( true );
+            ui->m_statistics_combo_box->setCurrentIndex( index );
+            ui->m_statistics_combo_box->blockSignals( wasBlocked );
+            // パネルは直前の統計量の状態のまま（onStatisticSelectionChanged と同じ扱い）
+        }
+        else
+        {
+            qDebug() << "[Client][EnsembleTFE] skip member restore:" << rawRootStatistic
+                     << "(no combo box item; num_ensemble =" << m_num_ensemble << ")";
+        }
+    }
+
+    // member:N でなければ従来どおり統計量名として解釈する
+    const QString rootStatistic = ( rootMember >= 0 )
+        ? QString()
+        : NormalizeStatisticName( rawRootStatistic );
     if( !rootStatistic.isEmpty() )
     {
         StatisticIndex receivedStatistic = AverageStatistic;
@@ -443,11 +595,27 @@ void EnsembleTransferFunctionEditor::onReceiveEnsembleStatisticsParameter( const
         }
 
         saveCurrentStatisticState();
+        m_current_member = -1;
         m_current_statistic = receivedStatistic;
         const bool wasBlocked = ui->m_statistics_combo_box->blockSignals( true );
         ui->m_statistics_combo_box->setCurrentIndex( receivedStatistic );
         ui->m_statistics_combo_box->blockSignals( wasBlocked );
         loadStatisticState( m_current_statistic );
+    }
+
+    // 常用対数モードの現在値（root レベル）。接続時の初期 publish と、
+    // 他クライアントの Apply をサーバが再 publish したものの両方がここに届く。
+    const QJsonValue receivedLogScale =
+        payload.value( QString::fromUtf8( Protocol::Key::LogScaleStatistics ) );
+    if( receivedLogScale.isBool() )
+    {
+        qDebug() << "[Client][EnsembleTFE] receive log_scale_statistics=" << receivedLogScale.toBool();
+        ui->m_log_scale_statistics_check_box->setChecked( receivedLogScale.toBool() );
+    }
+    else
+    {
+        qDebug() << "[Client][EnsembleTFE] EnsembleStatisticsParameter has no LogScaleStatistics key"
+                 << "(server does not include the feature?)";
     }
 
     const QString dataKey = QString::fromUtf8( Protocol::Key::Data );
@@ -776,6 +944,10 @@ void EnsembleTransferFunctionEditor::onReceiveRequestDataAtEnsembleStatisticsPar
 
 QString EnsembleTransferFunctionEditor::selectedStatistic() const
 {
+    // メンバー選択中は "member:N" を返す。サーバーは統計量名と同じ経路でこれを受け付け、
+    // PARTICLE_DIR/ensNNNN/t_* の粒子を返す（Server/Utils/Worker.h resolveParticlePath）。
+    const int member = selectedMemberId();
+    if( member >= 0 ) return QStringLiteral( "member:%1" ).arg( member );
     return m_statistics[selectedStatisticIndex()].statisticName;
 }
 
@@ -966,7 +1138,17 @@ void EnsembleTransferFunctionEditor::onApply()
     QJsonObject root;
     root[QString::fromUtf8( Protocol::Key::Event )] = QString::fromUtf8( Protocol::Events::EnsembleStatisticsParameter );
     root[QString::fromUtf8( Protocol::Key::Statistic )] = selectedStatistic();
+    // 常用対数モードは平均・分散をまとめて1つの設定なので、統計量ごとの Data ではなく root レベルで送る
+    root[QString::fromUtf8( Protocol::Key::LogScaleStatistics )] =
+        ui->m_log_scale_statistics_check_box->isChecked();
     root[QString::fromUtf8( Protocol::Key::Data )] = data;
+
+    // 送信ペイロードの検証ログ。チェックボックスではなく root に実際に入った値を読み戻して出す。
+    qDebug() << "[Client][EnsembleTFE] send EnsembleStatisticsParameter:"
+             << "statistic=" << root.value( QString::fromUtf8( Protocol::Key::Statistic ) ).toString()
+             << "log_scale_statistics="
+             << root.value( QString::fromUtf8( Protocol::Key::LogScaleStatistics ) ).toBool()
+             << "patches=" << data.size();
 
     m_web_sockets->text()->sendTextMessage( QJsonDocument( root ).toJson( QJsonDocument::Compact ) );
 }
@@ -1012,6 +1194,10 @@ void EnsembleTransferFunctionEditor::onExport()
 
     QJsonObject settings;
     settings["transfer_function"] = transferFunctionSettings;
+
+    QJsonObject ensembleSettings;
+    ensembleSettings["log_scale_statistics"] = ui->m_log_scale_statistics_check_box->isChecked();
+    settings["ensemble"] = ensembleSettings;
 
     QJsonArray normalTransferFunctions;
     normalTransferFunctions.append( TransferFunctionToDefaultJson( average ) );
@@ -1123,6 +1309,16 @@ void EnsembleTransferFunctionEditor::onImport()
     importStatistic( QStringLiteral( "mean_transfer_functions" ), AverageStatistic );
     importStatistic( QStringLiteral( "variance_transfer_functions" ), VarianceStatistic );
     importStatistic( QStringLiteral( "coefficient_of_variation_transfer_functions" ), CoefficientVariationStatistic );
+
+    // settings.ensemble.log_scale_statistics は optional。無ければ現在の GUI 値を保つ
+    // （サーバ側 reader も欠損時は既定値扱い。既存ファイルに ensemble キーは無いため警告にしない）。
+    const QJsonValue importedLogScale = root.value( QStringLiteral( "settings" ) ).toObject()
+                                            .value( QStringLiteral( "ensemble" ) ).toObject()
+                                            .value( QStringLiteral( "log_scale_statistics" ) );
+    if( importedLogScale.isBool() )
+    {
+        ui->m_log_scale_statistics_check_box->setChecked( importedLogScale.toBool() );
+    }
 
     if( !importedExpression.isEmpty() ) ui->m_statistics_synthesizer_line_edit->setText( importedExpression );
 

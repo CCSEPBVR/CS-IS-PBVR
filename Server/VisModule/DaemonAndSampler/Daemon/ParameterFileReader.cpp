@@ -468,6 +468,7 @@ nlohmann::json BuildLegacyParametersFromReadableJson(
     const nlohmann::json sampling = settings.value( "sampling", nlohmann::json::object() );
     const nlohmann::json image = settings.value( "image", nlohmann::json::object() );
     const nlohmann::json transfer_settings = settings.value( "transfer_function", nlohmann::json::object() );
+    const nlohmann::json ensemble = settings.value( "ensemble", nlohmann::json::object() );
 
     if ( sampling.contains( "method" ) ) params["SAMPLING_METHOD"] = sampling.at( "method" );
     if ( sampling.contains( "particle_limit" ) ) params["PARTICLE_LIMIT"] = sampling.at( "particle_limit" );
@@ -484,6 +485,8 @@ nlohmann::json BuildLegacyParametersFromReadableJson(
     else params["TF_NUMBER"] = transfer_functions.size();
     if ( transfer_settings.contains( "color_synthesis" ) ) params["COLOR_SYNTH"] = transfer_settings.at( "color_synthesis" );
     if ( transfer_settings.contains( "opacity_synthesis" ) ) params["OPACITY_SYNTH"] = transfer_settings.at( "opacity_synthesis" );
+    // アンサンブル統計量(平均・分散)の常用対数化。変動係数は対象外。
+    if ( ensemble.contains( "log_scale_statistics" ) ) params["LOG_SCALE_STATISTICS"] = ensemble.at( "log_scale_statistics" );
 
     for ( size_t i = 0; i < transfer_functions.size(); ++i )
     {
@@ -1002,6 +1005,9 @@ bool ParameterFileReader::readTransferFunctionFromJson( const char* fname, Parti
             params.value( "COLOR_SYNTH", std::string( "" ) );
         particle_property.m_opacity_transfer_function_synthesis =
             params.value( "OPACITY_SYNTH", std::string( "" ) );
+        // 既存の json には無いキーなので、既定は false(対数化しない)。
+        particle_property.m_log_scale_statistics =
+            params.value( "LOG_SCALE_STATISTICS", false );
 
         if ( particle_data_size_limit_unit != "MB" )
         {

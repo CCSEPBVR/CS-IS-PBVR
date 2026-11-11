@@ -31,7 +31,8 @@ vismodule::PointObject* PointObjectGenerator::GenerateParticleStruct(
     const domain_parameters_struct& dom,
     Type** values,
     const int nvariables,
-    ServerMode server_mode
+    ServerMode server_mode,
+    const float repetition
 )
 {
     vismodule::CoordSynthesizerStrings* css;
@@ -72,8 +73,9 @@ vismodule::PointObject* PointObjectGenerator::GenerateParticleStruct(
             transfunc_array[0],
             transfunc_array,
             particle_property.m_transfunc_synthesizer, 
-            css
-        );
+            css,
+                repetition
+            );
     case 'r':
         std::cout << "Rejection sampling" << std::endl;
         return new vismodule::CellByCellRejectionSampling(
@@ -83,8 +85,9 @@ vismodule::PointObject* PointObjectGenerator::GenerateParticleStruct(
             transfunc_array[0],
             transfunc_array,
             particle_property.m_transfunc_synthesizer, 
-            css
-        );
+            css,
+                repetition
+            );
     case 'm':
         std::cout << "Metropolis sampling" << std::endl;
         return new vismodule::CellByCellMetropolisSampling(
@@ -94,8 +97,9 @@ vismodule::PointObject* PointObjectGenerator::GenerateParticleStruct(
             transfunc_array[0],
             transfunc_array,
             particle_property.m_transfunc_synthesizer,
-            css
-        );
+            css,
+                repetition
+            );
     case 'h':
         std::cout << "Histogram " << std::endl;
         return new vismodule::CellByCellHistogram(
@@ -136,7 +140,8 @@ vismodule::PointObject* PointObjectGenerator::GenerateParticleUnstruct(
     unsigned int* connections,
     const int ncells,
     const vismodule::VolumeObjectBase::CellType& celltype,
-    ServerMode server_mode
+    ServerMode server_mode,
+    const float repetition
 )
 {
     vismodule::CoordSynthesizerStrings* css;
@@ -182,8 +187,9 @@ vismodule::PointObject* PointObjectGenerator::GenerateParticleUnstruct(
             transfunc_array[0],
             transfunc_array,
             particle_property.m_transfunc_synthesizer,
-            css
-        );
+            css,
+                repetition
+            );
     case 'r':
         std::cout << "Rejection sampling" << std::endl;
         return new vismodule::CellByCellRejectionSampling(
@@ -198,8 +204,9 @@ vismodule::PointObject* PointObjectGenerator::GenerateParticleUnstruct(
             transfunc_array[0],
             transfunc_array,
             particle_property.m_transfunc_synthesizer,
-            css
-        );
+            css,
+                repetition
+            );
     case 'm':
         std::cout << "Metropolis sampling" << std::endl;
         return new vismodule::CellByCellMetropolisSampling(
@@ -214,8 +221,9 @@ vismodule::PointObject* PointObjectGenerator::GenerateParticleUnstruct(
             transfunc_array[0],
             transfunc_array,
             particle_property.m_transfunc_synthesizer,
-            css
-        );
+            css,
+                repetition
+            );
     case 'h':
         std::cout << "Histogram " << std::endl;
         return new vismodule::CellByCellHistogram( 

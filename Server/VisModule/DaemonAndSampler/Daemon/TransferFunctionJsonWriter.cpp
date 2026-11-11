@@ -370,7 +370,8 @@ nlohmann::json BuildHumanReadableView( const ParticleProperty& particle_property
         "The color.map.values field contains a flat uint8 RGB array with three components (R, G, B) per control point.",
         "The opacity.map.values field contains a one-dimensional array of floating-point values in the range [0, 1].",
         "color_synthesis and opacity_synthesis specify the synthesis expressions defined in the Transfer Function Editor.",
-        "The mean_transfer_functions, variance_transfer_functions, and coefficient_of_variation_transfer_functions sections contain transfer-function parameters for ensemble statistics."
+        "The mean_transfer_functions, variance_transfer_functions, and coefficient_of_variation_transfer_functions sections contain transfer-function parameters for ensemble statistics.",
+        "settings.ensemble.log_scale_statistics applies a base-10 logarithm to the ensemble mean and variance. The coefficient of variation is not transformed."
     } );
 
     view["settings"]["sampling"]["method"] = SamplingMethodName( particle_property.m_sampling_method );
@@ -392,6 +393,8 @@ nlohmann::json BuildHumanReadableView( const ParticleProperty& particle_property
     }
     view["settings"]["transfer_function"]["color_synthesis"] = particle_property.m_color_transfer_function_synthesis;
     view["settings"]["transfer_function"]["opacity_synthesis"] = particle_property.m_opacity_transfer_function_synthesis;
+
+    view["settings"]["ensemble"]["log_scale_statistics"] = particle_property.m_log_scale_statistics;
 
     view["transfer_functions"] = TransferFunctionArrayToJson( particle_property.m_transfunc_array );
     view["mean_transfer_functions"] = TransferFunctionArrayToJson( particle_property.m_mean_transfer_function_array );

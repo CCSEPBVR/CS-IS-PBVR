@@ -74,6 +74,18 @@ std::vector<std::string> ExpandNumericWildcard( const std::string& wildcard,
     return files;
 }
 
+/*  "member:N"（N は 0 以上の整数）かどうか。
+ *  アンサンブルメンバーの粒子を指す statistic である。 */
+bool IsEnsembleMemberStatistic( const std::string& statistic )
+{
+    static const char tag[] = "member:";
+    if ( statistic.rfind( tag, 0 ) != 0 ) return false;
+    const std::string id = statistic.substr( sizeof( tag ) - 1 );
+    if ( id.empty() ) return false;
+    return std::all_of( id.begin(), id.end(),
+        []( unsigned char c ) { return std::isdigit( c ) != 0; } );
+}
+
 std::string NormalizeStatisticName( const std::string& statistic )
 {
     const auto first = std::find_if_not( statistic.begin(), statistic.end(),
@@ -85,6 +97,11 @@ std::string NormalizeStatisticName( const std::string& statistic )
     std::string normalized( first, last );
     std::transform( normalized.begin(), normalized.end(), normalized.begin(),
         []( unsigned char c ) { return static_cast<char>( std::tolower( c ) ); } );
+
+    /*  "member:N" は統計量名ではなくメンバー指定なので、正規化せず素通しする。
+     *  ここで潰すと受信側（EnsembleStatisticsParameter の処理）で
+     *  statistic が採用されず、メンバーを切り替えても表示が変わらない。 */
+    if ( IsEnsembleMemberStatistic( normalized ) ) return normalized;
 
     if ( normalized == "average" || normalized == "avg" || normalized == "mean" )
         return "mean";
@@ -102,6 +119,10 @@ std::vector<EnsembleTransferFunction>* StatisticTransferFunctionArray(
     const std::string& statistic )
 {
     const std::string normalized = NormalizeStatisticName( statistic );
+    /*  メンバー個別の伝達関数は持たないため、平均用の伝達関数で描く。
+     *  値域もメンバー間で大きく変わらない想定である。 */
+    if ( IsEnsembleMemberStatistic( normalized ) )
+        return &particle_property.m_mean_transfer_function_array;
     if ( normalized == "mean" ) return &particle_property.m_mean_transfer_function_array;
     if ( normalized == "variance" ) return &particle_property.m_variance_transfer_function_array;
     if ( normalized == "cv" ) return &particle_property.m_coefficient_of_variation_transfer_function_array;
@@ -321,7 +342,12 @@ nlohmann::json BuildEnsembleStatisticsParameter(
 
     const std::string normalized_statistic = NormalizeStatisticName( statistic );
     std::string client_statistic = "average";
-    if ( normalized_statistic == "variance" )
+    if ( IsEnsembleMemberStatistic( normalized_statistic ) )
+    {
+        /*  メンバー指定はそのまま返す。クライアントが選択状態を復元できるようにする。 */
+        client_statistic = normalized_statistic;
+    }
+    else if ( normalized_statistic == "variance" )
     {
         client_statistic = "variance";
     }
@@ -333,6 +359,11 @@ nlohmann::json BuildEnsembleStatisticsParameter(
     nlohmann::json msg;
     msg[Protocol::Key::Event] = Protocol::Events::EnsembleStatisticsParameter;
     msg[Protocol::Key::Statistic] = client_statistic;
+    // 常用対数モードの現在値。接続直後のクライアントがチェックボックスを復元できるよう
+    // root レベルで送る（クライアント→サーバの LogScaleStatistics と同じキー）。
+    msg[Protocol::Key::LogScaleStatistics] = particle_property.m_log_scale_statistics;
+    // アンサンブルメンバー数。クライアントが Member 選択肢を作るのに使う。
+    msg[Protocol::Key::NumEnsemble] = particle_property.m_num_ensemble;
     msg[Protocol::Key::Data] = std::move( data );
     return msg;
 }
@@ -2684,7 +2715,9 @@ void Server::receiveEnsembleStatisticsParameter(uWS::WebSocket<false, true, PerS
     {
         const std::string statistic =
             NormalizeStatisticName( received.at( Protocol::Key::Statistic ).get<std::string>() );
-        if ( statistic == "mean" || statistic == "variance" || statistic == "cv" )
+        // "member:N" は N 番目のアンサンブルメンバーの粒子を指す。
+        const bool is_member = IsEnsembleMemberStatistic( statistic );
+        if ( statistic == "mean" || statistic == "variance" || statistic == "cv" || is_member )
         {
             m_current_ensemble_statistic = statistic;
         }
@@ -2693,6 +2726,19 @@ void Server::receiveEnsembleStatisticsParameter(uWS::WebSocket<false, true, PerS
             std::cout << "[Server][EnsembleStatisticsParameter] keep current statistic. unknown statistic="
                       << statistic << std::endl;
         }
+    }
+
+    // 常用対数モード。平均と分散をまとめて log10 にする実装(ApplyLog10ToMeanVariance)なので、
+    // 統計量ごとの Data ではなく root レベルで受ける。
+    // 設定した値は末尾の ParameterFileWriter が default.json の
+    // settings.ensemble.log_scale_statistics へ書き出し、次ステップで IS 側が読んで対数化する。
+    if ( received.contains( Protocol::Key::LogScaleStatistics ) &&
+         received.at( Protocol::Key::LogScaleStatistics ).is_boolean() )
+    {
+        m_particle_property->m_log_scale_statistics =
+            received.at( Protocol::Key::LogScaleStatistics ).get<bool>();
+        std::cout << "[Server][EnsembleStatisticsParameter] log_scale_statistics="
+                  << m_particle_property->m_log_scale_statistics << std::endl;
     }
 
     if ( received.contains( Protocol::Key::Data ) && received.at( Protocol::Key::Data ).is_array() )

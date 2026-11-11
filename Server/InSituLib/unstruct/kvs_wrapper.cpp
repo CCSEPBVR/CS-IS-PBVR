@@ -151,13 +151,16 @@ static void GenerateParticleObject(
     const vismodule::VolumeObjectBase::CellType& celltype,
     std::vector<float>& particle_coords,
     std::vector<Byte>& particle_colors,
-    std::vector<float>& particle_normals
+    std::vector<float>& particle_normals,
+    /*  粒子数の倍率。既定 1.0f で通常版と同一。
+     *  アンサンブルメンバーの重ね描きでは 1/N を渡す。 */
+    const float repetition = 1.0f
 )
 {
     vismodule::PointObjectGenerator point_object_generator;
     vismodule::PointObject* point_object = point_object_generator.GenerateParticleUnstruct(
         particle_property, dom, values, nvariables, coordinates,
-        ncoords, connections, ncells, celltype, ServerMode::IS
+        ncoords, connections, ncells, celltype, ServerMode::IS, repetition
     );
 
     MakeParticle( point_object, particle_coords, particle_colors, particle_normals );
@@ -600,6 +603,10 @@ bool ensemble_generate_particles(
     }
 
     ParticleProperty particle_property;
+    /*  この関数はアンサンブル経路専用。粒子数 1/N の判定に使うため既存フラグを立てる。
+     *  （デーモン側では history json から設定されるが、ソルバー側では未設定） */
+    particle_property.m_is_ensemble = true;
+
     MultiVolumePropertyList mvpl;
     particle_property.m_transfunc_synthesizer = new TransferFunctionSynthesizer();
     particle_property.m_camera = new vismodule::Camera();
@@ -671,7 +678,6 @@ bool ensemble_generate_particles(
     {
     EnsembleParticleArrays average, variance, coefficient;
     EnsembleStatisticRange average_range, variance_range, co_variation_range;
-//    particle_property.m_log_scale_statistics = true; // スタブデータ(検証用。default.json連携時に有効化 or 削除)
     bool ok = vismodule::GenerateEnsembleParticles(
         num_ensemble, particle_property, values, nvariables,
         coordinates, ncoords, connections, ncells, celltype,
@@ -733,7 +739,61 @@ bool ensemble_generate_particles(
 #endif
         OutputEnsembleStatisticHistory(
             particle_property, tf_number, nvariables, historyFilePath,
-            average_range, variance_range, co_variation_range
+            average_range, variance_range, co_variation_range,
+            MPI_COMM_WORLD, num_ensemble
+        );
+    }
+
+    /*  各アンサンブルメンバーの粒子を出力する。
+     *
+     *  全メンバーを出力するため、各プロセスは自分のメンバー分を1回出すだけでよい。
+     *  メンバーIDは mpi_rank / MPIprocess_per_ensemble で決まる
+     *  (統計量のリング交換が MPIprocess_per_ensemble 刻みでシフトするのと同じ構造)。
+     *
+     *  OutputEnsembleMemberParticles は集団通信を含むため全プロセスが呼ぶ必要があるが、
+     *  全員が自分の分を出す構造では自然に満たされる。
+     *
+     *  出力先は PARTICLE_DIR/ensNNNN/t_<時刻>_0000001_0000001.kvsml。
+     *  1メンバー1ステップで4ファイル出るため、メンバーごとにディレクトリを分ける。 */
+    {
+        const int mpi_process_per_ensemble = ( num_ensemble > 0 ) ? mpi_size / num_ensemble : mpi_size;
+        const int my_ens_id   = ( mpi_process_per_ensemble > 0 ) ? mpi_rank / mpi_process_per_ensemble : 0;
+        const int my_ens_rank = ( mpi_process_per_ensemble > 0 ) ? mpi_rank % mpi_process_per_ensemble : 0;
+
+        std::vector<float> member_coords;
+        std::vector<Byte>  member_colors;
+        std::vector<float> member_normals;
+
+        /*  各メンバーの粒子数を「統計量1メンバー分」と同じにする。
+         *
+         *  統計量側（EnsembleParticleGenerator）は
+         *      repetitions = m_repeat_level / ens_number
+         *  で1メンバー分を生成し、それを ens_number 個合成している。
+         *  メンバー個別出力でも同じ式を使うことで、全メンバーの合計が
+         *  統計量と同じ粒子数になる（= 重ね描きしても総量が増えない）。
+         *
+         *  通常版の粒子数は density * volume のみで m_repeat_level を含まないため、
+         *  ここで明示的に掛ける必要がある。 */
+        const float member_repetition = particle_property.m_is_ensemble
+            ? static_cast<float>( particle_property.m_repeat_level )
+                  / static_cast<float>( num_ensemble )
+            : 1.0f;
+
+        // 通常版 generate_particles と同じ生成処理を、自分のメンバーの場に対して行う。
+        GenerateParticleObject(
+            particle_property, dom, values, nvariables, coordinates,
+            ncoords, connections, ncells, celltype,
+            member_coords, member_colors, member_normals, member_repetition
+        );
+
+        const std::string memberFilePrefix =
+            pbvr::PrepareEnsembleMemberDirectory( particleFilePrefix, my_ens_id, my_ens_rank );
+#ifndef CPU_VER
+        MPI_Barrier( MPI_COMM_WORLD );   // ディレクトリ作成を待ってから書く
+#endif
+        pbvr::OutputEnsembleMemberParticles(
+            particle_property, mvpl, time_step, memberFilePrefix, my_ens_id,
+            member_coords, member_colors, member_normals
         );
     }
     if ( mpi_rank == 0 )

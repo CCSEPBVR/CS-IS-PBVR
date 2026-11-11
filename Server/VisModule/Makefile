@@ -47,9 +47,24 @@ endif
 #=============================================================================
 #  Build rule.
 #=============================================================================
+# ar はパスを捨ててベース名でメンバーを登録するため、同じベース名の .o
+# (File.o / Header.o / MeshData.o が各2つある) が互いを上書きしてしまう。
+# AR の 'r' は同名メンバーを置換するので、片方のシンボルがアーカイブから消え、
+# pnm::Header などが未定義参照になる。
+# そこで連番つきのユニーク名へコピーしてから ar に渡す。
+ARSTAGE := $(OUTDIR)/.arstage
+
 $(TARGET_LIB): $(OBJECTS)
-	$(AR) $@ $^
+	$(RM) -f $@
+	$(RM) -rf $(ARSTAGE)
+	$(MKDIR) $(ARSTAGE)
+	@i=0; for o in $^; do \
+	  i=`expr $$i + 1`; \
+	  cp $$o $(ARSTAGE)/`printf '%04d' $$i`_`basename $$o`; \
+	done
+	$(AR) $@ $(ARSTAGE)/*.o
 	$(RANLIB) $@
+	$(RM) -rf $(ARSTAGE)
 
 #$(TARGET_EXE): $(OBJECTS)
 #	$(LD) $(LDFLAGS) $(LIBRARY_PATH) -o $@ $^ $(LINK_LIBRARY)

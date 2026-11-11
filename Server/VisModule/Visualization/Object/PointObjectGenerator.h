@@ -32,7 +32,10 @@ public:
         const domain_parameters_struct& dom,
         Type** values,
         const int nvariables,
-        ServerMode server_mode
+        ServerMode server_mode,
+        /*  粒子数の倍率。既定 1.0f で従来と同一の粒子数になる。
+         *  アンサンブルメンバーの重ね描きで 1/N を渡す。 */
+        const float repetition = 1.0f
     );
 
     vismodule::PointObject* GenerateParticleUnstruct(
@@ -45,7 +48,10 @@ public:
         unsigned int* connections,
         const int ncells,
         const vismodule::VolumeObjectBase::CellType& celltype,
-        ServerMode server_mode
+        ServerMode server_mode,
+        /*  粒子数の倍率。既定 1.0f で従来と同一の粒子数になる。
+         *  アンサンブルメンバーの重ね描きで 1/N を渡す。 */
+        const float repetition = 1.0f
     );
 }; // class ParticleProperty
 

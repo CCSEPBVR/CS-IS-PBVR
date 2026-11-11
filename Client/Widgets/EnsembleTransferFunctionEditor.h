@@ -74,12 +74,19 @@ private:
     QVector<QColor> m_default_color_map;
     QVector<float> m_default_opacity_map;
     StatisticIndex m_current_statistic = AverageStatistic;
+    /*  アンサンブルメンバー数（サーバー受信値）。0 = 非アンサンブル/未受信。
+     *  メンバーは可変個なので固定長の m_statistics には入れず別に持つ。 */
+    int m_num_ensemble = 0;
+    /*  表示対象のメンバーID。-1 = 統計量表示中 / 0以上 = そのメンバーを表示中。 */
+    int m_current_member = -1;
     TransferFunction m_legend_transfer_function;
 
     void initialize();
     void saveCurrentStatisticState();
     void loadStatisticState( StatisticIndex statistic );
     StatisticIndex selectedStatisticIndex() const;
+    int selectedMemberId() const;
+    void rebuildMemberItems();
     TransferFunction createLegendTransferFunction() const;
     TransferFunction createLegendTransferFunction( const std::array<StatisticUiState, StatisticCount>& statistics ) const;
     bool validateForApply() const;

@@ -13,6 +13,8 @@
 #include <cmath>
 #include <cstdlib>
 #include <climits>
+#include <sys/stat.h>   // mkdir（メンバー用ディレクトリの作成）
+#include <sys/types.h>
 
 #include <vismodule/ValueArray>
 #include <vismodule/PointObject>
@@ -292,6 +294,164 @@ std::string EnsembleParticleFilePrefix(
 }
 
 
+/*===========================================================================*/
+/**
+ *  @brief  メンバー用の出力先ディレクトリを作り、ファイル接頭辞を返す。
+ *
+ *  1メンバー1ステップあたり4ファイル(.kvsml と coord/color/normal の .dat)が
+ *  出るため、1000メンバー×100ステップで40万ファイルになる。読み出し側
+ *  (ParticleFile::setParameterFromFile) はディレクトリ内の全ファイルを走査して
+ *  名前を解析するので、メンバーごとにディレクトリを分けないと走査が重くなる。
+ */
+/*===========================================================================*/
+std::string PrepareEnsembleMemberDirectory(
+    const std::string& particleFilePrefix,
+    const int my_ens_id,
+    const int my_ens_rank
+)
+{
+    // particleFilePrefix は "<PARTICLE_DIR>/t_" の形で渡される。
+    // 末尾のファイル名部分を落としてディレクトリ部分を取り出す。
+    std::string dir = particleFilePrefix;
+    const std::size_t sep = dir.find_last_of( "/\\" );
+    if ( sep != std::string::npos ) dir = dir.substr( 0, sep + 1 );
+    else                            dir = "./";
+
+    std::ostringstream member_dir;
+    member_dir << dir << "ens" << std::setfill( '0' ) << std::setw( 4 ) << my_ens_id;
+
+    // 同じメンバーの rank 0 だけが作る。既存の場合の EEXIST は無視する。
+    if ( my_ens_rank == 0 )
+    {
+        mkdir( member_dir.str().c_str(), 0755 );
+    }
+
+    // ファイル名の接頭辞は通常版と同じ "t_"。メンバーの区別はディレクトリ名で行う。
+    return member_dir.str() + "/t_";
+}
+
+/*===========================================================================*/
+/**
+ *  @brief  アンサンブルメンバー1つ分の粒子を出力する。
+ */
+/*===========================================================================*/
+void OutputEnsembleMemberParticles(
+    ParticleProperty& particle_property,
+    const MultiVolumePropertyList& mvpl,
+    const int time_step,
+    const std::string& particleFilePrefix,
+    const int my_ens_id,
+    const std::vector<float>& coords,
+    const std::vector<Byte>& colors,
+    const std::vector<float>& normals
+)
+{
+    static bool first_step = true;
+    static MPI_Comm member_comm;
+
+    if ( first_step )
+    {
+#ifndef CPU_VER
+        int myrank;
+        MPI_Comm_rank( MPI_COMM_WORLD, &myrank );
+        // 統計量用はノード名で分割するが、ここはメンバーID で分割する。
+        // 同じメンバーの全プロセスが1つの comm に入り、その rank 0 が1ファイル書く。
+        MPI_Comm_split( MPI_COMM_WORLD, my_ens_id, myrank, &member_comm );
+#endif
+        first_step = false;
+    }
+
+    // 連番・総数は 1/1 に固定する(統計量出力と同じ)。タイムステップは従来どおり
+    // 入るため、ステップごとに別ファイルとなり過去ステップの参照は維持される。
+    std::stringstream ss;
+    ss << std::setfill( '0' ) << std::setw( 5 ) << time_step;
+    ss << "_";
+    ss << std::setfill( '0' ) << std::setw( 7 ) << 1;
+    ss << "_";
+    ss << std::setfill( '0' ) << std::setw( 7 ) << 1;
+    ss << ".kvsml";
+    const std::string particleFilePath = particleFilePrefix + ss.str();
+
+    int particle_size = coords.size();
+    int* recvcounts;
+    int* displs;
+    int new_rank;
+    int new_number_of_process;
+
+#ifndef CPU_VER
+    MPI_Comm_rank( member_comm, &new_rank );
+    MPI_Comm_size( member_comm, &new_number_of_process );
+#else
+    new_rank = 0;
+    new_number_of_process = 1;
+#endif
+
+    displs = new int[new_number_of_process];
+    recvcounts = new int[new_number_of_process];
+
+#ifndef CPU_VER
+    MPI_Allgather( &particle_size, 1, MPI_INT,
+                   recvcounts, 1, MPI_INT,
+                   member_comm );
+#else
+    recvcounts[0] = particle_size;
+#endif
+
+    displs[0] = 0;
+    for ( int i = 1; i < new_number_of_process; i++ )
+    {
+        displs[i] = displs[i - 1] + recvcounts[i - 1];
+    }
+
+    const int gathered_size = displs[new_number_of_process - 1] + recvcounts[new_number_of_process - 1];
+    vismodule::ValueArray<float> new_coords( gathered_size );
+    vismodule::ValueArray<Byte> new_colors( gathered_size );
+    vismodule::ValueArray<float> new_normals( gathered_size );
+
+#ifndef CPU_VER
+    vismodule::ValueArray<float> tmp_coords( coords );
+    vismodule::ValueArray<Byte> tmp_colors( colors );
+    vismodule::ValueArray<float> tmp_normals( normals );
+
+    MPI_Gatherv( tmp_coords.pointer(), particle_size, MPI_FLOAT,
+                 new_coords.pointer(), recvcounts, displs, MPI_FLOAT,
+                 0, member_comm );
+    MPI_Gatherv( tmp_colors.pointer(), particle_size, MPI_BYTE,
+                 new_colors.pointer(), recvcounts, displs, MPI_BYTE,
+                 0, member_comm );
+    MPI_Gatherv( tmp_normals.pointer(), particle_size, MPI_FLOAT,
+                 new_normals.pointer(), recvcounts, displs, MPI_FLOAT,
+                 0, member_comm );
+#else
+    for ( int i = 0; i < particle_size; i++ )
+    {
+        new_coords[i] = coords[i];
+        new_colors[i] = colors[i];
+        new_normals[i] = normals[i];
+    }
+#endif
+
+    if ( new_rank == 0 )
+    {
+        vismodule::PointObject* point_object = new vismodule::PointObject(
+            new_coords, new_colors, new_normals, particle_property.m_subpixel_level
+        );
+        point_object->setMinMaxObjectCoords( mvpl.m_total_min_object_coord, mvpl.m_total_max_object_coord );
+
+        // 非同期IOは統計量用と共用のワーカを使うため、ここでは同期書き出しにする。
+        // (メンバー数ぶん連続で呼ばれるので、共用ワーカでは待ちが入る)
+        vismodule::KVSMLObjectPoint* kvsml_object =
+            new vismodule::PointExporter<vismodule::KVSMLObjectPoint>( *point_object );
+        kvsml_object->setWritingDataType( vismodule::KVSMLObjectPoint::ExternalBinary );
+        kvsml_object->write( particleFilePath.c_str() );
+        delete kvsml_object;
+        delete point_object;
+    }
+
+    delete[] displs;
+    delete[] recvcounts;
+}
+
 void OutputEnsembleStatisticParticles(
     ParticleProperty& particle_property,
     const MultiVolumePropertyList& mvpl,
@@ -464,7 +624,8 @@ void OutputEnsembleStatisticHistory(
     EnsembleStatisticRange average_range,
     EnsembleStatisticRange variance_range,
     EnsembleStatisticRange co_variation_range,
-    MPI_Comm ensemble_comm
+    MPI_Comm ensemble_comm,
+    const int num_ensemble
 )
 {
     EnsureEnsembleStatisticRangeSize( average_range, tf_number );
@@ -490,6 +651,15 @@ void OutputEnsembleStatisticHistory(
     history_json << "    \"nvariables\": " << nvariables << ",\n";
     history_json << "    \"particle_limit\": " << particle_property.m_particle_limit << ",\n";
     history_json << "    \"is_ensemble\": true,\n";
+    // 統計量(平均・分散)が常用対数化されているか。値域 min/max が log10 値かを判別するため。
+    history_json << "    \"log_scale_statistics\": "
+                 << ( particle_property.m_log_scale_statistics ? "true" : "false" ) << ",\n";
+    // アンサンブルメンバー数。クライアントが表示対象メンバーの選択肢を作るのに使う。
+    // メンバーの粒子は PARTICLE_DIR/ensNNNN/ に全メンバー分出力される。
+    if ( num_ensemble > 0 )
+    {
+        history_json << "    \"num_ensemble\": " << num_ensemble << ",\n";
+    }
     history_json << "    \"statistics\": {\n";
     WriteEnsembleStatisticJson( history_json, "average", average_range, tf_number );
     history_json << ",\n";

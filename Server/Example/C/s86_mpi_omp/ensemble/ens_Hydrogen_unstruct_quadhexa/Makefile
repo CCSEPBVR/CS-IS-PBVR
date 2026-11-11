@@ -20,12 +20,11 @@ else
 	CXXFLAGS += -DCPU_VER
 endif
 
-PBVR_KVS_INSTALL_DIR ?= $(abspath ../../../../../../KVS/Install)
-ifneq ($(wildcard $(PBVR_KVS_INSTALL_DIR)/kvs.conf),)
-include $(PBVR_KVS_INSTALL_DIR)/kvs.conf
-ifeq "$(KVS_SUPPORT_EXTENDED_FILE_FORMAT)" "1"
-CXXFLAGS += -DEXTEND_FILE_FORMAT
-endif
+ifdef KVS_DIR
+include $(KVS_DIR)/kvs.conf
+#ifeq "$(KVS_SUPPORT_EXTENDED_FILE_FORMAT)" "1"
+#CXXFLAGS += -DEXTEND_FILE_FORMAT
+#endif
 endif
 
 CXXFLAGS += -I./ \
@@ -60,8 +59,16 @@ LDFLAGS  += -L${INSITU_DIR} -lInSituPBVR \
 ifneq ($(wildcard $(PBVR_KVS_INSTALL_DIR)/kvs.conf),)
 include $(PBVR_KVS_INSTALL_DIR)/kvs.conf
 ifeq "$(KVS_SUPPORT_EXTENDED_FILE_FORMAT)" "1"
+# VTK の静的ライブラリは相互依存があり、1列に並べる順序では解決できない。
+# --start-group で囲んで繰り返し走査させる。あわせて kvsSupportExtendedFileFormat が
+# 要求する NetCDF 系（vtkIONetCDF / vtknetcdf / vtkhdf5*）を補う。
 LDFLAGS += -L$(VTK_LIB_PATH) \
+-Wl,--start-group \
 -lkvsSupportExtendedFileFormat \
+-lvtkIONetCDF-$(VTK_VERSION) \
+-lvtknetcdf-$(VTK_VERSION) \
+-lvtkhdf5_hl-$(VTK_VERSION) \
+-lvtkhdf5-$(VTK_VERSION) \
 -lvtkCommonExecutionModel-$(VTK_VERSION) \
 -lvtkFiltersCore-$(VTK_VERSION) \
 -lvtkFiltersExtraction-$(VTK_VERSION) \
