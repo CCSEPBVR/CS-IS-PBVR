@@ -3,6 +3,7 @@
 
 #include <sstream>
 #include <iomanip>
+#include <sys/stat.h>   // メンバー粒子のステップ欠落検出（stat）
 #include <cstdlib>
 #include <cstring>
 #include <functional>
@@ -246,6 +247,42 @@ private:
      *  メンバーの区別をディレクトリ名で行うのは、1メンバー1ステップで4ファイル出るため
      *  直下に並べるとファイル数が実用限界を超えること、および ParticleFile の名前解析が
      *  接頭辞の長さに依存しており "t" のままなら無改造で使えることによる。 */
+    /*  メンバー粒子の要求ステップのファイルが揃っているかを確認する。
+     *
+     *  ParticleFile::generatePointObject の while( !read_success ) は
+     *  「in-situ 側が書き込み中のファイルはいずれ現れる」前提の sleep なしリトライで、
+     *  永遠に現れないファイル（出力OFFで欠落したステップ）だと抜けられない。
+     *  この読み出しは WebSocket ハンドラ内で同期実行されるため、固まるのは
+     *  1リクエストではなく uWS のイベントループごと＝サーバー全体がハングする。
+     *  ParticleMonitor::stepExisted() は state.txt しか見ないので、メンバー個別・
+     *  ステップ個別の欠落は素通りする。そこで読み出し前にここで弾く。
+     *
+     *  メンバー粒子は連番・総数が常に 1/1 なのでファイル名が一意に決まる。
+     *  kvsml 本体と 3つの .dat がすべて存在し、かつサイズが 0 でないことを確認する
+     *  （書きかけ・writer 死亡でも同じループに捕まるため）。
+     *
+     *  particlePrefix は "<PARTICLE_DIR>/ensNNNN/t" の形。 */
+    static bool memberStepFilesReady( const std::string& particlePrefix, const int timeStep )
+    {
+        std::ostringstream base;
+        base << particlePrefix << "_"
+             << std::setfill( '0' ) << std::setw( 5 ) << timeStep
+             << "_0000001_0000001";
+
+        static const char* suffixes[] = { ".kvsml", "_coord.dat", "_color.dat", "_normal.dat" };
+        for ( const char* suffix : suffixes )
+        {
+            const std::string path = base.str() + suffix;
+            struct stat st;
+            if ( stat( path.c_str(), &st ) != 0 || st.st_size == 0 )
+            {
+                std::cout << "[Worker][StatisticParticle] step file not ready: " << path << std::endl;
+                return false;
+            }
+        }
+        return true;
+    }
+
     static bool resolveParticlePath( const std::string& statistic,
                                      std::string* subdir, std::string* prefix )
     {
@@ -335,6 +372,21 @@ private:
         {
             std::cout << "[Worker][StatisticParticle] step does not exist for prefix="
                       << particlePrefix << std::endl;
+            pointObject->setCoords( kvs::ValueArray<kvs::Real32>() );
+            pointObject->setColors( kvs::ValueArray<kvs::UInt8>() );
+            pointObject->setNormals( kvs::ValueArray<kvs::Real32>() );
+            return false;
+        }
+
+        /*  メンバー指定のときは、要求ステップのファイルが揃っているか先に確認する。
+         *  揃っていない状態で readParticleFile() に渡すとサーバー全体がハングする
+         *  （memberStepFilesReady のコメント参照）。
+         *  subdir が空でない＝メンバー指定。統計量（ave/var/cov）は毎ステップ出力され、
+         *  かつ総数がノード数で変わるためここでは確認しない。 */
+        if ( !subdir.empty() && !memberStepFilesReady( particlePrefix, timeStep ) )
+        {
+            std::cout << "[Worker][StatisticParticle] skip: member step is missing. statistic="
+                      << statistic << ", timestep=" << timeStep << std::endl;
             pointObject->setCoords( kvs::ValueArray<kvs::Real32>() );
             pointObject->setColors( kvs::ValueArray<kvs::UInt8>() );
             pointObject->setNormals( kvs::ValueArray<kvs::Real32>() );
