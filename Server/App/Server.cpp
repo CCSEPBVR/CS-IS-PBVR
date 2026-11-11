@@ -364,6 +364,9 @@ nlohmann::json BuildEnsembleStatisticsParameter(
     msg[Protocol::Key::LogScaleStatistics] = particle_property.m_log_scale_statistics;
     // アンサンブルメンバー数。クライアントが Member 選択肢を作るのに使う。
     msg[Protocol::Key::NumEnsemble] = particle_property.m_num_ensemble;
+    // メンバー粒子出力の現在値。接続直後のクライアントがチェックボックスを復元できるよう
+    // root レベルで送る（クライアント→サーバの MemberOutput と同じキー）。
+    msg[Protocol::Key::MemberOutput] = particle_property.m_member_output_enabled;
     msg[Protocol::Key::Data] = std::move( data );
     return msg;
 }
@@ -2739,6 +2742,19 @@ void Server::receiveEnsembleStatisticsParameter(uWS::WebSocket<false, true, PerS
             received.at( Protocol::Key::LogScaleStatistics ).get<bool>();
         std::cout << "[Server][EnsembleStatisticsParameter] log_scale_statistics="
                   << m_particle_property->m_log_scale_statistics << std::endl;
+    }
+
+    // メンバー粒子出力の ON/OFF。全メンバー一括の設定なので root レベルで受ける。
+    // 設定した値は末尾の ParameterFileWriter が default.json の
+    // settings.ensemble.member_output へ書き出し、次ステップで IS 側が読んで反映する。
+    // 全ランクへの配布は ParticleProperty の pack/unpack(2ca0af02) 経由。
+    if ( received.contains( Protocol::Key::MemberOutput ) &&
+         received.at( Protocol::Key::MemberOutput ).is_boolean() )
+    {
+        m_particle_property->m_member_output_enabled =
+            received.at( Protocol::Key::MemberOutput ).get<bool>();
+        std::cout << "[Server][EnsembleStatisticsParameter] member_output="
+                  << m_particle_property->m_member_output_enabled << std::endl;
     }
 
     if ( received.contains( Protocol::Key::Data ) && received.at( Protocol::Key::Data ).is_array() )

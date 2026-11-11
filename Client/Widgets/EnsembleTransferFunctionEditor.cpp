@@ -369,6 +369,7 @@ void EnsembleTransferFunctionEditor::reset()
 {
     ui->m_statistics_synthesizer_line_edit->setText( QStringLiteral( "q1" ) );
     ui->m_log_scale_statistics_check_box->setChecked( false );
+    ui->m_member_output_check_box->setChecked( false );
     for( auto& statistic : m_statistics )
     {
         statistic.colorMap = m_default_color_map;
@@ -643,6 +644,21 @@ void EnsembleTransferFunctionEditor::onReceiveEnsembleStatisticsParameter( const
     else
     {
         qDebug() << "[Client][EnsembleTFE] EnsembleStatisticsParameter has no LogScaleStatistics key"
+                 << "(server does not include the feature?)";
+    }
+
+    // メンバー粒子出力の現在値（root レベル）。接続時の初期 publish と、
+    // 他クライアントの Apply をサーバが再 publish したものの両方がここに届く。
+    const QJsonValue receivedMemberOutput =
+        payload.value( QString::fromUtf8( Protocol::Key::MemberOutput ) );
+    if( receivedMemberOutput.isBool() )
+    {
+        qDebug() << "[Client][EnsembleTFE] receive member_output=" << receivedMemberOutput.toBool();
+        ui->m_member_output_check_box->setChecked( receivedMemberOutput.toBool() );
+    }
+    else
+    {
+        qDebug() << "[Client][EnsembleTFE] EnsembleStatisticsParameter has no MemberOutput key"
                  << "(server does not include the feature?)";
     }
 
@@ -1169,6 +1185,11 @@ void EnsembleTransferFunctionEditor::onApply()
     // 常用対数モードは平均・分散をまとめて1つの設定なので、統計量ごとの Data ではなく root レベルで送る
     root[QString::fromUtf8( Protocol::Key::LogScaleStatistics )] =
         ui->m_log_scale_statistics_check_box->isChecked();
+    // メンバー粒子出力の ON/OFF。全メンバー一括の設定なので root レベルで送る。
+    // サーバーが default.json の settings.ensemble.member_output へ書き出し、
+    // 次ステップで in-situ 側が読んで反映する（反映は Apply の次ステップ以降）。
+    root[QString::fromUtf8( Protocol::Key::MemberOutput )] =
+        ui->m_member_output_check_box->isChecked();
     root[QString::fromUtf8( Protocol::Key::Data )] = data;
 
     // 送信ペイロードの検証ログ。チェックボックスではなく root に実際に入った値を読み戻して出す。
@@ -1176,6 +1197,8 @@ void EnsembleTransferFunctionEditor::onApply()
              << "statistic=" << root.value( QString::fromUtf8( Protocol::Key::Statistic ) ).toString()
              << "log_scale_statistics="
              << root.value( QString::fromUtf8( Protocol::Key::LogScaleStatistics ) ).toBool()
+             << "member_output="
+             << root.value( QString::fromUtf8( Protocol::Key::MemberOutput ) ).toBool()
              << "patches=" << data.size();
 
     m_web_sockets->text()->sendTextMessage( QJsonDocument( root ).toJson( QJsonDocument::Compact ) );
