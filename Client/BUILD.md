@@ -9,6 +9,7 @@
 - GNU make と g++ が利用できること。
 - KVS が `KVS/Install` にインストールされていること。
   - `Client/SETTINGS.pri` は `../KVS/Install/kvs.conf` を参照します。
+- macOS で後述の動画録画対象テストを有効にする場合、Qt 6.8 以降と Qt Multimedia が利用できること。現在の使用環境は Qt 6.11.0 です。導入方法と対象テストは「macOS のテスト動画録画」を参照してください。
 
 ## クライアントとテストをまとめてビルドする
 
@@ -68,6 +69,58 @@ xvfb-run -a \
 
 `PBVR_DISABLE_SCREENSHOTS` は `1`, `true`, `yes`, `on` のいずれかを指定すると有効になります。
 
+## macOS のテスト動画録画
+
+### 対象テストと録画方式
+
+次の3テストは、macOS で `screencapture` によるデスクトップ収録から、アプリ内の描画を Qt Multimedia で動画化する方式へ変更しました。
+
+| テスト | `Tests/TestsConfig.pri` の有効化設定 | 動画ファイル |
+| --- | --- | --- |
+| PlayBackControlToolBarTest | `TEST_ENABLE_PLAYBACKCONTROLTOOLBAR = 1` | `PlayBackControlToolBarTest.mp4` |
+| TimeStepControlToolBarTest | `TEST_ENABLE_TIMESTEPCONTROLTOOLBAR = 1` | `TimeStepControlToolBarTest.mp4` |
+| AnimationControlTest | `TEST_ENABLE_ANIMATIONCONTROL = 1` | `AnimationControlTest.mp4` |
+
+共通処理は `Tests/TestWindowVideoRecorder.h` と `Tests/TestWindowVideoRecorder.cpp` にあります。メインウィンドウの UI と OpenGL フレームバッファーを取得し、所属する表示中の Qt ダイアログを重ねて、10fps・音声なしの MP4/H.264 として保存します。ダイアログが録画範囲からはみ出す場合は、録画画像内で位置・サイズを補正します。OS のデスクトップや他アプリ、ネイティブダイアログは録画対象に含みません。テストの共通起動処理ではネイティブダイアログを無効にしています。
+
+この方式は OS の画面収録 API を使用しないため、対象3テストの録画に macOS の画面収録許可は不要です。Windows・Linux の録画処理や、他のテストの録画方式はこの変更の対象外です。
+
+### Qt Multimedia の追加とビルド設定
+
+`QVideoFrameInput` を使用するため、Qt 6.8 以降が必要です。対象3テストのいずれかを macOS で有効にすると、`Tests/Tests.pro` が `QT += multimedia` と共通録画クラスを追加します。
+
+1. Qt Maintenance Tool を起動し、「コンポーネントの追加・削除」で、使用する Qt バージョン・macOS キットの Qt Multimedia を追加します。Qt Creator で選択しているキットと、追加先の Qt が一致していることを確認してください。
+2. Qt Multimedia の FFmpeg バックエンドと、MP4/H.264 のエンコードに必要な実行時ライブラリ・プラグインを利用できる状態にします。公式配布の Qt を使用する場合も、別の Mac にテストアプリを配布するときはこれらの配置を確認してください。
+3. `Tests/TestsConfig.pri` で実行するテストを有効にします。
+4. Qt Creator で qmake を再実行してから再ビルドします。コマンドラインの場合も、使用するキットの qmake で Makefile を更新してからビルドしてください。
+5. 生成された `pbvr_client_qtest.app` の実際の出力先を確認し、テストを実行します。
+
+ここで必要な FFmpeg バックエンドは Qt Multimedia のプラグインです。外部の `ffmpeg` 実行ファイルのインストールや `PBVR_FFMPEG_EXECUTABLE` の指定は、macOS の対象3テストでは不要です。
+
+`QT_MEDIA_BACKEND` が未設定または空の場合、テストが `ffmpeg` を指定します。実行環境に別の値を指定している場合は、設定を解除するか `QT_MEDIA_BACKEND=ffmpeg` に変更してください。別のバックエンドが明示されている場合、テストは録画失敗として理由を記録します。
+
+### 動画・レポートの確認
+
+標準の保存先は、リポジトリ直下から見て次の構成です。`yyyyMMdd` はテスト実行日、`テスト名` は上表の名前です。
+
+```text
+Client/output-tests/yyyyMMdd/テスト名/
+    テスト名.mp4
+    TestResult.md
+```
+
+`PBVR_TEST_OUTPUT_DIR` を指定した場合は、そのディレクトリに直接保存します。複数テストで同じ保存先を指定すると `TestResult.md` が上書きされるため、レポートを残す場合はテストごとに保存先を分けて実行してください。AnimationControlTest のキーフレームファイル `Test.anim` も同じ出力ディレクトリに保存します。
+
+`TestResult.md` にはテスト結果、動画の埋め込みと相対リンク、録画の診断情報を記録します。埋め込み再生に対応しない Markdown ビューアーでは、動画へのリンクから開いてください。録画失敗時は動画を埋め込まず、確認できた失敗理由を記載します。
+
+確認時は、今回の QtTest ログの PASS／FAIL と、動画・レポートの更新時刻を照合してください。ダイアログの表示を確認する場合は、動画と、診断情報の「合成対象ダイアログ」「ダイアログを含むフレーム取得数」を確認します。AnimationControlTest の `.anim` 保存・読み込みでは、表示直後とファイル名入力後に各1秒の確認時間を設けています。
+
+問題が起きた場合は、次の情報を確認します。
+
+- qmake が `Unknown module(s) in QT: multimedia` で失敗する場合：使用中のキットに Qt Multimedia を追加できているか。
+- 録画を開始できない場合：レポートと QtTest ログのエラー、`QT_MEDIA_BACKEND`、FFmpeg バックエンドと MP4/H.264 の対応状況。
+- 動画の内容や保存に問題がある場合：診断情報の解像度・送信フレーム数・取得見送り回数・動画時間・保存完了状態。
+
 ## ビルド成果物
 
 ビルドに成功すると、主な成果物は次の場所に生成されます。
@@ -85,6 +138,8 @@ KVS のランタイム用シェーダーとフォントリソースは、ビル�
 このコピー処理は `Client/KvsRuntimeResources.pri` にまとめて定義されており、`Client/App/App.pro` と `Client/Tests/Tests.pro` の両方から読み込まれます。
 
 ## macOS のテストアプリ署名
+
+前述の新方式を使用する3テストの録画には、画面収録許可を維持するための Apple Development 署名は不要です。以下の画面収録許可に関する説明は、OS の画面収録 API を使用する他のテストや機能に適用されます。テストアプリの署名処理自体は引き続き実施します。
 
 macOS では `Tests.pro` のリンク後処理が、KVS リソースのコピー後に `pbvr_client_qtest.app` を自動署名します。署名前に Font と Shader を `Contents/Resources` に移し、従来の `Contents/MacOS` 配下には参照用シンボリックリンクを置きます。有効な Apple Development 証明書を使用すると、再ビルド後も画面収録の許可を維持できます。利用できる証明書は、通常のターミナルで `security find-identity -v -p codesigning` を実行して確認できます。
 

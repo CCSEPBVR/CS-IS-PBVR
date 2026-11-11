@@ -39,7 +39,7 @@ int main( int argc, char** argv )
     int time_step = 0;
 
     begin_wrapper_async_io();
-    for(size_t i = 0; i < 10; i++ )
+    for(;;)
     {
         if(mpi_rank==RANK) hydro.show();
 

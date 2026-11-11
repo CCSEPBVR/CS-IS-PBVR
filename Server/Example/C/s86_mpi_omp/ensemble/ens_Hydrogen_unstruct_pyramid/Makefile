@@ -20,11 +20,12 @@ else
 	CXXFLAGS += -DCPU_VER
 endif
 
-ifdef KVS_DIR
-include $(KVS_DIR)/kvs.conf
-#ifeq "$(KVS_SUPPORT_EXTENDED_FILE_FORMAT)" "1"
-#CXXFLAGS += -DEXTEND_FILE_FORMAT
-#endif
+PBVR_KVS_INSTALL_DIR ?= $(abspath ../../../../../../KVS/Install)
+ifneq ($(wildcard $(PBVR_KVS_INSTALL_DIR)/kvs.conf),)
+include $(PBVR_KVS_INSTALL_DIR)/kvs.conf
+ifeq "$(KVS_SUPPORT_EXTENDED_FILE_FORMAT)" "1"
+CXXFLAGS += -DEXTEND_FILE_FORMAT
+endif
 endif
 
 CXXFLAGS += -I./ \
@@ -34,10 +35,10 @@ CXXFLAGS += -I./ \
             -I${INSITU_COMMON_DIR} \
             -I${VISMODULE_SOURCE_DIR} \
             -I${FUNC_DIR} \
-            -I${KVS_DIR}/include
+            -I$(PBVR_KVS_INSTALL_DIR)/include
 
-ifdef KVS_DIR
-include $(KVS_DIR)/kvs.conf
+ifneq ($(wildcard $(PBVR_KVS_INSTALL_DIR)/kvs.conf),)
+include $(PBVR_KVS_INSTALL_DIR)/kvs.conf
 ifeq "$(KVS_SUPPORT_EXTENDED_FILE_FORMAT)" "1"
 CXXFLAGS += -I$(VTK_INCLUDE_PATH)
 endif
@@ -54,10 +55,10 @@ endif
 LDFLAGS  += -L${INSITU_DIR} -lInSituPBVR \
             -L${VISMODULE_SOURCE_DIR}/Release -lvisModule \
             -L${FUNC_DIR} -lpbvrFunc \
-            -L${KVS_DIR}/lib -lkvsCore
+            -L$(PBVR_KVS_INSTALL_DIR)/lib -lkvsCore
 
-ifdef KVS_DIR
-include $(KVS_DIR)/kvs.conf
+ifneq ($(wildcard $(PBVR_KVS_INSTALL_DIR)/kvs.conf),)
+include $(PBVR_KVS_INSTALL_DIR)/kvs.conf
 ifeq "$(KVS_SUPPORT_EXTENDED_FILE_FORMAT)" "1"
 # VTK の静的ライブラリは相互依存があり、1列に並べる順序では解決できない。
 # --start-group で囲んで繰り返し走査させる。あわせて kvsSupportExtendedFileFormat が

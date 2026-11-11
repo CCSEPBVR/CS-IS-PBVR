@@ -13,8 +13,8 @@ export MPICXX MPICXXFLAGS MPILD MPILDFLAGS
 .PHONY: all clean
 
 # アンサンブルPBVR 用のサンプル。通常サンプル(親ディレクトリの Hydrogen_*)とは
-# 別に置く。非構造格子は KVS_DIR の指定が要る:
-#   export KVS_DIR=$(PBVR_DIR)/../KVS/Install
+# 別に置く。KVS のインストール先は各サンプルの PBVR_KVS_INSTALL_DIR で指定する。
+# 必要に応じて環境変数 PBVR_KVS_INSTALL_DIR で上書きできる。
 
 # --- 非構造格子 ---
 SUBDIRS += ens_Hydrogen_unstruct

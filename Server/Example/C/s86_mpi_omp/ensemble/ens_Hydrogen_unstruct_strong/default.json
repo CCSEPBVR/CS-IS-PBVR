@@ -10,10 +10,6 @@
                 },
                 "range": {
                     "active_range": "user",
-                    "server": {
-                        "max": 0.999993085861206,
-                        "min": 0.0
-                    },
                     "user": {
                         "max": 5.0,
                         "min": 0.0
@@ -32,10 +28,6 @@
                 },
                 "range": {
                     "active_range": "user",
-                    "server": {
-                        "max": 0.999993085861206,
-                        "min": 0.0
-                    },
                     "user": {
                         "max": 5.0,
                         "min": 0.0
@@ -59,7 +51,6 @@
         "The mean_transfer_functions, variance_transfer_functions, and coefficient_of_variation_transfer_functions sections contain transfer-function parameters for ensemble statistics."
     ],
     "format": "PBVR transfer-function parameters",
-    "format_version": 1.1,
     "mean_transfer_functions": [
         {
             "color": {
@@ -71,10 +62,6 @@
                 },
                 "range": {
                     "active_range": "user",
-                    "server": {
-                        "max": 41.435604095458984,
-                        "min": 5.0684382586041465e-05
-                    },
                     "user": {
                         "max": 255.0,
                         "min": 0.0
@@ -93,10 +80,6 @@
                 },
                 "range": {
                     "active_range": "user",
-                    "server": {
-                        "max": 41.435604095458984,
-                        "min": 5.0684382586041465e-05
-                    },
                     "user": {
                         "max": 255.0,
                         "min": 0.0
@@ -107,6 +90,7 @@
         }
     ],
     "purpose": "Particle-based volume rendering parameters for PBVR.",
+    "schema_version": 1,
     "settings": {
         "image": {
             "height": 620,
@@ -137,10 +121,6 @@
                 },
                 "range": {
                     "active_range": "user",
-                    "server": {
-                        "max": 41.435604095458984,
-                        "min": 5.0684382586041465e-05
-                    },
                     "user": {
                         "max": 255.0,
                         "min": 3.873640075369167e-09
@@ -159,10 +139,6 @@
                 },
                 "range": {
                     "active_range": "user",
-                    "server": {
-                        "max": 41.435604095458984,
-                        "min": 5.0684382586041465e-05
-                    },
                     "user": {
                         "max": 255.0,
                         "min": 3.873640075369167e-09
@@ -183,10 +159,6 @@
                 },
                 "range": {
                     "active_range": "user",
-                    "server": {
-                        "max": 1083.3671875,
-                        "min": 0.0
-                    },
                     "user": {
                         "max": 255.0,
                         "min": 0.0
@@ -205,10 +177,6 @@
                 },
                 "range": {
                     "active_range": "user",
-                    "server": {
-                        "max": 1083.3671875,
-                        "min": 0.0
-                    },
                     "user": {
                         "max": 255.0,
                         "min": 0.0

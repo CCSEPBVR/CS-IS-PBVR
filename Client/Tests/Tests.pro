@@ -25,6 +25,16 @@ SOURCES += \
 
 DEFINES += PBVR_TEST_NO_MAIN
 
+macx {
+    equals(TEST_ENABLE_PLAYBACKCONTROLTOOLBAR, 1)|equals(TEST_ENABLE_TIMESTEPCONTROLTOOLBAR, 1)|equals(TEST_ENABLE_ANIMATIONCONTROL, 1) {
+        lessThan(QT_MAJOR_VERSION, 6): error("Test video recording requires Qt 6.8 or later.")
+        equals(QT_MAJOR_VERSION, 6):lessThan(QT_MINOR_VERSION, 8): error("Test video recording requires Qt 6.8 or later.")
+        QT += multimedia
+        HEADERS += TestWindowVideoRecorder.h
+        SOURCES += TestWindowVideoRecorder.cpp
+    }
+}
+
 equals(TEST_ENABLE_MENUBAR, 1) {
     DEFINES += PBVR_ENABLE_TEST_MENUBAR
     HEADERS += MenuBarTest.h

@@ -74,6 +74,15 @@ PlayBackControlToolBar::~PlayBackControlToolBar() {}
 
 void PlayBackControlToolBar::reset()
 {
+    // TimeStepControlToolBar::reset() と合わせて再生状態と表示を初期化する。
+    m_reverse_push_button->setChecked( false );
+    m_play_push_button->setChecked( false );
+    m_keep_last_push_button->setChecked( false );
+    m_loop_push_button->setChecked( false );
+    m_reverse_push_button->setIcon( QIcon( "://Resources/images/reverse.svg" ) );
+    m_play_push_button->setIcon( QIcon( "://Resources/images/play.svg" ) );
+    m_keep_last_push_button->setIcon( QIcon( "://Resources/images/keepLast.svg" ) );
+    onOperatorStateUpdate( m_is_operator );
 }
 
 void PlayBackControlToolBar::onDataRequestCompleted()

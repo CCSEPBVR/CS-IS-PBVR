@@ -23,7 +23,7 @@
             "method": "Uniform",
             "particle_data_size_limit": 20.0,
             "particle_data_size_limit_unit": "MB",
-            "particle_limit": 30000000
+            "particle_limit": 10000000
         },
         "transfer_function": {
             "color_synthesis": "C1",

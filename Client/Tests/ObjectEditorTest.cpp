@@ -1228,9 +1228,11 @@ void ObjectEditorTest::performs_object_editor_scenario()
         } );
 
     run_step(
-        QStringLiteral( "オンラインで CLOCK_POLYGON_DATA を読み込み、opacity変更前を撮影する。" ),
+        QStringLiteral( "1 行目の clock を非表示にし、オンラインで CLOCK_POLYGON_DATA を読み込んで opacity 変更前を撮影する。" ),
         [&]()
         {
+            setDisplayItemChecked( client, 0, false );
+            clickJumpAndWaitForCompletion( client );
             ensureConnected( client );
             configureRemoteVisualizationWithoutVolume( client );
             browseAndLoadObject( client, m_object_data_path, 1 );
