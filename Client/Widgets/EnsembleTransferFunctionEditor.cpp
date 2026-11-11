@@ -22,6 +22,7 @@
 #include <QMouseEvent>
 #include <QPushButton>
 #include <QRadioButton>
+#include <QSpinBox>
 #include <QVariant>
 
 #include <cmath>
@@ -32,6 +33,8 @@ namespace
 {
 constexpr int UserRangeMode = 1;
 constexpr int ServerRangeMode = 2;
+// コンボボックスの「Member」項目の itemData。統計量項目は -1、メンバー番号はスピンボックスが持つ。
+constexpr int MemberEntryItemData = -2;
 
 struct EnsembleTFSetting
 {
@@ -288,6 +291,12 @@ EnsembleTransferFunctionEditor::EnsembleTransferFunctionEditor( WebSocketPair* w
                           << "(sent to server on Apply)";
                  UpdateMinMaxGroupTitle( ui, m_current_statistic != CoefficientVariationStatistic );
              } );
+    connect( ui->m_member_spin_box, QOverload<int>::of( &QSpinBox::valueChanged ), this,
+             [this]( const int value )
+             {
+                 // Member 選択中のみ意味を持つ。送信は従来どおり Apply 時。
+                 if( selectedMemberId() >= 0 ) m_current_member = value;
+             } );
 }
 
 EnsembleTransferFunctionEditor::~EnsembleTransferFunctionEditor()
@@ -329,11 +338,13 @@ void EnsembleTransferFunctionEditor::initialize()
     m_statistics[CoefficientVariationStatistic].statisticName = QStringLiteral( "cv" );
 
     // コンボボックスの統計量3項目（.ui 定義）に itemData = -1 を入れる。
-    // メンバー項目は itemData = メンバーID（0以上）で追加し、種別は index でなく itemData で判定する。
+    // メンバーは「Member」1項目（itemData = MemberEntryItemData）＋スピンボックスの番号指定で選ぶ。
     for( int i = 0; i < StatisticCount; ++i )
     {
         ui->m_statistics_combo_box->setItemData( i, QVariant( -1 ) );
     }
+    ui->m_member_spin_box->setVisible( false );
+    ui->m_member_spin_box->setEnabled( false );
 
     m_default_color_map = ui->m_color_map->getColors();
     m_default_opacity_map = ui->m_opacity_map->getOpacities();
@@ -422,22 +433,24 @@ EnsembleTransferFunctionEditor::StatisticIndex EnsembleTransferFunctionEditor::s
     return AverageStatistic;
 }
 
-// コンボボックスで選択中のメンバーID。統計量項目が選ばれていれば -1。
+// 選択中のメンバーID。「Member」項目が選ばれていればスピンボックスの値、統計量項目なら -1。
 int EnsembleTransferFunctionEditor::selectedMemberId() const
 {
     const QVariant data = ui->m_statistics_combo_box->currentData();
-    if( !data.isValid() ) return -1;  // itemData の無い項目（セパレータ等）
-    const int member = data.toInt();
-    return ( member >= 0 ) ? member : -1;
+    if( !data.isValid() || data.toInt() != MemberEntryItemData ) return -1;
+    if( m_num_ensemble <= 0 ) return -1;
+    return ui->m_member_spin_box->value();
 }
 
-// コンボボックスのメンバー項目（統計量3項目より後ろ）を m_num_ensemble に合わせて作り直す。
-// 選択中のメンバーが作り直し後も存在すれば選択を維持し、無くなれば直前の統計量へ戻す。
+// コンボボックスの「Member」項目とスピンボックスを m_num_ensemble に合わせて作り直す。
+// 選択中のメンバーが作り直し後も範囲内なら選択を維持し、範囲外になれば直前の統計量へ戻す。
 void EnsembleTransferFunctionEditor::rebuildMemberItems()
 {
     QComboBox* combo = ui->m_statistics_combo_box;
+    QSpinBox* spin = ui->m_member_spin_box;
     const int previousMember = selectedMemberId();
     const bool wasBlocked = combo->blockSignals( true );
+    const bool spinBlocked = spin->blockSignals( true );
 
     while( combo->count() > StatisticCount )
     {
@@ -446,28 +459,36 @@ void EnsembleTransferFunctionEditor::rebuildMemberItems()
     if( m_num_ensemble > 0 )
     {
         combo->insertSeparator( combo->count() );
-        for( int member = 0; member < m_num_ensemble; ++member )
-        {
-            combo->addItem( QStringLiteral( "Member %1" ).arg( member ), QVariant( member ) );
-        }
+        combo->addItem( QStringLiteral( "Member" ), QVariant( MemberEntryItemData ) );
     }
+
+    spin->setRange( 0, qMax( 0, m_num_ensemble - 1 ) );
+    spin->setSuffix( QStringLiteral( " / %1" ).arg( qMax( 0, m_num_ensemble - 1 ) ) );
+    spin->setVisible( m_num_ensemble > 0 );
 
     bool fallbackToStatistic = false;
     if( previousMember >= 0 )
     {
-        const int index = combo->findData( QVariant( previousMember ) );
-        if( index >= 0 )
+        if( previousMember < m_num_ensemble )
         {
-            combo->setCurrentIndex( index );
+            spin->setValue( previousMember );
+            spin->setEnabled( true );
+            combo->setCurrentIndex( combo->count() - 1 );  // 「Member」項目
         }
         else
         {
             m_current_member = -1;
+            spin->setEnabled( false );
             combo->setCurrentIndex( static_cast<int>( m_current_statistic ) );
             fallbackToStatistic = true;
         }
     }
+    else
+    {
+        spin->setEnabled( false );
+    }
 
+    spin->blockSignals( spinBlocked );
     combo->blockSignals( wasBlocked );
     if( fallbackToStatistic ) loadStatisticState( m_current_statistic );
 }
@@ -521,6 +542,7 @@ void EnsembleTransferFunctionEditor::onStatisticSelectionChanged( int )
 {
     saveCurrentStatisticState();
     const int member = selectedMemberId();
+    ui->m_member_spin_box->setEnabled( member >= 0 );
     if( member >= 0 )
     {
         // メンバー選択中はパネルを直前の統計量の状態のまま残す
@@ -561,20 +583,25 @@ void EnsembleTransferFunctionEditor::onReceiveEnsembleStatisticsParameter( const
     if( rootMember >= 0 )
     {
         // member:N の復元。接続直後の publish と、他クライアントの Apply の再 publish が届く。
-        const int index = ui->m_statistics_combo_box->findData( QVariant( rootMember ) );
-        if( index >= 0 )
+        const int memberEntryIndex =
+            ui->m_statistics_combo_box->findData( QVariant( MemberEntryItemData ) );
+        if( rootMember < m_num_ensemble && memberEntryIndex >= 0 )
         {
             saveCurrentStatisticState();
             m_current_member = rootMember;
             const bool wasBlocked = ui->m_statistics_combo_box->blockSignals( true );
-            ui->m_statistics_combo_box->setCurrentIndex( index );
+            const bool spinBlocked = ui->m_member_spin_box->blockSignals( true );
+            ui->m_member_spin_box->setValue( rootMember );
+            ui->m_member_spin_box->setEnabled( true );
+            ui->m_statistics_combo_box->setCurrentIndex( memberEntryIndex );
+            ui->m_member_spin_box->blockSignals( spinBlocked );
             ui->m_statistics_combo_box->blockSignals( wasBlocked );
             // パネルは直前の統計量の状態のまま（onStatisticSelectionChanged と同じ扱い）
         }
         else
         {
             qDebug() << "[Client][EnsembleTFE] skip member restore:" << rawRootStatistic
-                     << "(no combo box item; num_ensemble =" << m_num_ensemble << ")";
+                     << "(out of range; num_ensemble =" << m_num_ensemble << ")";
         }
     }
 
@@ -596,6 +623,7 @@ void EnsembleTransferFunctionEditor::onReceiveEnsembleStatisticsParameter( const
 
         saveCurrentStatisticState();
         m_current_member = -1;
+        ui->m_member_spin_box->setEnabled( false );
         m_current_statistic = receivedStatistic;
         const bool wasBlocked = ui->m_statistics_combo_box->blockSignals( true );
         ui->m_statistics_combo_box->setCurrentIndex( receivedStatistic );

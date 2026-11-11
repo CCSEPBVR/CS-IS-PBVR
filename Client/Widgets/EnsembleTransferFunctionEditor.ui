@@ -64,6 +64,16 @@
            </widget>
           </item>
           <item>
+           <widget class="QSpinBox" name="m_member_spin_box">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="toolTip">
+             <string>Ensemble member ID</string>
+            </property>
+           </widget>
+          </item>
+          <item>
            <spacer name="m_statistics_right_spacer">
             <property name="orientation">
              <enum>Qt::Orientation::Horizontal</enum>
