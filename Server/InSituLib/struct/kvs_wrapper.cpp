@@ -654,15 +654,20 @@ bool ensemble_generate_particles(
 
     /*  各アンサンブルメンバーの粒子を出力する。
      *
+     *  デフォルトでは出力しない（default.json の settings.ensemble.member_output で
+     *  有効化する）。100メンバー×130ステップで約6.4GB・6万ファイルになるため。
+     *
      *  全メンバーを出力するため、各プロセスは自分のメンバー分を1回出すだけでよい。
      *  メンバーIDは mpi_rank / MPIprocess_per_ensemble で決まる
      *  (統計量のリング交換が MPIprocess_per_ensemble 刻みでシフトするのと同じ構造)。
      *
      *  OutputEnsembleMemberParticles は集団通信を含むため全プロセスが呼ぶ必要があるが、
-     *  全員が自分の分を出す構造では自然に満たされる。
+     *  全員が自分の分を出す構造では自然に満たされる。フラグは全プロセスで同じ値になる
+     *  （同じ default.json を読む）ため、集団通信が片側だけ走ることはない。
      *
      *  出力先は PARTICLE_DIR/ensNNNN/t_<時刻>_0000001_0000001.kvsml。
      *  1メンバー1ステップで4ファイル出るため、メンバーごとにディレクトリを分ける。 */
+    if ( particle_property.m_member_output_enabled )
     {
         const int mpi_process_per_ensemble = ( num_ensemble > 0 ) ? mpi_size / num_ensemble : mpi_size;
         const int my_ens_id   = ( mpi_process_per_ensemble > 0 ) ? mpi_rank / mpi_process_per_ensemble : 0;

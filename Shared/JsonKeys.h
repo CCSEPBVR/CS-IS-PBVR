@@ -127,6 +127,7 @@ inline constexpr std::string_view EnsembleOpacityMap        = "EnsembleOpacityMa
 inline constexpr std::string_view EnsembleHistogram         = "EnsembleHistogram";
 inline constexpr std::string_view LogScaleStatistics        = "LogScaleStatistics";
 inline constexpr std::string_view NumEnsemble               = "NumEnsemble";
+inline constexpr std::string_view MemberOutput              = "MemberOutput";
 
 // Repetition Level Control
 inline constexpr std::string_view RepeatLevel               = "RepeatLevel";

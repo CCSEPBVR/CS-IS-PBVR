@@ -25,6 +25,10 @@ struct ParticleProperty
     bool m_is_ensemble = false;
     bool m_log_scale_statistics = false; // 統計量(平均・分散)の常用対数化 ON/OFF（デフォルトOFF）
     int m_num_ensemble = 0;              // アンサンブルメンバー数（0=非アンサンブル/未記録）
+    /*  各アンサンブルメンバーの粒子を出力するか。デフォルト false（出力しない）。
+     *  100メンバー×130ステップで約6.4GB・6万ファイルになるため、既定では出さない。
+     *  default.json の settings.ensemble.member_output で有効化する。 */
+    bool m_member_output_enabled = false;
     vismodule::Camera* m_camera;
     TransferFunctionSynthesizer* m_transfunc_synthesizer; // pack unpackしない
     std::vector<NamedTransferFunction> m_transfunc_array;

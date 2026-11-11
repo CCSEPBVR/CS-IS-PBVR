@@ -487,6 +487,7 @@ nlohmann::json BuildLegacyParametersFromReadableJson(
     if ( transfer_settings.contains( "opacity_synthesis" ) ) params["OPACITY_SYNTH"] = transfer_settings.at( "opacity_synthesis" );
     // アンサンブル統計量(平均・分散)の常用対数化。変動係数は対象外。
     if ( ensemble.contains( "log_scale_statistics" ) ) params["LOG_SCALE_STATISTICS"] = ensemble.at( "log_scale_statistics" );
+    if ( ensemble.contains( "member_output" ) ) params["MEMBER_OUTPUT"] = ensemble.at( "member_output" );
 
     for ( size_t i = 0; i < transfer_functions.size(); ++i )
     {
@@ -1008,6 +1009,9 @@ bool ParameterFileReader::readTransferFunctionFromJson( const char* fname, Parti
         // 既存の json には無いキーなので、既定は false(対数化しない)。
         particle_property.m_log_scale_statistics =
             params.value( "LOG_SCALE_STATISTICS", false );
+        // 各メンバーの粒子出力。既定は false(出力しない)。容量が大きいため明示的に有効化する。
+        particle_property.m_member_output_enabled =
+            params.value( "MEMBER_OUTPUT", false );
 
         if ( particle_data_size_limit_unit != "MB" )
         {

@@ -395,6 +395,7 @@ nlohmann::json BuildHumanReadableView( const ParticleProperty& particle_property
     view["settings"]["transfer_function"]["opacity_synthesis"] = particle_property.m_opacity_transfer_function_synthesis;
 
     view["settings"]["ensemble"]["log_scale_statistics"] = particle_property.m_log_scale_statistics;
+    view["settings"]["ensemble"]["member_output"] = particle_property.m_member_output_enabled;
 
     view["transfer_functions"] = TransferFunctionArrayToJson( particle_property.m_transfunc_array );
     view["mean_transfer_functions"] = TransferFunctionArrayToJson( particle_property.m_mean_transfer_function_array );
