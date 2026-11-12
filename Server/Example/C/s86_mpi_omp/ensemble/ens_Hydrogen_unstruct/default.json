@@ -48,10 +48,10 @@
         "The color.map.values field contains a flat uint8 RGB array with three components (R, G, B) per control point.",
         "The opacity.map.values field contains a one-dimensional array of floating-point values in the range [0, 1].",
         "color_synthesis and opacity_synthesis specify the synthesis expressions defined in the Transfer Function Editor.",
-        "The mean_transfer_functions, variance_transfer_functions, and coefficient_of_variation_transfer_functions sections contain transfer-function parameters for ensemble statistics."
+        "The mean_transfer_functions, variance_transfer_functions, and coefficient_of_variation_transfer_functions sections contain transfer-function parameters for ensemble statistics.",
+        "settings.ensemble.log_scale_statistics applies a base-10 logarithm to the ensemble mean and variance. The coefficient of variation is not transformed."
     ],
     "format": "PBVR transfer-function parameters",
-    "format_version": 1.2,
     "mean_transfer_functions": [
         {
             "color": {
@@ -91,9 +91,11 @@
         }
     ],
     "purpose": "Particle-based volume rendering parameters for PBVR.",
+    "schema_version": 1,
     "settings": {
         "ensemble": {
-            "log_scale_statistics": true
+            "log_scale_statistics": false,
+            "member_output": false
         },
         "image": {
             "height": 620,
