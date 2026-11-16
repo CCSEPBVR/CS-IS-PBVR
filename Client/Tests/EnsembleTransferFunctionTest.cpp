@@ -3950,10 +3950,10 @@ void EnsembleTransferFunctionTest::runItem25MemberOutputEmptyStep( ItemContext& 
         return;
     }
 
-    // メンバー出力を OFF にして Apply(以降のステップはメンバー粒子が空)
+    // 1) メンバー出力を OFF にして Apply(Average)。以降に生成されるステップはメンバー粒子ファイルが書かれない=空。
     client.member_output_check_box->setChecked( false );
     QCoreApplication::processEvents();
-    selectStatistic( client, 0 );
+    selectStatistic( client, 0 ); // Average
     ParticleUpdateResult off_update;
     if( !applyAndWait( ctx, 0, false, &off_update ) )
     {
@@ -3962,45 +3962,70 @@ void EnsembleTransferFunctionTest::runItem25MemberOutputEmptyStep( ItemContext& 
         return;
     }
 
-    // メンバーを選択して Apply。欠落ステップでは粒子が増えないが、dataRequestCompleted が進めば
-    // 「サーバーが応答を返し続けている=ハングしていない」。180秒ではなく k_empty_step_probe_ms で短く判定する。
+    // 2) OFF 適用時点の最新ステップ L を記録し、現在ステップが確実に「OFF後の空メンバーステップ」になるまで待つ
+    //    (latest >= L + margin。OFF 直前に生成済みのメンバーファイル有りステップを誤って拾わないため)
+    const int latest_at_off = latestNotifiedMaxTimeStep();
+    if( latest_at_off < 0 )
+    {
+        skipItem( result, QStringLiteral( "最新タイムステップ(UpdateMaxTimeStep)を取得できないため SKIP" ) );
+        finishItem( result );
+        return;
+    }
+    const int empty_threshold = latest_at_off + k_ensemble_generation_margin_steps;
+    if( !waitForCondition(
+            [this, empty_threshold]() { return latestNotifiedMaxTimeStep() >= empty_threshold; },
+            k_empty_step_probe_ms, 500 ) )
+    {
+        skipItem( result, QStringLiteral( "OFF後の空メンバーステップ(>= %1)が生成されない(最新=%2)ため SKIP" )
+            .arg( empty_threshold ).arg( latestNotifiedMaxTimeStep() ) );
+        finishItem( result );
+        return;
+    }
+
+    // 3) 危険要求: member:0 を Apply。現在の「空メンバーステップ」へ member:0 を要求し、サーバーの欠落メンバー
+    //    ファイル経路(memberStepFilesReady が false → 空 pointObject を返す)を踏ませる。欠落時に無限ループで
+    //    ハングするのが元の不具合(commit 8d532d5a で修正)。ここではメンバー粒子が転送されない(Total が 0/空
+    //    になる)ことを確認する。Keep Last は終始 ON のまま触らない。
     const int member_idx = memberComboIndex( client );
     client.statistic_combo_box->setCurrentIndex( member_idx );
     QCoreApplication::processEvents();
     client.member_spin_box->setValue( 0 );
     QCoreApplication::processEvents();
-
-    const int completion_before = ctx.completion_spy ? ctx.completion_spy->count() : 0;
-    const QByteArray fingerprint_before = particleFingerprint( client );
     QTest::mouseClick( client.ensemble_apply_button, Qt::LeftButton );
+    const bool became_empty = waitForCondition(
+        [this, &client]() { return totalParticles( client ) <= 0; },
+        k_empty_step_probe_ms, 200 );
+    const int member_total = totalParticles( client );
 
-    QElapsedTimer probe;
-    probe.start();
-    bool member_particles_appeared = false;
-    while( probe.elapsed() < k_empty_step_probe_ms )
-    {
-        QTest::qWait( 500 );
-        if( particleFingerprint( client ) != fingerprint_before && totalParticles( client ) > 0 )
-        {
-            member_particles_appeared = true;
-            break;
-        }
-    }
-    const int completion_after = ctx.completion_spy ? ctx.completion_spy->count() : 0;
+    // 4) 非ハング判定(主判定): 続けて Average を Apply。ave は毎ステップ出力=必ず提供可能。この Average 要求の
+    //    dataRequestCompleted が返れば、サーバーの event loop は生きている=ハングしていない(3 の空メンバー
+    //    ステップ要求が event loop を固めていれば、この応答は返らない)。
+    selectStatistic( client, 0 ); // Average
+    QCoreApplication::processEvents();
+    const int recover_before = ctx.completion_spy ? ctx.completion_spy->count() : 0;
+    QTest::mouseClick( client.ensemble_apply_button, Qt::LeftButton );
+    const bool server_alive = waitForCondition(
+        [&ctx, recover_before]() { return ctx.completion_spy && ctx.completion_spy->count() > recover_before; },
+        k_empty_step_probe_ms, 200 );
+    check( result, server_alive,
+           QStringLiteral( "member:0 の空メンバーステップ要求後、Average の Apply に対する応答(dataRequestCompleted)が %1 秒以内に返らない=サーバーの event loop が固まっている(ハング)可能性" )
+               .arg( k_empty_step_probe_ms / 1000 ) );
 
-    if( member_particles_appeared )
-    {
-        skipItem( result, QStringLiteral( "観察中にメンバー粒子が現れた(出力OFF反映前のステップを引いた可能性)。空ステップ条件を作れずSKIP" ) );
-        finishItem( result );
-        return;
-    }
-    const bool server_responsive = completion_after > completion_before;
-    check( result, server_responsive,
-           QStringLiteral( "メンバー出力OFFの欠落ステップ要求後、%1 秒間に dataRequestCompleted が進まない=サーバーがハングしている可能性" ).arg( k_empty_step_probe_ms / 1000 ) );
+    // 5) 空であること(メンバー粒子が転送されない)
+    check( result, became_empty,
+           QStringLiteral( "空メンバーステップへの member:0 要求でメンバー粒子が転送されている(Total Particles=%1、期待は 0/空)" )
+               .arg( member_total ) );
+
     result.messages.push_back(
-        QStringLiteral( "メンバー出力OFF時の欠落ステップ要求で空表示・サーバー応答継続を確認(dataRequestCompleted %1→%2件、%3 秒観察)" )
-            .arg( completion_before ).arg( completion_after ).arg( k_empty_step_probe_ms / 1000 ) );
+        QStringLiteral( "OFF適用時の最新=%1 / 空メンバーステップ閾値(L+%2)=%3 / member:0要求時のTotal=%4(≤0=粒子転送なし) / Average応答による非ハング=%5" )
+            .arg( latest_at_off ).arg( k_ensemble_generation_margin_steps ).arg( empty_threshold )
+            .arg( member_total )
+            .arg( server_alive ? QStringLiteral( "確認" ) : QStringLiteral( "未確認(ハング疑い)" ) ) );
 
+    bringWindowToFront( client.main_window );
+    captureManual( result, client.main_window, 1, QStringLiteral( "member_output_off_empty_step" ), manualEtf( 25, 1 ), off_update.request_time_step );
+
+    // 6) 後始末: Average 表示に戻す(既に戻済)。Keep Last は終始 ON のため操作不要。
     selectStatistic( client, 0 );
     finishItem( result );
 }
