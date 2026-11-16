@@ -22,10 +22,13 @@ class MainWindow;
 class ObjectEditor;
 class OpacityMap;
 class PlayBackControlToolBar;
+class QCheckBox;
 class QComboBox;
 class QDoubleSpinBox;
 class QEvent;
 class QFileDialog;
+class QGroupBox;
+class QSpinBox;
 class QJsonObject;
 class QLabel;
 class QLineEdit;
@@ -130,6 +133,11 @@ private:
         OpacityMap* opacity_map = nullptr;
         Histogram* histogram = nullptr;
         QComboBox* color_function_combo_box = nullptr;
+        // v4.0.0 追加機能用
+        QCheckBox* log_scale_check_box = nullptr;     // m_log_scale_statistics_check_box(常用対数)
+        QSpinBox* member_spin_box = nullptr;          // m_member_spin_box(メンバーID)
+        QCheckBox* member_output_check_box = nullptr; // m_member_output_check_box(メンバー粒子出力ON/OFF)
+        QGroupBox* min_max_group_box = nullptr;       // m_min_max_group_box(タイトルに [log10] が付く)
     };
 
     // ---- チェックシート項目(C-ETF-xx / C-MB-15 / C-CMS-02)用 ----
@@ -329,6 +337,16 @@ private:
     void runItem17InvalidJson( ItemContext& ctx );
     void runItem18MissingKeys( ItemContext& ctx );
     void runItem19And16DisconnectReconnect( ItemContext& ctx, MainWindow& window );
+    // v4.0.0 追加機能(常用対数 / メンバー可視化 / メンバー出力)
+    void runItem20LogScale( ItemContext& ctx );
+    void runItem21LogScaleOff( ItemContext& ctx );
+    void runItem22Member( ItemContext& ctx );
+    void runItem23MemberChange( ItemContext& ctx );
+    void runItem24MemberOutput( ItemContext& ctx );
+    void runItem25MemberOutputEmptyStep( ItemContext& ctx );
+    // メンバー選択ヘルパー。statistic_combo_box の「Member」項目を選び、spinbox を member_id にして Apply する。
+    int memberComboIndex( const ClientHandles& client ) const;
+    bool applyMemberAndWait( ItemContext& ctx, int member_id, bool require_particle_change, ParticleUpdateResult* update_result );
     void runCheckSheetItems( ItemContext& ctx, MainWindow& window );
     // 基本シナリオ(3統計×6ケース、Export/Import)の各ケースを FAIL として記録し、QVERIFY で中断せずに続行する
     void recordBaseCase( const QString& title, bool ok, const QString& failure_message );

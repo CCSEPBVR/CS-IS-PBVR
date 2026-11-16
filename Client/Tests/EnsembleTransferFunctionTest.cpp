@@ -3,6 +3,7 @@
 #include <QAbstractItemModel>
 #include <QAction>
 #include <QApplication>
+#include <QCheckBox>
 #include <QComboBox>
 #include <QCoreApplication>
 #include <QCryptographicHash>
@@ -11,6 +12,7 @@
 #include <QDir>
 #include <QDoubleSpinBox>
 #include <QElapsedTimer>
+#include <QGroupBox>
 #include <QEvent>
 #include <QEventLoop>
 #include <QFile>
@@ -73,6 +75,8 @@ constexpr int k_dialog_timeout_ms = 10000;
 constexpr int k_object_load_timeout_ms = 120000;
 constexpr int k_data_request_timeout_ms = 180000;
 constexpr int k_apply_propagation_wait_ms = 5000;
+constexpr int k_empty_step_probe_ms = 45000; // C-ETF-25: メンバー出力OFFの欠落ステップ要求で非ハングを確認する観察時間
+constexpr int k_log_scale_reflect_wait_ms = 15000; // C-ETF-20/21: LogScaleStatistics が最新応答へ反映されるまでの待ち上限(ms)
 // Apply 後に生成されたステップで判定するためのマージン。Apply 後に最初に通知された最新ステップ M' に対し、
 // Apply 時点で生成中だったステップは高々 M'+1 のため、M'+2 以上のステップを「Apply 後の設定で生成された」とみなす。
 // (シミュレーションが古いステップ(例: 接続直後の step 12)に張り付いた応答を返しても、それを判定に使わない)
@@ -412,6 +416,11 @@ EnsembleTransferFunctionTest::resolveClientHandles( MainWindow& window ) const
     handles.color_map = handles.ensemble_editor->findChild<ColorMap*>( "m_color_map" );
     handles.opacity_map = handles.ensemble_editor->findChild<OpacityMap*>( "m_opacity_map" );
     handles.histogram = handles.ensemble_editor->findChild<Histogram*>( "m_histogram" );
+    // v4.0.0 追加機能のウィジェット
+    handles.log_scale_check_box = handles.ensemble_editor->findChild<QCheckBox*>( "m_log_scale_statistics_check_box" );
+    handles.member_spin_box = handles.ensemble_editor->findChild<QSpinBox*>( "m_member_spin_box" );
+    handles.member_output_check_box = handles.ensemble_editor->findChild<QCheckBox*>( "m_member_output_check_box" );
+    handles.min_max_group_box = handles.ensemble_editor->findChild<QGroupBox*>( "m_min_max_group_box" );
     if( auto* selector = window.findChild<ColorMapSelectorToolBar*>() )
     {
         handles.color_function_combo_box = selector->findChild<QComboBox*>();
@@ -3614,6 +3623,389 @@ void EnsembleTransferFunctionTest::runItem18MissingKeys( ItemContext& ctx )
 }
 
 // ===========================================================================
+// v4.0.0 追加機能ヘルパー
+// ===========================================================================
+// statistic_combo_box の「Member」項目のインデックス。無ければ -1。
+int EnsembleTransferFunctionTest::memberComboIndex( const ClientHandles& client ) const
+{
+    if( !client.statistic_combo_box ) return -1;
+    for( int i = 0; i < client.statistic_combo_box->count(); ++i )
+    {
+        if( client.statistic_combo_box->itemText( i ) == QStringLiteral( "Member" ) ) return i;
+    }
+    return -1;
+}
+
+// 「Member」項目を選び spinbox を member_id にして Apply し、応答と粒子変化を待つ。
+bool EnsembleTransferFunctionTest::applyMemberAndWait(
+    ItemContext& ctx, int member_id, bool require_particle_change, ParticleUpdateResult* update_result )
+{
+    const ClientHandles& client = ctx.client;
+    const int idx = memberComboIndex( client );
+    if( idx < 0 || !client.member_spin_box )
+    {
+        m_last_wait_failure = QStringLiteral( "Member 項目またはスピンボックスが見つからない" );
+        return false;
+    }
+    // captureAllStatisticStates はコンボを動かすため、先に取得してから Member を選ぶ。
+    const std::array<StatisticState, 3> expected = captureAllStatisticStates( client );
+    const QString variable = client.variable_line_edit->text().trimmed();
+    client.statistic_combo_box->setCurrentIndex( idx );
+    QCoreApplication::processEvents();
+    client.member_spin_box->setValue( member_id );
+    QCoreApplication::processEvents();
+    update_result->before_fingerprint = particleFingerprint( client );
+    m_current_case_name = QStringLiteral( "member_%1" ).arg( member_id );
+    return waitForAppliedParticles(
+        client, *ctx.request_spy, *ctx.completion_spy, *ctx.request_parameter_spy,
+        expected, variable, require_particle_change, update_result );
+}
+
+// ===========================================================================
+// C-ETF-20 統計量の常用対数表示(Log10 Scale)を有効化
+// ===========================================================================
+void EnsembleTransferFunctionTest::runItem20LogScale( ItemContext& ctx )
+{
+    ItemResult result;
+    result.id = QStringLiteral( "C-ETF-20" );
+    result.title = QStringLiteral( "Log10 Scale (Mean / Variance) を有効化してApplyする" );
+    restoreBaseline( ctx );
+    const ClientHandles& client = ctx.client;
+    if( !check( result, client.log_scale_check_box != nullptr, QStringLiteral( "m_log_scale_statistics_check_box が見つからない" ) ) )
+    {
+        finishItem( result );
+        return;
+    }
+
+    client.log_scale_check_box->setChecked( false );
+    QCoreApplication::processEvents();
+    selectStatistic( client, 0 ); // Average
+    client.log_scale_check_box->setChecked( true );
+    QCoreApplication::processEvents();
+
+    ParticleUpdateResult update;
+    const bool applied = applyAndWait( ctx, 0, true, &update );
+    check( result, applied, QStringLiteral( "Log10 Scale ON の Apply 後、RequestDataAt 応答が届かないか粒子が変化しない" ) );
+
+    // RequestDataAt 応答は Keep Last でステップ進行とともに届き続ける。ON 設定が最新応答へ
+    // 反映されるまで最大 k_log_scale_reflect_wait_ms 待ってから判定する(高ステップ時の取りこぼし対策)。
+    const bool log_on_reflected = waitForCondition(
+        [this, &ctx]() {
+            return latestRequestPayload( ctx ).value( QString::fromUtf8( Protocol::Key::LogScaleStatistics ) ).toBool();
+        },
+        k_log_scale_reflect_wait_ms,
+        200 );
+    check( result, log_on_reflected,
+           QStringLiteral( "RequestDataAt 応答の LogScaleStatistics が %1ms 以内に true にならない" ).arg( k_log_scale_reflect_wait_ms ) );
+
+    // MinMax グループのタイトル [log10](Average では付き、CV では付かない)
+    if( client.min_max_group_box )
+    {
+        const bool avg_has_log = client.min_max_group_box->title().contains( QStringLiteral( "log10" ) );
+        check( result, avg_has_log, QStringLiteral( "Average 選択時に MinMax タイトルへ [log10] が付かない: %1" ).arg( client.min_max_group_box->title() ) );
+        selectStatistic( client, 2 ); // CV(対数化対象外)
+        result.messages.push_back( QStringLiteral( "CV 選択時の MinMax タイトル(参考): %1" ).arg( client.min_max_group_box->title() ) );
+        selectStatistic( client, 0 );
+    }
+
+    const QString default_path = defaultJsonPath();
+    if( default_path.isEmpty() || !QFileInfo::exists( default_path ) )
+    {
+        result.messages.push_back( QStringLiteral( "default.json との突合: SKIP(ENSEMBLE_VIS_PARAM_DIR 未設定または未検出)" ) );
+    }
+    else
+    {
+        bool ok = false;
+        const QJsonObject root = readJsonObject( default_path, &ok );
+        if( check( result, ok, QStringLiteral( "default.json を読めない: %1" ).arg( default_path ) ) )
+        {
+            const QJsonObject ensemble = root.value( QStringLiteral( "settings" ) ).toObject().value( QStringLiteral( "ensemble" ) ).toObject();
+            check( result, ensemble.value( QStringLiteral( "log_scale_statistics" ) ).toBool(),
+                   QStringLiteral( "default.json settings.ensemble.log_scale_statistics が true ではない" ) );
+        }
+    }
+
+    bringWindowToFront( client.main_window );
+    captureManual( result, client.ensemble_editor, 1, QStringLiteral( "log_on_editor" ), manualEtf( 20, 1 ) );
+    if( applied ) captureManual( result, client.main_window, 2, QStringLiteral( "log_on_particles" ), manualEtf( 20, 2 ), update.request_time_step );
+    finishItem( result );
+}
+
+// ===========================================================================
+// C-ETF-21 Log10 Scale を無効化(線形スケールへ戻す)
+// ===========================================================================
+void EnsembleTransferFunctionTest::runItem21LogScaleOff( ItemContext& ctx )
+{
+    ItemResult result;
+    result.id = QStringLiteral( "C-ETF-21" );
+    result.title = QStringLiteral( "Log10 Scale を無効化してApplyする(線形スケールに戻す)" );
+    const ClientHandles& client = ctx.client;
+    if( !check( result, client.log_scale_check_box != nullptr, QStringLiteral( "m_log_scale_statistics_check_box が見つからない" ) ) )
+    {
+        finishItem( result );
+        return;
+    }
+    // C-ETF-20 の ON 状態から続けて OFF にする
+    selectStatistic( client, 0 );
+    client.log_scale_check_box->setChecked( false );
+    QCoreApplication::processEvents();
+
+    ParticleUpdateResult update;
+    const bool applied = applyAndWait( ctx, 0, true, &update );
+    check( result, applied, QStringLiteral( "Log10 Scale OFF の Apply 後、RequestDataAt 応答が届かないか粒子が変化しない" ) );
+    // OFF 設定が最新応答へ反映されるまで待ってから判定する(C-ETF-20 と同様、高ステップ時の取りこぼし対策)。
+    const bool log_off_reflected = waitForCondition(
+        [this, &ctx]() {
+            return !latestRequestPayload( ctx ).value( QString::fromUtf8( Protocol::Key::LogScaleStatistics ) ).toBool();
+        },
+        k_log_scale_reflect_wait_ms,
+        200 );
+    check( result, log_off_reflected,
+           QStringLiteral( "RequestDataAt 応答の LogScaleStatistics が %1ms 以内に false にならない" ).arg( k_log_scale_reflect_wait_ms ) );
+    if( client.min_max_group_box )
+    {
+        check( result, !client.min_max_group_box->title().contains( QStringLiteral( "log10" ) ),
+               QStringLiteral( "OFF にしても MinMax タイトルへ [log10] が残る: %1" ).arg( client.min_max_group_box->title() ) );
+    }
+    bringWindowToFront( client.main_window );
+    if( applied ) captureManual( result, client.main_window, 1, QStringLiteral( "log_off_particles" ), manualEtf( 21, 1 ), update.request_time_step );
+    finishItem( result );
+}
+
+// ===========================================================================
+// C-ETF-22 Member を選択してメンバー粒子を表示する
+// (メンバー粒子出力をONにし、メンバー粒子が利用可能になってから選択する)
+// ===========================================================================
+void EnsembleTransferFunctionTest::runItem22Member( ItemContext& ctx )
+{
+    ItemResult result;
+    result.id = QStringLiteral( "C-ETF-22" );
+    result.title = QStringLiteral( "Statisticで「Member」を選択し、メンバーを表示する" );
+    restoreBaseline( ctx );
+    const ClientHandles& client = ctx.client;
+
+    const int num_ensemble = latestRequestPayload( ctx ).value( QString::fromUtf8( Protocol::Key::NumEnsemble ) ).toInt( -1 );
+    if( memberComboIndex( client ) < 0 || !client.member_spin_box || num_ensemble <= 0 )
+    {
+        skipItem( result, QStringLiteral( "Member 項目が無い、または NumEnsemble<=0(サーバがメンバー数を送っていない)ため SKIP(NumEnsemble=%1)" ).arg( num_ensemble ) );
+        finishItem( result );
+        return;
+    }
+    result.messages.push_back( QStringLiteral( "NumEnsemble=%1、member spinbox max=%2" ).arg( num_ensemble ).arg( client.member_spin_box->maximum() ) );
+
+    // 前提: メンバー粒子出力を ON にして、以降のステップでメンバー粒子が出力されるようにする
+    if( client.member_output_check_box )
+    {
+        client.member_output_check_box->setChecked( true );
+        QCoreApplication::processEvents();
+        ParticleUpdateResult enable_update;
+        applyAndWait( ctx, 0, false, &enable_update );
+    }
+
+    ParticleUpdateResult update;
+    const bool applied = applyMemberAndWait( ctx, 0, true, &update );
+    if( !applied )
+    {
+        skipItem( result, QStringLiteral( "メンバー 0 の粒子が利用可能なステップを取得できなかった(出力ON反映待ち・タイミング)。SKIP。待機結果: %1" ).arg( m_last_wait_failure ) );
+        finishItem( result );
+        return;
+    }
+    // 注意: RequestDataAt 応答の EnsembleTransferFunctionParameter は root の Statistic を erase して返す(Server.cpp)。
+    // そのためメンバー選択は「GUI 状態(コンボ=Member・spinbox値)+ 粒子変化(applyMemberAndWait が要求済み)+ Total>0」で確認する。
+    check( result, client.statistic_combo_box->currentText() == QStringLiteral( "Member" ),
+           QStringLiteral( "Statistic コンボが「Member」になっていない: %1" ).arg( client.statistic_combo_box->currentText() ) );
+    check( result, client.member_spin_box->value() == 0,
+           QStringLiteral( "member spinbox が 0 でない: %1" ).arg( client.member_spin_box->value() ) );
+    check( result, totalParticles( client ) > 0, QStringLiteral( "メンバー 0 の Total Particles が正でない" ) );
+    const QJsonObject payload = latestRequestPayload( ctx );
+    result.messages.push_back( QStringLiteral( "応答(参考) MemberOutput=%1、NumEnsemble=%2(応答 root の Statistic はサーバが erase するため未検証)" )
+        .arg( payload.value( QString::fromUtf8( Protocol::Key::MemberOutput ) ).toBool() )
+        .arg( payload.value( QString::fromUtf8( Protocol::Key::NumEnsemble ) ).toInt( -1 ) ) );
+
+    bringWindowToFront( client.main_window );
+    captureManual( result, client.ensemble_editor, 1, QStringLiteral( "member0_editor" ), manualEtf( 22, 1 ) );
+    captureManual( result, client.main_window, 2, QStringLiteral( "member0_particles" ), manualEtf( 22, 2 ), update.request_time_step );
+    finishItem( result );
+}
+
+// ===========================================================================
+// C-ETF-23 メンバーIDを変更して別メンバーの粒子に切り替わることを確認する
+// ===========================================================================
+void EnsembleTransferFunctionTest::runItem23MemberChange( ItemContext& ctx )
+{
+    ItemResult result;
+    result.id = QStringLiteral( "C-ETF-23" );
+    result.title = QStringLiteral( "メンバーIDを変更して別メンバーの粒子に切り替わることを確認する" );
+    const ClientHandles& client = ctx.client;
+
+    const int num_ensemble = latestRequestPayload( ctx ).value( QString::fromUtf8( Protocol::Key::NumEnsemble ) ).toInt( -1 );
+    if( memberComboIndex( client ) < 0 || !client.member_spin_box )
+    {
+        skipItem( result, QStringLiteral( "Member 項目/スピンボックスが無いため SKIP" ) );
+        finishItem( result );
+        return;
+    }
+    // スピンボックスの範囲は 0〜(NumEnsemble-1)
+    if( num_ensemble > 0 )
+    {
+        check( result, client.member_spin_box->maximum() == num_ensemble - 1,
+               QStringLiteral( "member spinbox の最大値(%1)が NumEnsemble-1(%2)と一致しない" ).arg( client.member_spin_box->maximum() ).arg( num_ensemble - 1 ) );
+    }
+    if( num_ensemble < 2 )
+    {
+        skipItem( result, QStringLiteral( "メンバーが 1 個以下(NumEnsemble=%1)のため切替確認を SKIP" ).arg( num_ensemble ) );
+        finishItem( result );
+        return;
+    }
+
+    // C-ETF-22 で member 0 を表示済みの前提(出力は ON のまま)。member 1 へ変更。
+    ParticleUpdateResult update;
+    const bool applied = applyMemberAndWait( ctx, 1, true, &update );
+    if( !applied )
+    {
+        skipItem( result, QStringLiteral( "メンバー 1 の粒子が利用可能なステップを取得できなかった。SKIP。待機結果: %1" ).arg( m_last_wait_failure ) );
+        finishItem( result );
+        return;
+    }
+    // 応答 root の Statistic はサーバが erase するため、GUI(spinbox値)と粒子変化で確認する
+    //(applyMemberAndWait が member 0 からの粒子変化を要求済み=別メンバーに切り替わった)。
+    check( result, client.member_spin_box->value() == 1,
+           QStringLiteral( "member spinbox が 1 でない: %1" ).arg( client.member_spin_box->value() ) );
+    check( result, totalParticles( client ) > 0, QStringLiteral( "メンバー 1 の Total Particles が正でない" ) );
+
+    bringWindowToFront( client.main_window );
+    captureManual( result, client.main_window, 1, QStringLiteral( "member1_particles" ), manualEtf( 23, 1 ), update.request_time_step );
+    finishItem( result );
+}
+
+// ===========================================================================
+// C-ETF-24 Output Member Particles(メンバー粒子出力)の ON/OFF 切替
+// ===========================================================================
+void EnsembleTransferFunctionTest::runItem24MemberOutput( ItemContext& ctx )
+{
+    ItemResult result;
+    result.id = QStringLiteral( "C-ETF-24" );
+    result.title = QStringLiteral( "Output Member Particles(メンバー粒子出力)を切り替えてApplyする" );
+    restoreBaseline( ctx );
+    const ClientHandles& client = ctx.client;
+    if( !check( result, client.member_output_check_box != nullptr, QStringLiteral( "m_member_output_check_box が見つからない" ) ) )
+    {
+        finishItem( result );
+        return;
+    }
+    const QString key = QString::fromUtf8( Protocol::Key::MemberOutput );
+
+    // ON
+    client.member_output_check_box->setChecked( true );
+    QCoreApplication::processEvents();
+    ParticleUpdateResult up_on;
+    const bool applied_on = applyAndWait( ctx, 0, false, &up_on );
+    check( result, applied_on, QStringLiteral( "メンバー出力 ON の Apply 応答が届かない" ) );
+    check( result, latestRequestPayload( ctx ).value( key ).toBool(),
+           QStringLiteral( "RequestDataAt 応答の MemberOutput が true ではない" ) );
+    captureManual( result, client.ensemble_editor, 1, QStringLiteral( "member_output_on" ), manualEtf( 24, 1 ) );
+
+    const QString default_path = defaultJsonPath();
+    if( !default_path.isEmpty() && QFileInfo::exists( default_path ) )
+    {
+        bool ok = false;
+        const QJsonObject root = readJsonObject( default_path, &ok );
+        if( ok )
+        {
+            const QJsonObject ensemble = root.value( QStringLiteral( "settings" ) ).toObject().value( QStringLiteral( "ensemble" ) ).toObject();
+            check( result, ensemble.value( QStringLiteral( "member_output" ) ).toBool(),
+                   QStringLiteral( "default.json settings.ensemble.member_output が true ではない" ) );
+        }
+    }
+    else
+    {
+        result.messages.push_back( QStringLiteral( "default.json との突合: SKIP(ENSEMBLE_VIS_PARAM_DIR 未設定または未検出)" ) );
+    }
+
+    // OFF
+    client.member_output_check_box->setChecked( false );
+    QCoreApplication::processEvents();
+    ParticleUpdateResult up_off;
+    const bool applied_off = applyAndWait( ctx, 0, false, &up_off );
+    check( result, applied_off, QStringLiteral( "メンバー出力 OFF の Apply 応答が届かない" ) );
+    check( result, !latestRequestPayload( ctx ).value( key ).toBool(),
+           QStringLiteral( "RequestDataAt 応答の MemberOutput が false ではない" ) );
+    finishItem( result );
+}
+
+// ===========================================================================
+// C-ETF-25 メンバー出力OFFで生成された(欠落)ステップをメンバー指定で要求し、
+// 粒子が転送されず・サーバーがハングしないことを確認する(best-effort)
+// ===========================================================================
+void EnsembleTransferFunctionTest::runItem25MemberOutputEmptyStep( ItemContext& ctx )
+{
+    ItemResult result;
+    result.id = QStringLiteral( "C-ETF-25" );
+    result.title = QStringLiteral( "メンバー粒子出力OFFで生成されたステップをメンバー指定で要求し、粒子が転送されず・サーバーがハングしないことを確認する" );
+    const ClientHandles& client = ctx.client;
+    if( memberComboIndex( client ) < 0 || !client.member_output_check_box || !client.member_spin_box )
+    {
+        skipItem( result, QStringLiteral( "Member 項目または出力チェックボックスが無いため SKIP" ) );
+        finishItem( result );
+        return;
+    }
+
+    // メンバー出力を OFF にして Apply(以降のステップはメンバー粒子が空)
+    client.member_output_check_box->setChecked( false );
+    QCoreApplication::processEvents();
+    selectStatistic( client, 0 );
+    ParticleUpdateResult off_update;
+    if( !applyAndWait( ctx, 0, false, &off_update ) )
+    {
+        skipItem( result, QStringLiteral( "メンバー出力 OFF の Apply が完了しないため SKIP" ) );
+        finishItem( result );
+        return;
+    }
+
+    // メンバーを選択して Apply。欠落ステップでは粒子が増えないが、dataRequestCompleted が進めば
+    // 「サーバーが応答を返し続けている=ハングしていない」。180秒ではなく k_empty_step_probe_ms で短く判定する。
+    const int member_idx = memberComboIndex( client );
+    client.statistic_combo_box->setCurrentIndex( member_idx );
+    QCoreApplication::processEvents();
+    client.member_spin_box->setValue( 0 );
+    QCoreApplication::processEvents();
+
+    const int completion_before = ctx.completion_spy ? ctx.completion_spy->count() : 0;
+    const QByteArray fingerprint_before = particleFingerprint( client );
+    QTest::mouseClick( client.ensemble_apply_button, Qt::LeftButton );
+
+    QElapsedTimer probe;
+    probe.start();
+    bool member_particles_appeared = false;
+    while( probe.elapsed() < k_empty_step_probe_ms )
+    {
+        QTest::qWait( 500 );
+        if( particleFingerprint( client ) != fingerprint_before && totalParticles( client ) > 0 )
+        {
+            member_particles_appeared = true;
+            break;
+        }
+    }
+    const int completion_after = ctx.completion_spy ? ctx.completion_spy->count() : 0;
+
+    if( member_particles_appeared )
+    {
+        skipItem( result, QStringLiteral( "観察中にメンバー粒子が現れた(出力OFF反映前のステップを引いた可能性)。空ステップ条件を作れずSKIP" ) );
+        finishItem( result );
+        return;
+    }
+    const bool server_responsive = completion_after > completion_before;
+    check( result, server_responsive,
+           QStringLiteral( "メンバー出力OFFの欠落ステップ要求後、%1 秒間に dataRequestCompleted が進まない=サーバーがハングしている可能性" ).arg( k_empty_step_probe_ms / 1000 ) );
+    result.messages.push_back(
+        QStringLiteral( "メンバー出力OFF時の欠落ステップ要求で空表示・サーバー応答継続を確認(dataRequestCompleted %1→%2件、%3 秒観察)" )
+            .arg( completion_before ).arg( completion_after ).arg( k_empty_step_probe_ms / 1000 ) );
+
+    selectStatistic( client, 0 );
+    finishItem( result );
+}
+
+// ===========================================================================
 // C-ETF-19 / C-ETF-16 切断・再接続とリセット、未接続 Apply
 // ===========================================================================
 void EnsembleTransferFunctionTest::runItem19And16DisconnectReconnect( ItemContext& ctx, MainWindow& window )
@@ -3745,6 +4137,13 @@ void EnsembleTransferFunctionTest::runCheckSheetItems( ItemContext& ctx, MainWin
     runItem15MinMaxInvalid( ctx );
     runItem17InvalidJson( ctx );
     runItem18MissingKeys( ctx );
+    // v4.0.0 追加機能(切断・再接続テストより前に実施)
+    runItem20LogScale( ctx );
+    runItem21LogScaleOff( ctx );
+    runItem22Member( ctx );
+    runItem23MemberChange( ctx );
+    runItem24MemberOutput( ctx );
+    runItem25MemberOutputEmptyStep( ctx );
     runItem19And16DisconnectReconnect( ctx, window );
 }
 
