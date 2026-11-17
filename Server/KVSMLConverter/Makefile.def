@@ -66,6 +66,21 @@ INSTALL_PREFIX := /usr/local
 #=============================================================================
 #  Command macro.
 #=============================================================================
+# 非MPIビルドでは、呼び出し元によらずServerの設定からコンパイラを選択する。
+# Makefile.defの位置を基準にすることで、SourceやExampleからの参照にも対応する。
+ifndef CVT_ENABLE_MPI
+PBVR_CONVERTER_SERVER_DIR := $(abspath $(dir $(lastword $(MAKEFILE_LIST)))/..)
+include $(PBVR_CONVERTER_SERVER_DIR)/pbvr.conf
+include $(PBVR_CONVERTER_SERVER_DIR)/arch/$(PBVR_MACHINE)
+
+# Intelの場合だけPBVR_MACHINEの指定を優先し、環境変数やコマンドライン指定を上書きする。
+# CXXFLAGSは転用せず、LDFLAGSは後段のConverter用定義で初期化する。
+ifneq ($(filter icpc icpx,$(notdir $(strip $(CXX)))),)
+  override KVS_CPP := $(CXX)
+  override KVS_LD := $(CXX)
+endif
+endif
+
 ifndef KVS_CPP
   KVS_CPP := g++
 endif
