@@ -52,7 +52,7 @@ int main( int argc, char** argv )
     MPI_Comm_size( MPI_COMM_WORLD, &ens_num );
 
     begin_wrapper_async_io();
-    for(int i =0;i<1;i ++ )
+    for(;;)
     {
         if(mpi_rank==RANK) hydro.show();
 

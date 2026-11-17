@@ -46,11 +46,7 @@ int main( int argc, char** argv )
         std::cout << "ens_num =  " << ens_num << std::endl;
 
     begin_wrapper_async_io();
-    // 複数タイムステップ対応: 既定 1(従来通り)。env PBVR_NUM_TIMESTEPS>0 で回数指定。
-    int num_timesteps = 1;
-    { const char* e = std::getenv( "PBVR_NUM_TIMESTEPS" ); if ( e && std::atoi( e ) > 0 ) num_timesteps = std::atoi( e ); }
-    if ( mpi_rank == 0 ) std::cout << "num_timesteps = " << num_timesteps << std::endl;
-    for(int i =0;i<num_timesteps;i ++ )
+    for(;;)
     {
         if(mpi_rank==RANK) hydro.show();
 

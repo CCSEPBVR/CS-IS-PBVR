@@ -20,11 +20,12 @@ else
 	CXXFLAGS += -DCPU_VER
 endif
 
-ifdef KVS_DIR
-include $(KVS_DIR)/kvs.conf
-#ifeq "$(KVS_SUPPORT_EXTENDED_FILE_FORMAT)" "1"
-#CXXFLAGS += -DEXTEND_FILE_FORMAT
-#endif
+PBVR_KVS_INSTALL_DIR ?= $(abspath ../../../../../../KVS/Install)
+ifneq ($(wildcard $(PBVR_KVS_INSTALL_DIR)/kvs.conf),)
+include $(PBVR_KVS_INSTALL_DIR)/kvs.conf
+ifeq "$(KVS_SUPPORT_EXTENDED_FILE_FORMAT)" "1"
+CXXFLAGS += -DEXTEND_FILE_FORMAT
+endif
 endif
 
 CXXFLAGS += -I./ \
@@ -59,12 +60,14 @@ LDFLAGS  += -L${INSITU_DIR} -lInSituPBVR \
 ifneq ($(wildcard $(PBVR_KVS_INSTALL_DIR)/kvs.conf),)
 include $(PBVR_KVS_INSTALL_DIR)/kvs.conf
 ifeq "$(KVS_SUPPORT_EXTENDED_FILE_FORMAT)" "1"
-# VTK の静的ライブラリは相互依存があり、1列に並べる順序では解決できない。
-# --start-group で囲んで繰り返し走査させる。あわせて kvsSupportExtendedFileFormat が
+# GNU リンカでは VTK の静的ライブラリの相互依存をグループの再検索で解決する。
+# macOS のリンカはグループ指定に非対応のため付けない。kvsSupportExtendedFileFormat が
 # 要求する NetCDF 系（vtkIONetCDF / vtknetcdf / vtkhdf5*）を補う。
-LDFLAGS += -L$(VTK_LIB_PATH) \
--Wl,--start-group \
--lkvsSupportExtendedFileFormat \
+LDFLAGS += -L$(VTK_LIB_PATH)
+ifneq ($(shell uname -s),Darwin)
+LDFLAGS += -Wl,--start-group
+endif
+LDFLAGS += -lkvsSupportExtendedFileFormat \
 -lvtkIONetCDF-$(VTK_VERSION) \
 -lvtknetcdf-$(VTK_VERSION) \
 -lvtkhdf5_hl-$(VTK_VERSION) \
@@ -102,6 +105,9 @@ LDFLAGS += -L$(VTK_LIB_PATH) \
 -lvtkCommonMisc-$(VTK_VERSION) \
 -lvtknetcdf-$(VTK_VERSION) \
 -lvtkpugixml-$(VTK_VERSION)
+ifneq ($(shell uname -s),Darwin)
+LDFLAGS += -Wl,--end-group
+endif
 endif
 endif
 
