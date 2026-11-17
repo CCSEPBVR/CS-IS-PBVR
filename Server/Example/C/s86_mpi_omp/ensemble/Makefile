@@ -49,9 +49,9 @@ SUBDIRS += ens_Hydrogen_unstruct_sine
 # クローンした環境には実体が無いので、無いものは飛ばす。
 all:
 	for i in $(SUBDIRS); do \
-	if [ -d $$i ]; then $(MAKE) -C $$i; \
+	if [ -d $$i ]; then $(MAKE) -C $$i || exit $$?; \
 	else echo "skip $$i (このリポジトリには含まれていません)"; fi; done
 
 clean:
 	for i in $(SUBDIRS); do \
-	if [ -d $$i ]; then $(MAKE) -C $$i clean; fi; done
+	if [ -d $$i ]; then $(MAKE) -C $$i clean || exit $$?; fi; done
