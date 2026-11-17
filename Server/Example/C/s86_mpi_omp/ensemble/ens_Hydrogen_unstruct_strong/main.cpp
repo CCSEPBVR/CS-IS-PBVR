@@ -46,7 +46,7 @@ int main( int argc, char** argv )
         std::cout << "ens_num =  " << ens_num << std::endl;
 
     begin_wrapper_async_io();
-    for(int i =0;i<1;i ++ )
+    for(;;)
     {
         if(mpi_rank==RANK) hydro.show();
 
