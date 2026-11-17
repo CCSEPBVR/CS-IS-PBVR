@@ -1,13 +1,16 @@
 #include "Server.h"
 
 #include "../../Shared/TransferFunction.h"
+#include "../Utils/ObjectInfoUtils.h"
 #include <filesystem>
 #include <chrono>
+#include <cctype>
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
 #include <algorithm>
 #include <regex>
+#include <cmath>
 
 #ifndef CPU_VER
 #include "mpi.h"
@@ -19,6 +22,7 @@
 
 #include <vismodule/KVSMLObjectPlotOverLine>
 #include <vismodule/InitialStep>
+#include <vismodule/GenerateParticle>
 #include <vismodule/GeneratePOL>
 #include <vismodule/GeneratePOT>
 #include <vismodule/ParticleMonitor>
@@ -69,7 +73,405 @@ std::vector<std::string> ExpandNumericWildcard( const std::string& wildcard,
     if ( files.empty() ) error = "No regular file matches: " + wildcard;
     return files;
 }
+
+/*  "member:N"（N は 0 以上の整数）かどうか。
+ *  アンサンブルメンバーの粒子を指す statistic である。 */
+bool IsEnsembleMemberStatistic( const std::string& statistic )
+{
+    static const char tag[] = "member:";
+    if ( statistic.rfind( tag, 0 ) != 0 ) return false;
+    const std::string id = statistic.substr( sizeof( tag ) - 1 );
+    if ( id.empty() ) return false;
+    return std::all_of( id.begin(), id.end(),
+        []( unsigned char c ) { return std::isdigit( c ) != 0; } );
 }
+
+std::string NormalizeStatisticName( const std::string& statistic )
+{
+    const auto first = std::find_if_not( statistic.begin(), statistic.end(),
+        []( unsigned char c ) { return std::isspace( c ) != 0; } );
+    const auto last = std::find_if_not( statistic.rbegin(), statistic.rend(),
+        []( unsigned char c ) { return std::isspace( c ) != 0; } ).base();
+    if ( first >= last ) return {};
+
+    std::string normalized( first, last );
+    std::transform( normalized.begin(), normalized.end(), normalized.begin(),
+        []( unsigned char c ) { return static_cast<char>( std::tolower( c ) ); } );
+
+    /*  "member:N" は統計量名ではなくメンバー指定なので、正規化せず素通しする。
+     *  ここで潰すと受信側（EnsembleStatisticsParameter の処理）で
+     *  statistic が採用されず、メンバーを切り替えても表示が変わらない。 */
+    if ( IsEnsembleMemberStatistic( normalized ) ) return normalized;
+
+    if ( normalized == "average" || normalized == "avg" || normalized == "mean" )
+        return "mean";
+    if ( normalized == "variance" ) return "variance";
+    if ( normalized == "cv" || normalized == "cov" ||
+         normalized == "coefficient_variation" ||
+         normalized == "coefficient of variation" ||
+         normalized == "coefficient-of-variation" )
+        return "cv";
+    return {};
+}
+
+std::vector<EnsembleTransferFunction>* StatisticTransferFunctionArray(
+    ParticleProperty& particle_property,
+    const std::string& statistic )
+{
+    const std::string normalized = NormalizeStatisticName( statistic );
+    /*  メンバー個別の伝達関数は持たないため、平均用の伝達関数で描く。
+     *  値域もメンバー間で大きく変わらない想定である。 */
+    if ( IsEnsembleMemberStatistic( normalized ) )
+        return &particle_property.m_mean_transfer_function_array;
+    if ( normalized == "mean" ) return &particle_property.m_mean_transfer_function_array;
+    if ( normalized == "variance" ) return &particle_property.m_variance_transfer_function_array;
+    if ( normalized == "cv" ) return &particle_property.m_coefficient_of_variation_transfer_function_array;
+    return nullptr;
+}
+
+int HistogramSum( const vismodule::UInt64* histogram )
+{
+    int sum = 0;
+    if ( histogram == nullptr ) return sum;
+    for ( int i = 0; i < DEFAULT_NBINS; ++i )
+    {
+        sum += static_cast<int>( histogram[i] );
+    }
+    return sum;
+}
+
+int RangeModeValue( const EnsembleTransferFunction::ServerRangeMode mode )
+{
+    return static_cast<int>( mode );
+}
+
+int RangeModeValue( const NamedTransferFunction::ServerRangeMode mode )
+{
+    return static_cast<int>( mode );
+}
+
+double RoundToEightDecimalPlaces( const double value )
+{
+    constexpr double scale = 100000000.0;
+    return std::round( value * scale ) / scale;
+}
+
+void LogRangeModeMismatch(
+    const NamedTransferFunction& tf,
+    const std::string& statistic )
+{
+    if ( tf.m_server_color_range_mode == tf.m_server_opacity_range_mode ) return;
+
+    std::cout << "[Server][EnsembleStatisticsParameter] statistic=" << statistic
+              << " color/opacity range mode mismatch. Use color range mode."
+              << " color=" << RangeModeValue( tf.m_server_color_range_mode )
+              << " opacity=" << RangeModeValue( tf.m_server_opacity_range_mode )
+              << std::endl;
+}
+
+void LogRangeMismatch(
+    const std::string& statistic,
+    const char* range_name,
+    const double color_min,
+    const double color_max,
+    const double opacity_min,
+    const double opacity_max )
+{
+    if ( color_min == opacity_min && color_max == opacity_max ) return;
+
+    std::cout << "[Server][EnsembleStatisticsParameter] statistic=" << statistic
+              << " color/opacity " << range_name << " range mismatch. Use color range."
+              << " color=[" << color_min << ", " << color_max << "]"
+              << " opacity=[" << opacity_min << ", " << opacity_max << "]"
+              << std::endl;
+}
+
+nlohmann::json ColorMapJson( const vismodule::ColorMap& color_map )
+{
+    nlohmann::json map = nlohmann::json::array();
+    const auto& table = color_map.table();
+    for ( size_t i = 0; i + 2 < table.size(); i += 3 )
+    {
+        nlohmann::json rgb = nlohmann::json::array();
+        rgb.push_back( static_cast<int>( table[i] ) );
+        rgb.push_back( static_cast<int>( table[i + 1] ) );
+        rgb.push_back( static_cast<int>( table[i + 2] ) );
+        map.push_back( std::move( rgb ) );
+    }
+    return map;
+}
+
+nlohmann::json OpacityMapJson( const vismodule::OpacityMap& opacity_map )
+{
+    nlohmann::json map = nlohmann::json::array();
+    const auto& table = opacity_map.table();
+    for ( size_t i = 0; i < table.size(); ++i )
+    {
+        map.push_back( static_cast<float>( table[i] ) );
+    }
+    return map;
+}
+
+void DebugStatisticTransferFunctionArray(
+    const std::string& statistic,
+    const std::vector<EnsembleTransferFunction>& transfer_functions )
+{
+    std::cout << "[Server][EnsembleStatisticsParameter][debug] statistic=" << statistic
+              << ", transfer_functions.size=" << transfer_functions.size() << std::endl;
+    if ( transfer_functions.empty() )
+    {
+        std::cout << "[Server][EnsembleStatisticsParameter][debug] statistic=" << statistic
+                  << " has no transfer functions. No patches can be generated." << std::endl;
+        return;
+    }
+
+    for ( size_t i = 0; i < transfer_functions.size(); ++i )
+    {
+        const EnsembleTransferFunction& tf = transfer_functions[i];
+        std::cout << "[Server][EnsembleStatisticsParameter][debug]"
+                  << " statistic=" << statistic
+                  << " index=" << i
+                  << " bins=" << DEFAULT_NBINS
+                  << " sum=" << HistogramSum( tf.opacityHistogram() )
+                  << " range=[" << tf.serverMinValue()
+                  << ", " << tf.serverMaxValue() << "]"
+                  << std::endl;
+    }
+}
+
+void AppendStatisticTransferFunctionPatches(
+    nlohmann::json& data,
+    const std::string& statistic,
+    const std::vector<EnsembleTransferFunction>& transfer_functions,
+    const bool include_history )
+{
+    for ( size_t i = 0; i < transfer_functions.size(); ++i )
+    {
+        if ( i != 0 )
+        {
+            std::cout << "[Server][EnsembleStatisticsParameter] skip statistic=" << statistic
+                      << ", index=" << i << ", reason=unsupported index" << std::endl;
+            continue;
+        }
+
+        const EnsembleTransferFunction& tf = transfer_functions[i];
+        const double server_min = tf.serverMinValue();
+        const double server_max = tf.serverMaxValue();
+        const double user_min = tf.userMinValue();
+        const double user_max = tf.userMaxValue();
+
+        if ( include_history && ( !std::isfinite( server_min ) || !std::isfinite( server_max ) ) )
+        {
+            std::cout << "[Server][EnsembleStatisticsParameter] skip statistic=" << statistic
+                      << ", index=" << i << ", reason=non-finite range" << std::endl;
+            continue;
+        }
+        if ( include_history && server_min > server_max )
+        {
+            std::cout << "[Server][EnsembleStatisticsParameter] skip statistic=" << statistic
+                      << ", index=" << i << ", reason=min > max" << std::endl;
+            continue;
+        }
+
+        nlohmann::json patch;
+        patch[Protocol::Key::Statistic] = statistic;
+        patch[Protocol::Key::EnsembleVariable] = tf.m_variable;
+        patch[Protocol::Key::EnsembleUserRangeMode] = RangeModeValue( tf.m_server_range_mode );
+        patch[Protocol::Key::EnsembleUserRangeMin] = user_min;
+        patch[Protocol::Key::EnsembleUserRangeMax] = user_max;
+        patch[Protocol::Key::EnsembleColorMap] = ColorMapJson( tf.colorMap() );
+        patch[Protocol::Key::EnsembleOpacityMap] = OpacityMapJson( tf.opacityMap() );
+
+        if ( include_history )
+        {
+            patch[Protocol::Key::EnsembleServerRangeMin] = RoundToEightDecimalPlaces( server_min );
+            patch[Protocol::Key::EnsembleServerRangeMax] = RoundToEightDecimalPlaces( server_max );
+
+            nlohmann::json opacity_histogram = nlohmann::json::array();
+            const vismodule::UInt64* opacity_hist = tf.opacityHistogram();
+            for ( int j = 0; j < DEFAULT_NBINS; ++j )
+            {
+                opacity_histogram.push_back( static_cast<int>( opacity_hist[j] ) );
+            }
+            patch[Protocol::Key::EnsembleHistogram] = std::move( opacity_histogram );
+        }
+
+        data.push_back( std::move( patch ) );
+    }
+}
+
+nlohmann::json BuildEnsembleStatisticsParameter(
+    const ParticleProperty& particle_property,
+    const std::string& statistic,
+    const bool include_history = true )
+{
+    nlohmann::json data = nlohmann::json::array();
+    if ( include_history )
+    {
+        DebugStatisticTransferFunctionArray(
+            "average",
+            particle_property.m_mean_transfer_function_array );
+    }
+    AppendStatisticTransferFunctionPatches(
+        data,
+        "average",
+        particle_property.m_mean_transfer_function_array,
+        include_history );
+    if ( include_history )
+    {
+        DebugStatisticTransferFunctionArray(
+            "variance",
+            particle_property.m_variance_transfer_function_array );
+    }
+    AppendStatisticTransferFunctionPatches(
+        data,
+        "variance",
+        particle_property.m_variance_transfer_function_array,
+        include_history );
+    if ( include_history )
+    {
+        DebugStatisticTransferFunctionArray(
+            "cv",
+            particle_property.m_coefficient_of_variation_transfer_function_array );
+    }
+    AppendStatisticTransferFunctionPatches(
+        data,
+        "cv",
+        particle_property.m_coefficient_of_variation_transfer_function_array,
+        include_history );
+
+    const std::string normalized_statistic = NormalizeStatisticName( statistic );
+    std::string client_statistic = "average";
+    if ( IsEnsembleMemberStatistic( normalized_statistic ) )
+    {
+        /*  メンバー指定はそのまま返す。クライアントが選択状態を復元できるようにする。 */
+        client_statistic = normalized_statistic;
+    }
+    else if ( normalized_statistic == "variance" )
+    {
+        client_statistic = "variance";
+    }
+    else if ( normalized_statistic == "cv" )
+    {
+        client_statistic = "cv";
+    }
+
+    nlohmann::json msg;
+    msg[Protocol::Key::Event] = Protocol::Events::EnsembleStatisticsParameter;
+    msg[Protocol::Key::Statistic] = client_statistic;
+    // 常用対数モードの現在値。接続直後のクライアントがチェックボックスを復元できるよう
+    // root レベルで送る（クライアント→サーバの LogScaleStatistics と同じキー）。
+    msg[Protocol::Key::LogScaleStatistics] = particle_property.m_log_scale_statistics;
+    // アンサンブルメンバー数。クライアントが Member 選択肢を作るのに使う。
+    msg[Protocol::Key::NumEnsemble] = particle_property.m_num_ensemble;
+    // メンバー粒子出力の現在値。接続直後のクライアントがチェックボックスを復元できるよう
+    // root レベルで送る（クライアント→サーバの MemberOutput と同じキー）。
+    msg[Protocol::Key::MemberOutput] = particle_property.m_member_output_enabled;
+    msg[Protocol::Key::Data] = std::move( data );
+    return msg;
+}
+
+void ApplyTransferFunctionPatch( EnsembleTransferFunction& tf, const nlohmann::json& patch )
+{
+    bool range_changed = false;
+    bool color_map_changed = false;
+    bool opacity_map_changed = false;
+
+    if ( patch.contains( Protocol::Key::EnsembleVariable ) )
+    {
+        tf.m_variable = patch[Protocol::Key::EnsembleVariable].get<std::string>();
+    }
+    if ( patch.contains( Protocol::Key::EnsembleUserRangeMode ) )
+    {
+        tf.m_server_range_mode =
+            static_cast<EnsembleTransferFunction::ServerRangeMode>(
+                patch[Protocol::Key::EnsembleUserRangeMode].get<int>() );
+        range_changed = true;
+    }
+    if ( patch.contains( Protocol::Key::EnsembleUserRangeMin ) )
+    {
+        tf.m_user_variable_min = patch[Protocol::Key::EnsembleUserRangeMin].get<double>();
+        range_changed = true;
+    }
+    if ( patch.contains( Protocol::Key::EnsembleUserRangeMax ) )
+    {
+        tf.m_user_variable_max = patch[Protocol::Key::EnsembleUserRangeMax].get<double>();
+        range_changed = true;
+    }
+    if ( patch.contains( Protocol::Key::EnsembleColorMap ) && patch[Protocol::Key::EnsembleColorMap].is_array() )
+    {
+        std::vector<vismodule::UInt8> c_table;
+        c_table.reserve( 256 * 3 );
+        for ( const auto& rgbArr : patch[Protocol::Key::EnsembleColorMap] )
+        {
+            if ( rgbArr.is_array() && rgbArr.size() == 3 )
+            {
+                c_table.push_back( static_cast<vismodule::UInt8>( rgbArr[0].get<int>() ) );
+                c_table.push_back( static_cast<vismodule::UInt8>( rgbArr[1].get<int>() ) );
+                c_table.push_back( static_cast<vismodule::UInt8>( rgbArr[2].get<int>() ) );
+            }
+        }
+        vismodule::ValueArray<vismodule::UInt8> cc_table( c_table );
+        vismodule::ColorMap color_map( cc_table );
+        if ( tf.m_server_range_mode == EnsembleTransferFunction::ServerRangeMode::UserRange )
+        {
+            color_map.setRange( tf.m_user_variable_min, tf.m_user_variable_max );
+        }
+        else if ( tf.m_server_range_mode == EnsembleTransferFunction::ServerRangeMode::ServerSide )
+        {
+            color_map.setRange( tf.m_server_variable_min, tf.m_server_variable_max );
+        }
+        tf.setColorMap( color_map );
+        color_map_changed = true;
+    }
+    if ( range_changed && !color_map_changed )
+    {
+        auto color_map = tf.colorMap();
+        if ( tf.m_server_range_mode == EnsembleTransferFunction::ServerRangeMode::UserRange )
+        {
+            color_map.setRange( tf.m_user_variable_min, tf.m_user_variable_max );
+        }
+        else if ( tf.m_server_range_mode == EnsembleTransferFunction::ServerRangeMode::ServerSide )
+        {
+            color_map.setRange( tf.m_server_variable_min, tf.m_server_variable_max );
+        }
+        tf.setColorMap( color_map );
+    }
+
+    if ( patch.contains( Protocol::Key::EnsembleOpacityMap ) && patch[Protocol::Key::EnsembleOpacityMap].is_array() )
+    {
+        std::vector<float> o_table;
+        o_table.reserve( 256 );
+        for ( const auto& v : patch[Protocol::Key::EnsembleOpacityMap] ) o_table.push_back( v.get<float>() );
+        vismodule::ValueArray<float> oo_table( o_table );
+        vismodule::OpacityMap opacity_map( oo_table );
+        if ( tf.m_server_range_mode == EnsembleTransferFunction::ServerRangeMode::UserRange )
+        {
+            opacity_map.setRange( tf.m_user_variable_min, tf.m_user_variable_max );
+        }
+        else if ( tf.m_server_range_mode == EnsembleTransferFunction::ServerRangeMode::ServerSide )
+        {
+            opacity_map.setRange( tf.m_server_variable_min, tf.m_server_variable_max );
+        }
+        tf.setOpacityMap( opacity_map );
+        opacity_map_changed = true;
+    }
+    if ( range_changed && !opacity_map_changed )
+    {
+        auto opacity_map = tf.opacityMap();
+        if ( tf.m_server_range_mode == EnsembleTransferFunction::ServerRangeMode::UserRange )
+        {
+            opacity_map.setRange( tf.m_user_variable_min, tf.m_user_variable_max );
+        }
+        else if ( tf.m_server_range_mode == EnsembleTransferFunction::ServerRangeMode::ServerSide )
+        {
+            opacity_map.setRange( tf.m_server_variable_min, tf.m_server_variable_max );
+        }
+        tf.setOpacityMap( opacity_map );
+}
+}
+
+} // namespace
 
 Server::Server(int port)
     : m_port(port)
@@ -136,7 +538,7 @@ Server::Server(int port)
                 onMessage(ws, message, opCode);
             },
             .dropped = [](uWS::WebSocket<false, true, PerSocket>* ws, std::string_view, uWS::OpCode) { std::cout << "[Server-text] dropped" << std::endl; },
-            .drain = [](uWS::WebSocket<false, true, PerSocket>* ws) { std::cout << "[Server-text] drain" << std::endl; },
+            .drain = [this](uWS::WebSocket<false, true, PerSocket>* ws) { flushPOTSnapshot(ws); },
             .ping = [](uWS::WebSocket<false, true, PerSocket>* ws, std::string_view) { std::cout << "[Server-text] ping" << std::endl; },
             .pong = [](uWS::WebSocket<false, true, PerSocket>* ws, std::string_view) { std::cout << "[Server-text] pong" << std::endl; },
             .close = [this](uWS::WebSocket<false, true, PerSocket>* ws, int code, std::string_view message)
@@ -170,11 +572,18 @@ Server::~Server()
     {
         m_plot_over_time_sender_thread.join();
     }
+
+    reset();
 }
 
 void Server::reset()
 {
     if( !m_objects ) { return; }
+
+    for( auto& info : *m_objects )
+    {
+        ServerObjectUtils::DestroyObject( info );
+    }
 
     m_objects->clear();
     m_objects->shrink_to_fit();
@@ -182,7 +591,7 @@ void Server::reset()
     // FIXME:以下In-Situモードのみ
     // FIXME:"Waiting for simulation object generation "でている間にresetが機能しない。
     // FIXME:LastStepMonitorLoopを止める必要がある
-    std::cout << "[Server] reset(): cleared all objects" << std::endl;
+    std::cout << "[Server] reset(): destroyed and cleared all objects" << std::endl;
 }
 
 void Server::onUpgrade(uWS::HttpResponse<SSL>* res, uWS::HttpRequest* req, struct us_socket_context_t* context, SocketType socketType)
@@ -250,7 +659,13 @@ void Server::onOpen(uWS::WebSocket<false, true, PerSocket>* ws, SocketType socke
     if (!ps || !ps->state) return;
 
     if (socketType == SocketType::Binary) { ps->state->binary_ws = ws; }
-    if (socketType == SocketType::Text) { ps->state->text_ws = ws; }
+    if (socketType == SocketType::Text)
+    {
+        ps->state->text_ws = ws;
+        if ( !m_pot_dataset_id.empty() &&
+             ws->send( potSnapshot().dump(), uWS::OpCode::TEXT ) == uWS::WebSocket<false, true, PerSocket>::DROPPED )
+            ps->state->pot_snapshot_pending = true;
+    }
 
     if (socketType == SocketType::Text)
     {
@@ -273,7 +688,18 @@ void Server::onOpen(uWS::WebSocket<false, true, PerSocket>* ws, SocketType socke
 void Server::onMessage(uWS::WebSocket<false, true, PerSocket>* ws, std::string_view msg, uWS::OpCode)
 {
     auto received = nlohmann::json::parse(msg);
+    auto state = ws->getUserData()->state;
+    // Dispatch incoming messages FIFO on this same loop thread, outside uWS's
+    // automatically corked receive callback. This lets long synchronous CS work
+    // send each POT sample immediately. No MPI thread or POT task queue is used.
+    m_u_web_sockets.getLoop()->defer([this, ws, state, received = std::move(received)]() {
+        if ( state && ( state->text_ws == ws || state->binary_ws == ws ) )
+            dispatchMessage( ws, received );
+    });
+}
 
+void Server::dispatchMessage(uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received)
+{
     if (received.contains(Protocol::Key::Event))
     {
         const std::string event = received[Protocol::Key::Event].get<std::string>();
@@ -292,6 +718,8 @@ void Server::onMessage(uWS::WebSocket<false, true, PerSocket>* ws, std::string_v
         else if (event == Protocol::Events::PlotOverLineParameter)         receivePlotOverLineParameter(ws, received);
         else if (event == Protocol::Events::PlotOverTimeParameter)         receivePlotOverTimeParameter(ws, received);
         else if (event == Protocol::Events::TransferFunctionParameter)     receiveTransferFunctionParameter(ws, received);
+        else if (event == Protocol::Events::EnsembleStatisticsParameter)   receiveEnsembleStatisticsParameter(ws, received);
+        else if (event == Protocol::Events::RepetitionLevelParameter)      receiveRepetitionLevelParameter(ws, received);
         else if (event == "fileList")                                      fileList(ws, received);
         else if (event == Protocol::Events::SelectedFile)                  selectedFile(ws, received);
         else if (event == Protocol::Events::ObjectDelete)                  receiveObjectDelete(ws, received);        
@@ -788,36 +1216,25 @@ void Server::initialize(uWS::WebSocket<false, true, PerSocket>* ws, const nlohma
         *m_glyph_property = candidate_glyph_property;
         *m_pol_property = candidate_pol_property;
         m_server_mode = ServerMode::CS;
+
+        SetDefaultPOTParameter(*m_pot_property);
+
+        // 同じパスでも、新しいデータセットとして観測状態を初期化する。
+        m_pot_dataset_id = pointObjectUUID;
+        m_pot_observation = nullptr;
+        m_pot_samples = nlohmann::json::array();
+        m_pot_state = "idle";
     }
     else if (pointObjectFormat == ObjectInfoExtractor::Format::InsituServerPointObject)
     {
         m_server_mode = ServerMode::IS;
+        m_pot_dataset_id.clear();
+        m_pot_observation = nullptr;
+        m_pot_samples = nlohmann::json::array();
+        m_pot_state = "idle";
 
         ParticleMonitor particleMonitor;
         particleMonitor.check();
-
-        std::string tfFilePath_old;
-        std::string visParamDir;
-        std::string tfFilename;
-        const char *envBuf = NULL;
-        envBuf = std::getenv( "VIS_PARAM_DIR" );
-        if (envBuf == NULL) {
-            visParamDir = "./";
-        }
-        else {
-            visParamDir = envBuf;
-            if (visParamDir[visParamDir.size() - 1] != '/') {
-                visParamDir += "/";
-            }
-        }
-        envBuf = std::getenv( "TF_NAME" );
-        if (envBuf == NULL) {
-            tfFilename = "default";
-        }
-        else {
-            tfFilename = envBuf;
-        }
-        tfFilePath_old = visParamDir + tfFilename + "_old.tf";     
 
         int counter = 0;
 
@@ -831,10 +1248,14 @@ void Server::initialize(uWS::WebSocket<false, true, PerSocket>* ws, const nlohma
             counter++;
         }
 
-        SetDefaultParticleParameterIS(
+        if ( !SetDefaultParticleParameterIS(
             *m_particle_property,
             *m_multi_volume_property_list
-        );
+        ) )
+        {
+            std::cerr << "ERROR:Failed to initialize IS particle parameters." << std::endl;
+            return;
+        }
 
         switch( samplingType )
         {
@@ -851,15 +1272,8 @@ void Server::initialize(uWS::WebSocket<false, true, PerSocket>* ws, const nlohma
             break;
         }
 
-        std::ifstream tfFileOld( tfFilePath_old );
-
-        // default_old.tfが存在する場合のみdefault.tfを出力する
-        if ( tfFileOld.good() )
-        {
-            ParameterFileWriter ppw;
-            ppw.getParticleParameter(*m_particle_property);
-            ppw.writeParticleParameterFile();
-        }
+        ParameterFileWriter ppw;
+        ppw.writeTF2Json(*m_particle_property);
 
         InitialStepIS(
             m_multi_volume_property_list->m_total_start_steps,
@@ -930,6 +1344,7 @@ void Server::initialize(uWS::WebSocket<false, true, PerSocket>* ws, const nlohma
         // サーバポイントオブジェクト(ClientServer/In-Situ共通)
         objectInfo.tmpParticleLimit = m_particle_property->m_particle_limit;
         objectInfo.particleLimit    = m_particle_property->m_particle_limit;
+        objectInfo.isEnsemble       = ( m_server_mode == ServerMode::IS ) ? m_particle_property->m_is_ensemble : false;
         objectInfo.tmpExtraOpacityFactor = 1.0;
         objectInfo.extraOpacityFactor    = 1.0;
 
@@ -981,6 +1396,7 @@ void Server::initialize(uWS::WebSocket<false, true, PerSocket>* ws, const nlohma
         // サーバポイントオブジェクト(ClientServer/In-Situ共通)
         msg[Protocol::Key::TmpParticleLimit] = objectInfo.tmpParticleLimit;
         msg[Protocol::Key::ParticleLimit] = objectInfo.particleLimit;
+        msg[Protocol::Key::IsEnsemble] = objectInfo.isEnsemble;
         // msg[Protocol::Key::TmpExtraOpacityFactor] = objectInfo.tmpExtraOpacityFactor;
         // msg[Protocol::Key::ExtraOpacityFactor]    = objectInfo.extraOpacityFactor;
 
@@ -1268,9 +1684,30 @@ void Server::initialize(uWS::WebSocket<false, true, PerSocket>* ws, const nlohma
     nlohmann::json plotOverTimeParameter;
     plotOverTimeParameter[Protocol::Key::Enable] = m_pot_property->m_plot_flag;
     plotOverTimeParameter[Protocol::Key::Coords] = m_pot_property->m_target_point;
+    if ( m_server_mode == ServerMode::CS ) plotOverTimeParameter = potSnapshot();
     msg[Protocol::Key::PlotOverTimeParameter] = std::move(plotOverTimeParameter);
-    
+
+    if (m_server_mode == ServerMode::IS)
+    {
+        msg[Protocol::Key::RepeatLevel] = static_cast<int>(m_particle_property->m_repeat_level);
+    }
+
     m_u_web_sockets.publish(k_text_topic, msg.dump(), uWS::OpCode::TEXT);
+
+    if ( m_server_mode == ServerMode::IS )
+    {
+        nlohmann::json ensembleStatisticsParameter =
+            BuildEnsembleStatisticsParameter( *m_particle_property, m_current_ensemble_statistic );
+        size_t data_size = 0;
+        if ( ensembleStatisticsParameter.contains( Protocol::Key::Data ) &&
+             ensembleStatisticsParameter.at( Protocol::Key::Data ).is_array() )
+        {
+            data_size = ensembleStatisticsParameter.at( Protocol::Key::Data ).size();
+        }
+        std::cout << "[Server][EnsembleStatisticsParameter] initialize publish patches="
+                  << data_size << std::endl;
+        m_u_web_sockets.publish( k_text_topic, ensembleStatisticsParameter.dump(), uWS::OpCode::TEXT );
+    }
 
     // ISの場合state.txtを監視しLAST_STEPが更新されたらクライアントにLAST_STEPを送信するスレッドを起動する
     if (m_server_mode == ServerMode::IS)
@@ -1306,15 +1743,27 @@ void Server::requestDataAt(uWS::WebSocket<false, true, PerSocket>* ws, const nlo
     const auto& maxJson = received.at(Protocol::Key::ResultMaxObjectCoords);
     kvs::Vec3 minObjectCoords(minJson[0].get<float>(), minJson[1].get<float>(), minJson[2].get<float>());
     kvs::Vec3 maxObjectCoords(maxJson[0].get<float>(), maxJson[1].get<float>(), maxJson[2].get<float>());
+    const bool is_ensemble_request =
+        m_server_mode == ServerMode::IS && m_particle_property && m_particle_property->m_is_ensemble;
+    const std::string statistic = is_ensemble_request ? m_current_ensemble_statistic : "normal";
+    std::cout << "[Server][RequestDataAt] received timestep=" << timeStep
+              << ", statistic=" << statistic
+              << ", mode=" << ( m_server_mode == ServerMode::IS ? "IS" : "CS" )
+              << ", objects=" << ( m_objects ? m_objects->size() : 0 )
+              << std::endl;
 
-    Worker worker(timeStep, m_objects, minObjectCoords, maxObjectCoords, m_server_mode, m_particle_property, m_glyph_property, m_pol_property, m_multi_volume_property_list);
-    worker.setDoneCallBack([this, ws, timeStep]() {
+    Worker worker(timeStep, m_objects, minObjectCoords, maxObjectCoords, m_server_mode, m_particle_property, m_glyph_property, m_pol_property, m_multi_volume_property_list, statistic);
+    worker.setDoneCallBack([this, ws, timeStep, is_ensemble_request]() {
         std::vector<char> buffer = pack(timeStep);
+        std::cout << "[Server][RequestDataAt] packed bytes=" << buffer.size()
+                  << ", timestep=" << timeStep << std::endl;
 
         // バイナリ送信
         m_u_web_sockets.getLoop()->defer([buffer, this]() {
-            std::cout << "[Server] publish UUID + PointObjects..." << std::endl;
-            m_u_web_sockets.publish(k_binary_topic, std::string_view(buffer.data(), buffer.size()), uWS::OpCode::BINARY);
+            std::cout << "[Server][Binary] publish UUID + PointObjects bytes=" << buffer.size() << std::endl;
+            const bool published =
+                m_u_web_sockets.publish(k_binary_topic, std::string_view(buffer.data(), buffer.size()), uWS::OpCode::BINARY);
+            std::cout << "[Server][Binary] publish result=" << published << std::endl;
         });
 
         nlohmann::json msg;
@@ -1369,7 +1818,7 @@ void Server::requestDataAt(uWS::WebSocket<false, true, PerSocket>* ws, const nlo
 
             if (kvsml_object_pol && isSendEnabled)
             {
-                const size_t resolution = kvsml_object_pol->values_on_line().size();
+                const std::size_t resolution = kvsml_object_pol->values_on_line().size();
 
                 std::vector<float>   valuesOnLine(resolution);
                 std::vector<float>   xAxis(resolution);
@@ -1394,8 +1843,16 @@ void Server::requestDataAt(uWS::WebSocket<false, true, PerSocket>* ws, const nlo
             }
         }
 
+        // Always evaluate POT after the POL position, including when POL is off.
+        // This call runs the entire time range before another generation can start.
+        if ( m_server_mode == ServerMode::CS ) generatePOTCS();
+
         // Transfer Function
         ParticleProperty* tmpParticleProperty = nullptr;
+        bool step_transfer_function_available = true;
+        bool step_ensemble_transfer_function_available = true;
+        bool transfer_function_history_available = true;
+        bool ensemble_history_available = true;
 
         if (m_server_mode == ServerMode::CS)
         {
@@ -1410,7 +1867,7 @@ void Server::requestDataAt(uWS::WebSocket<false, true, PerSocket>* ws, const nlo
 
             const char *envBuf = NULL;
             std::string visParamDir;
-            std::string tfFilePath;
+            std::string tfJsonPath;
 
             envBuf = std::getenv("VIS_PARAM_DIR");
 
@@ -1424,7 +1881,7 @@ void Server::requestDataAt(uWS::WebSocket<false, true, PerSocket>* ws, const nlo
                 }
             }
 
-            tfFilePath = visParamDir;
+            tfJsonPath = visParamDir;
 
             envBuf = std::getenv("TF_NAME");
 
@@ -1432,26 +1889,33 @@ void Server::requestDataAt(uWS::WebSocket<false, true, PerSocket>* ws, const nlo
             step << '_' << std::setw( 5 ) << std::setfill( '0' ) << timeStep;
 
             if (envBuf == NULL) {
-                tfFilePath     += "default" + step.str() + ".tf";
+                tfJsonPath     += "default" + step.str() + ".json";
             }
             else {
-                tfFilePath     += envBuf;
-                tfFilePath     += step.str() + ".tf";
+                tfJsonPath     += envBuf;
+                tfJsonPath     += step.str() + ".json";
             }
 
-            std::ifstream tfFile( tfFilePath.c_str() );
+            std::cout << "[Server][RequestDataAt][TF] read path=" << tfJsonPath
+                      << ", exists=" << std::filesystem::exists( tfJsonPath )
+                      << std::endl;
 
-            if ( tfFile.good() )
-            {
-                ParameterFileReader ppr;
-                ppr.readParticleParameterFile(tfFilePath.c_str());
-                ppr.setParticleParameter(*tmpParticleProperty);
-            }
-            else
+            ParameterFileReader ppr;
+            step_transfer_function_available =
+                ppr.readTransferFunctionFromJson(tfJsonPath.c_str(), *tmpParticleProperty);
+            step_ensemble_transfer_function_available =
+                step_transfer_function_available &&
+                !tmpParticleProperty->m_mean_transfer_function_array.empty() &&
+                !tmpParticleProperty->m_variance_transfer_function_array.empty() &&
+                !tmpParticleProperty->m_coefficient_of_variation_transfer_function_array.empty();
+            if ( !step_transfer_function_available )
             {
                 std::cout << "================================================================" << std::endl;
-                std::cout << "[WARN] Step particle parameter file does not exist." << std::endl;
-                std::cout << "[WARN] File: " << tfFilePath << std::endl;
+                std::cout << "[WARN] Failed to load step transfer function json."
+                          << " timestep=" << timeStep
+                          << " path=" << tfJsonPath
+                          << " reason=read failed; particles will be sent without Ensemble Transfer Function"
+                          << std::endl;
                 std::cout << "[INFO] VIS_PARAM_DIR = " << EnvValueOrUnset( "VIS_PARAM_DIR" ) << std::endl;
                 std::cout << "[INFO] PARTICLE_DIR  = " << EnvValueOrUnset( "PARTICLE_DIR" ) << std::endl;
                 std::cout << "[INFO] Set default particle parameters." << std::endl;
@@ -1463,18 +1927,32 @@ void Server::requestDataAt(uWS::WebSocket<false, true, PerSocket>* ws, const nlo
                     static_cast<int>( m_particle_property->m_transfunc_array.size() )
                 );
             }
-
-            const int tfNumber = tmpParticleProperty->m_transfunc_array.size();
-
-            for (size_t i = 0; i < tfNumber; ++i)
+            else if ( is_ensemble_request && !step_ensemble_transfer_function_available )
             {
-                // m_particle_propertyのヒストグラムをtmpParticlePropertyにコピーする
-                vismodule::UInt64* fromColorPointer   = m_particle_property->m_transfunc_array[i].m_color_histogram;
-                vismodule::UInt64* toColorPointer     = tmpParticleProperty->m_transfunc_array[i].m_color_histogram;
-                vismodule::UInt64* fromOpacityPointer = m_particle_property->m_transfunc_array[i].m_opacity_histogram;
-                vismodule::UInt64* toOpacityPointer   = tmpParticleProperty->m_transfunc_array[i].m_opacity_histogram;
-                std::copy( fromColorPointer, fromColorPointer + DEFAULT_NBINS, toColorPointer );
-                std::copy( fromOpacityPointer, fromOpacityPointer + DEFAULT_NBINS, toOpacityPointer );
+                std::cerr << "[Server][RequestDataAt][EnsembleTF][WARN]"
+                          << " timestep=" << timeStep
+                          << " path=" << tfJsonPath
+                          << " reason=ensemble transfer-function sections are missing or empty;"
+                          << " particles will be sent without Ensemble Transfer Function"
+                          << std::endl;
+            }
+
+            const ParticleHistoryUpdateResult history_result =
+                UpdateParticlePropertyFromHistoryIS( timeStep, *tmpParticleProperty );
+            transfer_function_history_available = history_result.succeeded;
+            ensemble_history_available = history_result.ensemble_statistics_available;
+            if ( !history_result.succeeded ||
+                 ( is_ensemble_request && !ensemble_history_available ) )
+            {
+                std::cerr << "[Server][ParticleHistory][WARN]"
+                          << " timestep=" << timeStep
+                          << " path=" << history_result.file_path
+                          << " reason=" << history_result.error_message;
+                if ( is_ensemble_request )
+                {
+                    std::cerr << "; particles will be sent without Server Side MinMax and histogram";
+                }
+                std::cerr << std::endl;
             }
         }
 
@@ -1490,8 +1968,11 @@ void Server::requestDataAt(uWS::WebSocket<false, true, PerSocket>* ws, const nlo
             tf[Protocol::Key::ColorRangeMode] = static_cast<std::uint8_t>(tmpParticleProperty->m_transfunc_array[i].m_server_color_range_mode);
             tf[Protocol::Key::ColorUserRangeMin] = tmpParticleProperty->m_transfunc_array[i].userColorMinValue();
             tf[Protocol::Key::ColorUserRangeMax] = tmpParticleProperty->m_transfunc_array[i].userColorMaxValue();
-            tf[Protocol::Key::ColorServerRangeMin] = tmpParticleProperty->m_transfunc_array[i].serverColorMinValue();
-            tf[Protocol::Key::ColorServerRangeMax] = tmpParticleProperty->m_transfunc_array[i].serverColorMaxValue();
+            if ( transfer_function_history_available )
+            {
+                tf[Protocol::Key::ColorServerRangeMin] = tmpParticleProperty->m_transfunc_array[i].serverColorMinValue();
+                tf[Protocol::Key::ColorServerRangeMax] = tmpParticleProperty->m_transfunc_array[i].serverColorMaxValue();
+            }
 
             {
                 nlohmann::json color_map_json = nlohmann::json::array();
@@ -1510,6 +1991,7 @@ void Server::requestDataAt(uWS::WebSocket<false, true, PerSocket>* ws, const nlo
                 tf[Protocol::Key::ColorMap] = color_map_json;
             }
 
+            if ( transfer_function_history_available )
             {
                 nlohmann::json colorHistogramJson = nlohmann::json::array();
                 const vismodule::UInt64* hist = tmpParticleProperty->m_transfunc_array[i].colorHistogram();
@@ -1525,9 +2007,13 @@ void Server::requestDataAt(uWS::WebSocket<false, true, PerSocket>* ws, const nlo
             tf[Protocol::Key::OpacityRangeMode] = static_cast<std::uint8_t>(tmpParticleProperty->m_transfunc_array[i].m_server_opacity_range_mode);
             tf[Protocol::Key::OpacityUserRangeMin] = tmpParticleProperty->m_transfunc_array[i].userOpacityMinValue();
             tf[Protocol::Key::OpacityUserRangeMax] = tmpParticleProperty->m_transfunc_array[i].userOpacityMaxValue();
-            tf[Protocol::Key::OpacityServerRangeMin] = tmpParticleProperty->m_transfunc_array[i].serverOpacityMinValue();
-            tf[Protocol::Key::OpacityServerRangeMax] = tmpParticleProperty->m_transfunc_array[i].serverOpacityMaxValue();
+            if ( transfer_function_history_available )
+            {
+                tf[Protocol::Key::OpacityServerRangeMin] = tmpParticleProperty->m_transfunc_array[i].serverOpacityMinValue();
+                tf[Protocol::Key::OpacityServerRangeMax] = tmpParticleProperty->m_transfunc_array[i].serverOpacityMaxValue();
+            }
 
+            if ( transfer_function_history_available )
             {
                 nlohmann::json opacityHistogramJson = nlohmann::json::array();
                 const vismodule::UInt64* hist = tmpParticleProperty->m_transfunc_array[i].opacityHistogram();
@@ -1546,6 +2032,20 @@ void Server::requestDataAt(uWS::WebSocket<false, true, PerSocket>* ws, const nlo
         transferFunctionParameter[Protocol::Key::Data] = transferFunctions;
         msg[Protocol::Key::TransferFunctionParameter] = std::move(transferFunctionParameter);
 
+        if ( m_server_mode == ServerMode::IS &&
+             is_ensemble_request &&
+             step_ensemble_transfer_function_available )
+        {
+            nlohmann::json ensembleStatisticsParameter =
+                BuildEnsembleStatisticsParameter(
+                    *tmpParticleProperty,
+                    m_current_ensemble_statistic,
+                    ensemble_history_available );
+            ensembleStatisticsParameter.erase( std::string( Protocol::Key::Event ) );
+            ensembleStatisticsParameter.erase( std::string( Protocol::Key::Statistic ) );
+            msg[Protocol::Key::EnsembleTransferFunctionParameter] = std::move( ensembleStatisticsParameter );
+        }
+
         if (m_server_mode == ServerMode::IS)
         {
             delete tmpParticleProperty->m_camera;
@@ -1556,6 +2056,7 @@ void Server::requestDataAt(uWS::WebSocket<false, true, PerSocket>* ws, const nlo
         m_u_web_sockets.publish(k_text_topic, msg.dump(), uWS::OpCode::TEXT);
     });
     worker.process();
+    std::cout << "[Server][RequestDataAt] worker.process finished timestep=" << timeStep << std::endl;
 }
 
 void Server::receiveTimeStepControlParameter(uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received)
@@ -1806,39 +2307,9 @@ void Server::receiveObjectInfoParameter(uWS::WebSocket<false, true, PerSocket>* 
     }
     else // m_server_mode == ServerMode::IS
     {
-        std::string tfFilePath_old;
-        std::string visParamDir;
-        std::string tfFilename;
-        const char *envBuf = NULL;
-        envBuf = std::getenv( "VIS_PARAM_DIR" );
-        if (envBuf == NULL) {
-            visParamDir = "./";
-        }
-        else {
-            visParamDir = envBuf;
-            if (visParamDir[visParamDir.size() - 1] != '/') {
-                visParamDir += "/";
-            }
-        }
-        envBuf = std::getenv( "TF_NAME" );
-        if (envBuf == NULL) {
-            tfFilename = "default";
-        }
-        else {
-            tfFilename = envBuf;
-        }
-        tfFilePath_old = visParamDir + tfFilename + "_old.tf";
-
-        std::ifstream tfFileOld( tfFilePath_old );
-
-        // default_old.tfが存在する場合のみdefault.tfを出力する
-        if ( tfFileOld.good() )
-        {
-            // パラメータファイルに粒子パラメータを書き込む
-            ParameterFileWriter ppw;
-            ppw.getParticleParameter(*m_particle_property);
-            ppw.writeParticleParameterFile();
-        }
+        // パラメータJSONに粒子パラメータを書き込む
+        ParameterFileWriter ppw;
+        ppw.writeTF2Json(*m_particle_property);
     }
 
     ws->publish( k_text_topic, received.dump(), uWS::OpCode::TEXT );
@@ -1846,7 +2317,6 @@ void Server::receiveObjectInfoParameter(uWS::WebSocket<false, true, PerSocket>* 
 
 void Server::receiveServerSideSameTimeStepReplace( uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received )
 {
-    std::cout << __LINE__ << std::endl;
     if (received.contains(Protocol::Key::Objects) && received[Protocol::Key::Objects].is_array())
     {
         for (const auto& patch : received[Protocol::Key::Objects])
@@ -1945,6 +2415,14 @@ void Server::receivePlotOverTimeParameter(uWS::WebSocket<false, true, PerSocket>
 {
     // std::cout << "[Server] plot over time parameter" << std::endl;
 
+    if ( m_server_mode == ServerMode::CS && received.contains(Protocol::Key::Coords) )
+    {
+        const auto& coords = received.at(Protocol::Key::Coords);
+        if ( !coords.is_array() || coords.size() != 3 ) return;
+        for ( const auto& value : coords )
+            if ( !value.is_number() || !std::isfinite(value.get<float>()) ) return;
+    }
+
     if (received.contains(Protocol::Key::Enable))
     {
         m_pot_property->m_plot_flag = received.at(Protocol::Key::Enable).get<bool>();
@@ -1975,7 +2453,16 @@ void Server::receivePlotOverTimeParameter(uWS::WebSocket<false, true, PerSocket>
         ppw.writePlotOverTimeParameterFile();
     }
 
-    ws->publish( k_text_topic, received.dump(), uWS::OpCode::TEXT );
+    if ( m_server_mode == ServerMode::CS )
+    {
+        // Apply only stores settings. Comparing with the actual cached observation
+        // (not the presence of Coords) decides reuse on the next time update.
+        auto snapshot = potSnapshot();
+        if ( received.contains(Protocol::Key::ApplyId) )
+            snapshot[Protocol::Key::ApplyId] = received.at(Protocol::Key::ApplyId);
+        sendPOTMessage( snapshot );
+    }
+    else ws->publish( k_text_topic, received.dump(), uWS::OpCode::TEXT );
 }
 
 void Server::receiveTransferFunctionParameter(uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received)
@@ -2210,13 +2697,121 @@ void Server::receiveTransferFunctionParameter(uWS::WebSocket<false, true, PerSoc
     }
     else // m_server_mode == ServerMode::IS
     {
-        // パラメータファイルに粒子パラメータファイルを書き込む
+        // パラメータJSONに粒子パラメータを書き込む
         ParameterFileWriter ppw;
-        ppw.getParticleParameter(*m_particle_property);
-        ppw.writeParticleParameterFile();
+        ppw.writeTF2Json(*m_particle_property);
     }
 
     ws->publish( k_text_topic, received.dump(), uWS::OpCode::TEXT );
+}
+
+void Server::receiveEnsembleStatisticsParameter(uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received)
+{
+    if ( m_server_mode != ServerMode::IS )
+    {
+        std::cout << "[Server] EnsembleStatisticsParameter is ignored because server mode is not IS." << std::endl;
+        ws->publish( k_text_topic, received.dump(), uWS::OpCode::TEXT );
+        return;
+    }
+
+    if ( received.contains( Protocol::Key::Statistic ) && received.at( Protocol::Key::Statistic ).is_string() )
+    {
+        const std::string statistic =
+            NormalizeStatisticName( received.at( Protocol::Key::Statistic ).get<std::string>() );
+        // "member:N" は N 番目のアンサンブルメンバーの粒子を指す。
+        const bool is_member = IsEnsembleMemberStatistic( statistic );
+        if ( statistic == "mean" || statistic == "variance" || statistic == "cv" || is_member )
+        {
+            m_current_ensemble_statistic = statistic;
+        }
+        else
+        {
+            std::cout << "[Server][EnsembleStatisticsParameter] keep current statistic. unknown statistic="
+                      << statistic << std::endl;
+        }
+    }
+
+    // 常用対数モード。平均と分散をまとめて log10 にする実装(ApplyLog10ToMeanVariance)なので、
+    // 統計量ごとの Data ではなく root レベルで受ける。
+    // 設定した値は末尾の ParameterFileWriter が default.json の
+    // settings.ensemble.log_scale_statistics へ書き出し、次ステップで IS 側が読んで対数化する。
+    if ( received.contains( Protocol::Key::LogScaleStatistics ) &&
+         received.at( Protocol::Key::LogScaleStatistics ).is_boolean() )
+    {
+        m_particle_property->m_log_scale_statistics =
+            received.at( Protocol::Key::LogScaleStatistics ).get<bool>();
+        std::cout << "[Server][EnsembleStatisticsParameter] log_scale_statistics="
+                  << m_particle_property->m_log_scale_statistics << std::endl;
+    }
+
+    // メンバー粒子出力の ON/OFF。全メンバー一括の設定なので root レベルで受ける。
+    // 設定した値は末尾の ParameterFileWriter が default.json の
+    // settings.ensemble.member_output へ書き出し、次ステップで IS 側が読んで反映する。
+    // 全ランクへの配布は ParticleProperty の pack/unpack(2ca0af02) 経由。
+    if ( received.contains( Protocol::Key::MemberOutput ) &&
+         received.at( Protocol::Key::MemberOutput ).is_boolean() )
+    {
+        m_particle_property->m_member_output_enabled =
+            received.at( Protocol::Key::MemberOutput ).get<bool>();
+        std::cout << "[Server][EnsembleStatisticsParameter] member_output="
+                  << m_particle_property->m_member_output_enabled << std::endl;
+    }
+
+    if ( received.contains( Protocol::Key::Data ) && received.at( Protocol::Key::Data ).is_array() )
+    {
+        for ( const auto& patch : received.at( Protocol::Key::Data ) )
+        {
+            if ( !patch.is_object() ) continue;
+            if ( !patch.contains( Protocol::Key::Statistic ) || !patch.at( Protocol::Key::Statistic ).is_string() ) continue;
+
+            auto* transfer_functions = StatisticTransferFunctionArray(
+                *m_particle_property,
+                patch.at( Protocol::Key::Statistic ).get<std::string>() );
+            if ( transfer_functions == nullptr ) continue;
+
+            if ( transfer_functions->empty() )
+            {
+                transfer_functions->resize( 1 );
+            }
+
+            ApplyTransferFunctionPatch( transfer_functions->at( 0 ), patch );
+        }
+    }
+
+    ParameterFileWriter ppw;
+    ppw.writeTF2Json( *m_particle_property );
+
+    nlohmann::json published = received;
+    if ( m_current_ensemble_statistic == "variance" ) published[Protocol::Key::Statistic] = "variance";
+    else if ( m_current_ensemble_statistic == "cv" ) published[Protocol::Key::Statistic] = "cv";
+    else published[Protocol::Key::Statistic] = "average";
+    ws->publish( k_text_topic, published.dump(), uWS::OpCode::TEXT );
+}
+
+void Server::receiveRepetitionLevelParameter(uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received)
+{
+    if ( m_server_mode != ServerMode::IS )
+    {
+        std::cout << "[Server] RepetitionLevelParameter is ignored because server mode is not IS." << std::endl;
+        return;
+    }
+
+    if ( !received.contains( Protocol::Key::RepeatLevel ) ||
+         !received.at( Protocol::Key::RepeatLevel ).is_number_integer() )
+    {
+        std::cout << "[Server] RepetitionLevelParameter has no RepeatLevel." << std::endl;
+        return;
+    }
+
+    const int raw_repeat_level = received.at( Protocol::Key::RepeatLevel ).get<int>();
+    m_particle_property->m_repeat_level = static_cast<size_t>( std::clamp( raw_repeat_level, 1, 1024 ) );
+
+    ParameterFileWriter ppw;
+    ppw.writeTF2Json( *m_particle_property );
+
+    nlohmann::json repetitionLevelParameter = received;
+    repetitionLevelParameter[Protocol::Key::RepeatLevel] = static_cast<int>(m_particle_property->m_repeat_level);
+    ws->publish( k_text_topic, repetitionLevelParameter.dump(), uWS::OpCode::TEXT );
 }
 
 void Server::fileList(uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received)
@@ -2360,6 +2955,17 @@ void Server::receiveObjectDelete(uWS::WebSocket<false, true, PerSocket>* ws, con
 
     if (it == m_objects->end()) return;
 
+    if ( it->format == ObjectInfoExtractor::Format::ClientServerPointObject && it->uuid == m_pot_dataset_id )
+    {
+        m_pot_dataset_id.clear();
+        m_pot_observation = nullptr;
+        m_pot_samples = nlohmann::json::array();
+        m_pot_state = "idle";
+        SetDefaultPOTParameter(*m_pot_property);
+        sendPOTMessage(potSnapshot());
+    }
+    
+    ServerObjectUtils::DestroyObject( *it );
     m_objects->erase(it);
 
     nlohmann::json msg;
@@ -2404,9 +3010,11 @@ void Server::assignOperator(int oldOperatorID, int newOperatorID)
 
 std::vector<char> Server::pack(const int timeStep)
 {
-    size_t totalSize = calculateTotalSize();
+    std::size_t totalSize = calculateTotalSize();
     std::vector<char> buffer(totalSize);
-    size_t offset = 0;
+    std::size_t offset = 0;
+    std::cout << "[Server][pack] begin timestep=" << timeStep
+              << ", totalSize=" << totalSize << std::endl;
 
     // Time Step
     std::memcpy(buffer.data() + offset, &timeStep, sizeof(int));
@@ -2414,10 +3022,19 @@ std::vector<char> Server::pack(const int timeStep)
 
     for (const auto& info : *m_objects)
     {
-        if (info.object == nullptr) continue; // nullptrである場合は送信しない
+        if (info.object == nullptr)
+        {
+            std::cout << "[Server][pack] skip null object uuid=" << info.uuid
+                      << ", format=" << static_cast<int>( info.format ) << std::endl;
+            continue;
+        }
 
         // UUID
         uint32_t uuidLen = static_cast<uint32_t>(info.uuid.size());
+        std::cout << "[Server][pack] object uuid=" << info.uuid
+                  << ", format=" << static_cast<int>( info.format )
+                  << ", currentImportedTimeStep=" << info.currentImportedTimeStep
+                  << std::endl;
 
         std::memcpy(buffer.data() + offset, &uuidLen, sizeof(uint32_t));
         offset += sizeof(uint32_t);
@@ -2439,7 +3056,12 @@ std::vector<char> Server::pack(const int timeStep)
         {
             auto* pointObject = static_cast<kvs::PointObject*>(info.object);
 
-            const size_t numberOfVertices = pointObject->numberOfVertices();                                  // numberOfVertices
+            const std::size_t numberOfVertices = pointObject->numberOfVertices();                                  // numberOfVertices
+            std::cout << "[Server][pack] point vertices=" << numberOfVertices
+                      << ", coords=" << pointObject->coords().size()
+                      << ", colors=" << pointObject->colors().size()
+                      << ", normals=" << pointObject->normals().size()
+                      << std::endl;
             std::memcpy(buffer.data() + offset, &numberOfVertices, sizeof(size_t));
             offset += sizeof(size_t);
 
@@ -2469,7 +3091,7 @@ std::vector<char> Server::pack(const int timeStep)
         {
             auto* pointObject = static_cast<kvs::PointObject*>(info.object);
 
-            const size_t numberOfVertices = pointObject->numberOfVertices();                                  // numberOfVertices
+            const std::size_t numberOfVertices = pointObject->numberOfVertices();                                  // numberOfVertices
             std::memcpy(buffer.data() + offset, &numberOfVertices, sizeof(size_t));
             offset += sizeof(size_t);
 
@@ -2508,7 +3130,7 @@ std::vector<char> Server::pack(const int timeStep)
             std::memcpy(buffer.data() + offset, &normalType, sizeof(kvs::PolygonObject::NormalType));
             offset += sizeof(kvs::PolygonObject::NormalType);
 
-            const size_t nCoords = polygonObject->coords().size();                                                  // coords.size()
+            const std::size_t nCoords = polygonObject->coords().size();                                                  // coords.size()
             std::memcpy(buffer.data() + offset, &nCoords, sizeof(size_t));
             offset += sizeof(size_t);
 
@@ -2516,7 +3138,7 @@ std::vector<char> Server::pack(const int timeStep)
             std::memcpy(buffer.data() + offset, coords.data(), sizeof(kvs::Real32) * coords.size());
             offset += sizeof(kvs::Real32) * coords.size();
 
-            const size_t nColors = polygonObject->colors().size();                                                  // colors.size()
+            const std::size_t nColors = polygonObject->colors().size();                                                  // colors.size()
             std::memcpy(buffer.data() + offset, &nColors, sizeof(size_t));
             offset += sizeof(size_t);
 
@@ -2524,7 +3146,7 @@ std::vector<char> Server::pack(const int timeStep)
             std::memcpy(buffer.data() + offset, colors.data(), sizeof(kvs::UInt8) * colors.size());
             offset += sizeof(kvs::UInt8) * colors.size();
 
-            const size_t nNormals = polygonObject->normals().size();                                                // normals.size()
+            const std::size_t nNormals = polygonObject->normals().size();                                                // normals.size()
             std::memcpy(buffer.data() + offset, &nNormals, sizeof(size_t));
             offset += sizeof(size_t);
 
@@ -2532,7 +3154,7 @@ std::vector<char> Server::pack(const int timeStep)
             std::memcpy(buffer.data() + offset, normals.data(), sizeof(kvs::Real32) * normals.size());
             offset += sizeof(kvs::Real32) * normals.size();
 
-            const size_t nConnections = polygonObject->connections().size();                                        // connections.size()
+            const std::size_t nConnections = polygonObject->connections().size();                                        // connections.size()
             std::memcpy(buffer.data() + offset, &nConnections, sizeof(size_t));
             offset += sizeof(size_t);
 
@@ -2540,7 +3162,7 @@ std::vector<char> Server::pack(const int timeStep)
             std::memcpy(buffer.data() + offset, connections.data(), sizeof(kvs::UInt32) * connections.size());
             offset += sizeof(kvs::UInt32) * connections.size();
 
-            const size_t nOpacities = polygonObject->opacities().size();                                            // opacities.size()
+            const std::size_t nOpacities = polygonObject->opacities().size();                                            // opacities.size()
             std::memcpy(buffer.data() + offset, &nOpacities, sizeof(size_t));
             offset += sizeof(size_t);
 
@@ -2574,7 +3196,7 @@ std::vector<char> Server::pack(const int timeStep)
             std::memcpy(buffer.data() + offset, &normalType, sizeof(kvs::TexturedPolygonObject::NormalType));
             offset += sizeof(kvs::TexturedPolygonObject::NormalType);
 
-            const size_t nCoords = texturedPolygonObject->coords().size();                                                  // coords.size()
+            const std::size_t nCoords = texturedPolygonObject->coords().size();                                                  // coords.size()
             std::memcpy(buffer.data() + offset, &nCoords, sizeof(size_t));
             offset += sizeof(size_t);
 
@@ -2582,7 +3204,7 @@ std::vector<char> Server::pack(const int timeStep)
             std::memcpy(buffer.data() + offset, coords.data(), sizeof(kvs::Real32) * coords.size());
             offset += sizeof(kvs::Real32) * coords.size();
 
-            const size_t nColors = texturedPolygonObject->colors().size();                                                  // colors.size()
+            const std::size_t nColors = texturedPolygonObject->colors().size();                                                  // colors.size()
             std::memcpy(buffer.data() + offset, &nColors, sizeof(size_t));
             offset += sizeof(size_t);
 
@@ -2590,7 +3212,7 @@ std::vector<char> Server::pack(const int timeStep)
             std::memcpy(buffer.data() + offset, colors.data(), sizeof(kvs::UInt8) * colors.size());
             offset += sizeof(kvs::UInt8) * colors.size();
 
-            const size_t nNormals = texturedPolygonObject->normals().size();                                                // normals.size()
+            const std::size_t nNormals = texturedPolygonObject->normals().size();                                                // normals.size()
             std::memcpy(buffer.data() + offset, &nNormals, sizeof(size_t));
             offset += sizeof(size_t);
 
@@ -2598,7 +3220,7 @@ std::vector<char> Server::pack(const int timeStep)
             std::memcpy(buffer.data() + offset, normals.data(), sizeof(kvs::Real32) * normals.size());
             offset += sizeof(kvs::Real32) * normals.size();
 
-            const size_t nConnections = texturedPolygonObject->connections().size();                                        // connections.size()
+            const std::size_t nConnections = texturedPolygonObject->connections().size();                                        // connections.size()
             std::memcpy(buffer.data() + offset, &nConnections, sizeof(size_t));
             offset += sizeof(size_t);
 
@@ -2606,7 +3228,7 @@ std::vector<char> Server::pack(const int timeStep)
             std::memcpy(buffer.data() + offset, connections.data(), sizeof(kvs::UInt32) * connections.size());
             offset += sizeof(kvs::UInt32) * connections.size();
 
-            const size_t nOpacities = texturedPolygonObject->opacities().size();                                            // opacities.size()
+            const std::size_t nOpacities = texturedPolygonObject->opacities().size();                                            // opacities.size()
             std::memcpy(buffer.data() + offset, &nOpacities, sizeof(size_t));
             offset += sizeof(size_t);
 
@@ -2614,7 +3236,7 @@ std::vector<char> Server::pack(const int timeStep)
             std::memcpy(buffer.data() + offset, opacities.data(), sizeof(kvs::UInt8) * opacities.size());
             offset += sizeof(kvs::UInt8) * opacities.size();
 
-            const size_t nTexture2DCoords = texturedPolygonObject->texture2DCoords().size();                                // texture2DCoords().size()
+            const std::size_t nTexture2DCoords = texturedPolygonObject->texture2DCoords().size();                                // texture2DCoords().size()
             std::memcpy(buffer.data() + offset, &nTexture2DCoords, sizeof(size_t));
             offset += sizeof(size_t);
 
@@ -2622,7 +3244,7 @@ std::vector<char> Server::pack(const int timeStep)
             std::memcpy(buffer.data() + offset, texture2DCoords.data(), sizeof(kvs::Real32) * texture2DCoords.size());
             offset += sizeof(kvs::Real32) * texture2DCoords.size();
 
-            const size_t nTextureIds = texturedPolygonObject->textureIds().size();                                          // textureIds().size()
+            const std::size_t nTextureIds = texturedPolygonObject->textureIds().size();                                          // textureIds().size()
             std::memcpy(buffer.data() + offset, &nTextureIds, sizeof(size_t));
             offset += sizeof(size_t);
 
@@ -2632,7 +3254,7 @@ std::vector<char> Server::pack(const int timeStep)
 
             {
                 const auto& mapColor = texturedPolygonObject->mapIdToColorArray();
-                size_t mapSize = mapColor.size();
+                std::size_t mapSize = mapColor.size();
                 memcpy(buffer.data() + offset, &mapSize, sizeof(size_t));
                 offset += sizeof(size_t);
 
@@ -2643,7 +3265,7 @@ std::vector<char> Server::pack(const int timeStep)
                     offset += sizeof(kvs::UInt32);
 
                     const auto& arr = kv.second;
-                    size_t arrSize = arr.size();
+                    std::size_t arrSize = arr.size();
                     memcpy(buffer.data() + offset, &arrSize, sizeof(size_t));
                     offset += sizeof(size_t);
 
@@ -2654,7 +3276,7 @@ std::vector<char> Server::pack(const int timeStep)
 
             {
                 const auto& mapW = texturedPolygonObject->mapIdToImageWidth();
-                size_t mapSize = mapW.size();
+                std::size_t mapSize = mapW.size();
                 memcpy(buffer.data() + offset, &mapSize, sizeof(size_t));
                 offset += sizeof(size_t);
 
@@ -2670,7 +3292,7 @@ std::vector<char> Server::pack(const int timeStep)
 
             {
                 const auto& mapH = texturedPolygonObject->mapIdToImageHeight();
-                size_t mapSize = mapH.size();
+                std::size_t mapSize = mapH.size();
                 memcpy(buffer.data() + offset, &mapSize, sizeof(size_t));
                 offset += sizeof(size_t);
 
@@ -2706,7 +3328,7 @@ std::vector<char> Server::pack(const int timeStep)
             std::memcpy(buffer.data() + offset, &colorType, sizeof(kvs::LineObject::ColorType));
             offset += sizeof(kvs::LineObject::ColorType);
 
-            const size_t nCoords = lineObject->coords().size();                                                     // coords.size()
+            const std::size_t nCoords = lineObject->coords().size();                                                     // coords.size()
             std::memcpy(buffer.data() + offset, &nCoords, sizeof(size_t));
             offset += sizeof(size_t);
 
@@ -2714,7 +3336,7 @@ std::vector<char> Server::pack(const int timeStep)
             std::memcpy(buffer.data() + offset, coords.data(), sizeof(kvs::Real32) * coords.size());
             offset += sizeof(kvs::Real32) * coords.size();
 
-            const size_t nColors = lineObject->colors().size();                                                     // colors.size()
+            const std::size_t nColors = lineObject->colors().size();                                                     // colors.size()
             std::memcpy(buffer.data() + offset, &nColors, sizeof(size_t));
             offset += sizeof(size_t);
 
@@ -2722,7 +3344,7 @@ std::vector<char> Server::pack(const int timeStep)
             std::memcpy(buffer.data() + offset, colors.data(), sizeof(kvs::UInt8) * colors.size());
             offset += sizeof(kvs::UInt8) * colors.size();
 
-            const size_t nNormals = lineObject->normals().size();                                                   // normals.size()
+            const std::size_t nNormals = lineObject->normals().size();                                                   // normals.size()
             std::memcpy(buffer.data() + offset, &nNormals, sizeof(size_t));
             offset += sizeof(size_t);
 
@@ -2730,7 +3352,7 @@ std::vector<char> Server::pack(const int timeStep)
             std::memcpy(buffer.data() + offset, normals.data(), sizeof(kvs::Real32) * normals.size());
             offset += sizeof(kvs::Real32) * normals.size();
 
-            const size_t nConnections = lineObject->connections().size();                                           // connections.size()
+            const std::size_t nConnections = lineObject->connections().size();                                           // connections.size()
             std::memcpy(buffer.data() + offset, &nConnections, sizeof(size_t));
             offset += sizeof(size_t);
 
@@ -2738,7 +3360,7 @@ std::vector<char> Server::pack(const int timeStep)
             std::memcpy(buffer.data() + offset, connections.data(), sizeof(kvs::UInt32) * connections.size());    // connections
             offset += sizeof(kvs::UInt32) * connections.size();
 
-            const size_t nSizes = lineObject->sizes().size();                                                       // sizes.size()
+            const std::size_t nSizes = lineObject->sizes().size();                                                       // sizes.size()
             std::memcpy(buffer.data() + offset, &nSizes, sizeof(size_t));
             offset += sizeof(size_t);
 
@@ -2764,7 +3386,7 @@ std::vector<char> Server::pack(const int timeStep)
 
 size_t Server::calculateTotalSize() const
 {
-    size_t totalSize = 0;
+    std::size_t totalSize = 0;
 
     // Time Step
     totalSize += sizeof(int);
@@ -2788,7 +3410,7 @@ size_t Server::calculateTotalSize() const
         case ObjectInfoExtractor::PointObjectKVSML:
         {
             auto* pointObject = static_cast<kvs::PointObject*>(info.object);
-            size_t numberOfVertices = pointObject->numberOfVertices();
+            std::size_t numberOfVertices = pointObject->numberOfVertices();
             totalSize += sizeof(size_t);                                // numberOfVertices
 
             totalSize += sizeof(kvs::Real32) * 3 * numberOfVertices;    // coords
@@ -2803,7 +3425,7 @@ size_t Server::calculateTotalSize() const
         case ObjectInfoExtractor::PointObjectPTS:
         {
             auto* pointObject = static_cast<kvs::PointObject*>(info.object);
-            size_t numberOfVertices = pointObject->numberOfVertices();
+            std::size_t numberOfVertices = pointObject->numberOfVertices();
             totalSize += sizeof(size_t);                                // numberOfVertices
 
             totalSize += sizeof(kvs::Real32) * 3 * numberOfVertices;    // coords
@@ -2875,7 +3497,7 @@ size_t Server::calculateTotalSize() const
             for (const auto& kv : texturedPolygonObject->mapIdToColorArray())
             {
                 const kvs::UInt32 id = kv.first;
-                const size_t size = kv.second.size();
+                const std::size_t size = kv.second.size();
 
                 totalSize += sizeof(kvs::UInt32);                                                   // id
                 totalSize += sizeof(size_t);                                                        // array size
@@ -3052,6 +3674,8 @@ void Server::PlotOverTimeSenderLoop()
                 nlohmann::json one;
                 one[Protocol::Key::TimeStep]    = timeStep;
                 one[Protocol::Key::ValueOnTime] = std::move( valueArray );
+                one[Protocol::Key::Mask] = kvsmlObjectPOT->mask();
+                one[Protocol::Key::SampleState] = kvsmlObjectPOT->mask() ? "valid" : "outside_domain";
 
                 samples.push_back( std::move( one ) );
             }
@@ -3078,4 +3702,127 @@ void Server::PlotOverTimeSenderLoop()
     }
 
     std::cout << "[Server] PlotOverTimeSenderLoop() end" << std::endl;
+}
+
+nlohmann::json Server::appliedPOTObservation() const
+{
+    nlohmann::json observation;
+    observation[Protocol::Key::DatasetId] = m_pot_dataset_id;
+    observation[Protocol::Key::Coords] = m_pot_property->m_target_point;
+    observation[Protocol::Key::RangeStart] = m_multi_volume_property_list->m_total_start_steps;
+    observation[Protocol::Key::RangeEnd] = m_multi_volume_property_list->m_total_last_step;
+    return observation;
+}
+
+nlohmann::json Server::potSnapshot() const
+{
+    const auto applied = appliedPOTObservation();
+    nlohmann::json message;
+    message[Protocol::Key::Event] = Protocol::Events::PlotOverTimeParameter;
+    message[Protocol::Key::Enable] = m_pot_property->m_plot_flag;
+    message[Protocol::Key::Coords] = m_pot_property->m_target_point;
+    message[Protocol::Key::AppliedObservation] = applied;
+    message[Protocol::Key::Snapshot] = true;
+    // A retained result is only exposed as the result of its actual observation.
+    if ( m_pot_observation == applied )
+    {
+        message[Protocol::Key::Observation] = m_pot_observation;
+        message[Protocol::Key::Samples] = m_pot_samples;
+        message[Protocol::Key::CalculationState] = m_pot_state;
+    }
+    else
+    {
+        message[Protocol::Key::Observation] = applied;
+        message[Protocol::Key::Samples] = nlohmann::json::array();
+        message[Protocol::Key::CalculationState] = m_pot_property->m_plot_flag ? "pending" : "idle";
+    }
+    return message;
+}
+
+void Server::sendPOTMessage( const nlohmann::json& message )
+{
+    const std::string payload = message.dump();
+    // App::publish batches small messages until the next loop iteration. Direct
+    // sends outside the receive callback stream progress during the full sweep.
+    for ( const auto& entry : m_clients )
+    {
+        auto* socket = entry.second->text_ws;
+        if ( !socket ) continue;
+        auto& state = *entry.second;
+        if ( message.contains(Protocol::Key::ApplyId) )
+            state.pot_apply_id = message.at(Protocol::Key::ApplyId).get<std::string>();
+        socket->cork([socket, &payload, &state]() {
+            if ( socket->send( payload, uWS::OpCode::TEXT ) == uWS::WebSocket<false, true, PerSocket>::DROPPED )
+                state.pot_snapshot_pending = true;
+        });
+    }
+}
+
+void Server::flushPOTSnapshot( uWS::WebSocket<false, true, PerSocket>* ws )
+{
+    auto state = ws->getUserData()->state;
+    if ( !state || !state->pot_snapshot_pending || ws->getBufferedAmount() != 0 ) return;
+    state->pot_snapshot_pending = false;
+    if ( m_pot_dataset_id.empty() ) return;
+    // A slow peer recovers from the one retained result after its socket drains.
+    // No second computation or unbounded per-peer result queue is created.
+    auto message = potSnapshot();
+    if ( !state->pot_apply_id.empty() ) message[Protocol::Key::ApplyId] = state->pot_apply_id;
+    if ( ws->send(message.dump(), uWS::OpCode::TEXT) == uWS::WebSocket<false, true, PerSocket>::DROPPED )
+        state->pot_snapshot_pending = true;
+}
+
+void Server::generatePOTCS()
+{
+    if ( !m_pot_property->m_plot_flag || m_pot_dataset_id.empty() ) return;
+    const auto observation = appliedPOTObservation();
+    if ( m_pot_observation == observation && m_pot_state == "complete" ) return;
+
+    std::string path;
+    for ( const auto& info : *m_objects )
+        if ( info.format == ObjectInfoExtractor::Format::ClientServerPointObject && info.uuid == m_pot_dataset_id )
+        {
+            path = Worker::toNativePath( info.directory );
+            break;
+        }
+    const PlotOverTimeProperty property = *m_pot_property;
+    const int first = m_multi_volume_property_list->m_total_start_steps;
+    const int last = m_multi_volume_property_list->m_total_last_step;
+    m_pot_observation = observation;
+    m_pot_samples = nlohmann::json::array();
+    m_pot_state = "computing";
+    nlohmann::json message;
+    message[Protocol::Key::Event] = Protocol::Events::PlotOverTimeParameter;
+    message[Protocol::Key::Observation] = observation;
+    message[Protocol::Key::AppliedObservation] = observation;
+    message[Protocol::Key::CalculationState] = m_pot_state;
+    message[Protocol::Key::Snapshot] = true;
+    sendPOTMessage( message );
+    message.erase( Protocol::Key::Snapshot );
+    message.erase( Protocol::Key::AppliedObservation );
+
+    bool success = !path.empty() && first <= last;
+    if ( success )
+    {
+        SendPlotOverTimePropertySignal( property );
+        for ( int step = first; ; ++step )
+        {
+            SendGeneratePlotOverTimeSignal( path, step );
+            const auto sample = GeneratePOTCS( path, step, property, *m_multi_volume_property_list );
+            success = success && sample.success;
+            nlohmann::json one;
+            one[Protocol::Key::TimeStep] = step;
+            one[Protocol::Key::ValueOnTime] = sample.values; // NaN serializes to JSON null.
+            one[Protocol::Key::Mask] = sample.mask;
+            one[Protocol::Key::SampleState] = !sample.success ? "failed" : sample.mask ? "valid" : "outside_domain";
+            m_pot_samples.push_back( one );
+            message[Protocol::Key::Samples] = nlohmann::json::array({one});
+            sendPOTMessage( message );
+            if ( step == last ) break; // Also avoids overflowing INT_MAX.
+        }
+    }
+    m_pot_state = success ? "complete" : "failed";
+    message.erase( Protocol::Key::Samples );
+    message[Protocol::Key::CalculationState] = m_pot_state;
+    sendPOTMessage( message );
 }

@@ -57,7 +57,7 @@ size_t PolygonTag::npolygons() const
  *  @param  npolygons [in] number of polygons
  */
 /*===========================================================================*/
-void PolygonTag::setNPolygons( const size_t npolygons )
+void PolygonTag::setNPolygons( const std::size_t npolygons )
 {
     m_has_npolygons = true;
     m_npolygons = npolygons;

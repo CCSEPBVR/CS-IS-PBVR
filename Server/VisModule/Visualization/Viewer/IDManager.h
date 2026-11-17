@@ -50,9 +50,9 @@ public:
 
 public:
 
-    const IDPair operator [] ( const size_t index ) const;
+    const IDPair operator [] ( const std::size_t index ) const;
 
-    const size_t size() const;
+    const std::size_t size() const;
 
     void insert( const int object_id, const int renderer_id );
 

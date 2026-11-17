@@ -207,7 +207,7 @@ std::ostream& operator << ( std::ostream& os, const AVSField& fld )
     os << "data    : " << ::DataTypeToString[fld.m_type] << std::endl;
     os << "field   : " << ::FieldTypeToString[fld.m_field] << std::endl;
     os << "label   : ";
-    for( size_t i = 0; i < fld.m_labels.size(); i++ )
+    for( std::size_t i = 0; i < fld.m_labels.size(); i++ )
     {
         os << fld.m_labels[i] << " ";
     }
@@ -514,7 +514,7 @@ void AVSField::setDataType( const DataType type )
 void AVSField::setLabels( const std::vector<std::string>& labels )
 {
     m_labels.clear();
-    for( size_t i = 0; i < labels.size(); i++ )
+    for( std::size_t i = 0; i < labels.size(); i++ )
     {
         m_labels.push_back( labels[i] );
     }
@@ -735,7 +735,7 @@ bool AVSField::read_node( FILE* ifs )
 {
     ::SkipHeader( ifs );
 
-    const size_t nelems = m_dim.x() * m_dim.y() * m_dim.z() * m_veclen;
+    const std::size_t nelems = m_dim.x() * m_dim.y() * m_dim.z() * m_veclen;
     switch( m_type )
     {
     case Byte:    m_values.allocate<unsigned char>( nelems ); break;
@@ -746,7 +746,7 @@ bool AVSField::read_node( FILE* ifs )
     default: break;
     }
 
-    const size_t byte_size = m_values.byteSize();
+    const std::size_t byte_size = m_values.byteSize();
     if ( fread( m_values.pointer(), 1, byte_size, ifs ) != byte_size )
     {
         return( false );
@@ -769,17 +769,17 @@ bool AVSField::read_coord( FILE* ifs )
 {
     if( m_field == AVSField::Uniform ) return true;
 
-    size_t nvertices = 0;
+    std::size_t nvertices = 0;
     if( m_field == AVSField::Rectilinear )
     {
-        const size_t ndim = static_cast<size_t>( m_ndim );
-        for ( size_t i = 0; i < ndim; i++ ) nvertices += m_dim[i];
+        const std::size_t ndim = static_cast<size_t>( m_ndim );
+        for ( std::size_t i = 0; i < ndim; i++ ) nvertices += m_dim[i];
     }
     else if( m_field == AVSField::Irregular )
     {
         nvertices = 1;
-        const size_t ndim = static_cast<size_t>( m_ndim );
-        for ( size_t i = 0; i < ndim; i++ ) nvertices *= m_dim[i];
+        const std::size_t ndim = static_cast<size_t>( m_ndim );
+        for ( std::size_t i = 0; i < ndim; i++ ) nvertices *= m_dim[i];
     }
     else
     {
@@ -801,14 +801,14 @@ bool AVSField::read_coord( FILE* ifs )
 }
 
 template <typename T>
-bool AVSField::read_coord_data(  FILE* ifs, const size_t nvertices )
+bool AVSField::read_coord_data(  FILE* ifs, const std::size_t nvertices )
 {
     m_coords.allocate( nvertices * m_nspace );
 
-    const size_t nspace = static_cast<size_t>( m_nspace );
-    for( size_t nsp = 0; nsp < nspace; nsp++ )
+    const std::size_t nspace = static_cast<size_t>( m_nspace );
+    for( std::size_t nsp = 0; nsp < nspace; nsp++ )
     {
-        for( size_t i = 0; i < nvertices; i++ )
+        for( std::size_t i = 0; i < nvertices; i++ )
         {
             T data = T(0);
             if ( fread( &data, sizeof(T), 1, ifs ) == 1 )
@@ -898,7 +898,7 @@ bool AVSField::write_header( std::ofstream& ofs ) const
     if( m_labels.size() != 0 )
     {
         ofs << "label  = ";
-        for( size_t i = 0; i < m_labels.size(); i++ )
+        for( std::size_t i = 0; i < m_labels.size(); i++ )
         {
             ofs << m_labels[i] << " ";
         }

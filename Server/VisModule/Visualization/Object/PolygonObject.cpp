@@ -337,18 +337,18 @@ const PolygonObject::NormalType PolygonObject::normalType( void ) const
     return( m_normal_type );
 }
 
-const size_t PolygonObject::nconnections( void ) const
+const std::size_t PolygonObject::nconnections( void ) const
 {
-    const size_t nvertices_per_face = m_polygon_type;
+    const std::size_t nvertices_per_face = m_polygon_type;
     return( m_connections.size() / nvertices_per_face );
 }
 
-const size_t PolygonObject::nopacities( void ) const
+const std::size_t PolygonObject::nopacities( void ) const
 {
     return( m_opacities.size() );
 }
 
-const vismodule::UInt8 PolygonObject::opacity( const size_t index ) const
+const vismodule::UInt8 PolygonObject::opacity( const std::size_t index ) const
 {
     return( m_opacities[index] );
 }

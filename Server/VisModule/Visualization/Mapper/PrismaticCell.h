@@ -57,7 +57,31 @@ public:
     const vismodule::Vector3f randomSampling() const;
     const vismodule::Vector3f randomSampling_MT(vismodule::MersenneTwister* MT) const;
     const vismodule::Real32 volume() const;
+    // volume() のブロック一括版。既存の volume() は残したまま追加している
+    // (CS-PBVR 側の経路を変えないため)。
+    void volumeArray( const int loop_cnt,
+                      const vismodule::UInt32* cell_index,
+                      vismodule::Real32* volumes );
     void setLocalGravityPoint() const;
+
+    /*  節点 i の局所座標（新規追加）。interpolationFunctions() から導いた。
+     *  節点0-2が z=1、3-5が z=0。三角形断面は (x,y) の重心座標
+     */
+    bool localNodeCoord( const int i, vismodule::Vector3f* coord ) const
+    {
+        static const float table[6][3] =
+        {
+            { 0, 0, 1 },
+            { 1, 0, 1 },
+            { 0, 1, 1 },
+            { 0, 0, 0 },
+            { 1, 0, 0 },
+            { 0, 1, 0 }
+        };
+        if ( i < 0 || i >= 6 || coord == NULL ) return false;
+        *coord = vismodule::Vector3f( table[i][0], table[i][1], table[i][2] );
+        return true;
+    }
 };
 
 /*===========================================================================*/
@@ -109,7 +133,7 @@ template <typename T>
 inline void PrismaticCell<T>::scalar_ary( float* scalar_array, const int loop_cnt) const 
 {
     #pragma ivdep
-    for ( size_t i = 0; i < loop_cnt ; i++ )
+    for ( std::size_t i = 0; i < loop_cnt ; i++ )
     {
         //scalar_array[i]= static_cast<vismodule::Real32>( m_interpolation_functions_array[0][j] * m_scalars_array[0][j] );
         scalar_array[i] =  BaseClass::m_interpolation_functions_array[0][i] * BaseClass::m_scalars_array[0][i] 
@@ -382,6 +406,10 @@ void PrismaticCell<T>::interpolationFunctions_array( const vismodule::Vector3f* 
 /**
  *  @brief  Calculates the differential functions in the local coordinate.
  *  @return point [in] point in the local coordinate
+ *
+ *  出力はスカラー版 differentialFunctions() と同じ [dNdx | dNdy | dNdz] の並びで、
+ *  添字は 0..5 が dNdx、6..11 が dNdy、12..17 が dNdz である
+ *  (m_differential_functions_array は nnodes*dimension = 18 本確保されている)。
  */
 /*==========================================================================*/
 template <typename T>
@@ -423,26 +451,29 @@ void PrismaticCell<T>::differentialFunctions_array(const vismodule::Vector3f* lo
 //    BaseClass::m_differential_functions_array[i][4] = -x;
 //    BaseClass::m_differential_functions_array[i][5] = -y;
 
-    BaseClass::m_differential_functions_array[0][i] = -z;
-    BaseClass::m_differential_functions_array[1][i] =  z;
-    BaseClass::m_differential_functions_array[2][i] =  0;
-    BaseClass::m_differential_functions_array[3][i] = -( 1 - z );
-    BaseClass::m_differential_functions_array[4][i] =  ( 1 - z );
-    BaseClass::m_differential_functions_array[5][i] =  0;
+    // dNdx
+    BaseClass::m_differential_functions_array[ 0][i] = -z;
+    BaseClass::m_differential_functions_array[ 1][i] =  z;
+    BaseClass::m_differential_functions_array[ 2][i] =  0;
+    BaseClass::m_differential_functions_array[ 3][i] = -( 1 - z );
+    BaseClass::m_differential_functions_array[ 4][i] =  ( 1 - z );
+    BaseClass::m_differential_functions_array[ 5][i] =  0;
                                                    
-    BaseClass::m_differential_functions_array[0][i] = -z;
-    BaseClass::m_differential_functions_array[1][i] =  0;
-    BaseClass::m_differential_functions_array[2][i] =  z;
-    BaseClass::m_differential_functions_array[3][i] = -( 1 - z );
-    BaseClass::m_differential_functions_array[4][i] =  0;
-    BaseClass::m_differential_functions_array[5][i] =  ( 1 - z );
+    // dNdy
+    BaseClass::m_differential_functions_array[ 6][i] = -z;
+    BaseClass::m_differential_functions_array[ 7][i] =  0;
+    BaseClass::m_differential_functions_array[ 8][i] =  z;
+    BaseClass::m_differential_functions_array[ 9][i] = -( 1 - z );
+    BaseClass::m_differential_functions_array[10][i] =  0;
+    BaseClass::m_differential_functions_array[11][i] =  ( 1 - z );
                                                    
-    BaseClass::m_differential_functions_array[0][i] =  ( 1 - x - y );
-    BaseClass::m_differential_functions_array[1][i] =  x;
-    BaseClass::m_differential_functions_array[2][i] =  y;
-    BaseClass::m_differential_functions_array[3][i] = -( 1 - x - y );
-    BaseClass::m_differential_functions_array[4][i] = -x;
-    BaseClass::m_differential_functions_array[5][i] = -y;
+    // dNdz
+    BaseClass::m_differential_functions_array[12][i] =  ( 1 - x - y );
+    BaseClass::m_differential_functions_array[13][i] =  x;
+    BaseClass::m_differential_functions_array[14][i] =  y;
+    BaseClass::m_differential_functions_array[15][i] = -( 1 - x - y );
+    BaseClass::m_differential_functions_array[16][i] = -x;
+    BaseClass::m_differential_functions_array[17][i] = -y;
     }
 
 //    return BaseClass::m_differential_functions_array;
@@ -542,7 +573,7 @@ const vismodule::Vector3f PrismaticCell<T>::randomSampling_MT( vismodule::Mersen
 template <typename T>
 const vismodule::Real32 PrismaticCell<T>::volume() const
 {
-    const size_t N = 9;
+    const std::size_t N = 9;
     vismodule::Vector3f P[ N ] =
     {
         vismodule::Vector3f( 0.3f, 0.3f, 0.2f ),
@@ -557,7 +588,7 @@ const vismodule::Real32 PrismaticCell<T>::volume() const
     };
 
     float S = 0.0f;
-    for ( size_t i = 0; i < N; i++ )
+    for ( std::size_t i = 0; i < N; i++ )
     {
         this->setLocalPoint( P[i] );
         const vismodule::Matrix33f J = BaseClass::JacobiMatrix();
@@ -570,13 +601,96 @@ const vismodule::Real32 PrismaticCell<T>::volume() const
 
 /*===========================================================================*/
 /**
+ *  @brief  Returns volumes for cells already loaded by bindCellArray().
+ *  @param  loop_cnt [in]  number of bound cells
+ *  @param  volumes  [out] volume array
+ *
+ *  volume() のブロック一括版(既存の volume() は無変更)。
+ *  求積点は全セル共通の定数なので、形状関数の微分は求積点ごとに1回だけ評価し、
+ *  内側でセル方向にベクトル化する。頂点は bindCellArray() が既に集めた
+ *  m_vertices_array を読むため、bindCell による再 gather が起きない。
+ *  各セルについて求積点を volume() と同じ順序で加算し、行列式も
+ *  Matrix33f::determinant() と同一の式・順序で展開しているので結果はビット一致。
+ */
+/*===========================================================================*/
+template <typename T>
+inline void PrismaticCell<T>::volumeArray(
+    const int loop_cnt,
+    const vismodule::UInt32*,
+    vismodule::Real32* volumes )
+{
+    if ( volumes == NULL ) return;
+
+    // volume() と同一の求積点(同じ順序・同じリテラル)
+    const std::size_t N = 9;
+    const vismodule::Vector3f P[ N ] =
+    {
+        vismodule::Vector3f( 0.3f, 0.3f, 0.2f ),
+        vismodule::Vector3f( 0.6f, 0.3f, 0.2f ),
+        vismodule::Vector3f( 0.3f, 0.6f, 0.2f ),
+        vismodule::Vector3f( 0.3f, 0.3f, 0.5f ),
+        vismodule::Vector3f( 0.6f, 0.3f, 0.5f ),
+        vismodule::Vector3f( 0.3f, 0.6f, 0.5f ),
+        vismodule::Vector3f( 0.3f, 0.3f, 0.8f ),
+        vismodule::Vector3f( 0.6f, 0.3f, 0.8f ),
+        vismodule::Vector3f( 0.3f, 0.6f, 0.8f )
+    };
+
+    // __restrict で volumes が m_vertices_array と別領域であることを示し、
+    // 仮定された依存(#15346)を解いてベクトル化させる。
+    vismodule::Real32* __restrict vol = volumes;
+    for ( int i = 0; i < loop_cnt; ++i ) vol[i] = 0.0f;
+
+    for ( std::size_t k = 0; k < N; k++ )
+    {
+        // 求積点はセルに依存しないので、微分はここで1回だけ評価する。
+        // volume() は setLocalPoint() 経由で内挿関数も計算していたが、
+        // JacobiMatrix() は微分しか読まないため結果は変わらない。
+        this->differentialFunctions( P[k] );
+        const float* const dNdx = BaseClass::m_differential_functions;
+        const float* const dNdy = dNdx + NumberOfNodes;
+        const float* const dNdz = dNdy + NumberOfNodes;
+
+        #pragma omp simd
+        for ( int i = 0; i < loop_cnt; ++i )
+        {
+            // JacobiMatrix() と同じ節点順・同じ加算順で J を組む
+            float dXdx = 0, dYdx = 0, dZdx = 0;
+            float dXdy = 0, dYdy = 0, dZdy = 0;
+            float dXdz = 0, dYdz = 0, dZdz = 0;
+            for ( int n = 0; n < NumberOfNodes; ++n )
+            {
+                const vismodule::Vector3f& v = BaseClass::m_vertices_array[n][i];
+                dXdx += dNdx[n] * v.x();  dYdx += dNdx[n] * v.y();  dZdx += dNdx[n] * v.z();
+                dXdy += dNdy[n] * v.x();  dYdy += dNdy[n] * v.y();  dZdy += dNdy[n] * v.z();
+                dXdz += dNdz[n] * v.x();  dYdz += dNdz[n] * v.y();  dZdz += dNdz[n] * v.z();
+            }
+
+            // Matrix33f::determinant() と同一の式・順序
+            const float d0 = dYdy * dZdz - dZdy * dYdz;
+            const float d1 = dXdy * dZdz - dZdy * dXdz;
+            const float d2 = dXdy * dYdz - dYdy * dXdz;
+            const float det = dXdx * d0 - dYdx * d1 + dZdx * d2;
+
+            vol[i] += vismodule::Math::Abs<float>( 0.5f * det );
+        }
+    }
+
+    for ( int i = 0; i < loop_cnt; ++i ) vol[i] = vol[i] / N;
+}
+
+/*===========================================================================*/
+/**
  *  @brief Sets a point in the gravity coordinate.
  */
 /*===========================================================================*/
 template <typename T>
 inline void PrismaticCell<T>::setLocalGravityPoint() const
 {
-    this->setLocalPoint( vismodule::Vector3f( 1 / 3, 1 / 3, 0.5 ) );
+    // 三角形断面の重心は重心座標で (1/3, 1/3)、z は中央の 0.5。
+    // 以前は 1 / 3 と書かれており整数除算で 0 になっていたため、重心が
+    // (0, 0, 0.5) すなわち底面三角形の頂点の1つにずれていた。
+    this->setLocalPoint( vismodule::Vector3f( 1.0f / 3.0f, 1.0f / 3.0f, 0.5f ) );
 }
 
 } // end of namespace vismodule

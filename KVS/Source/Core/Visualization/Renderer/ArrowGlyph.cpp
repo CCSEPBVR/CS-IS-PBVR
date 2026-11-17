@@ -217,7 +217,7 @@ void ArrowGlyph::draw_lines()
 
     if ( BaseClass::directions().size() == 0 )
     {
-        for ( size_t i = 0, index = 0; i < npoints; i++, index += 3 )
+        for ( std::size_t i = 0, index = 0; i < npoints; i++, index += 3 )
         {
             const kvs::Vec3 position( coords.data() + index );
             const kvs::Real32 size = sizes[i];
@@ -233,7 +233,7 @@ void ArrowGlyph::draw_lines()
     }
     else
     {
-        for ( size_t i = 0, index = 0; i < npoints; i++, index += 3 )
+        for ( std::size_t i = 0, index = 0; i < npoints; i++, index += 3 )
         {
             const kvs::Vec3 position( coords.data() + index );
             const kvs::Vec3 direction( BaseClass::directions().data() + index );
@@ -268,7 +268,7 @@ void ArrowGlyph::draw_tubes()
 
     if ( BaseClass::directions().size() == 0 )
     {
-        for ( size_t i = 0, index = 0; i < npoints; i++, index += 3 )
+        for ( std::size_t i = 0, index = 0; i < npoints; i++, index += 3 )
         {
             const kvs::Vec3 position( coords.data() + index );
             const kvs::Real32 size = sizes[i];
@@ -284,7 +284,7 @@ void ArrowGlyph::draw_tubes()
     }
     else
     {
-        for ( size_t i = 0, index = 0; i < npoints; i++, index += 3 )
+        for ( std::size_t i = 0, index = 0; i < npoints; i++, index += 3 )
         {
             const kvs::Vec3 position( coords.data() + index );
             const kvs::Vec3 direction( BaseClass::directions().data() + index );
@@ -317,7 +317,7 @@ void ArrowGlyph::draw_line_element(
 {
     kvs::OpenGL::Begin( GL_LINES );
     kvs::OpenGL::Color( color.r(), color.g(), color.b(), opacity );
-    for ( size_t i = 0; i < 6; i++ )
+    for ( std::size_t i = 0; i < 6; i++ )
     {
         kvs::OpenGL::Vertex3( ::LineVertices + ::LineConnections[i] * 3 );
     }

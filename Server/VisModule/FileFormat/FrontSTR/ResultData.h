@@ -41,10 +41,10 @@ public:
 
 protected:
 
-    size_t m_nnodes; ///< number of nodes
-    size_t m_ncells; ///< number of cells
-    size_t m_ncomponents_per_node; ///< number of components per node
-    size_t m_ncomponents_per_cell; ///< number of components per cell
+    std::size_t m_nnodes; ///< number of nodes
+    std::size_t m_ncells; ///< number of cells
+    std::size_t m_ncomponents_per_node; ///< number of components per node
+    std::size_t m_ncomponents_per_cell; ///< number of components per cell
     std::vector<size_t> m_veclens; ///< vector length of components
     std::vector<std::string> m_labels; ///< label of components
     std::vector<Values> m_values; ///< values of components
@@ -55,13 +55,13 @@ public:
 
 public:
 
-    const size_t numberOfNodes( void ) const;
+    const std::size_t numberOfNodes( void ) const;
 
-    const size_t numberOfCells( void ) const;
+    const std::size_t numberOfCells( void ) const;
 
-    const size_t numberOfComponentsPerNode( void ) const;
+    const std::size_t numberOfComponentsPerNode( void ) const;
 
-    const size_t numberOfComponentsPerCell( void ) const;
+    const std::size_t numberOfComponentsPerCell( void ) const;
 
     const std::vector<size_t>& veclens( void ) const;
 

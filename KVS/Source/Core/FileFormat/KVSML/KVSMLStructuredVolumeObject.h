@@ -47,7 +47,7 @@ private:
     bool m_has_max_value; ///< max. value is specified or not
     std::string m_label; ///< data label
     std::string m_unit; ///< data unit
-    size_t m_veclen; ///< vector length
+    std::size_t m_veclen; ///< vector length
     kvs::Vec3ui m_resolution; ///< grid resolution
     double m_min_value; ///< min. value
     double m_max_value; ///< max. value
@@ -73,7 +73,7 @@ public:
     bool hasExternalCoord() const { return m_object_tag.hasExternalCoord(); }
     const std::string& label() const { return m_label; }
     const std::string& unit() const { return m_unit; }
-    size_t veclen() const { return m_veclen; }
+    std::size_t veclen() const { return m_veclen; }
     const kvs::Vec3ui& resolution() const { return m_resolution; }
     double minValue() const { return m_min_value; }
     double maxValue() const { return m_max_value; }
@@ -91,7 +91,7 @@ public:
     void setGridType( const std::string& type ) { m_grid_type = type; }
     void setLabel( const std::string& label ) { m_has_label = true; m_label = label; }
     void setUnit( const std::string& unit ) { m_has_unit = true; m_unit = unit; }
-    void setVeclen( const size_t veclen ) { m_veclen = veclen; }
+    void setVeclen( const std::size_t veclen ) { m_veclen = veclen; }
     void setResolution( const kvs::Vec3ui& resolution ) { m_resolution = resolution; }
     void setMinValue( const double value ) { m_has_min_value = true; m_min_value = value; }
     void setMaxValue( const double value ) { m_has_max_value = true; m_max_value = value; }

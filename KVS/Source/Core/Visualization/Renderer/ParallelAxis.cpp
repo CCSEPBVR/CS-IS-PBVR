@@ -113,7 +113,7 @@ void ParallelAxis::drawAxes( const kvs::TableObject* table,  const kvs::Rectangl
     {
         kvs::OpenGL::SetLineWidth( m_axis_width * dpr );
         kvs::OpenGL::Begin( GL_LINES );
-        for ( size_t i = 0; i < naxes; i++ )
+        for ( std::size_t i = 0; i < naxes; i++ )
         {
             const float x = content.x0() + stride * i;
             kvs::OpenGL::Color( m_axis_color );
@@ -123,7 +123,7 @@ void ParallelAxis::drawAxes( const kvs::TableObject* table,  const kvs::Rectangl
     }
 
     bool has_label = false;
-    for ( size_t i = 0; i < table->labels().size(); i++ )
+    for ( std::size_t i = 0; i < table->labels().size(); i++ )
     {
         if ( table->labels().at(i).size() > 0 ) { has_label = true; break; }
     }
@@ -131,7 +131,7 @@ void ParallelAxis::drawAxes( const kvs::TableObject* table,  const kvs::Rectangl
     const kvs::FontMetrics metrics = m_painter.fontMetrics();
 
     // Draw min/max values and label.
-    for ( size_t i = 0; i < naxes; i++ )
+    for ( std::size_t i = 0; i < naxes; i++ )
     {
         std::string max_value;
         std::string min_value;
@@ -146,9 +146,9 @@ void ParallelAxis::drawAxes( const kvs::TableObject* table,  const kvs::Rectangl
             min_value = kvs::String::From( table->minValue(i) );
         }
 
-        const size_t max_width = metrics.width( max_value );
-        const size_t min_width = metrics.width( min_value );
-        const size_t height = metrics.height();
+        const std::size_t max_width = metrics.width( max_value );
+        const std::size_t min_width = metrics.width( min_value );
+        const std::size_t height = metrics.height();
 
         const float max_x = ( content.x0() + stride * i ) - max_width * 0.5f;
         const float max_y = content.y0() - 5.0f;
@@ -165,7 +165,7 @@ void ParallelAxis::drawAxes( const kvs::TableObject* table,  const kvs::Rectangl
         if ( has_label && m_label_visible )
         {
             const std::string label( table->label(i) );
-            const size_t label_width = metrics.width( label );
+            const std::size_t label_width = metrics.width( label );
             const float label_x = ( content.x0() + stride * i ) - label_width * 0.5f;
             const float label_y = min_y + height;
             m_painter.font().setColor( m_label_color );

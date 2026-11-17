@@ -56,8 +56,8 @@ public:
         this->calculate_A_matrix( cell );
     }
 
-    //kvs::Vec4 v( const size_t index ) const { return kvs::Vec4( m_v[index], 1.0f ); }
-    kvs::Vec4 Lv( const size_t index ) const { return m_Lv[index]; }
+    //kvs::Vec4 v( const std::size_t index ) const { return kvs::Vec4( m_v[index], 1.0f ); }
+    kvs::Vec4 Lv( const std::size_t index ) const { return m_Lv[index]; }
     //const kvs::Mat4& L() const { return m_L; }
     const kvs::Mat4& A() const { return m_A; }
 
@@ -132,9 +132,9 @@ private:
             0.0f, 0.0f, 0.0f, 1.0f );
     }
 
-    size_t primary_axis( const kvs::Vec3& g )
+    std::size_t primary_axis( const kvs::Vec3& g )
     {
-        size_t axis = 0;
+        std::size_t axis = 0;
         axis = kvs::Math::Abs( g[0] ) < kvs::Math::Abs( g[1] ) ? 0 : 1;
         axis = kvs::Math::Abs( g[axis] ) < kvs::Math::Abs( g[2] ) ? axis : 2;
         return axis;
@@ -171,17 +171,17 @@ inline bool Equal( kvs::Real32 s0, kvs::Real32 s1, kvs::Real32 s2, kvs::Real32 s
  */
 /*===========================================================================*/
 inline kvs::PointObject* PregenerateParticles(
-    const size_t nparticles,
+    const std::size_t nparticles,
     const kvs::CellByCellSampling::ParticleDensityMap& density_map,
     kvs::Real32* integral )
 {
-    const size_t resolution = density_map.resolution();
-    const size_t nintervals = resolution - 1;
+    const std::size_t resolution = density_map.resolution();
+    const std::size_t nintervals = resolution - 1;
 
     // Integrate the density distribution function as piecewise linear function.
     kvs::ValueArray<float> m( nintervals ); m.fill( 0 );
     float M = 0.0f;
-    for ( size_t i = 0; i < nintervals; i++ )
+    for ( std::size_t i = 0; i < nintervals; i++ )
     {
         const float p0 = density_map.table().at(i);
         const float p1 = density_map.table().at(i+1);
@@ -199,7 +199,7 @@ inline kvs::PointObject* PregenerateParticles(
     kvs::MersenneTwister R; R.setSeed();
     kvs::ValueArray<kvs::UInt32> n( nintervals ); n.fill( 0 );
     kvs::UInt32 N = 0; // total number of particles
-    for ( size_t i = 0; i < nintervals; i++ )
+    for ( std::size_t i = 0; i < nintervals; i++ )
     {
         const float tmp = static_cast<float>( nparticles ) * m[i] / M;
 
@@ -212,7 +212,7 @@ inline kvs::PointObject* PregenerateParticles(
     // Generate particles by using rejection method.
     kvs::ValueArray<kvs::Real32> coords( N * 3 );
     kvs::Real32* pcoords = coords.data();
-    for ( size_t i = 0; i < nintervals; i++ )
+    for ( std::size_t i = 0; i < nintervals; i++ )
     {
         const float p0 = density_map.table().at(i);
         const float p1 = density_map.table().at(i+1);
@@ -223,7 +223,7 @@ inline kvs::PointObject* PregenerateParticles(
         const float b = ( p0 * s1 - p1 * s0 ) / ( s1 - s0 );
         const float c = kvs::Math::Max( p0, p1 );
 
-        size_t counter = 0;
+        std::size_t counter = 0;
         while ( counter < n[i] )
         {
             const float s = static_cast<float>( R() ) * ( s1 - s0 ) + s0;
@@ -270,8 +270,8 @@ inline kvs::ValueArray<kvs::UInt32> ParticlesInCell(
     const kvs::Mat3 D = kvs::Mat3( d1, d2, d3 ).transposed().inverted();
 
     std::vector<kvs::UInt32> indices;
-    const size_t nparticles = particles->numberOfVertices();
-    for ( size_t i = 0, i3 = 0; i < nparticles; i++, i3 += 3 )
+    const std::size_t nparticles = particles->numberOfVertices();
+    for ( std::size_t i = 0, i3 = 0; i < nparticles; i++, i3 += 3 )
     {
         const kvs::Vec3 v = particles->coord(i) - g0.xyz();
         const kvs::Vec3 lambda = D * v;
@@ -297,20 +297,20 @@ inline kvs::ValueArray<kvs::UInt32> ParticlesInCell(
  *  @return required number of particles
  */
 /*===========================================================================*/
-inline size_t ActualNumberOfParticles(
-    const size_t nparticles_in_cell,
-    const size_t nparticles,
+inline std::size_t ActualNumberOfParticles(
+    const std::size_t nparticles_in_cell,
+    const std::size_t nparticles,
     const kvs::Real32 integral,
     const Matrices& matrices )
 {
-    const size_t N_in = nparticles_in_cell;
-    const size_t N_all = nparticles;
+    const std::size_t N_in = nparticles_in_cell;
+    const std::size_t N_all = nparticles;
 
     const float detA_inv = 1.0f / matrices.detA();
     const float N = detA_inv * integral * N_in / N_all;
     const float R = kvs::CellByCellSampling::RandomNumber();
 
-    size_t n = static_cast<size_t>( N );
+    std::size_t n = static_cast<size_t>( N );
     if ( N - n > R ) { ++n; }
 
     return n;
@@ -326,16 +326,16 @@ inline size_t ActualNumberOfParticles(
  */
 /*===========================================================================*/
 inline void UniformSampling(
-    const size_t nparticles,
+    const std::size_t nparticles,
     kvs::CellByCellSampling::CellSampler& sampler,
     size_t& particle_index_counter,
     kvs::CellByCellSampling::ColoredParticles& particles )
 {
-    for ( size_t i = 0; i < nparticles; ++i )
+    for ( std::size_t i = 0; i < nparticles; ++i )
     {
         sampler.sample();
         const kvs::CellByCellSampling::Particle& p = sampler.accept();
-        const size_t particle_index = particle_index_counter++;
+        const std::size_t particle_index = particle_index_counter++;
         particles.push( particle_index, p );
     }
 }
@@ -350,7 +350,7 @@ inline void UniformSampling(
  */
 /*===========================================================================*/
 inline void RejectionSampling(
-    const size_t nparticles,
+    const std::size_t nparticles,
     kvs::CellByCellSampling::CellSampler& sampler,
     size_t& particle_index_counter,
     kvs::CellByCellSampling::ColoredParticles& particles )
@@ -358,7 +358,7 @@ inline void RejectionSampling(
     const kvs::Real32 max_density = sampler.maxDensity();
     const kvs::Real32 pmax = max_density / nparticles;
 
-    size_t counter = 0;
+    std::size_t counter = 0;
     while ( counter < nparticles )
     {
         const kvs::Real32 density = sampler.sample();
@@ -367,7 +367,7 @@ inline void RejectionSampling(
         if ( p > pmax * R )
         {
             const kvs::CellByCellSampling::Particle& p = sampler.accept();
-            const size_t particle_index = particle_index_counter++;
+            const std::size_t particle_index = particle_index_counter++;
             particles.push( particle_index, p );
             counter++;
         }
@@ -387,7 +387,7 @@ inline void RejectionSampling(
  */
 /*===========================================================================*/
 inline void RouletteSelection(
-    const size_t nparticles,
+    const std::size_t nparticles,
     const kvs::PointObject* pregenerated_particles,
     const Matrices& matrices,
     const kvs::ValueArray<kvs::UInt32>& indices,
@@ -399,7 +399,7 @@ inline void RouletteSelection(
     const kvs::Mat4 invLA = matrices.invL() * matrices.invA();
     const kvs::Real32 min_value = sampler.cell()->referenceVolume()->minValue();
     const kvs::Real32 max_value = sampler.cell()->referenceVolume()->maxValue();
-    for ( size_t i = 0; i < nparticles; i++ )
+    for ( std::size_t i = 0; i < nparticles; i++ )
     {
         const kvs::Real32 fid = kvs::CellByCellSampling::RandomNumber() * indices.size();
         const kvs::UInt32 id = indices[ int( fid ) ];
@@ -411,7 +411,7 @@ inline void RouletteSelection(
         // Set coord, color, and normal to the point object.
         sampler.sample( coord.xyz(), normal, scalar );
         const kvs::CellByCellSampling::Particle& p = sampler.accept();
-        const size_t particle_index = particle_index_counter++;
+        const std::size_t particle_index = particle_index_counter++;
         particles.push( particle_index, p );
     }
 }
@@ -434,7 +434,7 @@ namespace kvs
 /*===========================================================================*/
 CellByCellLayeredSampling::CellByCellLayeredSampling(
     const kvs::VolumeObjectBase* volume,
-    const size_t repetition_level,
+    const std::size_t repetition_level,
     const float sampling_step,
     const kvs::TransferFunction& transfer_function,
     const float object_depth ):
@@ -462,7 +462,7 @@ CellByCellLayeredSampling::CellByCellLayeredSampling(
 CellByCellLayeredSampling::CellByCellLayeredSampling(
     const kvs::Camera* camera,
     const kvs::VolumeObjectBase* volume,
-    const size_t repetition_level,
+    const std::size_t repetition_level,
     const float sampling_step,
     const kvs::TransferFunction& transfer_function,
     const float object_depth ):
@@ -564,14 +564,14 @@ void CellByCellLayeredSampling::generate_particles( const kvs::UnstructuredVolum
     kvs::Real32 integral = 0.0f;
     kvs::PointObject* pregenerated_particles = ::PregenerateParticles( 800000, density_map, &integral );
 
-    const size_t resolution = density_map.resolution();
+    const std::size_t resolution = density_map.resolution();
     const float tiny_value = 1.0f / resolution;
 
-    const size_t ncells = volume->numberOfCells();
+    const std::size_t ncells = volume->numberOfCells();
     const kvs::ColorMap color_map( BaseClass::transferFunction().colorMap() );
 
     // Calculate number of particles
-    size_t N = 0;
+    std::size_t N = 0;
     kvs::ValueArray<kvs::UInt32> nparticles( ncells );
     KVS_OMP_PARALLEL()
     {
@@ -579,11 +579,11 @@ void CellByCellLayeredSampling::generate_particles( const kvs::UnstructuredVolum
         CellByCellSampling::CellSampler sampler( cell, &density_map );
 
         KVS_OMP_FOR( reduction(+:N) )
-        for ( size_t index = 0; index < ncells; ++index )
+        for ( std::size_t index = 0; index < ncells; ++index )
         {
             sampler.bind( index );
 
-            size_t n = 0;
+            std::size_t n = 0;
             const kvs::Real32* s = sampler.cell()->values();
             const kvs::Real32 smin = kvs::Math::Min( s[0], s[1], s[2], s[3] );
             const kvs::Real32 smax = kvs::Math::Max( s[0], s[1], s[2], s[3] );
@@ -603,9 +603,9 @@ void CellByCellLayeredSampling::generate_particles( const kvs::UnstructuredVolum
 
                 typedef kvs::ValueArray<kvs::UInt32> Indices;
                 const Indices indices = ::ParticlesInCell( cell, pregenerated_particles, matrices );
-                const size_t Nin = indices.size();
-                const size_t Nall = pregenerated_particles->numberOfVertices();
-                const size_t Ntet = ::ActualNumberOfParticles( Nin, Nall, integral, matrices );
+                const std::size_t Nin = indices.size();
+                const std::size_t Nall = pregenerated_particles->numberOfVertices();
+                const std::size_t Ntet = ::ActualNumberOfParticles( Nin, Nall, integral, matrices );
                 n = Ntet;
             }
 
@@ -629,10 +629,10 @@ void CellByCellLayeredSampling::generate_particles( const kvs::UnstructuredVolum
         KVS_OMP_FOR( schedule(dynamic) )
         for ( kvs::UInt32 r = 0; r < repetitions; ++r )
         {
-            size_t particle_index_counter = N * r;
-            for ( size_t index = 0; index < ncells; ++index )
+            std::size_t particle_index_counter = N * r;
+            for ( std::size_t index = 0; index < ncells; ++index )
             {
-                const size_t n = nparticles[index];
+                const std::size_t n = nparticles[index];
                 if ( n == 0 ) continue;
 
                 sampler.bind( index );
@@ -657,8 +657,8 @@ void CellByCellLayeredSampling::generate_particles( const kvs::UnstructuredVolum
 
                     typedef kvs::ValueArray<kvs::UInt32> Indices;
                     const Indices indices = ::ParticlesInCell( cell, pregenerated_particles, matrices );
-                    const size_t Nin = indices.size();
-                    const size_t Ntet = n;
+                    const std::size_t Nin = indices.size();
+                    const std::size_t Ntet = n;
                     if ( Nin > Ntet )
                     {
                         ::RouletteSelection( Ntet, pregenerated_particles, matrices, indices, sampler,

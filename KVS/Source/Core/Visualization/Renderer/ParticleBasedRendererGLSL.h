@@ -85,23 +85,23 @@ public:
     {
     private:
         using Manager = kvs::VertexBufferObjectManager;
-        size_t m_nmanagers = 0; ///< number of VBO managers (repeat level)
+        std::size_t m_nmanagers = 0; ///< number of VBO managers (repeat level)
         Manager* m_managers = nullptr; ///< a set of VBO managers for each repetition
         bool m_enable_shuffle = false; ///< flag for shuffling particles
-        size_t m_random_index = 0;
+        std::size_t m_random_index = 0;
     public:
         BufferObject() = default;
         virtual ~BufferObject() { if ( m_managers ) { delete [] m_managers; m_nmanagers = 0; }  }
-        Manager& manager( const size_t index ) { return m_managers[index]; }
-        void release() { for ( size_t i = 0; i < m_nmanagers; ++i ) { m_managers[i].release(); } }
-        void create( const kvs::ObjectBase* object, const size_t nmanagers );
-        void draw( const kvs::ObjectBase* object, const size_t index );
+        Manager& manager( const std::size_t index ) { return m_managers[index]; }
+        void release() { for ( std::size_t i = 0; i < m_nmanagers; ++i ) { m_managers[i].release(); } }
+        void create( const kvs::ObjectBase* object, const std::size_t nmanagers );
+        void draw( const kvs::ObjectBase* object, const std::size_t index );
 
         bool isShuffleEnabled() const { return m_enable_shuffle; }
         void setShuffleEnabled( const bool enable = true ) { m_enable_shuffle = enable; }
         void enableShuffle() { this->setShuffleEnabled( true ); }
         void disableShuffle() { this->setShuffleEnabled( false ); }
-        void setRandomIndex( const size_t index ) { m_random_index = index; }
+        void setRandomIndex( const std::size_t index ) { m_random_index = index; }
     };
 
     class RenderPass
@@ -129,7 +129,7 @@ public:
         virtual void create( const kvs::Shader::ShadingModel& model, const bool enable );
         virtual void update( const kvs::Shader::ShadingModel& model, const bool enable );
         virtual void setup( const kvs::Shader::ShadingModel& model );
-        virtual void draw( const kvs::ObjectBase* object, const size_t index );
+        virtual void draw( const kvs::ObjectBase* object, const std::size_t index );
 
         bool isZoomingEnabled() const { return m_enable_zooming; }
         void setZoomingEnabled( const bool enable = true ) { m_enable_zooming = enable; }

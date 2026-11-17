@@ -30,24 +30,24 @@ public:
     static void Swap( kvs::Real32* value );
     static void Swap( kvs::Real64* value );
 
-    static void Swap( kvs::Int8* values, size_t n );
-    static void Swap( kvs::Int16* values, size_t n );
-    static void Swap( kvs::Int32* values, size_t n );
-    static void Swap( kvs::Int64* values, size_t n );
-    static void Swap( kvs::UInt8* values, size_t n );
-    static void Swap( kvs::UInt16* values, size_t n );
-    static void Swap( kvs::UInt32* values, size_t n );
-    static void Swap( kvs::UInt64* values, size_t n );
-    static void Swap( kvs::Real32* values, size_t n );
-    static void Swap( kvs::Real64* values, size_t n );
+    static void Swap( kvs::Int8* values, std::size_t n );
+    static void Swap( kvs::Int16* values, std::size_t n );
+    static void Swap( kvs::Int32* values, std::size_t n );
+    static void Swap( kvs::Int64* values, std::size_t n );
+    static void Swap( kvs::UInt8* values, std::size_t n );
+    static void Swap( kvs::UInt16* values, std::size_t n );
+    static void Swap( kvs::UInt32* values, std::size_t n );
+    static void Swap( kvs::UInt64* values, std::size_t n );
+    static void Swap( kvs::Real32* values, std::size_t n );
+    static void Swap( kvs::Real64* values, std::size_t n );
 
 private:
     static void Swap2Bytes( void* value );
     static void Swap4Bytes( void* value );
     static void Swap8Bytes( void* value );
-    static void Swap2Bytes( void* values, size_t n );
-    static void Swap4Bytes( void* values, size_t n );
-    static void Swap8Bytes( void* values, size_t n );
+    static void Swap2Bytes( void* values, std::size_t n );
+    static void Swap4Bytes( void* values, std::size_t n );
+    static void Swap8Bytes( void* values, std::size_t n );
 
 private:
     Endian();
@@ -100,7 +100,7 @@ inline void Endian::Swap8Bytes( void* value )
  *  @param  n [in] number of elements
  */
 /*===========================================================================*/
-inline void Endian::Swap2Bytes( void* values, size_t n )
+inline void Endian::Swap2Bytes( void* values, std::size_t n )
 {
     unsigned char* v = static_cast<unsigned char*>( values );
     unsigned char* vend = v + n * 2;
@@ -118,7 +118,7 @@ inline void Endian::Swap2Bytes( void* values, size_t n )
  *  @param  n [in] number of elements
  */
 /*===========================================================================*/
-inline void Endian::Swap4Bytes( void* values, size_t n )
+inline void Endian::Swap4Bytes( void* values, std::size_t n )
 {
     unsigned char* v = static_cast<unsigned char*>( values );
     unsigned char* vend = v + n * 4;
@@ -136,7 +136,7 @@ inline void Endian::Swap4Bytes( void* values, size_t n )
  *  @param  n [in] number of elements
  */
 /*===========================================================================*/
-inline void Endian::Swap8Bytes( void* values, size_t n )
+inline void Endian::Swap8Bytes( void* values, std::size_t n )
 {
     unsigned char* v = static_cast<unsigned char*>( values );
     unsigned char* vend = v + n * 8;
@@ -281,7 +281,7 @@ inline void Endian::Swap( kvs::Real64* value )
  *  @brief  Swaps the array of 8-bit integer value. (inaction)
  */
 /*===========================================================================*/
-inline void Endian::Swap( kvs::Int8*, size_t )
+inline void Endian::Swap( kvs::Int8*, std::size_t )
 {
 }
 
@@ -290,7 +290,7 @@ inline void Endian::Swap( kvs::Int8*, size_t )
  *  @brief  Swaps the array of 8-bit integer value. (inaction)
  */
 /*===========================================================================*/
-inline void Endian::Swap( kvs::UInt8*, size_t )
+inline void Endian::Swap( kvs::UInt8*, std::size_t )
 {
 }
 
@@ -301,7 +301,7 @@ inline void Endian::Swap( kvs::UInt8*, size_t )
  *  @param  n [in] number of elements
  */
 /*===========================================================================*/
-inline void Endian::Swap( kvs::Int16* values, size_t n )
+inline void Endian::Swap( kvs::Int16* values, std::size_t n )
 {
     Swap2Bytes( values, n );
 }
@@ -313,7 +313,7 @@ inline void Endian::Swap( kvs::Int16* values, size_t n )
  *  @param  n [in] number of elements
  */
 /*===========================================================================*/
-inline void Endian::Swap( kvs::UInt16* values, size_t n )
+inline void Endian::Swap( kvs::UInt16* values, std::size_t n )
 {
     Swap2Bytes( values, n );
 }
@@ -325,7 +325,7 @@ inline void Endian::Swap( kvs::UInt16* values, size_t n )
  *  @param  n [in] number of elements
  */
 /*===========================================================================*/
-inline void Endian::Swap( kvs::Int32* values, size_t n )
+inline void Endian::Swap( kvs::Int32* values, std::size_t n )
 {
     Swap4Bytes( values, n );
 }
@@ -337,7 +337,7 @@ inline void Endian::Swap( kvs::Int32* values, size_t n )
  *  @param  n [in] number of elements
  */
 /*===========================================================================*/
-inline void Endian::Swap( kvs::UInt32* values, size_t n )
+inline void Endian::Swap( kvs::UInt32* values, std::size_t n )
 {
     Swap4Bytes( values, n );
 }
@@ -349,7 +349,7 @@ inline void Endian::Swap( kvs::UInt32* values, size_t n )
  *  @param  n [in] number of elements
  */
 /*===========================================================================*/
-inline void Endian::Swap( kvs::Int64* values, size_t n )
+inline void Endian::Swap( kvs::Int64* values, std::size_t n )
 {
     Swap8Bytes( values, n );
 }
@@ -361,7 +361,7 @@ inline void Endian::Swap( kvs::Int64* values, size_t n )
  *  @param  n [in] number of elements
  */
 /*===========================================================================*/
-inline void Endian::Swap( kvs::UInt64* values, size_t n )
+inline void Endian::Swap( kvs::UInt64* values, std::size_t n )
 {
     Swap8Bytes( values, n );
 }
@@ -373,7 +373,7 @@ inline void Endian::Swap( kvs::UInt64* values, size_t n )
  *  @param  n [in] number of elements
  */
 /*===========================================================================*/
-inline void Endian::Swap( kvs::Real32* values, size_t n )
+inline void Endian::Swap( kvs::Real32* values, std::size_t n )
 {
     Swap4Bytes( values, n );
 }
@@ -385,7 +385,7 @@ inline void Endian::Swap( kvs::Real32* values, size_t n )
  *  @param  n [in] number of elements
  */
 /*===========================================================================*/
-inline void Endian::Swap( kvs::Real64* values, size_t n )
+inline void Endian::Swap( kvs::Real64* values, std::size_t n )
 {
     Swap8Bytes( values, n );
 }

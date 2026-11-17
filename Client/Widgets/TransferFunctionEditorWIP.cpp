@@ -494,7 +494,7 @@ void TransferFunctionEditorWIP::onNumberOfTransferFunctionValueChanged( const in
     ui->colorFunctionComboBox->blockSignals( true );
     ui->opacityFunctionComboBox->blockSignals( true );
 
-    size_t tfCount = m_transfer_function->count();
+    std::size_t tfCount = m_transfer_function->count();
 
     // Color
     int currentColorIndex      = ui->colorFunctionComboBox->currentIndex();
@@ -511,7 +511,7 @@ void TransferFunctionEditorWIP::onNumberOfTransferFunctionValueChanged( const in
     }
 
     // アイテム追加
-    for( size_t i = ui->colorFunctionComboBox->count(); i < tfCount; ++i )
+    for( std::size_t i = ui->colorFunctionComboBox->count(); i < tfCount; ++i )
     {
         ui->colorFunctionComboBox->addItem( QString( "C%1" ).arg( i + 1 ) );
     }
@@ -531,7 +531,7 @@ void TransferFunctionEditorWIP::onNumberOfTransferFunctionValueChanged( const in
         ui->opacityFunctionComboBox->removeItem( ui->opacityFunctionComboBox->count() - 1 );
     }
 
-    for( size_t i = ui->opacityFunctionComboBox->count(); i < tfCount; ++i )
+    for( std::size_t i = ui->opacityFunctionComboBox->count(); i < tfCount; ++i )
     {
         ui->opacityFunctionComboBox->addItem( QString( "O%1" ).arg( i + 1 ) );
     }

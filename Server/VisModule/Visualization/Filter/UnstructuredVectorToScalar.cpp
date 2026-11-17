@@ -102,17 +102,17 @@ UnstructuredVectorToScalar::SuperClass* UnstructuredVectorToScalar::exec( const 
 template <typename T>
 void UnstructuredVectorToScalar::calculate_magnitude( const vismodule::UnstructuredVolumeObject& volume )
 {
-    const size_t veclen = volume.veclen();
-    const size_t nnodes = volume.nnodes();
+    const std::size_t veclen = volume.veclen();
+    const std::size_t nnodes = volume.nnodes();
 
     vismodule::AnyValueArray values;
     vismodule::Real32* dst = static_cast<vismodule::Real32*>( values.allocate<vismodule::Real32>( nnodes ) );
     const T* src = static_cast<const T*>( volume.values().pointer() );
 
-    for ( size_t i = 0; i < nnodes; i++ )
+    for ( std::size_t i = 0; i < nnodes; i++ )
     {
         vismodule::Real32 magnitude = 0;
-        for ( size_t j = 0; j < veclen; j++ )
+        for ( std::size_t j = 0; j < veclen; j++ )
         {
             magnitude += vismodule::Math::Square( static_cast<vismodule::Real32>( *(src++) ) );
         }

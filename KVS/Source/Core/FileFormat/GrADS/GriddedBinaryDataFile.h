@@ -53,7 +53,7 @@ public:
     bool bigEndian() const { return m_big_endian; }
     const std::string& filename() const { return m_filename; }
     const kvs::ValueArray<kvs::Real32>& values() const { return m_values; }
-    const kvs::ValueArray<kvs::Real32> values( const size_t vindex, const kvs::Vec3ui& dim ) const;
+    const kvs::ValueArray<kvs::Real32> values( const std::size_t vindex, const kvs::Vec3ui& dim ) const;
     bool load() const;
     void free() const;
 };

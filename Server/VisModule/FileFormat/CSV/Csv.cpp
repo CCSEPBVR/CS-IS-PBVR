@@ -100,7 +100,7 @@ std::ostream& operator << ( std::ostream& os, const Csv& csv )
  *  @return number of rows
  */
 /*===========================================================================*/
-const size_t Csv::nrows( void ) const
+const std::size_t Csv::nrows( void ) const
 {
     return( m_values.size() );
 }
@@ -112,7 +112,7 @@ const size_t Csv::nrows( void ) const
  *  @return row
  */
 /*===========================================================================*/
-const Csv::Row& Csv::row( const size_t index ) const
+const Csv::Row& Csv::row( const std::size_t index ) const
 {
     return( m_values.at(index) );
 }
@@ -125,7 +125,7 @@ const Csv::Row& Csv::row( const size_t index ) const
  *  @return value
  */
 /*===========================================================================*/
-const std::string& Csv::value( const size_t i, const size_t j ) const
+const std::string& Csv::value( const std::size_t i, const std::size_t j ) const
 {
     return( m_values.at(i).at(j) );
 }
@@ -148,7 +148,7 @@ void Csv::addRow( const Row& row )
  *  @param  row [in] row
  */
 /*===========================================================================*/
-void Csv::setRow( const size_t index, const Row& row )
+void Csv::setRow( const std::size_t index, const Row& row )
 {
     m_values.at(index) = row;
 }
@@ -161,7 +161,7 @@ void Csv::setRow( const size_t index, const Row& row )
  *  @param  value [in] value
  */
 /*===========================================================================*/
-void Csv::setValue( const size_t i, const size_t j, const std::string& value )
+void Csv::setValue( const std::size_t i, const std::size_t j, const std::string& value )
 {
     m_values.at(i).at(j) = value;
 }

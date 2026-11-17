@@ -35,9 +35,9 @@ public:
 
 private:
     double m_accumulation_time; ///< accumulation time
-    size_t m_num_projected_particles; ///< number of projected points
-    size_t m_num_stored_particles; ///< number of stored points
-    size_t m_subpixel_level; ///< subpixel level
+    std::size_t m_num_projected_particles; ///< number of projected points
+    std::size_t m_num_stored_particles; ///< number of stored points
+    std::size_t m_subpixel_level; ///< subpixel level
     kvs::ObjectManager* m_object_manager; ///< pointer to the object manager
     kvs::RendererManager* m_renderer_manager; ///< pointer to the renderer manager
     kvs::IDManager* m_id_manager; ///< pointer to the ID manager
@@ -53,9 +53,9 @@ public:
     virtual ~ParticleBufferCompositor();
 
     void exec( kvs::ObjectBase* object, kvs::Camera* camera, kvs::Light* light );
-    size_t accumulationTime() const { return m_accumulation_time; }
-    size_t numberOfProjectedParticles() const { return m_num_projected_particles; }
-    size_t numberOfStoredParticles() const { return m_num_stored_particles; }
+    std::size_t accumulationTime() const { return m_accumulation_time; }
+    std::size_t numberOfProjectedParticles() const { return m_num_projected_particles; }
+    std::size_t numberOfStoredParticles() const { return m_num_stored_particles; }
     void link( kvs::PointObject* object, kvs::ParticleVolumeRenderer* renderer );
     void clearList();
 
@@ -72,8 +72,8 @@ private:
         kvs::Light* light );
 
 public:
-    KVS_DEPRECATED( size_t numOfProjectedParticles() const ) { return this->numberOfProjectedParticles(); }
-    KVS_DEPRECATED( size_t numOfStoredParticles() const ) { return this->numberOfStoredParticles(); }
+    KVS_DEPRECATED( std::size_t numOfProjectedParticles() const ) { return this->numberOfProjectedParticles(); }
+    KVS_DEPRECATED( std::size_t numOfStoredParticles() const ) { return this->numberOfStoredParticles(); }
 };
 
 } // end of namespace kvs

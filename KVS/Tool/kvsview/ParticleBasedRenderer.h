@@ -41,7 +41,7 @@ public:
     float diffuse() const { return valueAs<float>( "kd", shader() == 0 ? 0.6f : 0.5f ); }
     float specular() const { return valueAs<float>( "ks", 0.8f ); }
     float shininess() const { return valueAs<float>( "n", 100.0f ); }
-    size_t repetitionLevel() const { return valueAs<size_t>( "r", 1 ); }
+    std::size_t repetitionLevel() const { return valueAs<size_t>( "r", 1 ); }
 
     const kvs::TransferFunction transferFunction( const kvs::VolumeObjectBase* volume ) const;
 };

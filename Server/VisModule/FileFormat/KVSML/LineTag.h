@@ -38,7 +38,7 @@ public:
 protected:
 
     bool m_has_nlines; ///< flag to check whether 'nlines' is specified or not
-    size_t m_nlines; ///< number of lines
+    std::size_t m_nlines; ///< number of lines
 
 public:
 
@@ -50,11 +50,11 @@ public:
 
     const bool hasNLines( void ) const;
 
-    const size_t nlines( void ) const;
+    const std::size_t nlines( void ) const;
 
 public:
 
-    void setNLines( const size_t nlines );
+    void setNLines( const std::size_t nlines );
 
 public:
 

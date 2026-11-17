@@ -76,9 +76,9 @@ public:
     void setGridDrawMode( const GridDrawMode mode ) { m_grid_draw_mode = mode; }
     void setGridlinePattern( const GridlinePattern pattern ) { m_gridline_pattern = pattern; }
     void setNumberOfGridlines( const kvs::Vec3u& ngridlines ) { m_ngridlines = ngridlines; }
-    void setNumberOfXGridlines( const size_t ngridlines ) { m_ngridlines[0] = ngridlines; }
-    void setNumberOfYGridlines( const size_t ngridlines ) { m_ngridlines[1] = ngridlines; }
-    void setNumberOfZGridlines( const size_t ngridlines ) { m_ngridlines[2] = ngridlines; }
+    void setNumberOfXGridlines( const std::size_t ngridlines ) { m_ngridlines[0] = ngridlines; }
+    void setNumberOfYGridlines( const std::size_t ngridlines ) { m_ngridlines[1] = ngridlines; }
+    void setNumberOfZGridlines( const std::size_t ngridlines ) { m_ngridlines[2] = ngridlines; }
     void setGridlineColor( const kvs::RGBColor& color ) { m_gridline_color = color; }
     void setGridlineWidth( const kvs::Real32 width ) { m_gridline_width = width; }
     void setXLabel( const std::string& label ) { m_x_label = label; }
@@ -105,9 +105,9 @@ public:
     GridDrawMode gridDrawMode() const { return m_grid_draw_mode; }
     GridlinePattern gridlinePattern() const { return m_gridline_pattern; }
     const kvs::Vec3u& numberOfGridlines() const { return m_ngridlines; }
-    size_t numberOfXGridlines() const { return m_ngridlines.x(); }
-    size_t numberOfYGridlines() const { return m_ngridlines.y(); }
-    size_t numberOfZGridlines() const { return m_ngridlines.z(); }
+    std::size_t numberOfXGridlines() const { return m_ngridlines.x(); }
+    std::size_t numberOfYGridlines() const { return m_ngridlines.y(); }
+    std::size_t numberOfZGridlines() const { return m_ngridlines.z(); }
     const kvs::RGBColor& gridlineColor() const { return m_gridline_color; }
     kvs::Real32 gridlineWidth() const { return m_gridline_width; }
     const std::string& xLabel() const { return m_x_label; }

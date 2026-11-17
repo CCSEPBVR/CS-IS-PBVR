@@ -186,8 +186,8 @@ void MarchingCubes::extract_surfaces_with_duplication(
     const vismodule::UInt32    slice_size( volume.nnodesPerSlice() );
 
     // Extract surfaces.
-    size_t index = 0;
-    size_t local_index[8];
+    std::size_t index = 0;
+    std::size_t local_index[8];
     for ( vismodule::UInt32 z = 0; z < ncells.z(); ++z )
     {
         for ( vismodule::UInt32 y = 0; y < ncells.y(); ++y )
@@ -206,12 +206,12 @@ void MarchingCubes::extract_surfaces_with_duplication(
                 index++;
 
                 // Calculate the index of the reference table.
-                const size_t table_index = this->calculate_table_index<T>( local_index );
+                const std::size_t table_index = this->calculate_table_index<T>( local_index );
                 if ( table_index == 0 ) continue;
                 if ( table_index == 255 ) continue;
 
                 // Calculate the triangle polygons.
-                for ( size_t i = 0; MarchingCubesTable::TriangleID[ table_index ][i] != -1; i += 3 )
+                for ( std::size_t i = 0; MarchingCubesTable::TriangleID[ table_index ][i] != -1; i += 3 )
                 {
                     // Refer the edge IDs from the TriangleTable by using the table_index.
                     const int e0 = MarchingCubesTable::TriangleID[table_index][i];
@@ -300,8 +300,8 @@ template <typename T>
 void MarchingCubes::extract_surfaces_without_duplication(
     const vismodule::StructuredVolumeObject& volume )
 {
-    const size_t volume_size = volume.nnodes();
-    const size_t byte_size   = sizeof( vismodule::UInt32 ) * 3 * volume_size;
+    const std::size_t volume_size = volume.nnodes();
+    const std::size_t byte_size   = sizeof( vismodule::UInt32 ) * 3 * volume_size;
     vismodule::UInt32* vertex_map = static_cast<vismodule::UInt32*>( malloc( byte_size ) );
     if ( !vertex_map )
     {
@@ -348,12 +348,12 @@ void MarchingCubes::extract_surfaces_without_duplication(
  */
 /*==========================================================================*/
 template <typename T>
-const size_t MarchingCubes::calculate_table_index( const size_t* local_index ) const
+const std::size_t MarchingCubes::calculate_table_index( const size_t* local_index ) const
 {
     const T* const values = static_cast<const T*>( BaseClass::m_volume->values().pointer() );
     const double isolevel = m_isolevel;
 
-    size_t table_index = 0;
+    std::size_t table_index = 0;
     if ( static_cast<double>( values[ local_index[0] ] ) > isolevel ) { table_index |=   1; }
     if ( static_cast<double>( values[ local_index[1] ] ) > isolevel ) { table_index |=   2; }
     if ( static_cast<double>( values[ local_index[2] ] ) > isolevel ) { table_index |=   4; }
@@ -391,8 +391,8 @@ const vismodule::Vector3f MarchingCubes::interpolate_vertex(
     const double z1 = vertex1.z();
     const vismodule::UInt32 line_size  = volume->nnodesPerLine();
     const vismodule::UInt32 slice_size = volume->nnodesPerSlice();
-    const size_t v0_index = static_cast<size_t>( x0 + y0 * line_size + z0 * slice_size );
-    const size_t v1_index = static_cast<size_t>( x1 + y1 * line_size + z1 * slice_size );
+    const std::size_t v0_index = static_cast<size_t>( x0 + y0 * line_size + z0 * slice_size );
+    const std::size_t v1_index = static_cast<size_t>( x1 + y1 * line_size + z1 * slice_size );
 
     const double v0 = static_cast<double>( values[ v0_index ] );
     const double v1 = static_cast<double>( values[ v1_index ] );
@@ -451,17 +451,17 @@ void MarchingCubes::calculate_isopoints(
     const double         isolevel = m_isolevel;
 
     vismodule::UInt32 nisopoints = 0;
-    size_t      index = 0;
+    std::size_t      index = 0;
     for ( vismodule::UInt32 z = 0; z < resolution.z(); ++z )
     {
         for ( vismodule::UInt32 y = 0; y < resolution.y(); ++y )
         {
             for ( vismodule::UInt32 x = 0; x < resolution.x(); ++x )
             {
-                const size_t id0 = index;
-                const size_t id1 = id0 + 1;
-                const size_t id2 = id0 + line_size;
-                const size_t id3 = id0 + slice_size;
+                const std::size_t id0 = index;
+                const std::size_t id1 = id0 + 1;
+                const std::size_t id2 = id0 + line_size;
+                const std::size_t id3 = id0 + slice_size;
 
                 if ( x != ncells.x() )
                 {
@@ -539,9 +539,9 @@ void MarchingCubes::connect_isopoints(
     const vismodule::UInt32    line_size( volume->nnodesPerLine() );
     const vismodule::UInt32    slice_size( volume->nnodesPerSlice() );
 
-    size_t index = 0;
-    size_t local_index[8];
-    size_t local_edge[12];
+    std::size_t index = 0;
+    std::size_t local_index[8];
+    std::size_t local_edge[12];
     for ( vismodule::UInt32 z = 0; z < ncells.z(); ++z )
     {
         for ( vismodule::UInt32 y = 0; y < ncells.y(); ++y )
@@ -560,7 +560,7 @@ void MarchingCubes::connect_isopoints(
                 index++;
 
                 // Calculate the index of the reference table.
-                const size_t table_index = this->calculate_table_index<T>( local_index );
+                const std::size_t table_index = this->calculate_table_index<T>( local_index );
                 if ( table_index == 0 ) continue;
                 if ( table_index == 255 ) continue;
 
@@ -577,7 +577,7 @@ void MarchingCubes::connect_isopoints(
                 local_edge[10] = local_edge[8] + 3 + 3 * line_size;
                 local_edge[11] = local_edge[8] + 3 * line_size;
 
-                for ( size_t i = 0; MarchingCubesTable::TriangleID[table_index][i] != -1; i += 3 )
+                for ( std::size_t i = 0; MarchingCubesTable::TriangleID[table_index][i] != -1; i += 3 )
                 {
                     const int e0 = local_edge[ MarchingCubesTable::TriangleID[table_index][i]   ];
                     const int e1 = local_edge[ MarchingCubesTable::TriangleID[table_index][i+2] ];
@@ -614,7 +614,7 @@ void MarchingCubes::calculate_normals_on_polygon(
 
     const vismodule::Real32* const coords_ptr = &coords[ 0 ];
 
-    const size_t size = connections.size();
+    const std::size_t size = connections.size();
     for ( vismodule::UInt32 index = 0; index < size; index += 3 )
     {
         const vismodule::UInt32 coord0_index = 3 * connections[ index     ];
@@ -653,7 +653,7 @@ void MarchingCubes::calculate_normals_on_vertex(
 
     const vismodule::Real32* const coords_ptr = &coords[ 0 ];
 
-    const size_t size = connections.size();
+    const std::size_t size = connections.size();
     for ( vismodule::UInt32 index = 0; index < size; index += 3 )
     {
         const vismodule::UInt32 coord0_index = 3 * connections[ index     ];

@@ -27,15 +27,15 @@ public:
 
 private:
     bool m_has_nlines; ///< flag to check whether 'nlines' is specified or not
-    size_t m_nlines; ///< number of lines
+    std::size_t m_nlines; ///< number of lines
 
 public:
     LineTag();
 
     bool hasNLines() const { return m_has_nlines; }
-    size_t nlines() const { return m_nlines; }
+    std::size_t nlines() const { return m_nlines; }
 
-    void setNLines( const size_t nlines ) { m_has_nlines = true; m_nlines = nlines; }
+    void setNLines( const std::size_t nlines ) { m_has_nlines = true; m_nlines = nlines; }
 
     bool read( const kvs::XMLNode::SuperClass* parent );
     bool write( kvs::XMLNode::SuperClass* parent );

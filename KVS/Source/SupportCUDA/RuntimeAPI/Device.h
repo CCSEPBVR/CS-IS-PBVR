@@ -35,8 +35,8 @@ private:
 
     Handler m_handler; ///< device handler
     Property m_property; ///< cuda device properties
-    size_t m_free_memory; ///< free amount of memory on the device
-    size_t m_total_memory; ///< total amount of memory on the device
+    std::size_t m_free_memory; ///< free amount of memory on the device
+    std::size_t m_total_memory; ///< total amount of memory on the device
 
 public:
 
@@ -56,8 +56,8 @@ public:
     int majorRevision() const;
     int minorRevision() const;
     std::string name() const;
-    size_t totalMemory() const;
-    size_t freeMemory() const;
+    std::size_t totalMemory() const;
+    std::size_t freeMemory() const;
     int maxThreadsPerBlock() const;
     kvs::Vector3i maxThreadsDimension() const;
     kvs::Vector3i maxGridSize() const;

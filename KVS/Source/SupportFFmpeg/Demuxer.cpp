@@ -175,7 +175,7 @@ av::VideoFrame Demuxer::retrieve()
 bool Demuxer::find_stream()
 {
     const auto nstreams = m_format_context.streamsCount();
-    for ( size_t i = 0; i < nstreams; ++i )
+    for ( std::size_t i = 0; i < nstreams; ++i )
     {
         auto stream = m_format_context.stream(i);
         if ( stream.mediaType() == AVMEDIA_TYPE_VIDEO )

@@ -37,8 +37,8 @@ public:
 private:
     kvs::MersenneTwister m_random{}; ///< random number generator
     SeedingMethod m_seeding_method = SmartSeeding; ///< seeding method
-    size_t m_nclusters = 1; ///< number of clusters
-    size_t m_max_iterations = 100; ///< maximum number of interations
+    std::size_t m_nclusters = 1; ///< number of clusters
+    std::size_t m_max_iterations = 100; ///< maximum number of interations
     float m_tolerance = 1.e-6; ///< tolerance of distance
     kvs::AnyValueTable m_input_table{}; ///< input table data
     kvs::ValueArray<kvs::UInt32> m_cluster_ids{}; ///< cluster IDs
@@ -49,20 +49,20 @@ public:
     virtual ~KMeans() { if ( m_cluster_centers ) { delete [] m_cluster_centers; } }
 
     void setSeedingMethod( SeedingMethod seeding_method ) { m_seeding_method = seeding_method; }
-    void setSeed( const size_t seed ) { m_random.setSeed( seed ); }
-    void setNumberOfClusters( const size_t nclusters ) { m_nclusters = nclusters; }
-    void setMaxIterations( const size_t max_iterations ) { m_max_iterations = max_iterations; }
+    void setSeed( const std::size_t seed ) { m_random.setSeed( seed ); }
+    void setNumberOfClusters( const std::size_t nclusters ) { m_nclusters = nclusters; }
+    void setMaxIterations( const std::size_t max_iterations ) { m_max_iterations = max_iterations; }
     void setTolerance( const float tolerance ) { m_tolerance = tolerance; }
     void setInputTableData( const kvs::AnyValueTable& table ) { m_input_table = table; }
 
     SeedingMethod seedingMethod() const { return m_seeding_method; }
-    size_t numberOfClusters() const { return m_nclusters; }
-    size_t maxIterations() const { return m_max_iterations; }
+    std::size_t numberOfClusters() const { return m_nclusters; }
+    std::size_t maxIterations() const { return m_max_iterations; }
     float tolerance() const { return m_tolerance; }
 
     void run();
     const kvs::ValueArray<kvs::UInt32>& clusterIDs() const { return m_cluster_ids; }
-    const kvs::ValueArray<kvs::Real32>& clusterCenter( const size_t index ) const { return m_cluster_centers[ index ]; }
+    const kvs::ValueArray<kvs::Real32>& clusterCenter( const std::size_t index ) const { return m_cluster_centers[ index ]; }
 };
 
 } // end of namespace kvs

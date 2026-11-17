@@ -79,6 +79,10 @@
 #include "PlotOverLineEditorTest.h"
 #endif
 
+#ifdef PBVR_ENABLE_TEST_PLOTOVERTIMEEDITOR
+#include "PlotOverTimeEditorTest.h"
+#endif
+
 #ifdef PBVR_ENABLE_TEST_POINTSIZECONTROL
 #include "PointSizeControlTest.h"
 #endif
@@ -95,12 +99,32 @@
 #include "ServerTest.h"
 #endif
 
+#ifdef PBVR_ENABLE_TEST_INSITU_MODE
+#include "InSituModeTest.h"
+#endif
+
+#ifdef PBVR_ENABLE_TEST_ENSEMBLE_TRANSFER_FUNCTION
+#include "EnsembleTransferFunctionTest.h"
+#endif
+
+#ifdef PBVR_ENABLE_TEST_REPETITIONLEVELCONTROL_INSITU
+#include "RepetitionLevelControlInSituTest.h"
+#endif
+
+#ifdef PBVR_ENABLE_TEST_ENSEMBLE_INSITU_MODE
+#include "EnsembleInSituModeTest.h"
+#endif
+
 #ifdef PBVR_ENABLE_TEST_VOLUMETRANSFORM
 #include "VolumeTransformTest.h"
 #endif
 
 #ifdef PBVR_ENABLE_TEST_TRANSFERFUNCTIONEDITOR_IMPORTEXPORT
 #include "TransferFunctionEditorImportExportTest.h"
+#endif
+
+#ifdef PBVR_ENABLE_TEST_TRANSFERFUNCTIONEDITOR_IMPORT_INVALID_FILE
+#include "TransferFunctionEditorImportInvalidFileTest.h"
 #endif
 
 #ifdef PBVR_ENABLE_TEST_TRANSFERFUNCTIONEDITOR_CHANGE_TRANSFER_FUNCTION_NUMBER
@@ -171,6 +195,9 @@ void cleanupBetweenTests()
 
 int qExecWithCleanup( QObject* test, int argc, char** argv )
 {
+    // QtTestは初回のqExecでタイムアウト値を保持するため、各テストの
+    // コンストラクタによる設定後、共通の入口で45分を設定します。
+    qputenv( "QTEST_FUNCTION_TIMEOUT", QByteArrayLiteral( "2700000" ) );
     const int result = QTest::qExec( test, argc, argv );
     cleanupBetweenTests();
     return result;
@@ -258,6 +285,14 @@ int runEnabledTests( int argc, char** argv )
     runEnabledTest<ClientTests::PlotOverLineEditorTest>( result, has_enabled_test, argc, argv );
 #endif
 
+#ifdef PBVR_ENABLE_TEST_PLOTOVERTIMEEDITOR
+    {
+        has_enabled_test = true;
+        ClientTests::PlotOverTimeEditorTest test;
+        result |= qExecWithCleanup( &test, argc, argv );
+    }
+#endif
+
 #ifdef PBVR_ENABLE_TEST_POINTSIZECONTROL
     runEnabledTest<ClientTests::PointSizeControlTest>( result, has_enabled_test, argc, argv );
 #endif
@@ -274,12 +309,52 @@ int runEnabledTests( int argc, char** argv )
     runEnabledTest<ClientTests::ServerTest>( result, has_enabled_test, argc, argv );
 #endif
 
+#ifdef PBVR_ENABLE_TEST_INSITU_MODE
+    {
+        has_enabled_test = true;
+        ClientTests::InSituModeTest test;
+        result |= qExecWithCleanup( &test, argc, argv );
+    }
+#endif
+
+#ifdef PBVR_ENABLE_TEST_ENSEMBLE_TRANSFER_FUNCTION
+    {
+        has_enabled_test = true;
+        ClientTests::EnsembleTransferFunctionTest test;
+        result |= qExecWithCleanup( &test, argc, argv );
+    }
+#endif
+
+#ifdef PBVR_ENABLE_TEST_REPETITIONLEVELCONTROL_INSITU
+    {
+        has_enabled_test = true;
+        ClientTests::RepetitionLevelControlInSituTest test;
+        result |= qExecWithCleanup( &test, argc, argv );
+    }
+#endif
+
+#ifdef PBVR_ENABLE_TEST_ENSEMBLE_INSITU_MODE
+    {
+        has_enabled_test = true;
+        ClientTests::EnsembleInSituModeTest test;
+        result |= qExecWithCleanup( &test, argc, argv );
+    }
+#endif
+
 #ifdef PBVR_ENABLE_TEST_VOLUMETRANSFORM
     runEnabledTest<ClientTests::VolumeTransformTest>( result, has_enabled_test, argc, argv );
 #endif
 
 #ifdef PBVR_ENABLE_TEST_TRANSFERFUNCTIONEDITOR_IMPORTEXPORT
     runEnabledTest<TransferFunctionEditorTest::ImportExportTest>( result, has_enabled_test, argc, argv );
+#endif
+
+#ifdef PBVR_ENABLE_TEST_TRANSFERFUNCTIONEDITOR_IMPORT_INVALID_FILE
+    {
+        has_enabled_test = true;
+        TransferFunctionEditorTest::ImportInvalidFileTest test;
+        result |= qExecWithCleanup( &test, argc, argv );
+    }
 #endif
 
 #ifdef PBVR_ENABLE_TEST_TRANSFERFUNCTIONEDITOR_CHANGE_TRANSFER_FUNCTION_NUMBER
@@ -334,10 +409,14 @@ int runEnabledTests( int argc, char** argv )
                    "TEST_ENABLE_ANIMATIONCONTROL, or "
                    "TEST_ENABLE_GLYPHEDITOR, or "
                    "TEST_ENABLE_OBJECTEDITOR, or "
-                   "TEST_ENABLE_PLOTOVERLINEEDITOR, or "
+                   "TEST_ENABLE_PLOTOVERLINEEDITOR, "
+                   "TEST_ENABLE_PLOTOVERTIMEEDITOR, or "
                    "TEST_ENABLE_POINTSIZECONTROL, or "
                    "TEST_ENABLE_REPETITIONLEVELCONTROL, or "
                    "TEST_ENABLE_SHADINGCONTROL, or "
+                   "TEST_ENABLE_SERVER, or "
+                   "TEST_ENABLE_INSITU_MODE, or "
+                   "TEST_ENABLE_ENSEMBLE_TRANSFER_FUNCTION, or "
                    "TEST_ENABLE_VOLUMETRANSFORM, or "
                    "TEST_ENABLE_TRANSFERFUNCTIONEDITOR_IMPORTEXPORT, or "
                    "TEST_ENABLE_TRANSFERFUNCTIONEDITOR_CHANGE_TRANSFER_FUNCTION_NUMBER, or "

@@ -171,8 +171,8 @@ void StochasticUniformGridRenderer::Engine::create(
     this->create_shader_program( BaseClass::shader(), BaseClass::isShadingEnabled() );
 
     const float dpr = camera->devicePixelRatio();
-    const size_t framebuffer_width = static_cast<size_t>( camera->windowWidth() * dpr );
-    const size_t framebuffer_height = static_cast<size_t>( camera->windowHeight() * dpr );
+    const std::size_t framebuffer_width = static_cast<size_t>( camera->windowWidth() * dpr );
+    const std::size_t framebuffer_height = static_cast<size_t>( camera->windowHeight() * dpr );
     this->create_framebuffer( framebuffer_width, framebuffer_height );
 
     this->create_buffer_object( volume );
@@ -192,8 +192,8 @@ void StochasticUniformGridRenderer::Engine::update(
     kvs::Light* light )
 {
     const float dpr = camera->devicePixelRatio();
-    const size_t framebuffer_width = static_cast<size_t>( camera->windowWidth() * dpr );
-    const size_t framebuffer_height = static_cast<size_t>( camera->windowHeight() * dpr );
+    const std::size_t framebuffer_width = static_cast<size_t>( camera->windowWidth() * dpr );
+    const std::size_t framebuffer_height = static_cast<size_t>( camera->windowHeight() * dpr );
     this->update_framebuffer( framebuffer_width, framebuffer_height );
 }
 
@@ -212,7 +212,7 @@ void StochasticUniformGridRenderer::Engine::setup(
 {
     if ( m_transfer_function_changed )
     {
-        const size_t width = m_transfer_function.resolution();
+        const std::size_t width = m_transfer_function.resolution();
         const auto table = m_transfer_function.table();
         m_transfer_function_texture.release();
         m_transfer_function_texture.setWrapS( GL_CLAMP_TO_EDGE );
@@ -330,8 +330,8 @@ void StochasticUniformGridRenderer::Engine::setup_shader_program(
  */
 /*===========================================================================*/
 void StochasticUniformGridRenderer::Engine::create_framebuffer(
-    const size_t width,
-    const size_t height )
+    const std::size_t width,
+    const std::size_t height )
 {
     m_entry_texture.setWrapS( GL_CLAMP_TO_BORDER );
     m_entry_texture.setWrapT( GL_CLAMP_TO_BORDER );
@@ -365,8 +365,8 @@ void StochasticUniformGridRenderer::Engine::create_framebuffer(
  */
 /*===========================================================================*/
 void StochasticUniformGridRenderer::Engine::update_framebuffer(
-    const size_t width,
-    const size_t height )
+    const std::size_t width,
+    const std::size_t height )
 {
     m_entry_texture.release();
     m_exit_texture.release();
@@ -486,7 +486,7 @@ void StochasticUniformGridRenderer::Engine::update_buffer_object(
 void StochasticUniformGridRenderer::Engine::draw_buffer_object(
     const kvs::StructuredVolumeObject* volume )
 {
-    const size_t size = BaseClass::randomTextureSize();
+    const std::size_t size = BaseClass::randomTextureSize();
     const int count = BaseClass::repetitionCount() * ::RandomNumber();
     const float offset_x = static_cast<float>( ( count ) % size );
     const float offset_y = static_cast<float>( ( count / size ) % size );

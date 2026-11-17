@@ -15,11 +15,11 @@ std::ostream& operator << ( std::ostream& os, const kvs::ValueArray<T>& values )
 }
 
 template <typename T>
-kvs::ValueArray<T> Random( const size_t n )
+kvs::ValueArray<T> Random( const std::size_t n )
 {
     kvs::MersenneTwister engine;
     kvs::ValueArray<T> values( n );
-    for ( size_t i = 0; i < n; i++ )
+    for ( std::size_t i = 0; i < n; i++ )
     {
         values[i] = static_cast<T>( engine.randInteger(100) );
     }
@@ -28,7 +28,7 @@ kvs::ValueArray<T> Random( const size_t n )
 
 int main( int argc, char** argv )
 {
-    const size_t n = 10;
+    const std::size_t n = 10;
     kvs::ValueArray<float> Y = Random<float>( n );
     kvs::ValueArray<float> X0 = Random<float>( n );
     kvs::ValueArray<float> X1 = Random<float>( n );

@@ -111,7 +111,7 @@ size_t FrontSTR::numberOfResultData() const
  *  @return mesh data
  */
 /*===========================================================================*/
-const kvs::fstr::MeshData& FrontSTR::meshData( const size_t index ) const
+const kvs::fstr::MeshData& FrontSTR::meshData( const std::size_t index ) const
 {
     KVS_ASSERT( index < m_nmeshes );
     return m_mesh_data[ index ];
@@ -124,7 +124,7 @@ const kvs::fstr::MeshData& FrontSTR::meshData( const size_t index ) const
  *  @return mesh data
  */
 /*===========================================================================*/
-const kvs::fstr::ResultData& FrontSTR::resultData( const size_t index ) const
+const kvs::fstr::ResultData& FrontSTR::resultData( const std::size_t index ) const
 {
     KVS_ASSERT( index < m_nresults );
     return m_result_data[ index ];
@@ -215,12 +215,12 @@ void FrontSTR::print( std::ostream& os, const kvs::Indent& indent ) const
     os << indent << "Filename : " << BaseClass::filename() << std::endl;
     os << indent << "Number of mesh data : " << m_nmeshes << std::endl;
     os << indent << "Number of result data : " << m_nresults << std::endl;
-    for ( size_t i = 0; i < m_nmeshes; i++ )
+    for ( std::size_t i = 0; i < m_nmeshes; i++ )
     {
         os << indent << "Mesh data [" << i << "] : " << std::endl;
         m_mesh_data[i].print( os, indent.nextIndent() );
     }
-    for ( size_t i = 0; i < m_nresults; i++ )
+    for ( std::size_t i = 0; i < m_nresults; i++ )
     {
         os << indent << "Result data [" << i << "] : " << std::endl;
         m_result_data[i].print( os, indent.nextIndent() );
@@ -238,8 +238,8 @@ void FrontSTR::print( std::ostream& os, const kvs::Indent& indent ) const
 bool FrontSTR::read( const std::vector<std::string>& msh_filenames, const std::vector<std::string>& res_filenames )
 {
     std::string filenames = msh_filenames[0];
-    for ( size_t i = 1; i < msh_filenames.size(); i++ ) filenames += ";" + msh_filenames[i];
-    for ( size_t i = 0; i < res_filenames.size(); i++ ) filenames += ";" + res_filenames[i];
+    for ( std::size_t i = 1; i < msh_filenames.size(); i++ ) filenames += ";" + msh_filenames[i];
+    for ( std::size_t i = 0; i < res_filenames.size(); i++ ) filenames += ";" + res_filenames[i];
 
     BaseClass::setFilename( filenames );
     BaseClass::setSuccess( true );
@@ -268,7 +268,7 @@ bool FrontSTR::read( const std::vector<std::string>& msh_filenames, const std::v
     else
     {
         // Reading divided mesh data.
-        for ( size_t i = 0; i < m_nmeshes; i++ )
+        for ( std::size_t i = 0; i < m_nmeshes; i++ )
         {
             if ( !m_mesh_data[i].readDividedData( msh_filenames[i] ) )
             {
@@ -292,7 +292,7 @@ bool FrontSTR::read( const std::vector<std::string>& msh_filenames, const std::v
     else
     {
         // Reading divided result data.
-        for ( size_t i = 0; i < m_nresults; i++ )
+        for ( std::size_t i = 0; i < m_nresults; i++ )
         {
             if ( !m_result_data[i].readDividedData( res_filenames[i] ) )
             {

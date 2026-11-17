@@ -76,7 +76,7 @@ Gis::Gis( const std::string& filename, const kvs::gis::Area& render_area ):
 /*===========================================================================*/
 Gis::~Gis()
 {
-    for ( size_t i = 0; i < m_meshes.size(); i++ )
+    for ( std::size_t i = 0; i < m_meshes.size(); i++ )
     {
         if ( m_meshes[i] ) delete m_meshes[i];
     }
@@ -122,7 +122,7 @@ const std::vector<kvs::gis::Mesh*>& Gis::meshes() const
  *  @return pointer to the mesh
  */
 /*===========================================================================*/
-const kvs::gis::Mesh* Gis::mesh( const size_t index ) const
+const kvs::gis::Mesh* Gis::mesh( const std::size_t index ) const
 {
     return m_meshes[ index ];
 }
@@ -169,7 +169,7 @@ void Gis::print( std::ostream& os, const kvs::Indent& indent ) const
     m_render_area.print( os, indent.nextIndent() );
     os << indent << "Ocean color : " << m_ocean_color << std::endl;
     os << indent << "Number of meshes : " << m_meshes.size() << std::endl;
-    for ( size_t i = 0; i < m_meshes.size(); i++ )
+    for ( std::size_t i = 0; i < m_meshes.size(); i++ )
     {
         os << indent << "Mesh [" << i << "] : " << std::endl;
         m_meshes[i]->print( os, indent.nextIndent() );
@@ -192,8 +192,8 @@ bool Gis::read( const std::string& filenames )
     {
         kvs::Directory directory( filenames );
 
-        const size_t nfiles = directory.fileList().size();
-        for ( size_t i = 0; i < nfiles; i++ )
+        const std::size_t nfiles = directory.fileList().size();
+        for ( std::size_t i = 0; i < nfiles; i++ )
         {
             const std::string file = directory.fileList().at(i).filePath( true );
             if ( !this->read_mesh( file ) )
@@ -221,7 +221,7 @@ bool Gis::read( const std::string& filenames )
     float max_longitude = -9999.0f;
     float min_height =  9999.0f;
     float max_height = -9999.0f;
-    for ( size_t i = 0; i < m_meshes.size(); i++ )
+    for ( std::size_t i = 0; i < m_meshes.size(); i++ )
     {
         if ( m_meshes[i]->hasData() )
         {

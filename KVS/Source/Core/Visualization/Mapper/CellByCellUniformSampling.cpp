@@ -31,7 +31,7 @@ namespace kvs
 /*===========================================================================*/
 CellByCellUniformSampling::CellByCellUniformSampling(
     const kvs::VolumeObjectBase* volume,
-    const size_t repetition_level,
+    const std::size_t repetition_level,
     const float sampling_step,
     const kvs::TransferFunction& transfer_function,
     const float object_depth ):
@@ -59,7 +59,7 @@ CellByCellUniformSampling::CellByCellUniformSampling(
 CellByCellUniformSampling::CellByCellUniformSampling(
     const kvs::Camera* camera,
     const kvs::VolumeObjectBase* volume,
-    const size_t repetition_level,
+    const std::size_t repetition_level,
     const float sampling_step,
     const kvs::TransferFunction& transfer_function,
     const float object_depth ):
@@ -189,7 +189,7 @@ void CellByCellUniformSampling::generate_particles( const kvs::StructuredVolumeO
     const kvs::ColorMap color_map( BaseClass::transferFunction().colorMap() );
 
     // Calculate number of particles.
-    size_t N = 0;
+    std::size_t N = 0;
     kvs::ValueArray<kvs::UInt32> nparticles( ncells.x() * ncells.y() * ncells.z() );
     KVS_OMP_PARALLEL()
     {
@@ -199,13 +199,13 @@ void CellByCellUniformSampling::generate_particles( const kvs::StructuredVolumeO
         KVS_OMP_FOR( reduction(+:N) )
         for ( kvs::UInt32 z = 0; z < ncells.z(); ++z )
         {
-            size_t cell_index_counter = z * ncells.x() * ncells.y();
+            std::size_t cell_index_counter = z * ncells.x() * ncells.y();
             for ( kvs::UInt32 y = 0; y < ncells.y(); ++y )
             {
                 for ( kvs::UInt32 x = 0; x < ncells.x(); ++x )
                 {
                     sampler.bind( kvs::Vec3ui( x, y, z ) );
-                    const size_t n = sampler.numberOfParticles();
+                    const std::size_t n = sampler.numberOfParticles();
                     const kvs::UInt32 index = cell_index_counter++;
                     nparticles[index] = n;
                     N += n;
@@ -230,8 +230,8 @@ void CellByCellUniformSampling::generate_particles( const kvs::StructuredVolumeO
         KVS_OMP_FOR( schedule(static) )
         for ( kvs::UInt32 r = 0; r < repetitions; ++r )
         {
-            size_t cell_index_counter = 0;
-            size_t particle_index_counter = N * r;
+            std::size_t cell_index_counter = 0;
+            std::size_t particle_index_counter = N * r;
             for ( kvs::UInt32 z = 0; z < ncells.z(); ++z )
             {
                 for ( kvs::UInt32 y = 0; y < ncells.y(); ++y )
@@ -239,19 +239,19 @@ void CellByCellUniformSampling::generate_particles( const kvs::StructuredVolumeO
                     for ( kvs::UInt32 x = 0; x < ncells.x(); ++x )
                     {
                         const kvs::UInt32 index = cell_index_counter++;
-                        const size_t n = nparticles[index];
+                        const std::size_t n = nparticles[index];
                         if ( n == 0 ) continue;
 
                         sampler.bind( kvs::Vec3ui( x, y, z ) );
-                        for ( size_t i = 0; i < n; ++i )
+                        for ( std::size_t i = 0; i < n; ++i )
                         {
                             sampler.sample();
                             const CellByCellSampling::Particle& p = sampler.accept();
-                            const size_t particle_index = particle_index_counter++;
+                            const std::size_t particle_index = particle_index_counter++;
                             particles.push( particle_index, p );
                             /*
                             const kvs::RGBColor color = color_map.at( p.scalar );
-                            const size_t index3 = ( particle_index_counter++ ) * 3;
+                            const std::size_t index3 = ( particle_index_counter++ ) * 3;
                             coords[ index3 + 0 ] = p.coord.x();
                             coords[ index3 + 1 ] = p.coord.y();
                             coords[ index3 + 2 ] = p.coord.z();
@@ -289,21 +289,21 @@ void CellByCellUniformSampling::generate_particles( const kvs::UnstructuredVolum
     density_map.attachObject( volume );
     density_map.create( BaseClass::transferFunction().opacityMap() );
 
-    const size_t ncells = volume->numberOfCells();
+    const std::size_t ncells = volume->numberOfCells();
     const kvs::ColorMap color_map( BaseClass::transferFunction().colorMap() );
 
     // Calculate number of particles
-    size_t N = 0;
+    std::size_t N = 0;
     kvs::ValueArray<kvs::UInt32> nparticles( ncells );
     KVS_OMP_PARALLEL()
     {
         kvs::CellBase* cell = CellByCellSampling::Cell( volume );
         CellByCellSampling::CellSampler sampler( cell, &density_map );
         KVS_OMP_FOR( reduction(+:N) )
-        for ( size_t index = 0; index < ncells; ++index )
+        for ( std::size_t index = 0; index < ncells; ++index )
         {
             sampler.bind( index );
-            const size_t n = sampler.numberOfParticles();
+            const std::size_t n = sampler.numberOfParticles();
             nparticles[index] = n;
 
             N += n;
@@ -324,18 +324,18 @@ void CellByCellUniformSampling::generate_particles( const kvs::UnstructuredVolum
         KVS_OMP_FOR( schedule(static) )
         for ( kvs::UInt32 r = 0; r < repetitions; ++r )
         {
-            size_t particle_index_counter = N * r;
-            for ( size_t index = 0; index < ncells; ++index )
+            std::size_t particle_index_counter = N * r;
+            for ( std::size_t index = 0; index < ncells; ++index )
             {
-                const size_t n = nparticles[index];
+                const std::size_t n = nparticles[index];
                 if ( n == 0 ) continue;
 
                 sampler.bind( index );
-                for ( size_t i = 0; i < n; ++i )
+                for ( std::size_t i = 0; i < n; ++i )
                 {
                     sampler.sample();
                     const CellByCellSampling::Particle& p = sampler.accept();
-                    const size_t particle_index = particle_index_counter++;
+                    const std::size_t particle_index = particle_index_counter++;
                     particles.push( particle_index, p );
                 }
             }

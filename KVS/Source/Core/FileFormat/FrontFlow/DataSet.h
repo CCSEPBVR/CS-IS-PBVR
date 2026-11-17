@@ -34,9 +34,9 @@ public:
     friend std::ostream& operator << ( std::ostream& os, const DataSet& d );
 
     const std::vector<std::string>& commentList() const { return m_comment_list; }
-    const std::string& comment( const size_t index ) const { return m_comment_list[index]; }
+    const std::string& comment( const std::size_t index ) const { return m_comment_list[index]; }
     const std::vector<kvs::gf::Data>& dataList() const { return m_data_list; }
-    const kvs::gf::Data& data( const size_t index ) const { return m_data_list[index]; }
+    const kvs::gf::Data& data( const std::size_t index ) const { return m_data_list[index]; }
     void deallocate();
 
     bool readAscii( FILE* fp );

@@ -42,12 +42,12 @@ const kvs::UInt8 ResetBitMask[8] =
     kvsBinary8( 1111, 1110 ),
 };
 
-size_t BitToByte( size_t nbits )
+size_t BitToByte( std::size_t nbits )
 {
     return nbits >> 3;
 }
 
-size_t ByteToBit( size_t nbytes )
+size_t ByteToBit( std::size_t nbytes )
 {
     return nbytes << 3;
 }
@@ -71,24 +71,24 @@ size_t CountBits( kvs::UInt8 val )
 namespace kvs
 {
 
-BitArray::BitArray( const size_t size, const bool flag )
+BitArray::BitArray( const std::size_t size, const bool flag )
 {
     this->allocate( size );
     if ( flag ) this->set();
     else this->reset();
 }
 
-BitArray::BitArray( const kvs::UInt8* values, const size_t size )
+BitArray::BitArray( const kvs::UInt8* values, const std::size_t size )
 {
     m_size = size;
     m_values.allocate( this->byteSize() );
     std::copy( values, values + this->byteSize(), m_values.data() );
 }
 
-BitArray::BitArray( const bool* values, const size_t size )
+BitArray::BitArray( const bool* values, const std::size_t size )
 {
     this->allocate( size );
-    for ( size_t index = 0; index < size; index++ )
+    for ( std::size_t index = 0; index < size; index++ )
     {
         if ( values[ index ] ) this->set( index );
         else                   this->reset( index );
@@ -98,15 +98,15 @@ BitArray::BitArray( const bool* values, const size_t size )
 // set all 1 to table
 void BitArray::set()
 {
-    const size_t size = m_values.size();
-    for ( size_t index = 0; index < size; index++ )
+    const std::size_t size = m_values.size();
+    for ( std::size_t index = 0; index < size; index++ )
     {
         m_values[ index ] = ::Ones;
     }
 }
 
 // set true the "bit" position of table
-void BitArray::set( size_t index )
+void BitArray::set( std::size_t index )
 {
     KVS_ASSERT( index < this->size() );
     m_values[ ::BitToByte( index ) ] |= ::SetBitMask[ index % 8 ];
@@ -115,15 +115,15 @@ void BitArray::set( size_t index )
 // set all 0 to table
 void BitArray::reset()
 {
-    const size_t size = m_values.size();
-    for ( size_t index = 0; index < size; index++ )
+    const std::size_t size = m_values.size();
+    for ( std::size_t index = 0; index < size; index++ )
     {
         m_values[ index ] = ::Zeros;
     }
 }
 
 // set false the "bit" position of table
-void BitArray::reset( size_t index )
+void BitArray::reset( std::size_t index )
 {
     KVS_ASSERT( index < this->size() );
     m_values[ ::BitToByte( index ) ] &= ::ResetBitMask[ index % 8 ];
@@ -132,15 +132,15 @@ void BitArray::reset( size_t index )
 // reverse all value of table
 void BitArray::flip()
 {
-    const size_t size = m_values.size();
-    for ( size_t index = 0; index < size; index++ )
+    const std::size_t size = m_values.size();
+    for ( std::size_t index = 0; index < size; index++ )
     {
         m_values[ index ] ^= ::Ones;
     }
 }
 
 // reverse the value of "bit" position
-void BitArray::flip( size_t index )
+void BitArray::flip( std::size_t index )
 {
     KVS_ASSERT( index < this->size() );
     m_values[ ::BitToByte( index ) ] ^= ::SetBitMask[ index % 8 ];
@@ -152,9 +152,9 @@ size_t BitArray::count() const
     if ( m_values.empty() )
         return 0;
 
-    size_t ret = 0;
-    size_t index = 0;
-    const size_t size = m_values.size() - 1;
+    std::size_t ret = 0;
+    std::size_t index = 0;
+    const std::size_t size = m_values.size() - 1;
     for ( ; index < size; index++ )
     {
         ret += ::CountBits( m_values[ index ] );
@@ -164,7 +164,7 @@ size_t BitArray::count() const
 }
 
 // return the "bit" position value
-bool BitArray::test( size_t index ) const
+bool BitArray::test( std::size_t index ) const
 {
     return (*this)[ index ];
 }
@@ -184,7 +184,7 @@ size_t BitArray::paddingBit() const
     return this->bitSize() - this->size();
 }
 
-void BitArray::allocate( size_t size )
+void BitArray::allocate( std::size_t size )
 {
     m_size = size;
     m_values.allocate( this->byteSize() );
@@ -210,7 +210,7 @@ BitArray BitArray::clone() const
     return ret;
 }
 
-bool BitArray::operator [] ( size_t index ) const
+bool BitArray::operator [] ( std::size_t index ) const
 {
     KVS_ASSERT( index < this->size() );
     return ( m_values[ ::BitToByte( index ) ] & ::SetBitMask[ index % 8 ] ) != 0;
@@ -219,8 +219,8 @@ bool BitArray::operator [] ( size_t index ) const
 BitArray& BitArray::operator &= ( const BitArray& other ) // AND
 {
     KVS_ASSERT( this->size() == other.size() );
-    const size_t size = m_values.size();
-    for ( size_t index = 0; index < size; index++ )
+    const std::size_t size = m_values.size();
+    for ( std::size_t index = 0; index < size; index++ )
     {
         m_values[ index ] &= other.m_values[ index ];
     }
@@ -230,8 +230,8 @@ BitArray& BitArray::operator &= ( const BitArray& other ) // AND
 BitArray& BitArray::operator |= ( const BitArray& other ) // OR
 {
     KVS_ASSERT( this->size() == other.size() );
-    const size_t size = m_values.size();
-    for ( size_t index = 0; index < size; index++ )
+    const std::size_t size = m_values.size();
+    for ( std::size_t index = 0; index < size; index++ )
     {
         m_values[ index ] |= other.m_values[ index ];
     }
@@ -241,8 +241,8 @@ BitArray& BitArray::operator |= ( const BitArray& other ) // OR
 BitArray& BitArray::operator ^= ( const BitArray& other ) // XOR
 {
     KVS_ASSERT( this->size() == other.size() );
-    const size_t size = m_values.size();
-    for ( size_t index = 0; index < size; index++ )
+    const std::size_t size = m_values.size();
+    for ( std::size_t index = 0; index < size; index++ )
     {
         m_values[ index ] ^= other.m_values[ index ];
     }

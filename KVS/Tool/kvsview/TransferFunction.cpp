@@ -45,14 +45,14 @@ struct Parameters
 
     void initializeColorMapTexture()
     {
-        const size_t nchannels  = 4; // rgba
-        const size_t width = transfer_function.colorMap().resolution();
+        const std::size_t nchannels  = 4; // rgba
+        const std::size_t width = transfer_function.colorMap().resolution();
         const kvs::UInt8* color_map = transfer_function.colorMap().table().data();
         const kvs::Real32* opacity_map = transfer_function.opacityMap().table().data();
 
         kvs::ValueArray<GLubyte> data( width * nchannels );
         GLubyte* pdata = data.data();
-        for ( size_t i = 0, i3 = 0; i < width; i++, i3 += 3 )
+        for ( std::size_t i = 0, i3 = 0; i < width; i++, i3 += 3 )
         {
             *(pdata++) = static_cast<GLubyte>(color_map[i3]);
             *(pdata++) = static_cast<GLubyte>(color_map[i3+1]);
@@ -69,7 +69,7 @@ struct Parameters
 
     void initializeCheckerboardTexture()
     {
-        const size_t nchannels = 3;
+        const std::size_t nchannels = 3;
         const int width = 32;
         const int height = 32;
 

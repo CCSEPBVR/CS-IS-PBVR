@@ -46,13 +46,13 @@ public:
 
     StructuredVolumeObject(
         const vismodule::Vector3ui& resolution,
-        const size_t          veclen,
+        const std::size_t          veclen,
         const Values&         values );
 
     StructuredVolumeObject(
         const GridType        grid_type,
         const vismodule::Vector3ui& resolution,
-        const size_t          veclen,
+        const std::size_t          veclen,
         const Coords&         coords,
         const Values&         values );
 
@@ -95,11 +95,11 @@ public:
 
     const vismodule::Vector3ui& resolution() const;
 
-    const size_t nnodesPerLine() const;
+    const std::size_t nnodesPerLine() const;
 
-    const size_t nnodesPerSlice() const;
+    const std::size_t nnodesPerSlice() const;
 
-    const size_t nnodes() const;
+    const std::size_t nnodes() const;
 
 public:
 

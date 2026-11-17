@@ -355,7 +355,7 @@ bool BoundaryData::read( const std::string filename )
     }
 
     const kvs::gf::DataSet& data_set = file.dataSet(0);
-    for ( size_t i = 0; i < data_set.dataList().size(); i++ )
+    for ( std::size_t i = 0; i < data_set.dataList().size(); i++ )
     {
         const kvs::gf::Data& data = data_set.data(i);
         const std::string& keyword = data.keyword();
@@ -368,10 +368,10 @@ bool BoundaryData::read( const std::string filename )
             {
                 m_nnodes_inlet = data.num2();
                 const kvs::Int32* src = data.intArray().data();
-                const size_t size = data.intArray().size();
+                const std::size_t size = data.intArray().size();
                 m_connections_inlet.allocate( size );
                 kvs::UInt32* dst = m_connections_inlet.data();
-                for ( size_t i = 0; i < size; i++ )
+                for ( std::size_t i = 0; i < size; i++ )
                     dst[i] = static_cast<kvs::UInt32>( src[i] - 1 );
             }
         }
@@ -383,10 +383,10 @@ bool BoundaryData::read( const std::string filename )
             {
                 m_nnodes_wall = data.num2();
                 const kvs::Int32* src = data.intArray().data();
-                const size_t size = data.intArray().size();
+                const std::size_t size = data.intArray().size();
                 m_connections_wall.allocate( size );
                 kvs::UInt32* dst = m_connections_wall.data();
-                for ( size_t i = 0; i < size; i++ )
+                for ( std::size_t i = 0; i < size; i++ )
                     dst[i] = static_cast<kvs::UInt32>( src[i] - 1 );
             }
         }
@@ -398,10 +398,10 @@ bool BoundaryData::read( const std::string filename )
             {
                 m_nnodes_symetric = data.num2();
                 const kvs::Int32* src = data.intArray().data();
-                const size_t size = data.intArray().size();
+                const std::size_t size = data.intArray().size();
                 m_connections_symetric.allocate( size );
                 kvs::UInt32* dst = m_connections_symetric.data();
-                for ( size_t i = 0; i < size; i++ )
+                for ( std::size_t i = 0; i < size; i++ )
                     dst[i] = static_cast<kvs::UInt32>( src[i] - 1 );
             }
         }
@@ -413,10 +413,10 @@ bool BoundaryData::read( const std::string filename )
             {
                 m_nnodes_cyclic = data.num2();
                 const kvs::Int32* src = data.intArray().data();
-                const size_t size = data.intArray().size();
+                const std::size_t size = data.intArray().size();
                 m_connections_cyclic.allocate( size );
                 kvs::UInt32* dst = m_connections_cyclic.data();
-                for ( size_t i = 0; i < size; i++ )
+                for ( std::size_t i = 0; i < size; i++ )
                     dst[i] = static_cast<kvs::UInt32>( src[i] - 1 );
             }
         }
@@ -428,10 +428,10 @@ bool BoundaryData::read( const std::string filename )
             {
                 m_nnodes_body = data.num2();
                 const kvs::Int32* src = data.intArray().data();
-                const size_t size = data.intArray().size();
+                const std::size_t size = data.intArray().size();
                 m_connections_body.allocate( size );
                 kvs::UInt32* dst = m_connections_body.data();
-                for ( size_t i = 0; i < size; i++ )
+                for ( std::size_t i = 0; i < size; i++ )
                     dst[i] = static_cast<kvs::UInt32>( src[i] - 1 );
             }
         }
@@ -443,10 +443,10 @@ bool BoundaryData::read( const std::string filename )
             {
                 m_nnodes_free = data.num2();
                 const kvs::Int32* src = data.intArray().data();
-                const size_t size = data.intArray().size();
+                const std::size_t size = data.intArray().size();
                 m_connections_free.allocate( size );
                 kvs::UInt32* dst = m_connections_free.data();
-                for ( size_t i = 0; i < size; i++ )
+                for ( std::size_t i = 0; i < size; i++ )
                     dst[i] = static_cast<kvs::UInt32>( src[i] - 1 );
             }
         }
@@ -458,10 +458,10 @@ bool BoundaryData::read( const std::string filename )
             {
                 m_nnodes_moving_wall = data.num2();
                 const kvs::Int32* src = data.intArray().data();
-                const size_t size = data.intArray().size();
+                const std::size_t size = data.intArray().size();
                 m_connections_moving_wall.allocate( size );
                 kvs::UInt32* dst = m_connections_moving_wall.data();
-                for ( size_t i = 0; i < size; i++ )
+                for ( std::size_t i = 0; i < size; i++ )
                     dst[i] = static_cast<kvs::UInt32>( src[i] - 1 );
             }
         }
@@ -473,10 +473,10 @@ bool BoundaryData::read( const std::string filename )
             {
                 m_nnodes_temp = data.num2();
                 const kvs::Int32* src = data.intArray().data();
-                const size_t size = data.intArray().size();
+                const std::size_t size = data.intArray().size();
                 m_connections_temp.allocate( size );
                 kvs::UInt32* dst = m_connections_temp.data();
-                for ( size_t i = 0; i < size; i++ )
+                for ( std::size_t i = 0; i < size; i++ )
                     dst[i] = static_cast<kvs::UInt32>( src[i] - 1 );
             }
         }
@@ -488,10 +488,10 @@ bool BoundaryData::read( const std::string filename )
             {
                 m_nnodes_temp = data.num2();
                 const kvs::Int32* src = data.intArray().data();
-                const size_t size = data.intArray().size();
+                const std::size_t size = data.intArray().size();
                 m_connections_heat.allocate( size );
                 kvs::UInt32* dst = m_connections_heat.data();
-                for ( size_t i = 0; i < size; i++ )
+                for ( std::size_t i = 0; i < size; i++ )
                     dst[i] = static_cast<kvs::UInt32>( src[i] - 1 );
             }
         }

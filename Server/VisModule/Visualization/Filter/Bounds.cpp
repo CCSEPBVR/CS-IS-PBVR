@@ -315,12 +315,12 @@ void Bounds::create_circle_bounds( void )
     const float b = sqrt2 * y1;  const float b2 = b * b;
     const float c = sqrt2 * z1;  const float c2 = c * c;
 
-    size_t vertex_id = 0;
-    const size_t division = static_cast<size_t>( m_division );
+    std::size_t vertex_id = 0;
+    const std::size_t division = static_cast<size_t>( m_division );
 
     // Circle 1 (X-Y axis)
     const float a2b2 = a2 * b2;
-    for( size_t i = 0; i <= division; i++ )
+    for( std::size_t i = 0; i <= division; i++ )
     {
         const float angle = diff_angle * i;
 
@@ -343,7 +343,7 @@ void Bounds::create_circle_bounds( void )
 
     // Circle 2 (Y-Z axis)
     const float b2c2 = b2 * c2;
-    for( size_t i = 0; i <= division; i++ )
+    for( std::size_t i = 0; i <= division; i++ )
     {
         const float angle = diff_angle * i;
 
@@ -366,7 +366,7 @@ void Bounds::create_circle_bounds( void )
 
     // Circle 3 (Z-X axis)
     const float c2a2 = c2 * a2;
-    for( size_t i = 0; i <= division; i++ )
+    for( std::size_t i = 0; i <= division; i++ )
     {
         const float angle = diff_angle * i;
 
@@ -425,8 +425,8 @@ void Bounds::set_corner(
     coords->push_back( v1.y() );
     coords->push_back( v2.z() );
 
-    const size_t dimension = 3;
-    const size_t nvertices = coords->size() / dimension;
+    const std::size_t dimension = 3;
+    const std::size_t nvertices = coords->size() / dimension;
 
     connects->push_back( nvertices - 4 );
     connects->push_back( nvertices - 3 );

@@ -27,7 +27,7 @@ namespace vismodule
  *  @param value [in] counter value
  */
 /*==========================================================================*/
-ReferenceCounter::ReferenceCounter( size_t value )
+ReferenceCounter::ReferenceCounter( std::size_t value )
     : m_value( value )
 {
 }
@@ -47,7 +47,7 @@ ReferenceCounter::~ReferenceCounter( void )
  *  @param value [in] counter value
  */
 /*==========================================================================*/
-void ReferenceCounter::setValue( size_t value )
+void ReferenceCounter::setValue( std::size_t value )
 {
     m_value = value;
 }
@@ -58,7 +58,7 @@ void ReferenceCounter::setValue( size_t value )
  *  @return counter value
  */
 /*==========================================================================*/
-const size_t ReferenceCounter::value( void ) const
+const std::size_t ReferenceCounter::value( void ) const
 {
     return( m_value );
 }

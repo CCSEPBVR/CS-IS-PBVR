@@ -93,7 +93,7 @@ FrontSTR::~FrontSTR( void )
  *  @return number of mesh data
  */
 /*===========================================================================*/
-const size_t FrontSTR::numberOfMeshData( void ) const
+const std::size_t FrontSTR::numberOfMeshData( void ) const
 {
     return( m_nmeshes );
 }
@@ -104,7 +104,7 @@ const size_t FrontSTR::numberOfMeshData( void ) const
  *  @return number of result data
  */
 /*===========================================================================*/
-const size_t FrontSTR::numberOfResultData( void ) const
+const std::size_t FrontSTR::numberOfResultData( void ) const
 {
     return( m_nresults );
 }
@@ -116,7 +116,7 @@ const size_t FrontSTR::numberOfResultData( void ) const
  *  @return mesh data
  */
 /*===========================================================================*/
-const vismodule::fstr::MeshData& FrontSTR::meshData( const size_t index ) const
+const vismodule::fstr::MeshData& FrontSTR::meshData( const std::size_t index ) const
 {
     VIS_MODULE_ASSERT( index < m_nmeshes );
     return( m_mesh_data[ index ] );
@@ -129,7 +129,7 @@ const vismodule::fstr::MeshData& FrontSTR::meshData( const size_t index ) const
  *  @return mesh data
  */
 /*===========================================================================*/
-const vismodule::fstr::ResultData& FrontSTR::resultData( const size_t index ) const
+const vismodule::fstr::ResultData& FrontSTR::resultData( const std::size_t index ) const
 {
     VIS_MODULE_ASSERT( index < m_nresults );
     return( m_result_data[ index ] );
@@ -242,7 +242,7 @@ const bool FrontSTR::read( const std::vector<std::string>& msh_filenames, const 
     else
     {
         // Reading divided mesh data.
-        for ( size_t i = 0; i < m_nmeshes; i++ )
+        for ( std::size_t i = 0; i < m_nmeshes; i++ )
         {
             if ( !m_mesh_data[i].readDividedData( msh_filenames[i] ) )
             {
@@ -264,7 +264,7 @@ const bool FrontSTR::read( const std::vector<std::string>& msh_filenames, const 
     else
     {
         // Reading divided result data.
-        for ( size_t i = 0; i < m_nresults; i++ )
+        for ( std::size_t i = 0; i < m_nresults; i++ )
         {
             if ( !m_result_data[i].readDividedData( res_filenames[i] ) )
             {

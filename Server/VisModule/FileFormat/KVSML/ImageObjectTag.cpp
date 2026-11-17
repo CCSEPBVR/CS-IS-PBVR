@@ -64,7 +64,7 @@ const bool ImageObjectTag::hasWidth( void ) const
  *  @return image width
  */
 /*===========================================================================*/
-const size_t ImageObjectTag::width( void ) const
+const std::size_t ImageObjectTag::width( void ) const
 {
     return( m_width );
 }
@@ -86,7 +86,7 @@ const bool ImageObjectTag::hasHeight( void ) const
  *  @return image height
  */
 /*===========================================================================*/
-const size_t ImageObjectTag::height( void ) const
+const std::size_t ImageObjectTag::height( void ) const
 {
     return( m_height );
 }
@@ -97,7 +97,7 @@ const size_t ImageObjectTag::height( void ) const
  *  @param  width [in] image width
  */
 /*===========================================================================*/
-void ImageObjectTag::setWidth( const size_t width )
+void ImageObjectTag::setWidth( const std::size_t width )
 {
     m_has_width = true;
     m_width = width;
@@ -109,7 +109,7 @@ void ImageObjectTag::setWidth( const size_t width )
  *  @param  height [in] image height
  */
 /*===========================================================================*/
-void ImageObjectTag::setHeight( const size_t height )
+void ImageObjectTag::setHeight( const std::size_t height )
 {
     m_has_height = true;
     m_height = height;

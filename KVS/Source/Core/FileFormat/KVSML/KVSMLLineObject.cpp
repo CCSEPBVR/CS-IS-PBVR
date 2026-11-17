@@ -188,7 +188,7 @@ bool KVSMLLineObject::read( const std::string& filename )
         const kvs::XMLNode::SuperClass* parent = vertex_tag.node();
 
         // <Coord>
-        const size_t ncoords = vertex_tag.nvertices();
+        const std::size_t ncoords = vertex_tag.nvertices();
         if ( !kvs::kvsml::ReadCoordData( parent, ncoords, &m_coords ) ) 
         {
             return false;
@@ -203,7 +203,7 @@ bool KVSMLLineObject::read( const std::string& filename )
         // <Color>
         if ( m_color_type == "vertex" )
         {
-            const size_t ncolors = vertex_tag.nvertices();
+            const std::size_t ncolors = vertex_tag.nvertices();
             if ( !kvs::kvsml::ReadColorData( parent, ncolors, &m_colors ) )
             {
                 return false;
@@ -224,7 +224,7 @@ bool KVSMLLineObject::read( const std::string& filename )
         // we recommend that the size is described under <Line> not under <Vertex>.
         // Current version of KVSML tentative supports both of the descriptions for the
         // size in order to maintain backward compatibility.
-        const size_t nsizes = vertex_tag.nvertices();
+        const std::size_t nsizes = vertex_tag.nvertices();
         if ( !kvs::kvsml::ReadSizeData( parent, nsizes, &m_sizes ) )
         {
             return false;
@@ -251,11 +251,11 @@ bool KVSMLLineObject::read( const std::string& filename )
         {
             // Parent node.
             const kvs::XMLNode::SuperClass* parent = line_tag.node();
-            const size_t nvertices = vertex_tag.nvertices();
-            const size_t nlines = line_tag.nlines();
+            const std::size_t nvertices = vertex_tag.nvertices();
+            const std::size_t nlines = line_tag.nlines();
 
             // <Size>
-            const size_t nsizes = nlines;
+            const std::size_t nsizes = nlines;
             if ( !kvs::kvsml::ReadSizeData( parent, nsizes, &m_sizes ) )
             {
                 return false;
@@ -271,7 +271,7 @@ bool KVSMLLineObject::read( const std::string& filename )
             // <Color>
             if ( m_color_type == "line" )
             {
-                const size_t ncolors =
+                const std::size_t ncolors =
                     ( m_line_type == "strip"    ) ? nvertices - 1 :
                     ( m_line_type == "uniline"  ) ? nlines - 1 :
                     ( m_line_type == "polyline" ) ? nlines :
@@ -294,7 +294,7 @@ bool KVSMLLineObject::read( const std::string& filename )
             // <Connection>
             if ( m_line_type != "strip" )
             {
-                const size_t nconnections =
+                const std::size_t nconnections =
                     ( m_line_type == "uniline"  ) ? nlines :
                     ( m_line_type == "polyline" ) ? nlines * 2 :
                     ( m_line_type == "segment"  ) ? nlines * 2 : 0;
@@ -358,8 +358,8 @@ bool KVSMLLineObject::write( const std::string& filename )
         return false;
     }
 
-    const size_t dimension = 3;
-    const size_t nvertices = m_coords.size() / dimension;
+    const std::size_t dimension = 3;
+    const std::size_t nvertices = m_coords.size() / dimension;
 
     // <Vertex nvertices="xxx">
     kvs::kvsml::VertexTag vertex_tag;
@@ -394,8 +394,8 @@ bool KVSMLLineObject::write( const std::string& filename )
     // <Line nlines="xxx">
     if ( m_color_type == "line" || m_sizes.size() > 0 || m_connections.size() > 0 )
     {
-        const size_t nconnections = m_connections.size();
-        const size_t nlines =
+        const std::size_t nconnections = m_connections.size();
+        const std::size_t nlines =
             ( m_line_type == "strip"   ) ? nvertices - 1 :
             ( m_line_type == "uniline" ) ? nconnections : nconnections / 2;
 

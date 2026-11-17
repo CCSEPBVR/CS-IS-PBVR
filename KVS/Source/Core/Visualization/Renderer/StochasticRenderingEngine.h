@@ -32,9 +32,9 @@ private:
     const kvs::ObjectBase* m_object = nullptr; ///< pointer to the object
     const kvs::Shader::ShadingModel* m_shader = nullptr; ///< pointer to the shader
     bool m_enable_shading = true; ///< shading flag
-    size_t m_repetition_level = 1; ///< repetition level
-    size_t m_repetition_count = 0; ///< repetition count
-    size_t m_random_texture_size = 512; ///< size of the random texture
+    std::size_t m_repetition_level = 1; ///< repetition level
+    std::size_t m_repetition_count = 0; ///< repetition count
+    std::size_t m_random_texture_size = 512; ///< size of the random texture
     kvs::Texture2D m_random_texture{}; ///< random number texture
     kvs::Texture2D m_depth_texture{}; ///< depth texture
 
@@ -46,16 +46,16 @@ public:
         m_depth_texture.release();
     }
 
-    size_t repetitionLevel() const { return m_repetition_level; }
-    size_t repetitionCount() const { return m_repetition_count; }
-    size_t randomTextureSize() const { return m_random_texture_size; }
+    std::size_t repetitionLevel() const { return m_repetition_level; }
+    std::size_t repetitionCount() const { return m_repetition_count; }
+    std::size_t randomTextureSize() const { return m_random_texture_size; }
     const kvs::Texture2D& randomTexture() const { return m_random_texture; }
     const kvs::Texture2D& depthTexture() const { return m_depth_texture; }
     const kvs::ObjectBase* object() const { return m_object; }
 
     void setShader( const kvs::Shader::ShadingModel* shader ) { m_shader = shader; }
-    void setRepetitionLevel( const size_t repetition_level ) { m_repetition_level = repetition_level; }
-    void setRandomTextureSize( const size_t size ) { m_random_texture_size = size; }
+    void setRepetitionLevel( const std::size_t repetition_level ) { m_repetition_level = repetition_level; }
+    void setRandomTextureSize( const std::size_t size ) { m_random_texture_size = size; }
     void setDepthTexture( const kvs::Texture2D& depth_texture ) { m_depth_texture = depth_texture; }
 
     bool isShadingEnabled() const { return m_enable_shading; }
@@ -73,7 +73,7 @@ public:
     void attachObject( const kvs::ObjectBase* object ) { m_object = object; }
     void detachObject() { m_object = nullptr; }
     void createRandomTexture();
-    kvs::ValueArray<kvs::UInt16> randomIndices( const size_t nvertices ) const;
+    kvs::ValueArray<kvs::UInt16> randomIndices( const std::size_t nvertices ) const;
 
 public:
     KVS_DEPRECATED( void setEnabledShading( const bool enable ) ) { this->setShadingEnabled( enable ); }

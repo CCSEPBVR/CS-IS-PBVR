@@ -23,7 +23,7 @@
 namespace
 {
 
-const size_t MaxLineLength = 512;
+const std::size_t MaxLineLength = 512;
 
 const char* const Delimiter = " \n\r";
 
@@ -131,8 +131,8 @@ AVSUcd::AVSUcd( void )
 /*==========================================================================*/
 AVSUcd::AVSUcd(
     const std::string& filename,
-    const size_t       step_id,
-    const size_t       component_id )
+    const std::size_t       step_id,
+    const std::size_t       component_id )
     : FileFormatBase()
     , m_nsteps( 0 )
     , m_cycle_type( vismodule::AVSUcd::CycleTypeUnknown )
@@ -158,7 +158,7 @@ AVSUcd::~AVSUcd( void )
 {
 }
 
-const size_t AVSUcd::nsteps( void ) const
+const std::size_t AVSUcd::nsteps( void ) const
 {
     return( m_nsteps );
 }
@@ -173,7 +173,7 @@ const AVSUcd::ElementType AVSUcd::elementType( void ) const
     return( m_element_type );
 }
 
-const size_t AVSUcd::stepID( void ) const
+const std::size_t AVSUcd::stepID( void ) const
 {
     return( m_step_id );
 }
@@ -183,22 +183,22 @@ const std::string& AVSUcd::stepComment( void ) const
     return( m_step_comment );
 }
 
-const size_t AVSUcd::nnodes( void ) const
+const std::size_t AVSUcd::nnodes( void ) const
 {
     return( m_nnodes );
 }
 
-const size_t AVSUcd::nelements( void ) const
+const std::size_t AVSUcd::nelements( void ) const
 {
     return( m_nelements );
 }
 
-const size_t AVSUcd::nvaluesPerNode( void ) const
+const std::size_t AVSUcd::nvaluesPerNode( void ) const
 {
     return( m_nvalues_per_node );
 }
 
-const size_t AVSUcd::ncomponentsPerNode( void ) const
+const std::size_t AVSUcd::ncomponentsPerNode( void ) const
 {
     return( m_ncomponents_per_node );
 }
@@ -218,7 +218,7 @@ const std::vector<std::string>& AVSUcd::componentUnits( void ) const
     return( m_component_units );
 }
 
-const size_t AVSUcd::componentID( void ) const
+const std::size_t AVSUcd::componentID( void ) const
 {
     return( m_component_id );
 }
@@ -248,7 +248,7 @@ const AVSUcd::Values& AVSUcd::values( void ) const
     return( m_values );
 }
 
-void AVSUcd::setNSteps( const size_t nsteps )
+void AVSUcd::setNSteps( const std::size_t nsteps )
 {
     m_nsteps = nsteps;
 }
@@ -263,7 +263,7 @@ void AVSUcd::setElementType( const ElementType element_type )
     m_element_type = element_type;
 }
 
-void AVSUcd::setStepID( const size_t step_id )
+void AVSUcd::setStepID( const std::size_t step_id )
 {
     m_step_id = step_id;
 }
@@ -273,22 +273,22 @@ void AVSUcd::setStepComment( const std::string& step_comment )
     m_step_comment = step_comment;
 }
 
-void AVSUcd::setNNodes( const size_t nnodes )
+void AVSUcd::setNNodes( const std::size_t nnodes )
 {
     m_nnodes = nnodes;
 }
 
-void AVSUcd::setNElements( const size_t nelements )
+void AVSUcd::setNElements( const std::size_t nelements )
 {
     m_nelements = nelements;
 }
 
-void AVSUcd::setNValuesPerNode( const size_t nvalues_per_node )
+void AVSUcd::setNValuesPerNode( const std::size_t nvalues_per_node )
 {
     m_nvalues_per_node = nvalues_per_node;
 }
 
-void AVSUcd::setNComponentsPerNode( const size_t ncomponents_per_node )
+void AVSUcd::setNComponentsPerNode( const std::size_t ncomponents_per_node )
 {
     m_ncomponents_per_node = ncomponents_per_node;
 }
@@ -302,8 +302,8 @@ void AVSUcd::setComponentNames( const std::vector<std::string>& component_names 
 {
     m_component_names.clear();
 
-    const size_t size = component_names.size();
-    for ( size_t i = 0; i < size; ++i )
+    const std::size_t size = component_names.size();
+    for ( std::size_t i = 0; i < size; ++i )
     {
         m_component_names.push_back( component_names[ i ] );
     }
@@ -313,14 +313,14 @@ void AVSUcd::setComponentUnits( const std::vector<std::string>& component_units 
 {
     m_component_units.clear();
 
-    const size_t size = component_units.size();
-    for ( size_t i = 0; i < size; ++i )
+    const std::size_t size = component_units.size();
+    for ( std::size_t i = 0; i < size; ++i )
     {
         m_component_units.push_back( component_units[ i ] );
     }
 }
 
-void AVSUcd::setComponentID( const size_t component_id )
+void AVSUcd::setComponentID( const std::size_t component_id )
 {
     m_component_id = component_id;
 }
@@ -440,21 +440,21 @@ std::ostream& operator <<( std::ostream& os, const AVSUcd& rhs )
     os << "Number of components per node : " << rhs.m_ncomponents_per_node << std::endl;
 
     os << "Veclens of each component     : ";
-    for ( size_t i = 0; i < rhs.m_ncomponents_per_node; ++i )
+    for ( std::size_t i = 0; i < rhs.m_ncomponents_per_node; ++i )
     {
         os << rhs.m_veclens[ i ] << " ";
     }
     os << std::endl;
 
     os << "Names of each component       : ";
-    for ( size_t i = 0; i < rhs.m_ncomponents_per_node; ++i )
+    for ( std::size_t i = 0; i < rhs.m_ncomponents_per_node; ++i )
     {
         os << rhs.m_component_names[ i ] << " ";
     }
     os << std::endl;
 
     os << "Units of each component       : ";
-    for ( size_t i = 0; i < rhs.m_ncomponents_per_node; ++i )
+    for ( std::size_t i = 0; i < rhs.m_ncomponents_per_node; ++i )
     {
         os << rhs.m_component_units[ i ] << " ";
     }
@@ -639,7 +639,7 @@ void AVSUcd::read_coords( FILE* const ifs )
 
     vismodule::Real32* coord = m_coords.pointer();
 
-    for ( size_t i = 0; i < m_nnodes; i++ )
+    for ( std::size_t i = 0; i < m_nnodes; i++ )
     {
         if ( fgets( buffer, ::MaxLineLength, ifs ) )
         {
@@ -886,7 +886,7 @@ void AVSUcd::read_components( FILE* const ifs )
     {
         m_ncomponents_per_node = atoi( strtok( buffer, ::Delimiter ) );
 
-        for ( size_t i = 0; i < m_ncomponents_per_node; ++i )
+        for ( std::size_t i = 0; i < m_ncomponents_per_node; ++i )
         {
             m_veclens.push_back( atoi( strtok( 0, ::Delimiter ) ) );
         }
@@ -896,7 +896,7 @@ void AVSUcd::read_components( FILE* const ifs )
         throw "Unexpected EOF in reading ncomponents per node";
     }
 
-    for ( size_t i = 0; i < m_ncomponents_per_node; ++i )
+    for ( std::size_t i = 0; i < m_ncomponents_per_node; ++i )
     {
         if ( fgets( buffer, ::MaxLineLength, ifs ) != 0 )
         {
@@ -931,18 +931,18 @@ void AVSUcd::read_values( FILE* const ifs )
 {
     char buffer[ ::MaxLineLength ];
 
-    const size_t veclen = m_veclens[ m_component_id ];
+    const std::size_t veclen = m_veclens[ m_component_id ];
     m_values.allocate( veclen * m_nnodes );
 
     vismodule::Real32* value = m_values.pointer();
 
-    size_t nskips = 0;
-    for ( size_t i = 0; i < m_component_id; ++i )
+    std::size_t nskips = 0;
+    for ( std::size_t i = 0; i < m_component_id; ++i )
     {
         nskips += m_veclens[ i ];
     }
 
-    for ( size_t i = 0; i < m_nnodes; i++ )
+    for ( std::size_t i = 0; i < m_nnodes; i++ )
     {
         if ( fgets( buffer, ::MaxLineLength, ifs ) )
         {
@@ -950,12 +950,12 @@ void AVSUcd::read_values( FILE* const ifs )
             const int index = atoi( strtok( buffer, ::Delimiter ) ) - 1;
 
             // Skip other components
-            for ( size_t j = 0; j < nskips; ++j )
+            for ( std::size_t j = 0; j < nskips; ++j )
             {
                 strtok( 0, ::Delimiter );
             }
 
-            for ( size_t j = 0; j < veclen; ++j )
+            for ( std::size_t j = 0; j < veclen; ++j )
             {
                 value[ index * veclen + j ] = static_cast<vismodule::Real32>( atof( strtok( 0, ::Delimiter ) ) );
             }
@@ -978,7 +978,7 @@ void AVSUcd::write_single_step_format( FILE* const ofs ) const
 
 void AVSUcd::write_coords( FILE* const ofs ) const
 {
-    size_t node_id = 1;
+    std::size_t node_id = 1;
 
     const vismodule::Real32*       coord = m_coords.pointer();
     const vismodule::Real32* const end   = coord + m_coords.size();
@@ -999,7 +999,7 @@ void AVSUcd::write_coords( FILE* const ofs ) const
 
 void AVSUcd::write_connections( FILE* const ofs ) const
 {
-    size_t element_id = 1;
+    std::size_t element_id = 1;
 
     const vismodule::UInt32*       connection = m_connections.pointer();
     const vismodule::UInt32* const end        = connection + m_connections.size();
@@ -1081,8 +1081,8 @@ void AVSUcd::write_connections( FILE* const ofs ) const
         {
             fprintf( ofs, "%u 0 hex2", static_cast<unsigned int>( element_id++ ) );
 
-            const size_t nnodes = 20;
-            for ( size_t i = 0; i < nnodes; i++ )
+            const std::size_t nnodes = 20;
+            for ( std::size_t i = 0; i < nnodes; i++ )
             {
                 const vismodule::UInt32 node_id = *( connection++ );
                 fprintf( ofs, " %u", node_id );
@@ -1100,13 +1100,13 @@ void AVSUcd::write_connections( FILE* const ofs ) const
 void AVSUcd::write_components( FILE* ofs ) const
 {
     fprintf( ofs, "%u", static_cast<unsigned int>( m_ncomponents_per_node ) );
-    for ( size_t i = 0; i < m_ncomponents_per_node; ++i )
+    for ( std::size_t i = 0; i < m_ncomponents_per_node; ++i )
     {
         fprintf( ofs, " %u", static_cast<unsigned int>( m_veclens[ i ] ) );
     }
     fprintf( ofs, "\n" );
 
-    for ( size_t i = 0; i < m_ncomponents_per_node; ++i )
+    for ( std::size_t i = 0; i < m_ncomponents_per_node; ++i )
     {
         fprintf( ofs, "%s,%s\n", m_component_names[ i ].c_str(), m_component_units[ i ].c_str() );
     }
@@ -1114,7 +1114,7 @@ void AVSUcd::write_components( FILE* ofs ) const
 
 void AVSUcd::write_values( FILE* ofs ) const
 {
-    size_t node_id = 1;
+    std::size_t node_id = 1;
 
     const vismodule::Real32*       value = m_values.pointer();
     const vismodule::Real32* const end   = value + m_values.size();

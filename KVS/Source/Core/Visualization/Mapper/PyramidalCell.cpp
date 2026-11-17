@@ -84,7 +84,7 @@ void PyramidalCell::updateDifferentialFunctions( const kvs::Vec3& local ) const
     }
 
     const float pq = p * q;
-    const size_t nnodes = BaseClass::numberOfCellNodes();
+    const std::size_t nnodes = BaseClass::numberOfCellNodes();
     kvs::Real32* dN = BaseClass::differentialFunctions();
     kvs::Real32* dNdp = dN;
     kvs::Real32* dNdq = dNdp + nnodes;

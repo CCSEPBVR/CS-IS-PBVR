@@ -70,12 +70,12 @@ size_t NumberOfVertices( const kvs::TexturedPolygonObject* texturedPolygon, kvs:
 {
     if ( texturedPolygon->connections().size() > 0 )
     {
-        const size_t nfaces = texturedPolygon->numberOfConnections();
+        const std::size_t nfaces = texturedPolygon->numberOfConnections();
         const kvs::UInt32* polygon_connections = texturedPolygon->connections().data();
         const kvs::UInt32* vertex_texture_id = texturedPolygon->textureIds().data();
 
-        size_t nvertices = 0;
-        for ( size_t i = 0; i < nfaces; i++ )
+        std::size_t nvertices = 0;
+        for ( std::size_t i = 0; i < nfaces; i++ )
         {
             const kvs::UInt32 id0 = polygon_connections[ i * 3 + 0 ];
             const kvs::UInt32 id1 = polygon_connections[ i * 3 + 1 ];
@@ -109,16 +109,16 @@ size_t NumberOfVertices( const kvs::TexturedPolygonObject* texturedPolygon, kvs:
 kvs::ValueArray<kvs::Real32> VertexCoords(
     const kvs::TexturedPolygonObject* texturedPolygon,
     const kvs::UInt32 texture_id,
-    const size_t nvertices )
+    const std::size_t nvertices )
 {
-    const size_t nfaces = texturedPolygon->numberOfConnections();
+    const std::size_t nfaces = texturedPolygon->numberOfConnections();
     const kvs::Real32* vertex_coords = texturedPolygon->coords().data();
     const kvs::UInt32* vertex_texture_id = texturedPolygon->textureIds().data();
     const kvs::UInt32* polygon_connections = texturedPolygon->connections().data();
 
     kvs::ValueArray<kvs::Real32> coords( nvertices * 3 );
-    size_t offset = 0;
-    for ( size_t i = 0; i < nfaces; i++ )
+    std::size_t offset = 0;
+    for ( std::size_t i = 0; i < nfaces; i++ )
     {
         const kvs::UInt32 id0 = polygon_connections[ i * 3 + 0 ];
         const kvs::UInt32 id1 = polygon_connections[ i * 3 + 1 ];
@@ -160,22 +160,22 @@ kvs::ValueArray<kvs::Real32> VertexCoords(
 kvs::ValueArray<kvs::Real32> VertexNormals(
     const kvs::TexturedPolygonObject* texturedPolygon,
     const kvs::UInt32 texture_id,
-    const size_t nvertices )
+    const std::size_t nvertices )
 {
     if ( texturedPolygon->normals().size() == 0 )
     {
         return kvs::ValueArray<kvs::Real32>();
     }
 
-    const size_t nfaces = texturedPolygon->numberOfConnections();
+    const std::size_t nfaces = texturedPolygon->numberOfConnections();
     const kvs::Real32* vertex_coords = texturedPolygon->coords().data();
     const kvs::UInt32* vertex_texture_id = texturedPolygon->textureIds().data();
     const kvs::UInt32* polygon_connections = texturedPolygon->connections().data();
     //const kvs::Real32* vertex_normals = texturedPolygon->normals().data();
 
     kvs::ValueArray<kvs::Real32> normals( nvertices * 3 );
-    size_t offset = 0;
-    for ( size_t i = 0; i < nfaces; i++ )
+    std::size_t offset = 0;
+    for ( std::size_t i = 0; i < nfaces; i++ )
     {
         const kvs::UInt32 id0 = polygon_connections[ i * 3 + 0 ];
         const kvs::UInt32 id1 = polygon_connections[ i * 3 + 1 ];
@@ -259,16 +259,16 @@ kvs::ValueArray<kvs::Real32> VertexNormals(
 kvs::ValueArray<kvs::UInt8> VertexColors(
     const kvs::TexturedPolygonObject* texturedPolygon,
     const kvs::UInt32 texture_id,
-    const size_t nvertices )
+    const std::size_t nvertices )
 {
-    const size_t nfaces = texturedPolygon->numberOfConnections();
+    const std::size_t nfaces = texturedPolygon->numberOfConnections();
     const kvs::UInt8* vertex_colors = texturedPolygon->colors().data();
     const kvs::UInt32* vertex_texture_id = texturedPolygon->textureIds().data();
     const kvs::UInt32* polygon_connections = texturedPolygon->connections().data();
 
     kvs::ValueArray<kvs::UInt8> colors( nvertices * 4 );
-    size_t offset = 0;
-    for ( size_t i = 0; i < nfaces; i++ )
+    std::size_t offset = 0;
+    for ( std::size_t i = 0; i < nfaces; i++ )
     {
         const kvs::UInt32 id0 = polygon_connections[ i * 3 + 0 ];
         const kvs::UInt32 id1 = polygon_connections[ i * 3 + 1 ];
@@ -313,16 +313,16 @@ kvs::ValueArray<kvs::UInt8> VertexColors(
 kvs::ValueArray<kvs::Real32> VertexTexture2DCoords(
     const kvs::TexturedPolygonObject* texturedPolygon,
     const kvs::UInt32 texture_id,
-    const size_t nvertices )
+    const std::size_t nvertices )
 {
-    const size_t nfaces = texturedPolygon->numberOfConnections();
+    const std::size_t nfaces = texturedPolygon->numberOfConnections();
     const kvs::Real32* vertex_texture_2d_coords = texturedPolygon->texture2DCoords().data();
     const kvs::UInt32* vertex_texture_id = texturedPolygon->textureIds().data();
     const kvs::UInt32* polygon_connections = texturedPolygon->connections().data();
 
     kvs::ValueArray<kvs::Real32> texture_2d_coords( nvertices * 2 );
-    size_t offset = 0;
-    for ( size_t i = 0; i < nfaces; i++ )
+    std::size_t offset = 0;
+    for ( std::size_t i = 0; i < nfaces; i++ )
     {
         const kvs::UInt32 id0 = polygon_connections[ i * 3 + 0 ];
         const kvs::UInt32 id1 = polygon_connections[ i * 3 + 1 ];
@@ -678,7 +678,7 @@ void StochasticTexturedPolygonRenderer::Engine::draw( kvs::ObjectBase* object, k
         kvs::UInt32 texture_id = itr->first;
         kvs::Texture2D* texture2d= itr->second;
         //std::cout << texture2d->width() << ", " << texture2d->height() << ", " << texture2d->id() << std::endl;
-        const size_t nvertices = m_map_num_vertices[texture_id];
+        const std::size_t nvertices = m_map_num_vertices[texture_id];
 
         kvs::Texture::GuardedBinder bind_texture_2d( *texture2d );
         if( m_enabled_texture_anisotropy ){
@@ -691,20 +691,20 @@ void StochasticTexturedPolygonRenderer::Engine::draw( kvs::ObjectBase* object, k
         {
             kvs::OpenGL::WithEnabled d( GL_DEPTH_TEST );
 
-            const size_t size = randomTextureSize();
+            const std::size_t size = randomTextureSize();
             const int count = repetitionCount() * ::RandomNumber();
             const float offset_x = static_cast<float>( ( count ) % size );
             const float offset_y = static_cast<float>( ( count / size ) % size );
             const kvs::Vec2 random_offset( offset_x, offset_y );
             m_shader_program.setUniform( "random_offset", random_offset );
 
-            const size_t nvertices = m_map_num_vertices[texture_id];
-            const size_t npolygons = nvertices / 3;
-            const size_t index_size = nvertices * 2 * sizeof( kvs::UInt16 );
-            const size_t coord_size = nvertices * 3 * sizeof( kvs::Real32 );
-            //const size_t color_size = nvertices * 4 * sizeof( kvs::UInt8 );
-            const size_t normal_size = nvertices * 3 * sizeof( kvs::Real32 );
-            const size_t texture_2d_coord_size = nvertices * 2 * sizeof( kvs::Real32 );
+            const std::size_t nvertices = m_map_num_vertices[texture_id];
+            const std::size_t npolygons = nvertices / 3;
+            const std::size_t index_size = nvertices * 2 * sizeof( kvs::UInt16 );
+            const std::size_t coord_size = nvertices * 3 * sizeof( kvs::Real32 );
+            //const std::size_t color_size = nvertices * 4 * sizeof( kvs::UInt8 );
+            const std::size_t normal_size = nvertices * 3 * sizeof( kvs::Real32 );
+            const std::size_t texture_2d_coord_size = nvertices * 2 * sizeof( kvs::Real32 );
 
             GLbyte* offset_indices           = offset;
             GLbyte* offset_coords            = offset_indices + index_size;
@@ -829,26 +829,26 @@ void StochasticTexturedPolygonRenderer::Engine::create_buffer_object( const kvs:
 
     std::map<kvs::UInt32, kvs::UInt32> m_map_id_to_image_width = texturedPolygon->mapIdToImageWidth();
 
-    size_t total_polygons = texturedPolygon->numberOfConnections();
-    size_t sum_polygons = 0;
+    std::size_t total_polygons = texturedPolygon->numberOfConnections();
+    std::size_t sum_polygons = 0;
 
     std::cerr << "total: " << total_polygons << std::endl;
 
-    size_t byte_size = 0;
+    std::size_t byte_size = 0;
     for(auto itr = m_map_id_to_image_width.begin(); itr != m_map_id_to_image_width.end(); itr++){
         kvs::UInt32 texture_id = itr->first;
-        const size_t nvertices = ::NumberOfVertices( texturedPolygon, texture_id );
+        const std::size_t nvertices = ::NumberOfVertices( texturedPolygon, texture_id );
         m_map_num_vertices[texture_id] = nvertices;
         //std::cout << "# id=" << texture_id << ", nvertices=" << nvertices << std::endl;
 
         std::cerr << "  texture[" << texture_id << "]: " << (nvertices/3) << std::endl;
         sum_polygons += (nvertices / 3);
 
-        const size_t index_size = nvertices * 2 * sizeof( kvs::UInt16 );
-        const size_t coord_size = nvertices * 3 * sizeof( kvs::Real32 );
-        //const size_t color_size = nvertices * 4 * sizeof( kvs::UInt8 );
-        const size_t normal_size = nvertices * 3 * sizeof( kvs::Real32 );
-        const size_t texture_2d_coord_size = nvertices * 2 * sizeof( kvs::Real32 );
+        const std::size_t index_size = nvertices * 2 * sizeof( kvs::UInt16 );
+        const std::size_t coord_size = nvertices * 3 * sizeof( kvs::Real32 );
+        //const std::size_t color_size = nvertices * 4 * sizeof( kvs::UInt8 );
+        const std::size_t normal_size = nvertices * 3 * sizeof( kvs::Real32 );
+        const std::size_t texture_2d_coord_size = nvertices * 2 * sizeof( kvs::Real32 );
 
         //byte_size += index_size + coord_size + color_size + normal_size + texture_2d_coord_size;
         byte_size += index_size + coord_size + normal_size + texture_2d_coord_size;
@@ -867,17 +867,17 @@ void StochasticTexturedPolygonRenderer::Engine::create_buffer_object( const kvs:
 
     m_vbo.create( byte_size );
     m_vbo.bind();
-    size_t offset = 0;
+    std::size_t offset = 0;
     for(auto itr = m_map_id_to_image_width.begin(); itr != m_map_id_to_image_width.end(); itr++){
         kvs::UInt32 texture_id = itr->first;
 
-        const size_t nvertices = m_map_num_vertices[texture_id];
+        const std::size_t nvertices = m_map_num_vertices[texture_id];
         if( nvertices == 0 ){
             continue;
         }
 
         kvs::ValueArray<kvs::UInt16> indices( nvertices * 2 );
-        for ( size_t i = 0; i < nvertices; i++ )
+        for ( std::size_t i = 0; i < nvertices; i++ )
         {
             const unsigned int count = i * 12347;
             indices[ 2 * i + 0 ] = static_cast<kvs::UInt16>( ( count ) % randomTextureSize() );
@@ -888,16 +888,16 @@ void StochasticTexturedPolygonRenderer::Engine::create_buffer_object( const kvs:
         kvs::ValueArray<kvs::Real32> normals = ::VertexNormals( texturedPolygon, texture_id, nvertices );
         kvs::ValueArray<kvs::Real32> texture_2d_coords = ::VertexTexture2DCoords( texturedPolygon, texture_id, nvertices );
 
-        const size_t index_size = indices.byteSize();
-        const size_t coord_size = coords.byteSize();
-        //const size_t color_size = colors.byteSize();
-        const size_t normal_size = normals.byteSize();
-        const size_t texture_2d_coord_size = texture_2d_coords.byteSize();
-        size_t offset_indices           = offset;
-        size_t offset_coords            = offset_indices + index_size;
+        const std::size_t index_size = indices.byteSize();
+        const std::size_t coord_size = coords.byteSize();
+        //const std::size_t color_size = colors.byteSize();
+        const std::size_t normal_size = normals.byteSize();
+        const std::size_t texture_2d_coord_size = texture_2d_coords.byteSize();
+        std::size_t offset_indices           = offset;
+        std::size_t offset_coords            = offset_indices + index_size;
         //size_t offset_colors            = offset_coords + coord_size;
-        size_t offset_normals           = offset_coords + coord_size;
-        size_t offset_texture_2d_coords = offset_normals + normal_size;
+        std::size_t offset_normals           = offset_coords + coord_size;
+        std::size_t offset_texture_2d_coords = offset_normals + normal_size;
         //offset += index_size + coord_size + color_size + normal_size + texture_2d_coord_size;
         offset += index_size + coord_size + normal_size + texture_2d_coord_size;
 

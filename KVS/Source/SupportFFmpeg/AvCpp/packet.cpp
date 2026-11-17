@@ -52,7 +52,7 @@ Packet::Packet(const vector<uint8_t> &data)
 {
 }
 
-Packet::Packet(const uint8_t *data, size_t size, bool /*doAllign*/)
+Packet::Packet(const uint8_t *data, std::size_t size, bool /*doAllign*/)
     : Packet()
 {
     auto pkt_data = av::memdup<uint8_t>(data, size);
@@ -69,7 +69,7 @@ Packet::Packet(const uint8_t *data, size_t size, bool /*doAllign*/)
     m_completeFlag = true;
 }
 
-Packet::Packet(uint8_t *data, size_t size, Packet::wrap_data, OptionalErrorCode ec)
+Packet::Packet(uint8_t *data, std::size_t size, Packet::wrap_data, OptionalErrorCode ec)
     : Packet()
 {
     auto sts = av_packet_from_data(raw(), data, size);
@@ -83,7 +83,7 @@ Packet::Packet(uint8_t *data, size_t size, Packet::wrap_data, OptionalErrorCode 
 static void dummy_buffer_free(void */*opaque*/, uint8_t */*ptr*/)
 {}
 
-Packet::Packet(uint8_t *data, size_t size, Packet::wrap_data_static, OptionalErrorCode ec)
+Packet::Packet(uint8_t *data, std::size_t size, Packet::wrap_data_static, OptionalErrorCode ec)
     : Packet()
 {
     auto buf = av_buffer_create(data, size, dummy_buffer_free, nullptr, 0);
@@ -172,7 +172,7 @@ bool Packet::setData(const vector<uint8_t> &newData, OptionalErrorCode ec)
     return setData(newData.data(), newData.size(), ec);
 }
 
-bool Packet::setData(const uint8_t *newData, size_t size, OptionalErrorCode ec)
+bool Packet::setData(const uint8_t *newData, std::size_t size, OptionalErrorCode ec)
 {
     clear_if(ec);
     av_packet_unref(raw());

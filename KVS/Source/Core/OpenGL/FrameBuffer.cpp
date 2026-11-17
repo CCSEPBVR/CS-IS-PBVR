@@ -69,8 +69,8 @@ void FrameBuffer::setType( const GLenum type )
 void FrameBuffer::readPixels(
     const int x,
     const int y,
-    const size_t width,
-    const size_t height,
+    const std::size_t width,
+    const std::size_t height,
     void* pixels,
     const GLenum buffer ) const
 {
@@ -101,8 +101,8 @@ void FrameBuffer::readPixels(
 void FrameBuffer::drawPixels(
     const int x,
     const int y,
-    const size_t width,
-    const size_t height,
+    const std::size_t width,
+    const std::size_t height,
     const void* pixels,
     const GLenum buffer ) const
 {

@@ -55,8 +55,8 @@ public:
 protected:
 
     std::vector<vismodule::Dicom*> m_list;            ///< DICOM list
-    size_t                   m_row;             ///< row
-    size_t                   m_column;          ///< column
+    std::size_t                   m_row;             ///< row
+    std::size_t                   m_column;          ///< column
     double                   m_slice_thickness; ///< slice thickness
     double                   m_slice_spacing;   ///< slice spacing
     vismodule::Vector2f            m_pixel_spacing;   ///< pixel spacing
@@ -74,9 +74,9 @@ public:
 
 public:
 
-    const vismodule::Dicom* operator [] ( const size_t index ) const;
+    const vismodule::Dicom* operator [] ( const std::size_t index ) const;
 
-    vismodule::Dicom* operator [] ( const size_t index );
+    vismodule::Dicom* operator [] ( const std::size_t index );
 
 public:
 
@@ -84,21 +84,21 @@ public:
 
     void push_back( vismodule::Dicom* dicom );
 
-    const size_t size( void ) const;
+    const std::size_t size( void ) const;
 
     void clear( void );
 
 public:
 
-    const size_t row( void ) const;
+    const std::size_t row( void ) const;
 
-    const size_t column( void ) const;
+    const std::size_t column( void ) const;
 
-    const size_t nslices( void ) const;
+    const std::size_t nslices( void ) const;
 
-    const size_t width( void ) const;
+    const std::size_t width( void ) const;
 
-    const size_t height( void ) const;
+    const std::size_t height( void ) const;
 
     const double sliceThickness( void ) const;
 

@@ -157,7 +157,7 @@ void DataArrayTag::setFormat( const std::string& format )
 /*===========================================================================*/
 const bool DataArrayTag::read(
     const vismodule::XMLNode::SuperClass* parent,
-    const size_t nelements,
+    const std::size_t nelements,
     vismodule::AnyValueArray* data )
 {
     const std::string tag_name = BaseClass::name();
@@ -200,51 +200,51 @@ const bool DataArrayTag::write(
         // Write the data array to string-stream.
         std::ostringstream oss( std::ostringstream::out );
         const std::type_info& data_type = data.typeInfo()->type();
-        const size_t data_size = data.size();
+        const std::size_t data_size = data.size();
         if ( data_type == typeid( vismodule::Int8 ) )
         {
             const vismodule::Int8* values = data.pointer<vismodule::Int8>();
-            for ( size_t i = 0; i < data_size; i++ ) oss << vismodule::Int16( values[i] ) << " ";
+            for ( std::size_t i = 0; i < data_size; i++ ) oss << vismodule::Int16( values[i] ) << " ";
         }
         else if ( data_type == typeid( vismodule::UInt8 ) )
         {
             const vismodule::UInt8* values = data.pointer<vismodule::UInt8>();
-            for ( size_t i = 0; i < data_size; i++ ) oss << vismodule::UInt16( values[i] ) << " ";
+            for ( std::size_t i = 0; i < data_size; i++ ) oss << vismodule::UInt16( values[i] ) << " ";
         }
         else if ( data_type == typeid( vismodule::Int16 ) )
         {
             const vismodule::Int16* values = data.pointer<vismodule::Int16>();
-            for ( size_t i = 0; i < data_size; i++ ) oss << values[i] << " ";
+            for ( std::size_t i = 0; i < data_size; i++ ) oss << values[i] << " ";
         }
         else if ( data_type == typeid( vismodule::UInt16 ) )
         {
             const vismodule::UInt16* values = data.pointer<vismodule::UInt16>();
-            for ( size_t i = 0; i < data_size; i++ ) oss << values[i] << " ";
+            for ( std::size_t i = 0; i < data_size; i++ ) oss << values[i] << " ";
         }
         else if ( data_type == typeid( vismodule::Int32 ) )
         {
             const vismodule::Int32* values = data.pointer<vismodule::Int32>();
-            for ( size_t i = 0; i < data_size; i++ ) oss << values[i] << " ";
+            for ( std::size_t i = 0; i < data_size; i++ ) oss << values[i] << " ";
         }
         else if ( data_type == typeid( vismodule::UInt32 ) )
         {
             const vismodule::UInt32* values = data.pointer<vismodule::UInt32>();
-            for ( size_t i = 0; i < data_size; i++ ) oss << values[i] << " ";
+            for ( std::size_t i = 0; i < data_size; i++ ) oss << values[i] << " ";
         }
         else if ( data_type == typeid( vismodule::Real32 ) )
         {
             const vismodule::Real32* values = data.pointer<vismodule::Real32>();
-            for ( size_t i = 0; i < data_size; i++ ) oss << values[i] << " ";
+            for ( std::size_t i = 0; i < data_size; i++ ) oss << values[i] << " ";
         }
         else if ( data_type == typeid( vismodule::Real64 ) )
         {
             const vismodule::Real64* values = data.pointer<vismodule::Real64>();
-            for ( size_t i = 0; i < data_size; i++ ) oss << values[i] << " ";
+            for ( std::size_t i = 0; i < data_size; i++ ) oss << values[i] << " ";
         }
         else if ( data_type == typeid( vismodule::Real128 ) )
         {
             const vismodule::Real128* values = data.pointer<vismodule::Real128>();
-            for ( size_t i = 0; i < data_size; i++ ) oss << values[i] << " ";
+            for ( std::size_t i = 0; i < data_size; i++ ) oss << values[i] << " ";
         }
 
         // Insert the data array as string-stream to the parent node.
@@ -323,7 +323,7 @@ const void DataArrayTag::read_attribute()
  *  @return true, if the reading process is done successfully
  */
 /*===========================================================================*/
-const bool DataArrayTag::read_data( const size_t nelements, vismodule::AnyValueArray* data )
+const bool DataArrayTag::read_data( const std::size_t nelements, vismodule::AnyValueArray* data )
 {
     const std::string tag_name = BaseClass::name();
 

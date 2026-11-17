@@ -23,7 +23,7 @@
 namespace
 {
 
-const size_t MaxNumberOfScreens = 256;
+const std::size_t MaxNumberOfScreens = 256;
 kvs::glut::ScreenBase* Context[ MaxNumberOfScreens ] = {};
 
 /*===========================================================================*/
@@ -33,7 +33,7 @@ kvs::glut::ScreenBase* Context[ MaxNumberOfScreens ] = {};
 /*===========================================================================*/
 void ExitFunction()
 {
-    for ( size_t i = 0; i < MaxNumberOfScreens; i++)
+    for ( std::size_t i = 0; i < MaxNumberOfScreens; i++)
     {
         if ( Context[i] ) Context[i]->~ScreenBase();
     }
@@ -626,8 +626,8 @@ void ScreenBase::draw()
 /*===========================================================================*/
 kvs::ColorImage ScreenBase::capture() const
 {
-    const size_t width = BaseClass::width();
-    const size_t height = BaseClass::height();
+    const std::size_t width = BaseClass::width();
+    const std::size_t height = BaseClass::height();
     kvs::ValueArray<kvs::UInt8> buffer( width * height * 3 );
 
     kvs::OpenGL::SetReadBuffer( GL_FRONT );

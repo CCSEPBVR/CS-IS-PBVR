@@ -50,7 +50,7 @@ Pbm::Pbm()
  *  @param  pixels [in] pixel data
  */
 /*==========================================================================*/
-Pbm::Pbm( const size_t width, const size_t height, const kvs::BitArray& pixels ):
+Pbm::Pbm( const std::size_t width, const std::size_t height, const kvs::BitArray& pixels ):
     m_width( width ),
     m_height( height ),
     m_pixels( pixels )
@@ -155,15 +155,15 @@ bool Pbm::read( const std::string& filename )
     m_height = m_header.height();
 
     // Allocate the pixel data.
-    const size_t npixels = m_width * m_height;
+    const std::size_t npixels = m_width * m_height;
     m_pixels.allocate( npixels );
 
     // Ascii data.
     if ( m_header.isP1() )
     {
-        for ( size_t i = 0; i < npixels; i++ )
+        for ( std::size_t i = 0; i < npixels; i++ )
         {
-            size_t v;
+            std::size_t v;
             ifs >> v;
 
             if ( v == 1 ) m_pixels.set(i);

@@ -5,6 +5,7 @@
 #include <codecvt>
 #include <thread>
 #include <atomic>
+#include <string>
 
 #ifdef _WIN32
 #include <uwebsockets/App.h>
@@ -41,6 +42,8 @@ struct ClientState
     std::string userUUID;
     int userID = -1;
     bool isOperator = false;
+    bool pot_snapshot_pending = false;
+    std::string pot_apply_id;
     uWS::WebSocket<false, true, PerSocket>* binary_ws = nullptr;
     uWS::WebSocket<false, true, PerSocket>* text_ws = nullptr;
 };
@@ -80,11 +83,24 @@ private:
     PlotOverLineProperty* m_pol_property;
     PlotOverTimeProperty* m_pot_property;
     std::vector<ObjectInfoExtractor::ObjectInfo>* m_objects;
+    std::string m_current_ensemble_statistic = "mean";
 
     std::atomic<bool> m_last_step_monitor_is_running;     // LAST_STEPを監視するスレッドに終了信号を送る変数
     std::thread m_last_step_monitor_thread;               // state.txtのLAST_STEPを監視するスレッド
     std::atomic<bool> m_plot_over_time_sender_is_running; // Plot Over Timeをクライアントに送信するスレッドに終了信号を送る変数
     std::thread m_plot_over_time_sender_thread;           // Plot Over Timeをクライアントに送信するスレッド
+
+    // Only one CS observation is retained. Applied settings live in m_pot_property.
+    std::string m_pot_dataset_id;
+    nlohmann::json m_pot_observation;
+    nlohmann::json m_pot_samples = nlohmann::json::array();
+    std::string m_pot_state = "idle";
+    nlohmann::json appliedPOTObservation() const;
+    nlohmann::json potSnapshot() const;
+    void generatePOTCS();
+    void sendPOTMessage( const nlohmann::json& message );
+    void flushPOTSnapshot( uWS::WebSocket<false, true, PerSocket>* ws );
+    void dispatchMessage( uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received );
 
     void reset();
     void onUpgrade(uWS::HttpResponse<SSL>* res, uWS::HttpRequest* req, struct us_socket_context_t* context, SocketType type);
@@ -105,13 +121,15 @@ private:
     void receivePlotOverLineParameter(uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received);
     void receivePlotOverTimeParameter(uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received);
     void receiveTransferFunctionParameter(uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received);
+    void receiveEnsembleStatisticsParameter(uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received);
+    void receiveRepetitionLevelParameter(uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received);
     void fileList(uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received);
     void selectedFile(uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received);
     void receiveObjectDelete(uWS::WebSocket<false, true, PerSocket>* ws, const nlohmann::json& received);
 
     void assignOperator(int oldOperatorID, int newOperatorID);
     std::vector<char> pack(const int timeStep);
-    size_t calculateTotalSize() const;
+    std::size_t calculateTotalSize() const;
     void LastStepMonitorLoop();
     void PlotOverTimeSenderLoop();
 };

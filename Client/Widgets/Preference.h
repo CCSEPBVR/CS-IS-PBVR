@@ -3,6 +3,8 @@
 
 #include <QDialog>
 #include <QColorDialog>
+#include <QFile>
+#include <QSettings>
 
 #include <kvs/ColorMapBar>
 #include <kvs/Label>
@@ -97,7 +99,7 @@ private:
     QSettings m_settings;
     int m_current_time_step = -1;
 
-    bool isConfigFileExists() { return QFile::exists( QCoreApplication::applicationDirPath() + "/config.ini" ); }
+    bool isConfigFileExists() { return QFile::exists( m_settings.fileName() ); }
 
     void loadSettings();
     void loadColorMapBarSetting();

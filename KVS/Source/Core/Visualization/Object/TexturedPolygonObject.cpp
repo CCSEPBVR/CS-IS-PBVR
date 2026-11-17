@@ -248,7 +248,7 @@ void TexturedPolygonObject::setOpacity( const kvs::UInt8 opacity )
 /*===========================================================================*/
 size_t TexturedPolygonObject::numberOfConnections() const
 {
-    const size_t nvertices_per_face = m_polygon_type;
+    const std::size_t nvertices_per_face = m_polygon_type;
     return nvertices_per_face == 0 ? 0 : m_connections.size() / nvertices_per_face;
 }
 
@@ -265,16 +265,16 @@ void TexturedPolygonObject::flip( const kvs::UInt32 id )
     const kvs::UInt32 width = m_map_id_to_image_width[id];
     const kvs::UInt32 height = m_map_id_to_image_height[id];
 
-    const size_t nChannels = 4;
-    const size_t stride = width * nChannels;
+    const std::size_t nChannels = 4;
+    const std::size_t stride = width * nChannels;
 
     kvs::UInt8* color_array = m_map_id_to_color_array[id].data();
-    const size_t end_line = height / 2;
-    for ( size_t i = 0; i < end_line; i++ )
+    const std::size_t end_line = height / 2;
+    for ( std::size_t i = 0; i < end_line; i++ )
     {
         kvs::UInt8* src = color_array + ( i * stride );
         kvs::UInt8* dst = color_array + ( ( height - i - 1 ) * stride );
-        for ( size_t j = 0; j < stride; j++ )
+        for ( std::size_t j = 0; j < stride; j++ )
         {
             std::swap( *src, *dst );
             src++; dst++;

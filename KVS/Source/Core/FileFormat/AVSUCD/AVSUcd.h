@@ -63,19 +63,19 @@ public:
     };
 
 private:
-    size_t m_nsteps = 0; ///< Number of steps.
+    std::size_t m_nsteps = 0; ///< Number of steps.
     CycleType m_cycle_type = CycleType::CycleTypeUnknown; ///< Cycle type.
     ElementType m_element_type = ElementType::ElementTypeUnknown; ///< Element type.
-    size_t m_step_id = 0; ///< Step ID.
+    std::size_t m_step_id = 0; ///< Step ID.
     std::string m_step_comment = ""; ///< Comment of step.
-    size_t m_nnodes = 0; ///< Number of nodes.
-    size_t m_nelements = 0; ///< Number of elements.
-    size_t m_nvalues_per_node = 0; ///< Number of values per node.
-    size_t m_ncomponents_per_node = 0; ///< Number of components per node.
+    std::size_t m_nnodes = 0; ///< Number of nodes.
+    std::size_t m_nelements = 0; ///< Number of elements.
+    std::size_t m_nvalues_per_node = 0; ///< Number of values per node.
+    std::size_t m_ncomponents_per_node = 0; ///< Number of components per node.
     std::vector<size_t> m_veclens{}; ///< Veclens of each component.
     std::vector<std::string> m_component_names{}; ///< Names of each component.
     std::vector<std::string> m_component_units{}; ///< Units of each component.
-    size_t m_component_id = 0; ///< Component ID.
+    std::size_t m_component_id = 0; ///< Component ID.
     Coords m_coords{}; ///< coordinate array
     Connections m_connections{}; ///< connection array
     Values m_values{}; ///< value array
@@ -86,40 +86,40 @@ public:
 public:
     AVSUcd() = default;
     virtual ~AVSUcd() = default;
-    explicit AVSUcd( const std::string& filename, const size_t step_id = 0, const size_t component_id = 0 );
+    explicit AVSUcd( const std::string& filename, const std::size_t step_id = 0, const std::size_t component_id = 0 );
 
-    size_t nsteps() const { return m_nsteps; }
+    std::size_t nsteps() const { return m_nsteps; }
     CycleType cycleType() const { return m_cycle_type; }
     ElementType elementType() const { return m_element_type; }
-    size_t stepID() const { return m_step_id; }
+    std::size_t stepID() const { return m_step_id; }
     const std::string& stepComment() const { return m_step_comment; }
-    size_t nnodes() const { return m_nnodes; }
-    size_t nelements() const { return m_nelements; }
-    size_t nvaluesPerNode() const { return m_nvalues_per_node; }
-    size_t ncomponentsPerNode() const { return m_ncomponents_per_node; }
+    std::size_t nnodes() const { return m_nnodes; }
+    std::size_t nelements() const { return m_nelements; }
+    std::size_t nvaluesPerNode() const { return m_nvalues_per_node; }
+    std::size_t ncomponentsPerNode() const { return m_ncomponents_per_node; }
     const std::vector<size_t>& veclens() const { return m_veclens; }
     const std::vector<std::string>& componentNames() const { return m_component_names; }
     const std::vector<std::string>& componentUnits() const { return m_component_units; }
-    size_t componentID() const { return m_component_id; }
+    std::size_t componentID() const { return m_component_id; }
     const std::string& componentName() const { return m_component_names[ m_component_id ]; }
     const std::string& componentUnit() const { return m_component_units[ m_component_id ]; }
     const Coords& coords() const { return m_coords; }
     const Connections& connections() const { return m_connections; }
     const Values& values() const { return m_values; }
 
-    void setNSteps( const size_t nsteps ) { m_nsteps = nsteps; }
+    void setNSteps( const std::size_t nsteps ) { m_nsteps = nsteps; }
     void setCycleType( const CycleType cycle_type ) { m_cycle_type = cycle_type; }
     void setElementType( const ElementType element_type ) { m_element_type = element_type; }
-    void setStepID( const size_t step_id ) { m_step_id = step_id; }
+    void setStepID( const std::size_t step_id ) { m_step_id = step_id; }
     void setStepComment( const std::string& step_comment ) { m_step_comment = step_comment; }
-    void setNNodes( const size_t nnodes ) { m_nnodes = nnodes; }
-    void setNElements( const size_t nelements ) { m_nelements = nelements; }
-    void setNValuesPerNode( const size_t nvalues ) { m_nvalues_per_node = nvalues; }
-    void setNComponentsPerNode( const size_t ncomponents ) { m_ncomponents_per_node = ncomponents; }
+    void setNNodes( const std::size_t nnodes ) { m_nnodes = nnodes; }
+    void setNElements( const std::size_t nelements ) { m_nelements = nelements; }
+    void setNValuesPerNode( const std::size_t nvalues ) { m_nvalues_per_node = nvalues; }
+    void setNComponentsPerNode( const std::size_t ncomponents ) { m_ncomponents_per_node = ncomponents; }
     void setVeclens( const std::vector<size_t>& veclens ) { m_veclens = veclens; }
     void setComponentNames( const std::vector<std::string>& component_names );
     void setComponentUnits( const std::vector<std::string>& component_units );
-    void setComponentID( const size_t id ) { m_component_id = id; }
+    void setComponentID( const std::size_t id ) { m_component_id = id; }
     void setCoords( const Coords& coords ) { m_coords = coords; }
     void setConnections( const Connections& connections ) { m_connections = connections; }
     void setValues( const Values& values ) { m_values = values; }

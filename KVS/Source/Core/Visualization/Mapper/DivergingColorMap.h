@@ -15,7 +15,7 @@ namespace kvs
 namespace DivergingColorMap
 {
 
-kvs::ColorMap Create( const kvs::RGBColor& rgb1, const kvs::RGBColor& rgb2, const size_t resolution );
+kvs::ColorMap Create( const kvs::RGBColor& rgb1, const kvs::RGBColor& rgb2, const std::size_t resolution );
 
 /*===========================================================================*/
 /**
@@ -24,7 +24,7 @@ kvs::ColorMap Create( const kvs::RGBColor& rgb1, const kvs::RGBColor& rgb2, cons
  *  @return colormap
  */
 /*===========================================================================*/
-inline kvs::ColorMap CoolWarm( const size_t resolution )
+inline kvs::ColorMap CoolWarm( const std::size_t resolution )
 {
     const kvs::RGBColor rgb1(  59, 76, 192 );
     const kvs::RGBColor rgb2( 180,  4,  38 );

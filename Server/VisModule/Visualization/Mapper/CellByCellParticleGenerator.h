@@ -650,7 +650,7 @@ inline const vismodule::ValueArray<float> CalculateDensityMap(
                                &max_opacity,
                                &max_density );
 
-    const size_t resolution = opacity_map.resolution();
+    const std::size_t resolution = opacity_map.resolution();
 
     // Create the density map.
     vismodule::ValueArray<float> density_map;
@@ -660,7 +660,7 @@ inline const vismodule::ValueArray<float> CalculateDensityMap(
         return density_map;
     }
 
-    for ( size_t i = 0; i < resolution; ++i )
+    for ( std::size_t i = 0; i < resolution; ++i )
     {
         const float opacity = opacity_map[i];
 
@@ -789,7 +789,7 @@ inline const double CalculateTotalVolume( const vismodule::VolumeObjectBase& obj
         }
 
         double total_volume = 0.0f;
-        const size_t ncells = volume->ncells();
+        const std::size_t ncells = volume->ncells();
         #pragma omp parallel reduction(+: total_volume)
         {
 #if _OPENMP

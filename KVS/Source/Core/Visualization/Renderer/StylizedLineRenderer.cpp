@@ -17,9 +17,9 @@ namespace
 
 inline kvs::ValueArray<kvs::Real32> QuadVertexCoords( const kvs::LineObject* line )
 {
-    const size_t nvertices = line->numberOfVertices();
+    const std::size_t nvertices = line->numberOfVertices();
     kvs::ValueArray<kvs::Real32> coords( nvertices * 6 );
-    for ( size_t i = 0; i < nvertices; i++ )
+    for ( std::size_t i = 0; i < nvertices; i++ )
     {
         coords[ 6 * i + 0 ] = line->coords()[ 3 * i + 0 ];
         coords[ 6 * i + 1 ] = line->coords()[ 3 * i + 1 ];
@@ -33,11 +33,11 @@ inline kvs::ValueArray<kvs::Real32> QuadVertexCoords( const kvs::LineObject* lin
 
 inline kvs::ValueArray<kvs::UInt8> QuadVertexColors( const kvs::LineObject* line )
 {
-    const size_t nvertices = line->numberOfVertices();
+    const std::size_t nvertices = line->numberOfVertices();
     kvs::ValueArray<kvs::UInt8> colors( nvertices * 6 );
     if ( line->colorType() == kvs::LineObject::VertexColor )
     {
-        for ( size_t i = 0; i < nvertices; i++ )
+        for ( std::size_t i = 0; i < nvertices; i++ )
         {
             colors[ 6 * i + 0 ] = line->colors()[ 3 * i + 0 ];
             colors[ 6 * i + 1 ] = line->colors()[ 3 * i + 1 ];
@@ -50,7 +50,7 @@ inline kvs::ValueArray<kvs::UInt8> QuadVertexColors( const kvs::LineObject* line
     else
     {
         const kvs::RGBColor color = line->color();
-        for ( size_t i = 0; i < nvertices; i++ )
+        for ( std::size_t i = 0; i < nvertices; i++ )
         {
             colors[ 6 * i + 0 ] = color.r();
             colors[ 6 * i + 1 ] = color.g();
@@ -65,12 +65,12 @@ inline kvs::ValueArray<kvs::UInt8> QuadVertexColors( const kvs::LineObject* line
 
 inline kvs::ValueArray<kvs::Real32> QuadVertexNormals( const kvs::LineObject* line )
 {
-    const size_t nvertices = line->numberOfVertices();
+    const std::size_t nvertices = line->numberOfVertices();
     kvs::ValueArray<kvs::Real32> normals( nvertices * 6 );
 
     if ( line->coords().size() == line->normals().size() )
     {
-        for ( size_t i = 0; i < nvertices; i++ )
+        for ( std::size_t i = 0; i < nvertices; i++ )
         {
             normals[ 6 * i + 0 ] = line->normals()[ 3 * i + 0 ];
             normals[ 6 * i + 1 ] = line->normals()[ 3 * i + 1 ];
@@ -86,11 +86,11 @@ inline kvs::ValueArray<kvs::Real32> QuadVertexNormals( const kvs::LineObject* li
         {
         case kvs::LineObject::Uniline:
         {
-            const size_t nconnections = line->numberOfConnections();
-            for ( size_t i = 0; i < nconnections - 1; i++ )
+            const std::size_t nconnections = line->numberOfConnections();
+            for ( std::size_t i = 0; i < nconnections - 1; i++ )
             {
-                const size_t id0 = line->connections().at( i );
-                const size_t id1 = line->connections().at( i + 1 );
+                const std::size_t id0 = line->connections().at( i );
+                const std::size_t id1 = line->connections().at( i + 1 );
                 const kvs::Vec3 p0 = line->coord( id0 );
                 const kvs::Vec3 p1 = line->coord( id1 );
                 const kvs::Vec3 n = ( p1 - p0 ).normalized();
@@ -114,11 +114,11 @@ inline kvs::ValueArray<kvs::Real32> QuadVertexNormals( const kvs::LineObject* li
         }
         case kvs::LineObject::Segment:
         {
-            const size_t nconnections = line->numberOfConnections();
-            for ( size_t i = 0; i < nconnections; i++ )
+            const std::size_t nconnections = line->numberOfConnections();
+            for ( std::size_t i = 0; i < nconnections; i++ )
             {
-                const size_t id0 = line->connections().at( 2 * i );
-                const size_t id1 = line->connections().at( 2 * i + 1 );
+                const std::size_t id0 = line->connections().at( 2 * i );
+                const std::size_t id1 = line->connections().at( 2 * i + 1 );
                 const kvs::Vec3 p0 = line->coord( id0 );
                 const kvs::Vec3 p1 = line->coord( id1 );
                 const kvs::Vec3 n = ( p1 - p0 ).normalized();
@@ -139,12 +139,12 @@ inline kvs::ValueArray<kvs::Real32> QuadVertexNormals( const kvs::LineObject* li
         }
         case kvs::LineObject::Polyline:
         {
-            const size_t nconnections = line->numberOfConnections();
-            for ( size_t i = 0; i < nconnections; i++ )
+            const std::size_t nconnections = line->numberOfConnections();
+            for ( std::size_t i = 0; i < nconnections; i++ )
             {
-                const size_t id0 = line->connections().at( 2 * i );
-                const size_t id1 = line->connections().at( 2 * i + 1 );
-                for ( size_t j = id0; j < id1; j++ )
+                const std::size_t id0 = line->connections().at( 2 * i );
+                const std::size_t id1 = line->connections().at( 2 * i + 1 );
+                for ( std::size_t j = id0; j < id1; j++ )
                 {
                     const kvs::Vec3 p0 = line->coord( j );
                     const kvs::Vec3 p1 = line->coord( j + 1 );
@@ -170,8 +170,8 @@ inline kvs::ValueArray<kvs::Real32> QuadVertexNormals( const kvs::LineObject* li
         }
         case kvs::LineObject::Strip:
         {
-            const size_t nvertices = line->numberOfVertices();
-            for ( size_t i = 0; i < nvertices - 1; i++ )
+            const std::size_t nvertices = line->numberOfVertices();
+            for ( std::size_t i = 0; i < nvertices - 1; i++ )
             {
                 const kvs::Vec3 p0 = line->coord( i );
                 const kvs::Vec3 p1 = line->coord( i + 1 );
@@ -206,13 +206,13 @@ inline kvs::ValueArray<kvs::Real32> QuadVertexTexCoords(
     const float halo_size,
     const float radius_size )
 {
-    const size_t nvertices = line->numberOfVertices();
+    const std::size_t nvertices = line->numberOfVertices();
     kvs::ValueArray<kvs::Real32> texcoords( nvertices * 4 * 2 );
 
     const float halo_factor = 1.0f + 2.0f * halo_size;
     const float rot = 0.0f;
     const float zdiff = 0.0f;
-    for ( size_t i = 0; i < nvertices; i++ )
+    for ( std::size_t i = 0; i < nvertices; i++ )
     {
         texcoords[ 8 * i + 0 ] = -radius_size * halo_factor;
         texcoords[ 8 * i + 1 ] =  radius_size;
@@ -262,7 +262,7 @@ void StylizedLineRenderer::BufferObject::create(
         const kvs::UInt32* pconnections = line->connections().data();
         m_first_array.allocate( line->numberOfConnections() );
         m_count_array.allocate( m_first_array.size() );
-        for ( size_t i = 0; i < m_first_array.size(); ++i )
+        for ( std::size_t i = 0; i < m_first_array.size(); ++i )
         {
             m_first_array[i] = 2 * ( pconnections[ 2 * i ] );
             m_count_array[i] = 2 * ( pconnections[ 2 * i + 1 ] - pconnections[ 2 * i ] + 1 );
@@ -302,13 +302,13 @@ void StylizedLineRenderer::RenderPass::setShaderFiles(
 
 void StylizedLineRenderer::BufferObject::create_shape_texture()
 {
-    const size_t resolution = 256;
+    const std::size_t resolution = 256;
     kvs::ValueArray<kvs::Real32> shape( resolution * resolution * 4 );
-    for ( size_t j = 0, index = 0; j < resolution; j++ )
+    for ( std::size_t j = 0, index = 0; j < resolution; j++ )
     {
-        for ( size_t i = 0; i < resolution; i++, index++ )
+        for ( std::size_t i = 0; i < resolution; i++, index++ )
         {
-            const size_t index4 = index * 4;
+            const std::size_t index4 = index * 4;
             const kvs::Real32 x = ( i * 2.0f ) / kvs::Real32( resolution ) - 1.0f;
 
             // Cylinder shape.
@@ -335,8 +335,8 @@ void StylizedLineRenderer::BufferObject::create_diffuse_texture()
     {
         for ( int i = 0; i < resolution; i++, index++ )
         {
-            const size_t index4 = index * 4;
-//            const size_t index4 = ( j * resolution + i ) * 4;
+            const std::size_t index4 = index * 4;
+//            const std::size_t index4 = ( j * resolution + i ) * 4;
 //            const float x = kvs::Real32(i) / kvs::Real32( resolution );
             const float y = kvs::Real32(j) / kvs::Real32( resolution );
 
@@ -450,8 +450,8 @@ void StylizedLineRenderer::exec( kvs::ObjectBase* object, kvs::Camera* camera, k
     BaseClass::startTimer();
     kvs::OpenGL::WithPushedAttrib p( GL_ALL_ATTRIB_BITS );
 
-    const size_t width = camera->windowWidth();
-    const size_t height = camera->windowHeight();
+    const std::size_t width = camera->windowWidth();
+    const std::size_t height = camera->windowHeight();
     const auto shading_enabled = BaseClass::isShadingEnabled();
     auto& shading_model = *m_shading_model;
     shading_model.two_side_lighting = false;

@@ -50,9 +50,9 @@ private:
     vismodule::ReferenceCounter* m_counter;       ///< reference counter
 
     TypeInfo* m_type_info;     ///< type information
-    size_t    m_size_of_value; ///< byte size of a value
+    std::size_t    m_size_of_value; ///< byte size of a value
 
-    size_t    m_nvalues;       ///< number of values
+    std::size_t    m_nvalues;       ///< number of values
     void*     m_values;        ///< value array
 
 public:
@@ -60,7 +60,7 @@ public:
     AnyValueArray( void );
 
     template<typename T>
-    AnyValueArray( const T* values, const size_t nvalues );
+    AnyValueArray( const T* values, const std::size_t nvalues );
 
     template<typename T>
     explicit AnyValueArray( const std::vector<T>& values );
@@ -88,7 +88,7 @@ public:
 public:
 
     template<typename T>
-    T& at( const size_t index )
+    T& at( const std::size_t index )
     {
         VIS_MODULE_ASSERT( index < m_nvalues );
         VIS_MODULE_ASSERT( this->typeInfo()->type() == typeid( T ) );
@@ -97,7 +97,7 @@ public:
     }
 
     template<typename T>
-    const T& at( const size_t index ) const
+    const T& at( const std::size_t index ) const
     {
         VIS_MODULE_ASSERT( index < m_nvalues );
         VIS_MODULE_ASSERT( this->typeInfo()->type() == typeid( T ) );
@@ -106,7 +106,7 @@ public:
     }
 
     template<typename T>
-    const T to( const size_t index ) const
+    const T to( const std::size_t index ) const
     {
         // Value to Value.
         const std::type_info& type = this->typeInfo()->type();
@@ -132,12 +132,12 @@ public:
         return( T(0) );
     }
 
-    const size_t size( void ) const
+    const std::size_t size( void ) const
     {
         return( m_nvalues );
     }
 
-    const size_t byteSize( void ) const
+    const std::size_t byteSize( void ) const
     {
         return( m_nvalues * m_size_of_value );
     }
@@ -224,7 +224,7 @@ public:
     }
 
     template<typename T>
-    void deepCopy( const T* values, const size_t nvalues )
+    void deepCopy( const T* values, const std::size_t nvalues )
     {
         void* pvalues = this->template allocate<T>( nvalues );
         memcpy( pvalues, values, sizeof( T ) * nvalues );
@@ -233,7 +233,7 @@ public:
 public:
 
     template<typename T>
-    void* allocate( const size_t nvalues )
+    void* allocate( const std::size_t nvalues )
     {
         this->unref();
         this->create_counter();
@@ -294,7 +294,7 @@ private:
 };
 
 template<typename T>
-inline AnyValueArray::AnyValueArray( const T* values, const size_t nvalues )
+inline AnyValueArray::AnyValueArray( const T* values, const std::size_t nvalues )
     : m_counter( 0 )
     , m_type_info( 0 )
     , m_size_of_value( 0 )
@@ -327,7 +327,7 @@ inline AnyValueArray::AnyValueArray( const vismodule::ValueArray<T>& values )
 }
 
 template<>
-inline std::string& AnyValueArray::at<std::string>( const size_t index )
+inline std::string& AnyValueArray::at<std::string>( const std::size_t index )
 {
     VIS_MODULE_ASSERT( index < m_nvalues );
     VIS_MODULE_ASSERT( this->typeInfo()->type() == typeid( std::string ) );
@@ -336,7 +336,7 @@ inline std::string& AnyValueArray::at<std::string>( const size_t index )
 }
 
 template<>
-inline const std::string& AnyValueArray::at<std::string>( const size_t index ) const
+inline const std::string& AnyValueArray::at<std::string>( const std::size_t index ) const
 {
     VIS_MODULE_ASSERT( index < m_nvalues );
     VIS_MODULE_ASSERT( this->typeInfo()->type() == typeid( std::string ) );
@@ -345,7 +345,7 @@ inline const std::string& AnyValueArray::at<std::string>( const size_t index ) c
 }
 
 template<>
-inline const std::string AnyValueArray::to<std::string>( const size_t index ) const
+inline const std::string AnyValueArray::to<std::string>( const std::size_t index ) const
 {
     // Value to String.
     const std::type_info& type = this->typeInfo()->type();
@@ -368,7 +368,7 @@ inline const std::string AnyValueArray::to<std::string>( const size_t index ) co
 }
 
 template <>
-inline void* AnyValueArray::allocate<std::string>( const size_t nvalues )
+inline void* AnyValueArray::allocate<std::string>( const std::size_t nvalues )
 {
     this->unref();
     this->create_counter();
@@ -383,7 +383,7 @@ inline void* AnyValueArray::allocate<std::string>( const size_t nvalues )
 }
 
 template <>
-inline void AnyValueArray::deepCopy<std::string>( const std::string* values, const size_t nvalues )
+inline void AnyValueArray::deepCopy<std::string>( const std::string* values, const std::size_t nvalues )
 {
     std::string* pvalues = static_cast<std::string*>( this->allocate<std::string>( nvalues ) );
     std::copy( values, values + nvalues, pvalues );

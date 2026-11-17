@@ -23,7 +23,7 @@ void StochasticRenderingEngine::createRandomTexture()
 
     kvs::Xorshift128 R;
     kvs::ValueArray<kvs::Real32> random( m_random_texture_size * m_random_texture_size );
-    for ( size_t i = 0; i < random.size(); i++ ) { random[i] = R.rand(); }
+    for ( std::size_t i = 0; i < random.size(); i++ ) { random[i] = R.rand(); }
 
     m_random_texture.release();
     m_random_texture.setWrapS( GL_REPEAT );
@@ -41,11 +41,11 @@ void StochasticRenderingEngine::createRandomTexture()
  */
 /*===========================================================================*/
 kvs::ValueArray<kvs::UInt16> StochasticRenderingEngine::randomIndices(
-    const size_t nvertices ) const
+    const std::size_t nvertices ) const
 {
     const auto tex_size = this->randomTextureSize();
     kvs::ValueArray<kvs::UInt16> indices( nvertices * 2 );
-    for ( size_t i = 0; i < nvertices; i++ )
+    for ( std::size_t i = 0; i < nvertices; i++ )
     {
         const unsigned int count = i * 12347;
         indices[ 2 * i + 0 ] = static_cast<kvs::UInt16>( ( count ) % tex_size );

@@ -52,7 +52,7 @@ public:
     void setColor( const kvs::RGBColor& c0, const kvs::RGBColor& c1, const kvs::RGBColor& c2, const kvs::RGBColor& c3 );
     void setImage( const kvs::ColorImage& image );
 
-    const kvs::RGBColor& color( size_t index = 0 ) const;
+    const kvs::RGBColor& color( std::size_t index = 0 ) const;
 
     void apply();
 

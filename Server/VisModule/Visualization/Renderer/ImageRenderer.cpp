@@ -123,26 +123,26 @@ void ImageRenderer::create_texture( const vismodule::ImageObject* image )
 
     if ( image->type() == vismodule::ImageObject::Gray8 )
     {
-        const size_t nchannels         = 1;
-        const size_t bytes_per_channel = 1;
+        const std::size_t nchannels         = 1;
+        const std::size_t bytes_per_channel = 1;
         m_texture.setPixelFormat( nchannels, bytes_per_channel );
     }
     else if ( image->type() == vismodule::ImageObject::Gray16 )
     {
-        const size_t nchannels         = 1;
-        const size_t bytes_per_channel = 2;
+        const std::size_t nchannels         = 1;
+        const std::size_t bytes_per_channel = 2;
         m_texture.setPixelFormat( nchannels, bytes_per_channel );
     }
     else if ( image->type() == vismodule::ImageObject::Color24 )
     {
-        const size_t nchannels         = 3;
-        const size_t bytes_per_channel = 1;
+        const std::size_t nchannels         = 3;
+        const std::size_t bytes_per_channel = 1;
         m_texture.setPixelFormat( nchannels, bytes_per_channel );
     }
     else if ( image->type() == vismodule::ImageObject::Color32 )
     {
-        const size_t nchannels         = 4;
-        const size_t bytes_per_channel = 1;
+        const std::size_t nchannels         = 4;
+        const std::size_t bytes_per_channel = 1;
         m_texture.setPixelFormat( nchannels, bytes_per_channel );
     }
     else

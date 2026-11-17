@@ -69,8 +69,8 @@ void StochasticRendererBase::exec(
     startTimer();
     kvs::OpenGL::WithPushedAttrib p( GL_ALL_ATTRIB_BITS );
 
-    const size_t width = camera->windowWidth();
-    const size_t height = camera->windowHeight();
+    const std::size_t width = camera->windowWidth();
+    const std::size_t height = camera->windowHeight();
     if ( this->isWindowCreated() )
     {
         this->setWindowSize( width, height );
@@ -113,8 +113,8 @@ void StochasticRendererBase::exec(
     // Ensemble rendering.
     const auto m = kvs::OpenGL::ModelViewMatrix();
     const auto l = light->position();
-    const size_t r = this->controllledRepetitions( m, l );
-    for ( size_t i = 0; i < r; i++ )
+    const std::size_t r = this->controllledRepetitions( m, l );
+    for ( std::size_t i = 0; i < r; i++ )
     {
         // Render to the ensemble buffer.
         m_ensemble_buffer.bind();
@@ -137,7 +137,7 @@ size_t StochasticRendererBase::controllledRepetitions(
     const kvs::Mat4& modelview,
     const kvs::Vec3& light_position )
 {
-    size_t repetitions = m_repetition_level;
+    std::size_t repetitions = m_repetition_level;
     if ( m_light_position != light_position || m_modelview != modelview )
     {
         if ( m_enable_lod )
@@ -153,8 +153,8 @@ size_t StochasticRendererBase::controllledRepetitions(
 }
 
 void StochasticRendererBase::createEnsembleBuffer(
-    const size_t frame_width,
-    const size_t frame_height )
+    const std::size_t frame_width,
+    const std::size_t frame_height )
 {
     m_ensemble_buffer.create( frame_width, frame_height );
     m_ensemble_buffer.clear();

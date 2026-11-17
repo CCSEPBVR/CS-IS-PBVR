@@ -190,17 +190,17 @@ LineObject::LineObject( const vismodule::PolygonObject& polygon )
 
     this->setLineType( LineObject::Segment );
 
-    const size_t nconnections = polygon.nconnections();
-    const size_t ncorners     = size_t( polygon.polygonType() );
-    const size_t npolygons    = ( nconnections == 0 ) ?
+    const std::size_t nconnections = polygon.nconnections();
+    const std::size_t ncorners     = size_t( polygon.polygonType() );
+    const std::size_t npolygons    = ( nconnections == 0 ) ?
         polygon.nvertices() / ncorners : nconnections;
 
     vismodule::ValueArray<vismodule::UInt32> connections( npolygons * ncorners * 2 );
-    size_t p_index = 0;
-    size_t l_index = 0;
-    for( size_t i = 0; i < npolygons; i++ )
+    std::size_t p_index = 0;
+    std::size_t l_index = 0;
+    for( std::size_t i = 0; i < npolygons; i++ )
     {
-        for( size_t j = 0; j < ncorners; j++ )
+        for( std::size_t j = 0; j < ncorners; j++ )
         {
             connections.at( l_index++ ) = p_index++;
         }
@@ -346,24 +346,24 @@ const LineObject::ColorType LineObject::colorType( void ) const
     return( m_color_type );
 }
 
-const size_t LineObject::nconnections( void ) const
+const std::size_t LineObject::nconnections( void ) const
 {
     return( m_line_type == LineObject::Uniline ?
             m_connections.size() :
             m_connections.size() / 2 );
 }
 
-const size_t LineObject::nsizes( void ) const
+const std::size_t LineObject::nsizes( void ) const
 {
     return( m_sizes.size() );
 }
 
-const vismodule::Vector2ui LineObject::connection( const size_t index ) const
+const vismodule::Vector2ui LineObject::connection( const std::size_t index ) const
 {
     return( vismodule::Vector2ui( (unsigned int*)m_connections.pointer() + 2 * index ) );
 }
 
-const vismodule::Real32 LineObject::size( const size_t index ) const
+const vismodule::Real32 LineObject::size( const std::size_t index ) const
 {
     return( m_sizes[index] );
 }

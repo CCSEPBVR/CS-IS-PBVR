@@ -34,16 +34,16 @@ class BoundaryData
 {
 protected:
 
-    size_t m_dimensions; ///< dimensions (2 or 3)
-    size_t m_nnodes_inlet; ///< number of inlet boundary nodes
-    size_t m_nnodes_wall; ///< number of wall boundary nodes
-    size_t m_nnodes_symetric; ///< number of symetric boundary nodes
-    size_t m_nnodes_cyclic; ///< number of cyclic boundary nodes
-    size_t m_nnodes_body; ///< number of body surface boundary nodes
-    size_t m_nnodes_free; ///< number of free boundary nodes
-    size_t m_nnodes_moving_wall; ///< number of moving wall boundary nodes
-    size_t m_nnodes_inter_connect; ///< number of inter connect boundary nodes
-    size_t m_nnodes_temp; ///< number of temperature boundary nodes
+    std::size_t m_dimensions; ///< dimensions (2 or 3)
+    std::size_t m_nnodes_inlet; ///< number of inlet boundary nodes
+    std::size_t m_nnodes_wall; ///< number of wall boundary nodes
+    std::size_t m_nnodes_symetric; ///< number of symetric boundary nodes
+    std::size_t m_nnodes_cyclic; ///< number of cyclic boundary nodes
+    std::size_t m_nnodes_body; ///< number of body surface boundary nodes
+    std::size_t m_nnodes_free; ///< number of free boundary nodes
+    std::size_t m_nnodes_moving_wall; ///< number of moving wall boundary nodes
+    std::size_t m_nnodes_inter_connect; ///< number of inter connect boundary nodes
+    std::size_t m_nnodes_temp; ///< number of temperature boundary nodes
     vismodule::ValueArray<vismodule::UInt32> m_connections_inlet; ///< inlet boundary nodes
     vismodule::ValueArray<vismodule::UInt32> m_connections_wall; ///< wall boundary nodes
     vismodule::ValueArray<vismodule::UInt32> m_connections_symetric; ///< symetric boundary nodes
@@ -67,25 +67,25 @@ public:
 
 public:
 
-    const size_t dimensions( void ) const;
+    const std::size_t dimensions( void ) const;
 
-    const size_t nnodesInlet( void ) const;
+    const std::size_t nnodesInlet( void ) const;
 
-    const size_t nnodesWall( void ) const;
+    const std::size_t nnodesWall( void ) const;
 
-    const size_t nnodesSymetric( void ) const;
+    const std::size_t nnodesSymetric( void ) const;
 
-    const size_t nnodesCyclic( void ) const;
+    const std::size_t nnodesCyclic( void ) const;
 
-    const size_t nnodesBody( void ) const;
+    const std::size_t nnodesBody( void ) const;
 
-    const size_t nnodesFree( void ) const;
+    const std::size_t nnodesFree( void ) const;
 
-    const size_t nnodesMovingWall( void ) const;
+    const std::size_t nnodesMovingWall( void ) const;
 
-    const size_t nnodesInterConnect( void ) const;
+    const std::size_t nnodesInterConnect( void ) const;
 
-    const size_t nnodesTemp( void ) const;
+    const std::size_t nnodesTemp( void ) const;
 
     const vismodule::ValueArray<vismodule::UInt32>& connectionsInlet( void ) const;
 

@@ -66,7 +66,7 @@ const kvs::TransferFunction Argument::transferFunction( const kvs::VolumeObjectB
     }
     else
     {
-        const size_t resolution = 256;
+        const std::size_t resolution = 256;
         return kvs::TransferFunction( resolution );
     }
 }

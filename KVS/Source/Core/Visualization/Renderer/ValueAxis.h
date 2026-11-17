@@ -59,7 +59,7 @@ private:
     kvs::Font m_tick_label_font; ///< tick label font
     int m_tick_label_offset; ///< offset between the tick label and the axis
     TickDirection m_tick_direction; ///< tick mark direction
-    size_t m_nticks; ///< number of ticks
+    std::size_t m_nticks; ///< number of ticks
 
     // Region
     kvs::Rectangle m_rect; ///< drawing region (x0, x1, y0, y1 )
@@ -94,7 +94,7 @@ public:
     void setTickDirection( const TickDirection dir ) { m_tick_direction = dir; }
     void setTickDirectionToInside() { this->setTickDirection( Inside ); }
     void setTickDirectionToOutside() { this->setTickDirection( Outside ); }
-    void setNumberOfTicks( const size_t nticks ) { m_nticks = nticks; }
+    void setNumberOfTicks( const std::size_t nticks ) { m_nticks = nticks; }
     void setRect( const kvs::Rectangle& rect ) { m_rect = rect; }
     void setMin( const kvs::Real64 min ) { m_min = min; }
     void setMax( const kvs::Real64 max ) { m_max = max; }
@@ -116,7 +116,7 @@ public:
     const kvs::Font& tickLabelFont() const { return m_tick_label_font; }
     int tickLabelOffset() const { return m_tick_label_offset; }
     TickDirection tickDirection() const { return m_tick_direction; }
-    size_t numberOfTicks() const { return m_nticks; }
+    std::size_t numberOfTicks() const { return m_nticks; }
     const kvs::Rectangle& rect() const { return m_rect; }
     kvs::Real64 min() const { return m_min; }
     kvs::Real64 max() const { return m_max; }

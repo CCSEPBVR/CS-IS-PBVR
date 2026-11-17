@@ -57,7 +57,7 @@ void TetrahedralCell::updateDifferentialFunctions( const kvs::Vec3& local ) cons
     KVS_ASSERT( this->containsLocalPoint( local ) );
     kvs::IgnoreUnusedVariable( local );
 
-    const size_t nnodes = BaseClass::numberOfCellNodes();
+    const std::size_t nnodes = BaseClass::numberOfCellNodes();
     kvs::Real32* dN = BaseClass::differentialFunctions();
     kvs::Real32* dNdp = dN;
     kvs::Real32* dNdq = dN + nnodes;

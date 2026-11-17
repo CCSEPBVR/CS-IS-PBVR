@@ -22,7 +22,7 @@ class thread_data
     public:
     hresclock::time_point start;
     double time_spent=0;
-    size_t count=0;
+    std::size_t count=0;
 
 };
 class TimedScope;
@@ -51,12 +51,12 @@ class TimedScope
 
 
 public:
-    size_t n_threads;
+    std::size_t n_threads;
     thread_data* threads;
     std::string name;
 
 
-    TimedScope(std::string name, size_t nthreads)
+    TimedScope(std::string name, std::size_t nthreads)
     {
 //#ifdef TIMER_DEBUG_VERBOSE
         std::cout<<"CREATING TIMED SCOPE:"<<name<<" size"<<nthreads<<std::endl;
@@ -74,7 +74,7 @@ public:
         std::cout<<" PRODUCING SUMMARY"<<std::endl;
         for (TimedScope* l1: *TimedScopeTracker::get_list())
         {
-            size_t count_sum=0;
+            std::size_t count_sum=0;
 
             double time_sum=0;
             double time_max=0;
@@ -88,7 +88,7 @@ public:
                  l1->threads[i].count=0;
                  l1->threads[i].time_spent=0;
             }
-            size_t nthreads=l1->n_threads;
+            std::size_t nthreads=l1->n_threads;
             time_total+=time_sum;
             double count_avg = count_sum/nthreads;
             std::cout<<"| time avg:"<<
@@ -114,7 +114,7 @@ public:
  * @param sd, section data pointer
  * @param thid, thread id
  */
-static inline void timed_section_start(TimedScope& ts, size_t thid=0)
+static inline void timed_section_start(TimedScope& ts, std::size_t thid=0)
 {
 #ifdef TIMER_DEBUG_ON
 #ifdef TIMER_DEBUG_VERBOSE
@@ -133,7 +133,7 @@ static inline void timed_section_start(TimedScope& ts, size_t thid=0)
  * @param sd , section data pointer
  * @param thid , thread id
  */
-static inline void timed_section_end(TimedScope& ts, size_t thid=0)
+static inline void timed_section_end(TimedScope& ts, std::size_t thid=0)
 {
 #ifdef TIMER_DEBUG_ON
 #ifdef TIMER_DEBUG_VERBOSE

@@ -43,7 +43,7 @@ class MetropolisSampling : public MapperBase, public PointObject
 
 protected:
 
-    size_t m_nparticles; ///< number of generated particles
+    std::size_t m_nparticles; ///< number of generated particles
 
 public:
 
@@ -51,20 +51,20 @@ public:
 
     MetropolisSampling(
         const vismodule::VolumeObjectBase& volume,
-        const size_t                 nparticles );
+        const std::size_t                 nparticles );
 
     MetropolisSampling(
         const vismodule::VolumeObjectBase& volume,
-        const size_t                 nparticles,
+        const std::size_t                 nparticles,
         const vismodule::TransferFunction& transfer_function );
 
     virtual ~MetropolisSampling( void );
 
 public:
 
-    const size_t nparticles( void ) const;
+    const std::size_t nparticles( void ) const;
 
-    void setNParticles( const size_t nparticles );
+    void setNParticles( const std::size_t nparticles );
 
 public:
 
@@ -81,9 +81,9 @@ private:
     void generate_particles( const vismodule::StructuredVolumeObject& volume );
 
     void adopt_particle(
-        const size_t         index,
+        const std::size_t         index,
         const vismodule::Vector3f& coord,
-        const size_t         scalar,
+        const std::size_t         scalar,
         const vismodule::Vector3f& gradient );
 };
 

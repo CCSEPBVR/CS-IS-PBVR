@@ -63,28 +63,28 @@ public:
     typedef const_row_order_reverse_iterator const_reverse_iterator;
 
 private:
-    size_t m_nrows; ///< Number of rows.
-    size_t m_ncols; ///< Number of columns.
+    std::size_t m_nrows; ///< Number of rows.
+    std::size_t m_ncols; ///< Number of columns.
     row_type* m_data; ///< Row vectors.
 
 public:
-    static const Matrix Zero( const size_t nrows, const size_t ncols );
-    static const Matrix Ones( const size_t nrows, const size_t ncols );
-    static const Matrix Identity( const size_t nrows, const size_t ncols );
-    static const Matrix Constant( const size_t nrows, const size_t ncols, const T x );
-    static const Matrix Diagonal( const size_t nrows, const size_t ncols, const T x );
+    static const Matrix Zero( const std::size_t nrows, const std::size_t ncols );
+    static const Matrix Ones( const std::size_t nrows, const std::size_t ncols );
+    static const Matrix Identity( const std::size_t nrows, const std::size_t ncols );
+    static const Matrix Constant( const std::size_t nrows, const std::size_t ncols, const T x );
+    static const Matrix Diagonal( const std::size_t nrows, const std::size_t ncols, const T x );
     static const Matrix Diagonal( const kvs::Vector<T>& v );
-    static const Matrix Random( const size_t nrows, const size_t ncols );
-    static const Matrix Random( const size_t nrows, const size_t ncols, const kvs::UInt32 seed );
-    static const Matrix Random( const size_t nrows, const size_t ncols, const T min, const T max );
-    static const Matrix Random( const size_t nrows, const size_t ncols, const T min, const T max, const kvs::UInt32 seed );
+    static const Matrix Random( const std::size_t nrows, const std::size_t ncols );
+    static const Matrix Random( const std::size_t nrows, const std::size_t ncols, const kvs::UInt32 seed );
+    static const Matrix Random( const std::size_t nrows, const std::size_t ncols, const T min, const T max );
+    static const Matrix Random( const std::size_t nrows, const std::size_t ncols, const T min, const T max, const kvs::UInt32 seed );
 
 public:
     Matrix(): m_nrows( 0 ), m_ncols( 0 ), m_data( nullptr ) {}
     ~Matrix() { delete [] m_data; }
 
-    Matrix( const size_t nrows, const size_t ncols );
-    Matrix( const size_t nrows, const size_t ncols, const T* const elements );
+    Matrix( const std::size_t nrows, const std::size_t ncols );
+    Matrix( const std::size_t nrows, const std::size_t ncols, const T* const elements );
     Matrix( const kvs::Matrix22<T>& other );
     Matrix( const kvs::Matrix33<T>& other );
     Matrix( const kvs::Matrix44<T>& other );
@@ -98,9 +98,9 @@ public:
     Matrix& operator =( Matrix&& rhs ) noexcept;
 
 public:
-    size_t rowSize() const { return m_nrows; }
-    size_t columnSize() const { return m_ncols; }
-    size_t size() const { return m_nrows * m_ncols; }
+    std::size_t rowSize() const { return m_nrows; }
+    std::size_t columnSize() const { return m_ncols; }
+    std::size_t size() const { return m_nrows * m_ncols; }
 
     rows_iterator beginRows() { return m_data; }
     rows_iterator endRows() { return m_data + m_nrows; }
@@ -141,13 +141,13 @@ public:
         return row_order_reverse_iterator( this->beginInRowOrder() );
     }
 
-    row_order_iterator beginRow( const size_t row_index )
+    row_order_iterator beginRow( const std::size_t row_index )
     {
         KVS_ASSERT( row_index < this->rowSize() );
         return this->beginInRowOrder() + row_index * this->columnSize();
     }
 
-    row_order_iterator endRow( const size_t row_index )
+    row_order_iterator endRow( const std::size_t row_index )
     {
         KVS_ASSERT( row_index < this->rowSize() );
         return this->beginInRowOrder() + ( row_index + 1 ) * this->columnSize();
@@ -160,7 +160,7 @@ public:
         rows_iterator row = this->beginRows();
         rows_iterator begin = this->beginRows();
         rows_iterator end = this->endRows();
-        size_t offset = 0;
+        std::size_t offset = 0;
         return column_order_iterator( col, row, begin, end, offset );
     }
 
@@ -170,7 +170,7 @@ public:
         rows_iterator row = this->endRows();
         rows_iterator begin = this->beginRows();
         rows_iterator end = this->endRows();
-        size_t offset = ( end - 1 )->size();
+        std::size_t offset = ( end - 1 )->size();
         return column_order_iterator( col, row, begin, end, offset );
     }
 
@@ -184,13 +184,13 @@ public:
         return column_order_reverse_iterator( this->beginInColumnOrder() );
     }
 
-    column_order_iterator beginColumn( const size_t column_index )
+    column_order_iterator beginColumn( const std::size_t column_index )
     {
         KVS_ASSERT( column_index < this->columnSize() );
         return this->beginInColumnOrder() + column_index * this->rowSize();
     }
 
-    column_order_iterator endColumn( const size_t column_index )
+    column_order_iterator endColumn( const std::size_t column_index )
     {
         KVS_ASSERT( column_index < this->columnSize() );
         return this->beginInColumnOrder() + ( column_index + 1 ) * this->rowSize();
@@ -207,17 +207,17 @@ public:
     void setRandom( const T min, const T max );
     void setRandom( const T min, const T max, const kvs::UInt32 seed );
 
-    void resize( const size_t nrows, const size_t ncols );
+    void resize( const std::size_t nrows, const std::size_t ncols );
     void swap( Matrix& other );
     void transpose();
     void invert();
 
     T trace() const;
     T determinant() const;
-    size_t pivot( const size_t row_index ) const;
+    std::size_t pivot( const std::size_t row_index ) const;
     const Matrix transposed() const;
     const Matrix inverted() const;
-    size_t rank() const;
+    std::size_t rank() const;
 
     bool isSquare() const;
     bool isSymmetric() const;
@@ -255,8 +255,8 @@ public:
         const kvs::Indent& indent = kvs::Indent(0) ) const;
 
 public:
-    const kvs::Vector<T>& operator []( const size_t index ) const;
-    kvs::Vector<T>& operator []( const size_t index );
+    const kvs::Vector<T>& operator []( const std::size_t index ) const;
+    kvs::Vector<T>& operator []( const std::size_t index );
     Matrix& operator +=( const Matrix& rhs );
     Matrix& operator -=( const Matrix& rhs );
     Matrix& operator *=( const Matrix& rhs );
@@ -291,17 +291,17 @@ public:
     {
         KVS_ASSERT( lhs.columnSize() == rhs.rowSize() );
 
-        const size_t L = lhs.rowSize();
-        const size_t M = lhs.columnSize();
-        const size_t N = rhs.columnSize();
+        const std::size_t L = lhs.rowSize();
+        const std::size_t M = lhs.columnSize();
+        const std::size_t N = rhs.columnSize();
 
         Matrix result( L, N );
-        for ( size_t r = 0; r < L; ++r )
+        for ( std::size_t r = 0; r < L; ++r )
         {
-            for ( size_t c = 0; c < N; ++c )
+            for ( std::size_t c = 0; c < N; ++c )
             {
                 T sum(0);
-                for ( size_t k = 0; k < M; ++k )
+                for ( std::size_t k = 0; k < M; ++k )
                 {
                     sum += lhs[r][k] * rhs[k][c];
                 }
@@ -316,9 +316,9 @@ public:
     {
         KVS_ASSERT( lhs.columnSize() == rhs.size() );
 
-        const size_t nrows = lhs.rowSize();
+        const std::size_t nrows = lhs.rowSize();
         kvs::Vector<T> result( nrows );
-        for ( size_t r = 0; r < nrows; ++r )
+        for ( std::size_t r = 0; r < nrows; ++r )
         {
             result[r] = lhs[r].dot( rhs );
         }
@@ -330,14 +330,14 @@ public:
     {
         KVS_ASSERT( lhs.size() == rhs.rowSize() );
 
-        const size_t nrows = rhs.rowSize();
-        const size_t ncols = rhs.columnSize();
+        const std::size_t nrows = rhs.rowSize();
+        const std::size_t ncols = rhs.columnSize();
 
         kvs::Vector<T> result( ncols );
-        for ( size_t c = 0; c < ncols; ++c )
+        for ( std::size_t c = 0; c < ncols; ++c )
         {
             T sum(0);
-            for ( size_t r = 0; r < nrows; ++r )
+            for ( std::size_t r = 0; r < nrows; ++r )
             {
                 sum += lhs[r] * rhs[r][c];
             }
@@ -370,12 +370,12 @@ public:
     }
 
 public:
-    KVS_DEPRECATED( size_t nrows() const ) { return this->rowSize(); }
-    KVS_DEPRECATED( size_t ncolumns() const ) { return this->columnSize(); }
+    KVS_DEPRECATED( std::size_t nrows() const ) { return this->rowSize(); }
+    KVS_DEPRECATED( std::size_t ncolumns() const ) { return this->columnSize(); }
     KVS_DEPRECATED( void zero() ) { this->setZero(); }
     KVS_DEPRECATED( void identity() ) { this->setIdentity(); }
     KVS_DEPRECATED( void print() const ) { std::cout << *this << std::endl; }
-    KVS_DEPRECATED( void setSize( const size_t nrows, const size_t ncols ) ) { this->resize( nrows, ncols ); }
+    KVS_DEPRECATED( void setSize( const std::size_t nrows, const std::size_t ncols ) ) { this->resize( nrows, ncols ); }
 };
 
 
@@ -389,7 +389,7 @@ typedef Matrix<double> Matd;
 
 
 template <typename T>
-inline const Matrix<T> Matrix<T>::Zero( const size_t nrows, const size_t ncols )
+inline const Matrix<T> Matrix<T>::Zero( const std::size_t nrows, const std::size_t ncols )
 {
     Matrix<T> m( nrows, ncols );
     m.setZero();
@@ -397,7 +397,7 @@ inline const Matrix<T> Matrix<T>::Zero( const size_t nrows, const size_t ncols )
 }
 
 template <typename T>
-inline const Matrix<T> Matrix<T>::Ones( const size_t nrows, const size_t ncols )
+inline const Matrix<T> Matrix<T>::Ones( const std::size_t nrows, const std::size_t ncols )
 {
     Matrix<T> m( nrows, ncols );
     m.setOnes();
@@ -405,7 +405,7 @@ inline const Matrix<T> Matrix<T>::Ones( const size_t nrows, const size_t ncols )
 }
 
 template <typename T>
-inline const Matrix<T> Matrix<T>::Identity( const size_t nrows, const size_t ncols )
+inline const Matrix<T> Matrix<T>::Identity( const std::size_t nrows, const std::size_t ncols )
 {
     Matrix<T> m( nrows, ncols );
     m.setIdentity();
@@ -413,7 +413,7 @@ inline const Matrix<T> Matrix<T>::Identity( const size_t nrows, const size_t nco
 }
 
 template <typename T>
-inline const Matrix<T> Matrix<T>::Constant( const size_t nrows, const size_t ncols, const T x )
+inline const Matrix<T> Matrix<T>::Constant( const std::size_t nrows, const std::size_t ncols, const T x )
 {
     Matrix<T> m( nrows, ncols );
     m.setConstant( x );
@@ -421,7 +421,7 @@ inline const Matrix<T> Matrix<T>::Constant( const size_t nrows, const size_t nco
 }
 
 template <typename T>
-inline const Matrix<T> Matrix<T>::Diagonal( const size_t nrows, const size_t ncols, const T x )
+inline const Matrix<T> Matrix<T>::Diagonal( const std::size_t nrows, const std::size_t ncols, const T x )
 {
     Matrix<T> m( nrows, ncols );
     m.setDiagonal( x );
@@ -437,7 +437,7 @@ inline const Matrix<T> Matrix<T>::Diagonal( const kvs::Vector<T>& v )
 }
 
 template <typename T>
-inline const Matrix<T> Matrix<T>::Random( const size_t nrows, const size_t ncols )
+inline const Matrix<T> Matrix<T>::Random( const std::size_t nrows, const std::size_t ncols )
 {
     Matrix<T> m( nrows, ncols );
     m.setRandom();
@@ -445,7 +445,7 @@ inline const Matrix<T> Matrix<T>::Random( const size_t nrows, const size_t ncols
 }
 
 template <typename T>
-inline const Matrix<T> Matrix<T>::Random( const size_t nrows, const size_t ncols, const kvs::UInt32 seed )
+inline const Matrix<T> Matrix<T>::Random( const std::size_t nrows, const std::size_t ncols, const kvs::UInt32 seed )
 {
     Matrix<T> m( nrows, ncols );
     m.setRandom( seed );
@@ -453,7 +453,7 @@ inline const Matrix<T> Matrix<T>::Random( const size_t nrows, const size_t ncols
 }
 
 template <typename T>
-inline const Matrix<T> Matrix<T>::Random( const size_t nrows, const size_t ncols, const T min, const T max )
+inline const Matrix<T> Matrix<T>::Random( const std::size_t nrows, const std::size_t ncols, const T min, const T max )
 {
     Matrix<T> m( nrows, ncols );
     m.setRandom( min, max );
@@ -461,7 +461,7 @@ inline const Matrix<T> Matrix<T>::Random( const size_t nrows, const size_t ncols
 }
 
 template <typename T>
-inline const Matrix<T> Matrix<T>::Random( const size_t nrows, const size_t ncols, const T min, const T max, const kvs::UInt32 seed )
+inline const Matrix<T> Matrix<T>::Random( const std::size_t nrows, const std::size_t ncols, const T min, const T max, const kvs::UInt32 seed )
 {
     Matrix<T> m( nrows, ncols );
     m.setRandom( min, max, seed );
@@ -476,7 +476,7 @@ inline const Matrix<T> Matrix<T>::Random( const size_t nrows, const size_t ncols
  */
 /*==========================================================================*/
 template<typename T>
-inline Matrix<T>::Matrix( const size_t nrows, const size_t ncols ):
+inline Matrix<T>::Matrix( const std::size_t nrows, const std::size_t ncols ):
     m_nrows( nrows ),
     m_ncols( ncols ),
     m_data( new row_type [ nrows ] )
@@ -494,12 +494,12 @@ inline Matrix<T>::Matrix( const size_t nrows, const size_t ncols ):
  */
 /*==========================================================================*/
 template<typename T>
-inline Matrix<T>::Matrix( const size_t nrows, const size_t ncols, const T* const elements ):
+inline Matrix<T>::Matrix( const std::size_t nrows, const std::size_t ncols, const T* const elements ):
     m_nrows( nrows ),
     m_ncols( ncols ),
     m_data( new row_type [ nrows ] )
 {
-    size_t offset = 0;
+    std::size_t offset = 0;
     const_rows_iterator last = m_data + m_nrows;
     for ( rows_iterator v = m_data; v != last; ++v, offset += ncols )
     {
@@ -578,7 +578,7 @@ inline Matrix<T>& Matrix<T>::operator =( const Matrix& rhs )
 {
     if ( this != &rhs )
     {
-        const size_t nrows = rhs.rowSize();
+        const std::size_t nrows = rhs.rowSize();
         if ( m_nrows != nrows )
         {
             delete [] m_data;
@@ -640,7 +640,7 @@ inline void Matrix<T>::setOnes()
 template<typename T>
 inline void Matrix<T>::setIdentity()
 {
-    size_t i = 0;
+    std::size_t i = 0;
     const_rows_iterator last = m_data + m_nrows;
     for ( rows_iterator v = m_data; v != last; ++v, ++i ) { v->setUnit(i); }
 }
@@ -655,7 +655,7 @@ inline void Matrix<T>::setConstant( const T x )
 template<typename T>
 inline void Matrix<T>::setDiagonal( const T x )
 {
-    for ( size_t i = 0; i < m_nrows; ++i )
+    for ( std::size_t i = 0; i < m_nrows; ++i )
     {
         m_data[i].setZero();
         m_data[i][i] = x;
@@ -665,7 +665,7 @@ inline void Matrix<T>::setDiagonal( const T x )
 template<typename T>
 inline void Matrix<T>::setDiagonal( const kvs::Vector<T>& v )
 {
-    for ( size_t i = 0; i < m_nrows; ++i )
+    for ( std::size_t i = 0; i < m_nrows; ++i )
     {
         m_data[i].setZero();
         m_data[i][i] = v[i];
@@ -716,7 +716,7 @@ inline void Matrix<T>::setRandom( const T min, const T max, const kvs::UInt32 se
  */
 /*==========================================================================*/
 template<typename T>
-inline void Matrix<T>::resize( const size_t nrows, const size_t ncols )
+inline void Matrix<T>::resize( const std::size_t nrows, const std::size_t ncols )
 {
     if ( nrows == 0 )
     {
@@ -771,15 +771,15 @@ inline void Matrix<T>::swap( Matrix& other )
 template<typename T>
 inline void Matrix<T>::transpose()
 {
-    const size_t nrows = this->rowSize();
-    const size_t ncols = this->columnSize();
+    const std::size_t nrows = this->rowSize();
+    const std::size_t ncols = this->columnSize();
     kvs::Vector<T>* const m = m_data;
 
     if ( nrows == ncols )
     {
-        for ( size_t r = 0; r < nrows; ++r )
+        for ( std::size_t r = 0; r < nrows; ++r )
         {
-            for ( size_t c = r + 1; c < ncols; ++c )
+            for ( std::size_t c = r + 1; c < ncols; ++c )
             {
                 std::swap( m[r][c], m[c][r] );
             }
@@ -788,9 +788,9 @@ inline void Matrix<T>::transpose()
     else
     {
         Matrix result( ncols, nrows );
-        for ( size_t r = 0; r < nrows; ++r )
+        for ( std::size_t r = 0; r < nrows; ++r )
         {
-            for ( size_t c = 0; c < ncols; ++c )
+            for ( std::size_t c = 0; c < ncols; ++c )
             {
                 result[c][r] = m[r][c];
             }
@@ -812,17 +812,17 @@ inline void Matrix<T>::invert()
 {
     KVS_ASSERT( this->rowSize() == this->columnSize() );
 
-    const size_t size = this->rowSize();
-    const size_t nrows = this->rowSize();
-    const size_t ncols = this->columnSize();
+    const std::size_t size = this->rowSize();
+    const std::size_t nrows = this->rowSize();
+    const std::size_t ncols = this->columnSize();
     kvs::Vector<T>* const m = m_data;
 
     Matrix<T> result( nrows, nrows );
     result.setIdentity();
-    for ( size_t k = 0; k < size; k++ )
+    for ( std::size_t k = 0; k < size; k++ )
     {
         // Search a pivot row.
-        const size_t pivot_row = this->pivot( k );
+        const std::size_t pivot_row = this->pivot( k );
 
         // Swap the k-row and the pivot_row.
         if ( k != pivot_row )
@@ -833,19 +833,19 @@ inline void Matrix<T>::invert()
 
         // Forward elimination
         const T diagonal_element = m[k][k];
-        for ( size_t c = 0; c < ncols; ++c )
+        for ( std::size_t c = 0; c < ncols; ++c )
         {
             m[k][c] /= diagonal_element;
             result[k][c] /= diagonal_element;
         }
 
-        for ( size_t r = 0; r < nrows; ++r )
+        for ( std::size_t r = 0; r < nrows; ++r )
         {
             // Skip the pivot_row.
             if ( r != k )
             {
                 const T value = m[r][k];
-                for( size_t c = 0; c < ncols; ++c )
+                for( std::size_t c = 0; c < ncols; ++c )
                 {
                     m[r][c] -= value * m[k][c];
                     result[r][c] -= value * result[k][c];
@@ -883,7 +883,7 @@ inline std::string Matrix<T>::format(
         else
         {
             os << m_data[0].format( delim, bracket_l, bracket_r );
-            for ( size_t i = 1; i < m_nrows; ++i )
+            for ( std::size_t i = 1; i < m_nrows; ++i )
             {
                 os << delim; if ( newline ) { os << std::endl << indent << offset; }
                 os << m_data[i].format( delim, bracket_l, bracket_r );
@@ -905,11 +905,11 @@ inline T Matrix<T>::trace() const
 {
     KVS_ASSERT( this->rowSize() == this->columnSize() );
 
-    const size_t nrows = this->rowSize();
+    const std::size_t nrows = this->rowSize();
     kvs::Vector<T>* const m = m_data;
 
     T result = T(0);
-    for ( size_t r = 0; r < nrows; ++r ) { result += m[r][r]; }
+    for ( std::size_t r = 0; r < nrows; ++r ) { result += m[r][r]; }
     return result;
 }
 
@@ -924,22 +924,22 @@ inline T Matrix<T>::determinant() const
 {
     KVS_ASSERT( this->rowSize() == this->columnSize() );
 
-    const size_t size = this->rowSize();
-    const size_t nrows = this->rowSize();
-    const size_t ncols = this->columnSize();
+    const std::size_t size = this->rowSize();
+    const std::size_t nrows = this->rowSize();
+    const std::size_t ncols = this->columnSize();
 
     Matrix<T> result( *this );
     T det = T(1);
-    for ( size_t k = 0; k < size; ++k )
+    for ( std::size_t k = 0; k < size; ++k )
     {
-        const size_t pivot_row = result.pivot( k );
+        const std::size_t pivot_row = result.pivot( k );
         if ( k != pivot_row ) { det *= T(-1); }
 
         det *= result[k][k];
-        for ( size_t r = k + 1; r < nrows; ++r )
+        for ( std::size_t r = k + 1; r < nrows; ++r )
         {
             const T value = result[r][k] / result[k][k];
-            for ( size_t c = k + 1; c < ncols; ++c )
+            for ( std::size_t c = k + 1; c < ncols; ++c )
             {
                 result[r][c] -= value * result[k][c];
             }
@@ -956,15 +956,15 @@ inline T Matrix<T>::determinant() const
  */
 /*===========================================================================*/
 template<typename T>
-inline size_t Matrix<T>::pivot( const size_t column ) const
+inline std::size_t Matrix<T>::pivot( const std::size_t column ) const
 {
-    const size_t nrows = this->rowSize();
+    const std::size_t nrows = this->rowSize();
     kvs::Vector<T>* const m = m_data;
 
     // Search a max absolute value in the vector of a given row index.
     T max = T( 0 );
-    size_t k = column;
-    for ( size_t r = column; r < nrows; r++ )
+    std::size_t k = column;
+    for ( std::size_t r = column; r < nrows; r++ )
     {
         const T abs = kvs::Math::Abs( m[r][column] );
         if ( abs > max ) { max = abs; k = r; }
@@ -1007,18 +1007,18 @@ inline const Matrix<T> Matrix<T>::inverted() const
  */
 /*===========================================================================*/
 template<typename T>
-inline size_t Matrix<T>::rank() const
+inline std::size_t Matrix<T>::rank() const
 {
-    const size_t nrows = this->rowSize();
-    const size_t ncols = this->columnSize();
+    const std::size_t nrows = this->rowSize();
+    const std::size_t ncols = this->columnSize();
 
     kvs::Matrix<T> tmp = *this;
     kvs::BitArray flags( nrows, false );
 
-    size_t r = 0;
-    for ( size_t i = 0; i < ncols; ++i )
+    std::size_t r = 0;
+    for ( std::size_t i = 0; i < ncols; ++i )
     {
-        size_t j = 0;
+        std::size_t j = 0;
         for ( j = 0; j < nrows; ++j )
         {
             if ( !flags[j] && !kvs::Math::IsZero( tmp[j][i] ) ) { break; }
@@ -1028,15 +1028,15 @@ inline size_t Matrix<T>::rank() const
         {
             ++r;
             flags.set(j);
-            for ( size_t s = i + 1; s < ncols; ++s )
+            for ( std::size_t s = i + 1; s < ncols; ++s )
             {
                 tmp[j][s] /= tmp[j][i];
             }
-            for ( size_t s = 0; s < nrows; ++s )
+            for ( std::size_t s = 0; s < nrows; ++s )
             {
                 if ( s != j && !kvs::Math::IsZero( tmp[s][i] ) )
                 {
-                    for ( size_t t = i + 1; t < ncols; ++t )
+                    for ( std::size_t t = i + 1; t < ncols; ++t )
                     {
                         tmp[s][t] -= tmp[j][t] * tmp[s][i];
                     }
@@ -1058,9 +1058,9 @@ inline bool Matrix<T>::isSymmetric() const
 {
     if ( !this->isSquare() ) { return false; }
 
-    for ( size_t i = 0; i < m_nrows; i++ )
+    for ( std::size_t i = 0; i < m_nrows; i++ )
     {
-        for ( size_t j = i + 1; j < m_ncols; j++ )
+        for ( std::size_t j = i + 1; j < m_ncols; j++ )
         {
             if ( !kvs::Math::Equal( m_data[i][j], m_data[j][i] ) ) { return false; }
         }
@@ -1074,9 +1074,9 @@ inline bool Matrix<T>::isDiagonal() const
 {
     if ( !this->isSquare() ) { return false; }
 
-    for ( size_t i = 0; i < m_nrows; i++ )
+    for ( std::size_t i = 0; i < m_nrows; i++ )
     {
-        for ( size_t j = i + 1; j < m_ncols; j++ )
+        for ( std::size_t j = i + 1; j < m_ncols; j++ )
         {
             if ( !kvs::Math::IsZero( m_data[i][j] ) ||
                  !kvs::Math::IsZero( m_data[j][i] ) ) { return false; }
@@ -1087,14 +1087,14 @@ inline bool Matrix<T>::isDiagonal() const
 }
 
 template<typename T>
-inline const kvs::Vector<T>& Matrix<T>::operator []( const size_t index ) const
+inline const kvs::Vector<T>& Matrix<T>::operator []( const std::size_t index ) const
 {
     KVS_ASSERT( index < this->rowSize() );
     return *( m_data + index );
 }
 
 template<typename T>
-inline kvs::Vector<T>& Matrix<T>::operator []( const size_t index )
+inline kvs::Vector<T>& Matrix<T>::operator []( const std::size_t index )
 {
     KVS_ASSERT( index < this->rowSize() );
     return *( m_data + index );
@@ -1287,11 +1287,11 @@ public:
     }
 
 private:
-    size_t index() const
+    std::size_t index() const
     {
-        const size_t ncols = std::distance( m_row_begin->begin(), m_row_begin->end() );
-        const size_t j = std::distance( m_row_begin, m_row_iterator );
-        const size_t i =
+        const std::size_t ncols = std::distance( m_row_begin->begin(), m_row_begin->end() );
+        const std::size_t j = std::distance( m_row_begin, m_row_iterator );
+        const std::size_t i =
             ( m_row_iterator == m_row_end ) ? 0 :
             ( m_col_iterator == m_row_iterator->end() ) ? 0 :
             std::distance( m_row_iterator->begin(), m_col_iterator );
@@ -1353,7 +1353,7 @@ private:
     rows_iterator m_row_iterator;
     rows_iterator m_row_begin;
     rows_iterator m_row_end;
-    size_t m_col_offset;
+    std::size_t m_col_offset;
 
 public:
     ColumnOrderIterator( const ColumnOrderIterator& other ):
@@ -1368,7 +1368,7 @@ public:
         rows_iterator row_iterator,
         rows_iterator row_begin,
         rows_iterator row_end,
-        size_t col_offset ):
+        std::size_t col_offset ):
         m_col_iterator( col_iterator ),
         m_row_iterator( row_iterator ),
         m_row_begin( row_begin ),
@@ -1467,15 +1467,15 @@ public:
     }
 
 private:
-    size_t index() const
+    std::size_t index() const
     {
-        const size_t nrows = std::distance( m_row_begin, m_row_end );
-        const size_t ncols = std::distance( m_row_begin->begin(), m_row_begin->end() );
-        const size_t j =
+        const std::size_t nrows = std::distance( m_row_begin, m_row_end );
+        const std::size_t ncols = std::distance( m_row_begin->begin(), m_row_begin->end() );
+        const std::size_t j =
             ( m_row_iterator == m_row_end ) ? ncols :
             ( m_col_iterator == m_row_iterator->end() ) ? ncols :
             std::distance( m_row_iterator->begin(), m_col_iterator );
-        const size_t i = ( m_row_iterator == m_row_end ) ? 0 : std::distance( m_row_begin, m_row_iterator );
+        const std::size_t i = ( m_row_iterator == m_row_end ) ? 0 : std::distance( m_row_begin, m_row_iterator );
         return j * nrows + i;
     }
 

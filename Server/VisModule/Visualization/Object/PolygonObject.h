@@ -201,13 +201,13 @@ public:
 
     const NormalType normalType( void ) const;
 
-    const size_t nconnections( void ) const;
+    const std::size_t nconnections( void ) const;
 
-    const size_t nopacities( void ) const;
+    const std::size_t nopacities( void ) const;
 
 public:
 
-    const vismodule::UInt8 opacity( const size_t index = 0 ) const;
+    const vismodule::UInt8 opacity( const std::size_t index = 0 ) const;
 
 public:
 

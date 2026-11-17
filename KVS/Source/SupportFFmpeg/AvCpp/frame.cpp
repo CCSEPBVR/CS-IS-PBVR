@@ -94,10 +94,10 @@ VideoFrame::VideoFrame(PixelFormat pixelFormat, int width, int height, int align
     av_frame_get_buffer(m_raw, align);
 }
 
-VideoFrame::VideoFrame(const uint8_t *data, size_t size, PixelFormat pixelFormat, int width, int height, int align)
+VideoFrame::VideoFrame(const uint8_t *data, std::size_t size, PixelFormat pixelFormat, int width, int height, int align)
     : VideoFrame(pixelFormat, width, height, align)
 {
-    size_t calcSize = av_image_get_buffer_size(pixelFormat, width, height, align);
+    std::size_t calcSize = av_image_get_buffer_size(pixelFormat, width, height, align);
     if (calcSize != size)
         throw length_error("Data size and required buffer for this format/width/height/align not equal");
 
@@ -197,7 +197,7 @@ size_t VideoFrame::bufferSize(int align, OptionalErrorCode ec) const
     return static_cast<size_t>(sz);
 }
 
-bool VideoFrame::copyToBuffer(uint8_t *dst, size_t size, int align, OptionalErrorCode ec)
+bool VideoFrame::copyToBuffer(uint8_t *dst, std::size_t size, int align, OptionalErrorCode ec)
 {
     clear_if(ec);
     auto sts = av_image_copy_to_buffer(dst, static_cast<int>(size), m_raw->data, m_raw->linesize, static_cast<AVPixelFormat>(m_raw->format), m_raw->width, m_raw->height, align);
@@ -244,7 +244,7 @@ int AudioSamples::init(SampleFormat sampleFormat, int samplesCount, uint64_t cha
     return 0;
 }
 
-AudioSamples::AudioSamples(const uint8_t *data, size_t size, SampleFormat sampleFormat, int samplesCount, uint64_t channelLayout, int sampleRate, int align)
+AudioSamples::AudioSamples(const uint8_t *data, std::size_t size, SampleFormat sampleFormat, int samplesCount, uint64_t channelLayout, int sampleRate, int align)
     : AudioSamples(sampleFormat, samplesCount, channelLayout, sampleRate, align)
 {
     const auto channels = av_get_channel_layout_nb_channels(channelLayout);

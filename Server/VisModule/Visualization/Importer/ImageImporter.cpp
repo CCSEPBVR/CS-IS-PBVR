@@ -343,7 +343,7 @@ void ImageImporter::import( const vismodule::Tiff* tiff )
     }
 
     const vismodule::UInt8* raw_data = static_cast<const vismodule::UInt8*>( tiff->rawData().pointer() );
-    const size_t      raw_size = tiff->rawData().byteSize();
+    const std::size_t      raw_size = tiff->rawData().byteSize();
     vismodule::ValueArray<vismodule::UInt8> data( raw_data, raw_size ); // deep copy
 
     SuperClass::m_width  = tiff->width();
@@ -388,10 +388,10 @@ void ImageImporter::import( const vismodule::Pgm* pgm )
 /*==========================================================================*/
 void ImageImporter::import( const vismodule::Pbm* pbm )
 {
-    const size_t npixels = pbm->width() * pbm->height();
+    const std::size_t npixels = pbm->width() * pbm->height();
     vismodule::ValueArray<vismodule::UInt8> data( npixels );
 
-    for ( size_t i = 0; i < npixels; i++ )
+    for ( std::size_t i = 0; i < npixels; i++ )
     {
         data[i] = pbm->data().test(i) ? 0 : 255;
     }

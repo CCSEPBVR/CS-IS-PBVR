@@ -39,9 +39,9 @@ public:
 protected:
 
     bool m_has_nrows; ///< flag to check whether 'nrows' is specified or not
-    size_t m_nrows; ///< number of rows
+    std::size_t m_nrows; ///< number of rows
     bool m_has_ncolumns; ///< flag to check whether 'ncolumns' is specified or not
-    size_t m_ncolumns; ///< number of columns
+    std::size_t m_ncolumns; ///< number of columns
 
 public:
 
@@ -51,17 +51,17 @@ public:
 
     const bool hasNRows( void ) const;
 
-    const size_t nrows( void ) const;
+    const std::size_t nrows( void ) const;
 
     const bool hasNColumns( void ) const;
 
-    const size_t ncolumns( void ) const;
+    const std::size_t ncolumns( void ) const;
 
 public:
 
-    void setNRows( const size_t nrows );
+    void setNRows( const std::size_t nrows );
 
-    void setNColumns( const size_t ncolumns );
+    void setNColumns( const std::size_t ncolumns );
 
 public:
 

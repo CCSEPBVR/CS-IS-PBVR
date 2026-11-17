@@ -23,9 +23,9 @@
 
 
 // Static parameters.
-namespace { size_t Counter = 0; }
+namespace { std::size_t Counter = 0; }
 namespace { bool Flag = true; }
-namespace { const size_t MaxNumberOfPipelines = 256; }
+namespace { const std::size_t MaxNumberOfPipelines = 256; }
 namespace { vismodule::VisualizationPipeline* context[::MaxNumberOfPipelines]; }
 
 namespace
@@ -38,7 +38,7 @@ namespace
 /*===========================================================================*/
 void ExitFunction( void )
 {
-    for ( size_t i = 0; i < ::MaxNumberOfPipelines; i++)
+    for ( std::size_t i = 0; i < ::MaxNumberOfPipelines; i++)
     {
         if ( ::context[i] ) ::context[i]->~VisualizationPipeline();
     }
@@ -506,10 +506,10 @@ VisualizationPipeline::ModuleList::iterator VisualizationPipeline::find_module(
  *  @return number of the modules
  */
 /*===========================================================================*/
-const size_t VisualizationPipeline::count_module(
+const std::size_t VisualizationPipeline::count_module(
     const vismodule::PipelineModule::Category category ) const
 {
-    size_t counter = 0;
+    std::size_t counter = 0;
 
     ModuleList::const_iterator module = m_module_list.begin();
     ModuleList::const_iterator end = m_module_list.end();

@@ -62,7 +62,7 @@ const bool LineTag::hasNLines( void ) const
  *  @return number of lines
  */
 /*===========================================================================*/
-const size_t LineTag::nlines( void ) const
+const std::size_t LineTag::nlines( void ) const
 {
     return( m_nlines );
 }
@@ -73,7 +73,7 @@ const size_t LineTag::nlines( void ) const
  *  @param  nlines [in] number of lines
  */
 /*===========================================================================*/
-void LineTag::setNLines( const size_t nlines )
+void LineTag::setNLines( const std::size_t nlines )
 {
     m_has_nlines = true;
     m_nlines = nlines;

@@ -84,7 +84,7 @@ const kvs::tiff::Tag TagTable[] =
     kvs::tiff::Tag( 347, "JPEG table stream")
 };
 
-const size_t TagTableSize = sizeof( TagTable ) / sizeof( kvs::tiff::Tag );
+const std::size_t TagTableSize = sizeof( TagTable ) / sizeof( kvs::tiff::Tag );
 
 } // end of namespace tiff
 

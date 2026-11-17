@@ -46,7 +46,7 @@ bool ImageFileDirectory::read( std::ifstream& ifs )
     ifs.read( reinterpret_cast<char*>( &nentries ), 2 );
     if ( ifs.gcount() != 2 ) return( false );
 
-    for( size_t i = 0; i < nentries; i++ )
+    for( std::size_t i = 0; i < nentries; i++ )
     {
         m_entry_list.push_back( vismodule::tiff::Entry( ifs ) );
     }

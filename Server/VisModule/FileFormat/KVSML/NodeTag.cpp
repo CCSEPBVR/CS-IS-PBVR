@@ -62,7 +62,7 @@ const bool NodeTag::hasNNodes( void ) const
  *  @return number of nodes
  */
 /*===========================================================================*/
-const size_t NodeTag::nnodes( void ) const
+const std::size_t NodeTag::nnodes( void ) const
 {
     return( m_nnodes );
 }
@@ -73,7 +73,7 @@ const size_t NodeTag::nnodes( void ) const
  *  @param  nnodes [in] number of nodes
  */
 /*===========================================================================*/
-void NodeTag::setNNodes( const size_t nnodes )
+void NodeTag::setNNodes( const std::size_t nnodes )
 {
     m_has_nnodes = true;
     m_nnodes = nnodes;

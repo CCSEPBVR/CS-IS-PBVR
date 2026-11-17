@@ -26,8 +26,8 @@ class Record
 {
     FILE* m_fp = nullptr; //< file pointer
     bool m_swap = false; //< flag for byte swapping
-    size_t m_offset = 0; //< offset bytes for reading record length
-    size_t m_length = 0; //< record length
+    std::size_t m_offset = 0; //< offset bytes for reading record length
+    std::size_t m_length = 0; //< record length
 
 public:
     static void Error()
@@ -36,7 +36,7 @@ public:
     }
 
     template <typename T>
-    static T PeekValue( FILE* fp, bool swap, size_t offset )
+    static T PeekValue( FILE* fp, bool swap, std::size_t offset )
     {
         T value = 0;
 
@@ -50,7 +50,7 @@ public:
         return value;
     }
 
-    static std::string PeekString( size_t size, FILE* fp, size_t offset )
+    static std::string PeekString( std::size_t size, FILE* fp, std::size_t offset )
     {
         fpos_t p;
         if ( fgetpos( fp, &p ) != 0 ) Error();
@@ -64,7 +64,7 @@ public:
     }
 
 public:
-    Record( FILE* fp, bool swap, size_t offset ):
+    Record( FILE* fp, bool swap, std::size_t offset ):
         m_fp( fp ),
         m_swap( swap ),
         m_offset( offset )
@@ -89,7 +89,7 @@ public:
     }
 
     //size_t offset() const { return m_offset; }
-    size_t length() const { return m_length; }
+    std::size_t length() const { return m_length; }
     //void skip() { if ( fseek( m_fp, m_length, SEEK_CUR ) != 0 ) Error(); }
 
     template <typename T>
@@ -102,7 +102,7 @@ public:
     }
 
     template <typename T>
-    kvs::ValueArray<T> readValues( size_t size )
+    kvs::ValueArray<T> readValues( std::size_t size )
     {
         kvs::ValueArray<T> values( size );
         if ( fread( values.data(), sizeof(T), size, m_fp ) < size ) Error();
@@ -110,7 +110,7 @@ public:
         return values;
     }
 
-    std::string readString( size_t size )
+    std::string readString( std::size_t size )
     {
         kvs::ValueArray<char> values( size );
         if ( fread( values.data(), sizeof(char), size, m_fp ) < size ) Error();
@@ -143,14 +143,14 @@ class Format
 {
     std::string m_filename = ""; ///< filename
     bool m_swap = false; ///< flag for byte-swap
-    size_t m_offset = 0; ///< offset byte
+    std::size_t m_offset = 0; ///< offset byte
 
 public:
     Format( const std::string& filename ):
         m_filename( filename ) {}
 
     bool swap() const { return m_swap; }
-    size_t offset() const { return m_offset; }
+    std::size_t offset() const { return m_offset; }
 
     bool isAscii()
     {
@@ -189,7 +189,7 @@ public:
     }
 
 private:
-    bool check_binary( FILE* fp, bool swap, size_t offset ) const
+    bool check_binary( FILE* fp, bool swap, std::size_t offset ) const
     {
         int magic = Record::PeekValue<int>( fp, swap, offset );
         return magic == FV_MAGIC;
@@ -221,9 +221,9 @@ bool FieldViewData::CheckExtension( const std::string& filename )
 /*===========================================================================*/
 size_t FieldViewData::totalNumberOfNodes() const
 {
-    size_t nnodes = 0;
-    const size_t ngrids = this->numberOfGrids();
-    for ( size_t i = 0; i < ngrids; i++ )
+    std::size_t nnodes = 0;
+    const std::size_t ngrids = this->numberOfGrids();
+    for ( std::size_t i = 0; i < ngrids; i++ )
     {
         nnodes += this->grid(i).nnodes;
     }
@@ -237,11 +237,11 @@ size_t FieldViewData::totalNumberOfNodes() const
  *  @return total number of elements
  */
 /*===========================================================================*/
-size_t FieldViewData::totalNumberOfElements( const size_t etype ) const
+size_t FieldViewData::totalNumberOfElements( const std::size_t etype ) const
 {
-    size_t nelements = 0;
-    const size_t ngrids = this->numberOfGrids();
-    for ( size_t i = 0; i < ngrids; i++ )
+    std::size_t nelements = 0;
+    const std::size_t ngrids = this->numberOfGrids();
+    for ( std::size_t i = 0; i < ngrids; i++ )
     {
         nelements += this->grid(i).nelements[ etype ];
     }
@@ -264,12 +264,12 @@ void FieldViewData::print( std::ostream& os, const kvs::Indent& indent ) const
     os << indent << "\tAlpha : " << m_constant.alpha << std::endl;
     os << indent << "\tRe : " << m_constant.re << std::endl;
     os << indent << "Number of variables : " << numberOfVariables() << std::endl;
-    for ( size_t i = 0; i < numberOfVariables(); i++ )
+    for ( std::size_t i = 0; i < numberOfVariables(); i++ )
     {
         os << indent << "\t" << variableName(i) << std::endl;
     }
     os << indent << "Number of grids : " << numberOfGrids() << std::endl;
-    for ( size_t i = 0; i < numberOfGrids(); i++ )
+    for ( std::size_t i = 0; i < numberOfGrids(); i++ )
     {
         os << indent << "\tNumber of nodes : " << m_grids[i].nodes.size() << std::endl;
         os << indent << "\tNumber of elements : " << m_grids[i].elements.size() << std::endl;
@@ -343,7 +343,7 @@ bool FieldViewData::readAscii( const std::string& filename )
     this->read_grids( fp );
     this->read_variable_names( fp );
 
-    for ( size_t i = 0; i < m_ngrids; i++ )
+    for ( std::size_t i = 0; i < m_ngrids; i++ )
     {
         if ( m_grids.size() <= i )
         {
@@ -401,7 +401,7 @@ bool FieldViewData::readBinary( const std::string& filename )
  *  @return true, if the reading process is done successfully
  */
 /*===========================================================================*/
-bool FieldViewData::readBinary( const std::string& filename, bool swap, size_t offset )
+bool FieldViewData::readBinary( const std::string& filename, bool swap, std::size_t offset )
 {
     setFilename( filename );
     setSuccess( true );
@@ -423,8 +423,8 @@ bool FieldViewData::readBinary( const std::string& filename, bool swap, size_t o
     this->read_variable_names( fp, swap, offset );
     this->read_variable_names_on_face( fp, swap, offset );
 
-    const size_t ngrids = this->numberOfGrids();
-    for ( size_t i = 0; i < ngrids; i++ )
+    const std::size_t ngrids = this->numberOfGrids();
+    for ( std::size_t i = 0; i < ngrids; i++ )
     {
         if ( m_grids.size() <= i )
         {
@@ -485,7 +485,7 @@ bool FieldViewData::readBinaryGrid( const std::string& filename )
  *  @return true, if the reading process is done successfully
  */
 /*===========================================================================*/
-bool FieldViewData::readBinaryGrid( const std::string& filename, bool swap, size_t offset )
+bool FieldViewData::readBinaryGrid( const std::string& filename, bool swap, std::size_t offset )
 {
     setFilename( filename );
     setSuccess( true );
@@ -504,8 +504,8 @@ bool FieldViewData::readBinaryGrid( const std::string& filename, bool swap, size
     this->read_grids( fp, swap, offset );
     this->read_boundary_condition( fp, swap, offset );
 
-    const size_t ngrids = this->numberOfGrids();
-    for ( size_t i = 0; i < ngrids; i++ )
+    const std::size_t ngrids = this->numberOfGrids();
+    for ( std::size_t i = 0; i < ngrids; i++ )
     {
         if ( m_grids.size() <= i )
         {
@@ -564,7 +564,7 @@ bool FieldViewData::readBinaryResult( const std::string& filename )
  *  @return true, if the reading process is done successfully
  */
 /*===========================================================================*/
-bool FieldViewData::readBinaryResult( const std::string& filename, bool swap, size_t offset )
+bool FieldViewData::readBinaryResult( const std::string& filename, bool swap, std::size_t offset )
 {
     setFilename( filename );
     setSuccess( true );
@@ -585,8 +585,8 @@ bool FieldViewData::readBinaryResult( const std::string& filename, bool swap, si
     this->read_variable_names( fp, swap, offset );
     this->read_variable_names_on_face( fp, swap, offset );
 
-    const size_t ngrids = this->numberOfGrids();
-    for ( size_t i = 0; i < ngrids; i++ )
+    const std::size_t ngrids = this->numberOfGrids();
+    for ( std::size_t i = 0; i < ngrids; i++ )
     {
         if ( m_grids.size() <= i )
         {
@@ -621,7 +621,7 @@ bool FieldViewData::readBinaryResult( const std::string& filename, bool swap, si
 /*===========================================================================*/
 void FieldViewData::read_version( FILE* fp )
 {
-    const size_t MaxLineLength = 256;
+    const std::size_t MaxLineLength = 256;
     char buffer[ MaxLineLength ];
     int major;
     int minor;
@@ -641,7 +641,7 @@ void FieldViewData::read_version( FILE* fp )
 /*===========================================================================*/
 void FieldViewData::read_constants( FILE* fp )
 {
-    const size_t MaxLineLength = 256;
+    const std::size_t MaxLineLength = 256;
     char buffer[ MaxLineLength ];
 
     while ( fscanf( fp, "%s", buffer ) != -1 )
@@ -689,7 +689,7 @@ void FieldViewData::read_constants( FILE* fp )
 /*===========================================================================*/
 void FieldViewData::read_grids( FILE* fp )
 {
-    const size_t MaxLineLength = 256;
+    const std::size_t MaxLineLength = 256;
     char buffer[ MaxLineLength ];
 
     while ( fscanf( fp, "%s", buffer ) != -1 )
@@ -716,7 +716,7 @@ void FieldViewData::read_grids( FILE* fp )
 /*===========================================================================*/
 void FieldViewData::read_variable_names( FILE* fp )
 {
-    const size_t MaxLineLength = 256;
+    const std::size_t MaxLineLength = 256;
     char buffer[ MaxLineLength ];
 
     while ( fscanf( fp, "%s", buffer ) != -1 )
@@ -737,7 +737,7 @@ void FieldViewData::read_variable_names( FILE* fp )
                 }
 
                 m_nvariables = static_cast<size_t>( nvariables );
-                for ( size_t i = 0; i < m_nvariables; i++ )
+                for ( std::size_t i = 0; i < m_nvariables; i++ )
                 {
                     if ( fgets( buffer, MaxLineLength, fp ) == NULL )
                     {
@@ -761,11 +761,11 @@ void FieldViewData::read_variable_names( FILE* fp )
  *  @param  gindex [in] grid index
  */
 /*===========================================================================*/
-void FieldViewData::read_nodes( FILE* fp, size_t gindex )
+void FieldViewData::read_nodes( FILE* fp, std::size_t gindex )
 {
     Grid& grid = m_grids[ gindex ];
 
-    const size_t MaxLineLength = 256;
+    const std::size_t MaxLineLength = 256;
     char buffer[ MaxLineLength ];
 
     while ( fscanf( fp, "%s", buffer ) != -1 )
@@ -811,11 +811,11 @@ void FieldViewData::read_nodes( FILE* fp, size_t gindex )
  *  @param  gindex [in] grid index
  */
 /*===========================================================================*/
-void FieldViewData::read_elements( FILE* fp, size_t gindex )
+void FieldViewData::read_elements( FILE* fp, std::size_t gindex )
 {
     Grid& grid = m_grids[ gindex ];
 
-    const size_t MaxLineLength = 256;
+    const std::size_t MaxLineLength = 256;
     char buffer[ MaxLineLength ];
 
     // none-0, tet-4, hex-8, prism-6, pyramid-5
@@ -880,22 +880,22 @@ void FieldViewData::read_elements( FILE* fp, size_t gindex )
  *  @param  gindex [in] grid index
  */
 /*===========================================================================*/
-void FieldViewData::read_variables( FILE* fp, size_t gindex )
+void FieldViewData::read_variables( FILE* fp, std::size_t gindex )
 {
     Grid& grid = m_grids[ gindex ];
 
-    const size_t MaxLineLength = 256;
+    const std::size_t MaxLineLength = 256;
     char buffer[ MaxLineLength ];
 
     while ( fscanf( fp, "%s", buffer ) != -1 )
     {
         if ( kvs::String::ToUpper( std::string( buffer ) ) == "VARIABLES" )
         {
-            for ( size_t i = 0; i < m_nvariables; i++ )
+            for ( std::size_t i = 0; i < m_nvariables; i++ )
             {
                 Variable variable;
                 variable.data.allocate( grid.nodes.size() );
-                for ( size_t j = 0; j < grid.nodes.size(); j++ )
+                for ( std::size_t j = 0; j < grid.nodes.size(); j++ )
                 {
                     float data = 0.0f;
                     if ( fscanf( fp, "%f", &data ) == -1 )
@@ -908,7 +908,7 @@ void FieldViewData::read_variables( FILE* fp, size_t gindex )
                 grid.variables.push_back( variable );
             }
 
-            for ( size_t i = 0; i < m_nvariables; i++ )
+            for ( std::size_t i = 0; i < m_nvariables; i++ )
             {
                 bool is_vector = ( m_variable_names[i].find( ';', 0 ) != std::string::npos );
                 if ( is_vector )
@@ -936,7 +936,7 @@ void FieldViewData::read_variables( FILE* fp, size_t gindex )
  *  @param  offset [in] offset byte
  */
 /*===========================================================================*/
-void FieldViewData::read_magic( FILE* fp, bool swap, size_t offset )
+void FieldViewData::read_magic( FILE* fp, bool swap, std::size_t offset )
 {
     ::Record record( fp, swap, offset );
     int temp = record.readValue<int>();
@@ -951,7 +951,7 @@ void FieldViewData::read_magic( FILE* fp, bool swap, size_t offset )
  *  @param  offset [in] offset byte
  */
 /*===========================================================================*/
-void FieldViewData::read_title( FILE* fp, bool swap, size_t offset )
+void FieldViewData::read_title( FILE* fp, bool swap, std::size_t offset )
 {
     ::Record record( fp, swap, offset );
     std::string temp = record.readString( 80 ); // "FIELDVIEW"
@@ -965,7 +965,7 @@ void FieldViewData::read_title( FILE* fp, bool swap, size_t offset )
  *  @param  offset [in] offset byte
  */
 /*===========================================================================*/
-void FieldViewData::read_version( FILE* fp, bool swap, size_t offset )
+void FieldViewData::read_version( FILE* fp, bool swap, std::size_t offset )
 {
     ::Record record( fp, swap, offset );
     kvs::ValueArray<int> temp = record.readValues<int>( 2 );
@@ -993,7 +993,7 @@ void FieldViewData::read_version( FILE* fp, bool swap, size_t offset )
  *  @param  offset [in] offset byte
  */
 /*===========================================================================*/
-void FieldViewData::read_constants( FILE* fp, bool swap, size_t offset )
+void FieldViewData::read_constants( FILE* fp, bool swap, std::size_t offset )
 {
     ::Record record( fp, swap, offset );
     kvs::ValueArray<float> temp = record.readValues<float>( 4 );
@@ -1011,7 +1011,7 @@ void FieldViewData::read_constants( FILE* fp, bool swap, size_t offset )
  *  @param  offset [in] offset byte
  */
 /*===========================================================================*/
-void FieldViewData::read_boundary_condition( FILE* fp, bool swap, size_t offset )
+void FieldViewData::read_boundary_condition( FILE* fp, bool swap, std::size_t offset )
 {
     // Read number of boundary face types (m_boundary_condition.ntypes)
     {
@@ -1020,7 +1020,7 @@ void FieldViewData::read_boundary_condition( FILE* fp, bool swap, size_t offset 
         m_boundary_condition.ntypes = static_cast<size_t>( temp );
     }
 
-    for ( size_t i = 0; i < m_boundary_condition.ntypes; i++ )
+    for ( std::size_t i = 0; i < m_boundary_condition.ntypes; i++ )
     {
         ::Record record( fp, swap, offset );
         kvs::ValueArray<int> values = record.readValues<int>( 2 );
@@ -1039,7 +1039,7 @@ void FieldViewData::read_boundary_condition( FILE* fp, bool swap, size_t offset 
  *  @param  offset [in] offset byte
  */
 /*===========================================================================*/
-void FieldViewData::read_grids( FILE* fp, bool swap, size_t offset )
+void FieldViewData::read_grids( FILE* fp, bool swap, std::size_t offset )
 {
     ::Record record( fp, swap, offset );
     int ngrids = record.readValue<int>();
@@ -1054,7 +1054,7 @@ void FieldViewData::read_grids( FILE* fp, bool swap, size_t offset )
  *  @param  offset [in] offset byte
  */
 /*===========================================================================*/
-void FieldViewData::read_variable_names( FILE* fp, bool swap, size_t offset )
+void FieldViewData::read_variable_names( FILE* fp, bool swap, std::size_t offset )
 {
     // Read number of variables (m_nvariables)
     {
@@ -1063,7 +1063,7 @@ void FieldViewData::read_variable_names( FILE* fp, bool swap, size_t offset )
         m_nvariables = static_cast<size_t>( temp );
     }
 
-    for ( size_t i = 0; i < m_nvariables; i++ )
+    for ( std::size_t i = 0; i < m_nvariables; i++ )
     {
         ::Record record( fp, swap, offset );
         std::string name = record.readString( 80 );
@@ -1079,7 +1079,7 @@ void FieldViewData::read_variable_names( FILE* fp, bool swap, size_t offset )
  *  @param  offset [in] offset byte
  */
 /*===========================================================================*/
-void FieldViewData::read_variable_names_on_face( FILE* fp, bool swap, size_t offset )
+void FieldViewData::read_variable_names_on_face( FILE* fp, bool swap, std::size_t offset )
 {
     // Read number of variables on face (m_nvariables_on_face)
     {
@@ -1088,7 +1088,7 @@ void FieldViewData::read_variable_names_on_face( FILE* fp, bool swap, size_t off
         m_nvariables_on_face = static_cast<size_t>( temp );
     }
 
-    for ( size_t i = 0; i < m_nvariables_on_face; i++ )
+    for ( std::size_t i = 0; i < m_nvariables_on_face; i++ )
     {
         ::Record record( fp, swap, offset );
         std::string name = record.readString( 80 );
@@ -1105,7 +1105,7 @@ void FieldViewData::read_variable_names_on_face( FILE* fp, bool swap, size_t off
  *  @param  gindex [in] grid index
  */
 /*===========================================================================*/
-void FieldViewData::read_nnodes( FILE* fp, bool swap, size_t offset, size_t gindex )
+void FieldViewData::read_nnodes( FILE* fp, bool swap, std::size_t offset, std::size_t gindex )
 {
     Grid& grid = m_grids[ gindex ];
 
@@ -1125,7 +1125,7 @@ void FieldViewData::read_nnodes( FILE* fp, bool swap, size_t offset, size_t gind
  *  @param  gindex [in] grid index
  */
 /*===========================================================================*/
-void FieldViewData::read_nodes( FILE* fp, bool swap, size_t offset, size_t gindex )
+void FieldViewData::read_nodes( FILE* fp, bool swap, std::size_t offset, std::size_t gindex )
 {
     Grid& grid = m_grids[ gindex ];
 
@@ -1134,7 +1134,7 @@ void FieldViewData::read_nodes( FILE* fp, bool swap, size_t offset, size_t ginde
     kvs::ValueArray<float> ycoords = record.readValues<float>( grid.nnodes );
     kvs::ValueArray<float> zcoords = record.readValues<float>( grid.nnodes );
 
-    for ( size_t i = 0; i < grid.nnodes; i++ )
+    for ( std::size_t i = 0; i < grid.nnodes; i++ )
     {
         Node node;
         node.x = xcoords[i];
@@ -1153,7 +1153,7 @@ void FieldViewData::read_nodes( FILE* fp, bool swap, size_t offset, size_t ginde
  *  @param  gindex [in] grid index
  */
 /*===========================================================================*/
-void FieldViewData::read_faces( FILE* fp, bool swap, size_t offset, size_t gindex )
+void FieldViewData::read_faces( FILE* fp, bool swap, std::size_t offset, std::size_t gindex )
 {
     Grid& grid = m_grids[ gindex ];
 
@@ -1189,7 +1189,7 @@ void FieldViewData::read_faces( FILE* fp, bool swap, size_t offset, size_t ginde
  *  @param  gindex [in] grid index
  */
 /*===========================================================================*/
-void FieldViewData::read_elements( FILE* fp, bool swap, size_t offset, size_t gindex )
+void FieldViewData::read_elements( FILE* fp, bool swap, std::size_t offset, std::size_t gindex )
 {
     Grid& grid = m_grids[ gindex ];
 
@@ -1267,7 +1267,7 @@ void FieldViewData::read_elements( FILE* fp, bool swap, size_t offset, size_t gi
  *  @param  gindex [in] grid index
  */
 /*===========================================================================*/
-void FieldViewData::read_variables( FILE* fp, bool swap, size_t offset, size_t gindex )
+void FieldViewData::read_variables( FILE* fp, bool swap, std::size_t offset, std::size_t gindex )
 {
     Grid& grid = m_grids[ gindex ];
 
@@ -1278,14 +1278,14 @@ void FieldViewData::read_variables( FILE* fp, bool swap, size_t offset, size_t g
     }
 
     ::Record record( fp, swap, offset );
-    for ( size_t i = 0; i < m_nvariables; i++ )
+    for ( std::size_t i = 0; i < m_nvariables; i++ )
     {
         Variable variable;
         variable.data = record.readValues<float>( grid.nodes.size() );
         grid.variables.push_back( variable );
     }
 
-    for ( size_t i = 0; i < m_nvariables; i++ )
+    for ( std::size_t i = 0; i < m_nvariables; i++ )
     {
         bool is_vector = ( m_variable_names[i].find( ';', 0 ) != std::string::npos );
         if ( is_vector )
@@ -1310,12 +1310,12 @@ void FieldViewData::read_variables( FILE* fp, bool swap, size_t offset, size_t g
  *  @param  gindex [inde] grid index
  */
 /*===========================================================================*/
-void FieldViewData::read_variables_on_face( FILE* fp, bool swap, size_t offset, size_t gindex )
+void FieldViewData::read_variables_on_face( FILE* fp, bool swap, std::size_t offset, std::size_t gindex )
 {
     Grid& grid = m_grids[ gindex ];
 
-    size_t nvariables_on_face = m_nvariables_on_face;
-    size_t nfaces = m_boundary_condition.ntypes;
+    std::size_t nvariables_on_face = m_nvariables_on_face;
+    std::size_t nfaces = m_boundary_condition.ntypes;
     {
         ::Record record( fp, swap, offset );
         int temp = record.readValue<int>();
@@ -1325,10 +1325,10 @@ void FieldViewData::read_variables_on_face( FILE* fp, bool swap, size_t offset, 
     if ( nvariables_on_face > 0 )
     {
         ::Record record( fp, swap, offset );
-        for ( size_t i = 0; i < nvariables_on_face; i++ )
+        for ( std::size_t i = 0; i < nvariables_on_face; i++ )
         {
             std::vector<float> data;
-            for ( size_t j = 0; j < nfaces; j++ )
+            for ( std::size_t j = 0; j < nfaces; j++ )
             {
                 if ( m_boundary_condition.results[j] == 1 )
                 {
@@ -1342,7 +1342,7 @@ void FieldViewData::read_variables_on_face( FILE* fp, bool swap, size_t offset, 
             grid.variables_on_face.push_back( variable );
         }
 
-        for ( size_t i = 0; i < m_nvariables_on_face; i++ )
+        for ( std::size_t i = 0; i < m_nvariables_on_face; i++ )
         {
             bool is_vector = ( m_variable_names_on_face[i].find( ';', 0 ) != std::string::npos );
             if ( is_vector )

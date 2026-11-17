@@ -30,10 +30,10 @@ class Mesh
 private:
 
     kvs::gis::Point** m_data; ///< set of points
-    size_t m_row; ///< number of rows
-    size_t m_column; ///< number of columns
-    size_t m_latitude_dimension; ///< number of dimensions for latitude
-    size_t m_longitude_dimension; ///< number of dimensions for longitude
+    std::size_t m_row; ///< number of rows
+    std::size_t m_column; ///< number of columns
+    std::size_t m_latitude_dimension; ///< number of dimensions for latitude
+    std::size_t m_longitude_dimension; ///< number of dimensions for longitude
     float m_latitude_interval; ///< interval for latitude
     float m_longitude_interval; ///< interval for longitude
     kvs::gis::Area m_area; ///< mesh area
@@ -43,21 +43,21 @@ public:
     Mesh();
     virtual ~Mesh();
 
-    const kvs::gis::Point& data( const size_t latitude, const size_t longitude ) const;
-    size_t row() const;
-    size_t column() const;
-    size_t latitudeDimension() const;
-    size_t longitudeDimension() const;
+    const kvs::gis::Point& data( const std::size_t latitude, const std::size_t longitude ) const;
+    std::size_t row() const;
+    std::size_t column() const;
+    std::size_t latitudeDimension() const;
+    std::size_t longitudeDimension() const;
     float latitudeInterval() const;
     float longitudeInterval() const;
     const kvs::gis::Area& area() const;
     bool hasData() const;
 
-    void setData( const size_t latitude, const size_t longitude, const kvs::gis::Point& data );
-    void setRow( const size_t row );
-    void setColumn( const size_t column );
-    void setLatitudeDimension( const size_t latitude_dimension );
-    void setLongitudeDimension( const size_t longitude_dimension );
+    void setData( const std::size_t latitude, const std::size_t longitude, const kvs::gis::Point& data );
+    void setRow( const std::size_t row );
+    void setColumn( const std::size_t column );
+    void setLatitudeDimension( const std::size_t latitude_dimension );
+    void setLongitudeDimension( const std::size_t longitude_dimension );
     void setLatitudeInterval( const float latitude_interval );
     void setLongitudeInterval( const float longitude_interval );
     void setArea( const kvs::gis::Area& area );
@@ -66,7 +66,7 @@ public:
 
 protected:
 
-    void allocate_data( const size_t row, const size_t column );
+    void allocate_data( const std::size_t row, const std::size_t column );
     void deallocate_data();
     kvs::gis::Area available_area( const kvs::gis::Area& area ) const;
 };

@@ -53,9 +53,9 @@ private:
     Tiff::Header       m_header;          ///< header information
     Tiff::IFD          m_ifd;             ///< 0-th IFD
 
-    size_t             m_width;           ///< width
-    size_t             m_height;          ///< height
-    size_t             m_bits_per_sample; ///< bits per channel (sample)
+    std::size_t             m_width;           ///< width
+    std::size_t             m_height;          ///< height
+    std::size_t             m_bits_per_sample; ///< bits per channel (sample)
     ColorMode          m_color_mode;      ///< color mode
     vismodule::AnyValueArray m_raw_data;        ///< raw data
 
@@ -75,11 +75,11 @@ public:
 
 public:
 
-    size_t width( void ) const;
+    std::size_t width( void ) const;
 
-    size_t height( void ) const;
+    std::size_t height( void ) const;
 
-    size_t bitsPerSample( void ) const;
+    std::size_t bitsPerSample( void ) const;
 
     ColorMode colorMode( void ) const;
 
@@ -97,19 +97,19 @@ private:
 
 private:
 
-    size_t get_width( void ) const;
+    std::size_t get_width( void ) const;
 
-    size_t get_height( void ) const;
+    std::size_t get_height( void ) const;
 
-    size_t get_bits_per_sample( void ) const;
+    std::size_t get_bits_per_sample( void ) const;
 
-    size_t get_samples_per_pixel( void ) const;
+    std::size_t get_samples_per_pixel( void ) const;
 
-    size_t get_photometirc_interpretation( void ) const;
+    std::size_t get_photometirc_interpretation( void ) const;
 
-    size_t get_rows_per_strip( void ) const;
+    std::size_t get_rows_per_strip( void ) const;
 
-    size_t get_compression_mode( void ) const;
+    std::size_t get_compression_mode( void ) const;
 
     vismodule::AnyValueArray get_strip_offsets( void ) const;
 

@@ -31,7 +31,7 @@ namespace kvs
 /*===========================================================================*/
 CellByCellRejectionSampling::CellByCellRejectionSampling(
     const kvs::VolumeObjectBase* volume,
-    const size_t repetition_level,
+    const std::size_t repetition_level,
     const float sampling_step,
     const kvs::TransferFunction& transfer_function,
     const float object_depth ):
@@ -59,7 +59,7 @@ CellByCellRejectionSampling::CellByCellRejectionSampling(
 CellByCellRejectionSampling::CellByCellRejectionSampling(
     const kvs::Camera* camera,
     const kvs::VolumeObjectBase* volume,
-    const size_t repetition_level,
+    const std::size_t repetition_level,
     const float sampling_step,
     const kvs::TransferFunction& transfer_function,
     const float object_depth ):
@@ -189,7 +189,7 @@ void CellByCellRejectionSampling::generate_particles( const kvs::StructuredVolum
     const kvs::ColorMap color_map( BaseClass::transferFunction().colorMap() );
 
     // Calculate number of particles.
-    size_t N = 0;
+    std::size_t N = 0;
     kvs::ValueArray<kvs::UInt32> nparticles( ncells.x() * ncells.y() * ncells.z() );
     KVS_OMP_PARALLEL()
     {
@@ -201,13 +201,13 @@ void CellByCellRejectionSampling::generate_particles( const kvs::StructuredVolum
         KVS_OMP_FOR( reduction(+:N) )
         for ( kvs::UInt32 z = 0; z < ncells.z(); ++z )
         {
-            size_t cell_index_counter = z * ncells.x() * ncells.y();
+            std::size_t cell_index_counter = z * ncells.x() * ncells.y();
             for ( kvs::UInt32 y = 0; y < ncells.y(); ++y )
             {
                 for ( kvs::UInt32 x = 0; x < ncells.x(); ++x )
                 {
                     sampler.bind( kvs::Vec3ui( x, y, z ) );
-                    const size_t n = sampler.numberOfParticles();
+                    const std::size_t n = sampler.numberOfParticles();
                     const kvs::UInt32 index = cell_index_counter++;
                     nparticles[index] = n;
                     N += n;
@@ -228,8 +228,8 @@ void CellByCellRejectionSampling::generate_particles( const kvs::StructuredVolum
         KVS_OMP_FOR( schedule(dynamic) )
         for ( kvs::UInt32 r = 0; r < repetitions; r++ )
         {
-            size_t cell_index_counter = 0;
-            size_t particle_index_counter = N * r;
+            std::size_t cell_index_counter = 0;
+            std::size_t particle_index_counter = N * r;
             for ( kvs::UInt32 z = 0; z < ncells.z(); ++z )
             {
                 for ( kvs::UInt32 y = 0; y < ncells.y(); ++y )
@@ -237,14 +237,14 @@ void CellByCellRejectionSampling::generate_particles( const kvs::StructuredVolum
                     for ( kvs::UInt32 x = 0; x < ncells.x(); ++x )
                     {
                         const kvs::UInt32 index = cell_index_counter++;
-                        const size_t n = nparticles[index];
+                        const std::size_t n = nparticles[index];
                         if ( n == 0 ) continue;
 
                         sampler.bind( kvs::Vec3ui( x, y, z ) );
                         const kvs::Real32 max_density = density_map.maxValueInGrid<T>( interpolator, volume );
                         const kvs::Real32 pmax = max_density / n;
 
-                        size_t counter = 0;
+                        std::size_t counter = 0;
                         while ( counter < n )
                         {
                             const kvs::Real32 density = sampler.sample();
@@ -253,7 +253,7 @@ void CellByCellRejectionSampling::generate_particles( const kvs::StructuredVolum
                             if ( p > pmax * R )
                             {
                                 const CellByCellSampling::Particle& p = sampler.accept();
-                                const size_t particle_index = particle_index_counter++;
+                                const std::size_t particle_index = particle_index_counter++;
                                 particles.push( particle_index, p );
 
                                 counter++;
@@ -285,11 +285,11 @@ void CellByCellRejectionSampling::generate_particles( const kvs::UnstructuredVol
     density_map.attachObject( volume );
     density_map.create( BaseClass::transferFunction().opacityMap() );
 
-    const size_t ncells = volume->numberOfCells();
+    const std::size_t ncells = volume->numberOfCells();
     const kvs::ColorMap color_map( BaseClass::transferFunction().colorMap() );
 
     // Calculate number of particles
-    size_t N = 0;
+    std::size_t N = 0;
     kvs::ValueArray<kvs::UInt32> nparticles( ncells );
     KVS_OMP_PARALLEL()
     {
@@ -297,10 +297,10 @@ void CellByCellRejectionSampling::generate_particles( const kvs::UnstructuredVol
         CellByCellSampling::CellSampler sampler( cell, &density_map );
 
         KVS_OMP_FOR( reduction(+:N) )
-        for ( size_t index = 0; index < ncells; ++index )
+        for ( std::size_t index = 0; index < ncells; ++index )
         {
             sampler.bind( index );
-            const size_t n = sampler.numberOfParticles();
+            const std::size_t n = sampler.numberOfParticles();
             nparticles[index] = n;
 
             N += n;
@@ -321,10 +321,10 @@ void CellByCellRejectionSampling::generate_particles( const kvs::UnstructuredVol
         KVS_OMP_FOR( schedule(dynamic) )
         for ( kvs::UInt32 r = 0; r < repetitions; ++r )
         {
-            size_t particle_index_counter = N * r;
-            for ( size_t index = 0; index < ncells; ++index )
+            std::size_t particle_index_counter = N * r;
+            for ( std::size_t index = 0; index < ncells; ++index )
             {
-                const size_t n = nparticles[index];
+                const std::size_t n = nparticles[index];
                 if ( n == 0 ) continue;
 
                 sampler.bind( index );
@@ -332,7 +332,7 @@ void CellByCellRejectionSampling::generate_particles( const kvs::UnstructuredVol
                 const kvs::Real32 max_density = density_map.maxValueInCell( cell, volume );
                 const kvs::Real32 pmax = max_density / n;
 
-                size_t counter = 0;
+                std::size_t counter = 0;
                 while ( counter < n )
                 {
                     const kvs::Real32 density = sampler.sample();
@@ -341,7 +341,7 @@ void CellByCellRejectionSampling::generate_particles( const kvs::UnstructuredVol
                     if ( p > pmax * R )
                     {
                         const CellByCellSampling::Particle& p = sampler.accept();
-                        const size_t particle_index = particle_index_counter++;
+                        const std::size_t particle_index = particle_index_counter++;
                         particles.push( particle_index, p );
 
                         counter++;

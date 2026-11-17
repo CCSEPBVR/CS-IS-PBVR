@@ -13,7 +13,7 @@ int main( int argc, char** argv )
     kvs::Screen screen( &app );
     screen.setSize( 800, 300 );
 
-    const size_t nsamples = 100;
+    const std::size_t nsamples = 100;
     const auto random_x = kvs::ValueArray<float>::Random( nsamples );
     const auto random_y = kvs::ValueArray<float>::Random( nsamples );
     const auto random_z = kvs::ValueArray<float>::Random( nsamples );

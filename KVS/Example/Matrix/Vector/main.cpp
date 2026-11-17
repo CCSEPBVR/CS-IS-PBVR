@@ -6,7 +6,7 @@
 namespace
 {
 
-void PerfTest( const size_t size, const size_t nloops )
+void PerfTest( const std::size_t size, const std::size_t nloops )
 {
     std::cout << "Performance Test (" << nloops << " times)" << std::endl;
 
@@ -17,7 +17,7 @@ void PerfTest( const size_t size, const size_t nloops )
     {
         Vec a;
         kvs::Timer timer( kvs::Timer::Start );
-        for ( size_t i = 0; i < nloops; ++i ) { a = Vec::Random( size ); }
+        for ( std::size_t i = 0; i < nloops; ++i ) { a = Vec::Random( size ); }
         timer.stop();
         std::cout << indent << "Random: " << timer.sec() << " [sec]" << std::endl;
     }
@@ -27,7 +27,7 @@ void PerfTest( const size_t size, const size_t nloops )
         Vec a = Vec::Random( size );
         Vec b = Vec::Random( size );
         kvs::Timer timer( kvs::Timer::Start );
-        for ( size_t i = 0; i < nloops; ++i ) { a.swap( b ); }
+        for ( std::size_t i = 0; i < nloops; ++i ) { a.swap( b ); }
         timer.stop();
         std::cout << indent << "Swap: " << timer.sec() << " [sec]" << std::endl;
     }
@@ -36,7 +36,7 @@ void PerfTest( const size_t size, const size_t nloops )
     {
         Vec a = Vec::Random( size );
         kvs::Timer timer( kvs::Timer::Start );
-        for ( size_t i = 0; i < nloops; ++i ) { a.normalized(); }
+        for ( std::size_t i = 0; i < nloops; ++i ) { a.normalized(); }
         timer.stop();
         std::cout << indent << "Normalize: " << timer.sec() << " [sec]" << std::endl;
     }
@@ -46,7 +46,7 @@ void PerfTest( const size_t size, const size_t nloops )
         Vec a = Vec::Random( size );
         double b = 0.0;
         kvs::Timer timer( kvs::Timer::Start );
-        for ( size_t i = 0; i < nloops; ++i ) { b = a.length(); }
+        for ( std::size_t i = 0; i < nloops; ++i ) { b = a.length(); }
         timer.stop();
         std::cout << indent << "Length: " << timer.sec() << " [sec]" << std::endl;
     }
@@ -57,7 +57,7 @@ void PerfTest( const size_t size, const size_t nloops )
         Vec b = Vec::Random( size );
         float c = 0.0f;
         kvs::Timer timer( kvs::Timer::Start );
-        for ( size_t i = 0; i < nloops; ++i ) { c = a.dot( b ); }
+        for ( std::size_t i = 0; i < nloops; ++i ) { c = a.dot( b ); }
         timer.stop();
         std::cout << indent << "Dot: " << timer.sec() << " [sec]" << std::endl;
     }
@@ -68,7 +68,7 @@ void PerfTest( const size_t size, const size_t nloops )
         Vec b = Vec::Random( size );
         Vec c;
         kvs::Timer timer( kvs::Timer::Start );
-        for ( size_t i = 0; i < nloops; ++i ) { c = a + b; }
+        for ( std::size_t i = 0; i < nloops; ++i ) { c = a + b; }
         timer.stop();
         std::cout << indent << "+ operator: " << timer.sec() << " [sec]" << std::endl;
     }
@@ -79,7 +79,7 @@ void PerfTest( const size_t size, const size_t nloops )
         Vec b = Vec::Random( size );
         Vec c;
         kvs::Timer timer( kvs::Timer::Start );
-        for ( size_t i = 0; i < nloops; ++i ) { c = a - b; }
+        for ( std::size_t i = 0; i < nloops; ++i ) { c = a - b; }
         timer.stop();
         std::cout << indent << "- operator: " << timer.sec() << " [sec]" << std::endl;
     }
@@ -90,7 +90,7 @@ void PerfTest( const size_t size, const size_t nloops )
         Vec b = Vec::Random( size );
         Vec c;
         kvs::Timer timer( kvs::Timer::Start );
-        for ( size_t i = 0; i < nloops; ++i ) { c = a * b; }
+        for ( std::size_t i = 0; i < nloops; ++i ) { c = a * b; }
         timer.stop();
         std::cout << indent << "* operator: " << timer.sec() << " [sec]" << std::endl;
     }
@@ -101,7 +101,7 @@ void PerfTest( const size_t size, const size_t nloops )
         Vec b = Vec::Random( size );
         Vec c;
         kvs::Timer timer( kvs::Timer::Start );
-        for ( size_t i = 0; i < nloops; ++i ) { c = a / b; }
+        for ( std::size_t i = 0; i < nloops; ++i ) { c = a / b; }
         timer.stop();
         std::cout << indent << "/ operator: " << timer.sec() << " [sec]" << std::endl;
     }
@@ -112,7 +112,7 @@ void PerfTest( const size_t size, const size_t nloops )
 int main()
 {
     std::cout << "Definition" << std::endl;
-    const size_t n = 5;
+    const std::size_t n = 5;
     const float v1[n] = { 1.0f, 2.0f, 3.0f, 4.0f, 5.0f };
     kvs::Vector<float> a( n, v1 );
     std::cout << "a = [" << a[0] << " " << a[1] << " " << a[2] << " " << a[3] << " " << a[4] << "]" << std::endl;
@@ -195,8 +195,8 @@ int main()
     std::cout << "kvs::Vec::Random(n,min,max,seed) = " << kvs::Vec::Random(n,-1.0f,1.0f,2).format() << std::endl;
     std::cout << std::endl;
 
-    const size_t size = 10000;
-    const size_t nloops = 10000;
+    const std::size_t size = 10000;
+    const std::size_t nloops = 10000;
     ::PerfTest( size, nloops );
 
     return 0;

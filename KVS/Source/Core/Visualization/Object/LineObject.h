@@ -80,11 +80,11 @@ public:
 
     LineType lineType() const { return m_line_type; }
     ColorType colorType() const { return m_color_type; }
-    size_t numberOfConnections() const;
-    size_t numberOfSizes() const;
+    std::size_t numberOfConnections() const;
+    std::size_t numberOfSizes() const;
 
-    const kvs::Vec2ui connection( const size_t index = 0 ) const;
-    kvs::Real32 size( const size_t index = 0 ) const;
+    const kvs::Vec2ui connection( const std::size_t index = 0 ) const;
+    kvs::Real32 size( const std::size_t index = 0 ) const;
 
     const kvs::ValueArray<kvs::UInt32>& connections() const { return m_connections; }
     const kvs::ValueArray<kvs::Real32>& sizes() const { return m_sizes; }
@@ -221,8 +221,8 @@ public:
         this->setSize( 1.0f );
     }
 
-    KVS_DEPRECATED( size_t nconnections() const ) { return this->numberOfConnections(); }
-    KVS_DEPRECATED( size_t nsizes() const ) { return this->numberOfSizes(); }
+    KVS_DEPRECATED( std::size_t nconnections() const ) { return this->numberOfConnections(); }
+    KVS_DEPRECATED( std::size_t nsizes() const ) { return this->numberOfSizes(); }
     KVS_DEPRECATED( friend std::ostream& operator << ( std::ostream& os, const LineObject& object ) );
 };
 

@@ -97,16 +97,16 @@ m_cellType( celltype )
 
 void PlotOverTime::for_structured_mesh( const vismodule::Vec3 P )
 {
-    const size_t res_x = m_dom.resolution[0];
-    const size_t res_y = m_dom.resolution[1];
-    const size_t res_z = m_dom.resolution[2];
-    const size_t nx = res_x-1;
-    const size_t ny = res_y-1;
-    const size_t nz = res_z-1;
-    const size_t ncoord     = res_x*res_y*res_z;
-    const size_t nvariables = m_nvariables;
+    const std::size_t res_x = m_dom.resolution[0];
+    const std::size_t res_y = m_dom.resolution[1];
+    const std::size_t res_z = m_dom.resolution[2];
+    const std::size_t nx = res_x-1;
+    const std::size_t ny = res_y-1;
+    const std::size_t nz = res_z-1;
+    const std::size_t ncoord     = res_x*res_y*res_z;
+    const std::size_t nvariables = m_nvariables;
 
-    auto index = [res_x, res_y]( size_t I, size_t J, size_t K ){ return I + J*res_x + K*res_x*res_y; };
+    auto index = [res_x, res_y]( std::size_t I, std::size_t J, std::size_t K ){ return I + J*res_x + K*res_x*res_y; };
 
     const vismodule::UInt32 face_id[24] = {
         0, 1, 5, 4,
@@ -122,11 +122,11 @@ void PlotOverTime::for_structured_mesh( const vismodule::Vec3 P )
     const float z_min = m_dom.z_min;
     const float cell_length = 1;
 
-    for( size_t K = 0; K < nz; K++ )
+    for( std::size_t K = 0; K < nz; K++ )
     {
-        for( size_t J = 0; J < ny; J++ )
+        for( std::size_t J = 0; J < ny; J++ )
         {
-            for( size_t I = 0; I < nx; I++ )
+            for( std::size_t I = 0; I < nx; I++ )
             {
 
                 vismodule::Vec3 vertex[8];
@@ -148,8 +148,8 @@ void PlotOverTime::for_structured_mesh( const vismodule::Vec3 P )
                 }
 
                 vismodule::Vec3 face_center_vertex[6];
-                size_t fid = 0;
-                for( size_t i = 0; i < 6; i++, fid += 4 )
+                std::size_t fid = 0;
+                for( std::size_t i = 0; i < 6; i++, fid += 4 )
                 {
                     face_center_vertex[i] = (
                         vertex[face_id[fid    ]] + vertex[face_id[fid + 1]] +
@@ -167,7 +167,7 @@ void PlotOverTime::for_structured_mesh( const vismodule::Vec3 P )
                 face_center_scalars = new vismodule ::Real32*[nvariables];
                 cell_center_scalars = new vismodule::Real32[nvariables];
 
-                for ( size_t i = 0; i < nvariables; i++ )
+                for ( std::size_t i = 0; i < nvariables; i++ )
                 {
                     struct_scalars[i] = new vismodule::Real32[8];
                     struct_scalars[i][0] = m_values[i][index( I    , J + 1, K + 1 )];
@@ -199,9 +199,9 @@ void PlotOverTime::for_structured_mesh( const vismodule::Vec3 P )
                 vismodule::Vec4* tetra_scalars;
                 tetra_scalars = new vismodule::Vec4[nvariables];
 
-                for( size_t face = 0; face < 6; face++ )
+                for( std::size_t face = 0; face < 6; face++ )
                 {
-                    for( size_t i = 0; i < 4; i++ )
+                    for( std::size_t i = 0; i < 4; i++ )
                     {
                         //Face  0, 1, 5, 4
                         vert[0] = cell_center_vertex;
@@ -209,7 +209,7 @@ void PlotOverTime::for_structured_mesh( const vismodule::Vec3 P )
                         vert[2] = vertex[face_id[face*4 + i]];
                         vert[3] = vertex[face_id[face*4 + ((i + 1) % 4)]];
 
-                        for ( size_t j = 0; j < nvariables; j++ )
+                        for ( std::size_t j = 0; j < nvariables; j++ )
                         {
                             tetra_scalars[j][0] = cell_center_scalars[j];
                             tetra_scalars[j][1] = face_center_scalars[j][face];
@@ -223,7 +223,7 @@ void PlotOverTime::for_structured_mesh( const vismodule::Vec3 P )
                     if ( m_mask ) break;
                 }
 
-                for( size_t i = 0; i < nvariables; i++ )
+                for( std::size_t i = 0; i < nvariables; i++ )
                 {
                     delete[] struct_scalars[i];
                     delete[] face_center_scalars[i];
@@ -244,15 +244,15 @@ void PlotOverTime::for_tetrahedral_mesh( const vismodule::Vec3 P )
 {
     const vismodule::Real32* coords = m_coordinates;
     const vismodule::UInt32* connec = m_connections;
-    const size_t ncells     = m_ncells;
-    const size_t ncoord     = m_nnodes;
-    const size_t nvariables = m_nvariables;
+    const std::size_t ncells     = m_ncells;
+    const std::size_t ncoord     = m_nnodes;
+    const std::size_t nvariables = m_nvariables;
 
-    size_t id = 0;
+    std::size_t id = 0;
 
     for( int cell = 0; cell < ncells; cell++, id+=4 )
     {
-        size_t local_id[4];
+        std::size_t local_id[4];
         local_id[0] = connec[ id   ];
         local_id[1] = connec[ id+1 ];
         local_id[2] = connec[ id+2 ];
@@ -288,9 +288,9 @@ void PlotOverTime::for_hexahedral_mesh( const vismodule::Vec3 P )
 
     const vismodule::Real32*  coords = m_coordinates;
     const vismodule::UInt32*  connec = m_connections;
-    const size_t ncells     = m_ncells;
-    const size_t ncoord     = m_nnodes;
-    const size_t nvariables = m_nvariables;
+    const std::size_t ncells     = m_ncells;
+    const std::size_t ncoord     = m_nnodes;
+    const std::size_t nvariables = m_nvariables;
 
     const vismodule::UInt32 face_id[24] = {
         0, 1, 5, 4,
@@ -300,7 +300,7 @@ void PlotOverTime::for_hexahedral_mesh( const vismodule::Vec3 P )
         4, 5, 6, 7,
         3, 2, 1, 0 };
 
-    size_t id = 0;
+    std::size_t id = 0;
 
     for( int cell = 0; cell < ncells; cell++, id+=8 )
     {
@@ -331,7 +331,7 @@ void PlotOverTime::for_hexahedral_mesh( const vismodule::Vec3 P )
         }
 
         vismodule::Vec3 face_center_vertex[6];
-        size_t fid = 0;
+        std::size_t fid = 0;
         for( int i=0; i<6; i++, fid+=4 )
         {
             face_center_vertex[i] = (
@@ -418,9 +418,9 @@ void PlotOverTime::for_pyramidal_mesh( const vismodule::Vec3 P )
 {
     const vismodule::Real32* coords = m_coordinates;
     const vismodule::UInt32* connec = m_connections;
-    const size_t ncells     = m_ncells;
-    const size_t ncoord     = m_nnodes;
-    const size_t nvariables = m_nvariables;
+    const std::size_t ncells     = m_ncells;
+    const std::size_t ncoord     = m_nnodes;
+    const std::size_t nvariables = m_nvariables;
 
     // for AVS
     const vismodule::UInt32 face_id[24] = { 1, 2, 3, 4 };
@@ -428,7 +428,7 @@ void PlotOverTime::for_pyramidal_mesh( const vismodule::Vec3 P )
     // for VTK
     // const vismodule::UInt32 face_id[24] = { 3, 2, 1, 0 };
 
-    size_t id = 0;
+    std::size_t id = 0;
 
     for( int cell = 0; cell < ncells; cell++, id+=5 )
     {
@@ -458,7 +458,7 @@ void PlotOverTime::for_pyramidal_mesh( const vismodule::Vec3 P )
         }
 
         vismodule::Vec3 face_center_vertex[1];
-        size_t fid = 0;
+        std::size_t fid = 0;
         for( int i=0; i<1; i++, fid+=4 )
         {
             face_center_vertex[i] = (
@@ -549,16 +549,16 @@ void PlotOverTime::for_prismic_mesh( const vismodule::Vec3 P )
 {
     const vismodule::Real32* coords = m_coordinates;
     const vismodule::UInt32* connec = m_connections;
-    const size_t ncells = m_ncells;
-    const size_t ncoord = m_nnodes;
-    const size_t nvariables = m_nvariables;
+    const std::size_t ncells = m_ncells;
+    const std::size_t ncoord = m_nnodes;
+    const std::size_t nvariables = m_nvariables;
 
     const vismodule::UInt32 face_id[12] = {
         0, 1, 4, 3,
         1, 2, 5, 4,
         2, 0, 3, 5 };
 
-    size_t id = 0;
+    std::size_t id = 0;
 
     for( int cell = 0; cell < ncells; cell++, id+=6 )
     {
@@ -589,7 +589,7 @@ void PlotOverTime::for_prismic_mesh( const vismodule::Vec3 P )
 
         // Square to triangle
         vismodule::Vec3 face_center_vertex[3];
-        size_t fid = 0;
+        std::size_t fid = 0;
         for( int i=0; i<3; i++, fid+=4 )
         {
             face_center_vertex[i] = (
@@ -717,22 +717,22 @@ void PlotOverTime::for_polyhedral_mesh( const vismodule::Vec3 P )
     const vismodule::UInt32* faces  = m_polyhedron->faces.pointer();
     const vismodule::UInt32* facoff = m_polyhedron->face_offsets.pointer();
     const vismodule::Real32* scalar = m_polyhedron->scalars.pointer();
-    const size_t ncells     = m_polyhedron->ncells;
-    const size_t nvariables = 1;
+    const std::size_t ncells     = m_polyhedron->ncells;
+    const std::size_t nvariables = 1;
 
     for( int cell = 0; cell < ncells; cell++ )
     {
-        const size_t vid0 = cell==0 ? 0 : conoff[ cell -1 ];
-        const size_t vid1 = conoff[ cell ];
+        const std::size_t vid0 = cell==0 ? 0 : conoff[ cell -1 ];
+        const std::size_t vid1 = conoff[ cell ];
 
         // Bounding Box
-        const size_t id0 = connec[vid0]*3;
+        const std::size_t id0 = connec[vid0]*3;
         const vismodule::Vec3 vertex0( coords[id0],coords[id0+1],coords[id0+2] );
         vismodule::Vec3 MinCoord( vertex0 );
         vismodule::Vec3 MaxCoord( vertex0 );
         for( int i=vid0+1; i<vid1; i++ )
         {
-            const size_t id = connec[i]*3;
+            const std::size_t id = connec[i]*3;
             const vismodule::Vec3 vertex( coords[id], coords[id+1], coords[id+2] );
             MinCoord.x() = MinCoord.x() < vertex.x() ? MinCoord.x() : vertex.x();
             MinCoord.y() = MinCoord.y() < vertex.y() ? MinCoord.y() : vertex.y();
@@ -750,26 +750,26 @@ void PlotOverTime::for_polyhedral_mesh( const vismodule::Vec3 P )
         vismodule::Vec3 cell_center_vertex( vertex0 );
         for( int i=vid0+1; i<vid1; i++ )
         {
-            const size_t id = connec[i]*3;
+            const std::size_t id = connec[i]*3;
             cell_center_vertex += vismodule::Vec3( coords[id], coords[id+1], coords[id+2] );
         }
-        const size_t ncellvert = vid1 - vid0;
+        const std::size_t ncellvert = vid1 - vid0;
         cell_center_vertex /= (vismodule::Real32)ncellvert;
 
         // Cell center scalar
         vismodule::Real32 cell_center_scalar = 0.0f;
         for( int i=vid0; i<vid1; i++ )
         {
-            const size_t id = connec[i];
+            const std::size_t id = connec[i];
             cell_center_scalar += scalar[id];
         }
         cell_center_scalar /= (vismodule::Real32)ncellvert;
 
         // Access each face
-        const size_t fid0 = cell==0 ? 0 : facoff[ cell -1 ];
+        const std::size_t fid0 = cell==0 ? 0 : facoff[ cell -1 ];
 
         const vismodule::UInt32* pface_array = &faces[ fid0 ];
-        const size_t nfaces = *pface_array;
+        const std::size_t nfaces = *pface_array;
         pface_array++;
 
         for( int fcnt=0; fcnt<nfaces; fcnt++ )
@@ -777,7 +777,7 @@ void PlotOverTime::for_polyhedral_mesh( const vismodule::Vec3 P )
             // Calc. Face center
             vismodule::Vec3 face_center_vertex( 0.0f, 0.0f, 0.0f );
             vismodule::Real32 face_center_scalar = 0.0f;
-            const size_t nfacevert = *pface_array;
+            const std::size_t nfacevert = *pface_array;
             pface_array++;
 
             // keep a pointer for the start of face array
@@ -786,7 +786,7 @@ void PlotOverTime::for_polyhedral_mesh( const vismodule::Vec3 P )
 
             for( int vcnt=0; vcnt<nfacevert; vcnt++ )
             {
-                const size_t face_vert_id = *pface_array;
+                const std::size_t face_vert_id = *pface_array;
                 pface_array++;
                 const vismodule::Vec3 vertex( coords[face_vert_id*3  ],
                                         coords[face_vert_id*3+1],
@@ -805,8 +805,8 @@ void PlotOverTime::for_polyhedral_mesh( const vismodule::Vec3 P )
 
             for( int i=0; i<nfacevert; i++ )
             {
-                const size_t vid2 = *(pface + i);
-                const size_t vid3 = *(pface + (i+1)%nfacevert);
+                const std::size_t vid2 = *(pface + i);
+                const std::size_t vid3 = *(pface + (i+1)%nfacevert);
                 vert[0] = cell_center_vertex;
                 vert[1] = face_center_vertex;
                 vert[2] = vismodule::Vec3( coords[vid2*3], coords[vid2*3+1], coords[vid2*3+2] );

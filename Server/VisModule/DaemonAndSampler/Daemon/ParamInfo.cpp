@@ -173,7 +173,7 @@ bool ParamInfo::LoadIN( const std::string& filename )
 
     while ( std::getline( fin, line ) )
     {
-        size_t pos;
+        std::size_t pos;
         while ( ( pos = line.find_first_of( " 　\t\r\n" ) ) != std::string::npos )
         {
             line.erase( pos, 1 );
@@ -339,7 +339,7 @@ void ParamInfo::write( const std::string name )
 
 size_t ParamInfo::byteSize() const
 {
-    size_t index = 0;
+    std::size_t index = 0;
    
     index += jpv::Serializer::byteSize( param.size() );
     for ( std::map<std::string, std::string>::const_iterator i = param.begin(); i != param.end(); i++ )
@@ -353,7 +353,7 @@ size_t ParamInfo::byteSize() const
 
 size_t ParamInfo::pack( char* buf ) const
 {
-    size_t index = 0;
+    std::size_t index = 0;
    
     index += jpv::Serializer::write( buf + index, param.size() );
     for ( std::map<std::string, std::string>::const_iterator i = param.begin(); i != param.end(); i++ )
@@ -369,8 +369,8 @@ size_t ParamInfo::unpack( const char* buf )
 {
     std::string nm;
     std::string val;
-    size_t s;
-    size_t index = 0;
+    std::size_t s;
+    std::size_t index = 0;
 
     for ( std::vector<std::string>::iterator i = name_list.begin(); i != name_list.end(); i++ )
     {
@@ -379,7 +379,7 @@ size_t ParamInfo::unpack( const char* buf )
 
     //index += jpv::Serializer::read( buf + index, s );
     index += jpv::Serializer::read( buf + index, &s );
-    for ( size_t i = 0; i != s; i++ )
+    for ( std::size_t i = 0; i != s; i++ )
     {
         index += jpv::Serializer::read( buf + index, &nm );
         index += jpv::Serializer::read( buf + index, &val );

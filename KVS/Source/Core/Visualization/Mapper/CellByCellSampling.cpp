@@ -206,8 +206,8 @@ kvs::Real32 ParticleDensityMap::at( const float value ) const
     const float v0 = kvs::Math::Clamp( value, m_min_value, m_max_value );
     const float r = static_cast<float>( m_resolution - 1 );
     const float v = ( v0 - m_min_value ) / ( m_max_value - m_min_value ) * r;
-    const size_t s0 = static_cast<size_t>( v );
-    const size_t s1 = kvs::Math::Min( s0 + 1, m_resolution - 1 );
+    const std::size_t s0 = static_cast<size_t>( v );
+    const std::size_t s1 = kvs::Math::Min( s0 + 1, m_resolution - 1 );
 
     const kvs::Real32 d0 = m_table[ s0 ];
     const kvs::Real32 d1 = m_table[ s1 ];
@@ -238,7 +238,7 @@ void ParticleDensityMap::create( const kvs::OpacityMap& omap )
     KVS_OMP_PARALLEL()
     {
         KVS_OMP_FOR( schedule(static) )
-        for ( size_t i = 0; i < m_resolution; i++ )
+        for ( std::size_t i = 0; i < m_resolution; i++ )
         {
             const kvs::Real32 opacity = omap[i];
             if ( opacity < max_opacity )
@@ -265,10 +265,10 @@ kvs::Real32 ParticleDensityMap::max_density( const kvs::Real32 s0, const kvs::Re
 {
     const kvs::Real32 min_value = this->minValue();
     const kvs::Real32 max_value = this->maxValue();
-    const size_t dims = this->resolution() - 1;
+    const std::size_t dims = this->resolution() - 1;
     const kvs::Real32 scale = dims / ( max_value - min_value );
-    size_t i0 = static_cast<size_t>( ( s0 - min_value ) * scale );
-    size_t i1 = static_cast<size_t>( ( s1 - min_value ) * scale ) + 1;
+    std::size_t i0 = static_cast<size_t>( ( s0 - min_value ) * scale );
+    std::size_t i1 = static_cast<size_t>( ( s1 - min_value ) * scale ) + 1;
     i0 = kvs::Math::Clamp( i0, size_t(0), dims );
     i1 = kvs::Math::Clamp( i1, size_t(0), dims );
 
@@ -279,7 +279,7 @@ kvs::Real32 ParticleDensityMap::max_density( const kvs::Real32 s0, const kvs::Re
     {
         KVS_OMP_FOR( reduction(max:max_density) )
 #endif
-        for( size_t i = i0; i <= i1; i++ )
+        for( std::size_t i = i0; i <= i1; i++ )
         {
             const kvs::Real32 density =  this->table().at(i);
             max_density = kvs::Math::Max( max_density, density );

@@ -38,7 +38,7 @@ Acceptor::Acceptor( void )
  *  @param  ntrials [in] number of trials
  */
 /*===========================================================================*/
-Acceptor::Acceptor( const int port, const size_t ntrials )
+Acceptor::Acceptor( const int port, const std::size_t ntrials )
 {
     if ( this->create_handler() )
     {
@@ -97,9 +97,9 @@ void Acceptor::close( void )
  *  @return true if the process is done successfully
  */
 /*===========================================================================*/
-const bool Acceptor::bind( const int port, const size_t ntrials )
+const bool Acceptor::bind( const int port, const std::size_t ntrials )
 {
-    size_t counter = 0;
+    std::size_t counter = 0;
     while( counter < ntrials )
     {
         m_handler->bind( port );

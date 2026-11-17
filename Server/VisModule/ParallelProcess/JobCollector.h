@@ -12,8 +12,8 @@ class JobCollector
 private:
     JobDispatcher* m_jd;
 
-    size_t         m_pack_size;
-    size_t         m_pack_size_div3;
+    std::size_t         m_pack_size;
+    std::size_t         m_pack_size_div3;
     float*         m_pack_coords;
     unsigned char* m_pack_colors;
     float*         m_pack_normals;
@@ -24,11 +24,11 @@ private:
     float*         m_pack_values;
     int*           m_pack_mask;
 
-    size_t              m_nvertices_list_size;
+    std::size_t              m_nvertices_list_size;
     std::vector<size_t> m_nvertices_list;
 
     int    m_pack_count;
-    size_t m_pack_head;
+    std::size_t m_pack_head;
 
 public:
     JobCollector( JobDispatcher* pjd );

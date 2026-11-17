@@ -69,9 +69,9 @@ public:
     void scalar_ary( float* scalar_array, const int loop_cnt ) const;
     void grad_ary( float* grad_array_x, float* grad_array_y, float* grad_array_z, const int loop_cnt ) const;
 
-    void bindCell( const vismodule::UInt32 cell, const size_t n = 0 );
+    void bindCell( const vismodule::UInt32 cell, const std::size_t n = 0 );
     
-    void bindCell_wVolume( const vismodule::UInt32 index, const size_t n = 0 );
+    void bindCell_wVolume( const vismodule::UInt32 index, const std::size_t n = 0 );
 
     const vismodule::Vector3f randomSampling() const;
     const vismodule::Vector3f randomSampling_MT( vismodule::MersenneTwister* MT  ) const;
@@ -79,6 +79,25 @@ public:
     const vismodule::Real32 volume() const;
 
     void setLocalGravityPoint() const;
+
+    /*  節点 i の局所座標（新規追加）。interpolationFunctions() から導いた。
+     *  格納座標で表す。形状関数の内部で x=2x/(1-z) に潰されるため、
+     *  底面は +-1 ではなく +-(1-z)/2 = +-0.5 になる。節点0は頂点(z=1)
+     */
+    bool localNodeCoord( const int i, vismodule::Vector3f* coord ) const
+    {
+        static const float table[5][3] =
+        {
+            { 0.0f, 0.0f, 1.0f },
+            { -0.5f, -0.5f, 0.0f },
+            { 0.5f, -0.5f, 0.0f },
+            { 0.5f, 0.5f, 0.0f },
+            { -0.5f, 0.5f, 0.0f }
+        };
+        if ( i < 0 || i >= 5 || coord == NULL ) return false;
+        *coord = vismodule::Vector3f( table[i][0], table[i][1], table[i][2] );
+        return true;
+    }
 };
 
 /*===========================================================================*/
@@ -130,7 +149,7 @@ template <typename T>
 inline void PyramidalCell<T>::scalar_ary( float*  scalar_array, const int loop_cnt) const 
 {
     #pragma ivdep
-    for ( size_t i = 0; i < loop_cnt ; i++ )
+    for ( std::size_t i = 0; i < loop_cnt ; i++ )
     {
         //scalar_array[i]= static_cast<vismodule::Real32>( m_interpolation_functions_array[0][j] * m_scalars_array[0][j] );
         scalar_array[i] =  BaseClass::m_interpolation_functions_array[0][i] * BaseClass::m_scalars_array[0][i] 
@@ -527,7 +546,7 @@ inline void PyramidalCell<T>::differentialFunctions_array( const vismodule::Vect
  */
 /*===========================================================================*/
 template <typename T>
-inline void PyramidalCell<T>::bindCell( const vismodule::UInt32 index, const size_t n )
+inline void PyramidalCell<T>::bindCell( const vismodule::UInt32 index, const std::size_t n )
 {
     BaseClass::bindCell( index, n );
 
@@ -545,7 +564,7 @@ inline void PyramidalCell<T>::bindCell( const vismodule::UInt32 index, const siz
 }
 
 template <typename T>
-inline void PyramidalCell<T>::bindCell_wVolume( const vismodule::UInt32 index, const size_t n )
+inline void PyramidalCell<T>::bindCell_wVolume( const vismodule::UInt32 index, const std::size_t n )
 {
     BaseClass::bindCell_wVolume( index, n );
 

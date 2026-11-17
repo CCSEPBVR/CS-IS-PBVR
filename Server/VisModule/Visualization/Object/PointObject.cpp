@@ -359,7 +359,7 @@ void PointObject::add( const PointObject& other )
 
         // Integrate the coordinate values.
         vismodule::ValueArray<vismodule::Real32> coords;
-        const size_t ncoords = this->coords().size() + other.coords().size();
+        const std::size_t ncoords = this->coords().size() + other.coords().size();
         vismodule::Real32* pcoords = coords.allocate( ncoords );
         if ( pcoords != NULL )
         {
@@ -376,7 +376,7 @@ void PointObject::add( const PointObject& other )
             if ( other.normals().size() > 0 )
             {
                 // nx,ny,nz, ... + nx,ny,nz, ... = nx,ny,nz, ... ,nx,ny,nz, ...
-                const size_t nnormals = this->normals().size() + other.normals().size();
+                const std::size_t nnormals = this->normals().size() + other.normals().size();
                 vismodule::Real32* pnormals = normals.allocate( nnormals );
                 if ( pnormals != NULL )
                 {
@@ -387,7 +387,7 @@ void PointObject::add( const PointObject& other )
             else
             {
                 // nx,ny,nz, ... + (none) = nx,ny,nz, ... ,0,0,0, ...
-                const size_t nnormals = this->normals().size() + other.coords().size();
+                const std::size_t nnormals = this->normals().size() + other.coords().size();
                 vismodule::Real32* pnormals = normals.allocate( nnormals );
                 if ( pnormals != NULL )
                 {
@@ -400,7 +400,7 @@ void PointObject::add( const PointObject& other )
         {
             if ( other.normals().size() > 0 )
             {
-                const size_t nnormals = this->coords().size() + other.normals().size();
+                const std::size_t nnormals = this->coords().size() + other.normals().size();
                 vismodule::Real32* pnormals = normals.allocate( nnormals );
                 if ( pnormals != NULL )
                 {
@@ -419,7 +419,7 @@ void PointObject::add( const PointObject& other )
             if ( other.colors().size() > 1 )
             {
                 // r,g,b, ... + r,g,b, ... = r,g,b, ... ,r,g,b, ...
-                const size_t ncolors = this->colors().size() + other.colors().size();
+                const std::size_t ncolors = this->colors().size() + other.colors().size();
                 vismodule::UInt8* pcolors = colors.allocate( ncolors );
                 if ( pcolors != NULL )
                 {
@@ -430,14 +430,14 @@ void PointObject::add( const PointObject& other )
             else
             {
                 // r,g,b, ... + R,G,B = r,g,b, ... ,R,G,B, ... ,R,G,B
-                const size_t ncolors = this->colors().size() + other.coords().size();
+                const std::size_t ncolors = this->colors().size() + other.coords().size();
                 vismodule::UInt8* pcolors = colors.allocate( ncolors );
                 if ( pcolors != NULL )
                 {
                     memcpy( pcolors, this->colors().pointer(), this->colors().byteSize() );
                     pcolors += this->colors().size();
                     const vismodule::RGBColor color = other.color();
-                    for ( size_t i = 0; i < other.coords().size(); i += 3 )
+                    for ( std::size_t i = 0; i < other.coords().size(); i += 3 )
                     {
                         *( pcolors++ ) = color.r();
                         *( pcolors++ ) = color.g();
@@ -451,12 +451,12 @@ void PointObject::add( const PointObject& other )
             if ( other.colors().size() > 1 )
             {
                 // R,G,B + r,g,b, ... = R,G,B, ... ,R,G,B, r,g,b, ...
-                const size_t ncolors = this->coords().size() + other.colors().size();
+                const std::size_t ncolors = this->coords().size() + other.colors().size();
                 vismodule::UInt8* pcolors = colors.allocate( ncolors );
                 if ( pcolors != NULL )
                 {
                     const vismodule::RGBColor color = this->color();
-                    for ( size_t i = 0; i < this->coords().size(); i += 3 )
+                    for ( std::size_t i = 0; i < this->coords().size(); i += 3 )
                     {
                         *( pcolors++ ) = color.r();
                         *( pcolors++ ) = color.g();
@@ -472,7 +472,7 @@ void PointObject::add( const PointObject& other )
                 if ( color1 == color2 )
                 {
                     // R,G,B + R,G,B = R,G,B
-                    const size_t ncolors = 3;
+                    const std::size_t ncolors = 3;
                     vismodule::UInt8* pcolors = colors.allocate( ncolors );
                     if ( pcolors != NULL )
                     {
@@ -484,17 +484,17 @@ void PointObject::add( const PointObject& other )
                 else
                 {
                     // R,G,B + R,G,B = R,G,B, ... ,R,G,B, ...
-                    const size_t ncolors = this->coords().size() + other.coords().size();
+                    const std::size_t ncolors = this->coords().size() + other.coords().size();
                     vismodule::UInt8* pcolors = colors.allocate( ncolors );
                     if ( pcolors != NULL )
                     {
-                        for ( size_t i = 0; i < this->coords().size(); i += 3 )
+                        for ( std::size_t i = 0; i < this->coords().size(); i += 3 )
                         {
                             *( pcolors++ ) = color1.r();
                             *( pcolors++ ) = color1.g();
                             *( pcolors++ ) = color1.b();
                         }
-                        for ( size_t i = 0; i < other.coords().size(); i += 3 )
+                        for ( std::size_t i = 0; i < other.coords().size(); i += 3 )
                         {
                             *( pcolors++ ) = color2.r();
                             *( pcolors++ ) = color2.g();
@@ -513,7 +513,7 @@ void PointObject::add( const PointObject& other )
             if ( other.sizes().size() > 1 )
             {
                 // s, ... + s, ... = s, ... ,s, ...
-                const size_t nsizes = this->sizes().size() + other.sizes().size();
+                const std::size_t nsizes = this->sizes().size() + other.sizes().size();
                 vismodule::Real32* psizes = sizes.allocate( nsizes );
                 if ( psizes != NULL )
                 {
@@ -524,14 +524,14 @@ void PointObject::add( const PointObject& other )
             else
             {
                 // s, ... + S = s, ... ,S, ... ,S
-                const size_t nsizes = this->sizes().size() + other.coords().size();
+                const std::size_t nsizes = this->sizes().size() + other.coords().size();
                 vismodule::Real32* psizes = sizes.allocate( nsizes );
                 if ( psizes != NULL )
                 {
                     memcpy( psizes, this->sizes().pointer(), this->sizes().byteSize() );
                     psizes += this->colors().size();
                     const vismodule::Real32 size = other.size();
-                    for ( size_t i = 0; i < other.coords().size(); i++ )
+                    for ( std::size_t i = 0; i < other.coords().size(); i++ )
                     {
                         *( psizes++ ) = size;
                     }
@@ -543,12 +543,12 @@ void PointObject::add( const PointObject& other )
             if ( other.sizes().size() > 1 )
             {
                 // S + s, ... = S, ... ,S, s, ...
-                const size_t nsizes = this->coords().size() + other.sizes().size();
+                const std::size_t nsizes = this->coords().size() + other.sizes().size();
                 vismodule::Real32* psizes = sizes.allocate( nsizes );
                 if ( psizes != NULL )
                 {
                     const vismodule::Real32 size = this->size();
-                    for ( size_t i = 0; i < this->coords().size(); i++ )
+                    for ( std::size_t i = 0; i < this->coords().size(); i++ )
                     {
                         *( psizes++ ) = size;
                     }
@@ -563,7 +563,7 @@ void PointObject::add( const PointObject& other )
                 if ( size1 == size2 )
                 {
                     // S + S = S
-                    const size_t nsizes = 1;
+                    const std::size_t nsizes = 1;
                     vismodule::Real32* psizes = sizes.allocate( nsizes );
                     if ( psizes != NULL )
                     {
@@ -573,15 +573,15 @@ void PointObject::add( const PointObject& other )
                 else
                 {
                     // S + S = S, ... , S, ...
-                    const size_t nsizes = this->coords().size() + other.coords().size();
+                    const std::size_t nsizes = this->coords().size() + other.coords().size();
                     vismodule::Real32* psizes = sizes.allocate( nsizes );
                     if ( psizes != NULL )
                     {
-                        for ( size_t i = 0; i < this->coords().size(); i++ )
+                        for ( std::size_t i = 0; i < this->coords().size(); i++ )
                         {
                             *( psizes++ ) = size1;
                         }
-                        for ( size_t i = 0; i < other.coords().size(); i++ )
+                        for ( std::size_t i = 0; i < other.coords().size(); i++ )
                         {
                             *( psizes++ ) = size2;
                         }
@@ -679,7 +679,7 @@ const PointObject::BaseClass::GeometryType PointObject::geometryType() const
  *  @return number of size values
  */
 /*===========================================================================*/
-const size_t PointObject::nsizes() const
+const std::size_t PointObject::nsizes() const
 {
     return m_sizes.size();
 }
@@ -691,7 +691,7 @@ const size_t PointObject::nsizes() const
  *  @return size value
  */
 /*===========================================================================*/
-const vismodule::Real32 PointObject::size( const size_t index ) const
+const vismodule::Real32 PointObject::size( const std::size_t index ) const
 {
     return m_sizes[index];
 }

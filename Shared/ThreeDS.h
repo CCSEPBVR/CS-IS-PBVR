@@ -87,7 +87,7 @@ public:
     const kvs::ValueArray<kvs::ValueArray<kvs::UInt8>>& colorArrays() const { return m_color_arrays; }
     const kvs::ValueArray<kvs::UInt32>& imageWidths() const { return m_image_widths; }
     const kvs::ValueArray<kvs::UInt32>& imageHeights() const { return m_image_heights; }
-    size_t numberOfTriangles() const { return m_normals.size() / 3; }
+    std::size_t numberOfTriangles() const { return m_normals.size() / 3; }
 
     void setFileType( const FileType file_type ) { m_file_type = file_type; }
     void setNormals( const kvs::ValueArray<kvs::Real32>& normals ) { m_normals = normals; }
@@ -257,7 +257,7 @@ public:
             std::string textureFilename = parentPath + texturePaths[i].C_Str();
 #endif \
             // read image file from filesystem and get width, height and data.
-            const size_t bytesPerChannel = 1;
+            const std::size_t bytesPerChannel = 1;
             int width = 0;
             int height = 0;
             int numChannels = 0; // It will be 4 for RGBA, 3 for RGB
@@ -291,7 +291,7 @@ public:
                 else if( numChannels == 3 )
                 {
                     kvs::ValueArray<kvs::UInt8> pixels( width * height * 4 );
-                    for( size_t iData=0; iData < width * height; iData++)
+                    for( std::size_t iData=0; iData < width * height; iData++)
                     {
                         stbi_uc r = data[iData*3 + 0];
                         stbi_uc g = data[iData*3 + 1];
@@ -372,14 +372,14 @@ public:
 
         // Multibyte to Wide
         const char* mbstr = text.c_str();
-        std::size_t wideLength = std::mbsrtowcs( NULL, &mbstr, 0, &state ) + 1;
+        std::size_t  wideLength = std::mbsrtowcs( NULL, &mbstr, 0, &state ) + 1;
         std::vector<wchar_t> wideCharacters( wideLength );
         std::mbsrtowcs( &wideCharacters[0], &mbstr, wideCharacters.size(), &state );
 
         // Wide to UTF8
         std::setlocale( LC_ALL, ".utf8" );
         const wchar_t* wstr = &wideCharacters[0];
-        std::size_t utf8Length = std::wcsrtombs( nullptr, &wstr, 0, &state ) + 1;
+        std::size_t  utf8Length = std::wcsrtombs( nullptr, &wstr, 0, &state ) + 1;
         std::vector<char> utf8bytes( utf8Length );
         std::wcsrtombs( &utf8bytes[0], &wstr, utf8bytes.size(), &state );
 

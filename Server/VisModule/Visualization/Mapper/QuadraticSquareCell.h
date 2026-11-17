@@ -131,15 +131,15 @@ inline const vismodule::Vector3f QuadraticSquareCell<T>::gradient() const
     //Normal of surface = dV/dx cross dV/dy
     const float* dN = BaseClass::m_differential_functions;
     const vismodule::Vector3f* V = BaseClass::m_vertices;
-    const size_t nnodes = BaseClass::m_nnodes;
+    const std::size_t nnodes = BaseClass::m_nnodes;
 
     // dV/dx
     vismodule::Vector3f dVdx( 0, 0, 0 );
-    for ( size_t i = 0; i < nnodes; i++ ) dVdx += dN[i] * V[i];
+    for ( std::size_t i = 0; i < nnodes; i++ ) dVdx += dN[i] * V[i];
 
     // dV/dy
     vismodule::Vector3f dVdy( 0, 0, 0 );
-    for ( size_t i = 0; i < nnodes; i++ ) dVdy += dN[i + nnodes] * V[i];
+    for ( std::size_t i = 0; i < nnodes; i++ ) dVdy += dN[i + nnodes] * V[i];
 
     return dVdx.cross( dVdy );
 }

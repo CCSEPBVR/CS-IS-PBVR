@@ -36,7 +36,7 @@ namespace kvs
  *  @param  resolution [in] Resolution.
  */
 /*==========================================================================*/
-TransferFunction::TransferFunction( const size_t resolution ):
+TransferFunction::TransferFunction( const std::size_t resolution ):
     m_color_map( resolution ),
     m_opacity_map( resolution )
 {
@@ -312,13 +312,13 @@ size_t TransferFunction::resolution() const
 /*===========================================================================*/
 kvs::ValueArray<kvs::Real32> TransferFunction::table() const
 {
-    const size_t width = this->resolution();
+    const std::size_t width = this->resolution();
     kvs::ValueArray<kvs::Real32> table( width * 4 );
     float* data = table.data();
 
     const kvs::ColorMap& cmap = this->colorMap();
     const kvs::OpacityMap& omap = this->opacityMap();
-    for ( size_t i = 0; i < width; i++ )
+    for ( std::size_t i = 0; i < width; i++ )
     {
         *(data++) = static_cast<float>( cmap[i].r() ) / 255.0f;
         *(data++) = static_cast<float>( cmap[i].g() ) / 255.0f;
@@ -335,7 +335,7 @@ kvs::ValueArray<kvs::Real32> TransferFunction::table() const
  *  @param  resolution [in] resolution
  */
 /*==========================================================================*/
-void TransferFunction::create( const size_t resolution )
+void TransferFunction::create( const std::size_t resolution )
 {
     m_opacity_map.setResolution( resolution );
     m_opacity_map.create();

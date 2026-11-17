@@ -33,7 +33,7 @@ public:
     LineTag();
 
     const std::vector<XYZSequenceTag>& xyzSequences() const { return m_xyzSequences; }
-    const XYZSequenceTag& xyzSequence( const size_t index ) const { return m_xyzSequences[index]; }
+    const XYZSequenceTag& xyzSequence( const std::size_t index ) const { return m_xyzSequences[index]; }
 
     void print( std::ostream& os, const kvs::Indent& indent = kvs::Indent(0) ) const;
     bool read( const Node* parent );

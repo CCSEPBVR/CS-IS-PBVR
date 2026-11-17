@@ -142,7 +142,7 @@ void StochasticPointRenderer::Engine::RenderPass::setup(
 void StochasticPointRenderer::Engine::RenderPass::draw(
     const kvs::ObjectBase* object )
 {
-    const size_t size = m_parent->randomTextureSize();
+    const std::size_t size = m_parent->randomTextureSize();
     const int count = m_parent->repetitionCount() * ::RandomNumber();
     const float offset_x = static_cast<float>( ( count ) % size );
     const float offset_y = static_cast<float>( ( count / size ) % size );
@@ -174,7 +174,7 @@ void StochasticPointRenderer::Engine::create(
 
     m_render_pass.create( BaseClass::shader(), BaseClass::isShadingEnabled() );
 
-    const size_t nvertices = point->numberOfVertices();
+    const std::size_t nvertices = point->numberOfVertices();
     const auto indices = BaseClass::randomIndices( nvertices );
     auto location = m_render_pass.shaderProgram().attributeLocation( "random_index" );
     m_buffer_object.manager().setVertexAttribArray( indices, location, 2 );
@@ -222,6 +222,11 @@ void StochasticPointRenderer::Engine::draw(
 {
     auto* point = kvs::PointObject::DownCast( object );
     auto dpr = camera->devicePixelRatio();
+    kvs::OpenGL::WithPushedAttrib p( GL_ENABLE_BIT );
+
+    // ParticleBasedRenderer enables shader-controlled point size. This shader
+    // uses glPointSize instead, so ignore the state left by earlier draws.
+    kvs::OpenGL::Disable( GL_VERTEX_PROGRAM_POINT_SIZE );
 
     // Depth offset
     if ( !kvs::Math::IsZero( m_depth_offset[0] ) )

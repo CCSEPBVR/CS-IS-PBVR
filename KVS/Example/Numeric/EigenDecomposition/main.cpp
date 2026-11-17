@@ -66,13 +66,13 @@ void PrintResult( const kvs::Matrix<double>& M, const kvs::EigenDecomposition<do
  *  @param  n [in] number of trials
  */
 /*===========================================================================*/
-void PerfTest( const kvs::Matrix<double>& M, const size_t nloops )
+void PerfTest( const kvs::Matrix<double>& M, const std::size_t nloops )
 {
     const kvs::Indent indent(4);
 
     std::cout << "Performance Test" << std::endl;
     kvs::Timer timer( kvs::Timer::Start );
-    for ( size_t i = 0; i < nloops; i++ ) { kvs::EigenDecomposition<double> e( M ); }
+    for ( std::size_t i = 0; i < nloops; i++ ) { kvs::EigenDecomposition<double> e( M ); }
     timer.stop();
     std::cout << indent << "Calculation (" << nloops << " times): " << timer.sec() << " [sec]" << std::endl;
 }
@@ -111,7 +111,7 @@ int main()
         kvs::EigenDecomposition<double> eigen( M );
         ::PrintResult( M, eigen );
 
-        const size_t nloops = 100000;
+        const std::size_t nloops = 100000;
         ::PerfTest( M, nloops );
     }
 
@@ -134,7 +134,7 @@ int main()
         kvs::EigenDecomposition<double> eigen( M );
         ::PrintResult( M, eigen );
 
-        const size_t nloops = 100000;
+        const std::size_t nloops = 100000;
         ::PerfTest( M, nloops );
     }
 }

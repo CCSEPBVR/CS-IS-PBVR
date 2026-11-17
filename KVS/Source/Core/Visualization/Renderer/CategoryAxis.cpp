@@ -76,7 +76,7 @@ int CategoryAxis::drawCategoryLabelsOnTop( kvs::Painter& painter )
     const auto ncats = this->numberOfCategories();
     const auto cat_width = ( x1 - x0 ) / ncats;
     const auto cat_offset = cat_width * 0.5f;
-    for ( size_t i = 0; i < ncats; ++i )
+    for ( std::size_t i = 0; i < ncats; ++i )
     {
         if ( i % m_stride ) { continue; }
         const auto label = m_category_labels[i];
@@ -105,7 +105,7 @@ int CategoryAxis::drawCategoryLabelsOnBottom( kvs::Painter& painter )
     const auto ncats = this->numberOfCategories();
     const auto cat_width = ( x1 - x0 ) / ncats;
     const auto cat_offset = cat_width * 0.5f;
-    for ( size_t i = 0; i < ncats; ++i )
+    for ( std::size_t i = 0; i < ncats; ++i )
     {
         if ( i % m_stride ) { continue; }
         const auto label = m_category_labels[i];
@@ -137,7 +137,7 @@ int CategoryAxis::drawCategoryLabelsOnLeft( kvs::Painter& painter )
 
     int margin = 0;
     const int offset = 3; // additional offset between the axis and tick label
-    for ( size_t i = 0; i < ncats; ++i )
+    for ( std::size_t i = 0; i < ncats; ++i )
     {
         if ( i % m_stride ) { continue; }
         const auto label = m_category_labels[i];
@@ -170,7 +170,7 @@ int CategoryAxis::drawCategoryLabelsOnRight( kvs::Painter& painter )
 
     int margin = 0;
     const int offset = 3; // additional offset between the axis and tick label
-    for ( size_t i = 0; i < ncats; ++i )
+    for ( std::size_t i = 0; i < ncats; ++i )
     {
         if ( i % m_stride ) { continue; }
         const auto label = m_category_labels[i];

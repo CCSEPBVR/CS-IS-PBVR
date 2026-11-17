@@ -159,7 +159,7 @@ void Scene::removeObject(
     // Remove the all of renderers assigned for the specified object from
     // the renderer manager.
     const std::vector<int> renderer_ids = m_id_manager->rendererID( object_id );
-    for ( size_t i = 0; i < renderer_ids.size(); i++ )
+    for ( std::size_t i = 0; i < renderer_ids.size(); i++ )
     {
         m_renderer_manager->erase( renderer_ids[i], delete_renderer );
     }
@@ -667,7 +667,7 @@ kvs::CubicImage Scene::cubemap()
     {
         this->camera()->setFieldOfView( 90.0 );
         this->camera()->setFront( 0.1 );
-        for ( size_t i = 0; i < kvs::CubicImage::NumberOfDirections; i++ )
+        for ( std::size_t i = 0; i < kvs::CubicImage::NumberOfDirections; i++ )
         {
             const kvs::CubicImage::Direction dir = kvs::CubicImage::Direction( i );
             const kvs::Vec3 dir_vec = kvs::CubicImage::DirectionVector( dir );
@@ -902,8 +902,8 @@ bool Scene::detect_collision( const kvs::Vec2& p_win )
 
     int active_object_id = -1;
     kvs::ObjectBase* active_object = 0;
-    const size_t size = m_id_manager->size();
-    for ( size_t i = 0; i < size; i++ )
+    const std::size_t size = m_id_manager->size();
+    for ( std::size_t i = 0; i < size; i++ )
     {
         auto id = m_id_manager->id( i );
         auto* object = m_object_manager->object( id.first );

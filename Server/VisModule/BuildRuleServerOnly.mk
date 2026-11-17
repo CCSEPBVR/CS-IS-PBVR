@@ -194,6 +194,7 @@ $(OUTDIR)/./Visualization/Mapper/CellByCellRejectionSampling.o \
 $(OUTDIR)/./Visualization/Mapper/CellByCellUniformSampling.o \
 $(OUTDIR)/./Visualization/Mapper/ColorMap.o \
 $(OUTDIR)/./Visualization/Mapper/CropRegion.o \
+$(OUTDIR)/./Visualization/Mapper/EnsembleTransferFunction.o \
 $(OUTDIR)/./Visualization/Mapper/ExtractEdges.o \
 $(OUTDIR)/./Visualization/Mapper/ExtractVertices.o \
 $(OUTDIR)/./Visualization/Mapper/ExtendedTransferFunction.o \
@@ -277,6 +278,7 @@ $(OUTDIR)/./DaemonAndSampler/Daemon/PlotOverTimeFile.o \
 $(OUTDIR)/./DaemonAndSampler/Daemon/ParticleMonitor.o \
 $(OUTDIR)/./DaemonAndSampler/Daemon/SetDefaultTransferFunction.o \
 $(OUTDIR)/./DaemonAndSampler/Daemon/Timer.o \
+$(OUTDIR)/./DaemonAndSampler/Daemon/TransferFunctionJsonWriter.o \
 $(OUTDIR)/./DaemonAndSampler/Daemon/InitialStep.o \
 $(OUTDIR)/./DaemonAndSampler/Daemon/GenerateGlyph.o \
 $(OUTDIR)/./DaemonAndSampler/Daemon/GenerateParticle.o \

@@ -52,7 +52,7 @@ void ThisClass::updateMinMaxValues()
 
         auto min_value = object.minValue();
         auto max_value = object.maxValue();
-        for ( size_t i = 1; i < this->size(); ++i )
+        for ( std::size_t i = 1; i < this->size(); ++i )
         {
             object = this->load(i);
             object.updateMinMaxValues();
@@ -85,7 +85,7 @@ void ThisClass::setMinMaxValues( const float min_value, const float max_value )
  *  @return Loaded object
  */
 /*===========================================================================*/
-ThisClass::Object ThisClass::load( const size_t index ) const
+ThisClass::Object ThisClass::load( const std::size_t index ) const
 {
     if ( index < m_objects.size() ) { return m_objects[ index ]; }
     if ( index < m_filenames.size() ) { return m_importer( m_filenames[ index ] ); }

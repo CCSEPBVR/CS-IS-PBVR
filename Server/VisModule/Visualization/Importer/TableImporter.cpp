@@ -117,8 +117,8 @@ TableImporter::SuperClass* TableImporter::exec( const vismodule::FileFormatBase&
 /*===========================================================================*/
 void TableImporter::import( const vismodule::KVSMLObjectTable* kvsml )
 {
-    const size_t ncolumns = kvsml->ncolumns();
-    for ( size_t i = 0; i < ncolumns; i++ )
+    const std::size_t ncolumns = kvsml->ncolumns();
+    for ( std::size_t i = 0; i < ncolumns; i++ )
     {
         const std::string label = kvsml->labelList().at(i);
         const vismodule::AnyValueArray& column = kvsml->columnList().at(i);

@@ -37,7 +37,7 @@ struct TDef
         int unit = 0; ///< unit (0:mn, 1:hr, 2:dy, 3:mo, 4:yr)
     };
 
-    size_t num = 0; ///< number of the time steps
+    std::size_t num = 0; ///< number of the time steps
     Start start{}; ///< start time/date
     Increment increment{}; ///< increment time
 

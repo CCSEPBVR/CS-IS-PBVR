@@ -30,6 +30,7 @@ public:
     explicit TransferFunctionEditor( WebSocketPair* websockets, QWidget *parent = nullptr );
     ~TransferFunctionEditor();
     void reset();
+    void emitLegendTransferFunctionUpdate();
 
 signals:
     void transferFunctionUpdate();
@@ -62,6 +63,8 @@ private:
 
     TransferFunction m_last_sent_tf;
     bool m_has_last_sent = false;
+    TransferFunction m_legend_transfer_function;
+    bool m_has_legend_transfer_function = false;
 
     void updateUIFromUserInput( UpdateTarget target );
     void updateUIFromServer( UpdateTarget target );

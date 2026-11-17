@@ -3,4 +3,7 @@ rm default_0*
 rm timer.out.*
 rm particle_out/*
 rm state.txt
-cp default_old.tf default.tf
+mv default_old.json default.json
+mv glyph_parameter_old.json glyph_parameter.json
+mv plot_over_line_parameter_old.json plot_over_line_parameter.json
+mv plot_over_time_parameter_old.json plot_over_time_parameter.json

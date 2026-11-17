@@ -19,54 +19,54 @@ class Serializer
 {
 public:
     template<typename T>
-    static size_t byteSize( const T& object )
+    static std::size_t byteSize( const T& object )
     {
         return sizeof( object );
     }
     template<typename T>
-    static size_t pack( char* buf, const T& object )
+    static std::size_t pack( char* buf, const T& object )
     {
         std::memcpy( buf, object, sizeof( object ) );
         return sizeof( object );
     }
     template<typename T>
-    static size_t unpack( const char* buf, T* object )
+    static std::size_t unpack( const char* buf, T* object )
     {
         std::memcpy( object, buf, sizeof( *object ) );
         return sizeof( *object );
     }
     template<typename T>
-    static size_t writeArray( char* buf, const T& t )
+    static std::size_t writeArray( char* buf, const T& t )
     {
         std::memcpy( buf, t, sizeof( t ) );
         return sizeof( t );
     }
     template<typename T>
-    static size_t writeArray( char* buf, const T* t, const size_t sz )
+    static std::size_t writeArray( char* buf, const T* t, const std::size_t sz )
     {
         std::memcpy( buf, t, sizeof( T )*sz );
         return sizeof( T ) * sz;
     }
     template<typename T>
-    static size_t readArray( const char* buf, T& t )
+    static std::size_t readArray( const char* buf, T& t )
     {
         std::memcpy( t, buf, sizeof( t ) );
         return sizeof( t );
     }
     template<typename T>
-    static size_t readArray( const char* buf, T* t, const size_t sz )
+    static std::size_t readArray( const char* buf, T* t, const std::size_t sz )
     {
         std::memcpy( t, buf, sizeof( T )*sz );
         return sizeof( T ) * sz;
     }
     template<typename T>
-    static size_t write( char* buf, const T& t )
+    static std::size_t write( char* buf, const T& t )
     {
         std::memcpy( buf, &t, sizeof( t ) );
         return sizeof( t );
     }
     template<typename T>
-    static size_t read( const char* buf, T* t )
+    static std::size_t read( const char* buf, T* t )
     {
         std::memcpy( t, buf, sizeof( *t ) );
         return sizeof( *t );

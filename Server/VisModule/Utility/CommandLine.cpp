@@ -98,7 +98,7 @@ CommandLine::Argument::~Argument( void )
  *  @return length of argument value
  */
 /*==========================================================================*/
-const size_t CommandLine::Argument::length( void ) const
+const std::size_t CommandLine::Argument::length( void ) const
 {
     return( m_length );
 }
@@ -191,7 +191,7 @@ CommandLine::Option::Option( void )
 CommandLine::Option::Option(
     const std::string& name,
     const std::string& description,
-    size_t             nvalues,
+    std::size_t             nvalues,
     bool               is_required )
     : m_name( name )
     , m_description( description )
@@ -278,7 +278,7 @@ const std::string& CommandLine::Option::description( void ) const
  *  @return number of option values
  */
 /*==========================================================================*/
-const size_t CommandLine::Option::nvalues( void ) const
+const std::size_t CommandLine::Option::nvalues( void ) const
 {
     return( m_nvalues );
 }
@@ -668,7 +668,7 @@ const bool CommandLine::parse( void )
 
     // Check the required argument.
     option = m_options.begin();
-    for ( size_t i = 0; i < m_options.size(); ++i )
+    for ( std::size_t i = 0; i < m_options.size(); ++i )
     {
         if ( option->isRequired() )
         {
@@ -683,7 +683,7 @@ const bool CommandLine::parse( void )
     }
 
     value = m_values.begin();
-    for ( size_t i = 0; i < m_values.size(); ++i )
+    for ( std::size_t i = 0; i < m_values.size(); ++i )
     {
         if ( value->isRequired() )
         {
@@ -823,7 +823,7 @@ const bool CommandLine::hasValues( void ) const
  *  @return number of input values
  */
 /*==========================================================================*/
-const size_t CommandLine::nvalues( void ) const
+const std::size_t CommandLine::nvalues( void ) const
 {
     return( m_values.size() );
 }
@@ -865,7 +865,7 @@ const bool CommandLine::hasOptionValue( const std::string& option_name ) const
  *  @return number of options
  */
 /*==========================================================================*/
-const size_t CommandLine::noptions( void ) const
+const std::size_t CommandLine::noptions( void ) const
 {
     return( m_options.size() );
 }
@@ -893,7 +893,7 @@ void CommandLine::addHelpOption( const std::string& help_option )
 void CommandLine::addOption(
     const std::string& name,
     const std::string& description,
-    size_t             nvalues,
+    std::size_t             nvalues,
     bool               is_required )
 {
     this->add_option( name, description, nvalues, is_required );
@@ -948,7 +948,7 @@ void CommandLine::add_help_option( const std::string& help_option )
 void CommandLine::add_option(
     const std::string& name,
     const std::string& description,
-    size_t             nvalues,
+    std::size_t             nvalues,
     bool               is_required )
 {
     m_max_length = Math::Max( name.length() + 1, m_max_length );
@@ -1044,7 +1044,7 @@ const bool CommandLine::read_option_values(
         return( true );
     }
 
-    for ( size_t i = 0; i < option->nvalues(); ++i )
+    for ( std::size_t i = 0; i < option->nvalues(); ++i )
     {
         if ( argument == m_arguments.end() ) { return( false ); }
         if ( this->is_option( argument ) ) { return( false ); }
@@ -1069,11 +1069,11 @@ void CommandLine::print_help_message( HelpMessageMode mode ) const
     {
         std::cerr << "Usage: " << m_command_name << " ";
         std::cerr << "[options] ";
-        const size_t ninputs = m_values.size();
+        const std::size_t ninputs = m_values.size();
 
         if ( ninputs > 0 )
         {
-            for ( size_t i = 0; i < ninputs; ++i )
+            for ( std::size_t i = 0; i < ninputs; ++i )
             {
                 std::cerr << "<" << m_values[i].description() << "> ";
             }

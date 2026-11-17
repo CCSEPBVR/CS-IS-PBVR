@@ -384,7 +384,7 @@ STBIDEF stbi_uc *stbi_load_gif_from_memory(stbi_uc const *buffer, int len, int *
 #endif
 
 #ifdef STBI_WINDOWS_UTF8
-STBIDEF int stbi_convert_wchar_to_utf8(char *buffer, size_t bufferlen, const wchar_t* input);
+STBIDEF int stbi_convert_wchar_to_utf8(char *buffer, std::size_t bufferlen, const wchar_t* input);
 #endif
 
 ////////////////////////////////////
@@ -1082,7 +1082,7 @@ static stbi__uint16 *stbi__convert_8_to_16(stbi_uc *orig, int w, int h, int chan
 static void stbi__vertical_flip(void *image, int w, int h, int bytes_per_pixel)
 {
     int row;
-    size_t bytes_per_row = (size_t)w * bytes_per_pixel;
+    std::size_t bytes_per_row = (size_t)w * bytes_per_pixel;
     stbi_uc temp[2048];
     stbi_uc *bytes = (stbi_uc *)image;
 
@@ -1090,9 +1090,9 @@ static void stbi__vertical_flip(void *image, int w, int h, int bytes_per_pixel)
         stbi_uc *row0 = bytes + row*bytes_per_row;
         stbi_uc *row1 = bytes + (h - row - 1)*bytes_per_row;
         // swap row0 with row1
-        size_t bytes_left = bytes_per_row;
+        std::size_t bytes_left = bytes_per_row;
         while (bytes_left) {
-            size_t bytes_copy = (bytes_left < sizeof(temp)) ? bytes_left : sizeof(temp);
+            std::size_t bytes_copy = (bytes_left < sizeof(temp)) ? bytes_left : sizeof(temp);
             memcpy(temp, row0, bytes_copy);
             memcpy(row0, row1, bytes_copy);
             memcpy(row1, temp, bytes_copy);
@@ -1184,7 +1184,7 @@ STBI_EXTERN __declspec(dllimport) int __stdcall WideCharToMultiByte(unsigned int
 #endif
 
 #if defined(_MSC_VER) && defined(STBI_WINDOWS_UTF8)
-STBIDEF int stbi_convert_wchar_to_utf8(char *buffer, size_t bufferlen, const wchar_t* input)
+STBIDEF int stbi_convert_wchar_to_utf8(char *buffer, std::size_t bufferlen, const wchar_t* input)
 {
     return WideCharToMultiByte(65001 /* UTF8 */, 0, input, -1, buffer, (int) bufferlen, NULL, NULL);
 }

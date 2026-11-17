@@ -325,8 +325,8 @@ void Axis2DMatrix::exec( kvs::ObjectBase* object, kvs::Camera* camera, kvs::Ligh
             glEnd();
 
             // Draw min/max values.
-            const size_t x_index = j;
-            const size_t y_index = ncolumns - i - 1;
+            const std::size_t x_index = j;
+            const std::size_t y_index = ncolumns - i - 1;
 
             if ( y_index == 0 )
             {
@@ -361,7 +361,7 @@ void Axis2DMatrix::exec( kvs::ObjectBase* object, kvs::Camera* camera, kvs::Ligh
             {
                 const std::string x_label( table->label(x_index) );
                 const std::string y_label( table->label(y_index) );
-                const size_t x_label_width = x_label.size() * ::CharacterWidth;
+                const std::size_t x_label_width = x_label.size() * ::CharacterWidth;
 
                 const float x_label_position_x = x1 - x_label_width - 5;
                 const float x_label_position_y = y1 - 5;
@@ -374,7 +374,7 @@ void Axis2DMatrix::exec( kvs::ObjectBase* object, kvs::Camera* camera, kvs::Ligh
             else
             {
                 const std::string label( table->label(x_index) );
-                const size_t label_width = label.size() * ::CharacterWidth;
+                const std::size_t label_width = label.size() * ::CharacterWidth;
 
                 const float label_position_x = ( x1 + x0 ) * 0.5f - label_width * 0.5f;
                 const float label_position_y = ( y1 + y0 ) * 0.5f + ::CharacterHeight * 0.5f;

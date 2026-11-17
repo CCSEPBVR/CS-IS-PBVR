@@ -31,7 +31,7 @@ public:
     using ModuleList = std::list<kvs::PipelineModule>;
 
 private:
-    size_t m_id = 0; ///< pipeline ID
+    std::size_t m_id = 0; ///< pipeline ID
     std::string m_filename{""}; ///< filename
     bool m_cache = true; ///< cache mode (DISABLE NOW)
     ModuleList m_module_list{}; ///< pipeline module list
@@ -68,7 +68,7 @@ private:
     bool create_renderer_module( const kvs::GeometryObjectBase* geometry );
     bool create_renderer_module( const kvs::VolumeObjectBase* volume );
     ModuleList::iterator find_module( const kvs::PipelineModule::Category category );
-    size_t count_module( const kvs::PipelineModule::Category category ) const;
+    std::size_t count_module( const kvs::PipelineModule::Category category ) const;
 };
 
 } // end of namespace kvs

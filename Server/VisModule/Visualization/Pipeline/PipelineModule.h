@@ -187,7 +187,7 @@ private:
 
     void deep_copy( const PipelineModule& module );
 
-    void create_counter( const size_t counter = 1 );
+    void create_counter( const std::size_t counter = 1 );
 
     void ref( void );
 

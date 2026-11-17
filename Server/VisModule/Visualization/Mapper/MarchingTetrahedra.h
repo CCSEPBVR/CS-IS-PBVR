@@ -78,7 +78,7 @@ protected:
         const vismodule::UnstructuredVolumeObject& volume );
 
     template <typename T>
-    const size_t calculate_table_index(
+    const std::size_t calculate_table_index(
         const size_t* local_index ) const;
 
     template <typename T>

@@ -15,9 +15,9 @@
 // Default parameters.
 namespace { namespace Default
 {
-const size_t Margin = 10;
-const size_t Width = 350;
-const size_t Height = 50;
+const std::size_t Margin = 10;
+const std::size_t Width = 350;
+const std::size_t Height = 50;
 const kvs::RGBColor RectColor = kvs::RGBColor( 255, 255, 255 );
 const kvs::RGBColor RectEdgeColor = kvs::RGBColor( 230, 230, 230 );
 } }
@@ -191,7 +191,7 @@ void ColorMapPalette::mousePressEvent( kvs::MouseEvent* event )
             pdata[1] = static_cast<kvs::UInt8>( drawing_color.g() * ratio + pdata[1] * ( 1 - ratio ) );
             pdata[2] = static_cast<kvs::UInt8>( drawing_color.b() * ratio + pdata[2] * ( 1 - ratio ) );
 
-            const size_t width = m_color_map.resolution();
+            const std::size_t width = m_color_map.resolution();
             m_texture.bind();
             m_texture.load( width, data );
             m_texture.unbind();
@@ -253,7 +253,7 @@ void ColorMapPalette::mouseMoveEvent( kvs::MouseEvent* event )
                 pdata[2] = static_cast<kvs::UInt8>( drawing_color.b() * ratio + pdata[2] * ( 1 - ratio ) );
             }
 
-            const size_t width = m_color_map.resolution();
+            const std::size_t width = m_color_map.resolution();
             m_texture.bind();
             m_texture.load( width, data );
             m_texture.unbind();
@@ -286,7 +286,7 @@ void ColorMapPalette::mouseReleaseEvent( kvs::MouseEvent* event )
 
 int ColorMapPalette::adjustedWidth()
 {
-    const size_t width = m_caption.size() * BaseClass::characterWidth() + BaseClass::margin() * 2;
+    const std::size_t width = m_caption.size() * BaseClass::characterWidth() + BaseClass::margin() * 2;
     return kvs::Math::Max( width, ::Default::Width );
 }
 
@@ -297,8 +297,8 @@ int ColorMapPalette::adjustedHeight()
 
 void ColorMapPalette::initialize_texture( const kvs::ColorMap& color_map )
 {
-    const size_t nchannels  = 3; // rgb
-    const size_t width = color_map.resolution();
+    const std::size_t nchannels  = 3; // rgb
+    const std::size_t width = color_map.resolution();
     const kvs::UInt8* data = color_map.table().data();
 
     m_texture.release();

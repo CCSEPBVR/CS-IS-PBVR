@@ -1,5 +1,10 @@
 #include "TimeStepControlToolBarTest.h"
 
+#ifdef Q_OS_MACOS
+#include "TestWindowVideoRecorder.h"
+#include <QTextStream>
+#endif
+
 #ifdef Q_OS_WIN
 #include <winsock2.h>
 #include <windows.h>
@@ -162,6 +167,9 @@ QRect physicalWindowGeometryForRecording( QWidget* target_window, QScreen* fallb
 namespace ClientTests
 {
 
+TimeStepControlToolBarTest::TimeStepControlToolBarTest() = default;
+TimeStepControlToolBarTest::~TimeStepControlToolBarTest() = default;
+
 QFileDialog* TimeStepControlToolBarTest::waitForFileDialog( int timeout_ms ) const
 {
     QFileDialog* dialog = nullptr;
@@ -283,6 +291,20 @@ QList<QSpinBox*> TimeStepControlToolBarTest::findSpinBoxes( QToolBar* tool_bar )
 
 void TimeStepControlToolBarTest::startVideoRecording( QWidget* target_window )
 {
+#ifdef Q_OS_MACOS
+    m_recording_attempted = true;
+    const QString backend = qEnvironmentVariable( "QT_MEDIA_BACKEND" );
+    if ( !backend.isEmpty() && backend != QStringLiteral( "ffmpeg" ) )
+    {
+        m_recording_failure_reason = QStringLiteral(
+            "QT_MEDIA_BACKEND=%1 が指定されています。アプリ内描画の録画には ffmpeg が必要です。" ).arg( backend );
+        return;
+    }
+    qputenv( "QT_MEDIA_BACKEND", QByteArrayLiteral( "ffmpeg" ) );
+    m_window_recorder = std::make_unique<TestWindowVideoRecorder>();
+    m_video_recording_available = m_window_recorder->start( target_window, m_video_file_path );
+    m_recording_failure_reason = m_window_recorder->failureReason();
+#else
     if ( QFileInfo::exists( m_video_file_path ) )
     {
         QVERIFY2(
@@ -429,15 +451,8 @@ void TimeStepControlToolBarTest::startVideoRecording( QWidget* target_window )
         } );
 #endif
 #else
-    m_recording_process.setProgram( QStringLiteral( "screencapture" ) );
-    m_recording_process.setArguments(
-        {
-            QStringLiteral( "-v" ),
-            QStringLiteral( "-k" ),
-            QStringLiteral( "-m" ),
-            QStringLiteral( "-x" ),
-            m_video_file_path
-        } );
+    qWarning() << "Video recording is not supported on this OS";
+    return;
 #endif
 
     m_video_recording_available = true;
@@ -451,10 +466,22 @@ void TimeStepControlToolBarTest::startVideoRecording( QWidget* target_window )
             false,
             qPrintable( QStringLiteral( "Failed to start video recording: %1" ).arg( m_recording_process.errorString() ) ) );
     }
+#endif
 }
 
 void TimeStepControlToolBarTest::stopVideoRecording()
 {
+#ifdef Q_OS_MACOS
+    if ( m_recording_finalized || !m_recording_attempted ) { return; }
+    if ( m_window_recorder )
+    {
+        m_video_created = m_window_recorder->finish();
+        m_recording_failure_reason = m_window_recorder->failureReason();
+        m_recording_diagnostics = m_window_recorder->diagnostics();
+    }
+    m_recording_finalized = true;
+    if ( !m_video_created ) { qWarning().noquote() << m_recording_failure_reason; }
+#else
 #if defined( Q_OS_WIN ) || defined( Q_OS_LINUX )
     if ( !m_video_recording_available )
     {
@@ -514,7 +541,62 @@ void TimeStepControlToolBarTest::stopVideoRecording()
     QVERIFY2(
         video_file_info.exists() && video_file_info.size() > 0,
         qPrintable( QStringLiteral( "Recorded video was not created: %1" ).arg( m_video_file_path ) ) );
+#endif
 }
+
+#ifdef Q_OS_MACOS
+void TimeStepControlToolBarTest::writeMarkdownReport() const
+{
+    QFile report_file( m_report_path );
+    QVERIFY2( report_file.open( QIODevice::WriteOnly | QIODevice::Text | QIODevice::Truncate ),
+              qPrintable( QStringLiteral( "Failed to open markdown report: %1" ).arg( m_report_path ) ) );
+
+    QTextStream stream( &report_file );
+    stream << "# TimeStepControlToolBarTest\n\n";
+    stream << "## テスト結果\n\n";
+    stream << "- 結果: " << ( m_test_succeeded ? "PASS" : "FAIL" ) << "\n";
+    stream << "- オブジェクトデータ: `" << m_object_file_path << "`\n";
+    stream << "- 出力先: `" << m_output_dir_path << "`\n";
+    stream << "- 動画出力: " << ( m_video_created ? "PASS" : "FAIL" ) << "\n\n";
+    stream << "## 実施シナリオ\n\n";
+    stream << "1. Object Editor でオブジェクトを読み込み、Jump 後に録画を開始する。\n";
+    stream << "2. 次タイムステップを 5、下限を 3、上限を 8 に設定する。\n";
+    stream << "3. Jump、First、Last を操作し、下限を 0、上限を 11 に戻す。\n";
+    stream << "4. ループ再生中に更新間隔を 50、100 に設定し、再生を停止する。\n";
+    stream << "5. 録画を停止し、動画の保存完了を確認する。\n\n";
+    stream << "## 動画\n\n";
+    if ( m_video_created )
+    {
+        const QString relative_path = QDir( QFileInfo( m_report_path ).absolutePath() )
+                                          .relativeFilePath( m_video_file_path );
+        stream << "<video controls src=\"" << relative_path.toHtmlEscaped() << "\"></video>\n\n";
+        stream << "[操作動画を開く](<" << relative_path << ">)\n\n";
+        stream << "埋め込み再生に対応していないビューアーでは、上のリンクから動画を開いてください。\n\n";
+    }
+    else
+    {
+        stream << "動画を出力できませんでした。\n\n";
+        stream << ( m_recording_attempted ? m_recording_failure_reason
+                    : QStringLiteral( "録画開始前にテストが失敗したため、録画は実行されませんでした。QtTest ログを確認してください。" ) )
+               << "\n\n";
+    }
+    stream << "## 録画の診断情報\n\n";
+    // 診断文字列中の Markdown 記号によってコードブロックが閉じないようにする。
+    const auto write_diagnostic = [&stream]( const QString& value )
+    {
+        for ( const QString& line : value.split( QLatin1Char( '\n' ) ) )
+        {
+            stream << "    " << line << "\n";
+        }
+        stream << "\n";
+    };
+    stream << "### 録画方式・保存結果\n\n";
+    write_diagnostic( m_recording_diagnostics.isEmpty() ? QStringLiteral( "録画未開始" ) : m_recording_diagnostics );
+    stream.flush();
+    QVERIFY2( stream.status() == QTextStream::Ok, "Failed to write markdown report" );
+}
+
+#endif
 
 void TimeStepControlToolBarTest::initTestCase()
 {
@@ -527,19 +609,31 @@ void TimeStepControlToolBarTest::initTestCase()
         ClientTests::configuredPath( "CLOCK_POLYGON_DATA", ClientTests::repoRootPath() ) );
     m_output_dir_path = ClientTests::envOrDefault(
         "PBVR_TEST_OUTPUT_DIR",
-        ClientTests::datedTestOutputDir( ClientTests::repoRootPath(), date_stamp ) );
+        ClientTests::datedTestOutputDir( ClientTests::repoRootPath(), date_stamp
+#ifdef Q_OS_MACOS
+                                       , QStringLiteral( "TimeStepControlToolBarTest" )
+#endif
+        ) );
     m_video_file_path = QDir( m_output_dir_path ).absoluteFilePath( QStringLiteral( "TimeStepControlToolBarTest.mp4" ) );
 
-    QVERIFY2(
-        QFileInfo::exists( m_object_file_path ),
-        qPrintable( QStringLiteral( "Object file not found: %1" ).arg( m_object_file_path ) ) );
+#ifdef Q_OS_MACOS
+    m_report_path = QDir( m_output_dir_path ).absoluteFilePath( QStringLiteral( "TestResult.md" ) );
+#endif
+
     QVERIFY2(
         QDir().mkpath( m_output_dir_path ),
         qPrintable( QStringLiteral( "Failed to create output directory: %1" ).arg( m_output_dir_path ) ) );
+    QVERIFY2(
+        QFileInfo::exists( m_object_file_path ),
+        qPrintable( QStringLiteral( "Object file not found: %1" ).arg( m_object_file_path ) ) );
 }
 
 void TimeStepControlToolBarTest::cleanupTestCase()
 {
+#ifdef Q_OS_MACOS
+    if ( m_recording_attempted && !m_recording_finalized ) { stopVideoRecording(); }
+    writeMarkdownReport();
+#endif
     if ( m_recording_process.state() != QProcess::NotRunning )
     {
         stopVideoRecording();
@@ -681,6 +775,10 @@ void TimeStepControlToolBarTest::performs_time_step_control_toolbar_scenario()
     QVERIFY2( jump_reenabled, "m_jump_push_button did not become enabled within the timeout" );
 
     startVideoRecording( &main_window );
+#ifdef Q_OS_MACOS
+    QVERIFY2( m_video_recording_available && !QTest::currentTestFailed(),
+              qPrintable( m_recording_failure_reason ) );
+#endif
 
     QTest::qWait( k_action_wait_ms );
     next_time_step_spin_box->setValue( 5 );
@@ -742,6 +840,10 @@ void TimeStepControlToolBarTest::performs_time_step_control_toolbar_scenario()
 
     QTest::qWait( k_action_wait_ms );
     stopVideoRecording();
+#ifdef Q_OS_MACOS
+    QVERIFY2( m_video_created, qPrintable( m_recording_failure_reason ) );
+    m_test_succeeded = !QTest::currentTestFailed();
+#endif
 }
 
 } // namespace ClientTests

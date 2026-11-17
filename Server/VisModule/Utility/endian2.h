@@ -37,9 +37,9 @@ template <typename T>
 inline void SwapByteOrder( T* v )
 {
     volatile unsigned char* pv = reinterpret_cast<volatile unsigned char*>( v );
-    for ( size_t p = 0; p < sizeof( T ) / 2; p++ )
+    for ( std::size_t p = 0; p < sizeof( T ) / 2; p++ )
     {
-        size_t p1 = sizeof( T ) - p - 1;
+        std::size_t p1 = sizeof( T ) - p - 1;
         unsigned char t = pv[p1];
         pv[p1] = pv[p];
         pv[p] = t;
@@ -79,34 +79,34 @@ inline void HostToBig( T* v )
 };
 
 template <typename T>
-inline void LittleToHost( T* pv, const size_t n )
+inline void LittleToHost( T* pv, const std::size_t n )
 {
 #if VIS_MODULE_BYTE_ORDER == VIS_MODULE_BIG_ENDIAN
-    for ( size_t m = 0; m < n; m++ ) SwapByteOrder<T>( &pv[m] );
+    for ( std::size_t m = 0; m < n; m++ ) SwapByteOrder<T>( &pv[m] );
 #endif
 };
 
 template <typename T>
-inline void HostToLittle( T* pv, const size_t n )
+inline void HostToLittle( T* pv, const std::size_t n )
 {
 #if VIS_MODULE_BYTE_ORDER == VIS_MODULE_BIG_ENDIAN
-    for ( size_t m = 0; m < n; m++ ) SwapByteOrder<T>( &pv[m] );
+    for ( std::size_t m = 0; m < n; m++ ) SwapByteOrder<T>( &pv[m] );
 #endif
 };
 
 template <typename T>
-inline void BigToHost( T* pv, const size_t n )
+inline void BigToHost( T* pv, const std::size_t n )
 {
 #if VIS_MODULE_BYTE_ORDER == VIS_MODULE_LITTLE_ENDIAN
-    for ( size_t m = 0; m < n; m++ ) SwapByteOrder<T>( &pv[m] );
+    for ( std::size_t m = 0; m < n; m++ ) SwapByteOrder<T>( &pv[m] );
 #endif
 };
 
 template <typename T>
-inline void HostToBig( T* pv, const size_t n )
+inline void HostToBig( T* pv, const std::size_t n )
 {
 #if VIS_MODULE_BYTE_ORDER == VIS_MODULE_LITTLE_ENDIAN
-    for ( size_t m = 0; m < n; m++ ) SwapByteOrder<T>( &pv[m] );
+    for ( std::size_t m = 0; m < n; m++ ) SwapByteOrder<T>( &pv[m] );
 #endif
 };
 }

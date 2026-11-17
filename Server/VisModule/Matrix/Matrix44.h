@@ -113,8 +113,8 @@ public:
 
 public:
 
-    const Vector4<T>& operator []( const size_t index ) const;
-    Vector4<T>&       operator []( const size_t index );
+    const Vector4<T>& operator []( const std::size_t index ) const;
+    Vector4<T>&       operator []( const std::size_t index );
 
 public:
 
@@ -747,7 +747,7 @@ inline const T Matrix44<T>::determinant( void ) const
  */
 /*==========================================================================*/
 template<typename T>
-inline const Vector4<T>& Matrix44<T>::operator []( const size_t index ) const
+inline const Vector4<T>& Matrix44<T>::operator []( const std::size_t index ) const
 {
     VIS_MODULE_ASSERT( index < 4 );
 
@@ -764,7 +764,7 @@ inline const Vector4<T>& Matrix44<T>::operator []( const size_t index ) const
  */
 /*==========================================================================*/
 template<typename T>
-inline Vector4<T>& Matrix44<T>::operator []( const size_t index )
+inline Vector4<T>& Matrix44<T>::operator []( const std::size_t index )
 {
     VIS_MODULE_ASSERT( index < 4 );
 

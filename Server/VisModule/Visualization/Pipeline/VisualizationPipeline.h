@@ -44,7 +44,7 @@ public:
 
 private:
 
-    size_t      m_id;          ///< pipeline ID
+    std::size_t      m_id;          ///< pipeline ID
     std::string m_filename;    ///< filename
     bool        m_cache;       ///< cache mode (DISABLE NOW)
     ModuleList  m_module_list; ///< pipeline module list
@@ -110,7 +110,7 @@ private:
 
     ModuleList::iterator find_module( const vismodule::PipelineModule::Category category );
 
-    const size_t count_module( const vismodule::PipelineModule::Category category ) const;
+    const std::size_t count_module( const vismodule::PipelineModule::Category category ) const;
 };
 
 } // end of namespace vismodule

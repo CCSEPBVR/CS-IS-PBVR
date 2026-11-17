@@ -39,7 +39,7 @@ GSIMesh::GSIMesh():
     m_forth_flg( false ),
     m_record_num( 0 )
 {
-    for ( size_t i = 0; i < 320; i++ ) m_record_flg[i] = false;
+    for ( std::size_t i = 0; i < 320; i++ ) m_record_flg[i] = false;
 }
 
 /*===========================================================================*/
@@ -62,7 +62,7 @@ GSIMesh::GSIMesh( const std::string& filename, const kvs::gis::Area& area ):
     m_forth_flg( false ),
     m_record_num( 0 )
 {
-    for ( size_t i = 0; i < 320; i++ ) m_record_flg[i] = false;
+    for ( std::size_t i = 0; i < 320; i++ ) m_record_flg[i] = false;
 
     if ( !this->read( filename, area ) )
     {
@@ -156,8 +156,8 @@ bool GSIMesh::read_header( FILE* fp )
     char lon_dim[4]; memset( lon_dim, 0, 3 ); tmp.copy( lon_dim, 3, 23 ); lon_dim[3] = '\0';
     char lat_dim[4]; memset( lat_dim, 0, 3 ); tmp.copy( lat_dim, 3, 26 ); lat_dim[3] = '\0';
 
-    const size_t longitude_dimension = atoi( lon_dim );
-    const size_t latitude_dimension = atoi( lat_dim );
+    const std::size_t longitude_dimension = atoi( lon_dim );
+    const std::size_t latitude_dimension = atoi( lat_dim );
     BaseClass::setLongitudeDimension( longitude_dimension );
     BaseClass::setLatitudeDimension( latitude_dimension );
 
@@ -216,7 +216,7 @@ bool GSIMesh::read_header( FILE* fp )
     tmp.copy( m_comment, 80, 145 );
 
     char record_flg = '0';
-    size_t size = 0;
+    std::size_t size = 0;
     switch( m_type )
     {
     case Mesh1KM: size = 80; break;
@@ -225,7 +225,7 @@ bool GSIMesh::read_header( FILE* fp )
     default: break;
     }
 
-    for ( size_t i = 0; i < size; i++ )
+    for ( std::size_t i = 0; i < size; i++ )
     {
         tmp.copy( &record_flg, 1, 225 + i );
         m_record_flg[i] = record_flg == '0' ? false : true;
@@ -259,26 +259,26 @@ bool GSIMesh::read_data( FILE* fp, const kvs::gis::Area& area )
 
     const float latitude_interval = BaseClass::latitudeInterval();
     const float longitude_interval = BaseClass::longitudeInterval();
-    const size_t lat_size = kvs::Math::Round( ( range[1] - range[0] ) / latitude_interval  ) + 1;
-    const size_t lon_size = kvs::Math::Round( ( range[3] - range[2] ) / longitude_interval ) + 1;
+    const std::size_t lat_size = kvs::Math::Round( ( range[1] - range[0] ) / latitude_interval  ) + 1;
+    const std::size_t lon_size = kvs::Math::Round( ( range[3] - range[2] ) / longitude_interval ) + 1;
     BaseClass::allocate_data( lat_size, lon_size );
 
     const float max_latitude = BaseClass::area().maxLatitude();
     const float min_longitude = BaseClass::area().minLongitude();
-    const size_t max_lat_id = kvs::Math::Round( ( max_latitude - range[1] ) / latitude_interval );
-    const size_t min_lon_id = kvs::Math::Round( ( range[2] - min_longitude ) / longitude_interval );
+    const std::size_t max_lat_id = kvs::Math::Round( ( max_latitude - range[1] ) / latitude_interval );
+    const std::size_t min_lon_id = kvs::Math::Round( ( range[2] - min_longitude ) / longitude_interval );
 
     // Set position data.
     std::vector<size_t> available_id; available_id.clear();
-    for ( size_t i = 0; i < lat_size; i++ )
+    for ( std::size_t i = 0; i < lat_size; i++ )
     {
-        const size_t lat_id = max_lat_id + i;
+        const std::size_t lat_id = max_lat_id + i;
         const float latitude = max_latitude - latitude_interval * lat_id;
         if ( m_record_flg[lat_id] ) available_id.push_back( lat_id + 1 );
 
-        for ( size_t j = 0; j < lon_size; j++ )
+        for ( std::size_t j = 0; j < lon_size; j++ )
         {
-            const size_t lon_id = min_lon_id + j;
+            const std::size_t lon_id = min_lon_id + j;
             const float longitude = min_longitude + longitude_interval * lon_id;
 
             kvs::gis::Point data = BaseClass::data( i, j );
@@ -296,13 +296,13 @@ bool GSIMesh::read_data( FILE* fp, const kvs::gis::Area& area )
 
     if ( available_id.size() != 0 )
     {
-        size_t read_ctr = 0;
-        for ( size_t i = 0; i < BaseClass::latitudeDimension(); i++ )
+        std::size_t read_ctr = 0;
+        for ( std::size_t i = 0; i < BaseClass::latitudeDimension(); i++ )
         {
             if ( m_record_flg[i] ) read_ctr++;
         }
 
-        size_t line = 0;
+        std::size_t line = 0;
         switch ( m_type )
         {
         case Mesh1KM: line = 412; break;
@@ -313,24 +313,24 @@ bool GSIMesh::read_data( FILE* fp, const kvs::gis::Area& area )
 
         // Read data.
         char* buf = new char [ line ];
-        size_t available_ctr = 0;
-        for ( size_t i = 0; i < read_ctr; i++ )
+        std::size_t available_ctr = 0;
+        for ( std::size_t i = 0; i < read_ctr; i++ )
         {
             if ( !fgets( buf, line, fp ) ) return false;
 
             const std::string tmp( buf );
             char code[7]; memset( code, 0, 6 ); tmp.copy( code, 6, 0 ); code[6] = '\0';
             char number[4]; memset( number, 0, 3 ); tmp.copy( number, 3, 6 ); number[3] = '\0';
-            const size_t num = atoi( number );
+            const std::size_t num = atoi( number );
             if ( num != available_id[available_ctr] ) continue;
 
-            for ( size_t j = 0; j < lon_size; j++ )
+            for ( std::size_t j = 0; j < lon_size; j++ )
             {
-                const size_t lon_id = min_lon_id + j;
+                const std::size_t lon_id = min_lon_id + j;
 
                 char hei[6]; memset( hei, 0, 5 ); tmp.copy( hei, 5, 9 + 5 * lon_id ); hei[5] = '\0';
                 const int h = atoi( hei );
-                const size_t id = num - 1 - max_lat_id;
+                const std::size_t id = num - 1 - max_lat_id;
 
                 kvs::gis::Point data = BaseClass::data( id, j );
                 kvs::gis::Area area = BaseClass::area();

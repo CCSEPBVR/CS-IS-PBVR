@@ -220,7 +220,7 @@ void  Connect( int argc, char** argv )
                 std::string target = "¥";
                 std::string replacement = "/";
 
-                size_t pos = 0;
+                std::size_t pos = 0;
                 while ((pos = clntMes.m_input_directory.find(target, pos)) != std::string::npos) {
                     clntMes.m_input_directory.replace(pos, target.length(), replacement);
                     pos += replacement.length();
@@ -229,7 +229,7 @@ void  Connect( int argc, char** argv )
                 std::string target = "\\";
                 std::string replacement = "/";
 
-                size_t pos = 0;
+                std::size_t pos = 0;
                 while ((pos = clntMes.m_input_directory.find(target, pos)) != std::string::npos) {
                     clntMes.m_input_directory.replace(pos, target.length(), replacement);
                     pos += replacement.length();
@@ -682,7 +682,7 @@ void  Connect( int argc, char** argv )
             std::string target = "¥";
             std::string replacement = "/";
 
-            size_t pos = 0;
+            std::size_t pos = 0;
             while ((pos = clntMes.m_input_directory.find(target, pos)) != std::string::npos) {
                 clntMes.m_input_directory.replace(pos, target.length(), replacement);
                 pos += replacement.length();
@@ -691,7 +691,7 @@ void  Connect( int argc, char** argv )
             std::string target = "\\";
             std::string replacement = "/";
 
-            size_t pos = 0;
+            std::size_t pos = 0;
             while ((pos = clntMes.m_input_directory.find(target, pos)) != std::string::npos) {
                 clntMes.m_input_directory.replace(pos, target.length(), replacement);
                 pos += replacement.length();
@@ -775,8 +775,8 @@ void  Connect( int argc, char** argv )
 #ifndef EXTEND_FILE_FORMAT
                 ExtendFileFormat_flag = false;
                 pfi_flag = false;
-                size_t found_pfl = param.m_input_data_base.find(".pfl");
-                size_t found_pfi = param.m_input_data_base.find(".pfi");
+                std::size_t found_pfl = param.m_input_data_base.find(".pfl");
+                std::size_t found_pfi = param.m_input_data_base.find(".pfi");
                 if (found_pfl != std::string::npos) pfi_flag = true;
                 if (found_pfi != std::string::npos) pfi_flag = true;
 #endif
@@ -1665,8 +1665,8 @@ bool CheckFileFormat(
 #ifndef EXTEND_FILE_FORMAT
     ExtendFileFormat_flag = false;
     pfi_flag = false;
-    size_t found_pfl = param.m_input_data_base.find(".pfl");
-    size_t found_pfi = param.m_input_data_base.find(".pfi");
+    std::size_t found_pfl = param.m_input_data_base.find(".pfl");
+    std::size_t found_pfi = param.m_input_data_base.find(".pfi");
     if (found_pfl != std::string::npos) pfi_flag = true;
     if (found_pfi != std::string::npos) pfi_flag = true;
 #endif

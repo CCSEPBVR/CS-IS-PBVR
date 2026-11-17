@@ -33,6 +33,7 @@
     <ClCompile Include="DaemonAndSampler\Daemon\ParticleStatusFile.cpp" />
     <ClCompile Include="DaemonAndSampler\Daemon\PlotOverLineFile.cpp" />
     <ClCompile Include="DaemonAndSampler\Daemon\PlotOverTimeFile.cpp" />
+    <ClCompile Include="DaemonAndSampler\Daemon\TransferFunctionJsonWriter.cpp" />
     <ClCompile Include="FileFormat\AggregateTypeSubvolume.cpp" />
     <ClCompile Include="FileFormat\AVSField\AVSField.cpp" />
     <ClCompile Include="FileFormat\AVSUCD\AVSUcd.cpp" />
@@ -406,6 +407,7 @@
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <AdditionalIncludeDirectories>$(VTK_INCLUDE_PATH);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <OpenMPSupport>true</OpenMPSupport>
+      <AdditionalOptions>/openmp:experimental %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>

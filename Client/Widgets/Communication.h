@@ -52,9 +52,12 @@ signals:
     void receivePlotOverLineParameter    ( const QJsonObject& payload );
     void receivePlotOverTimeParameter    ( const QJsonObject& payload );
     void receiveTransferFunctionParameter( const QJsonObject& payload );
+    void receiveEnsembleStatisticsParameter( const QJsonObject& payload );
+    void receiveRepetitionLevelParameter ( const QJsonObject& payload );
 
     // NOTE:時系列更新用
     void receiveRequestDataAtTransferFunctionParameter( const QJsonObject& payload );
+    void receiveRequestDataAtEnsembleStatisticsParameter( const QJsonObject& payload );
 
     void receiveSelectedFile( const QJsonObject& payload );
     void receiveObjectDelete( const QJsonObject& payload );

@@ -32,10 +32,10 @@ inline kvs::Real32 GetMahalanobisDistance(
     const kvs::ValueArray<kvs::Real32>& x,
     const kvs::ValueArray<kvs::Real32>& u )
 {
-    const size_t dim = x.size();
+    const std::size_t dim = x.size();
     kvs::Matrix<kvs::Real32> d( dim, 1 );
     kvs::Matrix<kvs::Real32> dt( 1, dim );
-    for ( size_t i = 0; i < dim; i++ ) { d[i][0] = dt[0][i] = x[i] - u[i]; }
+    for ( std::size_t i = 0; i < dim; i++ ) { d[i][0] = dt[0][i] = x[i] - u[i]; }
 
     // Covariance matrix (identity matrix)
     kvs::Matrix<kvs::Real32> S( dim, dim );
@@ -56,11 +56,11 @@ inline kvs::Real32 GetMahalanobisDistance(
 /*===========================================================================*/
 inline kvs::ValueArray<kvs::Real32> GetRowArray(
     const kvs::AnyValueTable& table,
-    const size_t row_index )
+    const std::size_t row_index )
 {
-    const size_t ncolumns = table.columnSize();
+    const std::size_t ncolumns = table.columnSize();
     kvs::ValueArray<kvs::Real32> row( ncolumns );
-    for ( size_t i = 0; i < ncolumns; i++ )
+    for ( std::size_t i = 0; i < ncolumns; i++ )
     {
         row[i] = table.column(i).at<kvs::Real32>( row_index );
     }
@@ -86,9 +86,9 @@ void AdaptiveKMeans::run()
         return;
     }
 
-    const size_t ncolumns = m_input_table.columnSize();
-    const size_t nrows = m_input_table.column(0).size();
-    for ( size_t i = 1; i < m_input_table.columnSize(); i++ )
+    const std::size_t ncolumns = m_input_table.columnSize();
+    const std::size_t nrows = m_input_table.column(0).size();
+    for ( std::size_t i = 1; i < m_input_table.columnSize(); i++ )
     {
         if ( nrows != m_input_table.column(i).size() )
         {
@@ -97,16 +97,16 @@ void AdaptiveKMeans::run()
         }
     }
 
-    const size_t K = m_max_nclusters; // number of clusters
-    const size_t p = ncolumns; // p-dimension
+    const std::size_t K = m_max_nclusters; // number of clusters
+    const std::size_t p = ncolumns; // p-dimension
     const kvs::Real32 Y = p * 0.5f; // transformation power
 
-    size_t nclusters = 1; // number of clusters (best k)
+    std::size_t nclusters = 1; // number of clusters (best k)
     kvs::Real32 Jmax = 0.0f; // maximum jump
     kvs::ValueArray<kvs::UInt32> IDs; // cluster IDs with the best k
     kvs::ValueArray<kvs::Real32>* centers = NULL; // cluster centers with the best k
     kvs::ValueArray<kvs::Real32> distortion( K + 1 ); distortion[0] = 0.0f; // distortion
-    for ( size_t k = 1; k < K + 1; k++ )
+    for ( std::size_t k = 1; k < K + 1; k++ )
     {
         // k-means clustering.
         kvs::FastKMeans kmeans;
@@ -119,12 +119,12 @@ void AdaptiveKMeans::run()
 
         // Calculate the distortions (averaged Mahalanobis distance per dimension).
         distortion[k] = 0.0f;
-        for ( size_t i = 0; i < nrows; i++ )
+        for ( std::size_t i = 0; i < nrows; i++ )
         {
             kvs::ValueArray<kvs::Real32> cx = kmeans.clusterCenter(0);
             kvs::ValueArray<kvs::Real32> x = ::GetRowArray( m_input_table, i );
             kvs::Real32 distance = ::GetMahalanobisDistance( x, cx );
-            for ( size_t j = 1; j < k; j++ )
+            for ( std::size_t j = 1; j < k; j++ )
             {
                 cx = kmeans.clusterCenter(j);
                 distance = kvs::Math::Min( distance, ::GetMahalanobisDistance( x, cx ) );
@@ -145,7 +145,7 @@ void AdaptiveKMeans::run()
 
             if ( centers ) delete [] centers;
             centers = new kvs::ValueArray<kvs::Real32> [ nclusters ];
-            for ( size_t i = 0; i < nclusters; i++ )
+            for ( std::size_t i = 0; i < nclusters; i++ )
             {
                 centers[i] = kmeans.clusterCenter(i);
             }
@@ -169,10 +169,10 @@ const kvs::ValueArray<kvs::Real32> AdaptiveKMeans::jumps() const
     if ( m_distortions.size() != m_max_nclusters + 1 ) return kvs::ValueArray<kvs::Real32>();
 
     const kvs::ValueArray<kvs::Real32>& d = m_distortions;
-    const size_t p = m_input_table.columnSize() - 1;
+    const std::size_t p = m_input_table.columnSize() - 1;
     const kvs::Real32 Y = p * 0.5f;
     kvs::ValueArray<kvs::Real32> J( m_max_nclusters + 1 ); J[0] = 0.0f;
-    for ( size_t k = 1; k < m_max_nclusters + 1; k++ )
+    for ( std::size_t k = 1; k < m_max_nclusters + 1; k++ )
     {
         J[k] = std::pow( d[k], -Y ) - std::pow( d[k-1], -Y );
     }

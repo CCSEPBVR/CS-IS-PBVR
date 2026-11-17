@@ -25,7 +25,7 @@ Config::~Config()
 
 bool Config::create( const EGLint* attribs )
 {
-    const size_t config_size = 128;
+    const std::size_t config_size = 128;
     EGLConfig configs[ config_size ];
     EGLint nconfigs = 0;
     EGLBoolean status = EGL_FALSE;

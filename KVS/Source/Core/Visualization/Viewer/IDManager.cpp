@@ -42,7 +42,7 @@ IDManager::~IDManager()
  *  @param  index [in] index
  */
 /*===========================================================================*/
-IDManager::IDPair IDManager::id( size_t index ) const
+IDManager::IDPair IDManager::id( std::size_t index ) const
 {
     auto p = m_id_list.begin();
     std::advance( p, m_flip_table[ index ] );

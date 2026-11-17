@@ -45,14 +45,14 @@ void PrintResult(
     std::cout << indent << "A * x = " << A * x << std::endl;
 }
 
-void PerfTest( const kvs::Matrix<double>& A, const kvs::Vector<double>& b, const size_t nloops )
+void PerfTest( const kvs::Matrix<double>& A, const kvs::Vector<double>& b, const std::size_t nloops )
 {
     const kvs::Indent indent(4);
 
     std::cout << "Performance Test" << std::endl;
     kvs::Vector<double> x;
     kvs::Timer timer( kvs::Timer::Start );
-    for ( size_t i = 0; i < nloops; i++ ) { x = kvs::GaussEliminationSolver<double>( A, b ); }
+    for ( std::size_t i = 0; i < nloops; i++ ) { x = kvs::GaussEliminationSolver<double>( A, b ); }
     timer.stop();
     std::cout << indent << "Calculation (" << nloops << " times): " << timer.sec() << " [sec]" << std::endl;
 }
@@ -91,6 +91,6 @@ int main( void )
     const kvs::Vector<double> x = kvs::GaussEliminationSolver<double>( A, b );
     PrintResult( A, b, x );
 
-    const size_t nloops = 100000;
+    const std::size_t nloops = 100000;
     PerfTest( A, b, nloops );
 }

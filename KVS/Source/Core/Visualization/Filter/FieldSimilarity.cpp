@@ -32,10 +32,10 @@ inline float Similarity(
 
     float min = 0.0f;
     float max = 0.0f;
-    const size_t size = values0.size();
+    const std::size_t size = values0.size();
 
     #pragma omp parallel for reduction(+:min,max)
-    for ( size_t i = 0; i < size; ++i )
+    for ( std::size_t i = 0; i < size; ++i )
     {
         const auto v0 = normalize( static_cast<float>( values0[i] ) );
         const auto v1 = normalize( static_cast<float>( values1[i] ) );

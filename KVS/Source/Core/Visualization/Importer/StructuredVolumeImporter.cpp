@@ -200,9 +200,9 @@ void StructuredVolumeImporter::import( const kvs::DicomList* dicom_list )
     const float spacing = static_cast<float>( dicom_list->sliceSpacing() );
     const float thickness = static_cast<float>( dicom_list->sliceThickness() );
 
-    const size_t x_size = dicom_list->width();
-    const size_t y_size = dicom_list->height();
-    const size_t z_size = dicom_list->nslices();
+    const std::size_t x_size = dicom_list->width();
+    const std::size_t y_size = dicom_list->height();
+    const std::size_t z_size = dicom_list->nslices();
     const float x_ratio = dicom_list->pixelSpacing()[0];
     const float y_ratio = dicom_list->pixelSpacing()[1];
     const float z_ratio = kvs::Math::IsZero( spacing ) ? kvs::Math::IsZero( thickness ) ? x_ratio : thickness : spacing;
@@ -274,10 +274,10 @@ const kvs::AnyValueArray StructuredVolumeImporter::get_dicom_data(
     const kvs::DicomList* dicom_list,
     const bool shift )
 {
-    const size_t width = dicom_list->width();
-    const size_t height = dicom_list->height();
-    const size_t nslices = dicom_list->nslices();
-    const size_t nnodes = width * height * nslices;
+    const std::size_t width = dicom_list->width();
+    const std::size_t height = dicom_list->height();
+    const std::size_t nslices = dicom_list->nslices();
+    const std::size_t nnodes = width * height * nslices;
 
     const double min_range = static_cast<double>( kvs::Value<T>::Min() );
     const double max_range = static_cast<double>( kvs::Value<T>::Max() );
@@ -286,17 +286,17 @@ const kvs::AnyValueArray StructuredVolumeImporter::get_dicom_data(
     values.template allocate<T>( nnodes );
 
     T* pvalues = static_cast<T*>( values.data() );
-    for ( size_t k = 0; k < nslices; k++ )
+    for ( std::size_t k = 0; k < nslices; k++ )
     {
         const kvs::Dicom* dicom = (*dicom_list)[k];
         const T* const raw_data = reinterpret_cast<const T*>( dicom->rawData().data() );
         const int shift_value = shift ? dicom->minRawValue() : 0;
 
-        for ( size_t j = 0; j < height; j++ )
+        for ( std::size_t j = 0; j < height; j++ )
         {
-            for ( size_t i = 0; i < width; i++ )
+            for ( std::size_t i = 0; i < width; i++ )
             {
-                const size_t pixel_index = ( height - j - 1 ) * width + i;
+                const std::size_t pixel_index = ( height - j - 1 ) * width + i;
                 double value = static_cast<double>( raw_data[ pixel_index ] );
                 value = value - shift_value;
                 value = kvs::Math::Clamp( value, min_range, max_range );

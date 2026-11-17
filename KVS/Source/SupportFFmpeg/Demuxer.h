@@ -65,7 +65,7 @@ public:
 
     void seek( const int64_t index ) { this->seek_by_index( index ); }
     void seek( const int index ) { this->seek_by_index( int64_t( index ) ); }
-    void seek( const size_t index ) { this->seek_by_index( int64_t( index ) ); }
+    void seek( const std::size_t index ) { this->seek_by_index( int64_t( index ) ); }
     void seek( const double sec ) { this->seek_by_sec( sec ); }
     void seek( const float sec ) { this->seek_by_sec( double( sec ) ); }
 

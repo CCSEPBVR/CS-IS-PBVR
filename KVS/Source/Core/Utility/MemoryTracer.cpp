@@ -40,7 +40,7 @@ const char* AllocationName[] =
  *  @return value string with commas
  */
 /*===========================================================================*/
-const std::string Comma( const size_t n )
+const std::string Comma( const std::size_t n )
 {
     char N[30]; memset( N, 0, 30 );
 
@@ -89,7 +89,7 @@ extern kvs::MemoryTracer kvsMemoryTracer;
  *  @return allocated memory address
  */
 /*===========================================================================*/
-void* operator new ( size_t size, char const* file, int line )
+void* operator new ( std::size_t size, char const* file, int line )
 {
     kvs::MemoryTracer::AllocationType type = kvs::MemoryTracer::New;
     return( kvs::MemoryTracer::Allocate( size, file, line, type ) );
@@ -116,7 +116,7 @@ void operator delete ( void* address )
  *  @return allocated memory address
  */
 /*===========================================================================*/
-void* operator new [] ( size_t size, char const* file, int line )
+void* operator new [] ( std::size_t size, char const* file, int line )
 {
     kvs::MemoryTracer::AllocationType type = kvs::MemoryTracer::NewArray;
     return( kvs::MemoryTracer::Allocate( size, file, line, type ) );
@@ -193,7 +193,7 @@ MemoryTracer::~MemoryTracer()
 /*===========================================================================*/
 void MemoryTracer::insert(
     void* address,
-    size_t size,
+    std::size_t size,
     char const* file,
     int line,
     MemoryTracer::AllocationType type )
@@ -280,8 +280,8 @@ void MemoryTracer::dump( std::ostream& os )
     os << "Peak amount of allocated memory: " << ::Comma(m_peak_allocated_memory) << " bytes" << std::endl;
     os << std::endl;
 
-    const size_t nleaks = m_map.size();
-    const size_t leak_size = this->leaked_memory_size();
+    const std::size_t nleaks = m_map.size();
+    const std::size_t leak_size = this->leaked_memory_size();
     os << "M E M O R Y  L E A K S" << std::endl;
     os << "Number of memory leaks: " << nleaks << std::endl;
     os << "Total amount of leaked memory: " << ::Comma(leak_size) << " bytes" << std::endl;
@@ -297,7 +297,7 @@ void MemoryTracer::dump( std::ostream& os )
             const void* address = mem->first;
             const char* name = mem->second.name();
             const int line = mem->second.line();
-            const size_t size = mem->second.size();
+            const std::size_t size = mem->second.size();
             const std::string type = ::AllocationName[ mem->second.type() ];
             os << std::hex << address << ": " << std::dec
                << name << "("
@@ -364,7 +364,7 @@ size_t MemoryTracer::leaked_memory_size() const
  */
 /*===========================================================================*/
 void* MemoryTracer::Allocate(
-    size_t size,
+    std::size_t size,
     char const* file,
     int line,
     MemoryTracer::AllocationType type,
@@ -470,7 +470,7 @@ MemoryTracer::Lock::~Lock()
  */
 /*===========================================================================*/
 MemoryTracer::Node::Node(
-    size_t size,
+    std::size_t size,
     char const* name,
     int line,
     MemoryTracer::AllocationType type ):

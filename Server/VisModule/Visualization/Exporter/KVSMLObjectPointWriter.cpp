@@ -61,11 +61,11 @@ void KVSMLObjectPointWriter:: write_coords()
     std::string coords_filename   = m_basename + "_coords.dat";
     FILE* coords_file = fopen( coords_filename.c_str(), "wb" );
 
-    size_t nvertices = m_object->nvertices();
+    std::size_t nvertices = m_object->nvertices();
     const float* coords_pointer = m_object->coords().pointer();
 
-    size_t size = sizeof( float );
-    size_t nmemb = nvertices * 3;
+    std::size_t size = sizeof( float );
+    std::size_t nmemb = nvertices * 3;
     float* ptr = new float[nmemb];
     FILE* stream = coords_file;
 
@@ -82,11 +82,11 @@ void KVSMLObjectPointWriter::write_colors()
     std::string colors_filename   = m_basename + "_colors.dat";
     FILE* colors_file = fopen( colors_filename.c_str(), "wb" );
 
-    size_t nvertices = m_object->nvertices();
+    std::size_t nvertices = m_object->nvertices();
     const unsigned char* colors_pointer = m_object->colors().pointer();
 
-    size_t size = sizeof( unsigned char );
-    size_t nmemb = nvertices * 3;
+    std::size_t size = sizeof( unsigned char );
+    std::size_t nmemb = nvertices * 3;
     unsigned char* ptr = new unsigned char[nmemb];
     FILE* stream = colors_file;
 
@@ -103,11 +103,11 @@ void KVSMLObjectPointWriter::write_normals()
     std::string normals_filename  = m_basename + "_normals.dat";
     FILE* normals_file = fopen( normals_filename.c_str(), "wb" );
 
-    size_t nvertices = m_object->nvertices();
+    std::size_t nvertices = m_object->nvertices();
     const float* normals_pointer = m_object->normals().pointer();
 
-    size_t size = sizeof( float );
-    size_t nmemb = nvertices * 3;
+    std::size_t size = sizeof( float );
+    std::size_t nmemb = nvertices * 3;
     float* ptr = new float[nmemb];
     FILE* stream = normals_file;
 

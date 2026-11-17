@@ -56,17 +56,17 @@ public:
 
 public:
 
-    const size_t nrows( void ) const;
+    const std::size_t nrows( void ) const;
 
-    const Row& row( const size_t index ) const;
+    const Row& row( const std::size_t index ) const;
 
-    const std::string& value( const size_t i, const size_t j ) const;
+    const std::string& value( const std::size_t i, const std::size_t j ) const;
 
     void addRow( const Row& row );
 
-    void setRow( const size_t index, const Row& row );
+    void setRow( const std::size_t index, const Row& row );
 
-    void setValue( const size_t i, const size_t j, const std::string& value );
+    void setValue( const std::size_t i, const std::size_t j, const std::string& value );
 
 public:
 

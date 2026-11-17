@@ -54,7 +54,7 @@ CellByCellLayeredSampling::CellByCellLayeredSampling( void ):
 /*===========================================================================*/
 CellByCellLayeredSampling::CellByCellLayeredSampling(
     const vismodule::VolumeObjectBase& volume,
-    const size_t                 subpixel_level,
+    const std::size_t                 subpixel_level,
     const float                  sampling_step,
     const vismodule::TransferFunction& transfer_function,
     const float                  object_depth ):
@@ -83,7 +83,7 @@ CellByCellLayeredSampling::CellByCellLayeredSampling(
 CellByCellLayeredSampling::CellByCellLayeredSampling(
     const vismodule::Camera*           camera,
     const vismodule::VolumeObjectBase& volume,
-    const size_t                 subpixel_level,
+    const std::size_t                 subpixel_level,
     const float                  sampling_step,
     const vismodule::TransferFunction& transfer_function,
     const float                  object_depth ):
@@ -116,7 +116,7 @@ CellByCellLayeredSampling::~CellByCellLayeredSampling( void )
  *  @return sub-pixel level
  */
 /*===========================================================================*/
-const size_t CellByCellLayeredSampling::subpixelLevel( void ) const
+const std::size_t CellByCellLayeredSampling::subpixelLevel( void ) const
 {
     return( m_subpixel_level );
 }
@@ -160,7 +160,7 @@ void CellByCellLayeredSampling::attachCamera( const vismodule::Camera* camera )
  *  @param  subpixel_level [in] sub-pixel level
  */
 /*===========================================================================*/
-void CellByCellLayeredSampling::setSubpixelLevel( const size_t subpixel_level )
+void CellByCellLayeredSampling::setSubpixelLevel( const std::size_t subpixel_level )
 {
     m_subpixel_level = subpixel_level;
 }
@@ -297,7 +297,7 @@ template <typename T>
 void CellByCellLayeredSampling::generate_particles( const vismodule::UnstructuredVolumeObject& volume )
 {
     // Tiny value.
-    const size_t resolution = BaseClass::transferFunction().resolution();
+    const std::size_t resolution = BaseClass::transferFunction().resolution();
     const float TinyValue = 1.0f / resolution;
 
     // Pregenerate particles.
@@ -312,8 +312,8 @@ void CellByCellLayeredSampling::generate_particles( const vismodule::Unstructure
     vismodule::TetrahedralCell<T>* cell = new vismodule::TetrahedralCell<T>( volume );
 
     // Generate particles for each cell.
-    const size_t ncells = volume->ncells();
-    for ( size_t index = 0; index < ncells; ++index )
+    const std::size_t ncells = volume->ncells();
+    for ( std::size_t index = 0; index < ncells; ++index )
     {
         // Bind the cell which is indicated by 'index'.
         cell->bindCell( index );
@@ -329,7 +329,7 @@ void CellByCellLayeredSampling::generate_particles( const vismodule::Unstructure
         {
             const float scalar = cell->averagedScalar();
             const float density = this->calculate_density( scalar );
-            const size_t nparticles = this->calculate_number_of_particles( density, cell );
+            const std::size_t nparticles = this->calculate_number_of_particles( density, cell );
 
             this->uniform_sampling<T>(
                 cell, BaseClass::transferFunction(), nparticles,
@@ -341,7 +341,7 @@ void CellByCellLayeredSampling::generate_particles( const vismodule::Unstructure
         {
             const float scalar = cell->averagedScalar();
             const float density = this->calculate_density( scalar );
-            const size_t nparticles = this->calculate_number_of_particles( density, cell );
+            const std::size_t nparticles = this->calculate_number_of_particles( density, cell );
 
             this->rejection_sampling<T>(
                 cell, BaseClass::transferFunction(), nparticles,
@@ -353,8 +353,8 @@ void CellByCellLayeredSampling::generate_particles( const vismodule::Unstructure
         {
             this->calculate_particles_in_cell( cell );
 
-            const size_t N_in = m_selected_particles.nparticles;
-            const size_t N_tet = this->calculate_number_of_particles( N_in );
+            const std::size_t N_in = m_selected_particles.nparticles;
+            const std::size_t N_tet = this->calculate_number_of_particles( N_in );
 
             // All particles are selected from pregenerated particles.
             if ( N_in > N_tet )
@@ -390,15 +390,15 @@ void CellByCellLayeredSampling::generate_particles( const vismodule::Unstructure
  *  @param  nparticles [in] target number of particles
  */
 /*===========================================================================*/
-void CellByCellLayeredSampling::pregenerate_particles( const size_t nparticles )
+void CellByCellLayeredSampling::pregenerate_particles( const std::size_t nparticles )
 {
-    const size_t resolution = BaseClass::transferFunction().resolution();
-    const size_t nintervals = resolution - 1;
+    const std::size_t resolution = BaseClass::transferFunction().resolution();
+    const std::size_t nintervals = resolution - 1;
 
     // Integrate the density distribution function as piecewise linear function.
     vismodule::ValueArray<float> m( nintervals ); m.fill( 0x00 );
     float M = 0.0f;
-    for ( size_t i = 0; i < nintervals; i++ )
+    for ( std::size_t i = 0; i < nintervals; i++ )
     {
         const float p0 = m_density_map[i];
         const float p1 = m_density_map[i+1];
@@ -416,7 +416,7 @@ void CellByCellLayeredSampling::pregenerate_particles( const size_t nparticles )
     vismodule::MersenneTwister R; R.setSeed();
     vismodule::ValueArray<vismodule::UInt32> n( nintervals ); n.fill( 0x00 );
     vismodule::UInt32 N = 0; // total number of particles
-    for ( size_t i = 0; i < nintervals; i++ )
+    for ( std::size_t i = 0; i < nintervals; i++ )
     {
         const float tmp = static_cast<float>( nparticles ) * m[i] / M;
 
@@ -432,7 +432,7 @@ void CellByCellLayeredSampling::pregenerate_particles( const size_t nparticles )
     // Generate particles by using rejection method.
     vismodule::ValueArray<vismodule::Real32> coords( N * 3 );
     vismodule::Real32* pcoords = coords.pointer();
-    for ( size_t i = 0; i < nintervals; i++ )
+    for ( std::size_t i = 0; i < nintervals; i++ )
     {
         const float p0 = m_density_map[i];
         const float p1 = m_density_map[i+1];
@@ -443,7 +443,7 @@ void CellByCellLayeredSampling::pregenerate_particles( const size_t nparticles )
         const float b = ( p0 * s1 - p1 * s0 ) / ( s1 - s0 );
         const float c = vismodule::Math::Max( p0, p1 );
 
-        size_t count = 0;
+        std::size_t count = 0;
         while ( count < n[i] )
         {
             const float s = static_cast<float>( R() ) * ( s1 - s0 ) + s0;
@@ -486,12 +486,12 @@ template <typename T>
 void CellByCellLayeredSampling::uniform_sampling(
     const vismodule::TetrahedralCell<T>* cell,
     const vismodule::TransferFunction& tfunc,
-    const size_t nparticles,
+    const std::size_t nparticles,
     std::vector<vismodule::Real32>* coords,
     std::vector<vismodule::UInt8>*  colors,
     std::vector<vismodule::Real32>* normals )
 {
-    for ( size_t particle = 0; particle < nparticles; ++particle )
+    for ( std::size_t particle = 0; particle < nparticles; ++particle )
     {
         // Calculate a coord.
         const vismodule::Vector3f coord = cell->randomSampling();
@@ -533,7 +533,7 @@ template <typename T>
 void CellByCellLayeredSampling::rejection_sampling(
     const vismodule::TetrahedralCell<T>* cell,
     const vismodule::TransferFunction& tfunc,
-    const size_t nparticles,
+    const std::size_t nparticles,
     std::vector<vismodule::Real32>* coords,
     std::vector<vismodule::UInt8>*  colors,
     std::vector<vismodule::Real32>* normals )
@@ -543,7 +543,7 @@ void CellByCellLayeredSampling::rejection_sampling(
     const float S_max = static_cast<float>( vismodule::Math::Max( S[0], S[1], S[2], S[3] ) );
     const float p_max = this->calculate_maximum_density( S_min, S_max ) / nparticles;
 
-    size_t count = 0;
+    std::size_t count = 0;
     while ( count < nparticles )
     {
         const vismodule::Vector3f coord = cell->randomSampling();
@@ -593,7 +593,7 @@ template <typename T>
 void CellByCellLayeredSampling::roulette_selection(
     const vismodule::TetrahedralCell<T>* cell,
     const vismodule::TransferFunction& tfunc,
-    const size_t nparticles,
+    const std::size_t nparticles,
     std::vector<vismodule::Real32>* coords,
     std::vector<vismodule::UInt8>*  colors,
     std::vector<vismodule::Real32>* normals )
@@ -615,11 +615,11 @@ void CellByCellLayeredSampling::roulette_selection(
     const vismodule::Vector3f g( cell->gradient().normalize() );
 
     const vismodule::Matrix44f LA_inv = L_inv * A_inv;
-    for ( size_t i = 0; i < nparticles; i++ )
+    for ( std::size_t i = 0; i < nparticles; i++ )
     {
         const float fid = Generator::GetRandomNumber() * m_selected_particles.nparticles;
-        const size_t id = static_cast< size_t >( fid );
-        const size_t id3 = m_selected_particles.indices[ id ] * 3;
+        const std::size_t id = static_cast< std::size_t>( fid );
+        const std::size_t id3 = m_selected_particles.indices[ id ] * 3;
         const vismodule::Vector4f selected_particle(
             m_pregenerated_particles->coords()[ id3   ],
             m_pregenerated_particles->coords()[ id3+1 ],
@@ -630,7 +630,7 @@ void CellByCellLayeredSampling::roulette_selection(
 
         const float scalar = selected_particle.z();
         const float max_range = static_cast<float>( tfunc.resolution() - 1 );
-        const size_t index = static_cast<size_t>( scalar * max_range );
+        const std::size_t index = static_cast<size_t>( scalar * max_range );
         const vismodule::RGBColor color( tfunc.colorMap()[index] );
 
         // Set coord, color, and normal to the point object.
@@ -662,8 +662,8 @@ const float CellByCellLayeredSampling::calculate_density( const float scalar )
     const float max_range = static_cast<float>( BaseClass::transferFunction().resolution() - 1 );
     const float normalize_factor = max_range / ( max_value - min_value );
     const float normalized_scalar = ( scalar - min_value ) * normalize_factor;
-    const size_t index0 = static_cast<size_t>( normalized_scalar );
-    const size_t index1 = index0 + 1;
+    const std::size_t index0 = static_cast<size_t>( normalized_scalar );
+    const std::size_t index1 = index0 + 1;
     const float scalar_offset = normalized_scalar - index0;
 
     const float* const density_map = m_density_map.pointer();
@@ -702,14 +702,14 @@ const float CellByCellLayeredSampling::calculate_maximum_density( const float sc
     const float max_value = BaseClass::transferFunction().colorMap().maxValue();
     const float max_range = static_cast<float>( BaseClass::transferFunction().resolution() - 1 );
     const float normalize_factor = max_range / ( max_value - min_value );
-    const size_t index0 = static_cast<size_t>( ( scalar0 - min_value ) * normalize_factor ) + 1;
-    const size_t index1 = static_cast<size_t>( ( scalar1 - min_value ) * normalize_factor );
+    const std::size_t index0 = static_cast<size_t>( ( scalar0 - min_value ) * normalize_factor ) + 1;
+    const std::size_t index1 = static_cast<size_t>( ( scalar1 - min_value ) * normalize_factor );
 
     const float* const density_map = m_density_map.pointer();
 
     float maximum_density = density_map[ index0 ];
 
-    for ( size_t i = index0 + 1; i <= index1; i++ )
+    for ( std::size_t i = index0 + 1; i <= index1; i++ )
     {
         maximum_density = density_map[ i ] > maximum_density ? density_map[ i ] : maximum_density;
     }
@@ -732,7 +732,7 @@ const float CellByCellLayeredSampling::calculate_maximum_density( const float sc
  */
 /*===========================================================================*/
 template <typename T>
-const size_t CellByCellLayeredSampling::calculate_number_of_particles(
+const std::size_t CellByCellLayeredSampling::calculate_number_of_particles(
     const float density,
     const vismodule::TetrahedralCell<T>* cell )
 {
@@ -740,7 +740,7 @@ const size_t CellByCellLayeredSampling::calculate_number_of_particles(
     const float N = density * volume_of_cell;
     const float R = Generator::GetRandomNumber();
 
-    size_t n = static_cast<size_t>( N );
+    std::size_t n = static_cast<size_t>( N );
     if ( N - n > R ) { ++n; }
 
     return( n );
@@ -753,11 +753,11 @@ const size_t CellByCellLayeredSampling::calculate_number_of_particles(
  *  @return required number of particles
  */
 /*===========================================================================*/
-const size_t CellByCellLayeredSampling::calculate_number_of_particles(
-    const size_t nparticles_in_cell )
+const std::size_t CellByCellLayeredSampling::calculate_number_of_particles(
+    const std::size_t nparticles_in_cell )
 {
-    const size_t N_in = nparticles_in_cell;
-    const size_t N_all = m_pregenerated_particles->nvertices();
+    const std::size_t N_in = nparticles_in_cell;
+    const std::size_t N_all = m_pregenerated_particles->nvertices();
 
     const float a1 = m_A_matrix[0][0];
     const float a2 = m_A_matrix[1][1];
@@ -766,7 +766,7 @@ const size_t CellByCellLayeredSampling::calculate_number_of_particles(
     const float N = detA_inv * m_M_value * N_in / N_all;
     const float R = Generator::GetRandomNumber();
 
-    size_t n = static_cast<size_t>( N );
+    std::size_t n = static_cast<size_t>( N );
     if ( N - n > R ) { ++n; }
 
     return( n );
@@ -796,7 +796,7 @@ void CellByCellLayeredSampling::calculate_particles_in_cell(
 
     // Temporary vector for calculating basis vectors: t1 and t2.
     vismodule::Vector3f u( 0.0f, 0.0f, 0.0f );
-    size_t index = 0;
+    std::size_t index = 0;
     index = vismodule::Math::Abs( g[0] ) < vismodule::Math::Abs( g[1] ) ? 0 : 1;
     index = vismodule::Math::Abs( g[index] ) < vismodule::Math::Abs( g[2] ) ? index : 2;
     u[index] = 1.0f;
@@ -856,9 +856,9 @@ void CellByCellLayeredSampling::calculate_particles_in_cell(
 
     const vismodule::Matrix33f D_inv( D.inverse() );
 
-    size_t counter = 0;
-    const size_t nparticles = m_pregenerated_particles->nvertices();
-    for ( size_t i = 0, i3 = 0; i < nparticles; i++, i3 += 3 )
+    std::size_t counter = 0;
+    const std::size_t nparticles = m_pregenerated_particles->nvertices();
+    for ( std::size_t i = 0, i3 = 0; i < nparticles; i++, i3 += 3 )
     {
         const vismodule::Vector3f located_v(
             m_pregenerated_particles->coords()[i3  ] - g0.x(),

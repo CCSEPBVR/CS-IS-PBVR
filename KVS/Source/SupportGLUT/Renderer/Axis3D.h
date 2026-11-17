@@ -81,9 +81,9 @@ public:
     void setGridDrawMode( const GridDrawMode mode );
     void setGridlinePattern( const GridlinePattern pattern );
     void setNumberOfGridlines( const kvs::Vector3ui& ngridlines );
-    void setNumberOfXGridlines( const size_t ngridlines );
-    void setNumberOfYGridlines( const size_t ngridlines );
-    void setNumberOfZGridlines( const size_t ngridlines );
+    void setNumberOfXGridlines( const std::size_t ngridlines );
+    void setNumberOfYGridlines( const std::size_t ngridlines );
+    void setNumberOfZGridlines( const std::size_t ngridlines );
     void setGridlineColor( const kvs::RGBColor& color );
     void setGridlineWidth( const kvs::Real32 width );
     void setXLabel( const std::string& label );
@@ -108,9 +108,9 @@ public:
     GridDrawMode gridDrawMode() const;
     GridlinePattern gridlinePattern() const;
     const kvs::Vector3ui& numberOfGridlines() const;
-    size_t numberOfXGridlines() const;
-    size_t numberOfYGridlines() const;
-    size_t numberOfZGridlines() const;
+    std::size_t numberOfXGridlines() const;
+    std::size_t numberOfYGridlines() const;
+    std::size_t numberOfZGridlines() const;
     const kvs::RGBColor& gridlineColor() const;
     kvs::Real32 gridlineWidth() const;
     const std::string& xLabel() const;

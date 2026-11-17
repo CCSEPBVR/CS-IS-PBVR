@@ -1,6 +1,8 @@
 #ifndef  __PLOT_OVER_LINE_PROPERTY__
 #define  __PLOT_OVER_LINE_PROPERTY__
 
+#include <cstddef>
+#include <cstdint>
 #include <string>
 #include <vector>
 
@@ -21,40 +23,40 @@ struct PlotOverLineProperty
         int32_t size = 0;
         TaskSignal task_signal = TaskSignal::UPDATE_PLOT_OVER_LINE_PROPERTY;
 
-        size += sizeof( task_signal );
-        size += sizeof( m_plot_flag );
-        size += sizeof( m_plot_variable );
+        size += vismodule::Serializer::byteSize( task_signal );
+        size += vismodule::Serializer::byteSize( m_plot_flag );
+        size += vismodule::Serializer::byteSize( m_plot_variable );
 
-        for ( size_t i = 0; i < 3; i++ )
+        for ( std::size_t i = 0; i < 3; i++ )
         {
-            size += sizeof( m_start_point[i] );
+            size += vismodule::Serializer::byteSize( m_start_point[i] );
         }
 
-        for ( size_t i = 0; i < 3; i++ )
+        for ( std::size_t i = 0; i < 3; i++ )
         {
-            size += sizeof( m_end_point[i] );
+            size += vismodule::Serializer::byteSize( m_end_point[i] );
         }
 
-        size += sizeof( m_sampling_size );
+        size += vismodule::Serializer::byteSize( m_sampling_size );
 
         return size;
     }
 
-    size_t pack( char* buf ) const
+    std::size_t pack( char* buf ) const
     {
-        size_t index = 0;
+        std::size_t index = 0;
         TaskSignal task_signal = TaskSignal::UPDATE_PLOT_OVER_LINE_PROPERTY;
 
         index += vismodule::Serializer::write( buf + index, task_signal );
         index += vismodule::Serializer::write( buf + index, m_plot_flag );
         index += vismodule::Serializer::write( buf + index, m_plot_variable );
 
-        for ( size_t i = 0; i < 3; i++ )
+        for ( std::size_t i = 0; i < 3; i++ )
         {
             index += vismodule::Serializer::write( buf + index, m_start_point[i] );
         }
 
-        for ( size_t i = 0; i < 3; i++ )
+        for ( std::size_t i = 0; i < 3; i++ )
         {
             index += vismodule::Serializer::write( buf + index, m_end_point[i] );
         }
@@ -64,21 +66,21 @@ struct PlotOverLineProperty
         return index;
     }
 
-    size_t unpack( char* buf )
+    std::size_t unpack( const char* buf )
     {
-        size_t index = 0;
+        std::size_t index = 0;
         TaskSignal task_signal;
 
         index += vismodule::Serializer::read( buf + index, &task_signal );
         index += vismodule::Serializer::read( buf + index, &m_plot_flag );
         index += vismodule::Serializer::read( buf + index, &m_plot_variable );
 
-        for ( size_t i = 0; i < 3; i++ )
+        for ( std::size_t i = 0; i < 3; i++ )
         {
             index += vismodule::Serializer::read( buf + index, &m_start_point[i] );
         }
 
-        for ( size_t i = 0; i < 3; i++ )
+        for ( std::size_t i = 0; i < 3; i++ )
         {
             index += vismodule::Serializer::read( buf + index, &m_end_point[i] );
         }
@@ -105,4 +107,3 @@ struct PlotOverLineProperty
 };
 
 #endif // __PARAM_INFO_H__
-

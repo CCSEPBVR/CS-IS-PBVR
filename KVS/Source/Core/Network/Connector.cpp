@@ -41,7 +41,7 @@ Connector::Connector( kvs::TCPSocket* handler ):
  *  @param  ntrials [in] number of trials
  */
 /*===========================================================================*/
-Connector::Connector( const kvs::IPAddress& ip, const int port, const size_t ntrials )
+Connector::Connector( const kvs::IPAddress& ip, const int port, const std::size_t ntrials )
 {
     if ( this->create_handler() )
     {
@@ -104,13 +104,13 @@ void Connector::close()
  *  @return true if the proce is done successfully
  */
 /*===========================================================================*/
-bool Connector::connect( const kvs::IPAddress& ip, const int port, const size_t ntrials )
+bool Connector::connect( const kvs::IPAddress& ip, const int port, const std::size_t ntrials )
 {
     m_ip      = ip;
     m_port    = port;
     m_ntrials = ntrials;
 
-    size_t counter = 0;
+    std::size_t counter = 0;
     while ( counter < ntrials )
     {
         m_handler->connect( ip, port );

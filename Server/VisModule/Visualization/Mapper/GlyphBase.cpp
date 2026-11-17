@@ -197,15 +197,15 @@ void GlyphBase::calculate_uniform_coords( const vismodule::StructuredVolumeObjec
         volume_size.y() / static_cast<float>( ngrids.y() ),
         volume_size.z() / static_cast<float>( ngrids.z() ) );
 
-    for ( size_t k = 0; k < resolution.z(); ++k )
+    for ( std::size_t k = 0; k < resolution.z(); ++k )
     {
         const float z =
             grid_size.z() * static_cast<float>( k );
-        for ( size_t j = 0; j < resolution.y(); ++j )
+        for ( std::size_t j = 0; j < resolution.y(); ++j )
         {
             const float y =
                 grid_size.y() * static_cast<float>( j );
-            for ( size_t i = 0; i < resolution.x(); ++i )
+            for ( std::size_t i = 0; i < resolution.x(); ++i )
             {
                 const float x =
                     grid_size.x() * static_cast<float>( i );
@@ -242,8 +242,8 @@ template <typename T>
 void GlyphBase::calculate_sizes( const vismodule::VolumeObjectBase& volume )
 {
     const T* value = reinterpret_cast<const T*>( volume->values().pointer() );
-    const size_t veclen = volume->veclen();
-    const size_t nnodes = volume->nnodes();
+    const std::size_t veclen = volume->veclen();
+    const std::size_t nnodes = volume->nnodes();
 
     if ( !volume->hasMinMaxValues() ) { volume->updateMinMaxValues(); }
     const vismodule::Real32 min_value = static_cast<vismodule::Real32>(volume->minValue());
@@ -256,19 +256,19 @@ void GlyphBase::calculate_sizes( const vismodule::VolumeObjectBase& volume )
     switch( m_size_mode )
     {
     case GlyphBase::SizeByDefault:
-        for( size_t i = 0; i < nnodes; i++ ) size[i] = ::DefaultSize;
+        for( std::size_t i = 0; i < nnodes; i++ ) size[i] = ::DefaultSize;
         break;
     case GlyphBase::SizeByMagnitude:
         if ( veclen == 1 )
         {
-            for( size_t i = 0; i < nnodes; i++ )
+            for( std::size_t i = 0; i < nnodes; i++ )
             {
                 size[i] = ::DefaultSize * normalize * ( static_cast<float>(value[i]) - min_value );
             }
         }
         else if ( veclen == 3 )
         {
-            for( size_t i = 0, index = 0; i < nnodes; i++, index += 3 )
+            for( std::size_t i = 0, index = 0; i < nnodes; i++, index += 3 )
             {
                 const vismodule::Vector3f v(
                     static_cast<float>(value[index]),
@@ -306,14 +306,14 @@ template <typename T>
 void GlyphBase::calculate_directions( const vismodule::VolumeObjectBase& volume )
 {
     const T* value = reinterpret_cast<const T*>( volume->values().pointer() );
-    const size_t veclen = volume->veclen();
-    const size_t nnodes = volume->nnodes();
+    const std::size_t veclen = volume->veclen();
+    const std::size_t nnodes = volume->nnodes();
     if ( veclen == 3 )
     {
         vismodule::ValueArray<vismodule::Real32> directions( nnodes * veclen );
         vismodule::Real32* direction = directions.pointer();
 
-        for ( size_t i = 0; i < directions.size(); i++ )
+        for ( std::size_t i = 0; i < directions.size(); i++ )
         {
             direction[i] = static_cast<vismodule::Real32>( value[i] );
         }
@@ -343,8 +343,8 @@ template <typename T>
 void GlyphBase::calculate_colors( const vismodule::VolumeObjectBase& volume )
 {
     const T* value = reinterpret_cast<const T*>( volume->values().pointer() );
-    const size_t veclen = volume->veclen();
-    const size_t nnodes = volume->nnodes();
+    const std::size_t veclen = volume->veclen();
+    const std::size_t nnodes = volume->nnodes();
 
     if ( !volume->hasMinMaxValues() ) { volume->updateMinMaxValues(); }
     const vismodule::Real32 min_value = static_cast<vismodule::Real32>(volume->minValue());
@@ -357,7 +357,7 @@ void GlyphBase::calculate_colors( const vismodule::VolumeObjectBase& volume )
     switch( m_color_mode )
     {
     case GlyphBase::ColorByDefault:
-        for ( size_t i = 0; i < nnodes; i++ )
+        for ( std::size_t i = 0; i < nnodes; i++ )
         {
             *( color++ ) = ::DefaultColor.r();
             *( color++ ) = ::DefaultColor.r();
@@ -369,10 +369,10 @@ void GlyphBase::calculate_colors( const vismodule::VolumeObjectBase& volume )
         const vismodule::ColorMap color_map( BaseClass::transferFunction().colorMap() );
         if ( veclen == 1 )
         {
-            for ( size_t i = 0; i < nnodes; i++ )
+            for ( std::size_t i = 0; i < nnodes; i++ )
             {
                 const float d = normalize * ( static_cast<float>(value[i]) - min_value );
-                const size_t level = static_cast<size_t>( 255.0f * d );
+                const std::size_t level = static_cast<size_t>( 255.0f * d );
                 const vismodule::RGBColor c = color_map[ level ];
                 *( color++ ) = c.r();
                 *( color++ ) = c.g();
@@ -381,14 +381,14 @@ void GlyphBase::calculate_colors( const vismodule::VolumeObjectBase& volume )
         }
         else if ( veclen == 3 )
         {
-            for ( size_t i = 0, index = 0; i < nnodes; i++, index += 3 )
+            for ( std::size_t i = 0, index = 0; i < nnodes; i++, index += 3 )
             {
                 const vismodule::Vector3f v(
                     static_cast<float>(value[index]),
                     static_cast<float>(value[index+1]),
                     static_cast<float>(value[index+2]));
                 const float d = normalize * ( static_cast<float>(v.length()) - min_value );
-                const size_t level = static_cast<size_t>( 255.0f * d );
+                const std::size_t level = static_cast<size_t>( 255.0f * d );
                 const vismodule::RGBColor c = color_map[ level ];
                 *( color++ ) = c.r();
                 *( color++ ) = c.g();
@@ -425,8 +425,8 @@ template <typename T>
 void GlyphBase::calculate_opacities( const vismodule::VolumeObjectBase& volume )
 {
     const T* value = reinterpret_cast<const T*>( volume->values().pointer() );
-    const size_t veclen = volume->veclen();
-    const size_t nnodes = volume->nnodes();
+    const std::size_t veclen = volume->veclen();
+    const std::size_t nnodes = volume->nnodes();
 
     if ( !volume->hasMinMaxValues() ) { volume->updateMinMaxValues(); }
     const vismodule::Real32 min_value = static_cast<vismodule::Real32>(volume->minValue());
@@ -439,19 +439,19 @@ void GlyphBase::calculate_opacities( const vismodule::VolumeObjectBase& volume )
     switch( m_opacity_mode )
     {
     case GlyphBase::OpacityByDefault:
-        for( size_t i = 0; i < nnodes; i++ ) opacity[i] = ::DefaultOpacity;
+        for( std::size_t i = 0; i < nnodes; i++ ) opacity[i] = ::DefaultOpacity;
         break;
     case GlyphBase::OpacityByMagnitude:
         if ( veclen == 1 )
         {
-            for( size_t i = 0; i < nnodes; i++ )
+            for( std::size_t i = 0; i < nnodes; i++ )
             {
                 opacity[i] = static_cast<vismodule::UInt8>( normalize * ( static_cast<float>(value[i]) - min_value ) );
             }
         }
         else if ( veclen == 3 )
         {
-            for( size_t i = 0, index = 0; i < nnodes; i++, index += 3 )
+            for( std::size_t i = 0, index = 0; i < nnodes; i++, index += 3 )
             {
                 const vismodule::Vector3f v(
                     static_cast<float>(value[index]),

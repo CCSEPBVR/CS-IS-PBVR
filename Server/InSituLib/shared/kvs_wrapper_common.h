@@ -56,9 +56,9 @@ void SetParameterFilePath(
     std::string& glyphFilePrefix,
     std::string& plotOverLineFilePrefix,
     std::string& plotOverTimeFilePrefix,
-    std::string& tfFilePath,
-    std::string& tfFilePath_old,
-    std::string& tfFilePath_step,
+    std::string& tfJsonPath,
+    std::string& tfJsonPath_old,
+    std::string& tfJsonPath_step,
     std::string& glyphParameterPath,
     std::string& glyphParameterPath_old,
     std::string& plotOverLineParameterPath,
@@ -70,22 +70,19 @@ void SetParameterFilePath(
 bool SetGlyphParameter(
     const std::string& glyphParameterPath,
     const std::string& glyphParameterPath_old,
-    GlyphProperty& glyph_property,
-    NameListFile& nameListFile
+    GlyphProperty& glyph_property
 );
 
 bool SetPlotOverLineParameter(
     const std::string& plotOverLineParameterPath,
     const std::string& plotOverLineParameterPath_old,
-    PlotOverLineProperty& pol_property,
-    NameListFile& nameListFile
+    PlotOverLineProperty& pol_property
 );
 
 bool SetPlotOverTimeParameter(
     const std::string& plotOverTimeParameterPath,
     const std::string& plotOverTimeParameterPath_old,
-    PlotOverTimeProperty& pot_property,
-    NameListFile& nameListFile
+    PlotOverTimeProperty& pot_property
 );
 
 void MakeParticle(
@@ -118,7 +115,6 @@ void OutputParticleHistory(
     const int tf_number,
     const int nvariables,
     const std::string& histryFilePath,
-    const bool update_parameter_file,
     const vismodule::UInt64* c_bins,
     const vismodule::UInt64* o_bins,
     const float* max_array,

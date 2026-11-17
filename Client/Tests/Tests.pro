@@ -25,6 +25,16 @@ SOURCES += \
 
 DEFINES += PBVR_TEST_NO_MAIN
 
+macx {
+    equals(TEST_ENABLE_PLAYBACKCONTROLTOOLBAR, 1)|equals(TEST_ENABLE_TIMESTEPCONTROLTOOLBAR, 1)|equals(TEST_ENABLE_ANIMATIONCONTROL, 1) {
+        lessThan(QT_MAJOR_VERSION, 6): error("Test video recording requires Qt 6.8 or later.")
+        equals(QT_MAJOR_VERSION, 6):lessThan(QT_MINOR_VERSION, 8): error("Test video recording requires Qt 6.8 or later.")
+        QT += multimedia
+        HEADERS += TestWindowVideoRecorder.h
+        SOURCES += TestWindowVideoRecorder.cpp
+    }
+}
+
 equals(TEST_ENABLE_MENUBAR, 1) {
     DEFINES += PBVR_ENABLE_TEST_MENUBAR
     HEADERS += MenuBarTest.h
@@ -115,6 +125,12 @@ equals(TEST_ENABLE_PLOTOVERLINEEDITOR, 1) {
     SOURCES += PlotOverLineEditorTest.cpp
 }
 
+equals(TEST_ENABLE_PLOTOVERTIMEEDITOR, 1) {
+    DEFINES += PBVR_ENABLE_TEST_PLOTOVERTIMEEDITOR
+    HEADERS += PlotOverTimeEditorTest.h
+    SOURCES += PlotOverTimeEditorTest.cpp
+}
+
 equals(TEST_ENABLE_POINTSIZECONTROL, 1) {
     DEFINES += PBVR_ENABLE_TEST_POINTSIZECONTROL
     HEADERS += PointSizeControlTest.h
@@ -139,6 +155,30 @@ equals(TEST_ENABLE_SERVER, 1) {
     SOURCES += ServerTest.cpp
 }
 
+equals(TEST_ENABLE_INSITU_MODE, 1) {
+    DEFINES += PBVR_ENABLE_TEST_INSITU_MODE
+    HEADERS += InSituModeTest.h
+    SOURCES += InSituModeTest.cpp
+}
+
+equals(TEST_ENABLE_ENSEMBLE_TRANSFER_FUNCTION, 1) {
+    DEFINES += PBVR_ENABLE_TEST_ENSEMBLE_TRANSFER_FUNCTION
+    HEADERS += EnsembleTransferFunctionTest.h
+    SOURCES += EnsembleTransferFunctionTest.cpp
+}
+
+equals(TEST_ENABLE_REPETITIONLEVELCONTROL_INSITU, 1) {
+    DEFINES += PBVR_ENABLE_TEST_REPETITIONLEVELCONTROL_INSITU
+    HEADERS += RepetitionLevelControlInSituTest.h
+    SOURCES += RepetitionLevelControlInSituTest.cpp
+}
+
+equals(TEST_ENABLE_ENSEMBLE_INSITU_MODE, 1) {
+    DEFINES += PBVR_ENABLE_TEST_ENSEMBLE_INSITU_MODE
+    HEADERS += EnsembleInSituModeTest.h
+    SOURCES += EnsembleInSituModeTest.cpp
+}
+
 equals(TEST_ENABLE_VOLUMETRANSFORM, 1) {
     DEFINES += PBVR_ENABLE_TEST_VOLUMETRANSFORM
     HEADERS += VolumeTransformTest.h
@@ -149,6 +189,12 @@ equals(TEST_ENABLE_TRANSFERFUNCTIONEDITOR_IMPORTEXPORT, 1) {
     DEFINES += PBVR_ENABLE_TEST_TRANSFERFUNCTIONEDITOR_IMPORTEXPORT
     HEADERS += TransferFunctionEditorImportExportTest.h
     SOURCES += TransferFunctionEditorImportExportTest.cpp
+}
+
+equals(TEST_ENABLE_TRANSFERFUNCTIONEDITOR_IMPORT_INVALID_FILE, 1) {
+    DEFINES += PBVR_ENABLE_TEST_TRANSFERFUNCTIONEDITOR_IMPORT_INVALID_FILE
+    HEADERS += TransferFunctionEditorImportInvalidFileTest.h
+    SOURCES += TransferFunctionEditorImportInvalidFileTest.cpp
 }
 
 equals(TEST_ENABLE_TRANSFERFUNCTIONEDITOR_CHANGE_TRANSFER_FUNCTION_NUMBER, 1) {
@@ -342,3 +388,9 @@ unix:!macx {
 }
 
 include(../KvsRuntimeResources.pri)
+
+# Sign the completed macOS test bundle after KVS resources have been copied.
+macx {
+    PRE_TARGETDEPS += $$PWD/sign-test-app.sh
+    QMAKE_POST_LINK += && /bin/sh $$shell_quote($$PWD/sign-test-app.sh) $$shell_quote($$OUT_PWD/$${TARGET}.app)
+}

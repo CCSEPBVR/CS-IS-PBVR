@@ -49,7 +49,7 @@ BufferObject::BufferObject(
  *  @param  data [in] pointer to loaded buffer data
  */
 /*===========================================================================*/
-void BufferObject::create( const size_t size, const void* data )
+void BufferObject::create( const std::size_t size, const void* data )
 {
     this->createID();
     this->setSize( size );
@@ -136,7 +136,7 @@ bool BufferObject::isBound() const
  *  @param  offset [in] texel offset within the existing buffer data array
  */
 /*===========================================================================*/
-GLsizeiptr BufferObject::load( const size_t size, const void* data, const size_t offset )
+GLsizeiptr BufferObject::load( const std::size_t size, const void* data, const std::size_t offset )
 {
     if ( !m_is_loaded )
     {

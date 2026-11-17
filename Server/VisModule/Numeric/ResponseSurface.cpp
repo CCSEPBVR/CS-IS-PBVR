@@ -28,7 +28,7 @@ namespace
  *  @return number of terms
  */
 /*===========================================================================*/
-const size_t GetNumberOfTerms( const size_t nvariables )
+const std::size_t GetNumberOfTerms( const std::size_t nvariables )
 {
     return( 1 + 2 * nvariables + ( nvariables - 1 ) * nvariables / 2 );
 }
@@ -44,8 +44,8 @@ template <typename T>
 const T GetSumOfElements( const vismodule::Vector<T>& v )
 {
     T sum = 0;
-    const size_t nelements = v.size();
-    for ( size_t i = 0; i < nelements; i++ ) sum += v[i];
+    const std::size_t nelements = v.size();
+    for ( std::size_t i = 0; i < nelements; i++ ) sum += v[i];
 
     return( sum );
 }
@@ -136,7 +136,7 @@ const vismodule::Vector<T>& ResponseSurface<T>::improve( const T threshold )
     if ( m_npoints == 0 ) return( *this );
 
     m_nterms = 0;
-    for ( size_t i = 0; i < vismodule::Vector<T>::size(); i++ )
+    for ( std::size_t i = 0; i < vismodule::Vector<T>::size(); i++ )
     {
         if( m_mask.test(i) )
         {
@@ -157,7 +157,7 @@ const vismodule::Vector<T>& ResponseSurface<T>::improve( const T threshold )
  */
 /*===========================================================================*/
 template <typename T>
-const size_t ResponseSurface<T>::npoints( void ) const
+const std::size_t ResponseSurface<T>::npoints( void ) const
 {
     return( m_npoints );
 }
@@ -169,7 +169,7 @@ const size_t ResponseSurface<T>::npoints( void ) const
  */
 /*===========================================================================*/
 template <typename T>
-const size_t ResponseSurface<T>::nvariables( void ) const
+const std::size_t ResponseSurface<T>::nvariables( void ) const
 {
     return( m_nvariables );
 }
@@ -222,7 +222,7 @@ void ResponseSurface<T>::solve_regression_coefficients( void )
 
     const vismodule::Matrix<T> X = m_coefficient_matrix; // variable matrix
     const vismodule::Vector<T> y = m_responses;          // response vector
-    const size_t n = m_responses.size();           // num. of responses
+    const std::size_t n = m_responses.size();           // num. of responses
 
     const vismodule::Matrix<T> Xt = X.transpose();       // X^{t}
     const vismodule::Matrix<T> XtX = Xt * X;             // X^{t} X
@@ -247,12 +247,12 @@ void ResponseSurface<T>::solve_regression_coefficients( void )
 
     // T-test.
     vismodule::Vector<T> t( m_nterms );
-    for ( size_t i = 0; i < m_nterms; i++ )
+    for ( std::size_t i = 0; i < m_nterms; i++ )
     {
         t[i] = b[i] / static_cast<T>(sqrt( (double)(sigma2 * invXtX[i][i]) ));
     }
 
-    for ( size_t i = 0, index = 0; i < vismodule::Vector<T>::size(); i++ )
+    for ( std::size_t i = 0, index = 0; i < vismodule::Vector<T>::size(); i++ )
     {
         (*this)[i] = T(0);
         m_t_values[i] = T(0);
@@ -276,10 +276,10 @@ void ResponseSurface<T>::create_coefficient_matrix(
     const vismodule::Matrix<T>& variables )
 {
     m_coefficient_matrix.setSize( m_responses.size(), m_nterms );
-    for ( size_t row = 0; row < m_responses.size(); row++ )
+    for ( std::size_t row = 0; row < m_responses.size(); row++ )
     {
         m_coefficient_matrix[row][0] = 1;
-        for ( size_t i = 0; i < m_nvariables; i++ )
+        for ( std::size_t i = 0; i < m_nvariables; i++ )
         {
             // Calculate first-order term's value (ex. x, y, z, ...)
             m_coefficient_matrix[row][i+1] = variables[row][i];
@@ -289,9 +289,9 @@ void ResponseSurface<T>::create_coefficient_matrix(
         }
 
         // Caluculate another term's value (ex. xy, yz, ...)
-        for ( size_t i = 0, index = 2 * m_nvariables + 1; i < m_nvariables; i++ )
+        for ( std::size_t i = 0, index = 2 * m_nvariables + 1; i < m_nvariables; i++ )
         {
-            for ( size_t j = i + 1; j < m_nvariables; j++ )
+            for ( std::size_t j = i + 1; j < m_nvariables; j++ )
             {
                 m_coefficient_matrix[row][index] = variables[row][i] * variables[row][j];
                 index++;
@@ -308,15 +308,15 @@ void ResponseSurface<T>::create_coefficient_matrix(
 template <typename T>
 void ResponseSurface<T>::update_coefficient_matrix( void )
 {
-    const size_t nrows = m_coefficient_matrix.nrows();
-    const size_t ncolumns = m_coefficient_matrix.ncolumns();
+    const std::size_t nrows = m_coefficient_matrix.nrows();
+    const std::size_t ncolumns = m_coefficient_matrix.ncolumns();
 
     vismodule::Matrix<T> temp( m_responses.size(), m_nterms );
-    for ( size_t j = 0, index = 0; j < ncolumns; j++ )
+    for ( std::size_t j = 0, index = 0; j < ncolumns; j++ )
     {
         if ( m_mask.test(j) )
         {
-            for( size_t i = 0; i < nrows; i++ )
+            for( std::size_t i = 0; i < nrows; i++ )
             {
                 temp[i][index] = m_coefficient_matrix[i][j];
             }

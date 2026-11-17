@@ -51,7 +51,7 @@ public:
     typedef const T*                              const_iterator;
     typedef T&                                    reference;
     typedef const T&                              const_reference;
-    typedef std::size_t                           size_type;
+    typedef std::size_t                            size_type;
     typedef std::ptrdiff_t                        difference_type;
     typedef std::reverse_iterator<iterator>       reverse_iterator;
     typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
@@ -59,7 +59,7 @@ public:
 private:
 
     vismodule::ReferenceCounter* m_counter; ///< Reference counter.
-    size_t                 m_nvalues; ///< Number of values.
+    std::size_t                 m_nvalues; ///< Number of values.
     value_type*            m_values;  ///< Value array.
 
 public:
@@ -72,7 +72,7 @@ public:
         this->create_counter();
     }
 
-    explicit ValueArray( const size_t nvalues )
+    explicit ValueArray( const std::size_t nvalues )
         : m_counter( 0 )
         , m_nvalues( 0 )
         , m_values( 0 )
@@ -80,7 +80,7 @@ public:
         this->allocate( nvalues );
     }
 
-    ValueArray( const value_type* const values, const size_t nvalues )
+    ValueArray( const value_type* const values, const std::size_t nvalues )
         : m_counter( 0 )
         , m_nvalues( 0 )
         , m_values( 0 )
@@ -153,14 +153,14 @@ public:
 
 public:
 
-    reference operator []( const size_t index )
+    reference operator []( const std::size_t index )
     {
         VIS_MODULE_ASSERT( index < m_nvalues );
 
         return( m_values[index] );
     }
 
-    const_reference operator []( const size_t index ) const
+    const_reference operator []( const std::size_t index ) const
     {
         VIS_MODULE_ASSERT( index < m_nvalues );
 
@@ -211,14 +211,14 @@ public:
 
 public:
 
-    reference at( const size_t index )
+    reference at( const std::size_t index )
     {
         VIS_MODULE_ASSERT( index < m_nvalues );
 
         return( m_values[index] );
     }
 
-    const_reference at( const size_t index ) const
+    const_reference at( const std::size_t index ) const
     {
         VIS_MODULE_ASSERT( index < m_nvalues );
 
@@ -295,7 +295,7 @@ public:
         memcpy( pvalues, other.m_values, sizeof( value_type ) * m_nvalues );
     }
 
-    void deepCopy( const value_type* values, const size_t nvalues )
+    void deepCopy( const value_type* values, const std::size_t nvalues )
     {
         value_type* pvalues = this->allocate( nvalues );
         memcpy( pvalues, values, sizeof( value_type ) * nvalues );
@@ -308,7 +308,7 @@ public:
 
 public:
 
-    value_type* allocate( const size_t nvalues )
+    value_type* allocate( const std::size_t nvalues )
     {
         this->unref();
         this->create_counter();
@@ -365,7 +365,7 @@ inline void ValueArray<std::string>::deepCopy( const ValueArray<std::string>& ot
 }
 
 template <>
-inline void ValueArray<std::string>::deepCopy( const std::string* values, const size_t nvalues )
+inline void ValueArray<std::string>::deepCopy( const std::string* values, const std::size_t nvalues )
 {
     std::string* pvalues = this->allocate( nvalues );
     std::copy( values, values + nvalues, pvalues );

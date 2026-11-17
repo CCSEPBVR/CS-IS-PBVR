@@ -32,9 +32,9 @@ namespace
  *  @return number of nodes per element
  */
 /*===========================================================================*/
-inline size_t GetNumberOfNodesPerElement( const std::string& cell_type )
+inline std::size_t GetNumberOfNodesPerElement( const std::string& cell_type )
 {
-    size_t nnodes = 0;
+    std::size_t nnodes = 0;
     if ( cell_type == "tetrahedra" ) nnodes = 4;
     else if ( cell_type == "quadratic tetrahedra" ) nnodes = 10;
     else if ( cell_type == "hexahedra" ) nnodes = 8;
@@ -224,7 +224,7 @@ bool KVSMLUnstructuredVolumeObject::read( const std::string& filename )
     }
 
     // <DataArray>
-    const size_t value_nelements = m_node_tag.nnodes() * m_value_tag.veclen();
+    const std::size_t value_nelements = m_node_tag.nnodes() * m_value_tag.veclen();
     kvs::kvsml::DataArrayTag values;
     if ( !values.read( m_value_tag.node(), value_nelements, &m_values ) )
     {
@@ -242,8 +242,8 @@ bool KVSMLUnstructuredVolumeObject::read( const std::string& filename )
     }
 
     // <DataArray>
-    const size_t dimension = 3;
-    const size_t coord_nelements = m_node_tag.nnodes() * dimension;
+    const std::size_t dimension = 3;
+    const std::size_t coord_nelements = m_node_tag.nnodes() * dimension;
     kvs::kvsml::DataArrayTag coords;
     if ( !coords.read( m_coord_tag.node(), coord_nelements, &m_coords ) )
     {
@@ -281,8 +281,8 @@ bool KVSMLUnstructuredVolumeObject::read( const std::string& filename )
     }
 
     // <DataArray>
-    const size_t nnodes_per_element = ::GetNumberOfNodesPerElement( m_volume_tag.cellType() );
-    const size_t connection_nelements = m_cell_tag.ncells() * nnodes_per_element;
+    const std::size_t nnodes_per_element = ::GetNumberOfNodesPerElement( m_volume_tag.cellType() );
+    const std::size_t connection_nelements = m_cell_tag.ncells() * nnodes_per_element;
     kvs::kvsml::DataArrayTag connections;
     if ( !connections.read( m_connection_tag.node(), connection_nelements, &m_connections ) )
     {

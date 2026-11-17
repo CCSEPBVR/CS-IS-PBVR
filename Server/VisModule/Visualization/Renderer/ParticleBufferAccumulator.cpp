@@ -26,9 +26,9 @@ namespace vismodule
  */
 /*==========================================================================*/
 ParticleBufferAccumulator::ParticleBufferAccumulator(
-    const size_t width,
-    const size_t height,
-    const size_t subpixel_level ):
+    const std::size_t width,
+    const std::size_t height,
+    const std::size_t subpixel_level ):
     vismodule::ParticleBuffer( width, height, subpixel_level )
 {
     this->create( width, height, subpixel_level );
@@ -54,12 +54,12 @@ ParticleBufferAccumulator::~ParticleBufferAccumulator( void )
  */
 /*==========================================================================*/
 bool ParticleBufferAccumulator::create(
-    const size_t width,
-    const size_t height,
-    const size_t subpixel_level )
+    const std::size_t width,
+    const std::size_t height,
+    const std::size_t subpixel_level )
 {
-    const size_t npixels = width * height;
-    const size_t subpixeled_npixels = npixels * subpixel_level * subpixel_level;
+    const std::size_t npixels = width * height;
+    const std::size_t subpixeled_npixels = npixels * subpixel_level * subpixel_level;
 
     m_id_buffer.allocate( subpixeled_npixels );
     m_id_buffer.fill( 0x00 );
@@ -97,11 +97,11 @@ void ParticleBufferAccumulator::clear( void )
  */
 /*==========================================================================*/
 void ParticleBufferAccumulator::accumulate(
-    const size_t               id,
+    const std::size_t               id,
     const vismodule::ParticleBuffer* buffer )
 {
-    const size_t nsubpixels = m_width * m_height * m_subpixel_level * m_subpixel_level;
-    for( size_t index = 0; index < nsubpixels; index++ )
+    const std::size_t nsubpixels = m_width * m_height * m_subpixel_level * m_subpixel_level;
+    for( std::size_t index = 0; index < nsubpixels; index++ )
     {
         const vismodule::Real32 buffer_depth = buffer->depth( index );
         if( buffer_depth > 0.0f )
@@ -122,8 +122,8 @@ void ParticleBufferAccumulator::accumulate(
  */
 /*==========================================================================*/
 void ParticleBufferAccumulator::add(
-    const size_t      index,
-    const size_t      id,
+    const std::size_t      index,
+    const std::size_t      id,
     const vismodule::Real32 depth,
     const vismodule::UInt32 vindex )
 {
@@ -165,33 +165,33 @@ void ParticleBufferAccumulator::createImage(
     const float inv_ssize = 1.0f / ( m_subpixel_level * m_subpixel_level );
     const float normalize_alpha = 255.0f * inv_ssize;
 
-    size_t pindex   = 0;
-    size_t pindex4  = 0;
-    size_t by_start = 0;
-    const size_t bw = m_width * m_subpixel_level;
-    for ( size_t py = 0; py < m_height; py++, by_start += m_subpixel_level )
+    std::size_t pindex   = 0;
+    std::size_t pindex4  = 0;
+    std::size_t by_start = 0;
+    const std::size_t bw = m_width * m_subpixel_level;
+    for ( std::size_t py = 0; py < m_height; py++, by_start += m_subpixel_level )
     {
-        size_t bx_start = 0;
-        for( size_t px = 0; px < m_width; px++, pindex++, pindex4 += 4, bx_start += m_subpixel_level )
+        std::size_t bx_start = 0;
+        for( std::size_t px = 0; px < m_width; px++, pindex++, pindex4 += 4, bx_start += m_subpixel_level )
         {
             float R = 0.0f;
             float G = 0.0f;
             float B = 0.0f;
             float D = 0.0f;
-            size_t npoints = 0;
-            for( size_t by = by_start; by < by_start + m_subpixel_level; by++ )
+            std::size_t npoints = 0;
+            for( std::size_t by = by_start; by < by_start + m_subpixel_level; by++ )
             {
-                const size_t bindex_start = bw * by;
-                for( size_t bx = bx_start; bx < bx_start + m_subpixel_level; bx++ )
+                const std::size_t bindex_start = bw * by;
+                for( std::size_t bx = bx_start; bx < bx_start + m_subpixel_level; bx++ )
                 {
-                    const size_t bindex = bindex_start + bx;
+                    const std::size_t bindex = bindex_start + bx;
                     if( m_depth_buffer[bindex] > 0.0f )
                     {
-                        const size_t id = m_id_buffer[ bindex ];
+                        const std::size_t id = m_id_buffer[ bindex ];
                         const vismodule::PointObject*            object   = object_list[id];
                         const vismodule::ParticleVolumeRenderer* renderer = renderer_list[id];
 
-                        const size_t point_index3 = 3 * m_index_buffer[bindex];
+                        const std::size_t point_index3 = 3 * m_index_buffer[bindex];
 
                         vismodule::RGBColor color( object->colors().pointer() + point_index3 );
                         if( renderer->isEnabledShading() )

@@ -61,16 +61,16 @@ void JobCollector::jobCollect( vismodule::PointObject* object, VariableRange* vr
                 if ( wid ) *wid = src - 1;
 
                 VIS_MODULE_TIMER_STA( 62 );
-                MPI_Recv( &m_pack_size, sizeof( size_t ), MPI_BYTE, src, 1, MPI_COMM_WORLD, &stat );
+                MPI_Recv( &m_pack_size, sizeof( std::size_t ), MPI_BYTE, src, 1, MPI_COMM_WORLD, &stat );
                 VIS_MODULE_TIMER_END( 62 );
                 VIS_MODULE_TIMER_STA( 63 );
-                MPI_Recv( &m_nvertices_list_size, sizeof( size_t ), MPI_BYTE, src, 1, MPI_COMM_WORLD, &stat );
+                MPI_Recv( &m_nvertices_list_size, sizeof( std::size_t ), MPI_BYTE, src, 1, MPI_COMM_WORLD, &stat );
                 VIS_MODULE_TIMER_END( 63 );
                 VIS_MODULE_TIMER_STA( 64 );
                 m_nvertices_list.assign( m_nvertices_list_size, 0 );
                 VIS_MODULE_TIMER_END( 64 );
                 VIS_MODULE_TIMER_STA( 65 );
-                MPI_Recv( &m_nvertices_list[0]  , sizeof( size_t )*m_nvertices_list_size, MPI_BYTE, src, 1, MPI_COMM_WORLD, &stat );
+                MPI_Recv( &m_nvertices_list[0]  , sizeof( std::size_t )*m_nvertices_list_size, MPI_BYTE, src, 1, MPI_COMM_WORLD, &stat );
                 VIS_MODULE_TIMER_END( 65 );
                 VIS_MODULE_TIMER_STA( 66 );
 
@@ -102,8 +102,8 @@ void JobCollector::jobCollect( vismodule::PointObject* object, VariableRange* vr
                 *invalid |= sub_invalid;
           }
 
-            size_t nvertices = m_nvertices_list[m_pack_count];
-            size_t nmemb = nvertices * 3;
+            std::size_t nvertices = m_nvertices_list[m_pack_count];
+            std::size_t nmemb = nvertices * 3;
 
             float*         coords  = &m_pack_coords[m_pack_head];
             unsigned char* colors  = &m_pack_colors[m_pack_head];
@@ -125,8 +125,8 @@ void JobCollector::jobCollect( vismodule::PointObject* object, VariableRange* vr
   }
   else
   {
-      const size_t nvertices = object->nvertices();
-      const size_t nmemb = nvertices * 3;
+      const std::size_t nvertices = object->nvertices();
+      const std::size_t nmemb = nvertices * 3;
 
       std::cerr << "*nvertices: " << nvertices << std::endl;
 
@@ -152,18 +152,18 @@ void JobCollector::jobCollect( vismodule::PointObject* object, VariableRange* vr
       if ( m_jd->getCollectSendState() )
       {
             double send_time = GetTime();
-            size_t nvertices_list_size = m_nvertices_list.size();
+            std::size_t nvertices_list_size = m_nvertices_list.size();
             VIS_MODULE_TIMER_STA( 451 );
             MPI_Send( &send_time, 1, MPI_DOUBLE_PRECISION, 0, 1, MPI_COMM_WORLD );
             VIS_MODULE_TIMER_END( 451 );
                 VIS_MODULE_TIMER_STA( 452 );
-                MPI_Send( &m_pack_size, sizeof( size_t ), MPI_BYTE, 0, 1, MPI_COMM_WORLD );
+                MPI_Send( &m_pack_size, sizeof( std::size_t ), MPI_BYTE, 0, 1, MPI_COMM_WORLD );
                 VIS_MODULE_TIMER_END( 452 );
                 VIS_MODULE_TIMER_STA( 453 );
-                MPI_Send( &nvertices_list_size, sizeof( size_t ), MPI_BYTE, 0, 1, MPI_COMM_WORLD );
+                MPI_Send( &nvertices_list_size, sizeof( std::size_t ), MPI_BYTE, 0, 1, MPI_COMM_WORLD );
                 VIS_MODULE_TIMER_END( 453 );
                 VIS_MODULE_TIMER_STA( 454 );
-                MPI_Send( &m_nvertices_list[0], sizeof( size_t )*nvertices_list_size, MPI_BYTE, 0, 1, MPI_COMM_WORLD );
+                MPI_Send( &m_nvertices_list[0], sizeof( std::size_t )*nvertices_list_size, MPI_BYTE, 0, 1, MPI_COMM_WORLD );
                 VIS_MODULE_TIMER_END( 454 );
                 VIS_MODULE_TIMER_STA( 456 );
                 MPI_Send( m_pack_coords, m_pack_size, MPI_FLOAT, 0, 1, MPI_COMM_WORLD );
@@ -244,17 +244,17 @@ void JobCollector::jobCollect_glyph( vismodule::KVSMLObjectGlyph* object, bool* 
                 if ( wid ) *wid = src - 1;
 
                 VIS_MODULE_TIMER_STA( 62 );
-                MPI_Recv( &m_pack_size, sizeof( size_t ), MPI_BYTE, src, 1, MPI_COMM_WORLD, &stat );
+                MPI_Recv( &m_pack_size, sizeof( std::size_t ), MPI_BYTE, src, 1, MPI_COMM_WORLD, &stat );
                 m_pack_size_div3 = int(m_pack_size/3);
                 VIS_MODULE_TIMER_END( 62 );
                 VIS_MODULE_TIMER_STA( 63 );
-                MPI_Recv( &m_nvertices_list_size, sizeof( size_t ), MPI_BYTE, src, 1, MPI_COMM_WORLD, &stat );
+                MPI_Recv( &m_nvertices_list_size, sizeof( std::size_t ), MPI_BYTE, src, 1, MPI_COMM_WORLD, &stat );
                 VIS_MODULE_TIMER_END( 63 );
                 VIS_MODULE_TIMER_STA( 64 );
                 m_nvertices_list.assign( m_nvertices_list_size, 0 );
                 VIS_MODULE_TIMER_END( 64 );
                 VIS_MODULE_TIMER_STA( 65 );
-                MPI_Recv( &m_nvertices_list[0]  , sizeof( size_t )*m_nvertices_list_size, MPI_BYTE, src, 1, MPI_COMM_WORLD, &stat );
+                MPI_Recv( &m_nvertices_list[0]  , sizeof( std::size_t )*m_nvertices_list_size, MPI_BYTE, src, 1, MPI_COMM_WORLD, &stat );
                 VIS_MODULE_TIMER_END( 65 );
                 VIS_MODULE_TIMER_STA( 66 );
 
@@ -278,8 +278,8 @@ void JobCollector::jobCollect_glyph( vismodule::KVSMLObjectGlyph* object, bool* 
                 *invalid |= sub_invalid;
           }
 
-            size_t nvertices = m_nvertices_list[m_pack_count];
-            size_t nmemb = nvertices * 3;
+            std::size_t nvertices = m_nvertices_list[m_pack_count];
+            std::size_t nmemb = nvertices * 3;
 
             float*         coords  = &m_pack_coords[m_pack_head];
             unsigned char* colors  = &m_pack_colors[m_pack_head];
@@ -304,9 +304,9 @@ void JobCollector::jobCollect_glyph( vismodule::KVSMLObjectGlyph* object, bool* 
   }
   else
   {
-      const size_t nvertices = object->sizes().size();
-      const size_t nmemb = nvertices * 3;
-      const size_t nmemb_size = nvertices;
+      const std::size_t nvertices = object->sizes().size();
+      const std::size_t nmemb = nvertices * 3;
+      const std::size_t nmemb_size = nvertices;
 
             const float*         coords     = object->coords().pointer();
             const unsigned char* colors     = object->colors().pointer();
@@ -336,18 +336,18 @@ void JobCollector::jobCollect_glyph( vismodule::KVSMLObjectGlyph* object, bool* 
       if ( m_jd->getCollectSendState() )
       {
             double send_time = GetTime();
-            size_t nvertices_list_size = m_nvertices_list.size();
+            std::size_t nvertices_list_size = m_nvertices_list.size();
             VIS_MODULE_TIMER_STA( 451 );
             MPI_Send( &send_time, 1, MPI_DOUBLE_PRECISION, 0, 1, MPI_COMM_WORLD );
             VIS_MODULE_TIMER_END( 451 );
                 VIS_MODULE_TIMER_STA( 452 );
-                MPI_Send( &m_pack_size, sizeof( size_t ), MPI_BYTE, 0, 1, MPI_COMM_WORLD );
+                MPI_Send( &m_pack_size, sizeof( std::size_t ), MPI_BYTE, 0, 1, MPI_COMM_WORLD );
                 VIS_MODULE_TIMER_END( 452 );
                 VIS_MODULE_TIMER_STA( 453 );
-                MPI_Send( &nvertices_list_size, sizeof( size_t ), MPI_BYTE, 0, 1, MPI_COMM_WORLD );
+                MPI_Send( &nvertices_list_size, sizeof( std::size_t ), MPI_BYTE, 0, 1, MPI_COMM_WORLD );
                 VIS_MODULE_TIMER_END( 453 );
                 VIS_MODULE_TIMER_STA( 454 );
-                MPI_Send( &m_nvertices_list[0], sizeof( size_t )*nvertices_list_size, MPI_BYTE, 0, 1, MPI_COMM_WORLD );
+                MPI_Send( &m_nvertices_list[0], sizeof( std::size_t )*nvertices_list_size, MPI_BYTE, 0, 1, MPI_COMM_WORLD );
                 VIS_MODULE_TIMER_END( 454 );
                 VIS_MODULE_TIMER_STA( 456 );
                 MPI_Send( m_pack_coords, m_pack_size, MPI_FLOAT, 0, 1, MPI_COMM_WORLD );
@@ -392,16 +392,16 @@ void JobCollector::jobCollect_pol( std::vector<float>& axis, std::vector<int>& m
                 if ( wid ) *wid = src - 1;
 
                 VIS_MODULE_TIMER_STA( 62 );
-                MPI_Recv( &m_pack_size, sizeof( size_t ), MPI_BYTE, src, 1, MPI_COMM_WORLD, &stat );
+                MPI_Recv( &m_pack_size, sizeof( std::size_t ), MPI_BYTE, src, 1, MPI_COMM_WORLD, &stat );
                 VIS_MODULE_TIMER_END( 62 );
                 VIS_MODULE_TIMER_STA( 63 );
-                MPI_Recv( &m_nvertices_list_size, sizeof( size_t ), MPI_BYTE, src, 1, MPI_COMM_WORLD, &stat );
+                MPI_Recv( &m_nvertices_list_size, sizeof( std::size_t ), MPI_BYTE, src, 1, MPI_COMM_WORLD, &stat );
                 VIS_MODULE_TIMER_END( 63 );
                 VIS_MODULE_TIMER_STA( 64 );
                 m_nvertices_list.assign( m_nvertices_list_size, 0 );
                 VIS_MODULE_TIMER_END( 64 );
                 VIS_MODULE_TIMER_STA( 65 );
-                MPI_Recv( &m_nvertices_list[0]  , sizeof( size_t )*m_nvertices_list_size, MPI_BYTE, src, 1, MPI_COMM_WORLD, &stat );
+                MPI_Recv( &m_nvertices_list[0]  , sizeof( std::size_t )*m_nvertices_list_size, MPI_BYTE, src, 1, MPI_COMM_WORLD, &stat );
                 VIS_MODULE_TIMER_END( 65 );
                 VIS_MODULE_TIMER_STA( 66 );
 
@@ -445,16 +445,16 @@ void JobCollector::jobCollect_pol( std::vector<float>& axis, std::vector<int>& m
                 std::cout << " values[i] = " << values[i] << std::endl;  
             }
 
-            size_t nvertices = axis.size();
-            size_t nmemb = nvertices;
+            std::size_t nvertices = axis.size();
+            std::size_t nmemb = nvertices;
             m_pack_head += nmemb;
             m_pack_count++;
 
   }
   else
   {
-      const size_t nvertices = axis.size();
-      const size_t nmemb = nvertices;
+      const std::size_t nvertices = axis.size();
+      const std::size_t nmemb = nvertices;
 
 //      if ( !m_batch )
 //      {
@@ -482,18 +482,18 @@ void JobCollector::jobCollect_pol( std::vector<float>& axis, std::vector<int>& m
       if ( m_jd->getCollectSendState() )
       {
             double send_time = GetTime();
-            size_t nvertices_list_size = m_nvertices_list.size();
+            std::size_t nvertices_list_size = m_nvertices_list.size();
             VIS_MODULE_TIMER_STA( 451 );
             MPI_Send( &send_time, 1, MPI_DOUBLE_PRECISION, 0, 1, MPI_COMM_WORLD );
             VIS_MODULE_TIMER_END( 451 );
                 VIS_MODULE_TIMER_STA( 452 );
-                MPI_Send( &m_pack_size, sizeof( size_t ), MPI_BYTE, 0, 1, MPI_COMM_WORLD );
+                MPI_Send( &m_pack_size, sizeof( std::size_t ), MPI_BYTE, 0, 1, MPI_COMM_WORLD );
                 VIS_MODULE_TIMER_END( 452 );
                 VIS_MODULE_TIMER_STA( 453 );
-                MPI_Send( &nvertices_list_size, sizeof( size_t ), MPI_BYTE, 0, 1, MPI_COMM_WORLD );
+                MPI_Send( &nvertices_list_size, sizeof( std::size_t ), MPI_BYTE, 0, 1, MPI_COMM_WORLD );
                 VIS_MODULE_TIMER_END( 453 );
                 VIS_MODULE_TIMER_STA( 454 );
-                MPI_Send( &m_nvertices_list[0], sizeof( size_t )*nvertices_list_size, MPI_BYTE, 0, 1, MPI_COMM_WORLD );
+                MPI_Send( &m_nvertices_list[0], sizeof( std::size_t )*nvertices_list_size, MPI_BYTE, 0, 1, MPI_COMM_WORLD );
                 VIS_MODULE_TIMER_END( 454 );
                 VIS_MODULE_TIMER_STA( 456 );
                 MPI_Send( axis.data()  , m_pack_size, MPI_FLOAT, 0, 1, MPI_COMM_WORLD );

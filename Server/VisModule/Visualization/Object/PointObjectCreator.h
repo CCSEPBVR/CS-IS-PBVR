@@ -115,8 +115,8 @@ public:
 
         vismodule::ValueArray<vismodule::Real32> coords( nnodes * 3 );
         vismodule::Matrix33f mat( vismodule::YRotationMatrix33<float>( ( float )rank * 60.0 ) );
-        size_t i3 = 0;
-        for ( size_t i = 0; i < nnodes; i++, i3 += 3 )
+        std::size_t i3 = 0;
+        for ( std::size_t i = 0; i < nnodes; i++, i3 += 3 )
         {
             vismodule::Vector3f vec;
             vec.x() = m_field->coords()[i3];
@@ -229,7 +229,7 @@ protected:
         if ( ! po ) return false;
         if ( m_xcSynthStr.empty() && m_ycSynthStr.empty() && m_zcSynthStr.empty() )
             return true;
-        size_t i, j, nv = po->nvertices();
+        std::size_t i, j, nv = po->nvertices();
         if ( nv < 1 ) return true;
         FuncParser::Variables synth_vars;
         FuncParser::Variable X;
@@ -365,11 +365,11 @@ protected:
         vismodule::UInt32 m_index[8];
         vismodule::UInt32* connec = connections.pointer();
         std::cout << m_mpi_rank << ":start of gen. conne." << std::endl;
-        for ( size_t k = 0; k < elem.z(); k++ )
+        for ( std::size_t k = 0; k < elem.z(); k++ )
         {
-            for ( size_t j = 0; j < elem.y(); j++ )
+            for ( std::size_t j = 0; j < elem.y(); j++ )
             {
-                for ( size_t i = 0; i < elem.x(); i++ )
+                for ( std::size_t i = 0; i < elem.x(); i++ )
                 {
                     m_index[0] = i + j * line_size + k * slice_size;
                     m_index[1] = m_index[0] + 1;
@@ -380,7 +380,7 @@ protected:
                     m_index[6] = m_index[2] + slice_size;
                     m_index[7] = m_index[3] + slice_size;
 
-                    for ( size_t p = 0; p < 8; p++ )
+                    for ( std::size_t p = 0; p < 8; p++ )
                     {
                         *connec = m_index[p];
                         connec++;

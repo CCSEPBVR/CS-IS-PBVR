@@ -27,10 +27,10 @@ public:
     IPLabList( const std::string& dirname ) { this->read( dirname ); }
 
     const std::vector<std::string>& filenames() const { return m_filenames; }
-    const std::string& filename( const size_t index ) const { return m_filenames[index]; }
+    const std::string& filename( const std::size_t index ) const { return m_filenames[index]; }
 
     bool read( const std::string& dirname );
-    IPLab load( const size_t index ) const;
+    IPLab load( const std::size_t index ) const;
 };
 
 } // end of namespace kvs

@@ -38,7 +38,7 @@ class Vector
 public:
     typedef Vector<T> this_type;
     typedef T value_type;
-    typedef std::size_t size_type;
+    typedef std::size_t  size_type;
     typedef std::ptrdiff_t difference_type;
     typedef T& reference;
     typedef const T& const_reference;
@@ -50,26 +50,26 @@ public:
     typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
 
 private:
-    size_t m_size; ///< Vector size( dimension ).
+    std::size_t m_size; ///< Vector size( dimension ).
     value_type* m_data; ///< Array of elements.
 
 public:
-    static const Vector Zero( const size_t size );
-    static const Vector Ones( const size_t size );
-    static const Vector Unit( const size_t size, const size_t index = 0 );
-    static const Vector Identity( const size_t size );
-    static const Vector Constant( const size_t size, const T x );
-    static const Vector Random( const size_t size );
-    static const Vector Random( const size_t size, const kvs::UInt32 seed );
-    static const Vector Random( const size_t size, const T min, const T max );
-    static const Vector Random( const size_t size, const T min, const T max, const kvs::UInt32 seed );
+    static const Vector Zero( const std::size_t size );
+    static const Vector Ones( const std::size_t size );
+    static const Vector Unit( const std::size_t size, const std::size_t index = 0 );
+    static const Vector Identity( const std::size_t size );
+    static const Vector Constant( const std::size_t size, const T x );
+    static const Vector Random( const std::size_t size );
+    static const Vector Random( const std::size_t size, const kvs::UInt32 seed );
+    static const Vector Random( const std::size_t size, const T min, const T max );
+    static const Vector Random( const std::size_t size, const T min, const T max, const kvs::UInt32 seed );
 
 public:
     Vector(): m_size( 0 ), m_data( nullptr ) {}
     ~Vector() { delete [] m_data; }
 
-    explicit Vector( const size_t size );
-    Vector( const size_t size, const T* elements );
+    explicit Vector( const std::size_t size );
+    Vector( const std::size_t size, const T* elements );
     Vector( const std::vector<T>& other );
     Vector( const kvs::Vector2<T>& other );
     Vector( const kvs::Vector3<T>& other );
@@ -89,7 +89,7 @@ public:
 public:
     T* data() { return m_data; }
     const T* data() const { return m_data; }
-    size_t size() const { return m_size; }
+    std::size_t size() const { return m_size; }
 
     iterator begin() { return m_data; }
     iterator end() { return m_data + m_size; }
@@ -98,7 +98,7 @@ public:
 
     void setZero();
     void setOnes();
-    void setUnit( const size_t index = 0 );
+    void setUnit( const std::size_t index = 0 );
     void setIdentity();
     void setConstant( const T x );
     void setRandom();
@@ -106,7 +106,7 @@ public:
     void setRandom( const T min, const T max );
     void setRandom( const T min, const T max, const kvs::UInt32 seed );
 
-    void resize( const size_t size );
+    void resize( const std::size_t size );
     void swap( Vector& other );
     void normalize();
     double length() const;
@@ -138,8 +138,8 @@ public:
         const std::string bracket_r ) const;
 
 public:
-    const T& operator []( const size_t index ) const;
-    T& operator []( const size_t index );
+    const T& operator []( const std::size_t index ) const;
+    T& operator []( const std::size_t index );
     Vector& operator +=( const Vector& rhs );
     Vector& operator -=( const Vector& rhs );
     Vector& operator *=( const Vector& rhs );
@@ -209,7 +209,7 @@ public:
     KVS_DEPRECATED( void zero() ) { this->setZero(); }
     KVS_DEPRECATED( double length2() const ) { return this->squaredLength(); }
     KVS_DEPRECATED( void print() const ) { std::cout << *this << std::endl; }
-    KVS_DEPRECATED( void setSize( const size_t size ) ) { this->resize( size ); }
+    KVS_DEPRECATED( void setSize( const std::size_t size ) ) { this->resize( size ); }
 };
 
 
@@ -225,7 +225,7 @@ typedef Vector<double> Vecd;
 
 
 template <typename T>
-inline const Vector<T> Vector<T>::Zero( const size_t size )
+inline const Vector<T> Vector<T>::Zero( const std::size_t size )
 {
     Vector<T> v( size );
     v.setZero();
@@ -233,7 +233,7 @@ inline const Vector<T> Vector<T>::Zero( const size_t size )
 }
 
 template <typename T>
-inline const Vector<T> Vector<T>::Ones( const size_t size )
+inline const Vector<T> Vector<T>::Ones( const std::size_t size )
 {
     Vector<T> v( size );
     v.setOnes();
@@ -241,7 +241,7 @@ inline const Vector<T> Vector<T>::Ones( const size_t size )
 }
 
 template <typename T>
-inline const Vector<T> Vector<T>::Unit( const size_t size, const size_t index )
+inline const Vector<T> Vector<T>::Unit( const std::size_t size, const std::size_t index )
 {
     Vector<T> v( size );
     v.setUnit( index );
@@ -249,7 +249,7 @@ inline const Vector<T> Vector<T>::Unit( const size_t size, const size_t index )
 }
 
 template <typename T>
-inline const Vector<T> Vector<T>::Identity( const size_t size )
+inline const Vector<T> Vector<T>::Identity( const std::size_t size )
 {
     Vector<T> v( size );
     v.setIdentity();
@@ -257,7 +257,7 @@ inline const Vector<T> Vector<T>::Identity( const size_t size )
 }
 
 template <typename T>
-inline const Vector<T> Vector<T>::Constant( const size_t size, const T x )
+inline const Vector<T> Vector<T>::Constant( const std::size_t size, const T x )
 {
     Vector<T> v( size );
     v.setConstant( x );
@@ -265,7 +265,7 @@ inline const Vector<T> Vector<T>::Constant( const size_t size, const T x )
 }
 
 template <typename T>
-inline const Vector<T> Vector<T>::Random( const size_t size )
+inline const Vector<T> Vector<T>::Random( const std::size_t size )
 {
     Vector<T> v( size );
     v.setRandom();
@@ -273,7 +273,7 @@ inline const Vector<T> Vector<T>::Random( const size_t size )
 }
 
 template <typename T>
-inline const Vector<T> Vector<T>::Random( const size_t size, const kvs::UInt32 seed )
+inline const Vector<T> Vector<T>::Random( const std::size_t size, const kvs::UInt32 seed )
 {
     Vector<T> v( size );
     v.setRandom( seed );
@@ -281,7 +281,7 @@ inline const Vector<T> Vector<T>::Random( const size_t size, const kvs::UInt32 s
 }
 
 template <typename T>
-inline const Vector<T> Vector<T>::Random( const size_t size, const T min, const T max )
+inline const Vector<T> Vector<T>::Random( const std::size_t size, const T min, const T max )
 {
     Vector<T> v( size );
     v.setRandom( min, max );
@@ -290,7 +290,7 @@ inline const Vector<T> Vector<T>::Random( const size_t size, const T min, const 
 
 template <typename T>
 inline const Vector<T> Vector<T>::Random(
-    const size_t size,
+    const std::size_t size,
     const T min,
     const T max,
     const kvs::UInt32 seed )
@@ -307,7 +307,7 @@ inline const Vector<T> Vector<T>::Random(
  */
 /*==========================================================================*/
 template <typename T>
-inline Vector<T>::Vector( const size_t size ):
+inline Vector<T>::Vector( const std::size_t size ):
     m_size( size ),
     m_data( new T [ size ] )
 {
@@ -322,7 +322,7 @@ inline Vector<T>::Vector( const size_t size ):
  */
 /*==========================================================================*/
 template <typename T>
-inline Vector<T>::Vector( const size_t size, const T* elements ):
+inline Vector<T>::Vector( const std::size_t size, const T* elements ):
     m_size( size ),
     m_data( new T [ size ] )
 {
@@ -459,7 +459,7 @@ inline void Vector<T>::setOnes()
 }
 
 template <typename T>
-inline void Vector<T>::setUnit( const size_t index )
+inline void Vector<T>::setUnit( const std::size_t index )
 {
     KVS_ASSERT( index < m_size );
     if ( m_size > 0 ) { this->setZero(); m_data[index] = T(1); }
@@ -527,7 +527,7 @@ inline void Vector<T>::setRandom( const T min, const T max, const kvs::UInt32 se
 }
 
 template <typename T>
-inline void Vector<T>::resize( const size_t size )
+inline void Vector<T>::resize( const std::size_t size )
 {
     if ( this->size() != size )
     {
@@ -637,21 +637,21 @@ inline std::string Vector<T>::format(
     {
         os << bracket_l;
         os << m_data[0];
-        for ( size_t i = 1; i < m_size; ++i ) { os << delim << m_data[i]; }
+        for ( std::size_t i = 1; i < m_size; ++i ) { os << delim << m_data[i]; }
         os << bracket_r;
     }
     return os.str();
 }
 
 template <typename T>
-inline const T& Vector<T>::operator []( const size_t index ) const
+inline const T& Vector<T>::operator []( const std::size_t index ) const
 {
     KVS_ASSERT( index < this->size() );
     return *( m_data + index );
 }
 
 template <typename T>
-inline T& Vector<T>::operator []( const size_t index )
+inline T& Vector<T>::operator []( const std::size_t index )
 {
     KVS_ASSERT( index < this->size() );
     return *( m_data + index );

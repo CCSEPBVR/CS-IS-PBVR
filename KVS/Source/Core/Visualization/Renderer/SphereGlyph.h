@@ -37,8 +37,8 @@ class SphereGlyph : public kvs::GlyphBase
 
 private:
 
-    size_t m_nslices; ///< number of subdivisions around the z-axis (lines of longitude)
-    size_t m_nstacks; ///< number of subdivisions along the z-axis (lines of latitude)
+    std::size_t m_nslices; ///< number of subdivisions around the z-axis (lines of longitude)
+    std::size_t m_nstacks; ///< number of subdivisions along the z-axis (lines of latitude)
     const kvs::PointObject* m_point; ///< pointer to the point object (reference)
     const kvs::VolumeObjectBase* m_volume; ///< pointer to the volume object (reference)
 
@@ -49,8 +49,8 @@ public:
     SphereGlyph( const kvs::VolumeObjectBase* volume );
     SphereGlyph( const kvs::VolumeObjectBase* volume, const kvs::TransferFunction& transfer_function );
 
-    void setNumberOfSlices( const size_t nslices ) { m_nslices = nslices; }
-    void setNumberOfStacks( const size_t nstacks ) { m_nstacks = nstacks; }
+    void setNumberOfSlices( const std::size_t nslices ) { m_nslices = nslices; }
+    void setNumberOfStacks( const std::size_t nstacks ) { m_nstacks = nstacks; }
 
     void exec( kvs::ObjectBase* object, kvs::Camera* camera, kvs::Light* light );
 
@@ -63,8 +63,8 @@ private:
     void initialize();
 
 public:
-    KVS_DEPRECATED( void setNSlices( const size_t nslices ) ) { this->setNumberOfSlices( nslices ); }
-    KVS_DEPRECATED( void setNStacks( const size_t nstacks ) ) { this->setNumberOfStacks( nstacks ); }
+    KVS_DEPRECATED( void setNSlices( const std::size_t nslices ) ) { this->setNumberOfSlices( nslices ); }
+    KVS_DEPRECATED( void setNStacks( const std::size_t nstacks ) ) { this->setNumberOfStacks( nstacks ); }
 };
 
 } // end of namespace kvs

@@ -45,7 +45,7 @@ private:
     VolumeType m_volume_type = UnknownVolumeType; ///< volume type
     std::string m_label = ""; ///< data label
     std::string m_unit = ""; ///< data unit
-    size_t m_veclen = 0; ///< Vector length.
+    std::size_t m_veclen = 0; ///< Vector length.
     Coords m_coords{}; ///< Coordinate array
     Values m_values{}; ///< Value array
     mutable bool m_has_min_max_values = false; ///< Whether includes min/max values or not
@@ -64,14 +64,14 @@ public:
 
     void setLabel( const std::string& label ) { m_label = label; }
     void setUnit( const std::string& unit ) { m_unit = unit; }
-    void setVeclen( const size_t veclen ) { m_veclen = veclen; }
+    void setVeclen( const std::size_t veclen ) { m_veclen = veclen; }
     void setCoords( const Coords& coords ) { m_coords = coords; }
     void setValues( const Values& values ) { m_values = values; }
     void setMinMaxValues( const kvs::Real64 min_value, const kvs::Real64 max_value ) const;
 
     const std::string& label() const { return m_label; }
     const std::string& unit() const { return m_unit; }
-    size_t veclen() const { return m_veclen; }
+    std::size_t veclen() const { return m_veclen; }
     const Coords& coords() const { return m_coords; }
     const Values& values() const { return m_values; }
     bool hasMinMaxValues() const { return m_has_min_max_values; }
@@ -79,8 +79,8 @@ public:
     kvs::Real64 maxValue() const { return m_max_value; }
 
     VolumeType volumeType() const { return m_volume_type; }
-    virtual size_t numberOfNodes() const = 0;
-    virtual size_t numberOfCells() const = 0;
+    virtual std::size_t numberOfNodes() const = 0;
+    virtual std::size_t numberOfCells() const = 0;
     virtual void updateMinMaxValues() const {}
 
 protected:
@@ -88,7 +88,7 @@ protected:
 
 public:
     KVS_DEPRECATED( VolumeObjectBase(
-                        const size_t veclen,
+                        const std::size_t veclen,
                         const Coords& coords,
                         const Values& values ) )
     {

@@ -195,7 +195,7 @@ void kvs::PolygonGlyphObject::attach_volume( const kvs::VolumeObjectBase* volume
 /*===========================================================================*/
 void kvs::PolygonGlyphObject::createArrowGlyphPolygon()
 {
-    const size_t npoint = this->coords().size() / 3;
+    const std::size_t npoint = this->coords().size() / 3;
     const kvs::ValueArray<kvs::Real32> coords = this->coords();
     const kvs::ValueArray<kvs::UInt8> colors = this->colors();
     const kvs::ValueArray<kvs::Real32> sizes = this->sizes();
@@ -206,7 +206,7 @@ void kvs::PolygonGlyphObject::createArrowGlyphPolygon()
     std::vector<kvs::UInt32> all_indices;
     std::vector<kvs::UInt8> all_colors;
 
-    for ( size_t i = 0, index = 0; i < npoint; i++, index += 3 )
+    for ( std::size_t i = 0, index = 0; i < npoint; i++, index += 3 )
     {
         kvs::Vec3 position( coords.data() + index );
         kvs::Vec3 direction( this->directions().data() + index );
@@ -328,7 +328,7 @@ void kvs::PolygonGlyphObject::createArrowGlyphPolygon()
             normal = rotation * normal;
         }
 
-        size_t index_offset = all_vertices.size();
+        std::size_t index_offset = all_vertices.size();
         all_vertices.insert( all_vertices.end(), vertices.begin(), vertices.end() );
         all_normals.insert( all_normals.end(), normals.begin(), normals.end() );
 
@@ -365,7 +365,7 @@ void kvs::PolygonGlyphObject::createArrowGlyphPolygon()
 /*===========================================================================*/
 void kvs::PolygonGlyphObject::createDiamondGlyphPolygon()
 {
-    const size_t npoint = this->coords().size() / 3;
+    const std::size_t npoint = this->coords().size() / 3;
     const kvs::ValueArray<kvs::Real32> coords = this->coords();
     const kvs::ValueArray<kvs::UInt8> colors = this->colors();
     const kvs::ValueArray<kvs::Real32> sizes = this->sizes();
@@ -376,7 +376,7 @@ void kvs::PolygonGlyphObject::createDiamondGlyphPolygon()
     std::vector<kvs::UInt32> all_indices;
     std::vector<kvs::UInt8> all_colors;
 
-    for ( size_t i = 0, index = 0; i < npoint; i++, index += 3 )
+    for ( std::size_t i = 0, index = 0; i < npoint; i++, index += 3 )
     {
         kvs::Vec3 position( coords.data() + index );
         kvs::Vec3 direction( this->directions().data() + index );
@@ -463,7 +463,7 @@ void kvs::PolygonGlyphObject::createDiamondGlyphPolygon()
             normal = rotation * normal;
         }
 
-        size_t index_offset = all_vertices.size();
+        std::size_t index_offset = all_vertices.size();
         all_vertices.insert(all_vertices.end(), vertices.begin(), vertices.end());
         all_normals.insert(all_normals.end(), normals.begin(), normals.end());
 
@@ -511,7 +511,7 @@ void kvs::PolygonGlyphObject::createDiamondGlyphPolygon()
 /*===========================================================================*/
 void kvs::PolygonGlyphObject::createSphereGlyphPolygon()
 {
-    const size_t npoint = this->coords().size() / 3;
+    const std::size_t npoint = this->coords().size() / 3;
     const kvs::ValueArray<kvs::Real32> coords = this->coords();
     const kvs::ValueArray<kvs::UInt8> colors = this->colors();
     const kvs::ValueArray<kvs::Real32> sizes = this->sizes();
@@ -669,13 +669,13 @@ void PolygonGlyphObject::calculateUniformCoords( const kvs::StructuredVolumeObje
             ( ngrids.z() == 0 ) ? 0.0f : volume_size.z() / static_cast<float>( ngrids.z() )
         };
 
-    for ( size_t k = 0; k < resolution.z(); ++k )
+    for ( std::size_t k = 0; k < resolution.z(); ++k )
     {
         const float z = grid_size.z() * static_cast<float>( k );
-        for ( size_t j = 0; j < resolution.y(); ++j )
+        for ( std::size_t j = 0; j < resolution.y(); ++j )
         {
             const float y = grid_size.y() * static_cast<float>( j );
-            for ( size_t i = 0; i < resolution.x(); ++i )
+            for ( std::size_t i = 0; i < resolution.x(); ++i )
             {
                 const float x = grid_size.x() * static_cast<float>( i );
                 *( coord++ ) = x;
@@ -707,13 +707,13 @@ void PolygonGlyphObject::calculateRectilinearCoords( const kvs::StructuredVolume
     const auto* ycoord = xcoord + dimx;
     const auto* zcoord = ycoord + dimy;
 
-    for ( size_t k = 0; k < dimz; ++k )
+    for ( std::size_t k = 0; k < dimz; ++k )
     {
         const auto z = zcoord[k];
-        for ( size_t j = 0; j < dimy; ++j )
+        for ( std::size_t j = 0; j < dimy; ++j )
         {
             const auto y = ycoord[j];
-            for ( size_t i = 0; i < dimx; ++i )
+            for ( std::size_t i = 0; i < dimx; ++i )
             {
                 const auto x = xcoord[i];
                 *( coord++ ) = x;
@@ -736,8 +736,8 @@ template <typename T>
 void PolygonGlyphObject::calculateSizes( const kvs::VolumeObjectBase* volume )
 {
     const auto values = volume->values().asValueArray<T>();
-    const size_t veclen = volume->veclen();
-    const size_t nnodes = volume->numberOfNodes();
+    const std::size_t veclen = volume->veclen();
+    const std::size_t nnodes = volume->numberOfNodes();
 
     if ( !volume->hasMinMaxValues() ) { volume->updateMinMaxValues(); }
     const kvs::Real32 min_value = static_cast<kvs::Real32>( volume->minValue() );
@@ -758,14 +758,14 @@ void PolygonGlyphObject::calculateSizes( const kvs::VolumeObjectBase* volume )
     {
         if ( veclen == 1 )
         {
-            for ( size_t i = 0; i < nnodes; i++ )
+            for ( std::size_t i = 0; i < nnodes; i++ )
             {
                 size[i] = DefaultSize() * normalize * ( static_cast<float>(values[i]) - min_value );
             }
         }
         else if ( veclen == 3 )
         {
-            for( size_t i = 0, index = 0; i < nnodes; i++, index += 3 )
+            for( std::size_t i = 0, index = 0; i < nnodes; i++, index += 3 )
             {
                 const kvs::Vec3 v
                     {
@@ -805,14 +805,14 @@ template <typename T>
 void PolygonGlyphObject::calculateDirections( const kvs::VolumeObjectBase* volume )
 {
     const auto values = volume->values().asValueArray<T>();
-    const size_t veclen = volume->veclen();
-    const size_t nnodes = volume->numberOfNodes();
+    const std::size_t veclen = volume->veclen();
+    const std::size_t nnodes = volume->numberOfNodes();
     if ( veclen == 3 )
     {
         kvs::ValueArray<kvs::Real32> directions( nnodes * veclen );
         kvs::Real32* direction = directions.data();
 
-        for ( size_t i = 0; i < directions.size(); i++ )
+        for ( std::size_t i = 0; i < directions.size(); i++ )
         {
             direction[i] = static_cast<kvs::Real32>( values[i] );
         }
@@ -842,8 +842,8 @@ template <typename T>
 void PolygonGlyphObject::calculateColors( const kvs::VolumeObjectBase* volume )
 {
     const auto values = volume->values().asValueArray<T>();
-    const size_t veclen = volume->veclen();
-    const size_t nnodes = volume->numberOfNodes();
+    const std::size_t veclen = volume->veclen();
+    const std::size_t nnodes = volume->numberOfNodes();
 
     if ( !volume->hasMinMaxValues() ) { volume->updateMinMaxValues(); }
     const kvs::Real32 min_value = static_cast<kvs::Real32>(volume->minValue());
@@ -856,7 +856,7 @@ void PolygonGlyphObject::calculateColors( const kvs::VolumeObjectBase* volume )
     switch( m_color_mode )
     {
     case PolygonGlyphObject::ColorByDefault:
-        for ( size_t i = 0; i < nnodes; i++ )
+        for ( std::size_t i = 0; i < nnodes; i++ )
         {
             *( color++ ) = DefaultColor().r();
             *( color++ ) = DefaultColor().r();
@@ -868,10 +868,10 @@ void PolygonGlyphObject::calculateColors( const kvs::VolumeObjectBase* volume )
         const kvs::ColorMap color_map( m_tfunc.colorMap() );
         if ( veclen == 1 )
         {
-            for ( size_t i = 0; i < nnodes; i++ )
+            for ( std::size_t i = 0; i < nnodes; i++ )
             {
                 const float d = normalize * ( static_cast<float>(values[i]) - min_value );
-                const size_t level = static_cast<size_t>( 255.0f * d );
+                const std::size_t level = static_cast<size_t>( 255.0f * d );
                 const kvs::RGBColor c = color_map[ level ];
                 *( color++ ) = c.r();
                 *( color++ ) = c.g();
@@ -880,14 +880,14 @@ void PolygonGlyphObject::calculateColors( const kvs::VolumeObjectBase* volume )
         }
         else if ( veclen == 3 )
         {
-            for ( size_t i = 0, index = 0; i < nnodes; i++, index += 3 )
+            for ( std::size_t i = 0, index = 0; i < nnodes; i++, index += 3 )
             {
                 const kvs::Vec3 v(
                     static_cast<float>(values[index]),
                     static_cast<float>(values[index+1]),
                     static_cast<float>(values[index+2]) );
                 const float d = normalize * ( static_cast<float>(v.length()) - min_value );
-                const size_t level = static_cast<size_t>( 255.0f * d );
+                const std::size_t level = static_cast<size_t>( 255.0f * d );
                 const kvs::RGBColor c = color_map[ level ];
                 *( color++ ) = c.r();
                 *( color++ ) = c.g();
@@ -924,8 +924,8 @@ template <typename T>
 void PolygonGlyphObject::calculateOpacities( const kvs::VolumeObjectBase* volume )
 {
     const auto values = volume->values().asValueArray<T>();
-    const size_t veclen = volume->veclen();
-    const size_t nnodes = volume->numberOfNodes();
+    const std::size_t veclen = volume->veclen();
+    const std::size_t nnodes = volume->numberOfNodes();
 
     if ( !volume->hasMinMaxValues() ) { volume->updateMinMaxValues(); }
     const kvs::Real32 min_value = static_cast<kvs::Real32>(volume->minValue());
@@ -938,19 +938,19 @@ void PolygonGlyphObject::calculateOpacities( const kvs::VolumeObjectBase* volume
     switch( m_opacity_mode )
     {
     case PolygonGlyphObject::OpacityByDefault:
-        for( size_t i = 0; i < nnodes; i++ ) opacity[i] = DefaultOpacity();
+        for( std::size_t i = 0; i < nnodes; i++ ) opacity[i] = DefaultOpacity();
         break;
     case PolygonGlyphObject::OpacityByMagnitude:
         if ( veclen == 1 )
         {
-            for( size_t i = 0; i < nnodes; i++ )
+            for( std::size_t i = 0; i < nnodes; i++ )
             {
                 opacity[i] = static_cast<kvs::UInt8>( normalize * ( static_cast<float>(values[i]) - min_value ) );
             }
         }
         else if ( veclen == 3 )
         {
-            for( size_t i = 0, index = 0; i < nnodes; i++, index += 3 )
+            for( std::size_t i = 0, index = 0; i < nnodes; i++, index += 3 )
             {
                 const kvs::Vector3f v(
                     static_cast<float>(values[index]),

@@ -17,9 +17,9 @@
 // Default parameters.
 namespace { namespace Default
 {
-const size_t Margin = 10;
-const size_t Width = 350;
-const size_t Height = 150;
+const std::size_t Margin = 10;
+const std::size_t Width = 350;
+const std::size_t Height = 150;
 const int HPaletteWidth = 10;
 const int ColorBoxSize = 50;
 const kvs::RGBColor RectColor = kvs::RGBColor( 255, 255, 255 );
@@ -391,7 +391,7 @@ void ColorPalette::draw_selected_color_value()
 
 int ColorPalette::adjustedWidth()
 {
-    const size_t width = m_caption.size() * BaseClass::characterWidth() + BaseClass::margin() * 2;
+    const std::size_t width = m_caption.size() * BaseClass::characterWidth() + BaseClass::margin() * 2;
     return kvs::Math::Max( width, ::Default::Width );
 }
 

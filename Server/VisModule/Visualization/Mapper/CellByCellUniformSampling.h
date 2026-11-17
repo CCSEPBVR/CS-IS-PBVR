@@ -56,14 +56,19 @@ class CellByCellUniformSampling : public vismodule::MapperBase, public vismodule
 private:
 
     const vismodule::Camera*     m_camera;         ///< camera (reference)
-    size_t                 m_subpixel_level; ///< subpixel level
+    std::size_t                 m_subpixel_level; ///< subpixel level
+    /*  粒子数の倍率。既定 1.0f で従来と同一（* 1.0f は IEEE754 で値を変えない）。
+     *  アンサンブルメンバーを重ね描きするとき 1/N を渡し、全メンバー合計を
+     *  1メンバー分に抑える。アンサンブル版 EnsembleParticleGenerator の
+     *  repetition と同じ役割。 */
+    float                       m_repetition = 1.0f;
     float                  m_sampling_step;  ///< sampling step in the object coordinate
     float                  m_object_depth;   ///< object depth
     vismodule::ValueArray<float> m_density_map;    ///< density map
     TransferFunctionSynthesizer* m_transfer_function_synthesizer;
     std::vector<vismodule::TransferFunction> m_transfer_function_array; 
 
-    const size_t m_normal_ingredient;
+    const std::size_t m_normal_ingredient;
 
     vismodule::CoordSynthesizerStrings* m_coord_synthesizer_strings;
 
@@ -80,7 +85,10 @@ public:
         const vismodule::TransferFunction& transfer_function,
         const std::vector<vismodule::TransferFunction>& transfer_function_array,
         TransferFunctionSynthesizer* transfunc_synthesizer,
-        vismodule::CoordSynthesizerStrings* coord_synthesizer_strings);
+        vismodule::CoordSynthesizerStrings* coord_synthesizer_strings,
+        /*  粒子数の倍率。既定 1.0f で従来と同一。コンストラクタ内で粒子生成が
+         *  走るため、setter ではなくここで受け取る必要がある。 */
+        const float repetition = 1.0f);
 
     //constructor for struct 
         CellByCellUniformSampling(
@@ -90,7 +98,10 @@ public:
         const vismodule::TransferFunction& transfer_function,
         const std::vector<vismodule::TransferFunction>& transfer_function_array,
         TransferFunctionSynthesizer* transfunc_synthesizer,
-        vismodule::CoordSynthesizerStrings* coord_synthesizer_strings);
+        vismodule::CoordSynthesizerStrings* coord_synthesizer_strings,
+        /*  粒子数の倍率。既定 1.0f で従来と同一。コンストラクタ内で粒子生成が
+         *  走るため、setter ではなくここで受け取る必要がある。 */
+        const float repetition = 1.0f);
 
         virtual ~CellByCellUniformSampling();
 
@@ -101,7 +112,7 @@ public:
 
 public:
 
-    const size_t subpixelLevel() const;
+    const std::size_t subpixelLevel() const;
 
     const float samplingStep() const;
 
@@ -109,7 +120,13 @@ public:
 
     void attachCamera( const vismodule::Camera& camera );
 
-    void setSubpixelLevel( const size_t subpixel_level );
+    void setSubpixelLevel( const std::size_t subpixel_level );
+
+    /*  粒子数の倍率。既定は 1.0f（従来と同一の粒子数）。
+     *  注意: コンストラクタ内で粒子生成が走るため、生成後に呼んでも効かない。
+     *  生成時に効かせるにはコンストラクタ引数で渡すこと。 */
+    void setRepetition( const float repetition ) { m_repetition = repetition; }
+    float repetition() const { return m_repetition; }
 
     void setSamplingStep( const float sampling_step );
 
@@ -117,7 +134,7 @@ public:
 
 private:
    
-    const size_t calculate_number_of_particles(
+    const std::size_t calculate_number_of_particles(
     const float density,
     const float volume_of_cell,
     vismodule::MersenneTwister* MT ); 
@@ -132,7 +149,7 @@ public:
         const  vismodule::VolumeObjectBase::CellType& celltype) ;
 
 private: 
-    const size_t calculate_number_of_particles( const float density, const float volume_of_cell );
+    const std::size_t calculate_number_of_particles( const float density, const float volume_of_cell );
 
     void calculate_histogram( vismodule::ValueArray<int>&   th_o_histogram,
                           vismodule::ValueArray<int>&   th_c_histogram,

@@ -24,7 +24,7 @@ template <typename T>
 GaussEliminationSolver<T>& GaussEliminationSolver<T>::operator = ( const kvs::Vector<T>& v )
 {
     this->resize( v.size() );
-    for ( size_t i = 0; i < this->size(); ++i ) { (*this)[i] = v[i]; }
+    for ( std::size_t i = 0; i < this->size(); ++i ) { (*this)[i] = v[i]; }
     return *this;
 }
 
@@ -46,11 +46,11 @@ const kvs::Vector<T>& GaussEliminationSolver<T>::solve(
 
     kvs::Matrix<T> temp_mat( A );
     kvs::Vector<T> temp_vec( b );
-    const size_t nrows = A.rowSize();
-    for ( size_t k = 0; k < nrows; ++k )
+    const std::size_t nrows = A.rowSize();
+    for ( std::size_t k = 0; k < nrows; ++k )
     {
         // Search a pivot element.
-        const size_t index = temp_mat.pivot( k );
+        const std::size_t index = temp_mat.pivot( k );
 
         // This matrix is a singular matrix. So it is impossible to
         // calculate the invert matrix, this method return a identity matrix.
@@ -71,7 +71,7 @@ const kvs::Vector<T>& GaussEliminationSolver<T>::solve(
         const T a1 = temp_mat[k][k];
         temp_mat[k] /= a1;
         temp_vec[k] /= a1;
-        for ( size_t i = 0; i < nrows; ++i )
+        for ( std::size_t i = 0; i < nrows; ++i )
         {
             if( i != k ) // Skip the pivot-row.
             {

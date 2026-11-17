@@ -48,7 +48,7 @@ Mesh::~Mesh()
  *  @param  longitude [in] longitude
  */
 /*===========================================================================*/
-const kvs::gis::Point& Mesh::data( const size_t latitude, const size_t longitude ) const
+const kvs::gis::Point& Mesh::data( const std::size_t latitude, const std::size_t longitude ) const
 {
     return m_data[ latitude ][ longitude ];
 }
@@ -149,7 +149,7 @@ bool Mesh::hasData() const
  *  @param  data [in] data
  */
 /*===========================================================================*/
-void Mesh::setData( const size_t latitude, const size_t longitude, const kvs::gis::Point& data )
+void Mesh::setData( const std::size_t latitude, const std::size_t longitude, const kvs::gis::Point& data )
 {
     m_data[ latitude ][ longitude ] = data;
 }
@@ -160,7 +160,7 @@ void Mesh::setData( const size_t latitude, const size_t longitude, const kvs::gi
  *  @param  row [in] number of rows
  */
 /*===========================================================================*/
-void Mesh::setRow( const size_t row )
+void Mesh::setRow( const std::size_t row )
 {
     m_row = row;
 }
@@ -171,7 +171,7 @@ void Mesh::setRow( const size_t row )
  *  @param  column [in] number of columns
  */
 /*===========================================================================*/
-void Mesh::setColumn( const size_t column )
+void Mesh::setColumn( const std::size_t column )
 {
     m_column = column;
 }
@@ -182,7 +182,7 @@ void Mesh::setColumn( const size_t column )
  *  @param  latitude_dimension [in] latitude dimension
  */
 /*===========================================================================*/
-void Mesh::setLatitudeDimension( const size_t latitude_dimension )
+void Mesh::setLatitudeDimension( const std::size_t latitude_dimension )
 {
     m_latitude_dimension = latitude_dimension;
 }
@@ -193,7 +193,7 @@ void Mesh::setLatitudeDimension( const size_t latitude_dimension )
  *  @param  longitude_dimension [in] longitude dimension
  */
 /*===========================================================================*/
-void Mesh::setLongitudeDimension( const size_t longitude_dimension )
+void Mesh::setLongitudeDimension( const std::size_t longitude_dimension )
 {
     m_longitude_dimension = longitude_dimension;
 }
@@ -250,14 +250,14 @@ void Mesh::print( std::ostream& os, const kvs::Indent& indent ) const
  *  @param  column [in] number of columns
  */
 /*===========================================================================*/
-void Mesh::allocate_data( const size_t row, const size_t column )
+void Mesh::allocate_data( const std::size_t row, const std::size_t column )
 {
     if ( m_data ) this->deallocate_data();
 
     m_row = row;
     m_column = column;
     m_data = new kvs::gis::Point* [ row ];
-    for ( size_t i = 0; i < row; i++ )
+    for ( std::size_t i = 0; i < row; i++ )
     {
         m_data[i] = new kvs::gis::Point [ column ];
     }
@@ -272,7 +272,7 @@ void Mesh::deallocate_data()
 {
     if ( m_data )
     {
-        for ( size_t i = 0; i < m_row; i++ )
+        for ( std::size_t i = 0; i < m_row; i++ )
         {
             if ( m_data[i] ) delete [] m_data[i];
         }
@@ -308,7 +308,7 @@ kvs::gis::Area Mesh::available_area( const kvs::gis::Area& area ) const
     }
     else
     {
-        for ( size_t i = 0; i < m_latitude_dimension; i++ )
+        for ( std::size_t i = 0; i < m_latitude_dimension; i++ )
         {
             min_latitude = m_area.minLatitude() + m_latitude_interval * i;
             if ( ( area.minLatitude() < min_latitude ) ||
@@ -330,7 +330,7 @@ kvs::gis::Area Mesh::available_area( const kvs::gis::Area& area ) const
     }
     else
     {
-        for ( size_t i = 0; i < m_latitude_dimension; i++ )
+        for ( std::size_t i = 0; i < m_latitude_dimension; i++ )
         {
             max_latitude = m_area.maxLatitude() - m_latitude_interval * i;
             if ( ( area.maxLatitude() > max_latitude ) ||
@@ -352,7 +352,7 @@ kvs::gis::Area Mesh::available_area( const kvs::gis::Area& area ) const
     }
     else
     {
-        for ( size_t i = 0; i < m_longitude_dimension; i++ )
+        for ( std::size_t i = 0; i < m_longitude_dimension; i++ )
         {
             min_longitude = m_area.minLongitude() + m_longitude_interval * i;
             if ( ( area.minLongitude() < min_longitude ) ||
@@ -374,7 +374,7 @@ kvs::gis::Area Mesh::available_area( const kvs::gis::Area& area ) const
     }
     else
     {
-        for ( size_t i = 0; i < m_longitude_dimension; i++ )
+        for ( std::size_t i = 0; i < m_longitude_dimension; i++ )
         {
             max_longitude = m_area.maxLongitude() - m_longitude_interval * i;
             if ( ( area.maxLongitude() > max_longitude ) ||

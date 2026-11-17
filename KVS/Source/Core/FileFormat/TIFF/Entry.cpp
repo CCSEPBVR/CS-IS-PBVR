@@ -42,7 +42,7 @@ std::ostream& operator << ( std::ostream& os, const Entry& entry )
     {
         os << "Value: ";
         kvs::ValueArray<kvs::Int8> values = entry.values().asValueArray<kvs::Int8>();
-        for ( size_t i = 0; i < entry.count(); i++ )
+        for ( std::size_t i = 0; i < entry.count(); i++ )
         {
             os << values[i];
         }
@@ -51,7 +51,7 @@ std::ostream& operator << ( std::ostream& os, const Entry& entry )
     {
         os << "Value: ";
         kvs::ValueArray<kvs::UInt32> values = entry.values().asValueArray<kvs::UInt32>();
-        for ( size_t i = 0; i < entry.count(); i++ )
+        for ( std::size_t i = 0; i < entry.count(); i++ )
         {
             os << values[i];
         }
@@ -80,7 +80,7 @@ void Entry::print( std::ostream& os, const kvs::Indent& indent ) const
     {
         os << indent << "Value : ";
         kvs::ValueArray<kvs::Int8> values = this->values().asValueArray<kvs::Int8>();
-        for ( size_t i = 0; i < this->count(); i++ )
+        for ( std::size_t i = 0; i < this->count(); i++ )
         {
             os << values[i];
         }
@@ -89,7 +89,7 @@ void Entry::print( std::ostream& os, const kvs::Indent& indent ) const
     {
         os << indent << "Value : ";
         kvs::ValueArray<kvs::UInt32> values = this->values().asValueArray<kvs::UInt32>();
-        for ( size_t i = 0; i < this->count(); i++ )
+        for ( std::size_t i = 0; i < this->count(); i++ )
         {
             os << values[i];
         }
@@ -113,7 +113,7 @@ bool Entry::read( std::ifstream& ifs )
     this->allocate_values( m_count, m_type );
 
     // Read values.
-    const size_t byte_size = kvs::tiff::ValueTypeSize[m_type] * m_count;
+    const std::size_t byte_size = kvs::tiff::ValueTypeSize[m_type] * m_count;
     if ( byte_size > 4 )
     {
         const std::ifstream::pos_type end_of_entry = ifs.tellg();
@@ -138,7 +138,7 @@ bool Entry::read( std::ifstream& ifs )
     return true;
 }
 
-void* Entry::allocate_values( const size_t nvalues, const size_t value_type )
+void* Entry::allocate_values( const std::size_t nvalues, const std::size_t value_type )
 {
     switch ( value_type )
     {

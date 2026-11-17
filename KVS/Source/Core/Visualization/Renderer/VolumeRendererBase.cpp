@@ -19,7 +19,7 @@ namespace kvs
  *  @param  size [in] number of element of the data
  */
 /*===========================================================================*/
-void VolumeRendererBase::allocateDepthData( const size_t size )
+void VolumeRendererBase::allocateDepthData( const std::size_t size )
 {
     m_depth_data.allocate( size );
 }
@@ -30,7 +30,7 @@ void VolumeRendererBase::allocateDepthData( const size_t size )
  *  @param  size [in] number of element of the data
  */
 /*===========================================================================*/
-void VolumeRendererBase::allocateColorData( const size_t size )
+void VolumeRendererBase::allocateColorData( const std::size_t size )
 {
     m_color_data.allocate( size );
 }
@@ -64,8 +64,8 @@ void VolumeRendererBase::fillColorData( const kvs::UInt8 value )
 /*===========================================================================*/
 void VolumeRendererBase::readImage()
 {
-    const size_t width = this->framebufferWidth();
-    const size_t height = this->framebufferHeight();
+    const std::size_t width = this->framebufferWidth();
+    const std::size_t height = this->framebufferHeight();
     m_depth_buffer.readPixels( 0, 0, width, height, m_depth_data.data() );
     m_color_buffer.readPixels( 0, 0, width, height, m_color_data.data() );
 }
@@ -77,8 +77,8 @@ void VolumeRendererBase::readImage()
 /*==========================================================================*/
 void VolumeRendererBase::drawImage()
 {
-    const size_t width = this->framebufferWidth();
-    const size_t height = this->framebufferHeight();
+    const std::size_t width = this->framebufferWidth();
+    const std::size_t height = this->framebufferHeight();
 
     kvs::OpenGL::SetDepthFunc( GL_LEQUAL );
     kvs::OpenGL::SetDepthMask( GL_TRUE );

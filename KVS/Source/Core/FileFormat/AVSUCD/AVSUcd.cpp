@@ -31,7 +31,7 @@ auto& Seek = kvs::FileFormatBase::Seek;
 namespace
 {
 
-const size_t MaxLineLength = 512;
+const std::size_t MaxLineLength = 512;
 
 const char* const Delimiter = " \n\r";
 
@@ -175,8 +175,8 @@ bool AVSUcd::CheckExtension( const std::string& filename )
 /*==========================================================================*/
 AVSUcd::AVSUcd(
     const std::string& filename,
-    const size_t step_id,
-    const size_t component_id ):
+    const std::size_t step_id,
+    const std::size_t component_id ):
     FileFormatBase(),
     m_step_id( step_id ),
     m_component_id( component_id )
@@ -188,8 +188,8 @@ void AVSUcd::setComponentNames( const std::vector<std::string>& component_names 
 {
     m_component_names.clear();
 
-    const size_t size = component_names.size();
-    for ( size_t i = 0; i < size; ++i )
+    const std::size_t size = component_names.size();
+    for ( std::size_t i = 0; i < size; ++i )
     {
         m_component_names.push_back( component_names[ i ] );
     }
@@ -199,8 +199,8 @@ void AVSUcd::setComponentUnits( const std::vector<std::string>& component_units 
 {
     m_component_units.clear();
 
-    const size_t size = component_units.size();
-    for ( size_t i = 0; i < size; ++i )
+    const std::size_t size = component_units.size();
+    for ( std::size_t i = 0; i < size; ++i )
     {
         m_component_units.push_back( component_units[ i ] );
     }
@@ -220,21 +220,21 @@ void AVSUcd::print( std::ostream& os, const kvs::Indent& indent ) const
     os << indent << "Number of components per node : " << m_ncomponents_per_node << std::endl;
 
     os << indent << "Veclens of each component : ";
-    for ( size_t i = 0; i < m_ncomponents_per_node; ++i )
+    for ( std::size_t i = 0; i < m_ncomponents_per_node; ++i )
     {
         os << m_veclens[ i ] << " ";
     }
     os << std::endl;
 
     os << indent << "Names of each component : ";
-    for ( size_t i = 0; i < m_ncomponents_per_node; ++i )
+    for ( std::size_t i = 0; i < m_ncomponents_per_node; ++i )
     {
         os << m_component_names[ i ] << " ";
     }
     os << std::endl;
 
     os << indent << "Units of each component : ";
-    for ( size_t i = 0; i < m_ncomponents_per_node; ++i )
+    for ( std::size_t i = 0; i < m_ncomponents_per_node; ++i )
     {
         os << m_component_units[ i ] << " ";
     }
@@ -367,7 +367,7 @@ void AVSUcd::read_control_file( FILE* const ifs )
     {
         if ( buffer[0] == '#' ) continue;
 
-        size_t last = strlen(buffer) - 1;
+        std::size_t last = strlen(buffer) - 1;
         if ( buffer[last] == '\n' ) buffer[last] = '\0';
 
         const std::string filename = path + kvs::Directory::Separator() + std::string( buffer );
@@ -380,7 +380,7 @@ void AVSUcd::read_control_file( FILE* const ifs )
 
 void AVSUcd::read_binary_files( const std::vector<std::string>& filenames )
 {
-    for ( size_t i = 0; i < filenames.size(); i++ )
+    for ( std::size_t i = 0; i < filenames.size(); i++ )
     {
         const std::string& filename = filenames[i];
         const int step_id = ::StepNumber( filename ) - 1;
@@ -446,7 +446,7 @@ void AVSUcd::read_binary_file( const std::string& filename )
     {
         if ( std::string( keyword ) == "AVS UCD" )
         {
-            for ( size_t i = 0; i < m_nnodes; i++ )
+            for ( std::size_t i = 0; i < m_nnodes; i++ )
             {
                 int node_number = 0; // 1, 2, 3, ...
                 ::Read( &node_number, 4, 1, ifs );
@@ -457,7 +457,7 @@ void AVSUcd::read_binary_file( const std::string& filename )
         }
         else if ( std::string( keyword ) == "AVSUC64" )
         {
-            for ( size_t i = 0; i < m_nnodes; i++ )
+            for ( std::size_t i = 0; i < m_nnodes; i++ )
             {
                 long node_number = 0; // 1, 2, 3, ...
                 ::Read( &node_number, 8, 1, ifs );
@@ -472,7 +472,7 @@ void AVSUcd::read_binary_file( const std::string& filename )
         if ( std::string( keyword ) == "AVS UCD" )
         {
             kvs::ValueArray<int> node_ids( m_nnodes );
-            for ( size_t i = 0; i < m_nnodes; i++ )
+            for ( std::size_t i = 0; i < m_nnodes; i++ )
             {
                 int node_number = 0;
                 ::Read( &node_number, 4, 1, ifs );
@@ -481,19 +481,19 @@ void AVSUcd::read_binary_file( const std::string& filename )
                 node_ids[i] = node_id;
             }
 
-            for ( size_t i = 0; i < m_nnodes; i++ )
+            for ( std::size_t i = 0; i < m_nnodes; i++ )
             {
                 int node_id = node_ids[i];
                 ::Read( pcoords + 3 * node_id, 4, 1, ifs );
             }
 
-            for ( size_t i = 0; i < m_nnodes; i++ )
+            for ( std::size_t i = 0; i < m_nnodes; i++ )
             {
                 int node_id = node_ids[i];
                 ::Read( pcoords + 3 * node_id + 1, 4, 1, ifs );
             }
 
-            for ( size_t i = 0; i < m_nnodes; i++ )
+            for ( std::size_t i = 0; i < m_nnodes; i++ )
             {
                 int node_id = node_ids[i];
                 ::Read( pcoords + 3 * node_id + 2, 4, 1, ifs );
@@ -502,7 +502,7 @@ void AVSUcd::read_binary_file( const std::string& filename )
         else if ( std::string( keyword ) == "AVSUC64" )
         {
             kvs::ValueArray<long> node_ids( m_nnodes );
-            for ( size_t i = 0; i < m_nnodes; i++ )
+            for ( std::size_t i = 0; i < m_nnodes; i++ )
             {
                 long node_number = 0;
                 ::Read( &node_number, 8, 1, ifs );
@@ -511,19 +511,19 @@ void AVSUcd::read_binary_file( const std::string& filename )
                 node_ids[i] = node_id;
             }
 
-            for ( size_t i = 0; i < m_nnodes; i++ )
+            for ( std::size_t i = 0; i < m_nnodes; i++ )
             {
                 long node_id = node_ids[i];
                 ::Read( pcoords + 3 * node_id, 4, 1, ifs );
             }
 
-            for ( size_t i = 0; i < m_nnodes; i++ )
+            for ( std::size_t i = 0; i < m_nnodes; i++ )
             {
                 long node_id = node_ids[i];
                 ::Read( pcoords + 3 * node_id + 1, 4, 1, ifs );
             }
 
-            for ( size_t i = 0; i < m_nnodes; i++ )
+            for ( std::size_t i = 0; i < m_nnodes; i++ )
             {
                 long node_id = node_ids[i];
                 ::Read( pcoords + 3 * node_id + 2, 4, 1, ifs );
@@ -540,7 +540,7 @@ void AVSUcd::read_binary_file( const std::string& filename )
         m_nelements = static_cast<size_t>( nelements );
 
         kvs::ValueArray<int> element_ids( m_nelements );
-        for ( size_t i = 0; i < m_nelements; i++ )
+        for ( std::size_t i = 0; i < m_nelements; i++ )
         {
             int element_number = 0;
             ::Read( &element_number, 4, 1, ifs );
@@ -556,7 +556,7 @@ void AVSUcd::read_binary_file( const std::string& filename )
         ::Read( &element_type, 1, 1, ifs );
         ::Seek( ifs, m_nelements - 1, SEEK_CUR );
 
-        size_t nnodes_per_element = 0;
+        std::size_t nnodes_per_element = 0;
         if ( element_type == 0 ) { m_element_type = Point; nnodes_per_element = 1; }
         else if ( element_type == 4 ) { m_element_type = Tetrahedra; nnodes_per_element = 4; }
         else if ( element_type == 11 ) { m_element_type = Tetrahedra2; nnodes_per_element = 10; }
@@ -568,11 +568,11 @@ void AVSUcd::read_binary_file( const std::string& filename )
 
         m_connections.allocate( m_nelements * nnodes_per_element );
         kvs::UInt32* pconnections = m_connections.data();
-        for ( size_t i = 0; i < m_nelements; i++ )
+        for ( std::size_t i = 0; i < m_nelements; i++ )
         {
             int element_id = element_ids[i];
             kvs::UInt32* target = pconnections + nnodes_per_element * element_id;
-            for ( size_t j = 0; j < nnodes_per_element; j++ )
+            for ( std::size_t j = 0; j < nnodes_per_element; j++ )
             {
                 int connection_number = 0;
                 ::Read( &connection_number, 4, 1, ifs );
@@ -590,7 +590,7 @@ void AVSUcd::read_binary_file( const std::string& filename )
         m_nelements = static_cast<size_t>( nelements );
 
         kvs::ValueArray<long> element_ids( m_nelements );
-        for ( size_t i = 0; i < m_nelements; i++ )
+        for ( std::size_t i = 0; i < m_nelements; i++ )
         {
             long element_number = 0;
             ::Read( &element_number, 8, 1, ifs );
@@ -606,7 +606,7 @@ void AVSUcd::read_binary_file( const std::string& filename )
         ::Read( &element_type, 1, 1, ifs );
         ::Seek( ifs, m_nelements - 1, SEEK_CUR );
 
-        size_t nnodes_per_element = 0;
+        std::size_t nnodes_per_element = 0;
         if ( element_type == 0 ) { m_element_type = Point; nnodes_per_element = 1; }
         else if ( element_type == 4 ) { m_element_type = Tetrahedra; nnodes_per_element = 4; }
         else if ( element_type == 11 ) { m_element_type = Tetrahedra2; nnodes_per_element = 10; }
@@ -618,11 +618,11 @@ void AVSUcd::read_binary_file( const std::string& filename )
 
         m_connections.allocate( m_nelements * nnodes_per_element );
         kvs::UInt32* pconnections = m_connections.data();
-        for ( size_t i = 0; i < m_nelements; i++ )
+        for ( std::size_t i = 0; i < m_nelements; i++ )
         {
             long element_id = element_ids[i];
             kvs::UInt32* target = pconnections + nnodes_per_element * element_id;
-            for ( size_t j = 0; j < nnodes_per_element; j++ )
+            for ( std::size_t j = 0; j < nnodes_per_element; j++ )
             {
                 long connection_number = 0;
                 ::Read( &connection_number, 8, 1, ifs );
@@ -645,7 +645,7 @@ void AVSUcd::read_binary_file( const std::string& filename )
 
         if ( data_type == 1 )
         {
-            for ( size_t i = 0; i < m_ncomponents_per_node; i++ )
+            for ( std::size_t i = 0; i < m_ncomponents_per_node; i++ )
             {
                 char component_name[17] = {'\0'};
                 ::Read( component_name, 16, 1, ifs );
@@ -668,21 +668,21 @@ void AVSUcd::read_binary_file( const std::string& filename )
             }
 
             m_nvalues_per_node = 0;
-            for ( size_t i = 0; i < m_ncomponents_per_node; i++ )
+            for ( std::size_t i = 0; i < m_ncomponents_per_node; i++ )
             {
                 m_nvalues_per_node += m_veclens[i];
             }
 
-            size_t veclen = m_veclens[ m_component_id ];
-            size_t offset = 0; for ( size_t i = 0; i < m_component_id; i++ ) { offset += m_veclens[i]; }
+            std::size_t veclen = m_veclens[ m_component_id ];
+            std::size_t offset = 0; for ( std::size_t i = 0; i < m_component_id; i++ ) { offset += m_veclens[i]; }
             float* one_node = new float [ m_nvalues_per_node ];
             m_values.allocate( veclen * m_nnodes );
             kvs::Real32* pvalues = m_values.data();
-            for ( size_t i = 0; i < m_nnodes; i++ )
+            for ( std::size_t i = 0; i < m_nnodes; i++ )
             {
                 ::Read( one_node, 4, m_nvalues_per_node, ifs );
                 float* v = one_node + offset;
-                for ( size_t j = 0; j < veclen; j++ )
+                for ( std::size_t j = 0; j < veclen; j++ )
                 {
                     *(pvalues++) = *(v++);
                 }
@@ -872,7 +872,7 @@ void AVSUcd::read_coords( FILE* const ifs )
 
     kvs::Real32* coord = m_coords.data();
 
-    for ( size_t i = 0; i < m_nnodes; i++ )
+    for ( std::size_t i = 0; i < m_nnodes; i++ )
     {
         if ( fgets( buffer, ::MaxLineLength, ifs ) )
         {
@@ -1224,7 +1224,7 @@ void AVSUcd::read_components( FILE* const ifs )
     {
         m_ncomponents_per_node = atoi( strtok( buffer, ::Delimiter ) );
 
-        for ( size_t i = 0; i < m_ncomponents_per_node; ++i )
+        for ( std::size_t i = 0; i < m_ncomponents_per_node; ++i )
         {
             m_veclens.push_back( atoi( strtok( 0, ::Delimiter ) ) );
         }
@@ -1234,7 +1234,7 @@ void AVSUcd::read_components( FILE* const ifs )
         throw "Unexpected EOF in reading ncomponents per node";
     }
 
-    for ( size_t i = 0; i < m_ncomponents_per_node; ++i )
+    for ( std::size_t i = 0; i < m_ncomponents_per_node; ++i )
     {
         if ( fgets( buffer, ::MaxLineLength, ifs ) != 0 )
         {
@@ -1269,18 +1269,18 @@ void AVSUcd::read_values( FILE* const ifs )
 {
     char buffer[ ::MaxLineLength ];
 
-    const size_t veclen = m_veclens[ m_component_id ];
+    const std::size_t veclen = m_veclens[ m_component_id ];
     m_values.allocate( veclen * m_nnodes );
 
     kvs::Real32* value = m_values.data();
 
-    size_t nskips = 0;
-    for ( size_t i = 0; i < m_component_id; ++i )
+    std::size_t nskips = 0;
+    for ( std::size_t i = 0; i < m_component_id; ++i )
     {
         nskips += m_veclens[ i ];
     }
 
-    for ( size_t i = 0; i < m_nnodes; i++ )
+    for ( std::size_t i = 0; i < m_nnodes; i++ )
     {
         if ( fgets( buffer, ::MaxLineLength, ifs ) )
         {
@@ -1288,12 +1288,12 @@ void AVSUcd::read_values( FILE* const ifs )
             const int index = atoi( strtok( buffer, ::Delimiter ) ) - 1;
 
             // Skip other components
-            for ( size_t j = 0; j < nskips; ++j )
+            for ( std::size_t j = 0; j < nskips; ++j )
             {
                 strtok( 0, ::Delimiter );
             }
 
-            for ( size_t j = 0; j < veclen; ++j )
+            for ( std::size_t j = 0; j < veclen; ++j )
             {
                 value[ index * veclen + j ] = static_cast<kvs::Real32>( atof( strtok( 0, ::Delimiter ) ) );
             }
@@ -1316,7 +1316,7 @@ void AVSUcd::write_single_step_format( FILE* const ofs ) const
 
 void AVSUcd::write_coords( FILE* const ofs ) const
 {
-    size_t node_id = 1;
+    std::size_t node_id = 1;
 
     const kvs::Real32*       coord = m_coords.data();
     const kvs::Real32* const end   = coord + m_coords.size();
@@ -1337,7 +1337,7 @@ void AVSUcd::write_coords( FILE* const ofs ) const
 
 void AVSUcd::write_connections( FILE* const ofs ) const
 {
-    size_t element_id = 1;
+    std::size_t element_id = 1;
 
     const kvs::UInt32*       connection = m_connections.data();
     const kvs::UInt32* const end        = connection + m_connections.size();
@@ -1430,8 +1430,8 @@ void AVSUcd::write_connections( FILE* const ofs ) const
         {
             fprintf( ofs, "%u 0 hex2", static_cast<unsigned int>( element_id++ ) );
 
-            const size_t nnodes = 20;
-            for ( size_t i = 0; i < nnodes; i++ )
+            const std::size_t nnodes = 20;
+            for ( std::size_t i = 0; i < nnodes; i++ )
             {
                 const kvs::UInt32 node_id = *( connection++ ) + 1;
                 fprintf( ofs, " %u", node_id );
@@ -1489,13 +1489,13 @@ void AVSUcd::write_connections( FILE* const ofs ) const
 void AVSUcd::write_components( FILE* ofs ) const
 {
     fprintf( ofs, "%u", static_cast<unsigned int>( m_ncomponents_per_node ) );
-    for ( size_t i = 0; i < m_ncomponents_per_node; ++i )
+    for ( std::size_t i = 0; i < m_ncomponents_per_node; ++i )
     {
         fprintf( ofs, " %u", static_cast<unsigned int>( m_veclens[ i ] ) );
     }
     fprintf( ofs, "\n" );
 
-    for ( size_t i = 0; i < m_ncomponents_per_node; ++i )
+    for ( std::size_t i = 0; i < m_ncomponents_per_node; ++i )
     {
         fprintf( ofs, "%s,%s\n", m_component_names[ i ].c_str(), m_component_units[ i ].c_str() );
     }
@@ -1503,7 +1503,7 @@ void AVSUcd::write_components( FILE* ofs ) const
 
 void AVSUcd::write_values( FILE* ofs ) const
 {
-    size_t node_id = 1;
+    std::size_t node_id = 1;
 
     const kvs::Real32*       value = m_values.data();
     const kvs::Real32* const end   = value + m_values.size();

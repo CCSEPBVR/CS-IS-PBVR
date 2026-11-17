@@ -19,7 +19,7 @@
 
 namespace
 {
-const size_t DefaultResolution = 256;
+const std::size_t DefaultResolution = 256;
 }
 
 namespace pbvr
@@ -31,7 +31,7 @@ namespace pbvr
  *  @param  resolution [in] Resolution.
  */
 /*==========================================================================*/
-TransferFunction::TransferFunction( const size_t resolution )
+TransferFunction::TransferFunction( const std::size_t resolution )
     : m_color_map( resolution )
     , m_opacity_map( resolution )
 {
@@ -251,7 +251,7 @@ const kvs::OpacityMap& TransferFunction::opacityMap( void ) const
  *  @brief  Returns the resolution.
  */
 /*==========================================================================*/
-const size_t TransferFunction::resolution( void ) const
+const std::size_t TransferFunction::resolution( void ) const
 {
     KVS_ASSERT( m_opacity_map.resolution() == m_color_map.resolution() );
     return ( m_opacity_map.resolution() );
@@ -263,7 +263,7 @@ const size_t TransferFunction::resolution( void ) const
  *  @param  resolution [in] resolution
  */
 /*==========================================================================*/
-void TransferFunction::create( const size_t resolution )
+void TransferFunction::create( const std::size_t resolution )
 {
     m_opacity_map.setResolution( resolution );
     m_opacity_map.create();

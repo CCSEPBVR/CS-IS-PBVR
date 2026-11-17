@@ -6,11 +6,15 @@
 #include <vismodule/GlyphProperty>
 #include <vismodule/PlotOverLineProperty>
 #include <vismodule/PlotOverTimeProperty>
+#include <vismodule/TransferFunctionJsonWriter>
 
 class ParameterFileWriter
 {
 private:
     NameListFile m_name_list_file;
+    nlohmann::json m_glyph_parameter_json;
+    nlohmann::json m_pol_parameter_json;
+    nlohmann::json m_pot_parameter_json;
     std::string m_particle_parameter_path;
     std::string m_particle_parameter_old_path;
     std::string m_glyph_parameter_path;
@@ -23,12 +27,11 @@ public:
     std::string getGlyphParameterPath();
     std::string getPOLParameterPath();
     std::string getPOTParameterPath();
-    void getParticleParameter( const ParticleProperty& particle_property );
     void getGlyphParameter( const GlyphProperty& glyph_property );
     void getPlotOverLineParameter( const PlotOverLineProperty& pol_property );
     void getPlotOverTimeParameter( const PlotOverTimeProperty& pot_property );
-    void writeParticleParameterFile();
-    void writeParticleParameterOldFile();
+    void writeTF2Json( const ParticleProperty& particle_property );
+    void writeTF2OldJson( const ParticleProperty& particle_property );
     void writeGlyphParameterFile();
     void writePlotOverLineParameterFile();
     void writePlotOverTimeParameterFile();

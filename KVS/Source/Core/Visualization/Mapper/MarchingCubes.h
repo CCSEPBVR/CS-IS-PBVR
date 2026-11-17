@@ -54,7 +54,7 @@ private:
     template <typename T> void extract_surfaces( const Volume* volume );
     template <typename T> void extract_surfaces_with_duplication( const Volume* volume );
     template <typename T> void extract_surfaces_without_duplication( const Volume* volume );
-    template <typename T> size_t calculate_table_index( const size_t* local_index ) const;
+    template <typename T> std::size_t calculate_table_index( const size_t* local_index ) const;
     template <typename T> const kvs::Vec3 interpolate_vertex( const kvs::Vec3& vertex0, const kvs::Vec3& vertex1 ) const;
     template <typename T> void calculate_isopoints( kvs::UInt32*& vertex_map, Coords& coords );
     template <typename T> void connect_isopoints( kvs::UInt32*& vertex_map, Connects& connections );

@@ -138,7 +138,7 @@ void Texture::setPixelFormat(
  *  @param  bytes_per_channel [in] bytes per channel (1, 2 or 4)
  */
 /*==========================================================================*/
-void Texture::setPixelFormat( const size_t nchannels, const size_t bytes_per_channel )
+void Texture::setPixelFormat( const std::size_t nchannels, const std::size_t bytes_per_channel )
 {
     this->estimate_pixel_format( nchannels, bytes_per_channel );
 }
@@ -151,7 +151,7 @@ void Texture::setPixelFormat( const size_t nchannels, const size_t bytes_per_cha
  *  @param  depth [in] texture depth
  */
 /*===========================================================================*/
-void Texture::setSize( const size_t width, const size_t height, const size_t depth )
+void Texture::setSize( const std::size_t width, const std::size_t height, const std::size_t depth )
 {
     m_width = width;
     m_height = height;
@@ -592,7 +592,7 @@ void Texture::setPixelStorageMode( GLenum pname, GLint param )
 /*
 size_t Texture::get_nchannels( const GLenum external_format ) const
 {
-    size_t nchannels = 0;
+    std::size_t nchannels = 0;
     switch( external_format )
     {
     case GL_COLOR_INDEX:
@@ -641,7 +641,7 @@ size_t Texture::get_nchannels( const GLenum external_format ) const
 /*
 size_t Texture::get_channel_size( const GLenum external_type ) const
 {
-    size_t channel_size = 0;
+    std::size_t channel_size = 0;
     switch( external_type )
     {
     case GL_UNSIGNED_BYTE:
@@ -675,7 +675,7 @@ size_t Texture::get_channel_size( const GLenum external_type ) const
  *  @param bytes_per_channel [in] bytes per channel
  */
 /*==========================================================================*/
-void Texture::estimate_pixel_format( const size_t nchannels, const size_t bytes_per_channel )
+void Texture::estimate_pixel_format( const std::size_t nchannels, const std::size_t bytes_per_channel )
 {
     // Initialize.
     this->setPixelFormat( 0, 0, 0 );
@@ -698,7 +698,7 @@ void Texture::estimate_pixel_format( const size_t nchannels, const size_t bytes_
  *  @param bytes_per_channel [in] bytes per channel
  */
 /*==========================================================================*/
-void Texture::determine_pixel_format_for_1_channel( const size_t bytes_per_channel )
+void Texture::determine_pixel_format_for_1_channel( const std::size_t bytes_per_channel )
 {
     switch( bytes_per_channel )
     {
@@ -717,7 +717,7 @@ void Texture::determine_pixel_format_for_1_channel( const size_t bytes_per_chann
  *  @param bytes_per_channel [in] bytes per channel
  */
 /*==========================================================================*/
-void Texture::determine_pixel_format_for_2_channel( const size_t bytes_per_channel )
+void Texture::determine_pixel_format_for_2_channel( const std::size_t bytes_per_channel )
 {
     switch( bytes_per_channel )
     {
@@ -736,7 +736,7 @@ void Texture::determine_pixel_format_for_2_channel( const size_t bytes_per_chann
  *  @param bytes_per_channel [in] bytes per channel
  */
 /*==========================================================================*/
-void Texture::determine_pixel_format_for_3_channel( const size_t bytes_per_channel )
+void Texture::determine_pixel_format_for_3_channel( const std::size_t bytes_per_channel )
 {
     switch( bytes_per_channel )
     {
@@ -755,7 +755,7 @@ void Texture::determine_pixel_format_for_3_channel( const size_t bytes_per_chann
  *  @param bytes_per_channel [in] bytes per channel
  */
 /*==========================================================================*/
-void Texture::determine_pixel_format_for_4_channel( const size_t bytes_per_channel )
+void Texture::determine_pixel_format_for_4_channel( const std::size_t bytes_per_channel )
 {
     switch( bytes_per_channel )
     {

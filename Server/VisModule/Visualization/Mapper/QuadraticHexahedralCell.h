@@ -72,7 +72,46 @@ public:
 
     const vismodule::Real32 volume() const;
 
+    // volume() のブロック一括版。既存の volume() は残したまま追加している
+    // (CS-PBVR 側の経路を変えないため)。
+    void volumeArray( const int loop_cnt,
+                      const vismodule::UInt32* cell_index,
+                      vismodule::Real32* volumes );
+
     void setLocalGravityPoint() const;
+
+    /*  節点 i の局所座標（新規追加）。interpolationFunctions() から導いた。
+     *  0-7が角(HexahedralCell と同じ)、8-19が辺の中点
+     */
+    bool localNodeCoord( const int i, vismodule::Vector3f* coord ) const
+    {
+        static const float table[20][3] =
+        {
+            { 0, 0, 1 },
+            { 1, 0, 1 },
+            { 1, 1, 1 },
+            { 0, 1, 1 },
+            { 0, 0, 0 },
+            { 1, 0, 0 },
+            { 1, 1, 0 },
+            { 0, 1, 0 },
+            { 0.5f, 0, 1 },
+            { 1, 0.5f, 1 },
+            { 0.5f, 1, 1 },
+            { 0, 0.5f, 1 },
+            { 0.5f, 0, 0 },
+            { 1, 0.5f, 0 },
+            { 0.5f, 1, 0 },
+            { 0, 0.5f, 0 },
+            { 0, 0, 0.5f },
+            { 1, 0, 0.5f },
+            { 1, 1, 0.5f },
+            { 0, 1, 0.5f }
+        };
+        if ( i < 0 || i >= 20 || coord == NULL ) return false;
+        *coord = vismodule::Vector3f( table[i][0], table[i][1], table[i][2] );
+        return true;
+    }
 };
 
 /*===========================================================================*/
@@ -124,7 +163,7 @@ template <typename T>
 inline void QuadraticHexahedralCell<T>::scalar_ary( float*  scalar_array, const int loop_cnt) const 
 {
     #pragma ivdep
-    for ( size_t i = 0; i < loop_cnt ; i++ )
+    for ( std::size_t i = 0; i < loop_cnt ; i++ )
     {
         //scalar_array[i]= static_cast<vismodule::Real32>( m_interpolation_functions_array[0][j] * m_scalars_array[0][j] );
         scalar_array[i] =  BaseClass::m_interpolation_functions_array[ 0][i] * BaseClass::m_scalars_array[ 0][i] 
@@ -892,7 +931,7 @@ const vismodule::Vector3f QuadraticHexahedralCell<T>::randomSampling_MT(vismodul
 template <typename T>
 inline const vismodule::Real32 QuadraticHexahedralCell<T>::volume() const
 {
-    const size_t resolution = 3;
+    const std::size_t resolution = 3;
     const float sampling_length = 1.0f / ( float )resolution;
     const float adjustment = sampling_length * 0.5f;
 
@@ -916,13 +955,13 @@ inline const vismodule::Real32 QuadraticHexahedralCell<T>::volume() const
 //    debug << "dNdx[i] = " <<  dNdx[i] << ", dNdy[i] = " << dNdy[i] << ", dNdz[i] = " << dNdz[i] << std::endl;
 //    }
 
-    for ( size_t k = 0 ; k < resolution ; k++ )
+    for ( std::size_t k = 0 ; k < resolution ; k++ )
     {
         sampling_position[ 2 ] +=  sampling_length;
-        for ( size_t j = 0 ; j < resolution ; j++ )
+        for ( std::size_t j = 0 ; j < resolution ; j++ )
         {
             sampling_position[ 1 ] += sampling_length;
-            for ( size_t i = 0 ; i < resolution ; i++ )
+            for ( std::size_t i = 0 ; i < resolution ; i++ )
             {
                 sampling_position[ 0 ] += sampling_length;
 
@@ -948,6 +987,87 @@ inline const vismodule::Real32 QuadraticHexahedralCell<T>::volume() const
 //   std::cout << debug.str() <<std::endl;
 
     return sum_metric / resolution3;
+}
+
+/*===========================================================================*/
+/**
+ *  @brief  Returns volumes for cells already loaded by bindCellArray().
+ *  @param  loop_cnt [in]  number of bound cells
+ *  @param  volumes  [out] volume array
+ *
+ *  volume() のブロック一括版(既存の volume() は無変更)。
+ *  求積点(3x3x3)は sampling_position への繰り返し加算で作られており厳密な
+ *  {1/6,1/2,5/6} ではないため、三重ループの構造と加算の仕方・点の順序を
+ *  volume() からそのまま保っている。各点について内側でセル方向にベクトル化する。
+ *  頂点は bindCellArray() が既に集めた m_vertices_array を読む。
+ *  加算順序・式・定数が volume() と同一なので結果はビット一致。
+ */
+/*===========================================================================*/
+template <typename T>
+inline void QuadraticHexahedralCell<T>::volumeArray(
+    const int loop_cnt,
+    const vismodule::UInt32*,
+    vismodule::Real32* volumes )
+{
+    if ( volumes == NULL ) return;
+
+    const std::size_t resolution = 3;
+    const float sampling_length = 1.0f / ( float )resolution;
+    const float adjustment = sampling_length * 0.5f;
+
+    vismodule::Vector3f sampling_position( -adjustment, -adjustment, -adjustment );
+
+    // __restrict で volumes が m_vertices_array と別領域であることを示す
+    vismodule::Real32* __restrict vol = volumes;
+    for ( int ci = 0; ci < loop_cnt; ++ci ) vol[ci] = 0.0f;
+
+    for ( std::size_t k = 0 ; k < resolution ; k++ )
+    {
+        sampling_position[ 2 ] +=  sampling_length;
+        for ( std::size_t j = 0 ; j < resolution ; j++ )
+        {
+            sampling_position[ 1 ] += sampling_length;
+            for ( std::size_t i = 0 ; i < resolution ; i++ )
+            {
+                sampling_position[ 0 ] += sampling_length;
+
+                // 求積点はセルに依存しないので、微分はここで1回だけ評価する
+                this->differentialFunctions( sampling_position );
+                const float* const dNdx = BaseClass::m_differential_functions;
+                const float* const dNdy = dNdx + NumberOfNodes;
+                const float* const dNdz = dNdy + NumberOfNodes;
+
+                #pragma omp simd
+                for ( int ci = 0; ci < loop_cnt; ++ci )
+                {
+                    // JacobiMatrix() と同じ節点順・同じ加算順で J を組む
+                    float dXdx = 0, dYdx = 0, dZdx = 0;
+                    float dXdy = 0, dYdy = 0, dZdy = 0;
+                    float dXdz = 0, dYdz = 0, dZdz = 0;
+                    for ( int nd = 0; nd < NumberOfNodes; ++nd )
+                    {
+                        const vismodule::Vector3f& v = BaseClass::m_vertices_array[nd][ci];
+                        dXdx += dNdx[nd] * v.x();  dYdx += dNdx[nd] * v.y();  dZdx += dNdx[nd] * v.z();
+                        dXdy += dNdy[nd] * v.x();  dYdy += dNdy[nd] * v.y();  dZdy += dNdy[nd] * v.z();
+                        dXdz += dNdz[nd] * v.x();  dYdz += dNdz[nd] * v.y();  dZdz += dNdz[nd] * v.z();
+                    }
+
+                    // Matrix33f::determinant() と同一の式・順序
+                    const float d0 = dYdy * dZdz - dZdy * dYdz;
+                    const float d1 = dXdy * dZdz - dZdy * dXdz;
+                    const float d2 = dXdy * dYdz - dYdy * dXdz;
+                    const float det = dXdx * d0 - dYdx * d1 + dZdx * d2;
+
+                    vol[ci] += vismodule::Math::Abs<float>( det );
+                }
+            }
+            sampling_position[ 0 ] = -adjustment;
+        }
+        sampling_position[ 1 ] = -adjustment;
+    }
+
+    const float resolution3 = resolution * resolution * resolution;
+    for ( int ci = 0; ci < loop_cnt; ++ci ) vol[ci] = vol[ci] / resolution3;
 }
 
 /*===========================================================================*/

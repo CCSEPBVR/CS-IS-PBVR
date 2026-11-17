@@ -48,23 +48,23 @@ public:
     void setOpacitySynthesizer( const std::string& synthesizer ) { m_opacity_synthesizer = synthesizer; }
     const std::string& opacitySynthesizer() const { return m_opacity_synthesizer; }
 
-    Item& at( size_t index )
+    Item& at( std::size_t index )
     {
         return m_transfer_functions.at( index ); // 範囲外なら std::out_of_range
     }
 
-    const Item& at( size_t index ) const
+    const Item& at( std::size_t index ) const
     {
         return m_transfer_functions.at( index ); // 範囲外アクセスは std::out_of_range を投げる
     }
 
-    size_t count() const { return m_transfer_functions.size(); }
+    std::size_t count() const { return m_transfer_functions.size(); }
     void addTransferFunction( const Item& item )
     {
         m_transfer_functions.push_back( item );
     }
 
-    void removeTransferFunction( size_t index )
+    void removeTransferFunction( std::size_t index )
     {
         if( index < m_transfer_functions.size() )
             m_transfer_functions.erase( m_transfer_functions.begin() + index );

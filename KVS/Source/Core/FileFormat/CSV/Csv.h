@@ -45,19 +45,19 @@ public:
     Csv();
     Csv( const std::string& filename );
 
-    size_t numberOfRows() const;
-    const Row& row( const size_t index ) const;
-    const std::string& value( const size_t i, const size_t j ) const;
+    std::size_t numberOfRows() const;
+    const Row& row( const std::size_t index ) const;
+    const std::string& value( const std::size_t i, const std::size_t j ) const;
     void addRow( const Row& row );
-    void setRow( const size_t index, const Row& row );
-    void setValue( const size_t i, const size_t j, const std::string& value );
+    void setRow( const std::size_t index, const Row& row );
+    void setValue( const std::size_t i, const std::size_t j, const std::string& value );
 
     void print( std::ostream& os, const kvs::Indent& indent = kvs::Indent(0) ) const;
     bool read( const std::string& filename );
     bool write( const std::string& filename );
 
 public:
-    KVS_DEPRECATED( size_t nrows() const ) { return this->numberOfRows(); }
+    KVS_DEPRECATED( std::size_t nrows() const ) { return this->numberOfRows(); }
 };
 
 } // end of namespace kvs

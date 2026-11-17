@@ -23,8 +23,8 @@ namespace POT
 class Polyhedron
 {
 public:
-    size_t nvertices;
-    size_t ncells;
+    std::size_t nvertices;
+    std::size_t ncells;
     vismodule::ValueArray<vismodule::Real32> coords;
     vismodule::ValueArray<vismodule::Real32> scalars;
     vismodule::ValueArray<vismodule::UInt32> connections;

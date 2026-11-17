@@ -54,9 +54,9 @@ protected:
     std::string                  m_cell_type;     ///< cell type
     bool                         m_has_label;     ///< data label is specified or not
     std::string                  m_label;         ///< data label
-    size_t                       m_veclen;        ///< vector length
-    size_t                       m_nnodes;        ///< number of nodes
-    size_t                       m_ncells;        ///< number of cells
+    std::size_t                       m_veclen;        ///< vector length
+    std::size_t                       m_nnodes;        ///< number of nodes
+    std::size_t                       m_ncells;        ///< number of cells
     bool                         m_has_min_value; ///< min. value is specified or not
     bool                         m_has_max_value; ///< max. value is specified or not
     double                       m_min_value;     ///< min. value
@@ -87,11 +87,11 @@ public:
 
     const std::string& label( void ) const;
 
-    const size_t veclen( void ) const;
+    const std::size_t veclen( void ) const;
 
-    const size_t nnodes( void ) const;
+    const std::size_t nnodes( void ) const;
 
-    const size_t ncells( void ) const;
+    const std::size_t ncells( void ) const;
 
     const bool hasMinValue( void ) const;
 
@@ -115,11 +115,11 @@ public:
 
     void setLabel( const std::string& label );
 
-    void setVeclen( const size_t veclen );
+    void setVeclen( const std::size_t veclen );
 
-    void setNNodes( const size_t nnodes );
+    void setNNodes( const std::size_t nnodes );
 
-    void setNCells( const size_t ncells );
+    void setNCells( const std::size_t ncells );
 
     void setMinValue( const double min_value );
 

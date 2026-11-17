@@ -26,7 +26,7 @@ int main( int argc, char** argv )
     kvs::Screen screen( &app );
     screen.setTitle( "kvs::ScatterPlotMatrixRenderer" );
 
-    const size_t nsamples = 50;
+    const std::size_t nsamples = 50;
     const float min_value = 0.0f;
     const float max_value = 1.0f;
     const auto random_x = kvs::ValueArray<float>::Random( nsamples, min_value, max_value );

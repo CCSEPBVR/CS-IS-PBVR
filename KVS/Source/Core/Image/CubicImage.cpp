@@ -41,15 +41,15 @@ const kvs::Vec3 UpVecs[ kvs::CubicImage::NumberOfDirections ] = {
 
 inline void Draw(
     const kvs::ColorImage& source,
-    const size_t offset_i,
-    const size_t offset_j,
+    const std::size_t offset_i,
+    const std::size_t offset_j,
     kvs::ColorImage* result )
 {
-    const size_t w = source.width();
-    const size_t h = source.height();
-    for ( size_t j = 0; j < h; j++ )
+    const std::size_t w = source.width();
+    const std::size_t h = source.height();
+    for ( std::size_t j = 0; j < h; j++ )
     {
-        for ( size_t i = 0; i < w; i++ )
+        for ( std::size_t i = 0; i < w; i++ )
         {
             const auto pixel = source.pixel( i, j );
             result->setPixel( i + offset_i, j + offset_j, pixel );
@@ -80,8 +80,8 @@ kvs::Vec3 CubicImage::UpVector( const CubicImage::Direction dir )
 
 void CubicImage::stitch()
 {
-    const size_t w = this->frontImage().width();
-    const size_t h = this->frontImage().height();
+    const std::size_t w = this->frontImage().width();
+    const std::size_t h = this->frontImage().height();
     KVS_ASSERT( w == this->backImage().width() && h == this->backImage().height() );
     KVS_ASSERT( w == this->topImage().width() && h == this->topImage().height() );
     KVS_ASSERT( w == this->bottomImage().width() && h == this->bottomImage().height() );

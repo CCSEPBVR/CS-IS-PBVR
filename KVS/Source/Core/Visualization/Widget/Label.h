@@ -42,7 +42,7 @@ public:
     virtual void screenResized() { if ( m_screen_resized ) m_screen_resized(); }
 
     const TextList& textList() const { return m_text_list; }
-    const std::string& text( const size_t index ) { return m_text_list[ index ]; }
+    const std::string& text( const std::size_t index ) { return m_text_list[ index ]; }
 
     void setText( const std::string& text ) { m_text_list.clear(); this->addText( text ); }
     void addText( const std::string& text ) { m_text_list.push_back( text ); }

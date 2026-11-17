@@ -7,7 +7,7 @@
 namespace
 {
 
-void PerfTest( const size_t size, const size_t nloops )
+void PerfTest( const std::size_t size, const std::size_t nloops )
 {
     std::cout << "Performance Test (" << nloops << " times)" << std::endl;
 
@@ -18,7 +18,7 @@ void PerfTest( const size_t size, const size_t nloops )
     {
         Mat a;
         kvs::Timer timer( kvs::Timer::Start );
-        for ( size_t i = 0; i < nloops; ++i ) { a = Mat::Random( size, size ); }
+        for ( std::size_t i = 0; i < nloops; ++i ) { a = Mat::Random( size, size ); }
         timer.stop();
         std::cout << indent << "Random: " << timer.sec() << " [sec]" << std::endl;
     }
@@ -28,7 +28,7 @@ void PerfTest( const size_t size, const size_t nloops )
         Mat a = Mat::Random( size, size );
         Mat b = Mat::Random( size, size );
         kvs::Timer timer( kvs::Timer::Start );
-        for ( size_t i = 0; i < nloops; ++i ) { a.swap( b ); }
+        for ( std::size_t i = 0; i < nloops; ++i ) { a.swap( b ); }
         timer.stop();
         std::cout << indent << "Swap: " << timer.sec() << " [sec]" << std::endl;
     }
@@ -37,7 +37,7 @@ void PerfTest( const size_t size, const size_t nloops )
     {
         Mat a = Mat::Random( size, size );
         kvs::Timer timer( kvs::Timer::Start );
-        for ( size_t i = 0; i < nloops; ++i ) { a.transposed(); }
+        for ( std::size_t i = 0; i < nloops; ++i ) { a.transposed(); }
         timer.stop();
         std::cout << indent << "Transpose: " << timer.sec() << " [sec]" << std::endl;
     }
@@ -46,7 +46,7 @@ void PerfTest( const size_t size, const size_t nloops )
     {
         Mat a = Mat::Random( size, size );
         kvs::Timer timer( kvs::Timer::Start );
-        for ( size_t i = 0; i < nloops; ++i ) { a.inverted(); }
+        for ( std::size_t i = 0; i < nloops; ++i ) { a.inverted(); }
         timer.stop();
         std::cout << indent << "Inverse: " << timer.sec() << " [sec]" << std::endl;
     }
@@ -57,7 +57,7 @@ void PerfTest( const size_t size, const size_t nloops )
         Mat b = Mat::Random( size, size );
         Mat c;
         kvs::Timer timer( kvs::Timer::Start );
-        for ( size_t i = 0; i < nloops; ++i ) { c = a + b; }
+        for ( std::size_t i = 0; i < nloops; ++i ) { c = a + b; }
         timer.stop();
         std::cout << indent << "+ operator: " << timer.sec() << " [sec]" << std::endl;
     }
@@ -68,7 +68,7 @@ void PerfTest( const size_t size, const size_t nloops )
         Mat b = Mat::Random( size, size );
         Mat c;
         kvs::Timer timer( kvs::Timer::Start );
-        for ( size_t i = 0; i < nloops; ++i ) { c = a - b; }
+        for ( std::size_t i = 0; i < nloops; ++i ) { c = a - b; }
         timer.stop();
         std::cout << indent << "- operator: " << timer.sec() << " [sec]" << std::endl;
     }
@@ -79,7 +79,7 @@ void PerfTest( const size_t size, const size_t nloops )
         Mat b = Mat::Random( size, size );
         Mat c;
         kvs::Timer timer( kvs::Timer::Start );
-        for ( size_t i = 0; i < nloops; ++i ) { c = a * b; }
+        for ( std::size_t i = 0; i < nloops; ++i ) { c = a * b; }
         timer.stop();
         std::cout << indent << "* operator: " << timer.sec() << " [sec]" << std::endl;
     }
@@ -91,8 +91,8 @@ void PerfTest( const size_t size, const size_t nloops )
 int main()
 {
     std::cout << "Definition" << std::endl;
-    const size_t nrows = 5;
-    const size_t ncols = 5;
+    const std::size_t nrows = 5;
+    const std::size_t ncols = 5;
     const float m1[ nrows * ncols ] = {
         1.0f, 2.0f, 3.0f, 4.0f, 5.0f,
         5.0f, 2.0f, 1.0f, 2.0f, 1.0f,
@@ -102,7 +102,7 @@ int main()
     };
     kvs::Matrix<float> a( nrows, ncols, m1 );
     std::cout << "a = [" << a[0];
-    for ( size_t i = 1; i < a.rowSize(); ++i ) { std::cout << ", " << a[i]; }
+    for ( std::size_t i = 1; i < a.rowSize(); ++i ) { std::cout << ", " << a[i]; }
     std::cout << "]" << std::endl;
 
     kvs::Matrix<float> b( nrows, ncols );
@@ -202,8 +202,8 @@ int main()
               << kvs::Mat::Random( nrows, ncols, -1.0f, 1.0f, 2 ).format( true, indent ) << std::endl;
     std::cout << std::endl;
 
-    const size_t size = 100;
-    const size_t nloops = 10000;
+    const std::size_t size = 100;
+    const std::size_t nloops = 10000;
     ::PerfTest( size, nloops );
 
     return 0;

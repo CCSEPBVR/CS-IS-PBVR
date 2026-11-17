@@ -4,7 +4,7 @@
 #include <vector>
 
 
-void PerfTest( const size_t size, const size_t n )
+void PerfTest( const std::size_t size, const std::size_t n )
 {
     std::cout << "Performance Test (" << size << " elements, " << n << " times)" << std::endl;
 
@@ -15,7 +15,7 @@ void PerfTest( const size_t size, const size_t n )
     {
         Array a;
         kvs::Timer timer( kvs::Timer::Start );
-        for ( size_t i = 0; i < n; ++i ) { a = Array::Random( size ); }
+        for ( std::size_t i = 0; i < n; ++i ) { a = Array::Random( size ); }
         timer.stop();
         std::cout << indent << "Random: " << timer.sec() << " [sec]" << std::endl;
     }
@@ -24,7 +24,7 @@ void PerfTest( const size_t size, const size_t n )
     {
         Array a;
         kvs::Timer timer( kvs::Timer::Start );
-        for ( size_t i = 0; i < n; ++i ) { a = Array::Linear( size ); }
+        for ( std::size_t i = 0; i < n; ++i ) { a = Array::Linear( size ); }
         timer.stop();
         std::cout << indent << "Linear: " << timer.sec() << " [sec]" << std::endl;
     }
@@ -33,7 +33,7 @@ void PerfTest( const size_t size, const size_t n )
     {
         Array a = Array::Random( size );
         kvs::Timer timer( kvs::Timer::Start );
-        for ( size_t i = 0; i < n; ++i ) { a.shuffle(); }
+        for ( std::size_t i = 0; i < n; ++i ) { a.shuffle(); }
         timer.stop();
         std::cout << indent << "Shuffle: " << timer.sec() << " [sec]" << std::endl;
     }
@@ -43,7 +43,7 @@ void PerfTest( const size_t size, const size_t n )
         Array a = Array::Random( size );
         float value = 0.0f;
         kvs::Timer timer( kvs::Timer::Start );
-        for ( size_t i = 0; i < n; ++i ) { value = a.min(); }
+        for ( std::size_t i = 0; i < n; ++i ) { value = a.min(); }
         timer.stop();
         std::cout << indent << "Min: " << timer.sec() << " [sec]" << std::endl;
     }
@@ -52,7 +52,7 @@ void PerfTest( const size_t size, const size_t n )
     {
         Array a = Array::Random( size );
         kvs::Timer timer( kvs::Timer::Start );
-        for ( size_t i = 0; i < n; ++i ) { a.sort(); }
+        for ( std::size_t i = 0; i < n; ++i ) { a.sort(); }
         timer.stop();
         std::cout << indent << "Sort: " << timer.sec() << " [sec]" << std::endl;
     }
@@ -60,9 +60,9 @@ void PerfTest( const size_t size, const size_t n )
     // ArgMin
     {
         Array a = Array::Random( size );
-        size_t index = 0;
+        std::size_t index = 0;
         kvs::Timer timer( kvs::Timer::Start );
-        for ( size_t i = 0; i < n; ++i ) { index = a.argmin(); }
+        for ( std::size_t i = 0; i < n; ++i ) { index = a.argmin(); }
         timer.stop();
         std::cout << indent << "ArgMin: " << timer.sec() << " [sec]" << std::endl;
     }
@@ -71,7 +71,7 @@ void PerfTest( const size_t size, const size_t n )
     {
         Array a = Array::Random( size );
         kvs::Timer timer( kvs::Timer::Start );
-        for ( size_t i = 0; i < n; ++i ) { a.argsort(); }
+        for ( std::size_t i = 0; i < n; ++i ) { a.argsort(); }
         timer.stop();
         std::cout << indent << "ArgSort: " << timer.sec() << " [sec]" << std::endl;
     }
@@ -156,7 +156,7 @@ int main()
 
     std::cout << "Random" << std::endl;
     {
-        const size_t n = 5;
+        const std::size_t n = 5;
         auto v = kvs::ValueArray<int>::Random( n );
         std::cout << indent << "kvs::ValueArray<int>::Random( n ); // n = 5" << std::endl;
         std::cout << indent.nextIndent() << v.format() << std::endl;
@@ -179,7 +179,7 @@ int main()
 
     std::cout << "Linear" << std::endl;
     {
-        const size_t n = 5;
+        const std::size_t n = 5;
         auto v1 = kvs::ValueArray<int>::Linear( n );
         std::cout << indent << "kvs::ValueArray<int>::Linear( n ); // n = 5" << std::endl;
         std::cout << indent.nextIndent() << v1.format() << std::endl;

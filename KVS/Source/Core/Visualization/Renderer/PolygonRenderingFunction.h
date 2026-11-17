@@ -49,8 +49,8 @@ void Rendering_Tri_VCs_O( const kvs::PolygonObject* polygon )
     kvs::OpenGL::Begin( GL_TRIANGLES );
     {
         const kvs::UInt8 opacity = polygon->opacity();
-        const size_t nvertices = polygon->numberOfVertices();
-        for ( size_t i = 0, i3 = 0; i < nvertices; i++, i3 += 3 )
+        const std::size_t nvertices = polygon->numberOfVertices();
+        for ( std::size_t i = 0, i3 = 0; i < nvertices; i++, i3 += 3 )
         {
             kvs::OpenGL::Color( polygon->colors().data() + i3, opacity );
             kvs::OpenGL::Vertex3( polygon->coords().data() + i3 );
@@ -71,12 +71,12 @@ void Rendering_Tri_VCs_O_Cs( const kvs::PolygonObject* polygon )
     {
         const kvs::UInt8 opacity = polygon->opacity();
         const kvs::UInt32* connections = polygon->connections().data();
-        const size_t nconnections = polygon->numberOfConnections();
-        for ( size_t i = 0, i3 = 0; i < nconnections; i++, i3 += 3 )
+        const std::size_t nconnections = polygon->numberOfConnections();
+        for ( std::size_t i = 0, i3 = 0; i < nconnections; i++, i3 += 3 )
         {
-            const size_t id0 = *( connections + i3 ) * 3;
-            const size_t id1 = *( connections + i3 + 1 ) * 3;
-            const size_t id2 = *( connections + i3 + 2 ) * 3;
+            const std::size_t id0 = *( connections + i3 ) * 3;
+            const std::size_t id1 = *( connections + i3 + 1 ) * 3;
+            const std::size_t id2 = *( connections + i3 + 2 ) * 3;
 
             kvs::OpenGL::Color( polygon->colors().data() + id0, opacity );
             kvs::OpenGL::Vertex3( polygon->coords().data() + id0 );
@@ -101,8 +101,8 @@ void Rendering_Tri_VCs_Os( const kvs::PolygonObject* polygon )
 {
     kvs::OpenGL::Begin( GL_TRIANGLES );
     {
-        const size_t nvertices = polygon->numberOfVertices();
-        for ( size_t i = 0, i3 = 0; i < nvertices; i++, i3 += 3 )
+        const std::size_t nvertices = polygon->numberOfVertices();
+        for ( std::size_t i = 0, i3 = 0; i < nvertices; i++, i3 += 3 )
         {
             kvs::OpenGL::Color( polygon->colors().data() + i3, polygon->opacity(i) );
             kvs::OpenGL::Vertex3( polygon->coords().data() + i3 );
@@ -122,12 +122,12 @@ void Rendering_Tri_VCs_Os_Cs( const kvs::PolygonObject* polygon )
     kvs::OpenGL::Begin( GL_TRIANGLES );
     {
         const kvs::UInt32* connections = polygon->connections().data();
-        const size_t nconnections = polygon->numberOfConnections();
-        for ( size_t i = 0, i3 = 0; i < nconnections; i++, i3 += 3 )
+        const std::size_t nconnections = polygon->numberOfConnections();
+        for ( std::size_t i = 0, i3 = 0; i < nconnections; i++, i3 += 3 )
         {
-            const size_t id0 = *( connections + i3 ) * 3;
-            const size_t id1 = *( connections + i3 + 1 ) * 3;
-            const size_t id2 = *( connections + i3 + 2 ) * 3;
+            const std::size_t id0 = *( connections + i3 ) * 3;
+            const std::size_t id1 = *( connections + i3 + 1 ) * 3;
+            const std::size_t id2 = *( connections + i3 + 2 ) * 3;
             const kvs::UInt8 opacity0 = polygon->opacity( id0 / 3 );
             const kvs::UInt8 opacity1 = polygon->opacity( id1 / 3 );
             const kvs::UInt8 opacity2 = polygon->opacity( id2 / 3 );
@@ -159,8 +159,8 @@ void Rendering_Tri_SC_O( const kvs::PolygonObject* polygon )
         const kvs::UInt8 opacity = polygon->opacity(0);
         kvs::OpenGL::Color( color.r(), color.g(), color.b(), opacity );
 
-        const size_t nvertices = polygon->numberOfVertices();
-        for ( size_t i = 0, i3 = 0; i < nvertices; i++, i3 += 3 )
+        const std::size_t nvertices = polygon->numberOfVertices();
+        for ( std::size_t i = 0, i3 = 0; i < nvertices; i++, i3 += 3 )
         {
             kvs::OpenGL::Vertex3( polygon->coords().data() + i3 );
         }
@@ -183,12 +183,12 @@ void Rendering_Tri_SC_O_Cs( const kvs::PolygonObject* polygon )
         kvs::OpenGL::Color( color.r(), color.g(), color.b(), opacity );
 
         const kvs::UInt32* connections = polygon->connections().data();
-        const size_t nconnections = polygon->numberOfConnections();
-        for ( size_t i = 0, i3 = 0; i < nconnections; i++, i3 += 3 )
+        const std::size_t nconnections = polygon->numberOfConnections();
+        for ( std::size_t i = 0, i3 = 0; i < nconnections; i++, i3 += 3 )
         {
-            const size_t id0 = *( connections + i3 ) * 3;
-            const size_t id1 = *( connections + i3 + 1 ) * 3;
-            const size_t id2 = *( connections + i3 + 2 ) * 3;
+            const std::size_t id0 = *( connections + i3 ) * 3;
+            const std::size_t id1 = *( connections + i3 + 1 ) * 3;
+            const std::size_t id2 = *( connections + i3 + 2 ) * 3;
             kvs::OpenGL::Vertex3( polygon->coords().data() + id0 );
             kvs::OpenGL::Vertex3( polygon->coords().data() + id1 );
             kvs::OpenGL::Vertex3( polygon->coords().data() + id2 );
@@ -208,8 +208,8 @@ void Rendering_Tri_SC_Os( const kvs::PolygonObject* polygon )
     kvs::OpenGL::Begin( GL_TRIANGLES );
     {
         const kvs::RGBColor color = polygon->color(0);
-        const size_t nopacities = polygon->numberOfOpacities();
-        for ( size_t i = 0, i9 = 0; i < nopacities; i++, i9 += 9 )
+        const std::size_t nopacities = polygon->numberOfOpacities();
+        for ( std::size_t i = 0, i9 = 0; i < nopacities; i++, i9 += 9 )
         {
             const kvs::UInt8 opacity = polygon->opacity(i);
             kvs::OpenGL::Color( color.r(), color.g(), color.b(), opacity );
@@ -233,15 +233,15 @@ void Rendering_Tri_SC_Os_Cs( const kvs::PolygonObject* polygon )
     {
         const kvs::RGBColor color = polygon->color(0);
         const kvs::UInt32* connections = polygon->connections().data();
-        const size_t nconnections = polygon->numberOfConnections();
-        for ( size_t i = 0, i3 = 0; i < nconnections; i++, i3 += 3 )
+        const std::size_t nconnections = polygon->numberOfConnections();
+        for ( std::size_t i = 0, i3 = 0; i < nconnections; i++, i3 += 3 )
         {
             const kvs::UInt8 opacity = polygon->opacity(i);
             kvs::OpenGL::Color( color.r(), color.g(), color.b(), opacity );
 
-            const size_t id0 = *( connections + i3 ) * 3;
-            const size_t id1 = *( connections + i3 + 1 ) * 3;
-            const size_t id2 = *( connections + i3 + 2 ) * 3;
+            const std::size_t id0 = *( connections + i3 ) * 3;
+            const std::size_t id1 = *( connections + i3 + 1 ) * 3;
+            const std::size_t id2 = *( connections + i3 + 2 ) * 3;
             kvs::OpenGL::Vertex3( polygon->coords().data() + id0 );
             kvs::OpenGL::Vertex3( polygon->coords().data() + id1 );
             kvs::OpenGL::Vertex3( polygon->coords().data() + id2 );
@@ -261,8 +261,8 @@ void Rendering_Tri_PCs_O( const kvs::PolygonObject* polygon )
     kvs::OpenGL::Begin( GL_TRIANGLES );
     {
         const kvs::UInt8 opacity = polygon->opacity(0);
-        const size_t ncolors = polygon->numberOfColors();
-        for ( size_t i = 0, i3 = 0, i9 = 0; i < ncolors; i++, i3 += 3, i9 += 9 )
+        const std::size_t ncolors = polygon->numberOfColors();
+        for ( std::size_t i = 0, i3 = 0, i9 = 0; i < ncolors; i++, i3 += 3, i9 += 9 )
         {
             kvs::OpenGL::Color( polygon->colors().data() + i3, opacity );
             kvs::OpenGL::Vertex3( polygon->coords().data() + i9 );
@@ -285,14 +285,14 @@ void Rendering_Tri_PCs_O_Cs( const kvs::PolygonObject* polygon )
     {
         const kvs::UInt8 opacity = polygon->opacity(0);
         const kvs::UInt32* connections = polygon->connections().data();
-        const size_t nconnections = polygon->numberOfConnections();
-        for ( size_t i = 0, i3 = 0; i < nconnections; i++, i3 += 3 )
+        const std::size_t nconnections = polygon->numberOfConnections();
+        for ( std::size_t i = 0, i3 = 0; i < nconnections; i++, i3 += 3 )
         {
             kvs::OpenGL::Color( polygon->colors().data() + i3, opacity );
 
-            const size_t id0 = *( connections + i3 ) * 3;
-            const size_t id1 = *( connections + i3 + 1 ) * 3;
-            const size_t id2 = *( connections + i3 + 2 ) * 3;
+            const std::size_t id0 = *( connections + i3 ) * 3;
+            const std::size_t id1 = *( connections + i3 + 1 ) * 3;
+            const std::size_t id2 = *( connections + i3 + 2 ) * 3;
             kvs::OpenGL::Vertex3( polygon->coords().data() + id0 );
             kvs::OpenGL::Vertex3( polygon->coords().data() + id1 );
             kvs::OpenGL::Vertex3( polygon->coords().data() + id2 );
@@ -311,8 +311,8 @@ void Rendering_Tri_PCs_Os( const kvs::PolygonObject* polygon )
 {
     kvs::OpenGL::Begin( GL_TRIANGLES );
     {
-        const size_t ncolors = polygon->numberOfColors();
-        for ( size_t i = 0, i3 = 0, i9 = 0; i < ncolors; i++, i3 += 3, i9 += 9 )
+        const std::size_t ncolors = polygon->numberOfColors();
+        for ( std::size_t i = 0, i3 = 0, i9 = 0; i < ncolors; i++, i3 += 3, i9 += 9 )
         {
             const kvs::UInt8 opacity = polygon->opacity(i);
             kvs::OpenGL::Color( polygon->colors().data() + i3, opacity );
@@ -335,15 +335,15 @@ void Rendering_Tri_PCs_Os_Cs( const kvs::PolygonObject* polygon )
     kvs::OpenGL::Begin( GL_TRIANGLES );
     {
         const kvs::UInt32* connections = polygon->connections().data();
-        const size_t nconnections = polygon->numberOfConnections();
-        for ( size_t i = 0, i3 = 0; i < nconnections; i++, i3 += 3 )
+        const std::size_t nconnections = polygon->numberOfConnections();
+        for ( std::size_t i = 0, i3 = 0; i < nconnections; i++, i3 += 3 )
         {
             const kvs::UInt8 opacity = polygon->opacity(i);
             kvs::OpenGL::Color( polygon->colors().data() + i3, opacity );
 
-            const size_t id0 = *( connections + i3 ) * 3;
-            const size_t id1 = *( connections + i3 + 1 ) * 3;
-            const size_t id2 = *( connections + i3 + 2 ) * 3;
+            const std::size_t id0 = *( connections + i3 ) * 3;
+            const std::size_t id1 = *( connections + i3 + 1 ) * 3;
+            const std::size_t id2 = *( connections + i3 + 2 ) * 3;
             kvs::OpenGL::Vertex3( polygon->coords().data() + id0 );
             kvs::OpenGL::Vertex3( polygon->coords().data() + id1 );
             kvs::OpenGL::Vertex3( polygon->coords().data() + id2 );
@@ -363,8 +363,8 @@ void Rendering_Quad_VCs_O( const kvs::PolygonObject* polygon )
     kvs::OpenGL::Begin( GL_QUADS );
     {
         const kvs::UInt8 opacity = polygon->opacity(0);
-        const size_t nvertices = polygon->numberOfVertices();
-        for ( size_t i = 0, i3 = 0; i < nvertices; i++, i3 += 3 )
+        const std::size_t nvertices = polygon->numberOfVertices();
+        for ( std::size_t i = 0, i3 = 0; i < nvertices; i++, i3 += 3 )
         {
             kvs::OpenGL::Color( polygon->colors().data(), opacity );
             kvs::OpenGL::Vertex3( polygon->coords().data() );
@@ -385,13 +385,13 @@ void Rendering_Quad_VCs_O_Cs( const kvs::PolygonObject* polygon )
     {
         const kvs::UInt8 opacity = polygon->opacity(0);
         const kvs::UInt32* connections = polygon->connections().data();
-        const size_t nconnections = polygon->numberOfConnections();
-        for ( size_t i = 0, i4 = 0; i < nconnections; i++, i4 += 4 )
+        const std::size_t nconnections = polygon->numberOfConnections();
+        for ( std::size_t i = 0, i4 = 0; i < nconnections; i++, i4 += 4 )
         {
-            const size_t con0 = *( connections + i4 ) * 3;
-            const size_t con1 = *( connections + i4 + 1 ) * 3;
-            const size_t con2 = *( connections + i4 + 2 ) * 3;
-            const size_t con3 = *( connections + i4 + 3 ) * 3;
+            const std::size_t con0 = *( connections + i4 ) * 3;
+            const std::size_t con1 = *( connections + i4 + 1 ) * 3;
+            const std::size_t con2 = *( connections + i4 + 2 ) * 3;
+            const std::size_t con3 = *( connections + i4 + 3 ) * 3;
 
             kvs::OpenGL::Color( polygon->colors().data() + con0, opacity );
             kvs::OpenGL::Vertex3( polygon->coords().data() + con0 );
@@ -419,8 +419,8 @@ void Rendering_Quad_VCs_Os( const kvs::PolygonObject* polygon )
 {
     kvs::OpenGL::Begin( GL_QUADS );
     {
-        const size_t nvertices = polygon->numberOfVertices();
-        for ( size_t i = 0, i3 = 0; i < nvertices; i++, i3 += 3 )
+        const std::size_t nvertices = polygon->numberOfVertices();
+        for ( std::size_t i = 0, i3 = 0; i < nvertices; i++, i3 += 3 )
         {
             kvs::OpenGL::Color( polygon->colors().data() + i3, polygon->opacity(i) );
             kvs::OpenGL::Vertex3( polygon->coords().data() + i3 );
@@ -440,13 +440,13 @@ void Rendering_Quad_VCs_Os_Cs( const kvs::PolygonObject* polygon )
     kvs::OpenGL::Begin( GL_QUADS );
     {
         const kvs::UInt32* connections = polygon->connections().data();
-        const size_t nconnections = polygon->numberOfConnections();
-        for ( size_t i = 0, i4 = 0; i < nconnections; i++, i4 += 4 )
+        const std::size_t nconnections = polygon->numberOfConnections();
+        for ( std::size_t i = 0, i4 = 0; i < nconnections; i++, i4 += 4 )
         {
-            const size_t con0 = *( connections + i4 ) * 3;
-            const size_t con1 = *( connections + i4 + 1 ) * 3;
-            const size_t con2 = *( connections + i4 + 2 ) * 3;
-            const size_t con3 = *( connections + i4 + 3 ) * 3;
+            const std::size_t con0 = *( connections + i4 ) * 3;
+            const std::size_t con1 = *( connections + i4 + 1 ) * 3;
+            const std::size_t con2 = *( connections + i4 + 2 ) * 3;
+            const std::size_t con3 = *( connections + i4 + 3 ) * 3;
             const kvs::UInt8 opacity0 = polygon->opacity( con0 / 3 );
             const kvs::UInt8 opacity1 = polygon->opacity( con1 / 3 );
             const kvs::UInt8 opacity2 = polygon->opacity( con2 / 3 );
@@ -482,8 +482,8 @@ void Rendering_Quad_SC_O( const kvs::PolygonObject* polygon )
         const kvs::UInt8 opacity = polygon->opacity(0);
         kvs::OpenGL::Color( color.r(), color.g(), color.b(), opacity );
 
-        const size_t nvertices = polygon->numberOfVertices();
-        for ( size_t i = 0, i3 = 0; i < nvertices; i++, i3 += 3 )
+        const std::size_t nvertices = polygon->numberOfVertices();
+        for ( std::size_t i = 0, i3 = 0; i < nvertices; i++, i3 += 3 )
         {
             kvs::OpenGL::Vertex3( polygon->coords().data() + i3 );
         }
@@ -506,13 +506,13 @@ void Rendering_Quad_SC_O_Cs( const kvs::PolygonObject* polygon )
         kvs::OpenGL::Color( color.r(), color.g(), color.b(), opacity );
 
         const kvs::UInt32* connections = polygon->connections().data();
-        const size_t nconnections = polygon->numberOfConnections();
-        for ( size_t i = 0, i4 = 0; i < nconnections; i++, i4 += 4 )
+        const std::size_t nconnections = polygon->numberOfConnections();
+        for ( std::size_t i = 0, i4 = 0; i < nconnections; i++, i4 += 4 )
         {
-            const size_t con0 = *( connections + i4 ) * 3;
-            const size_t con1 = *( connections + i4 + 1 ) * 3;
-            const size_t con2 = *( connections + i4 + 2 ) * 3;
-            const size_t con3 = *( connections + i4 + 3 ) * 3;
+            const std::size_t con0 = *( connections + i4 ) * 3;
+            const std::size_t con1 = *( connections + i4 + 1 ) * 3;
+            const std::size_t con2 = *( connections + i4 + 2 ) * 3;
+            const std::size_t con3 = *( connections + i4 + 3 ) * 3;
             kvs::OpenGL::Vertex3( polygon->coords().data() + con0 );
             kvs::OpenGL::Vertex3( polygon->coords().data() + con1 );
             kvs::OpenGL::Vertex3( polygon->coords().data() + con2 );
@@ -533,8 +533,8 @@ void Rendering_Quad_SC_Os( const kvs::PolygonObject* polygon )
     kvs::OpenGL::Begin( GL_QUADS );
     {
         const kvs::RGBColor color = polygon->color(0);
-        const size_t nopacities = polygon->numberOfOpacities();
-        for ( size_t i = 0, i12 = 0; i < nopacities; i++, i12 += 12 )
+        const std::size_t nopacities = polygon->numberOfOpacities();
+        for ( std::size_t i = 0, i12 = 0; i < nopacities; i++, i12 += 12 )
         {
             const kvs::UInt8 opacity = polygon->opacity(i);
             kvs::OpenGL::Color( color.r(), color.g(), color.b(), opacity );
@@ -559,13 +559,13 @@ void Rendering_Quad_SC_Os_Cs( const kvs::PolygonObject* polygon )
     {
         const kvs::RGBColor color = polygon->color(0);
         const kvs::UInt32* connections = polygon->connections().data();
-        const size_t nconnections = polygon->numberOfConnections();
-        for ( size_t i = 0, i4 = 0; i < nconnections; i++, i4 += 4 )
+        const std::size_t nconnections = polygon->numberOfConnections();
+        for ( std::size_t i = 0, i4 = 0; i < nconnections; i++, i4 += 4 )
         {
-            const size_t con0 = *( connections + i4 ) * 3;
-            const size_t con1 = *( connections + i4 + 1 ) * 3;
-            const size_t con2 = *( connections + i4 + 2 ) * 3;
-            const size_t con3 = *( connections + i4 + 3 ) * 3;
+            const std::size_t con0 = *( connections + i4 ) * 3;
+            const std::size_t con1 = *( connections + i4 + 1 ) * 3;
+            const std::size_t con2 = *( connections + i4 + 2 ) * 3;
+            const std::size_t con3 = *( connections + i4 + 3 ) * 3;
 
             const kvs::UInt8 opacity = polygon->opacity(i);
             kvs::OpenGL::Color( color.r(), color.g(), color.b(), opacity );
@@ -588,9 +588,9 @@ void Rendering_Quad_PCs_O( const kvs::PolygonObject* polygon )
 {
     kvs::OpenGL::Begin( GL_QUADS );
     {
-        const size_t ncolors = polygon->numberOfColors();
+        const std::size_t ncolors = polygon->numberOfColors();
         const kvs::UInt8 opacity = polygon->opacity(0);
-        for ( size_t i = 0, i3 = 0, i12 = 0; i < ncolors; i++, i3 += 3, i12 += 12 )
+        for ( std::size_t i = 0, i3 = 0, i12 = 0; i < ncolors; i++, i3 += 3, i12 += 12 )
         {
             kvs::OpenGL::Color( polygon->colors().data() + i3, opacity );
             kvs::OpenGL::Vertex3( polygon->coords().data() + i12 );
@@ -614,13 +614,13 @@ void Rendering_Quad_PCs_O_Cs( const kvs::PolygonObject* polygon )
     {
         const kvs::UInt8 opacity = polygon->opacity(0);
         const kvs::UInt32* connections = polygon->connections().data();
-        const size_t nconnections = polygon->numberOfConnections();
-        for ( size_t i = 0, i3 = 0, i4 = 0; i < nconnections; i++, i3 += 3, i4 += 4 )
+        const std::size_t nconnections = polygon->numberOfConnections();
+        for ( std::size_t i = 0, i3 = 0, i4 = 0; i < nconnections; i++, i3 += 3, i4 += 4 )
         {
-            const size_t con0 = *( connections + i4 ) * 3;
-            const size_t con1 = *( connections + i4 + 1 ) * 3;
-            const size_t con2 = *( connections + i4 + 2 ) * 3;
-            const size_t con3 = *( connections + i4 + 3 ) * 3;
+            const std::size_t con0 = *( connections + i4 ) * 3;
+            const std::size_t con1 = *( connections + i4 + 1 ) * 3;
+            const std::size_t con2 = *( connections + i4 + 2 ) * 3;
+            const std::size_t con3 = *( connections + i4 + 3 ) * 3;
 
             kvs::OpenGL::Color( polygon->colors().data() + i3, opacity );
             kvs::OpenGL::Vertex3( polygon->coords().data() + con0 );
@@ -642,8 +642,8 @@ void Rendering_Quad_PCs_Os( const kvs::PolygonObject* polygon )
 {
     kvs::OpenGL::Begin( GL_QUADS );
     {
-        const size_t ncolors = polygon->numberOfColors();
-        for ( size_t i = 0, i3 = 0, i12 = 0; i < ncolors; i++, i3 += 3, i12 += 12 )
+        const std::size_t ncolors = polygon->numberOfColors();
+        for ( std::size_t i = 0, i3 = 0, i12 = 0; i < ncolors; i++, i3 += 3, i12 += 12 )
         {
             const kvs::UInt8 opacity = polygon->opacity(i);
             kvs::OpenGL::Color( polygon->colors().data() + i3, opacity );
@@ -667,13 +667,13 @@ void Rendering_Quad_PCs_Os_Cs( const kvs::PolygonObject* polygon )
     kvs::OpenGL::Begin( GL_QUADS );
     {
         const kvs::UInt32* connections = polygon->connections().data();
-        const size_t nconnections = polygon->numberOfConnections();
-        for ( size_t i = 0, i3 = 0, i4 = 0; i < nconnections; i++, i3 += 3, i4 += 4 )
+        const std::size_t nconnections = polygon->numberOfConnections();
+        for ( std::size_t i = 0, i3 = 0, i4 = 0; i < nconnections; i++, i3 += 3, i4 += 4 )
         {
-            const size_t con0 = *( connections + i4 ) * 3;
-            const size_t con1 = *( connections + i4 + 1 ) * 3;
-            const size_t con2 = *( connections + i4 + 2 ) * 3;
-            const size_t con3 = *( connections + i4 + 3 ) * 3;
+            const std::size_t con0 = *( connections + i4 ) * 3;
+            const std::size_t con1 = *( connections + i4 + 1 ) * 3;
+            const std::size_t con2 = *( connections + i4 + 2 ) * 3;
+            const std::size_t con3 = *( connections + i4 + 3 ) * 3;
             const kvs::UInt8 opacity = polygon->opacity(i);
 
             kvs::OpenGL::Color( polygon->colors().data() + i3, opacity );
@@ -697,8 +697,8 @@ void Rendering_Tri_VN_VCs_O( const kvs::PolygonObject* polygon )
     kvs::OpenGL::Begin( GL_TRIANGLES );
     {
         const kvs::UInt8 opacity = polygon->opacity(0);
-        const size_t nvertices = polygon->numberOfVertices();
-        for ( size_t i = 0, i3 = 0; i < nvertices; i++, i3 += 3 )
+        const std::size_t nvertices = polygon->numberOfVertices();
+        for ( std::size_t i = 0, i3 = 0; i < nvertices; i++, i3 += 3 )
         {
             kvs::OpenGL::Color( polygon->colors().data() + i3, opacity );
             kvs::OpenGL::Normal3( polygon->normals().data() + i3 );
@@ -720,12 +720,12 @@ void Rendering_Tri_VN_VCs_O_Cs( const kvs::PolygonObject* polygon )
     {
         const kvs::UInt8 opacity = polygon->opacity(0);
         const kvs::UInt32* connections = polygon->connections().data();
-        const size_t nconnections = polygon->numberOfConnections();
-        for ( size_t i = 0, i3 = 0; i < nconnections; i++, i3 += 3 )
+        const std::size_t nconnections = polygon->numberOfConnections();
+        for ( std::size_t i = 0, i3 = 0; i < nconnections; i++, i3 += 3 )
         {
-            const size_t con0 = *( connections + i3 ) * 3;
-            const size_t con1 = *( connections + i3 + 1 ) * 3;
-            const size_t con2 = *( connections + i3 + 2 ) * 3;
+            const std::size_t con0 = *( connections + i3 ) * 3;
+            const std::size_t con1 = *( connections + i3 + 1 ) * 3;
+            const std::size_t con2 = *( connections + i3 + 2 ) * 3;
 
             kvs::OpenGL::Color( polygon->colors().data() + con0, opacity );
             kvs::OpenGL::Normal3( polygon->normals().data() + con0 );
@@ -753,8 +753,8 @@ void Rendering_Tri_VN_VCs_Os( const kvs::PolygonObject* polygon )
 {
     kvs::OpenGL::Begin( GL_TRIANGLES );
     {
-        const size_t nvertices = polygon->numberOfVertices();
-        for ( size_t i = 0, i3 = 0; i < nvertices; i++, i3 += 3 )
+        const std::size_t nvertices = polygon->numberOfVertices();
+        for ( std::size_t i = 0, i3 = 0; i < nvertices; i++, i3 += 3 )
         {
             const kvs::UInt8 opacity = polygon->opacity(i);
             kvs::OpenGL::Color( polygon->colors().data() + i3, opacity );
@@ -776,12 +776,12 @@ void Rendering_Tri_VN_VCs_Os_Cs( const kvs::PolygonObject* polygon )
     kvs::OpenGL::Begin( GL_TRIANGLES );
     {
         const kvs::UInt32* connections = polygon->connections().data();
-        const size_t nconnections = polygon->numberOfConnections();
-        for ( size_t i = 0, i3 = 0; i < nconnections; i++, i3 += 3 )
+        const std::size_t nconnections = polygon->numberOfConnections();
+        for ( std::size_t i = 0, i3 = 0; i < nconnections; i++, i3 += 3 )
         {
-            const size_t con0 = *( connections + i3 ) * 3;
-            const size_t con1 = *( connections + i3 + 1 ) * 3;
-            const size_t con2 = *( connections + i3 + 2 ) * 3;
+            const std::size_t con0 = *( connections + i3 ) * 3;
+            const std::size_t con1 = *( connections + i3 + 1 ) * 3;
+            const std::size_t con2 = *( connections + i3 + 2 ) * 3;
             const kvs::UInt8 opacity0 = polygon->opacity( con0 / 3 );
             const kvs::UInt8 opacity1 = polygon->opacity( con1 / 3 );
             const kvs::UInt8 opacity2 = polygon->opacity( con2 / 3 );
@@ -816,8 +816,8 @@ void Rendering_Tri_VN_SC_O( const kvs::PolygonObject* polygon )
         const kvs::UInt8 opacity = polygon->opacity(0);
         kvs::OpenGL::Color( color.r(), color.g(), color.b(), opacity );
 
-        const size_t nvertices = polygon->numberOfVertices();
-        for ( size_t i = 0, i3 = 0; i < nvertices; i++, i3 += 3 )
+        const std::size_t nvertices = polygon->numberOfVertices();
+        for ( std::size_t i = 0, i3 = 0; i < nvertices; i++, i3 += 3 )
         {
             kvs::OpenGL::Normal3( polygon->normals().data() + i3 );
             kvs::OpenGL::Vertex3( polygon->coords().data() + i3 );
@@ -841,12 +841,12 @@ void Rendering_Tri_VN_SC_O_Cs( const kvs::PolygonObject* polygon )
         kvs::OpenGL::Color( color.r(), color.g(), color.b(), opacity );
 
         const kvs::UInt32* connections = polygon->connections().data();
-        const size_t nconnections = polygon->numberOfConnections();
-        for ( size_t i = 0, i3 = 0; i < nconnections; i++, i3 += 3 )
+        const std::size_t nconnections = polygon->numberOfConnections();
+        for ( std::size_t i = 0, i3 = 0; i < nconnections; i++, i3 += 3 )
         {
-            const size_t con0 = *( connections + i3 ) * 3;
-            const size_t con1 = *( connections + i3 + 1 ) * 3;
-            const size_t con2 = *( connections + i3 + 2 ) * 3;
+            const std::size_t con0 = *( connections + i3 ) * 3;
+            const std::size_t con1 = *( connections + i3 + 1 ) * 3;
+            const std::size_t con2 = *( connections + i3 + 2 ) * 3;
 
             kvs::OpenGL::Normal3( polygon->normals().data() + con0 );
             kvs::OpenGL::Vertex3( polygon->coords().data() + con0 );
@@ -872,8 +872,8 @@ void Rendering_Tri_VN_SC_Os( const kvs::PolygonObject* polygon )
     kvs::OpenGL::Begin( GL_TRIANGLES );
     {
         const kvs::RGBColor color = polygon->color(0);
-        const size_t nopacities = polygon->numberOfOpacities();
-        for ( size_t i = 0, i9 = 0; i < nopacities; i++, i9 += 9 )
+        const std::size_t nopacities = polygon->numberOfOpacities();
+        for ( std::size_t i = 0, i9 = 0; i < nopacities; i++, i9 += 9 )
         {
             const kvs::UInt8 opacity = polygon->opacity(i);
             kvs::OpenGL::Color( color.r(), color.g(), color.b(), opacity );
@@ -903,12 +903,12 @@ void Rendering_Tri_VN_SC_Os_Cs( const kvs::PolygonObject* polygon )
     {
         const kvs::RGBColor color = polygon->color(0);
         const kvs::UInt32* connections = polygon->connections().data();
-        const size_t nconnections = polygon->numberOfConnections();
-        for ( size_t i = 0, i3 = 0; i < nconnections; i++, i3 += 3 )
+        const std::size_t nconnections = polygon->numberOfConnections();
+        for ( std::size_t i = 0, i3 = 0; i < nconnections; i++, i3 += 3 )
         {
-            const size_t con0 = *( connections + i3 ) * 3;
-            const size_t con1 = *( connections + i3 + 1 ) * 3;
-            const size_t con2 = *( connections + i3 + 2 ) * 3;
+            const std::size_t con0 = *( connections + i3 ) * 3;
+            const std::size_t con1 = *( connections + i3 + 1 ) * 3;
+            const std::size_t con2 = *( connections + i3 + 2 ) * 3;
 
             const kvs::UInt8 opacity = polygon->opacity(i);
             kvs::OpenGL::Color( color.r(), color.g(), color.b(), opacity );
@@ -937,8 +937,8 @@ void Rendering_Tri_VN_PCs_O( const kvs::PolygonObject* polygon )
     kvs::OpenGL::Begin( GL_TRIANGLES );
     {
         const kvs::UInt8 opacity = polygon->opacity(0);
-        const size_t ncolors = polygon->numberOfColors();
-        for ( size_t i = 0, i3 = 0, i9 = 0; i < ncolors; i++, i3 += 3, i9 += 9 )
+        const std::size_t ncolors = polygon->numberOfColors();
+        for ( std::size_t i = 0, i3 = 0, i9 = 0; i < ncolors; i++, i3 += 3, i9 += 9 )
         {
             kvs::OpenGL::Color( polygon->colors().data() + i3, opacity );
 
@@ -967,12 +967,12 @@ void Rendering_Tri_VN_PCs_O_Cs( const kvs::PolygonObject* polygon )
     {
         const kvs::UInt8 opacity = polygon->opacity(0);
         const kvs::UInt32* connections = polygon->connections().data();
-        const size_t nconnections = polygon->numberOfConnections();
-        for ( size_t i = 0, i3 = 0; i < nconnections; i++, i3 += 3 )
+        const std::size_t nconnections = polygon->numberOfConnections();
+        for ( std::size_t i = 0, i3 = 0; i < nconnections; i++, i3 += 3 )
         {
-            const size_t con0 = *( connections + i3 ) * 3;
-            const size_t con1 = *( connections + i3 + 1 ) * 3;
-            const size_t con2 = *( connections + i3 + 2 ) * 3;
+            const std::size_t con0 = *( connections + i3 ) * 3;
+            const std::size_t con1 = *( connections + i3 + 1 ) * 3;
+            const std::size_t con2 = *( connections + i3 + 2 ) * 3;
 
             kvs::OpenGL::Color( polygon->colors().data() + i3, opacity );
 
@@ -999,8 +999,8 @@ void Rendering_Tri_VN_PCs_Os( const kvs::PolygonObject* polygon )
 {
     kvs::OpenGL::Begin( GL_TRIANGLES );
     {
-        const size_t ncolors = polygon->numberOfColors();
-        for ( size_t i = 0, i3 = 0, i9 = 0; i < ncolors; i++, i3 += 3, i9 += 9 )
+        const std::size_t ncolors = polygon->numberOfColors();
+        for ( std::size_t i = 0, i3 = 0, i9 = 0; i < ncolors; i++, i3 += 3, i9 += 9 )
         {
             const kvs::UInt8 opacity = polygon->opacity(i);
             kvs::OpenGL::Color( polygon->colors().data() + i3, opacity );
@@ -1029,12 +1029,12 @@ void Rendering_Tri_VN_PCs_Os_Cs( const kvs::PolygonObject* polygon )
     kvs::OpenGL::Begin( GL_TRIANGLES );
     {
         const kvs::UInt32* connections = polygon->connections().data();
-        const size_t nconnections = polygon->numberOfConnections();
-        for ( size_t i = 0, i3 = 0; i < nconnections; i++, i3 += 3 )
+        const std::size_t nconnections = polygon->numberOfConnections();
+        for ( std::size_t i = 0, i3 = 0; i < nconnections; i++, i3 += 3 )
         {
-            const size_t con0 = *( connections + i3 ) * 3;
-            const size_t con1 = *( connections + i3 + 1 ) * 3;
-            const size_t con2 = *( connections + i3 + 2 ) * 3;
+            const std::size_t con0 = *( connections + i3 ) * 3;
+            const std::size_t con1 = *( connections + i3 + 1 ) * 3;
+            const std::size_t con2 = *( connections + i3 + 2 ) * 3;
             const kvs::UInt8 opacity = polygon->opacity(i);
 
             kvs::OpenGL::Color( polygon->colors().data() + i3, opacity );
@@ -1063,8 +1063,8 @@ void Rendering_Quad_VN_VCs_O( const kvs::PolygonObject* polygon )
     kvs::OpenGL::Begin( GL_QUADS );
     {
         const kvs::UInt8 opacity = polygon->opacity(0);
-        const size_t nvertices = polygon->numberOfVertices();
-        for ( size_t i = 0, i3 = 0; i < nvertices; i++, i3 += 3 )
+        const std::size_t nvertices = polygon->numberOfVertices();
+        for ( std::size_t i = 0, i3 = 0; i < nvertices; i++, i3 += 3 )
         {
             kvs::OpenGL::Color( polygon->colors().data() + i3, opacity );
             kvs::OpenGL::Normal3( polygon->normals().data() + i3 );
@@ -1086,13 +1086,13 @@ void Rendering_Quad_VN_VCs_O_Cs( const kvs::PolygonObject* polygon )
     {
         const kvs::UInt8 opacity = polygon->opacity(0);
         const kvs::UInt32* connections = polygon->connections().data();
-        const size_t nconnections = polygon->numberOfConnections();
-        for ( size_t i = 0, i4 = 0; i < nconnections; i++, i4 += 4 )
+        const std::size_t nconnections = polygon->numberOfConnections();
+        for ( std::size_t i = 0, i4 = 0; i < nconnections; i++, i4 += 4 )
         {
-            const size_t con0 = *( connections + i4 ) * 3;
-            const size_t con1 = *( connections + i4 + 1 ) * 3;
-            const size_t con2 = *( connections + i4 + 2 ) * 3;
-            const size_t con3 = *( connections + i4 + 3 ) * 3;
+            const std::size_t con0 = *( connections + i4 ) * 3;
+            const std::size_t con1 = *( connections + i4 + 1 ) * 3;
+            const std::size_t con2 = *( connections + i4 + 2 ) * 3;
+            const std::size_t con3 = *( connections + i4 + 3 ) * 3;
 
             kvs::OpenGL::Color( polygon->colors().data() + con0, opacity );
             kvs::OpenGL::Normal3( polygon->normals().data() + con0 );
@@ -1124,8 +1124,8 @@ void Rendering_Quad_VN_VCs_Os( const kvs::PolygonObject* polygon )
 {
     kvs::OpenGL::Begin( GL_QUADS );
     {
-        const size_t nvertices = polygon->numberOfVertices();
-        for ( size_t i = 0, i3 = 0; i < nvertices; i++, i3 += 3 )
+        const std::size_t nvertices = polygon->numberOfVertices();
+        for ( std::size_t i = 0, i3 = 0; i < nvertices; i++, i3 += 3 )
         {
             kvs::OpenGL::Color( polygon->colors().data() + i3, polygon->opacity(i) );
             kvs::OpenGL::Normal3( polygon->normals().data() + i3 );
@@ -1146,13 +1146,13 @@ void Rendering_Quad_VN_VCs_Os_Cs( const kvs::PolygonObject* polygon )
     kvs::OpenGL::Begin( GL_QUADS );
     {
         const kvs::UInt32* connections = polygon->connections().data();
-        const size_t nconnections = polygon->numberOfConnections();
-        for ( size_t i = 0, i4 = 0; i < nconnections; i++, i4 += 4 )
+        const std::size_t nconnections = polygon->numberOfConnections();
+        for ( std::size_t i = 0, i4 = 0; i < nconnections; i++, i4 += 4 )
         {
-            const size_t con0 = *( connections + i4 ) * 3;
-            const size_t con1 = *( connections + i4 + 1 ) * 3;
-            const size_t con2 = *( connections + i4 + 2 ) * 3;
-            const size_t con3 = *( connections + i4 + 3 ) * 3;
+            const std::size_t con0 = *( connections + i4 ) * 3;
+            const std::size_t con1 = *( connections + i4 + 1 ) * 3;
+            const std::size_t con2 = *( connections + i4 + 2 ) * 3;
+            const std::size_t con3 = *( connections + i4 + 3 ) * 3;
             const kvs::UInt8 opacity0 = polygon->opacity( con0 / 3 );
             const kvs::UInt8 opacity1 = polygon->opacity( con1 / 3 );
             const kvs::UInt8 opacity2 = polygon->opacity( con2 / 3 );
@@ -1192,8 +1192,8 @@ void Rendering_Quad_VN_SC_O( const kvs::PolygonObject* polygon )
         const kvs::UInt8 opacity = polygon->opacity(0);
         kvs::OpenGL::Color( color.r(), color.g(), color.b(), opacity );
 
-        const size_t nvertices = polygon->numberOfVertices();
-        for ( size_t i = 0, i3 = 0; i < nvertices; i++, i3 += 3 )
+        const std::size_t nvertices = polygon->numberOfVertices();
+        for ( std::size_t i = 0, i3 = 0; i < nvertices; i++, i3 += 3 )
         {
             kvs::OpenGL::Normal3( polygon->normals().data() + i3 );
             kvs::OpenGL::Vertex3( polygon->coords().data() + i3 );
@@ -1217,13 +1217,13 @@ void Rendering_Quad_VN_SC_O_Cs( const kvs::PolygonObject* polygon )
         kvs::OpenGL::Color( color.r(), color.g(), color.b(), opacity );
 
         const kvs::UInt32* connections = polygon->connections().data();
-        const size_t nconnections = polygon->numberOfConnections();
-        for ( size_t i = 0, i4 = 0; i < nconnections; i++, i4 += 4 )
+        const std::size_t nconnections = polygon->numberOfConnections();
+        for ( std::size_t i = 0, i4 = 0; i < nconnections; i++, i4 += 4 )
         {
-            const size_t con0 = *( connections + i4 ) * 3;
-            const size_t con1 = *( connections + i4 + 1 ) * 3;
-            const size_t con2 = *( connections + i4 + 2 ) * 3;
-            const size_t con3 = *( connections + i4 + 3 ) * 3;
+            const std::size_t con0 = *( connections + i4 ) * 3;
+            const std::size_t con1 = *( connections + i4 + 1 ) * 3;
+            const std::size_t con2 = *( connections + i4 + 2 ) * 3;
+            const std::size_t con3 = *( connections + i4 + 3 ) * 3;
 
             kvs::OpenGL::Normal3( polygon->normals().data() + con0 );
             kvs::OpenGL::Vertex3( polygon->coords().data() + con0 );
@@ -1252,8 +1252,8 @@ void Rendering_Quad_VN_SC_Os( const kvs::PolygonObject* polygon )
     kvs::OpenGL::Begin( GL_QUADS );
     {
         const kvs::RGBColor color = polygon->color(0);
-        const size_t nopacities = polygon->numberOfOpacities();
-        for ( size_t i = 0, i12 = 0; i < nopacities; i++, i12 += 12 )
+        const std::size_t nopacities = polygon->numberOfOpacities();
+        for ( std::size_t i = 0, i12 = 0; i < nopacities; i++, i12 += 12 )
         {
             const kvs::UInt8 opacity = polygon->opacity(i);
             kvs::OpenGL::Color( color.r(), color.g(), color.b(), opacity );
@@ -1286,13 +1286,13 @@ void Rendering_Quad_VN_SC_Os_Cs( const kvs::PolygonObject* polygon )
     {
         const kvs::RGBColor color = polygon->color(0);
         const kvs::UInt32* connections = polygon->connections().data();
-        const size_t nconnections = polygon->numberOfConnections();
-        for( size_t i = 0, i4 = 0; i < nconnections; i++, i4 += 4 )
+        const std::size_t nconnections = polygon->numberOfConnections();
+        for( std::size_t i = 0, i4 = 0; i < nconnections; i++, i4 += 4 )
         {
-            const size_t con0 = *( connections + i4 ) * 3;
-            const size_t con1 = *( connections + i4 + 1 ) * 3;
-            const size_t con2 = *( connections + i4 + 2 ) * 3;
-            const size_t con3 = *( connections + i4 + 3 ) * 3;
+            const std::size_t con0 = *( connections + i4 ) * 3;
+            const std::size_t con1 = *( connections + i4 + 1 ) * 3;
+            const std::size_t con2 = *( connections + i4 + 2 ) * 3;
+            const std::size_t con3 = *( connections + i4 + 3 ) * 3;
             const kvs::UInt8 opacity = polygon->opacity(i);
             kvs::OpenGL::Color( color.r(), color.g(), color.b(), opacity );
 
@@ -1323,8 +1323,8 @@ void Rendering_Quad_VN_PCs_O( const kvs::PolygonObject* polygon )
     kvs::OpenGL::Begin( GL_QUADS );
     {
         const kvs::UInt8 opacity = polygon->opacity(0);
-        const size_t ncolors = polygon->numberOfColors();
-        for ( size_t i = 0, i3 = 0, i12 = 0; i < ncolors; i++, i3 += 3, i12 += 12 )
+        const std::size_t ncolors = polygon->numberOfColors();
+        for ( std::size_t i = 0, i3 = 0, i12 = 0; i < ncolors; i++, i3 += 3, i12 += 12 )
         {
             kvs::OpenGL::Color( polygon->colors().data() + i3, opacity );
 
@@ -1356,13 +1356,13 @@ void Rendering_Quad_VN_PCs_O_Cs( const kvs::PolygonObject* polygon )
     {
         const kvs::UInt8 opacity = polygon->opacity(0);
         const kvs::UInt32* connections = polygon->connections().data();
-        const size_t nconnections = polygon->numberOfConnections();
-        for ( size_t i = 0, i3 = 0, i4 = 0; i < nconnections; i++, i3 += 3, i4 += 4 )
+        const std::size_t nconnections = polygon->numberOfConnections();
+        for ( std::size_t i = 0, i3 = 0, i4 = 0; i < nconnections; i++, i3 += 3, i4 += 4 )
         {
-            const size_t con0 = *( connections + i4 ) * 3;
-            const size_t con1 = *( connections + i4 + 1 ) * 3;
-            const size_t con2 = *( connections + i4 + 2 ) * 3;
-            const size_t con3 = *( connections + i4 + 3 ) * 3;
+            const std::size_t con0 = *( connections + i4 ) * 3;
+            const std::size_t con1 = *( connections + i4 + 1 ) * 3;
+            const std::size_t con2 = *( connections + i4 + 2 ) * 3;
+            const std::size_t con3 = *( connections + i4 + 3 ) * 3;
 
             kvs::OpenGL::Color( polygon->colors().data() + i3, opacity );
 
@@ -1392,8 +1392,8 @@ void Rendering_Quad_VN_PCs_Os( const kvs::PolygonObject* polygon )
 {
     kvs::OpenGL::Begin( GL_QUADS );
     {
-        const size_t ncolors = polygon->numberOfColors();
-        for ( size_t i = 0, i3 = 0, i12 = 0; i < ncolors; i++, i3 += 3, i12 += 12 )
+        const std::size_t ncolors = polygon->numberOfColors();
+        for ( std::size_t i = 0, i3 = 0, i12 = 0; i < ncolors; i++, i3 += 3, i12 += 12 )
         {
             const kvs::UInt8 opacity = polygon->opacity(i);
             kvs::OpenGL::Color( polygon->colors().data() + i3, opacity );
@@ -1425,16 +1425,16 @@ void Rendering_Quad_VN_PCs_Os_Cs( const kvs::PolygonObject* polygon )
     kvs::OpenGL::Begin( GL_QUADS );
     {
         const kvs::UInt32* connections = polygon->connections().data();
-        const size_t nconnections = polygon->numberOfConnections();
-        for ( size_t i = 0, i3 = 0, i4 = 0; i < nconnections; i++, i3 += 3, i4 += 4 )
+        const std::size_t nconnections = polygon->numberOfConnections();
+        for ( std::size_t i = 0, i3 = 0, i4 = 0; i < nconnections; i++, i3 += 3, i4 += 4 )
         {
             const kvs::UInt8 opacity = polygon->opacity(i);
             kvs::OpenGL::Color( polygon->colors().data() + i3, opacity );
 
-            const size_t con0 = *( connections + i4 ) * 3;
-            const size_t con1 = *( connections + i4 + 1 ) * 3;
-            const size_t con2 = *( connections + i4 + 2 ) * 3;
-            const size_t con3 = *( connections + i4 + 3 ) * 3;
+            const std::size_t con0 = *( connections + i4 ) * 3;
+            const std::size_t con1 = *( connections + i4 + 1 ) * 3;
+            const std::size_t con2 = *( connections + i4 + 2 ) * 3;
+            const std::size_t con3 = *( connections + i4 + 3 ) * 3;
 
             kvs::OpenGL::Normal3( polygon->normals().data() + con0 );
             kvs::OpenGL::Vertex3( polygon->coords().data() + con0 );
@@ -1463,8 +1463,8 @@ void Rendering_Tri_PN_VCs_O( const kvs::PolygonObject* polygon )
     kvs::OpenGL::Begin( GL_TRIANGLES );
     {
         const kvs::UInt8 opacity = polygon->opacity(0);
-        const size_t nnormals = polygon->numberOfNormals();
-        for ( size_t i = 0, i3 = 0, i9 = 0; i < nnormals; i++, i3 += 3, i9 += 9 )
+        const std::size_t nnormals = polygon->numberOfNormals();
+        for ( std::size_t i = 0, i3 = 0, i9 = 0; i < nnormals; i++, i3 += 3, i9 += 9 )
         {
             kvs::OpenGL::Normal3( polygon->normals().data() + i3 );
 
@@ -1493,12 +1493,12 @@ void Rendering_Tri_PN_VCs_O_Cs( const kvs::PolygonObject* polygon )
     {
         const kvs::UInt8 opacity = polygon->opacity(0);
         const kvs::UInt32* connections = polygon->connections().data();
-        const size_t nconnections = polygon->numberOfConnections();
-        for ( size_t i = 0, i3 = 0; i < nconnections; i++, i3 += 3 )
+        const std::size_t nconnections = polygon->numberOfConnections();
+        for ( std::size_t i = 0, i3 = 0; i < nconnections; i++, i3 += 3 )
         {
-            const size_t con0 = *( connections + i3 ) * 3;
-            const size_t con1 = *( connections + i3 + 1 ) * 3;
-            const size_t con2 = *( connections + i3 + 2 ) * 3;
+            const std::size_t con0 = *( connections + i3 ) * 3;
+            const std::size_t con1 = *( connections + i3 + 1 ) * 3;
+            const std::size_t con2 = *( connections + i3 + 2 ) * 3;
 
             kvs::OpenGL::Normal3( polygon->normals().data() + i3 );
 
@@ -1525,8 +1525,8 @@ void Rendering_Tri_PN_VCs_Os( const kvs::PolygonObject* polygon )
 {
     kvs::OpenGL::Begin( GL_TRIANGLES );
     {
-        const size_t nnormals = polygon->numberOfNormals();
-        for ( size_t i = 0, i3 = 0, i9 = 0; i < nnormals; i++, i3 += 3, i9 += 9 )
+        const std::size_t nnormals = polygon->numberOfNormals();
+        for ( std::size_t i = 0, i3 = 0, i9 = 0; i < nnormals; i++, i3 += 3, i9 += 9 )
         {
             kvs::OpenGL::Normal3( polygon->normals().data() + i3 );
 
@@ -1554,12 +1554,12 @@ void Rendering_Tri_PN_VCs_Os_Cs( const kvs::PolygonObject* polygon )
     kvs::OpenGL::Begin( GL_TRIANGLES );
     {
         const kvs::UInt32* connections = polygon->connections().data();
-        const size_t nconnections = polygon->numberOfConnections();
-        for ( size_t i = 0, i3 = 0; i < nconnections; i++, i3 += 3 )
+        const std::size_t nconnections = polygon->numberOfConnections();
+        for ( std::size_t i = 0, i3 = 0; i < nconnections; i++, i3 += 3 )
         {
-            const size_t con0 = *( connections + i3 ) * 3;
-            const size_t con1 = *( connections + i3 + 1 ) * 3;
-            const size_t con2 = *( connections + i3 + 2 ) * 3;
+            const std::size_t con0 = *( connections + i3 ) * 3;
+            const std::size_t con1 = *( connections + i3 + 1 ) * 3;
+            const std::size_t con2 = *( connections + i3 + 2 ) * 3;
             const kvs::UInt8 opacity0 = polygon->opacity( con0 / 3 );
             const kvs::UInt8 opacity1 = polygon->opacity( con1 / 3 );
             const kvs::UInt8 opacity2 = polygon->opacity( con2 / 3 );
@@ -1593,8 +1593,8 @@ void Rendering_Tri_PN_SC_O( const kvs::PolygonObject* polygon )
         const kvs::UInt8 opacity = polygon->opacity(0);
         kvs::OpenGL::Color( color.r(), color.g(), color.b(), opacity );
 
-        const size_t nnormals = polygon->numberOfNormals();
-        for ( size_t i = 0, i3 = 0, i9 = 0; i < nnormals; i++, i3 += 3, i9 += 9 )
+        const std::size_t nnormals = polygon->numberOfNormals();
+        for ( std::size_t i = 0, i3 = 0, i9 = 0; i < nnormals; i++, i3 += 3, i9 += 9 )
         {
             kvs::OpenGL::Normal3( polygon->normals().data() + i3 );
 
@@ -1621,12 +1621,12 @@ void Rendering_Tri_PN_SC_O_Cs( const kvs::PolygonObject* polygon )
         kvs::OpenGL::Color( color.r(), color.g(), color.b(), opacity );
 
         const kvs::UInt32* connections = polygon->connections().data();
-        const size_t nconnections = polygon->numberOfConnections();
-        for ( size_t i = 0, i3 = 0; i < nconnections; i++, i3 += 3 )
+        const std::size_t nconnections = polygon->numberOfConnections();
+        for ( std::size_t i = 0, i3 = 0; i < nconnections; i++, i3 += 3 )
         {
-            const size_t con0 = *( connections + i3 ) * 3;
-            const size_t con1 = *( connections + i3 + 1 ) * 3;
-            const size_t con2 = *( connections + i3 + 2 ) * 3;
+            const std::size_t con0 = *( connections + i3 ) * 3;
+            const std::size_t con1 = *( connections + i3 + 1 ) * 3;
+            const std::size_t con2 = *( connections + i3 + 2 ) * 3;
 
             kvs::OpenGL::Normal3( polygon->normals().data() + i3 );
 
@@ -1649,8 +1649,8 @@ void Rendering_Tri_PN_SC_Os( const kvs::PolygonObject* polygon )
     kvs::OpenGL::Begin( GL_TRIANGLES );
     {
         const kvs::RGBColor color = polygon->color(0);
-        const size_t nopacities = polygon->numberOfOpacities();
-        for( size_t i = 0, i3 = 0, i9 = 0; i < nopacities; i++, i3 += 0, i9 += 9 )
+        const std::size_t nopacities = polygon->numberOfOpacities();
+        for( std::size_t i = 0, i3 = 0, i9 = 0; i < nopacities; i++, i3 += 0, i9 += 9 )
         {
             const kvs::UInt8 opacity = polygon->opacity(i);
             kvs::OpenGL::Color( color.r(), color.g(), color.b(), opacity );
@@ -1676,12 +1676,12 @@ void Rendering_Tri_PN_SC_Os_Cs( const kvs::PolygonObject* polygon )
     {
         const kvs::RGBColor color = polygon->color(0);
         const kvs::UInt32* connections = polygon->connections().data();
-        const size_t nconnections = polygon->numberOfConnections();
-        for ( size_t i = 0, i3 = 0; i < nconnections; i++, i3 += 3 )
+        const std::size_t nconnections = polygon->numberOfConnections();
+        for ( std::size_t i = 0, i3 = 0; i < nconnections; i++, i3 += 3 )
         {
-            const size_t con0 = *( connections + i3 ) * 3;
-            const size_t con1 = *( connections + i3 + 1 ) * 3;
-            const size_t con2 = *( connections + i3 + 2 ) * 3;
+            const std::size_t con0 = *( connections + i3 ) * 3;
+            const std::size_t con1 = *( connections + i3 + 1 ) * 3;
+            const std::size_t con2 = *( connections + i3 + 2 ) * 3;
             const kvs::UInt8 opacity = polygon->opacity(i);
             kvs::OpenGL::Color( color.r(), color.g(), color.b(), opacity );
             kvs::OpenGL::Normal3( polygon->normals().data() + i3 );
@@ -1705,8 +1705,8 @@ void Rendering_Tri_PN_PCs_O( const kvs::PolygonObject* polygon )
     kvs::OpenGL::Begin( GL_TRIANGLES );
     {
         const kvs::UInt8 opacity = polygon->opacity(0);
-        const size_t ncolors = polygon->numberOfColors();
-        for ( size_t i = 0, i3 = 0, i9 = 0; i < ncolors; i++, i3 += 3, i9 += 9 )
+        const std::size_t ncolors = polygon->numberOfColors();
+        for ( std::size_t i = 0, i3 = 0, i9 = 0; i < ncolors; i++, i3 += 3, i9 += 9 )
         {
             kvs::OpenGL::Color( polygon->colors().data() + i3, opacity );
             kvs::OpenGL::Normal3( polygon->normals().data() + i3 );
@@ -1731,12 +1731,12 @@ void Rendering_Tri_PN_PCs_O_Cs( const kvs::PolygonObject* polygon )
     {
         const kvs::UInt8 opacity = polygon->opacity(0);
         const kvs::UInt32* connections = polygon->connections().data();
-        const size_t nconnections = polygon->numberOfConnections();
-        for ( size_t i = 0, i3 = 0; i < nconnections; i++, i3 += 3 )
+        const std::size_t nconnections = polygon->numberOfConnections();
+        for ( std::size_t i = 0, i3 = 0; i < nconnections; i++, i3 += 3 )
         {
-            const size_t con0 = *( connections + i3 ) * 3;
-            const size_t con1 = *( connections + i3 + 1 ) * 3;
-            const size_t con2 = *( connections + i3 + 2 ) * 3;
+            const std::size_t con0 = *( connections + i3 ) * 3;
+            const std::size_t con1 = *( connections + i3 + 1 ) * 3;
+            const std::size_t con2 = *( connections + i3 + 2 ) * 3;
             kvs::OpenGL::Color( polygon->colors().data() + i3, opacity );
             kvs::OpenGL::Normal3( polygon->normals().data() + i3 );
 
@@ -1758,8 +1758,8 @@ void Rendering_Tri_PN_PCs_Os( const kvs::PolygonObject* polygon )
 {
     kvs::OpenGL::Begin( GL_TRIANGLES );
     {
-        const size_t ncolors = polygon->numberOfColors();
-        for ( size_t i = 0, i3 = 0, i9 = 0; i < ncolors; i++, i3 += 3, i9 += 9 )
+        const std::size_t ncolors = polygon->numberOfColors();
+        for ( std::size_t i = 0, i3 = 0, i9 = 0; i < ncolors; i++, i3 += 3, i9 += 9 )
         {
             const kvs::UInt8 opacity = polygon->opacity(i);
             kvs::OpenGL::Color( polygon->colors().data() + i3, opacity );
@@ -1784,12 +1784,12 @@ void Rendering_Tri_PN_PCs_Os_Cs( const kvs::PolygonObject* polygon )
     kvs::OpenGL::Begin( GL_TRIANGLES );
     {
         const kvs::UInt32* connections = polygon->connections().data();
-        const size_t nconnections = polygon->numberOfConnections();
-        for ( size_t i = 0, i3 = 0; i < nconnections; i++, i3 += 3 )
+        const std::size_t nconnections = polygon->numberOfConnections();
+        for ( std::size_t i = 0, i3 = 0; i < nconnections; i++, i3 += 3 )
         {
-            const size_t con0 = *( connections + i3 ) * 3;
-            const size_t con1 = *( connections + i3 + 1 ) * 3;
-            const size_t con2 = *( connections + i3 + 2 ) * 3;
+            const std::size_t con0 = *( connections + i3 ) * 3;
+            const std::size_t con1 = *( connections + i3 + 1 ) * 3;
+            const std::size_t con2 = *( connections + i3 + 2 ) * 3;
             const kvs::UInt8 opacity = polygon->opacity(i);
             kvs::OpenGL::Color( polygon->colors().data() + i3, opacity );
             kvs::OpenGL::Normal3( polygon->normals().data() + i3 );
@@ -1813,8 +1813,8 @@ void Rendering_Quad_PN_VCs_O( const kvs::PolygonObject* polygon )
     kvs::OpenGL::Begin( GL_QUADS );
     {
         const kvs::UInt8 opacity = polygon->opacity(0);
-        const size_t nnormals = polygon->numberOfNormals();
-        for( size_t i = 0, i3 = 0, i12 = 0; i < nnormals; i++, i3 += 3, i12 += 12 )
+        const std::size_t nnormals = polygon->numberOfNormals();
+        for( std::size_t i = 0, i3 = 0, i12 = 0; i < nnormals; i++, i3 += 3, i12 += 12 )
         {
             kvs::OpenGL::Normal3( polygon->normals().data() + i3 );
 
@@ -1846,13 +1846,13 @@ void Rendering_Quad_PN_VCs_O_Cs( const kvs::PolygonObject* polygon )
     {
         const kvs::UInt8 opacity = polygon->opacity(0);
         const kvs::UInt32* connections = polygon->connections().data();
-        const size_t nconnections = polygon->numberOfConnections();
-        for ( size_t i = 0, i3 = 0, i4 = 0; i < nconnections; i++, i3 += 3, i4 += 4 )
+        const std::size_t nconnections = polygon->numberOfConnections();
+        for ( std::size_t i = 0, i3 = 0, i4 = 0; i < nconnections; i++, i3 += 3, i4 += 4 )
         {
-            const size_t con0 = *( connections + i4 ) * 3;
-            const size_t con1 = *( connections + i4 + 1 ) * 3;
-            const size_t con2 = *( connections + i4 + 2 ) * 3;
-            const size_t con3 = *( connections + i4 + 3 ) * 3;
+            const std::size_t con0 = *( connections + i4 ) * 3;
+            const std::size_t con1 = *( connections + i4 + 1 ) * 3;
+            const std::size_t con2 = *( connections + i4 + 2 ) * 3;
+            const std::size_t con3 = *( connections + i4 + 3 ) * 3;
 
             kvs::OpenGL::Normal3( polygon->normals().data() + i3 );
 
@@ -1882,8 +1882,8 @@ void Rendering_Quad_PN_VCs_Os( const kvs::PolygonObject* polygon )
 {
     kvs::OpenGL::Begin( GL_QUADS );
     {
-        const size_t nnormals = polygon->numberOfNormals();
-        for ( size_t i = 0, i3 = 0, i12 = 0; i < nnormals; i++, i3 += 3, i12 += 12 )
+        const std::size_t nnormals = polygon->numberOfNormals();
+        for ( std::size_t i = 0, i3 = 0, i12 = 0; i < nnormals; i++, i3 += 3, i12 += 12 )
         {
             kvs::OpenGL::Normal3( polygon->normals().data() + i3 );
 
@@ -1914,13 +1914,13 @@ void Rendering_Quad_PN_VCs_Os_Cs( const kvs::PolygonObject* polygon )
     kvs::OpenGL::Begin( GL_QUADS );
     {
         const kvs::UInt32* connections = polygon->connections().data();
-        const size_t nconnections = polygon->numberOfConnections();
-        for ( size_t i = 0, i3 = 0, i4 = 0; i < nconnections; i++, i3 += 3, i4 += 4 )
+        const std::size_t nconnections = polygon->numberOfConnections();
+        for ( std::size_t i = 0, i3 = 0, i4 = 0; i < nconnections; i++, i3 += 3, i4 += 4 )
         {
-            const size_t con0 = *( connections + i4 ) * 3;
-            const size_t con1 = *( connections + i4 + 1 ) * 3;
-            const size_t con2 = *( connections + i4 + 2 ) * 3;
-            const size_t con3 = *( connections + i4 + 3 ) * 3;
+            const std::size_t con0 = *( connections + i4 ) * 3;
+            const std::size_t con1 = *( connections + i4 + 1 ) * 3;
+            const std::size_t con2 = *( connections + i4 + 2 ) * 3;
+            const std::size_t con3 = *( connections + i4 + 3 ) * 3;
             const kvs::UInt8 opacity0 = polygon->opacity( con0 / 3 );
             const kvs::UInt8 opacity1 = polygon->opacity( con1 / 3 );
             const kvs::UInt8 opacity2 = polygon->opacity( con2 / 3 );
@@ -1958,8 +1958,8 @@ void Rendering_Quad_PN_SC_O( const kvs::PolygonObject* polygon )
         const kvs::UInt8 opacity = polygon->opacity(0);
         kvs::OpenGL::Color( color.r(), color.g(), color.b(), opacity );
 
-        const size_t nnormals = polygon->numberOfNormals();
-        for ( size_t i = 0, i3 = 0, i12 = 0; i < nnormals; i++, i3 += 3, i12 += 12 )
+        const std::size_t nnormals = polygon->numberOfNormals();
+        for ( std::size_t i = 0, i3 = 0, i12 = 0; i < nnormals; i++, i3 += 3, i12 += 12 )
         {
             kvs::OpenGL::Normal3( polygon->normals().data() + i3 );
 
@@ -1987,13 +1987,13 @@ void Rendering_Quad_PN_SC_O_Cs( const kvs::PolygonObject* polygon )
         kvs::OpenGL::Color( color.r(), color.g(), color.b(), opacity );
 
         const kvs::UInt32* connections = polygon->connections().data();
-        const size_t nconnections = polygon->numberOfConnections();
-        for ( size_t i = 0, i3 = 0, i4 = 0; i < nconnections; i++, i3 += 3, i4 += 4 )
+        const std::size_t nconnections = polygon->numberOfConnections();
+        for ( std::size_t i = 0, i3 = 0, i4 = 0; i < nconnections; i++, i3 += 3, i4 += 4 )
         {
-            const size_t con0 = *( connections + i4 ) * 3;
-            const size_t con1 = *( connections + i4 + 1 ) * 3;
-            const size_t con2 = *( connections + i4 + 2 ) * 3;
-            const size_t con3 = *( connections + i4 + 3 ) * 3;
+            const std::size_t con0 = *( connections + i4 ) * 3;
+            const std::size_t con1 = *( connections + i4 + 1 ) * 3;
+            const std::size_t con2 = *( connections + i4 + 2 ) * 3;
+            const std::size_t con3 = *( connections + i4 + 3 ) * 3;
 
             kvs::OpenGL::Normal3( polygon->normals().data() + i3 );
 
@@ -2017,8 +2017,8 @@ void Rendering_Quad_PN_SC_Os( const kvs::PolygonObject* polygon )
     kvs::OpenGL::Begin( GL_QUADS );
     {
         const kvs::RGBColor color = polygon->color(0);
-        const size_t nopacities = polygon->numberOfOpacities();
-        for ( size_t i = 0, i3 = 0, i12 = 0; i < nopacities; i++, i3 += 3, i12 += 12 )
+        const std::size_t nopacities = polygon->numberOfOpacities();
+        for ( std::size_t i = 0, i3 = 0, i12 = 0; i < nopacities; i++, i3 += 3, i12 += 12 )
         {
             const kvs::UInt8 opacity = polygon->opacity(i);
             kvs::OpenGL::Color( color.r(), color.g(), color.b(), opacity );
@@ -2046,13 +2046,13 @@ void Rendering_Quad_PN_SC_Os_Cs( const kvs::PolygonObject* polygon )
         const kvs::RGBColor color = polygon->color(0);
 
         const kvs::UInt32* connections = polygon->connections().data();
-        const size_t nconnections = polygon->numberOfConnections();
-        for ( size_t i = 0, i3 = 0, i4 = 0; i < nconnections; i++, i3 += 3, i4 += 4 )
+        const std::size_t nconnections = polygon->numberOfConnections();
+        for ( std::size_t i = 0, i3 = 0, i4 = 0; i < nconnections; i++, i3 += 3, i4 += 4 )
         {
-            const size_t con0 = *( connections + i4 ) * 3;
-            const size_t con1 = *( connections + i4 + 1 ) * 3;
-            const size_t con2 = *( connections + i4 + 2 ) * 3;
-            const size_t con3 = *( connections + i4 + 3 ) * 3;
+            const std::size_t con0 = *( connections + i4 ) * 3;
+            const std::size_t con1 = *( connections + i4 + 1 ) * 3;
+            const std::size_t con2 = *( connections + i4 + 2 ) * 3;
+            const std::size_t con3 = *( connections + i4 + 3 ) * 3;
             const kvs::UInt8 opacity = polygon->opacity(i);
 
             kvs::OpenGL::Color( color.r(), color.g(), color.b(), opacity );
@@ -2078,8 +2078,8 @@ void Rendering_Quad_PN_PCs_O( const kvs::PolygonObject* polygon )
     kvs::OpenGL::Begin( GL_QUADS );
     {
         const kvs::UInt8 opacity = polygon->opacity(0);
-        const size_t ncolors = polygon->numberOfColors();
-        for ( size_t i = 0, i3 = 0, i12 = 0; i < ncolors; i++, i3 += 3, i12 += 12 )
+        const std::size_t ncolors = polygon->numberOfColors();
+        for ( std::size_t i = 0, i3 = 0, i12 = 0; i < ncolors; i++, i3 += 3, i12 += 12 )
         {
             kvs::OpenGL::Color( polygon->colors().data() + i3, opacity );
             kvs::OpenGL::Normal3( polygon->normals().data() + i3 );
@@ -2104,13 +2104,13 @@ void Rendering_Quad_PN_PCs_O_Cs( const kvs::PolygonObject* polygon )
     kvs::OpenGL::Begin( GL_QUADS );
     {
         const kvs::UInt32* connections = polygon->connections().data();
-        const size_t nconnections = polygon->numberOfConnections();
-        for ( size_t i = 0, i3 = 0, i4 = 0; i < nconnections; i++, i3 += 3, i4 += 4 )
+        const std::size_t nconnections = polygon->numberOfConnections();
+        for ( std::size_t i = 0, i3 = 0, i4 = 0; i < nconnections; i++, i3 += 3, i4 += 4 )
         {
-            const size_t con0 = *( connections + i4 ) * 3;
-            const size_t con1 = *( connections + i4 + 1 ) * 3;
-            const size_t con2 = *( connections + i4 + 2 ) * 3;
-            const size_t con3 = *( connections + i4 + 3 ) * 3;
+            const std::size_t con0 = *( connections + i4 ) * 3;
+            const std::size_t con1 = *( connections + i4 + 1 ) * 3;
+            const std::size_t con2 = *( connections + i4 + 2 ) * 3;
+            const std::size_t con3 = *( connections + i4 + 3 ) * 3;
             const kvs::UInt8 opacity = polygon->opacity(0);
 
             kvs::OpenGL::Color( polygon->colors().data() + i3, opacity );
@@ -2135,8 +2135,8 @@ void Rendering_Quad_PN_PCs_Os( const kvs::PolygonObject* polygon )
 {
     kvs::OpenGL::Begin( GL_QUADS );
     {
-        const size_t ncolors = polygon->numberOfColors();
-        for ( size_t i = 0, i3 = 0, i12 = 0; i < ncolors; i++, i3 += 3, i12 += 12 )
+        const std::size_t ncolors = polygon->numberOfColors();
+        for ( std::size_t i = 0, i3 = 0, i12 = 0; i < ncolors; i++, i3 += 3, i12 += 12 )
         {
             const kvs::UInt8 opacity = polygon->opacity(i);
             kvs::OpenGL::Color( polygon->colors().data() + i3, opacity );
@@ -2162,13 +2162,13 @@ void Rendering_Quad_PN_PCs_Os_Cs( const kvs::PolygonObject* polygon )
     kvs::OpenGL::Begin( GL_QUADS );
     {
         const kvs::UInt32* connections = polygon->connections().data();
-        const size_t nconnections = polygon->numberOfConnections();
-        for ( size_t i = 0, i3 = 0, i4 = 0; i < nconnections; i++, i3 += 3, i4 += 4 )
+        const std::size_t nconnections = polygon->numberOfConnections();
+        for ( std::size_t i = 0, i3 = 0, i4 = 0; i < nconnections; i++, i3 += 3, i4 += 4 )
         {
-            const size_t con0 = *( connections + i4 ) * 3;
-            const size_t con1 = *( connections + i4 + 1 ) * 3;
-            const size_t con2 = *( connections + i4 + 2 ) * 3;
-            const size_t con3 = *( connections + i4 + 3 ) * 3;
+            const std::size_t con0 = *( connections + i4 ) * 3;
+            const std::size_t con1 = *( connections + i4 + 1 ) * 3;
+            const std::size_t con2 = *( connections + i4 + 2 ) * 3;
+            const std::size_t con3 = *( connections + i4 + 3 ) * 3;
             const kvs::UInt8 opacity = polygon->opacity(i);
 
             kvs::OpenGL::Color( polygon->colors().data() + i3, opacity );
@@ -2351,9 +2351,9 @@ PolygonRenderingFunctionType Rendering[NumberOfRenderingTypes] =
 
 PolygonRenderingType GetPolygonRenderingType( const kvs::PolygonObject* polygon )
 {
-    const size_t nopacities = polygon->numberOfOpacities();
-    const size_t ncolors = polygon->numberOfColors();
-    const size_t nconnects = polygon->numberOfConnections();
+    const std::size_t nopacities = polygon->numberOfOpacities();
+    const std::size_t ncolors = polygon->numberOfColors();
+    const std::size_t nconnects = polygon->numberOfConnections();
     const kvs::PolygonObject::PolygonType polygon_type = polygon->polygonType();
     const kvs::PolygonObject::NormalType normal_type = polygon->normalType();
     const kvs::PolygonObject::ColorType color_type = polygon->colorType();

@@ -25,9 +25,9 @@ int UniformGrid::findGrid( const kvs::Vec3& global ) const
     if ( global.y() < 0 || global.y() >= dim.y() - 1 ) { return -1; }
     if ( global.z() < 0 || global.z() >= dim.z() - 1 ) { return -1; }
 
-    const size_t i = static_cast<size_t>( global.x() );
-    const size_t j = static_cast<size_t>( global.y() );
-    const size_t k = static_cast<size_t>( global.z() );
+    const std::size_t i = static_cast<size_t>( global.x() );
+    const std::size_t j = static_cast<size_t>( global.y() );
+    const std::size_t k = static_cast<size_t>( global.z() );
     return BaseClass::gridIndexOf( kvs::Vec3ui( i, j, k ) );
 }
 

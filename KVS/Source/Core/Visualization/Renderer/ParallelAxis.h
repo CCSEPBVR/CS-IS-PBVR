@@ -108,15 +108,15 @@ protected:
     void drawAxes( const kvs::TableObject* table,  const kvs::Rectangle& content, const float dpr );
 
 public:
-    KVS_DEPRECATED( void setTopMargin( const size_t margin ) ) { m_margins.setTop( margin ); }
-    KVS_DEPRECATED( void setBottomMargin( const size_t margin ) ) { m_margins.setBottom( margin ); }
-    KVS_DEPRECATED( void setLeftMargin( const size_t margin ) ) { m_margins.setLeft( margin ); }
-    KVS_DEPRECATED( void setRightMargin( const size_t margin ) ) { m_margins.setRight( margin ); }
+    KVS_DEPRECATED( void setTopMargin( const std::size_t margin ) ) { m_margins.setTop( margin ); }
+    KVS_DEPRECATED( void setBottomMargin( const std::size_t margin ) ) { m_margins.setBottom( margin ); }
+    KVS_DEPRECATED( void setLeftMargin( const std::size_t margin ) ) { m_margins.setLeft( margin ); }
+    KVS_DEPRECATED( void setRightMargin( const std::size_t margin ) ) { m_margins.setRight( margin ); }
 
-    KVS_DEPRECATED( size_t topMargin() const ) { return m_margins.top(); }
-    KVS_DEPRECATED( size_t bottomMargin() const ) { return m_margins.bottom(); }
-    KVS_DEPRECATED( size_t leftMargin() const ) { return m_margins.left(); }
-    KVS_DEPRECATED( size_t rightMargin() const ) { return m_margins.right(); }
+    KVS_DEPRECATED( std::size_t topMargin() const ) { return m_margins.top(); }
+    KVS_DEPRECATED( std::size_t bottomMargin() const ) { return m_margins.bottom(); }
+    KVS_DEPRECATED( std::size_t leftMargin() const ) { return m_margins.left(); }
+    KVS_DEPRECATED( std::size_t rightMargin() const ) { return m_margins.right(); }
 };
 
 } // end of namespace kvs

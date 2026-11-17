@@ -68,7 +68,7 @@ int main( int argc, char** argv )
     delete volume;
 
     // Convert to tube lines as polygon object.
-    const size_t ndivisions = 20;
+    const std::size_t ndivisions = 20;
     auto* object = new kvs::Tubeline( line, ndivisions );
     delete line;
 

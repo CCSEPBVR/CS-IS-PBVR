@@ -54,9 +54,9 @@ const kvs::UnstructuredVolumeObject* Cast( const kvs::ObjectBase* object )
  *  @return tensor value specified by the given index
  */
 /*===========================================================================*/
-kvs::Mat3 Tensor( const kvs::UnstructuredVolumeObject* volume, const size_t index )
+kvs::Mat3 Tensor( const kvs::UnstructuredVolumeObject* volume, const std::size_t index )
 {
-    const size_t veclen = volume->veclen();
+    const std::size_t veclen = volume->veclen();
     switch ( volume->values().typeID() )
     {
     case kvs::Type::TypeInt8:
@@ -188,13 +188,13 @@ UnstructuredQCriterion::SuperClass* UnstructuredQCriterion::exec( const kvs::Obj
 void UnstructuredQCriterion::qvalues_from_vectors( const kvs::UnstructuredVolumeObject* volume )
 {
     const kvs::UInt32* connections = volume->connections().data();
-    const size_t ncells = volume->numberOfCells();
-    const size_t nnodes = volume->numberOfNodes();
+    const std::size_t ncells = volume->numberOfCells();
+    const std::size_t nnodes = volume->numberOfNodes();
 
     kvs::InverseDistanceWeighting<kvs::Real32> idw( nnodes );
     kvs::PrismaticCell cell( volume );
     const kvs::Vec3 center = cell.localCenter();
-    for ( size_t i = 0; i < ncells; i++ )
+    for ( std::size_t i = 0; i < ncells; i++ )
     {
         cell.bindCell( i );
         cell.setLocalPoint( center );
@@ -202,7 +202,7 @@ void UnstructuredQCriterion::qvalues_from_vectors( const kvs::UnstructuredVolume
         const kvs::Real32 Q = ::Q( T );
 
         const kvs::Vec3 c = cell.center();
-        for ( size_t j = 0; j < cell.numberOfCellNodes(); j++ )
+        for ( std::size_t j = 0; j < cell.numberOfCellNodes(); j++ )
         {
             const kvs::UInt32 id = *( connections++ );
             const kvs::Real32 d = ( cell.coord(j) - c ).length();
@@ -224,10 +224,10 @@ void UnstructuredQCriterion::qvalues_from_vectors( const kvs::UnstructuredVolume
 /*===========================================================================*/
 void UnstructuredQCriterion::qvalues_from_tensors( const kvs::UnstructuredVolumeObject* volume )
 {
-    const size_t nnodes = volume->numberOfNodes();
+    const std::size_t nnodes = volume->numberOfNodes();
 
     kvs::ValueArray<kvs::Real32> values( nnodes );
-    for ( size_t i = 0; i < nnodes; i++ )
+    for ( std::size_t i = 0; i < nnodes; i++ )
     {
         const kvs::Mat3 T = ::Tensor( volume, i );
         values[i] = ::Q( T );

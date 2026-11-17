@@ -50,8 +50,8 @@ public:
 protected:
 
     std::vector<kvs::Dicom*> m_list; ///< DICOM list
-    size_t m_row; ///< row
-    size_t m_column; ///< column
+    std::size_t m_row; ///< row
+    std::size_t m_column; ///< column
     double m_slice_thickness; ///< slice thickness
     double m_slice_spacing; ///< slice spacing
     kvs::Vector2f m_pixel_spacing; ///< pixel spacing
@@ -69,19 +69,19 @@ public:
     DicomList( const std::string& dirname, const bool extension_check = true );
     virtual ~DicomList();
 
-    const kvs::Dicom* operator [] ( const size_t index ) const;
-    kvs::Dicom* operator [] ( const size_t index );
+    const kvs::Dicom* operator [] ( const std::size_t index ) const;
+    kvs::Dicom* operator [] ( const std::size_t index );
 
     void push_back( const kvs::Dicom& dicom );
     void push_back( kvs::Dicom* dicom );
-    size_t size() const;
+    std::size_t size() const;
     void clear();
 
-    size_t row() const;
-    size_t column() const;
-    size_t nslices() const;
-    size_t width() const;
-    size_t height() const;
+    std::size_t row() const;
+    std::size_t column() const;
+    std::size_t nslices() const;
+    std::size_t width() const;
+    std::size_t height() const;
     double sliceThickness() const;
     double sliceSpacing() const;
     const kvs::Vector2f& pixelSpacing() const;

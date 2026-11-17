@@ -71,7 +71,7 @@ const GLenum Texture1D::wrapS( void ) const
  *  Returns the texture width.
  */
 /*==========================================================================*/
-const size_t Texture1D::width( void ) const
+const std::size_t Texture1D::width( void ) const
 {
     return( m_width );
 }
@@ -97,7 +97,7 @@ void Texture1D::setWrapS( const GLenum wrap_s )
  *  Create the texture.
  */
 /*==========================================================================*/
-void Texture1D::create( const size_t width )
+void Texture1D::create( const std::size_t width )
 {
     m_width  = width;
 
@@ -125,9 +125,9 @@ void Texture1D::create( const size_t width )
  */
 /*==========================================================================*/
 void Texture1D::download(
-    const size_t width,
+    const std::size_t width,
     const void*  pixels,
-    const size_t xoffset )
+    const std::size_t xoffset )
 {
     GLint swap;
     GLint alignment;
@@ -140,7 +140,7 @@ void Texture1D::download(
 
     if ( !m_is_downloaded )
     {
-//        const size_t ext_width  = 1 << ( vismodule::Math::Log2Smallest( width ) );
+//        const std::size_t ext_width  = 1 << ( vismodule::Math::Log2Smallest( width ) );
 
         const GLint level = 0;  // level-of-detail number
         const GLint border = 0; // border width (0 or 1)

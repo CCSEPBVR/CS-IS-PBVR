@@ -59,7 +59,7 @@ T OnlineMean( const kvs::ValueArray<T>& values )
 {
     KVS_ASSERT( values.size() != 0 );
     T mean = 0;
-    size_t i = 1;
+    std::size_t i = 1;
     for ( const auto& value : values )
     {
         const auto delta = value - mean;
@@ -77,12 +77,12 @@ class IncrementalMean
 {
 private:
     double m_value = 0.0; ///< mean
-    size_t m_count = 0; ///< number of samples (added values)
+    std::size_t m_count = 0; ///< number of samples (added values)
 
 public:
     IncrementalMean() = default;
     double value() const { return m_value; }
-    size_t count() const { return m_count; }
+    std::size_t count() const { return m_count; }
     template <typename T>
     void add( const T v )
     {
@@ -275,9 +275,9 @@ T OnlineVar( const kvs::ValueArray<T>& values, T* mean = nullptr )
 {
     KVS_ASSERT( values.size() - 1 != 0 );
 
-    const size_t n = values.size();
+    const std::size_t n = values.size();
     T m = T(0), m2 = T(0);
-    size_t i = 1;
+    std::size_t i = 1;
     for ( const auto& value : values )
     {
         const T delta = value - m;
@@ -299,13 +299,13 @@ class IncrementalVar
 private:
     double m_mean = 0.0; ///< mean
     double m_m2 = 0.0; ///< squared distance from the mean
-    size_t m_count = 0; ///< counter for adding values
+    std::size_t m_count = 0; ///< counter for adding values
 
 public:
     IncrementalVar() = default;
     double value() const { return m_m2 / ( m_count - 1 ); }
     double mean() const { return m_mean; }
-    size_t count() const { return m_count; }
+    std::size_t count() const { return m_count; }
     template <typename T>
     void add( const T v )
     {
@@ -353,11 +353,11 @@ T Cov(
     KVS_ASSERT( values1.size() - 1 != 0 );
     KVS_ASSERT( values1.size() == values2.size() );
 
-    const size_t n = values1.size();
+    const std::size_t n = values1.size();
     T sum1 = T(0);
     T sum2 = T(0);
     T sum12 = T(0);
-    for ( size_t i = 0; i < n; i++ )
+    for ( std::size_t i = 0; i < n; i++ )
     {
         sum1 += values1[i];
         sum2 += values2[i];
@@ -388,7 +388,7 @@ T CovP(
 {
     KVS_ASSERT( values1.size() != 0 );
     KVS_ASSERT( values1.size() == values2.size() );
-    const size_t n = values1.size();
+    const std::size_t n = values1.size();
     return ( n == 1 ) ? T(0) : Cov( values1, values2, mean1, mean2 ) * ( n - 1 ) / n;
 }
 
@@ -414,11 +414,11 @@ T ShiftedCov(
 
     const T k1 = values1[0];
     const T k2 = values2[0];
-    const size_t n = values1.size();
+    const std::size_t n = values1.size();
     T sum12 = T(0);
     T sum1 = T(0);
     T sum2 = T(0);
-    for ( size_t i = 0; i < n; i++ )
+    for ( std::size_t i = 0; i < n; i++ )
     {
         sum1 += values1[i] - k1;
         sum2 += values2[i] - k2;
@@ -449,7 +449,7 @@ T ShiftedCovP(
 {
     KVS_ASSERT( values1.size() != 0 );
     KVS_ASSERT( values1.size() == values2.size() );
-    const size_t n = values1.size();
+    const std::size_t n = values1.size();
     return ( n == 1 ) ? T(0) : ShiftedCov( values1, values2, mean1, mean2 ) * ( n - 1 ) / n;
 }
 
@@ -473,11 +473,11 @@ T TwoPassCov(
     KVS_ASSERT( values1.size() - 1 != 0 );
     KVS_ASSERT( values1.size() == values2.size() );
 
-    const size_t n = values1.size();
+    const std::size_t n = values1.size();
     const T m1 = Sum( values1 ) / n;
     const T m2 = Sum( values2 ) / n;
     T cov = T(0);
-    for ( size_t i = 0; i < n; i++ )
+    for ( std::size_t i = 0; i < n; i++ )
     {
         cov += ( values1[i] - m1 ) * ( values2[i] - m2 ) / ( n - 1 );
     }
@@ -506,7 +506,7 @@ T TwoPassCovP(
 {
     KVS_ASSERT( values1.size() != 0 );
     KVS_ASSERT( values1.size() == values2.size() );
-    const size_t n = values1.size();
+    const std::size_t n = values1.size();
     return ( n == 1 ) ? T(0) : TwoPassCov( values1, values2, mean1, mean2 ) * ( n - 1 ) / n;
 }
 
@@ -530,11 +530,11 @@ T OnlineCov(
     KVS_ASSERT( values1.size() - 1 != 0 );
     KVS_ASSERT( values1.size() == values2.size() );
 
-    const size_t n = values1.size();
+    const std::size_t n = values1.size();
     T m1 = T(0);
     T m2 = T(0);
     T cov = T(0);
-    for ( size_t i = 0; i < n; i++ )
+    for ( std::size_t i = 0; i < n; i++ )
     {
         const T delta1 = ( values1[i] - m1 ) / ( i + 1 );
         const T delta2 = ( values2[i] - m2 ) / ( i + 1 );
@@ -567,7 +567,7 @@ T OnlineCovP(
 {
     KVS_ASSERT( values1.size() != 0 );
     KVS_ASSERT( values1.size() == values2.size() );
-    const size_t n = values1.size();
+    const std::size_t n = values1.size();
     return ( n == 1 ) ? T(0) : OnlineCov( values1, values2, mean1, mean2 ) * ( n - 1 ) / n;
 }
 
@@ -582,14 +582,14 @@ private:
     double m_value = 0.0; ///< covariance
     double m_mean1 = 0.0; ///< mean
     double m_mean2 = 0.0; ///< mean
-    size_t m_count = 0; ///< counter for adding values
+    std::size_t m_count = 0; ///< counter for adding values
 
 public:
     IncrementalCoV() = default;
     double value() const { return m_value * m_count / static_cast<double>( m_count - 1 ); }
     double mean1() const { return m_mean1; }
     double mean2() const { return m_mean2; }
-    size_t count() const { return m_count; }
+    std::size_t count() const { return m_count; }
     template <typename T>
     void add( const T v1, const T v2 )
     {
@@ -655,18 +655,18 @@ T StdDev( const kvs::ValueArray<T>& values, F VarF, T* mean = nullptr )
  */
 /*===========================================================================*/
 template <typename T>
-T Corr( const kvs::ValueArray<T>& values1, const kvs::ValueArray<T>& values2, const size_t lag = 0 )
+T Corr( const kvs::ValueArray<T>& values1, const kvs::ValueArray<T>& values2, const std::size_t lag = 0 )
 {
     KVS_ASSERT( values1.size() != 0 );
     KVS_ASSERT( values1.size() > lag );
     KVS_ASSERT( values1.size() == values2.size() );
 
-    const size_t k = lag;
-    const size_t n = values1.size();
+    const std::size_t k = lag;
+    const std::size_t n = values1.size();
     T sum1 = T(0), sum11 = T(0);
     T sum2 = T(0), sum22 = T(0);
     T sum12 = T(0);
-    for ( size_t i = k; i < n; i++ )
+    for ( std::size_t i = k; i < n; i++ )
     {
         sum1 += values1[i];
         sum11 += values1[i] * values1[i];
@@ -690,7 +690,7 @@ T Corr( const kvs::ValueArray<T>& values1, const kvs::ValueArray<T>& values2, co
  */
 /*===========================================================================*/
 template <typename T>
-T AutoCorr( const kvs::ValueArray<T>& values, const size_t lag )
+T AutoCorr( const kvs::ValueArray<T>& values, const std::size_t lag )
 {
     return Corr( values, values, lag );
 }
@@ -705,9 +705,9 @@ T AutoCorr( const kvs::ValueArray<T>& values, const size_t lag )
 template <typename T>
 kvs::ValueArray<T> AutoCorr( const kvs::ValueArray<T>& values )
 {
-    const size_t n = values.size();
+    const std::size_t n = values.size();
     kvs::ValueArray<T> corrs( n );
-    for ( size_t i = 0; i < n; i++ ) { corrs[i] = AutoCorr( values, i ); }
+    for ( std::size_t i = 0; i < n; i++ ) { corrs[i] = AutoCorr( values, i ); }
     return corrs;
 }
 
@@ -721,7 +721,7 @@ kvs::ValueArray<T> AutoCorr( const kvs::ValueArray<T>& values )
  */
 /*===========================================================================*/
 template <typename T>
-T CrossCorr( const kvs::ValueArray<T>& values1, const kvs::ValueArray<T>& values2, const size_t lag )
+T CrossCorr( const kvs::ValueArray<T>& values1, const kvs::ValueArray<T>& values2, const std::size_t lag )
 {
     return Corr( values1, values2, lag );
 }
@@ -737,9 +737,9 @@ T CrossCorr( const kvs::ValueArray<T>& values1, const kvs::ValueArray<T>& values
 template <typename T>
 kvs::ValueArray<T> CrossCorr( const kvs::ValueArray<T>& values1, const kvs::ValueArray<T>& values2 )
 {
-    const size_t n = values1.size();
+    const std::size_t n = values1.size();
     kvs::ValueArray<T> corrs( n );
-    for ( size_t i = 0; i < n; i++ ) { corrs[i] = CrossCorr( values1, values2, i ); }
+    for ( std::size_t i = 0; i < n; i++ ) { corrs[i] = CrossCorr( values1, values2, i ); }
     return corrs;
 }
 

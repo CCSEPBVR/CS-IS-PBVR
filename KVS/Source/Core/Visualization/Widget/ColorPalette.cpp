@@ -17,9 +17,9 @@
 // Default parameters.
 namespace { namespace Default
 {
-const size_t Margin = 10;
-const size_t Width = 350;
-const size_t Height = 150;
+const std::size_t Margin = 10;
+const std::size_t Width = 350;
+const std::size_t Height = 150;
 const int HPaletteWidth = 10;
 const int ColorBoxSize = 50;
 const kvs::RGBColor RectColor = kvs::RGBColor( 255, 255, 255 );
@@ -305,7 +305,7 @@ void ColorPalette::draw_H_palette()
     const kvs::Vec2 p4 = kvs::Vec2( x0, y0 + stride * 2 ) * dpr + kvs::Vec2( dx, 0 );
     const kvs::Vec2 p5 = kvs::Vec2( x0, y0 + stride * 1 ) * dpr + kvs::Vec2( dx, 0 );
     const kvs::Vec2 p6 = kvs::Vec2( x0, y0 + stride * 0 ) * dpr + kvs::Vec2( dx, 0 );
-    for ( size_t i = 0; i < size_t(dpr); i++ )
+    for ( std::size_t i = 0; i < size_t(dpr); i++ )
     {
         kvs::OpenGL::SetLineWidth( static_cast<GLfloat>( m_H_palette.width() ) );
         kvs::OpenGL::Begin( GL_LINE_STRIP );
@@ -410,7 +410,7 @@ void ColorPalette::draw_border( const kvs::Rectangle& rect )
 
 int ColorPalette::adjustedWidth()
 {
-    size_t width = 0;
+    std::size_t width = 0;
     BaseClass::painter().begin( BaseClass::screen() );
     width = BaseClass::painter().fontMetrics().width( m_caption ) + BaseClass::margin() * 2;
     BaseClass::painter().end();

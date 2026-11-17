@@ -38,19 +38,19 @@ private:
 #if defined ( VIS_MODULE_ENABLE_THREAD_SAFE )
     mutable vismodule::Mutex m_key;   ///< lock key
 #endif
-    size_t             m_value; ///< counter
+    std::size_t             m_value; ///< counter
 
 public:
 
-    explicit ReferenceCounter( size_t value = 0 );
+    explicit ReferenceCounter( std::size_t value = 0 );
 
     ~ReferenceCounter( void );
 
 public:
 
-    void setValue( size_t value );
+    void setValue( std::size_t value );
 
-    const size_t value( void ) const;
+    const std::size_t value( void ) const;
 
 #if defined ( VIS_MODULE_ENABLE_THREAD_SAFE )
     vismodule::Mutex& key( void ) const;

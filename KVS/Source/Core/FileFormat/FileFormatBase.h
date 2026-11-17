@@ -24,13 +24,13 @@ private:
     bool m_is_success = false; ///< Whether the reading is success or not.
 
 public:
-    static size_t Read( void* buf, size_t size, size_t n, FILE* fp )
+    static std::size_t Read( void* buf, std::size_t size, std::size_t n, FILE* fp )
     {
         const auto ret = fread( buf, size, n, fp );
         return ret;
     }
 
-    static size_t Seek( FILE* fp, long offset, int origin )
+    static std::size_t Seek( FILE* fp, long offset, int origin )
     {
         const auto ret = fseek( fp, offset, origin );
         return ret;

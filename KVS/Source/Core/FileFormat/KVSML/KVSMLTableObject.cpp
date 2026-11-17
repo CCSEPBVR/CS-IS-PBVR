@@ -99,7 +99,7 @@ KVSMLTableObject::KVSMLTableObject( const std::string& filename ):
  *  @param  value [in] min. value
  */
 /*===========================================================================*/
-void KVSMLTableObject::setMinValue( const size_t column_index, const double value )
+void KVSMLTableObject::setMinValue( const std::size_t column_index, const double value )
 {
     m_has_min_values[column_index] = true;
     m_min_values[column_index] = value;
@@ -111,7 +111,7 @@ void KVSMLTableObject::setMinValue( const size_t column_index, const double valu
  *  @param  value [in] max. value
  */
 /*===========================================================================*/
-void KVSMLTableObject::setMaxValue( const size_t column_index, const double value )
+void KVSMLTableObject::setMaxValue( const std::size_t column_index, const double value )
 {
     m_has_max_values[column_index] = true;
     m_max_values[column_index] = value;
@@ -123,7 +123,7 @@ void KVSMLTableObject::setMaxValue( const size_t column_index, const double valu
  *  @param  value [in] min. range
  */
 /*===========================================================================*/
-void KVSMLTableObject::setMinRange( const size_t column_index, const double range )
+void KVSMLTableObject::setMinRange( const std::size_t column_index, const double range )
 {
     m_has_min_ranges[column_index] = true;
     m_min_ranges[column_index] = range;
@@ -135,7 +135,7 @@ void KVSMLTableObject::setMinRange( const size_t column_index, const double rang
  *  @param  value [in] max. range
  */
 /*===========================================================================*/
-void KVSMLTableObject::setMaxRange( const size_t column_index, const double range )
+void KVSMLTableObject::setMaxRange( const std::size_t column_index, const double range )
 {
     m_has_max_ranges[column_index] = true;
     m_max_ranges[column_index] = range;
@@ -179,7 +179,7 @@ void KVSMLTableObject::print( std::ostream& os, const kvs::Indent& indent ) cons
     os << indent << "Number of rows : " << m_nrows << std::endl;
     os << indent << "Number of columns : " << m_ncolumns << std::endl;
     os << indent << "Labels : ";
-    for ( size_t i = 0; i < m_ncolumns; i++ )
+    for ( std::size_t i = 0; i < m_ncolumns; i++ )
     {
         os << m_labels.at(i);
         if ( i < m_ncolumns - 1 ) os << ", ";
@@ -231,7 +231,7 @@ bool KVSMLTableObject::read( const std::string& filename )
     // <Column>
     kvs::kvsml::ColumnTag column_tag;
     kvs::XMLNode::SuperClass* node = kvs::XMLNode::FindChildNode( table_object_tag.node(), column_tag.name() );
-    size_t counter = 0;
+    std::size_t counter = 0;
     while ( node )
     {
         column_tag.read( kvs::XMLNode::ToElement( node ) );
@@ -305,7 +305,7 @@ bool KVSMLTableObject::write( const std::string& filename )
         return false;
     }
 
-    for ( size_t i = 0; i < m_ncolumns; i++ )
+    for ( std::size_t i = 0; i < m_ncolumns; i++ )
     {
         // <Column label="xxx" min_value="xxx" max_value="xxx" min_range="xxx" max_range="xxx">
         kvs::kvsml::ColumnTag column_tag;

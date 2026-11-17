@@ -40,7 +40,7 @@ public:
 
 private:
 
-    size_t m_resolution; ///< table resolution
+    std::size_t m_resolution; ///< table resolution
     float  m_min_value;  ///< min. value
     float  m_max_value;  ///< max. value
     Points m_points;     ///< control point list
@@ -50,13 +50,13 @@ public:
 
     OpacityMap( void );
 
-    explicit OpacityMap( const size_t resolution );
+    explicit OpacityMap( const std::size_t resolution );
 
     explicit OpacityMap( const Table& table );
 
     OpacityMap( const OpacityMap& other );
 
-    OpacityMap( const size_t resolution, const float min_value, const float max_value );
+    OpacityMap( const std::size_t resolution, const float min_value, const float max_value );
 
     OpacityMap( const Table& table, const float min_value, const float max_value );
 
@@ -68,7 +68,7 @@ public:
 
     const float maxValue( void ) const;
 
-    const size_t resolution( void ) const;
+    const std::size_t resolution( void ) const;
 
     const Points& points( void ) const;
 
@@ -80,7 +80,7 @@ public:
 
     void setRange( const float min_value, const float max_value );
 
-    void setResolution( const size_t resolution );
+    void setResolution( const std::size_t resolution );
 
     void addPoint( const float value, const float opacity );
 
@@ -90,7 +90,7 @@ public:
 
 public:
 
-    const vismodule::Real32 operator []( const size_t index ) const;
+    const vismodule::Real32 operator []( const std::size_t index ) const;
 
     const vismodule::Real32 at( const float value ) const;
 

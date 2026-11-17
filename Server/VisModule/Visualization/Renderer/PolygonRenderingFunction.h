@@ -58,8 +58,8 @@ void Rendering_Tri_VCs_O( const vismodule::PolygonObject* polygon )
         const vismodule::Real32* coords  = polygon->coords().pointer();
         const vismodule::UInt8   opacity = polygon->opacity();
 
-        const size_t nvertices = polygon->nvertices();
-        for ( size_t i = 0, index = 0; i < nvertices; i++, index += 3 )
+        const std::size_t nvertices = polygon->nvertices();
+        for ( std::size_t i = 0, index = 0; i < nvertices; i++, index += 3 )
         {
             glColor4ub( *( colors + index ), *( colors + index + 1 ), *( colors + index + 2 ), opacity );
             glVertex3fv( coords + index );
@@ -83,12 +83,12 @@ void Rendering_Tri_VCs_O_Cs( const vismodule::PolygonObject* polygon )
         const vismodule::UInt32* connections = polygon->connections().pointer();
         const vismodule::UInt8   opacity     = polygon->opacity();
 
-        const size_t nconnections = polygon->nconnections();
-        for ( size_t i = 0, index = 0; i < nconnections; i++, index += 3 )
+        const std::size_t nconnections = polygon->nconnections();
+        for ( std::size_t i = 0, index = 0; i < nconnections; i++, index += 3 )
         {
-            const size_t id0 = *( connections + index ) * 3;
-            const size_t id1 = *( connections + index + 1 ) * 3;
-            const size_t id2 = *( connections + index + 2 ) * 3;
+            const std::size_t id0 = *( connections + index ) * 3;
+            const std::size_t id1 = *( connections + index + 1 ) * 3;
+            const std::size_t id2 = *( connections + index + 2 ) * 3;
 
             glColor4ub( *( colors + id0 ), *( colors + id0 + 1 ), *( colors + id0 + 2 ), opacity );
             glVertex3f( *( coords + id0 ), *( coords + id0 + 1 ), *( coords + id0 + 2 ) );
@@ -117,8 +117,8 @@ void Rendering_Tri_VCs_Os( const vismodule::PolygonObject* polygon )
         const vismodule::Real32* coords    = polygon->coords().pointer();
         const vismodule::UInt8*  opacities = polygon->opacities().pointer();
 
-        const size_t nvertices = polygon->nvertices();
-        for ( size_t i = 0, index = 0; i < nvertices; i++, index += 3 )
+        const std::size_t nvertices = polygon->nvertices();
+        for ( std::size_t i = 0, index = 0; i < nvertices; i++, index += 3 )
         {
             glColor4ub( *( colors + index ), *( colors + index + 1 ), *( colors + index + 2 ), opacities[i] );
             glVertex3f( *( coords + index ), *( coords + index + 1 ), *( coords + index + 2 ) );
@@ -142,12 +142,12 @@ void Rendering_Tri_VCs_Os_Cs( const vismodule::PolygonObject* polygon )
         const vismodule::UInt32* connections = polygon->connections().pointer();
         const vismodule::UInt8*  opacities   = polygon->opacities().pointer();
 
-        const size_t nconnections = polygon->nconnections();
-        for ( size_t i = 0, index = 0; i < nconnections; i++, index += 3 )
+        const std::size_t nconnections = polygon->nconnections();
+        for ( std::size_t i = 0, index = 0; i < nconnections; i++, index += 3 )
         {
-            const size_t id0 = *( connections + index ) * 3;
-            const size_t id1 = *( connections + index + 1 ) * 3;
-            const size_t id2 = *( connections + index + 2 ) * 3;
+            const std::size_t id0 = *( connections + index ) * 3;
+            const std::size_t id1 = *( connections + index + 1 ) * 3;
+            const std::size_t id2 = *( connections + index + 2 ) * 3;
 
             glColor4ub( *( colors + id0 ), *( colors + id0 + 1 ), *( colors + id0 + 2 ), opacities[id0/3] );
             glVertex3f( *( coords + id0 ), *( coords + id0 + 1 ), *( coords + id0 + 2 ) );
@@ -178,8 +178,8 @@ void Rendering_Tri_SC_O( const vismodule::PolygonObject* polygon )
 
         glColor4ub( color.r(), color.g(), color.b(), opacity );
 
-        const size_t nvertices = polygon->nvertices();
-        for ( size_t i = 0, index = 0; i < nvertices; i++, index += 3 )
+        const std::size_t nvertices = polygon->nvertices();
+        for ( std::size_t i = 0, index = 0; i < nvertices; i++, index += 3 )
         {
             glVertex3f( *( coords + index ), *( coords + index + 1 ), *( coords + index + 2 ) );
         }
@@ -205,12 +205,12 @@ void Rendering_Tri_SC_O_Cs( const vismodule::PolygonObject* polygon )
 
         glColor4ub( color.r(), color.g(), color.b(), opacity );
 
-        const size_t nconnections = polygon->nconnections();
-        for ( size_t i = 0, index = 0; i < nconnections; i++, index += 3 )
+        const std::size_t nconnections = polygon->nconnections();
+        for ( std::size_t i = 0, index = 0; i < nconnections; i++, index += 3 )
         {
-            const size_t id0 = *( connections + index ) * 3;
-            const size_t id1 = *( connections + index + 1 ) * 3;
-            const size_t id2 = *( connections + index + 2 ) * 3;
+            const std::size_t id0 = *( connections + index ) * 3;
+            const std::size_t id1 = *( connections + index + 1 ) * 3;
+            const std::size_t id2 = *( connections + index + 2 ) * 3;
 
             glVertex3f( *( coords + id0 ), *( coords + id0 + 1 ), *( coords + id0 + 2 ) );
             glVertex3f( *( coords + id1 ), *( coords + id1 + 1 ), *( coords + id1 + 2 ) );
@@ -234,8 +234,8 @@ void Rendering_Tri_SC_Os( const vismodule::PolygonObject* polygon )
         const vismodule::UInt8*   opacities = polygon->opacities().pointer();
         const vismodule::Real32*  coords    = polygon->coords().pointer();
 
-        const size_t nopacities = polygon->nopacities();
-        for ( size_t i = 0, index = 0; i < nopacities; i++, index += 9 )
+        const std::size_t nopacities = polygon->nopacities();
+        for ( std::size_t i = 0, index = 0; i < nopacities; i++, index += 9 )
         {
             glColor4ub( color.r(), color.g(), color.b(), opacities[i] );
 
@@ -262,12 +262,12 @@ void Rendering_Tri_SC_Os_Cs( const vismodule::PolygonObject* polygon )
         const vismodule::Real32*  coords      = polygon->coords().pointer();
         const vismodule::UInt8*   opacities   = polygon->opacities().pointer();
 
-        const size_t nconnections = polygon->nconnections();
-        for ( size_t i = 0, index = 0; i < nconnections; i++, index += 3 )
+        const std::size_t nconnections = polygon->nconnections();
+        for ( std::size_t i = 0, index = 0; i < nconnections; i++, index += 3 )
         {
-            const size_t id0 = *( connections + index ) * 3;
-            const size_t id1 = *( connections + index + 1 ) * 3;
-            const size_t id2 = *( connections + index + 2 ) * 3;
+            const std::size_t id0 = *( connections + index ) * 3;
+            const std::size_t id1 = *( connections + index + 1 ) * 3;
+            const std::size_t id2 = *( connections + index + 2 ) * 3;
 
             glColor4ub( color.r(), color.g(), color.b(), opacities[i] );
             glVertex3f( *( coords + id0 ), *( coords + id0 + 1 ), *( coords + id0 + 2 ) );
@@ -292,8 +292,8 @@ void Rendering_Tri_PCs_O( const vismodule::PolygonObject* polygon )
         const vismodule::UInt8*  colors  = polygon->colors().pointer();
         const vismodule::Real32* coords  = polygon->coords().pointer();
 
-        const size_t ncolors = polygon->ncolors();
-        for ( size_t i = 0, index3 = 0, index9 = 0; i < ncolors; i++, index3 += 3, index9 += 9 )
+        const std::size_t ncolors = polygon->ncolors();
+        for ( std::size_t i = 0, index3 = 0, index9 = 0; i < ncolors; i++, index3 += 3, index9 += 9 )
         {
             glColor4ub( *( colors + index3 ), *( colors + index3 + 1 ), *( colors + index3 + 2 ), opacity );
 
@@ -320,12 +320,12 @@ void Rendering_Tri_PCs_O_Cs( const vismodule::PolygonObject* polygon )
         const vismodule::UInt8   opacity     = polygon->opacity(0);
         const vismodule::Real32* coords      = polygon->coords().pointer();
 
-        const size_t nconnections = polygon->nconnections();
-        for ( size_t i = 0, index = 0; i < nconnections; i++, index += 3 )
+        const std::size_t nconnections = polygon->nconnections();
+        for ( std::size_t i = 0, index = 0; i < nconnections; i++, index += 3 )
         {
-            const size_t id0 = *( connections + index ) * 3;
-            const size_t id1 = *( connections + index + 1 ) * 3;
-            const size_t id2 = *( connections + index + 2 ) * 3;
+            const std::size_t id0 = *( connections + index ) * 3;
+            const std::size_t id1 = *( connections + index + 1 ) * 3;
+            const std::size_t id2 = *( connections + index + 2 ) * 3;
 
             glColor4ub( *( colors + index ), *( colors + index + 1 ), *( colors + index + 2 ), opacity );
             glVertex3f( *( coords + id0 ), *( coords + id0 + 1 ), *( coords + id0 + 2 ) );
@@ -350,8 +350,8 @@ void Rendering_Tri_PCs_Os( const vismodule::PolygonObject* polygon )
         const vismodule::UInt8*  opacities = polygon->opacities().pointer();
         const vismodule::Real32* coords    = polygon->coords().pointer();
 
-        const size_t ncolors = polygon->ncolors();
-        for ( size_t i = 0, index3 = 0, index9 = 0; i < ncolors; i++, index3 += 3, index9 += 9 )
+        const std::size_t ncolors = polygon->ncolors();
+        for ( std::size_t i = 0, index3 = 0, index9 = 0; i < ncolors; i++, index3 += 3, index9 += 9 )
         {
             glColor4ub( *( colors + index3 ), *( colors + index3 + 1 ), *( colors + index3 + 2 ), opacities[i] );
 
@@ -378,12 +378,12 @@ void Rendering_Tri_PCs_Os_Cs( const vismodule::PolygonObject* polygon )
         const vismodule::UInt8*  opacities   = polygon->opacities().pointer();
         const vismodule::Real32* coords      = polygon->coords().pointer();
 
-        const size_t nconnections = polygon->nconnections();
-        for ( size_t i = 0, index = 0; i < nconnections; i++, index += 3 )
+        const std::size_t nconnections = polygon->nconnections();
+        for ( std::size_t i = 0, index = 0; i < nconnections; i++, index += 3 )
         {
-            const size_t id0 = *( connections + index ) * 3;
-            const size_t id1 = *( connections + index + 1 ) * 3;
-            const size_t id2 = *( connections + index + 2 ) * 3;
+            const std::size_t id0 = *( connections + index ) * 3;
+            const std::size_t id1 = *( connections + index + 1 ) * 3;
+            const std::size_t id2 = *( connections + index + 2 ) * 3;
 
             glColor4ub( *( colors + index ), *( colors + index + 1 ), *( colors + index + 2 ), opacities[i] );
             glVertex3f( *( coords + id0 ), *( coords + id0 + 1 ), *( coords + id0 + 2 ) );
@@ -408,8 +408,8 @@ void Rendering_Quad_VCs_O( const vismodule::PolygonObject* polygon )
         const vismodule::UInt8   opacity = polygon->opacity(0);
         const vismodule::Real32* coords  = polygon->coords().pointer();
 
-        const size_t nvertices = polygon->nvertices();
-        for ( size_t i = 0, index = 0; i < nvertices; i++, index += 3 )
+        const std::size_t nvertices = polygon->nvertices();
+        for ( std::size_t i = 0, index = 0; i < nvertices; i++, index += 3 )
         {
             glColor4ub( *( colors + index ), *( colors + index + 1 ), *( colors + index + 2 ), opacity );
             glVertex3f( *( coords + index ), *( coords + index + 1 ), *( coords + index + 2 ) );
@@ -428,13 +428,13 @@ void Rendering_Quad_VCs_O_Cs( const vismodule::PolygonObject* polygon )
 {
     glBegin( GL_QUADS );
     {
-        for( size_t i = 0; i < polygon->nconnections(); i++ )
+        for( std::size_t i = 0; i < polygon->nconnections(); i++ )
         {
-            size_t index = 4 * i;
-            size_t con0 = *(polygon->connections().pointer() + index)   * 3;
-            size_t con1 = *(polygon->connections().pointer() + index+1) * 3;
-            size_t con2 = *(polygon->connections().pointer() + index+2) * 3;
-            size_t con3 = *(polygon->connections().pointer() + index+3) * 3;
+            std::size_t index = 4 * i;
+            std::size_t con0 = *(polygon->connections().pointer() + index)   * 3;
+            std::size_t con1 = *(polygon->connections().pointer() + index+1) * 3;
+            std::size_t con2 = *(polygon->connections().pointer() + index+2) * 3;
+            std::size_t con3 = *(polygon->connections().pointer() + index+3) * 3;
 
             glColor4ub( *(polygon->colors().pointer()   + con0),
                         *(polygon->colors().pointer()   + con0+1),
@@ -479,9 +479,9 @@ void Rendering_Quad_VCs_Os( const vismodule::PolygonObject* polygon )
 {
     glBegin( GL_QUADS );
     {
-        for( size_t i = 0; i < polygon->nvertices(); i++ )
+        for( std::size_t i = 0; i < polygon->nvertices(); i++ )
         {
-            size_t index = 3 * i;
+            std::size_t index = 3 * i;
             glColor4ub( *(polygon->colors().pointer()   + index),
                         *(polygon->colors().pointer()   + index+1),
                         *(polygon->colors().pointer()   + index+2),
@@ -504,13 +504,13 @@ void Rendering_Quad_VCs_Os_Cs( const vismodule::PolygonObject* polygon )
 {
     glBegin( GL_QUADS );
     {
-        for( size_t i = 0; i < polygon->nconnections(); i++ )
+        for( std::size_t i = 0; i < polygon->nconnections(); i++ )
         {
-            size_t index = 4 * i;
-            size_t con0 = *(polygon->connections().pointer() + index)   * 3;
-            size_t con1 = *(polygon->connections().pointer() + index+1) * 3;
-            size_t con2 = *(polygon->connections().pointer() + index+2) * 3;
-            size_t con3 = *(polygon->connections().pointer() + index+3) * 3;
+            std::size_t index = 4 * i;
+            std::size_t con0 = *(polygon->connections().pointer() + index)   * 3;
+            std::size_t con1 = *(polygon->connections().pointer() + index+1) * 3;
+            std::size_t con2 = *(polygon->connections().pointer() + index+2) * 3;
+            std::size_t con3 = *(polygon->connections().pointer() + index+3) * 3;
 
             glColor4ub( *(polygon->colors().pointer()   + con0),
                         *(polygon->colors().pointer()   + con0+1),
@@ -559,9 +559,9 @@ void Rendering_Quad_SC_O( const vismodule::PolygonObject* polygon )
 
         glColor4ub( col.r(), col.g(), col.b(), polygon->opacity( 0 ) );
 
-        for( size_t i = 0; i < polygon->nvertices(); i++ )
+        for( std::size_t i = 0; i < polygon->nvertices(); i++ )
         {
-            size_t index = 3 * i;
+            std::size_t index = 3 * i;
             glVertex3f( *(polygon->coords().pointer() + index),
                         *(polygon->coords().pointer() + index+1),
                         *(polygon->coords().pointer() + index+2) );
@@ -584,13 +584,13 @@ void Rendering_Quad_SC_O_Cs( const vismodule::PolygonObject* polygon )
 
         glColor4ub( col.r(), col.g(), col.b(), polygon->opacity( 0 ) );
 
-        for( size_t i = 0; i < polygon->nconnections(); i++ )
+        for( std::size_t i = 0; i < polygon->nconnections(); i++ )
         {
-            size_t index = 4 * i;
-            size_t con0 = *(polygon->connections().pointer() + index)   * 3;
-            size_t con1 = *(polygon->connections().pointer() + index+1) * 3;
-            size_t con2 = *(polygon->connections().pointer() + index+2) * 3;
-            size_t con3 = *(polygon->connections().pointer() + index+3) * 3;
+            std::size_t index = 4 * i;
+            std::size_t con0 = *(polygon->connections().pointer() + index)   * 3;
+            std::size_t con1 = *(polygon->connections().pointer() + index+1) * 3;
+            std::size_t con2 = *(polygon->connections().pointer() + index+2) * 3;
+            std::size_t con3 = *(polygon->connections().pointer() + index+3) * 3;
 
             glVertex3f( *(polygon->coords().pointer() + con0),
                         *(polygon->coords().pointer() + con0+1),
@@ -621,10 +621,10 @@ void Rendering_Quad_SC_Os( const vismodule::PolygonObject* polygon )
     {
         const vismodule::RGBColor& col = polygon->color( 0 );
 
-        for( size_t i = 0; i < polygon->nopacities(); i++ )
+        for( std::size_t i = 0; i < polygon->nopacities(); i++ )
         {
             glColor4ub( col.r(), col.g(), col.b(), polygon->opacity( i ) );
-            size_t index = 12 * i;
+            std::size_t index = 12 * i;
 
             glVertex3f( *(polygon->coords().pointer() + index),
                         *(polygon->coords().pointer() + index+1),
@@ -655,13 +655,13 @@ void Rendering_Quad_SC_Os_Cs( const vismodule::PolygonObject* polygon )
     {
         const vismodule::RGBColor& col = polygon->color( 0 );
 
-        for( size_t i = 0; i < polygon->nconnections(); i++ )
+        for( std::size_t i = 0; i < polygon->nconnections(); i++ )
         {
-            size_t index = 4 * i;
-            size_t con0 = *(polygon->connections().pointer() + index)   * 3;
-            size_t con1 = *(polygon->connections().pointer() + index+1) * 3;
-            size_t con2 = *(polygon->connections().pointer() + index+2) * 3;
-            size_t con3 = *(polygon->connections().pointer() + index+3) * 3;
+            std::size_t index = 4 * i;
+            std::size_t con0 = *(polygon->connections().pointer() + index)   * 3;
+            std::size_t con1 = *(polygon->connections().pointer() + index+1) * 3;
+            std::size_t con2 = *(polygon->connections().pointer() + index+2) * 3;
+            std::size_t con3 = *(polygon->connections().pointer() + index+3) * 3;
 
             glColor4ub( col.r(), col.g(), col.b(), polygon->opacity(i) );
             glVertex3f( *(polygon->coords().pointer() + con0),
@@ -691,9 +691,9 @@ void Rendering_Quad_PCs_O( const vismodule::PolygonObject* polygon )
 {
     glBegin( GL_QUADS );
     {
-        for( size_t i = 0; i < polygon->ncolors(); i++ )
+        for( std::size_t i = 0; i < polygon->ncolors(); i++ )
         {
-            size_t index = 3 * i;
+            std::size_t index = 3 * i;
             glColor4ub( *(polygon->colors().pointer() + index),
                         *(polygon->colors().pointer() + index+1),
                         *(polygon->colors().pointer() + index+2),
@@ -727,19 +727,19 @@ void Rendering_Quad_PCs_O_Cs( const vismodule::PolygonObject* polygon )
 {
     glBegin( GL_QUADS );
     {
-        for( size_t i = 0; i < polygon->nconnections(); i++ )
+        for( std::size_t i = 0; i < polygon->nconnections(); i++ )
         {
-            size_t index = 3 * i;
+            std::size_t index = 3 * i;
             glColor4ub( *(polygon->colors().pointer() + index),
                         *(polygon->colors().pointer() + index+1),
                         *(polygon->colors().pointer() + index+2),
                         polygon->opacity( 0 ) );
 
             index = 4 * i;
-            size_t con0 = *(polygon->connections().pointer() + index)   * 3;
-            size_t con1 = *(polygon->connections().pointer() + index+1) * 3;
-            size_t con2 = *(polygon->connections().pointer() + index+2) * 3;
-            size_t con3 = *(polygon->connections().pointer() + index+3) * 3;
+            std::size_t con0 = *(polygon->connections().pointer() + index)   * 3;
+            std::size_t con1 = *(polygon->connections().pointer() + index+1) * 3;
+            std::size_t con2 = *(polygon->connections().pointer() + index+2) * 3;
+            std::size_t con3 = *(polygon->connections().pointer() + index+3) * 3;
 
             glVertex3f( *(polygon->coords().pointer() + con0),
                         *(polygon->coords().pointer() + con0+1),
@@ -768,9 +768,9 @@ void Rendering_Quad_PCs_Os( const vismodule::PolygonObject* polygon )
 {
     glBegin( GL_QUADS );
     {
-        for( size_t i = 0; i < polygon->ncolors(); i++ )
+        for( std::size_t i = 0; i < polygon->ncolors(); i++ )
         {
-            size_t index = 3 * i;
+            std::size_t index = 3 * i;
             glColor4ub( *(polygon->colors().pointer() + index),
                         *(polygon->colors().pointer() + index+1),
                         *(polygon->colors().pointer() + index+2),
@@ -804,19 +804,19 @@ void Rendering_Quad_PCs_Os_Cs( const vismodule::PolygonObject* polygon )
 {
     glBegin( GL_QUADS );
     {
-        for( size_t i = 0; i < polygon->nconnections(); i++ )
+        for( std::size_t i = 0; i < polygon->nconnections(); i++ )
         {
-            size_t index = 3 * i;
+            std::size_t index = 3 * i;
             glColor4ub( *(polygon->colors().pointer() + index),
                         *(polygon->colors().pointer() + index+1),
                         *(polygon->colors().pointer() + index+2),
                         polygon->opacity( i ) );
 
             index = 4 * i;
-            size_t con0 = *(polygon->connections().pointer() + index)   * 3;
-            size_t con1 = *(polygon->connections().pointer() + index+1) * 3;
-            size_t con2 = *(polygon->connections().pointer() + index+2) * 3;
-            size_t con3 = *(polygon->connections().pointer() + index+3) * 3;
+            std::size_t con0 = *(polygon->connections().pointer() + index)   * 3;
+            std::size_t con1 = *(polygon->connections().pointer() + index+1) * 3;
+            std::size_t con2 = *(polygon->connections().pointer() + index+2) * 3;
+            std::size_t con3 = *(polygon->connections().pointer() + index+3) * 3;
 
             glVertex3f( *(polygon->coords().pointer() + con0),
                         *(polygon->coords().pointer() + con0+1),
@@ -845,9 +845,9 @@ void Rendering_Tri_VN_VCs_O( const vismodule::PolygonObject* polygon )
 {
     glBegin( GL_TRIANGLES );
     {
-        for( size_t i = 0; i < polygon->nvertices(); i++ )
+        for( std::size_t i = 0; i < polygon->nvertices(); i++ )
         {
-            size_t index = 3 * i;
+            std::size_t index = 3 * i;
             glColor4ub( *(polygon->colors().pointer() + index),
                         *(polygon->colors().pointer() + index+1),
                         *(polygon->colors().pointer() + index+2),
@@ -873,12 +873,12 @@ void Rendering_Tri_VN_VCs_O_Cs( const vismodule::PolygonObject* polygon )
 {
     glBegin( GL_TRIANGLES );
     {
-        for( size_t i = 0; i < polygon->nconnections(); i++ )
+        for( std::size_t i = 0; i < polygon->nconnections(); i++ )
         {
-            size_t index = 3 * i;
-            size_t con0 = *(polygon->connections().pointer() + index)   * 3;
-            size_t con1 = *(polygon->connections().pointer() + index+1) * 3;
-            size_t con2 = *(polygon->connections().pointer() + index+2) * 3;
+            std::size_t index = 3 * i;
+            std::size_t con0 = *(polygon->connections().pointer() + index)   * 3;
+            std::size_t con1 = *(polygon->connections().pointer() + index+1) * 3;
+            std::size_t con2 = *(polygon->connections().pointer() + index+2) * 3;
 
             glColor4ub( *(polygon->colors().pointer() + con0),
                         *(polygon->colors().pointer() + con0+1),
@@ -925,9 +925,9 @@ void Rendering_Tri_VN_VCs_Os( const vismodule::PolygonObject* polygon )
 {
     glBegin( GL_TRIANGLES );
     {
-        for( size_t i = 0; i < polygon->nvertices(); i++ )
+        for( std::size_t i = 0; i < polygon->nvertices(); i++ )
         {
-            size_t index = 3 * i;
+            std::size_t index = 3 * i;
             glColor4ub( *(polygon->colors().pointer()   + index),
                         *(polygon->colors().pointer()   + index+1),
                         *(polygon->colors().pointer()   + index+2),
@@ -953,12 +953,12 @@ void Rendering_Tri_VN_VCs_Os_Cs( const vismodule::PolygonObject* polygon )
 {
     glBegin( GL_TRIANGLES );
     {
-        for( size_t i = 0; i < polygon->nconnections(); i++ )
+        for( std::size_t i = 0; i < polygon->nconnections(); i++ )
         {
-            size_t index = 3 * i;
-            size_t con0 = *(polygon->connections().pointer() + index)   * 3;
-            size_t con1 = *(polygon->connections().pointer() + index+1) * 3;
-            size_t con2 = *(polygon->connections().pointer() + index+2) * 3;
+            std::size_t index = 3 * i;
+            std::size_t con0 = *(polygon->connections().pointer() + index)   * 3;
+            std::size_t con1 = *(polygon->connections().pointer() + index+1) * 3;
+            std::size_t con2 = *(polygon->connections().pointer() + index+2) * 3;
 
             glColor4ub( *(polygon->colors().pointer()   + con0),
                         *(polygon->colors().pointer()   + con0+1),
@@ -1009,9 +1009,9 @@ void Rendering_Tri_VN_SC_O( const vismodule::PolygonObject* polygon )
 
         glColor4ub( col.r(), col.g(), col.b(), polygon->opacity( 0 ) );
 
-        for( size_t i = 0; i < polygon->nvertices(); i++ )
+        for( std::size_t i = 0; i < polygon->nvertices(); i++ )
         {
-            size_t index = 3 * i;
+            std::size_t index = 3 * i;
             glNormal3f( *(polygon->normals().pointer()    + index),
                         *(polygon->normals().pointer()    + index+1),
                         *(polygon->normals().pointer()    + index+2) );
@@ -1037,12 +1037,12 @@ void Rendering_Tri_VN_SC_O_Cs( const vismodule::PolygonObject* polygon )
 
         glColor4ub( col.r(), col.g(), col.b(), polygon->opacity( 0 ) );
 
-        for( size_t i = 0; i < polygon->nconnections(); i++ )
+        for( std::size_t i = 0; i < polygon->nconnections(); i++ )
         {
-            size_t index = 3 * i;
-            size_t con0 = *(polygon->connections().pointer() + index)   * 3;
-            size_t con1 = *(polygon->connections().pointer() + index+1) * 3;
-            size_t con2 = *(polygon->connections().pointer() + index+2) * 3;
+            std::size_t index = 3 * i;
+            std::size_t con0 = *(polygon->connections().pointer() + index)   * 3;
+            std::size_t con1 = *(polygon->connections().pointer() + index+1) * 3;
+            std::size_t con2 = *(polygon->connections().pointer() + index+2) * 3;
 
             glNormal3f( *(polygon->normals().pointer()    + con0),
                         *(polygon->normals().pointer()    + con0+1),
@@ -1079,10 +1079,10 @@ void Rendering_Tri_VN_SC_Os( const vismodule::PolygonObject* polygon )
     {
         const vismodule::RGBColor& col = polygon->color( 0 );
 
-        for( size_t i = 0; i < polygon->nopacities(); i++ )
+        for( std::size_t i = 0; i < polygon->nopacities(); i++ )
         {
             glColor4ub( col.r(), col.g(), col.b(), polygon->opacity( i ) );
-            size_t index = 9 * i;
+            std::size_t index = 9 * i;
 
             glNormal3f( *(polygon->normals().pointer()    + index),
                         *(polygon->normals().pointer()    + index+1),
@@ -1119,12 +1119,12 @@ void Rendering_Tri_VN_SC_Os_Cs( const vismodule::PolygonObject* polygon )
     {
         const vismodule::RGBColor& col = polygon->color( 0 );
 
-        for( size_t i = 0; i < polygon->nconnections(); i++ )
+        for( std::size_t i = 0; i < polygon->nconnections(); i++ )
         {
-            size_t index = 3 * i;
-            size_t con0 = *(polygon->connections().pointer() + index)   * 3;
-            size_t con1 = *(polygon->connections().pointer() + index+1) * 3;
-            size_t con2 = *(polygon->connections().pointer() + index+2) * 3;
+            std::size_t index = 3 * i;
+            std::size_t con0 = *(polygon->connections().pointer() + index)   * 3;
+            std::size_t con1 = *(polygon->connections().pointer() + index+1) * 3;
+            std::size_t con2 = *(polygon->connections().pointer() + index+2) * 3;
 
             glColor4ub( col.r(), col.g(), col.b(), polygon->opacity(i) );
             glNormal3f( *(polygon->normals().pointer()    + con0),
@@ -1160,9 +1160,9 @@ void Rendering_Tri_VN_PCs_O( const vismodule::PolygonObject* polygon )
 {
     glBegin( GL_TRIANGLES );
     {
-        for( size_t i = 0; i < polygon->ncolors(); i++ )
+        for( std::size_t i = 0; i < polygon->ncolors(); i++ )
         {
-            size_t index = 3 * i;
+            std::size_t index = 3 * i;
             glColor4ub( *(polygon->colors().pointer() + index),
                         *(polygon->colors().pointer() + index+1),
                         *(polygon->colors().pointer() + index+2),
@@ -1202,12 +1202,12 @@ void Rendering_Tri_VN_PCs_O_Cs( const vismodule::PolygonObject* polygon )
 {
     glBegin( GL_TRIANGLES );
     {
-        for( size_t i = 0; i < polygon->nconnections(); i++ )
+        for( std::size_t i = 0; i < polygon->nconnections(); i++ )
         {
-            size_t index = 3 * i;
-            size_t con0 = *(polygon->connections().pointer() + index)   * 3;
-            size_t con1 = *(polygon->connections().pointer() + index+1) * 3;
-            size_t con2 = *(polygon->connections().pointer() + index+2) * 3;
+            std::size_t index = 3 * i;
+            std::size_t con0 = *(polygon->connections().pointer() + index)   * 3;
+            std::size_t con1 = *(polygon->connections().pointer() + index+1) * 3;
+            std::size_t con2 = *(polygon->connections().pointer() + index+2) * 3;
 
             glColor4ub( *(polygon->colors().pointer() + index),
                         *(polygon->colors().pointer() + index+1),
@@ -1246,9 +1246,9 @@ void Rendering_Tri_VN_PCs_Os( const vismodule::PolygonObject* polygon )
 {
     glBegin( GL_TRIANGLES );
     {
-        for( size_t i = 0; i < polygon->ncolors(); i++ )
+        for( std::size_t i = 0; i < polygon->ncolors(); i++ )
         {
-            size_t index = 3 * i;
+            std::size_t index = 3 * i;
             glColor4ub( *(polygon->colors().pointer() + index),
                         *(polygon->colors().pointer() + index+1),
                         *(polygon->colors().pointer() + index+2),
@@ -1288,12 +1288,12 @@ void Rendering_Tri_VN_PCs_Os_Cs( const vismodule::PolygonObject* polygon )
 {
     glBegin( GL_TRIANGLES );
     {
-        for( size_t i = 0; i < polygon->nconnections(); i++ )
+        for( std::size_t i = 0; i < polygon->nconnections(); i++ )
         {
-            size_t index = 3 * i;
-            size_t con0 = *(polygon->connections().pointer() + index)   * 3;
-            size_t con1 = *(polygon->connections().pointer() + index+1) * 3;
-            size_t con2 = *(polygon->connections().pointer() + index+2) * 3;
+            std::size_t index = 3 * i;
+            std::size_t con0 = *(polygon->connections().pointer() + index)   * 3;
+            std::size_t con1 = *(polygon->connections().pointer() + index+1) * 3;
+            std::size_t con2 = *(polygon->connections().pointer() + index+2) * 3;
 
             glColor4ub( *(polygon->colors().pointer() + index),
                         *(polygon->colors().pointer() + index+1),
@@ -1332,9 +1332,9 @@ void Rendering_Quad_VN_VCs_O( const vismodule::PolygonObject* polygon )
 {
     glBegin( GL_QUADS );
     {
-        for( size_t i = 0; i < polygon->nvertices(); i++ )
+        for( std::size_t i = 0; i < polygon->nvertices(); i++ )
         {
-            size_t index = 3 * i;
+            std::size_t index = 3 * i;
             glColor4ub( *(polygon->colors().pointer() + index),
                         *(polygon->colors().pointer() + index+1),
                         *(polygon->colors().pointer() + index+2),
@@ -1360,13 +1360,13 @@ void Rendering_Quad_VN_VCs_O_Cs( const vismodule::PolygonObject* polygon )
 {
     glBegin( GL_QUADS );
     {
-        for( size_t i = 0; i < polygon->nconnections(); i++ )
+        for( std::size_t i = 0; i < polygon->nconnections(); i++ )
         {
-            size_t index = 4 * i;
-            size_t con0 = *(polygon->connections().pointer() + index)   * 3;
-            size_t con1 = *(polygon->connections().pointer() + index+1) * 3;
-            size_t con2 = *(polygon->connections().pointer() + index+2) * 3;
-            size_t con3 = *(polygon->connections().pointer() + index+3) * 3;
+            std::size_t index = 4 * i;
+            std::size_t con0 = *(polygon->connections().pointer() + index)   * 3;
+            std::size_t con1 = *(polygon->connections().pointer() + index+1) * 3;
+            std::size_t con2 = *(polygon->connections().pointer() + index+2) * 3;
+            std::size_t con3 = *(polygon->connections().pointer() + index+3) * 3;
 
             glColor4ub( *(polygon->colors().pointer() + con0),
                         *(polygon->colors().pointer() + con0+1),
@@ -1423,9 +1423,9 @@ void Rendering_Quad_VN_VCs_Os( const vismodule::PolygonObject* polygon )
 {
     glBegin( GL_QUADS );
     {
-        for( size_t i = 0; i < polygon->nvertices(); i++ )
+        for( std::size_t i = 0; i < polygon->nvertices(); i++ )
         {
-            size_t index = 3 * i;
+            std::size_t index = 3 * i;
             glColor4ub( *(polygon->colors().pointer()   + index),
                         *(polygon->colors().pointer()   + index+1),
                         *(polygon->colors().pointer()   + index+2),
@@ -1451,13 +1451,13 @@ void Rendering_Quad_VN_VCs_Os_Cs( const vismodule::PolygonObject* polygon )
 {
     glBegin( GL_QUADS );
     {
-        for( size_t i = 0; i < polygon->nconnections(); i++ )
+        for( std::size_t i = 0; i < polygon->nconnections(); i++ )
         {
-            size_t index = 4 * i;
-            size_t con0 = *(polygon->connections().pointer() + index)   * 3;
-            size_t con1 = *(polygon->connections().pointer() + index+1) * 3;
-            size_t con2 = *(polygon->connections().pointer() + index+2) * 3;
-            size_t con3 = *(polygon->connections().pointer() + index+3) * 3;
+            std::size_t index = 4 * i;
+            std::size_t con0 = *(polygon->connections().pointer() + index)   * 3;
+            std::size_t con1 = *(polygon->connections().pointer() + index+1) * 3;
+            std::size_t con2 = *(polygon->connections().pointer() + index+2) * 3;
+            std::size_t con3 = *(polygon->connections().pointer() + index+3) * 3;
 
             glColor4ub( *(polygon->colors().pointer()   + con0),
                         *(polygon->colors().pointer()   + con0+1),
@@ -1518,9 +1518,9 @@ void Rendering_Quad_VN_SC_O( const vismodule::PolygonObject* polygon )
 
         glColor4ub( col.r(), col.g(), col.b(), polygon->opacity( 0 ) );
 
-        for( size_t i = 0; i < polygon->nvertices(); i++ )
+        for( std::size_t i = 0; i < polygon->nvertices(); i++ )
         {
-            size_t index = 3 * i;
+            std::size_t index = 3 * i;
             glNormal3f( *(polygon->normals().pointer()    + index),
                         *(polygon->normals().pointer()    + index+1),
                         *(polygon->normals().pointer()    + index+2) );
@@ -1546,13 +1546,13 @@ void Rendering_Quad_VN_SC_O_Cs( const vismodule::PolygonObject* polygon )
 
         glColor4ub( col.r(), col.g(), col.b(), polygon->opacity( 0 ) );
 
-        for( size_t i = 0; i < polygon->nconnections(); i++ )
+        for( std::size_t i = 0; i < polygon->nconnections(); i++ )
         {
-            size_t index = 4 * i;
-            size_t con0 = *(polygon->connections().pointer() + index)   * 3;
-            size_t con1 = *(polygon->connections().pointer() + index+1) * 3;
-            size_t con2 = *(polygon->connections().pointer() + index+2) * 3;
-            size_t con3 = *(polygon->connections().pointer() + index+3) * 3;
+            std::size_t index = 4 * i;
+            std::size_t con0 = *(polygon->connections().pointer() + index)   * 3;
+            std::size_t con1 = *(polygon->connections().pointer() + index+1) * 3;
+            std::size_t con2 = *(polygon->connections().pointer() + index+2) * 3;
+            std::size_t con3 = *(polygon->connections().pointer() + index+3) * 3;
 
             glNormal3f( *(polygon->normals().pointer()    + con0),
                         *(polygon->normals().pointer()    + con0+1),
@@ -1595,10 +1595,10 @@ void Rendering_Quad_VN_SC_Os( const vismodule::PolygonObject* polygon )
     {
         const vismodule::RGBColor& col = polygon->color( 0 );
 
-        for( size_t i = 0; i < polygon->nopacities(); i++ )
+        for( std::size_t i = 0; i < polygon->nopacities(); i++ )
         {
             glColor4ub( col.r(), col.g(), col.b(), polygon->opacity( i ) );
-            size_t index = 12 * i;
+            std::size_t index = 12 * i;
 
             glNormal3f( *(polygon->normals().pointer()    + index),
                         *(polygon->normals().pointer()    + index+1),
@@ -1641,13 +1641,13 @@ void Rendering_Quad_VN_SC_Os_Cs( const vismodule::PolygonObject* polygon )
     {
         const vismodule::RGBColor& col = polygon->color( 0 );
 
-        for( size_t i = 0; i < polygon->nconnections(); i++ )
+        for( std::size_t i = 0; i < polygon->nconnections(); i++ )
         {
-            size_t index = 4 * i;
-            size_t con0 = *(polygon->connections().pointer() + index)   * 3;
-            size_t con1 = *(polygon->connections().pointer() + index+1) * 3;
-            size_t con2 = *(polygon->connections().pointer() + index+2) * 3;
-            size_t con3 = *(polygon->connections().pointer() + index+3) * 3;
+            std::size_t index = 4 * i;
+            std::size_t con0 = *(polygon->connections().pointer() + index)   * 3;
+            std::size_t con1 = *(polygon->connections().pointer() + index+1) * 3;
+            std::size_t con2 = *(polygon->connections().pointer() + index+2) * 3;
+            std::size_t con3 = *(polygon->connections().pointer() + index+3) * 3;
 
             glColor4ub( col.r(), col.g(), col.b(), polygon->opacity(i) );
             glNormal3f( *(polygon->normals().pointer()    + con0),
@@ -1689,9 +1689,9 @@ void Rendering_Quad_VN_PCs_O( const vismodule::PolygonObject* polygon )
 {
     glBegin( GL_QUADS );
     {
-        for( size_t i = 0; i < polygon->ncolors(); i++ )
+        for( std::size_t i = 0; i < polygon->ncolors(); i++ )
         {
-            size_t index = 3 * i;
+            std::size_t index = 3 * i;
             glColor4ub( *(polygon->colors().pointer() + index),
                         *(polygon->colors().pointer() + index+1),
                         *(polygon->colors().pointer() + index+2),
@@ -1737,19 +1737,19 @@ void Rendering_Quad_VN_PCs_O_Cs( const vismodule::PolygonObject* polygon )
 {
     glBegin( GL_QUADS );
     {
-        for( size_t i = 0; i < polygon->nconnections(); i++ )
+        for( std::size_t i = 0; i < polygon->nconnections(); i++ )
         {
-            size_t index = 3 * i;
+            std::size_t index = 3 * i;
             glColor4ub( *(polygon->colors().pointer() + index),
                         *(polygon->colors().pointer() + index+1),
                         *(polygon->colors().pointer() + index+2),
                         polygon->opacity( 0 ) );
 
             index = 4 * i;
-            size_t con0 = *(polygon->connections().pointer() + index)   * 3;
-            size_t con1 = *(polygon->connections().pointer() + index+1) * 3;
-            size_t con2 = *(polygon->connections().pointer() + index+2) * 3;
-            size_t con3 = *(polygon->connections().pointer() + index+3) * 3;
+            std::size_t con0 = *(polygon->connections().pointer() + index)   * 3;
+            std::size_t con1 = *(polygon->connections().pointer() + index+1) * 3;
+            std::size_t con2 = *(polygon->connections().pointer() + index+2) * 3;
+            std::size_t con3 = *(polygon->connections().pointer() + index+3) * 3;
 
             glNormal3f( *(polygon->normals().pointer()    + con0),
                         *(polygon->normals().pointer()    + con0+1),
@@ -1790,9 +1790,9 @@ void Rendering_Quad_VN_PCs_Os( const vismodule::PolygonObject* polygon )
 {
     glBegin( GL_QUADS );
     {
-        for( size_t i = 0; i < polygon->ncolors(); i++ )
+        for( std::size_t i = 0; i < polygon->ncolors(); i++ )
         {
-            size_t index = 3 * i;
+            std::size_t index = 3 * i;
             glColor4ub( *(polygon->colors().pointer() + index),
                         *(polygon->colors().pointer() + index+1),
                         *(polygon->colors().pointer() + index+2),
@@ -1838,19 +1838,19 @@ void Rendering_Quad_VN_PCs_Os_Cs( const vismodule::PolygonObject* polygon )
 {
     glBegin( GL_QUADS );
     {
-        for( size_t i = 0; i < polygon->nconnections(); i++ )
+        for( std::size_t i = 0; i < polygon->nconnections(); i++ )
         {
-            size_t index = 3 * i;
+            std::size_t index = 3 * i;
             glColor4ub( *(polygon->colors().pointer() + index),
                         *(polygon->colors().pointer() + index+1),
                         *(polygon->colors().pointer() + index+2),
                         polygon->opacity( i ) );
 
             index = 4 * i;
-            size_t con0 = *(polygon->connections().pointer() + index)   * 3;
-            size_t con1 = *(polygon->connections().pointer() + index+1) * 3;
-            size_t con2 = *(polygon->connections().pointer() + index+2) * 3;
-            size_t con3 = *(polygon->connections().pointer() + index+3) * 3;
+            std::size_t con0 = *(polygon->connections().pointer() + index)   * 3;
+            std::size_t con1 = *(polygon->connections().pointer() + index+1) * 3;
+            std::size_t con2 = *(polygon->connections().pointer() + index+2) * 3;
+            std::size_t con3 = *(polygon->connections().pointer() + index+3) * 3;
 
             glNormal3f( *(polygon->normals().pointer()    + con0),
                         *(polygon->normals().pointer()    + con0+1),
@@ -1891,9 +1891,9 @@ void Rendering_Tri_PN_VCs_O( const vismodule::PolygonObject* polygon )
 {
     glBegin( GL_TRIANGLES );
     {
-        for( size_t i = 0; i < polygon->nnormals(); i++ )
+        for( std::size_t i = 0; i < polygon->nnormals(); i++ )
         {
-            size_t index = 3 * i;
+            std::size_t index = 3 * i;
             glNormal3f( *(polygon->normals().pointer()    + index),
                         *(polygon->normals().pointer()    + index+1),
                         *(polygon->normals().pointer()    + index+2) );
@@ -1935,12 +1935,12 @@ void Rendering_Tri_PN_VCs_O_Cs( const vismodule::PolygonObject* polygon )
 {
     glBegin( GL_TRIANGLES );
     {
-        for( size_t i = 0; i < polygon->nconnections(); i++ )
+        for( std::size_t i = 0; i < polygon->nconnections(); i++ )
         {
-            size_t index = 3 * i;
-            size_t con0 = *(polygon->connections().pointer() + index)   * 3;
-            size_t con1 = *(polygon->connections().pointer() + index+1) * 3;
-            size_t con2 = *(polygon->connections().pointer() + index+2) * 3;
+            std::size_t index = 3 * i;
+            std::size_t con0 = *(polygon->connections().pointer() + index)   * 3;
+            std::size_t con1 = *(polygon->connections().pointer() + index+1) * 3;
+            std::size_t con2 = *(polygon->connections().pointer() + index+2) * 3;
 
             glNormal3f( *(polygon->normals().pointer()    + index),
                         *(polygon->normals().pointer()    + index+1),
@@ -1981,14 +1981,14 @@ void Rendering_Tri_PN_VCs_Os( const vismodule::PolygonObject* polygon )
 {
     glBegin( GL_TRIANGLES );
     {
-        for( size_t i = 0; i < polygon->nnormals(); i++ )
+        for( std::size_t i = 0; i < polygon->nnormals(); i++ )
         {
-            size_t nindex = 3 * i;
+            std::size_t nindex = 3 * i;
             glNormal3f( *(polygon->normals().pointer()    + nindex),
                         *(polygon->normals().pointer()    + nindex+1),
                         *(polygon->normals().pointer()    + nindex+2) );
 
-            size_t vindex = 9 * i;
+            std::size_t vindex = 9 * i;
             glColor4ub( *(polygon->colors().pointer()   + vindex),
                         *(polygon->colors().pointer()   + vindex+1),
                         *(polygon->colors().pointer()   + vindex+2),
@@ -2025,12 +2025,12 @@ void Rendering_Tri_PN_VCs_Os_Cs( const vismodule::PolygonObject* polygon )
 {
     glBegin( GL_TRIANGLES );
     {
-        for( size_t i = 0; i < polygon->nconnections(); i++ )
+        for( std::size_t i = 0; i < polygon->nconnections(); i++ )
         {
-            size_t index = 3 * i;
-            size_t con0 = *(polygon->connections().pointer() + index)   * 3;
-            size_t con1 = *(polygon->connections().pointer() + index+1) * 3;
-            size_t con2 = *(polygon->connections().pointer() + index+2) * 3;
+            std::size_t index = 3 * i;
+            std::size_t con0 = *(polygon->connections().pointer() + index)   * 3;
+            std::size_t con1 = *(polygon->connections().pointer() + index+1) * 3;
+            std::size_t con2 = *(polygon->connections().pointer() + index+2) * 3;
 
             glNormal3f( *(polygon->normals().pointer()    + index),
                         *(polygon->normals().pointer()    + index+1),
@@ -2075,9 +2075,9 @@ void Rendering_Tri_PN_SC_O( const vismodule::PolygonObject* polygon )
 
         glColor4ub( col.r(), col.g(), col.b(), polygon->opacity( 0 ) );
 
-        for( size_t i = 0; i < polygon->nnormals(); i++ )
+        for( std::size_t i = 0; i < polygon->nnormals(); i++ )
         {
-            size_t index = 3 * i;
+            std::size_t index = 3 * i;
             glNormal3f( *(polygon->normals().pointer() + index),
                         *(polygon->normals().pointer() + index+1),
                         *(polygon->normals().pointer() + index+2) );
@@ -2111,12 +2111,12 @@ void Rendering_Tri_PN_SC_O_Cs( const vismodule::PolygonObject* polygon )
 
         glColor4ub( col.r(), col.g(), col.b(), polygon->opacity( 0 ) );
 
-        for( size_t i = 0; i < polygon->nconnections(); i++ )
+        for( std::size_t i = 0; i < polygon->nconnections(); i++ )
         {
-            size_t index = 3 * i;
-            size_t con0 = *(polygon->connections().pointer() + index)   * 3;
-            size_t con1 = *(polygon->connections().pointer() + index+1) * 3;
-            size_t con2 = *(polygon->connections().pointer() + index+2) * 3;
+            std::size_t index = 3 * i;
+            std::size_t con0 = *(polygon->connections().pointer() + index)   * 3;
+            std::size_t con1 = *(polygon->connections().pointer() + index+1) * 3;
+            std::size_t con2 = *(polygon->connections().pointer() + index+2) * 3;
 
             glNormal3f( *(polygon->normals().pointer()    + index),
                         *(polygon->normals().pointer()    + index+1),
@@ -2147,11 +2147,11 @@ void Rendering_Tri_PN_SC_Os( const vismodule::PolygonObject* polygon )
     {
         const vismodule::RGBColor& col = polygon->color( 0 );
 
-        for( size_t i = 0; i < polygon->nopacities(); i++ )
+        for( std::size_t i = 0; i < polygon->nopacities(); i++ )
         {
             glColor4ub( col.r(), col.g(), col.b(), polygon->opacity( i ) );
 
-            size_t index = 3 * i;
+            std::size_t index = 3 * i;
 
             glNormal3f( *(polygon->normals().pointer()    + index),
                         *(polygon->normals().pointer()    + index+1),
@@ -2184,12 +2184,12 @@ void Rendering_Tri_PN_SC_Os_Cs( const vismodule::PolygonObject* polygon )
     {
         const vismodule::RGBColor& col = polygon->color( 0 );
 
-        for( size_t i = 0; i < polygon->nconnections(); i++ )
+        for( std::size_t i = 0; i < polygon->nconnections(); i++ )
         {
-            size_t index = 3 * i;
-            size_t con0 = *(polygon->connections().pointer() + index)   * 3;
-            size_t con1 = *(polygon->connections().pointer() + index+1) * 3;
-            size_t con2 = *(polygon->connections().pointer() + index+2) * 3;
+            std::size_t index = 3 * i;
+            std::size_t con0 = *(polygon->connections().pointer() + index)   * 3;
+            std::size_t con1 = *(polygon->connections().pointer() + index+1) * 3;
+            std::size_t con2 = *(polygon->connections().pointer() + index+2) * 3;
 
             glColor4ub( col.r(), col.g(), col.b(), polygon->opacity(i) );
             glNormal3f( *(polygon->normals().pointer()    + index),
@@ -2219,9 +2219,9 @@ void Rendering_Tri_PN_PCs_O( const vismodule::PolygonObject* polygon )
 {
     glBegin( GL_TRIANGLES );
     {
-        for( size_t i = 0; i < polygon->ncolors(); i++ )
+        for( std::size_t i = 0; i < polygon->ncolors(); i++ )
         {
-            size_t index = 3 * i;
+            std::size_t index = 3 * i;
             glColor4ub( *(polygon->colors().pointer() + index),
                         *(polygon->colors().pointer() + index+1),
                         *(polygon->colors().pointer() + index+2),
@@ -2255,12 +2255,12 @@ void Rendering_Tri_PN_PCs_O_Cs( const vismodule::PolygonObject* polygon )
 {
     glBegin( GL_TRIANGLES );
     {
-        for( size_t i = 0; i < polygon->nconnections(); i++ )
+        for( std::size_t i = 0; i < polygon->nconnections(); i++ )
         {
-            size_t index = 3 * i;
-            size_t con0 = *(polygon->connections().pointer() + index)   * 3;
-            size_t con1 = *(polygon->connections().pointer() + index+1) * 3;
-            size_t con2 = *(polygon->connections().pointer() + index+2) * 3;
+            std::size_t index = 3 * i;
+            std::size_t con0 = *(polygon->connections().pointer() + index)   * 3;
+            std::size_t con1 = *(polygon->connections().pointer() + index+1) * 3;
+            std::size_t con2 = *(polygon->connections().pointer() + index+2) * 3;
 
             glColor4ub( *(polygon->colors().pointer() + index),
                         *(polygon->colors().pointer() + index+1),
@@ -2294,9 +2294,9 @@ void Rendering_Tri_PN_PCs_Os( const vismodule::PolygonObject* polygon )
 {
     glBegin( GL_TRIANGLES );
     {
-        for( size_t i = 0; i < polygon->ncolors(); i++ )
+        for( std::size_t i = 0; i < polygon->ncolors(); i++ )
         {
-            size_t index = 3 * i;
+            std::size_t index = 3 * i;
             glColor4ub( *(polygon->colors().pointer() + index),
                         *(polygon->colors().pointer() + index+1),
                         *(polygon->colors().pointer() + index+2),
@@ -2330,12 +2330,12 @@ void Rendering_Tri_PN_PCs_Os_Cs( const vismodule::PolygonObject* polygon )
 {
     glBegin( GL_TRIANGLES );
     {
-        for( size_t i = 0; i < polygon->nconnections(); i++ )
+        for( std::size_t i = 0; i < polygon->nconnections(); i++ )
         {
-            size_t index = 3 * i;
-            size_t con0 = *(polygon->connections().pointer() + index)   * 3;
-            size_t con1 = *(polygon->connections().pointer() + index+1) * 3;
-            size_t con2 = *(polygon->connections().pointer() + index+2) * 3;
+            std::size_t index = 3 * i;
+            std::size_t con0 = *(polygon->connections().pointer() + index)   * 3;
+            std::size_t con1 = *(polygon->connections().pointer() + index+1) * 3;
+            std::size_t con2 = *(polygon->connections().pointer() + index+2) * 3;
 
             glColor4ub( *(polygon->colors().pointer() + index),
                         *(polygon->colors().pointer() + index+1),
@@ -2369,10 +2369,10 @@ void Rendering_Quad_PN_VCs_O( const vismodule::PolygonObject* polygon )
 {
     glBegin( GL_QUADS );
     {
-        const size_t nnormals = polygon->nnormals();
-        for( size_t i = 0; i < nnormals; i++ )
+        const std::size_t nnormals = polygon->nnormals();
+        for( std::size_t i = 0; i < nnormals; i++ )
         {
-            size_t index = 3 * i;
+            std::size_t index = 3 * i;
             glNormal3f( *(polygon->normals().pointer()    + index),
                         *(polygon->normals().pointer()    + index+1),
                         *(polygon->normals().pointer()    + index+2) );
@@ -2421,18 +2421,18 @@ void Rendering_Quad_PN_VCs_O_Cs( const vismodule::PolygonObject* polygon )
 {
     glBegin( GL_QUADS );
     {
-        for( size_t i = 0; i < polygon->nconnections(); i++ )
+        for( std::size_t i = 0; i < polygon->nconnections(); i++ )
         {
-            size_t index = 3 * i;
+            std::size_t index = 3 * i;
             glNormal3f( *(polygon->normals().pointer()    + index),
                         *(polygon->normals().pointer()    + index+1),
                         *(polygon->normals().pointer()    + index+2) );
 
             index = 4 * i;
-            size_t con0 = *(polygon->connections().pointer() + index)   * 3;
-            size_t con1 = *(polygon->connections().pointer() + index+1) * 3;
-            size_t con2 = *(polygon->connections().pointer() + index+2) * 3;
-            size_t con3 = *(polygon->connections().pointer() + index+3) * 3;
+            std::size_t con0 = *(polygon->connections().pointer() + index)   * 3;
+            std::size_t con1 = *(polygon->connections().pointer() + index+1) * 3;
+            std::size_t con2 = *(polygon->connections().pointer() + index+2) * 3;
+            std::size_t con3 = *(polygon->connections().pointer() + index+3) * 3;
 
             glColor4ub( *(polygon->colors().pointer()   + con0),
                         *(polygon->colors().pointer()   + con0+1),
@@ -2477,14 +2477,14 @@ void Rendering_Quad_PN_VCs_Os( const vismodule::PolygonObject* polygon )
 {
     glBegin( GL_QUADS );
     {
-        for( size_t i = 0; i < polygon->nnormals(); i++ )
+        for( std::size_t i = 0; i < polygon->nnormals(); i++ )
         {
-            size_t nindex = 3 * i;
+            std::size_t nindex = 3 * i;
             glNormal3f( *(polygon->normals().pointer()    + nindex),
                         *(polygon->normals().pointer()    + nindex+1),
                         *(polygon->normals().pointer()    + nindex+2) );
 
-            size_t vindex = 12 * i;
+            std::size_t vindex = 12 * i;
             glColor4ub( *(polygon->colors().pointer()   + vindex),
                         *(polygon->colors().pointer()   + vindex+1),
                         *(polygon->colors().pointer()   + vindex+2),
@@ -2528,18 +2528,18 @@ void Rendering_Quad_PN_VCs_Os_Cs( const vismodule::PolygonObject* polygon )
 {
     glBegin( GL_QUADS );
     {
-        for( size_t i = 0; i < polygon->nconnections(); i++ )
+        for( std::size_t i = 0; i < polygon->nconnections(); i++ )
         {
-            size_t index = 3 * i;
+            std::size_t index = 3 * i;
             glNormal3f( *(polygon->normals().pointer()    + index),
                         *(polygon->normals().pointer()    + index+1),
                         *(polygon->normals().pointer()    + index+2) );
 
             index = 4 * i;
-            size_t con0 = *(polygon->connections().pointer() + index)   * 3;
-            size_t con1 = *(polygon->connections().pointer() + index+1) * 3;
-            size_t con2 = *(polygon->connections().pointer() + index+2) * 3;
-            size_t con3 = *(polygon->connections().pointer() + index+3) * 3;
+            std::size_t con0 = *(polygon->connections().pointer() + index)   * 3;
+            std::size_t con1 = *(polygon->connections().pointer() + index+1) * 3;
+            std::size_t con2 = *(polygon->connections().pointer() + index+2) * 3;
+            std::size_t con3 = *(polygon->connections().pointer() + index+3) * 3;
 
             glColor4ub( *(polygon->colors().pointer()   + con0),
                         *(polygon->colors().pointer()   + con0+1),
@@ -2588,9 +2588,9 @@ void Rendering_Quad_PN_SC_O( const vismodule::PolygonObject* polygon )
 
         glColor4ub( col.r(), col.g(), col.b(), polygon->opacity( 0 ) );
 
-        for( size_t i = 0; i < polygon->nnormals(); i++ )
+        for( std::size_t i = 0; i < polygon->nnormals(); i++ )
         {
-            size_t index = 3 * i;
+            std::size_t index = 3 * i;
             glNormal3f( *(polygon->normals().pointer()    + index),
                         *(polygon->normals().pointer()    + index+1),
                         *(polygon->normals().pointer()    + index+2) );
@@ -2627,18 +2627,18 @@ void Rendering_Quad_PN_SC_O_Cs( const vismodule::PolygonObject* polygon )
 
         glColor4ub( col.r(), col.g(), col.b(), polygon->opacity( 0 ) );
 
-        for( size_t i = 0; i < polygon->nconnections(); i++ )
+        for( std::size_t i = 0; i < polygon->nconnections(); i++ )
         {
-            size_t index = 3 * i;
+            std::size_t index = 3 * i;
             glNormal3f( *(polygon->normals().pointer()    + index),
                         *(polygon->normals().pointer()    + index+1),
                         *(polygon->normals().pointer()    + index+2) );
 
             index = 4 * i;
-            size_t con0 = *(polygon->connections().pointer() + index)   * 3;
-            size_t con1 = *(polygon->connections().pointer() + index+1) * 3;
-            size_t con2 = *(polygon->connections().pointer() + index+2) * 3;
-            size_t con3 = *(polygon->connections().pointer() + index+3) * 3;
+            std::size_t con0 = *(polygon->connections().pointer() + index)   * 3;
+            std::size_t con1 = *(polygon->connections().pointer() + index+1) * 3;
+            std::size_t con2 = *(polygon->connections().pointer() + index+2) * 3;
+            std::size_t con3 = *(polygon->connections().pointer() + index+3) * 3;
 
             glVertex3f( *(polygon->coords().pointer() + con0),
                         *(polygon->coords().pointer() + con0+1),
@@ -2669,11 +2669,11 @@ void Rendering_Quad_PN_SC_Os( const vismodule::PolygonObject* polygon )
     {
         const vismodule::RGBColor& col = polygon->color( 0 );
 
-        for( size_t i = 0; i < polygon->nopacities(); i++ )
+        for( std::size_t i = 0; i < polygon->nopacities(); i++ )
         {
             glColor4ub( col.r(), col.g(), col.b(), polygon->opacity( i ) );
 
-            size_t index = 3 * i;
+            std::size_t index = 3 * i;
 
             glNormal3f( *(polygon->normals().pointer()    + index),
                         *(polygon->normals().pointer()    + index+1),
@@ -2709,20 +2709,20 @@ void Rendering_Quad_PN_SC_Os_Cs( const vismodule::PolygonObject* polygon )
     {
         const vismodule::RGBColor& col = polygon->color( 0 );
 
-        for( size_t i = 0; i < polygon->nconnections(); i++ )
+        for( std::size_t i = 0; i < polygon->nconnections(); i++ )
         {
             glColor4ub( col.r(), col.g(), col.b(), polygon->opacity(i) );
 
-            size_t index = 3 * i;
+            std::size_t index = 3 * i;
             glNormal3f( *(polygon->normals().pointer()    + index),
                         *(polygon->normals().pointer()    + index+1),
                         *(polygon->normals().pointer()    + index+2) );
 
             index = 4 * i;
-            size_t con0 = *(polygon->connections().pointer() + index)   * 3;
-            size_t con1 = *(polygon->connections().pointer() + index+1) * 3;
-            size_t con2 = *(polygon->connections().pointer() + index+2) * 3;
-            size_t con3 = *(polygon->connections().pointer() + index+3) * 3;
+            std::size_t con0 = *(polygon->connections().pointer() + index)   * 3;
+            std::size_t con1 = *(polygon->connections().pointer() + index+1) * 3;
+            std::size_t con2 = *(polygon->connections().pointer() + index+2) * 3;
+            std::size_t con3 = *(polygon->connections().pointer() + index+3) * 3;
 
             glVertex3f( *(polygon->coords().pointer() + con0),
                         *(polygon->coords().pointer() + con0+1),
@@ -2751,9 +2751,9 @@ void Rendering_Quad_PN_PCs_O( const vismodule::PolygonObject* polygon )
 {
     glBegin( GL_QUADS );
     {
-        for( size_t i = 0; i < polygon->ncolors(); i++ )
+        for( std::size_t i = 0; i < polygon->ncolors(); i++ )
         {
-            size_t index = 3 * i;
+            std::size_t index = 3 * i;
             glColor4ub( *(polygon->colors().pointer() + index),
                         *(polygon->colors().pointer() + index+1),
                         *(polygon->colors().pointer() + index+2),
@@ -2790,9 +2790,9 @@ void Rendering_Quad_PN_PCs_O_Cs( const vismodule::PolygonObject* polygon )
 {
     glBegin( GL_QUADS );
     {
-        for( size_t i = 0; i < polygon->nconnections(); i++ )
+        for( std::size_t i = 0; i < polygon->nconnections(); i++ )
         {
-            size_t index = 3 * i;
+            std::size_t index = 3 * i;
             glColor4ub( *(polygon->colors().pointer() + index),
                         *(polygon->colors().pointer() + index+1),
                         *(polygon->colors().pointer() + index+2),
@@ -2802,10 +2802,10 @@ void Rendering_Quad_PN_PCs_O_Cs( const vismodule::PolygonObject* polygon )
                         *(polygon->normals().pointer() + index+2) );
 
             index = 4 * i;
-            size_t con0 = *(polygon->connections().pointer() + index)   * 3;
-            size_t con1 = *(polygon->connections().pointer() + index+1) * 3;
-            size_t con2 = *(polygon->connections().pointer() + index+2) * 3;
-            size_t con3 = *(polygon->connections().pointer() + index+3) * 3;
+            std::size_t con0 = *(polygon->connections().pointer() + index)   * 3;
+            std::size_t con1 = *(polygon->connections().pointer() + index+1) * 3;
+            std::size_t con2 = *(polygon->connections().pointer() + index+2) * 3;
+            std::size_t con3 = *(polygon->connections().pointer() + index+3) * 3;
 
             glVertex3f( *(polygon->coords().pointer() + con0),
                         *(polygon->coords().pointer() + con0+1),
@@ -2834,9 +2834,9 @@ void Rendering_Quad_PN_PCs_Os( const vismodule::PolygonObject* polygon )
 {
     glBegin( GL_QUADS );
     {
-        for( size_t i = 0; i < polygon->ncolors(); i++ )
+        for( std::size_t i = 0; i < polygon->ncolors(); i++ )
         {
-            size_t index = 3 * i;
+            std::size_t index = 3 * i;
             glColor4ub( *(polygon->colors().pointer() + index),
                         *(polygon->colors().pointer() + index+1),
                         *(polygon->colors().pointer() + index+2),
@@ -2873,9 +2873,9 @@ void Rendering_Quad_PN_PCs_Os_Cs( const vismodule::PolygonObject* polygon )
 {
     glBegin( GL_QUADS );
     {
-        for( size_t i = 0; i < polygon->nconnections(); i++ )
+        for( std::size_t i = 0; i < polygon->nconnections(); i++ )
         {
-            size_t index = 3 * i;
+            std::size_t index = 3 * i;
             glColor4ub( *(polygon->colors().pointer() + index),
                         *(polygon->colors().pointer() + index+1),
                         *(polygon->colors().pointer() + index+2),
@@ -2885,10 +2885,10 @@ void Rendering_Quad_PN_PCs_Os_Cs( const vismodule::PolygonObject* polygon )
                         *(polygon->normals().pointer() + index+2) );
 
             index = 4 * i;
-            size_t con0 = *(polygon->connections().pointer() + index)   * 3;
-            size_t con1 = *(polygon->connections().pointer() + index+1) * 3;
-            size_t con2 = *(polygon->connections().pointer() + index+2) * 3;
-            size_t con3 = *(polygon->connections().pointer() + index+3) * 3;
+            std::size_t con0 = *(polygon->connections().pointer() + index)   * 3;
+            std::size_t con1 = *(polygon->connections().pointer() + index+1) * 3;
+            std::size_t con2 = *(polygon->connections().pointer() + index+2) * 3;
+            std::size_t con3 = *(polygon->connections().pointer() + index+3) * 3;
 
             glVertex3f( *(polygon->coords().pointer() + con0),
                         *(polygon->coords().pointer() + con0+1),
@@ -3075,9 +3075,9 @@ PolygonRenderingFunctionType Rendering[NumberOfRenderingTypes] =
 
 PolygonRenderingType GetPolygonRenderingType( const vismodule::PolygonObject* polygon )
 {
-    const size_t nopacities = polygon->nopacities();
-    const size_t ncolors    = polygon->ncolors();
-    const size_t nconnects  = polygon->nconnections();
+    const std::size_t nopacities = polygon->nopacities();
+    const std::size_t ncolors    = polygon->ncolors();
+    const std::size_t nconnects  = polygon->nconnections();
     const vismodule::PolygonObject::PolygonType polygon_type = polygon->polygonType();
     const vismodule::PolygonObject::NormalType  normal_type  = polygon->normalType();
     const vismodule::PolygonObject::ColorType   color_type   = polygon->colorType();

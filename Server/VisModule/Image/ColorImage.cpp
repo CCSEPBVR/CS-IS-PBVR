@@ -44,7 +44,7 @@ ColorImage::ColorImage( void )
  *  @param height [in] image height
  */
 /*==========================================================================*/
-ColorImage::ColorImage( const size_t width, const size_t height ):
+ColorImage::ColorImage( const std::size_t width, const std::size_t height ):
     vismodule::ImageBase( width, height, vismodule::ImageBase::Color )
 {
 }
@@ -58,8 +58,8 @@ ColorImage::ColorImage( const size_t width, const size_t height ):
  */
 /*==========================================================================*/
 ColorImage::ColorImage(
-    const size_t width,
-    const size_t height,
+    const std::size_t width,
+    const std::size_t height,
     const vismodule::UInt8* data ):
     vismodule::ImageBase( width, height, vismodule::ImageBase::Color, data )
 {
@@ -74,8 +74,8 @@ ColorImage::ColorImage(
  */
 /*==========================================================================*/
 ColorImage::ColorImage(
-    const size_t width,
-    const size_t height,
+    const std::size_t width,
+    const std::size_t height,
     const vismodule::ValueArray<vismodule::UInt8>& data ):
     vismodule::ImageBase( width, height, vismodule::ImageBase::Color, data )
 {
@@ -153,7 +153,7 @@ vismodule::ColorImage& ColorImage::operator = ( const vismodule::ColorImage& ima
  *  @return red component
  */
 /*==========================================================================*/
-const vismodule::UInt8 ColorImage::r( const size_t index ) const
+const vismodule::UInt8 ColorImage::r( const std::size_t index ) const
 {
     return( m_data[ 3 * index ] );
 }
@@ -166,7 +166,7 @@ const vismodule::UInt8 ColorImage::r( const size_t index ) const
  *  @return red component
  */
 /*==========================================================================*/
-const vismodule::UInt8 ColorImage::r( const size_t i, const size_t j ) const
+const vismodule::UInt8 ColorImage::r( const std::size_t i, const std::size_t j ) const
 {
     return( m_data[ 3 * ( m_width * j + i ) ] );
 }
@@ -178,7 +178,7 @@ const vismodule::UInt8 ColorImage::r( const size_t i, const size_t j ) const
  *  @return green component
  */
 /*==========================================================================*/
-const vismodule::UInt8 ColorImage::g( const size_t index ) const
+const vismodule::UInt8 ColorImage::g( const std::size_t index ) const
 {
     return( m_data[ 3 * index + 1 ] );
 }
@@ -191,7 +191,7 @@ const vismodule::UInt8 ColorImage::g( const size_t index ) const
  *  @return green component
  */
 /*==========================================================================*/
-const vismodule::UInt8 ColorImage::g( const size_t i, const size_t j ) const
+const vismodule::UInt8 ColorImage::g( const std::size_t i, const std::size_t j ) const
 {
     return( m_data[ 3 * ( m_width * j + i ) + 1 ] );
 }
@@ -203,7 +203,7 @@ const vismodule::UInt8 ColorImage::g( const size_t i, const size_t j ) const
  *  @return blue component
  */
 /*==========================================================================*/
-const vismodule::UInt8 ColorImage::b( const size_t index ) const
+const vismodule::UInt8 ColorImage::b( const std::size_t index ) const
 {
     return( m_data[ 3 * index + 2 ] );
 }
@@ -216,7 +216,7 @@ const vismodule::UInt8 ColorImage::b( const size_t index ) const
  *  @return blue component
  */
 /*==========================================================================*/
-const vismodule::UInt8 ColorImage::b( const size_t i, const size_t j ) const
+const vismodule::UInt8 ColorImage::b( const std::size_t i, const std::size_t j ) const
 {
     return( m_data[ 3 * ( m_width * j + i ) + 2 ] );
 }
@@ -228,9 +228,9 @@ const vismodule::UInt8 ColorImage::b( const size_t i, const size_t j ) const
  *  @return pixel color
  */
 /*==========================================================================*/
-const vismodule::RGBColor ColorImage::pixel( const size_t index ) const
+const vismodule::RGBColor ColorImage::pixel( const std::size_t index ) const
 {
-    const size_t index3 = index * 3;
+    const std::size_t index3 = index * 3;
     return( vismodule::RGBColor( m_data[index3], m_data[index3+1], m_data[index3+2] ) );
 }
 
@@ -242,9 +242,9 @@ const vismodule::RGBColor ColorImage::pixel( const size_t index ) const
  *  @return pixel color
  */
 /*==========================================================================*/
-const vismodule::RGBColor ColorImage::pixel( const size_t i, const size_t j ) const
+const vismodule::RGBColor ColorImage::pixel( const std::size_t i, const std::size_t j ) const
 {
-    const size_t index3 = ( m_width * j + i ) * 3;
+    const std::size_t index3 = ( m_width * j + i ) * 3;
     return( vismodule::RGBColor( m_data[index3], m_data[index3+1], m_data[index3+2] ) );
 }
 
@@ -255,9 +255,9 @@ const vismodule::RGBColor ColorImage::pixel( const size_t i, const size_t j ) co
  *  @param pixel [in] pixel color
  */
 /*==========================================================================*/
-void ColorImage::set( const size_t index, const vismodule::RGBColor& pixel )
+void ColorImage::set( const std::size_t index, const vismodule::RGBColor& pixel )
 {
-    const size_t index3 = index * 3;
+    const std::size_t index3 = index * 3;
     m_data[ index3 + 0 ] = pixel.r();
     m_data[ index3 + 1 ] = pixel.g();
     m_data[ index3 + 2 ] = pixel.b();
@@ -271,9 +271,9 @@ void ColorImage::set( const size_t index, const vismodule::RGBColor& pixel )
  *  @param pixel [in] pixel color
  */
 /*==========================================================================*/
-void ColorImage::set( const size_t i, const size_t j, const vismodule::RGBColor& pixel )
+void ColorImage::set( const std::size_t i, const std::size_t j, const vismodule::RGBColor& pixel )
 {
-    const size_t index3 = ( m_width * j + i ) * 3;
+    const std::size_t index3 = ( m_width * j + i ) * 3;
     m_data[ index3 + 0 ] = pixel.r();
     m_data[ index3 + 1 ] = pixel.g();
     m_data[ index3 + 2 ] = pixel.b();
@@ -287,8 +287,8 @@ void ColorImage::set( const size_t i, const size_t j, const vismodule::RGBColor&
 /*===========================================================================*/
 void ColorImage::scale( const double ratio )
 {
-    const size_t width = static_cast<size_t>( this->width() * ratio );
-    const size_t height = static_cast<size_t>( this->height() * ratio );
+    const std::size_t width = static_cast<size_t>( this->width() * ratio );
+    const std::size_t height = static_cast<size_t>( this->height() * ratio );
     BaseClass::resize<ColorImage,ColorImage::Bilinear>( width, height, this );
 }
 
@@ -304,8 +304,8 @@ void ColorImage::scale( const double ratio, InterpolationMethod method )
 {
     vismodule::IgnoreUnusedVariable( method );
 
-    const size_t width = static_cast<size_t>( this->width() * ratio );
-    const size_t height = static_cast<size_t>( this->height() * ratio );
+    const std::size_t width = static_cast<size_t>( this->width() * ratio );
+    const std::size_t height = static_cast<size_t>( this->height() * ratio );
     BaseClass::resize<ColorImage,InterpolationMethod>( width, height, this );
 }
 
@@ -323,7 +323,7 @@ void ColorImage::scale( const double ratio, ColorImage::Bilinear method );
  *  @param  height [in] resized height
  */
 /*===========================================================================*/
-void ColorImage::resize( const size_t width, const size_t height )
+void ColorImage::resize( const std::size_t width, const std::size_t height )
 {
     BaseClass::resize<ColorImage,ColorImage::Bilinear>( width, height, this );
 }
@@ -337,7 +337,7 @@ void ColorImage::resize( const size_t width, const size_t height )
  */
 /*===========================================================================*/
 template <typename InterpolationMethod>
-void ColorImage::resize( const size_t width, const size_t height, InterpolationMethod method )
+void ColorImage::resize( const std::size_t width, const std::size_t height, InterpolationMethod method )
 {
     vismodule::IgnoreUnusedVariable( method );
 
@@ -346,10 +346,10 @@ void ColorImage::resize( const size_t width, const size_t height, InterpolationM
 
 // Specialization.
 template
-void ColorImage::resize( const size_t width, const size_t height, ColorImage::NearestNeighbor method );
+void ColorImage::resize( const std::size_t width, const std::size_t height, ColorImage::NearestNeighbor method );
 
 template
-void ColorImage::resize( const size_t width, const size_t height, ColorImage::Bilinear method );
+void ColorImage::resize( const std::size_t width, const std::size_t height, ColorImage::Bilinear method );
 
 /*==========================================================================*/
 /**
@@ -505,7 +505,7 @@ const bool ColorImage::read_image( const vismodule::GrayImage& image )
     }
 
     const vismodule::UInt8* data = image.data().pointer();
-    for ( size_t index = 0, index3 = 0; index < m_npixels; index++, index3 += 3 )
+    for ( std::size_t index = 0, index3 = 0; index < m_npixels; index++, index3 += 3 )
     {
         const vismodule::UInt8 pixel = data[ index ];
         m_data[ index3 + 0 ] = pixel;
@@ -530,12 +530,12 @@ const bool ColorImage::read_image( const vismodule::BitImage& image )
         return( false );
     }
 
-    const size_t width = image.width();
-    const size_t height = image.height();
-    size_t index3 = 0;
-    for ( size_t j = 0; j < height; j++ )
+    const std::size_t width = image.width();
+    const std::size_t height = image.height();
+    std::size_t index3 = 0;
+    for ( std::size_t j = 0; j < height; j++ )
     {
-        for ( size_t i = 0; i < width; i++, index3 += 3 )
+        for ( std::size_t i = 0; i < width; i++, index3 += 3 )
         {
             const vismodule::UInt8 pixel = image.pixel( i, j ) ? 255 : 0;
             m_data[ index3 + 0 ] = pixel;

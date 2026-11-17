@@ -32,12 +32,12 @@ public:
 
 private:
 
-    size_t m_nvertices; ///< number of vertices of the original data
+    std::size_t m_nvertices; ///< number of vertices of the original data
     Bucket m_bucket; ///< bucket for the edge data
 
 public:
 
-    EdgeMap( const size_t nvertices );
+    EdgeMap( const std::size_t nvertices );
 
 public:
 
@@ -52,7 +52,7 @@ public:
  *  @param  nvertices [in] number of vertices of the orignal volume data
  */
 /*===========================================================================*/
-EdgeMap::EdgeMap( const size_t nvertices ):
+EdgeMap::EdgeMap( const std::size_t nvertices ):
     m_nvertices( nvertices )
 {
 }
@@ -100,7 +100,7 @@ const kvs::ValueArray<kvs::UInt32> EdgeMap::serialize()
 
     Bucket::const_iterator e = m_bucket.begin();
     Bucket::const_iterator last = m_bucket.end();
-    size_t connection_index = 0;
+    std::size_t connection_index = 0;
     while ( e != last )
     {
         connections[ connection_index++ ] = e->second.first;
@@ -277,15 +277,15 @@ void ExtractEdges::calculate_uniform_coords( const kvs::StructuredVolumeObject* 
         volume_size.y() / static_cast<float>( ngrids.y() ),
         volume_size.z() / static_cast<float>( ngrids.z() ) );
 
-    for ( size_t k = 0; k < resolution.z(); ++k )
+    for ( std::size_t k = 0; k < resolution.z(); ++k )
     {
         const float z =
             grid_size.z() * static_cast<float>( k );
-        for ( size_t j = 0; j < resolution.y(); ++j )
+        for ( std::size_t j = 0; j < resolution.y(); ++j )
         {
             const float y =
                 grid_size.y() * static_cast<float>( j );
-            for ( size_t i = 0; i < resolution.x(); ++i )
+            for ( std::size_t i = 0; i < resolution.x(); ++i )
             {
                 const float x =
                     grid_size.x() * static_cast<float>( i );
@@ -322,10 +322,10 @@ void ExtractEdges::calculate_rectilinear_coords( const kvs::StructuredVolumeObje
 /*===========================================================================*/
 void ExtractEdges::calculate_connections( const kvs::StructuredVolumeObject* volume )
 {
-    const size_t line_size = volume->numberOfNodesPerLine();
-    const size_t slice_size = volume->numberOfNodesPerSlice();
+    const std::size_t line_size = volume->numberOfNodesPerLine();
+    const std::size_t slice_size = volume->numberOfNodesPerSlice();
     const Vector3ui resolution( volume->resolution() );
-    const size_t nedges =
+    const std::size_t nedges =
         3 * ( resolution.x() - 1 ) * ( resolution.y() - 1 ) * ( resolution.z() - 1 ) +
         2 * ( resolution.x() - 1 ) * ( resolution.y() - 1 ) +
         2 * ( resolution.y() - 1 ) * ( resolution.z() - 1 ) +
@@ -337,11 +337,11 @@ void ExtractEdges::calculate_connections( const kvs::StructuredVolumeObject* vol
 
     kvs::UInt32 volume_vertex = 0;
     kvs::UInt32 connection_index = 0;
-    for ( size_t z = 0; z < resolution.z(); ++z )
+    for ( std::size_t z = 0; z < resolution.z(); ++z )
     {
-        for ( size_t y = 0; y < resolution.y(); ++y )
+        for ( std::size_t y = 0; y < resolution.y(); ++y )
         {
-            for ( size_t x = 0; x < resolution.x(); ++x )
+            for ( std::size_t x = 0; x < resolution.x(); ++x )
             {
                 if ( x != resolution.x() - 1 )
                 {
@@ -456,11 +456,11 @@ void ExtractEdges::calculate_tetrahedra_connections(
     const kvs::UnstructuredVolumeObject* volume )
 {
     const kvs::UInt32* connections = volume->connections().data();
-    const size_t ncells = volume->numberOfCells();
-    const size_t nnodes = volume->numberOfNodes();
+    const std::size_t ncells = volume->numberOfCells();
+    const std::size_t nnodes = volume->numberOfNodes();
 
     ::EdgeMap edge_map( nnodes );
-    for ( size_t cell_index = 0, connection_index = 0; cell_index < ncells; cell_index++ )
+    for ( std::size_t cell_index = 0, connection_index = 0; cell_index < ncells; cell_index++ )
     {
         const kvs::UInt32 local_vertex0 = connections[ connection_index     ];
         const kvs::UInt32 local_vertex1 = connections[ connection_index + 1 ];
@@ -489,11 +489,11 @@ void ExtractEdges::calculate_hexahedra_connections(
     const kvs::UnstructuredVolumeObject* volume )
 {
     const kvs::UInt32* connections = volume->connections().data();
-    const size_t ncells = volume->numberOfCells();
-    const size_t nnodes = volume->numberOfNodes();
+    const std::size_t ncells = volume->numberOfCells();
+    const std::size_t nnodes = volume->numberOfNodes();
 
     ::EdgeMap edge_map( nnodes );
-    for ( size_t cell_index = 0, connection_index = 0; cell_index < ncells; cell_index++ )
+    for ( std::size_t cell_index = 0, connection_index = 0; cell_index < ncells; cell_index++ )
     {
         const kvs::UInt32 local_vertex0 = connections[ connection_index     ];
         const kvs::UInt32 local_vertex1 = connections[ connection_index + 1 ];
@@ -532,11 +532,11 @@ void ExtractEdges::calculate_quadratic_tetrahedra_connections(
     const kvs::UnstructuredVolumeObject* volume )
 {
     const kvs::UInt32* connections = volume->connections().data();
-    const size_t ncells = volume->numberOfCells();
-    const size_t nnodes = volume->numberOfNodes();
+    const std::size_t ncells = volume->numberOfCells();
+    const std::size_t nnodes = volume->numberOfNodes();
 
     ::EdgeMap edge_map( nnodes );
-    for ( size_t cell_index = 0, connection_index = 0; cell_index < ncells; cell_index++ )
+    for ( std::size_t cell_index = 0, connection_index = 0; cell_index < ncells; cell_index++ )
     {
         const kvs::UInt32 local_vertex0 = connections[ connection_index     ];
         const kvs::UInt32 local_vertex1 = connections[ connection_index + 1 ];
@@ -577,11 +577,11 @@ void ExtractEdges::calculate_quadratic_hexahedra_connections(
     const kvs::UnstructuredVolumeObject* volume )
 {
     const kvs::UInt32* connections = volume->connections().data();
-    const size_t ncells = volume->numberOfCells();
-    const size_t nnodes = volume->numberOfNodes();
+    const std::size_t ncells = volume->numberOfCells();
+    const std::size_t nnodes = volume->numberOfNodes();
 
     ::EdgeMap edge_map( nnodes );
-    for ( size_t cell_index = 0, connection_index = 0; cell_index < ncells; cell_index++ )
+    for ( std::size_t cell_index = 0, connection_index = 0; cell_index < ncells; cell_index++ )
     {
         const kvs::UInt32 local_vertex0  = connections[ connection_index      ];
         const kvs::UInt32 local_vertex1  = connections[ connection_index +  1 ];
@@ -637,11 +637,11 @@ void ExtractEdges::calculate_quadratic_hexahedra_connections(
 void ExtractEdges::calculate_prism_connections( const kvs::UnstructuredVolumeObject* volume )
 {
     const kvs::UInt32* connections = volume->connections().data();
-    const size_t ncells = volume->numberOfCells();
-    const size_t nnodes = volume->numberOfNodes();
+    const std::size_t ncells = volume->numberOfCells();
+    const std::size_t nnodes = volume->numberOfNodes();
 
     ::EdgeMap edge_map( nnodes );
-    for ( size_t cell_index = 0, connection_index = 0; cell_index < ncells; cell_index++ )
+    for ( std::size_t cell_index = 0, connection_index = 0; cell_index < ncells; cell_index++ )
     {
         const kvs::UInt32 local_vertex0 = connections[ connection_index     ];
         const kvs::UInt32 local_vertex1 = connections[ connection_index + 1 ];
@@ -689,7 +689,7 @@ void ExtractEdges::calculate_colors( const kvs::VolumeObjectBase* volume )
     const kvs::Real64 normalize_factor =
         static_cast<kvs::Real64>( cmap.resolution() - 1 ) / ( max_value - min_value );
 
-    const size_t veclen = BaseClass::volume()->veclen();
+    const std::size_t veclen = BaseClass::volume()->veclen();
     if ( veclen == 1 )
     {
         while ( value < end )
@@ -707,7 +707,7 @@ void ExtractEdges::calculate_colors( const kvs::VolumeObjectBase* volume )
         while( value < end )
         {
             kvs::Real64 magnitude = 0.0;
-            for ( size_t i = 0; i < veclen; ++i )
+            for ( std::size_t i = 0; i < veclen; ++i )
             {
                 magnitude += kvs::Math::Square( static_cast<kvs::Real64>( *value ) );
                 ++value;

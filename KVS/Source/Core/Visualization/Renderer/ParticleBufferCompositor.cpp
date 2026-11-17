@@ -63,8 +63,8 @@ ParticleBufferCompositor::ParticleBufferCompositor(
     object->setMinMaxObjectCoords( obj_min, obj_max );
     object->setMinMaxExternalCoords( ext_min, ext_max );
 
-    const size_t object_id = m_object_manager->insert( object );
-    const size_t renderer_id = m_renderer_manager->insert( this );
+    const std::size_t object_id = m_object_manager->insert( object );
+    const std::size_t renderer_id = m_renderer_manager->insert( this );
     m_id_manager->insert( object_id, renderer_id );
 }
 
@@ -151,12 +151,12 @@ void ParticleBufferCompositor::clearList()
 /*==========================================================================*/
 bool ParticleBufferCompositor::create_accumulator()
 {
-    const size_t width = BaseClass::windowWidth();
-    const size_t height = BaseClass::windowHeight();
-    const size_t level = m_subpixel_level;
+    const std::size_t width = BaseClass::windowWidth();
+    const std::size_t height = BaseClass::windowHeight();
+    const std::size_t level = m_subpixel_level;
 
-    const size_t nrenderers = m_point_renderer_list.size();
-    for ( size_t i = 0; i < nrenderers; i++ )
+    const std::size_t nrenderers = m_point_renderer_list.size();
+    for ( std::size_t i = 0; i < nrenderers; i++ )
     {
         m_point_renderer_list[i]->createParticleBuffer( width, height, level );
     }
@@ -174,8 +174,8 @@ bool ParticleBufferCompositor::create_accumulator()
 void ParticleBufferCompositor::clean_accumulator()
 {
 #if TEST__RENDERING_ACTIVE_OBJECT_ONLY
-    const size_t nrenderers = m_point_renderer_list.size();
-    for ( size_t i = 0; i < nrenderers; i++ )
+    const std::size_t nrenderers = m_point_renderer_list.size();
+    for ( std::size_t i = 0; i < nrenderers; i++ )
     {
         kvs::PointObject* object = m_point_object_list[i];
         if ( m_object_manager->hasActiveObject() )
@@ -200,8 +200,8 @@ void ParticleBufferCompositor::delete_accumulator()
 {
     if ( m_accumulator )
     {
-        const size_t nrenderers = m_point_renderer_list.size();
-        for ( size_t i = 0; i < nrenderers; i++ )
+        const std::size_t nrenderers = m_point_renderer_list.size();
+        for ( std::size_t i = 0; i < nrenderers; i++ )
         {
             m_point_renderer_list[i]->deleteParticleBuffer();
         }
@@ -221,12 +221,12 @@ void ParticleBufferCompositor::delete_accumulator()
 void ParticleBufferCompositor::create_image( kvs::Camera* camera, kvs::Light* light )
 {
     // Current rendering window size.
-    const size_t current_width = BaseClass::windowWidth();
-    const size_t current_height = BaseClass::windowHeight();
+    const std::size_t current_width = BaseClass::windowWidth();
+    const std::size_t current_height = BaseClass::windowHeight();
 
     // Updated rendering window size
-    const size_t width = camera->windowWidth();
-    const size_t height = camera->windowHeight();
+    const std::size_t width = camera->windowWidth();
+    const std::size_t height = camera->windowHeight();
 
     // Create memory region for the buffers, if the screen size is changed.
     if ( ( current_width != width ) || ( current_height != height ) )
@@ -255,8 +255,8 @@ void ParticleBufferCompositor::accumulate( kvs::Camera* camera, kvs::Light* ligh
     kvs::Timer timer;
     m_accumulation_time = 0.0;
 
-    const size_t nobjects = m_point_object_list.size();
-    for ( size_t id = 0; id < nobjects; id++ )
+    const std::size_t nobjects = m_point_object_list.size();
+    for ( std::size_t id = 0; id < nobjects; id++ )
     {
         kvs::PointObject* object = m_point_object_list[id];
         kvs::ParticleVolumeRenderer* renderer = m_point_renderer_list[id];

@@ -30,9 +30,9 @@ public:
     void clear();
     void merge( const VariableRange& vr );
 
-    size_t byteSize() const;
-    size_t pack( char* buf ) const;
-    size_t unpack( const char* buf );
+    std::size_t byteSize() const;
+    std::size_t pack( char* buf ) const;
+    std::size_t unpack( const char* buf );
 
     void show();
 };

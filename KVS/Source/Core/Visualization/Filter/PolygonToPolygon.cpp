@@ -92,9 +92,9 @@ PolygonToPolygon::SuperClass* PolygonToPolygon::exec( const kvs::ObjectBase* obj
 /*===========================================================================*/
 void PolygonToPolygon::calculate_triangle_connections( const kvs::PolygonObject* object )
 {
-    const size_t nvertices = object->numberOfVertices();
-    const size_t npolygons = object->numberOfConnections();
-    const size_t ncolors = object->numberOfColors();
+    const std::size_t nvertices = object->numberOfVertices();
+    const std::size_t npolygons = object->numberOfConnections();
+    const std::size_t ncolors = object->numberOfColors();
     if ( npolygons > 0 && nvertices != 3 * npolygons )
     {
         SuperClass::setCoords( object->coords() );
@@ -115,13 +115,13 @@ void PolygonToPolygon::calculate_triangle_connections( const kvs::PolygonObject*
     const unsigned char* p_colors = object->colors().pointer();
     const bool has_colors = ncolors > 1;
 
-    for ( size_t i = 0; i < nvertices / 3; i++ )
+    for ( std::size_t i = 0; i < nvertices / 3; i++ )
     {
         kvs::Vec3 vertex[3];
         kvs::RGBColor color[3];
         bool has_vertex[3];
-        size_t index[3];
-        for ( size_t j = 0; j < 3; j++ )
+        std::size_t index[3];
+        for ( std::size_t j = 0; j < 3; j++ )
         {
             vertex[j] = kvs::Vec3( p_coords + i * 9 + j * 3 );
             has_vertex[j] = false;
@@ -132,16 +132,16 @@ void PolygonToPolygon::calculate_triangle_connections( const kvs::PolygonObject*
             }
         }
 
-        for ( size_t j = 0; j < 3; j++ )
+        for ( std::size_t j = 0; j < 3; j++ )
         {
             const float key = vertex[j].x() + vertex[j].y() + vertex[j].z();
-            const size_t nresults = indices.count( key );
+            const std::size_t nresults = indices.count( key );
             if ( nresults > 0 )
             {
                 std::multimap<float, unsigned int>::iterator itr = indices.find( key );
-                for ( size_t k = 0; k < nresults; k++ )
+                for ( std::size_t k = 0; k < nresults; k++ )
                 {
-                    const size_t result = itr->second;
+                    const std::size_t result = itr->second;
                     kvs::Vector3f v( coords[ result * 3 ], coords[ result * 3 + 1 ], coords[ result * 3 + 2 ] );
                     if ( vertex[j].x() == v.x() && vertex[j].y() == v.y() && vertex[j].z() == v.z() )
                     {
@@ -153,7 +153,7 @@ void PolygonToPolygon::calculate_triangle_connections( const kvs::PolygonObject*
             }
         }
 
-        for ( size_t j = 0; j < 3; j++ )
+        for ( std::size_t j = 0; j < 3; j++ )
         {
             if ( !has_vertex[j] )
             {
@@ -193,26 +193,26 @@ void PolygonToPolygon::calculate_triangle_connections( const kvs::PolygonObject*
 /*===========================================================================*/
 void PolygonToPolygon::calculate_triangle_normals()
 {
-    const size_t nvertices = SuperClass::numberOfVertices();
-    const size_t npolygons = SuperClass::numberOfConnections();
+    const std::size_t nvertices = SuperClass::numberOfVertices();
+    const std::size_t npolygons = SuperClass::numberOfConnections();
     const float* p_coords = SuperClass::coords().pointer();
     const unsigned int* p_connections = SuperClass::connections().pointer();
 
     kvs::ValueArray<float> normals( 3 * nvertices );
     normals.fill( 0x00 );
 
-    for ( size_t i = 0; i < npolygons; i++ )
+    for ( std::size_t i = 0; i < npolygons; i++ )
     {
-        size_t index[3];
+        std::size_t index[3];
         kvs::Vec3 vertex[3];
-        for ( size_t j = 0; j < 3; j++ )
+        for ( std::size_t j = 0; j < 3; j++ )
         {
             index[j] = p_connections[ 3 * i + j ];
             vertex[j] = kvs::Vec3( p_coords + 3 * index[j] );
         }
 
         const kvs::Vector3f normal( ( vertex[1] - vertex[0] ).cross( vertex[2] - vertex[0] ) );
-        for ( size_t j = 0; j < 3; j++ )
+        for ( std::size_t j = 0; j < 3; j++ )
         {
             normals[ 3 * index[j]     ] += normal.x();
             normals[ 3 * index[j] + 1 ] += normal.y();
@@ -222,7 +222,7 @@ void PolygonToPolygon::calculate_triangle_normals()
 
     // Normalize normals.
     const float* p_normals = normals.pointer();
-    for ( size_t i = 0; i < nvertices; i++ )
+    for ( std::size_t i = 0; i < nvertices; i++ )
     {
         kvs::Vec3 normal( p_normals + i * 3 );
         normal.normalize();

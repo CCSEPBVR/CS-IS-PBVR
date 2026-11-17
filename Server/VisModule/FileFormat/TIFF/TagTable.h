@@ -92,7 +92,7 @@ const vismodule::tiff::Tag TagTable[] =
     vismodule::tiff::Tag( 347, "JPEG table stream" )
 };
 
-const size_t TagTableSize = sizeof( TagTable ) / sizeof( vismodule::tiff::Tag );
+const std::size_t TagTableSize = sizeof( TagTable ) / sizeof( vismodule::tiff::Tag );
 
 } // end of namespace tiff
 

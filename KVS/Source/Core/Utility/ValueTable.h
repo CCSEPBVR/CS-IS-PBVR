@@ -68,7 +68,7 @@ private:
     Columns m_columns; ///< column vector
 
 public:
-    static ValueTable Random( const size_t nrows, const size_t ncols, const unsigned int seed = 0 )
+    static ValueTable Random( const std::size_t nrows, const std::size_t ncols, const unsigned int seed = 0 )
     {
         this_type m( nrows, ncols );
         if ( seed == 0 ) { static bool flag = true; if ( flag ) { kvs::Value<T>::SetRandomSeed(); flag = false; } }
@@ -77,7 +77,7 @@ public:
         return m;
     }
 
-    static ValueTable Random( const size_t nrows, const size_t ncols, const T min, const T max, const unsigned int seed = 0 )
+    static ValueTable Random( const std::size_t nrows, const std::size_t ncols, const T min, const T max, const unsigned int seed = 0 )
     {
         this_type m( nrows, ncols );
         if ( seed == 0 ) { static bool flag = true; if ( flag ) { kvs::Value<T>::SetRandomSeed(); flag = false; } }
@@ -86,7 +86,7 @@ public:
         return m;
     }
 
-    static ValueTable Linear( const size_t nrows, const size_t ncols, const T start = T(0), const T step = T(1) )
+    static ValueTable Linear( const std::size_t nrows, const std::size_t ncols, const T start = T(0), const T step = T(1) )
     {
         this_type m( ncols );
         const_column_iterator last = m.endColumn();
@@ -101,15 +101,15 @@ public:
 public:
     ValueTable(){}
 
-    explicit ValueTable( const size_t ncolumns )
+    explicit ValueTable( const std::size_t ncolumns )
     {
         m_columns.resize( ncolumns );
     }
 
-    ValueTable( const size_t nrows, const size_t ncolumns )
+    ValueTable( const std::size_t nrows, const std::size_t ncolumns )
     {
         m_columns.resize( ncolumns );
-        for ( size_t i = 0; i < ncolumns; ++i )
+        for ( std::size_t i = 0; i < ncolumns; ++i )
         {
             m_columns[i] = kvs::ValueArray<T>( nrows );
         }
@@ -143,12 +143,12 @@ public:
         std::ostringstream os;
         os << bracket_l;
         {
-            const size_t ncols = this->columnSize();
+            const std::size_t ncols = this->columnSize();
             if ( ncols == 0 ) { os << bracket_l << " " << bracket_r; }
             else
             {
                 os  << m_columns[0].format( delim, bracket_l, bracket_r );
-                for ( size_t i = 1; i < ncols; ++i )
+                for ( std::size_t i = 1; i < ncols; ++i )
                 {
                     os << delim << tab << m_columns[i].format( delim, bracket_l, bracket_r );
                 }
@@ -158,13 +158,13 @@ public:
         return os.str();
     }
 
-    column_reference operator []( const size_t column_index )
+    column_reference operator []( const std::size_t column_index )
     {
         KVS_ASSERT( column_index < m_columns.size() );
         return m_columns[ column_index ];
     }
 
-    const_column_reference operator []( const size_t column_index ) const
+    const_column_reference operator []( const std::size_t column_index ) const
     {
         KVS_ASSERT( column_index < m_columns.size() );
         return m_columns[ column_index ];
@@ -217,10 +217,10 @@ public:
 
     friend std::ostream& operator <<( std::ostream& os, const this_type& rhs )
     {
-//        const size_t ncols = rhs.columnSize();
+//        const std::size_t ncols = rhs.columnSize();
 //        if ( ncols == 0 ) { return os << "{{ }}"; }
 //        os << "{" << rhs[0];
-//        for ( size_t i = 1; i < ncols; ++i ) { os << ", " << rhs[i]; }
+//        for ( std::size_t i = 1; i < ncols; ++i ) { os << ", " << rhs[i]; }
 //        return os << "}";
         return os << rhs.format( " ", "", "" );
     }
@@ -281,7 +281,7 @@ public:
         column_iterator column = m_columns.begin();
         column_iterator begin = m_columns.begin();
         column_iterator end = m_columns.end();
-        size_t offset = 0;
+        std::size_t offset = 0;
         return row_order_iterator( row, column, begin, end, offset );
     }
 
@@ -291,7 +291,7 @@ public:
         column_iterator column = m_columns.end();
         column_iterator begin = m_columns.begin();
         column_iterator end = m_columns.end();
-        size_t offset = ( end - 1 )->size();
+        std::size_t offset = ( end - 1 )->size();
         return row_order_iterator( row, column, begin, end, offset );
     }
 
@@ -305,25 +305,25 @@ public:
         return row_order_reverse_iterator( this->beginInRowOrder() );
     }
 
-    column_order_iterator beginColumn( const size_t column_index )
+    column_order_iterator beginColumn( const std::size_t column_index )
     {
         KVS_ASSERT( column_index < this->columnSize() );
         return this->beginInColumnOrder() + column_index * this->rowSize();
     }
 
-    column_order_iterator endColumn( const size_t column_index )
+    column_order_iterator endColumn( const std::size_t column_index )
     {
         KVS_ASSERT( column_index < this->columnSize() );
         return this->beginInColumnOrder() + ( column_index + 1 ) * this->rowSize();
     }
 
-    row_order_iterator beginRow( const size_t row_index )
+    row_order_iterator beginRow( const std::size_t row_index )
     {
         KVS_ASSERT( row_index < this->rowSize() );
         return this->beginInRowOrder() + row_index * this->columnSize();
     }
 
-    row_order_iterator endRow( const size_t row_index )
+    row_order_iterator endRow( const std::size_t row_index )
     {
         KVS_ASSERT( row_index < this->rowSize() );
         return this->beginInRowOrder() + ( row_index + 1 ) * this->columnSize();
@@ -345,7 +345,7 @@ public:
     const_column_reference backColumn() const { KVS_ASSERT( !this->empty() ); return ( *this )[ this->columnSize() - 1 ]; }
     // }
 
-    size_t columnSize() const
+    std::size_t columnSize() const
     {
         return m_columns.size();
     }
@@ -360,26 +360,26 @@ public:
         m_columns.pop_back();
     }
 
-    size_t rowSize( const size_t column_index = 0 ) const
+    std::size_t rowSize( const std::size_t column_index = 0 ) const
     {
         return ( *this )[ column_index ].size();
     }
 
-    column_reference column( const size_t index )
+    column_reference column( const std::size_t index )
     {
         return ( *this )[ index ];
     }
 
-    const_column_reference column( const size_t index ) const
+    const_column_reference column( const std::size_t index ) const
     {
         return ( *this )[ index ];
     }
 
-    const kvs::ValueArray<T> row( const size_t index ) const
+    const kvs::ValueArray<T> row( const std::size_t index ) const
     {
-        size_t ncolumns = this->columnSize();
+        std::size_t ncolumns = this->columnSize();
         kvs::ValueArray<T> row( ncolumns );
-        for ( size_t i = 0; i < ncolumns; i++ )
+        for ( std::size_t i = 0; i < ncolumns; i++ )
         {
             row[i] = this->column(i).at( index );
         }
@@ -387,12 +387,12 @@ public:
         return row;
     }
 
-    T& at( const size_t row_index, const size_t column_index )
+    T& at( const std::size_t row_index, const std::size_t column_index )
     {
         return ( *this )[ column_index ].at( row_index );
     }
 
-    const T& at( const size_t row_index, const size_t column_index ) const
+    const T& at( const std::size_t row_index, const std::size_t column_index ) const
     {
         return ( *this )[ column_index ].at( row_index );
     }
@@ -407,10 +407,10 @@ public:
         return m_columns;
     }
 
-    size_t size() const
+    std::size_t size() const
     {
-        size_t ncells = 0;
-        for ( size_t i = 0; i < m_columns.size(); i++ )
+        std::size_t ncells = 0;
+        for ( std::size_t i = 0; i < m_columns.size(); i++ )
         {
             ncells += m_columns[i].size();
         }
@@ -465,7 +465,7 @@ public:
     ValueTable sliceRow( const kvs::SliceRange& row_range ) const
     {
         ValueTable ret;
-        for ( size_t i = 0; i < this->columnSize(); ++i )
+        for ( std::size_t i = 0; i < this->columnSize(); ++i )
         {
             ret.pushBackColumn( this->column(i).slice( row_range ) );
         }
@@ -609,11 +609,11 @@ public:
     }
 
 private:
-    size_t index() const
+    std::size_t index() const
     {
-        const size_t nrows = std::distance( m_col_begin->begin(), m_col_begin->end() );
-        const size_t j = std::distance( m_col_begin, m_col_iterator );
-        const size_t i = ( m_col_iterator == m_col_end ) ? 0 : std::distance( m_col_iterator->begin(), m_row_iterator );
+        const std::size_t nrows = std::distance( m_col_begin->begin(), m_col_begin->end() );
+        const std::size_t j = std::distance( m_col_begin, m_col_iterator );
+        const std::size_t i = ( m_col_iterator == m_col_end ) ? 0 : std::distance( m_col_iterator->begin(), m_row_iterator );
         return j * nrows + i;
     }
 
@@ -669,7 +669,7 @@ private:
     column_iterator m_col_iterator;
     column_iterator m_col_begin;
     column_iterator m_col_end;
-    size_t m_row_offset;
+    std::size_t m_row_offset;
 
 public:
     RowOrderIterator( const RowOrderIterator& other ):
@@ -684,7 +684,7 @@ public:
         column_iterator col_iterator,
         column_iterator& col_begin,
         column_iterator& col_end,
-        size_t row_offset ):
+        std::size_t row_offset ):
         m_row_iterator( row_iterator ),
         m_col_iterator( col_iterator ),
         m_col_begin( col_begin ),
@@ -770,12 +770,12 @@ public:
     }
 
 private:
-    size_t index() const
+    std::size_t index() const
     {
-        const size_t nrows = std::distance( m_col_begin->begin(), m_col_begin->end() );
-        const size_t ncols = std::distance( m_col_begin, m_col_end );
-        const size_t j = ( m_row_iterator == m_col_end->end() ) ? nrows : std::distance( m_col_iterator->begin(), m_row_iterator );
-        const size_t i = ( m_col_iterator == m_col_end ) ? 0 : std::distance( m_col_begin, m_col_iterator );
+        const std::size_t nrows = std::distance( m_col_begin->begin(), m_col_begin->end() );
+        const std::size_t ncols = std::distance( m_col_begin, m_col_end );
+        const std::size_t j = ( m_row_iterator == m_col_end->end() ) ? nrows : std::distance( m_col_iterator->begin(), m_row_iterator );
+        const std::size_t i = ( m_col_iterator == m_col_end ) ? 0 : std::distance( m_col_begin, m_col_iterator );
         return j * ncols + i;
     }
 

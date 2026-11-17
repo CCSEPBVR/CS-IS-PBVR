@@ -162,12 +162,12 @@ void TransferFunctionSynthesizer::SynthesizedOpacityScalars(
         m_var_value[Z][I] = z_g[I];
     }
 
-    const size_t nvar = interp.size();
+    const std::size_t nvar = interp.size();
 
     //各変数のループ
     //id of Q1=4, Q2=8,,,,, Qn=4*n
     //id of dxQ1=5, dyQ1=6, dzQ1=7,
-    for( size_t j= 0; j < nvar; j++ )
+    for( std::size_t j= 0; j < nvar; j++ )
     {
         float scalar[SIMDW];
         float grad_x[SIMDW], grad_y[SIMDW], grad_z[SIMDW];
@@ -186,7 +186,7 @@ void TransferFunctionSynthesizer::SynthesizedOpacityScalars(
     }
 
     //ボリュームデータ合成式のループ
-    for( size_t i = 0; i < m_opa_var.size(); i++ )
+    for( std::size_t i = 0; i < m_opa_var.size(); i++ )
     {
         m_rpn.setExpToken( &(m_opa_var[i].exp_token[0]) );
         m_rpn.setVariableName( &(m_opa_var[i].var_name[0]) );
@@ -212,12 +212,12 @@ void TransferFunctionSynthesizer::SynthesizedColorScalars(
         m_var_value[Z][I] = z_g[I];
     }
 
-    const size_t nvar = interp.size();
+    const std::size_t nvar = interp.size();
 
     //各変数のループ
     //id of Q1=4, Q2=8,,,,, Qn=4*n
     //id of dxQ1=5, dyQ1=6, dzQ1=7,
-    for( size_t j= 0; j < nvar; j++ )
+    for( std::size_t j= 0; j < nvar; j++ )
     {
         float scalar[SIMDW];
         float grad_x[SIMDW], grad_y[SIMDW], grad_z[SIMDW];
@@ -237,7 +237,7 @@ void TransferFunctionSynthesizer::SynthesizedColorScalars(
 
 
     //ボリュームデータ合成式のループ
-    for( size_t i = 0; i < m_col_var.size(); i++ )
+    for( std::size_t i = 0; i < m_col_var.size(); i++ )
     {
         m_rpn.setExpToken( &(m_col_var[i].exp_token[0]) );
         m_rpn.setVariableName( &(m_col_var[i].var_name[0]) );
@@ -264,11 +264,11 @@ void TransferFunctionSynthesizer::CalculateOpacity(
         m_var_value[Z][I] = z_g[I];
     }
 
-    const size_t nvar = interp.size();
+    const std::size_t nvar = interp.size();
 
     //各変数のループ
     //id of Q1=4, Q2=8,,,,, Qn=4*n
-    for( size_t j= 0; j < nvar; j++ )
+    for( std::size_t j= 0; j < nvar; j++ )
     {
         float scalar[SIMDW];
         float grad_x[SIMDW], grad_y[SIMDW], grad_z[SIMDW];
@@ -287,7 +287,7 @@ void TransferFunctionSynthesizer::CalculateOpacity(
     }
 
     //ボリュームデータ合成式のループ
-    for( size_t i = 0; i < m_opa_var.size(); i++ )
+    for( std::size_t i = 0; i < m_opa_var.size(); i++ )
     {
         //set variable eq. ex) Q1+Q2/Q3
         m_rpn.setExpToken( &(m_opa_var[i].exp_token[0]) );
@@ -342,11 +342,11 @@ void TransferFunctionSynthesizer::CalculateColor(
         m_var_value[Z][I] = z_g[I];
     }
 
-    const size_t nvar = interp.size();
+    const std::size_t nvar = interp.size();
 
     //各変数のループ
     //id of Q1=4, Q2=8,,,,, Qn=4*n
-    for( size_t j= 0; j < nvar; j++ )
+    for( std::size_t j= 0; j < nvar; j++ )
     {
         float scalar[SIMDW];
         float grad_x[SIMDW], grad_y[SIMDW], grad_z[SIMDW];
@@ -367,7 +367,7 @@ void TransferFunctionSynthesizer::CalculateColor(
     kvs::RGBColor colors[m_col_var.size()][SIMDW]; //result of t_func.colorMap().at( m_scalars[i] );
 
     //ボリュームデータ合成式のループ
-    for( size_t i = 0; i < m_col_var.size(); i++ )
+    for( std::size_t i = 0; i < m_col_var.size(); i++ )
     {
         //set variable eq. ex) Q1+Q2/Q3
         m_rpn.setExpToken( &(m_col_var[i].exp_token[0]) );
@@ -398,7 +398,7 @@ void TransferFunctionSynthesizer::CalculateColor(
     m_rpn.setNumber( &(m_col_func.val_array[0]) );
 
     //RED
-    for( size_t i = 0; i < m_col_var.size(); i++ )
+    for( std::size_t i = 0; i < m_col_var.size(); i++ )
     {
         for( int I=0; I<SIMDW; I++ )
         {
@@ -419,7 +419,7 @@ void TransferFunctionSynthesizer::CalculateColor(
     }
 
     //GREEN
-    for( size_t i = 0; i < m_col_var.size(); i++ )
+    for( std::size_t i = 0; i < m_col_var.size(); i++ )
     {
         for( int I=0; I<SIMDW; I++ )
         {
@@ -441,7 +441,7 @@ void TransferFunctionSynthesizer::CalculateColor(
 
 
     //BLUE
-    for( size_t i = 0; i < m_col_var.size(); i++ )
+    for( std::size_t i = 0; i < m_col_var.size(); i++ )
     {
         for( int I=0; I<SIMDW; I++ )
         {

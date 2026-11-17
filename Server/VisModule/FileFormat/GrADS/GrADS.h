@@ -59,7 +59,7 @@ public:
 
     const GriddedBinaryDataFileList& dataList( void ) const;
 
-    const GriddedBinaryDataFile& data( const size_t index ) const;
+    const GriddedBinaryDataFile& data( const std::size_t index ) const;
 
     const bool read( const std::string& filename );
 

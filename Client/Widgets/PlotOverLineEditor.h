@@ -54,8 +54,8 @@ public slots:
 
 private:
     // NOTE:kvs::LineObject用定数
-    static constexpr size_t k_N = 2; // 点の数
-    static constexpr size_t k_L = 1; // 線の数
+    static constexpr std::size_t k_N = 2; // 点の数
+    static constexpr std::size_t k_L = 1; // 線の数
     // 座標
     static constexpr kvs::Real32 k_initial_coords[k_N * 3] =
         {

@@ -60,7 +60,7 @@ protected:
     int          m_argc;         ///< argument count
     char**       m_argv;         ///< argument values
     std::string  m_command_name; ///< command name
-    size_t       m_max_length;   ///< max length of the option name
+    std::size_t       m_max_length;   ///< max length of the option name
     bool         m_no_help;      ///< no help option
     std::string  m_help_option;  ///< help option character (ex: 'h')
     Arguments    m_arguments;    ///< argument values
@@ -92,22 +92,22 @@ public:
 public:
 
     template <class T>
-    const T value( size_t index = 0 ) const;
+    const T value( std::size_t index = 0 ) const;
 
     const bool hasValues( void ) const;
 
-    const size_t nvalues( void ) const;
+    const std::size_t nvalues( void ) const;
 
 public:
 
     template <class T>
-    const T optionValue( const std::string& option_name, size_t index = 0 ) const;
+    const T optionValue( const std::string& option_name, std::size_t index = 0 ) const;
 
     const bool hasOption( const std::string& option_name ) const;
 
     const bool hasOptionValue( const std::string& option_name ) const;
 
-    const size_t noptions( void ) const;
+    const std::size_t noptions( void ) const;
 
 public:
 
@@ -116,7 +116,7 @@ public:
     void addOption(
         const std::string& name,
         const std::string& description,
-        size_t             nvalues     = 0,
+        std::size_t             nvalues     = 0,
         bool               is_required = false );
 
     void addValue( const std::string& description, bool is_required = true );
@@ -130,7 +130,7 @@ protected:
     void add_option(
         const std::string& name,
         const std::string& description,
-        size_t             nvalues     = 0,
+        std::size_t             nvalues     = 0,
         bool               is_required = false );
 
     void add_value( const std::string& description, bool is_required = true );
@@ -161,7 +161,7 @@ class CommandLine::Argument
 {
 private:
 
-    size_t m_length; ///< length of the argument value
+    std::size_t m_length; ///< length of the argument value
     char*  m_data;   ///< argument value
 
 public:
@@ -176,7 +176,7 @@ public:
 
 public:
 
-    const size_t length( void ) const;
+    const std::size_t length( void ) const;
 
     const char* data( void ) const;
 
@@ -198,7 +198,7 @@ private:
 
     std::string           m_name;        ///< option name
     std::string           m_description; ///< option description
-    size_t                m_nvalues;     ///< number of required values
+    std::size_t                m_nvalues;     ///< number of required values
     bool                  m_is_required; ///< true, if the option is required
     bool                  m_is_given;    ///< true, if the option is given
     std::vector<Argument> m_values;      ///< option values
@@ -210,7 +210,7 @@ public:
     explicit Option(
         const std::string& name,
         const std::string& description = "",
-        size_t             nvalues     = 0,
+        std::size_t             nvalues     = 0,
         bool               is_required = false );
 
     Option( const Option& other );
@@ -229,7 +229,7 @@ public:
 
     const std::string& description( void ) const;
 
-    const size_t nvalues( void ) const;
+    const std::size_t nvalues( void ) const;
 
     const bool isRequired( void ) const;
 
@@ -238,7 +238,7 @@ public:
     const std::vector<Argument>& values( void ) const;
 
     template <typename T>
-    const T value( size_t index ) const;
+    const T value( std::size_t index ) const;
 
 public:
 
@@ -305,7 +305,7 @@ public:
  */
 /*==========================================================================*/
 template <class T>
-inline const T CommandLine::value( size_t index ) const
+inline const T CommandLine::value( std::size_t index ) const
 {
     return( m_values[index].value<T>() );
 }
@@ -319,7 +319,7 @@ inline const T CommandLine::value( size_t index ) const
  */
 /*==========================================================================*/
 template <class T>
-inline const T CommandLine::optionValue( const std::string& option_name, size_t index ) const
+inline const T CommandLine::optionValue( const std::string& option_name, std::size_t index ) const
 {
     Option                  key( option_name );
     Options::const_iterator option =
@@ -349,7 +349,7 @@ inline const T CommandLine::optionValue( const std::string& option_name, size_t 
  */
 /*==========================================================================*/
 template <typename T>
-inline const T CommandLine::Option::value( size_t index ) const
+inline const T CommandLine::Option::value( std::size_t index ) const
 {
     if ( m_nvalues < index )
     {
@@ -373,7 +373,7 @@ inline const T CommandLine::Option::value( size_t index ) const
  */
 /*==========================================================================*/
 template<>
-inline const std::string CommandLine::Option::value<std::string>( size_t index ) const
+inline const std::string CommandLine::Option::value<std::string>( std::size_t index ) const
 {
     if ( m_nvalues < index )
     {

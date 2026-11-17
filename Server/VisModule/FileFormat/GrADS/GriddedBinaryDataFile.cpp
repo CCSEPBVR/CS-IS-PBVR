@@ -112,18 +112,18 @@ const bool GriddedBinaryDataFile::load( void ) const
     }
 
     ifs.seekg( 0, std::ios::end );
-    const size_t end = ifs.tellg();
+    const std::size_t end = ifs.tellg();
 
     ifs.seekg( 0, std::ios::beg );
-    const size_t begin = ifs.tellg();
+    const std::size_t begin = ifs.tellg();
 
-    const size_t file_size = end - begin; // [byte]
-    const size_t nelements = file_size / sizeof( vismodule::Real32 );
+    const std::size_t file_size = end - begin; // [byte]
+    const std::size_t nelements = file_size / sizeof( vismodule::Real32 );
     m_values.allocate( nelements );
 
     if ( m_sequential )
     {
-        for ( size_t i = 0; i < nelements; i++ )
+        for ( std::size_t i = 0; i < nelements; i++ )
         {
             vismodule::Int16 padding[4];
             vismodule::Real32 value;

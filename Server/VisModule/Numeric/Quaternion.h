@@ -122,9 +122,9 @@ public:
 
 public:
 
-    T& operator [] ( size_t index );
+    T& operator [] ( std::size_t index );
 
-    const T operator [] ( size_t index ) const;
+    const T operator [] ( std::size_t index ) const;
 
     Quaternion<T>& operator = ( const Quaternion<T>& q );
 
@@ -214,8 +214,8 @@ public:
 
     friend std::ostream& operator << ( std::ostream& os, const Quaternion<T>& q )
     {
-        const size_t width     = 8;
-        const size_t precision = 3;
+        const std::size_t width     = 8;
+        const std::size_t precision = 3;
 
         const std::ios_base::fmtflags original_flags( os.flags() );
 
@@ -676,7 +676,7 @@ const double Quaternion<T>::length2( void ) const
 }
 
 template<typename T>
-T& Quaternion<T>::operator [] ( size_t index )
+T& Quaternion<T>::operator [] ( std::size_t index )
 {
     VIS_MODULE_ASSERT( index < 4 );
 
@@ -684,7 +684,7 @@ T& Quaternion<T>::operator [] ( size_t index )
 }
 
 template<typename T>
-const T Quaternion<T>::operator [] ( size_t index ) const
+const T Quaternion<T>::operator [] ( std::size_t index ) const
 {
     VIS_MODULE_ASSERT( index < 4 );
 

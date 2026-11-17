@@ -26,7 +26,7 @@ bool IPLabList::read( const std::string& dirname )
     return true;
 }
 
-kvs::IPLab IPLabList::load( const size_t index ) const
+kvs::IPLab IPLabList::load( const std::size_t index ) const
 {
     kvs::IPLab ipl;
     ipl.read( m_filenames[index] );

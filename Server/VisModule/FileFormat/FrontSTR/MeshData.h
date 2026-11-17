@@ -62,8 +62,8 @@ public:
 protected:
 
     ElementType m_element_type; ///< element type
-    size_t m_nnodes; ///< number of nodes
-    size_t m_ncells; ///< number of cells
+    std::size_t m_nnodes; ///< number of nodes
+    std::size_t m_ncells; ///< number of cells
     Coords m_coords; ///< coordinate values
     Connections m_connections; ///< connection values
 
@@ -75,9 +75,9 @@ public:
 
     const ElementType elementType( void ) const;
 
-    const size_t numberOfNodes( void ) const;
+    const std::size_t numberOfNodes( void ) const;
 
-    const size_t numberOfCells( void ) const;
+    const std::size_t numberOfCells( void ) const;
 
     const Coords& coords( void ) const;
 

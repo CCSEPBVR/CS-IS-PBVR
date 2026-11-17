@@ -63,7 +63,7 @@ void PrismaticCell::updateDifferentialFunctions( const kvs::Vec3& local ) const
     const float q = local.y();
     const float r = local.z();
 
-    const size_t nnodes = BaseClass::numberOfCellNodes();
+    const std::size_t nnodes = BaseClass::numberOfCellNodes();
     kvs::Real32* dN = BaseClass::differentialFunctions();
     kvs::Real32* dNdp = dN;
     kvs::Real32* dNdq = dNdp + nnodes;
@@ -145,7 +145,7 @@ kvs::Vec3 PrismaticCell::randomSampling() const
 /*===========================================================================*/
 kvs::Real32 PrismaticCell::volume() const
 {
-    const size_t N = 9;
+    const std::size_t N = 9;
     kvs::Vec3 P[ N ] = {
         kvs::Vec3( 0.3f, 0.3f, 0.2f ),
         kvs::Vec3( 0.6f, 0.3f, 0.2f ),
@@ -159,7 +159,7 @@ kvs::Real32 PrismaticCell::volume() const
     };
 
     float S = 0.0f;
-    for ( size_t i = 0; i < N; i++ )
+    for ( std::size_t i = 0; i < N; i++ )
     {
         BaseClass::setLocalPoint( P[i] );
         const kvs::Mat3 J = BaseClass::JacobiMatrix();

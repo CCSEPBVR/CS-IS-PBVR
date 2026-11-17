@@ -31,6 +31,7 @@
 #include "TestAppContext.h"
 #include "TestCommon.h"
 #include "TestOutputPaths.h"
+#include "../../Shared/TransferFunctionFile.h"
 
 namespace
 {
@@ -95,8 +96,8 @@ void TransferFunctionEditorTest::ImportExportTest::writeMarkdownReport() const
     stream << "# TransferFunctionEditor::ImportExportTest\n\n";
     stream << "- 結果: " << ( m_test_succeeded ? "PASS" : "FAIL" ) << "\n";
     stream << "- ボリュームデータ: `" << m_volume_data_path << "`\n";
-    stream << "- import元: `" << m_import_tfe_path << "`\n";
-    stream << "- export先: `" << m_export_tfe_path << "`\n";
+    stream << "- import元: `" << m_import_json_path << "`\n";
+    stream << "- export先: `" << m_export_json_path << "`\n";
     stream << "- 出力先: `" << m_output_dir_path << "`\n";
     stream << "- スクリーンショット出力先: `" << m_screenshot_dir_path << "`\n\n";
 
@@ -509,10 +510,10 @@ void TransferFunctionEditorTest::ImportExportTest::initTestCase()
     m_volume_data_path = ClientTests::envOrDefault(
         "PBVR_VOLUME_DATA",
         ClientTests::configuredPath( "GT5D_VOLUME_DATA", ClientTests::repoRootPath() ) );
-    m_import_tfe_path = ClientTests::envOrDefault(
+    m_import_json_path = ClientTests::envOrDefault(
         "GT5D_TRANSFER_FUNCTION",
         ClientTests::configuredPath( "GT5D_TRANSFER_FUNCTION", ClientTests::repoRootPath() ) );
-    m_export_tfe_path = ClientTests::envOrDefault(
+    m_export_json_path = ClientTests::envOrDefault(
         "GT5D_TRANSFER_FUNCTION_EXPORT_TEST",
         ClientTests::configuredPath( "GT5D_TRANSFER_FUNCTION_EXPORT_TEST", ClientTests::repoRootPath() ) );
     m_output_dir_path = ClientTests::envOrDefault(
@@ -521,6 +522,8 @@ void TransferFunctionEditorTest::ImportExportTest::initTestCase()
     m_screenshot_dir_path = ClientTests::envOrDefault(
         "PBVR_SCREENSHOT_DIR",
         QDir( m_output_dir_path ).absoluteFilePath( QStringLiteral( "img" ) ) );
+    if ( m_export_json_path.isEmpty() )
+        m_export_json_path = QDir( m_output_dir_path ).absoluteFilePath( QStringLiteral( "demo_test.json" ) );
     m_report_path = QDir( m_output_dir_path ).absoluteFilePath( QStringLiteral( "TestResult.md" ) );
     m_test_succeeded = false;
 
@@ -528,7 +531,7 @@ void TransferFunctionEditorTest::ImportExportTest::initTestCase()
     QVERIFY2( QDir().mkpath( m_screenshot_dir_path ), qPrintable( QStringLiteral( "Failed to create screenshot directory: %1" ).arg( m_screenshot_dir_path ) ) );
 
     QVERIFY2( QFileInfo::exists( m_volume_data_path ), qPrintable( QStringLiteral( "Volume data file not found: %1" ).arg( m_volume_data_path ) ) );
-    QVERIFY2( QFileInfo::exists( m_import_tfe_path ), qPrintable( QStringLiteral( "Import transfer function file not found: %1" ).arg( m_import_tfe_path ) ) );
+    QVERIFY2( QFileInfo::exists( m_import_json_path ), qPrintable( QStringLiteral( "Import transfer function file not found: %1" ).arg( m_import_json_path ) ) );
 
 }
 
@@ -541,6 +544,58 @@ void TransferFunctionEditorTest::ImportExportTest::cleanupTestCase()
     }
 
     writeMarkdownReport();
+}
+
+void TransferFunctionEditorTest::ImportExportTest::validates_json_file_contract()
+{
+    for ( const QString& name : { QStringLiteral( "demo" ), QStringLiteral( "mej_v2" ) } )
+    {
+        QFile file( QDir( ClientTests::repoRootPath() ).filePath(
+            QStringLiteral( "Client/Tests/Data/TransferFunctions/%1.json" ).arg( name ) ) );
+        QVERIFY( file.open( QIODevice::ReadOnly ) );
+        const auto root = nlohmann::json::parse( file.readAll().toStdString() );
+        const auto document = TransferFunctionFile::FromJson( root );
+        QCOMPARE( static_cast<int>( document.items.size() ), name == QStringLiteral( "demo" ) ? 4 : 5 );
+        const auto saved = TransferFunctionFile::ToJson( document );
+        QVERIFY( saved == root ); // Includes every table value and each expression/range.
+        QVERIFY( !saved["transfer_functions"][0]["color"]["range"].contains( "active_range" ) );
+        const auto rejects = []( const nlohmann::json& invalid )
+        {
+            try { TransferFunctionFile::FromJson( invalid ); }
+            catch ( const std::exception& ) { return true; }
+            return false;
+        };
+        auto invalid = root;
+        invalid["settings"]["transfer_function"].erase( "transfer_function_count" );
+        QVERIFY( rejects( invalid ) );
+        invalid = root;
+        invalid["transfer_functions"][0]["color"]["map"]["values"].erase( 0 );
+        QVERIFY( rejects( invalid ) );
+        invalid = root;
+        invalid["transfer_functions"][0]["opacity"]["map"]["values"].push_back( 0.0 );
+        QVERIFY( rejects( invalid ) );
+        invalid = root;
+        invalid["transfer_functions"][0]["color"]["map"]["values"][0] = 256;
+        QVERIFY( rejects( invalid ) );
+        invalid["transfer_functions"][0]["color"]["map"]["values"][0] = 0.5;
+        QVERIFY( rejects( invalid ) );
+        invalid = root;
+        invalid["transfer_functions"][0]["opacity"]["map"]["values"][0] = -0.1;
+        QVERIFY( rejects( invalid ) );
+        invalid = root;
+        invalid["transfer_functions"][1]["id"] = 1;
+        QVERIFY( rejects( invalid ) );
+        invalid = root;
+        invalid["schema_version"] = 2;
+        QVERIFY( rejects( invalid ) );
+        invalid = root;
+        invalid["transfer_functions"][0]["color"]["range"]["active_range"] = "server";
+        const auto imported = TransferFunctionFile::FromJson( invalid );
+        QVERIFY( !TransferFunctionFile::ToJson( imported )["transfer_functions"][0]["color"]["range"].contains( "active_range" ) );
+    }
+    QVERIFY( !TransferFunctionFile::IsJsonPath( "demo.tfe" ) );
+    QVERIFY( !TransferFunctionFile::IsJsonPath( "demo.tf" ) );
+    QVERIFY( TransferFunctionFile::IsJsonPath( "demo.json" ) );
 }
 
 void TransferFunctionEditorTest::ImportExportTest::performs_import_export_scenario()
@@ -575,8 +630,8 @@ void TransferFunctionEditorTest::ImportExportTest::performs_import_export_scenar
     bringTransferFunctionEditorToFront( client.transfer_function_editor );
     saveScreenshot( QStringLiteral( "01_tfe_before_import.png" ), QStringLiteral( "伝達関数をimportする前のTransferFunctionEditorの状態" ) );
     markStepCompleted( QStringLiteral( "TransferFunctionEditor.uiを開き、import前の状態を撮影しました。" ) );
-    importTransferFunction( client, m_import_tfe_path );
-    markStepCompleted( QStringLiteral( "TransferFunctionEditor.ui: importPushButtonでdemo.tfeを選択し、applyPushButtonを押しました。" ) );
+    importTransferFunction( client, m_import_json_path );
+    markStepCompleted( QStringLiteral( "TransferFunctionEditor.ui: importPushButtonでdemo.jsonを選択し、applyPushButtonを押しました。" ) );
     saveScreenshot( QStringLiteral( "02_tfe_after_import.png" ), QStringLiteral( "伝達関数をimportした後のTransferFunctionEditorの状態" ) );
     markStepCompleted( QStringLiteral( "スクリーンショットを撮影: 伝達関数をimportした後のTransferFunctionEditorの状態" ) );
 
@@ -600,8 +655,8 @@ void TransferFunctionEditorTest::ImportExportTest::performs_import_export_scenar
     saveScreenshot( QStringLiteral( "04_tfe_before_export.png" ), QStringLiteral( "伝達関数をexportする前のTransferFunctionEditorの状態" ) );
     markStepCompleted( QStringLiteral( "スクリーンショットを撮影: 伝達関数をexportする前のTransferFunctionEditorの状態" ) );
     QTest::qWait( k_short_wait_ms );
-    exportTransferFunction( client, m_export_tfe_path );
-    markStepCompleted( QStringLiteral( "TransferFunctionEditor.ui: exportPushButtonを押し、demo_test.tfeとして保存しました。" ) );
+    exportTransferFunction( client, m_export_json_path );
+    markStepCompleted( QStringLiteral( "TransferFunctionEditor.ui: exportPushButtonを押し、demo_test.jsonとして保存しました。" ) );
     QTest::qWait( k_short_wait_ms );
 
     disconnectClient( client );
@@ -625,8 +680,8 @@ void TransferFunctionEditorTest::ImportExportTest::performs_import_export_scenar
     bringTransferFunctionEditorToFront( client.transfer_function_editor );
     saveScreenshot( QStringLiteral( "06_tfe_before_reimport_exported.png" ), QStringLiteral( "exportした伝達関数をimportする前のTransferFunctionEditorの状態" ) );
     markStepCompleted( QStringLiteral( "TransferFunctionEditor.uiを開き、exportした伝達関数をimportする前の状態を撮影しました。" ) );
-    importTransferFunction( client, m_export_tfe_path );
-    markStepCompleted( QStringLiteral( "TransferFunctionEditor.ui: importPushButtonでdemo_test.tfeを選択し、applyPushButtonを押しました。" ) );
+    importTransferFunction( client, m_export_json_path );
+    markStepCompleted( QStringLiteral( "TransferFunctionEditor.ui: importPushButtonでdemo_test.jsonを選択し、applyPushButtonを押しました。" ) );
     selectThirdColorFunction( client );
     markStepCompleted( QStringLiteral( "TransferFunctionEditor.ui: exportした伝達関数をimport後、colorFunctionComboBoxの3番目を選択し、1秒待機しました。" ) );
     saveScreenshot( QStringLiteral( "07_tfe_after_reimport_exported.png" ), QStringLiteral( "exportした伝達関数をimportした後のTransferFunctionEditorの状態" ) );

@@ -169,7 +169,7 @@ void PipelineModule::deep_copy( const PipelineModule& module )
     m_module   = module.m_module;
 }
 
-void PipelineModule::create_counter( const size_t counter )
+void PipelineModule::create_counter( const std::size_t counter )
 {
     m_counter = new vismodule::ReferenceCounter( counter );
     VIS_MODULE_ASSERT( m_counter != NULL );

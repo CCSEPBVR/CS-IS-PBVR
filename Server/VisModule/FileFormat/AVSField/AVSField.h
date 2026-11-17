@@ -173,7 +173,7 @@ private:
     bool read_coord( FILE* ifs );
 
     template< typename T >
-    bool read_coord_data(  FILE* ifs, const size_t nvertices );
+    bool read_coord_data(  FILE* ifs, const std::size_t nvertices );
 
     bool write_header( std::ofstream& ofs ) const;
 

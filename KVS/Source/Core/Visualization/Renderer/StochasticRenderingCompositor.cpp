@@ -72,13 +72,13 @@ void StochasticRenderingCompositor::render_objects()
     if ( past_num_objects != m_num_objects )
     {
         m_ensemble_buffer.release();
-        const size_t width = m_scene->camera()->windowWidth();
-        const size_t height = m_scene->camera()->windowHeight();
+        const std::size_t width = m_scene->camera()->windowWidth();
+        const std::size_t height = m_scene->camera()->windowHeight();
         m_window_width = width;
         m_window_height = height;
         const float dpr = m_scene->camera()->devicePixelRatio();
-        const size_t framebuffer_width = static_cast<size_t>( width * dpr );
-        const size_t framebuffer_height = static_cast<size_t>( height * dpr );
+        const std::size_t framebuffer_width = static_cast<size_t>( width * dpr );
+        const std::size_t framebuffer_height = static_cast<size_t>( height * dpr );
         m_ensemble_buffer.create( framebuffer_width, framebuffer_height );
         m_ensemble_buffer.clear();
 
@@ -120,14 +120,14 @@ void StochasticRenderingCompositor::render_objects()
 
 void StochasticRenderingCompositor::onWindowCreated()
 {
-    const size_t width = m_scene->camera()->windowWidth();
-    const size_t height = m_scene->camera()->windowHeight();
+    const std::size_t width = m_scene->camera()->windowWidth();
+    const std::size_t height = m_scene->camera()->windowHeight();
     m_window_width = width;
     m_window_height = height;
 
     const float dpr = m_scene->camera()->devicePixelRatio();
-    const size_t framebuffer_width = static_cast<size_t>( width * dpr );
-    const size_t framebuffer_height = static_cast<size_t>( height * dpr );
+    const std::size_t framebuffer_width = static_cast<size_t>( width * dpr );
+    const std::size_t framebuffer_height = static_cast<size_t>( height * dpr );
     m_ensemble_buffer.create( framebuffer_width, framebuffer_height );
     m_ensemble_buffer.clear();
 
@@ -140,14 +140,14 @@ void StochasticRenderingCompositor::onWindowCreated()
 
 void StochasticRenderingCompositor::onWindowResized()
 {
-    const size_t width = m_scene->camera()->windowWidth();
-    const size_t height = m_scene->camera()->windowHeight();
+    const std::size_t width = m_scene->camera()->windowWidth();
+    const std::size_t height = m_scene->camera()->windowHeight();
     m_window_width = width;
     m_window_height = height;
 
     const float dpr = m_scene->camera()->devicePixelRatio();
-    const size_t framebuffer_width = static_cast<size_t>( width * dpr );
-    const size_t framebuffer_height = static_cast<size_t>( height * dpr );
+    const std::size_t framebuffer_width = static_cast<size_t>( width * dpr );
+    const std::size_t framebuffer_height = static_cast<size_t>( height * dpr );
     m_ensemble_buffer.release();
     m_ensemble_buffer.create( framebuffer_width, framebuffer_height );
     m_ensemble_buffer.clear();
@@ -274,7 +274,7 @@ bool StochasticRenderingCompositor::is_object_changed( Object* object, Renderer*
 /*===========================================================================*/
 size_t StochasticRenderingCompositor::lod_control()
 {
-    size_t repetitions = m_repetition_level;
+    std::size_t repetitions = m_repetition_level;
     kvs::Vec3 camera_position = m_scene->camera()->position();
     kvs::Vec3 light_position = m_scene->light()->position();
     kvs::Mat4 object_xform = this->object_xform();

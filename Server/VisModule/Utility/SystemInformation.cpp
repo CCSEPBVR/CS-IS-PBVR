@@ -58,7 +58,7 @@ namespace vismodule
  *  @return number of processors
  */
 /*==========================================================================*/
-const size_t SystemInformation::nprocessors( void )
+const std::size_t SystemInformation::nprocessors( void )
 {
 #if defined ( VIS_MODULE_PLATFORM_WINDOWS )
     SYSTEM_INFO sysinfo;
@@ -76,7 +76,7 @@ const size_t SystemInformation::nprocessors( void )
     int nprocessors = 0;
 
     int    mib[2] = { CTL_HW, HW_NCPU };
-    size_t length = sizeof( nprocessors );
+    std::size_t length = sizeof( nprocessors );
     int    ret    = 0;
     ret = sysctl( mib, 2, &nprocessors, &length, NULL, 0 );
     visModuleMessageWarning( ret != -1, ::GetWarningMessage( errno, strerror( errno ) ) );
@@ -91,7 +91,7 @@ const size_t SystemInformation::nprocessors( void )
  *  @return total memory size
  */
 /*==========================================================================*/
-const size_t SystemInformation::totalMemorySize( void )
+const std::size_t SystemInformation::totalMemorySize( void )
 {
 // Windows
 #if defined ( VIS_MODULE_PLATFORM_WINDOWS )
@@ -121,14 +121,14 @@ const size_t SystemInformation::totalMemorySize( void )
 #elif defined ( VIS_MODULE_PLATFORM_MACOSX )
 #if defined ( VIS_MODULE_PLATFORM_CPU_64 )
     uint64_t memory_size = 0;
-    size_t   length      = sizeof( memory_size );
+    std::size_t   length      = sizeof( memory_size );
     int      ret         = 0;
     ret = sysctlbyname( "hw.memsize", &memory_size, &length, NULL, 0 );
     visModuleMessageWarning( ret != -1, strerror( errno ) );
     return( memory_size );
 #else
     uint32_t memory_size = 0;
-    size_t   length      = sizeof( memory_size );
+    std::size_t   length      = sizeof( memory_size );
     int      ret         = 0;
     ret = sysctlbyname( "hw.physmem", &memory_size, &length, NULL, 0 );
     visModuleMessageWarning( ret != -1, strerror( errno ) );
@@ -143,7 +143,7 @@ const size_t SystemInformation::totalMemorySize( void )
  *  @return free memory size
  */
 /*==========================================================================*/
-const size_t SystemInformation::freeMemorySize( void )
+const std::size_t SystemInformation::freeMemorySize( void )
 {
 // Windows
 #if defined ( VIS_MODULE_PLATFORM_WINDOWS )

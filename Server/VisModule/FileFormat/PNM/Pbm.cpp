@@ -39,7 +39,7 @@ Pbm::Pbm( void )
  *  @param data   [in] pixel data
  */
 /*==========================================================================*/
-Pbm::Pbm( const size_t width, const size_t height, const vismodule::BitArray& data ):
+Pbm::Pbm( const std::size_t width, const std::size_t height, const vismodule::BitArray& data ):
     m_width( width ),
     m_height( height ),
     m_data( data )
@@ -76,7 +76,7 @@ const Pbm::Header& Pbm::header( void ) const
  *  @return image width
  */
 /*==========================================================================*/
-const size_t Pbm::width( void ) const
+const std::size_t Pbm::width( void ) const
 {
     return( m_width );
 }
@@ -87,7 +87,7 @@ const size_t Pbm::width( void ) const
  *  @return image height
  */
 /*==========================================================================*/
-const size_t Pbm::height( void ) const
+const std::size_t Pbm::height( void ) const
 {
     return( m_height );
 }
@@ -131,15 +131,15 @@ const bool Pbm::read( const std::string& filename )
     m_height  = m_header.height();
 
     // Allocate the pixel data.
-    const size_t npixels = m_width * m_height;
+    const std::size_t npixels = m_width * m_height;
     m_data.allocate( npixels );
 
     // Ascii data.
     if ( m_header.isP1() )
     {
-        for ( size_t i = 0; i < npixels; i++ )
+        for ( std::size_t i = 0; i < npixels; i++ )
         {
-            size_t v;
+            std::size_t v;
             ifs >> v;
 
             if ( v == 1 ) m_data.set(i);

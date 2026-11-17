@@ -31,7 +31,7 @@ PyObject* Convert( const kvs::ValueArray<IN>& array )
     npy_intp dims[1] = { (npy_intp)(array.size()) };
 
     PyArrayObject* object = (PyArrayObject*)PyArray_SimpleNew( ndim, dims, Type<OUT>() );
-    for ( size_t i = 0; i < array.size(); i++ )
+    for ( std::size_t i = 0; i < array.size(); i++ )
     {
         *(OUT*)PyArray_GETPTR1( object, i ) = static_cast<OUT>( array[i] );
     }
@@ -50,10 +50,10 @@ PyObject* Convert( const kvs::ValueArray<IN>& array )
 template <typename IN, typename OUT>
 kvs::ValueArray<OUT> Convert( const PyArrayObject* object )
 {
-    const size_t size = PyArray_DIMS( (PyArrayObject*)object )[0];
+    const std::size_t size = PyArray_DIMS( (PyArrayObject*)object )[0];
 
     kvs::ValueArray<OUT> array( size );
-    for ( size_t i = 0; i < size; i++ )
+    for ( std::size_t i = 0; i < size; i++ )
     {
         array[i] = static_cast<OUT>( *(IN*)PyArray_GETPTR1( (PyArrayObject*)object, i ) );
     }

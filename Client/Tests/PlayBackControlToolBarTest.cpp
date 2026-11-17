@@ -1,5 +1,9 @@
 #include "PlayBackControlToolBarTest.h"
 
+#ifdef Q_OS_MACOS
+#include "TestWindowVideoRecorder.h"
+#endif
+
 #ifdef Q_OS_WIN
 #include <winsock2.h>
 #include <windows.h>
@@ -27,6 +31,7 @@
 #include <QString>
 #include <QSpinBox>
 #include <QStandardPaths>
+#include <QTextStream>
 #include <QTimer>
 #include <QToolBar>
 #include <QTreeView>
@@ -160,6 +165,9 @@ QRect physicalWindowGeometryForRecording( QWidget* target_window, QScreen* fallb
 namespace ClientTests
 {
 
+PlayBackControlToolBarTest::PlayBackControlToolBarTest() = default;
+PlayBackControlToolBarTest::~PlayBackControlToolBarTest() = default;
+
 QFileDialog* PlayBackControlToolBarTest::waitForFileDialog( int timeout_ms ) const
 {
     QFileDialog* dialog = nullptr;
@@ -260,6 +268,8 @@ QSpinBox* PlayBackControlToolBarTest::findNextTimeStepSpinBox( QToolBar* tool_ba
 
 void PlayBackControlToolBarTest::startVideoRecording( QWidget* target_window )
 {
+    m_recording_attempted = true;
+    m_recording_failure_reason = QStringLiteral( "録画開始処理が完了しませんでした。QtTest の失敗ログも確認してください。" );
     if ( QFileInfo::exists( m_video_file_path ) )
     {
         QVERIFY2(
@@ -267,7 +277,21 @@ void PlayBackControlToolBarTest::startVideoRecording( QWidget* target_window )
             qPrintable( QStringLiteral( "Failed to remove existing video: %1" ).arg( m_video_file_path ) ) );
     }
 
-#if defined( Q_OS_WIN ) || defined( Q_OS_LINUX )
+#ifdef Q_OS_MACOS
+    // Multimedia オブジェクトの生成前にバックエンドを選択する。
+    const QString backend = qEnvironmentVariable( "QT_MEDIA_BACKEND" );
+    if ( !backend.isEmpty() && backend != QStringLiteral( "ffmpeg" ) )
+    {
+        m_recording_failure_reason = QStringLiteral(
+            "QT_MEDIA_BACKEND=%1 が指定されています。アプリ内描画の録画には ffmpeg が必要です。" ).arg( backend );
+        return;
+    }
+    qputenv( "QT_MEDIA_BACKEND", QByteArrayLiteral( "ffmpeg" ) );
+    m_window_recorder = std::make_unique<TestWindowVideoRecorder>();
+    m_video_recording_available = m_window_recorder->start( target_window, m_video_file_path );
+    m_recording_failure_reason = m_window_recorder->failureReason();
+    return;
+#elif defined( Q_OS_WIN ) || defined( Q_OS_LINUX )
     if ( target_window != nullptr )
     {
         target_window->raise();
@@ -280,8 +304,10 @@ void PlayBackControlToolBarTest::startVideoRecording( QWidget* target_window )
         QStandardPaths::findExecutable( QStringLiteral( "ffmpeg" ) ) );
     if ( ffmpeg_path.isEmpty() )
     {
+        m_recording_failure_reason = QStringLiteral(
+            "ffmpeg が見つかりません。PBVR_FFMPEG_EXECUTABLE または PATH を設定してください。" );
         qWarning().noquote()
-            << QStringLiteral( "Video recording skipped: ffmpeg was not found. "
+            << QStringLiteral( "Video recording failed: ffmpeg was not found. "
                                "Set PBVR_FFMPEG_EXECUTABLE or add ffmpeg to PATH." );
         m_video_recording_available = false;
         return;
@@ -407,15 +433,8 @@ void PlayBackControlToolBarTest::startVideoRecording( QWidget* target_window )
         } );
 #endif
 #else
-    m_recording_process.setProgram( QStringLiteral( "screencapture" ) );
-    m_recording_process.setArguments(
-        {
-            QStringLiteral( "-v" ),
-            QStringLiteral( "-k" ),
-            QStringLiteral( "-m" ),
-            QStringLiteral( "-x" ),
-            m_video_file_path
-        } );
+    m_recording_failure_reason = QStringLiteral( "この OS での動画保存には対応していません。" );
+    return;
 #endif
 
     m_video_recording_available = true;
@@ -425,66 +444,168 @@ void PlayBackControlToolBarTest::startVideoRecording( QWidget* target_window )
     if ( !m_recording_process.waitForStarted( 5000 ) )
     {
         m_video_recording_available = false;
+        m_recording_failure_reason = QStringLiteral( "録画プロセスを起動できませんでした: %1" )
+                                         .arg( m_recording_process.errorString() );
         QVERIFY2(
             false,
             qPrintable( QStringLiteral( "Failed to start video recording: %1" ).arg( m_recording_process.errorString() ) ) );
     }
+    else
+    {
+        m_recording_failure_reason.clear();
+    }
 }
 
-void PlayBackControlToolBarTest::stopVideoRecording()
+bool PlayBackControlToolBarTest::stopVideoRecording()
 {
-#if defined( Q_OS_WIN ) || defined( Q_OS_LINUX )
-    if ( !m_video_recording_available )
+    if ( m_recording_finalized || !m_recording_attempted )
     {
-        return;
+        return m_video_created;
     }
+
+#ifdef Q_OS_MACOS
+    if ( m_window_recorder )
+    {
+        m_video_created = m_window_recorder->finish();
+        m_recording_failure_reason = m_window_recorder->failureReason();
+        m_recorder_output = m_window_recorder->diagnostics();
+    }
+    if ( !m_video_created ) { qWarning().noquote() << m_recording_failure_reason; }
+    m_recording_finalized = true;
+    return m_video_created;
+#else
+    const bool exited_before_stop = m_recording_process.state() == QProcess::NotRunning;
+    bool forced_stop = false;
+    if ( !exited_before_stop )
+    {
+#ifdef Q_OS_WIN
+        m_recording_process.write( "q" );
+        m_recording_process.closeWriteChannel();
+#else
+        const qint64 pid = m_recording_process.processId();
+        if ( pid > 0 )
+        {
+            ::kill( static_cast<pid_t>( pid ), SIGINT );
+        }
+        else
+        {
+            m_recording_process.terminate();
+        }
 #endif
 
-    if ( m_recording_process.state() == QProcess::NotRunning )
-    {
-        const QFileInfo video_file_info( m_video_file_path );
-        QVERIFY2(
-            video_file_info.exists() && video_file_info.size() > 0,
-            qPrintable( QStringLiteral( "Recorded video was not created: %1" ).arg( m_video_file_path ) ) );
-        return;
+        if ( !m_recording_process.waitForFinished( k_recording_finish_timeout_ms ) )
+        {
+            forced_stop = true;
+            m_recording_process.terminate();
+        }
+        if ( m_recording_process.state() != QProcess::NotRunning &&
+             !m_recording_process.waitForFinished( 5000 ) )
+        {
+            m_recording_process.kill();
+            m_recording_process.waitForFinished( 5000 );
+        }
     }
 
-#ifdef Q_OS_WIN
-    m_recording_process.write( "q" );
-    m_recording_process.closeWriteChannel();
-#else
-    const qint64 pid = m_recording_process.processId();
-    if ( pid > 0 )
+    // 早期終了時にも出力を回収し、QtTest ログとレポートの両方に残す。
+    m_recorder_output = QString::fromLocal8Bit( m_recording_process.readAll() ).trimmed();
+    if ( m_video_recording_available )
     {
-        ::kill( static_cast<pid_t>( pid ), SIGINT );
+        m_recorder_exit_details = QStringLiteral( "exitCode=%1, exitStatus=%2, 停止要求前に終了=%3, 強制停止=%4" )
+            .arg( m_recording_process.exitCode() )
+            .arg( m_recording_process.exitStatus() == QProcess::NormalExit ? QStringLiteral( "NormalExit" ) : QStringLiteral( "CrashExit" ) )
+            .arg( exited_before_stop ? QStringLiteral( "yes" ) : QStringLiteral( "no" ) )
+            .arg( forced_stop ? QStringLiteral( "yes" ) : QStringLiteral( "no" ) );
     }
     else
     {
-        m_recording_process.terminate();
+        m_recorder_exit_details = QStringLiteral( "録画未開始（有効な終了コードなし）" );
     }
-#endif
-
-    if ( !m_recording_process.waitForFinished( k_recording_finish_timeout_ms ) )
-    {
-        m_recording_process.terminate();
-    }
-    if ( m_recording_process.state() != QProcess::NotRunning &&
-         !m_recording_process.waitForFinished( 5000 ) )
-    {
-        m_recording_process.kill();
-        m_recording_process.waitForFinished( 5000 );
-    }
-
-    const QString recorder_output = QString::fromLocal8Bit( m_recording_process.readAll() ).trimmed();
-    if ( !recorder_output.isEmpty() )
-    {
-        qInfo().noquote() << recorder_output;
-    }
+    qInfo().noquote() << QStringLiteral( "Recorder: %1 %2\n%3\n%4" )
+        .arg( m_recording_process.program(), m_recording_process.arguments().join( QLatin1Char( ' ' ) ),
+              m_recorder_exit_details, m_recorder_output );
 
     const QFileInfo video_file_info( m_video_file_path );
-    QVERIFY2(
-        video_file_info.exists() && video_file_info.size() > 0,
-        qPrintable( QStringLiteral( "Recorded video was not created: %1" ).arg( m_video_file_path ) ) );
+    m_video_created = m_video_recording_available && !forced_stop &&
+                      video_file_info.exists() && video_file_info.size() > 0;
+    if ( !m_video_created && m_recording_failure_reason.isEmpty() )
+    {
+        m_recording_failure_reason = forced_stop
+            ? QStringLiteral( "録画プロセスが停止要求後の制限時間内に終了せず、強制停止しました。動画の正常な保存を確認できません。" )
+            : exited_before_stop
+                ? QStringLiteral( "録画プロセスが停止要求前に終了し、空でない動画ファイルを生成しませんでした。" )
+                : QStringLiteral( "録画停止後に動画ファイルが存在しないか、サイズが 0 バイトでした。" );
+        m_recording_failure_reason += m_recorder_output.isEmpty()
+            ? QStringLiteral( " 録画コマンドの診断出力がないため、直接の原因は特定できません。" )
+            : QStringLiteral( " 録画コマンドの診断出力を以下に記載します。" );
+    }
+    if ( !m_video_created )
+    {
+        qWarning().noquote() << m_recording_failure_reason;
+    }
+    m_recording_finalized = true;
+    return m_video_created;
+#endif
+}
+
+void PlayBackControlToolBarTest::writeMarkdownReport() const
+{
+    QFile report_file( m_report_path );
+    QVERIFY2( report_file.open( QIODevice::WriteOnly | QIODevice::Text | QIODevice::Truncate ),
+              qPrintable( QStringLiteral( "Failed to open markdown report: %1" ).arg( m_report_path ) ) );
+
+    QTextStream stream( &report_file );
+    stream << "# PlayBackControlToolBarTest\n\n";
+    stream << "## テスト結果\n\n";
+    stream << "- 結果: " << ( m_test_succeeded ? "PASS" : "FAIL" ) << "\n";
+    stream << "- オブジェクトデータ: `" << m_object_file_path << "`\n";
+    stream << "- 出力先: `" << m_output_dir_path << "`\n";
+    stream << "- 動画出力: " << ( m_video_created ? "PASS" : "FAIL" ) << "\n\n";
+    stream << "## 実施シナリオ\n\n";
+    stream << "1. Object Editor でオブジェクトを選択して Apply し、Jump を実行する。\n";
+    stream << "2. 録画を開始し、Last、First、Next、Previous を操作する。\n";
+    stream << "3. 順再生・停止、逆再生・停止を操作する。\n";
+    stream << "4. タイムステップを 5 に設定して Jump し、ループ再生・停止を操作する。\n";
+    stream << "5. 録画を停止し、動画ファイルの存在とサイズを確認する。\n\n";
+    stream << "## 動画\n\n";
+    if ( m_video_created )
+    {
+        const QString relative_path = QDir( QFileInfo( m_report_path ).absolutePath() )
+                                          .relativeFilePath( m_video_file_path );
+        stream << "<video controls src=\"" << relative_path.toHtmlEscaped() << "\"></video>\n\n";
+        stream << "[操作動画を開く](<" << relative_path << ">)\n\n";
+        stream << "埋め込み再生に対応していないビューアーでは、上のリンクから動画を開いてください。\n\n";
+    }
+    else
+    {
+        stream << "動画を出力できませんでした。\n\n";
+        stream << ( m_recording_attempted ? m_recording_failure_reason
+                    : QStringLiteral( "録画開始前にテストが失敗したため、録画は実行されませんでした。QtTest ログを確認してください。" ) )
+               << "\n\n";
+    }
+    stream << "## 録画の診断情報\n\n";
+    // 診断文字列中の Markdown 記号によってコードブロックが閉じないようにする。
+    const auto write_diagnostic = [&stream]( const QString& value )
+    {
+        for ( const QString& line : value.split( QLatin1Char( '\n' ) ) )
+        {
+            stream << "    " << line << "\n";
+        }
+        stream << "\n";
+    };
+#ifdef Q_OS_MACOS
+    stream << "### 録画方式・保存結果\n\n";
+    write_diagnostic( m_recorder_output.isEmpty() ? QStringLiteral( "録画未開始" ) : m_recorder_output );
+#else
+    stream << "### コマンド（プログラムと各引数を行ごとに記載）\n\n";
+    write_diagnostic( m_recording_process.program() + QLatin1Char( '\n' ) +
+                      m_recording_process.arguments().join( QLatin1Char( '\n' ) ) );
+    stream << "### 終了状態\n\n";
+    write_diagnostic( m_recorder_exit_details.isEmpty() ? QStringLiteral( "録画未実行" ) : m_recorder_exit_details );
+    stream << "### 標準出力・標準エラー\n\n";
+    write_diagnostic( m_recorder_output.isEmpty() ? QStringLiteral( "診断出力なし" ) : m_recorder_output );
+#endif
+    stream.flush();
+    QVERIFY2( stream.status() == QTextStream::Ok, "Failed to write markdown report" );
 }
 
 void PlayBackControlToolBarTest::initTestCase()
@@ -498,23 +619,31 @@ void PlayBackControlToolBarTest::initTestCase()
         ClientTests::configuredPath( "CLOCK_POLYGON_DATA", ClientTests::repoRootPath() ) );
     m_output_dir_path = ClientTests::envOrDefault(
         "PBVR_TEST_OUTPUT_DIR",
-        ClientTests::datedTestOutputDir( ClientTests::repoRootPath(), date_stamp ) );
+        ClientTests::datedTestOutputDir( ClientTests::repoRootPath(), date_stamp,
+                                       QStringLiteral( "PlayBackControlToolBarTest" ) ) );
     m_video_file_path = QDir( m_output_dir_path ).absoluteFilePath( QStringLiteral( "PlayBackControlToolBarTest.mp4" ) );
+    m_report_path = QDir( m_output_dir_path ).absoluteFilePath( QStringLiteral( "TestResult.md" ) );
 
-    QVERIFY2(
-        QFileInfo::exists( m_object_file_path ),
-        qPrintable( QStringLiteral( "Object file not found: %1" ).arg( m_object_file_path ) ) );
+    // 入力データの検証に失敗した場合も cleanupTestCase でレポートを保存する。
     QVERIFY2(
         QDir().mkpath( m_output_dir_path ),
         qPrintable( QStringLiteral( "Failed to create output directory: %1" ).arg( m_output_dir_path ) ) );
+    QVERIFY2(
+        QFileInfo::exists( m_object_file_path ),
+        qPrintable( QStringLiteral( "Object file not found: %1" ).arg( m_object_file_path ) ) );
 }
 
 void PlayBackControlToolBarTest::cleanupTestCase()
 {
-    if ( m_recording_process.state() != QProcess::NotRunning )
+    if ( m_recording_attempted && !m_recording_finalized )
     {
-        stopVideoRecording();
+        const bool video_created = stopVideoRecording();
+        if ( !video_created )
+        {
+            m_test_succeeded = false;
+        }
     }
+    writeMarkdownReport();
 }
 
 void PlayBackControlToolBarTest::performs_playback_control_toolbar_scenario()
@@ -610,6 +739,8 @@ void PlayBackControlToolBarTest::performs_playback_control_toolbar_scenario()
     clickButtonAndWait( jump_button, k_action_wait_ms );
 
     startVideoRecording( &main_window );
+    QVERIFY2( m_video_recording_available && !QTest::currentTestFailed(),
+              qPrintable( m_recording_failure_reason ) );
     QTest::qWait( k_action_wait_ms );
 
     clickButtonAndWait( last_button, k_action_wait_ms );
@@ -640,7 +771,8 @@ void PlayBackControlToolBarTest::performs_playback_control_toolbar_scenario()
     clickButtonAndWait( play_button, k_action_wait_ms );
     clickButtonAndWait( loop_button, k_action_wait_ms );
 
-    stopVideoRecording();
+    const bool video_created = stopVideoRecording();
+    QVERIFY2( video_created, qPrintable( m_recording_failure_reason ) );
 
     QVERIFY2(
         ClientTests::waitForCondition(
@@ -657,7 +789,7 @@ void PlayBackControlToolBarTest::performs_playback_control_toolbar_scenario()
     QCoreApplication::processEvents( QEventLoop::AllEvents, k_window_settle_ms );
     QCoreApplication::sendPostedEvents( nullptr, QEvent::DeferredDelete );
 
-    m_test_succeeded = true;
+    m_test_succeeded = !QTest::currentTestFailed();
 }
 
 } // namespace ClientTests

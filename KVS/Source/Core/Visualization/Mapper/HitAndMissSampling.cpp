@@ -165,27 +165,27 @@ template <typename T>
 void HitAndMissSampling::generate_particles( const kvs::StructuredVolumeObject* volume  )
 {
     // Set the geometry arrays.
-    const size_t max_nparticles = volume->numberOfNodes();
+    const std::size_t max_nparticles = volume->numberOfNodes();
     std::vector<kvs::Real32> coords;  coords.reserve( max_nparticles * 3 );
     std::vector<kvs::UInt8>  colors;  colors.reserve( max_nparticles * 3 );
     std::vector<kvs::Real32> normals; normals.reserve( max_nparticles * 3 );
 
     // Aliases.
     const kvs::Vector3ui resolution = volume->resolution();
-    const size_t line_size  = volume->numberOfNodesPerLine();
-    const size_t slice_size = volume->numberOfNodesPerSlice();
+    const std::size_t line_size  = volume->numberOfNodesPerLine();
+    const std::size_t slice_size = volume->numberOfNodesPerSlice();
     const T* values = reinterpret_cast<const T*>( volume->values().data() );
 
     kvs::MersenneTwister R; // Random number generator
-    size_t index = 0;     // index of voxel
-    for ( size_t k = 0; k < resolution.z(); k++ )
+    std::size_t index = 0;     // index of voxel
+    for ( std::size_t k = 0; k < resolution.z(); k++ )
     {
-        for ( size_t j = 0; j < resolution.y(); j++ )
+        for ( std::size_t j = 0; j < resolution.y(); j++ )
         {
-            for ( size_t i = 0; i < resolution.x(); i++, index++ )
+            for ( std::size_t i = 0; i < resolution.x(); i++, index++ )
             {
                 // Rejection.
-                const size_t voxel_value = values[ index ];
+                const std::size_t voxel_value = values[ index ];
                 if( R() < BaseClass::opacityMap()[ voxel_value ] )
                 {
                     // Set coordinate value.

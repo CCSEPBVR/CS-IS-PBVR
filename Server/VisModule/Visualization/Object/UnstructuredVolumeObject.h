@@ -43,8 +43,8 @@ public:
 private:
 
     CellType m_cell_type; ///< Cell type.
-    size_t   m_nnodes;    ///< Number of nodes.
-    size_t   m_ncells;    ///< Number of cells.
+    std::size_t   m_nnodes;    ///< Number of nodes.
+    std::size_t   m_ncells;    ///< Number of cells.
 
     Connections m_connections; ///< Connection ( Node ID ) array.
 
@@ -54,9 +54,9 @@ public:
 
     UnstructuredVolumeObject(
         const CellType     cell_type,
-        const size_t       nnodes,
-        const size_t       ncells,
-        const size_t       veclen,
+        const std::size_t       nnodes,
+        const std::size_t       ncells,
+        const std::size_t       veclen,
         const Coords&      coords,
         const Connections& connections,
         const Values&      values );
@@ -87,9 +87,9 @@ public:
 
     void setCellType( const CellType& cell_type );
 
-    void setNNodes( const size_t nnodes );
+    void setNNodes( const std::size_t nnodes );
 
-    void setNCells( const size_t ncells );
+    void setNCells( const std::size_t ncells );
 
     void setConnections( const Connections& connections );
 
@@ -101,9 +101,9 @@ public:
 
     const CellType cellType() const;
 
-    const size_t nnodes() const;
+    const std::size_t nnodes() const;
 
-    const size_t ncells() const;
+    const std::size_t ncells() const;
 
     const Connections& connections() const;
 

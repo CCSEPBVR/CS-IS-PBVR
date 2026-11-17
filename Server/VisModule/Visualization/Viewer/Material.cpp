@@ -167,7 +167,7 @@ void Material::clear( void )
 /*===========================================================================*/
 Material& Material::operator = ( const Material& material )
 {
-    size_t byte_size = sizeof(float) * 4;
+    std::size_t byte_size = sizeof(float) * 4;
 
     memcpy( m_ambient,  material.m_ambient,  byte_size );
     memcpy( m_diffuse,  material.m_diffuse,  byte_size );

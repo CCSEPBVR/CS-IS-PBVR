@@ -179,7 +179,7 @@ void PipelineModule::deep_copy( const PipelineModule& module )
  *  @param  counter [in] counter number
  */
 /*===========================================================================*/
-void PipelineModule::create_counter( const size_t counter )
+void PipelineModule::create_counter( const std::size_t counter )
 {
     m_counter = new kvs::ReferenceCounter( counter );
     KVS_ASSERT( m_counter != NULL );

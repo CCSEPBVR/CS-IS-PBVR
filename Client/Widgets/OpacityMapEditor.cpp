@@ -117,7 +117,7 @@ void OpacityMapEditor::onExpressionChanged()
 
         const float stride = ( max_value - min_value ) / ( 256 - 1 );
         float x = min_value;
-        for ( size_t i = 0; i < 256; ++i, x += stride )
+        for ( std::size_t i = 0; i < 256; ++i, x += stride )
         {
             float opacity;
 

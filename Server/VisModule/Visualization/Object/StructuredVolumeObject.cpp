@@ -58,7 +58,7 @@ StructuredVolumeObject::StructuredVolumeObject():
 /*==========================================================================*/
 StructuredVolumeObject::StructuredVolumeObject(
     const vismodule::Vector3ui& resolution,
-    const size_t          veclen,
+    const std::size_t          veclen,
     const Values&         values ):
     vismodule::VolumeObjectBase( veclen, Coords( 0 ), values ),
     m_grid_type( Uniform ),
@@ -80,7 +80,7 @@ StructuredVolumeObject::StructuredVolumeObject(
 StructuredVolumeObject::StructuredVolumeObject(
     const GridType        grid_type,
     const vismodule::Vector3ui& resolution,
-    const size_t          veclen,
+    const std::size_t          veclen,
     const Coords&         coords,
     const Values&         values ):
     vismodule::VolumeObjectBase( veclen, coords, values ),
@@ -248,7 +248,7 @@ const vismodule::Vector3ui& StructuredVolumeObject::resolution() const
  *  Returns the number of nodes per line.
  */
 /*==========================================================================*/
-const size_t StructuredVolumeObject::nnodesPerLine() const
+const std::size_t StructuredVolumeObject::nnodesPerLine() const
 {
     return m_resolution.x();
 }
@@ -258,7 +258,7 @@ const size_t StructuredVolumeObject::nnodesPerLine() const
  *  Returns the number of nodes per slice.
  */
 /*==========================================================================*/
-const size_t StructuredVolumeObject::nnodesPerSlice() const
+const std::size_t StructuredVolumeObject::nnodesPerSlice() const
 {
     return this->nnodesPerLine() * m_resolution.y();
 }
@@ -268,7 +268,7 @@ const size_t StructuredVolumeObject::nnodesPerSlice() const
  *  Returns the number of nodes.
  */
 /*==========================================================================*/
-const size_t StructuredVolumeObject::nnodes() const
+const std::size_t StructuredVolumeObject::nnodes() const
 {
     return this->nnodesPerSlice() * m_resolution.z();
 }

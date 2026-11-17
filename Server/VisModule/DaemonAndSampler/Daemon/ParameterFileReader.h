@@ -17,6 +17,7 @@
 #include <vismodule/GlyphProperty>
 #include <vismodule/PlotOverLineProperty>
 #include <vismodule/PlotOverTimeProperty>
+#include <vismodule/TransferFunctionJsonWriter>
 
 class ParameterFileReader
 {
@@ -29,16 +30,13 @@ private:
     std::vector<float> getTableFloat( std::string table_string );
     std::vector<std::string> getTableString( std::string table_string );
 public:
-    void readTransferFunctionFile( const char* fname ); // CSのConnect時に指定した.tfファイルを読み込む
-    void readParticleParameterFile( const char* fname ); // ISのdefault.tfファイルを読み込む
-    void readGlyphParameterFile( const char* fname );
-    void readPlotOverLineParameterFile( const char* fname );
-    void readPlotOverTimeParameterFile( const char* fname );
-    void setTransferFunctionParameter( ParticleProperty& particle_property ); // CSのConnect時に指定した.tfファイルを読み込んだ値を設定する
-    void setParticleParameter( ParticleProperty& particle_property ); // ISのdefault.tfファイルを読み込んだ値を設定する
-    void setGlyphParameter( GlyphProperty& glyph_property );
-    void setPlotOverLineParameter( PlotOverLineProperty& pol_property );
-    void setPlotOverTimeParameter( PlotOverTimeProperty& pot_property );
+    void readTransferFunctionJsonCS( const char* fname, ParticleProperty& particle_property ); // Throws on invalid CS JSON.
+    void readParticleParameterFile( const char* fname ); // ISの旧形式default.tfファイルを読み込む
+    bool readTransferFunctionFromJson( const char* fname, ParticleProperty& particle_property ); // ISのdefault.jsonファイルを読み込む
+    void readGlyphParameterFile( const char* fname, GlyphProperty& glyph_property );
+    void readPlotOverLineParameterFile( const char* fname, PlotOverLineProperty& pol_property );
+    void readPlotOverTimeParameterFile( const char* fname, PlotOverTimeProperty& pot_property );
+    void setParticleParameter( ParticleProperty& particle_property ); // ISの旧形式default.tfファイルを読み込んだ値を設定する
     void setNameListFile( const NameListFile& nameListFile );
     const NameListFile& getNameListFile() const;
 };

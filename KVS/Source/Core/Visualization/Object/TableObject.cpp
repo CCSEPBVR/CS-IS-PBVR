@@ -43,7 +43,7 @@ std::pair<kvs::Real64,kvs::Real64> GetMinMaxValues( const kvs::AnyValueArray& ar
     if ( type == typeid( kvs::Int8 ) )
     {
         const kvs::Int8* value = static_cast<const kvs::Int8*>( array.data() );
-        for( size_t i = 0; i < array.size(); i++ )
+        for( std::size_t i = 0; i < array.size(); i++ )
         {
             min_value = kvs::Math::Min( min_value, kvs::Real64( value[i] ) );
             max_value = kvs::Math::Max( max_value, kvs::Real64( value[i] ) );
@@ -52,7 +52,7 @@ std::pair<kvs::Real64,kvs::Real64> GetMinMaxValues( const kvs::AnyValueArray& ar
     else if ( type == typeid( kvs::UInt8 ) )
     {
         const kvs::UInt8* value = static_cast<const kvs::UInt8*>( array.data() );
-        for( size_t i = 0; i < array.size(); i++ )
+        for( std::size_t i = 0; i < array.size(); i++ )
         {
             min_value = kvs::Math::Min( min_value, kvs::Real64( value[i] ) );
             max_value = kvs::Math::Max( max_value, kvs::Real64( value[i] ) );
@@ -61,7 +61,7 @@ std::pair<kvs::Real64,kvs::Real64> GetMinMaxValues( const kvs::AnyValueArray& ar
     else if ( type == typeid( kvs::Int16 ) )
     {
         const kvs::Int16* value = static_cast<const kvs::Int16*>( array.data() );
-        for( size_t i = 0; i < array.size(); i++ )
+        for( std::size_t i = 0; i < array.size(); i++ )
         {
             min_value = kvs::Math::Min( min_value, kvs::Real64( value[i] ) );
             max_value = kvs::Math::Max( max_value, kvs::Real64( value[i] ) );
@@ -70,7 +70,7 @@ std::pair<kvs::Real64,kvs::Real64> GetMinMaxValues( const kvs::AnyValueArray& ar
     else if ( type == typeid( kvs::UInt16 ) )
     {
         const kvs::UInt16* value = static_cast<const kvs::UInt16*>( array.data() );
-        for( size_t i = 0; i < array.size(); i++ )
+        for( std::size_t i = 0; i < array.size(); i++ )
         {
             min_value = kvs::Math::Min( min_value, kvs::Real64( value[i] ) );
             max_value = kvs::Math::Max( max_value, kvs::Real64( value[i] ) );
@@ -79,7 +79,7 @@ std::pair<kvs::Real64,kvs::Real64> GetMinMaxValues( const kvs::AnyValueArray& ar
     else if ( type == typeid( kvs::Int32 ) )
     {
         const kvs::Int32* value = static_cast<const kvs::Int32*>( array.data() );
-        for( size_t i = 0; i < array.size(); i++ )
+        for( std::size_t i = 0; i < array.size(); i++ )
         {
             min_value = kvs::Math::Min( min_value, kvs::Real64( value[i] ) );
             max_value = kvs::Math::Max( max_value, kvs::Real64( value[i] ) );
@@ -88,7 +88,7 @@ std::pair<kvs::Real64,kvs::Real64> GetMinMaxValues( const kvs::AnyValueArray& ar
     else if ( type == typeid( kvs::UInt32 ) )
     {
         const kvs::UInt32* value = static_cast<const kvs::UInt32*>( array.data() );
-        for( size_t i = 0; i < array.size(); i++ )
+        for( std::size_t i = 0; i < array.size(); i++ )
         {
             min_value = kvs::Math::Min( min_value, kvs::Real64( value[i] ) );
             max_value = kvs::Math::Max( max_value, kvs::Real64( value[i] ) );
@@ -97,7 +97,7 @@ std::pair<kvs::Real64,kvs::Real64> GetMinMaxValues( const kvs::AnyValueArray& ar
     else if ( type == typeid( kvs::Int64 ) )
     {
         const kvs::Int64* value = static_cast<const kvs::Int64*>( array.data() );
-        for( size_t i = 0; i < array.size(); i++ )
+        for( std::size_t i = 0; i < array.size(); i++ )
         {
             min_value = kvs::Math::Min( min_value, kvs::Real64( value[i] ) );
             max_value = kvs::Math::Max( max_value, kvs::Real64( value[i] ) );
@@ -106,7 +106,7 @@ std::pair<kvs::Real64,kvs::Real64> GetMinMaxValues( const kvs::AnyValueArray& ar
     else if ( type == typeid( kvs::UInt64 ) )
     {
         const kvs::UInt64* value = static_cast<const kvs::UInt64*>( array.data() );
-        for( size_t i = 0; i < array.size(); i++ )
+        for( std::size_t i = 0; i < array.size(); i++ )
         {
             min_value = kvs::Math::Min( min_value, kvs::Real64( value[i] ) );
             max_value = kvs::Math::Max( max_value, kvs::Real64( value[i] ) );
@@ -115,7 +115,7 @@ std::pair<kvs::Real64,kvs::Real64> GetMinMaxValues( const kvs::AnyValueArray& ar
     else if ( type == typeid( kvs::Real32 ) )
     {
         const kvs::Real32* value = static_cast<const kvs::Real32*>( array.data() );
-        for( size_t i = 0; i < array.size(); i++ )
+        for( std::size_t i = 0; i < array.size(); i++ )
         {
             min_value = kvs::Math::Min( min_value, kvs::Real64( value[i] ) );
             max_value = kvs::Math::Max( max_value, kvs::Real64( value[i] ) );
@@ -124,7 +124,7 @@ std::pair<kvs::Real64,kvs::Real64> GetMinMaxValues( const kvs::AnyValueArray& ar
     else if ( type == typeid( kvs::Real64 ) )
     {
         const kvs::Real64* value = static_cast<const kvs::Real64*>( array.data() );
-        for( size_t i = 0; i < array.size(); i++ )
+        for( std::size_t i = 0; i < array.size(); i++ )
         {
             min_value = kvs::Math::Min( min_value, kvs::Real64( value[i] ) );
             max_value = kvs::Math::Max( max_value, kvs::Real64( value[i] ) );
@@ -190,13 +190,13 @@ void TableObject::deepCopy( const TableObject& other )
     BaseClass::operator=( other );
     this->m_nrows = other.numberOfRows();
     this->m_ncolumns = other.numberOfColumns();
-    for ( size_t i = 0; i < m_table.columnSize(); i++ ) this->m_table.pushBackColumn( other.column(i).clone() );
-    for ( size_t i = 0; i < m_labels.size(); i++ ) this->m_labels.push_back( other.label(i) );
-    for ( size_t i = 0; i < m_min_values.size(); i++ ) this->m_min_values.push_back( other.minValue(i) );
-    for ( size_t i = 0; i < m_max_values.size(); i++ ) this->m_max_values.push_back( other.maxValue(i) );
-    for ( size_t i = 0; i < m_min_ranges.size(); i++ ) this->m_min_ranges.push_back( other.minRange(i) );
-    for ( size_t i = 0; i < m_max_ranges.size(); i++ ) this->m_max_ranges.push_back( other.maxRange(i) );
-    for ( size_t i = 0; i < m_inside_range_flags.size(); i++ ) this->m_inside_range_flags.push_back( other.insideRange(i) );
+    for ( std::size_t i = 0; i < m_table.columnSize(); i++ ) this->m_table.pushBackColumn( other.column(i).clone() );
+    for ( std::size_t i = 0; i < m_labels.size(); i++ ) this->m_labels.push_back( other.label(i) );
+    for ( std::size_t i = 0; i < m_min_values.size(); i++ ) this->m_min_values.push_back( other.minValue(i) );
+    for ( std::size_t i = 0; i < m_max_values.size(); i++ ) this->m_max_values.push_back( other.maxValue(i) );
+    for ( std::size_t i = 0; i < m_min_ranges.size(); i++ ) this->m_min_ranges.push_back( other.minRange(i) );
+    for ( std::size_t i = 0; i < m_max_ranges.size(); i++ ) this->m_max_ranges.push_back( other.maxRange(i) );
+    for ( std::size_t i = 0; i < m_inside_range_flags.size(); i++ ) this->m_inside_range_flags.push_back( other.insideRange(i) );
 }
 
 /*===========================================================================*/
@@ -212,15 +212,15 @@ void TableObject::print( std::ostream& os, const kvs::Indent& indent ) const
     os << indent << "Number of columns : " << this->numberOfColumns() << std::endl;
     os << indent << "Number of rows : " << this->numberOfRows() << std::endl;
     os << indent << "Labels for each column : ";
-    for ( size_t i = 0; i < this->labels().size(); i++ ) { os << "\"" << this->labels()[i] << "\", "; } os << std::endl;
+    for ( std::size_t i = 0; i < this->labels().size(); i++ ) { os << "\"" << this->labels()[i] << "\", "; } os << std::endl;
     os << indent << "Min. values for each column : ";
-    for ( size_t i = 0; i < this->minValues().size(); i++ ) { os << this->minValues()[i] << ", "; } os << std::endl;
+    for ( std::size_t i = 0; i < this->minValues().size(); i++ ) { os << this->minValues()[i] << ", "; } os << std::endl;
     os << indent << "Max. values for each column : ";
-    for ( size_t i = 0; i < this->maxValues().size(); i++ ) { os << this->maxValues()[i] << ", "; } os << std::endl;
+    for ( std::size_t i = 0; i < this->maxValues().size(); i++ ) { os << this->maxValues()[i] << ", "; } os << std::endl;
     os << indent << "Min. ranges for each column : ";
-    for ( size_t i = 0; i < this->minRanges().size(); i++ ) { os << this->minRanges()[i] << ", "; } os << std::endl;
+    for ( std::size_t i = 0; i < this->minRanges().size(); i++ ) { os << this->minRanges()[i] << ", "; } os << std::endl;
     os << indent << "Max. ranges for each column : ";
-    for ( size_t i = 0; i < this->maxRanges().size(); i++ ) { os << this->maxRanges()[i] << ", "; } os << std::endl;
+    for ( std::size_t i = 0; i < this->maxRanges().size(); i++ ) { os << this->maxRanges()[i] << ", "; } os << std::endl;
 }
 
 /*===========================================================================*/
@@ -241,8 +241,8 @@ bool TableObject::read( const std::string& filename )
     kvs::KVSMLTableObject kvsml;
     if ( !kvsml.read( filename ) ) { return false; }
 
-    const size_t ncolumns = kvsml.ncolumns();
-    for ( size_t i = 0; i < ncolumns; i++ )
+    const std::size_t ncolumns = kvsml.ncolumns();
+    for ( std::size_t i = 0; i < ncolumns; i++ )
     {
         const std::string label = kvsml.labelList().at(i);
         const kvs::AnyValueArray& column = kvsml.columnList().at(i);
@@ -271,8 +271,8 @@ bool TableObject::write( const std::string& filename, const bool ascii, const bo
     kvs::KVSMLTableObject kvsml;
     kvsml.setWritingDataType( ::GetWritingDataType( ascii, external ) );
 
-    const size_t ncolumns = this->numberOfColumns();
-    for ( size_t i = 0; i < ncolumns; i++ )
+    const std::size_t ncolumns = this->numberOfColumns();
+    for ( std::size_t i = 0; i < ncolumns; i++ )
     {
         const std::string label = this->labels().at(i);
         const kvs::AnyValueArray& column = this->column(i);
@@ -340,7 +340,7 @@ void TableObject::setTable( const kvs::AnyValueTable& table, const Labels& label
     ::Clear( m_max_ranges );
     ::Clear( m_inside_range_flags );
 
-    for ( size_t i = 0; i < table.columnSize(); i++ )
+    for ( std::size_t i = 0; i < table.columnSize(); i++ )
     {
         const std::string label = i < labels.size() ? labels[i] : "";
         this->addColumn( table.column(i), label );
@@ -354,7 +354,7 @@ void TableObject::setTable( const kvs::AnyValueTable& table, const Labels& label
  *  @param  value [in] minimum value
  */
 /*===========================================================================*/
-void TableObject::setMinValue( const size_t column_index, const kvs::Real64 value )
+void TableObject::setMinValue( const std::size_t column_index, const kvs::Real64 value )
 {
     if ( value > m_min_ranges[column_index] ) { this->setMinRange( column_index, value ); }
     m_min_values[column_index] = value;
@@ -367,7 +367,7 @@ void TableObject::setMinValue( const size_t column_index, const kvs::Real64 valu
  *  @param  value [in] maximum value
  */
 /*===========================================================================*/
-void TableObject::setMaxValue( const size_t column_index, const kvs::Real64 value )
+void TableObject::setMaxValue( const std::size_t column_index, const kvs::Real64 value )
 {
     if ( value < m_max_ranges[column_index] ) { this->setMaxRange( column_index, value ); }
     m_max_values[column_index] = value;
@@ -382,7 +382,7 @@ void TableObject::setMaxValue( const size_t column_index, const kvs::Real64 valu
  */
 /*===========================================================================*/
 void TableObject::setMinMaxValues(
-    const size_t column_index,
+    const std::size_t column_index,
     const kvs::Real64 min_value,
     const kvs::Real64 max_value )
 {
@@ -397,7 +397,7 @@ void TableObject::setMinMaxValues(
  *  @param  range [in] range value
  */
 /*===========================================================================*/
-void TableObject::setMinRange( const size_t column_index, const kvs::Real64 range )
+void TableObject::setMinRange( const std::size_t column_index, const kvs::Real64 range )
 {
     const kvs::Real64 min_value = this->minValue(column_index);
     const kvs::Real64 max_range = m_max_ranges[column_index];
@@ -408,8 +408,8 @@ void TableObject::setMinRange( const size_t column_index, const kvs::Real64 rang
     if ( kvs::Math::Equal( min_range_old, min_range_new ) ) return;
     m_min_ranges[column_index] = min_range_new;
 
-    const size_t nrows = this->numberOfRows();
-    const size_t ncolumns = this->numberOfColumns();
+    const std::size_t nrows = this->numberOfRows();
+    const std::size_t ncolumns = this->numberOfColumns();
     if ( m_table.columns().size() > 0 )
     {
         if ( min_range_new > min_range_old )
@@ -421,7 +421,7 @@ void TableObject::setMinRange( const size_t column_index, const kvs::Real64 rang
              *  (after)  |xxxAxxxxBooo*xxxxxx|  A: min_range_old, B: min_range_new
              */
             const kvs::AnyValueArray& column = this->column( column_index );
-            for ( size_t i = 0; i < nrows; i++ )
+            for ( std::size_t i = 0; i < nrows; i++ )
             {
                 const kvs::Real64 value = column[i].to<kvs::Real64>();
                 if (  min_range_old <= value && value <= min_range_new )
@@ -437,10 +437,10 @@ void TableObject::setMinRange( const size_t column_index, const kvs::Real64 rang
              *  (before) |xxxxxxxx+ooo*xxxxxx|  o: on, x: off, +: min_range, *: max_range
              *  (after)  |xxxAooooBooo*xxxxxx|  A: min_range, B: min_range_old
              */
-            for ( size_t i = 0; i < nrows; i++ )
+            for ( std::size_t i = 0; i < nrows; i++ )
             {
                 m_inside_range_flags[i] = 1;
-                for ( size_t j = 0; j < ncolumns; j++ )
+                for ( std::size_t j = 0; j < ncolumns; j++ )
                 {
                     const kvs::AnyValueArray& column = this->column( j );
                     const kvs::Real64 value = column[i].to<kvs::Real64>();
@@ -462,7 +462,7 @@ void TableObject::setMinRange( const size_t column_index, const kvs::Real64 rang
  *  @param  range [in] range value
  */
 /*===========================================================================*/
-void TableObject::setMaxRange( const size_t column_index, const kvs::Real64 range )
+void TableObject::setMaxRange( const std::size_t column_index, const kvs::Real64 range )
 {
     const kvs::Real64 min_range = m_min_ranges[column_index];
     const kvs::Real64 max_value = this->maxValue(column_index);
@@ -473,8 +473,8 @@ void TableObject::setMaxRange( const size_t column_index, const kvs::Real64 rang
     if ( kvs::Math::Equal( max_range_old, max_range_new ) ) return;
     m_max_ranges[column_index] = max_range_new;
 
-    const size_t nrows = this->numberOfRows();
-    const size_t ncolumns = this->numberOfColumns();
+    const std::size_t nrows = this->numberOfRows();
+    const std::size_t ncolumns = this->numberOfColumns();
     if ( m_table.columns().size() > 0 )
     {
         if ( max_range_new > max_range_old )
@@ -484,10 +484,10 @@ void TableObject::setMaxRange( const size_t column_index, const kvs::Real64 rang
              *  (before) |xxx*oooooooo+xxxxxx|  o: on, x: off, *: min_range, +: max_range
              *  (after)  |xxx*ooooooooAoooBxx|  A: max_range_old, B: max_range_new
              */
-            for ( size_t i = 0; i < nrows; i++ )
+            for ( std::size_t i = 0; i < nrows; i++ )
             {
                 m_inside_range_flags[i] = 1;
-                for ( size_t j = 0; j < ncolumns; j++ )
+                for ( std::size_t j = 0; j < ncolumns; j++ )
                 {
                     const kvs::AnyValueArray& column = this->column( j );
                     const kvs::Real64 value = column[i].to<kvs::Real64>();
@@ -508,7 +508,7 @@ void TableObject::setMaxRange( const size_t column_index, const kvs::Real64 rang
              *  (after)  |xxx*ooooBxxxAxxxxxx|  A: max_range_old, B: max_range_new
              */
             const kvs::AnyValueArray& column = this->column( column_index );
-            for ( size_t i = 0; i < nrows; i++ )
+            for ( std::size_t i = 0; i < nrows; i++ )
             {
                 const kvs::Real64 value = column[i].to<kvs::Real64>();
                 if (  max_range_new <= value && value <= max_range_old )
@@ -528,7 +528,7 @@ void TableObject::setMaxRange( const size_t column_index, const kvs::Real64 rang
  *  @param  max_range [in] maximum range value
  */
 /*===========================================================================*/
-void TableObject::setRange( const size_t column_index, const kvs::Real64 min_range, const kvs::Real64 max_range )
+void TableObject::setRange( const std::size_t column_index, const kvs::Real64 min_range, const kvs::Real64 max_range )
 {
     this->setMinRange( column_index, min_range );
     this->setMaxRange( column_index, max_range );
@@ -541,7 +541,7 @@ void TableObject::setRange( const size_t column_index, const kvs::Real64 min_ran
  *  @param  drange [in] distance of range value
  */
 /*===========================================================================*/
-void TableObject::moveMinRange( const size_t column_index, const kvs::Real64 drange )
+void TableObject::moveMinRange( const std::size_t column_index, const kvs::Real64 drange )
 {
     const kvs::Real64 min_range = this->minRange( column_index );
     this->setMinRange( column_index, min_range + drange );
@@ -554,7 +554,7 @@ void TableObject::moveMinRange( const size_t column_index, const kvs::Real64 dra
  *  @param  drange [in] distance of range value
  */
 /*===========================================================================*/
-void TableObject::moveMaxRange( const size_t column_index, const kvs::Real64 drange )
+void TableObject::moveMaxRange( const std::size_t column_index, const kvs::Real64 drange )
 {
     const kvs::Real64 max_range = this->maxRange( column_index );
     this->setMaxRange( column_index, max_range + drange );
@@ -567,7 +567,7 @@ void TableObject::moveMaxRange( const size_t column_index, const kvs::Real64 dra
  *  @param  drange [in] distance of range value
  */
 /*===========================================================================*/
-void TableObject::moveRange( const size_t column_index, const kvs::Real64 drange )
+void TableObject::moveRange( const std::size_t column_index, const kvs::Real64 drange )
 {
     const kvs::Real64 min_range = this->minRange( column_index );
     const kvs::Real64 max_range = this->maxRange( column_index );
@@ -598,7 +598,7 @@ void TableObject::moveRange( const size_t column_index, const kvs::Real64 drange
  *  @param  column_index [in] column index
  */
 /*===========================================================================*/
-void TableObject::resetRange( const size_t column_index )
+void TableObject::resetRange( const std::size_t column_index )
 {
     this->setMinRange( column_index, this->minValue(column_index) );
     this->setMaxRange( column_index, this->maxValue(column_index) );
@@ -611,8 +611,8 @@ void TableObject::resetRange( const size_t column_index )
 /*===========================================================================*/
 void TableObject::resetRange()
 {
-    const size_t ncolumns = this->numberOfColumns();
-    for ( size_t i = 0; i < ncolumns; i++ )
+    const std::size_t ncolumns = this->numberOfColumns();
+    for ( std::size_t i = 0; i < ncolumns; i++ )
     {
         m_max_ranges[i] = this->maxValue(i);
         m_min_ranges[i] = this->minValue(i);

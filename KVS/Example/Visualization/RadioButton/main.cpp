@@ -44,7 +44,7 @@ int main( int argc, char** argv )
     screen.addEvent( &paint_event );
 
     // Button margin.
-    const size_t margin = 10;
+    const std::size_t margin = 10;
 
     // Button for changing triangle color to gray.
     kvs::RadioButton gray( &screen );

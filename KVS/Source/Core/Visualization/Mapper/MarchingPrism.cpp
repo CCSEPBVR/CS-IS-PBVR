@@ -155,8 +155,8 @@ void MarchingPrism::extract_surfaces_with_duplication(
     const kvs::UInt32* connections = volume->connections().data();
 
     // Extract surfaces.
-    size_t index = 0;
-    size_t local_index[6];
+    std::size_t index = 0;
+    std::size_t local_index[6];
     for ( kvs::UInt32 cell = 0; cell < ncells; ++cell, index += 6 )
     {
         // Calculate the indices of the target cell.
@@ -168,12 +168,12 @@ void MarchingPrism::extract_surfaces_with_duplication(
         local_index[5] = connections[ index + 5 ];
 
         // Calculate the index of the reference table.
-        const size_t table_index = this->calculate_table_index<T>( local_index );
+        const std::size_t table_index = this->calculate_table_index<T>( local_index );
         if ( table_index == 0 ) continue;
         if ( table_index == 63 ) continue;
 
         // Calculate the triangle polygons.
-        for ( size_t i = 0; MarchingPrismTable::TriangleID[table_index][i] != -1; i += 3 )
+        for ( std::size_t i = 0; MarchingPrismTable::TriangleID[table_index][i] != -1; i += 3 )
         {
             // Refer the edge IDs from the TriangleTable by using the table_index.
             const int e0 = MarchingPrismTable::TriangleID[table_index][i+0];
@@ -237,7 +237,7 @@ size_t MarchingPrism::calculate_table_index( const size_t* local_index ) const
     const T* const values = static_cast<const T*>( BaseClass::volume()->values().data() );
     const double isolevel = m_isolevel;
 
-    size_t table_index = 0;
+    std::size_t table_index = 0;
     if ( static_cast<double>( values[ local_index[0] ] ) > isolevel ) { table_index |=   1; }
     if ( static_cast<double>( values[ local_index[1] ] ) > isolevel ) { table_index |=   2; }
     if ( static_cast<double>( values[ local_index[2] ] ) > isolevel ) { table_index |=   4; }
@@ -264,8 +264,8 @@ const kvs::Vec3 MarchingPrism::interpolate_vertex(
     const kvs::ValueArray<T>& values = BaseClass::volume()->values().asValueArray<T>();
     const kvs::ValueArray<kvs::Real32>& coords = BaseClass::volume()->coords();
 
-    const size_t coord0_index = 3 * vertex0;
-    const size_t coord1_index = 3 * vertex1;
+    const std::size_t coord0_index = 3 * vertex0;
+    const std::size_t coord1_index = 3 * vertex1;
 
     auto v0 = static_cast<double>( values[ vertex0 ] );
     auto v1 = static_cast<double>( values[ vertex1 ] );

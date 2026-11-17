@@ -143,7 +143,7 @@ size_t Tiff::get_width() const
         return 0;
     }
 
-    size_t ret = 0;
+    std::size_t ret = 0;
     switch( entry->type() )
     {
     case kvs::tiff::Short:
@@ -176,7 +176,7 @@ size_t Tiff::get_height() const
         return 0;
     }
 
-    size_t ret = 0;
+    std::size_t ret = 0;
     switch( entry->type() )
     {
     case kvs::tiff::Short:
@@ -205,13 +205,13 @@ size_t Tiff::get_bits_per_sample() const
     // Default = 1.
     if ( entry == m_ifd.entryList().end() )
     {
-        const size_t default_value = 1;
+        const std::size_t default_value = 1;
         return default_value;
     }
 
     kvs::ValueArray<kvs::UInt16> values = entry->values().asValueArray<kvs::UInt16>();
-    size_t ret = 0;
-    for ( size_t i = 0; i < entry->count(); i++ )
+    std::size_t ret = 0;
+    for ( std::size_t i = 0; i < entry->count(); i++ )
     {
         ret += values[i]; // kvs::tiff::Short
     }
@@ -232,7 +232,7 @@ size_t Tiff::get_samples_per_pixel() const
     // Default = 1.
     if ( entry == m_ifd.entryList().end() )
     {
-        const size_t default_value = 1;
+        const std::size_t default_value = 1;
         return default_value;
     }
 
@@ -281,11 +281,11 @@ size_t Tiff::get_rows_per_strip() const
     // Default = 2**32 - 1.
     if ( entry == m_ifd.entryList().end() )
     {
-        const size_t default_value = ( kvs::UInt64( 1 ) << 32 ) - 1;
+        const std::size_t default_value = ( kvs::UInt64( 1 ) << 32 ) - 1;
         return default_value;
     }
 
-    size_t ret = 0;
+    std::size_t ret = 0;
     switch( entry->type() )
     {
     case kvs::tiff::Short:
@@ -331,7 +331,7 @@ size_t Tiff::get_compression_mode() const
     // Default = 1 (non compression).
     if ( entry == m_ifd.entryList().end() )
     {
-        const size_t default_value = 1;
+        const std::size_t default_value = 1;
         return default_value;
     }
 
@@ -380,8 +380,8 @@ Tiff::ColorMode Tiff::get_color_mode() const
 {
     Tiff::ColorMode color_mode = Tiff::UnknownColorMode;
 
-    const size_t bps = ( m_bits_per_sample > 0 ) ? m_bits_per_sample : this->get_bits_per_sample();
-    const size_t spp = this->get_samples_per_pixel();
+    const std::size_t bps = ( m_bits_per_sample > 0 ) ? m_bits_per_sample : this->get_bits_per_sample();
+    const std::size_t spp = this->get_samples_per_pixel();
     if ( spp == 1 )
     {
         switch ( bps )
@@ -400,7 +400,7 @@ Tiff::ColorMode Tiff::get_color_mode() const
         }
     }
 
-    size_t photometric_interpretation = this->get_photometirc_interpretation();
+    std::size_t photometric_interpretation = this->get_photometirc_interpretation();
     switch ( photometric_interpretation )
     {
     case 0:
@@ -424,7 +424,7 @@ kvs::AnyValueArray Tiff::get_raw_data( std::ifstream& ifs ) const
 
     const kvs::AnyValueArray offsets = this->get_strip_offsets();
     const kvs::AnyValueArray bytes   = this->get_strip_bytes();
-    const size_t             count   = offsets.size();
+    const std::size_t             count   = offsets.size();
 
     kvs::ValueArray<kvs::UInt32> offset = offsets.asValueArray<kvs::UInt32>();
     kvs::ValueArray<kvs::UInt32> byte = bytes.asValueArray<kvs::UInt32>();
@@ -433,7 +433,7 @@ kvs::AnyValueArray Tiff::get_raw_data( std::ifstream& ifs ) const
     {
         raw_data.allocate<kvs::UInt8>( m_width * m_height );
         kvs::UInt8* data = reinterpret_cast<kvs::UInt8*>( raw_data.data() );
-        for ( size_t i = 0; i < count; i++ )
+        for ( std::size_t i = 0; i < count; i++ )
         {
             ifs.seekg( offset[i], std::ios::beg );
             ifs.read( reinterpret_cast<char*>( data ), byte[i] );
@@ -445,7 +445,7 @@ kvs::AnyValueArray Tiff::get_raw_data( std::ifstream& ifs ) const
     {
         raw_data.allocate<kvs::UInt16>( m_width * m_height );
         kvs::UInt16* data = reinterpret_cast<kvs::UInt16*>( raw_data.data() );
-        for ( size_t i = 0; i < count; i++ )
+        for ( std::size_t i = 0; i < count; i++ )
         {
             ifs.seekg( offset[i], std::ios::beg );
             ifs.read( reinterpret_cast<char*>( data ), byte[i] );
@@ -457,7 +457,7 @@ kvs::AnyValueArray Tiff::get_raw_data( std::ifstream& ifs ) const
     {
         raw_data.allocate<kvs::UInt8>( m_width * m_height * 3 );
         kvs::UInt8* data = reinterpret_cast<kvs::UInt8*>( raw_data.data() );
-        for ( size_t i = 0; i < count; i++ )
+        for ( std::size_t i = 0; i < count; i++ )
         {
             ifs.seekg( offset[i], std::ios::beg );
             ifs.read( reinterpret_cast<char*>( data ), byte[i] );

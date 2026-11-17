@@ -201,8 +201,8 @@ bool USGSMesh::read_header( FILE* fp )
     const float min_longitude = BaseClass::area().minLongitude();
     const float latitude_interval = BaseClass::latitudeInterval();
     const float longitude_interval = BaseClass::longitudeInterval();
-    const size_t latitude_dimension = BaseClass::latitudeDimension();
-    const size_t longitude_dimension = BaseClass::longitudeDimension();
+    const std::size_t latitude_dimension = BaseClass::latitudeDimension();
+    const std::size_t longitude_dimension = BaseClass::longitudeDimension();
     kvs::gis::Area area = BaseClass::area();
     area.setMinLatitude( max_latitude - ( latitude_dimension - 1 ) * latitude_interval );
     area.setMaxLongitude( min_longitude + ( longitude_dimension - 1 ) * longitude_interval );
@@ -222,8 +222,8 @@ bool USGSMesh::read_header( FILE* fp )
 bool USGSMesh::read_data( FILE* fp, const kvs::gis::Area& area )
 {
     // Read feet data.
-    const size_t latitude_dimension = BaseClass::latitudeDimension();
-    const size_t longitude_dimension = BaseClass::longitudeDimension();
+    const std::size_t latitude_dimension = BaseClass::latitudeDimension();
+    const std::size_t longitude_dimension = BaseClass::longitudeDimension();
     short* data = new short [ latitude_dimension * longitude_dimension ];
     ::Read( data, sizeof(short) * latitude_dimension * longitude_dimension, 1, fp );
     fclose( fp );
@@ -243,17 +243,17 @@ bool USGSMesh::read_data( FILE* fp, const kvs::gis::Area& area )
 
     const float latitude_interval = BaseClass::latitudeInterval();
     const float longitude_interval = BaseClass::longitudeInterval();
-    const size_t lat_size = kvs::Math::Round( ( range[1] - range[0] ) / latitude_interval  ) + 1;
-    const size_t lon_size = kvs::Math::Round( ( range[3] - range[2] ) / longitude_interval ) + 1;
+    const std::size_t lat_size = kvs::Math::Round( ( range[1] - range[0] ) / latitude_interval  ) + 1;
+    const std::size_t lon_size = kvs::Math::Round( ( range[3] - range[2] ) / longitude_interval ) + 1;
     BaseClass::allocate_data( lat_size, lon_size );
 
     // Set data.
-    size_t row = 0;
-    size_t col = 0;
-    for ( size_t i = 0; i < latitude_dimension; i++ )
+    std::size_t row = 0;
+    std::size_t col = 0;
+    for ( std::size_t i = 0; i < latitude_dimension; i++ )
     {
         const float latitude = BaseClass::area().maxLatitude() - latitude_interval * i;
-        for ( size_t j = 0; j < longitude_dimension; j++ )
+        for ( std::size_t j = 0; j < longitude_dimension; j++ )
         {
             const float longitude = BaseClass::area().minLongitude() + longitude_interval * j;
             if ( ( kvs::Math::Equal( range[0], latitude  ) || range[0] < latitude  ) &&
@@ -261,7 +261,7 @@ bool USGSMesh::read_data( FILE* fp, const kvs::gis::Area& area )
                  ( kvs::Math::Equal( range[2], longitude ) || range[2] < longitude ) &&
                  ( kvs::Math::Equal( range[3], longitude ) || range[3] > longitude ) )
             {
-                const size_t index = longitude_dimension * i + j;
+                const std::size_t index = longitude_dimension * i + j;
                 short h = data[index];
                 kvs::Endian::Swap( &h );
 

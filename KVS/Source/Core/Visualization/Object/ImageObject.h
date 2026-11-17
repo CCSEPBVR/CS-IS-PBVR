@@ -40,15 +40,15 @@ public:
 
 private:
     ImageObject::PixelType m_type = UnknownPixelType; ///< pixel type
-    size_t m_width = 0; ///< image width
-    size_t m_height = 0; ///< image height
+    std::size_t m_width = 0; ///< image width
+    std::size_t m_height = 0; ///< image height
     kvs::ValueArray<kvs::UInt8> m_pixels{}; ///< pixel data
 
 public:
     ImageObject(): BaseClass( Image ) {}
     ImageObject(
-        const size_t width,
-        const size_t height,
+        const std::size_t width,
+        const std::size_t height,
         const kvs::ValueArray<kvs::UInt8>& pixels,
         const PixelType type = Color24 );
     virtual ~ImageObject() = default;
@@ -60,19 +60,19 @@ public:
     bool write( const std::string& filename, const bool ascii = true, const bool external = false ) const;
 
     PixelType pixelType() const { return m_type; }
-    size_t width() const { return m_width; }
-    size_t height() const { return m_height; }
+    std::size_t width() const { return m_width; }
+    std::size_t height() const { return m_height; }
     const kvs::ValueArray<kvs::UInt8>& pixels() const { return m_pixels; }
-    size_t bitsPerPixel() const { return m_type; }
-    size_t bytesPerPixel() const { return m_type >> 3; }
-    size_t numberOfChannels() const;
+    std::size_t bitsPerPixel() const { return m_type; }
+    std::size_t bytesPerPixel() const { return m_type >> 3; }
+    std::size_t numberOfChannels() const;
 
-    void setSize( const size_t width, const size_t height ) { m_width = width; m_height = height; }
+    void setSize( const std::size_t width, const std::size_t height ) { m_width = width; m_height = height; }
     void setPixels( const kvs::ValueArray<kvs::UInt8>& pixels, const PixelType type = Color24 ) { m_pixels = pixels; m_type = type; }
 
 public:
     KVS_DEPRECATED( const kvs::ValueArray<kvs::UInt8>& data() const ) { return this->pixels(); }
-    KVS_DEPRECATED( size_t nchannels() const ) { return this->numberOfChannels(); }
+    KVS_DEPRECATED( std::size_t nchannels() const ) { return this->numberOfChannels(); }
     KVS_DEPRECATED( friend std::ostream& operator << ( std::ostream& os, const ImageObject& object ) );
     KVS_DEPRECATED( PixelType type() const ) { return this->pixelType(); }
 };

@@ -58,7 +58,7 @@ bool XYZDef::read( std::string line, std::ifstream& ifs )
         this->mapping = Levels;
         this->values.allocate( this->num );
 
-        size_t counter = 0;
+        std::size_t counter = 0;
         if ( !t.isLast() )
         {
             while ( !t.isLast() )

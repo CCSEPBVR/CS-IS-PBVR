@@ -48,7 +48,7 @@ kvs::Real64 GammaFunction::log( const kvs::Real64 x ) const
     const kvs::Real64 temp = ( x + 5.5 ) - ( x + 0.5 ) * std::log( x + 5.5 );
     kvs::Real64 ser = 1.000000000190015;
     kvs::Real64 y = x;
-    for ( size_t i = 0; i < 6; i++ ) { ser += coef[i] / ( y + 1.0 ); y = y + 1.0; }
+    for ( std::size_t i = 0; i < 6; i++ ) { ser += coef[i] / ( y + 1.0 ); y = y + 1.0; }
 
     return -1.0 * temp + std::log( 2.5066282746310005 * ser / x );
 }
@@ -191,12 +191,12 @@ kvs::Real64 GammaFunction::series( const kvs::Real64 a, const kvs::Real64 x ) co
     KVS_ASSERT( a > 0.0 );
     KVS_ASSERT( x >= 0.0 );
 
-    const size_t max_iterations = 500;
+    const std::size_t max_iterations = 500;
     const kvs::Real64 epsilon = 3.0e-7;
     kvs::Real64 del = 1.0 / a;
     kvs::Real64 sum = del;
     kvs::Real64 ap = a;
-    for ( size_t i = 1; i <= max_iterations; i++ )
+    for ( std::size_t i = 1; i <= max_iterations; i++ )
     {
         ++ap;
         del *= x / ap;
@@ -213,14 +213,14 @@ kvs::Real64 GammaFunction::continued_fraction( const kvs::Real64 a, const kvs::R
     KVS_ASSERT( a > 0.0 );
     KVS_ASSERT( x >= 0.0 );
 
-    const size_t max_iterations = 500;
+    const std::size_t max_iterations = 500;
     const kvs::Real64 epsilon = 3.0e-7;
     const kvs::Real64 fpmin = 1.0e-30;
     kvs::Real64 b = x + 1.0 - a;
     kvs::Real64 c = 1.0 / fpmin;
     kvs::Real64 d = 1.0 / b;
     kvs::Real64 h = d;
-    for ( size_t i = 1; i <= max_iterations; i++ )
+    for ( std::size_t i = 1; i <= max_iterations; i++ )
     {
         kvs::Real64 an = i * ( a - i );
         b += 2.0;

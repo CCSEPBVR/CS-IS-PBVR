@@ -1,0 +1,47 @@
+#!/bin/sh
+#PBS -q sc16
+#PBS -l select=1:ncpus=40:mpiprocs=1:ompthreads=40
+#PBS -l walltime=00:30:00
+#PBS -N ens_permember
+#PBS -j oe
+#PBS -P job
+
+# Per-ensemble particle data (hydrogen charge density).
+#   - One MPI rank (base generate_particles); 40 OpenMP threads.
+#   - main.cpp loops 4 ensemble members: member m -> kd = 1 + m (kd = 1..4),
+#     the 256^3 field is regenerated per member and emitted as time step m.
+#   - OutputParticles encodes the time step in the file name, so each member
+#     lands in a separate particle file under a single PARTICLE_DIR.
+
+set -eu
+
+CASE_DIR=$PBS_O_WORKDIR
+cd "$CASE_DIR"
+
+. /etc/profile.d/modules.sh
+module purge
+module load cuda/11.4
+module load gnu/cur
+module load intel/2023.2.1
+module load mpt/2.23-ga
+
+export OMP_NUM_THREADS=40
+export KMP_AFFINITY=disabled
+
+export VIS_PARAM_DIR="$CASE_DIR"
+export PARTICLE_DIR="$CASE_DIR/particle_out"
+
+mkdir -p "$PARTICLE_DIR"
+# reset previous outputs for a clean run
+rm -f "$PARTICLE_DIR"/* 2>/dev/null || true
+rm -f "$CASE_DIR"/history_0* "$CASE_DIR"/default_0* "$CASE_DIR"/timer.out.* "$CASE_DIR"/state.txt 2>/dev/null || true
+
+echo "CASE=ens_permember (4 members, kd=1..4, 256^3, single PARTICLE_DIR)"
+echo "VIS_PARAM_DIR=$VIS_PARAM_DIR"
+echo "PARTICLE_DIR=$PARTICLE_DIR"
+echo "COMMAND=mpirun -n 1 omplace ./run"
+
+mpirun -n 1 omplace ./run
+
+echo "--- produced particle files (one per ensemble member) ---"
+ls -1 "$PARTICLE_DIR"

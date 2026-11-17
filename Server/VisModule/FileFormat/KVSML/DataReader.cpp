@@ -43,7 +43,7 @@ namespace kvsml
 /*===========================================================================*/
 const bool ReadCoordData(
     const vismodule::XMLNode::SuperClass* parent,
-    const size_t ncoords,
+    const std::size_t ncoords,
     vismodule::ValueArray<vismodule::Real32>* coords )
 {
     // <Coord>
@@ -57,8 +57,8 @@ const bool ReadCoordData(
         }
 
         // <DataArray>
-        const size_t dimension = 3;
-        const size_t nelements = ncoords * dimension;
+        const std::size_t dimension = 3;
+        const std::size_t nelements = ncoords * dimension;
         vismodule::kvsml::DataArrayTag data_tag;
         if ( !data_tag.read( coord_tag.node(), nelements, coords ) )
         {
@@ -83,7 +83,7 @@ const bool ReadCoordData(
 /*===========================================================================*/
 const bool ReadColorData(
     const vismodule::XMLNode::SuperClass* parent,
-    const size_t ncolors,
+    const std::size_t ncolors,
     vismodule::ValueArray<vismodule::UInt8>* colors )
 {
     // <Color>
@@ -100,8 +100,8 @@ const bool ReadColorData(
         if ( vismodule::XMLNode::FindChildNode( color_tag.node(), "DataValue" ) )
         {
             // In this case, 'ncolors' is equal to 1.
-            const size_t nchannels = 3; // RGB
-            const size_t nelements = nchannels; // = 1 * nchannels
+            const std::size_t nchannels = 3; // RGB
+            const std::size_t nelements = nchannels; // = 1 * nchannels
             vismodule::kvsml::DataValueTag data_tag;
             if ( !data_tag.read( color_tag.node(), nelements, colors ) )
             {
@@ -114,8 +114,8 @@ const bool ReadColorData(
         // <DataArray>
         else
         {
-            const size_t nchannels = 3; // RGB
-            const size_t nelements = ncolors * nchannels;
+            const std::size_t nchannels = 3; // RGB
+            const std::size_t nelements = ncolors * nchannels;
             vismodule::kvsml::DataArrayTag data_tag;
             if ( !data_tag.read( color_tag.node(), nelements, colors ) )
             {
@@ -141,7 +141,7 @@ const bool ReadColorData(
 /*===========================================================================*/
 const bool ReadNormalData(
     const vismodule::XMLNode::SuperClass* parent,
-    const size_t nnormals,
+    const std::size_t nnormals,
     vismodule::ValueArray<vismodule::Real32>* normals )
 {
     // <Normal>
@@ -158,8 +158,8 @@ const bool ReadNormalData(
         if ( vismodule::XMLNode::FindChildNode( normal_tag.node(), "DataValue" ) )
         {
             // In this case, 'nnormals' is equal to 1.
-            const size_t dimension = 3;
-            const size_t nelements = dimension; // = 1 * dimension
+            const std::size_t dimension = 3;
+            const std::size_t nelements = dimension; // = 1 * dimension
             vismodule::kvsml::DataValueTag data_tag;
             if ( !data_tag.read( normal_tag.node(), nelements, normals ) )
             {
@@ -172,8 +172,8 @@ const bool ReadNormalData(
         // <DataArray>
         else
         {
-            const size_t dimension = 3;
-            const size_t nelements = nnormals * dimension;
+            const std::size_t dimension = 3;
+            const std::size_t nelements = nnormals * dimension;
             vismodule::kvsml::DataArrayTag data_tag;
             if ( !data_tag.read( normal_tag.node(), nelements, normals ) )
             {
@@ -199,7 +199,7 @@ const bool ReadNormalData(
 /*===========================================================================*/
 const bool ReadSizeData(
     const vismodule::XMLNode::SuperClass* parent,
-    const size_t nsizes,
+    const std::size_t nsizes,
     vismodule::ValueArray<vismodule::Real32>* sizes )
 {
     // <Size>
@@ -215,7 +215,7 @@ const bool ReadSizeData(
         // <DataValue>
         if ( vismodule::XMLNode::FindChildNode( size_tag.node(), "DataValue" ) )
         {
-            const size_t nelements = 1;
+            const std::size_t nelements = 1;
             vismodule::kvsml::DataValueTag data_tag;
             if ( !data_tag.read( size_tag.node(), nelements, sizes ) )
             {
@@ -228,7 +228,7 @@ const bool ReadSizeData(
         // <DataArray>
         else
         {
-            const size_t nelements = nsizes;
+            const std::size_t nelements = nsizes;
             vismodule::kvsml::DataArrayTag data_tag;
             if ( !data_tag.read( size_tag.node(), nelements, sizes ) )
             {
@@ -254,7 +254,7 @@ const bool ReadSizeData(
 /*===========================================================================*/
 const bool ReadConnectionData(
     const vismodule::XMLNode::SuperClass* parent,
-    const size_t nconnections,
+    const std::size_t nconnections,
     vismodule::ValueArray<vismodule::UInt32>* connections )
 {
     // <Connection>
@@ -268,7 +268,7 @@ const bool ReadConnectionData(
         }
 
         // <DataArray>
-        const size_t nelements = nconnections;
+        const std::size_t nelements = nconnections;
         vismodule::kvsml::DataArrayTag data_tag;
         if ( !data_tag.read( connection_tag.node(), nelements, connections ) )
         {
@@ -293,7 +293,7 @@ const bool ReadConnectionData(
 /*===========================================================================*/
 const bool ReadOpacityData(
     const vismodule::XMLNode::SuperClass* parent,
-    const size_t nopacities,
+    const std::size_t nopacities,
     vismodule::ValueArray<vismodule::UInt8>* opacities )
 {
     // <Opacity>
@@ -309,7 +309,7 @@ const bool ReadOpacityData(
         // <DataValue>
         if ( vismodule::XMLNode::FindChildNode( opacity_tag.node(), "DataValue" ) )
         {
-            const size_t nelements = 1;
+            const std::size_t nelements = 1;
             vismodule::kvsml::DataValueTag data_tag;
             if ( !data_tag.read( opacity_tag.node(), nelements, opacities ) )
             {
@@ -322,7 +322,7 @@ const bool ReadOpacityData(
         // <DataArray>
         else
         {
-            const size_t nelements = nopacities;
+            const std::size_t nelements = nopacities;
             vismodule::kvsml::DataArrayTag data_tag;
             if ( !data_tag.read( opacity_tag.node(), nelements, opacities ) )
             {

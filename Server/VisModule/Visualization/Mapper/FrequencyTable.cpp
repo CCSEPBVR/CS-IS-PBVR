@@ -72,7 +72,7 @@ const vismodule::Real64 FrequencyTable::maxRange() const
  *  @return max. counts
  */
 /*==========================================================================*/
-const size_t FrequencyTable::maxCount() const
+const std::size_t FrequencyTable::maxCount() const
 {
     return m_max_count;
 }
@@ -188,7 +188,7 @@ void FrequencyTable::create( const vismodule::VolumeObjectBase& volume )
  */
 /*==========================================================================*/
 /*
-void FrequencyTable::create( const vismodule::ImageObject* image, const size_t channel )
+void FrequencyTable::create( const vismodule::ImageObject* image, const std::size_t channel )
 {
     // Calculate the min/max range value and the number of bins.
     this->calculate_range( image );
@@ -208,7 +208,7 @@ void FrequencyTable::create( const vismodule::ImageObject* image, const size_t c
  *  @return counts
  */
 /*==========================================================================*/
-const vismodule::UInt64 FrequencyTable::operator [] ( const size_t index ) const
+const vismodule::UInt64 FrequencyTable::operator [] ( const std::size_t index ) const
 {
     return m_bin[ index ];
 }
@@ -220,7 +220,7 @@ const vismodule::UInt64 FrequencyTable::operator [] ( const size_t index ) const
  *  @return counts
  */
 /*==========================================================================*/
-const vismodule::UInt64 FrequencyTable::at( const size_t index ) const
+const vismodule::UInt64 FrequencyTable::at( const std::size_t index ) const
 {
     return m_bin.at( index );
 }
@@ -382,7 +382,7 @@ void FrequencyTable::count_bin( const vismodule::VolumeObjectBase& volume )
  *  @param  channel [in] color element channel (0, 1, 2, 3)
  */
 /*==========================================================================*/
-/*void FrequencyTable::count_bin( const vismodule::ImageObject* image, const size_t channel )
+/*void FrequencyTable::count_bin( const vismodule::ImageObject* image, const std::size_t channel )
 {
     switch ( image->type() )
     {

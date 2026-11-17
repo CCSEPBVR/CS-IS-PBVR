@@ -13,7 +13,7 @@ namespace kvs
 namespace python
 {
 
-Tuple::Tuple( const size_t size ):
+Tuple::Tuple( const std::size_t size ):
     kvs::python::Object( PyTuple_New( size ) )
 {
 }
@@ -60,7 +60,7 @@ Tuple::Tuple(
     this->set( 3, object3 );
 }
 
-void Tuple::set( const size_t index, const kvs::python::Object& object )
+void Tuple::set( const std::size_t index, const kvs::python::Object& object )
 {
     object.increment();
     PyTuple_SetItem( get(), Py_ssize_t( index ), object.get() );
@@ -71,7 +71,7 @@ size_t Tuple::size() const
     return static_cast<size_t>( PyTuple_Size( get() ) );
 }
 
-kvs::python::Object Tuple::operator [] ( const size_t index ) const
+kvs::python::Object Tuple::operator [] ( const std::size_t index ) const
 {
     const bool borrowed = true;
     return kvs::python::Object( PyTuple_GetItem( get(), Py_ssize_t( index ) ), borrowed );

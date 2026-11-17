@@ -22,20 +22,20 @@ namespace
 template <typename ValueType>
 inline void Bind(
     const kvs::UnstructuredVolumeObject* volume,
-    const size_t index,
+    const std::size_t index,
     kvs::Real32* cell_values,
     kvs::Vec3* cell_coords )
 {
-    const size_t nnodes = volume->numberOfCellNodes();
-    const size_t veclen = volume->veclen();
+    const std::size_t nnodes = volume->numberOfCellNodes();
+    const std::size_t veclen = volume->veclen();
 
     const kvs::UInt32* connections = volume->connections().data() + nnodes * index;
     const kvs::Real32* coords = volume->coords().data();
     const ValueType* values = static_cast<const ValueType*>( volume->values().data() );
-    for ( size_t j = 0; j < nnodes; j++ )
+    for ( std::size_t j = 0; j < nnodes; j++ )
     {
         const kvs::UInt32 node_index = *( connections++ );
-        for ( size_t i = 0; i < veclen; i++ )
+        for ( std::size_t i = 0; i < veclen; i++ )
         {
             cell_values[ i * nnodes + j ] = kvs::Real32( values[ veclen * node_index + i ] );
         }
@@ -63,9 +63,9 @@ CellBase::CellBase(
     m_local_point( 0, 0, 0 ),
     m_reference_volume( volume )
 {
-    const size_t dimension = 3;
-    const size_t nnodes = m_nnodes;
-    const size_t veclen = m_veclen;
+    const std::size_t dimension = 3;
+    const std::size_t nnodes = m_nnodes;
+    const std::size_t veclen = m_veclen;
     try
     {
         m_coords = new kvs::Vec3 [nnodes];
@@ -165,7 +165,7 @@ bool CellBase::containsLocalPoint( const kvs::Vec3& local ) const
 /*===========================================================================*/
 kvs::Vec3 CellBase::globalPoint() const
 {
-    const size_t nnodes = m_nnodes;
+    const std::size_t nnodes = m_nnodes;
     const float* N = m_interpolation_functions;
     const kvs::Vec3* V = m_coords;
     return this->interpolateCoord( V, N, nnodes );
@@ -184,9 +184,9 @@ kvs::Vec3 CellBase::globalToLocal( const kvs::Vec3& global ) const
     // Calculate the coordinate of 'global' in the local coordinate
     // by using Newton-Raphson method.
     const float TinyValue = static_cast<float>( 1.e-6 );
-    const size_t MaxLoop = 100;
+    const std::size_t MaxLoop = 100;
     kvs::Vec3 x0( 0.25f, 0.25f, 0.25f ); // Initial point in local coordinate.
-    for ( size_t i = 0; i < MaxLoop; i++ )
+    for ( std::size_t i = 0; i < MaxLoop; i++ )
     {
         const kvs::Vec3 X0( this->localToGlobal( x0 ) );
         const kvs::Vec3 dX( X - X0 );
@@ -281,9 +281,9 @@ kvs::Mat3 CellBase::JacobiMatrix() const
 /*===========================================================================*/
 kvs::Vec3 CellBase::center() const
 {
-    const size_t nnodes = this->numberOfCellNodes();
+    const std::size_t nnodes = this->numberOfCellNodes();
     kvs::Vec3 center = kvs::Vec3::Zero();
-    for ( size_t i = 0; i < nnodes; i ++ ) { center += m_coords[i]; }
+    for ( std::size_t i = 0; i < nnodes; i ++ ) { center += m_coords[i]; }
     return center /= nnodes;
 }
 
@@ -296,7 +296,7 @@ kvs::Real32 CellBase::scalar() const
 {
     KVS_ASSERT( m_veclen == 1 );
 
-    const size_t nnodes = m_nnodes;
+    const std::size_t nnodes = m_nnodes;
     const kvs::Real32* N = m_interpolation_functions;
     const kvs::Real32* S = m_values;
     return this->interpolateValue( S, N, nnodes );
@@ -311,7 +311,7 @@ kvs::Vec3 CellBase::vector() const
 {
     KVS_ASSERT( m_veclen == 3 );
 
-    const size_t nnodes = m_nnodes;
+    const std::size_t nnodes = m_nnodes;
     const kvs::Real32* N = m_interpolation_functions;
     const kvs::Real32* Su = m_values;
     const kvs::Real32* Sv = Su + nnodes;
@@ -438,8 +438,8 @@ bool CellBase::containsInBounds( const kvs::Vec3& global ) const
 {
     kvs::Vec3 min_coord = this->coords()[0];
     kvs::Vec3 max_coord = this->coords()[0];
-    const size_t nnodes = this->numberOfCellNodes();
-    for ( size_t i = 0; i < nnodes; i++ )
+    const std::size_t nnodes = this->numberOfCellNodes();
+    for ( std::size_t i = 0; i < nnodes; i++ )
     {
         const kvs::Vec3 v = this->coords()[i];
         min_coord.x() = kvs::Math::Min( min_coord.x(), v.x() );
@@ -469,10 +469,10 @@ bool CellBase::containsInBounds( const kvs::Vec3& global ) const
 kvs::Real32 CellBase::interpolateValue(
     const kvs::Real32* values,
     const kvs::Real32* weights,
-    const size_t nnodes ) const
+    const std::size_t nnodes ) const
 {
     kvs::Real32 value = 0;
-    for ( size_t i = 0; i < nnodes; ++i )
+    for ( std::size_t i = 0; i < nnodes; ++i )
     {
         value += *values * *weights;
         ++values; ++weights;
@@ -492,10 +492,10 @@ kvs::Real32 CellBase::interpolateValue(
 kvs::Vec3 CellBase::interpolateCoord(
     const kvs::Vec3* coords,
     const kvs::Real32* weights,
-    const size_t nnodes ) const
+    const std::size_t nnodes ) const
 {
     kvs::Vec3 coord = kvs::Vec3::Zero();
-    for ( size_t i = 0; i < nnodes; ++i )
+    for ( std::size_t i = 0; i < nnodes; ++i )
     {
         coord += *coords * *weights;
         ++coords; ++weights;

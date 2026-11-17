@@ -41,31 +41,31 @@ public:
 
 public:
     BitImage() = default;
-    BitImage( const size_t width, const size_t height, const bool bit = true );
-    BitImage( const size_t width, const size_t height, const kvs::ValueArray<kvs::UInt8>& data );
+    BitImage( const std::size_t width, const std::size_t height, const bool bit = true );
+    BitImage( const std::size_t width, const std::size_t height, const kvs::ValueArray<kvs::UInt8>& data );
     BitImage( const kvs::GrayImage& image, BinarizationMethod method = PTile() );
     explicit BitImage( const std::string& filename );
 
-    bool create( const size_t width, const size_t height, const bool bit = true );
-    bool create( const size_t width, const size_t height, const kvs::ValueArray<kvs::UInt8>& pixels );
+    bool create( const std::size_t width, const std::size_t height, const bool bit = true );
+    bool create( const std::size_t width, const std::size_t height, const kvs::ValueArray<kvs::UInt8>& pixels );
 
-    bool pixel( const size_t index ) const;
-    bool pixel( const size_t i, const size_t j ) const;
+    bool pixel( const std::size_t index ) const;
+    bool pixel( const std::size_t i, const std::size_t j ) const;
 
-    void setPixel( const size_t index, const bool pixel );
-    void setPixel( const size_t i, const size_t j, const bool pixel );
+    void setPixel( const std::size_t index, const bool pixel );
+    void setPixel( const std::size_t i, const std::size_t j, const bool pixel );
 
-    size_t count() const;
+    std::size_t count() const;
     void fill( const bool bit );
-    void invert( const size_t index );
-    void invert( const size_t i, const size_t j );
+    void invert( const std::size_t index );
+    void invert( const std::size_t i, const std::size_t j );
     void invert();
     bool read( const std::string& filename );
     bool write( const std::string& filename );
 
 private:
-    void set_bit( const size_t i, const size_t j );
-    void reset_bit( const size_t i, const size_t j );
+    void set_bit( const std::size_t i, const std::size_t j );
+    void reset_bit( const std::size_t i, const std::size_t j );
 };
 
 } // end of namespace kvs

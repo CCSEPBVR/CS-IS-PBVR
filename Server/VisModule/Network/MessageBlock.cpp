@@ -18,8 +18,8 @@
 
 namespace
 {
-//const size_t SizeOfHeader = sizeof( size_t );
-const size_t SizeOfHeader = sizeof( vismodule::UInt32 ); // 32 bits = 4 bytes
+//const std::size_t SizeOfHeader = sizeof( std::size_t );
+const std::size_t SizeOfHeader = sizeof( vismodule::UInt32 ); // 32 bits = 4 bytes
 }
 
 namespace vismodule
@@ -41,7 +41,7 @@ MessageBlock::MessageBlock( void )
  *  @param message_size [in] size of message [byte]
  */
 /*==========================================================================*/
-MessageBlock::MessageBlock( const void* message, const size_t message_size )
+MessageBlock::MessageBlock( const void* message, const std::size_t message_size )
 {
     this->copy( message, message_size );
 }
@@ -156,7 +156,7 @@ const void* MessageBlock::blockPointer( void ) const
 std::string MessageBlock::toString( void ) const
 {
     const char*  c_str = reinterpret_cast<const char*>( this->pointer() );
-    const size_t size  = this->size();
+    const std::size_t size  = this->size();
 
     return( std::string( c_str, size ) );
 }
@@ -168,7 +168,7 @@ std::string MessageBlock::toString( void ) const
  *  @param message_size [in] size of message
  */
 /*==========================================================================*/
-void MessageBlock::copy( const void* message, size_t message_size )
+void MessageBlock::copy( const void* message, std::size_t message_size )
 {
     if( this->allocate( message_size ) )
     {
@@ -213,7 +213,7 @@ void MessageBlock::copy( const std::vector<T>& message )
  *  @return pointer to the allocate region
  */
 /*==========================================================================*/
-void* MessageBlock::allocate( size_t data_size )
+void* MessageBlock::allocate( std::size_t data_size )
 {
     return( m_block.allocate( data_size + SizeOfHeader ) );
 }

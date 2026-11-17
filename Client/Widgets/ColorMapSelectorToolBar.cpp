@@ -9,6 +9,7 @@ ColorMapSelectorToolBar::ColorMapSelectorToolBar( kvs::qt::jaea::Screen* screen,
 
     m_color_function_label = new QLabel( "Color Function : ", this );
     m_color_function_combo_box = new QComboBox( this );
+    m_color_function_combo_box->setSizeAdjustPolicy( QComboBox::AdjustToContents );
 
     layout->addWidget( m_color_function_label );
     layout->addWidget( m_color_function_combo_box );
@@ -21,6 +22,15 @@ ColorMapSelectorToolBar::ColorMapSelectorToolBar( kvs::qt::jaea::Screen* screen,
 
 ColorMapSelectorToolBar::~ColorMapSelectorToolBar() {}
 
+void ColorMapSelectorToolBar::setMode( Mode mode )
+{
+    if( m_mode == mode ) { return; }
+
+    m_mode = mode;
+    rebuildComboBox( 0 );
+    updateCurrentIndex();
+}
+
 void ColorMapSelectorToolBar::onTransferFunctionUpdate( TransferFunction* tf )
 {
     if( !tf ) { return; }
@@ -28,29 +38,22 @@ void ColorMapSelectorToolBar::onTransferFunctionUpdate( TransferFunction* tf )
     const int prev_index = m_color_function_combo_box->currentIndex();
 
     m_transfer_function_storage = *tf;
-    m_transfer_function = &m_transfer_function_storage;
+    if( m_mode != Mode::TransferFunction ) { return; }
 
-    QSignalBlocker blocker( m_color_function_combo_box );
-
-    m_color_function_combo_box->clear();
-
-    const int count = static_cast<int>( m_transfer_function->count() );
-    for( int i = 0; i < count; ++i )
-    {
-        const QString label = QString( "C%1" ).arg( i + 1 );
-        m_color_function_combo_box->addItem( label );
-    }
-
-    int new_index = prev_index;
-    if( new_index < 0 ) { new_index = 0; }
-    if( new_index >= count ) { new_index = count - 1; }
-
-    if( count > 0 ) { m_color_function_combo_box->setCurrentIndex( new_index ); }
-
+    rebuildComboBox( prev_index );
     updateCurrentIndex();
 }
 
+void ColorMapSelectorToolBar::onEnsembleTransferFunctionUpdate( TransferFunction* tf, int selectedIndex )
+{
+    if( !tf ) { return; }
 
+    m_ensemble_transfer_function_storage = *tf;
+    if( m_mode != Mode::EnsembleTransferFunction ) { return; }
+
+    rebuildComboBox( selectedIndex );
+    updateCurrentIndex();
+}
 
 void ColorMapSelectorToolBar::onLoadParameter( const QString& filePath )
 {
@@ -62,15 +65,64 @@ void ColorMapSelectorToolBar::onSaveParameter( const QString& filePath )
     qDebug() << __FILE__ << ":" << __func__ << ":" << filePath;
 }
 
+void ColorMapSelectorToolBar::rebuildComboBox( int preferredIndex )
+{
+    TransferFunction* tf = currentTransferFunction();
+    if( !tf ) { return; }
+
+    const int count = static_cast<int>( tf->count() );
+
+    QSignalBlocker blocker( m_color_function_combo_box );
+    m_color_function_combo_box->clear();
+
+    int minimum_width = 0;
+    for( int i = 0; i < count; ++i )
+    {
+        QString label;
+        if( m_mode == Mode::EnsembleTransferFunction )
+        {
+            if( i == 0 )      { label = QStringLiteral( "Average" ); }
+            else if( i == 1 ) { label = QStringLiteral( "Variance" ); }
+            else if( i == 2 ) { label = QStringLiteral( "Coefficient of Variation" ); }
+            else              { label = QString( "Statistic %1" ).arg( i + 1 ); }
+        }
+        else
+        {
+            label = QString( "C%1" ).arg( i + 1 );
+        }
+        m_color_function_combo_box->addItem( label );
+
+        const int label_width = m_color_function_combo_box->fontMetrics().horizontalAdvance( label );
+        if( label_width > minimum_width ) { minimum_width = label_width; }
+    }
+
+    if( count > 0 )
+    {
+        m_color_function_combo_box->setMinimumWidth( minimum_width + 48 );
+    }
+
+    int new_index = preferredIndex;
+    if( new_index < 0 ) { new_index = 0; }
+    if( new_index >= count ) { new_index = count - 1; }
+
+    if( count > 0 ) { m_color_function_combo_box->setCurrentIndex( new_index ); }
+}
+
+TransferFunction* ColorMapSelectorToolBar::currentTransferFunction()
+{
+    return m_mode == Mode::EnsembleTransferFunction ? m_ensemble_transfer_function : m_transfer_function;
+}
+
 void ColorMapSelectorToolBar::updateColorMapByIndex( int index )
 {    
-    if( !m_transfer_function || !m_color_map_bar ) { return; }
+    TransferFunction* tf = currentTransferFunction();
+    if( !tf || !m_color_map_bar ) { return; }
 
-    const int count = m_transfer_function->count();
+    const int count = tf->count();
     if( count <= 0 )                  { return; }
     if( index < 0 || index >= count ) { return; }
 
-    const auto& colors = m_transfer_function->at( index ).color.map; // std::vector<kvs::RGBColor>
+    const auto& colors = tf->at( index ).color.map; // std::vector<kvs::RGBColor>
     const int n = static_cast<int>( colors.size() );
     if( n <= 0 ) { return; }
 
@@ -92,13 +144,13 @@ void ColorMapSelectorToolBar::updateColorMapByIndex( int index )
 
     color_map.create();
     m_color_map_bar->setColorMap( color_map );
-    if( m_transfer_function->at( index ).color.rangeMode == TransferFunction::UserRange )
+    if( tf->at( index ).color.rangeMode == TransferFunction::UserRange )
     {
-        m_color_map_bar->setRange( m_transfer_function->at( index ).color.userDefinedMinMax.first, m_transfer_function->at( index ).color.userDefinedMinMax.second );
+        m_color_map_bar->setRange( tf->at( index ).color.userDefinedMinMax.first, tf->at( index ).color.userDefinedMinMax.second );
     }
     else
     {
-        m_color_map_bar->setRange( m_transfer_function->at( index ).color.serverSideMinMax.first, m_transfer_function->at( index ).color.serverSideMinMax.second );
+        m_color_map_bar->setRange( tf->at( index ).color.serverSideMinMax.first, tf->at( index ).color.serverSideMinMax.second );
     }
 
     m_screen->update();

@@ -18,7 +18,7 @@ namespace
  *  @return number of terms
  */
 /*===========================================================================*/
-size_t GetNumberOfTerms( const size_t nvariables )
+size_t GetNumberOfTerms( const std::size_t nvariables )
 {
     return( 1 + 2 * nvariables + ( nvariables - 1 ) * nvariables / 2 );
 }
@@ -34,8 +34,8 @@ template <typename T>
 T GetSumOfElements( const kvs::Vector<T>& v )
 {
     T sum = 0;
-    const size_t nelements = v.size();
-    for ( size_t i = 0; i < nelements; i++ ) sum += v[i];
+    const std::size_t nelements = v.size();
+    for ( std::size_t i = 0; i < nelements; i++ ) sum += v[i];
 
     return( sum );
 }
@@ -126,7 +126,7 @@ const kvs::Vector<T>& ResponseSurface<T>::improve( const T threshold )
     if ( m_npoints == 0 ) return( *this );
 
     m_nterms = 0;
-    for ( size_t i = 0; i < kvs::Vector<T>::size(); i++ )
+    for ( std::size_t i = 0; i < kvs::Vector<T>::size(); i++ )
     {
         if( m_mask.test(i) )
         {
@@ -212,7 +212,7 @@ void ResponseSurface<T>::solve_regression_coefficients()
 
     const kvs::Matrix<T> X = m_coefficient_matrix; // variable matrix
     const kvs::Vector<T> y = m_responses;          // response vector
-    const size_t n = m_responses.size();           // num. of responses
+    const std::size_t n = m_responses.size();           // num. of responses
 
     const kvs::Matrix<T> Xt = X.transposed();      // X^{t}
     const kvs::Matrix<T> XtX = Xt * X;             // X^{t} X
@@ -237,12 +237,12 @@ void ResponseSurface<T>::solve_regression_coefficients()
 
     // T-test.
     kvs::Vector<T> t( m_nterms );
-    for ( size_t i = 0; i < m_nterms; i++ )
+    for ( std::size_t i = 0; i < m_nterms; i++ )
     {
         t[i] = b[i] / static_cast<T>(sqrt( (double)(sigma2 * invXtX[i][i]) ));
     }
 
-    for ( size_t i = 0, index = 0; i < kvs::Vector<T>::size(); i++ )
+    for ( std::size_t i = 0, index = 0; i < kvs::Vector<T>::size(); i++ )
     {
         (*this)[i] = T(0);
         m_t_values[i] = T(0);
@@ -266,10 +266,10 @@ void ResponseSurface<T>::create_coefficient_matrix(
     const kvs::Matrix<T>& variables )
 {
     m_coefficient_matrix.resize( m_responses.size(), m_nterms );
-    for ( size_t row = 0; row < m_responses.size(); row++ )
+    for ( std::size_t row = 0; row < m_responses.size(); row++ )
     {
         m_coefficient_matrix[row][0] = 1;
-        for ( size_t i = 0; i < m_nvariables; i++ )
+        for ( std::size_t i = 0; i < m_nvariables; i++ )
         {
             // Calculate first-order term's value (ex. x, y, z, ...)
             m_coefficient_matrix[row][i+1] = variables[row][i];
@@ -279,9 +279,9 @@ void ResponseSurface<T>::create_coefficient_matrix(
         }
 
         // Caluculate another term's value (ex. xy, yz, ...)
-        for ( size_t i = 0, index = 2 * m_nvariables + 1; i < m_nvariables; i++ )
+        for ( std::size_t i = 0, index = 2 * m_nvariables + 1; i < m_nvariables; i++ )
         {
-            for ( size_t j = i + 1; j < m_nvariables; j++ )
+            for ( std::size_t j = i + 1; j < m_nvariables; j++ )
             {
                 m_coefficient_matrix[row][index] = variables[row][i] * variables[row][j];
                 index++;
@@ -298,15 +298,15 @@ void ResponseSurface<T>::create_coefficient_matrix(
 template <typename T>
 void ResponseSurface<T>::update_coefficient_matrix()
 {
-    const size_t nrows = m_coefficient_matrix.rowSize();
-    const size_t ncolumns = m_coefficient_matrix.columnSize();
+    const std::size_t nrows = m_coefficient_matrix.rowSize();
+    const std::size_t ncolumns = m_coefficient_matrix.columnSize();
 
     kvs::Matrix<T> temp( m_responses.size(), m_nterms );
-    for ( size_t j = 0, index = 0; j < ncolumns; j++ )
+    for ( std::size_t j = 0, index = 0; j < ncolumns; j++ )
     {
         if ( m_mask.test(j) )
         {
-            for( size_t i = 0; i < nrows; i++ )
+            for( std::size_t i = 0; i < nrows; i++ )
             {
                 temp[i][index] = m_coefficient_matrix[i][j];
             }

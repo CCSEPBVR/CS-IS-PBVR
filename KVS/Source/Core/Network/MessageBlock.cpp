@@ -12,7 +12,7 @@
 
 namespace
 {
-const size_t SizeOfHeader = sizeof( kvs::UInt32 ); // 32 bits = 4 bytes
+const std::size_t SizeOfHeader = sizeof( kvs::UInt32 ); // 32 bits = 4 bytes
 }
 
 namespace kvs
@@ -34,7 +34,7 @@ MessageBlock::MessageBlock()
  *  @param message_size [in] size of message [byte]
  */
 /*==========================================================================*/
-MessageBlock::MessageBlock( const void* message, const size_t message_size )
+MessageBlock::MessageBlock( const void* message, const std::size_t message_size )
 {
     this->copy( message, message_size );
 }
@@ -149,7 +149,7 @@ const void* MessageBlock::blockData() const
 std::string MessageBlock::toString() const
 {
     const char*  c_str = reinterpret_cast<const char*>( this->data() );
-    const size_t size  = this->size();
+    const std::size_t size  = this->size();
 
     return( std::string( c_str, size ) );
 }
@@ -161,7 +161,7 @@ std::string MessageBlock::toString() const
  *  @param message_size [in] size of message
  */
 /*==========================================================================*/
-void MessageBlock::copy( const void* message, size_t message_size )
+void MessageBlock::copy( const void* message, std::size_t message_size )
 {
     if( this->allocate( message_size ) )
     {
@@ -206,7 +206,7 @@ void MessageBlock::copy( const std::vector<T>& message )
  *  @return pointer to the allocate region
  */
 /*==========================================================================*/
-void* MessageBlock::allocate( size_t data_size )
+void* MessageBlock::allocate( std::size_t data_size )
 {
     m_block.allocate( data_size + SizeOfHeader );
     return( m_block.data() );

@@ -13,7 +13,7 @@
 namespace kvs
 {
 
-template <typename T> size_t SVDecomposition<T>::m_max_iterations = 30;
+template <typename T> std::size_t SVDecomposition<T>::m_max_iterations = 30;
 
 /*===========================================================================*/
 /**
@@ -22,7 +22,7 @@ template <typename T> size_t SVDecomposition<T>::m_max_iterations = 30;
  */
 /*===========================================================================*/
 template <typename T>
-void SVDecomposition<T>::SetMaxIterations( const size_t max_iterations )
+void SVDecomposition<T>::SetMaxIterations( const std::size_t max_iterations )
 {
     m_max_iterations = max_iterations;
 }
@@ -176,9 +176,9 @@ void SVDecomposition<T>::setMatrix( const kvs::Matrix33<T>& m )
     m_w.resize( 3 );
     m_v.resize( 3, 3 );
     m_u.resize( 3, 3 );
-    for ( size_t i = 0; i < 3; i++ )
+    for ( std::size_t i = 0; i < 3; i++ )
     {
-        for ( size_t j = 0; j < 3; j++ )
+        for ( std::size_t j = 0; j < 3; j++ )
         {
             m_u[i][j] = m[i][j];
         }
@@ -197,9 +197,9 @@ void SVDecomposition<T>::setMatrix( const kvs::Matrix44<T>& m )
     m_w.resize( 4 );
     m_v.resize( 4, 4 );
     m_u.resize( 4, 4 );
-    for ( size_t i = 0; i < 4; i++ )
+    for ( std::size_t i = 0; i < 4; i++ )
     {
-        for ( size_t j = 0; j < 4; j++ )
+        for ( std::size_t j = 0; j < 4; j++ )
         {
             m_u[i][j] = m[i][j];
         }

@@ -197,7 +197,7 @@ const unsigned long MersenneTwister::hash( std::time_t t, std::clock_t c )
 
     unsigned long  h1 = 0;
     unsigned char* p  = reinterpret_cast<unsigned char*>( &t );
-    for ( size_t i = 0; i < sizeof( t ); ++i )
+    for ( std::size_t i = 0; i < sizeof( t ); ++i )
     {
         h1 *= UCHAR_MAX + 2U;
         h1 += p[i];
@@ -205,7 +205,7 @@ const unsigned long MersenneTwister::hash( std::time_t t, std::clock_t c )
 
     unsigned long h2 = 0;
     p = reinterpret_cast<unsigned char*>( &c );
-    for ( size_t j = 0; j < sizeof( c ); ++j )
+    for ( std::size_t j = 0; j < sizeof( c ); ++j )
     {
         h2 *= UCHAR_MAX + 2U;
         h2 += p[j];

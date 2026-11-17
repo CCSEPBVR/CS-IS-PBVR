@@ -50,7 +50,7 @@ const std::string ValueTypeName[ kvs::tiff::NumberOfValueTypes ] =
     "Double"
 };
 
-const size_t ValueTypeSize[ kvs::tiff::NumberOfValueTypes ] =
+const std::size_t ValueTypeSize[ kvs::tiff::NumberOfValueTypes ] =
 {
     0,
     1,

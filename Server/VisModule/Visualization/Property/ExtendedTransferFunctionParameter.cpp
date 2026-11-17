@@ -10,21 +10,21 @@ bool ExtendedTransferFunctionParameter::operator==( const ExtendedTransferFuncti
     v0 &= ( this->m_opacity_variable_min == s.m_opacity_variable_min );
     v0 &= ( this->m_opacity_variable_max == s.m_opacity_variable_max );
 
-    const size_t n_color   = this->colorMap().table().size();
-    const size_t n_opacity = this->opacityMap().table().size();
+    const std::size_t n_color   = this->colorMap().table().size();
+    const std::size_t n_opacity = this->opacityMap().table().size();
 
     v0 &= ( n_color == s.colorMap().table().size() );
     v0 &= ( n_opacity == s.opacityMap().table().size() );
 
     if ( v0 )
     {
-        for ( size_t n = 0; n < n_color; n++ )
+        for ( std::size_t n = 0; n < n_color; n++ )
         {
             const vismodule::UInt8 r0 = this->colorMap().table().at( n );
             const vismodule::UInt8 r1 = s.colorMap().table().at( n );
             v0 &= ( r0 == r1 );
         }
-        for ( size_t n = 0; n < n_opacity; n++ )
+        for ( std::size_t n = 0; n < n_opacity; n++ )
         {
             const float r0 = this->opacityMap().table().at( n );
             const float r1 = s.opacityMap().table().at( n );

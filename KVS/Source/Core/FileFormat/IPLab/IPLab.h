@@ -35,7 +35,7 @@ private:
     kvs::Int32 m_height; ///< data height
     kvs::Int16 m_nframes; ///< number of frames
     DataSet m_dataset; ///< set of pixel data
-    mutable size_t m_importing_frame_index; ///< frame index for importing
+    mutable std::size_t m_importing_frame_index; ///< frame index for importing
 
 public:
     static bool CheckExtension( const std::string& filename );
@@ -48,9 +48,9 @@ public:
     kvs::Int32 height() const { return m_height; }
     kvs::Int16 numberOfFrames() const { return m_nframes; }
     const DataSet& dataSet() const { return m_dataset; }
-    const Data& data( const size_t index ) const { return m_dataset[index]; }
-    size_t importingFrameIndex() const { return m_importing_frame_index; }
-    void setImportingFrameIndex( const size_t index ) const { m_importing_frame_index = index; }
+    const Data& data( const std::size_t index ) const { return m_dataset[index]; }
+    std::size_t importingFrameIndex() const { return m_importing_frame_index; }
+    void setImportingFrameIndex( const std::size_t index ) const { m_importing_frame_index = index; }
 
     void print( std::ostream& os, const kvs::Indent& indent = kvs::Indent(0) ) const;
     bool read( const std::string& filename );

@@ -50,7 +50,7 @@ namespace
  *  @return subpixel level
  */
 /*===========================================================================*/
-inline const size_t GetSubpixelLevel( const size_t repetition_level )
+inline const std::size_t GetSubpixelLevel( const std::size_t repetition_level )
 {
     return( static_cast<size_t>( sqrtf( static_cast<float>( repetition_level ) ) + 0.5f ) );
 }
@@ -128,7 +128,7 @@ const void SetupMapper(
     /* const */ kvs::Screen& screen,
     Mapper* mapper )
 {
-    const size_t repetition_level = arg.repetitionLevel();
+    const std::size_t repetition_level = arg.repetitionLevel();
     const float step = 0.5f;
     const float depth = 0.0f;
     mapper->attachCamera( screen.scene()->camera() );
@@ -195,7 +195,7 @@ const kvs::TransferFunction Argument::transferFunction( const kvs::VolumeObjectB
     }
     else
     {
-        const size_t resolution = 256;
+        const std::size_t resolution = 256;
         return kvs::TransferFunction( resolution );
     }
 }
@@ -310,8 +310,8 @@ int Main::exec()
         ParticleBasedRenderer::SetupRenderer( arg, prenderer );
 
         // Subpixel level.
-        const size_t repetition_level = arg.repetitionLevel();
-        const size_t subpixel_level = ::GetSubpixelLevel( repetition_level );
+        const std::size_t repetition_level = arg.repetitionLevel();
+        const std::size_t subpixel_level = ::GetSubpixelLevel( repetition_level );
         prenderer->setSubpixelLevel( subpixel_level );
 
         pipe.connect( renderer );
@@ -323,7 +323,7 @@ int Main::exec()
         ParticleBasedRenderer::SetupRenderer( arg, prenderer );
 
         // Repetition level.
-        const size_t repetition_level = arg.repetitionLevel();
+        const std::size_t repetition_level = arg.repetitionLevel();
         prenderer->setRepetitionLevel( repetition_level );
 
         if ( !arg.nolod() ) prenderer->enableLODControl();
@@ -439,8 +439,8 @@ int Main::exec()
             ParticleBasedRenderer::SetupRenderer( arg, renderer );
 
             // Subpixel level.
-            const size_t repetition_level = arg.repetitionLevel();
-            const size_t subpixel_level = ::GetSubpixelLevel( repetition_level );
+            const std::size_t repetition_level = arg.repetitionLevel();
+            const std::size_t subpixel_level = ::GetSubpixelLevel( repetition_level );
             renderer->setSubpixelLevel( subpixel_level );
 
             screen.scene()->replaceRenderer( ::RendererName, renderer );
@@ -451,7 +451,7 @@ int Main::exec()
             ParticleBasedRenderer::SetupRenderer( arg, renderer );
 
             // repetition level.
-            const size_t repetition_level = arg.repetitionLevel();
+            const std::size_t repetition_level = arg.repetitionLevel();
             renderer->setRepetitionLevel( repetition_level );
             if ( !arg.nolod() ) { renderer->enableLODControl(); }
 

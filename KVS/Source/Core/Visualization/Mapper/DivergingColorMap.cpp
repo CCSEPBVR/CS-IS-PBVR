@@ -43,11 +43,11 @@ namespace kvs
 kvs::ColorMap DivergingColorMap::Create(
     const kvs::RGBColor& rgb1,
     const kvs::RGBColor& rgb2,
-    const size_t resolution )
+    const std::size_t resolution )
 {
     kvs::ColorMap::Table table( 3 * resolution );
     kvs::UInt8* color = table.data();
-    for ( size_t i = 0; i < resolution; i++ )
+    for ( std::size_t i = 0; i < resolution; i++ )
     {
         const kvs::Real32 ratio = kvs::Real32(i) / ( resolution - 1 );
         const kvs::RGBColor rgb = ::Interpolate( rgb1, rgb2, ratio );

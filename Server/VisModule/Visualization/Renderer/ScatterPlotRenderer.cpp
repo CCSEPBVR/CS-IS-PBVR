@@ -327,8 +327,8 @@ void ScatterPlotRenderer::exec( vismodule::ObjectBase* object, vismodule::Camera
         glColor4ub( color.r(), color.g(), color.b(), opacity );
         const vismodule::Real64 x_ratio = vismodule::Real64( x1 - x0 ) / ( x_max_value - x_min_value );
         const vismodule::Real64 y_ratio = vismodule::Real64( y1 - y0 ) / ( y_max_value - y_min_value );
-        const size_t nrows = table->nrows();
-        for ( size_t i = 0; i < nrows; i++ )
+        const std::size_t nrows = table->nrows();
+        for ( std::size_t i = 0; i < nrows; i++ )
         {
             if ( !table->insideRange( i ) ) continue;
 
@@ -351,8 +351,8 @@ void ScatterPlotRenderer::exec( vismodule::ObjectBase* object, vismodule::Camera
         glBegin( GL_POINTS );
         const vismodule::Real64 x_ratio = vismodule::Real64( x1 - x0 ) / ( x_max_value - x_min_value );
         const vismodule::Real64 y_ratio = vismodule::Real64( y1 - y0 ) / ( y_max_value - y_min_value );
-        const size_t nrows = table->nrows();
-        for ( size_t i = 0; i < nrows; i++ )
+        const std::size_t nrows = table->nrows();
+        for ( std::size_t i = 0; i < nrows; i++ )
         {
             if ( !table->insideRange( i ) ) continue;
 
