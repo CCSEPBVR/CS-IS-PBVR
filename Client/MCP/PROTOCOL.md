@@ -3,8 +3,9 @@
 ## 通信と寿命
 
 `PBVR_CTRL_DIR`は双方必須、既存ディレクトリの絶対パスです。未指定時の代替先はありません。
-Windowsローカルファイル、PBVRとMCPサーバー各1インスタンスを前提とします。
-Pythonのみcommand.txtへ追記、PBVRのみstructured.logへ追記します。
+PBVRはWindows・macOSのローカルファイルを使います。ローカル接続は同一端末のPBVRとMCPサーバー各1インスタンスを前提とします。
+ローカル接続ではPython MCPサーバー、[SFTP中継経由](ssh_bridge/README.md)ではPC側の中継が、PBVR側のcommand.txtへ追記します。
+PBVR側のstructured.logへの追記はPBVRが担当します。要求と応答の形式はどちらの接続方式でも共通です。
 UTF-8（BOMなし）JSON Linesで、LFまでが1レコードです。CRLFもJSONの末尾空白として許容します。
 空行は不正JSONです。改行のない断片は保留します。
 
@@ -53,7 +54,7 @@ CancelScope内でファイル処理タスクをasyncio.shieldで待ちます。�
 ただし、実行中のOSファイルI/Oを即時に中断する保証はありません。
 送信直前の確認で通知を検知すれば要求は書き込みません。その確認とwrite/flushとの間に
 通知が届く競合では送信され得ます。送信済み要求の削除・取り消し・再送はしません。
-ClaudeのキャンセルはPBVRでの操作取り消しを意味せず、将来追加する色変更等も送信後は
+MCPホストのキャンセルはPBVRでの操作取り消しを意味せず、将来追加する色変更等も送信後は
 キャンセル後にPBVRが実行し得ます。今回は取り消し要求も追加ツールも定義しません。
 キャンセルした要求の遅延応答も、後続要求とはrequest_idで区別します。
 
@@ -66,7 +67,8 @@ Pythonは要求前のstructured.log末尾から追尾し、IDの異なる応答�
 ## ファイル異常
 
 - PBVR起動時にないファイルは作成。既存structured.logは維持。
-- PBVRはcommand.txt読み取り時、およびstructured.log書き込み前にWindowsのファイルID、
+- PBVRはcommand.txt読み取り時、およびstructured.log書き込み前にファイルID
+  （Windowsはボリューム・ファイルインデックス、macOSはdevice・inode）、
   サイズ、消費済み全バイトのSHA-256を確認。観測した削除・置換・短縮・既読部分変更で
   MCP受付を停止し、ドックへエラーを保持。読み取り位置を巻き戻さず再実行しない。
 - structured.logの別ライターによる追記もPBVR側でエラー。未完の末尾が起動時にある場合も停止。

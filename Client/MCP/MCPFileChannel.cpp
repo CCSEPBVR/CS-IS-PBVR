@@ -1,12 +1,19 @@
 #include "MCPFileChannel.h"
 #include <QDir>
 #include <QFileInfo>
+#include <QFile>
 #include <limits>
 #ifdef Q_OS_WIN
 #ifndef NOMINMAX
 #define NOMINMAX
 #endif
 #include <windows.h>
+#elif defined(Q_OS_MACOS)
+#include <cerrno>
+#include <cstring>
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <unistd.h>
 #endif
 
 // Own OS handles directly. Never exchange CRT file descriptors with Qt:
@@ -107,6 +114,113 @@ struct MCPFileChannel::NativeFile
         { error = failure( "FlushFileBuffers", path ); return false; }
         return true;
     }
+#elif defined(Q_OS_MACOS)
+    int descriptor = -1;
+
+    ~NativeFile()
+    {
+        // Do not retry close(): after EINTR the descriptor's state is unspecified.
+        if( descriptor >= 0 ) ::close( descriptor );
+    }
+
+    static QString failure( const QString& operation, const QString& path )
+    {
+        const int code = errno;
+        return operation + " failed (POSIX error " + QString::number( code ) +
+            ": " + QString::fromLocal8Bit( std::strerror( code ) ) + "): " + path;
+    }
+
+    bool open( const QString& filePath, bool create, QString& error )
+    {
+        path = filePath;
+        const QByteArray nativePath = QFile::encodeName( path );
+        // Never truncate existing history. Only PBVR writes the response log.
+        const int flags = ( create ? O_RDWR | O_CREAT : O_RDONLY ) | O_CLOEXEC | O_NONBLOCK;
+        do { descriptor = ::open( nativePath.constData(), flags, 0666 ); }
+        while( descriptor < 0 && errno == EINTR );
+        if( descriptor < 0 ) { error = failure( "open", path ); return false; }
+        struct stat info{};
+        if( ::fstat( descriptor, &info ) != 0 )
+        { error = failure( "fstat", path ); return false; }
+        if( !S_ISREG( info.st_mode ) )
+        { error = "MCP requires a regular local file: " + path; return false; }
+        return true;
+    }
+
+    QByteArray identity( QString& error ) const
+    {
+        struct stat info{};
+        if( ::fstat( descriptor, &info ) != 0 )
+        { error = failure( "fstat", path ); return {}; }
+        return QByteArray::number( qulonglong( info.st_dev ) ) + ':' +
+            QByteArray::number( qulonglong( info.st_ino ) );
+    }
+
+    bool size( qint64& value, QString& error ) const
+    {
+        struct stat info{};
+        if( ::fstat( descriptor, &info ) != 0 )
+        { error = failure( "fstat", path ); return false; }
+        value = info.st_size;
+        return true;
+    }
+
+    bool seek( qint64 offset, QString& error )
+    {
+        if( ::lseek( descriptor, offset, SEEK_SET ) == off_t( -1 ) )
+        { error = failure( "lseek", path ); return false; }
+        return true;
+    }
+
+    bool read( unsigned int count, QByteArray& bytes, QString& error )
+    {
+        bytes.resize( count );
+        ssize_t received;
+        do { received = ::read( descriptor, bytes.data(), count ); }
+        while( received < 0 && errno == EINTR );
+        if( received < 0 )
+        { error = failure( "read", path ); bytes.clear(); return false; }
+        bytes.resize( received );
+        return true;
+    }
+
+    bool hashPrefix( qint64 count, QCryptographicHash& hash, QString& error )
+    {
+        if( !seek( 0, error ) ) return false;
+        while( count > 0 )
+        {
+            QByteArray bytes;
+            if( !read( static_cast<unsigned int>( qMin<qint64>( count, 65536 ) ), bytes, error ) ) return false;
+            if( bytes.isEmpty() )
+            { error = "File shortened while hashing: " + path; return false; }
+            hash.addData( bytes );
+            count -= bytes.size();
+        }
+        return true;
+    }
+
+    bool write( const QByteArray& bytes, QString& error )
+    {
+        // Complete a partial write at the current offset; never resend a request.
+        qint64 offset = 0;
+        while( offset < bytes.size() )
+        {
+            const ssize_t written = ::write( descriptor, bytes.constData() + offset,
+                static_cast<size_t>( bytes.size() - offset ) );
+            if( written < 0 )
+            {
+                if( errno == EINTR ) continue;
+                error = failure( "write", path ); return false;
+            }
+            if( written == 0 )
+            { error = "Incomplete response write: " + path; return false; }
+            offset += written;
+        }
+        int result;
+        do { result = ::fsync( descriptor ); } while( result != 0 && errno == EINTR );
+        if( result != 0 ) { error = failure( "fsync", path ); return false; }
+        return true;
+    }
 #endif
 };
 
@@ -128,7 +242,7 @@ bool MCPFileChannel::open( const QString& directory, QString& error )
     const auto canonical = QFileInfo( directory ).canonicalFilePath();
     if( canonical.isEmpty() || !QDir::isAbsolutePath( canonical ) )
     { error = "Cannot resolve PBVR_CTRL_DIR; MCP disabled"; return false; }
-#ifdef Q_OS_WIN
+#if defined(Q_OS_WIN) || defined(Q_OS_MACOS)
     const QDir dir( canonical );
     m_command = std::make_unique<NativeFile>();
     m_log = std::make_unique<NativeFile>();
@@ -167,7 +281,7 @@ bool MCPFileChannel::open( const QString& directory, QString& error )
     }
     return true;
 #else
-    error = "MCP file communication currently requires Windows";
+    error = "MCP file communication requires Windows or macOS";
     return false;
 #endif
 }
@@ -175,7 +289,7 @@ bool MCPFileChannel::open( const QString& directory, QString& error )
 bool MCPFileChannel::verify( NativeFile& file, const QByteArray& identity, qint64 offset,
                              const QByteArray& digest, QString& error )
 {
-#ifdef Q_OS_WIN
+#if defined(Q_OS_WIN) || defined(Q_OS_MACOS)
     // Compare the newly opened path with the retained OS handle, then check the
     // consumed prefix. Replacement must never cause a rewind/replay.
     NativeFile current;
@@ -192,7 +306,7 @@ bool MCPFileChannel::verify( NativeFile& file, const QByteArray& identity, qint6
     return true;
 #else
     Q_UNUSED( file ); Q_UNUSED( identity ); Q_UNUSED( offset ); Q_UNUSED( digest );
-    error = "MCP file communication currently requires Windows";
+    error = "MCP file communication requires Windows or macOS";
     return false;
 #endif
 }
@@ -200,7 +314,7 @@ bool MCPFileChannel::verify( NativeFile& file, const QByteArray& identity, qint6
 bool MCPFileChannel::read( QByteArray& bytes, QString& error )
 {
     if( !m_command ) { error = "MCP command file is not open"; return false; }
-#ifdef Q_OS_WIN
+#if defined(Q_OS_WIN) || defined(Q_OS_MACOS)
     if( !verify( *m_command, m_command_identity, m_offset, m_hash.result(), error ) ||
         !m_command->seek( m_offset, error ) || !m_command->read( 65536, bytes, error ) ) return false;
     m_offset += bytes.size();
@@ -208,7 +322,7 @@ bool MCPFileChannel::read( QByteArray& bytes, QString& error )
     return true;
 #else
     Q_UNUSED( bytes );
-    error = "MCP file communication currently requires Windows";
+    error = "MCP file communication requires Windows or macOS";
     return false;
 #endif
 }
@@ -216,7 +330,7 @@ bool MCPFileChannel::read( QByteArray& bytes, QString& error )
 bool MCPFileChannel::append( const QByteArray& line, QString& error )
 {
     if( !m_log ) { error = "MCP response file is not open"; return false; }
-#ifdef Q_OS_WIN
+#if defined(Q_OS_WIN) || defined(Q_OS_MACOS)
     if( !verify( *m_log, m_log_identity, m_log_offset, m_log_hash.result(), error ) ) return false;
     qint64 size = 0;
     if( !m_log->size( size, error ) ) return false;
@@ -229,7 +343,7 @@ bool MCPFileChannel::append( const QByteArray& line, QString& error )
     return true;
 #else
     Q_UNUSED( line );
-    error = "MCP file communication currently requires Windows";
+    error = "MCP file communication requires Windows or macOS";
     return false;
 #endif
 }
