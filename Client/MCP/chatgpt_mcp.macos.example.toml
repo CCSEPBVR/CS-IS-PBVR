@@ -1,0 +1,12 @@
+# Merge only these tables into the MCP host's config.toml; preserve other settings.
+# Replace every /Users/your-user/path/to/CS-IS-PBVR with the actual absolute path.
+[mcp_servers.pbvr]
+command = "/Users/your-user/path/to/CS-IS-PBVR/Client/MCP/.venv/bin/python"
+args = ["/Users/your-user/path/to/CS-IS-PBVR/Client/MCP/server.py"]
+cwd = "/Users/your-user/path/to/CS-IS-PBVR/Client/MCP"
+tool_timeout_sec = 180
+enabled_tools = ["get_state"]
+
+[mcp_servers.pbvr.env]
+PBVR_CTRL_DIR = "/Users/your-user/path/to/CS-IS-PBVR/Client/MCP/ctrl"
+PBVR_MCP_TIMEOUT_SECONDS = "120"
