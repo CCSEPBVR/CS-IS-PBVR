@@ -11,7 +11,7 @@ PC の Streamable HTTP サーバーが返す `pong from PC: ...` を、PBS 対�
 
 `60002` は予備。SSH の接続先はログインノード。PC 側の中継が `ssh -L` 経由で計算ノードへ制御接続を張り、s86 側で新しい HTTP 接続を受けるごとに PC からデータ接続を追加する。HTTP は TCP のバイト列として転送するので、MCP のセッションやイベントストリームも SDK が処理する。
 
-この手順は PC が Windows で Python 3.10 以上を使え、s86 に既存の Claude Code と Ollama の環境があることを前提とする。PBS 対話ジョブ側の中継には Python 3.8 以上の標準ライブラリを使う。PC 側の Python 環境には [既存の MCP 要件](../requirements.txt) をインストールする。
+この手順は PC が Windows で Python 3.10 以上を使え、s86 に既存の Claude Code と Ollama の環境があることを前提とする。PBS 対話ジョブ側の中継には Python 3.6 以上の標準ライブラリを使う。PC 側の Python 環境には [既存の MCP 要件](../requirements.txt) をインストールする。
 
 ## 1. PC から検証用ファイルを配置する
 

@@ -35,8 +35,10 @@ async def read_line(reader):
 async def close_writer(writer):
     """書き込み側を閉じ、切断時の例外を処理する。"""
     writer.close()
-    with contextlib.suppress(OSError):
-        await writer.wait_closed()
+    wait_closed = getattr(writer, "wait_closed", None)
+    if wait_closed is not None:
+        with contextlib.suppress(OSError):
+            await wait_closed()
 
 
 async def copy_stream(reader, writer):
@@ -54,8 +56,8 @@ async def copy_stream(reader, writer):
 async def relay(left_reader, left_writer, right_reader, right_writer):
     """2本の TCP 接続間で、両方向のストリームを転送する。"""
     tasks = [
-        asyncio.create_task(copy_stream(left_reader, right_writer)),
-        asyncio.create_task(copy_stream(right_reader, left_writer)),
+        asyncio.ensure_future(copy_stream(left_reader, right_writer)),
+        asyncio.ensure_future(copy_stream(right_reader, left_writer)),
     ]
     try:
         await asyncio.gather(*tasks)
@@ -118,7 +120,7 @@ class NodeTunnel:
     async def accept_http(self, reader, writer):
         """s86 側の HTTP 接続に対応する PC 側データ接続を要求する。"""
         connection_id = secrets.token_hex(16).encode("ascii")
-        future = asyncio.get_running_loop().create_future()
+        future = asyncio.get_event_loop().create_future()
         self.pending[connection_id] = future
         try:
             if self.control is None:
@@ -188,7 +190,7 @@ async def run_pc(token):
             connection_id = line.rstrip(b"\n")
             if len(connection_id) != 32 or not line.endswith(b"\n"):
                 raise ValueError("Invalid connection ID")
-            task = asyncio.create_task(connect_http(token, connection_id))
+            task = asyncio.ensure_future(connect_http(token, connection_id))
             tasks.add(task)
             task.add_done_callback(tasks.discard)
     finally:
@@ -202,31 +204,57 @@ async def run_node(token, bind):
     """計算ノードの転送用ポートとループバックの HTTP ポートを開く。"""
     tunnel = NodeTunnel(token)
     pc_server = await asyncio.start_server(tunnel.accept_pc, bind, NODE_PORT, limit=1024)
-    async with pc_server:
+    try:
         http_server = await asyncio.start_server(tunnel.accept_http, "127.0.0.1", NODE_HTTP_PORT)
-        async with http_server:
+        try:
             LOG.info("Waiting for PC tunnel on %s:%d", bind, NODE_PORT)
             LOG.info("MCP endpoint on s86: http://127.0.0.1:%d/mcp", NODE_HTTP_PORT)
-            await pc_server.serve_forever()
+            await asyncio.get_event_loop().create_future()
+        finally:
+            http_server.close()
+    finally:
+        pc_server.close()
+
+
+def run_tunnel(coroutine):
+    """中継を実行し、Python 3.6 ではイベントループを明示的に終了する。"""
+    if hasattr(asyncio, "run"):
+        asyncio.run(coroutine)
+        return
+
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    try:
+        loop.run_until_complete(coroutine)
+    finally:
+        pending = [task for task in asyncio.Task.all_tasks(loop) if not task.done()]
+        for task in pending:
+            task.cancel()
+        if pending:
+            loop.run_until_complete(asyncio.gather(*pending, return_exceptions=True))
+        asyncio.set_event_loop(None)
+        loop.close()
 
 
 def main():
     """コマンドラインと検証用トークンを読み取り、指定側の中継を起動する。"""
     parser = argparse.ArgumentParser(description="PBVR MCP reverse tunnel prototype")
-    modes = parser.add_subparsers(dest="mode", required=True)
+    modes = parser.add_subparsers(dest="mode")
     node = modes.add_parser("node")
     node.add_argument("--bind", required=True, help="Compute node address reachable from the SSH login node")
     modes.add_parser("pc")
     args = parser.parse_args()
+    if args.mode is None:
+        parser.error("Specify node or pc")
     logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
     token = os.environ.get("PBVR_MCP_PROTOTYPE_TOKEN") or getpass.getpass("Prototype token: ")
     if len(token) < 32:
         parser.error("The prototype token must contain at least 32 characters")
     try:
         if args.mode == "node":
-            asyncio.run(run_node(token.encode("utf-8"), args.bind))
+            run_tunnel(run_node(token.encode("utf-8"), args.bind))
         else:
-            asyncio.run(run_pc(token.encode("utf-8")))
+            run_tunnel(run_pc(token.encode("utf-8")))
     except (OSError, asyncio.TimeoutError, ValueError) as error:
         parser.exit(1, f"Tunnel stopped: {error or 'timed out'}\n")
     except KeyboardInterrupt:
