@@ -419,6 +419,8 @@ EnsembleTransferFunctionTest::resolveClientHandles( MainWindow& window ) const
     // v4.0.0 追加機能のウィジェット
     handles.log_scale_check_box = handles.ensemble_editor->findChild<QCheckBox*>( "m_log_scale_statistics_check_box" );
     handles.member_spin_box = handles.ensemble_editor->findChild<QSpinBox*>( "m_member_spin_box" );
+    handles.display_statistic_radio = handles.ensemble_editor->findChild<QRadioButton*>( "m_display_statistic_radio_button" );
+    handles.display_member_radio = handles.ensemble_editor->findChild<QRadioButton*>( "m_display_member_radio_button" );
     handles.member_output_check_box = handles.ensemble_editor->findChild<QCheckBox*>( "m_member_output_check_box" );
     handles.min_max_group_box = handles.ensemble_editor->findChild<QGroupBox*>( "m_min_max_group_box" );
     if( auto* selector = window.findChild<ColorMapSelectorToolBar*>() )
@@ -578,6 +580,8 @@ void EnsembleTransferFunctionTest::waitForPositiveParticleCount( const ClientHan
 void EnsembleTransferFunctionTest::selectStatistic( const ClientHandles& client, int index ) const
 {
     QVERIFY2( index >= 0 && index < client.statistic_combo_box->count(), "Statistic index is out of range" );
+    // 新UIでは表示対象(Display)が別ラジオのため、統計量選択時は Statistic 表示へ戻す
+    if( client.display_statistic_radio ) client.display_statistic_radio->setChecked( true );
     client.statistic_combo_box->setCurrentIndex( index );
     QCOMPARE( client.statistic_combo_box->currentIndex(), index );
     QCoreApplication::processEvents();
@@ -3625,32 +3629,26 @@ void EnsembleTransferFunctionTest::runItem18MissingKeys( ItemContext& ctx )
 // ===========================================================================
 // v4.0.0 追加機能ヘルパー
 // ===========================================================================
-// statistic_combo_box の「Member」項目のインデックス。無ければ -1。
-int EnsembleTransferFunctionTest::memberComboIndex( const ClientHandles& client ) const
+// Display 行の Member ラジオとスピンボックスが存在するか(メンバー表示UIの有無)。
+bool EnsembleTransferFunctionTest::memberDisplayAvailable( const ClientHandles& client ) const
 {
-    if( !client.statistic_combo_box ) return -1;
-    for( int i = 0; i < client.statistic_combo_box->count(); ++i )
-    {
-        if( client.statistic_combo_box->itemText( i ) == QStringLiteral( "Member" ) ) return i;
-    }
-    return -1;
+    return client.display_member_radio != nullptr && client.member_spin_box != nullptr;
 }
 
-// 「Member」項目を選び spinbox を member_id にして Apply し、応答と粒子変化を待つ。
+// Display の「Member」を選び spinbox を member_id にして Apply し、応答と粒子変化を待つ。
 bool EnsembleTransferFunctionTest::applyMemberAndWait(
     ItemContext& ctx, int member_id, bool require_particle_change, ParticleUpdateResult* update_result )
 {
     const ClientHandles& client = ctx.client;
-    const int idx = memberComboIndex( client );
-    if( idx < 0 || !client.member_spin_box )
+    if( !memberDisplayAvailable( client ) )
     {
-        m_last_wait_failure = QStringLiteral( "Member 項目またはスピンボックスが見つからない" );
+        m_last_wait_failure = QStringLiteral( "Display の Member ラジオまたはスピンボックスが見つからない" );
         return false;
     }
-    // captureAllStatisticStates はコンボを動かすため、先に取得してから Member を選ぶ。
+    // captureAllStatisticStates はコンボを動かすため、先に取得してから Member 表示を選ぶ。
     const std::array<StatisticState, 3> expected = captureAllStatisticStates( client );
     const QString variable = client.variable_line_edit->text().trimmed();
-    client.statistic_combo_box->setCurrentIndex( idx );
+    client.display_member_radio->setChecked( true );
     QCoreApplication::processEvents();
     client.member_spin_box->setValue( member_id );
     QCoreApplication::processEvents();
@@ -3780,14 +3778,14 @@ void EnsembleTransferFunctionTest::runItem22Member( ItemContext& ctx )
 {
     ItemResult result;
     result.id = QStringLiteral( "C-ETF-22" );
-    result.title = QStringLiteral( "Statisticで「Member」を選択し、メンバーを表示する" );
+    result.title = QStringLiteral( "Displayで「Member」を選択し、メンバーを表示する" );
     restoreBaseline( ctx );
     const ClientHandles& client = ctx.client;
 
     const int num_ensemble = latestRequestPayload( ctx ).value( QString::fromUtf8( Protocol::Key::NumEnsemble ) ).toInt( -1 );
-    if( memberComboIndex( client ) < 0 || !client.member_spin_box || num_ensemble <= 0 )
+    if( !memberDisplayAvailable( client ) || num_ensemble <= 0 )
     {
-        skipItem( result, QStringLiteral( "Member 項目が無い、または NumEnsemble<=0(サーバがメンバー数を送っていない)ため SKIP(NumEnsemble=%1)" ).arg( num_ensemble ) );
+        skipItem( result, QStringLiteral( "Member 表示UIが無い、または NumEnsemble<=0(サーバがメンバー数を送っていない)ため SKIP(NumEnsemble=%1)" ).arg( num_ensemble ) );
         finishItem( result );
         return;
     }
@@ -3811,9 +3809,9 @@ void EnsembleTransferFunctionTest::runItem22Member( ItemContext& ctx )
         return;
     }
     // 注意: RequestDataAt 応答の EnsembleTransferFunctionParameter は root の Statistic を erase して返す(Server.cpp)。
-    // そのためメンバー選択は「GUI 状態(コンボ=Member・spinbox値)+ 粒子変化(applyMemberAndWait が要求済み)+ Total>0」で確認する。
-    check( result, client.statistic_combo_box->currentText() == QStringLiteral( "Member" ),
-           QStringLiteral( "Statistic コンボが「Member」になっていない: %1" ).arg( client.statistic_combo_box->currentText() ) );
+    // そのためメンバー選択は「GUI 状態(Member ラジオ・spinbox値)+ 粒子変化(applyMemberAndWait が要求済み)+ Total>0」で確認する。
+    check( result, client.display_member_radio->isChecked(),
+           QStringLiteral( "Display の Member ラジオが選択状態になっていない" ) );
     check( result, client.member_spin_box->value() == 0,
            QStringLiteral( "member spinbox が 0 でない: %1" ).arg( client.member_spin_box->value() ) );
     check( result, totalParticles( client ) > 0, QStringLiteral( "メンバー 0 の Total Particles が正でない" ) );
@@ -3839,9 +3837,9 @@ void EnsembleTransferFunctionTest::runItem23MemberChange( ItemContext& ctx )
     const ClientHandles& client = ctx.client;
 
     const int num_ensemble = latestRequestPayload( ctx ).value( QString::fromUtf8( Protocol::Key::NumEnsemble ) ).toInt( -1 );
-    if( memberComboIndex( client ) < 0 || !client.member_spin_box )
+    if( !memberDisplayAvailable( client ) )
     {
-        skipItem( result, QStringLiteral( "Member 項目/スピンボックスが無いため SKIP" ) );
+        skipItem( result, QStringLiteral( "Member 表示UI(ラジオ/スピンボックス)が無いため SKIP" ) );
         finishItem( result );
         return;
     }
@@ -3943,9 +3941,9 @@ void EnsembleTransferFunctionTest::runItem25MemberOutputEmptyStep( ItemContext& 
     result.id = QStringLiteral( "C-ETF-25" );
     result.title = QStringLiteral( "メンバー粒子出力OFFで生成されたステップをメンバー指定で要求し、粒子が転送されず・サーバーがハングしないことを確認する" );
     const ClientHandles& client = ctx.client;
-    if( memberComboIndex( client ) < 0 || !client.member_output_check_box || !client.member_spin_box )
+    if( !memberDisplayAvailable( client ) || !client.member_output_check_box )
     {
-        skipItem( result, QStringLiteral( "Member 項目または出力チェックボックスが無いため SKIP" ) );
+        skipItem( result, QStringLiteral( "Member 表示UIまたは出力チェックボックスが無いため SKIP" ) );
         finishItem( result );
         return;
     }
@@ -3986,8 +3984,7 @@ void EnsembleTransferFunctionTest::runItem25MemberOutputEmptyStep( ItemContext& 
     //    ファイル経路(memberStepFilesReady が false → 空 pointObject を返す)を踏ませる。欠落時に無限ループで
     //    ハングするのが元の不具合(commit 8d532d5a で修正)。ここではメンバー粒子が転送されない(Total が 0/空
     //    になる)ことを確認する。Keep Last は終始 ON のまま触らない。
-    const int member_idx = memberComboIndex( client );
-    client.statistic_combo_box->setCurrentIndex( member_idx );
+    client.display_member_radio->setChecked( true );
     QCoreApplication::processEvents();
     client.member_spin_box->setValue( 0 );
     QCoreApplication::processEvents();

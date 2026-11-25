@@ -33,8 +33,6 @@ namespace
 {
 constexpr int UserRangeMode = 1;
 constexpr int ServerRangeMode = 2;
-// コンボボックスの「Member」項目の itemData。統計量項目は -1、メンバー番号はスピンボックスが持つ。
-constexpr int MemberEntryItemData = -2;
 
 struct EnsembleTFSetting
 {
@@ -294,8 +292,16 @@ EnsembleTransferFunctionEditor::EnsembleTransferFunctionEditor( WebSocketPair* w
     connect( ui->m_member_spin_box, QOverload<int>::of( &QSpinBox::valueChanged ), this,
              [this]( const int value )
              {
-                 // Member 選択中のみ意味を持つ。送信は従来どおり Apply 時。
+                 // Member 表示中のみ意味を持つ。送信は従来どおり Apply 時。
                  if( selectedMemberId() >= 0 ) m_current_member = value;
+             } );
+    connect( ui->m_display_member_radio_button, &QRadioButton::toggled, this,
+             [this]( const bool checked )
+             {
+                 // 表示対象（Statistic/Member）の択一。送信は従来どおり Apply 時。
+                 ui->m_member_spin_box->setEnabled( checked && m_num_ensemble > 0 );
+                 m_current_member = ( checked && m_num_ensemble > 0 )
+                                        ? ui->m_member_spin_box->value() : -1;
              } );
 }
 
@@ -319,6 +325,12 @@ void EnsembleTransferFunctionEditor::initialize()
     m_min_max_group->addButton( ui->m_user_min_max_radio_button );
     m_min_max_group->setExclusive( true );
 
+    m_display_group = new QButtonGroup( this );
+    m_display_group->setObjectName( QStringLiteral( "DisplayGroup" ) );
+    m_display_group->addButton( ui->m_display_statistic_radio_button );
+    m_display_group->addButton( ui->m_display_member_radio_button );
+    m_display_group->setExclusive( true );
+
     ui->m_statistics_synthesizer_line_edit->setText( QStringLiteral( "q1" ) );
     ui->m_export_push_button->setAutoDefault( false );
     ui->m_export_push_button->setDefault( false );
@@ -337,14 +349,8 @@ void EnsembleTransferFunctionEditor::initialize()
     m_statistics[CoefficientVariationStatistic].displayName = QStringLiteral( "Coefficient of Variation" );
     m_statistics[CoefficientVariationStatistic].statisticName = QStringLiteral( "cv" );
 
-    // コンボボックスの統計量3項目（.ui 定義）に itemData = -1 を入れる。
-    // メンバーは「Member」1項目（itemData = MemberEntryItemData）＋スピンボックスの番号指定で選ぶ。
-    for( int i = 0; i < StatisticCount; ++i )
-    {
-        ui->m_statistics_combo_box->setItemData( i, QVariant( -1 ) );
-    }
-    ui->m_member_spin_box->setVisible( false );
-    ui->m_member_spin_box->setEnabled( false );
+    // Display 行（表示対象ラジオ＋メンバーIDスピン）は NumEnsemble 受信まで非表示（rebuildMemberItems が制御）
+    rebuildMemberItems();
 
     m_default_color_map = ui->m_color_map->getColors();
     m_default_opacity_map = ui->m_opacity_map->getOpacities();
@@ -426,72 +432,53 @@ void EnsembleTransferFunctionEditor::loadStatisticState( StatisticIndex statisti
 
 EnsembleTransferFunctionEditor::StatisticIndex EnsembleTransferFunctionEditor::selectedStatisticIndex() const
 {
-    // メンバー選択中は直前に選ばれていた統計量を返す（パネル・凡例はその状態を保持し続ける）
-    if( selectedMemberId() >= 0 ) return m_current_statistic;
     const int index = ui->m_statistics_combo_box->currentIndex();
     if( index == VarianceStatistic ) return VarianceStatistic;
     if( index == CoefficientVariationStatistic ) return CoefficientVariationStatistic;
     return AverageStatistic;
 }
 
-// 選択中のメンバーID。「Member」項目が選ばれていればスピンボックスの値、統計量項目なら -1。
+// 表示対象のメンバーID。Display の Member ラジオ選択中ならスピンボックスの値、Statistic 選択中は -1。
 int EnsembleTransferFunctionEditor::selectedMemberId() const
 {
-    const QVariant data = ui->m_statistics_combo_box->currentData();
-    if( !data.isValid() || data.toInt() != MemberEntryItemData ) return -1;
     if( m_num_ensemble <= 0 ) return -1;
+    if( !ui->m_display_member_radio_button->isChecked() ) return -1;
     return ui->m_member_spin_box->value();
 }
 
-// コンボボックスの「Member」項目とスピンボックスを m_num_ensemble に合わせて作り直す。
-// 選択中のメンバーが作り直し後も範囲内なら選択を維持し、範囲外になれば直前の統計量へ戻す。
+// Display 行（表示対象ラジオ＋メンバーIDスピンボックス）を m_num_ensemble に合わせて作り直す。
+// 非アンサンブル時は行ごと非表示。選択中のメンバーが範囲外になれば Statistic 表示へ戻す。
 void EnsembleTransferFunctionEditor::rebuildMemberItems()
 {
-    QComboBox* combo = ui->m_statistics_combo_box;
     QSpinBox* spin = ui->m_member_spin_box;
     const int previousMember = selectedMemberId();
-    const bool wasBlocked = combo->blockSignals( true );
+    const bool hasEnsemble = m_num_ensemble > 0;
     const bool spinBlocked = spin->blockSignals( true );
-
-    while( combo->count() > StatisticCount )
-    {
-        combo->removeItem( combo->count() - 1 );
-    }
-    if( m_num_ensemble > 0 )
-    {
-        combo->insertSeparator( combo->count() );
-        combo->addItem( QStringLiteral( "Member" ), QVariant( MemberEntryItemData ) );
-    }
 
     spin->setRange( 0, qMax( 0, m_num_ensemble - 1 ) );
     spin->setSuffix( QStringLiteral( " / %1" ).arg( qMax( 0, m_num_ensemble - 1 ) ) );
-    spin->setVisible( m_num_ensemble > 0 );
 
-    bool fallbackToStatistic = false;
-    if( previousMember >= 0 )
+    ui->m_display_label->setVisible( hasEnsemble );
+    ui->m_display_statistic_radio_button->setVisible( hasEnsemble );
+    ui->m_display_member_radio_button->setVisible( hasEnsemble );
+    spin->setVisible( hasEnsemble );
+
+    if( previousMember >= 0 && previousMember < m_num_ensemble )
     {
-        if( previousMember < m_num_ensemble )
-        {
-            spin->setValue( previousMember );
-            spin->setEnabled( true );
-            combo->setCurrentIndex( combo->count() - 1 );  // 「Member」項目
-        }
-        else
-        {
-            m_current_member = -1;
-            spin->setEnabled( false );
-            combo->setCurrentIndex( static_cast<int>( m_current_statistic ) );
-            fallbackToStatistic = true;
-        }
+        spin->setValue( previousMember );
+        spin->setEnabled( true );
     }
     else
     {
+        // 非アンサンブル化・範囲外・もともと Statistic 表示のいずれも Statistic 側へ寄せる
+        m_current_member = -1;
         spin->setEnabled( false );
+        if( ui->m_display_member_radio_button->isChecked() )
+        {
+            ui->m_display_statistic_radio_button->setChecked( true );
+        }
     }
-
     spin->blockSignals( spinBlocked );
-    combo->blockSignals( wasBlocked );
-    if( fallbackToStatistic ) loadStatisticState( m_current_statistic );
 }
 
 TransferFunction EnsembleTransferFunctionEditor::createLegendTransferFunction() const
@@ -541,17 +528,8 @@ TransferFunction EnsembleTransferFunctionEditor::createLegendTransferFunction( c
 
 void EnsembleTransferFunctionEditor::onStatisticSelectionChanged( int )
 {
+    // コンボボックスは統計量専用。表示対象（Statistic/Member）は Display ラジオが受け持つ
     saveCurrentStatisticState();
-    const int member = selectedMemberId();
-    ui->m_member_spin_box->setEnabled( member >= 0 );
-    if( member >= 0 )
-    {
-        // メンバー選択中はパネルを直前の統計量の状態のまま残す
-        // （メンバー粒子は生成済みデータの表示であり、伝達関数の編集対象ではないため）
-        m_current_member = member;
-        return;
-    }
-    m_current_member = -1;
     m_current_statistic = selectedStatisticIndex();
     loadStatisticState( m_current_statistic );
 }
@@ -584,20 +562,15 @@ void EnsembleTransferFunctionEditor::onReceiveEnsembleStatisticsParameter( const
     if( rootMember >= 0 )
     {
         // member:N の復元。接続直後の publish と、他クライアントの Apply の再 publish が届く。
-        const int memberEntryIndex =
-            ui->m_statistics_combo_box->findData( QVariant( MemberEntryItemData ) );
-        if( rootMember < m_num_ensemble && memberEntryIndex >= 0 )
+        if( rootMember < m_num_ensemble )
         {
-            saveCurrentStatisticState();
             m_current_member = rootMember;
-            const bool wasBlocked = ui->m_statistics_combo_box->blockSignals( true );
             const bool spinBlocked = ui->m_member_spin_box->blockSignals( true );
             ui->m_member_spin_box->setValue( rootMember );
-            ui->m_member_spin_box->setEnabled( true );
-            ui->m_statistics_combo_box->setCurrentIndex( memberEntryIndex );
             ui->m_member_spin_box->blockSignals( spinBlocked );
-            ui->m_statistics_combo_box->blockSignals( wasBlocked );
-            // パネルは直前の統計量の状態のまま（onStatisticSelectionChanged と同じ扱い）
+            ui->m_display_member_radio_button->setChecked( true );  // toggled がスピンを有効化する
+            ui->m_member_spin_box->setEnabled( true );
+            // パネル（編集対象の統計量）はそのまま
         }
         else
         {
@@ -623,8 +596,8 @@ void EnsembleTransferFunctionEditor::onReceiveEnsembleStatisticsParameter( const
         }
 
         saveCurrentStatisticState();
-        m_current_member = -1;
-        ui->m_member_spin_box->setEnabled( false );
+        // 表示対象を Statistic へ（Member 表示中なら toggled が m_current_member とスピンを戻す）
+        ui->m_display_statistic_radio_button->setChecked( true );
         m_current_statistic = receivedStatistic;
         const bool wasBlocked = ui->m_statistics_combo_box->blockSignals( true );
         ui->m_statistics_combo_box->setCurrentIndex( receivedStatistic );

@@ -70,6 +70,7 @@ private:
     };
 
     QButtonGroup* m_min_max_group = nullptr;
+    QButtonGroup* m_display_group = nullptr;
     std::array<StatisticUiState, StatisticCount> m_statistics;
     QVector<QColor> m_default_color_map;
     QVector<float> m_default_opacity_map;

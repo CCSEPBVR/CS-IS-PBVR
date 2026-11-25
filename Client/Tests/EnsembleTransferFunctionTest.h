@@ -136,6 +136,8 @@ private:
         // v4.0.0 追加機能用
         QCheckBox* log_scale_check_box = nullptr;     // m_log_scale_statistics_check_box(常用対数)
         QSpinBox* member_spin_box = nullptr;          // m_member_spin_box(メンバーID)
+        QRadioButton* display_statistic_radio = nullptr; // m_display_statistic_radio_button(表示対象=Statistic)
+        QRadioButton* display_member_radio = nullptr;    // m_display_member_radio_button(表示対象=Member)
         QCheckBox* member_output_check_box = nullptr; // m_member_output_check_box(メンバー粒子出力ON/OFF)
         QGroupBox* min_max_group_box = nullptr;       // m_min_max_group_box(タイトルに [log10] が付く)
     };
@@ -345,7 +347,7 @@ private:
     void runItem24MemberOutput( ItemContext& ctx );
     void runItem25MemberOutputEmptyStep( ItemContext& ctx );
     // メンバー選択ヘルパー。statistic_combo_box の「Member」項目を選び、spinbox を member_id にして Apply する。
-    int memberComboIndex( const ClientHandles& client ) const;
+    bool memberDisplayAvailable( const ClientHandles& client ) const;
     bool applyMemberAndWait( ItemContext& ctx, int member_id, bool require_particle_change, ParticleUpdateResult* update_result );
     void runCheckSheetItems( ItemContext& ctx, MainWindow& window );
     // 基本シナリオ(3統計×6ケース、Export/Import)の各ケースを FAIL として記録し、QVERIFY で中断せずに続行する
