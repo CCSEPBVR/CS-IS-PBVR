@@ -1,0 +1,17 @@
+{
+  "websocket": {
+    "url": "ws://127.0.0.1:28080",
+    "connect_timeout": 60,
+    "retry_interval": 1,
+    "max_message_size": 67108864
+  },
+  "mcp_server": {
+    "command": "C:/path/to/CS-IS-PBVR/Client/MCP/.venv/Scripts/python.exe",
+    "args": ["-u", "C:/path/to/CS-IS-PBVR/Client/MCP/server.py"],
+    "cwd": "C:/path/to/CS-IS-PBVR/Client/MCP",
+    "env": {
+      "PBVR_CTRL_DIR": "C:/path/to/CS-IS-PBVR/Client/MCP/ctrl",
+      "PBVR_MCP_TIMEOUT_SECONDS": "120"
+    }
+  }
+}

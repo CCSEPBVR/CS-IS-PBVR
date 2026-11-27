@@ -7,8 +7,8 @@ PBVRは利用者が手動起動します。通信フォルダーごとにPBVR・
 公開MCPツールは`get_state`のみです。状態取得では設定変更、データ要求、粒子再生成を行いません。
 要求・応答はUTF-8のJSON Linesで、`request_id`により照合します。自動再送は行いません。
 
-通常画面版のWindows・macOS Clientを対象とします。既定のローカルモードでは接続元アプリとPBVRを同一端末で起動します。
-Claude CodeとPython MCPサーバーをスパコンで起動する場合は、[SFTP中継の手順](ssh_bridge/README.md)を参照してください。
+通常画面版のWindows・macOS Clientを対象とします。ローカル接続では接続元アプリとPBVRを同一端末で起動します。
+s86のClaude Codeから接続する場合は、[s86からのリモート接続](#s86からのリモート接続)を参照してください。
 WindowsはWin32 API、macOSはPOSIX APIでローカルファイルを読み書きします。
 LinuxのPBVR側ファイル通信は未対応です。OpenXRも対象外です。
 2026-11-10に、利用者がWindowsのChatGPTデスクトップアプリ内のWorkでSTDIO接続し、
@@ -44,10 +44,10 @@ macOSの設定画面・接続、および第5節のその他の検証項目は�
 
 | ファイル | 役割 |
 |---|---|
-| server.py | get_stateだけを公開するFastMCP stdioエントリーポイント |
+| server.py | stdioでget_stateだけを公開するFastMCPエントリーポイント |
 | transport.py | 一意ID付き要求の追記、応答追尾、排他、期限管理 |
-| sftp_transport.py | スパコンの共有領域を介した中継セッションとの通信 |
-| ssh_bridge/ | クライアントPC用のSFTP中継、設定例、起動手順 |
+| remote_mcp/ | Windows側のWebSocket中継と依存定義 |
+| remote_mcp.windows.example.json | s86のClaude Codeから接続するためのWindows側中継設定例 |
 | MCPFileChannel.h/.cpp | ワーカースレッド専用のファイル読み書き・履歴整合性確認 |
 | MCPProtocol.h/.cpp | 要求解析、対応コマンド判定、JSON応答生成 |
 | MCPWorker.h/.cpp | ファイル監視タイマー、順次受付、GUIへの状態取得依頼 |
@@ -86,12 +86,12 @@ macOSの設定画面・接続、および第5節のその他の検証項目は�
 Python 3.11以上を使用します。パスは利用環境に実在するリポジトリの絶対パスへ置き換えます。
 以下のコマンドは利用者が実施するための例です。
 
-Windows（PowerShell）：
+Windows（Developer Command Prompt for VS 2022）：
 
-```powershell
-Set-Location 'C:/path/to/CS-IS-PBVR/Client/MCP'
+```cmd
+cd /d "C:\path\to\CS-IS-PBVR\Client\MCP"
 py -3.11 -m venv .venv
-& ./.venv/Scripts/python.exe -m pip install -r requirements.txt
+.venv\Scripts\python.exe -m pip install -r requirements.txt
 ```
 
 macOS（ターミナル）：
@@ -113,11 +113,11 @@ Pillowなどの画像処理用依存は追加しません。
 既定値・作業ディレクトリからの推測・ディレクトリ自動作成はありません。
 初期配置はリポジトリ内の`Client/MCP/ctrl`です（`ctrl/.gitkeep`でディレクトリを収録）。
 PBVRを手動起動する環境にも、Pythonと同じ通信先を設定します。
-Windowsでは次の設定を行ったPowerShellから、実際のPBVR実行ファイルを起動してください。
+WindowsではDeveloper Command Prompt for VS 2022から、次のようにPBVRを起動してください。
 
-```powershell
-$env:PBVR_CTRL_DIR = 'C:/path/to/CS-IS-PBVR/Client/MCP/ctrl'
-& 'C:/path/to/PBVR/pbvr_client.exe'
+```cmd
+set "PBVR_CTRL_DIR=C:\path\to\CS-IS-PBVR\Client\MCP\ctrl"
+"C:\path\to\PBVR\pbvr_client.exe"
 ```
 
 macOSでは次の設定を行ったターミナルから、実際のClient実行ファイルを直接起動してください。
@@ -337,3 +337,42 @@ macOSではデバイス番号とinodeで同一性を判定し、書き込み後�
 複数インスタンス、自動ローテーションには対応していません。
 データ読み込み中の色・不透明度Applyによる設定と描画データの混在は、別途対応が必要です。
 将来の操作コマンドはMCPProtocolの受付とGUI処理、Python側ツールを追加する形で拡張できます。
+
+## s86からのリモート接続
+
+WebSocket中継を使います。Claude Codeはs86側の中継にstdioで接続し、Windows側の中継がSSHローカルポート転送を経由して接続します。Windows側の中継は、このリポジトリの`server.py`をstdioの子プロセスとして起動します。通信ファイルはWindows上のPBVRと`server.py`の間で使います。
+
+### Windows側の準備
+
+第1節のMCP用Python環境を準備します。Windows側の中継コードと依存定義は、このリポジトリの`Client/MCP/remote_mcp`にあります。Developer Command Prompt for VS 2022で`Client\MCP`に移動し、依存ライブラリを追加します。`remote_mcp.windows.json`を既に作成している場合は、その設定を使用できます。
+
+```cmd
+cd /d "C:\path\to\CS-IS-PBVR\Client\MCP"
+.venv\Scripts\python.exe -m pip install -r remote_mcp\requirements.txt
+if not exist remote_mcp.windows.json copy /-Y remote_mcp.windows.example.json remote_mcp.windows.json
+```
+
+`remote_mcp.windows.json`の`C:/path/to/CS-IS-PBVR`を実際のリポジトリの絶対パスに置き換えます。`mcp_server.env.PBVR_CTRL_DIR`を第2節でPBVR Clientに指定する値と揃え、PBVR Clientを起動します。接続確認に使うデータを開き、同じ通信ディレクトリを使用するローカルのMCPサーバーは終了しておきます。
+
+### 接続と確認
+
+1. s86のログインノードで次を実行します。Phase 4と同じ中継ソースと依存ライブラリを配備済みの環境を使います。`~/claude-sandbox/remote-mcp`はPhase 4の配備先です。別の場所に配備している場合は`run.sh`のパスを置き換えます。
+
+   ```sh
+   bash ~/claude-sandbox/remote-mcp/run.sh --remote-mcp ~/work
+   ```
+
+2. `Remote MCP endpoint`が表示されたら、Windowsの別のDeveloper Command Prompt for VS 2022で`ComputeHost`と`ComputePort`を表示値に置き換えてSSH転送を開始し、その端末を開いたままにします。
+
+   ```cmd
+   ssh -N -o ExitOnForwardFailure=yes -L 127.0.0.1:28080:ComputeHost:ComputePort s86
+   ```
+
+3. s86側の待機プロンプトでEnterを押し、Windows側の準備で使った端末ですぐに中継を起動します。
+
+   ```cmd
+   .venv\Scripts\python.exe remote_mcp\websocket_client.py --config remote_mcp.windows.json
+   ```
+
+4. Claude Codeの`/mcp`で`pbvr-remote`の接続を確認します。`get_state`を呼び出し、`ok: true`と`result.objects`の内容がWindows側で開いたデータと一致することを確認します。
+5. Claude CodeとWindows側のSSH転送を終了し、中継とその子プロセスのMCPサーバーが終了することを確認します。

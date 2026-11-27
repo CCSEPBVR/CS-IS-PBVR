@@ -3,9 +3,9 @@
 ## 通信と寿命
 
 `PBVR_CTRL_DIR`は双方必須、既存ディレクトリの絶対パスです。未指定時の代替先はありません。
-PBVRはWindows・macOSのローカルファイルを使います。ローカル接続は同一端末のPBVRとMCPサーバー各1インスタンスを前提とします。
-ローカル接続ではPython MCPサーバー、[SFTP中継経由](ssh_bridge/README.md)ではPC側の中継が、PBVR側のcommand.txtへ追記します。
-PBVR側のstructured.logへの追記はPBVRが担当します。要求と応答の形式はどちらの接続方式でも共通です。
+PBVRとPython MCPサーバーは同じPCで動作し、ローカルファイルを使います。通信ディレクトリごとに各1インスタンスを前提とします。
+Python MCPサーバーがcommand.txtへ追記し、PBVRがstructured.logへ追記します。
+[s86から接続する場合](README.md#s86からのリモート接続)も、PC内のファイル通信には同じプロトコルを使います。
 UTF-8（BOMなし）JSON Linesで、LFまでが1レコードです。CRLFもJSONの末尾空白として許容します。
 空行は不正JSONです。改行のない断片は保留します。
 

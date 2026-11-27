@@ -1,26 +1,14 @@
 """PBVRのMCPツールをstdioで公開する。"""
 import logging
-import os
 
 from mcp.server.fastmcp import FastMCP
 
 from transport import FileTransport
 
-def create_transport() -> FileTransport:
-    """環境変数が指定する通信方式を初期化して返す。"""
-    mode = os.environ.get("PBVR_TRANSPORT", "local")
-    if mode == "local":
-        return FileTransport.from_environment()
-    if mode == "sftp-files":
-        from sftp_transport import SftpFileTransport
-
-        return SftpFileTransport.from_environment()
-    raise ValueError("PBVR_TRANSPORT must be local or sftp-files")
-
 
 logging.basicConfig(level=logging.INFO)  # MCPのstdioを保つためログは標準エラーに出す。
 mcp = FastMCP("PBVR")
-transport = create_transport()
+transport = FileTransport.from_environment()
 
 
 @mcp.tool()
